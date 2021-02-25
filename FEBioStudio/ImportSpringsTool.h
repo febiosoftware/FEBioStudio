@@ -52,6 +52,7 @@ private:
 	QString	m_fileName;
 	double	m_tol;
 	bool	m_bintersect;
+	int		m_type;
 
 	std::vector<SPRING>	m_springs;
 };
