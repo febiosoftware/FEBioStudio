@@ -1598,6 +1598,13 @@ void CMainWindow::writeSettings()
 	settings.setValue("showNewDialogBox", ui->m_showNewDialog);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
+	settings.setValue("bgColor1", (int)vs.m_col1);
+	settings.setValue("bgColor2", (int)vs.m_col2);
+	settings.setValue("fgColor", (int)vs.m_fgcol);
+	settings.setValue("meshColor", (int)vs.m_mcol);
+	settings.setValue("bgStyle", vs.m_nbgstyle);
+	settings.setValue("lighting", vs.m_bLighting);
+	settings.setValue("shadows", vs.m_bShadows);
 	settings.setValue("multiViewProjection", vs.m_nconv);
 	settings.setValue("showMaterialFibers", vs.m_bfiber);
 	settings.setValue("showMaterialAxes", vs.m_blma);
@@ -1676,6 +1683,13 @@ void CMainWindow::readSettings()
 	ui->m_showNewDialog = settings.value("showNewDialogBox", true).toBool();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
+	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1).toInt());
+	vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2).toInt());
+	vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol).toInt());
+	vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol).toInt());
+	vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
+	vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
+	vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
 	vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
 	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
 	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
