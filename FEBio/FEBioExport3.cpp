@@ -4764,7 +4764,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 			}
 			else if (ps->Type() == FE_RIGID_DISPLACEMENT)
 			{
-				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				FERigidDisplacement* rc = dynamic_cast<FERigidDisplacement*>(ps);
 				XMLElement el;
 				el.name("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
@@ -4777,6 +4777,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
 					el.value(rc->GetValue());
 					m_xml.add_leaf(el);
+					m_xml.add_leaf("relative", rc->GetRelativeFlag());
 				}
 				m_xml.close_branch();
 			}
