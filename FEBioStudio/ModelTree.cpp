@@ -197,10 +197,10 @@ public:
 	bool IsValid()
 	{
 		if (m_pci == 0) return false;
-		FEItemListBuilder* master = m_pci->GetMasterSurfaceList();
-		FEItemListBuilder* slave  = m_pci->GetSlaveSurfaceList();
-		if ((master == 0) || (master->size() == 0)) return false;
-		if ((slave  == 0) || (slave ->size() == 0)) return false;
+		FEItemListBuilder* surf1 = m_pci->GetPrimarySurface();
+		FEItemListBuilder* surf2 = m_pci->GetSecondarySurface();
+		if ((surf1 == 0) || (surf1->size() == 0)) return false;
+		if ((surf2 == 0) || (surf2->size() == 0)) return false;
 		return true;
 	}
 

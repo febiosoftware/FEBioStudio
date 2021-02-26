@@ -113,14 +113,14 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pstep->Interface(j));
 			if (pi && pi->IsActive())
 			{
-				FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pi->GetSecondarySurface();
 				if (pms)
 				{
 					const string& name = pms->GetName();
 					if (name.empty() == false) m_pSurf.push_back(pms);
 				}
 
-				FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pi->GetPrimarySurface();
 				if (pss)
 				{
 					const string& name = pss->GetName();
@@ -1811,7 +1811,7 @@ void FEBioExport12::WriteContactPoro(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1820,7 +1820,7 @@ void FEBioExport12::WriteContactPoro(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -1853,7 +1853,7 @@ void FEBioExport12::WriteContactPoroSolute(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1862,7 +1862,7 @@ void FEBioExport12::WriteContactPoroSolute(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -1895,7 +1895,7 @@ void FEBioExport12::WriteContactMultiphasic(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1904,7 +1904,7 @@ void FEBioExport12::WriteContactMultiphasic(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -1937,7 +1937,7 @@ void FEBioExport12::WriteContactTC(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1946,7 +1946,7 @@ void FEBioExport12::WriteContactTC(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -1979,7 +1979,7 @@ void FEBioExport12::WriteContactTiedPoro(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pp->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pp->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pp->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -1988,7 +1988,7 @@ void FEBioExport12::WriteContactTiedPoro(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pp->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pp->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2068,7 +2068,7 @@ void FEBioExport12::WriteContactTied(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pt->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pt->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pt->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2077,7 +2077,7 @@ void FEBioExport12::WriteContactTied(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pt->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pt->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2109,7 +2109,7 @@ void FEBioExport12::WriteContactSticky(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pt->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pt->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pt->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2118,7 +2118,7 @@ void FEBioExport12::WriteContactSticky(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pt->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pt->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2152,7 +2152,7 @@ void FEBioExport12::WriteContactPeriodic(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pt->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pt->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pt->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2161,7 +2161,7 @@ void FEBioExport12::WriteContactPeriodic(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pt->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pt->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2203,7 +2203,7 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 				}
 
 				// master surface
-				FEItemListBuilder* pms = ps->GetMasterSurfaceList();
+				FEItemListBuilder* pms = ps->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2212,7 +2212,7 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = ps->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = ps->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2238,7 +2238,7 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pswg->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pswg->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pswg->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2247,7 +2247,7 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pswg->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pswg->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");
@@ -2273,7 +2273,7 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 				for (int n = 0; n<NP; ++n) WriteParam(pf2f->GetParam(n));
 
 				// master surface
-				FEItemListBuilder* pms = pf2f->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pf2f->GetSecondarySurface();
 				if (pms)
 				{
 					XMLElement el("surface");
@@ -2282,7 +2282,7 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 				}
 
 				// slave surface
-				FEItemListBuilder* pss = pf2f->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pf2f->GetPrimarySurface();
 				if (pss)
 				{
 					XMLElement el("surface");

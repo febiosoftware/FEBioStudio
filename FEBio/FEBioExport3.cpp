@@ -511,7 +511,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 
 				if (pi && pi->IsActive())
 				{
-					FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+					FEItemListBuilder* pss = pi->GetPrimarySurface();
 					if (pss == 0) throw InvalidItemListBuilder(pi);
 
 					string name = pss->GetName();
@@ -523,7 +523,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 					}
 					AddSurface(szname, pss);
 
-					FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+					FEItemListBuilder* pms = pi->GetSecondarySurface();
 					if (pms == 0) throw InvalidItemListBuilder(pi);
 
 					name = pms->GetName();
@@ -2576,10 +2576,10 @@ void FEBioExport3::WriteGeometrySurfacePairs()
 
 			if (pi && pi->IsActive())
 			{
-				FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pi->GetSecondarySurface();
 				if (pms == 0) throw InvalidItemListBuilder(pi);
 
-				FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pi->GetPrimarySurface();
 				if (pss == 0) throw InvalidItemListBuilder(pi);
 
 				XMLElement el("SurfacePair");
@@ -4767,7 +4767,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 			}
 			else if (ps->Type() == FE_RIGID_DISPLACEMENT)
 			{
-				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				FERigidDisplacement* rc = dynamic_cast<FERigidDisplacement*>(ps);
 				XMLElement el;
 				el.name("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
@@ -4780,6 +4780,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
 					el.value(rc->GetValue());
 					m_xml.add_leaf(el);
+					m_xml.add_leaf("relative", rc->GetRelativeFlag());
 				}
 				m_xml.close_branch();
 			}

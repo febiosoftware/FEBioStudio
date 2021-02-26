@@ -367,7 +367,7 @@ void check_008(FEProject& prj, std::vector<FSObject*>& objList)
 			if (dynamic_cast<FEPairedInterface*>(pi))
 			{
 				FEPairedInterface* psi = dynamic_cast<FEPairedInterface*>(pi);
-				if ((psi->GetMasterSurfaceList() == nullptr) || (psi->GetSlaveSurfaceList() == nullptr))
+				if ((psi->GetPrimarySurface() == nullptr) || (psi->GetSecondarySurface() == nullptr))
 				{
 					objList.push_back(pi);
 				}

@@ -1988,13 +1988,13 @@ void FEBioFormat2::ParseContactParams(XMLTag& tag, FEPairedInterface* pi, int ni
 				{
 					sprintf(szbuf, "MasterSurface%02d", nid);
 					ps->SetName(szn ? szn : szbuf);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					sprintf(szbuf, "SlaveSurface%02d", nid);
 					ps->SetName(szn ? szn : szbuf);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 			}
 			else ParseUnknownTag(tag);

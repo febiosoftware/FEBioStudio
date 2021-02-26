@@ -702,8 +702,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			ui->setSelection1Title("Primary");
 			ui->setSelection2Title("Secondary");
 			ui->showSelectionPanel2(true);
-			SetSelection(0, pi->GetSlaveSurfaceList());
-			SetSelection(1, pi->GetMasterSurfaceList());
+			SetSelection(0, pi->GetPrimarySurface());
+			SetSelection(1, pi->GetSecondarySurface());
 			return;
 		}
 
@@ -977,7 +977,7 @@ void CModelPropsPanel::addSelection(int n)
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
 	if (pi)
 	{
-		if ((ps->Type() != SELECT_SURFACES) && (ps->Type() != SELECT_FE_FACES))
+		if ((ps->Type() != SELECT_SURFACES) && (ps->Type() != SELECT_FE_FACES) && (ps->Type() != SELECT_PARTS))
 		{
 			QMessageBox::critical(this, "FEBio Studio", "The selection cannot be assigned to this interface.");
 			return;
@@ -985,11 +985,11 @@ void CModelPropsPanel::addSelection(int n)
 
 		FEItemListBuilder* pg = ps->CreateItemList();
 
-		FEItemListBuilder* pl = (n==0? pi->GetSlaveSurfaceList() : pi->GetMasterSurfaceList());
+		FEItemListBuilder* pl = (n==0? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 		if (pl == 0)
 		{
-			if (n == 0) pi->SetSlave(pg);
-			else pi->SetMaster(pg);
+			if (n == 0) pi->SetPrimarySurface(pg);
+			else pi->SetSecondarySurface(pg);
 			SetSelection(n, pg);
 		}
 		else
@@ -1205,7 +1205,7 @@ void CModelPropsPanel::subSelection(int n)
 		if (dynamic_cast<GObjectSelection*>(ps) ||
 		dynamic_cast<GPartSelection*>(ps)) return;
 
-		FEItemListBuilder* pl = (n==0? pi->GetSlaveSurfaceList() : pi->GetMasterSurfaceList());
+		FEItemListBuilder* pl = (n==0? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 
 		if (pl)
 		{
@@ -1336,7 +1336,7 @@ void CModelPropsPanel::delSelection(int n)
 		if (psi) pl = psi->GetItemList();
 
 		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
-		if (pi) pl = (n == 0 ? pi->GetSlaveSurfaceList() : pi->GetMasterSurfaceList());
+		if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 
 		CSelectionBox* sel = ui->selectionPanel(n);
 
@@ -1383,7 +1383,7 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 	if (psi) pl = psi->GetItemList();
 
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
-	if (pi) pl = pi->GetSlaveSurfaceList();
+	if (pi) pl = pi->GetPrimarySurface();
 
 	if (pl == 0) return;
 
@@ -1425,7 +1425,7 @@ void CModelPropsPanel::clearSelection(int n)
 	else if (dynamic_cast<FEPairedInterface*>(m_currentObject))
 	{
 		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
-		pl = (n == 0 ? pi->GetSlaveSurfaceList() : pi->GetMasterSurfaceList());
+		pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 		if (pl)
 		{
 			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pi, n));
@@ -1456,7 +1456,7 @@ void CModelPropsPanel::on_select2_nameChanged(const QString& t)
 	if (psi) pl = psi->GetItemList();
 
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
-	if (pi) pl = pi->GetMasterSurfaceList();
+	if (pi) pl = pi->GetSecondarySurface();
 
 	if (pl == 0) return;
 
@@ -1494,7 +1494,7 @@ void CModelPropsPanel::selSelection(int n)
 	if (pmc) pl = pmc->GetItemList();
 
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
-	if (pi) pl = (n==0? pi->GetSlaveSurfaceList() : pi->GetMasterSurfaceList());
+	if (pi) pl = (n==0? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 
 	GGroup* pg = dynamic_cast<GGroup*>(m_currentObject);
 	if (pg) pl = pg;

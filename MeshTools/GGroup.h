@@ -124,6 +124,7 @@ public:
 
 	FENodeList* BuildNodeList() override;
 	FEElemList* BuildElemList() override;
+	FEFaceList*	BuildFaceList() override;
 
 	bool IsValid() const override;
 

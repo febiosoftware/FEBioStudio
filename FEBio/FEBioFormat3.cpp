@@ -337,7 +337,7 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 						++tag;
 						do
 						{
-							if (tag == "shell_nodal_normal")
+							if (tag == "shell_normal_nodal")
 							{
 								if (dom) tag.value(dom->m_bshellNodalNormals);
 							}
@@ -2017,14 +2017,14 @@ void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 				{
 					string name1 = part->GetSurface(surfPair->masterID()).name();
 					FESurface* master = febio.BuildFESurface(name1.c_str());
-					pci->SetMaster(master);
+					pci->SetSecondarySurface(master);
 				}
 
 				if (surfPair->slaveID() >= 0)
 				{
 					string name2 = part->GetSurface(surfPair->slaveID()).name();
 					FESurface* slave = febio.BuildFESurface(name2.c_str());
-					pci->SetSlave(slave);
+					pci->SetPrimarySurface(slave);
 				}
 			}
 

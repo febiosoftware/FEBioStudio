@@ -243,6 +243,8 @@ public:
 	void Set3DCursor(const vec3d& r) { m_view.m_pos3d = r; }
 	vec3d Get3DCursor() const { return m_view.m_pos3d; }
 
+	std::string GetOGLVersionString();
+
 protected:
 	void mousePressEvent  (QMouseEvent* ev);
 	void mouseMoveEvent   (QMouseEvent* ev);
@@ -526,6 +528,8 @@ private:
 	int			m_planeCutMode;
 	double		m_plane[4];
 	GLMesh*		m_planeCut;
+
+	std::string		m_oglVersionString;
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);

@@ -125,6 +125,7 @@ public slots:
 	void OnDeleteAllDiscete();
 	void OnSelectDiscreteObject();
 	void OnDetachDiscreteObject();
+	void OnChangeDiscreteType();
 	void OnHidePart();
 	void OnSelectPartElements();
 	void OnShowPart();

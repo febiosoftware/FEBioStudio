@@ -38,7 +38,9 @@ CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Impo
 	addResourceProperty(&m_fileName, "Filename");
 	addDoubleProperty(&m_tol, "Snap tolerance");
 	addBoolProperty(&m_bintersect, "Check for intersections");
+	addEnumProperty(&m_type, "Spring type")->setEnumValues(QStringList() << "Linear" << "Nonlinear" << "Hill");
 
+	m_type = 0;
 	m_tol = 1e-6;
 	m_bintersect = true;
 }
@@ -58,6 +60,9 @@ bool CImportSpringsTool::OnApply()
 
 	// read the file
 	if (ReadFile() == false) return SetErrorString("There was a problem reading the file.");
+
+	// check if we have springs
+	if (m_springs.empty()) return SetErrorString("The file did not contain any springs or was not properly formatted.");
 
 	// apply the springs
 	if (mo) return AddSprings(doc->GetGModel(), mo);
@@ -131,8 +136,19 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 
 bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 {
+	// create the discrete set
 	GDiscreteSpringSet* dset = new GDiscreteSpringSet;
-	dset->SetMaterial(new FELinearSpringMaterial);
+
+	// set the spring material
+	switch (m_type)
+	{
+	case 0: dset->SetMaterial(new FELinearSpringMaterial); break;
+	case 1: dset->SetMaterial(new FENonLinearSpringMaterial); break;
+	case 2: dset->SetMaterial(new FEHillContractileMaterial); break;
+	default:
+		assert(false);
+		return false;
+	}	
 
 	// extract the name from the file name
 	QFileInfo file(m_fileName);

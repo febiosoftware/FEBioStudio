@@ -47,7 +47,8 @@ SOFTWARE.*/
 // 3.10: Added density to prestrain elastic material.
 // 3.11: changes to FEMeshData classes. 
 // 3.12: Added shell nodal normal flag to GPart
-#define SAVE_VERSION	0x0003000C
+// 3.13: Added "relative" flag to FERigidDisplacement. 
+#define SAVE_VERSION	0x0003000D
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D
