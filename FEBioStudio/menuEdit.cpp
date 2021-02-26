@@ -1080,6 +1080,48 @@ void CMainWindow::on_actionSelectOverlap_triggered()
 	}
 }
 
+void CMainWindow::on_actionSelectIsolatedVertices_triggered()
+{
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr) return;
+
+	FEMesh* mesh = po->GetFEMesh();
+	if (mesh == nullptr) return;
+	
+	mesh->TagAllNodes(0);
+	int NE = mesh->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& el = mesh->Element(i);
+		int ne = el.Nodes();
+		for (int j = 0; j < ne; ++j)
+		{
+			mesh->Node(el.m_node[j]).m_ntag = 1;
+		}
+	}
+
+	std::vector<int> isolatedVerts;
+	for (int i = 0; i < mesh->Nodes(); ++i)
+	{
+		if (mesh->Node(i).m_ntag == 0)
+		{
+			isolatedVerts.push_back(i);
+		}
+	}
+
+	AddLogEntry(QString("%1: %2 isolated vertices found\n").arg(QString::fromStdString(po->GetName())).arg(isolatedVerts.size()));
+
+	if (isolatedVerts.empty() == false)
+	{
+		CCommand* cmd = new CCmdSelectFENodes(mesh, isolatedVerts, false);
+		doc->DoCommand(cmd);
+		RedrawGL();
+	}
+}
+
 void CMainWindow::on_actionGrowSelection_triggered()
 {
 	GObject* po = GetActiveObject();

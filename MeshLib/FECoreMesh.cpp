@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FECoreMesh.h"
-#include "hex8.h"
-#include "tet4.h"
-#include "pyra5.h"
-#include "pyra13.h"
+#include "hex.h"
+#include "tet.h"
+#include "penta.h"
+#include "pyra.h"
 
 //-----------------------------------------------------------------------------
 //! constructor
@@ -155,16 +155,15 @@ double FECoreMesh::ElementVolume(const FEElement_& el)
 }
 
 //-----------------------------------------------------------------------------
-double hex8_volume(vec3d* r)
+double hex8_volume(vec3d* r, bool bJ)
 {
-	// gauss-point data
-	const double a = 1.f / (float)sqrt(3.0);
 	const int NELN = 8;
 	const int NINT = 8;
-	static double gr[NINT] = { -a,  a,  a, -a, -a,  a, a, -a };
-	static double gs[NINT] = { -a, -a,  a,  a, -a, -a, a,  a };
-	static double gt[NINT] = { -a, -a, -a, -a,  a,  a, a,  a };
-	static double gw[NINT] = { 1,  1,  1,  1,  1,  1,  1, 1 };
+    
+    static double gr[NINT] = { 0 };
+    static double gs[NINT] = { 0 };
+    static double gt[NINT] = { 0 };
+    static double gw[NINT] = { 0 };
 
 	static double H[NINT][NELN] = { 0 };
 	static double Gr[NINT][NELN] = { 0 };
@@ -174,6 +173,7 @@ double hex8_volume(vec3d* r)
 
 	if (bfirst)
 	{
+        HEX8::gauss_data(gr, gs, gt, gw);
 		for (int n = 0; n<NINT; ++n)
 		{
 			// calculate shape function values at gauss points
@@ -217,154 +217,26 @@ double hex8_volume(vec3d* r)
 			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
 			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
 
-		vol += detJ*gw[n];
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
 	}
 
 	return vol;
 }
 
 //-----------------------------------------------------------------------------
-// Calculate the volume of a hex element
-double FECoreMesh::HexVolume(const FEElement_& el)
+double hex20_volume(vec3d* r, bool bJ)
 {
-	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
-
-	vec3d rt[FEElement::MAX_NODES];
-	for (int i = 0; i<8; ++i) rt[i] = m_Node[el.m_node[i]].r;
-
-	return hex8_volume(rt);
-}
-
-//-----------------------------------------------------------------------------
-// Calculate the volume of a pentahedral element
-double FECoreMesh::PentaVolume(const FEElement_& el)
-{
-	assert((el.Type() == FE_PENTA6) || (el.Type() == FE_PENTA15));
-
-	// gauss-point data
-	//gauss intergration points
-	const double a = 1.f / 6.f;
-	const double b = 2.f / 3.f;
-	const double c = 1.f / (float)sqrt(3.0);
-	const double w = 1.f / 6.f;
-
-	const int NELN = 6;
-	const int NINT = 6;
-
-	static double gr[NINT] = { a, b, a, a, b, a };
-	static double gs[NINT] = { a, a, b, a, a, b };
-	static double gt[NINT] = { -c, -c, -c, c, c, c };
-	static double gw[NINT] = { w, w, w, w, w, w };
-
-	static double H[NINT][NELN] = { 0 };
-	static double Gr[NINT][NELN] = { 0 };
-	static double Gs[NINT][NELN] = { 0 };
-	static double Gt[NINT][NELN] = { 0 };
-	static bool bfirst = true;
-
-	if (bfirst)
-	{
-		int n;
-
-		// calculate shape function values at gauss points
-		for (n = 0; n<NINT; ++n)
-		{
-			H[n][0] = 0.5*(1.f - gt[n])*(1.0 - gr[n] - gs[n]);
-			H[n][1] = 0.5*(1.f - gt[n])*gr[n];
-			H[n][2] = 0.5*(1.f - gt[n])*gs[n];
-			H[n][3] = 0.5*(1.f + gt[n])*(1.0 - gr[n] - gs[n]);
-			H[n][4] = 0.5*(1.f + gt[n])*gr[n];
-			H[n][5] = 0.5*(1.f + gt[n])*gs[n];
-		}
-
-		// calculate local derivatives of shape functions at gauss points
-		for (n = 0; n<NINT; ++n)
-		{
-			Gr[n][0] = -0.5*(1.0 - gt[n]);
-			Gr[n][1] = 0.5*(1.0 - gt[n]);
-			Gr[n][2] = 0.0;
-			Gr[n][3] = -0.5*(1.0 + gt[n]);
-			Gr[n][4] = 0.5*(1.0 + gt[n]);
-			Gr[n][5] = 0.0;
-
-			Gs[n][0] = -0.5*(1.0 - gt[n]);
-			Gs[n][1] = 0.0;
-			Gs[n][2] = 0.5*(1.0 - gt[n]);
-			Gs[n][3] = -0.5*(1.0 + gt[n]);
-			Gs[n][4] = 0.0;
-			Gs[n][5] = 0.5*(1.0 + gt[n]);
-
-			Gt[n][0] = -0.5*(1.0 - gr[n] - gs[n]);
-			Gt[n][1] = -0.5*gr[n];
-			Gt[n][2] = -0.5*gs[n];
-			Gt[n][3] = 0.5*(1.0 - gr[n] - gs[n]);
-			Gt[n][4] = 0.5*gr[n];
-			Gt[n][5] = 0.5*gs[n];
-		}
-
-		bfirst = false;
-	}
-
-	double *Grn, *Gsn, *Gtn;
-	double vol = 0, detJ;
-	double J[3][3];
-	int i, n;
-
-	vec3d rt[NELN];
-	for (i = 0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
-
-	for (n = 0; n<NINT; ++n)
-	{
-		Grn = Gr[n];
-		Gsn = Gs[n];
-		Gtn = Gt[n];
-
-		J[0][0] = J[0][1] = J[0][2] = 0.0;
-		J[1][0] = J[1][1] = J[1][2] = 0.0;
-		J[2][0] = J[2][1] = J[2][2] = 0.0;
-		for (i = 0; i<NELN; ++i)
-		{
-			double Gri = Grn[i];
-			double Gsi = Gsn[i];
-			double Gti = Gtn[i];
-
-			double x = rt[i].x;
-			double y = rt[i].y;
-			double z = rt[i].z;
-
-			J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
-			J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
-			J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
-		}
-
-		// calculate the determinant
-		detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
-			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
-			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
-
-		vol += detJ*gw[n];
-	}
-
-	return vol;
-}
-
-//-----------------------------------------------------------------------------
-double pyra5_volume(vec3d* r, bool bJ)
-{
-    const int NELN = 5;
+    const int NELN = 20;
     const int NINT = 8;
-    
-    // integration point coordinates
-    const double a = 1.0 / sqrt(3.0);
-    static double gr[NINT], gs[NINT], gt[NINT], gw[NINT];
-    gr[0] = -a; gs[0] = -a; gt[0] = -a; gw[0] = 1;
-    gr[1] = a; gs[1] = -a; gt[1] = -a; gw[1] = 1;
-    gr[2] = a; gs[2] = a; gt[2] = -a; gw[2] = 1;
-    gr[3] = -a; gs[3] = a; gt[3] = -a; gw[3] = 1;
-    gr[4] = -a; gs[4] = -a; gt[4] = a; gw[4] = 1;
-    gr[5] = a; gs[5] = -a; gt[5] = a; gw[5] = 1;
-    gr[6] = a; gs[6] = a; gt[6] = a; gw[6] = 1;
-    gr[7] = -a; gs[7] = a; gt[7] = a; gw[7] = 1;
+
+    static double gr[NINT] = { 0 };
+    static double gs[NINT] = { 0 };
+    static double gt[NINT] = { 0 };
+    static double gw[NINT] = { 0 };
     
     static double H[NINT][NELN] = { 0 };
     static double Gr[NINT][NELN] = { 0 };
@@ -374,6 +246,346 @@ double pyra5_volume(vec3d* r, bool bJ)
     
     if (bfirst)
     {
+        HEX20::gauss_data(gr, gs, gt, gw);
+        for (int n = 0; n<NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            HEX20::shape(H[n], gr[n], gs[n], gt[n]);
+            
+            // calculate local derivatives of shape functions at gauss points
+            HEX20::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+        }
+        
+        bfirst = false;
+    }
+    
+    double J[3][3];
+    double vol = 0;
+    for (int n = 0; n<NINT; ++n)
+    {
+        double* Grn = Gr[n];
+        double* Gsn = Gs[n];
+        double* Gtn = Gt[n];
+        
+        J[0][0] = J[0][1] = J[0][2] = 0.0;
+        J[1][0] = J[1][1] = J[1][2] = 0.0;
+        J[2][0] = J[2][1] = J[2][2] = 0.0;
+        for (int i = 0; i<NELN; ++i)
+        {
+            double Gri = Grn[i];
+            double Gsi = Gsn[i];
+            double Gti = Gtn[i];
+            
+            double x = r[i].x;
+            double y = r[i].y;
+            double z = r[i].z;
+            
+            J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+            J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+            J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+        }
+        
+        // calculate the determinant
+        double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+        + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+        + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+        
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
+    }
+    
+    return vol;
+}
+
+//-----------------------------------------------------------------------------
+double hex27_volume(vec3d* r, bool bJ)
+{
+    // gauss-point data
+    const int NELN = 27;
+    const int NINT = 27;
+    
+    static double gr[NINT] = { 0 };
+    static double gs[NINT] = { 0 };
+    static double gt[NINT] = { 0 };
+    static double gw[NINT] = { 0 };
+
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static double Gt[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+    
+    if (bfirst)
+    {
+        HEX27::gauss_data(gr, gs, gt, gw);
+        for (int n = 0; n<NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            HEX27::shape(H[n], gr[n], gs[n], gt[n]);
+            
+            // calculate local derivatives of shape functions at gauss points
+            HEX27::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+        }
+        
+        bfirst = false;
+    }
+    
+    double J[3][3];
+    double vol = 0;
+    for (int n = 0; n<NINT; ++n)
+    {
+        double* Grn = Gr[n];
+        double* Gsn = Gs[n];
+        double* Gtn = Gt[n];
+        
+        J[0][0] = J[0][1] = J[0][2] = 0.0;
+        J[1][0] = J[1][1] = J[1][2] = 0.0;
+        J[2][0] = J[2][1] = J[2][2] = 0.0;
+        for (int i = 0; i<NELN; ++i)
+        {
+            double Gri = Grn[i];
+            double Gsi = Gsn[i];
+            double Gti = Gtn[i];
+            
+            double x = r[i].x;
+            double y = r[i].y;
+            double z = r[i].z;
+            
+            J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+            J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+            J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+        }
+        
+        // calculate the determinant
+        double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+        + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+        + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+        
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
+    }
+    
+    return vol;
+}
+
+//-----------------------------------------------------------------------------
+// Calculate the volume of a hex element
+double FECoreMesh::HexVolume(const FEElement_& el)
+{
+	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
+
+    
+    vec3d rt[FEElement::MAX_NODES];
+    for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
+    
+    switch (el.Type())
+    {
+        case FE_HEX8:
+            return hex8_volume(rt);
+            break;
+        case FE_HEX20:
+            return hex20_volume(rt);
+            break;
+        case FE_HEX27:
+            return hex27_volume(rt);
+            break;
+    }
+    return 0.0;
+}
+
+
+//-----------------------------------------------------------------------------
+double penta6_volume(vec3d* r, bool bJ)
+{
+    const int NELN = 6;
+    const int NINT = 8;
+    
+    static double gr[NINT] = { 0 };
+    static double gs[NINT] = { 0 };
+    static double gt[NINT] = { 0 };
+    static double gw[NINT] = { 0 };
+
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static double Gt[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+    
+    if (bfirst)
+    {
+        PENTA6::gauss_data(gr, gs, gt, gw);
+        for (int n = 0; n<NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            PENTA6::shape(H[n], gr[n], gs[n], gt[n]);
+            
+            // calculate local derivatives of shape functions at gauss points
+            PENTA6::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+        }
+        
+        bfirst = false;
+    }
+    
+    double J[3][3];
+    double vol = 0;
+    for (int n = 0; n<NINT; ++n)
+    {
+        double* Grn = Gr[n];
+        double* Gsn = Gs[n];
+        double* Gtn = Gt[n];
+        
+        J[0][0] = J[0][1] = J[0][2] = 0.0;
+        J[1][0] = J[1][1] = J[1][2] = 0.0;
+        J[2][0] = J[2][1] = J[2][2] = 0.0;
+        for (int i = 0; i<NELN; ++i)
+        {
+            double Gri = Grn[i];
+            double Gsi = Gsn[i];
+            double Gti = Gtn[i];
+            
+            double x = r[i].x;
+            double y = r[i].y;
+            double z = r[i].z;
+            
+            J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+            J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+            J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+        }
+        
+        // calculate the determinant
+        double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+        + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+        + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+        
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
+    }
+    
+    return vol;
+}
+
+//-----------------------------------------------------------------------------
+double penta15_volume(vec3d* r, bool bJ)
+{
+    const int NELN = 15;
+    const int NINT = 8;
+    
+    static double gr[NINT] = { 0 };
+    static double gs[NINT] = { 0 };
+    static double gt[NINT] = { 0 };
+    static double gw[NINT] = { 0 };
+
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static double Gt[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+    
+    if (bfirst)
+    {
+        PENTA15::gauss_data(gr, gs, gt, gw);
+        for (int n = 0; n<NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            PENTA15::shape(H[n], gr[n], gs[n], gt[n]);
+            
+            // calculate local derivatives of shape functions at gauss points
+            PENTA15::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+        }
+        
+        bfirst = false;
+    }
+    
+    double J[3][3];
+    double vol = 0;
+    for (int n = 0; n<NINT; ++n)
+    {
+        double* Grn = Gr[n];
+        double* Gsn = Gs[n];
+        double* Gtn = Gt[n];
+        
+        J[0][0] = J[0][1] = J[0][2] = 0.0;
+        J[1][0] = J[1][1] = J[1][2] = 0.0;
+        J[2][0] = J[2][1] = J[2][2] = 0.0;
+        for (int i = 0; i<NELN; ++i)
+        {
+            double Gri = Grn[i];
+            double Gsi = Gsn[i];
+            double Gti = Gtn[i];
+            
+            double x = r[i].x;
+            double y = r[i].y;
+            double z = r[i].z;
+            
+            J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+            J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+            J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+        }
+        
+        // calculate the determinant
+        double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+        + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+        + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+        
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
+    }
+    
+    return vol;
+}
+
+//-----------------------------------------------------------------------------
+// Calculate the volume of a pentahedral element
+double FECoreMesh::PentaVolume(const FEElement_& el)
+{
+	assert((el.Type() == FE_PENTA6) || (el.Type() == FE_PENTA15));
+
+    vec3d rt[FEElement::MAX_NODES];
+    for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
+    
+    switch (el.Type())
+    {
+        case FE_PENTA6:
+            return penta6_volume(rt);
+            break;
+        case FE_PENTA15:
+            return penta15_volume(rt);
+            break;
+    }
+    return 0.0;
+}
+//-----------------------------------------------------------------------------
+double pyra5_volume(vec3d* r, bool bJ)
+{
+    const int NELN = 5;
+    const int NINT = 8;
+    
+    static double gr[NINT] = {0};
+    static double gs[NINT] = {0};
+    static double gt[NINT] = {0};
+    static double gw[NINT] = {0};
+    
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static double Gt[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+    
+    if (bfirst)
+    {
+        PYRA5::gauss_data(gr, gs, gt, gw);
         for (int n = 0; n<NINT; ++n)
         {
             // calculate shape function values at gauss points
@@ -418,7 +630,9 @@ double pyra5_volume(vec3d* r, bool bJ)
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
         // evaluate volume or (if bJ = true) minimum Jacobian
-        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
         else vol += detJ*gw[n];
     }
     
@@ -431,18 +645,11 @@ double pyra13_volume(vec3d* r, bool bJ)
     const int NELN = 13;
     const int NINT = 8;
     
-    // integration point coordinates
-    const double a = 1.0 / sqrt(3.0);
-    static double gr[NINT], gs[NINT], gt[NINT], gw[NINT];
-    gr[0] = -a; gs[0] = -a; gt[0] = -a; gw[0] = 1;
-    gr[1] = a; gs[1] = -a; gt[1] = -a; gw[1] = 1;
-    gr[2] = a; gs[2] = a; gt[2] = -a; gw[2] = 1;
-    gr[3] = -a; gs[3] = a; gt[3] = -a; gw[3] = 1;
-    gr[4] = -a; gs[4] = -a; gt[4] = a; gw[4] = 1;
-    gr[5] = a; gs[5] = -a; gt[5] = a; gw[5] = 1;
-    gr[6] = a; gs[6] = a; gt[6] = a; gw[6] = 1;
-    gr[7] = -a; gs[7] = a; gt[7] = a; gw[7] = 1;
-    
+    static double gr[NINT] = {0};
+    static double gs[NINT] = {0};
+    static double gt[NINT] = {0};
+    static double gw[NINT] = {0};
+
     static double H[NINT][NELN] = { 0 };
     static double Gr[NINT][NELN] = { 0 };
     static double Gs[NINT][NELN] = { 0 };
@@ -451,6 +658,7 @@ double pyra13_volume(vec3d* r, bool bJ)
     
     if (bfirst)
     {
+        PYRA13::gauss_data(gr, gs, gt, gw);
         for (int n = 0; n<NINT; ++n)
         {
             // calculate shape function values at gauss points
@@ -495,7 +703,9 @@ double pyra13_volume(vec3d* r, bool bJ)
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
         // evaluate volume or (if bJ = true) minimum Jacobian
-        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
         else vol += detJ*gw[n];
     }
     
@@ -524,20 +734,15 @@ double FECoreMesh::PyramidVolume(const FEElement_& el)
 }
 
 //-----------------------------------------------------------------------------
-double tet4_volume(vec3d* r)
+double tet4_volume(vec3d* r, bool bJ)
 {
-	// gauss-point data
-	const double a = 0.58541020f;
-	const double b = 0.13819660f;
-	const double w = 1.f / 24.f;
-
 	const int NELN = 4;
 	const int NINT = 4;
 
-	static double gr[NINT] = { b, a, b, b };
-	static double gs[NINT] = { b, b, a, b };
-	static double gt[NINT] = { b, b, b, a };
-	static double gw[NINT] = { w, w, w, w };
+    static double gr[NINT] = {0};
+    static double gs[NINT] = {0};
+    static double gt[NINT] = {0};
+    static double gw[NINT] = {0};
 
 	static double H[NINT][NELN] = { 0 };
 	static double Gr[NINT][NELN] = { 0 };
@@ -547,6 +752,7 @@ double tet4_volume(vec3d* r)
 
 	if (bfirst)
 	{
+        TET4::gauss_data(gr, gs, gt, gw);
 		for (int n = 0; n<NINT; ++n)
 		{
 			// calculate shape function values at gauss points
@@ -590,27 +796,99 @@ double tet4_volume(vec3d* r)
 			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
 			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
 
-		vol += detJ*gw[n];
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
 	}
 
 	return vol;
 }
 
 //-----------------------------------------------------------------------------
-double tet10_volume(vec3d* r)
+double tet5_volume(vec3d* r, bool bJ)
 {
-	// gauss-point data
-	const double a = 0.58541020;
-	const double b = 0.13819660;
-	const double w = 1.0 / 24.0;
+    const int NELN = 5;
+    const int NINT = 4;
+    
+    static double gr[NINT] = {0};
+    static double gs[NINT] = {0};
+    static double gt[NINT] = {0};
+    static double gw[NINT] = {0};
+    
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static double Gt[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+    
+    if (bfirst)
+    {
+        TET5::gauss_data(gr, gs, gt, gw);
+        for (int n = 0; n<NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            TET5::shape(H[n], gr[n], gs[n], gt[n]);
+            
+            // calculate local derivatives of shape functions at gauss points
+            TET5::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+        }
+        
+        bfirst = false;
+    }
+    
+    double J[3][3];
+    double vol = 0;
+    for (int n = 0; n<NINT; ++n)
+    {
+        double* Grn = Gr[n];
+        double* Gsn = Gs[n];
+        double* Gtn = Gt[n];
+        
+        J[0][0] = J[0][1] = J[0][2] = 0.0;
+        J[1][0] = J[1][1] = J[1][2] = 0.0;
+        J[2][0] = J[2][1] = J[2][2] = 0.0;
+        for (int i = 0; i<NELN; ++i)
+        {
+            double Gri = Grn[i];
+            double Gsi = Gsn[i];
+            double Gti = Gtn[i];
+            
+            double x = r[i].x;
+            double y = r[i].y;
+            double z = r[i].z;
+            
+            J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+            J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+            J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+        }
+        
+        // calculate the determinant
+        double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+        + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+        + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+        
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
+    }
+    
+    return vol;
+}
 
+//-----------------------------------------------------------------------------
+double tet10_volume(vec3d* r, bool bJ)
+{
 	const int NELN = 10;
-	const int NINT = 4;
+	const int NINT = 8;
 
-	static double gr[NINT] = { b, a, b, b };
-	static double gs[NINT] = { b, b, a, b };
-	static double gt[NINT] = { b, b, b, a };
-	static double gw[NINT] = { w, w, w, w };
+	static double gr[NINT] = { 0 };
+	static double gs[NINT] = { 0 };
+	static double gt[NINT] = { 0 };
+	static double gw[NINT] = { 0 };
 
 	static double H[NINT][NELN] = { 0 };
 	static double Gr[NINT][NELN] = { 0 };
@@ -620,13 +898,14 @@ double tet10_volume(vec3d* r)
 
 	if (bfirst)
 	{
+        TET10::gauss_data(gr, gs, gt, gw);
 		for (int n = 0; n<NINT; ++n)
 		{
 			// calculate shape function values at gauss points
-			TET4::shape(H[n], gr[n], gs[n], gt[n]);
+			TET10::shape(H[n], gr[n], gs[n], gt[n]);
 
 			// calculate local derivatives of shape functions at gauss points
-			TET4::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+			TET10::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
 		}
 
 		bfirst = false;
@@ -663,11 +942,162 @@ double tet10_volume(vec3d* r)
 			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
 			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
 
-		vol += detJ*gw[n];
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
 	}
 
 	return vol;
 }
+
+//-----------------------------------------------------------------------------
+double tet15_volume(vec3d* r, bool bJ)
+{
+    const int NELN = 15;
+    const int NINT = 8;
+    
+    static double gr[NINT] = { 0 };
+    static double gs[NINT] = { 0 };
+    static double gt[NINT] = { 0 };
+    static double gw[NINT] = { 0 };
+    
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static double Gt[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+    
+    if (bfirst)
+    {
+        TET15::gauss_data(gr, gs, gt, gw);
+        for (int n = 0; n<NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            TET15::shape(H[n], gr[n], gs[n], gt[n]);
+            
+            // calculate local derivatives of shape functions at gauss points
+            TET15::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+        }
+        
+        bfirst = false;
+    }
+    
+    double J[3][3];
+    double vol = 0;
+    for (int n = 0; n<NINT; ++n)
+    {
+        double* Grn = Gr[n];
+        double* Gsn = Gs[n];
+        double* Gtn = Gt[n];
+        
+        J[0][0] = J[0][1] = J[0][2] = 0.0;
+        J[1][0] = J[1][1] = J[1][2] = 0.0;
+        J[2][0] = J[2][1] = J[2][2] = 0.0;
+        for (int i = 0; i<NELN; ++i)
+        {
+            double Gri = Grn[i];
+            double Gsi = Gsn[i];
+            double Gti = Gtn[i];
+            
+            double x = r[i].x;
+            double y = r[i].y;
+            double z = r[i].z;
+            
+            J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+            J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+            J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+        }
+        
+        // calculate the determinant
+        double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+        + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+        + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+        
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
+    }
+    
+    return vol;
+}
+
+//-----------------------------------------------------------------------------
+double tet20_volume(vec3d* r, bool bJ)
+{
+    const int NELN = 20;
+    const int NINT = 15;
+    
+    static double gr[NINT] = { 0 };
+    static double gs[NINT] = { 0 };
+    static double gt[NINT] = { 0 };
+    static double gw[NINT] = { 0 };
+    
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static double Gt[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+    
+    if (bfirst)
+    {
+        TET20::gauss_data(gr, gs, gt, gw);
+        for (int n = 0; n<NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            TET20::shape(H[n], gr[n], gs[n], gt[n]);
+            
+            // calculate local derivatives of shape functions at gauss points
+            TET20::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+        }
+        
+        bfirst = false;
+    }
+    
+    double J[3][3];
+    double vol = 0;
+    for (int n = 0; n<NINT; ++n)
+    {
+        double* Grn = Gr[n];
+        double* Gsn = Gs[n];
+        double* Gtn = Gt[n];
+        
+        J[0][0] = J[0][1] = J[0][2] = 0.0;
+        J[1][0] = J[1][1] = J[1][2] = 0.0;
+        J[2][0] = J[2][1] = J[2][2] = 0.0;
+        for (int i = 0; i<NELN; ++i)
+        {
+            double Gri = Grn[i];
+            double Gsi = Gsn[i];
+            double Gti = Gtn[i];
+            
+            double x = r[i].x;
+            double y = r[i].y;
+            double z = r[i].z;
+            
+            J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+            J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+            J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+        }
+        
+        // calculate the determinant
+        double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+        + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+        + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+        
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
+    }
+    
+    return vol;
+}
+
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a tetrahedral element
@@ -682,13 +1112,20 @@ double FECoreMesh::TetVolume(const FEElement_& el)
 	switch (el.Type())
 	{
 	case FE_TET4:
-	case FE_TET20:
 		return tet4_volume(rt);
 		break;
+    case FE_TET5:
+        return tet5_volume(rt);
+        break;
 	case FE_TET10:
+        return tet10_volume(rt);
+        break;
 	case FE_TET15:
-		return tet10_volume(rt);
+		return tet15_volume(rt);
 		break;
+    case FE_TET20:
+        return tet20_volume(rt);
+        break;
 	}
 	return 0.0;
 }

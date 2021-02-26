@@ -214,6 +214,7 @@ SOFTWARE.*/
 #define CID_OBJ_PART_ID				0x00080102
 #define CID_OBJ_PART_MAT			0x00080103
 #define CID_OBJ_PART_NAME			0x00080104	// as of version 1.9
+#define CID_OBJ_PART_PARAMS			0x00080105 // as of version 1.4
 
 #define CID_OBJ_FACE_SECTION		0x00080200
 #define CID_OBJ_FACE				0x00080201

@@ -134,19 +134,29 @@ public:
 	//! Is the element of this type
 	bool IsType(int ntype) const { return (Type() == ntype); }
 
-	//! Get the face i (only solids have faces)
+	//! get the index into the element's node array (or -1 of the element does not have this node)
+	int FindNodeIndex(int nid);
+
+public: // for solid elements only
+
+	//! Get the face i
 	FEFace GetFace(int i) const;
 	void GetFace(int i, FEFace& face) const;
 	int GetLocalFaceIndices(int i, int* n) const;
 
-	//! Get the edge
-	FEEdge GetEdge(int i);
-
-	//! get the index into the element's node array (or -1 of the element does not have this node)
-	int FindNodeIndex(int nid);
-
 	// Find the face. Returns local index in face array
 	int FindFace(const FEFace& f);
+
+public: // for shell elements only
+
+	//! Get the face of a shell
+	void GetShellFace(FEFace& f) const;
+
+	//! Get the edge
+	FEEdge GetEdge(int i) const;
+
+	//! Find the edge index of a shell
+	int FindEdge(const FEEdge& edge) const;
 
 public:
 	// evaluate shape function at iso-parameteric point (r,s,t)
@@ -166,11 +176,6 @@ public:
 
 	// get iso-param coordinates of the nodes
 	void iso_coord(int n, double q[3]);
-
-public: // for shells
-
-	//! Get the face of a shell
-	void GetShellFace(FEFace& f) const;
 
 protected:
 	// help class for copy-ing element data

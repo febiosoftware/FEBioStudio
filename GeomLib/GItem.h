@@ -147,8 +147,8 @@ private:
 class GPart : public GItem_T<GPart>
 {
 public:
-	GPart() : GItem_T<GPart>(0) { m_matid = -1; }
-	GPart(GBaseObject* po) : GItem_T<GPart>(po) { m_matid = -1; }
+	GPart();
+	GPart(GBaseObject* po);
 
 	GPart(const GPart& p);
 	void operator = (const GPart& p);
@@ -156,6 +156,9 @@ public:
 public:
 	int GetMaterialID() const { return m_matid; }
 	void SetMaterialID(int mid) { m_matid = mid; }
+
+	void setShellNormalNodal(bool b);
+	bool shellNormalNodal() const;
 
 protected:
 	int		m_matid;

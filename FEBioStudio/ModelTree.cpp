@@ -1209,7 +1209,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		for (int j = 0; j<po->Parts(); ++j)
 		{
 			GPart* pg = po->Part(j);
-			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_PART, 0, pg);
+			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_PART, 0, pg, new FEObjectProps(pg), 0, 1);
 
 			if (pg->IsVisible() == false)
 			{

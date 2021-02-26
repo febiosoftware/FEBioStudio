@@ -748,55 +748,71 @@ void FEMesh::UpdateElementNeighbors()
 
 	// set up the element's neighbour pointers
 	FEEdge edge;
-	int nbrf, nbre;
 	FEFace f1, f2, f3;
 
-	// assign neighbor elements
+	// loop over all elements
 	for (int i = 0; i < elems; i++)
 	{
 		FEElement_* pe = ElementPtr(i);
-		// do the solid elements
+		// do the solid elements first
 		int n = pe->Faces();
 		for (int j = 0; j < n; j++)
 		{
+			// check if we already have a neighbor assigned
 			if (pe->m_nbr[j] == -1)
 			{
+				// get the corresponding element face
 				pe->GetFace(j, f1);
 
-				// find the neighbour element
+				// pick a node on the face
 				int inode = f1.n[0];
 				int nval = NET.Valence(inode);
 				bool bfound = false;
+
+				// search for shell neighbors first
+				// This is necessary since a shell can share a face with a solid. 
+				// This requires a bit of special handling, so we need to check for that first
 				for (int k = 0; k < nval; k++)
 				{
 					int nbe = NET.ElementIndex(inode, k);
-					FEElement_* pne = ElementPtr(nbe);
-					if (pne != pe)
+					FEElement_* pne = NET.Element(inode, k);
+					if ((pne != pe) && pne->IsShell())
 					{
-						nbrf = pne->Faces();
-						int l;
-						for (l = 0; l < nbrf; l++)
+						// get the shell surface facet
+						pne->GetShellFace(f2);
+						if (f1 == f2)
 						{
-							pne->GetFace(l, f2);
-							if (f1 == f2)
+							bfound = true;
+							pe->m_nbr[j] = nbe;
+							break;
+						}
+					}
+				}
+
+				if (bfound == false)
+				{
+					// search for solid neighbors next
+					for (int k = 0; k < nval; k++)
+					{
+						int nbe = NET.ElementIndex(inode, k);
+						FEElement_* pne = ElementPtr(nbe);
+						if ((pne != pe) && pne->IsSolid())
+						{
+							int l = pne->FindFace(f1);
+							if (l != -1)
 							{
 								bfound = true;
+								pe->m_nbr[j] = nbe;
+								pne->m_nbr[l] = i;
 								break;
 							}
-						}
-
-						if (bfound)
-						{
-							pe->m_nbr[j] = nbe;
-							pne->m_nbr[l] = i;
-							break;
 						}
 					}
 				}
 			}
 		}
 
-		// do the shell elements
+		// do the shell elements next
 		n = pe->Edges();
 		for (int j = 0; j < n; j++)
 		{
@@ -811,16 +827,16 @@ void FEMesh::UpdateElementNeighbors()
 				for (int k = 0; k < nval; k++)
 				{
 					FEElement_* pne = NET.Element(inode, k);
-					if ((pne != pe) && (pe->is_equal(*pne) == false))
+					if ((pne != pe) && (pe->is_equal(*pne) == false) && pne->IsShell())
 					{
-						nbre = pne->Edges();
-						for (int l = 0; l < nbre; l++)
-							if (edge == pne->GetEdge(l))
-							{
-								pe->m_nbr[j] = NET.ElementIndex(inode, k);
-								pne->m_nbr[l] = i;
-								break;
-							}
+						int l = pne->FindEdge(edge);
+						if (l != -1)
+						{
+							bfound = true;
+							pe->m_nbr[j] = NET.ElementIndex(inode, k);
+							pne->m_nbr[l] = i;
+							break;
+						}
 					}
 				}
 			}
@@ -970,6 +986,30 @@ void FEMesh::UpdateFaceElementTable()
 		int n0 = face.n[0];
 		int nval = NET.Valence(n0);
 		int m = 0;
+
+		// check shell elements first
+		for (int j = 0; j < nval; ++j)
+		{
+			int eid = NET.ElementIndex(n0, j);
+			FEElement_* pej = ElementPtr(eid);
+
+			if (pej->IsShell())
+			{
+				pej->GetShellFace(f2);
+				if (f2 == face)
+				{
+					if (m == 0)
+					{
+						face.m_elem[m].eid = eid;
+						face.m_elem[m++].lid = 0;
+						pej->m_face[0] = i;
+					}
+					break;
+				}
+			}
+		}
+
+		// now, process solids
 		for (int j=0; j<nval; ++j)
 		{
 			int eid = NET.ElementIndex(n0, j);
@@ -992,9 +1032,9 @@ void FEMesh::UpdateFaceElementTable()
 						}
 						else if (m < 2)
 						{
-							// set the element with the lowest GID first
+							// set the element with the lowest GID first (except if it is a shell)
 							FEElement_* p0 = ElementPtr(face.m_elem[0].eid);
-							if (p0->m_gid < pej->m_gid)
+							if ((p0->m_gid < pej->m_gid) || (p0->IsShell()))
 							{
 								face.m_elem[m  ].eid = eid;
 								face.m_elem[m++].lid = k;
@@ -1009,31 +1049,6 @@ void FEMesh::UpdateFaceElementTable()
 							}
 						}
 						pej->m_face[k] = i;
-					}
-				}
-			}
-		}
-
-		// shells
-		for (int j=0; j<nval; ++j)
-		{
-			int eid = NET.ElementIndex(n0, j);
-			FEElement_* pej = ElementPtr(eid);
-
-			int n = pej->Edges();
-			if (n > 0)
-			{
-				if (pej->m_face[0] == -1)
-				{
-					pej->GetShellFace(f2);
-					if (f2 == face)
-					{
-						if (m == 0) 
-						{	
-							face.m_elem[m  ].eid = eid;
-							face.m_elem[m++].lid = 0;
-							pej->m_face[0] = i;
-						}
 					}
 				}
 			}

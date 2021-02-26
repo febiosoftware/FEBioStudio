@@ -302,6 +302,7 @@ void FEBioFormat25::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 
 	// add domain to list
 	FEBioModel::Domain* dom = part->AddDomain(name, matID);
+	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// read the elements
 	vector<FEBioModel::ELEM> elem;
@@ -1115,6 +1116,9 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	else if (abc == "u" ) bc = 15;
 	else if (abc == "v") bc = 16;
 	else if (abc == "w") bc = 17;
+    else if (abc == "sx" ) bc = 18;
+    else if (abc == "sy") bc = 19;
+    else if (abc == "sz") bc = 20;
 	else throw XMLReader::InvalidAttributeValue(tag, "bc", abc.cvalue());
 
 	XMLAtt& set = tag.Attribute("node_set");
@@ -1154,6 +1158,12 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		bc = bc - 15;
 		pbc = new FEPrescribedRotation(&fem, pg, bc, 1.0, pstep->GetID());
 		break;
+    case 18:
+    case 19:
+    case 20:
+        bc = bc - 18;
+        pbc = new FEPrescribedShellDisplacement(&fem, pg, bc, 1.0, pstep->GetID());
+        break;
 	}
 	if (pbc == 0) throw XMLReader::InvalidAttributeValue(tag, "bc", abc.cvalue());
 
@@ -2414,7 +2424,40 @@ void FEBioFormat25::ParseContact(FEStep *pstep, XMLTag &tag)
 			if (szname) pci->SetName(szname);
 
 			// read the parameters
-			ReadParameters(*pci, tag);
+			if (tag.isleaf() == false)
+			{
+				++tag;
+				do
+				{
+					// try to read the parameters
+					if (ReadParam(*pci, tag) == false)
+					{
+						if (tag == "flip_slave")
+						{
+							Param* pp = pci->GetParam("flip_primary"); assert(pp);
+							if (pp)
+							{
+								bool b = false;
+								tag.value(b);
+								pp->SetBoolValue(b);
+							}
+						}
+						else if (tag == "flip_master")
+						{
+							Param* pp = pci->GetParam("flip_secondary"); assert(pp);
+							if (pp)
+							{
+								bool b = false;
+								tag.value(b);
+								pp->SetBoolValue(b);
+							}
+						}
+						else ParseUnknownTag(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+			}
+
 
 			// assign surfaces
 			FEBioModel::Part* part = surfPair->GetPart();

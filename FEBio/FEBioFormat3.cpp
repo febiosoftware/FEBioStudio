@@ -331,6 +331,21 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 
 					FEBioModel::Domain* dom = part->FindDomain(szname);
 					if (dom) dom->SetMatID(matID);
+
+					if (tag.isleaf() == false)
+					{
+						++tag;
+						do
+						{
+							if (tag == "shell_nodal_normal")
+							{
+								if (dom) tag.value(dom->m_bshellNodalNormals);
+							}
+							else ParseUnknownTag(tag);
+							++tag;
+						}
+						while (!tag.isend());
+					}
 				}
 			}
 			else ParseUnknownTag(tag);
@@ -487,6 +502,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 
 	// add domain to list
 	FEBioModel::Domain* dom = part->AddDomain(name, matID);
+	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// create elements
 	FEMesh& mesh = *part->GetFEMesh();
@@ -1286,6 +1302,9 @@ int prescribe_dof(const char* sz)
 	else if (abc == "u") bc = 15;
 	else if (abc == "v") bc = 16;
 	else if (abc == "w") bc = 17;
+    else if (abc == "sx") bc = 18;
+    else if (abc == "sy") bc = 19;
+    else if (abc == "sz") bc = 20;
 	return bc;
 }
 
@@ -1362,6 +1381,12 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		bc = bc - 15;
 		pbc = new FEPrescribedRotation(&fem, pg, bc, 1.0, pstep->GetID());
 		break;
+    case 18:
+    case 19:
+    case 20:
+        bc = bc - 18;
+        pbc = new FEPrescribedShellDisplacement(&fem, pg, bc, 1.0, pstep->GetID());
+        break;
 	}
 
 	// get the optional name

@@ -26,17 +26,10 @@ SOFTWARE.*/
 
 #include "FEElement.h"
 #include "FEElementLibrary.h"
-#include "tet4.h"
-#include "penta6.h"
-#include "penta15.h"
-#include "hex8.h"
-#include "pyra5.h"
-#include "pyra13.h"
-#include "tet10.h"
-#include "tet15.h"
-#include "tet20.h"
-#include "hex20.h"
-#include "hex27.h"
+#include "tet.h"
+#include "penta.h"
+#include "hex.h"
+#include "pyra.h"
 
 //=============================================================================
 // FEElement_
@@ -400,7 +393,7 @@ void FEElement_::GetFace(int i, FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-FEEdge FEElement_::GetEdge(int i)
+FEEdge FEElement_::GetEdge(int i) const
 {
 	FEEdge e;
 
@@ -453,6 +446,22 @@ FEEdge FEElement_::GetEdge(int i)
 }
 
 //-----------------------------------------------------------------------------
+//! Find the edge index of a shell
+int FEElement_::FindEdge(const FEEdge& edge) const
+{
+	assert(IsShell());
+	int nbre = Edges();
+	for (int l = 0; l < nbre; l++)
+	{
+		if (edge == GetEdge(l))
+		{
+			return l;
+		}
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
 void FEElement_::GetShellFace(FEFace& f) const
 {
 	switch (Type())
@@ -495,12 +504,10 @@ int FEElement_::FindFace(const FEFace& f)
 	int nf = Faces();
 	for (int i = 0; i<nf; ++i) {
 		FEFace lf = GetFace(i);
-		bool found = true;
-		for (int j = 0; j<f.Nodes(); ++j) {
-			found = lf.HasNode(f.n[j]);
-			if (!found) break;
+		if (lf == f)
+		{
+			return i;
 		}
-		if (found) return i;
 	}
 	return -1;
 }

@@ -131,8 +131,15 @@ double IntegrateQuad(vec3d* r, float* v);
 float IntegrateQuad(vec3f* r, float* v);
 float IntegrateHex(vec3f* r, float* v);
 
-double hex8_volume(vec3d* r);
-double tet4_volume(vec3d* r);
-double tet10_volume(vec3d* r);
+double hex8_volume(vec3d* r, bool bJ = false);
+double hex20_volume(vec3d* r, bool bJ = false);
+double hex27_volume(vec3d* r, bool bJ = false);
+double tet4_volume(vec3d* r, bool bJ = false);
+double tet5_volume(vec3d* r, bool bJ = false);
+double tet10_volume(vec3d* r, bool bJ = false);
+double tet15_volume(vec3d* r, bool bJ = false);
+double tet20_volume(vec3d* r, bool bJ = false);
+double penta6_volume(vec3d* r, bool bJ = false);
+double penta15_volume(vec3d* r, bool bJ = false);
 double pyra5_volume(vec3d* r, bool bJ = false);
 double pyra13_volume(vec3d* r, bool bJ = false);

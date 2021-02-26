@@ -378,8 +378,22 @@ bool GFace::HasEdge(int nid)
 //=============================================================================
 // GPart
 //-----------------------------------------------------------------------------
+GPart::GPart() : GItem_T<GPart>(0) 
+{ 
+	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
+	m_matid = -1; 
+}
+GPart::GPart(GBaseObject* po) : GItem_T<GPart>(po) 
+{ 
+	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
+	m_matid = -1;
+}
+
 GPart::GPart(const GPart& p)
 {
+	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
+	CopyParams(p);
+
 	m_matid = p.m_matid;
 
 	m_state = p.m_state;
@@ -393,10 +407,21 @@ GPart::GPart(const GPart& p)
 void GPart::operator =(const GPart &p)
 {
 	m_matid = p.m_matid;
+	CopyParams(p);
 
 	m_state = p.m_state;
 	m_gid = p.m_gid;
 	m_lid = p.m_lid;
 	SetName(p.GetName());
 //	m_po = p.m_po;
+}
+
+void GPart::setShellNormalNodal(bool b)
+{
+	SetBoolValue(0, b);
+}
+
+bool GPart::shellNormalNodal() const
+{
+	return GetBoolValue(0);
 }

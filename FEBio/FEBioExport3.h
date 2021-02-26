@@ -114,9 +114,13 @@ private:
 	class Domain
 	{
 	public:
+		Domain() { m_pg = nullptr; }
+
+	public:
 		string	m_name;
 		string	m_matName;
 		int		m_elemClass;
+		GPart*	m_pg;
 	};
 
 	class Part

@@ -2050,16 +2050,34 @@ void FEBioExport3::WriteMeshDomainsSection()
 		Domain* dom = part->m_Dom[i];
 
 		XMLElement el;
-		if      (dom->m_elemClass == ELEM_SOLID) el.name("SolidDomain");
-		else if (dom->m_elemClass == ELEM_SHELL) el.name("ShellDomain");
+		if (dom->m_elemClass == ELEM_SOLID)
+		{
+			el.name("SolidDomain");
+			el.add_attribute("name", dom->m_name);
+			el.add_attribute("mat", dom->m_matName);
+			m_xml.add_empty(el);
+		}
+		else if (dom->m_elemClass == ELEM_SHELL)
+		{
+			GPart* pg = dom->m_pg;
+			el.name("ShellDomain");
+			el.add_attribute("name", dom->m_name);
+			el.add_attribute("mat", dom->m_matName);
+
+			if (pg && pg->Parameters())
+			{
+				m_xml.add_branch(el);
+				{
+					WriteParamList(*pg);
+				}
+				m_xml.close_branch();
+			}
+			else m_xml.add_empty(el);
+		}
 		else
 		{
 			assert(false);
 		}		
-
-		el.add_attribute("name", dom->m_name);
-		el.add_attribute("mat", dom->m_matName);
-		m_xml.add_empty(el);
 	}
 }
 
@@ -2778,6 +2796,7 @@ void FEBioExport3::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 			{
 				FEBioExport3::Domain* dom = new FEBioExport3::Domain;
 				dom->m_name = szname;
+				dom->m_pg = pg;
 				if (pmat) dom->m_matName = pmat->GetName().c_str();
 				part->m_Dom.push_back(dom);
 

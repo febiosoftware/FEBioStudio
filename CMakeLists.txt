@@ -13,6 +13,9 @@ set(CMAKE_FILES_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Autogen)
 
+# Change to 6 if looking to build with Qt6.
+set(QT_Ver 5 CACHE INTERNAL "")
+
 # Set a default build type if none was specified
 set(default_build_type "Release")
  
@@ -25,37 +28,45 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(NOT Qt6_DIR)
-    if(NOT Qt6_Root)
-        set(Qt6_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
+if(QT_Ver VERSION_EQUAL 5)
+  set(Qt_Version "Qt5" CACHE INTERNAL "")
+elseif(QT_Ver VERSION_EQUAL 6)
+  set(Qt_Version "Qt6" CACHE INTERNAL "")
+else()
+  message(FATAL_ERROR "Qt5 or Qt6 version not correctly set. Please set QT_Ver properly as 5 or 6.")
+endif()
+
+if(NOT ${Qt_Version}_DIR)
+    if(NOT ${Qt_Version}_Root)
+        set(${Qt_Version}_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
     endif()
     
     if(WIN32)
-        find_file(Qt6_CMAKE cmake/Qt6/Qt6Config.cmake
-			PATHS ${Qt6_Root}/* ${Qt6_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+        find_file(${Qt_Version}_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
+			PATHS ${${Qt_Version}_Root}/* ${${Qt_Version}_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
 			PATH_SUFFIXES "msvc2015_64/lib" "msvc2017_64/lib" "msvc2019_64/lib"
-			DOC "Qt6 CMake Directory")
+			DOC "${Qt_Version} CMake Directory")
     elseif(APPLE)
-		find_file(Qt6_CMAKE cmake/Qt6/Qt6Config.cmake
-			PATHS ${Qt6_Root}/* ${Qt6_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+		find_file(${Qt_Version}_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
+			PATHS ${${Qt_Version}_Root}/* ${${Qt_Version}_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
 			PATH_SUFFIXES "clang_64/lib"
-			DOC "Qt6 CMake Directory")
+			DOC "${Qt_Version} CMake Directory")
     else()
-		find_file(Qt6_CMAKE cmake/Qt6/Qt6Config.cmake
-			PATHS ${Qt6_Root}/* ${Qt6_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+		find_file(${Qt_Version}_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
+			PATHS ${${Qt_Version}_Root}/* ${${Qt_Version}_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
 			PATH_SUFFIXES "gcc_64/lib"
-			DOC "Qt6 CMake Directory")
+			DOC "${Qt_Version} CMake Directory")
     endif()
         
-    if(Qt6_CMAKE)
-        get_filename_component(Qt6_TEMP ${Qt6_CMAKE} DIRECTORY)
-        set(Qt6_DIR ${Qt6_TEMP} CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
-        unset(Qt6_TEMP)
-        unset(Qt6_CMAKE CACHE)
+    if(${Qt_Version}_CMAKE)
+        get_filename_component(${Qt_Version}_TEMP ${${Qt_Version}_CMAKE} DIRECTORY)
+        set(${Qt_Version}_DIR ${${Qt_Version}_TEMP} CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
+        unset(${Qt_Version}_TEMP)
+        unset(${Qt_Version}_CMAKE CACHE)
     endif()
     
-    if(NOT Qt6_DIR)
-        message(FATAL_ERROR "Unable to locate Qt6Config.cmake. Please check the value of Qt6_Root and set it to the root directory of your Qt6 installation (e.g. /opt/Qt).")
+    if(NOT ${Qt_Version}_DIR)
+        message(FATAL_ERROR "Unable to locate ${Qt_Version}Config.cmake. Please check the value of ${Qt_Version}_Root and set it to the root directory of your ${Qt_Version} installation (e.g. /opt/Qt).")
     endif()
 endif()
 
@@ -143,9 +154,15 @@ if(USE_SSH)
 endif()
 
 if(MODEL_REPO)
-    # Passing quazip5 as a possible alternate name for the library
-    findLib(quazip1-qt6 QUAZIP_LIB_DIR QUAZIP_LIB quazip6)
-
+    # Passing quazip5 as a possible alternate name for the librarya
+	if(QT_Ver VERSION_EQUAL 5)
+      findLib(quazip QUAZIP_LIB_DIR QUAZIP_LIB quazip5)
+    elseif(QT_Ver VERSION_EQUAL 6)
+	  findLib(quazip1-qt6 QUAZIP_LIB_DIR QUAZIP_LIB quazip6)
+	else()
+	  message(FATAL_ERROR "QT_Ver was not set.")
+	endif()
+	
     findLib(sqlite3 SQLITE_LIB_DIR SQLITE_LIB)
 endif()
 
@@ -170,8 +187,7 @@ endif()
 ##### Set appropriate defines and includes #####
 
 if(WIN32)
-    add_definitions(-DWIN32)
-	add_compile_options(/MP)
+    add_definitions(-DWIN32 /MP)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
@@ -219,9 +235,10 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
-#if(Qt6WebEngineWidgets_FOUND)
-#    add_definitions(-DWEBHELP)
-#endif()
+# This shouldn't cause any errors.
+if(${Qt_Version}WebEngineWidgets_FOUND)
+    add_definitions(-DWEBHELP)
+endif()
 
 include_directories(${ZLIB_INCLUDE_DIR})
 
@@ -243,15 +260,20 @@ endforeach(name)
 ##### Add binaries #####
 
 # Linking the Qt libraries also pulls in the include files
-link_libraries(Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
-#Qt5::Charts
-#Added openGLWidgets
+link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Qt_Version}::Network ${Qt_Version}::OpenGL ${Qt_Version}::OpenGLWidgets)
 
-#if(Qt6WebEngineWidgets_FOUND)
-#	link_libraries(Qt6::WebEngineWidgets)
-#endif()
+if(QT_Ver VERSION_EQUAL 5)
+  Qt5::Charts
+endif()
 
-if(APPLE)
+if(${Qt_Version}WebEngineWidgets_FOUND)
+	link_libraries(${Qt_Version}::WebEngineWidgets)
+endif()
+
+if(WIN32)
+	add_executable(FEBioStudio WIN32 ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
+	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+elseif(APPLE)
 	# set bundle icon
 	set(FBS_ICON ${CMAKE_CURRENT_SOURCE_DIR}/icons/FEBioStudio.icns)
 	set(MACOSX_BUNDLE_ICON_FILE FEBioStudio.icns)
@@ -272,6 +294,55 @@ endmacro()
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	addLib(${name})
 endforeach(name)
+
+
+##### Set dev commit information #####
+
+# Cross platform execute_process
+macro(crossExecProcess OUT)
+	if(WIN32)
+		execute_process(COMMAND cmd.exe /c ${CMD}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			RESULT_VARIABLE SUCCESS
+			OUTPUT_VARIABLE ${OUT}
+			OUTPUT_STRIP_TRAILING_WHITESPACE)
+	else()
+		execute_process(COMMAND ${CMD}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			RESULT_VARIABLE SUCCESS
+			OUTPUT_VARIABLE ${OUT}
+			OUTPUT_STRIP_TRAILING_WHITESPACE)
+	endif()
+endmacro()
+
+# Check for git and give warning if not available
+if(WIN32)
+    set(CMD where git)
+else()
+	set(CMD which git)
+endif()
+crossExecProcess(NULL)
+
+if(SUCCESS EQUAL 0)
+	# Get branch name and check if we're on the develop branch
+    set(CMD git rev-parse --abbrev-ref HEAD)
+	crossExecProcess(BRANCH_NAME)
+
+	string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
+	
+	# Get the commit info and set the DEVCOMMIT macro
+	if(SUCCESS EQUAL 0 AND ISDEVELOP)
+        
+        set(CMD git rev-parse --short=9 HEAD)
+		crossExecProcess(DEVCOMMIT)
+		
+		if(${SUCCESS} EQUAL 0)
+			target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
+		endif()
+	endif()
+else()
+	message(WARNING "Could not find git in system PATH. Development version info will not be addded.")
+endif()
 
 ##### Link Libraries #####
 

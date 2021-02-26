@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 #include "GLModel.h"
-#include <MeshLib/hex8.h>
+#include <MeshLib/hex.h>
 using namespace Post;
 
 extern int LUT[256][15];
