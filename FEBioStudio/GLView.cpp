@@ -453,6 +453,11 @@ CGLView::~CGLView()
 {
 }
 
+std::string CGLView::GetOGLVersionString()
+{
+	return m_oglVersionString;
+}
+
 CGLDocument* CGLView::GetDocument()
 {
 	return m_pWnd->GetGLDocument();
@@ -1262,6 +1267,9 @@ void CGLView::initializeGL()
 	m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
 	m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 	m_pframe->hide();
+
+	const char* szv = (const char*) glGetString(GL_VERSION);
+	m_oglVersionString = szv;
 
 	// initialize clipping planes
 	Post::CGLPlaneCutPlot::InitClipPlanes();
