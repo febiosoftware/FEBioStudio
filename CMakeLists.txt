@@ -14,7 +14,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Autogen)
 
 # Change to 6 if looking to build with Qt6.
-set(QT_Ver 5 CACHE INTERNAL "")
+set(QT_Ver 6 CACHE INTERNAL "")
 
 # Set a default build type if none was specified
 set(default_build_type "Release")
@@ -263,7 +263,7 @@ endforeach(name)
 link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Qt_Version}::Network ${Qt_Version}::OpenGL ${Qt_Version}::OpenGLWidgets)
 
 if(QT_Ver VERSION_EQUAL 5)
-  Qt5::Charts
+  link_libraries(Qt5::Charts)
 endif()
 
 if(${Qt_Version}WebEngineWidgets_FOUND)
