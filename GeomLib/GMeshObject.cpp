@@ -333,15 +333,47 @@ void GMeshObject::UpdateEdges()
 void GMeshObject::UpdateNodes()
 {
 	// get the mesh
-	FEMesh& m = *GetFEMesh();
+	FEMesh& mesh = *GetFEMesh();
 
 	// first, we need to figure out which nodes are no longer being used
+	// we will also reindex the mesh nodes, in order to preserve
+	// the global node numbers. 
 	int NN = Nodes();
 	vector<int> tag; tag.assign(NN, -1);
-	for (int i=0; i<m.Nodes(); ++i)
+	mesh.TagAllNodes(0);
+	int geomNodes = 0;
+	for (int i=0; i<mesh.Nodes(); ++i)
 	{
-		FENode& n = m.Node(i);
-		if ((n.m_gid >= 0) && (n.m_gid < NN)) tag[n.m_gid] = i;
+		FENode& n = mesh.Node(i);
+		if (n.m_gid >= 0)
+		{
+			geomNodes++;
+			vec3d ri = n.pos();
+
+			// this is a geometry node, so see which node it corresponds to
+			int newId = -1;
+			double D2min = 0;
+			for (int j = 0; j < NN; ++j)
+			{
+				if (tag[j] == -1)
+				{
+					vec3d rj = Node(j)->LocalPosition();
+					double d2 = (ri - rj).SqrLength();
+					if ((newId == -1) || (d2 < D2min))
+					{
+						newId = j;
+						D2min = d2;
+					}
+				}
+			}
+
+			if (newId >= 0)
+			{
+				tag[newId] = i;
+				n.m_gid = newId;
+			}
+			else n.m_ntag = 1; // mark this node since we need to create a new GNode for it. 
+		}
 	}
 
 	// remove the nodes that are no longer used
@@ -355,7 +387,7 @@ void GMeshObject::UpdateNodes()
 				m_Node[n] = m_Node[i];
 				m_Node[i] = nullptr;
 			}
-			m.Node(tag[i]).m_gid = n;
+			mesh.Node(tag[i]).m_gid = n;
 			n++;
 		}
 	}
@@ -366,31 +398,19 @@ void GMeshObject::UpdateNodes()
 		for (int i = 0; i<(int)m_Node.size(); ++i) m_Node[i]->SetLocalID(i);
 	}
 
-	// now find the largest gid
-	int nn = -1, gid;
-	for (int i=0; i<m.Nodes(); ++i)
+	// now create new nodes where necessary
+	for (int i=0; i<mesh.Nodes(); ++i)
 	{
-		gid = m.Node(i).m_gid;
-		if (gid > nn) nn = gid;
-	}
-	++nn;
-	assert(nn >= n);
-
-	if (nn > (int) m_Node.size())
-	{
-		for (int i=(int)m_Node.size(); i<nn; ++i) 
+		FENode& node = mesh.Node(i);
+		if (node.m_ntag == 1)
 		{
 			GNode* n = new GNode(this);
 			n->SetType(NODE_VERTEX);
 			GObject::AddNode(n);
+			n->LocalPosition() = node.r;
 		}
 	}
-
-	for (int i=0; i<m.Nodes(); ++i)
-	{
-		FENode& node = m.Node(i);
-		if (node.m_gid >= 0) m_Node[node.m_gid]->LocalPosition() = node.r;
-	}
+	assert(geomNodes == Nodes());
 }
 
 //-----------------------------------------------------------------------------
