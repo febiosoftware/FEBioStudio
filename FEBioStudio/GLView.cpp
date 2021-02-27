@@ -1748,16 +1748,19 @@ void CGLView::RenderModelView()
 			for (int i = 0; i<model.Objects(); ++i)
 			{
 				GObject* po = model.Object(i);
-				glPushMatrix();
-				SetModelView(po);
-				switch (nsel)
+				if (po->IsVisible() && po->IsValid())
 				{
-				case SELECT_PART: RenderSelectedParts(po); break;
-				case SELECT_FACE: RenderSelectedSurfaces(po); break;
-				case SELECT_EDGE: RenderSelectedEdges(po); break;
-				case SELECT_NODE: RenderSelectedNodes(po); break;
+					glPushMatrix();
+					SetModelView(po);
+					switch (nsel)
+					{
+					case SELECT_PART: RenderSelectedParts(po); break;
+					case SELECT_FACE: RenderSelectedSurfaces(po); break;
+					case SELECT_EDGE: RenderSelectedEdges(po); break;
+					case SELECT_NODE: RenderSelectedNodes(po); break;
+					}
+					glPopMatrix();
 				}
-				glPopMatrix();
 			}
 		}
 	}
@@ -2459,7 +2462,7 @@ void CGLView::RenderModel()
 		for (int i = 0; i<model.Objects(); ++i)
 		{
 			GObject* po = model.Object(i);
-			if (po->IsVisible())
+			if (po->IsVisible() && po->IsValid())
 			{
 				glPushMatrix();
 				SetModelView(po);
@@ -2918,7 +2921,7 @@ void CGLView::RenderMaterialFibers()
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		if (po->IsVisible())
+		if (po->IsVisible() && po->IsValid())
 		{
 			FEMesh* pm = po->GetFEMesh();
 			if (pm)
@@ -8283,7 +8286,7 @@ void CGLView::RenderMeshLines()
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		if (po->IsVisible())
+		if (po->IsVisible() && po->IsValid())
 		{
 			FEMesh* pm = po->GetFEMesh();
 			if (pm)
