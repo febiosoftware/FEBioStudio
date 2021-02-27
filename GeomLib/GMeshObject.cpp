@@ -167,53 +167,126 @@ void GMeshObject::UpdateParts()
 	FEMesh& m = *GetFEMesh();
 
 	// count how many parts there are
-	int nparts = 0;
+	int nparts = m.CountElementPartitions();
+
+	// figure out which parts are still used
+	vector<int> tag(nparts, 0);
 	for (int i=0; i<m.Elements(); ++i)
 	{
 		FEElement& el = m.Element(i);
-		if (el.m_gid+1 > nparts) nparts = el.m_gid+1;
+		assert(el.m_gid >= 0);
+		tag[el.m_gid]++;
 	}
 
-	// create the GParts
-	// We only create needed parts
-	if (nparts < (int) m_Part.size()) ResizeParts(nparts);
-	else if (nparts > (int) m_Part.size())
+	int n = 0;
+	for (int i = 0; i < nparts; ++i)
 	{
-		for (int i = (int)m_Part.size(); i<nparts; ++i) AddPart();
+		if (n < m_Part.size())
+		{
+			if (tag[i] == 0)
+			{
+				// this part is no longer used, so delete it
+				GPart* pg = m_Part[n];
+				m_Part.erase(m_Part.begin() + n);
+				delete pg;
+				tag[i] = -1;
+			}
+			else tag[i] = n++;
+		}
+		else
+		{
+			AddPart();
+			tag[i] = n++;
+		}
 	}
+	for (int i = nparts; i < m_Part.size(); ++i)
+	{
+		GPart* pg = m_Part[n];
+		m_Part.erase(m_Part.begin() + n);
+		delete pg;
+	}
+
+	// reindex local IDs
+	for (int i = 0; i < m_Part.size(); ++i) m_Part[i]->SetLocalID(i);
+
+	// update element mesh IDs
+	for (int i = 0; i < m.Elements(); ++i)
+	{
+		FEElement& el = m.Element(i);
+		assert(tag[el.m_gid] >= 0);
+		el.m_gid = tag[el.m_gid];
+	}
+
+	// sanity check
+	assert(m.CountElementPartitions() == Parts());
 }
 
 //-----------------------------------------------------------------------------
 // The surfaces are defined by face connectivity
-
 void GMeshObject::UpdateSurfaces()
 {
 	// get the mesh
 	FEMesh& m = *GetFEMesh();
-	int NF = m.Faces();
 
-	// find the number of surfaces we have
-	int ng = -1;
-	for (int i=0; i<NF; ++i)
+	// count how many surfaces there are
+	int nsurf = m.CountFacePartitions();
+
+	// figure out which parts are still used
+	vector<int> tag(nsurf, 0);
+	for (int i = 0; i < m.Faces(); ++i)
 	{
-		FEFace& f = m.Face(i);
-		if (f.m_gid > ng) ng = f.m_gid;
+		FEFace& face = m.Face(i);
+		assert(face.m_gid >= 0);
+		tag[face.m_gid]++;
 	}
-	++ng;
 
-	// create the Surfaces (if necessary)
-	if (ng < (int) m_Face.size()) ResizeSurfaces(ng);
-	else if (ng > (int) m_Face.size())
+	int n = 0;
+	for (int i = 0; i < nsurf; ++i)
 	{
-		for (int i=(int)m_Face.size(); i<ng; ++i)
+		if (n <  m_Face.size())
+		{
+			if (tag[i] == 0)
+			{
+				// this surface is no longer used, so delete it
+				GFace* pg = m_Face[n];
+				m_Face.erase(m_Face.begin() + n);
+				delete pg;
+				tag[i] = -1;
+			}
+			else tag[i] = n++;
+		}
+		else
 		{
 			GFace* s = new GFace(this);
 			AddSurface(s);
+			tag[i] = n++;
 		}
 	}
+	for (int i = nsurf; i < m_Face.size(); ++i)
+	{
+		GFace* pg = m_Face[n];
+		m_Face.erase(m_Face.begin() + n);
+		delete pg;
+	}
 
-	// reset part ID's for all surfaces
-	for (int i = 0; i<(int)m_Face.size(); ++i) { m_Face[i]->m_nPID[0] = m_Face[i]->m_nPID[1] = -1; }
+	// reindex local IDs
+	for (int i = 0; i < m_Face.size(); ++i)
+	{
+		m_Face[i]->SetLocalID(i);
+		m_Face[i]->m_nPID[0] = -1;
+		m_Face[i]->m_nPID[1] = -1;
+	}
+
+	// update face IDs
+	for (int i = 0; i < m.Faces(); ++i)
+	{
+		FEFace& face = m.Face(i);
+		assert(tag[face.m_gid] >= 0);
+		face.m_gid = tag[face.m_gid];
+	}
+
+	// sanity check
+	assert(m.CountFacePartitions() == Faces());
 
 	// assign part ID's
 	FEElement_* pe;
@@ -258,41 +331,70 @@ void GMeshObject::UpdateEdges()
 {
 	// get the mesh
 	FEMesh& m = *GetFEMesh();
-	int NE = m.Edges();
 
-	int ng = -1;
-	for (int i=0; i<NE; ++i)
+	// count how many edges there are
+	int nedges = m.CountEdgePartitions();
+
+	// figure out which edges are still used
+	vector<int> tag(nedges, 0);
+	for (int i = 0; i < m.Edges(); ++i)
 	{
-		FEEdge& e = m.Edge(i);
-		if (e.m_gid > ng) ng = e.m_gid;
+		FEEdge& edge = m.Edge(i);
+		tag[edge.m_gid]++;
 	}
-	++ng;
 
-	// create the Edge
-	if (ng < (int) m_Edge.size()) ResizeCurves(ng);
-	else if (ng > (int) m_Edge.size())
+	int n = 0;
+	for (int i = 0; i < nedges; ++i)
 	{
-		for (int i=(int)m_Edge.size(); i<ng; ++i) 
+		if (n < m_Edge.size())
+		{
+			if (tag[i] == 0)
+			{
+				// this edge is no longer used, so delete it
+				GEdge* pg = m_Edge[n];
+				m_Edge.erase(m_Edge.begin() + n);
+				delete pg;
+				tag[i] = -1;
+			}
+			else tag[i] = n++;
+		}
+		else
 		{
 			GEdge* e = new GEdge(this);
-			e->m_node[0] = -1;
-			e->m_node[1] = -1;
 			AddEdge(e);
+			tag[i] = n++;
 		}
 	}
+	for (int i = nedges; i < m_Edge.size(); ++i)
+	{
+		GEdge* pg = m_Edge[n];
+		m_Edge.erase(m_Edge.begin() + n);
+		delete pg;
+	}
+
+	// update edge IDs
+	for (int i = 0; i < m.Edges(); ++i)
+	{
+		FEEdge& edge = m.Edge(i);
+		assert(tag[edge.m_gid] >= 0);
+		edge.m_gid = tag[edge.m_gid];
+	}
+
+	// sanity check
+	assert(m.CountEdgePartitions() == Edges());
 
 	// reset edge nodes
-	for (int i=0; i<ng; ++i)
+	for (GEdge* e : m_Edge)
 	{
-		GEdge& e = *m_Edge[i];
-		e.m_node[0] = -1;
-		e.m_node[1] = -1;
+		e->m_node[0] = -1;
+		e->m_node[1] = -1;
 	}
 
 	// set the nodes for the GEdge
 	const int NN = Nodes();
 	if (NN > 0)
 	{
+		int NE = m.Edges();
 		for (int i=0; i<NE; ++i)
 		{
 			FEEdge& e = m.Edge(i);
@@ -1043,50 +1145,28 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 void GMeshObject::DeletePart(GPart* pg)
 {
 	// make sure this is a part of this object
-	if (pg->Object() != this)
-	{
-		assert(false);
-		return;
-	}
+	if (pg->Object() != this) { assert(false); return; }
 
-	// find the part
-	int npart = -1;
-	for (int i=0; i<Parts(); ++i)
-	{
-		if (m_Part[i] == pg)
-		{
-			npart = i;
-			break;
-		}
-	}
-	assert(npart != -1);
-	if (npart == -1) return;
-
-	// remove this part from the list
-	m_Part.erase(m_Part.begin() + npart);
-	for (int n=0; n<m_Part.size(); ++n)
-	{
-		m_Part[n]->SetLocalID(n);
-	}
-	delete pg;
-
-	// delete all the elements 
+	// get the mesh
 	FEMesh* pm = GetFEMesh(); assert(pm);
 	if (pm == 0) return;
 
-	pm->TagAllElements(0);
-	int NE = pm->Elements();
-	for (int i=0; i<NE; ++i)
-	{
-		FEElement& el = pm->Element(i);
-		if (el.m_gid == npart) el.m_ntag = 1;
-	}
+	// let's begin
+	SetValidFlag(false);
 
+	// get the part's local ID
+	int partId = pg->GetLocalID();
+	assert(Part(partId) == pg);
+
+	// delete the elements of this part
 	FEMeshBuilder meshBuilder(*pm);
-	meshBuilder.DeleteTaggedElements(1);
+	meshBuilder.DeletePart(partId);
 
 	// update the rest
 	Update();
+
+	// all done
+	SetValidFlag(true);
 }
 
 // detach an element selection

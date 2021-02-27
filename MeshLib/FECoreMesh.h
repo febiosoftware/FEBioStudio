@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "FEElement.h"
 #include "FEMeshBase.h"
 #include <vector>
+#include <functional>
 
 //-----------------------------------------------------------------------------
 //! This class defines a simple mesh structure that provides basic container
@@ -141,3 +142,6 @@ double penta6_volume(vec3d* r, bool bJ = false);
 double penta15_volume(vec3d* r, bool bJ = false);
 double pyra5_volume(vec3d* r, bool bJ = false);
 double pyra13_volume(vec3d* r, bool bJ = false);
+
+// helper functions
+void ForAllElements(FECoreMesh& mesh, std::function<void(FEElement_& el)> f);

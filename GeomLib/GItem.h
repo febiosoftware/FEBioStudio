@@ -203,7 +203,7 @@ class GEdge : public GItem_T<GEdge>
 {
 public:
 	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; }
-	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = 0; m_ntype = EDGE_UNKNOWN; }
+	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; }
 
 	GEdge(const GEdge& e);
 	void operator = (const GEdge& e);
