@@ -106,7 +106,7 @@ public:
 		febioFile->addItem("FEBio 3.0 format");
 		febioFile->setCurrentIndex(1);
 
-		autoSave = new QCheckBox("Save document before running FEBio");
+		autoSave = new QCheckBox("Save model before running FEBio");
 		autoSave->setChecked(true);
 
 		configFile = new QLineEdit;
