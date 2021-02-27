@@ -137,7 +137,7 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 {
 	// create the discrete set
-	GDiscreteSpringSet* dset = new GDiscreteSpringSet;
+	GDiscreteSpringSet* dset = new GDiscreteSpringSet(fem);
 
 	// set the spring material
 	switch (m_type)

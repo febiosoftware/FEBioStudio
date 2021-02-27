@@ -340,7 +340,10 @@ void GMeshObject::UpdateEdges()
 	for (int i = 0; i < m.Edges(); ++i)
 	{
 		FEEdge& edge = m.Edge(i);
-		tag[edge.m_gid]++;
+		if (edge.m_gid >= 0)
+		{
+			tag[edge.m_gid]++;
+		}
 	}
 
 	int n = 0;
@@ -376,8 +379,10 @@ void GMeshObject::UpdateEdges()
 	for (int i = 0; i < m.Edges(); ++i)
 	{
 		FEEdge& edge = m.Edge(i);
-		assert(tag[edge.m_gid] >= 0);
-		edge.m_gid = tag[edge.m_gid];
+		if (edge.m_gid >= 0)
+		{
+			edge.m_gid = tag[edge.m_gid];
+		}
 	}
 
 	// sanity check
@@ -435,84 +440,67 @@ void GMeshObject::UpdateEdges()
 void GMeshObject::UpdateNodes()
 {
 	// get the mesh
-	FEMesh& mesh = *GetFEMesh();
+	FEMesh& m = *GetFEMesh();
 
-	// first, we need to figure out which nodes are no longer being used
-	// we will also reindex the mesh nodes, in order to preserve
-	// the global node numbers. 
-	int NN = Nodes();
-	vector<int> tag; tag.assign(NN, -1);
-	mesh.TagAllNodes(0);
-	int geomNodes = 0;
-	for (int i=0; i<mesh.Nodes(); ++i)
+	// count how many nodes there are
+	int nodes = m.CountNodePartitions();
+
+	// figure out which node are still used
+	vector<int> tag(nodes, 0);
+	for (int i = 0; i < m.Nodes(); ++i)
 	{
-		FENode& n = mesh.Node(i);
-		if (n.m_gid >= 0)
+		FENode& node = m.Node(i);
+		if (node.m_gid >= 0)
 		{
-			geomNodes++;
-			vec3d ri = n.pos();
-
-			// this is a geometry node, so see which node it corresponds to
-			int newId = -1;
-			double D2min = 0;
-			for (int j = 0; j < NN; ++j)
-			{
-				if (tag[j] == -1)
-				{
-					vec3d rj = Node(j)->LocalPosition();
-					double d2 = (ri - rj).SqrLength();
-					if ((newId == -1) || (d2 < D2min))
-					{
-						newId = j;
-						D2min = d2;
-					}
-				}
-			}
-
-			if (newId >= 0)
-			{
-				tag[newId] = i;
-				n.m_gid = newId;
-			}
-			else n.m_ntag = 1; // mark this node since we need to create a new GNode for it. 
+			tag[node.m_gid]++;
 		}
 	}
 
-	// remove the nodes that are no longer used
 	int n = 0;
-	for (int i=0; i<NN; ++i)
+	for (int i = 0; i < nodes; ++i)
 	{
-		if (tag[i] != -1)
+		if (n < m_Node.size())
 		{
-			if (n != i)
+			if (tag[i] == 0)
 			{
-				m_Node[n] = m_Node[i];
-				m_Node[i] = nullptr;
+				// this node is no longer used, so delete it
+				GNode* pg = m_Node[n];
+				m_Node.erase(m_Node.begin() + n);
+				delete pg;
+				tag[i] = -1;
 			}
-			mesh.Node(tag[i]).m_gid = n;
-			n++;
+			else tag[i] = n++;
+		}
+		else
+		{
+			GNode* gnode = new GNode(this);
+			GObject::AddNode(gnode);
+			tag[i] = n++;
 		}
 	}
-	if (n != NN) 
+	for (int i = nodes; i < m_Node.size(); ++i)
 	{
-		ResizeNodes(n);
-		// reset local ID's
-		for (int i = 0; i<(int)m_Node.size(); ++i) m_Node[i]->SetLocalID(i);
+		GNode* pg = m_Node[n];
+		m_Node.erase(m_Node.begin() + n);
+		delete pg;
 	}
 
-	// now create new nodes where necessary
-	for (int i=0; i<mesh.Nodes(); ++i)
+	// update node IDs
+	for (int i = 0; i < m.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
-		if (node.m_ntag == 1)
+		FENode& node = m.Node(i);
+		if (node.m_gid >= 0)
 		{
-			GNode* n = new GNode(this);
-			n->SetType(NODE_VERTEX);
-			GObject::AddNode(n);
-			n->LocalPosition() = node.r;
+			node.m_gid = tag[node.m_gid];
+			GNode* pn = m_Node[node.m_gid];
+			pn->SetFENodeIndex(i);
+			pn->LocalPosition() = node.r;
+			node.SetRequired(pn->IsRequired());
 		}
 	}
-	assert(geomNodes == Nodes());
+
+	// sanity check
+	assert(m.CountNodePartitions() == Nodes());
 }
 
 //-----------------------------------------------------------------------------
@@ -1051,6 +1039,7 @@ void GMeshObject::Load(IArchive& ar)
 //	Update(false);
 	UpdateSurfaces(); // we need to call this to update the Surfaces' part IDs, since they are not stored.
 	UpdateEdges(); // we need to call this since the edge nodes are not stored
+	UpdateNodes(); // we need to call this because the GNode::m_fenode is not stored
 	BuildGMesh();
 }
 

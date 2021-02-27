@@ -1153,11 +1153,11 @@ void GModel::Load(IArchive &ar)
 					GDiscreteObject* po = 0;
 					switch (ntype)
 					{
-					case FE_DISCRETE_SPRING     : po = new GLinearSpring(); break;
-					case FE_GENERAL_SPRING      : po = new GGeneralSpring(); break;
-					case FE_DISCRETE_SPRING_SET : po = new GDiscreteSpringSet(); break;
-					case FE_LINEAR_SPRING_SET   : po = new GLinearSpringSet(); break;
-					case FE_NONLINEAR_SPRING_SET: po = new GNonlinearSpringSet(); break;
+					case FE_DISCRETE_SPRING     : po = new GLinearSpring(this); break;
+					case FE_GENERAL_SPRING      : po = new GGeneralSpring(this); break;
+					case FE_DISCRETE_SPRING_SET : po = new GDiscreteSpringSet(this); break;
+					case FE_LINEAR_SPRING_SET   : po = new GLinearSpringSet(this); break;
+					case FE_NONLINEAR_SPRING_SET: po = new GNonlinearSpringSet(this); break;
 					default:
 						throw ReadError("error parsing CID_DISCRETE_OBJECT (GModel::Load)");
 					}
@@ -1169,7 +1169,7 @@ void GModel::Load(IArchive &ar)
 					if (ntype == FE_LINEAR_SPRING_SET)
 					{
 						GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po); assert(ds);
-						GDiscreteSpringSet* pnew = new GDiscreteSpringSet();
+						GDiscreteSpringSet* pnew = new GDiscreteSpringSet(this);
 						pnew->SetName(po->GetName());
 						pnew->CopyDiscreteElementSet(ds);
 						FELinearSpringMaterial* mat = new FELinearSpringMaterial();
@@ -1181,7 +1181,7 @@ void GModel::Load(IArchive &ar)
 					else if (ntype == FE_NONLINEAR_SPRING_SET)
 					{
 						GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po); assert(ds);
-						GDiscreteSpringSet* pnew = new GDiscreteSpringSet();
+						GDiscreteSpringSet* pnew = new GDiscreteSpringSet(this);
 						pnew->SetName(po->GetName());
 						pnew->CopyDiscreteElementSet(ds);
 						FENonLinearSpringMaterial* mat = new FENonLinearSpringMaterial();

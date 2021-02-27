@@ -138,6 +138,7 @@ GObject* PRVObjectImport::LoadObject(IArchive& ar, FEProject& prj)
 GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& prj)
 {
 	GDiscreteObject* po = 0;
+	GModel* gm = &prj.GetFEModel().GetModel();
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
@@ -149,9 +150,9 @@ GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& pr
 
 			switch (ntype)
 			{
-			case FE_LINEAR_SPRING_SET   : po = new GLinearSpringSet; break;
-			case FE_NONLINEAR_SPRING_SET: po = new GNonlinearSpringSet; break;
-			case FE_DISCRETE_SPRING_SET : po = new GDiscreteSpringSet; break;
+			case FE_LINEAR_SPRING_SET   : po = new GLinearSpringSet(gm); break;
+			case FE_NONLINEAR_SPRING_SET: po = new GNonlinearSpringSet(gm); break;
+			case FE_DISCRETE_SPRING_SET : po = new GDiscreteSpringSet(gm); break;
 			}
 			if (po == 0) return 0;
 		}
@@ -175,7 +176,7 @@ GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& pr
 		if (ntype == FE_LINEAR_SPRING_SET)
 		{
 			GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po); assert(ds);
-			GDiscreteSpringSet* pnew = new GDiscreteSpringSet();
+			GDiscreteSpringSet* pnew = new GDiscreteSpringSet(gm);
 			pnew->SetName(po->GetName());
 			pnew->CopyDiscreteElementSet(ds);
 			FELinearSpringMaterial* mat = new FELinearSpringMaterial();
@@ -187,7 +188,7 @@ GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& pr
 		else if (ntype == FE_NONLINEAR_SPRING_SET)
 		{
 			GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po); assert(ds);
-			GDiscreteSpringSet* pnew = new GDiscreteSpringSet();
+			GDiscreteSpringSet* pnew = new GDiscreteSpringSet(gm);
 			pnew->SetName(po->GetName());
 			pnew->CopyDiscreteElementSet(ds);
 			FENonLinearSpringMaterial* mat = new FENonLinearSpringMaterial();

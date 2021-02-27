@@ -257,7 +257,14 @@ void FEMeshBuilder::DeletePart(int partId)
 		{
 			el.m_ntag = TAG;
 			int ne = el.Nodes();
-			for (int j = 0; j < ne; ++j) m_mesh.Node(el.m_node[j]).m_ntag = -1;
+			for (int j = 0; j < ne; ++j)
+			{
+				FENode& node = m_mesh.Node(el.m_node[j]);
+				if (node.IsRequired() == false)
+				{
+					node.m_ntag = -1;
+				}
+			}
 		}
 	}
 	for (int i = 0; i < NE; ++i)
