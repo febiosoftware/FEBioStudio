@@ -1132,6 +1132,7 @@ void FEBioExport3::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STATIC" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1156,10 +1157,6 @@ void FEBioExport3::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
-
-	el.name("analysis");
-	el.add_attribute("type", (ops.nanalysis == 0 ? "static" : "transient"));
-	m_xml.add_empty(el);
 }
 
 
