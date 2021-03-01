@@ -241,6 +241,159 @@ void FEMeshBuilder::DeleteTaggedElements(int tag)
 }
 
 //-----------------------------------------------------------------------------
+void FEMeshBuilder::DeletePart(int partId)
+{
+	const int TAG = 1;
+
+	// First, figure out all nodes that we will have to remove
+	// This approach ensures that isolated nodes are not removed
+	m_mesh.TagAllNodes(0);
+	m_mesh.TagAllElements(0);
+	int NE = m_mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& el = m_mesh.Element(i);
+		if (el.m_gid == partId)
+		{
+			el.m_ntag = TAG;
+			int ne = el.Nodes();
+			for (int j = 0; j < ne; ++j)
+			{
+				FENode& node = m_mesh.Node(el.m_node[j]);
+				if (node.IsRequired() == false)
+				{
+					node.m_ntag = -1;
+				}
+			}
+		}
+	}
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& el = m_mesh.Element(i);
+		if (el.m_gid != partId)
+		{
+			int ne = el.Nodes();
+			for (int j = 0; j < ne; ++j) m_mesh.Node(el.m_node[j]).m_ntag = 0;
+		}
+	}
+
+	// figure out which faces to remove
+	m_mesh.TagAllFaces(0);
+	for (int i = 0; i < m_mesh.Faces(); ++i)
+	{
+		FEFace& face = m_mesh.Face(i);
+		int nf = face.Nodes();
+		for (int j = 0; j < nf; ++j)
+		{
+			if (m_mesh.Node(face.n[j]).m_ntag == -1)
+			{
+				face.m_ntag = TAG;
+				break;
+			}
+		}
+	}
+
+	// figure out which edges to remove
+	m_mesh.TagAllEdges(0);
+	for (int i = 0; i < m_mesh.Edges(); ++i)
+	{
+		FEEdge& edge = m_mesh.Edge(i);
+		int ne = edge.Nodes();
+		for (int j = 0; j < ne; ++j)
+		{
+			if (m_mesh.Node(edge.n[j]).m_ntag == -1)
+			{
+				edge.m_ntag = TAG;
+				break;
+			}
+		}
+	}
+
+	// Let's go ahead and remove all tagged items
+	m_mesh.RemoveElements(TAG);
+	m_mesh.RemoveFaces(TAG);
+	m_mesh.RemoveEdges(TAG);
+
+	// remove tagged nodes
+	int n = 0;
+	int NN = m_mesh.Nodes();
+	for (int i = 0; i < NN; ++i)
+	{
+		FENode& node = m_mesh.Node(i);
+		if (node.m_ntag >= 0) node.m_ntag = n++;
+	}
+
+	// fix element node numbering
+	for (int i = 0; i < m_mesh.Elements(); ++i)
+	{
+		FEElement& el = m_mesh.Element(i);
+		int n = el.Nodes();
+		for (int j = 0; j < n; ++j)
+		{
+			el.m_node[j] = m_mesh.Node(el.m_node[j]).m_ntag;
+			assert(el.m_node[j] >= 0);
+		}
+	}
+
+	// fix face node numbering
+	for (int i = 0; i < m_mesh.Faces(); ++i)
+	{
+		FEFace& face = m_mesh.Face(i);
+		int n = face.Nodes();
+		for (int j = 0; j < n; ++j)
+		{
+			face.n[j] = m_mesh.Node(face.n[j]).m_ntag;
+			assert(face.n[j] >= 0);
+		}
+	}
+
+	// fix edge node numbering
+	for (int i = 0; i < m_mesh.Edges(); ++i)
+	{
+		FEEdge& edge = m_mesh.Edge(i);
+		int n = edge.Nodes();
+		for (int j = 0; j < n; ++j)
+		{
+			edge.n[j] = m_mesh.Node(edge.n[j]).m_ntag;
+			assert(edge.n[j] >= 0);
+		}
+	}
+
+	// remove the nodes
+	n = 0;
+	for (int i = 0; i < m_mesh.Nodes(); ++i)
+	{
+		FENode& n1 = m_mesh.Node(i);
+		FENode& n2 = m_mesh.Node(n);
+
+		if (n1.m_ntag >= 0)
+		{
+			n2 = n1;
+			++n;
+		}
+	}
+	m_mesh.m_Node.resize(n);
+
+	// update the element neighbours
+	m_mesh.UpdateElementNeighbors();
+
+	// mark the exterior elements
+	m_mesh.MarkExteriorElements();
+
+	// update face data
+	m_mesh.RebuildFaceData();
+
+	// update edge data
+	m_mesh.RebuildEdgeData();
+
+	// update node data
+	m_mesh.RebuildNodeData();
+
+	// update the mesh
+	m_mesh.UpdateMesh();
+}
+
+//-----------------------------------------------------------------------------
 // Attach another to this mesh.
 //
 void FEMeshBuilder::Attach(FEMesh& fem)

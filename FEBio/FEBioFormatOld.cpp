@@ -2470,6 +2470,7 @@ void FEBioFormatOld::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 void FEBioFormatOld::ParseSprings(FEStep *pstep, XMLTag &tag)
 {
 	FEModel& fem = GetFEModel();
+	GModel& gm = fem.GetModel();
 
 	int n[2], lc = -1;
 	double E = 0;
@@ -2507,7 +2508,7 @@ void FEBioFormatOld::ParseSprings(FEStep *pstep, XMLTag &tag)
 	{
 	case FE_DISCRETE_SPRING:
 	{
-							   GLinearSpring* ps = new GLinearSpring(n[0], n[1]);
+							   GLinearSpring* ps = new GLinearSpring(&gm, n[0], n[1]);
 							   char szname[256];
 							   sprintf(szname, "Spring%02d", N);
 							   ps->SetName(szname);
@@ -2517,7 +2518,7 @@ void FEBioFormatOld::ParseSprings(FEStep *pstep, XMLTag &tag)
 		break;
 	case FE_GENERAL_SPRING:
 	{
-							  GGeneralSpring* pg = new GGeneralSpring(n[0], n[1]);
+							  GGeneralSpring* pg = new GGeneralSpring(&gm, n[0], n[1]);
 							  char szname[256];
 							  sprintf(szname, "Spring%02d", N);
 							  pg->SetName(szname);

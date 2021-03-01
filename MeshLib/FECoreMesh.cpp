@@ -1382,3 +1382,13 @@ int FECoreMesh::CountSmoothingGroups() const
 	}
 	return max_sg + 1;
 }
+
+//-----------------------------------------------------------------------------
+void ForAllElements(FECoreMesh& mesh, std::function<void(FEElement_& el)> f)
+{
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement_& el = mesh.ElementRef(i);
+		f(el);
+	}
+}

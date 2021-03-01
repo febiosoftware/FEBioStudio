@@ -744,7 +744,7 @@ void FENIKEImport::build_discrete(FENikeProject& nike)
 				n2 = po->MakeGNode(n2);
 
 				// make a discrete spring
-				GLinearSpring* ps = new GLinearSpring(n1, n2);
+				GLinearSpring* ps = new GLinearSpring(&model, n1, n2);
 
 				sprintf(szname, "Spring%02d", i+1);
 				ps->SetName(szname);
