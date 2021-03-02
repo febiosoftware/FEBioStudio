@@ -379,7 +379,7 @@ FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 	// fix edge node numbering
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& edge = m_mesh.Edge(i);
+		FEEdge& edge = mesh.Edge(i);
 		int n = edge.Nodes();
 		for (int j = 0; j < n; ++j)
 		{
@@ -391,7 +391,7 @@ FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 
 	// remove the nodes
 	n = 0;
-	for (int i = 0; i < m_mesh.Nodes(); ++i)
+	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
 		FENode& n1 = mesh.Node(i);
 		FENode& n2 = mesh.Node(n);
