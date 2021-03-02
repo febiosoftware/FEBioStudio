@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,16 +25,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEModifier.h"
+#include "FESurfaceModifier.h"
 
 //-----------------------------------------------------------------------------
 // This modifier implements a list of tools to fixing meshes
-class FEFixMesh : public FEModifier
+class FEFixSurfaceMesh : public FESurfaceModifier
 {
 public:
-	FEFixMesh();
-	FEMesh* Apply(FEMesh* pm) override;
+	FEFixSurfaceMesh();
+	FESurfaceMesh* Apply(FESurfaceMesh* pm);
 
-public:
-	bool RemoveDuplicateEdges  (FEMesh* pm);
+	bool RemoveDuplicateFaces(FESurfaceMesh* pm);
+	bool RemoveNonManifoldFaces(FESurfaceMesh* pm);
+	bool FixElementWinding(FESurfaceMesh* pm);
+	bool InvertMesh(FESurfaceMesh* pm);
+	bool FillAllHoles(FESurfaceMesh* pm);
+	bool RemoveDuplicateEdges(FESurfaceMesh* pm);
 };

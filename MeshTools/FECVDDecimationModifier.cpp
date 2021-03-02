@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FESurfaceMesh.h>
-#include "FEFixMesh.h"
+#include "FEFixSurfaceMesh.h"
 #include <algorithm>
 #include <stack>
 
@@ -101,7 +101,7 @@ FESurfaceMesh* FECVDDecimationModifier::Apply(FESurfaceMesh* pm)
 		// next, we use the auto-mesher to reconstruct all faces, edges and nodes
 		pnew->RebuildMesh();
 	
-		FEFixMesh fix;
+		FEFixSurfaceMesh fix;
 		// TODO: I noticed that this algorithm can create duplicate elements. I'm not sure yet if
 		//       this is a bug or if there is something fishy about this algorithm. In any case,
 		//       for now I will explicitly check for duplicate elements and remove duplicates. Even

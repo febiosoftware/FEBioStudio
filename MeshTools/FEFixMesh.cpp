@@ -32,28 +32,23 @@ SOFTWARE.*/
 #include <MeshLib/FENodeFaceList.h>
 
 //-----------------------------------------------------------------------------
-FEFixMesh::FEFixMesh() : FESurfaceModifier("Fix mesh")
+FEFixMesh::FEFixMesh() : FEModifier("Fix mesh")
 {
-	AddIntParam(0, "Task:", "Task:")->SetEnumNames("Remove duplicate faces\0Remove non-manifold faces\0Fix winding\0Invert mesh\0Fill all holes\0Removed duplicate edges\0");
+	AddIntParam(0, "Task:", "Task:")->SetEnumNames("Remove duplicate edges\0");
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceMesh* FEFixMesh::Apply(FESurfaceMesh* pm)
+FEMesh* FEFixMesh::Apply(FEMesh* pm)
 {
 	// create a copy of the mesh
-	FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
+	FEMesh* pnew = new FEMesh(*pm);
 
 	// apply the task on this mesh
 	int task = GetIntValue(0);
 	bool ret = false;
 	switch (task)
 	{
-	case 0: ret = RemoveDuplicateFaces  (pnew); break;
-	case 1: ret = RemoveNonManifoldFaces(pnew); break;
-	case 2: ret = FixElementWinding     (pnew); break;
-	case 3: ret = InvertMesh            (pnew); break;
-	case 4: ret = FillAllHoles          (pnew); break;
-	case 5: ret = RemoveDuplicateEdges  (pnew); break;
+	case 0: ret = RemoveDuplicateEdges  (pnew); break;
 	}
 
 	if (ret == false)
@@ -66,254 +61,106 @@ FESurfaceMesh* FEFixMesh::Apply(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFixMesh::RemoveDuplicateFaces(FESurfaceMesh* pm)
+bool FEFixMesh::RemoveDuplicateEdges(FEMesh* pm)
 {
-	// clear all tags
-	pm->TagAllFaces(0);
+	int NE = pm->Edges();
+	int NN = pm->Nodes();
 
-	// build the node-face table
-	FENodeFaceList NFT;
-	NFT.Build(pm);
-
-	// loop over all elements
-	for (int i = 0; i<pm->Nodes(); ++i)
+	vector<vector<int> > NET(NN);
+	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		int n = NFT.Valence(i);
-		for (int j = 0; j<n - 1; ++j)
+		FEEdge& ei = pm->Edge(i);
+		NET[ei.n[0]].push_back(i);
+		NET[ei.n[1]].push_back(i);
+	}
+
+	int duplicates = 0;
+	pm->TagAllEdges(-1);
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FEEdge& ei = pm->Edge(i);
+		if (ei.m_ntag == -1)
 		{
-			FEFace& fj = *NFT.Face(i, j);
-			if (fj.m_ntag == 0)
+			vector<int>& net = NET[ei.n[0]];
+			for (int j = 0; j < net.size(); ++j)
 			{
-				for (int k = j + 1; k<n; ++k)
+				int nej = net[j];
+				if (nej > i)
 				{
-					FEFace& fk = *NFT.Face(i, k);
-					if (fj == fk)
+					FEEdge& ej = pm->Edge(nej);
+					if ((ej.m_ntag == -1) && (ej == ei))
 					{
-						fk.m_ntag = 1;
+						ej.m_ntag = i;
+						duplicates++;
 					}
 				}
 			}
 		}
 	}
+	SetError("%d duplicate edges found.", duplicates);
+	if (duplicates == 0) return true;
 
-	// remove tagged faces
-	pm->DeleteTaggedFaces(1);
-
-	// rebuild the mesh
-	pm->RebuildMesh();
-
-	// done
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-bool FEFixMesh::RemoveNonManifoldFaces(FESurfaceMesh* pm)
-{
-	// clear all tags
-	pm->TagAllFaces(0);
-
-	// loop over all face
-	for (int i = 0; i<pm->Faces(); ++i)
+	// re-index the edges
+	vector<int> id(pm->Edges(), -1);
+	int ne = 0;
+	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEFace& face = pm->Face(i);
-		int n = face.Edges();
-		for (int j = 0; j<n; ++j) if (face.m_nbr[j] == -1) { face.m_ntag = 1; break; }
+		FEEdge& ei = pm->Edge(i);
+		if (ei.m_ntag == -1) id[i] = ne++;
 	}
 
-	// remove tagged faces
-	pm->DeleteTaggedFaces(1);
-
-	// rebuild the mesh
-	pm->RebuildMesh();
-
-	// done
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-void flipTri3(FEFace& f)
-{
-	// flip nodes 1 and 2
-	int ntmp = f.n[1];
-	f.n[1] = f.n[2];
-	f.n[2] = ntmp;
-
-	// flip neighbors
-	ntmp = f.m_nbr[0];
-	f.m_nbr[0] = f.m_nbr[2];
-	f.m_nbr[2] = ntmp;
-
-	// flip edges
-	ntmp = f.m_edge[0];
-	f.m_edge[0] = f.m_edge[3];
-	f.m_edge[2] = ntmp;
-
-	// flip normals
-	f.m_fn = -f.m_fn;
-	f.m_nn[0] = -f.m_nn[0];
-	f.m_nn[1] = -f.m_nn[1];
-	f.m_nn[2] = -f.m_nn[2];
-}
-
-//-----------------------------------------------------------------------------
-void flipQuad4(FEFace& f)
-{
-	// flip nodes 1 and 3
-	int ntmp = f.n[1];
-	f.n[1] = f.n[3];
-	f.n[3] = ntmp;
-
-	// flip neighbors
-	ntmp = f.m_nbr[0];
-	f.m_nbr[0] = f.m_nbr[3];
-	f.m_nbr[3] = ntmp;
-
-	ntmp = f.m_nbr[1];
-	f.m_nbr[1] = f.m_nbr[2];
-	f.m_nbr[2] = ntmp;
-
-	// flip edges
-	ntmp = f.m_edge[0];
-	f.m_edge[0] = f.m_edge[3];
-	f.m_edge[3] = ntmp;
-
-	ntmp = f.m_edge[1];
-	f.m_edge[1] = f.m_edge[2];
-	f.m_edge[2] = ntmp;
-
-	// flip normals
-	f.m_fn = -f.m_fn;
-	f.m_nn[0] = -f.m_nn[0];
-	f.m_nn[1] = -f.m_nn[1];
-	f.m_nn[2] = -f.m_nn[2];
-	f.m_nn[3] = -f.m_nn[3];
-}
-
-//-----------------------------------------------------------------------------
-bool FEFixMesh::FixElementWinding(FESurfaceMesh* pm)
-{
-	// clear tags
-	pm->TagAllFaces(0);
-
-	// loop over all triangles
-	int NF = pm->Faces();
-	for (int i = 0; i<NF; ++i)
+	// update edge neighbors
+	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		// get an face
-		FEFace& f0 = pm->Face(i);
-
-		// proceed if it has not been processed
-		if (f0.m_ntag == 0)
+		FEEdge& ei = pm->Edge(i);
+		if (ei.m_ntag == -1)
 		{
-			// this element will be the starter element
-			// all elements connected to this element will now be wound
-			// in the same direction.
-			f0.m_ntag = 1;
-			stack<FEFace*> S;
-			S.push(&f0);
-			while (S.empty() == false)
+			if (ei.m_nbr[0] >= 0) ei.m_nbr[0] = id[ei.m_nbr[0]];
+			if (ei.m_nbr[1] >= 0) ei.m_nbr[1] = id[ei.m_nbr[1]];
+		}
+	}
+
+	// the faces could reference edges, so we will need to reindex them 
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FEFace& f = pm->Face(i);
+		for (int j = 0; j < 4; ++j)
+		{
+			int nej = f.m_edge[j];
+			if (nej >= 0)
 			{
-				// pop an face
-				FEFace* pf = S.top(); S.pop();
-
-				// loop over the neighbors
-				int nn = pf->Nodes();
-				for (int j = 0; j<nn; ++j)
+				FEEdge& ej = pm->Edge(nej);
+				if (ej.m_ntag >= 0)
 				{
-					int n0 = pf->n[j];
-					int n1 = pf->n[(j + 1) % nn];
-					int fj = pf->m_nbr[j];
-					if (fj >= 0)
-					{
-						FEFace* pfj = &pm->Face(fj);
-						if (pfj->m_ntag == 0)
-						{
-							int nnj = pfj->Nodes();
-							// find the shared edge
-							for (int k = 0; k<nnj; ++k)
-							{
-								int k0 = pfj->n[k];
-								int k1 = pfj->n[(k + 1) % nnj];
-
-								if ((k0 == n0) && (k1 == n1))
-								{
-									// winding is wrong, so flip the element
-									// flip nodes
-									if      (nnj == 3) flipTri3(*pfj);
-									else if (nnj == 4) flipQuad4(*pfj);
-									else 
-									{
-										assert(false);
-										return false;
-									}
-
-									pfj->m_ntag = 1;
-									S.push(pfj);
-									break;
-								}
-								else if ((k0 == n1) && (k1 == n0))
-								{
-									// winding is correct, just push it
-									pfj->m_ntag = 1;
-									S.push(pfj);
-									break;
-								}
-							}
-							assert(pfj->m_ntag == 1);
-						}
-					}
+					int nid = id[ej.m_ntag]; assert(nid >= 0);
+					f.m_edge[j] = nid;
 				}
 			}
 		}
 	}
 
-	// done
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-bool FEFixMesh::InvertMesh(FESurfaceMesh* pm)
-{
-	// loop over all faces
-	int NF = pm->Faces();
-	for (int i = 0; i<NF; ++i)
+	// delete the duplicate edges
+	ne = 0;
+	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		// get a face
-		FEFace& face = pm->Face(i);
-
-		int nn = face.Nodes();
-		if      (nn == 3) flipTri3 (face);
-		else if (nn == 4) flipQuad4(face);
-		else {
-			assert(false);
-			return false;
+		FEEdge& ei = pm->Edge(i);
+		if (ei.m_ntag == -1)
+		{
+			assert(id[i] >= 0);
+			if (i != ne)
+			{
+				FEEdge& en = pm->Edge(ne);
+				en = ei;
+			}
+			ne++;
 		}
 	}
 
-	return true;
-}
+	// resize edges
+	pm->ResizeEdges(ne);
 
-//-----------------------------------------------------------------------------
-bool FEFixMesh::FillAllHoles(FESurfaceMesh* pm)
-{
-	// fill all the holes
-	FEFillHole fill;
-	fill.FillAllHoles(pm);
-
-	// rebuild the mesh
-	pm->RebuildMesh();
-
-	// all done
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-bool FEFixMesh::RemoveDuplicateEdges(FESurfaceMesh* pm)
-{
-	pm->RemoveDuplicateEdges();
-
-	// rebuild the mesh
-	pm->RebuildMesh();
+	// TODO: It is possible that duplicate edges messed up
+	// the node partitioning. Should I repartition nodes here? 
 
 	//all done
 	return true;
