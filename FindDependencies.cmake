@@ -1,5 +1,9 @@
 # Qt
-find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL OpenGLWidgets REQUIRED) 
+find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED) 
+
+if(QT_Ver VERSION_EQUAL 6)
+  find_package(${Qt_Version} COMPONENTS OpenGLWidgets REQUIRED)
+endif()
 find_package(${Qt_Version} COMPONENTS WebEngineWidgets QUIET)
 mark_as_advanced(${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR ${Qt_Version}Positioning_DIR 
     ${Qt_Version}PrintSupport_DIR ${Qt_Version}QmlModels_DIR ${Qt_Version}Qml_DIR ${Qt_Version}Quick_DIR  ${Qt_Version}Widgets_DIR)
