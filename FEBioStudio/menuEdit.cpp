@@ -177,13 +177,14 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 	}
 	else if (dynamic_cast<GPartSelection*>(psel))
 	{
+		GModel& m = *doc->GetGModel();
+		GPartSelection* sel = dynamic_cast<GPartSelection*>(psel);
+		int n = sel->Count();
+		if (n == 0) return;
+
 		int nanswer = QMessageBox::question(this, "FEBio Studio", "Deleting parts cannot be undone.\nDo you wish to continue?");
 		if (nanswer == QMessageBox::Yes)
 		{
-			GModel& m = *doc->GetGModel();
-			GPartSelection* sel = dynamic_cast<GPartSelection*>(psel);
-			int n = sel->Count();
-			if (n == 0) return;
 			GPartSelection::Iterator it(sel);
 			vector<int> pid(n);
 			for (int i = 0; i < n; ++i, ++it)

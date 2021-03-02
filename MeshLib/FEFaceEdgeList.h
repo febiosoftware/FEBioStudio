@@ -32,6 +32,7 @@ SOFTWARE.*/
 class FEMeshBase;
 class FEMesh;
 class FESurfaceMesh;
+class FELineMesh;
 
 class FENodeNodeTable
 {
@@ -48,8 +49,11 @@ private:
 class FEEdgeList
 {
 public:
+	FEEdgeList();
 	FEEdgeList(const FESurfaceMesh& mesh);
 	FEEdgeList(const FEMesh& mesh, bool surfOnly = false);
+
+	void BuildFromMeshEdges(FELineMesh& mesh);
 
 	int size() const { return (int) ET.size(); }
 
@@ -92,6 +96,10 @@ public:
 	FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET);
 
 	std::vector<int>& operator [] (int i) { return EET[i]; }
+
+	size_t Valence(int nel) const { return EET[nel].size(); }
+
+	int EdgeIndex(int nel, int nedge) const { return EET[nel][nedge]; }
 
 private:
 	std::vector< std::vector<int> > EET;

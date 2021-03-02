@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEMeshBuilder.h"
 #include "FEMesh.h"
 #include <GeomLib/GObject.h>
+#include <MeshLib/FEFaceEdgeList.h>
 
 FEMeshBuilder::FEMeshBuilder(FEMesh& mesh) : m_mesh(mesh)
 {
@@ -260,10 +261,7 @@ void FEMeshBuilder::DeletePart(int partId)
 			for (int j = 0; j < ne; ++j)
 			{
 				FENode& node = m_mesh.Node(el.m_node[j]);
-				if (node.IsRequired() == false)
-				{
-					node.m_ntag = -1;
-				}
+				node.m_ntag = -1;
 			}
 		}
 	}
@@ -282,29 +280,53 @@ void FEMeshBuilder::DeletePart(int partId)
 	for (int i = 0; i < m_mesh.Faces(); ++i)
 	{
 		FEFace& face = m_mesh.Face(i);
-		int nf = face.Nodes();
-		for (int j = 0; j < nf; ++j)
+
+		FEElement_* pe0 = m_mesh.ElementPtr(face.m_elem[0].eid); assert(pe0);
+		FEElement_* pe1 = m_mesh.ElementPtr(face.m_elem[1].eid);
+
+		if ((pe0->m_ntag == TAG) && ((pe1==nullptr) || (pe1->m_ntag == TAG)))
 		{
-			if (m_mesh.Node(face.n[j]).m_ntag == -1)
-			{
-				face.m_ntag = TAG;
-				break;
-			}
+			face.m_ntag = TAG;
 		}
 	}
 
+	// create element-edge list
+	FEEdgeList EL; EL.BuildFromMeshEdges(m_mesh);
+	FEElementEdgeList EEL(m_mesh, EL);
+
 	// figure out which edges to remove
 	m_mesh.TagAllEdges(0);
-	for (int i = 0; i < m_mesh.Edges(); ++i)
+	for (int i = 0; i < m_mesh.Elements(); ++i)
 	{
-		FEEdge& edge = m_mesh.Edge(i);
-		int ne = edge.Nodes();
-		for (int j = 0; j < ne; ++j)
+		FEElement& el = m_mesh.Element(i);
+		if (el.m_ntag == TAG)
 		{
-			if (m_mesh.Node(edge.n[j]).m_ntag == -1)
+			int nval = EEL.Valence(i);
+			for (int j = 0; j < nval; ++j)
 			{
-				edge.m_ntag = TAG;
-				break;
+				int nedge = EEL.EdgeIndex(i, j);
+				if (nedge >= 0)
+				{
+					FEEdge& edge = m_mesh.Edge(nedge);
+					edge.m_ntag = TAG;
+				}
+			}
+		}
+	}
+	for (int i = 0; i < m_mesh.Elements(); ++i)
+	{
+		FEElement& el = m_mesh.Element(i);
+		if (el.m_ntag != TAG)
+		{
+			int nval = EEL.Valence(i);
+			for (int j = 0; j < nval; ++j)
+			{
+				int nedge = EEL.EdgeIndex(i, j);
+				if (nedge >= 0)
+				{
+					FEEdge& edge = m_mesh.Edge(nedge);
+					edge.m_ntag = 0;
+				}
 			}
 		}
 	}
@@ -315,12 +337,13 @@ void FEMeshBuilder::DeletePart(int partId)
 	m_mesh.RemoveEdges(TAG);
 
 	// remove tagged nodes
+	// note that we do not remove required nodes
 	int n = 0;
 	int NN = m_mesh.Nodes();
 	for (int i = 0; i < NN; ++i)
 	{
 		FENode& node = m_mesh.Node(i);
-		if (node.m_ntag >= 0) node.m_ntag = n++;
+		if ((node.m_ntag >= 0) || node.IsRequired()) node.m_ntag = n++;
 	}
 
 	// fix element node numbering

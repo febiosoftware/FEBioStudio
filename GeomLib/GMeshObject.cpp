@@ -200,7 +200,7 @@ void GMeshObject::UpdateParts()
 		}
 	}
 	int NP = m_Part.size();
-	for (int i = nparts; i < NP; ++i)
+	for (int i = n; i < NP; ++i)
 	{
 		GPart* pg = m_Part[n];
 		m_Part.erase(m_Part.begin() + n);
@@ -264,7 +264,7 @@ void GMeshObject::UpdateSurfaces()
 		}
 	}
 	int NF = m_Face.size();
-	for (int i = nsurf; i < NF; ++i)
+	for (int i = n; i < NF; ++i)
 	{
 		GFace* pg = m_Face[n];
 		m_Face.erase(m_Face.begin() + n);
@@ -371,7 +371,7 @@ void GMeshObject::UpdateEdges()
 		}
 	}
 	int NE = m_Edge.size();
-	for (int i = nedges; i < NE; ++i)
+	for (int i = n; i < NE; ++i)
 	{
 		GEdge* pg = m_Edge[n];
 		m_Edge.erase(m_Edge.begin() + n);
@@ -482,7 +482,7 @@ void GMeshObject::UpdateNodes()
 		}
 	}
 	int NN = m_Node.size();
-	for (int i = nodes; i < NN; ++i)
+	for (int i = n; i < NN; ++i)
 	{
 		GNode* pg = m_Node[n];
 		m_Node.erase(m_Node.begin() + n);
