@@ -204,6 +204,7 @@
 		D5DE72F424E3678B00752E1D /* DlgLogin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DE72F124E3678B00752E1D /* DlgLogin.cpp */; };
 		D5DFB17D248F24750006DB45 /* DlgPlaneCut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DFB17A248F24750006DB45 /* DlgPlaneCut.cpp */; };
 		D5E04A4B2357BD1B006AC137 /* DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */; };
+		D5E1AA9125E96EBE003162AB /* menuFEBio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E1AA9025E96EBE003162AB /* menuFEBio.cpp */; };
 		D5E73B8824902EB80091806F /* QtWebEngineWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5E73B8724902EB80091806F /* QtWebEngineWidgets.framework */; };
 		D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A6232AEAED00EED2BE /* Logger.cpp */; };
 		D5ED290123197E8500C16BF7 /* libFSCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290023197E8500C16BF7 /* libFSCore.a */; };
@@ -666,6 +667,7 @@
 		D5DFB17B248F24750006DB45 /* DlgPlaneCut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgPlaneCut.h; sourceTree = "<group>"; };
 		D5E04A482357BD1B006AC137 /* DlgEditLConfigs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgEditLConfigs.h; sourceTree = "<group>"; };
 		D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgEditLConfigs.cpp; sourceTree = "<group>"; };
+		D5E1AA9025E96EBE003162AB /* menuFEBio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuFEBio.cpp; sourceTree = "<group>"; };
 		D5E73B8724902EB80091806F /* QtWebEngineWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWebEngineWidgets.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtWebEngineWidgets.framework; sourceTree = "<absolute>"; };
 		D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchConfig.h; sourceTree = "<group>"; };
 		D5EBB7A5232AEAEC00EED2BE /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
@@ -1348,6 +1350,7 @@
 				D579B667239F04E100278644 /* MeasureVolumeTool.cpp */,
 				D579B669239F04E100278644 /* MeasureVolumeTool.h */,
 				D5992F1A2461E4310054F9DA /* menuEdit.cpp */,
+				D5E1AA9025E96EBE003162AB /* menuFEBio.cpp */,
 				D5CC3A5B245B4CD700311F48 /* menuFile.cpp */,
 				D5992F102461E4310054F9DA /* menuHelp.cpp */,
 				D5F7D74222FA37C40089B08E /* menuPhysics.cpp */,
@@ -1861,6 +1864,7 @@
 				D5F7D87922FA37C40089B08E /* CurveEditor.cpp in Sources */,
 				D5F7D89C22FA37C40089B08E /* ObjectProps.cpp in Sources */,
 				D5946E1C24B4F5A60009C22F /* DlgRequestUploadPerm.cpp in Sources */,
+				D5E1AA9125E96EBE003162AB /* menuFEBio.cpp in Sources */,
 				D5F7D8A422FA37C40089B08E /* DlgAddRigidConstraint.cpp in Sources */,
 				D5F7D84722FA37C40089B08E /* DlgAddChemicalReaction.cpp in Sources */,
 				D5ED2A0D23198CD900C16BF7 /* DragBox.cpp in Sources */,
