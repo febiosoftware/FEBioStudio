@@ -39,10 +39,12 @@ SOFTWARE.*/
 #define FE_DEFORMABLE_SPRING	7
 #define FE_DISCRETE_SPRING_SET	8
 
+class GModel;
+
 class GDiscreteObject : public FSObject
 {
 public:
-	GDiscreteObject(int ntype);
+	GDiscreteObject(GModel* gm, int ntype);
 	~GDiscreteObject(void);
 
 	int GetType() { return m_ntype; }
@@ -68,10 +70,15 @@ public:
 	GLColor GetColor() const;
 	void SetColor(const GLColor& c);
 
+	// get the model
+	const GModel* GetModel() const;
+	GModel* GetModel();
+
 protected:
 	int		m_ntype;
 	int		m_state;
 	GLColor	m_col;
+	GModel*	m_gm;
 };
 
 //-----------------------------------------------------------------------------
@@ -82,8 +89,8 @@ public:
 	enum { MP_E };
 
 public:
-	GLinearSpring();
-	GLinearSpring(int n1, int n2);
+	GLinearSpring(GModel* gm);
+	GLinearSpring(GModel* gm, int n1, int n2);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -100,8 +107,8 @@ public:
 	enum { MP_F };
 
 public:
-	GGeneralSpring();
-	GGeneralSpring(int n1, int n2);
+	GGeneralSpring(GModel* gm);
+	GGeneralSpring(GModel* gm, int n1, int n2);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -115,8 +122,8 @@ public:
 class GDiscreteElement : public GDiscreteObject
 {
 public:
-	GDiscreteElement();
-	GDiscreteElement(int n0, int n1);
+	GDiscreteElement(GModel* gm);
+	GDiscreteElement(GModel* gm, int n0, int n1);
 	GDiscreteElement(const GDiscreteElement& el);
 	void operator = (const GDiscreteElement& el);
 
@@ -139,7 +146,7 @@ protected:
 class GDiscreteElementSet : public GDiscreteObject
 {
 public:
-	GDiscreteElementSet(int ntype);
+	GDiscreteElementSet(GModel* gm, int ntype);
 	~GDiscreteElementSet();
 
 	int size() const;
@@ -175,7 +182,7 @@ protected:
 class GDiscreteSpringSet : public GDiscreteElementSet
 {
 public:
-	GDiscreteSpringSet();
+	GDiscreteSpringSet(GModel* gm);
 
 	void CopyDiscreteElementSet(GDiscreteElementSet* ds);
 
@@ -197,7 +204,7 @@ public:
 	enum { MP_E };
 
 public:
-	GLinearSpringSet();
+	GLinearSpringSet(GModel* gm);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -211,7 +218,7 @@ public:
 	enum { MP_F };
 
 public:
-	GNonlinearSpringSet();
+	GNonlinearSpringSet(GModel* gm);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -224,8 +231,8 @@ public:
 	enum { MP_E, MP_DIV };
 
 public:
-	GDeformableSpring();
-	GDeformableSpring(int n0, int n1);
+	GDeformableSpring(GModel* gm);
+	GDeformableSpring(GModel* gm, int n0, int n1);
 
 	int NodeID(int i) const { return m_node[i]; }
 
@@ -244,5 +251,5 @@ public:
 class GArmature : public GDiscreteObject
 {
 public:
-	GArmature() : GDiscreteObject(FE_ARMATURE) {}
+	GArmature(GModel* gm) : GDiscreteObject(gm, FE_ARMATURE) {}
 };

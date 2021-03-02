@@ -1635,6 +1635,7 @@ bool AbaqusImport::build_physics()
 GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 {
 	FEModel& fem = *m_pfem;
+	GModel& gm = fem.GetModel();
 
 	AbaqusModel::PART& part = *pg;
 	assert(part.m_po == 0);
@@ -1905,7 +1906,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			int n0 = po->MakeGNode(pn1->n);
 			int n1 = po->MakeGNode(pn2->n);
 
-			GLinearSpring* ps = new GLinearSpring(n0, n1);
+			GLinearSpring* ps = new GLinearSpring(&gm, n0, n1);
 			char szname[256];
 			sprintf(szname, "Spring%02d", n);
 			ps->SetName(szname);

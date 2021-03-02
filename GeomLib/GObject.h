@@ -197,6 +197,8 @@ public:
 	// is called whenever the selection has changed (default does nothing)
 	virtual void UpdateSelection();
 
+	virtual bool IsValid() const;
+
 public:
 	bool IsFaceVisible(const GFace* pf) const;
 
@@ -211,6 +213,8 @@ protected: // helper functions for building the GMesh
 protected:
 	// set the render mesh
 	void SetRenderMesh(GLMesh* mesh);
+
+	void SetValidFlag(bool b);
 
 public:
 	// --- G R O U P S ---

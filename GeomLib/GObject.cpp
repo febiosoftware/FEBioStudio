@@ -47,6 +47,8 @@ public:
 		m_pGMesh  = nullptr;
 
 		m_col = GLColor(200, 200, 200);
+
+		m_bValid = true;
 	}
 
 	~Imp()
@@ -59,6 +61,7 @@ public:
 public:
 	int	m_ntype;	//!< object type identifier
 	GLColor	m_col;	//!< color of object
+	bool	m_bValid;
 
 	FEMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
@@ -87,6 +90,18 @@ GObject::GObject(int ntype): imp(new GObject::Imp)
 GObject::~GObject(void)
 {
 	delete imp;
+}
+
+//-----------------------------------------------------------------------------
+bool GObject::IsValid() const
+{
+	return imp->m_bValid;
+}
+
+//-----------------------------------------------------------------------------
+void GObject::SetValidFlag(bool b)
+{
+	imp->m_bValid = b;
 }
 
 //-----------------------------------------------------------------------------

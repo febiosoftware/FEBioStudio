@@ -1135,6 +1135,7 @@ void FEBioExport3::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STATIC" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1159,10 +1160,6 @@ void FEBioExport3::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
-
-	el.name("analysis");
-	el.add_attribute("type", (ops.nanalysis == 0 ? "static" : "transient"));
-	m_xml.add_empty(el);
 }
 
 
@@ -4189,14 +4186,15 @@ void FEBioExport3::WriteInitShellVelocity(FENodalShellVelocities& iv)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitConcentration(FEInitConcentration& ic)
 {
-	char szbc[6][3] = { "c1", "c2", "c3", "c4", "c5", "c6" };
+    char szbc[6];
 	int bc = ic.GetBC();
+    sprintf(szbc, "c%d",bc+1);
 	XMLElement ec("ic");
 	ec.add_attribute("type", "init_dof");
 	ec.add_attribute("node_set", GetNodeSetName(ic.GetItemList()));
 	m_xml.add_branch(ec);
 	{
-		m_xml.add_leaf("dof", szbc[bc]);
+		m_xml.add_leaf("dof", szbc);
 		m_xml.add_leaf("value", ic.GetValue());
 	}
 	m_xml.close_branch();
@@ -4205,14 +4203,15 @@ void FEBioExport3::WriteInitConcentration(FEInitConcentration& ic)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitShellConcentration(FEInitShellConcentration& ic)
 {
-	char szbc[6][3] = { "d1", "d2", "d3", "d4", "d5", "d6" };
+    char szbc[6];
 	int bc = ic.GetBC();
+    sprintf(szbc, "d%d",bc+1);
 	XMLElement ec("ic");
 	ec.add_attribute("type", "init_dof");
 	ec.add_attribute("node_set", GetNodeSetName(ic.GetItemList()));
 	m_xml.add_branch(ec);
 	{
-		m_xml.add_leaf("dof", szbc[bc]);
+		m_xml.add_leaf("dof", szbc);
 		m_xml.add_leaf("value", ic.GetValue());
 	}
 	m_xml.close_branch();

@@ -2577,6 +2577,7 @@ void FEBioFormat2::ParseSprings(FEStep *pstep, XMLTag &tag)
 	FEBioModel& febio = GetFEBioModel();
 
 	FEModel &fem = GetFEModel();
+	GModel& gm = fem.GetModel();
 	GMeshObject* po = GetGObject();
 	
 	int n[2], lc = -1;
@@ -2614,7 +2615,7 @@ void FEBioFormat2::ParseSprings(FEStep *pstep, XMLTag &tag)
 	{
 	case FE_DISCRETE_SPRING:
 		{
-			GLinearSpring* ps = new GLinearSpring(n[0], n[1]);
+			GLinearSpring* ps = new GLinearSpring(&gm, n[0], n[1]);
 			char szname[256];
 			sprintf(szname, "Spring%02d", N);
 			ps->SetName(szname);
@@ -2624,7 +2625,7 @@ void FEBioFormat2::ParseSprings(FEStep *pstep, XMLTag &tag)
 		break;
 	case FE_GENERAL_SPRING:
 		{
-			GGeneralSpring* pg = new GGeneralSpring(n[0], n[1]);
+			GGeneralSpring* pg = new GGeneralSpring(&gm, n[0], n[1]);
 			char szname[256];
 			sprintf(szname, "Spring%02d", N);
 			pg->SetName(szname);

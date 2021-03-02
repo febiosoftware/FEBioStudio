@@ -35,6 +35,7 @@ SOFTWARE.*/
 #define FE_INVISIBLE	0x10		// is the item invisible because the parent material was hidden? 
 #define FE_ERODED		0x20		// the item is "eroded" and should be treated as no longer present
 #define FE_EXTERIOR		0x40		// the item is "exterior"
+#define FE_REQUIRED		0x80		// the item is required and should not be deleted during mesh operations
 // Even when not hidden, the item may not be shown since e.g. the material is hidden
 
 //-----------------------------------------------------------------------------
@@ -69,6 +70,9 @@ public:
 
 	void SetExterior(bool b) { if (b) m_state = m_state | FE_EXTERIOR; else m_state = m_state & ~FE_EXTERIOR; }
 	bool IsExterior() const { return ((m_state & FE_EXTERIOR) != 0); }
+
+	bool IsRequired() const { return ((m_state & FE_REQUIRED) != 0); }
+	void SetRequired(bool b) { if (b) m_state = m_state | FE_REQUIRED; else m_state = m_state & ~FE_REQUIRED; }
 
 	bool IsEnabled() const { return (IsDisabled() == false); }
 

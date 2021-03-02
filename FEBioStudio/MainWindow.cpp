@@ -2774,19 +2774,25 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 
 	bool ret = false;
 
-	if (febioFileVersion == 0)
-	{
-		FEBioExport25 feb(doc->GetProject());
-		ret = feb.Write(febFile.c_str());
+	try {
+		if (febioFileVersion == 0)
+		{
+			FEBioExport25 feb(doc->GetProject());
+			ret = feb.Write(febFile.c_str());
+		}
+		else if (febioFileVersion == 1)
+		{
+			FEBioExport3 feb(doc->GetProject());
+			ret = feb.Write(febFile.c_str());
+		}
+		else
+		{
+			assert(false);
+		}
 	}
-	else if (febioFileVersion == 1)
+	catch (...)
 	{
-		FEBioExport3 feb(doc->GetProject());
-		ret = feb.Write(febFile.c_str());
-	}
-	else
-	{
-		assert(false);
+		ret = false;
 	}
 
 	if (ret == false)

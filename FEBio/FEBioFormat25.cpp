@@ -2973,6 +2973,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
+	GModel& gm = fem.GetModel();
 
 	char buf[256] = { 0 };
 
@@ -2994,7 +2995,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
 				FELinearSpringMaterial* mat = new FELinearSpringMaterial();
-				GDiscreteSpringSet* pg = new GDiscreteSpringSet();
+				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 				pg->SetMaterial(mat);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
@@ -3015,7 +3016,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
 				FENonLinearSpringMaterial* mat = new FENonLinearSpringMaterial();
-				GDiscreteSpringSet* pg = new GDiscreteSpringSet();
+				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 				pg->SetMaterial(mat);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
@@ -3041,7 +3042,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 				FEDiscreteMaterial* dmat = dynamic_cast<FEDiscreteMaterial*>(mat);
 				if (dmat)
 				{
-					GDiscreteSpringSet* pg = new GDiscreteSpringSet();
+					GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 					pg->SetMaterial(dmat);
 					pg->SetName(szname);
 					fem.GetModel().AddDiscreteObject(pg);

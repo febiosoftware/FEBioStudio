@@ -227,16 +227,19 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			}
 		}
 
+		// store the name of the job
+		lastJobName = jobName;
+
 		// export to FEBio
 		if (modelDoc)
 		{
 			// save the FEBio file
 			string febFile = job->GetFEBFileName(false);
-			ExportFEBioFile(modelDoc, febFile, lastFEBioFileVersion);
+			if (ExportFEBioFile(modelDoc, febFile, lastFEBioFileVersion) == false)
+			{
+				return;
+			}
 		}
-
-		// store the name of the job
-		lastJobName = jobName;
 
 		// run the job
 		RunFEBioJob(job);

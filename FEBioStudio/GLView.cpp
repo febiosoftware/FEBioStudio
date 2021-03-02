@@ -1748,16 +1748,19 @@ void CGLView::RenderModelView()
 			for (int i = 0; i<model.Objects(); ++i)
 			{
 				GObject* po = model.Object(i);
-				glPushMatrix();
-				SetModelView(po);
-				switch (nsel)
+				if (po->IsVisible() && po->IsValid())
 				{
-				case SELECT_PART: RenderSelectedParts(po); break;
-				case SELECT_FACE: RenderSelectedSurfaces(po); break;
-				case SELECT_EDGE: RenderSelectedEdges(po); break;
-				case SELECT_NODE: RenderSelectedNodes(po); break;
+					glPushMatrix();
+					SetModelView(po);
+					switch (nsel)
+					{
+					case SELECT_PART: RenderSelectedParts(po); break;
+					case SELECT_FACE: RenderSelectedSurfaces(po); break;
+					case SELECT_EDGE: RenderSelectedEdges(po); break;
+					case SELECT_NODE: RenderSelectedNodes(po); break;
+					}
+					glPopMatrix();
 				}
-				glPopMatrix();
 			}
 		}
 	}
@@ -2459,7 +2462,7 @@ void CGLView::RenderModel()
 		for (int i = 0; i<model.Objects(); ++i)
 		{
 			GObject* po = model.Object(i);
-			if (po->IsVisible())
+			if (po->IsVisible() && po->IsValid())
 			{
 				glPushMatrix();
 				SetModelView(po);
@@ -2511,6 +2514,7 @@ void CGLView::RenderModel()
 				}
 				break;
 				}
+				if (bnorm) RenderNormals(po, scale);
 				glPopMatrix();
 			}
 		}
@@ -2520,7 +2524,7 @@ void CGLView::RenderModel()
 		for (int i = 0; i<model.Objects(); ++i)
 		{
 			GObject* po = model.Object(i);
-			if (po->IsVisible())
+			if (po->IsVisible() && po->IsValid())
 			{
 				glPushMatrix();
 				SetModelView(po);
@@ -2551,7 +2555,6 @@ void CGLView::RenderModel()
 							RenderFEFaces(po);
 							RenderFENodes(po);
 						}
-						if (bnorm) RenderNormals(po, scale);
 					}
 					else
 					{
@@ -2574,10 +2577,10 @@ void CGLView::RenderModel()
 							RenderSurfaceMeshFaces(po);
 							RenderSurfaceMeshNodes(po);
 						}
-						if (bnorm) RenderNormals(po, scale);
 					}
 				}
 				else RenderObject(po);
+				if (bnorm) RenderNormals(po, scale);
 				glPopMatrix();
 			}
 		}
@@ -2622,7 +2625,6 @@ void CGLView::RenderSelectionBox()
 					if (po->IsSelected())
 					{
 						RenderBox(po->GetLocalBox(), true, 1.025);
-						if (bnorm) RenderNormals(po, scale);
 					}
 				}
 				else if (po == poa)
@@ -2918,7 +2920,7 @@ void CGLView::RenderMaterialFibers()
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		if (po->IsVisible())
+		if (po->IsVisible() && po->IsValid())
 		{
 			FEMesh* pm = po->GetFEMesh();
 			if (pm)
@@ -8283,7 +8285,7 @@ void CGLView::RenderMeshLines()
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		if (po->IsVisible())
+		if (po->IsVisible() && po->IsValid())
 		{
 			FEMesh* pm = po->GetFEMesh();
 			if (pm)
@@ -8792,12 +8794,14 @@ void CGLView::RenderTags()
 		for (int i = 0; i<NE; i++)
 		{
 			FEElement_& el = mesh.Element(i);
-			if (el.IsSelected() && (el.GetID() > 0))
+			if (el.IsSelected())
 			{
 				tag.r = mesh.LocalToGlobal(mesh.ElementCenter(el));
 				tag.bvis = false;
 				tag.ntag = 0;
-				sprintf(tag.sztag, "E%d", el.GetID());
+				int nid = el.GetID();
+				if (nid < 0) nid = i + 1;
+				sprintf(tag.sztag, "E%d", nid);
 				vtag.push_back(tag);
 
 				int ne = el.Nodes();
@@ -8818,7 +8822,9 @@ void CGLView::RenderTags()
 				tag.r = mesh.LocalToGlobal(mesh.FaceCenter(f));
 				tag.bvis = false;
 				tag.ntag = (f.IsExternal() ? 0 : 1);
-				sprintf(tag.sztag, "F%d", f.GetID());
+				int nid = f.GetID();
+				if (nid < 0) nid = i + 1;
+				sprintf(tag.sztag, "F%d", nid);
 				vtag.push_back(tag);
 
 				int nf = f.Nodes();
@@ -8839,7 +8845,9 @@ void CGLView::RenderTags()
 				tag.r = mesh.LocalToGlobal(mesh.EdgeCenter(edge));
 				tag.bvis = false;
 				tag.ntag = 0;
-				sprintf(tag.sztag, "L%d", edge.GetID());
+				int nid = edge.GetID();
+				if (nid < 0) nid = i + 1;
+				sprintf(tag.sztag, "L%d", nid);
 				vtag.push_back(tag);
 
 				int ne = edge.Nodes();
@@ -8859,7 +8867,9 @@ void CGLView::RenderTags()
 				tag.r = mesh.LocalToGlobal(node.r);
 				tag.bvis = false;
 				tag.ntag = (node.IsExterior() ? 0 : 1);
-				sprintf(tag.sztag, "N%d", node.GetID());
+				int nid = node.GetID();
+				if (nid < 0) nid = i + 1;
+				sprintf(tag.sztag, "N%d", nid);
 				vtag.push_back(tag);
 			}
 		}
