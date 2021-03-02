@@ -2514,6 +2514,7 @@ void CGLView::RenderModel()
 				}
 				break;
 				}
+				if (bnorm) RenderNormals(po, scale);
 				glPopMatrix();
 			}
 		}
@@ -2523,7 +2524,7 @@ void CGLView::RenderModel()
 		for (int i = 0; i<model.Objects(); ++i)
 		{
 			GObject* po = model.Object(i);
-			if (po->IsVisible())
+			if (po->IsVisible() && po->IsValid())
 			{
 				glPushMatrix();
 				SetModelView(po);
@@ -2554,7 +2555,6 @@ void CGLView::RenderModel()
 							RenderFEFaces(po);
 							RenderFENodes(po);
 						}
-						if (bnorm) RenderNormals(po, scale);
 					}
 					else
 					{
@@ -2577,10 +2577,10 @@ void CGLView::RenderModel()
 							RenderSurfaceMeshFaces(po);
 							RenderSurfaceMeshNodes(po);
 						}
-						if (bnorm) RenderNormals(po, scale);
 					}
 				}
 				else RenderObject(po);
+				if (bnorm) RenderNormals(po, scale);
 				glPopMatrix();
 			}
 		}
@@ -2625,7 +2625,6 @@ void CGLView::RenderSelectionBox()
 					if (po->IsSelected())
 					{
 						RenderBox(po->GetLocalBox(), true, 1.025);
-						if (bnorm) RenderNormals(po, scale);
 					}
 				}
 				else if (po == poa)
