@@ -253,7 +253,7 @@ public:
 	void ShowAllObjects();
 	void ShowAllParts(GObject* po);
 
-	void DeletePart(GPart* pg);
+	bool DeletePart(GPart* pg);
 
 public:
 	int MeshLayers() const; 

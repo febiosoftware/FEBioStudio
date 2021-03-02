@@ -1135,31 +1135,50 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 	BuildGMesh();
 }
 
-void GMeshObject::DeletePart(GPart* pg)
+bool GMeshObject::DeletePart(GPart* pg)
 {
 	// make sure this is a part of this object
-	if (pg->Object() != this) { assert(false); return; }
+	if (pg->Object() != this) { assert(false); return false; }
 
 	// get the mesh
 	FEMesh* pm = GetFEMesh(); assert(pm);
-	if (pm == 0) return;
-
-	// let's begin
-	SetValidFlag(false);
+	if (pm == 0) return false;
 
 	// get the part's local ID
 	int partId = pg->GetLocalID();
 	assert(Part(partId) == pg);
+	if (Part(partId) != pg) return false;
 
-	// delete the elements of this part
-	FEMeshBuilder meshBuilder(*pm);
-	meshBuilder.DeletePart(partId);
+	// let's begin
+	SetValidFlag(false);
 
-	// update the rest
-	Update();
+	bool bret = true;
+	try {
+
+		// delete the elements of this part
+		FEMeshBuilder meshBuilder(*pm);
+		FEMesh* newMesh = meshBuilder.DeletePart(*pm, partId);
+
+		if (newMesh)
+		{
+			SetFEMesh(newMesh);
+			Update();
+			bret = true;
+		}
+		else
+		{
+			bret = false;
+		}
+	}
+	catch (...)
+	{
+		bret = false;
+	}
 
 	// all done
 	SetValidFlag(true);
+
+	return bret;
 }
 
 // detach an element selection

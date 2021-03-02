@@ -85,7 +85,7 @@ public:
 	void DeleteTaggedElements(int tag);
 
 	// delete all elements of a part
-	void DeletePart(int partId);
+	FEMesh* DeletePart(FEMesh& mesh, int partId);
 
 	// Attach another mesh to this mesh
 	void Attach(FEMesh& fem);
