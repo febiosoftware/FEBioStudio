@@ -42,8 +42,10 @@ inline bool pointOnAxis(const vec3d& c, const vec3d& n, const vec3d& p)
 {
     vec3d q = p - c;
     q = q - n*(q*n);
-    double L2 = q.SqrLength();
-    return (L2 < 1e-10);
+    double Lp = p.Length();
+    double Lq = q.Length();
+    double Lr = (Lp > 0) ? Lq/Lp : Lq;
+    return (Lr < 1e-10);
 }
 
 FEMesh* FERevolveFaces::Apply(FEMesh* pm)
