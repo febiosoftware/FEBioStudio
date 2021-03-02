@@ -200,7 +200,7 @@ void GMeshObject::UpdateParts()
 		}
 	}
 	int NP = m_Part.size();
-	for (int i = nparts; i < NP; ++i)
+	for (int i = n; i < NP; ++i)
 	{
 		GPart* pg = m_Part[n];
 		m_Part.erase(m_Part.begin() + n);
@@ -264,7 +264,7 @@ void GMeshObject::UpdateSurfaces()
 		}
 	}
 	int NF = m_Face.size();
-	for (int i = nsurf; i < NF; ++i)
+	for (int i = n; i < NF; ++i)
 	{
 		GFace* pg = m_Face[n];
 		m_Face.erase(m_Face.begin() + n);
@@ -371,7 +371,7 @@ void GMeshObject::UpdateEdges()
 		}
 	}
 	int NE = m_Edge.size();
-	for (int i = nedges; i < NE; ++i)
+	for (int i = n; i < NE; ++i)
 	{
 		GEdge* pg = m_Edge[n];
 		m_Edge.erase(m_Edge.begin() + n);
@@ -482,7 +482,7 @@ void GMeshObject::UpdateNodes()
 		}
 	}
 	int NN = m_Node.size();
-	for (int i = nodes; i < NN; ++i)
+	for (int i = n; i < NN; ++i)
 	{
 		GNode* pg = m_Node[n];
 		m_Node.erase(m_Node.begin() + n);
@@ -1135,31 +1135,50 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 	BuildGMesh();
 }
 
-void GMeshObject::DeletePart(GPart* pg)
+bool GMeshObject::DeletePart(GPart* pg)
 {
 	// make sure this is a part of this object
-	if (pg->Object() != this) { assert(false); return; }
+	if (pg->Object() != this) { assert(false); return false; }
 
 	// get the mesh
 	FEMesh* pm = GetFEMesh(); assert(pm);
-	if (pm == 0) return;
-
-	// let's begin
-	SetValidFlag(false);
+	if (pm == 0) return false;
 
 	// get the part's local ID
 	int partId = pg->GetLocalID();
 	assert(Part(partId) == pg);
+	if (Part(partId) != pg) return false;
 
-	// delete the elements of this part
-	FEMeshBuilder meshBuilder(*pm);
-	meshBuilder.DeletePart(partId);
+	// let's begin
+	SetValidFlag(false);
 
-	// update the rest
-	Update();
+	bool bret = true;
+	try {
+
+		// delete the elements of this part
+		FEMeshBuilder meshBuilder(*pm);
+		FEMesh* newMesh = meshBuilder.DeletePart(*pm, partId);
+
+		if (newMesh)
+		{
+			SetFEMesh(newMesh);
+			Update();
+			bret = true;
+		}
+		else
+		{
+			bret = false;
+		}
+	}
+	catch (...)
+	{
+		bret = false;
+	}
 
 	// all done
 	SetValidFlag(true);
+
+	return bret;
 }
 
 // detach an element selection

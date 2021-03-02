@@ -1462,14 +1462,15 @@ void GModel::ShowPart(GPart* pg, bool bshow)
 }
 
 //-----------------------------------------------------------------------------
-void GModel::DeletePart(GPart* pg)
+bool GModel::DeletePart(GPart* pg)
 {
-	if (pg == 0) return;
+	if (pg == 0) return false;
 	GMeshObject* obj = dynamic_cast<GMeshObject*>(pg->Object());
 	if (obj)
 	{
-		obj->DeletePart(pg);
+		return obj->DeletePart(pg);
 	}
+	else return false;
 }
 
 //-----------------------------------------------------------------------------

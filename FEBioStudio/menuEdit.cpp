@@ -177,13 +177,14 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 	}
 	else if (dynamic_cast<GPartSelection*>(psel))
 	{
+		GModel& m = *doc->GetGModel();
+		GPartSelection* sel = dynamic_cast<GPartSelection*>(psel);
+		int n = sel->Count();
+		if (n == 0) return;
+
 		int nanswer = QMessageBox::question(this, "FEBio Studio", "Deleting parts cannot be undone.\nDo you wish to continue?");
 		if (nanswer == QMessageBox::Yes)
 		{
-			GModel& m = *doc->GetGModel();
-			GPartSelection* sel = dynamic_cast<GPartSelection*>(psel);
-			int n = sel->Count();
-			if (n == 0) return;
 			GPartSelection::Iterator it(sel);
 			vector<int> pid(n);
 			for (int i = 0; i < n; ++i, ++it)
@@ -196,7 +197,18 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 				GPart* pg = m.FindPart(pid[i]); assert(pg);
 				if (pg)
 				{
-					m.DeletePart(pg);
+					if (m.DeletePart(pg) == false)
+					{
+						QString err; err = QString("Failed deleting Part \"%1\" (id = %2)").arg(QString::fromStdString(pg->GetName())).arg(pid[i]);
+						QMessageBox::critical(this, "FEBio Studio", err);
+						break;
+					}
+				}
+				else
+				{
+					QString err; err = QString("Cannot find part with ID %1.").arg(pid[i]);
+					QMessageBox::critical(this, "FEBio Studio", err);
+					break;
 				}
 			}
 

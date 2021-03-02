@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEMeshBuilder.h"
 #include "FEMesh.h"
 #include <GeomLib/GObject.h>
+#include <MeshLib/FEFaceEdgeList.h>
 
 FEMeshBuilder::FEMeshBuilder(FEMesh& mesh) : m_mesh(mesh)
 {
@@ -241,121 +242,150 @@ void FEMeshBuilder::DeleteTaggedElements(int tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBuilder::DeletePart(int partId)
+FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 {
+	FEMesh* newMesh = new FEMesh(oldMesh);
+	FEMesh& mesh = *newMesh;
+
 	const int TAG = 1;
 
 	// First, figure out all nodes that we will have to remove
 	// This approach ensures that isolated nodes are not removed
-	m_mesh.TagAllNodes(0);
-	m_mesh.TagAllElements(0);
-	int NE = m_mesh.Elements();
+	mesh.TagAllNodes(0);
+	mesh.TagAllElements(0);
+	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FEElement& el = mesh.Element(i);
 		if (el.m_gid == partId)
 		{
 			el.m_ntag = TAG;
 			int ne = el.Nodes();
 			for (int j = 0; j < ne; ++j)
 			{
-				FENode& node = m_mesh.Node(el.m_node[j]);
-				if (node.IsRequired() == false)
-				{
-					node.m_ntag = -1;
-				}
+				FENode& node = mesh.Node(el.m_node[j]);
+				node.m_ntag = -1;
 			}
 		}
 	}
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FEElement& el = mesh.Element(i);
 		if (el.m_gid != partId)
 		{
 			int ne = el.Nodes();
-			for (int j = 0; j < ne; ++j) m_mesh.Node(el.m_node[j]).m_ntag = 0;
+			for (int j = 0; j < ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 0;
 		}
 	}
 
 	// figure out which faces to remove
-	m_mesh.TagAllFaces(0);
-	for (int i = 0; i < m_mesh.Faces(); ++i)
+	mesh.TagAllFaces(0);
+	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = m_mesh.Face(i);
-		int nf = face.Nodes();
-		for (int j = 0; j < nf; ++j)
+		FEFace& face = mesh.Face(i);
+
+		FEElement_* pe0 = mesh.ElementPtr(face.m_elem[0].eid);
+		if (pe0 == nullptr) { delete newMesh; return nullptr; }
+		FEElement_* pe1 = mesh.ElementPtr(face.m_elem[1].eid);
+
+		if ((pe0->m_ntag == TAG) && ((pe1==nullptr) || (pe1->m_ntag == TAG)))
 		{
-			if (m_mesh.Node(face.n[j]).m_ntag == -1)
-			{
-				face.m_ntag = TAG;
-				break;
-			}
+			face.m_ntag = TAG;
 		}
 	}
 
+	// create element-edge list
+	FEEdgeList EL; EL.BuildFromMeshEdges(mesh);
+	FEElementEdgeList EEL(mesh, EL);
+
 	// figure out which edges to remove
-	m_mesh.TagAllEdges(0);
-	for (int i = 0; i < m_mesh.Edges(); ++i)
+	mesh.TagAllEdges(0);
+	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEEdge& edge = m_mesh.Edge(i);
-		int ne = edge.Nodes();
-		for (int j = 0; j < ne; ++j)
+		FEElement& el = mesh.Element(i);
+		if (el.m_ntag == TAG)
 		{
-			if (m_mesh.Node(edge.n[j]).m_ntag == -1)
+			int nval = EEL.Valence(i);
+			for (int j = 0; j < nval; ++j)
 			{
-				edge.m_ntag = TAG;
-				break;
+				int nedge = EEL.EdgeIndex(i, j);
+				if (nedge >= 0)
+				{
+					FEEdge& edge = mesh.Edge(nedge);
+					edge.m_ntag = TAG;
+				}
+			}
+		}
+	}
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		if (el.m_ntag != TAG)
+		{
+			int nval = EEL.Valence(i);
+			for (int j = 0; j < nval; ++j)
+			{
+				int nedge = EEL.EdgeIndex(i, j);
+				if (nedge >= 0)
+				{
+					FEEdge& edge = mesh.Edge(nedge);
+					edge.m_ntag = 0;
+				}
 			}
 		}
 	}
 
 	// Let's go ahead and remove all tagged items
-	m_mesh.RemoveElements(TAG);
-	m_mesh.RemoveFaces(TAG);
-	m_mesh.RemoveEdges(TAG);
+	mesh.RemoveElements(TAG);
+	mesh.RemoveFaces(TAG);
+	mesh.RemoveEdges(TAG);
 
 	// remove tagged nodes
+	// note that we do not remove required nodes
 	int n = 0;
-	int NN = m_mesh.Nodes();
+	int NN = mesh.Nodes();
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& node = m_mesh.Node(i);
-		if (node.m_ntag >= 0) node.m_ntag = n++;
+		FENode& node = mesh.Node(i);
+		if ((node.m_ntag >= 0) || node.IsRequired()) node.m_ntag = n++;
 	}
 
 	// fix element node numbering
-	for (int i = 0; i < m_mesh.Elements(); ++i)
+	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FEElement& el = mesh.Element(i);
 		int n = el.Nodes();
 		for (int j = 0; j < n; ++j)
 		{
-			el.m_node[j] = m_mesh.Node(el.m_node[j]).m_ntag;
-			assert(el.m_node[j] >= 0);
+			int nj = mesh.Node(el.m_node[j]).m_ntag;
+			if (nj < 0) { delete newMesh; return nullptr; }
+			el.m_node[j] = nj;
 		}
 	}
 
 	// fix face node numbering
-	for (int i = 0; i < m_mesh.Faces(); ++i)
+	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = m_mesh.Face(i);
+		FEFace& face = mesh.Face(i);
 		int n = face.Nodes();
 		for (int j = 0; j < n; ++j)
 		{
-			face.n[j] = m_mesh.Node(face.n[j]).m_ntag;
-			assert(face.n[j] >= 0);
+			int nj = mesh.Node(face.n[j]).m_ntag;
+			if (nj < 0) { delete newMesh; return nullptr; }
+			face.n[j] = nj;
 		}
 	}
 
 	// fix edge node numbering
-	for (int i = 0; i < m_mesh.Edges(); ++i)
+	for (int i = 0; i < mesh.Edges(); ++i)
 	{
 		FEEdge& edge = m_mesh.Edge(i);
 		int n = edge.Nodes();
 		for (int j = 0; j < n; ++j)
 		{
-			edge.n[j] = m_mesh.Node(edge.n[j]).m_ntag;
-			assert(edge.n[j] >= 0);
+			int nj = mesh.Node(edge.n[j]).m_ntag;
+			if (nj < 0) { delete newMesh; return nullptr; }
+			edge.n[j] = nj;
 		}
 	}
 
@@ -363,8 +393,8 @@ void FEMeshBuilder::DeletePart(int partId)
 	n = 0;
 	for (int i = 0; i < m_mesh.Nodes(); ++i)
 	{
-		FENode& n1 = m_mesh.Node(i);
-		FENode& n2 = m_mesh.Node(n);
+		FENode& n1 = mesh.Node(i);
+		FENode& n2 = mesh.Node(n);
 
 		if (n1.m_ntag >= 0)
 		{
@@ -372,25 +402,27 @@ void FEMeshBuilder::DeletePart(int partId)
 			++n;
 		}
 	}
-	m_mesh.m_Node.resize(n);
+	mesh.m_Node.resize(n);
 
 	// update the element neighbours
-	m_mesh.UpdateElementNeighbors();
+	mesh.UpdateElementNeighbors();
 
 	// mark the exterior elements
-	m_mesh.MarkExteriorElements();
+	mesh.MarkExteriorElements();
 
 	// update face data
-	m_mesh.RebuildFaceData();
+	mesh.RebuildFaceData();
 
 	// update edge data
-	m_mesh.RebuildEdgeData();
+	mesh.RebuildEdgeData();
 
 	// update node data
-	m_mesh.RebuildNodeData();
+	mesh.RebuildNodeData();
 
 	// update the mesh
-	m_mesh.UpdateMesh();
+	mesh.UpdateMesh();
+
+	return newMesh;
 }
 
 //-----------------------------------------------------------------------------
