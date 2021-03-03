@@ -154,7 +154,8 @@ public:
 	GDiscreteElement& element(int i);
 
 	void AddElement(int n0, int n1);
-	
+	void AddElement(GNode* node0, GNode* node2);
+
 	void AddElement(const GDiscreteElement& el);
 
 	void RemoveElement(int index);
