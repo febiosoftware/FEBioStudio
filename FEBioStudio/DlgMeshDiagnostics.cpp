@@ -1,0 +1,899 @@
+/*This file is part of the FEBio Studio source code and is licensed under the MIT license
+listed below.
+
+See Copyright-FEBio-Studio.txt for details.
+
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+the City of New York, and others.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.*/
+#include "DlgMeshDiagnostics.h"
+#include <QBoxLayout>
+#include <QPushButton>
+#include <QFormLayout>
+#include <QLabel>
+#include <QDialogButtonBox>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <GeomLib/GObject.h>
+#include <MeshLib/FEMesh.h>
+
+class CDlgMeshDiagnosticsUI
+{
+public:
+	QLabel*		objName;
+	QPlainTextEdit*	out;
+
+public:
+	GObject*	obj;
+	int			testCount;
+	int			errorCount;
+	int			warningCount;
+
+public:
+	void setup(QDialog* dlg)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+
+		QFormLayout* f = new QFormLayout;
+		f->addRow("Object:", objName = new QLabel);
+
+		l->addLayout(f);
+
+		QHBoxLayout* h = new QHBoxLayout;
+		QPushButton* b = new QPushButton("Run Diagnostics");
+		h->setMargin(0);
+		h->addWidget(b);
+		h->addStretch();
+
+		l->addLayout(h);
+
+		out = new QPlainTextEdit;
+		out->setReadOnly(true);
+		out->setFont(QFont("Courier", 11));
+		out->setWordWrapMode(QTextOption::NoWrap);
+
+		l->addWidget(out);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok);
+		l->addWidget(bb);
+
+		dlg->setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(b, SIGNAL(clicked()), dlg, SLOT(runDiagnostics()));
+	}
+
+	void setObjectName(const QString& name)
+	{
+		objName->setText(name);
+	}
+
+	void clearOutput()
+	{
+		out->clear();
+	}
+
+	void log(const QString& msg)
+	{
+		out->appendPlainText(msg);
+	}
+
+	void logWarning(const QString& msg)
+	{
+		warningCount++;
+		out->appendPlainText(QString("WARNING: ") + msg);
+	}
+
+	void logError(const QString& msg)
+	{
+		errorCount++;
+		out->appendPlainText(QString("ERROR: ") + msg);
+	}
+
+	void diagnose()
+	{
+		testCount = 0;
+		errorCount = 0;
+		warningCount = 0;
+
+		checkMeshStats(); testCount++;
+		checkElementConnectivity(); testCount++;
+		checkFaceConnectivity(); testCount++;
+		checkEdgeConnectivity(); testCount++;
+		checkIsolatedVertices(); testCount++;
+		checkDuplicateEdges(); testCount++;
+		checkDuplicateFaces(); testCount++;
+		checkDuplicateElements(); testCount++;
+		checkElementNeighbors(); testCount++;
+		checkFaceNeighbors(); testCount++;
+		checkEdgeNeighbors(); testCount++;
+		checkElementFaceTable(); testCount++;
+		checkElementPartitioning(); testCount++;
+		checkFacePartitioning(); testCount++;
+		checkEdgePartitioning(); testCount++;
+		checkNodePartitioning(); testCount++;
+	}
+
+	void checkMeshStats();
+	void checkElementConnectivity();
+	void checkFaceConnectivity();
+	void checkEdgeConnectivity();
+	void checkIsolatedVertices();
+	void checkDuplicateEdges();
+	void checkDuplicateFaces();
+	void checkDuplicateElements();
+	void checkElementNeighbors();
+	void checkFaceNeighbors();
+	void checkEdgeNeighbors();
+	void checkElementFaceTable();
+	void checkElementPartitioning();
+	void checkFacePartitioning();
+	void checkEdgePartitioning();
+	void checkNodePartitioning();
+};
+
+CDlgMeshDiagnostics::CDlgMeshDiagnostics(QWidget* parent) : QDialog(parent), ui(new CDlgMeshDiagnosticsUI)
+{
+	ui->obj = nullptr;
+	setMinimumSize(800, 600);
+	ui->setup(this);
+	setWindowTitle("Mesh Diagnostics Tool");
+}
+
+void CDlgMeshDiagnostics::SetObject(GObject* po)
+{
+	ui->obj = po;
+	if (po) ui->setObjectName(QString::fromStdString(po->GetName()));
+	else ui->setObjectName("---");
+	ui->clearOutput();
+}
+
+void CDlgMeshDiagnostics::runDiagnostics()
+{
+	ui->clearOutput();
+
+	// make sure we have an object
+	GObject* po = ui->obj;
+	if (po == nullptr)
+	{
+		ui->log("No object selected to diagnose.");
+		return;
+	}
+
+	// see if this object has a mesh
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr)
+	{
+		ui->log("This object does not have a mesh to diagnose.");
+		return;
+	}
+	FEMesh& mesh = *pm;
+
+	try {
+		ui->diagnose();
+	}
+	catch (...)
+	{
+		ui->log("\nCatastropic error during diagnostic. Aborting!");
+	}
+
+	ui->log("\nDiagnostics summary:");
+	ui->log(QString("  Tests completed    : %1").arg(ui->testCount));
+	ui->log(QString("  Warnings generated : %1").arg(ui->warningCount));
+	ui->log(QString("  Errors generated   : %1").arg(ui->errorCount));
+	ui->log("\n\nDiagnostics completed!");
+}
+
+void CDlgMeshDiagnosticsUI::checkMeshStats()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+
+	// collect some statistics
+	int nodes = mesh.Nodes();    log(QString(" Nodes    = %1").arg(nodes));
+	int edges = mesh.Edges();    log(QString(" Edges    = %1").arg(edges));
+	int faces = mesh.Faces();    log(QString(" Faces    = %1").arg(faces));
+	int elems = mesh.Elements(); log(QString(" Elements = %1").arg(elems));
+
+	// break down elements
+	int solidElems = 0;
+	int shellElems = 0;
+	int beamElems  = 0;
+	int elemCount[22] = { 0 };
+	for (int i = 0; i < elems; ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		int elemType = el.Type();
+		if ((elemType >= 0) && (elemType <= 22)) elemCount[elemType]++; else elemCount[0]++;
+		if      (el.IsSolid()) solidElems++;
+		else if (el.IsShell()) shellElems++;
+		else if (el.IsBeam ()) beamElems++;
+	}
+
+	int* c = elemCount;
+	log(QString("\nSolid elements = %1").arg(solidElems));
+	if (solidElems > 0)
+	{
+		log(QString("   HEX8  |  HEX20  |  HEX27  |   TET4  |   TET5  |  TET10  |  TET15  |  TET20  |  PENTA6 | PENTA15 |  PYRA5  | PYRA13  "));
+		log(QString("---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------"));
+		log(QString("%1|%2|%3|%4|%5|%6|%7|%8|%9|%10|%11|%12")\
+			.arg(c[FE_HEX8   ], 9)\
+			.arg(c[FE_HEX20  ], 9)\
+			.arg(c[FE_HEX27  ], 9)\
+			.arg(c[FE_TET4   ], 9)\
+			.arg(c[FE_TET5   ], 9)\
+			.arg(c[FE_TET10  ], 9)\
+			.arg(c[FE_TET15  ], 9)\
+			.arg(c[FE_TET20  ], 9)\
+			.arg(c[FE_PENTA6 ], 9)\
+			.arg(c[FE_PENTA15], 9)\
+			.arg(c[FE_PYRA5  ], 9)\
+			.arg(c[FE_PYRA13 ], 9));
+	}
+
+	log(QString("\nShell elements = %1").arg(shellElems));
+	if (shellElems > 0)
+	{
+		log(QString("  QUAD4  |  QUAD8  |  QUAD9  |   TRI3  |   TRI6  |   TRI7  |  TRI10  "));
+		log(QString("---------+---------+---------+---------+---------+---------+---------"));
+		log(QString("%1|%2|%3|%4|%5|%6|%7")\
+			.arg(c[FE_QUAD4  ], 9)\
+			.arg(c[FE_QUAD8  ], 9)\
+			.arg(c[FE_QUAD9  ], 9)\
+			.arg(c[FE_TRI3   ], 9)\
+			.arg(c[FE_TRI6   ], 9)\
+			.arg(c[FE_TRI7   ], 9)\
+			.arg(c[FE_TRI10  ], 9));
+	}
+
+	log(QString("\nBeam elements = %1").arg(beamElems));
+	if (beamElems > 0)
+	{
+		log(QString("  BEAM2  |  BEAM3  "));
+		log(QString("---------+---------"));
+		log(QString("%1|%2")\
+			.arg(c[FE_BEAM2], 9)\
+			.arg(c[FE_BEAM3], 9));
+	}
+
+	if (c[FE_INVALID_ELEMENT_TYPE] > 0)
+	{
+		logError(QString("%d invalid elements found.").arg(c[FE_INVALID_ELEMENT_TYPE]));
+	}
+
+	// break down faces
+	int faceCount[8] = { 0 };
+	for (int i = 0; i < faces; ++i)
+	{
+		FEFace& face = mesh.Face(i);
+		int faceType = face.Type();
+		if ((faceType >= 0) && (faceType < 8)) faceCount[faceType]++;
+	}
+
+	log("\nFace breakdown:");
+	c = faceCount;
+	log(QString("  QUAD4  |  QUAD8  |  QUAD9  |   TRI3  |   TRI6  |   TRI7  |  TRI10  "));
+	log(QString("---------+---------+---------+---------+---------+---------+---------"));
+	log(QString("%1|%2|%3|%4|%5|%6|%7")\
+		.arg(c[FE_FACE_QUAD4], 9)\
+		.arg(c[FE_FACE_QUAD8], 9)\
+		.arg(c[FE_FACE_QUAD9], 9)\
+		.arg(c[FE_FACE_TRI3 ], 9)\
+		.arg(c[FE_FACE_TRI6 ], 9)\
+		.arg(c[FE_FACE_TRI7 ], 9)\
+		.arg(c[FE_FACE_TRI10], 9));
+
+	if (c[FE_FACE_INVALID_TYPE] > 0)
+	{
+		logError(QString("%d invalid faces found.").arg(c[FE_FACE_INVALID_TYPE]));
+	}
+
+	// break down edges
+	int edgeCount[4] = { 0 };
+	for (int i = 0; i < edges; ++i)
+	{
+		FEEdge& edge = mesh.Edge(i);
+		int edgeType = edge.Type();
+		if ((edgeType >= 0) && (edgeType < 4)) edgeCount[edgeType]++;
+	}
+
+	log("\nEdge breakdown:");
+	c = edgeCount;
+	log(QString("  EDGE2  |  EDGE3  |  EDGE4  "));
+	log(QString("---------+---------+---------"));
+	log(QString("%1|%2|%3")\
+		.arg(c[FE_EDGE2], 9)\
+		.arg(c[FE_EDGE3], 9)\
+		.arg(c[FE_EDGE4], 9));
+
+	if (c[FE_EDGE_INVALID] > 0)
+	{
+		logError(QString("%1 invalid edges found.").arg(c[FE_EDGE_INVALID]));
+	}
+}
+
+void CDlgMeshDiagnosticsUI::checkElementConnectivity()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+
+	int errors = 0;
+	int NN = mesh.Nodes();
+	int NE = mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		for (int j = 0; j < el.Nodes(); ++j)
+		{
+			int nj = el.m_node[j];
+			if ((nj < 0) || (nj >= NN)) errors++;
+		}
+	}
+
+	if (errors == 0) log("Element connectivity looks good.");
+	else logError(QString("%1 invalid node reference(s) found in element connectivity.").arg(errors));
+}
+
+void CDlgMeshDiagnosticsUI::checkFaceConnectivity()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+
+	int errors = 0;
+	int NN = mesh.Nodes();
+	int NF = mesh.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FEFace& face = mesh.Face(i);
+		for (int j = 0; j < face.Nodes(); ++j)
+		{
+			int nj = face.n[j];
+			if ((nj < 0) || (nj >= NN)) errors++;
+		}
+	}
+
+	if (errors == 0) log("Face connectivity looks good.");
+	else logError(QString("%1 invalid node reference(s) found in face connectivity.").arg(errors));
+}
+
+void CDlgMeshDiagnosticsUI::checkEdgeConnectivity()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+
+	int errors = 0;
+	int NN = mesh.Nodes();
+	int NE = mesh.Edges();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEEdge& edge = mesh.Edge(i);
+		for (int j = 0; j < edge.Nodes(); ++j)
+		{
+			int nj = edge.n[j];
+			if ((nj < 0) || (nj >= NN)) errors++;
+		}
+	}
+
+	if (errors == 0) log("Edge connectivity looks good.");
+	else logError(QString("%1 invalid node reference(s) found in edge connectivity.").arg(errors));
+}
+
+void CDlgMeshDiagnosticsUI::checkIsolatedVertices()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+	mesh.TagAllNodes(0);
+	int NN = mesh.Nodes();
+	int NE = mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		for (int j = 0; j < el.Nodes(); ++j)
+		{
+			int nj = el.m_node[j];
+			if ((nj >= 0) && (nj < NN))
+			{
+				FENode& node = mesh.Node(nj);
+				node.m_ntag = 1;
+			}
+		}
+	}
+
+	int nerr = 0;
+	for (int i = 0; i < NN; ++i)
+	{
+		if (mesh.Node(i).m_ntag == 0) nerr++;
+	}
+
+	if (nerr == 0) log("No isolated nodes found.");
+	else logWarning(QString("%1 isolated nodes found.").arg(nerr));
+
+	// Count required nodes
+	int nreq = 0;
+	for (int i = 0; i < NN; ++i)
+	{
+		if (mesh.Node(i).IsRequired()) nreq++;
+	}
+
+	log(QString("%1 required nodes found.").arg(nreq));
+}
+
+void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+
+	int NE = mesh.Edges();
+	int NN = mesh.Nodes();
+
+	vector<vector<int> > NET(NN);
+	for (int i = 0; i < mesh.Edges(); ++i)
+	{
+		FEEdge& ei = mesh.Edge(i);
+		if ((ei.n[0] >= 0) && (ei.n[0] < NN)) NET[ei.n[0]].push_back(i);
+		if ((ei.n[1] >= 0) && (ei.n[1] < NN)) NET[ei.n[1]].push_back(i);
+	}
+
+	int duplicates = 0;
+	mesh.TagAllEdges(-1);
+	for (int i = 0; i < NE; ++i)
+	{
+		FEEdge& ei = mesh.Edge(i);
+		if (ei.m_ntag == -1)
+		{
+			if ((ei.n[0] >= 0) && (ei.n[0] < NN))
+			{
+				vector<int>& net = NET[ei.n[0]];
+				for (int j = 0; j < net.size(); ++j)
+				{
+					int nej = net[j];
+					if (nej > i)
+					{
+						FEEdge& ej = mesh.Edge(nej);
+						if ((ej.m_ntag == -1) && (ej == ei))
+						{
+							ej.m_ntag = i;
+							duplicates++;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (duplicates == 0) log("No duplicate edges found.");
+	else logError(QString("%1 duplicate edges found.").arg(duplicates));
+}
+
+void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+
+	int NF = mesh.Faces();
+	int NN = mesh.Nodes();
+
+	vector<vector<int> > NFT(NN);
+	for (int i = 0; i < mesh.Faces(); ++i)
+	{
+		FEFace& face = mesh.Face(i);
+		int nf = 0;
+		if (face.Shape() == FE_FACE_QUAD) nf = 4;
+		if (face.Shape() == FE_FACE_TRI ) nf = 3;
+		for (int j = 0; j < nf; ++j)
+		{
+			int nj = face.n[j];
+			if ((nj >= 0) && (nj < NN))
+			{
+				NFT[nj].push_back(i);
+			}
+		}
+	}
+
+	int duplicates = 0;
+	mesh.TagAllFaces(-1);
+	for (int i = 0; i < NF; ++i)
+	{
+		FEFace& facei = mesh.Face(i);
+		if (facei.m_ntag == -1)
+		{
+			int n0 = facei.n[0];
+			if ((n0 >= 0) && (n0 < NN))
+			{
+				vector<int>& nft = NFT[n0];
+				for (int j = 0; j < nft.size(); ++j)
+				{
+					int nfj = nft[j];
+					if (nfj > i)
+					{
+						FEFace& facej = mesh.Face(nfj);
+						if ((facej.m_ntag == -1) && (facej == facei))
+						{
+							facej.m_ntag = i;
+							duplicates++;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (duplicates == 0) log("No duplicate faces found.");
+	else logError(QString("%1 duplicate faces found.").arg(duplicates));
+}
+
+void CDlgMeshDiagnosticsUI::checkDuplicateElements()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+
+	int NE = mesh.Elements();
+	int NN = mesh.Nodes();
+
+	vector<vector<int> > NET(NN);
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		int ne = 0;
+		switch (el.Shape())
+		{
+		case ELEM_LINE : ne = 2; break;
+		case ELEM_TRI  : ne = 3; break;
+		case ELEM_QUAD : ne = 4; break;
+		case ELEM_TET  : ne = 4; break;
+		case ELEM_PENTA: ne = 6; break;
+		case ELEM_HEX  : ne = 8; break;
+		case ELEM_PYRA : ne = 5; break;
+		default:
+			assert(false);
+		}
+
+		for (int j = 0; j < ne; ++j)
+		{
+			int nj = el.m_node[j];
+			if ((nj >= 0) && (nj < NN))
+			{
+				NET[nj].push_back(i);
+			}
+		}
+	}
+
+	int duplicates = 0;
+	mesh.TagAllElements(-1);
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& eli = mesh.Element(i);
+		if (eli.m_ntag == -1)
+		{
+			int n0 = eli.m_node[0];
+			if ((n0 >= 0) && (n0 < NN))
+			{
+				vector<int>& net = NET[n0];
+				for (int j = 0; j < net.size(); ++j)
+				{
+					int nej = net[j];
+					if (nej > i)
+					{
+						FEElement& elj = mesh.Element(nej);
+						if ((elj.m_ntag == -1) && elj.is_equal(eli))
+						{
+							elj.m_ntag = i;
+							duplicates++;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (duplicates == 0) log("No duplicate elements found.");
+	else logError(QString("%1 duplicate elements found.").arg(duplicates));
+}
+
+void CDlgMeshDiagnosticsUI::checkElementNeighbors()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+	int nerr = 0;
+	int NE = mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		if (el.IsSolid())
+		{
+			int nf = el.Faces();
+			for (int j = 0; j < nf; ++j)
+			{
+				int nebr = el.m_nbr[j];
+				if ((nebr >= 0) && (nebr >= NE))
+				{
+					nerr++;
+				}
+			}
+		}
+		else if (el.IsShell())
+		{
+			int ne = el.Edges();
+			for (int j = 0; j < ne; ++j)
+			{
+				int nebr = el.m_nbr[j];
+				if ((nebr >= 0) && (nebr >= NE))
+				{
+					nerr++;
+				}
+			}
+		}
+	}
+
+	if (nerr == 0) log("Element neighbors look good.");
+	else logError(QString("%1 elements have invalid neighbors.").arg(nerr));
+}
+
+void CDlgMeshDiagnosticsUI::checkFaceNeighbors()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+	int nerr = 0;
+	int NF = mesh.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FEFace& face = mesh.Face(i);
+		int nf = face.Edges();
+		for (int j = 0; j < nf; ++j)
+		{
+			int nebr = face.m_nbr[j];
+			if ((nebr >= 0) && (nebr >= NF))
+			{
+				nerr++;
+			}
+		}
+	}
+
+	if (nerr == 0) log("Face neighbors look good.");
+	else logError(QString("%1 faces have invalid neighbors.").arg(nerr));
+}
+
+void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+	int nerr = 0;
+	int NE = mesh.Edges();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEEdge& edge = mesh.Edge(i);
+		for (int j = 0; j < 2; ++j)
+		{
+			int nebr = edge.m_nbr[j];
+			if ((nebr >= 0) && (nebr >= NE))
+			{
+				nerr++;
+			}
+		}
+	}
+
+	if (nerr == 0) log("Edge neighbors look good.");
+	else logError(QString("%1 edges have invalid neighbors.").arg(nerr));
+}
+
+void CDlgMeshDiagnosticsUI::checkElementFaceTable()
+{
+	int invalidSolidFaces = 0;
+	int invalidShellFaces = 0;
+	int invalidSolidShellFaces = 0;
+	int elemFaces = 0; 
+	FEMesh& mesh = *obj->GetFEMesh();
+	int NE = mesh.Elements();
+	int NF = mesh.Faces();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		if (el.IsSolid())
+		{
+			int nf = el.Faces();
+			for (int j = 0; j < nf; ++j)
+			{
+				int nfj = el.m_face[j];
+				FEElement_* pej = mesh.ElementPtr(el.m_nbr[j]);
+
+				// Make sure the face is valid
+				if (nfj >= NF) invalidSolidFaces++;
+
+				// An element can only have a face if it does not have a neighbor
+				// or if the neighbor belongs to a different part.
+				if ((nfj >= 0) && (nfj < NF))
+				{
+					if (pej && (pej->m_gid == el.m_gid)) invalidSolidFaces++;
+					else
+					{
+						// make sure that this face's element is this element
+						FEFace& f = mesh.Face(nfj);
+						if (pej == nullptr)
+						{
+							// If there is no neighbor, then the face only should have elem[0] set
+							if (f.m_elem[0].eid != i) invalidSolidFaces++;
+							if (f.m_elem[0].lid != j) invalidSolidFaces++;
+							if (f.m_elem[1].eid != -1) invalidSolidFaces++;
+						}
+						else if (pej->IsSolid())
+						{
+							// If the neighbor is a solid, then the face can be either elem.
+							if (f.m_elem[0].eid == i)
+							{
+								if (f.m_elem[0].lid != j) invalidSolidFaces++;
+							}
+							else if (f.m_elem[1].eid == i)
+							{
+								if (f.m_elem[1].lid != j) invalidSolidFaces++;
+							}
+							else invalidSolidFaces++;
+						}
+						else if (pej->IsShell())
+						{
+							// The face should be elem[1] (since elem[0] is the shell)
+							if (f.m_elem[1].eid != i) invalidSolidShellFaces++;
+							if (f.m_elem[1].lid != j) invalidSolidShellFaces++;
+						}
+					}
+				}
+				else if (nfj < 0)
+				{
+					if ((pej == nullptr) || (pej->m_gid != el.m_gid)) invalidSolidFaces++;
+				}
+
+				if ((pej == nullptr) || (pej->IsSolid() && (pej->m_gid > el.m_gid))) elemFaces++;
+			}
+		}
+		else if (el.IsShell())
+		{
+			// a shell should always have a face
+			int nf0 = el.m_face[0];
+			if ((nf0 < 0) || (nf0 >= NF)) invalidShellFaces++;
+			else
+			{
+				// make sure that the face's element is this element
+				FEFace& f = mesh.Face(nf0);
+				if (f.m_elem[0].eid != i) invalidShellFaces++;
+			}
+
+			elemFaces++;
+		}
+	}
+
+	int nerrs = 0;
+	nerrs += invalidSolidFaces;
+	nerrs += invalidShellFaces;
+	nerrs += invalidSolidShellFaces;
+
+	if ((nerrs == 0) && (elemFaces == mesh.Faces())) log("Element-face table looks good.");
+	if (invalidSolidFaces > 0) logError(QString("%1 invalid solid faces found when checking element-face table.").arg(invalidSolidFaces));
+	if (invalidShellFaces > 0) logError(QString("%1 invalid shell faces found when checking element-face table.").arg(invalidShellFaces));
+	if (invalidSolidShellFaces > 0) logError(QString("%1 invalid solid-shell faces found when checking element-face table.").arg(invalidSolidShellFaces));
+	if (elemFaces != mesh.Faces()) logError(QString("Element faces (%1) does not match actual faces (%2)").arg(elemFaces).arg(mesh.Faces()));
+}
+
+void CDlgMeshDiagnosticsUI::checkElementPartitioning()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+	int ng = mesh.CountElementPartitions();
+	vector<int> lut(ng, 0);
+	int invalidGID = 0;
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		int gid = el.m_gid;
+		if ((gid >= 0) && (gid < ng)) lut[gid]++;
+		else invalidGID++;
+	}
+
+	bool berr = false;
+	if (invalidGID > 0) { berr = true; logError(QString("%1 elements have an invalid partition ID.").arg(invalidGID)); }
+	for (int i = 0; i < ng; ++i)
+	{
+		if (lut[i] == 0) {
+			berr = true;
+			logWarning(QString("element partition %1 has zero elements.").arg(i));
+		}
+	}
+	if (ng != obj->Parts()) {
+		berr = true;
+		logError(QString("Number of element partitions (%1) does not match number of parts (%2).").arg(ng).arg(obj->Parts()));
+	}
+	if (berr == false) log("Element partitions look good.");
+}
+
+void CDlgMeshDiagnosticsUI::checkFacePartitioning()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+	int ng = mesh.CountFacePartitions();
+	vector<int> lut(ng, 0);
+	int invalidGID = 0;
+	for (int i = 0; i < mesh.Faces(); ++i)
+	{
+		FEFace& face = mesh.Face(i);
+		int gid = face.m_gid;
+		if ((gid >= 0) && (gid < ng)) lut[gid]++;
+		else invalidGID++;
+	}
+
+	bool berr = false;
+	if (invalidGID > 0) { berr = true; logError(QString("%1 faces have an invalid partition ID.").arg(invalidGID)); }
+	for (int i = 0; i < ng; ++i)
+	{
+		if (lut[i] == 0) {
+			berr = true;
+			logWarning(QString("face partition %1 has zero faces.").arg(i));
+		}
+	}
+	if (ng != obj->Faces()) {
+		berr = true;
+		logError(QString("Number of face partitions (%1) does not match number of surfaces (%2).").arg(ng).arg(obj->Faces()));
+	}
+	if (berr == false) log("Face partitions look good.");
+}
+
+void CDlgMeshDiagnosticsUI::checkEdgePartitioning()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+	int ng = mesh.CountEdgePartitions();
+	vector<int> lut(ng, 0);
+	int invalidGID = 0;
+	for (int i = 0; i < mesh.Edges(); ++i)
+	{
+		FEEdge& edge = mesh.Edge(i);
+		int gid = edge.m_gid;
+		if ((gid >= 0) && (gid < ng)) lut[gid]++;
+		else if (gid >= ng) invalidGID++;
+	}
+
+	bool berr = false;
+	if (invalidGID > 0) { berr = true; logError(QString("%1 edges have an invalid partition ID.").arg(invalidGID)); }
+	for (int i = 0; i < ng; ++i)
+	{
+		if (lut[i] == 0) {
+			berr = true;
+			logWarning(QString("edge partition %1 has zero edges.").arg(i));
+		}
+	}
+	if (ng != obj->Edges()) {
+		berr = true;
+		logError(QString("Number of edge partitions (%1) does not match number of curves (%2).").arg(ng).arg(obj->Edges()));
+	}
+	if (berr == false) log("Edge partitions look good.");
+}
+
+void CDlgMeshDiagnosticsUI::checkNodePartitioning()
+{
+	FEMesh& mesh = *obj->GetFEMesh();
+	int ng = mesh.CountNodePartitions();
+	vector<int> lut(ng, 0);
+	int invalidGID = 0;
+	for (int i = 0; i < mesh.Nodes(); ++i)
+	{
+		FENode& node = mesh.Node(i);
+		int gid = node.m_gid;
+		if ((gid >= 0) && (gid < ng)) lut[gid]++;
+		else if (gid >= ng) invalidGID++;
+	}
+
+	bool berr = false;
+	if (invalidGID > 0) { berr = true; logError(QString("%1 nodes have an invalid partition ID.").arg(invalidGID)); }
+	for (int i = 0; i < ng; ++i)
+	{
+		if (lut[i] == 0) {
+			berr = true;
+			logWarning(QString("node partition %1 has zero nodes.").arg(i));
+		}
+	}
+	if (ng != obj->Nodes()) {
+		berr = true;
+		logError(QString("Number of node partitions (%1) does not match number of vertices (%2).").arg(ng).arg(obj->Nodes()));
+	}
+	if (berr == false) log("Node partitions look good.");
+}

@@ -218,6 +218,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgLSDYNAExport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgMeasure.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgMergeObjects.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgMeshDiagnostics.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgModelInfo.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgNew.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgNewProject.cpp" />
@@ -319,6 +320,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgKinemat.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgLameConvertor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgMeasure.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgMeshDiagnostics.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgModelInfo.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgNew.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgNewProject.cpp" />
@@ -552,6 +554,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgLogin.h" />
+    <CustomBuild Include="..\..\FEBioStudio\DlgMeshDiagnostics.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgSelectRange.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgUnitConverter.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
