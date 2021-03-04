@@ -360,11 +360,25 @@ FEEdgeSet* GEdge::GetFEEdgeSet() const
 //=============================================================================
 // GFace
 //-----------------------------------------------------------------------------
+
+GFace::GFace() : GItem_T<GFace>(0) 
+{ 
+	m_nPID[0] = m_nPID[1] = m_nPID[2] = -1;
+	m_ntype = FACE_UNKNOWN; 
+}
+
+GFace::GFace(GBaseObject* po) : GItem_T<GFace>(po) 
+{ 
+	m_nPID[0] = m_nPID[1] = m_nPID[2] = -1; 
+	m_ntype = FACE_UNKNOWN; 
+}
+
 GFace::GFace(const GFace& f) 
 {
 	m_ntype = f.m_ntype;
 	m_nPID[0] = f.m_nPID[0];
 	m_nPID[1] = f.m_nPID[1];
+	m_nPID[2] = f.m_nPID[2];
 	m_node = f.m_node;
 	m_edge = f.m_edge;
 
@@ -381,6 +395,7 @@ void GFace::operator = (const GFace& f)
 	m_ntype = f.m_ntype;
 	m_nPID[0] = f.m_nPID[0];
 	m_nPID[1] = f.m_nPID[1];
+	m_nPID[2] = f.m_nPID[2];
 	m_node = f.m_node;
 	m_edge = f.m_edge;
 

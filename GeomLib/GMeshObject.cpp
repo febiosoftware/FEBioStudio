@@ -277,6 +277,7 @@ void GMeshObject::UpdateSurfaces()
 		m_Face[i]->SetLocalID(i);
 		m_Face[i]->m_nPID[0] = -1;
 		m_Face[i]->m_nPID[1] = -1;
+		m_Face[i]->m_nPID[2] = -1;
 	}
 
 	// update face IDs
@@ -298,29 +299,35 @@ void GMeshObject::UpdateSurfaces()
 		FEFace& f = m.Face(i);
 
 		// get the two part IDs
-		int pid0 = -1, pid1 = -1;
+		int pid0 = -1, pid1 = -1, pid2 = -1;
 
 		// make sure the first element is nonzero
 		pe = m.ElementPtr(f.m_elem[0].eid);
 		if (pe == 0) throw GObjectException(this, "GMeshObject::UpdateSurfaces\n(pe == NULL)");
 		if (pe) pid0 = pe->m_gid;
 
-		// get the second element (which can be null)
+		// get the second and third element (which can be null)
 		pe = m.ElementPtr(f.m_elem[1].eid);
 		if (pe) pid1 = pe->m_gid;
+		pe = m.ElementPtr(f.m_elem[2].eid);
+		if (pe) pid2 = pe->m_gid;
 
 		// assign the part ID's
 		int* pid = m_Face[f.m_gid]->m_nPID;
 		if (pid[0] == -1) pid[0] = pid0;
 		if (pid[1] == -1) pid[1] = pid1;
+		if (pid[2] == -1) pid[2] = pid2;
 
 		// make sure the part IDs match
-		if ((pid[0] != pid0) && (pid[0] != pid1))
+		if ((pid[0] != pid0) && (pid[0] != pid1) && (pid[0] != pid2))
 		{
 			throw GObjectException(this, "GMeshObject::UpdateSurfaces\nID's don't match");
 		}
-		// make sure the part IDs match
-		if ((pid[1] != pid0) && (pid[1] != pid1))
+		if ((pid[1] != pid0) && (pid[1] != pid1) && (pid[1] != pid2))
+		{
+			throw GObjectException(this, "GMeshObject::UpdateSurfaces\nID's don't match");
+		}
+		if ((pid[2] != pid0) && (pid[2] != pid1) && (pid[2] != pid2))
 		{
 			throw GObjectException(this, "GMeshObject::UpdateSurfaces\nID's don't match");
 		}

@@ -167,6 +167,6 @@ public:
 	float	m_tex[MAX_NODES];	// nodal 1D-texture coordinates
 	float	m_texe;				// element texture coordinate
 
-	ELEM_REF	m_elem[2];	//!< the elements to which this face belongs
+	ELEM_REF	m_elem[3];	//!< the elements to which this face belongs
 	int			m_edge[4];	//!< the edges (interior faces don't have edges!)
 };

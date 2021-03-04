@@ -306,14 +306,12 @@ void check_006(FEProject& prj, std::vector<FSObject*>& objList)
 					for (int k = 0; k < po->Faces(); ++k)
 					{
 						GFace* face = po->Face(k);
-						if ((face->m_nPID[0] != -1) && (face->m_nPID[1] != -1))
+						for (int l = 0; l < 3; ++l)
 						{
-							GPart* pg0 = po->Part(face->m_nPID[0]);
-							GPart* pg1 = po->Part(face->m_nPID[1]);
-							if ((pg0->GetMaterialID() == matId) || (pg1->GetMaterialID() == matId))
+							GPart* pgl = po->Part(face->m_nPID[l]);
+							if (pgl && (pgl->GetMaterialID() == matId))
 							{
 								matUsed = true;
-								break;
 							}
 						}
 					}

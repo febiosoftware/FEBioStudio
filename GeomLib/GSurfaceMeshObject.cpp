@@ -89,6 +89,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		f->m_node = fo.m_node;
 		f->m_nPID[0] = fo.m_nPID[0];
 		f->m_nPID[1] = fo.m_nPID[1];
+		f->m_nPID[2] = fo.m_nPID[2];
 		f->SetID(fo.GetID());
 		f->SetLocalID(i);
 		f->SetName(fo.GetName());
@@ -959,6 +960,7 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 
 		f->m_nPID[0] = (fo.m_nPID[0] >= 0 ? fo.m_nPID[0] + NP0 : -1);
 		f->m_nPID[1] = (fo.m_nPID[1] >= 0 ? fo.m_nPID[1] + NP0 : -1);
+		f->m_nPID[2] = (fo.m_nPID[2] >= 0 ? fo.m_nPID[2] + NP0 : -1);
 		f->SetID(fo.GetID());
 		f->SetLocalID(i + NF0);
 		f->SetName(fo.GetName());

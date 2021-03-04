@@ -181,8 +181,8 @@ public:
 	};
 
 public:
-	GFace() : GItem_T<GFace>(0) { m_nPID[0] = m_nPID[1] = -1;  m_ntype = FACE_UNKNOWN; }
-	GFace(GBaseObject* po) : GItem_T<GFace>(po) { m_nPID[0] = m_nPID[1] = -1; m_ntype = FACE_UNKNOWN; }
+	GFace();
+	GFace(GBaseObject* po);
 
 	GFace(const GFace& f);
 	void operator = (const GFace& f);
@@ -197,7 +197,7 @@ public:
 
 public:
 	int				m_ntype;	// face type
-	int				m_nPID[2];	// part ID's
+	int				m_nPID[3];	// part ID's
 	vector<int>		m_node;		// node ID's
 	vector<EDGE>	m_edge;		// edges defining face
 };

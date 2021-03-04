@@ -720,9 +720,17 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 						}
 						else if (pej->IsShell())
 						{
-							// The face should be elem[1] (since elem[0] is the shell)
-							if (f.m_elem[1].eid != i) invalidSolidShellFaces++;
-							if (f.m_elem[1].lid != j) invalidSolidShellFaces++;
+							// The face should be elem[1] or elem[2] (since elem[0] is the shell)
+							if (f.m_elem[0].eid == i) invalidSolidShellFaces++;
+							else if (f.m_elem[1].eid == i)
+							{
+								if (f.m_elem[1].lid != j) invalidSolidShellFaces++;
+							}
+							else if (f.m_elem[2].eid == i)
+							{
+								if (f.m_elem[2].lid != j) invalidSolidShellFaces++;
+							}
+							else invalidSolidShellFaces++;
 						}
 					}
 				}
