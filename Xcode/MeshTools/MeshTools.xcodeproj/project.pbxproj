@@ -11,6 +11,8 @@
 		D50C858623A283F400E42D37 /* FETet4ToHex8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */; };
 		D5173D042421ABA400462BAF /* FEShellMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5173D022421ABA400462BAF /* FEShellMesher.cpp */; };
 		D5173D052421ABA400462BAF /* FEShellMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5173D032421ABA400462BAF /* FEShellMesher.h */; };
+		D5349B3425F18A7E002D2CC4 /* FEFixSurfaceMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5349B3225F18A7D002D2CC4 /* FEFixSurfaceMesh.h */; };
+		D5349B3525F18A7E002D2CC4 /* FEFixSurfaceMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5349B3325F18A7E002D2CC4 /* FEFixSurfaceMesh.cpp */; };
 		D550436E24705E12007DCB29 /* FEMeshOverlap.h in Headers */ = {isa = PBXBuildFile; fileRef = D550436C24705E12007DCB29 /* FEMeshOverlap.h */; };
 		D550436F24705E12007DCB29 /* FEMeshOverlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D550436D24705E12007DCB29 /* FEMeshOverlap.cpp */; };
 		D5606C83238DA8FA002B037E /* TetOverlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C81238DA8FA002B037E /* TetOverlap.cpp */; };
@@ -236,6 +238,8 @@
 		D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToHex8.cpp; sourceTree = "<group>"; };
 		D5173D022421ABA400462BAF /* FEShellMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellMesher.cpp; sourceTree = "<group>"; };
 		D5173D032421ABA400462BAF /* FEShellMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellMesher.h; sourceTree = "<group>"; };
+		D5349B3225F18A7D002D2CC4 /* FEFixSurfaceMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFixSurfaceMesh.h; sourceTree = "<group>"; };
+		D5349B3325F18A7E002D2CC4 /* FEFixSurfaceMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFixSurfaceMesh.cpp; sourceTree = "<group>"; };
 		D550436C24705E12007DCB29 /* FEMeshOverlap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshOverlap.h; sourceTree = "<group>"; };
 		D550436D24705E12007DCB29 /* FEMeshOverlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshOverlap.cpp; sourceTree = "<group>"; };
 		D5606C81238DA8FA002B037E /* TetOverlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlap.cpp; sourceTree = "<group>"; };
@@ -539,6 +543,8 @@
 				D5ED278C23197DE300C16BF7 /* FEFillHole.h */,
 				D5ED27ED23197DE400C16BF7 /* FEFixMesh.cpp */,
 				D5ED27CB23197DE400C16BF7 /* FEFixMesh.h */,
+				D5349B3325F18A7E002D2CC4 /* FEFixSurfaceMesh.cpp */,
+				D5349B3225F18A7D002D2CC4 /* FEFixSurfaceMesh.h */,
 				D5ED27E623197DE400C16BF7 /* FEGregoryPatch.cpp */,
 				D5ED27FD23197DE400C16BF7 /* FEGregoryPatch.h */,
 				D5ED275723197DE300C16BF7 /* FEGroup.cpp */,
@@ -809,6 +815,7 @@
 				D5ED28D523197DE400C16BF7 /* FEGregoryPatch.h in Headers */,
 				D5ED280A23197DE400C16BF7 /* GModifier.h in Headers */,
 				D5ED281C23197DE400C16BF7 /* stdafx.h in Headers */,
+				D5349B3425F18A7E002D2CC4 /* FEFixSurfaceMesh.h in Headers */,
 				D5ED288923197DE400C16BF7 /* FEShellRing.h in Headers */,
 				D5ED287723197DE400C16BF7 /* NetGenMesher.h in Headers */,
 				D5ED280C23197DE400C16BF7 /* FEProject.h in Headers */,
@@ -991,6 +998,7 @@
 				D5ED28B423197DE400C16BF7 /* GMaterial.cpp in Sources */,
 				D5ED28CF23197DE400C16BF7 /* GObject2D.cpp in Sources */,
 				D5ED287A23197DE400C16BF7 /* FEAdvancingFrontMesher2D.cpp in Sources */,
+				D5349B3525F18A7E002D2CC4 /* FEFixSurfaceMesh.cpp in Sources */,
 				D5ED286023197DE400C16BF7 /* SurfaceDistance.cpp in Sources */,
 				D5ED28CC23197DE400C16BF7 /* FEBox.cpp in Sources */,
 				D5ED288623197DE400C16BF7 /* FELinearToQuadratic.cpp in Sources */,
