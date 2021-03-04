@@ -671,6 +671,13 @@ void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 			{
 				nerr++;
 			}
+			else if (nebr >= 0)
+			{
+				// an edge neighbor must have the same GID
+				FEEdge* pen = mesh.EdgePtr(nebr);
+				if (pen == nullptr) nerr++;
+				else if (pen->m_gid != edge.m_gid) nerr++;
+			}
 		}
 	}
 
