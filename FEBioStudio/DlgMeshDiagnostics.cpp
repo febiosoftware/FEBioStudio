@@ -310,6 +310,18 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	{
 		logError(QString("%1 invalid edges found.").arg(edgeCount[FE_EDGE_INVALID]));
 	}
+
+	// count solid-shell and solid-shell-solid interface.
+	int nss = 0;
+	int nsss = 0;
+	for (int i = 0; i < mesh.Faces(); ++i)
+	{
+		FEFace& face = mesh.Face(i);
+		if (face.m_elem[2].eid >= 0) nsss++;
+		else if (face.m_elem[1].eid >= 0) nss++;
+	}
+	log(QString("Solid-shell interface elements = %1").arg(nss));
+	log(QString("Solid-shell-solid interface elements = %1").arg(nsss));
 }
 
 void CDlgMeshDiagnosticsUI::checkElementConnectivity()
