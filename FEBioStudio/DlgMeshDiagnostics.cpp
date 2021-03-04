@@ -97,14 +97,26 @@ public:
 
 	void logWarning(const QString& msg)
 	{
+		QTextCharFormat cf = out->currentCharFormat();
+		QBrush fg = cf.foreground();
+		cf.setForeground(QColor::fromRgb(255, 128, 0));
+		out->setCurrentCharFormat(cf);
 		warningCount++;
 		out->appendPlainText(QString("WARNING: ") + msg);
+		cf.setForeground(fg);
+		out->setCurrentCharFormat(cf);
 	}
 
 	void logError(const QString& msg)
 	{
+		QTextCharFormat cf = out->currentCharFormat();
+		QBrush fg = cf.foreground();
+		cf.setForeground(Qt::red);
+		out->setCurrentCharFormat(cf);
 		errorCount++;
 		out->appendPlainText(QString("ERROR: ") + msg);
+		cf.setForeground(fg);
+		out->setCurrentCharFormat(cf);
 	}
 
 	void diagnose()
@@ -215,116 +227,88 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	int solidElems = 0;
 	int shellElems = 0;
 	int beamElems  = 0;
-	int elemCount[22] = { 0 };
+	const int MAX_ELEM_TYPES = 22;
+	int elemCount[MAX_ELEM_TYPES] = { 0 };
 	for (int i = 0; i < elems; ++i)
 	{
 		FEElement& el = mesh.Element(i);
 		int elemType = el.Type();
-		if ((elemType >= 0) && (elemType <= 22)) elemCount[elemType]++; else elemCount[0]++;
+		if ((elemType >= 0) && (elemType < MAX_ELEM_TYPES)) elemCount[elemType]++; else elemCount[FE_INVALID_ELEMENT_TYPE]++;
 		if      (el.IsSolid()) solidElems++;
 		else if (el.IsShell()) shellElems++;
 		else if (el.IsBeam ()) beamElems++;
 	}
 
-	int* c = elemCount;
-	log(QString("\nSolid elements = %1").arg(solidElems));
-	if (solidElems > 0)
+	log(QString("Solid elements = %1").arg(solidElems));
+	log(QString("Shell elements = %1").arg(shellElems));
+	log(QString("Beam elements = %1").arg(beamElems));
+	log("Element breakdown:");
+	const char* szelem[] = { "invalid","HEX8","TET4","PENTA6","QUAD4","TRI3", "BEAM2", "HEX20", "QUAD8", "BEAM3", "TET10", "TRI6", "TET15", "HEX27", "TRI7", "QUAD9", "PENTA15", "PYRA5", "TET20", "TRI10", "TET5", "PYRA13" };
+	for (int i = 1; i < MAX_ELEM_TYPES; ++i)
 	{
-		log(QString("   HEX8  |  HEX20  |  HEX27  |   TET4  |   TET5  |  TET10  |  TET15  |  TET20  |  PENTA6 | PENTA15 |  PYRA5  | PYRA13  "));
-		log(QString("---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------"));
-		log(QString("%1|%2|%3|%4|%5|%6|%7|%8|%9|%10|%11|%12")\
-			.arg(c[FE_HEX8   ], 9)\
-			.arg(c[FE_HEX20  ], 9)\
-			.arg(c[FE_HEX27  ], 9)\
-			.arg(c[FE_TET4   ], 9)\
-			.arg(c[FE_TET5   ], 9)\
-			.arg(c[FE_TET10  ], 9)\
-			.arg(c[FE_TET15  ], 9)\
-			.arg(c[FE_TET20  ], 9)\
-			.arg(c[FE_PENTA6 ], 9)\
-			.arg(c[FE_PENTA15], 9)\
-			.arg(c[FE_PYRA5  ], 9)\
-			.arg(c[FE_PYRA13 ], 9));
+		int ni = elemCount[i];
+		if (ni > 0)
+		{
+			QString s = QString(" %1 = %2").arg(szelem[i], 9).arg(ni);
+			log(s);
+		}
 	}
-
-	log(QString("\nShell elements = %1").arg(shellElems));
-	if (shellElems > 0)
+	if (elemCount[FE_INVALID_ELEMENT_TYPE] > 0)
 	{
-		log(QString("  QUAD4  |  QUAD8  |  QUAD9  |   TRI3  |   TRI6  |   TRI7  |  TRI10  "));
-		log(QString("---------+---------+---------+---------+---------+---------+---------"));
-		log(QString("%1|%2|%3|%4|%5|%6|%7")\
-			.arg(c[FE_QUAD4  ], 9)\
-			.arg(c[FE_QUAD8  ], 9)\
-			.arg(c[FE_QUAD9  ], 9)\
-			.arg(c[FE_TRI3   ], 9)\
-			.arg(c[FE_TRI6   ], 9)\
-			.arg(c[FE_TRI7   ], 9)\
-			.arg(c[FE_TRI10  ], 9));
-	}
-
-	log(QString("\nBeam elements = %1").arg(beamElems));
-	if (beamElems > 0)
-	{
-		log(QString("  BEAM2  |  BEAM3  "));
-		log(QString("---------+---------"));
-		log(QString("%1|%2")\
-			.arg(c[FE_BEAM2], 9)\
-			.arg(c[FE_BEAM3], 9));
-	}
-
-	if (c[FE_INVALID_ELEMENT_TYPE] > 0)
-	{
-		logError(QString("%d invalid elements found.").arg(c[FE_INVALID_ELEMENT_TYPE]));
+		logError(QString("%d invalid elements found.").arg(elemCount[FE_INVALID_ELEMENT_TYPE]));
 	}
 
 	// break down faces
-	int faceCount[8] = { 0 };
+	const int MAX_FACE_TYPES = 8;
+	int faceCount[MAX_FACE_TYPES] = { 0 };
 	for (int i = 0; i < faces; ++i)
 	{
 		FEFace& face = mesh.Face(i);
 		int faceType = face.Type();
-		if ((faceType >= 0) && (faceType < 8)) faceCount[faceType]++;
+		if ((faceType >= 0) && (faceType < MAX_FACE_TYPES)) faceCount[faceType]++;
+		else faceCount[FE_FACE_INVALID_TYPE]++;
 	}
 
-	log("\nFace breakdown:");
-	c = faceCount;
-	log(QString("  QUAD4  |  QUAD8  |  QUAD9  |   TRI3  |   TRI6  |   TRI7  |  TRI10  "));
-	log(QString("---------+---------+---------+---------+---------+---------+---------"));
-	log(QString("%1|%2|%3|%4|%5|%6|%7")\
-		.arg(c[FE_FACE_QUAD4], 9)\
-		.arg(c[FE_FACE_QUAD8], 9)\
-		.arg(c[FE_FACE_QUAD9], 9)\
-		.arg(c[FE_FACE_TRI3 ], 9)\
-		.arg(c[FE_FACE_TRI6 ], 9)\
-		.arg(c[FE_FACE_TRI7 ], 9)\
-		.arg(c[FE_FACE_TRI10], 9));
-
-	if (c[FE_FACE_INVALID_TYPE] > 0)
+	log("Face breakdown:");
+	const char* szface[] = { "invalid","TRI3","QUAD4","TRI6","TRI7","QUAD8", "QUAD9", "TRI10" };
+	for (int i = 1; i < MAX_FACE_TYPES; ++i)
 	{
-		logError(QString("%d invalid faces found.").arg(c[FE_FACE_INVALID_TYPE]));
+		int ni = faceCount[i];
+		if (ni > 0)
+		{
+			QString s = QString(" %1 = %2").arg(szface[i], 9).arg(ni);
+			log(s);
+		}
+	}
+	if (faceCount[FE_FACE_INVALID_TYPE] > 0)
+	{
+		logError(QString("%d invalid faces found.").arg(faceCount[FE_FACE_INVALID_TYPE]));
 	}
 
 	// break down edges
-	int edgeCount[4] = { 0 };
+	const int MAX_EDGE_TYPES = 4;
+	int edgeCount[MAX_EDGE_TYPES] = { 0 };
 	for (int i = 0; i < edges; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
 		int edgeType = edge.Type();
-		if ((edgeType >= 0) && (edgeType < 4)) edgeCount[edgeType]++;
+		if ((edgeType >= 0) && (edgeType < MAX_EDGE_TYPES)) edgeCount[edgeType]++; else edgeCount[FE_EDGE_INVALID]++;
 	}
 
-	log("\nEdge breakdown:");
-	c = edgeCount;
-	log(QString("  EDGE2  |  EDGE3  |  EDGE4  "));
-	log(QString("---------+---------+---------"));
-	log(QString("%1|%2|%3")\
-		.arg(c[FE_EDGE2], 9)\
-		.arg(c[FE_EDGE3], 9)\
-		.arg(c[FE_EDGE4], 9));
-
-	if (c[FE_EDGE_INVALID] > 0)
+	log("Edge breakdown:");
+	const char* szline[] = { "LINE2","LINE3","LINE4","invalid"};
+	for (int i = 0; i < MAX_EDGE_TYPES - 1; ++i)
 	{
-		logError(QString("%1 invalid edges found.").arg(c[FE_EDGE_INVALID]));
+		int ni = edgeCount[i];
+		if (ni > 0)
+		{
+			QString s = QString(" %1 = %2").arg(szline[i], 9).arg(ni);
+			log(s);
+		}
+	}
+	if (edgeCount[FE_EDGE_INVALID] > 0)
+	{
+		logError(QString("%1 invalid edges found.").arg(edgeCount[FE_EDGE_INVALID]));
 	}
 }
 
