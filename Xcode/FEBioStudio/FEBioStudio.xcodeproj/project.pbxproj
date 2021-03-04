@@ -20,6 +20,8 @@
 		D524F6C0258C3CE500A403CD /* XMLEditor.h in Sources */ = {isa = PBXBuildFile; fileRef = D524F6BD258C3B2A00A403CD /* XMLEditor.h */; };
 		D532E2AA24747D8000826447 /* libTKVCAF.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */; };
 		D532E2AB24747D8000826447 /* libTKVCAF.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		D5349B3825F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5349B3625F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp */; };
+		D5349B3A25F18B7C002D2CC4 /* DlgMeshDiagnostics.h in Sources */ = {isa = PBXBuildFile; fileRef = D5349B3725F18AB1002D2CC4 /* DlgMeshDiagnostics.h */; };
 		D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */; };
 		D548545823749CCF00BE1731 /* libssl.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */; };
 		D548545C23749D1100BE1731 /* libx265.179.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545B23749D1100BE1731 /* libx265.179.dylib */; };
@@ -515,6 +517,9 @@
 		D524F6BD258C3B2A00A403CD /* XMLEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLEditor.h; sourceTree = "<group>"; };
 		D524F6BE258C3B2A00A403CD /* XMLEditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XMLEditor.cpp; sourceTree = "<group>"; };
 		D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKVCAF.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKVCAF.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5349B3625F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgMeshDiagnostics.cpp; sourceTree = "<group>"; };
+		D5349B3725F18AB1002D2CC4 /* DlgMeshDiagnostics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgMeshDiagnostics.h; sourceTree = "<group>"; };
+		D5349B3925F18ACD002D2CC4 /* ui_repositorypanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_repositorypanel.h; sourceTree = "<group>"; };
 		D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = /usr/local/Cellar/openssl/1.0.2t/lib/libcrypto.1.0.0.dylib; sourceTree = "<absolute>"; };
 		D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = /usr/local/Cellar/openssl/1.0.2t/lib/libssl.1.0.0.dylib; sourceTree = "<absolute>"; };
 		D548545B23749D1100BE1731 /* libx265.179.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libx265.179.dylib; path = /usr/local/Cellar/x265/3.2.1/lib/libx265.179.dylib; sourceTree = "<absolute>"; };
@@ -1218,6 +1223,8 @@
 				D5CC3A60245B4CD700311F48 /* DlgMeasure.h */,
 				D5F7D7FE22FA37C40089B08E /* DlgMergeObjects.cpp */,
 				D5F7D7BA22FA37C40089B08E /* DlgMergeObjects.h */,
+				D5349B3625F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp */,
+				D5349B3725F18AB1002D2CC4 /* DlgMeshDiagnostics.h */,
 				D5F7D7BC22FA37C40089B08E /* DlgModelInfo.cpp */,
 				D5F7D80522FA37C40089B08E /* DlgModelInfo.h */,
 				D5F7D7AC22FA37C40089B08E /* DlgNew.cpp */,
@@ -1477,6 +1484,7 @@
 				D5F7D75222FA37C40089B08E /* ui_meshinspector.h */,
 				D5F7D74722FA37C40089B08E /* ui_meshpanel.h */,
 				D5F7D7A422FA37C40089B08E /* ui_modelviewer.h */,
+				D5349B3925F18ACD002D2CC4 /* ui_repositorypanel.h */,
 				D5F7D76722FA37C40089B08E /* ui_toolspanel.h */,
 				D5D27484246D9D0100B1AA9D /* UnitParser.cpp */,
 				D5D27483246D9D0100B1AA9D /* UnitParser.h */,
@@ -1669,6 +1677,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D59A609F258997770095F0A7 /* febiostudio.qrc in Sources */,
+				D5349B3A25F18B7C002D2CC4 /* DlgMeshDiagnostics.h in Sources */,
 				D5AE8C4025901A33003AC08B /* UpdateChecker.h in Sources */,
 				D524F6C0258C3CE500A403CD /* XMLEditor.h in Sources */,
 				D57BF83A258858FF00E0EF1A /* PostDataPanel.h in Sources */,
@@ -1706,6 +1715,7 @@
 				D57D004325884CC6009ED051 /* DlgPlaneCut.h in Sources */,
 				D57D004425884CC6009ED051 /* DlgPlotMix.h in Sources */,
 				D57D004725884CC6009ED051 /* DlgRequestUploadPerm.h in Sources */,
+				D5349B3825F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp in Sources */,
 				D57D004825884CC6009ED051 /* DlgRun.h in Sources */,
 				D57D004A25884CC6009ED051 /* DlgSetRepoFolder.h in Sources */,
 				D57D004B25884CC6009ED051 /* DlgSettings.h in Sources */,
