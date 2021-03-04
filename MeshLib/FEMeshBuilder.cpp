@@ -1893,9 +1893,12 @@ void FEMeshBuilder::BuildEdges()
 	// tag all faces
 	for (int i = 0; i < m_mesh.Faces(); ++i) m_mesh.Face(i).m_ntag = i;
 
+	// keep node-edge table to prevent adding duplicate edges
+	int NN = m_mesh.Nodes();
+	vector<vector<int> > NET(NN);
+
 	// loop over all faces
 	int NF = m_mesh.Faces();
-	int NN = m_mesh.Nodes();
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& f = m_mesh.Face(i);
@@ -1906,10 +1909,33 @@ void FEMeshBuilder::BuildEdges()
 			if (((pfn == 0) && f.IsExternal()) || (pfn && (f.m_ntag < pfn->m_ntag)))
 			{
 				FEEdge e = f.GetEdge(j);
-				e.m_gid = ((pfn == 0) || (f.m_gid != pfn->m_gid) ? 0 : -1);
-				e.SetID((int)m_mesh.m_Edge.size() + 1);
-				e.SetExterior(e.m_gid == 0);
-				m_mesh.m_Edge.push_back(e);
+
+				// see if this node already exists
+				bool bfound = false;
+				vector<int>& net = NET[e.n[0]];
+				for (int l = 0; l < net.size(); ++l)
+				{
+					FEEdge& el = m_mesh.Edge(net[l]);
+					if (el == e)
+					{
+						// the edge already exists, so don't add it
+						bfound = true;
+						break;
+					}
+				}
+
+				// If not, then process and add
+				if (bfound == false)
+				{
+					e.m_gid = ((pfn == 0) || (f.m_gid != pfn->m_gid) ? 0 : -1);
+					e.SetID((int)m_mesh.m_Edge.size() + 1);
+					e.SetExterior(e.m_gid == 0);
+
+					int edgeIndex = m_mesh.Edges();
+					m_mesh.m_Edge.push_back(e);
+					NET[e.n[0]].push_back(edgeIndex);
+					NET[e.n[1]].push_back(edgeIndex);
+				}
 			}
 		}
 	}
