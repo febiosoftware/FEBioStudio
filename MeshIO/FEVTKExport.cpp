@@ -140,24 +140,33 @@ bool FEVTKExport::Write(const char* szfile)
 	//fprintf(fp, "%d %d %d %d\n", parts, nodes, faces, edges);
 
 	// --- N O D E S ---
-	for (int i=0; i<model.Objects(); ++i)
+	vector<vec3d> nodeCoords(nodes);
+	nodes = 0;
+	for (int i = 0; i < model.Objects(); ++i)
 	{
-		GObject* po = model.Object(i);
-		FEMesh& m = *po->GetFEMesh();
-		for (int j=0; j<m.Nodes(); )
+		FEMesh& m = *model.Object(i)->GetFEMesh();
+		for (int j = 0; j < m.Nodes(); ++j)
 		{
-			for (int k =0; k<3 && j+k<m.Nodes();k++)
+			FENode& node = m.Node(j);
+			if (node.m_ntag >= 0)
 			{
-				FENode& n = m.Node(j+k);
-				vec3d r = m.LocalToGlobal(n.r);
-				fprintf(fp, "%g %g %g ", r.x, r.y, r.z);
+				vec3d r = m.LocalToGlobal(node.r);
+				nodeCoords[nodes] = r;
+				nodes++;
 			}
-			fprintf(fp, "\n");
-			j = j + 3;				
 		}
 	}
+	assert(nodes == nodeCoords.size());
+	for (int i=0; i<nodes; i+=3)
+	{
+		for (int k =0; (k<3) && ((i+k)<nodes);k++)
+		{
+			vec3d r = nodeCoords[i + k];
+			fprintf(fp, "%g %g %g ", r.x, r.y, r.z);
+		}
+		fprintf(fp, "\n");
+	}
 	fprintf(fp, "%s\n" ,"");
-
 
 	// --- E L E M E N T S ---
 
