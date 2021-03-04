@@ -263,13 +263,9 @@ public:
 	// get the global position of the node
 	vec3d Position() const;
 
-	int GetFENodeIndex() const { return m_fenode; }
-	void SetFENodeIndex(int n) { m_fenode = n; }
-
 	void MakeRequired();
 
 private:
 	vec3d		m_r;		// node position (in local coordinates)
-	int			m_fenode;	// node index of FE Node
 	int			m_ntype;	// node type
 };

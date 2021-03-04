@@ -115,6 +115,9 @@ public:
 	// returns a list of node indices that belong to a part with part ID gid
 	void FindNodesFromPart(int gid, vector<int>& node);
 
+	// find a node from its ID
+	FENode* FindNodeFromID(int gid);
+
 	int CountNodePartitions() const;
 	int CountEdgePartitions() const;
 	int CountFacePartitions() const;

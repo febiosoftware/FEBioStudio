@@ -895,5 +895,6 @@ void CDlgMeshDiagnosticsUI::checkNodePartitioning()
 		berr = true;
 		logError(QString("Number of node partitions (%1) does not match number of vertices (%2).").arg(ng).arg(obj->Nodes()));
 	}
+
 	if (berr == false) log("Node partitions look good.");
 }
