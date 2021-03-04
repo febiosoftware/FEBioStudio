@@ -316,7 +316,7 @@ void FERigidInterface::Load(IArchive &ar)
 				m_pmat = m_ps->GetMaterialFromID(mid);
 			}
 			break;
-		case CID_INTERFACE_SURFACE1: m_pItem = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE2: m_pItem = FEInterface::LoadList(ar); break;
 		case CID_RI_LIST:	// obsolete in 1.8
 			{
 				int nid; ar.read(nid); 
