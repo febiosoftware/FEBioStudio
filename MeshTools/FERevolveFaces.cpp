@@ -235,6 +235,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                         face.n[5] = el.m_node[11];
                         face.m_elem[0].eid = n;
                         face.m_elem[1].eid = -1;
+                        face.m_elem[2].eid = -1;
                         ++n;
                     }
                     else {
@@ -302,6 +303,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                         }
                         face.m_elem[0].eid = n;
                         face.m_elem[1].eid = -1;
+                        face.m_elem[2].eid = -1;
                         ++n;
                     }
                 }
@@ -335,6 +337,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                         face.n[2] = el.m_node[5];
                         face.m_elem[0].eid = n;
                         face.m_elem[1].eid = -1;
+                        face.m_elem[2].eid = -1;
                         ++n;
                     }
                     else{
@@ -447,6 +450,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                         face.n[3] = el.m_node[7];
                         face.m_elem[0].eid = n;
                         face.m_elem[1].eid = -1;
+                        face.m_elem[2].eid = -1;
                     }
                     else
                     {
@@ -498,6 +502,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                                     face.n[((j + 3) % 4) + 4] = el.m_node[8];
                                     face.m_elem[0].eid = n;
                                     face.m_elem[1].eid = -1;
+                                    face.m_elem[2].eid = -1;
                                     
                                     break;
                                 }
@@ -518,6 +523,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                                     face.n[(j + 3) % nf] = el.m_node[2];
                                     face.m_elem[0].eid = n;
                                     face.m_elem[1].eid = -1;
+                                    face.m_elem[2].eid = -1;
                                     
                                     break;
                                 }
@@ -646,6 +652,7 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
                 face.n[2] = el.m_node[5];
                 face.m_elem[0].eid = n;
                 face.m_elem[1].eid = -1;
+                face.m_elem[2].eid = -1;
                 
                 ++n;
             }
@@ -676,6 +683,7 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
                     face.n[3] = el.m_node[7];
                     face.m_elem[0].eid = n;
                     face.m_elem[1].eid = -1;
+                    face.m_elem[2].eid = -1;
                 }
                 else
                 {
@@ -703,6 +711,7 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
                             face.n[(j + 3) % nf] = el.m_node[2];
                             face.m_elem[0].eid = n;
                             face.m_elem[1].eid = -1;
+                            face.m_elem[2].eid = -1;
                             
                             break;
                         }

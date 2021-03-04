@@ -296,40 +296,28 @@ void GMeshObject::UpdateSurfaces()
 	for (int i=0; i<m.Faces(); ++i)
 	{
 		// get the face
-		FEFace& f = m.Face(i);
+		FEFace& f = m.Face(i); assert(f.m_gid >= 0);
 
 		// get the two part IDs
 		int pid0 = -1, pid1 = -1, pid2 = -1;
 
 		// make sure the first element is nonzero
-		pe = m.ElementPtr(f.m_elem[0].eid);
-		if (pe == 0) throw GObjectException(this, "GMeshObject::UpdateSurfaces\n(pe == NULL)");
+		pe = m.ElementPtr(f.m_elem[0].eid); assert(pe);
 		if (pe) pid0 = pe->m_gid;
 
 		// get the second and third element (which can be null)
 		pe = m.ElementPtr(f.m_elem[1].eid);
-		if (pe) pid1 = pe->m_gid;
+		pid1 = (pe ? pe->m_gid : -1);
 		pe = m.ElementPtr(f.m_elem[2].eid);
-		if (pe) pid2 = pe->m_gid;
+		pid2 = (pe ? pe->m_gid : -1);
 
 		// assign the part ID's
-		int* pid = m_Face[f.m_gid]->m_nPID;
-		if (pid[0] == -1) pid[0] = pid0;
-		if (pid[1] == -1) pid[1] = pid1;
-		if (pid[2] == -1) pid[2] = pid2;
-
-		// make sure the part IDs match
-		if ((pid[0] != pid0) && (pid[0] != pid1) && (pid[0] != pid2))
+		if (f.m_gid >= 0)
 		{
-			throw GObjectException(this, "GMeshObject::UpdateSurfaces\nID's don't match");
-		}
-		if ((pid[1] != pid0) && (pid[1] != pid1) && (pid[1] != pid2))
-		{
-			throw GObjectException(this, "GMeshObject::UpdateSurfaces\nID's don't match");
-		}
-		if ((pid[2] != pid0) && (pid[2] != pid1) && (pid[2] != pid2))
-		{
-			throw GObjectException(this, "GMeshObject::UpdateSurfaces\nID's don't match");
+			int* pid = m_Face[f.m_gid]->m_nPID;
+			if (pid[0] == -1) pid[0] = pid0;
+			if (pid[1] == -1) pid[1] = pid1;
+			if (pid[2] == -1) pid[2] = pid2;
 		}
 	}
 }
@@ -423,20 +411,20 @@ void GMeshObject::UpdateEdges()
 						if (ge.m_node[0] == -1)
 						{
 							FENode& nj = m.Node(e.n[j]);
-							if ((nj.m_gid < 0) || (nj.m_gid >= NN))
+							if ((nj.m_gid >= 0) && (nj.m_gid < NN))
 							{
-								throw GObjectException(this, "GMeshObject::UpdateEdges\n(invalid node ID)");
+								ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
 							}
-							else ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
+							else assert(false);
 						}
 						else if (ge.m_node[1] == -1)
 						{
 							FENode& nj = m.Node(e.n[j]);
-							if ((nj.m_gid < 0) || (nj.m_gid >= NN))
+							if ((nj.m_gid >= 0) && (nj.m_gid < NN))
 							{
-								throw GObjectException(this, "GMeshObject::UpdateEdges\n(invalid node ID)");
+								ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
 							}
-							else ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
+							else assert(false);
 						}
 					}
 				}

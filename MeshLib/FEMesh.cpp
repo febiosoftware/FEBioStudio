@@ -950,8 +950,9 @@ void FEMesh::UpdateFaceElementTable()
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& f = Face(i);
-		f.m_elem[0].eid = -1;
-		f.m_elem[1].eid = -1;
+		f.m_elem[0].eid = -1; f.m_elem[0].lid = -1;
+		f.m_elem[1].eid = -1; f.m_elem[1].lid = -1;
+		f.m_elem[2].eid = -1; f.m_elem[2].lid = -1;
 	}
 
 	for (int i = 0; i<NE; ++i)
@@ -1197,7 +1198,7 @@ void FEMesh::UpdateEdgeNeighbors()
 	for (int i = 0; i<Edges(); ++i)
 	{
 		FEEdge& edge = Edge(i);
-		if (edge.IsExterior())
+		if (edge.m_gid >= 0)
 		{
 			for (int j = 0; j<2; ++j)
 			{

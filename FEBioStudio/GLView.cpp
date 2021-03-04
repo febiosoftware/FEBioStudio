@@ -7027,8 +7027,8 @@ void CGLView::RenderParts(GObject* po)
 		int* pid = f.m_nPID;
 
 		// get the part (that is visible)
-		GPart* pg = po->Part(pid[0]);
-		if ((pg->IsVisible() == false) || (pg->IsSelected()))
+		GPart* pg = po->Part(pid[0]); assert(pg);
+		if (pg && ((pg->IsVisible() == false) || (pg->IsSelected())))
 		{
 			if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
 			if (pg && ((pg->IsVisible() == false) || pg->IsSelected())) pg = 0;
@@ -7103,7 +7103,7 @@ void CGLView::RenderSelectedParts(GObject* po)
 			GPart* p0 = po->Part(pf->m_nPID[0]);
 			GPart* p1 = po->Part(pf->m_nPID[1]);
 			GPart* p2 = po->Part(pf->m_nPID[2]);
-			if (p0->IsSelected() || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
+			if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
 			{
 				m_renderer.RenderGLMesh(&m, i);
 			}

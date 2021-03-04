@@ -207,6 +207,10 @@ void FEMeshBuilder::DeleteTaggedFaces(int tag)
 			{
 				m_mesh.Element(face.m_elem[1].eid).m_ntag = 1;
 			}
+			if (face.m_elem[2].eid >= 0)
+			{
+				m_mesh.Element(face.m_elem[2].eid).m_ntag = 1;
+			}
 		}
 	}
 
@@ -287,8 +291,11 @@ FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 		FEElement_* pe0 = mesh.ElementPtr(face.m_elem[0].eid);
 		if (pe0 == nullptr) { delete newMesh; return nullptr; }
 		FEElement_* pe1 = mesh.ElementPtr(face.m_elem[1].eid);
+		FEElement_* pe2 = mesh.ElementPtr(face.m_elem[2].eid);
 
-		if ((pe0->m_ntag == TAG) && ((pe1==nullptr) || (pe1->m_ntag == TAG)))
+		if ((pe0->m_ntag == TAG) && 
+			((pe1 == nullptr) || (pe1->m_ntag == TAG)) && 
+			((pe2 == nullptr) || (pe2->m_ntag == TAG)))
 		{
 			face.m_ntag = TAG;
 		}
@@ -415,6 +422,24 @@ FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 
 	// update edge data
 	mesh.RebuildEdgeData();
+
+	// It is possible that edges were cut and that new nodes need to be promoted
+	int ng = mesh.CountNodePartitions();
+	for (int i = 0; i < mesh.Edges(); ++i)
+	{
+		FEEdge& edge = mesh.Edge(i);
+		if (edge.m_gid >= 0)
+		{
+			for (int j = 0; j < 2; ++j)
+			{
+				if (edge.m_nbr[j] < 0)
+				{
+					FENode& node = mesh.Node(edge.n[j]);
+					if (node.m_gid < 0) node.m_gid = ng++;
+				}
+			}
+		}
+	}
 
 	// update node data
 	mesh.RebuildNodeData();
@@ -946,7 +971,7 @@ void FEMeshBuilder::RemoveDuplicateFaces()
 				fi.m_ntag = 1;
 
 				// we set the element indices to 0 to avoid deleting these elements
-				fi.m_elem[0].eid = fi.m_elem[1].eid = -1;
+				fi.m_elem[0].eid = fi.m_elem[1].eid = fi.m_elem[2].eid = -1;
 			}
 		}
 	}

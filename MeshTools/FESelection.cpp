@@ -317,8 +317,8 @@ void GPartSelection::Update()
 		for (int i=0; i<NF; ++i)
 		{
 			GMesh::FACE& f = pm->Face(i);
-			GFace* pf = po->Face(f.pid);
-			GPart* pg = po->Part(pf->m_nPID[0]);
+			GFace* pf = po->Face(f.pid); assert(pf);
+			GPart* pg = (pf ? po->Part(pf->m_nPID[0]) : nullptr);
 			assert(pg);
 			if (pg && pg->IsSelected())
 			{

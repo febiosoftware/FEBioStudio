@@ -197,9 +197,10 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 				GPart* pg = m.FindPart(pid[i]); assert(pg);
 				if (pg)
 				{
+					std::string partName = pg->GetName();
 					if (m.DeletePart(pg) == false)
 					{
-						QString err; err = QString("Failed deleting Part \"%1\" (id = %2)").arg(QString::fromStdString(pg->GetName())).arg(pid[i]);
+						QString err; err = QString("Failed deleting Part \"%1\" (id = %2)").arg(QString::fromStdString(partName)).arg(pid[i]);
 						QMessageBox::critical(this, "FEBio Studio", err);
 						break;
 					}

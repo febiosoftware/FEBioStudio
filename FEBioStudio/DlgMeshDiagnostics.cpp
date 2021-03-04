@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QFormLayout>
 #include <QLabel>
+#include <QComboBox>
 #include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -37,18 +38,22 @@ SOFTWARE.*/
 class CDlgMeshDiagnosticsUI
 {
 public:
-	QLabel*		objName;
+	QLabel*			objName;
 	QPlainTextEdit*	out;
+	QComboBox*		cb;
 
 public:
 	GObject*	obj;
 	int			testCount;
 	int			errorCount;
 	int			warningCount;
+	int			outLevel;
 
 public:
 	void setup(QDialog* dlg)
 	{
+		outLevel = 0;
+
 		QVBoxLayout* l = new QVBoxLayout;
 
 		QFormLayout* f = new QFormLayout;
@@ -58,8 +63,12 @@ public:
 
 		QHBoxLayout* h = new QHBoxLayout;
 		QPushButton* b = new QPushButton("Run Diagnostics");
+		cb = new QComboBox;
+		cb->addItems(QStringList() << "Default" << "Detailed");
 		h->setMargin(0);
 		h->addWidget(b);
+		h->addWidget(new QLabel("Output level:"));
+		h->addWidget(cb);
 		h->addStretch();
 
 		l->addLayout(h);
@@ -75,6 +84,8 @@ public:
 		l->addWidget(bb);
 
 		dlg->setLayout(l);
+
+		b->setFocus();
 
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(b, SIGNAL(clicked()), dlg, SLOT(runDiagnostics()));
@@ -121,6 +132,9 @@ public:
 
 	void diagnose()
 	{
+		outLevel = cb->currentIndex();
+		if (outLevel < 0) outLevel = 0;
+
 		testCount = 0;
 		errorCount = 0;
 		warningCount = 0;
@@ -659,7 +673,7 @@ void CDlgMeshDiagnosticsUI::checkFaceNeighbors()
 void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 {
 	FEMesh& mesh = *obj->GetFEMesh();
-	int nerr = 0;
+	vector<int> err;
 	int NE = mesh.Edges();
 	for (int i = 0; i < NE; ++i)
 	{
@@ -669,20 +683,43 @@ void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 			int nebr = edge.m_nbr[j];
 			if ((nebr >= 0) && (nebr >= NE))
 			{
-				nerr++;
+				err.push_back(i);
 			}
 			else if (nebr >= 0)
 			{
 				// an edge neighbor must have the same GID
 				FEEdge* pen = mesh.EdgePtr(nebr);
-				if (pen == nullptr) nerr++;
-				else if (pen->m_gid != edge.m_gid) nerr++;
+				if (pen == nullptr) err.push_back(i);
+				else if (pen->m_gid != edge.m_gid) err.push_back(i);
+			}
+			else if ((nebr < 0) && (edge.m_gid >= 0))
+			{
+				// if an edge has no neighbor,
+				// then it must have a GNode
+				int nj = edge.n[j];
+				if ((nj >= 0) && (nj < mesh.Nodes()))
+				{
+					FENode& node = mesh.Node(nj);
+					if (node.m_gid < 0) err.push_back(i);
+				}
+				else err.push_back(i);
 			}
 		}
 	}
 
-	if (nerr == 0) log("Edge neighbors look good.");
-	else logError(QString("%1 edges have invalid neighbors.").arg(nerr));
+	if (err.empty()) log("Edge neighbors look good.");
+	else
+	{
+		logError(QString("%1 edges have invalid neighbors.").arg(err.size()));
+		if (outLevel > 0)
+		{
+			for (int i = 0; i < err.size(); ++i)
+			{
+				FEEdge& edge = mesh.Edge(err[i]);
+				logError(QString("Edge %1, nodes =%2, %3, gid = %4, nbr = %5, %6").arg(err[i]+1).arg(edge.n[0]+1).arg(edge.n[1]+1).arg(edge.m_gid).arg(edge.m_nbr[0]+1).arg(edge.m_nbr[1]+1));
+			}
+		}
+	}
 }
 
 void CDlgMeshDiagnosticsUI::checkElementFaceTable()
@@ -846,6 +883,54 @@ void CDlgMeshDiagnosticsUI::checkFacePartitioning()
 		berr = true;
 		logError(QString("Number of face partitions (%1) does not match number of surfaces (%2).").arg(ng).arg(obj->Faces()));
 	}
+
+	// make sure that each surface has a valid part ID
+	int invalidPIDs = 0;
+	for (int i = 0; i < obj->Faces(); ++i)
+	{
+		GFace* pg = obj->Face(i);
+		if (pg->m_nPID[0] < 0) invalidPIDs++;
+	}
+	if (invalidPIDs > 0) {
+		berr = true;
+		logError(QString("%1 surfaces with invalid part ID 0").arg(invalidPIDs));
+	}
+
+	// see if the face-elem data is consistent with the surface-part data
+	int invalidSurfaces = 0;
+	for (int i = 0; i < mesh.Faces(); ++i)
+	{
+		FEFace& face = mesh.Face(i);
+		int fid = face.m_gid;
+		if ((fid >= 0) && (fid < obj->Faces()))
+		{
+			FEElement_* pe0 = mesh.ElementPtr(face.m_elem[0].eid);
+			FEElement_* pe1 = mesh.ElementPtr(face.m_elem[1].eid);
+			FEElement_* pe2 = mesh.ElementPtr(face.m_elem[2].eid);
+
+			int pid[3];
+			pid[0] = (pe0 ? pe0->m_gid : -1);
+			pid[1] = (pe1 ? pe1->m_gid : -1);
+			pid[2] = (pe2 ? pe2->m_gid : -1);
+
+			GFace* pg = obj->Face(fid);
+
+			// the first part-ID should always match
+			if (pg->m_nPID[0] != pid[0]) invalidSurfaces++;
+
+			// the other ones, I'm not sure if they would appear in the same order 
+			if ((pid[1] >= 0) && ((pid[1] != pg->m_nPID[1]) && (pid[1] != pg->m_nPID[2]))) invalidSurfaces++;
+			if ((pid[2] >= 0) && ((pid[2] != pg->m_nPID[1]) && (pid[2] != pg->m_nPID[2]))) invalidSurfaces++;
+
+			if ((pid[1] < 0) && (pg->m_nPID[1] >= 0)) invalidSurfaces++;
+			if ((pid[2] < 0) && (pg->m_nPID[2] >= 0)) invalidSurfaces++;
+		}
+	}
+	if (invalidSurfaces) {
+		berr = true;
+		logError(QString("%1 surfaces with inconsistent PIDs").arg(invalidSurfaces));
+	}
+
 	if (berr == false) log("Face partitions look good.");
 }
 

@@ -255,6 +255,7 @@ FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 {
 	const int ETET[6][2] = { { 0, 1 }, { 1, 2 }, { 2, 0 }, { 0, 3 }, { 1, 3 }, { 2, 3 } };
 	const int EHEX[12][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7} };
+	const int EPENTA[9][2] = { {0,1}, {1,2}, {2,0}, {3,4},{4,5},{5,3},{0,3},{1,4},{2,5}};
 	const int ETRI[3][2] = { {0,1}, {1,2}, {2,0} };
 	const int EQUAD[4][2] = { {0,1}, {1,2}, {2,3}, {3, 0} };
 
@@ -279,11 +280,12 @@ FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 		const int(*lut)[2] = nullptr;
 		switch (el.Type())
 		{
-		case FE_TET4 :
-		case FE_TET5 : nedges =  6; lut = ETET; break;
-		case FE_HEX8 : nedges = 12; lut = EHEX; break;
-		case FE_TRI3 : nedges =  3; lut = ETRI; break;
-		case FE_QUAD4: nedges =  4; lut = EQUAD; break;
+		case FE_TET4  :
+		case FE_TET5  : nedges =  6; lut = ETET; break;
+		case FE_HEX8  : nedges = 12; lut = EHEX; break;
+		case FE_PENTA6: nedges =  9; lut = EPENTA; break;
+		case FE_TRI3  : nedges =  3; lut = ETRI; break;
+		case FE_QUAD4 : nedges =  4; lut = EQUAD; break;
 		default:
 			assert(false);
 		}
