@@ -5874,6 +5874,10 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
+
+		// if the exterior-only flag is off, make sure all solids are selectable
+		if ((view.m_bext == false) && el.IsSolid()) el.m_ntag = 0;
+
 		if ((el.m_ntag == 0) && el.IsVisible() && po->Part(el.m_gid)->IsVisible())
 		{
 			if ((view.m_bext == false) || el.IsExterior())
