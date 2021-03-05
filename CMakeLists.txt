@@ -98,8 +98,13 @@ function(findLib libName libDir libOut)
 endfunction()
 
 if(USE_MMG)
-    findLib(mmg3d MMG_LIB_DIR MMG_LIB)
-		find_library(mmgs NAMES mmgs MMG_LIB_DIR MMG_LIB)
+    set(MMG_LIB_NAMES mmg3d mmgs)
+    foreach(name IN LISTS MMG_LIB_NAMES)
+        findLib(${name} MMG_LIB_DIR MMG_LIB)
+        list(APPEND MMG_LIBS ${MMG_LIB})
+        unset(MMG_LIB)
+    endforeach(name)
+	#message("Libs found: " ${MMG_LIBS}) remove comment to debug
 endif()
 
 if(USE_TETGEN)
@@ -339,7 +344,7 @@ else()
 endif()
 
 if(USE_MMG)
-	target_link_libraries(FEBioStudio ${MMG_LIB})
+	target_link_libraries(FEBioStudio ${MMG_LIBS})
 endif()
 
 if(USE_TETGEN)
