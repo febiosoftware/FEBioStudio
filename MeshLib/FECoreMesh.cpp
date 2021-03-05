@@ -1259,6 +1259,17 @@ void FECoreMesh::FindNodesFromPart(int gid, vector<int>& node)
 }
 
 //-------------------------------------------------------------------------------------------------
+FENode* FECoreMesh::FindNodeFromID(int gid)
+{
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		FENode& node = Node(i);
+		if (node.m_gid == gid) return &node;
+	}
+	return nullptr;
+}
+
+//-------------------------------------------------------------------------------------------------
 void FECoreMesh::ShowAllElements()
 {
 	for (int i = 0; i<Nodes(); ++i) Node(i).Show();

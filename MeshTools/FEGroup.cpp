@@ -68,7 +68,8 @@ FEGroup::~FEGroup()
 
 void FEGroup::Save(OArchive& ar)
 {
-	int meshid = m_pObj->GetID();
+	assert(m_pObj);
+	int meshid = (m_pObj ? m_pObj->GetID() : -1);
 	int N = (int)m_Item.size();
 	ar.WriteChunk(ID, m_nID);
 	ar.WriteChunk(NAME, GetName());

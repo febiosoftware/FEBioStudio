@@ -54,6 +54,7 @@ SOFTWARE.*/
 #include <GeomLib/MeshLayer.h>
 #include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FETetGenMesher.h>
+#include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
 
 class CSurfaceMesherProps : public CObjectProps
@@ -212,6 +213,7 @@ void CDlgStartThread::threadFinished()
 //=============================================================================
 
 REGISTER_CLASS(FERebuildMesh          , CLASS_FEMODIFIER, "Rebuild Mesh"   , EDIT_MESH);
+REGISTER_CLASS(FEFixMesh              , CLASS_FEMODIFIER, "Fix Mesh"       , EDIT_MESH);
 REGISTER_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
 REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
 REGISTER_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
@@ -235,7 +237,7 @@ REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDI
 REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 REGISTER_CLASS(FERezoneMesh           , CLASS_FEMODIFIER, "Rezone"         , EDIT_FACE | EDIT_SAFE);
 #ifdef HAS_MMG
-REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Remesh", EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "MMG Remesh", EDIT_MESH | EDIT_SAFE);
 #endif
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
@@ -414,6 +416,8 @@ void CMeshPanel::on_apply_clicked(bool b)
 
 void CMeshPanel::on_apply2_clicked(bool b)
 {
+	CMainWindow* w = GetMainWindow();
+
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GObject* activeObject = doc->GetActiveObject();
 	if (activeObject == 0) return;
@@ -441,11 +445,18 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		QString err = QString("Error while applying %1:\n%2").arg(QString::fromStdString(m_mod->GetName())).arg(QString::fromStdString(m_mod->GetErrorString()));
 		QMessageBox::critical(this, "Error", err);
 	}
+	else
+	{
+		std::string err = m_mod->GetErrorString();
+		if (err.empty() == false)
+		{
+			w->AddLogEntry(QString::fromStdString(err) + QString("\n"));
+		}
+	}
 
 	// don't forget to cleanup
 	if (g) delete g;
 
-	CMainWindow* w = GetMainWindow();
 	w->UpdateModel(activeObject, true);
 	w->UpdateGLControlBar();
 	w->RedrawGL();

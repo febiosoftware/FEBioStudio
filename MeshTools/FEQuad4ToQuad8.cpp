@@ -236,6 +236,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
         f1.n[7] = FE[i][3] + NN;
         f1.m_elem[0] = f0.m_elem[0];
         f1.m_elem[1] = f0.m_elem[1];
+        f1.m_elem[2] = f0.m_elem[2];
         f1.m_nbr[0] = f0.m_nbr[0];
         f1.m_nbr[1] = f0.m_nbr[1];
         f1.m_nbr[2] = f0.m_nbr[2];
@@ -572,6 +573,7 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
         f1.n[3] = f0.n[3];
         f1.m_elem[0] = f0.m_elem[0];
         f1.m_elem[1] = f0.m_elem[1];
+        f1.m_elem[2] = f0.m_elem[2];
         f1.m_nbr[0] = f0.m_nbr[0];
         f1.m_nbr[1] = f0.m_nbr[1];
         f1.m_nbr[2] = f0.m_nbr[2];

@@ -4010,6 +4010,16 @@ void CGLView::SelectParts(int x, int y)
 									minDist = distance;
 								}
 							}
+							else if (gface->m_nPID[2] >= 0)
+							{
+								pid = gface->m_nPID[2];
+								part = po->Part(pid);
+								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+								{
+									closestPart = part;
+									minDist = distance;
+								}
+							}
 						}
 					}
 				}
@@ -5864,6 +5874,10 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
+
+		// if the exterior-only flag is off, make sure all solids are selectable
+		if ((view.m_bext == false) && el.IsSolid()) el.m_ntag = 0;
+
 		if ((el.m_ntag == 0) && el.IsVisible() && po->Part(el.m_gid)->IsVisible())
 		{
 			if ((view.m_bext == false) || el.IsExterior())
@@ -7017,11 +7031,17 @@ void CGLView::RenderParts(GObject* po)
 		int* pid = f.m_nPID;
 
 		// get the part (that is visible)
-		GPart* pg = po->Part(pid[0]);
-		if ((pg->IsVisible() == false) || (pg->IsSelected()))
+		GPart* pg = po->Part(pid[0]); assert(pg);
+		if (pg && ((pg->IsVisible() == false) || (pg->IsSelected())))
 		{
 			if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
 			if (pg && ((pg->IsVisible() == false) || pg->IsSelected())) pg = 0;
+
+			if (pg == nullptr)
+			{
+				if (pid[2] >= 0) pg = po->Part(pid[2]); else pg = 0;
+				if (pg && ((pg->IsVisible() == false) || pg->IsSelected())) pg = 0;
+			}
 		}
 
 		// make sure we have a part
@@ -7086,7 +7106,8 @@ void CGLView::RenderSelectedParts(GObject* po)
 			GFace* pf = po->Face(i);
 			GPart* p0 = po->Part(pf->m_nPID[0]);
 			GPart* p1 = po->Part(pf->m_nPID[1]);
-			if (p0->IsSelected() || (p1 && p1->IsSelected()))
+			GPart* p2 = po->Part(pf->m_nPID[2]);
+			if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
 			{
 				m_renderer.RenderGLMesh(&m, i);
 			}

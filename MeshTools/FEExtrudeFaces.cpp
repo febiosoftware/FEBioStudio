@@ -224,7 +224,7 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 				face.n[1] = el.m_node[4];
 				face.n[2] = el.m_node[5];
 				face.m_elem[0].eid = n;
-				face.m_elem[1].eid = -1;
+				face.m_elem[1].eid = face.m_elem[2].eid = -1;
 
 				++n;
 			}
@@ -249,7 +249,7 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 				face.n[2] = el.m_node[6];
 				face.n[3] = el.m_node[7];
 				face.m_elem[0].eid = n;
-				face.m_elem[1].eid = -1;
+				face.m_elem[1].eid = face.m_elem[2].eid = -1;
 
 				++n;
 			}
@@ -285,7 +285,7 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 				face.n[4] = el.m_node[10];
 				face.n[5] = el.m_node[11];
 				face.m_elem[0].eid = n;
-				face.m_elem[1].eid = -1;
+				face.m_elem[1].eid = face.m_elem[2].eid = -1;
                 
                 ++n;
 			}
@@ -328,7 +328,7 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 				face.n[6] = el.m_node[14];
 				face.n[7] = el.m_node[15];
 				face.m_elem[0].eid = n;
-				face.m_elem[1].eid = -1;
+				face.m_elem[1].eid = face.m_elem[2].eid = -1;
                 
                 ++n;
 			}
@@ -381,7 +381,7 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 				face.n[7] = el.m_node[15];
 				face.n[8] = el.m_node[25];
 				face.m_elem[0].eid = n;
-				face.m_elem[1].eid = -1;
+				face.m_elem[1].eid = face.m_elem[2].eid = -1;
                 
                 ++n;
 			}

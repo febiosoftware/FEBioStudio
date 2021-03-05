@@ -146,10 +146,10 @@ void GExtrudeModifier::Apply(GObject* po)
 		GFace& f1 = *po->Face(i+F);
 
 		f0.m_nPID[0] = i;
-		f0.m_nPID[1] = -1;
+		f0.m_nPID[1] = f0.m_nPID[2] = -1;
 
 		f1.m_nPID[0] = i;
-		f1.m_nPID[1] = -1;
+		f1.m_nPID[1] = f1.m_nPID[2] = -1;
 	}
 
 	// The side walls will be trickier since they can be interior faces
@@ -159,6 +159,7 @@ void GExtrudeModifier::Apply(GObject* po)
 		GFace& f = *po->Face(2*F + i);
 		f.m_nPID[0] = -1;
 		f.m_nPID[1] = -1;
+		f.m_nPID[2] = -1;
 		int m = 0;
 		for (int j=0; j<F; ++j)
 		{

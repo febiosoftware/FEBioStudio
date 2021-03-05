@@ -237,6 +237,7 @@ FEMesh* FEHex8ToHex20::Apply(FEMesh* pm)
 		f1.n[7] = FE[i][3] + NN;
 		f1.m_elem[0] = f0.m_elem[0];
 		f1.m_elem[1] = f0.m_elem[1];
+		f1.m_elem[2] = f0.m_elem[2];
 		f1.m_nbr[0] = f0.m_nbr[0];
 		f1.m_nbr[1] = f0.m_nbr[1];
 		f1.m_nbr[2] = f0.m_nbr[2];
@@ -596,6 +597,7 @@ FEMesh* FEHex20ToHex8::Apply(FEMesh* pm)
 		f1.n[3] = pm->Node(f0.n[3]).m_ntag;
 		f1.m_elem[0] = f0.m_elem[0];
 		f1.m_elem[1] = f0.m_elem[1];
+		f1.m_elem[2] = f0.m_elem[2];
 		f1.m_nbr[0] = f0.m_nbr[0];
 		f1.m_nbr[1] = f0.m_nbr[1];
 		f1.m_nbr[2] = f0.m_nbr[2];

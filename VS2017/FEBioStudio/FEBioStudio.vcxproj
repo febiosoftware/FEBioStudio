@@ -111,7 +111,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgen.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;nike3d.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;gllib.lib;cuilib.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;Qt5Networkd.lib;Qt5WebEngineWidgetsd.lib;glew32.lib;opengl32.lib;glu32.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;postlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;libcrypto.lib;quazip.lib;sqlite3.lib;zlibstaticd.lib;ssh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgen.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;nike3d.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;gllib.lib;cuilib.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;Qt5Networkd.lib;Qt5WebEngineWidgetsd.lib;glew32.lib;opengl32.lib;glu32.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;mmgs.lib;postlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;libcrypto.lib;quazip.lib;sqlite3.lib;zlibstaticd.lib;ssh.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
@@ -152,7 +152,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgen.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;nike3d.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;postlib.lib;gllib.lib;cuilib.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;Qt5Network.lib;Qt5WebEngineWidgets.lib;glew32.lib;opengl32.lib;glu32.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;ssh.lib;libcrypto.lib;quazip.lib;sqlite3.lib;nglib.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgen.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;nike3d.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;postlib.lib;gllib.lib;cuilib.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;Qt5Network.lib;Qt5WebEngineWidgets.lib;glew32.lib;opengl32.lib;glu32.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;mmgs.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;ssh.lib;libcrypto.lib;quazip.lib;sqlite3.lib;nglib.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <Bscmake>
@@ -218,6 +218,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgLSDYNAExport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgMeasure.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgMergeObjects.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgMeshDiagnostics.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgModelInfo.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgNew.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgNewProject.cpp" />
@@ -319,6 +320,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgKinemat.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgLameConvertor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgMeasure.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgMeshDiagnostics.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgModelInfo.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgNew.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgNewProject.cpp" />
@@ -552,6 +554,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgLogin.h" />
+    <CustomBuild Include="..\..\FEBioStudio\DlgMeshDiagnostics.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgSelectRange.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgUnitConverter.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

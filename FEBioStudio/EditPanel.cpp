@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/FECurveIntersect.h>
 #include <MeshTools/FESmoothSurfaceMesh.h>
 #include <MeshTools/FEEdgeCollapse.h>
-#include <MeshTools/FEFixMesh.h>
+#include <MeshTools/FEFixSurfaceMesh.h>
 #include <MeshTools/FECVDDecimationModifier.h>
 #include <MeshTools/FEEdgeFlip.h>
 #include <MeshTools/FERefineSurface.h>
@@ -49,7 +49,7 @@ REGISTER_CLASS(FESurfaceAutoPartition     , CLASS_SURFACE_MODIFIER, "Auto partit
 REGISTER_CLASS(FESurfacePartitionSelection, CLASS_SURFACE_MODIFIER, "Partition"    , 0xFF);
 REGISTER_CLASS(FESmoothSurfaceMesh        , CLASS_SURFACE_MODIFIER, "Smooth"       , 0xFF);
 REGISTER_CLASS(FEEdgeCollapse             , CLASS_SURFACE_MODIFIER, "Edge Collapse", 0xFF);
-REGISTER_CLASS(FEFixMesh                  , CLASS_SURFACE_MODIFIER, "Fix Mesh"     , 0xFF);
+REGISTER_CLASS(FEFixSurfaceMesh           , CLASS_SURFACE_MODIFIER, "Fix Mesh"     , 0xFF);
 REGISTER_CLASS(FECVDDecimationModifier    , CLASS_SURFACE_MODIFIER, "Decimate"     , 0xFF);
 REGISTER_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"   , 0xFF);
 REGISTER_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"       , 0xFF);

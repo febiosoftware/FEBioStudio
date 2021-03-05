@@ -172,6 +172,7 @@
     <ClCompile Include="..\..\MeshTools\FEFileExport.cpp" />
     <ClCompile Include="..\..\MeshTools\FEFillHole.cpp" />
     <ClCompile Include="..\..\MeshTools\FEFixMesh.cpp" />
+    <ClCompile Include="..\..\MeshTools\FEFixSurfaceMesh.cpp" />
     <ClCompile Include="..\..\MeshTools\FEGregoryPatch.cpp" />
     <ClCompile Include="..\..\MeshTools\FEGroup.cpp" />
     <ClCompile Include="..\..\MeshTools\FEHex8ToHex20.cpp" />
@@ -295,6 +296,7 @@
     <ClInclude Include="..\..\MeshTools\FEFileExport.h" />
     <ClInclude Include="..\..\MeshTools\FEFillHole.h" />
     <ClInclude Include="..\..\MeshTools\FEFixMesh.h" />
+    <ClInclude Include="..\..\MeshTools\FEFixSurfaceMesh.h" />
     <ClInclude Include="..\..\MeshTools\FEGregoryPatch.h" />
     <ClInclude Include="..\..\MeshTools\FEGroup.h" />
     <ClInclude Include="..\..\MeshTools\FEHollowSphere.h" />

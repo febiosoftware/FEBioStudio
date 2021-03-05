@@ -133,7 +133,6 @@ void GTruncatedEllipsoid::Create()
 		f->m_node[2] = FT[i][2];
 		f->m_node[3] = FT[i][3];
 		f->m_nPID[0] = 0;
-		f->m_nPID[1] = -1;
 		AddSurface(f);
 	}
 

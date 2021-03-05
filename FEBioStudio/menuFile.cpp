@@ -193,13 +193,14 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv)";
+	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk)";
 	filters << "FEBioStudio Model (*.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
 	filters << "PreView files (*.prv)";
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
+	filters << "VTK files (*.vtk)";
 
 	QFileDialog dlg(this, "Open");
 	dlg.setFileMode(QFileDialog::ExistingFile);

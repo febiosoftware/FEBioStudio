@@ -245,6 +245,31 @@ void GDiscreteElementSet::AddElement(int n0, int n1)
 }
 
 //-----------------------------------------------------------------------------
+void GDiscreteElementSet::AddElement(GNode* node0, GNode* node1)
+{
+	assert(node0);
+	assert(node1);
+	if ((node0 == nullptr) || (node1 == nullptr)) return;
+
+	int n0 = node0->GetID();
+	int n1 = node1->GetID();
+
+	// create new discrete element
+	GDiscreteElement* el = new GDiscreteElement(GetModel(), n0, n1);
+
+	// set default name
+	char szbuf[32] = { 0 };
+	sprintf(szbuf, "spring%d", (int)m_elem.size() + 1);
+	el->SetName(szbuf);
+
+	// add it to the pile
+	m_elem.push_back(el);
+
+	if (node0) node0->MakeRequired();
+	if (node1) node1->MakeRequired();
+}
+
+//-----------------------------------------------------------------------------
 void GDiscreteElementSet::AddElement(const GDiscreteElement& el)
 {
 	GDiscreteElement* newElem = new GDiscreteElement(el);

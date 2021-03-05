@@ -473,7 +473,8 @@ public:
 
 		// --- Tools menu ---
 		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F9);
-		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", "inspect");
+		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", "inspect"); actionMeshInspector->setShortcut(Qt::Key_F10);
+		QAction* actionMeshDiagnostic = addAction("Mesh Diagnostic ...", "actionMeshDiagnostic"); actionMeshDiagnostic->setShortcut(Qt::Key_F11);
 		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
 		QAction* actionUnitConverter = addAction("Unit Converter ...", "actionUnitConverter");
 		QAction* actionKinemat = addAction("Kinemat ...", "actionKinemat");
@@ -795,6 +796,7 @@ public:
 		menuBar->addAction(menuTools->menuAction());
 		menuTools->addAction(actionCurveEditor);
 		menuTools->addAction(actionMeshInspector);
+		menuTools->addAction(actionMeshDiagnostic);
 		menuTools->addAction(actionUnitConverter);
 		menuTools->addAction(actionElasticityConvertor);
 		menuTools->addAction(actionKinemat);

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,24 +25,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEModifier.h"
+#include <QDialog>
 
-//-----------------------------------------------------------------------------
-//! This modifier refines a tet mesh using MMG.
-class FEMMGRemesh : public FEModifier
+class GObject;
+
+class CDlgMeshDiagnosticsUI;
+
+class CDlgMeshDiagnostics : public QDialog
 {
-	enum {
-		ELEM_SIZE,
-		HMIN,
-		HAUSDORFF,
-		HGRAD
-	};
+	Q_OBJECT
 
 public:
-	FEMMGRemesh();
-	FEMesh* Apply(FEMesh* pm) override;
+	CDlgMeshDiagnostics(QWidget* parent);
+
+	void SetObject(GObject* po);
+
+private slots:
+	void runDiagnostics();
 
 private:
-	FEMesh* RemeshTET4(FEMesh* pm);
-	FEMesh* RemeshTRI3(FEMesh* pm);
+	CDlgMeshDiagnosticsUI*	ui;
 };

@@ -118,6 +118,7 @@ void FEModelComponent::Load(IArchive &ar)
 					case GO_FACE: m_pItem = new GFaceList(m_ps); break;
 					case GO_PART: m_pItem = new GPartList(m_ps); break;
 					case FE_NODESET: m_pItem = new FENodeSet((GObject*)0); break;
+					case FE_EDGESET: m_pItem = new FEEdgeSet((GObject*)0); break;
 					case FE_SURFACE: m_pItem = new FESurface((GObject*)0); break;
 					case FE_PART   : m_pItem = new FEPart   ((GObject*)0); break;
 					default:
