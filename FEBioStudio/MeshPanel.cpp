@@ -237,7 +237,7 @@ REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDI
 REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 REGISTER_CLASS(FERezoneMesh           , CLASS_FEMODIFIER, "Rezone"         , EDIT_FACE | EDIT_SAFE);
 #ifdef HAS_MMG
-REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Remesh", EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "MMG Remesh", EDIT_MESH | EDIT_SAFE);
 #endif
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)

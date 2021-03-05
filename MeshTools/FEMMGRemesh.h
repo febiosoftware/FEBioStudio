@@ -40,5 +40,9 @@ class FEMMGRemesh : public FEModifier
 
 public:
 	FEMMGRemesh();
-	FEMesh* Apply(FEMesh* pm);
+	FEMesh* Apply(FEMesh* pm) override;
+
+private:
+	FEMesh* RemeshTET4(FEMesh* pm);
+	FEMesh* RemeshTRI3(FEMesh* pm);
 };
