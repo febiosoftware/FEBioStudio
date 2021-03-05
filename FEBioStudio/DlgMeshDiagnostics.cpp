@@ -331,8 +331,12 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
 		FEFace& face = mesh.Face(i);
-		if (face.m_elem[2].eid >= 0) nsss++;
-		else if (face.m_elem[1].eid >= 0) nss++;
+		FEElement_* pe = mesh.ElementPtr(face.m_elem[0].eid);
+		if (pe && pe->IsShell())
+		{
+			if (face.m_elem[2].eid >= 0) nsss++;
+			else if (face.m_elem[1].eid >= 0) nss++;
+		}
 	}
 	log(QString("Solid-shell interface elements = %1").arg(nss));
 	log(QString("Solid-shell-solid interface elements = %1").arg(nsss));
