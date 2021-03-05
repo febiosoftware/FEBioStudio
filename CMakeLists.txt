@@ -99,6 +99,7 @@ endfunction()
 
 if(USE_MMG)
     findLib(mmg3d MMG_LIB_DIR MMG_LIB)
+		find_library(mmgs NAMES mmgs MMG_LIB_DIR MMG_LIB)
 endif()
 
 if(USE_TETGEN)
