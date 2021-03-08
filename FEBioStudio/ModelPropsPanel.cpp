@@ -809,6 +809,21 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 		default:
 			assert(false);
 		}
+
+		FEGroup* pg = dynamic_cast<FEGroup*>(item);
+		if (pg)
+		{
+			FEMesh* mesh = pg->GetMesh();
+			if (mesh)
+			{
+				GObject* po = mesh->GetGObject();
+				if (po)
+				{
+					type += QString(" [%1]").arg(QString::fromStdString(po->GetName()));
+				}
+			}
+		}
+
 		sel->setType(type);
 
 		// set the data
