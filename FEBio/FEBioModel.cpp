@@ -861,6 +861,10 @@ FEItemListBuilder* FEBioModel::BuildItemList(const char* szname)
 		{
 			return BuildFESurface(szname + n + 1);
 		}
+		else if (strncmp(szname, "@elem_set", n) == 0)
+		{
+			return BuildFEPart(szname + n + 1);
+		}
 		else return nullptr;
 	}
 	else return BuildFENodeSet(szname);

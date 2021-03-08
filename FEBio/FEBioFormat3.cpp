@@ -1340,6 +1340,15 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 			if (sztype) scaleType = sztype;
 			scaleValue = tag.szvalue();
 			lc = tag.AttributeValue<int>("lc", -1);
+
+			if (tag.isleaf() == false)
+			{
+				++tag;
+				do {
+					if (tag == "math") scaleValue = tag.szvalue();
+					++tag;
+				} while (!tag.isend());
+			}
 		}
 		else if (tag == "relative") tag.value(relative);
 		++tag;
