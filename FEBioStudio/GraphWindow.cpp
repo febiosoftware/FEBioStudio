@@ -1217,7 +1217,7 @@ void CGraphWindow::ShowAddToModelButton(bool b)
 void CGraphWindow::DocumentDelete()
 {
 	CDocObserver::DocumentDelete();
-	Update();
+	close();
 }
 
 //-----------------------------------------------------------------------------
