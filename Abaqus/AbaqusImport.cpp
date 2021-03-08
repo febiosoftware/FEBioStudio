@@ -1481,6 +1481,11 @@ bool AbaqusImport::build_mesh()
 	{
 		// loop over all parts
 		list<AbaqusModel::PART*>& Part = m_inp.PartList();
+		if (Part.empty())
+		{
+			return errf("This file contains no parts.");
+		}
+
 		list<AbaqusModel::PART*>::iterator pi;
 		for (pi=Part.begin(); pi!=Part.end(); ++pi)
 		{
