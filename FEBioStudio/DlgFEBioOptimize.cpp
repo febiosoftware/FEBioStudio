@@ -85,12 +85,19 @@ public:
 		for (int j = 0; j < mat->Properties(); ++j)
 		{
 			FEMaterialProperty& prop = mat->GetProperty(j);
-			FEMaterial* mj = mat->GetProperty(j).GetMaterial();
-			if (mj)
+			int nsize = prop.Size();
+			QString propName = QString::fromStdString(prop.GetName());
+			for (int k = 0; k < nsize; ++k)
 			{
-				QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(prop.GetName()), 2);
-				AddMaterial(mj, matItem);
-				item->addChild(matItem);
+				FEMaterial* mj = mat->GetProperty(j).GetMaterial(k);
+				if (mj)
+				{
+					QString matName = propName;
+					if (nsize > 1) matName += QString("[%1]").arg(k);
+					QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << matName, 2);
+					AddMaterial(mj, matItem);
+					item->addChild(matItem);
+				}
 			}
 		}
 	}
