@@ -4169,6 +4169,10 @@ void FEBioExport25::WriteFluidNormalVelocity(FEStep& s)
                 bparab.value(ptc->GetBParab());
                 m_xml.add_leaf(bparab);
                 
+                XMLElement brimp("prescribe_rim_pressure");
+                brimp.value(ptc->GetBRimP());
+                m_xml.add_leaf(brimp);
+                
             }
             m_xml.close_branch(); // surface_load
         }

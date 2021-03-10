@@ -22,8 +22,6 @@
 		D532E2AB24747D8000826447 /* libTKVCAF.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5349B3825F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5349B3625F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp */; };
 		D5349B3A25F18B7C002D2CC4 /* DlgMeshDiagnostics.h in Sources */ = {isa = PBXBuildFile; fileRef = D5349B3725F18AB1002D2CC4 /* DlgMeshDiagnostics.h */; };
-		D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */; };
-		D548545823749CCF00BE1731 /* libssl.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */; };
 		D548545C23749D1100BE1731 /* libx265.179.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545B23749D1100BE1731 /* libx265.179.dylib */; };
 		D548546123749D4700BE1731 /* libavformat.58.29.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545D23749D4700BE1731 /* libavformat.58.29.100.dylib */; };
 		D548546223749D4700BE1731 /* libavutil.56.31.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */; };
@@ -37,6 +35,9 @@
 		D54879BF234B77D700D0E506 /* AreaCalculatorTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54879BD234B77D700D0E506 /* AreaCalculatorTool.cpp */; };
 		D54D2CE82444A7DE00146123 /* DlgExportXPLT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CE42444A7DE00146123 /* DlgExportXPLT.cpp */; };
 		D54D2CEA2444A7DE00146123 /* ImportSpringsTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CE72444A7DE00146123 /* ImportSpringsTool.cpp */; };
+		D55050F725F6AB47003783FA /* libcrypto.1.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D55050F525F6AB47003783FA /* libcrypto.1.1.dylib */; };
+		D55050F825F6AB47003783FA /* libssl.1.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D55050F625F6AB47003783FA /* libssl.1.1.dylib */; };
+		D55050FA25F6BC82003783FA /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D55050F925F6BC82003783FA /* libsqlite3.0.dylib */; };
 		D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7F238DA80C002B037E /* libCUILib.a */; };
 		D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */; };
 		D56ADC1E2502879A0097DC8E /* DlgExportAscii.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56ADC1A2502879A0097DC8E /* DlgExportAscii.cpp */; };
@@ -46,7 +47,6 @@
 		D576570423E32E6900E4F70F /* RepoConnectionHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */; };
 		D576571623E32F7E00E4F70F /* QtNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571523E32F7E00E4F70F /* QtNetwork.framework */; };
 		D576571823E3345500E4F70F /* libquazip.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */; };
-		D576571A23E3347D00E4F70F /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571923E3347D00E4F70F /* libsqlite3.0.dylib */; };
 		D579B679239F04E300278644 /* MeasureAreaTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B664239F04E100278644 /* MeasureAreaTool.cpp */; };
 		D579B67B239F04E300278644 /* MeasureVolumeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B667239F04E100278644 /* MeasureVolumeTool.cpp */; };
 		D579B67C239F04E300278644 /* 3PointAngleTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B668239F04E100278644 /* 3PointAngleTool.cpp */; };
@@ -215,18 +215,13 @@
 		D5ED290723197E8500C16BF7 /* libMeshIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290623197E8500C16BF7 /* libMeshIO.a */; };
 		D5ED290923197E8500C16BF7 /* libMeshTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290823197E8500C16BF7 /* libMeshTools.a */; };
 		D5ED290B23197E8500C16BF7 /* libNike3D.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290A23197E8500C16BF7 /* libNike3D.a */; };
-		D5ED292B2319858D00C16BF7 /* libcsgvis.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED291D2319858900C16BF7 /* libcsgvis.dylib */; };
-		D5ED292C2319858D00C16BF7 /* liboccvis.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED291E2319858A00C16BF7 /* liboccvis.dylib */; };
 		D5ED292D2319858D00C16BF7 /* libstl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED291F2319858A00C16BF7 /* libstl.dylib */; };
-		D5ED292E2319858D00C16BF7 /* libstlvis.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29202319858A00C16BF7 /* libstlvis.dylib */; };
 		D5ED292F2319858D00C16BF7 /* libinterface.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29212319858B00C16BF7 /* libinterface.dylib */; };
 		D5ED29302319858D00C16BF7 /* libcsg.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29222319858B00C16BF7 /* libcsg.dylib */; };
 		D5ED29312319858D00C16BF7 /* libngcore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29232319858B00C16BF7 /* libngcore.dylib */; };
 		D5ED29322319858D00C16BF7 /* libmesh.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29242319858B00C16BF7 /* libmesh.dylib */; };
-		D5ED29332319858D00C16BF7 /* libgeom2dvis.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29252319858B00C16BF7 /* libgeom2dvis.dylib */; };
 		D5ED29342319858D00C16BF7 /* libgeom2d.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29262319858C00C16BF7 /* libgeom2d.dylib */; };
 		D5ED29352319858D00C16BF7 /* libocc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29272319858C00C16BF7 /* libocc.dylib */; };
-		D5ED29362319858D00C16BF7 /* libgui.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29282319858C00C16BF7 /* libgui.dylib */; };
 		D5ED29372319858D00C16BF7 /* libvisual.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29292319858C00C16BF7 /* libvisual.dylib */; };
 		D5ED29382319858D00C16BF7 /* libnglib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED292A2319858D00C16BF7 /* libnglib.dylib */; };
 		D5ED294A231987CF00C16BF7 /* libTKernel.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED2939231987CB00C16BF7 /* libTKernel.7.3.0.dylib */; };
@@ -277,18 +272,13 @@
 		D5ED2A362319902B00C16BF7 /* libTKXMesh.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED293D231987CC00C16BF7 /* libTKXMesh.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A372319902B00C16BF7 /* libTKXSBase.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED293F231987CD00C16BF7 /* libTKXSBase.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A382319902B00C16BF7 /* libcsg.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29222319858B00C16BF7 /* libcsg.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A392319902B00C16BF7 /* libcsgvis.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED291D2319858900C16BF7 /* libcsgvis.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A3A2319902B00C16BF7 /* libgeom2d.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29262319858C00C16BF7 /* libgeom2d.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A3B2319902B00C16BF7 /* libgeom2dvis.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29252319858B00C16BF7 /* libgeom2dvis.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A3C2319902B00C16BF7 /* libgui.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29282319858C00C16BF7 /* libgui.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A3D2319902B00C16BF7 /* libinterface.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29212319858B00C16BF7 /* libinterface.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A3E2319902B00C16BF7 /* libmesh.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29242319858B00C16BF7 /* libmesh.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A3F2319902B00C16BF7 /* libngcore.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29232319858B00C16BF7 /* libngcore.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A402319902B00C16BF7 /* libnglib.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED292A2319858D00C16BF7 /* libnglib.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A412319902B00C16BF7 /* libocc.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29272319858C00C16BF7 /* libocc.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A422319902B00C16BF7 /* liboccvis.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED291E2319858A00C16BF7 /* liboccvis.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A432319902B00C16BF7 /* libstl.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED291F2319858A00C16BF7 /* libstl.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A442319902B00C16BF7 /* libstlvis.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29202319858A00C16BF7 /* libstlvis.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A452319902B00C16BF7 /* libvisual.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29292319858C00C16BF7 /* libvisual.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5EF347323A03BA500BF4D56 /* libxvidcore.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */; };
 		D5EF347423A03BFB00BF4D56 /* libxvidcore.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -476,18 +466,13 @@
 				D5ED2A362319902B00C16BF7 /* libTKXMesh.7.3.0.dylib in CopyFiles */,
 				D5ED2A372319902B00C16BF7 /* libTKXSBase.7.3.0.dylib in CopyFiles */,
 				D5ED2A382319902B00C16BF7 /* libcsg.dylib in CopyFiles */,
-				D5ED2A392319902B00C16BF7 /* libcsgvis.dylib in CopyFiles */,
 				D5ED2A3A2319902B00C16BF7 /* libgeom2d.dylib in CopyFiles */,
-				D5ED2A3B2319902B00C16BF7 /* libgeom2dvis.dylib in CopyFiles */,
-				D5ED2A3C2319902B00C16BF7 /* libgui.dylib in CopyFiles */,
 				D5ED2A3D2319902B00C16BF7 /* libinterface.dylib in CopyFiles */,
 				D5ED2A3E2319902B00C16BF7 /* libmesh.dylib in CopyFiles */,
 				D5ED2A3F2319902B00C16BF7 /* libngcore.dylib in CopyFiles */,
 				D5ED2A402319902B00C16BF7 /* libnglib.dylib in CopyFiles */,
 				D5ED2A412319902B00C16BF7 /* libocc.dylib in CopyFiles */,
-				D5ED2A422319902B00C16BF7 /* liboccvis.dylib in CopyFiles */,
 				D5ED2A432319902B00C16BF7 /* libstl.dylib in CopyFiles */,
-				D5ED2A442319902B00C16BF7 /* libstlvis.dylib in CopyFiles */,
 				D5ED2A452319902B00C16BF7 /* libvisual.dylib in CopyFiles */,
 				D532E2AB24747D8000826447 /* libTKVCAF.7.3.0.dylib in CopyFiles */,
 			);
@@ -520,8 +505,6 @@
 		D5349B3625F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgMeshDiagnostics.cpp; sourceTree = "<group>"; };
 		D5349B3725F18AB1002D2CC4 /* DlgMeshDiagnostics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgMeshDiagnostics.h; sourceTree = "<group>"; };
 		D5349B3925F18ACD002D2CC4 /* ui_repositorypanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_repositorypanel.h; sourceTree = "<group>"; };
-		D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = /usr/local/Cellar/openssl/1.0.2t/lib/libcrypto.1.0.0.dylib; sourceTree = "<absolute>"; };
-		D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = /usr/local/Cellar/openssl/1.0.2t/lib/libssl.1.0.0.dylib; sourceTree = "<absolute>"; };
 		D548545B23749D1100BE1731 /* libx265.179.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libx265.179.dylib; path = /usr/local/Cellar/x265/3.2.1/lib/libx265.179.dylib; sourceTree = "<absolute>"; };
 		D548545D23749D4700BE1731 /* libavformat.58.29.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.29.100.dylib; path = /usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavformat.58.29.100.dylib; sourceTree = "<absolute>"; };
 		D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.56.31.100.dylib; path = /usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavutil.56.31.100.dylib; sourceTree = "<absolute>"; };
@@ -538,6 +521,9 @@
 		D54D2CE42444A7DE00146123 /* DlgExportXPLT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgExportXPLT.cpp; sourceTree = "<group>"; };
 		D54D2CE52444A7DE00146123 /* DlgExportXPLT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgExportXPLT.h; sourceTree = "<group>"; };
 		D54D2CE72444A7DE00146123 /* ImportSpringsTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImportSpringsTool.cpp; sourceTree = "<group>"; };
+		D55050F525F6AB47003783FA /* libcrypto.1.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.1.dylib; path = "/usr/local/Cellar/openssl@1.1/1.1.1j/lib/libcrypto.1.1.dylib"; sourceTree = "<absolute>"; };
+		D55050F625F6AB47003783FA /* libssl.1.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.1.dylib; path = "/usr/local/Cellar/openssl@1.1/1.1.1j/lib/libssl.1.1.dylib"; sourceTree = "<absolute>"; };
+		D55050F925F6BC82003783FA /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = /usr/local/Cellar/sqlite/3.34.0/lib/libsqlite3.0.dylib; sourceTree = "<absolute>"; };
 		D5606C7F238DA80C002B037E /* libCUILib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libCUILib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlapTool.cpp; sourceTree = "<group>"; };
 		D5606C86238DAAD1002B037E /* TetOverlapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlapTool.h; sourceTree = "<group>"; };
@@ -683,18 +669,13 @@
 		D5ED290623197E8500C16BF7 /* libMeshIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMeshIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290823197E8500C16BF7 /* libMeshTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMeshTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290A23197E8500C16BF7 /* libNike3D.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libNike3D.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D5ED291D2319858900C16BF7 /* libcsgvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcsgvis.dylib; path = /Applications/Netgen.app/Contents/MacOS/libcsgvis.dylib; sourceTree = "<absolute>"; };
-		D5ED291E2319858A00C16BF7 /* liboccvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liboccvis.dylib; path = /Applications/Netgen.app/Contents/MacOS/liboccvis.dylib; sourceTree = "<absolute>"; };
 		D5ED291F2319858A00C16BF7 /* libstl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libstl.dylib; path = /Applications/Netgen.app/Contents/MacOS/libstl.dylib; sourceTree = "<absolute>"; };
-		D5ED29202319858A00C16BF7 /* libstlvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libstlvis.dylib; path = /Applications/Netgen.app/Contents/MacOS/libstlvis.dylib; sourceTree = "<absolute>"; };
 		D5ED29212319858B00C16BF7 /* libinterface.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libinterface.dylib; path = /Applications/Netgen.app/Contents/MacOS/libinterface.dylib; sourceTree = "<absolute>"; };
 		D5ED29222319858B00C16BF7 /* libcsg.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcsg.dylib; path = /Applications/Netgen.app/Contents/MacOS/libcsg.dylib; sourceTree = "<absolute>"; };
 		D5ED29232319858B00C16BF7 /* libngcore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libngcore.dylib; path = /Applications/Netgen.app/Contents/MacOS/libngcore.dylib; sourceTree = "<absolute>"; };
 		D5ED29242319858B00C16BF7 /* libmesh.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmesh.dylib; path = /Applications/Netgen.app/Contents/MacOS/libmesh.dylib; sourceTree = "<absolute>"; };
-		D5ED29252319858B00C16BF7 /* libgeom2dvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgeom2dvis.dylib; path = /Applications/Netgen.app/Contents/MacOS/libgeom2dvis.dylib; sourceTree = "<absolute>"; };
 		D5ED29262319858C00C16BF7 /* libgeom2d.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgeom2d.dylib; path = /Applications/Netgen.app/Contents/MacOS/libgeom2d.dylib; sourceTree = "<absolute>"; };
 		D5ED29272319858C00C16BF7 /* libocc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libocc.dylib; path = /Applications/Netgen.app/Contents/MacOS/libocc.dylib; sourceTree = "<absolute>"; };
-		D5ED29282319858C00C16BF7 /* libgui.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgui.dylib; path = /Applications/Netgen.app/Contents/MacOS/libgui.dylib; sourceTree = "<absolute>"; };
 		D5ED29292319858C00C16BF7 /* libvisual.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvisual.dylib; path = /Applications/Netgen.app/Contents/MacOS/libvisual.dylib; sourceTree = "<absolute>"; };
 		D5ED292A2319858D00C16BF7 /* libnglib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libnglib.dylib; path = /Applications/Netgen.app/Contents/MacOS/libnglib.dylib; sourceTree = "<absolute>"; };
 		D5ED2939231987CB00C16BF7 /* libTKernel.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKernel.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKernel.7.3.0.dylib; sourceTree = "<absolute>"; };
@@ -988,8 +969,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D55050FA25F6BC82003783FA /* libsqlite3.0.dylib in Frameworks */,
+				D55050F725F6AB47003783FA /* libcrypto.1.1.dylib in Frameworks */,
+				D55050F825F6AB47003783FA /* libssl.1.1.dylib in Frameworks */,
 				D5DE72EE24E3458200752E1D /* libomp.dylib in Frameworks */,
-				D576571A23E3347D00E4F70F /* libsqlite3.0.dylib in Frameworks */,
 				D576571823E3345500E4F70F /* libquazip.1.0.0.dylib in Frameworks */,
 				D5EF347623A03C1A00BF4D56 /* libssh.4.8.3.dylib in Frameworks */,
 				D5EF347323A03BA500BF4D56 /* libxvidcore.4.dylib in Frameworks */,
@@ -1005,8 +988,6 @@
 				D548546323749D4700BE1731 /* libavcodec.58.54.100.dylib in Frameworks */,
 				D548546423749D4700BE1731 /* libswresample.3.5.100.dylib in Frameworks */,
 				D548545C23749D1100BE1731 /* libx265.179.dylib in Frameworks */,
-				D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */,
-				D548545823749CCF00BE1731 /* libssl.1.0.0.dylib in Frameworks */,
 				D57A0B03234653F700B7C0B8 /* libmmg3d.a in Frameworks */,
 				D57A0B04234653F700B7C0B8 /* libmmg.a in Frameworks */,
 				D57A0B05234653F700B7C0B8 /* libmmg2d.a in Frameworks */,
@@ -1032,18 +1013,13 @@
 				D5ED2958231987CF00C16BF7 /* libTKPrim.7.3.0.dylib in Frameworks */,
 				D5ED2959231987CF00C16BF7 /* libTKMath.7.3.0.dylib in Frameworks */,
 				D5ED295A231987CF00C16BF7 /* libTKGeomAlgo.7.3.0.dylib in Frameworks */,
-				D5ED292B2319858D00C16BF7 /* libcsgvis.dylib in Frameworks */,
-				D5ED292C2319858D00C16BF7 /* liboccvis.dylib in Frameworks */,
 				D5ED292D2319858D00C16BF7 /* libstl.dylib in Frameworks */,
-				D5ED292E2319858D00C16BF7 /* libstlvis.dylib in Frameworks */,
 				D5ED292F2319858D00C16BF7 /* libinterface.dylib in Frameworks */,
 				D5ED29302319858D00C16BF7 /* libcsg.dylib in Frameworks */,
 				D5ED29312319858D00C16BF7 /* libngcore.dylib in Frameworks */,
 				D5ED29322319858D00C16BF7 /* libmesh.dylib in Frameworks */,
-				D5ED29332319858D00C16BF7 /* libgeom2dvis.dylib in Frameworks */,
 				D5ED29342319858D00C16BF7 /* libgeom2d.dylib in Frameworks */,
 				D5ED29352319858D00C16BF7 /* libocc.dylib in Frameworks */,
-				D5ED29362319858D00C16BF7 /* libgui.dylib in Frameworks */,
 				D5ED29372319858D00C16BF7 /* libvisual.dylib in Frameworks */,
 				D5ED29382319858D00C16BF7 /* libnglib.dylib in Frameworks */,
 				D5F7D8DD22FA38B60089B08E /* libAbaqus.a in Frameworks */,
@@ -1513,6 +1489,9 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D55050F925F6BC82003783FA /* libsqlite3.0.dylib */,
+				D55050F525F6AB47003783FA /* libcrypto.1.1.dylib */,
+				D55050F625F6AB47003783FA /* libssl.1.1.dylib */,
 				D5DE72ED24E3458200752E1D /* libomp.dylib */,
 				D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */,
 				D576571923E3347D00E4F70F /* libsqlite3.0.dylib */,
@@ -1532,8 +1511,6 @@
 				D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */,
 				D548546023749D4700BE1731 /* libswresample.3.5.100.dylib */,
 				D548545B23749D1100BE1731 /* libx265.179.dylib */,
-				D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */,
-				D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */,
 				D57A0B00234653F700B7C0B8 /* libmmg.a */,
 				D57A0B01234653F700B7C0B8 /* libmmg2d.a */,
 				D57A0AFF234653F700B7C0B8 /* libmmg3d.a */,
@@ -1560,18 +1537,13 @@
 				D5ED293D231987CC00C16BF7 /* libTKXMesh.7.3.0.dylib */,
 				D5ED293F231987CD00C16BF7 /* libTKXSBase.7.3.0.dylib */,
 				D5ED29222319858B00C16BF7 /* libcsg.dylib */,
-				D5ED291D2319858900C16BF7 /* libcsgvis.dylib */,
 				D5ED29262319858C00C16BF7 /* libgeom2d.dylib */,
-				D5ED29252319858B00C16BF7 /* libgeom2dvis.dylib */,
-				D5ED29282319858C00C16BF7 /* libgui.dylib */,
 				D5ED29212319858B00C16BF7 /* libinterface.dylib */,
 				D5ED29242319858B00C16BF7 /* libmesh.dylib */,
 				D5ED29232319858B00C16BF7 /* libngcore.dylib */,
 				D5ED292A2319858D00C16BF7 /* libnglib.dylib */,
 				D5ED29272319858C00C16BF7 /* libocc.dylib */,
-				D5ED291E2319858A00C16BF7 /* liboccvis.dylib */,
 				D5ED291F2319858A00C16BF7 /* libstl.dylib */,
-				D5ED29202319858A00C16BF7 /* libstlvis.dylib */,
 				D5ED29292319858C00C16BF7 /* libvisual.dylib */,
 				D5ED290023197E8500C16BF7 /* libFSCore.a */,
 				D5ED290223197E8500C16BF7 /* libGLLib.a */,
@@ -2115,6 +2087,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/qt/Frameworks,
+					"/usr/local/Cellar/python@3.9/3.9.2_1/Frameworks",
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/local/opt/qt/include/QtCore,
@@ -2148,6 +2121,8 @@
 					/usr/local/lib,
 					/usr/local/Cellar/sqlite/3.30.1/lib,
 					/usr/local/Cellar/libomp/9.0.0/lib,
+					"/usr/local/Cellar/openssl@1.1/1.1.1j/lib",
+					/usr/local/Cellar/sqlite/3.34.0/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2167,6 +2142,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/qt/Frameworks,
+					"/usr/local/Cellar/python@3.9/3.9.2_1/Frameworks",
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/local/opt/qt/include/QtCore,
@@ -2200,6 +2176,8 @@
 					/usr/local/lib,
 					/usr/local/Cellar/sqlite/3.30.1/lib,
 					/usr/local/Cellar/libomp/9.0.0/lib,
+					"/usr/local/Cellar/openssl@1.1/1.1.1j/lib",
+					/usr/local/Cellar/sqlite/3.34.0/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
