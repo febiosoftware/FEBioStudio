@@ -418,6 +418,8 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 void CMainWindow::on_actionAddMaterial_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	FEProject& prj = doc->GetProject();
 
 	CMaterialEditor dlg(prj, this);

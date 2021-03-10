@@ -214,6 +214,8 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_fem = new Post::FEPostModel;
 	m_postObj = nullptr;
 	m_glm = nullptr;
+
+	SetItemMode(ITEM_ELEM);
 }
 
 CPostDocument::~CPostDocument()

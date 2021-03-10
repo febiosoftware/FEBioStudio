@@ -93,6 +93,8 @@ public:
 
 	void GetNodeList(vector<int>& node, vector<int>& lnode);
 
+	vector<int> GetElementList() const { return m_Elem; }
+
 	FEItemListBuilder* Copy() override { return nullptr; }
 
 public:

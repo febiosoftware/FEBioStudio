@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QSplitter>
 #include <QLabel>
 #include <QToolButton>
+#include <QMenu>
 #include "MainWindow.h"
 #include "Document.h"
 #include "PropertyListView.h"
@@ -63,6 +64,7 @@ SOFTWARE.*/
 #include "GLView.h"
 #include "PostDocument.h"
 #include "GraphWindow.h"
+#include "Commands.h"
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -111,7 +113,7 @@ public:
 		case 7: m_fem->SetSmoothingAngle(v.toDouble());  break;
 		}
 	}
-	
+
 private:
 	Post::CGLModel*	m_fem;
 };
@@ -363,24 +365,87 @@ private:
 class CModelTreeItem : public QTreeWidgetItem
 {
 public:
-	CModelTreeItem(FSObject* po, QTreeWidget* tree) : QTreeWidgetItem(tree), m_po(po) {}
-	CModelTreeItem(FSObject* po, QTreeWidgetItem* item) : QTreeWidgetItem(item), m_po(po) {}
+	enum Flag {
+		CANNOT_RENAME = 0x01,
+		CANNOT_DELETE = 0x02,
+		CANNOT_DISABLE = 0x04,
+		ALL_FLAGS = 0x07
+	};
+
+	struct Flags
+	{
+	public:
+		Flags() { m_flags = 0; }
+		Flags(Flag flag) { m_flags = flag; }
+		Flags(const Flags& flags) { m_flags = flags.m_flags; }
+
+		Flags operator | (const Flags& flags)
+		{
+			Flags newFlags;
+			newFlags.m_flags = m_flags;
+			newFlags.m_flags |= flags.m_flags;
+			return newFlags;
+		}
+
+		bool HasFlag(Flag flag) const { return (m_flags & flag); }
+
+	private:
+		unsigned int m_flags;
+	};
+
+public:
+	CModelTreeItem(FSObject* po, QTreeWidget* tree) : QTreeWidgetItem(tree), m_po(po), m_propList(nullptr) {}
+	CModelTreeItem(FSObject* po, QTreeWidgetItem* item) : QTreeWidgetItem(item), m_po(po), m_propList(nullptr) {}
+	~CModelTreeItem() { if (m_propList) delete m_propList; }
 
 	FSObject* Object() { return m_po; }
 
 	void SetObject(FSObject* po) { m_po = po; }
 
+	void SetPropertyList(CPropertyList* propList)
+	{
+		m_propList = propList;
+	}
+
+	CPropertyList* GetPropertyList() { return m_propList; }
+
+	void SetFlags(const Flags& flags) { m_flags = flags; }
+
+	bool CanDelete() { return (m_flags.HasFlag(CANNOT_DELETE) == false); }
+	bool CanRename() { return (m_flags.HasFlag(CANNOT_RENAME) == false); }
+	bool CanDisable() { return (m_flags.HasFlag(CANNOT_DISABLE) == false); }
+
 private:
 	FSObject* m_po;
+	CPropertyList*	m_propList;
+	Flags m_flags;
+};
+
+CModelTreeItem::Flags operator | (CModelTreeItem::Flag left, CModelTreeItem::Flag right)
+{
+	return CModelTreeItem::Flags(left) | CModelTreeItem::Flags(right);
+}
+
+//-----------------------------------------------------------------------------
+class CPostModelTree : public QTreeWidget
+{
+public:
+	CPostModelTree(::CPostModelPanel* view) : m_view(view) {}
+	void contextMenuEvent(QContextMenuEvent* ev) override
+	{
+		m_view->ShowContextMenu(ev);
+	}
+
+private:
+	CPostModelPanel*	m_view;
 };
 
 //-----------------------------------------------------------------------------
 class Ui::CPostModelPanel
 {
 public:
-	QTreeWidget*			m_tree;
+	CPostModelTree*			m_tree;
 	::CPropertyListView*	m_props;
-	QVector<CPropertyList*>	m_list;
 
 	CImageViewer*	m_imgView;
 
@@ -394,18 +459,19 @@ public:
 
 	QPushButton* autoUpdate;
 	QPushButton* apply;
+	QPushButton* delButton;
 
 public:
 	void setupUi(::CPostModelPanel* parent)
 	{
 		QVBoxLayout* pg = new QVBoxLayout(parent);
 		pg->setMargin(0);
-		
+
 		QSplitter* psplitter = new QSplitter;
 		psplitter->setOrientation(Qt::Vertical);
 		pg->addWidget(psplitter);
 
-		m_tree = new QTreeWidget;
+		m_tree = new CPostModelTree(parent);
 		m_tree->setObjectName(QStringLiteral("postModel"));
 		m_tree->setColumnCount(1);
 		m_tree->setHeaderHidden(true);
@@ -413,32 +479,32 @@ public:
 		QWidget* w = new QWidget;
 		QVBoxLayout* pvl = new QVBoxLayout;
 		pvl->setMargin(0);
-		
+
 		QHBoxLayout* phl = new QHBoxLayout;
 		enabled = new QCheckBox; enabled->setObjectName("enabled");
 
 		phl->addWidget(enabled);
 		phl->addWidget(name = new QLineEdit); name->setObjectName("nameEdit");
 
-		QPushButton* del = new QPushButton("Delete"); del->setObjectName("deleteButton");
-		phl->addWidget(del);
+		delButton = new QPushButton("Delete"); delButton->setObjectName("deleteButton");
+		phl->addWidget(delButton);
 		phl->addStretch();
 
-/*		autoUpdate = new QPushButton; autoUpdate->setObjectName("autoUpdate"); autoUpdate->setToolTip("Auto-update");
-		autoUpdate->setIcon(QIcon(":/icons/auto.png")); autoUpdate->setFixedWidth(20); 
-		autoUpdate->setCheckable(true);
+		/*		autoUpdate = new QPushButton; autoUpdate->setObjectName("autoUpdate"); autoUpdate->setToolTip("Auto-update");
+				autoUpdate->setIcon(QIcon(":/icons/auto.png")); autoUpdate->setFixedWidth(20);
+				autoUpdate->setCheckable(true);
 
-		apply = new QPushButton; apply->setObjectName("applyButton"); autoUpdate->setToolTip("Update");
-		apply->setIcon(QIcon(":/icons/apply.png"));
+				apply = new QPushButton; apply->setObjectName("applyButton"); autoUpdate->setToolTip("Update");
+				apply->setIcon(QIcon(":/icons/apply.png"));
 
-		QHBoxLayout* bl = new QHBoxLayout;
-		bl->setSpacing(0);
-		bl->addStretch();
-		bl->addWidget(autoUpdate);
-		bl->addWidget(apply);
+				QHBoxLayout* bl = new QHBoxLayout;
+				bl->setSpacing(0);
+				bl->addStretch();
+				bl->addWidget(autoUpdate);
+				bl->addWidget(apply);
 
-		phl->addLayout(bl);
-*/
+				phl->addLayout(bl);
+		*/
 
 		pvl->addLayout(phl);
 
@@ -446,10 +512,10 @@ public:
 		m_props = new ::CPropertyListView;
 		m_props->setObjectName("props");
 		m_tab->addTab(m_props, "Properties");
-//		tab->setTabPosition(QTabWidget::West);
+		//		tab->setTabPosition(QTabWidget::West);
 
 		m_imgView = new CImageViewer;
-//		m_tab->addTab(m_imgView, "Image Viewer");
+		//		m_tab->addTab(m_imgView, "Image Viewer");
 
 		m_histo = new CHistogramViewer;
 
@@ -465,10 +531,16 @@ public:
 		QMetaObject::connectSlotsByName(parent);
 	}
 
-	FSObject* currentObject()
+	CModelTreeItem* currentItem()
 	{
 		QTreeWidgetItem* current = m_tree->currentItem();
 		CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(current);
+		return item;
+	}
+
+	FSObject* currentObject()
+	{
+		CModelTreeItem* item = currentItem();
 		if (item == 0) return 0;
 
 		FSObject* po = item->Object();
@@ -496,6 +568,86 @@ public:
 		m_imgView->SetImageModel(nullptr);
 		m_histo->SetImageModel(nullptr);
 	}
+
+	CModelTreeItem* AddItem(
+		CModelTreeItem* parent,
+		FSObject* po,
+		QString txt,
+		QString icon = "",
+		CPropertyList* props = nullptr,
+		CModelTreeItem::Flags flags = CModelTreeItem::Flags())
+	{
+		CModelTreeItem* pi1 = nullptr;
+		if (parent == nullptr) pi1 = new CModelTreeItem(po, m_tree);
+		else pi1 = new CModelTreeItem(po, parent);
+
+		pi1->setText(0, txt);
+		if (icon.isEmpty() == false) pi1->setIcon(0, QIcon(QString(":/icons/") + icon + ".png"));
+
+		pi1->SetPropertyList(props);
+
+		pi1->SetFlags(flags);
+
+		updateItem(pi1);
+
+		return pi1;
+	}
+
+	void setCurrentObject(FSObject* po)
+	{
+		if (po == 0) m_tree->clearSelection();
+		else
+		{
+			std::string name = po->GetName();
+			QString s(name.c_str());
+			QTreeWidgetItemIterator it(m_tree);
+			while (*it)
+			{
+				QString t = (*it)->text(0);
+				string st = t.toStdString();
+				if ((*it)->text(0) == s)
+				{
+					(*it)->setSelected(true);
+					m_tree->setCurrentItem(*it);
+					break;
+				}
+				++it;
+			}
+		}
+	}
+
+	void clear()
+	{
+		// hide the image viewer
+		HideImageViewer();
+
+		name->clear();
+
+		// rebuild the tree
+		m_props->Update(0);
+		m_tree->clear();
+	}
+
+	void updateItem(CModelTreeItem* item)
+	{
+		if (item == nullptr) return;
+
+		Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(item->Object());
+		if (po == 0) return;
+
+		if (po->IsActive())
+		{
+			QFont font = item->font(0);
+			font.setItalic(false);
+			item->setFont(0, font);
+		}
+		else
+		{
+			QFont font = item->font(0);
+			font.setItalic(true);
+			item->setFont(0, font);
+		}
+	}
 };
 
 CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwnd, parent), ui(new Ui::CPostModelPanel)
@@ -513,33 +665,12 @@ CPostDocument* CPostModelPanel::GetActiveDocument()
 
 void CPostModelPanel::selectObject(FSObject* po)
 {
-	if (po == 0) ui->m_tree->clearSelection();
-	else
-	{
-		std::string name = po->GetName();
-		QString s(name.c_str());
-		QTreeWidgetItemIterator it(ui->m_tree);
-		while (*it)
-		{
-			QString t = (*it)->text(0);
-			string st = t.toStdString();
-			if ((*it)->text(0) == s)
-			{
-				(*it)->setSelected(true);
-				ui->m_tree->setCurrentItem(*it);
-//				on_modelTree_currentItemChanged(*it, 0);
-				break;
-			}
-			++it;
-		}
-	}
+	ui->setCurrentObject(po);
 }
 
 FSObject* CPostModelPanel::selectedObject()
 {
-	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(ui->m_tree->currentItem());
-	if (item == nullptr) return nullptr;
-	return item->Object();
+	return ui->currentObject();
 }
 
 void CPostModelPanel::UpdateView()
@@ -555,230 +686,7 @@ void CPostModelPanel::Update(bool breset)
 {
 	if (breset)
 	{
-//		CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(ui->m_tree->currentItem());
-/*		CGLObject* po = 0;
-		if (item)
-		{
-			po = item->Object();
-		}
-*/
-		// clear all property lists
-		if (ui->m_list.isEmpty() == false)
-		{
-			QVector<CPropertyList*>::iterator it;
-			for (it=ui->m_list.begin(); it != ui->m_list.end(); ++it) delete (*it);
-			ui->m_list.clear();
-		}
-
-		// clear object list
-		m_obj.clear();
-
-		// hide the image viewer
-		ui->HideImageViewer();
-
-		ui->name->clear();
-
-		// rebuild the tree
-		CPostDocument* pdoc = GetActiveDocument();
-		ui->m_props->Update(0);
-		ui->m_tree->clear();
-		if (pdoc && pdoc->IsValid())
-		{
-			Post::FEPostModel* fem = pdoc->GetFEModel();
-			Post::CGLModel* mdl = pdoc->GetGLModel();
-
-			CModelTreeItem* pi1 = nullptr;
-			if (mdl)
-			{
-				pi1 = new CModelTreeItem(0, ui->m_tree);
-				pi1->setText(0, QString::fromStdString(pdoc->GetDocFileName()));
-				pi1->setIcon(0, QIcon(QString(":/icons/postview.png")));
-				ui->m_list.push_back(new CModelProps(mdl));
-				pi1->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-				m_obj.push_back(0);
-				pi1->setExpanded(true);
-
-				// add the mesh
-				CModelTreeItem* pi2 = new CModelTreeItem(0, pi1);
-				if (fem)
-				{
-					pi2->setText(0, "Mesh");
-					pi2->setIcon(0, QIcon(QString(":/icons/mesh.png")));
-					ui->m_list.push_back(new CMeshProps(fem));
-					pi2->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-					m_obj.push_back(0);
-				}
-				pi2->setExpanded(true);
-
-				Post::CGLDisplacementMap* map = mdl->GetDisplacementMap();
-				if (map)
-				{
-					CModelTreeItem* pi3 = new CModelTreeItem(map, pi2);
-					pi3->setText(0, QString::fromStdString(map->GetName()));
-//					pi3->setTextColor(0, map && map->IsActive() ? Qt::black : Qt::gray);
-					pi3->setIcon(0, QIcon(QString(":/icons/distort.png")));
-					ui->m_list.push_back(new CObjectProps(map));
-					pi3->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-					m_obj.push_back(map);
-				}
-
-				Post::CGLColorMap* col = mdl->GetColorMap();
-				if (col)
-				{
-					CModelTreeItem* pi3 = new CModelTreeItem(col, pi2);
-					pi3->setText(0, QString::fromStdString(col->GetName()));
-//					pi3->setTextColor(0, col->IsActive() ? Qt::black : Qt::gray);
-					pi3->setIcon(0, QIcon(QString(":/icons/colormap.png")));
-					ui->m_list.push_back(new CObjectProps(col));
-					pi3->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-					m_obj.push_back(0);
-				}
-
-				if (fem && fem->PlotObjects())
-				{
-					int npo = fem->PlotObjects();
-					for (int i = 0; i < npo; ++i)
-					{
-						Post::FEPostModel::PlotObject* po = fem->GetPlotObject(i);
-
-						CModelTreeItem* pi = new CModelTreeItem(po, pi1);
-						pi->setText(0, QString::fromStdString(po->GetName()));
-						ui->m_list.push_back(new CObjectProps(po));
-						pi->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-						m_obj.push_back(0);
-					}
-				}
-
-				Post::GPlotList& pl = mdl->GetPlotList();
-				for (int n = 0; n < pl.Size(); ++n)
-				{
-					Post::CGLPlot& plot = *pl[n];
-					CModelTreeItem* pi1 = new CModelTreeItem(&plot, ui->m_tree);
-
-					if (dynamic_cast<Post::CGLPlaneCutPlot    *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/cut.png")));
-					else if (dynamic_cast<Post::CGLVectorPlot      *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/vectors.png")));
-					else if (dynamic_cast<Post::CGLSlicePlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/slice.png")));
-					else if (dynamic_cast<Post::CGLIsoSurfacePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/isosurface.png")));
-					else if (dynamic_cast<Post::CGLStreamLinePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/streamlines.png")));
-					else if (dynamic_cast<Post::CGLParticleFlowPlot*>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/particle.png")));
-					else if (dynamic_cast<Post::GLTensorPlot*>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/tensor.png")));
-					else if (dynamic_cast<Post::CGLMirrorPlane*>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/mirror.png")));
-
-					string name = plot.GetName();
-
-					pi1->setText(0, name.c_str());
-					//				pi1->setTextColor(0, plot.IsActive() ? Qt::black : Qt::gray);
-					ui->m_list.push_back(new CObjectProps(&plot));
-					pi1->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-					m_obj.push_back(&plot);
-				}
-			}
-
-			for (int i = 0; i < pdoc->ImageModels(); ++i)
-			{
-				Post::CImageModel* img = pdoc->GetImageModel(i);
-
-				CModelTreeItem* pi1 = new CModelTreeItem(img, ui->m_tree);
-				pi1->setText(0, QString::fromStdString(img->GetName()));
-				pi1->setIcon(0, QIcon(QString(":/icons/image.png")));
-				ui->m_list.push_back(new CImageModelProps(img));
-				pi1->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-				m_obj.push_back(img);
-				pi1->setExpanded(true);
-
-				for (int j = 0; j < img->ImageRenderers(); ++j)
-				{
-					Post::CGLImageRenderer* render = img->GetImageRenderer(j);
-
-					Post::CVolRender* volRender = dynamic_cast<Post::CVolRender*>(render);
-					if (volRender)
-					{
-						CModelTreeItem* pi = new CModelTreeItem(volRender, pi1);
-						pi->setText(0, QString::fromStdString(render->GetName()));
-						//				pi->setTextColor(0, volRender->IsActive() ? Qt::black : Qt::gray);
-						pi->setIcon(0, QIcon(QString(":/icons/volrender.png")));
-						ui->m_list.push_back(new CObjectProps(volRender));
-						pi->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-						m_obj.push_back(volRender);
-					}
-
-					Post::CImageSlicer* imgSlice = dynamic_cast<Post::CImageSlicer*>(render);
-					if (imgSlice)
-					{
-						CModelTreeItem* pi = new CModelTreeItem(imgSlice, pi1);
-						pi->setText(0, QString::fromStdString(render->GetName()));
-						//				pi->setTextColor(0, imgSlice->IsActive() ? Qt::black : Qt::gray);
-						pi->setIcon(0, QIcon(QString(":/icons/imageslice.png")));
-						ui->m_list.push_back(new CObjectProps(imgSlice));
-						pi->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-						m_obj.push_back(imgSlice);
-					}
-
-					Post::CMarchingCubes* marchCube = dynamic_cast<Post::CMarchingCubes*>(render);
-					if (marchCube)
-					{
-						CModelTreeItem* pi = new CModelTreeItem(marchCube, pi1);
-						pi->setText(0, QString::fromStdString(render->GetName()));
-						//				pi->setTextColor(0, imgSlice->IsActive() ? Qt::black : Qt::gray);
-						pi->setIcon(0, QIcon(QString(":/icons/marching_cubes.png")));
-						ui->m_list.push_back(new CObjectProps(marchCube));
-						pi->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-						m_obj.push_back(marchCube);
-					}
-				}
-			}
-	
-			// view settings
-			CGView& view = *pdoc->GetView();
-			pi1 = new CModelTreeItem(&view, ui->m_tree);
-			pi1->setText(0, "View");
-			pi1->setIcon(0, QIcon(QString(":/icons/view.png")));
-			ui->m_list.push_back(new CViewProps(*GetMainWindow()->GetGLView()));
-			pi1->setData(0, Qt::UserRole, (int) (ui->m_list.size() - 1));
-			pi1->setExpanded(true);
-			m_obj.push_back(0);
-
-			for (int i=0; i<view.CameraKeys(); ++i)
-			{
-				GLCameraTransform& key = view.GetKey(i);
-				CModelTreeItem* pi2 = new CModelTreeItem(&key, pi1);
-
-				string name = key.GetName();
-				pi2->setText(0, name.c_str());
-
-				pi2->setIcon(0, QIcon(QString(":/icons/view.png")));
-				ui->m_list.push_back(new CCameraTransformProps(key));
-				pi2->setData(0, Qt::UserRole, (int) (ui->m_list.size() - 1));
-				m_obj.push_back(&key);
-			}
-
-			// saved graphs
-			int n = pdoc->Graphs();
-			if (n > 0)
-			{
-				pi1 = new CModelTreeItem(nullptr, ui->m_tree);
-				pi1->setText(0, "Saved Graphs");
-				pi1->setIcon(0, QIcon(QString(":/icons/chart.png")));
-				ui->m_list.push_back(nullptr);
-				m_obj.push_back(0);
-				pi1->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-				for (int i = 0; i < n; ++i)
-				{
-					CGraphData* gd = const_cast<CGraphData*>(pdoc->GetGraphData(i));
-
-					CModelTreeItem* pi2 = new CModelTreeItem(nullptr, pi1);
-
-					string name = gd->GetName();
-					pi2->setText(0, name.c_str());
-					ui->m_list.push_back(nullptr);
-					pi2->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
-					m_obj.push_back(gd);
-				}
-			}
-		}
-
-		// This can crash PostView if po no longer exists (e.g. after new file is read)
-//		if (po) selectObject(po);
+		BuildModelTree();
 	}
 	else
 	{
@@ -786,59 +694,184 @@ void CPostModelPanel::Update(bool breset)
 	}
 }
 
-void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev)
+void CPostModelPanel::BuildModelTree()
 {
-	if (current)
+	ui->clear();
+	CPostDocument* pdoc = GetActiveDocument();
+	if (pdoc && pdoc->IsValid())
 	{
-		CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(current);
-		if (item)
-		{
-			FSObject* po = item->Object();
-			if (po)
-			{
-				ui->enabled->setEnabled(true);
-				Post::CGLObject* glo = dynamic_cast<Post::CGLObject*>(po);
-				if (glo)
-				{
-					ui->enabled->setChecked(glo->IsActive());
-				}
+		Post::FEPostModel* fem = pdoc->GetFEModel();
+		Post::CGLModel* mdl = pdoc->GetGLModel();
 
-				if (dynamic_cast<Post::CImageModel*>(po))
-				{
-					Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
-					ui->ShowImageViewer(img);
-				}
-				else ui->HideImageViewer();
-			}
-			else 
+		CModelTreeItem* pi1 = nullptr;
+		if (mdl)
+		{
+			pi1 = ui->AddItem(nullptr, nullptr, QString::fromStdString(pdoc->GetDocFileName()), "PostView", new CModelProps(mdl), CModelTreeItem::ALL_FLAGS);
+			pi1->setExpanded(true);
+
+			// add the mesh
+			if (fem)
 			{
-				ui->HideImageViewer();
-				ui->enabled->setEnabled(false);
-				ui->enabled->setChecked(true);
+				Post::FEPostMesh& mesh = *fem->GetFEMesh(0);
+				CModelTreeItem* pi2 = ui->AddItem(pi1, mdl, "Mesh", "mesh", new CMeshProps(fem), CModelTreeItem::ALL_FLAGS);
+
+				for (int i = 0; i < mesh.Parts(); ++i)
+				{
+					Post::FEPart& part = mesh.Part(i);
+					ui->AddItem(pi2, &part, QString::fromStdString(part.GetName()), "", nullptr, CModelTreeItem::ALL_FLAGS);
+				}
+			}
+
+			Post::CGLDisplacementMap* map = mdl->GetDisplacementMap();
+			if (map)
+			{
+				ui->AddItem(pi1, map, QString::fromStdString(map->GetName()), "distort", new CObjectProps(map), CModelTreeItem::CANNOT_RENAME);
+			}
+
+			Post::CGLColorMap* col = mdl->GetColorMap();
+			if (col)
+			{
+				ui->AddItem(pi1, col, QString::fromStdString(col->GetName()), "colormap", new CObjectProps(col), CModelTreeItem::CANNOT_RENAME);
+			}
+
+			if (fem && fem->PlotObjects())
+			{
+				int npo = fem->PlotObjects();
+				for (int i = 0; i < npo; ++i)
+				{
+					Post::FEPostModel::PlotObject* po = fem->GetPlotObject(i);
+					ui->AddItem(pi1, po, QString::fromStdString(po->GetName()), "", new CObjectProps(po));
+				}
+			}
+
+			Post::GPlotList& pl = mdl->GetPlotList();
+			for (int n = 0; n < pl.Size(); ++n)
+			{
+				Post::CGLPlot& plot = *pl[n];
+				CModelTreeItem* pi1 = ui->AddItem(nullptr, &plot, QString::fromStdString(plot.GetName()), "", new CObjectProps(&plot));
+
+				if      (dynamic_cast<Post::CGLPlaneCutPlot    *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/cut.png")));
+				else if (dynamic_cast<Post::CGLVectorPlot      *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/vectors.png")));
+				else if (dynamic_cast<Post::CGLSlicePlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/slice.png")));
+				else if (dynamic_cast<Post::CGLIsoSurfacePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/isosurface.png")));
+				else if (dynamic_cast<Post::CGLStreamLinePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/streamlines.png")));
+				else if (dynamic_cast<Post::CGLParticleFlowPlot*>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/particle.png")));
+				else if (dynamic_cast<Post::GLTensorPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/tensor.png")));
+				else if (dynamic_cast<Post::CGLMirrorPlane     *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/mirror.png")));
 			}
 		}
-		else
+
+		for (int i = 0; i < pdoc->ImageModels(); ++i)
+		{
+			Post::CImageModel* img = pdoc->GetImageModel(i);
+			ui->AddItem(nullptr, img, QString::fromStdString(img->GetName()), "image", new CImageModelProps(img));
+
+			for (int j = 0; j < img->ImageRenderers(); ++j)
+			{
+				Post::CGLImageRenderer* render = img->GetImageRenderer(j);
+
+				Post::CVolRender* volRender = dynamic_cast<Post::CVolRender*>(render);
+				if (volRender)
+				{
+					ui->AddItem(pi1, volRender, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender));
+				}
+
+				Post::CImageSlicer* imgSlice = dynamic_cast<Post::CImageSlicer*>(render);
+				if (imgSlice)
+				{
+					ui->AddItem(pi1, imgSlice, QString::fromStdString(render->GetName()), "imageslice", new CObjectProps(imgSlice));
+				}
+
+				Post::CMarchingCubes* marchCube = dynamic_cast<Post::CMarchingCubes*>(render);
+				if (marchCube)
+				{
+					ui->AddItem(pi1, marchCube, QString::fromStdString(render->GetName()), "marching_cubes", new CObjectProps(marchCube));
+				}
+			}
+		}
+	
+		// view settings
+		CGView& view = *pdoc->GetView();
+		pi1 = ui->AddItem(nullptr, &view, "View", "view", new CViewProps(*GetMainWindow()->GetGLView()), CModelTreeItem::ALL_FLAGS);
+
+		for (int i=0; i<view.CameraKeys(); ++i)
+		{
+			GLCameraTransform& key = view.GetKey(i);
+			string name = key.GetName();
+			ui->AddItem(pi1, &key, QString::fromStdString(name), "view", new CCameraTransformProps(key));
+		}
+
+		// saved graphs
+		int n = pdoc->Graphs();
+		if (n > 0)
+		{
+			pi1 = ui->AddItem(nullptr, nullptr, "Saved Graphs", "chart", nullptr, CModelTreeItem::ALL_FLAGS);
+			for (int i = 0; i < n; ++i)
+			{
+				CGraphData* gd = const_cast<CGraphData*>(pdoc->GetGraphData(i));
+				ui->AddItem(pi1, gd, QString::fromStdString(gd->GetName()));
+			}
+		}
+	}
+
+	// This can crash PostView if po no longer exists (e.g. after new file is read)
+//		if (po) selectObject(po);
+}
+
+void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev)
+{
+	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(current);
+	if (item)
+	{
+		FSObject* po = item->Object();
+		if (po)
+		{
+			ui->delButton->setEnabled(item->CanDelete());
+
+			ui->enabled->setEnabled(item->CanDisable());
+			Post::CGLObject* glo = dynamic_cast<Post::CGLObject*>(po);
+			if (glo)
+			{
+				ui->enabled->setChecked(glo->IsActive());
+			}
+
+			if (dynamic_cast<Post::CImageModel*>(po))
+			{
+				Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+				ui->ShowImageViewer(img);
+			}
+			else ui->HideImageViewer();
+		}
+		else 
 		{
 			ui->HideImageViewer();
 			ui->enabled->setEnabled(false);
-			ui->enabled->setChecked(false);
+			ui->enabled->setChecked(true);
+			ui->delButton->setEnabled(false);
 		}
 
-		ui->name->setText(current->text(0));
-		QVariant v = current->data(0, Qt::UserRole);
-		ui->m_props->Update(ui->m_list[v.toInt()]);
+		ui->name->setText(item->text(0));
+		ui->name->setEnabled(item->CanRename());
+		ui->m_props->Update(item->GetPropertyList());
 	}
 	else
 	{
 		ui->HideImageViewer();
 		ui->m_props->Update(0);
+		ui->enabled->setEnabled(false);
+		ui->enabled->setChecked(false);
+		ui->delButton->setEnabled(false);
+		ui->name->setText("");
+		ui->name->setEnabled(false);
 	}
 }
 
-void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int column)
+void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, int column)
 {
-	int n = item->data(0, Qt::UserRole).toInt();
-	GLCameraTransform* pkey = dynamic_cast<GLCameraTransform*>(m_obj[n]);
+	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(treeItem);
+	FSObject* po = item->Object();
+
+	GLCameraTransform* pkey = dynamic_cast<GLCameraTransform*>(po);
 	if (pkey)
 	{
 		CGView* view = GetActiveDocument()->GetView();
@@ -846,7 +879,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int 
 		GetMainWindow()->RedrawGL();
 	}
 
-	CGraphData* graph = dynamic_cast<CGraphData*>(m_obj[n]);
+	CGraphData* graph = dynamic_cast<CGraphData*>(po);
 	if (graph)
 	{
 		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
@@ -860,7 +893,8 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int 
 void CPostModelPanel::on_nameEdit_editingFinished()
 {
 	QString name = ui->name->text();
-	QTreeWidgetItem* item = ui->m_tree->currentItem();
+
+	CModelTreeItem* item = ui->currentItem();
 	if (item) item->setText(0, name);
 
 	FSObject* po = selectedObject();
@@ -873,33 +907,32 @@ void CPostModelPanel::on_nameEdit_editingFinished()
 
 void CPostModelPanel::on_deleteButton_clicked()
 {
-	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(ui->m_tree->currentItem());
-	if (item)
-	{
-		QVariant v = item->data(0, Qt::UserRole);
-		int n = v.toInt();
-		Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(m_obj[n]);
-		CGraphData* graph = dynamic_cast<CGraphData*>(m_obj[n]);
-		if (po)
-		{
-			// TODO: This is a hack to avoid a crash when the image viewer updates itself
-			//       after the image model is deleted. 
-			ui->HideImageViewer();
+	CModelTreeItem* item = ui->currentItem();
+	if (item == nullptr) return;
 
-			GetActiveDocument()->DeleteObject(po);
-			item->SetObject(0);
-			Update(true);
-			GetMainWindow()->RedrawGL();
-		}
-		else if (graph)
-		{
-			GetActiveDocument()->DeleteGraph(graph);
-			item->SetObject(0);
-			Update(true);
-			GetMainWindow()->RedrawGL();
-		}
-		else QMessageBox::information(this, "FEBio Studio", "Cannot delete this object");
+	FSObject* pobj = item->Object();
+
+	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(pobj);
+	CGraphData* graph = dynamic_cast<CGraphData*>(pobj);
+	if (po)
+	{
+		// TODO: This is a hack to avoid a crash when the image viewer updates itself
+		//       after the image model is deleted. 
+		ui->HideImageViewer();
+		
+		GetActiveDocument()->DeleteObject(po);
+		item->SetObject(0);
+		Update(true);
+		GetMainWindow()->RedrawGL();
 	}
+	else if (graph)
+	{
+		GetActiveDocument()->DeleteGraph(graph);
+		item->SetObject(0);
+		Update(true);
+		GetMainWindow()->RedrawGL();
+	}
+	else QMessageBox::information(this, "FEBio Studio", "Cannot delete this object");
 }
 
 void CPostModelPanel::on_props_dataChanged()
@@ -912,8 +945,7 @@ void CPostModelPanel::on_props_dataChanged()
 
 void CPostModelPanel::on_enabled_stateChanged(int nstate)
 {
-	QTreeWidgetItem* current = ui->m_tree->currentItem();
-	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(current);
+	CModelTreeItem* item = ui->currentItem();
 	if (item == 0) return;
 
 	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(item->Object());
@@ -922,29 +954,87 @@ void CPostModelPanel::on_enabled_stateChanged(int nstate)
 	if (nstate == Qt::Unchecked)
 	{
 		po->Activate(false);
-		item->setForeground(0, Qt::gray);
 	}
 	else if (nstate == Qt::Checked)
 	{
 		po->Activate(true);
-		item->setForeground(0, Qt::black);
 	}
+
+	ui->updateItem(item);
 
 	emit postObjectStateChanged();
 }
-/*
-void CModelViewer::on_autoUpdate_toggled(bool b)
-{
-	ui->apply->setEnabled(!b);	
-}
 
-void CModelViewer::on_applyButton_clicked()
+void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 {
-	CGLObject* po = ui->currentObject();
-	if (po)
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	Post::CGLModel* pmdl = dynamic_cast<Post::CGLModel*>(po);
+	if (pmdl)
 	{
-		CGLModel* mdl = po->GetModel();
-		if (mdl) po->Update(mdl->currentTimeIndex(), 0.f, true);
+		QMenu menu(this);
+		menu.addAction("Show All Elements", this, SLOT(OnShowAllElements()));
+		menu.exec(ev->globalPos());
+		return;
+	}
+
+	Post::FEPart* pg = dynamic_cast<Post::FEPart*>(po);
+	if (pg)
+	{
+		QMenu menu(this);
+		menu.addAction("Select Elements", this, SLOT(OnSelectElements()));
+		menu.addAction("Hide Elements", this, SLOT(OnHideElements()));
+		menu.exec(ev->globalPos());
+		return;
 	}
 }
-*/
+
+void CPostModelPanel::OnSelectElements()
+{
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	Post::FEPart* pg = dynamic_cast<Post::FEPart*>(po);
+	if (pg)
+	{
+		CPostDocument* pdoc = GetActiveDocument();
+		FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
+		pdoc->SetItemMode(ITEM_ELEM);
+		pdoc->DoCommand(new CCmdSelectElements(mesh, pg->GetElementList(), false));
+		GetMainWindow()->UpdateGLControlBar();
+		GetMainWindow()->RedrawGL();
+	}
+}
+
+void CPostModelPanel::OnHideElements()
+{
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	Post::FEPart* pg = dynamic_cast<Post::FEPart*>(po);
+	if (pg)
+	{
+		CPostDocument* pdoc = GetActiveDocument();
+		FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
+
+		pdoc->DoCommand(new CCmdHideElements(mesh, pg->GetElementList()));
+		GetMainWindow()->RedrawGL();
+	}
+}
+
+void CPostModelPanel::OnShowAllElements()
+{
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
+	if (mesh)
+	{
+		ForAllElements(*mesh, [](FEElement_& el) {
+			el.Unhide();
+		});
+		mesh->UpdateItemVisibility();
+		GetMainWindow()->RedrawGL();
+	}
+}

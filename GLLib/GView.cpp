@@ -59,10 +59,11 @@ void CGView::DeleteAllKeys()
 	m_key.clear();
 }
 
-void CGView::AddCameraKey(GLCameraTransform& key)
+GLCameraTransform* CGView::AddCameraKey(GLCameraTransform& key)
 {
 	m_key.push_back(new GLCameraTransform(key));
 	m_nkey = (int)m_key.size()-1;
+	return m_key[m_nkey];
 }
 
 void CGView::SetCurrentKey(GLCameraTransform* pkey)
