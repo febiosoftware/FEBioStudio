@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D5044A5F25F9701200C81BC4 /* quad4.h in Headers */ = {isa = PBXBuildFile; fileRef = D5044A5D25F9701200C81BC4 /* quad4.h */; };
+		D5044A6025F9701200C81BC4 /* tri3.h in Headers */ = {isa = PBXBuildFile; fileRef = D5044A5E25F9701200C81BC4 /* tri3.h */; };
 		D5215EE81F018C3300838680 /* FEMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215EDC1F018C3300838680 /* FEMesh.cpp */; };
 		D5215EE91F018C3300838680 /* FEMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215EDD1F018C3300838680 /* FEMesh.h */; };
 		D5215EEA1F018C3300838680 /* LineMesh2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215EDE1F018C3300838680 /* LineMesh2D.cpp */; };
@@ -68,6 +70,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D5044A5D25F9701200C81BC4 /* quad4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = quad4.h; sourceTree = "<group>"; };
+		D5044A5E25F9701200C81BC4 /* tri3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tri3.h; sourceTree = "<group>"; };
 		D5215EDC1F018C3300838680 /* FEMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMesh.cpp; sourceTree = "<group>"; };
 		D5215EDD1F018C3300838680 /* FEMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMesh.h; sourceTree = "<group>"; };
 		D5215EDE1F018C3300838680 /* LineMesh2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LineMesh2D.cpp; sourceTree = "<group>"; };
@@ -199,6 +203,7 @@
 				D5B42D641FA1004600C56FCE /* FENodeNodeList.h */,
 				D53293A51E4A8454002798B3 /* FESurfaceMesh.cpp */,
 				D53293A61E4A8454002798B3 /* FESurfaceMesh.h */,
+				D57FEE5325E0236D00D8ADC1 /* hex.h */,
 				D5A49E431FD74D4F0083510E /* insertCurve.cpp */,
 				D5A49E401FD74D4E0083510E /* insertCurve.h */,
 				D5A49E421FD74D4F0083510E /* insertCurve2.cpp */,
@@ -213,16 +218,17 @@
 				D5215EE21F018C3300838680 /* MeshMetrics.h */,
 				D5215EE31F018C3300838680 /* MeshTools.cpp */,
 				D5215EE41F018C3300838680 /* MeshTools.h */,
+				D57FEE5225E020C400D8ADC1 /* penta.h */,
+				D57FEE4F25E0200F00D8ADC1 /* pyra.h */,
+				D5044A5D25F9701200C81BC4 /* quad4.h */,
 				D5ED25E023197A1E00C16BF7 /* quad8.h */,
+				D57FEE5425E023D200D8ADC1 /* tet.h */,
+				D5044A5E25F9701200C81BC4 /* tri3.h */,
 				D5215EE51F018C3300838680 /* triangulate.cpp */,
 				D5215EE61F018C3300838680 /* triangulate.h */,
 				D53293A71E4A8454002798B3 /* TriMesh.cpp */,
 				D53293A81E4A8454002798B3 /* TriMesh.h */,
 				D5215EE71F018C3300838680 /* TriMesh2D.h */,
-				D57FEE4F25E0200F00D8ADC1 /* pyra.h */,
-				D57FEE5225E020C400D8ADC1 /* penta.h */,
-				D57FEE5325E0236D00D8ADC1 /* hex.h */,
-				D57FEE5425E023D200D8ADC1 /* tet.h */,
 			);
 			name = MeshLib;
 			path = ../../MeshLib;
@@ -263,8 +269,10 @@
 				D5215EEB1F018C3300838680 /* LineMesh2D.h in Headers */,
 				D5215EEE1F018C3300838680 /* MeshMetrics.h in Headers */,
 				D5ED25EF23197A1F00C16BF7 /* FEElementLibrary.h in Headers */,
+				D5044A5F25F9701200C81BC4 /* quad4.h in Headers */,
 				D53293B21E4A8454002798B3 /* FEElement.h in Headers */,
 				D53293B71E4A8454002798B3 /* FENode.h in Headers */,
+				D5044A6025F9701200C81BC4 /* tri3.h in Headers */,
 				D5B42D681FA1004600C56FCE /* FENodeElementList.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

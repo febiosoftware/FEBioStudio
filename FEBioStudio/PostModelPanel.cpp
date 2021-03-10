@@ -1001,7 +1001,8 @@ void CPostModelPanel::OnSelectElements()
 		CPostDocument* pdoc = GetActiveDocument();
 		FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_ELEM);
-		pdoc->DoCommand(new CCmdSelectElements(mesh, pg->GetElementList(), false));
+        vector<int>pgl = pg->GetElementList();
+		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
 		GetMainWindow()->UpdateGLControlBar();
 		GetMainWindow()->RedrawGL();
 	}
