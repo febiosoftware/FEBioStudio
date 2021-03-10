@@ -238,16 +238,18 @@ FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps) : FESurfaceLoad(FE_FLU
 {
     SetTypeString("Fluid Normal Velocity");
     AddDoubleParam(1, "velocity", "velocity")->SetLoadCurve();
-    AddBoolParam(true, "prescribe_nodal_velocities", "prescribe_nodal_velocities");
-    AddBoolParam(false, "parabolic", "parabolic");
+    AddBoolParam(true, "prescribe_nodal_velocities", "prescribe nodal velocities");
+    AddBoolParam(false, "parabolic", "parabolic velocity profile");
+    AddBoolParam(false, "prescribe_rim_pressure", "prescribe rim pressure");
 }
 
-FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, int nstep) : FESurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps, pi, nstep)
+FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep) : FESurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps, pi, nstep)
 {
     SetTypeString("Fluid Normal Velocity");
     AddDoubleParam(vn, "velocity", "velocity")->SetLoadCurve();
-    AddBoolParam(bp, "prescribe_nodal_velocities", "prescribe_nodal_velocities");
-    AddBoolParam(bparab, "parabolic", "parabolic");
+    AddBoolParam(bp, "prescribe_nodal_velocities", "prescribe nodal velocities");
+    AddBoolParam(bparab, "parabolic", "parabolic velocity profile");
+    AddBoolParam(brimp, "prescribe_rim_pressure", "prescribe rim pressure");
 }
 
 //-----------------------------------------------------------------------------

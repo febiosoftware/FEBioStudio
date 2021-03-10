@@ -1619,6 +1619,10 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidNormalVelocity(XMLTag& tag)
             bool b; tag.value(b);
             psl->SetBParab(b);
         }
+        else if (tag == "prescribe_rim_pressure") {
+            bool b; tag.value(b);
+            psl->SetBRimP(b);
+        }
         else ParseUnknownTag(tag);
         ++tag;
     } while (!tag.isend());
