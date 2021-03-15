@@ -466,3 +466,17 @@ bool FELoadCurve::LoadData(const char* szfile)
 
 	return true;
 }
+
+bool FELoadCurve::WriteData(const char* szfile)
+{
+	FILE* fp = fopen(szfile, "wt");
+	if (fp == 0) return false;
+
+	for (int i = 0; i < m_Pt.size(); ++i)
+	{
+		LOADPOINT& pt = m_Pt[i];
+		fprintf(fp, "%lg %lg\n", pt.time, pt.load);
+	}
+	fclose(fp);
+	return true;
+}

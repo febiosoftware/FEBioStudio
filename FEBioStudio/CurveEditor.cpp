@@ -978,6 +978,19 @@ void CCurveEditor::on_plot_doneSelectingRect(QRect rt)
 
 void CCurveEditor::on_save_triggered()
 {
+	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
+	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+
+	QString fileName = QFileDialog::getSaveFileName(this, "Open File", "", "All files (*)");
+	if (fileName.isEmpty() == false)
+	{
+		std::string sfile = fileName.toStdString();
+		const char* szfile = sfile.c_str();
+		if (plc->WriteData(szfile) == false)
+		{
+			QMessageBox::critical(this, "Save File", QString("Failed saving curve data to file %1").arg(szfile));
+		}
+	}
 }
 
 void CCurveEditor::on_clip_triggered()
