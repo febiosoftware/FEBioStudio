@@ -65,7 +65,7 @@ SOFTWARE.*/
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
 
-void VIEW_SETTINGS::Defaults()
+void VIEW_SETTINGS::Defaults(int ntheme)
 {
 	m_bgrid = true;
 	m_bmesh = true;
@@ -104,8 +104,18 @@ void VIEW_SETTINGS::Defaults()
 	m_bTags = true;
 	m_ntagInfo = 0;
 
-	m_col1 = GLColor(164,164,255);
-	m_col2 = GLColor(96,96,164);		
+	if (ntheme == 0)
+	{
+		m_col1 = GLColor(255, 255, 255);
+		m_col2 = GLColor(128, 128, 255);
+		m_nbgstyle = BG_HORIZONTAL;
+	}
+	else
+	{
+		m_col1 = GLColor(83, 83, 83);
+		m_col2 = GLColor(128, 128, 128);
+		m_nbgstyle = BG_HORIZONTAL;
+	}
 
 	m_mcol = GLColor(0, 0, 128);
 	m_fgcol = GLColor(0, 0, 0);

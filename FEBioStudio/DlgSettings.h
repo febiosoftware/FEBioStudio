@@ -165,9 +165,12 @@ public:
 public slots:
 	void accept();
 	void onClicked(QAbstractButton*);
+	void onReset();
 
 private:
 	void UpdatePalettes();
+	void UpdateSettings();
+	void UpdateUI();
 
 protected:
 	CMainWindow*		m_pwnd;

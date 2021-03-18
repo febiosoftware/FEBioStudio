@@ -1278,22 +1278,8 @@ void CGLView::initializeGL()
 void CGLView::Reset()
 {
 	// default display properties
-	m_view.Defaults();
-
-	// set some theme dependant settings
 	int ntheme = m_pWnd->currentTheme();
-	if (ntheme == 0)
-	{
-		m_view.m_col1 = GLColor(255, 255, 255);
-		m_view.m_col2 = GLColor(128, 128, 255);
-		m_view.m_nbgstyle = BG_HORIZONTAL;
-	}
-	else
-	{
-		m_view.m_col1 = GLColor(83, 83, 83);
-		m_view.m_col2 = GLColor(128, 128, 128);
-		m_view.m_nbgstyle = BG_HORIZONTAL;
-	}
+	m_view.Defaults(ntheme);
 
 	GLHighlighter::ClearHighlights();
 	repaint();
