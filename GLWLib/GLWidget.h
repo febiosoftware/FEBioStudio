@@ -119,8 +119,16 @@ public:
 	unsigned int layer() const { return m_layer; }
 	void set_layer(unsigned int l) { m_layer = l; }
 
+	std::string processLabel() const;
+
 public:
 	static void set_base_color(GLColor c) { m_base = c; }
+
+public:
+	static void clearStringTable();
+	static void addToStringTable(const std::string& key, const std::string& value);
+	static void addToStringTable(const std::string& key, double value);
+	static std::string getStringTableValue(const std::string& key);
 
 protected:
 	int m_x, m_y;
@@ -145,6 +153,8 @@ protected:
 	static	GLColor	m_base;	// base color
 
 	bool	m_bshow;	// show the widget or not
+
+	static	std::map<std::string, std::string>	m_stringTable;
 
 	friend class CGLWidgetManager;
 };

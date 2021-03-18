@@ -425,8 +425,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	setMouseTracking(true);
 
-	m_szsubtitle[0] = 0;
-
 	m_showPlaneCut = false;
 	m_planeCutMode = 0;
 	m_plane[0] = 1.0;
@@ -1256,11 +1254,13 @@ void CGLView::initializeGL()
 	m_Widget->AddWidget(m_ptitle = new GLBox(20, 20, 300, 50, ""), 0);
 	m_ptitle->set_font_size(30);
 	m_ptitle->fit_to_size();
+	m_ptitle->set_label("$(filename)");
 	Y += m_ptitle->h();
 
 	m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""), 0);
 	m_psubtitle->set_font_size(15);
 	m_psubtitle->fit_to_size();
+	m_psubtitle->set_label("$(datafield)\\nTime = $(time)");
 
 	m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
 	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
@@ -1306,8 +1306,6 @@ void CGLView::UpdateWidgets(bool bposition)
 
 	if (postDoc && postDoc->IsValid())
 	{
-		const string& title = postDoc->GetDocFileName();
-		m_ptitle->copy_label(title.c_str());
 		m_ptitle->fit_to_size();
 
 		int Y = 0;
@@ -1560,16 +1558,14 @@ void CGLView::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// render the title
+	// Update GLWidget string table for post rendering
 	if (postDoc)
 	{
-		if (postDoc && postDoc->IsValid())// && view.m_bTitle)
+		if (postDoc && postDoc->IsValid())
 		{
-			string title = postDoc->GetDocFileBase();
-			m_ptitle->copy_label(title.c_str());
-
-			sprintf(m_szsubtitle, "%s\nTime = %.4g", postDoc->GetFieldString().c_str(), postDoc->GetTimeValue());
-			m_psubtitle->set_label(m_szsubtitle);
+			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
+			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
+			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
 		}
 	}
 
