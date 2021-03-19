@@ -584,7 +584,7 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 		{
 			GLEdge::EDGE& edge = m_edge.Edge(i);
 			FEElement_* pe = mesh.ElementPtr(edge.elem);
-			if (pe && !pe->IsSelected())
+			if (pe && !pe->IsSelected() && pe->IsVisible())
 			{
 				int mat = edge.mat;
 				if (mat != curMat)
@@ -621,7 +621,7 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 	{
 		GLEdge::EDGE& edge = m_edge.Edge(i);
 		FEElement_* pe = mesh.ElementPtr(edge.elem);
-		if (pe && !pe->IsSelected())
+		if (pe && !pe->IsSelected() && pe->IsVisible())
 		{
 			int mat = edge.mat;
 			if (mat != curMat)
