@@ -208,6 +208,37 @@ void check_002(FEProject& prj, std::vector<FSObject*>& objList)
 
 void check_003(FEProject& prj, std::vector<FSObject*>& objList)
 {
+	FEModel& fem = prj.GetFEModel();
+
+	// build a material lookup table
+	int minId, maxId;
+	for (int i = 0; i < fem.Materials(); ++i)
+	{
+		GMaterial* gm = fem.GetMaterial(i); assert(gm);
+		if (gm)
+		{
+			int matId = gm->GetID();
+			if ((i == 0) || (matId < minId)) minId = matId;
+			if ((i == 0) || (matId > maxId)) maxId = matId;
+		}
+	}
+	int mats = maxId - minId + 1;
+	vector<int> lut(mats, -1);
+	for (int i = 0; i < fem.Materials(); ++i)
+	{
+		GMaterial* gm = fem.GetMaterial(i); assert(gm);
+		if (gm)
+		{
+			int matId = gm->GetID() - minId;
+			assert(matId < mats);
+			if (matId < mats)
+			{
+				assert(lut[matId] == -1);
+				lut[matId] = i;
+			}
+		}
+	}
+
 	GModel& mdl = prj.GetFEModel().GetModel();
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
@@ -215,7 +246,8 @@ void check_003(FEProject& prj, std::vector<FSObject*>& objList)
 		for (int j = 0; j < po->Parts(); ++j)
 		{
 			GPart* pj = po->Part(j);
-			if (pj->GetMaterialID() == -1)
+			int matId = pj->GetMaterialID() - minId;
+			if ((matId < 0) || (matId >= mats) || (lut[matId] == -1))
 			{
 				objList.push_back(pj);
 			}
@@ -478,9 +510,9 @@ void check_013(FEProject& prj, std::vector<FSObject*>& objList)
 				{
 					// see if the material is rigid
 					int mid = pg->GetMaterialID();
-					if (mid >= 0)
+					GMaterial* pm = fem.GetMaterialFromID(mid);
+					if (pm)
 					{
-						GMaterial* pm = fem.GetMaterialFromID(mid);
 						FEMaterial* mat = pm->GetMaterialProperties();
 						if (mat && (dynamic_cast<FERigidMaterial*>(mat)))
 						{
