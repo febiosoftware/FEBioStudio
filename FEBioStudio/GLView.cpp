@@ -5668,7 +5668,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	for (int i = 0; i<lineMesh->Nodes(); ++i)
 	{
 		FENode& node = lineMesh->Node(i);
-		if (node.m_ntag == 0)
+		if (node.IsVisible() && (node.m_ntag == 0))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
 
@@ -6112,7 +6112,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	for (int i = 0; i<NE; ++i)
 	{
 		FEEdge& edge = pm->Edge(i);
-		if (edge.m_ntag == 0)
+		if (edge.IsVisible() && (edge.m_ntag == 0))
 		{
 			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 			vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
