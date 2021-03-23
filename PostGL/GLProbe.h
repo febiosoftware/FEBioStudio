@@ -49,6 +49,9 @@ public:
 	void SetColor(const GLColor& c);
 
 private:
+	int ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt);
+
+private:
 	vec3d	m_initPos;
 	GLColor	m_col;
 	double	m_size;
