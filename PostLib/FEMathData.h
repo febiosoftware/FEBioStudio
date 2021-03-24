@@ -73,7 +73,7 @@ private:
 class FEMathDataField : public FEDataField
 {
 public:
-	FEMathDataField(const std::string& name, unsigned int flag = 0) : FEDataField(name, DATA_FLOAT, DATA_NODE, CLASS_NODE, flag)
+	FEMathDataField(Post::FEPostModel* fem, unsigned int flag = 0) : FEDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_NODE, flag)
 	{
 		m_eq = "";
 	}
@@ -81,7 +81,7 @@ public:
 	//! Create a copy
 	FEDataField* Clone() const override
 	{
-		FEMathDataField* pd = new FEMathDataField(GetName());
+		FEMathDataField* pd = new FEMathDataField(m_fem);
 		pd->m_eq = m_eq;
 		return pd;
 	}
@@ -103,7 +103,7 @@ private:
 class FEMathVec3DataField : public FEDataField
 {
 public:
-	FEMathVec3DataField(const std::string& name, unsigned int flag = 0) : FEDataField(name, DATA_VEC3F, DATA_NODE, CLASS_NODE, flag)
+	FEMathVec3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : FEDataField(fem, DATA_VEC3F, DATA_NODE, CLASS_NODE, flag)
 	{
 		m_eq[0] = "";
 		m_eq[1] = "";
@@ -113,7 +113,7 @@ public:
 	//! Create a copy
 	FEDataField* Clone() const override
 	{
-		FEMathVec3DataField* pd = new FEMathVec3DataField(GetName());
+		FEMathVec3DataField* pd = new FEMathVec3DataField(m_fem);
 		pd->m_eq[0] = m_eq[0];
 		pd->m_eq[1] = m_eq[1];
 		pd->m_eq[2] = m_eq[2];
@@ -144,14 +144,14 @@ private:
 class FEMathMat3DataField : public FEDataField
 {
 public:
-	FEMathMat3DataField(const std::string& name, unsigned int flag = 0) : FEDataField(name, DATA_MAT3F, DATA_NODE, CLASS_NODE, flag)
+	FEMathMat3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : FEDataField(fem, DATA_MAT3F, DATA_NODE, CLASS_NODE, flag)
 	{
 	}
 
 	//! Create a copy
 	FEDataField* Clone() const override
 	{
-		FEMathMat3DataField* pd = new FEMathMat3DataField(GetName());
+		FEMathMat3DataField* pd = new FEMathMat3DataField(m_fem);
 		for (int i = 0; i < 9; ++i) pd->m_eq[i] = m_eq[i];
 		return pd;
 	}

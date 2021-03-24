@@ -25,9 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEPostModel.h"
+#include "FEDataField.h"
 
 namespace Post {
+
+	class FEPostModel;
 
 //-----------------------------------------------------------------------------
 // This class maps the distance between two surfaces and adds a field variable
@@ -53,14 +55,13 @@ private:
 	};
 
 public:
-	FEDistanceMap(FEPostModel* fem);
+	FEDistanceMap(FEPostModel* fem, int flags);
 
 	FEDataField* Clone() const override;
 
 	FEMeshData* CreateData(FEState* pstate) override;
 
 	void Apply();
-	void Apply(FEPostModel* fem);
 
 	void InitSurface(int n);
 
@@ -85,7 +86,6 @@ protected:
 protected:
 	Surface			m_surf1;
 	Surface			m_surf2;
-	FEPostModel*	m_pfem;
 
 public:
 	double	m_tol;			//!< projection tolerance

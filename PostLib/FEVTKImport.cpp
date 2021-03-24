@@ -246,7 +246,7 @@ bool FEVTKimport::Load(const char* szfile)
 				}
 			}
 
-			fem.AddDataField(new FEDataField_T<FENodeData<float> >("data", EXPORT_DATA));
+			fem.AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), "data");
 
 			FENodeData<float>& df = dynamic_cast<FENodeData<float>&>(ps->m_Data[0]);
 			for (int j=0; j<pm->Nodes(); ++j) df[j] = (float) data[j];
@@ -255,7 +255,7 @@ bool FEVTKimport::Load(const char* szfile)
 		//reading cell data
 		if(isCellData)
 		{
-			fem.AddDataField(new FEDataField_T<FEElementData<float, DATA_ITEM> >("data", EXPORT_DATA));
+			fem.AddDataField(new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem, EXPORT_DATA), "data");
 
 			FEElementData<float, DATA_ITEM>& ed = dynamic_cast<FEElementData<float, DATA_ITEM>&>(ps->m_Data[ ps->m_Data.size() - 1]);
 
@@ -282,13 +282,14 @@ bool FEVTKimport::readPointData(char* szline)
 	char buf[3][64] = {0};
 	int nread = sscanf(szline, "%s %s %s", buf[0], buf[1], buf[2]);
 
+	FEPostModel& fem = *m_fem;
 
 	bool bVectors = false;
 	if (strcmp(buf[0], "VECTORS") == 0) bVectors = true;
 
 	if (bVectors)
 	{
-		m_fem->AddDataField(new FEDataField_T<FENodeData<vec3f> >(buf[1], EXPORT_DATA));
+		m_fem->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), buf[1]);
 
 		FENodeData<vec3f>& df = dynamic_cast<FENodeData<vec3f>&>(m_ps->m_Data[  m_ps->m_Data.size() - 1 ]);
 

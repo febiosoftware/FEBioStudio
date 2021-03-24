@@ -181,7 +181,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		}
 
 		// If not, try to add it
-		if (bfound == false) Post::AddStandardDataField(*po, si);
+		if (bfound == false) Post::AddStandardDataField(*ps, si);
 	}
 
 	// see if we can reactivate the same data field
