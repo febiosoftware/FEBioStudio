@@ -136,7 +136,7 @@ public:
 		QVariant v;
 		if (m_fem)
 		{
-			Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
+			Post::FEPostMesh& mesh = *m_fem->CurrentState()->GetFEMesh();
 			switch (i)
 			{
 			case 0: v = mesh.Nodes(); break;
