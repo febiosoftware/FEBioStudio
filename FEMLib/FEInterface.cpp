@@ -695,6 +695,7 @@ FETiedMultiphasicInterface::FETiedMultiphasicInterface(FEModel* ps, int nstep) :
 	AddDoubleParam(0.2, "tolerance", "augmentation tolerance");
 	AddDoubleParam(0, "gaptol", "gap tolerance");
 	AddDoubleParam(0, "ptol", "pressure tolerance");
+    AddDoubleParam(0, "ctol", "concentration tolerance");
 	AddDoubleParam(1.0, "penalty", "penalty factor");
 	AddBoolParam(false, "auto_penalty", "auto-penalty");
 	AddBoolParam(false, "two_pass", "two pass");

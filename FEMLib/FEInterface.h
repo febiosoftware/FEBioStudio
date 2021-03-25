@@ -284,7 +284,7 @@ public:
 class FETiedMultiphasicInterface : public FEPairedInterface
 {
 public:
-	enum { LAUGON, ALTOL, GAPTOL, PTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD };
+	enum { LAUGON, ALTOL, GAPTOL, PTOL, CTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD };
 
 public:
 	FETiedMultiphasicInterface(FEModel* ps, int nstep = 0);
