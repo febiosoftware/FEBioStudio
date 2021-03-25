@@ -427,8 +427,10 @@ FEDataField* FEPostModel::CopyDataField(FEDataField* pd, const char* sznewname)
 }
 
 //-----------------------------------------------------------------------------
-FEDataField* createCachedDataField(FEDataField* pd, const char* sznewname)
+FEDataField* createCachedDataField(FEDataField* pd)
 {
+	Post::FEPostModel* fem = pd->GetModel();
+
 	Data_Class nclass = pd->DataClass();
 	Data_Type ntype = pd->Type();
 	Data_Format nfmt = pd->Format();
@@ -436,38 +438,38 @@ FEDataField* createCachedDataField(FEDataField* pd, const char* sznewname)
 	FEDataField* newField = 0;
 	if (nclass == CLASS_NODE)
 	{
-		if      (ntype == DATA_FLOAT ) newField = new FEDataField_T<FENodeData<float > >(sznewname);
-		else if (ntype == DATA_VEC3F ) newField = new FEDataField_T<FENodeData<vec3f > >(sznewname);
-		else if (ntype == DATA_MAT3FS) newField = new FEDataField_T<FENodeData<mat3fs> >(sznewname);
-		else if (ntype == DATA_MAT3FD) newField = new FEDataField_T<FENodeData<mat3fd> >(sznewname);
-		else if (ntype == DATA_MAT3D ) newField = new FEDataField_T<FENodeData<Mat3d > >(sznewname);
-		else if (ntype == DATA_MAT3F ) newField = new FEDataField_T<FENodeData<mat3f > >(sznewname);
+		if      (ntype == DATA_FLOAT ) newField = new FEDataField_T<FENodeData<float > >(fem);
+		else if (ntype == DATA_VEC3F ) newField = new FEDataField_T<FENodeData<vec3f > >(fem);
+		else if (ntype == DATA_MAT3FS) newField = new FEDataField_T<FENodeData<mat3fs> >(fem);
+		else if (ntype == DATA_MAT3FD) newField = new FEDataField_T<FENodeData<mat3fd> >(fem);
+		else if (ntype == DATA_MAT3D ) newField = new FEDataField_T<FENodeData<Mat3d > >(fem);
+		else if (ntype == DATA_MAT3F ) newField = new FEDataField_T<FENodeData<mat3f > >(fem);
 		else assert(false);
 	}
 	else if (nclass == CLASS_ELEM)
 	{
 		if (ntype == DATA_FLOAT)
 		{
-			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEElementData<float, DATA_NODE  > >(sznewname);
-			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEElementData<float, DATA_ITEM  > >(sznewname);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEElementData<float, DATA_COMP  > >(sznewname);
-			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEElementData<float, DATA_REGION> >(sznewname);
+			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEElementData<float, DATA_NODE  > >(fem);
+			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEElementData<float, DATA_ITEM  > >(fem);
+			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEElementData<float, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEElementData<float, DATA_REGION> >(fem);
 			else assert(false);
 		}
 		else if (ntype == DATA_VEC3F)
 		{
-			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_NODE  > >(sznewname);
-			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_ITEM  > >(sznewname);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_COMP  > >(sznewname);
-			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEElementData<vec3f, DATA_REGION> >(sznewname);
+			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_NODE  > >(fem);
+			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_ITEM  > >(fem);
+			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEElementData<vec3f, DATA_REGION> >(fem);
 			else assert(false);
 		}
 		else if (ntype == DATA_MAT3FS)
 		{
-			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_NODE  > >(sznewname);
-			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_ITEM  > >(sznewname);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_COMP  > >(sznewname);
-			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEElementData<mat3fs, DATA_REGION> >(sznewname);
+			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_NODE  > >(fem);
+			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_ITEM  > >(fem);
+			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEElementData<mat3fs, DATA_REGION> >(fem);
 			else assert(false);
 		}
 		else assert(false);
@@ -476,26 +478,26 @@ FEDataField* createCachedDataField(FEDataField* pd, const char* sznewname)
 	{
 		if (ntype == DATA_FLOAT)
 		{
-			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEFaceData<float, DATA_NODE  > >(sznewname);
-			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEFaceData<float, DATA_ITEM  > >(sznewname);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEFaceData<float, DATA_COMP  > >(sznewname);
-			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEFaceData<float, DATA_REGION> >(sznewname);
+			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEFaceData<float, DATA_NODE  > >(fem);
+			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEFaceData<float, DATA_ITEM  > >(fem);
+			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEFaceData<float, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEFaceData<float, DATA_REGION> >(fem);
 			else assert(false);
 		}
 		else if (ntype == DATA_VEC3F)
 		{
-			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_NODE  > >(sznewname);
-			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_ITEM  > >(sznewname);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_COMP  > >(sznewname);
-			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEFaceData<vec3f, DATA_REGION> >(sznewname);
+			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_NODE  > >(fem);
+			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_ITEM  > >(fem);
+			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEFaceData<vec3f, DATA_REGION> >(fem);
 			else assert(false);
 		}
 		else if (ntype == DATA_MAT3FS)
 		{
-			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_NODE  > >(sznewname);
-			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_ITEM  > >(sznewname);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_COMP  > >(sznewname);
-			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_REGION> >(sznewname);
+			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_NODE  > >(fem);
+			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_ITEM  > >(fem);
+			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_REGION> >(fem);
 			else assert(false);
 		}
 		else assert(false);
@@ -670,11 +672,11 @@ template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshDat
 FEDataField* FEPostModel::CreateCachedCopy(FEDataField* pd, const char* sznewname)
 {
 	// create a new data field that will store a cached copy
-	FEDataField* pdcopy = createCachedDataField(pd, sznewname);
+	FEDataField* pdcopy = createCachedDataField(pd);
 	if (pdcopy == 0) return 0;
 
 	// Add it to the model
-	AddDataField(pdcopy);
+	AddDataField(pdcopy, sznewname);
 
 	// get the field ID codes
 	int ndst = FIELD_CODE(pdcopy->GetFieldID());
@@ -819,10 +821,10 @@ void FEPostModel::DeleteDataField(FEDataField* pd)
 
 //-----------------------------------------------------------------------------
 // Add a data field to all states of the model
-void FEPostModel::AddDataField(FEDataField* pd)
+void FEPostModel::AddDataField(FEDataField* pd, const std::string& name)
 {
 	// add the data field to the data manager
-	m_pDM->AddDataField(pd);
+	m_pDM->AddDataField(pd, name);
 
 	// now add new data for each of the states
 	vector<FEState*>::iterator it;

@@ -100,7 +100,7 @@ void FECongruencyMap::Apply(FEPostModel& fem)
 	m_pfem = &fem;
 
 	// add a new field 
-	fem.AddDataField(new FEDataField_T<FEFaceData<float, DATA_NODE> >("congruency"));
+	fem.AddDataField(new FEDataField_T<FEFaceData<float, DATA_NODE> >(&fem), "congruency");
 	int NDATA = fem.GetDataManager()->DataFields()-1;
 
 	// get the mesh

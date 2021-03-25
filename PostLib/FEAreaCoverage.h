@@ -59,7 +59,7 @@ class FEAreaCoverage : public FEDataField
 	};
 
 public:
-	FEAreaCoverage(FEPostModel* fem);
+	FEAreaCoverage(FEPostModel* fem, int flags);
 
 	FEDataField* Clone() const override;
 
@@ -100,7 +100,6 @@ protected:
 protected:
 	Surface		m_surf1;
 	Surface		m_surf2;
-	FEPostModel*	m_fem;
 
 	bool		m_ballowBackIntersections;	// include back intersections
 	double		m_angleThreshold;			// angular threshold (between 0 and 1)

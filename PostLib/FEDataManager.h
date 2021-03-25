@@ -44,7 +44,7 @@ public:
 	~FEDataManager(void);
 
 	//! add a data field
-	void AddDataField(FEDataField* pd);
+	void AddDataField(FEDataField* pd, const std::string& name = "");
 
 	//! delete a data field
 	void DeleteDataField(FEDataField* pd);

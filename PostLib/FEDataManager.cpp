@@ -57,8 +57,9 @@ void FEDataManager::Clear()
 	m_Data.clear();
 }
 
-void FEDataManager::AddDataField(FEDataField* pd)
+void FEDataManager::AddDataField(FEDataField* pd, const std::string& name)
 {
+	if (name.empty() == false) pd->SetName(name);
 	m_Data.push_back(pd);
 	pd->SetFieldID(BUILD_FIELD(pd->DataClass(), DataFields()-1, 0));
 }
