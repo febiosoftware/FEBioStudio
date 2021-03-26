@@ -351,6 +351,18 @@ FEFSITraction::FEFSITraction(FEModel* ps, FEItemListBuilder* pi, int nstep) : FE
     SetTypeString("FSI Interface Traction");
 }
 
+//-----------------------------------------------------------------------------
+
+FEBFSITraction::FEBFSITraction(FEModel* ps) : FESurfaceLoad(FE_BFSI_TRACTION, ps)
+{
+    SetTypeString("Biphasic-FSI Interface Traction");
+}
+
+FEBFSITraction::FEBFSITraction(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_BFSI_TRACTION, ps, pi, nstep)
+{
+    SetTypeString("Biphasic-FSI Interface Traction");
+}
+
 //=======================================================================================
 FEConcentrationFlux::FEConcentrationFlux(FEModel* ps) : FESurfaceLoad(FE_CONCENTRATION_FLUX, ps)
 {

@@ -3295,8 +3295,11 @@ void FEBioExport25::WriteLoadsSection(FEStep& s)
     // fluid tangential stabilization
     WriteFluidTangentialStabilization(s);
     
-    // fluid normal velocities
+    // fluid-FSI traction
     WriteFSITraction(s);
+    
+    // biphasic-FSI traction
+    WriteBFSITraction(s);
     
 }
 
@@ -4398,7 +4401,7 @@ void FEBioExport25::WriteFluidTangentialStabilization(FEStep& s)
 }
 
 //----------------------------------------------------------------------------
-// Export FSI traction
+// Export fluid-FSI traction
 //
 void FEBioExport25::WriteFSITraction(FEStep& s)
 {
@@ -4414,6 +4417,30 @@ void FEBioExport25::WriteFSITraction(FEStep& s)
             
             XMLElement flux("surface_load");
             flux.add_attribute("type", "fluid-FSI traction");
+            flux.add_attribute("surface", GetSurfaceName(pitem));
+            m_xml.add_branch(flux);
+            m_xml.close_branch(); // surface_load
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+// Export biphasic-FSI traction
+//
+void FEBioExport25::WriteBFSITraction(FEStep& s)
+{
+    for (int j=0; j<s.Loads(); ++j)
+    {
+        FEBFSITraction* ptc = dynamic_cast<FEBFSITraction*>(s.Load(j));
+        if (ptc && ptc->IsActive())
+        {
+            if (m_writeNotes) m_xml.add_comment(ptc->GetInfo());
+            
+            FEItemListBuilder* pitem = ptc->GetItemList();
+            if (pitem == 0) throw InvalidItemListBuilder(ptc);
+            
+            XMLElement flux("surface_load");
+            flux.add_attribute("type", "biphasic-FSI traction");
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             m_xml.close_branch(); // surface_load

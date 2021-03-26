@@ -4,6 +4,70 @@
 
 *****************************************************************
 
+
+===========================================================================
+
+ R E L E A S E   1.4   3/29/2021
+
+===========================================================================
+
+* Added concentration tolerance parameter to tied-multiphasic contact interface.
+* Fixed issues with export and import of Hill discrete material.
+* Fixed some issues related to post models that have multiple meshes.
+* Fixed bugs in the model check that could cause crash when no material was assigned to shell part.
+* An error message is now shown when exporting a model to febio format fails.
+* Fixed bug that was selecting nodes and edges using the region selection tools.
+* Eroded (inactive) springs are not rendered.
+* A reset button was added to the Settings dialog that will reset all settings to their default values.
+* The text of the title and subtitle GL widgets can be edited again. Minor cosmetic changes to GL widgets.
+* Added ability to save load curves to file from curve editor.
+* LSDYNA export now saves mesh from current time of a post model (instead of initial mesh).
+* Fixed issues with rendering internal facets and lines of eroded elements.
+* Added prescribe_rim_pressure option to fluid normal velocity.
+* The mesh' domain list was added to the Post\Model panel's model tree and options to select or hide the corresponding elements were added to the context menu. (github issue #34)
+* Fixed issue with Ansys importer.
+* Fixed issue in listing material parameters of materials with multiple nested materials in the FEBio optimization wizard.
+* Added support for applying scalar field tool and fiber generator tool to shells.
+* Added the name of a selection's parent object to the selection box.
+* Fixed some issues with reading math parameters and node sets defined through element sets.
+* Fixed crash when document is closed while graph windows are open.
+* Added check for empty part list in Abaqus reader.
+* Added an "MMG remesh" modifier for triangular surfaces (using mmgs). The new tool is available on the Mesh panel for editable meshes.  
+* Fixed minor issue with region selection logic.
+* A new mesh diagnostic tool was added that tests various heuristics and attempts to identify issues with an FE mesh. The tool is available from the menu Tools\ Mesh Diagnostics.
+* Several issues were fixed with deleting parts of objects. Now, deleting parts will not delete any springs that are applied to the mesh. 
+* A bug was fixed in the auto-partitioning algorithm, used by editable meshes, that was creating duplicate edges.
+* Fixed bug in VTK export when multiple objects are exported.
+* Fixed bug in importing springs from FEBio file.
+* Added VTK option to File\Open dialog. This will open the VTK model in post mode.
+* An issue was fixed in Revolve tool that detect points on axis more accurately.
+* A "Fix mesh" tool was added to the Mesh panel for editable meshes. It currently only removes duplicate edges.
+* Fixed minor issue with rendering normals.
+* An arbitrary number of solutes can now be exported in the initial concentration feature (not just 6).
+* Fixed incorrect syntax of analysis tag for heat-transfer problems in febio3 format.
+* Cosmetic changes to Run dialog.
+* The opengl version is now printed to the About box. (after opening a model file)
+* Fixed issue with showing floating point parameters in model props panel.
+* FEBioStudio now saves background color and some lighting settings between sessions.
+* Added "relative" flag for rigid body displacements. (only exported for febio3 format).
+* Added option to select spring type in import spring tool. Added option to change spring type from model tree.
+* Fixed issue with reading shell_normal_nodal flag.
+* The time panel now uses a color coding for the model's states. The color depends on the state's status flag as written from the xplt file. 
+* Added support for assigning parts to contact interfaces. Parts are converted to surfaces on export to febio file.
+* Added menu option to select isolated vertices (Edit\More selection options\select isolated vertices).
+* Fixed bug in repo panel that caused issues if the repository folder did not exist.
+* Several issues were fixed in the "Refine Mesh" tool for triangular and quad meshes.
+* Fixed bug where FEBio could not import prescribed shell displacements for 2.5 and 3.0 format.  Added parameters to sliding-elastic to allow specifying which side of a shell layer should be in contact.
+* Fixed several issues with shells that are attached to solids. 
+* Added support for "shell_normal_nodal" flag. This flag can now be set in the Model panel (in the Properties pane when selecting a part).
+* Added (optional) pitch to Revolve Faces tool to generate helical geometry.
+* Load curves can now be assigned to all parameters, not just floating point parameters.
+* Fixed issue were fixed with dark theme on mac.
+* A warning icon is now added to jobs if the corresponding files cannot be located.
+* A "Delete All" context-menu option was added to the Jobs item in the model tree.
+* Implemented 13-node pyramid element (PYRA13). Updated implementation for 5-node pyramid element (PYRA5).  Updated face revolve tool to create PYRA13 and TET10 elements for TRI6 faces with a node or edge on the axis of rotation.
+
+
 ===========================================================================
 
  R E L E A S E   1.3   2/5/2021

@@ -33,6 +33,7 @@ SOFTWARE.*/
 class Ui::CDlgVTKExport
 {
 public:
+	QCheckBox* partIds;
 	QCheckBox* shellThick;
 	QCheckBox* scalarData;
 
@@ -41,8 +42,10 @@ public:
 	{
 		QVBoxLayout* lo = new QVBoxLayout;
 
-		lo->addWidget(shellThick = new QCheckBox("Shell thickness"));
-		lo->addWidget(scalarData = new QCheckBox("Scalar data"));
+		lo->addWidget(partIds    = new QCheckBox("Write part numbers as CELL_DATA"));
+		lo->addWidget(shellThick = new QCheckBox("Write shell thickness"));
+		lo->addWidget(scalarData = new QCheckBox("Write scalar data"));
+		partIds->setChecked(true);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		lo->addWidget(bb);
@@ -61,6 +64,7 @@ CDlgVTKExport::CDlgVTKExport(QWidget* parent) : QDialog(parent), ui(new Ui::CDlg
 
 void CDlgVTKExport::accept()
 {
+	m_bpart_ids    = ui->partIds->isChecked();
 	m_bshell_thick = ui->shellThick->isChecked();
 	m_bscalar_data = ui->scalarData->isChecked();
 

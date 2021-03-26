@@ -827,8 +827,9 @@ void CMainWindow::ExportGeometry()
 			if (dlg.exec())
 			{
 				VTKEXPORT ops;
+				ops.bpartIds    = dlg.m_bpart_ids;
 				ops.bshellthick = dlg.m_bshell_thick;
-				ops.bscalar_data = dlg.m_bscalar_data;
+				ops.bscalardata = dlg.m_bscalar_data;
 				FEVTKExport writer(fem);
 				writer.SetOptions(ops);
 				if (!writer.Write(szfile))
