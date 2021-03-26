@@ -31,10 +31,10 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 struct VTKEXPORT
 {
+	bool	bpartIds;		// write element's part IDs
 	bool	bshellthick;	// shell thickness
-	bool	bscalar_data;   //user scalar data
+	bool	bscalardata;	// user scalar data
 };
-
 
 class FEVTKExport : public FEFileExport
 {
