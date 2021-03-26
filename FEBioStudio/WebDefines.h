@@ -106,6 +106,7 @@ SOFTWARE.*/
 #define Fluid_Rotational_Velocity "FEBio_um_3-0-3.12.2.14.html"
 #define Fluid_Resistance "FEBio_um_3-0-3.12.2.15.html"
 #define Fluid_FSI_Traction "FEBio_um_3-0-3.12.2.16.html"
+#define Fluid_BFSI_Traction "FEBio_um_3-0-3.12.2.16.html"
 #define Body_Loads "FEBio_um_3-0-Subsection-3.12.3.html"
 #define Constant_Body_Force "FEBio_um_3-0-3.12.3.1.html"
 #define Non_Constant_Body_Force "FEBio_um_3-0-3.12.3.2.html"

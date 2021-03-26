@@ -409,6 +409,17 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+
+class FEBFSITraction : public FESurfaceLoad
+{
+public:
+    FEBFSITraction(FEModel* ps);
+    FEBFSITraction(FEModel* ps, FEItemListBuilder* pi, int nstep = 0);
+    FELoadCurve* GetLoadCurve() { return nullptr; }
+    
+};
+
+//-----------------------------------------------------------------------------
 // concentration flux for reaction-diffusion problems
 class FEConcentrationFlux : public FESurfaceLoad
 {

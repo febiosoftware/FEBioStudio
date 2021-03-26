@@ -629,6 +629,7 @@ SOFTWARE.*/
 #define FE_NON_CONST_BODY_FORCE				0x0031
 #define FE_INIT_PRESTRAIN					0x0032
 #define FE_CENTRIFUGAL_BODY_FORCE           0x0033
+#define FE_BFSI_TRACTION                    0x0034
 
 //--------------------------------------------------------
 // Interface types
