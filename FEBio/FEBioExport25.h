@@ -223,6 +223,7 @@ protected:
     void WriteFluidBackflowStabilization  (FEStep& s);
     void WriteFluidTangentialStabilization(FEStep& s);
     void WriteFSITraction                 (FEStep& s);
+    void WriteBFSITraction                (FEStep& s);
 	void WriteFluidFlux         (FEStep& s);
 	void WriteHeatFlux          (FEStep& s);
 	void WriteConvectiveHeatFlux(FEStep& s);

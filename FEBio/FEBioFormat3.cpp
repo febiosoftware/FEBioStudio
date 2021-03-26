@@ -1670,6 +1670,7 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
     else if (att == "fluid backflow stabilization"  ) psl = CREATE_SURFACE_LOAD(FEFluidBackflowStabilization);
     else if (att == "fluid tangential stabilization") psl = CREATE_SURFACE_LOAD(FEFluidTangentialStabilization);
     else if (att == "fluid-FSI traction"            ) psl = CREATE_SURFACE_LOAD(FEFSITraction);
+    else if (att == "biphasic-FSI traction"         ) psl = CREATE_SURFACE_LOAD(FEBFSITraction);
 	else ParseUnknownAttribute(tag, "type");
 
 	// process surface load
