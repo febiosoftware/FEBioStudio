@@ -233,14 +233,18 @@ bool FEVTKExport::Write(const char* szfile)
 		fprintf(fp, "%s %d\n", "CELL_DATA", totElems);
 		fprintf(fp, "%s %s %s\n", "SCALARS", "part_ids", "int");
 		fprintf(fp, "%s\n", "LOOKUP_TABLE default");
+		int IDoffset = 0;
 		for (int i = 0; i < model.Objects(); ++i)
 		{
+			int maxId = 0;
 			FEMesh& m = *model.Object(i)->GetFEMesh();
 			for (int j = 0; j < m.Elements(); ++j)
 			{
-				FEElement& el = m.Element(j);
-				fprintf(fp, "%d\n", el.m_gid);
+				int gid = m.Element(j).m_gid;
+				if (gid > maxId) maxId = gid;
+				fprintf(fp, "%d\n", gid + IDoffset);
 			}
+			IDoffset += maxId + 1;
 		}
 	}
 
