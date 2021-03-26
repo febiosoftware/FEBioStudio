@@ -83,6 +83,7 @@ private:
 
 private:
 	bool ParseStep(XMLTag& tag);
+	bool ParseLoadCurve(XMLTag& tag, FELoadCurve& lc);
 
 private:
 	// contact input functions

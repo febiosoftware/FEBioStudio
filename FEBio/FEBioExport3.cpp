@@ -1732,6 +1732,29 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
         m_xml.add_leaf(el);
         return;
     }
+	else if (pm->Type() == FE_FNC1D_POINT)
+	{
+		FE1DPointFunction* pf1d = dynamic_cast<FE1DPointFunction*>(pm); assert(pf1d);
+		FELoadCurve* plc = pf1d->GetParam(0).GetLoadCurve();
+		el.add_attribute("type", sztype);
+		m_xml.add_branch(el);
+		{
+			if (plc)
+			{
+				m_xml.add_branch("points");
+				int n = plc->Size();
+				for (int i = 0; i < n; ++i)
+				{
+					LOADPOINT& p = plc->Item(i);
+					double d[2] = { p.time, p.load };
+					m_xml.add_leaf("pt", d, 2);
+				}
+				m_xml.close_branch();
+			}
+		}
+		m_xml.close_branch();
+		return;
+	}
 	else
 		el.add_attribute("type", sztype);
 
@@ -1772,6 +1795,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 					case FE_PRODUCT_MATERIAL: is_multi = true; break;
 					case FE_SPECIES_MATERIAL: is_multi = true; break;
 					case FE_SOLID_SPECIES_MATERIAL: is_multi = true; break;
+					case FE_FNC1D_POINT: is_multi = true; break;
 					}
 
 					if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);

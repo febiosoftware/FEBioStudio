@@ -2828,6 +2828,32 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				} while (!tag.isend());
 				set.push_back(pg);
 			}
+			else if (strcmp(sztype, "Hill") == 0)
+			{
+				FEHillContractileMaterial* mat = new FEHillContractileMaterial();
+				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
+				pg->SetMaterial(mat);
+				pg->SetName(szname);
+				fem.GetModel().AddDiscreteObject(pg);
+				++tag;
+				do
+				{
+					if (ReadParam(*mat, tag) == false)
+					{
+						FEMaterialProperty* prop = mat->FindProperty(tag.m_sztag);
+						FE1DPointFunction* pf1d = dynamic_cast<FE1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
+						if (pf1d)
+						{
+							FELoadCurve lc;
+							ParseLoadCurve(tag, lc);
+							pf1d->SetPointCurve(lc);
+						}
+						else ParseUnknownTag(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+				set.push_back(pg);
+			}
 			else
 			{
 				assert(false);
@@ -3104,52 +3130,62 @@ bool FEBioFormat3::ParseLoadDataSection(XMLTag& tag)
 
 			// get the load curve ID
 			int nid = tag.Attribute("id").value<int>();
+			lc.SetID(nid);
 
-			++tag;
-			do
-			{
-				if (tag == "interpolate")
-				{
-					string interpolate = tag.szvalue();
-					if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetType(FELoadCurve::LC_STEP);
-					else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetType(FELoadCurve::LC_LINEAR);
-					else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetType(FELoadCurve::LC_SMOOTH);
-					else FileReader()->AddLogEntry("unknown interpolation type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
-				}
-				else if (tag == "extend")
-				{
-					string extend = tag.szvalue();
-					if      ((extend == "constant"     )||(extend == "CONSTANT"     )) lc.SetExtend(FELoadCurve::EXT_CONSTANT);
-					else if ((extend == "extrapolate"  )||(extend == "EXTRAPOLATE"  )) lc.SetExtend(FELoadCurve::EXT_EXTRAPOLATE);
-					else if ((extend == "repeat"       )||(extend == "REPEAT"       )) lc.SetExtend(FELoadCurve::EXT_REPEAT);
-					else if ((extend == "repeat offset")||(extend == "REPEAT OFFSET")) lc.SetExtend(FELoadCurve::EXT_REPEAT_OFFSET);
-					else FileReader()->AddLogEntry("unknown extend mode for loadcurve %d (line %d)", nid, tag.m_nstart_line);
-				}
-				else if (tag == "points")
-				{
-					// read the points
-					double d[2];
-					++tag;
-					do
-					{
-						tag.value(d, 2);
-
-						LOADPOINT pt;
-						pt.time = d[0];
-						pt.load = d[1];
-						lc.Add(pt);
-
-						++tag;
-					} while (!tag.isend());
-				}
-				++tag;
-			}
-			while (!tag.isend());
+			ParseLoadCurve(tag, lc);
 
 			febio.AddLoadCurve(lc);
 		}
 		else ParseUnknownTag(tag);
 
+		++tag;
+	}
+	while (!tag.isend());
+
+	return true;
+}
+
+bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, FELoadCurve& lc)
+{
+	int nid = lc.GetID();
+
+	++tag;
+	do
+	{
+		if (tag == "interpolate")
+		{
+			string interpolate = tag.szvalue();
+			if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetType(FELoadCurve::LC_STEP);
+			else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetType(FELoadCurve::LC_LINEAR);
+			else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetType(FELoadCurve::LC_SMOOTH);
+			else FileReader()->AddLogEntry("unknown interpolation type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
+		}
+		else if (tag == "extend")
+		{
+			string extend = tag.szvalue();
+			if      ((extend == "constant"     ) || (extend == "CONSTANT"     )) lc.SetExtend(FELoadCurve::EXT_CONSTANT);
+			else if ((extend == "extrapolate"  ) || (extend == "EXTRAPOLATE"  )) lc.SetExtend(FELoadCurve::EXT_EXTRAPOLATE);
+			else if ((extend == "repeat"       ) || (extend == "REPEAT"       )) lc.SetExtend(FELoadCurve::EXT_REPEAT);
+			else if ((extend == "repeat offset") || (extend == "REPEAT OFFSET")) lc.SetExtend(FELoadCurve::EXT_REPEAT_OFFSET);
+			else FileReader()->AddLogEntry("unknown extend mode for loadcurve %d (line %d)", nid, tag.m_nstart_line);
+		}
+		else if (tag == "points")
+		{
+			// read the points
+			double d[2];
+			++tag;
+			do
+			{
+				tag.value(d, 2);
+
+				LOADPOINT pt;
+				pt.time = d[0];
+				pt.load = d[1];
+				lc.Add(pt);
+
+				++tag;
+			} while (!tag.isend());
+		}
 		++tag;
 	}
 	while (!tag.isend());
