@@ -44,17 +44,12 @@ SOFTWARE.*/
 vector<string> GetDOFList(string sz)
 {
     vector<string> dofs;
-    int nc = (int)sz.find(",");
-    if (nc == string::npos) {
-        dofs.push_back(sz);
-        return dofs;
-    }
-    do {
-        dofs.push_back(sz.substr(0,nc-1));
-        sz = sz.substr(nc+1);
+    int nc = 0;
+    while (nc != -1) {
         nc = (int)sz.find(",");
+        dofs.push_back(sz.substr(0,nc));
+        sz = sz.substr(nc+1);
     }
-    while (nc != string::npos);
     
     return dofs;
 }
@@ -1405,21 +1400,21 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 
 	// make a new boundary condition
 	FEPrescribedDOF* pbc = 0;
-    if (bc=="x") pbc = new FEPrescribedDisplacement (&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="y") pbc = new FEPrescribedDisplacement (&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="z") pbc = new FEPrescribedDisplacement (&fem, pg, 2, 1, pstep->GetID());
+    if (bc=="x") pbc = new FEPrescribedDisplacement (&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="y") pbc = new FEPrescribedDisplacement (&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="z") pbc = new FEPrescribedDisplacement (&fem, pg, 3, 1, pstep->GetID());
     else if (bc=="T") pbc = new FEPrescribedTemperature  (&fem, pg, 1, pstep->GetID());
     else if (bc=="p") pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
-    else if (bc=="vx") pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="vy") pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="vz") pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="vx") pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="vy") pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="vz") pbc = new FEPrescribedFluidVelocity(&fem, pg, 3, 1, pstep->GetID());
     else if (bc=="ef") pbc = new FEPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
-    else if (bc=="sx") pbc = new FEPrescribedShellDisplacement(&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="sy") pbc = new FEPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="sz") pbc = new FEPrescribedShellDisplacement(&fem, pg, 2, 1, pstep->GetID());
-    else if (bc=="u") pbc = new FEPrescribedRotation(&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="v") pbc = new FEPrescribedRotation(&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="w") pbc = new FEPrescribedRotation(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="sx") pbc = new FEPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="sy") pbc = new FEPrescribedShellDisplacement(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="sz") pbc = new FEPrescribedShellDisplacement(&fem, pg, 3, 1, pstep->GetID());
+    else if (bc=="u") pbc = new FEPrescribedRotation(&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="v") pbc = new FEPrescribedRotation(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="w") pbc = new FEPrescribedRotation(&fem, pg, 3, 1, pstep->GetID());
     else if (bc.compare(0,1,"c") == 0) {
         int isol;
         sscanf(bc.substr(1).c_str(),"%d",&isol);
