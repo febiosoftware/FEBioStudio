@@ -66,6 +66,18 @@ int GetDOFDir(vector<string> sz)
     return dof;
 }
 
+int GetROTDir(vector<string> sz)
+{
+    int dof = 0;
+    for (int i=0; i<sz.size(); ++i)
+    {
+        if (sz[i].find("u") != string::npos) dof |= 1;
+        if (sz[i].find("v") != string::npos) dof |= (1 << 1);
+        if (sz[i].find("w") != string::npos) dof |= (1 << 2);
+    }
+    return dof;
+}
+
 bool validate_dof(string bc)
 {
     if      (bc == "x") return true;
@@ -1254,9 +1266,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
     }
     else if ((bc=="u") || (bc=="v") || (bc=="w"))
     {
-        // use ascii code to figure out component
-        int ibc = int(bc.c_str()[0]) - int('u') + 1;
-        FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, ibc, pstep->GetID());
+        FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, GetROTDir(dofs), pstep->GetID());
         if (name.empty())
         {
             sprintf(szbuf, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem) + 1);
@@ -1337,7 +1347,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
         sscanf(bc.substr(1).c_str(),"%d",&isol);
         if (isol > 0)
         {
-            FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, isol-1, pstep->GetID());
+            FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, isol, pstep->GetID());
             if (name.empty())
             {
                 sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
