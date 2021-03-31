@@ -54,12 +54,16 @@ vector<string> GetDOFList(string sz)
     return dofs;
 }
 
-int GetDOFDir(string sz)
+int GetDOFDir(vector<string> sz)
 {
-    if (sz.find("x") != string::npos) return 1;
-    else if (sz.find("y") != string::npos) return 2;
-    else if (sz.find("z") != string::npos) return 3;
-    return -1;
+    int dof = 0;
+    for (int i=0; i<sz.size(); ++i)
+    {
+        if (sz[i].find("x") != string::npos) dof |= 1;
+        if (sz[i].find("y") != string::npos) dof |= (1 << 1);
+        if (sz[i].find("z") != string::npos) dof |= (1 << 2);
+    }
+    return dof;
 }
 
 bool validate_dof(string bc)
@@ -1235,91 +1239,105 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 
 	// create the constraint
     char szbuf[256] = { 0 };
-    for (int i=0; i<dofs.size(); ++i) {
-        string bc = dofs[i];
-        if ((bc=="x") || (bc=="y") || (bc=="z")) {
-            {
-                FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, GetDOFDir(bc), pstep->GetID());
-                if (name.empty())
-                {
-                    sprintf(szbuf, "FixedDisplacement%02d", CountBCs<FEFixedDisplacement>(fem) + 1);
-                    name = szbuf;
-                }
-                pbc->SetName(name);
-                pstep->AddComponent(pbc);
-            }
-        }
-        else if ((bc=="u") || (bc=="v") || (bc=="w"))
+    string bc = dofs[0];
+    if ((bc=="x") || (bc=="y") || (bc=="z")) {
         {
-            // use ascii code to figure out component
-            int ibc = int(bc.c_str()[0]) - int('u') + 1;
-            FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, ibc, pstep->GetID());
+            FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, GetDOFDir(dofs), pstep->GetID());
             if (name.empty())
             {
-                sprintf(szbuf, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem) + 1);
+                sprintf(szbuf, "FixedDisplacement%02d", CountBCs<FEFixedDisplacement>(fem) + 1);
                 name = szbuf;
             }
             pbc->SetName(name);
             pstep->AddComponent(pbc);
         }
-        else if (bc == "T")
+    }
+    else if ((bc=="u") || (bc=="v") || (bc=="w"))
+    {
+        // use ascii code to figure out component
+        int ibc = int(bc.c_str()[0]) - int('u') + 1;
+        FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, ibc, pstep->GetID());
+        if (name.empty())
         {
-            FEFixedTemperature* pbc = new FEFixedTemperature(&fem, pg, 1, pstep->GetID());
-            if (name.empty())
-            {
-                sprintf(szbuf, "FixedTemperature%02d", CountBCs<FEFixedTemperature>(fem) + 1);
-                name = szbuf;
-            }
-            pbc->SetName(name);
-            pstep->AddComponent(pbc);
+            sprintf(szbuf, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem) + 1);
+            name = szbuf;
         }
-        else if (bc == "p")
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc == "T")
+    {
+        FEFixedTemperature* pbc = new FEFixedTemperature(&fem, pg, 1, pstep->GetID());
+        if (name.empty())
         {
-            FEFixedFluidPressure* pbc = new FEFixedFluidPressure(&fem, pg, 1, pstep->GetID());
-            if (name.empty())
-            {
-                sprintf(szbuf, "FixedFluidPressure%02d", CountBCs<FEFixedFluidPressure>(fem) + 1);
-                name = szbuf;
-            }
-            pbc->SetName(name);
-            pstep->AddComponent(pbc);
+            sprintf(szbuf, "FixedTemperature%02d", CountBCs<FEFixedTemperature>(fem) + 1);
+            name = szbuf;
         }
-        else if ((bc=="wx") || (bc=="wy") || (bc=="wz"))
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc == "p")
+    {
+        FEFixedFluidPressure* pbc = new FEFixedFluidPressure(&fem, pg, 1, pstep->GetID());
+        if (name.empty())
         {
-            FEFixedFluidVelocity* pbc = new FEFixedFluidVelocity(&fem, pg, GetDOFDir(bc), pstep->GetID());
-            if (name.empty())
-            {
-                sprintf(szbuf, "FixedFluidVelocity%02d", CountBCs<FEFixedFluidVelocity>(fem) + 1);
-                name = szbuf;
-            }
-            pbc->SetName(name);
-            pstep->AddComponent(pbc);
+            sprintf(szbuf, "FixedFluidPressure%02d", CountBCs<FEFixedFluidPressure>(fem) + 1);
+            name = szbuf;
         }
-        else if (bc == "ef")
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if ((bc=="wx") || (bc=="wy") || (bc=="wz"))
+    {
+        FEFixedFluidVelocity* pbc = new FEFixedFluidVelocity(&fem, pg, GetDOFDir(dofs), pstep->GetID());
+        if (name.empty())
         {
-            FEFixedFluidDilatation* pbc = new FEFixedFluidDilatation(&fem, pg, 1, pstep->GetID());
-            if (name.empty())
-            {
-                sprintf(szbuf, "FixedFluidDilatation%02d", CountBCs<FEFixedFluidDilatation>(fem) + 1);
-                name = szbuf;
-            }
-            pbc->SetName(name);
-            pstep->AddComponent(pbc);
+            sprintf(szbuf, "FixedFluidVelocity%02d", CountBCs<FEFixedFluidVelocity>(fem) + 1);
+            name = szbuf;
         }
-        else if ((bc=="sx") || (bc=="sy") || (bc=="sz"))
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc == "ef")
+    {
+        FEFixedFluidDilatation* pbc = new FEFixedFluidDilatation(&fem, pg, 1, pstep->GetID());
+        if (name.empty())
         {
-            FEFixedShellDisplacement* pbc = new FEFixedShellDisplacement(&fem, pg, GetDOFDir(bc), pstep->GetID());
-            if (name.empty())
-            {
-                sprintf(szbuf, "FixedShellDisplacement%02d", CountBCs<FEFixedShellDisplacement>(fem) + 1);
-                name = szbuf;
-            }
-            pbc->SetName(name);
-            pstep->AddComponent(pbc);
+            sprintf(szbuf, "FixedFluidDilatation%02d", CountBCs<FEFixedFluidDilatation>(fem) + 1);
+            name = szbuf;
         }
-        else if (bc=="c")
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if ((bc=="sx") || (bc=="sy") || (bc=="sz"))
+    {
+        FEFixedShellDisplacement* pbc = new FEFixedShellDisplacement(&fem, pg, GetDOFDir(dofs), pstep->GetID());
+        if (name.empty())
         {
-            FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, 0, pstep->GetID());
+            sprintf(szbuf, "FixedShellDisplacement%02d", CountBCs<FEFixedShellDisplacement>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc=="c")
+    {
+        FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, 0, pstep->GetID());
+        if (name.empty())
+        {
+            sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc.compare(0,1,"c") == 0)
+    {
+        int isol = 0;
+        sscanf(bc.substr(1).c_str(),"%d",&isol);
+        if (isol > 0)
+        {
+            FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, isol-1, pstep->GetID());
             if (name.empty())
             {
                 sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
@@ -1327,22 +1345,6 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
             }
             pbc->SetName(name);
             pstep->AddComponent(pbc);
-        }
-        else if (bc.compare(0,1,"c") == 0)
-        {
-            int isol = 0;
-            sscanf(bc.substr(1).c_str(),"%d",&isol);
-            if (isol > 0)
-            {
-                FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, isol-1, pstep->GetID());
-                if (name.empty())
-                {
-                    sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
-                    name = szbuf;
-                }
-                pbc->SetName(name);
-                pstep->AddComponent(pbc);
-            }
         }
     }
 }
