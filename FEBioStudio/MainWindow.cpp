@@ -2397,6 +2397,7 @@ void CMainWindow::UpdatePhysicsUi()
 	ui->actionSoluteTable->setVisible(module & MODULE_SOLUTES);
 	ui->actionSBMTable->setVisible(module & MODULE_SOLUTES);
 	ui->actionAddReaction->setVisible(module & MODULE_REACTIONS);
+    ui->actionAddMembraneReaction->setVisible(module & MODULE_REACTIONS);
 }
 
 //-----------------------------------------------------------------------------

@@ -93,6 +93,7 @@ protected:
 
 	FEReactionMaterial* ParseReaction(XMLTag& tag);
 	FEReactionMaterial* ParseReaction2(XMLTag& tag);
+    FEMembraneReactionMaterial* ParseMembraneReaction(XMLTag& tag);
 
 	void ParseMappedParameter(XMLTag& tag, Param* param);
 

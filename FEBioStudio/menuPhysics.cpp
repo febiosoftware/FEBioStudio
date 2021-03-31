@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include "DlgAddStep.h"
 #include "DlgSoluteTable.h"
 #include "DlgAddChemicalReaction.h"
+#include "DlgAddMembraneReaction.h"
 #include "DlgAddRigidConstraint.h"
 #include "DlgAddRigidConnector.h"
 #include "MaterialEditor.h"
@@ -481,6 +482,16 @@ void CMainWindow::on_actionAddReaction_triggered()
 	// update the model editor
 	UpdateModel(0, true);
 	Update();
+}
+
+void CMainWindow::on_actionAddMembraneReaction_triggered()
+{
+    CDlgAddMembraneReaction dlg(this);
+    dlg.exec();
+    
+    // update the model editor
+    UpdateModel(0, true);
+    Update();
 }
 
 void CMainWindow::on_actionSoluteTable_triggered()

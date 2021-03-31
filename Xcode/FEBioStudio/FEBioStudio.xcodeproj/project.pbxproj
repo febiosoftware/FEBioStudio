@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		D509D41D24BF9A1D0064160E /* TagLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D41724BF9A1C0064160E /* TagLabel.cpp */; };
 		D509D41E24BF9A1D0064160E /* WzdUpload.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D41A24BF9A1D0064160E /* WzdUpload.cpp */; };
+		D50D09E826128EDF005564C6 /* DlgAddMembraneReaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50D09E626128EDF005564C6 /* DlgAddMembraneReaction.cpp */; };
+		D50D09ED26149D5D005564C6 /* DlgAddMembraneReaction.h in Sources */ = {isa = PBXBuildFile; fileRef = D50D09E726128EDF005564C6 /* DlgAddMembraneReaction.h */; };
 		D50EB7B2246B6E6900E016F1 /* IconProvider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7AD246B6E6800E016F1 /* IconProvider.cpp */; };
 		D50EB7B3246B6E6900E016F1 /* DlgSetRepoFolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7AE246B6E6800E016F1 /* DlgSetRepoFolder.cpp */; };
 		D511EF17253B55DB00893F69 /* MultiLineLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D511EF16253B55DB00893F69 /* MultiLineLabel.cpp */; };
@@ -485,6 +487,8 @@
 		D509D41824BF9A1C0064160E /* WzdUpload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WzdUpload.h; sourceTree = "<group>"; };
 		D509D41924BF9A1D0064160E /* TagLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TagLabel.h; sourceTree = "<group>"; };
 		D509D41A24BF9A1D0064160E /* WzdUpload.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WzdUpload.cpp; sourceTree = "<group>"; };
+		D50D09E626128EDF005564C6 /* DlgAddMembraneReaction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddMembraneReaction.cpp; sourceTree = "<group>"; };
+		D50D09E726128EDF005564C6 /* DlgAddMembraneReaction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DlgAddMembraneReaction.h; sourceTree = "<group>"; };
 		D50EB7AD246B6E6800E016F1 /* IconProvider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IconProvider.cpp; sourceTree = "<group>"; };
 		D50EB7AE246B6E6800E016F1 /* DlgSetRepoFolder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgSetRepoFolder.cpp; sourceTree = "<group>"; };
 		D50EB7AF246B6E6800E016F1 /* DlgSetRepoFolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSetRepoFolder.h; sourceTree = "<group>"; };
@@ -1129,6 +1133,8 @@
 				D5F7D73322FA37C40089B08E /* DlgAddChemicalReaction.h */,
 				D5F7D6FA22FA37C30089B08E /* DlgAddEquation.cpp */,
 				D5F7D7F322FA37C40089B08E /* DlgAddEquation.h */,
+				D50D09E626128EDF005564C6 /* DlgAddMembraneReaction.cpp */,
+				D50D09E726128EDF005564C6 /* DlgAddMembraneReaction.h */,
 				D5F7D79722FA37C40089B08E /* DlgAddMeshData.cpp */,
 				D5F7D7E922FA37C40089B08E /* DlgAddMeshData.h */,
 				D5F7D7B522FA37C40089B08E /* DlgAddNodalLoad.cpp */,
@@ -1649,6 +1655,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D59A609F258997770095F0A7 /* febiostudio.qrc in Sources */,
+				D50D09ED26149D5D005564C6 /* DlgAddMembraneReaction.h in Sources */,
 				D5349B3A25F18B7C002D2CC4 /* DlgMeshDiagnostics.h in Sources */,
 				D5AE8C4025901A33003AC08B /* UpdateChecker.h in Sources */,
 				D524F6C0258C3CE500A403CD /* XMLEditor.h in Sources */,
@@ -1919,6 +1926,7 @@
 				D5F7D8CB22FA37C40089B08E /* ModelTree.cpp in Sources */,
 				D5F7D85822FA37C40089B08E /* CColorButton.cpp in Sources */,
 				D5F7D84222FA37C40089B08E /* DlgBatchConvert.cpp in Sources */,
+				D50D09E826128EDF005564C6 /* DlgAddMembraneReaction.cpp in Sources */,
 				D5CA211823EF7025001AE230 /* Commands.cpp in Sources */,
 				D5F7D89022FA37C40089B08E /* PropertyList.cpp in Sources */,
 				D5F7D86222FA37C40089B08E /* Command.cpp in Sources */,

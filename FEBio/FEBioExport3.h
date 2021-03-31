@@ -301,6 +301,7 @@ protected:
 	void WriteFiberMaterial(FEOldFiberMaterial& f);
 	void WriteReactionMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el);
+    void WriteMembraneReactionMaterial(FEMaterial* pmat, XMLElement& el);
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteElementList(FEElemList& el);
