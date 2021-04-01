@@ -1332,7 +1332,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
     }
     else if (bc=="c")
     {
-        FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, 0, pstep->GetID());
+        FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, 1, pstep->GetID());
         if (name.empty())
         {
             sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
