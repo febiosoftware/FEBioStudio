@@ -49,6 +49,7 @@ private slots:
 	void onNodeChanged();
 	void onPlaneChanged();
 	void onAlignView();
+	void onEditToggled(bool b);
 
 private:
 	CPlaneToolUI*		ui;

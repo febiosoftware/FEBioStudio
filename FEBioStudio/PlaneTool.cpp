@@ -58,6 +58,7 @@ public:
 
 	// node input
 	CIntInput* 	node[3];
+	QPushButton* edit[3];
 
 	// plane input
 	CDragBox*	plane[4];
@@ -88,9 +89,18 @@ public:
 		// select nodes input
 		QGroupBox* pg = new QGroupBox;
 		QFormLayout* pform = new QFormLayout;
-		pform->addRow("node 1:", node[0] = new CIntInput);
-		pform->addRow("node 2:", node[1] = new CIntInput);
-		pform->addRow("node 3:", node[2] = new CIntInput);
+
+		for (int i = 0; i < 3; ++i)
+		{
+			node[i] = new CIntInput;
+			edit[i] = new QPushButton("Edit");
+			edit[i]->setCheckable(true);
+			QHBoxLayout* h = new QHBoxLayout;
+			h->setMargin(0);
+			h->addWidget(node[i]);
+			h->addWidget(edit[i]);
+			pform->addRow(QString("node %1:").arg(i+1), h);
+		}
 		pg->setLayout(pform);
 		stack->addWidget(pg);
 
@@ -133,6 +143,10 @@ public:
 		QObject::connect(plane[1], SIGNAL(valueChanged(double)), parent, SLOT(onPlaneChanged()));
 		QObject::connect(plane[2], SIGNAL(valueChanged(double)), parent, SLOT(onPlaneChanged()));
 		QObject::connect(plane[3], SIGNAL(valueChanged(double)), parent, SLOT(onPlaneChanged()));
+
+		QObject::connect(edit[0], SIGNAL(toggled(bool)), parent, SLOT(onEditToggled(bool)));
+		QObject::connect(edit[1], SIGNAL(toggled(bool)), parent, SLOT(onEditToggled(bool)));
+		QObject::connect(edit[2], SIGNAL(toggled(bool)), parent, SLOT(onEditToggled(bool)));
 
 		QObject::connect(input, SIGNAL(currentIndexChanged(int)), stack, SLOT(setCurrentIndex(int)));
 
@@ -194,11 +208,32 @@ public:
 	}
 
 	void UpdatePlaneOffsetMinMax();
+
+	int activeEditField()
+	{
+		if (edit[0]->isChecked()) return 0;
+		if (edit[1]->isChecked()) return 1;
+		if (edit[2]->isChecked()) return 2;
+		return -1;
+	}
 };
 
 CPlaneTool::CPlaneTool(CMainWindow* wnd) : CAbstractTool(wnd, "Plane")
 {
 
+}
+
+void CPlaneTool::onEditToggled(bool b)
+{
+	QPushButton* pb = dynamic_cast<QPushButton*>(QObject::sender()); assert(pb);
+	if (pb == nullptr) return;
+	if (b)
+	{
+		// make sure only one button is toggled
+		if (ui->edit[0] != pb) ui->edit[0]->setChecked(false);
+		if (ui->edit[1] != pb) ui->edit[1]->setChecked(false);
+		if (ui->edit[2] != pb) ui->edit[2]->setChecked(false);
+	}
 }
 
 void CPlaneTool::onNodeChanged()
@@ -383,26 +418,50 @@ void CPlaneTool::Update()
 
 	if (ui->inputOption() == 0)
 	{
-		int nsel = 0;
-		int N = mesh->Nodes();
-		for (int i = 0; i < N; ++i)
+		int activeField = ui->activeEditField();
+		if (activeField == -1)
 		{
-			FENode& node = mesh->Node(i);
-			if (node.IsSelected())
+			int nsel = 0;
+			int N = mesh->Nodes();
+			for (int i = 0; i < N; ++i)
 			{
-				nsel++;
-				int nid = i + 1;
-				addPoint(nid);
+				FENode& node = mesh->Node(i);
+				if (node.IsSelected())
+				{
+					nsel++;
+					int nid = i + 1;
+					addPoint(nid);
+				}
+			}
+			if (nsel == 0)
+			{
+				ui->m_node[0] = ui->m_node[1] = ui->m_node[2] = 0;
+			}
+
+			ui->node[0]->setValue(ui->m_node[0]);
+			ui->node[1]->setValue(ui->m_node[1]);
+			ui->node[2]->setValue(ui->m_node[2]);
+		}
+		else
+		{
+			int selNode = -1;
+			int N = mesh->Nodes();
+			for (int i = 0; i < N; ++i)
+			{
+				FENode& node = mesh->Node(i);
+				if (node.IsSelected())
+				{
+					selNode = i + 1;
+					break;
+				}
+			}
+
+			if (selNode >= 0)
+			{
+				ui->m_node[activeField] = selNode;
+				ui->node[activeField]->setValue(selNode);
 			}
 		}
-		if (nsel == 0)
-		{
-			ui->m_node[0] = ui->m_node[1] = ui->m_node[2] = 0;
-		}
-
-		ui->node[0]->setValue(ui->m_node[0]);
-		ui->node[1]->setValue(ui->m_node[1]);
-		ui->node[2]->setValue(ui->m_node[2]);
 
 		onNodeChanged();
 	}
