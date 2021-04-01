@@ -43,12 +43,13 @@ public:
 	QWidget* createUi() override;
 
 private:
-	void addPoint(int n);
+	void UpdateDecoration();
 
 private slots:
 	void onNodeChanged();
 	void onPlaneChanged();
 	void onAlignView();
+	void onCopy();
 	void onEditToggled(bool b);
 
 private:

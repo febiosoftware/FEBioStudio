@@ -41,10 +41,25 @@ SOFTWARE.*/
 
 void GPointDecoration::render()
 {
+	if (m_renderAura)
+	{
+		GLfloat s0;
+		glGetFloatv(GL_POINT_SIZE, &s0);
+
+		glPointSize(s0 + 2);
+		glColor3ub(m_col2.r, m_col2.g, m_col2.b);
+		glBegin(GL_POINTS);
+		{
+			glVertex3f(m_pos.x, m_pos.y, m_pos.z);
+		}
+		glEnd();
+		glPointSize(s0);
+	}
+
 	glColor3ub(m_col.r, m_col.g, m_col.b);
 	glBegin(GL_POINTS);
 	{
-		glVertex3f(pos.x, pos.y, pos.z);
+		glVertex3f(m_pos.x, m_pos.y, m_pos.z);
 	}
 	glEnd();
 }
