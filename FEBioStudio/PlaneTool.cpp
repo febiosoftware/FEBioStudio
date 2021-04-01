@@ -31,90 +31,40 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QPushButton>
+#include <QRadioButton>
+#include <QButtonGroup>
+#include <QComboBox>
+#include <QStackedWidget>
 #include "Document.h"
 #include <PostGL/GLModel.h>
 #include <PostLib/FEPostMesh.h>
 #include "MainWindow.h"
 #include "GLView.h"
+#include "DragBox.h"
 using namespace Post;
-
-//-----------------------------------------------------------------------------
-class CPlaneDecoration : public GDecoration
-{
-public:
-	CPlaneDecoration()
-	{
-		point[0] = new GPointDecoration(vec3f(0,0,0));
-		point[1] = new GPointDecoration(vec3f(0,0,0));
-		point[2] = new GPointDecoration(vec3f(0,0,0));
-		center = new GPointDecoration(vec3f(0, 0, 0));
-		tip = new GPointDecoration(vec3f(0, 0, 0));
-		line[0] = new GLineDecoration(point[0], point[1]);
-		line[1] = new GLineDecoration(point[1], point[2]);
-		line[2] = new GLineDecoration(point[2], point[0]);
-		norm = new GLineDecoration(center, tip);
-		tri = new GTriangleDecoration(point[0], point[1], point[2]);
-		tri->setColor(GLColor(255, 255, 0, 128));
-		setVisible(false);
-	}
-
-	~CPlaneDecoration()
-	{
-		delete line[2]; 
-		delete line[1]; 
-		delete line[0];
-		delete point[2];
-		delete point[1];
-		delete point[0];
-	}
-
-	void setPosition(const vec3f& a, const vec3f& b, const vec3f& c)
-	{
-		point[0]->setPosition(a);
-		point[1]->setPosition(b);
-		point[2]->setPosition(c);
-
-		vec3f N = (b - a) ^ (c - a);
-		double L = N.Length(); N /= 2.f*(float)sqrt(L);
-
-		vec3f o = (a + b + c) / 3.f;
-		center->setPosition(o);
-		tip->setPosition(o + N);
-	}
-
-	void render()
-	{
-		tri->render();
-		point[0]->render();
-		point[1]->render();
-		point[2]->render();
-		line[0]->render();
-		line[1]->render();
-		line[2]->render();
-		norm->render();
-	}
-
-private:
-	GPointDecoration*	point[3];
-	GPointDecoration*	center, *tip;
-	GLineDecoration*	line[3];
-	GLineDecoration*	norm;
-	GTriangleDecoration*	tri;
-};
 
 class CPlaneToolUI : public QWidget
 {
 public:
-	int	m_node[3];
+	int		m_node[3];
+	vec3d	m_pos[3];
+	FEMeshBase*	m_mesh;
+	BOX		m_box;
+	double	m_range[2];
 
 public:
-	CIntInput* 	node1;
-	CIntInput* 	node2;
-	CIntInput* 	node3;
+	QComboBox*	input;
+	QStackedWidget* stack;
 
-	CFloatInput* normx;
-	CFloatInput* normy;
-	CFloatInput* normz;
+	// node input
+	CIntInput* 	node[3];
+
+	// plane input
+	CDragBox*	plane[4];
+
+	// plane output
+	QLineEdit* norm[3];
+	QLineEdit* off;
 
 public:
 	CPlaneToolUI(QObject* parent)
@@ -123,23 +73,51 @@ public:
 		m_node[1] = 0;
 		m_node[2] = 0;
 
+		m_mesh = nullptr;
+
 		QVBoxLayout* pv = new QVBoxLayout;
-		QGroupBox* pg = new QGroupBox("Select nodes");
+
+		input = new QComboBox;
+		input->addItem("Select nodes");
+		input->addItem("Plane coordinates");
+//		input->addItem("Spherical angles/offset");
+		pv->addWidget(input);
+
+		stack = new QStackedWidget;
+
+		// select nodes input
+		QGroupBox* pg = new QGroupBox;
 		QFormLayout* pform = new QFormLayout;
-		pform->addRow("node 1:", node1 = new CIntInput);
-		pform->addRow("node 2:", node2 = new CIntInput);
-		pform->addRow("node 3:", node3 = new CIntInput);
+		pform->addRow("node 1:", node[0] = new CIntInput);
+		pform->addRow("node 2:", node[1] = new CIntInput);
+		pform->addRow("node 3:", node[2] = new CIntInput);
 		pg->setLayout(pform);
-		pv->addWidget(pg);
+		stack->addWidget(pg);
 
-		pg = new QGroupBox("Plane normal:");
+		// plane coordinates input
+		pg = new QGroupBox;
 		pform = new QFormLayout;
-		pform->addRow("x:", normx = new CFloatInput); normx->setReadOnly(true);
-		pform->addRow("y:", normy = new CFloatInput); normy->setReadOnly(true);
-		pform->addRow("z:", normz = new CFloatInput); normz->setReadOnly(true);
+		pform->addRow("a:", plane[0] = new CDragBox); plane[0]->setRange(-1, 1); plane[0]->setSingleStep(0.01);
+		pform->addRow("b:", plane[1] = new CDragBox); plane[1]->setRange(-1, 1); plane[1]->setSingleStep(0.01);
+		pform->addRow("c:", plane[2] = new CDragBox); plane[2]->setRange(-1, 1); plane[2]->setSingleStep(0.01);
+		pform->addRow("d:", plane[3] = new CDragBox); plane[3]->setRange(-1, 1); plane[3]->setSingleStep(0.01);
+		pg->setLayout(pform);
+		stack->addWidget(pg);
+
+		// add the stack widget
+		pv->addWidget(stack);
+
+		// plane definition output
+		pg = new QGroupBox("Plane definition:");
+		pform = new QFormLayout;
+		pform->addRow("x:", norm[0] = new QLineEdit); norm[0]->setReadOnly(true);
+		pform->addRow("y:", norm[1] = new QLineEdit); norm[1]->setReadOnly(true);
+		pform->addRow("z:", norm[2] = new QLineEdit); norm[2]->setReadOnly(true);
+		pform->addRow("d:", off   = new QLineEdit); off->setReadOnly(true);
 		pg->setLayout(pform);
 		pv->addWidget(pg);
 
+		// align view push button
 		QPushButton* pb = new QPushButton("Align View");
 		pv->addWidget(pb);
 
@@ -147,80 +125,202 @@ public:
 
 		setLayout(pv);
 
-		QObject::connect(node1, SIGNAL(editingFinished()), parent, SLOT(on_change_node1()));
-		QObject::connect(node2, SIGNAL(editingFinished()), parent, SLOT(on_change_node2()));
-		QObject::connect(node3, SIGNAL(editingFinished()), parent, SLOT(on_change_node3()));
+		QObject::connect(node[0], SIGNAL(editingFinished()), parent, SLOT(onNodeChanged()));
+		QObject::connect(node[1], SIGNAL(editingFinished()), parent, SLOT(onNodeChanged()));
+		QObject::connect(node[2], SIGNAL(editingFinished()), parent, SLOT(onNodeChanged()));
+
+		QObject::connect(plane[0], SIGNAL(valueChanged(double)), parent, SLOT(onPlaneChanged()));
+		QObject::connect(plane[1], SIGNAL(valueChanged(double)), parent, SLOT(onPlaneChanged()));
+		QObject::connect(plane[2], SIGNAL(valueChanged(double)), parent, SLOT(onPlaneChanged()));
+		QObject::connect(plane[3], SIGNAL(valueChanged(double)), parent, SLOT(onPlaneChanged()));
+
+		QObject::connect(input, SIGNAL(currentIndexChanged(int)), stack, SLOT(setCurrentIndex(int)));
 
 		QObject::connect(pb, SIGNAL(clicked()), parent, SLOT(onAlignView()));
 	}
+
+	int inputOption()
+	{
+		return input->currentIndex();
+	}
+
+	void SetNormal(const vec3d& r)
+	{
+		norm[0]->setText(QString::number(r.x));
+		norm[1]->setText(QString::number(r.y));
+		norm[2]->setText(QString::number(r.z));
+	}
+
+	vec3d GetNormal() const
+	{
+		double x = norm[0]->text().toDouble();
+		double y = norm[1]->text().toDouble();
+		double z = norm[2]->text().toDouble();
+		return vec3d(x, y, z);
+	}
+
+	void SetOffset(double d)
+	{
+		off->setText(QString::number(d));
+	}
+
+	double GetOffset() const
+	{
+		double d = off->text().toDouble();
+		return d;
+	}
+
+	void SetPoints(const vec3d& r1, const vec3d& r2, const vec3d& r3)
+	{
+		m_pos[0] = r1;
+		m_pos[1] = r2;
+		m_pos[2] = r3;
+	}
+
+	void GetPlaneCoordinates(double a[4])
+	{
+		a[0] = plane[0]->value();
+		a[1] = plane[1]->value();
+		a[2] = plane[2]->value();
+		a[3] = plane[3]->value();
+	}
+
+	void SetPlaneCoordinates(double nx, double ny, double nz, double d)
+	{
+		plane[0]->setValue(nx);
+		plane[1]->setValue(ny);
+		plane[2]->setValue(nz);
+		plane[3]->setValue(d);
+	}
+
+	void UpdatePlaneOffsetMinMax();
 };
 
-CPlaneTool::CPlaneTool(CMainWindow* wnd) : CAbstractTool(wnd, "Plane normal")
+CPlaneTool::CPlaneTool(CMainWindow* wnd) : CAbstractTool(wnd, "Plane")
 {
 
 }
 
-void CPlaneTool::on_change_node1()
+void CPlaneTool::onNodeChanged()
 {
-	ui->m_node[0] = ui->node1->value();
-	UpdateNormal();
-}
+	ui->m_node[0] = ui->node[0]->value();
+	ui->m_node[1] = ui->node[1]->value();
+	ui->m_node[2] = ui->node[2]->value();
 
-void CPlaneTool::on_change_node2()
-{
-	ui->m_node[1] = ui->node2->value();
-	UpdateNormal();
-}
-
-void CPlaneTool::on_change_node3()
-{
-	ui->m_node[2] = ui->node3->value();
-	UpdateNormal();
-}
-
-void CPlaneTool::UpdateNormal()
-{
-	FEMesh* pm = GetActiveMesh();
+	FEMeshBase* pm = ui->m_mesh;
 	if (pm == nullptr) return;
 
 	int* node = ui->m_node;
 	if ((node[0] > 0) && (node[1] > 0) && (node[2] > 0))
 	{
+		FENode& n1 = pm->Node(node[0] - 1);
+		FENode& n2 = pm->Node(node[1] - 1);
+		FENode& n3 = pm->Node(node[2] - 1);
 
-		FENode& n1 = pm->Node(node[0]-1);
-		FENode& n2 = pm->Node(node[1]-1);
-		FENode& n3 = pm->Node(node[2]-1);
+		// get the nodal positions
+		vec3d r1 = pm->GlobalToLocal(n1.r);
+		vec3d r2 = pm->GlobalToLocal(n2.r);
+		vec3d r3 = pm->GlobalToLocal(n3.r);
+		ui->SetPoints(r1, r2, r3);
 
-		vec3d r1 = n1.r;
-		vec3d r2 = n2.r;
-		vec3d r3 = n3.r;
-
-		vec3d rc = (r1 + r2 + r3)/3.0;
-
-		vec3d e[3];
+		// calculate the normal
+		vec3d e[2], N;
 		e[0] = r2 - r1;
 		e[1] = r3 - r1;
-		e[2] = e[0] ^ e[1]; 
-		e[1] = e[2] ^ e[0];
+		N = e[0] ^ e[1];
+		N.Normalize();
+		ui->SetNormal(N);
 
-		e[0].Normalize();
-		e[1].Normalize();
-		e[2].Normalize();
+		// calculate offset
+		double d = N * r1;
+		ui->SetOffset(d);
 
-		ui->normx->setValue(e[2].x);
-		ui->normy->setValue(e[2].y);
-		ui->normz->setValue(e[2].z);
+		// update the plane offset range
+		ui->UpdatePlaneOffsetMinMax();
 
-		CPlaneDecoration* deco = new CPlaneDecoration;
-		deco->setPosition(to_vec3f(n1.r), to_vec3f(n2.r), to_vec3f(n3.r));
+		double d0 = ui->m_range[0];
+		double d1 = ui->m_range[1];
+		double dr = 2.0*(d - d0) / (d1 - d0) - 1.0;
+
+		// update the plane coordinates
+		ui->SetPlaneCoordinates(N.x, N.y, N.z, dr);
+
+		// add a decoration
+		GPlaneCutDecoration* planeCut = new GPlaneCutDecoration;
+		planeCut->setColor(GLColor(255, 255, 0, 128));
+		planeCut->setColor2(GLColor(255, 255, 0));
+		planeCut->setBoundingBox(ui->m_box);
+		planeCut->setPlane(N.x, N.y, N.z, d);
+		GCompositeDecoration* deco = new GCompositeDecoration;
+		deco->AddDecoration(new GPointDecoration(to_vec3f(r1)));
+		deco->AddDecoration(new GPointDecoration(to_vec3f(r2)));
+		deco->AddDecoration(new GPointDecoration(to_vec3f(r3)));
+		deco->AddDecoration(planeCut);
 		SetDecoration(deco);
 	}
-	else 
-	{ 
-		ui->normx->setValue(0.0);
-		ui->normy->setValue(0.0);
-		ui->normz->setValue(0.0);
+	else
+	{
+		SetDecoration(nullptr);
+		ui->SetNormal(vec3d(0, 0, 0));
+		ui->SetOffset(0);
 	}
+}
+
+void CPlaneTool::onPlaneChanged()
+{
+	if (ui->inputOption() != 1) return;
+
+	double a[4];
+	ui->GetPlaneCoordinates(a);
+
+	vec3d N(a[0], a[1], a[2]); 
+	N.Normalize();
+
+	ui->SetNormal(N);
+	ui->UpdatePlaneOffsetMinMax();
+
+	double w = a[3];
+	double w0 = ui->m_range[0];
+	double w1 = ui->m_range[1];
+	double d = 0.5*w0 * (1.0 - w) + 0.5*w1 * (1.0 + w);
+	ui->SetOffset(d);
+
+	// add a decoration
+	GPlaneCutDecoration* deco = new GPlaneCutDecoration;
+	deco->setColor(GLColor(255, 255, 0, 128));
+	deco->setColor2(GLColor(255, 255, 0));
+	deco->setBoundingBox(ui->m_box);
+	deco->setPlane(N.x, N.y, N.z, d);
+	SetDecoration(deco);
+}
+
+void CPlaneToolUI::UpdatePlaneOffsetMinMax()
+{
+	// get the nodal values
+	BOX& box = m_box;
+	vec3d a = box.r0();
+	vec3d b = box.r1();
+	vec3d r[8] = {
+		vec3d(a.x, a.y, a.z),
+		vec3d(b.x, a.y, a.z),
+		vec3d(b.x, b.y, a.z),
+		vec3d(a.x, b.y, a.z),
+		vec3d(a.x, a.y, b.z),
+		vec3d(b.x, a.y, b.z),
+		vec3d(b.x, b.y, b.z),
+		vec3d(a.x, b.y, b.z)
+	};
+	vec3d n = GetNormal();
+	double dmin, dmax;
+	for (int k = 0; k < 8; ++k)
+	{
+		double dk = r[k] * n;
+		if ((k == 0) || (dk < dmin)) dmin = dk;
+		if ((k == 0) || (dk > dmax)) dmax = dk;
+	}
+	if (dmin == dmax) dmax += 1.0;
+	m_range[0] = dmin;
+	m_range[1] = dmax;
 }
 
 void CPlaneTool::onAlignView()
@@ -231,7 +331,7 @@ void CPlaneTool::onAlignView()
 	int* node = ui->m_node;
 	if ((node[0] > 0) && (node[1] > 0) && (node[2] > 0))
 	{
-		vec3f r(ui->normx->value(), ui->normy->value(), ui->normz->value());
+		vec3f r = to_vec3f(ui->GetNormal());
 
 		CGLCamera& cam = doc->GetView()->GetCamera();
 		cam.SetViewDirection(r);
@@ -244,7 +344,6 @@ QWidget* CPlaneTool::createUi()
 {
 	return (ui = new CPlaneToolUI(this));
 }
-
 
 //-----------------------------------------------------------------------------
 void CPlaneTool::addPoint(int n)
@@ -271,32 +370,40 @@ void CPlaneTool::addPoint(int n)
 
 void CPlaneTool::Update()
 {
-	SetDecoration(nullptr);
-
-	FEMesh* mesh = GetActiveMesh();
-	if (mesh == nullptr) return;
-
-	int nsel = 0;
-	int N = mesh->Nodes();
-	for (int i = 0; i<N; ++i)
+	// set the active mesh
+	FEMeshBase* mesh = GetActiveEditMesh();
+	ui->m_mesh = mesh;
+	if (mesh == nullptr)
 	{
-		FENode& node = mesh->Node(i);
-		if (node.IsSelected())
+		SetDecoration(nullptr);
+		return;
+	}
+
+	ui->m_box = mesh->GetBoundingBox();
+
+	if (ui->inputOption() == 0)
+	{
+		int nsel = 0;
+		int N = mesh->Nodes();
+		for (int i = 0; i < N; ++i)
 		{
-			nsel++;
-			int nid = i + 1;
-			addPoint(nid);
+			FENode& node = mesh->Node(i);
+			if (node.IsSelected())
+			{
+				nsel++;
+				int nid = i + 1;
+				addPoint(nid);
+			}
 		}
+		if (nsel == 0)
+		{
+			ui->m_node[0] = ui->m_node[1] = ui->m_node[2] = 0;
+		}
+
+		ui->node[0]->setValue(ui->m_node[0]);
+		ui->node[1]->setValue(ui->m_node[1]);
+		ui->node[2]->setValue(ui->m_node[2]);
+
+		onNodeChanged();
 	}
-
-	if (nsel == 0)
-	{
-		ui->m_node[0] = ui->m_node[1] = ui->m_node[2] = 0;
-	}
-
-	ui->node1->setValue(ui->m_node[0]);
-	ui->node2->setValue(ui->m_node[1]);
-	ui->node3->setValue(ui->m_node[2]);
-
-	UpdateNormal();
 }

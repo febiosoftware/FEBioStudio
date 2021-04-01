@@ -3739,7 +3739,6 @@ void CGLView::AddDecoration(GDecoration* deco)
 		if (deco == m_deco[i]) return;
 	}
 	m_deco.push_back(deco);
-	repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -3751,7 +3750,6 @@ void CGLView::RemoveDecoration(GDecoration* deco)
 		if (deco == m_deco[i])
 		{
 			m_deco.erase(m_deco.begin() + i);
-			repaint();
 			return;
 		}
 	}
