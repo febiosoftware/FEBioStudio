@@ -502,6 +502,9 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
     
     ui->name->setText(QString::fromStdString(mat->GetName()));
     
+    m_bovrd = mat->GetOvrd();
+    ui->ovrVB->setChecked(m_bovrd);
+    
     // set species
     ui->selectReactants->clear();
     ui->selectInternalReactants->clear();

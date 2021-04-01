@@ -126,7 +126,7 @@ REGISTER_MATERIAL(FESoluteMaterial, MODULE_MULTIPHASIC, FE_SOLUTE_MATERIAL, FE_M
 FESoluteMaterial::FESoluteMaterial() : FEMaterial(FE_SOLUTE_MATERIAL)
 {
 	// add the solute material index
-	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);
 
 	// Add diffusivity property
 	AddProperty("diffusivity", FE_MAT_DIFFUSIVITY);
@@ -144,7 +144,7 @@ REGISTER_MATERIAL(FESBMMaterial, MODULE_MULTIPHASIC, FE_SBM_MATERIAL, FE_MAT_SBM
 FESBMMaterial::FESBMMaterial() : FEMaterial(FE_SBM_MATERIAL)
 {
 	// add the SBM material index
-	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(SBMs)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(SBMs)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);
     
 	// add parameters
 	AddScienceParam(0, UNIT_DENSITY, "rho0", "apparent density");

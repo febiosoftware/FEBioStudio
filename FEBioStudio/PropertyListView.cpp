@@ -389,7 +389,7 @@ public:
 			if (prop.brange)
 			{
 				CDragBox* pc = new CDragBox(parent);
-				pc->SetSingleStep(prop.fstep);
+				pc->setSingleStep(prop.fstep);
 				pc->setRange(prop.fmin, prop.fmax);
 				pc->textFromValue(data.value<double>());
 				pc->setAccelerated(true);
