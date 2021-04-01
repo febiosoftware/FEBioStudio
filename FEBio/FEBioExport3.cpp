@@ -1654,6 +1654,13 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 		else WriteReactionMaterial(pm, el);
 		return;
 	}
+    // redirect membrane reactions
+    if ((pm->Type() == FE_MMASS_ACTION_FORWARD) ||
+        (pm->Type() == FE_MMASS_ACTION_REVERSIBLE))
+    {
+        WriteMembraneReactionMaterial(pm, el);
+        return;
+    }
 
 	// get the type string    
 	const char* sztype = FEMaterialFactory::TypeStr(pm);
@@ -1725,6 +1732,66 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 		m_xml.add_leaf(el);
 		return;
 	}
+    else if (pm->Type() == FE_INT_REACTANT_MATERIAL)
+    {
+        FEInternalReactantMaterial* psb = dynamic_cast<FEInternalReactantMaterial*>(pm); assert(psb);
+        int idx = psb->GetIndex();
+        int type = psb->GetReactantType();
+        el.value(psb->GetCoef());
+        switch (type)
+        {
+            case FEMembraneReactionMaterial::INT_SPECIES: el.add_attribute("sol", idx + 1); break;
+            default:
+                assert(false);
+        }
+        m_xml.add_leaf(el);
+        return;
+    }
+    else if (pm->Type() == FE_INT_PRODUCT_MATERIAL)
+    {
+        FEInternalProductMaterial* psb = dynamic_cast<FEInternalProductMaterial*>(pm); assert(psb);
+        int idx = psb->GetIndex();
+        int type = psb->GetProductType();
+        el.value(psb->GetCoef());
+        switch (type)
+        {
+            case FEMembraneReactionMaterial::INT_SPECIES: el.add_attribute("sol", idx + 1); break;
+            default:
+                assert(false);
+        }
+        m_xml.add_leaf(el);
+        return;
+    }
+    else if (pm->Type() == FE_EXT_REACTANT_MATERIAL)
+    {
+        FEExternalReactantMaterial* psb = dynamic_cast<FEExternalReactantMaterial*>(pm); assert(psb);
+        int idx = psb->GetIndex();
+        int type = psb->GetReactantType();
+        el.value(psb->GetCoef());
+        switch (type)
+        {
+            case FEMembraneReactionMaterial::EXT_SPECIES: el.add_attribute("sol", idx + 1); break;
+            default:
+                assert(false);
+        }
+        m_xml.add_leaf(el);
+        return;
+    }
+    else if (pm->Type() == FE_EXT_PRODUCT_MATERIAL)
+    {
+        FEExternalProductMaterial* psb = dynamic_cast<FEExternalProductMaterial*>(pm); assert(psb);
+        int idx = psb->GetIndex();
+        int type = psb->GetProductType();
+        el.value(psb->GetCoef());
+        switch (type)
+        {
+            case FEMembraneReactionMaterial::EXT_SPECIES: el.add_attribute("sol", idx + 1); break;
+            default:
+                assert(false);
+        }
+        m_xml.add_leaf(el);
+        return;
+    }
     else if (pm->Type() == FE_OSMO_WM)
     {
         FEOsmoWellsManning* pwm = dynamic_cast<FEOsmoWellsManning*>(pm); assert(pwm);
@@ -1997,6 +2064,71 @@ void FEBioExport3::WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el)
 	}
 
 	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteMembraneReactionMaterial(FEMaterial* pmat, XMLElement& el)
+{
+    const char* sztype = 0;
+    switch (pmat->Type())
+    {
+        case FE_MMASS_ACTION_FORWARD: sztype = "membrane-mass-action-forward"; break;
+        case FE_MMASS_ACTION_REVERSIBLE: sztype = "membrane-mass-action-reversible"; break;
+        default:
+            assert(false);
+            return;
+    }
+    
+    el.add_attribute("type", sztype);
+    
+    m_xml.add_branch(el);
+    {
+        // write the material parameters (if any)
+        if (pmat->Parameters()) WriteMaterialParams(pmat);
+        
+        // write the components
+        int NC = pmat->Properties();
+        for (int i = 0; i<NC; ++i)
+        {
+            FEMaterialProperty& mc = pmat->GetProperty(i);
+            for (int j = 0; j<mc.Size(); ++j)
+            {
+                FEMaterial* pc = mc.GetMaterial(j);
+                if (pc)
+                {
+                    el.name(mc.GetName().c_str());
+                    const string& name = pc->GetName();
+                    if (name.empty() == false) el.add_attribute("name", name.c_str());
+                    
+                    bool is_multi = false;
+                    switch (pc->Type())
+                    {
+                        case FE_SBM_MATERIAL: is_multi = true; break;
+                        case FE_REACTANT_MATERIAL: is_multi = true; break;
+                        case FE_PRODUCT_MATERIAL: is_multi = true; break;
+                        case FE_INT_REACTANT_MATERIAL: is_multi = true; break;
+                        case FE_INT_PRODUCT_MATERIAL: is_multi = true; break;
+                        case FE_EXT_REACTANT_MATERIAL: is_multi = true; break;
+                        case FE_EXT_PRODUCT_MATERIAL: is_multi = true; break;
+                        case FE_SPECIES_MATERIAL: is_multi = true; break;
+                        case FE_SOLID_SPECIES_MATERIAL: is_multi = true; break;
+                    }
+                    
+                    if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);
+                    else
+                    {
+                        el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
+                        m_xml.add_branch(el);
+                        {
+                            WriteMaterialParams(pc);
+                        }
+                        m_xml.close_branch();
+                    }
+                }
+            }
+        }
+    }
+    m_xml.close_branch();
 }
 
 //-----------------------------------------------------------------------------
