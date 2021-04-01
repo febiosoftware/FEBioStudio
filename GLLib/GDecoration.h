@@ -54,17 +54,20 @@ protected:
 class GPointDecoration : public GDecoration
 {
 public:
-	GPointDecoration() {}
-	GPointDecoration(const vec3f& r) : pos(r) {}
+	GPointDecoration() { m_renderAura = false; }
+	GPointDecoration(const vec3f& r) : m_pos(r) { m_renderAura = false; }
 
 	void render();
 
-	void setPosition(const vec3f& r) { pos = r; }
+	void setPosition(const vec3f& r) { m_pos = r; }
 
-	vec3f& position() { return pos; }
+	vec3f& position() { return m_pos; }
+
+	void renderAura(bool b) { m_renderAura = b; }
 
 private:
-	vec3f	pos;
+	vec3f	m_pos;
+	bool	m_renderAura;
 };
 
 //-------------------------------------------------------------------
