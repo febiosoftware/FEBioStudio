@@ -199,6 +199,7 @@ public:
 	QAction* actionSoluteTable;
 	QAction* actionSBMTable;
 	QAction* actionAddReaction;
+    QAction* actionAddMembraneReaction;
 
 	QComboBox* coord;
 
@@ -467,6 +468,7 @@ public:
 		actionSoluteTable        = addAction("Solute Table ..."              , "actionSoluteTable");
 		actionSBMTable           = addAction("Solid-bound Molecule Table ...", "actionSBMTable");
 		actionAddReaction        = addAction("Chemical Reaction Editor ..."  , "actionAddReaction");
+        actionAddMembraneReaction= addAction("Membrane Reaction Editor ..."  , "actionAddMembraneReaction");
 		QAction* actionEditProject = addAction("Edit Physics Modules ...", "actionEditProject");
 
 		// --- Tools menu ---
@@ -745,6 +747,7 @@ public:
 		menuPhysics->addAction(actionSoluteTable);
 		menuPhysics->addAction(actionSBMTable);
 		menuPhysics->addAction(actionAddReaction);
+        menuPhysics->addAction(actionAddMembraneReaction);
 		menuPhysics->addSeparator();
 		menuPhysics->addAction(actionEditProject);
 

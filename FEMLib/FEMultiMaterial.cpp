@@ -378,7 +378,7 @@ FEReactiveViscoelasticMaterialUC::FEReactiveViscoelasticMaterialUC() : FEMateria
 }
 
 //=============================================================================
-//								REACTION
+//							CHEMICAL REACTION
 //=============================================================================
 
 FEReactionMaterial::FEReactionMaterial(int ntype) : FEMaterial(ntype)
@@ -539,6 +539,327 @@ string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem)
 }
 
 //=============================================================================
+//                            MEMBRANE REACTION
+//=============================================================================
+
+FEMembraneReactionMaterial::FEMembraneReactionMaterial(int ntype) : FEMaterial(ntype)
+{
+    // the optional Vbar parameter is hidden by default.
+    AddScienceParam(0, UNIT_MOLAR_VOLUME, "Vbar", "Vbar")->SetState(Param_HIDDEN);
+    AddBoolParam(false, 0, 0)->SetState(Param_HIDDEN);
+    
+    // Add reaction rate properties
+    AddProperty("forward_rate", FE_MAT_MREACTION_RATE);
+    AddProperty("reverse_rate", FE_MAT_MREACTION_RATE);
+    
+    AddProperty("vR" , FE_MAT_REACTION_REACTANTS  , FEMaterialProperty::NO_FIXED_SIZE);
+    AddProperty("vP" , FE_MAT_REACTION_PRODUCTS   , FEMaterialProperty::NO_FIXED_SIZE);
+    AddProperty("vRi", FE_MAT_MREACTION_IREACTANTS, FEMaterialProperty::NO_FIXED_SIZE);
+    AddProperty("vPi", FE_MAT_MREACTION_IPRODUCTS , FEMaterialProperty::NO_FIXED_SIZE);
+    AddProperty("vRe", FE_MAT_MREACTION_EREACTANTS, FEMaterialProperty::NO_FIXED_SIZE);
+    AddProperty("vPe", FE_MAT_MREACTION_EPRODUCTS , FEMaterialProperty::NO_FIXED_SIZE);
+}
+
+
+void FEMembraneReactionMaterial::SetOvrd(bool bovrd) {
+    SetBoolValue(MP_OVRD, bovrd);
+    if (bovrd) GetParam(MP_VBAR).SetState(Param_ALLFLAGS);
+    else GetParam(MP_VBAR).SetState(Param_HIDDEN);
+}
+
+bool FEMembraneReactionMaterial::GetOvrd() { return GetBoolValue(MP_OVRD); }
+
+// set forward rate
+void FEMembraneReactionMaterial::SetForwardRate(FEMaterial* pm) { ReplaceProperty(0, pm); }
+FEMaterial* FEMembraneReactionMaterial::GetForwardRate() { return GetProperty(0).GetMaterial(); }
+
+// set reverse rate
+void FEMembraneReactionMaterial::SetReverseRate(FEMaterial* pm) { ReplaceProperty(1, pm); }
+FEMaterial* FEMembraneReactionMaterial::GetReverseRate() { return GetProperty(1).GetMaterial(); }
+
+int FEMembraneReactionMaterial::Reactants() { return GetProperty(2).Size(); }
+int FEMembraneReactionMaterial::Products() { return GetProperty(3).Size(); }
+int FEMembraneReactionMaterial::InternalReactants() { return GetProperty(4).Size(); }
+int FEMembraneReactionMaterial::InternalProducts() { return GetProperty(5).Size(); }
+int FEMembraneReactionMaterial::ExternalReactants() { return GetProperty(6).Size(); }
+int FEMembraneReactionMaterial::ExternalProducts() { return GetProperty(7).Size(); }
+
+FEReactantMaterial* FEMembraneReactionMaterial::Reactant(int i)
+{
+    return dynamic_cast<FEReactantMaterial*>(GetProperty(2).GetMaterial(i));
+}
+
+FEProductMaterial* FEMembraneReactionMaterial::Product(int i)
+{
+    return dynamic_cast<FEProductMaterial*>(GetProperty(3).GetMaterial(i));
+}
+
+FEInternalReactantMaterial* FEMembraneReactionMaterial::InternalReactant(int i)
+{
+    return dynamic_cast<FEInternalReactantMaterial*>(GetProperty(4).GetMaterial(i));
+}
+
+FEInternalProductMaterial* FEMembraneReactionMaterial::InternalProduct(int i)
+{
+    return dynamic_cast<FEInternalProductMaterial*>(GetProperty(5).GetMaterial(i));
+}
+
+FEExternalReactantMaterial* FEMembraneReactionMaterial::ExternalReactant(int i)
+{
+    return dynamic_cast<FEExternalReactantMaterial*>(GetProperty(6).GetMaterial(i));
+}
+
+FEExternalProductMaterial* FEMembraneReactionMaterial::ExternalProduct(int i)
+{
+    return dynamic_cast<FEExternalProductMaterial*>(GetProperty(7).GetMaterial(i));
+}
+
+// add reactant/product component
+void FEMembraneReactionMaterial::AddReactantMaterial(FEReactantMaterial* pm) { AddProperty(2, pm); }
+void FEMembraneReactionMaterial::AddProductMaterial (FEProductMaterial* pm) { AddProperty(3, pm); }
+void FEMembraneReactionMaterial::AddInternalReactantMaterial(FEInternalReactantMaterial* pm) { AddProperty(4, pm); }
+void FEMembraneReactionMaterial::AddInternalProductMaterial (FEInternalProductMaterial* pm) { AddProperty(5, pm); }
+void FEMembraneReactionMaterial::AddExternalReactantMaterial(FEExternalReactantMaterial* pm) { AddProperty(6, pm); }
+void FEMembraneReactionMaterial::AddExternalProductMaterial (FEExternalProductMaterial* pm) { AddProperty(7, pm); }
+
+void FEMembraneReactionMaterial::ClearReactants()
+{
+    GetProperty(2).Clear();
+    GetProperty(4).Clear();
+    GetProperty(6).Clear();
+}
+
+void FEMembraneReactionMaterial::ClearProducts()
+{
+    GetProperty(3).Clear();
+    GetProperty(5).Clear();
+    GetProperty(7).Clear();
+}
+
+void FEMembraneReactionMaterial::GetSoluteReactants(vector<int>& solR)
+{
+    solR.clear();
+    FEMaterialProperty& p = GetProperty(2);
+    int N = p.Size();
+    for (int i=0; i<N; ++i)
+    {
+        FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
+        if (ri && (ri->GetReactantType() == FEMembraneReactionMaterial::SOLUTE_SPECIES)) solR.push_back(ri->GetIndex());
+    }
+}
+
+void FEMembraneReactionMaterial::GetInternalSoluteReactants(vector<int>& solRi)
+{
+    solRi.clear();
+    FEMaterialProperty& p = GetProperty(4);
+    int N = p.Size();
+    for (int i=0; i<N; ++i)
+    {
+        FEInternalReactantMaterial* ri = dynamic_cast<FEInternalReactantMaterial*>(p.GetMaterial(i)); assert(ri);
+        if (ri && (ri->GetReactantType() == FEMembraneReactionMaterial::INT_SPECIES)) solRi.push_back(ri->GetIndex());
+    }
+}
+
+void FEMembraneReactionMaterial::GetExternalSoluteReactants(vector<int>& solRe)
+{
+    solRe.clear();
+    FEMaterialProperty& p = GetProperty(6);
+    int N = p.Size();
+    for (int i=0; i<N; ++i)
+    {
+        FEExternalReactantMaterial* ri = dynamic_cast<FEExternalReactantMaterial*>(p.GetMaterial(i)); assert(ri);
+        if (ri && (ri->GetReactantType() == FEMembraneReactionMaterial::EXT_SPECIES)) solRe.push_back(ri->GetIndex());
+    }
+}
+
+void FEMembraneReactionMaterial::GetSBMReactants(vector<int>& sbmR)
+{
+    sbmR.clear();
+    FEMaterialProperty& p = GetProperty(2);
+    int N = p.Size();
+    for (int i = 0; i<N; ++i)
+    {
+        FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
+        if (ri && (ri->GetReactantType() == FEMembraneReactionMaterial::SBM_SPECIES)) sbmR.push_back(ri->GetIndex());
+    }
+}
+
+void FEMembraneReactionMaterial::GetSoluteProducts(vector<int>& solP)
+{
+    solP.clear();
+    FEMaterialProperty& p = GetProperty(3);
+    int N = p.Size();
+    for (int i = 0; i<N; ++i)
+    {
+        FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
+        if (ri && (ri->GetProductType() == FEMembraneReactionMaterial::SOLUTE_SPECIES)) solP.push_back(ri->GetIndex());
+    }
+}
+
+void FEMembraneReactionMaterial::GetInternalSoluteProducts(vector<int>& solPi)
+{
+    solPi.clear();
+    FEMaterialProperty& p = GetProperty(5);
+    int N = p.Size();
+    for (int i = 0; i<N; ++i)
+    {
+        FEInternalProductMaterial* ri = dynamic_cast<FEInternalProductMaterial*>(p.GetMaterial(i)); assert(ri);
+        if (ri && (ri->GetProductType() == FEMembraneReactionMaterial::INT_SPECIES)) solPi.push_back(ri->GetIndex());
+    }
+}
+
+void FEMembraneReactionMaterial::GetExternalSoluteProducts(vector<int>& solPe)
+{
+    solPe.clear();
+    FEMaterialProperty& p = GetProperty(7);
+    int N = p.Size();
+    for (int i = 0; i<N; ++i)
+    {
+        FEExternalProductMaterial* ri = dynamic_cast<FEExternalProductMaterial*>(p.GetMaterial(i)); assert(ri);
+        if (ri && (ri->GetProductType() == FEMembraneReactionMaterial::EXT_SPECIES)) solPe.push_back(ri->GetIndex());
+    }
+}
+
+void FEMembraneReactionMaterial::GetSBMProducts(vector<int>& sbmP)
+{
+    sbmP.clear();
+    FEMaterialProperty& p = GetProperty(3);
+    int N = p.Size();
+    for (int i = 0; i<N; ++i)
+    {
+        FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
+        if (ri && (ri->GetProductType() == FEMembraneReactionMaterial::SBM_SPECIES)) sbmP.push_back(ri->GetIndex());
+    }
+}
+
+string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& fem)
+{
+    stringstream ss;
+    int NR = mat->Reactants();
+    for (int i = 0; i<NR; ++i)
+    {
+        FEReactantMaterial* rm = mat->Reactant(i);
+        
+        string name;
+        int m = rm->GetIndex();
+        int ntype = rm->GetReactantType();
+        if (ntype == FEMembraneReactionMaterial::SOLUTE_SPECIES)
+            name = fem.GetSoluteData(m).GetName();
+        else
+            name = fem.GetSBMData(m).GetName();
+        
+        int n = rm->GetCoef();
+        if (n == 1)
+            ss << name;
+        else
+            ss << n << "*" << name;
+        if (i != NR - 1) ss << "+";
+    }
+    
+    int NRI = mat->InternalReactants();
+    for (int i = 0; i<NRI; ++i)
+    {
+        FEInternalReactantMaterial* rm = mat->InternalReactant(i);
+        
+        string name;
+        int m = rm->GetIndex();
+        int ntype = rm->GetReactantType();
+        if (ntype == FEMembraneReactionMaterial::INT_SPECIES)
+            name = fem.GetSoluteData(m).GetName();
+        
+        int n = rm->GetCoef();
+        if (n == 1)
+            ss << name << "i";
+        else
+            ss << n << "*" << name << "i";
+        if (i != NRI - 1) ss << "+";
+    }
+    
+    int NRE = mat->ExternalReactants();
+    for (int i = 0; i<NRE; ++i)
+    {
+        FEExternalReactantMaterial* rm = mat->ExternalReactant(i);
+        
+        string name;
+        int m = rm->GetIndex();
+        int ntype = rm->GetReactantType();
+        if (ntype == FEMembraneReactionMaterial::EXT_SPECIES)
+            name = fem.GetSoluteData(m).GetName();
+        
+        int n = rm->GetCoef();
+        if (n == 1)
+            ss << name << "e";
+        else
+            ss << n << "*" << name << "e";
+        if (i != NRE - 1) ss << "+";
+    }
+    
+    bool rev = (mat->GetReverseRate() != 0);
+    if (rev) ss << "<-->";
+    else ss << "-->";
+    
+    int NP = mat->Products();
+    for (int i = 0; i<NP; ++i)
+    {
+        FEProductMaterial* pm = mat->Product(i);
+        
+        string name;
+        int m = pm->GetIndex();
+        int ntype = pm->GetProductType();
+        if (ntype == FEMembraneReactionMaterial::SOLUTE_SPECIES)
+            name = fem.GetSoluteData(m).GetName();
+        else
+            name = fem.GetSBMData(m).GetName();
+        
+        int n = pm->GetCoef();
+        if (n == 1)
+            ss << name;
+        else
+            ss << n << "*" << name;
+        if (i != NP - 1) ss << "+";
+    }
+    
+    int NPI = mat->InternalProducts();
+    for (int i = 0; i<NPI; ++i)
+    {
+        FEInternalProductMaterial* pm = mat->InternalProduct(i);
+        
+        string name;
+        int m = pm->GetIndex();
+        int ntype = pm->GetProductType();
+        if (ntype == FEMembraneReactionMaterial::INT_SPECIES)
+            name = fem.GetSoluteData(m).GetName();
+        
+        int n = pm->GetCoef();
+        if (n == 1)
+            ss << name << "i";
+        else
+            ss << n << "*" << name << "i";
+        if (i != NPI - 1) ss << "+";
+    }
+    
+    int NPE = mat->ExternalProducts();
+    for (int i = 0; i<NPE; ++i)
+    {
+        FEExternalProductMaterial* pm = mat->ExternalProduct(i);
+        
+        string name;
+        int m = pm->GetIndex();
+        int ntype = pm->GetProductType();
+        if (ntype == FEMembraneReactionMaterial::EXT_SPECIES)
+            name = fem.GetSoluteData(m).GetName();
+        
+        int n = pm->GetCoef();
+        if (n == 1)
+            ss << name << "e";
+        else
+            ss << n << "*" << name << "e";
+        if (i != NPI - 1) ss << "+";
+    }
+    return ss.str();
+}
+
+//=============================================================================
 //								MULTIPHASIC
 //=============================================================================
 
@@ -567,6 +888,9 @@ FEMultiphasicMaterial::FEMultiphasicMaterial() : FEMultiMaterial(FE_MULTIPHASIC_
 
 	// add reaction material
 	AddProperty("reaction", FE_MAT_REACTION, FEMaterialProperty::NO_FIXED_SIZE, 0);
+
+    // add reaction material
+    AddProperty("membrane_reaction", FE_MAT_MREACTION, FEMaterialProperty::NO_FIXED_SIZE, 0);
 }
 
 // set/get elastic component 
@@ -605,6 +929,12 @@ void FEMultiphasicMaterial::AddReactionMaterial(FEReactionMaterial* pm)
 	GetProperty(REACTION).AddMaterial(pm);
 }
 
+// add membrane reaction component
+void FEMultiphasicMaterial::AddMembraneReactionMaterial(FEMembraneReactionMaterial* pm)
+{
+    GetProperty(MREACTION).AddMaterial(pm);
+}
+
 // get solute global index from local index
 int FEMultiphasicMaterial::GetSoluteIndex(const int isol) 
 {
@@ -633,6 +963,20 @@ FEReactionMaterial* FEMultiphasicMaterial::GetReaction(int n)
 	FEMaterialProperty& p = GetProperty(REACTION);
 	FEReactionMaterial* prm = dynamic_cast<FEReactionMaterial*>(p.GetMaterial(n));
 	return prm;
+}
+
+// count membrane reaction components
+int FEMultiphasicMaterial::MembraneReactions()
+{
+    return GetProperty(MREACTION).Size();
+}
+
+// get reaction component
+FEMembraneReactionMaterial* FEMultiphasicMaterial::GetMembraneReaction(int n)
+{
+    FEMaterialProperty& p = GetProperty(MREACTION);
+    FEMembraneReactionMaterial* prm = dynamic_cast<FEMembraneReactionMaterial*>(p.GetMaterial(n));
+    return prm;
 }
 
 // see if this material has a solute with global ID
@@ -694,6 +1038,70 @@ FEProductMaterial::FEProductMaterial() : FEMaterial(FE_PRODUCT_MATERIAL)
 }
 
 //=============================================================================
+//                          INTERNAL REACTANT
+//=============================================================================
+
+REGISTER_MATERIAL(FEInternalReactantMaterial, MODULE_REACTIONS, FE_INT_REACTANT_MATERIAL, FE_MAT_MREACTION_IREACTANTS, "vRi", 0);
+
+FEInternalReactantMaterial::FEInternalReactantMaterial() : FEMaterial(FE_INT_REACTANT_MATERIAL)
+{
+    // add the stoichiometric coefficient
+    AddIntParam(1, "vRi", "vRi"); // reactant stoichiometric coefficient
+    // add the type
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+    // add the index
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+}
+
+//=============================================================================
+//                           INTERNAL PRODUCT
+//=============================================================================
+
+REGISTER_MATERIAL(FEInternalProductMaterial, MODULE_REACTIONS, FE_INT_PRODUCT_MATERIAL, FE_MAT_MREACTION_IPRODUCTS, "vPi", 0);
+
+FEInternalProductMaterial::FEInternalProductMaterial() : FEMaterial(FE_INT_PRODUCT_MATERIAL)
+{
+    // add the stoichiometric coefficient
+    AddIntParam(1, "vPi", "vPi"); // product stoichiometric coefficient
+    // add the type
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+    // add the index
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+}
+
+//=============================================================================
+//                          EXTERNAL REACTANT
+//=============================================================================
+
+REGISTER_MATERIAL(FEExternalReactantMaterial, MODULE_REACTIONS, FE_EXT_REACTANT_MATERIAL, FE_MAT_MREACTION_EREACTANTS, "vRe", 0);
+
+FEExternalReactantMaterial::FEExternalReactantMaterial() : FEMaterial(FE_EXT_REACTANT_MATERIAL)
+{
+    // add the stoichiometric coefficient
+    AddIntParam(1, "vRe", "vRe"); // reactant stoichiometric coefficient
+    // add the type
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+    // add the index
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+}
+
+//=============================================================================
+//                           EXTERNAL PRODUCT
+//=============================================================================
+
+REGISTER_MATERIAL(FEExternalProductMaterial, MODULE_REACTIONS, FE_EXT_PRODUCT_MATERIAL, FE_MAT_MREACTION_EPRODUCTS, "vPe", 0);
+
+FEExternalProductMaterial::FEExternalProductMaterial() : FEMaterial(FE_EXT_PRODUCT_MATERIAL)
+{
+    // add the stoichiometric coefficient
+    AddIntParam(1, "vPe", "vPe"); // product stoichiometric coefficient
+    // add the type
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+    // add the index
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+}
+
+//=============================================================================
 //								MASS ACTION FORWARD REACTION
 //=============================================================================
 
@@ -723,6 +1131,26 @@ FEMichaelisMenten::FEMichaelisMenten() : FEReactionMaterial(FE_MICHAELIS_MENTEN)
 {
 	AddScienceParam(0, UNIT_CONCENTRATION, "Km", "Km"); // concentration at half-maximum rate
 	AddScienceParam(0, UNIT_CONCENTRATION, "c0", "c0"); // substrate trigger concentration
+}
+
+//=============================================================================
+//                         MEMBRANE MASS ACTION FORWARD REACTION
+//=============================================================================
+
+REGISTER_MATERIAL(FEMembraneMassActionForward, MODULE_REACTIONS, FE_MMASS_ACTION_FORWARD, FE_MAT_MREACTION, "membrane-mass-action-forward", 0);
+
+FEMembraneMassActionForward::FEMembraneMassActionForward() : FEMembraneReactionMaterial(FE_MMASS_ACTION_FORWARD)
+{
+}
+
+//=============================================================================
+//                         MEMBRANE MASS ACTION REVERSIBLE REACTION
+//=============================================================================
+
+REGISTER_MATERIAL(FEMembraneMassActionReversible, MODULE_REACTIONS, FE_MMASS_ACTION_REVERSIBLE, FE_MAT_MREACTION, "membrane-mass-action-reversible", 0);
+
+FEMembraneMassActionReversible::FEMembraneMassActionReversible() : FEMembraneReactionMaterial(FE_MMASS_ACTION_REVERSIBLE)
+{
 }
 
 //=============================================================================
