@@ -184,20 +184,47 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	ValArray& faceData1 = s1.m_FaceData;
 	if (IS_ELEM_FIELD(m_nfield) && (m_bDispNodeVals == false))
 	{
-		int NE = pm->Elements();
-		for (int i=0; i<NE; ++i)
+		int ndata = FIELD_CODE(m_nfield);
+		if (s0.m_Data[ndata].GetFormat() == DATA_ITEM)
 		{
-			FEElement_& el = pm->ElementRef(i);
-			ELEMDATA& d0 = s0.m_ELEM[i];
-			ELEMDATA& d1 = s1.m_ELEM[i];
-			if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
+			int NE = pm->Elements();
+			for (int i = 0; i < NE; ++i)
 			{
-				float f0 = d0.m_val;
-				float f1 = d1.m_val;
-				float f = f0 + (f1 - f0)*w;
-				if (f > fmax) fmax = f;
-				if (f < fmin) fmin = f;
-			}			
+				FEElement_& el = pm->ElementRef(i);
+				ELEMDATA& d0 = s0.m_ELEM[i];
+				ELEMDATA& d1 = s1.m_ELEM[i];
+				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
+				{
+					float f0 = d0.m_val;
+					float f1 = d1.m_val;
+					float f = f0 + (f1 - f0)*w;
+					if (f > fmax) fmax = f;
+					if (f < fmin) fmin = f;
+				}
+			}
+		}
+		else
+		{
+			ValArray& elemData0 = s0.m_ElemData;
+			ValArray& elemData1 = s1.m_ElemData;
+			int NE = pm->Elements();
+			for (int i = 0; i < NE; ++i)
+			{
+				FEElement_& el = pm->ElementRef(i);
+				ELEMDATA& d0 = s0.m_ELEM[i];
+				ELEMDATA& d1 = s1.m_ELEM[i];
+				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
+				{
+					for (int j = 0; j < el.Nodes(); ++j)
+					{
+						float f0 = elemData0.value(i, j);
+						float f1 = elemData1.value(i, j);
+						float f = f0 + (f1 - f0)*w;
+						if (f > fmax) fmax = f;
+						if (f < fmin) fmin = f;
+					}
+				}
+			}
 		}
 	}
 	else
