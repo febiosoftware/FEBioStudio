@@ -4,6 +4,14 @@
 
 *****************************************************************
 
+===========================================================================
+
+ R E L E A S E   1.4.1   4/2/2021
+
+===========================================================================
+
+* Fixed bug in evaluation of data range for element data using format other than ITEM. 
+* Modified parameter names for rigid wall to be more descriptive and consistent between model tree and curve editor.
 
 ===========================================================================
 
