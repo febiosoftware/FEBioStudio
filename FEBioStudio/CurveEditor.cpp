@@ -181,7 +181,7 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po)
 		FELoadCurve* plc = p.GetLoadCurve();
 		if (plc)
 		{
-			string name = po->GetName() + "." + p.GetShortName();
+			string name = po->GetName() + "." + p.GetLongName();
 			ui->addTreeItem(t1, QString::fromStdString(name), plc, &p);
 		}
 	}
@@ -526,7 +526,7 @@ void CCurveEditor::BuildModelTree()
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pw->GetName()));
 					ui->addTreeItem(t3, "tolerance", pw->GetParamLC(FERigidWallInterface::ALTOL  ), pw->GetParamPtr(FERigidWallInterface::ALTOL  ));
 					ui->addTreeItem(t3, "penalty"  , pw->GetParamLC(FERigidWallInterface::PENALTY), pw->GetParamPtr(FERigidWallInterface::PENALTY));
-					ui->addTreeItem(t3, "offset"   , pw->GetParamLC(FERigidWallInterface::OFFSET ), pw->GetParamPtr(FERigidWallInterface::OFFSET ));
+					ui->addTreeItem(t3, "plane displacement", pw->GetParamLC(FERigidWallInterface::OFFSET ), pw->GetParamPtr(FERigidWallInterface::OFFSET ));
 				}
 				else
 				{
