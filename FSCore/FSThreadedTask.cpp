@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,35 +23,34 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "stdafx.h"
+#include "FSThreadedTask.h"
 
-#pragma once
-#include "FEMesher.h"
-
-class GOCCObject;
-
-class NetGenMesher : public FEMesher
+FSThreadedTask::FSThreadedTask()
 {
-public:
-	enum {
-		GRANULARITY,
-		USELOCALH,
-		GRADING,
-		MAXELEMSIZE,
-		NROPT2D,
-		NROPT3D,
-		SECONDORDER
-	};
 
-public:
-	NetGenMesher();
-	NetGenMesher(GOCCObject* po);
+}
 
-	FEMesh*	BuildMesh() override;
+FSTaskProgress FSThreadedTask::GetProgress()
+{
+	return m_progress;
+}
 
-	FSTaskProgress GetProgress() override;
+void FSThreadedTask::Terminate()
+{
+	m_progress.valid = false;
+}
 
-	void Terminate() override;
+void FSThreadedTask::setProgress(double progress)
+{
+	if (progress < 0.0) progress = 0.0;
+	if (progress > 100.0) progress = 100.0;
+	m_progress.valid = true;
+	m_progress.percent = progress;
+}
 
-private:
-	GOCCObject*	m_occ;
-};
+void FSThreadedTask::setCurrentTask(const char* sz, double progress)
+{
+	setProgress(progress);
+	m_progress.task = sz;
+}

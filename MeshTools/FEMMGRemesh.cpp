@@ -35,7 +35,7 @@ SOFTWARE.*/
 extern int ET_TET[6][2]; // in lut.cpp
 extern int ET_TRI[3][2]; // in lut.cpp
 
-FEMMGRemesh::FEMMGRemesh() : FEModifier("Tet Refine")
+FEMMGRemesh::FEMMGRemesh() : FEModifier("MMG Remesh")
 {
 	AddDoubleParam(0.0, "H", "Element size");
 

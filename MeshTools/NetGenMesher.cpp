@@ -199,15 +199,16 @@ FEMesh*	NetGenMesher::BuildMesh()
 #endif // HAS_NETGEN
 }
 
-MeshingProgress NetGenMesher::Progress()
+FSTaskProgress NetGenMesher::GetProgress()
 {
 #ifdef HAS_NETGEN
-	MeshingProgress mp;
+	FSTaskProgress mp;
 	mp.percent = netgen::multithread.percent;
 	mp.task = netgen::multithread.task;
+	mp.valid = true;
 	return mp;
 #else
-	MeshingProgress mp;
+	FSTaskProgress mp;
 	return mp;
 #endif
 }

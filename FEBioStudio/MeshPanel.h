@@ -32,6 +32,7 @@ SOFTWARE.*/
 using namespace std;
 
 class CMainWindow;
+class CModelDocument;
 class QToolButton;
 class QGridLayout;
 class QButtonGroup;
@@ -44,6 +45,7 @@ class CCommand;
 class GObject;
 class QProgressBar;
 class FEMesher;
+class FEGroup;
 class QLabel;
 
 namespace Ui {
@@ -76,46 +78,94 @@ private:
 	Ui::CMeshPanel*		ui;
 };
 
-class MeshingThread : public QThread
+class CustomThread : public QThread
 {
 	Q_OBJECT
+
+public:
+	CustomThread();
+
+	virtual bool hasProgress();
+
+	virtual double progress();
+
+	virtual const char* currentTask();
+
+	virtual void stop();
+
+signals:
+	void resultReady(bool);
+};
+
+class MeshingThread : public CustomThread
+{
+public:
+	MeshingThread(GObject* po);
 
 	void run() Q_DECL_OVERRIDE;
 
 public:
-	MeshingThread(GObject* po);
+	bool hasProgress() override;
 
-	double progress();
+	double progress() override;
 
-	const char* currentTask();
+	const char* currentTask() override;
 
-	void stop();
-
-signals:
-	void resultReady();
+	void stop() override;
 
 private:
 	GObject*	m_po;
 	FEMesher*	m_mesher;
 };
 
+class ModifierThread : public CustomThread
+{
+public:
+	ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FEGroup* pg);
+
+	void run() Q_DECL_OVERRIDE;
+
+public:
+	bool hasProgress() override;
+
+	double progress() override;
+
+	const char* currentTask() override;
+
+	void stop() override;
+
+private:
+	CModelDocument*	m_doc;
+	GObject*	m_po;
+	FEModifier*	m_mod;
+	FEGroup*	m_pg;
+};
+
+
 class CDlgStartThread : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgStartThread(QWidget* parent, MeshingThread* thread);
+	CDlgStartThread(QWidget* parent, CustomThread* thread);
+
+	void closeEvent(QCloseEvent* ev) override;
 
 	void accept();
 
+	bool GetReturnCode();
+
+	void setTask(const QString& taskString);
+
 private slots:
-	void threadFinished();
+	void threadFinished(bool b);
 	void checkProgress();
 	void cancel();
 
 private:
-	MeshingThread*	m_thread;
+	CustomThread*	m_thread;
 	bool			m_bdone;
+	bool			m_breturn;
 
 	QLabel*			m_task;
 	QProgressBar*	m_progress;
