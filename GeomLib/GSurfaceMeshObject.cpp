@@ -195,7 +195,6 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 				}
 			}
 
-			assert(pe);
 			if (pe)
 			{
 				pe->m_gid = src.m_gid;

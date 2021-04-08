@@ -449,7 +449,9 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 	GObject* po = pdoc->GetActiveObject();
 	GModel* mdl = pdoc->GetGModel();
 
-	if (pa->objectName() == "convert1")
+	int convertOption = pa->data().toInt();
+
+	if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_SURFACE)
 	{
 		if (dynamic_cast<GSurfaceMeshObject*>(po) == nullptr)
 		{
@@ -465,7 +467,7 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
-	else
+	else if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_MESH)
 	{
 		// convert to editable mesh
 		if (dynamic_cast<GMeshObject*>(po) == 0)
@@ -482,6 +484,11 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
+	else
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Don't know how to convert object.");
+	}
+
 	Update();
 	GetMainWindow()->Update(this, true);
 }

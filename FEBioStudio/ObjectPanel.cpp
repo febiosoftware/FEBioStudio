@@ -32,76 +32,113 @@ SOFTWARE.*/
 #include <QGridLayout>
 #include <QFormLayout>
 #include <QMenu>
+#include <QLineEdit>
+#include <QLabel>
 #include "CColorButton.h"
 #include <GeomLib/GObject.h>
+#include <GeomLib/GMeshObject.h>
+#include <GeomLib/GSurfaceMeshObject.h>
 #include <GLWLib/convert.h>
 #include "MainWindow.h"
 #include "Document.h"
 
-CObjectPanel::CObjectPanel(CMainWindow* wnd, QWidget* parent) : QWidget(parent)
+class CObjectPanelUI
 {
-	name = new QLineEdit;
-	name->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-	type = new QLabel;
-	color = new CColorButton;
+public:
+	QMenu*			menu;
+	QLineEdit*		name;
+	QLabel*			type;
+	CColorButton*	color;
+	CMainWindow*	m_wnd;
 
-	m_wnd = wnd;
+public:
+	void setup(QWidget* w)
+	{
+		name = new QLineEdit;
+		name->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+		type = new QLabel;
+		color = new CColorButton;
 
-	QMenu* menu = new QMenu(this);
-	menu->setObjectName("menu");
-	QAction* convertAction1 = menu->addAction("Editable Surface");
-	QAction* convertAction2 = menu->addAction("Editable Mesh");
-	convertAction1->setObjectName("convert1");
-	convertAction2->setObjectName("convert2");
+		menu = new QMenu(w);
+		menu->setObjectName("menu");
 
-	QPushButton* pb = new QPushButton("Convert");
-	pb->setMenu(menu);
+		QPushButton* pb = new QPushButton("Convert");
+		pb->setMenu(menu);
 
-	QGridLayout* objGrid = new QGridLayout;
-	QLabel* nameLabel = new QLabel("Name:"); nameLabel->setBuddy(name);
-	QLabel* typeLabel = new QLabel("Type:"); typeLabel->setBuddy(type);
+		QGridLayout* objGrid = new QGridLayout;
+		QLabel* nameLabel = new QLabel("Name:"); nameLabel->setBuddy(name);
+		QLabel* typeLabel = new QLabel("Type:"); typeLabel->setBuddy(type);
 
-	objGrid->addWidget(nameLabel, 0, 0);
-	objGrid->addWidget(name, 0, 1, 1, 2);
-	objGrid->addWidget(color, 0, 3);
-	objGrid->addWidget(typeLabel, 1, 0);
-	objGrid->addWidget(type, 1, 1);
-	objGrid->addWidget(pb, 1, 2);
-	setLayout(objGrid);
+		objGrid->addWidget(nameLabel, 0, 0);
+		objGrid->addWidget(name, 0, 1, 1, 2);
+		objGrid->addWidget(color, 0, 3);
+		objGrid->addWidget(typeLabel, 1, 0);
+		objGrid->addWidget(type, 1, 1);
+		objGrid->addWidget(pb, 1, 2);
+		w->setLayout(objGrid);
 
-	QObject::connect(color, SIGNAL(colorChanged(QColor)), this, SLOT(onColorChanged(QColor)));
+		QObject::connect(color, SIGNAL(colorChanged(QColor)), w, SLOT(onColorChanged(QColor)));
+	}
+};
+
+CObjectPanel::CObjectPanel(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new CObjectPanelUI)
+{
+	ui->m_wnd = wnd;
+	ui->setup(this);
 }
 
 void CObjectPanel::onColorChanged(QColor c)
 {
-	CGLDocument* doc = m_wnd->GetGLDocument();
+	CGLDocument* doc = ui->m_wnd->GetGLDocument();
 	GObject* po = (doc ? doc->GetActiveObject() : nullptr);
 	if (po)
 	{
 		po->SetColor(toGLColor(c));
-		m_wnd->RedrawGL();
+		ui->m_wnd->RedrawGL();
 	}
 }
 
 void CObjectPanel::Update()
 {
-	CGLDocument* doc = m_wnd->GetGLDocument();
+	CGLDocument* doc = ui->m_wnd->GetGLDocument();
 	GObject* po = (doc ? doc->GetActiveObject() : nullptr);
+	ui->menu->clear();
 	if (po)
 	{
+		if (dynamic_cast<GMeshObject*>(po))
+		{
+			// mesh objects can be converted to surface objects
+			ui->menu->addAction("Editable Surface")->setData(CONVERT_TO_EDITABLE_SURFACE);
+			ui->menu->setEnabled(true);
+		}
+		else if (dynamic_cast<GSurfaceMeshObject*>(po))
+		{
+			// surface mesh objects can be converted to mesh objects
+			ui->menu->addAction("Editable Mesh")->setData(CONVERT_TO_EDITABLE_MESH);
+			ui->menu->setEnabled(true);
+		}
+		else if (po->GetFEMesh())
+		{
+			// if it has a mesh, we can do either
+			ui->menu->addAction("Editable Mesh")->setData(CONVERT_TO_EDITABLE_MESH);
+			ui->menu->addAction("Editable Surface")->setData(CONVERT_TO_EDITABLE_SURFACE);
+			ui->menu->setEnabled(true);
+		}
+		else ui->menu->setEnabled(false);
+
 		if (isEnabled() == false) setEnabled(true);
 
-		name->setText(QString::fromStdString(po->GetName()));
-		color->setColor(toQColor(po->GetColor()));
+		ui->name->setText(QString::fromStdString(po->GetName()));
+		ui->color->setColor(toQColor(po->GetColor()));
 
 		std::string stype = doc->GetTypeString(po);
-		type->setText(QString::fromStdString(stype));
+		ui->type->setText(QString::fromStdString(stype));
 	}
 	else 
 	{
 		setEnabled(false);
-		name->setText("");
-		type->setText("");
-		color->setColor(QColor(0,0,0));
+		ui->name->setText("");
+		ui->type->setText("");
+		ui->color->setColor(QColor(0,0,0));
 	}
 }
