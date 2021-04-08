@@ -1651,6 +1651,10 @@ void CGLView::RenderModelView()
 		if (m_planeCut == nullptr) UpdatePlaneCut();
 		if (m_planeCutMode == 0)
 		{
+			// render the plane cut first
+			if (m_planeCut) RenderPlaneCut();
+
+			// then turn on the clipping plane before rendering the other geometry
 			glClipPlane(GL_CLIP_PLANE0, m_plane);
 			glEnable(GL_CLIP_PLANE0);
 		}
@@ -1748,11 +1752,6 @@ void CGLView::RenderModelView()
 	}
 
 	glDisable(GL_CLIP_PLANE0);
-
-	if (m_showPlaneCut && m_planeCut && (m_planeCutMode == 0))
-	{
-		RenderPlaneCut();
-	}
 
 	// render the tags
 	if (view.m_bTags) RenderTags();
@@ -4475,13 +4474,43 @@ void CGLView::SelectFEElements(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	ray.origin = po->GetTransform().GlobalToLocal(ray.origin);
-	ray.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
+	Ray localRay;
+	localRay.origin = po->GetTransform().GlobalToLocal(ray.origin);
+	localRay.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
 
 	// find the intersection
 	Intersection q;
 	CCommand* pcmd = 0;
-	if (FindElementIntersection(ray, *pm, q, m_bctrl))
+	bool bfound = FindElementIntersection(localRay, *pm, q, m_bctrl);
+
+	if (bfound && m_planeCut)
+	{
+		vec3d p = po->GetTransform().LocalToGlobal(q.point);
+
+		// see if the intersection lies behind the plane cut. 
+		double* a = m_plane;
+		double d = p.x*a[0] + p.y*a[1] + p.z*a[2] + a[3];
+		if (d < 0)
+		{
+			// find the intersection with the plane cut
+			bfound = FindFaceIntersection(ray, *m_planeCut, q);
+
+			if (bfound)
+			{
+				// conver the index from a face index into an element index
+				int nface = q.m_index;
+				if ((nface >= 0) && (nface < m_planeCut->Faces()))
+				{
+					GMesh::FACE& face = m_planeCut->Face(nface);
+					q.m_index = face.eid;
+					if (q.m_index < 0) bfound = false;
+				}
+				else bfound = false;
+			}
+		}
+	}
+
+	if (bfound)
 	{
 		int index = q.m_index;
 		if (view.m_bconn)
@@ -4511,12 +4540,6 @@ void CGLView::SelectFEElements(int x, int y)
 			// get the respect partition boundary flag
 			bool bpart = view.m_bpart;
 			int gid = pe->m_gid;
-			int fid = -1;
-			if (q.m_faceIndex >= 0)
-			{
-				FEFace& face = pm->Face(q.m_faceIndex);
-				fid = face.m_gid;
-			}
 
 			// now push the rest
 			int n;
@@ -4659,6 +4682,7 @@ void CGLView::SelectFEElements(int x, int y)
 		}
 	}
 
+	delete m_planeCut; m_planeCut = nullptr;
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -9244,8 +9268,12 @@ void CGLView::UpdatePlaneCut(bool breset)
 							}
 
 							int nf = m_planeCut->Faces();
-							m_planeCut->AddFace(r, (mid >= 0 ? mid : 0));
+							m_planeCut->AddFace(r, (el.IsSelected() ? 1 : 0));
 							GMesh::FACE& face = m_planeCut->Face(nf);
+							if (po == poa)
+							{
+								face.eid = i;
+							}
 
 							if (showContour)
 							{
@@ -9314,7 +9342,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 						{
 							if (etag[k] == 0)
 							{
-								m_planeCut->AddEdge(edgeNode[k], 2);
+								m_planeCut->AddEdge(edgeNode[k], 2, (el.IsSelected() ? 1 : 0));
 							}
 						}
 					}
@@ -9395,10 +9423,19 @@ void CGLView::RenderPlaneCut()
 	FEModel& fem = *doc->GetFEModel();
 	int MAT = fem.Materials();
 
+	// render the unselected faces
 	glColor3ub(255, 255, 255);
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_COLOR_MATERIAL);
-	GetMeshRenderer().RenderGLMesh(m_planeCut);
+	GetMeshRenderer().RenderGLMesh(m_planeCut, 0);
+
+	// render the selected faces
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_POLYGON_STIPPLE);
+	glColor3ub(255, 0, 0);
+	GetMeshRenderer().RenderGLMesh(m_planeCut, 1);
 
 	if (GetViewSettings().m_bmesh)
 	{
@@ -9410,7 +9447,10 @@ void CGLView::RenderPlaneCut()
 		cam.LineDrawMode(true);
 		cam.Transform();
 		
-		GetMeshRenderer().RenderGLEdges(m_planeCut);
+		GetMeshRenderer().RenderGLEdges(m_planeCut, 0);
+		glDisable(GL_DEPTH_TEST);
+		glColor3ub(255, 255, 0);
+		GetMeshRenderer().RenderGLEdges(m_planeCut, 1);
 
 		cam.LineDrawMode(false);
 		cam.Transform();

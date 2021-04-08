@@ -70,17 +70,6 @@ void FEMesher::Load(IArchive& ar)
 	}
 }
 
-MeshingProgress FEMesher::Progress()
-{
-	MeshingProgress mp;
-	return mp;
-}
-
-void FEMesher::Terminate()
-{
-
-}
-
 FEMesher* FEMesher::Create(GObject* po, int classType)
 {
 	FEMesher* mesher = nullptr;

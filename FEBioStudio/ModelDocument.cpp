@@ -1032,7 +1032,7 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup*
 
 	// swap the meshes
 	string ss = modifier.GetName();
-	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str());
+	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str(), false);
 }
 
 bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FEGroup* sel)

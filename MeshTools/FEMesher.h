@@ -25,29 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FSCore/FSObject.h>
+#include <FSCore/FSThreadedTask.h>
 
 class GObject;
 class FEMesh;
-
-struct MeshingProgress
-{
-	double		percent;
-	const char*	task;
-
-	MeshingProgress()
-	{
-		percent = 0.0;
-		task = 0;
-	}
-};
 
 //-----------------------------------------------------------------------------
 // The FEMesher class takes a geometry object and converts it to a finite
 // element mesh.
 //
 
-class FEMesher : public FSObject
+class FEMesher : public FSThreadedTask
 {
 	enum {PARAMS};
 
@@ -64,10 +52,6 @@ public:
 	// save/load
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
-
-	// return progress
-	virtual MeshingProgress Progress();
-	virtual void Terminate();
 
 	// set the error message
 	void SetErrorMessage(const std::string& err);

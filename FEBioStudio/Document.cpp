@@ -545,7 +545,7 @@ bool CGLDocument::DoCommand(CCommand* pcmd)
 }
 
 //-----------------------------------------------------------------------------
-bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s)
+bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
 {
 	CMainWindow* wnd = GetMainWindow();
 	if (s.empty() == false)
@@ -556,7 +556,7 @@ bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s)
 
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
-	UpdateSelection();
+	UpdateSelection(b);
 	return ret;
 }
 
