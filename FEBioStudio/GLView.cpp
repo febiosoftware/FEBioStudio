@@ -4582,14 +4582,17 @@ void CGLView::SelectFEElements(int x, int y)
 					pe2 = pm->ElementPtr(pe->m_nbr[i]);
 					if (pe2->m_ntag >= 0 && pe2->IsVisible())
 					{
-						assert(pe2->m_face[0] >= 0);
-						if ((view.m_bmax == false) || (pm->Face(pe2->m_face[0]).m_fn*to_vec3f(t) >= tr))
+						int eface = pe2->m_face[0]; assert(eface >= 0);
+						if (eface >= 0)
 						{
-							if ((bpart == false) || (pe2->m_gid == gid))
+							if ((view.m_bmax == false) || (pm->Face(eface).m_fn*to_vec3f(t) >= tr))
 							{
-								pint[m++] = pe2->m_ntag;
-								pe2->m_ntag = -1;
-								stack.push(pe2);
+								if ((bpart == false) || (pe2->m_gid == gid))
+								{
+									pint[m++] = pe2->m_ntag;
+									pe2->m_ntag = -1;
+									stack.push(pe2);
+								}
 							}
 						}
 					}
