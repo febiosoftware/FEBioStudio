@@ -1066,5 +1066,5 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 	else cmd = new CCmdChangeFESurfaceMesh(po, newMesh);
 
 	// swap the meshes
-	return DoCommand(cmd);
+	return DoCommand(cmd, false);
 }

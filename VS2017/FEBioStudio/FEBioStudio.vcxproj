@@ -233,6 +233,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgSetRepoFolder.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSoluteTable.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgStartThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgTimeSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgTransform.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgUnitConverter.cpp" />
@@ -333,6 +334,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSetRepoFolder.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSoluteTable.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgStartThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgUnitConverter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgWidgetProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_EditPanel.cpp" />
@@ -573,6 +575,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\DlgSetRepoFolder.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgStartThread.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>

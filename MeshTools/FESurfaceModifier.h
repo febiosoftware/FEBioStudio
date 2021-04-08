@@ -26,13 +26,14 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
+#include <FSCore/FSThreadedTask.h>
 
 class FESurfaceMesh;
 class FEGroup;
 
 //-------------------------------------------------------------------
 // Class for modifying surface meshes
-class FESurfaceModifier : public FSObject
+class FESurfaceModifier : public FSThreadedTask
 {
 public:
 	FESurfaceModifier(const std::string& name = "");
