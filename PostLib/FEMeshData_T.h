@@ -149,6 +149,7 @@ public:
 	void copy(FEFaceData<T,DATA_ITEM>& d) { m_data = d.m_data; }
 	bool add(int n, const T& d)
 	{ 
+		if ((n < 0) || (n >= m_face.size())) return false;
 		if (m_face[n] >= 0) 
 		{
 //			assert(m_face[n] == (int) m_data.size());

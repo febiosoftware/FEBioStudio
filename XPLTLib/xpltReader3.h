@@ -241,7 +241,7 @@ public:
 		int		mid;
 		int		ne;
 		int		nid;	// domain ID
-		char	szname[64];
+		char	szname[DI_NAME_SIZE];
 		vector<int>		elist;
 		vector<ELEM>	elem;
 
@@ -258,7 +258,7 @@ public:
 		int				nfaces;		// number of faces
 		int				maxNodes;	// max nr of nodes
 		vector<FACE>	face;
-		char			szname[64];
+		char			szname[DI_NAME_SIZE];
 
 	public:
 		Surface() { nfaces = 0; maxNodes = 0; szname[0] = 0; }
@@ -271,7 +271,7 @@ public:
 	public:
 		int		nid;
 		int		nn;
-		char	szname[64];
+		char	szname[DI_NAME_SIZE];
 		vector<int>	node;
 
 	public:
