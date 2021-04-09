@@ -885,7 +885,7 @@ bool XpltReader3::ReadNodeSection(FEPostModel &fem)
 					int nid = m_ar.GetChunkID();
 					if      (nid == PLT_NODE_SIZE) m_ar.read(nodes); 
 					else if (nid == PLT_NODE_DIM ) m_ar.read(dim);
-					else if (nid == PLT_NODE_NAME) m_ar.read(szname);
+					else if (nid == PLT_NODE_NAME) m_ar.sread(szname, DI_NAME_SIZE);
 					m_ar.CloseChunk();
 				}
 			}
@@ -939,7 +939,7 @@ bool XpltReader3::ReadDomainSection(FEPostModel &fem)
 						case PLT_DOM_ELEM_TYPE: m_ar.read(D.etype); break;
 						case PLT_DOM_PART_ID   : m_ar.read(D.mid); break;
 						case PLT_DOM_ELEMS    : m_ar.read(D.ne); break;
-						case PLT_DOM_NAME     : m_ar.read(D.szname); break;
+						case PLT_DOM_NAME     : m_ar.sread(D.szname, DI_NAME_SIZE); break;
 						default:
 							assert(false);
 							return errf("Error while reading Domain section");
@@ -1040,7 +1040,7 @@ bool XpltReader3::ReadSurfaceSection(FEPostModel &fem)
 						{
 						case PLT_SURFACE_ID             : m_ar.read(S.sid); break;
 						case PLT_SURFACE_FACES          : m_ar.read(S.nfaces); break;
-						case PLT_SURFACE_NAME           : m_ar.read(S.szname); break;
+						case PLT_SURFACE_NAME           : m_ar.sread(S.szname, DI_NAME_SIZE); break;
 						case PLT_SURFACE_MAX_FACET_NODES: m_ar.read(S.maxNodes); break;
 						default:
 							assert(false);
@@ -1108,7 +1108,7 @@ bool XpltReader3::ReadNodeSetSection(FEPostModel& fem)
 						{
 						case PLT_NODESET_ID   : m_ar.read(S.nid); break;
 						case PLT_NODESET_SIZE : m_ar.read(S.nn); break;
-						case PLT_NODESET_NAME : m_ar.read(S.szname); break;
+						case PLT_NODESET_NAME : m_ar.sread(S.szname, DI_NAME_SIZE); break;
 						default:
 							assert(false);
 							return errf("Error while reading NodeSet section");
