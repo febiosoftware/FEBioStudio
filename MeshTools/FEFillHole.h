@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FESurfaceModifier.h"
+#include <MeshLib/FENodeEdgeList.h>
 
 //-----------------------------------------------------------------------------
 // This class implements a modifier that fills a hole in a mesh. 
@@ -84,6 +85,7 @@ public:
 
 	// divide a ring
 	bool DivideRing1(EdgeRing& ring, vector<FACE>& tri_list);
+	bool DivideRing2(EdgeRing& ring, vector<FACE>& tri_list);
 
 	// fill all holes
 	void FillAllHoles(FESurfaceMesh* pm);
@@ -107,4 +109,8 @@ private:
 
 	// get the quality of the worst triangle
 	double min_tri_quality(vector<FACE>& tri);
+
+private:
+	std::vector<vec3d>	m_node_normals;
+	FENodeEdgeList		m_NEL;
 };

@@ -42,12 +42,14 @@ public:
 	virtual FESurfaceMesh* Apply(FESurfaceMesh* pm) { return 0; }
 	virtual FESurfaceMesh* Apply(FESurfaceMesh* pm, FEGroup* pg) { return Apply(pm); }
 
-	static bool SetError(const char* szerr, ...);
+	bool SetError(const char* szerr, ...);
 
-	static std::string GetErrorString();
+	std::string GetErrorString();
+
+	void ClearError();
 
 protected:
-	static std::string	m_error;
+	std::string	m_error;
 };
 
 //-----------------------------------------------------------------------------
