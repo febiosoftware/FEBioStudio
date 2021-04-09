@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,66 +23,51 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "CommandPanel.h"
-#include "DlgStartThread.h"
+#include <QDialog>
+#include <QThread>
 
-class CMainWindow;
-
-namespace Ui {
-	class CEditPanel;
-}
-
-class CMainWindow;
-class CModelDocument;
-class FESurfaceModifier;
-class FEMesh;
-class GSurfaceMeshObject;
-class FEMesher;
-class FEGroup;
-
-class SurfaceModifierThread : public CustomThread
-{
-public:
-	SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FEGroup* pg);
-
-	void run() Q_DECL_OVERRIDE;
-
-public:
-	bool hasProgress() override;
-
-	double progress() override;
-
-	const char* currentTask() override;
-
-	void stop() override;
-
-private:
-	CModelDocument*		m_doc;
-	GSurfaceMeshObject*	m_po;
-	FESurfaceModifier*	m_mod;
-	FEGroup*			m_pg;
-};
-
-
-class CEditPanel : public CCommandPanel
+class CustomThread : public QThread
 {
 	Q_OBJECT
 
 public:
-	CEditPanel(CMainWindow* wnd, QWidget* parent = 0);
+	CustomThread();
 
-	// update mesh panel
-	void Update(bool breset = true) override;
+	virtual bool hasProgress();
 
-	void Apply() override;
+	virtual double progress();
+
+	virtual const char* currentTask();
+
+	virtual void stop();
+
+signals:
+	void resultReady(bool);
+};
+
+class CDlgStartThreadUI;
+
+class CDlgStartThread : public QDialog
+{
+	Q_OBJECT
+
+public:
+	CDlgStartThread(QWidget* parent, CustomThread* thread);
+
+	void closeEvent(QCloseEvent* ev) override;
+
+	void accept();
+
+	bool GetReturnCode();
+
+	void setTask(const QString& taskString);
 
 private slots:
-	void on_apply_clicked(bool b);
-	void on_menu_triggered(QAction* pa);
-	void on_buttons_buttonSelected(int n);
+	void threadFinished(bool b);
+	void checkProgress();
+	void cancel();
 
 private:
-	Ui::CEditPanel*	ui;
+	CDlgStartThreadUI*	ui;
 };

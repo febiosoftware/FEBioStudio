@@ -27,26 +27,16 @@ SOFTWARE.*/
 #pragma once
 #include "CommandPanel.h"
 #include <vector>
-#include <QtCore/QThread>
-#include <QDialog>
+#include "DlgStartThread.h"
 using namespace std;
 
 class CMainWindow;
 class CModelDocument;
-class QToolButton;
-class QGridLayout;
-class QButtonGroup;
-class QLineEdit;
-class QPushButton;
 class FEModifier;
-class QAction;
 class FEMesh;
-class CCommand;
 class GObject;
-class QProgressBar;
 class FEMesher;
 class FEGroup;
-class QLabel;
 
 namespace Ui {
 	class CMeshPanel;
@@ -76,25 +66,6 @@ private:
 	FEModifier*			m_mod;	// temporary modifier
 	GObject*			m_currentObject;
 	Ui::CMeshPanel*		ui;
-};
-
-class CustomThread : public QThread
-{
-	Q_OBJECT
-
-public:
-	CustomThread();
-
-	virtual bool hasProgress();
-
-	virtual double progress();
-
-	virtual const char* currentTask();
-
-	virtual void stop();
-
-signals:
-	void resultReady(bool);
 };
 
 class MeshingThread : public CustomThread
@@ -139,37 +110,4 @@ private:
 	GObject*	m_po;
 	FEModifier*	m_mod;
 	FEGroup*	m_pg;
-};
-
-
-class CDlgStartThread : public QDialog
-{
-	Q_OBJECT
-
-public:
-	CDlgStartThread(QWidget* parent, CustomThread* thread);
-
-	void closeEvent(QCloseEvent* ev) override;
-
-	void accept();
-
-	bool GetReturnCode();
-
-	void setTask(const QString& taskString);
-
-private slots:
-	void threadFinished(bool b);
-	void checkProgress();
-	void cancel();
-
-private:
-	CustomThread*	m_thread;
-	bool			m_bdone;
-	bool			m_breturn;
-
-	QLabel*			m_task;
-	QProgressBar*	m_progress;
-	QPushButton*	m_stop;
-
-	const char*		m_szcurrentTask;
 };

@@ -534,13 +534,13 @@ const char* CGLDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
 const char* CGLDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
 
 //-----------------------------------------------------------------------------
-bool CGLDocument::DoCommand(CCommand* pcmd)
+bool CGLDocument::DoCommand(CCommand* pcmd, bool b)
 {
 	CMainWindow* wnd = GetMainWindow();
 	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
-	UpdateSelection();
+	if (b) UpdateSelection();
 	return ret;
 }
 

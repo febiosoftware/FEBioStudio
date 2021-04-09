@@ -111,31 +111,6 @@ private:
 	GSurfaceMeshObject*	m_po;
 };
 
-//=======================================================================================
-CustomThread::CustomThread()
-{
-
-}
-
-bool CustomThread::hasProgress()
-{
-	return false;
-}
-
-double CustomThread::progress()
-{
-	return 0.0;
-}
-
-const char* CustomThread::currentTask()
-{
-	return "";
-}
-
-void CustomThread::stop()
-{
-
-}
 
 //=======================================================================================
 MeshingThread::MeshingThread(GObject* po)
@@ -205,101 +180,6 @@ const char* ModifierThread::currentTask()
 void ModifierThread::stop()
 {
 	
-}
-
-//=============================================================================
-CDlgStartThread::CDlgStartThread(QWidget* parent, CustomThread* thread)
-{
-	m_thread = thread;
-
-	m_szcurrentTask = 0;
-
-	QVBoxLayout* l = new QVBoxLayout;
-	l->addWidget(new QLabel("Please wait until the operation completes."));
-	l->addWidget(m_task = new QLabel(""));
-
-	l->addWidget(m_progress = new QProgressBar);
-	m_progress->setRange(0, 0);
-	m_progress->setValue(0);
-
-	QHBoxLayout* h = new QHBoxLayout;
-	h->addStretch();
-	h->addWidget(m_stop = new QPushButton("Cancel"));
-
-	l->addLayout(h);
-	setLayout(l);
-
-	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-	QObject::connect(m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
-	QObject::connect(m_stop, SIGNAL(clicked()), this, SLOT(cancel()));
-
-	QTimer::singleShot(100, this, SLOT(checkProgress()));
-
-	m_bdone = false;
-	m_breturn = false;
-	m_thread->start();
-}
-
-void CDlgStartThread::setTask(const QString& taskString)
-{
-	m_task->setText(taskString);
-}
-
-void CDlgStartThread::closeEvent(QCloseEvent* ev)
-{
-	if (m_bdone == false) cancel();
-	QDialog::closeEvent(ev);
-}
-
-void CDlgStartThread::accept()
-{
-	QDialog::accept();
-}
-
-void CDlgStartThread::cancel()
-{
-	m_stop->setEnabled(false);
-	m_thread->stop();
-	m_thread->terminate();
-	//	m_thread->wait();
-	reject();
-}
-
-void CDlgStartThread::checkProgress()
-{
-	if (m_bdone) accept();
-	else
-	{
-		if (m_thread->hasProgress())
-		{
-			m_progress->setRange(0.0, 100.0);
-			double p = m_thread->progress();
-			m_progress->setValue((int)p);
-
-			const char* sztask = m_thread->currentTask();
-			if (sztask && (sztask != m_szcurrentTask))
-			{
-				m_szcurrentTask = sztask;
-				m_task->setText(m_szcurrentTask);
-			}
-		}
-
-		QTimer::singleShot(100, this, SLOT(checkProgress()));
-	}
-}
-
-void CDlgStartThread::threadFinished(bool b)
-{
-	m_bdone = true;
-	m_breturn = b;
-	m_thread->deleteLater();
-	checkProgress();
-}
-
-bool CDlgStartThread::GetReturnCode()
-{
-	return m_breturn;
 }
 
 //=============================================================================
@@ -569,7 +449,9 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 	GObject* po = pdoc->GetActiveObject();
 	GModel* mdl = pdoc->GetGModel();
 
-	if (pa->objectName() == "convert1")
+	int convertOption = pa->data().toInt();
+
+	if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_SURFACE)
 	{
 		if (dynamic_cast<GSurfaceMeshObject*>(po) == nullptr)
 		{
@@ -585,7 +467,7 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
-	else
+	else if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_MESH)
 	{
 		// convert to editable mesh
 		if (dynamic_cast<GMeshObject*>(po) == 0)
@@ -602,6 +484,11 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
+	else
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Don't know how to convert object.");
+	}
+
 	Update();
 	GetMainWindow()->Update(this, true);
 }
