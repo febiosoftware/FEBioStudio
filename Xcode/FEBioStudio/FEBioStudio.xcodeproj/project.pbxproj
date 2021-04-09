@@ -210,6 +210,8 @@
 		D5E04A4B2357BD1B006AC137 /* DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */; };
 		D5E1AA9125E96EBE003162AB /* menuFEBio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E1AA9025E96EBE003162AB /* menuFEBio.cpp */; };
 		D5E73B8824902EB80091806F /* QtWebEngineWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5E73B8724902EB80091806F /* QtWebEngineWidgets.framework */; };
+		D5E82FCA26206BE800B23605 /* DlgStartThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E82FC826206BE800B23605 /* DlgStartThread.cpp */; };
+		D5E82FCB26206C1500B23605 /* DlgStartThread.h in Sources */ = {isa = PBXBuildFile; fileRef = D5E82FC926206BE800B23605 /* DlgStartThread.h */; };
 		D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A6232AEAED00EED2BE /* Logger.cpp */; };
 		D5ED290123197E8500C16BF7 /* libFSCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290023197E8500C16BF7 /* libFSCore.a */; };
 		D5ED290323197E8500C16BF7 /* libGLLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290223197E8500C16BF7 /* libGLLib.a */; };
@@ -664,6 +666,8 @@
 		D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgEditLConfigs.cpp; sourceTree = "<group>"; };
 		D5E1AA9025E96EBE003162AB /* menuFEBio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuFEBio.cpp; sourceTree = "<group>"; };
 		D5E73B8724902EB80091806F /* QtWebEngineWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWebEngineWidgets.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtWebEngineWidgets.framework; sourceTree = "<absolute>"; };
+		D5E82FC826206BE800B23605 /* DlgStartThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgStartThread.cpp; sourceTree = "<group>"; };
+		D5E82FC926206BE800B23605 /* DlgStartThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgStartThread.h; sourceTree = "<group>"; };
 		D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchConfig.h; sourceTree = "<group>"; };
 		D5EBB7A5232AEAEC00EED2BE /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
 		D5EBB7A6232AEAED00EED2BE /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
@@ -1233,6 +1237,8 @@
 				D5F7D80C22FA37C40089B08E /* DlgSettings.h */,
 				D5F7D6F822FA37C30089B08E /* DlgSoluteTable.cpp */,
 				D5F7D6FF22FA37C30089B08E /* DlgSoluteTable.h */,
+				D5E82FC826206BE800B23605 /* DlgStartThread.cpp */,
+				D5E82FC926206BE800B23605 /* DlgStartThread.h */,
 				D5F7D75422FA37C40089B08E /* DlgTimeSettings.cpp */,
 				D5F7D79622FA37C40089B08E /* DlgTimeSettings.h */,
 				D5F7D76F22FA37C40089B08E /* DlgTransform.cpp */,
@@ -1654,6 +1660,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5E82FCB26206C1500B23605 /* DlgStartThread.h in Sources */,
 				D59A609F258997770095F0A7 /* febiostudio.qrc in Sources */,
 				D50D09ED26149D5D005564C6 /* DlgAddMembraneReaction.h in Sources */,
 				D5349B3A25F18B7C002D2CC4 /* DlgMeshDiagnostics.h in Sources */,
@@ -1693,6 +1700,7 @@
 				D57D004225884CC6009ED051 /* DlgNewProject.h in Sources */,
 				D57D004325884CC6009ED051 /* DlgPlaneCut.h in Sources */,
 				D57D004425884CC6009ED051 /* DlgPlotMix.h in Sources */,
+				D5E82FCA26206BE800B23605 /* DlgStartThread.cpp in Sources */,
 				D57D004725884CC6009ED051 /* DlgRequestUploadPerm.h in Sources */,
 				D5349B3825F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp in Sources */,
 				D57D004825884CC6009ED051 /* DlgRun.h in Sources */,
