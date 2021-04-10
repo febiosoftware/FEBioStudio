@@ -507,16 +507,19 @@ void FELoadCurve::Update()
     int N = (int)m_Pt.size();
     if (m_ntype == LC_CSPLINE) {
         int korder = min(N,4);
+        if (m_spline) delete m_spline;
         m_spline = new BSpline();
         valid = m_spline->init_interpolation(korder, m_Pt);
     }
     else if (m_ntype == LC_CPOINTS) {
         int korder = min(N,4);
+        if (m_spline) delete m_spline;
         m_spline = new BSpline();
         valid = m_spline->init(korder, m_Pt);
     }
     else if (m_ntype == LC_APPROX) {
         int korder = min(N/2+1,4);
+        if (m_spline) delete m_spline;
         m_spline = new BSpline();
         valid = m_spline->init_approximation(korder, N/2+1, m_Pt);
     }
