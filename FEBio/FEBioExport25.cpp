@@ -1847,6 +1847,9 @@ void FEBioExport25::WritePointCurve(FE1DPointFunction* f1d, XMLElement& el)
 		case FELoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "linear"); break;
 		case FELoadCurve::LC_STEP  : m_xml.add_leaf("interpolate", "step"); break;
 		case FELoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "smooth"); break;
+        case FELoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "cubic spline"); break;
+        case FELoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "control points"); break;
+        case FELoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "approximation"); break;
 		}
 
 		int nextend = plc->GetExtend();
@@ -4874,6 +4877,9 @@ void FEBioExport25::WriteLoadDataSection()
 		case FELoadCurve::LC_STEP  : el.add_attribute("type", "step"  ); break;
 		case FELoadCurve::LC_LINEAR: el.add_attribute("type", "linear"); break;
 		case FELoadCurve::LC_SMOOTH: el.add_attribute("type", "smooth"); break;
+        case FELoadCurve::LC_CSPLINE: el.add_attribute("interpolate", "cubic spline"); break;
+        case FELoadCurve::LC_CPOINTS: el.add_attribute("interpolate", "control points"); break;
+        case FELoadCurve::LC_APPROX: el.add_attribute("interpolate", "approximation"); break;
 		}
 
 		switch (plc->GetExtend())

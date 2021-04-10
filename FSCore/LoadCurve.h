@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <vector>
 using namespace std;
 
+class BSpline;
+
 //-----------------------------------------------------------------------------
 // STRUCT: LOADPOINT
 // structure describing a single datapoint of a load curve
@@ -56,7 +58,10 @@ public:
 	enum {
 		LC_LINEAR,
 		LC_STEP,
-		LC_SMOOTH
+		LC_SMOOTH,
+        LC_CSPLINE,
+        LC_CPOINTS,
+        LC_APPROX
 	};
 
 	// extend modes
@@ -118,6 +123,7 @@ public:
 public:
 	void SetID(int nid) { m_nID = nid; }
 	int GetID() const { return m_nID; }
+    void Update();  // initialize spline
 
 protected:
 	double ExtendValue(double t);
@@ -136,4 +142,6 @@ protected:
 	double	m_ref;		// reference value (for n==0)
 
 	vector<LOADPOINT>	m_Pt;	// array of points
+    
+    BSpline*    m_spline;   // B-spline pointer
 };
