@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "Image.h"
+#include <teem/nrrd.h>
 
 //-----------------------------------------------------------------------------
 // A class for representing 3D image stacks

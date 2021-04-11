@@ -98,6 +98,7 @@ endfunction()
 
 if(USE_MMG)
     findLib(mmg3d MMG_LIB_DIR MMG_LIB)
+    find_library(mmgs NAMES mmgs PATH MMG_LIB_DIR MMG_LIB)
 endif()
 
 if(USE_TETGEN)
@@ -224,6 +225,7 @@ endif()
 #endif()
 
 include_directories(${ZLIB_INCLUDE_DIR})
+include_directories(${Teem_INCLUDE_DIRS})
 
 ##### Find Source Files #####
 
@@ -313,7 +315,7 @@ endif()
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
-
+target_link_libraries(FEBioStudio ${Teem_LIBRARY})
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 if(WIN32)
