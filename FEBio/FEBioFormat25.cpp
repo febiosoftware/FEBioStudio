@@ -235,6 +235,7 @@ void FEBioFormat25::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 	else if (strcmp(sztype, "tri6"  ) == 0) ntype = FE_TRI6;
 	else if (strcmp(sztype, "pyra5") == 0) ntype = FE_PYRA5;
 	else if (strcmp(sztype, "penta15") == 0) ntype = FE_PENTA15;
+    else if (strcmp(sztype, "pyra13") == 0) ntype = FE_PYRA13;
 	else if (strcmp(sztype, "TET10G4"     ) == 0) ntype = FE_TET10;
 	else if (strcmp(sztype, "TET10G8"     ) == 0) ntype = FE_TET10;
 	else if (strcmp(sztype, "TET10GL11"   ) == 0) ntype = FE_TET10;
@@ -301,6 +302,7 @@ void FEBioFormat25::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 
 	// add domain to list
 	FEBioModel::Domain* dom = part->AddDomain(name, matID);
+	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// read the elements
 	vector<FEBioModel::ELEM> elem;
@@ -1114,6 +1116,9 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	else if (abc == "u" ) bc = 15;
 	else if (abc == "v") bc = 16;
 	else if (abc == "w") bc = 17;
+    else if (abc == "sx" ) bc = 18;
+    else if (abc == "sy") bc = 19;
+    else if (abc == "sz") bc = 20;
 	else throw XMLReader::InvalidAttributeValue(tag, "bc", abc.cvalue());
 
 	XMLAtt& set = tag.Attribute("node_set");
@@ -1153,6 +1158,12 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		bc = bc - 15;
 		pbc = new FEPrescribedRotation(&fem, pg, bc, 1.0, pstep->GetID());
 		break;
+    case 18:
+    case 19:
+    case 20:
+        bc = bc - 18;
+        pbc = new FEPrescribedShellDisplacement(&fem, pg, bc, 1.0, pstep->GetID());
+        break;
 	}
 	if (pbc == 0) throw XMLReader::InvalidAttributeValue(tag, "bc", abc.cvalue());
 
@@ -1943,7 +1954,11 @@ FESurfaceLoad* FEBioFormat25::ParseConcentrationFlux(XMLTag& tag)
 				int lc = alc->value<int>() - 1;
 				febio.AddParamCurve(pcf->GetLoadCurve(), lc);
 			}
-			else pcf->GetLoadCurve()->Clear();
+			else
+			{
+				FELoadCurve* plc = pcf->GetLoadCurve();
+				if (plc) plc->Clear();
+			}
 			double s; tag.value(s);
 			pcf->SetFlux(s);
 		}
@@ -2409,7 +2424,40 @@ void FEBioFormat25::ParseContact(FEStep *pstep, XMLTag &tag)
 			if (szname) pci->SetName(szname);
 
 			// read the parameters
-			ReadParameters(*pci, tag);
+			if (tag.isleaf() == false)
+			{
+				++tag;
+				do
+				{
+					// try to read the parameters
+					if (ReadParam(*pci, tag) == false)
+					{
+						if (tag == "flip_slave")
+						{
+							Param* pp = pci->GetParam("flip_primary"); assert(pp);
+							if (pp)
+							{
+								bool b = false;
+								tag.value(b);
+								pp->SetBoolValue(b);
+							}
+						}
+						else if (tag == "flip_master")
+						{
+							Param* pp = pci->GetParam("flip_secondary"); assert(pp);
+							if (pp)
+							{
+								bool b = false;
+								tag.value(b);
+								pp->SetBoolValue(b);
+							}
+						}
+						else ParseUnknownTag(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+			}
+
 
 			// assign surfaces
 			FEBioModel::Part* part = surfPair->GetPart();
@@ -2421,8 +2469,8 @@ void FEBioFormat25::ParseContact(FEStep *pstep, XMLTag &tag)
 				FESurface* master = febio.BuildFESurface(name1.c_str());
 				FESurface* slave  = febio.BuildFESurface(name2.c_str());
 
-				pci->SetMaster(master);
-				pci->SetSlave(slave);
+				pci->SetSecondarySurface(master);
+				pci->SetPrimarySurface(slave);
 			}
 
 			// add to the analysis step
@@ -2925,6 +2973,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
+	GModel& gm = fem.GetModel();
 
 	char buf[256] = { 0 };
 
@@ -2946,7 +2995,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
 				FELinearSpringMaterial* mat = new FELinearSpringMaterial();
-				GDiscreteSpringSet* pg = new GDiscreteSpringSet();
+				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 				pg->SetMaterial(mat);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
@@ -2967,7 +3016,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
 				FENonLinearSpringMaterial* mat = new FENonLinearSpringMaterial();
-				GDiscreteSpringSet* pg = new GDiscreteSpringSet();
+				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 				pg->SetMaterial(mat);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
@@ -2993,7 +3042,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 				FEDiscreteMaterial* dmat = dynamic_cast<FEDiscreteMaterial*>(mat);
 				if (dmat)
 				{
-					GDiscreteSpringSet* pg = new GDiscreteSpringSet();
+					GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 					pg->SetMaterial(dmat);
 					pg->SetName(szname);
 					fem.GetModel().AddDiscreteObject(pg);

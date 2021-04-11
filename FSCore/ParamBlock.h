@@ -226,8 +226,8 @@ public:
 	ParamBlock(void);
 	~ParamBlock(void);
 
-	ParamBlock(ParamBlock& b);
-	ParamBlock& operator = (ParamBlock& b);
+	ParamBlock(const ParamBlock& b);
+	ParamBlock& operator = (const ParamBlock& b);
 
 	Param* AddIntParam(int n, const char* szb, const char* szn = 0)
 	{
@@ -349,7 +349,7 @@ public:
 
 	const Param& operator [] (int n) const { return m_Param[n]; }
 	Param& operator [] (int n)	{ return m_Param[n]; }
-	int Size() { return (int)m_Param.size(); }
+	int Size() const { return (int)m_Param.size(); }
 
 	// returns last parameter in list
 	// This pointer is valid until the parameter list changes (e.g. when a new parameter is added)
@@ -417,12 +417,19 @@ class ParamContainer : public CSerializable
 {
 public:
 	// get the number of parameters
-	int Parameters() { return m_Param.Size(); }
+	int Parameters() const { return m_Param.Size(); }
 
 	// get a particular parameter
 	Param& GetParam(int n)
 	{
 		assert((n >= 0) && ( n < m_Param.Size()));
+		return m_Param[n];
+	}
+
+	// get a particular parameter
+	const Param& GetParam(int n) const
+	{
+		assert((n >= 0) && (n < m_Param.Size()));
 		return m_Param[n];
 	}
 
@@ -484,6 +491,9 @@ public:
 
 public:
 	ParamBlock& GetParamBlock() { return m_Param; }
+	const ParamBlock& GetParamBlock() const { return m_Param; }
+
+	void CopyParams(const ParamContainer& pc);
 
 private:
 	ParamBlock	m_Param;

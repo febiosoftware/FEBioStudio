@@ -86,6 +86,7 @@ void VIEW_SETTINGS::Defaults()
 	m_fiber_scale = 1.0;
 	m_showHiddenFibers = false;
 	m_showDiscrete = true;
+	m_showRigidLabels = false;
 
 	m_bcull = false;
 	m_bconn = false;
@@ -114,6 +115,7 @@ void VIEW_SETTINGS::Defaults()
 	m_line_size = 1.0f;
 	m_bline_smooth = true;
 	m_bpoint_smooth = true;
+	m_bzsorting = true;
 
 	m_snapToGrid = true;
 	m_snapToNode = false;

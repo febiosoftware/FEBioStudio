@@ -276,6 +276,23 @@ bool AnsysImport::BuildMesh(FEModel &fem)
 			pe->m_node[8] = NLT[n[8] - imin]; if (pe->m_node[8] < 0) return false;
 			pe->m_node[9] = NLT[n[9] - imin]; if (pe->m_node[9] < 0) return false;
 		}
+        else if (ih->nn == 13)
+        {
+            pe->SetType(FE_PYRA13);
+            pe->m_node[0] = NLT[n[0] - imin]; if (pe->m_node[0] < 0) return false;
+            pe->m_node[1] = NLT[n[1] - imin]; if (pe->m_node[1] < 0) return false;
+            pe->m_node[2] = NLT[n[2] - imin]; if (pe->m_node[2] < 0) return false;
+            pe->m_node[3] = NLT[n[3] - imin]; if (pe->m_node[3] < 0) return false;
+            pe->m_node[4] = NLT[n[4] - imin]; if (pe->m_node[4] < 0) return false;
+            pe->m_node[5] = NLT[n[5] - imin]; if (pe->m_node[5] < 0) return false;
+            pe->m_node[6] = NLT[n[6] - imin]; if (pe->m_node[6] < 0) return false;
+            pe->m_node[7] = NLT[n[7] - imin]; if (pe->m_node[7] < 0) return false;
+            pe->m_node[8] = NLT[n[8] - imin]; if (pe->m_node[8] < 0) return false;
+            pe->m_node[9] = NLT[n[9] - imin]; if (pe->m_node[9] < 0) return false;
+            pe->m_node[10] = NLT[n[10] - imin]; if (pe->m_node[10] < 0) return false;
+            pe->m_node[11] = NLT[n[11] - imin]; if (pe->m_node[11] < 0) return false;
+            pe->m_node[12] = NLT[n[12] - imin]; if (pe->m_node[12] < 0) return false;
+        }
 		else if (ih->nn == 20)
 		{
 			pe->SetType(FE_HEX20);

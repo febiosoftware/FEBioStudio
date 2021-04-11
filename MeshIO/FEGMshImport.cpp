@@ -298,6 +298,26 @@ bool FEGMshImport::ReadElements()
             el.node[9] = m[8] - 1;
             Elem.push_back(el);
             break;
+        case 19: // 13-node pyramid
+            {
+                if (nread != 3 + ntags + 13) return errf("Invalid number of entries when reading element %d", n[0]);
+                el.ntype = FE_PYRA13;
+                el.node[0] = m[0] - 1;
+                el.node[1] = m[1] - 1;
+                el.node[2] = m[2] - 1;
+                el.node[3] = m[3] - 1;
+                el.node[4] = m[4] - 1;
+                el.node[ 5] = m[ 5] - 1;
+                el.node[ 6] = m[ 6] - 1;
+                el.node[ 7] = m[ 7] - 1;
+                el.node[ 8] = m[ 9] - 1;
+                el.node[ 9] = m[ 8] - 1;
+                el.node[10] = m[11] - 1;
+                el.node[11] = m[10] - 1;
+                el.node[12] = m[15] - 1;
+                Elem.push_back(el);
+            }
+            break;
 		case 29: // 20-tet tehrahedron
 			{
 				if (nread != 3 + ntags + 20) return errf("Invalid number of entries when reading element %d", n[0]);
@@ -418,6 +438,21 @@ bool FEGMshImport::ReadElements()
 					for (int i = 0; i < 20; ++i) el.m_node[i] = e.node[i];
 				}
 				break;
+            case FE_PYRA13:
+                el.m_node[0] = e.node[0];
+                el.m_node[1] = e.node[1];
+                el.m_node[2] = e.node[2];
+                el.m_node[3] = e.node[3];
+                el.m_node[4] = e.node[4];
+                el.m_node[5] = e.node[5];
+                el.m_node[6] = e.node[6];
+                el.m_node[7] = e.node[7];
+                el.m_node[8] = e.node[8];
+                el.m_node[9] = e.node[9];
+                el.m_node[10] = e.node[10];
+                el.m_node[11] = e.node[11];
+                el.m_node[12] = e.node[12];
+                break;
 			default:
 				return false;
 			}

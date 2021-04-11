@@ -153,6 +153,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "enclosed volume"                   , false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_MECH, "fiber stretch"                     );
     AddPlotVariable(MODULE_MECH, "fiber vector"                      );
+    AddPlotVariable(MODULE_MECH, "intact bond fraction"              );
     AddPlotVariable(MODULE_MECH, "kinetic energy density"            );
     AddPlotVariable(MODULE_MECH, "Lagrange strain"                   );
     AddPlotVariable(MODULE_MECH, "nested damage"                     );
@@ -162,6 +163,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "nodal stress"                      );
     AddPlotVariable(MODULE_MECH, "nodal surface traction"            );
     AddPlotVariable(MODULE_MECH, "nodal vector gap"                  );
+    AddPlotVariable(MODULE_MECH, "octahedral plastic strain"         );
     AddPlotVariable(MODULE_MECH, "reaction forces"                   );
     AddPlotVariable(MODULE_MECH, "relative volume");
     AddPlotVariable(MODULE_MECH, "rigid acceleration"                );
@@ -190,7 +192,8 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "surface traction"                  );
     AddPlotVariable(MODULE_MECH, "uncoupled pressure"                );
     AddPlotVariable(MODULE_MECH, "vector gap"                        );
-    AddPlotVariable(MODULE_MECH, "velocity");
+    AddPlotVariable(MODULE_MECH, "velocity"                          );
+    AddPlotVariable(MODULE_MECH, "yielded bond fraction"             );
 
     AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure"          );
     AddPlotVariable(MODULE_BIPHASIC, "fluid pressure"                    );

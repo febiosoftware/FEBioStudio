@@ -25,693 +25,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "RepositoryPanel.h"
+#include "ui_repositorypanel.h"
 #include "stdafx.h"
 
 #ifdef MODEL_REPO
 #include <vector>
-#include <unordered_set>
 #include <unordered_map>
-#include <map>
-#include <QApplication>
-#include <QLocale>
-#include <QPalette>
-#include <QMenu>
-#include <QAction>
-#include <QMessageBox>
-#include <QDialog>
-#include <QDialogButtonBox>
-#include <QToolButton>
-#include <QToolBar>
-#include <QBoxLayout>
-#include <QSplitter>
-#include <QToolButton>
-#include <QStackedLayout>
-#include <QFormLayout>
-#include <QLineEdit>
-#include <QTextBrowser>
-#include <QProgressBar>
-#include <QLabel>
-#include <QFont>
-#include <QPushButton>
-#include <QTreeWidget>
-#include <QHeaderView>
-#include <QJsonDocument>
-#include <QByteArray>
-#include <QDir>
-#include <QFileIconProvider>
 #include <JlCompress.h>
 #include <QStandardPaths>
+#include <QDateTime>
+#include <QXmlStreamReader>
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "WzdUpload.h"
 #include "DlgRequestUploadPerm.h"
-//#include "ExportProjectWidget.h"
 #include "DlgSetRepoFolder.h"
 #include "LocalDatabaseHandler.h"
 #include "ToolBox.h"
-#include "PublicationWidgetView.h"
 #include "IconProvider.h"
 #include "FSCore/FSDir.h"
 #include "DlgLogin.h"
-#include "MultiLineLabel.h"
 #include "WrapLabel.h"
 #include "TagLabel.h"
 #include "ZipFiles.h"
 
 #include <iostream>
 #include <QDebug>
-
-enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
-
-class CustomTreeWidgetItem : public QTreeWidgetItem
-{
-public:
-	CustomTreeWidgetItem(QString name, int type)
-		: QTreeWidgetItem(QStringList(name), type), localCopy(0), totalCopies(0), m_size(0)
-	{
-
-	}
-
-	virtual CustomTreeWidgetItem* getProjectItem() = 0;
-
-	bool LocalCopy() { return localCopy >= totalCopies; }
-
-	int GetLocalCopy() { return localCopy; }
-	int GetTotalCopies() { return totalCopies; }
-
-	virtual void UpdateLocalCopyColor()
-	{
-		if(LocalCopy())
-		{
-			setForeground(0, qApp->palette().color(QPalette::Active, QPalette::Text));
-			setForeground(1, qApp->palette().color(QPalette::Active, QPalette::Text));
-		}
-		else
-		{
-			setForeground(0, qApp->palette().color(QPalette::Disabled, QPalette::Text));
-			setForeground(1, qApp->palette().color(QPalette::Disabled, QPalette::Text));
-		}
-	}
-
-
-	void AddLocalCopy()
-	{
-		localCopy++;
-		UpdateLocalCopyColor();
-
-		if(type() != PROJECTITEM)
-		{
-			static_cast<CustomTreeWidgetItem*>(parent())->AddLocalCopy();
-
-		}
-	}
-
-	void SubtractLocalCopy()
-	{
-		localCopy--;
-		UpdateLocalCopyColor();
-
-		if(type() != PROJECTITEM)
-		{
-			static_cast<CustomTreeWidgetItem*>(parent())->SubtractLocalCopy();
-
-		}
-	}
-
-	void setLocalCopyRecursive(bool lc)
-	{
-		for(int index = 0; index < childCount(); index++)
-		{
-			static_cast<CustomTreeWidgetItem*>(child(index))->setLocalCopyRecursive(lc);
-		}
-
-		if(lc)
-		{
-			AddLocalCopy();
-		}
-		else
-		{
-			SubtractLocalCopy();
-		}
-
-	}
-
-	void AddTotalCopy()
-	{
-		totalCopies++;
-		UpdateLocalCopyColor();
-	}
-
-	void UpdateCopies()
-	{
-		int lc = 0;
-		int tc = 0;
-
-		for(int index = 0; index < childCount(); index++)
-		{
-			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
-			current->UpdateCopies();
-
-			lc += current->GetLocalCopy();
-			tc += current->GetTotalCopies();
-		}
-
-		localCopy += lc;
-		totalCopies += tc;
-		UpdateLocalCopyColor();
-	}
-
-	void UpdateSize()
-	{
-		int currentSize = 0;
-
-		for(int index = 0; index < childCount(); index++)
-		{
-			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
-			current->UpdateSize();
-
-			currentSize += current->m_size;
-		}
-
-		m_size += currentSize;
-
-		setText(1, qApp->topLevelWidgets()[0]->locale().formattedDataSize(m_size, 2, QLocale::DataSizeTraditionalFormat));
-	}
-
-protected:
-	int localCopy;
-	int totalCopies;
-
-	qint64 m_size;
-
-};
-
-class ProjectItem : public CustomTreeWidgetItem
-{
-public:
-	ProjectItem(QString name, int projectID, bool owned, bool authorized)
-		: CustomTreeWidgetItem(name, PROJECTITEM), m_projectID(projectID), m_ownedByUser(owned), m_authorized(authorized)
-	{
-		setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
-	}
-
-	CustomTreeWidgetItem* getProjectItem()
-	{
-		return this;
-	}
-
-	void setProjectID(int project) {m_projectID = project;}
-	int getProjectID() {return m_projectID;}
-	bool ownedByUser() {return m_ownedByUser;}
-	bool isAuthorized() {return m_authorized;}
-
-private:
-	int m_projectID;
-	bool m_ownedByUser;
-	bool m_authorized;
-};
-
-class FolderItem : public CustomTreeWidgetItem
-{
-public:
-	FolderItem(QString name)
-		: CustomTreeWidgetItem(name, FOLDERITEM)
-	{
-		setIcon(0, CIconProvider::GetIcon("folder"));
-	}
-
-	CustomTreeWidgetItem* getProjectItem()
-	{
-		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
-	}
-
-};
-
-class FileItem : public CustomTreeWidgetItem
-{
-public:
-	FileItem(QString name, int fileID, bool lc, qint64 size)
-		: CustomTreeWidgetItem(name, FILEITEM), m_fileID(fileID)
-	{
-		if(name.endsWith(".fsp"))
-		{
-			setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
-		}
-		else if(name.endsWith(".fsm") || name.endsWith(".fsprj") || name.endsWith(".prv"))
-		{
-			setIcon(0, CIconProvider::GetIcon("PreView"));
-		}
-		else if(name.endsWith(".feb"))
-		{
-			setIcon(0, CIconProvider::GetIcon("febio"));
-		}
-		else if(name.endsWith(".xplt"))
-		{
-			setIcon(0, CIconProvider::GetIcon("PostView"));
-		}
-		else
-		{
-			setIcon(0, CIconProvider::GetIcon("new"));
-		}
-
-
-		localCopy = (lc ? 1 : 0);
-
-		totalCopies = 1;
-
-		UpdateLocalCopyColor();
-
-		m_size = size;
-	}
-
-	virtual CustomTreeWidgetItem* getProjectItem()
-	{
-		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
-	}
-
-	int getFileID()
-	{
-		return m_fileID;
-	}
-
-private:
-	int m_fileID;
-
-};
-
-class FileSearchItem : public QTreeWidgetItem
-{
-public:
-	FileSearchItem(FileItem* item)
-		: QTreeWidgetItem(), realItem(item)
-	{
-		setText(0, realItem->text(0));
-		setText(1, realItem->text(1));
-		UpdateColor();
-		setIcon(0,realItem->icon(0));
-	}
-
-	void UpdateColor()
-	{
-		setForeground(0, realItem->foreground(0));
-		setForeground(1, realItem->foreground(1));
-	}
-
-	FileItem* getRealItem()
-	{
-		return realItem;
-	}
-
-private:
-	FileItem* realItem;
-
-};
-
-class Ui::CRepositoryPanel
-{
-public:
-	QStackedLayout* stack;
-
-	QWidget* welcomePage;
-	QPushButton* connectButton;
-
-	QPushButton* loginButton;
-	QAction* loginAction;
-
-	QWidget* modelPage;
-	QStackedWidget* treeStack;
-	QTreeWidget* projectTree;
-	QTreeWidget* fileSearchTree;
-
-	CToolBox* projectInfoBox;
-
-	QLabel* unauthorized;
-
-	QFormLayout* projectInfoForm;
-	QLabel* projectName;
-	MultiLineLabel* projectDesc;
-	QLabel* projectOwner;
-	TagLabel* projectTags;
-
-	QFormLayout* fileInfoForm;
-	MultiLineLabel* filenameLabel;
-	MultiLineLabel* fileDescLabel;
-	TagLabel* fileTags;
-
-	::CPublicationWidgetView* projectPubs;
-
-	QToolBar* toolbar;
-
-	QAction* actionRefresh;
-	QAction* actionDownload;
-	QAction* actionOpen;
-	QAction* actionOpenFileLocation;
-	QAction* actionDelete;
-
-	QAction* actionUpload;
-
-	QAction* actionDeleteRemote;
-	QAction* actionModify;
-
-	QAction* actionFindInTree;
-
-	QLineEdit* searchLineEdit;
-	QAction* actionSearch;
-	QAction* actionClearSearch;
-
-	QWidget* loadingPage;
-	QLabel* loadingLabel;
-	QProgressBar* loadingBar;
-	QPushButton* loadingCancel;
-
-public:
-	CRepositoryPanel() : currentProject(nullptr), openAfterDownload(nullptr){}
-
-	void setupUi(::CRepositoryPanel* parent)
-	{
-		stack = new QStackedLayout(parent);
-
-
-		// Weclome Page
-		QVBoxLayout* welcomeVBLayout = new QVBoxLayout;
-		welcomeVBLayout->setAlignment(Qt::AlignCenter);
-		QLabel* welcomeLabel = new QLabel("To access the project repository, please click the Connect button below.");
-		welcomeLabel->setWordWrap(true);
-		welcomeLabel->setAlignment(Qt::AlignCenter);
-		welcomeVBLayout->addWidget(welcomeLabel);
-
-		QHBoxLayout* connectButtonLayout = new QHBoxLayout;
-		connectButtonLayout->addStretch();
-		connectButton = new QPushButton("Connect");
-		connectButton->setObjectName("connectButton");
-		connectButtonLayout->addWidget(connectButton);
-		connectButtonLayout->addStretch();
-		welcomeVBLayout->addLayout(connectButtonLayout);
-
-		welcomePage = new QWidget;
-		welcomePage->setLayout(welcomeVBLayout);
-
-		stack->addWidget(welcomePage);
-
-		// Model view page
-		QVBoxLayout* modelVBLayout = new QVBoxLayout;
-
-		toolbar = new QToolBar();
-
-		actionRefresh = new QAction(CIconProvider::GetIcon("refresh"), "Refresh", parent);
-		actionRefresh->setObjectName("actionRefresh");
-		actionRefresh->setIconVisibleInMenu(false);
-		toolbar->addAction(actionRefresh);
-
-		actionDownload = new QAction(CIconProvider::GetIcon("download"), "Download", parent);
-		actionDownload->setObjectName("actionDownload");
-		actionDownload->setIconVisibleInMenu(false);
-		toolbar->addAction(actionDownload);
-
-		actionOpen = new QAction(CIconProvider::GetIcon("open"), "Open Local Copy", parent);
-		actionOpen->setObjectName("actionOpen");
-		actionOpen->setIconVisibleInMenu(false);
-		toolbar->addAction(actionOpen);
-
-		actionOpenFileLocation = new QAction(CIconProvider::GetIcon("openContaining"), "Open File Location", parent);
-		actionOpenFileLocation->setObjectName("actionOpenFileLocation");
-		actionOpenFileLocation->setIconVisibleInMenu(false);
-		toolbar->addAction(actionOpenFileLocation);
-
-		actionDelete = new QAction(CIconProvider::GetIcon("delete"), "Delete Local Copy", parent);
-		actionDelete->setObjectName("actionDelete");
-		actionDelete->setIconVisibleInMenu(false);
-		toolbar->addAction(actionDelete);
-
-		toolbar->addSeparator();
-		QWidget* empty = new QWidget();
-		empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-		toolbar->addWidget(empty);
-
-		actionDeleteRemote = new QAction(CIconProvider::GetIcon("deleteRemote"), "Delete From Repository", parent);
-		actionDeleteRemote->setObjectName("actionDeleteRemote");
-		actionDeleteRemote->setIconVisibleInMenu(false);
-		toolbar->addAction(actionDeleteRemote);
-
-		actionModify = new QAction(CIconProvider::GetIcon("edit"), "Modify Project", parent);
-		actionModify->setObjectName("actionModify");
-		actionModify->setIconVisibleInMenu(false);
-		toolbar->addAction(actionModify);
-
-		loginButton = new QPushButton("Login");
-		loginButton->setObjectName("loginButton");
-		loginAction = toolbar->addWidget(loginButton);
-
-		actionUpload = new QAction(CIconProvider::GetIcon("upload"), "Upload", parent);
-		actionUpload->setObjectName("actionUpload");
-		actionUpload->setIconVisibleInMenu(false);
-		toolbar->addAction(actionUpload);
-
-		modelVBLayout->addWidget(toolbar);
-
-		QToolBar* searchBar = new QToolBar;
-		searchBar->addWidget(searchLineEdit = new QLineEdit);
-		actionSearch = new QAction(CIconProvider::GetIcon("search"), "Search", parent);
-		actionSearch->setObjectName("actionSearch");
-		searchBar->addAction(actionSearch);
-		actionClearSearch = new QAction(CIconProvider::GetIcon("clear"), "Clear", parent);
-		actionClearSearch->setObjectName("actionClearSearch");
-		searchBar->addAction(actionClearSearch);
-
-		modelVBLayout->addWidget(searchBar);
-
-		actionFindInTree = new QAction("Show in Project Tree", parent);
-		actionFindInTree->setObjectName("actionFindInTree");
-
-		QSplitter* splitter = new QSplitter;
-		splitter->setOrientation(Qt::Vertical);
-
-		treeStack = new QStackedWidget;
-
-		projectTree = new QTreeWidget;
-		projectTree->setObjectName("treeWidget");
-		projectTree->setColumnCount(2);
-		projectTree->setHeaderLabels(QStringList() << "Projects" << "Size");
-		projectTree->setSelectionMode(QAbstractItemView::SingleSelection);
-		projectTree->setContextMenuPolicy(Qt::CustomContextMenu);
-		projectTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-		projectTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-		projectTree->header()->setStretchLastSection(false);
-		treeStack->addWidget(projectTree);
-
-		fileSearchTree = new QTreeWidget;
-		fileSearchTree->setObjectName("fileSearchTree");
-		fileSearchTree->setColumnCount(2);
-		fileSearchTree->setHeaderLabels(QStringList() << "Files" << "Size");
-		fileSearchTree->setSelectionMode(QAbstractItemView::SingleSelection);
-		fileSearchTree->setContextMenuPolicy(Qt::CustomContextMenu);
-		fileSearchTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-		fileSearchTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-		fileSearchTree->header()->setStretchLastSection(false);
-		treeStack->addWidget(fileSearchTree);
-
-		splitter->addWidget(treeStack);
-
-		projectInfoBox = new CToolBox;
-		QWidget* projectDummy = new QWidget;
-		QVBoxLayout* modelInfoLayout = new QVBoxLayout;
-		projectDummy->setLayout(modelInfoLayout);
-
-		modelInfoLayout->addWidget(unauthorized = new QLabel("<font color='red'>This project has not yet been approved by our "
-				"reviewers. It is visible only to you. For now, you may only modify the metadata or delete the project. Once "
-				"approved, it will available for all users.</font>"));
-		unauthorized->setWordWrap(true);
-		unauthorized->hide();
-
-		QHBoxLayout* centerName = new QHBoxLayout;
-		centerName->addStretch();
-		centerName->addWidget(projectName = new QLabel);
-		centerName->addStretch();
-
-		modelInfoLayout->addLayout(centerName);
-
-		QFont font = projectName->font();
-		font.setBold(true);
-		font.setPointSize(14);
-		projectName->setFont(font);
-
-		modelInfoLayout->addWidget(projectDesc = new MultiLineLabel);
-
-		QFrame* line = new QFrame();
-		line->setFrameShape(QFrame::HLine);
-		modelInfoLayout->addWidget(line);
-
-		projectInfoForm = new QFormLayout;
-		projectInfoForm->setHorizontalSpacing(10);
-		projectInfoForm->addRow("Owner:", projectOwner = new QLabel);
-
-		modelInfoLayout->addLayout(projectInfoForm);
-
-		modelInfoLayout->addWidget(projectTags = new TagLabel);
-		projectTags->setObjectName("projectTags");
-
-		projectInfoBox->addTool("Project Info", projectDummy);
-
-		projectInfoBox->addTool("Publications", projectPubs = new ::CPublicationWidgetView(::CPublicationWidgetView::LIST, false));
-		projectInfoBox->getToolItem(1)->hide();
-
-		QWidget* fileDummy = new QWidget;
-		QVBoxLayout* fileInfoLayout = new QVBoxLayout;
-		fileDummy->setLayout(fileInfoLayout);
-
-		fileInfoForm = new QFormLayout;
-		fileInfoForm->setHorizontalSpacing(10);
-		fileInfoForm->addRow("Filename:", filenameLabel = new MultiLineLabel);
-		fileInfoForm->addRow("Description:", fileDescLabel = new MultiLineLabel);
-		fileInfoLayout->addLayout(fileInfoForm);
-
-		fileInfoLayout->addWidget(fileTags = new TagLabel);
-		fileTags->setObjectName("fileTags");
-
-		projectInfoBox->addTool("File Info", fileDummy);
-		projectInfoBox->getToolItem(2)->hide();
-
-		splitter->addWidget(projectInfoBox);
-
-		modelVBLayout->addWidget(splitter);
-
-		modelPage = new QWidget;
-		modelPage->setLayout(modelVBLayout);
-
-		stack->addWidget(modelPage);
-
-		// Loading Page
-		loadingPage = new QWidget;
-		QVBoxLayout* loadingLayout = new QVBoxLayout;
-		loadingLayout->setAlignment(Qt::AlignCenter);
-
-		loadingLayout->addWidget(loadingLabel = new QLabel);
-		loadingLayout->setAlignment(loadingLabel, Qt::AlignCenter);
-		loadingLayout->addWidget(loadingBar = new QProgressBar);
-		loadingLayout->addWidget(loadingCancel = new QPushButton("Cancel"));
-		loadingCancel->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
-		loadingLayout->setAlignment(loadingCancel, Qt::AlignCenter);
-
-		loadingPage->setLayout(loadingLayout);
-		stack->addWidget(loadingPage);
-
-		setLoginVisible(true);
-	}
-
-	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, qint64 size)
-	{
-		int pos = path.right(path.length() - index).indexOf("/");
-
-		if(pos == -1)
-		{
-			FileItem* child = new FileItem(path.right(path.length() - index), fileID, localCopy, size);
-
-			fileItemsByID[fileID] = child;
-
-			return child;
-		}
-
-		CustomTreeWidgetItem* child = addFile(path, index + (pos + 1), fileID, localCopy, size);
-		CustomTreeWidgetItem* parent;
-
-		try
-		{
-			parent = currentProjectFolders.at(path.left(pos + index).toStdString());
-		}
-		catch(std::out_of_range& e)
-		{
-			parent = new FolderItem(path.right(path.length() - index).left(pos));
-
-			currentProjectFolders[path.left(pos + index).toStdString()] = parent;
-		}
-
-		parent->addChild(child);
-
-		return parent;
-	}
-
-	void unhideAll()
-	{
-		for(auto current : projectItemsByID)
-		{
-			current.second->setHidden(false);
-		}
-
-		for(auto current : fileItemsByID)
-		{
-			current.second->setHidden(false);
-		}
-	}
-
-	void setLoginVisible(bool visible)
-	{
-		loginAction->setVisible(visible);
-		actionUpload->setVisible(!visible);
-
-		actionDeleteRemote->setVisible(!visible);
-		actionModify->setVisible(!visible);
-	}
-
-	void showLoadingPage(QString message, bool progress = false)
-	{
-		loadingLabel->setText(message);
-
-		loadingBar->setVisible(progress);
-		loadingBar->setValue(0);
-		loadingCancel->setVisible(progress);
-
-		stack->setCurrentIndex(2);
-	}
-
-	void setProjectTags()
-	{
-		if(currentTags.isEmpty())
-		{
-			projectTags->hide();
-		}
-		else
-		{
-			projectTags->show();
-			projectTags->setTagList(currentTags);
-		}
-	}
-
-	void setFileDescription(QString description)
-	{
-		fileInfoForm->removeRow(fileDescLabel);
-
-		if(!description.isEmpty())
-		{
-			fileInfoForm->insertRow(1, "Description:", fileDescLabel = new MultiLineLabel(description));
-		}
-
-	}
-
-	void setFileTags()
-	{
-		if(currentFileTags.isEmpty())
-		{
-			fileTags->hide();
-		}
-		else
-		{
-			fileTags->show();
-			fileTags->setTagList(currentFileTags);
-		}
-	}
-
-
-public:
-	ProjectItem* currentProject;
-	std::unordered_map<std::string, CustomTreeWidgetItem*> currentProjectFolders;
-	QStringList currentTags;
-	QStringList currentFileTags;
-	std::unordered_map<int, ProjectItem*> projectItemsByID;
-	std::unordered_map<int, FileItem*> fileItemsByID;
-
-	CustomTreeWidgetItem* openAfterDownload;
-};
 
 CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent)
 	: QWidget(parent), m_wnd(pwnd), ui(new Ui::CRepositoryPanel)
@@ -744,8 +84,6 @@ void CRepositoryPanel::SetModelList()
 
 	if(repoHandler->isAuthenticated())
 	{
-		ui->setLoginVisible(false);
-
 		QString category("My Projects");
 		QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
 		item->setIcon(0, QIcon(":/icons/folder.png"));
@@ -794,11 +132,102 @@ void CRepositoryPanel::ShowMessage(QString message)
 	dlg->exec();
 }
 
+void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages)
+{
+	QString message;
+
+	qDebug() << lastMessageTime;
+	
+	if(lastMessageTime == -1)
+	{
+	 	message += "<h2>Welcome to the FEBio Project Repository!</h2><p>This repository is a way for FEBio users to easily access models "
+            "created by the FEBio Team or by other users, and to share models of their own from within FEBio Studio itself.<br><br>"
+            "Using this panel, you can view or search for projects and download the associated files.<br><br>"
+            "To share a project of your own, click on the Upload button in the upper right corner of the panel.<br><br>"
+			"For more information, please see the section entitled \"The Repository Panel\" in the FEBio Studio user manual.</p>";
+	}
+
+	qint64 newMessageTime = 0;
+
+	QXmlStreamReader reader(messages);
+
+	if (reader.readNextStartElement())
+	{
+		if(reader.name() == "messages")
+		{
+			while(reader.readNextStartElement())
+			{
+				if(reader.name() == "message")
+				{
+					qint64 time = reader.attributes().value("time").toLongLong();
+
+					if(time > lastMessageTime)
+					{
+						if(time > newMessageTime) newMessageTime = time;
+
+						QDateTime dateTime;
+						dateTime.setSecsSinceEpoch(time);
+
+						if(!message.isEmpty()) message += "<br>";
+
+						message += "<h2>Message from ";
+						message += dateTime.toString("ddd MMMM d yyyy:");
+						message += "</h2><p>";
+
+						message += reader.readElementText().replace("\n", "<br>");
+						message += "</p>";
+
+					}
+				}
+				else
+				{
+					reader.skipCurrentElement();
+				}
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	if(!message.isEmpty())
+	{
+		QDialog *dlg = new QDialog(this);
+		QVBoxLayout* l = new QVBoxLayout;
+		dlg->setLayout(l);
+		QTextBrowser* msg = new QTextBrowser();
+
+		msg->setFrameStyle(QFrame::Plain|QFrame::NoFrame);
+		QPalette qpalette = palette();
+		qpalette.setColor(QPalette::Base, qApp->palette().color(QPalette::Window));
+		msg->setPalette(qpalette);
+
+		msg->setText(message);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok);
+		l->addWidget(msg);
+		l->addWidget(bb);
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+
+		int width = 600;
+		msg->document()->setTextWidth(width);
+		int height = msg->document()->size().height() + 100;
+
+		if(height > 500) height = 500;
+
+		dlg->resize(width,height);
+		dlg->exec();
+
+		lastMessageTime = newMessageTime;
+	}
+}
+
 void CRepositoryPanel::LoginTimeout()
 {
 	ShowMessage("Your login to the model repository has timed out.");
 
-	ui->setLoginVisible(true);
 	ui->stack->setCurrentIndex(1);
 }
 
@@ -920,7 +349,16 @@ void CRepositoryPanel::AddProjectFile(char **data)
 
 void CRepositoryPanel::on_connectButton_clicked()
 {
-	if(m_repositoryFolder.isEmpty())
+	bool getNewFolder = false;
+
+	getNewFolder = m_repositoryFolder.isEmpty();
+
+	if(!getNewFolder)
+	{
+		getNewFolder = !QFile::exists(m_repositoryFolder);
+	}
+
+	if(getNewFolder)
 	{
 		QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 		defaultPath += "/FEBio Studio Repo Files";
@@ -943,18 +381,6 @@ void CRepositoryPanel::on_connectButton_clicked()
 	repoHandler->getSchema();
 
 	ui->showLoadingPage("Connecting...");
-}
-
-void CRepositoryPanel::on_loginButton_clicked()
-{
-	CDlgLogin dlg;
-
-	if(dlg.exec())
-	{
-		repoHandler->authenticate(dlg.username(), dlg.password());
-
-		ui->showLoadingPage("Logging in...");
-	}
 }
 
 void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column)
@@ -1039,6 +465,20 @@ void CRepositoryPanel::on_actionDelete_triggered()
 
 void CRepositoryPanel::on_actionUpload_triggered()
 {
+	if(!repoHandler->isAuthenticated())
+	{
+		CDlgLogin dlg;
+
+		if(dlg.exec())
+		{
+			repoHandler->authenticate(dlg.username(), dlg.password());
+
+			ui->showLoadingPage("Logging in...");
+		}
+
+		return;
+	}
+
 	if(repoHandler->getUploadPermission())
 	{
 		CWzdUpload dlg(this,repoHandler->getUploadPermission(), dbHandler, repoHandler);
@@ -1696,6 +1136,16 @@ void CRepositoryPanel::SetRepositoryFolder(QString folder)
 	m_repositoryFolder = folder;
 }
 
+qint64 CRepositoryPanel::GetLastMessageTime()
+{
+	return lastMessageTime;
+}
+
+void CRepositoryPanel::SetLastMessageTime(qint64 time)
+{
+	lastMessageTime = time;
+}
+
 void CRepositoryPanel::showMainPage()
 {
 	ui->stack->setCurrentIndex(1);
@@ -1719,6 +1169,7 @@ CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent){}
 CRepositoryPanel::~CRepositoryPanel(){}
 void CRepositoryPanel::SetModelList(){}
 void CRepositoryPanel::ShowMessage(QString message) {}
+void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages) {}
 void CRepositoryPanel::LoginTimeout() {}
 void CRepositoryPanel::NetworkInaccessible() {}
 void CRepositoryPanel::DownloadFinished(int fileID, int fileType) {}
@@ -1731,7 +1182,8 @@ void CRepositoryPanel::AddCurrentTag(char **argv) {}
 void CRepositoryPanel::AddPublication(QVariantMap data) {}
 QString CRepositoryPanel::GetRepositoryFolder() { return QString(); }
 void CRepositoryPanel::SetRepositoryFolder(QString folder) {}
-void CRepositoryPanel::on_loginButton_clicked() {}
+qint64 CRepositoryPanel::GetLastMessageTime() { return -1; }
+void CRepositoryPanel::SetLastMessageTime(qint64 time) {}
 void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column){}
 void CRepositoryPanel::on_actionDownload_triggered() {}
 void CRepositoryPanel::on_actionOpen_triggered() {}

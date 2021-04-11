@@ -22,8 +22,8 @@ public:
 		layout->addWidget(new WrapLabel("In order to upload to the repository, you must first request permission. The repository "
 				"is not meant to be used as cloud storage for in-progress models, but as a means of sharing well-built, "
 				"thoroughly-tested models with the FEBio community.\n\n"
-				"Please fill out this form, and our team will notify you when your account has been given permission to "
-				"upload."));
+				"Please fill out this form, and our team will notify you when your account has been given permission to upload.\n\n"
+				"This is a manual process and may take a few business days."));
 
 		QFormLayout* form = new QFormLayout;
 		form->addRow("Email Address:", email = new QLineEdit);
@@ -36,7 +36,9 @@ public:
 		layout->addWidget(new QLabel("Why do you want to upload projects to the repository?"));
 
 		layout->addWidget(description = new QTextEdit);
-
+		description->setPlaceholderText("What kind of work are you involved in?\n\n"
+			"What kinds of models will you be sharing with the community?");
+		
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		layout->addWidget(bb);
 

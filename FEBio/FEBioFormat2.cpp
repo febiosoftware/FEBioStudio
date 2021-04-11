@@ -184,6 +184,7 @@ void FEBioFormat2::ParseGeometryElements(FEBioModel::Part& part, XMLTag& tag)
 	else if (strcmp(sztype, "tri6") == 0) ntype = FE_TRI6;
 	else if (strcmp(sztype, "pyra5") == 0) ntype = FE_PYRA5;
 	else if (strcmp(sztype, "penta15") == 0) ntype = FE_PENTA15;
+    else if (strcmp(sztype, "pyra13") == 0) ntype = FE_PYRA13;
 	else if (strcmp(sztype, "TET10G4"     ) == 0) ntype = FE_TET10;
 	else if (strcmp(sztype, "TET10G8"     ) == 0) ntype = FE_TET10;
 	else if (strcmp(sztype, "TET10GL11"   ) == 0) ntype = FE_TET10;
@@ -1987,13 +1988,13 @@ void FEBioFormat2::ParseContactParams(XMLTag& tag, FEPairedInterface* pi, int ni
 				{
 					sprintf(szbuf, "MasterSurface%02d", nid);
 					ps->SetName(szn ? szn : szbuf);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					sprintf(szbuf, "SlaveSurface%02d", nid);
 					ps->SetName(szn ? szn : szbuf);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 			}
 			else ParseUnknownTag(tag);
@@ -2576,6 +2577,7 @@ void FEBioFormat2::ParseSprings(FEStep *pstep, XMLTag &tag)
 	FEBioModel& febio = GetFEBioModel();
 
 	FEModel &fem = GetFEModel();
+	GModel& gm = fem.GetModel();
 	GMeshObject* po = GetGObject();
 	
 	int n[2], lc = -1;
@@ -2613,7 +2615,7 @@ void FEBioFormat2::ParseSprings(FEStep *pstep, XMLTag &tag)
 	{
 	case FE_DISCRETE_SPRING:
 		{
-			GLinearSpring* ps = new GLinearSpring(n[0], n[1]);
+			GLinearSpring* ps = new GLinearSpring(&gm, n[0], n[1]);
 			char szname[256];
 			sprintf(szname, "Spring%02d", N);
 			ps->SetName(szname);
@@ -2623,7 +2625,7 @@ void FEBioFormat2::ParseSprings(FEStep *pstep, XMLTag &tag)
 		break;
 	case FE_GENERAL_SPRING:
 		{
-			GGeneralSpring* pg = new GGeneralSpring(n[0], n[1]);
+			GGeneralSpring* pg = new GGeneralSpring(&gm, n[0], n[1]);
 			char szname[256];
 			sprintf(szname, "Spring%02d", N);
 			pg->SetName(szname);

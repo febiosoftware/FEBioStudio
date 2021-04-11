@@ -795,21 +795,20 @@ void FEAlmansi::eval(int n, mat3fs* pv)
 double element_volume(int ntype, vec3d* r)
 {
 	switch (ntype)
-	{
-	case FE_TET4:
-	case FE_TET20:
-		return tet4_volume(r);
-		break;
-	case FE_TET10:
-	case FE_TET15:
-		return tet10_volume(r);
-		break;
-	case FE_HEX8:
-	case FE_HEX20:
-	case FE_HEX27:
-		return hex8_volume(r);
-		break;
-	}
+    {
+        case FE_TET4: return tet4_volume(r); break;
+        case FE_TET5: return tet5_volume(r); break;
+        case FE_TET10: return tet10_volume(r); break;
+        case FE_TET15: return tet15_volume(r); break;
+        case FE_TET20: return tet20_volume(r); break;
+        case FE_HEX8: return hex8_volume(r); break;
+        case FE_HEX20: return hex20_volume(r); break;
+        case FE_HEX27: return hex27_volume(r); break;
+        case FE_PENTA6: return penta6_volume(r); break;
+        case FE_PENTA15: return penta15_volume(r); break;
+        case FE_PYRA5: return pyra5_volume(r); break;
+        case FE_PYRA13: return pyra13_volume(r); break;
+    }
 	return 0.0;
 }
 

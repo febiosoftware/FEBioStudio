@@ -190,6 +190,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 
 	m_time = time;
 	m_nField = -1;
+	m_status = 0;
 
 	// get the data manager
 	FEDataManager* pdm = fem->GetDataManager();
@@ -239,6 +240,7 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 	m_id = -1;
 	m_time = time;
 	m_nField = -1;
+	m_status = 0;
 	m_mesh = pstate->m_mesh;
 
 	RebuildData();

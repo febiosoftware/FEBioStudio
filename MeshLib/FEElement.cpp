@@ -26,16 +26,10 @@ SOFTWARE.*/
 
 #include "FEElement.h"
 #include "FEElementLibrary.h"
-#include "tet4.h"
-#include "penta6.h"
-#include "penta15.h"
-#include "hex8.h"
-#include "pyra5.h"
-#include "tet10.h"
-#include "tet15.h"
-#include "tet20.h"
-#include "hex20.h"
-#include "hex27.h"
+#include "tet.h"
+#include "penta.h"
+#include "hex.h"
+#include "pyra.h"
 
 //=============================================================================
 // FEElement_
@@ -196,6 +190,16 @@ int FEElement_::GetLocalFaceIndices(int i, int* n) const
 		case 4: n[0] = 3; n[1] = 2; n[2] = 1; n[3] = 0; nodes = 4; break;
 		}
 		break;
+    case FE_PYRA13:
+        switch (i)
+        {
+            case 0: n[0] = 0; n[1] = 1; n[2] = 4; n[3] = 5; n[4] = 10; n[5] =  9; nodes = 6; break;
+            case 1: n[0] = 1; n[1] = 2; n[2] = 4; n[3] = 6; n[4] = 11; n[5] = 10; nodes = 6; break;
+            case 2: n[0] = 2; n[1] = 3; n[2] = 4; n[3] = 7; n[4] = 12; n[5] = 11; nodes = 6; break;
+            case 3: n[0] = 3; n[1] = 0; n[2] = 4; n[3] = 8; n[4] =  9; n[5] = 12; nodes = 6; break;
+            case 4: n[0] = 3; n[1] = 2; n[2] = 1; n[3] = 0; n[4] =  7; n[5] =  6; n[6] =  5; n[7] =  8; nodes = 8; break;
+        }
+        break;
 	case FE_PENTA15:
 		switch (i)
 		{
@@ -324,6 +328,16 @@ void FEElement_::GetFace(int i, FEFace& f) const
 		case 4: f.SetType(FE_FACE_QUAD4); n[0] = m[3]; n[1] = m[2]; n[2] = m[1]; n[3] = m[0]; break;
 		}
 		break;
+    case FE_PYRA13:
+        switch (i)
+        {
+            case 0: f.SetType(FE_FACE_TRI6 ); n[0] = m[0]; n[1] = m[1]; n[2] = m[4]; n[3] = m[5]; n[4] = m[10]; n[5] = m[9]; break;
+            case 1: f.SetType(FE_FACE_TRI6 ); n[0] = m[1]; n[1] = m[2]; n[2] = m[4]; n[3] = m[6]; n[4] = m[11]; n[5] = m[10]; break;
+            case 2: f.SetType(FE_FACE_TRI6 ); n[0] = m[2]; n[1] = m[3]; n[2] = m[4]; n[3] = m[7]; n[4] = m[12]; n[5] = m[11]; break;
+            case 3: f.SetType(FE_FACE_TRI6 ); n[0] = m[3]; n[1] = m[0]; n[2] = m[4]; n[3] = m[8]; n[4] = m[ 9]; n[5] = m[12]; break;
+            case 4: f.SetType(FE_FACE_QUAD8); n[0] = m[3]; n[1] = m[2]; n[2] = m[1]; n[3] = m[0]; n[4] = m[7]; n[5] = m[6]; n[6] = m[5]; n[7] = m[8]; break;
+        }
+        break;
 	case FE_PENTA15:
 		switch (i)
 		{
@@ -379,7 +393,7 @@ void FEElement_::GetFace(int i, FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-FEEdge FEElement_::GetEdge(int i)
+FEEdge FEElement_::GetEdge(int i) const
 {
 	FEEdge e;
 
@@ -432,6 +446,22 @@ FEEdge FEElement_::GetEdge(int i)
 }
 
 //-----------------------------------------------------------------------------
+//! Find the edge index of a shell
+int FEElement_::FindEdge(const FEEdge& edge) const
+{
+	assert(IsShell());
+	int nbre = Edges();
+	for (int l = 0; l < nbre; l++)
+	{
+		if (edge == GetEdge(l))
+		{
+			return l;
+		}
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
 void FEElement_::GetShellFace(FEFace& f) const
 {
 	switch (Type())
@@ -474,12 +504,10 @@ int FEElement_::FindFace(const FEFace& f)
 	int nf = Faces();
 	for (int i = 0; i<nf; ++i) {
 		FEFace lf = GetFace(i);
-		bool found = true;
-		for (int j = 0; j<f.Nodes(); ++j) {
-			found = lf.HasNode(f.n[j]);
-			if (!found) break;
+		if (lf == f)
+		{
+			return i;
 		}
-		if (found) return i;
 	}
 	return -1;
 }
@@ -546,6 +574,14 @@ bool FEElement_::is_equal(FEElement_& e)
 		if ((n[3] != m[0]) && (n[3] != m[1]) && (n[3] != m[2]) && (n[3] != m[3]) && (n[3] != m[4])) return false;
 		if ((n[4] != m[0]) && (n[4] != m[1]) && (n[4] != m[2]) && (n[4] != m[3]) && (n[4] != m[4])) return false;
 		break;
+    case FE_PYRA13:
+        if ((n[0] != m[0]) && (n[0] != m[1]) && (n[0] != m[2]) && (n[0] != m[3]) && (n[0] != m[4])) return false;
+        if ((n[1] != m[0]) && (n[1] != m[1]) && (n[1] != m[2]) && (n[1] != m[3]) && (n[1] != m[4])) return false;
+        if ((n[2] != m[0]) && (n[2] != m[1]) && (n[2] != m[2]) && (n[2] != m[3]) && (n[2] != m[4])) return false;
+        if ((n[3] != m[0]) && (n[3] != m[1]) && (n[3] != m[2]) && (n[3] != m[3]) && (n[3] != m[4])) return false;
+        if ((n[4] != m[0]) && (n[4] != m[1]) && (n[4] != m[2]) && (n[4] != m[3]) && (n[4] != m[4])) return false;
+        break;
+            
 	case FE_HEX8:
 		if ((n[0]!=m[0])&&(n[0]!=m[1])&&(n[0]!=m[2])&&(n[0]!=m[3])&&(n[0]!=m[4])&&(n[0]!=m[5])&&(n[0]!=m[6])&&(n[0]!=m[7])) return false;
 		if ((n[1]!=m[0])&&(n[1]!=m[1])&&(n[1]!=m[2])&&(n[1]!=m[3])&&(n[1]!=m[4])&&(n[1]!=m[5])&&(n[1]!=m[6])&&(n[1]!=m[7])) return false;
@@ -698,6 +734,7 @@ void FEElement_::shape(double *H, double r, double s, double t)
 	case FE_HEX20  : HEX20  ::shape(H, r, s, t); break;
 	case FE_HEX27  : HEX27  ::shape(H, r, s, t); break;
 	case FE_PENTA15: PENTA15::shape(H, r, s, t); break;
+    case FE_PYRA13 : PYRA13 ::shape(H, r, s, t); break;
 	default:
 		assert(false);
 	}
@@ -749,6 +786,7 @@ void FEElement_::shape_deriv(double* Hr, double* Hs, double* Ht, double r, doubl
 	case FE_HEX20  : HEX20  ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
 	case FE_HEX27  : HEX27  ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
 	case FE_PENTA15: PENTA15::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+    case FE_PYRA13 : PYRA13 ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
     default:
 		assert(false);
     }
@@ -773,6 +811,7 @@ void FEElement_::iso_coord(int n, double q[3])
 	case FE_HEX20  : HEX20  ::iso_coord(n, q); break;
 	case FE_HEX27  : HEX27  ::iso_coord(n, q); break;
 	case FE_PENTA15: PENTA15::iso_coord(n, q); break;
+    case FE_PYRA13 : PYRA13 ::iso_coord(n, q); break;
 	default:
 		assert(false);
     }

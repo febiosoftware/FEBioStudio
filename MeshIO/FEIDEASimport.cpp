@@ -157,8 +157,20 @@ bool FEIDEASimport::BuildMesh(FEModel& fem)
 		case  94: pe->SetType(FE_QUAD4 ); break;
 		case 111: pe->SetType(FE_TET4  ); break;
 		case 112: pe->SetType(FE_PENTA6); break;
-		case 115: pe->SetType(FE_HEX8  ); break;
-        case 116: pe->SetType(FE_HEX27 ); break;
+        case 113: pe->SetType(FE_PENTA15); break;
+        case 115:
+            {
+                if (ie->nn == 8) pe->SetType(FE_HEX8);
+                else if (ie->nn == 5) pe->SetType(FE_PYRA5);
+            }
+            break;
+        case 116:
+            {
+                if (ie->nn == 27) pe->SetType(FE_HEX27 );
+                else if (ie->nn == 20) pe->SetType(FE_HEX20);
+                else if (ie->nn == 13) pe->SetType(FE_PYRA13);
+            }
+            break;
         case 118: pe->SetType(FE_TET10 ); break;
 		default:
 			delete pm;
@@ -242,6 +254,7 @@ bool FEIDEASimport::ReadNodes(bool& bend)
 bool FEIDEASimport::ReadElements(bool& bend)
 {
 	char sz[256] = {0};
+    int junk;
 
 	ELEMENT el;
 	int* n = el.n;
@@ -254,7 +267,7 @@ bool FEIDEASimport::ReadElements(bool& bend)
 		if ((sz[4] == '-') && (sz[5] == '1')) break;
 
 		// read the element id and type
-		sscanf(sz, "%d %d", &el.id, &el.ntype);
+		sscanf(sz, "%d %d %d %d %d %d", &el.id, &el.ntype, &junk, &junk, &junk, &el.nn);
 
 		// read the second record
 		if (fgets(sz, 255, m_fp) == 0) return errf("Error encountered while reading Element dataset (2412)");
@@ -274,19 +287,37 @@ bool FEIDEASimport::ReadElements(bool& bend)
 				m_Elem.push_back(el);
 			}
 			break;
-        case 116:    // 27-node brick element
+        case 113:    // 15-node wedge element
             {
-                // rescan second record
-                sscanf(sz, "%d %d %d %d %d %d %d %d", &n[4], &n[16], &n[0], &n[11], &n[3], &n[19], &n[7], &n[15]);
                 // read the next record
                 if (fgets(sz, 255, m_fp) == 0) return errf("Error encountered while reading Element dataset (2412)");
-                sscanf(sz, "%d %d %d %d %d %d %d %d", &n[12], &n[8], &n[10], &n[14], &n[5], &n[17], &n[1], &n[9]);
-                // read the next record
-                if (fgets(sz, 255, m_fp) == 0) return errf("Error encountered while reading Element dataset (2412)");
-                sscanf(sz, "%d %d %d %d %d %d %d %d", &n[2], &n[18], &n[6], &n[13], &n[26], &n[23], &n[21], &n[20]);
-                // read the next record
-                if (fgets(sz, 255, m_fp) == 0) return errf("Error encountered while reading Element dataset (2412)");
-                sscanf(sz, "%d %d %d", &n[24], &n[22], &n[25]);
+                sscanf(sz, "%d %d %d %d %d %d %d", &n[8], &n[12], &n[13], &n[14], &n[9], &n[10], &n[11]);
+                // add the element to the list
+                m_Elem.push_back(el);
+            }
+            break;
+        case 116:
+            {
+                // 27-node brick element
+                if (el.nn == 27) {
+                    // rescan second record
+                    sscanf(sz, "%d %d %d %d %d %d %d %d", &n[4], &n[16], &n[0], &n[11], &n[3], &n[19], &n[7], &n[15]);
+                    // read the next record
+                    if (fgets(sz, 255, m_fp) == 0) return errf("Error encountered while reading Element dataset (2412)");
+                    sscanf(sz, "%d %d %d %d %d %d %d %d", &n[12], &n[8], &n[10], &n[14], &n[5], &n[17], &n[1], &n[9]);
+                    // read the next record
+                    if (fgets(sz, 255, m_fp) == 0) return errf("Error encountered while reading Element dataset (2412)");
+                    sscanf(sz, "%d %d %d %d %d %d %d %d", &n[2], &n[18], &n[6], &n[13], &n[26], &n[23], &n[21], &n[20]);
+                    // read the next record
+                    if (fgets(sz, 255, m_fp) == 0) return errf("Error encountered while reading Element dataset (2412)");
+                    sscanf(sz, "%d %d %d", &n[24], &n[22], &n[25]);
+                }
+                // 13-node pyramid element
+                else if (el.nn == 13) {
+                    // read the next record
+                    if (fgets(sz, 255, m_fp) == 0) return errf("Error encountered while reading Element dataset (2412)");
+                    sscanf(sz, "%d %d %d %d %d", &n[8], &n[9], &n[10], &n[11], &n[12]);
+                }
                 // add the element to the list
                 m_Elem.push_back(el);
             }

@@ -183,20 +183,39 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 		GPartSelection* sel = dynamic_cast<GPartSelection*>(psel);
 		int n = sel->Count();
 		if (n == 0) return;
-		GPartSelection::Iterator it(sel);
-		vector<int> pid(n);
-		for (int i = 0; i<n; ++i, ++it)
-		{
-			pid[i] = it->GetID();
-		}
 
-		for (int i = 0; i<n; ++i)
+		int nanswer = QMessageBox::question(this, "FEBio Studio", "Deleting parts cannot be undone.\nDo you wish to continue?");
+		if (nanswer == QMessageBox::Yes)
 		{
-			GPart* pg = m.FindPart(pid[i]); assert(pg);
-			if (pg)
+			GPartSelection::Iterator it(sel);
+			vector<int> pid(n);
+			for (int i = 0; i < n; ++i, ++it)
 			{
-				m.DeletePart(pg);
+				pid[i] = it->GetID();
 			}
+
+			for (int i = 0; i < n; ++i)
+			{
+				GPart* pg = m.FindPart(pid[i]); assert(pg);
+				if (pg)
+				{
+					if (m.DeletePart(pg) == false)
+					{
+						QString err; err = QString("Failed deleting Part \"%1\" (id = %2)").arg(QString::fromStdString(pg->GetName())).arg(pid[i]);
+						QMessageBox::critical(this, "FEBio Studio", err);
+						break;
+					}
+				}
+				else
+				{
+					QString err; err = QString("Cannot find part with ID %1.").arg(pid[i]);
+					QMessageBox::critical(this, "FEBio Studio", err);
+					break;
+				}
+			}
+
+			// TODO: This cannot be undone at the moment
+			doc->ClearCommandStack();
 		}
 	}
 	else
@@ -1076,6 +1095,48 @@ void CMainWindow::on_actionSelectOverlap_triggered()
 		
 		SetItemSelectionMode(SELECT_OBJECT, ITEM_FACE);
 		doc->DoCommand(new CCmdSelectFaces(mesh, faceList, false));
+		RedrawGL();
+	}
+}
+
+void CMainWindow::on_actionSelectIsolatedVertices_triggered()
+{
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr) return;
+
+	FEMesh* mesh = po->GetFEMesh();
+	if (mesh == nullptr) return;
+	
+	mesh->TagAllNodes(0);
+	int NE = mesh->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& el = mesh->Element(i);
+		int ne = el.Nodes();
+		for (int j = 0; j < ne; ++j)
+		{
+			mesh->Node(el.m_node[j]).m_ntag = 1;
+		}
+	}
+
+	std::vector<int> isolatedVerts;
+	for (int i = 0; i < mesh->Nodes(); ++i)
+	{
+		if (mesh->Node(i).m_ntag == 0)
+		{
+			isolatedVerts.push_back(i);
+		}
+	}
+
+	AddLogEntry(QString("%1: %2 isolated vertices found\n").arg(QString::fromStdString(po->GetName())).arg(isolatedVerts.size()));
+
+	if (isolatedVerts.empty() == false)
+	{
+		CCommand* cmd = new CCmdSelectFENodes(mesh, isolatedVerts, false);
+		doc->DoCommand(cmd);
 		RedrawGL();
 	}
 }

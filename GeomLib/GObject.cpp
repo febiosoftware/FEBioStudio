@@ -47,6 +47,8 @@ public:
 		m_pGMesh  = nullptr;
 
 		m_col = GLColor(200, 200, 200);
+
+		m_bValid = true;
 	}
 
 	~Imp()
@@ -59,6 +61,7 @@ public:
 public:
 	int	m_ntype;	//!< object type identifier
 	GLColor	m_col;	//!< color of object
+	bool	m_bValid;
 
 	FEMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
@@ -87,6 +90,18 @@ GObject::GObject(int ntype): imp(new GObject::Imp)
 GObject::~GObject(void)
 {
 	delete imp;
+}
+
+//-----------------------------------------------------------------------------
+bool GObject::IsValid() const
+{
+	return imp->m_bValid;
+}
+
+//-----------------------------------------------------------------------------
+void GObject::SetValidFlag(bool b)
+{
+	imp->m_bValid = b;
 }
 
 //-----------------------------------------------------------------------------
@@ -1847,6 +1862,15 @@ void GObject::Save(OArchive &ar)
 					ar.WriteChunk(CID_OBJ_PART_ID, nid);
 					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
 					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
+
+					if (p.Parameters() > 0)
+					{
+						ar.BeginChunk(CID_OBJ_PART_PARAMS);
+						{
+							p.ParamContainer::Save(ar);
+						}
+						ar.EndChunk();
+					}
 				}
 				ar.EndChunk();
 			}
@@ -2015,12 +2039,17 @@ void GObject::Load(IArchive& ar)
 					case CID_OBJ_PART_ID: ar.read(nid); p->SetID(nid); break;
 					case CID_OBJ_PART_MAT: ar.read(mid); p->SetMaterialID(mid); break;
 					case CID_OBJ_PART_NAME:
-					{
-						char szname[256] = { 0 };
-						ar.read(szname);
-						p->SetName(szname);
-					}
-					break;
+						{
+							char szname[256] = { 0 };
+							ar.read(szname);
+							p->SetName(szname);
+						}
+						break;
+					case CID_OBJ_PART_PARAMS:
+						{
+							p->ParamContainer::Load(ar);
+						}
+						break;
 					}
 					ar.CloseChunk();
 				}

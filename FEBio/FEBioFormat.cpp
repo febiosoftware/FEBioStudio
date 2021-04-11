@@ -306,6 +306,14 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	++tag;
 	do
 	{
+		// This flag needs to be read into the FEBioModel.
+		// The problem is that this flag is defined in the multi-phasic analysis step
+		// so we need to read this flag before the usual parameter processing
+		if (tag == "shell_normal_nodal")
+		{
+			tag.value(febio.m_shellNodalNormals);
+		}
+
 		if (ReadParam(*pstep, tag) == false)
 		{
 			if (tag == "title") tag.value(ops.sztitle);
@@ -349,12 +357,18 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 			else if (tag == "plot_level")
 			{
 				char sz[256]; tag.value(sz);
-				//			ops.nplot = FE_PLOT_DEFAULT;
-				//			if (strcmp(sz, "PLOT_DEFAULT") == 0) ops.nplot = FE_PLOT_DEFAULT;
-				//			else if (strcmp(sz, "PLOT_NEVER") == 0) ops.nplot = FE_PLOT_NEVER;
-				//			else if (strcmp(sz, "PLOT_MAJOR_ITRS") == 0) ops.nplot = FE_PLOT_MAJOR_ITRS;
-				//			else if (strcmp(sz, "PLOT_MINOR_ITRS") == 0) ops.nplot = FE_PLOT_MINOR_ITRS;
-				//			else if (strcmp(sz, "PLOT_MUST_POINTS") == 0) ops.nplot = FE_PLOT_MUST_POINTS;
+				ops.plot_level = FE_PLOT_MAJOR_ITRS;
+				if      (strcmp(sz, "PLOT_NEVER"        ) == 0) ops.plot_level = FE_PLOT_NEVER;
+				else if (strcmp(sz, "PLOT_MAJOR_ITRS"   ) == 0) ops.plot_level = FE_PLOT_MAJOR_ITRS;
+				else if (strcmp(sz, "PLOT_MINOR_ITRS"   ) == 0) ops.plot_level = FE_PLOT_MINOR_ITRS;
+				else if (strcmp(sz, "PLOT_MUST_POINTS"  ) == 0) ops.plot_level = FE_PLOT_MUST_POINTS;
+				else if (strcmp(sz, "PLOT_FINAL"        ) == 0) ops.plot_level = FE_PLOT_FINAL;
+				else if (strcmp(sz, "PLOT_AUGMENTATIONS") == 0) ops.plot_level = FE_PLOT_AUGMENTS;
+				else if (strcmp(sz, "PLOT_STEP_FINAL"   ) == 0) ops.plot_level = FE_PLOT_STEP_FINAL;
+				else
+				{
+					FileReader()->AddLogEntry("unknown plot_level (line %d)", tag.currentLine());
+				}
 			}
 			else if (tag == "analysis")
 			{

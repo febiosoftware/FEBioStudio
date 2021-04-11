@@ -91,7 +91,7 @@ enum Snap_Mode
 // tag structure
 struct GLTAG
 {
-	char	sztag[32];	// name of tag
+	char	sztag[64];	// name of tag
 	float	wx, wy;		// window coordinates for tag
 	vec3d	r;			// world coordinates of tag
 	bool	bvis;		// is the tag visible or not
@@ -235,11 +235,15 @@ public:
 	// --- view settings ---
 	VIEW_SETTINGS& GetViewSettings() { return m_view; }
 
+	void ShowMeshData(bool b);
+
 	CGView* GetView();
 	CGLCamera* GetCamera();
 
 	void Set3DCursor(const vec3d& r) { m_view.m_pos3d = r; }
 	vec3d Get3DCursor() const { return m_view.m_pos3d; }
+
+	std::string GetOGLVersionString();
 
 protected:
 	void mousePressEvent  (QMouseEvent* ev);
@@ -339,6 +343,7 @@ public:
 	void RenderTags();
 	void RenderImageData();
 	void RenderTrack();
+	void RenderRigidLabels();
 
 	void ScreenToView(int x, int y, double& fx, double& fy);
 
@@ -410,7 +415,11 @@ public:
 
 	void ShowPlaneCut(bool b);
 	void SetPlaneCut(double d[4]);
-	void UpdatePlaneCut();
+	void SetPlaneCutMode(int nmode);
+	void UpdatePlaneCut(bool breset = false);
+
+public:
+	void SetColorMap(Post::CColorMap& map);
 
 protected:
 	void PanView(vec3d r);
@@ -513,9 +522,14 @@ private:
 
 	CGLCamera	m_oldCam;
 
+	Post::CColorMap m_colorMap;	// color map used for rendering mesh data
+
 	bool		m_showPlaneCut;
+	int			m_planeCutMode;
 	double		m_plane[4];
 	GLMesh*		m_planeCut;
+
+	std::string		m_oglVersionString;
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);

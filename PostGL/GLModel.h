@@ -209,9 +209,9 @@ public:
 
 protected:
 	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
-	void RenderSolidMaterial(FEPostModel* ps, int m);
+	void RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m);
 	void RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m);
-	void RenderSolidDomain(FEDomain& dom, bool btex, bool benable);
+	void RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool benable, bool zsort = false);
 
 	void RenderInnerSurface(int m, bool btex = true);
 	void RenderInnerSurfaceOutline(int m, int ndivs);
@@ -346,8 +346,10 @@ protected:
 
 public:
 	bool		m_bnorm;		//!< calculate normals or not
+	double		m_scaleNormals;	//!< normal scale factor
 	bool		m_bghost;		//!< render the ghost (undeformed outline)
 	bool		m_brenderInteriorNodes;	//!< render interior nodes or not
+	bool		m_brenderPlotObjects;
 	int			m_nDivs;		//!< nr of element subdivisions
 	int			m_nrender;		//!< render mode
     int         m_nconv;        //!< multiview projection convention
@@ -358,6 +360,7 @@ public:
 	double		m_stol;			//!< smoothing threshold
 
 	bool		m_bshowMesh;
+	bool		m_doZSorting;
 
 	unsigned int	m_layer;
 

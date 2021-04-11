@@ -166,6 +166,7 @@ FERigidDisplacement::FERigidDisplacement(FEModel* fem, int nstep) : FERigidPresc
 
 	AddIntParam(0, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
 	AddScienceParam(0.0, UNIT_LENGTH, "value", "value")->SetLoadCurve();
+	AddBoolParam(false, "relative");
 }
 
 FERigidDisplacement::FERigidDisplacement(int bc, int matid, double v, int nstep) : FERigidPrescribed(FE_RIGID_DISPLACEMENT, nstep)
@@ -174,9 +175,15 @@ FERigidDisplacement::FERigidDisplacement(int bc, int matid, double v, int nstep)
 
 	AddIntParam(bc, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
 	AddScienceParam(v, UNIT_LENGTH, "value", "value")->SetLoadCurve();
+	AddBoolParam(false, "relative");
+
 	SetMaterialID(matid);
 }
 
+bool FERigidDisplacement::GetRelativeFlag() const
+{
+	return GetBoolValue(2);
+}
 
 FERigidForce::FERigidForce(FEModel* fem, int nstep) : FERigidPrescribed(FE_RIGID_FORCE, nstep)
 {

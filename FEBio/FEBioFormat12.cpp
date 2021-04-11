@@ -177,6 +177,7 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 					else if (tag == "tri6") el.SetType(FE_TRI6);
 					else if (tag == "pyra5") el.SetType(FE_PYRA5);
 					else if (tag == "penta15") el.SetType(FE_PENTA15);
+                    else if (tag == "pyra13") el.SetType(FE_PYRA13);
 					else throw XMLReader::InvalidTag(tag);
 
 					// read nodes
@@ -1763,13 +1764,13 @@ void FEBioFormat12::ParseContactSliding(FEStep* pstep, XMLTag& tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -1828,13 +1829,13 @@ void FEBioFormat12::ParseF2FSliding(FEStep* pstep, XMLTag& tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -1886,13 +1887,13 @@ void FEBioFormat12::ParseContactBiphasic(FEStep* pstep, XMLTag& tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -1946,13 +1947,13 @@ void FEBioFormat12::ParseContactSolute(FEStep* pstep, XMLTag& tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -2006,13 +2007,13 @@ void FEBioFormat12::ParseContactMultiphasic(FEStep* pstep, XMLTag& tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -2066,13 +2067,13 @@ void FEBioFormat12::ParseContactTied(FEStep *pstep, XMLTag &tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -2126,13 +2127,13 @@ void FEBioFormat12::ParseContactSticky(FEStep *pstep, XMLTag &tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -2186,13 +2187,13 @@ void FEBioFormat12::ParseContactPeriodic(FEStep *pstep, XMLTag &tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -2246,13 +2247,13 @@ void FEBioFormat12::ParseContactTC(FEStep *pstep, XMLTag &tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -2306,13 +2307,13 @@ void FEBioFormat12::ParseContactTiedPoro(FEStep *pstep, XMLTag &tag)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetMaster(ps);
+					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
-					pi->SetSlave(ps);
+					pi->SetPrimarySurface(ps);
 				}
 
 				// read the surface
@@ -2498,6 +2499,7 @@ void FEBioFormat12::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 void FEBioFormat12::ParseSprings(FEStep *pstep, XMLTag &tag)
 {
 	FEModel& fem = GetFEModel();
+	GModel& gm = fem.GetModel();
 
 	int n[2], lc = -1;
 	double E = 0;
@@ -2536,7 +2538,7 @@ void FEBioFormat12::ParseSprings(FEStep *pstep, XMLTag &tag)
 	{
 	case FE_DISCRETE_SPRING:
 		{
-			GLinearSpring* ps = new GLinearSpring(n[0], n[1]);
+			GLinearSpring* ps = new GLinearSpring(&gm, n[0], n[1]);
 			char szname[256];
 			sprintf(szname, "Spring%02d", N);
 			ps->SetName(szname);
@@ -2546,7 +2548,7 @@ void FEBioFormat12::ParseSprings(FEStep *pstep, XMLTag &tag)
 		break;
 	case FE_GENERAL_SPRING:
 		{
-			GGeneralSpring* pg = new GGeneralSpring(n[0], n[1]);
+			GGeneralSpring* pg = new GGeneralSpring(&gm, n[0], n[1]);
 			char szname[256];
 			sprintf(szname, "Spring%02d", N);
 			pg->SetName(szname);

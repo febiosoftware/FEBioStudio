@@ -144,6 +144,14 @@ void CColorMap::red()
 	m_pos[4] = 1.00f; m_col[4] = GLColor(255, 0, 0);
 }
 
+void CColorMap::redgreen()
+{
+	m_ncol = 2;
+
+	m_pos[0] = 0.00f; m_col[0] = GLColor(255, 0, 0);
+	m_pos[1] = 1.00f; m_col[1] = GLColor(0, 255, 0);
+}
+
 void CColorMap::green()
 {
 	m_ncol = 5;
@@ -427,6 +435,7 @@ void ColorMapManager::Initialize()
 	map.jet    (); AddColormap("Jet"   , map);
 	map.rbb    (); AddColormap("RBB"   , map);
 	map.red    (); AddColormap("Red"   , map);
+	map.redgreen(); AddColormap("Red-Green", map);
 	map.spring (); AddColormap("Spring", map);
 	map.summer (); AddColormap("Summer", map);
 	map.winter (); AddColormap("Winter", map);

@@ -102,6 +102,8 @@ class FERigidDisplacement : public FERigidPrescribed
 public:
 	FERigidDisplacement(FEModel* fem, int nstep = 0);
 	FERigidDisplacement(int bc, int matid, double v, int nstep);
+
+	bool GetRelativeFlag() const;
 };
 
 class FERigidForce : public FERigidPrescribed

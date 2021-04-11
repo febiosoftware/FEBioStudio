@@ -789,6 +789,8 @@ public:
 	void SetAutoCOM(bool b);
 	void SetCenterOfMass(const vec3d& r);
 
+	vec3d GetCenterOfMass() const;
+
 public:
 	int	m_pid;	// parent ID
 

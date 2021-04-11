@@ -187,7 +187,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 #endif
 
 	// Instantiate IconProvider singleton
-	CIconProvider::Instantiate(ui->m_theme, devicePixelRatio());
+	CIconProvider::Instantiate(usingDarkTheme(), devicePixelRatio());
 
 	// setup the GUI
 	ui->setupUi(this);
@@ -242,6 +242,24 @@ CMainWindow::~CMainWindow()
 int CMainWindow::currentTheme() const
 {
 	return ui->m_theme;
+}
+
+//-----------------------------------------------------------------------------
+// check for dark theme
+bool CMainWindow::usingDarkTheme() const
+{
+	bool dark = currentTheme() == 1 || currentTheme() == 3;
+
+#ifdef __APPLE__
+	if(!dark)
+	{
+		QColor text = qApp->palette().color(QPalette::Text);
+
+		dark = (text.red() + text.green() + text.blue())/3 >= 128;
+	}
+#endif
+
+	return dark;
 }
 
 //-----------------------------------------------------------------------------
@@ -392,6 +410,13 @@ void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 			QStringList recentFiles = GetRecentFileList();
 			OpenFile(recentFiles.at(n));
 		}
+		if (strncmp(sz, "#recentproject_", 15) == 0)
+		{
+			int n = atoi(sz + 15);
+
+			QStringList recentProjects = GetRecentProjectsList();
+			OpenFile(recentProjects.at(n));
+		}
 	}
 }
 
@@ -437,6 +462,7 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		QPushButton* importButton = box.addButton("Import as Model", QMessageBox::AcceptRole);
 		QPushButton* textButton = box.addButton("Edit as Text", QMessageBox::YesRole);
 		box.addButton(QMessageBox::Cancel);
+		box.setDefaultButton(importButton);
 
 		box.exec();
 
@@ -634,7 +660,7 @@ bool CMainWindow::OpenProject(const QString& projectFile)
 	}
 
 	ui->fileViewer->Update();
-	ui->addToRecentFiles(projectFile);
+	ui->addToRecentProjects(projectFile);
 	ui->fileViewer->parentWidget()->show();
 	ui->fileViewer->parentWidget()->raise();
 	UpdateTitle();
@@ -662,7 +688,6 @@ void CMainWindow::OpenDocument(const QString& fileName)
 		if (filePath == fileName_i)
 		{
 			ui->tab->setCurrentIndex(i);
-			on_actionRefresh_triggered();
 			QApplication::alert(this);
 			return;
 		}
@@ -769,7 +794,7 @@ bool CMainWindow::CreateNewProject(QString fileName)
 	// try to create a new project
 	bool ret = ui->m_project.Save(fileName);
 
-	if (ret) ui->addToRecentFiles(fileName);
+	if (ret) ui->addToRecentProjects(fileName);
 
 	ui->fileViewer->parentWidget()->show();
 	ui->fileViewer->parentWidget()->raise();
@@ -815,6 +840,9 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 			}
 			doc->SetFileReader(xplt);
 			ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::NEW_DOCUMENT);
+
+			// add file to recent list
+			ui->addToRecentFiles(fileName);
 		}
 		else if (ext.compare("vtk", Qt::CaseInsensitive) == 0)
 		{
@@ -1334,6 +1362,7 @@ void CMainWindow::ReportSelection()
 			case FE_PYRA5  : AddLogEntry("  Type = PYRA5"  ); break;
 			case FE_TET20  : AddLogEntry("  Type = TET20"  ); break;
 			case FE_TRI10  : AddLogEntry("  Type = TRI10"  ); break;
+            case FE_PYRA13 : AddLogEntry("  Type = PYRA13" ); break;
 			}
 			AddLogEntry("\n");
 
@@ -1400,15 +1429,21 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 		if(ui->m_updateOnClose && ui->m_updaterPresent)
 		{
 			QProcess* updater = new QProcess;
+			bool bret = true;
 			if(ui->m_updateDevChannel)
 			{
-				updater->startDetached(QApplication::applicationDirPath() + UPDATER, QStringList() << "--devChannel");	
+				QString s = QApplication::applicationDirPath() + UPDATER;
+				bret = updater->startDetached(s, QStringList() << "--devChannel");	
 			}
 			else
 			{
-				updater->startDetached(QApplication::applicationDirPath() + UPDATER);
+				QString s = QApplication::applicationDirPath() + UPDATER;
+				bret = updater->startDetached(s, QStringList());
 			}
-			
+			if (bret == false)
+			{
+				QMessageBox::critical(this, "FEBIo Studio", "Failed to launch updater.");
+			}
 		}
 
 		ev->accept();
@@ -1564,6 +1599,13 @@ void CMainWindow::writeSettings()
 	settings.setValue("showNewDialogBox", ui->m_showNewDialog);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
+	settings.setValue("bgColor1", (int)vs.m_col1);
+	settings.setValue("bgColor2", (int)vs.m_col2);
+	settings.setValue("fgColor", (int)vs.m_fgcol);
+	settings.setValue("meshColor", (int)vs.m_mcol);
+	settings.setValue("bgStyle", vs.m_nbgstyle);
+	settings.setValue("lighting", vs.m_bLighting);
+	settings.setValue("shadows", vs.m_bShadows);
 	settings.setValue("multiViewProjection", vs.m_nconv);
 	settings.setValue("showMaterialFibers", vs.m_bfiber);
 	settings.setValue("showMaterialAxes", vs.m_blma);
@@ -1583,9 +1625,11 @@ void CMainWindow::writeSettings()
 
 	settings.setValue("defaultProjectFolder", ui->m_defaultProjectParent);
 	settings.setValue("repositoryFolder", ui->databasePanel->GetRepositoryFolder());
+	settings.setValue("repoMessageTime", ui->databasePanel->GetLastMessageTime());
 
 	settings.setValue("recentFiles", ui->m_recentFiles);
 	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
+	settings.setValue("recentProjects", ui->m_recentProjects);
 
 	settings.endGroup();
 
@@ -1640,6 +1684,13 @@ void CMainWindow::readSettings()
 	ui->m_showNewDialog = settings.value("showNewDialogBox", true).toBool();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
+	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1).toInt());
+	vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2).toInt());
+	vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol).toInt());
+	vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol).toInt());
+	vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
+	vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
+	vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
 	vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
 	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
 	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
@@ -1665,9 +1716,12 @@ void CMainWindow::readSettings()
 	ui->m_defaultProjectParent = settings.value("defaultProjectFolder", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
 	QString repositoryFolder = settings.value("repositoryFolder").toString();
 	ui->databasePanel->SetRepositoryFolder(repositoryFolder);
+	qint64 lastMessageTime = settings.value("repoMessageTime", -1).toLongLong();
+	ui->databasePanel->SetLastMessageTime(lastMessageTime);
 
 	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
 	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
+	QStringList recentProjects = settings.value("recentProjects").toStringList(); ui->setRecentProjects(recentProjects);
 
 	settings.endGroup();
 
@@ -2533,10 +2587,32 @@ void CMainWindow::DeleteAllSteps()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all steps?\nThis will also delete all boundary conditions, etc., associated with the steps.\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	QString txt("Are you sure you want to delete all steps?\nThis will also delete all boundary conditions, etc., associated with the steps.\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
 	{
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllSteps();
+		doc->SetModifiedFlag(true);
+		UpdateTab(doc);
+		UpdateModel();
+		RedrawGL();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::DeleteAllJobs()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all jobs?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		doc->DeleteAllJobs();
+		doc->SetModifiedFlag(true);
+		UpdateTab(doc);
 		UpdateModel();
 		RedrawGL();
 	}
@@ -2698,19 +2774,25 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 
 	bool ret = false;
 
-	if (febioFileVersion == 0)
-	{
-		FEBioExport25 feb(doc->GetProject());
-		ret = feb.Write(febFile.c_str());
+	try {
+		if (febioFileVersion == 0)
+		{
+			FEBioExport25 feb(doc->GetProject());
+			ret = feb.Write(febFile.c_str());
+		}
+		else if (febioFileVersion == 1)
+		{
+			FEBioExport3 feb(doc->GetProject());
+			ret = feb.Write(febFile.c_str());
+		}
+		else
+		{
+			assert(false);
+		}
 	}
-	else if (febioFileVersion == 1)
+	catch (...)
 	{
-		FEBioExport3 feb(doc->GetProject());
-		ret = feb.Write(febFile.c_str());
-	}
-	else
-	{
-		assert(false);
+		ret = false;
 	}
 
 	if (ret == false)
@@ -2921,6 +3003,11 @@ void CMainWindow::toggleOrtho()
 QStringList CMainWindow::GetRecentFileList()
 {
 	return ui->m_recentFiles;
+}
+
+QStringList CMainWindow::GetRecentProjectsList()
+{
+	return ui->m_recentProjects;
 }
 
 QString CMainWindow::ProjectFolder()

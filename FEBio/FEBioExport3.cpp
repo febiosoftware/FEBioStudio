@@ -511,7 +511,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 
 				if (pi && pi->IsActive())
 				{
-					FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+					FEItemListBuilder* pss = pi->GetPrimarySurface();
 					if (pss == 0) throw InvalidItemListBuilder(pi);
 
 					string name = pss->GetName();
@@ -523,7 +523,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 					}
 					AddSurface(szname, pss);
 
-					FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+					FEItemListBuilder* pms = pi->GetSecondarySurface();
 					if (pms == 0) throw InvalidItemListBuilder(pi);
 
 					name = pms->GetName();
@@ -684,8 +684,26 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
 					FEPart* pg = const_cast<FEPart*>(map->GetPart());
-					FEItemListBuilder* pil = pg;
-					if (pg) AddElemSet(data->GetName(), pil);
+
+					if (pg)
+					{
+						string name = pg->GetName();
+						if (name.empty()) name = data->GetName();
+
+						// It is possible that a FEPart has the same name as the domain
+						// from which it was created. In that case we don't want to 
+						// write this element set.
+						for (int j = 0; j < po->Parts(); ++j)
+						{
+							GPart* part = po->Part(j);
+							if (part->GetName() == name)
+							{
+								pg = nullptr;
+								break;
+							}
+						}
+						if (pg) AddElemSet(name, pg);
+					}
 				}
 				break;
 				case FEMeshData::PART_DATA:
@@ -1097,6 +1115,17 @@ void FEBioExport3::WriteSolidControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
+
+	if (ops.plot_level != 1)
+	{
+		const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+		m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+	}
+
+	if (ops.plot_stride != 1)
+	{
+		m_xml.add_leaf("plot_stride", ops.plot_stride);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1106,6 +1135,7 @@ void FEBioExport3::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STATIC" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1130,10 +1160,6 @@ void FEBioExport3::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
-
-	el.name("analysis");
-	el.add_attribute("type", (ops.nanalysis == 0 ? "static" : "transient"));
-	m_xml.add_empty(el);
 }
 
 
@@ -2021,16 +2047,34 @@ void FEBioExport3::WriteMeshDomainsSection()
 		Domain* dom = part->m_Dom[i];
 
 		XMLElement el;
-		if      (dom->m_elemClass == ELEM_SOLID) el.name("SolidDomain");
-		else if (dom->m_elemClass == ELEM_SHELL) el.name("ShellDomain");
+		if (dom->m_elemClass == ELEM_SOLID)
+		{
+			el.name("SolidDomain");
+			el.add_attribute("name", dom->m_name);
+			el.add_attribute("mat", dom->m_matName);
+			m_xml.add_empty(el);
+		}
+		else if (dom->m_elemClass == ELEM_SHELL)
+		{
+			GPart* pg = dom->m_pg;
+			el.name("ShellDomain");
+			el.add_attribute("name", dom->m_name);
+			el.add_attribute("mat", dom->m_matName);
+
+			if (pg && pg->Parameters())
+			{
+				m_xml.add_branch(el);
+				{
+					WriteParamList(*pg);
+				}
+				m_xml.close_branch();
+			}
+			else m_xml.add_empty(el);
+		}
 		else
 		{
 			assert(false);
 		}		
-
-		el.add_attribute("name", dom->m_name);
-		el.add_attribute("mat", dom->m_matName);
-		m_xml.add_empty(el);
 	}
 }
 
@@ -2529,10 +2573,10 @@ void FEBioExport3::WriteGeometrySurfacePairs()
 
 			if (pi && pi->IsActive())
 			{
-				FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pi->GetSecondarySurface();
 				if (pms == 0) throw InvalidItemListBuilder(pi);
 
-				FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pi->GetPrimarySurface();
 				if (pss == 0) throw InvalidItemListBuilder(pi);
 
 				XMLElement el("SurfacePair");
@@ -2749,6 +2793,7 @@ void FEBioExport3::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 			{
 				FEBioExport3::Domain* dom = new FEBioExport3::Domain;
 				dom->m_name = szname;
+				dom->m_pg = pg;
 				if (pmat) dom->m_matName = pmat->GetName().c_str();
 				part->m_Dom.push_back(dom);
 
@@ -3180,9 +3225,12 @@ void FEBioExport3::WriteElementDataFields()
 				FEElementData& data = *meshData;
 				const FEPart* pg = data.GetPart();
 
+				string name = pg->GetName();
+				if (name.empty()) name = data.GetName();
+
 				XMLElement tag("ElementData");
 				tag.add_attribute("name", data.GetName().c_str());
-				tag.add_attribute("elem_set", data.GetName());
+				tag.add_attribute("elem_set", name);
 				m_xml.add_branch(tag);
 				{
 					XMLElement el("e");
@@ -3202,6 +3250,7 @@ void FEBioExport3::WriteElementDataFields()
 			FEPartData* partData = dynamic_cast<FEPartData*>(pm->GetMeshDataField(n));
 			if (partData)
 			{
+				double v[FEElement::MAX_NODES] = { 0 };
 				FEPartData& data = *partData;
 				GPartList* partList = data.GetPartList(&fem);
 				std::vector<GPart*> partArray = partList->GetPartList();
@@ -3227,7 +3276,18 @@ void FEBioExport3::WriteElementDataFields()
 							if (pe->m_gid == pid)
 							{
 								el.set_attribute(nid, lid++);
-								el.value(data[j]);
+
+								if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+								{
+									el.value(data[j]);
+								}
+								else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+								{
+									int nn = pe->Nodes();
+									for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
+									el.value(v, nn);
+								}
+
 								m_xml.add_leaf(el, false);
 							}
 						}
@@ -4126,14 +4186,15 @@ void FEBioExport3::WriteInitShellVelocity(FENodalShellVelocities& iv)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitConcentration(FEInitConcentration& ic)
 {
-	char szbc[6][3] = { "c1", "c2", "c3", "c4", "c5", "c6" };
+    char szbc[6];
 	int bc = ic.GetBC();
+    sprintf(szbc, "c%d",bc+1);
 	XMLElement ec("ic");
 	ec.add_attribute("type", "init_dof");
 	ec.add_attribute("node_set", GetNodeSetName(ic.GetItemList()));
 	m_xml.add_branch(ec);
 	{
-		m_xml.add_leaf("dof", szbc[bc]);
+		m_xml.add_leaf("dof", szbc);
 		m_xml.add_leaf("value", ic.GetValue());
 	}
 	m_xml.close_branch();
@@ -4142,14 +4203,15 @@ void FEBioExport3::WriteInitConcentration(FEInitConcentration& ic)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitShellConcentration(FEInitShellConcentration& ic)
 {
-	char szbc[6][3] = { "d1", "d2", "d3", "d4", "d5", "d6" };
+    char szbc[6];
 	int bc = ic.GetBC();
+    sprintf(szbc, "d%d",bc+1);
 	XMLElement ec("ic");
 	ec.add_attribute("type", "init_dof");
 	ec.add_attribute("node_set", GetNodeSetName(ic.GetItemList()));
 	m_xml.add_branch(ec);
 	{
-		m_xml.add_leaf("dof", szbc[bc]);
+		m_xml.add_leaf("dof", szbc);
 		m_xml.add_leaf("value", ic.GetValue());
 	}
 	m_xml.close_branch();
@@ -4704,7 +4766,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 			}
 			else if (ps->Type() == FE_RIGID_DISPLACEMENT)
 			{
-				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				FERigidDisplacement* rc = dynamic_cast<FERigidDisplacement*>(ps);
 				XMLElement el;
 				el.name("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
@@ -4717,6 +4779,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
 					el.value(rc->GetValue());
 					m_xml.add_leaf(el);
+					m_xml.add_leaf("relative", rc->GetRelativeFlag());
 				}
 				m_xml.close_branch();
 			}

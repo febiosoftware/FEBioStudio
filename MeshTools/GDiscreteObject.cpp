@@ -27,10 +27,12 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GDiscreteObject.h"
 #include <FSCore/Archive.h>
+#include <MeshTools/GModel.h>
 #include <sstream>
 
-GDiscreteObject::GDiscreteObject(int ntype)
+GDiscreteObject::GDiscreteObject(GModel* gm, int ntype)
 {
+	m_gm = gm;
 	m_ntype = ntype;
 	m_state = 0;
 	m_col = GLColor(0, 255, 0);
@@ -43,15 +45,18 @@ GDiscreteObject::~GDiscreteObject(void)
 GLColor GDiscreteObject::GetColor() const { return m_col; }
 void GDiscreteObject::SetColor(const GLColor& c) { m_col = c; }
 
+const GModel* GDiscreteObject::GetModel() const { return m_gm; }
+GModel* GDiscreteObject::GetModel() { return m_gm; }
+
 //-----------------------------------------------------------------------------
 
-GLinearSpring::GLinearSpring() : GDiscreteObject(FE_DISCRETE_SPRING)
+GLinearSpring::GLinearSpring(GModel* gm) : GDiscreteObject(gm, FE_DISCRETE_SPRING)
 {
 	m_node[0] = m_node[1] = -1;
 	AddDoubleParam(0, "E", "spring constant");
 }
 
-GLinearSpring::GLinearSpring(int n1, int n2) : GDiscreteObject(FE_DISCRETE_SPRING)
+GLinearSpring::GLinearSpring(GModel* gm, int n1, int n2) : GDiscreteObject(gm, FE_DISCRETE_SPRING)
 {
 	m_node[0] = n1;
 	m_node[1] = n2;
@@ -92,7 +97,7 @@ void GLinearSpring::Load(IArchive& ar)
 
 //-----------------------------------------------------------------------------
 
-GGeneralSpring::GGeneralSpring() : GDiscreteObject(FE_GENERAL_SPRING)
+GGeneralSpring::GGeneralSpring(GModel* gm) : GDiscreteObject(gm, FE_GENERAL_SPRING)
 {
 	m_node[0] = m_node[1] = -1;
 	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
@@ -103,7 +108,7 @@ GGeneralSpring::GGeneralSpring() : GDiscreteObject(FE_GENERAL_SPRING)
 	GetParamLC(MP_F)->Add(p1);
 }
 
-GGeneralSpring::GGeneralSpring(int n1, int n2) : GDiscreteObject(FE_GENERAL_SPRING)
+GGeneralSpring::GGeneralSpring(GModel* gm, int n1, int n2) : GDiscreteObject(gm, FE_GENERAL_SPRING)
 {
 	m_node[0] = n1;
 	m_node[1] = n2;
@@ -151,13 +156,13 @@ void GGeneralSpring::Load(IArchive& ar)
 //-----------------------------------------------------------------------------
 int GDiscreteElement::m_ncount = 1;
 
-GDiscreteElement::GDiscreteElement() : GDiscreteObject(FE_DISCRETE_ELEMENT)
+GDiscreteElement::GDiscreteElement(GModel* gm) : GDiscreteObject(gm, FE_DISCRETE_ELEMENT)
 { 
 	m_node[0] = m_node[1] = -1; m_state = 0; 
 	m_nid = m_ncount++;
 }
 
-GDiscreteElement::GDiscreteElement(int n0, int n1) : GDiscreteObject(FE_DISCRETE_ELEMENT)
+GDiscreteElement::GDiscreteElement(GModel* gm, int n0, int n1) : GDiscreteObject(gm, FE_DISCRETE_ELEMENT)
 { 
 	m_node[0] = n0; 
 	m_node[1] = n1; 
@@ -165,7 +170,7 @@ GDiscreteElement::GDiscreteElement(int n0, int n1) : GDiscreteObject(FE_DISCRETE
 	m_nid = m_ncount++;
 }
 
-GDiscreteElement::GDiscreteElement(const GDiscreteElement& el) : GDiscreteObject(FE_DISCRETE_ELEMENT)
+GDiscreteElement::GDiscreteElement(const GDiscreteElement& el) : GDiscreteObject(el.m_gm, FE_DISCRETE_ELEMENT)
 {
 	m_node[0] = el.m_node[0]; 
 	m_node[1] = el.m_node[1]; 
@@ -189,7 +194,7 @@ void GDiscreteElement::SetNodes(int n0, int n1)
 
 //=================================================================================================
 
-GDiscreteElementSet::GDiscreteElementSet(int ntype) : GDiscreteObject(ntype) 
+GDiscreteElementSet::GDiscreteElementSet(GModel* gm, int ntype) : GDiscreteObject(gm, ntype)
 {
 }
 
@@ -222,7 +227,7 @@ GDiscreteElement& GDiscreteElementSet::element(int i)
 void GDiscreteElementSet::AddElement(int n0, int n1)
 {
 	// create new discrete element
-	GDiscreteElement* el = new GDiscreteElement(n0, n1);
+	GDiscreteElement* el = new GDiscreteElement(GetModel(), n0, n1);
 
 	// set default name
 	char szbuf[32] = {0};
@@ -231,6 +236,12 @@ void GDiscreteElementSet::AddElement(int n0, int n1)
 
 	// add it to the pile
 	m_elem.push_back(el);
+
+	GModel* gm = GetModel();
+	GNode* pn0 = gm->FindNode(n0); assert(pn0);
+	GNode* pn1 = gm->FindNode(n1); assert(pn1);
+	if (pn0) pn0->MakeRequired();
+	if (pn1) pn1->MakeRequired();
 }
 
 //-----------------------------------------------------------------------------
@@ -341,7 +352,7 @@ void GDiscreteElementSet::Load(IArchive& ar)
 }
 
 //=============================================================================
-GDiscreteSpringSet::GDiscreteSpringSet() : GDiscreteElementSet(FE_DISCRETE_SPRING_SET)
+GDiscreteSpringSet::GDiscreteSpringSet(GModel* gm) : GDiscreteElementSet(gm, FE_DISCRETE_SPRING_SET)
 {
 	m_mat = nullptr;
 }
@@ -461,7 +472,7 @@ void GDiscreteSpringSet::Load(IArchive& ar)
 }
 
 //=============================================================================
-GLinearSpringSet::GLinearSpringSet() : GDiscreteElementSet(FE_LINEAR_SPRING_SET)
+GLinearSpringSet::GLinearSpringSet(GModel* gm) : GDiscreteElementSet(gm, FE_LINEAR_SPRING_SET)
 {
 	AddDoubleParam(1, "E", "spring constant");
 }
@@ -512,7 +523,7 @@ void GLinearSpringSet::Load(IArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-GNonlinearSpringSet::GNonlinearSpringSet() : GDiscreteElementSet(FE_NONLINEAR_SPRING_SET)
+GNonlinearSpringSet::GNonlinearSpringSet(GModel* gm) : GDiscreteElementSet(gm, FE_NONLINEAR_SPRING_SET)
 {
 	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
 
@@ -570,7 +581,7 @@ void GNonlinearSpringSet::Load(IArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-GDeformableSpring::GDeformableSpring() : GDiscreteObject(FE_DEFORMABLE_SPRING)
+GDeformableSpring::GDeformableSpring(GModel* gm) : GDiscreteObject(gm, FE_DEFORMABLE_SPRING)
 {
 	AddDoubleParam(1, "E", "spring constant");
 	AddIntParam(1, "divs", "Divisions");
@@ -579,7 +590,7 @@ GDeformableSpring::GDeformableSpring() : GDiscreteObject(FE_DEFORMABLE_SPRING)
 }
 
 //-----------------------------------------------------------------------------
-GDeformableSpring::GDeformableSpring(int n0, int n1) : GDiscreteObject(FE_DEFORMABLE_SPRING)
+GDeformableSpring::GDeformableSpring(GModel* gm, int n0, int n1) : GDiscreteObject(gm, FE_DEFORMABLE_SPRING)
 {
 	AddDoubleParam(1, "E", "spring constant");
 	AddIntParam(1, "divs", "Divisions")->SetState(Param_EDITABLE | Param_PERSISTENT);

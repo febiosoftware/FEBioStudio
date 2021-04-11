@@ -56,7 +56,8 @@ enum FEElementType {
 	FE_PYRA5,
 	FE_TET20,
 	FE_TRI10,
-	FE_TET5
+	FE_TET5,
+    FE_PYRA13
 };
 
 //-----------------------------------------------------------------------------
@@ -133,19 +134,29 @@ public:
 	//! Is the element of this type
 	bool IsType(int ntype) const { return (Type() == ntype); }
 
-	//! Get the face i (only solids have faces)
+	//! get the index into the element's node array (or -1 of the element does not have this node)
+	int FindNodeIndex(int nid);
+
+public: // for solid elements only
+
+	//! Get the face i
 	FEFace GetFace(int i) const;
 	void GetFace(int i, FEFace& face) const;
 	int GetLocalFaceIndices(int i, int* n) const;
 
-	//! Get the edge
-	FEEdge GetEdge(int i);
-
-	//! get the index into the element's node array (or -1 of the element does not have this node)
-	int FindNodeIndex(int nid);
-
 	// Find the face. Returns local index in face array
 	int FindFace(const FEFace& f);
+
+public: // for shell elements only
+
+	//! Get the face of a shell
+	void GetShellFace(FEFace& f) const;
+
+	//! Get the edge
+	FEEdge GetEdge(int i) const;
+
+	//! Find the edge index of a shell
+	int FindEdge(const FEEdge& edge) const;
 
 public:
 	// evaluate shape function at iso-parameteric point (r,s,t)
@@ -165,11 +176,6 @@ public:
 
 	// get iso-param coordinates of the nodes
 	void iso_coord(int n, double q[3]);
-
-public: // for shells
-
-	//! Get the face of a shell
-	void GetShellFace(FEFace& f) const;
 
 protected:
 	// help class for copy-ing element data
@@ -247,6 +253,7 @@ template <> class FEElementTraits<FE_HEX20  > { public: enum { Nodes = 20 }; enu
 template <> class FEElementTraits<FE_HEX27  > { public: enum { Nodes = 27 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX27; } };
 template <> class FEElementTraits<FE_PYRA5  > { public: enum { Nodes = 5 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PYRA5; } };
 template <> class FEElementTraits<FE_TET5   > { public: enum { Nodes = 5 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET5; } };
+template <> class FEElementTraits<FE_PYRA13 > { public: enum { Nodes = 13 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PYRA13; } };
 
 template <class T> class FEElementBase : public FEElement_
 {
@@ -299,6 +306,7 @@ typedef FEElementBase< FEElementTraits<FE_HEX20  > > FEHex20;
 typedef FEElementBase< FEElementTraits<FE_HEX27  > > FEHex27;
 typedef FEElementBase< FEElementTraits<FE_PYRA5  > > FEPyra5;
 typedef FEElementBase< FEElementTraits<FE_TET5   > > FETet5;
+typedef FEElementBase< FEElementTraits<FE_PYRA13 > > FEPyra13;
 
 //-----------------------------------------------------------------------------
 // This element class can represent any of the linear elements.

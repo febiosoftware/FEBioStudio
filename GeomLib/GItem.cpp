@@ -42,9 +42,23 @@ template <> int GItem_T<GNode  >::m_ncount = 0;
 //=============================================================================
 // GNode
 //-----------------------------------------------------------------------------
+
+GNode::GNode() : GItem_T<GNode>(0) 
+{ 
+	m_ntype = NODE_UNKNOWN; 
+	m_fenode = -1; 
+}
+
+GNode::GNode(GBaseObject* po) : GItem_T<GNode>(po) 
+{ 
+	m_ntype = NODE_UNKNOWN; 
+	m_fenode = -1; 
+}
+
 GNode::GNode(const GNode &n)
 {
 	m_r = n.m_r;
+	m_fenode = n.m_fenode;
 
 	m_state = n.m_state;
 	m_gid = n.m_gid;
@@ -59,6 +73,7 @@ GNode::GNode(const GNode &n)
 void GNode::operator =(const GNode &n)
 {
 	m_r = n.m_r;
+	m_fenode = n.m_fenode;
 
 	m_state = n.m_state;
 	m_gid = n.m_gid;
@@ -78,6 +93,26 @@ vec3d GNode::Position() const
 		return po->GetTransform().LocalToGlobal(m_r);
 	}
 	else return m_r;
+}
+
+//-----------------------------------------------------------------------------
+void GNode::MakeRequired()
+{
+	SetRequired(true);
+
+	if (m_fenode >= 0)
+	{
+		GObject* po = dynamic_cast<GObject*>(Object());
+		if (po)
+		{
+			FEMesh* pm = po->GetFEMesh(); assert(pm); 
+			if (pm)
+			{
+				FENode* pn = pm->NodePtr(m_fenode); assert(pn);
+				if (pn) pn->SetRequired(true);
+			}
+		}
+	}
 }
 
 //=============================================================================
@@ -378,8 +413,22 @@ bool GFace::HasEdge(int nid)
 //=============================================================================
 // GPart
 //-----------------------------------------------------------------------------
+GPart::GPart() : GItem_T<GPart>(0) 
+{ 
+	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
+	m_matid = -1; 
+}
+GPart::GPart(GBaseObject* po) : GItem_T<GPart>(po) 
+{ 
+	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
+	m_matid = -1;
+}
+
 GPart::GPart(const GPart& p)
 {
+	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
+	CopyParams(p);
+
 	m_matid = p.m_matid;
 
 	m_state = p.m_state;
@@ -393,10 +442,21 @@ GPart::GPart(const GPart& p)
 void GPart::operator =(const GPart &p)
 {
 	m_matid = p.m_matid;
+	CopyParams(p);
 
 	m_state = p.m_state;
 	m_gid = p.m_gid;
 	m_lid = p.m_lid;
 	SetName(p.GetName());
 //	m_po = p.m_po;
+}
+
+void GPart::setShellNormalNodal(bool b)
+{
+	SetBoolValue(0, b);
+}
+
+bool GPart::shellNormalNodal() const
+{
+	return GetBoolValue(0);
 }

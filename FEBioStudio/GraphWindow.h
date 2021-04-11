@@ -390,6 +390,11 @@ private:
 
 //=================================================================================================
 // Specialized graph for displaying data from a model's selection
+
+namespace Post {
+	class GLProbe;
+}
+
 class CModelGraphWindow : public CGraphWindow
 {
 public:
@@ -410,6 +415,7 @@ private:
 	void addSelectedFaces();
 	void addSelectedElems();
 	void addObjectData(int n);
+	void addProbeData(Post::GLProbe* probe);
 
 	CPlotData* nextData();
 

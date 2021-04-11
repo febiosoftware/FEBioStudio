@@ -852,6 +852,13 @@ void CMainWindow::on_recentFiles_triggered(QAction* action)
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::on_recentProjects_triggered(QAction* action)
+{
+	QString fileName = action->text();
+	OpenFile(fileName);
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::on_recentFEFiles_triggered(QAction* action)
 {
 	QString fileName = action->text();
@@ -1142,7 +1149,7 @@ void CMainWindow::on_actionSaveProject_triggered()
 		{
 			QMessageBox::critical(this, "ERROR", "Failed saving the project file.");
 		}
-		else ui->addToRecentFiles(fileName);
+		else ui->addToRecentProjects(fileName);
 		ui->fileViewer->Update();
 		UpdateTitle();
 	}
@@ -1221,44 +1228,51 @@ void CMainWindow::on_actionExportFEModel_triggered()
 					return;
 				}
 
-				if (dlg.m_nversion == 0)
-				{
-					// write version 3.0
-					FEBioExport3 writer(fem);
-					writer.SetPlotfileCompressionFlag(dlg.m_compress);
-					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
-					writer.SetWriteNotesFlag(dlg.m_writeNotes);
-					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					bsuccess = writer.Write(szfile);
-					if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+				try {
+					if (dlg.m_nversion == 0)
+					{
+						// write version 3.0
+						FEBioExport3 writer(fem);
+						writer.SetPlotfileCompressionFlag(dlg.m_compress);
+						writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
+						writer.SetWriteNotesFlag(dlg.m_writeNotes);
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						bsuccess = writer.Write(szfile);
+						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+					}
+					else if (dlg.m_nversion == 1)
+					{
+						// write version 2.5
+						FEBioExport25 writer(fem);
+						writer.SetPlotfileCompressionFlag(dlg.m_compress);
+						writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
+						writer.SetWriteNotesFlag(dlg.m_writeNotes);
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						bsuccess = writer.Write(szfile);
+						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+					}
+					else if (dlg.m_nversion == 2)
+					{
+						// Write version 2.0
+						FEBioExport2 writer(fem);
+						writer.SetPlotfileCompressionFlag(dlg.m_compress);
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						bsuccess = writer.Write(szfile);
+						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+					}
+					else if (dlg.m_nversion == 3)
+					{
+						// Write version 1.x
+						FEBioExport12 writer(fem);
+						for (int i = 0; i < FEBioExport12::MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						bsuccess = writer.Write(szfile);
+						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+					}
 				}
-				else if (dlg.m_nversion == 1)
+				catch (...)
 				{
-					// write version 2.5
-					FEBioExport25 writer(fem);
-					writer.SetPlotfileCompressionFlag(dlg.m_compress);
-					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
-					writer.SetWriteNotesFlag(dlg.m_writeNotes);
-					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					bsuccess = writer.Write(szfile);
-					if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
-				}
-				else if (dlg.m_nversion == 2)
-				{
-					// Write version 2.0
-					FEBioExport2 writer(fem);
-					writer.SetPlotfileCompressionFlag(dlg.m_compress);
-					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					bsuccess = writer.Write(szfile);
-					if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
-				}
-				else if (dlg.m_nversion == 3)
-				{
-					// Write version 1.x
-					FEBioExport12 writer(fem);
-					for (int i = 0; i < FEBioExport12::MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					bsuccess = writer.Write(szfile);
-					if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+					bsuccess = false;
+					errMsg = QString("An exception was deteced.\nFailed writing FEBio file.");
 				}
 			}
 		}

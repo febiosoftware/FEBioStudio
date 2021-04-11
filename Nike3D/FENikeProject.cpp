@@ -886,7 +886,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 
 			// count slave faces
 			n = 0;
-			FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+			FEItemListBuilder* pss = pi->GetPrimarySurface();
 			if (pss)
 			{
 				unique_ptr<FEFaceList> pgs(pss->BuildFaceList());
@@ -909,7 +909,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 			
 			// count master surfaces
 			n = 0;
-			FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+			FEItemListBuilder* pms = pi->GetSecondarySurface();
 			if (pms)
 			{
 				unique_ptr<FEFaceList> pgm(pms->BuildFaceList());
@@ -965,7 +965,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 
 			// count slave faces
 			n = 0;
-			FEItemListBuilder* pss = pt->GetSlaveSurfaceList();
+			FEItemListBuilder* pss = pt->GetPrimarySurface();
 			if (pss)
 			{
 				unique_ptr<FEFaceList> pgs(pss->BuildFaceList());
@@ -988,7 +988,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 
 			// count master surfaces
 			n = 0;
-			FEItemListBuilder* pms = pt->GetMasterSurfaceList();
+			FEItemListBuilder* pms = pt->GetSecondarySurface();
 			if (pms)
 			{
 				unique_ptr<FEFaceList> pgm(pms->BuildFaceList());

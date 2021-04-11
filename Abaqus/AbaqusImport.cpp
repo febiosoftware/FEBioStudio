@@ -609,9 +609,11 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 			if      (szicmp(sz, "C3D8"  )) ntype = FE_HEX8;
             else if (szicmp(sz, "C3D8H" )) ntype = FE_HEX8;
 			else if (szicmp(sz, "C3D8I" )) ntype = FE_HEX8;
+            else if (szicmp(sz, "C3D5"  )) ntype = FE_PYRA5;
 			else if (szicmp(sz, "C3D6"  )) ntype = FE_PENTA6;
 			else if (szicmp(sz, "C3D4"  )) ntype = FE_TET4;
 			else if (szicmp(sz, "C3D10" )) ntype = FE_TET10;
+            else if (szicmp(sz, "C3D13" )) ntype = FE_PYRA13;  // invented Abaqus code (no Abaqus element of this type)
 			else if (szicmp(sz, "C3D20R")) ntype = FE_HEX20;
 			else if (szicmp(sz, "C3D20" )) ntype = FE_HEX20;
 			else if (szicmp(sz, "R3D4"  )) ntype = FE_QUAD4;
@@ -669,7 +671,9 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 	case FE_HEX8  : N = 8; break;
 	case FE_PENTA6: N = 6; break;
 	case FE_TET4  : N = 4; break;
+    case FE_PYRA5 : N = 5; break;
 	case FE_TET10 : N = 10; break;
+    case FE_PYRA13: N = 13; break;
 	case FE_HEX20 : N = 20; break;
 	case FE_QUAD4 : N = 4; break;
 	case FE_TRI3  : N = 3; break;
@@ -728,6 +732,14 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 				(el.n[5] == el.n[4])) el.type = FE_PYRA5;
 		}
 
+        // check for pyramid elements
+        if (ntype == FE_HEX20)
+        {
+            if ((el.n[7] == el.n[4]) &&
+                (el.n[6] == el.n[4]) &&
+                (el.n[5] == el.n[4])) el.type = FE_PYRA13;
+        }
+        
 		// add the element to the list
 		part.AddElement(el);
 
@@ -1623,6 +1635,7 @@ bool AbaqusImport::build_physics()
 GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 {
 	FEModel& fem = *m_pfem;
+	GModel& gm = fem.GetModel();
 
 	AbaqusModel::PART& part = *pg;
 	assert(part.m_po == 0);
@@ -1893,7 +1906,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			int n0 = po->MakeGNode(pn1->n);
 			int n1 = po->MakeGNode(pn2->n);
 
-			GLinearSpring* ps = new GLinearSpring(n0, n1);
+			GLinearSpring* ps = new GLinearSpring(&gm, n0, n1);
 			char szname[256];
 			sprintf(szname, "Spring%02d", n);
 			ps->SetName(szname);

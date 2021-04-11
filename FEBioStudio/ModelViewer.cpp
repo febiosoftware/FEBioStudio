@@ -343,8 +343,8 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<FEPairedInterface*>(po))
 	{
 		FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(po);
-		FEItemListBuilder* pml = pci->GetMasterSurfaceList();
-		FEItemListBuilder* psl = pci->GetSlaveSurfaceList();
+		FEItemListBuilder* pml = pci->GetSecondarySurface();
+		FEItemListBuilder* psl = pci->GetPrimarySurface();
 
 		if (pml == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
 		else SelectItemList(pml);
@@ -776,6 +776,34 @@ void CModelViewer::OnDetachDiscreteObject()
 		Update();
 		Select(po);
 		wnd->RedrawGL();
+	}
+}
+
+void CModelViewer::OnChangeDiscreteType()
+{
+	GDiscreteSpringSet* set = dynamic_cast<GDiscreteSpringSet*>(m_currentObject); assert(set);
+	if (set == 0) return;
+
+	QStringList items; items << "Linear" << "Nonlinear" << "Hill";
+	QString item = QInputDialog::getItem(this, "Discrete Set Type", "Type:", items, 0, false);
+	if (item.isEmpty() == false)
+	{
+		FEDiscreteMaterial* mat = nullptr;
+		if (item == "Linear"   ) mat = new FELinearSpringMaterial();
+		if (item == "Nonlinear") mat = new FENonLinearSpringMaterial();
+		if (item == "Hill"     ) mat = new FEHillContractileMaterial();
+		if (mat)
+		{
+			delete set->GetMaterial();
+			set->SetMaterial(mat);
+
+			Update();
+			Select(set);
+		}
+		else
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed to assign new material.");
+		}
 	}
 }
 
@@ -1565,6 +1593,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_DISCRETE_SET:
 		menu.addAction("Select", this, SLOT(OnSelectDiscreteObject()));
 		menu.addAction("Detach", this, SLOT(OnDetachDiscreteObject()));
+		menu.addAction("Change Type ...", this, SLOT(OnChangeDiscreteType()));
 		del = true;
 		break;
 	case MT_DISCRETE:
@@ -1616,6 +1645,11 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 				menu.addAction("Move Down", this, SLOT(OnStepMoveDown()));
 			}
 			del = true;
+		}
+		break;
+	case MT_JOBLIST:
+		{
+			menu.addAction("Delete All", this, SLOT(OnDeleteAllJobs()));
 		}
 		break;
 	case MT_JOB:
@@ -1679,7 +1713,7 @@ void CModelViewer::OnSwapMasterSlave()
 	FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(m_currentObject);
 	if (pci)
 	{
-		pci->SwapMasterSlave();
+		pci->SwapPrimarySecondary();
 		UpdateObject(m_currentObject);
 	}
 }
@@ -1722,4 +1756,9 @@ void CModelViewer::OnDeleteAllRigidConnectors()
 void CModelViewer::OnDeleteAllSteps()
 {
 	GetMainWindow()->DeleteAllSteps();
+}
+
+void CModelViewer::OnDeleteAllJobs()
+{
+	GetMainWindow()->DeleteAllJobs();
 }

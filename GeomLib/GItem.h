@@ -32,8 +32,9 @@ class FEEdgeSet;
 //-----------------------------------------------------------------------------
 // State values for GItem state
 enum {
-	GEO_VISIBLE = 1, 
-	GEO_SELECTED = 2 
+	GEO_VISIBLE  = 1, 
+	GEO_SELECTED = 2,
+	GEO_REQUIRED = 4
 };
 
 //-----------------------------------------------------------------------------
@@ -105,6 +106,10 @@ public:
 	void Select  () { m_state = m_state | GEO_SELECTED; }
 	void UnSelect() { m_state = m_state & ~GEO_SELECTED; }
 
+	// set required state
+	bool IsRequired() const { return ((m_state & GEO_REQUIRED) != 0); }
+	void SetRequired(bool b) { if (b) m_state = m_state | GEO_REQUIRED;	else m_state = m_state & ~GEO_REQUIRED; }
+
 	// get/set state
 	unsigned int GetState() const { return m_state; }
 	void SetState(unsigned int state) { m_state = state; }
@@ -147,8 +152,8 @@ private:
 class GPart : public GItem_T<GPart>
 {
 public:
-	GPart() : GItem_T<GPart>(0) { m_matid = -1; }
-	GPart(GBaseObject* po) : GItem_T<GPart>(po) { m_matid = -1; }
+	GPart();
+	GPart(GBaseObject* po);
 
 	GPart(const GPart& p);
 	void operator = (const GPart& p);
@@ -156,6 +161,9 @@ public:
 public:
 	int GetMaterialID() const { return m_matid; }
 	void SetMaterialID(int mid) { m_matid = mid; }
+
+	void setShellNormalNodal(bool b);
+	bool shellNormalNodal() const;
 
 protected:
 	int		m_matid;
@@ -200,7 +208,7 @@ class GEdge : public GItem_T<GEdge>
 {
 public:
 	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; }
-	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = 0; m_ntype = EDGE_UNKNOWN; }
+	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; }
 
 	GEdge(const GEdge& e);
 	void operator = (const GEdge& e);
@@ -236,8 +244,8 @@ public:
 class GNode : public GItem_T<GNode>
 {
 public:
-	GNode() : GItem_T<GNode>(0) { m_ntype = NODE_UNKNOWN; }
-	GNode(GBaseObject* po) : GItem_T<GNode>(po) { m_ntype = NODE_UNKNOWN; }
+	GNode();
+	GNode(GBaseObject* po);
 
 	GNode(const GNode& n);
 	void operator = (const GNode& n);
@@ -255,7 +263,13 @@ public:
 	// get the global position of the node
 	vec3d Position() const;
 
+	int GetFENodeIndex() const { return m_fenode; }
+	void SetFENodeIndex(int n) { m_fenode = n; }
+
+	void MakeRequired();
+
 private:
 	vec3d		m_r;		// node position (in local coordinates)
+	int			m_fenode;	// node index of FE Node
 	int			m_ntype;	// node type
 };

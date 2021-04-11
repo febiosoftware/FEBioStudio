@@ -125,6 +125,7 @@ public slots:
 	void OnDeleteAllDiscete();
 	void OnSelectDiscreteObject();
 	void OnDetachDiscreteObject();
+	void OnChangeDiscreteType();
 	void OnHidePart();
 	void OnSelectPartElements();
 	void OnShowPart();
@@ -166,6 +167,7 @@ public slots:
 	void OnDeleteAllRigidConstraints();
 	void OnDeleteAllRigidConnectors();
 	void OnDeleteAllSteps();
+	void OnDeleteAllJobs();
 
 signals:
 	void currentObjectChanged(FSObject* po);

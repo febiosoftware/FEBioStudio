@@ -444,7 +444,7 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 
 			if (pi && pi->IsActive())
 			{
-				FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pi->GetSecondarySurface();
 				if (pms == 0) throw InvalidItemListBuilder(pi);
 
 				string name = pms->GetName();				
@@ -456,7 +456,7 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 				}
 				AddSurface(szname,	pms);
 
-				FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pi->GetPrimarySurface();
 				if (pss == 0) throw InvalidItemListBuilder(pi);
 				
 				name = pss->GetName();
@@ -2474,10 +2474,10 @@ void FEBioExport25::WriteGeometrySurfacePairs()
 
 			if (pi && pi->IsActive())
 			{
-				FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pi->GetSecondarySurface();
 				if (pms == 0) throw InvalidItemListBuilder(pi);
 
-				FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pi->GetPrimarySurface();
 				if (pss == 0) throw InvalidItemListBuilder(pi);
 
 				XMLElement el("SurfacePair");
@@ -2631,6 +2631,7 @@ const char* ElementTypeString(int ntype)
     case FE_QUAD9 :	sztype = "quad9" ; break;
 	case FE_PYRA5 :	sztype = "pyra5"; break;
 	case FE_PENTA15: sztype = "penta15"; break;
+    case FE_PYRA13: sztype = "pyra13"; break;
 	default:
 		assert(false);
 	}

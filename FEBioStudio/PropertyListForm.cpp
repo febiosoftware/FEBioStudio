@@ -267,7 +267,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 */
 			QLineEdit* edit = new QLineEdit;
 			edit->setValidator(new QDoubleValidator);
-			edit->setText(QString::number(v.toDouble(), 'g', 3));
+			edit->setText(QString::number(v.toDouble()));
 			connect(edit, SIGNAL(textChanged(const QString&)), this, SLOT(onDataChanged()));
 			return edit;
 		}

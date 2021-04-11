@@ -189,7 +189,7 @@ void CCreateSpringPane::on_newSet_clicked()
 		}
 
 		// create discrete element set and assign material
-		GDiscreteSpringSet* po = new GDiscreteSpringSet();
+		GDiscreteSpringSet* po = new GDiscreteSpringSet(&geom);
 		po->SetMaterial(dmat);
 
 		// create a name

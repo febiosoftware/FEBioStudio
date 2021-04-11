@@ -79,16 +79,22 @@ void CMainWindow::on_actionAbout_triggered()
 	version = QString("Dev Version %1.%2.%3.%4").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).arg(DEVCOMMIT);
 #endif
 
+	std::string oglVersion = GetGLView()->GetOGLVersionString();
+
+
 	QString txt = QString(\
 		"<h1>FEBio Studio</h1>\
 		<p><b>%1</b></p>\
 		<p>Weiss Lab, University of Utah</p>\
 		<p>Ateshian Lab, Columbia University</p>\
-		<p>Copyright (c) 2019 - 2020, All rights reserved</p>\
+		<p>Copyright (c) 2019 - 2021, All rights reserved</p>\
 		<hr>\
 		<p>When using FEBio or FEBioStudio in your publications, please cite:</p>\
-		<p><b>Maas SA, Ellis BJ, Ateshian GA, Weiss JA: FEBio: Finite Elements for Biomechanics. Journal of Biomechanical Engineering, 134(1):011005, 2012</b></p>"\
-	).arg(version);
+		<p><b>Maas SA, Ellis BJ, Ateshian GA, Weiss JA: FEBio: Finite Elements for Biomechanics. Journal of Biomechanical Engineering, 134(1):011005, 2012</b></p>\
+		<hr>\
+		<p><b>Information:<b/></p>\
+		<p>OPENGL Version: %2</p>"\
+	).arg(version).arg(QString::fromStdString(oglVersion));
 
 	QMessageBox about(this);
 	about.setWindowTitle("About FEBio Studio");

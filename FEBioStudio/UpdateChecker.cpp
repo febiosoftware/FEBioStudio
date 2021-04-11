@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QCheckBox>
 #include "UpdateChecker.h"
+#include "version.h"
 
 #include <iostream>
 
@@ -98,6 +99,7 @@ void CUpdateWidget::checkForUpdate(bool dev)
 	QNetworkRequest request;
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+	request.setRawHeader(QByteArray("version"), QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).toUtf8());
 
 	if(NetworkAccessibleCheck())
 	{

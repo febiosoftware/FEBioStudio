@@ -99,6 +99,7 @@ bool FEAbaqusExport::Write(const char* szfile)
 				case FE_TET10: sztype = "C3D10"; break;
 				case FE_HEX20: sztype = "C3D20"; break;
 				case FE_PENTA6: sztype = "C3D6"; break;
+                case FE_PYRA5: sztype = "C3D5"; break;
 				default:
 					assert(false);
 				}

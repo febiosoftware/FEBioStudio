@@ -128,3 +128,46 @@ void CSurfaceMeshInfoPanel::setInfo(const FESurfaceMesh* pm)
 		setInfo(0, 0, 0);
 	}
 }
+
+CPartInfoPanel::CPartInfoPanel(QWidget* parent) : QWidget(parent)
+{
+	m_solid = new QLabel;
+	m_shell = new QLabel;
+
+	QFormLayout* form = new QFormLayout;
+	form->addRow("Solid elements:", m_solid);
+	form->addRow("Shell elements:", m_shell);
+
+	setLayout(form);
+
+	setInfo(0);
+}
+
+void CPartInfoPanel::setInfo(GPart* pg)
+{
+	if (pg == nullptr) { setPartInfo(0, 0); return; }
+	GObject* po = dynamic_cast<GObject*>(pg->Object());
+	if (po == nullptr) { setPartInfo(0, 0); return; }
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) { setPartInfo(0, 0); return; }
+
+	int nsolid = 0;
+	int nshell = 0;
+	int pid = pg->GetLocalID();
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		if (el.m_gid == pid)
+		{
+			if (el.IsSolid()) nsolid++;
+			else if (el.IsShell()) nshell++;
+		}
+	}
+	setPartInfo(nsolid, nshell);
+}
+
+void CPartInfoPanel::setPartInfo(int solid, int shell)
+{
+	m_solid->setText(QString::number(solid));
+	m_shell->setText(QString::number(shell));
+}

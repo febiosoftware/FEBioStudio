@@ -148,12 +148,31 @@ FEEdgeList::FEEdgeList(const FEMesh& mesh, bool surfOnly)
 	}
 }
 
+FEEdgeList::FEEdgeList()
+{
+
+}
+
 FEEdgeList::FEEdgeList(const FESurfaceMesh& mesh)
 {
 	ET.clear();
 
 	// add all the edges
 	for (int i = 0; i<mesh.Edges(); ++i)
+	{
+		const FEEdge& e = mesh.Edge(i);
+		pair<int, int> edge;
+		edge.first = e.n[0];
+		edge.second = e.n[1];
+		ET.push_back(edge);
+	}
+}
+
+void FEEdgeList::BuildFromMeshEdges(FELineMesh& mesh)
+{
+	ET.clear();
+	// add all the edges
+	for (int i = 0; i < mesh.Edges(); ++i)
 	{
 		const FEEdge& e = mesh.Edge(i);
 		pair<int, int> edge;
@@ -236,16 +255,17 @@ FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 {
 	const int ETET[6][2] = { { 0, 1 }, { 1, 2 }, { 2, 0 }, { 0, 3 }, { 1, 3 }, { 2, 3 } };
 	const int EHEX[12][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7} };
+	const int ETRI[3][2] = { {0,1}, {1,2}, {2,0} };
+	const int EQUAD[4][2] = { {0,1}, {1,2}, {2,3}, {3, 0} };
 
+	// build a node-edge list
 	int NN = mesh.Nodes();
-	vector<pair<int, int> > NI;
-	NI.resize(NN);
-	for (int i = 0; i<NN; ++i) NI[i].second = 0;
+	vector<vector<int> > NI(NN);
 	for (int i = ET.size() - 1; i >= 0; --i)
 	{
 		const pair<int, int>& et = ET[i];
-		NI[et.first].first = i;
-		NI[et.first].second++;
+		NI[et.first].push_back(i);
+		NI[et.second].push_back(i);
 	}
 
 	int NE = mesh.Elements();
@@ -254,49 +274,37 @@ FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 	{
 		const FEElement& el = mesh.Element(i);
 		vector<int>& EETi = EET[i];
-		if ((el.Type() == FE_TET4)|| (el.Type() == FE_TET5))
+
+		int nedges = 0;
+		const int(*lut)[2] = nullptr;
+		switch (el.Type())
 		{
-			EETi.resize(6);
-			for (int j = 0; j<6; ++j)
-			{
-				int n0 = el.m_node[ETET[j][0]];
-				int n1 = el.m_node[ETET[j][1]];
-
-				if (n1 < n0) { int nt = n1; n1 = n0; n0 = nt; }
-
-				int l0 = NI[n0].first;
-				int ln = NI[n0].second;
-				for (int l = 0; l<ln; ++l)
-				{
-					assert(ET[l0 + l].first == n0);
-					if (ET[l0 + l].second == n1)
-					{
-						EETi[j] = l0 + l;
-						break;
-					}
-				}
-			}
+		case FE_TET4 :
+		case FE_TET5 : nedges =  6; lut = ETET; break;
+		case FE_HEX8 : nedges = 12; lut = EHEX; break;
+		case FE_TRI3 : nedges =  3; lut = ETRI; break;
+		case FE_QUAD4: nedges =  4; lut = EQUAD; break;
+		default:
+			assert(false);
 		}
-		else if (el.Type() == FE_HEX8)
+		EETi.assign(nedges, -1);
+		for (int j = 0; j<nedges; ++j)
 		{
-			EETi.resize(12);
-			for (int j = 0; j<12; ++j)
+			int n0 = el.m_node[lut[j][0]];
+			int n1 = el.m_node[lut[j][1]];
+
+			if (n1 < n0) { int nt = n1; n1 = n0; n0 = nt; }
+			int nval = NI[n0].size();
+			for (int k = 0; k < nval; ++k)
 			{
-				int n0 = el.m_node[EHEX[j][0]];
-				int n1 = el.m_node[EHEX[j][1]];
+				int nk = NI[n0][k];
+				const std::pair<int, int>& ek = ET[nk];
 
-				if (n1 < n0) { int nt = n1; n1 = n0; n0 = nt; }
-
-				int l0 = NI[n0].first;
-				int ln = NI[n0].second;
-				for (int l = 0; l<ln; ++l)
+				if (((n0 == ek.first) && (n1 == ek.second)) ||
+					((n0 == ek.second) && (n1 == ek.first)))
 				{
-					assert(ET[l0 + l].first == n0);
-					if (ET[l0 + l].second == n1)
-					{
-						EETi[j] = l0 + l;
-						break;
-					}
+					EETi[j] = nk;
+					break;
 				}
 			}
 		}

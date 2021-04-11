@@ -150,6 +150,9 @@ public:
 	// get the current theme
 	int currentTheme() const;
 
+	// check for dark theme
+	bool usingDarkTheme() const;
+
 	// set the current theme
 	void setCurrentTheme(int n);
 
@@ -326,6 +329,7 @@ public slots:
 	void on_actionConvertGeo_triggered();
 	void on_actionExit_triggered();
 	void on_recentFiles_triggered(QAction* action);
+	void on_recentProjects_triggered(QAction* action);
 	void on_recentFEFiles_triggered(QAction* action);
 	void on_recentGeomFiles_triggered(QAction* action);
 
@@ -357,6 +361,7 @@ public slots:
 	void on_actionSelectOverlap_triggered();
 	void on_actionGrowSelection_triggered();
 	void on_actionShrinkSelection_triggered();
+	void on_actionSelectIsolatedVertices_triggered();
 
 	void on_actionFindTxt_triggered();
 	void on_actionFindAgain_triggered();
@@ -405,6 +410,7 @@ public slots:
 	void on_actionImageSlicer_triggered();
 	void on_actionVolumeRender_triggered();
 	void on_actionMarchingCubes_triggered();
+	void on_actionAddProbe_triggered();
 	void on_actionGraph_triggered();
 	void on_actionSummary_triggered();
 	void on_actionStats_triggered();
@@ -559,6 +565,7 @@ public slots:
 	void DeleteAllRigidConstraints();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
+	void DeleteAllJobs();
 
 	CGLView* GetGLView();
 
@@ -587,6 +594,7 @@ public slots:
 
 public:
 	QStringList GetRecentFileList();
+	QStringList GetRecentProjectsList();
 
 	QString ProjectFolder();
 	QString ProjectName();

@@ -128,13 +128,11 @@ XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 	m_countCache.first = -1;
 	m_countCache.second = -1;
 
-	int theme = wnd->currentTheme();
-
 	QPalette p = palette();
-	p.setColor(QPalette::Text, (theme==0 ? Qt::darkBlue : QColor::fromRgb(51, 153, 255)));
+	p.setColor(QPalette::Text, (!wnd->usingDarkTheme() ? Qt::darkBlue : QColor::fromRgb(51, 153, 255)));
 	setPalette(p);
 
-	if (theme == 0)
+	if (!wnd->usingDarkTheme())
 	{
 		XMLHighlighter::setColor(Qt::black, XMLHighlighter::XML_VALUE);
 		XMLHighlighter::setColor(Qt::red, XMLHighlighter::XML_ATTRIBUTE_NAME);

@@ -473,30 +473,81 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 					fd.value(i, 1) = elemData.value(eid, fn[1]);
 					fd.value(i, 2) = elemData.value(eid, fn[2]);
 					d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
-				}
-				break;
+            }
+            break;
+            case FE_PYRA5:
+            {
+                const int* fn = FTPYRA5[lid];
+                switch (f.m_type) {
+                    case FE_FACE_TRI3:
+                        fd.value(i, 0) = elemData.value(eid, fn[0]);
+                        fd.value(i, 1) = elemData.value(eid, fn[1]);
+                        fd.value(i, 2) = elemData.value(eid, fn[2]);
+                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
+                        break;
+                    case FE_FACE_QUAD4:
+                        fd.value(i, 0) = elemData.value(eid, fn[0]);
+                        fd.value(i, 1) = elemData.value(eid, fn[1]);
+                        fd.value(i, 2) = elemData.value(eid, fn[2]);
+                        fd.value(i, 3) = elemData.value(eid, fn[3]);
+                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3)) * 0.25f;
+                        break;
+                    default:
+                    break;
+                }
+            }
+            break;
 			case FE_PENTA6:
-				{
-					const int* fn = FTPENTA[lid];
-                    switch (f.m_type) {
-                        case FE_FACE_TRI3:
-                            fd.value(i, 0) = elemData.value(eid, fn[0]);
-                            fd.value(i, 1) = elemData.value(eid, fn[1]);
-                            fd.value(i, 2) = elemData.value(eid, fn[2]);
-                            d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
-                            break;
-                        case FE_FACE_QUAD4:
-                            fd.value(i, 0) = elemData.value(eid, fn[0]);
-                            fd.value(i, 1) = elemData.value(eid, fn[1]);
-                            fd.value(i, 2) = elemData.value(eid, fn[2]);
-                            fd.value(i, 3) = elemData.value(eid, fn[3]);
-                            d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3)) * 0.25f;
-                            break;
-                        default:
-                            break;
-                    }
-				}
-				break;
+            {
+                const int* fn = FTPENTA[lid];
+                switch (f.m_type) {
+                    case FE_FACE_TRI3:
+                        fd.value(i, 0) = elemData.value(eid, fn[0]);
+                        fd.value(i, 1) = elemData.value(eid, fn[1]);
+                        fd.value(i, 2) = elemData.value(eid, fn[2]);
+                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
+                        break;
+                    case FE_FACE_QUAD4:
+                        fd.value(i, 0) = elemData.value(eid, fn[0]);
+                        fd.value(i, 1) = elemData.value(eid, fn[1]);
+                        fd.value(i, 2) = elemData.value(eid, fn[2]);
+                        fd.value(i, 3) = elemData.value(eid, fn[3]);
+                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3)) * 0.25f;
+                        break;
+                    default:
+                    break;
+                }
+            }
+            break;
+            case FE_PYRA13:
+            {
+                const int* fn = FTPYRA13[lid];
+                switch (f.m_type) {
+                    case FE_FACE_TRI6:
+                        fd.value(i, 0) = elemData.value(eid, fn[0]);
+                        fd.value(i, 1) = elemData.value(eid, fn[1]);
+                        fd.value(i, 2) = elemData.value(eid, fn[2]);
+                        fd.value(i, 3) = elemData.value(eid, fn[3]);
+                        fd.value(i, 4) = elemData.value(eid, fn[4]);
+                        fd.value(i, 5) = elemData.value(eid, fn[5]);
+                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5)) / 6.f;
+                        break;
+                    case FE_FACE_QUAD8:
+                        fd.value(i, 0) = elemData.value(eid, fn[0]);
+                        fd.value(i, 1) = elemData.value(eid, fn[1]);
+                        fd.value(i, 2) = elemData.value(eid, fn[2]);
+                        fd.value(i, 3) = elemData.value(eid, fn[3]);
+                        fd.value(i, 4) = elemData.value(eid, fn[4]);
+                        fd.value(i, 5) = elemData.value(eid, fn[5]);
+                        fd.value(i, 6) = elemData.value(eid, fn[6]);
+                        fd.value(i, 7) = elemData.value(eid, fn[7]);
+                        d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5) + fd.value(i, 6) + fd.value(i, 7)) * 0.125f;
+                        break;
+                    default:
+                    break;
+                }
+            }
+            break;
             case FE_PENTA15:
                 {
                     const int* fn = FTPENTA[lid];
@@ -1380,6 +1431,57 @@ bool FEPostModel::EvaluateFace(int n, int ntime, int nfield, float* data, float&
                 }
             }
             break;
+            case FE_PYRA5:
+            {
+                const int* fn = FTPYRA5[lid];
+                switch (f.m_type) {
+                    case FE_FACE_TRI3:
+                        data[0] = edata[fn[0]];
+                        data[1] = edata[fn[1]];
+                        data[2] = edata[fn[2]];
+                        val = (data[0] + data[1] + data[2]) / 3.f;
+                        break;
+                    case FE_FACE_QUAD4:
+                        data[0] = edata[fn[0]];
+                        data[1] = edata[fn[1]];
+                        data[2] = edata[fn[2]];
+                        data[3] = edata[fn[3]];
+                        val = 0.25f*(data[0] + data[1] + data[2] + data[3]);
+                        break;
+                    default:
+                        break;
+                }
+            }
+                break;
+            case FE_PYRA13:
+            {
+                const int* fn = FTPYRA13[lid];
+                switch (f.m_type) {
+                    case FE_FACE_TRI6:
+                        data[0] = edata[fn[0]];
+                        data[1] = edata[fn[1]];
+                        data[2] = edata[fn[2]];
+                        data[3] = edata[fn[3]];
+                        data[4] = edata[fn[4]];
+                        data[5] = edata[fn[5]];
+                        val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5]) / 6.f;
+                        break;
+                    case FE_FACE_QUAD8:
+                        data[0] = edata[fn[0]];
+                        data[1] = edata[fn[1]];
+                        data[2] = edata[fn[2]];
+                        data[3] = edata[fn[3]];
+                        data[4] = edata[fn[4]];
+                        data[5] = edata[fn[5]];
+                        data[6] = edata[fn[6]];
+                        data[7] = edata[fn[7]];
+                        val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7]) / 8.f;
+                        break;
+                    default:
+                        break;
+                }
+            }
+                break;
             case FE_HEX8:
             {
                 const int* fn = FTHEX8[lid];

@@ -93,6 +93,8 @@ public: // interface for accessing mesh items
 public:
 	void TagAllFaces(int ntag);
 
+	int CountSelectedNodes() const;
+	int CountSelectedEdges() const;
 	int CountSelectedFaces() const;
 
 	// see if the nodes form an edge

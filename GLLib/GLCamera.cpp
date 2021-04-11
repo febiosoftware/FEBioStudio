@@ -163,13 +163,27 @@ void CGLCamera::Transform()
 //-----------------------------------------------------------------------------
 void CGLCamera::Pan(const quatd& q)
 {
+	vec3d p = GetPosition();
+	quatd Q = m_rot.Target();
 
+	Q.RotateVector(p);
+	p += Target();
+
+	q.RotateVector(p);
+
+	p -= Target();
+
+	Q = q * Q;
+	Q.Inverse().RotateVector(p);
+
+	SetTarget(p);
+	SetOrientation(Q);
 }
 
 //-----------------------------------------------------------------------------
 void CGLCamera::Dolly(double f)
 {
-	vec3d dr(0, 0, -GetFinalTargetDistance()*f);
+	vec3d dr(0, 0, -f);
 	m_rot.Target().Inverse().RotateVector(dr);
 	SetTarget(FinalPosition() + dr);
 }
@@ -233,13 +247,10 @@ void CGLCamera::GetTransform(GLCameraTransform& t)
 //-----------------------------------------------------------------------------
 vec3d CGLCamera::WorldToCam(vec3d r) const
 {
-	r += Target();
-
-	quatd q = m_rot.Value().Inverse();
-
+	r -= Target();
+	quatd q = m_rot.Value();
 	q.RotateVector(r);
-
-	r += GetPosition();
+	r -= GetPosition();
 
 	return r;
 }

@@ -50,6 +50,7 @@ const char* elementTypeStr(int ntype)
 	case FE_TET20   : szeltype = "tet20"; break;
 	case FE_TRI6    : szeltype = "tri6"; break;
 	case FE_PYRA5   : szeltype = "pyra5"; break;
+    case FE_PYRA13  : szeltype = "pyra13"; break;
 	default:
 		assert(false);
 	}

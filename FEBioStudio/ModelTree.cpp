@@ -197,10 +197,10 @@ public:
 	bool IsValid()
 	{
 		if (m_pci == 0) return false;
-		FEItemListBuilder* master = m_pci->GetMasterSurfaceList();
-		FEItemListBuilder* slave  = m_pci->GetSlaveSurfaceList();
-		if ((master == 0) || (master->size() == 0)) return false;
-		if ((slave  == 0) || (slave ->size() == 0)) return false;
+		FEItemListBuilder* surf1 = m_pci->GetPrimarySurface();
+		FEItemListBuilder* surf2 = m_pci->GetSecondarySurface();
+		if ((surf1 == 0) || (surf1->size() == 0)) return false;
+		if ((surf2 == 0) || (surf2->size() == 0)) return false;
 		return true;
 	}
 
@@ -240,6 +240,37 @@ public:
 
 private:
 	FERigidInterface*	m_ri;
+};
+
+class CJobValidator : public CObjectValidator
+{
+public:
+	CJobValidator(CFEBioJob* job) : m_job(job) {}
+
+	QString GetErrorString() const
+	{
+		std::string febFile = m_job->GetFEBFileName();
+		if (febFile.empty()) return "";
+
+		QFileInfo fi(QString::fromStdString(febFile));
+		if (fi.exists() == false)
+		{
+			return QString("feb file does not exist.");
+		}
+		else return "";
+	}
+
+	bool IsValid()
+	{
+		std::string febFile = m_job->GetFEBFileName();
+		if (febFile.empty()) return true;
+		
+		QFileInfo fi(QString::fromStdString(febFile));
+		return fi.exists();
+	}
+
+private:
+	CFEBioJob*	m_job;
 };
 
 class CFEBioJobProps : public CPropertyList
@@ -1006,7 +1037,7 @@ void CModelTree::Build(CModelDocument* doc)
 			t1->setExpanded(true);
 			t1->setData(0, Qt::UserRole, (int)m_data.size());
 
-			CModelTreeItem it = { 0, 0 };
+			CModelTreeItem it = { 0, 0, 0, 0, MT_JOBLIST };
 			m_data.push_back(it);
 
 			UpdateJobs(t1, doc);
@@ -1039,7 +1070,7 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CModelDocument* doc)
 	for (int i=0; i<doc->FEBioJobs(); ++i)
 	{
 		CFEBioJob* job = doc->GetFEBioJob(i);
-		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(job->GetName()), MT_JOB, 0, job, new CFEBioJobProps(m_view->GetMainWindow(), m_view, job), 0, SHOW_PROPERTY_FORM);
+		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(job->GetName()), MT_JOB, 0, job, new CFEBioJobProps(m_view->GetMainWindow(), m_view, job), new CJobValidator(job), SHOW_PROPERTY_FORM);
 /*
 		CPostDoc* doc = job->GetPostDoc();
 		if (doc)
@@ -1178,7 +1209,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		for (int j = 0; j<po->Parts(); ++j)
 		{
 			GPart* pg = po->Part(j);
-			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_PART, 0, pg);
+			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_PART, 0, pg, new FEObjectProps(pg), 0, 1);
 
 			if (pg->IsVisible() == false)
 			{

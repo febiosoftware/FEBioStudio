@@ -744,7 +744,7 @@ void FENIKEImport::build_discrete(FENikeProject& nike)
 				n2 = po->MakeGNode(n2);
 
 				// make a discrete spring
-				GLinearSpring* ps = new GLinearSpring(n1, n2);
+				GLinearSpring* ps = new GLinearSpring(&model, n1, n2);
 
 				sprintf(szname, "Spring%02d", i+1);
 				ps->SetName(szname);
@@ -793,8 +793,8 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 				FETiedInterface* pi = new FETiedInterface(ps);
 				sprintf(szname, "TiedInterface%02d", i+1);
 				pi->SetName(szname);
-				pi->SetMaster(pms);
-				pi->SetSlave(pss);
+				pi->SetSecondarySurface(pms);
+				pi->SetPrimarySurface(pss);
 				ps->GetStep(0)->AddComponent(pi);
 
 				pi->SetFloatValue(FETiedInterface::ALTOL, si.toln);
@@ -808,8 +808,8 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 				sprintf(szname, "SlidingInterface%02d", i+1);
 				pi->SetName(szname);
 				ps->GetStep(0)->AddComponent(pi);
-				pi->SetMaster(pms);
-				pi->SetSlave(pss);
+				pi->SetSecondarySurface(pms);
+				pi->SetPrimarySurface(pss);
 
 				bool twopass = (si.itype == -3);
 				bool auto_pen = (si.pen >= 0);

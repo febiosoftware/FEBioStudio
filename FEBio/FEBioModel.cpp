@@ -468,22 +468,68 @@ FENodeSet* FEBioModel::PartInstance::BuildFENodeSet(const FEBioModel::NodeSet& n
 	return pns;
 }
 
+bool check_winding(const vector<int>& nodeList, const FEFace& face)
+{
+	int nf = face.Nodes();
+	if (nodeList.size() != nf) return false;
+
+	int n0 = nodeList[0];
+	for (int j = 0; j < nf; ++j)
+	{
+		if (n0 == face.n[j])
+		{
+			for (int i = 1; i < nf; ++i)
+			{
+				int ni = (j + i) % nf;
+				if (nodeList[i] != face.n[ni]) return false;
+			}
+
+			return true;
+		}
+	}
+	return false;
+}
+
 FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
 {
 	Surface* surface = m_part->FindSurface(szname);
 	if (surface == 0) return 0;
 
+	bool issuesFound = false;
+
 	// create face list
 	vector<int> faceList;
 	int NF = surface->faces();
-	for (int i = 0; i<NF; ++i)
+	for (int i = 0; i < NF; ++i)
 	{
 		const vector<int>& face = surface->face(i);
 		int faceID = m_part->m_mesh.FindFace(face);
-		if (faceID >= 0) faceList.push_back(faceID);
+		if (faceID >= 0)
+		{
+			// check winding
+			bool winding = check_winding(face, m_part->m_mesh->Face(faceID));
+			if (winding == false)
+			{
+				stringstream ss;
+				if (issuesFound == false) ss << "Building surface \"" << szname << "\":\n";
+				ss << "facet has incorrect winding: ";
+				for (int j = 0; j < face.size(); ++j)
+				{
+					ss << face[j] + 1;
+					if (j != face.size() - 1) ss << ",";
+				}
+				string s = ss.str();
+				AddLogEntry(s.c_str());
+				issuesFound = true;
+			}
+
+			// add it to the list
+			faceList.push_back(faceID);
+		}
 		else
 		{
 			stringstream ss;
+			if (issuesFound == false) ss << "Building surface \"" << szname << "\":\n";
 			ss << "Cannot find facet: ";
 			for (int j = 0; j < face.size(); ++j)
 			{
@@ -492,6 +538,7 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
 			}
 			string s = ss.str();
 			AddLogEntry(s.c_str());
+			issuesFound = true;
 		}
 	}
 
@@ -536,12 +583,14 @@ FEPart* FEBioModel::PartInstance::BuildFEPart(const char* szname)
 //=============================================================================
 FEBioModel::Domain::Domain(Part* part) : m_part(part)
 {
+	m_bshellNodalNormals = true;
 }
 
 FEBioModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_part(part)
 {
 	m_name = name;
 	m_matID = matID;
+	m_bshellNodalNormals = true;
 }
 
 FEBioModel::Domain::Domain(const Domain& part)
@@ -549,6 +598,7 @@ FEBioModel::Domain::Domain(const Domain& part)
 	m_part = part.m_part;
 	m_name = part.m_name;
 	m_matID = part.m_matID;
+	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_elem = part.m_elem;
 }
 
@@ -556,6 +606,7 @@ void FEBioModel::Domain::operator = (const Domain& part)
 {
 	m_part = part.m_part;
 	m_name = part.m_name;
+	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_matID = part.m_matID;
 	m_elem = part.m_elem;
 }
@@ -688,6 +739,7 @@ FEBioModel::LogVariable::LogVariable(int ntype, const std::string& data)
 //=============================================================================
 FEBioModel::FEBioModel(FEModel& fem) : m_fem(fem)
 {
+	m_shellNodalNormals = true;
 }
 
 FEBioModel::~FEBioModel()
@@ -781,6 +833,8 @@ void FEBioModel::UpdateGeometry()
 
 			std::string name = elSet.name();
 			gpart.SetName(name.c_str());
+
+			gpart.setShellNormalNodal(elSet.m_bshellNodalNormals);
 		}
 	}
 }
