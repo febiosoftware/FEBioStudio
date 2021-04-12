@@ -777,6 +777,11 @@ bool FEFillHole::DivideRing2(EdgeRing& ring, vector<FACE>& tri_list)
 		}
 	}
 
+	if (tri_list.empty())
+	{
+		DivideRing1(ring, tri_list);
+	}
+
 	return (tri_list.empty() == false);
 }
 

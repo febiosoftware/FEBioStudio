@@ -353,7 +353,7 @@ void GSurfaceMeshObject::UpdateEdges()
 						{
 							ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
 						}
-						else assert(false);
+//						else assert(false);
 						
 					}
 					else if (ge.m_node[1] == -1)
@@ -363,7 +363,7 @@ void GSurfaceMeshObject::UpdateEdges()
 						{
 							ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
 						}
-						else assert(false);						
+//						else assert(false);						
 					}
 				}
 			}
