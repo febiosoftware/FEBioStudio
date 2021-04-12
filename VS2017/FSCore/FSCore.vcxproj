@@ -148,6 +148,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\FSCore\box.cpp" />
+    <ClCompile Include="..\..\FSCore\BSpline.cpp" />
     <ClCompile Include="..\..\FSCore\CallTracer.cpp" />
     <ClCompile Include="..\..\FSCore\FSDir.cpp" />
     <ClCompile Include="..\..\FSCore\FSObject.cpp" />
@@ -161,6 +162,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\FSCore\Archive.h" />
     <ClInclude Include="..\..\FSCore\box.h" />
+    <ClInclude Include="..\..\FSCore\BSpline.h" />
     <ClInclude Include="..\..\FSCore\CallTracer.h" />
     <ClInclude Include="..\..\FSCore\color.h" />
     <ClInclude Include="..\..\FSCore\FSDir.h" />

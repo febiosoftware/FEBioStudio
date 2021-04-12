@@ -51,6 +51,9 @@
     <ClCompile Include="..\..\FSCore\FSThreadedTask.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FSCore\BSpline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FSCore\FSObject.h">
@@ -96,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FSCore\FSThreadedTask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FSCore\BSpline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
