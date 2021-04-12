@@ -1902,6 +1902,9 @@ FEMaterial* FEBioFormat::Parse1DFunction(FEMaterial* pm, XMLTag& tag)
 			if (stricmp(szval, "smooth") == 0) plc->SetType(FELoadCurve::LC_SMOOTH);
 			if (stricmp(szval, "linear") == 0) plc->SetType(FELoadCurve::LC_LINEAR);
 			if (stricmp(szval, "step"  ) == 0) plc->SetType(FELoadCurve::LC_STEP);
+            if (stricmp(szval, "cubic spline" ) == 0) plc->SetType(FELoadCurve::LC_CSPLINE);
+            if (stricmp(szval, "control point") == 0) plc->SetType(FELoadCurve::LC_CPOINTS);
+            if (stricmp(szval, "approximation") == 0) plc->SetType(FELoadCurve::LC_APPROX);
 		}
 		else if (tag == "extend")
 		{
@@ -1926,6 +1929,7 @@ FEMaterial* FEBioFormat::Parse1DFunction(FEMaterial* pm, XMLTag& tag)
 		++tag;
 	}
 	while (!tag.isend());
+    plc->Update();
 	return pm;
 }
 
@@ -1967,6 +1971,9 @@ bool FEBioFormat::ParseLoadDataSection(XMLTag& tag)
 				if (*pat == "step") lc.SetType(FELoadCurve::LC_STEP);
 				else if (*pat == "linear") lc.SetType(FELoadCurve::LC_LINEAR);
 				else if (*pat == "smooth") lc.SetType(FELoadCurve::LC_SMOOTH);
+                else if (*pat == "cubic spline") lc.SetType(FELoadCurve::LC_CSPLINE);
+                else if (*pat == "control points") lc.SetType(FELoadCurve::LC_CPOINTS);
+                else if (*pat == "approximation") lc.SetType(FELoadCurve::LC_APPROX);
 				else FileReader()->AddLogEntry("unknown type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 			}
 			else lc.SetType(FELoadCurve::LC_LINEAR);

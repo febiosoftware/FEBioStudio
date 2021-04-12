@@ -4556,6 +4556,9 @@ void FEBioExport3::WriteLoadDataSection()
 			case FELoadCurve::LC_STEP  : m_xml.add_leaf("interpolate", "STEP"); break;
 			case FELoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "LINEAR"); break;
 			case FELoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "SMOOTH"); break;
+            case FELoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "CUBIC SPLINE"); break;
+            case FELoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "CONTROL POINTS"); break;
+            case FELoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "APPROXIMATION"); break;
 			}
 
 			switch (plc->GetExtend())

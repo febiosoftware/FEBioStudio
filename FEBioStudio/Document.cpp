@@ -244,11 +244,7 @@ bool CDocument::IsModified()
 //-----------------------------------------------------------------------------
 void CDocument::SetModifiedFlag(bool bset)
 {
-	if (bset != m_bModified)
-	{
-		m_bModified = bset;
-		if (m_wnd) m_wnd->UpdateTab(this);
-	}
+	m_bModified = bset;
 }
 
 //-----------------------------------------------------------------------------

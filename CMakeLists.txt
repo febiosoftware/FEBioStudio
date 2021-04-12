@@ -75,23 +75,20 @@ include(FindDependencies.cmake)
 #### Check if paths are valid and find libs ####
 
 function(findLib libName libDir libOut)
-    find_library(TEMP ${libName} PATHS ${${libDir}} NO_DEFAULT_PATH)
-
-    # Optional argument ARGV3 can be used to pass an alternate name for the library
-    if(NOT TEMP AND ${ARGC} GREATER 3)
-        find_library(TEMP ${ARGV3} PATHS ${${libDir}} NO_DEFAULT_PATH)
-    endif()
+    # Optional arguments ARGV3-ARVG6 can be used as alernative names for the library
+    find_library(TEMP NAMES ${libName} ${ARGV3} ${ARGV4} ${ARGV5} ${ARGV6}
+        PATHS ${${libDir}} NO_DEFAULT_PATH)
     
     if(TEMP)
         set(${libOut} ${TEMP} PARENT_SCOPE)
         unset(TEMP CACHE)
     else()
         if(WIN32)
-            message(SEND_ERROR "Could not find ${libName}.lib. Check ${libName}.")
+            message(SEND_ERROR "Could not find ${libName}.lib. Check ${libDir}.")
         elseif(APPLE)
-            message(SEND_ERROR "Could not find ${libName}.so, ${libName}.a, or ${libName}.dylib Check ${libDir}.")
+            message(SEND_ERROR "Could not find lib${libName}.so, lib${libName}.a, or lib${libName}.dylib Check ${libDir}.")
         else()
-            message(SEND_ERROR "Could not find ${libName}.so, or ${libName}.a. Check ${libDir}")
+            message(SEND_ERROR "Could not find lib${libName}.so, or lib${libName}.a. Check ${libDir}")
         endif()
         unset(TEMP CACHE)
     endif()
@@ -104,7 +101,6 @@ if(USE_MMG)
         list(APPEND MMG_LIBS ${MMG_LIB})
         unset(MMG_LIB)
     endforeach(name)
-	#message("Libs found: " ${MMG_LIBS}) remove comment to debug
 endif()
 
 if(USE_TETGEN)
@@ -183,12 +179,12 @@ elseif(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 else()
 	add_definitions(-DLINUX)
-    add_compile_options(-static-libstdc++ -static-libgcc -w -Wall)
+    add_compile_options(-w -Wall)
+    
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
     
     set(CMAKE_BUILD_RPATH_USE_LINK_PATH FALSE)
     set(CMAKE_BUILD_RPATH $ORIGIN/../lib/)
-
-    #set_property(TARGET FEBioStudio PROPERTY CMAKE_BUILD_RPATH $ORIGIN/../lib/)
 endif()
 
 include_directories(.)
@@ -305,32 +301,34 @@ macro(crossExecProcess OUT)
 endmacro()
 
 # Check for git and give warning if not available
-if(WIN32)
-    set(CMD where git)
-else()
-	set(CMD which git)
-endif()
-crossExecProcess(NULL)
+if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
+    if(WIN32)
+        set(CMD where git)
+    else()
+        set(CMD which git)
+    endif()
+    crossExecProcess(NULL)
 
-if(SUCCESS EQUAL 0)
-	# Get branch name and check if we're on the develop branch
-    set(CMD git rev-parse --abbrev-ref HEAD)
-	crossExecProcess(BRANCH_NAME)
+    if(SUCCESS EQUAL 0)
+        # Get branch name and check if we're on the develop branch
+        set(CMD git rev-parse --abbrev-ref HEAD)
+        crossExecProcess(BRANCH_NAME)
 
-	string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
-	
-	# Get the commit info and set the DEVCOMMIT macro
-	if(SUCCESS EQUAL 0 AND ISDEVELOP)
+        string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
         
-        set(CMD git rev-parse --short=9 HEAD)
-		crossExecProcess(DEVCOMMIT)
-		
-		if(${SUCCESS} EQUAL 0)
-			target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
-		endif()
-	endif()
-else()
-	message(WARNING "Could not find git in system PATH. Development version info will not be addded.")
+        # Get the commit info and set the DEVCOMMIT macro
+        if(SUCCESS EQUAL 0 AND ISDEVELOP)
+            
+            set(CMD git rev-parse --short=9 HEAD)
+            crossExecProcess(DEVCOMMIT)
+            
+            if(${SUCCESS} EQUAL 0)
+                target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
+            endif()
+        endif()
+    else()
+        message(WARNING "Could not find git in system PATH. Development version info will not be addded.")
+    endif()
 endif()
 
 ##### Link Libraries #####
@@ -339,6 +337,8 @@ if(WIN32)
 elseif(APPLE)
 else()
     set_property(TARGET MeshTools PROPERTY CXX_STANDARD 17)
+    
+    target_link_libraries(FEBioStudio -static-libstdc++ -static-libgcc)
     
 	target_link_libraries(FEBioStudio -Wl,--start-group)
 endif()
@@ -381,7 +381,6 @@ if(WIN32)
 elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -Wl,--end-group)
-    #target_link_libraries(FEBioStudio -Wl,-rpath,\'\$ORIGIN/../lib/\')
 endif()
 
 get_target_property(LINKEDLIBS FEBioStudio LINK_LIBRARIES)

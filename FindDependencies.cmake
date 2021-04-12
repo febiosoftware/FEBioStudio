@@ -399,3 +399,6 @@ find_package(ZLIB REQUIRED)
 if(ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY_RELEASE)
     mark_as_advanced(ZLIB_INCLUDE_DIR ZLIB_LIBRARY_RELEASE)
 endif()
+
+# OpenMP
+find_package(OpenMP)
