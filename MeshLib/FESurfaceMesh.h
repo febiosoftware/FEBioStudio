@@ -56,6 +56,8 @@ public:
 
 	void AutoPartition(double smoothingAngle);
 
+	void Update();
+
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);

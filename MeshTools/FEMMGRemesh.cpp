@@ -585,7 +585,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 		MMG5_ARG_end);
 
 	// allocate mesh size
-	if (MMGS_Set_meshSize(mmgMesh, NN, NF, NC) != 1)
+	if (MMGS_Set_meshSize(mmgMesh, NN, NF, 0) != 1)
 	{
 		assert(false);
 		SetError("Error in MMGS_Set_meshSize");
@@ -620,7 +620,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 		int* n = f.n;
 		MMGS_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
 	}
-	for (int i = 0; i < NC; ++i)
+/*	for (int i = 0; i < NC; ++i)
 	{
 		FEEdge& e = pm->Edge(i);
 		if (e.m_gid >= 0)
@@ -629,7 +629,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 			MMGS_Set_edge(mmgMesh, n[0] + 1, n[1] + 1, e.m_gid, i + 1);
 		}
 	}
-
+*/
 	// Now, we build the "solution", i.e. the target element size.
 	// If no elements are selected, we set a homogenous remeshing using the element size parameter.
 	// set the "solution", i.e. desired element size
@@ -757,7 +757,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 		face.n[0]--;
 		face.n[1]--;
 		face.n[2]--;
-		//		f.m_sid = ST[f.m_gid];
+		if (face.m_gid <= NS) face.m_sid = ST[face.m_gid];
 	}
 	// get the edges
 	for (int i = 0; i < NC; ++i)
@@ -774,6 +774,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	}
 
 	newMesh->BuildMesh();
+//	newMesh->Update();
 
 	// Clean up
 	MMGS_Free_all(MMG5_ARG_start,
