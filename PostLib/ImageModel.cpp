@@ -30,6 +30,12 @@ SOFTWARE.*/
 #include "GLImageRenderer.h"
 #include <FSCore/FSDir.h>
 #include <assert.h>
+
+#ifdef HAS_TEEM
+#include <ImageLib/tif_reader.h>
+#include <ImageLib/compatibility.h>
+#include <teem/nrrd.h> 
+#endif
 using namespace Post;
 
 CImageSource::CImageSource(CImageModel* imgModel)
@@ -67,6 +73,49 @@ std::string CImageSource::GetFileName() const
 {
 	return GetStringValue(0);
 }
+
+#ifdef HAS_TEEM
+bool CImageSource::LoadTiffData(std::wstring &fileName)
+{
+  C3DImage* im = new C3DImage;
+  std::unique_ptr<TIFReader> reader = std::make_unique<TIFReader>();
+  reader->SetFile(fileName);
+  reader->Preprocess();
+  auto nrrdStruct = reader->Convert(0,0,0);
+
+  auto [nx,ny,npages,bits] = reader->GetTiffInfo();
+
+  std::string file = ws2s(fileName);
+  
+  if(im->Create(nx,ny,npages) == false)
+	{
+		delete im;
+		return false;
+	}
+  std::cout << "It is good if I made it here!" << std::endl; 
+
+  std::cout << "x: " << nx << " y: " << ny << " pages: " << npages << " bits: " << bits << std::endl;
+  // This should error 
+  const char* data = reader->GetRawImage();
+
+  if(im->LoadFromFile(file.c_str(),bits) == false)
+  {
+    std::cout << "I have failed you." << std::endl;
+		delete im;
+		return false;
+  }
+	
+  SetIntValue(1, nx);
+	SetIntValue(2, ny);
+	SetIntValue(3, npages);
+
+	delete m_img;
+	m_img = im;
+
+	return true;
+
+}
+#endif
 
 bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, int nz)
 {
@@ -160,6 +209,30 @@ bool CImageModel::UpdateData(bool bsave)
 
 	return false;
 }
+
+#ifdef HAS_TEEM
+bool CImageModel::LoadTiffData(std::wstring &fileName)
+{
+	if (m_img == nullptr) m_img = new CImageSource(this);
+
+  std::cout << "I am here." << std::endl;
+	if (m_img->LoadTiffData(fileName) == false)
+	{
+    std::cout << "I failed to load the tiff data, check other func." << std::endl;
+		delete m_img;
+		m_img = nullptr;
+		return false;
+	}
+
+	// set the default name by extracting the base of the file name
+	string fileBase = FSDir::fileBase(ws2s(fileName));
+	m_img->SetName(fileBase);
+
+	UpdateData(false);
+
+	return true;
+}
+#endif
 
 bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box)
 {

@@ -28,11 +28,20 @@ SOFTWARE.*/
 #include "3DImage.h"
 #include <stdio.h>
 #include <math.h>
+#include <memory>
 
+/*
 #ifdef WIN32
 #include <memory>
 #else
 #include <memory.h>
+#endif
+*/
+
+#ifdef HAS_TEEM
+#include "tif_reader.h"
+#include "compatibility.h"
+#include <teem/nrrd.h>
 #endif
 
 //-----------------------------------------------------------------------------
@@ -113,6 +122,28 @@ bool C3DImage::LoadFromFile(const char* szfile, int nbits)
 
 	return true;
 }
+
+#ifdef HAS_TEEM
+/*
+bool C3DImage::LoadFromTiff(std::wstring &file)
+{
+  int bits = 0;
+  std::unique_ptr<TIFReader> reader = std::make_unique<TIFReader>();
+  reader->SetFile(file);
+  reader->Preprocess();
+  reader->Convert(0,0,0);
+    
+  std::tie(m_cx, m_cy, m_cz, bits) = reader->GetTiffInfo();
+  //std::string fromFile = ws2s(file);
+
+  //this may not work. May require raw data extraction from tif header. 
+  const char* data = reinterpret_cast<const char* const>(reader->data()); 
+
+  return LoadFromFile(data,bits);
+
+}
+*/
+#endif
 
 // BitBlt assumes that the 3D and 2D images have the same resolution !
 void C3DImage::BitBlt(CImage& im, int nslice)

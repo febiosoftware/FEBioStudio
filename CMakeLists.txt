@@ -14,7 +14,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Autogen)
 
 # Change to 6 if looking to build with Qt6.
-set(QT_Ver 5 CACHE INTERNAL "")
+set(QT_Ver 6 CACHE INTERNAL "")
 
 # Set a default build type if none was specified
 set(default_build_type "Release")
@@ -106,6 +106,11 @@ function(findLib libName libDir libOut)
         unset(TEMP CACHE)
     endif()
 endfunction()
+
+if(USE_TEEM)
+  findLib(teem TEEM_LIB_DIR TEEM_LIB)
+  find_library(teem NAMES teem PATH TEEM_LIB_DIR TEEM_LIB)
+endif()
 
 if(USE_MMG)
     findLib(mmg3d MMG_LIB_DIR MMG_LIB)
@@ -199,6 +204,11 @@ endif()
 
 include_directories(.)
 
+if(USE_TEEM)
+  add_definitions(-DHAS_TEEM)
+  include_directories(${TEEM_INC})
+endif()
+
 if(USE_MMG)
 	add_definitions(-DHAS_MMG)
 	include_directories(${MMG_INC})
@@ -242,7 +252,6 @@ if(${Qt_Version}WebEngineWidgets_FOUND)
 endif()
 
 include_directories(${ZLIB_INCLUDE_DIR})
-include_directories(${Teem_INCLUDE_DIRS})
 
 ##### Find Source Files #####
 
@@ -263,6 +272,10 @@ endforeach(name)
 
 # Linking the Qt libraries also pulls in the include files
 link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Qt_Version}::Network ${Qt_Version}::OpenGL ${Qt_Version}::OpenGLWidgets)
+
+if(QT_Ver VERSION_EQUAL 6)
+  link_libraries(Qt6::Core5Compat)
+endif()
 
 if(QT_Ver VERSION_EQUAL 5)
   link_libraries(Qt5::Charts)
@@ -356,6 +369,10 @@ else()
 	target_link_libraries(FEBioStudio -Wl,--start-group)
 endif()
 
+if(USE_TEEM)
+  target_link_libraries(FEBioStudio ${TEEM_LIB})
+endif()
+
 if(USE_MMG)
 	target_link_libraries(FEBioStudio ${MMG_LIB})
 endif()
@@ -386,7 +403,6 @@ endif()
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
-target_link_libraries(FEBioStudio ${Teem_LIBRARY})
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 if(WIN32)

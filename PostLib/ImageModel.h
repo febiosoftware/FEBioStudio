@@ -48,6 +48,9 @@ public:
 	void SetFileName(const std::string& fileName);
 	std::string GetFileName() const;
 
+#ifdef HAS_TEEM
+  bool LoadTiffData(std::wstring& filename);
+#endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
 
 	C3DImage* Get3DImage() { return m_img; }
@@ -73,7 +76,9 @@ class CImageModel : public CGLObject
 public:
 	CImageModel(CGLModel* mdl);
 	~CImageModel();
-
+#ifdef HAS_TEEM
+  bool LoadTiffData(std::wstring& filename);
+#endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
 
 	int ImageRenderers() const { return (int)m_render.Size(); }

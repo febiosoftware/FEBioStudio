@@ -122,6 +122,10 @@ using std::stringstream;
 #include "ZipFiles.h"
 #endif
 
+#ifdef HAS_TEEM
+#include <QFileInfo>
+#endif
+
 
 void CMainWindow::on_actionOpenProject_triggered()
 {
@@ -1400,7 +1404,11 @@ void CMainWindow::on_actionImportGeometry_triggered()
 void CMainWindow::on_actionImportImage_triggered()
 {
 	QStringList filters;
-	filters << "RAW files (*.raw)";
+  #ifdef HAS_TEEM
+	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)";
+  #else
+	  filters << "RAW files (*.raw)";
+  #endif
 
 	CGLDocument* doc = GetGLDocument();
 
@@ -1418,6 +1426,60 @@ void CMainWindow::on_actionImportImage_triggered()
 		// get the file name
 		QStringList files = filedlg.selectedFiles();
 		QString fileName = files.at(0);
+
+    #ifdef HAS_TEEM
+		  std::string sfile = fileName.toStdString();
+      QFileInfo fileInfo(fileName);
+      QString ext = fileInfo.suffix();
+      
+      if(ext == ".tiff" || ".tif")
+      {
+        Post::CImageModel* po = doc->ImportTiff(sfile);
+        if (po == nullptr)
+			  {
+				  QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+			  }
+			  else
+			  {
+				  Update(0, true);
+				  ZoomTo(po->GetBoundingBox());
+
+				  // only for model docs
+				  if (dynamic_cast<CModelDocument*>(doc))
+				  {
+					  ShowInModelViewer(po);
+				  }
+			  }
+      }
+      else //will need to be written for other cases
+      {
+		    CDlgRAWImport dlg(this);
+		    if (dlg.exec())
+		    {
+			    BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
+
+			    Post::CImageModel* po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+			    if (po == nullptr)
+			    {
+				    QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+			    }
+			    else
+			    {
+				    Update(0, true);
+				    ZoomTo(po->GetBoundingBox());
+
+				    // only for model docs
+				    if (dynamic_cast<CModelDocument*>(doc))
+				    {
+					    ShowInModelViewer(po);
+				    }
+			    }
+		    }
+		  else return;
+	  }
+        
+    #else
+
 		std::string sfile = fileName.toStdString();
 
 	/*	// create 'resources' subdirectory
@@ -1471,6 +1533,7 @@ void CMainWindow::on_actionImportImage_triggered()
 			}
 		}
 		else return;
+#endif
 	}
 }
 
