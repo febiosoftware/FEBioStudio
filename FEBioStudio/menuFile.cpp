@@ -114,6 +114,7 @@ SOFTWARE.*/
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
 #include <PostLib/FEVTKImport.h>
+#include <PostLib/VolRender.h>
 #include <sstream>
 
 using std::stringstream;
@@ -1517,21 +1518,31 @@ void CMainWindow::on_actionImportImage_triggered()
 		{
 			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-			Post::CImageModel* po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-			if (po == nullptr)
+			Post::CImageModel* imageModel = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+			if (imageModel == nullptr)
 			{
 				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
 			}
 			else
 			{
-				Update(0, true);
-				ZoomTo(po->GetBoundingBox());
-
 				// only for model docs
 				if (dynamic_cast<CModelDocument*>(doc))
 				{
-					ShowInModelViewer(po);
+					// add default volume renderer
+					Post::CVolRender* vr = new Post::CVolRender(imageModel);
+					vr->Create();
+					imageModel->AddImageRenderer(vr);
+
+					Update(0, true);
+
+					// show it in the model tree
+					ShowInModelViewer(imageModel);
 				}
+				else
+				{
+					Update(0, true);
+				}
+				ZoomTo(imageModel->GetBoundingBox());
 			}
 		}
 		else return;
