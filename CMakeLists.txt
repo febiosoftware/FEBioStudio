@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(FEBioStudio)
 
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -173,15 +172,25 @@ endif()
 ##### Set appropriate defines and includes #####
 
 if(WIN32)
-    add_definitions(-DWIN32 /MP)
+    add_definitions(-DWIN32)
+    add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+    
+    if(${OpenMP_C_FOUND})
+        add_compile_options(-Xpreprocessor -fopenmp)
+    endif()
+    
 else()
 	add_definitions(-DLINUX)
     add_compile_options(-w -Wall)
     
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+    
+    if(${OpenMP_C_FOUND})
+        add_compile_options(-fopenmp)
+    endif()
     
     set(CMAKE_BUILD_RPATH_USE_LINK_PATH FALSE)
     set(CMAKE_BUILD_RPATH $ORIGIN/../lib/)
@@ -341,6 +350,10 @@ else()
     target_link_libraries(FEBioStudio -static-libstdc++ -static-libgcc)
     
 	target_link_libraries(FEBioStudio -Wl,--start-group)
+endif()
+
+if(NOT WIN32 AND ${OpenMP_C_FOUND})
+    target_link_libraries(FEBioStudio ${OpenMP_C_LIBRARIES})
 endif()
 
 if(USE_MMG)

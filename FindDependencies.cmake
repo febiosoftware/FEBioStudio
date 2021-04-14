@@ -401,4 +401,6 @@ if(ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY_RELEASE)
 endif()
 
 # OpenMP
-find_package(OpenMP)
+if(NOT WIN32)
+    find_package(OpenMP QUIET)
+endif()
