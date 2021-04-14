@@ -991,7 +991,9 @@ bool FEBioExport3::Write(const char* szfile)
 	}
 	catch (InvalidItemListBuilder e)
 	{
-		return errf("Invalid reference to mesh item list when exporting:\n%s", (e.m_po ? e.m_po->GetName().c_str() : "(unknown)"));
+		const char* sz = "(unknown)";
+		if (e.m_name.empty() == false) sz = e.m_name.c_str();
+		return errf("Invalid reference to mesh item list when exporting:\n%s", sz);
 	}
 	catch (MissingRigidBody e)
 	{
@@ -2588,19 +2590,13 @@ void FEBioExport3::WriteGeometrySurfaces()
 	int NS = (int)m_pSurf.size();
 	for (int i = 0; i<NS; ++i)
 	{
-		FEItemListBuilder* pl = m_pSurf[i].m_list;
-		FEFaceList* pfl = pl->BuildFaceList();
-		if (pfl)
+		XMLElement el("Surface");
+		el.add_attribute("name", m_pSurf[i].m_name.c_str());
+		m_xml.add_branch(el);
 		{
-			auto_ptr<FEFaceList> ps(pfl);
-			XMLElement el("Surface");
-			el.add_attribute("name", m_pSurf[i].m_name.c_str());
-			m_xml.add_branch(el);
-			{
-				WriteSurfaceSection(*ps);
-			}
-			m_xml.close_branch();
+			WriteSurfaceSection(m_pSurf[i]);
 		}
+		m_xml.close_branch();
 	}
 }
 
@@ -4603,6 +4599,46 @@ void FEBioExport3::WriteSurfaceSection(FEFaceList& s)
 		FECoreMesh* pm = pf->m_pm;
 		nfn = face.Nodes();
 		for (int k = 0; k<nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
+		switch (nfn)
+		{
+		case 3: ef.name("tri3"); break;
+		case 4: ef.name("quad4"); break;
+		case 6: ef.name("tri6"); break;
+		case 7: ef.name("tri7"); break;
+		case 8: ef.name("quad8"); break;
+		case 9: ef.name("quad9"); break;
+		case 10: ef.name("tri10"); break;
+		default:
+			assert(false);
+		}
+		ef.add_attribute("id", n);
+		ef.value(nn, nfn);
+		m_xml.add_leaf(ef);
+	}
+}
+
+void FEBioExport3::WriteSurfaceSection(NamedItemList& l)
+{
+	FEItemListBuilder* pl = l.m_list;
+	FEFaceList* pfl = pl->BuildFaceList();
+	if (pfl == nullptr) throw InvalidItemListBuilder(l.m_name);
+	auto_ptr<FEFaceList> ps(pfl);
+
+	XMLElement ef;
+	int n = 1, nn[9];
+
+	FEFaceList& s = *pfl;
+	int NF = s.Size();
+	FEFaceList::Iterator pf = s.First();
+
+	int nfn;
+	for (int j = 0; j < NF; ++j, ++n, ++pf)
+	{
+		if (pf->m_pi == 0) throw InvalidItemListBuilder(l.m_name);
+		FEFace& face = *(pf->m_pi);
+		FECoreMesh* pm = pf->m_pm;
+		nfn = face.Nodes();
+		for (int k = 0; k < nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
 		switch (nfn)
 		{
 		case 3: ef.name("tri3"); break;
