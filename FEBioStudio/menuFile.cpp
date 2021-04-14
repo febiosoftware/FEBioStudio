@@ -1420,6 +1420,7 @@ void CMainWindow::on_actionImportImage_triggered()
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 	filedlg.setNameFilters(filters);
+
 	if (filedlg.exec())
 	{
 		// store the current path
@@ -1430,124 +1431,59 @@ void CMainWindow::on_actionImportImage_triggered()
 		QStringList files = filedlg.selectedFiles();
 		QString fileName = files.at(0);
 
-    #ifdef HAS_TEEM
-		  std::string sfile = fileName.toStdString();
-      QFileInfo fileInfo(fileName);
-      QString ext = fileInfo.suffix();
-      
-      if(ext == ".tiff" || ".tif")
-      {
-        Post::CImageModel* po = doc->ImportTiff(sfile);
-        if (po == nullptr)
-			  {
-				  QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-			  }
-			  else
-			  {
-				  Update(0, true);
-				  ZoomTo(po->GetBoundingBox());
+    std::string sfile = fileName.toStdString();
+    QFileInfo fileInfo(fileName);
+    QString ext = fileInfo.suffix();
 
-				  // only for model docs
-				  if (dynamic_cast<CModelDocument*>(doc))
-				  {
-					  ShowInModelViewer(po);
-				  }
-			  }
+//TODO: change po to image model
+    Post::CImageModel* po = nullptr;
+    
+    if(ext == ".tiff" || ".tif")
+    {
+      po = doc->ImportTiff(sfile);
+      if (po == nullptr)
+      {
+        QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+        return;
       }
-      else //will need to be written for other cases
+    }
+    else //will need to be written for other cases
+    {
+      CDlgRAWImport dlg(this);
+      if (dlg.exec())
       {
-		    CDlgRAWImport dlg(this);
-		    if (dlg.exec())
-		    {
-			    BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
+        BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-			    Post::CImageModel* po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-			    if (po == nullptr)
-			    {
-				    QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-			    }
-			    else
-			    {
-				    Update(0, true);
-				    ZoomTo(po->GetBoundingBox());
+        po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+        if (po == nullptr)
+        {
+          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+          return;
+        }
+      }
+    }
+    if(po)
+    {
+      Update(0, true);
+      ZoomTo(po->GetBoundingBox());
 
-				    // only for model docs
-				    if (dynamic_cast<CModelDocument*>(doc))
-				    {
-					    ShowInModelViewer(po);
-				    }
-			    }
-		    }
-		  else return;
-	  }
-        
-    #else
+      // only for model docs
+      if (dynamic_cast<CModelDocument*>(doc))
+      {
+        Post::CVolRender* vr = new Post::CVolRender(po);
+        vr->Create();
+        po->AddImageRenderer(vr);
 
-		std::string sfile = fileName.toStdString();
-
-	/*	// create 'resources' subdirectory
-		std::string sPath = doc->GetDocFolder();
-
-		if (!sPath.empty())
-		{
-			QString projectPath = QString::fromStdString(sPath);
-			QDir projectDir(projectPath);
-			projectDir.mkdir("resources");
-			projectDir.cd("resources");
-			QString resourceDir = projectDir.absolutePath();
-
-
-			// store path for linked file
-			QString linkName = projectDir.absoluteFilePath(QFileInfo(fileName).fileName());
-
-			// add .lnk extension to link when on windows
-#ifdef WIN32
-			linkName += ".lnk";
-#endif
-			// create link in resources directory
-			QFile originalFile(fileName);
-			originalFile.link(linkName);
-
-			// store path to newly created link
-			sfile = linkName.toStdString();
-		}
-*/
-
-		CDlgRAWImport dlg(this);
-		if (dlg.exec())
-		{
-			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
-
-			Post::CImageModel* imageModel = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-			if (imageModel == nullptr)
-			{
-				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-			}
-			else
-			{
-				// only for model docs
-				if (dynamic_cast<CModelDocument*>(doc))
-				{
-					// add default volume renderer
-					Post::CVolRender* vr = new Post::CVolRender(imageModel);
-					vr->Create();
-					imageModel->AddImageRenderer(vr);
-
-					Update(0, true);
-
-					// show it in the model tree
-					ShowInModelViewer(imageModel);
-				}
-				else
-				{
-					Update(0, true);
-				}
-				ZoomTo(imageModel->GetBoundingBox());
-			}
-		}
-		else return;
-#endif
-	}
+        Update(0, true);
+        ShowInModelViewer(po);
+      }
+      else
+      {
+        Update(0, true);
+      }
+      ZoomTo(po->GetBoundingBox());
+    }
+  }
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()

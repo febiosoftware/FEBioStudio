@@ -37,7 +37,7 @@ public:
 	virtual ~C3DImage();
 	void CleanUp();
 
-	bool Create(int nx, int ny, int nz);
+	bool Create(int nx, int ny, int nz, Byte* data = nullptr);
 
 	bool LoadFromFile(const char* szfile, int nbits);
   #ifdef HAS_TEEM

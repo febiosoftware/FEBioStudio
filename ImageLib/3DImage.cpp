@@ -78,15 +78,18 @@ void C3DImage::CleanUp()
 	m_cx = m_cy = m_cz = 0;
 }
 
-bool C3DImage::Create(int nx, int ny, int nz)
+bool C3DImage::Create(int nx, int ny, int nz, Byte* data)
 {
 	// reallocate data if necessary
 	if (nx*ny*nz != m_cx*m_cy*m_cz)
 	{
 		CleanUp();
-
-		m_pb = new Byte[nx*ny*nz];
-		if (m_pb == 0) return false;
+    if(data == nullptr)
+    {
+		  m_pb = new Byte[nx*ny*nz];
+		  if (m_pb == 0) return false;
+    }
+    m_pb = data;
 	}
 
 	m_cx = nx;

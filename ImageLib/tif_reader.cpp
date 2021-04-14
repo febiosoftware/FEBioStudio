@@ -1786,7 +1786,7 @@ Nrrd* TIFReader::ReadTiff(std::vector<SliceInfo> &filelist,
 	nrrdAxisInfoSet(nrrdout, nrrdAxisInfoSize, (size_t)m_x_size,
 		(size_t)m_y_size, (size_t)numPages);
 
-  rawImage = static_cast<const char*>(val);
+  rawImage = static_cast<unsigned char*>(val);
 
   loadTiffInfo(static_cast<size_t>(m_x_size),
                static_cast<size_t>(m_y_size),

@@ -84,10 +84,14 @@ bool CImageSource::LoadTiffData(std::wstring &fileName)
   auto nrrdStruct = reader->Convert(0,0,0);
 
   auto [nx,ny,npages,bits] = reader->GetTiffInfo();
-
+  const auto SIZE = nx * ny * npages;
+  unsigned char* rawData = reader->GetRawImage();
+  //Byte* data = static_cast<Byte*>(rawData);
+  //std::memcpy(&data,&rawData,SIZE); 
+  data = rawData;
   std::string file = ws2s(fileName);
   
-  if(im->Create(nx,ny,npages) == false)
+  if(im->Create(nx,ny,npages,data) == false)
 	{
 		delete im;
 		return false;
@@ -96,15 +100,14 @@ bool CImageSource::LoadTiffData(std::wstring &fileName)
 
   std::cout << "x: " << nx << " y: " << ny << " pages: " << npages << " bits: " << bits << std::endl;
   // This should error 
-  const char* data = reader->GetRawImage();
-
+/*
   if(im->LoadFromFile(file.c_str(),bits) == false)
   {
     std::cout << "I have failed you." << std::endl;
 		delete im;
 		return false;
   }
-	
+*/	
   SetIntValue(1, nx);
 	SetIntValue(2, ny);
 	SetIntValue(3, npages);

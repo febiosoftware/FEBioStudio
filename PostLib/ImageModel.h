@@ -69,6 +69,7 @@ public:
 private:
 	C3DImage*	m_img;
 	CImageModel*	m_imgModel;
+  unsigned char* data = nullptr;
 };
 
 class CImageModel : public CGLObject

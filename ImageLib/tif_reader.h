@@ -182,7 +182,7 @@ public:
 	int GetBatchNum() {return (int)m_batch_list.size();}
 	int GetCurBatch() {return m_cur_batch;}
   std::tuple<size_t,size_t,size_t,int> GetTiffInfo();
-  const char* GetRawImage() { return rawImage; }
+  unsigned char* GetRawImage() { return rawImage; }
 
 private:
 	wstring m_data_name;
@@ -190,7 +190,7 @@ private:
 	bool isHyperstack_;		//true if it is a hyperstack tiff saved by ImageJ
 	bool isHsTimeSeq_;		//true if it is a time sequence of hyperstack files
   std::tuple<size_t,size_t,size_t,int> tiffInfo;
-  const char* rawImage;
+  unsigned char* rawImage;
   
   void loadTiffInfo(size_t x, size_t y, size_t pages, int bits);
 
