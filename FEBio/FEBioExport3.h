@@ -42,6 +42,7 @@ class NamedItemList
 public:
 	std::string			m_name;
 	FEItemListBuilder*	m_list;
+	FSObject*			m_parent;
 	bool				m_duplicate;	// this list is defined more than once, and should not be written to Mesh section.
 
 public:
@@ -54,6 +55,15 @@ public:
 	NamedItemList(const std::string& name, FEItemListBuilder* itemList, bool duplicate = false)
 	{
 		m_name = name;
+		m_parent = nullptr;
+		m_list = itemList;
+		m_duplicate = duplicate;
+	}
+
+	NamedItemList(const std::string& name, FSObject* parent, FEItemListBuilder* itemList, bool duplicate = false)
+	{
+		m_name = name;
+		m_parent = parent;
 		m_list = itemList;
 		m_duplicate = duplicate;
 	}
@@ -304,6 +314,7 @@ protected:
     void WriteMembraneReactionMaterial(FEMaterial* pmat, XMLElement& el);
 
 	void WriteSurfaceSection(FEFaceList& s);
+	void WriteSurfaceSection(NamedItemList& l);
 	void WriteElementList(FEElemList& el);
 
 protected:
