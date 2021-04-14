@@ -50,11 +50,13 @@ CCmdAddPoint::CCmdAddPoint(FELoadCurve* plc, LOADPOINT& pt) : CCommand("Add poin
 void CCmdAddPoint::Execute()
 {
 	m_index = m_lc->Add(m_pt);
+    m_lc->Update();
 }
 
 void CCmdAddPoint::UnExecute()
 {
 	m_lc->Delete(m_index);
+    m_lc->Update();
 }
 
 CCmdRemovePoint::CCmdRemovePoint(FELoadCurve* plc, const vector<int>& index) : CCommand("Remove point")
@@ -67,11 +69,13 @@ void CCmdRemovePoint::Execute()
 {
 	m_copy = *m_lc;
 	m_lc->Delete(m_index);
+    m_lc->Update();
 }
 
 void CCmdRemovePoint::UnExecute()
 {
 	*m_lc = m_copy;
+    m_lc->Update();
 }
 
 CCmdMovePoint::CCmdMovePoint(FELoadCurve* plc, int index, LOADPOINT to) : CCommand("Move point")
@@ -79,6 +83,7 @@ CCmdMovePoint::CCmdMovePoint(FELoadCurve* plc, int index, LOADPOINT to) : CComma
 	m_lc = plc;
 	m_index = index;
 	m_p = to;
+    m_lc->Update();
 }
 
 void CCmdMovePoint::Execute()
@@ -86,6 +91,7 @@ void CCmdMovePoint::Execute()
 	LOADPOINT tmp = m_lc->Item(m_index);
 	m_lc->Item(m_index) = m_p;
 	m_p = tmp;
+    m_lc->Update();
 }
 
 void CCmdMovePoint::UnExecute()
@@ -181,7 +187,8 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po)
 		FELoadCurve* plc = p.GetLoadCurve();
 		if (plc)
 		{
-			string name = po->GetName() + "." + p.GetShortName();
+            plc->Update();
+			string name = po->GetName() + "." + p.GetLongName();
 			ui->addTreeItem(t1, QString::fromStdString(name), plc, &p);
 		}
 	}
@@ -196,6 +203,7 @@ void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FEMaterial* mat, con
 		FELoadCurve* plc = p.GetLoadCurve();
 		if (plc)
 		{
+            plc->Update();
 			string paramName = name + "." + p.GetShortName();
 			ui->addTreeItem(t1, QString::fromStdString(paramName), plc, &p);
 		}
@@ -254,6 +262,7 @@ void CCurveEditor::BuildLoadCurves()
 			FELoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
 			if (plc)
 			{
+                plc->Update();
 				string name = pls->GetName() + ".E";
 				ui->addTreeItem(t1, QString::fromStdString(name), plc);
 			}
@@ -265,6 +274,7 @@ void CCurveEditor::BuildLoadCurves()
 			FELoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
 			if (plc)
 			{
+                plc->Update();
 				string name = pls->GetName() + ".F";
 				ui->addTreeItem(t1, QString::fromStdString(name), plc);
 			}
@@ -526,7 +536,7 @@ void CCurveEditor::BuildModelTree()
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pw->GetName()));
 					ui->addTreeItem(t3, "tolerance", pw->GetParamLC(FERigidWallInterface::ALTOL  ), pw->GetParamPtr(FERigidWallInterface::ALTOL  ));
 					ui->addTreeItem(t3, "penalty"  , pw->GetParamLC(FERigidWallInterface::PENALTY), pw->GetParamPtr(FERigidWallInterface::PENALTY));
-					ui->addTreeItem(t3, "offset"   , pw->GetParamLC(FERigidWallInterface::OFFSET ), pw->GetParamPtr(FERigidWallInterface::OFFSET ));
+					ui->addTreeItem(t3, "plane displacement", pw->GetParamLC(FERigidWallInterface::OFFSET ), pw->GetParamPtr(FERigidWallInterface::OFFSET ));
 				}
 				else
 				{
@@ -869,6 +879,7 @@ void CCurveEditor::on_plot_pointDragged(QPoint p)
 
 		if (sel.size() == 1) ui->setPointValues(pi.x(), pi.y());
 	}
+    plc->Update();
 	ui->plot->repaint();
 }
 
@@ -978,6 +989,19 @@ void CCurveEditor::on_plot_doneSelectingRect(QRect rt)
 
 void CCurveEditor::on_save_triggered()
 {
+	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
+	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+
+	QString fileName = QFileDialog::getSaveFileName(this, "Open File", "", "All files (*)");
+	if (fileName.isEmpty() == false)
+	{
+		std::string sfile = fileName.toStdString();
+		const char* szfile = sfile.c_str();
+		if (plc->WriteData(szfile) == false)
+		{
+			QMessageBox::critical(this, "Save File", QString("Failed saving curve data to file %1").arg(szfile));
+		}
+	}
 }
 
 void CCurveEditor::on_clip_triggered()
@@ -1198,6 +1222,7 @@ void CCurveEditor::on_lineType_currentIndexChanged(int n)
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 	plc->SetType(n);
+    plc->Update();
 	ui->plot->repaint();
 }
 

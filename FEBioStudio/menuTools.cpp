@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "DlgKinemat.h"
 #include "DlgPlotMix.h"
 #include "DlgSettings.h"
+#include "DlgMeshDiagnostics.h"
 #include <QMessageBox>
 #include <GeomLib/MeshLayer.h>
 #include <GeomLib/GObject.h>
@@ -46,6 +47,20 @@ void CMainWindow::on_actionCurveEditor_triggered()
 void CMainWindow::on_actionMeshInspector_triggered()
 {
 	ui->showMeshInspector();
+}
+
+void CMainWindow::on_actionMeshDiagnostic_triggered()
+{
+	GObject* po = GetActiveObject();
+	if (po == nullptr)
+	{
+		QMessageBox::warning(this, "FEBio Studio", "You need to select an object first.");
+		return;
+	}
+
+	CDlgMeshDiagnostics dlg(this);
+	dlg.SetObject(po);
+	dlg.exec();
 }
 
 void CMainWindow::on_actionElasticityConvertor_triggered()

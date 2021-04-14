@@ -55,7 +55,7 @@ bool FELSDYNAExport::ExportSurface(FEPostModel &fem, int ntime, const char *szfi
 	int i, j, n;
 
 	// get the mesh
-	FEPostMesh& mesh = *fem.GetFEMesh(0);
+	FEPostMesh& mesh = *fem.GetState(ntime)->GetFEMesh();
 
 	// count total nr of faces
 	int faces = mesh.Faces();
@@ -124,7 +124,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const ch
 	if (fp == 0) return false;
 	fprintf(fp, "*KEYWORD\n");
 
-	FEPostMesh& m = *fem.GetFEMesh(0);
+	FEPostMesh& m = *fem.GetState(ntime)->GetFEMesh();
 	int NN = m.Nodes();
 	int NF = m.Faces();
 	int i;
@@ -206,7 +206,7 @@ bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 	fprintf(fp, "*KEYWORD\n");
 	
 	// tag all nodes that will be exported
-	FEPostMesh& m = *fem.GetFEMesh(0);
+	FEPostMesh& m = *fem.GetState(ntime)->GetFEMesh();
 	int NN = m.Nodes();
 	int NE = m.Elements();
 	for (i=0; i<NN; ++i) m.Node(i).m_ntag = -1;
@@ -337,9 +337,9 @@ bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 //-----------------------------------------------------------------------------
 void FELSDYNAExport::NodalResults(FEPostModel &fem, int ntime, FILE* fp)
 {
-	FEPostMesh& m = *fem.GetFEMesh(0);
-	int NN = m.Nodes();
 	FEState* ps = fem.GetState(ntime);
+	FEPostMesh& m = *ps->GetFEMesh();
+	int NN = m.Nodes();
 
 	fprintf(fp, "*NODAL_RESULTS\n");
 	for (int i=0; i<NN; ++i)

@@ -156,6 +156,31 @@ public: // reading
 		return IO_OK;
 	}
 
+	IOResult sread(char* sz, int max_len)
+	{
+		IOResult ret;
+		int l;
+		ret = read(l); if (ret != IO_OK) return ret;
+
+		if (l < max_len)
+		{
+			mread(sz, 1, l, &m_pdata);
+			sz[l] = 0;
+		}
+		else
+		{
+			char* tmp = new char[l + 1];
+			mread(tmp, 1, l, &m_pdata);
+			tmp[l] = 0;
+			strncpy(sz, tmp, max_len - 1);
+			sz[max_len - 1] = 0;
+			delete tmp;
+		}
+
+		return IO_OK;
+	}
+
+
 	IOResult read(vec3f&   a) { return read(&(a.x), 3); }
 	IOResult read(mat3fs&  a) { return read(&(a.x), 6); }
 	IOResult read(mat3fd&  a) { return read(&(a.x), 3); }

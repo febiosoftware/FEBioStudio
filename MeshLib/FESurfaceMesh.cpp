@@ -154,6 +154,15 @@ void FESurfaceMesh::Create(unsigned int nodes, unsigned int edges, unsigned int 
 }
 
 //-----------------------------------------------------------------------------
+void FESurfaceMesh::Update()
+{
+	UpdateFaceNeighbors();
+	UpdateEdgeNeighbors();
+	UpdateNormals();
+	UpdateBoundingBox();
+}
+
+//-----------------------------------------------------------------------------
 // Build the mesh data structures
 // It is assumed that all faces have been assigned to a partition
 void FESurfaceMesh::BuildMesh()
@@ -300,7 +309,7 @@ void FESurfaceMesh::AutoPartitionEdges()
 void FESurfaceMesh::UpdateEdgeNeighbors()
 {
 	FENodeEdgeList NET;
-	NET.Build(this, true);
+	NET.Build(this);
 
 	for (int i=0; i<Edges(); ++i)
 	{
@@ -317,12 +326,23 @@ void FESurfaceMesh::UpdateEdgeNeighbors()
 			for (int j=0; j<2; ++j)
 			{
 				int nj = edge.n[j]; assert(nj != -1);
-				int val = NET.Edges(nj);
-				if (val == 2)
+				int nval = NET.Edges(nj);
+				int adj = 0;
+				int na[2] = { 0,0 };
+				for (int k = 0; k < nval; k++)
 				{
-					assert((NET.EdgeIndex(nj, 0) == i) || (NET.EdgeIndex(nj, 1) == i));
-					int nk = NET.EdgeIndex(nj, 0);
-					if (nk == i) nk = NET.EdgeIndex(nj, 1); assert(nk != i);
+					int ek = NET.EdgeIndex(nj, k);
+					if (Edge(ek).m_gid >= 0)
+					{
+						if (adj < 2) na[adj] = ek;
+						adj++;
+					}
+				}
+				if (adj == 2)
+				{
+					assert((na[0] == i) || (na[1] == i));
+					int nk = na[0];
+					if (nk == i) nk = na[1]; assert(nk != i);
 					assert(Edge(nk).m_gid >= 0);
 					edge.m_nbr[j] = nk;
 				}

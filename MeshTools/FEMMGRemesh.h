@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEModifier.h"
+#include "FESurfaceModifier.h"
 
 //-----------------------------------------------------------------------------
 //! This modifier refines a tet mesh using MMG.
@@ -40,5 +41,25 @@ class FEMMGRemesh : public FEModifier
 
 public:
 	FEMMGRemesh();
-	FEMesh* Apply(FEMesh* pm);
+	FEMesh* Apply(FEMesh* pm) override;
+
+private:
+	FEMesh* RemeshTET4(FEMesh* pm);
+	FEMesh* RemeshTRI3(FEMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
+//! This modifier refines a tet mesh using MMG.
+class FEMMGSurfaceRemesh : public FESurfaceModifier
+{
+	enum {
+		ELEM_SIZE,
+		HMIN,
+		HAUSDORFF,
+		HGRAD
+	};
+
+public:
+	FEMMGSurfaceRemesh();
+	FESurfaceMesh* Apply(FESurfaceMesh* pm) override;
 };

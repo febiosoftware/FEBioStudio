@@ -950,8 +950,9 @@ void FEMesh::UpdateFaceElementTable()
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& f = Face(i);
-		f.m_elem[0].eid = -1;
-		f.m_elem[1].eid = -1;
+		f.m_elem[0].eid = -1; f.m_elem[0].lid = -1;
+		f.m_elem[1].eid = -1; f.m_elem[1].lid = -1;
+		f.m_elem[2].eid = -1; f.m_elem[2].lid = -1;
 	}
 
 	for (int i = 0; i<NE; ++i)
@@ -998,6 +999,7 @@ void FEMesh::UpdateFaceElementTable()
 				pej->GetShellFace(f2);
 				if (f2 == face)
 				{
+					assert(m == 0);
 					if (m == 0)
 					{
 						face.m_elem[m].eid = eid;
@@ -1024,7 +1026,7 @@ void FEMesh::UpdateFaceElementTable()
 					pej->GetFace(k, f2);
 					if (f2 == face)
 					{
-//						assert(m<2);
+						assert(m<3);
 						if (m == 0)
 						{
 							face.m_elem[m  ].eid = eid;
@@ -1046,6 +1048,29 @@ void FEMesh::UpdateFaceElementTable()
 
 								face.m_elem[0].eid = eid;
 								face.m_elem[0].lid = k;
+							}
+						}
+						else if (m < 3)
+						{
+							// The only way to get here is if a shell is sandwhiched between
+							// two solids. The shell should have already been found.
+							FEElement_* p0 = ElementPtr(face.m_elem[0].eid);
+							assert(p0 && p0->IsShell());
+
+							// for consistency, we set the solid with the lowest GID first.
+							FEElement_* p1 = ElementPtr(face.m_elem[1].eid); assert(p1 && p1->IsSolid());
+							if (p1->m_gid < pej->m_gid)
+							{
+								face.m_elem[m  ].eid = eid;
+								face.m_elem[m++].lid = k;
+							}
+							else
+							{
+								face.m_elem[m  ].eid = face.m_elem[1].eid;
+								face.m_elem[m++].lid = face.m_elem[1].lid;
+
+								face.m_elem[1].eid = eid;
+								face.m_elem[1].lid = k;
 							}
 						}
 						pej->m_face[k] = i;
@@ -1173,7 +1198,7 @@ void FEMesh::UpdateEdgeNeighbors()
 	for (int i = 0; i<Edges(); ++i)
 	{
 		FEEdge& edge = Edge(i);
-		if (edge.IsExterior())
+		if (edge.m_gid >= 0)
 		{
 			for (int j = 0; j<2; ++j)
 			{

@@ -27,13 +27,14 @@ SOFTWARE.*/
 #pragma once
 #include <MathLib/math3d.h>
 #include <FSCore/color.h>
+#include <FSCore/box.h>
 
 //-------------------------------------------------------------------
 // A GDecoration is something that will be drawn onto the Graphics View
 class GDecoration
 {
 public:
-	GDecoration() { bvisible = true; m_col = GLColor(255, 255, 0); }
+	GDecoration() { bvisible = true; m_col = GLColor(255, 255, 0); m_col2 = GLColor(0, 0, 0); }
 	virtual ~GDecoration(){}
 
 	virtual void render() = 0;
@@ -42,27 +43,31 @@ public:
 	void setVisible(bool b) { bvisible = b; }
 
 	void setColor(GLColor c) { m_col = c; }
+	void setColor2(GLColor c) { m_col2 = c; }
 
 protected:
 	bool	bvisible;
-	GLColor	m_col;
+	GLColor	m_col, m_col2;
 };
 
 //-------------------------------------------------------------------
 class GPointDecoration : public GDecoration
 {
 public:
-	GPointDecoration() {}
-	GPointDecoration(const vec3f& r) : pos(r) {}
+	GPointDecoration() { m_renderAura = false; }
+	GPointDecoration(const vec3f& r) : m_pos(r) { m_renderAura = false; }
 
 	void render();
 
-	void setPosition(const vec3f& r) { pos = r; }
+	void setPosition(const vec3f& r) { m_pos = r; }
 
-	vec3f& position() { return pos; }
+	vec3f& position() { return m_pos; }
+
+	void renderAura(bool b) { m_renderAura = b; }
 
 private:
-	vec3f	pos;
+	vec3f	m_pos;
+	bool	m_renderAura;
 };
 
 //-------------------------------------------------------------------
@@ -140,4 +145,21 @@ public:
 
 private:
 	std::vector<GDecoration*>	m_deco;
+};
+
+//-------------------------------------------------------------------
+class GPlaneCutDecoration : public GDecoration
+{
+public:
+	GPlaneCutDecoration();
+	~GPlaneCutDecoration();
+
+	void setBoundingBox(BOX box);
+	void setPlane(double n0, double n1, double n2, double d);
+
+	void render();
+
+private:
+	BOX		m_box;
+	double	m_a[4];
 };

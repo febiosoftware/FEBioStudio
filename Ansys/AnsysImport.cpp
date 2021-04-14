@@ -50,11 +50,11 @@ bool AnsysImport::Load(const char* szfile)
 	// parse the file
 	while (!feof(m_fp) && !ferror(m_fp))
 	{
-		if (strstr(m_szline, "NBLOCK"))
+		if (strstr(m_szline, "NBLOCK") || strstr(m_szline, "nblock"))
 		{
 			if (read_NBLOCK() == false) return errf("Error while reading NBLOCK");
 		}
-		else if (strstr(m_szline, "EBLOCK"))
+		else if (strstr(m_szline, "EBLOCK")|| strstr(m_szline, "eblock"))
 		{
 			if (read_EBLOCK() == false) return errf("Error while reading EBLOCK");
 		}
@@ -94,6 +94,8 @@ bool AnsysImport::read_NBLOCK()
 			  sscanf(m_szline, "%d%*d%*d%g%g%g", &n.nid, &x, &y, &z);
 		else
 			sscanf(m_szline, "%d%g%g%g", &n.nid, &x, &y, &z);
+
+		if (n.nid == -1) break;
 
 		n.r = vec3d(x,y,z);
 		m_Node.push_back(n);

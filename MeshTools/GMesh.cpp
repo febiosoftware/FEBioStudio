@@ -129,6 +129,7 @@ int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext)
 	f.pid = groupID;
 	f.sid = smoothID;
 	f.bext = bext;
+	f.eid = -1;
 	m_Face.push_back(f);
 	return ((int)m_Face.size() - 1);
 }

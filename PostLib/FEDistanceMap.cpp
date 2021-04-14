@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
+#include "FEPostModel.h"
 #include "FEDistanceMap.h"
 #include "FEMeshData_T.h"
 #include <stdio.h>
@@ -32,9 +33,8 @@ SOFTWARE.*/
 #include "constants.h"
 
 //-----------------------------------------------------------------------------
-Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem) : Post::FEDataField("distance map", DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem, int flags) : Post::FEDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
 { 
-	m_pfem = fem;
 	m_tol = 0.01; 
 	m_bsigned = false; 
 }
@@ -42,7 +42,8 @@ Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem) : Post::FEDataField("
 //-----------------------------------------------------------------------------
 Post::FEDataField* Post::FEDistanceMap::Clone() const
 {
-	FEDistanceMap* pd = new FEDistanceMap(m_pfem);
+	FEDistanceMap* pd = new FEDistanceMap(m_fem, 0);
+	pd->SetName(GetName());
 	pd->m_surf1 = m_surf1;
 	pd->m_surf2 = m_surf2;
 	pd->m_tol = m_tol;
@@ -53,7 +54,7 @@ Post::FEDataField* Post::FEDistanceMap::Clone() const
 //-----------------------------------------------------------------------------
 void Post::FEDistanceMap::InitSurface(int n)
 {
-	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
 
 	vector<int> L;
 	for (int i = 0; i<mesh.Faces(); ++i) if (mesh.Face(i).IsSelected()) L.push_back(i);
@@ -122,7 +123,7 @@ void Post::FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s)
 {
 	// get the mesh
-	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
 
 	int NF = s.Faces();
 	int NN = s.Nodes();
@@ -148,17 +149,10 @@ Post::FEMeshData* Post::FEDistanceMap::CreateData(Post::FEState* pstate)
 }
 
 //-----------------------------------------------------------------------------
-void Post::FEDistanceMap::Apply(Post::FEPostModel* fem)
-{
-	m_pfem = fem;
-	Apply();
-}
-
-//-----------------------------------------------------------------------------
 void Post::FEDistanceMap::Apply()
 {
 	// store the model
-	Post::FEPostModel& fem = *m_pfem;
+	Post::FEPostModel& fem = *m_fem;
 
 	// get the mesh
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
@@ -227,15 +221,16 @@ void Post::FEDistanceMap::Apply()
 //-----------------------------------------------------------------------------
 vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r, int ntime)
 {
-	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+	Post::FEPostModel& fem = *GetModel();
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	// find the closest surface node
-	vec3f q = m_pfem->NodePosition(surf.m_node[0], ntime);
+	vec3f q = fem.NodePosition(surf.m_node[0], ntime);
 	float Dmin = (q - r)*(q - r);
 	int imin = 0;
 	for (int i=1; i<surf.Nodes(); ++i)
 	{
-		vec3f p = m_pfem->NodePosition(surf.m_node[i], ntime);
+		vec3f p = fem.NodePosition(surf.m_node[i], ntime);
 		float D = (p - r)*(p - r);
 		if (D < Dmin)
 		{
@@ -272,8 +267,10 @@ vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r,
 //-----------------------------------------------------------------------------
 bool Post::FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& q)
 {
+	Post::FEPostModel& fem = *GetModel();
+
 	// get the mesh to which this surface belongs
-	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	
 	// number of element nodes
 	int nf = f.Nodes();
@@ -290,7 +287,7 @@ bool Post::FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& 
 	case FE_FACE_TRI7:
 	case FE_FACE_TRI10:
 		{
-			for (int i = 0; i<3; ++i) y[i] = m_pfem->NodePosition(f.n[i], ntime);
+			for (int i = 0; i<3; ++i) y[i] = fem.NodePosition(f.n[i], ntime);
 			return ProjectToTriangle(y, x, q, m_tol);
 		}
 		break;
@@ -298,7 +295,7 @@ bool Post::FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& 
 	case FE_FACE_QUAD8:
 	case FE_FACE_QUAD9:
 		{
-			for (int i = 0; i<4; ++i) y[i] = m_pfem->NodePosition(f.n[i], ntime);
+			for (int i = 0; i<4; ++i) y[i] = fem.NodePosition(f.n[i], ntime);
 			return ProjectToQuad(y, x, q, m_tol);
 		}
 		break;

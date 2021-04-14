@@ -863,6 +863,10 @@ FEItemListBuilder* FEBioModel::BuildItemList(const char* szname)
 		{
 			return BuildFESurface(szname + n + 1);
 		}
+		else if (strncmp(szname, "@elem_set", n) == 0)
+		{
+			return BuildFEPart(szname + n + 1);
+		}
 		else return nullptr;
 	}
 	else return BuildFENodeSet(szname);
@@ -1008,7 +1012,10 @@ bool FEBioModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szname)
 			{
 				n0 = po->MakeGNode(n0);
 				n1 = po->MakeGNode(n1);
-				set.AddElement(n0, n1);
+
+				GNode* pn0 = po->FindNode(n0); assert(pn0);
+				GNode* pn1 = po->FindNode(n1); assert(pn1);
+				set.AddElement(pn0, pn1);
 			}
 			else
 			{

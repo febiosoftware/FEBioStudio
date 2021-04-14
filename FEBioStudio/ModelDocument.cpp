@@ -1012,10 +1012,17 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup*
 
 	// apply modifier and create new mesh
 	FEMesh* newMesh = 0;
-	if (sel)
-		newMesh = modifier.Apply(sel);
-	else
-		newMesh = modifier.Apply(pm);
+	try {
+		if (sel)
+			newMesh = modifier.Apply(sel);
+		else
+			newMesh = modifier.Apply(pm);
+	}
+	catch (...)
+	{
+		modifier.SetError("Exception detected.");
+		return false;
+	}
 
 	// make sure the modifier succeeded
 	if (newMesh == 0) return false;
@@ -1025,7 +1032,7 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup*
 
 	// swap the meshes
 	string ss = modifier.GetName();
-	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str());
+	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str(), false);
 }
 
 bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FEGroup* sel)
@@ -1035,7 +1042,16 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 	if (mesh == 0) return false;
 
 	// create a new mesh
-	FESurfaceMesh* newMesh = modifier.Apply(mesh, sel);
+	FESurfaceMesh* newMesh = 0;
+	try {
+		newMesh = modifier.Apply(mesh, sel);
+	}
+	catch (...)
+	{
+		modifier.SetError("Exception detected.");
+		return false;
+	}
+
 	if (newMesh == 0) return false;
 
 	// if the object has an FE mesh, we need to delete it
@@ -1050,5 +1066,5 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 	else cmd = new CCmdChangeFESurfaceMesh(po, newMesh);
 
 	// swap the meshes
-	return DoCommand(cmd);
+	return DoCommand(cmd, false);
 }

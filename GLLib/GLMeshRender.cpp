@@ -96,7 +96,7 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 				n1 = n2 = n3 = n4 = n;
 			}
 
-			if ((pen == 0) || (pen->IsSolid() && ((!pen->IsVisible()) || (pen->IsSelected() && bsel))))
+			if ((pen == 0) || ((!pen->IsVisible()) || (pen->IsSelected() && pen->IsSolid() && bsel)))
 			{
 				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
 				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
@@ -1292,12 +1292,11 @@ void GLMeshRender::RenderGLEdges(GLMesh* pm, int nid)
 		}
 		glEnd();
 	}
-	else
+	else if (nid < (int)pm->m_EIL.size())
 	{
 		assert(pm->m_EIL.size() > 0);
 		glBegin(GL_LINES);
 		{
-			assert((nid >= 0) && (nid < (int)pm->m_EIL.size()));
 			pair<int, int> eil = pm->m_EIL[nid];
 
 			for (int i = 0; i<eil.second; ++i)

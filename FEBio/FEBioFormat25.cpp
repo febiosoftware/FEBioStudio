@@ -1460,7 +1460,8 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
     else if (att == "fluid RCR"                     ) psl = ParseLoadFluidFlowRCR                (tag);
     else if (att == "fluid backflow stabilization"  ) psl = ParseLoadFluidBackFlowStabilization  (tag);
     else if (att == "fluid tangential stabilization") psl = ParseLoadFluidTangentialStabilization(tag);
-    else if (att == "fluid-FSI traction" ) psl = ParseLoadFSITraction       (tag);
+    else if (att == "fluid-FSI traction"            ) psl = ParseLoadFSITraction       (tag);
+    else if (att == "biphasic-FSI traction"         ) psl = ParseLoadBFSITraction      (tag);
 	else ParseUnknownAttribute(tag, "type");
 
 	if (psl)
@@ -1620,6 +1621,10 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidNormalVelocity(XMLTag& tag)
         else if (tag == "parabolic") {
             bool b; tag.value(b);
             psl->SetBParab(b);
+        }
+        else if (tag == "prescribe_rim_pressure") {
+            bool b; tag.value(b);
+            psl->SetBRimP(b);
         }
         else ParseUnknownTag(tag);
         ++tag;
@@ -1828,6 +1833,19 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFSITraction(XMLTag& tag)
     FEFSITraction* psl = new FEFSITraction(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "FSInterfaceTraction%02d", CountLoads<FEFSITraction>(fem)+1);
+    psl->SetName(szname);
+    
+    return psl;
+}
+
+//-----------------------------------------------------------------------------
+FESurfaceLoad* FEBioFormat25::ParseLoadBFSITraction(XMLTag& tag)
+{
+    FEBioModel& febio = GetFEBioModel();
+    FEModel& fem = GetFEModel();
+    FEBFSITraction* psl = new FEBFSITraction(&fem);
+    char szname[128] = { 0 };
+    sprintf(szname, "BFSInterfaceTraction%02d", CountLoads<FEBFSITraction>(fem)+1);
     psl->SetName(szname);
     
     return psl;

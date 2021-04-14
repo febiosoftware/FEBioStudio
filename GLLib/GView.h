@@ -46,7 +46,7 @@ public:
 	void SetCurrentKey(GLCameraTransform* pkey);
 	void SetCurrentKey(int i);
 
-	void AddCameraKey(GLCameraTransform& t);
+	GLCameraTransform* AddCameraKey(GLCameraTransform& t);
 
 	void DeleteKey(GLCameraTransform* pt);
 

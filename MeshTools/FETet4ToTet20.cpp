@@ -179,6 +179,7 @@ FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
 		f1.n[9] = FFT[i] + NN + 2*NC;
 		f1.m_elem[0] = f0.m_elem[0];
 		f1.m_elem[1] = f0.m_elem[1];
+		f1.m_elem[2] = f0.m_elem[2];
 		f1.m_nbr[0] = f0.m_nbr[0];
 		f1.m_nbr[1] = f0.m_nbr[1];
 		f1.m_nbr[2] = f0.m_nbr[2];

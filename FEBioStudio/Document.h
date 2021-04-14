@@ -261,8 +261,8 @@ public:
 	bool CanRedo();
 	void AddCommand(CCommand* pcmd);
 	void AddCommand(CCommand* pcmd, const std::string& s);
-	bool DoCommand(CCommand* pcmd);
-	bool DoCommand(CCommand* pcmd, const std::string& s);
+	bool DoCommand(CCommand* pcmd, bool b = true);
+	bool DoCommand(CCommand* pcmd, const std::string& s, bool b = true);
 	void UndoCommand();
 	void RedoCommand();
 	const char* GetUndoCmdName();

@@ -140,24 +140,33 @@ bool FEVTKExport::Write(const char* szfile)
 	//fprintf(fp, "%d %d %d %d\n", parts, nodes, faces, edges);
 
 	// --- N O D E S ---
-	for (int i=0; i<model.Objects(); ++i)
+	vector<vec3d> nodeCoords(nodes);
+	nodes = 0;
+	for (int i = 0; i < model.Objects(); ++i)
 	{
-		GObject* po = model.Object(i);
-		FEMesh& m = *po->GetFEMesh();
-		for (int j=0; j<m.Nodes(); )
+		FEMesh& m = *model.Object(i)->GetFEMesh();
+		for (int j = 0; j < m.Nodes(); ++j)
 		{
-			for (int k =0; k<3 && j+k<m.Nodes();k++)
+			FENode& node = m.Node(j);
+			if (node.m_ntag >= 0)
 			{
-				FENode& n = m.Node(j+k);
-				vec3d r = m.LocalToGlobal(n.r);
-				fprintf(fp, "%g %g %g ", r.x, r.y, r.z);
+				vec3d r = m.LocalToGlobal(node.r);
+				nodeCoords[nodes] = r;
+				nodes++;
 			}
-			fprintf(fp, "\n");
-			j = j + 3;				
 		}
 	}
+	assert(nodes == nodeCoords.size());
+	for (int i=0; i<nodes; i+=3)
+	{
+		for (int k =0; (k<3) && ((i+k)<nodes);k++)
+		{
+			vec3d r = nodeCoords[i + k];
+			fprintf(fp, "%g %g %g ", r.x, r.y, r.z);
+		}
+		fprintf(fp, "\n");
+	}
 	fprintf(fp, "%s\n" ,"");
-
 
 	// --- E L E M E N T S ---
 
@@ -199,6 +208,46 @@ bool FEVTKExport::Write(const char* szfile)
 			}
 		}
 	}
+
+	//cell type
+	if (isHex8 || isTet4 || isTet10)
+	{
+		fprintf(fp, "%s\n", "");
+		fprintf(fp, "%s %d\n", "CELL_TYPES", totElems);
+		for (int i = 0; i < model.Objects(); ++i)
+		{
+			FEMesh& m = *model.Object(i)->GetFEMesh();
+			for (int j = 0; j < m.Elements(); ++j)
+			{
+				if (isHex8) fprintf(fp, "%s\n", "12");
+				if (isTet4) fprintf(fp, "%s\n", "10");
+				if (isTet10) fprintf(fp, "%s\n", "24");
+			}
+		}
+	}
+
+	// Write element IDs as cell data
+	if (m_ops.bpartIds)
+	{
+		fprintf(fp, "%s\n", "");
+		fprintf(fp, "%s %d\n", "CELL_DATA", totElems);
+		fprintf(fp, "%s %s %s\n", "SCALARS", "part_ids", "int");
+		fprintf(fp, "%s\n", "LOOKUP_TABLE default");
+		int IDoffset = 0;
+		for (int i = 0; i < model.Objects(); ++i)
+		{
+			int maxId = 0;
+			FEMesh& m = *model.Object(i)->GetFEMesh();
+			for (int j = 0; j < m.Elements(); ++j)
+			{
+				int gid = m.Element(j).m_gid;
+				if (gid > maxId) maxId = gid;
+				fprintf(fp, "%d\n", gid + IDoffset);
+			}
+			IDoffset += maxId + 1;
+		}
+	}
+
 	//----Shell Thickness ----
 	if (m_ops.bshellthick)
 	{
@@ -243,7 +292,7 @@ bool FEVTKExport::Write(const char* szfile)
 	}
 
 	//-----Nodal Data-----------
-	if (m_ops.bscalar_data)
+	if (m_ops.bscalardata)
 	{
 /*		fprintf(fp, "%s\n" ,"");
 		fprintf(fp, "%s %d\n" ,"POINT_DATA", nodes);
@@ -264,23 +313,6 @@ bool FEVTKExport::Write(const char* szfile)
 			}
 		}
 */
-	}
-
-	//cell type
-	if(isHex8 || isTet4 || isTet10)
-	{
-		fprintf(fp, "%s\n" ,"");		
-		fprintf(fp, "%s %d\n", "CELL_TYPES", totElems);
-		for (int i=0; i<model.Objects(); ++i)
-		{
-			FEMesh& m = *model.Object(i)->GetFEMesh();
-			for (int j=0; j<m.Elements(); ++j)
-			{
-				if (isHex8) fprintf(fp, "%s\n", "12");
-				if (isTet4) fprintf(fp, "%s\n", "10");
-				if (isTet10) fprintf(fp, "%s\n", "24");
-			}
-		}	
 	}
 
 	fclose(fp);

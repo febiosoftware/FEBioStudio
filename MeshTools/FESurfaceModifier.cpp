@@ -30,8 +30,6 @@ SOFTWARE.*/
 #include <MeshTools/FEGroup.h>
 #include <stdarg.h>
 
-std::string	FESurfaceModifier::m_error;
-
 FESurfaceModifier::FESurfaceModifier(const std::string& name)
 { 
 	SetName(name);
@@ -50,8 +48,14 @@ bool FESurfaceModifier::SetError(const char* szerr, ...)
 	vsprintf(sz, szerr, args);
 	va_end(args);
 
-	m_error = std::string(sz);
+	if (m_error.empty() == false) m_error += "\n";
+	m_error += std::string(sz);
 	return false;
+}
+
+void FESurfaceModifier::ClearError()
+{
+	m_error = "";
 }
 
 std::string FESurfaceModifier::GetErrorString()

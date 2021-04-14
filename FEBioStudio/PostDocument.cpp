@@ -181,7 +181,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		}
 
 		// If not, try to add it
-		if (bfound == false) Post::AddStandardDataField(*po, si);
+		if (bfound == false) Post::AddStandardDataField(*ps, si);
 	}
 
 	// see if we can reactivate the same data field
@@ -214,6 +214,8 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_fem = new Post::FEPostModel;
 	m_postObj = nullptr;
 	m_glm = nullptr;
+
+	SetItemMode(ITEM_ELEM);
 }
 
 CPostDocument::~CPostDocument()

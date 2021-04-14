@@ -94,6 +94,7 @@ void CAbstractTool::SetDecoration(GDecoration* deco)
 	}
 	m_deco = deco;
 	if (m_deco) view->AddDecoration(m_deco);
+	view->repaint();
 }
 
 // get the active mesh
@@ -101,6 +102,13 @@ FEMesh* CAbstractTool::GetActiveMesh()
 {
 	GObject* po = GetActiveObject();
 	if (po) return po->GetFEMesh();
+	else return nullptr;
+}
+
+FEMeshBase* CAbstractTool::GetActiveEditMesh()
+{
+	GObject* po = GetActiveObject();
+	if (po) return po->GetEditableMesh();
 	else return nullptr;
 }
 

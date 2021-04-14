@@ -914,13 +914,23 @@ public:
 		QVBoxLayout* pg = new QVBoxLayout(pwnd);
 		pg->addLayout(hl);
 
+		QHBoxLayout* bl = new QHBoxLayout;
+		bl->setContentsMargins(0,0,0,0);
+
+		QPushButton* resetButton = new QPushButton("Reset");
+		bl->addWidget(resetButton);
+		bl->addStretch();
+
 		buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply);
-		pg->addWidget(buttonBox);
+		bl->addWidget(buttonBox);
+
+		pg->addLayout(bl);
 
 		QObject::connect(buttonBox, SIGNAL(accepted()), pwnd, SLOT(accept()));
 		QObject::connect(buttonBox, SIGNAL(rejected()), pwnd, SLOT(reject()));
 		QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), pwnd, SLOT(onClicked(QAbstractButton*)));
 		QObject::connect(list, SIGNAL(currentRowChanged(int)), stack, SLOT(setCurrentIndex(int)));
+		QObject::connect(resetButton, SIGNAL(clicked()), pwnd, SLOT(onReset()));
 	}
 };
 
@@ -930,58 +940,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	m_pwnd = pwnd;
 	setWindowTitle("Options");
 
-	VIEW_SETTINGS& view = pwnd->GetGLView()->GetViewSettings();
-	CGLView* glview = pwnd->GetGLView();
-
-	ui->m_bg->m_bg1 = toQColor(view.m_col1);
-	ui->m_bg->m_bg2 = toQColor(view.m_col2);
-	ui->m_bg->m_fg = toQColor(view.m_fgcol);
-	ui->m_bg->m_nstyle = view.m_nbgstyle;
-
-	ui->m_display->m_meshColor = toQColor(view.m_mcol);
-	ui->m_display->m_nodeSize = (double) view.m_node_size;
-	ui->m_display->m_lineSize = (double) view.m_line_size;
-	ui->m_display->m_bnormal = view.m_bnorm;
-	ui->m_display->m_scaleNormal = view.m_scaleNormals;
-    ui->m_display->m_nconv = view.m_nconv;
-	ui->m_display->m_ntrans = view.m_transparencyMode;
-	ui->m_display->m_nobjcol = view.m_objectColor;
-	ui->m_display->m_dozsorting = view.m_bzsorting;
-
-	ui->m_physics->m_showRigidBodies = view.m_brigid;
-	ui->m_physics->m_showRigidJoints = view.m_bjoint;
-	ui->m_physics->m_showRigidLabels = view.m_showRigidLabels;
-	ui->m_physics->m_showRigidWalls = view.m_bwall;
-	ui->m_physics->m_showFibers = view.m_bfiber;
-	ui->m_physics->m_fiberScale = view.m_fiber_scale;
-	ui->m_physics->m_showMatAxes = view.m_blma;
-	ui->m_physics->m_showHiddenFibers = view.m_showHiddenFibers;
-
-	ui->m_ui->m_apply = (view.m_apply == 1);
-	ui->m_ui->m_bcmd = pwnd->clearCommandStackOnSave();
-	ui->m_ui->m_theme = pwnd->currentTheme();
-	ui->m_ui->m_showNewDialog = pwnd->showNewDialog();
-	ui->m_ui->m_autoSaveInterval = pwnd->autoSaveInterval();
-
-	ui->m_select->m_bconnect = view.m_bconn;
-	ui->m_select->m_ntagInfo = view.m_ntagInfo;
-	ui->m_select->m_backface = view.m_bcullSel;
-	ui->m_select->m_binterior = view.m_bext;
-	ui->m_select->m_bpart = view.m_bpart;
-
-	ui->m_light->m_blight = view.m_bLighting;
-	ui->m_light->m_diffuse = view.m_diffuse;
-	ui->m_light->m_ambient = view.m_ambient;
-	ui->m_light->m_bshadow = view.m_bShadows;
-	ui->m_light->m_shadow = view.m_shadow_intensity;
-	if (glview) ui->m_light->m_pos = glview->GetLightPosition();
-
-	CGLCamera* cam = glview->GetCamera();
-	ui->m_cam->m_banim = true;
-	ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
-	ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
-
-	ui->m_unit->m_unit = Units::GetUnitSystem();
+	UpdateSettings();
 
 	if (pwnd->GetDocManager()->Documents())
 	{
@@ -1005,6 +964,60 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	pwnd->GetDatabasePanel()->GetRepositoryFolder();
 }
 
+void CDlgSettings::UpdateSettings()
+{
+	VIEW_SETTINGS& view = m_pwnd->GetGLView()->GetViewSettings();
+	CGLView* glview = m_pwnd->GetGLView();
+
+	ui->m_bg->m_bg1 = toQColor(view.m_col1);
+	ui->m_bg->m_bg2 = toQColor(view.m_col2);
+	ui->m_bg->m_fg = toQColor(view.m_fgcol);
+	ui->m_bg->m_nstyle = view.m_nbgstyle;
+
+	ui->m_display->m_meshColor = toQColor(view.m_mcol);
+	ui->m_display->m_nodeSize = (double)view.m_node_size;
+	ui->m_display->m_lineSize = (double)view.m_line_size;
+	ui->m_display->m_bnormal = view.m_bnorm;
+	ui->m_display->m_scaleNormal = view.m_scaleNormals;
+	ui->m_display->m_nconv = view.m_nconv;
+	ui->m_display->m_ntrans = view.m_transparencyMode;
+	ui->m_display->m_nobjcol = view.m_objectColor;
+	ui->m_display->m_dozsorting = view.m_bzsorting;
+
+	ui->m_physics->m_showRigidBodies = view.m_brigid;
+	ui->m_physics->m_showRigidJoints = view.m_bjoint;
+	ui->m_physics->m_showRigidLabels = view.m_showRigidLabels;
+	ui->m_physics->m_showRigidWalls = view.m_bwall;
+	ui->m_physics->m_showFibers = view.m_bfiber;
+	ui->m_physics->m_fiberScale = view.m_fiber_scale;
+	ui->m_physics->m_showMatAxes = view.m_blma;
+	ui->m_physics->m_showHiddenFibers = view.m_showHiddenFibers;
+
+	ui->m_ui->m_apply = (view.m_apply == 1);
+	ui->m_ui->m_bcmd = m_pwnd->clearCommandStackOnSave();
+	ui->m_ui->m_theme = m_pwnd->currentTheme();
+	ui->m_ui->m_showNewDialog = m_pwnd->showNewDialog();
+	ui->m_ui->m_autoSaveInterval = m_pwnd->autoSaveInterval();
+
+	ui->m_select->m_bconnect = view.m_bconn;
+	ui->m_select->m_ntagInfo = view.m_ntagInfo;
+	ui->m_select->m_backface = view.m_bcullSel;
+	ui->m_select->m_binterior = view.m_bext;
+	ui->m_select->m_bpart = view.m_bpart;
+
+	ui->m_light->m_blight = view.m_bLighting;
+	ui->m_light->m_diffuse = view.m_diffuse;
+	ui->m_light->m_ambient = view.m_ambient;
+	ui->m_light->m_bshadow = view.m_bShadows;
+	ui->m_light->m_shadow = view.m_shadow_intensity;
+	if (glview) ui->m_light->m_pos = glview->GetLightPosition();
+
+	CGLCamera* cam = glview->GetCamera();
+	ui->m_cam->m_banim = true;
+	ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
+	ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
+}
+
 void CDlgSettings::UpdatePalettes()
 {
 	ui->m_pal->pal->clear();
@@ -1021,6 +1034,11 @@ void CDlgSettings::UpdatePalettes()
 
 void CDlgSettings::showEvent(QShowEvent* ev)
 {
+	UpdateUI();
+}
+
+void CDlgSettings::UpdateUI()
+{
 	ui->bg_panel->Update(ui->m_bg);
 	ui->di_panel->Update(ui->m_display);
 	ui->ph_panel->Update(ui->m_physics);
@@ -1033,7 +1051,6 @@ void CDlgSettings::showEvent(QShowEvent* ev)
 void CDlgSettings::apply()
 {
 	CGLDocument* pdoc = m_pwnd->GetGLDocument();
-
 	CGLView* glview = m_pwnd->GetGLView();
 	VIEW_SETTINGS& view = glview->GetViewSettings();
 
@@ -1081,9 +1098,16 @@ void CDlgSettings::apply()
 	if (cam) cam->SetCameraSpeed(ui->m_cam->m_speed);
 
 	m_pwnd->setClearCommandStackOnSave(ui->m_ui->m_bcmd);
-	m_pwnd->setCurrentTheme(ui->m_ui->m_theme);
 	m_pwnd->setShowNewDialog(ui->m_ui->m_showNewDialog);
 	m_pwnd->setAutoSaveInterval(ui->m_ui->m_autoSaveInterval);
+
+	int oldTheme = m_pwnd->currentTheme();
+	if (ui->m_ui->m_theme != oldTheme)
+	{
+		m_pwnd->setCurrentTheme(ui->m_ui->m_theme);
+		view.Defaults(ui->m_ui->m_theme);
+		QMessageBox::information(this, "FEBio Studio", "Changing the theme requires a restart of FEBio Studio for all changes to take effect.");
+	}
 
 	// update units
 	int newUnit = ui->m_unit->m_unit;
@@ -1125,4 +1149,15 @@ void CDlgSettings::accept()
 void CDlgSettings::onClicked(QAbstractButton* button)
 {
 	if (ui->buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) apply();
+}
+
+void CDlgSettings::onReset()
+{
+	CGLDocument* pdoc = m_pwnd->GetGLDocument();
+	CGLView* glview = m_pwnd->GetGLView();
+	VIEW_SETTINGS& view = glview->GetViewSettings();
+	int ntheme = m_pwnd->currentTheme();
+	view.Defaults(ntheme);
+	UpdateSettings();
+	UpdateUI();
 }

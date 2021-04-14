@@ -53,5 +53,6 @@ class FE1DPointFunction : public FE1DFunction
 public:
 	FE1DPointFunction();
 	FELoadCurve* GetPointCurve();
+	void SetPointCurve(FELoadCurve& lc);
 	DECLARE_REGISTERED(FE1DPointFunction);
 };

@@ -124,7 +124,11 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn, int 
 	for (int i = 0; i < elist.size(); ++i)
 	{
 		int eid = elist[i];
-		Ve[eid] = FEMeshMetrics::ElementVolume(*pm, pm->Element(eid));
+		FEElement& el = pm->Element(eid);
+		if (el.IsSolid())
+			Ve[eid] = FEMeshMetrics::ElementVolume(*pm, el);
+		else
+			Ve[eid] = FEMeshMetrics::ShellArea(*pm, el);
 	}
 
 	// build the node list

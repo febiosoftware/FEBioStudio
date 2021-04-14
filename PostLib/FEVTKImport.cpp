@@ -44,10 +44,6 @@ bool FEVTKimport::Load(const char* szfile)
 	FEPostModel& fem = *m_fem;
 	fem.Clear();
 
-	// add one material to the scene
-	FEMaterial mat;
-	fem.AddMaterial(mat);
-
 	if (!Open(szfile, "rt")) return errf("Failed opening file %s.", szfile);
 
 	char szline[256] = {0}, *ch;
@@ -72,7 +68,6 @@ bool FEVTKimport::Load(const char* szfile)
 	int nodes = atoi(ch+6);
 	
 	int size = 0;
-	int nparts = 0;
 	int edges = 0;
 	int elems = 0;
 	if (nodes <= 0) return errf("Invalid number of nodes.");
@@ -177,10 +172,7 @@ bool FEVTKimport::Load(const char* szfile)
 	}
 	ch = fgets(szline, 255, m_fp);
 
-	// update the mesh
 	fem.AddMesh(pm);
-	pm->BuildMesh();
-	fem.UpdateBoundingBox();
 
 	// add a state
 	FEState* ps = new FEState(0.f, m_fem, m_fem->GetFEMesh(0));
@@ -189,6 +181,7 @@ bool FEVTKimport::Load(const char* szfile)
 
 	while (ch != NULL) //making sure the file doesn't ends here
 	{
+		bool floatFormat = true;
 		//reading the point data
 		do
 		{	
@@ -205,6 +198,7 @@ bool FEVTKimport::Load(const char* szfile)
 				isCellData = true;
 			}
 			if (strstr(ch, "SCALARS") != 0) isScalar = true;
+			if ((strstr(ch, "int") != 0) || (strstr(ch, "INT") != 0)) floatFormat = false;
 			if (strstr(ch, "ShellThickness") != 0) isShellThickness = true;
 			ch = fgets(szline, 255, m_fp);
 		}
@@ -216,7 +210,7 @@ bool FEVTKimport::Load(const char* szfile)
 			return errf("Only scalar data is supported.");	
 		vector<double> data; 
 		//reading shell thickness
-		if(isShellThickness || isScalar)
+		if((isShellThickness || isScalar) && floatFormat)
 		{			
 			data.reserve(size);
 			//Check how many nodes are there in each line
@@ -246,31 +240,94 @@ bool FEVTKimport::Load(const char* szfile)
 				}
 			}
 
-			fem.AddDataField(new FEDataField_T<FENodeData<float> >("data", EXPORT_DATA));
+			fem.AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), "data");
 
 			FENodeData<float>& df = dynamic_cast<FENodeData<float>&>(ps->m_Data[0]);
 			for (int j=0; j<pm->Nodes(); ++j) df[j] = (float) data[j];
 		}
 
 		//reading cell data
-		if(isCellData)
+		if (isCellData)
 		{
-			fem.AddDataField(new FEDataField_T<FEElementData<float, DATA_ITEM> >("data", EXPORT_DATA));
-
-			FEElementData<float, DATA_ITEM>& ed = dynamic_cast<FEElementData<float, DATA_ITEM>&>(ps->m_Data[ ps->m_Data.size() - 1]);
-
-			for (i=0; i<size; ++i)
+			if (floatFormat)
 			{
-				FEElement_& el = pm->ElementRef(i);
-				ch = fgets(szline, 255, m_fp);
-				if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-				nread = sscanf(szline, "%lg", &temp[0]);
-				ed.add(i, (float) temp[0]);
+				fem.AddDataField(new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem, EXPORT_DATA), "data");
+
+				FEElementData<float, DATA_ITEM>& ed = dynamic_cast<FEElementData<float, DATA_ITEM>&>(ps->m_Data[ps->m_Data.size() - 1]);
+
+				for (i = 0; i < size; ++i)
+				{
+					FEElement_& el = pm->ElementRef(i);
+					ch = fgets(szline, 255, m_fp);
+					if (ch == 0) return errf("An unexpected error occured while reading the file data.");
+					nread = sscanf(szline, "%lg", &temp[0]);
+					ed.add(i, (float)temp[0]);
+				}
+			}
+			else
+			{
+				// assume these are part IDs
+				for (i = 0; i < size; ++i)
+				{
+					FEElement_& el = pm->ElementRef(i);
+					ch = fgets(szline, 255, m_fp);
+					if (ch == 0) return errf("An unexpected error occured while reading the file data.");
+					nread = sscanf(szline, "%d", &el.m_gid);
+				}
 			}
 		}		
 	}
 
 	Close();
+
+	// count the parts
+	int nparts = pm->CountElementPartitions();
+
+	// add one material for each part
+	for (int i = 0; i < nparts; ++i)
+	{
+		FEMaterial mat;
+		fem.AddMaterial(mat);
+	}
+
+	// the mesh will be partitioned in the BuildMesh function based on the material IDs
+	// so, we have to match the material IDs to the part IDs
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		el.m_MatID = el.m_gid;
+	}
+
+	// make sure the mat IDs are 0-based and sequential
+	int minId, maxId;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		int mid = pm->Element(i).m_MatID;
+		if ((i == 0) || (mid < minId)) minId = mid;
+		if ((i == 0) || (mid > maxId)) maxId = mid;
+	}
+	int nsize = maxId - minId + 1;
+	vector<int> lut(nsize, 0);
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		int mid = pm->Element(i).m_MatID - minId;
+		lut[mid]++;
+	}
+	int m = 0;
+	for (int i = 0; i < nsize; ++i)
+	{
+		if (lut[i] > 0) lut[i] = m++;
+		else lut[i] = -1;
+	}
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		int mid = pm->Element(i).m_MatID - minId;
+		pm->Element(i).m_MatID = lut[mid]; assert(lut[mid] >= 0);
+	}
+
+	// update the mesh
+	pm->BuildMesh();
+	fem.UpdateBoundingBox();
 
 	return true;
 }
@@ -282,13 +339,14 @@ bool FEVTKimport::readPointData(char* szline)
 	char buf[3][64] = {0};
 	int nread = sscanf(szline, "%s %s %s", buf[0], buf[1], buf[2]);
 
+	FEPostModel& fem = *m_fem;
 
 	bool bVectors = false;
 	if (strcmp(buf[0], "VECTORS") == 0) bVectors = true;
 
 	if (bVectors)
 	{
-		m_fem->AddDataField(new FEDataField_T<FENodeData<vec3f> >(buf[1], EXPORT_DATA));
+		m_fem->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), buf[1]);
 
 		FENodeData<vec3f>& df = dynamic_cast<FENodeData<vec3f>&>(m_ps->m_Data[  m_ps->m_Data.size() - 1 ]);
 

@@ -104,6 +104,7 @@ FEMesh* FETet15ToTet4::Apply(FEMesh* pm)
 		f1.n[2] = pm->Node(f0.n[2]).m_ntag;
 		f1.m_elem[0] = f0.m_elem[0];
 		f1.m_elem[1] = f0.m_elem[1];
+		f1.m_elem[2] = f0.m_elem[2];
 		f1.m_nbr[0] = f0.m_nbr[0];
 		f1.m_nbr[1] = f0.m_nbr[1];
 		f1.m_nbr[2] = f0.m_nbr[2];

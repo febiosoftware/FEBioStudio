@@ -89,6 +89,8 @@ public:
 		method = op.method;
 		obj_tol = op.obj_tol;
 		f_diff_scale = op.f_diff_scale;
+		outLevel = op.outLevel;
+		printLevel = op.printLevel;
 		m_params = op.m_params;
 		m_data = op.m_data;
 		m_objParam = op.m_objParam;
@@ -99,6 +101,8 @@ public:
 		method = op.method;
 		obj_tol = op.obj_tol;
 		f_diff_scale = op.f_diff_scale;
+		outLevel = op.outLevel;
+		printLevel = op.printLevel;
 		m_params = op.m_params;
 		m_data = op.m_data;
 		m_objParam = op.m_objParam;

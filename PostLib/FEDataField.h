@@ -35,7 +35,7 @@ using std::string;
 namespace Post {
 
 // forward declarations
-class CGLModel;
+class FEPostModel;
 
 //-----------------------------------------------------------------------------
 // data field flags
@@ -48,15 +48,12 @@ enum DataFieldFlags {
 class FEDataField
 {
 public:
-	enum { MAX_DATA_NAME = 64 };
+	FEDataField(FEPostModel* glm, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
 
-public:
-	FEDataField(const std::string& name, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
-
-	virtual ~FEDataField(){}
+	virtual ~FEDataField();
 
 	//! get the name of the field
-	const std::string& GetName() const { return m_name; }
+	const std::string& GetName() const;
 
 	//! set the name of the field
 	void SetName(const std::string& newName);
@@ -104,6 +101,8 @@ public:
 	void SetArrayNames(vector<string>& n);
 	vector<string> GetArrayNames() const;
 
+	FEPostModel* GetModel() { return m_fem; }
+
 protected:
 	int				m_nfield;	//!< field ID
 	Data_Type		m_ntype;	//!< data type
@@ -115,6 +114,7 @@ protected:
 	int				m_arraySize;	//!< data size for arrays
 	vector<string>	m_arrayNames;	//!< (optional) names of array components
 
+	FEPostModel*	m_fem;
 
 public:
 	// TODO: Add properties list for data fields (e.g. strains and curvature could use this)
@@ -126,12 +126,13 @@ public:
 template<typename T> class FEDataField_T : public FEDataField
 {
 public:
-	FEDataField_T(const std::string& name, unsigned int flag = 0) : FEDataField(name, T::Type(), T::Format(), T::Class(), flag) {}
+	FEDataField_T(FEPostModel* fem, unsigned int flag = 0) : FEDataField(fem, T::Type(), T::Format(), T::Class(), flag) {}
 	FEMeshData* CreateData(FEState* pstate) { return new T(pstate, this); }
 
 	virtual FEDataField* Clone() const
 	{
-		FEDataField_T<T>* newData = new FEDataField_T<T>(GetName());
+		FEDataField_T<T>* newData = new FEDataField_T<T>(m_fem);
+		newData->SetName(GetName());
 		return newData;
 	}
 
@@ -146,7 +147,7 @@ typedef vector<FEDataField*>::iterator FEDataFieldPtr;
 class FEArrayDataField : public FEDataField
 {
 public:
-	FEArrayDataField(const std::string& name, Data_Class c, Data_Format f, unsigned int flag = 0);
+	FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag = 0);
 
 	FEDataField* Clone() const override;
 
@@ -157,7 +158,7 @@ public:
 class FEArrayVec3DataField : public FEDataField
 {
 public:
-	FEArrayVec3DataField(const std::string& name, Data_Class c, unsigned int flag = 0);
+	FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag = 0);
 
 	FEDataField* Clone() const override;
 
@@ -165,21 +166,27 @@ public:
 };
 
 //-------------------------------------------------------------------------------
-bool ExportDataField(CGLModel& glm, const FEDataField& df, const char* szfile);
-bool ExportNodeDataField(CGLModel& glm, const FEDataField& df, FILE* fp);
-bool ExportFaceDataField(CGLModel& glm, const FEDataField& df, FILE* fp);
-bool ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp);
+bool ExportDataField(FEPostModel& fem, const FEDataField& df, const char* szfile);
+bool ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
+bool ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
+bool ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
 
 //-----------------------------------------------------------------------------
-bool AddStandardDataField(CGLModel& glm, const std::string& dataField, bool bselection_only = false);
-bool AddNodeDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype);
-bool AddFaceDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype);
-bool AddElemDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype);
+void InitStandardDataFields();
+int StandardDataFields(); 
+std::string GetStandarDataFieldName(int i);
+bool AddStandardDataField(FEPostModel& fem, const std::string& dataField);
+bool AddStandardDataField(FEPostModel& fem, const std::string& dataField, std::vector<int> selectionList);
+
+//-----------------------------------------------------------------------------
+bool AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char* szname, int ntype);
+bool AddFaceDataFromFile(FEPostModel& fem, const char* szfile, const char* szname, int ntype);
+bool AddElemDataFromFile(FEPostModel& fem, const char* szfile, const char* szname, int ntype);
 
 class FEPlotObjectData : public FEDataField
 {
 public:
-	FEPlotObjectData(const std::string& name, Data_Type ntype) : FEDataField(name, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
+	FEPlotObjectData(FEPostModel* fem, Data_Type ntype) : FEDataField(fem, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
 
 	FEDataField* Clone() const override { assert(false); return nullptr; };
 	FEMeshData* CreateData(FEState* pstate) override { assert(false); return nullptr; }

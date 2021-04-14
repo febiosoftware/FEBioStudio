@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include "tet.h"
 #include "penta.h"
 #include "pyra.h"
+#include "tri3.h"
+#include "quad4.h"
 
 int FTHEX8[6][4] = {
 	{ 0, 1, 5, 4 },
@@ -605,7 +607,18 @@ double TetMaxDihedralAngle(const FEMesh& mesh, const FEElement& el)
 }
 
 //-----------------------------------------------------------------------------
+vec3d GradientSolid(const FEMesh& mesh, const FEElement& el, int node, double* v);
+vec3d GradientShell(const FEMesh& mesh, const FEElement& el, int node, double* v);
+
 vec3d Gradient(const FEMesh& mesh, const FEElement& el, int node, double* v)
+{
+	if (el.IsSolid()) return GradientSolid(mesh, el, node, v);
+	else if (el.IsShell()) return GradientShell(mesh, el, node, v);
+	assert(false);
+	return vec3d(0, 0, 0);
+}
+
+vec3d GradientSolid(const FEMesh& mesh, const FEElement& el, int node, double* v)
 {
 	const int MN = FEElement::MAX_NODES;
 	vec3d r[MN];
@@ -725,9 +738,97 @@ vec3d Gradient(const FEMesh& mesh, const FEElement& el, int node, double* v)
 	return g;
 }
 
+vec3d GradientShell(const FEMesh& mesh, const FEElement& el, int node, double* v)
+{
+	const int MN = FEElement::MAX_NODES;
+	vec3d r[MN];
+	const int ne = el.Nodes();
+	mesh.ElementNodeLocalPositions(el, r);
+
+	// shape function derivatives at node
+	double G[2][MN] = { 0 };
+	double q[2];
+	switch (el.Type())
+	{
+	case FE_TRI3:
+	{
+		TRI3::iso_coord(node, q);
+		TRI3::shape_deriv(G[0], G[1], q[0], q[1]);
+	}
+	break;
+	case FE_QUAD4:
+	{
+		QUAD4::iso_coord(node, q);
+		QUAD4::shape_deriv(G[0], G[1], q[0], q[1]);
+	}
+	break;
+	default:
+		return vec3d(0, 0, 0);
+	}
+
+	// get the surface normal
+	int n0 = node;
+	int n1 = (node + 1) % ne;
+	int n2 = (node + (ne-1)) % ne;
+	vec3d e1 = r[n1] - r[n0];
+	vec3d e2 = r[n2] - r[n0];
+	vec3d e3 = e1 ^ e2;
+	e3.Normalize();
+
+	// shell thickness
+	double h = 1.0;
+
+	// Jacobian
+	mat3d J; J.zero();
+	for (int i = 0; i < ne; ++i)
+	{
+		J[0][0] += G[0][i] * r[i].x; J[0][1] += G[1][i] * r[i].x;
+		J[1][0] += G[0][i] * r[i].y; J[1][1] += G[1][i] * r[i].y;
+		J[2][0] += G[0][i] * r[i].z; J[2][1] += G[1][i] * r[i].z;
+	}
+	J[0][2] += h*e3.x;
+	J[1][2] += h*e3.y;
+	J[2][2] += h*e3.z;
+
+	J = J.inverse();
+	J = J.transpose();
+
+	// shape function gradients
+	double Gx[MN] = { 0 }, Gy[MN] = { 0 }, Gz[MN] = { 0 };
+	for (int i = 0; i < ne; ++i)
+	{
+		Gx[i] += J[0][0] * G[0][i] + J[0][1] * G[1][i];
+		Gy[i] += J[1][0] * G[0][i] + J[1][1] * G[1][i];
+		Gz[i] += J[2][0] * G[0][i] + J[2][1] * G[1][i];
+	}
+
+	// gradient
+	vec3d g(0, 0, 0);
+	for (int j = 0; j < ne; ++j)
+	{
+		g.x += Gx[j] * v[j];
+		g.y += Gy[j] * v[j];
+		g.z += Gz[j] * v[j];
+	}
+
+	return g;
+}
+
 //-----------------------------------------------------------------------------
 // evaluate gradient at element nodes (i.e. Grad{Na(x_b)})
+
+vec3d ShapeGradientSolid(const FEMesh& mesh, const FEElement_& el, int na, int nb);
+vec3d ShapeGradientShell(const FEMesh& mesh, const FEElement_& el, int na, int nb);
+
 vec3d ShapeGradient(const FEMesh& mesh, const FEElement_& el, int na, int nb)
+{
+	if (el.IsSolid()) return ShapeGradientSolid(mesh, el, na, nb);
+	else if (el.IsShell()) return ShapeGradientShell(mesh, el, na, nb);
+	assert(false);
+	return vec3d(0, 0, 0);
+}
+
+vec3d ShapeGradientSolid(const FEMesh& mesh, const FEElement_& el, int na, int nb)
 {
 	const int MN = FEElement::MAX_NODES;
 	vec3d r[MN];
@@ -831,6 +932,71 @@ vec3d ShapeGradient(const FEMesh& mesh, const FEElement_& el, int na, int nb)
 	grad.x = J[0][0] * G[0][na] + J[0][1] * G[1][na] + J[0][2] * G[2][na];
 	grad.y = J[1][0] * G[0][na] + J[1][1] * G[1][na] + J[1][2] * G[2][na];
 	grad.z = J[2][0] * G[0][na] + J[2][1] * G[1][na] + J[2][2] * G[2][na];
+
+	return grad;
+}
+
+// NOTE: This is a work in progress and was implemented to apply the scalar field tool to shells.
+vec3d ShapeGradientShell(const FEMesh& mesh, const FEElement_& el, int na, int nb)
+{
+	const int MN = FEElement::MAX_NODES;
+	vec3d r[MN];
+	const int ne = el.Nodes();
+	mesh.ElementNodeLocalPositions(el, r);
+
+	// shape function derivatives at node
+	double G[2][FEElement::MAX_NODES] = { 0 };
+	double q[2];
+	switch (el.Type())
+	{
+	case FE_TRI3:
+	{
+		TRI3::iso_coord(nb, q);
+		TRI3::shape_deriv(G[0], G[1], q[0], q[1]);
+	}
+	break;
+	case FE_QUAD4:
+	{
+		QUAD4::iso_coord(nb, q);
+		QUAD4::shape_deriv(G[0], G[1], q[0], q[1]);
+	}
+	break;
+	default:
+		return vec3d(0, 0, 0);
+	}
+
+	// get the surface normal
+	int n0 = nb;
+	int n1 = (nb + 1) % ne;
+	int n2 = (nb + (ne - 1)) % ne;
+	vec3d e1 = r[n1] - r[n0];
+	vec3d e2 = r[n2] - r[n0];
+	vec3d e3 = e1 ^ e2;
+	e3.Normalize();
+
+	// shell thickenss
+	double h = 1.0;
+
+	// Jacobian at node b
+	mat3d J; J.zero();
+	for (int i = 0; i < ne; ++i)
+	{
+		J[0][0] += G[0][i] * r[i].x; J[0][1] += G[1][i] * r[i].x;
+		J[1][0] += G[0][i] * r[i].y; J[1][1] += G[1][i] * r[i].y;
+		J[2][0] += G[0][i] * r[i].z; J[2][1] += G[1][i] * r[i].z;
+	}
+	J[0][2] += h*e3.x;
+	J[1][2] += h*e3.y;
+	J[2][2] += h*e3.z;
+
+	J = J.inverse();
+	J = J.transpose();
+
+	// shape function gradient
+	vec3d grad(0, 0, 0);
+	grad.x = J[0][0] * G[0][na] + J[0][1] * G[1][na];
+	grad.y = J[1][0] * G[0][na] + J[1][1] * G[1][na];
+	grad.z = J[2][0] * G[0][na] + J[2][1] * G[1][na];
 
 	return grad;
 }

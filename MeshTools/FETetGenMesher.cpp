@@ -684,6 +684,7 @@ FEMesh* FETetGenMesher::build_tet10_mesh(FEMesh* pm)
 		f1.n[5] = FE[i][2] + NN;
 		f1.m_elem[0] = f0.m_elem[0];
 		f1.m_elem[1] = f0.m_elem[1];
+		f1.m_elem[2] = f0.m_elem[2];
 	}
 
 	// create the new edges

@@ -60,6 +60,15 @@ public:
 		m_obs.insert(m_obs.begin() + pos, po);
 	}
 
+	int Find(FSObject* po)
+	{
+		for (int i = 0; i < m_obs.size(); ++i)
+		{
+			if (m_obs[i] == po) return i;
+		}
+		return -1;
+	}
+
 protected:
 	std::vector<FSObject*>	m_obs;
 };
