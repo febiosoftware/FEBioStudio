@@ -352,8 +352,10 @@ else()
 	target_link_libraries(FEBioStudio -Wl,--start-group)
 endif()
 
-if(NOT WIN32 AND ${OpenMP_C_FOUND})
-    target_link_libraries(FEBioStudio ${OpenMP_C_LIBRARIES})
+if(NOT WIN32)
+    if(${OpenMP_C_FOUND})
+        target_link_libraries(FEBioStudio ${OpenMP_C_LIBRARIES})
+    endif()
 endif()
 
 if(USE_MMG)
