@@ -109,7 +109,15 @@ endif()
 if(CAD_FEATURES)
     set(NETGEN_LIBS "")
     
-    set(NETGEN_LIB_NAMES nglib csg interface mesh occ)
+    set(NETGEN_LIB_NAMES nglib csg interface occ)
+    
+    # This NetGen library is called "meshing" on Windows and "mesh" elsewhere.
+    if(WIN32)
+        list(APPEND NETGEN_LIB_NAMES meshing)
+    else()
+        list(APPEND NETGEN_LIB_NAMES mesh)
+    endif()
+    
     foreach(name IN LISTS NETGEN_LIB_NAMES)
         findLib(${name} NETGEN_LIB_DIR NETGEN_LIB)
         list(APPEND NETGEN_LIBS ${NETGEN_LIB})
@@ -352,8 +360,10 @@ else()
 	target_link_libraries(FEBioStudio -Wl,--start-group)
 endif()
 
-if(NOT WIN32 AND ${OpenMP_C_FOUND})
-    target_link_libraries(FEBioStudio ${OpenMP_C_LIBRARIES})
+if(NOT WIN32)
+    if(${OpenMP_C_FOUND})
+        target_link_libraries(FEBioStudio ${OpenMP_C_LIBRARIES})
+    endif()
 endif()
 
 if(USE_MMG)

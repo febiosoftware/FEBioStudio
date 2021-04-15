@@ -1070,7 +1070,9 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CModelDocument* doc)
 	for (int i=0; i<doc->FEBioJobs(); ++i)
 	{
 		CFEBioJob* job = doc->GetFEBioJob(i);
-		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(job->GetName()), MT_JOB, 0, job, new CFEBioJobProps(m_view->GetMainWindow(), m_view, job), new CJobValidator(job), SHOW_PROPERTY_FORM);
+		QString name = QString::fromStdString(job->GetName());
+		if (job->GetStatus() == CFEBioJob::RUNNING) name += " [RUNNING]";
+		QTreeWidgetItem* t2 = AddTreeItem(t1, name, MT_JOB, 0, job, new CFEBioJobProps(m_view->GetMainWindow(), m_view, job), new CJobValidator(job), SHOW_PROPERTY_FORM);
 /*
 		CPostDoc* doc = job->GetPostDoc();
 		if (doc)
