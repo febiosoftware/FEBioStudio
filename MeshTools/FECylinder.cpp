@@ -35,6 +35,93 @@ SOFTWARE.*/
 
 extern double gain2(double x, double r, double n);
 
+class FECylinderShapeModifier : public FEShapeModifier
+{
+public:
+	FECylinderShapeModifier(double radius, double ratio, bool br, double gr, int ns) 
+	{ 
+		m_R = radius; 
+		m_r = ratio;
+		m_br = br;
+		m_gr = gr;
+		m_ns = ns;
+	}
+
+	vec3d Apply(const vec3d& r) override
+	{
+		vec3d rn = r;
+
+		double R1 = m_R;
+		double R0 = m_r;
+		if (R0 < 0) R0 = 0;
+		if (R0 > 1) R0 = 1;
+		R0 *= R1;
+
+		double d0 = R0 / sqrt(2.0);
+		double d1 = R1 / sqrt(2.0);
+
+		// project the nodes onto a cylinder
+		vec3d r0, r1;
+
+		// get the nodal coordinate in the template
+		double x = rn.x;
+		double y = rn.y;
+
+		// get the max-distance 
+		double D = fmax(fabs(x), fabs(y));
+
+		if (D <= 1)
+		{
+			rn.x *= d0;
+			rn.y *= d0;
+		}
+		else
+		{
+			// "normalize" the coordinates
+			// with respect to the max distance
+			double r = x / D;
+			double s = y / D;
+
+			vec3d r0;
+			if (fabs(x) >= fabs(y))
+			{
+				double u = x / fabs(x);
+				r0.x = u * R1*cos(PI*0.25*s);
+				r0.y = R1 * sin(PI*0.25*s);
+			}
+			else
+			{
+				double u = y / fabs(y);
+				r0.y = u * R1*cos(PI*0.25*r);
+				r0.x = R1 * sin(PI*0.25*r);
+			}
+
+			vec3d r1(r*d0, s*d0, 0);
+			double a = D - 1;
+
+			if (m_br)
+			{
+				if (a <= 0.5)
+					a = 0.5*gain2(2 * a, m_gr, m_ns);
+				else
+					a = 1 - 0.5*gain2(2 - 2 * a, m_gr, m_ns);
+			}
+			else a = gain2(a, m_gr, m_ns);
+
+			rn.x = r0.x*a + r1.x*(1 - a);
+			rn.y = r0.y*a + r1.y*(1 - a);
+		}
+
+		return rn;
+	}
+
+private:
+	double	m_R, m_r;
+	bool	m_br;
+	double	m_gr;
+	int		m_ns;
+};
+
 //-----------------------------------------------------------------------------
 // Constructor
 FECylinder::FECylinder(GCylinder* po)
@@ -88,11 +175,9 @@ FEMesh* FECylinder::BuildButterfly()
 
 	// get the object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
-	double R1 = param.GetFloatValue(GCylinder::RADIUS);
 	double h = param.GetFloatValue(GCylinder::HEIGHT);
 
 	// get the mesh parameters
-	m_r = GetFloatValue(RATIO);
 	m_gz = GetFloatValue(ZZ);
 	m_gr = GetFloatValue(GR);
 	m_nd = GetIntValue(NDIV);
@@ -103,7 +188,6 @@ FEMesh* FECylinder::BuildButterfly()
 	m_br = GetBoolValue(GR2);
 
 	// get parameters
-	double R0 = m_r;
 	int nd = m_nd;
 	int ns = m_ns;
 	int nz = m_nz;
@@ -114,16 +198,10 @@ FEMesh* FECylinder::BuildButterfly()
 	if (nd < 1) nd = 1;
 	if (ns < 1) ns = 1;
 	if (nz < 1) nz = 1;
-
-	if (R0 < 0) R0 = 0;
-	if (R0 > 1) R0 = 1;
-
 	if (nz == 1) m_bz = false;
 
-	R0 *= R1;
-
-	double d0 = R0/sqrt(2.0);
-	double d1 = R1/sqrt(2.0);
+	double R1 = param.GetFloatValue(GCylinder::RADIUS);
+	m_r = GetFloatValue(RATIO);
 
 	// create the MB nodes
 	m_MBNode.resize(34);
@@ -289,63 +367,29 @@ FEMesh* FECylinder::BuildButterfly()
 	m_MBNode[33].SetID(6);
 	m_MBNode[27].SetID(7);
 
+	// apply a global shape modifier
+	FEShapeModifier* mod = new FECylinderShapeModifier(R1, m_r, m_br, m_gr, m_ns);
+	SetGlobalShapeModifier(mod);
+//	SetShapeModifier(b5, mod);
+//	SetShapeModifier(b6, mod);
+//	SetShapeModifier(b7, mod);
+//	SetShapeModifier(b8, mod);
+//	SetShapeModifier(b9, mod);
+//	SetShapeModifier(b10, mod);
+//	SetShapeModifier(b11, mod);
+//	SetShapeModifier(b12, mod);
+//	SetShapeModifier(F1, mod);
+//	SetShapeModifier(F2, mod);
+//	SetShapeModifier(F3, mod);
+//	SetShapeModifier(F4, mod);
+//	SetShapeModifier(F5, mod);
+//	SetShapeModifier(F6, mod);
+//	SetShapeModifier(F7, mod);
+//	SetShapeModifier(F8, mod);
+
+
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
-
-	// project the nodes onto a cylinder
-	vec3d r0, r1;
-	for (int i=0; i<pm->Nodes(); ++i)
-	{
-		// get the nodal coordinate in the template
-		vec3d& rn = pm->Node(i).r;
-		double x = rn.x;
-		double y = rn.y;
-
-		// get the max-distance 
-		double D = fmax(fabs(x),fabs(y));
-
-		if (D <= 1)
-		{
-			rn.x *= d0;
-			rn.y *= d0;
-		}
-		else
-		{
-			// "normalize" the coordinates
-			// with respect to the max distance
-			double r = x/D;
-			double s = y/D;
-
-			vec3d r0;
-			if (fabs(x) >= fabs(y))
-			{
-				double u = x/fabs(x);
-				r0.x = u*R1*cos(PI*0.25*s);
-				r0.y =   R1*sin(PI*0.25*s);
-			}
-			else 
-			{
-				double u = y/fabs(y);
-				r0.y = u*R1*cos(PI*0.25*r);
-				r0.x =   R1*sin(PI*0.25*r);
-			}
-
-			vec3d r1(r*d0, s*d0, 0);
-			double a = D - 1;
-				
-			if (m_br)
-			{
-				if (a <= 0.5)
-					a = 0.5*gain2(2*a, m_gr, m_ns);
-				else
-					a = 1 - 0.5*gain2(2 - 2*a, m_gr, m_ns);
-			}
-			else a = gain2(a, m_gr, m_ns); 
-
-			rn.x = r0.x*a + r1.x*(1-a);
-			rn.y = r0.y*a + r1.y*(1-a);
-		}
-	}
 
 	// update the mesh
 	pm->UpdateMesh();
@@ -355,6 +399,9 @@ FEMesh* FECylinder::BuildButterfly()
 	// For now, we autosmooth the mesh although we should think of a 
 	// better way
 	pm->AutoSmooth(60);
+
+	// cleanup
+	delete mod;
 
 	return pm;
 }

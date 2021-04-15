@@ -30,6 +30,16 @@ SOFTWARE.*/
 using namespace std;
 
 //-----------------------------------------------------------------------------
+class FEShapeModifier
+{
+public:
+	FEShapeModifier();
+	virtual ~FEShapeModifier();
+
+	virtual vec3d Apply(const vec3d& r) = 0;
+};
+
+//-----------------------------------------------------------------------------
 // class MBItem: base class for all Multi Block items.
 // members:
 //		m_ntag	- used for tagging
@@ -43,7 +53,25 @@ using namespace std;
 class MBItem
 {
 public:
-	MBItem() { m_ntag = 0; m_gid = -1; m_bext = false; }
+	MBItem() { m_ntag = 0; m_gid = -1; m_bext = false; m_mod = nullptr; }
+
+	MBItem(const MBItem& it)
+	{
+		m_ntag = it.m_ntag;
+		m_bext = it.m_bext;
+		m_gid = it.m_gid;
+		m_mod = it.m_mod;
+		m_fenodes = it.m_fenodes;
+	}
+
+	void operator = (const MBItem& it)
+	{
+		m_ntag = it.m_ntag;
+		m_bext = it.m_bext;
+		m_gid = it.m_gid;
+		m_mod = it.m_mod;
+		m_fenodes = it.m_fenodes;
+	}
 
 	void SetID(int n) { m_gid = n; }
 
@@ -51,6 +79,9 @@ public:
 	int		m_ntag;	// tag
 	bool	m_bext;	// external item flag
 	int		m_gid;	// group ID
+	FEShapeModifier*	m_mod;
+
+	vector<int>	m_fenodes;
 };
 
 class MBNode : public MBItem
@@ -179,6 +210,21 @@ protected:
 
 	int GetBlockFaceNodeIndex(MBBlock& b, int nf, int i, int j);
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
+
+public:
+	void SetGlobalShapeModifier(FEShapeModifier* shapeMod);
+	void SetShapeModifier(MBBlock& b, FEShapeModifier* mod);
+	void SetShapeModifier(MBFace& f, FEShapeModifier* mod);
+	void SetShapeModifier(MBEdge& e, FEShapeModifier* mod);
+	void SetShapeModifier(MBNode& n, FEShapeModifier* mod);
+
+protected:
+	void ApplyMeshModifiers(FEMesh* pm);
+
+	int GetFENode(MBNode& node);
+	vector<int> GetFENodeList(MBEdge& node);
+	vector<int> GetFENodeList(MBFace& node);
+	vector<int> GetFENodeList(MBBlock& node);
 
 protected:
 	vector<MBBlock>	m_MBlock;
