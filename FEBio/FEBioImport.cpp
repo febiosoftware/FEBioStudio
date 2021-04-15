@@ -490,6 +490,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 		ld.type = v.type();
 		ld.sdata = v.data();
 		ld.groupID = v.GroupID();
+		ld.fileName = v.file();
 		log.AddLogData(ld);
 	}
 

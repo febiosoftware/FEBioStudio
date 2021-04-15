@@ -718,6 +718,7 @@ FEBioModel::LogVariable::LogVariable(const LogVariable& log)
 	m_type = log.m_type;
 	m_data = log.m_data;
 	m_groupID = log.m_groupID;
+	m_file = log.m_file;
 }
 
 void FEBioModel::LogVariable::operator=(const LogVariable& log)
@@ -725,6 +726,7 @@ void FEBioModel::LogVariable::operator=(const LogVariable& log)
 	m_type = log.m_type;
 	m_data = log.m_data;
 	m_groupID = log.m_groupID;
+	m_file = log.m_file;
 }
 
 FEBioModel::LogVariable::LogVariable(int ntype, const std::string& data)
