@@ -27,24 +27,16 @@ SOFTWARE.*/
 #pragma once
 #include "CommandPanel.h"
 #include <vector>
-#include <QtCore/QThread>
-#include <QDialog>
-//using namespace std;
+#include "DlgStartThread.h"
 
+//using namespace std;
 class CMainWindow;
-class QToolButton;
-class QGridLayout;
-class QButtonGroup;
-class QLineEdit;
-class QPushButton;
+class CModelDocument;
 class FEModifier;
-class QAction;
 class FEMesh;
-class CCommand;
 class GObject;
-class QProgressBar;
 class FEMesher;
-class QLabel;
+class FEGroup;
 
 namespace Ui {
 	class CMeshPanel;
@@ -76,50 +68,46 @@ private:
 	Ui::CMeshPanel*		ui;
 };
 
-class MeshingThread : public QThread
+class MeshingThread : public CustomThread
 {
-	Q_OBJECT
+public:
+	MeshingThread(GObject* po);
 
 	void run() Q_DECL_OVERRIDE;
 
 public:
-	MeshingThread(GObject* po);
+	bool hasProgress() override;
 
-	double progress();
+	double progress() override;
 
-	const char* currentTask();
+	const char* currentTask() override;
 
-	void stop();
-
-signals:
-	void resultReady();
+	void stop() override;
 
 private:
 	GObject*	m_po;
 	FEMesher*	m_mesher;
 };
 
-class CDlgStartThread : public QDialog
+class ModifierThread : public CustomThread
 {
-	Q_OBJECT
+public:
+	ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FEGroup* pg);
+
+	void run() Q_DECL_OVERRIDE;
 
 public:
-	CDlgStartThread(QWidget* parent, MeshingThread* thread);
+	bool hasProgress() override;
 
-	void accept();
+	double progress() override;
 
-private slots:
-	void threadFinished();
-	void checkProgress();
-	void cancel();
+	const char* currentTask() override;
+
+	void stop() override;
 
 private:
-	MeshingThread*	m_thread;
-	bool			m_bdone;
-
-	QLabel*			m_task;
-	QProgressBar*	m_progress;
-	QPushButton*	m_stop;
-
-	const char*		m_szcurrentTask;
+	CModelDocument*	m_doc;
+	GObject*	m_po;
+	FEModifier*	m_mod;
+	FEGroup*	m_pg;
 };

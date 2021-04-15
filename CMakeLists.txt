@@ -14,7 +14,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Autogen)
 
 # Change to 6 if looking to build with Qt6.
-set(QT_Ver 5 CACHE INTERNAL "")
+set(QT_Ver 6 CACHE INTERNAL "")
 
 # Set a default build type if none was specified
 set(default_build_type "Release")
@@ -85,31 +85,38 @@ include(FindDependencies.cmake)
 #### Check if paths are valid and find libs ####
 
 function(findLib libName libDir libOut)
-    find_library(TEMP ${libName} PATHS ${${libDir}} NO_DEFAULT_PATH)
-
-    # Optional argument ARGV3 can be used to pass an alternate name for the library
-    if(NOT TEMP AND ${ARGC} GREATER 3)
-        find_library(TEMP ${ARGV3} PATHS ${${libDir}} NO_DEFAULT_PATH)
-    endif()
+    # Optional arguments ARGV3-ARVG6 can be used as alernative names for the library
+    find_library(TEMP NAMES ${libName} ${ARGV3} ${ARGV4} ${ARGV5} ${ARGV6}
+        PATHS ${${libDir}} NO_DEFAULT_PATH)
     
     if(TEMP)
         set(${libOut} ${TEMP} PARENT_SCOPE)
         unset(TEMP CACHE)
     else()
         if(WIN32)
-            message(SEND_ERROR "Could not find ${libName}.lib. Check ${libName}.")
+            message(SEND_ERROR "Could not find ${libName}.lib. Check ${libDir}.")
         elseif(APPLE)
-            message(SEND_ERROR "Could not find ${libName}.so, ${libName}.a, or ${libName}.dylib Check ${libDir}.")
+            message(SEND_ERROR "Could not find lib${libName}.so, lib${libName}.a, or lib${libName}.dylib Check ${libDir}.")
         else()
-            message(SEND_ERROR "Could not find ${libName}.so, or ${libName}.a. Check ${libDir}")
+            message(SEND_ERROR "Could not find lib${libName}.so, or lib${libName}.a. Check ${libDir}")
         endif()
         unset(TEMP CACHE)
     endif()
 endfunction()
 
+if(USE_TEEM)
+  findLib(teem TEEM_LIB_DIR TEEM_LIB)
+  findLib(tiff LIBTIFF_LIB_DIR LIBTIFF_LIB)
+  #find_library(teem NAMES teem PATH TEEM_LIB_DIR TEEM_LIB)
+endif()
+
 if(USE_MMG)
-    findLib(mmg3d MMG_LIB_DIR MMG_LIB)
-		find_library(mmgs NAMES mmgs MMG_LIB_DIR MMG_LIB)
+    set(MMG_LIB_NAMES mmg3d mmgs)
+    foreach(name IN LISTS MMG_LIB_NAMES)
+        findLib(${name} MMG_LIB_DIR MMG_LIB)
+        list(APPEND MMG_LIBS ${MMG_LIB})
+        unset(MMG_LIB)
+    endforeach(name)
 endif()
 
 if(USE_TETGEN)
@@ -119,7 +126,15 @@ endif()
 if(CAD_FEATURES)
     set(NETGEN_LIBS "")
     
-    set(NETGEN_LIB_NAMES nglib csg interface mesh occ)
+    set(NETGEN_LIB_NAMES nglib csg interface occ)
+    
+    # This NetGen library is called "meshing" on Windows and "mesh" elsewhere.
+    if(WIN32)
+        list(APPEND NETGEN_LIB_NAMES meshing)
+    else()
+        list(APPEND NETGEN_LIB_NAMES mesh)
+    endif()
+    
     foreach(name IN LISTS NETGEN_LIB_NAMES)
         findLib(${name} NETGEN_LIB_DIR NETGEN_LIB)
         list(APPEND NETGEN_LIBS ${NETGEN_LIB})
@@ -188,16 +203,37 @@ endif()
 ##### Set appropriate defines and includes #####
 
 if(WIN32)
-    add_definitions(-DWIN32 /MP)
+    add_definitions(-DWIN32)
+    add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+    
+    if(${OpenMP_C_FOUND})
+        add_compile_options(-Xpreprocessor -fopenmp)
+    endif()
+    
 else()
 	add_definitions(-DLINUX)
-    add_compile_options(-static-libstdc++ -static-libgcc -w -Wall)
+    add_compile_options(-w -Wall)
+    
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+    
+    if(${OpenMP_C_FOUND})
+        add_compile_options(-fopenmp)
+    endif()
+    
+    set(CMAKE_BUILD_RPATH_USE_LINK_PATH FALSE)
+    set(CMAKE_BUILD_RPATH $ORIGIN/../lib/)
 endif()
 
 include_directories(.)
+
+if(USE_TEEM)
+  add_definitions(-DHAS_TEEM)
+  include_directories(${TEEM_INC})
+  include_directories(${LIBTIFF_INC})
+endif()
 
 if(USE_MMG)
 	add_definitions(-DHAS_MMG)
@@ -263,6 +299,10 @@ endforeach(name)
 # Linking the Qt libraries also pulls in the include files
 link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Qt_Version}::Network ${Qt_Version}::OpenGL ${Qt_Version}::OpenGLWidgets)
 
+if(QT_Ver VERSION_EQUAL 6)
+  link_libraries(Qt6::Core5Compat)
+endif()
+
 if(QT_Ver VERSION_EQUAL 5)
   link_libraries(Qt5::Charts)
 endif()
@@ -317,32 +357,34 @@ macro(crossExecProcess OUT)
 endmacro()
 
 # Check for git and give warning if not available
-if(WIN32)
-    set(CMD where git)
-else()
-	set(CMD which git)
-endif()
-crossExecProcess(NULL)
+if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
+    if(WIN32)
+        set(CMD where git)
+    else()
+        set(CMD which git)
+    endif()
+    crossExecProcess(NULL)
 
-if(SUCCESS EQUAL 0)
-	# Get branch name and check if we're on the develop branch
-    set(CMD git rev-parse --abbrev-ref HEAD)
-	crossExecProcess(BRANCH_NAME)
+    if(SUCCESS EQUAL 0)
+        # Get branch name and check if we're on the develop branch
+        set(CMD git rev-parse --abbrev-ref HEAD)
+        crossExecProcess(BRANCH_NAME)
 
-	string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
-	
-	# Get the commit info and set the DEVCOMMIT macro
-	if(SUCCESS EQUAL 0 AND ISDEVELOP)
+        string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
         
-        set(CMD git rev-parse --short=9 HEAD)
-		crossExecProcess(DEVCOMMIT)
-		
-		if(${SUCCESS} EQUAL 0)
-			target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
-		endif()
-	endif()
-else()
-	message(WARNING "Could not find git in system PATH. Development version info will not be addded.")
+        # Get the commit info and set the DEVCOMMIT macro
+        if(SUCCESS EQUAL 0 AND ISDEVELOP)
+            
+            set(CMD git rev-parse --short=9 HEAD)
+            crossExecProcess(DEVCOMMIT)
+            
+            if(${SUCCESS} EQUAL 0)
+                target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
+            endif()
+        endif()
+    else()
+        message(WARNING "Could not find git in system PATH. Development version info will not be addded.")
+    endif()
 endif()
 
 ##### Link Libraries #####
@@ -352,11 +394,24 @@ elseif(APPLE)
 else()
     set_property(TARGET MeshTools PROPERTY CXX_STANDARD 17)
     
+    target_link_libraries(FEBioStudio -static-libstdc++ -static-libgcc)
+    
 	target_link_libraries(FEBioStudio -Wl,--start-group)
 endif()
 
+if(USE_TEEM)
+  target_link_libraries(FEBioStudio ${TEEM_LIB})
+  target_link_libraries(FEBioStudio ${LIBTIFF_LIB})
+endif()
+
+if(NOT WIN32)
+    if(${OpenMP_C_FOUND})
+        target_link_libraries(FEBioStudio ${OpenMP_C_LIBRARIES})
+    endif()
+endif()
+
 if(USE_MMG)
-	target_link_libraries(FEBioStudio ${MMG_LIB})
+	target_link_libraries(FEBioStudio ${MMG_LIBS})
 endif()
 
 if(USE_TETGEN)
@@ -385,7 +440,6 @@ endif()
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
-
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 if(WIN32)
@@ -393,7 +447,6 @@ if(WIN32)
 elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -Wl,--end-group)
-    target_link_libraries(FEBioStudio -Wl,-rpath,\'\$ORIGIN/../lib/\')
 endif()
 
 

@@ -34,26 +34,43 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 FEFixSurfaceMesh::FEFixSurfaceMesh() : FESurfaceModifier("Fix mesh")
 {
+	m_mod = nullptr;
 	AddIntParam(0, "Task:", "Task:")->SetEnumNames("Remove duplicate faces\0Remove non-manifold faces\0Fix winding\0Invert mesh\0Fill all holes\0Removed duplicate edges\0");
+}
+
+//-----------------------------------------------------------------------------
+FSTaskProgress FEFixSurfaceMesh::GetProgress()
+{
+	if (m_mod) return m_mod->GetProgress();
+	else return FESurfaceModifier::GetProgress();
 }
 
 //-----------------------------------------------------------------------------
 FESurfaceMesh* FEFixSurfaceMesh::Apply(FESurfaceMesh* pm)
 {
+	ClearError();
+
 	// create a copy of the mesh
 	FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
 
 	// apply the task on this mesh
 	int task = GetIntValue(0);
 	bool ret = false;
-	switch (task)
+	try {
+		switch (task)
+		{
+		case 0: ret = RemoveDuplicateFaces(pnew); break;
+		case 1: ret = RemoveNonManifoldFaces(pnew); break;
+		case 2: ret = FixElementWinding(pnew); break;
+		case 3: ret = InvertMesh(pnew); break;
+		case 4: ret = FillAllHoles(pnew); break;
+		case 5: ret = RemoveDuplicateEdges(pnew); break;
+		}
+	}
+	catch (...)
 	{
-	case 0: ret = RemoveDuplicateFaces(pnew); break;
-	case 1: ret = RemoveNonManifoldFaces(pnew); break;
-	case 2: ret = FixElementWinding(pnew); break;
-	case 3: ret = InvertMesh(pnew); break;
-	case 4: ret = FillAllHoles(pnew); break;
-	case 5: ret = RemoveDuplicateEdges(pnew); break;
+		SetError("*** The operation aborted due to an exception. ***");
+		ret = false;
 	}
 
 	if (ret == false)
@@ -76,6 +93,7 @@ bool FEFixSurfaceMesh::RemoveDuplicateFaces(FESurfaceMesh* pm)
 	NFT.Build(pm);
 
 	// loop over all elements
+	setProgress(0.0);
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
 		int n = NFT.Valence(i);
@@ -94,7 +112,14 @@ bool FEFixSurfaceMesh::RemoveDuplicateFaces(FESurfaceMesh* pm)
 				}
 			}
 		}
+		setProgress(100.0*(i + 1.0) / pm->Nodes());
 	}
+	int taggedFaces = 0;
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		if (pm->Face(i).m_ntag == 1) taggedFaces++;
+	}
+	SetError("Found %d duplicate faces", taggedFaces);
 
 	// remove tagged faces
 	pm->DeleteTaggedFaces(1);
@@ -298,12 +323,18 @@ bool FEFixSurfaceMesh::FillAllHoles(FESurfaceMesh* pm)
 {
 	// fill all the holes
 	FEFillHole fill;
+	m_mod = &fill;
 	fill.FillAllHoles(pm);
+
+	// copy the error string
+	string err = fill.GetErrorString();
+	if (err.empty() == false) SetError(err.c_str());
 
 	// rebuild the mesh
 	pm->RebuildMesh();
 
 	// all done
+	m_mod = nullptr;
 	return true;
 }
 

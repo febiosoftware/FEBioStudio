@@ -64,10 +64,14 @@ SOFTWARE.*/
 
 using std::stringstream;
 
+#ifdef HAS_TEEM
+#include <ImageLib/compatibility.h>
+#endif
+
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
 
-void VIEW_SETTINGS::Defaults()
+void VIEW_SETTINGS::Defaults(int ntheme)
 {
 	m_bgrid = true;
 	m_bmesh = true;
@@ -106,8 +110,18 @@ void VIEW_SETTINGS::Defaults()
 	m_bTags = true;
 	m_ntagInfo = 0;
 
-	m_col1 = GLColor(164,164,255);
-	m_col2 = GLColor(96,96,164);		
+	if (ntheme == 0)
+	{
+		m_col1 = GLColor(255, 255, 255);
+		m_col2 = GLColor(128, 128, 255);
+		m_nbgstyle = BG_HORIZONTAL;
+	}
+	else
+	{
+		m_col1 = GLColor(83, 83, 83);
+		m_col2 = GLColor(128, 128, 128);
+		m_nbgstyle = BG_HORIZONTAL;
+	}
 
 	m_mcol = GLColor(0, 0, 128);
 	m_fgcol = GLColor(0, 0, 0);
@@ -236,11 +250,7 @@ bool CDocument::IsModified()
 //-----------------------------------------------------------------------------
 void CDocument::SetModifiedFlag(bool bset)
 {
-	if (bset != m_bModified)
-	{
-		m_bModified = bset;
-		if (m_wnd) m_wnd->UpdateTab(this);
-	}
+	m_bModified = bset;
 }
 
 //-----------------------------------------------------------------------------
@@ -526,18 +536,18 @@ const char* CGLDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
 const char* CGLDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
 
 //-----------------------------------------------------------------------------
-bool CGLDocument::DoCommand(CCommand* pcmd)
+bool CGLDocument::DoCommand(CCommand* pcmd, bool b)
 {
 	CMainWindow* wnd = GetMainWindow();
 	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
-	UpdateSelection();
+	if (b) UpdateSelection();
 	return ret;
 }
 
 //-----------------------------------------------------------------------------
-bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s)
+bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
 {
 	CMainWindow* wnd = GetMainWindow();
 	if (s.empty() == false)
@@ -548,7 +558,7 @@ bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s)
 
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
-	UpdateSelection();
+	UpdateSelection(b);
 	return ret;
 }
 
@@ -762,6 +772,37 @@ void CGLDocument::LoadResources(IArchive& ar)
 		ar.CloseChunk();
 	}
 }
+
+
+#ifdef HAS_TEEM
+// Load Tiff Data
+Post::CImageModel* CGLDocument::ImportTiff(const std::string& fileName)
+{
+	static int n = 1;
+	// we pass the relative path to the image model
+	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
+
+	Post::CImageModel* po = new Post::CImageModel(nullptr);
+
+  // Need to convert relFile to wstring maybe? 
+  std::wstring relativeFile = s2ws(relFile);
+	if (po->LoadTiffData(relativeFile) == false)
+	{
+		delete po;
+		return nullptr;
+	}
+
+	stringstream ss;
+	ss << "ImageModel" << n++;
+	po->SetName(ss.str());
+
+	// add it to the project
+	AddImageModel(po);
+
+	return po;
+
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // import image data

@@ -26,13 +26,14 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
+#include <FSCore/FSThreadedTask.h>
 
 class FESurfaceMesh;
 class FEGroup;
 
 //-------------------------------------------------------------------
 // Class for modifying surface meshes
-class FESurfaceModifier : public FSObject
+class FESurfaceModifier : public FSThreadedTask
 {
 public:
 	FESurfaceModifier(const std::string& name = "");
@@ -41,12 +42,14 @@ public:
 	virtual FESurfaceMesh* Apply(FESurfaceMesh* pm) { return 0; }
 	virtual FESurfaceMesh* Apply(FESurfaceMesh* pm, FEGroup* pg) { return Apply(pm); }
 
-	static bool SetError(const char* szerr, ...);
+	bool SetError(const char* szerr, ...);
 
-	static std::string GetErrorString();
+	std::string GetErrorString();
+
+	void ClearError();
 
 protected:
-	static std::string	m_error;
+	std::string	m_error;
 };
 
 //-----------------------------------------------------------------------------

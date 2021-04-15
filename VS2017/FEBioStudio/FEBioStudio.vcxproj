@@ -183,6 +183,7 @@
     <ClCompile Include="..\..\FEBioStudio\DataFieldSelector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddChemicalReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddEquation.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddMembraneReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddMeshData.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddNodalLoad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddPhysicsItem.cpp" />
@@ -232,6 +233,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgSetRepoFolder.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSoluteTable.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgStartThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgTimeSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgTransform.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgUnitConverter.cpp" />
@@ -305,6 +307,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DataFieldSelector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddChemicalReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddEquation.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgAddMembraneReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddMeshData.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddPublication.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneGrid.cpp" />
@@ -331,6 +334,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSetRepoFolder.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSoluteTable.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgStartThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgUnitConverter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgWidgetProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_EditPanel.cpp" />
@@ -505,6 +509,11 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgAddMembraneReaction.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgAddPhysicsItem.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgCheck.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgEditLConfigs.h">
@@ -566,6 +575,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\DlgSetRepoFolder.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgStartThread.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>

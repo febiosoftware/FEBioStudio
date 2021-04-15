@@ -206,11 +206,13 @@
     <ClInclude Include="..\..\MeshLib\penta15.h" />
     <ClInclude Include="..\..\MeshLib\penta6.h" />
     <ClInclude Include="..\..\MeshLib\pyra5.h" />
+    <ClInclude Include="..\..\MeshLib\quad4.h" />
     <ClInclude Include="..\..\MeshLib\quad8.h" />
     <ClInclude Include="..\..\MeshLib\tet10.h" />
     <ClInclude Include="..\..\MeshLib\tet15.h" />
     <ClInclude Include="..\..\MeshLib\tet20.h" />
     <ClInclude Include="..\..\MeshLib\tet4.h" />
+    <ClInclude Include="..\..\MeshLib\tri3.h" />
     <ClInclude Include="..\..\MeshLib\triangulate.h" />
     <ClInclude Include="..\..\MeshLib\TriMesh.h" />
     <ClInclude Include="..\..\MeshLib\TriMesh2D.h" />

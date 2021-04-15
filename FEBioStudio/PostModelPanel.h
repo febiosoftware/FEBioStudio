@@ -56,6 +56,8 @@ public:
 
 	FSObject* selectedObject();
 
+	void ShowContextMenu(QContextMenuEvent* ev);
+
 private slots:
 	void on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
 	void on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int column);
@@ -63,6 +65,9 @@ private slots:
 	void on_deleteButton_clicked();
 	void on_props_dataChanged();
 	void on_enabled_stateChanged(int nstate);
+	void OnSelectElements();
+	void OnHideElements();
+	void OnShowAllElements();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
 
@@ -73,7 +78,8 @@ signals:
 private:
 	CPostDocument* GetActiveDocument();
 
+	void BuildModelTree();
+
 private:
 	Ui::CPostModelPanel*				ui;
-	std::vector<FSObject*>	m_obj;
 };

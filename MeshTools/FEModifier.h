@@ -26,10 +26,11 @@ SOFTWARE.*/
 
 #pragma once
 #include <MeshLib/FEMesh.h>
+#include <FSCore/FSThreadedTask.h>
 
 //-----------------------------------------------------------------------------
 
-class FEModifier : public FSObject 
+class FEModifier : public FSThreadedTask 
 {
 public:
 	FEModifier(const char* sz) { SetName(sz); }

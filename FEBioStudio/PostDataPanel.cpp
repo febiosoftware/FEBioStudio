@@ -827,42 +827,29 @@ void CPostDataPanel::Update(bool breset)
 
 void CPostDataPanel::on_AddStandard_triggered()
 {
-	// NOTE: Make sure this list matches the list in Post::AddStandardDataField (FEDataField.cpp)
 	QStringList items;
-	items.push_back("Position");
-	items.push_back("Initial position");
-	items.push_back("Deformation gradient");
-	items.push_back("Infinitesimal strain");
-	items.push_back("Lagrange strain");
-	items.push_back("Right Cauchy-Green");
-	items.push_back("Right stretch");
-	items.push_back("Biot strain");
-	items.push_back("Right Hencky");
-	items.push_back("Left Cauchy-Green");
-	items.push_back("Left stretch");
-	items.push_back("Left Hencky");
-	items.push_back("Almansi strain");
-	items.push_back("Volume");
-	items.push_back("Volume ratio");
-	items.push_back("Volume strain");
-	items.push_back("Aspect ratio");
-	items.push_back("1-Princ Curvature");
-	items.push_back("2-Princ Curvature");
-	items.push_back("Gaussian Curvature");
-	items.push_back("Mean Curvature");
-	items.push_back("RMS Curvature");
-	items.push_back("Princ Curvature difference");
-	items.push_back("Congruency");
-	items.push_back("1-Princ Curvature vector");
-	items.push_back("2-Princ Curvature vector");
-	items.push_back("distance map");
-	items.push_back("area coverage");
+	Post::InitStandardDataFields();
+	int stdDataFields = Post::StandardDataFields();
+	for (int i = 0; i < stdDataFields; ++i)
+	{
+		std::string dataFieldName = Post::GetStandarDataFieldName(i);
+		items.push_back(QString::fromStdString(dataFieldName));
+	}
 
 	bool ok = false;
 	QString item = QInputDialog::getItem(this, "Select new data field", "data:", items, 0, false, &ok);
 	if (ok)
 	{
-		if (Post::AddStandardDataField(*GetActiveDocument()->GetGLModel(), item.toStdString(), true) == false)
+		Post::CGLModel* glm = GetActiveDocument()->GetGLModel();
+		Post::FEPostModel* fem = glm->GetFEModel();
+
+		vector<int> L;
+		if (glm->GetSelectionMode() == Post::SELECT_FACES)
+		{
+			glm->GetSelectionList(L, Post::SELECT_FACES);
+		}
+
+		if (Post::AddStandardDataField(*fem, item.toStdString(), L) == false)
 		{
 			QMessageBox::critical(this, "Add Data Field", "Failed adding data");
 		}
@@ -885,12 +872,13 @@ void CPostDataPanel::on_AddFromFile_triggered()
 	CDlgAddDataFile dlg(this);
 	if (dlg.exec())
 	{
+		Post::FEPostModel* fem = doc->GetFEModel();
 		bool bret = false;
 		switch (dlg.m_nclass)
 		{
-		case 0: bret = Post::AddNodeDataFromFile(*doc->GetGLModel(), dlg.m_file.c_str(), dlg.m_name.c_str(), dlg.m_ntype); break;
-		case 1: bret = Post::AddFaceDataFromFile(*doc->GetGLModel(), dlg.m_file.c_str(), dlg.m_name.c_str(), dlg.m_ntype); break;
-		case 2: bret = Post::AddElemDataFromFile(*doc->GetGLModel(), dlg.m_file.c_str(), dlg.m_name.c_str(), dlg.m_ntype); break;
+		case 0: bret = Post::AddNodeDataFromFile(*fem, dlg.m_file.c_str(), dlg.m_name.c_str(), dlg.m_ntype); break;
+		case 1: bret = Post::AddFaceDataFromFile(*fem, dlg.m_file.c_str(), dlg.m_name.c_str(), dlg.m_ntype); break;
+		case 2: bret = Post::AddElemDataFromFile(*fem, dlg.m_file.c_str(), dlg.m_name.c_str(), dlg.m_ntype); break;
 		default:
 			assert(false);
 		}
@@ -914,6 +902,8 @@ void CPostDataPanel::on_AddEquation_triggered()
 	CDlgAddEquation dlg(this);
 	if (dlg.exec())
 	{
+		Post::FEPostModel& fem = *doc.GetFEModel();
+
 		QString name = dlg.GetDataName();
 
 		int type = dlg.GetDataType();
@@ -928,12 +918,11 @@ void CPostDataPanel::on_AddEquation_triggered()
 			if (name.isEmpty()) name = "(empty)";
 
 			// create new math data field
-			Post::FEMathDataField* pd = new Post::FEMathDataField(name.toStdString());
+			Post::FEMathDataField* pd = new Post::FEMathDataField(&fem);
 			pd->SetEquationString(eq.toStdString());
 
 			// add it to the model
-			Post::FEPostModel& fem = *doc.GetFEModel();
-			fem.AddDataField(pd);
+			fem.AddDataField(pd, name.toStdString());
 		}
 		break;
 		case 1:
@@ -947,12 +936,12 @@ void CPostDataPanel::on_AddEquation_triggered()
 			QString z = s.at(2);
 
 			// create new math data field
-			Post::FEMathVec3DataField* pd = new Post::FEMathVec3DataField(name.toStdString());
+			Post::FEMathVec3DataField* pd = new Post::FEMathVec3DataField(&fem);
 			pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString());
 
 			// add it to the model
 			Post::FEPostModel& fem = *doc.GetFEModel();
-			fem.AddDataField(pd);
+			fem.AddDataField(pd, name.toStdString());
 		}
 		break;
 		case 2:
@@ -961,12 +950,12 @@ void CPostDataPanel::on_AddEquation_triggered()
 			QStringList s = dlg.GetMatrixEquations();
 
 			// create new math data field
-			Post::FEMathMat3DataField* pd = new Post::FEMathMat3DataField(name.toStdString());
+			Post::FEMathMat3DataField* pd = new Post::FEMathMat3DataField(&fem);
 			for (int i=0; i<9; ++i) pd->SetEquationString(i, s.at(i).toStdString());
 
 			// add it to the model
 			Post::FEPostModel& fem = *doc.GetFEModel();
-			fem.AddDataField(pd);
+			fem.AddDataField(pd, name.toStdString());
 		}
 		};
 
@@ -1100,7 +1089,8 @@ void CPostDataPanel::on_AddFilter_triggered()
 				case 3:
 				{
 					// create new vector field for storing the gradient
-					newData = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(sname.c_str(), Post::EXPORT_DATA);
+					newData = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(&fem, Post::EXPORT_DATA);
+					newData->SetName(sname);
 					fem.AddDataField(newData);
 
 					// now, calculate gradient from scalar field
@@ -1116,7 +1106,8 @@ void CPostDataPanel::on_AddFilter_triggered()
 				break;
 				case 5:
 				{
-					newData = new Post::FEDataField_T<Post::FEElementData<float, Post::DATA_ITEM> >(sname.c_str(), Post::EXPORT_DATA);
+					newData = new Post::FEDataField_T<Post::FEElementData<float, Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA);
+					newData->SetName(sname);
 					fem.AddDataField(newData);
 
 					// calculate fractional anisotropy
@@ -1172,7 +1163,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 			if (file.isEmpty() == false)
 			{
 				std::string sfile = file.toStdString();
-				if (Post::ExportDataField(*doc.GetGLModel(), *pdf, sfile.c_str()) == false)
+				if (Post::ExportDataField(fem, *pdf, sfile.c_str()) == false)
 				{
 					QMessageBox::critical(this, "Export Data", "Export Failed!");
 				}

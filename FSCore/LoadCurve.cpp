@@ -29,7 +29,10 @@ SOFTWARE.*/
 //////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "LoadCurve.h"
+#include "BSpline.h"
 #include <algorithm>
+
+using std::min;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -53,6 +56,8 @@ FELoadCurve::FELoadCurve()
 
 	m_ntype = LC_SMOOTH;
 	m_nextend = EXT_CONSTANT;
+    
+    m_spline = nullptr;
 }
 
 FELoadCurve::FELoadCurve(double r)
@@ -63,6 +68,7 @@ FELoadCurve::FELoadCurve(double r)
 	m_szname[0] = 0;
 	m_ntype = LC_SMOOTH;
 	m_nextend = EXT_CONSTANT;
+    m_spline = nullptr;
 }
 
 FELoadCurve::FELoadCurve(const FELoadCurve& lc)
@@ -75,6 +81,7 @@ FELoadCurve::FELoadCurve(const FELoadCurve& lc)
 	m_ntype   = lc.m_ntype;
 	m_nextend = lc.m_nextend;
 	m_ref = lc.m_ref;
+    m_spline = lc.m_spline;
 }
 
 FELoadCurve::~FELoadCurve()
@@ -92,6 +99,7 @@ FELoadCurve& FELoadCurve::operator =(const FELoadCurve& lc)
 	m_ntype   = lc.m_ntype;
 	m_nextend = lc.m_nextend;
 	m_ref = lc.m_ref;
+    m_spline = lc.m_spline;
 
 	return (*this);
 }
@@ -280,6 +288,11 @@ double FELoadCurve::Value(double time)
 			}
 		}
 	}
+    else if ((m_ntype == LC_CSPLINE) || (m_ntype == LC_CPOINTS) || (m_ntype == LC_APPROX))
+    {
+        if (m_spline) return m_spline->eval(time);
+        else return 0;
+    }
 
 	return 0;
 }
@@ -318,6 +331,9 @@ double FELoadCurve::ExtendValue(double t)
 			}
 			break;
 		case LC_SMOOTH:
+        case LC_CSPLINE:
+        case LC_CPOINTS:
+        case LC_APPROX:
 			{
 				if (t < m_Pt[0].time) return lerp(t, m_Pt[0].time, Val(0), m_Pt[0].time + dt, Value(m_Pt[0].time+dt));
 				else return lerp(t, m_Pt[N].time - dt, Value(m_Pt[N].time - dt), m_Pt[N].time, Val(N));
@@ -399,6 +415,8 @@ void FELoadCurve::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+    
+    Update();
 }
 
 void FELoadCurve::Save(OArchive& ar)
@@ -432,6 +450,7 @@ void FELoadCurve::Save(OArchive& ar)
 void FELoadCurve::Scale(double s)
 {
 	for (int i=0; i<Size(); ++i) m_Pt[i].load *= s;
+    Update();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -463,6 +482,48 @@ bool FELoadCurve::LoadData(const char* szfile)
 	n = lc.Size();
 	m_Pt.resize(n);
 	for (int i=0; i<n; ++i) m_Pt[i] = lc[i];
+    Update();
 
 	return true;
+}
+
+bool FELoadCurve::WriteData(const char* szfile)
+{
+	FILE* fp = fopen(szfile, "wt");
+	if (fp == 0) return false;
+
+	for (int i = 0; i < m_Pt.size(); ++i)
+	{
+		LOADPOINT& pt = m_Pt[i];
+		fprintf(fp, "%lg %lg\n", pt.time, pt.load);
+	}
+	fclose(fp);
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void FELoadCurve::Update()
+{
+    // check if using spline
+    bool valid = true;
+    int N = (int)m_Pt.size();
+    if (m_ntype == LC_CSPLINE) {
+        int korder = min(N,4);
+        if (m_spline) delete m_spline;
+        m_spline = new BSpline();
+        valid = m_spline->init_interpolation(korder, m_Pt);
+    }
+    else if (m_ntype == LC_CPOINTS) {
+        int korder = min(N,4);
+        if (m_spline) delete m_spline;
+        m_spline = new BSpline();
+        valid = m_spline->init(korder, m_Pt);
+    }
+    else if (m_ntype == LC_APPROX) {
+        int korder = min(N/2+1,4);
+        if (m_spline) delete m_spline;
+        m_spline = new BSpline();
+        valid = m_spline->init_approximation(korder, N/2+1, m_Pt);
+    }
+    if (!valid) m_spline = nullptr;
 }

@@ -95,7 +95,7 @@ struct VIEW_SETTINGS
 	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
 	int		m_objectColor;			// 0 = default (by material), 1 = by object
 
-	void Defaults();
+	void Defaults(int ntheme = 0);
 };
 
 //-----------------------------------------------------------------------------

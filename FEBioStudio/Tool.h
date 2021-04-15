@@ -35,6 +35,7 @@ class CPostDocument;
 class GObject;
 class GDecoration;
 class FEMesh;
+class FEMeshBase;
 
 //-----------------------------------------------------------------------------
 // A tool implements a general purpose extension.
@@ -84,6 +85,7 @@ public:
 
 	// get the active mesh
 	FEMesh* GetActiveMesh();
+	FEMeshBase* GetActiveEditMesh();
 
 private:
 	QString			m_name;

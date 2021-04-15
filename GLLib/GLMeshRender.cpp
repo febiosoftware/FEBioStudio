@@ -1292,12 +1292,11 @@ void GLMeshRender::RenderGLEdges(GLMesh* pm, int nid)
 		}
 		glEnd();
 	}
-	else
+	else if (nid < (int)pm->m_EIL.size())
 	{
 		assert(pm->m_EIL.size() > 0);
 		glBegin(GL_LINES);
 		{
-			assert((nid >= 0) && (nid < (int)pm->m_EIL.size()));
 			pair<int, int> eil = pm->m_EIL[nid];
 
 			for (int i = 0; i<eil.second; ++i)

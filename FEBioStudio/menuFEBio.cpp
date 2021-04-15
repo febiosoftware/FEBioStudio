@@ -274,14 +274,21 @@ void CMainWindow::on_actionFEBioOptimize_triggered()
 		QString fileName = QFileDialog::getSaveFileName(this, "Save", "", "*.feb");
 		if (fileName.isEmpty() == false)
 		{
-			FEBioOpt opt = dlg.GetFEBioOpt();
-			if (doc->GenerateFEBioOptimizationFile(fileName.toStdString(), opt) == false)
-			{
-				QMessageBox::critical(this, "Generate FEBio Optimization file", "Something went terribly wrong!");
+			try {
+				FEBioOpt opt = dlg.GetFEBioOpt();
+
+				if (doc->GenerateFEBioOptimizationFile(fileName.toStdString(), opt) == false)
+				{
+					QMessageBox::critical(this, "Generate FEBio Optimization file", "Something went terribly wrong!");
+				}
+				else
+				{
+					QMessageBox::information(this, "Generate FEBio Optimization file", "Success writing FEBio optimization file!");
+				}
 			}
-			else
+			catch (...)
 			{
-				QMessageBox::information(this, "Generate FEBio Optimization file", "Success writing FEBio optimization file!");
+				QMessageBox::critical(this, "Generate FEBio Optimization file", "Exception detection. Optimization file might be incorrect.");
 			}
 		}
 	}

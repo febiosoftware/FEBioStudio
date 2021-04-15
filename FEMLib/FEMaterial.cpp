@@ -2272,6 +2272,62 @@ FEReactionRateHuiskes::FEReactionRateHuiskes() : FEMaterial(FE_REACTION_RATE_HUI
 }
 
 //=============================================================================
+// Membrane constant reaction rate
+//=============================================================================
+
+REGISTER_MATERIAL(FEMembraneReactionRateConst, MODULE_REACTIONS, FE_MREACTION_RATE_CONST, FE_MAT_MREACTION_RATE, "membrane constant reaction rate", 0, Constant_Reaction_Rate);
+
+FEMembraneReactionRateConst::FEMembraneReactionRateConst() : FEMaterial(FE_MREACTION_RATE_CONST)
+{
+    AddDoubleParam(0, "k", "k");
+}
+
+double FEMembraneReactionRateConst::GetRateConstant() { return GetParam(0).GetFloatValue(); }
+
+void FEMembraneReactionRateConst::SetRateConstant(double K) { SetFloatValue(0, K); }
+
+//=============================================================================
+// Membrane ion channel reaction rate
+//=============================================================================
+
+REGISTER_MATERIAL(FEMembraneReactionRateIonChannel, MODULE_REACTIONS, FE_MREACTION_RATE_ION_CHNL, FE_MAT_MREACTION_RATE, "membrane ion channel reaction rate", 0, Membrane_Ion_Channel_Reaction_Rate);
+
+FEMembraneReactionRateIonChannel::FEMembraneReactionRateIonChannel() : FEMaterial(FE_MREACTION_RATE_ION_CHNL)
+{
+    AddScienceParam(0, UNIT_CURRENT_CONDUCTIVITY, "g", "g");
+    AddIntParam(0,"sol","sol");
+}
+
+double FEMembraneReactionRateIonChannel::GetConductivity() { return GetParam(0).GetFloatValue(); }
+
+void FEMembraneReactionRateIonChannel::SetConductivity(double g) { SetFloatValue(0, g); }
+
+int FEMembraneReactionRateIonChannel::GetSolute()  { return GetParam(1).GetIntValue(); }
+void FEMembraneReactionRateIonChannel::SetSolute(int isol) { SetIntValue(1, isol); }
+
+//=============================================================================
+// Membrane voltage-gated channel reaction rate
+//=============================================================================
+
+REGISTER_MATERIAL(FEMembraneReactionRateVoltageGated, MODULE_REACTIONS, FE_MREACTION_RATE_VOLT_GTD, FE_MAT_MREACTION_RATE, "membrane voltage-gated reaction rate", 0, Membrane_Voltage_Gated_Channel_Reaction_Rate);
+
+FEMembraneReactionRateVoltageGated::FEMembraneReactionRateVoltageGated() : FEMaterial(FE_MREACTION_RATE_VOLT_GTD)
+{
+    AddDoubleParam(0, "a", "a");
+    AddDoubleParam(0, "b", "b");
+    AddDoubleParam(0, "c", "c");
+    AddDoubleParam(0, "d", "d");
+    AddIntParam(0,"sol","sol");
+}
+
+double FEMembraneReactionRateVoltageGated::GetConstant(int i) { return GetParam(i).GetFloatValue(); }
+
+void FEMembraneReactionRateVoltageGated::SetConstant(int i, double c) { SetFloatValue(i, c); }
+
+int FEMembraneReactionRateVoltageGated::GetSolute()  { return GetParam(4).GetIntValue(); }
+void FEMembraneReactionRateVoltageGated::SetSolute(int isol) { SetIntValue(1, isol); }
+
+//=============================================================================
 // CFD Fiber-Exponential-Power-Law
 //=============================================================================
 

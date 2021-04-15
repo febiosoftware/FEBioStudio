@@ -1148,7 +1148,13 @@ void CMainWindow::on_actionGrowSelection_triggered()
 	if (po == nullptr) return;
 
 	FEMesh* pm = po->GetFEMesh();
-	if (pm == nullptr) return;
+	FEMeshBase* pmb = pm;
+	if (pm == nullptr)
+	{
+		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
+		if (pso) pmb = pso->GetSurfaceMesh();
+		if (pmb == nullptr) return;
+	}
 
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return;
@@ -1160,9 +1166,9 @@ void CMainWindow::on_actionGrowSelection_triggered()
 	switch (itemMode)
 	{
 	case ITEM_ELEM: doc->GrowElementSelection(pm, vs.m_bpart); break;
-	case ITEM_FACE: doc->GrowFaceSelection(pm, vs.m_bpart); break;
-	case ITEM_EDGE: doc->GrowEdgeSelection(pm); break;
-	case ITEM_NODE: doc->GrowNodeSelection(pm); break;
+	case ITEM_FACE: doc->GrowFaceSelection(pmb, vs.m_bpart); break;
+	case ITEM_EDGE: doc->GrowEdgeSelection(pmb); break;
+	case ITEM_NODE: doc->GrowNodeSelection(pmb); break;
 	}
 
 	RedrawGL();
@@ -1174,7 +1180,13 @@ void CMainWindow::on_actionShrinkSelection_triggered()
 	if (po == nullptr) return;
 
 	FEMesh* pm = po->GetFEMesh();
-	if (pm == nullptr) return;
+	FEMeshBase* pmb = pm;
+	if (pm == nullptr)
+	{
+		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
+		if (pso) pmb = pso->GetSurfaceMesh();
+		if (pmb == nullptr) return;
+	}
 
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return;
@@ -1184,9 +1196,9 @@ void CMainWindow::on_actionShrinkSelection_triggered()
 	switch (itemMode)
 	{
 	case ITEM_ELEM: doc->ShrinkElementSelection(pm); break;
-	case ITEM_FACE: doc->ShrinkFaceSelection(pm); break;
-	case ITEM_EDGE: doc->ShrinkEdgeSelection(pm); break;
-	case ITEM_NODE: doc->ShrinkNodeSelection(pm); break;
+	case ITEM_FACE: doc->ShrinkFaceSelection(pmb); break;
+	case ITEM_EDGE: doc->ShrinkEdgeSelection(pmb); break;
+	case ITEM_NODE: doc->ShrinkNodeSelection(pmb); break;
 	}
 
 	RedrawGL();

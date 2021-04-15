@@ -338,10 +338,10 @@ bool FEVTKimport::read_POINT_DATA(VTKMesh& vtkMesh)
 
 bool FEVTKimport::read_CELL_DATA(VTKMesh& vtkMesh)
 {
-	if (checkLine("CELL_DATA") == false) return errf("Cannot find POINT_DATA keyword.");
+	if (checkLine("CELL_DATA") == false) return errf("Cannot find CELL_DATA keyword.");
 
 	int cells = atoi(m_szline + 10);
-	if (cells != vtkMesh.cells()) return errf("Incorrect number of nodes specified in CELL_DATA.");
+	if (cells != vtkMesh.cells()) return errf("Incorrect number of cells specified in CELL_DATA.");
 
 	if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
 	if (strncmp(m_szline, "SCALARS", 7) == 0)

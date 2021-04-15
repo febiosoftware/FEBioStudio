@@ -464,7 +464,9 @@ bool FEBioExport2::Write(const char* szfile)
 	}
 	catch (InvalidItemListBuilder e)
 	{
-		return errf("Invalid reference to mesh item list when exporting:\n%s", (e.m_po ? e.m_po->GetName().c_str(): "(unknown"));
+		const char* sz = "(unknown)";
+		if (e.m_name.empty() == false) sz = e.m_name.c_str();
+		return errf("Invalid reference to mesh item list when exporting:\n%s", sz);
 	}
 	catch (MissingRigidBody e)
 	{
@@ -4243,6 +4245,10 @@ void FEBioExport2::WriteFluidNormalVelocity(FEStep& s)
                 bparab.value(ptc->GetBParab());
                 m_xml.add_leaf(bparab);
                 
+                XMLElement brimp("prescribe_rim_pressure");
+                brimp.value(ptc->GetBRimP());
+                m_xml.add_leaf(brimp);
+
                 // Write surface element
                 XMLElement el("surface");
                 WriteSurface(el, pitem);

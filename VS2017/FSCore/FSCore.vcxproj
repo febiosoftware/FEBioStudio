@@ -148,9 +148,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\FSCore\box.cpp" />
+    <ClCompile Include="..\..\FSCore\BSpline.cpp" />
     <ClCompile Include="..\..\FSCore\CallTracer.cpp" />
     <ClCompile Include="..\..\FSCore\FSDir.cpp" />
     <ClCompile Include="..\..\FSCore\FSObject.cpp" />
+    <ClCompile Include="..\..\FSCore\FSThreadedTask.cpp" />
     <ClCompile Include="..\..\FSCore\LoadCurve.cpp" />
     <ClCompile Include="..\..\FSCore\memtool.cpp" />
     <ClCompile Include="..\..\FSCore\ParamBlock.cpp" />
@@ -160,11 +162,13 @@
   <ItemGroup>
     <ClInclude Include="..\..\FSCore\Archive.h" />
     <ClInclude Include="..\..\FSCore\box.h" />
+    <ClInclude Include="..\..\FSCore\BSpline.h" />
     <ClInclude Include="..\..\FSCore\CallTracer.h" />
     <ClInclude Include="..\..\FSCore\color.h" />
     <ClInclude Include="..\..\FSCore\FSDir.h" />
     <ClInclude Include="..\..\FSCore\FSObject.h" />
     <ClInclude Include="..\..\FSCore\FSObjectList.h" />
+    <ClInclude Include="..\..\FSCore\FSThreadedTask.h" />
     <ClInclude Include="..\..\FSCore\LoadCurve.h" />
     <ClInclude Include="..\..\FSCore\memtool.h" />
     <ClInclude Include="..\..\FSCore\ParamBlock.h" />

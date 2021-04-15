@@ -2398,6 +2398,7 @@ void CMainWindow::UpdatePhysicsUi()
 	ui->actionSoluteTable->setVisible(module & MODULE_SOLUTES);
 	ui->actionSBMTable->setVisible(module & MODULE_SOLUTES);
 	ui->actionAddReaction->setVisible(module & MODULE_REACTIONS);
+    ui->actionAddMembraneReaction->setVisible(module & MODULE_REACTIONS);
 }
 
 //-----------------------------------------------------------------------------
@@ -2773,17 +2774,20 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
 
 	bool ret = false;
+	string err;
 
 	try {
 		if (febioFileVersion == 0)
 		{
 			FEBioExport25 feb(doc->GetProject());
 			ret = feb.Write(febFile.c_str());
+			if (ret == false) err = feb.GetErrorMessage();
 		}
 		else if (febioFileVersion == 1)
 		{
 			FEBioExport3 feb(doc->GetProject());
 			ret = feb.Write(febFile.c_str());
+			if (ret == false) err = feb.GetErrorMessage();
 		}
 		else
 		{
@@ -2792,12 +2796,14 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	}
 	catch (...)
 	{
+		err = "Unknown exception detected.";
 		ret = false;
 	}
 
 	if (ret == false)
 	{
-		QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
+		QString msg = QString("Failed saving FEBio file:\n%1").arg(QString::fromStdString(err));
+		QMessageBox::critical(this, "Run FEBio", msg);
 		AddLogEntry("FAILED\n");
 	}
 	else AddLogEntry("SUCCESS!\n");

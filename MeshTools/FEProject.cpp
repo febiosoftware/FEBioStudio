@@ -382,6 +382,8 @@ void FEProject::InitModules()
     // --- FLUID-FSI MODULE ---
     REGISTER_FE_CLASS(FEFluidFSIAnalysis        , MODULE_FLUID_FSI, FE_ANALYSIS    , FE_STEP_FLUID_FSI   , "Fluid-FSI Mechanics");
     REGISTER_FE_CLASS(FEFSITraction             , MODULE_FLUID_FSI, FE_SURFACE_LOAD, FE_FSI_TRACTION     , "FSI Interface Traction", Fluid_FSI_Traction);
+    REGISTER_FE_CLASS(FEBFSITraction            , MODULE_FLUID_FSI, FE_SURFACE_LOAD, FE_BFSI_TRACTION     , "Biphasic-FSI Interface Traction", Fluid_BFSI_Traction);
+    
 
 	// --- REACTION-DIFFUSION MODULE ---
 	REGISTER_FE_CLASS(FEReactionDiffusionAnalysis, MODULE_REACTION_DIFFUSION, FE_ANALYSIS, FE_STEP_REACTION_DIFFUSION, "Reaction-Diffusion");

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FERefineSurface.h"
 #include <MeshLib/FESurfaceMesh.h>
 
-FERefineSurface::FERefineSurface()
+FERefineSurface::FERefineSurface() : FESurfaceModifier("Refine Mesh")
 {
 	AddIntParam(1, "iterations", "iterations");
 }
@@ -55,6 +55,7 @@ FESurfaceMesh* FERefineSurface::Apply(FESurfaceMesh* pm)
 	}
 
 	FESurfaceMesh* newMesh = 0;
+	setProgress(0.0);
 	for (int i = 0; i<niter; ++i)
 	{
 		newMesh = Split(pm);
@@ -64,6 +65,8 @@ FESurfaceMesh* FERefineSurface::Apply(FESurfaceMesh* pm)
 			if (i != 0) delete pm;
 			pm = newMesh;
 		}
+
+		setProgress(100.0*(i + 1.0) / niter);
 	}
 	return newMesh;
 }

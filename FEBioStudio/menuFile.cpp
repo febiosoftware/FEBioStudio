@@ -114,12 +114,17 @@ SOFTWARE.*/
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
 #include <PostLib/FEVTKImport.h>
+#include <PostLib/VolRender.h>
 #include <sstream>
 
 using std::stringstream;
 
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
+#endif
+
+#ifdef HAS_TEEM
+#include <QFileInfo>
 #endif
 
 
@@ -829,8 +834,9 @@ void CMainWindow::ExportGeometry()
 			if (dlg.exec())
 			{
 				VTKEXPORT ops;
+				ops.bpartIds    = dlg.m_bpart_ids;
 				ops.bshellthick = dlg.m_bshell_thick;
-				ops.bscalar_data = dlg.m_bscalar_data;
+				ops.bscalardata = dlg.m_bscalar_data;
 				FEVTKExport writer(fem);
 				writer.SetOptions(ops);
 				if (!writer.Write(szfile))
@@ -1401,7 +1407,11 @@ void CMainWindow::on_actionImportGeometry_triggered()
 void CMainWindow::on_actionImportImage_triggered()
 {
 	QStringList filters;
-	filters << "RAW files (*.raw)";
+  #ifdef HAS_TEEM
+	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)";
+  #else
+	  filters << "RAW files (*.raw)";
+  #endif
 
 	CGLDocument* doc = GetGLDocument();
 
@@ -1410,6 +1420,7 @@ void CMainWindow::on_actionImportImage_triggered()
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 	filedlg.setNameFilters(filters);
+
 	if (filedlg.exec())
 	{
 		// store the current path
@@ -1419,60 +1430,60 @@ void CMainWindow::on_actionImportImage_triggered()
 		// get the file name
 		QStringList files = filedlg.selectedFiles();
 		QString fileName = files.at(0);
-		std::string sfile = fileName.toStdString();
 
-	/*	// create 'resources' subdirectory
-		std::string sPath = doc->GetDocFolder();
+    std::string sfile = fileName.toStdString();
+    QFileInfo fileInfo(fileName);
+    QString ext = fileInfo.suffix();
 
-		if (!sPath.empty())
-		{
-			QString projectPath = QString::fromStdString(sPath);
-			QDir projectDir(projectPath);
-			projectDir.mkdir("resources");
-			projectDir.cd("resources");
-			QString resourceDir = projectDir.absolutePath();
+//TODO: change po to image model
+    Post::CImageModel* po = nullptr;
+    
+    if(ext == ".tiff" || ".tif")
+    {
+      po = doc->ImportTiff(sfile);
+      if (po == nullptr)
+      {
+        QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+        return;
+      }
+    }
+    else //will need to be written for other cases
+    {
+      CDlgRAWImport dlg(this);
+      if (dlg.exec())
+      {
+        BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
+        po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+        if (po == nullptr)
+        {
+          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+          return;
+        }
+      }
+    }
+    if(po)
+    {
+      Update(0, true);
+      ZoomTo(po->GetBoundingBox());
 
-			// store path for linked file
-			QString linkName = projectDir.absoluteFilePath(QFileInfo(fileName).fileName());
+      // only for model docs
+      if (dynamic_cast<CModelDocument*>(doc))
+      {
+        Post::CVolRender* vr = new Post::CVolRender(po);
+        vr->Create();
+        po->AddImageRenderer(vr);
 
-			// add .lnk extension to link when on windows
-#ifdef WIN32
-			linkName += ".lnk";
-#endif
-			// create link in resources directory
-			QFile originalFile(fileName);
-			originalFile.link(linkName);
-
-			// store path to newly created link
-			sfile = linkName.toStdString();
-		}
-*/
-
-		CDlgRAWImport dlg(this);
-		if (dlg.exec())
-		{
-			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
-
-			Post::CImageModel* po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-			if (po == nullptr)
-			{
-				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-			}
-			else
-			{
-				Update(0, true);
-				ZoomTo(po->GetBoundingBox());
-
-				// only for model docs
-				if (dynamic_cast<CModelDocument*>(doc))
-				{
-					ShowInModelViewer(po);
-				}
-			}
-		}
-		else return;
-	}
+        Update(0, true);
+        ShowInModelViewer(po);
+      }
+      else
+      {
+        Update(0, true);
+      }
+      ZoomTo(po->GetBoundingBox());
+    }
+  }
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()

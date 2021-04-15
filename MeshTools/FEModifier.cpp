@@ -954,11 +954,13 @@ FEMesh* FERefineMesh::Apply(FEMesh* pm)
 
 	// apply the refine modifier
 	FEMesh* pmold = pm;
+	setProgress(0.0);
 	for (int i=0; i<niter; ++i)
 	{
 		FEMesh* pmnew = mod->Apply(pmold);
 		if (i != 0) delete pmold;
 		pmold = pmnew;
+		setProgress(100.0*(i + 1.0) / (double)niter);
 	}
 
 	delete mod;

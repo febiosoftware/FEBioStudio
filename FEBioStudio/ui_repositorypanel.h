@@ -597,7 +597,7 @@ public:
 		{
 			parent = currentProjectFolders.at(path.left(pos + index).toStdString());
 		}
-		catch(out_of_range& e)
+		catch(std::out_of_range& e)
 		{
 			parent = new FolderItem(path.right(path.length() - index).left(pos));
 

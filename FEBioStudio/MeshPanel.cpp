@@ -111,6 +111,8 @@ private:
 	GSurfaceMeshObject*	m_po;
 };
 
+
+//=======================================================================================
 MeshingThread::MeshingThread(GObject* po)
 {
 	m_po = po;
@@ -121,18 +123,23 @@ void MeshingThread::run()
 {
 	m_mesher = m_po->GetFEMesher();
 	if (m_mesher) m_mesher->SetErrorMessage("");
-	m_po->BuildMesh();
-	emit resultReady();
+	FEMesh* mesh = m_po->BuildMesh();
+	emit resultReady(mesh != nullptr);
+}
+
+bool MeshingThread::hasProgress()
+{
+	return (m_mesher ? m_mesher->GetProgress().valid : false);
 }
 
 double MeshingThread::progress()
 {
-	return (m_mesher ? m_mesher->Progress().percent : 0.0);
+	return (m_mesher ? m_mesher->GetProgress().percent : 0.0);
 }
 
 const char* MeshingThread::currentTask()
 {
-	return (m_mesher ? m_mesher->Progress().task : "");
+	return (m_mesher ? m_mesher->GetProgress().task : "");
 }
 
 void MeshingThread::stop()
@@ -140,74 +147,39 @@ void MeshingThread::stop()
 	if (m_mesher) m_mesher->Terminate();
 }
 
-//=============================================================================
-CDlgStartThread::CDlgStartThread(QWidget* parent, MeshingThread* thread)
+//=======================================================================================
+ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FEGroup* pg)
 {
-	m_thread = thread;
-
-	m_szcurrentTask = 0;
-
-	QVBoxLayout* l = new QVBoxLayout;
-	l->addWidget(new QLabel("Meshing in progress. Please wait."));
-	l->addWidget(m_task = new QLabel(""));
-
-	l->addWidget(m_progress = new QProgressBar);
-	m_progress->setRange(0, 100);
-	m_progress->setValue(0);
-
-	QHBoxLayout* h = new QHBoxLayout;
-	h->addStretch();
-	h->addWidget(m_stop = new QPushButton("Cancel"));
-
-	l->addLayout(h);
-	setLayout(l);
-
-	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-	QObject::connect(m_thread, SIGNAL(resultReady()), this, SLOT(threadFinished()));
-	QObject::connect(m_stop, SIGNAL(clicked()), this, SLOT(cancel()));
-
-	QTimer::singleShot(100, this, SLOT(checkProgress()));
-
-	m_bdone = false;
-	m_thread->start();
+	m_doc = doc;
+	m_mod = mod;
+	m_pg = pg;
+	m_po = po;
 }
 
-void CDlgStartThread::accept()
+void ModifierThread::run()
 {
-	QDialog::accept();
+	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_pg);
+	emit resultReady(bsuccess);
 }
 
-void CDlgStartThread::cancel()
+bool ModifierThread::hasProgress()
 {
-	m_stop->setEnabled(false);
-	m_thread->stop();
+	return (m_mod ? m_mod->GetProgress().valid : false);
 }
 
-void CDlgStartThread::checkProgress()
+double ModifierThread::progress()
 {
-	if (m_bdone) accept();
-	else
-	{
-		double p = m_thread->progress();
-		m_progress->setValue((int) p);
-
-		const char* sztask = m_thread->currentTask();
-		if (sztask != m_szcurrentTask)
-		{
-			m_szcurrentTask = sztask;
-			m_task->setText(m_szcurrentTask);
-		}
-
-		QTimer::singleShot(100, this, SLOT(checkProgress()));
-	}
+	return (m_mod ? m_mod->GetProgress().percent : 0.0);
 }
 
-void CDlgStartThread::threadFinished()
+const char* ModifierThread::currentTask()
 {
-	m_bdone = true;
-	m_thread->deleteLater();
-	checkProgress();
+	return (m_mod ? m_mod->GetName().c_str() : "");
+}
+
+void ModifierThread::stop()
+{
+	
 }
 
 //=============================================================================
@@ -439,18 +411,24 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		else { delete list; list = 0; }
 	}
 
-	bool bsuccess = doc->ApplyFEModifier(*m_mod, activeObject, g);
-	if (bsuccess == false)
+	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, g);
+	CDlgStartThread dlg(this, thread);
+	dlg.setTask(QString::fromStdString(m_mod->GetName()));
+	if (dlg.exec())
 	{
-		QString err = QString("Error while applying %1:\n%2").arg(QString::fromStdString(m_mod->GetName())).arg(QString::fromStdString(m_mod->GetErrorString()));
-		QMessageBox::critical(this, "Error", err);
-	}
-	else
-	{
-		std::string err = m_mod->GetErrorString();
-		if (err.empty() == false)
+		bool bsuccess = dlg.GetReturnCode();
+		if (bsuccess == false)
 		{
-			w->AddLogEntry(QString::fromStdString(err) + QString("\n"));
+			QString err = QString("Error while applying %1:\n%2").arg(QString::fromStdString(m_mod->GetName())).arg(QString::fromStdString(m_mod->GetErrorString()));
+			QMessageBox::critical(this, "Error", err);
+		}
+		else
+		{
+			std::string err = m_mod->GetErrorString();
+			if (err.empty() == false)
+			{
+				w->AddLogEntry(QString::fromStdString(err) + QString("\n"));
+			}
 		}
 	}
 
@@ -471,7 +449,9 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 	GObject* po = pdoc->GetActiveObject();
 	GModel* mdl = pdoc->GetGModel();
 
-	if (pa->objectName() == "convert1")
+	int convertOption = pa->data().toInt();
+
+	if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_SURFACE)
 	{
 		if (dynamic_cast<GSurfaceMeshObject*>(po) == nullptr)
 		{
@@ -487,7 +467,7 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
-	else
+	else if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_MESH)
 	{
 		// convert to editable mesh
 		if (dynamic_cast<GMeshObject*>(po) == 0)
@@ -504,6 +484,11 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
+	else
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Don't know how to convert object.");
+	}
+
 	Update();
 	GetMainWindow()->Update(this, true);
 }

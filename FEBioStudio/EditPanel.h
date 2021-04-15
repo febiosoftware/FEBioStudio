@@ -26,12 +26,45 @@ SOFTWARE.*/
 
 #pragma once
 #include "CommandPanel.h"
+#include "DlgStartThread.h"
 
 class CMainWindow;
 
 namespace Ui {
 	class CEditPanel;
 }
+
+class CMainWindow;
+class CModelDocument;
+class FESurfaceModifier;
+class FEMesh;
+class GSurfaceMeshObject;
+class FEMesher;
+class FEGroup;
+
+class SurfaceModifierThread : public CustomThread
+{
+public:
+	SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FEGroup* pg);
+
+	void run() Q_DECL_OVERRIDE;
+
+public:
+	bool hasProgress() override;
+
+	double progress() override;
+
+	const char* currentTask() override;
+
+	void stop() override;
+
+private:
+	CModelDocument*		m_doc;
+	GSurfaceMeshObject*	m_po;
+	FESurfaceModifier*	m_mod;
+	FEGroup*			m_pg;
+};
+
 
 class CEditPanel : public CCommandPanel
 {

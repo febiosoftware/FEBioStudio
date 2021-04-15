@@ -39,6 +39,7 @@ public:
 	void accept();
 
 public:
+	bool	m_bpart_ids;
 	bool	m_bshell_thick;
 	bool	m_bscalar_data;
 

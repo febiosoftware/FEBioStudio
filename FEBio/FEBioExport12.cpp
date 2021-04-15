@@ -315,7 +315,9 @@ bool FEBioExport12::Write(const char* szfile)
 	}
 	catch (InvalidItemListBuilder e)
 	{
-		return errf("Invalid reference to mesh item list when exporting:\n%s", e.m_po->GetName().c_str());
+		const char* sz = "(unknown)";
+		if (e.m_name.empty() == false) sz = e.m_name.c_str();
+		return errf("Invalid reference to mesh item list when exporting:\n%s", sz);
 	}
 	catch (MissingRigidBody e)
 	{

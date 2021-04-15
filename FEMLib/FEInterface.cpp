@@ -347,10 +347,10 @@ FERigidWallInterface::FERigidWallInterface(FEModel* ps, int nstep) : FESoloInter
 	AddBoolParam  (false, "laugon"   , "augmented lagrangian"  );
 	AddDoubleParam(0.2  , "tolerance", "augmentation tolerance");
 	AddDoubleParam(1    , "penalty"  , "penalty factor"        );
-	AddDoubleParam(0    , "a"        , "a"                     );
-	AddDoubleParam(0    , "b"        , "b"                     );
-	AddDoubleParam(0    , "c"        , "c"                     );
-	AddDoubleParam(0    , "d"        , "d"                     );
+	AddDoubleParam(0    , "a"        , "Normal-x"              );
+	AddDoubleParam(0    , "b"        , "Normal-y"              );
+	AddDoubleParam(0    , "c"        , "Normal-z"              );
+	AddDoubleParam(0    , "d"        , "distance to origin"    );
 	AddDoubleParam(0.0  , "offset"   , "plane displacment"     );
 }
 
@@ -698,6 +698,7 @@ FETiedMultiphasicInterface::FETiedMultiphasicInterface(FEModel* ps, int nstep) :
 	AddDoubleParam(0.2, "tolerance", "augmentation tolerance");
 	AddDoubleParam(0, "gaptol", "gap tolerance");
 	AddDoubleParam(0, "ptol", "pressure tolerance");
+    AddDoubleParam(0, "ctol", "concentration tolerance");
 	AddDoubleParam(1.0, "penalty", "penalty factor");
 	AddBoolParam(false, "auto_penalty", "auto-penalty");
 	AddBoolParam(false, "two_pass", "two pass");

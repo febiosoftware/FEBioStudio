@@ -481,7 +481,9 @@ void XMLReader::ReadTag(XMLTag& tag)
 					{
 						ch = GetNextChar();
 						if (ch == '>') break;
+						else m_comment += "--";
 					}
+					else m_comment += '-';
 				}
 				m_comment += ch;
 			}

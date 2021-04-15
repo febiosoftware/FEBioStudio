@@ -51,10 +51,10 @@ public:
 		QVBoxLayout* l = new QVBoxLayout;
 
 		QFormLayout* f = new QFormLayout;
-		f->addRow("X-normal:", w[0] = new CDragBox); w[0]->setRange(-1.0, 1.0); w[0]->SetSingleStep(0.01);
-		f->addRow("Y-normal:", w[1] = new CDragBox); w[1]->setRange(-1.0, 1.0); w[1]->SetSingleStep(0.01);
-		f->addRow("Z-normal:", w[2] = new CDragBox); w[2]->setRange(-1.0, 1.0); w[2]->SetSingleStep(0.01);
-		f->addRow("offset:"  , w[3] = new CDragBox); w[3]->setRange(-1.0, 1.0); w[3]->SetSingleStep(0.01);
+		f->addRow("X-normal:", w[0] = new CDragBox); w[0]->setRange(-1.0, 1.0); w[0]->setSingleStep(0.01);
+		f->addRow("Y-normal:", w[1] = new CDragBox); w[1]->setRange(-1.0, 1.0); w[1]->setSingleStep(0.01);
+		f->addRow("Z-normal:", w[2] = new CDragBox); w[2]->setRange(-1.0, 1.0); w[2]->setSingleStep(0.01);
+		f->addRow("offset:"  , w[3] = new CDragBox); w[3]->setRange(-1.0, 1.0); w[3]->setSingleStep(0.01);
 		f->addRow("", m_rb[0] = new QRadioButton("plane cut"));
 		f->addRow("", m_rb[1] = new QRadioButton("hide elements"));
 		m_rb[0]->setChecked(true);

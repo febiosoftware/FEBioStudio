@@ -35,10 +35,15 @@ public:
 	FEFixSurfaceMesh();
 	FESurfaceMesh* Apply(FESurfaceMesh* pm);
 
+	FSTaskProgress GetProgress() override;
+
 	bool RemoveDuplicateFaces(FESurfaceMesh* pm);
 	bool RemoveNonManifoldFaces(FESurfaceMesh* pm);
 	bool FixElementWinding(FESurfaceMesh* pm);
 	bool InvertMesh(FESurfaceMesh* pm);
 	bool FillAllHoles(FESurfaceMesh* pm);
 	bool RemoveDuplicateEdges(FESurfaceMesh* pm);
+
+protected:
+	FESurfaceModifier* m_mod;
 };

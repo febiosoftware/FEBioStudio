@@ -41,7 +41,78 @@ SOFTWARE.*/
 #include <sstream>
 
 using std::stringstream;
+//-----------------------------------------------------------------------------
+vector<string> GetDOFList(string sz)
+{
+    vector<string> dofs;
+    int nc = 0;
+    while (nc != -1) {
+        nc = (int)sz.find(",");
+        dofs.push_back(sz.substr(0,nc));
+        sz = sz.substr(nc+1);
+    }
+    
+    return dofs;
+}
 
+int GetDOFDir(vector<string> sz)
+{
+    int dof = 0;
+    for (int i=0; i<sz.size(); ++i)
+    {
+        if (sz[i].find("x") != string::npos) dof |= 1;
+        if (sz[i].find("y") != string::npos) dof |= (1 << 1);
+        if (sz[i].find("z") != string::npos) dof |= (1 << 2);
+    }
+    return dof;
+}
+
+int GetROTDir(vector<string> sz)
+{
+    int dof = 0;
+    for (int i=0; i<sz.size(); ++i)
+    {
+        if (sz[i].find("u") != string::npos) dof |= 1;
+        if (sz[i].find("v") != string::npos) dof |= (1 << 1);
+        if (sz[i].find("w") != string::npos) dof |= (1 << 2);
+    }
+    return dof;
+}
+
+bool validate_dof(string bc)
+{
+    if      (bc == "x") return true;
+    else if (bc == "y") return true;
+    else if (bc == "z") return true;
+    else if (bc == "T") return true;
+    else if (bc == "p") return true;
+    else if (bc == "q") return true;
+    else if (bc == "wx") return true;
+    else if (bc == "wy") return true;
+    else if (bc == "wz") return true;
+    else if (bc == "ef") return true;
+    else if (bc == "u")  return true;
+    else if (bc == "v")  return true;
+    else if (bc == "w")  return true;
+    else if (bc == "sx") return true;
+    else if (bc == "sy") return true;
+    else if (bc == "sz") return true;
+    else if (bc == "c")  return true;
+    else if (bc.compare(0,1,"c") == 0) {
+        int isol = 0;
+        sscanf(bc.substr(1).c_str(),"%d",&isol);
+        if (isol > 0) return true;
+    }
+    else if (bc == "d")  return true;
+    else if (bc.compare(0,1,"d") == 0) {
+        int isol = 0;
+        sscanf(bc.substr(1).c_str(),"%d",&isol);
+        if (isol > 0) return true;
+    }
+    return false;
+}
+
+//-----------------------------------------------------------------------------
 FEBioFormat3::FEBioFormat3(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {
 	m_geomFormat = 0;
@@ -385,7 +456,7 @@ void FEBioFormat3::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 	} while (!tag.isend());
 
 	// create nodes
-	int nn = nodes.size();
+	int nn = (int)nodes.size();
 	FEMesh& mesh = *part->GetFEMesh();
 	int N0 = mesh.Nodes();
 	mesh.Create(N0 + nn, 0);
@@ -1163,7 +1234,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", szset);
 
 	string dofList;
-	int bc = 0;
+    vector<string> dofs;
 	++tag;
 	do
 	{
@@ -1171,142 +1242,125 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 		{
 			// figure out the bc value
 			tag.value(dofList);
-			bc = GetDOFCode(dofList.c_str());
-			if (bc == 0) throw XMLReader::InvalidValue(tag);
+            dofs = GetDOFList(dofList);
+            for (int i=0; i<dofs.size(); ++i)
+                if (validate_dof(dofs[i]) == false) throw XMLReader::InvalidValue(tag);
 		}
 		++tag;
 	}
 	while (!tag.isend());
 
 	// create the constraint
-	char szbuf[256] = { 0 };
-	if (bc < 8)
-	{
-		FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, bc, pstep->GetID());
-		if (name.empty())
-		{
-			sprintf(szbuf, "FixedDisplacement%02d", CountBCs<FEFixedDisplacement>(fem) + 1);
-			name = szbuf;
-		}
-		pbc->SetName(name);
-		pstep->AddComponent(pbc);
-	}
-	else if (bc < 64)
-	{
-		bc = bc >> 3;
-		FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, bc, pstep->GetID());
-		if (name.empty())
-		{
-			sprintf(szbuf, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem) + 1);
-			name = szbuf;
-		}
-		pbc->SetName(name);
-		pstep->AddComponent(pbc);
-	}
-	else if (bc == 64)
-	{
-		FEFixedTemperature* pbc = new FEFixedTemperature(&fem, pg, 1, pstep->GetID());
-		if (name.empty())
-		{
-			sprintf(szbuf, "FixedTemperature%02d", CountBCs<FEFixedTemperature>(fem) + 1);
-			name = szbuf;
-		}
-		pbc->SetName(name);
-		pstep->AddComponent(pbc);
-	}
-	else if (bc == 128)
-	{
-		FEFixedFluidPressure* pbc = new FEFixedFluidPressure(&fem, pg, 1, pstep->GetID());
-		if (name.empty())
-		{
-			sprintf(szbuf, "FixedFluidPressure%02d", CountBCs<FEFixedFluidPressure>(fem) + 1);
-			name = szbuf;
-		}
-		pbc->SetName(name);
-		pstep->AddComponent(pbc);
-	}
-	else if ((bc < 2048) && (bc >= 256))
-	{
-		bc = bc >> 8;
-		FEFixedFluidVelocity* pbc = new FEFixedFluidVelocity(&fem, pg, bc, pstep->GetID());
-		if (name.empty())
-		{
-			sprintf(szbuf, "FixedFluidVelocity%02d", CountBCs<FEFixedFluidVelocity>(fem) + 1);
-			name = szbuf;
-		}
-		pbc->SetName(name);
-		pstep->AddComponent(pbc);
-	}
-	else if (bc == 2048)
-	{
-		FEFixedFluidDilatation* pbc = new FEFixedFluidDilatation(&fem, pg, 1, pstep->GetID());
-		if (name.empty())
-		{
-			sprintf(szbuf, "FixedFluidDilatation%02d", CountBCs<FEFixedFluidDilatation>(fem) + 1);
-			name = szbuf;
-		}
-		pbc->SetName(name);
-		pstep->AddComponent(pbc);
-	}
-	else if (bc < (1 << 15))
-	{
-		bc = bc >> 12;
-		FEFixedShellDisplacement* pbc = new FEFixedShellDisplacement(&fem, pg, bc, pstep->GetID());
-		if (name.empty())
-		{
-			sprintf(szbuf, "FixedShellDisplacement%02d", CountBCs<FEFixedShellDisplacement>(fem) + 1);
-			name = szbuf;
-		}
-		pbc->SetName(name);
-		pstep->AddComponent(pbc);
-	}
-	else
-	{
-		bc = bc >> 15;
-		if (bc < 256)
-		{
-			FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, bc, pstep->GetID());
-			if (name.empty())
-			{
-				sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
-				name = szbuf;
-			}
-			pbc->SetName(name);
-			pstep->AddComponent(pbc);
-		}
-	}
+    char szbuf[256] = { 0 };
+    string bc = dofs[0];
+    if ((bc=="x") || (bc=="y") || (bc=="z")) {
+        {
+            FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, GetDOFDir(dofs), pstep->GetID());
+            if (name.empty())
+            {
+                sprintf(szbuf, "FixedDisplacement%02d", CountBCs<FEFixedDisplacement>(fem) + 1);
+                name = szbuf;
+            }
+            pbc->SetName(name);
+            pstep->AddComponent(pbc);
+        }
+    }
+    else if ((bc=="u") || (bc=="v") || (bc=="w"))
+    {
+        FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, GetROTDir(dofs), pstep->GetID());
+        if (name.empty())
+        {
+            sprintf(szbuf, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc == "T")
+    {
+        FEFixedTemperature* pbc = new FEFixedTemperature(&fem, pg, 1, pstep->GetID());
+        if (name.empty())
+        {
+            sprintf(szbuf, "FixedTemperature%02d", CountBCs<FEFixedTemperature>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc == "p")
+    {
+        FEFixedFluidPressure* pbc = new FEFixedFluidPressure(&fem, pg, 1, pstep->GetID());
+        if (name.empty())
+        {
+            sprintf(szbuf, "FixedFluidPressure%02d", CountBCs<FEFixedFluidPressure>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if ((bc=="wx") || (bc=="wy") || (bc=="wz"))
+    {
+        FEFixedFluidVelocity* pbc = new FEFixedFluidVelocity(&fem, pg, GetDOFDir(dofs), pstep->GetID());
+        if (name.empty())
+        {
+            sprintf(szbuf, "FixedFluidVelocity%02d", CountBCs<FEFixedFluidVelocity>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc == "ef")
+    {
+        FEFixedFluidDilatation* pbc = new FEFixedFluidDilatation(&fem, pg, 1, pstep->GetID());
+        if (name.empty())
+        {
+            sprintf(szbuf, "FixedFluidDilatation%02d", CountBCs<FEFixedFluidDilatation>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if ((bc=="sx") || (bc=="sy") || (bc=="sz"))
+    {
+        FEFixedShellDisplacement* pbc = new FEFixedShellDisplacement(&fem, pg, GetDOFDir(dofs), pstep->GetID());
+        if (name.empty())
+        {
+            sprintf(szbuf, "FixedShellDisplacement%02d", CountBCs<FEFixedShellDisplacement>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc=="c")
+    {
+        FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, 1, pstep->GetID());
+        if (name.empty())
+        {
+            sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
+    else if (bc.compare(0,1,"c") == 0)
+    {
+        int isol = 0;
+        sscanf(bc.substr(1).c_str(),"%d",&isol);
+        if (isol > 0)
+        {
+            FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, isol, pstep->GetID());
+            if (name.empty())
+            {
+                sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
+                name = szbuf;
+            }
+            pbc->SetName(name);
+            pstep->AddComponent(pbc);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
-
-int prescribe_dof(const char* sz)
-{
-	string abc(sz);
-	int bc = -1;
-	if      (abc == "x") bc = 0;
-	else if (abc == "y") bc = 1;
-	else if (abc == "z") bc = 2;
-	else if (abc == "T") bc = 3;
-	else if (abc == "p") bc = 4;
-	else if (abc == "wx") bc = 5;
-	else if (abc == "wy") bc = 6;
-	else if (abc == "wz") bc = 7;
-	else if (abc == "ef") bc = 8;
-	else if (abc == "c") bc = 9;
-	else if (abc == "c1") bc = 9;
-	else if (abc == "c2") bc = 10;
-	else if (abc == "c3") bc = 11;
-	else if (abc == "c4") bc = 12;
-	else if (abc == "c5") bc = 13;
-	else if (abc == "c6") bc = 14;
-	else if (abc == "u") bc = 15;
-	else if (abc == "v") bc = 16;
-	else if (abc == "w") bc = 17;
-    else if (abc == "sx") bc = 18;
-    else if (abc == "sy") bc = 19;
-    else if (abc == "sz") bc = 20;
-	return bc;
-}
 
 void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 {
@@ -1322,7 +1376,7 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	FEItemListBuilder* pg = febio.BuildItemList(set.cvalue());
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", set.cvalue());
 
-	int bc = 0;
+	string bc;
 	bool relative = false;
 	string scaleType("");
 	string scaleValue("");
@@ -1333,8 +1387,8 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		if (tag == "dof")
 		{
 			// determine bc
-			bc = prescribe_dof(tag.szvalue());
-			if (bc == -1) throw XMLReader::InvalidValue(tag);
+			bc = string(tag.szvalue());
+			if (validate_dof(bc) == false) throw XMLReader::InvalidValue(tag);
 		}
 		else if (tag == "scale")
 		{
@@ -1342,6 +1396,15 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 			if (sztype) scaleType = sztype;
 			scaleValue = tag.szvalue();
 			lc = tag.AttributeValue<int>("lc", -1);
+
+			if (tag.isleaf() == false)
+			{
+				++tag;
+				do {
+					if (tag == "math") scaleValue = tag.szvalue();
+					++tag;
+				} while (!tag.isend());
+			}
 		}
 		else if (tag == "relative") tag.value(relative);
 		++tag;
@@ -1350,44 +1413,26 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 
 	// make a new boundary condition
 	FEPrescribedDOF* pbc = 0;
-	switch (bc)
-	{
-	case 0:
-	case 1:
-	case 2: pbc = new FEPrescribedDisplacement (&fem, pg, bc, 1, pstep->GetID()); break;
-	case 3: pbc = new FEPrescribedTemperature  (&fem, pg, bc, pstep->GetID()); break;
-	case 4: pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID()); break;
-	case 5:
-	case 6:
-	case 7:
-		bc = bc - 5;
-		pbc = new FEPrescribedFluidVelocity(&fem, pg, bc, 1, pstep->GetID());
-		break;
-	case 8:
-		pbc = new FEPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
-		break;
-	case 9:
-	case 10:
-	case 11:
-	case 12:
-	case 13:
-	case 14:
-		bc = bc - 9;
-		pbc = new FEPrescribedConcentration(&fem, pg, bc, 1.0, pstep->GetID());
-		break;
-	case 15:
-	case 16:
-	case 17:
-		bc = bc - 15;
-		pbc = new FEPrescribedRotation(&fem, pg, bc, 1.0, pstep->GetID());
-		break;
-    case 18:
-    case 19:
-    case 20:
-        bc = bc - 18;
-        pbc = new FEPrescribedShellDisplacement(&fem, pg, bc, 1.0, pstep->GetID());
-        break;
-	}
+    if (bc=="x") pbc = new FEPrescribedDisplacement (&fem, pg, 0, 1, pstep->GetID());
+    else if (bc=="y") pbc = new FEPrescribedDisplacement (&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="z") pbc = new FEPrescribedDisplacement (&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="T") pbc = new FEPrescribedTemperature  (&fem, pg, 1, pstep->GetID());
+    else if (bc=="p") pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
+    else if (bc=="vx") pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
+    else if (bc=="vy") pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="vz") pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="ef") pbc = new FEPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
+    else if (bc=="sx") pbc = new FEPrescribedShellDisplacement(&fem, pg, 0, 1, pstep->GetID());
+    else if (bc=="sy") pbc = new FEPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="sz") pbc = new FEPrescribedShellDisplacement(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="u") pbc = new FEPrescribedRotation(&fem, pg, 0, 1, pstep->GetID());
+    else if (bc=="v") pbc = new FEPrescribedRotation(&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="w") pbc = new FEPrescribedRotation(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc.compare(0,1,"c") == 0) {
+        int isol;
+        sscanf(bc.substr(1).c_str(),"%d",&isol);
+        pbc = new FEPrescribedConcentration(&fem, pg, isol-1, 1.0, pstep->GetID());
+    }
 
 	// get the optional name
 	if (name.empty()) name = pg->GetName();
@@ -1593,16 +1638,15 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 			// read the bc attribute
 			string abc = tag.szvalue();
 			int bc = 0;
-			if (abc == "x") bc = 0;
+			if      (abc == "x") bc = 0;
 			else if (abc == "y") bc = 1;
 			else if (abc == "z") bc = 2;
 			else if (abc == "p") bc = 3;
-			else if (abc == "c1") bc = 4;
-			else if (abc == "c2") bc = 5;
-			else if (abc == "c3") bc = 6;
-			else if (abc == "c4") bc = 7;
-			else if (abc == "c5") bc = 8;
-			else if (abc == "c6") bc = 9;
+            else if (abc.compare(0,1,"c") == 0) {
+                int isol = 0;
+                sscanf(abc.substr(1).c_str(),"%d",&isol);
+                bc = isol+3;
+            }
 			else throw XMLReader::InvalidValue(tag);
 
 			pbc->SetDOF(bc);
@@ -1663,6 +1707,7 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
     else if (att == "fluid backflow stabilization"  ) psl = CREATE_SURFACE_LOAD(FEFluidBackflowStabilization);
     else if (att == "fluid tangential stabilization") psl = CREATE_SURFACE_LOAD(FEFluidTangentialStabilization);
     else if (att == "fluid-FSI traction"            ) psl = CREATE_SURFACE_LOAD(FEFSITraction);
+    else if (att == "biphasic-FSI traction"         ) psl = CREATE_SURFACE_LOAD(FEBFSITraction);
 	else ParseUnknownAttribute(tag, "type");
 
 	// process surface load
@@ -1762,7 +1807,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 
 				string scaleType("");
 				string scaleValue("");
-				int bc = 0;
+				string bc;
 				++tag;
 				do
 				{
@@ -1774,34 +1819,8 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 					}
 					else if (tag == "dof")
 					{
-						string abc = tag.szvalue();
-
-						if      (abc == "t") bc = 3;
-						else if (abc == "p") bc = 4;
-						else if (abc == "vx") bc = 5;
-						else if (abc == "vy") bc = 6;
-						else if (abc == "vz") bc = 7;
-			//			else if (abc == "ef") bc = 8;
-						else if (abc == "c") bc = 9;
-						else if (abc == "c1") bc = 9;
-						else if (abc == "c2") bc = 10;
-						else if (abc == "c3") bc = 11;
-						else if (abc == "c4") bc = 12;
-						else if (abc == "c5") bc = 13;
-						else if (abc == "c6") bc = 14;
-						else if (abc == "q") bc = 15;
-						else if (abc == "d") bc = 16;
-						else if (abc == "d1") bc = 16;
-						else if (abc == "d2") bc = 17;
-						else if (abc == "d3") bc = 18;
-						else if (abc == "d4") bc = 19;
-						else if (abc == "d5") bc = 20;
-						else if (abc == "d6") bc = 21;
-						else if (abc == "svx") bc = 22;
-						else if (abc == "svy") bc = 23;
-						else if (abc == "svz") bc = 24;
-						else if (abc == "ef") bc = 25;
-						else throw XMLReader::InvalidValue(tag);
+						bc = tag.szvalue();
+						if (validate_dof(bc) == false) throw XMLReader::InvalidValue(tag);
 					}
 					else ParseUnknownTag(tag);
 					++tag;
@@ -1816,13 +1835,12 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				// create a new initial velocity BC
 				FEInitialCondition* pic = 0;
 				char szname[64] = { 0 };
-				switch (bc)
-				{
-				case 3:
+                if (bc == "T")
+                {
 					pic = new FEInitTemperature(&fem, pg, val, m_pBCStep->GetID());
 					sprintf(szname, "InitialTemperature%02d", CountICs<FEInitTemperature>(fem) + 1);
-					break;
-				case 4:
+                }
+                else if (bc == "p")
 				{
 					pic = new FEInitFluidPressure(&fem, pg, val, m_pBCStep->GetID());
 					sprintf(szname, "InitialFluidPressure%02d", CountICs<FEInitFluidPressure>(fem) + 1);
@@ -1840,52 +1858,59 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 						pp->SetStringValue(scaleValue);
 					}
 				}
-					break;
-				case 5:
+                else if (bc == "q")
+                {
+                    pic = new FEInitShellFluidPressure(&fem, pg, val, m_pBCStep->GetID());
+                    sprintf(szname, "InitialShellFluidPressure%02d", CountICs<FEInitShellFluidPressure>(fem) + 1);
+                }
+                else if (bc == "vx")
+                {
 					pic = new FENodalVelocities(&fem, pg, vec3d(val, 0, 0), m_pBCStep->GetID());
 					sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
-					break;
-				case 6:
+                }
+                else if (bc == "vy")
+                {
 					pic = new FENodalVelocities(&fem, pg, vec3d(0, val, 0), m_pBCStep->GetID());
 					sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
-					break;
-				case 7:
+                }
+                else if (bc == "vz")
+                {
 					pic = new FENodalVelocities(&fem, pg, vec3d(0, 0, val), m_pBCStep->GetID());
 					sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
-					break;
-				case 15:
-					pic = new FEInitShellFluidPressure(&fem, pg, val, m_pBCStep->GetID());
-					sprintf(szname, "InitialShellFluidPressure%02d", CountICs<FEInitShellFluidPressure>(fem) + 1);
-					break;
-				case 22:
+                }
+				else if (bc == "svx")
+                {
 					pic = new FENodalShellVelocities(&fem, pg, vec3d(val, 0, 0), m_pBCStep->GetID());
 					sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) + 1);
-					break;
-				case 23:
+                }
+                else if (bc == "svy")
+                {
 					pic = new FENodalShellVelocities(&fem, pg, vec3d(0, val, 0), m_pBCStep->GetID());
 					sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) + 1);
-					break;
-				case 24:
+                }
+                else if (bc == "svz")
+                {
 					pic = new FENodalShellVelocities(&fem, pg, vec3d(0, 0, val), m_pBCStep->GetID());
 					sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) + 1);
-					break;
-				case 25:
+                }
+                else if (bc == "ef")
+                {
 					pic = new FEInitFluidDilatation(&fem, pg, val, m_pBCStep->GetID());
 					sprintf(szname, "InitialFluidDilatation%02d", CountICs<FEInitFluidDilatation>(fem) + 1);
-					break;
-				default:
-					if ((bc >= 9) && (bc <= 14))
-					{
-						int nsol = bc - 9;
-						pic = new FEInitConcentration(&fem, pg, nsol, val, m_pBCStep->GetID());
-						sprintf(szname, "InitConcentration%02d", CountICs<FEInitConcentration>(fem) + 1);
-					}
-					else if ((bc >= 16) && (bc <= 21))
-					{
-						int nsol = bc - 16;
-						pic = new FEInitShellConcentration(&fem, pg, nsol, val, m_pBCStep->GetID());
-						sprintf(szname, "InitShellConcentration%02d", CountICs<FEInitShellConcentration>(fem) + 1);
-					}
+                }
+                else if (bc.compare(0,1,"c") == 0)
+                {
+                    int nsol;
+                    sscanf(bc.substr(1).c_str(),"%d",&nsol);
+                    pic = new FEInitConcentration(&fem, pg, nsol-1, val, m_pBCStep->GetID());
+                    sprintf(szname, "InitConcentration%02d", CountICs<FEInitConcentration>(fem) + 1);
+                }
+                else if (bc.compare(0,1,"d") == 0)
+                {
+                    int nsol;
+                    sscanf(bc.substr(1).c_str(),"%d",&nsol);
+                    pic = new FEInitShellConcentration(&fem, pg, nsol-1, val, m_pBCStep->GetID());
+                    sprintf(szname, "InitShellConcentration%02d", CountICs<FEInitShellConcentration>(fem) + 1);
 				}
 
 				if (pic)
@@ -2821,6 +2846,32 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				} while (!tag.isend());
 				set.push_back(pg);
 			}
+			else if (strcmp(sztype, "Hill") == 0)
+			{
+				FEHillContractileMaterial* mat = new FEHillContractileMaterial();
+				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
+				pg->SetMaterial(mat);
+				pg->SetName(szname);
+				fem.GetModel().AddDiscreteObject(pg);
+				++tag;
+				do
+				{
+					if (ReadParam(*mat, tag) == false)
+					{
+						FEMaterialProperty* prop = mat->FindProperty(tag.m_sztag);
+						FE1DPointFunction* pf1d = dynamic_cast<FE1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
+						if (pf1d)
+						{
+							FELoadCurve lc;
+							ParseLoadCurve(tag, lc);
+							pf1d->SetPointCurve(lc);
+						}
+						else ParseUnknownTag(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+				set.push_back(pg);
+			}
 			else
 			{
 				assert(false);
@@ -3097,47 +3148,9 @@ bool FEBioFormat3::ParseLoadDataSection(XMLTag& tag)
 
 			// get the load curve ID
 			int nid = tag.Attribute("id").value<int>();
+			lc.SetID(nid);
 
-			++tag;
-			do
-			{
-				if (tag == "interpolate")
-				{
-					string interpolate = tag.szvalue();
-					if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetType(FELoadCurve::LC_STEP);
-					else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetType(FELoadCurve::LC_LINEAR);
-					else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetType(FELoadCurve::LC_SMOOTH);
-					else FileReader()->AddLogEntry("unknown interpolation type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
-				}
-				else if (tag == "extend")
-				{
-					string extend = tag.szvalue();
-					if      ((extend == "constant"     )||(extend == "CONSTANT"     )) lc.SetExtend(FELoadCurve::EXT_CONSTANT);
-					else if ((extend == "extrapolate"  )||(extend == "EXTRAPOLATE"  )) lc.SetExtend(FELoadCurve::EXT_EXTRAPOLATE);
-					else if ((extend == "repeat"       )||(extend == "REPEAT"       )) lc.SetExtend(FELoadCurve::EXT_REPEAT);
-					else if ((extend == "repeat offset")||(extend == "REPEAT OFFSET")) lc.SetExtend(FELoadCurve::EXT_REPEAT_OFFSET);
-					else FileReader()->AddLogEntry("unknown extend mode for loadcurve %d (line %d)", nid, tag.m_nstart_line);
-				}
-				else if (tag == "points")
-				{
-					// read the points
-					double d[2];
-					++tag;
-					do
-					{
-						tag.value(d, 2);
-
-						LOADPOINT pt;
-						pt.time = d[0];
-						pt.load = d[1];
-						lc.Add(pt);
-
-						++tag;
-					} while (!tag.isend());
-				}
-				++tag;
-			}
-			while (!tag.isend());
+			ParseLoadCurve(tag, lc);
 
 			febio.AddLoadCurve(lc);
 		}
@@ -3146,6 +3159,59 @@ bool FEBioFormat3::ParseLoadDataSection(XMLTag& tag)
 		++tag;
 	}
 	while (!tag.isend());
+
+	return true;
+}
+
+bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, FELoadCurve& lc)
+{
+	int nid = lc.GetID();
+
+	++tag;
+	do
+	{
+		if (tag == "interpolate")
+		{
+			string interpolate = tag.szvalue();
+			if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetType(FELoadCurve::LC_STEP);
+			else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetType(FELoadCurve::LC_LINEAR);
+			else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetType(FELoadCurve::LC_SMOOTH);
+            else if ((interpolate == "cubic spline") || (interpolate == "CUBIC SPLINE")) lc.SetType(FELoadCurve::LC_CSPLINE);
+            else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetType(FELoadCurve::LC_CPOINTS);
+            else if ((interpolate == "approximation") || (interpolate == "APPROXIMATION")) lc.SetType(FELoadCurve::LC_APPROX);
+			else FileReader()->AddLogEntry("unknown interpolation type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
+		}
+		else if (tag == "extend")
+		{
+			string extend = tag.szvalue();
+			if      ((extend == "constant"     ) || (extend == "CONSTANT"     )) lc.SetExtend(FELoadCurve::EXT_CONSTANT);
+			else if ((extend == "extrapolate"  ) || (extend == "EXTRAPOLATE"  )) lc.SetExtend(FELoadCurve::EXT_EXTRAPOLATE);
+			else if ((extend == "repeat"       ) || (extend == "REPEAT"       )) lc.SetExtend(FELoadCurve::EXT_REPEAT);
+			else if ((extend == "repeat offset") || (extend == "REPEAT OFFSET")) lc.SetExtend(FELoadCurve::EXT_REPEAT_OFFSET);
+			else FileReader()->AddLogEntry("unknown extend mode for loadcurve %d (line %d)", nid, tag.m_nstart_line);
+		}
+		else if (tag == "points")
+		{
+			// read the points
+			double d[2];
+			++tag;
+			do
+			{
+				tag.value(d, 2);
+
+				LOADPOINT pt;
+				pt.time = d[0];
+				pt.load = d[1];
+				lc.Add(pt);
+
+				++tag;
+			} while (!tag.isend());
+		}
+		++tag;
+	}
+	while (!tag.isend());
+    
+    lc.Update();
 
 	return true;
 }

@@ -43,14 +43,14 @@ public:
 	QWidget* createUi() override;
 
 private:
-	void UpdateNormal();
-	void addPoint(int n);
+	void UpdateDecoration();
 
 private slots:
-	void on_change_node1();
-	void on_change_node2();
-	void on_change_node3();
+	void onNodeChanged();
+	void onPlaneChanged();
 	void onAlignView();
+	void onCopy();
+	void onEditToggled(bool b);
 
 private:
 	CPlaneToolUI*		ui;

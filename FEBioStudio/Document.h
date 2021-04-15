@@ -251,6 +251,9 @@ public:
 	FileWriter* GetFileWriter();
 
 	// import image data
+#ifdef HAS_TEEM
+  Post::CImageModel* ImportTiff(const std::string& filename);
+#endif
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
 	// --- Command history functions ---
@@ -258,8 +261,8 @@ public:
 	bool CanRedo();
 	void AddCommand(CCommand* pcmd);
 	void AddCommand(CCommand* pcmd, const std::string& s);
-	bool DoCommand(CCommand* pcmd);
-	bool DoCommand(CCommand* pcmd, const std::string& s);
+	bool DoCommand(CCommand* pcmd, bool b = true);
+	bool DoCommand(CCommand* pcmd, const std::string& s, bool b = true);
 	void UndoCommand();
 	void RedoCommand();
 	const char* GetUndoCmdName();

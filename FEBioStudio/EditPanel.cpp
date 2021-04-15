@@ -39,12 +39,49 @@ SOFTWARE.*/
 #include <MeshTools/FEEdgeFlip.h>
 #include <MeshTools/FERefineSurface.h>
 #include <MeshTools/FEWeldModifier.h>
+#include <MeshTools/FEMMGRemesh.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GOCCObject.h>
 #include <QMessageBox>
 #include "Commands.h"
 
+//=======================================================================================
+SurfaceModifierThread::SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FEGroup* pg)
+{
+	m_doc = doc;
+	m_mod = mod;
+	m_pg = pg;
+	m_po = po;
+}
+
+void SurfaceModifierThread::run()
+{
+	bool bsuccess = m_doc->ApplyFESurfaceModifier(*m_mod, m_po, m_pg);
+	emit resultReady(bsuccess);
+}
+
+bool SurfaceModifierThread::hasProgress()
+{
+	return (m_mod ? m_mod->GetProgress().valid : false);
+}
+
+double SurfaceModifierThread::progress()
+{
+	return (m_mod ? m_mod->GetProgress().percent : 0.0);
+}
+
+const char* SurfaceModifierThread::currentTask()
+{
+	return (m_mod ? m_mod->GetName().c_str() : "");
+}
+
+void SurfaceModifierThread::stop()
+{
+
+}
+
+//=======================================================================================
 REGISTER_CLASS(FESurfaceAutoPartition     , CLASS_SURFACE_MODIFIER, "Auto partition", 0xFF);
 REGISTER_CLASS(FESurfacePartitionSelection, CLASS_SURFACE_MODIFIER, "Partition"    , 0xFF);
 REGISTER_CLASS(FESmoothSurfaceMesh        , CLASS_SURFACE_MODIFIER, "Smooth"       , 0xFF);
@@ -55,6 +92,7 @@ REGISTER_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"
 REGISTER_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"       , 0xFF);
 REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
 REGISTER_CLASS(FEWeldSurfaceNodes         , CLASS_SURFACE_MODIFIER, "Weld Nodes"   , 0xFF);
+REGISTER_CLASS(FEMMGSurfaceRemesh         , CLASS_SURFACE_MODIFIER, "MMG Remesh"   , 0xFF);
 
 class CPartitionProps : public CDataPropertyList
 {
@@ -184,17 +222,31 @@ void CEditPanel::on_apply_clicked(bool b)
 				if (g == 0) { delete list; list = 0; }
 			}
 
-			bool ret = doc->ApplyFESurfaceModifier(*ui->m_mod, surfaceObject, g);
-			if (ret == false)
+			SurfaceModifierThread* thread = new SurfaceModifierThread(doc, ui->m_mod, surfaceObject, g);
+			CDlgStartThread dlg(this, thread);
+			dlg.setTask(QString::fromStdString(ui->m_mod->GetName()));
+			if (dlg.exec())
 			{
-				std::string err;
-				if (ui->m_mod) err = ui->m_mod->GetErrorString();
-				if (err.empty()) err = "(unknown)";
-				QString errStr = QString::fromStdString(err);
-				QMessageBox::critical(this, "Apply modifier", "Cannot apply this modifier to this selection.\nERROR: " + errStr);
+				bool bsuccess = dlg.GetReturnCode();
+				if (bsuccess == false)
+				{
+					std::string err;
+					if (ui->m_mod) err = ui->m_mod->GetErrorString();
+					if (err.empty()) err = "(unknown)";
+					QString errStr = QString::fromStdString(err);
+					QMessageBox::critical(this, "Apply modifier", "Cannot apply this modifier to this selection.\nERROR: " + errStr);
+				}
+				else
+				{
+					std::string log = ui->m_mod->GetErrorString();
+					if (log.empty() == false)
+					{
+						GetMainWindow()->AddLogEntry(QString::fromStdString(log) + "\n");
+					}
+				}
+				GetMainWindow()->RedrawGL();
+				GetMainWindow()->UpdateModel(activeObject, true);
 			}
-			GetMainWindow()->RedrawGL();
-			GetMainWindow()->UpdateModel(activeObject, true);
 
 			// don't forget to cleanup
 			if (g) delete g;
@@ -217,7 +269,9 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	GObject* po = pdoc->GetActiveObject();
 
-	if (pa->objectName() == "convert1")
+	int convertOption = pa->data().toInt();
+
+	if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_SURFACE)
 	{
 		if (dynamic_cast<GSurfaceMeshObject*>(po) == nullptr)
 		{
@@ -233,7 +287,7 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
-	else
+	else if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_MESH)
 	{
 		// convert to editable mesh
 		if (dynamic_cast<GMeshObject*>(po) == 0)
@@ -250,6 +304,11 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
+	else
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Don't know how to convert object.");
+	}
+
 	Update();
 	GetMainWindow()->Update(this, true);
 }
