@@ -75,10 +75,10 @@ std::string CImageSource::GetFileName() const
 }
 
 
-//TODO: Get Dimensions from Tiff file
-//      Create BOX struct with the dimensions FSCore/Box.h, may not need to include
-//      set the box to the m_imgModel
 #ifdef HAS_TEEM
+
+//TODO: Maybe see if we can break this function up a bit? 
+//      See much how much of Yong's code we can break off.
 bool CImageSource::LoadTiffData(std::wstring &fileName)
 {
   C3DImage* im = new C3DImage;
@@ -92,7 +92,11 @@ bool CImageSource::LoadTiffData(std::wstring &fileName)
   unsigned char* rawData = reader->GetRawImage();
   data = rawData;
   std::string file = ws2s(fileName);
-  
+
+  BOX box(nx, ny, npages, nx + reader->GetXSpc(), ny+reader->GetYSpc(), npages+reader->GetZSpc());
+ 
+  m_imgModel->SetBoundingBox(box);
+ 
   if(im->Create(nx,ny,npages,data) == false)
   {
 	delete im;
@@ -209,10 +213,8 @@ bool CImageModel::LoadTiffData(std::wstring &fileName)
 {
 	if (m_img == nullptr) m_img = new CImageSource(this);
 
-  std::cout << "I am here." << std::endl;
 	if (m_img->LoadTiffData(fileName) == false)
 	{
-    std::cout << "I failed to load the tiff data, check other func." << std::endl;
 		delete m_img;
 		m_img = nullptr;
 		return false;

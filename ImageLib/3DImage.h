@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include "Image.h"
-#include <string>
 
 //-----------------------------------------------------------------------------
 // A class for representing 3D image stacks
@@ -40,9 +39,6 @@ public:
 	bool Create(int nx, int ny, int nz, Byte* data = nullptr);
 
 	bool LoadFromFile(const char* szfile, int nbits);
-  #ifdef HAS_TEEM
-  //bool LoadFromTiff(std::wstring &file);
-  #endif
 
 	void BitBlt(CImage& im, int nslice);
 	void StretchBlt(CImage& im, int nslice);

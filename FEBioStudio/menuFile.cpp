@@ -1423,67 +1423,66 @@ void CMainWindow::on_actionImportImage_triggered()
 
 	if (filedlg.exec())
 	{
-		// store the current path
-		QDir dir = filedlg.directory();
-		SetCurrentFolder(dir.absolutePath());
+	  // store the current path
+	  QDir dir = filedlg.directory();
+	  SetCurrentFolder(dir.absolutePath());
 
-		// get the file name
-		QStringList files = filedlg.selectedFiles();
-		QString fileName = files.at(0);
+	  // get the file name
+	  QStringList files = filedlg.selectedFiles();
+	  QString fileName = files.at(0);
 
-    std::string sfile = fileName.toStdString();
-    QFileInfo fileInfo(fileName);
-    QString ext = fileInfo.suffix();
+      std::string sfile = fileName.toStdString();
+      QFileInfo fileInfo(fileName);
+      QString ext = fileInfo.suffix();
 
-//TODO: change po to image model
-    Post::CImageModel* po = nullptr;
+      Post::CImageModel* imageModel = nullptr;
     
-    if(ext == ".tiff" || ".tif")
-    {
-      po = doc->ImportTiff(sfile);
-      if (po == nullptr)
+      if(ext == ".tiff" || ".tif")
       {
-        QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-        return;
-      }
-    }
-    else //will need to be written for other cases
-    {
-      CDlgRAWImport dlg(this);
-      if (dlg.exec())
-      {
-        BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
-
-        po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-        if (po == nullptr)
+        imageModel = doc->ImportTiff(sfile);
+        if (imageModel == nullptr)
         {
           QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
           return;
         }
       }
-    }
-    if(po)
-    {
-      Update(0, true);
-      ZoomTo(po->GetBoundingBox());
-
-      // only for model docs
-      if (dynamic_cast<CModelDocument*>(doc))
+      else //will need to be written for other cases
       {
-        Post::CVolRender* vr = new Post::CVolRender(po);
-        vr->Create();
-        po->AddImageRenderer(vr);
+        CDlgRAWImport dlg(this);
+        if (dlg.exec())
+        {
+          BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-        Update(0, true);
-        ShowInModelViewer(po);
+          imageModel = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+          if (imageModel == nullptr)
+          {
+            QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+            return;
+          }
+        }
       }
-      else
+      if(imageModel)
       {
         Update(0, true);
+        ZoomTo(imageModel->GetBoundingBox());
+
+        // only for model docs
+        if (dynamic_cast<CModelDocument*>(doc))
+        {
+          Post::CVolRender* vr = new Post::CVolRender(imageModel);
+          vr->Create();
+          imageModel->AddImageRenderer(vr);
+
+          Update(0, true);
+          ShowInModelViewer(imageModel);
+        }
+        else
+        {
+          Update(0, true);
+        }
+        ZoomTo(imageModel->GetBoundingBox());
       }
-      ZoomTo(po->GetBoundingBox());
     }
-  }
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()
