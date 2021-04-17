@@ -504,11 +504,11 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
     int NC = pm->Edges();
     
     // count the number of corner nodes
-    for (int i=0; i<NN; ++i) pm->Node(i).m_ntag = -1;
+    for (int i=0; i<NN; ++i) pm->Node(i).m_ntag = 1;
     for (int i=0; i<NE; ++i)
     {
         FEElement& el = pm->Element(i);
-        for (int j=0; j<4; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+        for (int j=4; j<8; ++j) pm->Node(el.m_node[j]).m_ntag = -1;
     }
     int nn = 0;
     for (int i=0; i<NN; ++i)
@@ -586,7 +586,7 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
         FEEdge& e0 = pm->Edge(i);
         FEEdge& e1 = pnew->Edge(i);
         
-		e1.SetType(FE_EDGE3);
+		e1.SetType(FE_EDGE2);
         e1.n[0] = e0.n[0];
         e1.n[1] = e0.n[1];
         e1.n[2] = -1;
