@@ -111,6 +111,7 @@ private:
 	FESurfaceLoad* ParseLoadPressure          (XMLTag& tag);
 	FESurfaceLoad* ParseLoadTraction          (XMLTag& tag);
 	FESurfaceLoad* ParseLoadFluidTraction     (XMLTag& tag);
+    FESurfaceLoad* ParseLoadFluidPressure     (XMLTag& tag);
     FESurfaceLoad* ParseLoadFluidVelocity               (XMLTag& tag);
     FESurfaceLoad* ParseLoadFluidNormalVelocity         (XMLTag& tag);
     FESurfaceLoad* ParseLoadFluidRotationalVelocity     (XMLTag& tag);
