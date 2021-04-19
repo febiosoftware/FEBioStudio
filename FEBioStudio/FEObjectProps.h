@@ -41,6 +41,7 @@ class FEProject;
 class Param;
 class FEReactionMaterial;
 class FEMaterial;
+class GPart;
 
 class FEObjectProps : public CObjectProps
 {
@@ -178,4 +179,16 @@ public:
 private:
 	FEReactionMaterial*	m_mat;
 	int					m_nsols;
+};
+
+class CPartProperties : public CObjectProps
+{
+public:
+	CPartProperties(GPart* pg, FEModel& fem);
+	QVariant GetPropertyValue(int i);
+	void SetPropertyValue(int i, const QVariant& v);
+private:
+	int	m_lid;
+	GPart*	m_pg;
+	FEModel*	m_fem;
 };

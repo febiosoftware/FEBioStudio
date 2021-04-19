@@ -1098,6 +1098,11 @@ void CMainWindow::on_actionSelectOverlap_triggered()
 	}
 }
 
+void CMainWindow::on_actionSyncSelection_triggered()
+{
+	ui->modelViewer->on_syncButton_clicked();
+}
+
 void CMainWindow::on_actionSelectIsolatedVertices_triggered()
 {
 	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());

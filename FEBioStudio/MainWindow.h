@@ -362,6 +362,7 @@ public slots:
 	void on_actionGrowSelection_triggered();
 	void on_actionShrinkSelection_triggered();
 	void on_actionSelectIsolatedVertices_triggered();
+	void on_actionSyncSelection_triggered();
 
 	void on_actionFindTxt_triggered();
 	void on_actionFindAgain_triggered();
