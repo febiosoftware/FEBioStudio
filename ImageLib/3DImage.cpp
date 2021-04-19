@@ -89,7 +89,7 @@ bool C3DImage::Create(int nx, int ny, int nz, Byte* data)
       if(data == nullptr)
       {
         m_pb = new Byte[nx*ny*nz];
-        if (m_pb == 0) return false;
+        if (m_pb == nullptr) return false;
       }
       else
         m_pb = data;
