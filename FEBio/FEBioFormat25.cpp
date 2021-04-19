@@ -1453,6 +1453,7 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	else if (att == "heatflux"           ) psl = ParseLoadHeatFlux          (tag);
 	else if (att == "convective_heatflux") psl = ParseLoadConvectiveHeatFlux(tag);
 	else if (att == "fluid viscous traction") psl = ParseLoadFluidTraction     (tag);
+    else if (att == "fluid pressure"                ) psl = ParseLoadFluidPressure               (tag);
     else if (att == "fluid velocity"                ) psl = ParseLoadFluidVelocity               (tag);
     else if (att == "fluid normal velocity"         ) psl = ParseLoadFluidNormalVelocity         (tag);
     else if (att == "fluid rotational velocity"     ) psl = ParseLoadFluidRotationalVelocity     (tag);
@@ -1579,9 +1580,27 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidTraction(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
+FESurfaceLoad* FEBioFormat25::ParseLoadFluidPressure(XMLTag& tag)
+{
+    FEModel& fem = GetFEModel();
+    
+    // create a new surface load
+    FEFluidPressureLoad* pbc = new FEFluidPressureLoad(&fem);
+    
+    // set the name
+    char szname[256] = { 0 };
+    sprintf(szname, "FluidPressureLoad%d", CountLoads<FEFluidPressureLoad>(fem) + 1);
+    pbc->SetName(szname);
+    
+    // read the parameters
+    ReadParameters(*pbc, tag);
+    
+    return pbc;
+}
+
+//-----------------------------------------------------------------------------
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidVelocity(XMLTag& tag)
 {
-    FEBioModel& febio = GetFEBioModel();
     FEModel& fem = GetFEModel();
     FEFluidVelocity* psl = new FEFluidVelocity(&fem);
     char szname[128] = { 0 };

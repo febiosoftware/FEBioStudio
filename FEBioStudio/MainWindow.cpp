@@ -2872,6 +2872,8 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		ui->m_bkillProcess = false;
 
 		// go!
+		job->SetStatus(CFEBioJob::RUNNING);
+		UpdateModel(job, false);
 		ui->m_process->start(program, args);
 
 		// show the output window

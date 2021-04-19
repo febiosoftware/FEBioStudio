@@ -1989,6 +1989,7 @@ void GLMeshRender::RenderThickShellOutline(FEFace &face, FECoreMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
+// Assumes that we are inside glBegin(GL_LINES)\glEnd()
 void RenderFEEdge(FEEdge& edge, FELineMesh* pm)
 {
 	const vec3d& r1 = pm->Node(edge.n[0]).r;
@@ -2005,19 +2006,17 @@ void RenderFEEdge(FEEdge& edge, FELineMesh* pm)
 	case 3:
 	{
 		const vec3d& r3 = pm->Node(edge.n[2]).r;
-		glx::vertex3d(r1);
-		glx::vertex3d(r3);
-		glx::vertex3d(r2);
+		glx::vertex3d(r1); glx::vertex3d(r3);
+		glx::vertex3d(r3); glx::vertex3d(r2);
 	}
 	break;
 	case 4:
 	{
 		const vec3d& r3 = pm->Node(edge.n[2]).r;
 		const vec3d& r4 = pm->Node(edge.n[3]).r;
-		glx::vertex3d(r1);
-		glx::vertex3d(r3);
-		glx::vertex3d(r4);
-		glx::vertex3d(r2);
+		glx::vertex3d(r1); glx::vertex3d(r3);
+		glx::vertex3d(r3); glx::vertex3d(r4);
+		glx::vertex3d(r4); glx::vertex3d(r2);
 	}
 	break;
 	default:

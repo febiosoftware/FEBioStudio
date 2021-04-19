@@ -183,6 +183,25 @@ void FESurfaceTraction::LoadParam(const Param& p)
 }
 
 //-----------------------------------------------------------------------------
+FEFluidPressureLoad::FEFluidPressureLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_FLUID_PRESSURE_LOAD, ps, pi, nstep)
+{
+    SetTypeString("Fluid pressure");
+    Param* p = AddScienceParam(1, UNIT_PRESSURE, "pressure", "pressure");
+    p->SetLoadCurve();
+    p->MakeVariable(true);
+}
+
+// used only for reading parameters for old file formats
+void FEFluidPressureLoad::LoadParam(const Param& p)
+{
+    switch (p.GetParamID())
+    {
+        case 0: SetLoad(p.GetFloatValue()); break;
+        case 1: *GetLoadCurve() = *p.GetLoadCurve(); break;
+    }
+}
+
+//-----------------------------------------------------------------------------
 
 FEFluidTraction::FEFluidTraction(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_FLUID_TRACTION, ps, pi, nstep)
 {

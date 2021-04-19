@@ -3282,6 +3282,9 @@ void FEBioExport25::WriteLoadsSection(FEStep& s)
     // fluid tractions
     WriteFluidTraction(s);
     
+    // fluid pressure loads
+    WriteFluidPressureLoad(s);
+    
     // fluid velocities
     WriteFluidVelocity(s);
     
@@ -4104,6 +4107,35 @@ void FEBioExport25::WriteFluidTraction(FEStep& s)
             {
 				WriteParamList(*ptc);
 			}
+            m_xml.close_branch(); // surface_load
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+// Export fluid pressure loads
+//
+void FEBioExport25::WriteFluidPressureLoad(FEStep& s)
+{
+    for (int j=0; j<s.Loads(); ++j)
+    {
+        FEFluidPressureLoad* pbc = dynamic_cast<FEFluidPressureLoad*>(s.Load(j));
+        if (pbc && pbc->IsActive())
+        {
+            if (m_writeNotes) m_xml.add_comment(pbc->GetInfo());
+            
+            // create the surface list
+            FEItemListBuilder* pitem = pbc->GetItemList();
+            if (pitem == 0) throw InvalidItemListBuilder(pbc);
+            
+            XMLElement load;
+            load.name("surface_load");
+            load.add_attribute("type", "fluid pressure");
+            load.add_attribute("surface", GetSurfaceName(pitem));
+            m_xml.add_branch(load);
+            {
+                WriteParamList(*pbc);
+            }
             m_xml.close_branch(); // surface_load
         }
     }

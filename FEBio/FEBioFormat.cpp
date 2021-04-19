@@ -2100,6 +2100,9 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 
 			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(FELogData::LD_NODE, szdata);
 
+			const char* szfile = tag.AttributeValue("file", true);
+			if (szfile) logVar.setFile(szfile);
+
 			const char* szset = tag.AttributeValue("node_set", true);
 			if (szset)
 			{
@@ -2143,6 +2146,9 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			if (szdata == 0) szdata = "";
 
 			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(FELogData::LD_ELEM, szdata);
+
+			const char* szfile = tag.AttributeValue("file", true);
+			if (szfile) logVar.setFile(szfile);
 
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)

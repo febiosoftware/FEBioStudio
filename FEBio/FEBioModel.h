@@ -387,6 +387,9 @@ public:
 
 		int type() { return m_type; }
 		const std::string& data() { return m_data; }
+		
+		void setFile(const std::string& file) { m_file = file; }
+		const std::string& file() { return m_file;}
 
 		void SetGroupID(int n) { m_groupID = n; }
 		int GroupID() const { return m_groupID; }
@@ -395,6 +398,7 @@ public:
 		int			m_type;
 		std::string	m_data;
 		int			m_groupID;
+		std::string	m_file;
 	};
 
 	struct PARAM_CURVE
