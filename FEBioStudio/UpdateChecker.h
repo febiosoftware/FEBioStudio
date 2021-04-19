@@ -130,6 +130,8 @@ public:
 	bool devChannel;
 	QString urlBase;
 
+	QString UUID;
+
 };
 
 class CUpdateChecker : public QDialog
