@@ -1439,7 +1439,9 @@ void CMainWindow::on_actionImportImage_triggered()
     
       if(ext == ".tiff" || ".tif")
       {
+        #ifdef HAS_TEEM
         imageModel = doc->ImportTiff(sfile);
+        #endif
         if (imageModel == nullptr)
         {
           QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
