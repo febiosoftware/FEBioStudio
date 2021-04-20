@@ -64,7 +64,6 @@ public:
 	void LoadParam(const Param& p);
 };
 
-
 //-----------------------------------------------------------------------------
 // Mixture Normal Traction surface boundary load
 //
@@ -227,6 +226,26 @@ public:
 
 	// used only for reading parameters for old file formats
 	void LoadParam(const Param& p);
+};
+
+//-----------------------------------------------------------------------------
+// fluid pressure boundary conditions
+//
+class FEFluidPressureLoad : public FESurfaceLoad
+{
+public:
+    enum { LOAD };
+    
+public:
+    FEFluidPressureLoad(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    
+    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    
+    void SetLoad(double f) { SetFloatValue(LOAD, f); }
+    double GetLoad() { return GetFloatValue(LOAD); }
+    
+    // used only for reading parameters for old file formats
+    void LoadParam(const Param& p);
 };
 
 //-----------------------------------------------------------------------------

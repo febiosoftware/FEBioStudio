@@ -6,6 +6,36 @@
 
 ===========================================================================
 
+ R E L E A S E   1.4.2   4/20/2021
+
+===========================================================================
+
+* IMPORTANT: This is the final patch release that can be acquired via the auto-update feature in FEBio Studio 1.4. The next release (FEBio Studio 1.5) will need to be downloaded from the web. After that, you will be able to continue updating via the auto-update feature.
+* Added a material property for Parts in the model tree.
+* Added Alt+F shortcut for syncing selection from Graphics View to model tree.
+* Added "fluid pressure" load list of surface loads available for fluid analyses.
+* Fixed issue with importing fluid rotational velocity boundary condition from febio3 file.
+* Fixed bugs in Q4-to-Q8 and Q8-to-Q4 convertors.
+* Fixed bug in rendering of edges of higher order elements.
+* Added support for reading file attribute of log data sections in febio input file.
+* The status of the running job is now reflected correctly in the model tree.
+* A default volume renderer is attached to a 3D image when importing on the pre-processor side.
+* Added check for unique object and part names before adding objects to model.
+* Fixed bug in reading xml comments with '-' characters in FEBio input files.
+* Fixed issues with edge generation for surface meshes.
+* Suppport was added for new interpolation options of load curves, namely cubic spline, control points, and approximation.
+* Fixed bug with reading surface names from xplt that were longer than 64. Fixed bug when face data cannot be mapped to an actual facet.
+* Reimplemented hole-filling algorithm. 
+* Minor fix in STL import. 
+* Added "MMG Remesh" tool for remeshing editable surface objects.
+* Edit and Mesh panel now only show available convert options in object pane.
+* Fixed bug in grow/shrink selection tool for surface mesh objects.
+* Fixed performance issue when converting editable mesh to editable surface.
+* Added threading support for applying mesh modifiers.
+* Elements can now be selected on the plane cut.
+
+===========================================================================
+
  R E L E A S E   1.4.1   4/2/2021
 
 ===========================================================================

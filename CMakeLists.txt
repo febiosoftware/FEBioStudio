@@ -406,4 +406,5 @@ else()
     target_link_libraries(FEBioStudio -Wl,--end-group)
 endif()
 
-
+get_target_property(LINKEDLIBS FEBioStudio LINK_LIBRARIES)
+file(WRITE ${CMAKE_FILES_DIRECTORY}/linkedLibraries "${LINKEDLIBS}")

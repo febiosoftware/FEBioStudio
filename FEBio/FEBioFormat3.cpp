@@ -40,6 +40,18 @@ SOFTWARE.*/
 #include <assert.h>
 #include <sstream>
 
+#define CREATE_SURFACE_LOAD(className) createNewSurfaceLoad(new className(&fem), #className, CountLoads<className>(fem))
+
+//-----------------------------------------------------------------------------
+FESurfaceLoad* createNewSurfaceLoad(FESurfaceLoad* psl, const char* szclass, int N)
+{
+	// set the name
+	char szname[256] = { 0 };
+	sprintf(szname, "%s%d", szclass + 2, N + 1);
+	psl->SetName(szname);
+	return psl;
+}
+
 //-----------------------------------------------------------------------------
 vector<string> GetDOFList(string sz)
 {
@@ -1206,6 +1218,10 @@ bool FEBioFormat3::ParseBoundarySection(XMLTag& tag)
 			if      (type == "fix"       ) ParseBCFixed(m_pBCStep, tag);
 			else if (type == "prescribe" ) ParseBCPrescribed(m_pBCStep, tag);
 			else if (type == "rigid"     ) ParseBCRigid(m_pBCStep, tag);
+			else if (type == "fluid rotational velocity")
+			{
+				ParseBCFluidRotationalVelocity(m_pBCStep, tag);
+			}
 			else ParseUnknownTag(tag);
 		}
 		else ParseUnknownTag(tag);
@@ -1505,6 +1521,54 @@ void FEBioFormat3::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 	pstep->AddComponent(pi);
 }
 
+// TODO: The fluid-rotational velocity is a BC in FEBio, but a surface load in FEBioStudio.
+//       Need to create proper boundary condition class for this component.
+void FEBioFormat3::ParseBCFluidRotationalVelocity(FEStep* pstep, XMLTag& tag)
+{
+	FEBioModel& febio = GetFEBioModel();
+	FEModel& fem = GetFEModel();
+
+	std::string comment = tag.comment();
+
+	// read the (optional) name
+	string name = tag.AttributeValue("name", "");
+
+	// find the surface
+	XMLAtt& nodeSet = tag.Attribute("node_set");
+	FEItemListBuilder* psurf = febio.BuildItemList(nodeSet.cvalue());
+	if (psurf == 0)
+	{
+		AddLogEntry("Failed creating selection for fluid rotational velocity \"%s\"", name.c_str());
+	}
+
+	// create the surface load
+	FESurfaceLoad* psl = nullptr;
+	XMLAtt& att = tag.Attribute("type");
+    if (att == "fluid rotational velocity"     ) psl = CREATE_SURFACE_LOAD(FEFluidRotationalVelocity);
+	else ParseUnknownAttribute(tag, "type");
+
+	if (psurf) psl->SetItemList(psurf);
+
+	// process surface load
+	if (psl)
+	{
+		// read the parameters
+		ReadParameters(*psl, tag);
+
+		// set the name
+		if (name.empty() == false) psl->SetName(name);
+
+		// assign the surface
+		psl->SetItemList(psurf);
+
+		// set the comment
+		psl->SetInfo(comment);
+
+		// add to the step
+		pstep->AddComponent(psl);
+	}
+}
+
 //=============================================================================
 //
 //                                R I G I D
@@ -1657,18 +1721,6 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* createNewSurfaceLoad(FESurfaceLoad* psl, const char* szclass, int N)
-{
-	// set the name
-	char szname[256] = { 0 };
-	sprintf(szname, "%s%d", szclass + 2, N + 1);
-	psl->SetName(szname);
-	return psl;
-}
-
-#define CREATE_SURFACE_LOAD(className) createNewSurfaceLoad(new className(&fem), #className, CountLoads<className>(fem))
-
-//-----------------------------------------------------------------------------
 //! Parses the surface_load section.
 void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 {
@@ -1698,6 +1750,7 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	else if (att == "heatflux"                      ) psl = CREATE_SURFACE_LOAD(FEHeatFlux);
 	else if (att == "convective_heatflux"           ) psl = CREATE_SURFACE_LOAD(FEConvectiveHeatFlux);
 	else if (att == "fluid viscous traction"        ) psl = CREATE_SURFACE_LOAD(FEFluidTraction);
+    else if (att == "fluid pressure"                ) psl = CREATE_SURFACE_LOAD(FEFluidPressureLoad);
     else if (att == "fluid velocity"                ) psl = CREATE_SURFACE_LOAD(FEFluidVelocity);
     else if (att == "fluid normal velocity"         ) psl = CREATE_SURFACE_LOAD(FEFluidNormalVelocity);
     else if (att == "fluid rotational velocity"     ) psl = CREATE_SURFACE_LOAD(FEFluidRotationalVelocity);
