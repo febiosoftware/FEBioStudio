@@ -100,7 +100,9 @@ void CUpdateWidget::checkForUpdate(bool dev)
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 	request.setRawHeader(QByteArray("version"), QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).toUtf8());
-	request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
+	
+	// To be turned back on in 1.5.0
+	// request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
 	
 
 	if(NetworkAccessibleCheck())
@@ -126,7 +128,7 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 		showError("Update Check Failed!\n\nUnable to receive response from server.");
 	}
 
-	serverTime = r->rawHeader("serverTime").toLongLong();
+	// serverTime = r->rawHeader("serverTime").toLongLong();
 
 	QXmlStreamReader reader(r->readAll());
 
@@ -139,12 +141,17 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 				if(reader.name() == "release")
 				{
 					Release release;
+					release.terminal = false;
 
 					while(reader.readNextStartElement())
 					{
 						if(reader.name() == "active")
 						{
 							release.active = reader.readElementText().toInt();
+						}
+						else if(reader.name() == "terminal")
+						{
+							release.terminal = reader.readElementText().toInt();
 						}
 						else if(reader.name() == "timestamp")
 						{
@@ -253,7 +260,13 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 	if(releases.size() > 0)
 	{
-		if(releases[0].timestamp > lastUpdate)
+		serverTime = releases[0].timestamp;
+
+		if(releases[0].terminal)
+		{
+			showTerminal();
+		}
+		else if(releases[0].timestamp > lastUpdate)
 		{
 			showUpdateInfo();
 		}
@@ -390,6 +403,15 @@ void CUpdateWidget::showUpToDate()
     emit ready(false);
 }
 
+void CUpdateWidget::showTerminal()
+{
+    infoLabel->setText("There is a new update available, but you cannot update to it automatically.<br>"
+		"You must download a new installer from <a href=\"https://febio.org\">febio.org</a>");
+	infoLabel->setOpenExternalLinks(true);
+
+    emit ready(true, true);
+}
+
 void CUpdateWidget::showError(const QString& error)
 {
     infoLabel->setText(error);
@@ -504,9 +526,9 @@ CUpdateChecker::CUpdateChecker(bool dev, QWidget* parent)
 	widget->checkForUpdate(dev);
 }
 
-void CUpdateChecker::updateWidgetReady(bool update)
+void CUpdateChecker::updateWidgetReady(bool update, bool terminal)
 {
-	if(update)
+	if(update && !terminal)
 	{
 		updateAvailable = true;
 
