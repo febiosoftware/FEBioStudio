@@ -70,6 +70,7 @@ struct ReleaseFile
 struct Release
 {
 	bool active;
+	bool terminal;
 	qint64 timestamp;
 	QString FEBioVersion;
 	QString FBSVersion;
@@ -94,7 +95,7 @@ public slots:
 	void linkActivated(const QString& link);
 
 signals:
-    void ready(bool update);
+    void ready(bool update, bool terminal=false);
 
 private slots:
 	void connFinished(QNetworkReply *r);
@@ -107,6 +108,7 @@ private:
 
     void showUpdateInfo();
     void showUpToDate();
+	void showTerminal();
     void showError(const QString& error);
 
 public:
@@ -142,13 +144,12 @@ public:
 	CUpdateChecker(bool dev, QWidget *parent = nullptr);
 
 	bool doUpdate() { return update; }
-	bool autoUpdateCheck();
 
 private:
 	void accept() override;
 
 private slots:
-	void updateWidgetReady(bool update);
+	void updateWidgetReady(bool update, bool terminal);
 
 private:
 	QVBoxLayout* layout;
