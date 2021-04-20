@@ -54,7 +54,6 @@ FESurfaceLoad* createNewSurfaceLoad(FESurfaceLoad* psl, const char* szclass, int
 	return psl;
 }
 
->>>>>>> 196d175405d8c4199847cc86bb5a8a2d99eeaf89
 //-----------------------------------------------------------------------------
 vector<string> GetDOFList(string sz)
 {
