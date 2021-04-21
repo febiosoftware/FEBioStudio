@@ -30,21 +30,6 @@ SOFTWARE.*/
 #include <math.h>
 #include <memory>
 
-/*
-#ifdef WIN32
-#include <memory>
-#else
-#include <memory.h>
-#endif
-*/
-
-#ifdef HAS_TEEM
-#include "tif_reader.h"
-#include "compatibility.h"
-#include <teem/nrrd.h>
-#include <string>
-#endif
-
 //-----------------------------------------------------------------------------
 // find the power of 2 that is closest to n
 int closest_pow2(int n)
