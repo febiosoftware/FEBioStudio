@@ -122,6 +122,17 @@ public:
 	int	m_nbr[4];	// the neighbour faces
 
 public:
+	MBFace()
+	{
+		m_node[0] = m_node[1] = m_node[2] = m_node[3] = -1;
+		m_edge[0] = m_edge[1] = m_edge[2] = m_edge[3] = -1;
+		m_block[0] = m_block[1] = -1;
+		m_nx = m_ny = 1;
+		m_gx = m_gy = 1.0;
+		m_bx = m_by = false;
+		m_nbr[0] = m_nbr[1] = m_nbr[2] = m_nbr[3] = -1;
+	}
+
 	bool operator == (const MBFace& f) const
 	{
 		const int* n1 = m_node;
@@ -134,6 +145,8 @@ public:
 	}
 
 	bool IsExternal() { return m_block[1] == -1; }
+
+	void SetSizes(int nx, int ny) { m_nx = nx; m_ny = ny; }
 };
 
 class MBBlock : public MBItem
@@ -176,7 +189,7 @@ public:
 	FEMesh* BuildMesh();
 
 protected:
-	// update the Multii-Block data
+	// update the Multi-Block data
 	void UpdateMB();
 
 	MBNode& GetMBNode(int i) { return m_MBNode[i]; }

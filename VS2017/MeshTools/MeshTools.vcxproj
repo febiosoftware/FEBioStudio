@@ -191,6 +191,7 @@
     <ClCompile Include="..\..\MeshTools\FEModifier.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMortarProjection.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMultiBlockMesh.cpp" />
+    <ClCompile Include="..\..\MeshTools\FEMultiQuadMesh.cpp" />
     <ClCompile Include="..\..\MeshTools\FENNQuery.cpp" />
     <ClCompile Include="..\..\MeshTools\FENodeData.cpp" />
     <ClCompile Include="..\..\MeshTools\FEPlaneCut.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="..\..\MeshTools\FEModifier.h" />
     <ClInclude Include="..\..\MeshTools\FEMortarProjection.h" />
     <ClInclude Include="..\..\MeshTools\FEMultiBlockMesh.h" />
+    <ClInclude Include="..\..\MeshTools\FEMultiQuadMesh.h" />
     <ClInclude Include="..\..\MeshTools\FENNQuery.h" />
     <ClInclude Include="..\..\MeshTools\FENodeData.h" />
     <ClInclude Include="..\..\MeshTools\FEProject.h" />
