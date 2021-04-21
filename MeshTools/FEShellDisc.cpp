@@ -54,8 +54,8 @@ FEShellDisc::FEShellDisc(GDisc* po)
 
 FEMesh* FEShellDisc::BuildMesh()
 {
-	return BuildMeshLegacy();
-//	return BuildMultiQuadMesh();
+//	return BuildMeshLegacy();
+	return BuildMultiQuadMesh();
 }
 
 FEMesh* FEShellDisc::BuildMultiQuadMesh()
@@ -119,6 +119,16 @@ FEMesh* FEShellDisc::BuildMultiQuadMesh()
 	MQ.SetFaceEdgeIDs( 9, -1,  2,  7, -1);
 	MQ.SetFaceEdgeIDs(10,  7,  3, -1, -1);
 	MQ.SetFaceEdgeIDs(11, -1,  3,  4, -1);
+
+	// set edge types (default is line, so we only set the arcs)
+	MQ.GetFaceEdge( 4, 1).edge.m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 5, 1).edge.m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 6, 1).edge.m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 7, 1).edge.m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 8, 1).edge.m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 9, 1).edge.m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge(10, 1).edge.m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge(11, 1).edge.m_ntype = EDGE_ZARC;
 
 	// Build the mesh
 	FEMesh* pm = MQ.BuildMesh();

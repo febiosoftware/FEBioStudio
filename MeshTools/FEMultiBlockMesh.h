@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMesher.h"
+#include <GeomLib/GObject.h>
 #include <vector>
 using namespace std;
 
@@ -93,17 +94,21 @@ public:
 class MBEdge : public MBItem
 {
 public:
-	int	m_node[2];	// edge nodes
+	GEdge	edge;
 	int	m_face[2];	// external faces
 	int	m_nx;		// tesselation
 	double	m_gx;	// zoning
 	bool	m_bx;	// single or double zoning
 
+	int Node(int i) const { return edge.m_node[i]; }
+
 public:
+	MBEdge() {}
+	MBEdge(int n0, int n1) { edge.m_node[0] = n0; edge.m_node[1] = n1; edge.m_ntype = EDGE_LINE; }
 	bool operator == (const MBEdge& e) const
 	{
-		const int* n1 = m_node;
-		const int* n2 = e.m_node;
+		const int* n1 = edge.m_node;
+		const int* n2 = e.edge.m_node;
 		if ((n1[0] != n2[0]) && (n1[0] != n2[1])) return false;
 		if ((n1[1] != n2[0]) && (n1[1] != n2[1])) return false;
 		return true;

@@ -155,8 +155,8 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 	for (i=0; i<NE; ++i)
 	{
 		MBEdge& e = m_MBEdge[i];
-		r1 = m_MBNode[e.m_node[0]].m_r;
-		r2 = m_MBNode[e.m_node[1]].m_r;
+		r1 = m_MBNode[e.Node(0)].m_r;
+		r2 = m_MBNode[e.Node(1)].m_r;
 		e.m_ntag = nodes;
 
 		fr = e.m_gx;
@@ -566,9 +566,7 @@ void FEMultiBlockMesh::BuildMBEdges()
 			}
 			else
 			{
-				MBEdge e;
-				e.m_node[0] = n1;
-				e.m_node[1] = n2;
+				MBEdge e(n1, n2);
 				e.m_face[0] = e.m_face[1] = -1;
 
 				if (f.IsExternal()) e.m_face[0] = i;
@@ -1010,9 +1008,7 @@ void FEMultiBlockMesh::BuildNodeBlockTable(vector<vector<int> > &NBT)
 
 int FEMultiBlockMesh::FindEdge(int n1, int n2)
 {
-	MBEdge e;
-	e.m_node[0] = n1;
-	e.m_node[1] = n2;
+	MBEdge e(n1, n2);
 
 	int NE = m_MBEdge.size();
 
@@ -1140,12 +1136,12 @@ int FEMultiBlockMesh::GetFaceEdgeNodeIndex(MBFace& f, int ne, int i)
 	MBEdge& e = m_MBEdge[ f.m_edge[ne] ];
 
 	// next, we need to see if we need to flip the edge or not
-	if (e.m_node[0] == f.m_node[ne])
+	if (e.Node(0) == f.m_node[ne])
 	{
 		// don't flip the edge
 		return GetEdgeNodeIndex(e, i);
 	}
-	else if (e.m_node[1] == f.m_node[ne])
+	else if (e.Node(1) == f.m_node[ne])
 	{
 		// do flip the edge
 		return GetEdgeNodeIndex(e, e.m_nx-i);
@@ -1182,11 +1178,11 @@ int FEMultiBlockMesh::GetEdgeNodeIndex(MBEdge& e, int i)
 {
 	if (i==0) 
 	{
-		return m_MBNode[e.m_node[0]].m_ntag;
+		return m_MBNode[e.Node(0)].m_ntag;
 	}
 	else if (i==e.m_nx)
 	{
-		return m_MBNode[e.m_node[1]].m_ntag;
+		return m_MBNode[e.Node(1)].m_ntag;
 	}
 	else
 	{
@@ -1255,9 +1251,9 @@ int FEMultiBlockMesh::GetFENode(MBNode& node)
 vector<int> FEMultiBlockMesh::GetFENodeList(MBEdge& edge)
 {
 	vector<int> nodeList;
-	nodeList.push_back(m_MBNode[edge.m_node[0]].m_fenodes[0]);
+	nodeList.push_back(m_MBNode[edge.Node(0)].m_fenodes[0]);
 	nodeList.insert(nodeList.end(), edge.m_fenodes.begin(), edge.m_fenodes.end());
-	nodeList.push_back(m_MBNode[edge.m_node[1]].m_fenodes[0]);
+	nodeList.push_back(m_MBNode[edge.Node(1)].m_fenodes[0]);
 	return nodeList;
 }
 

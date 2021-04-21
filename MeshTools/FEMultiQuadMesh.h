@@ -53,9 +53,8 @@ public:
 
 	void SetFaceEdgeIDs(int nface, int n0, int n1, int n2, int n3);
 
-protected:
 	MBNode& GetMBNode(int i) { return m_MBNode[i]; }
-	MBEdge& GetFaceEdge(MBFace& f, int n);
+	MBEdge& GetFaceEdge(int nface, int nedge);
 
 protected:
 	void FindFaceNeighbours();
@@ -76,7 +75,6 @@ protected:
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
 
 public:
-	void SetGlobalShapeModifier(FEShapeModifier* shapeMod);
 	void SetShapeModifier(MBFace& f, FEShapeModifier* mod);
 	void SetShapeModifier(MBEdge& e, FEShapeModifier* mod);
 	void SetShapeModifier(MBNode& n, FEShapeModifier* mod);
