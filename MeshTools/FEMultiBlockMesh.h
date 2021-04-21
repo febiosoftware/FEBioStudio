@@ -95,6 +95,7 @@ class MBEdge : public MBItem
 {
 public:
 	GEdge	edge;
+	int		m_winding;
 	int	m_face[2];	// external faces
 	int	m_nx;		// tesselation
 	double	m_gx;	// zoning
@@ -103,8 +104,14 @@ public:
 	int Node(int i) const { return edge.m_node[i]; }
 
 public:
-	MBEdge() {}
-	MBEdge(int n0, int n1) { edge.m_node[0] = n0; edge.m_node[1] = n1; edge.m_ntype = EDGE_LINE; }
+	MBEdge() 
+	{
+		m_nx = 1;
+		m_gx = 1;
+		m_bx = false;
+		m_winding = 1;
+	}
+	MBEdge(int n0, int n1) { edge.m_node[0] = n0; edge.m_node[1] = n1; edge.m_ntype = EDGE_LINE; m_winding = 1; }
 	bool operator == (const MBEdge& e) const
 	{
 		const int* n1 = edge.m_node;
@@ -113,6 +120,8 @@ public:
 		if ((n1[1] != n2[0]) && (n1[1] != n2[1])) return false;
 		return true;
 	}
+
+	MBEdge& SetWinding(int w) { m_winding = w; return *this; }
 };
 
 class MBFace : public MBItem
@@ -151,7 +160,7 @@ public:
 
 	bool IsExternal() { return m_block[1] == -1; }
 
-	void SetSizes(int nx, int ny) { m_nx = nx; m_ny = ny; }
+	MBFace& SetSizes(int nx, int ny) { m_nx = nx; m_ny = ny; return *this; }
 };
 
 class MBBlock : public MBItem

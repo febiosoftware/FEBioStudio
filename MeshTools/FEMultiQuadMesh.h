@@ -44,9 +44,14 @@ public:
 	// build the mesh
 	FEMesh* BuildMesh();
 
+	// build the mesh from the object
+	bool Build(GObject* po);
+
 public:
 	MBNode& AddNode(const vec3d& r);
 	MBFace& AddFace(int n0, int n1, int n2, int n3);
+
+	MBFace& GetFace(int n);
 
 	// update the Multii-Block data
 	void UpdateMQ();
@@ -55,6 +60,8 @@ public:
 
 	MBNode& GetMBNode(int i) { return m_MBNode[i]; }
 	MBEdge& GetFaceEdge(int nface, int nedge);
+
+	void SetFaceSizes(int nface, int nx, int ny);
 
 protected:
 	void FindFaceNeighbours();
@@ -87,6 +94,7 @@ protected:
 	vector<int> GetFENodeList(MBFace& node);
 
 protected:
+	GObject*		m_po;
 	vector<MBFace>	m_MBFace;
 	vector<MBEdge>	m_MBEdge;
 	vector<MBNode>	m_MBNode;

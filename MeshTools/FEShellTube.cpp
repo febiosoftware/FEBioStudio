@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "FEShellTube.h"
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FEMesh.h>
+#include "FEMultiQuadMesh.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -51,6 +52,46 @@ FEShellTube::FEShellTube(GThinTube* po)
 }
 
 FEMesh* FEShellTube::BuildMesh()
+{
+//	return BuildMeshLegacy();
+	return BuildMultiQuadMesh();
+}
+
+FEMesh* FEShellTube::BuildMultiQuadMesh()
+{
+	// get discretization parameters
+	int nd = GetIntValue(NDIV);
+	int nz = GetIntValue(NSTACK);
+
+	// check parameters
+	if (nd < 1) nd = 1;
+	if (nz < 1) nz = 1;
+
+	FEMultiQuadMesh MQ;
+	MQ.Build(m_pobj);
+
+	// set tesselation
+	MQ.SetFaceSizes(0, nd, nz);
+	MQ.SetFaceSizes(1, nd, nz);
+	MQ.SetFaceSizes(2, nd, nz);
+	MQ.SetFaceSizes(3, nd, nz);
+
+	// Build the mesh
+	FEMesh* pm = MQ.BuildMesh();
+	if (pm == nullptr) return nullptr;
+
+	// assign shell thickness
+	double t = GetFloatValue(T);
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		el.m_h[0] = el.m_h[1] = el.m_h[2] = el.m_h[3] = t;
+	}
+
+	return pm;
+}
+
+FEMesh* FEShellTube::BuildMeshLegacy()
 {
 	int i, j;
 

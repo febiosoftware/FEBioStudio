@@ -33,6 +33,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 FEMultiQuadMesh::FEMultiQuadMesh()
 {
+	m_po = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -62,6 +63,11 @@ MBFace& FEMultiQuadMesh::AddFace(int n0, int n1, int n2, int n3)
 	return m_MBFace[m_MBFace.size() - 1];
 }
 
+MBFace& FEMultiQuadMesh::GetFace(int n)
+{
+	return m_MBFace[n];
+}
+
 //-----------------------------------------------------------------------------
 // build the FE mesh
 //
@@ -80,13 +86,63 @@ FEMesh* FEMultiQuadMesh::BuildMesh()
 	BuildFaces(pm);
 	BuildEdges(pm);
 
-	// apply the shape modifiers
-//	ApplyMeshModifiers(pm);
-
 	// update the mesh
 	pm->BuildMesh();
 
 	return pm;
+}
+
+//-----------------------------------------------------------------------------
+// build the mesh from the object
+bool FEMultiQuadMesh::Build(GObject* po)
+{
+	m_po = po;
+	if (po == nullptr) return false;
+
+	m_MBNode.clear();
+	m_MBEdge.clear();
+	m_MBFace.clear();
+	
+	// build nodes
+	int NN = po->Nodes();
+	for (int i = 0; i < NN; ++i)
+	{
+		GNode* pn = po->Node(i);
+		if (pn->Type() != NODE_SHAPE)
+		{
+			AddNode(pn->LocalPosition()).SetID(pn->GetLocalID());
+		}
+	}
+
+	// build edges
+	int NE = po->Edges();
+	for (int i=0; i<NE; ++i)
+	{
+		GEdge* pe = po->Edge(i);
+		MBEdge edge;
+		edge.edge = *pe;
+		edge.m_gid = pe->GetLocalID();
+		m_MBEdge.push_back(edge);
+	}
+
+	// build the faces
+	int NF = po->Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		GFace* pf = po->Face(i);
+		assert(pf->Nodes() == 4);
+		int* n = &pf->m_node[0];
+		MBFace& F = AddFace(n[0], n[1], n[2], n[3]);
+		F.m_edge[0] = pf->m_edge[0].nid;
+		F.m_edge[1] = pf->m_edge[1].nid;
+		F.m_edge[2] = pf->m_edge[2].nid;
+		F.m_edge[3] = pf->m_edge[3].nid;
+		F.m_gid = pf->GetLocalID();
+	}
+
+	FindFaceNeighbours();
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -176,10 +232,27 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 					vec2d b(r2.x, r2.y);
 
 					// create an arc object
-					GM_CIRCLE_ARC ca(c, a, b);
+					GM_CIRCLE_ARC ca(c, a, b, e.m_winding);
 
 					vec2d p = ca.Point(r);
-					pn->r = vec3d(p.x, p.y, 0.0);
+					pn->r = vec3d(p.x, p.y, r1.z);
+				}
+				break;
+				case EDGE_3P_CIRC_ARC:
+				{
+					assert(m_po);
+					vec3d r0 = m_po->Node(e.edge.m_cnode)->LocalPosition();
+					vec3d r1 = m_po->Node(e.edge.m_node[0])->LocalPosition() - r0;
+					vec3d r2 = m_po->Node(e.edge.m_node[1])->LocalPosition() - r0;
+					vec3d n = r1 ^ r2; n.Normalize();
+					quatd q(n, vec3d(0, 0, 1)), qi = q.Inverse();
+					q.RotateVector(r1);
+					q.RotateVector(r2);
+					GM_CIRCLE_ARC c(vec2d(0, 0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y));
+					vec2d a = c.Point(r);
+					vec3d p(a.x, a.y, 0);
+					qi.RotateVector(p);
+					pn->r = p + r0;
 				}
 				break;
 				default:
@@ -659,6 +732,17 @@ int FEMultiQuadMesh::GetEdgeNodeIndex(MBEdge& e, int i)
 MBEdge& FEMultiQuadMesh::GetFaceEdge(int nface, int nedge)
 {
 	return m_MBEdge[m_MBFace[nface].m_edge[nedge]];
+}
+
+//-----------------------------------------------------------------------------
+void FEMultiQuadMesh::SetFaceSizes(int nface, int nx, int ny)
+{
+	MBFace& F = m_MBFace[nface];
+	F.SetSizes(nx, ny);
+	m_MBEdge[F.m_edge[0]].m_nx = nx;
+	m_MBEdge[F.m_edge[1]].m_nx = ny;
+	m_MBEdge[F.m_edge[2]].m_nx = nx;
+	m_MBEdge[F.m_edge[3]].m_nx = ny;
 }
 
 //-----------------------------------------------------------------------------

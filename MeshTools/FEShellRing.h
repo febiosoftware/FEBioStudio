@@ -40,6 +40,9 @@ public:
 	FEMesh* BuildMesh();
 
 protected:
+	FEMesh* BuildMeshLegacy();
+	FEMesh* BuildMultiQuadMesh();
+
 	void BuildFaces(FEMesh* pm);
 	void BuildEdges(FEMesh* pm);
 
