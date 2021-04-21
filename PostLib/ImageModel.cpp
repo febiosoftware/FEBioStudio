@@ -32,10 +32,9 @@ SOFTWARE.*/
 #include <assert.h>
 
 #ifdef HAS_TEEM
-#include <ImageLib/tif_reader.h>
 #include <ImageLib/compatibility.h>
-#include <teem/nrrd.h> 
 #endif
+
 using namespace Post;
 
 CImageSource::CImageSource(CImageModel* imgModel)
@@ -83,62 +82,61 @@ bool CImageSource::LoadTiffData(std::wstring &fileName)
 {
   C3DImage* im = new C3DImage;
   std::unique_ptr<TIFReader> reader = std::make_unique<TIFReader>();
-  reader->SetFile(fileName);
-  reader->Preprocess();
-  Nrrd* nrrdStruct = reader->Convert(0,0,0); 
+
+  // Returns a nrrd based on templated function
+  Nrrd* nrrdStruct = GetNrrd<TIFReader>(reader,fileName);
 
   auto [nx,ny,npages,bits] = reader->GetTiffInfo();
-  const auto SIZE = nx * ny * npages;
-  unsigned char* rawData = reader->GetRawImage();
-  data = rawData;
-  std::string file = ws2s(fileName);
 
   BOX box(nx, ny, npages, nx + reader->GetXSpc(), ny+reader->GetYSpc(), npages+reader->GetZSpc());
- 
   m_imgModel->SetBoundingBox(box);
  
-  if(im->Create(nx,ny,npages,data) == false)
+  if(im->Create(nx,ny,npages,reader->GetRawImage()) == false)
   {
 	delete im;
 	return false;
   }
 
-  SetIntValue(1, nx);
-  SetIntValue(2, ny);
-  SetIntValue(3, npages);
-
-  delete m_img;
-  m_img = im;
+  SetValues(ws2s(fileName),nx,ny,npages);
+  AssignImage(im);
 
   return true;
-
 }
 #endif
 
 bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, int nz)
 {
-	C3DImage* im = new C3DImage;
-	if (im->Create(nx, ny, nz) == false)
-	{
-		delete im;
-		return false;
-	}
+  C3DImage* im = new C3DImage;
+  if (im->Create(nx, ny, nz) == false)
+  {
+    delete im;
+    return false;
+  }
 
-	if (im->LoadFromFile(fileName.c_str(), 8) == false)
-	{
-		delete im;
-		return false;
-	}
+  if (im->LoadFromFile(fileName.c_str(), 8) == false)
+  {
+    delete im;
+    return false;
+  }
 
+  SetValues(fileName,nx,ny,nz);
+  AssignImage(im);
+
+  return true;
+}
+
+void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)
+{
 	SetStringValue(0, fileName);
-	SetIntValue(1, nx);
-	SetIntValue(2, ny);
-	SetIntValue(3, nz);
+	SetIntValue(1, x);
+	SetIntValue(2, y);
+	SetIntValue(3, z);
+}
 
-	delete m_img;
-	m_img = im;
-
-	return true;
+void CImageSource::AssignImage(C3DImage* im)
+{
+  delete m_img;
+  m_img = im;
 }
 
 void CImageSource::Save(OArchive& ar)
