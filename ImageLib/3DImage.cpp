@@ -81,6 +81,10 @@ void C3DImage::CleanUp()
 
 bool C3DImage::Create(int nx, int ny, int nz, Byte* data)
 {
+    // Check to make sure this does not allocate memory of size 0.
+    if(nx*ny*nz == 0)
+      return false;
+
 	// reallocate data if necessary
 	if (nx*ny*nz != m_cx*m_cy*m_cz)
 	{
