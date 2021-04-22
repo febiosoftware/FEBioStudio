@@ -39,13 +39,23 @@ FEQuartDogBone::FEQuartDogBone(GQuartDogBone* po)
 	AddIntParam( 1, "nz", "Nz");
 
 	AddDoubleParam(1, "R-bias");
+	AddDoubleParam(1, "Z-bias");
+	AddBoolParam(false, "bz", "Z-mirrored bias");
 }
 
 //-----------------------------------------------------------------------------
 FEMesh* FEQuartDogBone::BuildMesh()
 {
 //	return BuildMeshLegacy();
-	return BuildMultiBlockMesh6();
+
+	// see if we should do 4-block or 6-block
+	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
+	double ch = m_pobj->GetFloatValue(GQuartDogBone::CHEIGHT);
+	double R = m_pobj->GetFloatValue(GQuartDogBone::RADIUS);
+	double W = m_pobj->GetFloatValue(GQuartDogBone::WING);
+
+	if (ch < cw - W - R) return BuildMultiBlockMesh4();
+	else return BuildMultiBlockMesh6();
 }
 
 //-----------------------------------------------------------------------------
@@ -67,69 +77,78 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
 	int NY = GetIntValue(N_Y);
 	int NZ = GetIntValue(N_Z);
 
-	if (NX < 2) NX = 2;
-//	if (NY < 2) NY = 2;
+	double gr = GetFloatValue(R_BIAS);
+	double gz = GetFloatValue(Z_BIAS);
+	bool bz = GetBoolValue(BZ);
 
-	double fx = W / cw;
-	int lx = (int)(NX*fx); if (lx < 1) lx = 1;
-	int mx = NX - lx;
+	if (NX < 1) NX = 1;
+	if (NY < 2) NY = 2;
 
-	int my = mx;
-	double fy = L / (ch + R);
-	int ly = (int)(my); if (ly < 1) ly = 1;
+	int nx = NX;
 
-	int ny = NY;
+	double fy = L / (ch + R + L);
+	int ny2 = (int)(fy*NY); if (ny2 < 1) ny2 = 1;
+	int ny1 = NY - ny2;
+
+	int nx1 = ny1;
+	double fx = W / (cw - W);
+	int nx2 = (int)(fx*nx1); if (nx2 < 1) nx2 = 1;
+
 	int nz = NZ;
 
 	// create the MB nodes
-	m_MBNode.resize(22);
-	m_MBNode[0].m_r = vec3d(0, 0, 0);
-	m_MBNode[1].m_r = vec3d(cw - W, 0, 0);
-	m_MBNode[2].m_r = vec3d(cw, 0, 0);
-	m_MBNode[3].m_r = vec3d(cw, ch, 0);
-	m_MBNode[4].m_r = vec3d(cw - W, ch, 0);
-	m_MBNode[5].m_r = vec3d(px, py, 0);
-	m_MBNode[6].m_r = vec3d(cw - W - R, ch + R, 0);
-	m_MBNode[7].m_r = vec3d(cw - W - R, ch + R + L, 0);
-	m_MBNode[8].m_r = vec3d(0, ch + R + L, 0);
-	m_MBNode[9].m_r = vec3d(0, ch + R, 0);
+	m_MBNode.clear();
+	AddNode(vec3d(0, 0, 0));
+	AddNode(vec3d(cw - W, 0, 0));
+	AddNode(vec3d(cw, 0, 0));
+	AddNode(vec3d(cw, ch, 0));
+	AddNode(vec3d(cw - W, ch, 0));
+	AddNode(vec3d(px, py, 0));
+	AddNode(vec3d(cw - W - R, ch + R, 0));
+	AddNode(vec3d(cw - W - R, ch + R + L, 0));
+	AddNode(vec3d(0, ch + R + L, 0));
+	AddNode(vec3d(0, ch + R, 0));
 
-	m_MBNode[10].m_r = vec3d(cw-W, ch+R, 0); m_MBNode[10].m_type = NODE_SHAPE;
+	AddNode(vec3d(cw-W, ch+R, 0), NODE_SHAPE);
 
-	m_MBNode[11].m_r = vec3d(0, 0, h);
-	m_MBNode[12].m_r = vec3d(cw - W, 0, h);
-	m_MBNode[13].m_r = vec3d(cw, 0, h);
-	m_MBNode[14].m_r = vec3d(cw, ch, h);
-	m_MBNode[15].m_r = vec3d(cw - W, ch, h);
-	m_MBNode[16].m_r = vec3d(px, py, h);
-	m_MBNode[17].m_r = vec3d(cw - W - R, ch + R, h);
-	m_MBNode[18].m_r = vec3d(cw - W - R, ch + R + L, h);
-	m_MBNode[19].m_r = vec3d(0, ch + R + L, h);
-	m_MBNode[20].m_r = vec3d(0, ch + R, h);
+	AddNode(vec3d(0, 0, h));
+	AddNode(vec3d(cw - W, 0, h));
+	AddNode(vec3d(cw, 0, h));
+	AddNode(vec3d(cw, ch, h));
+	AddNode(vec3d(cw - W, ch, h));
+	AddNode(vec3d(px, py, h));
+	AddNode(vec3d(cw - W - R, ch + R, h));
+	AddNode(vec3d(cw - W - R, ch + R + L, h));
+	AddNode(vec3d(0, ch + R + L, h));
+	AddNode(vec3d(0, ch + R, h));
 
-	m_MBNode[21].m_r = vec3d(cw - W, ch + R, h); m_MBNode[21].m_type = NODE_SHAPE;
+	AddNode(vec3d(cw - W, ch + R, h), NODE_SHAPE);
 
 	// create the MB blocks
 	m_MBlock.resize(4);
 	MBBlock& b1 = m_MBlock[0];
 	b1.SetID(0);
 	b1.SetNodes(0, 1, 4, 5, 11, 12, 15, 16);
-	b1.SetSizes(mx, ny, nz);
+	b1.SetSizes(nx1, nx, nz);
+	b1.SetZoning(1, gr, gz, false, false, bz);
 
 	MBBlock& b2 = m_MBlock[1];
 	b2.SetID(0);
 	b2.SetNodes(0, 5, 6, 9, 11, 16, 17, 20);
-	b2.SetSizes(ny, mx, nz);
+	b2.SetSizes(nx, ny1, nz);
+	b2.SetZoning(gr, 1, gz, false, false, bz);
 
 	MBBlock& b3 = m_MBlock[2];
 	b3.SetID(0);
 	b3.SetNodes(1, 2, 3, 4, 12, 13, 14, 15);
-	b3.SetSizes(lx, ny, nz);
+	b3.SetSizes(nx2, nx, nz);
+	b3.SetZoning(1, gr, gz, false, false, bz);
 
 	MBBlock& b4 = m_MBlock[3];
 	b4.SetID(0);
 	b4.SetNodes(9, 6, 7, 8, 20, 17, 18, 19);
-	b4.SetSizes(ny, ly, nz);
+	b4.SetSizes(nx, ny2, nz);
+	b4.SetZoning(gr, 1, gz, false, false, bz);
 
 	UpdateMB();
 
@@ -205,6 +224,8 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	int NZ = GetIntValue(N_Z);
 
 	double gr = GetFloatValue(R_BIAS);
+	double gz = GetFloatValue(Z_BIAS);
+	bool bz = GetBoolValue(BZ);
 
 	if (NX < 1) NX = 1;
 	if (NY < 3) NY = 3;
@@ -222,38 +243,38 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	int nz = NZ;
 
 	// create the MB nodes
-	m_MBNode.resize(28);
-	m_MBNode[0 ].m_r = vec3d( 0,  0, 0);
-	m_MBNode[1 ].m_r = vec3d(x1,  0, 0);
-	m_MBNode[2 ].m_r = vec3d(x2,  0, 0);
-	m_MBNode[3 ].m_r = vec3d( 0, y1, 0);
-	m_MBNode[4 ].m_r = vec3d(x1, y1, 0);
-	m_MBNode[5 ].m_r = vec3d(x2, y1, 0);
-	m_MBNode[6 ].m_r = vec3d(px, py, 0);
-	m_MBNode[7 ].m_r = vec3d(x1, y2, 0);
-	m_MBNode[8 ].m_r = vec3d(x2, y2, 0);
-	m_MBNode[9 ].m_r = vec3d( 0, y3, 0);
-	m_MBNode[10].m_r = vec3d(x3, y3, 0);
-	m_MBNode[11].m_r = vec3d( 0, y4, 0);
-	m_MBNode[12].m_r = vec3d(x3, y4, 0);
+	m_MBNode.clear();
+	AddNode(vec3d( 0,  0, 0));
+	AddNode(vec3d(x1,  0, 0));
+	AddNode(vec3d(x2,  0, 0));
+	AddNode(vec3d( 0, y1, 0));
+	AddNode(vec3d(x1, y1, 0));
+	AddNode(vec3d(x2, y1, 0));
+	AddNode(vec3d(px, py, 0));
+	AddNode(vec3d(x1, y2, 0));
+	AddNode(vec3d(x2, y2, 0));
+	AddNode(vec3d( 0, y3, 0));
+	AddNode(vec3d(x3, y3, 0));
+	AddNode(vec3d( 0, y4, 0));
+	AddNode(vec3d(x3, y4, 0));
 
-	m_MBNode[13].m_r = vec3d(x1, y3, 0); m_MBNode[13].m_type = NODE_SHAPE;
+	AddNode(vec3d(x1, y3, 0), NODE_SHAPE);
 
-	m_MBNode[14].m_r = vec3d( 0,  0, h);
-	m_MBNode[15].m_r = vec3d(x1,  0, h);
-	m_MBNode[16].m_r = vec3d(x2,  0, h);
-	m_MBNode[17].m_r = vec3d( 0, y1, h);
-	m_MBNode[18].m_r = vec3d(x1, y1, h);
-	m_MBNode[19].m_r = vec3d(x2, y1, h);
-	m_MBNode[20].m_r = vec3d(px, py, h);
-	m_MBNode[21].m_r = vec3d(x1, y2, h);
-	m_MBNode[22].m_r = vec3d(x2, y2, h);
-	m_MBNode[23].m_r = vec3d( 0, y3, h);
-	m_MBNode[24].m_r = vec3d(x3, y3, h);
-	m_MBNode[25].m_r = vec3d( 0, y4, h);
-	m_MBNode[26].m_r = vec3d(x3, y4, h);
+	AddNode(vec3d( 0,  0, h));
+	AddNode(vec3d(x1,  0, h));
+	AddNode(vec3d(x2,  0, h));
+	AddNode(vec3d( 0, y1, h));
+	AddNode(vec3d(x1, y1, h));
+	AddNode(vec3d(x2, y1, h));
+	AddNode(vec3d(px, py, h));
+	AddNode(vec3d(x1, y2, h));
+	AddNode(vec3d(x2, y2, h));
+	AddNode(vec3d( 0, y3, h));
+	AddNode(vec3d(x3, y3, h));
+	AddNode(vec3d( 0, y4, h));
+	AddNode(vec3d(x3, y4, h));
 
-	m_MBNode[27].m_r = vec3d(x1, y3, h); m_MBNode[27].m_type = NODE_SHAPE;
+	AddNode(vec3d(x1, y3, h), NODE_SHAPE);
 
 	// create the MB blocks
 	m_MBlock.resize(6);
@@ -261,35 +282,37 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	b1.SetID(0);
 	b1.SetNodes(0, 1, 4, 3, 14, 15, 18, 17);
 	b1.SetSizes(nx1, ny1, nz);
+	b1.SetZoning(1, 1, gz, false, false, bz);
 
 	MBBlock& b2 = m_MBlock[1];
 	b2.SetID(0);
 	b2.SetNodes(1, 2, 5, 4, 15, 16, 19, 18);
 	b2.SetSizes(nx2, ny1, nz);
+	b2.SetZoning(1, 1, gz, false, false, bz);
 
 	MBBlock& b3 = m_MBlock[2];
 	b3.SetID(0);
 	b3.SetNodes(3, 4, 7, 6, 17, 18, 21, 20);
 	b3.SetSizes(nx1, NX, nz);
-	b3.SetZoning(1, gr, 1, false, false, false);
+	b3.SetZoning(1, gr, gz, false, false, bz);
 
 	MBBlock& b4 = m_MBlock[3];
 	b4.SetID(0);
 	b4.SetNodes(4, 5, 8, 7, 18, 19, 22, 21);
 	b4.SetSizes(nx2, NX, nz);
-	b4.SetZoning(1, gr, 1, false, false, false);
+	b4.SetZoning(1, gr, gz, false, false, bz);
 
 	MBBlock& b5 = m_MBlock[4];
 	b5.SetID(0);
 	b5.SetNodes(3, 6, 10, 9, 17, 20, 24, 23);
 	b5.SetSizes(NX, ny2, nz);
-	b5.SetZoning(gr, 1, 1, false, false, false);
+	b5.SetZoning(gr, 1, gz, false, false, bz);
 
 	MBBlock& b6 = m_MBlock[5];
 	b6.SetID(0);
 	b6.SetNodes(9, 10, 12, 11, 23, 24, 26, 25);
 	b6.SetSizes(NX, ny3, nz);
-	b6.SetZoning(gr, 1, 1, false, false, false);
+	b6.SetZoning(gr, 1, gz, false, false, bz);
 
 	UpdateMB();
 

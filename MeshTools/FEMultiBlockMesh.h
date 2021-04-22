@@ -215,6 +215,8 @@ protected:
 
 	MBEdge& GetEdge(int nedge);
 
+	MBNode& AddNode(const vec3d& r, int nodeType = NODE_VERTEX);
+
 protected:
 	void FindBlockNeighbours();
 	void FindFaceNeighbours();

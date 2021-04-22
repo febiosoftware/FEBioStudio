@@ -31,7 +31,7 @@ class GQuartDogBone;
 class FEQuartDogBone : public FEMultiBlockMesh
 {
 public:
-	enum {N_X, N_Y, N_Z, R_BIAS};
+	enum {N_X, N_Y, N_Z, R_BIAS, Z_BIAS, BZ};
 
 public:
 	FEQuartDogBone(){}

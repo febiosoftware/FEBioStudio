@@ -1222,6 +1222,16 @@ MBFace& FEMultiBlockMesh::GetBlockFace(int nb, int nf)
 }
 
 //-----------------------------------------------------------------------------
+MBNode& FEMultiBlockMesh::AddNode(const vec3d& r, int nodeType)
+{
+	MBNode node;
+	node.m_r = r;
+	node.m_type = nodeType;
+	m_MBNode.push_back(node);
+	return m_MBNode[m_MBNode.size() - 1];
+}
+
+//-----------------------------------------------------------------------------
 MBEdge& FEMultiBlockMesh::GetEdge(int nedge)
 {
 	return m_MBEdge[nedge];
