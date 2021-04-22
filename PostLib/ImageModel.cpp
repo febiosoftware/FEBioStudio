@@ -102,6 +102,49 @@ bool CImageSource::LoadTiffData(std::wstring &fileName)
 
   return true;
 }
+
+bool CImageSource::LoadNrrdData(std::wstring& filename)
+{
+  C3DImage* im = new C3DImage();
+  std::unique_ptr<NRRDReader> reader = std::make_unique<NRRDReader>();
+
+  Nrrd* nrrdStruct = GetNrrd<NRRDReader>(reader,filename);
+  
+  int nx = reader->GetXSize();
+  int ny = reader->GetYSize();
+  int nz = reader->GetSliceNum();
+  int dataSize = nx * ny * nz;
+
+  Byte* data = static_cast<Byte*>(nrrdStruct->data);
+
+  Byte* dataBuf;
+
+  if (nrrdStruct->type == nrrdTypeUShort || nrrdStruct->type == nrrdTypeShort)
+  {
+    dataBuf = new Byte[dataSize];
+    for (int i = 0; i < dataSize; ++i)
+    {
+      dataBuf[i] = data[2*i];
+    }
+  }
+  else
+    dataBuf = data;
+
+
+  BOX box(nx, ny, nz, nx+reader->GetXSpc(), ny+reader->GetYSpc(), nz+reader->GetZSpc());
+  m_imgModel->SetBoundingBox(box);
+
+  if (im->Create(nx, ny, nz, dataBuf) == false)
+  {
+    delete im;
+    return false;
+  }
+
+  SetValues(ws2s(filename),nx,ny,nz);
+  AssignImage(im);
+
+  return true;
+}
 #endif
 
 bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, int nz)
@@ -225,6 +268,24 @@ bool CImageModel::LoadTiffData(std::wstring &fileName)
 	UpdateData(false);
 
 	return true;
+}
+
+bool CImageModel::LoadNrrdData(std::wstring& filename)
+{
+  if(m_img == nullptr) m_img = new CImageSource(this);
+
+  if (m_img->LoadNrrdData(filename) == false)
+  {
+    delete m_img;
+    m_img = nullptr;
+    return false;
+  }
+  std::string fileBase = FSDir::fileBase(ws2s(filename));
+  m_img->SetName(fileBase);
+
+  UpdateData(false);
+
+  return true;
 }
 #endif
 

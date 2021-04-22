@@ -802,6 +802,33 @@ Post::CImageModel* CGLDocument::ImportTiff(const std::string& fileName)
 	return po;
 
 }
+
+Post::CImageModel* CGLDocument::ImportNrrd(const std::string& filename)
+{
+	static int n = 1;
+	// we pass the relative path to the image model
+	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
+
+	Post::CImageModel* po = new Post::CImageModel(nullptr);
+
+  // Need to convert relFile to wstring maybe? 
+  std::wstring relativeFile = s2ws(relFile);
+	if (po->LoadNrrdData(relativeFile) == false)
+	{
+		delete po;
+		return nullptr;
+	}
+
+	stringstream ss;
+	ss << "ImageModel" << n++;
+	po->SetName(ss.str());
+
+	// add it to the project
+	AddImageModel(po);
+
+	return po;
+
+}
 #endif
 
 //-----------------------------------------------------------------------------

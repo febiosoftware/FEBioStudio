@@ -253,6 +253,7 @@ public:
 	// import image data
 #ifdef HAS_TEEM
   Post::CImageModel* ImportTiff(const std::string& filename);
+  Post::CImageModel* ImportNrrd(const std::string& filename);
 #endif
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 

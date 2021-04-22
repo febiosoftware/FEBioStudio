@@ -64,7 +64,7 @@ void C3DImage::CleanUp()
 	m_cx = m_cy = m_cz = 0;
 }
 
-bool C3DImage::Create(int nx, int ny, int nz, Byte* data)
+bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize)
 {
     // Check to make sure this does not allocate memory of size 0.
     if(nx*ny*nz == 0)
@@ -77,7 +77,11 @@ bool C3DImage::Create(int nx, int ny, int nz, Byte* data)
 
       if(data == nullptr)
       {
-        m_pb = new Byte[nx*ny*nz];
+        if(dataSize == 0)
+          m_pb = new Byte[nx*ny*nz];
+        else
+          m_pb = new Byte[dataSize];
+
         if (m_pb == nullptr) return false;
       }
       else

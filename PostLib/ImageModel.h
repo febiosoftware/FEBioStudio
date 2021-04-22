@@ -35,6 +35,7 @@ SOFTWARE.*/
 
 #ifdef HAS_TEEM
   #include <ImageLib/tif_reader.h>
+  #include <ImageLib/nrrd_reader.h>
 #endif
 
 class C3DImage;
@@ -55,6 +56,7 @@ public:
 
 #ifdef HAS_TEEM
   bool LoadTiffData(std::wstring& filename);
+  bool LoadNrrdData(std::wstring& filename);
 #endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
 
@@ -98,6 +100,7 @@ public:
 	~CImageModel();
 #ifdef HAS_TEEM
   bool LoadTiffData(std::wstring& filename);
+  bool LoadNrrdData(std::wstring& filename);
 #endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
 

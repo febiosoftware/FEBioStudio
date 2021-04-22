@@ -1408,7 +1408,7 @@ void CMainWindow::on_actionImportImage_triggered()
 {
 	QStringList filters;
   #ifdef HAS_TEEM
-	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)";
+	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)";
   #else
 	  filters << "RAW files (*.raw)";
   #endif
@@ -1437,7 +1437,7 @@ void CMainWindow::on_actionImportImage_triggered()
 
       Post::CImageModel* imageModel = nullptr;
     
-      if(ext == ".tiff" || ".tif")
+      if(ext == "tiff" || ext == "tif")
       {
         #ifdef HAS_TEEM
         imageModel = doc->ImportTiff(sfile);
@@ -1448,6 +1448,17 @@ void CMainWindow::on_actionImportImage_triggered()
           return;
         }
       }
+	  else if (ext == "nrrd")
+	  {
+        #ifdef HAS_TEEM
+        imageModel = doc->ImportNrrd(sfile);
+        #endif
+        if (imageModel == nullptr)
+        {
+          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+          return;
+        }
+	  }
       else //will need to be written for other cases
       {
         CDlgRAWImport dlg(this);

@@ -36,7 +36,7 @@ public:
 	virtual ~C3DImage();
 	void CleanUp();
 
-	bool Create(int nx, int ny, int nz, Byte* data = nullptr);
+	bool Create(int nx, int ny, int nz, Byte* data = nullptr, int dataSize = 0);
 
 	bool LoadFromFile(const char* szfile, int nbits);
 
