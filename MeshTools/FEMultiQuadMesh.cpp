@@ -150,9 +150,9 @@ bool FEMultiQuadMesh::Build(GObject* po)
 //
 void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 {
-	int NF = m_MBFace.size();
-	int NE = m_MBEdge.size();
-	int NN = m_MBNode.size();
+	int NF = (int) m_MBFace.size();
+	int NE = (int) m_MBEdge.size();
+	int NN = (int) m_MBNode.size();
 
 	// now, let's count the nodes
 	int nodes = 0;
@@ -188,18 +188,15 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 	}
 
 	// A.2. add all edge nodes
-	vec3d r1, r2, r3, r4, r5, r6, r7, r8;
-	double r, s, t, gr, gs, gt, fr, fs, ft, dr, ds, dt;
-	double N1, N2, N3, N4, N5, N6, N7, N8;
 	for (int i = 0; i < NE; ++i)
 	{
 		MBEdge& e = m_MBEdge[i];
-		r1 = m_MBNode[e.Node(0)].m_r;
-		r2 = m_MBNode[e.Node(1)].m_r;
+		vec3d r1 = m_MBNode[e.Node(0)].m_r;
+		vec3d r2 = m_MBNode[e.Node(1)].m_r;
 		e.m_ntag = nodes;
 
-		fr = e.m_gx;
-		gr = 1;
+		double fr = e.m_gx;
+		double gr = 1;
 		if (e.m_bx)
 		{
 			gr = 2; if (e.m_nx % 2) gr += fr;
@@ -212,8 +209,8 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 			gr = 1 / gr;
 		}
 
-		dr = gr;
-		r = 0;
+		double dr = gr;
+		double r = 0;
 		for (int j = 0; j < e.m_nx; ++j)
 		{
 			if (j > 0)
@@ -278,17 +275,17 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 	for (int i = 0; i < NF; ++i)
 	{
 		MBFace& f = m_MBFace[i];
-		r1 = m_MBNode[f.m_node[0]].m_r;
-		r2 = m_MBNode[f.m_node[1]].m_r;
-		r3 = m_MBNode[f.m_node[2]].m_r;
-		r4 = m_MBNode[f.m_node[3]].m_r;
+		vec3d r1 = m_MBNode[f.m_node[0]].m_r;
+		vec3d r2 = m_MBNode[f.m_node[1]].m_r;
+		vec3d r3 = m_MBNode[f.m_node[2]].m_r;
+		vec3d r4 = m_MBNode[f.m_node[3]].m_r;
 		f.m_ntag = nodes;
 
 		int nx = f.m_nx;
 		int ny = f.m_ny;
 
-		fr = f.m_gx;
-		gr = 1;
+		double fr = f.m_gx;
+		double gr = 1;
 		if (f.m_bx)
 		{
 			gr = 2; if (f.m_nx % 2) gr += fr;
@@ -301,8 +298,8 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 			gr = 1 / gr;
 		}
 
-		fs = f.m_gy;
-		gs = 1;
+		double fs = f.m_gy;
+		double gs = 1;
 		if (f.m_by)
 		{
 			gs = 2; if (f.m_ny % 2) gs += fs;
@@ -315,22 +312,22 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 			gs = 1 / gs;
 		}
 
-		ds = gs;
-		s = 0;
+		double ds = gs;
+		double s = 0;
 		for (int j = 0; j < ny; ++j)
 		{
 			if (j > 0)
 			{
-				dr = gr;
-				r = 0;
+				double dr = gr;
+				double r = 0;
 				for (int k = 0; k < nx; ++k)
 				{
 					if (k > 0)
 					{
-						N1 = (1 - r)*(1 - s);
-						N2 = r * (1 - s);
-						N3 = r * s;
-						N4 = (1 - r)*s;
+						double N1 = (1 - r)*(1 - s);
+						double N2 = r * (1 - s);
+						double N3 = r * s;
+						double N4 = (1 - r)*s;
 					
 						// get edge points
 						vec3d e1 = pm->Node(GetFaceEdgeNodeIndex(f, 0, k)).r;
@@ -379,7 +376,7 @@ void FEMultiQuadMesh::BuildFaces(FEMesh* pm)
 {
 	// figure out how many elements we have
 	int faces = 0;
-	int NF = m_MBFace.size();
+	int NF = (int)m_MBFace.size();
 	for (int i = 0; i < NF; ++i)
 	{
 		MBFace& F = m_MBFace[i];
@@ -462,7 +459,7 @@ void FEMultiQuadMesh::BuildEdges(FEMesh* pm)
 
 void FEMultiQuadMesh::BuildMBEdges()
 {
-	int NF = m_MBFace.size();
+	int NF = (int) m_MBFace.size();
 	m_MBEdge.clear();
 	m_MBEdge.reserve(4 * NF);
 	int NE = 0;
@@ -522,21 +519,7 @@ void FEMultiQuadMesh::BuildMBEdges()
 		}
 	}
 
-	NE = m_MBEdge.size();
-
-	// set the external flag of the edges
-	for (int i = 0; i < NE; ++i) m_MBEdge[i].m_bext = false;
-	for (int i = 0; i < NF; ++i)
-	{
-		MBFace& f = m_MBFace[i];
-		for (int j = 0; j < 4; ++j)
-		{
-			if (f.m_nbr[j] == -1)
-			{
-				m_MBEdge[f.m_edge[j]].m_bext = true;
-			}
-		}
-	}
+	NE = (int)m_MBEdge.size();
 }
 
 //-----------------------------------------------------------------------------
@@ -603,8 +586,8 @@ int FEMultiQuadMesh::FindEdgeIndex(MBFace& F, int n1, int n2)
 //-----------------------------------------------------------------------------
 void FEMultiQuadMesh::BuildNodeFaceTable(vector< vector<int> >& NFT)
 {
-	int NN = m_MBNode.size();
-	int NF = m_MBFace.size();
+	int NN = (int) m_MBNode.size();
+	int NF = (int) m_MBFace.size();
 
 	// calculate node valences
 	for (int i = 0; i < NN; ++i) m_MBNode[i].m_ntag = 0;
@@ -642,7 +625,7 @@ int FEMultiQuadMesh::FindEdge(int n1, int n2)
 {
 	MBEdge e(n1, n2);
 
-	int NE = m_MBEdge.size();
+	int NE = (int)m_MBEdge.size();
 
 	for (int i = 0; i < NE; ++i)
 	{

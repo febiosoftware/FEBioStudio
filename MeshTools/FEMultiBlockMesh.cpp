@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEMultiBlockMesh.h"
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FENodeNodeList.h>
+#include <GeomLib/geom.h>
 
 FEShapeModifier::FEShapeModifier() {}
 FEShapeModifier::~FEShapeModifier() {}
@@ -88,7 +89,7 @@ FEMesh* FEMultiBlockMesh::BuildMesh()
 	BuildEdges(pm);
 
 	// apply the shape modifiers
-	ApplyMeshModifiers(pm);
+//	ApplyMeshModifiers(pm);
 
 	// update the mesh
 	pm->BuildMesh();
@@ -101,36 +102,33 @@ FEMesh* FEMultiBlockMesh::BuildMesh()
 //
 void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 {
-	int i, j, k, l;
-
 	int NB = m_MBlock.size();
 	int NF = m_MBFace.size();
 	int NE = m_MBEdge.size();
 	int NN = m_MBNode.size();
 
 	// now, let's count the nodes
-	// I think the correct formula is:
-	// (NX+1)*(NY+1)*(NZ+1)*blocks - (NX+1)*(NY+1)*internal faces + (NX+1)*internal edges - internal nodes
 	int nodes = 0;
-	for (i=0; i<NB; ++i)
-	{
-		MBBlock& B = m_MBlock[i];
-		nodes += (B.m_nx+1)*(B.m_ny+1)*(B.m_nz+1);
-	}
-	for (i=0; i<NF; ++i)
-	{
-		MBFace& F = m_MBFace[i];
-		if (!F.m_bext) nodes -= (F.m_nx+1)*(F.m_ny+1);
-	}
-	for (i=0; i<NE; ++i)
-	{
-		MBEdge& E = m_MBEdge[i];
-		if (!E.m_bext) nodes += (E.m_nx + 1);
-	}
-	for (i=0; i<NN; ++i)
+	for (int i = 0; i < NN; ++i)
 	{
 		MBNode& N = m_MBNode[i];
-		if (!N.m_bext) nodes -= 1;
+		if (N.m_type != NODE_SHAPE)
+			nodes += 1;
+	}
+	for (int i = 0; i < NE; ++i)
+	{
+		MBEdge& E = m_MBEdge[i];
+		nodes += (E.m_nx - 1);
+	}
+	for (int i = 0; i < NF; ++i)
+	{
+		MBFace& F = m_MBFace[i];
+		nodes += (F.m_nx - 1)*(F.m_ny - 1);
+	}
+	for (int i=0; i<NB; ++i)
+	{
+		MBBlock& B = m_MBlock[i];
+		nodes += (B.m_nx-1)*(B.m_ny-1)*(B.m_nz-1);
 	}
 
 	// create storage
@@ -140,19 +138,25 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 	// A.1. add all MB nodes
 	nodes = 0;
 	FENode* pn = pm->NodePtr();
-	for (i=0; i<NN; ++i, ++pn)
+	for (int i=0; i<NN; ++i)
 	{
-		pn->r = m_MBNode[i].m_r;
-		m_MBNode[i].m_ntag = nodes;
-		m_MBNode[i].m_fenodes.push_back(nodes++);
-		pn->m_gid = m_MBNode[i].m_gid;
+		MBNode& node = m_MBNode[i];
+		if (node.m_type != NODE_SHAPE)
+		{
+			pn->r = node.m_r;
+			node.m_ntag = nodes;
+			node.m_fenodes.push_back(nodes++);
+			pn->m_gid = node.m_gid;
+			++pn;
+		}
+		else node.m_ntag = -1;
 	}
 
 	// A.2. add all edge nodes
 	vec3d r1, r2, r3, r4, r5, r6, r7, r8;
 	double r, s, t, gr, gs, gt, fr, fs, ft, dr, ds, dt;
 	double N1, N2, N3, N4, N5, N6, N7, N8;
-	for (i=0; i<NE; ++i)
+	for (int i=0; i<NE; ++i)
 	{
 		MBEdge& e = m_MBEdge[i];
 		r1 = m_MBNode[e.Node(0)].m_r;
@@ -164,24 +168,45 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 		if (e.m_bx)
 		{
 			gr = 2; if (e.m_nx%2) gr += fr;
-			for (j=0; j<e.m_nx/2-1; ++j) gr = fr*gr+2;
+			for (int j=0; j<e.m_nx/2-1; ++j) gr = fr*gr+2;
 			gr = 1 / gr;
 		}
 		else 
 		{
-			for (j=0; j<e.m_nx-1; ++j) gr = fr*gr+1; 
+			for (int j=0; j<e.m_nx-1; ++j) gr = fr*gr+1;
 			gr = 1 / gr;
 		}
 
 		dr = gr;
 		r = 0;
-		for (j=0; j<e.m_nx; ++j)
+		for (int j=0; j<e.m_nx; ++j)
 		{
 			if (j>0)
 			{
-				N1 = 1-r;
-				N2 = r;
-				pn->r = r1*N1 + r2*N2;
+				switch (e.edge.Type())
+				{
+				case EDGE_LINE:
+					pn->r = r1 * (1 - r) + r2 * r;
+					break;
+				case EDGE_3P_CIRC_ARC:
+					{
+					vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
+					vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r - r0;
+					vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r - r0;
+					vec3d n = r1 ^ r2; n.Normalize();
+					quatd q(n, vec3d(0, 0, 1)), qi = q.Inverse();
+					q.RotateVector(r1);
+					q.RotateVector(r2);
+					GM_CIRCLE_ARC c(vec2d(0, 0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y), e.m_winding);
+					vec2d a = c.Point(r);
+					vec3d p(a.x, a.y, 0);
+					qi.RotateVector(p);
+					pn->r = p + r0;
+					}
+					break;
+				default:
+					assert(false);
+				}
 
 				e.m_fenodes.push_back(nodes);
 				++pn;
@@ -199,7 +224,7 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 	}
 
 	// A.3. add all face nodes
-	for (i=0; i<NF; ++i)
+	for (int i=0; i<NF; ++i)
 	{
 		MBFace& f = m_MBFace[i];
 		r1 = m_MBNode[f.m_node[0]].m_r;
@@ -208,17 +233,20 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 		r4 = m_MBNode[f.m_node[3]].m_r;
 		f.m_ntag = nodes;
 
+		int nx = f.m_nx;
+		int ny = f.m_ny;
+
 		fr = f.m_gx;
 		gr = 1;
 		if (f.m_bx)
 		{
 			gr = 2; if (f.m_nx%2) gr += fr;
-			for (j=0; j<f.m_nx/2-1; ++j) gr = fr*gr+2;
+			for (int j=0; j<f.m_nx/2-1; ++j) gr = fr*gr+2;
 			gr = 1 / gr;
 		}
 		else 
 		{
-			for (j=0; j<f.m_nx-1; ++j) gr = fr*gr+1; 
+			for (int j=0; j<f.m_nx-1; ++j) gr = fr*gr+1;
 			gr = 1 / gr;
 		}
 
@@ -227,32 +255,50 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 		if (f.m_by)
 		{
 			gs = 2; if (f.m_ny%2) gs += fs;
-			for (j=0; j<f.m_ny/2-1; ++j) gs = fs*gs+2;
+			for (int j=0; j<f.m_ny/2-1; ++j) gs = fs*gs+2;
 			gs = 1 / gs;
 		}
 		else 
 		{
-			for (j=0; j<f.m_ny-1; ++j) gs = fs*gs+1; 
+			for (int j=0; j<f.m_ny-1; ++j) gs = fs*gs+1;
 			gs = 1 / gs;
 		}
 
 		ds = gs;
 		s = 0;
-		for (j=0; j<f.m_ny; ++j)
+		for (int j=0; j<f.m_ny; ++j)
 		{
 			if (j>0)
 			{
 				dr = gr;
 				r = 0;
-				for (k=0; k<f.m_nx; ++k)
+				for (int k=0; k<f.m_nx; ++k)
 				{
 					if (k>0)
 					{
+/*
 						N1 = (1-r)*(1-s);
 						N2 = r*(1-s);
 						N3 = r*s;
 						N4 = (1-r)*s;
 						pn->r = r1*N1 + r2*N2 + r3*N3 + r4*N4;
+*/
+
+						double N1 = (1 - r)*(1 - s);
+						double N2 = r * (1 - s);
+						double N3 = r * s;
+						double N4 = (1 - r)*s;
+
+						// get edge points
+						vec3d e1 = pm->Node(GetFaceEdgeNodeIndex(f, 0, k)).r;
+						vec3d e2 = pm->Node(GetFaceEdgeNodeIndex(f, 1, j)).r;
+						vec3d e3 = pm->Node(GetFaceEdgeNodeIndex(f, 2, nx - k)).r;
+						vec3d e4 = pm->Node(GetFaceEdgeNodeIndex(f, 3, ny - j)).r;
+
+						vec3d p = e1 * (1 - s) + e2 * r + e3 * s + e4 * (1 - r) \
+							- (r1*N1 + r2 * N2 + r3 * N3 + r4 * N4);
+
+						pn->r = p;
 
 						f.m_fenodes.push_back(nodes);
 						++pn;
@@ -280,9 +326,9 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 	}
 
 	// A.4. add all block nodes
-	for (i=0; i<NB; ++i)
+	for (int nb=0; nb<NB; ++nb)
 	{
-		MBBlock& b = m_MBlock[i];
+		MBBlock& b = m_MBlock[nb];
 		r1 = m_MBNode[b.m_node[0]].m_r;
 		r2 = m_MBNode[b.m_node[1]].m_r;
 		r3 = m_MBNode[b.m_node[2]].m_r;
@@ -293,17 +339,21 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 		r8 = m_MBNode[b.m_node[7]].m_r;
 		b.m_ntag = nodes;
 
+		int nx = b.m_nx;
+		int ny = b.m_ny;
+		int nz = b.m_nz;
+
 		fr = b.m_gx;
 		gr = 1;
 		if (b.m_bx)
 		{
 			gr = 2; if (b.m_nx%2) gr += fr;
-			for (j=0; j<b.m_nx/2-1; ++j) gr = fr*gr+2;
+			for (int j=0; j<b.m_nx/2-1; ++j) gr = fr*gr+2;
 			gr = 1 / gr;
 		}
 		else 
 		{
-			for (j=0; j<b.m_nx-1; ++j) gr = fr*gr+1; 
+			for (int j=0; j<b.m_nx-1; ++j) gr = fr*gr+1; 
 			gr = 1 / gr;
 		}
 
@@ -312,12 +362,12 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 		if (b.m_by)
 		{
 			gs = 2; if (b.m_ny%2) gs += fs;
-			for (j=0; j<b.m_ny/2-1; ++j) gs = fs*gs+2;
+			for (int j=0; j<b.m_ny/2-1; ++j) gs = fs*gs+2;
 			gs = 1 / gs;
 		}
 		else 
 		{
-			for (j=0; j<b.m_ny-1; ++j) gs = fs*gs+1; 
+			for (int j=0; j<b.m_ny-1; ++j) gs = fs*gs+1; 
 			gs = 1 / gs;
 		}
 
@@ -326,42 +376,57 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 		if (b.m_bz)
 		{
 			gt = 2; if (b.m_nz%2) gt += ft;
-			for (j=0; j<b.m_nz/2-1; ++j) gt = ft*gt+2;
+			for (int j=0; j<b.m_nz/2-1; ++j) gt = ft*gt+2;
 			gt = 1 / gt;
 		}
 		else 
 		{
-			for (j=0; j<b.m_nz-1; ++j) gt = ft*gt+1; 
+			for (int j=0; j<b.m_nz-1; ++j) gt = ft*gt+1; 
 			gt = 1 / gt;
 		}
 
 		dt = gt;
 		t = 0;
-		for (j=0; j<b.m_nz; ++j)
+		for (int k=0; k<b.m_nz; ++k)
 		{
-			if (j>0)
+			if (k>0)
 			{
 				ds = gs;
 				s = 0;
-				for (k=0; k<b.m_ny; ++k)
+				for (int j=0; j<b.m_ny; ++j)
 				{
-					if (k>0)
+					if (j>0)
 					{
 						dr = gr;
 						r = 0;
-						for (l=0; l<b.m_nx; ++l)
+						for (int i=0; i<b.m_nx; ++i)
 						{
 							if (r>0)
 							{
-								N1 = (1-r)*(1-s)*(1-t);
-								N2 = r*(1-s)*(1-t);
-								N3 = r*s*(1-t);
-								N4 = (1-r)*s*(1-t);
-								N5 = (1-r)*(1-s)*t;
-								N6 = r*(1-s)*t;
-								N7 = r*s*t;
-								N8 = (1-r)*s*t;
-								pn->r = r1*N1 + r2*N2 + r3*N3 + r4*N4 + r5*N5 + r6*N6 + r7*N7 + r8*N8;
+								double N1 = (1-r)*(1-s)*(1-t);
+								double N2 = r*(1-s)*(1-t);
+								double N3 = r*s*(1-t);
+								double N4 = (1-r)*s*(1-t);
+								double N5 = (1-r)*(1-s)*t;
+								double N6 = r*(1-s)*t;
+								double N7 = r*s*t;
+								double N8 = (1-r)*s*t;
+
+								// tri-linear interpolation
+//								pn->r = r1*N1 + r2*N2 + r3*N3 + r4*N4 + r5*N5 + r6*N6 + r7*N7 + r8*N8;
+
+								// transfinite interpolation
+								vec3d f1 = pm->Node(GetBlockFaceNodeIndex(b, 4, i, ny - j)).r;
+								vec3d f2 = pm->Node(GetBlockFaceNodeIndex(b, 0, i, k)).r;
+								vec3d f3 = pm->Node(GetBlockFaceNodeIndex(b, 3, ny - j, k)).r;
+								vec3d f4 = pm->Node(GetBlockFaceNodeIndex(b, 5, i, j)).r;
+								vec3d f5 = pm->Node(GetBlockFaceNodeIndex(b, 2, nx - i, k)).r;
+								vec3d f6 = pm->Node(GetBlockFaceNodeIndex(b, 1, j, k)).r;
+
+								vec3d p = (f1 * (1 - t) + f2 * (1 - s) + f3 * (1 - r) + f4 * t + f5 * s + f6 * r \
+									- (r1*N1 + r2*N2 + r3*N3 + r4*N4 + r5*N5 + r6*N6 + r7*N7 + r8*N8))*0.5;
+
+								pn->r = p;
 
 								b.m_fenodes.push_back(nodes);
 								++pn;
@@ -370,7 +435,7 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 
 							r += dr;
 							dr *= fr;
-							if (b.m_bx && (l==b.m_nx/2-1))
+							if (b.m_bx && (i==b.m_nx/2-1))
 							{
 								if (b.m_nx%2 == 0) dr /= fr;
 								fr = 1.0/fr;
@@ -381,7 +446,7 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 
 					s += ds;
 					ds *= fs;
-					if (b.m_by && (k==b.m_ny/2-1))
+					if (b.m_by && (j==b.m_ny/2-1))
 					{
 						if (b.m_ny%2 == 0) ds /= fs;
 						fs = 1.0/fs;
@@ -392,7 +457,7 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 
 			t += dt;
 			dt *= ft;
-			if (b.m_bz && (j==b.m_nz/2-1))
+			if (b.m_bz && (k==b.m_nz/2-1))
 			{
 				if (b.m_nz%2 == 0) dt /= ft;
 				ft = 1.0/ft;
@@ -601,17 +666,6 @@ void FEMultiBlockMesh::BuildMBEdges()
 	}
 
 	NE = m_MBEdge.size();
-
-	// set the external flag of the edges
-	for (i=0; i<NE; ++i) m_MBEdge[i].m_bext = false;
-	for (i=0; i<NF; ++i)
-	{
-		MBFace& f = m_MBFace[i];
-		if (f.m_bext)
-		{
-			for (j=0; j<4; ++j) m_MBEdge[ f.m_edge[j] ].m_bext = true;
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -697,36 +751,33 @@ void FEMultiBlockMesh::BuildMBFaces()
 
 void FEMultiBlockMesh::FindFaceNeighbours()
 {
-	int i, j, k, l;
-
-	int NF = (int) m_MBFace.size();
-
 	// build the node-face table
 	vector< vector<int> > NFT;
 	BuildNodeFaceTable(NFT);
 
 	// reset all face neighbours
-	for (i=0; i<NF; ++i)
+	int NF = (int)m_MBFace.size();
+	for (int i=0; i<NF; ++i)
 	{
 		MBFace& F = m_MBFace[i];
-		for (j=0; j<4; ++j) F.m_nbr[j] = -1;
+		for (int j=0; j<4; ++j) F.m_nbr[j] = -1;
 	}
 
 	// find the face's neighbours
 	int nf, n1, n2;
-	for (i=0; i<NF; ++i)
+	for (int i=0; i<NF; ++i)
 	{
 		MBFace& F = m_MBFace[i];
 		if (F.IsExternal())
 		{
-			for (j=0; j<4; ++j)
+			for (int j=0; j<4; ++j)
 			{
 				if (F.m_nbr[j] == -1)
 				{
 					// pick a node
 					n1 = F.m_node[j];
 					n2 = F.m_node[(j+1)%4];
-					for (k=0; k<(int) NFT[n1].size(); ++k)
+					for (int k=0; k<(int) NFT[n1].size(); ++k)
 					{
 						nf = NFT[n1][k];
 						if (nf != i)
@@ -734,7 +785,7 @@ void FEMultiBlockMesh::FindFaceNeighbours()
 							MBFace& F2 = m_MBFace[nf];
 							if (F2.IsExternal())
 							{
-								l = FindEdgeIndex(F2, n1, n2);
+								int l = FindEdgeIndex(F2, n1, n2);
 								if (l != -1)
 								{
 									F.m_nbr[j] = nf;
@@ -756,16 +807,13 @@ void FEMultiBlockMesh::FindFaceNeighbours()
 // At this point it is assumed that the nodes and the blocks are defined.
 void FEMultiBlockMesh::FindBlockNeighbours()
 {
-	// get the number of nodes and blocks
-	int NN = m_MBNode.size();
-	int NB = m_MBlock.size();
-
 	// build the node-block table
 	// This table stores for each ndoe the list of blocks that the node connects to
 	vector< vector<int> > NBT;
 	BuildNodeBlockTable(NBT);
 
 	// reset all block's neighbours
+	int NB = m_MBlock.size();
 	for (int i=0; i<NB; ++i)
 	{
 		MBBlock& B = m_MBlock[i];
@@ -813,33 +861,6 @@ void FEMultiBlockMesh::FindBlockNeighbours()
 					}
 				}
 			}
-		}
-	}
-
-	// set the external flag for the blocks
-	// A block is external if it has an open neighbor
-	for (int i=0; i<NB; ++i)
-	{
-		MBBlock& B = m_MBlock[i];
-		B.m_bext = false;
-		for (int j=0; j<6; ++j)
-		{
-			if (B.m_Nbr[j] == -1)
-			{
-				B.m_bext = true;
-				break;
-			}
-		}
-	}
-
-	// set the external flag for the nodes
-	for (int i=0; i<NN; ++i) m_MBNode[i].m_bext = true;
-	for (int i=0; i<NB; ++i)
-	{
-		MBBlock& B = m_MBlock[i];
-		if (B.m_bext == false)
-		{
-			for (int j=0; j<8; ++j) m_MBNode[ B.m_node[j] ].m_bext = false;
 		}
 	}
 }
@@ -892,7 +913,6 @@ MBFace FEMultiBlockMesh::BuildBlockFace(MBBlock& B, int j)
 	default:
 		assert(false);
 	}
-	f.m_bext = (B.m_Nbr[j] == -1? true : false);
 	return f;
 }
 
@@ -946,9 +966,11 @@ void FEMultiBlockMesh::BuildNodeFaceTable(vector< vector<int> >& NFT)
 	NFT.resize(NN);
 	for (i=0; i<NN; ++i) 
 	{
-		assert(m_MBNode[i].m_ntag);
-		NFT[i].resize( m_MBNode[i].m_ntag );
-		m_MBNode[i].m_ntag = 0;
+		if (m_MBNode[i].m_ntag > 0)
+		{
+			NFT[i].resize(m_MBNode[i].m_ntag);
+			m_MBNode[i].m_ntag = 0;
+		}
 	}
 
 	// fill the node-block array
@@ -986,9 +1008,11 @@ void FEMultiBlockMesh::BuildNodeBlockTable(vector<vector<int> > &NBT)
 	NBT.resize(NN);
 	for (i=0; i<NN; ++i) 
 	{
-		assert(m_MBNode[i].m_ntag);
-		NBT[i].resize( m_MBNode[i].m_ntag );
-		m_MBNode[i].m_ntag = 0;
+		if (m_MBNode[i].m_ntag > 0)
+		{
+			NBT[i].resize(m_MBNode[i].m_ntag);
+			m_MBNode[i].m_ntag = 0;
+		}
 	}
 
 	// fill the node-block array
@@ -1195,6 +1219,12 @@ int FEMultiBlockMesh::GetEdgeNodeIndex(MBEdge& e, int i)
 MBFace& FEMultiBlockMesh::GetBlockFace(int nb, int nf)
 {
 	return m_MBFace[ m_MBlock[nb].m_face[nf] ];
+}
+
+//-----------------------------------------------------------------------------
+MBEdge& FEMultiBlockMesh::GetEdge(int nedge)
+{
+	return m_MBEdge[nedge];
 }
 
 //-----------------------------------------------------------------------------

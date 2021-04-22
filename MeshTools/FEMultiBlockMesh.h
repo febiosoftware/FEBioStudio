@@ -54,12 +54,11 @@ public:
 class MBItem
 {
 public:
-	MBItem() { m_ntag = 0; m_gid = -1; m_bext = false; m_mod = nullptr; }
+	MBItem() { m_ntag = 0; m_gid = -1; false; m_mod = nullptr; }
 
 	MBItem(const MBItem& it)
 	{
 		m_ntag = it.m_ntag;
-		m_bext = it.m_bext;
 		m_gid = it.m_gid;
 		m_mod = it.m_mod;
 		m_fenodes = it.m_fenodes;
@@ -68,7 +67,6 @@ public:
 	void operator = (const MBItem& it)
 	{
 		m_ntag = it.m_ntag;
-		m_bext = it.m_bext;
 		m_gid = it.m_gid;
 		m_mod = it.m_mod;
 		m_fenodes = it.m_fenodes;
@@ -78,7 +76,6 @@ public:
 
 public:
 	int		m_ntag;	// tag
-	bool	m_bext;	// external item flag
 	int		m_gid;	// group ID
 	FEShapeModifier*	m_mod;
 
@@ -89,6 +86,12 @@ class MBNode : public MBItem
 {
 public:
 	vec3d	m_r;	// position of the node
+	int		m_type;
+
+	MBNode()
+	{
+		m_type = NODE_VERTEX;
+	}
 };
 
 class MBEdge : public MBItem
@@ -209,6 +212,8 @@ protected:
 	MBNode& GetMBNode(int i) { return m_MBNode[i]; }
 	MBFace& GetBlockFace(int nb, int nf);
 	MBEdge& GetFaceEdge(MBFace& f, int n);
+
+	MBEdge& GetEdge(int nedge);
 
 protected:
 	void FindBlockNeighbours();

@@ -36,7 +36,12 @@ public:
 public:
 	FEQuartDogBone(){}
 	FEQuartDogBone(GQuartDogBone* po);
+
 	FEMesh* BuildMesh();
+
+protected:
+	FEMesh* BuildMeshLegacy();
+	FEMesh* BuildMultiBlockMesh();
 
 protected:
 	GQuartDogBone* m_pobj;

@@ -42,6 +42,142 @@ FEQuartDogBone::FEQuartDogBone(GQuartDogBone* po)
 //-----------------------------------------------------------------------------
 FEMesh* FEQuartDogBone::BuildMesh()
 {
+//	return BuildMeshLegacy();
+	return BuildMultiBlockMesh();
+}
+
+//-----------------------------------------------------------------------------
+FEMesh* FEQuartDogBone::BuildMultiBlockMesh()
+{
+	// get parameters
+	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
+	double ch = m_pobj->GetFloatValue(GQuartDogBone::CHEIGHT);
+	double R = m_pobj->GetFloatValue(GQuartDogBone::RADIUS);
+	double h = m_pobj->GetFloatValue(GQuartDogBone::DEPTH);
+	double L = m_pobj->GetFloatValue(GQuartDogBone::LENGTH);
+	double W = m_pobj->GetFloatValue(GQuartDogBone::WING);
+
+	double a = sqrt(2.0)*0.5;
+	double px = cw - W - R * a;
+	double py = ch + R * (1.0 - a);
+
+	int NX = GetIntValue(N_X);
+	int NY = GetIntValue(N_Y);
+	int NZ = GetIntValue(N_Z);
+
+	if (NX < 2) NX = 2;
+//	if (NY < 2) NY = 2;
+
+	double fx = W / cw;
+	int lx = (int)(NX*fx); if (lx < 1) lx = 1;
+	int mx = NX - lx;
+
+	int my = mx;
+	double fy = L / (ch + R);
+	int ly = (int)(my); if (ly < 1) ly = 1;
+
+	int ny = NY;
+	int nz = NZ;
+
+	// create the MB nodes
+	m_MBNode.resize(22);
+	m_MBNode[0].m_r = vec3d(0, 0, 0);
+	m_MBNode[1].m_r = vec3d(cw - W, 0, 0);
+	m_MBNode[2].m_r = vec3d(cw, 0, 0);
+	m_MBNode[3].m_r = vec3d(cw, ch, 0);
+	m_MBNode[4].m_r = vec3d(cw - W, ch, 0);
+	m_MBNode[5].m_r = vec3d(px, py, 0);
+	m_MBNode[6].m_r = vec3d(cw - W - R, ch + R, 0);
+	m_MBNode[7].m_r = vec3d(cw - W - R, ch + R + L, 0);
+	m_MBNode[8].m_r = vec3d(0, ch + R + L, 0);
+	m_MBNode[9].m_r = vec3d(0, ch + R, 0);
+
+	m_MBNode[10].m_r = vec3d(cw-W, ch+R, 0); m_MBNode[10].m_type = NODE_SHAPE;
+
+	m_MBNode[11].m_r = vec3d(0, 0, h);
+	m_MBNode[12].m_r = vec3d(cw - W, 0, h);
+	m_MBNode[13].m_r = vec3d(cw, 0, h);
+	m_MBNode[14].m_r = vec3d(cw, ch, h);
+	m_MBNode[15].m_r = vec3d(cw - W, ch, h);
+	m_MBNode[16].m_r = vec3d(px, py, h);
+	m_MBNode[17].m_r = vec3d(cw - W - R, ch + R, h);
+	m_MBNode[18].m_r = vec3d(cw - W - R, ch + R + L, h);
+	m_MBNode[19].m_r = vec3d(0, ch + R + L, h);
+	m_MBNode[20].m_r = vec3d(0, ch + R, h);
+
+	m_MBNode[21].m_r = vec3d(cw - W, ch + R, h); m_MBNode[21].m_type = NODE_SHAPE;
+
+	// create the MB blocks
+	m_MBlock.resize(4);
+	MBBlock& b1 = m_MBlock[0];
+	b1.SetID(0);
+	b1.SetNodes(0, 1, 4, 5, 11, 12, 15, 16);
+	b1.SetSizes(mx, ny, nz);
+
+	MBBlock& b2 = m_MBlock[1];
+	b2.SetID(0);
+	b2.SetNodes(0, 5, 6, 9, 11, 16, 17, 20);
+	b2.SetSizes(ny, mx, nz);
+
+	MBBlock& b3 = m_MBlock[2];
+	b3.SetID(0);
+	b3.SetNodes(1, 2, 3, 4, 12, 13, 14, 15);
+	b3.SetSizes(lx, ny, nz);
+
+	MBBlock& b4 = m_MBlock[3];
+	b4.SetID(0);
+	b4.SetNodes(9, 6, 7, 8, 20, 17, 18, 19);
+	b4.SetSizes(ny, ly, nz);
+
+	UpdateMB();
+
+	SetBlockFaceID(b1,  1, -1,  4, -1, 0, 8);
+	SetBlockFaceID(b2, -1,  4, -1,  7, 0, 8);
+	SetBlockFaceID(b3,  1,  2,  3, -1, 0, 8);
+	SetBlockFaceID(b4, -1,  5,  6,  7, 0, 8);
+
+	MBFace& F1 = GetBlockFace(0, 0); SetFaceEdgeID(F1, 0, -1, 7, 14);
+	MBFace& F2 = GetBlockFace(2, 0); SetFaceEdgeID(F2, 0, 15, 7, -1);
+	MBFace& F3 = GetBlockFace(2, 1); SetFaceEdgeID(F3, 1, 16, 8, 15);
+	MBFace& F4 = GetBlockFace(2, 2); SetFaceEdgeID(F4, 2, 17, 9, 16);
+	MBFace& F5 = GetBlockFace(0, 2); SetFaceEdgeID(F5, 3, -1, 10, 17);
+	MBEdge& E1 = GetEdge(F5.m_edge[0]);	E1.edge.m_ntype = EDGE_3P_CIRC_ARC; E1.edge.m_cnode = 10; E1.m_winding = -1;
+	MBEdge& E2 = GetEdge(F5.m_edge[2]); E2.edge.m_ntype = EDGE_3P_CIRC_ARC; E2.edge.m_cnode = 21;
+
+	MBFace& F6 = GetBlockFace(1, 1); SetFaceEdgeID(F6, 3, 18, 10, -1);
+	MBEdge& E3 = GetEdge(F6.m_edge[0]); E3.edge.m_ntype = EDGE_3P_CIRC_ARC; E3.edge.m_cnode = 10; E3.m_winding = -1;
+	MBEdge& E4 = GetEdge(F6.m_edge[2]); E4.edge.m_ntype = EDGE_3P_CIRC_ARC; E4.edge.m_cnode = 21;
+
+	MBFace& F7 = GetBlockFace(3, 1); SetFaceEdgeID(F7, 4, 19, 11, 18);
+	MBFace& F8 = GetBlockFace(3, 2); SetFaceEdgeID(F8, 5, 20, 12, 19);
+	MBFace& F9 = GetBlockFace(3, 3); SetFaceEdgeID(F9, 6, -1, 13, 20);
+	MBFace& F10 = GetBlockFace(1, 3); SetFaceEdgeID(F10, 6, 14, 13, -1);
+
+	m_MBNode[0].SetID(0);
+	m_MBNode[2].SetID(1);
+	m_MBNode[3].SetID(2);
+	m_MBNode[4].SetID(3);
+	m_MBNode[6].SetID(4);
+	m_MBNode[7].SetID(5);
+	m_MBNode[8].SetID(6);
+
+	m_MBNode[11].SetID(8);
+	m_MBNode[13].SetID(9);
+	m_MBNode[14].SetID(10);
+	m_MBNode[15].SetID(11);
+	m_MBNode[17].SetID(12);
+	m_MBNode[18].SetID(13);
+	m_MBNode[19].SetID(14);
+
+	// create the MB
+	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+
+	return pm;
+}
+
+//-----------------------------------------------------------------------------
+FEMesh* FEQuartDogBone::BuildMeshLegacy()
+{
 	assert(m_pobj);
 
 	ParamBlock& param = m_pobj->GetParamBlock();
