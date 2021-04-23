@@ -1799,6 +1799,9 @@ void CMainWindow::UpdateToolbar()
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != ui->actionShowGrid->isChecked()) ui->actionShowGrid->trigger();
 
+	CGView& gv = *doc->GetView();
+	if (gv.m_bortho != ui->actionOrtho->isChecked()) ui->actionOrtho->trigger();
+
 	if (ui->buildToolBar->isVisible())
 	{
 		ui->SetSelectionMode(doc->GetSelectionMode());
@@ -1928,6 +1931,7 @@ void CMainWindow::UpdateUIConfig()
 
 		RedrawGL();
 	}
+	UpdateToolbar();
 }
 
 //-----------------------------------------------------------------------------
@@ -2005,6 +2009,7 @@ void CMainWindow::on_tab_currentChanged(int n)
 
 	UpdateUIConfig();
 	UpdateGLControlBar();
+	UpdateToolbar();
 	ui->updateMeshInspector();
 	RedrawGL();
 
