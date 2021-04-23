@@ -81,13 +81,7 @@ protected:
 
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
 
-public:
-	void SetShapeModifier(MBFace& f, FEShapeModifier* mod);
-	void SetShapeModifier(MBEdge& e, FEShapeModifier* mod);
-	void SetShapeModifier(MBNode& n, FEShapeModifier* mod);
-
 protected:
-	void ApplyMeshModifiers(FEMesh* pm);
 
 	int GetFENode(MBNode& node);
 	vector<int> GetFENodeList(MBEdge& node);

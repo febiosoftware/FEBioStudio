@@ -35,7 +35,7 @@ SOFTWARE.*/
 
 extern double gain2(double x, double r, double n);
 
-class FECylinderShapeModifier : public FEShapeModifier
+class FECylinderShapeModifier
 {
 public:
 	FECylinderShapeModifier(double radius, double ratio, bool br, double gr, int ns) 
@@ -47,7 +47,7 @@ public:
 		m_ns = ns;
 	}
 
-	vec3d Apply(const vec3d& r) override
+	vec3d Apply(const vec3d& r)
 	{
 		vec3d rn = r;
 
@@ -367,29 +367,17 @@ FEMesh* FECylinder::BuildButterfly()
 	m_MBNode[33].SetID(6);
 	m_MBNode[27].SetID(7);
 
-	// apply a global shape modifier
-	FEShapeModifier* mod = new FECylinderShapeModifier(R1, m_r, m_br, m_gr, m_ns);
-	SetGlobalShapeModifier(mod);
-//	SetShapeModifier(b5, mod);
-//	SetShapeModifier(b6, mod);
-//	SetShapeModifier(b7, mod);
-//	SetShapeModifier(b8, mod);
-//	SetShapeModifier(b9, mod);
-//	SetShapeModifier(b10, mod);
-//	SetShapeModifier(b11, mod);
-//	SetShapeModifier(b12, mod);
-//	SetShapeModifier(F1, mod);
-//	SetShapeModifier(F2, mod);
-//	SetShapeModifier(F3, mod);
-//	SetShapeModifier(F4, mod);
-//	SetShapeModifier(F5, mod);
-//	SetShapeModifier(F6, mod);
-//	SetShapeModifier(F7, mod);
-//	SetShapeModifier(F8, mod);
-
-
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+
+	// apply a global shape modifier
+	FECylinderShapeModifier* mod = new FECylinderShapeModifier(R1, m_r, m_br, m_gr, m_ns);
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		vec3d r0 = pm->Node(i).pos();
+		vec3d rn = mod->Apply(r0);
+		pm->Node(i).pos(rn);
+	}
 
 	// update the mesh
 	pm->UpdateMesh();

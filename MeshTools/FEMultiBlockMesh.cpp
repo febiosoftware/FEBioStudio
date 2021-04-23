@@ -30,9 +30,6 @@ SOFTWARE.*/
 #include <MeshLib/FENodeNodeList.h>
 #include <GeomLib/geom.h>
 
-FEShapeModifier::FEShapeModifier() {}
-FEShapeModifier::~FEShapeModifier() {}
-
 void MBBlock::SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8)
 {
 	m_node[0] = n1;
@@ -1253,34 +1250,6 @@ void FEMultiBlockMesh::UpdateMB()
 	BuildMBEdges();
 }
 
-//-----------------------------------------------------------------------------
-void FEMultiBlockMesh::SetGlobalShapeModifier(FEShapeModifier* shapeMod)
-{
-	for (int i = 0; i < m_MBlock.size(); ++i)
-	{
-		SetShapeModifier(m_MBlock[i], shapeMod);
-	}
-}
-
-void FEMultiBlockMesh::SetShapeModifier(MBBlock& b, FEShapeModifier* mod)
-{
-	b.m_mod = mod;
-}
-
-void FEMultiBlockMesh::SetShapeModifier(MBFace& f, FEShapeModifier* mod)
-{
-	f.m_mod = mod;
-}
-
-void FEMultiBlockMesh::SetShapeModifier(MBEdge& e, FEShapeModifier* mod)
-{
-	e.m_mod = mod;
-}
-
-void FEMultiBlockMesh::SetShapeModifier(MBNode& n, FEShapeModifier* mod)
-{
-	n.m_mod = mod;
-}
 
 //-----------------------------------------------------------------------------
 int FEMultiBlockMesh::GetFENode(MBNode& node)
@@ -1331,124 +1300,4 @@ vector<int> FEMultiBlockMesh::GetFENodeList(MBBlock& block)
 	nodeList.insert(nodeList.end(), f6.begin(), f6.end());
 
 	return nodeList;
-}
-
-//-----------------------------------------------------------------------------
-void FEMultiBlockMesh::ApplyMeshModifiers(FEMesh* pm)
-{
-	pm->TagAllNodes(0);
-
-	// apply node modifiers first
-	for (int i = 0; i < m_MBNode.size(); ++i)
-	{
-		MBNode& node = m_MBNode[i];
-		if (node.m_mod)
-		{
-			int n = GetFENode(node); assert(n >= 0);
-			FENode& fen = pm->Node(n);
-			assert(fen.m_ntag == 0);
-			vec3d r0 = fen.pos();
-			vec3d rn = node.m_mod->Apply(r0);
-			fen.pos(rn);
-			fen.m_ntag = 1;
-		}
-	}
-
-	// apply edge modifiers
-	for (int i = 0; i < m_MBEdge.size(); ++i)
-	{
-		MBEdge& edge = m_MBEdge[i];
-		if (edge.m_mod)
-		{
-			vector<int> nodeList = GetFENodeList(edge);
-			for (int j = 0; j < nodeList.size(); ++j)
-			{
-				FENode& fen = pm->Node(nodeList[j]);
-				if (fen.m_ntag == 0)
-				{
-					vec3d r0 = fen.pos();
-					vec3d rn = edge.m_mod->Apply(r0);
-					fen.pos(rn);
-					fen.m_ntag = 2;
-				}
-			}
-		}
-	}
-
-	// apply face modifiers
-	for (int i = 0; i < m_MBFace.size(); ++i)
-	{
-		MBFace& face = m_MBFace[i];
-		if (face.m_mod)
-		{
-			vector<int> nodeList = GetFENodeList(face);
-			for (int j = 0; j < nodeList.size(); ++j)
-			{
-				FENode& fen = pm->Node(nodeList[j]);
-				if (fen.m_ntag == 0)
-				{
-					vec3d r0 = fen.pos();
-					vec3d rn = face.m_mod->Apply(r0);
-					fen.pos(rn);
-					fen.m_ntag = 3;
-				}
-			}
-		}
-	}
-
-	// apply block modifiers
-	for (int i = 0; i < m_MBlock.size(); ++i)
-	{
-		MBBlock& block = m_MBlock[i];
-		if (block.m_mod)
-		{
-			vector<int> nodeList = GetFENodeList(block);
-			for (int j = 0; j < nodeList.size(); ++j)
-			{
-				FENode& fen = pm->Node(nodeList[j]);
-				if (fen.m_ntag == 0)
-				{
-					vec3d r0 = fen.pos();
-					vec3d rn = block.m_mod->Apply(r0);
-					fen.pos(rn);
-					fen.m_ntag = 3;
-				}
-			}
-		}
-	}
-
-	// fix all corner nodes
-	for (int i = 0; i < m_MBNode.size(); ++i)
-	{
-//		pm->Node(m_MBNode[i].m_fenodes[0]).m_ntag = 4;
-	}
-
-	// solve for the remaining nodal positions
-	FENodeNodeList NNL(pm);
-	double err = 0, tol = 1e-5;
-	int niter = 0, maxIters = 100;
-	do
-	{
-		err = 0.0;
-		for (int i = 0; i < pm->Nodes(); ++i)
-		{
-			FENode& node = pm->Node(i);
-			if (node.m_ntag == 0)
-			{
-				int nn = NNL.Valence(i);
-				vec3d r(0, 0, 0);
-				for (int j = 0; j < nn; ++j)
-				{
-					r += pm->Node(NNL.Node(i, j)).pos();
-				}
-				r /= (double)nn;
-
-				vec3d dr = r - node.pos();
-				err += dr.SqrLength();
-				node.pos(r);
-			}
-		}
-		err = sqrt(err);
-		niter++;
-	} while ((err > tol) && (niter < maxIters));
 }
