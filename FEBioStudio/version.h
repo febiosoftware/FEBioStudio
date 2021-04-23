@@ -48,7 +48,8 @@ SOFTWARE.*/
 // 3.11: changes to FEMeshData classes. 
 // 3.12: Added shell nodal normal flag to GPart
 // 3.13: Added "relative" flag to FERigidDisplacement. 
-#define SAVE_VERSION	0x0003000D
+// 3.14: Added additional meshing parameters to FEQuartDogBone.
+#define SAVE_VERSION	0x0003000E
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D
