@@ -319,6 +319,8 @@ public:
 		return m_data[m_elem[n]*m_stride + comp];
 	}
 
+	int arraySize() const { return m_stride; }
+
 	void setData(vector<float>& data, vector<int>& elem)
 	{
 		assert(data.size() == m_stride*elem.size());
