@@ -164,8 +164,8 @@ public:
 	}
 
 	void SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8);
-	void SetSizes(int nx, int ny, int nz) { m_nx = nx; m_ny = ny; m_nz = nz; }
-	void SetZoning(double gx, double gy, double gz, bool bx, bool by, bool bz);
+	MBBlock& SetSizes(int nx, int ny, int nz) { m_nx = nx; m_ny = ny; m_nz = nz; return *this; }
+	MBBlock& SetZoning(double gx, double gy, double gz, bool bx, bool by, bool bz);
 
 public:
 	int	m_node[8];			// the eight nodes of the block
@@ -192,7 +192,10 @@ public:
 	// build the mesh
 	FEMesh* BuildMesh();
 
-protected:
+	MBNode& AddNode(const vec3d& r, int nodeType = NODE_VERTEX);
+
+	MBBlock& AddBlock(int n0, int n1, int n2, int n3, int n4, int n5, int n6, int n7);
+
 	// update the Multi-Block data
 	void UpdateMB();
 
@@ -202,7 +205,10 @@ protected:
 
 	MBEdge& GetEdge(int nedge);
 
-	MBNode& AddNode(const vec3d& r, int nodeType = NODE_VERTEX);
+	MBBlock& GetBlock(int i) { return m_MBlock[i]; }
+
+	void SetBlockFaceID(MBBlock& b, int n0, int n1, int n2, int n3, int n4, int n5);
+	void SetFaceEdgeID(MBFace& f, int n0, int n1, int n2, int n3);
 
 protected:
 	void FindBlockNeighbours();
@@ -226,8 +232,6 @@ protected:
 	int GetBlockNodeIndex(MBBlock& b, int i, int j, int k);
 	int GetFaceNodeIndex(MBFace& f, int i, int j);
 	int GetEdgeNodeIndex(MBEdge& e, int i);
-	void SetBlockFaceID(MBBlock& b, int n0, int n1, int n2, int n3, int n4, int n5);
-	void SetFaceEdgeID(MBFace& f, int n0, int n1, int n2, int n3);
 
 	int GetBlockFaceNodeIndex(MBBlock& b, int nf, int i, int j);
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);

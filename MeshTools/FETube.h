@@ -41,6 +41,9 @@ public:
 	FETube(GTube* po);
 	FEMesh* BuildMesh();
 
+	FEMesh* BuildMeshLegacy();
+	FEMesh* BuildMultiBlockMesh();
+
 protected:
 	void BuildFaces(FEMesh* pm);
 	void BuildEdges(FEMesh* pm);

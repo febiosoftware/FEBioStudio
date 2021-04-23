@@ -42,7 +42,7 @@ void MBBlock::SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8)
 	m_node[7] = n8;
 }
 
-void MBBlock::SetZoning(double gx, double gy, double gz, bool bx, bool by, bool bz)
+MBBlock& MBBlock::SetZoning(double gx, double gy, double gz, bool bx, bool by, bool bz)
 {
 	m_gx = gx;
 	m_gy = gy;
@@ -50,6 +50,7 @@ void MBBlock::SetZoning(double gx, double gy, double gz, bool bx, bool by, bool 
 	m_bx = bx;
 	m_by = by;
 	m_bz = bz;
+	return *this;
 }
 
 //-----------------------------------------------------------------------------
@@ -184,6 +185,18 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 				{
 				case EDGE_LINE:
 					pn->r = r1 * (1 - r) + r2 * r;
+					break;
+				case EDGE_ZARC:
+					{
+					vec2d c(0, 0);
+					vec2d a(r1.x, r1.y);
+					vec2d b(r2.x, r2.y);
+
+					// create an arc object
+					GM_CIRCLE_ARC ca(c, a, b, e.m_winding);
+					vec2d p = ca.Point(r);
+					pn->r = vec3d(p.x, p.y, r1.z);
+					}
 					break;
 				case EDGE_3P_CIRC_ARC:
 					{
@@ -1226,6 +1239,15 @@ MBNode& FEMultiBlockMesh::AddNode(const vec3d& r, int nodeType)
 	node.m_type = nodeType;
 	m_MBNode.push_back(node);
 	return m_MBNode[m_MBNode.size() - 1];
+}
+
+//-----------------------------------------------------------------------------
+MBBlock& FEMultiBlockMesh::AddBlock(int n0, int n1, int n2, int n3, int n4, int n5, int n6, int n7)
+{
+	MBBlock b;
+	b.SetNodes(n0, n1, n2, n3, n4, n5, n6, n7);
+	m_MBlock.push_back(b);
+	return m_MBlock[m_MBlock.size() - 1];
 }
 
 //-----------------------------------------------------------------------------
