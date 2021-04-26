@@ -31,9 +31,9 @@ SOFTWARE.*/
 using namespace std;
 
 //-----------------------------------------------------------------------------
-FETet4ToHex8::FETet4ToHex8() : FEModifier("Tet4-to-Hex8")
+FETet4ToHex8::FETet4ToHex8(bool bsmooth) : FEModifier("Tet4-to-Hex8")
 {
-	m_bsmooth = false;
+	m_bsmooth = bsmooth;
 }
 
 //-----------------------------------------------------------------------------

@@ -56,6 +56,21 @@ bool FECoreMesh::IsType(int ntype) const
 }
 
 //-----------------------------------------------------------------------------
+//! get the mesh type (returns -1 for mixed meshes)
+int FECoreMesh::GetMeshType() const
+{
+	int NE = Elements();
+	if (NE <= 0) return -1;
+	int ntype = ElementRef(0).Type();
+	for (int i = 1; i < NE; ++i)
+	{
+		const FEElement_& el = ElementRef(i);
+		if (el.Type() != ntype) return -1;
+	}
+	return ntype;
+}
+
+//-----------------------------------------------------------------------------
 vec3d FECoreMesh::ElementCenter(FEElement_& el) const
 {
 	vec3d r;

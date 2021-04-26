@@ -29,9 +29,9 @@ SOFTWARE.*/
 #include "FEModifier.h"
 
 //-----------------------------------------------------------------------------
-FETri3ToTri6::FETri3ToTri6() : FEModifier("Tri3-to-Tri6")
+FETri3ToTri6::FETri3ToTri6(bool bsmooth) : FEModifier("Tri3-to-Tri6")
 {
-    m_bsmooth = false;
+    m_bsmooth = bsmooth;
 }
 
 //-----------------------------------------------------------------------------

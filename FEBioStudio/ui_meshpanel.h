@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include "ObjectPanel.h"
 #include "MeshButtonBox.h"
+#include "ObjectProps.h"
 
 enum MeshEditButtonFlags
 {
@@ -135,6 +136,12 @@ public:
 		form->setPropertyList(0);
 		if (plold) delete plold;
 		if (pl) form->setPropertyList(pl);
+	}
+
+	void setActiveModifier(FEModifier* mod)
+	{
+		CPropertyList* pl = new CObjectProps(mod);
+		setModifierPropertyList(pl);
 	}
 
 	void setModifierPropertyList(CPropertyList* pl)
