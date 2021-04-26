@@ -1168,7 +1168,7 @@ FEMesh* FEConvertMesh::Apply(FEMesh* pm)
 FSTaskProgress FEConvertMesh::GetProgress()
 {
 	if (m_mod) return m_mod->GetProgress();
-	else FEModifier::GetProgress();
+	else return FEModifier::GetProgress();
 }
 
 //=============================================================================
