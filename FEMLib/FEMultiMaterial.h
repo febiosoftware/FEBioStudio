@@ -397,6 +397,60 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+// The FEInternalReactantMaterial is used as a component of a membrane reaction material
+class FEInternalReactantMaterial : public FEMaterial
+{
+public:
+    // material parameters
+    enum { MP_NU , MP_TYPE , MP_ID };
+    
+public:
+    FEInternalReactantMaterial();
+    
+    // get/set type (solute or sbm)
+    void SetReactantType(int i) { SetIntValue(MP_TYPE, i); }
+    int GetReactantType() { return GetIntValue(MP_TYPE); }
+    
+    // get/set (solute or sbm) index
+    void SetIndex(int i) { SetIntValue(MP_ID, i); }
+    int GetIndex() { return GetIntValue(MP_ID); }
+    
+    // get stoichiometric coefficient
+    int GetCoef() { return GetIntValue(MP_NU); }
+    void SetCoeff(int n) { SetIntValue(MP_NU, n); }
+    
+protected:
+    DECLARE_REGISTERED(FEInternalReactantMaterial);
+};
+
+//-----------------------------------------------------------------------------
+// The FEExternalReactantMaterial is used as a component of a membrane reaction material
+class FEExternalReactantMaterial : public FEMaterial
+{
+public:
+    // material parameters
+    enum { MP_NU , MP_TYPE , MP_ID };
+    
+public:
+    FEExternalReactantMaterial();
+    
+    // get/set type (solute or sbm)
+    void SetReactantType(int i) { SetIntValue(MP_TYPE, i); }
+    int GetReactantType() { return GetIntValue(MP_TYPE); }
+    
+    // get/set (solute or sbm) index
+    void SetIndex(int i) { SetIntValue(MP_ID, i); }
+    int GetIndex() { return GetIntValue(MP_ID); }
+    
+    // get stoichiometric coefficient
+    int GetCoef() { return GetIntValue(MP_NU); }
+    void SetCoeff(int n) { SetIntValue(MP_NU, n); }
+    
+protected:
+    DECLARE_REGISTERED(FEExternalReactantMaterial);
+};
+
+//-----------------------------------------------------------------------------
 // The FEProductMaterial is used as a component of a chemical reaction material
 class FEProductMaterial : public FEMaterial
 {
@@ -421,6 +475,60 @@ public:
 
 protected:
 	DECLARE_REGISTERED(FEProductMaterial);
+};
+
+//-----------------------------------------------------------------------------
+// The FEInternalProductMaterial is used as a component of a membrane reaction material
+class FEInternalProductMaterial : public FEMaterial
+{
+public:
+    // material parameters
+    enum { MP_NU , MP_TYPE , MP_ID };
+    
+public:
+    FEInternalProductMaterial();
+    
+    // get/set type (solute or sbm)
+    void SetProductType(int i) { SetIntValue(MP_TYPE, i); }
+    int GetProductType() { return GetIntValue(MP_TYPE); }
+    
+    // get/set (solute or sbm) index
+    void SetIndex(int i) { SetIntValue(MP_ID, i); }
+    int GetIndex() { return GetIntValue(MP_ID); }
+    
+    // get stoichiometric coefficient
+    int GetCoef() { return GetIntValue(MP_NU); }
+    void SetCoeff(int n) { SetIntValue(MP_NU, n); }
+    
+protected:
+    DECLARE_REGISTERED(FEInternalProductMaterial);
+};
+
+//-----------------------------------------------------------------------------
+// The FEExternalProductMaterial is used as a component of a membrane reaction material
+class FEExternalProductMaterial : public FEMaterial
+{
+public:
+    // material parameters
+    enum { MP_NU , MP_TYPE , MP_ID };
+    
+public:
+    FEExternalProductMaterial();
+    
+    // get/set type (solute or sbm)
+    void SetProductType(int i) { SetIntValue(MP_TYPE, i); }
+    int GetProductType() { return GetIntValue(MP_TYPE); }
+    
+    // get/set (solute or sbm) index
+    void SetIndex(int i) { SetIntValue(MP_ID, i); }
+    int GetIndex() { return GetIntValue(MP_ID); }
+    
+    // get stoichiometric coefficient
+    int GetCoef() { return GetIntValue(MP_NU); }
+    void SetCoeff(int n) { SetIntValue(MP_NU, n); }
+    
+protected:
+    DECLARE_REGISTERED(FEExternalProductMaterial);
 };
 
 //-----------------------------------------------------------------------------
@@ -475,6 +583,79 @@ public:
 string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem);
 
 //-----------------------------------------------------------------------------
+// membrane reaction parent class
+class FEMembraneReactionMaterial : public FEMaterial
+{
+public:
+    // material parameters
+    enum { MP_VBAR , MP_OVRD };
+    
+public:
+    // types for the rectant and product species
+    enum SpeciesType{
+        SOLUTE_SPECIES = 1,
+        SBM_SPECIES    = 2,
+        INT_SPECIES    = 3,
+        EXT_SPECIES    = 4
+    };
+    
+public:
+    FEMembraneReactionMaterial(int ntype);
+    
+    void SetOvrd(bool bovrd);
+    
+    bool GetOvrd();
+    
+    // set forward rate
+    void SetForwardRate(FEMaterial* pm);
+    FEMaterial* GetForwardRate();
+    
+    // set reverse rate
+    void SetReverseRate(FEMaterial* pm);
+    FEMaterial* GetReverseRate();
+    
+    int Reactants();
+    FEReactantMaterial* Reactant(int i);
+    
+    int Products();
+    FEProductMaterial* Product(int i);
+
+    int InternalReactants();
+    FEInternalReactantMaterial* InternalReactant(int i);
+    
+    int InternalProducts();
+    FEInternalProductMaterial* InternalProduct(int i);
+    
+    int ExternalReactants();
+    FEExternalReactantMaterial* ExternalReactant(int i);
+    
+    int ExternalProducts();
+    FEExternalProductMaterial* ExternalProduct(int i);
+    
+    // add reactant/product component
+    void AddReactantMaterial(FEReactantMaterial* pm);
+    void AddProductMaterial(FEProductMaterial* pm);
+    void AddInternalReactantMaterial(FEInternalReactantMaterial* pm);
+    void AddInternalProductMaterial(FEInternalProductMaterial* pm);
+    void AddExternalReactantMaterial(FEExternalReactantMaterial* pm);
+    void AddExternalProductMaterial(FEExternalProductMaterial* pm);
+
+    void GetSoluteReactants(vector<int>& solR);
+    void GetSBMReactants(vector<int>& sbmR);
+    void GetSoluteProducts(vector<int>& solP);
+    void GetSBMProducts(vector<int>& sbmP);
+    void GetInternalSoluteReactants(vector<int>& solRi);
+    void GetInternalSoluteProducts(vector<int>& solPi);
+    void GetExternalSoluteReactants(vector<int>& solRe);
+    void GetExternalSoluteProducts(vector<int>& solPe);
+
+    void ClearReactants();
+    void ClearProducts();
+};
+
+string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& fem);
+
+//-----------------------------------------------------------------------------
 // multiphasic
 class FEMultiphasicMaterial : public FEMultiMaterial
 {
@@ -483,7 +664,7 @@ public:
 	enum { MP_PHI0, MP_CHARGE };
 
 	// material properties
-	enum { SOLID, PERM, OSMC, SOLUTE, SBM, REACTION };
+	enum { SOLID, PERM, OSMC, SOLUTE, SBM, REACTION, MREACTION };
     
 public:
 	FEMultiphasicMaterial();
@@ -506,6 +687,9 @@ public:
 	// add chemical reaction component
 	void AddReactionMaterial(FEReactionMaterial* pm);
  
+    // add membrane reaction component
+    void AddMembraneReactionMaterial(FEMembraneReactionMaterial* pm);
+    
     // get solute global index from local index
     int GetSoluteIndex(const int isol);
      
@@ -515,6 +699,9 @@ public:
     // count reaction components
     int Reactions();
 
+    // count membrane reaction components
+    int MembraneReactions();
+    
 	// see if this material has a solute with global ID
 	bool HasSolute(int nid);
 
@@ -523,6 +710,9 @@ public:
     
     // get reaction component
     FEReactionMaterial* GetReaction(int n);
+    
+    // get membrane reaction component
+    FEMembraneReactionMaterial* GetMembraneReaction(int n);
     
 	DECLARE_REGISTERED(FEMultiphasicMaterial);
 };
@@ -562,6 +752,28 @@ public:
     
 protected:
 	DECLARE_REGISTERED(FEMichaelisMenten);
+};
+
+//-----------------------------------------------------------------------------
+// membrane mass action forward chemical reaction
+class FEMembraneMassActionForward : public FEMembraneReactionMaterial
+{
+public:
+    FEMembraneMassActionForward();
+    
+protected:
+    DECLARE_REGISTERED(FEMembraneMassActionForward);
+};
+
+//-----------------------------------------------------------------------------
+// membrane mass action reversible chemical reaction
+class FEMembraneMassActionReversible : public FEMembraneReactionMaterial
+{
+public:
+    FEMembraneMassActionReversible();
+    
+protected:
+    DECLARE_REGISTERED(FEMembraneMassActionReversible);
 };
 
 //-----------------------------------------------------------------------------

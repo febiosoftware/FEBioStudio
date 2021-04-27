@@ -96,7 +96,7 @@ TopoDS_Shape& GOCCObject::GetShape()
 #ifdef HAS_OCC
 	return m_occ->m_shape;
 #else
-	TopoDS_Shape* dummy;
+	TopoDS_Shape* dummy = nullptr;
 	return *dummy;
 #endif
 }

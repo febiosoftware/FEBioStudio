@@ -90,7 +90,7 @@ public:
 
 	void blockUpdate(bool block);
 
-private slots:
+public slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
 	void on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column);
 	void on_selectButton_clicked();

@@ -301,3 +301,26 @@ private:
 	int m_node;
 	int m_obj;
 };
+
+//-----------------------------------------------------------------------------
+class GPartIterator
+{
+public:
+	GPartIterator(GModel& m);
+
+	void operator ++ ();
+
+	GPart* operator -> ();
+
+	operator GPart* ();
+
+
+	bool isValid() const;
+
+	void reset();
+
+private:
+	GModel&	m_mdl;
+	int m_part;
+	int m_obj;
+};

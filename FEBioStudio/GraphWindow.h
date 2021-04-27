@@ -400,7 +400,7 @@ class CModelGraphWindow : public CGraphWindow
 public:
 	CModelGraphWindow(CMainWindow* wnd, CPostDocument* postDoc);
 
-	void Update(bool breset = true, bool bfit = false);
+	void Update(bool breset = true, bool bfit = false) override;
 
 private:
 	// track mesh data

@@ -215,6 +215,7 @@ protected:
 	void WriteLoadPressure      (FEStep& s);
 	void WriteLoadTraction      (FEStep& s);
     void WriteFluidTraction     (FEStep& s);
+    void WriteFluidPressureLoad           (FEStep& s);
     void WriteFluidVelocity               (FEStep& s);
     void WriteFluidNormalVelocity         (FEStep& s);
     void WriteFluidRotationalVelocity     (FEStep& s);
@@ -223,6 +224,7 @@ protected:
     void WriteFluidBackflowStabilization  (FEStep& s);
     void WriteFluidTangentialStabilization(FEStep& s);
     void WriteFSITraction                 (FEStep& s);
+    void WriteBFSITraction                (FEStep& s);
 	void WriteFluidFlux         (FEStep& s);
 	void WriteHeatFlux          (FEStep& s);
 	void WriteConvectiveHeatFlux(FEStep& s);

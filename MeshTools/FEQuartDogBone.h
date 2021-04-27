@@ -31,12 +31,18 @@ class GQuartDogBone;
 class FEQuartDogBone : public FEMultiBlockMesh
 {
 public:
-	enum {N_X, N_Y, N_Z};
+	enum {N_X, N_Y, N_Z, R_BIAS, Z_BIAS, BZ};
 
 public:
 	FEQuartDogBone(){}
 	FEQuartDogBone(GQuartDogBone* po);
+
 	FEMesh* BuildMesh();
+
+protected:
+	FEMesh* BuildMeshLegacy();
+	FEMesh* BuildMultiBlockMesh4();
+	FEMesh* BuildMultiBlockMesh6();
 
 protected:
 	GQuartDogBone* m_pobj;

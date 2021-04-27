@@ -48,7 +48,7 @@ public:
 
 	FEMesh*	BuildMesh() override;
 
-	MeshingProgress Progress() override;
+	FSTaskProgress GetProgress() override;
 
 	void Terminate() override;
 

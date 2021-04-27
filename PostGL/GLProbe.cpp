@@ -139,43 +139,56 @@ void GLProbe::Update(int ntime, float dt, bool breset)
 	bool bdisp = mdl->HasDisplacementMap();
 	if (bdisp == false) return;
 
-	FERefState* ps = mdl->GetActiveState()->m_ref;
-
 	vec3f p0 = to_vec3f(m_initPos);
+	m_elem = ProjectToMesh(ntime, p0, m_pos);
+}
+
+int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
+{
+	CGLModel* mdl = GetModel();
+	if (mdl == nullptr) return -1;
+
+	Post::FEState* state = mdl->GetFEModel()->GetState(nstate);
+	Post::FERefState* ps = state->m_ref;
+	FEMesh& mesh = *state->GetFEMesh();
+
+	int nelem = -1;
 	vec3f x0[FEElement::MAX_NODES];
 	vec3f xt[FEElement::MAX_NODES];
-	int NE = mesh->Elements();
+	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh->Element(i);
+		FEElement& el = mesh.Element(i);
 		int ne = el.Nodes();
 		for (int j = 0; j < el.Nodes(); ++j)
 		{
 			x0[j] = ps->m_Node[el.m_node[j]].m_rt;
-			xt[j] = to_vec3f(mesh->Node(el.m_node[j]).r);
+			xt[j] = to_vec3f(mesh.Node(el.m_node[j]).r);
 		}
 
 		if (m_bfollow)
 		{
 			vec3f q;
-			if (ProjectToElement(el, p0, x0, xt, q))
+			if (ProjectToElement(el, r0, x0, xt, q))
 			{
-				m_pos = q;
-				m_elem = i;
+				rt = q;
+				nelem = i;
 				break;
 			}
 		}
 		else
 		{
 			vec3f q;
-			if (ProjectToElement(el, p0, x0, x0, q))
+			if (ProjectToElement(el, r0, x0, x0, q))
 			{
-				m_pos = q;
-				m_elem = i;
+				rt = q;
+				nelem = i;
 				break;
 			}
 		}
 	}
+
+	return nelem;
 }
 
 GLColor GLProbe::GetColor() const
@@ -192,10 +205,12 @@ double GLProbe::DataValue(int nfield, int nstep)
 {
 	FEPostModel& fem = *GetModel()->GetFEModel();
 	float val = 0.f;
-	if (m_elem >= 0)
+	vec3f p0 = to_vec3f(m_initPos);
+	int nelem = ProjectToMesh(nstep, p0, m_pos);
+	if (nelem >= 0)
 	{
 		float data[FEElement::MAX_NODES];
-		fem.EvaluateElement(m_elem, nstep, nfield, data, val);
+		fem.EvaluateElement(nelem, nstep, nfield, data, val);
 	}
 	return val;
 }

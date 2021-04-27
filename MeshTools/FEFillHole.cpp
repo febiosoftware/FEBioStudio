@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FENodeEdgeList.h>
 #include <limits.h>
 
 //-----------------------------------------------------------------------------
@@ -44,6 +45,18 @@ bool FEFillHole::EdgeRing::contains(int inode)
 // that lies on the edge of the hole.
 FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 {
+	// build the node normals
+	m_node_normals.assign(pm->Nodes(), vec3d(0, 0, 0));
+	for (int i = 0; i < pm->Faces(); i++)
+	{
+		FEFace &Face = pm->Face(i);
+		for (int j = 0; j < Face.Nodes(); j++)
+		{
+			m_node_normals[Face.n[j]] += Face.m_nn[j];
+		}
+	}
+	for (int i = 0; i < m_node_normals.size(); ++i) m_node_normals[i].Normalize();
+
 	// find a selected node
 	int inode = -1;
 	for (int i=0; i<pm->Nodes(); i++) { if (pm->Node(i).IsSelected()) { inode = i; break; }}
@@ -148,7 +161,23 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 	// clear tags
 	pm->TagAllNodes(0);
 
+	// build the node-edge table
+	m_NEL.Build(pm);
+
+	// build the node normals
+	m_node_normals.assign(pm->Nodes(), vec3d(0, 0, 0));
+	for (int i = 0; i < pm->Faces(); i++)
+	{
+		FEFace &Face = pm->Face(i);
+		for (int j = 0; j < Face.Nodes(); j++)
+		{
+			m_node_normals[Face.n[j]] += Face.m_nn[j];
+		}
+	}
+	for (int i = 0; i < m_node_normals.size(); ++i) m_node_normals[i].Normalize();
+
 	// tag all the nodes that are on edge boundaries
+	pm->TagAllNodes(0);
 	for (int i=0; i<pm->Faces(); ++i)
 	{
 		FEFace& face = pm->Face(i);
@@ -158,46 +187,47 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 			if (face.m_nbr[j] == -1)
 			{
 				FEEdge ej = face.GetEdge(j);
-				pm->Node(ej.n[0]).m_ntag = 1;
-				pm->Node(ej.n[1]).m_ntag = 1;
+				pm->Node(ej.n[0]).m_ntag += 1;
+				pm->Node(ej.n[1]).m_ntag += 1;
 			}
 		}
 	}
 
 	// find the edge rings
 	vector<EdgeRing> ring;
-	int inode = -1;
-	do
+	setProgress(0.0);
+	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		inode = -1;
-		for (int i=0; i<pm->Nodes(); ++i)
-		{
-			if (pm->Node(i).m_ntag == 1)
-			{
-				inode = i;
-				break;
-			}
-		}
-
-		if (inode >= 0)
+		if (pm->Node(i).m_ntag > 0)
 		{
 			EdgeRing ri; 
-			if (FindEdgeRing(*pm, inode, ri)) ring.push_back(ri);
-			for (int i=0; i<ri.size(); ++i) pm->Node(ri[i]).m_ntag = 0;
+			if (FindEdgeRing(*pm, i, ri))
+			{
+				ring.push_back(ri);
+				for (int j = 0; j < ri.size(); ++j) pm->Node(ri[j]).m_ntag -= 2;
+			}
 		}
+		setProgress(100.0*(i + 1.0) / (double)pm->Nodes());
 	}
-	while (inode != -1);
 
+	SetError("Found %d holes", ring.size());
+
+	int fixedHoles = 0;
 	vector<FACE> tri_list;
 	for (int i=0; i < ring.size(); ++i)
 	{
 		vector<FACE> tri;
-		DivideRing(ring[i], tri);
-		tri_list.insert(tri_list.end(), tri.begin(), tri.end());
+		if (DivideRing2(ring[i], tri))
+		{
+			fixedHoles++;
+			tri_list.insert(tri_list.end(), tri.begin(), tri.end());
+		}
 	}
+	SetError("Fixed %d holes", fixedHoles);
 
 	// see how many new faces we have
 	int new_faces = (int) tri_list.size();
+	SetError("Inserted %d new faces", new_faces);
 
 	// allocate room for the new faces
 	int NF = pm->Faces();
@@ -220,23 +250,64 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
+// find the fitting sphere of a triangle
+bool findCircumSphere(const vec3d* r, vec3d& c, double& R)
+{
+	vec3d p[2];
+	p[0] = r[1] - r[0];
+	p[1] = r[2] - r[0];
+	vec3d n = p[0] ^ p[1];
+
+	// setup linear system of equation
+	matrix A(3, 3);
+	A[0][0] = 2.0*p[0].x; A[0][1] = 2.0*p[0].y; A[0][2] = 2.0*p[0].z;
+	A[1][0] = 2.0*p[1].x; A[1][1] = 2.0*p[1].y; A[1][2] = 2.0*p[1].z;
+	A[2][0] = n.x; A[2][1] = n.y; A[2][2] = n.z;
+
+	vector<double> y(3);
+	y[0] = p[0].SqrLength();
+	y[1] = p[1].SqrLength();
+	y[2] = 0.0;
+
+	// solve it
+	vector<double> x(3);
+	if (A.solve(x, y) == false) return false;
+
+	// this will give us the center of the sphere
+	c = vec3d(x[0], x[1], x[2]);
+
+	// now evaluate the radius
+	R = c.Length();
+
+	// don't forget to add r0
+	c += r[0];
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+inline bool IsInsideSphere(const vec3d& r, const vec3d& sphereCenter, double sphereRadius)
+{
+	return ((r - sphereCenter).SqrLength() < sphereRadius*sphereRadius);
+}
+
+//-----------------------------------------------------------------------------
+vec3d edgeVector(FEEdge& e, FESurfaceMesh& mesh)
+{
+	vec3d a = mesh.Node(e.n[0]).pos();
+	vec3d b = mesh.Node(e.n[1]).pos();
+	vec3d v = b - a;
+	v.Normalize();
+	return v;
+}
+
+//-----------------------------------------------------------------------------
 bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRing& ring)
 {
 	// let's make sure the ring is empty
 	ring.clear();
 
 	mesh.TagAllEdges(0);
-
-	//To save all the node normals
-	vector<vec3d> node_normals(mesh.Nodes(), vec3d(0,0,0));
-	for(int i = 0 ;i < mesh.Faces();i++)
-	{
-		FEFace &Face = mesh.Face(i);
-		for(int j = 0; j < Face.Nodes(); j++)
-		{
-			node_normals[Face.n[j]] = Face.m_nn[j];
-		}
-	}
 
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
@@ -301,7 +372,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 
 	// add the initial node to the ring as a starting point
 	int jnode = inode;
-	ring.add(jnode, mesh.Node(jnode).r, node_normals[jnode]);
+	ring.add(jnode, mesh.Node(jnode).r, m_node_normals[jnode]);
 	
 	// see in which direction we will be looping and if we need to flip the winding
 	if (jnode == edge.n[1]) ring.m_winding *= -1;
@@ -310,17 +381,50 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 	do
 	{
 		FEEdge& edge = mesh.Edge(iedge);
+		vec3d re = edgeVector(edge, mesh);
 		if (edge.n[0] == jnode)
-		{ 
-			jnode = edge.n[1]; iedge = edge.m_nbr[1];
-		}
-		else 
 		{
-			jnode = edge.n[0]; iedge = edge.m_nbr[0];
+			jnode = edge.n[1];
+		}
+		else
+		{
+			jnode = edge.n[0];
+			re = -re;
+		}
+
+		double minAngle = 0.0;
+		int nextEdge = -1;
+		int nedges = m_NEL.Edges(jnode);
+		for (int k = 0; k < nedges; ++k)
+		{
+			int edgek = m_NEL.EdgeIndex(jnode, k);
+			FEEdge& ek = mesh.Edge(edgek);
+			if ((edgek != iedge) && (ek.m_ntag == 1))
+			{
+				if ((mesh.Node(ek.n[0]).m_ntag > 0) &&
+					(mesh.Node(ek.n[1]).m_ntag > 0))
+				{
+					vec3d rk = edgeVector(ek, mesh);
+					if (ek.n[1] == jnode)
+					{
+						rk = -rk;
+					}
+					else assert(ek.n[0] == jnode);
+
+					double ca = re * rk;
+
+					if ((nextEdge == -1) || (ca < minAngle))
+					{
+						nextEdge = edgek;
+						minAngle = ca;
+					}
+				}
+			}
 		}
 
 		// if we've reached an open-ended edge we have a problem.
-		if (iedge == -1) return false;
+		if (nextEdge == -1) return false;
+		iedge = nextEdge;
 
 		// add the node (unless we're back we're we started)
 		if (jnode != inode)
@@ -330,7 +434,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 			// on the first node. This is an invalid topology that we cannot
 			// handle. 
 			if (ring.contains(jnode)) return false;
-			ring.add(jnode, mesh.Node(jnode).r, node_normals[jnode]);
+			ring.add(jnode, mesh.Node(jnode).r, m_node_normals[jnode]);
 		}
 	}
 	while (jnode != inode);
@@ -583,6 +687,103 @@ bool FEFillHole::DivideRing1(EdgeRing& ring, vector<FACE>& tri_list)
 	return (tri_list.empty() == false);
 }
 
+//------------------------------------------------------------------------------
+bool FEFillHole::DivideRing2(EdgeRing& ring, vector<FACE>& tri_list)
+{
+	// make sure this ring has at least three nodes
+	assert(ring.size() >= 3);
+	if (ring.size() < 3) return false;
+
+	// if the ring has only three nodes, we define a new face
+	if (ring.size() == 3)
+	{
+		FACE f;
+		if (ring.m_winding == 1)
+		{
+			f.n[0] = ring[0]; f.r[0] = ring.m_r[0];
+			f.n[1] = ring[1]; f.r[1] = ring.m_r[1];
+			f.n[2] = ring[2]; f.r[2] = ring.m_r[2];
+		}
+		else
+		{
+			f.n[0] = ring[2]; f.r[0] = ring.m_r[2];
+			f.n[1] = ring[1]; f.r[1] = ring.m_r[1];
+			f.n[2] = ring[0]; f.r[2] = ring.m_r[0];
+		}
+		tri_list.push_back(f);
+		return true;
+	}
+
+	// calculate the angles
+	int N = ring.size();
+	EdgeRing left, right;
+	for (int i = 0; i < N; ++i)
+	{
+		int i0 = i;
+		int i1 = (i + 1) % N;
+		int i2 = (i + 2) % N;
+		vec3d r[3];
+		r[0] = ring.m_r[i0];
+		r[1] = ring.m_r[i1];
+		r[2] = ring.m_r[i2];
+
+		// make sure that r2 is on positive side of plane
+		vec3d n = m_node_normals[ring.m_node[i0]];
+		vec3d t = (r[1] - r[0]) ^ n;
+		t.Normalize();
+		if (ring.m_winding == 1) t = -t;
+		if ((r[2] - r[1])*t > 0)
+		{
+			// see if this cuts off an ear
+			vec3d c;
+			double R;
+			if (findCircumSphere(r, c, R))
+			{
+				// make sure none of the other points lie in this sphere
+				bool valid = true;
+				for (int j = 0; j < N; ++j)
+				{
+					if ((j != i0) && (j != i1) && (j != i2))
+					{
+						vec3d rj = ring.m_r[j];
+						if (IsInsideSphere(rj, c, R))
+						{
+							valid = false;
+							break;
+						}
+					}
+				}
+
+				if (valid)
+				{
+					// get the left and right ears
+					ring.GetLeftEar(i0, i2, left);
+					ring.GetRightEar(i0, i2, right);
+
+					vector<FACE> tri_left, tri_right;
+					bool bret1 = DivideRing2(left, tri_left);
+					bool bret2 = DivideRing2(right, tri_right);
+
+					if (bret1 == false) bret1 = DivideRing1(left, tri_left);
+					if (bret2 == false) bret2 = DivideRing1(right, tri_right);
+
+					// merge the lists
+					if (bret1) tri_list.insert(tri_list.end(), tri_left.begin(), tri_left.end());
+					if (bret2) tri_list.insert(tri_list.end(), tri_right.begin(), tri_right.end());
+
+					break;
+				}
+			}
+		}
+	}
+
+	if (tri_list.empty())
+	{
+		DivideRing1(ring, tri_list);
+	}
+
+	return (tri_list.empty() == false);
+}
 
 //-----------------------------------------------------------------------------
 // Calculate the normal of the plane that approximate passes through the ring

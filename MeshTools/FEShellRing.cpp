@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "FEShellRing.h"
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FEMesh.h>
+#include "FEMultiQuadMesh.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -51,6 +52,41 @@ FEShellRing::FEShellRing(GRing* po)
 }
 
 FEMesh* FEShellRing::BuildMesh()
+{
+//	return BuildMeshLegacy();
+	return BuildMultiQuadMesh();
+}
+
+FEMesh* FEShellRing::BuildMultiQuadMesh()
+{
+	// build the mesh data structures
+	FEMultiQuadMesh MQ;
+	MQ.Build(m_pobj);
+
+	// set discretization
+	int nd = GetIntValue(NDIV); if (nd < 1) nd = 1;
+	int ns = GetIntValue(NSLICE); if (ns < 1) ns = 1;
+	MQ.SetFaceSizes(0, ns, nd);
+	MQ.SetFaceSizes(1, ns, nd);
+	MQ.SetFaceSizes(2, ns, nd);
+	MQ.SetFaceSizes(3, ns, nd);
+
+	// Build the mesh
+	FEMesh* pm = MQ.BuildMesh();
+	if (pm == nullptr) return nullptr;
+
+	// assign shell thickness
+	double t = GetFloatValue(T);
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		el.m_h[0] = el.m_h[1] = el.m_h[2] = el.m_h[3] = t;
+	}
+
+	return pm;
+}
+
+FEMesh* FEShellRing::BuildMeshLegacy()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();

@@ -31,9 +31,9 @@ SOFTWARE.*/
 //using namespace std;
 
 //-----------------------------------------------------------------------------
-FETet4ToTet15::FETet4ToTet15() : FEModifier("Tet4-to-Tet15")
+FETet4ToTet15::FETet4ToTet15(bool bsmooth) : FEModifier("Tet4-to-Tet15")
 {
-	m_bsmooth = false;
+	m_bsmooth = bsmooth;
 }
 
 //-----------------------------------------------------------------------------
@@ -167,6 +167,7 @@ FEMesh* FETet4ToTet15::Apply(FEMesh* pm)
 		f1.n[6] = FFT[i] + NN + NC;
 		f1.m_elem[0] = f0.m_elem[0];
 		f1.m_elem[1] = f0.m_elem[1];
+		f1.m_elem[2] = f0.m_elem[2];
 		f1.m_nbr[0] = f0.m_nbr[0];
 		f1.m_nbr[1] = f0.m_nbr[1];
 		f1.m_nbr[2] = f0.m_nbr[2];

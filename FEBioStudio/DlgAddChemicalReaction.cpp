@@ -243,7 +243,7 @@ public:
 		form2->addRow("Type:", type = new QComboBox);
 		form2->addRow("Forward Rate:", fwdRate = new QComboBox);
 		form2->addRow("Reverse Rate:", revRate = new QComboBox); revRate->setEnabled(false); // deactive this since we'll start with a forward reaction
-		form2->addRow("", ovrVB = new QCheckBox("Override Calculated VBar"));
+        form2->addRow("", ovrVB = new QCheckBox("Override Calculated VBar")); ovrVB->setCheckState(Qt::Checked);
 
 		QGroupBox* pgReactants = new QGroupBox("Reactants:");
 		pgReactants->setFlat(true);
@@ -573,6 +573,9 @@ void CDlgAddChemicalReaction::SetReaction(FEReactionMaterial* mat)
 	ui->setReverseRateType(rev ? rev->Type() : -1);
 
 	ui->name->setText(QString::fromStdString(mat->GetName()));
+
+	m_bovrd = mat->GetOvrd();
+	ui->ovrVB->setChecked(m_bovrd);
 
 	// set species
 	ui->selectReactants->clear();

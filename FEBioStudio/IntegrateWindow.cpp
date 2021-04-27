@@ -53,7 +53,7 @@ CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDocument* postDoc) : C
 void CIntegrateWindow::Update(bool breset, bool bfit)
 {
 	CDocument* doc = GetDocument();
-	if (doc->IsValid() == false) return;
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 	// update the source options
 	m_updating = true;
@@ -217,7 +217,7 @@ CIntegrateSurfaceWindow::CIntegrateSurfaceWindow(CMainWindow* wnd, CPostDocument
 void CIntegrateSurfaceWindow::Update(bool breset, bool bfit)
 {
 	CDocument* doc = GetDocument();
-	if (doc->IsValid() == false) return;
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 	// update the source options
 	m_updating = true;

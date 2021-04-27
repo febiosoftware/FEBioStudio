@@ -194,7 +194,7 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 	// get the mesh
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
-	const int* nt;
+	const int* nt = nullptr;
 
 	glColor3ub(col.r, col.g, col.b);
 

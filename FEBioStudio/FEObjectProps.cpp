@@ -719,3 +719,38 @@ void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 	FEProductMaterial* pr = m_mat->Product(i);
 	pr->SetCoeff(v.toInt());
 }
+
+//=======================================================================================
+CPartProperties::CPartProperties(GPart* pg, FEModel& fem) : CObjectProps(pg)
+{
+	m_fem = &fem;
+	m_pg = pg;
+	int mid = pg->GetMaterialID();
+	m_lid = -1;
+	QStringList mats;
+	for (int i = 0; i < fem.Materials(); ++i)
+	{
+		GMaterial* m = fem.GetMaterial(i);
+		if (m->GetID() == mid) m_lid = i;
+		mats.push_back(QString::fromStdString(m->GetName()));
+	}
+	addProperty("material", CProperty::Enum)->setEnumValues(mats);
+}
+
+QVariant CPartProperties::GetPropertyValue(int i)
+{
+	if (i < m_pg->Parameters() - 1) return CObjectProps::GetPropertyValue(i);
+	return m_lid;
+}
+
+void CPartProperties::SetPropertyValue(int i, const QVariant& v)
+{
+	if (i < m_pg->Parameters() - 1) return CObjectProps::SetPropertyValue(i, v);
+	m_lid = v.toInt();
+	if (m_lid >= 0)
+	{
+		GMaterial* mat = m_fem->GetMaterial(m_lid);
+		m_pg->SetMaterialID(mat->GetID());
+	}
+	else m_pg->SetMaterialID(-1);
+}

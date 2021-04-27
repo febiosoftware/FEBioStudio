@@ -362,6 +362,7 @@ public slots:
 	void on_actionGrowSelection_triggered();
 	void on_actionShrinkSelection_triggered();
 	void on_actionSelectIsolatedVertices_triggered();
+	void on_actionSyncSelection_triggered();
 
 	void on_actionFindTxt_triggered();
 	void on_actionFindAgain_triggered();
@@ -381,11 +382,13 @@ public slots:
 	void on_actionAddMaterial_triggered();
 	void on_actionAddStep_triggered();
 	void on_actionAddReaction_triggered();
+    void on_actionAddMembraneReaction_triggered();
 	void on_actionSoluteTable_triggered();
 	void on_actionSBMTable_triggered();
 
 	void on_actionCurveEditor_triggered();
 	void on_actionMeshInspector_triggered();
+	void on_actionMeshDiagnostic_triggered();
 	void on_actionElasticityConvertor_triggered();
 	void on_actionUnitConverter_triggered();
 	void on_actionKinemat_triggered();

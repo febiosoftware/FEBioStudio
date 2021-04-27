@@ -149,6 +149,7 @@ public:
 	void copy(FEFaceData<T,DATA_ITEM>& d) { m_data = d.m_data; }
 	bool add(int n, const T& d)
 	{ 
+		if ((n < 0) || (n >= m_face.size())) return false;
 		if (m_face[n] >= 0) 
 		{
 //			assert(m_face[n] == (int) m_data.size());
@@ -317,6 +318,8 @@ public:
 	{ 
 		return m_data[m_elem[n]*m_stride + comp];
 	}
+
+	int arraySize() const { return m_stride; }
 
 	void setData(vector<float>& data, vector<int>& elem)
 	{
@@ -667,7 +670,7 @@ public:
 	};
 
 public:
-	FECurvatureField(const std::string& name, int measure) : FEDataField(name, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+	FECurvatureField(FEPostModel* fem, int measure) : FEDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
 	{
 		m_measure = measure;
 		m_nlevels = 1;
@@ -677,7 +680,8 @@ public:
 
 	FEDataField* Clone() const override
 	{
-		FECurvatureField* pd = new FECurvatureField(GetName(), m_measure);
+		FECurvatureField* pd = new FECurvatureField(m_fem, m_measure);
+		pd->m_name = m_name;
 		pd->m_nlevels = m_nlevels;
 		pd->m_nmax = m_nmax;
 		pd->m_bext = m_bext;
@@ -790,7 +794,7 @@ public:
 	};
 
 public:
-	FEStrainDataField(const std::string& name, int measure) : FEDataField(name, DATA_MAT3FS, DATA_ITEM, CLASS_ELEM, 0)
+	FEStrainDataField(FEPostModel* fem, int measure) : FEDataField(fem, DATA_MAT3FS, DATA_ITEM, CLASS_ELEM, 0)
 	{ 
 		m_nref = -1; 
 		m_measure = measure; 
@@ -798,7 +802,8 @@ public:
 
 	FEDataField* Clone() const override
 	{
-		FEStrainDataField* pd = new FEStrainDataField(GetName(), m_measure);
+		FEStrainDataField* pd = new FEStrainDataField(m_fem, m_measure);
+		pd->m_name = m_name;
 		pd->m_nref = m_nref;
 		return pd;
 	}

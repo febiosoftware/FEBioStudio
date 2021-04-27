@@ -143,21 +143,6 @@ bool AbaqusImport::Load(const char* szfile)
 	// build the model
 	if (build_model() == false) return false;
 
-	// set the name of the mesh
-	GModel& model = fem.GetModel();
-	if (model.Objects())
-	{
-		char szname[256] = {0};
-		strcpy(szname, szfile);
-		char* ch = strrchr(szname, '.');
-		if (ch) *ch = 0;
-		ch = strrchr(szname, '/');
-		if (ch == 0) ch = strrchr(szname, '\\'); else ++ch;
-		if (ch == 0) ch = szname; else ++ch;
-		GObject* po = model.Object(model.Objects()-1);
-		po->SetName(ch);
-	}
-
 	// we're good!
 	return true;
 }
@@ -1442,6 +1427,8 @@ bool AbaqusImport::build_mesh()
 {
 	FEModel& fem = *m_pfem;
 
+	const char* szdefaultName = "Object";
+
 	// if instances are defined, we create the geometry based on the instances
 	list<AbaqusModel::INSTANCE*>& Inst = m_inp.InstanceList();
 	if (Inst.empty() == false)
@@ -1473,7 +1460,9 @@ bool AbaqusImport::build_mesh()
 			}
 
 			// if we get here we are good to go!
-			po->SetName((*pi)->GetName());
+			const char* szname = (*pi)->GetName();
+			if ((szname == 0) || (strlen(szname) == 0)) szname = szdefaultName;
+			po->SetName(szname);
 			fem.GetModel().AddObject(po);
 		}
 	}
@@ -1481,6 +1470,11 @@ bool AbaqusImport::build_mesh()
 	{
 		// loop over all parts
 		list<AbaqusModel::PART*>& Part = m_inp.PartList();
+		if (Part.empty())
+		{
+			return errf("This file contains no parts.");
+		}
+
 		list<AbaqusModel::PART*>::iterator pi;
 		for (pi=Part.begin(); pi!=Part.end(); ++pi)
 		{
@@ -1489,7 +1483,9 @@ bool AbaqusImport::build_mesh()
 			if (po == 0) return false;
 
 			// if we get here we are good to go!
-			po->SetName((*pi)->GetName());
+			const char* szname = (*pi)->GetName();
+			if ((szname == 0) || (strlen(szname) == 0)) szname = szdefaultName;
+			po->SetName(szname);
 			fem.GetModel().AddObject(po);
 		}
 	}

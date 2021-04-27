@@ -54,6 +54,7 @@ SOFTWARE.*/
 #include <GeomLib/MeshLayer.h>
 #include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FETetGenMesher.h>
+#include <MeshTools/FEFixMesh.h>
 #include "Commands.h"
 
 class CSurfaceMesherProps : public CObjectProps
@@ -110,6 +111,8 @@ private:
 	GSurfaceMeshObject*	m_po;
 };
 
+
+//=======================================================================================
 MeshingThread::MeshingThread(GObject* po)
 {
 	m_po = po;
@@ -120,18 +123,23 @@ void MeshingThread::run()
 {
 	m_mesher = m_po->GetFEMesher();
 	if (m_mesher) m_mesher->SetErrorMessage("");
-	m_po->BuildMesh();
-	emit resultReady();
+	FEMesh* mesh = m_po->BuildMesh();
+	emit resultReady(mesh != nullptr);
+}
+
+bool MeshingThread::hasProgress()
+{
+	return (m_mesher ? m_mesher->GetProgress().valid : false);
 }
 
 double MeshingThread::progress()
 {
-	return (m_mesher ? m_mesher->Progress().percent : 0.0);
+	return (m_mesher ? m_mesher->GetProgress().percent : 0.0);
 }
 
 const char* MeshingThread::currentTask()
 {
-	return (m_mesher ? m_mesher->Progress().task : "");
+	return (m_mesher ? m_mesher->GetProgress().task : "");
 }
 
 void MeshingThread::stop()
@@ -139,79 +147,45 @@ void MeshingThread::stop()
 	if (m_mesher) m_mesher->Terminate();
 }
 
-//=============================================================================
-CDlgStartThread::CDlgStartThread(QWidget* parent, MeshingThread* thread)
+//=======================================================================================
+ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FEGroup* pg)
 {
-	m_thread = thread;
-
-	m_szcurrentTask = 0;
-
-	QVBoxLayout* l = new QVBoxLayout;
-	l->addWidget(new QLabel("Meshing in progress. Please wait."));
-	l->addWidget(m_task = new QLabel(""));
-
-	l->addWidget(m_progress = new QProgressBar);
-	m_progress->setRange(0, 100);
-	m_progress->setValue(0);
-
-	QHBoxLayout* h = new QHBoxLayout;
-	h->addStretch();
-	h->addWidget(m_stop = new QPushButton("Cancel"));
-
-	l->addLayout(h);
-	setLayout(l);
-
-	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-	QObject::connect(m_thread, SIGNAL(resultReady()), this, SLOT(threadFinished()));
-	QObject::connect(m_stop, SIGNAL(clicked()), this, SLOT(cancel()));
-
-	QTimer::singleShot(100, this, SLOT(checkProgress()));
-
-	m_bdone = false;
-	m_thread->start();
+	m_doc = doc;
+	m_mod = mod;
+	m_pg = pg;
+	m_po = po;
 }
 
-void CDlgStartThread::accept()
+void ModifierThread::run()
 {
-	QDialog::accept();
+	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_pg);
+	emit resultReady(bsuccess);
 }
 
-void CDlgStartThread::cancel()
+bool ModifierThread::hasProgress()
 {
-	m_stop->setEnabled(false);
-	m_thread->stop();
+	return (m_mod ? m_mod->GetProgress().valid : false);
 }
 
-void CDlgStartThread::checkProgress()
+double ModifierThread::progress()
 {
-	if (m_bdone) accept();
-	else
-	{
-		double p = m_thread->progress();
-		m_progress->setValue((int) p);
-
-		const char* sztask = m_thread->currentTask();
-		if (sztask != m_szcurrentTask)
-		{
-			m_szcurrentTask = sztask;
-			m_task->setText(m_szcurrentTask);
-		}
-
-		QTimer::singleShot(100, this, SLOT(checkProgress()));
-	}
+	return (m_mod ? m_mod->GetProgress().percent : 0.0);
 }
 
-void CDlgStartThread::threadFinished()
+const char* ModifierThread::currentTask()
 {
-	m_bdone = true;
-	m_thread->deleteLater();
-	checkProgress();
+	return (m_mod ? m_mod->GetName().c_str() : "");
+}
+
+void ModifierThread::stop()
+{
+	
 }
 
 //=============================================================================
 
 REGISTER_CLASS(FERebuildMesh          , CLASS_FEMODIFIER, "Rebuild Mesh"   , EDIT_MESH);
+REGISTER_CLASS(FEFixMesh              , CLASS_FEMODIFIER, "Fix Mesh"       , EDIT_MESH);
 REGISTER_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
 REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
 REGISTER_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
@@ -235,7 +209,7 @@ REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDI
 REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 REGISTER_CLASS(FERezoneMesh           , CLASS_FEMODIFIER, "Rezone"         , EDIT_FACE | EDIT_SAFE);
 #ifdef HAS_MMG
-REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Remesh", EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "MMG Remesh", EDIT_MESH | EDIT_SAFE);
 #endif
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
@@ -254,6 +228,9 @@ void CMeshPanel::Update(bool breset)
 	GModel* gm = doc->GetGModel();
 	GObject* activeObject = doc->GetActiveObject();
 
+	// make sure this object is made the active object
+	GObject::SetActiveObject(activeObject);
+
 	// only update if reset is true or the active object changed
 	if ((breset == false) && (activeObject == m_currentObject)) return;
 
@@ -264,6 +241,15 @@ void CMeshPanel::Update(bool breset)
 
 	// start by hiding everything
 	ui->hideAllPanels();
+
+	// update the active modifier
+	if (m_mod)
+	{
+		if (m_mod->UpdateData(false) == true)
+		{
+			ui->setActiveModifier(m_mod);
+		}
+	}
 
 	// if there is no active object, we're done
 	if (activeObject == 0) return;
@@ -322,14 +308,8 @@ void CMeshPanel::on_buttons_buttonSelected(int id)
 		if (pcd)
 		{
 			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
-
-			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-
-			GModel* geo = &doc->GetFEModel()->GetModel();
-
-			CPropertyList* pl = new CObjectProps(m_mod);
-
-			ui->setModifierPropertyList(pl);
+			if (m_mod) m_mod->UpdateData(false);
+			ui->setActiveModifier(m_mod);
 		}
 
 		ui->showModifierParametersPanel(true);
@@ -359,14 +339,8 @@ void CMeshPanel::on_buttons2_buttonSelected(int id)
 		if (pcd)
 		{
 			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
-
-			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-
-			GModel* geo = &doc->GetFEModel()->GetModel();
-
-			CPropertyList* pl = new CObjectProps(m_mod);
-
-			ui->setModifierPropertyList(pl);
+			if (m_mod) m_mod->UpdateData(false);
+			ui->setActiveModifier(m_mod);
 		}
 
 		ui->showModifierParametersPanel(true);
@@ -414,6 +388,8 @@ void CMeshPanel::on_apply_clicked(bool b)
 
 void CMeshPanel::on_apply2_clicked(bool b)
 {
+	CMainWindow* w = GetMainWindow();
+
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GObject* activeObject = doc->GetActiveObject();
 	if (activeObject == 0) return;
@@ -435,17 +411,38 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		else { delete list; list = 0; }
 	}
 
-	bool bsuccess = doc->ApplyFEModifier(*m_mod, activeObject, g);
-	if (bsuccess == false)
+	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, g);
+	CDlgStartThread dlg(this, thread);
+	dlg.setTask(QString::fromStdString(m_mod->GetName()));
+	if (dlg.exec())
 	{
-		QString err = QString("Error while applying %1:\n%2").arg(QString::fromStdString(m_mod->GetName())).arg(QString::fromStdString(m_mod->GetErrorString()));
-		QMessageBox::critical(this, "Error", err);
+		bool bsuccess = dlg.GetReturnCode();
+		if (bsuccess == false)
+		{
+			QString err = QString("Error while applying %1:\n%2").arg(QString::fromStdString(m_mod->GetName())).arg(QString::fromStdString(m_mod->GetErrorString()));
+			QMessageBox::critical(this, "Error", err);
+		}
+		else
+		{
+			std::string err = m_mod->GetErrorString();
+			if (err.empty() == false)
+			{
+				w->AddLogEntry(QString::fromStdString(err) + QString("\n"));
+			}
+		}
+	}
+
+	if (m_mod)
+	{
+		if (m_mod->UpdateData(false))
+		{
+			ui->setActiveModifier(m_mod);
+		}
 	}
 
 	// don't forget to cleanup
 	if (g) delete g;
 
-	CMainWindow* w = GetMainWindow();
 	w->UpdateModel(activeObject, true);
 	w->UpdateGLControlBar();
 	w->RedrawGL();
@@ -460,7 +457,9 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 	GObject* po = pdoc->GetActiveObject();
 	GModel* mdl = pdoc->GetGModel();
 
-	if (pa->objectName() == "convert1")
+	int convertOption = pa->data().toInt();
+
+	if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_SURFACE)
 	{
 		if (dynamic_cast<GSurfaceMeshObject*>(po) == nullptr)
 		{
@@ -476,7 +475,7 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
-	else
+	else if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_MESH)
 	{
 		// convert to editable mesh
 		if (dynamic_cast<GMeshObject*>(po) == 0)
@@ -493,6 +492,11 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			}
 		}
 	}
+	else
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Don't know how to convert object.");
+	}
+
 	Update();
 	GetMainWindow()->Update(this, true);
 }

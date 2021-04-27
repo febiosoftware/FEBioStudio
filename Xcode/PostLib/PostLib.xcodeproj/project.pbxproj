@@ -687,6 +687,8 @@
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DFFMPEG",
+					"-Xpreprocessor",
+					"-fopenmp",
 				);
 				SDKROOT = macosx;
 			};
@@ -739,6 +741,8 @@
 					"$(OTHER_CFLAGS)",
 					"-DFFMPEG",
 					"-DNDEBUG",
+					"-Xpreprocessor",
+					"-fopenmp",
 				);
 				SDKROOT = macosx;
 			};

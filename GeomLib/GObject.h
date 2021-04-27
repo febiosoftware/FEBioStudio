@@ -260,6 +260,13 @@ public:
 
 	void Reindex();
 
+public:
+	static void SetActiveObject(GObject* po);
+	static GObject* GetActiveObject();
+	bool IsActiveObject() const;
+
 private:
 	Imp*	imp;
+
+	static GObject*		m_activeObject;
 };

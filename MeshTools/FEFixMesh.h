@@ -25,20 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FESurfaceModifier.h"
+#include "FEModifier.h"
 
 //-----------------------------------------------------------------------------
 // This modifier implements a list of tools to fixing meshes
-class FEFixMesh : public FESurfaceModifier
+class FEFixMesh : public FEModifier
 {
 public:
 	FEFixMesh();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FEMesh* Apply(FEMesh* pm) override;
 
-	bool RemoveDuplicateFaces  (FESurfaceMesh* pm);
-	bool RemoveNonManifoldFaces(FESurfaceMesh* pm);
-	bool FixElementWinding     (FESurfaceMesh* pm);
-	bool InvertMesh            (FESurfaceMesh* pm);
-	bool FillAllHoles		   (FESurfaceMesh* pm);
-	bool RemoveDuplicateEdges  (FESurfaceMesh* pm);
+public:
+	bool RemoveDuplicateEdges  (FEMesh* pm);
 };

@@ -374,6 +374,8 @@ protected:
 
 	GLMeshRender	m_render;
 
+	Post::FEPostMesh*	m_lastMesh;	// mesh of last evaluated state
+
 	// selected items
 	vector<FENode*>		m_nodeSelection;
 	vector<FEEdge*>		m_edgeSelection;

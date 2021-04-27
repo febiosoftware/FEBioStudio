@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshTools/FEModifier.h>
 #include <MeshLib/FECurveMesh.h>
 #include <MeshTools/GLMesh.h>
+#include <MeshLib/FENodeEdgeList.h>
 #include "GOCCObject.h"
 
 GSurfaceMeshObject::GSurfaceMeshObject(FESurfaceMesh* pm) : GObject(GSURFACEMESH_OBJECT), m_surfmesh(pm)
@@ -89,6 +90,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		f->m_node = fo.m_node;
 		f->m_nPID[0] = fo.m_nPID[0];
 		f->m_nPID[1] = fo.m_nPID[1];
+		f->m_nPID[2] = fo.m_nPID[2];
 		f->SetID(fo.GetID());
 		f->SetLocalID(i);
 		f->SetName(fo.GetName());
@@ -171,14 +173,28 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		m_surfmesh->UpdateBoundingBox();
 
 		// copy edges
+		// Build a node-edge tabel
+		FENodeEdgeList NEL(m_surfmesh);
 		m_surfmesh->BuildEdges();
 		for (int i = 0; i < pm->Edges(); ++i)
 		{
 			FEEdge& src = pm->Edge(i);
 			int n0 = pm->Node(src.n[0]).m_ntag;
 			int n1 = pm->Node(src.n[1]).m_ntag;
-			FEEdge* pe = m_surfmesh->FindEdge(n0, n1);
-			assert(pe);
+
+			FEEdge* pe = nullptr;
+			const std::vector<int>& el = NEL.EdgeIndexList(n0);
+			for (int k = 0; k < el.size(); ++k)
+			{
+				FEEdge& e = m_surfmesh->Edge(el[k]);
+				if (((e.n[0] == n0) && (e.n[1] == n1)) ||
+					((e.n[0] == n1) && (e.n[1] == n0)))
+				{
+					FEEdge* pe = &e;
+					break;
+				}
+			}
+
 			if (pe)
 			{
 				pe->m_gid = src.m_gid;
@@ -337,7 +353,7 @@ void GSurfaceMeshObject::UpdateEdges()
 						{
 							ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
 						}
-						else assert(false);
+//						else assert(false);
 						
 					}
 					else if (ge.m_node[1] == -1)
@@ -347,7 +363,7 @@ void GSurfaceMeshObject::UpdateEdges()
 						{
 							ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
 						}
-						else assert(false);						
+//						else assert(false);						
 					}
 				}
 			}
@@ -959,6 +975,7 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 
 		f->m_nPID[0] = (fo.m_nPID[0] >= 0 ? fo.m_nPID[0] + NP0 : -1);
 		f->m_nPID[1] = (fo.m_nPID[1] >= 0 ? fo.m_nPID[1] + NP0 : -1);
+		f->m_nPID[2] = (fo.m_nPID[2] >= 0 ? fo.m_nPID[2] + NP0 : -1);
 		f->SetID(fo.GetID());
 		f->SetLocalID(i + NF0);
 		f->SetName(fo.GetName());

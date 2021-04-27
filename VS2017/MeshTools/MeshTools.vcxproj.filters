@@ -382,6 +382,12 @@
     <ClCompile Include="..\..\MeshTools\QuadricFit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MeshTools\FEFixSurfaceMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MeshTools\FEMultiQuadMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshTools\BivariatePolynomialSpline.h">
@@ -457,9 +463,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FEFillHole.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\FEFixMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FEGregoryPatch.h">
@@ -685,6 +688,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\QuadricFit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshTools\FEFixSurfaceMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshTools\FEFixMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshTools\FEMultiQuadMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

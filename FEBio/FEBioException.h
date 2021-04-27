@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-
-class FSObject;
+#include <string>
+#include <FSCore/FSObject.h>
 
 #include <string>
 
@@ -45,8 +45,9 @@ class InvalidMaterialReference {};
 class InvalidItemListBuilder
 {
 public:
-	InvalidItemListBuilder(FSObject* po) : m_po(po) {}
-	FSObject*	m_po;
+	InvalidItemListBuilder(FSObject* po) { if (po) m_name = po->GetName(); }
+	InvalidItemListBuilder(const std::string& s) { m_name = s; }
+	std::string	m_name;
 };
 
 //-----------------------------------------------------------------------------

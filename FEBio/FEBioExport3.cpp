@@ -41,10 +41,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <memory>
 #include <sstream>
-//using namespace std;
-
-using std::stringstream;
-using std::unique_ptr;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // defined in FEFEBioExport25.cpp
@@ -994,7 +991,9 @@ bool FEBioExport3::Write(const char* szfile)
 	}
 	catch (InvalidItemListBuilder e)
 	{
-		return errf("Invalid reference to mesh item list when exporting:\n%s", (e.m_po ? e.m_po->GetName().c_str() : "(unknown)"));
+		const char* sz = "(unknown)";
+		if (e.m_name.empty() == false) sz = e.m_name.c_str();
+		return errf("Invalid reference to mesh item list when exporting:\n%s", sz);
 	}
 	catch (MissingRigidBody e)
 	{
@@ -1657,6 +1656,13 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 		else WriteReactionMaterial(pm, el);
 		return;
 	}
+    // redirect membrane reactions
+    if ((pm->Type() == FE_MMASS_ACTION_FORWARD) ||
+        (pm->Type() == FE_MMASS_ACTION_REVERSIBLE))
+    {
+        WriteMembraneReactionMaterial(pm, el);
+        return;
+    }
 
 	// get the type string    
 	const char* sztype = FEMaterialFactory::TypeStr(pm);
@@ -1728,6 +1734,66 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 		m_xml.add_leaf(el);
 		return;
 	}
+    else if (pm->Type() == FE_INT_REACTANT_MATERIAL)
+    {
+        FEInternalReactantMaterial* psb = dynamic_cast<FEInternalReactantMaterial*>(pm); assert(psb);
+        int idx = psb->GetIndex();
+        int type = psb->GetReactantType();
+        el.value(psb->GetCoef());
+        switch (type)
+        {
+            case FEMembraneReactionMaterial::INT_SPECIES: el.add_attribute("sol", idx + 1); break;
+            default:
+                assert(false);
+        }
+        m_xml.add_leaf(el);
+        return;
+    }
+    else if (pm->Type() == FE_INT_PRODUCT_MATERIAL)
+    {
+        FEInternalProductMaterial* psb = dynamic_cast<FEInternalProductMaterial*>(pm); assert(psb);
+        int idx = psb->GetIndex();
+        int type = psb->GetProductType();
+        el.value(psb->GetCoef());
+        switch (type)
+        {
+            case FEMembraneReactionMaterial::INT_SPECIES: el.add_attribute("sol", idx + 1); break;
+            default:
+                assert(false);
+        }
+        m_xml.add_leaf(el);
+        return;
+    }
+    else if (pm->Type() == FE_EXT_REACTANT_MATERIAL)
+    {
+        FEExternalReactantMaterial* psb = dynamic_cast<FEExternalReactantMaterial*>(pm); assert(psb);
+        int idx = psb->GetIndex();
+        int type = psb->GetReactantType();
+        el.value(psb->GetCoef());
+        switch (type)
+        {
+            case FEMembraneReactionMaterial::EXT_SPECIES: el.add_attribute("sol", idx + 1); break;
+            default:
+                assert(false);
+        }
+        m_xml.add_leaf(el);
+        return;
+    }
+    else if (pm->Type() == FE_EXT_PRODUCT_MATERIAL)
+    {
+        FEExternalProductMaterial* psb = dynamic_cast<FEExternalProductMaterial*>(pm); assert(psb);
+        int idx = psb->GetIndex();
+        int type = psb->GetProductType();
+        el.value(psb->GetCoef());
+        switch (type)
+        {
+            case FEMembraneReactionMaterial::EXT_SPECIES: el.add_attribute("sol", idx + 1); break;
+            default:
+                assert(false);
+        }
+        m_xml.add_leaf(el);
+        return;
+    }
     else if (pm->Type() == FE_OSMO_WM)
     {
         FEOsmoWellsManning* pwm = dynamic_cast<FEOsmoWellsManning*>(pm); assert(pwm);
@@ -1735,6 +1801,29 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
         m_xml.add_leaf(el);
         return;
     }
+	else if (pm->Type() == FE_FNC1D_POINT)
+	{
+		FE1DPointFunction* pf1d = dynamic_cast<FE1DPointFunction*>(pm); assert(pf1d);
+		FELoadCurve* plc = pf1d->GetParam(0).GetLoadCurve();
+		el.add_attribute("type", sztype);
+		m_xml.add_branch(el);
+		{
+			if (plc)
+			{
+				m_xml.add_branch("points");
+				int n = plc->Size();
+				for (int i = 0; i < n; ++i)
+				{
+					LOADPOINT& p = plc->Item(i);
+					double d[2] = { p.time, p.load };
+					m_xml.add_leaf("pt", d, 2);
+				}
+				m_xml.close_branch();
+			}
+		}
+		m_xml.close_branch();
+		return;
+	}
 	else
 		el.add_attribute("type", sztype);
 
@@ -1775,6 +1864,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 					case FE_PRODUCT_MATERIAL: is_multi = true; break;
 					case FE_SPECIES_MATERIAL: is_multi = true; break;
 					case FE_SOLID_SPECIES_MATERIAL: is_multi = true; break;
+					case FE_FNC1D_POINT: is_multi = true; break;
 					}
 
 					if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);
@@ -1979,6 +2069,71 @@ void FEBioExport3::WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el)
 }
 
 //-----------------------------------------------------------------------------
+void FEBioExport3::WriteMembraneReactionMaterial(FEMaterial* pmat, XMLElement& el)
+{
+    const char* sztype = 0;
+    switch (pmat->Type())
+    {
+        case FE_MMASS_ACTION_FORWARD: sztype = "membrane-mass-action-forward"; break;
+        case FE_MMASS_ACTION_REVERSIBLE: sztype = "membrane-mass-action-reversible"; break;
+        default:
+            assert(false);
+            return;
+    }
+    
+    el.add_attribute("type", sztype);
+    
+    m_xml.add_branch(el);
+    {
+        // write the material parameters (if any)
+        if (pmat->Parameters()) WriteMaterialParams(pmat);
+        
+        // write the components
+        int NC = pmat->Properties();
+        for (int i = 0; i<NC; ++i)
+        {
+            FEMaterialProperty& mc = pmat->GetProperty(i);
+            for (int j = 0; j<mc.Size(); ++j)
+            {
+                FEMaterial* pc = mc.GetMaterial(j);
+                if (pc)
+                {
+                    el.name(mc.GetName().c_str());
+                    const string& name = pc->GetName();
+                    if (name.empty() == false) el.add_attribute("name", name.c_str());
+                    
+                    bool is_multi = false;
+                    switch (pc->Type())
+                    {
+                        case FE_SBM_MATERIAL: is_multi = true; break;
+                        case FE_REACTANT_MATERIAL: is_multi = true; break;
+                        case FE_PRODUCT_MATERIAL: is_multi = true; break;
+                        case FE_INT_REACTANT_MATERIAL: is_multi = true; break;
+                        case FE_INT_PRODUCT_MATERIAL: is_multi = true; break;
+                        case FE_EXT_REACTANT_MATERIAL: is_multi = true; break;
+                        case FE_EXT_PRODUCT_MATERIAL: is_multi = true; break;
+                        case FE_SPECIES_MATERIAL: is_multi = true; break;
+                        case FE_SOLID_SPECIES_MATERIAL: is_multi = true; break;
+                    }
+                    
+                    if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);
+                    else
+                    {
+                        el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
+                        m_xml.add_branch(el);
+                        {
+                            WriteMaterialParams(pc);
+                        }
+                        m_xml.close_branch();
+                    }
+                }
+            }
+        }
+    }
+    m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
 void FEBioExport3::WriteGeometrySection()
 {
 	if (m_exportParts)
@@ -2089,7 +2244,7 @@ void FEBioExport3::WriteGeometrySectionNew()
 	m_ntotelem = 0;
 
 	// write all parts
-	auto nparts = m_Part.size();
+	int nparts = m_Part.size();
 	for (int i = 0; i<nparts; ++i)
 	{
 		Part* p = m_Part[i];
@@ -2384,7 +2539,7 @@ void FEBioExport3::WriteGeometryNodeSets()
 		if (m_pNSet[i].m_duplicate == false)
 		{
 			FEItemListBuilder* pil = m_pNSet[i].m_list;
-			unique_ptr<FENodeList> pl(pil->BuildNodeList());
+			auto_ptr<FENodeList> pl(pil->BuildNodeList());
 			if (WriteNodeSet(m_pNSet[i].m_name.c_str(), pl.get()) == false)
 			{
 				throw InvalidItemListBuilder(pil);
@@ -2400,7 +2555,7 @@ void FEBioExport3::WriteGeometryNodeSets()
 	for (int i = 0; i<model.NodeLists(); ++i)
 	{
 		GNodeList* pg = model.NodeList(i);
-		unique_ptr<FENodeList> pn(pg->BuildNodeList());
+		auto_ptr<FENodeList> pn(pg->BuildNodeList());
 		if (WriteNodeSet(pg->GetName(), pn.get()) == false)
 		{
 			throw InvalidItemListBuilder(pg);
@@ -2419,7 +2574,7 @@ void FEBioExport3::WriteGeometryNodeSets()
 			for (int j = 0; j<nset; ++j)
 			{
 				FENodeSet* pns = po->GetFENodeSet(j);
-				unique_ptr<FENodeList> pl(pns->BuildNodeList());
+				auto_ptr<FENodeList> pl(pns->BuildNodeList());
 				if (WriteNodeSet(pns->GetName(), pl.get()) == false)
 				{
 					throw InvalidItemListBuilder(po);
@@ -2435,19 +2590,13 @@ void FEBioExport3::WriteGeometrySurfaces()
 	int NS = (int)m_pSurf.size();
 	for (int i = 0; i<NS; ++i)
 	{
-		FEItemListBuilder* pl = m_pSurf[i].m_list;
-		FEFaceList* pfl = pl->BuildFaceList();
-		if (pfl)
+		XMLElement el("Surface");
+		el.add_attribute("name", m_pSurf[i].m_name.c_str());
+		m_xml.add_branch(el);
 		{
-			unique_ptr<FEFaceList> ps(pfl);
-			XMLElement el("Surface");
-			el.add_attribute("name", m_pSurf[i].m_name.c_str());
-			m_xml.add_branch(el);
-			{
-				WriteSurfaceSection(*ps);
-			}
-			m_xml.close_branch();
+			WriteSurfaceSection(m_pSurf[i]);
 		}
+		m_xml.close_branch();
 	}
 }
 
@@ -2458,7 +2607,7 @@ void FEBioExport3::WriteGeometryElementSets()
 	for (int i = 0; i<NS; ++i)
 	{
 		FEItemListBuilder* pl = m_pESet[i].m_list;
-		unique_ptr<FEElemList> ps(pl->BuildElemList());
+		auto_ptr<FEElemList> ps(pl->BuildElemList());
 		XMLElement el("ElementSet");
 		el.add_attribute("name", m_pESet[i].m_name.c_str());
 		m_xml.add_branch(el);
@@ -2976,7 +3125,7 @@ void FEBioExport3::WriteGeometryDiscreteSets()
 				el.add_attribute("name", pst->GetName().c_str());
 				m_xml.add_branch(el);
 				{
-					auto N = L.size();
+					int N = L.size();
 					for (int n = 0; n<N; ++n)
 					{
 						pair<int, int>& de = L[n];
@@ -3109,7 +3258,7 @@ void FEBioExport3::WriteMeshDataMaterialFibers()
 	FEModel& fem = *m_pfem;
 
 	// loop over all element sets
-	auto NSET = m_ElSet.size();
+	int NSET = m_ElSet.size();
 	for (int i = 0; i<NSET; ++i)
 	{
 		ElementSet& elSet = m_ElSet[i];
@@ -3149,7 +3298,7 @@ void FEBioExport3::WriteMeshDataMaterialFibers()
 void FEBioExport3::WriteMeshDataMaterialAxes()
 {
 	// loop over all element sets
-	auto NSET = m_ElSet.size();
+	int NSET = m_ElSet.size();
 	for (int i = 0; i<NSET; ++i)
 	{
 		ElementSet& elSet = m_ElSet[i];
@@ -4060,10 +4209,12 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 			case FE_FLUID_TANGENTIAL_STABIL  : WriteSurfaceLoad(s, pbc, "fluid tangential stabilization"); break;
 			case FE_FLUID_BACKFLOW_STABIL    : WriteSurfaceLoad(s, pbc, "fluid backflow stabilization"); break;
 			case FE_FSI_TRACTION             : WriteSurfaceLoad(s, pbc, "fluid-FSI traction"); break;
+            case FE_BFSI_TRACTION            : WriteSurfaceLoad(s, pbc, "biphasic-FSI traction"); break;
 			case FE_FLUID_NORMAL_VELOCITY    : WriteSurfaceLoad(s, pbc, "fluid normal velocity"); break;
 			case FE_FLUID_VELOCITY           : WriteSurfaceLoad(s, pbc, "fluid velocity"); break;
 			case FE_SOLUTE_FLUX              : WriteSurfaceLoad(s, pbc, "soluteflux"); break;
 			case FE_CONCENTRATION_FLUX       : WriteSurfaceLoad(s, pbc, "concentration flux"); break;
+            case FE_FLUID_PRESSURE_LOAD      : WriteSurfaceLoad(s, pbc, "fluid pressure"); break;
 			// NOTE: Fluid rotational velocity is a boundary condition in FEBio3!
 			case FE_FLUID_ROTATIONAL_VELOCITY: break;// WriteSurfaceLoad(s, pbc, "fluid rotational velocity"); break;
 			default:
@@ -4402,6 +4553,9 @@ void FEBioExport3::WriteLoadDataSection()
 			case FELoadCurve::LC_STEP  : m_xml.add_leaf("interpolate", "STEP"); break;
 			case FELoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "LINEAR"); break;
 			case FELoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "SMOOTH"); break;
+            case FELoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "CUBIC SPLINE"); break;
+            case FELoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "CONTROL POINTS"); break;
+            case FELoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "APPROXIMATION"); break;
 			}
 
 			switch (plc->GetExtend())
@@ -4446,6 +4600,46 @@ void FEBioExport3::WriteSurfaceSection(FEFaceList& s)
 		FECoreMesh* pm = pf->m_pm;
 		nfn = face.Nodes();
 		for (int k = 0; k<nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
+		switch (nfn)
+		{
+		case 3: ef.name("tri3"); break;
+		case 4: ef.name("quad4"); break;
+		case 6: ef.name("tri6"); break;
+		case 7: ef.name("tri7"); break;
+		case 8: ef.name("quad8"); break;
+		case 9: ef.name("quad9"); break;
+		case 10: ef.name("tri10"); break;
+		default:
+			assert(false);
+		}
+		ef.add_attribute("id", n);
+		ef.value(nn, nfn);
+		m_xml.add_leaf(ef);
+	}
+}
+
+void FEBioExport3::WriteSurfaceSection(NamedItemList& l)
+{
+	FEItemListBuilder* pl = l.m_list;
+	FEFaceList* pfl = pl->BuildFaceList();
+	if (pfl == nullptr) throw InvalidItemListBuilder(l.m_name);
+	auto_ptr<FEFaceList> ps(pfl);
+
+	XMLElement ef;
+	int n = 1, nn[9];
+
+	FEFaceList& s = *pfl;
+	int NF = s.Size();
+	FEFaceList::Iterator pf = s.First();
+
+	int nfn;
+	for (int j = 0; j < NF; ++j, ++n, ++pf)
+	{
+		if (pf->m_pi == 0) throw InvalidItemListBuilder(l.m_name);
+		FEFace& face = *(pf->m_pi);
+		FECoreMesh* pm = pf->m_pm;
+		nfn = face.Nodes();
+		for (int k = 0; k < nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
 		switch (nfn)
 		{
 		case 3: ef.name("tri3"); break;

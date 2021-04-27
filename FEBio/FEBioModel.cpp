@@ -720,6 +720,7 @@ FEBioModel::LogVariable::LogVariable(const LogVariable& log)
 	m_type = log.m_type;
 	m_data = log.m_data;
 	m_groupID = log.m_groupID;
+	m_file = log.m_file;
 }
 
 void FEBioModel::LogVariable::operator=(const LogVariable& log)
@@ -727,6 +728,7 @@ void FEBioModel::LogVariable::operator=(const LogVariable& log)
 	m_type = log.m_type;
 	m_data = log.m_data;
 	m_groupID = log.m_groupID;
+	m_file = log.m_file;
 }
 
 FEBioModel::LogVariable::LogVariable(int ntype, const std::string& data)
@@ -862,6 +864,10 @@ FEItemListBuilder* FEBioModel::BuildItemList(const char* szname)
 		if (strncmp(szname, "@surface", n) == 0)
 		{
 			return BuildFESurface(szname + n + 1);
+		}
+		else if (strncmp(szname, "@elem_set", n) == 0)
+		{
+			return BuildFEPart(szname + n + 1);
 		}
 		else return nullptr;
 	}
@@ -1008,7 +1014,10 @@ bool FEBioModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szname)
 			{
 				n0 = po->MakeGNode(n0);
 				n1 = po->MakeGNode(n1);
-				set.AddElement(n0, n1);
+
+				GNode* pn0 = po->FindNode(n0); assert(pn0);
+				GNode* pn1 = po->FindNode(n1); assert(pn1);
+				set.AddElement(pn0, pn1);
 			}
 			else
 			{

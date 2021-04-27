@@ -954,11 +954,13 @@ FEMesh* FERefineMesh::Apply(FEMesh* pm)
 
 	// apply the refine modifier
 	FEMesh* pmold = pm;
+	setProgress(0.0);
 	for (int i=0; i<niter; ++i)
 	{
 		FEMesh* pmnew = mod->Apply(pmold);
 		if (i != 0) delete pmold;
 		pmold = pmnew;
+		setProgress(100.0*(i + 1.0) / (double)niter);
 	}
 
 	delete mod;
@@ -970,107 +972,203 @@ FEMesh* FERefineMesh::Apply(FEMesh* pm)
 // FEConvertMesh
 //-----------------------------------------------------------------------------
 
+// NOTE: To add a new mesh convertor:
+// 1. Add a new enum value in the enum below, but add it before the END_OF_LIST item. 
+// 2. Add a new string in the FEConvertMeshOptions array in the same location
+// 3. update the switch statement inside UpdateData.
+// 4. Add the new option in the switch statement in Apply
+// Make sure when calling buildMeshConvertOptions that the list parameter value is END_OF_LIST!
+enum ConvertMeshOptions {
+	QUAD4_TO_TRI3,
+	HEX8_TO_TET4,
+	TET4_TO_TET5,
+	TET4_TO_TET10,
+	TET4_TO_TET15,
+	TET4_TO_TET20,
+	TET4_TO_HEX8,
+	TET5_TO_TET4,
+	TET10_TO_TET4,
+	TET15_TO_TET4,
+	HEX8_TO_HEX20,
+	HEX20_TO_HEX8,
+	QUAD4_TO_QUAD8,
+	QUAD8_TO_QUAD4,
+	TRI3_TO_TRI6,
+	TRI6_TO_TRI3,
+	LINEAR_TO_QUADRATIC,
+	QUADRATIC_TO_LINEAR,
+	END_OF_LIST // this has to be the last item!
+};
+
+const char* FEConvertMeshOptions[] = {
+		"Quad4 to Tri3",
+		"Hex8 to Tet4",
+		"Tet4 to Tet5",
+		"Tet4 to Tet10",
+		"Tet4 to Tet15",
+		"Tet4 to Tet20",
+		"Tet4 to Hex8",
+		"Tet5 to Tet4",
+		"Tet10 to Tet4",
+		"Tet15 to Tet4",
+		"Hex8 to Hex20",
+		"Hex20 to Hex8",
+		"Quad4 to Quad8",
+		"Quad8 to Quad4",
+		"Tri3 to Tri6",
+		"Tri6 to Tri3",
+		"Linear to Quadratic",
+		"Quadratic to Linear" };
+
+// function to build the enum string for the options parameter. Make sure that the last argument
+// to this function is END_OF_LIST
+void buildMeshConvertOptions(char* sz, ...)
+{
+	// get a pointer to the argument list
+	va_list	args;
+
+	// copy to string
+	va_start(args, sz);
+	int n = va_arg(args, int);
+	while (n != END_OF_LIST)
+	{
+		const char* szn = FEConvertMeshOptions[n]; assert(szn);
+		int l = strlen(szn);
+		strcpy(sz, szn);
+		sz += l + 1;
+		n = va_arg(args, int);
+	}
+	*sz = 0;
+	
+	va_end(args);
+}
+
+void buildAllMeshConvertOptions(char* sz)
+{
+	for (int i = 0; i < END_OF_LIST; ++i)
+	{
+		buildMeshConvertOptions(sz, i, -1);
+	}
+}
+
+int getModifierID(const char* szmod)
+{
+	for (int i = 0; i < END_OF_LIST; ++i)
+	{
+		const char* szn = FEConvertMeshOptions[i]; assert(szn);
+		if (strcmp(szmod, szn) == 0) return i;
+	}
+	return -1;
+}
+
 FEConvertMesh::FEConvertMesh() : FEModifier("Convert")
 {
-	const char* szops = \
-		"Quad4 to Tri3\0"\
-		"Hex8 to Tet4\0"\
-		"Tet4 to Tet5\0"\
-		"Tet4 to Tet10\0"\
-		"Tet4 to Tet15\0"\
-		"Tet4 to Tet20\0"\
-		"Tet4 to Hex8\0"\
-		"Tet5 to Tet4\0"\
-		"Tet10 to Tet4\0"\
-		"Tet15 to Tet4\0"\
-		"Hex8 to Hex20\0"\
-		"Hex20 to Hex8\0"\
-		"Quad4 to Quad8\0"\
-		"Quad8 to Quad4\0"\
-		"Tri3 to Tri6\0"\
-		"Tri6 to Tri 3\0"\
-		"Linear to Quadratic\0"\
-		"Quadratic to Linear\0\0";
-
-	AddIntParam(0, "convert", "Convert")->SetEnumNames(szops);
+	AddIntParam(0, "convert", "Convert");
 	AddBoolParam(false, "smooth", "smooth surface");
+
+	m_currentType = -2;
+}
+
+bool FEConvertMesh::UpdateData(bool bsave)
+{
+	GObject* po = GObject::GetActiveObject();
+	if (po == nullptr) return false;
+
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return false;
+
+	// get the mesh type
+	int meshType = pm->GetMeshType();
+
+	if (meshType == m_currentType) return false;
+
+	// get the enum params
+	Param& p = GetParam(0);
+	char sz[512] = { 0 };
+	switch (meshType)
+	{
+	case FE_QUAD4: buildMeshConvertOptions(sz, QUAD4_TO_TRI3, QUAD4_TO_QUAD8, END_OF_LIST); break;
+	case FE_HEX8 : buildMeshConvertOptions(sz, HEX8_TO_HEX20, HEX8_TO_TET4, END_OF_LIST); break;
+	case FE_TET4 : buildMeshConvertOptions(sz, TET4_TO_HEX8, TET4_TO_TET10, TET4_TO_TET15, TET4_TO_TET20, TET4_TO_TET5, END_OF_LIST); break;
+	case FE_TET5 : buildMeshConvertOptions(sz, TET5_TO_TET4, END_OF_LIST); break;
+	case FE_TET10: buildMeshConvertOptions(sz, TET10_TO_TET4, END_OF_LIST); break;
+	case FE_TET15: buildMeshConvertOptions(sz, TET15_TO_TET4, END_OF_LIST); break;
+	case FE_HEX20: buildMeshConvertOptions(sz, HEX20_TO_HEX8, END_OF_LIST); break;
+	case FE_QUAD8: buildMeshConvertOptions(sz, QUAD8_TO_QUAD4, END_OF_LIST); break;
+	case FE_TRI3 : buildMeshConvertOptions(sz, TRI3_TO_TRI6, END_OF_LIST); break;
+	case FE_TRI6 : buildMeshConvertOptions(sz, TRI6_TO_TRI3, END_OF_LIST); break;
+	default:
+		// add them all
+		buildAllMeshConvertOptions(sz);
+	}
+	p.CopyEnumNames(sz);
+	p.SetIntValue(0);
+
+	m_currentType = meshType;
+
+	return true;
 }
 
 FEMesh* FEConvertMesh::Apply(FEMesh* pm)
 {
+	// get the chosen option
 	int nsel = GetIntValue(0);
+	if (nsel < 0) return nullptr;
+
+	// convert to string
+	const char* sz = GetParam(0).GetEnumName(nsel);
+	if (sz == nullptr) return nullptr;
+
+	// get the corresponding modifier ID
+	int nmod = getModifierID(sz);
+
+	// get the smooth option
 	bool bsmooth = GetBoolValue(1);
 
-	FEModifier* pmod = 0;
-	switch (nsel)
+	// create the specific convertor
+	m_mod = nullptr;
+	switch (nmod)
 	{
-	case 0: pmod = new FEQuad2Tri; break;
-	case 1: pmod = new FEHex2Tet; break;
-	case 2: pmod = new FETet4ToTet5; break;
-	case 3:
-		{
-			  FETet4ToTet10* pfe = new FETet4ToTet10;
-			  pfe->SetSmoothing(bsmooth);
-			  pmod = pfe;
-		}
-		break;
-	case 4:
-		{
-			  FETet4ToTet15* pfe = new FETet4ToTet15;
-			  pfe->SetSmoothing(bsmooth);
-			  pmod = pfe;
-		}
-		break;
-	case 5: pmod = new FETet4ToTet20; break;
-	case 6: 
-		{
-			FETet4ToHex8* pfe = new FETet4ToHex8;
-			pfe->SetSmoothing(bsmooth);
-			pmod = pfe;
-		}
-		break;
-	case 7: pmod = new FETet5ToTet4; break;
-	case 8: pmod = new FETet10ToTet4; break;
-	case 9: pmod = new FETet15ToTet4; break;
-	case 10:
-		{
-			  FEHex8ToHex20* pfe = new FEHex8ToHex20;
-			  pfe->SetSmoothing(bsmooth);
-			  pmod = pfe;
-		}
-		break;
-	case 11: pmod = new FEHex20ToHex8; break;
-	case 12:
-		{
-			  FEQuad4ToQuad8* pfe = new FEQuad4ToQuad8;
-			  pfe->SetSmoothing(bsmooth);
-			  pmod = pfe;
-		}
-		break;
-	case 13: pmod = new FEQuad8ToQuad4; break;
-	case 14:
-		{
-			FETri3ToTri6* pfe = new FETri3ToTri6;
-			pfe->SetSmoothing(bsmooth);
-			pmod = pfe;
-		}
-		break;
-	case 15: pmod = new FETri6ToTri3; break;
-	case 16: pmod = new FELinearToQuadratic; break;
-	case 17: pmod = new FEQuadraticToLinear; break;
+	case QUAD4_TO_TRI3 : m_mod = new FEQuad2Tri; break;
+	case HEX8_TO_TET4  : m_mod = new FEHex2Tet; break;
+	case TET4_TO_TET5  : m_mod = new FETet4ToTet5; break;
+	case TET4_TO_TET10 : m_mod = new FETet4ToTet10(bsmooth); break;
+	case TET4_TO_TET15 : m_mod = new FETet4ToTet15(bsmooth); break;
+	case TET4_TO_TET20 : m_mod = new FETet4ToTet20; break;
+	case TET4_TO_HEX8  : m_mod = new FETet4ToHex8(bsmooth); break;
+	case TET5_TO_TET4  : m_mod = new FETet5ToTet4; break;
+	case TET10_TO_TET4 : m_mod = new FETet10ToTet4; break;
+	case TET15_TO_TET4 : m_mod = new FETet15ToTet4; break;
+	case HEX8_TO_HEX20 : m_mod = new FEHex8ToHex20(bsmooth); break;
+	case HEX20_TO_HEX8 : m_mod = new FEHex20ToHex8; break;
+	case QUAD4_TO_QUAD8: m_mod = new FEQuad4ToQuad8(bsmooth); break;
+	case QUAD8_TO_QUAD4: m_mod = new FEQuad8ToQuad4; break;
+	case TRI3_TO_TRI6  : m_mod = new FETri3ToTri6(bsmooth); break;
+	case TRI6_TO_TRI3  : m_mod = new FETri6ToTri3; break;
+	case LINEAR_TO_QUADRATIC: m_mod = new FELinearToQuadratic; break;
+	case QUADRATIC_TO_LINEAR: m_mod = new FEQuadraticToLinear; break;
 	default:
 		FEModifier::SetError("Unknown converter selected");
 		assert(false);
 		return 0;
 	}
 
-	if (pmod)
+	// apply it
+	if (m_mod)
 	{
-		FEMesh* newMesh = pmod->Apply(pm);
-		delete pmod;
+		FEMesh* newMesh = m_mod->Apply(pm);
+		FEModifier* tmp = m_mod; m_mod = nullptr;
+		delete tmp;
 		return newMesh;
 	}
 	else return 0;
+}
+
+// return progress
+FSTaskProgress FEConvertMesh::GetProgress()
+{
+	if (m_mod) return m_mod->GetProgress();
+	else return FEModifier::GetProgress();
 }
 
 //=============================================================================

@@ -29,9 +29,9 @@ SOFTWARE.*/
 #include "FEModifier.h"
 
 //-----------------------------------------------------------------------------
-FETri3ToTri6::FETri3ToTri6() : FEModifier("Tri3-to-Tri6")
+FETri3ToTri6::FETri3ToTri6(bool bsmooth) : FEModifier("Tri3-to-Tri6")
 {
-    m_bsmooth = false;
+    m_bsmooth = bsmooth;
 }
 
 //-----------------------------------------------------------------------------
@@ -231,6 +231,7 @@ FEMesh* FETri3ToTri6::Apply(FEMesh* pm)
         f1.n[5] = FE[i][2] + NN;
         f1.m_elem[0] = f0.m_elem[0];
         f1.m_elem[1] = f0.m_elem[1];
+        f1.m_elem[2] = f0.m_elem[2];
         f1.m_nbr[0] = f0.m_nbr[0];
         f1.m_nbr[1] = f0.m_nbr[1];
         f1.m_nbr[2] = f0.m_nbr[2];
@@ -563,6 +564,7 @@ FEMesh* FETri6ToTri3::Apply(FEMesh* pm)
         f1.n[2] = f0.n[2];
         f1.m_elem[0] = f0.m_elem[0];
         f1.m_elem[1] = f0.m_elem[1];
+        f1.m_elem[2] = f0.m_elem[2];
         f1.m_nbr[0] = f0.m_nbr[0];
         f1.m_nbr[1] = f0.m_nbr[1];
         f1.m_nbr[2] = f0.m_nbr[2];

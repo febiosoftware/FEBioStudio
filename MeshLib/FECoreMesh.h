@@ -52,6 +52,9 @@ public:
 	//! check the type of the mesh
 	bool IsType(int ntype) const;
 
+	//! get the mesh type (returns -1 for mixed meshes)
+	int GetMeshType() const;
+
 public: // interface for accessing elements
 
 	//! total number of elements
@@ -116,6 +119,9 @@ public:
 
 	// returns a list of node indices that belong to a part with part ID gid
 	void FindNodesFromPart(int gid, vector<int>& node);
+
+	// find a node from its ID
+	FENode* FindNodeFromID(int gid);
 
 	int CountNodePartitions() const;
 	int CountEdgePartitions() const;

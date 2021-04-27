@@ -105,3 +105,8 @@ FELoadCurve* FE1DPointFunction::GetPointCurve()
 {
 	return GetParamLC(0);
 }
+
+void FE1DPointFunction::SetPointCurve(FELoadCurve& lc)
+{
+	GetParam(0).SetLoadCurve(lc);
+}

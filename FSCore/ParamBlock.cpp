@@ -78,9 +78,16 @@ Param* Param::CopyEnumNames(const char* sz)
 	m_bcopy = false;
 	if (sz)
 	{
-		int l = (int) strlen(sz);
-		m_szenum = new char[l+1];
-		strncpy(m_szenum, sz, l);
+		int l = 0;
+		const char* ch = sz;
+		while (*ch)
+		{
+			int l1 = (int)strlen(ch) + 1;
+			ch += l1;
+			l += l1;
+		}
+		m_szenum = new char[l + 1];
+		for (int i=0; i<l; ++i) m_szenum[i] = sz[i];
 		m_szenum[l] = 0;
 		m_bcopy = true;
 	}
@@ -273,7 +280,7 @@ Param& Param::operator = (const Param& p)
 //	m_nstate = p.m_nstate;
 //  m_szindx = p.m_szindx;
 //  m_nindx = p.m_nindx;
-	m_offset = p.m_offset;
+//	m_offset = p.m_offset;
 	m_isVariable = p.m_isVariable;
 //	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;

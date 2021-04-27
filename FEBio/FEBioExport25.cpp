@@ -929,7 +929,9 @@ bool FEBioExport25::Write(const char* szfile)
 	}
 	catch (InvalidItemListBuilder e)
 	{
-		return errf("Invalid reference to mesh item list when exporting:\n%s", (e.m_po ? e.m_po->GetName().c_str() : "(unknown)"));
+		const char* sz = "(unknown)";
+		if (e.m_name.empty() == false) sz = e.m_name.c_str();
+		return errf("Invalid reference to mesh item list when exporting:\n%s", sz);
 	}
 	catch (MissingRigidBody e)
 	{
@@ -1850,6 +1852,9 @@ void FEBioExport25::WritePointCurve(FE1DPointFunction* f1d, XMLElement& el)
 		case FELoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "linear"); break;
 		case FELoadCurve::LC_STEP  : m_xml.add_leaf("interpolate", "step"); break;
 		case FELoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "smooth"); break;
+        case FELoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "cubic spline"); break;
+        case FELoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "control points"); break;
+        case FELoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "approximation"); break;
 		}
 
 		int nextend = plc->GetExtend();
@@ -3277,6 +3282,9 @@ void FEBioExport25::WriteLoadsSection(FEStep& s)
     // fluid tractions
     WriteFluidTraction(s);
     
+    // fluid pressure loads
+    WriteFluidPressureLoad(s);
+    
     // fluid velocities
     WriteFluidVelocity(s);
     
@@ -3298,8 +3306,11 @@ void FEBioExport25::WriteLoadsSection(FEStep& s)
     // fluid tangential stabilization
     WriteFluidTangentialStabilization(s);
     
-    // fluid normal velocities
+    // fluid-FSI traction
     WriteFSITraction(s);
+    
+    // biphasic-FSI traction
+    WriteBFSITraction(s);
     
 }
 
@@ -4102,6 +4113,35 @@ void FEBioExport25::WriteFluidTraction(FEStep& s)
 }
 
 //----------------------------------------------------------------------------
+// Export fluid pressure loads
+//
+void FEBioExport25::WriteFluidPressureLoad(FEStep& s)
+{
+    for (int j=0; j<s.Loads(); ++j)
+    {
+        FEFluidPressureLoad* pbc = dynamic_cast<FEFluidPressureLoad*>(s.Load(j));
+        if (pbc && pbc->IsActive())
+        {
+            if (m_writeNotes) m_xml.add_comment(pbc->GetInfo());
+            
+            // create the surface list
+            FEItemListBuilder* pitem = pbc->GetItemList();
+            if (pitem == 0) throw InvalidItemListBuilder(pbc);
+            
+            XMLElement load;
+            load.name("surface_load");
+            load.add_attribute("type", "fluid pressure");
+            load.add_attribute("surface", GetSurfaceName(pitem));
+            m_xml.add_branch(load);
+            {
+                WriteParamList(*pbc);
+            }
+            m_xml.close_branch(); // surface_load
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
 // Export fluid velocities
 //
 void FEBioExport25::WriteFluidVelocity(FEStep& s)
@@ -4171,6 +4211,10 @@ void FEBioExport25::WriteFluidNormalVelocity(FEStep& s)
                 XMLElement bparab("parabolic");
                 bparab.value(ptc->GetBParab());
                 m_xml.add_leaf(bparab);
+                
+                XMLElement brimp("prescribe_rim_pressure");
+                brimp.value(ptc->GetBRimP());
+                m_xml.add_leaf(brimp);
                 
             }
             m_xml.close_branch(); // surface_load
@@ -4397,7 +4441,7 @@ void FEBioExport25::WriteFluidTangentialStabilization(FEStep& s)
 }
 
 //----------------------------------------------------------------------------
-// Export FSI traction
+// Export fluid-FSI traction
 //
 void FEBioExport25::WriteFSITraction(FEStep& s)
 {
@@ -4413,6 +4457,30 @@ void FEBioExport25::WriteFSITraction(FEStep& s)
             
             XMLElement flux("surface_load");
             flux.add_attribute("type", "fluid-FSI traction");
+            flux.add_attribute("surface", GetSurfaceName(pitem));
+            m_xml.add_branch(flux);
+            m_xml.close_branch(); // surface_load
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+// Export biphasic-FSI traction
+//
+void FEBioExport25::WriteBFSITraction(FEStep& s)
+{
+    for (int j=0; j<s.Loads(); ++j)
+    {
+        FEBFSITraction* ptc = dynamic_cast<FEBFSITraction*>(s.Load(j));
+        if (ptc && ptc->IsActive())
+        {
+            if (m_writeNotes) m_xml.add_comment(ptc->GetInfo());
+            
+            FEItemListBuilder* pitem = ptc->GetItemList();
+            if (pitem == 0) throw InvalidItemListBuilder(ptc);
+            
+            XMLElement flux("surface_load");
+            flux.add_attribute("type", "biphasic-FSI traction");
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             m_xml.close_branch(); // surface_load
@@ -4846,6 +4914,9 @@ void FEBioExport25::WriteLoadDataSection()
 		case FELoadCurve::LC_STEP  : el.add_attribute("type", "step"  ); break;
 		case FELoadCurve::LC_LINEAR: el.add_attribute("type", "linear"); break;
 		case FELoadCurve::LC_SMOOTH: el.add_attribute("type", "smooth"); break;
+        case FELoadCurve::LC_CSPLINE: el.add_attribute("interpolate", "cubic spline"); break;
+        case FELoadCurve::LC_CPOINTS: el.add_attribute("interpolate", "control points"); break;
+        case FELoadCurve::LC_APPROX: el.add_attribute("interpolate", "approximation"); break;
 		}
 
 		switch (plc->GetExtend())

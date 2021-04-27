@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include "FEModifier.h"
 
 //-----------------------------------------------------------------------------
-FEQuad4ToQuad8::FEQuad4ToQuad8() : FEModifier("Quad4-to-Quad8")
+FEQuad4ToQuad8::FEQuad4ToQuad8(bool bsmooth) : FEModifier("Quad4-to-Quad8")
 {
-    m_bsmooth = false;
+    m_bsmooth = bsmooth;
 }
 
 //-----------------------------------------------------------------------------
@@ -236,6 +236,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
         f1.n[7] = FE[i][3] + NN;
         f1.m_elem[0] = f0.m_elem[0];
         f1.m_elem[1] = f0.m_elem[1];
+        f1.m_elem[2] = f0.m_elem[2];
         f1.m_nbr[0] = f0.m_nbr[0];
         f1.m_nbr[1] = f0.m_nbr[1];
         f1.m_nbr[2] = f0.m_nbr[2];
@@ -503,11 +504,11 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
     int NC = pm->Edges();
     
     // count the number of corner nodes
-    for (int i=0; i<NN; ++i) pm->Node(i).m_ntag = -1;
+    for (int i=0; i<NN; ++i) pm->Node(i).m_ntag = 1;
     for (int i=0; i<NE; ++i)
     {
         FEElement& el = pm->Element(i);
-        for (int j=0; j<4; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+        for (int j=4; j<8; ++j) pm->Node(el.m_node[j]).m_ntag = -1;
     }
     int nn = 0;
     for (int i=0; i<NN; ++i)
@@ -572,6 +573,7 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
         f1.n[3] = f0.n[3];
         f1.m_elem[0] = f0.m_elem[0];
         f1.m_elem[1] = f0.m_elem[1];
+        f1.m_elem[2] = f0.m_elem[2];
         f1.m_nbr[0] = f0.m_nbr[0];
         f1.m_nbr[1] = f0.m_nbr[1];
         f1.m_nbr[2] = f0.m_nbr[2];
@@ -584,7 +586,7 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
         FEEdge& e0 = pm->Edge(i);
         FEEdge& e1 = pnew->Edge(i);
         
-		e1.SetType(FE_EDGE3);
+		e1.SetType(FE_EDGE2);
         e1.n[0] = e0.n[0];
         e1.n[1] = e0.n[1];
         e1.n[2] = -1;

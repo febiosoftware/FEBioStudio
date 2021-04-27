@@ -201,6 +201,7 @@ public:
 	QAction* actionSoluteTable;
 	QAction* actionSBMTable;
 	QAction* actionAddReaction;
+    QAction* actionAddMembraneReaction;
 
 	QComboBox* coord;
 
@@ -425,6 +426,7 @@ public:
 		QAction* actionNameSelection     = addAction("Name Selection ...", "actionNameSelection"    ); actionNameSelection->setShortcut(Qt::ControlModifier + Qt::Key_G);
 		QAction* actionHideSelection     = addAction("Hide Selection"    , "actionHideSelection"    ); actionHideSelection->setShortcut(Qt::Key_H);
 		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier + Qt::Key_H);
+		QAction* actionSyncSelection     = addAction("Sync selection"    , "actionSyncSelection"    ); actionSyncSelection->setShortcut(Qt::AltModifier + Qt::Key_F);
 		QAction* actionUnhideAll         = addAction("Unhide All"        , "actionUnhideAll"        );
 		QAction* actionFind              = addAction("Find ..."          , "actionFind"             ); //actionFind->setShortcut(Qt::ControlModifier + Qt::Key_F);
 		QAction* actionSelectRange       = addAction("Select Range ...", "actionSelectRange"     );
@@ -469,11 +471,13 @@ public:
 		actionSoluteTable        = addAction("Solute Table ..."              , "actionSoluteTable");
 		actionSBMTable           = addAction("Solid-bound Molecule Table ...", "actionSBMTable");
 		actionAddReaction        = addAction("Chemical Reaction Editor ..."  , "actionAddReaction");
+        actionAddMembraneReaction= addAction("Membrane Reaction Editor ..."  , "actionAddMembraneReaction");
 		QAction* actionEditProject = addAction("Edit Physics Modules ...", "actionEditProject");
 
 		// --- Tools menu ---
 		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F9);
-		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", "inspect");
+		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", "inspect"); actionMeshInspector->setShortcut(Qt::Key_F10);
+		QAction* actionMeshDiagnostic = addAction("Mesh Diagnostic ...", "actionMeshDiagnostic"); actionMeshDiagnostic->setShortcut(Qt::Key_F11);
 		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
 		QAction* actionUnitConverter = addAction("Unit Converter ...", "actionUnitConverter");
 		QAction* actionKinemat = addAction("Kinemat ...", "actionKinemat");
@@ -691,6 +695,7 @@ public:
 		moreSelection->addAction(actionSelectIsolatedVertices);
 		moreSelection->addAction(actionGrowSelection);
 		moreSelection->addAction(actionShrinkSelection);
+		moreSelection->addAction(actionSyncSelection);
 
 		// Edit menu
 		menuBar->addAction(menuEdit->menuAction());
@@ -746,6 +751,7 @@ public:
 		menuPhysics->addAction(actionSoluteTable);
 		menuPhysics->addAction(actionSBMTable);
 		menuPhysics->addAction(actionAddReaction);
+        menuPhysics->addAction(actionAddMembraneReaction);
 		menuPhysics->addSeparator();
 		menuPhysics->addAction(actionEditProject);
 
@@ -795,6 +801,7 @@ public:
 		menuBar->addAction(menuTools->menuAction());
 		menuTools->addAction(actionCurveEditor);
 		menuTools->addAction(actionMeshInspector);
+		menuTools->addAction(actionMeshDiagnostic);
 		menuTools->addAction(actionUnitConverter);
 		menuTools->addAction(actionElasticityConvertor);
 		menuTools->addAction(actionKinemat);

@@ -496,7 +496,6 @@ protected:
 	GLBox*			m_psubtitle;
 	GLTriad*		m_ptriad;
 	GLSafeFrame*	m_pframe;
-	char			m_szsubtitle[256];
 
 	CGLWidgetManager*	m_Widget;
 

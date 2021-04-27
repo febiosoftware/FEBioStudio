@@ -64,7 +64,6 @@ public:
 	void LoadParam(const Param& p);
 };
 
-
 //-----------------------------------------------------------------------------
 // Mixture Normal Traction surface boundary load
 //
@@ -230,6 +229,26 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// fluid pressure boundary conditions
+//
+class FEFluidPressureLoad : public FESurfaceLoad
+{
+public:
+    enum { LOAD };
+    
+public:
+    FEFluidPressureLoad(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    
+    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    
+    void SetLoad(double f) { SetFloatValue(LOAD, f); }
+    double GetLoad() { return GetFloatValue(LOAD); }
+    
+    // used only for reading parameters for old file formats
+    void LoadParam(const Param& p);
+};
+
+//-----------------------------------------------------------------------------
 
 class FEFluidVelocity : public FESurfaceLoad
 {
@@ -251,11 +270,11 @@ public:
 class FEFluidNormalVelocity : public FESurfaceLoad
 {
 public:
-    enum {LOAD, BP, BPARAB};
+    enum {LOAD, BP, BPARAB, BRIMP};
     
 public:
     FEFluidNormalVelocity(FEModel* ps);
-    FEFluidNormalVelocity(FEModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, int nstep = 0);
+    FEFluidNormalVelocity(FEModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep = 0);
     
     FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
     
@@ -267,6 +286,9 @@ public:
     
     void SetBParab(bool b) { SetBoolValue(BPARAB, b); }
     bool GetBParab() { return GetBoolValue(BPARAB); }
+    
+    void SetBRimP(bool b) { SetBoolValue(BRIMP, b); }
+    bool GetBRimP() { return GetBoolValue(BRIMP); }
 };
 
 //-----------------------------------------------------------------------------
@@ -403,6 +425,17 @@ public:
     FEFSITraction(FEModel* ps, FEItemListBuilder* pi, int nstep = 0);
     FELoadCurve* GetLoadCurve() { return nullptr; }
 
+};
+
+//-----------------------------------------------------------------------------
+
+class FEBFSITraction : public FESurfaceLoad
+{
+public:
+    FEBFSITraction(FEModel* ps);
+    FEBFSITraction(FEModel* ps, FEItemListBuilder* pi, int nstep = 0);
+    FELoadCurve* GetLoadCurve() { return nullptr; }
+    
 };
 
 //-----------------------------------------------------------------------------

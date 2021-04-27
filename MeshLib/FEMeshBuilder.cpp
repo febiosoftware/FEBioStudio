@@ -207,6 +207,10 @@ void FEMeshBuilder::DeleteTaggedFaces(int tag)
 			{
 				m_mesh.Element(face.m_elem[1].eid).m_ntag = 1;
 			}
+			if (face.m_elem[2].eid >= 0)
+			{
+				m_mesh.Element(face.m_elem[2].eid).m_ntag = 1;
+			}
 		}
 	}
 
@@ -287,8 +291,11 @@ FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 		FEElement_* pe0 = mesh.ElementPtr(face.m_elem[0].eid);
 		if (pe0 == nullptr) { delete newMesh; return nullptr; }
 		FEElement_* pe1 = mesh.ElementPtr(face.m_elem[1].eid);
+		FEElement_* pe2 = mesh.ElementPtr(face.m_elem[2].eid);
 
-		if ((pe0->m_ntag == TAG) && ((pe1==nullptr) || (pe1->m_ntag == TAG)))
+		if ((pe0->m_ntag == TAG) && 
+			((pe1 == nullptr) || (pe1->m_ntag == TAG)) && 
+			((pe2 == nullptr) || (pe2->m_ntag == TAG)))
 		{
 			face.m_ntag = TAG;
 		}
@@ -379,7 +386,7 @@ FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 	// fix edge node numbering
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& edge = m_mesh.Edge(i);
+		FEEdge& edge = mesh.Edge(i);
 		int n = edge.Nodes();
 		for (int j = 0; j < n; ++j)
 		{
@@ -391,7 +398,7 @@ FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 
 	// remove the nodes
 	n = 0;
-	for (int i = 0; i < m_mesh.Nodes(); ++i)
+	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
 		FENode& n1 = mesh.Node(i);
 		FENode& n2 = mesh.Node(n);
@@ -415,6 +422,24 @@ FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 
 	// update edge data
 	mesh.RebuildEdgeData();
+
+	// It is possible that edges were cut and that new nodes need to be promoted
+	int ng = mesh.CountNodePartitions();
+	for (int i = 0; i < mesh.Edges(); ++i)
+	{
+		FEEdge& edge = mesh.Edge(i);
+		if (edge.m_gid >= 0)
+		{
+			for (int j = 0; j < 2; ++j)
+			{
+				if (edge.m_nbr[j] < 0)
+				{
+					FENode& node = mesh.Node(edge.n[j]);
+					if (node.m_gid < 0) node.m_gid = ng++;
+				}
+			}
+		}
+	}
 
 	// update node data
 	mesh.RebuildNodeData();
@@ -946,7 +971,7 @@ void FEMeshBuilder::RemoveDuplicateFaces()
 				fi.m_ntag = 1;
 
 				// we set the element indices to 0 to avoid deleting these elements
-				fi.m_elem[0].eid = fi.m_elem[1].eid = -1;
+				fi.m_elem[0].eid = fi.m_elem[1].eid = fi.m_elem[2].eid = -1;
 			}
 		}
 	}
@@ -1893,9 +1918,12 @@ void FEMeshBuilder::BuildEdges()
 	// tag all faces
 	for (int i = 0; i < m_mesh.Faces(); ++i) m_mesh.Face(i).m_ntag = i;
 
+	// keep node-edge table to prevent adding duplicate edges
+	int NN = m_mesh.Nodes();
+	vector<vector<int> > NET(NN);
+
 	// loop over all faces
 	int NF = m_mesh.Faces();
-	int NN = m_mesh.Nodes();
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& f = m_mesh.Face(i);
@@ -1906,10 +1934,33 @@ void FEMeshBuilder::BuildEdges()
 			if (((pfn == 0) && f.IsExternal()) || (pfn && (f.m_ntag < pfn->m_ntag)))
 			{
 				FEEdge e = f.GetEdge(j);
-				e.m_gid = ((pfn == 0) || (f.m_gid != pfn->m_gid) ? 0 : -1);
-				e.SetID((int)m_mesh.m_Edge.size() + 1);
-				e.SetExterior(e.m_gid == 0);
-				m_mesh.m_Edge.push_back(e);
+
+				// see if this node already exists
+				bool bfound = false;
+				vector<int>& net = NET[e.n[0]];
+				for (int l = 0; l < net.size(); ++l)
+				{
+					FEEdge& el = m_mesh.Edge(net[l]);
+					if (el == e)
+					{
+						// the edge already exists, so don't add it
+						bfound = true;
+						break;
+					}
+				}
+
+				// If not, then process and add
+				if (bfound == false)
+				{
+					e.m_gid = ((pfn == 0) || (f.m_gid != pfn->m_gid) ? 0 : -1);
+					e.SetID((int)m_mesh.m_Edge.size() + 1);
+					e.SetExterior(e.m_gid == 0);
+
+					int edgeIndex = m_mesh.Edges();
+					m_mesh.m_Edge.push_back(e);
+					NET[e.n[0]].push_back(edgeIndex);
+					NET[e.n[1]].push_back(edgeIndex);
+				}
 			}
 		}
 	}

@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include "GLWidget.h"
 #include <assert.h>
 #include "convert.h"
+#include <sstream>
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -48,6 +49,8 @@ using namespace Post;
 GLWidget* GLWidget::m_pfocus = 0;
 
 GLColor GLWidget::m_base = GLColor(0,0,0);
+
+std::map<std::string, std::string>	GLWidget::m_stringTable;
 
 GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
 {
@@ -116,6 +119,67 @@ bool GLWidget::is_inside(int x, int y)
 	return false;
 }
 
+std::string GLWidget::processLabel() const
+{
+	if ((m_szlabel == 0) || (m_szlabel[0] == 0)) return "";
+
+	char s[256] = { 0 };
+	stringstream ss;
+	char* c = m_szlabel;
+	while (*c)
+	{
+		if (*c == '$')
+		{
+			char* c2 = c;
+			++c;
+			if (*c && (*c == '('))
+			{
+				while (*c && (*c != ')')) ++c;
+				if (*c && (*c == ')'))
+				{
+					++c;
+					int l = c - c2;
+					strncpy(s, c2, l);
+					s[l] = 0;
+
+					ss << getStringTableValue(s);
+				}
+			}
+		}
+		else if (*c == '\\')
+		{
+			++c;
+			if (*c == 'n') ss << "\n";
+			
+			if (*c) c++;
+		}
+		else ss << *c++;
+	}
+	return ss.str();
+}
+
+void GLWidget::clearStringTable()
+{
+	m_stringTable.clear();
+}
+
+void GLWidget::addToStringTable(const std::string& key, const std::string& value)
+{
+	m_stringTable[key] = value;
+}
+
+void GLWidget::addToStringTable(const std::string& key, double value)
+{
+	char s[256] = { 0 };
+	sprintf(s, "%.4g", value);
+	m_stringTable[key] = s;
+}
+
+std::string GLWidget::getStringTableValue(const std::string& key)
+{
+	return m_stringTable[key];
+}
+
 //-----------------------------------------------------------------------------
 
 GLBox::GLBox(int x, int y, int w, int h, const char *szlabel) : GLWidget(x, y, w, h, szlabel)
@@ -127,10 +191,11 @@ GLBox::GLBox(int x, int y, int w, int h, const char *szlabel) : GLWidget(x, y, w
 
 void GLBox::fit_to_size()
 {
-	if (m_szlabel)
+	if (m_szlabel && (m_szlabel[0] != 0))
 	{
+		string s = processLabel();
 		QFontMetrics fm(m_font);
-		QSize size = fm.size(Qt::TextExpandTabs, m_szlabel);
+		QSize size = fm.size(Qt::TextExpandTabs, QString::fromStdString(s));
 		resize(x(), y(), size.width() + 2 * m_margin, size.height() + 2 * m_margin);
 	}
 }
@@ -186,18 +251,19 @@ void GLBox::draw(QPainter* painter)
 
 	if (m_szlabel)
 	{
+		string label = processLabel();
 		if (m_bshadow)
 		{
 			int dx = m_font.pointSize()/10+1;
 			painter->setPen(QColor(m_shc.r, m_shc.g, m_shc.b));
 			painter->setFont(m_font);
-			painter->drawText(x0+dx, y0+dx, w, h, Qt::AlignLeft| Qt::AlignVCenter, QString(m_szlabel));
+			painter->drawText(x0+dx, y0+dx, w, h, Qt::AlignLeft| Qt::AlignVCenter, QString::fromStdString(label));
 		}
 		QPen pen = painter->pen();
 		pen.setColor(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
 		painter->setFont(m_font);
 		painter->setPen(pen);
-		painter->drawText(x0, y0, w, h, Qt::AlignLeft| Qt::AlignVCenter, QString(m_szlabel));
+		painter->drawText(x0, y0, w, h, Qt::AlignLeft| Qt::AlignVCenter, QString::fromStdString(label));
 	}
 }
 

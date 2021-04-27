@@ -425,8 +425,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	setMouseTracking(true);
 
-	m_szsubtitle[0] = 0;
-
 	m_showPlaneCut = false;
 	m_planeCutMode = 0;
 	m_plane[0] = 1.0;
@@ -1256,11 +1254,13 @@ void CGLView::initializeGL()
 	m_Widget->AddWidget(m_ptitle = new GLBox(20, 20, 300, 50, ""), 0);
 	m_ptitle->set_font_size(30);
 	m_ptitle->fit_to_size();
+	m_ptitle->set_label("$(filename)");
 	Y += m_ptitle->h();
 
 	m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""), 0);
 	m_psubtitle->set_font_size(15);
 	m_psubtitle->fit_to_size();
+	m_psubtitle->set_label("$(datafield)\\nTime = $(time)");
 
 	m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
 	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
@@ -1278,22 +1278,8 @@ void CGLView::initializeGL()
 void CGLView::Reset()
 {
 	// default display properties
-	m_view.Defaults();
-
-	// set some theme dependant settings
 	int ntheme = m_pWnd->currentTheme();
-	if (ntheme == 0)
-	{
-		m_view.m_col1 = GLColor(255, 255, 255);
-		m_view.m_col2 = GLColor(128, 128, 255);
-		m_view.m_nbgstyle = BG_HORIZONTAL;
-	}
-	else
-	{
-		m_view.m_col1 = GLColor(83, 83, 83);
-		m_view.m_col2 = GLColor(128, 128, 128);
-		m_view.m_nbgstyle = BG_HORIZONTAL;
-	}
+	m_view.Defaults(ntheme);
 
 	GLHighlighter::ClearHighlights();
 	repaint();
@@ -1306,8 +1292,6 @@ void CGLView::UpdateWidgets(bool bposition)
 
 	if (postDoc && postDoc->IsValid())
 	{
-		const string& title = postDoc->GetDocFileName();
-		m_ptitle->copy_label(title.c_str());
 		m_ptitle->fit_to_size();
 
 		int Y = 0;
@@ -1560,16 +1544,14 @@ void CGLView::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// render the title
+	// Update GLWidget string table for post rendering
 	if (postDoc)
 	{
-		if (postDoc && postDoc->IsValid())// && view.m_bTitle)
+		if (postDoc && postDoc->IsValid())
 		{
-			string title = postDoc->GetDocFileBase();
-			m_ptitle->copy_label(title.c_str());
-
-			sprintf(m_szsubtitle, "%s\nTime = %.4g", postDoc->GetFieldString().c_str(), postDoc->GetTimeValue());
-			m_psubtitle->set_label(m_szsubtitle);
+			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
+			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
+			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
 		}
 	}
 
@@ -1669,6 +1651,10 @@ void CGLView::RenderModelView()
 		if (m_planeCut == nullptr) UpdatePlaneCut();
 		if (m_planeCutMode == 0)
 		{
+			// render the plane cut first
+			if (m_planeCut) RenderPlaneCut();
+
+			// then turn on the clipping plane before rendering the other geometry
 			glClipPlane(GL_CLIP_PLANE0, m_plane);
 			glEnable(GL_CLIP_PLANE0);
 		}
@@ -1766,11 +1752,6 @@ void CGLView::RenderModelView()
 	}
 
 	glDisable(GL_CLIP_PLANE0);
-
-	if (m_showPlaneCut && m_planeCut && (m_planeCutMode == 0))
-	{
-		RenderPlaneCut();
-	}
 
 	// render the tags
 	if (view.m_bTags) RenderTags();
@@ -3757,7 +3738,6 @@ void CGLView::AddDecoration(GDecoration* deco)
 		if (deco == m_deco[i]) return;
 	}
 	m_deco.push_back(deco);
-	repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -3769,7 +3749,6 @@ void CGLView::RemoveDecoration(GDecoration* deco)
 		if (deco == m_deco[i])
 		{
 			m_deco.erase(m_deco.begin() + i);
-			repaint();
 			return;
 		}
 	}
@@ -4003,6 +3982,16 @@ void CGLView::SelectParts(int x, int y)
 							else if (gface->m_nPID[1] >= 0)
 							{
 								pid = gface->m_nPID[1];
+								part = po->Part(pid);
+								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+								{
+									closestPart = part;
+									minDist = distance;
+								}
+							}
+							else if (gface->m_nPID[2] >= 0)
+							{
+								pid = gface->m_nPID[2];
 								part = po->Part(pid);
 								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
 								{
@@ -4485,13 +4474,43 @@ void CGLView::SelectFEElements(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	ray.origin = po->GetTransform().GlobalToLocal(ray.origin);
-	ray.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
+	Ray localRay;
+	localRay.origin = po->GetTransform().GlobalToLocal(ray.origin);
+	localRay.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
 
 	// find the intersection
 	Intersection q;
 	CCommand* pcmd = 0;
-	if (FindElementIntersection(ray, *pm, q, m_bctrl))
+	bool bfound = FindElementIntersection(localRay, *pm, q, m_bctrl);
+
+	if (bfound && m_planeCut)
+	{
+		vec3d p = po->GetTransform().LocalToGlobal(q.point);
+
+		// see if the intersection lies behind the plane cut. 
+		double* a = m_plane;
+		double d = p.x*a[0] + p.y*a[1] + p.z*a[2] + a[3];
+		if (d < 0)
+		{
+			// find the intersection with the plane cut
+			bfound = FindFaceIntersection(ray, *m_planeCut, q);
+
+			if (bfound)
+			{
+				// conver the index from a face index into an element index
+				int nface = q.m_index;
+				if ((nface >= 0) && (nface < m_planeCut->Faces()))
+				{
+					GMesh::FACE& face = m_planeCut->Face(nface);
+					q.m_index = face.eid;
+					if (q.m_index < 0) bfound = false;
+				}
+				else bfound = false;
+			}
+		}
+	}
+
+	if (bfound)
 	{
 		int index = q.m_index;
 		if (view.m_bconn)
@@ -4521,12 +4540,6 @@ void CGLView::SelectFEElements(int x, int y)
 			// get the respect partition boundary flag
 			bool bpart = view.m_bpart;
 			int gid = pe->m_gid;
-			int fid = -1;
-			if (q.m_faceIndex >= 0)
-			{
-				FEFace& face = pm->Face(q.m_faceIndex);
-				fid = face.m_gid;
-			}
 
 			// now push the rest
 			int n;
@@ -4569,14 +4582,17 @@ void CGLView::SelectFEElements(int x, int y)
 					pe2 = pm->ElementPtr(pe->m_nbr[i]);
 					if (pe2->m_ntag >= 0 && pe2->IsVisible())
 					{
-						assert(pe2->m_face[0] >= 0);
-						if ((view.m_bmax == false) || (pm->Face(pe2->m_face[0]).m_fn*to_vec3f(t) >= tr))
+						int eface = pe2->m_face[0]; assert(eface >= 0);
+						if (eface >= 0)
 						{
-							if ((bpart == false) || (pe2->m_gid == gid))
+							if ((view.m_bmax == false) || (pm->Face(eface).m_fn*to_vec3f(t) >= tr))
 							{
-								pint[m++] = pe2->m_ntag;
-								pe2->m_ntag = -1;
-								stack.push(pe2);
+								if ((bpart == false) || (pe2->m_gid == gid))
+								{
+									pint[m++] = pe2->m_ntag;
+									pe2->m_ntag = -1;
+									stack.push(pe2);
+								}
 							}
 						}
 					}
@@ -4669,6 +4685,7 @@ void CGLView::SelectFEElements(int x, int y)
 		}
 	}
 
+	delete m_planeCut; m_planeCut = nullptr;
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
@@ -5676,7 +5693,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	for (int i = 0; i<lineMesh->Nodes(); ++i)
 	{
 		FENode& node = lineMesh->Node(i);
-		if (node.m_ntag == 0)
+		if (node.IsVisible() && (node.m_ntag == 0))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
 
@@ -5864,6 +5881,10 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
+
+		// if the exterior-only flag is off, make sure all solids are selectable
+		if ((view.m_bext == false) && el.IsSolid()) el.m_ntag = 0;
+
 		if ((el.m_ntag == 0) && el.IsVisible() && po->Part(el.m_gid)->IsVisible())
 		{
 			if ((view.m_bext == false) || el.IsExterior())
@@ -6116,7 +6137,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	for (int i = 0; i<NE; ++i)
 	{
 		FEEdge& edge = pm->Edge(i);
-		if (edge.m_ntag == 0)
+		if (edge.IsVisible() && (edge.m_ntag == 0))
 		{
 			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 			vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
@@ -7017,11 +7038,17 @@ void CGLView::RenderParts(GObject* po)
 		int* pid = f.m_nPID;
 
 		// get the part (that is visible)
-		GPart* pg = po->Part(pid[0]);
-		if ((pg->IsVisible() == false) || (pg->IsSelected()))
+		GPart* pg = po->Part(pid[0]); assert(pg);
+		if (pg && ((pg->IsVisible() == false) || (pg->IsSelected())))
 		{
 			if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
 			if (pg && ((pg->IsVisible() == false) || pg->IsSelected())) pg = 0;
+
+			if (pg == nullptr)
+			{
+				if (pid[2] >= 0) pg = po->Part(pid[2]); else pg = 0;
+				if (pg && ((pg->IsVisible() == false) || pg->IsSelected())) pg = 0;
+			}
 		}
 
 		// make sure we have a part
@@ -7086,7 +7113,8 @@ void CGLView::RenderSelectedParts(GObject* po)
 			GFace* pf = po->Face(i);
 			GPart* p0 = po->Part(pf->m_nPID[0]);
 			GPart* p1 = po->Part(pf->m_nPID[1]);
-			if (p0->IsSelected() || (p1 && p1->IsSelected()))
+			GPart* p2 = po->Part(pf->m_nPID[2]);
+			if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
 			{
 				m_renderer.RenderGLMesh(&m, i);
 			}
@@ -8771,10 +8799,15 @@ void CGLView::RenderTags()
 
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
-	if (po->GetFEMesh() == nullptr) return;
 
-	// get the mesh
-	FEMesh& mesh = *po->GetFEMesh();
+	FEMesh* pm = po->GetFEMesh();
+	FEMeshBase* pmb = pm;
+	if (pm == nullptr)
+	{
+		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
+		if (pso) pmb = pso->GetSurfaceMesh();
+		if (pmb == nullptr) return;
+	}
 
 	// create the tag array.
 	// We add a tag for each selected item
@@ -8782,21 +8815,21 @@ void CGLView::RenderTags()
 	vector<GLTAG> vtag;
 
 	// clear the node tags
-	int NN = mesh.Nodes();
-	for (int i = 0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
+	int NN = pmb->Nodes();
+	for (int i = 0; i<NN; ++i) pmb->Node(i).m_ntag = 0;
 
 	int mode = doc->GetItemMode();
 
 	// process elements
-	if (mode == ITEM_ELEM)
+	if ((mode == ITEM_ELEM) && pm)
 	{
-		int NE = mesh.Elements();
+		int NE = pm->Elements();
 		for (int i = 0; i<NE; i++)
 		{
-			FEElement_& el = mesh.Element(i);
+			FEElement_& el = pm->Element(i);
 			if (el.IsSelected())
 			{
-				tag.r = mesh.LocalToGlobal(mesh.ElementCenter(el));
+				tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
 				tag.bvis = false;
 				tag.ntag = 0;
 				int nid = el.GetID();
@@ -8805,7 +8838,7 @@ void CGLView::RenderTags()
 				vtag.push_back(tag);
 
 				int ne = el.Nodes();
-				for (int j = 0; j < ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 1;
+				for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
 			}
 		}
 	}
@@ -8813,13 +8846,13 @@ void CGLView::RenderTags()
 	// process faces
 	if (mode == ITEM_FACE)
 	{
-		int NF = mesh.Faces();
+		int NF = pmb->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = mesh.Face(i);
+			FEFace& f = pmb->Face(i);
 			if (f.IsSelected())
 			{
-				tag.r = mesh.LocalToGlobal(mesh.FaceCenter(f));
+				tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
 				tag.bvis = false;
 				tag.ntag = (f.IsExternal() ? 0 : 1);
 				int nid = f.GetID();
@@ -8828,7 +8861,7 @@ void CGLView::RenderTags()
 				vtag.push_back(tag);
 
 				int nf = f.Nodes();
-				for (int j = 0; j < nf; ++j) mesh.Node(f.n[j]).m_ntag = 1;
+				for (int j = 0; j < nf; ++j) pmb->Node(f.n[j]).m_ntag = 1;
 			}
 		}
 	}
@@ -8836,13 +8869,13 @@ void CGLView::RenderTags()
 	// process edges
 	if (mode == ITEM_EDGE)
 	{
-		int NC = mesh.Edges();
+		int NC = pmb->Edges();
 		for (int i = 0; i<NC; i++)
 		{
-			FEEdge& edge = mesh.Edge(i);
+			FEEdge& edge = pmb->Edge(i);
 			if (edge.IsSelected())
 			{
-				tag.r = mesh.LocalToGlobal(mesh.EdgeCenter(edge));
+				tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
 				tag.bvis = false;
 				tag.ntag = 0;
 				int nid = edge.GetID();
@@ -8851,7 +8884,7 @@ void CGLView::RenderTags()
 				vtag.push_back(tag);
 
 				int ne = edge.Nodes();
-				for (int j = 0; j < ne; ++j) mesh.Node(edge.n[j]).m_ntag = 1;
+				for (int j = 0; j < ne; ++j) pmb->Node(edge.n[j]).m_ntag = 1;
 			}
 		}
 	}
@@ -8861,10 +8894,10 @@ void CGLView::RenderTags()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			FENode& node = mesh.Node(i);
+			FENode& node = pmb->Node(i);
 			if (node.IsSelected())
 			{
-				tag.r = mesh.LocalToGlobal(node.r);
+				tag.r = pmb->LocalToGlobal(node.r);
 				tag.bvis = false;
 				tag.ntag = (node.IsExterior() ? 0 : 1);
 				int nid = node.GetID();
@@ -8880,10 +8913,10 @@ void CGLView::RenderTags()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			FENode& node = mesh.Node(i);
+			FENode& node = pmb->Node(i);
 			if (node.m_ntag == 1)
 			{
-				tag.r = mesh.LocalToGlobal(node.r);
+				tag.r = pmb->LocalToGlobal(node.r);
 				tag.bvis = false;
 				tag.ntag = (node.IsExterior() ? 0 : 1);
 				sprintf(tag.sztag, "N%d", node.GetID());
@@ -9243,8 +9276,12 @@ void CGLView::UpdatePlaneCut(bool breset)
 							}
 
 							int nf = m_planeCut->Faces();
-							m_planeCut->AddFace(r, (mid >= 0 ? mid : 0));
+							m_planeCut->AddFace(r, (el.IsSelected() ? 1 : 0));
 							GMesh::FACE& face = m_planeCut->Face(nf);
+							if (po == poa)
+							{
+								face.eid = i;
+							}
 
 							if (showContour)
 							{
@@ -9313,7 +9350,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 						{
 							if (etag[k] == 0)
 							{
-								m_planeCut->AddEdge(edgeNode[k], 2);
+								m_planeCut->AddEdge(edgeNode[k], 2, (el.IsSelected() ? 1 : 0));
 							}
 						}
 					}
@@ -9394,10 +9431,19 @@ void CGLView::RenderPlaneCut()
 	FEModel& fem = *doc->GetFEModel();
 	int MAT = fem.Materials();
 
+	// render the unselected faces
 	glColor3ub(255, 255, 255);
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_COLOR_MATERIAL);
-	GetMeshRenderer().RenderGLMesh(m_planeCut);
+	GetMeshRenderer().RenderGLMesh(m_planeCut, 0);
+
+	// render the selected faces
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_POLYGON_STIPPLE);
+	glColor3ub(255, 0, 0);
+	GetMeshRenderer().RenderGLMesh(m_planeCut, 1);
 
 	if (GetViewSettings().m_bmesh)
 	{
@@ -9409,7 +9455,10 @@ void CGLView::RenderPlaneCut()
 		cam.LineDrawMode(true);
 		cam.Transform();
 		
-		GetMeshRenderer().RenderGLEdges(m_planeCut);
+		GetMeshRenderer().RenderGLEdges(m_planeCut, 0);
+		glDisable(GL_DEPTH_TEST);
+		glColor3ub(255, 255, 0);
+		GetMeshRenderer().RenderGLEdges(m_planeCut, 1);
 
 		cam.LineDrawMode(false);
 		cam.Transform();

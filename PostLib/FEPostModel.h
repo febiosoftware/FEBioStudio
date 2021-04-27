@@ -172,7 +172,7 @@ public:
 	FEState* GetState(int nstate) { return m_State[nstate]; }
 
 	//! Add a new data field
-	void AddDataField(FEDataField* pd);
+	void AddDataField(FEDataField* pd, const std::string& name = "");
 
 	//! add a new data field constrained to a set
 	void AddDataField(FEDataField* pd, vector<int>& L);

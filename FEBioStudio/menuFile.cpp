@@ -114,6 +114,7 @@ SOFTWARE.*/
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
 #include <PostLib/FEVTKImport.h>
+#include <PostLib/VolRender.h>
 #include <sstream>
 
 using std::stringstream;
@@ -193,13 +194,14 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv)";
+	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk)";
 	filters << "FEBioStudio Model (*.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
 	filters << "PreView files (*.prv)";
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
+	filters << "VTK files (*.vtk)";
 
 	QFileDialog dlg(this, "Open");
 	dlg.setFileMode(QFileDialog::ExistingFile);
@@ -828,8 +830,9 @@ void CMainWindow::ExportGeometry()
 			if (dlg.exec())
 			{
 				VTKEXPORT ops;
+				ops.bpartIds    = dlg.m_bpart_ids;
 				ops.bshellthick = dlg.m_bshell_thick;
-				ops.bscalar_data = dlg.m_bscalar_data;
+				ops.bscalardata = dlg.m_bscalar_data;
 				FEVTKExport writer(fem);
 				writer.SetOptions(ops);
 				if (!writer.Write(szfile))
@@ -1453,21 +1456,31 @@ void CMainWindow::on_actionImportImage_triggered()
 		{
 			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-			Post::CImageModel* po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-			if (po == nullptr)
+			Post::CImageModel* imageModel = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+			if (imageModel == nullptr)
 			{
 				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
 			}
 			else
 			{
-				Update(0, true);
-				ZoomTo(po->GetBoundingBox());
-
 				// only for model docs
 				if (dynamic_cast<CModelDocument*>(doc))
 				{
-					ShowInModelViewer(po);
+					// add default volume renderer
+					Post::CVolRender* vr = new Post::CVolRender(imageModel);
+					vr->Create();
+					imageModel->AddImageRenderer(vr);
+
+					Update(0, true);
+
+					// show it in the model tree
+					ShowInModelViewer(imageModel);
 				}
+				else
+				{
+					Update(0, true);
+				}
+				ZoomTo(imageModel->GetBoundingBox());
 			}
 		}
 		else return;

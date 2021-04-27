@@ -210,6 +210,37 @@ void check_002(FEProject& prj, std::vector<FSObject*>& objList)
 
 void check_003(FEProject& prj, std::vector<FSObject*>& objList)
 {
+	FEModel& fem = prj.GetFEModel();
+
+	// build a material lookup table
+	int minId, maxId;
+	for (int i = 0; i < fem.Materials(); ++i)
+	{
+		GMaterial* gm = fem.GetMaterial(i); assert(gm);
+		if (gm)
+		{
+			int matId = gm->GetID();
+			if ((i == 0) || (matId < minId)) minId = matId;
+			if ((i == 0) || (matId > maxId)) maxId = matId;
+		}
+	}
+	int mats = maxId - minId + 1;
+	vector<int> lut(mats, -1);
+	for (int i = 0; i < fem.Materials(); ++i)
+	{
+		GMaterial* gm = fem.GetMaterial(i); assert(gm);
+		if (gm)
+		{
+			int matId = gm->GetID() - minId;
+			assert(matId < mats);
+			if (matId < mats)
+			{
+				assert(lut[matId] == -1);
+				lut[matId] = i;
+			}
+		}
+	}
+
 	GModel& mdl = prj.GetFEModel().GetModel();
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
@@ -217,7 +248,8 @@ void check_003(FEProject& prj, std::vector<FSObject*>& objList)
 		for (int j = 0; j < po->Parts(); ++j)
 		{
 			GPart* pj = po->Part(j);
-			if (pj->GetMaterialID() == -1)
+			int matId = pj->GetMaterialID() - minId;
+			if ((matId < 0) || (matId >= mats) || (lut[matId] == -1))
 			{
 				objList.push_back(pj);
 			}
@@ -308,14 +340,12 @@ void check_006(FEProject& prj, std::vector<FSObject*>& objList)
 					for (int k = 0; k < po->Faces(); ++k)
 					{
 						GFace* face = po->Face(k);
-						if ((face->m_nPID[0] != -1) && (face->m_nPID[1] != -1))
+						for (int l = 0; l < 3; ++l)
 						{
-							GPart* pg0 = po->Part(face->m_nPID[0]);
-							GPart* pg1 = po->Part(face->m_nPID[1]);
-							if ((pg0->GetMaterialID() == matId) || (pg1->GetMaterialID() == matId))
+							GPart* pgl = po->Part(face->m_nPID[l]);
+							if (pgl && (pgl->GetMaterialID() == matId))
 							{
 								matUsed = true;
-								break;
 							}
 						}
 					}
@@ -482,9 +512,9 @@ void check_013(FEProject& prj, std::vector<FSObject*>& objList)
 				{
 					// see if the material is rigid
 					int mid = pg->GetMaterialID();
-					if (mid >= 0)
+					GMaterial* pm = fem.GetMaterialFromID(mid);
+					if (pm)
 					{
-						GMaterial* pm = fem.GetMaterialFromID(mid);
 						FEMaterial* mat = pm->GetMaterialProperties();
 						if (mat && (dynamic_cast<FERigidMaterial*>(mat)))
 						{

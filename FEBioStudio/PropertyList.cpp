@@ -53,7 +53,8 @@ mat3d StringToMat3d(const QString& s)
 
 vec2i StringToVec2i(const QString& s)
 {
-	const char* sz = s.toStdString().c_str();
+	std::string str = s.toStdString();
+	const char* sz = str.c_str();
 	vec2i r;
 	sscanf(sz, "%ld,%ld", &r.x, &r.y);
 	return r;

@@ -191,13 +191,14 @@ XMLWriter::~XMLWriter()
 bool XMLWriter::open(const char* szfile)
 {
 	if (m_fp) return false;
+	if (szfile == nullptr) return false;
 
 	m_fp = fopen(szfile, "wt");
 
 	// write the first line
 	if (m_fp) fprintf(m_fp, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n");
 	
-	return (m_fp != 0);
+	return (m_fp != nullptr);
 }
 
 void XMLWriter::close()

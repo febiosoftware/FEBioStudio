@@ -64,10 +64,7 @@ public:
 	FEMesh* BuildMesh();
 
 protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
-
-	int NodeIndex(int i, int j) { return i*(m_ny + 1) + j; }
+	FEMesh* BuildMultiQuadMesh();
 
 protected:
 	GCylindricalPatch* m_pobj;

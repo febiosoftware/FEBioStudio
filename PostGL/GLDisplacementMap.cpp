@@ -171,8 +171,8 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 {
 	CGLModel* po = GetModel();
-	FEMeshBase* pm = po->GetActiveMesh();
 	FEPostModel* pfem = po->GetFEModel();
+	FEMeshBase* pm = pfem->GetState(ntime)->GetFEMesh();
 	if (pfem == nullptr) {
 		m_ntag.clear(); return;
 	}

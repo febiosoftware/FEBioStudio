@@ -61,6 +61,7 @@ public:
 		int		n[3];	// nodes
 		int		nbr[3];	// neighbor faces
 		int		pid;	// GFace parent local id
+		int		eid;	// element ID of GFace (or -1 if not applicable)
 		int		sid;	// smoothing groupd ID
 		int		tag;	// multipurpose tag
 		vec3d	fn;		// face normal

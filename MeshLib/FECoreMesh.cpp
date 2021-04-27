@@ -56,6 +56,21 @@ bool FECoreMesh::IsType(int ntype) const
 }
 
 //-----------------------------------------------------------------------------
+//! get the mesh type (returns -1 for mixed meshes)
+int FECoreMesh::GetMeshType() const
+{
+	int NE = Elements();
+	if (NE <= 0) return -1;
+	int ntype = ElementRef(0).Type();
+	for (int i = 1; i < NE; ++i)
+	{
+		const FEElement_& el = ElementRef(i);
+		if (el.Type() != ntype) return -1;
+	}
+	return ntype;
+}
+
+//-----------------------------------------------------------------------------
 vec3d FECoreMesh::ElementCenter(FEElement_& el) const
 {
 	vec3d r;
@@ -1256,6 +1271,17 @@ void FECoreMesh::FindNodesFromPart(int gid, vector<int>& node)
 	nodes = 0;
 	for (int i = 0; i<Nodes(); ++i)
 		if (Node(i).m_ntag == 1) node[nodes++] = i;
+}
+
+//-------------------------------------------------------------------------------------------------
+FENode* FECoreMesh::FindNodeFromID(int gid)
+{
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		FENode& node = Node(i);
+		if (node.m_gid == gid) return &node;
+	}
+	return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------

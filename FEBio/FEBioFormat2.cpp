@@ -1178,6 +1178,11 @@ void FEBioFormat2::ParseLoadFluidNormalVelocity(FEStep* pstep, XMLTag& tag)
             bool s; tag.value(s);
             pbc->SetBParab(s);
         }
+        else if (tag == "prescribe_rim_pressure")
+        {
+            bool s; tag.value(s);
+            pbc->SetBRimP(s);
+        }
         else if (tag == "surface")
         {
             FESurface* psurf = ParseLoadSurface(tag);
@@ -2497,7 +2502,7 @@ void FEBioFormat2::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
-	FERigidConnector* pi;
+	FERigidConnector* pi = nullptr;
 	char szname[256];
 
 	switch (rc) {

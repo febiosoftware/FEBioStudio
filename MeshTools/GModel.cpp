@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
+#include <sstream>
 #include "GModel.h"
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GMeshObject.h>
@@ -40,6 +41,7 @@ SOFTWARE.*/
 #include <FEMLib/FEAnalysisStep.h>
 #include <GeomLib/MeshLayer.h>
 
+//=============================================================================
 GNodeIterator::GNodeIterator(GModel& m) : m_mdl(m)
 {
 	reset();
@@ -97,6 +99,64 @@ void GNodeIterator::reset()
 	else m_node = m_obj = -1;
 }
 
+//=============================================================================
+GPartIterator::GPartIterator(GModel& m) : m_mdl(m)
+{
+	reset();
+}
+
+void GPartIterator::operator ++ ()
+{
+	if (m_part != -1)
+	{
+		m_part++;
+		if (m_part >= m_mdl.Object(m_obj)->Parts())
+		{
+			m_obj++;
+			m_part = 0;
+
+			if (m_obj >= m_mdl.Objects())
+			{
+				m_part = -1;
+				m_obj = -1;
+			}
+		}
+	}
+}
+
+GPart* GPartIterator::operator -> ()
+{
+	if (m_part >= 0)
+	{
+		return m_mdl.Object(m_obj)->Part(m_part);
+	}
+	else
+		return nullptr;
+}
+
+GPartIterator::operator GPart* ()
+{
+	if (m_part >= 0)
+	{
+		return m_mdl.Object(m_obj)->Part(m_part);
+	}
+	else
+		return 0;
+}
+
+
+bool GPartIterator::isValid() const { return (m_part >= 0); }
+
+void GPartIterator::reset()
+{
+	if (m_mdl.Objects() > 0)
+	{
+		m_part = 0;
+		m_obj = 0;
+	}
+	else m_part = m_obj = -1;
+}
+
 //=================================================================================================
 
 class GModel::Imp
@@ -113,7 +173,10 @@ public:
 		delete m_mlm;
 	}
 
+	void ValidateNames(GObject* po);
+
 public:
+	GModel*				m_parent;
 	FEModel*			m_ps;	//!< pointer to model
 	BOX					m_box;	//!< bounding box
 
@@ -129,10 +192,70 @@ public:
 	FSObjectList<GDiscreteObject>	m_Discrete;	//!< list of discrete objects
 };
 
+void GModel::Imp::ValidateNames(GObject* po)
+{
+	if (m_Obj.Size() == 0) return;
+
+	// check object name
+	string oldName = po->GetName();
+	string newName = oldName;
+	int n = 1;
+	bool bok = false;
+	while (bok == false)
+	{
+		bok = true;
+		for (int i = 0; i < m_Obj.Size(); ++i)
+		{
+			GObject* poi = m_Obj[i];
+			if (poi->GetName() == newName)
+			{
+				bok = false;
+				stringstream ss;
+				ss << oldName << "(" << n << ")";
+				newName = ss.str();
+				po->SetName(newName);
+				n++;
+				break;
+			}
+		}
+	}
+
+	// check part names of new object
+	for (int i = 0; i < po->Parts(); ++i)
+	{
+		GPart* pg = po->Part(i);
+		string oldName = pg->GetName();
+		string newName = oldName;
+		int n = 1;
+		bool bok = false;
+		while (bok == false)
+		{
+			bok = true;
+			GPartIterator it(*m_parent);
+			while (it.isValid())
+			{
+				GPart* pgi = it;
+				if (pgi->GetName() == newName)
+				{
+					bok = false;
+					stringstream ss;
+					ss << oldName << "(" << n << ")";
+					newName = ss.str();
+					pg->SetName(newName);
+					n++;
+					break;
+				}
+				++it;
+			}
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------
 GModel::GModel(FEModel* ps): imp(new GModel::Imp)
 {
 	SetName("Model");
+	imp->m_parent = this;
 	imp->m_ps = ps;
 	imp->m_mlm = new MeshLayerManager(this);
 	imp->m_mlm->AddLayer("Default");
@@ -391,6 +514,17 @@ void GModel::ReplaceObject(GObject* po, GObject* pn)
 //-----------------------------------------------------------------------------
 void GModel::AddObject(GObject* po)
 { 
+	// Make sure the object does not already exist
+	if (imp->m_Obj.Find(po) >= 0)
+	{
+		assert(false);
+		return;
+	}
+
+	// before we can add it, we must ensure that the names of this object
+	// and all parts, surfaces, edges, and nodes are unique. 
+	if (Objects() > 0) imp->ValidateNames(po);
+
 	// add the object to the object list
 	imp->m_Obj.Add(po);
 

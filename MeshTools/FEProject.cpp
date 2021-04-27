@@ -367,6 +367,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FEFixedFluidDilatation    , MODULE_FLUID, FE_ESSENTIAL_BC, FE_FIXED_DILATATION            , "Zero fluid dilatation", Fixed_Nodal_Degrees_of_Freedom);
 	REGISTER_FE_CLASS(FEPrescribedFluidDilatation,MODULE_FLUID, FE_ESSENTIAL_BC, FE_PRESCRIBED_DILATATION       , "Prescribed fluid dilatation", Prescribed_Nodal_Degrees_of_Freedom);
 	REGISTER_FE_CLASS(FEFluidTraction           , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_TRACTION              , "Fluid viscous traction", Fluid_Traction);
+    REGISTER_FE_CLASS(FEFluidPressureLoad       , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_PRESSURE_LOAD         , "Fluid pressure", Fluid_Pressure_Load);
     REGISTER_FE_CLASS(FEFluidVelocity           , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_VELOCITY              , "Fluid velocity", Fluid_Velocity);
     REGISTER_FE_CLASS(FEFluidNormalVelocity     , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_NORMAL_VELOCITY       , "Fluid normal velocity", Fluid_Normal_Velocity);
     REGISTER_FE_CLASS(FEFluidRotationalVelocity , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_ROTATIONAL_VELOCITY   , "Fluid rotational velocity", Fluid_Rotational_Velocity);
@@ -382,6 +383,8 @@ void FEProject::InitModules()
     // --- FLUID-FSI MODULE ---
     REGISTER_FE_CLASS(FEFluidFSIAnalysis        , MODULE_FLUID_FSI, FE_ANALYSIS    , FE_STEP_FLUID_FSI   , "Fluid-FSI Mechanics");
     REGISTER_FE_CLASS(FEFSITraction             , MODULE_FLUID_FSI, FE_SURFACE_LOAD, FE_FSI_TRACTION     , "FSI Interface Traction", Fluid_FSI_Traction);
+    REGISTER_FE_CLASS(FEBFSITraction            , MODULE_FLUID_FSI, FE_SURFACE_LOAD, FE_BFSI_TRACTION     , "Biphasic-FSI Interface Traction", Fluid_BFSI_Traction);
+    
 
 	// --- REACTION-DIFFUSION MODULE ---
 	REGISTER_FE_CLASS(FEReactionDiffusionAnalysis, MODULE_REACTION_DIFFUSION, FE_ANALYSIS, FE_STEP_REACTION_DIFFUSION, "Reaction-Diffusion");

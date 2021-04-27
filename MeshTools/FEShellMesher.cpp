@@ -84,6 +84,7 @@ FEMesh*	FEShellMesher::BuildMesh()
 		df.m_elem[0].eid = i;
 		df.m_elem[0].lid = 0;
 		df.m_elem[1].eid = -1;
+		df.m_elem[2].eid = -1;
 	}
 
 	// create elements

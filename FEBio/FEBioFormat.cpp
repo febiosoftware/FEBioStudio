@@ -1396,7 +1396,14 @@ FEMaterial* FEBioFormat::ParseMultiphasic(FEMaterial* pmat, XMLTag &tag)
 				if (psr) pm->AddReactionMaterial(psr);
 				++tag;
 			}
-			else 
+            else if (tag == "membrane_reaction")
+            {
+                XMLAtt& atype = tag.Attribute("type");
+                FEMembraneReactionMaterial* psr = ParseMembraneReaction(tag);
+                if (psr) pm->AddMembraneReactionMaterial(psr);
+                ++tag;
+            }
+			else
 			{
 				ParseUnknownTag(tag);
 				++tag;
@@ -1575,7 +1582,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 	XMLAtt* pan = tag.AttributePtr("name");
 	if (pan) strcpy(szname, pan->cvalue());
 
-	FEReactionMaterial* pm;
+	FEReactionMaterial* pm = nullptr;
 	const char* sztype = mtype.cvalue();
 	if (strcmp(sztype, "mass-action-forward") == 0)
 		pm = new FEMassActionForward;
@@ -1583,6 +1590,11 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 		pm = new FEMassActionReversible;
 	else if (strcmp(sztype, "Michaelis-Menten") == 0)
 		pm = new FEMichaelisMenten;
+	else
+	{
+		assert(false);
+		return nullptr;
+	}
 
 	FEReactantMaterial* psr = 0;
 	FEProductMaterial* psp = 0;
@@ -1676,6 +1688,184 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
+FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
+{
+    char szname[256] = { 0 };
+    
+    // get the material type
+    XMLAtt& mtype = tag.Attribute("type");
+    
+    // get the material name
+    XMLAtt* pan = tag.AttributePtr("name");
+    if (pan) strcpy(szname, pan->cvalue());
+    
+    FEMembraneReactionMaterial* pm = nullptr;
+    const char* sztype = mtype.cvalue();
+    if (strcmp(sztype, "membrane-mass-action-forward") == 0)
+        pm = new FEMembraneMassActionForward;
+    else if (strcmp(sztype, "membrane-mass-action-reversible") == 0)
+        pm = new FEMembraneMassActionReversible;
+    
+    FEReactantMaterial* psr = 0;
+    FEProductMaterial* psp = 0;
+    FEInternalReactantMaterial* psri = 0;
+    FEInternalProductMaterial* pspi = 0;
+    FEExternalReactantMaterial* psre = 0;
+    FEExternalProductMaterial* pspe = 0;
+    FEMaterial* pfr = 0;
+    FEMaterial* prr = 0;
+    
+    pm->SetName(szname);
+    
+    ++tag;
+    do
+    {
+        if (tag == "Vbar") pm->SetOvrd(true);    // this parameter is optional
+        
+        if (ReadParam(*pm, tag) == false)
+        {
+            if (tag == "vR")
+            {
+                XMLAtt* asol = tag.AttributePtr("sol");
+                XMLAtt* asbm = tag.AttributePtr("sbm");
+                if (asol) {
+                    int sid; asol->value(sid); sid -= 1;
+                    psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "vR"));
+                    assert(psr);
+                    psr->SetIndex(sid);
+                    psr->SetReactantType(FEReactionMaterial::SOLUTE_SPECIES);
+                    ReadParam(*psr, tag);
+                    pm->AddReactantMaterial(psr);
+                }
+                else if (asbm) {
+                    int sid; asbm->value(sid); sid -= 1;
+                    psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "vR"));
+                    assert(psr);
+                    psr->SetIndex(sid);
+                    psr->SetReactantType(FEReactionMaterial::SBM_SPECIES);
+                    ReadParam(*psr, tag);
+                    pm->AddReactantMaterial(psr);
+                }
+                else
+                    assert(false);
+                ++tag;
+            }
+            else if (tag == "vRi")
+            {
+                XMLAtt* asol = tag.AttributePtr("sol");
+                if (asol) {
+                    int sid; asol->value(sid); sid -= 1;
+                    psri = dynamic_cast<FEInternalReactantMaterial*>(ParseMaterial(tag, "vRi"));
+                    assert(psri);
+                    psri->SetIndex(sid);
+                    psri->SetReactantType(FEMembraneReactionMaterial::INT_SPECIES);
+                    ReadParam(*psri, tag);
+                    pm->AddInternalReactantMaterial(psri);
+                }
+                else
+                    assert(false);
+                ++tag;
+            }
+            else if (tag == "vRe")
+            {
+                XMLAtt* asol = tag.AttributePtr("sol");
+                if (asol) {
+                    int sid; asol->value(sid); sid -= 1;
+                    psre = dynamic_cast<FEExternalReactantMaterial*>(ParseMaterial(tag, "vRe"));
+                    assert(psre);
+                    psre->SetIndex(sid);
+                    psre->SetReactantType(FEMembraneReactionMaterial::EXT_SPECIES);
+                    ReadParam(*psre, tag);
+                    pm->AddExternalReactantMaterial(psre);
+                }
+                else
+                    assert(false);
+                ++tag;
+            }
+            else if (tag == "vP")
+            {
+                XMLAtt* asol = tag.AttributePtr("sol");
+                XMLAtt* asbm = tag.AttributePtr("sbm");
+                if (asol) {
+                    int sid; asol->value(sid); sid -= 1;
+                    psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "vP"));
+                    assert(psp);
+                    psp->SetIndex(sid);
+                    psp->SetProductType(FEReactionMaterial::SOLUTE_SPECIES);
+                    ReadParam(*psp, tag);
+                    pm->AddProductMaterial(psp);
+                }
+                else if (asbm) {
+                    int sid; asbm->value(sid); sid -= 1;
+                    psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "vP"));
+                    assert(psp);
+                    psp->SetIndex(sid);
+                    psp->SetProductType(FEReactionMaterial::SBM_SPECIES);
+                    ReadParam(*psp, tag);
+                    pm->AddProductMaterial(psp);
+                }
+                else
+                    assert(false);
+                ++tag;
+            }
+            else if (tag == "vPi")
+            {
+                XMLAtt* asol = tag.AttributePtr("sol");
+                if (asol) {
+                    int sid; asol->value(sid); sid -= 1;
+                    pspi = dynamic_cast<FEInternalProductMaterial*>(ParseMaterial(tag, "vPi"));
+                    assert(pspi);
+                    pspi->SetIndex(sid);
+                    pspi->SetProductType(FEMembraneReactionMaterial::INT_SPECIES);
+                    ReadParam(*pspi, tag);
+                    pm->AddInternalProductMaterial(pspi);
+                }
+                else
+                    assert(false);
+                ++tag;
+            }
+            else if (tag == "vPe")
+            {
+                XMLAtt* asol = tag.AttributePtr("sol");
+                if (asol) {
+                    int sid; asol->value(sid); sid -= 1;
+                    pspe = dynamic_cast<FEExternalProductMaterial*>(ParseMaterial(tag, "vPe"));
+                    assert(pspe);
+                    pspe->SetIndex(sid);
+                    pspe->SetProductType(FEMembraneReactionMaterial::EXT_SPECIES);
+                    ReadParam(*pspe, tag);
+                    pm->AddExternalProductMaterial(pspe);
+                }
+                else
+                    assert(false);
+                ++tag;
+            }
+            else if (tag == "forward_rate")
+            {
+                XMLAtt& atype = tag.Attribute("type");
+                pfr = ParseMaterial(tag, atype.cvalue());
+                assert(pfr);
+                pm->SetForwardRate(pfr);
+                ++tag;
+            }
+            else if (tag == "reverse_rate")
+            {
+                XMLAtt& atype = tag.Attribute("type");
+                prr = ParseMaterial(tag, atype.cvalue());
+                assert(prr);
+                pm->SetReverseRate(prr);
+                ++tag;
+            }
+            else ParseUnknownTag(tag);
+        }
+        else ++tag;
+    }
+    while (!tag.isend());
+    
+    return pm;
+}
+
+//-----------------------------------------------------------------------------
 FEMaterial* FEBioFormat::ParseOsmoManning(FEMaterial* pmat, XMLTag& tag)
 {
     FEOsmoWellsManning* pm = dynamic_cast<FEOsmoWellsManning*>(pmat);
@@ -1717,6 +1907,9 @@ FEMaterial* FEBioFormat::Parse1DFunction(FEMaterial* pm, XMLTag& tag)
 			if (stricmp(szval, "smooth") == 0) plc->SetType(FELoadCurve::LC_SMOOTH);
 			if (stricmp(szval, "linear") == 0) plc->SetType(FELoadCurve::LC_LINEAR);
 			if (stricmp(szval, "step"  ) == 0) plc->SetType(FELoadCurve::LC_STEP);
+            if (stricmp(szval, "cubic spline" ) == 0) plc->SetType(FELoadCurve::LC_CSPLINE);
+            if (stricmp(szval, "control point") == 0) plc->SetType(FELoadCurve::LC_CPOINTS);
+            if (stricmp(szval, "approximation") == 0) plc->SetType(FELoadCurve::LC_APPROX);
 		}
 		else if (tag == "extend")
 		{
@@ -1741,6 +1934,7 @@ FEMaterial* FEBioFormat::Parse1DFunction(FEMaterial* pm, XMLTag& tag)
 		++tag;
 	}
 	while (!tag.isend());
+    plc->Update();
 	return pm;
 }
 
@@ -1782,6 +1976,9 @@ bool FEBioFormat::ParseLoadDataSection(XMLTag& tag)
 				if (*pat == "step") lc.SetType(FELoadCurve::LC_STEP);
 				else if (*pat == "linear") lc.SetType(FELoadCurve::LC_LINEAR);
 				else if (*pat == "smooth") lc.SetType(FELoadCurve::LC_SMOOTH);
+                else if (*pat == "cubic spline") lc.SetType(FELoadCurve::LC_CSPLINE);
+                else if (*pat == "control points") lc.SetType(FELoadCurve::LC_CPOINTS);
+                else if (*pat == "approximation") lc.SetType(FELoadCurve::LC_APPROX);
 				else FileReader()->AddLogEntry("unknown type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 			}
 			else lc.SetType(FELoadCurve::LC_LINEAR);
@@ -1908,6 +2105,9 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 
 			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(FELogData::LD_NODE, szdata);
 
+			const char* szfile = tag.AttributeValue("file", true);
+			if (szfile) logVar.setFile(szfile);
+
 			const char* szset = tag.AttributeValue("node_set", true);
 			if (szset)
 			{
@@ -1951,6 +2151,9 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			if (szdata == 0) szdata = "";
 
 			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(FELogData::LD_ELEM, szdata);
+
+			const char* szfile = tag.AttributeValue("file", true);
+			if (szfile) logVar.setFile(szfile);
 
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)

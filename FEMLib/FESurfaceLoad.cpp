@@ -183,6 +183,25 @@ void FESurfaceTraction::LoadParam(const Param& p)
 }
 
 //-----------------------------------------------------------------------------
+FEFluidPressureLoad::FEFluidPressureLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_FLUID_PRESSURE_LOAD, ps, pi, nstep)
+{
+    SetTypeString("Fluid pressure");
+    Param* p = AddScienceParam(1, UNIT_PRESSURE, "pressure", "pressure");
+    p->SetLoadCurve();
+    p->MakeVariable(true);
+}
+
+// used only for reading parameters for old file formats
+void FEFluidPressureLoad::LoadParam(const Param& p)
+{
+    switch (p.GetParamID())
+    {
+        case 0: SetLoad(p.GetFloatValue()); break;
+        case 1: *GetLoadCurve() = *p.GetLoadCurve(); break;
+    }
+}
+
+//-----------------------------------------------------------------------------
 
 FEFluidTraction::FEFluidTraction(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_FLUID_TRACTION, ps, pi, nstep)
 {
@@ -238,16 +257,18 @@ FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps) : FESurfaceLoad(FE_FLU
 {
     SetTypeString("Fluid Normal Velocity");
     AddDoubleParam(1, "velocity", "velocity")->SetLoadCurve();
-    AddBoolParam(true, "prescribe_nodal_velocities", "prescribe_nodal_velocities");
-    AddBoolParam(false, "parabolic", "parabolic");
+    AddBoolParam(true, "prescribe_nodal_velocities", "prescribe nodal velocities");
+    AddBoolParam(false, "parabolic", "parabolic velocity profile");
+    AddBoolParam(false, "prescribe_rim_pressure", "prescribe rim pressure");
 }
 
-FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, int nstep) : FESurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps, pi, nstep)
+FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep) : FESurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps, pi, nstep)
 {
     SetTypeString("Fluid Normal Velocity");
     AddDoubleParam(vn, "velocity", "velocity")->SetLoadCurve();
-    AddBoolParam(bp, "prescribe_nodal_velocities", "prescribe_nodal_velocities");
-    AddBoolParam(bparab, "parabolic", "parabolic");
+    AddBoolParam(bp, "prescribe_nodal_velocities", "prescribe nodal velocities");
+    AddBoolParam(bparab, "parabolic", "parabolic velocity profile");
+    AddBoolParam(brimp, "prescribe_rim_pressure", "prescribe rim pressure");
 }
 
 //-----------------------------------------------------------------------------
@@ -347,6 +368,18 @@ FEFSITraction::FEFSITraction(FEModel* ps) : FESurfaceLoad(FE_FSI_TRACTION, ps)
 FEFSITraction::FEFSITraction(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_FSI_TRACTION, ps, pi, nstep)
 {
     SetTypeString("FSI Interface Traction");
+}
+
+//-----------------------------------------------------------------------------
+
+FEBFSITraction::FEBFSITraction(FEModel* ps) : FESurfaceLoad(FE_BFSI_TRACTION, ps)
+{
+    SetTypeString("Biphasic-FSI Interface Traction");
+}
+
+FEBFSITraction::FEBFSITraction(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_BFSI_TRACTION, ps, pi, nstep)
+{
+    SetTypeString("Biphasic-FSI Interface Traction");
 }
 
 //=======================================================================================

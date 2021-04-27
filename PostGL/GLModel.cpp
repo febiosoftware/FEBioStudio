@@ -56,6 +56,8 @@ CGLModel::CGLModel(FEPostModel* ps)
 	m_ps = ps;
 	SetName("Model");
 
+	m_lastMesh = nullptr;
+
 	static int layer = 1;
 	m_layer = layer++;
 
@@ -215,9 +217,14 @@ bool CGLModel::Update(bool breset)
 	// update the state of the mesh
 	GetFEModel()->UpdateMeshState(ntime);
 
-	// TODO: Calling this will rebuild the internal surfaces
-	//       I should only need to do this when the mesh has changed
-//	UpdateInternalSurfaces(false);
+	// Calling this will rebuild the internal surfaces
+	// This should only be done when the mesh has changed
+	Post::FEPostMesh* currentMesh = fem.CurrentState()->GetFEMesh();
+	if (breset || (currentMesh != m_lastMesh))
+	{
+		UpdateInternalSurfaces(false);
+		m_lastMesh = currentMesh;
+	}
 
 	// update displacement map
 	if (m_pdis && m_pdis->IsActive()) m_pdis->Update(ntime, dt, breset);
@@ -577,7 +584,7 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 		{
 			GLEdge::EDGE& edge = m_edge.Edge(i);
 			FEElement_* pe = mesh.ElementPtr(edge.elem);
-			if (pe && !pe->IsSelected())
+			if (pe && !pe->IsSelected() && pe->IsVisible())
 			{
 				int mat = edge.mat;
 				if (mat != curMat)
@@ -614,7 +621,7 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 	{
 		GLEdge::EDGE& edge = m_edge.Edge(i);
 		FEElement_* pe = mesh.ElementPtr(edge.elem);
-		if (pe && !pe->IsSelected())
+		if (pe && !pe->IsSelected() && pe->IsVisible())
 		{
 			int mat = edge.mat;
 			if (mat != curMat)
@@ -1614,7 +1621,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 	{
 		FEFace& f = pm->Face(i);
 		FEElement_& el = pm->ElementRef(f.m_elem[0].eid);
-		if (f.IsVisible() && ((nmat == -1) || (el.m_MatID == nmat)))
+		if (f.IsVisible() && el.IsVisible() && ((nmat == -1) || (el.m_MatID == nmat)))
 		{
 			int n = f.Edges();
 			for (int j=0; j<n; ++j)

@@ -75,6 +75,7 @@ private:
 	void ParseBCFixed     (FEStep* pstep, XMLTag& tag);
 	void ParseBCPrescribed(FEStep* pstep, XMLTag& tag);
 	void ParseBCRigid     (FEStep* pstep, XMLTag& tag);
+	void ParseBCFluidRotationalVelocity(FEStep* pstep, XMLTag& tag);
 
 	// mesh data sections
 	bool ParseElementDataSection(XMLTag& tag);
@@ -83,6 +84,7 @@ private:
 
 private:
 	bool ParseStep(XMLTag& tag);
+	bool ParseLoadCurve(XMLTag& tag, FELoadCurve& lc);
 
 private:
 	// contact input functions

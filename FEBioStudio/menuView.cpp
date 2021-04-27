@@ -239,10 +239,12 @@ void CMainWindow::on_actionViewVPSave_triggered()
 
 	static int n = 0; n++;
 	char szname[64] = { 0 };
-	sprintf(szname, "key%02d", n);
+	sprintf(szname, "ViewPoint%02d", n);
 	t.SetName(szname);
-	view.AddCameraKey(t);
+	GLCameraTransform* vp = view.AddCameraKey(t);
 	ui->postPanel->Update();
+	ui->postPanel->SelectObject(vp);
+
 }
 
 void CMainWindow::on_actionViewVPPrev_triggered()

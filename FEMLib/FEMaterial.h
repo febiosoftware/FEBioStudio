@@ -48,6 +48,12 @@
 #define FE_MAT_GENERATION				0x001A0000
 #define FE_MAT_PRESTRAIN_GRADIENT		0x001B0000
 #define FE_MAT_FIBER_GENERATOR			0x001C0000
+#define FE_MAT_MREACTION                0x001D0000
+#define FE_MAT_MREACTION_RATE           0x001E0000
+#define FE_MAT_MREACTION_IREACTANTS     0x001F0000
+#define FE_MAT_MREACTION_IPRODUCTS      0x00200000
+#define FE_MAT_MREACTION_EREACTANTS     0x00210000
+#define FE_MAT_MREACTION_EPRODUCTS      0x00220000
 
 // --- Material Types ---
 // These values are stored in the prv file so don't change!
@@ -191,6 +197,17 @@
 #define FE_MICHAELIS_MENTEN         604
 #define FE_REACTION_RATE_CONST      605
 #define FE_REACTION_RATE_HUISKES    606
+
+// membrane reactions
+#define FE_INT_REACTANT_MATERIAL    650
+#define FE_INT_PRODUCT_MATERIAL     651
+#define FE_EXT_REACTANT_MATERIAL    652
+#define FE_EXT_PRODUCT_MATERIAL     653
+#define FE_MMASS_ACTION_FORWARD     654
+#define FE_MMASS_ACTION_REVERSIBLE  655
+#define FE_MREACTION_RATE_CONST     656
+#define FE_MREACTION_RATE_ION_CHNL  657
+#define FE_MREACTION_RATE_VOLT_GTD  658
 
 // fiber generators (old mechanism)
 #define FE_FIBER_LOCAL			0
@@ -1670,6 +1687,52 @@ public:
 public:
 	FEReactionRateHuiskes();
 	DECLARE_REGISTERED(FEReactionRateHuiskes);
+};
+
+//-----------------------------------------------------------------------------
+class FEMembraneReactionRateConst : public FEMaterial
+{
+public:
+    enum { MP_K };
+    
+    double GetRateConstant();
+    void SetRateConstant(double K);
+    
+public:
+    FEMembraneReactionRateConst();
+    DECLARE_REGISTERED(FEMembraneReactionRateConst);
+};
+
+//-----------------------------------------------------------------------------
+class FEMembraneReactionRateIonChannel : public FEMaterial
+{
+public:
+    enum { MP_G, MP_SOL };
+    
+    double GetConductivity();
+    void SetConductivity(double g);
+    int GetSolute();
+    void SetSolute(int isol);
+    
+public:
+    FEMembraneReactionRateIonChannel();
+    DECLARE_REGISTERED(FEMembraneReactionRateIonChannel);
+};
+
+//-----------------------------------------------------------------------------
+class FEMembraneReactionRateVoltageGated : public FEMaterial
+{
+public:
+    enum { MP_A, MP_B, MP_C, MP_D, MP_SOL };
+    
+    double GetConstant(int i);
+    void SetConstant(int i, double c);
+    int GetSolute();
+    void SetSolute(int isol);
+    
+public:
+    FEMembraneReactionRateVoltageGated();
+    DECLARE_REGISTERED(FEMembraneReactionRateVoltageGated);
 };
 
 //-----------------------------------------------------------------------------

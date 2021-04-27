@@ -28,22 +28,26 @@ SOFTWARE.*/
 #include "FEDataField.h"
 #include "FEMeshData_T.h"
 #include "constants.h"
-#include "PostGL/GLModel.h"
+#include "FEPostModel.h"
 #include "FEDistanceMap.h"
 #include "FEAreaCoverage.h"
 using namespace Post;
 
-FEDataField::FEDataField(const std::string& name, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
+FEDataField::FEDataField(FEPostModel* fem, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
 {
+	m_fem = fem;
 	m_ntype = ntype;
 	m_nfmt = nfmt;
 	m_nclass = ncls;
 	m_nref = 0;
 	m_flag = flag;
-	m_name = name;
 	m_arraySize = 0;
 }
 
+FEDataField::~FEDataField() {}
+
+//! get the name of the field
+const std::string& FEDataField::GetName() const { return m_name; }
 
 void FEDataField::SetName(const std::string& newName)
 {
@@ -367,13 +371,14 @@ std::string FEDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 }
 
 //=================================================================================================
-FEArrayDataField::FEArrayDataField(const std::string& name, Data_Class c, Data_Format f, unsigned int flag) : FEDataField(name, DATA_ARRAY, f, c, flag)
+FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag) : FEDataField(fem, DATA_ARRAY, f, c, flag)
 {
 }
 
 FEDataField* FEArrayDataField::Clone() const
 {
-	FEArrayDataField* newData = new FEArrayDataField(GetName(), DataClass(), Format(), m_flag);
+	FEArrayDataField* newData = new FEArrayDataField(m_fem, DataClass(), Format(), m_flag);
+	newData->SetName(GetName());
 	newData->SetArraySize(GetArraySize());
     vector<string> arrnames = GetArrayNames();
 	newData->SetArrayNames(arrnames);
@@ -398,13 +403,14 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 }
 
 //=================================================================================================
-FEArrayVec3DataField::FEArrayVec3DataField(const std::string& name, Data_Class c, unsigned int flag) : FEDataField(name, DATA_ARRAY_VEC3F, DATA_ITEM, c, flag)
+FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag) : FEDataField(fem, DATA_ARRAY_VEC3F, DATA_ITEM, c, flag)
 {
 }
 
 FEDataField* FEArrayVec3DataField::Clone() const
 {
-	FEArrayVec3DataField* newData = new FEArrayVec3DataField(GetName(), DataClass(), m_flag);
+	FEArrayVec3DataField* newData = new FEArrayVec3DataField(m_fem, DataClass(), m_flag);
+	newData->SetName(GetName());
 	newData->SetArraySize(GetArraySize());
     vector<string> arrnames = GetArrayNames();
     newData->SetArrayNames(arrnames);
@@ -423,7 +429,7 @@ Post::FEMeshData* FEArrayVec3DataField::CreateData(FEState* pstate)
 
 //=================================================================================================
 
-bool Post::ExportDataField(CGLModel& glm, const FEDataField& df, const char* szfile)
+bool Post::ExportDataField(Post::FEPostModel& fem, const FEDataField& df, const char* szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -432,29 +438,28 @@ bool Post::ExportDataField(CGLModel& glm, const FEDataField& df, const char* szf
 	int nfield = df.GetFieldID();
 	if (IS_NODE_FIELD(nfield))
 	{
-		bret = Post::ExportNodeDataField(glm, df, fp);
+		bret = Post::ExportNodeDataField(fem, df, fp);
 	}
 	else if (IS_ELEM_FIELD(nfield))
 	{
-		bret = Post::ExportElementDataField(glm, df, fp);
+		bret = Post::ExportElementDataField(fem, df, fp);
 	}
 	else if (IS_FACE_FIELD(nfield))
 	{
-		bret = Post::ExportFaceDataField(glm, df, fp);
+		bret = Post::ExportFaceDataField(fem, df, fp);
 	}
 	fclose(fp);
 
 	return bret;
 }
 
-bool Post::ExportNodeDataField(CGLModel& glm, const FEDataField& df, FILE* fp)
+bool Post::ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
 
 	// get the mesh
-	FEPostModel& fem = *glm.GetFEModel();
-	FEPostMesh& mesh = *glm.GetActiveMesh();
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nstates = fem.GetStates();
 
@@ -507,14 +512,13 @@ bool Post::ExportNodeDataField(CGLModel& glm, const FEDataField& df, FILE* fp)
 }
 
 
-bool Post::ExportFaceDataField(CGLModel& glm, const FEDataField& df, FILE* fp)
+bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
 
 	// get the mesh
-	FEPostModel& fem = *glm.GetFEModel();
-	FEPostMesh& mesh = *glm.GetActiveMesh();
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nstates = fem.GetStates();
 
@@ -687,14 +691,13 @@ bool Post::ExportFaceDataField(CGLModel& glm, const FEDataField& df, FILE* fp)
 	return true;
 }
 
-bool Post::ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp)
+bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE* fp)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
 
 	// get the mesh
-	FEPostModel& fem = *glm.GetFEModel();
-	FEPostMesh& mesh = *glm.GetActiveMesh();
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nstates = fem.GetStates();
 
@@ -739,6 +742,24 @@ bool Post::ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp
 					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
 				}
 				break;
+				case DATA_ARRAY:
+				{
+					FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(d);
+					int nsize = dm.arraySize();
+					vector<double> data(nsize, 0.0);
+					if (dm.active(i))
+					{
+						for (int j = 0; j < nsize; ++j) data[j] = dm.eval(i, j);
+					}
+					for (int j = 0; j < nsize; ++j)
+					{
+						fprintf(fp, "%g", data[j]);
+						if (j != nsize - 1) fprintf(fp, ",");
+					}
+				}
+				break;
+				default:
+					assert(false);
 				}
 			}
 			else if (fmt == DATA_COMP)
@@ -794,49 +815,144 @@ bool Post::ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp
 }
 
 //=============================================================================
-bool Post::AddStandardDataField(CGLModel& glm, const std::string& dataField, bool bselection_only)
+
+class StandardDataField
 {
-	FEPostModel& fem = *glm.GetFEModel();
+public:
+	StandardDataField(const char* sz, int flag) : m_szname(sz), m_flag(flag) {}
+	virtual ~StandardDataField() {}
+public:
+	virtual Post::FEDataField* Create(Post::FEPostModel* fem) = 0;
+	
+public:
+	const char*	m_szname;
+	int			m_flag;
+};
 
-	FEDataField* pdf = nullptr;
-	if      (dataField.compare("Position"                  ) == 0) pdf = new FEDataField_T<FENodePosition         >("Position"                  );
-	else if (dataField.compare("Initial position"          ) == 0) pdf = new FEDataField_T<FENodeInitPos          >("Initial position"          );
-	else if (dataField.compare("Deformation gradient"      ) == 0) pdf = new FEDataField_T<FEDeformationGradient  >("Deformation gradient"      );
-	else if (dataField.compare("Infinitesimal strain"      ) == 0) pdf = new FEStrainDataField("Infinitesimal strain", FEStrainDataField::INF_STRAIN        );
-	else if (dataField.compare("Lagrange strain"           ) == 0) pdf = new FEStrainDataField("Lagrange strain"     , FEStrainDataField::LAGRANGE          );
-	else if (dataField.compare("Right Cauchy-Green"        ) == 0) pdf = new FEStrainDataField("Right Cauchy-Green"  , FEStrainDataField::RIGHT_CAUCHY_GREEN);
-	else if (dataField.compare("Right stretch"             ) == 0) pdf = new FEStrainDataField("Right stretch"       , FEStrainDataField::RIGHT_STRETCH     );
-	else if (dataField.compare("Biot strain"               ) == 0) pdf = new FEStrainDataField("Biot strain"         , FEStrainDataField::BIOT              );
-	else if (dataField.compare("Right Hencky"              ) == 0) pdf = new FEStrainDataField("Right Hencky"        , FEStrainDataField::RIGHT_HENCKY      );
-    else if (dataField.compare("Left Cauchy-Green"         ) == 0) pdf = new FEStrainDataField("Left Cauchy-Green"   , FEStrainDataField::LEFT_CAUCHY_GREEN );
-    else if (dataField.compare("Left stretch"              ) == 0) pdf = new FEStrainDataField("Left stretch"        , FEStrainDataField::LEFT_STRETCH      );
-    else if (dataField.compare("Left Hencky"               ) == 0) pdf = new FEStrainDataField("Left Hencky"         , FEStrainDataField::LEFT_HENCKY       );
-    else if (dataField.compare("Almansi strain"            ) == 0) pdf = new FEStrainDataField("Almansi strain"      , FEStrainDataField::ALMANSI           );
-	else if (dataField.compare("Volume"                    ) == 0) pdf = new FEDataField_T<FEElementVolume        >("Volume"                    );
-	else if (dataField.compare("Volume ratio"              ) == 0) pdf = new FEDataField_T<FEVolRatio             >("Volume ratio"              );
-	else if (dataField.compare("Volume strain"             ) == 0) pdf = new FEDataField_T<FEVolStrain            >("Volume strain"             );
-	else if (dataField.compare("Aspect ratio"              ) == 0) pdf = new FEDataField_T<FEAspectRatio          >("Aspect ratio"              );
-	else if (dataField.compare("1-Princ curvature"         ) == 0) pdf = new FECurvatureField("1-Princ curvature"         , FECurvatureField::PRINC1_CURVATURE);
-	else if (dataField.compare("2-Princ curvature"         ) == 0) pdf = new FECurvatureField("2-Princ curvature"         , FECurvatureField::PRINC2_CURVATURE);
-	else if (dataField.compare("Gaussian curvature"        ) == 0) pdf = new FECurvatureField("Gaussian curvature"        , FECurvatureField::GAUSS_CURVATURE );
-	else if (dataField.compare("Mean curvature"            ) == 0) pdf = new FECurvatureField("Mean curvature"            , FECurvatureField::MEAN_CURVATURE  );
-	else if (dataField.compare("RMS curvature"             ) == 0) pdf = new FECurvatureField("RMS curvature"             , FECurvatureField::RMS_CURVATURE   );
-	else if (dataField.compare("Princ curvature difference") == 0) pdf = new FECurvatureField("Princ curvature difference", FECurvatureField::DIFF_CURVATURE  );
-	else if (dataField.compare("Congruency"                ) == 0) pdf = new FEDataField_T<FECongruency           >("Congruency"                );
-	else if (dataField.compare("1-Princ curvature vector"  ) == 0) pdf = new FEDataField_T<FEPrincCurvatureVector1>("1-Princ curvature vector");
-	else if (dataField.compare("2-Princ curvature vector"  ) == 0) pdf = new FEDataField_T<FEPrincCurvatureVector2>("2-Princ curvature vector");
-	else if (dataField.compare("distance map"              ) == 0) pdf = new FEDistanceMap(&fem);
-	else if (dataField.compare("area coverage"             ) == 0) pdf = new FEAreaCoverage(&fem);
+template <typename T> class StandardDataField_T : public StandardDataField
+{
+public:
+	StandardDataField_T(const char* szname, int flag = 0) : StandardDataField(szname, flag) {}
+	Post::FEDataField* Create(Post::FEPostModel* fem) override 
+	{ 
+		Post::FEDataField* dataField = new T(fem, m_flag);
+		dataField->SetName(m_szname);
+		return dataField;
+	}
+};
 
+class StandardDataFieldManager
+{
+public:
+	static void Init();
+
+	static int StandardDataFields() { return (int)m_stdDataFields.size(); }
+
+	static std::string GetStandarDataFieldName(int i)
+	{ 
+		assert((i >= 0) && (i < m_stdDataFields.size()));
+		std::string name;
+		if ((i >= 0) && (i < m_stdDataFields.size()))
+		{
+			name = m_stdDataFields[i]->m_szname;
+		}
+		return name;
+	}
+
+	static Post::FEDataField* CreateDataField(Post::FEPostModel* fem, const std::string& name)
+	{
+		for (int i = 0; i < m_stdDataFields.size(); ++i)
+		{
+			std::string namei = m_stdDataFields[i]->m_szname;
+			if (namei == name)
+			{
+				return m_stdDataFields[i]->Create(fem);
+			}
+		}
+		return nullptr;
+	}
+
+	template <typename T>
+	static void Add(const char* sz, int flag = 0)
+	{
+		m_stdDataFields.push_back(new StandardDataField_T<T>(sz, flag));
+	}
+
+private:
+	StandardDataFieldManager() {}
+
+	static std::vector<StandardDataField*>	m_stdDataFields;
+};
+
+std::vector<StandardDataField*>	StandardDataFieldManager::m_stdDataFields;
+
+void StandardDataFieldManager::Init()
+{
+	if (m_stdDataFields.empty() == false) return;
+
+	Add<FEDataField_T<FENodePosition> >("Position");
+	Add<FEDataField_T<FENodeInitPos > >("Initial Position");
+	Add<FEDataField_T<FEDeformationGradient> >("Deformation gradient");
+	Add<FEStrainDataField >("Infinitesimal strain", FEStrainDataField::INF_STRAIN);
+	Add<FEStrainDataField >("Lagrange strain"     , FEStrainDataField::LAGRANGE          );
+	Add<FEStrainDataField >("Right Cauchy-Green"  , FEStrainDataField::RIGHT_CAUCHY_GREEN);
+	Add<FEStrainDataField >("Right stretch"       , FEStrainDataField::RIGHT_STRETCH     );
+	Add<FEStrainDataField >("Biot strain"         , FEStrainDataField::BIOT              );
+	Add<FEStrainDataField >("Right Hencky"        , FEStrainDataField::RIGHT_HENCKY      );
+	Add<FEStrainDataField >("Left Cauchy-Green"   , FEStrainDataField::LEFT_CAUCHY_GREEN );
+	Add<FEStrainDataField >("Left stretch"        , FEStrainDataField::LEFT_STRETCH      );
+	Add<FEStrainDataField >("Left Hencky"         , FEStrainDataField::LEFT_HENCKY       );
+	Add<FEStrainDataField >("Almansi strain"      , FEStrainDataField::ALMANSI           );
+	Add<FEDataField_T<FEElementVolume        > >("Volume"                    );
+	Add<FEDataField_T<FEVolRatio             > >("Volume ratio"              );
+	Add<FEDataField_T<FEVolStrain            > >("Volume strain"             );
+	Add<FEDataField_T<FEAspectRatio          > >("Aspect ratio"              );
+	Add<FECurvatureField >("1-Princ curvature"         , FECurvatureField::PRINC1_CURVATURE);
+	Add<FECurvatureField >("2-Princ curvature"         , FECurvatureField::PRINC2_CURVATURE);
+	Add<FECurvatureField >("Gaussian curvature"        , FECurvatureField::GAUSS_CURVATURE );
+	Add<FECurvatureField >("Mean curvature"            , FECurvatureField::MEAN_CURVATURE  );
+	Add<FECurvatureField >("RMS curvature"             , FECurvatureField::RMS_CURVATURE   );
+	Add<FECurvatureField >("Princ curvature difference", FECurvatureField::DIFF_CURVATURE  );
+	Add<FEDataField_T<FECongruency           > >("Congruency"              );
+	Add<FEDataField_T<FEPrincCurvatureVector1> >("1-Princ curvature vector");
+	Add<FEDataField_T<FEPrincCurvatureVector2> >("2-Princ curvature vector");
+	Add<FEDistanceMap >("Distance map");
+	Add<FEAreaCoverage>("Area coverage");
+}
+
+void Post::InitStandardDataFields()
+{
+	StandardDataFieldManager::Init();
+}
+
+int Post::StandardDataFields()
+{
+	return StandardDataFieldManager::StandardDataFields();
+}
+
+std::string Post::GetStandarDataFieldName(int i)
+{
+	return StandardDataFieldManager::GetStandarDataFieldName(i);
+}
+
+bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataField)
+{
+	FEDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
+	if (pdf == nullptr) return false;
+	fem.AddDataField(pdf);
+	return true;
+}
+
+
+bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataField, vector<int> selectionList)
+{
+	FEDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
 	if (pdf == nullptr) return false;
 
 	// NOTE: This only works with curvatures
-	if (bselection_only && (glm.GetSelectionMode() == SELECT_FACES))
+	if (selectionList.empty() == false)
 	{
-		vector<int> L;
-		glm.GetSelectionList(L, glm.GetSelectionMode());
-		if (L.empty() == false) fem.AddDataField(pdf, L);
-		else fem.AddDataField(pdf);
+		fem.AddDataField(pdf, selectionList);
 	}
 	else fem.AddDataField(pdf);
 
@@ -844,31 +960,37 @@ bool Post::AddStandardDataField(CGLModel& glm, const std::string& dataField, boo
 }
 
 //------------------------------------------------------------------------------------------
-bool Post::AddNodeDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype)
+bool Post::AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char* szname, int ntype)
 {
 	FILE* fp = fopen(szfile, "rt");
 	if (fp == 0) return false;
 
 	// get the mesh
-	FEPostModel* pm = glm.GetFEModel();
-	FEPostMesh& m = *glm.GetActiveMesh();
+	FEPostMesh& m = *fem.GetFEMesh(0);
 
 	// create a new data field
 	int ND = 0;
+	Post::FEDataField* pdf = nullptr;
 	switch (ntype)
 	{
-	case DATA_FLOAT: pm->AddDataField(new FEDataField_T<FENodeData<float  > >(szname, EXPORT_DATA)); ND = 1; break;
-	case DATA_VEC3F: pm->AddDataField(new FEDataField_T<FENodeData<vec3f  > >(szname, EXPORT_DATA)); ND = 3; break;
-	case DATA_MAT3D: pm->AddDataField(new FEDataField_T<FENodeData<Mat3d  > >(szname, EXPORT_DATA)); ND = 9; break;
-	case DATA_MAT3F: pm->AddDataField(new FEDataField_T<FENodeData<mat3f  > >(szname, EXPORT_DATA)); ND = 9; break;
-	case DATA_MAT3FS: pm->AddDataField(new FEDataField_T<FENodeData<mat3fs > >(szname, EXPORT_DATA)); ND = 6; break;
-	case DATA_MAT3FD: pm->AddDataField(new FEDataField_T<FENodeData<mat3fd > >(szname, EXPORT_DATA)); ND = 3; break;
-	case DATA_TENS4FS: pm->AddDataField(new FEDataField_T<FENodeData<tens4fs> >(szname, EXPORT_DATA)); ND = 21; break;
-	default:
-		assert(false);
+	case DATA_FLOAT  : pdf = new FEDataField_T<FENodeData<float  > >(&fem, EXPORT_DATA); ND =  1; break;
+	case DATA_VEC3F  : pdf = new FEDataField_T<FENodeData<vec3f  > >(&fem, EXPORT_DATA); ND =  3; break;
+	case DATA_MAT3D  : pdf = new FEDataField_T<FENodeData<Mat3d  > >(&fem, EXPORT_DATA); ND =  9; break;
+	case DATA_MAT3F  : pdf = new FEDataField_T<FENodeData<mat3f  > >(&fem, EXPORT_DATA); ND =  9; break;
+	case DATA_MAT3FS : pdf = new FEDataField_T<FENodeData<mat3fs > >(&fem, EXPORT_DATA); ND =  6; break;
+	case DATA_MAT3FD : pdf = new FEDataField_T<FENodeData<mat3fd > >(&fem, EXPORT_DATA); ND =  3; break;
+	case DATA_TENS4FS: pdf = new FEDataField_T<FENodeData<tens4fs> >(&fem, EXPORT_DATA); ND = 21; break;
+	}
+	assert(pdf);
+	if (pdf == nullptr)
+	{
 		fclose(fp);
 		return false;
 	}
+
+	// Add the data field
+	pdf->SetName(szname);
+	fem.AddDataField(pdf);
 
 	// the data should be organized in a comma seperated list. 
 	// the first entry identifies the node for which the data is intended
@@ -890,7 +1012,7 @@ bool Post::AddNodeDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 		if ((node >= 0) && (node < m.Nodes()))
 		{
 			int nstate = 0;
-			while (ch && (nstate < pm->GetStates()))
+			while (ch && (nstate < fem.GetStates()))
 			{
 				float f[21] = { 0 };
 				int nf = 0;
@@ -902,7 +1024,7 @@ bool Post::AddNodeDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 				} while (ch && (nf < ND));
 
 				// get the state
-				FEState* ps = pm->GetState(nstate);
+				FEState* ps = fem.GetState(nstate);
 
 				int ndf = ps->m_Data.size();
 
@@ -964,31 +1086,37 @@ bool Post::AddNodeDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 }
 
 //------------------------------------------------------------------------------------------
-bool Post::AddFaceDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype)
+bool Post::AddFaceDataFromFile(Post::FEPostModel& fem, const char* szfile, const char* szname, int ntype)
 {
 	FILE* fp = fopen(szfile, "rt");
 	if (fp == 0) return false;
 
 	// get the mesh
-	FEPostModel* pm = glm.GetFEModel();
-	FEPostMesh& m = *glm.GetActiveMesh();
+	FEPostMesh& m = *fem.GetFEMesh(0);
 
 	// create a new data field
 	int ND = 0;
+	Post::FEDataField* pdf = nullptr;
 	switch (ntype)
 	{
-	case DATA_FLOAT: pm->AddDataField(new FEDataField_T<FEFaceData<float, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 1; break;
-	case DATA_VEC3F: pm->AddDataField(new FEDataField_T<FEFaceData<vec3f, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 3; break;
-	case DATA_MAT3F: pm->AddDataField(new FEDataField_T<FEFaceData<mat3f, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 9; break;
-	case DATA_MAT3D: pm->AddDataField(new FEDataField_T<FEFaceData<Mat3d, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 9; break;
-	case DATA_MAT3FS: pm->AddDataField(new FEDataField_T<FEFaceData<mat3fs, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 6; break;
-	case DATA_MAT3FD: pm->AddDataField(new FEDataField_T<FEFaceData<mat3fd, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 3; break;
-	case DATA_TENS4FS: pm->AddDataField(new FEDataField_T<FEFaceData<tens4fs, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 21; break;
-	default:
-		assert(false);
+	case DATA_FLOAT  : pdf = new FEDataField_T<FEFaceData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
+	case DATA_VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3D  : pdf = new FEDataField_T<FEFaceData<Mat3d  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
+	case DATA_MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
+	}
+	assert(pdf);
+	if (pdf == nullptr)
+	{
 		fclose(fp);
 		return false;
 	}
+
+	// add the data field
+	pdf->SetName(szname);
+	fem.AddDataField(pdf);
 
 	// the data should be organized in a comma seperated list. 
 	// the first entry identifies the element for which the data is intended
@@ -1010,7 +1138,7 @@ bool Post::AddFaceDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 		if ((nface >= 0) || (nface < m.Faces()))
 		{
 			int nstate = 0;
-			while (ch && (nstate < pm->GetStates()))
+			while (ch && (nstate < fem.GetStates()))
 			{
 				float f[21] = { 0 };
 				int nf = 0;
@@ -1022,7 +1150,7 @@ bool Post::AddFaceDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 				} while (ch && (nf < ND));
 
 				// get the state
-				FEState* ps = pm->GetState(nstate);
+				FEState* ps = fem.GetState(nstate);
 
 				int ndf = ps->m_Data.size();
 
@@ -1084,31 +1212,37 @@ bool Post::AddFaceDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 }
 
 //------------------------------------------------------------------------------------------
-bool Post::AddElemDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype)
+bool Post::AddElemDataFromFile(Post::FEPostModel& fem, const char* szfile, const char* szname, int ntype)
 {
 	FILE* fp = fopen(szfile, "rt");
 	if (fp == 0) return false;
 
 	// get the mesh
-	FEPostModel* pm = glm.GetFEModel();
-	FEPostMesh& m = *glm.GetActiveMesh();
+	FEPostMesh& m = *fem.GetFEMesh(0);
 
 	// create a new data field
 	int ND = 0;
+	Post::FEDataField* pdf = nullptr;
 	switch (ntype)
 	{
-	case DATA_FLOAT: pm->AddDataField(new FEDataField_T<FEElementData<float, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 1; break;
-	case DATA_VEC3F: pm->AddDataField(new FEDataField_T<FEElementData<vec3f, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 3; break;
-	case DATA_MAT3F: pm->AddDataField(new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 9; break;
-	case DATA_MAT3D: pm->AddDataField(new FEDataField_T<FEElementData<Mat3d, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 9; break;
-	case DATA_MAT3FS: pm->AddDataField(new FEDataField_T<FEElementData<mat3fs, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 6; break;
-	case DATA_MAT3FD: pm->AddDataField(new FEDataField_T<FEElementData<mat3fd, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 3; break;
-	case DATA_TENS4FS: pm->AddDataField(new FEDataField_T<FEElementData<tens4fs, DATA_ITEM> >(szname, EXPORT_DATA)); ND = 21; break;
-	default:
-		assert(false);
+	case DATA_FLOAT  : pdf = new FEDataField_T<FEElementData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
+	case DATA_VEC3F  : pdf = new FEDataField_T<FEElementData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_MAT3F  : pdf = new FEDataField_T<FEElementData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3D  : pdf = new FEDataField_T<FEElementData<Mat3d  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3FS : pdf = new FEDataField_T<FEElementData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
+	case DATA_MAT3FD : pdf = new FEDataField_T<FEElementData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
+	case DATA_TENS4FS: pdf = new FEDataField_T<FEElementData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
+	}
+	assert(pdf);
+	if (pdf == nullptr)
+	{
 		fclose(fp);
 		return false;
 	}
+
+	// add the data field
+	pdf->SetName(szname);
+	fem.AddDataField(pdf);
 
 	// the data should be organized in a comma seperated list. 
 	// the first entry identifies the element for which the data is intended
@@ -1130,7 +1264,7 @@ bool Post::AddElemDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 		if ((nelem >= 0) || (nelem < m.Elements()))
 		{
 			int nstate = 0;
-			while (ch && (nstate < pm->GetStates()))
+			while (ch && (nstate < fem.GetStates()))
 			{
 				float f[21] = { 0 };
 				int nf = 0;
@@ -1142,7 +1276,7 @@ bool Post::AddElemDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 				} while (ch && (nf < ND));
 
 				// get the state
-				FEState* ps = pm->GetState(nstate);
+				FEState* ps = fem.GetState(nstate);
 
 				int ndf = ps->m_Data.size();
 
