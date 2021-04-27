@@ -39,8 +39,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <assert.h>
 #include <sstream>
-
-using std::stringstream;
+using namespace std;
 
 #define CREATE_SURFACE_LOAD(className) createNewSurfaceLoad(new className(&fem), #className, CountLoads<className>(fem))
 
@@ -2664,7 +2663,7 @@ void FEBioFormat3::ParseRigidConnector(FEStep *pstep, XMLTag &tag, const int rc)
 {
 	FEModel& fem = GetFEModel();
 
-	FERigidConnector* pi;
+	FERigidConnector* pi = nullptr;
 	char szname[256];
 
 	switch (rc) {

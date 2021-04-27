@@ -78,9 +78,16 @@ Param* Param::CopyEnumNames(const char* sz)
 	m_bcopy = false;
 	if (sz)
 	{
-		int l = (int) strlen(sz);
-		m_szenum = new char[l+1];
-		strncpy(m_szenum, sz, l);
+		int l = 0;
+		const char* ch = sz;
+		while (*ch)
+		{
+			int l1 = (int)strlen(ch) + 1;
+			ch += l1;
+			l += l1;
+		}
+		m_szenum = new char[l + 1];
+		for (int i=0; i<l; ++i) m_szenum[i] = sz[i];
 		m_szenum[l] = 0;
 		m_bcopy = true;
 	}

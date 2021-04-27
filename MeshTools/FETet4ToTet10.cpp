@@ -31,9 +31,9 @@ SOFTWARE.*/
 //using namespace std;
 
 //-----------------------------------------------------------------------------
-FETet4ToTet10::FETet4ToTet10() : FEModifier("Tet4-to-Tet10")
+FETet4ToTet10::FETet4ToTet10(bool bsmooth) : FEModifier("Tet4-to-Tet10")
 {
-	m_bsmooth = false;
+	m_bsmooth = bsmooth;
 }
 
 //-----------------------------------------------------------------------------

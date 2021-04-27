@@ -216,7 +216,7 @@ public:
 class FETet4ToTet10 : public FEModifier
 {
 public:
-	FETet4ToTet10();
+	FETet4ToTet10(bool bsmooth = false);
 	FEMesh* Apply(FEMesh* pm);
 
 	void SetSmoothing(bool b) { m_bsmooth = b; }
@@ -230,7 +230,7 @@ private:
 class FETet4ToTet15 : public FEModifier
 {
 public:
-	FETet4ToTet15();
+	FETet4ToTet15(bool bsmooth = false);
 	FEMesh* Apply(FEMesh* pm);
 
 	void SetSmoothing(bool b) { m_bsmooth = b; }
@@ -258,7 +258,7 @@ private:
 class FETet4ToHex8 : public FEModifier
 {
 public:
-	FETet4ToHex8();
+	FETet4ToHex8(bool bsmooth = false);
 	FEMesh* Apply(FEMesh* pm);
 
 	void SetSmoothing(bool b) { m_bsmooth = b; }
@@ -299,7 +299,7 @@ public:
 class FEHex8ToHex20 : public FEModifier
 {
 public:
-	FEHex8ToHex20();
+	FEHex8ToHex20(bool bsmooth = false);
 	FEMesh* Apply(FEMesh* pm);
 	void SetSmoothing(bool b) { m_bsmooth = b; }
 
@@ -329,7 +329,7 @@ public:
 class FEQuad4ToQuad8 : public FEModifier
 {
 public:
-    FEQuad4ToQuad8();
+    FEQuad4ToQuad8(bool bsmooth = false);
     FEMesh* Apply(FEMesh* pm);
     void SetSmoothing(bool b) { m_bsmooth = b; }
     
@@ -359,7 +359,7 @@ public:
 class FETri3ToTri6 : public FEModifier
 {
 public:
-    FETri3ToTri6();
+    FETri3ToTri6(bool bsmooth = false);
     FEMesh* Apply(FEMesh* pm);
     void SetSmoothing(bool b) { m_bsmooth = b; }
     
@@ -417,6 +417,15 @@ public:
 	FEConvertMesh();
 
 	FEMesh* Apply(FEMesh* pm);
+
+	bool UpdateData(bool bsave) override;
+
+	// return progress
+	FSTaskProgress GetProgress() override;
+
+private:
+	FEModifier* m_mod;
+	int			m_currentType;
 };
 
 //-----------------------------------------------------------------------------

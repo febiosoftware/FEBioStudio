@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include "FEModifier.h"
 
 //-----------------------------------------------------------------------------
-FEQuad4ToQuad8::FEQuad4ToQuad8() : FEModifier("Quad4-to-Quad8")
+FEQuad4ToQuad8::FEQuad4ToQuad8(bool bsmooth) : FEModifier("Quad4-to-Quad8")
 {
-    m_bsmooth = false;
+    m_bsmooth = bsmooth;
 }
 
 //-----------------------------------------------------------------------------

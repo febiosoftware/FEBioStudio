@@ -100,6 +100,10 @@ void CUpdateWidget::checkForUpdate(bool dev)
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 	request.setRawHeader(QByteArray("version"), QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).toUtf8());
+	
+	// To be turned back on in 1.5.0
+	// request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
+	
 
 	if(NetworkAccessibleCheck())
 	{
@@ -117,62 +121,67 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-	std::cout << statusCode << std::endl;
+	std::cout << statusCode << endl;
 
 	if(statusCode != 200)
 	{
 		showError("Update Check Failed!\n\nUnable to receive response from server.");
 	}
 
-	serverTime = r->rawHeader("serverTime").toLongLong();
+	// serverTime = r->rawHeader("serverTime").toLongLong();
 
 	QXmlStreamReader reader(r->readAll());
 
 	if (reader.readNextStartElement())
 	{
-		if(reader.name() == UPDATE) 
+		if(reader.name() == "update")
 		{
 			while(reader.readNextStartElement())
 			{
-				if(reader.name() == RELEASE)
+				if(reader.name() == "release")
 				{
 					Release release;
+					release.terminal = false;
 
 					while(reader.readNextStartElement())
 					{
-						if(reader.name() == ACTIVE)
+						if(reader.name() == "active")
 						{
 							release.active = reader.readElementText().toInt();
 						}
-						else if(reader.name() == TIMESTAMP)
+						else if(reader.name() == "terminal")
+						{
+							release.terminal = reader.readElementText().toInt();
+						}
+						else if(reader.name() == "timestamp")
 						{
 							release.timestamp = reader.readElementText().toLongLong();
 						}
-						else if(reader.name() == FEBIOVERSION)
+						else if(reader.name() == "FEBioVersion")
 						{
 							release.FEBioVersion = reader.readElementText();
 						}
-						else if(reader.name() == FBSVERSION)
+						else if(reader.name() == "FBSVersion")
 						{
 							release.FBSVersion = reader.readElementText();
 						}
-						else if(reader.name() == FEBIONOTES)
+						else if(reader.name() == "FEBioNotes")
 						{
 							release.FEBioNotes = reader.readElementText();
 						}
-						else if(reader.name() == FBSNOTES)
+						else if(reader.name() == "FBSNotes")
 						{
 							release.FBSNotes = reader.readElementText();
 						}
-						else if(reader.name() == RELEASEMSG)
+						else if(reader.name() == "releaseMsg")
 						{
 							release.releaseMsg = reader.readElementText();
 						}
-						else if(reader.name() == FEBFILES)
+						else if(reader.name() == "files")
 						{
 							while(reader.readNextStartElement())
 							{
-								if(reader.name() == FEBFILE)
+								if(reader.name() == "file")
 								{
 									ReleaseFile rfile;
 									rfile.size = reader.attributes().value("size").toLongLong();
@@ -187,11 +196,11 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 								}
 							}
 						}
-						else if(reader.name() == DELETEFILES)
+						else if(reader.name() == "deleteFiles")
 						{
 							while(reader.readNextStartElement())
 							{
-								if(reader.name() == FEBFILE)
+								if(reader.name() == "file")
 								{
 									release.deleteFiles.append(reader.readElementText());
 								}
@@ -231,11 +240,11 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 	if (reader.readNextStartElement())
 	{
-		if(reader.name() == AUTOUPDATE)
+		if(reader.name() == "autoUpdate")
 		{
 			while(reader.readNextStartElement())
 			{
-				if(reader.name() == LASTUPDATE)
+				if(reader.name() == "lastUpdate")
 				{
 					lastUpdate = reader.readElementText().toLongLong();
 				}
@@ -251,7 +260,13 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 	if(releases.size() > 0)
 	{
-		if(releases[0].timestamp > lastUpdate)
+		serverTime = releases[0].timestamp;
+
+		if(releases[0].terminal)
+		{
+			showTerminal();
+		}
+		else if(releases[0].timestamp > lastUpdate)
 		{
 			showUpdateInfo();
 		}
@@ -388,6 +403,15 @@ void CUpdateWidget::showUpToDate()
     emit ready(false);
 }
 
+void CUpdateWidget::showTerminal()
+{
+    infoLabel->setText("There is a new update available, but you cannot update to it automatically.<br>"
+		"You must download a new installer from <a href=\"https://febio.org\">febio.org</a>");
+	infoLabel->setOpenExternalLinks(true);
+
+    emit ready(true, true);
+}
+
 void CUpdateWidget::showError(const QString& error)
 {
     infoLabel->setText(error);
@@ -431,10 +455,10 @@ void CUpdateWidget::linkActivated(const QString& link)
 				notes += release.FEBioVersion;
 
 				QDateTime timestamp;
-				timestamp.setSecsSinceEpoch(release.timestamp); //setTime_t is deprecated
+				timestamp.setTime_t(release.timestamp);
 
 				notes += "   Released: ";
-				notes += timestamp.toString("M/d/yy"); //Qt::SystemLocaleShortDate, this has been depricated and removed, prefers format now. Will required testing.
+				notes += timestamp.toString(Qt::SystemLocaleShortDate);
 
 				notes += "\n------------------------------------------------------\n";
 
@@ -458,10 +482,10 @@ void CUpdateWidget::linkActivated(const QString& link)
 				notes += release.FBSVersion;
 
 				QDateTime timestamp;
-				timestamp.setSecsSinceEpoch(release.timestamp);
+				timestamp.setTime_t(release.timestamp);
 
 				notes += "   Released: ";
-				notes += timestamp.toString("M/d/yy"); //Qt Locale has been removed and deprecated
+				notes += timestamp.toString(Qt::SystemLocaleShortDate);
 
 				notes += "\n------------------------------------------------------\n";
 
@@ -502,9 +526,9 @@ CUpdateChecker::CUpdateChecker(bool dev, QWidget* parent)
 	widget->checkForUpdate(dev);
 }
 
-void CUpdateChecker::updateWidgetReady(bool update)
+void CUpdateChecker::updateWidgetReady(bool update, bool terminal)
 {
-	if(update)
+	if(update && !terminal)
 	{
 		updateAvailable = true;
 

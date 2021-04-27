@@ -52,6 +52,9 @@ public:
 	//! check the type of the mesh
 	bool IsType(int ntype) const;
 
+	//! get the mesh type (returns -1 for mixed meshes)
+	int GetMeshType() const;
+
 public: // interface for accessing elements
 
 	//! total number of elements

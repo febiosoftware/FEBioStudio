@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include "FEModifier.h"
 
 //-----------------------------------------------------------------------------
-FEHex8ToHex20::FEHex8ToHex20() : FEModifier("Hex8-to-Hex20")
+FEHex8ToHex20::FEHex8ToHex20(bool bsmooth) : FEModifier("Hex8-to-Hex20")
 {
-	m_bsmooth = false;
+	m_bsmooth = bsmooth;
 }
 
 //-----------------------------------------------------------------------------

@@ -174,6 +174,10 @@ bool FEVTKimport::Load(const char* szfile)
 
 	fem.AddMesh(pm);
 
+	// We need to build the mesh before allocating a state so that we have 
+	// the faces. 
+	pm->BuildMesh();
+
 	// add a state
 	FEState* ps = new FEState(0.f, m_fem, m_fem->GetFEMesh(0));
 	m_ps = ps;

@@ -228,6 +228,9 @@ void CMeshPanel::Update(bool breset)
 	GModel* gm = doc->GetGModel();
 	GObject* activeObject = doc->GetActiveObject();
 
+	// make sure this object is made the active object
+	GObject::SetActiveObject(activeObject);
+
 	// only update if reset is true or the active object changed
 	if ((breset == false) && (activeObject == m_currentObject)) return;
 
@@ -238,6 +241,15 @@ void CMeshPanel::Update(bool breset)
 
 	// start by hiding everything
 	ui->hideAllPanels();
+
+	// update the active modifier
+	if (m_mod)
+	{
+		if (m_mod->UpdateData(false) == true)
+		{
+			ui->setActiveModifier(m_mod);
+		}
+	}
 
 	// if there is no active object, we're done
 	if (activeObject == 0) return;
@@ -296,14 +308,8 @@ void CMeshPanel::on_buttons_buttonSelected(int id)
 		if (pcd)
 		{
 			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
-
-			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-
-			GModel* geo = &doc->GetFEModel()->GetModel();
-
-			CPropertyList* pl = new CObjectProps(m_mod);
-
-			ui->setModifierPropertyList(pl);
+			if (m_mod) m_mod->UpdateData(false);
+			ui->setActiveModifier(m_mod);
 		}
 
 		ui->showModifierParametersPanel(true);
@@ -333,14 +339,8 @@ void CMeshPanel::on_buttons2_buttonSelected(int id)
 		if (pcd)
 		{
 			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
-
-			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-
-			GModel* geo = &doc->GetFEModel()->GetModel();
-
-			CPropertyList* pl = new CObjectProps(m_mod);
-
-			ui->setModifierPropertyList(pl);
+			if (m_mod) m_mod->UpdateData(false);
+			ui->setActiveModifier(m_mod);
 		}
 
 		ui->showModifierParametersPanel(true);
@@ -429,6 +429,14 @@ void CMeshPanel::on_apply2_clicked(bool b)
 			{
 				w->AddLogEntry(QString::fromStdString(err) + QString("\n"));
 			}
+		}
+	}
+
+	if (m_mod)
+	{
+		if (m_mod->UpdateData(false))
+		{
+			ui->setActiveModifier(m_mod);
 		}
 	}
 

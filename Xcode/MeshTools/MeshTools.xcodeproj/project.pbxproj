@@ -17,6 +17,8 @@
 		D550436F24705E12007DCB29 /* FEMeshOverlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D550436D24705E12007DCB29 /* FEMeshOverlap.cpp */; };
 		D5606C83238DA8FA002B037E /* TetOverlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C81238DA8FA002B037E /* TetOverlap.cpp */; };
 		D5606C84238DA8FA002B037E /* TetOverlap.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C82238DA8FA002B037E /* TetOverlap.h */; };
+		D56912BC2633496D00A337A0 /* FEMultiQuadMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56912BA2633496D00A337A0 /* FEMultiQuadMesh.cpp */; };
+		D56912BD2633496D00A337A0 /* FEMultiQuadMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D56912BB2633496D00A337A0 /* FEMultiQuadMesh.h */; };
 		D5AE8C4325901AEF003AC08B /* QuadricFit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5AE8C4125901AEF003AC08B /* QuadricFit.cpp */; };
 		D5AE8C4425901AEF003AC08B /* QuadricFit.h in Headers */ = {isa = PBXBuildFile; fileRef = D5AE8C4225901AEF003AC08B /* QuadricFit.h */; };
 		D5ED280423197DE400C16BF7 /* FEShellDisc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */; };
@@ -244,6 +246,8 @@
 		D550436D24705E12007DCB29 /* FEMeshOverlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshOverlap.cpp; sourceTree = "<group>"; };
 		D5606C81238DA8FA002B037E /* TetOverlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlap.cpp; sourceTree = "<group>"; };
 		D5606C82238DA8FA002B037E /* TetOverlap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlap.h; sourceTree = "<group>"; };
+		D56912BA2633496D00A337A0 /* FEMultiQuadMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMultiQuadMesh.cpp; sourceTree = "<group>"; };
+		D56912BB2633496D00A337A0 /* FEMultiQuadMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMultiQuadMesh.h; sourceTree = "<group>"; };
 		D5AE8C4125901AEF003AC08B /* QuadricFit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QuadricFit.cpp; sourceTree = "<group>"; };
 		D5AE8C4225901AEF003AC08B /* QuadricFit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QuadricFit.h; sourceTree = "<group>"; };
 		D5ED271923197DD200C16BF7 /* libMeshTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMeshTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -580,6 +584,8 @@
 				D5ED275F23197DE300C16BF7 /* FEMortarProjection.h */,
 				D5ED27F523197DE400C16BF7 /* FEMultiBlockMesh.cpp */,
 				D5ED27E023197DE400C16BF7 /* FEMultiBlockMesh.h */,
+				D56912BA2633496D00A337A0 /* FEMultiQuadMesh.cpp */,
+				D56912BB2633496D00A337A0 /* FEMultiQuadMesh.h */,
 				D5ED277D23197DE300C16BF7 /* FENNQuery.cpp */,
 				D5ED27CE23197DE400C16BF7 /* FENNQuery.h */,
 				D5ED274B23197DE300C16BF7 /* FENodeData.cpp */,
@@ -781,6 +787,7 @@
 				D5ED283523197DE400C16BF7 /* FEGroup.h in Headers */,
 				D5ED285923197DE400C16BF7 /* FoamMesh.h in Headers */,
 				D5ED281923197DE400C16BF7 /* FEEdgeFlip.h in Headers */,
+				D56912BD2633496D00A337A0 /* FEMultiQuadMesh.h in Headers */,
 				D5ED284223197DE400C16BF7 /* FESmoothSurfaceMesh.h in Headers */,
 				D5ED285023197DE400C16BF7 /* FETetGenMesher.h in Headers */,
 				D5ED286223197DE400C16BF7 /* BivariatePolynomialSpline.h in Headers */,
@@ -970,6 +977,7 @@
 				D5ED285123197DE400C16BF7 /* FEShellPatch.cpp in Sources */,
 				D5ED282823197DE400C16BF7 /* GHollowSphere.cpp in Sources */,
 				D5ED285C23197DE400C16BF7 /* FESurfaceModifier.cpp in Sources */,
+				D56912BC2633496D00A337A0 /* FEMultiQuadMesh.cpp in Sources */,
 				D5ED280423197DE400C16BF7 /* FEShellDisc.cpp in Sources */,
 				D5ED28A523197DE400C16BF7 /* FETruncatedEllipsoid.cpp in Sources */,
 				D5ED283823197DE400C16BF7 /* FECone.cpp in Sources */,

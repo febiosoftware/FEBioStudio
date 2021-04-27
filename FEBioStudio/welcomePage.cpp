@@ -124,10 +124,10 @@ void CWelcomePage::Activate()
 		prjLinks += link;
 	}
 
-	QString version = QString("version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	QString version = QString("Version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
 
 #ifdef DEVCOMMIT
-	version = QString("Dev version %1.%2.%3.%4").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).arg(DEVCOMMIT);
+	version = QString("Dev Version %1.%2.%3.%4").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).arg(DEVCOMMIT);
 #endif
 
 	QString page(welcome);

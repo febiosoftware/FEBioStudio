@@ -28,7 +28,6 @@ SOFTWARE.*/
 
 #include <QWidget>
 #include <QDialog>
-#include <QString>
 
 class QNetworkReply;
 class QSslError;
@@ -71,6 +70,7 @@ struct ReleaseFile
 struct Release
 {
 	bool active;
+	bool terminal;
 	qint64 timestamp;
 	QString FEBioVersion;
 	QString FBSVersion;
@@ -95,7 +95,7 @@ public slots:
 	void linkActivated(const QString& link);
 
 signals:
-    void ready(bool update);
+    void ready(bool update, bool terminal=false);
 
 private slots:
 	void connFinished(QNetworkReply *r);
@@ -108,6 +108,7 @@ private:
 
     void showUpdateInfo();
     void showUpToDate();
+	void showTerminal();
     void showError(const QString& error);
 
 public:
@@ -131,21 +132,7 @@ public:
 	bool devChannel;
 	QString urlBase;
 
-  //Made this so that QStringView can look up without making a copy.
-  const QString UPDATE       = "update";
-  const QString RELEASE      = "release";
-  const QString ACTIVE       = "active";
-  const QString TIMESTAMP    = "timestamp";
-  const QString FEBIOVERSION = "FEBioVersion";
-  const QString FBSVERSION   = "FBSVersion";
-  const QString FEBIONOTES   = "FEBioNotes";
-  const QString FBSNOTES     = "FBSNotes";
-  const QString RELEASEMSG   = "releaseMsg";
-  const QString FEBFILES     = "files";
-  const QString FEBFILE      = "file";
-  const QString DELETEFILES  = "deleteFiles";
-  const QString AUTOUPDATE   = "autoUpdate";
-  const QString LASTUPDATE   = "lastUpdate";
+	QString UUID;
 
 };
 
@@ -157,18 +144,16 @@ public:
 	CUpdateChecker(bool dev, QWidget *parent = nullptr);
 
 	bool doUpdate() { return update; }
-	bool autoUpdateCheck();
 
 private:
 	void accept() override;
 
 private slots:
-	void updateWidgetReady(bool update);
+	void updateWidgetReady(bool update, bool terminal);
 
 private:
 	QVBoxLayout* layout;
 	QDialogButtonBox* box;
 	bool update;
 	bool updateAvailable;
-
 };

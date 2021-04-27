@@ -742,6 +742,24 @@ bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE*
 					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
 				}
 				break;
+				case DATA_ARRAY:
+				{
+					FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(d);
+					int nsize = dm.arraySize();
+					vector<double> data(nsize, 0.0);
+					if (dm.active(i))
+					{
+						for (int j = 0; j < nsize; ++j) data[j] = dm.eval(i, j);
+					}
+					for (int j = 0; j < nsize; ++j)
+					{
+						fprintf(fp, "%g", data[j]);
+						if (j != nsize - 1) fprintf(fp, ",");
+					}
+				}
+				break;
+				default:
+					assert(false);
 				}
 			}
 			else if (fmt == DATA_COMP)
