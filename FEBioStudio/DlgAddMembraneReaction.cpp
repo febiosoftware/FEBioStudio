@@ -43,6 +43,8 @@
 #include <QMessageBox>
 #include <FEMLib/FEMultiMaterial.h>
 
+using std::stringstream;
+
 //=================================================================================================
 
 CMembraneReactionList::CMembraneReactionList(QWidget* parent) : QWidget(parent)
@@ -56,12 +58,12 @@ CMembraneReactionList::CMembraneReactionList(QWidget* parent) : QWidget(parent)
     l->addWidget(add);
     l->addWidget(del);
     l->addStretch();
-    l->setMargin(0);
+    l->setContentsMargins(0,0,0,0);
     
     QHBoxLayout* h = new QHBoxLayout;
     h->addWidget(m_list);
     h->addLayout(l);
-    h->setMargin(0);
+    h->setContentsMargins(0,0,0,0);
     
     setLayout(h);
     
@@ -144,48 +146,48 @@ public:
         QGroupBox* pgInternalReactants = new QGroupBox("Internal Reactants:");
         pgInternalReactants->setFlat(true);
         QVBoxLayout* intreactantsLayout = new QVBoxLayout;
-        intreactantsLayout->setMargin(0);
+        intreactantsLayout->setContentsMargins(0,0,0,0);
         intreactantsLayout->addWidget(selectInternalReactants = new QSelectBox);
         pgInternalReactants->setLayout(intreactantsLayout);
         
         QGroupBox* pgInternalProducts = new QGroupBox("Internal Products:");
         pgInternalProducts->setFlat(true);
         QVBoxLayout* intproductsLayout = new QVBoxLayout;
-        intproductsLayout->setMargin(0);
+        intproductsLayout->setContentsMargins(0,0,0,0);
         intproductsLayout->addWidget(selectInternalProducts = new QSelectBox);
         pgInternalProducts->setLayout(intproductsLayout);
         
         QGroupBox* pgExternalReactants = new QGroupBox("External Reactants:");
         pgExternalReactants->setFlat(true);
         QVBoxLayout* extreactantsLayout = new QVBoxLayout;
-        extreactantsLayout->setMargin(0);
+        extreactantsLayout->setContentsMargins(0,0,0,0);
         extreactantsLayout->addWidget(selectExternalReactants = new QSelectBox);
         pgExternalReactants->setLayout(extreactantsLayout);
         
         QGroupBox* pgExternalProducts = new QGroupBox("External Products:");
         pgExternalProducts->setFlat(true);
         QVBoxLayout* extproductsLayout = new QVBoxLayout;
-        extproductsLayout->setMargin(0);
+        extproductsLayout->setContentsMargins(0,0,0,0);
         extproductsLayout->addWidget(selectExternalProducts = new QSelectBox);
         pgExternalProducts->setLayout(extproductsLayout);
         
         QGroupBox* pgReactants = new QGroupBox("Membrane Reactants:");
         pgReactants->setFlat(true);
         QVBoxLayout* reactantsLayout = new QVBoxLayout;
-        reactantsLayout->setMargin(0);
+        reactantsLayout->setContentsMargins(0,0,0,0);
         reactantsLayout->addWidget(selectReactants = new QSelectBox);
         pgReactants->setLayout(reactantsLayout);
         
         QGroupBox* pgProducts = new QGroupBox("Membrane Products:");
         pgProducts->setFlat(true);
         QVBoxLayout* productsLayout = new QVBoxLayout;
-        productsLayout->setMargin(0);
+        productsLayout->setContentsMargins(0,0,0,0);
         productsLayout->addWidget(selectProducts = new QSelectBox);
         pgProducts->setLayout(productsLayout);
         
         dummy = new QWidget;
         QVBoxLayout* dummyLayout = new QVBoxLayout;
-        dummyLayout->setMargin(0);
+        dummyLayout->setContentsMargins(0,0,0,0);
         dummyLayout->addLayout(form2);
         dummyLayout->addWidget(pgInternalReactants);
         dummyLayout->addWidget(pgInternalProducts);

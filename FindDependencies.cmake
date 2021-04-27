@@ -2,7 +2,7 @@
 find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED) 
 
 if(QT_Ver VERSION_EQUAL 6)
-  find_package(${Qt_Version} COMPONENTS OpenGLWidgets REQUIRED)
+  find_package(${Qt_Version} COMPONENTS Core5Compat OpenGLWidgets REQUIRED)
 endif()
 find_package(${Qt_Version} COMPONENTS WebEngineWidgets QUIET)
 mark_as_advanced(${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR ${Qt_Version}Positioning_DIR 
@@ -11,6 +11,117 @@ mark_as_advanced(${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_
 if(QT_Ver VERSION_EQUAL 5)
   mark_as_advanced(Qt5Charts_DIR Qt5WebEngineWidgets_DIR Qt5WebChannel_DIR Qt5WebEngineCore_DIR)
 endif()
+
+#Teem
+if(WIN32)
+	find_path(TEEM_INC teem/nrrd.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		PATH_SUFFIXES "include" "include/teem*" "src" "build" "build/include"
+        DOC "Teem include directory")
+	find_library(TEEM_LIB teem 
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "build/bin" "src/build/bin" "Release" "Debug"
+		DOC "Teem library path")
+else()
+	find_path(TEEM_INC teem/nrrd.h
+        PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "include/teem" "build" "build/include" "src" 
+		DOC "Teem include directory")
+	find_library(TEEM_LIB teem
+        PATHS /opt/teem* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
+		DOC "Teem library path")
+endif()
+
+if(TEEM_LIB)
+    get_filename_component(TEEM_TEMP ${TEEM_LIB} DIRECTORY)
+    set(TEEM_LIB_DIR ${TEEM_TEMP} CACHE PATH "Path to the Teem lib directory (e.g. /opt/teem/bin)")
+    unset(TEEM_TEMP)
+    unset(TEEM_LIB CACHE)
+else()
+	set(TEEM_LIB_DIR  CACHE PATH "Path to the Teem lib directory (e.g. /opt/teem/bin)")
+    unset(TEEM_LIB CACHE)
+endif()
+
+#Libtiff
+if(WIN32)
+	find_path(LIBTIFF_INC tiffio.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		PATH_SUFFIXES "include" "src" "build" "build/include"
+        DOC "LibTiff include directory")
+	find_library(LIBTIFF_LIB tiff 
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "build/lib" "src/build/lib" "Release" "Debug"
+		DOC "LibTiff library path")
+else()
+	find_path(LIBTIFF_INC tiffio.h
+        PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "build" "build/include" "src" 
+		DOC "LibTiff include directory")
+	find_library(LIBTIFF_LIB tiff
+        PATHS /opt/libtiff* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
+		DOC "LibTiff library path")
+endif()
+
+if(LIBTIFF_LIB)
+    get_filename_component(LIBTIFF_TEMP ${LIBTIFF_LIB} DIRECTORY)
+    set(LIBTIFF_LIB_DIR ${LIBTIFF_TEMP} CACHE PATH "Path to the LibTiff lib directory (e.g. /opt/libtiff/lib)")
+    unset(LIBTIFF_TEMP)
+    unset(LIBTIFF_LIB CACHE)
+else()
+	set(LIBTIFF_LIB_DIR  CACHE PATH "Path to the LibTiff lib directory (e.g. /opt/libtiff/lib)")
+    unset(LIBTIFF_LIB CACHE)
+endif()
+
+
+if(LIBTIFF_INC AND LIBTIFF_LIB_DIR AND TEEM_INC AND TEEM_LIB_DIR)		
+	option(USE_TEEM "Required for Teem use" ON)
+    mark_as_advanced(TEEM_INC TEEM_LIB_DIR)
+else()
+	option(USE_TEEM "Required for Teem use" OFF)
+    mark_as_advanced(CLEAR TEEM_INC TEEM_LIB_DIR)
+endif()
+
+#Dicom
+if(WIN32)
+	find_path(DICOM_INC dcmtk/dcmimgle/dcmimage.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		PATH_SUFFIXES "include" "include/dcmtk*" "src" "build" "build/dcmtk"
+        DOC "Dicom include directory")
+	find_library(DICOM_LIB dcmimgle 
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "build/lib" "src/build/lib" "Release" "Debug"
+		DOC "Dicom library path")
+else()
+	find_path(DICOM_INC dcmtk/dcmimgle/dcmimage.h
+        PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "include/dcmtk*" "build" "build/include/dcmtk" "src" 
+		DOC "Dicom include directory")
+	find_library(DICOM_LIB dcmimgle
+        PATHS /opt/teem* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
+		DOC "Dicom library path")
+endif()
+
+if(DICOM_LIB)
+    get_filename_component(DICOM_TEMP ${DICOM_LIB} DIRECTORY)
+    set(DICOM_LIB_DIR ${DICOM_TEMP} CACHE PATH "Path to the Dicom lib directory (e.g. /opt/dcmtk/lib)")
+    unset(DICOM_TEMP)
+    unset(DICOM_LIB CACHE)
+else()
+	set(DICOM_LIB_DIR  CACHE PATH "Path to the Dicom lib directory (e.g. /opt/dcmtk/lib)")
+    unset(DICOM_LIB CACHE)
+endif()
+
+if(DICOM_INC AND DICOM_LIB_DIR)		
+	option(USE_DICOM "Required for Dicom use" ON)
+    mark_as_advanced(DICOM_INC DICOM_LIB_DIR)
+else()
+	option(USE_DICOM "Required for Dicom use" OFF)
+    mark_as_advanced(CLEAR DICOM_INC DICOM_LIB_DIR)
+endif()
+
 # MMG
 if(WIN32)
 	find_path(MMG_INC mmg/mmg3d/libmmg3d.h

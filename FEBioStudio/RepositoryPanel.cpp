@@ -153,11 +153,11 @@ void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages)
 
 	if (reader.readNextStartElement())
 	{
-		if(reader.name() == "messages")
+		if(reader.name() == MESSAGES)
 		{
 			while(reader.readNextStartElement())
 			{
-				if(reader.name() == "message")
+				if(reader.name() == MESSAGE)
 				{
 					qint64 time = reader.attributes().value("time").toLongLong();
 

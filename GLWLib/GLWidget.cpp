@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include "convert.h"
 #include <sstream>
 using namespace Post;
+using std::stringstream;
 
 //-----------------------------------------------------------------------------
 

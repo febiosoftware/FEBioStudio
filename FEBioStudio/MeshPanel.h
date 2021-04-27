@@ -28,8 +28,8 @@ SOFTWARE.*/
 #include "CommandPanel.h"
 #include <vector>
 #include "DlgStartThread.h"
-using namespace std;
 
+//using namespace std;
 class CMainWindow;
 class CModelDocument;
 class FEModifier;

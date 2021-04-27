@@ -92,7 +92,7 @@ public:
 			pick[i] = new QPushButton("Pick");
 			pick[i]->setCheckable(true);
 			QHBoxLayout* h = new QHBoxLayout;
-			h->setMargin(0);
+			h->setContentsMargins(0,0,0,0);
 			h->addWidget(pt[i]);
 			h->addWidget(pick[i]);
 			pform->addRow(QString("point %1:").arg(i+1), h);

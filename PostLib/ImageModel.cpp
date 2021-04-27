@@ -30,6 +30,15 @@ SOFTWARE.*/
 #include "GLImageRenderer.h"
 #include <FSCore/FSDir.h>
 #include <assert.h>
+
+#ifdef HAS_TEEM
+#include <ImageLib/compatibility.h>
+#endif
+
+#ifdef HAS_DICOM
+#include <dcmtk/dcmimgle/dcmimage.h>
+#endif
+
 using namespace Post;
 
 CImageSource::CImageSource(CImageModel* imgModel)
@@ -68,30 +77,164 @@ std::string CImageSource::GetFileName() const
 	return GetStringValue(0);
 }
 
+
+#ifdef HAS_TEEM
+
+//TODO: Maybe see if we can break this function up a bit? 
+//      See much how much of Yong's code we can break off.
+bool CImageSource::LoadTiffData(std::wstring &fileName)
+{
+  C3DImage* im = new C3DImage;
+  std::unique_ptr<TIFReader> reader = std::make_unique<TIFReader>();
+
+  // Returns a nrrd based on templated function
+  Nrrd* nrrdStruct = GetNrrd<TIFReader>(reader,fileName);
+
+  auto [nx,ny,npages,bits] = reader->GetTiffInfo();
+
+  BOX box(nx, ny, npages, nx + reader->GetXSpc(), ny+reader->GetYSpc(), npages+reader->GetZSpc());
+  m_imgModel->SetBoundingBox(box);
+ 
+  if(im->Create(nx,ny,npages,reader->GetRawImage()) == false)
+  {
+	delete im;
+	return false;
+  }
+
+  SetValues(ws2s(fileName),nx,ny,npages);
+  AssignImage(im);
+
+  return true;
+}
+
+bool CImageSource::LoadNrrdData(std::wstring& filename)
+{
+  C3DImage* im = new C3DImage();
+  std::unique_ptr<NRRDReader> reader = std::make_unique<NRRDReader>();
+
+  Nrrd* nrrdStruct = GetNrrd<NRRDReader>(reader,filename);
+  
+  int nx = reader->GetXSize();
+  int ny = reader->GetYSize();
+  int nz = reader->GetSliceNum();
+  int dataSize = nx * ny * nz;
+
+  Byte* data = static_cast<Byte*>(nrrdStruct->data);
+
+  Byte* dataBuf;
+
+  if (nrrdStruct->type == nrrdTypeUShort || nrrdStruct->type == nrrdTypeShort)
+  {
+    dataBuf = new Byte[dataSize];
+    for (int i = 0; i < dataSize; ++i)
+    {
+      dataBuf[i] = data[2*i];
+    }
+  }
+  else
+    dataBuf = data;
+
+
+  BOX box(nx, ny, nz, nx+reader->GetXSpc(), ny+reader->GetYSpc(), nz+reader->GetZSpc());
+  m_imgModel->SetBoundingBox(box);
+
+  if (im->Create(nx, ny, nz, dataBuf) == false)
+  {
+    delete im;
+    return false;
+  }
+
+  SetValues(ws2s(filename),nx,ny,nz);
+  AssignImage(im);
+
+  return true;
+}
+#endif
+
+#ifdef HAS_DICOM
+bool CImageSource::LoadDicomData(const std::string& filename)
+{
+  C3DImage* im = new C3DImage();
+  DicomImage* dicomImage = new DicomImage(filename.c_str());
+
+  int nx = dicomImage->getWidth();
+  int ny = dicomImage->getHeight();
+  int nz = dicomImage->getFrameCount(); 
+  int dataSize = nx * ny * nz;
+
+  const DiPixel* rawData = dicomImage->getInterData();
+
+  EP_Representation type = rawData->getRepresentation(); 
+  const Byte* data = static_cast<const Byte*>(rawData->getData());
+  Byte* dataBuf = new Byte[rawData->getCount()];
+  std::vector<Byte> dataBuff;
+
+  if (type == EPR_Uint16)
+  {
+    for(int i = 0; i < rawData->getCount(); ++i)
+    { 
+      dataBuf[i] = data[2*i];
+      dataBuff.push_back(data[2*i]);
+    }
+  }
+  else
+  {
+    for(int i = 0; i < rawData->getCount(); ++i)
+    { 
+      dataBuf[i] = data[i];
+    }
+  }
+
+  std::cout << dataBuff.size() << std::endl;
+  BOX box(nx, ny, nz, nx+1.0, ny+1.0, nz+1.0);
+  m_imgModel->SetBoundingBox(box);
+
+  if (im->Create(nx, ny, nz, dataBuf) == false)
+  {
+    delete im;
+    return false;
+  }
+
+  SetValues(filename,nx,ny,nz);
+  AssignImage(im);
+
+  return true;
+}
+#endif
+
 bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, int nz)
 {
-	C3DImage* im = new C3DImage;
-	if (im->Create(nx, ny, nz) == false)
-	{
-		delete im;
-		return false;
-	}
+  C3DImage* im = new C3DImage;
+  if (im->Create(nx, ny, nz) == false)
+  {
+    delete im;
+    return false;
+  }
 
-	if (im->LoadFromFile(fileName.c_str(), 8) == false)
-	{
-		delete im;
-		return false;
-	}
+  if (im->LoadFromFile(fileName.c_str(), 8) == false)
+  {
+    delete im;
+    return false;
+  }
 
+  SetValues(fileName,nx,ny,nz);
+  AssignImage(im);
+
+  return true;
+}
+
+void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)
+{
 	SetStringValue(0, fileName);
-	SetIntValue(1, nx);
-	SetIntValue(2, ny);
-	SetIntValue(3, nz);
+	SetIntValue(1, x);
+	SetIntValue(2, y);
+	SetIntValue(3, z);
+}
 
-	delete m_img;
-	m_img = im;
-
-	return true;
+void CImageSource::AssignImage(C3DImage* im)
+{
+  delete m_img;
+  m_img = im;
 }
 
 void CImageSource::Save(OArchive& ar)
@@ -160,6 +303,68 @@ bool CImageModel::UpdateData(bool bsave)
 
 	return false;
 }
+
+#ifdef HAS_TEEM
+bool CImageModel::LoadTiffData(std::wstring &fileName)
+{
+	if (m_img == nullptr) m_img = new CImageSource(this);
+
+	if (m_img->LoadTiffData(fileName) == false)
+	{
+		delete m_img;
+		m_img = nullptr;
+		return false;
+	}
+
+	// set the default name by extracting the base of the file name
+	string fileBase = FSDir::fileBase(ws2s(fileName));
+	m_img->SetName(fileBase);
+
+	UpdateData(false);
+
+	return true;
+}
+
+bool CImageModel::LoadNrrdData(std::wstring& filename)
+{
+  if(m_img == nullptr) m_img = new CImageSource(this);
+
+  if (m_img->LoadNrrdData(filename) == false)
+  {
+    delete m_img;
+    m_img = nullptr;
+    return false;
+  }
+  std::string fileBase = FSDir::fileBase(ws2s(filename));
+  m_img->SetName(fileBase);
+
+  UpdateData(false);
+
+  return true;
+}
+#endif
+
+#ifdef HAS_DICOM
+bool CImageModel::LoadDicomData(const std::string& filename)
+{
+	if (m_img == nullptr) m_img = new CImageSource(this);
+
+	if (m_img->LoadDicomData(filename) == false)
+	{
+		delete m_img;
+		m_img = nullptr;
+		return false;
+	}
+
+	// set the default name by extracting the base of the file name
+	string fileBase = FSDir::fileBase(filename);
+	m_img->SetName(fileBase);
+
+	UpdateData(false);
+
+	return true;
+}
+#endif
 
 bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box)
 {

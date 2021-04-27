@@ -41,6 +41,8 @@ SOFTWARE.*/
 #include <FEMLib/FEAnalysisStep.h>
 #include <GeomLib/MeshLayer.h>
 
+
+using std::stringstream;
 //=============================================================================
 GNodeIterator::GNodeIterator(GModel& m) : m_mdl(m)
 {

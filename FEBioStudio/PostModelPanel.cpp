@@ -465,7 +465,7 @@ public:
 	void setupUi(::CPostModelPanel* parent)
 	{
 		QVBoxLayout* pg = new QVBoxLayout(parent);
-		pg->setMargin(0);
+		pg->setContentsMargins(0,0,0,0);
 
 		QSplitter* psplitter = new QSplitter;
 		psplitter->setOrientation(Qt::Vertical);
@@ -478,8 +478,9 @@ public:
 
 		QWidget* w = new QWidget;
 		QVBoxLayout* pvl = new QVBoxLayout;
-		pvl->setMargin(0);
-
+		
+    pvl->setContentsMargins(0,0,0,0);
+		
 		QHBoxLayout* phl = new QHBoxLayout;
 		enabled = new QCheckBox; enabled->setObjectName("enabled");
 

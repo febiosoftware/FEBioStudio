@@ -915,7 +915,7 @@ public:
 		pg->addLayout(hl);
 
 		QHBoxLayout* bl = new QHBoxLayout;
-		bl->setMargin(0);
+		bl->setContentsMargins(0,0,0,0);
 
 		QPushButton* resetButton = new QPushButton("Reset");
 		bl->addWidget(resetButton);
