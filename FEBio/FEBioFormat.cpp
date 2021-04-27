@@ -1582,7 +1582,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 	XMLAtt* pan = tag.AttributePtr("name");
 	if (pan) strcpy(szname, pan->cvalue());
 
-	FEReactionMaterial* pm;
+	FEReactionMaterial* pm = nullptr;
 	const char* sztype = mtype.cvalue();
 	if (strcmp(sztype, "mass-action-forward") == 0)
 		pm = new FEMassActionForward;
@@ -1590,6 +1590,11 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 		pm = new FEMassActionReversible;
 	else if (strcmp(sztype, "Michaelis-Menten") == 0)
 		pm = new FEMichaelisMenten;
+	else
+	{
+		assert(false);
+		return nullptr;
+	}
 
 	FEReactantMaterial* psr = 0;
 	FEProductMaterial* psp = 0;

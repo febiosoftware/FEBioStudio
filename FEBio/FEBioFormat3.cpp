@@ -2662,7 +2662,7 @@ void FEBioFormat3::ParseRigidConnector(FEStep *pstep, XMLTag &tag, const int rc)
 {
 	FEModel& fem = GetFEModel();
 
-	FERigidConnector* pi;
+	FERigidConnector* pi = nullptr;
 	char szname[256];
 
 	switch (rc) {
