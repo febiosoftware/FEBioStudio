@@ -134,6 +134,23 @@ public:
 
 	QString UUID;
 
+	//Made this so that QStringView can look up without making a copy.
+	const QString UPDATE       = "update";
+	const QString RELEASE      = "release";
+	const QString ACTIVE       = "active";
+    const QString TERMINAL     = "terminal";
+	const QString TIMESTAMP    = "timestamp";
+	const QString FEBIOVERSION = "FEBioVersion";
+	const QString FBSVERSION   = "FBSVersion";
+	const QString FEBIONOTES   = "FEBioNotes";
+	const QString FBSNOTES     = "FBSNotes";
+	const QString RELEASEMSG   = "releaseMsg";
+	const QString FEBFILES     = "files";
+	const QString FEBFILE      = "file";
+	const QString DELETEFILES  = "deleteFiles";
+	const QString AUTOUPDATE   = "autoUpdate";
+	const QString LASTUPDATE   = "lastUpdate";
+
 };
 
 class CUpdateChecker : public QDialog

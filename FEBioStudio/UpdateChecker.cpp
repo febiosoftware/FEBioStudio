@@ -121,7 +121,7 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-	std::cout << statusCode << endl;
+	std::cout << statusCode << std::endl;
 
 	if(statusCode != 200)
 	{
@@ -134,59 +134,58 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 	if (reader.readNextStartElement())
 	{
-		if(reader.name() == "update")
+		if(reader.name() == UPDATE) 
 		{
 			while(reader.readNextStartElement())
 			{
-				if(reader.name() == "release")
+				if(reader.name() == RELEASE)
 				{
 					Release release;
-					release.terminal = false;
 
 					while(reader.readNextStartElement())
 					{
-						if(reader.name() == "active")
+						if(reader.name() == ACTIVE)
 						{
 							release.active = reader.readElementText().toInt();
 						}
-						else if(reader.name() == "terminal")
+						else if(reader.name() == TERMINAL)
 						{
-							release.terminal = reader.readElementText().toInt();
+							release.timestamp = reader.readElementText().toInt();
 						}
-						else if(reader.name() == "timestamp")
+						else if(reader.name() == TIMESTAMP)
 						{
 							release.timestamp = reader.readElementText().toLongLong();
 						}
-						else if(reader.name() == "FEBioVersion")
+						else if(reader.name() == FEBIOVERSION)
 						{
 							release.FEBioVersion = reader.readElementText();
 						}
-						else if(reader.name() == "FBSVersion")
+						else if(reader.name() == FBSVERSION)
 						{
 							release.FBSVersion = reader.readElementText();
 						}
-						else if(reader.name() == "FEBioNotes")
+						else if(reader.name() == FEBIONOTES)
 						{
 							release.FEBioNotes = reader.readElementText();
 						}
-						else if(reader.name() == "FBSNotes")
+						else if(reader.name() == FBSNOTES)
 						{
 							release.FBSNotes = reader.readElementText();
 						}
-						else if(reader.name() == "releaseMsg")
+						else if(reader.name() == RELEASEMSG)
 						{
 							release.releaseMsg = reader.readElementText();
 						}
-						else if(reader.name() == "files")
+						else if(reader.name() == FEBFILES)
 						{
 							while(reader.readNextStartElement())
 							{
-								if(reader.name() == "file")
+								if(reader.name() == FEBFILE)
 								{
 									ReleaseFile rfile;
 									rfile.size = reader.attributes().value("size").toLongLong();
 									rfile.name = reader.readElementText();
-									
+
 
 									release.files.push_back(rfile);
 								}
@@ -196,11 +195,11 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 								}
 							}
 						}
-						else if(reader.name() == "deleteFiles")
+						else if(reader.name() == DELETEFILES)
 						{
 							while(reader.readNextStartElement())
 							{
-								if(reader.name() == "file")
+								if(reader.name() == FEBFILE)
 								{
 									release.deleteFiles.append(reader.readElementText());
 								}
@@ -230,7 +229,6 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 		}
 	}
-
 	lastUpdate = 0;
 
 	QFile autoUpdateXML(QApplication::applicationDirPath() + "/autoUpdate.xml");
@@ -240,11 +238,11 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 	if (reader.readNextStartElement())
 	{
-		if(reader.name() == "autoUpdate")
+		if(reader.name() == AUTOUPDATE)
 		{
 			while(reader.readNextStartElement())
 			{
-				if(reader.name() == "lastUpdate")
+				if(reader.name() == LASTUPDATE)
 				{
 					lastUpdate = reader.readElementText().toLongLong();
 				}
@@ -455,10 +453,10 @@ void CUpdateWidget::linkActivated(const QString& link)
 				notes += release.FEBioVersion;
 
 				QDateTime timestamp;
-				timestamp.setTime_t(release.timestamp);
+				timestamp.setSecsSinceEpoch(release.timestamp);
 
 				notes += "   Released: ";
-				notes += timestamp.toString(Qt::SystemLocaleShortDate);
+				notes += timestamp.toString("M/d/yy");
 
 				notes += "\n------------------------------------------------------\n";
 
@@ -482,10 +480,10 @@ void CUpdateWidget::linkActivated(const QString& link)
 				notes += release.FBSVersion;
 
 				QDateTime timestamp;
-				timestamp.setTime_t(release.timestamp);
+				timestamp.setSecsSinceEpoch(release.timestamp);
 
 				notes += "   Released: ";
-				notes += timestamp.toString(Qt::SystemLocaleShortDate);
+				notes += timestamp.toString("M/d/yy");
 
 				notes += "\n------------------------------------------------------\n";
 
