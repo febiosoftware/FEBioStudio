@@ -35,6 +35,8 @@ SOFTWARE.*/
 #include <MeshTools/GLMesh.h>
 #include <sstream>
 
+using namespace std;
+
 GObject* GObject::m_activeObject = nullptr;
 
 void GObject::SetActiveObject(GObject* po) { m_activeObject = po; }

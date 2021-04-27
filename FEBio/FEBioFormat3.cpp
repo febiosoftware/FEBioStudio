@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <assert.h>
 #include <sstream>
+using namespace std;
 
 #define CREATE_SURFACE_LOAD(className) createNewSurfaceLoad(new className(&fem), #className, CountLoads<className>(fem))
 
