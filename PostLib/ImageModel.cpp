@@ -164,8 +164,8 @@ bool CImageSource::LoadDicomData(const std::string& filename)
 
   const DiPixel* rawData = dicomImage->getInterData();
 
-  EP_Representation type = rawData->getRepresentation(); 
-  const Byte* data = static_cast<const Byte*>(rawData->getData());
+  EP_Representation type = rawData->getRepresentation();  // An Enum that gets the type 
+  const Byte* data = static_cast<const Byte*>(rawData->getData()); //only returns const
   Byte* dataBuf = new Byte[rawData->getCount()];
   std::vector<Byte> dataBuff;
 
