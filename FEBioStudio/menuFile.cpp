@@ -1407,7 +1407,11 @@ void CMainWindow::on_actionImportGeometry_triggered()
 void CMainWindow::on_actionImportImage_triggered()
 {
 	QStringList filters;
-  #ifdef HAS_TEEM
+  #ifdef HAS_TEEM && HAS_DICOM
+	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)" << "Dicom files (*.dicom, *.dcm)";
+  #elif HAS_DICOM
+      filters << "RAW files (*.raw)" << "Dicom files (*.dicom, *.dcm)";
+  #elif HAS_TEEM 
 	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)";
   #else
 	  filters << "RAW files (*.raw)";
@@ -1459,7 +1463,18 @@ void CMainWindow::on_actionImportImage_triggered()
           return;
         }
 	  }
-      else //will need to be written for other cases
+	  else if (ext == "dcm" || ext == "dicom")
+	  {
+        #ifdef HAS_DICOM
+        imageModel = doc->ImportDicom(sfile);
+        #endif
+        if (imageModel == nullptr)
+        {
+          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+          return;
+        }
+	  }
+      else
       {
         CDlgRAWImport dlg(this);
         if (dlg.exec())

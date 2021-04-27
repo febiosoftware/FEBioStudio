@@ -35,6 +35,10 @@ SOFTWARE.*/
 #include <ImageLib/compatibility.h>
 #endif
 
+#ifdef HAS_DICOM
+#include <dcmtk/dcmimgle/dcmimage.h>
+#endif
+
 using namespace Post;
 
 CImageSource::CImageSource(CImageModel* imgModel)
@@ -141,6 +145,57 @@ bool CImageSource::LoadNrrdData(std::wstring& filename)
   }
 
   SetValues(ws2s(filename),nx,ny,nz);
+  AssignImage(im);
+
+  return true;
+}
+#endif
+
+#ifdef HAS_DICOM
+bool CImageSource::LoadDicomData(const std::string& filename)
+{
+  C3DImage* im = new C3DImage();
+  DicomImage* dicomImage = new DicomImage(filename.c_str());
+
+  int nx = dicomImage->getWidth();
+  int ny = dicomImage->getHeight();
+  int nz = dicomImage->getFrameCount(); 
+  int dataSize = nx * ny * nz;
+
+  const DiPixel* rawData = dicomImage->getInterData();
+
+  EP_Representation type = rawData->getRepresentation(); 
+  const Byte* data = static_cast<const Byte*>(rawData->getData());
+  Byte* dataBuf = new Byte[rawData->getCount()];
+  std::vector<Byte> dataBuff;
+
+  if (type == EPR_Uint16)
+  {
+    for(int i = 0; i < rawData->getCount(); ++i)
+    { 
+      dataBuf[i] = data[2*i];
+      dataBuff.push_back(data[2*i]);
+    }
+  }
+  else
+  {
+    for(int i = 0; i < rawData->getCount(); ++i)
+    { 
+      dataBuf[i] = data[i];
+    }
+  }
+
+  std::cout << dataBuff.size() << std::endl;
+  BOX box(nx, ny, nz, nx+1.0, ny+1.0, nz+1.0);
+  m_imgModel->SetBoundingBox(box);
+
+  if (im->Create(nx, ny, nz, dataBuf) == false)
+  {
+    delete im;
+    return false;
+  }
+
+  SetValues(filename,nx,ny,nz);
   AssignImage(im);
 
   return true;
@@ -286,6 +341,28 @@ bool CImageModel::LoadNrrdData(std::wstring& filename)
   UpdateData(false);
 
   return true;
+}
+#endif
+
+#ifdef HAS_DICOM
+bool CImageModel::LoadDicomData(const std::string& filename)
+{
+	if (m_img == nullptr) m_img = new CImageSource(this);
+
+	if (m_img->LoadDicomData(filename) == false)
+	{
+		delete m_img;
+		m_img = nullptr;
+		return false;
+	}
+
+	// set the default name by extracting the base of the file name
+	string fileBase = FSDir::fileBase(filename);
+	m_img->SetName(fileBase);
+
+	UpdateData(false);
+
+	return true;
 }
 #endif
 

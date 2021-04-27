@@ -255,6 +255,10 @@ public:
   Post::CImageModel* ImportTiff(const std::string& filename);
   Post::CImageModel* ImportNrrd(const std::string& filename);
 #endif
+
+#ifdef HAS_DICOM
+  Post::CImageModel* ImportDicom(const std::string& filename);
+#endif
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
 	// --- Command history functions ---

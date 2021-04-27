@@ -58,6 +58,10 @@ public:
   bool LoadTiffData(std::wstring& filename);
   bool LoadNrrdData(std::wstring& filename);
 #endif
+
+#ifdef HAS_DICOM
+  bool LoadDicomData(const std::string &filename);
+#endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
 
 	C3DImage* Get3DImage() { return m_img; }
@@ -101,6 +105,10 @@ public:
 #ifdef HAS_TEEM
   bool LoadTiffData(std::wstring& filename);
   bool LoadNrrdData(std::wstring& filename);
+#endif
+
+#ifdef HAS_DICOM
+  bool LoadDicomData(const std::string &filename);
 #endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
 
