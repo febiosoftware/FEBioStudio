@@ -36,8 +36,6 @@ SOFTWARE.*/
 #include <GL/glu.h>
 #endif
 
-#include <QOpenGLWidget>
-
 #include "GLWidget.h"
 #include <assert.h>
 #include "convert.h"

@@ -28,9 +28,9 @@ SOFTWARE.*/
 
 #include <QWidget>
 #include <QDialog>
+#include <QSslError>
 
 class QNetworkReply;
-class QSslError;
 class QVBoxLayout;
 class QLabel;
 class QNetworkAccessManager;
