@@ -511,7 +511,7 @@ void FESetFiberOrientation::SetFiberNodes(FEMesh *pm)
 
 FESetAxesOrientation::FESetAxesOrientation() : FEModifier("Set axes orientation")
 {
-	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0angles\0");
+	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0angles\0cylindrical\0");
 	AddVecParam(vec3d(1, 0, 0), "a");
 	AddVecParam(vec3d(0, 1, 0), "d");
 	AddIntParam(1, "n0")->SetState(0);
@@ -530,6 +530,7 @@ bool FESetAxesOrientation::UpdateData(bool bsave)
 		switch (n)
 		{
 		case 0: 
+		case 3:
 			GetParam(1).SetState(Param_ALLFLAGS);
 			GetParam(2).SetState(Param_ALLFLAGS);
 			GetParam(3).SetState(0);
@@ -587,6 +588,7 @@ FEMesh* FESetAxesOrientation::Apply(FEMesh *pm)
 		case 0: bret = SetAxesVectors(pnm); break;
 		case 1: bret = SetAxesNodes(pnm); break;
         case 2: bret = SetAxesAngles(pnm); break;
+		case 3: bret = SetAxesCylindrical(pnm); break;
 //		case 2: SetAxesCopy  (pnm); break;
 		default:
 			assert(false);
@@ -688,6 +690,57 @@ bool FESetAxesOrientation::SetAxesAngles(FEMesh *pm)
     }
 
     return true;
+}
+
+bool FESetAxesOrientation::SetAxesCylindrical(FEMesh* pm)
+{
+	vec3d c(0, 0, 0); // center of axis
+
+	vec3d a = GetVecValue(1); // axis
+	vec3d d = GetVecValue(2); // reference vector
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		if (el.m_ntag == 1)
+		{
+			vec3d p = pm->ElementCenter(el);
+
+			// find the vector to the axis
+			vec3d b = (p - c) - a * (a*(p - c)); b.Normalize();
+
+			// setup the rotation vector
+			vec3d x_unit(vec3d(1, 0, 0));
+			quatd q(x_unit, b);
+
+			// rotate the reference vector
+			vec3d r(d); r.Normalize();
+			q.RotateVector(r);
+
+			// setup a local coordinate system with r as the x-axis
+			vec3d d(0, 1, 0);
+			q.RotateVector(d);
+			if (fabs(d*r) > 0.99)
+			{
+				d = vec3d(0, 0, 1);
+				q.RotateVector(d);
+			}
+
+			// find basis vectors
+			vec3d e1 = r;
+			vec3d e3 = (e1 ^ d); e3.Normalize();
+			vec3d e2 = e3 ^ e1;
+
+			// setup rotation matrix
+			mat3d& Q = el.m_Q;
+			Q[0][0] = e1.x; Q[0][1] = e2.x; Q[0][2] = e3.x;
+			Q[1][0] = e1.y; Q[1][1] = e2.y; Q[1][2] = e3.y;
+			Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
+
+			el.m_Qactive = true;
+		}
+	}
+
+	return true;
 }
 
 bool FESetAxesOrientation::SetAxesCopy(FEMesh *pm)

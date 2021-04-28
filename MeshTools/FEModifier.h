@@ -160,6 +160,7 @@ protected:
 	bool SetAxesNodes (FEMesh* pm);
     bool SetAxesAngles(FEMesh* pm);
 	bool SetAxesCopy  (FEMesh* pm);
+	bool SetAxesCylindrical(FEMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
