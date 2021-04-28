@@ -133,8 +133,8 @@ void FEAxesCurvature::Curvature(FEMesh* pm)
         //store neighboring faces to a face
         for (int j = 0; j<faceEdges; ++j)
         {
-            bool isSel = pm->Face(face.m_nbr[j]).IsSelected();
-            if (isSel)
+			FEFace* pfj = pm->FacePtr(face.m_nbr[j]);
+            if (pfj && pfj->IsSelected())
             {
                 temp.push_back(face.m_nbr[j]);
             }
