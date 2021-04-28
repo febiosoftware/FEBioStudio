@@ -43,10 +43,11 @@ FEMultiQuadMesh::~FEMultiQuadMesh(void)
 }
 
 //-----------------------------------------------------------------------------
-MBNode& FEMultiQuadMesh::AddNode(const vec3d& r)
+MBNode& FEMultiQuadMesh::AddNode(const vec3d& r, int ntype)
 {
 	MBNode node;
 	node.m_r = r;
+	node.m_type = ntype;
 	m_MBNode.push_back(node);
 	return m_MBNode[m_MBNode.size() - 1];
 }
@@ -108,10 +109,7 @@ bool FEMultiQuadMesh::Build(GObject* po)
 	for (int i = 0; i < NN; ++i)
 	{
 		GNode* pn = po->Node(i);
-		if (pn->Type() != NODE_SHAPE)
-		{
-			AddNode(pn->LocalPosition()).SetID(pn->GetLocalID());
-		}
+		AddNode(pn->LocalPosition(), pn->Type()).SetID(pn->GetLocalID());
 	}
 
 	// build edges
@@ -169,7 +167,8 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 	for (int i = 0; i < NN; ++i)
 	{
 		MBNode& N = m_MBNode[i];
-		nodes += 1;
+		if (N.m_type != NODE_SHAPE)
+			nodes += 1;
 	}
 
 	// create storage
@@ -179,12 +178,18 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 	// A.1. add all MB nodes
 	nodes = 0;
 	FENode* pn = pm->NodePtr();
-	for (int i = 0; i < NN; ++i, ++pn)
+	for (int i = 0; i < NN; ++i)
 	{
-		pn->r = m_MBNode[i].m_r;
-		m_MBNode[i].m_ntag = nodes;
-		m_MBNode[i].m_fenodes.push_back(nodes++);
-		pn->m_gid = m_MBNode[i].m_gid;
+		MBNode& node = m_MBNode[i];
+		if (node.m_type != NODE_SHAPE)
+		{
+			pn->r = node.m_r;
+			node.m_ntag = nodes;
+			node.m_fenodes.push_back(nodes++);
+			pn->m_gid = node.m_gid;
+			++pn;
+		}
+		else node.m_ntag = -1;
 	}
 
 	// A.2. add all edge nodes
@@ -237,10 +242,9 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 				break;
 				case EDGE_3P_CIRC_ARC:
 				{
-					assert(m_po);
-					vec3d r0 = m_po->Node(e.edge.m_cnode)->LocalPosition();
-					vec3d r1 = m_po->Node(e.edge.m_node[0])->LocalPosition() - r0;
-					vec3d r2 = m_po->Node(e.edge.m_node[1])->LocalPosition() - r0;
+					vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
+					vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r - r0;
+					vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r - r0;
 					vec3d n = r1 ^ r2; n.Normalize();
 					quatd q(n, vec3d(0, 0, 1)), qi = q.Inverse();
 					q.RotateVector(r1);
@@ -602,9 +606,11 @@ void FEMultiQuadMesh::BuildNodeFaceTable(vector< vector<int> >& NFT)
 	NFT.resize(NN);
 	for (int i = 0; i < NN; ++i)
 	{
-		assert(m_MBNode[i].m_ntag);
-		NFT[i].resize(m_MBNode[i].m_ntag);
-		m_MBNode[i].m_ntag = 0;
+		if (m_MBNode[i].m_ntag > 0)
+		{
+			NFT[i].resize(m_MBNode[i].m_ntag);
+			m_MBNode[i].m_ntag = 0;
+		}
 	}
 
 	// fill the node-block array

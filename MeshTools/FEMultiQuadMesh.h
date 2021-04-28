@@ -48,7 +48,7 @@ public:
 	bool Build(GObject* po);
 
 public:
-	MBNode& AddNode(const vec3d& r);
+	MBNode& AddNode(const vec3d& r, int ntype = NODE_VERTEX);
 	MBFace& AddFace(int n0, int n1, int n2, int n3);
 
 	MBFace& GetFace(int n);
