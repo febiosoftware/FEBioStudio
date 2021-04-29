@@ -45,18 +45,18 @@ class QDialogButtonBox;
 // #define SCHEME "http"
 
 #ifdef WIN32
-	#define URL_BASE "/update/FEBioStudio/Windows"
-	#define DEV_BASE "/update/FEBioStudioDev/Windows"
+	#define URL_BASE "/update2/FEBioStudio/Windows"
+	#define DEV_BASE "/update2/FEBioStudioDev/Windows"
 	#define REL_ROOT "\\..\\"
 	#define UPDATER "/FEBioStudioUpdater.exe"
 #elif __APPLE__
-	#define URL_BASE "/update/FEBioStudio/macOS"
-	#define DEV_BASE "/update/FEBioStudioDev/macOS"
+	#define URL_BASE "/update2/FEBioStudio/macOS"
+	#define DEV_BASE "/update2/FEBioStudioDev/macOS"
 	#define REL_ROOT "/../../../"
 	#define UPDATER "/FEBioStudioUpdater"
 #else
-	#define URL_BASE "/update/FEBioStudio/Linux"
-	#define DEV_BASE "/update/FEBioStudioDev/Linux"
+	#define URL_BASE "/update2/FEBioStudio/Linux"
+	#define DEV_BASE "/update2/FEBioStudioDev/Linux"
 	#define REL_ROOT "/../"
 	#define UPDATER "/FEBioStudioUpdater"
 #endif
@@ -79,6 +79,7 @@ struct Release
 	QString releaseMsg;
 	std::vector<ReleaseFile> files;
 	QStringList deleteFiles;
+	std::vector<ReleaseFile> updaterFiles;
 };
 
 
@@ -89,7 +90,7 @@ class CUpdateWidget : public QWidget
 public:
     CUpdateWidget(QWidget* parent = nullptr);
 
-    void checkForUpdate(bool dev = false);
+    void checkForUpdate(bool dev = false, bool updaterUpdateCheck = false);
 
 public slots:
 	void linkActivated(const QString& link);
@@ -107,6 +108,7 @@ private:
     void checkForUpdateResponse(QNetworkReply *r);
 
     void showUpdateInfo();
+	void showUpdaterUpdateInfo();
     void showUpToDate();
 	void showTerminal();
     void showError(const QString& error);
@@ -130,6 +132,8 @@ public:
 	qint64 serverTime;
 
 	bool devChannel;
+	bool updaterUpdateCheck;
+	bool updaterUpdateNeeded;
 	QString urlBase;
 
 	QString UUID;

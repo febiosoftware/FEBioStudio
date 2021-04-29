@@ -44,7 +44,7 @@ SOFTWARE.*/
 
 CUpdateWidget::CUpdateWidget(QWidget* parent)
     : QWidget(parent), restclient(new QNetworkAccessManager), currentIndex(0), overallSize(0), downloadedSize(0),
-	devChannel(false), urlBase(URL_BASE)
+	devChannel(false), updaterUpdateCheck(false), updaterUpdateNeeded(false), urlBase(URL_BASE)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	layout = new QVBoxLayout;
@@ -78,8 +78,9 @@ void CUpdateWidget::connFinished(QNetworkReply *r)
 	}
 }
 
-void CUpdateWidget::checkForUpdate(bool dev)
+void CUpdateWidget::checkForUpdate(bool dev, bool updaterUpdateCheck)
 {
+	this->updaterUpdateCheck = updaterUpdateCheck;
 	devChannel = dev;
 	if(devChannel)
 	{
@@ -127,8 +128,6 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 	{
 		showError("Update Check Failed!\n\nUnable to receive response from server.");
 	}
-
-	// serverTime = r->rawHeader("serverTime").toLongLong();
 
 	QXmlStreamReader reader(r->readAll());
 
@@ -210,6 +209,25 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 								}
 							}
 						}
+						else if(reader.name() == "updaterFiles")
+						{
+							while(reader.readNextStartElement())
+							{
+								if(reader.name() == "file")
+								{
+									ReleaseFile rfile;
+									rfile.size = reader.attributes().value("size").toLongLong();
+									rfile.name = reader.readElementText();
+									
+
+									release.updaterFiles.push_back(rfile);
+								}
+								else
+								{
+									reader.skipCurrentElement();
+								}
+							}
+						}
 						else
 						{
 							reader.skipCurrentElement();
@@ -255,7 +273,6 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 			}
 		}
 	}
-
 	autoUpdateXML.close();
 
 	if(releases.size() > 0)
@@ -268,7 +285,42 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 		}
 		else if(releases[0].timestamp > lastUpdate)
 		{
-			showUpdateInfo();
+			if(updaterUpdateCheck)
+			{
+				// Check if any new files need to be downloaded for the updater
+				for(auto release : releases)
+				{
+					if(release.timestamp > lastUpdate)
+					{
+						for(auto file : release.updaterFiles)
+						{
+							if(!updateFiles.contains(file.name))
+							{
+								updateFiles.append(file.name);
+								overallSize += file.size;
+							}
+						}
+					}
+				}
+
+				// If the updateFiles vector has something in it at this point then they're files for 
+				// updating the updater
+				if(!updateFiles.isEmpty()) updaterUpdateNeeded = true; 
+
+
+			}
+
+			// If the updateFiles vector has something in it at this point then they're files for 
+			// updating the updater
+			if(updaterUpdateNeeded)
+			{
+				showUpdateInfo();
+			}
+			else
+			{
+				showUpdaterUpdateInfo();
+			}
+			
 		}
 		else
 		{
@@ -353,7 +405,19 @@ void CUpdateWidget::showUpdateInfo()
 
 			if(!releases[0].releaseMsg.isEmpty())
 			{
-				layout->addWidget(new QLabel(releases[0].releaseMsg));
+				// Show all release messages since last update.
+				QStringList messages;
+				for(auto release : releases)
+				{
+					if(release.timestamp > lastUpdate)
+					{
+						QLabel* label = new QLabel(release.releaseMsg);
+						label->setWordWrap(true);
+
+						layout->addWidget(label);
+					}
+				}
+				// layout->addWidget(new QLabel(releases[0].releaseMsg));
 			}
 
 			layout->addWidget(new QLabel("This update provides:"));
@@ -392,6 +456,17 @@ void CUpdateWidget::showUpdateInfo()
     layout->addStretch(10);
     layout->addWidget(new QLabel(QString("The total download size is %1.").arg(locale().formattedDataSize(overallSize))));
 
+    
+    emit ready(true);
+}
+
+void CUpdateWidget::showUpdaterUpdateInfo()
+{
+	infoLabel->setText("Before this update can be downloaded, the auto-updater needs to download an update for itself.");
+	infoLabel->setWordWrap(true);
+
+    layout->addStretch(10);
+    layout->addWidget(new QLabel(QString("The total download size is %1.").arg(locale().formattedDataSize(overallSize))));
     
     emit ready(true);
 }
