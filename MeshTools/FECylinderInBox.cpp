@@ -39,10 +39,10 @@ FECylinderInBox::FECylinderInBox()
 FECylinderInBox::FECylinderInBox(GCylinderInBox* po)
 {
 	m_po = po;
-	m_nx = 1;
-	m_ny = 1;
-	m_nz = 1;
-	m_nr = 1;
+	m_nx = 10;
+	m_ny = 10;
+	m_nz = 10;
+	m_nr = 10;
 
 	m_gz = 1;
 	m_gr = 1;
@@ -72,11 +72,10 @@ FEMesh* FECylinderInBox::BuildMesh()
 	assert(m_po);
 
 	// get the object parameters
-	ParamBlock& param = m_po->GetParamBlock();
-	double W = param.GetFloatValue(GCylinderInBox::WIDTH );
-	double H = param.GetFloatValue(GCylinderInBox::HEIGHT);
-	double D = param.GetFloatValue(GCylinderInBox::DEPTH );
-	double R = param.GetFloatValue(GCylinderInBox::RADIUS);
+	double W = m_po->GetFloatValue(GCylinderInBox::WIDTH );
+	double H = m_po->GetFloatValue(GCylinderInBox::HEIGHT);
+	double D = m_po->GetFloatValue(GCylinderInBox::DEPTH );
+	double R = m_po->GetFloatValue(GCylinderInBox::RADIUS);
 
 	double w = W*0.5;
 	double h = H*0.5;
@@ -98,24 +97,24 @@ FEMesh* FECylinderInBox::BuildMesh()
 	int nelem = GetIntValue(NELEM);
 
 	// create the MB nodes
-	m_MBNode.resize(16);
-	m_MBNode[ 0].m_r = vec3d(-2, -2, 0);
-	m_MBNode[ 1].m_r = vec3d( 2, -2, 0);
-	m_MBNode[ 2].m_r = vec3d( 2,  2, 0);
-	m_MBNode[ 3].m_r = vec3d(-2,  2, 0);
-	m_MBNode[ 4].m_r = vec3d(-2, -2, d);
-	m_MBNode[ 5].m_r = vec3d( 2, -2, d);
-	m_MBNode[ 6].m_r = vec3d( 2,  2, d);
-	m_MBNode[ 7].m_r = vec3d(-2,  2, d);
-	
-	m_MBNode[ 8].m_r = vec3d(-1, -1, 0);
-	m_MBNode[ 9].m_r = vec3d( 1, -1, 0);
-	m_MBNode[10].m_r = vec3d( 1,  1, 0);
-	m_MBNode[11].m_r = vec3d(-1,  1, 0);
-	m_MBNode[12].m_r = vec3d(-1, -1, d);
-	m_MBNode[13].m_r = vec3d( 1, -1, d);
-	m_MBNode[14].m_r = vec3d( 1,  1, d);
-	m_MBNode[15].m_r = vec3d(-1,  1, d);
+	m_MBNode.clear();
+	AddNode(vec3d(-w, -h, 0)).SetID(0);
+	AddNode(vec3d( w, -h, 0)).SetID(1);
+	AddNode(vec3d( w,  h, 0)).SetID(2);
+	AddNode(vec3d(-w,  h, 0)).SetID(3);
+	AddNode(vec3d(-w, -h, d)).SetID(4);
+	AddNode(vec3d( w, -h, d)).SetID(5);
+	AddNode(vec3d( w,  h, d)).SetID(6);
+	AddNode(vec3d(-w,  h, d)).SetID(7);
+							 
+	AddNode(vec3d(-r, -r, 0)).SetID(8);
+	AddNode(vec3d( r, -r, 0)).SetID(9);
+	AddNode(vec3d( r,  r, 0)).SetID(10);
+	AddNode(vec3d(-r,  r, 0)).SetID(11);
+	AddNode(vec3d(-r, -r, d)).SetID(12);
+	AddNode(vec3d( r, -r, d)).SetID(13);
+	AddNode(vec3d( r,  r, d)).SetID(14);
+	AddNode(vec3d(-r,  r, d)).SetID(15);
 
 	// create the blocks
 	m_MBlock.resize(4);
@@ -171,23 +170,15 @@ FEMesh* FECylinderInBox::BuildMesh()
 	MBFace& F15 = GetBlockFace( 2, 5); SetFaceEdgeID(F15,  6, 31, 18, 30);
 	MBFace& F16 = GetBlockFace( 3, 5); SetFaceEdgeID(F16,  7, 28, 19, 31);
 
-	// set the node ID's
-	m_MBNode[ 0].SetID(0);
-	m_MBNode[ 1].SetID(1);
-	m_MBNode[ 2].SetID(2);
-	m_MBNode[ 3].SetID(3);
-	m_MBNode[ 4].SetID(4);
-	m_MBNode[ 5].SetID(5);
-	m_MBNode[ 6].SetID(6);
-	m_MBNode[ 7].SetID(7);
-	m_MBNode[ 8].SetID(8);
-	m_MBNode[ 9].SetID(9);
-	m_MBNode[10].SetID(10);
-	m_MBNode[11].SetID(11);
-	m_MBNode[12].SetID(12);
-	m_MBNode[13].SetID(13);
-	m_MBNode[14].SetID(14);
-	m_MBNode[15].SetID(15);
+	// set the edges
+	GetFaceEdge(F5, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F5, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F6, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F6, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F7, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F7, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F8, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F8, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
 
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
@@ -201,46 +192,6 @@ FEMesh* FECylinderInBox::BuildMesh()
 		delete pm;
 		pm = pnew;
 	}
-
-	// project the nodes onto a cylinder
-	for (int i=0; i<pm->Nodes(); ++i)
-	{
-		// get the nodal coordinate in the template
-		vec3d& rn = pm->Node(i).r;
-		double x = rn.x;
-		double y = rn.y;
-
-		// get the max-distance 
-		double D = fmax(fabs(x),fabs(y));
-
-		// "normalize" the coordinates
-		// with respect to the max distance
-		double r = x/D;
-		double s = y/D;
-
-		vec3d r0;
-		if (fabs(x) >= fabs(y))
-		{
-			double u = x/fabs(x);
-			r0.x = u*R*cos(PI*0.25*s);
-			r0.y =   R*sin(PI*0.25*s);
-		}
-		else 
-		{
-			double u = y/fabs(y);
-			r0.y = u*R*cos(PI*0.25*r);
-			r0.x =   R*sin(PI*0.25*r);
-		}
-
-		vec3d r1(r*w, s*h, 0);
-		double a = D - 1;
-
-		rn.x = r0.x*(1-a) + r1.x*a;
-		rn.y = r0.y*(1-a) + r1.y*a;
-	}
-
-	// update the mesh
-	pm->UpdateMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 
