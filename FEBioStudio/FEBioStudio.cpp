@@ -184,8 +184,10 @@ int main(int argc, char* argv[])
 
 CMainWindow* PRV::getMainWindow()
 {
-	CMainWindow* wnd = dynamic_cast<CMainWindow*>(QApplication::activeWindow()); assert(wnd);
-	return wnd;
+	foreach (QWidget *w, qApp->topLevelWidgets())
+        if (CMainWindow* mainWin = qobject_cast<CMainWindow*>(w))
+            return mainWin;
+    return nullptr;
 }
 
 CDocument* PRV::getDocument()

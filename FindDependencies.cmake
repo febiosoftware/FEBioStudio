@@ -394,6 +394,9 @@ endif()
 # OpenGL
 find_package(OpenGL REQUIRED)
 
+# OpenGL
+find_package(Python3 COMPONENTS Development REQUIRED)
+
 # ZLIB
 find_package(ZLIB REQUIRED)
 if(ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY_RELEASE)

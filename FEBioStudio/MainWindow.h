@@ -278,6 +278,9 @@ public:
 	// Read a file
 	void ReadFile(CDocument* doc, const QString& fileName, FileReader* fileReader, int flags);
 
+	// Made public to expose to python interface
+	void ReadFile(QueuedFile& qfile);
+
 	FileReader* CreateFileReader(const QString& fileName);
 
 	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true);
@@ -297,7 +300,6 @@ public:
 	CModelDocument* CreateNewDocument();
 
 private:
-	void ReadFile(QueuedFile& qfile);
 
 	void OpenDocument(const QString& fileName);
 	void OpenFEModel(const QString& fileName);
@@ -398,6 +400,7 @@ public slots:
 	void on_actionFEBioOptimize_triggered();
 	void on_actionOptions_triggered();
 	void on_actionLayerInfo_triggered();
+	void on_actionRunPythonScript_triggered();
 
 	// Post menu actions
 	void on_actionPlaneCut_triggered();

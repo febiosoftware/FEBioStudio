@@ -258,7 +258,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MathLib MeshIO MeshLib MeshTools Nike3D PostGL PostLib XML XPLTLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MathLib MeshIO MeshLib MeshTools Nike3D PostGL PostLib XML XPLTLib PyLib)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -268,6 +268,7 @@ endforeach(name)
 
 # Linking the Qt libraries also pulls in the include files
 link_libraries(Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network Qt5::OpenGL)
+link_libraries(Python3::Python)
 
 if(Qt5WebEngineWidgets_FOUND)
 	link_libraries(Qt5::WebEngineWidgets)
