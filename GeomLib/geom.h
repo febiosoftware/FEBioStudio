@@ -51,6 +51,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// circular arc in 2D
 class GM_CIRCLE_ARC
 {
 public:
@@ -95,4 +96,20 @@ public:
 	vec2d	m_c;			// center point
 	double	m_R0, m_R1;		// radii of ellipsoid
 	double	m_w0, m_w1;		// start/end parameter
+};
+
+//-----------------------------------------------------------------------------
+// circular arc in 3D
+// c = center
+// a,b = two points defining the circular arc
+class GM_CIRCLE_3P_ARC
+{
+public:
+	GM_CIRCLE_3P_ARC(const vec3d& c, const vec3d& a, const vec3d& b, int nw = 1);
+
+	vec3d Point(double l);
+
+public:
+	vec3d	m_c, m_a, m_b;
+	int		m_winding;
 };

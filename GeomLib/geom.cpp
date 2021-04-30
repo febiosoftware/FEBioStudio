@@ -459,3 +459,28 @@ bool GM_ARC::Intersect(GM_CIRCLE_ARC &e, double &w)
 	assert(false);
 	return false;
 }
+
+//===============================================================================
+GM_CIRCLE_3P_ARC::GM_CIRCLE_3P_ARC(const vec3d& c, const vec3d& a, const vec3d& b, int nw)
+{
+	m_c = c;
+	m_a = a;
+	m_b = b;
+	m_winding = nw;
+}
+
+vec3d GM_CIRCLE_3P_ARC::Point(double l)
+{
+	vec3d r1 = m_a - m_c;
+	vec3d r2 = m_b - m_c;
+	vec3d n = r1 ^ r2; n.Normalize();
+	quatd q(n, vec3d(0, 0, 1)), qi = q.Inverse();
+	q.RotateVector(r1);
+	q.RotateVector(r2);
+	GM_CIRCLE_ARC c(vec2d(0, 0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y), m_winding);
+	vec2d a = c.Point(l);
+	vec3d p(a.x, a.y, 0);
+	qi.RotateVector(p);
+	vec3d r = p + m_c;
+	return r;
+}

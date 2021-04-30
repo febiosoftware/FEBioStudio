@@ -201,17 +201,11 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 				case EDGE_3P_CIRC_ARC:
 					{
 					vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
-					vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r - r0;
-					vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r - r0;
-					vec3d n = r1 ^ r2; n.Normalize();
-					quatd q(n, vec3d(0, 0, 1)), qi = q.Inverse();
-					q.RotateVector(r1);
-					q.RotateVector(r2);
-					GM_CIRCLE_ARC c(vec2d(0, 0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y), e.m_winding);
-					vec2d a = c.Point(r);
-					vec3d p(a.x, a.y, 0);
-					qi.RotateVector(p);
-					pn->r = p + r0;
+					vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r;
+					vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r;
+					GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_winding);
+					vec3d p = c.Point(r);
+					pn->r = p;
 					}
 					break;
 				default:
@@ -274,6 +268,44 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 			gs = 1 / gs;
 		}
 
+		// see if this face is a sphere
+		// it is assumed a sphere if all edges are 3P arcs with the same center node
+		bool isSphere = true;
+		double sphereRadius = 0;
+		vec3d sphereCenter(0, 0, 0);
+		int c0 = m_MBEdge[f.m_edge[0]].edge.m_cnode;
+		for (int j = 0; j < 4; ++j)
+		{
+			MBEdge& edgej = m_MBEdge[f.m_edge[j]];
+			if ((edgej.edge.m_ntype != EDGE_3P_CIRC_ARC) || (edgej.edge.m_cnode != c0))
+			{
+				isSphere = false;
+				break;
+			}
+		}
+		if (isSphere)
+		{
+			// we assume that the corner nodes are already on the sphere
+			sphereCenter = m_MBNode[c0].m_r;
+			sphereRadius = (r1 - sphereCenter).Length();
+		}
+
+		// see if it is a revolved surface
+		bool isRevolve = false;
+		int nrevolveEdge = -1;
+		if ((m_MBEdge[f.m_edge[0]].edge.m_ntype == EDGE_ZARC) &&
+			(m_MBEdge[f.m_edge[2]].edge.m_ntype == EDGE_ZARC))
+		{
+			isRevolve = true;
+			nrevolveEdge = 1;
+		}
+		if ((m_MBEdge[f.m_edge[1]].edge.m_ntype == EDGE_ZARC) &&
+			(m_MBEdge[f.m_edge[3]].edge.m_ntype == EDGE_ZARC))
+		{
+			isRevolve = true;
+			nrevolveEdge = 0;
+		}
+
 		ds = gs;
 		s = 0;
 		for (int j=0; j<f.m_ny; ++j)
@@ -287,6 +319,7 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 					if (k>0)
 					{
 /*
+						// linear interpolation
 						N1 = (1-r)*(1-s);
 						N2 = r*(1-s);
 						N3 = r*s;
@@ -294,19 +327,41 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 						pn->r = r1*N1 + r2*N2 + r3*N3 + r4*N4;
 */
 
+						// transfinite interpolation
 						double N1 = (1 - r)*(1 - s);
 						double N2 = r * (1 - s);
 						double N3 = r * s;
 						double N4 = (1 - r)*s;
 
 						// get edge points
-						vec3d e1 = pm->Node(GetFaceEdgeNodeIndex(f, 0, k)).r;
-						vec3d e2 = pm->Node(GetFaceEdgeNodeIndex(f, 1, j)).r;
-						vec3d e3 = pm->Node(GetFaceEdgeNodeIndex(f, 2, nx - k)).r;
-						vec3d e4 = pm->Node(GetFaceEdgeNodeIndex(f, 3, ny - j)).r;
+						vec3d e[4];
+						e[0] = pm->Node(GetFaceEdgeNodeIndex(f, 0, k)).r;
+						e[1] = pm->Node(GetFaceEdgeNodeIndex(f, 1, j)).r;
+						e[2] = pm->Node(GetFaceEdgeNodeIndex(f, 2, nx - k)).r;
+						e[3] = pm->Node(GetFaceEdgeNodeIndex(f, 3, ny - j)).r;
 
-						vec3d p = e1 * (1 - s) + e2 * r + e3 * s + e4 * (1 - r) \
+						vec3d p = e[0] * (1 - s) + e[1] * r + e[2] * s + e[3] * (1 - r) \
 							- (r1*N1 + r2 * N2 + r3 * N3 + r4 * N4);
+
+						// if this point should be on a sphere, project it to the sphere
+						if (isSphere)
+						{
+							vec3d t = p - sphereCenter; t.Normalize();
+							p = sphereCenter + t * sphereRadius;
+						}
+
+						if (isRevolve)
+						{
+							vec2d c(e[nrevolveEdge].x, e[nrevolveEdge].y);
+							double R = c.norm();
+
+							double z = p.z;
+							p.z = 0;
+							p.Normalize();
+							p.x *= R;
+							p.y *= R;
+							p.z = z;
+						}
 
 						pn->r = p;
 
@@ -676,6 +731,42 @@ void FEMultiBlockMesh::BuildMBEdges()
 	}
 
 	NE = m_MBEdge.size();
+
+	// find the block edges
+	int NN = m_MBNode.size();
+	vector< vector<int> > ET(NN);
+	for (int i = 0; i < NE; ++i)
+	{
+		MBEdge& ei = m_MBEdge[i];
+		ET[ei.edge.m_node[0]].push_back(i);
+		ET[ei.edge.m_node[1]].push_back(i);
+	}
+
+	const int EL[12][2] = { {0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7} };
+	int NB = m_MBlock.size();
+	for (int i = 0; i < NB; ++i)
+	{
+		MBBlock& b = m_MBlock[i];
+		for (int j = 0; j < 12; ++j)
+		{
+			b.m_edge[j] = -1;
+
+			int n0 = b.m_node[EL[j][0]];
+			int n1 = b.m_node[EL[j][1]];
+
+			int ne = ET[n0].size();
+			for (int k = 0; k < ne; ++k)
+			{
+				MBEdge& ek = m_MBEdge[ET[n0][k]];
+				if (((ek.Node(0) == n0) && (ek.Node(1) == n1))||
+					((ek.Node(0) == n1) && (ek.Node(1) == n0)))
+				{
+					b.m_edge[j] = ET[n0][k];
+					break;
+				}
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1229,6 +1320,15 @@ int FEMultiBlockMesh::GetEdgeNodeIndex(MBEdge& e, int i)
 MBFace& FEMultiBlockMesh::GetBlockFace(int nb, int nf)
 {
 	return m_MBFace[ m_MBlock[nb].m_face[nf] ];
+}
+
+//-----------------------------------------------------------------------------
+MBEdge& FEMultiBlockMesh::GetBlockEdge(int nblock, int nedge)
+{
+	MBBlock& b = m_MBlock[nblock];
+	int eid = b.m_edge[nedge];
+	assert(eid >= 0);
+	return m_MBEdge[eid];
 }
 
 //-----------------------------------------------------------------------------

@@ -243,17 +243,11 @@ void FEMultiQuadMesh::BuildNodes(FEMesh *pm)
 				case EDGE_3P_CIRC_ARC:
 				{
 					vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
-					vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r - r0;
-					vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r - r0;
-					vec3d n = r1 ^ r2; n.Normalize();
-					quatd q(n, vec3d(0, 0, 1)), qi = q.Inverse();
-					q.RotateVector(r1);
-					q.RotateVector(r2);
-					GM_CIRCLE_ARC c(vec2d(0, 0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y));
-					vec2d a = c.Point(r);
-					vec3d p(a.x, a.y, 0);
-					qi.RotateVector(p);
-					pn->r = p + r0;
+					vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r;
+					vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r;
+					GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_winding);
+					vec3d p = c.Point(r);
+					pn->r = p;
 				}
 				break;
 				default:

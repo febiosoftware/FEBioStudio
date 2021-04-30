@@ -95,7 +95,7 @@ public:
 	BOX GetBoundingBox() { return m_box; }
 	void UpdateBoundingBox();
 
-	void Attach(GMesh& m);
+	void Attach(GMesh& m, bool bupdate = true);
 
 public:
 	int	AddNode(const vec3d& r, int groupID = 0);
