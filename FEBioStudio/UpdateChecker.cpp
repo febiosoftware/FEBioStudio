@@ -250,6 +250,7 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 	}
 
 	lastUpdate = 0;
+	// lastUpdaterUpdate = 0;
 
 	QFile autoUpdateXML(QApplication::applicationDirPath() + "/autoUpdate.xml");
 	autoUpdateXML.open(QIODevice::ReadOnly);
@@ -266,6 +267,10 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 				{
 					lastUpdate = reader.readElementText().toLongLong();
 				}
+				// else if(reader.name() == "lastUpdaterUpdate")
+				// {
+				// 	lastUpdaterUpdate = reader.readElementText().toLongLong();
+				// }
 				else
 				{
 					reader.skipCurrentElement();
@@ -274,6 +279,10 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 		}
 	}
 	autoUpdateXML.close();
+
+	// If the lastUpdaterUpdate element doesn't appear in autoUpdate.xml, set it equal to
+	// lastUpdate
+	// if(lastUpdaterUpdate == 0) lastUpdaterUpdate == lastUpdate;
 
 	if(releases.size() > 0)
 	{
@@ -314,11 +323,11 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 			// updating the updater
 			if(updaterUpdateNeeded)
 			{
-				showUpdateInfo();
+				showUpdaterUpdateInfo();
 			}
 			else
 			{
-				showUpdaterUpdateInfo();
+				showUpdateInfo();
 			}
 			
 		}

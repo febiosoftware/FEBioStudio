@@ -129,6 +129,7 @@ public:
 
     std::vector<Release> releases;
 	qint64 lastUpdate;
+	// qint64 lastUpdaterUpdate;
 	qint64 serverTime;
 
 	bool devChannel;
