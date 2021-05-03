@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <stdio.h>
 #include <math.h>
 #include <memory>
+#include <cstring>
 
 //-----------------------------------------------------------------------------
 // find the power of 2 that is closest to n
