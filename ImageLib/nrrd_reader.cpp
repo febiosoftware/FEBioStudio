@@ -25,6 +25,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
+#ifdef HAS_TEEM
 #include "nrrd_reader.h"
 #include "compatibility.h"
 #include <algorithm>
@@ -329,3 +331,6 @@ std::wstring NRRDReader::GetCurLabelName(int t, int c)
 	std::wstring label_name = data_name.substr(0, data_name.find_last_of('.')) + L".lbl";
 	return label_name;
 }
+
+
+#endif
