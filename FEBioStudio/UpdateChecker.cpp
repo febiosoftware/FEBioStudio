@@ -44,7 +44,7 @@ SOFTWARE.*/
 
 CUpdateWidget::CUpdateWidget(QWidget* parent)
     : QWidget(parent), restclient(new QNetworkAccessManager), currentIndex(0), overallSize(0), downloadedSize(0),
-	devChannel(false), updaterUpdateCheck(false), updaterUpdateNeeded(false), urlBase(URL_BASE)
+	devChannel(false), updaterUpdateCheck(false), doingUpdaterUpdate(false), urlBase(URL_BASE), updaterBase(UPDATER_BASE)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	layout = new QVBoxLayout;
@@ -74,14 +74,37 @@ void CUpdateWidget::connFinished(QNetworkReply *r)
 {
 	if(r->request().url().path() == urlBase + ".xml")
 	{
-		checkForUpdateResponse(r);
+		checkForAppUpdateResponse(r);
+	}
+	else if(r->request().url().path() == updaterBase + ".xml")
+	{
+		checkForUpdaterUpdateResponse(r);
 	}
 }
 
-void CUpdateWidget::checkForUpdate(bool dev, bool updaterUpdateCheck)
+bool CUpdateWidget::NetworkAccessibleCheck()
 {
-	this->updaterUpdateCheck = updaterUpdateCheck;
+//	return restclient->networkAccessible() == QNetworkAccessManager::Accessible;
+	return true;
+}
+
+void CUpdateWidget::checkForUpdate(bool dev, bool upCheck)
+{
+	updaterUpdateCheck = upCheck;
 	devChannel = dev;
+
+	if(updaterUpdateCheck)
+	{
+		checkForUpdaterUpdate();
+	}
+	else
+	{
+		checkForAppUpdate();
+	}
+}
+
+void CUpdateWidget::checkForAppUpdate()
+{
 	if(devChannel)
 	{
 		urlBase = DEV_BASE;
@@ -112,13 +135,7 @@ void CUpdateWidget::checkForUpdate(bool dev, bool updaterUpdateCheck)
 	}
 }
 
-bool CUpdateWidget::NetworkAccessibleCheck()
-{
-//	return restclient->networkAccessible() == QNetworkAccessManager::Accessible;
-	return true;
-}
-
-void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
+void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -209,25 +226,6 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 								}
 							}
 						}
-						else if(reader.name() == "updaterFiles")
-						{
-							while(reader.readNextStartElement())
-							{
-								if(reader.name() == "file")
-								{
-									ReleaseFile rfile;
-									rfile.size = reader.attributes().value("size").toLongLong();
-									rfile.name = reader.readElementText();
-									
-
-									release.updaterFiles.push_back(rfile);
-								}
-								else
-								{
-									reader.skipCurrentElement();
-								}
-							}
-						}
 						else
 						{
 							reader.skipCurrentElement();
@@ -243,14 +241,153 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 			}
 
 		}
+	}
+
+	ReadLastUpdateInfo();
+
+	if(releases.size() > 0)
+	{
+		serverTime = releases[0].timestamp;
+
+		if(releases[0].terminal)
+		{
+			showTerminal();
+		}
+		else if(releases[0].timestamp > lastUpdate)
+		{
+			showUpdateInfo();
+		}
 		else
 		{
+			showUpToDate();
+		}
 
+	}
+	else
+	{
+		showError("Failed to read release information from server.\nPlease try again later.");
+	}
+
+}
+
+void CUpdateWidget::checkForUpdaterUpdate()
+{
+	QUrl myurl;
+	myurl.setScheme(SCHEME);
+	myurl.setHost(UPDATE_URL);
+	myurl.setPort(PORT);
+	myurl.setPath(updaterBase + ".xml");
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+
+	if(NetworkAccessibleCheck())
+	{
+		restclient->get(request);
+	}
+
+}
+
+void CUpdateWidget::checkForUpdaterUpdateResponse(QNetworkReply *r)
+{
+
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	std::cout << statusCode << endl;
+
+	if(statusCode != 200)
+	{
+		showError("Update Check Failed!\n\nUnable to receive response from server.");
+	}
+
+	QXmlStreamReader reader(r->readAll());
+
+	if (reader.readNextStartElement())
+	{
+		if(reader.name() == "update")
+		{
+			while(reader.readNextStartElement())
+			{
+				if(reader.name() == "release")
+				{
+					Release release;
+					release.terminal = false;
+
+					while(reader.readNextStartElement())
+					{
+						if(reader.name() == "active")
+						{
+							release.active = reader.readElementText().toInt();
+						}
+						else if(reader.name() == "timestamp")
+						{
+							release.timestamp = reader.readElementText().toLongLong();
+						}
+						else if(reader.name() == "files")
+						{
+							while(reader.readNextStartElement())
+							{
+								if(reader.name() == "file")
+								{
+									ReleaseFile rfile;
+									rfile.size = reader.attributes().value("size").toLongLong();
+									rfile.name = reader.readElementText();
+									
+
+									release.files.push_back(rfile);
+								}
+								else
+								{
+									reader.skipCurrentElement();
+								}
+							}
+						}
+						else
+						{
+							reader.skipCurrentElement();
+						}
+					}
+
+					if(release.active) updaterReleases.push_back(release);
+				}
+				else
+				{
+					reader.skipCurrentElement();
+				}
+			}
+			
 		}
 	}
 
+	ReadLastUpdateInfo();
+
+	if(updaterReleases.size() > 0)
+	{
+		serverTime = updaterReleases[0].timestamp;
+
+		if(updaterReleases[0].timestamp > lastUpdate)
+		{
+			showUpdaterUpdateInfo();
+		}
+		else
+		{
+			checkForAppUpdate();
+		}
+
+	}
+	else
+	{
+		checkForAppUpdate();
+	}
+
+}
+
+void CUpdateWidget::ReadLastUpdateInfo()
+{
+	QXmlStreamReader reader;
+
 	lastUpdate = 0;
-	// lastUpdaterUpdate = 0;
 
 	QFile autoUpdateXML(QApplication::applicationDirPath() + "/autoUpdate.xml");
 	autoUpdateXML.open(QIODevice::ReadOnly);
@@ -267,10 +404,6 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 				{
 					lastUpdate = reader.readElementText().toLongLong();
 				}
-				// else if(reader.name() == "lastUpdaterUpdate")
-				// {
-				// 	lastUpdaterUpdate = reader.readElementText().toLongLong();
-				// }
 				else
 				{
 					reader.skipCurrentElement();
@@ -279,68 +412,6 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 		}
 	}
 	autoUpdateXML.close();
-
-	// If the lastUpdaterUpdate element doesn't appear in autoUpdate.xml, set it equal to
-	// lastUpdate
-	// if(lastUpdaterUpdate == 0) lastUpdaterUpdate == lastUpdate;
-
-	if(releases.size() > 0)
-	{
-		serverTime = releases[0].timestamp;
-
-		if(releases[0].terminal)
-		{
-			showTerminal();
-		}
-		else if(releases[0].timestamp > lastUpdate)
-		{
-			if(updaterUpdateCheck)
-			{
-				// Check if any new files need to be downloaded for the updater
-				for(auto release : releases)
-				{
-					if(release.timestamp > lastUpdate)
-					{
-						for(auto file : release.updaterFiles)
-						{
-							if(!updateFiles.contains(file.name))
-							{
-								updateFiles.append(file.name);
-								overallSize += file.size;
-							}
-						}
-					}
-				}
-
-				// If the updateFiles vector has something in it at this point then they're files for 
-				// updating the updater
-				if(!updateFiles.isEmpty()) updaterUpdateNeeded = true; 
-
-
-			}
-
-			// If the updateFiles vector has something in it at this point then they're files for 
-			// updating the updater
-			if(updaterUpdateNeeded)
-			{
-				showUpdaterUpdateInfo();
-			}
-			else
-			{
-				showUpdateInfo();
-			}
-			
-		}
-		else
-		{
-			showUpToDate();
-		}
-
-	}
-	else
-	{
-		showError("Failed to read release information from server.\nPlease try again later.");
-	}
 
 }
 
@@ -471,6 +542,24 @@ void CUpdateWidget::showUpdateInfo()
 
 void CUpdateWidget::showUpdaterUpdateInfo()
 {
+	doingUpdaterUpdate = true;
+
+	// Find unique files that need to be downloaded or deleted
+	for(auto release : updaterReleases)
+	{
+		if(release.timestamp > lastUpdate)
+		{
+			for(auto file : release.files)
+			{
+				if(!updateFiles.contains(file.name))
+				{
+					updateFiles.append(file.name);
+					overallSize += file.size;
+				}
+			}
+		}
+	}
+
 	infoLabel->setText("Before this update can be downloaded, the auto-updater needs to download an update for itself.");
 	infoLabel->setWordWrap(true);
 
