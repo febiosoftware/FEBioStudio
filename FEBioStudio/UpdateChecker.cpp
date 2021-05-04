@@ -497,7 +497,6 @@ void CUpdateWidget::showUpdateInfo()
 						layout->addWidget(label);
 					}
 				}
-				// layout->addWidget(new QLabel(releases[0].releaseMsg));
 			}
 
 			layout->addWidget(new QLabel("This update provides:"));
@@ -510,6 +509,9 @@ void CUpdateWidget::showUpdateInfo()
 				QObject::connect(newFEBioLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
 
 				layout->addWidget(newFEBioLabel);
+
+				// if(newFEBioLabel->sizeHint().width() > sizeHint().width()) setMinimumWidth(newFEBioLabel->sizeHint().width());
+				newFEBioLabel->setWordWrap(true);
 			}
 
 			if(newFBS)
@@ -518,8 +520,12 @@ void CUpdateWidget::showUpdateInfo()
 				QLabel* newFBSLabel = new QLabel(QChar(0x22, 0x20) + QString(" An update to FEBio Studio %1. Click <a href=\"FBSNotes\">here</a> for release notes.").arg(releases[0].FBSVersion));
 				newFBSLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
 				QObject::connect(newFBSLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
-
+				
 				layout->addWidget(newFBSLabel);
+
+				// if(newFBSLabel->sizeHint().width() > sizeHint().width()) setMinimumWidth(newFBSLabel->sizeHint().width());
+
+				newFBSLabel->setWordWrap(true);
 			}
 		}
 	}
