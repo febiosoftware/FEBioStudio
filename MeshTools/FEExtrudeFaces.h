@@ -36,6 +36,10 @@ public:
 	FEMesh* Apply(FEGroup* pg);
 
 	void SetExtrusionDistance(double D);
+	void SetSegments(int n);
+	void SetUseNormalLocal(bool b);
+	void SetMeshBiasFactor(double g);
+	void SetSymmetricBias(bool b);
 
 protected:
 	void Extrude(FEMesh* pm, vector<int>& faceList);

@@ -33,11 +33,33 @@ FEExtrudeFaces::FEExtrudeFaces() : FEModifier("Extrude faces")
 	AddDoubleParam(1.0, "D", "Distance");
 	AddIntParam(1, "N", "Segments");
 	AddBoolParam(false, "L", "Use local normal");
+	AddDoubleParam(1, "mesh bias");
+	AddBoolParam(false, "symmetric mesh bias");
 }
 
 void FEExtrudeFaces::SetExtrusionDistance(double D)
 {
 	SetFloatValue(0, D);
+}
+
+void FEExtrudeFaces::SetSegments(int n)
+{
+	SetIntValue(1, n);
+}
+
+void FEExtrudeFaces::SetUseNormalLocal(bool b)
+{
+	SetBoolValue(2, b);
+}
+
+void FEExtrudeFaces::SetMeshBiasFactor(double g)
+{
+	SetFloatValue(3, g);
+}
+
+void FEExtrudeFaces::SetSymmetricBias(bool b)
+{
+	SetBoolValue(4, b);
 }
 
 FEMesh* FEExtrudeFaces::Apply(FEGroup* pg)
@@ -120,6 +142,8 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 	int nseg = GetIntValue(1);
 	bool bloc = GetBoolValue(2);
 
+	double gd = GetFloatValue(3);
+	bool bd = GetBoolValue(4);
 
 	// allocate room for new nodes
 	if (linear) pm->Create(n0 + nseg*nn, 0);
@@ -151,17 +175,40 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 	// make sure all directional vectors are normalized
 	for (int i = 0; i<nn; ++i) ed[i].Normalize();
 
+	double fd = gd;
+	gd = 1;
+	if (bd)
+	{
+		gd = 2; if (nseg % 2) gd += fd;
+		for (int i = 0; i < nseg / 2 - 1; ++i) gd = fd * gd + 2;
+		gd = dist / gd;
+	}
+	else
+	{
+		for (int i = 0; i < nseg - 1; ++i) gd = fd * gd + 1;
+		gd = dist / gd;
+	}
+
 	// extrude the nodes
+	double dd = gd;
+	double d = 0;
 	for (int l = 1; l <= nseg; ++l)
 	{
-		double D = l*dist / nseg;
+		d += dd;
+		dd *= fd;
+		if (bd && ((l-1) == nseg / 2 - 1))
+		{
+			if (nseg % 2 == 0) dd /= fd;
+			fd = 1.0 / fd;
+		}
+
 		for (int i = 0; i<n0; ++i)
 		{
 			FENode& node = pm->Node(i);
 			if (node.m_ntag >= 0)
 			{
 				FENode& node2 = pm->Node(n0 + (l - 1)*nn + node.m_ntag);
-				node2.r = node.r + ed[node.m_ntag] * D;
+				node2.r = node.r + ed[node.m_ntag] * d;
 				node2.m_ntag = node.m_ntag;
 			}
 		}

@@ -461,3 +461,14 @@ public:
 	FERezoneMesh();
 	FEMesh* Apply(FEMesh* pm);
 };
+
+//-----------------------------------------------------------------------------
+class FEInflateMesh: public FEModifier
+{
+public:
+	FEInflateMesh();
+	FEMesh* Apply(FEMesh* pm);
+
+private:
+	void ShrinkMesh(FEMesh& mesh);
+};

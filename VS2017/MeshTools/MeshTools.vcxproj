@@ -178,6 +178,7 @@
     <ClCompile Include="..\..\MeshTools\FEHex8ToHex20.cpp" />
     <ClCompile Include="..\..\MeshTools\FEHexSplitModifier.cpp" />
     <ClCompile Include="..\..\MeshTools\FEHollowSphere.cpp" />
+    <ClCompile Include="..\..\MeshTools\FEInflateMesh.cpp" />
     <ClCompile Include="..\..\MeshTools\FEItemListBuilder.cpp" />
     <ClCompile Include="..\..\MeshTools\FELinearToQuadratic.cpp" />
     <ClCompile Include="..\..\MeshTools\FELoftMesher.cpp" />
