@@ -231,3 +231,22 @@ public:
 protected:
 	QLineEdit*	m_distance;
 };
+
+//=============================================================================
+// CAD revolve surface
+class CCreateRevolve : public CCreatePane
+{
+	Q_OBJECT
+
+public:
+	CCreateRevolve(CCreatePanel* parent);
+
+	void Activate();
+	void Deactivate();
+
+	FSObject* Create();
+
+protected:
+	QLineEdit*	m_angle;
+	QLineEdit*	m_divs;
+};

@@ -883,7 +883,7 @@ bool PLC::BuildFaces()
 		case FACE_QUAD   : if (BuildFaceQuad   (fs) == false) return false; break;
 		case FACE_POLYGON: if (BuildFacePolygon(fs) == false) return false; break;
 		case FACE_EXTRUDE: if (BuildFaceExtrude(fs) == false) return false; break;
-//		case FACE_REVOLVE: if (BuildFaceRevolve(fs) == false) return false; break;
+		case FACE_REVOLVE: if (BuildFaceRevolve(fs) == false) return false; break;
 		default:
 			assert(false);
 			return false;

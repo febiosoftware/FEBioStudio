@@ -398,6 +398,65 @@ FSObject* CCreateExtrude::Create()
 	return newObject;
 }
 
+
+//=============================================================================
+CCreateRevolve::CCreateRevolve(CCreatePanel* parent) : CCreatePane(parent)
+{
+	QLabel* pl = new QLabel("Revolve angle (degrees):");
+	m_angle = new QLineEdit;
+	m_angle->setValidator(new QDoubleValidator);
+	m_angle->setText("90");
+
+	m_divs = new QLineEdit;
+	m_divs->setValidator(new QIntValidator);
+	m_divs->setText("1");
+
+	QVBoxLayout* layout = new QVBoxLayout;
+	layout->addWidget(pl);
+	layout->addWidget(m_angle);
+	layout->addWidget(m_divs);
+	layout->addStretch();
+
+	setLayout(layout);
+
+	QMetaObject::connectSlotsByName(this);
+}
+
+void CCreateRevolve::Activate()
+{
+}
+
+void CCreateRevolve::Deactivate()
+{
+}
+
+FSObject* CCreateRevolve::Create()
+{
+	static int n = 1;
+
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
+	if (doc == 0) return 0;
+
+	GObject* activeObject = doc->GetActiveObject();
+	if (activeObject == 0) return 0;
+
+	// create a clone of this object
+	GPLCObject* newObject = new GPLCObject;
+	newObject->Copy(activeObject);
+
+	GRevolveModifier mod;
+	mod.SetFloatValue(0, m_angle->text().toDouble());
+	mod.SetIntValue(1, m_divs->text().toInt());
+	mod.Apply(newObject);
+
+	stringstream ss;
+	ss << "Revolve" << n;
+	newObject->SetName(ss.str());
+	n++;
+
+	return newObject;
+}
+
 //=============================================================================
 // User interface for create panel
 class Ui::CCreatePanel

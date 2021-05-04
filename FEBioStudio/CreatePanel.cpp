@@ -98,6 +98,7 @@ CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wn
 	ui->AddCreateOption(2, "Point-to-point curve", QIcon(":/icons/p2pline.png"), new CCreateP2PLinePane(this));
 	ui->AddCreateOption(2, "Loft surface"        , QIcon(":/icons/loft.png"), new CCreateLoftSurface(this));
 	ui->AddCreateOption(2, "Extrude"             , QIcon(":/icons/extrude.png"), new CCreateExtrude(this));
+	ui->AddCreateOption(2, "Revolve"             , QIcon(":/icons/revolve.png"), new CCreateRevolve(this));
 }
 
 GObject* CCreatePanel::GetTempObject()

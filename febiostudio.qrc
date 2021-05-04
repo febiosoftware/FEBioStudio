@@ -167,5 +167,6 @@
         <file>icons/txt.png</file>
         <file>icons/video.png</file>
         <file>icons/html.png</file>
+        <file>icons/revolve.png</file>
 	</qresource>
 </RCC>
