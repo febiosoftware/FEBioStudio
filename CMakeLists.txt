@@ -13,9 +13,6 @@ set(CMAKE_FILES_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Autogen)
 
-# Change to 6 if looking to build with Qt6.
-set(QT_Ver 6 CACHE INTERNAL "")
-
 # Set a default build type if none was specified
 set(default_build_type "Release")
  
@@ -28,48 +25,91 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(QT_Ver VERSION_EQUAL 5)
-  set(Qt_Version "Qt5" CACHE INTERNAL "")
-elseif(QT_Ver VERSION_EQUAL 6)
-  set(Qt_Version "Qt6" CACHE INTERNAL "")
-else()
-  message(FATAL_ERROR "Qt5 or Qt6 version not correctly set. Please set QT_Ver properly as 5 or 6.")
+# Change to 6 if looking to build with Qt6.
+set(Qt_Ver 6 CACHE STRING "Major version number of Qt.")
+set(Qt_Version Qt${Qt_Ver})
+
+if(NOT Qt_Root)
+    set(Qt_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
 endif()
 
-if(NOT ${Qt_Version}_DIR)
-    if(NOT ${Qt_Version}_Root)
-        set(${Qt_Version}_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
-    endif()
+if(NOT NOT_FIRST)
+    set(NOT_FIRST true CACHE INTERNAL "")
+    return()
+endif()
+
+if(Qt_Ver VERSION_EQUAL 6)
+    if(NOT CMAKE_PREFIX_PATH)
     
-    if(WIN32)
-        find_file(${Qt_Version}_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
-			PATHS ${${Qt_Version}_Root}/* ${${Qt_Version}_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-			PATH_SUFFIXES "msvc2015_64/lib" "msvc2017_64/lib" "msvc2019_64/lib"
-			DOC "${Qt_Version} CMake Directory")
-    elseif(APPLE)
-		find_file(${Qt_Version}_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
-			PATHS ${${Qt_Version}_Root}/* ${${Qt_Version}_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-			PATH_SUFFIXES "clang_64/lib"
-			DOC "${Qt_Version} CMake Directory")
-    else()
-		find_file(${Qt_Version}_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
-			PATHS ${${Qt_Version}_Root}/* ${${Qt_Version}_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-			PATH_SUFFIXES "gcc_64/lib"
-			DOC "${Qt_Version} CMake Directory")
-    endif()
+        if(WIN32)
+            find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+                PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "msvc2015_64" "msvc2017_64" "msvc2019_64"
+                DOC "Qt CMake Directory")
+        elseif(APPLE)
+            find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+                PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
+                    $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "clang_64"
+                DOC "${Qt_Version} CMake Directory")
+        else()
+            find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+                PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
+                    $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt6 $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "gcc_64"
+                DOC "Qt CMake Directory")
+        endif()
         
-    if(${Qt_Version}_CMAKE)
-        get_filename_component(${Qt_Version}_TEMP ${${Qt_Version}_CMAKE} DIRECTORY)
-        set(${Qt_Version}_DIR ${${Qt_Version}_TEMP} CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
-        unset(${Qt_Version}_TEMP)
-        unset(${Qt_Version}_CMAKE CACHE)
+        if(Qt_TEMP)
+            set(CMAKE_PREFIX_PATH ${Qt_TEMP} CACHE INTERNAL "Path to Qt6 installation prefix.")
+            unset(Qt_TEMP CACHE)
+        else()
+            unset(Qt_TEMP CACHE)
+        endif()
+        
+        if(NOT CMAKE_PREFIX_PATH)
+            message(FATAL_ERROR "Unable to locate ${Qt_Version}Config.cmake. Please check the value of ${Qt_Version}_Root and set it to the root directory of your ${Qt_Version} installation (e.g. /opt/Qt).")
+        endif()
     endif()
-    
-    if(NOT ${Qt_Version}_DIR)
-        message(FATAL_ERROR "Unable to locate ${Qt_Version}Config.cmake. Please check the value of ${Qt_Version}_Root and set it to the root directory of your ${Qt_Version} installation (e.g. /opt/Qt).")
+elseif(Qt_Ver VERSION_EQUAL 5)
+    if(NOT Qt5_DIR)
+        if(WIN32)
+            find_file(Qt_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
+                PATHS ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "msvc2015_64/lib" "msvc2017_64/lib" "msvc2019_64/lib" "lib"
+                DOC "Qt CMake Directory")
+        elseif(APPLE)
+            find_file(Qt_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
+                PATHS ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
+                    $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "clang_64/lib" "lib"
+                DOC "${Qt_Version} CMake Directory")
+        else()
+            find_file(Qt_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
+                PATHS ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
+                    $ENV{HOME}/Qt/* $ENV{HOME}/*/${Qt_Version} $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "gcc_64/lib" "lib"
+                DOC "Qt CMake Directory")
+        endif()
+            
+        if(Qt_CMAKE)
+            get_filename_component(Qt_TEMP ${Qt_CMAKE} DIRECTORY)
+            set(Qt5_DIR ${Qt_TEMP} CACHE INTERNAL "Path to Qt5 CMake directory.")
+            
+            unset(Qt_TEMP)
+            unset(Qt_CMAKE CACHE)
+        
+        else()
+            unset(Qt_CMAKE CACHE)
+        endif()
+        
+        if(NOT Qt5_DIR)
+            message(FATAL_ERROR "Unable to locate ${Qt_Version}Config.cmake. Please check the value of ${Qt_Version}_Root and set it to the root directory of your ${Qt_Version} installation (e.g. /opt/Qt).")
+        endif()    
     endif()
+else()
+    message(FATAL_ERROR "FEBio Studio cannot be compiled with Qt version ${Qt_Ver}")
 endif()
-
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -179,14 +219,16 @@ if(USE_SSH)
 endif()
 
 if(MODEL_REPO)
-    # Passing quazip5 as a possible alternate name for the librarya
-	if(QT_Ver VERSION_EQUAL 5)
-      findLib(quazip QUAZIP_LIB_DIR QUAZIP_LIB quazip5)
-    elseif(QT_Ver VERSION_EQUAL 6)
-	  findLib(quazip1-qt6 QUAZIP_LIB_DIR QUAZIP_LIB quazip6)
-	else()
-	  message(FATAL_ERROR "QT_Ver was not set.")
-	endif()
+    # Passing quazip5 as a possible alternate name for the library
+	#~ if(Qt_Ver VERSION_EQUAL 5)
+      #~ findLib(quazip QUAZIP_LIB_DIR QUAZIP_LIB quazip5)
+    #~ elseif(Qt_Ver VERSION_EQUAL 6)
+	  #~ findLib(quazip1-qt6 QUAZIP_LIB_DIR QUAZIP_LIB quazip6)
+	#~ else()
+	  #~ message(FATAL_ERROR "Qt_Ver was not set.")
+	#~ endif()
+    
+    findLib(quazip QUAZIP_LIB_DIR QUAZIP_LIB ${QUAZIP_NAMES})
 	
     findLib(sqlite3 SQLITE_LIB_DIR SQLITE_LIB)
 endif()
@@ -311,14 +353,10 @@ endforeach(name)
 ##### Add binaries #####
 
 # Linking the Qt libraries also pulls in the include files
-link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Qt_Version}::Network ${Qt_Version}::OpenGL ${Qt_Version}::OpenGLWidgets)
+link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Qt_Version}::Network ${Qt_Version}::OpenGL)
 
-if(QT_Ver VERSION_EQUAL 6)
-  link_libraries(Qt6::Core5Compat)
-endif()
-
-if(QT_Ver VERSION_EQUAL 5)
-  link_libraries(Qt5::Charts)
+if(Qt_Ver VERSION_EQUAL 6)
+  link_libraries(Qt6::Core5Compat Qt6::OpenGLWidgets)
 endif()
 
 if(${Qt_Version}WebEngineWidgets_FOUND)
