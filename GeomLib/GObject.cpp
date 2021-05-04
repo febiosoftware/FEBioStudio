@@ -587,6 +587,7 @@ void GObject::BuildGMesh()
 				GEdge& e = *Edge(i);
 				switch (e.Type())
 				{
+				case EDGE_LINE: BuildEdgeLine(gmesh, e); break;
 				case EDGE_MESH: BuildEdgeMesh(gmesh, e); break;
 				default:
 					assert(false);
@@ -608,6 +609,19 @@ void GObject::BuildGMesh()
 
 	// assign new mesh
 	imp->m_pGMesh = gmesh;
+}
+
+//-----------------------------------------------------------------------------
+void GObject::BuildEdgeLine(GLMesh* glmsh, GEdge& e)
+{
+	vec3d y[2];
+	y[0] = Node(e.m_node[0])->LocalPosition();
+	y[1] = Node(e.m_node[1])->LocalPosition();
+	int n[2] = { 0 };
+	n[0] = glmsh->AddNode(y[0], e.m_node[0]);
+	n[1] = glmsh->AddNode(y[1], e.m_node[1]);
+	glmsh->AddEdge(n, 2, e.GetLocalID());
+	glmsh->Update();
 }
 
 //-----------------------------------------------------------------------------

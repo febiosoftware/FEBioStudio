@@ -161,15 +161,20 @@ void GExtrudeModifier::Apply(GObject* po)
 		f.m_nPID[1] = -1;
 		f.m_nPID[2] = -1;
 		int m = 0;
-		for (int j=0; j<F; ++j)
+		if (F > 0)
 		{
-			GFace& fj = *po->Face(j);
-			if (fj.HasEdge(i))
+			for (int j = 0; j < F; ++j)
 			{
-				assert(m<2);
-				f.m_nPID[m++] = fj.m_nPID[0];
+				GFace& fj = *po->Face(j);
+				if (fj.HasEdge(i))
+				{
+					assert(m < 2);
+					f.m_nPID[m++] = fj.m_nPID[0];
+				}
 			}
 		}
+		else f.m_nPID[0] = 0;
+
 		assert(f.m_nPID[0] != -1);
 	}
 

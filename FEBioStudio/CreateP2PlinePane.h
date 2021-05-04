@@ -64,6 +64,6 @@ private:
 	QLineEdit*	m_in[3];
 	QCheckBox*	m_cap;
 	QPushButton*	m_newCurve;
-	GCurveMeshObject*	m_tmp;	// temp object
+	GObject*	m_tmp;	// temp object
 	int		m_lastNode; // last node that was created
 };

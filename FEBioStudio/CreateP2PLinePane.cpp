@@ -108,34 +108,38 @@ void CCreateP2PLinePane::setInput(const vec3d& r)
 
 void CCreateP2PLinePane::AddPoint(const vec3d& r)
 {
-	if (m_tmp == 0) m_tmp = new GCurveMeshObject(new FECurveMesh);
+	if (m_tmp == 0)
+	{
+		m_tmp = new GObject(GCURVE);
+		m_tmp->AddPart();
+	}
 	m_parent->SetTempObject(m_tmp);
 
-	FECurveMesh* curveMesh = m_tmp->GetCurveMesh();
+	// Add the new point
+	// this will check if the point already coincides with a node
+	// of the curve, in which case it will return the (local) node ID. 
+	int newNode = m_tmp->AddNode(r);
 
-	int nodes = curveMesh->Nodes();
-	int newNode = curveMesh->AddNode(r);
-	if (newNode == nodes)
-	{
-		curveMesh->Node(newNode).m_gid = nodes;
-	}
-
+	// add a new edge connecting the last added node to this new node.
 	bool addEdge = false;
 	if ((m_lastNode != -1) && (newNode != m_lastNode))
 	{
-		int edges = curveMesh->Edges();
-		int newEdge = curveMesh->AddEdge(m_lastNode, newNode);
-		if (newEdge == edges)
+		int edges = m_tmp->Edges();
+		m_tmp->AddLine(m_lastNode, newNode);
+		if (m_tmp->Edges() > edges)
 		{
-			curveMesh->Edge(newEdge).m_gid = edges;
 			addEdge = true;
 		}
 	}
+
+	// update the last added node
 	m_lastNode = newNode;
 
-	// update the GMeshObject
+	// update the Object
 	m_tmp->Update();
 
+
+	// highlight edges
 	GLHighlighter::ClearHighlights();
 	int N = m_tmp->Edges();
 	if (N > 0)
@@ -174,16 +178,10 @@ bool CCreateP2PLinePane::Clear()
 {
 	if (m_tmp)
 	{
-		FECurveMesh* cm = m_tmp->GetCurveMesh();
-		if (cm == 0) return false;
-
-		if ((cm->Nodes() == 0) && (cm->Edges() == 0)) return false;
-
-		cm->Clear();
+		m_tmp->Clear();
 		m_lastNode = -1;
 		m_tmp->Update();
 		GLHighlighter::ClearHighlights();
-
 		return true;
 	}
 	else return false;
@@ -193,19 +191,14 @@ bool CCreateP2PLinePane::Undo()
 {
 	if (m_tmp)
 	{
-		FECurveMesh* cm = m_tmp->GetCurveMesh();
-		if (cm == 0) return false;
-
-		if ((cm->Nodes() == 0) && (cm->Edges() == 0)) return false;
+		GLHighlighter::ClearHighlights();
 
 		// remove the last point
-		cm->RemoveNode(cm->Nodes() - 1);
-		m_lastNode = cm->Nodes() - 1;
+		// this will also remove any edges that attach to this node
+		m_tmp->RemoveNode(m_tmp->Nodes() - 1);
+		m_lastNode = m_tmp->Nodes() - 1;
 
-		// update the object
-		m_tmp->Update();
-
-		GLHighlighter::ClearHighlights();
+		// update highlighter
 		int N = m_tmp->Edges();
 		if (N > 0)
 		{
@@ -223,30 +216,38 @@ FSObject* CCreateP2PLinePane::Create()
 	// make sure we have a temp object
 	if (m_tmp == 0) return 0;
 
-	// make sure we have a mesh
-	FECurveMesh* cm = m_tmp->GetCurveMesh();
-	if (cm == 0) return 0;
-
 	// make sure we have at least one edge
-	if (cm->Edges() == 0) return 0;
+	int NE = m_tmp->Edges();
+	if (NE == 0) return 0;
+
+	// see if the curve is closed
+	// TODO: this will need some better heuristics
+	bool isClosed = false;
+	if (NE > 1)
+	{
+		if (m_tmp->Edge(0)->m_node[0] == m_tmp->Edge(NE - 1)->m_node[1])
+		{
+			isClosed = true;
+		}
+	}
 
 	static int n = 1;
 
 	FSObject* newObject = 0;
-	if (IsCurveCapped() && (cm->Type() == FECurveMesh::CLOSED_CURVE))
+	if (IsCurveCapped() && isClosed)
 	{
 		// create new object
 		GObject2D* po = new GObject2D;
 
 		// add nodes
-		for (int i = 0; i<cm->Nodes(); ++i) po->AddNode(cm->Node(i).r);
+		for (int i = 0; i<m_tmp->Nodes(); ++i) po->AddNode(m_tmp->Node(i)->LocalPosition());
 
 		// add edges
-		for (int i = 0; i<cm->Nodes(); ++i)
+		for (int i = 0; i<m_tmp->Nodes(); ++i)
 		{
 			GEdge* edge = new GEdge(po);
 			edge->m_node[0] = i;
-			edge->m_node[1] = (i + 1) % cm->Nodes();
+			edge->m_node[1] = (i + 1) % m_tmp->Nodes();
 			edge->m_ntype = EDGE_LINE;
 			po->AddEdge(edge);
 		}
@@ -276,7 +277,6 @@ FSObject* CCreateP2PLinePane::Create()
 	}
 	else
 	{
-		m_tmp->GetCurveMesh()->BuildMesh();
 		m_tmp->Update();
 
 		newObject = m_tmp;
@@ -292,7 +292,6 @@ FSObject* CCreateP2PLinePane::Create()
 		newObject->SetName(sz);
 	}
 
-	GLHighlighter::SetActiveItem(0);
 	GLHighlighter::ClearHighlights();
 	m_parent->SetTempObject(0);
 

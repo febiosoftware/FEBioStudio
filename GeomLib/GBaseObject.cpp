@@ -548,3 +548,27 @@ void GBaseObject::CopyTransform(GBaseObject* po)
 {
 	m_transform = po->m_transform;
 }
+
+//-----------------------------------------------------------------------------
+void GBaseObject::RemoveNode(int n)
+{
+	// delete the node
+	delete m_Node[n];
+	m_Node.erase(m_Node.begin() + n);
+
+	// delete edges that contain this node
+	for (int i = 0; i < Edges();)
+	{
+		GEdge* ei = Edge(i);
+		if ((ei->m_node[0] == n) || (ei->m_node[1] == n))
+		{
+			delete m_Edge[i];
+			m_Edge.erase(m_Edge.begin() + i);
+		}
+		else ++i;
+	}
+
+	assert(m_Face.empty());
+
+	Update();
+}
