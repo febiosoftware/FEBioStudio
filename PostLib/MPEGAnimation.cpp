@@ -172,7 +172,7 @@ bool CMPEGAnimation::Rgb24ToYuv420p(QImage &im)
         return false;
     }
 
-	int linesize[] = { im.bytesPerLine(), 0, 0, 0, 0, 0, 0, 0 };
+	int linesize[] = { (int)im.bytesPerLine(), 0, 0, 0, 0, 0, 0, 0 };
 	const uint8_t* p = im.bits();
     
     sws_scale(converted_format, &p, linesize, 0, av_codec_context->height, yuv_frame->data, yuv_frame->linesize);
