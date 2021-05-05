@@ -41,9 +41,9 @@ FESphereInBox::FESphereInBox(GSphereInBox* po)
 	m_po = po;
 
 	// define the tube parameters
-	AddIntParam(1, "nx", "Nx");
-	AddIntParam(1, "ny", "Ny");
-	AddIntParam(1, "nz", "Nz");
+	AddIntParam(5, "nx", "Nx");
+	AddIntParam(5, "ny", "Ny");
+	AddIntParam(5, "nz", "Nz");
 	AddIntParam(1, "nr", "Nr");
 
 	AddDoubleParam(1.0, "gr", "R-bias");
@@ -66,6 +66,8 @@ FEMesh* FESphereInBox::BuildMesh()
 	double h = H*0.5;
 	double d = D*0.5;
 
+	double R3 = R / sqrt(3.0);
+
 	// get meshing parameters
 	int nx = GetIntValue(NX);
 	int ny = GetIntValue(NY);
@@ -77,23 +79,24 @@ FEMesh* FESphereInBox::BuildMesh()
 
 	// create the MB nodes
 	m_MBNode.resize(16);
-	m_MBNode[ 0].m_r = vec3d(-2, -2, -2);
-	m_MBNode[ 1].m_r = vec3d( 2, -2, -2);
-	m_MBNode[ 2].m_r = vec3d( 2,  2, -2);
-	m_MBNode[ 3].m_r = vec3d(-2,  2, -2);
-	m_MBNode[ 4].m_r = vec3d(-2, -2,  2);
-	m_MBNode[ 5].m_r = vec3d( 2, -2,  2);
-	m_MBNode[ 6].m_r = vec3d( 2,  2,  2);
-	m_MBNode[ 7].m_r = vec3d(-2,  2,  2);
+	m_MBNode[ 0].m_r = vec3d(-w, -h, 0);
+	m_MBNode[ 1].m_r = vec3d( w, -h, 0);
+	m_MBNode[ 2].m_r = vec3d( w,  h, 0);
+	m_MBNode[ 3].m_r = vec3d(-w,  h, 0);
+	m_MBNode[ 4].m_r = vec3d(-w, -h, D);
+	m_MBNode[ 5].m_r = vec3d( w, -h, D);
+	m_MBNode[ 6].m_r = vec3d( w,  h, D);
+	m_MBNode[ 7].m_r = vec3d(-w,  h, D);
 	
-	m_MBNode[ 8].m_r = vec3d(-1, -1, -1);
-	m_MBNode[ 9].m_r = vec3d( 1, -1, -1);
-	m_MBNode[10].m_r = vec3d( 1,  1, -1);
-	m_MBNode[11].m_r = vec3d(-1,  1, -1);
-	m_MBNode[12].m_r = vec3d(-1, -1,  1);
-	m_MBNode[13].m_r = vec3d( 1, -1,  1);
-	m_MBNode[14].m_r = vec3d( 1,  1,  1);
-	m_MBNode[15].m_r = vec3d(-1,  1,  1);
+	m_MBNode[ 8].m_r = vec3d(-R3, -R3, -R3 + d);
+	m_MBNode[ 9].m_r = vec3d( R3, -R3, -R3 + d);
+	m_MBNode[10].m_r = vec3d( R3,  R3, -R3 + d);
+	m_MBNode[11].m_r = vec3d(-R3,  R3, -R3 + d);
+	m_MBNode[12].m_r = vec3d(-R3, -R3,  R3 + d);
+	m_MBNode[13].m_r = vec3d( R3, -R3,  R3 + d);
+	m_MBNode[14].m_r = vec3d( R3,  R3,  R3 + d);
+	m_MBNode[15].m_r = vec3d(-R3,  R3,  R3 + d);
+	AddNode(vec3d(0, 0, d), NODE_SHAPE);
 
 	// create the blocks
 	m_MBlock.resize(6);
@@ -142,7 +145,7 @@ FEMesh* FESphereInBox::BuildMesh()
 	SetBlockFaceID(b3, 2, -1,  8, -1, -1, -1);
 	SetBlockFaceID(b4, 3, -1,  9, -1, -1, -1);
 	SetBlockFaceID(b5,-1, -1, -1, -1,  4, 10);
-	SetBlockFaceID(b6,-1, -1,- 1, -1,  5, 11);
+	SetBlockFaceID(b6,-1, -1, -1, -1,  5, 11);
 
 	// assign edge ID's
 	MBFace& F1 = GetBlockFace( 0, 0); SetFaceEdgeID(F1,  0, 9,   4,  8);
@@ -158,6 +161,22 @@ FEMesh* FESphereInBox::BuildMesh()
 	MBFace& F10 = GetBlockFace( 3, 2); SetFaceEdgeID(F10, 15, 23, 19, 20);
 	MBFace& F11 = GetBlockFace( 4, 5); SetFaceEdgeID(F11, 12, 13, 14, 15);
 	MBFace& F12 = GetBlockFace( 5, 5); SetFaceEdgeID(F12, 18, 17, 16, 19);
+
+	GetFaceEdge(F7, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+	GetFaceEdge(F7, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+	GetFaceEdge(F7, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+	GetFaceEdge(F7, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+
+	GetFaceEdge(F8, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+	GetFaceEdge(F8, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+
+	GetFaceEdge(F9, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+	GetFaceEdge(F9, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+	GetFaceEdge(F9, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+	GetFaceEdge(F9, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+
+	GetFaceEdge(F10, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
+	GetFaceEdge(F10, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 16);
 
 	// set the node ID's
 	m_MBNode[ 0].SetID(0);
@@ -179,33 +198,6 @@ FEMesh* FESphereInBox::BuildMesh()
 
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
-
-	// project the nodes onto a cylinder
-	for (int i=0; i<pm->Nodes(); ++i)
-	{
-		vec3d& rn = pm->Node(i).r;
-		vec3d r0 = rn;
-
-		double x = fabs(r0.x);
-		double y = fabs(r0.y);
-		double z = fabs(r0.z);
-
-		double m = fmax(fmax(x,y),z);
-		double a = m - 1;
-
-		vec3d r1 = r0;
-		vec3d r2 = r0;
-		r1.Normalize();
-		r2.x *= w/m;
-		r2.y *= h/m;
-		r2.z *= d/m;
-		rn.x = r1.x*R*(1-a) + r2.x*a;
-		rn.y = r1.y*R*(1-a) + r2.y*a;
-		rn.z = r1.z*R*(1-a) + r2.z*a;
-
-		// move up
-		rn.z += d;
-	}
 
 	// update the mesh
 	pm->UpdateMesh();

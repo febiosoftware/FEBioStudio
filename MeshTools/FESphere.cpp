@@ -88,6 +88,7 @@ FEMesh* FESphere::BuildMesh()
 
 	double d0 = R0/sqrt(2.0);
 	double d1 = R1/sqrt(2.0);
+	double d2 = R1/sqrt(3.0);
 
 	// check parameters
 	if (nd < 1) nd = 1;
@@ -123,34 +124,34 @@ FEMesh* FESphere::BuildMesh()
 	m_MBNode[25].m_r = vec3d(  0, d0, d0);
 	m_MBNode[26].m_r = vec3d( d0, d0, d0);
 
-	m_MBNode[27].m_r = vec3d(-d1,-d1,-d1);
+	m_MBNode[27].m_r = vec3d(-d2,-d2,-d2);
 	m_MBNode[28].m_r = vec3d(  0,-d1,-d1);
-	m_MBNode[29].m_r = vec3d( d1,-d1,-d1);
+	m_MBNode[29].m_r = vec3d( d2,-d2,-d2);
 	m_MBNode[30].m_r = vec3d(-d1,  0,-d1);
-	m_MBNode[31].m_r = vec3d(  0,  0,-d1);
+	m_MBNode[31].m_r = vec3d(  0,  0,-R1);
 	m_MBNode[32].m_r = vec3d( d1,  0,-d1);
-	m_MBNode[33].m_r = vec3d(-d1, d1,-d1);
+	m_MBNode[33].m_r = vec3d(-d2, d2,-d2);
 	m_MBNode[34].m_r = vec3d(  0, d1,-d1);
-	m_MBNode[35].m_r = vec3d( d1, d1,-d1);
+	m_MBNode[35].m_r = vec3d( d2, d2,-d2);
 
 	m_MBNode[36].m_r = vec3d(-d1, -d1, 0);
-	m_MBNode[37].m_r = vec3d(  0, -d1, 0);
+	m_MBNode[37].m_r = vec3d(  0, -R1, 0);
 	m_MBNode[38].m_r = vec3d( d1, -d1, 0);
-	m_MBNode[39].m_r = vec3d(-d1,   0, 0);
-	m_MBNode[40].m_r = vec3d( d1,   0, 0);
+	m_MBNode[39].m_r = vec3d(-R1,   0, 0);
+	m_MBNode[40].m_r = vec3d( R1,   0, 0);
 	m_MBNode[41].m_r = vec3d(-d1,  d1, 0);
-	m_MBNode[42].m_r = vec3d(  0,  d1, 0);
+	m_MBNode[42].m_r = vec3d(  0,  R1, 0);
 	m_MBNode[43].m_r = vec3d( d1,  d1, 0);
 
-	m_MBNode[44].m_r = vec3d(-d1,-d1, d1);
+	m_MBNode[44].m_r = vec3d(-d2,-d2, d2);
 	m_MBNode[45].m_r = vec3d(  0,-d1, d1);
-	m_MBNode[46].m_r = vec3d( d1,-d1, d1);
+	m_MBNode[46].m_r = vec3d( d2,-d2, d2);
 	m_MBNode[47].m_r = vec3d(-d1,  0, d1);
-	m_MBNode[48].m_r = vec3d(  0,  0, d1);
+	m_MBNode[48].m_r = vec3d(  0,  0, R1);
 	m_MBNode[49].m_r = vec3d( d1,  0, d1);
-	m_MBNode[50].m_r = vec3d(-d1, d1, d1);
+	m_MBNode[50].m_r = vec3d(-d2, d2, d2);
 	m_MBNode[51].m_r = vec3d(  0, d1, d1);
-	m_MBNode[52].m_r = vec3d( d1, d1, d1);
+	m_MBNode[52].m_r = vec3d( d2, d2, d2);
 
 	// create the MB block
 	m_MBlock.resize(32);
@@ -210,64 +211,123 @@ FEMesh* FESphere::BuildMesh()
 	UpdateMB();
 
 	// Face ID's
-	GetBlockFace( 8, 1).SetID(2);
-	GetBlockFace( 9, 1).SetID(3);
-	GetBlockFace(10, 1).SetID(6);
-	GetBlockFace(11, 1).SetID(7);
+	MBFace& F1 = GetBlockFace(13, 1); F1.SetID(0);
+	MBFace& F2 = GetBlockFace(16, 1); F2.SetID(0);
+	MBFace& F3 = GetBlockFace(27, 1); F3.SetID(0);
 
-	GetBlockFace(12, 1).SetID(3);
-	GetBlockFace(13, 1).SetID(0);
-	GetBlockFace(14, 1).SetID(7);
-	GetBlockFace(15, 1).SetID(4);
+	MBFace& F4 = GetBlockFace(17, 1); F4.SetID(1);
+	MBFace& F5 = GetBlockFace(20, 1); F5.SetID(1);
+	MBFace& F6 = GetBlockFace(26, 1); F6.SetID(1);
 
-	GetBlockFace(16, 1).SetID(0);
-	GetBlockFace(17, 1).SetID(1);
-	GetBlockFace(18, 1).SetID(4);
-	GetBlockFace(19, 1).SetID(5);
+	MBFace& F7 = GetBlockFace( 8, 1); F7.SetID(2);
+	MBFace& F8 = GetBlockFace(21, 1); F8.SetID(2);
+	MBFace& F9 = GetBlockFace(24, 1); F9.SetID(2);
 
-	GetBlockFace(20, 1).SetID(1);
-	GetBlockFace(21, 1).SetID(2);
-	GetBlockFace(22, 1).SetID(5);
-	GetBlockFace(23, 1).SetID(6);
+	MBFace& F10 = GetBlockFace( 9, 1); F10.SetID(3);
+	MBFace& F11 = GetBlockFace(12, 1); F11.SetID(3);
+	MBFace& F12 = GetBlockFace(25, 1); F12.SetID(3);
 
-	GetBlockFace(24, 1).SetID(2);
-	GetBlockFace(25, 1).SetID(3);
-	GetBlockFace(26, 1).SetID(1);
-	GetBlockFace(27, 1).SetID(0);
+	MBFace& F13 = GetBlockFace(15, 1); F13.SetID(4);
+	MBFace& F14 = GetBlockFace(18, 1); F14.SetID(4);
+	MBFace& F15 = GetBlockFace(31, 1); F15.SetID(4);
 
-	GetBlockFace(28, 1).SetID(6);
-	GetBlockFace(29, 1).SetID(7);
-	GetBlockFace(30, 1).SetID(5);
-	GetBlockFace(31, 1).SetID(4);
+	MBFace& F16 = GetBlockFace(19, 1); F16.SetID(5);
+	MBFace& F17 = GetBlockFace(22, 1); F17.SetID(5);
+	MBFace& F18 = GetBlockFace(30, 1); F18.SetID(5);
+
+	MBFace& F19 = GetBlockFace(10, 1); F19.SetID(6);
+	MBFace& F20 = GetBlockFace(23, 1); F20.SetID(6);
+	MBFace& F21 = GetBlockFace(28, 1); F21.SetID(6);
+
+	MBFace& F22 = GetBlockFace(11, 1); F22.SetID(7);
+	MBFace& F23 = GetBlockFace(14, 1); F23.SetID(7);
+	MBFace& F24 = GetBlockFace(29, 1); F24.SetID(7);
 
 	// Edge ID's
-	GetFaceEdge(GetBlockFace(15,1),0).SetID(0);
-	GetFaceEdge(GetBlockFace(18,1),0).SetID(0);
-	GetFaceEdge(GetBlockFace(19,1),0).SetID(1);
-	GetFaceEdge(GetBlockFace(22,1),0).SetID(1);
-	GetFaceEdge(GetBlockFace(23,1),0).SetID(2);
-	GetFaceEdge(GetBlockFace(10,1),0).SetID(2);
-	GetFaceEdge(GetBlockFace(11,1),0).SetID(3);
-	GetFaceEdge(GetBlockFace(14,1),0).SetID(3);
+	GetFaceEdge(F13, 0).SetID(0);
+	GetFaceEdge(F14, 0).SetID(0);
+	GetFaceEdge(F16, 0).SetID(1);
+	GetFaceEdge(F17, 0).SetID(1);
+	GetFaceEdge(F20, 0).SetID(2);
+	GetFaceEdge(F19, 0).SetID(2);
+	GetFaceEdge(F22, 0).SetID(3);
+	GetFaceEdge(F23, 0).SetID(3);
 
-	GetFaceEdge(GetBlockFace(15,1),3).SetID(4);
-	GetFaceEdge(GetBlockFace(31,1),0).SetID(4);
-	GetFaceEdge(GetBlockFace(19,1),3).SetID(5);
-	GetFaceEdge(GetBlockFace(31,1),3).SetID(5);
-	GetFaceEdge(GetBlockFace(22,1),1).SetID(6);
-	GetFaceEdge(GetBlockFace(28,1),2).SetID(6);
-	GetFaceEdge(GetBlockFace(11,1),3).SetID(7);
-	GetFaceEdge(GetBlockFace(28,1),1).SetID(7);
+	GetFaceEdge(F13, 3).SetID(4);
+	GetFaceEdge(F15, 0).SetID(4);
+	GetFaceEdge(F16, 3).SetID(5);
+	GetFaceEdge(F15, 3).SetID(5);
+	GetFaceEdge(F17, 1).SetID(6);
+	GetFaceEdge(F21, 2).SetID(6);
+	GetFaceEdge(F22, 3).SetID(7);
+	GetFaceEdge(F21, 1).SetID(7);
 
-	GetFaceEdge(GetBlockFace(12,1),1).SetID(8);
-	GetFaceEdge(GetBlockFace(27,1),3).SetID(8);
-	GetFaceEdge(GetBlockFace(16,1),1).SetID(9);
-	GetFaceEdge(GetBlockFace(27,1),0).SetID(9);
-	GetFaceEdge(GetBlockFace(20,1),1).SetID(10);
-	GetFaceEdge(GetBlockFace(24,1),1).SetID(10);
-	GetFaceEdge(GetBlockFace( 8,1),1).SetID(11);
-	GetFaceEdge(GetBlockFace(24,1),2).SetID(11);
+	GetFaceEdge(F11, 1).SetID(8);
+	GetFaceEdge(F3 , 3).SetID(8);
+	GetFaceEdge(F2 , 1).SetID(9);
+	GetFaceEdge(F3 , 0).SetID(9);
+	GetFaceEdge(F5 , 1).SetID(10);
+	GetFaceEdge(F9 , 1).SetID(10);
+	GetFaceEdge(F7 , 1).SetID(11);
+	GetFaceEdge(F9 , 2).SetID(11);
 
+	// set the edges
+	GetFaceEdge(F13, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, 13);
+	GetFaceEdge(F14, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, 13);
+	GetFaceEdge(F16, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, 13);
+	GetFaceEdge(F17, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, 13);
+	GetFaceEdge(F20, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, 13);
+	GetFaceEdge(F19, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, 13);
+	GetFaceEdge(F22, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, 13);
+	GetFaceEdge(F23, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, 13);
+	GetFaceEdge(F13, 3).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F15, 0).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F16, 3).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F15, 3).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F17, 1).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F21, 2).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F22, 3).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F21, 1).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F11, 1).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F3 , 3).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F2 , 1).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F3 , 0).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F5 , 1).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F9 , 1).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F7 , 1).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+	GetFaceEdge(F9 , 2).SetEdge(EDGE_3P_CIRC_ARC,  1, 13);
+
+	GetFaceEdge(F13, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F13, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F14, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+
+	GetFaceEdge(F16, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F16, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F17, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+
+	GetFaceEdge(F20, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F20, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F19, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+
+	GetFaceEdge(F22, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F22, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F23, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+
+	GetFaceEdge(F3, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F3, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F2, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+
+	GetFaceEdge(F4, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F5, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F5, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+
+	GetFaceEdge(F7, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F7, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F8, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+
+	GetFaceEdge(F10, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F10, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
+	GetFaceEdge(F11, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, 13);
 
 	// Node ID's
 	m_MBNode[40].SetID(0);
@@ -279,30 +339,6 @@ FEMesh* FESphere::BuildMesh()
 
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
-
-	// project the nodes onto a sphere
-	double d, w, x, y, z;
-	vec3d r0, r1;
-	for (i=0; i<pm->Nodes(); ++i)
-	{
-		vec3d& r = pm->Node(i).r;
-		r0 = r;
-		x = fabs(r0.x);
-		y = fabs(r0.y);
-		z = fabs(r0.z);
-		d = fmax(fmax(x,y),z);
-		r0 /= d/d0;
-		w = (d-d0)/(d1 - d0);
-		if (w > 0)
-		{
-			r1 = r0;
-			r1.Normalize();
-			r1 *= R1;
-			r.x = r1.x*w + r0.x*(1-w);
-			r.y = r1.y*w + r0.y*(1-w);
-			r.z = r1.z*w + r0.z*(1-w);
-		}
-	}
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. Instead we assign

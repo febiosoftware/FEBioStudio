@@ -573,6 +573,8 @@ void GObject::BuildGMesh()
 				assert(false);
 			}
 		}
+
+		gmesh->Update();
 	}
 	else
 	{
@@ -585,6 +587,7 @@ void GObject::BuildGMesh()
 				GEdge& e = *Edge(i);
 				switch (e.Type())
 				{
+				case EDGE_LINE: BuildEdgeLine(gmesh, e); break;
 				case EDGE_MESH: BuildEdgeMesh(gmesh, e); break;
 				default:
 					assert(false);
@@ -606,6 +609,19 @@ void GObject::BuildGMesh()
 
 	// assign new mesh
 	imp->m_pGMesh = gmesh;
+}
+
+//-----------------------------------------------------------------------------
+void GObject::BuildEdgeLine(GLMesh* glmsh, GEdge& e)
+{
+	vec3d y[2];
+	y[0] = Node(e.m_node[0])->LocalPosition();
+	y[1] = Node(e.m_node[1])->LocalPosition();
+	int n[2] = { 0 };
+	n[0] = glmsh->AddNode(y[0], e.m_node[0]);
+	n[1] = glmsh->AddNode(y[1], e.m_node[1]);
+	glmsh->AddEdge(n, 2, e.GetLocalID());
+	glmsh->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -816,7 +832,7 @@ void GObject::BuildFacePolygon(GLMesh* glmesh, GFace& f)
 	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).pid = f.GetLocalID();
 
 	// attach this mesh to our mesh
-	glmesh->Attach(*pm);
+	glmesh->Attach(*pm, false);
 
 	// don't forget to delete this mesh
 	delete pm;
@@ -1161,9 +1177,7 @@ void GObject::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 		assert(false);
 	}
 
-	m.Update();
-	m.UpdateNormals();
-	glmesh->Attach(m);
+	glmesh->Attach(m, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1386,9 +1400,7 @@ void GObject::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 		assert(false);
 	}
 
-	m.Update();
-	m.UpdateNormals();
-	glmesh->Attach(m);
+	glmesh->Attach(m, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1508,9 +1520,7 @@ void GObject::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 		assert(false);
 	}
 
-	m.Update();
-	m.UpdateNormals();
-	glmesh->Attach(m);
+	glmesh->Attach(m, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1604,10 +1614,7 @@ void GObject::BuildFaceQuad(GLMesh* glmesh, GFace &f)
 		e.n[1] = (M - i - 1)*(M+1);
 		e.pid = Edge(f.m_edge[3].nid)->GetLocalID();
 	}
-
-	m.Update();
-	m.UpdateNormals();
-	glmesh->Attach(m);
+	glmesh->Attach(m, false);
 }
 
 // get the mesh of an edge curve

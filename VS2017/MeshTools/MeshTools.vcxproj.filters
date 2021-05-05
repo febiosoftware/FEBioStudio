@@ -388,6 +388,9 @@
     <ClCompile Include="..\..\MeshTools\FEMultiQuadMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MeshTools\FEInflateMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshTools\BivariatePolynomialSpline.h">

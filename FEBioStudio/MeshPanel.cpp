@@ -208,6 +208,7 @@ REGISTER_CLASS(FEAxesCurvature        , CLASS_FEMODIFIER, "Set Axes from Curvatu
 REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
 REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 REGISTER_CLASS(FERezoneMesh           , CLASS_FEMODIFIER, "Rezone"         , EDIT_FACE | EDIT_SAFE);
+REGISTER_CLASS(FEInflateMesh          , CLASS_FEMODIFIER, "Inflate"        , EDIT_FACE);
 #ifdef HAS_MMG
 REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "MMG Remesh", EDIT_MESH | EDIT_SAFE);
 #endif

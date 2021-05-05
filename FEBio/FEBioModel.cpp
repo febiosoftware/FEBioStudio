@@ -159,15 +159,18 @@ int FEBioMesh::FindFace(const int* n, int nn, int noff)
 	for (int i = 0; i<N; ++i)
 	{
 		FEFace& face = m_mesh.Face(pf[i]);
-		bool bfound = true;
-		for (int j = 0; j<nn; ++j)
-		if (face.HasNode(n[j] - noff) == false)
+		if (face.Nodes() == nn)
 		{
-			bfound = false;
-			break;
-		}
+			bool bfound = true;
+			for (int j = 0; j < nn; ++j)
+				if (face.HasNode(n[j] - noff) == false)
+				{
+					bfound = false;
+					break;
+				}
 
-		if (bfound) return pf[i];
+			if (bfound) return pf[i];
+		}
 	}
 
 	return -1;

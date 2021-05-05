@@ -1075,7 +1075,7 @@ const char* FEConvertMeshOptions[] = {
 
 // function to build the enum string for the options parameter. Make sure that the last argument
 // to this function is END_OF_LIST
-void buildMeshConvertOptions(char* sz, ...)
+char* buildMeshConvertOptions(char* sz, ...)
 {
 	// get a pointer to the argument list
 	va_list	args;
@@ -1094,13 +1094,16 @@ void buildMeshConvertOptions(char* sz, ...)
 	*sz = 0;
 	
 	va_end(args);
+
+	return sz;
 }
 
 void buildAllMeshConvertOptions(char* sz)
 {
+	char* tmp = sz;
 	for (int i = 0; i < END_OF_LIST; ++i)
 	{
-		buildMeshConvertOptions(sz, i, -1);
+		tmp = buildMeshConvertOptions(tmp, i, END_OF_LIST);
 	}
 }
 
