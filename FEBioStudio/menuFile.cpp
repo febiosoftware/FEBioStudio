@@ -1438,6 +1438,7 @@ void CMainWindow::on_actionImportImage_triggered()
       std::string sfile = fileName.toStdString();
       QFileInfo fileInfo(fileName);
       QString ext = fileInfo.suffix();
+      ext = ext.toLower();
 
       Post::CImageModel* imageModel = nullptr;
     

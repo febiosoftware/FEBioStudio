@@ -159,22 +159,20 @@ bool CImageSource::LoadDicomData(const std::string& filename)
 
   int nx = dicomImage->getWidth();
   int ny = dicomImage->getHeight();
-  int nz = dicomImage->getFrameCount(); 
+  int nz = dicomImage->getNumberOfFrames(); 
   int dataSize = nx * ny * nz;
 
   const DiPixel* rawData = dicomImage->getInterData();
 
   EP_Representation type = rawData->getRepresentation();  // An Enum that gets the type 
-  const Byte* data = static_cast<const Byte*>(rawData->getData()); //only returns const
-  Byte* dataBuf = new Byte[rawData->getCount()];
-  std::vector<Byte> dataBuff;
+  const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
+  Byte* dataBuf = new Byte[rawData->getCount()]; //may not need dataSize
 
   if (type == EPR_Uint16)
   {
     for(int i = 0; i < rawData->getCount(); ++i)
     { 
-      dataBuf[i] = data[2*i];
-      dataBuff.push_back(data[2*i]);
+      dataBuf[i] = data[i] >> 8;
     }
   }
   else
@@ -185,8 +183,7 @@ bool CImageSource::LoadDicomData(const std::string& filename)
     }
   }
 
-  std::cout << dataBuff.size() << std::endl;
-  BOX box(nx, ny, nz, nx+1.0, ny+1.0, nz+1.0);
+  BOX box(nx, ny, nz, nx+dicomImage->getWidthHeightRatio(), ny+dicomImage->getHeightWidthRatio(), nz+1.0);
   m_imgModel->SetBoundingBox(box);
 
   if (im->Create(nx, ny, nz, dataBuf) == false)
