@@ -28,9 +28,12 @@ DEALINGS IN THE SOFTWARE.
 #ifndef NRRD_READER_HPP
 #define NRRD_READER_HPP
 
+#ifdef HAS_TEEM
+
 #include "base_reader.h"
 #include <stdio.h>
 #include <vector>
+#include <string>
 
 #define READER_NRRD_TYPE	1
 
@@ -105,5 +108,7 @@ private:
 private:
 	static bool nrrd_sort(const TimeDataInfo& info1, const TimeDataInfo& info2);
 };
+
+#endif
 
 #endif
