@@ -125,6 +125,7 @@ GLMesh* triangulate(GTriangulate& c)
 	int NF = 0;
 	while (N > 3)
 	{
+		int N0 = N;
 		for (int i=0; i<N; ++i)
 		{
 			GTriangulate::NODE& v2 = c.Node(i);
@@ -151,6 +152,13 @@ GLMesh* triangulate(GTriangulate& c)
 				N = c.Nodes();
 				break;
 			}
+		}
+		if (N == N0)
+		{
+			// Hmm, no ear was cut off. This is a problem and now we're stuck
+			// in an infinite loop, so let's just abort. 
+			// The most likely cause is a duplicate node in the original GTriangulate object. 
+			break;
 		}
 	}
 
