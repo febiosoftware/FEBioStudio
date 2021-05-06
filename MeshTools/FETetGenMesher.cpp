@@ -469,6 +469,69 @@ FEMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	// update the element neighbours
 	pmesh->BuildMesh();
 
+	// we need to restore the element partitioning
+	// TODO: This assumes that each part has at least one external face!
+	for (int i = 0; i < pmesh->Elements(); ++i) pmesh->Element(i).m_gid = -1;
+	for (int i = 0; i < pmesh->Elements(); ++i)
+	{
+		FEElement& el = pmesh->Element(i);
+		if (el.m_gid == -1)
+		{
+			// loop over the faces
+			for (int j = 0; j < 4; ++j)
+			{
+				// proceed if it has a face
+				if (el.m_face[j] != -1)
+				{
+					// get the GID of the face
+					FEFace& face = pmesh->Face(el.m_face[j]);
+					int faceId = face.m_gid;
+					if ((faceId >= 0) && (faceId < m_po->Faces()))
+					{
+						// make sure this is an outside face
+						GFace& face = *m_po->Face(faceId);
+						int pid = face.m_nPID[0];
+						if (face.m_nPID[1] == -1)
+						{
+							// ok, this is probably it. 
+							// flood-fill the pid
+							el.m_gid = pid;
+							stack<int> S;
+							S.push(i);
+							while (S.empty() == false)
+							{
+								int eid = S.top(); S.pop();
+								FEElement& eli = pmesh->Element(eid);
+
+								// loop over all neighbors
+								for (int k = 0; k < 4; ++k)
+								{
+									FEElement_* elk = pmesh->ElementPtr(eli.m_nbr[k]);
+									if (elk && (elk->m_gid == -1))
+									{
+										// don't cross an internal face
+										if (eli.m_face[k] == -1)
+										{
+											elk->m_gid = pid;
+											S.push(eli.m_nbr[k]);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	// make sure all elements are assigned a PID
+	for (int i = 0; i < pmesh->Elements(); ++i)
+	{
+		FEElement& el = pmesh->Element(i);
+		assert(el.m_gid >= 0);
+		if (el.m_gid < 0) el.m_gid = 0;
+	}
+
 	// update faces
 	pmesh->SmoothByPartition();
 

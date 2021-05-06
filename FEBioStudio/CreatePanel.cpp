@@ -59,6 +59,8 @@ REGISTER_CLASS2(GThinTube          , CLASS_OBJECT, "Thin Tube"      , ":/icons/t
 REGISTER_CLASS2(GPatch             , CLASS_OBJECT, "Patch"          , ":/icons/square.png"       , 0);
 REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "Disc"           , ":/icons/disc.png"         , 0);
 REGISTER_CLASS2(GRing              , CLASS_OBJECT, "Ring"           , ":/icons/ring.png"         , 0);
+REGISTER_CLASS2(GExtrudeModifier   , CLASS_MODIFIER, "Extrude", ":/icons/extrude.png", 0);
+REGISTER_CLASS2(GRevolveModifier   , CLASS_MODIFIER, "Revolve", ":/icons/revolve.png", 0);
 
 #ifdef _DEBUG
 REGISTER_CLASS2(GCylindricalPatch  , CLASS_OBJECT, "Cylindrical Patch", ":/icons/cylpatch.png"     , 0);
@@ -94,11 +96,18 @@ CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wn
 
 //	ui->AddCreateOption(1, "Deformable spring", QIcon(":/icons/wire.png"), new CCreateSpringPane(this));
 
+	for (it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
+	{
+		ClassDescriptor* pcd = *it;
+		if (pcd->GetType() == CLASS_MODIFIER)
+		{
+			ui->AddCreateOption(0, pcd->GetName(), QIcon(pcd->GetResourceName()), new CGeoModifierPane(this, pcd));
+		}
+	}
+
 	// CAD objects
 	ui->AddCreateOption(2, "Point-to-point curve", QIcon(":/icons/p2pline.png"), new CCreateP2PLinePane(this));
 	ui->AddCreateOption(2, "Loft surface"        , QIcon(":/icons/loft.png"), new CCreateLoftSurface(this));
-	ui->AddCreateOption(2, "Extrude"             , QIcon(":/icons/extrude.png"), new CCreateExtrude(this));
-	ui->AddCreateOption(2, "Revolve"             , QIcon(":/icons/revolve.png"), new CCreateRevolve(this));
 }
 
 GObject* CCreatePanel::GetTempObject()
@@ -161,7 +170,18 @@ void CCreatePanel::on_create_clicked()
 			}
 
 			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-			doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), go), go->GetName());
+
+			GObject* activeObject = doc->GetActiveObject();
+			if ((pane->createPolicy() == CCreatePane::ADD_NEW_OBJECT) || (activeObject == nullptr))
+			{
+				doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), go), go->GetName());
+			}
+			else if (pane->createPolicy() == CCreatePane::REPLACE_ACTIVE_OBJECT)
+			{
+				go->SetName(activeObject->GetName());
+				doc->DoCommand(new CCmdSwapObjects(doc->GetGModel(), activeObject, go));
+			}
+			
 			CMainWindow* wnd = GetMainWindow();
 			wnd->UpdateModel(go);
 			wnd->Update(this);

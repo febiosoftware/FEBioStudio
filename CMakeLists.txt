@@ -94,7 +94,7 @@ function(findLib libName libDir libOut)
 endfunction()
 
 if(USE_MMG)
-    set(MMG_LIB_NAMES mmg3d mmgs)
+    set(MMG_LIB_NAMES mmg3d mmg2d mmgs)
     foreach(name IN LISTS MMG_LIB_NAMES)
         findLib(${name} MMG_LIB_DIR MMG_LIB)
         list(APPEND MMG_LIBS ${MMG_LIB})

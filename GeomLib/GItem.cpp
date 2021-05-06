@@ -145,19 +145,19 @@ bool GEdge::operator==(const GEdge& e)
 	switch (m_ntype)
 	{
 	case EDGE_LINE:
+		if ((m_node[0] != e.m_node[0]) && (m_node[0] != e.m_node[1])) return false;
+		if ((m_node[1] != e.m_node[0]) && (m_node[1] != e.m_node[1])) return false;
+		break;
 	case EDGE_YARC:
 	case EDGE_ZARC:
-		if ((m_node[0] != e.m_node[0])&&(m_node[0] != e.m_node[1])) return false;
-		if ((m_node[1] != e.m_node[0])&&(m_node[1] != e.m_node[1])) return false;
+		if ((m_node[0] != e.m_node[0]) || (m_node[1] != e.m_node[1])) return false;
 		break;
 	case EDGE_3P_CIRC_ARC:
-		if ((m_node[0] != e.m_node[0])&&(m_node[0] != e.m_node[1])) return false;
-		if ((m_node[1] != e.m_node[0])&&(m_node[1] != e.m_node[1])) return false;
+		if ((m_node[0] != e.m_node[0])  || (m_node[1] != e.m_node[1])) return false;
 		if (m_cnode != e.m_cnode) return false;
 		break;
 	case EDGE_3P_ARC:
-		if ((m_node[0] != e.m_node[0])&&(m_node[0] != e.m_node[1])) return false;
-		if ((m_node[1] != e.m_node[0])&&(m_node[1] != e.m_node[1])) return false;
+		if ((m_node[0] != e.m_node[0]) || (m_node[1] != e.m_node[1])) return false;
 		if (m_cnode != e.m_cnode) return false;
 		break;
 	default:

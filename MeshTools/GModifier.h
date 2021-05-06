@@ -137,7 +137,7 @@ protected:
 class GExtrudeModifier : public GModifier
 {
 public:
-	enum { DIST };
+	enum { DIST, NDIVS };
 
 public:
 	GExtrudeModifier();
