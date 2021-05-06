@@ -24,20 +24,39 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "RunPython.h"
-// #include "fbsmodule.h"
-// #include <stdio.h>
+#pragma once
+#include <FEBioStudio/Tool.h>
+#include <unordered_map>
 
 
+// Forward declaration of PyObject
+#ifndef PyObject_HEAD
+struct _object;
+typedef _object PyObject;
+#endif
 
-void runPython(const char* scriptName)
+class CPythonTool : public CBasicTool
 {
-    // FILE* file;
 
-    // PyImport_AppendInittab("fbs", &PyInit_fbs);
-    // // PyImport_AppendInittab("doc", &PyInit_custom);
-    // Py_Initialize();
-    // file = fopen(scriptName, "r");
-    // PyRun_SimpleFile(file, scriptName);
-    // Py_Finalize();
-}
+public:
+	CPythonTool(CMainWindow* wnd, const char* name, PyObject* func);
+    ~CPythonTool();
+
+    CProperty* addBoolProperty(bool pd, const std::string& name);
+	CProperty* addIntProperty(int pd, const std::string& name);
+	CProperty* addEnumProperty(int pd, const std::string& name);
+	CProperty* addDoubleProperty(double pd, const std::string& name);
+    CProperty* addStringProperty(const char* pd, const std::string& name);
+    CProperty* addResourceProperty(const char* pd, const std::string& name);
+
+    bool OnApply();
+
+
+private:
+    PyObject* func;
+    std::unordered_map<std::string, bool*> boolProps;
+    std::unordered_map<std::string, int*> intProps;
+    std::unordered_map<std::string, double*> dblProps;
+    std::unordered_map<std::string, QString*> strProps;
+    std::unordered_map<std::string, QString*> rscProps;
+};

@@ -1,0 +1,162 @@
+/*This file is part of the FEBio Studio source code and is licensed under the MIT license
+listed below.
+
+See Copyright-FEBio-Studio.txt for details.
+
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+the City of New York, and others.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.*/
+
+#include "Python.h"
+#include "PythonTool.h"
+
+CPythonTool::CPythonTool(CMainWindow* wnd, const char* name, PyObject* func)
+    : CBasicTool(wnd, name, HAS_APPLY_BUTTON), func(func)
+{
+
+}
+
+CPythonTool::~CPythonTool()
+{
+    for(auto el : boolProps)
+    {
+        delete el.second;
+    }
+
+    for(auto el : intProps)
+    {
+        delete el.second;
+    }
+
+    for(auto el : dblProps)
+    {
+        delete el.second;
+    }
+
+    for(auto el : strProps)
+    {
+        delete el.second;
+    }
+
+    for(auto el : rscProps)
+    {
+        delete el.second;
+    }
+
+}
+
+CProperty* CPythonTool::addBoolProperty(bool pd, const std::string& name)
+{
+    bool* val = new bool;
+    boolProps[name] = val;
+
+    CDataPropertyList::addBoolProperty(val, QString::fromStdString(name));
+}
+
+CProperty* CPythonTool::addIntProperty(int pd, const std::string& name)
+{
+    int* val = new int;
+    intProps[name] = val;
+
+    CDataPropertyList::addIntProperty(val, QString::fromStdString(name));
+}
+
+CProperty* CPythonTool::addDoubleProperty(double pd, const std::string& name)
+{
+    double* val = new double;
+    dblProps[name] = val;
+
+    CDataPropertyList::addDoubleProperty(val, QString::fromStdString(name));
+}
+
+CProperty* CPythonTool::addStringProperty(const char* pd, const std::string& name)
+{
+    QString * val = new QString(pd);
+    strProps[name] = val;
+
+    CDataPropertyList::addStringProperty(val, QString::fromStdString(name));
+}
+
+CProperty* CPythonTool::addResourceProperty(const char* pd, const std::string& name)
+{
+    QString * val = new QString(pd);
+    rscProps[name] = val;
+
+    CDataPropertyList::addResourceProperty(val, QString::fromStdString(name));
+}
+
+
+bool CPythonTool::OnApply()
+{
+    PyObject* args = PyTuple_New(0);
+    PyObject* kwargs = PyDict_New();
+
+    std::vector<PyObject*> objs;
+
+    for(int prop = 0; prop < Properties(); prop++)
+    {
+        CProperty current = Property(prop);
+        std::string name = current.name.toStdString();
+
+        PyObject* obj;
+
+        switch(current.type)
+        {
+            case CProperty::Bool:
+                obj = *boolProps[name] ? Py_True: Py_False;
+                break;
+            case CProperty::Int:
+                obj = Py_BuildValue("i", *intProps[name]);
+                objs.push_back(obj);
+                break;
+            case CProperty::Float:
+                obj = Py_BuildValue("d", *dblProps[name]);
+                objs.push_back(obj);
+                break;
+            case CProperty::String:
+                obj = Py_BuildValue("s", strProps[name]->toStdString().c_str());
+                objs.push_back(obj);
+                break;
+            // case CProperty::Enum:
+            //     break;
+            case CProperty::Resource:
+                obj = Py_BuildValue("s", rscProps[name]->toStdString().c_str());
+                objs.push_back(obj);
+                break;
+
+            default:
+                return false;
+        };
+
+        PyDict_SetItemString(kwargs, current.name.toStdString().c_str(), obj);
+
+    }
+
+    PyObject_Call(func, args, kwargs);
+
+    Py_DECREF(args);
+    Py_DECREF(kwargs);
+    for(auto obj : objs)
+    {
+        Py_DECREF(obj);
+    }
+
+    return true;
+}

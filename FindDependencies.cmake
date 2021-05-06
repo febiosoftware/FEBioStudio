@@ -394,8 +394,13 @@ endif()
 # OpenGL
 find_package(OpenGL REQUIRED)
 
-# OpenGL
-find_package(Python3 COMPONENTS Development REQUIRED)
+# Python
+find_package(Python3 COMPONENTS Development)
+if(Python3_Development_FOUND)
+    option(USE_PYTHON "Required to for Python Plugins." ON)
+else()
+    option(USE_PYTHON "Required to for Python Plugins." OFF)
+endif()
 
 # ZLIB
 find_package(ZLIB REQUIRED)

@@ -43,6 +43,7 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
+class CPythonToolsPanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -136,6 +137,9 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
+
+	// get the python panel
+	CPythonToolsPanel* GetPythonToolsPanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);

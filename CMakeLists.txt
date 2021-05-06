@@ -268,7 +268,11 @@ endforeach(name)
 
 # Linking the Qt libraries also pulls in the include files
 link_libraries(Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network Qt5::OpenGL)
-link_libraries(Python3::Python)
+
+if(USE_PYTHON)
+    add_definitions(-DHAS_PYTHON)
+    link_libraries(Python3::Python)
+endif()
 
 if(Qt5WebEngineWidgets_FOUND)
 	link_libraries(Qt5::WebEngineWidgets)
@@ -406,6 +410,3 @@ elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -Wl,--end-group)
 endif()
-
-get_target_property(LINKEDLIBS FEBioStudio LINK_LIBRARIES)
-file(WRITE ${CMAKE_FILES_DIRECTORY}/linkedLibraries "${LINKEDLIBS}")

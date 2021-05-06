@@ -70,6 +70,7 @@ SOFTWARE.*/
 #include "TimelinePanel.h"
 #include "UpdateChecker.h"
 #include "XMLEditor.h"
+#include "PythonToolsPanel.h"
 
 class QProcess;
 
@@ -158,6 +159,7 @@ public:
 	::CPostPanel*	postPanel;
 	::CInfoPanel*	infoPanel;
 	::CRepositoryPanel*	databasePanel;
+	::CPythonToolsPanel*	pythonToolsPanel;
 	::CDlgMeasure*	measureTool;
 	::CDlgPlaneCut*	planeCutTool;
 	::CTimelinePanel*	timePanel;
@@ -1038,6 +1040,14 @@ public:
 		dock8->setWidget(timePanel);
 		menuWindows->addAction(dock8->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock8);
+
+#ifdef HAS_PYTHON
+		QDockWidget* dock9 = new QDockWidget("Python", m_wnd); dock9->setObjectName("dockPython");
+		pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock9);
+		dock9->setWidget(pythonToolsPanel);
+		menuWindows->addAction(dock9->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock3, dock7);
+#endif
 
 		// make sure the file viewer is the visible tab
 		dock1->raise();

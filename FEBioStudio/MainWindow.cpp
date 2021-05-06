@@ -1126,6 +1126,11 @@ CRepositoryPanel* CMainWindow::GetDatabasePanel()
 	return ui->databasePanel;
 }
 
+CPythonToolsPanel* CMainWindow::GetPythonToolsPanel()
+{
+	return ui->pythonToolsPanel;
+}
+
 //-----------------------------------------------------------------------------
 //! close the current open project
 void CMainWindow::CloseProject()

@@ -24,20 +24,52 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "RunPython.h"
-// #include "fbsmodule.h"
-// #include <stdio.h>
+#pragma once
+#include "CommandPanel.h"
 
-
-
-void runPython(const char* scriptName)
-{
-    // FILE* file;
-
-    // PyImport_AppendInittab("fbs", &PyInit_fbs);
-    // // PyImport_AppendInittab("doc", &PyInit_custom);
-    // Py_Initialize();
-    // file = fopen(scriptName, "r");
-    // PyRun_SimpleFile(file, scriptName);
-    // Py_Finalize();
+namespace Ui {
+	class CPythonToolsPanel;
 }
+
+// Forward declaration of PyObject
+#ifndef PyObject_HEAD
+struct _object;
+typedef _object PyObject;
+#endif
+
+class CMainWindow;
+class CAbstractTool;
+class CPythonTool;
+
+class CPythonToolsPanel : public CCommandPanel
+{
+	Q_OBJECT
+
+public:
+	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
+	// ~CPythonToolsPanel();
+
+	// update the tools panel
+	void Update(bool breset = true) override;
+
+	CPythonTool* addTool(const char* name, PyObject* func);
+
+	void finalizeTool(CPythonTool* tool);
+
+private:
+
+	void hideEvent(QHideEvent* event) override;
+	void showEvent(QShowEvent* event) override;
+
+private slots:
+	void on_buttons_buttonClicked(int id);
+	void on_importScript_triggered();
+
+private:
+	Ui::CPythonToolsPanel*	ui;
+
+	CAbstractTool*			m_activeTool;
+	QList<CAbstractTool*>	tools;
+
+	friend class Ui::CPythonToolsPanel;
+};
