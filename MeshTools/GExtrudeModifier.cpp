@@ -32,56 +32,68 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 GExtrudeModifier::GExtrudeModifier()
 {
-	AddDoubleParam(1.0, "distance", "distance");
+	SetName("Extrude");
+	AddDoubleParam(1.0, "distance");
+	AddIntParam(1, "segments");
 }
 
 //-----------------------------------------------------------------------------
 void GExtrudeModifier::Apply(GObject* po)
 {
-	int i;
 	vec3d t(0,0,1);
-	double d = GetFloatValue(DIST);
+	double D = GetFloatValue(DIST);
+	int NDIV = GetIntValue(NDIVS);
+	if (NDIV < 1) NDIV = 1;
 
 	// duplicate all the nodes
 	int N = po->Nodes();
-	for (i=0; i<N; ++i)
+	for (int j = 1; j <= NDIV; ++j)
 	{
-		GNode& n = *po->Node(i);
-		po->AddNode(n.LocalPosition() + t*d, n.Type(), true);
+		double d = (j * D) / NDIV;
+		for (int i = 0; i < N; ++i)
+		{
+			GNode& n = *po->Node(i);
+			po->AddNode(n.LocalPosition() + t * d, n.Type(), true);
+		}
 	}
 
-	for (i=0; i<N; ++i) po->Node(i)->m_ntag = -1;
+	for (int i=0; i<N; ++i) po->Node(i)->m_ntag = -1;
 
 	// duplicate all the edges
 	int E = po->Edges();
-	for (i=0; i<E; ++i)
+	for (int j = 1; j <= NDIV; ++j)
 	{
-		GEdge& e = *po->Edge(i);
-		po->Node(e.m_node[0])->m_ntag = 1;
-		po->Node(e.m_node[1])->m_ntag = 1;
-
-		switch (e.m_ntype)
+		for (int i = 0; i < E; ++i)
 		{
-		case EDGE_LINE:
-			po->AddLine(e.m_node[0] + N, e.m_node[1] + N);
-			break;
-		case EDGE_3P_CIRC_ARC:
-			po->AddCircularArc(e.m_cnode + N, e.m_node[0] + N, e.m_node[1] + N);
-			break;
-		default:
-			assert(false);
+			GEdge& e = *po->Edge(i);
+			po->Node(e.m_node[0])->m_ntag = 1;
+			po->Node(e.m_node[1])->m_ntag = 1;
+
+			switch (e.m_ntype)
+			{
+			case EDGE_LINE:
+				po->AddLine(e.m_node[0] + j*N, e.m_node[1] + j * N);
+				break;
+			case EDGE_3P_CIRC_ARC:
+				po->AddCircularArc(e.m_cnode + j * N, e.m_node[0] + j * N, e.m_node[1] + j * N);
+				break;
+			default:
+				assert(false);
+			}
 		}
 	}
 
 	// add vertical edges
-	int m = 2*E;
-	for (i=0; i<N; ++i)
+	int m = (NDIV + 1)*E;
+	for (int j = 1; j <= NDIV; ++j)
 	{
-		GNode& node = *po->Node(i);
-		if (node.m_ntag == 1)
+		for (int i = 0; i < N; ++i)
 		{
-			node.m_ntag = m++;
-			po->AddLine(i, i + N);
+			GNode& node = *po->Node(i);
+			if (node.m_ntag == 1)
+			{
+				po->AddLine(i+ (j-1)*N, i + j*N);
+			}
 		}
 	}
 
@@ -89,46 +101,53 @@ void GExtrudeModifier::Apply(GObject* po)
 	int F = po->Faces();
 	vector<int> node;
 	vector<pair<int, int> > edge;
-	for (i=0; i<F; ++i)
+	for (int n = 1; n <= NDIV; ++n)
 	{
-		GFace& f = *po->Face(i);
-		int nn = f.m_node.size();
-		node.resize(nn);
-		for (int j=0; j<nn; ++j) node[j] = f.m_node[j]+N;
-
-		int ne = f.m_edge.size();
-		edge.resize(ne);
-		for (int j=0; j<ne; ++j) 
+		for (int i = 0; i < F; ++i)
 		{
-			edge[j].first = f.m_edge[j].nid + E;
-			edge[j].second = f.m_edge[j].nwn;
-		}
+			GFace& f = *po->Face(i);
+			int nn = f.m_node.size();
+			node.resize(nn);
+			for (int j = 0; j < nn; ++j) node[j] = f.m_node[j] + n*N;
 
-		po->AddFacet(node, edge, FACE_POLYGON);
+			int ne = f.m_edge.size();
+			edge.resize(ne);
+			for (int j = 0; j < ne; ++j)
+			{
+				edge[j].first = f.m_edge[j].nid + n*E;
+				edge[j].second = f.m_edge[j].nwn;
+			}
+
+			po->AddFacet(node, edge, FACE_POLYGON);
+		}
 	}
 
 	// create new side-walls
 	node.resize(4);
 	edge.resize(4);
-	for (i=0; i<E; ++i)
+	for (int j = 1; j <=NDIV; ++j)
 	{
-		GEdge& e = *po->Edge(i);
-		int n0 = e.m_node[0];
-		int n1 = e.m_node[1];
-		int m0 = po->Node(n0)->m_ntag; assert(m0 != -1);
-		int m1 = po->Node(n1)->m_ntag; assert(m1 != -1);
-		node[0] = n0;
-		node[1] = n1;
-		node[2] = n1 + N;
-		node[3] = n0 + N;
+		for (int i = 0; i < E; ++i)
+		{
+			GEdge& e = *po->Edge(i);
+			int n0 = e.m_node[0];
+			int n1 = e.m_node[1];
+			node[0] = n0 + (j - 1)*N;
+			node[1] = n1 + (j - 1)*N;
+			node[2] = n1 + j*N;
+			node[3] = n0 + j*N;
 
-		// TODO: I don't think the winding is correct
-		//       I should probably copy the winding from the bottom and top edges
-		edge[0].first =     i; edge[0].second =  1;
-		edge[1].first =    m1; edge[1].second =  1;
-		edge[2].first = E + i; edge[2].second = -1;
-		edge[3].first =    m0; edge[3].second = -1;
-		po->AddFacet(node, edge, FACE_EXTRUDE);
+			// TODO: I don't think the winding is correct
+			//       I should probably copy the winding from the bottom and top edges
+			int m0 = E * (NDIV + 1) + (j - 1)*E + i;
+			int m1 = E * (NDIV + 1) + (j - 1)*E + (i + 1) % E;
+			
+			edge[0].first = i + (j-1)*E; edge[0].second = 1;
+			edge[1].first = m1; edge[1].second = 1;
+			edge[2].first = i + j*E; edge[2].second = -1;
+			edge[3].first = m0; edge[3].second = -1;
+			po->AddFacet(node, edge, FACE_EXTRUDE);
+		}
 	}
 
 	// create the parts
@@ -136,46 +155,47 @@ void GExtrudeModifier::Apply(GObject* po)
 	assert(po->Parts()==1);
 
 	// but we should have one for each face
-	for (i=1; i<F; ++i) po->AddPart();
+	for (int i=1; i<F*NDIV; ++i) po->AddPart();
+	const int NP = po->Parts();
 
 	// Now, we need to figure out which faces belong to which parts
 	// The bottom and top faces belong to the corresponding part
-	for (i=0; i<F; ++i)
+	for (int j = 0; j <= NDIV; ++j)
 	{
-		GFace& f0 = *po->Face(i);
-		GFace& f1 = *po->Face(i+F);
+		for (int i = 0; i < F; ++i)
+		{
+			GFace& f = *po->Face(j*F + i);
 
-		f0.m_nPID[0] = i;
-		f0.m_nPID[1] = f0.m_nPID[2] = -1;
-
-		f1.m_nPID[0] = i;
-		f1.m_nPID[1] = f1.m_nPID[2] = -1;
+			int pid = j * F + i;
+			if (pid >= NP) pid -= F;
+			f.m_nPID[0] = pid;
+			f.m_nPID[1] = ((j == 0) || (j == NDIV) ? -1 : (j - 1)*F + i);
+		}
 	}
 
 	// The side walls will be trickier since they can be interior faces
 	// If so, we need to find the two parts that they belong to.
-	for (i=0; i<E; ++i)
+	int nf = F * (NDIV + 1);
+	for (int n = 0; n < NDIV; ++n)
 	{
-		GFace& f = *po->Face(2*F + i);
-		f.m_nPID[0] = -1;
-		f.m_nPID[1] = -1;
-		f.m_nPID[2] = -1;
-		int m = 0;
-		if (F > 0)
+		for (int j = 0; j < E; ++j)
 		{
-			for (int j = 0; j < F; ++j)
+			GEdge* pe = po->Edge(n*E + j);
+			GFace& f = *po->Face(nf++);
+			f.m_nPID[0] = -1;
+			f.m_nPID[1] = -1;
+			int m = 0;
+			for (int k = 0; k < F; ++k)
 			{
-				GFace& fj = *po->Face(j);
-				if (fj.HasEdge(i))
+				GFace& fk = *po->Face(n*F + k);
+				if (fk.HasEdge(n*E + j))
 				{
 					assert(m < 2);
-					f.m_nPID[m++] = fj.m_nPID[0];
+					f.m_nPID[m++] = fk.m_nPID[0];
 				}
 			}
+			assert(f.m_nPID[0] != -1);
 		}
-		else f.m_nPID[0] = 0;
-
-		assert(f.m_nPID[0] != -1);
 	}
 
 	// find all vertices

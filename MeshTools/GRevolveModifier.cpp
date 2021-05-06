@@ -32,6 +32,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 GRevolveModifier::GRevolveModifier()
 {
+	SetName("Revolve");
 	AddDoubleParam(360.0, "angle", "Angle");
 	AddIntParam(1, "divisions", "Divisions");
 }
@@ -40,7 +41,6 @@ GRevolveModifier::GRevolveModifier()
 //! For now we assume that the axis of revolution is the y-axis
 void GRevolveModifier::Apply(GObject* po)
 {
-	int i, j;
 	const double tol = 1.e-6;
 
 	// figure out the divisions
@@ -54,7 +54,7 @@ void GRevolveModifier::Apply(GObject* po)
 	int N = po->Nodes();
 	int nl = 0; // nodes left of axis
 	int nr = 0; // nodes right of axis
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
 		GNode& n = *po->Node(i);
 		n.m_ntag = -1;
@@ -86,14 +86,14 @@ void GRevolveModifier::Apply(GObject* po)
 	// but do not duplicate nodes on the y-axis
 	int NN = (M+1)*N;
 	vector<int> nn(NN);
-	for (i=0; i<N; ++i) nn[i] = i;
-	for (i=0; i<M; ++i)
+	for (int i=0; i<N; ++i) nn[i] = i;
+	for (int i=0; i<M; ++i)
 	{
 		double w = wd*(i+1.0)/ (double) D;
 		double cw = cos(PI*w/180.0);
 		double sw = sin(PI*w/180.0);
 
-		for (j=0; j<N; ++j)
+		for (int j=0; j<N; ++j)
 		{
 			// get the source node's location
 			GNode& n = *po->Node(j);
@@ -116,10 +116,10 @@ void GRevolveModifier::Apply(GObject* po)
 	int E = po->Edges();
 	int NE = E*(M+1);
 	vector<int> ne(NE);
-	for (i=0; i<E; ++i) ne[i] = i;
-	for (i=0; i<M; ++i)
+	for (int i=0; i<E; ++i) ne[i] = i;
+	for (int i=0; i<M; ++i)
 	{
-		for (j=0; j<E; ++j)
+		for (int j=0; j<E; ++j)
 		{
 			GEdge& e = *po->Edge(i*E + j);
 			int n0 = nn[e.m_node[0] + N];
@@ -139,7 +139,7 @@ void GRevolveModifier::Apply(GObject* po)
 	// mark vertices for extrusion
 	// only mark the vertices that are not on the axis
 	// (they were tagged earlier with -2)
-	for (i=0; i<po->Edges(); ++i)
+	for (int i=0; i<po->Edges(); ++i)
 	{
 		GEdge& e = *po->Edge(i);
 		int n0 = e.m_node[0];
@@ -150,14 +150,14 @@ void GRevolveModifier::Apply(GObject* po)
 
 	// then the revolved edges
 	int m = po->Edges();
-	for (i=0; i<D; ++i)
+	for (int i=0; i<D; ++i)
 	{
-		for (j=0; j<N; ++j)
+		for (int j=0; j<N; ++j)
 		{
 			int i0 = nn[i*N + j];
 			int i1 = nn[((i+1)*N + j)%NN];
 			GNode& node = *po->Node(i0);
-			if (node.m_ntag == 1)
+			if (node.m_ntag != -2)
 			{
 				node.m_ntag = m++;
 				po->AddYArc(i0, i1);
@@ -169,9 +169,9 @@ void GRevolveModifier::Apply(GObject* po)
 	// if the original wire is closed
 	int F = po->Faces();
 	vector<int> edge;
-	for (i=0; i<M; ++i)
+	for (int i=0; i<M; ++i)
 	{
-		for (j=0; j<F; ++j)
+		for (int j=0; j<F; ++j)
 		{
 			GFace& f = *po->Face(j);
 
@@ -186,9 +186,9 @@ void GRevolveModifier::Apply(GObject* po)
 	}
 
 	// every in-plane edge now creates a face
-	for (i=0; i<D; ++i)
+	for (int i=0; i<D; ++i)
 	{
-		for (j=0; j<E; ++j)
+		for (int j=0; j<E; ++j)
 		{
 			GEdge& e0 = *po->Edge(ne[i*E + j]);
 			GEdge& e1 = *po->Edge(ne[((i+1)*E + j)%NE]);
@@ -234,14 +234,14 @@ void GRevolveModifier::Apply(GObject* po)
 	assert(po->Parts()==1);
 
 	// but we should have one for each face
-	for (i=1; i<F*D; ++i) po->AddPart();
+	for (int i=1; i<F*D; ++i) po->AddPart();
 	int NP = po->Parts();
 
 	// Now, we need to figure out which faces belong to which parts
 	// The bottom and top faces belong to the corresponding part
-	for (i=0; i<=M; ++i)
+	for (int i=0; i<=M; ++i)
 	{
-		for (j=0; j<F; ++j)
+		for (int j=0; j<F; ++j)
 		{
 			GFace& f = *po->Face(i*F + j);
 
@@ -255,9 +255,9 @@ void GRevolveModifier::Apply(GObject* po)
 	// The side walls will be trickier since they can be interior faces
 	// If so, we need to find the two parts that they belong to.
 	int nf = F*(M+1);
-	for (i=0; i<D; ++i)
+	for (int i=0; i<D; ++i)
 	{
-		for (j=0; j<E; ++j)
+		for (int j=0; j<E; ++j)
 		{
 			GEdge* pe = po->Edge(i*E + j);
 			if (pe->m_ntag == 1)
