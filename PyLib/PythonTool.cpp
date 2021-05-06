@@ -153,7 +153,7 @@ bool CPythonTool::OnApply()
                 objs.push_back(obj);
                 break;
             case CProperty::Enum:
-                obj = Py_BuildValue("s", current.values[*enumProps[name]].toStdString().c_str());
+                obj = Py_BuildValue("is", *enumProps[name], current.values[*enumProps[name]].toStdString().c_str());
                 objs.push_back(obj);
                 break;
             case CProperty::Resource:
