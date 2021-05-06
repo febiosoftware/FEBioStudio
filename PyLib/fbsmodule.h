@@ -73,16 +73,33 @@ static PyTypeObject pySpringSetType = {
 static int pySprintSet_init(pySpringSet* self, PyObject *args)
 {
     const char* name;
+    char* type = "Linear";
 
-    if(!PyArg_ParseTuple(args, "s", &name)) return -1;
-
+    if(!PyArg_ParseTuple(args, "s|s", &name, &type)) return -1;
 
     auto wnd = PRV::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
     auto gmodel = doc->GetGModel();
 
     self->set = new GDiscreteSpringSet(gmodel);
-    self->set->SetMaterial(new FELinearSpringMaterial);
+
+    if(strcmp(type, "Linear") == 0)
+    {
+        self->set->SetMaterial(new FELinearSpringMaterial);
+    }
+    else if(strcmp(type, "Nonlinear") == 0)
+    {
+        self->set->SetMaterial(new FENonLinearSpringMaterial);
+    }
+    else if(strcmp(type, "Hill") == 0)
+    {
+        self->set->SetMaterial(new FEHillContractileMaterial);
+    }
+    else
+    {
+        return -1;
+    }
+
     self->set->SetName(name);
 
     gmodel->AddDiscreteObject(self->set);
@@ -192,11 +209,11 @@ static int pyPythonTool_init(pyPythonTool* self, PyObject *args)
 static PyObject * pyPythonTool_addBoolProperty(pyPythonTool *self, PyObject *args)
 {
     const char* name;
-    bool bl;
+    bool bl = true;
 
-    if(!PyArg_ParseTuple(args, "sp", &name, &bl)) return NULL;
+    if(!PyArg_ParseTuple(args, "s|p", &name, &bl)) return NULL;
 
-    self->tool->addBoolProperty(bl, std::string(name));
+    self->tool->addBoolProperty(std::string(name), bl);
 
     Py_RETURN_NONE;
 }
@@ -204,11 +221,24 @@ static PyObject * pyPythonTool_addBoolProperty(pyPythonTool *self, PyObject *arg
 static PyObject * pyPythonTool_addIntProperty(pyPythonTool *self, PyObject *args)
 {
     const char* name;
-    int integer;
+    int integer = 0;
 
-    if(!PyArg_ParseTuple(args, "si", &name, &integer)) return NULL;
+    if(!PyArg_ParseTuple(args, "s|i", &name, &integer)) return NULL;
 
-    self->tool->addIntProperty(integer, std::string(name));
+    self->tool->addIntProperty(std::string(name), integer);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject * pyPythonTool_addEnumProperty(pyPythonTool *self, PyObject *args)
+{
+    const char* name;
+    const char* labels;
+    int integer = 0;
+
+    if(!PyArg_ParseTuple(args, "ss|i", &name, &labels, &integer)) return NULL;
+
+    self->tool->addEnumProperty(std::string(name), integer, std::string(labels));
 
     Py_RETURN_NONE;
 }
@@ -216,11 +246,11 @@ static PyObject * pyPythonTool_addIntProperty(pyPythonTool *self, PyObject *args
 static PyObject * pyPythonTool_addDoubleProperty(pyPythonTool *self, PyObject *args)
 {
     const char* name;
-    double dbl;
+    double dbl = 0;
 
-    if(!PyArg_ParseTuple(args, "sd", &name, &dbl)) return NULL;
+    if(!PyArg_ParseTuple(args, "s|d", &name, &dbl)) return NULL;
 
-    self->tool->addDoubleProperty(dbl, std::string(name));
+    self->tool->addDoubleProperty(std::string(name), dbl);
 
     Py_RETURN_NONE;
 }
@@ -228,11 +258,11 @@ static PyObject * pyPythonTool_addDoubleProperty(pyPythonTool *self, PyObject *a
 static PyObject * pyPythonTool_addStringProperty(pyPythonTool *self, PyObject *args)
 {
     const char* name;
-    const char* str;
+    char* str = "";
 
-    if(!PyArg_ParseTuple(args, "ss", &name, &str)) return NULL;
+    if(!PyArg_ParseTuple(args, "s|s", &name, &str)) return NULL;
 
-    self->tool->addStringProperty(str, std::string(name));
+    self->tool->addStringProperty(std::string(name), str);
 
     Py_RETURN_NONE;
 }
@@ -240,11 +270,11 @@ static PyObject * pyPythonTool_addStringProperty(pyPythonTool *self, PyObject *a
 static PyObject * pyPythonTool_addResourceProperty(pyPythonTool *self, PyObject *args)
 {
     const char* name;
-    const char* str;
+    char* str = "";
 
-    if(!PyArg_ParseTuple(args, "ss", &name, &str)) return NULL;
+    if(!PyArg_ParseTuple(args, "s|s", &name, &str)) return NULL;
 
-    self->tool->addResourceProperty(str, std::string(name));
+    self->tool->addResourceProperty(std::string(name), str);
 
     Py_RETURN_NONE;
 }
@@ -265,6 +295,9 @@ static PyMethodDef pyPythonTool_methods[] = {
     },
     {"addIntProperty", (PyCFunction) pyPythonTool_addIntProperty, METH_VARARGS,
      "Add an integer property to the tool"
+    },
+    {"addEnumProperty", (PyCFunction) pyPythonTool_addEnumProperty, METH_VARARGS,
+     "Add an enum property to the tool"
     },
     {"addDoubleProperty", (PyCFunction) pyPythonTool_addDoubleProperty, METH_VARARGS,
      "Add a double property to the tool"

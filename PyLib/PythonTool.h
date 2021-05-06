@@ -42,12 +42,12 @@ public:
 	CPythonTool(CMainWindow* wnd, const char* name, PyObject* func);
     ~CPythonTool();
 
-    CProperty* addBoolProperty(bool pd, const std::string& name);
-	CProperty* addIntProperty(int pd, const std::string& name);
-	CProperty* addEnumProperty(int pd, const std::string& name);
-	CProperty* addDoubleProperty(double pd, const std::string& name);
-    CProperty* addStringProperty(const char* pd, const std::string& name);
-    CProperty* addResourceProperty(const char* pd, const std::string& name);
+    CProperty* addBoolProperty(const std::string& name, bool value);
+	CProperty* addIntProperty(const std::string& name, int value);
+	CProperty* addEnumProperty(const std::string& name, int value, const std::string& labels);
+	CProperty* addDoubleProperty(const std::string& name, double value);
+    CProperty* addStringProperty(const std::string& name, char* value);
+    CProperty* addResourceProperty(const std::string& name, char* value);
 
     bool OnApply();
 
@@ -56,6 +56,7 @@ private:
     PyObject* func;
     std::unordered_map<std::string, bool*> boolProps;
     std::unordered_map<std::string, int*> intProps;
+    std::unordered_map<std::string, int*> enumProps;
     std::unordered_map<std::string, double*> dblProps;
     std::unordered_map<std::string, QString*> strProps;
     std::unordered_map<std::string, QString*> rscProps;

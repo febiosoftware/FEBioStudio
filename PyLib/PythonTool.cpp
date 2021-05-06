@@ -45,6 +45,11 @@ CPythonTool::~CPythonTool()
         delete el.second;
     }
 
+    for(auto el : enumProps)
+    {
+        delete el.second;
+    }
+
     for(auto el : dblProps)
     {
         delete el.second;
@@ -59,44 +64,57 @@ CPythonTool::~CPythonTool()
     {
         delete el.second;
     }
-
 }
 
-CProperty* CPythonTool::addBoolProperty(bool pd, const std::string& name)
+CProperty* CPythonTool::addBoolProperty(const std::string& name, bool value)
 {
     bool* val = new bool;
+    *val = value;
     boolProps[name] = val;
 
     CDataPropertyList::addBoolProperty(val, QString::fromStdString(name));
 }
 
-CProperty* CPythonTool::addIntProperty(int pd, const std::string& name)
+CProperty* CPythonTool::addIntProperty(const std::string& name, int value)
 {
     int* val = new int;
+    *val = value;
     intProps[name] = val;
 
     CDataPropertyList::addIntProperty(val, QString::fromStdString(name));
 }
 
-CProperty* CPythonTool::addDoubleProperty(double pd, const std::string& name)
+CProperty* CPythonTool::addEnumProperty(const std::string& name, int value, const std::string& labels)
+{
+    int* val = new int;
+    *val = value;
+    enumProps[name] = val;
+
+    QStringList qlabels = QString::fromStdString(labels).split(";");
+
+    CDataPropertyList::addEnumProperty(val, QString::fromStdString(name))->setEnumValues(qlabels);
+}
+
+CProperty* CPythonTool::addDoubleProperty(const std::string& name, double value)
 {
     double* val = new double;
+    *val = value;
     dblProps[name] = val;
 
     CDataPropertyList::addDoubleProperty(val, QString::fromStdString(name));
 }
 
-CProperty* CPythonTool::addStringProperty(const char* pd, const std::string& name)
+CProperty* CPythonTool::addStringProperty(const std::string& name, char* value)
 {
-    QString * val = new QString(pd);
+    QString * val = new QString(value);
     strProps[name] = val;
 
     CDataPropertyList::addStringProperty(val, QString::fromStdString(name));
 }
 
-CProperty* CPythonTool::addResourceProperty(const char* pd, const std::string& name)
+CProperty* CPythonTool::addResourceProperty(const std::string& name, char* value)
 {
-    QString * val = new QString(pd);
+    QString * val = new QString(value);
     rscProps[name] = val;
 
     CDataPropertyList::addResourceProperty(val, QString::fromStdString(name));
@@ -134,8 +152,10 @@ bool CPythonTool::OnApply()
                 obj = Py_BuildValue("s", strProps[name]->toStdString().c_str());
                 objs.push_back(obj);
                 break;
-            // case CProperty::Enum:
-            //     break;
+            case CProperty::Enum:
+                obj = Py_BuildValue("s", current.values[*enumProps[name]].toStdString().c_str());
+                objs.push_back(obj);
+                break;
             case CProperty::Resource:
                 obj = Py_BuildValue("s", rscProps[name]->toStdString().c_str());
                 objs.push_back(obj);
