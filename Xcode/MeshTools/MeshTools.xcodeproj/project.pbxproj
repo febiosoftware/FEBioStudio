@@ -11,6 +11,7 @@
 		D50C858623A283F400E42D37 /* FETet4ToHex8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */; };
 		D5173D042421ABA400462BAF /* FEShellMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5173D022421ABA400462BAF /* FEShellMesher.cpp */; };
 		D5173D052421ABA400462BAF /* FEShellMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5173D032421ABA400462BAF /* FEShellMesher.h */; };
+		D52E3D0F2642E87D00415518 /* FEInflateMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D52E3D0E2642E87C00415518 /* FEInflateMesh.cpp */; };
 		D5349B3425F18A7E002D2CC4 /* FEFixSurfaceMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5349B3225F18A7D002D2CC4 /* FEFixSurfaceMesh.h */; };
 		D5349B3525F18A7E002D2CC4 /* FEFixSurfaceMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5349B3325F18A7E002D2CC4 /* FEFixSurfaceMesh.cpp */; };
 		D550436E24705E12007DCB29 /* FEMeshOverlap.h in Headers */ = {isa = PBXBuildFile; fileRef = D550436C24705E12007DCB29 /* FEMeshOverlap.h */; };
@@ -240,6 +241,7 @@
 		D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToHex8.cpp; sourceTree = "<group>"; };
 		D5173D022421ABA400462BAF /* FEShellMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellMesher.cpp; sourceTree = "<group>"; };
 		D5173D032421ABA400462BAF /* FEShellMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellMesher.h; sourceTree = "<group>"; };
+		D52E3D0E2642E87C00415518 /* FEInflateMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEInflateMesh.cpp; sourceTree = "<group>"; };
 		D5349B3225F18A7D002D2CC4 /* FEFixSurfaceMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFixSurfaceMesh.h; sourceTree = "<group>"; };
 		D5349B3325F18A7E002D2CC4 /* FEFixSurfaceMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFixSurfaceMesh.cpp; sourceTree = "<group>"; };
 		D550436C24705E12007DCB29 /* FEMeshOverlap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshOverlap.h; sourceTree = "<group>"; };
@@ -557,6 +559,7 @@
 				D5ED27B723197DE300C16BF7 /* FEHexSplitModifier.cpp */,
 				D5ED27B123197DE300C16BF7 /* FEHollowSphere.cpp */,
 				D5ED27DD23197DE400C16BF7 /* FEHollowSphere.h */,
+				D52E3D0E2642E87C00415518 /* FEInflateMesh.cpp */,
 				D5ED27EE23197DE400C16BF7 /* FEItemList.h */,
 				D5ED27D023197DE400C16BF7 /* FEItemListBuilder.cpp */,
 				D5ED277A23197DE300C16BF7 /* FEItemListBuilder.h */,
@@ -981,6 +984,7 @@
 				D5ED280423197DE400C16BF7 /* FEShellDisc.cpp in Sources */,
 				D5ED28A523197DE400C16BF7 /* FETruncatedEllipsoid.cpp in Sources */,
 				D5ED283823197DE400C16BF7 /* FECone.cpp in Sources */,
+				D52E3D0F2642E87D00415518 /* FEInflateMesh.cpp in Sources */,
 				D5ED287323197DE400C16BF7 /* FEDomain.cpp in Sources */,
 				D5ED28C123197DE400C16BF7 /* FECurveMesher.cpp in Sources */,
 				D5ED281A23197DE400C16BF7 /* PRVArchive.cpp in Sources */,
