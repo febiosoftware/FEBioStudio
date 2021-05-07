@@ -97,23 +97,40 @@ void GRevolveModifier::Apply(GObject* po)
 		{
 			// get the source node's location
 			GNode& n = *po->Node(j);
-			vec3d& r = n.LocalPosition();
 
-			// rotate the node
-			vec3d rp;
-			rp.x = cw*r.x - sw*r.z;
-			rp.y = r.y;
-			rp.z = sw*r.x + cw*r.z;
+			if (n.m_ntag != -2)
+			{
+				vec3d& r = n.LocalPosition();
 
-			// add the new node
-			nn[N*(i+1)+j] = po->AddNode(rp, n.Type());
+				// rotate the node
+				vec3d rp;
+				rp.x = cw * r.x - sw * r.z;
+				rp.y = r.y;
+				rp.z = sw * r.x + cw * r.z;
+
+				// add the new node
+				nn[N*(i + 1) + j] = po->AddNode(rp, n.Type());
+			}
+			else
+				nn[N*(i + 1) + j] = j;
 		}
+	}
+
+	// mark edges on the Y-axis
+	int E = po->Edges();
+	for (int i = 0; i < E; ++i)
+	{
+		GEdge& edge = *po->Edge(i);
+		if ((po->Node(edge.m_node[0])->m_ntag == -2) && (po->Node(edge.m_node[1])->m_ntag == -2))
+		{
+			edge.m_ntag = -2;
+		}
+		else edge.m_ntag = -1;
 	}
 
 	// create all the new edges
 	// first the in-plane edges
 	// do not copy edges on the y-axis
-	int E = po->Edges();
 	int NE = E*(M+1);
 	vector<int> ne(NE);
 	for (int i=0; i<E; ++i) ne[i] = i;
@@ -121,35 +138,30 @@ void GRevolveModifier::Apply(GObject* po)
 	{
 		for (int j=0; j<E; ++j)
 		{
-			GEdge& e = *po->Edge(i*E + j);
-			int n0 = nn[e.m_node[0] + N];
-			int n1 = nn[e.m_node[1] + N];
+			GEdge& e = *po->Edge(j);
 
-			switch (e.m_ntype)
+			if (e.m_ntag != -2)
 			{
-			case EDGE_LINE       : ne[(i+1)*E + j] = po->AddLine(n0, n1); break;
-			case EDGE_3P_CIRC_ARC: ne[(i+1)*E + j] = po->AddCircularArc(nn[e.m_cnode + N], n0, n1); break;
-			case EDGE_3P_ARC     : ne[(i+1)*E + j] = po->AddArcSection (nn[e.m_cnode + N], n0, n1); break;
-			default:
-				assert(false);
+				int n0 = nn[e.m_node[0] + (i + 1)*N];
+				int n1 = nn[e.m_node[1] + (i + 1)*N];
+
+				switch (e.m_ntype)
+				{
+				case EDGE_LINE       : ne[(i + 1)*E + j] = po->AddLine(n0, n1); break;
+				case EDGE_3P_CIRC_ARC: ne[(i + 1)*E + j] = po->AddCircularArc(nn[e.m_cnode + (i + 1)*N], n0, n1); break;
+				case EDGE_3P_ARC     : ne[(i + 1)*E + j] = po->AddArcSection(nn[e.m_cnode + (i + 1)*N], n0, n1); break;
+				default:
+					assert(false);
+				}
 			}
+			else ne[(i + 1)*E + j] = j;
 		}
 	}
 
-	// mark vertices for extrusion
-	// only mark the vertices that are not on the axis
-	// (they were tagged earlier with -2)
-	for (int i=0; i<po->Edges(); ++i)
-	{
-		GEdge& e = *po->Edge(i);
-		int n0 = e.m_node[0];
-		int n1 = e.m_node[1];
-		if (po->Node(n0)->m_ntag == -1) po->Node(n0)->m_ntag = 1;
-		if (po->Node(n1)->m_ntag == -1) po->Node(n1)->m_ntag = 1;
-	}
-
 	// then the revolved edges
-	int m = po->Edges();
+	int m = 0;
+	for (int i = 0; i < NE; ++i) if (ne[i] > m) m = ne[i];
+	m++;
 	for (int i=0; i<D; ++i)
 	{
 		for (int j=0; j<N; ++j)
@@ -159,8 +171,8 @@ void GRevolveModifier::Apply(GObject* po)
 			GNode& node = *po->Node(i0);
 			if (node.m_ntag != -2)
 			{
-				node.m_ntag = m++;
 				po->AddYArc(i0, i1);
+				node.m_ntag = m++;
 			}
 		}
 	}
@@ -186,6 +198,7 @@ void GRevolveModifier::Apply(GObject* po)
 	}
 
 	// every in-plane edge now creates a face
+	int nf = po->Faces();
 	for (int i=0; i<D; ++i)
 	{
 		for (int j=0; j<E; ++j)
@@ -204,7 +217,7 @@ void GRevolveModifier::Apply(GObject* po)
 				edge[2] = ne[((i+1)*E+j)%NE];
 				edge[3] =                 m0;
 				po->AddFacet(edge, FACE_REVOLVE);
-				e0.m_ntag = 1;
+				e0.m_ntag = nf++;
 			}
 			else if (m0 > 0)
 			{
@@ -214,7 +227,7 @@ void GRevolveModifier::Apply(GObject* po)
 				edge[1] =                 m0;
 				edge[2] = ne[       i*E + j];
 				po->AddFacet(edge, FACE_REVOLVE_WEDGE);
-				e0.m_ntag = 1;
+				e0.m_ntag = nf++;
 			}
 			else if (m1 > 0)
 			{
@@ -224,7 +237,7 @@ void GRevolveModifier::Apply(GObject* po)
 				edge[1] =                 m1;
 				edge[2] = ne[((i+1)*E+j)%NE];
 				po->AddFacet(edge, FACE_REVOLVE_WEDGE);
-				e0.m_ntag = 1;
+				e0.m_ntag = nf++;
 			}
 		}
 	}
@@ -237,45 +250,55 @@ void GRevolveModifier::Apply(GObject* po)
 	for (int i=1; i<F*D; ++i) po->AddPart();
 	int NP = po->Parts();
 
-	// Now, we need to figure out which faces belong to which parts
-	// The bottom and top faces belong to the corresponding part
-	for (int i=0; i<=M; ++i)
+	if (F == 0)
 	{
-		for (int j=0; j<F; ++j)
+		// TODO: This assumes that all side faces are external. 
+		for (int i = 0; i < po->Faces(); ++i)
 		{
-			GFace& f = *po->Face(i*F + j);
-
-			int pid = i*F + j;
-			if (pid >= NP) pid -= F;
-			f.m_nPID[0] = pid;
-			f.m_nPID[1] = ((i==0)||(i==M)? -1 : (i-1)*F + j);
+			po->Face(i)->m_nPID[0] = 0;
 		}
 	}
-	
-	// The side walls will be trickier since they can be interior faces
-	// If so, we need to find the two parts that they belong to.
-	int nf = F*(M+1);
-	for (int i=0; i<D; ++i)
+	else
 	{
-		for (int j=0; j<E; ++j)
+		// Now, we need to figure out which faces belong to which parts
+		// The bottom and top faces belong to the corresponding part
+		for (int i = 0; i <= M; ++i)
 		{
-			GEdge* pe = po->Edge(i*E + j);
-			if (pe->m_ntag == 1)
+			for (int j = 0; j < F; ++j)
 			{
-				GFace& f = *po->Face(nf++);
-				f.m_nPID[0] = -1;
-				f.m_nPID[1] = -1;
-				int m = 0;
-				for (int k=0; k<F; ++k)
+				GFace& f = *po->Face(i*F + j);
+
+				int pid = i * F + j;
+				if (pid >= NP) pid -= F;
+				f.m_nPID[0] = pid;
+				f.m_nPID[1] = ((i == 0) || (i == M) ? -1 : (i - 1)*F + j);
+			}
+		}
+
+		// The side walls will be trickier since they can be interior faces
+		// If so, we need to find the two parts that they belong to.
+		for (int i = 0; i < D; ++i)
+		{
+			for (int j = 0; j < E; ++j)
+			{
+				GEdge* pe = po->Edge(ne[i*E + j]);
+				if (pe->m_ntag != -1)
 				{
-					GFace& fk = *po->Face(i*F + k);
-					if (fk.HasEdge(i*E + j))
+					GFace& f = *po->Face(pe->m_ntag);
+					f.m_nPID[0] = -1;
+					f.m_nPID[1] = -1;
+					int m = 0;
+					for (int k = 0; k < F; ++k)
 					{
-						assert(m<2);
-						f.m_nPID[m++] = fk.m_nPID[0];
+						GFace& fk = *po->Face(i*F + k);
+						if (fk.HasEdge(ne[i*E + j]))
+						{
+							assert(m < 2);
+							f.m_nPID[m++] = fk.m_nPID[0];
+						}
 					}
+					assert(f.m_nPID[0] != -1);
 				}
-				assert(f.m_nPID[0] != -1);
 			}
 		}
 	}

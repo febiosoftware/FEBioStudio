@@ -111,6 +111,7 @@ protected:
 	bool BuildFacePolygon(GFace& fs);
 	bool BuildFaceExtrude(GFace& fs);
 	bool BuildFaceRevolve(GFace& fs);
+	bool BuildFaceRevolveWedge(GFace& fs);
 
 protected:
 	vector<NODE>	m_Node;
@@ -146,6 +147,9 @@ public:
 public:
 	// Generate a volume mesh from a surface mesh
 	FEMesh* CreateMesh(FESurfaceMesh* surfaceMesh);
+
+protected:
+	FEMesh* BuildPLCMesh();
 
 protected:
 	GObject*	m_po;	// TODO: move this to base class

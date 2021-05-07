@@ -98,6 +98,9 @@ FEMesh* FETetGenMesher::BuildMesh()
 		return CreateMesh(surfObj->GetSurfaceMesh());
 	}
 
+//  NOTE: Use this for testing if TetGen fails to mesh the object
+//	return BuildPLCMesh();
+
 #ifdef TETLIBRARY
 	// allocate tetgen structures
 	tetgenio in, out;
@@ -137,10 +140,24 @@ FEMesh* FETetGenMesher::BuildMesh()
 	{
 		tetrahedralize(sz, &in, &out);
 	}
+	catch (int n)
+	{
+		switch (n) {
+		case 1: SetErrorMessage("Out of memory."); break;
+		case 2: SetErrorMessage("Internal error."); break;
+		case 3: SetErrorMessage("A self-intersection was detected. Meshing stopped."); break;
+		case 4: SetErrorMessage("A very small input feature size was detected. Meshing stopped."); break;
+		case 5: SetErrorMessage("Two very close input facets were detected. Meshing stopped."); break;
+		case 10: SetErrorMessage("An input error was detected. Meshing stopped.\n"); break;
+		default:
+			SetErrorMessage("Unknown error."); break;
+		}
+		return nullptr;
+	}
 	catch (...)
 	{
-//		flx_error("Tetgen was not able to mesh this object.");
-		return 0;
+		SetErrorMessage("Unknown exception.");
+		return nullptr;
 	}
 
 	// build and return a new tet mesh
@@ -149,6 +166,62 @@ FEMesh* FETetGenMesher::BuildMesh()
 #else 
 	return 0;
 #endif // TETLIBRARY
+}
+
+//-----------------------------------------------------------------------------
+FEMesh* FETetGenMesher::BuildPLCMesh()
+{
+	// get the requested element size
+	double h = GetFloatValue(ELSIZE);
+	if (h == 0) h = 1.0;
+
+	// Build a PLC from the object
+	PLC plc;
+	if (plc.Build(m_po, h) == false) return nullptr;
+
+	int NN = plc.Nodes();
+	int NF = plc.Faces();
+	FEMesh* mesh = new FEMesh();
+	mesh->Create(NN, NF);
+
+	for (int i = 0; i < NN; ++i)
+	{
+		FENode& node = mesh->Node(i);
+		node.r = plc.Node(i).r;
+		node.m_gid = plc.Node(i).nid;
+	}
+
+	for (int i = 0; i < NF; ++i)
+	{
+		FEElement& el = mesh->Element(i);
+		PLC::FACE& f = plc.Face(i);
+		el.m_gid = 0;
+		if (f.Nodes() == 3)
+		{
+			el.SetType(FE_TRI3);
+			el.m_node[0] = f.node[0];
+			el.m_node[1] = f.node[1];
+			el.m_node[2] = f.node[2];
+		}
+		else if (f.Nodes() == 4)
+		{
+			el.SetType(FE_QUAD4);
+			el.m_node[0] = f.node[0];
+			el.m_node[1] = f.node[1];
+			el.m_node[2] = f.node[2];
+			el.m_node[3] = f.node[3];
+		}
+		else
+		{
+			assert(false);
+			delete mesh;
+			return nullptr;
+		}
+	}
+
+	mesh->RebuildMesh();
+
+	return mesh;
 }
 
 //-----------------------------------------------------------------------------
@@ -1057,6 +1130,7 @@ bool PLC::BuildFaces()
 		case FACE_POLYGON: if (BuildFacePolygon(fs) == false) return false; break;
 		case FACE_EXTRUDE: if (BuildFaceExtrude(fs) == false) return false; break;
 		case FACE_REVOLVE: if (BuildFaceRevolve(fs) == false) return false; break;
+		case FACE_REVOLVE_WEDGE: if (BuildFaceRevolveWedge(fs) == false) return false; break;
 		default:
 			assert(false);
 			return false;
@@ -1207,6 +1281,109 @@ bool PLC::BuildFaceRevolve(GFace& fs)
 			fd.node[1] = nb[i    ];
 			fd.node[2] = na[i    ];
 			m_Face.push_back(fd);
+		}
+
+		na = nb;
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+//! Adds an extruded face to the PLC
+bool PLC::BuildFaceRevolveWedge(GFace& fs)
+{
+	assert(fs.m_ntype == FACE_REVOLVE_WEDGE);
+	FACE fd;
+	int ne = fs.m_edge.size();
+	assert(ne == 3);
+	EDGE& e0 = m_Edge[fs.m_edge[0].nid];
+	EDGE& e1 = m_Edge[fs.m_edge[1].nid];
+	EDGE& e2 = m_Edge[fs.m_edge[2].nid];
+
+	assert(e0.Nodes() == e2.Nodes());
+
+	int nx = e0.Nodes();
+	int ny = e1.Nodes();
+	vector<int> na(nx), nb(nx);
+	for (int i = 0; i < nx; ++i)
+	{
+		if (fs.m_edge[0].nwn == 1)
+			na[i] = e0.node[i];
+		else
+			na[i] = e0.node[nx - i - 1];
+
+		if (fs.m_edge[2].nwn == 1)
+			nb[i] = e2.node[nx - i - 1];
+		else
+			nb[i] = e2.node[i];
+	}
+
+	// get the coordinates of edge 0, 2
+	vector<vec3d> r0(nx), r2(nx), rj(nx);
+	for (int i = 0; i < nx; ++i) r0[i] = Node(na[i]).r;
+	for (int i = 0; i < nx; ++i) r2[i] = Node(nb[i]).r;
+
+	for (int j = 0; j < ny - 1; ++j)
+	{
+		// generate new points by revolving around Y
+		if (j != ny - 2)
+		{
+			nb[0] = na[0];
+			for (int i = 1; i < nx - 1; ++i)
+			{
+				vec3d ra = r0[i];
+				vec3d rb = r2[i];
+
+				vec2d a(ra.x, ra.z);
+				vec2d b(rb.x, rb.z);
+
+				GM_CIRCLE_ARC c(vec2d(0, 0), a, b);
+				double l = (double)j / (double)ny;
+				vec2d p = c.Point(l);
+				vec3d r(p.x, ra.y, p.y);
+				nb[i] = AddNode(r, -1);
+			}
+			nb[nx - 1] = (fs.m_edge[1].nwn == 1 ? e1.node[j + 1] : e1.node[ny - j - 2]);
+		}
+		else
+		{
+			for (int i = 0; i < nx; ++i)
+			{
+				if (fs.m_edge[2].nwn == 1)
+					nb[i] = e2.node[nx - i - 1];
+				else
+					nb[i] = e2.node[i];
+			}
+		}
+
+		// add the faces
+		for (int i = 0; i < nx - 1; ++i)
+		{
+			if (i == 0)
+			{
+				fd.nid = fs.GetLocalID();
+				fd.node.resize(3);
+				fd.node[0] = na[i];
+				fd.node[1] = na[i + 1];
+				fd.node[2] = nb[i + 1];
+				m_Face.push_back(fd);
+			}
+			else
+			{
+				fd.nid = fs.GetLocalID();
+				fd.node.resize(3);
+				fd.node[0] = na[i];
+				fd.node[1] = na[i + 1];
+				fd.node[2] = nb[i + 1];
+				m_Face.push_back(fd);
+
+				fd.nid = fs.GetLocalID();
+				fd.node.resize(3);
+				fd.node[0] = nb[i + 1];
+				fd.node[1] = nb[i];
+				fd.node[2] = na[i];
+				m_Face.push_back(fd);
+			}
 		}
 
 		na = nb;

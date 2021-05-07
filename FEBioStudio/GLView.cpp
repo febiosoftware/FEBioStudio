@@ -2383,7 +2383,8 @@ void CGLView::RenderNormals(GObject* po, double scale)
 		for (int i = 0; i<N; ++i)
 		{
 			FEFace& face = pm->Face(i);
-			if (face.IsVisible() && vis[face.m_gid])
+			bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
+			if (face.IsVisible() && bvis)
 			{
 				vec3d fn = face.m_fn;
 

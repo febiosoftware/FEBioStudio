@@ -1042,7 +1042,7 @@ void GObject::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 void GObject::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 {
 #ifdef _DEBUG
-	const int M = 5;
+	const int M = 10;
 #else
 	const int M = 50;
 #endif
@@ -1264,7 +1264,11 @@ void GObject::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 // The revolved surface has four edges, the two side ones of type EDGE_YARC
 void GObject::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 {
+#ifdef _DEBUG
+	const int M = 10;
+#else
 	const int M = 50;
+#endif
 
 	// get number of nodes and edges
 	int NN = f.Nodes();
