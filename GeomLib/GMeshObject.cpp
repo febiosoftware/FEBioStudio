@@ -1182,15 +1182,37 @@ bool GMeshObject::DeletePart(GPart* pg)
 // detach an element selection
 GMeshObject* GMeshObject::DetachSelection()
 {
-	FEMesh* pm = GetFEMesh();
+	FEMesh* oldMesh = GetFEMesh();
 
-	FEMeshBuilder meshBuilder(*pm);
+	// make sure material IDs are updated
+	for (int i = 0; i < oldMesh->Elements(); ++i)
+	{
+		FEElement& el = oldMesh->Element(i);
+		int pid = el.m_gid;
+		GPart* pg = Part(pid);
+		el.m_MatID = pg->GetMaterialID();
+	}
+
+	FEMeshBuilder meshBuilder(*oldMesh);
 	FEMesh* newMesh = meshBuilder.DetachSelectedMesh();
 	Update(true);
 
 	// create a new object for this mesh
 	GMeshObject* newObject = new GMeshObject(newMesh);
 	newObject->CopyTransform(this);
+
+	// see if we can map the materials back to the parts
+	FEMesh* pm = newObject->GetFEMesh();
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		if (el.m_MatID >= 0)
+		{
+			int pid = el.m_gid;
+			GPart* pg = newObject->Part(pid);
+			pg->SetMaterialID(el.m_MatID);
+		}
+	}
 
 	return newObject;
 }
