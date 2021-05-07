@@ -62,7 +62,6 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModifier.h>
 #include <sstream>
-//using namespace std;
 
 using std::stringstream;
 
@@ -359,7 +358,7 @@ CGeoModifierPane::CGeoModifierPane(CCreatePanel* parent, ClassDescriptor* pcd) :
 	m_params = new CPropertyListForm;
 
 	QVBoxLayout* layout = new QVBoxLayout;
-	layout->setMargin(0);
+	layout->setContentsMargins(0,0,0,0);
 	layout->addWidget(m_params);
 	layout->addStretch();
 

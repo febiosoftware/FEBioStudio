@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include <assert.h>
 #include <FSCore/Archive.h>
 #include <zlib.h>
-using namespace std;
 
 #ifdef WIN32
 typedef __int64 off_type;

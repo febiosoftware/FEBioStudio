@@ -169,6 +169,9 @@ FEMesh* FETetGenMesher::BuildMesh()
 }
 
 //-----------------------------------------------------------------------------
+#ifdef TETLIBRARY
+
+//-----------------------------------------------------------------------------
 FEMesh* FETetGenMesher::BuildPLCMesh()
 {
 	// get the requested element size
@@ -224,8 +227,6 @@ FEMesh* FETetGenMesher::BuildPLCMesh()
 	return mesh;
 }
 
-//-----------------------------------------------------------------------------
-#ifdef TETLIBRARY
 
 bool FETetGenMesher::build_tetgen_in(tetgenio& in)
 {

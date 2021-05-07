@@ -27,7 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include "FEMultiBlockMesh.h"
 #include <vector>
-using namespace std;
+
+using std::vector;
 
 //-----------------------------------------------------------------------------
 // The multi-quad mesh builds an fe mesh from an MB geometry

@@ -149,7 +149,6 @@ public:
 	FEMesh* CreateMesh(FESurfaceMesh* surfaceMesh);
 
 protected:
-	FEMesh* BuildPLCMesh();
 
 protected:
 	GObject*	m_po;	// TODO: move this to base class
@@ -158,6 +157,7 @@ protected:
 public:
 	bool build_plc(FESurfaceMesh* pm, tetgenio& in);
 protected:
+	FEMesh* BuildPLCMesh();
 	bool build_tetgen_in(tetgenio& in);
 	bool build_tetgen_in_remesh(tetgenio& io);
 	FEMesh* build_tet_mesh(tetgenio& out);
