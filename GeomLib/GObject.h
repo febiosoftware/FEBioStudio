@@ -209,6 +209,7 @@ protected: // helper functions for building the GMesh
 	void BuildFaceRevolve     (GLMesh* glmesh, GFace& f);
 	void BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f);
 	void BuildEdgeMesh        (GLMesh* glmesh, GEdge& e);
+	void BuildEdgeLine        (GLMesh* glmesh, GEdge& e);
 
 protected:
 	// set the render mesh

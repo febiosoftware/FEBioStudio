@@ -63,3 +63,19 @@ public:
 	FEMMGSurfaceRemesh();
 	FESurfaceMesh* Apply(FESurfaceMesh* pm) override;
 };
+
+//-----------------------------------------------------------------------------
+//! This modifier refines a tet mesh using MMG.
+class FEMMG2DRemesh : public FESurfaceModifier
+{
+	enum {
+		ELEM_SIZE,
+		HMIN,
+		HAUSDORFF,
+		HGRAD
+	};
+
+public:
+	FEMMG2DRemesh();
+	FESurfaceMesh* Apply(FESurfaceMesh* pm) override;
+};

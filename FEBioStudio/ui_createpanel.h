@@ -348,17 +348,19 @@ void CCreateLoftSurface::setInput(FESelection* sel)
 	}
 }
 
+
 //=============================================================================
-CCreateExtrude::CCreateExtrude(CCreatePanel* parent) : CCreatePane(parent)
+CGeoModifierPane::CGeoModifierPane(CCreatePanel* parent, ClassDescriptor* pcd) : CCreatePane(parent)
 {
-	QLabel* pl = new QLabel("Extrude distance:");
-	m_distance = new QLineEdit;
-	m_distance->setValidator(new QDoubleValidator);
-	m_distance->setText("1");
+	setCreatePolicy(CCreatePane::REPLACE_ACTIVE_OBJECT);
+
+	m_pcd = pcd;
+
+	m_params = new CPropertyListForm;
 
 	QVBoxLayout* layout = new QVBoxLayout;
-	layout->addWidget(pl);
-	layout->addWidget(m_distance);
+	layout->setMargin(0);
+	layout->addWidget(m_params);
 	layout->addStretch();
 
 	setLayout(layout);
@@ -366,15 +368,25 @@ CCreateExtrude::CCreateExtrude(CCreatePanel* parent) : CCreatePane(parent)
 	QMetaObject::connectSlotsByName(this);
 }
 
-void CCreateExtrude::Activate()
+void CGeoModifierPane::Activate()
 {
+	if (m_mod == nullptr)
+	{
+		m_mod = dynamic_cast<GModifier*>(m_pcd->Create()); assert(m_mod);
+		m_params->setPropertyList(new CObjectProps(m_mod));
+	}
 }
 
-void CCreateExtrude::Deactivate()
+void CGeoModifierPane::Deactivate()
 {
+	if (m_mod)
+	{
+		delete m_mod;
+		m_mod = nullptr;
+	}
 }
 
-FSObject* CCreateExtrude::Create()
+FSObject* CGeoModifierPane::Create()
 {
 	static int n = 1;
 
@@ -384,16 +396,17 @@ FSObject* CCreateExtrude::Create()
 	GObject* activeObject = doc->GetActiveObject();
 	if (activeObject == 0) return 0;
 
+	assert(m_mod);
+	if (m_mod == nullptr) return nullptr;
+
 	// create a clone of this object
 	GPLCObject* newObject = new GPLCObject;
 	newObject->Copy(activeObject);
 
-	GExtrudeModifier mod;
-	mod.SetFloatValue(0, m_distance->text().toDouble());
-	mod.Apply(newObject);
+	m_mod->Apply(newObject);
 
 	stringstream ss;
-	ss << "Extrude" << n;
+	ss << m_mod->GetName() << n;
 	newObject->SetName(ss.str());
 	n++;
 

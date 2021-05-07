@@ -575,6 +575,8 @@ void GObject::BuildGMesh()
 				assert(false);
 			}
 		}
+
+		gmesh->Update();
 	}
 	else
 	{
@@ -587,6 +589,7 @@ void GObject::BuildGMesh()
 				GEdge& e = *Edge(i);
 				switch (e.Type())
 				{
+				case EDGE_LINE: BuildEdgeLine(gmesh, e); break;
 				case EDGE_MESH: BuildEdgeMesh(gmesh, e); break;
 				default:
 					assert(false);
@@ -608,6 +611,19 @@ void GObject::BuildGMesh()
 
 	// assign new mesh
 	imp->m_pGMesh = gmesh;
+}
+
+//-----------------------------------------------------------------------------
+void GObject::BuildEdgeLine(GLMesh* glmsh, GEdge& e)
+{
+	vec3d y[2];
+	y[0] = Node(e.m_node[0])->LocalPosition();
+	y[1] = Node(e.m_node[1])->LocalPosition();
+	int n[2] = { 0 };
+	n[0] = glmsh->AddNode(y[0], e.m_node[0]);
+	n[1] = glmsh->AddNode(y[1], e.m_node[1]);
+	glmsh->AddEdge(n, 2, e.GetLocalID());
+	glmsh->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -670,155 +686,11 @@ void GObject::BuildEdgeMesh(GLMesh* glmsh, GEdge& e)
 //-----------------------------------------------------------------------------
 void GObject::BuildFacePolygon(GLMesh* glmesh, GFace& f)
 {
-	const int M = 50;
-
-	// find the face normal
-	vec3d fn(0,0,0);
-	vec3d rc = Node(f.m_node[0])->LocalPosition();
-	for (int i=1; i<f.Nodes()-1; ++i)
-	{
-		vec3d r1 = Node(f.m_node[i])->LocalPosition() - rc;
-		vec3d r2 = Node(f.m_node[i + 1])->LocalPosition() - rc;
-		fn += r1^r2;
-	}
-	fn.Normalize();
-
-	// find the rotation to bring it back to the x-y plane
-	quatd q(fn, vec3d(0,0,1)), qi = q.Inverse();
-
-	// create triangulation object
-	GTriangulate c;
-	c.Clear();
-
-	// create all nodes
-	int ne = f.Edges();
-	for (int i=0; i<ne; ++i)
-	{
-		GEdge& e = *Edge(f.m_edge[i].nid);
-		int ew = f.m_edge[i].nwn;
-		int en0 = (ew == 1? e.m_node[0] : e.m_node[1]);
-		int en1 = (ew == 1? e.m_node[1] : e.m_node[0]);
-		int n0 = Node(en0)->GetLocalID();
-		switch (e.m_ntype)
-		{
-		case EDGE_LINE:
-			{
-				vec3d r = Node(en0)->LocalPosition() - rc;
-				q.RotateVector(r);
-				c.AddNode(r, n0);
-			}
-			break;
-		case EDGE_3P_CIRC_ARC:
-			{
-				vec3d r0 = Node(e.m_cnode)->LocalPosition() - rc;
-				vec3d r1 = Node(e.m_node[0])->LocalPosition() - rc;
-				vec3d r2 = Node(e.m_node[1])->LocalPosition() - rc;
-				q.RotateVector(r0);
-				q.RotateVector(r1);
-				q.RotateVector(r2);
-
-				vec2d a0(r0.x, r0.y);
-				vec2d a1(r1.x, r1.y);
-				vec2d a2(r2.x, r2.y);
-
-				GM_CIRCLE_ARC ca(a0, a1, a2);
-
-				if (ew == 1) c.AddNode(r1, n0); else c.AddNode(r2, n0);
-
-				int j0, j1, ji;
-				if (f.m_edge[i].nwn == 1) { j0 = 1; j1 = M; ji = 1; } else { j0 = M-1; j1 = 0; ji = -1; }
-				for (int j=j0; j != j1; j += ji)
-				{
-					double l = (double) j / (double) M;
-					c.AddNode(ca.Point(l), -1);
-				}
-			}
-			break;
-		case EDGE_3P_ARC:
-			{
-				vec3d r0 = Node(e.m_cnode)->LocalPosition() - rc;
-				vec3d r1 = Node(e.m_node[0])->LocalPosition() - rc;
-				vec3d r2 = Node(e.m_node[1])->LocalPosition() - rc;
-				q.RotateVector(r0);
-				q.RotateVector(r1);
-				q.RotateVector(r2);
-
-				vec2d a0(r0.x, r0.y);
-				vec2d a1(r1.x, r1.y);
-				vec2d a2(r2.x, r2.y);
-
-				GM_ARC ca(a0, a1, a2);
-
-				if (ew == 1) c.AddNode(r1, n0); else c.AddNode(r2, n0);
-
-				int j0, j1, ji;
-				if (f.m_edge[i].nwn == 1) { j0 = 1; j1 = M; ji = 1; } else { j0 = M-1; j1 = 0; ji = -1; }
-				for (int j=j0; j != j1; j += ji)
-				{
-					double l = (double) j / (double) M;
-					c.AddNode(ca.Point(l), -1);
-				}
-			}
-			break;
-		default:
-			assert(false);
-		}
-	}
-
-	// create all edges
-	int NN = c.Nodes();
-	int m = 0;
-	for (int i=0; i<ne; ++i)
-	{
-		GEdge& e = *Edge(f.m_edge[i].nid);
-		int eid = e.GetLocalID();
-		switch (e.m_ntype)
-		{
-		case EDGE_LINE:
-			{
-				int n0 = m++;
-				int n1 = (n0+1)%NN;
-				c.AddEdge(n0, n1, eid);
-			}
-			break;
-		case EDGE_3P_CIRC_ARC:
-			for (int j=0; j<M; ++j)
-			{
-				int n0 = m++;
-				int n1 = (n0+1)%NN;
-				c.AddEdge(n0, n1, eid);
-			}
-			break;
-		case EDGE_3P_ARC:
-			for (int j=0; j<M; ++j)
-			{
-				int n0 = m++;
-				int n1 = (n0+1)%NN;
-				c.AddEdge(n0, n1, eid);
-			}
-			break;
-		default:
-			assert(false);
-		}
-	}
-
 	// triangulate the face
-	GLMesh* pm = triangulate(c);
-
-	// Position the face at the correct position
-	for (int i=0; i<pm->Nodes(); ++i) 
-	{
-		vec3d r = pm->Node(i).r;
-		qi.RotateVector(r);
-		r += rc;
-		pm->Node(i).r = r;
-	}
-
-	// set the proper face IDs
-	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).pid = f.GetLocalID();
+	GLMesh* pm = triangulate(f);
 
 	// attach this mesh to our mesh
-	glmesh->Attach(*pm);
+	glmesh->Attach(*pm, false);
 
 	// don't forget to delete this mesh
 	delete pm;
@@ -1163,9 +1035,7 @@ void GObject::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 		assert(false);
 	}
 
-	m.Update();
-	m.UpdateNormals();
-	glmesh->Attach(m);
+	glmesh->Attach(m, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1174,7 +1044,7 @@ void GObject::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 void GObject::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 {
 #ifdef _DEBUG
-	const int M = 5;
+	const int M = 10;
 #else
 	const int M = 50;
 #endif
@@ -1388,9 +1258,7 @@ void GObject::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 		assert(false);
 	}
 
-	m.Update();
-	m.UpdateNormals();
-	glmesh->Attach(m);
+	glmesh->Attach(m, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1398,7 +1266,11 @@ void GObject::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 // The revolved surface has four edges, the two side ones of type EDGE_YARC
 void GObject::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 {
+#ifdef _DEBUG
+	const int M = 10;
+#else
 	const int M = 50;
+#endif
 
 	// get number of nodes and edges
 	int NN = f.Nodes();
@@ -1510,9 +1382,7 @@ void GObject::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 		assert(false);
 	}
 
-	m.Update();
-	m.UpdateNormals();
-	glmesh->Attach(m);
+	glmesh->Attach(m, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1606,10 +1476,7 @@ void GObject::BuildFaceQuad(GLMesh* glmesh, GFace &f)
 		e.n[1] = (M - i - 1)*(M+1);
 		e.pid = Edge(f.m_edge[3].nid)->GetLocalID();
 	}
-
-	m.Update();
-	m.UpdateNormals();
-	glmesh->Attach(m);
+	glmesh->Attach(m, false);
 }
 
 // get the mesh of an edge curve

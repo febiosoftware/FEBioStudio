@@ -160,7 +160,7 @@ if(USE_DICOM)
 endif()
 
 if(USE_MMG)
-    set(MMG_LIB_NAMES mmg3d mmgs)
+    set(MMG_LIB_NAMES mmg3d mmg2d mmgs)
     foreach(name IN LISTS MMG_LIB_NAMES)
         findLib(MMG_LIB_DIR MMG_LIB ${name})
         list(APPEND MMG_LIBS ${MMG_LIB})

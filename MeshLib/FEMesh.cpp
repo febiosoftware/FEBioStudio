@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include "MeshTools/FESurfaceData.h"
 #include "MeshTools/FEElementData.h"
 #include "FEMeshBuilder.h"
+#include <MeshTools/GLMesh.h>
 #include <algorithm>
 #include <unordered_set>
 #include <map>
@@ -198,6 +199,49 @@ FEMesh::FEMesh(FEMesh& m)
 
 	// don't copy object (two meshes cannot be owned by the same object)
 	m_pobj = 0;
+}
+
+//-----------------------------------------------------------------------------
+FEMesh::FEMesh(FESurfaceMesh& m)
+{
+	int NN = m.Nodes();
+	int NF = m.Faces();
+	int NE = m.Edges();
+
+	Create(NN, NF, NF, NE);
+	for (int i = 0; i < NN; ++i)
+	{
+		FENode& node = Node(i);
+		FENode& snode = m.Node(i);
+		node = snode;
+	}
+
+	for (int i = 0; i < NE; ++i)
+	{
+		FEEdge& edge = Edge(i);
+		FEEdge& sedge = m.Edge(i);
+		edge = sedge;
+	}
+
+	for (int i = 0; i < NF; ++i)
+	{
+		FEElement& el = Element(i);
+		FEFace& face = Face(i);
+		FEFace& sface = m.Face(i);
+		el.SetType(FE_TRI3);
+		el.m_node[0] = sface.n[0];
+		el.m_node[1] = sface.n[1];
+		el.m_node[2] = sface.n[2];
+		el.m_gid = sface.m_gid;
+
+		face.SetType(FE_FACE_TRI3);
+		face.n[0] = sface.n[0];
+		face.n[1] = sface.n[1];
+		face.n[2] = sface.n[2];
+		face.m_gid = sface.m_gid;
+	}
+
+	BuildMesh();
 }
 
 //-----------------------------------------------------------------------------

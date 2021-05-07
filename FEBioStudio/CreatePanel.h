@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "CommandPanel.h"
 #include <QDialog>
 #include <MathLib/math3d.h>
+#include "PropertyListForm.h"
 
 class QLineEdit;
 class QCheckBox;
@@ -45,6 +46,7 @@ class QListWidget;
 class GItem;
 class GCurveMeshObject;
 class QPushButton;
+class GModifier;
 
 namespace Ui {
 	class CCreatePanel;
@@ -108,8 +110,15 @@ signals:
 class CCreatePane : public QWidget
 {
 public:
-	CCreatePane(CCreatePanel* parent) : QWidget(parent), m_parent(parent) {}
-	virtual ~CCreatePane(){}
+	enum CREATE_POLICY
+	{
+		ADD_NEW_OBJECT,
+		REPLACE_ACTIVE_OBJECT
+	};
+
+public:
+	CCreatePane(CCreatePanel* parent) : QWidget(parent), m_parent(parent) { m_createPolicy = ADD_NEW_OBJECT; }
+	virtual ~CCreatePane() {}
 
 	virtual FSObject* Create() = 0;
 
@@ -133,8 +142,12 @@ public:
 	virtual void setInput(const vec3d& r) {}
 	virtual void setInput(FESelection* sel) {}
 
+	int createPolicy() const { return m_createPolicy; }
+	void setCreatePolicy(CREATE_POLICY policy) { m_createPolicy = policy; }
+
 protected:
 	CCreatePanel*	m_parent;
+	int				m_createPolicy;
 };
 
 //-----------------------------------------------------------------------------
@@ -214,14 +227,14 @@ protected:
 };
 
 //=============================================================================
-// CAD extrude surface
+// Geometry modifiers (TODO: should I put this on the Edit panel instead?
 
-class CCreateExtrude : public CCreatePane
+class CGeoModifierPane : public CCreatePane
 {
 	Q_OBJECT
 
 public:
-	CCreateExtrude(CCreatePanel* parent);
+	CGeoModifierPane(CCreatePanel* parent, ClassDescriptor* pcd);
 
 	void Activate();
 	void Deactivate();
@@ -229,5 +242,10 @@ public:
 	FSObject* Create();
 
 protected:
-	QLineEdit*	m_distance;
+	void CreateModifier();
+
+protected:
+	ClassDescriptor*	m_pcd;
+	CPropertyListForm*  m_params;
+	GModifier*			m_mod;
 };

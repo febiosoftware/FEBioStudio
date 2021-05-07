@@ -112,6 +112,14 @@ public:
 	}
 
 	MBEdge& SetWinding(int w) { m_winding = w; return *this; }
+
+	MBEdge& SetEdge(int ntype, int nwinding, int cnode = -1)
+	{
+		m_winding = nwinding;
+		edge.m_ntype = ntype;
+		edge.m_cnode = cnode;
+		return *this;
+	}
 };
 
 class MBFace : public MBItem
@@ -175,6 +183,7 @@ public:
 
 	int m_Nbr[6];	// indices to neighbouring blocks
 	int	m_face[6];	// indices to faces
+	int m_edge[12];	// indices to edges
 };
 
 //-----------------------------------------------------------------------------
@@ -206,6 +215,8 @@ public:
 	MBEdge& GetEdge(int nedge);
 
 	MBBlock& GetBlock(int i) { return m_MBlock[i]; }
+
+	MBEdge& GetBlockEdge(int nblock, int nedge);
 
 	void SetBlockFaceID(MBBlock& b, int n0, int n1, int n2, int n3, int n4, int n5);
 	void SetFaceEdgeID(MBFace& f, int n0, int n1, int n2, int n3);

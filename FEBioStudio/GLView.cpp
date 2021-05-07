@@ -2383,7 +2383,8 @@ void CGLView::RenderNormals(GObject* po, double scale)
 		for (int i = 0; i<N; ++i)
 		{
 			FEFace& face = pm->Face(i);
-			if (face.IsVisible() && vis[face.m_gid])
+			bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
+			if (face.IsVisible() && bvis)
 			{
 				vec3d fn = face.m_fn;
 
@@ -6808,7 +6809,7 @@ void CGLView::RenderSurfaces(GObject* po)
 
 			// get the part (that is visible)
 			GPart* pg = po->Part(pid[0]);
-			if (pg->IsVisible() == false)
+			if (pg && pg->IsVisible() == false)
 			{
 				if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
 				if (pg && (pg->IsVisible() == false)) pg = 0;

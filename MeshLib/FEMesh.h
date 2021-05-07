@@ -99,6 +99,7 @@ public:
 
 //-----------------------------------------------------------------------------
 class FEMeshBuilder;
+class FESurfaceMesh;
 
 //-----------------------------------------------------------------------------
 // This class describes a finite element mesh. Every FEMesh must be owned by a
@@ -109,6 +110,7 @@ public:
 	// --- C O N S T R U C T I O N ---
 	FEMesh();
 	FEMesh(FEMesh& m);
+	FEMesh(FESurfaceMesh& m);
 	virtual ~FEMesh();
 
 	// allocate space for mesh

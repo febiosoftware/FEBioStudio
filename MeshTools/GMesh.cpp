@@ -695,7 +695,7 @@ void GMesh::FindNeighbors()
 
 
 //-----------------------------------------------------------------------------
-void GMesh::Attach(GMesh &m)
+void GMesh::Attach(GMesh &m, bool bupdate)
 {
 	int N0 = Nodes();
 	int E0 = Edges();
@@ -727,5 +727,5 @@ void GMesh::Attach(GMesh &m)
 		m_Face.push_back(f);
 	}
 
-	Update();
+	if (bupdate) Update();
 }
