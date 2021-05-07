@@ -1,16 +1,18 @@
 # Qt
 find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED) 
 
-if(QT_Ver VERSION_EQUAL 6)
+if(Qt_Ver VERSION_EQUAL 6)
   find_package(${Qt_Version} COMPONENTS Core5Compat OpenGLWidgets REQUIRED)
 endif()
 find_package(${Qt_Version} COMPONENTS WebEngineWidgets QUIET)
-mark_as_advanced(${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR ${Qt_Version}Positioning_DIR 
-    ${Qt_Version}PrintSupport_DIR ${Qt_Version}QmlModels_DIR ${Qt_Version}Qml_DIR ${Qt_Version}Quick_DIR  ${Qt_Version}Widgets_DIR)
+mark_as_advanced(${Qt_Version}_DIR ${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR 
+    ${Qt_Version}Positioning_DIR ${Qt_Version}PrintSupport_DIR ${Qt_Version}QmlModels_DIR ${Qt_Version}Qml_DIR ${Qt_Version}Quick_DIR
+    ${Qt_Version}Widgets_DIR ${Qt_Version}Core5Compat_DIR ${Qt_Version}GuiTools_DIR ${Qt_Version}CoreTools_DIR ${Qt_Version}OpenGLWidgets_DIR
+    ${Qt_Version}WidgetsTools_DIR ${Qt_Version}WebEngineWidgets_DIR XKB_INCLUDE_DIR XKB_LIBRARY)
 	
-if(QT_Ver VERSION_EQUAL 5)
+#~ if(Qt_Ver VERSION_EQUAL 5)
   mark_as_advanced(Qt5Charts_DIR Qt5WebEngineWidgets_DIR Qt5WebChannel_DIR Qt5WebEngineCore_DIR)
-endif()
+#~ endif()
 
 #Teem
 if(WIN32)
@@ -83,7 +85,7 @@ else()
     mark_as_advanced(CLEAR TEEM_INC TEEM_LIB_DIR)
 endif()
 
-#Dicom
+# Dicom
 if(WIN32)
 	find_path(DICOM_INC dcmtk/dcmimgle/dcmimage.h
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
@@ -370,12 +372,19 @@ else()
 endif()
 
 # QuaZip
+if(Qt_Ver VERSION_EQUAL 6)
+    set(QUAZIP_NAMES quazip1-qt6 quazip6 quazip)
+else()
+    set(QUAZIP_NAMES quazip5 quazip)
+endif()
+
 if(WIN32)
 	find_path(QUAZIP_INC quazip.h
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "/quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
         DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB quazip5 
+	find_library(QUAZIP_LIB 
+        NAMES ${QUAZIP_NAMES} 
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "QuaZip library path")
@@ -384,22 +393,25 @@ elseif(APPLE)
         PATHS /usr/include/* /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "/quazip" "include/quazip" "quazip/include/quazip" "build/quazip" "build/include/quazip"
 		DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB quazip 
+	find_library(QUAZIP_LIB 
+        NAMES ${QUAZIP_NAMES}  
         PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "quazip/lib" "build" "build/lib" "Release" "Debug"
 		DOC "QuaZip library path")
 else()
 	find_path(QUAZIP_INC quazip.h
-        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/include/*
         PATH_SUFFIXES "/quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
 		DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB quazip5 
-        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "lib" "quazip/lib" "build" "build/lib" "Release" "Debug"
+	find_library(QUAZIP_LIB
+        NAMES ${QUAZIP_NAMES}
+        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/ /usr/local/* 
+        PATH_SUFFIXES "lib" "lib64" "quazip/lib" "quazip/build/quazip" "build" "build/lib" "Release" "Debug"
 		DOC "QuaZip library path")
 endif()
 
 if(QUAZIP_LIB)
+    get_filename_component(QUAZIP_NAME ${QUAZIP_LIB} NAME)
     get_filename_component(QUAZIP_TEMP ${QUAZIP_LIB} DIRECTORY)
     set(QUAZIP_LIB_DIR ${QUAZIP_TEMP} CACHE PATH "Path to the QuaZip lib directory (e.g. /opt/quazip/lib)")
     unset(QUAZIP_TEMP)
@@ -482,7 +494,7 @@ elseif(APPLE)
 else()
 	find_path(FFMPEG_INC libavformat/avformat.h
         PATHS /usr/include/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
+        PATH_SUFFIXES "ffmpeg" "ffmpeg/include" "build" "build/include"
 		DOC "FFMPEG include directory")
 	find_library(FFMPEG_LIB avformat
         PATHS /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
