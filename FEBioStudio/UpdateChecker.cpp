@@ -125,9 +125,7 @@ void CUpdateWidget::checkForAppUpdate()
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 	request.setRawHeader(QByteArray("version"), QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).toUtf8());
 	
-	// To be turned back on in 1.5.0
-	// request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
-	
+	request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
 
 	if(NetworkAccessibleCheck())
 	{
