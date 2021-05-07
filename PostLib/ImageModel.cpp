@@ -37,6 +37,7 @@ SOFTWARE.*/
 
 #ifdef HAS_DICOM
 #include <dcmtk/dcmimgle/dcmimage.h>
+#include <bitset>
 #endif
 
 using namespace Post;
@@ -168,11 +169,28 @@ bool CImageSource::LoadDicomData(const std::string& filename)
   const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
   Byte* dataBuf = new Byte[rawData->getCount()]; //may not need dataSize
 
-  if (type == EPR_Uint16)
+  std::cout << "Image depth in pixels: " << dicomImage->getDepth() << std::endl;
+  std::cout << "Is it monochrome? " << dicomImage->isMonochrome() << std::endl;
+
+  if (type == EPR_Uint16 && dicomImage->getDepth() == 16)
   {
+    const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
     for(int i = 0; i < rawData->getCount(); ++i)
     { 
       dataBuf[i] = data[i] >> 8;
+    }
+  }
+  else if (type == EPR_Uint16 && dicomImage->getDepth() == 10)
+  {
+    const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
+    std::vector<std::bitset<10>> tenBitVec(rawData->getCount());
+ 
+    for(int i = 0; i < rawData->getCount(); ++i)
+      tenBitVec.at(i) = data[i];
+
+    for(int i = 0; i < rawData->getCount(); ++i)
+    {
+      dataBuf[i] = 256 * tenBitVec[i].to_ulong()/1024;
     }
   }
   else
