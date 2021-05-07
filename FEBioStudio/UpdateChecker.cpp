@@ -290,8 +290,6 @@ void CUpdateWidget::checkForUpdaterUpdateResponse(QNetworkReply *r)
 
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-	std::cout << statusCode << endl;
-
 	if(statusCode != 200)
 	{
 		showError("Update Check Failed!\n\nUnable to receive response from server.");
@@ -392,7 +390,7 @@ void CUpdateWidget::ReadLastUpdateInfo()
 
 	if (reader.readNextStartElement())
 	{
-		if(reader.name() == "autoUpdate")
+		if(reader.name() == AUTOUPDATE)
 		{
 			while(reader.readNextStartElement())
 			{
