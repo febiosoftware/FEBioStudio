@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QDialog>
 #include <QSslError>
+#include <QStringList>
 
 class QNetworkReply;
 class QVBoxLayout;
