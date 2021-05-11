@@ -27,10 +27,16 @@ SOFTWARE.*/
 #include "Python.h"
 #include "PythonTool.h"
 
-CPythonTool::CPythonTool(CMainWindow* wnd, const char* name, PyObject* func)
-    : CBasicTool(wnd, name, HAS_APPLY_BUTTON), func(func)
-{
+#include <iostream>
 
+CPythonTool::CPythonTool(CMainWindow* wnd, const char* name, PyObject* func)
+    : CBasicTool(wnd, name, HAS_APPLY_BUTTON)
+{
+    SetApplyButtonText("Run");
+
+    // Make a copy of the function object so that it doesn't get invalidted by
+    // importing another script with the same function name
+    this->func = PyFunction_New(PyFunction_GetCode(func), PyFunction_GetGlobals(func));
 }
 
 CPythonTool::~CPythonTool()
@@ -123,6 +129,8 @@ CProperty* CPythonTool::addResourceProperty(const std::string& name, char* value
 
 bool CPythonTool::OnApply()
 {
+    std::cout << PyFunction_Check(func) << std::endl;
+
     PyObject* args = PyTuple_New(0);
     PyObject* kwargs = PyDict_New();
 

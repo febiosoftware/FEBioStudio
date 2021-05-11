@@ -38,16 +38,16 @@ CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) : CComma
 	m_activeTool = 0;
 	ui->setupUi(this);
 
-	QMetaObject::connectSlotsByName(this);
-
 	PyImport_AppendInittab("fbs", &PyInit_fbs);
     Py_Initialize();
+
+	// Subclass calls connectSlotsByName so we don't need to here. 
 }
 
-// CPythonToolsPanel::~CPythonToolsPanel()
-// {
-//     Py_Finalize();
-// }
+CPythonToolsPanel::~CPythonToolsPanel()
+{
+    Py_Finalize();
+}
 
 void CPythonToolsPanel::Update(bool breset)
 {

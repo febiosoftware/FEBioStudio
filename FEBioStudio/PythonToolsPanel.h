@@ -47,7 +47,7 @@ class CPythonToolsPanel : public CCommandPanel
 
 public:
 	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
-	// ~CPythonToolsPanel();
+	~CPythonToolsPanel();
 
 	// update the tools panel
 	void Update(bool breset = true) override;
