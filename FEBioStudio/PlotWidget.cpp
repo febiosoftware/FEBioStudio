@@ -909,11 +909,11 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		double dy = H*0.05;
 
     //TODO: Check to see how this feels with MacOS and Linux distros. May need to use angleDelta()
-		if (ev->pixelDelta().y() < 0)
+		if ((ev->pixelDelta().y() < 0) || (ev->angleDelta().y() < 0))
 		{
 			m_viewRect.adjust(-dx, -dy, dx, dy);
 		}
-		else
+		else if ((ev->pixelDelta().y() > 0) || (ev->angleDelta().y() > 0))
 		{
 			m_viewRect.adjust(dx, dy, -dx, -dy);
 		}
