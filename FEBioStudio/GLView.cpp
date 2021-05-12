@@ -8959,16 +8959,19 @@ void CGLView::RenderTags()
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 
+	int dpr = GetDevicePixelRatio();
 	for (int i = 0; i<nsel; i++)
 		if (vtag[i].bvis)
 		{
 			glBegin(GL_POINTS);
 			{
 				glColor3ub(0, 0, 0);
-				glVertex2f(vtag[i].wx, vtag[i].wy);
+				int x = vtag[i].wx * dpr;
+				int y = m_viewport[3] - dpr*(m_viewport[3] - vtag[i].wy);
+				glVertex2f(x, y);
 				if (vtag[i].ntag == 0) glColor3ub(255, 255, 0);
 				else glColor3ub(255, 0, 0);
-				glVertex2f(vtag[i].wx - 1, vtag[i].wy + 1);
+				glVertex2f(x - 1, y + 1);
 			}
 			glEnd();
 		}
@@ -8979,7 +8982,6 @@ void CGLView::RenderTags()
 	for (int i = 0; i<nsel; ++i)
 		if (vtag[i].bvis)
 		{
-			int dpr = GetDevicePixelRatio();
             int x = vtag[i].wx;
             int y = height()*dpr - vtag[i].wy;
 			painter.setPen(Qt::black);
