@@ -805,12 +805,12 @@ void GLTriad::draw(QPainter* painter)
 	int view[4];
 	glGetIntegerv(GL_VIEWPORT, view);
     
-	int DPR = painter->device()->devicePixelRatio();
+	double DPR = painter->device()->devicePixelRatio();
 
-	int x0 = DPR*x();
-	int y0 = view[3]-DPR*(y() + h());
-	int x1 = x0 + DPR*w();
-	int y1 = view[3]-DPR*y();
+	int x0 = (int)(DPR*x());
+	int y0 = view[3]-(int)(DPR*(y() + h()));
+	int x1 = x0 + (int)(DPR*w());
+	int y1 = view[3]-(int)(DPR*y());
 	if (x1 < x0) { x0 ^= x1; x1 ^= x0; x0 ^= x1; }
 	if (y1 < y0) { y0 ^= y1; y1 ^= y0; y0 ^= y1; }
 

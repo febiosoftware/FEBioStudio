@@ -1345,8 +1345,8 @@ QImage CGLView::CaptureScreen()
 		QImage im = grabFramebuffer();
 
 		// crop based on the capture frame
-		int dpr = m_pWnd->devicePixelRatio();
-		return im.copy(dpr*m_pframe->x(), dpr*m_pframe->y(), dpr*m_pframe->w(), dpr*m_pframe->h());
+		double dpr = m_pWnd->devicePixelRatio();
+		return im.copy((int)(dpr*m_pframe->x()), (int)(dpr*m_pframe->y()), (int)(dpr*m_pframe->w()), (int)(dpr*m_pframe->h()));
 	}
 	else return grabFramebuffer();
 }
@@ -1921,12 +1921,12 @@ void CGLView::Render3DCursor(const vec3d& r, double R)
 
 //-----------------------------------------------------------------------------
 // get device pixel ration
-int CGLView::GetDevicePixelRatio() { return m_pWnd->devicePixelRatio(); }
+double CGLView::GetDevicePixelRatio() { return m_pWnd->devicePixelRatio(); }
 
 QPoint CGLView::DeviceToPhysical(int x, int y)
 {
-	int dpr = m_pWnd->devicePixelRatio();
-	return QPoint(dpr*x, m_viewport[3] - dpr * y);
+	double dpr = m_pWnd->devicePixelRatio();
+	return QPoint((int)(dpr*x), m_viewport[3] - (int)(dpr * y));
 }
 
 //-----------------------------------------------------------------------------
@@ -8959,15 +8959,15 @@ void CGLView::RenderTags()
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 
-	int dpr = GetDevicePixelRatio();
+	double dpr = GetDevicePixelRatio();
 	for (int i = 0; i<nsel; i++)
 		if (vtag[i].bvis)
 		{
 			glBegin(GL_POINTS);
 			{
 				glColor3ub(0, 0, 0);
-				int x = vtag[i].wx * dpr;
-				int y = m_viewport[3] - dpr*(m_viewport[3] - vtag[i].wy);
+				int x = (int)(vtag[i].wx * dpr);
+				int y = (int)(m_viewport[3] - dpr*(m_viewport[3] - vtag[i].wy));
 				glVertex2f(x, y);
 				if (vtag[i].ntag == 0) glColor3ub(255, 255, 0);
 				else glColor3ub(255, 0, 0);
@@ -9089,9 +9089,9 @@ void CGLView::RenderRigidLabels()
 	for (int i = 0; i < nsel; ++i)
 		if (vtag[i].bvis)
 		{
-			int dpr = GetDevicePixelRatio();
+			double dpr = GetDevicePixelRatio();
 			int x = vtag[i].wx;
-			int y = height()*dpr - vtag[i].wy;
+			int y = (int)(height()*dpr - vtag[i].wy);
 			painter.setPen(Qt::black);
 
 			painter.drawText(x + 3, y - 2, vtag[i].sztag);
