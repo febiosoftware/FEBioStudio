@@ -10,7 +10,6 @@
 		D50EB7B6246B6E7800E016F1 /* paramunit.h in Headers */ = {isa = PBXBuildFile; fileRef = D50EB7B5246B6E7800E016F1 /* paramunit.h */; };
 		D58A0B482452419A0084A352 /* LoadCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = D58A0B46245241990084A352 /* LoadCurve.h */; };
 		D58A0B492452419A0084A352 /* LoadCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D58A0B472452419A0084A352 /* LoadCurve.cpp */; };
-		D58D432023E32BF000DB8BE7 /* QtCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D58D431F23E32BF000DB8BE7 /* QtCore.framework */; };
 		D5E82FCE26206C6000B23605 /* FSThreadedTask.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E82FCC26206C6000B23605 /* FSThreadedTask.cpp */; };
 		D5E82FCF26206C6000B23605 /* FSThreadedTask.h in Headers */ = {isa = PBXBuildFile; fileRef = D5E82FCD26206C6000B23605 /* FSThreadedTask.h */; };
 		D5E82FF62621E22100B23605 /* BSpline.h in Headers */ = {isa = PBXBuildFile; fileRef = D5E82FF42621E22000B23605 /* BSpline.h */; };
@@ -42,7 +41,6 @@
 		D50EB7B5246B6E7800E016F1 /* paramunit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = paramunit.h; sourceTree = "<group>"; };
 		D58A0B46245241990084A352 /* LoadCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoadCurve.h; sourceTree = "<group>"; };
 		D58A0B472452419A0084A352 /* LoadCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LoadCurve.cpp; sourceTree = "<group>"; };
-		D58D431F23E32BF000DB8BE7 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCore.framework; sourceTree = "<group>"; };
 		D5E82FCC26206C6000B23605 /* FSThreadedTask.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FSThreadedTask.cpp; sourceTree = "<group>"; };
 		D5E82FCD26206C6000B23605 /* FSThreadedTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSThreadedTask.h; sourceTree = "<group>"; };
 		D5E82FF42621E22000B23605 /* BSpline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BSpline.h; sourceTree = "<group>"; };
@@ -76,7 +74,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D58D432023E32BF000DB8BE7 /* QtCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,7 +83,6 @@
 		D58D431E23E32BEF00DB8BE7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D58D431F23E32BF000DB8BE7 /* QtCore.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -251,7 +247,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -296,7 +292,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -310,7 +306,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -349,7 +345,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = "";

@@ -188,6 +188,7 @@ public:
 		g.setColorAt(1.0, c3);
 
 		QPixmap pix(24, 24);
+        pix.setDevicePixelRatio(m_list->devicePixelRatio());
 		pix.fill(Qt::transparent);
 		QPainter p(&pix);
 		p.setRenderHint(QPainter::Antialiasing);
