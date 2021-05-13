@@ -6,13 +6,14 @@
 
 ===========================================================================
 
- R E L E A S E   1.5   5/12/2021
+ R E L E A S E   1.5   5/14/2021
 
 ===========================================================================
 
 * This version addresses several issues with the auto-updater. As a result, this version cannot be installed through the auto-updater, but requires a fresh installation of FEBio Studio. After installing this new version, users will be able to continue using the auto-updater to update FEBio Studio to the latest version. 
 * This new version also comes with an updated EULA (EULA version 4) that includes a new PRIVACY clause. This was added because FEBio Studio communicates with an external server in order to provide services such as the model repo and the auto-updater. As of this version, a universally unique identifier is also assigned to each installation of FEBio Studio and send to the external server. This UUID is used to accumulate basic statistics on FEBio Studio usage. No personal data is send, recorded, or shared by FEBio Studio or FEBio.
 * This version uses a new version of Qt (version 6). CMakeLists have been updated to work more smoothly with both Qt5 and Qt6.
+* Fixed several issues that affected HDPI monitors. 
 * Several issues were fixed with the geometry point-to-point, extrude, and revolve tools and the meshing of geometry created using these tools. 
 * The TetGen based mesher now preserves element partitioning.
 * A bug, which could cause an infinite loop, was fixed in the triangulation algorithm that generates the render meshes of some of the primitives.
