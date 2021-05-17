@@ -206,6 +206,7 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
 	filters << "VTK files (*.vtk)";
+	filters << "LSDYNA database (*)";
 
 	QFileDialog dlg(this, "Open");
 	dlg.setFileMode(QFileDialog::ExistingFile);

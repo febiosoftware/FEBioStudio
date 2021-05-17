@@ -77,6 +77,7 @@ SOFTWARE.*/
 #include "units.h"
 #include "version.h"
 #include <PostLib/FEVTKImport.h>
+#include <PostLib/FELSDYNAPlot.h>
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
@@ -494,6 +495,11 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	{
 		OpenProject(fileName);
 	}
+	else if (ext.isEmpty() && (openExternal == true))
+	{
+		// Assume this is an LSDYNA database
+		OpenPostFile(fileName, nullptr, showLoadOptions);
+	}
 	else if (openExternal)
 	{
 		// Open any other files (e.g. log files) with the system's associated program
@@ -849,6 +855,12 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		{
 			Post::FEVTKimport* vtk = new Post::FEVTKimport(doc->GetFEModel());
 			ReadFile(doc, fileName, vtk, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.isEmpty())
+		{
+			// Assume this is an LSDYNA database
+			Post::FELSDYNAPlotImport* lsdyna = new Post::FELSDYNAPlotImport(doc->GetFEModel());
+			ReadFile(doc, fileName, lsdyna, QueuedFile::NEW_DOCUMENT);
 		}
 	}
 	else
