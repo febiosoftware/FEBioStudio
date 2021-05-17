@@ -6,7 +6,7 @@
 
 ===========================================================================
 
- R E L E A S E   1.5   5/14/2021
+ R E L E A S E   1.5   5/17/2021
 
 ===========================================================================
 
@@ -16,7 +16,7 @@
 * Fixed several issues that affected HDPI monitors. 
 * Several issues were fixed with the geometry point-to-point, extrude, and revolve tools and the meshing of geometry created using these tools. 
 * The TetGen based mesher now preserves element partitioning.
-* A bug, which could cause an infinite loop, was fixed in the triangulation algorithm that generates the render meshes of some of the primitives.
+* A bug, which could cause an infinite loop, was fixed in the triangulation algorithm that generates the render meshes for some of the primitives.
 * A mesh inflation modifier was implemented that adds a layer of structured elements, while preserving the underlying mesh topology.
 * The underlying multi-block mesh generator that many of the primitives use has been significantly improved. For most of the primitives the resulting mesh is not altered, however, the cylinder now produces a slightly different mesh, compared to the previous version. 
 * The dogbone primitive uses a different meshing algorithm that does not have the mesh singularity in the curved section. It was noticed that the singularity could create artifacts in the results. In addition, mesh-zoning parameters were added for this primitive. 
@@ -26,6 +26,8 @@
 * The Convert tool on the Mesh panel will now only show available options for the active mesh.
 * Support was added for exporting DataArray variables (with DATA_ITEM format).
 * Some minor issues were fixed with importing VTK file to post side.
+* Fixed issue with scrolling using the mouse wheel in the graph window. 
+* Support was added for reading LSDYNA database files. (Go to File\Open, select the LSDYNA database filter, and then select the plot file).
 
 
 ===========================================================================
