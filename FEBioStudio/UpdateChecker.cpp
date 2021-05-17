@@ -164,7 +164,7 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 						}
 						else if(reader.name() == TERMINAL)
 						{
-							release.timestamp = reader.readElementText().toInt();
+							release.terminal = reader.readElementText().toInt();
 						}
 						else if(reader.name() == TIMESTAMP)
 						{
