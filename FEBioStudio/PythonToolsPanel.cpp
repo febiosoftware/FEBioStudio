@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "PythonToolsPanel.h"
 #include "ui_pythontoolspanel.h"
 #include <PyLib/PythonTool.h>
+#include <PyLib/pyBindtest.cpp>
 #include <QFileDialog>
 #include "MainWindow.h"
 
@@ -39,6 +40,7 @@ CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) : CComma
 	ui->setupUi(this);
 
 	PyImport_AppendInittab("fbs", &PyInit_fbs);
+	PyImport_AppendInittab("fbs2", &PyInit_fbs2);
     Py_Initialize();
 
 	// Subclass calls connectSlotsByName so we don't need to here. 

@@ -326,6 +326,8 @@ endif()
 
 include_directories(${ZLIB_INCLUDE_DIR})
 
+include_directories("/home/mherron/Resources/pybind11/include")
+
 ##### Find Source Files #####
 
 macro(findHdrSrc name)

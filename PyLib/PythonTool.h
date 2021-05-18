@@ -42,12 +42,12 @@ public:
 	CPythonTool(CMainWindow* wnd, const char* name, PyObject* func);
     ~CPythonTool();
 
-    CProperty* addBoolProperty(const std::string& name, bool value);
-	CProperty* addIntProperty(const std::string& name, int value);
-	CProperty* addEnumProperty(const std::string& name, int value, const std::string& labels);
-	CProperty* addDoubleProperty(const std::string& name, double value);
-    CProperty* addStringProperty(const std::string& name, char* value);
-    CProperty* addResourceProperty(const std::string& name, char* value);
+    void addBoolProperty(const std::string& name, bool value);
+	void addIntProperty(const std::string& name, int value);
+	void addEnumProperty(const std::string& name, int value, const std::string& labels);
+	void addDoubleProperty(const std::string& name, double value);
+    void addStringProperty(const std::string& name, char* value);
+    void addResourceProperty(const std::string& name, char* value);
 
     bool OnApply();
 

@@ -37,6 +37,14 @@ CPythonTool::CPythonTool(CMainWindow* wnd, const char* name, PyObject* func)
     // Make a copy of the function object so that it doesn't get invalidted by
     // importing another script with the same function name
     this->func = PyFunction_New(PyFunction_GetCode(func), PyFunction_GetGlobals(func));
+
+    std::cout << PyObject_HasAttrString(func, "name") << std::endl;
+    std::cout << PyObject_HasAttrString(func, "_name") << std::endl;
+    std::cout << PyObject_HasAttrString(func, "_name_") << std::endl;
+    std::cout << PyObject_HasAttrString(func, "__name") << std::endl;
+    std::cout << PyObject_HasAttrString(func, "__name__") << std::endl;
+
+    std::cout << PyUnicode_AsUTF8(PyObject_GetAttrString(func, "__name__")) << std::endl;
 }
 
 CPythonTool::~CPythonTool()
@@ -72,7 +80,7 @@ CPythonTool::~CPythonTool()
     }
 }
 
-CProperty* CPythonTool::addBoolProperty(const std::string& name, bool value)
+void CPythonTool::addBoolProperty(const std::string& name, bool value)
 {
     bool* val = new bool;
     *val = value;
@@ -81,7 +89,7 @@ CProperty* CPythonTool::addBoolProperty(const std::string& name, bool value)
     CDataPropertyList::addBoolProperty(val, QString::fromStdString(name));
 }
 
-CProperty* CPythonTool::addIntProperty(const std::string& name, int value)
+void CPythonTool::addIntProperty(const std::string& name, int value)
 {
     int* val = new int;
     *val = value;
@@ -90,7 +98,7 @@ CProperty* CPythonTool::addIntProperty(const std::string& name, int value)
     CDataPropertyList::addIntProperty(val, QString::fromStdString(name));
 }
 
-CProperty* CPythonTool::addEnumProperty(const std::string& name, int value, const std::string& labels)
+void CPythonTool::addEnumProperty(const std::string& name, int value, const std::string& labels)
 {
     int* val = new int;
     *val = value;
@@ -101,7 +109,7 @@ CProperty* CPythonTool::addEnumProperty(const std::string& name, int value, cons
     CDataPropertyList::addEnumProperty(val, QString::fromStdString(name))->setEnumValues(qlabels);
 }
 
-CProperty* CPythonTool::addDoubleProperty(const std::string& name, double value)
+void CPythonTool::addDoubleProperty(const std::string& name, double value)
 {
     double* val = new double;
     *val = value;
@@ -110,7 +118,7 @@ CProperty* CPythonTool::addDoubleProperty(const std::string& name, double value)
     CDataPropertyList::addDoubleProperty(val, QString::fromStdString(name));
 }
 
-CProperty* CPythonTool::addStringProperty(const std::string& name, char* value)
+void CPythonTool::addStringProperty(const std::string& name, char* value)
 {
     QString * val = new QString(value);
     strProps[name] = val;
@@ -118,7 +126,7 @@ CProperty* CPythonTool::addStringProperty(const std::string& name, char* value)
     CDataPropertyList::addStringProperty(val, QString::fromStdString(name));
 }
 
-CProperty* CPythonTool::addResourceProperty(const std::string& name, char* value)
+void CPythonTool::addResourceProperty(const std::string& name, char* value)
 {
     QString * val = new QString(value);
     rscProps[name] = val;
