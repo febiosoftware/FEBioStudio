@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <PostLib/tools.h>
 #include <GeomLib/GObject.h>
 using namespace MeshTools;
-using namespace std;
+//using namespace std;
 
 std::vector<int> MeshTools::FindSurfaceOverlap(FEMesh* mesh, FEMeshBase* trg)
 {

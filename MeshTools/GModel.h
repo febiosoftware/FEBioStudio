@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <FSCore/box.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class GObject;
 class FEModel;

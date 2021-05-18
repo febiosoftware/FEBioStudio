@@ -92,7 +92,7 @@ public:
 		s->addWidget(w);
 
 		QVBoxLayout* l = new QVBoxLayout(parent);
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		l->addWidget(s);
 
 		parent->setLayout(l);

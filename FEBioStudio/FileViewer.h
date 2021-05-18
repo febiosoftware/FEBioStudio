@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class QTreeWidgetItem;
 class CMainWindow;

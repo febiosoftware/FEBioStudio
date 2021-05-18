@@ -59,6 +59,80 @@ FESolidArc::FESolidArc(GSolidArc* po)
 
 FEMesh* FESolidArc::BuildMesh()
 {
+//	return BuildMeshLegacy();
+	return BuildMultiBlockMesh();
+}
+
+FEMesh* FESolidArc::BuildMultiBlockMesh()
+{
+	double R0 = m_pobj->GetFloatValue(GSolidArc::RIN);
+	double R1 = m_pobj->GetFloatValue(GSolidArc::ROUT);
+	double H  = m_pobj->GetFloatValue(GSolidArc::HEIGHT);
+	double w  = m_pobj->GetFloatValue(GSolidArc::ARC);
+
+	// get mesh parameters
+	m_nd = GetIntValue(NDIV);
+	m_ns = GetIntValue(NSEG);
+	m_nz = GetIntValue(NSTACK);
+
+	m_gz = GetFloatValue(ZZ);
+	m_gr = GetFloatValue(ZR);
+
+	m_bz = GetBoolValue(GZ2);
+	m_br = GetBoolValue(GR2);
+
+	// check parameters
+	if (m_nd < 1) m_nd = 1;
+	if (m_ns < 1) m_ns = 1;
+	if (m_nz < 1) m_nz = 1;
+
+	if (m_nz == 1) m_bz = false;
+	if (m_ns == 1) m_br = false;
+
+	// build nodes
+	m_MBNode.clear();
+	AddNode(m_pobj->Node(0)->LocalPosition()).SetID(0);
+	AddNode(m_pobj->Node(1)->LocalPosition()).SetID(1);
+	AddNode(m_pobj->Node(2)->LocalPosition()).SetID(2);
+	AddNode(m_pobj->Node(3)->LocalPosition()).SetID(3);
+	AddNode(m_pobj->Node(4)->LocalPosition()).SetID(4);
+	AddNode(m_pobj->Node(5)->LocalPosition()).SetID(5);
+	AddNode(m_pobj->Node(6)->LocalPosition()).SetID(6);
+	AddNode(m_pobj->Node(7)->LocalPosition()).SetID(7);
+
+	// build block
+	m_MBlock.resize(1);
+	MBBlock& b1 = m_MBlock[0];
+	b1.SetID(0);
+	b1.SetNodes(0, 1, 2, 3, 4, 5, 6, 7);
+	b1.SetSizes(m_nd, m_nd, m_nz);
+	b1.SetZoning(1, m_gr, m_gz, false, m_br, m_bz);
+
+	// build MB data structures
+	UpdateMB();
+
+	// set IDs of faces and edges
+	SetBlockFaceID(b1, 0, 1, 2, 3, 4, 5);
+
+	MBFace& F1 = GetBlockFace(0, 0); SetFaceEdgeID(F1, 0, 9, 4, 8);
+	MBFace& F2 = GetBlockFace(0, 1); SetFaceEdgeID(F2, 1, 10, 5, 9);
+	MBFace& F3 = GetBlockFace(0, 2); SetFaceEdgeID(F3, 2, 11, 6, 10);
+	MBFace& F4 = GetBlockFace(0, 3); SetFaceEdgeID(F4, 3, 8, 7, 11);
+	MBFace& F5 = GetBlockFace(0, 4); SetFaceEdgeID(F5, 2, 1, 0, 3);
+	MBFace& F6 = GetBlockFace(0, 5); SetFaceEdgeID(F6, 4, 5, 6, 7);
+
+	// set edge types
+	GetFaceEdge(F1, 0).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F1, 2).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F3, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F3, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+
+	// build mesh and return
+	return FEMultiBlockMesh::BuildMesh();
+}
+
+FEMesh* FESolidArc::BuildMeshLegacy()
+{
 	assert(m_pobj);
 
 	int i, j, k, n;

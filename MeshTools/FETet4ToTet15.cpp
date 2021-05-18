@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include "FEModifier.h"
 #include <MeshLib/FEFaceEdgeList.h>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 FETet4ToTet15::FETet4ToTet15(bool bsmooth) : FEModifier("Tet4-to-Tet15")

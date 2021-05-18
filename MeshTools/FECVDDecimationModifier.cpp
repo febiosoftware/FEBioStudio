@@ -37,6 +37,9 @@ SOFTWARE.*/
 #include <algorithm>
 #include <stack>
 
+using std::min;
+using std::stack;
+
 //-----------------------------------------------------------------------------
 //! Constructor
 FECVDDecimationModifier::FECVDDecimationModifier() : FESurfaceModifier("CVD Decimation")

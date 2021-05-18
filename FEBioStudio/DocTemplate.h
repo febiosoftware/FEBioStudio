@@ -27,7 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <string>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::string;
 
 class DocTemplate
 {

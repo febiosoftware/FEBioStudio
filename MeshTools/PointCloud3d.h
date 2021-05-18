@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MathLib/math3d.h>
 #include "Plane.h"
 
-using namespace std;
+//using namespace std;
 
 class PointCloud3d
 {

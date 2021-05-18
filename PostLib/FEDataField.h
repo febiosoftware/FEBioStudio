@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <typeinfo>
 #include <string>
 
+using std::string;
+
 //-----------------------------------------------------------------------------
 namespace Post {
 

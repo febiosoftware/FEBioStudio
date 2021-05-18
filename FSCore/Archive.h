@@ -35,7 +35,12 @@ SOFTWARE.*/
 #include <list>
 #include <string>
 #include "memtool.h"
-using namespace std;
+//using namespace std;
+
+using std::string;
+using std::stack;
+using std::list;
+using std::pair;
 
 //-----------------------------------------------------------------------------
 // Used for reading archives

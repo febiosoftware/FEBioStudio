@@ -27,7 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 #include <vector>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::pair;
 
 class CMainWindow;
 class FSObject;

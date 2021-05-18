@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "PlotWidget.h"
 #include <QPainter>
+#include <QPainterPath>
 #include <QFontDatabase>
 #include <QMouseEvent>
 #include <QAction>
@@ -906,11 +907,13 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		double H = m_viewRect.height();
 		double dx = W*0.05;
 		double dy = H*0.05;
-		if (ev->delta() < 0)
+
+    //TODO: Check to see how this feels with MacOS and Linux distros. May need to use angleDelta()
+		if ((ev->pixelDelta().y() < 0) || (ev->angleDelta().y() < 0))
 		{
 			m_viewRect.adjust(-dx, -dy, dx, dy);
 		}
-		else
+		else if ((ev->pixelDelta().y() > 0) || (ev->angleDelta().y() > 0))
 		{
 			m_viewRect.adjust(dx, dy, -dx, -dy);
 		}

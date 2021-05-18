@@ -42,7 +42,9 @@ SOFTWARE.*/
 #include <ImageLib/3DGradientMap.h>
 #include <sstream>
 #include <assert.h>
-using namespace std;
+//using namespace std;
+
+using std::stringstream;
 using namespace Post;
 
 extern int LUT[256][15];

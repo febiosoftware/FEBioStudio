@@ -92,7 +92,7 @@ public:
 		showButtonsPanel(false);
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
-		mainLayout->setMargin(0);
+		mainLayout->setContentsMargins(0,0,0,0);
 		mainLayout->addWidget(tool);
 		parent->setLayout(mainLayout);
 

@@ -31,7 +31,9 @@ SOFTWARE.*/
 #include <vector>
 #include <QPushButton>
 #include <assert.h>
-using namespace std;
+//using namespace std;
+
+using std::vector;
 
 class Ui::CMeshButtonBox
 {
@@ -44,10 +46,10 @@ public:
 	void setup(QWidget* w, int classType, unsigned int nflag)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		l->setSpacing(0);
 		mainLayout = new QGridLayout;
-		mainLayout->setMargin(0);
+		mainLayout->setContentsMargins(0,0,0,0);
 		mainLayout->setSpacing(0);
 		buttonGroup = new QButtonGroup(w);
 
@@ -67,7 +69,7 @@ public:
 		w->setLayout(l);
 		w->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-		QObject::connect(buttonGroup, SIGNAL(buttonClicked(int)), w, SLOT(onButtonClicked(int)));
+		QObject::connect(buttonGroup, SIGNAL(idClicked(int)), w, SLOT(onButtonClicked(int)));
 	}
 
 	void AddButton(const QString& txt, ClassDescriptor* pcd)

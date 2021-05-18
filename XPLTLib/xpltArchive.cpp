@@ -27,6 +27,19 @@ SOFTWARE.*/
 #include "xpltArchive.h"
 #include <assert.h>
 #include <FSCore/Archive.h>
+#include <zlib.h>
+
+#ifdef WIN32
+typedef __int64 off_type;
+#endif
+
+#ifdef LINUX // same for Linux and Mac OS X
+typedef off_t off_type;
+#endif
+
+#ifdef __APPLE__ // same for Linux and Mac OS X
+typedef off_t off_type;
+#endif
 
 #ifdef WIN32
 #define ftell64(a)     _ftelli64(a)
@@ -47,19 +60,47 @@ SOFTWARE.*/
 // xpltArchive
 //////////////////////////////////////////////////////////////////////
 
-xpltArchive::xpltArchive()
+class xpltArchive::Imp 
 {
-	m_fp = 0;
-	m_bend = true;
-	m_bswap = false;
-	m_nversion = 0;
-	m_buf = 0;
-	m_pdata = 0;
-	m_bufsize = 0;
-	m_ncompress = 0;
-	m_pRoot = 0;
-	m_pChunk = 0;
-	m_bSaving = true;
+public:
+	IOFileStream* m_fp;		// the file pointer
+	bool	m_bswap;		// swap data when reading
+	bool	m_bend;			// chunk end flag
+	int		m_ncompress;	// compression flag
+	bool	m_bSaving;		// read or write mode?
+
+	unsigned int	m_nversion;	// stores the version nr of the file being loaded
+
+	// read data
+	stack<CHUNK*>	m_Chunk;
+
+	z_stream		strm;
+	char* m_buf;		// data buffer
+	void* m_pdata;	// data pointer
+	unsigned int	m_bufsize;	// size of data buffer
+
+	// write data
+	OBranch* m_pRoot;	// chunk tree root
+	OBranch* m_pChunk;	// current chunk
+
+	Imp()
+	{
+		m_fp = 0;
+		m_bend = true;
+		m_bswap = false;
+		m_nversion = 0;
+		m_buf = 0;
+		m_pdata = 0;
+		m_bufsize = 0;
+		m_ncompress = 0;
+		m_pRoot = 0;
+		m_pChunk = 0;
+		m_bSaving = true;
+	}
+};
+
+xpltArchive::xpltArchive() : im(*new xpltArchive::Imp)
+{
 }
 
 xpltArchive::~xpltArchive()
@@ -67,73 +108,85 @@ xpltArchive::~xpltArchive()
 	Close();
 }
 
+void xpltArchive::AddChild(OChunk* c)
+{
+	im.m_pChunk->AddChild(c);
+}
+
+void xpltArchive::SetVersion(unsigned int n) { im.m_nversion = n; }
+unsigned int xpltArchive::Version() { return im.m_nversion; }
+
+// set/get compression method
+int xpltArchive::GetCompression() { return im.m_ncompress; }
+void xpltArchive::SetCompression(int n) { im.m_ncompress = n; }
+
 void xpltArchive::Close()
 {
-	if (m_bSaving)
+	if (im.m_bSaving)
 	{
-		if (m_pRoot) Flush();
+		if (im.m_pRoot) Flush();
 	}
 	else {
 		// clear the stack
-		while (m_Chunk.empty() == false)
+		while (im.m_Chunk.empty() == false)
 		{
 			// pop the last chunk
-			CHUNK* pc = m_Chunk.top(); m_Chunk.pop();
+			CHUNK* pc = im.m_Chunk.top(); im.m_Chunk.pop();
 			delete pc;
 		}
 	}
 
 	// close the file pointer
-	m_fp = 0;
+	im.m_fp = 0;
 
 	// delete the buffer
-	if (m_buf) delete[] m_buf;
-	m_buf = 0;
-	m_pdata = 0;
-	m_bufsize = 0;
+	if (im.m_buf) delete[] im.m_buf;
+	im.m_buf = 0;
+	im.m_pdata = 0;
+	im.m_bufsize = 0;
 
 	// reset flags
-	m_bend = true;
-	m_bswap = false;
+	im.m_bend = true;
+	im.m_bswap = false;
 }
 
 
 void xpltArchive::Flush()
 {
-	if (m_fp && m_pRoot)
+	if (im.m_fp && im.m_pRoot)
 	{
-		m_fp->BeginStreaming();
-		m_pRoot->Write(m_fp);
-		m_fp->EndStreaming();
+		im.m_fp->BeginStreaming();
+		im.m_pRoot->Write(im.m_fp);
+		im.m_fp->EndStreaming();
 	}
-	delete m_pRoot;
-	m_pRoot = 0;
-	m_pChunk = 0;
+	delete im.m_pRoot;
+	im.m_pRoot = 0;
+	im.m_pChunk = 0;
 }
 
 
 bool xpltArchive::Create(const char* szfile)
 {
 	// attempt to create the file
-	assert(m_fp == 0);
-	m_fp = new IOFileStream();
-	if (m_fp->Create(szfile) == false) return false;
+	assert(im.m_fp == 0);
+	im.m_fp = new IOFileStream();
+	if (im.m_fp->Create(szfile) == false) return false;
 
 	// write the master tag 
 	unsigned int ntag = 0x00464542;
-	m_fp->Write(&ntag, sizeof(int), 1);
+	im.m_fp->Write(&ntag, sizeof(int), 1);
 
-	m_bSaving = true;
+	im.m_bSaving = true;
 
 	return true;
 }
 
 void xpltArchive::BeginChunk(unsigned int id)
 {
-	if (m_pRoot == 0)
+	if (im.m_pRoot == 0)
 	{
-		m_pRoot = new OBranch(id);
-		m_pChunk = m_pRoot;
+		im.m_pRoot = new OBranch(id);
+		im.m_pChunk = im.m_pRoot;
 	}
 	else
 	{
@@ -141,17 +194,17 @@ void xpltArchive::BeginChunk(unsigned int id)
 		OBranch* pbranch = new OBranch(id);
 
 		// attach it to the current branch
-		m_pChunk->AddChild(pbranch);
+		im.m_pChunk->AddChild(pbranch);
 
 		// move the current branch pointer
-		m_pChunk = pbranch;
+		im.m_pChunk = pbranch;
 	}
 }
 
 void xpltArchive::EndChunk()
 {
-	if (m_pChunk != m_pRoot)
-		m_pChunk = m_pChunk->GetParent();
+	if (im.m_pChunk != im.m_pRoot)
+		im.m_pChunk = im.m_pChunk->GetParent();
 	else
 	{
 		Flush();
@@ -161,22 +214,22 @@ void xpltArchive::EndChunk()
 bool xpltArchive::Open(IOFileStream* fp)
 {
 	// store a copy of the file pointer
-	m_fp = fp;
+	im.m_fp = fp;
 
 	// read the master tag
 	unsigned int ntag;
-	if (m_fp->read(&ntag, sizeof(int), 1) != 1)
+	if (im.m_fp->read(&ntag, sizeof(int), 1) != 1)
 	{
 		Close();
 		return false;
 	}
 
 	// see if the file needs to be byteswapped
-	if (ntag == 0x00464542) m_bswap = false;
+	if (ntag == 0x00464542) im.m_bswap = false;
 	else
 	{
 		bswap(ntag);
-		if (ntag == 0x00464542) m_bswap = true;
+		if (ntag == 0x00464542) im.m_bswap = true;
 		else
 		{
 			// unknown file format
@@ -186,15 +239,15 @@ bool xpltArchive::Open(IOFileStream* fp)
 	}
 
 	// set the end flag to false
-	m_bend = false;
+	im.m_bend = false;
 
 	// initialize decompression stream
-	strm.zalloc = Z_NULL;
-	strm.zfree = Z_NULL;
-	strm.opaque = Z_NULL;
-	strm.avail_in = 0;
-	strm.next_in = Z_NULL;
-	strm.avail_out = 0;
+	im.strm.zalloc = Z_NULL;
+	im.strm.zfree = Z_NULL;
+	im.strm.opaque = Z_NULL;
+	im.strm.avail_in = 0;
+	im.strm.next_in = Z_NULL;
+	im.strm.avail_out = 0;
 
 	return true;
 }
@@ -210,7 +263,7 @@ int xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 	static unsigned char out[CHUNK];
 
 	/* allocate inflate state */
-	ret = inflateInit(&strm);
+	ret = inflateInit(&im.strm);
 	if (ret != Z_OK) return ret;
 
 	// the uncompressed buffer
@@ -218,36 +271,36 @@ int xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 
 	/* decompress until deflate stream ends or end of file */
 	do {
-		if (strm.avail_in == 0)
+		if (im.strm.avail_in == 0)
 		{
-			strm.avail_in = m_fp->read(in, 1, CHUNK);
-			if (ferror(m_fp->FilePtr())) {
-				(void)inflateEnd(&strm);
+			im.strm.avail_in = im.m_fp->read(in, 1, CHUNK);
+			if (ferror(im.m_fp->FilePtr())) {
+				(void)inflateEnd(&im.strm);
 				return Z_ERRNO;
 			}
-			if (strm.avail_in == 0) break;
-			strm.next_in = in;
+			if (im.strm.avail_in == 0) break;
+			im.strm.next_in = in;
 		}
 
 		/* run inflate() on input until output buffer not full */
 		do {
-			strm.avail_out = CHUNK;
-			strm.next_out = out;
-			ret = inflate(&strm, Z_NO_FLUSH);
+			im.strm.avail_out = CHUNK;
+			im.strm.next_out = out;
+			ret = inflate(&im.strm, Z_NO_FLUSH);
 			assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
 			switch (ret) {
 			case Z_NEED_DICT:
 				ret = Z_DATA_ERROR;     /* and fall through */
 			case Z_DATA_ERROR:
 			case Z_MEM_ERROR:
-				(void)inflateEnd(&strm);
+				(void)inflateEnd(&im.strm);
 				return ret;
 			}
-			have = CHUNK - strm.avail_out;
+			have = CHUNK - im.strm.avail_out;
 
 			buf.append(out, have);
 
-		} while (strm.avail_out == 0);
+		} while (im.strm.avail_out == 0);
 
 		/* done when inflate() says it's done */
 	} while (ret != Z_STREAM_END);
@@ -255,17 +308,17 @@ int xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 	char* pbuf = buf.data();
 	if (pbuf)
 	{
-		memcpy(&nid, pbuf, sizeof(int)); pbuf += sizeof(int); if (m_bswap) bswap(nid);
-		memcpy(&nsize, pbuf, sizeof(int)); pbuf += sizeof(int); if (m_bswap) bswap(nsize);
+		memcpy(&nid, pbuf, sizeof(int)); pbuf += sizeof(int); if (im.m_bswap) bswap(nid);
+		memcpy(&nsize, pbuf, sizeof(int)); pbuf += sizeof(int); if (im.m_bswap) bswap(nsize);
 
-		m_bufsize = buf.size() - 2 * sizeof(int);
-		m_buf = new char[m_bufsize];
-		memcpy(m_buf, pbuf, m_bufsize);
-		m_pdata = m_buf;
+		im.m_bufsize = buf.size() - 2 * sizeof(int);
+		im.m_buf = new char[im.m_bufsize];
+		memcpy(im.m_buf, pbuf, im.m_bufsize);
+		im.m_pdata = im.m_buf;
 	}
 
 	/* clean up and return */
-	(void)inflateEnd(&strm);
+	(void)inflateEnd(&im.strm);
 	return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
@@ -273,10 +326,10 @@ int xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 bool xpltArchive::Append(const char* szfile)
 {
 	// reopen the plot file for appending
-	assert(m_fp == 0);
-	m_fp = new IOFileStream();
-	if (m_fp->Append(szfile) == false) return false;
-	m_bSaving = true;
+	assert(im.m_fp == 0);
+	im.m_fp = new IOFileStream();
+	if (im.m_fp->Append(szfile) == false) return false;
+	im.m_bSaving = true;
 	return true;
 }
 
@@ -284,44 +337,44 @@ int xpltArchive::OpenChunk()
 {
 	// see if the end flag was set
 	// in that case we first need to clear the flag
-	if (m_bend)
+	if (im.m_bend)
 	{
-		m_bend = false;
+		im.m_bend = false;
 		return IO_END;
 	}
 
 	// see if we have a buffer allocated
-	if (m_buf == 0)
+	if (im.m_buf == 0)
 	{
 		unsigned int id, nsize;
-		if (m_ncompress == 0)
+		if (im.m_ncompress == 0)
 		{
 			// see if we have reached the end of the file
-			if (feof(m_fp->FilePtr()) || ferror(m_fp->FilePtr())) return IO_ERROR;
+			if (feof(im.m_fp->FilePtr()) || ferror(im.m_fp->FilePtr())) return IO_ERROR;
 
 			// get the master chunk id and size
-			int nret = m_fp->read(&id, sizeof(unsigned int), 1); if (nret != 1) return IO_ERROR;
-			if (m_bswap) bswap(id);
-			nret = m_fp->read(&nsize, sizeof(unsigned int), 1); if (nret != 1) return IO_ERROR;
-			if (m_bswap) bswap(nsize);
+			int nret = im.m_fp->read(&id, sizeof(unsigned int), 1); if (nret != 1) return IO_ERROR;
+			if (im.m_bswap) bswap(id);
+			nret = im.m_fp->read(&nsize, sizeof(unsigned int), 1); if (nret != 1) return IO_ERROR;
+			if (im.m_bswap) bswap(nsize);
 
 			if (nsize == 0)
 			{
-				m_bend = true;
+				im.m_bend = true;
 				return IO_END;
 			}
 			else
 			{
 				// allocate the buffer
-				m_bufsize = nsize;
-				m_buf = new char[m_bufsize];
+				im.m_bufsize = nsize;
+				im.m_buf = new char[im.m_bufsize];
 
 				// read the buffer from file
-				int nread = m_fp->read(m_buf, sizeof(char), nsize);
+				int nread = im.m_fp->read(im.m_buf, sizeof(char), nsize);
 				if (nread != nsize) return IO_ERROR;
 
 				// set the data pointer
-				m_pdata = m_buf;
+				im.m_pdata = im.m_buf;
 			}
 		}
 		else
@@ -334,10 +387,9 @@ int xpltArchive::OpenChunk()
 		CHUNK* pc = new CHUNK;
 		pc->id = id;
 		pc->nsize = nsize;
-		pc->pdata = m_pdata;
+		pc->pdata = im.m_pdata;
 		// add it to the stack
-		m_Chunk.push(pc);
-
+		im.m_Chunk.push(pc);
 	}
 	else
 	{
@@ -349,13 +401,13 @@ int xpltArchive::OpenChunk()
 
 		// read the chunk size
 		if (read(pc->nsize) == IO_ERROR) return IO_ERROR;
-		if (pc->nsize == 0) m_bend = true;
+		if (pc->nsize == 0) im.m_bend = true;
 
 		// store the data pointer
-		pc->pdata = m_pdata;
+		pc->pdata = im.m_pdata;
 
 		// add it to the stack
-		m_Chunk.push(pc);
+		im.m_Chunk.push(pc);
 	}
 
 	return IO_OK;
@@ -364,41 +416,89 @@ int xpltArchive::OpenChunk()
 void xpltArchive::CloseChunk()
 {
 	// pop the last chunk
-	CHUNK* pc = m_Chunk.top(); m_Chunk.pop();
+	CHUNK* pc = im.m_Chunk.top(); im.m_Chunk.pop();
 
 	// calculate the offset to the end of the chunk
-	off_type noff = pc->nsize - ((char*)m_pdata - (char*)pc->pdata);
+	off_type noff = pc->nsize - ((char*)im.m_pdata - (char*)pc->pdata);
 
 	// skip any remaining part in the chunk
 	// I wonder if this can really happen
-	if (noff != 0) m_pdata = (char*)m_pdata + noff;
+	if (noff != 0) im.m_pdata = (char*)im.m_pdata + noff;
 
 	// delete this chunk
 	delete pc;
 
 	// take a peek at the parent
-	if (m_Chunk.empty())
+	if (im.m_Chunk.empty())
 	{
 		// we just deleted the master chunk
-		m_bend = true;
+		im.m_bend = true;
 
 		// delete the buffer
-		delete[] m_buf;
-		m_buf = 0;
-		m_pdata = 0;
-		m_bufsize = 0;
+		delete[] im.m_buf;
+		im.m_buf = 0;
+		im.m_pdata = 0;
+		im.m_bufsize = 0;
 	}
 	else
 	{
-		pc = m_Chunk.top();
-		off_type noff = pc->nsize - ((char*)m_pdata - (char*)pc->pdata);
-		if (noff == 0) m_bend = true;
+		pc = im.m_Chunk.top();
+		off_type noff = pc->nsize - ((char*)im.m_pdata - (char*)pc->pdata);
+		if (noff == 0) im.m_bend = true;
 	}
 }
 
 unsigned int xpltArchive::GetChunkID()
 {
-	CHUNK* pc = m_Chunk.top();
+	CHUNK* pc = im.m_Chunk.top();
 	assert(pc);
 	return pc->id;
+}
+
+xpltArchive::IOResult xpltArchive::read(char& c) { mread(&c, sizeof(char), 1, &im.m_pdata); return IO_OK; }
+xpltArchive::IOResult xpltArchive::read(int& n) { mread(&n, sizeof(int), 1, &im.m_pdata); if (im.m_bswap) bswap(n); return IO_OK; }
+xpltArchive::IOResult xpltArchive::read(bool& b) { mread(&b, sizeof(bool), 1, &im.m_pdata); return IO_OK; }
+xpltArchive::IOResult xpltArchive::read(float& f) { mread(&f, sizeof(float), 1, &im.m_pdata); if (im.m_bswap) bswap(f); return IO_OK; }
+xpltArchive::IOResult xpltArchive::read(double& g) { mread(&g, sizeof(double), 1, &im.m_pdata); if (im.m_bswap) bswap(g); return IO_OK; }
+
+xpltArchive::IOResult xpltArchive::read(unsigned int& n) { mread(&n, sizeof(unsigned int), 1, &im.m_pdata); if (im.m_bswap) bswap(n); return IO_OK; }
+
+xpltArchive::IOResult xpltArchive::read(char* pc, int n) { mread(pc, sizeof(char), n, &im.m_pdata); return IO_OK; }
+xpltArchive::IOResult xpltArchive::read(int* pi, int n) { mread(pi, sizeof(int), n, &im.m_pdata); if (im.m_bswap) bswapv(pi, n); return IO_OK; }
+xpltArchive::IOResult xpltArchive::read(bool* pb, int n) { mread(pb, sizeof(bool), n, &im.m_pdata); return IO_OK; }
+xpltArchive::IOResult xpltArchive::read(float* pf, int n) { mread(pf, sizeof(float), n, &im.m_pdata); if (im.m_bswap) bswapv(pf, n); return IO_OK; }
+xpltArchive::IOResult xpltArchive::read(double* pg, int n) { mread(pg, sizeof(double), n, &im.m_pdata); if (im.m_bswap) bswapv(pg, n); return IO_OK; }
+
+xpltArchive::IOResult xpltArchive::read(char* sz)
+{
+	IOResult ret;
+	int l;
+	ret = read(l); if (ret != IO_OK) return ret;
+	mread(sz, 1, l, &im.m_pdata);
+	sz[l] = 0;
+	return IO_OK;
+}
+
+xpltArchive::IOResult xpltArchive::sread(char* sz, int max_len)
+{
+	IOResult ret;
+	int l;
+	ret = read(l); if (ret != IO_OK) return ret;
+
+	if (l < max_len)
+	{
+		mread(sz, 1, l, &im.m_pdata);
+		sz[l] = 0;
+	}
+	else
+	{
+		char* tmp = new char[l + 1];
+		mread(tmp, 1, l, &im.m_pdata);
+		tmp[l] = 0;
+		strncpy(sz, tmp, max_len - 1);
+		sz[max_len - 1] = 0;
+		delete tmp;
+	}
+
+	return IO_OK;
 }

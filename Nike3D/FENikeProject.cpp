@@ -35,7 +35,9 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
 #include <memory>
-using namespace std;
+//using namespace std;
+
+using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
 // FENikeProject
@@ -544,7 +546,7 @@ bool FENikeProject::BuildNodes(FEProject& prj)
 			int bc;
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			int nbc = pbc->GetBC();
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
 			{
@@ -559,7 +561,7 @@ bool FENikeProject::BuildNodes(FEProject& prj)
 			int rc;
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			int nbc = pbc->GetBC();
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
 			{
@@ -767,7 +769,7 @@ bool FENikeProject::BuildRigidNodes(FEProject &prj)
 			FEItemListBuilder* pitem = pi->GetItemList();
 			if (pitem)
 			{
-				auto_ptr<FENodeList> pg(pitem->BuildNodeList() );
+				unique_ptr<FENodeList> pg(pitem->BuildNodeList() );
 				FENodeList::Iterator pn = pg->First();
 				for (int k=0; k<pg->Size(); ++k, ++pn)
 				{
@@ -887,7 +889,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 			FEItemListBuilder* pss = pi->GetPrimarySurface();
 			if (pss)
 			{
-				auto_ptr<FEFaceList> pgs(pss->BuildFaceList());
+				unique_ptr<FEFaceList> pgs(pss->BuildFaceList());
 				FEMesh* pm;
 				FEFaceList::Iterator pf = pgs->First();
 				for (k=0; k<pgs->Size(); ++k, ++pf)
@@ -910,7 +912,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 			FEItemListBuilder* pms = pi->GetSecondarySurface();
 			if (pms)
 			{
-				auto_ptr<FEFaceList> pgm(pms->BuildFaceList());
+				unique_ptr<FEFaceList> pgm(pms->BuildFaceList());
 				FEMesh* pm;
 				FEFaceList::Iterator pf = pgm->First();
 				for (k=0; k<pgm->Size(); ++k, ++pf)
@@ -966,7 +968,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 			FEItemListBuilder* pss = pt->GetPrimarySurface();
 			if (pss)
 			{
-				auto_ptr<FEFaceList> pgs(pss->BuildFaceList());
+				unique_ptr<FEFaceList> pgs(pss->BuildFaceList());
 				FEMesh* pm;
 				FEFaceList::Iterator pf = pgs->First();
 				for (k=0; k<pgs->Size(); ++k, ++pf)
@@ -989,7 +991,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 			FEItemListBuilder* pms = pt->GetSecondarySurface();
 			if (pms)
 			{
-				auto_ptr<FEFaceList> pgm(pms->BuildFaceList());
+				unique_ptr<FEFaceList> pgm(pms->BuildFaceList());
 				FEMesh* pm;
 				FEFaceList::Iterator pf = pgm->First();
 				for (k=0; k<pgm->Size(); ++k, ++pf)
@@ -1032,7 +1034,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 			int nlc = AddLoadCurve(lc);
 			int bc = pbc->GetDOF() + 1;
 			FEItemListBuilder* pitem = pbc->GetItemList();
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList() );
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList() );
 			FENodeList::Iterator pn = pg->First();
 			for (k=0; k<pg->Size(); ++k, ++pn)
 			{
@@ -1054,7 +1056,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 			int nlc = AddLoadCurve(lc);
 
 			FEItemListBuilder* pitem = ptc->GetItemList();
-			auto_ptr<FEFaceList> ps(pitem->BuildFaceList());
+			unique_ptr<FEFaceList> ps(pitem->BuildFaceList());
 
 			vec3d t = ptc->GetVecValue(FESurfaceTraction::LOAD);
 
@@ -1077,7 +1079,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 				}
 			}
 
-			auto_ptr<FENodeList> pns(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pns(pitem->BuildNodeList());
 			FENodeList::Iterator pn = pns->First();
 			for (k=0; k<pns->Size(); ++k, ++pn)
 			{
@@ -1128,7 +1130,7 @@ bool FENikeProject::BuildPressureLoads(FEProject &prj)
 			
 			PRESSURE_LOAD pl;
 			FEItemListBuilder* pitem = ppl->GetItemList();
-			auto_ptr<FEFaceList> pg(pitem->BuildFaceList());
+			unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
 			FEMesh* pm;
 			FEFaceList::Iterator pf = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pf)
@@ -1178,7 +1180,7 @@ bool FENikeProject::BuildDisplacements(FEProject &prj)
 			int bc = pbc->GetDOF()+1;
 
 			FEItemListBuilder* pitem = pbc->GetItemList();
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
 			{
@@ -1254,7 +1256,7 @@ bool FENikeProject::BuildNodalVelocities(FEProject &prj)
 		{
 			vec3d v = pbc->GetVelocity();
 			FEItemListBuilder* pitem = pbc->GetItemList();
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
 			{

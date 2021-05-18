@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <FSCore/FSObject.h>
 #include <list>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 class GObject;
@@ -137,7 +137,7 @@ protected:
 class GExtrudeModifier : public GModifier
 {
 public:
-	enum { DIST };
+	enum { DIST, NDIVS };
 
 public:
 	GExtrudeModifier();

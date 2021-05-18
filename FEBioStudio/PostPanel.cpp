@@ -54,7 +54,7 @@ public:
 		tab->addTab(state = new ::CStatePanel(wnd, parent), "State");
 
 		QHBoxLayout* l = new QHBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		l->addWidget(tab);
 
 		parent->setLayout(l);

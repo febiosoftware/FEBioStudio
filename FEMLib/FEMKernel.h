@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <FSCore/FSObject.h>
-using namespace std;
+//using namespace std;
 
 class FEModel;
 

@@ -25,11 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "FEMultiBlockMesh.h"
 
 class GTorus;
 
-class FETorus : public FEMesher
+class FETorus : public FEMultiBlockMesh
 {
 public:
 	enum { NDIV, NSEG };
@@ -38,6 +38,10 @@ public:
 	FETorus(){}
 	FETorus(GTorus* po);
 	FEMesh* BuildMesh();
+
+protected:
+	FEMesh* BuildMeshLegacy();
+	FEMesh* BuildMultiBlockMesh();
 
 protected:
 	void BuildFaces(FEMesh* pm);

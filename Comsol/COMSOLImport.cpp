@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 COMSOLimport::COMSOLimport(FEProject& prj) : FEFileImport(prj)
 {

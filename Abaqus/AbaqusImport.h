@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "AbaqusModel.h"
 
 #include <list>
-using namespace std;
+////using namespace std;
 
 //-----------------------------------------------------------------------------
 // Implements a class to import ABAQUS files

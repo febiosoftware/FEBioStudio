@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <GeomLib/GItem.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class GObject;
 
@@ -54,9 +54,9 @@ public:
 	class EDGE
 	{
 	public:
-		EDGE() {}
-		EDGE(const EDGE& e) { node = e.node; nid = e.nid; }
-		void operator = (const EDGE& e) { node = e.node; nid = e.nid; }
+		EDGE() { ndiv = 0; fixedDiv = false; }
+		EDGE(const EDGE& e) { node = e.node; nid = e.nid; ndiv = e.ndiv; fixedDiv = e.fixedDiv; }
+		void operator = (const EDGE& e) { node = e.node; nid = e.nid; ndiv = e.ndiv; fixedDiv = e.fixedDiv; }
 
 		void AddNode(int n) { node.push_back(n); }
 		int FindNode(int nid);
@@ -64,8 +64,10 @@ public:
 		int Nodes() { return (int) node.size(); }
 
 	public:
-		vector<int>	node;
-		int			nid;
+		vector<int>	node;	// node list
+		int			nid;	// edge ID
+		int			ndiv;	// number of divisions
+		bool		fixedDiv;	// ndiv is fixed and cannot be changed.
 	};
 
 	class FACE
@@ -99,6 +101,7 @@ public:
 	EDGE& Edge(int i) { return m_Edge[i]; }
 
 protected:
+	bool ProcessSizing();
 	bool BuildNodes();
 	bool BuildEdges();
 	bool BuildFaces();
@@ -108,6 +111,7 @@ protected:
 	bool BuildFacePolygon(GFace& fs);
 	bool BuildFaceExtrude(GFace& fs);
 	bool BuildFaceRevolve(GFace& fs);
+	bool BuildFaceRevolveWedge(GFace& fs);
 
 protected:
 	vector<NODE>	m_Node;
@@ -145,12 +149,15 @@ public:
 	FEMesh* CreateMesh(FESurfaceMesh* surfaceMesh);
 
 protected:
+
+protected:
 	GObject*	m_po;	// TODO: move this to base class
 
 #ifdef TETLIBRARY
 public:
 	bool build_plc(FESurfaceMesh* pm, tetgenio& in);
 protected:
+	FEMesh* BuildPLCMesh();
 	bool build_tetgen_in(tetgenio& in);
 	bool build_tetgen_in_remesh(tetgenio& io);
 	FEMesh* build_tet_mesh(tetgenio& out);

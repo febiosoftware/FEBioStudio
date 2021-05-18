@@ -26,9 +26,17 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
+#include <string>
 #include <list>
 #include <QDialog>
-using namespace std;
+
+
+//using namespace std;
+
+using std::vector;
+using std::list;
+using std::pair;
+using std::string;
 
 class CMainWindow;
 class QListWidget;

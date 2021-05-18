@@ -31,7 +31,11 @@ SOFTWARE.*/
 #include <vector>
 #include <set>
 #include <string>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::set;
+using std::string;
 
 //-----------------------------------------------------------------------------
 class FESurfaceMesh;
@@ -95,6 +99,7 @@ public:
 
 //-----------------------------------------------------------------------------
 class FEMeshBuilder;
+class FESurfaceMesh;
 
 //-----------------------------------------------------------------------------
 // This class describes a finite element mesh. Every FEMesh must be owned by a
@@ -105,6 +110,7 @@ public:
 	// --- C O N S T R U C T I O N ---
 	FEMesh();
 	FEMesh(FEMesh& m);
+	FEMesh(FESurfaceMesh& m);
 	virtual ~FEMesh();
 
 	// allocate space for mesh

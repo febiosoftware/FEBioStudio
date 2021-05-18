@@ -163,7 +163,7 @@ XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 void XMLEditor::SetDocument(QTextDocument* doc, const QString& title)
 {
 	QPalette p = palette();
-	p.setColor(QPalette::Foreground, Qt::blue);
+	p.setColor(QPalette::WindowText, Qt::blue); // Foreground was deprecated. Was told to replace with this.
 	setPalette(p);
 
 	if (doc)

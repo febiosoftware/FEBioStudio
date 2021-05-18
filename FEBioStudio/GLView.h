@@ -281,7 +281,7 @@ public:
 	void SetDefaultMaterial() { SetMatProps(0); }
 
 	// get device pixel ration
-	int GetDevicePixelRatio();
+	double GetDevicePixelRatio();
 
 	// set the GL material properties based on the material
 	void SetMatProps(GMaterial* pm);

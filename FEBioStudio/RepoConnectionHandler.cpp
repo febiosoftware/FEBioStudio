@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QSslSocket>
-#include <QSslError>
+//#include <QSslError>
 #include <QSslConfiguration>
 #include <QByteArray>
 #include <QBuffer>
@@ -54,6 +54,9 @@ SOFTWARE.*/
 #include "LocalDatabaseHandler.h"
 #include "ZipFiles.h"
 #include <iostream>
+
+using std::cout;
+using std::endl;
 
 #define REPO_URL "repo.febio.org"
 #define API_URL "/modelRepo/api/v1.02/"
@@ -136,7 +139,7 @@ void CRepoConnectionHandler::authenticate(QString username, QString password)
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-	imp->restclient->setNetworkAccessible(QNetworkAccessManager::Accessible);
+	//imp->restclient->setNetworkAccessible(QNetworkAccessManager::Accessible);
 
 	if(NetworkAccessibleCheck())
 	{

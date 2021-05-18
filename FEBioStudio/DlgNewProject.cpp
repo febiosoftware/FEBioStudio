@@ -53,7 +53,7 @@ public:
 		name->setText("MyProject");
 
 		QHBoxLayout* h = new QHBoxLayout;
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		h->addWidget(folder = new QLineEdit);
 		h->addWidget(selectFolder = new QToolButton);
 		f->addRow("Project folder:", h);

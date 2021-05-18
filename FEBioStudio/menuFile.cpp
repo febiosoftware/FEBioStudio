@@ -117,8 +117,14 @@ SOFTWARE.*/
 #include <PostLib/VolRender.h>
 #include <sstream>
 
+using std::stringstream;
+
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
+#endif
+
+#ifdef HAS_TEEM
+#include <QFileInfo>
 #endif
 
 
@@ -200,6 +206,7 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
 	filters << "VTK files (*.vtk)";
+	filters << "LSDYNA database (*)";
 
 	QFileDialog dlg(this, "Open");
 	dlg.setFileMode(QFileDialog::ExistingFile);
@@ -1401,7 +1408,15 @@ void CMainWindow::on_actionImportGeometry_triggered()
 void CMainWindow::on_actionImportImage_triggered()
 {
 	QStringList filters;
-	filters << "RAW files (*.raw)";
+  #ifdef HAS_TEEM && HAS_DICOM
+	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)" << "Dicom files (*.dicom, *.dcm)";
+  #elif HAS_DICOM
+      filters << "RAW files (*.raw)" << "Dicom files (*.dicom, *.dcm)";
+  #elif HAS_TEEM 
+	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)";
+  #else
+	  filters << "RAW files (*.raw)";
+  #endif
 
 	CGLDocument* doc = GetGLDocument();
 
@@ -1410,79 +1425,94 @@ void CMainWindow::on_actionImportImage_triggered()
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 	filedlg.setNameFilters(filters);
+
 	if (filedlg.exec())
 	{
-		// store the current path
-		QDir dir = filedlg.directory();
-		SetCurrentFolder(dir.absolutePath());
+	  // store the current path
+	  QDir dir = filedlg.directory();
+	  SetCurrentFolder(dir.absolutePath());
 
-		// get the file name
-		QStringList files = filedlg.selectedFiles();
-		QString fileName = files.at(0);
-		std::string sfile = fileName.toStdString();
+	  // get the file name
+	  QStringList files = filedlg.selectedFiles();
+	  QString fileName = files.at(0);
 
-	/*	// create 'resources' subdirectory
-		std::string sPath = doc->GetDocFolder();
+      std::string sfile = fileName.toStdString();
+      QFileInfo fileInfo(fileName);
+      QString ext = fileInfo.suffix();
+      ext = ext.toLower();
 
-		if (!sPath.empty())
-		{
-			QString projectPath = QString::fromStdString(sPath);
-			QDir projectDir(projectPath);
-			projectDir.mkdir("resources");
-			projectDir.cd("resources");
-			QString resourceDir = projectDir.absolutePath();
+      Post::CImageModel* imageModel = nullptr;
+    
+      if(ext == "tiff" || ext == "tif")
+      {
+        #ifdef HAS_TEEM
+        imageModel = doc->ImportTiff(sfile);
+        #endif
+        if (imageModel == nullptr)
+        {
+          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+          return;
+        }
+      }
+	  else if (ext == "nrrd")
+	  {
+        #ifdef HAS_TEEM
+        imageModel = doc->ImportNrrd(sfile);
+        #endif
+        if (imageModel == nullptr)
+        {
+          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+          return;
+        }
+	  }
+	  else if (ext == "dcm" || ext == "dicom")
+	  {
+        #ifdef HAS_DICOM
+        imageModel = doc->ImportDicom(sfile);
+        #endif
+        if (imageModel == nullptr)
+        {
+          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+          return;
+        }
+	  }
+      else
+      {
+        CDlgRAWImport dlg(this);
+        if (dlg.exec())
+        {
+          BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
+          imageModel = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+          if (imageModel == nullptr)
+          {
+            QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+            return;
+          }
+        }
+      }
+      if(imageModel)
+      {
+        Update(0, true);
+        ZoomTo(imageModel->GetBoundingBox());
 
-			// store path for linked file
-			QString linkName = projectDir.absoluteFilePath(QFileInfo(fileName).fileName());
+        // only for model docs
+        if (dynamic_cast<CModelDocument*>(doc))
+        {
+          Post::CVolRender* vr = new Post::CVolRender(imageModel);
+          vr->Create();
+          imageModel->AddImageRenderer(vr);
 
-			// add .lnk extension to link when on windows
-#ifdef WIN32
-			linkName += ".lnk";
-#endif
-			// create link in resources directory
-			QFile originalFile(fileName);
-			originalFile.link(linkName);
-
-			// store path to newly created link
-			sfile = linkName.toStdString();
-		}
-*/
-
-		CDlgRAWImport dlg(this);
-		if (dlg.exec())
-		{
-			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
-
-			Post::CImageModel* imageModel = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-			if (imageModel == nullptr)
-			{
-				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-			}
-			else
-			{
-				// only for model docs
-				if (dynamic_cast<CModelDocument*>(doc))
-				{
-					// add default volume renderer
-					Post::CVolRender* vr = new Post::CVolRender(imageModel);
-					vr->Create();
-					imageModel->AddImageRenderer(vr);
-
-					Update(0, true);
-
-					// show it in the model tree
-					ShowInModelViewer(imageModel);
-				}
-				else
-				{
-					Update(0, true);
-				}
-				ZoomTo(imageModel->GetBoundingBox());
-			}
-		}
-		else return;
-	}
+          Update(0, true);
+          ShowInModelViewer(imageModel);
+        }
+        else
+        {
+          Update(0, true);
+        }
+        ZoomTo(imageModel->GetBoundingBox());
+      }
+    }
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()

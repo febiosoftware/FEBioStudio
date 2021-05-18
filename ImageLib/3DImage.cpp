@@ -28,12 +28,8 @@ SOFTWARE.*/
 #include "3DImage.h"
 #include <stdio.h>
 #include <math.h>
-
-#ifdef WIN32
 #include <memory>
-#else
-#include <memory.h>
-#endif
+#include <cstring>
 
 //-----------------------------------------------------------------------------
 // find the power of 2 that is closest to n
@@ -69,15 +65,28 @@ void C3DImage::CleanUp()
 	m_cx = m_cy = m_cz = 0;
 }
 
-bool C3DImage::Create(int nx, int ny, int nz)
+bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize)
 {
+    // Check to make sure this does not allocate memory of size 0.
+    if(nx*ny*nz == 0)
+      return false;
+
 	// reallocate data if necessary
 	if (nx*ny*nz != m_cx*m_cy*m_cz)
 	{
-		CleanUp();
+	  CleanUp();
 
-		m_pb = new Byte[nx*ny*nz];
-		if (m_pb == 0) return false;
+      if(data == nullptr)
+      {
+        if(dataSize == 0)
+          m_pb = new Byte[nx*ny*nz];
+        else
+          m_pb = new Byte[dataSize];
+
+        if (m_pb == nullptr) return false;
+      }
+      else
+        m_pb = data;
 	}
 
 	m_cx = nx;

@@ -44,7 +44,7 @@ CModelSearch::CModelSearch(CModelViewer* view, CModelTree* tree, QWidget* parent
 	QHBoxLayout* h = new QHBoxLayout;
 	h->addWidget(label);
 	h->addWidget(m_flt);
-	h->setMargin(0);
+	h->setContentsMargins(0,0,0,0);
 
 	m_list = new QListWidget;
 	m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -52,7 +52,7 @@ CModelSearch::CModelSearch(CModelViewer* view, CModelTree* tree, QWidget* parent
 	QVBoxLayout* l = new QVBoxLayout;
 	l->addLayout(h);
 	l->addWidget(m_list);
-	l->setMargin(0);
+	l->setContentsMargins(0,0,0,0);
 
 	setLayout(l);
 

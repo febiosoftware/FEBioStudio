@@ -160,6 +160,7 @@ protected:
 	bool SetAxesNodes (FEMesh* pm);
     bool SetAxesAngles(FEMesh* pm);
 	bool SetAxesCopy  (FEMesh* pm);
+	bool SetAxesCylindrical(FEMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -459,4 +460,15 @@ class FERezoneMesh : public FEModifier
 public:
 	FERezoneMesh();
 	FEMesh* Apply(FEMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
+class FEInflateMesh: public FEModifier
+{
+public:
+	FEInflateMesh();
+	FEMesh* Apply(FEMesh* pm);
+
+private:
+	void ShrinkMesh(FEMesh& mesh);
 };

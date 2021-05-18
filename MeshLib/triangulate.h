@@ -27,9 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <MathLib/math3d.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class GLMesh;
+class GFace;
 
 class GTriangulate
 {
@@ -124,3 +125,4 @@ inline bool Intersect(const vec2d& a, const vec2d& b, const vec2d& c, const vec2
 
 //-----------------------------------------------------------------------------
 GLMesh* triangulate(GTriangulate& c);
+GLMesh* triangulate(GFace& face);

@@ -130,7 +130,7 @@ public:
 		update = true;
 
 		QVBoxLayout* pg = new QVBoxLayout;
-		pg->setMargin(0);
+		pg->setContentsMargins(0,0,0,0);
 
 		QSplitter* psplitter = new QSplitter;
 		psplitter->setOrientation(Qt::Vertical);
@@ -142,7 +142,7 @@ public:
 
 		QWidget* w = new QWidget;
 		QVBoxLayout* pvl = new QVBoxLayout;
-		pvl->setMargin(0);
+		pvl->setContentsMargins(0,0,0,0);
 
 		pshow = new QToolButton; pshow->setObjectName("showButton");
 		pshow->setIcon(QIcon(":/icons/eye.png"));
@@ -188,6 +188,7 @@ public:
 		g.setColorAt(1.0, c3);
 
 		QPixmap pix(24, 24);
+        pix.setDevicePixelRatio(m_list->devicePixelRatio());
 		pix.fill(Qt::transparent);
 		QPainter p(&pix);
 		p.setRenderHint(QPainter::Antialiasing);

@@ -153,11 +153,11 @@ void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages)
 
 	if (reader.readNextStartElement())
 	{
-		if(reader.name() == "messages")
+		if(reader.name() == MESSAGES)
 		{
 			while(reader.readNextStartElement())
 			{
-				if(reader.name() == "message")
+				if(reader.name() == MESSAGE)
 				{
 					qint64 time = reader.attributes().value("time").toLongLong();
 
@@ -288,11 +288,11 @@ void CRepositoryPanel::AddCategory(char **data)
 
 void CRepositoryPanel::AddProject(char **data)
 {
-	int ID = stoi(data[0]);
+	int ID = std::stoi(data[0]);
 	QString name(data[1]);
 	QString owner(data[2]);
 	QString category(data[3]);
-	bool authorized = stoi(data[4]);
+	bool authorized = std::stoi(data[4]);
 	bool cont = authorized;
 
 	bool owned = false;

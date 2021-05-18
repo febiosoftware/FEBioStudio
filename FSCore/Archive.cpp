@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include "zlib.h"
 static z_stream strm;
 
+using std::stringstream;
+
 //=============================================================================
 IOMemBuffer::IOMemBuffer()
 {

@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
-using namespace std;
+////using namespace std;
 
 //-----------------------------------------------------------------------------
 AbaqusImport::AbaqusImport(FEProject& prj) : FEFileImport(prj)

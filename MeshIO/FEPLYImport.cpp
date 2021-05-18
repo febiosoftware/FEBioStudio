@@ -30,6 +30,7 @@ SOFTWARE.*/
 
 FEPLYImport::FEPLYImport(FEProject& prj) : FEFileImport(prj)
 {
+	m_mesh = nullptr;
 }
 
 FEPLYImport::~FEPLYImport()
@@ -38,19 +39,59 @@ FEPLYImport::~FEPLYImport()
 
 bool FEPLYImport::Load(const char* szfile)
 {
+	// make sure the mesh pointer is reset
+	m_mesh = nullptr;
+
 	FEModel& fem = m_prj.GetFEModel();
 
-	if (!Open(szfile, "rt")) return errf("Failed opening file %s.", szfile);
+	if (read_file(szfile) == false)
+	{
+		if (m_mesh) delete m_mesh;
+		return false;
+	}
+
+	assert(m_mesh);
+	m_mesh->BuildMesh();
+	GSurfaceMeshObject* po = new GSurfaceMeshObject(m_mesh);
+
+	char szname[256];
+	FileTitle(szname);
+	po->SetName(szname);
+	fem.GetModel().AddObject(po);
+
+	m_mesh = nullptr;
+	return true;
+}
+
+bool FEPLYImport::read_file(const char* szfile)
+{
+	if (!Open(szfile, "rb")) return errf("Failed opening file %s.", szfile);
 
 	char szline[256] = {0}, *ch;
 
 	// read the first line
 	ch = fgets(szline, 255, m_fp);
 	if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-	int n;
-	if (n = strncmp(szline, "ply", 3) != 0) 
+	if (strncmp(szline, "ply", 3) != 0) 
 	{
 		return errf("This is not a valid ply file.");
+	}
+
+	// read the next line, this should tell us if this is an ascii or binary file
+	bool binary = false;
+	ch = fgets(szline, 255, m_fp);
+	if (ch == 0) return errf("An unexpected error occured while reading the file data.");
+	if (strstr(szline, "format ascii") != 0)
+	{
+		binary = false;
+	}
+	else if (strstr(szline, "format binary_little_endian") != 0)
+	{
+		binary = true;
+	}
+	else
+	{
+		return errf("This is not a PLY ascii file.");
 	}
 
 	// find vertices and faces
@@ -69,36 +110,103 @@ bool FEPLYImport::Load(const char* szfile)
 	if (verts == 0) return errf("No vertex data found.");
 	if (faces == 0) return errf("No face data found.");
 
-	FESurfaceMesh* pm = new FESurfaceMesh;
-	pm->Create(verts, 0, faces);
+	// allocate a mesh
+	m_mesh = new FESurfaceMesh;
+	FESurfaceMesh& mesh = *m_mesh;
+	mesh.Create(verts, 0, faces);
 
-	for (int i=0; i<verts; ++i)
+	if (binary == false)
 	{
-		ch = fgets(szline, 255, m_fp);
-		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-		FENode& n = pm->Node(i);
-		vec3d& r = n.r;
-		sscanf(szline, "%lg%lg%lg", &r.x, &r.y, &r.z);
+		for (int i = 0; i < verts; ++i)
+		{
+			ch = fgets(szline, 255, m_fp);
+			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
+			FENode& n = mesh.Node(i);
+			vec3d& r = n.r;
+			sscanf(szline, "%lg%lg%lg", &r.x, &r.y, &r.z);
+		}
+
+		for (int i = 0; i < faces; ++i)
+		{
+			ch = fgets(szline, 255, m_fp);
+			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
+			FEFace& el = mesh.Face(i);
+			int n[5];
+			int nread = sscanf(szline, "%d%d%d%d%d", &n[0], &n[1], &n[2], &n[3], &n[4]);
+
+			if (n[0] == 3)
+			{
+				assert(nread > 3);
+				el.SetType(FE_FACE_TRI3);
+				el.n[0] = n[1];
+				el.n[1] = n[2];
+				el.n[2] = n[3];
+			}
+			else if (n[0] == 4)
+			{
+				assert(nread > 4);
+				el.SetType(FE_FACE_QUAD4);
+				el.n[0] = n[1];
+				el.n[1] = n[2];
+				el.n[2] = n[3];
+				el.n[3] = n[4];
+			}
+			else
+			{
+				assert(false);
+				return false;
+			}
+		}
 	}
-
-	for (int i=0; i<faces; ++i)
+	else
 	{
-		ch = fgets(szline, 255, m_fp);
-		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-		FEFace& el = pm->Face(i);
-		el.SetType(FE_FACE_TRI3);
-		sscanf(szline, "%*d%d%d%d", &el.n[0], &el.n[1], &el.n[2]);
+		for (int i = 0; i < verts; ++i)
+		{
+			float r[3];
+			size_t nread = fread(r, sizeof(float), 3, m_fp);
+			if (nread != 3) return errf("An unexpected error occured while reading vertex data.");
+
+			FENode& n = mesh.Node(i);
+			n.r = vec3d(r[0], r[1], r[2]);
+		}
+
+		for (int i = 0; i < faces; ++i)
+		{
+			// read the number of vertices
+			unsigned char vertices;
+			fread(&vertices, sizeof(unsigned char), 1, m_fp);
+
+			int n[4];
+			int nread = fread(n, sizeof(int), vertices, m_fp);
+			if (nread != vertices) return errf("An unexpected error occured while reading element data.");
+
+			FEFace& el = mesh.Face(i);
+
+			if (vertices == 3)
+			{
+				el.SetType(FE_FACE_TRI3);
+				el.n[0] = n[0];
+				el.n[1] = n[1];
+				el.n[2] = n[2];
+			}
+			else if (n[0] == 4)
+			{
+				el.SetType(FE_FACE_QUAD4);
+				el.n[0] = n[0];
+				el.n[1] = n[1];
+				el.n[2] = n[2];
+				el.n[3] = n[3];
+			}
+			else
+			{
+				assert(false);
+				return false;
+			}
+		}
 	}
 
 	Close();
 
-	pm->BuildMesh();
-	GSurfaceMeshObject* po = new GSurfaceMeshObject(pm);
-
-	char szname[256];
-	FileTitle(szname);
-	po->SetName(szname);
-	fem.GetModel().AddObject(po);
 
 	return true;
 }

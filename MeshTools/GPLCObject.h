@@ -40,4 +40,6 @@ public:
 	void Create(GSketch& s);
 
 	FEMesh* BuildMesh();
+
+	FEMeshBase* GetEditableMesh() override;
 };

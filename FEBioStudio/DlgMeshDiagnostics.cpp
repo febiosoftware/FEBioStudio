@@ -65,7 +65,7 @@ public:
 		QPushButton* b = new QPushButton("Run Diagnostics");
 		cb = new QComboBox;
 		cb->addItems(QStringList() << "Default" << "Detailed");
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		h->addWidget(b);
 		h->addWidget(new QLabel("Output level:"));
 		h->addWidget(cb);

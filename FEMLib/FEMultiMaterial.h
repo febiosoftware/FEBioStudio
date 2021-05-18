@@ -1,7 +1,7 @@
 #pragma once
 #include <FEMLib/FEMaterial.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class FEMultiphasicMaterial;
 class FEModel;

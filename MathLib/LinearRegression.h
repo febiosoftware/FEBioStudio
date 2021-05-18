@@ -26,7 +26,10 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::pair;
 
 bool LinearRegression(const vector<pair<double, double> >& data, pair<double, double>& res);
 

@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QComboBox>
+#include <QCheckBox>
 
 class UIFiberGeneratorTool : public QWidget
 {
@@ -51,6 +52,7 @@ public:
 	QPushButton*	m_apply;
 	QTableWidget*	m_table;
 	QLineEdit*		m_val;
+	QCheckBox*		m_matAxes;
 
 	QComboBox*	m_matList;
 
@@ -79,11 +81,12 @@ public:
 		m_table->setHorizontalHeaderLabels(QStringList() << "selection" << "value");
 
 		QFormLayout* f = new QFormLayout;
-		f->setMargin(0);
+		f->setContentsMargins(0,0,0,0);
 		f->addRow("Material:", m_matList = new QComboBox);
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
 		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
+		f->addRow("Generate mat axes:", m_matAxes = new QCheckBox); 
 
 		m_maxIters->setValidator(new QIntValidator());
 		m_tol->setValidator(new QDoubleValidator());
@@ -294,14 +297,54 @@ void CFiberGeneratorTool::OnApply()
 	GradientMap G;
 	G.Apply(data, grad, m_nsmoothIters);
 
-	// assign to element fibers
-	int NE = pm->Elements();
-	for (int i = 0; i<NE; ++i)
+	bool matAxes = ui->m_matAxes->isChecked();
+	if (matAxes == false)
 	{
-		FEElement& el = pm->Element(i);
-		if (el.m_ntag == 1)
+		// assign to element fibers
+		int NE = pm->Elements();
+		for (int i = 0; i < NE; ++i)
 		{
-			el.m_fiber = grad[i];
+			FEElement& el = pm->Element(i);
+			if (el.m_ntag == 1)
+			{
+				el.m_fiber = grad[i];
+			}
+		}
+	}
+	else
+	{
+		// assign to mat axes
+		int NE = pm->Elements();
+		for (int i = 0; i < NE; ++i)
+		{
+			FEElement& el = pm->Element(i);
+			if (el.m_ntag == 1)
+			{
+				vec3d N(0, 0, 1);
+				if (el.IsShell())
+				{
+					// get the normal to the shell
+					vec3d r0 = pm->Node(el.m_node[0]).r;
+					vec3d r1 = pm->Node(el.m_node[1]).r;
+					vec3d r2 = pm->Node(el.m_node[2]).r;
+					vec3d e1 = r1 - r0;
+					vec3d e2 = r2 - r0;
+					N = e1 ^ e2; N.Normalize();
+				}
+
+				// setup orthogonal axes
+				vec3d a1 = grad[i]; a1.Normalize();
+				vec3d a2 = N ^ a1;
+				vec3d a3 = a1 ^ a2;
+
+				// setup rotation matrix
+				mat3d& Q = el.m_Q;
+				Q[0][0] = a1.x; Q[0][1] = a2.x; Q[0][2] = a3.x;
+				Q[1][0] = a1.y; Q[1][1] = a2.y; Q[1][2] = a3.y;
+				Q[2][0] = a1.z; Q[2][1] = a2.z; Q[2][2] = a3.z;
+
+				el.m_Qactive = true;
+			}
 		}
 	}
 

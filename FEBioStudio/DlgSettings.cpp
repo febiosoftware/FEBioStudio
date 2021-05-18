@@ -626,7 +626,7 @@ CUnitWidget::CUnitWidget(CMainWindow* wnd, QWidget* parent) : QWidget(parent), m
 	m_us->setCurrentIndex(m_unit);
 
 	QFormLayout* f = new QFormLayout();
-	f->setMargin(0);
+	f->setContentsMargins(0,0,0,0);
 	f->addRow("Change for:", m_ops);
 	f->addRow("Unit system:", m_us);
 
@@ -653,7 +653,7 @@ CUnitWidget::CUnitWidget(CMainWindow* wnd, QWidget* parent) : QWidget(parent), m
 	bd->setLayout(fd);
 
 	QVBoxLayout* el = new QVBoxLayout;
-	el->setMargin(0);
+	el->setContentsMargins(0,0,0,0);
 	el->addWidget(bu);
 	el->addWidget(bd);
 
@@ -907,7 +907,7 @@ public:
 		list->setResizeMode(QListView::ResizeMode::Adjust);
 
 		QHBoxLayout* hl = new QHBoxLayout;
-		hl->setMargin(0);
+		hl->setContentsMargins(0,0,0,0);
 		hl->addWidget(list);
 		hl->addWidget(stack);
 		
@@ -915,7 +915,7 @@ public:
 		pg->addLayout(hl);
 
 		QHBoxLayout* bl = new QHBoxLayout;
-		bl->setMargin(0);
+		bl->setContentsMargins(0,0,0,0);
 
 		QPushButton* resetButton = new QPushButton("Reset");
 		bl->addWidget(resetButton);

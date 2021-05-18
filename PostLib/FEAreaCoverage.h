@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <vector>
 #include <string>
 #include "FEDataField.h"
-using namespace std;
+//using namespace std;
 
 namespace Post {
 

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEElement.h>
 #include <vector>
 #include "ValArray.h"
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // forward declaration of the mesh

@@ -26,7 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 #include <list>
-using namespace std;
+//using namespace std;
+
+using std::list;
 
 //-----------------------------------------------------------------------------
 // Forward declaration of the FECoreMesh

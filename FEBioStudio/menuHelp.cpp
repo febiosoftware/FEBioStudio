@@ -99,7 +99,9 @@ void CMainWindow::on_actionAbout_triggered()
 	QMessageBox about(this);
 	about.setWindowTitle("About FEBio Studio");
 	about.setText(txt);
-	about.setIconPixmap(QPixmap(":/icons/FEBioStudio_large.png"));
+    QPixmap FEBStd = QPixmap(":/icons/FEBioStudio_large.png");
+    FEBStd.setDevicePixelRatio(devicePixelRatio());
+	about.setIconPixmap(FEBStd);
 	about.exec();
 }
 

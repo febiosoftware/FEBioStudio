@@ -28,7 +28,10 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <FSCore/color.h>
 #include <vector>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::pair;
 
 //-----------------------------------------------------------------------------
 // The GMesh class defines a triangulated surface. GMesh classes are used to
@@ -95,7 +98,7 @@ public:
 	BOX GetBoundingBox() { return m_box; }
 	void UpdateBoundingBox();
 
-	void Attach(GMesh& m);
+	void Attach(GMesh& m, bool bupdate = true);
 
 public:
 	int	AddNode(const vec3d& r, int groupID = 0);

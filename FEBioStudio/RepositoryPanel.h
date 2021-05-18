@@ -28,7 +28,8 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QVariantMap>
 #include <vector>
-using namespace std;
+#include <QString>
+//using namespace std;
 
 namespace Ui {
 	class CRepositoryPanel;
@@ -127,6 +128,8 @@ private:
 	CLocalDatabaseHandler* dbHandler;
 	QString m_repositoryFolder;
 	qint64 lastMessageTime;
+  const QString MESSAGE = "message";
+  const QString MESSAGES = "messages";
 
 	Ui::CRepositoryPanel*	ui;
 };

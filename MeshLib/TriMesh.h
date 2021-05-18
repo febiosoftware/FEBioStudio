@@ -27,7 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <MathLib/math3d.h>
 #include <list>
-using namespace std;
+//using namespace std;
+
+using std::list;
+using std::pair;
 
 // class that represents a triangle meshes and uses linked lists as the item containers.
 // This mesh can be used for algorithms that manipulate triangle meshes

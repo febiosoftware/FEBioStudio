@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <string.h>
 #include <string>
 
+using std::string;
+
 #ifdef WIN32
 typedef __int64 off_type;
 #endif

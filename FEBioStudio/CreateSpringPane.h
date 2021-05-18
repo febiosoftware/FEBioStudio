@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "CreatePanel.h"
 #include <vector>
-using namespace std;
+//using namespace std;
 
 namespace Ui {
 	class CCreateSpringPane;

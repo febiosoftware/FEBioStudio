@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QRegularExpression>
 
+void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat);
+
 CLogPanel::CLogPanel(QWidget* parent) : QWidget(parent), ui(new Ui::CLogPanel)
 {
 	ui->setupUi(this);
@@ -44,6 +46,15 @@ void CLogPanel::ClearOutput()
 {
 	ui->clearLog(1);
 }
+
+/*
+void CLogPanel::AddText(const QString& txt, int n)
+{
+	ui->txt[n]->moveCursor(QTextCursor::End);
+	ui->txt[n]->insertPlainText(txt);
+	ui->txt[n]->moveCursor(QTextCursor::End);
+}
+*/
 
 void CLogPanel::on_logSave_clicked(bool b)
 {
@@ -88,7 +99,6 @@ void CLogPanel::ShowOutput()
 {
 	ui->showTxt(1);
 }
-
 
 void CLogPanel::AddText(const QString& txt, int n)
 {

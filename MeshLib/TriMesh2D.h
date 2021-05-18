@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <list>
 #include <MathLib/math3d.h>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // Class that represents a triangle mesh in 2D

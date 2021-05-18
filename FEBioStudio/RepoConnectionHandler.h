@@ -28,9 +28,10 @@ SOFTWARE.*/
 
 #include <QObject>
 #include <QList>
+#include <QSslError>
 
 class QNetworkReply;
-class QSslError;
+//class QSslError;
 class CRepositoryPanel;
 class CLocalDatabaseHandler;
 class CMainWindow;

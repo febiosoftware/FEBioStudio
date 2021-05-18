@@ -30,9 +30,9 @@ SOFTWARE.*/
 #include "FENodeElementList.h"
 #include "FENodeFaceList.h"
 
-FENodeNodeList::FENodeNodeList(FEMesh* pm)
+FENodeNodeList::FENodeNodeList(FEMesh* pm, bool preservePartitions)
 {
-	Build(pm);
+	Build(pm, preservePartitions);
 }
 
 FENodeNodeList::FENodeNodeList(FESurfaceMesh* pm)
@@ -44,7 +44,7 @@ FENodeNodeList::~FENodeNodeList()
 {
 }
 
-void FENodeNodeList::Build(FEMesh* pm)
+void FENodeNodeList::Build(FEMesh* pm, bool preservePartitions)
 {
 	assert(pm);
 	if (pm == 0) return;
@@ -52,59 +52,125 @@ void FENodeNodeList::Build(FEMesh* pm)
 	FENodeElementList NEL;
 	NEL.Build(pm);
 
-	int i, j, k, n;
 	int NN = pm->Nodes();
 	vector<int> tag; tag.assign(NN, -1);
+
+	vector<int> P(NN, 0), D(NN, -1);
+	if (preservePartitions)
+	{
+		for (int i = 0; i < pm->Nodes(); ++i)
+		{
+			FENode& node = pm->Node(i);
+			if (node.m_gid >= 0)
+			{
+				P[i] = 3;
+				D[i] = node.m_gid;
+			}
+		}
+
+		for (int i = 0; i < pm->Edges(); ++i)
+		{
+			FEEdge& e = pm->Edge(i);
+			if (e.m_gid >= 0)
+			{
+				int nn = e.Nodes();
+				for (int j = 0; j < nn; ++j)
+				{
+					int nj = e.n[j];
+					if (P[nj] == 0)
+					{
+						P[nj] = 2;
+						D[nj] = e.m_gid;
+					}
+				}
+			}
+		}
+
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			FEFace& f = pm->Face(i);
+			if (f.m_gid >= 0)
+			{
+				int nn = f.Nodes();
+				for (int j = 0; j < nn; ++j)
+				{
+					int nj = f.n[j];
+					if (P[nj] == 0)
+					{
+						P[nj] = 1;
+						D[nj] = f.m_gid;
+					}
+				}
+			}
+		}
+
+	}
 
 	m_val.resize(NN);
 	int nsize = 0;
 
-	for (i=0; i<NN; ++i)
+	for (int i=0; i<NN; ++i)
 	{
+		int Pi = P[i];
+		double Di = D[i];
+		int n = 0;
 		int nv = NEL.Valence(i);
-		for (j=n=0; j<nv; ++j)
+		for (int j = 0; j < nv; ++j)
 		{
 			FEElement_* pe = NEL.Element(i, j);
 			int ne = pe->Nodes();
-			for (k=0; k<ne; ++k) 
+			for (int k = 0; k < ne; ++k)
 			{
 				int nn = pe->m_node[k];
 				if ((nn != i) && (tag[nn] != i))
 				{
-					tag[nn] = i;
-					n++;
+					int Pn = P[nn], Dn = D[nn];
+					if ((preservePartitions == false) || 
+						(Pi < Pn) ||
+						((Pi == Pn) && (Di == Dn)))
+					{
+						tag[nn] = i;
+						n++;
+					}
 				}
 			}
-
-			m_val[i] = n;
-			nsize += n;
 		}
+		m_val[i] = n;
+		nsize += n;
 	}
 
 	m_off.resize(NN);
 	m_off[0] = 0;
-	for (i=1; i<NN; ++i) m_off[i] = m_off[i-1] + m_val[i-1];
+	for (int i=1; i<NN; ++i) m_off[i] = m_off[i-1] + m_val[i-1];
 
-	for (i=0; i<NN; ++i) tag[i] = -1;
+	for (int i=0; i<NN; ++i) tag[i] = -1;
 
 	m_node.resize(nsize);
 
-	for (i=0; i<NN; ++i)
+	for (int i=0; i<NN; ++i)
 	{
+		int Pi = P[i], Di = D[i];
+		int n = 0;
 		int nv = NEL.Valence(i);
 		int noff = m_off[i];
-		for (j=n=0; j<nv; ++j)
+		for (int j = 0, n = 0; j < nv; ++j)
 		{
 			FEElement_* pe = NEL.Element(i, j);
 			int ne = pe->Nodes();
-			for (k=0; k<ne; ++k) 
+			for (int k = 0; k < ne; ++k)
 			{
 				int nn = pe->m_node[k];
 				if ((nn != i) && (tag[nn] != i))
 				{
-					tag[nn] = i;
-					m_node[noff + n] = nn;
-					n++;
+					int Pn = P[nn], Dn = D[nn];
+					if ((preservePartitions == false) || 
+						(Pi < Pn) ||
+						((Pi == Pn) && (Di == Dn)))
+					{
+						tag[nn] = i;
+						m_node[noff + n] = nn;
+						n++;
+					}
 				}
 			}
 		}

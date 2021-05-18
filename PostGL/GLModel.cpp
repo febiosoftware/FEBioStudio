@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include <GLLib/GLMeshRender.h>
 #include <GLLib/glx.h>
 #include <stack>
-using namespace std;
+//using namespace std;
 using namespace Post;
 
 //-----------------------------------------------------------------------------

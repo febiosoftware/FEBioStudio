@@ -25,40 +25,91 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(NOT Qt5_DIR)
-    if(NOT Qt5_Root)
-        set(Qt5_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
-    endif()
-    
-    if(WIN32)
-        find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-			PATH_SUFFIXES "msvc2017_64/lib" "msvc2019_64/lib" "msvc2015_64/lib"
-			DOC "Qt5 CMake Directory")
-    elseif(APPLE)
-		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-			PATH_SUFFIXES "clang_64/lib"
-			DOC "Qt5 CMake Directory")
-    else()
-		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-			PATH_SUFFIXES "gcc_64/lib"
-			DOC "Qt5 CMake Directory")
-    endif()
-        
-    if(Qt5_CMAKE)
-        get_filename_component(Qt5_TEMP ${Qt5_CMAKE} DIRECTORY)
-        set(Qt5_DIR ${Qt5_TEMP} CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
-        unset(Qt5_TEMP)
-        unset(Qt5_CMAKE CACHE)
-    endif()
-    
-    if(NOT Qt5_DIR)
-        message(FATAL_ERROR "Unable to locate Qt5Config.cmake. Please check the value of Qt5_Root and set it to the root directory of your Qt5 installation (e.g. /opt/Qt).")
-    endif()
+# Change to 6 if looking to build with Qt6.
+set(Qt_Ver 6 CACHE STRING "Major version number of Qt.")
+set(Qt_Version Qt${Qt_Ver})
+
+if(NOT Qt_Root)
+    set(Qt_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
 endif()
 
+if(NOT NOT_FIRST)
+    set(NOT_FIRST true CACHE INTERNAL "")
+    return()
+endif()
+
+if(Qt_Ver VERSION_EQUAL 6)
+    if(NOT CMAKE_PREFIX_PATH)
+    
+        if(WIN32)
+            find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+                PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "msvc2015_64" "msvc2017_64" "msvc2019_64"
+                DOC "Qt CMake Directory")
+        elseif(APPLE)
+            find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+                PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
+                    $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "clang_64"
+                DOC "${Qt_Version} CMake Directory")
+        else()
+            find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+                PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
+                    $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt6 $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "gcc_64"
+                DOC "Qt CMake Directory")
+        endif()
+        
+        if(Qt_TEMP)
+            set(CMAKE_PREFIX_PATH ${Qt_TEMP} CACHE INTERNAL "Path to Qt6 installation prefix.")
+            unset(Qt_TEMP CACHE)
+        else()
+            unset(Qt_TEMP CACHE)
+        endif()
+        
+        if(NOT CMAKE_PREFIX_PATH)
+            message(FATAL_ERROR "Unable to locate ${Qt_Version}Config.cmake. Please check the value of ${Qt_Version}_Root and set it to the root directory of your ${Qt_Version} installation (e.g. /opt/Qt).")
+        endif()
+    endif()
+elseif(Qt_Ver VERSION_EQUAL 5)
+    if(NOT Qt5_DIR)
+        if(WIN32)
+            find_file(Qt_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
+                PATHS ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "msvc2015_64/lib" "msvc2017_64/lib" "msvc2019_64/lib" "lib"
+                DOC "Qt CMake Directory")
+        elseif(APPLE)
+            find_file(Qt_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
+                PATHS ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
+                    $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "clang_64/lib" "lib"
+                DOC "${Qt_Version} CMake Directory")
+        else()
+            find_file(Qt_CMAKE cmake/${Qt_Version}/${Qt_Version}Config.cmake
+                PATHS ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
+                    $ENV{HOME}/Qt/* $ENV{HOME}/*/${Qt_Version} $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+                PATH_SUFFIXES "gcc_64/lib" "lib"
+                DOC "Qt CMake Directory")
+        endif()
+            
+        if(Qt_CMAKE)
+            get_filename_component(Qt_TEMP ${Qt_CMAKE} DIRECTORY)
+            set(Qt5_DIR ${Qt_TEMP} CACHE INTERNAL "Path to Qt5 CMake directory.")
+            
+            unset(Qt_TEMP)
+            unset(Qt_CMAKE CACHE)
+        
+        else()
+            unset(Qt_CMAKE CACHE)
+        endif()
+        
+        if(NOT Qt5_DIR)
+            message(FATAL_ERROR "Unable to locate ${Qt_Version}Config.cmake. Please check the value of ${Qt_Version}_Root and set it to the root directory of your ${Qt_Version} installation (e.g. /opt/Qt).")
+        endif()    
+    endif()
+else()
+    message(FATAL_ERROR "FEBio Studio cannot be compiled with Qt version ${Qt_Ver}")
+endif()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -73,7 +124,7 @@ include(FindDependencies.cmake)
 
 #### Check if paths are valid and find libs ####
 
-function(findLib libName libDir libOut)
+function(findLib libDir libOut libName)
     # Optional arguments ARGV3-ARVG6 can be used as alernative names for the library
     find_library(TEMP NAMES ${libName} ${ARGV3} ${ARGV4} ${ARGV5} ${ARGV6}
         PATHS ${${libDir}} NO_DEFAULT_PATH)
@@ -93,17 +144,32 @@ function(findLib libName libDir libOut)
     endif()
 endfunction()
 
+if(USE_TEEM)
+  findLib(TEEM_LIB_DIR TEEM_LIB teem)
+  findLib(LIBTIFF_LIB_DIR LIBTIFF_LIB tiff)
+  #find_library(teem NAMES teem PATH TEEM_LIB_DIR TEEM_LIB)
+endif()
+
+if(USE_DICOM)
+  set(DICOM_LIB_NAMES dcmdata dcmimage dcmimgle i2d oflog ofstd)
+  foreach(name IN LISTS DICOM_LIB_NAMES)
+    findLib(DICOM_LIB_DIR DICOM_LIB ${name})
+	list(APPEND DICOM_LIBS ${DICOM_LIB})
+	unset(DICOM_LIB)
+  endforeach(name)
+endif()
+
 if(USE_MMG)
-    set(MMG_LIB_NAMES mmg3d mmgs)
+    set(MMG_LIB_NAMES mmg3d mmg2d mmgs)
     foreach(name IN LISTS MMG_LIB_NAMES)
-        findLib(${name} MMG_LIB_DIR MMG_LIB)
+        findLib(MMG_LIB_DIR MMG_LIB ${name})
         list(APPEND MMG_LIBS ${MMG_LIB})
         unset(MMG_LIB)
     endforeach(name)
 endif()
 
 if(USE_TETGEN)
-    findLib(tet TETGEN_LIB_DIR TETGEN_LIB tetgen)
+    findLib(TETGEN_LIB_DIR TETGEN_LIB tet tetgen)
 endif()
 
 if(CAD_FEATURES)
@@ -119,7 +185,7 @@ if(CAD_FEATURES)
     endif()
     
     foreach(name IN LISTS NETGEN_LIB_NAMES)
-        findLib(${name} NETGEN_LIB_DIR NETGEN_LIB)
+        findLib(NETGEN_LIB_DIR NETGEN_LIB ${name})
         list(APPEND NETGEN_LIBS ${NETGEN_LIB})
         unset(NETGEN_LIB)
     endforeach(name)
@@ -130,7 +196,7 @@ if(CAD_FEATURES)
     
     set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKSTL TKFillet TKBO TKIGES TKSTEP TKSTEPBase TKXSBase TKG3d TKLCAF TKVCAF)
     foreach(name IN LISTS OCCT_LIB_NAMES)
-        findLib(${name} OCCT_LIB_DIR OCCT_LIB)
+        findLib(OCCT_LIB_DIR OCCT_LIB ${name})
         list(APPEND OCCT_LIBS ${OCCT_LIB})
         unset(OCCT_LIB)
     endforeach(name)
@@ -139,24 +205,23 @@ if(CAD_FEATURES)
 endif()
 
 if(USE_SSH)
-    findLib(ssh SSH_LIB_DIR SSH_LIB)
+    findLib(SSH_LIB_DIR SSH_LIB ssh)
     
     set(SSL_LIBS "")
     
-    findLib(crypto SSL_LIB_DIR CRYPTO_LIB libcrypto)
+    findLib(SSL_LIB_DIR CRYPTO_LIB crypto libcrypto)
     list(APPEND SSL_LIBS ${CRYPTO_LIB})
     unset(CRYPTO_LIB)
     
-    findLib(ssl SSL_LIB_DIR SSL_LIB libssl)
+    findLib(SSL_LIB_DIR SSL_LIB ssl libssl)
     list(APPEND SSL_LIBS ${SSL_LIB})
     unset(SSL_LIB)
 endif()
 
 if(MODEL_REPO)
-    # Passing quazip5 as a possible alternate name for the library
-    findLib(quazip QUAZIP_LIB_DIR QUAZIP_LIB quazip5)
-
-    findLib(sqlite3 SQLITE_LIB_DIR SQLITE_LIB)
+    findLib(QUAZIP_LIB_DIR QUAZIP_LIB ${QUAZIP_NAMES})
+	
+    findLib(SQLITE_LIB_DIR SQLITE_LIB sqlite3)
 endif()
 
 if(USE_FFMPEG)
@@ -169,7 +234,7 @@ if(USE_FFMPEG)
     endif()
     
     foreach(name IN LISTS FFMPEG_LIB_NAMES)
-        findLib(${name} FFMPEG_LIB_DIR FFMPEG_LIB)
+        findLib(FFMPEG_LIB_DIR FFMPEG_LIB ${name})
         list(APPEND FFMPEG_LIBS ${FFMPEG_LIB})
         unset(FFMPEG_LIB)
     endforeach(name)
@@ -205,6 +270,17 @@ else()
 endif()
 
 include_directories(.)
+
+if(USE_TEEM)
+  add_definitions(-DHAS_TEEM)
+  include_directories(${TEEM_INC})
+  include_directories(${LIBTIFF_INC})
+endif()
+
+if(USE_DICOM)
+  add_definitions(-DHAS_DICOM)
+  include_directories(${DICOM_INC})
+endif()
 
 if(USE_MMG)
 	add_definitions(-DHAS_MMG)
@@ -243,7 +319,8 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
-if(Qt5WebEngineWidgets_FOUND)
+# This shouldn't cause any errors.
+if(${Qt_Version}WebEngineWidgets_FOUND)
     add_definitions(-DWEBHELP)
 endif()
 
@@ -267,15 +344,19 @@ endforeach(name)
 ##### Add binaries #####
 
 # Linking the Qt libraries also pulls in the include files
-link_libraries(Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network Qt5::OpenGL)
+link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Qt_Version}::Network ${Qt_Version}::OpenGL)
 
 if(USE_PYTHON)
     add_definitions(-DHAS_PYTHON)
     link_libraries(Python3::Python)
 endif()
 
-if(Qt5WebEngineWidgets_FOUND)
-	link_libraries(Qt5::WebEngineWidgets)
+if(Qt_Ver VERSION_EQUAL 6)
+  link_libraries(Qt6::Core5Compat Qt6::OpenGLWidgets)
+endif()
+
+if(${Qt_Version}WebEngineWidgets_FOUND)
+	link_libraries(${Qt_Version}::WebEngineWidgets)
 endif()
 
 if(WIN32)
@@ -302,6 +383,7 @@ endmacro()
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	addLib(${name})
 endforeach(name)
+
 
 ##### Set dev commit information #####
 
@@ -365,6 +447,15 @@ else()
 	target_link_libraries(FEBioStudio -Wl,--start-group)
 endif()
 
+if(USE_TEEM)
+  target_link_libraries(FEBioStudio ${TEEM_LIB})
+  target_link_libraries(FEBioStudio ${LIBTIFF_LIB})
+endif()
+
+if(USE_DICOM)
+  target_link_libraries(FEBioStudio ${DICOM_LIBS})
+endif()
+
 if(NOT WIN32)
     if(${OpenMP_C_FOUND})
         target_link_libraries(FEBioStudio ${OpenMP_C_LIBRARIES})
@@ -401,7 +492,6 @@ endif()
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
-
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 if(WIN32)

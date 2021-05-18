@@ -319,12 +319,19 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 
 		ReadData(n, sizeof(int), 5);
 
-		el.SetType(FE_QUAD4);
+		if (n[2] == n[3])
+		{
+			el.SetType(FE_TRI3);
+		}
+		else
+		{
+			el.SetType(FE_QUAD4);
+		}
 
 		assert(n[4] > 0);
 
 		el.m_MatID = n[4] - 1;
-		for (j=0; j<4; j++) el.m_node[j] = n[j] - 1;
+		for (j = 0; j < el.Nodes(); j++) el.m_node[j] = n[j] - 1;
 	}
 
 	// set the enabled-ness of the elements and the nodes

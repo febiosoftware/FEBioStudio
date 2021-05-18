@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include "TriMesh.h"
-using namespace std;
+//using namespace std;
 
 class FESurfaceMesh;
 class GEdge;

@@ -29,10 +29,16 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FECurveMesh.h>
+#include <MeshTools/FEMMGRemesh.h>
 #include "FECurveMesher.h"
 #include <MeshLib/triangulate.h>
+#include <MeshLib/FESurfaceMesh.h>
+#include "GLMesh.h"
 #include <list>
-using namespace std;
+//using namespace std;
+
+#ifdef HAS_MMG
+#endif
 
 struct FRONT_NODE
 {
@@ -347,7 +353,7 @@ FEMesh* FEAdvancingFrontMesher2D::BuildMesh()
 	curve->Sort();
 
 	// make sure it's closed
-	if (curve->Type() == FECurveMesh::CLOSED_CURVE) return 0;
+	if (curve->Type() != FECurveMesh::CLOSED_CURVE) return 0;
 
 	// now we can get started
 	// copy the nodes 
@@ -396,4 +402,32 @@ FEMesh* FEAdvancingFrontMesher2D::BuildMesh()
 	delete curve;
 
 	return mesh;
+}
+
+//================================================================================
+FEMMG2DMesher::FEMMG2DMesher(GObject* po) : m_po(po)
+{
+	AddDoubleParam(0.1, "Element size", "Element size");
+}
+
+FEMesh* FEMMG2DMesher::BuildMesh()
+{
+	// MMG needs a base mesh, so let's create one by doing a rough triangulation of the shape.
+	assert(m_po->Faces() == 1);
+	GFace& face = *m_po->Face(0);
+	GLMesh* gm = triangulate(face);
+
+	// MMG needs a FESurfaceMesh, so convert
+	FESurfaceMesh* pm = new FESurfaceMesh(*gm);
+
+	// Now, let's use MMG to remesh
+	double h = GetFloatValue(0);
+	FEMMG2DRemesh mmg;
+	mmg.SetFloatValue(0, h);
+
+	FESurfaceMesh* newMesh = mmg.Apply(pm);
+
+	delete pm;
+
+	return new FEMesh(*newMesh);
 }

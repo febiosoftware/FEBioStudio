@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MathLib/math3d.h>
 #include <MathLib/MathParser.h>
 #include <string>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // This class defines a data variable over the volume of a domain.

@@ -27,10 +27,16 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <string>
+#include <memory>
 #include <FSCore/box.h>
 #include <FSCore/FSObjectList.h>
 #include "GLImageRenderer.h"
 #include "GLObject.h"
+
+#ifdef HAS_TEEM
+  #include <ImageLib/tif_reader.h>
+  #include <ImageLib/nrrd_reader.h>
+#endif
 
 class C3DImage;
 
@@ -48,6 +54,14 @@ public:
 	void SetFileName(const std::string& fileName);
 	std::string GetFileName() const;
 
+#ifdef HAS_TEEM
+  bool LoadTiffData(std::wstring& filename);
+  bool LoadNrrdData(std::wstring& filename);
+#endif
+
+#ifdef HAS_DICOM
+  bool LoadDicomData(const std::string &filename);
+#endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
 
 	C3DImage* Get3DImage() { return m_img; }
@@ -64,8 +78,23 @@ public:
 	void SetImageModel(CImageModel* imgModel);
 
 private:
+#ifdef HAS_TEEM
+    //works for Tiff and Nrrd structs. Returns a nrrd*.
+    template<class Reader>
+	Nrrd* GetNrrd(std::unique_ptr<Reader>& reader, std::wstring &fileName)
+	{
+	  reader->SetFile(fileName);
+      reader->Preprocess();
+      return reader->Convert(0,0,0);
+	}
+#endif
+
+    void SetValues(const std::string &fileName, int x, int y, int z);
+    void AssignImage(C3DImage* im);
+
 	C3DImage*	m_img;
 	CImageModel*	m_imgModel;
+    unsigned char* data = nullptr;
 };
 
 class CImageModel : public CGLObject
@@ -73,7 +102,14 @@ class CImageModel : public CGLObject
 public:
 	CImageModel(CGLModel* mdl);
 	~CImageModel();
+#ifdef HAS_TEEM
+  bool LoadTiffData(std::wstring& filename);
+  bool LoadNrrdData(std::wstring& filename);
+#endif
 
+#ifdef HAS_DICOM
+  bool LoadDicomData(const std::string &filename);
+#endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
 
 	int ImageRenderers() const { return (int)m_render.Size(); }

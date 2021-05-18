@@ -33,7 +33,9 @@ SOFTWARE.*/
 #include <MathLib/math3d.h>
 #include <stack>
 #include <cstring>
-using namespace std;
+//using namespace std;
+
+using std::stack;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

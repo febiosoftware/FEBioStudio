@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FEModel.h"
 #include "GDiscreteObject.h"
 #include <vector>
-using namespace std;
+//using namespace std;
 
 // selection type
 enum SelectionType

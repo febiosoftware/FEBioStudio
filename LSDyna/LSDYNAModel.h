@@ -29,7 +29,10 @@ SOFTWARE.*/
 #include <list>
 #include <string.h>
 
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::list;
 
 class FEModel;
 class GMeshObject;

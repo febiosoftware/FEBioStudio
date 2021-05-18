@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include "LUSolver.h"
 #include <math.h>
-#include <math.h>
 
 //-----------------------------------------------------------------------------
 LUSolver::LUSolver() : m_pA(0)

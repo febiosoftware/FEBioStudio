@@ -474,7 +474,7 @@ bool FindIntersection(FEMeshBase& mesh, FEFace &f, const vec3d& x, const vec3d& 
 }
 
 #include <set>
-using namespace std;
+//using namespace std;
 
 bool projectToLine(const vec3d& p, const vec3d& r0, const vec3d& r1, vec3d& q)
 {

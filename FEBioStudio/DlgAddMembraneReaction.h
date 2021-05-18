@@ -28,7 +28,11 @@
 #include <vector>
 #include <list>
 #include <QDialog>
-using namespace std;
+//using namespace std;
+
+using std::string;
+using std::vector;
+using std::pair;
 
 class CMainWindow;
 class QListWidget;

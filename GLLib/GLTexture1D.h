@@ -25,7 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-
+/*
+#ifdef WIN32
+  #define _HAS_STD_BYTE 0
+#endif
+*/
 class GLTexture1D
 {
 public:

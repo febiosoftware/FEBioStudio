@@ -38,7 +38,7 @@ SOFTWARE.*/
 
 #include <assert.h>
 #include <string>
-using namespace std;
+//using namespace std;
 using namespace Post;
 
 //////////////////////////////////////////////////////////////////////

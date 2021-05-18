@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 
 #include <list>
-using namespace std;
+//using namespace std;
 
 class FENASTRANimport : public FEFileImport
 {

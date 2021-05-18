@@ -40,7 +40,7 @@ SOFTWARE.*/
 
 #define OCCGEOMETRY
 
-using namespace std;
+//using namespace std;
 
 namespace nglib {
 #include <nglib.h>
@@ -82,7 +82,7 @@ FEMesh*	NetGenMesher::BuildMesh()
 #ifdef HAS_NETGEN
 	using namespace nglib;
 	using namespace netgen;
-	using namespace std;
+	//using namespace std;
 
 	// Initialise the Netgen Core library
 	cout << "Calling Netgen" << std::endl;

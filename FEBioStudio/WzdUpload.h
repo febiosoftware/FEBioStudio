@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+#include <QStringList>
 #include <QWizard>
 #include <QTreeWidget>
 #include <vector>
@@ -34,7 +35,7 @@ namespace Ui {
 	class CWzdUpload;
 }
 
-class QStringList;
+//class QStringList;
 class QTreeWidgetItem;
 class CPublicationWidget;
 class CLocalDatabaseHandler;

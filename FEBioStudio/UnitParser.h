@@ -27,7 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <QString>
-using namespace std;
+//using namespace std;
+
+using std::vector;
 
 struct SYMBOL
 {

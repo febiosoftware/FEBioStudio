@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <vector>
 #include <QDialog>
 #include "GraphData.h"
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 class QPainter;

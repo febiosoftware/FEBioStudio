@@ -6,7 +6,9 @@
 #include <vector>
 #include <string>
 
-using namespace std;
+//using namespace std;
+
+using std::map;
 
 // This code imports COMSOL mesh files.
 // Developed by Michael Fernandez (mjf2152@columbia.edu) at Columbia (10/22/13)

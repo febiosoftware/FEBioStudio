@@ -1,9 +1,128 @@
 # Qt
-find_package(Qt5 COMPONENTS Widgets Gui Network OpenGL REQUIRED)
-find_package(Qt5 COMPONENTS WebEngineWidgets QUIET)
-mark_as_advanced(Qt5Charts_DIR Qt5Core_DIR Qt5Gui_DIR Qt5Network_DIR Qt5OpenGL_DIR Qt5Positioning_DIR 
-    Qt5PrintSupport_DIR Qt5QmlModels_DIR Qt5Qml_DIR Qt5Quick_DIR Qt5WebChannel_DIR Qt5WebEngineCore_DIR 
-    Qt5WebEngineWidgets_DIR Qt5Widgets_DIR)
+find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED) 
+
+if(Qt_Ver VERSION_EQUAL 6)
+  find_package(${Qt_Version} COMPONENTS Core5Compat OpenGLWidgets REQUIRED)
+endif()
+find_package(${Qt_Version} COMPONENTS WebEngineWidgets QUIET)
+mark_as_advanced(${Qt_Version}_DIR ${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR 
+    ${Qt_Version}Positioning_DIR ${Qt_Version}PrintSupport_DIR ${Qt_Version}QmlModels_DIR ${Qt_Version}Qml_DIR ${Qt_Version}Quick_DIR
+    ${Qt_Version}Widgets_DIR ${Qt_Version}Core5Compat_DIR ${Qt_Version}GuiTools_DIR ${Qt_Version}CoreTools_DIR ${Qt_Version}OpenGLWidgets_DIR
+    ${Qt_Version}WidgetsTools_DIR ${Qt_Version}WebEngineWidgets_DIR XKB_INCLUDE_DIR XKB_LIBRARY)
+	
+#~ if(Qt_Ver VERSION_EQUAL 5)
+  mark_as_advanced(Qt5Charts_DIR Qt5WebEngineWidgets_DIR Qt5WebChannel_DIR Qt5WebEngineCore_DIR)
+#~ endif()
+
+#Teem
+if(WIN32)
+	find_path(TEEM_INC teem/nrrd.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		PATH_SUFFIXES "include" "include/teem*" "src" "build" "build/include"
+        DOC "Teem include directory")
+	find_library(TEEM_LIB teem 
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "build/bin" "src/build/bin" "Release" "Debug"
+		DOC "Teem library path")
+else()
+	find_path(TEEM_INC teem/nrrd.h
+        PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "include/teem" "build" "build/include" "src" 
+		DOC "Teem include directory")
+	find_library(TEEM_LIB teem
+        PATHS /opt/teem* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
+		DOC "Teem library path")
+endif()
+
+if(TEEM_LIB)
+    get_filename_component(TEEM_TEMP ${TEEM_LIB} DIRECTORY)
+    set(TEEM_LIB_DIR ${TEEM_TEMP} CACHE PATH "Path to the Teem lib directory (e.g. /opt/teem/bin)")
+    unset(TEEM_TEMP)
+    unset(TEEM_LIB CACHE)
+else()
+	set(TEEM_LIB_DIR  CACHE PATH "Path to the Teem lib directory (e.g. /opt/teem/bin)")
+    unset(TEEM_LIB CACHE)
+endif()
+
+#Libtiff
+if(WIN32)
+	find_path(LIBTIFF_INC tiffio.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		PATH_SUFFIXES "include" "src" "build" "build/include"
+        DOC "LibTiff include directory")
+	find_library(LIBTIFF_LIB tiff 
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "build/lib" "src/build/lib" "Release" "Debug"
+		DOC "LibTiff library path")
+else()
+	find_path(LIBTIFF_INC tiffio.h
+        PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "build" "build/include" "src" 
+		DOC "LibTiff include directory")
+	find_library(LIBTIFF_LIB tiff
+        PATHS /opt/libtiff* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
+		DOC "LibTiff library path")
+endif()
+
+if(LIBTIFF_LIB)
+    get_filename_component(LIBTIFF_TEMP ${LIBTIFF_LIB} DIRECTORY)
+    set(LIBTIFF_LIB_DIR ${LIBTIFF_TEMP} CACHE PATH "Path to the LibTiff lib directory (e.g. /opt/libtiff/lib)")
+    unset(LIBTIFF_TEMP)
+    unset(LIBTIFF_LIB CACHE)
+else()
+	set(LIBTIFF_LIB_DIR  CACHE PATH "Path to the LibTiff lib directory (e.g. /opt/libtiff/lib)")
+    unset(LIBTIFF_LIB CACHE)
+endif()
+
+
+if(LIBTIFF_INC AND LIBTIFF_LIB_DIR AND TEEM_INC AND TEEM_LIB_DIR)		
+	option(USE_TEEM "Required for Teem use" ON)
+    mark_as_advanced(TEEM_INC TEEM_LIB_DIR)
+else()
+	option(USE_TEEM "Required for Teem use" OFF)
+    mark_as_advanced(CLEAR TEEM_INC TEEM_LIB_DIR)
+endif()
+
+# Dicom
+if(WIN32)
+	find_path(DICOM_INC dcmtk/dcmimgle/dcmimage.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		PATH_SUFFIXES "include" "include/dcmtk*" "src" "build" "build/dcmtk"
+        DOC "Dicom include directory")
+	find_library(DICOM_LIB dcmimgle 
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "build/lib" "src/build/lib" "Release" "Debug"
+		DOC "Dicom library path")
+else()
+	find_path(DICOM_INC dcmtk/dcmimgle/dcmimage.h
+        PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "include/dcmtk*" "build" "build/include/dcmtk" "src" 
+		DOC "Dicom include directory")
+	find_library(DICOM_LIB dcmimgle
+        PATHS /opt/teem* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
+		DOC "Dicom library path")
+endif()
+
+if(DICOM_LIB)
+    get_filename_component(DICOM_TEMP ${DICOM_LIB} DIRECTORY)
+    set(DICOM_LIB_DIR ${DICOM_TEMP} CACHE PATH "Path to the Dicom lib directory (e.g. /opt/dcmtk/lib)")
+    unset(DICOM_TEMP)
+    unset(DICOM_LIB CACHE)
+else()
+	set(DICOM_LIB_DIR  CACHE PATH "Path to the Dicom lib directory (e.g. /opt/dcmtk/lib)")
+    unset(DICOM_LIB CACHE)
+endif()
+
+if(DICOM_INC AND DICOM_LIB_DIR)		
+	option(USE_DICOM "Required for Dicom use" ON)
+    mark_as_advanced(DICOM_INC DICOM_LIB_DIR)
+else()
+	option(USE_DICOM "Required for Dicom use" OFF)
+    mark_as_advanced(CLEAR DICOM_INC DICOM_LIB_DIR)
+endif()
 
 # MMG
 if(WIN32)
@@ -253,12 +372,19 @@ else()
 endif()
 
 # QuaZip
+if(Qt_Ver VERSION_EQUAL 6)
+    set(QUAZIP_NAMES quazip1-qt6 quazip6 quazip)
+else()
+    set(QUAZIP_NAMES quazip5 quazip)
+endif()
+
 if(WIN32)
 	find_path(QUAZIP_INC quazip.h
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "/quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
         DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB quazip5 
+	find_library(QUAZIP_LIB 
+        NAMES ${QUAZIP_NAMES} 
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "QuaZip library path")
@@ -267,22 +393,25 @@ elseif(APPLE)
         PATHS /usr/include/* /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "/quazip" "include/quazip" "quazip/include/quazip" "build/quazip" "build/include/quazip"
 		DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB quazip 
+	find_library(QUAZIP_LIB 
+        NAMES ${QUAZIP_NAMES}  
         PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "quazip/lib" "build" "build/lib" "Release" "Debug"
 		DOC "QuaZip library path")
 else()
 	find_path(QUAZIP_INC quazip.h
-        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/include/*
         PATH_SUFFIXES "/quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
 		DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB quazip5 
-        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "lib" "quazip/lib" "build" "build/lib" "Release" "Debug"
+	find_library(QUAZIP_LIB
+        NAMES ${QUAZIP_NAMES}
+        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/ /usr/local/* 
+        PATH_SUFFIXES "lib" "lib64" "quazip/lib" "quazip/build/quazip" "build" "build/lib" "Release" "Debug"
 		DOC "QuaZip library path")
 endif()
 
 if(QUAZIP_LIB)
+    get_filename_component(QUAZIP_NAME ${QUAZIP_LIB} NAME)
     get_filename_component(QUAZIP_TEMP ${QUAZIP_LIB} DIRECTORY)
     set(QUAZIP_LIB_DIR ${QUAZIP_TEMP} CACHE PATH "Path to the QuaZip lib directory (e.g. /opt/quazip/lib)")
     unset(QUAZIP_TEMP)
@@ -365,7 +494,7 @@ elseif(APPLE)
 else()
 	find_path(FFMPEG_INC libavformat/avformat.h
         PATHS /usr/include/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
+        PATH_SUFFIXES "ffmpeg" "ffmpeg/include" "build" "build/include"
 		DOC "FFMPEG include directory")
 	find_library(FFMPEG_LIB avformat
         PATHS /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*

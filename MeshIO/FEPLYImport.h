@@ -35,4 +35,10 @@ public:
 	~FEPLYImport();
 
 	bool Load(const char* szfile);
+
+private:
+	bool read_file(const char* szfile);
+
+private:
+	FESurfaceMesh* m_mesh;
 };

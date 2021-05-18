@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MathLib/math3d.h>
 #include <FSCore/FSObject.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // This class defines a 2D sketch

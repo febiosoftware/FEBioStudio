@@ -27,8 +27,11 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include <MathLib/mat3d.h>
 
+#include <string>
 #include <QDebug>
 #include <iostream>
+
+using std::string;
 
 vec3d StringToVec3d(const QString& s)
 {

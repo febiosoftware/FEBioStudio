@@ -151,7 +151,7 @@ public:
 	void setupUi(::CStatePanel* parent)
 	{
 		QVBoxLayout* pg = new QVBoxLayout(parent);
-		pg->setMargin(0);
+		pg->setContentsMargins(0,0,0,0);
 
 		QPushButton* pAdd  = new QPushButton("Add..." ); pAdd ->setObjectName("addButton"   );// pAdd ->setFixedWidth(60);
 		QPushButton* pEdit = new QPushButton("Edit..."); pEdit->setObjectName("editButton"  ); //pEdit->setFixedWidth(60);

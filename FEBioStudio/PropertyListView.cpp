@@ -262,13 +262,13 @@ public:
 
 	Qt::ItemFlags flags(const QModelIndex& index) const
 	{
-		if (!index.isValid()) return 0;
+		if (!index.isValid()) return Qt::NoItemFlags; // does not allow return 0;
 		if (index.column() == 1)
 		{
 			if (m_list->Property(index.row()).isEditable())
 				return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
 		}
-		return 0;
+		return Qt::NoItemFlags; // does not allow return 0;
 		//		return QAbstractTableModel::flags(index);
 	}
 
@@ -506,7 +506,7 @@ public:
 	void setupUi(::CPropertyListView* parent)
 	{
 		QVBoxLayout* playout = new QVBoxLayout(parent);
-		playout->setMargin(0);
+		playout->setContentsMargins(0,0,0,0);
 
 		m_prop = new QTableView;
 		m_prop->setObjectName(QStringLiteral("modelProps"));

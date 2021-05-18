@@ -71,7 +71,7 @@ public:
 		h->addWidget(m_relativePathEdit);
 		h->addWidget(m_open);
 		h->setSpacing(0);
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		w->setLayout(h);
 
 		QObject::connect(m_open, SIGNAL(clicked(bool)), w, SLOT(buttonPressed()));

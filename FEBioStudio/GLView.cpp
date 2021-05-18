@@ -1345,8 +1345,8 @@ QImage CGLView::CaptureScreen()
 		QImage im = grabFramebuffer();
 
 		// crop based on the capture frame
-		int dpr = m_pWnd->devicePixelRatio();
-		return im.copy(dpr*m_pframe->x(), dpr*m_pframe->y(), dpr*m_pframe->w(), dpr*m_pframe->h());
+		double dpr = m_pWnd->devicePixelRatio();
+		return im.copy((int)(dpr*m_pframe->x()), (int)(dpr*m_pframe->y()), (int)(dpr*m_pframe->w()), (int)(dpr*m_pframe->h()));
 	}
 	else return grabFramebuffer();
 }
@@ -1921,12 +1921,12 @@ void CGLView::Render3DCursor(const vec3d& r, double R)
 
 //-----------------------------------------------------------------------------
 // get device pixel ration
-int CGLView::GetDevicePixelRatio() { return m_pWnd->devicePixelRatio(); }
+double CGLView::GetDevicePixelRatio() { return m_pWnd->devicePixelRatio(); }
 
 QPoint CGLView::DeviceToPhysical(int x, int y)
 {
-	int dpr = m_pWnd->devicePixelRatio();
-	return QPoint(dpr*x, m_viewport[3] - dpr * y);
+	double dpr = m_pWnd->devicePixelRatio();
+	return QPoint((int)(dpr*x), m_viewport[3] - (int)(dpr * y));
 }
 
 //-----------------------------------------------------------------------------
@@ -2383,7 +2383,8 @@ void CGLView::RenderNormals(GObject* po, double scale)
 		for (int i = 0; i<N; ++i)
 		{
 			FEFace& face = pm->Face(i);
-			if (face.IsVisible() && vis[face.m_gid])
+			bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
+			if (face.IsVisible() && bvis)
 			{
 				vec3d fn = face.m_fn;
 
@@ -6808,7 +6809,7 @@ void CGLView::RenderSurfaces(GObject* po)
 
 			// get the part (that is visible)
 			GPart* pg = po->Part(pid[0]);
-			if (pg->IsVisible() == false)
+			if (pg && pg->IsVisible() == false)
 			{
 				if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
 				if (pg && (pg->IsVisible() == false)) pg = 0;
@@ -8958,16 +8959,19 @@ void CGLView::RenderTags()
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 
+	double dpr = GetDevicePixelRatio();
 	for (int i = 0; i<nsel; i++)
 		if (vtag[i].bvis)
 		{
 			glBegin(GL_POINTS);
 			{
 				glColor3ub(0, 0, 0);
-				glVertex2f(vtag[i].wx, vtag[i].wy);
+				int x = (int)(vtag[i].wx * dpr);
+				int y = (int)(m_viewport[3] - dpr*(m_viewport[3] - vtag[i].wy));
+				glVertex2f(x, y);
 				if (vtag[i].ntag == 0) glColor3ub(255, 255, 0);
 				else glColor3ub(255, 0, 0);
-				glVertex2f(vtag[i].wx - 1, vtag[i].wy + 1);
+				glVertex2f(x - 1, y + 1);
 			}
 			glEnd();
 		}
@@ -8978,7 +8982,6 @@ void CGLView::RenderTags()
 	for (int i = 0; i<nsel; ++i)
 		if (vtag[i].bvis)
 		{
-			int dpr = GetDevicePixelRatio();
             int x = vtag[i].wx;
             int y = height()*dpr - vtag[i].wy;
 			painter.setPen(Qt::black);
@@ -9086,9 +9089,9 @@ void CGLView::RenderRigidLabels()
 	for (int i = 0; i < nsel; ++i)
 		if (vtag[i].bvis)
 		{
-			int dpr = GetDevicePixelRatio();
+			double dpr = GetDevicePixelRatio();
 			int x = vtag[i].wx;
-			int y = height()*dpr - vtag[i].wy;
+			int y = (int)(height()*dpr - vtag[i].wy);
 			painter.setPen(Qt::black);
 
 			painter.drawText(x + 3, y - 2, vtag[i].sztag);

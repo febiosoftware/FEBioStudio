@@ -44,7 +44,7 @@ SOFTWARE.*/
 
 CUpdateWidget::CUpdateWidget(QWidget* parent)
     : QWidget(parent), restclient(new QNetworkAccessManager), currentIndex(0), overallSize(0), downloadedSize(0),
-	devChannel(false), urlBase(URL_BASE)
+	devChannel(false), updaterUpdateCheck(false), doingUpdaterUpdate(false), urlBase(URL_BASE), updaterBase(UPDATER_BASE)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	layout = new QVBoxLayout;
@@ -74,13 +74,37 @@ void CUpdateWidget::connFinished(QNetworkReply *r)
 {
 	if(r->request().url().path() == urlBase + ".xml")
 	{
-		checkForUpdateResponse(r);
+		checkForAppUpdateResponse(r);
+	}
+	else if(r->request().url().path() == updaterBase + ".xml")
+	{
+		checkForUpdaterUpdateResponse(r);
 	}
 }
 
-void CUpdateWidget::checkForUpdate(bool dev)
+bool CUpdateWidget::NetworkAccessibleCheck()
 {
+//	return restclient->networkAccessible() == QNetworkAccessManager::Accessible;
+	return true;
+}
+
+void CUpdateWidget::checkForUpdate(bool dev, bool upCheck)
+{
+	updaterUpdateCheck = upCheck;
 	devChannel = dev;
+
+	if(updaterUpdateCheck)
+	{
+		checkForUpdaterUpdate();
+	}
+	else
+	{
+		checkForAppUpdate();
+	}
+}
+
+void CUpdateWidget::checkForAppUpdate()
+{
 	if(devChannel)
 	{
 		urlBase = DEV_BASE;
@@ -101,9 +125,7 @@ void CUpdateWidget::checkForUpdate(bool dev)
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 	request.setRawHeader(QByteArray("version"), QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).toUtf8());
 	
-	// To be turned back on in 1.5.0
-	// request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
-	
+	request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
 
 	if(NetworkAccessibleCheck())
 	{
@@ -111,82 +133,73 @@ void CUpdateWidget::checkForUpdate(bool dev)
 	}
 }
 
-bool CUpdateWidget::NetworkAccessibleCheck()
-{
-//	return restclient->networkAccessible() == QNetworkAccessManager::Accessible;
-	return true;
-}
-
-void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
+void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-	std::cout << statusCode << endl;
+	std::cout << statusCode << std::endl;
 
 	if(statusCode != 200)
 	{
 		showError("Update Check Failed!\n\nUnable to receive response from server.");
 	}
 
-	// serverTime = r->rawHeader("serverTime").toLongLong();
-
 	QXmlStreamReader reader(r->readAll());
 
 	if (reader.readNextStartElement())
 	{
-		if(reader.name() == "update")
+		if(reader.name() == UPDATE) 
 		{
 			while(reader.readNextStartElement())
 			{
-				if(reader.name() == "release")
+				if(reader.name() == RELEASE)
 				{
 					Release release;
-					release.terminal = false;
 
 					while(reader.readNextStartElement())
 					{
-						if(reader.name() == "active")
+						if(reader.name() == ACTIVE)
 						{
 							release.active = reader.readElementText().toInt();
 						}
-						else if(reader.name() == "terminal")
+						else if(reader.name() == TERMINAL)
 						{
 							release.terminal = reader.readElementText().toInt();
 						}
-						else if(reader.name() == "timestamp")
+						else if(reader.name() == TIMESTAMP)
 						{
 							release.timestamp = reader.readElementText().toLongLong();
 						}
-						else if(reader.name() == "FEBioVersion")
+						else if(reader.name() == FEBIOVERSION)
 						{
 							release.FEBioVersion = reader.readElementText();
 						}
-						else if(reader.name() == "FBSVersion")
+						else if(reader.name() == FBSVERSION)
 						{
 							release.FBSVersion = reader.readElementText();
 						}
-						else if(reader.name() == "FEBioNotes")
+						else if(reader.name() == FEBIONOTES)
 						{
 							release.FEBioNotes = reader.readElementText();
 						}
-						else if(reader.name() == "FBSNotes")
+						else if(reader.name() == FBSNOTES)
 						{
 							release.FBSNotes = reader.readElementText();
 						}
-						else if(reader.name() == "releaseMsg")
+						else if(reader.name() == RELEASEMSG)
 						{
 							release.releaseMsg = reader.readElementText();
 						}
-						else if(reader.name() == "files")
+						else if(reader.name() == FEBFILES)
 						{
 							while(reader.readNextStartElement())
 							{
-								if(reader.name() == "file")
+								if(reader.name() == FEBFILE)
 								{
 									ReleaseFile rfile;
 									rfile.size = reader.attributes().value("size").toLongLong();
 									rfile.name = reader.readElementText();
-									
+
 
 									release.files.push_back(rfile);
 								}
@@ -196,11 +209,11 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 								}
 							}
 						}
-						else if(reader.name() == "deleteFiles")
+						else if(reader.name() == DELETEFILES)
 						{
 							while(reader.readNextStartElement())
 							{
-								if(reader.name() == "file")
+								if(reader.name() == FEBFILE)
 								{
 									release.deleteFiles.append(reader.readElementText());
 								}
@@ -225,38 +238,9 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 			}
 
 		}
-		else
-		{
-
-		}
 	}
 
-	lastUpdate = 0;
-
-	QFile autoUpdateXML(QApplication::applicationDirPath() + "/autoUpdate.xml");
-	autoUpdateXML.open(QIODevice::ReadOnly);
-
-	reader.setDevice(&autoUpdateXML);
-
-	if (reader.readNextStartElement())
-	{
-		if(reader.name() == "autoUpdate")
-		{
-			while(reader.readNextStartElement())
-			{
-				if(reader.name() == "lastUpdate")
-				{
-					lastUpdate = reader.readElementText().toLongLong();
-				}
-				else
-				{
-					reader.skipCurrentElement();
-				}
-			}
-		}
-	}
-
-	autoUpdateXML.close();
+	ReadLastUpdateInfo();
 
 	if(releases.size() > 0)
 	{
@@ -280,6 +264,148 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 	{
 		showError("Failed to read release information from server.\nPlease try again later.");
 	}
+}
+
+void CUpdateWidget::checkForUpdaterUpdate()
+{
+	QUrl myurl;
+	myurl.setScheme(SCHEME);
+	myurl.setHost(UPDATE_URL);
+	myurl.setPort(PORT);
+	myurl.setPath(updaterBase + ".xml");
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+
+	if(NetworkAccessibleCheck())
+	{
+		restclient->get(request);
+	}
+
+}
+
+void CUpdateWidget::checkForUpdaterUpdateResponse(QNetworkReply *r)
+{
+
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	if(statusCode != 200)
+	{
+		showError("Update Check Failed!\n\nUnable to receive response from server.");
+	}
+
+	QXmlStreamReader reader(r->readAll());
+
+	if (reader.readNextStartElement())
+	{
+		if(reader.name() == UPDATE)
+		{
+			while(reader.readNextStartElement())
+			{
+				if(reader.name() == RELEASE)
+				{
+					Release release;
+					release.terminal = false;
+
+					while(reader.readNextStartElement())
+					{
+						if(reader.name() == ACTIVE)
+						{
+							release.active = reader.readElementText().toInt();
+						}
+						else if(reader.name() == TIMESTAMP)
+						{
+							release.timestamp = reader.readElementText().toLongLong();
+						}
+						else if(reader.name() == FEBFILES)
+						{
+							while(reader.readNextStartElement())
+							{
+								if(reader.name() == FEBFILE)
+								{
+									ReleaseFile rfile;
+									rfile.size = reader.attributes().value("size").toLongLong();
+									rfile.name = reader.readElementText();
+									
+
+									release.files.push_back(rfile);
+								}
+								else
+								{
+									reader.skipCurrentElement();
+								}
+							}
+						}
+						else
+						{
+							reader.skipCurrentElement();
+						}
+					}
+
+					if(release.active) updaterReleases.push_back(release);
+				}
+				else
+				{
+					reader.skipCurrentElement();
+				}
+			}
+			
+		}
+	}
+
+	ReadLastUpdateInfo();
+
+	if(updaterReleases.size() > 0)
+	{
+		serverTime = updaterReleases[0].timestamp;
+
+		if(updaterReleases[0].timestamp > lastUpdate)
+		{
+			showUpdaterUpdateInfo();
+		}
+		else
+		{
+			checkForAppUpdate();
+		}
+
+	}
+	else
+	{
+		checkForAppUpdate();
+	}
+
+}
+
+void CUpdateWidget::ReadLastUpdateInfo()
+{
+	QXmlStreamReader reader;
+
+	lastUpdate = 0;
+
+	QFile autoUpdateXML(QApplication::applicationDirPath() + "/autoUpdate.xml");
+	autoUpdateXML.open(QIODevice::ReadOnly);
+
+	reader.setDevice(&autoUpdateXML);
+
+	if (reader.readNextStartElement())
+	{
+		if(reader.name() == AUTOUPDATE)
+		{
+			while(reader.readNextStartElement())
+			{
+				if(reader.name() == LASTUPDATE)
+				{
+					lastUpdate = reader.readElementText().toLongLong();
+				}
+				else
+				{
+					reader.skipCurrentElement();
+				}
+			}
+		}
+	}
+	autoUpdateXML.close();
 
 }
 
@@ -353,7 +479,18 @@ void CUpdateWidget::showUpdateInfo()
 
 			if(!releases[0].releaseMsg.isEmpty())
 			{
-				layout->addWidget(new QLabel(releases[0].releaseMsg));
+				// Show all release messages since last update.
+				QStringList messages;
+				for(auto release : releases)
+				{
+					if(release.timestamp > lastUpdate)
+					{
+						QLabel* label = new QLabel(release.releaseMsg);
+						label->setWordWrap(true);
+
+						layout->addWidget(label);
+					}
+				}
 			}
 
 			layout->addWidget(new QLabel("This update provides:"));
@@ -366,6 +503,9 @@ void CUpdateWidget::showUpdateInfo()
 				QObject::connect(newFEBioLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
 
 				layout->addWidget(newFEBioLabel);
+
+				// if(newFEBioLabel->sizeHint().width() > sizeHint().width()) setMinimumWidth(newFEBioLabel->sizeHint().width());
+				newFEBioLabel->setWordWrap(true);
 			}
 
 			if(newFBS)
@@ -374,8 +514,12 @@ void CUpdateWidget::showUpdateInfo()
 				QLabel* newFBSLabel = new QLabel(QChar(0x22, 0x20) + QString(" An update to FEBio Studio %1. Click <a href=\"FBSNotes\">here</a> for release notes.").arg(releases[0].FBSVersion));
 				newFBSLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
 				QObject::connect(newFBSLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
-
+				
 				layout->addWidget(newFBSLabel);
+
+				// if(newFBSLabel->sizeHint().width() > sizeHint().width()) setMinimumWidth(newFBSLabel->sizeHint().width());
+
+				newFBSLabel->setWordWrap(true);
 			}
 		}
 	}
@@ -392,6 +536,35 @@ void CUpdateWidget::showUpdateInfo()
     layout->addStretch(10);
     layout->addWidget(new QLabel(QString("The total download size is %1.").arg(locale().formattedDataSize(overallSize))));
 
+    
+    emit ready(true);
+}
+
+void CUpdateWidget::showUpdaterUpdateInfo()
+{
+	doingUpdaterUpdate = true;
+
+	// Find unique files that need to be downloaded or deleted
+	for(auto release : updaterReleases)
+	{
+		if(release.timestamp > lastUpdate)
+		{
+			for(auto file : release.files)
+			{
+				if(!updateFiles.contains(file.name))
+				{
+					updateFiles.append(file.name);
+					overallSize += file.size;
+				}
+			}
+		}
+	}
+
+	infoLabel->setText("Before this update can be downloaded, the auto-updater needs to download an update for itself.");
+	infoLabel->setWordWrap(true);
+
+    layout->addStretch(10);
+    layout->addWidget(new QLabel(QString("The total download size is %1.").arg(locale().formattedDataSize(overallSize))));
     
     emit ready(true);
 }
@@ -455,10 +628,10 @@ void CUpdateWidget::linkActivated(const QString& link)
 				notes += release.FEBioVersion;
 
 				QDateTime timestamp;
-				timestamp.setTime_t(release.timestamp);
+				timestamp.setSecsSinceEpoch(release.timestamp);
 
 				notes += "   Released: ";
-				notes += timestamp.toString(Qt::SystemLocaleShortDate);
+				notes += timestamp.toString("M/d/yy");
 
 				notes += "\n------------------------------------------------------\n";
 
@@ -482,10 +655,10 @@ void CUpdateWidget::linkActivated(const QString& link)
 				notes += release.FBSVersion;
 
 				QDateTime timestamp;
-				timestamp.setTime_t(release.timestamp);
+				timestamp.setSecsSinceEpoch(release.timestamp);
 
 				notes += "   Released: ";
-				notes += timestamp.toString(Qt::SystemLocaleShortDate);
+				notes += timestamp.toString("M/d/yy");
 
 				notes += "\n------------------------------------------------------\n";
 

@@ -48,3 +48,14 @@ public:
 protected:
 	GObject*	m_obj;
 };
+
+//-----------------------------------------------------------------------------
+class FEMMG2DMesher : public FEMesher
+{
+public:
+	FEMMG2DMesher(GObject* po);
+	FEMesh* BuildMesh();
+
+protected:
+	GObject*	m_po;
+};

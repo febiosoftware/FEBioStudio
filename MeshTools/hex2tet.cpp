@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include <MeshLib/FEMesh.h>
 #include "FEModifier.h"
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // lookup table into HT:

@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <FEBioStudio/WebDefines.h>
 #include <GeomLib/GObject.h>
 #include <string>
-using namespace std;
+//using namespace std;
 
 //=================================================================================================
 CLogDataSettings::CLogDataSettings()

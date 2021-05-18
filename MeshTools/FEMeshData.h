@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include <string>
-using namespace std;
+//using namespace std;
 
 class FEMesh;
 

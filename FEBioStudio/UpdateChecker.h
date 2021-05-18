@@ -28,9 +28,10 @@ SOFTWARE.*/
 
 #include <QWidget>
 #include <QDialog>
+#include <QSslError>
+#include <QStringList>
 
 class QNetworkReply;
-class QSslError;
 class QVBoxLayout;
 class QLabel;
 class QNetworkAccessManager;
@@ -45,18 +46,21 @@ class QDialogButtonBox;
 // #define SCHEME "http"
 
 #ifdef WIN32
-	#define URL_BASE "/update/FEBioStudio/Windows"
-	#define DEV_BASE "/update/FEBioStudioDev/Windows"
+	#define URL_BASE "/update2/FEBioStudio/Windows"
+	#define DEV_BASE "/update2/FEBioStudioDev/Windows"
+	#define UPDATER_BASE "/update2/Updater/Windows"
 	#define REL_ROOT "\\..\\"
 	#define UPDATER "/FEBioStudioUpdater.exe"
 #elif __APPLE__
-	#define URL_BASE "/update/FEBioStudio/macOS"
-	#define DEV_BASE "/update/FEBioStudioDev/macOS"
+	#define URL_BASE "/update2/FEBioStudio/macOS"
+	#define DEV_BASE "/update2/FEBioStudioDev/macOS"
+	#define UPDATER_BASE "/update2/Updater/macOS"
 	#define REL_ROOT "/../../../"
 	#define UPDATER "/FEBioStudioUpdater"
 #else
-	#define URL_BASE "/update/FEBioStudio/Linux"
-	#define DEV_BASE "/update/FEBioStudioDev/Linux"
+	#define URL_BASE "/update2/FEBioStudio/Linux"
+	#define DEV_BASE "/update2/FEBioStudioDev/Linux"
+	#define UPDATER_BASE "/update2/Updater/Linux"
 	#define REL_ROOT "/../"
 	#define UPDATER "/FEBioStudioUpdater"
 #endif
@@ -79,6 +83,7 @@ struct Release
 	QString releaseMsg;
 	std::vector<ReleaseFile> files;
 	QStringList deleteFiles;
+	std::vector<ReleaseFile> updaterFiles;
 };
 
 
@@ -89,7 +94,7 @@ class CUpdateWidget : public QWidget
 public:
     CUpdateWidget(QWidget* parent = nullptr);
 
-    void checkForUpdate(bool dev = false);
+    void checkForUpdate(bool dev = false, bool updaterUpdateCheck = false);
 
 public slots:
 	void linkActivated(const QString& link);
@@ -104,12 +109,19 @@ private slots:
 private:
 	bool NetworkAccessibleCheck();
 
-    void checkForUpdateResponse(QNetworkReply *r);
+	void checkForAppUpdate();
+    void checkForAppUpdateResponse(QNetworkReply *r);
+
+	void checkForUpdaterUpdate();
+	void checkForUpdaterUpdateResponse(QNetworkReply *r);
 
     void showUpdateInfo();
+	void showUpdaterUpdateInfo();
     void showUpToDate();
 	void showTerminal();
     void showError(const QString& error);
+
+	void ReadLastUpdateInfo();
 
 public:
 	QVBoxLayout* layout;
@@ -126,13 +138,34 @@ public:
 	qint64 downloadedSize;
 
     std::vector<Release> releases;
+	std::vector<Release> updaterReleases;
 	qint64 lastUpdate;
 	qint64 serverTime;
 
 	bool devChannel;
+	bool updaterUpdateCheck;
+	bool doingUpdaterUpdate;
 	QString urlBase;
+	QString updaterBase;
 
 	QString UUID;
+
+	//Made this so that QStringView can look up without making a copy.
+	const QString UPDATE       = "update";
+	const QString RELEASE      = "release";
+	const QString ACTIVE       = "active";
+    const QString TERMINAL     = "terminal";
+	const QString TIMESTAMP    = "timestamp";
+	const QString FEBIOVERSION = "FEBioVersion";
+	const QString FBSVERSION   = "FBSVersion";
+	const QString FEBIONOTES   = "FEBioNotes";
+	const QString FBSNOTES     = "FBSNotes";
+	const QString RELEASEMSG   = "releaseMsg";
+	const QString FEBFILES     = "files";
+	const QString FEBFILE      = "file";
+	const QString DELETEFILES  = "deleteFiles";
+	const QString AUTOUPDATE   = "autoUpdate";
+	const QString LASTUPDATE   = "lastUpdate";
 
 };
 

@@ -41,7 +41,10 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <memory>
 #include <sstream>
-using namespace std;
+//using namespace std;
+
+using std::unique_ptr;
+using std::stringstream;
 
 //-----------------------------------------------------------------------------
 FENodeList* BuildNodeList(GFace* pf)
@@ -2072,7 +2075,7 @@ void FEBioExport25::WriteGeometrySectionNew()
 	m_ntotelem = 0;
 
 	// write all parts
-	int nparts = m_Part.size();
+	size_t nparts = m_Part.size();
 	for (int i=0; i<nparts; ++i)
 	{
 		Part* p = m_Part[i];
@@ -2322,7 +2325,7 @@ void FEBioExport25::WriteGeometryNodeSets()
 	for (int i=0; i<NS; ++i)
 	{
 		FEItemListBuilder* pil = m_pNSet[i].second;
-		auto_ptr<FENodeList> pl(pil->BuildNodeList());
+		unique_ptr<FENodeList> pl(pil->BuildNodeList());
 		if (WriteNodeSet(m_pNSet[i].first.c_str(), pl.get()) == false)
 		{
 			throw InvalidItemListBuilder(pil);
@@ -2339,7 +2342,7 @@ void FEBioExport25::WriteGeometryNodeSets()
 		for (int i = 0; i < model.NodeLists(); ++i)
 		{
 			GNodeList* pg = model.NodeList(i);
-			auto_ptr<FENodeList> pn(pg->BuildNodeList());
+			unique_ptr<FENodeList> pn(pg->BuildNodeList());
 			if (WriteNodeSet(pg->GetName(), pn.get()) == false)
 			{
 				throw InvalidItemListBuilder(pg);
@@ -2358,7 +2361,7 @@ void FEBioExport25::WriteGeometryNodeSets()
 				for (int j = 0; j < nset; ++j)
 				{
 					FENodeSet* pns = po->GetFENodeSet(j);
-					auto_ptr<FENodeList> pl(pns->BuildNodeList());
+					unique_ptr<FENodeList> pl(pns->BuildNodeList());
 					if (WriteNodeSet(pns->GetName(), pl.get()) == false)
 					{
 						throw InvalidItemListBuilder(po);
@@ -2379,7 +2382,7 @@ void FEBioExport25::WriteGeometrySurfaces()
 		FEFaceList* pfl = pl->BuildFaceList();
 		if (pfl)
 		{
-			auto_ptr<FEFaceList> ps(pfl);
+			unique_ptr<FEFaceList> ps(pfl);
 			XMLElement el("Surface");
 			el.add_attribute("name", m_pSurf[i].first.c_str());
 			m_xml.add_branch(el);
@@ -2398,7 +2401,7 @@ void FEBioExport25::WriteGeometryElementSets()
 	for (int i = 0; i<NS; ++i)
 	{
 		FEItemListBuilder* pl = m_pESet[i].second;
-		auto_ptr<FEElemList> ps(pl->BuildElemList());
+		unique_ptr<FEElemList> ps(pl->BuildElemList());
 		XMLElement el("ElementSet");
 		el.add_attribute("name", m_pESet[i].first.c_str());
 		m_xml.add_branch(el);
@@ -2874,7 +2877,7 @@ void FEBioExport25::WriteGeometryDiscreteSets()
 				el.add_attribute("name", pst->GetName().c_str());
 				m_xml.add_branch(el);
 				{
-					int N = L.size();
+					size_t N = L.size();
 					for (int n = 0; n<N; ++n)
 					{
 						pair<int,int>& de = L[n];
@@ -3024,7 +3027,7 @@ void FEBioExport25::WriteMeshDataMaterialFibers()
 	FEModel& fem = *m_pfem;
 
 	// loop over all element sets
-	int NSET = m_ElSet.size();
+	size_t NSET = m_ElSet.size();
 	for (int i = 0; i<NSET; ++i)
 	{
 		ElementSet& elSet = m_ElSet[i];
@@ -3064,7 +3067,7 @@ void FEBioExport25::WriteMeshDataMaterialFibers()
 void FEBioExport25::WriteMeshDataMaterialAxes()
 {
 	// loop over all element sets
-	int NSET = m_ElSet.size();
+	size_t NSET = m_ElSet.size();
 	for (int i=0; i<NSET; ++i)
 	{
 		ElementSet& elSet = m_ElSet[i];

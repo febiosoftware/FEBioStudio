@@ -32,6 +32,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class TriMesh;
+class GLMesh;
 
 //-----------------------------------------------------------------------------
 // Class for representing surface meshes
@@ -41,6 +42,7 @@ public:
 	FESurfaceMesh();
 	FESurfaceMesh(const FESurfaceMesh& mesh);
 	FESurfaceMesh(TriMesh& triMesh);
+	FESurfaceMesh(GLMesh& mesh);
 	virtual ~FESurfaceMesh();
 
 	FESurfaceMesh& operator = (const FESurfaceMesh& mesh);

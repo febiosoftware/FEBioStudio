@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "GeomLib/GMeshObject.h"
 #include <MeshTools/GModel.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // FELSDYNAimport::CARD

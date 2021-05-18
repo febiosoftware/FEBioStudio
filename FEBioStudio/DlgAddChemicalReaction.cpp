@@ -42,6 +42,8 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <FEMLib/FEMultiMaterial.h>
 
+using std::stringstream;
+
 //=================================================================================================
 QSelectBox::QSelectBox(QWidget* parent) : QWidget(parent)
 {
@@ -52,13 +54,13 @@ QSelectBox::QSelectBox(QWidget* parent) : QWidget(parent)
 	QPushButton* toSource = new QPushButton("<"); toSource->setFixedWidth(30); toSource->setObjectName("toSource");
 
 	QVBoxLayout* buttonLayout = new QVBoxLayout;
-	buttonLayout->setMargin(0);
+	buttonLayout->setContentsMargins(0,0,0,0);
 	buttonLayout->addWidget(toTarget);
 	buttonLayout->addWidget(toSource);
 	buttonLayout->addStretch();
 
 	QHBoxLayout* mainLayout = new QHBoxLayout;
-	mainLayout->setMargin(0);
+	mainLayout->setContentsMargins(0,0,0,0);
 	mainLayout->addWidget(source);
 	mainLayout->addLayout(buttonLayout);
 	mainLayout->addWidget(target);
@@ -162,12 +164,12 @@ CReactionList::CReactionList(QWidget* parent) : QWidget(parent)
 	l->addWidget(add);
 	l->addWidget(del);
 	l->addStretch();
-	l->setMargin(0);
+	l->setContentsMargins(0,0,0,0);
 
 	QHBoxLayout* h = new QHBoxLayout;
 	h->addWidget(m_list);
 	h->addLayout(l);
-	h->setMargin(0);
+	h->setContentsMargins(0,0,0,0);
 
 	setLayout(h);
 
@@ -246,20 +248,20 @@ public:
 		QGroupBox* pgReactants = new QGroupBox("Reactants:");
 		pgReactants->setFlat(true);
 		QVBoxLayout* reactantsLayout = new QVBoxLayout;
-		reactantsLayout->setMargin(0);
+		reactantsLayout->setContentsMargins(0,0,0,0);
 		reactantsLayout->addWidget(selectReactants = new QSelectBox);
 		pgReactants->setLayout(reactantsLayout);
 
 		QGroupBox* pgProducts = new QGroupBox("Products:");
 		pgProducts->setFlat(true);
 		QVBoxLayout* productsLayout = new QVBoxLayout;
-		productsLayout->setMargin(0);
+		productsLayout->setContentsMargins(0,0,0,0);
 		productsLayout->addWidget(selectProducts = new QSelectBox);
 		pgProducts->setLayout(productsLayout);
 
 		dummy = new QWidget;
 		QVBoxLayout* dummyLayout = new QVBoxLayout;
-		dummyLayout->setMargin(0);
+		dummyLayout->setContentsMargins(0,0,0,0);
 		dummyLayout->addLayout(form2);
 		dummyLayout->addWidget(pgReactants);
 		dummyLayout->addWidget(pgProducts);

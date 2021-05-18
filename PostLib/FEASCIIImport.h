@@ -28,7 +28,10 @@ SOFTWARE.*/
 #include "FEFileReader.h"
 #include <list>
 #include <vector>
-using namespace std;
+//using namespace std;
+
+using std::list;
+using std::vector;
 
 namespace Post {
 //-----------------------------------------------------------------------------

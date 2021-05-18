@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <vector>
 #include "HelpDialog.h"
 
-using namespace std;
+//using namespace std;
 
 class FEProject;
 

@@ -50,7 +50,7 @@ public:
 		h->addWidget(m_name);
 		h->addWidget(m_pick);
 		h->setSpacing(0);
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		w->setLayout(h);
 
 		m_resFlt << "All files (*)";

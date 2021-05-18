@@ -48,13 +48,13 @@ public:
 		QPushButton* none = new QPushButton("None");
 
 		QVBoxLayout* l = new QVBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		l->addWidget(all);
 		l->addWidget(none);
 		l->addStretch();
 
 		QHBoxLayout* h = new QHBoxLayout;
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		h->addWidget(list);
 		h->addLayout(l);
 

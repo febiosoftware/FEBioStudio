@@ -44,7 +44,9 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "GLHighlighter.h"
 #include "Commands.h"
-using namespace std;
+//using namespace std;
+
+using std::stringstream;
 
 class Ui::CCreateSpringPane
 {
@@ -84,7 +86,7 @@ public:
 		m_node[0]->setObjectName("node1");
 		m_node[0]->showNameType(false);
 		QVBoxLayout* l1 = new QVBoxLayout;
-		l1->setMargin(0);
+		l1->setContentsMargins(0,0,0,0);
 		l1->addWidget(m_node[0]);
 		g1->setLayout(l1);
 
@@ -95,7 +97,7 @@ public:
 		m_node[1]->setObjectName("node2");
 		m_node[1]->showNameType(false);
 		QVBoxLayout* l2 = new QVBoxLayout;
-		l2->setMargin(0);
+		l2->setContentsMargins(0,0,0,0);
 		l2->addWidget(m_node[1]);
 		g2->setLayout(l2);
 
@@ -104,7 +106,7 @@ public:
 		m_method->addItem("connect by closest line projection");
 
 		QVBoxLayout* l = new QVBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		l->addLayout(h);
 		l->addWidget(g1);
 		l->addWidget(g2);

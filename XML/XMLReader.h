@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MathLib/mat3d.h>
 #include <FSCore/color.h>
 #include <stdexcept>
+#include <cstring>
 
 #ifndef WIN32
 	#include <string>
@@ -147,7 +148,7 @@ public:
 	void value(bool& b) { b = (atoi(m_szval) == 1); }
 	void value(vector<int>& l);
 	void value(GLColor& c);
-	void value(string& s);
+	void value(std::string& s);
 
 	const char* szvalue() { return m_szval; }
 
@@ -346,7 +347,7 @@ protected:
 	int		m_nline;	// current line (used only as temp storage)
 	int64_t	m_currentPos;	//!< current file position
 
-	string	m_comment;	// last comment that was read
+	std::string	m_comment;	// last comment that was read
 
 	char		m_buf[BUF_SIZE];
 	int64_t		m_bufIndex, m_bufSize;

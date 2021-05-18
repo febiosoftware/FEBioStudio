@@ -27,7 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include <MathLib/math3d.h>
 #include <list>
-using namespace std;
+//using namespace std;
+
+using std::list;
 
 //-----------------------------------------------------------------------------
 // Class that represents a line mesh in 2D composed of linear segments

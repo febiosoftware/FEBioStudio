@@ -400,7 +400,7 @@ void CGLPlaneCutPlot::RenderMesh()
 	int en[8];
 	int ne;
 
-	const int* nt;
+	const int* nt = nullptr;
 
 	float ev[8];
 	vec3d ex[8];
@@ -661,7 +661,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 		FEElement_& el = dom.Element(i);
 		if ((el.IsVisible() || m_bcut_hidden) && el.IsSolid())
 		{
-			const int *nt;
+			const int *nt = nullptr;
 			switch (el.Type())
 			{
 			case FE_HEX8: nt = HEX_NT; break;
@@ -843,10 +843,8 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 {
 	float ev[8];
 	vec3d ex[8];
-	int	nf[8];
 	EDGE edge[15];
 	int en[8];
-	int	rf[3];
 	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFEModel();
 	Post::FEState& state = *ps->CurrentState();
@@ -982,7 +980,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 		{
 			// we consider all elements degenerate hexes
 			// so get the equivalent hex' node numbering
-			const int* nt;
+			const int* nt = nullptr;
 			switch (el.Type())
 			{
 			case FE_HEX8   : nt = HEX_NT; break;

@@ -31,7 +31,9 @@ SOFTWARE.*/
 #include "LoadCurve.h"
 #include <vector>
 #include <string.h>
-using namespace std;
+//using namespace std;
+
+using std::vector;
 
 // parameter types
 enum Param_Type {

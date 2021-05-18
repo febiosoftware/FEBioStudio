@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/FETetGenMesher.h>
 #include <stack>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // constructor

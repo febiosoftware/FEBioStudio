@@ -31,6 +31,9 @@ SOFTWARE.*/
 #include <QDir>
 #include <sstream>
 
+using std::string;
+using std::stringstream;
+
 int FEBioStudioProject::ProjectItem::m_count = 0;
 
 int FEBioStudioProject::ProjectItem::newId() { return m_count++; }

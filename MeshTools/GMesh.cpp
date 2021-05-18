@@ -29,7 +29,9 @@ SOFTWARE.*/
 #include <stack>
 #include <algorithm>
 #include <MeshLib/quad8.h>
-using namespace std;
+//using namespace std;
+
+using std::stack;
 
 //-----------------------------------------------------------------------------
 GMesh::GMesh(void)
@@ -693,7 +695,7 @@ void GMesh::FindNeighbors()
 
 
 //-----------------------------------------------------------------------------
-void GMesh::Attach(GMesh &m)
+void GMesh::Attach(GMesh &m, bool bupdate)
 {
 	int N0 = Nodes();
 	int E0 = Edges();
@@ -725,5 +727,5 @@ void GMesh::Attach(GMesh &m)
 		m_Face.push_back(f);
 	}
 
-	Update();
+	if (bupdate) Update();
 }

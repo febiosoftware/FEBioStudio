@@ -121,29 +121,29 @@ public:
 		QPushButton* del = new QPushButton("Remove");
 
 		QHBoxLayout* fltLayout = new QHBoxLayout;
-		fltLayout->setMargin(0);
+		fltLayout->setContentsMargins(0,0,0,0);
 		fltLayout->addWidget(new QLabel("Filter"));
 		fltLayout->addWidget(filter);
 		fltLayout->addWidget(newVar);
 
 		QHBoxLayout* buttonLayout = new QHBoxLayout;
-		buttonLayout->setMargin(0);
+		buttonLayout->setContentsMargins(0,0,0,0);
 		buttonLayout->addWidget(add);
 		buttonLayout->addWidget(del);
 		buttonLayout->addStretch();
 
 		QVBoxLayout* domLayout = new QVBoxLayout;
-		domLayout->setMargin(0);
+		domLayout->setContentsMargins(0,0,0,0);
 		domLayout->addLayout(buttonLayout);
 		domLayout->addWidget(domList);
 
 		QVBoxLayout* varLayout = new QVBoxLayout;
-		varLayout->setMargin(0);
+		varLayout->setContentsMargins(0,0,0,0);
 		varLayout->addLayout(fltLayout);
 		varLayout->addWidget(varList);
 
 		QHBoxLayout* h = new QHBoxLayout;
-//		h->setMargin(0);
+//		h->setContentsMargins(0,0,0,0);
 
 		h->addLayout(varLayout);
 		h->addLayout(domLayout);
@@ -175,13 +175,13 @@ public:
 		table->setSelectionBehavior(QAbstractItemView::SelectRows);
 
 		QFormLayout* logForm = new QFormLayout;
-		logForm->setMargin(0);
+		logForm->setContentsMargins(0,0,0,0);
 		logForm->setLabelAlignment(Qt::AlignRight);
 		logForm->addRow("Type:", logType);
 		logForm->addRow("List:", logList);
 
 		QHBoxLayout* logbuttonLayout = new QHBoxLayout;
-		logbuttonLayout->setMargin(0);
+		logbuttonLayout->setContentsMargins(0,0,0,0);
 		logbuttonLayout->addWidget(addLogItem);
 		logbuttonLayout->addWidget(remLogItem);
 		logbuttonLayout->addStretch();

@@ -30,11 +30,18 @@ SOFTWARE.*/
 #include <GeomLib/geom.h>
 #include "GSketch.h"
 #include <MeshLib/triangulate.h>
+#include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
 GPLCObject::GPLCObject() : GObject(GPLC_OBJECT)
 {
 	SetFEMesher(new FETetGenMesher(this));
+}
+
+//-----------------------------------------------------------------------------
+FEMeshBase* GPLCObject::GetEditableMesh()
+{
+	return GetFEMesh();
 }
 
 //-----------------------------------------------------------------------------

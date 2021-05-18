@@ -826,6 +826,8 @@ FEMesh* FEMeshBuilder::DetachSelectedMesh()
 		{
 			FEElement& el = pm->Element(n);
 			el.SetType(pe->Type());
+			el.m_gid = pe->m_gid;
+			el.m_MatID = pe->m_MatID;
 
 			for (j = 0; j<pe->Nodes(); ++j)
 			{
@@ -837,6 +839,7 @@ FEMesh* FEMeshBuilder::DetachSelectedMesh()
 		}
 	}
 	assert(n == elems);
+	pm->UpdateElementPartitions();
 
 	// update the new mesh (is done later)
 	//	pm->Update();

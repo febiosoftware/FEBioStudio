@@ -41,6 +41,8 @@ SOFTWARE.*/
 #include <assert.h>
 #include <sstream>
 
+using std::stringstream;
+
 FEBioFormat25::FEBioFormat25(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {
 	m_geomFormat = 0;
@@ -2861,7 +2863,7 @@ void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 {
 	FEModel& fem = GetFEModel();
 
-	FERigidConnector* pi;
+	FERigidConnector* pi = nullptr;
 	char szname[256];
 
 	switch (rc) {

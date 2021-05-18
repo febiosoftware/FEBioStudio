@@ -197,7 +197,7 @@ public:
 		QVBoxLayout* treeLayout = new QVBoxLayout;
 		treeLayout->addWidget(filter);
 		treeLayout->addWidget(tree);
-		treeLayout->setMargin(0);
+		treeLayout->setContentsMargins(0,0,0,0);
 
 		QWidget* treeWidget = new QWidget;
 		treeWidget->setLayout(treeLayout);
@@ -219,7 +219,7 @@ public:
 		plotLayout->addLayout(curveLayout);
 		plotLayout->addWidget(plot);
 		plotLayout->addLayout(pltbutton);
-		plotLayout->setMargin(0);
+		plotLayout->setContentsMargins(0,0,0,0);
 
 		QWidget* plotWidget = new QWidget;
 		plotWidget->setLayout(plotLayout);

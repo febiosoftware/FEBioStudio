@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MathLib/math3d.h>
 #include <QtCore/QProcess>
 #include <FSCore/box.h>
+#include <MeshTools/GMaterial.h>
 
 class FSObject;
 class CDocument;

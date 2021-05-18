@@ -44,7 +44,10 @@ SOFTWARE.*/
 #include <vector>
 #include <sstream>
 #include <algorithm>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::stringstream;
 
 std::string Namify(const char* sz)
 {

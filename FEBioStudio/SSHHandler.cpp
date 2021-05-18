@@ -47,6 +47,9 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <QtCore/QThread>
 
+using std::ifstream;
+using std::ios;
+
 #define MAX_XFER_BUF_SIZE 16384
 
 #ifdef WIN32
@@ -1240,7 +1243,7 @@ int CSSHHandler::ParseCustomFile(std::vector<std::string>& commands)
 
 	QString customScript = m_data->job->GetLaunchConfig()->getText().c_str();
 	ReplaceMacros(customScript);
-	QStringList commandList = customScript.split("\n", QString::SkipEmptyParts);
+	QStringList commandList = customScript.split("\n", Qt::SkipEmptyParts); // QString::SkipEmptyParts is deprecated
 
 	for(QString command : commandList)
 	{

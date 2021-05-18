@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "triangulate.h"
 #include <MeshTools/GLMesh.h>
+#include <GeomLib/GObject.h>
+#include <GeomLib/geom.h>
 
 #ifdef LINUX
 #define abs(a) ((a)>=0?(a):(-(a)))
@@ -125,6 +127,7 @@ GLMesh* triangulate(GTriangulate& c)
 	int NF = 0;
 	while (N > 3)
 	{
+		int N0 = N;
 		for (int i=0; i<N; ++i)
 		{
 			GTriangulate::NODE& v2 = c.Node(i);
@@ -142,7 +145,7 @@ GLMesh* triangulate(GTriangulate& c)
 				f.pid = 0;
 				f.sid = 0;
 
-				// update earity of diangonal endpoints
+				// update earity of diagonal endpoints
 				v1.ntag = abs(v1.ntag); v1.ntag *= Diagonal(c, i-2, i+1);
 				v3.ntag = abs(v3.ntag); v3.ntag *= Diagonal(c, i-1, i+2);
 
@@ -151,6 +154,13 @@ GLMesh* triangulate(GTriangulate& c)
 				N = c.Nodes();
 				break;
 			}
+		}
+		if (N == N0)
+		{
+			// Hmm, no ear was cut off. This is a problem and now we're stuck
+			// in an infinite loop, so let's just abort. 
+			// The most likely cause is a duplicate node in the original GTriangulate object. 
+			break;
 		}
 	}
 
@@ -245,4 +255,161 @@ bool IntersectProp(vec3d& a, vec3d& b, vec3d& c, vec3d& d)
 double Area2(vec3d& a, vec3d& b, vec3d& c)
 {
 	return (b.x - a.x)*(c.y - a.y) - (c.x - a.x)*(b.y - a.y);
+}
+
+//-----------------------------------------------------------------------------
+GLMesh* triangulate(GFace& face)
+{
+	assert(face.m_ntype == FACE_POLYGON);
+
+	GBaseObject& obj = *face.Object();
+
+	GTriangulate c;
+	c.Clear();
+
+	const int M = 50;
+
+	// find the face normal
+	vec3d fn(0, 0, 0);
+	vec3d rc = obj.Node(face.m_node[0])->LocalPosition();
+	for (int i = 1; i < face.Nodes() - 1; ++i)
+	{
+		vec3d r1 = obj.Node(face.m_node[i])->LocalPosition() - rc;
+		vec3d r2 = obj.Node(face.m_node[i + 1])->LocalPosition() - rc;
+		fn += r1 ^ r2;
+	}
+	fn.Normalize();
+
+	// find the rotation to bring it back to the x-y plane
+	quatd q(fn, vec3d(0, 0, 1)), qi = q.Inverse();
+
+	// create all nodes
+	int ne = face.Edges();
+	for (int i = 0; i < ne; ++i)
+	{
+		GEdge& e = *obj.Edge(face.m_edge[i].nid);
+		int ew = face.m_edge[i].nwn;
+		int en0 = (ew == 1 ? e.m_node[0] : e.m_node[1]);
+		int en1 = (ew == 1 ? e.m_node[1] : e.m_node[0]);
+		int n0 = obj.Node(en0)->GetLocalID();
+		switch (e.m_ntype)
+		{
+		case EDGE_LINE:
+		{
+			vec3d r = obj.Node(en0)->LocalPosition() - rc;
+			q.RotateVector(r);
+			c.AddNode(r, n0);
+		}
+		break;
+		case EDGE_3P_CIRC_ARC:
+		{
+			vec3d r0 = obj.Node(e.m_cnode)->LocalPosition() - rc;
+			vec3d r1 = obj.Node(e.m_node[0])->LocalPosition() - rc;
+			vec3d r2 = obj.Node(e.m_node[1])->LocalPosition() - rc;
+			q.RotateVector(r0);
+			q.RotateVector(r1);
+			q.RotateVector(r2);
+
+			vec2d a0(r0.x, r0.y);
+			vec2d a1(r1.x, r1.y);
+			vec2d a2(r2.x, r2.y);
+
+			GM_CIRCLE_ARC ca(a0, a1, a2);
+
+			if (ew == 1) c.AddNode(r1, n0); else c.AddNode(r2, n0);
+
+			int j0, j1, ji;
+			if (face.m_edge[i].nwn == 1) { j0 = 1; j1 = M; ji = 1; }
+			else { j0 = M - 1; j1 = 0; ji = -1; }
+			for (int j = j0; j != j1; j += ji)
+			{
+				double l = (double)j / (double)M;
+				c.AddNode(ca.Point(l), -1);
+			}
+		}
+		break;
+		case EDGE_3P_ARC:
+		{
+			vec3d r0 = obj.Node(e.m_cnode)->LocalPosition() - rc;
+			vec3d r1 = obj.Node(e.m_node[0])->LocalPosition() - rc;
+			vec3d r2 = obj.Node(e.m_node[1])->LocalPosition() - rc;
+			q.RotateVector(r0);
+			q.RotateVector(r1);
+			q.RotateVector(r2);
+
+			vec2d a0(r0.x, r0.y);
+			vec2d a1(r1.x, r1.y);
+			vec2d a2(r2.x, r2.y);
+
+			GM_ARC ca(a0, a1, a2);
+
+			if (ew == 1) c.AddNode(r1, n0); else c.AddNode(r2, n0);
+
+			int j0, j1, ji;
+			if (face.m_edge[i].nwn == 1) { j0 = 1; j1 = M; ji = 1; }
+			else { j0 = M - 1; j1 = 0; ji = -1; }
+			for (int j = j0; j != j1; j += ji)
+			{
+				double l = (double)j / (double)M;
+				c.AddNode(ca.Point(l), -1);
+			}
+		}
+		break;
+		default:
+			assert(false);
+		}
+	}
+
+	// create all edges
+	int NN = c.Nodes();
+	int m = 0;
+	for (int i = 0; i < ne; ++i)
+	{
+		GEdge& e = *obj.Edge(face.m_edge[i].nid);
+		int eid = e.GetLocalID();
+		switch (e.m_ntype)
+		{
+		case EDGE_LINE:
+		{
+			int n0 = m++;
+			int n1 = (n0 + 1) % NN;
+			c.AddEdge(n0, n1, eid);
+		}
+		break;
+		case EDGE_3P_CIRC_ARC:
+			for (int j = 0; j < M; ++j)
+			{
+				int n0 = m++;
+				int n1 = (n0 + 1) % NN;
+				c.AddEdge(n0, n1, eid);
+			}
+			break;
+		case EDGE_3P_ARC:
+			for (int j = 0; j < M; ++j)
+			{
+				int n0 = m++;
+				int n1 = (n0 + 1) % NN;
+				c.AddEdge(n0, n1, eid);
+			}
+			break;
+		default:
+			assert(false);
+		}
+	}
+
+	GLMesh* pm = triangulate(c);
+
+	// Position the face at the correct position
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		vec3d r = pm->Node(i).r;
+		qi.RotateVector(r);
+		r += rc;
+		pm->Node(i).r = r;
+	}
+
+	// set the proper face IDs
+	for (int i = 0; i < pm->Faces(); ++i) pm->Face(i).pid = face.GetLocalID();
+
+	return pm;
 }

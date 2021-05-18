@@ -29,7 +29,11 @@ SOFTWARE.*/
 #include <list>
 #include <vector>
 #include <map>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::list;
+using std::map;
 
 class AbaqusModel
 {

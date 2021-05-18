@@ -161,25 +161,25 @@ public:
 		l->addWidget(drawAxes = new QCheckBox("Draw axes labels"));
 
 		QHBoxLayout* h = new QHBoxLayout;
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		h->addWidget(new QLabel("Background color"));
 		h->addWidget(bgcol = new CColorButton());
 		l->addLayout(h);
 
 		h = new QHBoxLayout;
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		h->addWidget(new QLabel("Title"));
 		h->addWidget(title = new QLineEdit());
 		l->addLayout(h);
 
 		h = new QHBoxLayout;
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		h->addWidget(new QLabel("X-label"));
 		h->addWidget(xlabel = new QLineEdit());
 		l->addLayout(h);
 
 		h = new QHBoxLayout;
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		h->addWidget(new QLabel("Y-label"));
 		h->addWidget(ylabel = new QLineEdit());
 		l->addLayout(h);
@@ -349,13 +349,13 @@ RegressionUi::RegressionUi(CGraphWidget* graph, QWidget* parent) : CPlotTool(par
 	cb->setMaximumWidth(20);
 
 	QHBoxLayout* h = new QHBoxLayout;
-	h->setMargin(0);
+	h->setContentsMargins(0,0,0,0);
 	h->addWidget(m_fnc);
 	h->addWidget(cb);
 
 	QFormLayout* f = new QFormLayout;
 	f->setLabelAlignment(Qt::AlignRight);
-	f->setMargin(0);
+	f->setContentsMargins(0,0,0,0);
 	f->addRow("Source", m_src);
 	f->addRow("Function", h);
 	f->addRow("", m_math = new QLabel(""));
@@ -565,7 +565,7 @@ MathPlot::MathPlot(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent), m_
 	m_edit = new QLineEdit;
 
 	QHBoxLayout* h = new QHBoxLayout;
-	h->setMargin(0);
+	h->setContentsMargins(0,0,0,0);
 	h->addWidget(new QLabel("y(x) = "));
 	h->addWidget(m_edit);
 	h->addWidget(cb);
@@ -876,7 +876,7 @@ public:
 
 		QWidget* x = new QWidget;
 		QHBoxLayout* hx = new QHBoxLayout;
-		hx->setMargin(0);
+		hx->setContentsMargins(0,0,0,0);
 		hx->addWidget(new QLabel(" X: "));
 		hx->addWidget(selectX);
 		x->setLayout(hx);
@@ -888,7 +888,7 @@ public:
 
 		QWidget* y = new QWidget;
 		QHBoxLayout* hy = new QHBoxLayout;
-		hy->setMargin(0);
+		hy->setContentsMargins(0,0,0,0);
 		hy->addWidget(new QLabel(" Y: "));
 		hy->addWidget(selectY);
 		y->setLayout(hy);

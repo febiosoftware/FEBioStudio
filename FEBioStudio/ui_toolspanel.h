@@ -46,7 +46,7 @@ public:
 		QList<CAbstractTool*>& tools = parent->tools;
 
 		QVBoxLayout* pg = new QVBoxLayout(parent);
-		pg->setMargin(1);
+		pg->setContentsMargins(1,1,1,1);
 
 		QWidget* box = new QWidget;
 
