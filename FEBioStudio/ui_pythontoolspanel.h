@@ -52,7 +52,7 @@ public:
 	{
 		this->parent = parent;
 
-		QList<CAbstractTool*>& tools = parent->tools;
+		QList<CPythonTool*>& tools = parent->tools;
 
 		QVBoxLayout* pg = new QVBoxLayout(parent);
 		pg->setMargin(1);
@@ -79,37 +79,6 @@ public:
 		QLabel* label = new QLabel("(No tool selected)");
 		label->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
 		stack->addWidget(label);
-
-		int ntools = tools.size();
-		QList<CAbstractTool*>::Iterator it = tools.begin();
-		for (int i = 0; i<ntools; ++i, ++it)
-		{
-			addTool(*it);
-
-			// CAbstractTool* tool = *it;
-			// QPushButton* but = new QPushButton(tool->name());
-			// but->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-			// but->setCheckable(true);
-
-			// grid->addWidget(but, i / 2, i % 2);
-			// group->addButton(but); group->setId(but, i + 1);
-		}
-
-		
-
-		// it = tools.begin();
-		// for (int i = 0; i<ntools; ++i, ++it)
-		// {
-		// 	CAbstractTool* tool = *it;
-		// 	QWidget* pw = tool->createUi();
-		// 	if (pw == 0)
-		// 	{
-		// 		QLabel* pl = new QLabel("(no properties)");
-		// 		pl->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-		// 		stack->addWidget(pl);
-		// 	}
-		// 	else stack->addWidget(pw);
-		// }
 
 		// create the toolbox
 		CToolBox* tool = new CToolBox;

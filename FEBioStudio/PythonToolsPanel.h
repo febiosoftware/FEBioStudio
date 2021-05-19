@@ -31,11 +31,9 @@ namespace Ui {
 	class CPythonToolsPanel;
 }
 
-// Forward declaration of PyObject
-#ifndef PyObject_HEAD
-struct _object;
-typedef _object PyObject;
-#endif
+namespace pybind11{
+	class function;
+}
 
 class CMainWindow;
 class CAbstractTool;
@@ -52,11 +50,10 @@ public:
 	// update the tools panel
 	void Update(bool breset = true) override;
 
-	CPythonTool* addTool(const char* name, PyObject* func);
-
-	void finalizeTool(CPythonTool* tool);
+	CPythonTool* addTool(const char* name, pybind11::function func);
 
 private:
+	void finalizeTools();
 
 	void hideEvent(QHideEvent* event) override;
 	void showEvent(QShowEvent* event) override;
@@ -68,8 +65,8 @@ private slots:
 private:
 	Ui::CPythonToolsPanel*	ui;
 
-	CAbstractTool*			m_activeTool;
-	QList<CAbstractTool*>	tools;
+	CPythonTool*			m_activeTool;
+	QList<CPythonTool*>	tools;
 
 	friend class Ui::CPythonToolsPanel;
 };

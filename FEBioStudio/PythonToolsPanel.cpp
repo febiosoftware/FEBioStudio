@@ -25,11 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include <PyLib/fbsmodule.h>
+#include <PyLib/pyBindtest.cpp>
 #include "PythonToolsPanel.h"
 #include "ui_pythontoolspanel.h"
 #include <PyLib/PythonTool.h>
-#include <PyLib/pyBindtest.cpp>
 #include <QFileDialog>
 #include "MainWindow.h"
 
@@ -40,7 +39,6 @@ CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) : CComma
 	ui->setupUi(this);
 
 	PyImport_AppendInittab("fbs", &PyInit_fbs);
-	PyImport_AppendInittab("fbs2", &PyInit_fbs2);
     Py_Initialize();
 
 	// Subclass calls connectSlotsByName so we don't need to here. 
@@ -59,7 +57,7 @@ void CPythonToolsPanel::Update(bool breset)
 	}
 }
 
-CPythonTool* CPythonToolsPanel::addTool(const char* name, PyObject* func)
+CPythonTool* CPythonToolsPanel::addTool(const char* name, pybind11::function func)
 {
 	CPythonTool* tool = new CPythonTool(GetMainWindow(), name, func);
 
@@ -68,9 +66,16 @@ CPythonTool* CPythonToolsPanel::addTool(const char* name, PyObject* func)
 	return tool;
 }
 
-void CPythonToolsPanel::finalizeTool(CPythonTool* tool)
+void CPythonToolsPanel::finalizeTools()
 {
-	ui->addTool(tool);
+	for(auto tool : tools)
+	{
+		if(!tool->Finalized())
+		{
+			ui->addTool(tool);
+			tool->setFinalized(true);
+		}
+	}
 }
 
 void CPythonToolsPanel::on_importScript_triggered()
@@ -80,6 +85,8 @@ void CPythonToolsPanel::on_importScript_triggered()
 	FILE* file;
 	file = fopen(fileName.toStdString().c_str(), "r");
 	PyRun_SimpleFile(file, fileName.toStdString().c_str());
+
+	finalizeTools();
 }
 
 void CPythonToolsPanel::on_buttons_buttonClicked(int id)
@@ -89,7 +96,7 @@ void CPythonToolsPanel::on_buttons_buttonClicked(int id)
 	m_activeTool = 0;
 
 	// find the tool
-	QList<CAbstractTool*>::iterator it = tools.begin();
+	QList<CPythonTool*>::iterator it = tools.begin();
 	for (int i = 0; i<id - 1; ++i, ++it);
 
 	// activate the tool

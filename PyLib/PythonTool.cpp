@@ -24,27 +24,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "Python.h"
 #include "PythonTool.h"
+#include <pybind11/pybind11.h>
 
 #include <iostream>
 
-CPythonTool::CPythonTool(CMainWindow* wnd, const char* name, PyObject* func)
-    : CBasicTool(wnd, name, HAS_APPLY_BUTTON)
+CPythonTool::CPythonTool(CMainWindow* wnd, const char* name, pybind11::function func)
+    : finalized(false), CBasicTool(wnd, name, HAS_APPLY_BUTTON)
 {
     SetApplyButtonText("Run");
 
-    // Make a copy of the function object so that it doesn't get invalidted by
-    // importing another script with the same function name
-    this->func = PyFunction_New(PyFunction_GetCode(func), PyFunction_GetGlobals(func));
-
-    std::cout << PyObject_HasAttrString(func, "name") << std::endl;
-    std::cout << PyObject_HasAttrString(func, "_name") << std::endl;
-    std::cout << PyObject_HasAttrString(func, "_name_") << std::endl;
-    std::cout << PyObject_HasAttrString(func, "__name") << std::endl;
-    std::cout << PyObject_HasAttrString(func, "__name__") << std::endl;
-
-    std::cout << PyUnicode_AsUTF8(PyObject_GetAttrString(func, "__name__")) << std::endl;
+    this->func = func;
 }
 
 CPythonTool::~CPythonTool()
@@ -65,6 +55,11 @@ CPythonTool::~CPythonTool()
     }
 
     for(auto el : dblProps)
+    {
+        delete el.second;
+    }
+
+    for(auto el : vec3Props)
     {
         delete el.second;
     }
@@ -98,7 +93,7 @@ void CPythonTool::addIntProperty(const std::string& name, int value)
     CDataPropertyList::addIntProperty(val, QString::fromStdString(name));
 }
 
-void CPythonTool::addEnumProperty(const std::string& name, int value, const std::string& labels)
+void CPythonTool::addEnumProperty(const std::string& name, const std::string& labels, int value)
 {
     int* val = new int;
     *val = value;
@@ -118,6 +113,15 @@ void CPythonTool::addDoubleProperty(const std::string& name, double value)
     CDataPropertyList::addDoubleProperty(val, QString::fromStdString(name));
 }
 
+void CPythonTool::addVec3Property(const std::string& name, vec3d value)
+{
+    vec3d* val = new vec3d;
+    *val = value;
+    vec3Props[name] = val;
+
+    CDataPropertyList::addVec3Property(val, QString::fromStdString(name));
+}
+
 void CPythonTool::addStringProperty(const std::string& name, char* value)
 {
     QString * val = new QString(value);
@@ -134,65 +138,55 @@ void CPythonTool::addResourceProperty(const std::string& name, char* value)
     CDataPropertyList::addResourceProperty(val, QString::fromStdString(name));
 }
 
-
 bool CPythonTool::OnApply()
 {
-    std::cout << PyFunction_Check(func) << std::endl;
-
-    PyObject* args = PyTuple_New(0);
-    PyObject* kwargs = PyDict_New();
-
-    std::vector<PyObject*> objs;
+    pybind11::dict kwargs;
 
     for(int prop = 0; prop < Properties(); prop++)
     {
         CProperty current = Property(prop);
         std::string name = current.name.toStdString();
 
-        PyObject* obj;
-
         switch(current.type)
         {
             case CProperty::Bool:
-                obj = *boolProps[name] ? Py_True: Py_False;
+                kwargs[name.c_str()] = *boolProps[name];
                 break;
             case CProperty::Int:
-                obj = Py_BuildValue("i", *intProps[name]);
-                objs.push_back(obj);
+                kwargs[name.c_str()] = *intProps[name];
                 break;
             case CProperty::Float:
-                obj = Py_BuildValue("d", *dblProps[name]);
-                objs.push_back(obj);
+                kwargs[name.c_str()] = *dblProps[name];
+                break;
+            case CProperty::Vec3:
+                kwargs[name.c_str()] = *vec3Props[name];
                 break;
             case CProperty::String:
-                obj = Py_BuildValue("s", strProps[name]->toStdString().c_str());
-                objs.push_back(obj);
+                kwargs[name.c_str()] = strProps[name]->toStdString().c_str();
                 break;
             case CProperty::Enum:
-                obj = Py_BuildValue("is", *enumProps[name], current.values[*enumProps[name]].toStdString().c_str());
-                objs.push_back(obj);
+                kwargs[name.c_str()] = pybind11::make_tuple(*enumProps[name], current.values[*enumProps[name]].toStdString().c_str());
                 break;
             case CProperty::Resource:
-                obj = Py_BuildValue("s", rscProps[name]->toStdString().c_str());
-                objs.push_back(obj);
+                kwargs[name.c_str()] = rscProps[name]->toStdString().c_str();
                 break;
 
             default:
                 return false;
         };
-
-        PyDict_SetItemString(kwargs, current.name.toStdString().c_str(), obj);
-
     }
 
-    PyObject_Call(func, args, kwargs);
-
-    Py_DECREF(args);
-    Py_DECREF(kwargs);
-    for(auto obj : objs)
-    {
-        Py_DECREF(obj);
-    }
+    func(**kwargs);
 
     return true;
+}
+
+bool CPythonTool::Finalized()
+{
+    return finalized;
+}
+
+void CPythonTool::setFinalized(bool fin)
+{
+    finalized = fin;
 }

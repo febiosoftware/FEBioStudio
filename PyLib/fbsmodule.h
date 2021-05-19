@@ -238,7 +238,7 @@ static PyObject * pyPythonTool_addEnumProperty(pyPythonTool *self, PyObject *arg
 
     if(!PyArg_ParseTuple(args, "ss|i", &name, &labels, &integer)) return NULL;
 
-    self->tool->addEnumProperty(std::string(name), integer, std::string(labels));
+    self->tool->addEnumProperty(std::string(name), std::string(labels), integer);
 
     Py_RETURN_NONE;
 }

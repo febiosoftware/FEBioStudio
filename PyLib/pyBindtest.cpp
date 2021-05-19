@@ -29,10 +29,13 @@ SOFTWARE.*/
 #include <FEBioStudio/FEBioStudio.h>
 #include <FEBioStudio/MainWindow.h>
 #include <FEBioStudio/ModelDocument.h>
+#include <FEBioStudio/Commands.h>
 #include <MeshTools/GModel.h>
 #include <GeomLib/GMeshObject.h>
 #include "PythonTool.h"
 #include <FEBioStudio/PythonToolsPanel.h>
+
+#include <GeomLib/GPrimitive.h>
 
 #include <MeshTools/GDiscreteObject.h>
 #include <MathLib/mat3d.h>
@@ -50,17 +53,9 @@ CPythonTool* PythonTool_init(const char* name, pybind11::function func)
     auto wnd = PRV::getMainWindow();
     CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
 
-    return pythonToolsPanel->addTool(name, func.ptr());
+    // return pythonToolsPanel->addTool(name, func.ptr());
+    return pythonToolsPanel->addTool(name, func);
 }
-
-void finalizePythonTool(CPythonTool* tool)
-{
-    auto wnd = PRV::getMainWindow();
-    CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
-
-    pythonToolsPanel->finalizeTool(tool);
-}
-
 
 GDiscreteSpringSet* SpringSet_init(const char* name, char* type)
 {
@@ -132,8 +127,38 @@ int FindOrMakeNode(double x, double y, double z, double tol)
     return po->AddNode(r);
 }
 
-PYBIND11_MODULE(fbs2, m)
+GBox* GBox_init(vec3d pos, double width, double height, double depth)
 {
+    GBox* gbox = new GBox();
+
+    gbox->SetFloatValue(GBox::WIDTH, width);
+    gbox->SetFloatValue(GBox::HEIGHT, height);
+    gbox->SetFloatValue(GBox::DEPTH, depth);
+
+    gbox->Update();
+
+    gbox->GetTransform().SetPosition(pos);
+
+    auto wnd = PRV::getMainWindow();
+    auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
+
+    doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), gbox), gbox->GetName());
+
+    return gbox;
+}
+
+PYBIND11_MODULE(fbs, m)
+{
+    pybind11::class_<GBox, std::unique_ptr<GBox, pybind11::nodelete>>(m, "GBox")
+        .def(pybind11::init(&GBox_init))
+        .def_property("position", 
+                [](const GBox& g){
+                    return g.GetTransform().GetPosition();
+                }, 
+                [](GBox* g, vec3d& pos){
+                    g->GetTransform().SetPosition(pos);
+                });
+
     pybind11::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, pybind11::nodelete>>(m, "SpringSet")
         .def(pybind11::init(&SpringSet_init))
         .def("addSpring", static_cast<void (GDiscreteSpringSet::*)(int,int)>(&GDiscreteSpringSet::AddElement));
@@ -143,9 +168,10 @@ PYBIND11_MODULE(fbs2, m)
         .def("addBoolProperty", &CPythonTool::addBoolProperty)
         .def("addIntProperty", &CPythonTool::addIntProperty)
         .def("addDoubleProperty", &CPythonTool::addDoubleProperty)
+        .def("addVec3Property", &CPythonTool::addVec3Property)
         .def("addEnumProperty", &CPythonTool::addEnumProperty)
-        .def("addResourceProperty", &CPythonTool::addResourceProperty)
-        .def("finalize", finalizePythonTool);
+        .def("addStringProperty", &CPythonTool::addStringProperty)
+        .def("addResourceProperty", &CPythonTool::addResourceProperty);
 
     m.def("openFile", openFile);
     m.def("FindOrMakeNode", FindOrMakeNode);
@@ -167,5 +193,11 @@ PYBIND11_MODULE(fbs2, m)
         .def("Normalized", &vec3d::Normalized)
         .def_readwrite("x", &vec3d::x)
         .def_readwrite("y", &vec3d::y)
-        .def_readwrite("z", &vec3d::z);
+        .def_readwrite("z", &vec3d::z)
+        .def("__repr__",
+            [](const vec3d& v){
+                return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
+            }
+        
+        );
 }
