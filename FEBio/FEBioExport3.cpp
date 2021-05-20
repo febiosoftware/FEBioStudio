@@ -4175,11 +4175,7 @@ void FEBioExport3::WriteLoadNodal(FEStep& s)
 			m_xml.add_branch(load);
 			{
 				m_xml.add_leaf("dof", bc[l]);
-
-				XMLElement scale("scale");
-				if (plc) scale.add_attribute("lc", plc->GetID());
-				scale.value(pbc->GetLoad());
-				m_xml.add_leaf(scale);
+				WriteParam(pbc->GetParam(FENodalLoad::LOAD));
 			}
 			m_xml.close_branch(); // nodal_load
 		}

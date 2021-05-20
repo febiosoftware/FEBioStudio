@@ -449,8 +449,9 @@ void CCurveEditor::BuildModelTree()
 				FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(pstep->BC(j));
 				if (pbc)
 				{
+					t3 = ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()));
 					Param& p = pbc->GetParam(FEPrescribedDOF::SCALE);
-					ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()), p.GetLoadCurve(), &p);
+					ui->addTreeItem(t3, QString::fromStdString(pbc->GetName()), p.GetLoadCurve(), &p);
 				}
 			}
 		}
@@ -471,15 +472,17 @@ void CCurveEditor::BuildModelTree()
                 FEFluidFlowResistance* pfr = dynamic_cast<FEFluidFlowResistance*>(pstep->Load(j));
                 FEFluidFlowRCR* prcr = dynamic_cast<FEFluidFlowRCR*>(pstep->Load(j));
                 if (pfr) {
-                    ui->addTreeItem(t2, QString::fromStdString("R"), pfr->GetLoadCurve());
-                    ui->addTreeItem(t2, QString::fromStdString("pressure_offset"), pfr->GetPOLoadCurve());
+					t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
+                    ui->addTreeItem(t3, QString::fromStdString("R"), pfr->GetLoadCurve());
+                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), pfr->GetPOLoadCurve());
                 }
                 else if (prcr) {
-                    ui->addTreeItem(t2, QString::fromStdString("R"), prcr->GetLoadCurve());
-                    ui->addTreeItem(t2, QString::fromStdString("Rd"), prcr->GetRDLoadCurve());
-                    ui->addTreeItem(t2, QString::fromStdString("capacitance"), prcr->GetCOLoadCurve());
-                    ui->addTreeItem(t2, QString::fromStdString("pressure_offset"), prcr->GetPOLoadCurve());
-                    ui->addTreeItem(t2, QString::fromStdString("initial_pressure"), prcr->GetIPLoadCurve());
+					t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
+					ui->addTreeItem(t3, QString::fromStdString("R"), prcr->GetLoadCurve());
+                    ui->addTreeItem(t3, QString::fromStdString("Rd"), prcr->GetRDLoadCurve());
+                    ui->addTreeItem(t3, QString::fromStdString("capacitance"), prcr->GetCOLoadCurve());
+                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), prcr->GetPOLoadCurve());
+                    ui->addTreeItem(t3, QString::fromStdString("initial_pressure"), prcr->GetIPLoadCurve());
                 }
 				else {
 					FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(pstep->Load(j));
@@ -495,22 +498,31 @@ void CCurveEditor::BuildModelTree()
                         FECentrifugalBodyForce* pcs = dynamic_cast<FECentrifugalBodyForce*>(pstep->Load(j));
 						if (phs)
 						{
-							if (phs->GetLoadCurve()) ui->addTreeItem(t2, QString::fromStdString(phs->GetName()), phs->GetLoadCurve());
+							if (phs->GetLoadCurve())
+							{
+								t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
+								ui->addTreeItem(t3, QString::fromStdString(phs->GetName()), phs->GetLoadCurve());
+							}
 						}
                         else if (pcs)
                         {
-                            if (pcs->GetLoadCurve()) ui->addTreeItem(t2, QString::fromStdString(pcs->GetName()), pcs->GetLoadCurve());
+							if (pcs->GetLoadCurve())
+							{
+								t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
+								ui->addTreeItem(t3, QString::fromStdString(pcs->GetName()), pcs->GetLoadCurve());
+							}
                         }
 						else
 						{
+							t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
 							int N = plj->Parameters();
 							for (int k = 0; k < N; ++k)
 							{
 								Param& pk = plj->GetParam(k);
-								if (pk.IsEditable())
+								if (pk.IsEditable() && (pk.GetParamType() != Param_INT))
 								{
 									FELoadCurve* plc = pk.GetLoadCurve();
-									ui->addTreeItem(t2, pk.GetLongName(), plc, &pk);
+									ui->addTreeItem(t3, pk.GetLongName(), plc, &pk);
 								}
 							}
 						}
