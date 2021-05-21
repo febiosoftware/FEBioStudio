@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <GeomLib/GMeshObject.h>
 #include "PythonTool.h"
-#include <FEBioStudio/PythonToolsPanel.h>
+#include "PythonToolsPanel.h"
 #include <QEventLoop>
 #include <GeomLib/GPrimitive.h>
 
@@ -203,5 +203,5 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
                 return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
             }
         
-        );
+    );
 }

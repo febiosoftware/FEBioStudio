@@ -33,10 +33,10 @@ SOFTWARE.*/
 #include <QButtonGroup>
 #include <QPushButton>
 #include <QStackedWidget>
-#include "IconProvider.h"
+#include <FEBioStudio/IconProvider.h>
 #include <QLabel>
-#include "Tool.h"
-#include "ToolBox.h"
+#include <FEBioStudio/Tool.h>
+#include <FEBioStudio/ToolBox.h>
 
 class Ui::CPythonToolsPanel
 {

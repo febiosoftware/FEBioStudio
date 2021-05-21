@@ -405,7 +405,6 @@ public slots:
 	void on_actionFEBioOptimize_triggered();
 	void on_actionOptions_triggered();
 	void on_actionLayerInfo_triggered();
-	void on_actionRunPythonScript_triggered();
 
 	// Post menu actions
 	void on_actionPlaneCut_triggered();

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "PyCallBack.h"
 #include <FEBioStudio/FEBioStudio.h>
 #include <FEBioStudio/MainWindow.h>
-#include <FEBioStudio/PythonToolsPanel.h>
+#include "PythonToolsPanel.h"
 #include "PythonInputHandler.h"
 
 

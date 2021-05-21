@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
-#include <PyLib/PythonInputHandler.h>
+#include <FEBioStudio/CommandPanel.h>
+#include "PythonInputHandler.h"
 
 namespace Ui {
 	class CPythonToolsPanel;

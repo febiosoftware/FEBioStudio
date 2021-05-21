@@ -70,7 +70,7 @@ SOFTWARE.*/
 #include "TimelinePanel.h"
 #include "UpdateChecker.h"
 #include "XMLEditor.h"
-#include "PythonToolsPanel.h"
+#include <PyLib/PythonToolsPanel.h>
 
 #include <vector>
 
@@ -487,7 +487,6 @@ public:
 		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 		QAction* actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
-		QAction* actionRunPythonScript = addAction("Run Python Script ...", "actionRunPythonScript");
 		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
 #ifdef _DEBUG
@@ -809,7 +808,6 @@ public:
 		menuTools->addAction(actionElasticityConvertor);
 		menuTools->addAction(actionKinemat);
 		menuTools->addAction(actionPlotMix);
-		menuTools->addAction(actionRunPythonScript);
 		menuTools->addAction(actionOptions);
 #ifdef _DEBUG
 		menuTools->addAction(actionLayerInfo);

@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "PythonInputHandler.h"
-#include <FEBioStudio/PythonToolsPanel.h>
+#include "PythonToolsPanel.h"
 #include "PyInputWidgets.h"
 
 CPythonInputHandler::CPythonInputHandler(CPythonToolsPanel* panel)

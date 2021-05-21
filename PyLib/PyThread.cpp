@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <pybind11/pybind11.h>
 #include "PyThread.h"
 #include "PythonTool.h"
-#include <FEBioStudio/PythonToolsPanel.h>
+#include "PythonToolsPanel.h"
 
 CPyThread::CPyThread(CPythonTool* tool) : tool(tool), panel(nullptr)
 {

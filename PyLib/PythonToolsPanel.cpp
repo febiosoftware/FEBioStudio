@@ -24,8 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "stdafx.h"
-
 #include <PyLib/pyBindtest.cpp>
 #include <pybind11/embed.h>
 
@@ -33,7 +31,7 @@ SOFTWARE.*/
 #include "ui_pythontoolspanel.h"
 #include <PyLib/PythonTool.h>
 #include <QFileDialog>
-#include "MainWindow.h"
+#include <FEBioStudio/MainWindow.h>
 #include <PyLib/PyThread.h>
 
 

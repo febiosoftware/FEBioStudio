@@ -39,7 +39,6 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
 #include "ModelDocument.h"
-#include <PyLib/RunPython.h>
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
@@ -93,13 +92,6 @@ void CMainWindow::on_actionOptions_triggered()
 {
 	CDlgSettings dlg(this);
 	dlg.exec();
-}
-
-void CMainWindow::on_actionRunPythonScript_triggered()
-{
-	QString fileName = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
-
-	runPython(fileName.toStdString().c_str());
 }
 
 void CMainWindow::on_actionLayerInfo_triggered()
