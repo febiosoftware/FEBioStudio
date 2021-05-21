@@ -24,64 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "CommandPanel.h"
-#include <PyLib/PythonInputHandler.h>
+#include <string>
 
-namespace Ui {
-	class CPythonToolsPanel;
-}
-
-namespace pybind11{
-	class function;
-}
-
-class CMainWindow;
-class CAbstractTool;
-class CPythonTool;
-class CPythonDummyTool;
-
-class CPythonToolsPanel : public CCommandPanel
-{
-	Q_OBJECT
-
-public:
-	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
-	~CPythonToolsPanel();
-
-	// update the tools panel
-	void Update(bool breset = true) override;
-
-	CPythonDummyTool* addDummyTool(const char* name, pybind11::function func);
-
-	void runScript(QString filename);
-
-	CPythonInputHandler* getInputHandler();
-	void addInputPage(QWidget* wgt);
-	QWidget* getInputWgt();
-	void removeInputPage();
-
-private:
-	void finalizeTools();
-	CPythonTool* addTool(std::string name, pybind11::function func);
-
-	void hideEvent(QHideEvent* event) override;
-	void showEvent(QShowEvent* event) override;
-
-private slots:
-	void endThread();
-
-	void on_buttons_idClicked(int id);
-	void on_importScript_triggered();
-	
-private:
-	Ui::CPythonToolsPanel*	ui;
-
-	CPythonTool*			m_activeTool;
-	QList<CPythonTool*>	tools;
-	std::vector<CPythonDummyTool*> dummyTools;
-
-	friend class Ui::CPythonToolsPanel;
-
-	CPythonInputHandler inputHandler;
-};
+std::string PyGetString();
+int PyGetInt();

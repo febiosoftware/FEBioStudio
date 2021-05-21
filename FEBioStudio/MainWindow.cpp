@@ -2127,7 +2127,14 @@ void CMainWindow::UpdatePostPanel(bool braise, Post::CGLObject* po)
 //-----------------------------------------------------------------------------
 void CMainWindow::RedrawGL()
 {
-	GetGLView()->repaint();
+	if(QThread::currentThread() == this->thread())
+	{
+		GetGLView()->repaint();
+	}
+	else
+	{
+		QMetaObject::invokeMethod(GetGLView(), "repaint");
+	}
 }
 
 //-----------------------------------------------------------------------------

@@ -25,28 +25,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
+
 #include <PyLib/pyBindtest.cpp>
+#include <pybind11/embed.h>
+
 #include "PythonToolsPanel.h"
 #include "ui_pythontoolspanel.h"
 #include <PyLib/PythonTool.h>
 #include <QFileDialog>
 #include "MainWindow.h"
+#include <PyLib/PyThread.h>
 
 
-CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CPythonToolsPanel)
+CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) 
+	: CCommandPanel(wnd, parent), ui(new Ui::CPythonToolsPanel), inputHandler(this)
 {
 	m_activeTool = 0;
 	ui->setupUi(this);
 
-	PyImport_AppendInittab("fbs", &PyInit_fbs);
-    Py_Initialize();
-
-	// Subclass calls connectSlotsByName so we don't need to here. 
+	pybind11::initialize_interpreter();
 }
 
 CPythonToolsPanel::~CPythonToolsPanel()
 {
-    Py_Finalize();
+    // Py_Finalize();
+	pybind11::finalize_interpreter();
 }
 
 void CPythonToolsPanel::Update(bool breset)
@@ -57,7 +60,16 @@ void CPythonToolsPanel::Update(bool breset)
 	}
 }
 
-CPythonTool* CPythonToolsPanel::addTool(const char* name, pybind11::function func)
+CPythonDummyTool* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func)
+{
+	CPythonDummyTool* tool = new CPythonDummyTool(name, func);
+
+	dummyTools.push_back(tool);
+
+	return tool;
+}
+
+CPythonTool* CPythonToolsPanel::addTool(std::string name, pybind11::function func)
 {
 	CPythonTool* tool = new CPythonTool(GetMainWindow(), name, func);
 
@@ -66,30 +78,102 @@ CPythonTool* CPythonToolsPanel::addTool(const char* name, pybind11::function fun
 	return tool;
 }
 
+void CPythonToolsPanel::runScript(QString filename)
+{
+	FILE* file;
+    file = fopen(filename.toStdString().c_str(), "r");
+    
+	
+	PyRun_SimpleFile(file, filename.toStdString().c_str());
+}
+
 void CPythonToolsPanel::finalizeTools()
 {
-	for(auto tool : tools)
+	for(auto dummyTool : dummyTools)
 	{
-		if(!tool->Finalized())
+		auto tool = addTool(dummyTool->name, dummyTool->func);
+
+		for(auto prop : dummyTool->boolProps)
 		{
-			ui->addTool(tool);
-			tool->setFinalized(true);
+			tool->addBoolProperty(prop.first, prop.second);
 		}
+
+		for(auto prop : dummyTool->intProps)
+		{
+			tool->addIntProperty(prop.first, prop.second);
+		}
+
+		for(auto prop : dummyTool->dblProps)
+		{
+			tool->addDoubleProperty(prop.first, prop.second);
+		}
+
+		for(auto prop : dummyTool->enumProps)
+		{
+			tool->addEnumProperty(prop.first, dummyTool->enumLabels[prop.first], prop.second);
+		}
+
+		for(auto prop : dummyTool->vec3Props)
+		{
+			tool->addVec3Property(prop.first, prop.second);
+		}
+
+		for(auto prop : dummyTool->strProps)
+		{
+			tool->addStringProperty(prop.first, prop.second);
+		}
+
+		for(auto prop : dummyTool->rscProps)
+		{
+			tool->addResourceProperty(prop.first, prop.second);
+		}
+
+		ui->addTool(tool);
+
+		delete dummyTool;
 	}
+
+	dummyTools.clear();
+}
+
+void CPythonToolsPanel::endThread()
+{
+	pybind11::gil_scoped_acquire acquire;
+	finalizeTools();
 }
 
 void CPythonToolsPanel::on_importScript_triggered()
 {
-	QString fileName = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
+	QString filename = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
 
-	FILE* file;
-	file = fopen(fileName.toStdString().c_str(), "r");
-	PyRun_SimpleFile(file, fileName.toStdString().c_str());
-
-	finalizeTools();
+	pybind11::gil_scoped_release release;
+	CPyThread* thread = new CPyThread(this, filename);
+	QObject::connect(thread, &CPyThread::finished, this, &CPythonToolsPanel::endThread);
+	thread->start();
 }
 
-void CPythonToolsPanel::on_buttons_buttonClicked(int id)
+CPythonInputHandler* CPythonToolsPanel::getInputHandler()
+{
+	return &inputHandler;
+}
+
+void CPythonToolsPanel::addInputPage(QWidget* wgt)
+{
+	ui->addPage(wgt);
+}
+
+QWidget* CPythonToolsPanel::getInputWgt()
+{
+	return ui->parentStack->currentWidget();
+}
+
+void CPythonToolsPanel::removeInputPage()
+{
+	ui->removePage();
+}
+
+
+void CPythonToolsPanel::on_buttons_idClicked(int id)
 {
 	// deactivate the active tool
 	if (m_activeTool) m_activeTool->Deactivate();

@@ -26,11 +26,12 @@ SOFTWARE.*/
 
 #include "PythonTool.h"
 #include <pybind11/pybind11.h>
+#include "PyThread.h"
 
 #include <iostream>
 
-CPythonTool::CPythonTool(CMainWindow* wnd, const char* name, pybind11::function func)
-    : finalized(false), CBasicTool(wnd, name, HAS_APPLY_BUTTON)
+CPythonTool::CPythonTool(CMainWindow* wnd, std::string name, pybind11::function func)
+    : CBasicTool(wnd, name.c_str(), HAS_APPLY_BUTTON)
 {
     SetApplyButtonText("Run");
 
@@ -122,23 +123,33 @@ void CPythonTool::addVec3Property(const std::string& name, vec3d value)
     CDataPropertyList::addVec3Property(val, QString::fromStdString(name));
 }
 
-void CPythonTool::addStringProperty(const std::string& name, char* value)
+void CPythonTool::addStringProperty(const std::string& name, std::string value)
 {
-    QString * val = new QString(value);
+    QString * val = new QString(value.c_str());
     strProps[name] = val;
 
     CDataPropertyList::addStringProperty(val, QString::fromStdString(name));
 }
 
-void CPythonTool::addResourceProperty(const std::string& name, char* value)
+void CPythonTool::addResourceProperty(const std::string& name, std::string value)
 {
-    QString * val = new QString(value);
+    QString * val = new QString(value.c_str());
     rscProps[name] = val;
 
     CDataPropertyList::addResourceProperty(val, QString::fromStdString(name));
 }
 
 bool CPythonTool::OnApply()
+{
+    // runFunc();
+
+    CPyThread* thread = new CPyThread(this);
+    thread->start();
+
+    return true;
+}
+
+bool CPythonTool::runFunc()
 {
     pybind11::dict kwargs;
 
@@ -181,12 +192,46 @@ bool CPythonTool::OnApply()
     return true;
 }
 
-bool CPythonTool::Finalized()
+// Dummy tool
+
+CPythonDummyTool::CPythonDummyTool(const char* name, pybind11::function func)
+    : name(name), func(func)
 {
-    return finalized;
+
 }
 
-void CPythonTool::setFinalized(bool fin)
+void CPythonDummyTool::addBoolProperty(const std::string& name, bool value)
 {
-    finalized = fin;
+    boolProps[name] = value;
+}
+
+void CPythonDummyTool::addIntProperty(const std::string& name, int value)
+{
+    intProps[name] = value;
+}
+
+void CPythonDummyTool::addEnumProperty(const std::string& name, const std::string& labels, int value)
+{
+    enumProps[name] = value;
+    enumLabels[name] = labels;
+}
+
+void CPythonDummyTool::addDoubleProperty(const std::string& name, double value)
+{
+    dblProps[name] = value;
+}
+
+void CPythonDummyTool::addVec3Property(const std::string& name, vec3d value)
+{
+    vec3Props[name] = value;
+}
+
+void CPythonDummyTool::addStringProperty(const std::string& name, char* value)
+{
+    strProps[name] = value;
+}
+
+void CPythonDummyTool::addResourceProperty(const std::string& name, char* value)
+{
+    rscProps[name] = value;
 }

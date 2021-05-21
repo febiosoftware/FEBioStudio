@@ -24,64 +24,52 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "CommandPanel.h"
-#include <PyLib/PythonInputHandler.h>
+#include <QWidget>
 
-namespace Ui {
-	class CPythonToolsPanel;
-}
+class QVBoxLayout;
+class QDialogButtonBox;
+class QLabel;
+class QLineEdit;
+class QSpinBox;
 
-namespace pybind11{
-	class function;
-}
-
-class CMainWindow;
-class CAbstractTool;
-class CPythonTool;
-class CPythonDummyTool;
-
-class CPythonToolsPanel : public CCommandPanel
+class PyInputWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
-	~CPythonToolsPanel();
 
-	// update the tools panel
-	void Update(bool breset = true) override;
+    PyInputWidget(QString lblText = "", QWidget* parent = nullptr);
 
-	CPythonDummyTool* addDummyTool(const char* name, pybind11::function func);
+protected:
+    void addWidget(QWidget* wgt);
 
-	void runScript(QString filename);
+protected:
+    QVBoxLayout* layout;
+    int numWgts;
 
-	CPythonInputHandler* getInputHandler();
-	void addInputPage(QWidget* wgt);
-	QWidget* getInputWgt();
-	void removeInputPage();
+signals:
+    void done();
+
+};
+
+class PyInputStringWidget : public PyInputWidget
+{
+public:
+    PyInputStringWidget(QString lblText = "", QWidget* parent = nullptr); 
+
+    std::string getVal();
 
 private:
-	void finalizeTools();
-	CPythonTool* addTool(std::string name, pybind11::function func);
+    QLineEdit* edit;
+};
 
-	void hideEvent(QHideEvent* event) override;
-	void showEvent(QShowEvent* event) override;
+class PyInputIntWidget : public PyInputWidget
+{
+public:
+    PyInputIntWidget(QString lblText = "", QWidget* parent = nullptr); 
 
-private slots:
-	void endThread();
+    int getVal();
 
-	void on_buttons_idClicked(int id);
-	void on_importScript_triggered();
-	
 private:
-	Ui::CPythonToolsPanel*	ui;
-
-	CPythonTool*			m_activeTool;
-	QList<CPythonTool*>	tools;
-	std::vector<CPythonDummyTool*> dummyTools;
-
-	friend class Ui::CPythonToolsPanel;
-
-	CPythonInputHandler inputHandler;
+    QSpinBox* spinBox;
 };

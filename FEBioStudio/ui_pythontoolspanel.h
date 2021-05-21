@@ -41,6 +41,7 @@ SOFTWARE.*/
 class Ui::CPythonToolsPanel
 {
 public:
+	QStackedWidget* parentStack;
 	QStackedWidget* stack;
 	QGridLayout* grid;
 	QButtonGroup* group;
@@ -53,9 +54,14 @@ public:
 		this->parent = parent;
 
 		QList<CPythonTool*>& tools = parent->tools;
+		
+		QVBoxLayout* parentLayout = new QVBoxLayout(parent);
+		parentLayout->addWidget(parentStack = new QStackedWidget);
 
-		QVBoxLayout* pg = new QVBoxLayout(parent);
-		pg->setMargin(1);
+		QWidget* mainPage = new QWidget;
+
+		QVBoxLayout* pg = new QVBoxLayout(mainPage);
+		pg->setContentsMargins(1,1,1,1);
 
 		QToolBar* toolbar = new QToolBar();
 
@@ -87,13 +93,15 @@ public:
 
 		pg->addWidget(tool);
 
+		parentStack->addWidget(mainPage);
+
 		QMetaObject::connectSlotsByName(parent);
 	}
 
 
 	void addTool(CAbstractTool* tool)
 	{
-		int i = parent->tools.length() - 1;
+		int i = parent->tools.size() - 1;
 
 		QPushButton* but = new QPushButton(tool->name());
 		but->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
@@ -110,6 +118,18 @@ public:
 			stack->addWidget(pl);
 		}
 		else stack->addWidget(pw);
+	}
+
+	void addPage(QWidget* page)
+	{
+		parentStack->addWidget(page);
+		parentStack->setCurrentIndex(1);
+	}
+
+	void removePage()
+	{
+		parentStack->setCurrentIndex(0);
+		parentStack->removeWidget(parentStack->widget(1));
 	}
 
 private:

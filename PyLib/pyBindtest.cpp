@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
 #include <pybind11/operators.h>
 #include <FEBioStudio/FEBioStudio.h>
 #include <FEBioStudio/MainWindow.h>
@@ -34,13 +35,14 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include "PythonTool.h"
 #include <FEBioStudio/PythonToolsPanel.h>
-
+#include <QEventLoop>
 #include <GeomLib/GPrimitive.h>
 
 #include <MeshTools/GDiscreteObject.h>
 #include <MathLib/mat3d.h>
 
-#include <iostream>
+#include "PyCallBack.h"
+#include "PythonInputHandler.h"
 
 
 void openFile(const char *fileName)
@@ -48,13 +50,12 @@ void openFile(const char *fileName)
     PRV::getMainWindow()->OpenFile(fileName);
 }
 
-CPythonTool* PythonTool_init(const char* name, pybind11::function func)
+CPythonDummyTool* PythonTool_init(const char* name, pybind11::function func)
 {
     auto wnd = PRV::getMainWindow();
     CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
 
-    // return pythonToolsPanel->addTool(name, func.ptr());
-    return pythonToolsPanel->addTool(name, func);
+    return pythonToolsPanel->addDummyTool(name, func);
 }
 
 GDiscreteSpringSet* SpringSet_init(const char* name, char* type)
@@ -147,7 +148,7 @@ GBox* GBox_init(vec3d pos, double width, double height, double depth)
     return gbox;
 }
 
-PYBIND11_MODULE(fbs, m)
+PYBIND11_EMBEDDED_MODULE(fbs, m)
 {
     pybind11::class_<GBox, std::unique_ptr<GBox, pybind11::nodelete>>(m, "GBox")
         .def(pybind11::init(&GBox_init))
@@ -163,18 +164,21 @@ PYBIND11_MODULE(fbs, m)
         .def(pybind11::init(&SpringSet_init))
         .def("addSpring", static_cast<void (GDiscreteSpringSet::*)(int,int)>(&GDiscreteSpringSet::AddElement));
 
-    pybind11::class_<CPythonTool, std::unique_ptr<CPythonTool, pybind11::nodelete>>(m, "PythonTool")
+    pybind11::class_<CPythonDummyTool, std::unique_ptr<CPythonDummyTool, pybind11::nodelete>>(m, "PythonTool")
         .def(pybind11::init(&PythonTool_init))
-        .def("addBoolProperty", &CPythonTool::addBoolProperty)
-        .def("addIntProperty", &CPythonTool::addIntProperty)
-        .def("addDoubleProperty", &CPythonTool::addDoubleProperty)
-        .def("addVec3Property", &CPythonTool::addVec3Property)
-        .def("addEnumProperty", &CPythonTool::addEnumProperty)
-        .def("addStringProperty", &CPythonTool::addStringProperty)
-        .def("addResourceProperty", &CPythonTool::addResourceProperty);
+        .def("addBoolProperty", &CPythonDummyTool::addBoolProperty)
+        .def("addIntProperty", &CPythonDummyTool::addIntProperty)
+        .def("addDoubleProperty", &CPythonDummyTool::addDoubleProperty)
+        .def("addVec3Property", &CPythonDummyTool::addVec3Property)
+        .def("addEnumProperty", &CPythonDummyTool::addEnumProperty)
+        .def("addStringProperty", &CPythonDummyTool::addStringProperty)
+        .def("addResourceProperty", &CPythonDummyTool::addResourceProperty);
 
     m.def("openFile", openFile);
     m.def("FindOrMakeNode", FindOrMakeNode);
+
+    m.def("getUserString", PyGetString);
+    m.def("getUserInt", PyGetInt);
 
     pybind11::class_<vec3d>(m, "vec3d")
         .def(pybind11::init<>())

@@ -24,64 +24,63 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "CommandPanel.h"
-#include <PyLib/PythonInputHandler.h>
+#include "PythonInputHandler.h"
+#include <FEBioStudio/PythonToolsPanel.h>
+#include "PyInputWidgets.h"
 
-namespace Ui {
-	class CPythonToolsPanel;
-}
-
-namespace pybind11{
-	class function;
-}
-
-class CMainWindow;
-class CAbstractTool;
-class CPythonTool;
-class CPythonDummyTool;
-
-class CPythonToolsPanel : public CCommandPanel
+CPythonInputHandler::CPythonInputHandler(CPythonToolsPanel* panel)
+    : currentType(0), panel(panel)
 {
-	Q_OBJECT
 
-public:
-	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
-	~CPythonToolsPanel();
+}
 
-	// update the tools panel
-	void Update(bool breset = true) override;
+std::string CPythonInputHandler::getString()
+{
+    return inputString;
+}
 
-	CPythonDummyTool* addDummyTool(const char* name, pybind11::function func);
+int CPythonInputHandler::getInt()
+{
+    return inputInt;
+}
 
-	void runScript(QString filename);
+void CPythonInputHandler::getInput(int type)
+{
+    currentType = type;
 
-	CPythonInputHandler* getInputHandler();
-	void addInputPage(QWidget* wgt);
-	QWidget* getInputWgt();
-	void removeInputPage();
+    PyInputWidget* wgt;
 
-private:
-	void finalizeTools();
-	CPythonTool* addTool(std::string name, pybind11::function func);
+	switch (type)
+	{
+	case STRING:
+		wgt = new PyInputStringWidget;
+        break;
+	case INT:
+        wgt = new PyInputIntWidget;
+        break;
+	default:
+        break;
+	}
 
-	void hideEvent(QHideEvent* event) override;
-	void showEvent(QShowEvent* event) override;
+    QObject::connect(wgt, &PyInputWidget::done, this, &CPythonInputHandler::finishInput);
+	panel->addInputPage(wgt);
+}
 
-private slots:
-	void endThread();
+void CPythonInputHandler::finishInput()
+{
+    switch (currentType)
+    {
+    case STRING:
+        inputString = dynamic_cast<PyInputStringWidget*>(panel->getInputWgt())->getVal();
+        break;
+    case INT:
+        inputInt = dynamic_cast<PyInputIntWidget*>(panel->getInputWgt())->getVal();
+        break;
+    default:
+        break;
+    }
 
-	void on_buttons_idClicked(int id);
-	void on_importScript_triggered();
+	panel->removeInputPage();
 	
-private:
-	Ui::CPythonToolsPanel*	ui;
-
-	CPythonTool*			m_activeTool;
-	QList<CPythonTool*>	tools;
-	std::vector<CPythonDummyTool*> dummyTools;
-
-	friend class Ui::CPythonToolsPanel;
-
-	CPythonInputHandler inputHandler;
-};
+	emit inputReady();
+}

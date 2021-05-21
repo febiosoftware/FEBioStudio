@@ -33,8 +33,37 @@ class CPythonTool : public CBasicTool
 {
 
 public:
-    CPythonTool(CMainWindow* wnd, const char* name, pybind11::function func);
+    CPythonTool(CMainWindow* wnd, std::string name, pybind11::function func);
     ~CPythonTool();
+
+    void addBoolProperty(const std::string& name, bool value = true);
+	void addIntProperty(const std::string& name, int value = 0);
+	void addEnumProperty(const std::string& name, const std::string& labels, int value = 0);
+	void addDoubleProperty(const std::string& name, double value = 0);
+    void addVec3Property(const std::string& name, vec3d value = vec3d());
+    void addStringProperty(const std::string& name, std::string = "");
+    void addResourceProperty(const std::string& name, std::string = "");
+
+    bool OnApply();
+
+    bool runFunc();
+
+private:
+    pybind11::function func;
+    std::unordered_map<std::string, bool*> boolProps;
+    std::unordered_map<std::string, int*> intProps;
+    std::unordered_map<std::string, int*> enumProps;
+    std::unordered_map<std::string, double*> dblProps;
+    std::unordered_map<std::string, vec3d*> vec3Props;
+    std::unordered_map<std::string, QString*> strProps;
+    std::unordered_map<std::string, QString*> rscProps;
+};
+
+
+class CPythonDummyTool
+{
+public:
+    CPythonDummyTool(const char* name, pybind11::function func);
 
     void addBoolProperty(const std::string& name, bool value = true);
 	void addIntProperty(const std::string& name, int value = 0);
@@ -44,21 +73,15 @@ public:
     void addStringProperty(const std::string& name, char* value = "");
     void addResourceProperty(const std::string& name, char* value = "");
 
-    bool OnApply();
 
-
-    bool Finalized();
-    void setFinalized(bool fin);
-
-
-private:
-    bool finalized;
+    std::string name;
     pybind11::function func;
-    std::unordered_map<std::string, bool*> boolProps;
-    std::unordered_map<std::string, int*> intProps;
-    std::unordered_map<std::string, int*> enumProps;
-    std::unordered_map<std::string, double*> dblProps;
-    std::unordered_map<std::string, vec3d*> vec3Props;
-    std::unordered_map<std::string, QString*> strProps;
-    std::unordered_map<std::string, QString*> rscProps;
+    std::unordered_map<std::string, bool> boolProps;
+    std::unordered_map<std::string, int> intProps;
+    std::unordered_map<std::string, int> enumProps;
+    std::unordered_map<std::string, std::string> enumLabels;
+    std::unordered_map<std::string, double> dblProps;
+    std::unordered_map<std::string, vec3d> vec3Props;
+    std::unordered_map<std::string, std::string> strProps;
+    std::unordered_map<std::string, std::string> rscProps;
 };

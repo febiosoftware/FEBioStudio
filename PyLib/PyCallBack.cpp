@@ -24,64 +24,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "CommandPanel.h"
-#include <PyLib/PythonInputHandler.h>
+#include <QEventLoop>
+#include "PyCallBack.h"
+#include <FEBioStudio/FEBioStudio.h>
+#include <FEBioStudio/MainWindow.h>
+#include <FEBioStudio/PythonToolsPanel.h>
+#include "PythonInputHandler.h"
 
-namespace Ui {
-	class CPythonToolsPanel;
-}
 
-namespace pybind11{
-	class function;
-}
-
-class CMainWindow;
-class CAbstractTool;
-class CPythonTool;
-class CPythonDummyTool;
-
-class CPythonToolsPanel : public CCommandPanel
+CPythonInputHandler* PyGetInput(int type)
 {
-	Q_OBJECT
+    auto wnd = PRV::getMainWindow();
+    auto inputHandler = wnd->GetPythonToolsPanel()->getInputHandler();
 
-public:
-	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
-	~CPythonToolsPanel();
+    QMetaObject::invokeMethod(inputHandler, "getInput", Q_ARG(int, type));
 
-	// update the tools panel
-	void Update(bool breset = true) override;
+    QEventLoop loop;
+    QObject::connect(inputHandler, &CPythonInputHandler::inputReady, &loop, &QEventLoop::quit);
+    loop.exec();
 
-	CPythonDummyTool* addDummyTool(const char* name, pybind11::function func);
+    return inputHandler;
+}
 
-	void runScript(QString filename);
+std::string PyGetString()
+{
+    return PyGetInput(CPythonInputHandler::STRING)->getString();
+}
 
-	CPythonInputHandler* getInputHandler();
-	void addInputPage(QWidget* wgt);
-	QWidget* getInputWgt();
-	void removeInputPage();
-
-private:
-	void finalizeTools();
-	CPythonTool* addTool(std::string name, pybind11::function func);
-
-	void hideEvent(QHideEvent* event) override;
-	void showEvent(QShowEvent* event) override;
-
-private slots:
-	void endThread();
-
-	void on_buttons_idClicked(int id);
-	void on_importScript_triggered();
-	
-private:
-	Ui::CPythonToolsPanel*	ui;
-
-	CPythonTool*			m_activeTool;
-	QList<CPythonTool*>	tools;
-	std::vector<CPythonDummyTool*> dummyTools;
-
-	friend class Ui::CPythonToolsPanel;
-
-	CPythonInputHandler inputHandler;
-};
+int PyGetInt()
+{
+    return PyGetInput(CPythonInputHandler::INT)->getInt();
+}

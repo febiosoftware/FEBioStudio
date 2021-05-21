@@ -25,63 +25,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
-#include <PyLib/PythonInputHandler.h>
+#include <QObject>
+#include <string>
 
-namespace Ui {
-	class CPythonToolsPanel;
-}
 
-namespace pybind11{
-	class function;
-}
+class CPythonToolsPanel;
 
-class CMainWindow;
-class CAbstractTool;
-class CPythonTool;
-class CPythonDummyTool;
-
-class CPythonToolsPanel : public CCommandPanel
+class CPythonInputHandler : public QObject
 {
-	Q_OBJECT
+
+    Q_OBJECT
 
 public:
-	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
-	~CPythonToolsPanel();
+    enum { STRING, INT };
 
-	// update the tools panel
-	void Update(bool breset = true) override;
+public:
+    CPythonInputHandler(CPythonToolsPanel* panel);
 
-	CPythonDummyTool* addDummyTool(const char* name, pybind11::function func);
-
-	void runScript(QString filename);
-
-	CPythonInputHandler* getInputHandler();
-	void addInputPage(QWidget* wgt);
-	QWidget* getInputWgt();
-	void removeInputPage();
+    std::string getString();
+    int getInt();
 
 private:
-	void finalizeTools();
-	CPythonTool* addTool(std::string name, pybind11::function func);
+    void finishInput();
 
-	void hideEvent(QHideEvent* event) override;
-	void showEvent(QShowEvent* event) override;
+public slots:
+    void getInput(int type);
 
-private slots:
-	void endThread();
+signals:
+    void inputReady();
 
-	void on_buttons_idClicked(int id);
-	void on_importScript_triggered();
-	
+
 private:
-	Ui::CPythonToolsPanel*	ui;
+    CPythonToolsPanel* panel;
 
-	CPythonTool*			m_activeTool;
-	QList<CPythonTool*>	tools;
-	std::vector<CPythonDummyTool*> dummyTools;
+    int currentType;
 
-	friend class Ui::CPythonToolsPanel;
+    std::string inputString;
+    int inputInt;
 
-	CPythonInputHandler inputHandler;
+
+
+
 };

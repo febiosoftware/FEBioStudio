@@ -24,64 +24,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "CommandPanel.h"
-#include <PyLib/PythonInputHandler.h>
+#include <pybind11/pybind11.h>
+#include "PyThread.h"
+#include "PythonTool.h"
+#include <FEBioStudio/PythonToolsPanel.h>
 
-namespace Ui {
-	class CPythonToolsPanel;
-}
-
-namespace pybind11{
-	class function;
-}
-
-class CMainWindow;
-class CAbstractTool;
-class CPythonTool;
-class CPythonDummyTool;
-
-class CPythonToolsPanel : public CCommandPanel
+CPyThread::CPyThread(CPythonTool* tool) : tool(tool), panel(nullptr)
 {
-	Q_OBJECT
+    init();
+}
 
-public:
-	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
-	~CPythonToolsPanel();
+CPyThread::CPyThread(CPythonToolsPanel* panel, QString& filename) 
+    : tool(nullptr), panel(panel), filename(filename)
+{
+    init();
+}
 
-	// update the tools panel
-	void Update(bool breset = true) override;
 
-	CPythonDummyTool* addDummyTool(const char* name, pybind11::function func);
+void CPyThread::init()
+{
+    QObject::connect(this, &QThread::finished, this, &QThread::deleteLater);
+}
 
-	void runScript(QString filename);
-
-	CPythonInputHandler* getInputHandler();
-	void addInputPage(QWidget* wgt);
-	QWidget* getInputWgt();
-	void removeInputPage();
-
-private:
-	void finalizeTools();
-	CPythonTool* addTool(std::string name, pybind11::function func);
-
-	void hideEvent(QHideEvent* event) override;
-	void showEvent(QShowEvent* event) override;
-
-private slots:
-	void endThread();
-
-	void on_buttons_idClicked(int id);
-	void on_importScript_triggered();
-	
-private:
-	Ui::CPythonToolsPanel*	ui;
-
-	CPythonTool*			m_activeTool;
-	QList<CPythonTool*>	tools;
-	std::vector<CPythonDummyTool*> dummyTools;
-
-	friend class Ui::CPythonToolsPanel;
-
-	CPythonInputHandler inputHandler;
-};
+void CPyThread::run()
+{
+    if(tool)
+    {
+        tool->runFunc();
+    }
+    else if(panel)
+    {
+        panel->runScript(filename);
+    }
+}
