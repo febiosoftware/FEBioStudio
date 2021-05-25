@@ -176,6 +176,9 @@ public:
 	bool RenderInteriorNodes() const { return m_brenderInteriorNodes; }
 	void RenderInteriorNodes(bool b) { m_brenderInteriorNodes = b; }
 
+	GLColor GetGhostColor() const { return m_ghost_color; }
+	void SetGhostColor(GLColor c) { m_ghost_color = c; }
+
 public:
 	// call this to render the model
 	void Render(CGLContext& rc) override;
@@ -357,6 +360,7 @@ public:
 	GLColor		m_node_col;		//!< color for rendering (unselected) nodes
 	GLColor		m_sel_col;		//!< selection color
 	GLColor		m_col_inactive;	//!< color for inactive parts
+	GLColor		m_ghost_color;	//!< color for the "ghost"
 	double		m_stol;			//!< smoothing threshold
 
 	bool		m_bshowMesh;
