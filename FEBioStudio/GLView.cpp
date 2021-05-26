@@ -2660,51 +2660,53 @@ void CGLView::RenderDiscrete()
 	for (int i = 0; i<model.DiscreteObjects(); ++i)
 	{
 		GDiscreteObject* po = model.DiscreteObject(i);
-
-		GLColor c = po->GetColor();
-
-		if (bsel && po->IsSelected()) glColor3ub(255, 255, 0);
-		else glColor3ub(c.r, c.g, c.b);
-
-		GLinearSpring* ps = dynamic_cast<GLinearSpring*>(po);
-		if (ps)
+		if (po->IsVisible())
 		{
-			GNode* pn0 = model.FindNode(ps->m_node[0]);
-			GNode* pn1 = model.FindNode(ps->m_node[1]);
-			if (pn0 && pn1) RenderLine(*pn0, *pn1);
-		}
+			GLColor c = po->GetColor();
 
-		GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(po);
-		if (pg)
-		{
-			GNode* pn0 = model.FindNode(pg->m_node[0]);
-			GNode* pn1 = model.FindNode(pg->m_node[1]);
-			if (pn0 && pn1) RenderLine(*pn0, *pn1);
-		}
+			if (bsel && po->IsSelected()) glColor3ub(255, 255, 0);
+			else glColor3ub(c.r, c.g, c.b);
 
-		GDiscreteElementSet* pd = dynamic_cast<GDiscreteElementSet*>(po);
-		if (pd)
-		{
-			int N = pd->size();
-			for (int n = 0; n<N; ++n)
+			GLinearSpring* ps = dynamic_cast<GLinearSpring*>(po);
+			if (ps)
 			{
-				GDiscreteElement& el = pd->element(n);
-
-				if (bsel && el.IsSelected()) glColor3ub(255, 255, 0);
-				else glColor3ub(c.r, c.g, c.b);
-
-				GNode* pn0 = model.FindNode(el.Node(0));
-				GNode* pn1 = model.FindNode(el.Node(1));
+				GNode* pn0 = model.FindNode(ps->m_node[0]);
+				GNode* pn1 = model.FindNode(ps->m_node[1]);
 				if (pn0 && pn1) RenderLine(*pn0, *pn1);
 			}
-		}
 
-		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(po);
-		if (ds)
-		{
-			GNode* pn0 = model.FindNode(ds->NodeID(0));
-			GNode* pn1 = model.FindNode(ds->NodeID(1));
-			if (pn0 && pn1) RenderLine(*pn0, *pn1);
+			GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(po);
+			if (pg)
+			{
+				GNode* pn0 = model.FindNode(pg->m_node[0]);
+				GNode* pn1 = model.FindNode(pg->m_node[1]);
+				if (pn0 && pn1) RenderLine(*pn0, *pn1);
+			}
+
+			GDiscreteElementSet* pd = dynamic_cast<GDiscreteElementSet*>(po);
+			if (pd)
+			{
+				int N = pd->size();
+				for (int n = 0; n < N; ++n)
+				{
+					GDiscreteElement& el = pd->element(n);
+
+					if (bsel && el.IsSelected()) glColor3ub(255, 255, 0);
+					else glColor3ub(c.r, c.g, c.b);
+
+					GNode* pn0 = model.FindNode(el.Node(0));
+					GNode* pn1 = model.FindNode(el.Node(1));
+					if (pn0 && pn1) RenderLine(*pn0, *pn1);
+				}
+			}
+
+			GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(po);
+			if (ds)
+			{
+				GNode* pn0 = model.FindNode(ds->NodeID(0));
+				GNode* pn1 = model.FindNode(ds->NodeID(1));
+				if (pn0 && pn1) RenderLine(*pn0, *pn1);
+			}
 		}
 	}
 	glPopAttrib();

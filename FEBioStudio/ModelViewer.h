@@ -123,7 +123,11 @@ public slots:
 	void OnShowObject();
 	void OnSelectObject();
 	void OnDeleteAllDiscete();
+	void OnShowAllDiscrete();
+	void OnHideAllDiscrete();
 	void OnSelectDiscreteObject();
+	void OnHideDiscreteObject();
+	void OnShowDiscreteObject();
 	void OnDetachDiscreteObject();
 	void OnChangeDiscreteType();
 	void OnHidePart();
