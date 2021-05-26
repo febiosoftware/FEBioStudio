@@ -49,5 +49,5 @@ public:
 	FEMesh* Apply(FEMesh* pm);
 
 protected:
-	void BoundaryLayer(FEMesh* pm);
+	bool BoundaryLayer(FEMesh* pm);
 };
