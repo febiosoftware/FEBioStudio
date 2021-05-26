@@ -53,6 +53,7 @@ public:
 private:
 	vec3f	m_norm;
 
-	bool	m_is_rendering;
+	int		m_id;
+	static	int m_render_id;
 };
 }

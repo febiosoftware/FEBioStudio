@@ -32,6 +32,7 @@ using namespace Post;
 CGLMirrorPlane::CGLMirrorPlane(CGLModel* fem) : CGLPlot(fem)
 {
 	static int n = 1;
+	m_id = n;
 	char szname[128] = { 0 };
 	sprintf(szname, "MirrorPlane.%02d", n++);
 	SetName(szname);
@@ -45,7 +46,6 @@ CGLMirrorPlane::CGLMirrorPlane(CGLModel* fem) : CGLPlot(fem)
 	m_showPlane = true;
 	m_transparency = 0.25f;
 	m_offset = 0.f;
-	m_is_rendering = false;
 
 	UpdateData(false);
 }
@@ -70,10 +70,12 @@ bool CGLMirrorPlane::UpdateData(bool bsave)
 	return false;
 }
 
+int CGLMirrorPlane::m_render_id = -1;
+
 void CGLMirrorPlane::Render(CGLContext& rc)
 {
 	// need to make sure we are not calling this recursively
-	if (m_is_rendering) return;
+	if ((m_render_id != -1) && (m_id >= m_render_id)) return;
 
 	// plane normal
 	vec3f scl;
@@ -92,11 +94,14 @@ void CGLMirrorPlane::Render(CGLContext& rc)
 	glTranslatef(-m_offset*m_norm.x, -m_offset*m_norm.y, -m_offset*m_norm.z);
 	glScalef(scl.x, scl.y, scl.z);
 
-	glFrontFace(GL_CW);
-	m_is_rendering = true;
+	int old_id = m_render_id;
+	m_render_id = m_id;
+	int frontFace;
+	glGetIntegerv(GL_FRONT_FACE, &frontFace);
+	glFrontFace(frontFace == GL_CW ? GL_CCW : GL_CW);
 	m->Render(rc);
-	m_is_rendering = false;
-	glFrontFace(GL_CCW);
+	glFrontFace(frontFace == GL_CW ? GL_CW : GL_CCW);
+	m_render_id = old_id;
 
 	glPopMatrix();
 
