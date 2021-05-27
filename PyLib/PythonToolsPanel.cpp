@@ -171,7 +171,18 @@ void CPythonToolsPanel::on_importScript_triggered()
 
 void CPythonToolsPanel::on_refresh_triggered()
 {
+	ui->removeTools();
+
+	for(auto tool : tools)
+	{
+		delete tool;
+	}
+	tools.clear();
+
+	m_activeTool = nullptr;
 	
+	finalizePython();
+	initPython();
 }
 
 CPythonInputHandler* CPythonToolsPanel::getInputHandler()

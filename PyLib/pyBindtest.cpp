@@ -88,7 +88,8 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
 {
     pybind11::class_<CPyOutput>(m, "PyOutput")
         .def(pybind11::init())
-        .def("write", &CPyOutput::write);
+        .def("write", &CPyOutput::write)
+        .def("flush", &CPyOutput::flush);
 
     pybind11::class_<GBox, std::unique_ptr<GBox, pybind11::nodelete>>(m, "GBox")
         .def(pybind11::init(&GBox_init))

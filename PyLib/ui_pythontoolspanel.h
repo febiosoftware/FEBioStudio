@@ -48,6 +48,7 @@ public:
 	QButtonGroup* group;
 	
 	QAction* importScript;
+	QAction* refresh;
 
 	QPlainTextEdit*	txt;
 
@@ -72,6 +73,15 @@ public:
 		importScript->setObjectName("importScript");
 		importScript->setIconVisibleInMenu(false);
 		toolbar->addAction(importScript);
+
+		QWidget* empty = new QWidget();
+		empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+		toolbar->addWidget(empty);
+
+		refresh = new QAction(CIconProvider::GetIcon("refresh"), "Refresh", parent);
+		refresh->setObjectName("refresh");
+		refresh->setIconVisibleInMenu(false);
+		toolbar->addAction(refresh);
 
 		pg->addWidget(toolbar);
 
@@ -128,6 +138,26 @@ public:
 			stack->addWidget(pl);
 		}
 		else stack->addWidget(pw);
+	}
+
+	void removeTools()
+	{
+		stack->setCurrentIndex(0);
+
+		for(auto button : group->buttons())
+		{
+			delete button;
+		}
+
+		// while(group->buttons().size() > 0)
+		// {
+		// 	delete group->button(0);
+		// }
+
+		while(stack->count() > 1)
+		{
+			delete stack->widget(1);
+		}
 	}
 
 	void addPage(QWidget* page)

@@ -49,6 +49,8 @@ public:
         emit output(txt);
     }
 
+    void flush() {}
+
 signals:
     void output(QString txt);
 
