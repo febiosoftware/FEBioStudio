@@ -42,11 +42,33 @@ SOFTWARE.*/
 
 #include <MeshTools/GDiscreteObject.h>
 #include <MathLib/mat3d.h>
+#include <exception>
 
 #include "PyCallBack.h"
 #include "PythonInputHandler.h"
 #include "PyOutput.h"
 
+
+class pyGenericExcept: public std::exception
+{
+public:
+    char * err;
+
+    pyGenericExcept(char* err) : err(err) { }
+
+    virtual const char* what() const throw()
+    {
+        return err;
+    }
+};
+
+class pyNoModelDocExcept: public std::exception
+{
+    virtual const char* what() const throw()
+    {
+        return "There is no editable model open.";
+    }
+};
 
 void openFile(const char *fileName)
 {
@@ -65,6 +87,12 @@ GDiscreteSpringSet* SpringSet_init(const char* name, char* type)
 {
     auto wnd = PRV::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
+
+    if(!doc)
+    {
+        throw pyNoModelDocExcept();
+    }
+
     auto gmodel = doc->GetGModel();
 
     auto set = new GDiscreteSpringSet(gmodel);
@@ -100,7 +128,16 @@ int FindOrMakeNode(double x, double y, double z, double tol)
 
     auto wnd = PRV::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
+    if(!doc)
+    {
+        throw pyNoModelDocExcept();
+    }
+
     auto po = dynamic_cast<GMeshObject*>(doc->GetActiveObject());
+    if(!po)
+    {
+        throw pyGenericExcept("There is no currently selected object.");
+    }
 
 	// find closest node
 	int imin = -1;
@@ -145,6 +182,10 @@ GBox* GBox_init(vec3d pos, double width, double height, double depth)
 
     auto wnd = PRV::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
+    if(!doc)
+    {
+        throw pyNoModelDocExcept();
+    }
 
     doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), gbox), gbox->GetName());
 
