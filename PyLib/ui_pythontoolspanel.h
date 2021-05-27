@@ -33,6 +33,8 @@ SOFTWARE.*/
 #include <QButtonGroup>
 #include <QPushButton>
 #include <QStackedWidget>
+#include <QProgressBar>
+#include <QSplitter>
 #include <FEBioStudio/IconProvider.h>
 #include <QLabel>
 #include <FEBioStudio/Tool.h>
@@ -50,17 +52,26 @@ public:
 	QAction* importScript;
 	QAction* refresh;
 
+	QLabel* runningText;
+	bool running;
+
 	QPlainTextEdit*	txt;
 
 public:
 	void setupUi(::CPythonToolsPanel* parent)
 	{
 		this->parent = parent;
+		running = false;
 
 		QList<CPythonTool*>& tools = parent->tools;
-		
+
 		QVBoxLayout* parentLayout = new QVBoxLayout(parent);
-		parentLayout->addWidget(parentStack = new QStackedWidget);
+		
+		QSplitter* splitter = new QSplitter;
+		splitter->setOrientation(Qt::Vertical);
+		
+		
+		splitter->addWidget(parentStack = new QStackedWidget);
 
 		QWidget* mainPage = new QWidget;
 
@@ -106,14 +117,30 @@ public:
 
 		pg->addWidget(tool);
 
+		parentStack->addWidget(mainPage);
+
+		QWidget* runningPage = new QWidget;
+		QVBoxLayout* runningLayout = new QVBoxLayout(runningPage);
+		runningLayout->setAlignment(Qt::AlignCenter);
+
+		runningLayout->addWidget(runningText = new QLabel);
+		runningText->setAlignment(Qt::AlignCenter);
+
+		QProgressBar* progress = new QProgressBar;
+		progress->setMinimum(0);
+		progress->setMaximum(0);
+
+		runningLayout->addWidget(progress);
+
+		parentStack->addWidget(runningPage);
+
 		txt = new QPlainTextEdit;
 		txt->setReadOnly(true);
 		txt->setFont(QFont("Courier", 11));
 		txt->setWordWrapMode(QTextOption::NoWrap);
+		splitter->addWidget(txt);
 
-		pg->addWidget(txt);
-
-		parentStack->addWidget(mainPage);
+		parentLayout->addWidget(splitter);
 
 		QMetaObject::connectSlotsByName(parent);
 	}
@@ -140,7 +167,7 @@ public:
 		else stack->addWidget(pw);
 	}
 
-	void removeTools()
+	void refreshPanel()
 	{
 		stack->setCurrentIndex(0);
 
@@ -149,27 +176,45 @@ public:
 			delete button;
 		}
 
-		// while(group->buttons().size() > 0)
-		// {
-		// 	delete group->button(0);
-		// }
-
 		while(stack->count() > 1)
 		{
 			delete stack->widget(1);
 		}
+
+		txt->clear();
+	}
+
+	void startRunning(const QString& txt)
+	{
+		running = true;
+		runningText->setText(txt);
+		parentStack->setCurrentIndex(1);
+	}
+
+	void stopRunning()
+	{
+		running = false;
+		parentStack->setCurrentIndex(0);
 	}
 
 	void addPage(QWidget* page)
 	{
 		parentStack->addWidget(page);
-		parentStack->setCurrentIndex(1);
+		parentStack->setCurrentIndex(2);
 	}
 
 	void removePage()
 	{
-		parentStack->setCurrentIndex(0);
-		parentStack->removeWidget(parentStack->widget(1));
+		if(running)
+		{
+			parentStack->setCurrentIndex(1);	
+		}
+		else
+		{
+			parentStack->setCurrentIndex(0);
+		}
+
+		parentStack->removeWidget(parentStack->widget(2));
 	}
 
 private:

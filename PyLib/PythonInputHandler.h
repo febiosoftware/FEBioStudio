@@ -49,7 +49,7 @@ private:
     void finishInput();
 
 public slots:
-    void getInput(int type);
+    void getInput(int type, const QString& txt);
 
 signals:
     void inputReady();

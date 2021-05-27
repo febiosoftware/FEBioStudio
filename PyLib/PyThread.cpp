@@ -28,20 +28,26 @@ SOFTWARE.*/
 #include "PyThread.h"
 #include "PythonToolsPanel.h"
 
-CPyThread::CPyThread(CPythonTool* tool) : tool(tool), panel(nullptr)
+CPyThread::CPyThread(CPythonToolsPanel* panel, CPythonTool* tool) 
+    : tool(tool), panel(panel)
 {
+    panel->startRunning(QString("Running %1...").arg(tool->name()));
+
     init();
 }
 
 CPyThread::CPyThread(CPythonToolsPanel* panel, QString& filename) 
     : tool(nullptr), panel(panel), filename(filename)
 {
+    panel->startRunning(QString("Running %1...").arg(filename));
+
     init();
 }
 
 
 void CPyThread::init()
 {
+    QObject::connect(this, &CPyThread::finished, panel, &CPythonToolsPanel::endThread);
     QObject::connect(this, &QThread::finished, this, &QThread::deleteLater);
 }
 

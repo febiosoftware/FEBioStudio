@@ -60,12 +60,12 @@ public:
 
 	void runScript(QString filename);
 
+	void startRunning(const QString& msg);
+
 	CPythonInputHandler* getInputHandler();
 	void addInputPage(QWidget* wgt);
 	QWidget* getInputWgt();
 	void removeInputPage();
-
-	
 
 private:
 	void finalizePython();
@@ -77,16 +77,17 @@ private:
 	void showEvent(QShowEvent* event) override;
 
 public slots:
+	void endThread();
 	void addLog(QString txt);
 
 private slots:
-	void endThread();
 
 	void on_buttons_idClicked(int id);
 	void on_importScript_triggered();
 	void on_refresh_triggered();
 
 private:
+	CMainWindow* m_wnd;
 	Ui::CPythonToolsPanel*	ui;
 
 	CPythonTool*			m_activeTool;

@@ -26,5 +26,5 @@ SOFTWARE.*/
 
 #include <string>
 
-std::string PyGetString();
-int PyGetInt();
+std::string PyGetString(const char* txt);
+int PyGetInt(const char* txt);

@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include "PyOutput.h"
 
 CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) 
-	: CCommandPanel(wnd, parent), ui(new Ui::CPythonToolsPanel), inputHandler(this)
+	: CCommandPanel(wnd, parent), ui(new Ui::CPythonToolsPanel), m_wnd(wnd), inputHandler(this)
 {
 	m_activeTool = 0;
 	ui->setupUi(this);
@@ -91,9 +91,13 @@ void CPythonToolsPanel::runScript(QString filename)
 {
 	FILE* file;
     file = fopen(filename.toStdString().c_str(), "r");
-    
 	
 	PyRun_SimpleFile(file, filename.toStdString().c_str());
+}
+
+void CPythonToolsPanel::startRunning(const QString& msg)
+{
+	ui->startRunning(msg);
 }
 
 void CPythonToolsPanel::finalizePython()
@@ -157,6 +161,10 @@ void CPythonToolsPanel::endThread()
 {
 	pybind11::gil_scoped_acquire acquire;
 	finalizeTools();
+
+	ui->stopRunning();
+
+	m_wnd->UpdateUI();
 }
 
 void CPythonToolsPanel::on_importScript_triggered()
@@ -165,13 +173,12 @@ void CPythonToolsPanel::on_importScript_triggered()
 
 	pybind11::gil_scoped_release release;
 	CPyThread* thread = new CPyThread(this, filename);
-	QObject::connect(thread, &CPyThread::finished, this, &CPythonToolsPanel::endThread);
 	thread->start();
 }
 
 void CPythonToolsPanel::on_refresh_triggered()
 {
-	ui->removeTools();
+	ui->refreshPanel();
 
 	for(auto tool : tools)
 	{
@@ -273,6 +280,7 @@ void CPythonToolsPanel::finalizeTools() {}
 void CPythonToolsPanel::endThread() {}
 void CPythonToolsPanel::on_importScript_triggered() {}
 void CPythonToolsPanel::on_refresh_triggered() {}
+void CPythonToolsPanel::startRunning(const QString& msg);
 CPythonInputHandler* CPythonToolsPanel::getInputHandler() {return nullptr;}
 void CPythonToolsPanel::addInputPage(QWidget* wgt) {}
 QWidget* CPythonToolsPanel::getInputWgt() {return nullptr;}

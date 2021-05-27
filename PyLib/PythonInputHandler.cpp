@@ -46,7 +46,7 @@ int CPythonInputHandler::getInt()
     return inputInt;
 }
 
-void CPythonInputHandler::getInput(int type)
+void CPythonInputHandler::getInput(int type, const QString& txt)
 {
     currentType = type;
 
@@ -55,10 +55,10 @@ void CPythonInputHandler::getInput(int type)
 	switch (type)
 	{
 	case STRING:
-		wgt = new PyInputStringWidget;
+		wgt = new PyInputStringWidget(txt);
         break;
 	case INT:
-        wgt = new PyInputIntWidget;
+        wgt = new PyInputIntWidget(txt);
         break;
 	default:
         break;

@@ -38,7 +38,7 @@ class CPyThread : public QThread
 	void run() Q_DECL_OVERRIDE;
 
 public:
-	CPyThread(CPythonTool* tool);
+	CPyThread(CPythonToolsPanel* panel, CPythonTool* tool);
     CPyThread(CPythonToolsPanel* panel, QString& filename);
 
 private:

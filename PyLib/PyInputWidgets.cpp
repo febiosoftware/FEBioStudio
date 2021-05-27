@@ -43,6 +43,7 @@ PyInputWidget::PyInputWidget(QString lblText, QWidget* parent)
     : numWgts(0), QWidget(parent)
 {
     layout = new QVBoxLayout;
+    layout->setAlignment(Qt::AlignCenter);
 
     if(!lblText.isEmpty())
     {

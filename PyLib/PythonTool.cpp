@@ -30,10 +30,12 @@ SOFTWARE.*/
 #include <pybind11/pybind11.h>
 #include "PyThread.h"
 
+#include <FEBioStudio/MainWindow.h>
+#include "PythonToolsPanel.h"
 #include <iostream>
 
 CPythonTool::CPythonTool(CMainWindow* wnd, std::string name, pybind11::function func)
-    : CBasicTool(wnd, name.c_str(), HAS_APPLY_BUTTON)
+    : CBasicTool(wnd, name.c_str(), HAS_APPLY_BUTTON), m_wnd(wnd)
 {
     SetApplyButtonText("Run");
 
@@ -179,7 +181,7 @@ bool CPythonTool::OnApply()
         };
     }
 
-    CPyThread* thread = new CPyThread(this);
+    CPyThread* thread = new CPyThread(m_wnd->GetPythonToolsPanel(), this);
     thread->start();
 
     return true;

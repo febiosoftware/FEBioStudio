@@ -34,12 +34,12 @@ SOFTWARE.*/
 #include "PythonToolsPanel.h"
 #include "PyCallBack.h"
 
-CPythonInputHandler* PyGetInput(int type)
+CPythonInputHandler* PyGetInput(int type, const char* txt)
 {
     auto wnd = PRV::getMainWindow();
     auto inputHandler = wnd->GetPythonToolsPanel()->getInputHandler();
 
-    QMetaObject::invokeMethod(inputHandler, "getInput", Q_ARG(int, type));
+    QMetaObject::invokeMethod(inputHandler, "getInput", Q_ARG(int, type), Q_ARG(const QString&, txt));
 
     QEventLoop loop;
     QObject::connect(inputHandler, &CPythonInputHandler::inputReady, &loop, &QEventLoop::quit);
@@ -48,18 +48,18 @@ CPythonInputHandler* PyGetInput(int type)
     return inputHandler;
 }
 
-std::string PyGetString()
+std::string PyGetString(const char* txt)
 {
-    return PyGetInput(CPythonInputHandler::STRING)->getString();
+    return PyGetInput(CPythonInputHandler::STRING, txt)->getString();
 }
 
-int PyGetInt()
+int PyGetInt(const char* txt)
 {
-    return PyGetInput(CPythonInputHandler::INT)->getInt();
+    return PyGetInput(CPythonInputHandler::INT, txt)->getInt();
 }
 
 #else
 CPythonInputHandler* PyGetInput(int type) {return nullptr;}
-std::string PyGetString() {return "";}
-int PyGetInt(){return 0;}
+std::string PyGetString(const char* txt) {return "";}
+int PyGetInt(const char* txt){return 0;}
 #endif

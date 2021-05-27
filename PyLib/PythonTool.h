@@ -62,6 +62,7 @@ public:
     bool runFunc();
 
 private:
+    CMainWindow* m_wnd;
     pybind11::function func;
     pybind11::dict kwargs;
     std::unordered_map<std::string, bool*> boolProps;
