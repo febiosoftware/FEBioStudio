@@ -3966,7 +3966,8 @@ void FEBioExport3::WriteBCRigid(FEStep& s)
 // write linear constraints
 void FEBioExport3::WriteLinearConstraints(FEStep& s)
 {
-	const char* szbc[] = { "x", "y", "z" };
+    // This list should be consistent with the list of DOFs in FEModel::FEModel()
+	const char* szbc[] = { "x", "y", "z", "u", "v", "w", "p", "T", "wx", "wy", "wz", "ef", "sx", "sy", "sz" };
 
 	for (int i = 0; i<s.LinearConstraints(); ++i)
 	{

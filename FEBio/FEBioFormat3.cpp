@@ -2805,9 +2805,8 @@ void FEBioFormat3::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 					dof.node = tag.AttributeValue<int>("id", 0);
 
 					const char* szbc = tag.AttributeValue("bc");
-					if (strcmp(szbc, "x") == 0) dof.bc = 0;
-					else if (strcmp(szbc, "y") == 0) dof.bc = 1;
-					else if (strcmp(szbc, "z") == 0) dof.bc = 2;
+                    int dofcode = fem.GetDOFIndex(szbc);
+					if (dofcode != -1) dof.bc = dofcode;
 					else throw XMLReader::InvalidAttributeValue(tag, "bc", szbc);
 
 					LC.m_dof.push_back(dof);
