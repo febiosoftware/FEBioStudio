@@ -193,10 +193,13 @@ bool CPythonTool::runFunc()
     }
     catch(pybind11::error_already_set &e)
     {
+        // Print the error message
         pybind11::print(e.what());
 
+        // Return execution to Python to allow the thread to exit
         e.restore();
 
+        // Clear the error to allow further Python execution. 
         PyErr_Clear();
     }
 
