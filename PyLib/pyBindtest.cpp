@@ -33,42 +33,19 @@ SOFTWARE.*/
 #include <FEBioStudio/MainWindow.h>
 #include <FEBioStudio/ModelDocument.h>
 #include <FEBioStudio/Commands.h>
-#include <MeshTools/GModel.h>
-#include <GeomLib/GMeshObject.h>
 #include "PythonTool.h"
 #include "PythonToolsPanel.h"
+#include "PyExceptions.h"
+#include "PySpringFunctions.h"
 #include <QEventLoop>
 #include <GeomLib/GPrimitive.h>
 
 #include <MeshTools/GDiscreteObject.h>
 #include <MathLib/mat3d.h>
-#include <exception>
 
 #include "PyCallBack.h"
 #include "PythonInputHandler.h"
 #include "PyOutput.h"
-
-
-class pyGenericExcept: public std::exception
-{
-public:
-    char * err;
-
-    pyGenericExcept(char* err) : err(err) { }
-
-    virtual const char* what() const throw()
-    {
-        return err;
-    }
-};
-
-class pyNoModelDocExcept: public std::exception
-{
-    virtual const char* what() const throw()
-    {
-        return "There is no editable model open.";
-    }
-};
 
 void openFile(const char *fileName)
 {
@@ -81,91 +58,6 @@ CPythonDummyTool* PythonTool_init(const char* name, pybind11::function func)
     CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
 
     return pythonToolsPanel->addDummyTool(name, func);
-}
-
-GDiscreteSpringSet* SpringSet_init(const char* name, char* type)
-{
-    auto wnd = PRV::getMainWindow();
-    auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
-
-    if(!doc)
-    {
-        throw pyNoModelDocExcept();
-    }
-
-    auto gmodel = doc->GetGModel();
-
-    auto set = new GDiscreteSpringSet(gmodel);
-
-    if(strcmp(type, "Linear") == 0)
-    {
-        set->SetMaterial(new FELinearSpringMaterial);
-    }
-    else if(strcmp(type, "Nonlinear") == 0)
-    {
-        set->SetMaterial(new FENonLinearSpringMaterial);
-    }
-    else if(strcmp(type, "Hill") == 0)
-    {
-        set->SetMaterial(new FEHillContractileMaterial);
-    }
-    else
-    {
-        delete set;
-        return nullptr;
-    }
-
-    set->SetName(name);
-
-    gmodel->AddDiscreteObject(set);
-
-    return set;
-}
-
-int FindOrMakeNode(double x, double y, double z, double tol)
-{
-    vec3d r(x,y,z);
-
-    auto wnd = PRV::getMainWindow();
-    auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
-    if(!doc)
-    {
-        throw pyNoModelDocExcept();
-    }
-
-    auto po = dynamic_cast<GMeshObject*>(doc->GetActiveObject());
-    if(!po)
-    {
-        throw pyGenericExcept("There is no currently selected object.");
-    }
-
-	// find closest node
-	int imin = -1;
-	double l2min = 0.0;
-	FEMesh* m = po->GetFEMesh();
-	int N = m->Nodes();
-	imin = -1;
-	for (int i = 0; i < N; ++i)
-	{
-		FENode& ni = m->Node(i);
-		if (ni.IsExterior())
-		{
-			vec3d ri = m->LocalToGlobal(ni.r);
-
-			double l2 = (r - ri).SqrLength();
-			if ((imin == -1) || (l2 < l2min))
-			{
-				imin = i;
-				l2min = l2;
-			}
-		}
-	}
-	if ((imin!=-1) && (l2min < tol*tol))
-	{
-		return po->MakeGNode(imin);
-	}
-
-    return po->AddNode(r);
 }
 
 GBox* GBox_init(vec3d pos, double width, double height, double depth)
@@ -224,6 +116,7 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
 
     m.def("openFile", openFile);
     m.def("FindOrMakeNode", FindOrMakeNode);
+    m.def("IntersectWithObject", IntersectWithObject);
 
     m.def("getUserString", PyGetString);
     m.def("getUserInt", PyGetInt);

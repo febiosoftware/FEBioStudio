@@ -58,8 +58,7 @@ void CPythonToolsPanel::initPython()
 
 CPythonToolsPanel::~CPythonToolsPanel()
 {
-    // Py_Finalize();
-	pybind11::finalize_interpreter();
+    finalizePython();
 }
 
 void CPythonToolsPanel::Update(bool breset)
@@ -95,6 +94,11 @@ void CPythonToolsPanel::runScript(QString filename)
     
 	
 	PyRun_SimpleFile(file, filename.toStdString().c_str());
+}
+
+void CPythonToolsPanel::finalizePython()
+{
+	pybind11::finalize_interpreter();
 }
 
 void CPythonToolsPanel::finalizeTools()
@@ -163,6 +167,11 @@ void CPythonToolsPanel::on_importScript_triggered()
 	CPyThread* thread = new CPyThread(this, filename);
 	QObject::connect(thread, &CPyThread::finished, this, &CPythonToolsPanel::endThread);
 	thread->start();
+}
+
+void CPythonToolsPanel::on_refresh_triggered()
+{
+	
 }
 
 CPythonInputHandler* CPythonToolsPanel::getInputHandler()
@@ -248,9 +257,11 @@ void CPythonToolsPanel::Update(bool breset) {}
 CPythonDummyTool* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func) {return nullptr;}
 CPythonTool* CPythonToolsPanel::addTool(std::string name, pybind11::function func) {return nullptr;}
 void CPythonToolsPanel::runScript(QString filename) {}
+void CPythonToolsPanel::finalizePython() {}
 void CPythonToolsPanel::finalizeTools() {}
 void CPythonToolsPanel::endThread() {}
 void CPythonToolsPanel::on_importScript_triggered() {}
+void CPythonToolsPanel::on_refresh_triggered() {}
 CPythonInputHandler* CPythonToolsPanel::getInputHandler() {return nullptr;}
 void CPythonToolsPanel::addInputPage(QWidget* wgt) {}
 QWidget* CPythonToolsPanel::getInputWgt() {return nullptr;}

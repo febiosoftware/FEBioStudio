@@ -33,6 +33,8 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 #include <QDir>
 
+#include <iostream>
+
 CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Import Springs", HAS_APPLY_BUTTON)
 {
 	addResourceProperty(&m_fileName, "Filename");
@@ -138,6 +140,8 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 {
 	// create the discrete set
 	GDiscreteSpringSet* dset = new GDiscreteSpringSet(fem);
+
+	std::cout << m_type << std::endl;
 
 	// set the spring material
 	switch (m_type)

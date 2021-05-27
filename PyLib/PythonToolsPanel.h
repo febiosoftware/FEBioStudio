@@ -68,6 +68,8 @@ public:
 	
 
 private:
+	void finalizePython();
+
 	void finalizeTools();
 	CPythonTool* addTool(std::string name, pybind11::function func);
 
@@ -82,7 +84,8 @@ private slots:
 
 	void on_buttons_idClicked(int id);
 	void on_importScript_triggered();
-	
+	void on_refresh_triggered();
+
 private:
 	Ui::CPythonToolsPanel*	ui;
 

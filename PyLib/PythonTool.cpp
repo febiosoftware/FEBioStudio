@@ -143,19 +143,11 @@ void CPythonTool::addResourceProperty(const std::string& name, std::string value
 
 bool CPythonTool::OnApply()
 {
-    CPyThread* thread = new CPyThread(this);
-    thread->start();
-
-    return true;
-}
-
-bool CPythonTool::runFunc()
-{
-    pybind11::dict kwargs;
+    kwargs = pybind11::dict();
 
     for(int prop = 0; prop < Properties(); prop++)
     {
-        CProperty current = Property(prop);
+        CProperty& current = Property(prop);
         std::string name = current.name.toStdString();
 
         switch(current.type)
@@ -187,6 +179,14 @@ bool CPythonTool::runFunc()
         };
     }
 
+    CPyThread* thread = new CPyThread(this);
+    thread->start();
+
+    return true;
+}
+
+bool CPythonTool::runFunc()
+{
     try
     {
         func(**kwargs);

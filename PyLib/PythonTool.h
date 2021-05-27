@@ -63,6 +63,7 @@ public:
 
 private:
     pybind11::function func;
+    pybind11::dict kwargs;
     std::unordered_map<std::string, bool*> boolProps;
     std::unordered_map<std::string, int*> intProps;
     std::unordered_map<std::string, int*> enumProps;
