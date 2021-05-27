@@ -141,8 +141,6 @@ void CPythonTool::addResourceProperty(const std::string& name, std::string value
 
 bool CPythonTool::OnApply()
 {
-    // runFunc();
-
     CPyThread* thread = new CPyThread(this);
     thread->start();
 
@@ -202,38 +200,45 @@ CPythonDummyTool::CPythonDummyTool(const char* name, pybind11::function func)
 
 void CPythonDummyTool::addBoolProperty(const std::string& name, bool value)
 {
-    boolProps[name] = value;
+    propOrder.push_back(CProperty::Bool);
+    boolProps.emplace(name, value);
 }
 
 void CPythonDummyTool::addIntProperty(const std::string& name, int value)
 {
-    intProps[name] = value;
+    propOrder.push_back(CProperty::Int);
+    intProps.emplace(name, value);
 }
 
 void CPythonDummyTool::addEnumProperty(const std::string& name, const std::string& labels, int value)
 {
-    enumProps[name] = value;
-    enumLabels[name] = labels;
+    propOrder.push_back(CProperty::Enum);
+    enumProps.emplace(name, value);
+    enumLabels.emplace(labels);
 }
 
 void CPythonDummyTool::addDoubleProperty(const std::string& name, double value)
 {
-    dblProps[name] = value;
+    propOrder.push_back(CProperty::Float);
+    dblProps.emplace(name, value);
 }
 
 void CPythonDummyTool::addVec3Property(const std::string& name, vec3d value)
 {
-    vec3Props[name] = value;
+    propOrder.push_back(CProperty::Vec3);
+    vec3Props.emplace(name, value);
 }
 
 void CPythonDummyTool::addStringProperty(const std::string& name, char* value)
 {
-    strProps[name] = value;
+    propOrder.push_back(CProperty::String);
+    strProps.emplace(name, value);
 }
 
 void CPythonDummyTool::addResourceProperty(const std::string& name, char* value)
 {
-    rscProps[name] = value;
+    propOrder.push_back(CProperty::Resource);
+    rscProps.emplace(name, value);
 }
 
 #else

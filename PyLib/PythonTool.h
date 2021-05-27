@@ -39,6 +39,7 @@ namespace pybind11
 #endif
 
 #include <FEBioStudio/Tool.h>
+#include <queue>
 #include <unordered_map>
 
 class CPythonTool : public CBasicTool
@@ -88,12 +89,13 @@ public:
 
     std::string name;
     pybind11::function func;
-    std::unordered_map<std::string, bool> boolProps;
-    std::unordered_map<std::string, int> intProps;
-    std::unordered_map<std::string, int> enumProps;
-    std::unordered_map<std::string, std::string> enumLabels;
-    std::unordered_map<std::string, double> dblProps;
-    std::unordered_map<std::string, vec3d> vec3Props;
-    std::unordered_map<std::string, std::string> strProps;
-    std::unordered_map<std::string, std::string> rscProps;
+    std::vector<int> propOrder;
+    std::queue<std::pair<std::string, bool>> boolProps;
+    std::queue<std::pair<std::string, int>> intProps;
+    std::queue<std::pair<std::string, int>> enumProps;
+    std::queue<std::string> enumLabels;
+    std::queue<std::pair<std::string, double>> dblProps;
+    std::queue<std::pair<std::string, vec3d>> vec3Props;
+    std::queue<std::pair<std::string, std::string>> strProps;
+    std::queue<std::pair<std::string, std::string>> rscProps;
 };

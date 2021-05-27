@@ -103,39 +103,42 @@ void CPythonToolsPanel::finalizeTools()
 	{
 		auto tool = addTool(dummyTool->name, dummyTool->func);
 
-		for(auto prop : dummyTool->boolProps)
+		for(auto type : dummyTool->propOrder)
 		{
-			tool->addBoolProperty(prop.first, prop.second);
-		}
-
-		for(auto prop : dummyTool->intProps)
-		{
-			tool->addIntProperty(prop.first, prop.second);
-		}
-
-		for(auto prop : dummyTool->dblProps)
-		{
-			tool->addDoubleProperty(prop.first, prop.second);
-		}
-
-		for(auto prop : dummyTool->enumProps)
-		{
-			tool->addEnumProperty(prop.first, dummyTool->enumLabels[prop.first], prop.second);
-		}
-
-		for(auto prop : dummyTool->vec3Props)
-		{
-			tool->addVec3Property(prop.first, prop.second);
-		}
-
-		for(auto prop : dummyTool->strProps)
-		{
-			tool->addStringProperty(prop.first, prop.second);
-		}
-
-		for(auto prop : dummyTool->rscProps)
-		{
-			tool->addResourceProperty(prop.first, prop.second);
+			switch (type)
+			{
+			case CProperty::Bool:
+				tool->addBoolProperty(dummyTool->boolProps.front().first, dummyTool->boolProps.front().second);
+				dummyTool->boolProps.pop();
+				break;
+			case CProperty::Int:
+				tool->addIntProperty(dummyTool->intProps.front().first, dummyTool->intProps.front().second);
+				dummyTool->intProps.pop();
+				break;
+			case CProperty::Float:
+				tool->addDoubleProperty(dummyTool->dblProps.front().first, dummyTool->dblProps.front().second);
+				dummyTool->dblProps.pop();
+				break;
+			case CProperty::Enum:
+				tool->addEnumProperty(dummyTool->enumProps.front().first, dummyTool->enumLabels.front(), dummyTool->enumProps.front().second);
+				dummyTool->enumProps.pop();
+				dummyTool->enumLabels.pop();
+				break;
+			case CProperty::Vec3:
+				tool->addVec3Property(dummyTool->vec3Props.front().first, dummyTool->vec3Props.front().second);
+				dummyTool->vec3Props.pop();
+				break;
+			case CProperty::String:
+				tool->addStringProperty(dummyTool->strProps.front().first, dummyTool->strProps.front().second);
+				dummyTool->strProps.pop();
+				break;
+			case CProperty::Resource:
+				tool->addResourceProperty(dummyTool->rscProps.front().first, dummyTool->rscProps.front().second);
+				dummyTool->rscProps.pop();
+				break;
+			default:
+				break;
+			}
 		}
 
 		ui->addTool(tool);
