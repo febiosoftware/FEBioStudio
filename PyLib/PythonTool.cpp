@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <pybind11/pybind11.h>
 #include "PyThread.h"
 
+#include <iostream>
+
 CPythonTool::CPythonTool(CMainWindow* wnd, std::string name, pybind11::function func)
     : CBasicTool(wnd, name.c_str(), HAS_APPLY_BUTTON)
 {
@@ -185,7 +187,18 @@ bool CPythonTool::runFunc()
         };
     }
 
-    func(**kwargs);
+    try
+    {
+        func(**kwargs);
+    }
+    catch(pybind11::error_already_set &e)
+    {
+        pybind11::print(e.what());
+
+        e.restore();
+
+        PyErr_Clear();
+    }
 
     return true;
 }
