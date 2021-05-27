@@ -24,6 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#ifdef HAS_PYTHON
+
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/operators.h>
@@ -43,6 +45,7 @@ SOFTWARE.*/
 
 #include "PyCallBack.h"
 #include "PythonInputHandler.h"
+#include "PyOutput.h"
 
 
 void openFile(const char *fileName)
@@ -150,6 +153,10 @@ GBox* GBox_init(vec3d pos, double width, double height, double depth)
 
 PYBIND11_EMBEDDED_MODULE(fbs, m)
 {
+    pybind11::class_<CPyOutput>(m, "PyOutput")
+        .def(pybind11::init())
+        .def("write", &CPyOutput::write);
+
     pybind11::class_<GBox, std::unique_ptr<GBox, pybind11::nodelete>>(m, "GBox")
         .def(pybind11::init(&GBox_init))
         .def_property("position", 
@@ -205,3 +212,5 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
         
     );
 }
+
+#endif

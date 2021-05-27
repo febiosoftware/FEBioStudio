@@ -1044,6 +1044,7 @@ public:
 #ifdef HAS_PYTHON
 		QDockWidget* dock9 = new QDockWidget("Python", m_wnd); dock9->setObjectName("dockPython");
 		pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock9);
+		pythonToolsPanel->initPython();
 		dock9->setWidget(pythonToolsPanel);
 		menuWindows->addAction(dock9->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock3, dock7);

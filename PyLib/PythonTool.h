@@ -25,7 +25,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+
+#ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
+#else
+namespace pybind11
+{
+    class function
+    {
+
+    };
+}
+#endif
+
 #include <FEBioStudio/Tool.h>
 #include <unordered_map>
 

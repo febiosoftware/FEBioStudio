@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "PyInputWidgets.h"
+
+#ifdef HAS_PYTHON
 #include "PythonInputHandler.h"
 
 #include <QVBoxLayout>
@@ -89,3 +91,16 @@ int PyInputIntWidget::getVal()
 {
     return spinBox->value();
 }
+
+#else
+
+PyInputWidget::PyInputWidget(QString lblText, QWidget* parent) {}
+void PyInputWidget::addWidget(QWidget* wgt) {}
+
+PyInputStringWidget::PyInputStringWidget(QString lblText, QWidget* parent) {}
+std::string PyInputStringWidget::getVal() {}
+
+PyInputIntWidget::PyInputIntWidget(QString lblText, QWidget* parent) {}
+int PyInputIntWidget::getVal() {}
+
+#endif

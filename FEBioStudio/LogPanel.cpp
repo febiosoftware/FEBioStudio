@@ -47,14 +47,14 @@ void CLogPanel::ClearOutput()
 	ui->clearLog(1);
 }
 
-/*
-void CLogPanel::AddText(const QString& txt, int n)
-{
-	ui->txt[n]->moveCursor(QTextCursor::End);
-	ui->txt[n]->insertPlainText(txt);
-	ui->txt[n]->moveCursor(QTextCursor::End);
-}
-*/
+
+// void CLogPanel::AddText(const QString& txt, int n)
+// {
+// 	ui->txt[n]->moveCursor(QTextCursor::End);
+// 	ui->txt[n]->insertPlainText(txt);
+// 	ui->txt[n]->moveCursor(QTextCursor::End);
+// }
+
 
 void CLogPanel::on_logSave_clicked(bool b)
 {

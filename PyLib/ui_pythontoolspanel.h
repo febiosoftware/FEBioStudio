@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <FEBioStudio/Tool.h>
 #include <FEBioStudio/ToolBox.h>
+#include <QPlainTextEdit>
 
 class Ui::CPythonToolsPanel
 {
@@ -47,6 +48,8 @@ public:
 	QButtonGroup* group;
 	
 	QAction* importScript;
+
+	QPlainTextEdit*	txt;
 
 public:
 	void setupUi(::CPythonToolsPanel* parent)
@@ -92,6 +95,13 @@ public:
 		tool->addTool("Parameters", stack);
 
 		pg->addWidget(tool);
+
+		txt = new QPlainTextEdit;
+		txt->setReadOnly(true);
+		txt->setFont(QFont("Courier", 11));
+		txt->setWordWrapMode(QTextOption::NoWrap);
+
+		pg->addWidget(txt);
 
 		parentStack->addWidget(mainPage);
 

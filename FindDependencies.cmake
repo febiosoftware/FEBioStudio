@@ -391,7 +391,7 @@ if(WIN32)
 elseif(APPLE)
 	find_path(QUAZIP_INC quazip.h
         PATHS /usr/include/* /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "/quazip" "include/quazip" "quazip/include/quazip" "build/quazip" "build/include/quazip"
+        PATH_SUFFIXES "quazip" "include/quazip" "quazip/include/quazip" "build/quazip" "build/include/quazip"
 		DOC "QuaZip include directory")
 	find_library(QUAZIP_LIB 
         NAMES ${QUAZIP_NAMES}  
@@ -400,8 +400,8 @@ elseif(APPLE)
 		DOC "QuaZip library path")
 else()
 	find_path(QUAZIP_INC quazip.h
-        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/include/*
-        PATH_SUFFIXES "/quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
+        PATHS /usr/local/include/* /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/include/*
+        PATH_SUFFIXES "quazip" "quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
 		DOC "QuaZip include directory")
 	find_library(QUAZIP_LIB
         NAMES ${QUAZIP_NAMES}
@@ -525,10 +525,38 @@ find_package(OpenGL REQUIRED)
 
 # Python
 find_package(Python3 COMPONENTS Development)
-if(Python3_Development_FOUND)
-    option(USE_PYTHON "Required to for Python Plugins." ON)
+
+if(WIN32)
+	find_path(PYBIND11_INC pybind11/pybind11.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		PATH_SUFFIXES "include" "pybind11/include"
+        DOC "pybind11 include directory")
+elseif(APPLE)
+	find_path(PYBIND11_INC pybind11/pybind11.h
+        PATHS /usr/include/ /opt/pybind11 $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "pybind11/include"
+		DOC "pybind11 include directory"
+		NO_DEFAULT_PATH)
 else()
-    option(USE_PYTHON "Required to for Python Plugins." OFF)
+	find_path(PYBIND11_INC pybind11/pybind11.h
+        PATHS /usr/include/ /opt/pybind11 $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "pybind11/include" 
+		DOC "pybind11 include directory")
+endif()
+
+if(PYBIND11_INC)
+    mark_as_advanced(PYBIND11_INC)
+else()
+    option(USE_PYTHON "Required for Python plugins." OFF)
+endif()
+
+if(Python3_Development_FOUND)
+    if(PYBIND11_INC)
+        option(USE_PYTHON "Required for Python plugins." ON)
+    endif()
+else()
+    option(USE_PYTHON "Required for Python plugins." OFF)
+    set(Python_ROOT_DIR "" CACHE PATH "Path to the root of a Python installation")
 endif()
 
 # ZLIB

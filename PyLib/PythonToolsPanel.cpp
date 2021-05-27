@@ -24,6 +24,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+
+
+#ifdef HAS_PYTHON
 #include <PyLib/pyBindtest.cpp>
 #include <pybind11/embed.h>
 
@@ -33,15 +36,24 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <FEBioStudio/MainWindow.h>
 #include <PyLib/PyThread.h>
-
+#include "PyOutput.h"
 
 CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) 
 	: CCommandPanel(wnd, parent), ui(new Ui::CPythonToolsPanel), inputHandler(this)
 {
 	m_activeTool = 0;
 	ui->setupUi(this);
+}
 
+void CPythonToolsPanel::initPython()
+{
 	pybind11::initialize_interpreter();
+ 
+	// setup output
+ 	auto sysm = pybind11::module::import("sys");
+	auto output = pybind11::module::import("fbs").attr("PyOutput");
+	sysm.attr("stdout") = output();
+	sysm.attr("stderr") = output();
 }
 
 CPythonToolsPanel::~CPythonToolsPanel()
@@ -170,6 +182,13 @@ void CPythonToolsPanel::removeInputPage()
 	ui->removePage();
 }
 
+void CPythonToolsPanel::addLog(QString txt)
+{
+	ui->txt->moveCursor(QTextCursor::End);
+	ui->txt->insertPlainText(txt);
+	ui->txt->moveCursor(QTextCursor::End);
+}
+
 
 void CPythonToolsPanel::on_buttons_idClicked(int id)
 {
@@ -206,3 +225,35 @@ void CPythonToolsPanel::showEvent(QShowEvent* ev)
 	}
 	ev->accept();
 }
+
+#else
+#include "PythonToolsPanel.h"
+#include "ui_pythontoolspanel.h"
+
+namespace pybind11
+{
+	class function
+	{
+
+	};
+}
+
+CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CPythonToolsPanel), inputHandler(this) {}
+void CPythonToolsPanel::initPython() {}
+CPythonToolsPanel::~CPythonToolsPanel() {}
+void CPythonToolsPanel::Update(bool breset) {}
+CPythonDummyTool* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func) {return nullptr;}
+CPythonTool* CPythonToolsPanel::addTool(std::string name, pybind11::function func) {return nullptr;}
+void CPythonToolsPanel::runScript(QString filename) {}
+void CPythonToolsPanel::finalizeTools() {}
+void CPythonToolsPanel::endThread() {}
+void CPythonToolsPanel::on_importScript_triggered() {}
+CPythonInputHandler* CPythonToolsPanel::getInputHandler() {return nullptr;}
+void CPythonToolsPanel::addInputPage(QWidget* wgt) {}
+QWidget* CPythonToolsPanel::getInputWgt() {return nullptr;}
+void CPythonToolsPanel::removeInputPage() {}
+void CPythonToolsPanel::addLog(QString txt) {}
+void CPythonToolsPanel::on_buttons_idClicked(int id) {}
+void CPythonToolsPanel::hideEvent(QHideEvent* ev) {}
+void CPythonToolsPanel::showEvent(QShowEvent* ev) {}
+#endif

@@ -24,42 +24,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-
-
-#include "PythonInputHandler.h"
-#ifdef HAS_PYTHON
-#include <QEventLoop>
+#pragma once
+#include <QObject>
 #include <FEBioStudio/FEBioStudio.h>
 #include <FEBioStudio/MainWindow.h>
 #include "PythonToolsPanel.h"
-#include "PyCallBack.h"
 
-CPythonInputHandler* PyGetInput(int type)
+#include <iostream>
+
+class CPyOutput : public QObject
 {
-    auto wnd = PRV::getMainWindow();
-    auto inputHandler = wnd->GetPythonToolsPanel()->getInputHandler();
+    Q_OBJECT
 
-    QMetaObject::invokeMethod(inputHandler, "getInput", Q_ARG(int, type));
+public:
+    CPyOutput() 
+    {
+        auto panel =  PRV::getMainWindow()->GetPythonToolsPanel();
 
-    QEventLoop loop;
-    QObject::connect(inputHandler, &CPythonInputHandler::inputReady, &loop, &QEventLoop::quit);
-    loop.exec();
+        QObject::connect(this, &CPyOutput::output, panel, &CPythonToolsPanel::addLog);
+    }
 
-    return inputHandler;
-}
+    void write(const char* txt)
+    {
+        emit output(txt);
+    }
 
-std::string PyGetString()
-{
-    return PyGetInput(CPythonInputHandler::STRING)->getString();
-}
+signals:
+    void output(QString txt);
 
-int PyGetInt()
-{
-    return PyGetInput(CPythonInputHandler::INT)->getInt();
-}
-
-#else
-CPythonInputHandler* PyGetInput(int type) {return nullptr;}
-std::string PyGetString() {return "";}
-int PyGetInt(){return 0;}
-#endif
+};

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+
 #include <FEBioStudio/CommandPanel.h>
 #include "PythonInputHandler.h"
 
@@ -40,6 +41,7 @@ class CMainWindow;
 class CAbstractTool;
 class CPythonTool;
 class CPythonDummyTool;
+class CPyOutput;
 
 class CPythonToolsPanel : public CCommandPanel
 {
@@ -48,6 +50,8 @@ class CPythonToolsPanel : public CCommandPanel
 public:
 	CPythonToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
 	~CPythonToolsPanel();
+
+	void initPython();
 
 	// update the tools panel
 	void Update(bool breset = true) override;
@@ -61,12 +65,17 @@ public:
 	QWidget* getInputWgt();
 	void removeInputPage();
 
+	
+
 private:
 	void finalizeTools();
 	CPythonTool* addTool(std::string name, pybind11::function func);
 
 	void hideEvent(QHideEvent* event) override;
 	void showEvent(QShowEvent* event) override;
+
+public slots:
+	void addLog(QString txt);
 
 private slots:
 	void endThread();

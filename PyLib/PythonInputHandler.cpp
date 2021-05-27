@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "PythonInputHandler.h"
+
+#ifdef HAS_PYTHON
 #include "PythonToolsPanel.h"
 #include "PyInputWidgets.h"
 
@@ -84,3 +86,11 @@ void CPythonInputHandler::finishInput()
 	
 	emit inputReady();
 }
+
+#else
+CPythonInputHandler::CPythonInputHandler(CPythonToolsPanel* panel) {}
+std::string CPythonInputHandler::getString() {return "";}
+int CPythonInputHandler::getInt() {return 0;}
+void CPythonInputHandler::getInput(int type) {}
+void CPythonInputHandler::finishInput() {}
+#endif

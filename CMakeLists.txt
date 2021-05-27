@@ -319,14 +319,16 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
+if(USE_PYTHON)
+    include_directories(${PYBIND11_INC})
+endif()
+
 # This shouldn't cause any errors.
 if(${Qt_Version}WebEngineWidgets_FOUND)
     add_definitions(-DWEBHELP)
 endif()
 
 include_directories(${ZLIB_INCLUDE_DIR})
-
-include_directories("/home/mherron/Resources/pybind11/include")
 
 ##### Find Source Files #####
 
@@ -348,17 +350,17 @@ endforeach(name)
 # Linking the Qt libraries also pulls in the include files
 link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Qt_Version}::Network ${Qt_Version}::OpenGL)
 
-if(USE_PYTHON)
-    add_definitions(-DHAS_PYTHON)
-    link_libraries(Python3::Python)
-endif()
-
 if(Qt_Ver VERSION_EQUAL 6)
   link_libraries(Qt6::Core5Compat Qt6::OpenGLWidgets)
 endif()
 
 if(${Qt_Version}WebEngineWidgets_FOUND)
 	link_libraries(${Qt_Version}::WebEngineWidgets)
+endif()
+
+if(USE_PYTHON)
+    add_definitions(-DHAS_PYTHON)
+    link_libraries(Python3::Python)
 endif()
 
 if(WIN32)
