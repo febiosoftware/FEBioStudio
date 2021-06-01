@@ -105,16 +105,6 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
         .def(pybind11::init(&SpringSet_init))
         .def("addSpring", static_cast<void (GDiscreteSpringSet::*)(int,int)>(&GDiscreteSpringSet::AddElement));
 
-    pybind11::class_<CPythonDummyTool, std::unique_ptr<CPythonDummyTool, pybind11::nodelete>>(m, "PythonTool")
-        .def(pybind11::init(&PythonTool_init))
-        .def("addBoolProperty", &CPythonDummyTool::addBoolProperty)
-        .def("addIntProperty", &CPythonDummyTool::addIntProperty)
-        .def("addDoubleProperty", &CPythonDummyTool::addDoubleProperty)
-        .def("addVec3Property", &CPythonDummyTool::addVec3Property)
-        .def("addEnumProperty", &CPythonDummyTool::addEnumProperty)
-        .def("addStringProperty", &CPythonDummyTool::addStringProperty)
-        .def("addResourceProperty", &CPythonDummyTool::addResourceProperty);
-
     m.def("openFile", openFile);
     m.def("FindOrMakeNode", FindOrMakeNode);
     m.def("IntersectWithObject", IntersectWithObject);
@@ -147,6 +137,16 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
             }
         
     );
+
+    pybind11::class_<CPythonDummyTool, std::unique_ptr<CPythonDummyTool, pybind11::nodelete>>(m, "PythonTool")
+        .def(pybind11::init(&PythonTool_init))
+        .def("addBoolProperty", &CPythonDummyTool::addBoolProperty, pybind11::arg("name"), pybind11::arg("value") = true)
+        .def("addIntProperty", &CPythonDummyTool::addIntProperty, pybind11::arg("name"), pybind11::arg("value") = 0)
+        .def("addDoubleProperty", &CPythonDummyTool::addDoubleProperty, pybind11::arg("name"), pybind11::arg("value") = 0)
+        .def("addVec3Property", &CPythonDummyTool::addVec3Property, pybind11::arg("name"), pybind11::arg("value") = vec3d())
+        .def("addEnumProperty", &CPythonDummyTool::addEnumProperty, pybind11::arg("name"), pybind11::arg("labels"), pybind11::arg("value") = 0)
+        .def("addStringProperty", &CPythonDummyTool::addStringProperty, pybind11::arg("name"), pybind11::arg("value") = "")
+        .def("addResourceProperty", &CPythonDummyTool::addResourceProperty, pybind11::arg("name"), pybind11::arg("value") = "");
 }
 
 #endif
