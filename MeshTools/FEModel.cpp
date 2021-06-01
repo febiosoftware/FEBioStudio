@@ -183,6 +183,9 @@ FEModel::FEModel()
 	FEDOFVariable* varTemperature = AddVariable("Temperature");
 	varTemperature->AddDOF("temperature", "T");
 
+    FEDOFVariable* varSolute = AddVariable("Effective Solute Concentration");
+    // (start with an empty solute variable)
+    
     FEDOFVariable* varVel = AddVariable("Fluid Velocity");
     varVel->AddDOF("X-fluid velocity", "wx");
     varVel->AddDOF("Y-fluid velocity", "wy");
@@ -196,9 +199,6 @@ FEModel::FEModel()
 	varSDisp->AddDOF("Shell Y-displacement", "sy");
 	varSDisp->AddDOF("Shell Z-displacement", "sz");
 
-    FEDOFVariable* varSolute = AddVariable("Effective Solute Concentration");
-    // (start with an empty solute variable)
-    
 	// define model parameters
 	AddScienceParam(0, UNIT_TEMPERATURE, "T", "Absolute temperature");
 	AddScienceParam(0, UNIT_GAS_CONSTANT, "R", "Gas constant");
