@@ -101,6 +101,7 @@ public:
 	bool drawAxesLabels();
 	bool drawLegend();
 	QColor backgroundColor();
+	QColor selectionColor();
 
 	void Update();
 

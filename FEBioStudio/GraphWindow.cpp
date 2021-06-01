@@ -145,6 +145,7 @@ public:
 	QCheckBox*		drawTitle;
 	QCheckBox*		drawAxes;
 	CColorButton*	bgcol;
+	CColorButton*	selcol;
 	QLineEdit*		title;
 	QLineEdit*		xlabel;
 	QLineEdit*		ylabel;
@@ -164,6 +165,12 @@ public:
 		h->setContentsMargins(0,0,0,0);
 		h->addWidget(new QLabel("Background color"));
 		h->addWidget(bgcol = new CColorButton());
+		l->addLayout(h);
+
+		h = new QHBoxLayout;
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(new QLabel("Selection color"));
+		h->addWidget(selcol = new CColorButton());
 		l->addLayout(h);
 
 		h = new QHBoxLayout;
@@ -198,6 +205,7 @@ public:
 		QObject::connect(smoothLines, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
 		QObject::connect(drawAxes, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
 		QObject::connect(bgcol, SIGNAL(colorChanged(QColor)), w, SLOT(onOptionsChanged()));
+		QObject::connect(selcol, SIGNAL(colorChanged(QColor)), w, SLOT(onOptionsChanged()));
 		QObject::connect(title, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
 		QObject::connect(xlabel, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
 		QObject::connect(ylabel, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
@@ -245,6 +253,13 @@ public:
 		bgcol->blockSignals(false);
 	}
 
+	void setSelectionColor(QColor c)
+	{
+		selcol->blockSignals(true);
+		selcol->setColor(c);
+		selcol->blockSignals(false);
+	}
+
 	void setTitle(const QString& t)
 	{
 		title->blockSignals(true);
@@ -282,6 +297,7 @@ void GraphOptions::onOptionsChanged()
 	ui->m_graph->setDrawTitle(drawTitle());
 	ui->m_graph->setDrawAxesLabels(drawAxesLabels());
 	ui->m_graph->setBackgroundColor(backgroundColor());
+	ui->m_graph->setSelectionColor(selectionColor());
 	ui->m_graph->setTitle(ui->title->text());
 	ui->m_graph->setXAxisLabel(ui->xlabel->text());
 	ui->m_graph->setYAxisLabel(ui->ylabel->text());
@@ -296,6 +312,7 @@ void GraphOptions::Update()
 	ui->setDrawTitle(ui->m_graph->drawTitle());
 	ui->setDrawAxes(ui->m_graph->drawAxesLabels());
 	ui->setBGColor(ui->m_graph->backgroundColor());
+	ui->setSelectionColor(ui->m_graph->selectionColor());
 	ui->setTitle(ui->m_graph->title());
 	ui->setXLabel(ui->m_graph->XAxisLabel());
 	ui->setYLabel(ui->m_graph->YAxisLabel());
@@ -329,6 +346,11 @@ bool GraphOptions::drawLegend()
 QColor GraphOptions::backgroundColor()
 {
 	return ui->bgcol->color();
+}
+
+QColor GraphOptions::selectionColor()
+{
+	return ui->selcol->color();
 }
 
 //=================================================================================================
@@ -431,17 +453,31 @@ void RegressionUi::onCalculate()
 	if (plots == 0) return;
 
 	int n = m_src->currentIndex();
-	if ((n < 0) || (n >= plots)) return;
+	if ((n < 0) || (n > plots)) return;
 
-	CPlotData& data = m_graph->getPlotData(n);
-	int N = data.size();
-	vector<pair<double, double> > pt(N);
-	for (int i=0; i<N; ++i)
-	{	
-		QPointF p = data.Point(i);
-		pt[i].first = p.x();
-		pt[i].second = p.y();
+	vector<pair<double, double> > pt;
+	if (n < plots)
+	{
+		CPlotData& data = m_graph->getPlotData(n);
+		int N = data.size();
+		pt.resize(N);
+		for (int i = 0; i < N; ++i)
+		{
+			QPointF p = data.Point(i);
+			pt[i].first = p.x();
+			pt[i].second = p.y();
+		}
 	}
+	else
+	{
+		// if (n == plots), then use the selection
+		std::vector<QPointF> sel = m_graph->SelectedPoints();
+		for (QPointF& p : sel)
+		{
+			pt.push_back(pair<double, double>(p.x(), p.y()));
+		}
+	}
+	if (pt.empty()) return;
 
 	int nfc = m_fnc->currentIndex();
 	if (nfc == 0)
@@ -475,7 +511,7 @@ void RegressionUi::onCalculate()
 	else if (nfc == 2)
 	{
 		// do a linear regression on the log
-		for (int i=0; i<N; ++i)
+		for (int i=0; i<pt.size(); ++i)
 		{
 			pair<double, double>& pi = pt[i];
 			if (pi.second > 0) pi.second = log(pi.second);
@@ -539,6 +575,7 @@ void RegressionUi::Update()
 		QString l = m_graph->getPlotData(i).label();
 		m_src->addItem(l);
 	}
+	m_src->addItem("<selection>");
 	clearParameters();
 }
 
