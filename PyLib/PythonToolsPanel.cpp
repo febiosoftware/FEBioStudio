@@ -100,6 +100,11 @@ void CPythonToolsPanel::startRunning(const QString& msg)
 	ui->startRunning(msg);
 }
 
+void CPythonToolsPanel::setProgressText(const QString& txt)
+{
+	ui->setProgressText(txt);
+}
+
 void CPythonToolsPanel::setProgress(int prog)
 {
 	ui->setProgress(prog);

@@ -26,7 +26,9 @@ SOFTWARE.*/
 
 #include <string>
 
+void PySetProgressText(const char* txt);
 void PySetProgress(int prog);
+void PySetProgress(float prog);
 
 std::string PyGetString(const char* txt);
 int PyGetInt(const char* txt);

@@ -34,12 +34,28 @@ SOFTWARE.*/
 #include "PythonToolsPanel.h"
 #include "PyCallBack.h"
 
+void PySetProgressText(const char* txt)
+{
+    auto wnd = PRV::getMainWindow();
+    auto panel = wnd->GetPythonToolsPanel();
+
+    QMetaObject::invokeMethod(panel, "setProgressText", Q_ARG(const QString&, txt));
+}
+
 void PySetProgress(int prog)
 {
     auto wnd = PRV::getMainWindow();
     auto panel = wnd->GetPythonToolsPanel();
 
     QMetaObject::invokeMethod(panel, "setProgress", Q_ARG(int, prog));
+}
+
+void PySetProgress(float prog)
+{
+    auto wnd = PRV::getMainWindow();
+    auto panel = wnd->GetPythonToolsPanel();
+
+    QMetaObject::invokeMethod(panel, "setProgress", Q_ARG(int, (int)(prog*100)));
 }
 
 CPythonInputHandler* PyGetInput(int type, const char* txt)

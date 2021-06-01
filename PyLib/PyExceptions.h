@@ -43,6 +43,6 @@ class pyNoModelDocExcept: public std::exception
 {
     virtual const char* what() const throw()
     {
-        return "There is no editable model open.";
+        return "There is no model document open.";
     }
 };

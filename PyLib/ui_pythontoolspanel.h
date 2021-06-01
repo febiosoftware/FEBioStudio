@@ -205,6 +205,11 @@ public:
 		progress->setValue(prog);
 	}
 
+	void setProgressText(const QString& txt)
+	{
+		runningText->setText(QString("%1...").arg(txt));
+	}
+
 	void addPage(QWidget* page)
 	{
 		parentStack->addWidget(page);
