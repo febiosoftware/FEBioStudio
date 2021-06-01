@@ -54,6 +54,7 @@ public:
 
 	QLabel* runningText;
 	bool running;
+	QProgressBar* progress;
 
 	QPlainTextEdit*	txt;
 
@@ -126,7 +127,7 @@ public:
 		runningLayout->addWidget(runningText = new QLabel);
 		runningText->setAlignment(Qt::AlignCenter);
 
-		QProgressBar* progress = new QProgressBar;
+		progress = new QProgressBar;
 		progress->setMinimum(0);
 		progress->setMaximum(0);
 
@@ -194,7 +195,14 @@ public:
 	void stopRunning()
 	{
 		running = false;
+		progress->setMaximum(0);
 		parentStack->setCurrentIndex(0);
+	}
+
+	void setProgress(int prog)
+	{
+		progress->setMaximum(100);
+		progress->setValue(prog);
 	}
 
 	void addPage(QWidget* page)

@@ -100,6 +100,11 @@ void CPythonToolsPanel::startRunning(const QString& msg)
 	ui->startRunning(msg);
 }
 
+void CPythonToolsPanel::setProgress(int prog)
+{
+	ui->setProgress(prog);
+}
+
 void CPythonToolsPanel::finalizePython()
 {
 	pybind11::finalize_interpreter();
@@ -170,6 +175,8 @@ void CPythonToolsPanel::endThread()
 void CPythonToolsPanel::on_importScript_triggered()
 {
 	QString filename = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
+
+	if(filename.isEmpty()) return;
 
 	pybind11::gil_scoped_release release;
 	CPyThread* thread = new CPyThread(this, filename);

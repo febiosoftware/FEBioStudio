@@ -119,6 +119,7 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
     m.def("FindOrMakeNode", FindOrMakeNode);
     m.def("IntersectWithObject", IntersectWithObject);
 
+    m.def("setProgress", PySetProgress);
     m.def("getUserString", PyGetString);
     m.def("getUserInt", PyGetInt);
 

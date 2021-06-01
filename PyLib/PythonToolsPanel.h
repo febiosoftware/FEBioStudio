@@ -79,6 +79,7 @@ private:
 public slots:
 	void endThread();
 	void addLog(QString txt);
+	void setProgress(int prog);
 
 private slots:
 
