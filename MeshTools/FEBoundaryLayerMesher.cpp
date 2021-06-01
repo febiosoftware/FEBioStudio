@@ -40,12 +40,17 @@ FEBoundaryLayerMesher::FEBoundaryLayerMesher() : FEModifier("PostBL")
 FEMesh* FEBoundaryLayerMesher::Apply(FEMesh* pm)
 {
 	FEMesh* pnm = new FEMesh(*pm);
-	BoundaryLayer(pnm);
+	if (BoundaryLayer(pnm) == false)
+	{
+		delete pnm;
+		pnm = nullptr;
+	}
 	return pnm;
 }
 
-void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
+bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 {
+	// get the modifier's parameters
 	double bias = GetFloatValue(0);
 	int nseg = GetIntValue(1);
 
@@ -55,7 +60,6 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 
 	// store list of selected faces in fdata
 	vector<FEFace> fdata;
-
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FEFace& face = pm->Face(i);
@@ -63,22 +67,27 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			fdata.push_back(face);
 	}
 
+	// make sure we have work to do
 	int ne1 = (int)fdata.size();
+	if (ne1 == 0)
+	{
+		SetError("No faces selected!");
+		return false;
+	}
 
 	// map faces to their element
-	std::map<int, vector<int>> fel;
-	std::map<int, vector<int>>::iterator it;
+	std::map<int, vector<int>> efm;
 	for (int i = 0; i<ne1; ++i)
 	{
 		FEFace face = fdata[i];
 		// get element to which this face belongs
 		int iel = face.m_elem[0].eid;
 		// store faces that share this element
-		fel[iel].push_back(i);
+		efm[iel].push_back(i);
 	}
 
 	// mark all nodes on the selected faces
-	for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = -1;
+	pm->TagAllNodes(-1);
 	for (int i = 0; i<ne1; ++i)
 		for (int j = 0; j<fdata[i].Nodes(); ++j)
 			pm->Node(fdata[i].n[j]).m_ntag = 1;
@@ -87,7 +96,6 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 	// fne key = non-face element
 	// fne mapped values = vector of entries into fdata faces
 	std::map<int, vector<int>> fne;
-	std::map<int, vector<int>>::iterator ie;
 	for (int i = 0; i<pm->Elements(); ++i) {
 		FEElement el = pm->Element(i);
 		vector<int> shared_nodes;
@@ -102,7 +110,8 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 
 	// create a domain from all selected elements
 	FEDomain dom(pm);
-	for (it = fel.begin(); it != fel.end(); ++it) {
+	std::map<int, vector<int>>::iterator it;
+	for (it = efm.begin(); it != efm.end(); ++it) {
 		if (it->second.size() == 1) {
 			// only one face connected to this element
 			int iel = (int)it->first;
@@ -117,9 +126,9 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 				FEDBox& box = dom.Box(ibox);
 				// find the local face number in that element
 				int ifc = box.FindBoxFace(face);
-				if (ifc == -1) return;
+				if (ifc == -1) return false;
 				if (!box.SetMeshSingleFace(ifc, nseg, bias, false))
-					return;
+					return false;
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
@@ -129,9 +138,9 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 				FEDWedge& wdg = dom.Wedge(iwdg);
 				// find the local face number in that element
 				int ifc = wdg.FindWedgeFace(face);
-				if (ifc == -1) return;
+				if (ifc == -1) return  false;
 				if (!wdg.SetMeshSingleFace(ifc, nseg, bias, false))
-					return;
+					return false;
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
@@ -141,9 +150,9 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 				FEDTet& tet = dom.Tet(itet);
 				// find the local face number in that element
 				int ifc = tet.FindTetFace(face);
-				if (ifc == -1) return;
+				if (ifc == -1) return false;
 				if (!tet.SetMeshFromFace(ifc, nseg, bias, false))
-					return;
+					return false;
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
@@ -158,7 +167,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 				for (int j = 0; j<face1.Nodes(); ++j)
 					if (face0.n[i] == face1.n[j]) cn.push_back(face0.n[i]);
 			// only allow two shared nodes
-			if (cn.size() != 2) return;
+			if (cn.size() != 2) return false;
 			int iel = (int)it->first;
 			FEElement_& el = pm->Element(iel);
 			if (el.Type() == FE_HEX8) {
@@ -182,16 +191,16 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 				ifc1 = wdg1.FindWedgeFace(face1);
 				if (ifc0 == -1) ifc0 = wdg0.FindWedgeFace(face1);
 				if (ifc1 == -1) ifc1 = wdg1.FindWedgeFace(face0);
-				if ((ifc0 == -1) || (ifc1 == -1)) return;
+				if ((ifc0 == -1) || (ifc1 == -1)) return false;
 				if (!wdg0.SetMeshSingleFace(ifc0, nseg, bias, false))
-					return;
+					return false;
 				if (!wdg1.SetMeshSingleFace(ifc1, nseg, bias, false))
-					return;
+					return false;
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
 			else if (el.Type() == FE_PENTA6) {
-				return;
+				return false;
 			}
 			else if (el.Type() == FE_TET4) {
 				// we have a tet with two faces on the selected surface
@@ -225,9 +234,9 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 					FEDTet& tet = dom.Tet(jtet);
 					// find the local face number in that element
 					int jfc = tet.FindTetFace(opface[i]);
-					if (jfc == -1) return;
+					if (jfc == -1) return false;
 					if (!tet.SetMeshFromFace(jfc, nseg, bias, false))
-						return;
+						return false;
 					// tag the original element for deletion
 					delem[jel] = true;
 				}
@@ -235,11 +244,12 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 		}
 		else if (it->second.size() > 2)
 			// more than two faces share same element
-			return;
+			return false;
 	}
 
 	// add hex and penta elements that belong to internal corner edges
 	// add tet elements that share one or two nodes with selected faces
+	std::map<int, vector<int>>::iterator ie;
 	for (ie = fne.begin(); ie != fne.end(); ++ie) {
 		// we have an internal corner
 		int iel = (int)ie->first;
@@ -262,11 +272,11 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			int edg0, edg1;
 			edg0 = wdg0.FindWedgeEdge(ie->second[0], ie->second[1]);
 			edg1 = wdg1.FindWedgeEdge(ie->second[0], ie->second[1]);
-			if ((edg0 == -1) || (edg1 == -1)) return;
+			if ((edg0 == -1) || (edg1 == -1)) return false;
 			if (!wdg0.SetMeshSingleEdge(edg0, nseg, bias, false))
-				return;
+				return false;
 			if (!wdg1.SetMeshSingleEdge(edg1, nseg, bias, false))
-				return;
+				return false;
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
@@ -279,7 +289,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			// find the shared edge in the wedge
 			int iedge = wdg.FindWedgeEdge(ie->second[0], ie->second[1]);
 			if (!wdg.SetMeshSingleEdge(iedge, nseg, bias, false))
-				return;
+				return false;
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
@@ -291,7 +301,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			FEDWedge& wdg = dom.Wedge(iwdg);
 			// find the shared vertex in the wedge
 			int ivtx = wdg.FindWedgeVertex(ie->second[0]);
-			if (ivtx == -1) return;
+			if (ivtx == -1) return false;
 			// split the wedge into tets
 			int itet[3];
 			dom.SplitWedgeIntoTets(iwdg, ivtx, itet);
@@ -299,12 +309,12 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			FEDTet& tet = dom.Tet(itet[0]);
 			// find the local vertex number in this tet
 			ivtx = tet.FindTetVertex(ie->second[0]);
-			if (ivtx == -1) return;
+			if (ivtx == -1) return false;
 			if (!tet.SetMeshFromVertex(ivtx, nseg, bias, false))
-				return;
+				return false;
 			// tag the original element for deletion
 			delem[iel] = true;
-			return;
+			return false;
 		}
 		else if ((ie->second.size() == 1) && (el.Type() == FE_TET4)) {
 			// add element to domain
@@ -315,7 +325,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			// find the shared node in the tet
 			int ivtx = tet.FindTetVertex(ie->second[0]);
 			if (!tet.SetMeshFromVertex(ivtx, nseg, bias, false))
-				return;
+				return false;
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
@@ -328,7 +338,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			// find the shared edge in the tet
 			int iedge = tet.FindTetEdge(ie->second[0], ie->second[1]);
 			if (!tet.SetMeshFromEdge(iedge, nseg, bias, false))
-				return;
+				return false;
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
@@ -340,11 +350,10 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 
 	// create the mesh
 	if (!dom.MeshDomain())
-		return;
+		return false;
 
 	// delete all the tagged elements
-	for (int i = 0; i<pm->Elements(); ++i)
-		pm->Element(i).m_ntag = 1;
+	pm->TagAllElements(1);
 	for (int i = 0; i<ne0; ++i)
 		if (delem[i]) pm->Element(i).m_ntag = -1;
 
@@ -363,4 +372,6 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			pm->Element(i).m_ntag = 1;
 	}
 	meshBuilder.InvertTaggedElements(-1);
+
+	return true;
 }

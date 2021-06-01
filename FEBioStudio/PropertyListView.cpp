@@ -240,7 +240,7 @@ public:
 				else if ((prop.type == CProperty::Enum)&&(prop.values.isEmpty()==false))
 				{
 					int n = v.value<int>();
-					if (n >= 0) return prop.values.at(n);
+					if ((n >= 0) && (n < prop.values.count())) return prop.values.at(n);
 					else return "(none)";
 				}
 				else if (prop.type == CProperty::Float)

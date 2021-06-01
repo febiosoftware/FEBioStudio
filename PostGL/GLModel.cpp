@@ -91,6 +91,8 @@ CGLModel::CGLModel(FEPostModel* ps)
 	m_pcol = nullptr;
 	m_pdis = nullptr;
 
+	m_ghost_color = GLColor(96, 96, 96);
+
 	if (ps == nullptr) return;
 
 	SetCurrentTimeIndex(0);
@@ -1527,7 +1529,8 @@ void CGLModel::RenderGhost(CGLContext &rc)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 
-	glColor3ub(96,96,96);
+	GLColor c = m_ghost_color;
+	glColor3ub(c.r,c.g,c.b);
 
 	quatd q = rc.m_cam->GetOrientation();
 

@@ -31,6 +31,7 @@ class FENode;
 class FEMesh;
 class FEEdgeSet;
 class FENodeSet;
+class FESurface;
 
 class FEMeshBuilder
 {
@@ -56,6 +57,7 @@ public:
 
 	// auto-partition selections
 	bool AutoPartitionEdges(double w, FEEdgeSet* pg);
+	bool AutoPartitionFaces(double w, FESurface* pg);
 
 	// Add an (isolated) node. The node will be partitioned.
 	FENode* AddNode(const vec3d& r);

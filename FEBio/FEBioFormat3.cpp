@@ -1689,13 +1689,7 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	{
 		if (tag == "scale")
 		{
-			int lc = tag.Attribute("lc").value<int>() - 1;
-			if (lc == -1) throw XMLReader::InvalidAttributeValue(tag, "lc", 0);
-			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
-
-			double val;
-			tag.value(val);
-			pbc->SetLoad(val);
+			ReadParam(*pbc, tag);
 		}
 		else if (tag == "dof")
 		{
@@ -2811,9 +2805,8 @@ void FEBioFormat3::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 					dof.node = tag.AttributeValue<int>("id", 0);
 
 					const char* szbc = tag.AttributeValue("bc");
-					if (strcmp(szbc, "x") == 0) dof.bc = 0;
-					else if (strcmp(szbc, "y") == 0) dof.bc = 1;
-					else if (strcmp(szbc, "z") == 0) dof.bc = 2;
+                    int dofcode = fem.GetDOFIndex(szbc);
+					if (dofcode != -1) dof.bc = dofcode;
 					else throw XMLReader::InvalidAttributeValue(tag, "bc", szbc);
 
 					LC.m_dof.push_back(dof);

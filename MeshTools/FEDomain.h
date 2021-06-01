@@ -122,13 +122,13 @@ public:
     int AddTri(FEDTri tri);
     
     // add a box from a list of vertices
-    int AddBox(vector<int> vlist, int ntag = -1);
+    int AddBox(vector<int> vlist, int ntag = -1, int gid = -1);
     
     // add a wedge from a list of vertices
-    int AddWedge(vector<int> vlist, int ntag = -1);
+    int AddWedge(vector<int> vlist, int ntag = -1, int gid = -1);
     
     // add a tet from a list of vertices
-    int AddTet(vector<int> vlist, int ntag = -1);
+    int AddTet(vector<int> vlist, int ntag = -1, int gid = -1);
     
     // split a box into two wedges
     void SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2]);
@@ -327,6 +327,7 @@ public:
     
 public:
     int             m_ntag;     // tag number
+    int             m_gid;
     
 public:
     int             v[8];       // list of vertices
@@ -389,7 +390,8 @@ public:
 public:
     int             m_ntag;     // tag number
     int             m_fne;      // face/node/edge number
-    
+    int             m_gid;
+
 public:
     int             v[6];       // list of vertices
     int             e[9];       // list of edges
@@ -458,7 +460,8 @@ public:
     int             m_ntag;     // tag number
     int             m_type;     // mesh type (0 = from face, 1 = from node, 2 = from edge)
     int             m_fne;      // face/node/edge number
-    
+    int             m_gid;
+
 public:
     int             v[4];       // list of vertices
     int             e[6];       // list of edges

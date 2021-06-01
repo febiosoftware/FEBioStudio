@@ -161,6 +161,8 @@ public:
 	void setGridColor(const QColor& c) { m_data.m_gridCol = c; }
 	void setXAxisColor(const QColor& c) { m_data.m_xCol = c; }
 	void setYAxisColor(const QColor& c) { m_data.m_yCol = c; }
+
+	QColor selectionColor() { return m_selCol; }
 	void setSelectionColor(const QColor& c) { m_selCol = c; }
 
 	QString XAxisLabel() { return m_data.m_xAxis.label; }
@@ -179,6 +181,8 @@ public:
 	void mapToUserRect(QRect rt, QRectF rng);
 
 	vector<Selection> selection() const { return m_selection; }
+
+	std::vector<QPointF> SelectedPoints() const;
 
 signals:
 	void doneZoomToRect();

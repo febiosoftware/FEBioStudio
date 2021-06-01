@@ -325,7 +325,7 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 	m_chartStyle = LINECHART_PLOT;
 
 	// set default colors
-	m_selCol = QColor(0,0,0);
+	m_selCol = QColor::fromRgb(255, 255, 0);
 
 	m_viewRect = QRectF(0.0, 0.0, 1.0, 1.0);
 	m_xscale = findScale(m_viewRect.left(), m_viewRect.right());
@@ -1553,4 +1553,16 @@ bool CPlotWidget::isSelected(int ndata, int npoint)
 			(si.npointIndex == npoint)) return true;
 	}
 	return false;
+}
+
+std::vector<QPointF> CPlotWidget::SelectedPoints() const
+{
+	vector<CPlotWidget::Selection> sel = selection();
+	vector<QPointF> pt;
+	for (CPlotWidget::Selection& si : sel)
+	{
+		QPointF pi = m_data.m_data[si.ndataIndex]->Point(si.npointIndex);
+		pt.push_back(pi);
+	}
+	return pt;
 }

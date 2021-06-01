@@ -189,6 +189,7 @@ public:
 	FEDOFVariable* AddVariable(const char* szvar);
 	int GetVariableIndex(const char* sz);
 	FEDOFVariable& GetVariable(const char* sz);
+    int GetDOFIndex(const char* sz);
 
 public:
 	int CountBCs(int type);

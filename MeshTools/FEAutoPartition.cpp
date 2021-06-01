@@ -64,6 +64,15 @@ FEMesh* FEAutoPartition::Apply(FEGroup* pg)
 			SetError("Cannot auto-partition this edge selection.");
 		}
 	}
+	else if (dynamic_cast<FESurface*>(pg))
+	{
+		if (meshBuilder.AutoPartitionFaces(w, dynamic_cast<FESurface*>(pg)) == false)
+		{
+			delete newMesh;
+			newMesh = nullptr;
+			SetError("Cannot auto-partition this face selection.");
+		}
+	}
 	else meshBuilder.AutoPartition(w);
 
 	return newMesh;

@@ -399,7 +399,7 @@ int FEDomain::AddTri(FEDTri tri)
 
 //-------------------------------------------------------------------------------
 // Add a box from a list of vertices in this domain
-int FEDomain::AddBox(vector<int> vlist, int ntag)
+int FEDomain::AddBox(vector<int> vlist, int ntag, int gid)
 {
     // check vlist
     if (vlist.size() < 8)
@@ -408,6 +408,7 @@ int FEDomain::AddBox(vector<int> vlist, int ntag)
     // create a box
     FEDBox box;
     box.m_ntag = ntag;
+    box.m_gid = gid;
     box.SetDomain(this);
     
     // store the supplied vertices into the box vertex list
@@ -465,7 +466,7 @@ int FEDomain::AddBox(vector<int> vlist, int ntag)
 
 //-------------------------------------------------------------------------------
 // Add a wedge from a list of vertices in this domain
-int FEDomain::AddWedge(vector<int> vlist, int ntag)
+int FEDomain::AddWedge(vector<int> vlist, int ntag, int gid)
 {
     // check vlist
     if (vlist.size() < 6)
@@ -474,6 +475,7 @@ int FEDomain::AddWedge(vector<int> vlist, int ntag)
     // create a wedge
     FEDWedge wdg;
     wdg.m_ntag = ntag;
+    wdg.m_gid = gid;
     wdg.SetDomain(this);
     
     // store the supplied vertices into the wedge vertex list
@@ -555,7 +557,7 @@ int FEDomain::AddWedge(vector<int> vlist, int ntag)
 
 //-------------------------------------------------------------------------------
 // Add a tet from a list of vertices in this domain
-int FEDomain::AddTet(vector<int> vlist, int ntag)
+int FEDomain::AddTet(vector<int> vlist, int ntag, int gid)
 {
     // check vlist
     if (vlist.size() < 4)
@@ -564,6 +566,7 @@ int FEDomain::AddTet(vector<int> vlist, int ntag)
     // create a tet
     FEDTet tet;
     tet.m_ntag = ntag;
+    tet.m_gid = gid;
     tet.SetDomain(this);
     
     // store the supplied vertices into the wedge vertex list
@@ -720,7 +723,8 @@ void FEDomain::SplitWedgeIntoTets(int iwdg, int ivtx, int itet[3])
 // Add an element as a domain in FEDomain
 bool FEDomain::AddElement(int iel)
 {
-    FEElement el = m_pmesh->Element(iel);
+    const FEElement& el = m_pmesh->Element(iel);
+    int gid = el.m_gid;
     
     vector<int> vlist(el.Nodes());
     
@@ -743,7 +747,7 @@ bool FEDomain::AddElement(int iel)
         if (FindBox(iel) != -1) return false;
         
         // otherwise, add it as a box to this domain
-        AddBox(vlist, iel);
+        AddBox(vlist, iel, gid);
         return true;
     }
     else if (el.Type() == FE_PENTA6) {
@@ -752,7 +756,7 @@ bool FEDomain::AddElement(int iel)
         if (FindWedge(iel) != -1) return false;
         
         // otherwise, add it as a wedge to this domain
-        AddWedge(vlist, iel);
+        AddWedge(vlist, iel, gid);
         return true;
     }
     else if (el.Type() == FE_TET4) {
@@ -761,7 +765,7 @@ bool FEDomain::AddElement(int iel)
         if (FindTet(iel) != -1) return false;
         
         // otherwise, add it as a tet to this domain
-        AddTet(vlist, iel);
+        AddTet(vlist, iel, gid);
         return true;
     }
     
@@ -906,6 +910,7 @@ bool FEDomain::MeshDomain()
         for (int j=0; j<box->elem.size(); ++j) {
             FEElement& el = m_pmesh->Element(ne0 + ne1);
             el.SetType(FE_HEX8);
+            el.m_gid = box->m_gid; assert(el.m_gid >= 0);
             for (int k=0; k<8; ++k)
                 el.m_node[k] = Vertex(box->elem[j][k]).m_ntag;
             ++ne1;
@@ -916,6 +921,7 @@ bool FEDomain::MeshDomain()
         FEDWedge* wdg = WedgePtr(i);
         for (int j=0; j<wdg->elem.size(); ++j) {
             FEElement& el = m_pmesh->Element(ne0 + ne1);
+            el.m_gid = wdg->m_gid; assert(el.m_gid >= 0);
             if (wdg->elem[j].size() == 8) {
                 el.SetType(FE_HEX8);
                 for (int k=0; k<8; ++k)
@@ -935,6 +941,7 @@ bool FEDomain::MeshDomain()
         FEDTet* tet = TetPtr(i);
         for (int j=0; j<tet->elem.size(); ++j) {
             FEElement& el = m_pmesh->Element(ne0 + ne1);
+            el.m_gid = tet->m_gid; assert(el.m_gid >= 0);
             if (tet->elem[j].size() == 4) {
                 el.SetType(FE_TET4);
                 for (int k=0; k<4; ++k)
@@ -1368,6 +1375,7 @@ bool FEDTri::CreateMesh(FEDomain* pdom)
 FEDBox::FEDBox()
 {
     m_ntag = -1;
+    m_gid = -1;
     for (int i=0; i< 8; ++i) v[i] = -1;
     for (int i=0; i<12; ++i) {
         e[i] = -1;
@@ -1385,6 +1393,7 @@ FEDBox::FEDBox()
 FEDBox::FEDBox(const FEDBox& box)
 {
     m_ntag = box.m_ntag;
+    m_gid = box.m_gid;
     for (int i=0; i<8; ++i) v[i] = box.v[i];
     for (int i=0; i<12; ++i) {
         e[i] = box.e[i];
@@ -1403,6 +1412,7 @@ FEDBox::FEDBox(const FEDBox& box)
 FEDBox& FEDBox::operator=(const FEDBox box)
 {
     m_ntag = box.m_ntag;
+    m_gid = box.m_gid;
     for (int i=0; i<8; ++i) v[i] = box.v[i];
     for (int i=0; i<12; ++i) {
         e[i] = box.e[i];
@@ -1784,6 +1794,7 @@ bool FEDBox::CreateMesh(FEDomain* pdom)
 FEDWedge::FEDWedge()
 {
     m_ntag = -1;
+    m_gid = -1;
     m_fne = -1;
     for (int i=0; i< 6; ++i) v[i] = -1;
     for (int i=0; i<9; ++i) {
@@ -1803,6 +1814,7 @@ FEDWedge::FEDWedge(const FEDWedge& wdg)
 {
     m_ntag = wdg.m_ntag;
     m_fne = wdg.m_fne;
+    m_gid = wdg.m_gid;
     for (int i=0; i<6; ++i) v[i] = wdg.v[i];
     for (int i=0; i<9; ++i) {
         e[i] = wdg.e[i];
@@ -1822,6 +1834,7 @@ FEDWedge& FEDWedge::operator=(const FEDWedge wdg)
 {
     m_ntag = wdg.m_ntag;
     m_fne = wdg.m_fne;
+    m_gid = wdg.m_gid;
     for (int i=0; i<6; ++i) v[i] = wdg.v[i];
     for (int i=0; i<9; ++i) {
         e[i] = wdg.e[i];
@@ -2443,6 +2456,7 @@ FEDTet::FEDTet()
     m_ntag = -1;
     m_type = -1;
     m_fne = -1;
+    m_gid = -1;
     for (int i=0; i< 4; ++i) v[i] = -1;
     for (int i=0; i<6; ++i) {
         e[i] = -1;
@@ -2462,6 +2476,7 @@ FEDTet::FEDTet(const FEDTet& tet)
     m_ntag = tet.m_ntag;
     m_type = tet.m_type;
     m_fne = tet.m_fne;
+    m_gid = tet.m_gid;
     for (int i=0; i<4; ++i) v[i] = tet.v[i];
     for (int i=0; i<6; ++i) {
         e[i] = tet.e[i];
@@ -2482,6 +2497,7 @@ FEDTet& FEDTet::operator=(const FEDTet tet)
     m_ntag = tet.m_ntag;
     m_type = tet.m_type;
     m_fne = tet.m_fne;
+    m_gid = tet.m_gid;
     for (int i=0; i<4; ++i) v[i] = tet.v[i];
     for (int i=0; i<6; ++i) {
         e[i] = tet.e[i];

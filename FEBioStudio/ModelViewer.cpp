@@ -736,6 +736,34 @@ void CModelViewer::OnDeleteAllDiscete()
 	}
 }
 
+void CModelViewer::OnShowAllDiscrete()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument()); assert(doc);
+	if (doc == nullptr) return;
+	GModel& m = doc->GetFEModel()->GetModel();
+	
+	for (int i = 0; i < m.DiscreteObjects(); ++i)
+	{
+		GDiscreteObject* pd = m.DiscreteObject(i);
+		if (pd->IsVisible() == false) pd->Show();
+	}
+	GetMainWindow()->RedrawGL();
+}
+
+void CModelViewer::OnHideAllDiscrete()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument()); assert(doc);
+	if (doc == nullptr) return;
+	GModel& m = doc->GetFEModel()->GetModel();
+
+	for (int i = 0; i < m.DiscreteObjects(); ++i)
+	{
+		GDiscreteObject* pd = m.DiscreteObject(i);
+		if (pd->IsVisible()) pd->Hide();
+	}
+	GetMainWindow()->RedrawGL();
+}
+
 void CModelViewer::OnSelectDiscreteObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -777,6 +805,30 @@ void CModelViewer::OnDetachDiscreteObject()
 		Select(po);
 		wnd->RedrawGL();
 	}
+}
+
+void CModelViewer::OnHideDiscreteObject()
+{
+	vector<GDiscreteObject*> sel;
+	for (int i = 0; i < (int)m_selection.size(); ++i)
+	{
+		GDiscreteObject* po = dynamic_cast<GDiscreteObject*>(m_selection[i]); assert(po);
+		if (po && po->IsVisible()) po->Hide();
+	}
+	CMainWindow* wnd = GetMainWindow();
+	wnd->RedrawGL();
+}
+
+void CModelViewer::OnShowDiscreteObject()
+{
+	vector<GDiscreteObject*> sel;
+	for (int i = 0; i < (int)m_selection.size(); ++i)
+	{
+		GDiscreteObject* po = dynamic_cast<GDiscreteObject*>(m_selection[i]); assert(po);
+		if (po && (po->IsVisible() == false)) po->Show();
+	}
+	CMainWindow* wnd = GetMainWindow();
+	wnd->RedrawGL();
 }
 
 void CModelViewer::OnChangeDiscreteType()
@@ -1589,9 +1641,13 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_DISCRETE_LIST:
 		menu.addAction("Delete all", this, SLOT(OnDeleteAllDiscete()));
+		menu.addAction("Hide all", this, SLOT(OnHideAllDiscrete()));
+		menu.addAction("Show all", this, SLOT(OnShowAllDiscrete()));
 		break;
 	case MT_DISCRETE_SET:
 		menu.addAction("Select", this, SLOT(OnSelectDiscreteObject()));
+		menu.addAction("Hide"  , this, SLOT(OnHideDiscreteObject()));
+		menu.addAction("Show"  , this, SLOT(OnShowDiscreteObject()));
 		menu.addAction("Detach", this, SLOT(OnDetachDiscreteObject()));
 		menu.addAction("Change Type ...", this, SLOT(OnChangeDiscreteType()));
 		del = true;

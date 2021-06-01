@@ -3966,7 +3966,8 @@ void FEBioExport3::WriteBCRigid(FEStep& s)
 // write linear constraints
 void FEBioExport3::WriteLinearConstraints(FEStep& s)
 {
-	const char* szbc[] = { "x", "y", "z" };
+    // This list should be consistent with the list of DOFs in FEModel::FEModel()
+	const char* szbc[] = { "x", "y", "z", "u", "v", "w", "p", "T", "wx", "wy", "wz", "ef", "sx", "sy", "sz" };
 
 	for (int i = 0; i<s.LinearConstraints(); ++i)
 	{
@@ -4175,11 +4176,7 @@ void FEBioExport3::WriteLoadNodal(FEStep& s)
 			m_xml.add_branch(load);
 			{
 				m_xml.add_leaf("dof", bc[l]);
-
-				XMLElement scale("scale");
-				if (plc) scale.add_attribute("lc", plc->GetID());
-				scale.value(pbc->GetLoad());
-				m_xml.add_leaf(scale);
+				WriteParam(pbc->GetParam(FENodalLoad::LOAD));
 			}
 			m_xml.close_branch(); // nodal_load
 		}

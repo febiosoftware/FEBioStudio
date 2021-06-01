@@ -183,9 +183,9 @@ FEModel::FEModel()
 	FEDOFVariable* varTemperature = AddVariable("Temperature");
 	varTemperature->AddDOF("temperature", "T");
 
-	FEDOFVariable* varSolute = AddVariable("Effective Solute Concentration");
-	// (start with an empty solute variable)
-
+    FEDOFVariable* varSolute = AddVariable("Effective Solute Concentration");
+    // (start with an empty solute variable)
+    
     FEDOFVariable* varVel = AddVariable("Fluid Velocity");
     varVel->AddDOF("X-fluid velocity", "wx");
     varVel->AddDOF("Y-fluid velocity", "wy");
@@ -222,6 +222,21 @@ int FEModel::GetVariableIndex(const char* sz)
 	}
 	assert(false);
 	return -1;
+}
+
+//-----------------------------------------------------------------------------
+int FEModel::GetDOFIndex(const char* sz)
+{
+    int idx = -1;
+    for (int i=0; i<(int)m_DOF.size(); ++i)
+    {
+        for (int j=0; j<m_DOF[i].DOFs(); ++j) {
+            ++idx;
+            if (strcmp(m_DOF[i].GetDOF(j).symbol(), sz) == 0) return idx;
+        }
+    }
+    assert(false);
+    return -1;
 }
 
 //-----------------------------------------------------------------------------

@@ -1534,6 +1534,78 @@ bool FEMeshBuilder::AutoPartitionEdges(double w, FEEdgeSet* pg)
 }
 
 //-----------------------------------------------------------------------------
+bool FEMeshBuilder::AutoPartitionFaces(double w, FESurface* pg)
+{
+	// sanity checks
+	if (pg == nullptr) return false;
+	if (pg->size() == 0) return false;
+
+	// Tag all faces to partition
+	m_mesh.TagAllFaces(0);
+	for (FEItemListBuilder::Iterator it = pg->begin(); it != pg->end(); ++it)
+	{
+		m_mesh.Face(*it).m_ntag = 1;
+	}
+
+	// smoothing threshold
+	double eps = (double)cos(w * DEG2RAD);
+
+	// stack for tracking unprocessed faces
+	vector<FEFace*> stack(m_mesh.Faces(), nullptr);
+	int ns = 0;
+
+	// process all faces
+	int ng = m_mesh.CountFacePartitions();
+	for (FEItemListBuilder::Iterator it = pg->begin(); it != pg->end(); ++it)
+	{
+		FEFace* pf = m_mesh.FacePtr(*it);
+		if (pf->m_ntag == 1)
+		{
+			FEElement_* pe = m_mesh.ElementPtr(pf->m_elem[0].eid);
+			int pid = (pe == nullptr ? -1 : pe->m_gid);
+			pg->m_ntag = 0;
+			stack[ns++] = pf;
+			while (ns > 0)
+			{
+				// pop a face
+				pf = stack[--ns];
+
+				// assign GID
+				pf->m_gid = ng;
+
+				// loop over neighbors
+				int n = pf->Edges();
+				for (int j = 0; j < n; ++j)
+				{
+					FEFace* pf2 = m_mesh.FacePtr(pf->m_nbr[j]);
+					FEElement_* pe2 = m_mesh.ElementPtr(pf2->m_elem[0].eid);
+					int pid2 = (pe2 == nullptr ? -1 : pe2->m_gid);
+
+					// push unprocessed neighbour
+					if (pf2 && (pf2->m_ntag == 1) && (pf->m_fn * pf2->m_fn >= eps) && (pid == pid2))
+					{
+						pf2->m_ntag = 0;
+						stack[ns++] = pf2;
+					}
+				}
+			}
+			++ng;
+		}
+	}
+	m_mesh.UpdateFacePartitions();
+
+	// we need to rebuild the edges
+	BuildEdges();
+	AutoPartitionEdges();
+
+	// partition the nodes
+	AutoPartitionNodes();
+	m_mesh.RebuildNodeData();
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 void FEMeshBuilder::AutoPartition(double smoothingAngle)
 {
 	// calculate smoothing IDs

@@ -183,35 +183,35 @@ void ModifierThread::stop()
 }
 
 //=============================================================================
-
-REGISTER_CLASS(FERebuildMesh          , CLASS_FEMODIFIER, "Rebuild Mesh"   , EDIT_MESH);
-REGISTER_CLASS(FEFixMesh              , CLASS_FEMODIFIER, "Fix Mesh"       , EDIT_MESH);
-REGISTER_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
-REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
-REGISTER_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
-REGISTER_CLASS(FEDiscardMesh          , CLASS_FEMODIFIER, "Discard Mesh"   , EDIT_MESH);
-REGISTER_CLASS(FEMirrorMesh           , CLASS_FEMODIFIER, "Mirror"         , EDIT_MESH);
-REGISTER_CLASS(FETetGenModifier       , CLASS_FEMODIFIER, "TetGen"         , EDIT_MESH);
-REGISTER_CLASS(FEExtrudeFaces         , CLASS_FEMODIFIER, "Extrude Faces"  , EDIT_FACE);
-REGISTER_CLASS(FERevolveFaces         , CLASS_FEMODIFIER, "Revolve Faces"  , EDIT_FACE);
-REGISTER_CLASS(FEWeldNodes            , CLASS_FEMODIFIER, "Weld nodes"     , EDIT_MESH);
-REGISTER_CLASS(FERefineMesh			  , CLASS_FEMODIFIER, "Refine Mesh"    , EDIT_MESH | EDIT_SAFE);
-REGISTER_CLASS(FEConvertMesh		  , CLASS_FEMODIFIER, "Convert"        , EDIT_MESH | EDIT_SAFE);
+// NOTE: Try to keep these in alphabetical order!
 REGISTER_CLASS(FEAddNode              , CLASS_FEMODIFIER, "Add Node"       , EDIT_MESH);
+REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
+REGISTER_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
+REGISTER_CLASS(FEBoundaryLayerMesher  , CLASS_FEMODIFIER, "Boundary Layer" , EDIT_FACE | EDIT_SAFE);
+REGISTER_CLASS(FEConvertMesh		  , CLASS_FEMODIFIER, "Convert Mesh"   , EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
+REGISTER_CLASS(FEDetachElements	      , CLASS_FEMODIFIER, "Detach Elements", EDIT_ELEMENT);
+REGISTER_CLASS(FEDiscardMesh          , CLASS_FEMODIFIER, "Discard Mesh"   , EDIT_MESH);
+REGISTER_CLASS(FEExtrudeFaces         , CLASS_FEMODIFIER, "Extrude Faces"  , EDIT_FACE);
+REGISTER_CLASS(FEFixMesh              , CLASS_FEMODIFIER, "Fix Mesh"       , EDIT_MESH);
+REGISTER_CLASS(FEInflateMesh          , CLASS_FEMODIFIER, "Inflate"        , EDIT_FACE);
 REGISTER_CLASS(FEInvertMesh           , CLASS_FEMODIFIER, "Invert"         , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
-REGISTER_CLASS(FEDetachElements	      , CLASS_FEMODIFIER, "Detach"         , EDIT_ELEMENT);
-REGISTER_CLASS(FEBoundaryLayerMesher  , CLASS_FEMODIFIER, "PostBL"         , EDIT_FACE | EDIT_SAFE);
-REGISTER_CLASS(FESetShellThickness    , CLASS_FEMODIFIER, "Shell Thickness", EDIT_MESH | EDIT_ELEMENT);
-REGISTER_CLASS(FESetFiberOrientation  , CLASS_FEMODIFIER, "Set Fibers"     , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
+REGISTER_CLASS(FEMirrorMesh           , CLASS_FEMODIFIER, "Mirror"         , EDIT_MESH);
+#ifdef HAS_MMG
+REGISTER_CLASS(FEMMGRemesh            , CLASS_FEMODIFIER, "MMG Remesh"     , EDIT_MESH | EDIT_SAFE);
+#endif
+REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
+REGISTER_CLASS(FERebuildMesh          , CLASS_FEMODIFIER, "Rebuild Mesh"   , EDIT_MESH);
+REGISTER_CLASS(FERefineMesh			  , CLASS_FEMODIFIER, "Refine Mesh"    , EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(FERevolveFaces         , CLASS_FEMODIFIER, "Revolve Faces"  , EDIT_FACE);
+REGISTER_CLASS(FERezoneMesh           , CLASS_FEMODIFIER, "Rezone"         , EDIT_FACE | EDIT_SAFE);
 REGISTER_CLASS(FESetAxesOrientation   , CLASS_FEMODIFIER, "Set Axes"       , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
 REGISTER_CLASS(FEAxesCurvature        , CLASS_FEMODIFIER, "Set Axes from Curvature" , EDIT_MESH | EDIT_ELEMENT | EDIT_FACE | EDIT_SAFE);
-REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
-REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
-REGISTER_CLASS(FERezoneMesh           , CLASS_FEMODIFIER, "Rezone"         , EDIT_FACE | EDIT_SAFE);
-REGISTER_CLASS(FEInflateMesh          , CLASS_FEMODIFIER, "Inflate"        , EDIT_FACE);
-#ifdef HAS_MMG
-REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "MMG Remesh", EDIT_MESH | EDIT_SAFE);
-#endif
+REGISTER_CLASS(FESetFiberOrientation  , CLASS_FEMODIFIER, "Set Fibers"     , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
+REGISTER_CLASS(FESetShellThickness    , CLASS_FEMODIFIER, "Shell Thickness", EDIT_MESH | EDIT_ELEMENT);
+REGISTER_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
+REGISTER_CLASS(FETetGenModifier       , CLASS_FEMODIFIER, "TetGen"         , EDIT_MESH);
+REGISTER_CLASS(FEWeldNodes            , CLASS_FEMODIFIER, "Weld nodes"     , EDIT_MESH);
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
 {
