@@ -1071,7 +1071,7 @@ void FEBioExport3::WriteSolidControlParams(FEAnalysisStep* pstep)
 	m_xml.add_branch("solver");
 	{
 		m_xml.add_leaf("max_refs", ops.maxref);
-		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("max_ups", ops.ilimit);
 		m_xml.add_leaf("diverge_reform", ops.bdivref);
 		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
@@ -1178,7 +1178,7 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 	m_xml.add_branch("solver");
 	{
 		m_xml.add_leaf("max_refs", ops.maxref);
-		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("max_ups", ops.ilimit);
 		m_xml.add_leaf("diverge_reform", ops.bdivref);
 		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
@@ -1234,7 +1234,7 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 	m_xml.add_branch("solver");
 	{
 		m_xml.add_leaf("max_refs", ops.maxref);
-		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("max_ups", ops.ilimit);
 		m_xml.add_leaf("diverge_reform", ops.bdivref);
 		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
@@ -1289,7 +1289,7 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 	m_xml.add_branch("solver");
 	{
 		m_xml.add_leaf("max_refs", ops.maxref);
-		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("max_ups", ops.ilimit);
 		m_xml.add_leaf("diverge_reform", ops.bdivref);
 		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
@@ -1344,7 +1344,7 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 	m_xml.add_branch("solver");
 	{
 		m_xml.add_leaf("max_refs", ops.maxref);
-		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("max_ups", ops.ilimit);
 		m_xml.add_leaf("diverge_reform", ops.bdivref);
 		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
@@ -1399,7 +1399,7 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 	m_xml.add_branch("solver");
 	{
 		m_xml.add_leaf("max_refs", ops.maxref);
-		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("max_ups", ops.ilimit);
 
 		// write the parameters
 		WriteParamList(*pstep);
