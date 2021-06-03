@@ -31,8 +31,11 @@ SOFTWARE.*/
 #include <FEBioStudio/ModelDocument.h>
 #include <MeshTools/GModel.h>
 #include <MeshLib/MeshTools.h>
+#include <MeshTools/FEShellDisc.h>
 #include <GeomLib/GMeshObject.h>
 #include "PyExceptions.h"
+
+#include <GeomLib/GPrimitive.h>
 
 
 GDiscreteSpringSet* SpringSet_init(const char* name, char* type)
@@ -170,4 +173,97 @@ void IntersectWithObject(vec3d& r0, vec3d& r1, double tol)
 			}
 		}
 	}
+}
+
+
+void meshFromCurve(std::vector<vec3d> points, double radius, int div, int seg, double ratio)
+{
+	auto wnd = PRV::getMainWindow();
+    auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
+    if(!doc)
+    {
+        throw pyNoModelDocExcept();
+    }
+
+	GDisc disc;
+	disc.SetFloatValue(GDisc::RADIUS, radius);
+	disc.Update();
+
+	auto mesher = dynamic_cast<FEShellDisc*>(disc.GetFEMesher());
+	mesher->SetIntValue(FEShellDisc::NDIV, div);
+	mesher->SetIntValue(FEShellDisc::NSEG, seg);
+	mesher->SetFloatValue(FEShellDisc::RATIO, ratio);
+	
+	auto mesh = disc.BuildMesh();
+
+	vector<vec3d> nodePositions;
+
+	for(int point = 0; point < points.size(); point++)
+	{
+		if(point == 0)
+		{
+			vec3d vec1(0,0,1);
+			vec3d vec2 = (points[point + 1] - points[point]).Normalize();
+
+			disc.GetTransform().Rotate(quatd(vec1, vec2), vec3d(0,0,0));
+		}
+		else if(point != points.size() - 1)
+		{
+			vec3d vec1 = (points[point] - points[point - 1]).Normalize();
+			vec3d vec2 = (points[point + 1] - points[point]).Normalize();
+
+			disc.GetTransform().Rotate(quatd(vec1, vec2), points[point - 1]);
+		}
+
+
+		disc.GetTransform().SetPosition(points[point]);
+		
+		for(int node = 0; node < mesh->Nodes(); node++)
+		{
+			nodePositions.push_back(mesh->NodePosition(node));
+		}
+	}
+
+	FEMesh* pm = new FEMesh();
+	pm->Create(nodePositions.size(), mesh->Elements() * (points.size() - 1));
+
+	for(int node = 0; node < pm->Nodes(); node++)
+	{
+		pm->Node(node).r = nodePositions[node];
+	}
+
+	for(int point = 0; point < points.size() - 1; point++)
+	{
+		for(int element = 0; element < mesh->Elements(); element++)
+		{
+			auto discElement = mesh->ElementPtr(element);
+			auto current = pm->ElementPtr(element + mesh->Elements() * point);
+			current->SetType(FE_HEX8);
+
+			for(int node = 0; node < discElement->Nodes(); node++)
+			{
+				current->m_node[node] = discElement->m_node[node] + mesh->Nodes() * point;
+				current->m_node[node + discElement->Nodes()] = discElement->m_node[node] + mesh->Nodes() * (point + 1);
+			}
+		}
+	}
+
+	pm->RebuildMesh();
+
+	GMeshObject* gmesh = new GMeshObject(pm);
+	gmesh->SetName("Test");
+
+
+	auto fem = doc->GetFEModel();
+
+	
+	fem->GetModel().AddObject(gmesh);
+
+
+
+	// for(auto pos : nodePositions)
+	// {
+	// 	FindOrMakeNode(pos, 0);
+	// }
+	
 }

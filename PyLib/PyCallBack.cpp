@@ -82,6 +82,11 @@ int PyGetInt(const char* txt)
     return PyGetInput(CPythonInputHandler::INT, txt)->getInt();
 }
 
+int PyGetSelection(const char* txt)
+{
+    return PyGetInput(CPythonInputHandler::SELECTION, txt)->getSelection();
+}
+
 #else
 CPythonInputHandler* PyGetInput(int type) {return nullptr;}
 std::string PyGetString(const char* txt) {return "";}

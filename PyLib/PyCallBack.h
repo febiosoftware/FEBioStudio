@@ -32,3 +32,5 @@ void PySetProgress(float prog);
 
 std::string PyGetString(const char* txt);
 int PyGetInt(const char* txt);
+
+int PyGetSelection(const char* txt);

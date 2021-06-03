@@ -46,6 +46,11 @@ int CPythonInputHandler::getInt()
     return inputInt;
 }
 
+int CPythonInputHandler::getSelection()
+{
+    return 0;
+}
+
 void CPythonInputHandler::getInput(int type, const QString& txt)
 {
     currentType = type;
@@ -59,6 +64,9 @@ void CPythonInputHandler::getInput(int type, const QString& txt)
         break;
 	case INT:
         wgt = new PyInputIntWidget(txt);
+        break;
+    case SELECTION:
+        wgt = new PyInputSelectionWidget(txt);
         break;
 	default:
         break;

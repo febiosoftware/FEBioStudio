@@ -37,13 +37,14 @@ class CPythonInputHandler : public QObject
     Q_OBJECT
 
 public:
-    enum { STRING, INT };
+    enum { STRING, INT, SELECTION};
 
 public:
     CPythonInputHandler(CPythonToolsPanel* panel);
 
     std::string getString();
     int getInt();
+    int getSelection();
 
 private:
     void finishInput();

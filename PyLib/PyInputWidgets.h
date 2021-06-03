@@ -31,6 +31,7 @@ class QDialogButtonBox;
 class QLabel;
 class QLineEdit;
 class QSpinBox;
+class CSelectionBox;
 
 class PyInputWidget : public QWidget
 {
@@ -72,4 +73,15 @@ public:
 
 private:
     QSpinBox* spinBox;
+};
+
+class PyInputSelectionWidget : public PyInputWidget
+{
+public:
+    PyInputSelectionWidget(QString lblText = "", QWidget* parent = nullptr); 
+
+    int getVal();
+
+private:
+    CSelectionBox* box;
 };

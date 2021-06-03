@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <FEBioStudio/SelectionBox.h>
 
 //////////////////////////////////////////////////////////////////////
 // PyInputWidget
@@ -91,6 +92,21 @@ PyInputIntWidget::PyInputIntWidget(QString lblText, QWidget* parent)
 int PyInputIntWidget::getVal()
 {
     return spinBox->value();
+}
+
+//////////////////////////////////////////////////////////////////////
+// PyInputSelectionWidget
+//////////////////////////////////////////////////////////////////////
+
+PyInputSelectionWidget::PyInputSelectionWidget(QString lblText, QWidget* parent)
+    : PyInputWidget(lblText, parent)
+{
+    addWidget(box = new CSelectionBox);
+} 
+
+int PyInputSelectionWidget::getVal()
+{
+    return 0;
 }
 
 #else
