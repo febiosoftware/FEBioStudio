@@ -60,6 +60,7 @@ protected:
 	void mousePressEvent(QMouseEvent* ev);
 	void mouseMoveEvent(QMouseEvent* ev);
 	void mouseReleaseEvent(QMouseEvent* ev);
+	void wheelEvent(QWheelEvent* ev) override;
 
 signals:
 	void pointClicked(int n);
@@ -67,16 +68,25 @@ signals:
 
 private:
 	void addPoint(double x, double y, int flag = 0);
+	double getscale(double fmin, double fmax);
+	void panTimeRange(double dt);
+
+private:
+	void drawDataBar(QPainter& painter);
+	void drawTimeBar(QPainter& painter);
+	void drawRangeBar(QPainter& painter);
 
 private:
 	std::vector<DataPoint>	m_data;
 	double	m_dataMin, m_dataMax;
-	double	m_min, m_max, m_inc;
+	double	m_tmin, m_tmax, m_tinc;	// time min, max, inc
+	double	m_tleft, m_tright;
 	double	m_ftime;
 	int	    m_first, m_last;
-	QRect	m_dataRect, m_timeRect;
+	QRect	m_dataRect, m_timeRect, m_rangeRect, m_slideRect;
 	QRect	m_leftBox, m_rightBox;
 	int		m_nselect;
 	int		m_ndrag;
+	QPoint	m_prevPt;
+	bool	m_drawRangeRect;
 };
-

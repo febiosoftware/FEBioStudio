@@ -31,11 +31,12 @@ SOFTWARE.*/
 
 CTimelineWidget::CTimelineWidget(QWidget* parent) : QWidget(parent)
 {
-	m_min = m_max = 0.0;
+	m_tmin = m_tmax = 0.0;
 	m_nselect = -1;
 	m_first = m_last = 0;
 	m_ftime = 0.0;
 	m_ndrag = -1;
+	m_drawRangeRect = false;
 
 	setMinimumHeight(50);
 }
@@ -58,7 +59,33 @@ void CTimelineWidget::setSelection(int i)
 
 void CTimelineWidget::setCurrentTime(float ftime)
 {
+	if (ftime == m_ftime) return;
+
+	bool binc = (ftime > m_ftime);
+
 	m_ftime = ftime;
+
+	if ((m_ftime < m_tmin) || (m_ftime > m_tmax))
+	{
+		double dt = (m_tmax - m_tmin)*0.5;
+
+		if (binc)
+		{
+			m_tmin = m_ftime - dt * 0.25;
+			m_tmax = m_ftime + dt * 1.75;
+		}
+		else
+		{
+			m_tmin = m_ftime - dt * 1.75;
+			m_tmax = m_ftime + dt * 0.25;
+		}
+
+		if (m_tmin < m_dataMin) { m_tmin = m_dataMin; m_tmax = m_tmin + dt*2; }
+		if (m_tmax > m_dataMax) { m_tmax = m_dataMax; m_tmin = m_tmax - dt*2; }
+
+		m_tinc = getscale(m_tmin, m_tmax);
+	}
+
 	update();
 }
 
@@ -150,31 +177,58 @@ void CTimelineWidget::setTimePoints(const std::vector< std::pair<double, int> >&
 	update();
 }
 
+double CTimelineWidget::getscale(double fmin, double fmax)
+{
+	// update scale
+	double df = fmax - fmin;
+	double g = log10(df);
+	double d = floor(g) - 1.0;
+	double finc = pow(10, d);
+
+	int W = rect().width();
+	int nd = W / (int)(df / finc);
+	if (nd < 50)
+	{
+		double finc0 = finc;
+		finc = 2 * finc0;
+		nd = W / (int)(df / finc);
+		if (nd < 50)
+		{
+			finc = 5 * finc0;
+			nd = W / (int)(df / finc);
+			if (nd < 50) finc = 10 * finc0;
+		}
+	}
+	return finc;
+}
+
 void CTimelineWidget::UpdateScale()
 {
 	// update scale
-	double dataRange = m_dataMax - m_dataMin;
-	double g = log10(dataRange);
-	double d = floor(g) - 1.0;
-	m_inc = pow(10, d);
+	m_tinc = getscale(m_dataMin, m_dataMax);
 
-	int W = rect().width();
-	int nd = W / (int)(dataRange / m_inc);
-	if (nd < 50)
+	m_tmin = floor(m_dataMin / m_tinc)*m_tinc;
+	m_tmax = ceil(m_dataMax / m_tinc)*m_tinc;
+}
+
+void CTimelineWidget::panTimeRange(double dt)
+{
+	double newMin = m_tmin - dt;
+	double newMax = m_tmax - dt;
+
+	if (newMin < m_dataMin)
 	{
-		double m_inc0 = m_inc;
-		m_inc = 2 * m_inc0;
-		nd = W / (int)(dataRange / m_inc);
-		if (nd < 50)
-		{
-			m_inc = 5 * m_inc0;
-			nd = W / (int)(dataRange / m_inc);
-			if (nd < 50) m_inc = 10 * m_inc0;
-		}
+		newMin = m_dataMin;
+		newMax = newMin + (m_tmax - m_tmin);
+	}
+	if (newMax > m_dataMax)
+	{
+		newMax = m_dataMax;
+		newMin = newMax - (m_tmax - m_tmin);
 	}
 
-	m_min = floor(m_dataMin / m_inc)*m_inc;
-	m_max = ceil(m_dataMax / m_inc)*m_inc;
+	m_tmin = newMin;
+	m_tmax = newMax;
 }
 
 void CTimelineWidget::resizeEvent(QResizeEvent* ev)
@@ -184,11 +238,19 @@ void CTimelineWidget::resizeEvent(QResizeEvent* ev)
 
 void CTimelineWidget::mousePressEvent(QMouseEvent* ev)
 {
+	QPoint pt = ev->pos();
+	m_prevPt = pt;
+
+	if (ev->modifiers() && Qt::ControlModifier)
+	{
+		ev->accept();
+		return;
+	}
+
 	if (m_data.empty() == false)
 	{
 		// first see if one the range selectors was clicked
 		m_ndrag = -1;
-		QPoint pt = ev->pos();
 		if (m_leftBox.contains(pt))
 		{
 			m_ndrag = 0;
@@ -203,36 +265,42 @@ void CTimelineWidget::mousePressEvent(QMouseEvent* ev)
 			return;
 		}
 
-		QRect rt = rect();
-		int x0 = rt.left();
-		int x1 = rt.right();
-		int W = x1 - x0;
-
-		int yc = (m_dataRect.top() + m_dataRect.bottom()) / 2;
-		int Hy = 2 * (m_dataRect.bottom() - yc) / 3;
-
-		// find the time point that is closest to the click
-		int xp = ev->x();
-		int yp = ev->y();
-		int isel = -1;
-		int dmin = 0;
-		for (int i = m_first; i <= m_last; ++i)
+		if (m_drawRangeRect && m_slideRect.contains(pt))
 		{
-			int xi = m_data[i].pt.x();
-			int yi = m_data[i].pt.y();
-
-			int d = abs(xp - xi) + abs(yp - yi);
-			if ((isel == -1) || (d < dmin))
-			{
-				isel = i;
-				dmin = d;
-			}
+			m_ndrag = 2;
+			ev->accept();
+			return;
 		}
 
-		if (isel != -1)
+		if (m_dataRect.contains(pt))
 		{
-			emit pointClicked(isel);
-			ev->accept();
+
+			int yc = (m_dataRect.top() + m_dataRect.bottom()) / 2;
+			int Hy = 2 * (m_dataRect.bottom() - yc) / 3;
+
+			// find the time point that is closest to the click
+			int xp = ev->x();
+			int yp = ev->y();
+			int isel = -1;
+			int dmin = 0;
+			for (int i = m_first; i <= m_last; ++i)
+			{
+				int xi = m_data[i].pt.x();
+				int yi = m_data[i].pt.y();
+
+				int d = abs(xp - xi) + abs(yp - yi);
+				if ((isel == -1) || (d < dmin))
+				{
+					isel = i;
+					dmin = d;
+				}
+			}
+
+			if (isel != -1)
+			{
+				emit pointClicked(isel);
+				ev->accept();
+			}
 		}
 	}
 }
@@ -241,64 +309,102 @@ void CTimelineWidget::mouseMoveEvent(QMouseEvent* ev)
 {
 	if (m_ndrag != -1)
 	{
-		QRect rt = rect();
-		int x0 = rt.left();
-		int x1 = rt.right();
-		int W = x1 - x0;
-
-		int xp = ev->x();
-		int yp = ev->y();
-
-		int yc = (m_dataRect.top() + m_dataRect.bottom()) / 2;
-		int Hy = 2 * (m_dataRect.bottom() - yc) / 3;
-
-		int dmin = W * 10, imin = -1;
-		for (int i = 0; i < (int)m_data.size(); ++i)
+		if ((m_ndrag == 0) || (m_ndrag == 1))
 		{
-			int xi = m_data[i].pt.x();
-			int yi = m_data[i].pt.y();
+			int W = m_dataRect.width();
 
-			int d = abs(xp - xi) + abs(yp - yi);
-			if (d < dmin)
-			{
-				dmin = d;
-				imin = i;
-			}
-		}
+			int xp = ev->x();
+			int yp = ev->y();
 
-		if ((m_ndrag == 0) && (imin != m_first))
-		{
-			m_first = imin;
-			if (m_first > m_last)
+			int yc = (m_dataRect.top() + m_dataRect.bottom()) / 2;
+			int Hy = 2 * (m_dataRect.bottom() - yc) / 3;
+
+			int dmin = W * 10, imin = -1;
+			for (int i = 0; i < (int)m_data.size(); ++i)
 			{
-				m_first = m_last;
-				m_last = imin;
-				m_ndrag = 1;
+				int xi = m_data[i].pt.x();
+				int yi = m_data[i].pt.y();
+
+				int d = abs(xp - xi) + abs(yp - yi);
+				if (d < dmin)
+				{
+					dmin = d;
+					imin = i;
+				}
 			}
 
-			emit rangeChanged(m_first, m_last);
-
-			update();
-			ev->accept();
-			return;
-		}
-
-		if ((m_ndrag == 1) && (imin != m_last))
-		{
-			m_last = imin;
-			if (m_last < m_first)
+			if ((m_ndrag == 0) && (imin != m_first))
 			{
-				m_last = m_first;
 				m_first = imin;
-				m_ndrag = 0;
+				if (m_first > m_last)
+				{
+					m_first = m_last;
+					m_last = imin;
+					m_ndrag = 1;
+				}
+
+				emit rangeChanged(m_first, m_last);
+
+				update();
+				ev->accept();
+				return;
 			}
 
-			emit rangeChanged(m_first, m_last);
+			if ((m_ndrag == 1) && (imin != m_last))
+			{
+				m_last = imin;
+				if (m_last < m_first)
+				{
+					m_last = m_first;
+					m_first = imin;
+					m_ndrag = 0;
+				}
 
+				emit rangeChanged(m_first, m_last);
+
+				update();
+				ev->accept();
+				return;
+			}
+		}
+		else if (m_ndrag == 2)
+		{
+			QPoint pt = ev->pos();
+			int dx = pt.x() - m_prevPt.x();
+
+			double dataRange = m_dataMax - m_dataMin;
+			if (dataRange <= 0) return;
+
+			double W = (double)m_rangeRect.width();
+			if (W == 0) return;
+
+			double dt = dx * dataRange / W;
+
+			panTimeRange(-dt);
 			update();
+
+			m_prevPt = pt;
 			ev->accept();
 			return;
 		}
+	}
+	else if (ev->modifiers() && Qt::ControlModifier)
+	{
+		QPoint pt = ev->pos();
+
+		int dx = pt.x() - m_prevPt.x();
+
+		int w = width();
+		if (w == 0) w = 1.0;
+		double dt = dx * (m_tmax - m_tmin) / w;
+
+		panTimeRange(dt);
+
+		update();
+		m_prevPt = pt;
+
+		ev->accept();
+		return;
 	}
 	else
 	{
@@ -343,6 +449,53 @@ void CTimelineWidget::mouseReleaseEvent(QMouseEvent* ev)
 	{
 		m_ndrag = -1;
 		update();
+	}
+}
+
+void CTimelineWidget::wheelEvent(QWheelEvent* ev)
+{
+	bool scrollUp = (ev->pixelDelta().y() < 0) || (ev->angleDelta().y() < 0);
+	bool scrollDown = (ev->pixelDelta().y() > 0) || (ev->angleDelta().y() > 0);
+
+	if (ev->modifiers() && Qt::ControlModifier)
+	{
+		double tw = (m_tmax - m_tmin) * 0.5;
+		double tc = (m_tmax + m_tmin) * 0.5;
+
+		if (scrollUp)
+		{
+			m_tmin = tc - tw / 0.95;
+			m_tmax = tc + tw / 0.95;
+		}
+		else if (scrollDown)
+		{
+			m_tmin = tc - tw * 0.95;
+			m_tmax = tc + tw * 0.95;
+		}
+
+		if (m_tmin < m_dataMin) m_tmin = m_dataMin;
+		if (m_tmax > m_dataMax) m_tmax = m_dataMax;
+
+		m_tinc = getscale(m_tmin, m_tmax);
+
+		update();
+	}
+	else
+	{
+		QPoint pt = ev->position().toPoint();
+		if (m_dataRect.contains(pt))
+		{
+			if (scrollDown && (m_nselect < m_last))
+			{
+				emit pointClicked(m_nselect + 1);
+				ev->accept();
+			}
+			else if (scrollUp && (m_nselect > m_first))
+			{
+				emit pointClicked(m_nselect - 1);
+				ev->accept();
+			}
+		}
 	}
 }
 
@@ -410,54 +563,125 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 		return;
 	}
 
+	// the font height determines the height of the time bar
 	QFontMetrics FM = painter.fontMetrics();
 	int fontH = FM.height();
 
 	// update rectangles
 	m_timeRect = rt; m_timeRect.setTop(rt.bottom() - fontH - 8);
 	m_dataRect = rt; m_dataRect.setBottom(m_timeRect.top() - 1);
-	int x0 = rt.left();
-	int x1 = rt.right();
-	int y0 = rt.top();
-	int y1 = rt.right();
-	int W = x1 - x0;
 
-	int xf = x0 + (int)((m_data[m_first].ptf.x() - m_min) / (m_max - m_min) * W);
-	int xl = x0 + (int)((m_data[m_last ].ptf.x() - m_min) / (m_max - m_min) * W);
+	// see if we should draw the range bar
+	const int RANGE_HEIGHT = 16;
+	m_drawRangeRect = false;
+	if ((m_tmin != m_dataMin) || (m_tmax != m_dataMax))
+	{
+		m_drawRangeRect = true;
+		m_rangeRect = m_dataRect;
+		m_dataRect.setTop( m_dataRect.top() + RANGE_HEIGHT);
+		m_rangeRect.setBottom(m_dataRect.top() - 1);
+	}
 
+	// the left, right values are the min,max labels on the time bar
+	m_tleft = floor(m_tmin / m_tinc) * m_tinc;
+	m_tright = ceil(m_tmax / m_tinc) * m_tinc;
+
+	// draw the rangebar (if needed)
+	if (m_drawRangeRect) drawRangeBar(painter);
+
+	// draw the data bar
+	drawDataBar(painter);
+
+	// draw the time bar
+	drawTimeBar(painter);
+}
+
+void CTimelineWidget::drawTimeBar(QPainter& painter)
+{
+	int x0 = m_timeRect.left();
+	int x1 = m_timeRect.right();
+	int y0 = m_timeRect.top();
+	int y1 = m_timeRect.bottom();
+	int W = m_timeRect.width();
+
+	QFontMetrics FM = painter.fontMetrics();
+	int fontH = FM.height();
+
+	painter.setRenderHint(QPainter::Antialiasing, false);
+	painter.fillRect(m_timeRect, Qt::lightGray);
+	painter.setPen(Qt::white);
+	painter.drawLine(x0, y0, x1, y0);
+	painter.setPen(Qt::darkGray);
+	painter.drawLine(x0, y1, x1, y1);
+	painter.setPen(Qt::black);
+
+	double t = m_tleft;
+	while (t <= m_tright)
+	{
+		int x = x0 + (int)((t - m_tmin) / (m_tmax - m_tmin) * W);
+		painter.drawLine(x, y0, x, y0 + 5);
+		t += m_tinc;
+	}
+
+	painter.setRenderHint(QPainter::Antialiasing, true);
+	t = m_tleft;
+	while (t <= m_tright)
+	{
+		int x = x0 + (int)((t - m_tmin) / (m_tmax - m_tmin) * W);
+
+		QString txt = QString::number(t);
+		int w = FM.horizontalAdvance(txt);
+		painter.drawText(x - w / 2, y0 + 5 + fontH, txt);
+
+		t += m_tinc;
+	}
+}
+
+void CTimelineWidget::drawDataBar(QPainter& painter)
+{
+	// draw the grid lines
+	int x0 = m_dataRect.left();
+	int x1 = m_dataRect.right();
+	int y0 = m_dataRect.top();
+	int y1 = m_dataRect.bottom();
+	int W = m_dataRect.width();
+
+	int xf = x0 + (int)((m_data[m_first].ptf.x() - m_tmin) / (m_tmax - m_tmin) * W);
+	int xl = x0 + (int)((m_data[m_last].ptf.x() - m_tmin) / (m_tmax - m_tmin) * W);
+
+	// draw the time rects background
 	QRect rt1 = m_dataRect; rt1.setRight(xf);
 	QRect rt2 = m_dataRect; rt2.setLeft(rt1.right()); rt2.setRight(xl);
 	QRect rt3 = m_dataRect; rt3.setLeft(rt2.right());
-
-	const int boxSize = 15;
-	m_leftBox = QRect(xf, rt.top(), boxSize, boxSize);
-	m_rightBox = QRect(xl - boxSize, rt.top(), boxSize, boxSize);
 
 	if (rt1.width() > 0) painter.fillRect(rt1, QColor::fromRgb(64, 64, 64));
 	if (rt2.width() > 0) painter.fillRect(rt2, Qt::darkGray);
 	if (rt3.width() > 0) painter.fillRect(rt3, QColor::fromRgb(64, 64, 64));
 
-//	drawBox(painter, m_leftBox, (m_ndrag == 0 ? Qt::white : Qt::lightGray));
-	drawLeftTriangle(painter, (m_ndrag == 0 ? Qt::white : Qt::lightGray), QPointF(xf, rt.top()), boxSize);
-//	drawBox(painter, m_rightBox, (m_ndrag == 1 ? Qt::white : Qt::lightGray));
-	drawRightTriangle(painter, (m_ndrag == 1 ? Qt::white : Qt::lightGray), QPointF(xl, rt.top()), boxSize);
+	// draw the range selectors
+	const int boxSize = 15;
+	m_leftBox = QRect(xf, y0, boxSize, boxSize);
+	m_rightBox = QRect(xl - boxSize, y0, boxSize, boxSize);
+
+	//	drawBox(painter, m_leftBox, (m_ndrag == 0 ? Qt::white : Qt::lightGray));
+	drawLeftTriangle(painter, (m_ndrag == 0 ? Qt::white : Qt::lightGray), QPointF(xf, y0), boxSize);
+	//	drawBox(painter, m_rightBox, (m_ndrag == 1 ? Qt::white : Qt::lightGray));
+	drawRightTriangle(painter, (m_ndrag == 1 ? Qt::white : Qt::lightGray), QPointF(xl, y0), boxSize);
 
 	painter.setRenderHint(QPainter::Antialiasing, true);
 
-	// draw the grid lines
-	int Y0 = m_dataRect.top();
-	int Y1 = m_dataRect.bottom();
-	double t = m_min;
-	while (t <= m_max)
+
+	double t = m_tleft;
+	while (t <= m_tright)
 	{
-		int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
+		int x = x0 + (int)((t - m_tmin) / (m_tmax - m_tmin) * W);
 		painter.setPen(QPen(Qt::lightGray, 1));
-		painter.drawLine(x, Y0, x, Y1);
-		t += m_inc;
+		painter.drawLine(x, y0, x, y1);
+		t += m_tinc;
 	}
 
 	// draw the current time value
-	int x = x0 + (int)((m_ftime - m_min) / (m_max - m_min) * W);
+	int x = x0 + (int)((m_ftime - m_tmin) / (m_tmax - m_tmin) * W);
 	painter.setPen(Qt::black);
 	painter.drawLine(x, y0, x, y1);
 
@@ -475,11 +699,11 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 	{
 		double t = m_data[i].ptf.x();
 		double l = m_data[i].ptf.y();
-		int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
+		int x = x0 + (int)((t - m_tmin) / (m_tmax - m_tmin) * W);
 		int y = yc;
 		if (maxl != 0)
 		{
-			y = yc - 0.5*Hy + Hy*l;
+			y = yc - 0.5 * Hy + Hy * l;
 		}
 		m_data[i].pt = QPoint(x, y);
 	}
@@ -518,7 +742,7 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 			int nflag = m_data[i].flag;
 			switch (nflag)
 			{
-			case 0: painter.setBrush(Qt::green); break;	
+			case 0: painter.setBrush(Qt::green); break;
 			case 1: painter.setBrush(Qt::magenta); break;
 			case 2: painter.setBrush(Qt::yellow); break;
 			default: painter.setBrush(Qt::lightGray); break;
@@ -549,38 +773,35 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 		int y = m_data[m_nselect].pt.y();
 		painter.drawEllipse(x - R2 / 2, y - R / 2, R2, R2);
 	}
+}
 
-	// draw the time bar
+void CTimelineWidget::drawRangeBar(QPainter& painter)
+{
+	double dataRange = m_dataMax - m_dataMin;
+	if (dataRange <= 0) dataRange = 1.0;
 
-	Y0 = m_timeRect.top();
-	Y1 = m_timeRect.bottom();
+	int x0 = m_rangeRect.left() + (int)(m_rangeRect.width()*(m_tmin - m_dataMin) / dataRange);
+	int x1 = m_rangeRect.left() + (int)(m_rangeRect.width()*(m_tmax - m_dataMin) / dataRange);
+	int y0 = m_rangeRect.top();
+	int y1 = m_rangeRect.bottom();
+	m_slideRect = QRect(x0, y0, x1 - x0, m_rangeRect.height());
 
-	painter.setRenderHint(QPainter::Antialiasing, false);
-	painter.fillRect(m_timeRect, Qt::lightGray);
-	painter.setPen(Qt::white);
-	painter.drawLine(x0, Y0, x1, Y0);
-	painter.setPen(Qt::darkGray);
-	painter.drawLine(x0, Y1, x1, Y1);
-	painter.setPen(Qt::black);
+	// draw the background
+	int xf = m_rangeRect.left() + (int)((m_data[m_first].ptf.x() - m_dataMin) / dataRange * m_rangeRect.width());
+	int xl = m_rangeRect.left() + (int)((m_data[m_last ].ptf.x() - m_dataMin) / dataRange * m_rangeRect.width());
+	QRect rt1 = m_rangeRect; rt1.setRight(xf);
+	QRect rt2 = m_rangeRect; rt2.setLeft(rt1.right()); rt2.setRight(xl);
+	QRect rt3 = m_rangeRect; rt3.setLeft(rt2.right());
+	if (rt1.width() > 0) painter.fillRect(rt1, QColor::fromRgb(32, 32, 32));
+	if (rt2.width() > 0) painter.fillRect(rt2, Qt::black);
+	if (rt3.width() > 0) painter.fillRect(rt3, QColor::fromRgb(32, 32, 32));
 
-	t = m_min;
-	while (t <= m_max)
-	{
-		int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
-		painter.drawLine(x, Y0, x, Y0 + 5);
-		t += m_inc;
-	}
+	// draw the current time point
+	int xc = m_rangeRect.left() + (int)(m_rangeRect.width() * (m_ftime - m_dataMin) / dataRange);
+	painter.setPen(Qt::darkGray); painter.drawLine(xc, y0, xc, y1);
 
-	painter.setRenderHint(QPainter::Antialiasing, true);
-	t = m_min;
-	while (t <= m_max)
-	{
-		int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
-
-		QString txt = QString::number(t);
-		int w = FM.horizontalAdvance(txt);
-		painter.drawText(x - w / 2, Y0 + 5 + FM.height(), txt);
-
-		t += m_inc;
-	}
+	// draw the slider bar
+	painter.fillRect(x0, m_rangeRect.top(), x1 - x0, m_rangeRect.height(), Qt::gray);
+	painter.setPen(Qt::black); painter.drawLine(x0, y1, x1, y1); painter.drawLine(x1, y0, x1, y1);
+	painter.setPen(Qt::white); painter.drawLine(x0, y0, x1, y0); painter.drawLine(x0, y0, x0, y1);
 }
