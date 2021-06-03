@@ -233,7 +233,7 @@ public:
 				int nc = p.Size();
 				for (int j = 0; j < nc; ++j) addChild(pm, -1, i, j);
 
-				if (p.maxSize() == FEMaterialProperty::NO_FIXED_SIZE)
+				if ((p.maxSize() == FEMaterialProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FEMaterialProperty::NON_EXTENDABLE) == 0))
 				{
 					addChild(pm, -1, i, -1);
 				}
@@ -380,9 +380,17 @@ public:
 					if (p.maxSize() != 1)
 					{
 						if (m_matIndex >= 0)
+						{
 							s += QString(" - %1").arg(m_matIndex + 1);
+							FEMaterial* pm = p.GetMaterial(m_matIndex);
+							if (pm && (pm->GetName().empty() == false))
+							{
+								QString name = QString::fromStdString(pm->GetName());
+								s += QString(" [%1]").arg(name);
+							}
+						}
 						else 
-							s = QString("(add %1)").arg(s);
+							s = QString("<add %1>").arg(s);
 					}
 					return s;
 				}
@@ -390,6 +398,27 @@ public:
 				{
 					FEMaterial* pm = (m_matIndex >= 0 ? p.GetMaterial(m_matIndex) : nullptr);
 					if (pm == nullptr) return QString("(select)");
+					else   if (dynamic_cast<FEReactionSpecies*>(pm))
+					{
+						FEModel* fem = GetFEModel();
+						FEReactionSpecies* prm = dynamic_cast<FEReactionSpecies*>(pm);
+
+						int ntype = prm->GetSpeciesType();
+						int index = prm->GetIndex();
+						const char* sz = nullptr;
+						if ((ntype == FEReactionMaterial::SOLUTE_SPECIES) ||
+							(ntype == FEMembraneReactionMaterial::INT_SPECIES) ||
+							(ntype == FEMembraneReactionMaterial::EXT_SPECIES))
+						{
+							sz = fem->GetVariableName("$(Solutes)", index);
+						}
+						else if (ntype == FEReactionMaterial::SBM_SPECIES)
+						{
+							sz = fem->GetVariableName("$(SBMs)", index);
+						}
+
+						return (sz ? sz : "(invalid species)");
+					}
 					else return pm->TypeStr();
 				}
 			}
@@ -462,6 +491,14 @@ public:
 					if (m_matIndex >= 0)
 					{
 						FEMaterial* oldMat = m_pm->GetProperty(m_propId).GetMaterial();
+
+						if (dynamic_cast<FEReactionSpecies*>(oldMat))
+						{
+							FEReactionSpecies* rs = dynamic_cast<FEReactionSpecies*>(oldMat);
+							rs->SetIndex(matId);
+							return true;
+						}
+
 						if (oldMat && (oldMat->Type() == matId))
 						{
 							// the type has not changed, so don't replace the material
@@ -711,28 +748,57 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 		{
 			FEMaterial* pm = item->m_pm;
 			FEMaterialProperty& matProp = pm->GetProperty(item->m_propId);
+			FEMaterial* pmat = pm->GetProperty(item->m_propId).GetMaterial(item->m_matIndex);
 
 			QComboBox* pc = new QComboBox(parent);
-			FillComboBox(pc, matProp.GetClassID(), 0xFFFF, false);
 
-			pc->insertSeparator(pc->count());
-			pc->addItem("(remove)", -2);
-
-			FEMaterial* pmat = pm->GetProperty(item->m_propId).GetMaterial(item->m_matIndex);
-			if (pmat)
+			if (dynamic_cast<FEReactionSpecies*>(pmat))
 			{
-				int index = pmat->Type();
-				for (int i = 0; i < pc->count(); ++i)
+				FEReactionSpecies* rs = dynamic_cast<FEReactionSpecies*>(pmat);
+				FEModel& fem = *item->GetFEModel();
+				int ntype = rs->GetSpeciesType();
+				int index = rs->GetIndex();
+				char buf[1024] = { 0 };
+				if (ntype == FEReactionMaterial::SBM_SPECIES)
 				{
-					int matid = pc->itemData(i, Qt::UserRole).toInt();
-					if (matid == index)
+					fem.GetVariableNames("$(SBMs)", buf);
+				}
+				else
+				{
+					fem.GetVariableNames("$(Solutes)", buf);
+				}
+
+				int n = 0;
+				char* sz = buf;
+				while (*sz)
+				{
+					pc->addItem(sz, n++);
+					sz += strlen(sz) + 1;
+				}
+				pc->setCurrentIndex(index);
+			}
+			else
+			{
+				FillComboBox(pc, matProp.GetClassID(), 0xFFFF, false);
+
+				pc->insertSeparator(pc->count());
+				pc->addItem("(remove)", -2);
+
+				if (pmat)
+				{
+					int index = pmat->Type();
+					for (int i = 0; i < pc->count(); ++i)
 					{
-						pc->setCurrentIndex(i);
-						break;
+						int matid = pc->itemData(i, Qt::UserRole).toInt();
+						if (matid == index)
+						{
+							pc->setCurrentIndex(i);
+							break;
+						}
 					}
 				}
+				else pc->setCurrentIndex(-1);
 			}
-			else pc->setCurrentIndex(-1);
 
 			QObject::connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 
