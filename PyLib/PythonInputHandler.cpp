@@ -99,6 +99,7 @@ void CPythonInputHandler::finishInput()
 CPythonInputHandler::CPythonInputHandler(CPythonToolsPanel* panel) {}
 std::string CPythonInputHandler::getString() {return "";}
 int CPythonInputHandler::getInt() {return 0;}
-void CPythonInputHandler::getInput(int type) {}
+void CPythonInputHandler::getInput(int type, const QString& txt) {}
+int CPythonInputHandler::getSelection() {return 0;}
 void CPythonInputHandler::finishInput() {}
 #endif

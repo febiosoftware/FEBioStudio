@@ -115,9 +115,12 @@ PyInputWidget::PyInputWidget(QString lblText, QWidget* parent) {}
 void PyInputWidget::addWidget(QWidget* wgt) {}
 
 PyInputStringWidget::PyInputStringWidget(QString lblText, QWidget* parent) {}
-std::string PyInputStringWidget::getVal() {}
+std::string PyInputStringWidget::getVal() {return "";}
 
 PyInputIntWidget::PyInputIntWidget(QString lblText, QWidget* parent) {}
-int PyInputIntWidget::getVal() {}
+int PyInputIntWidget::getVal() {return 0;}
+
+PyInputSelectionWidget::PyInputSelectionWidget(QString lblText, QWidget* parent) {}
+int PyInputSelectionWidget::getVal() {return 0;}
 
 #endif

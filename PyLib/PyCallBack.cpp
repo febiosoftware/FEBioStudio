@@ -88,7 +88,10 @@ int PyGetSelection(const char* txt)
 }
 
 #else
-CPythonInputHandler* PyGetInput(int type) {return nullptr;}
+void PySetProgressText(const char* txt) {}
+void PySetProgress(int prog) {}
+void PySetProgress(float prog) {}
 std::string PyGetString(const char* txt) {return "";}
-int PyGetInt(const char* txt){return 0;}
+int PyGetInt(const char* txt) {return 0;}
+int PyGetSelection(const char* txt) {return 0;}
 #endif

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <vector>
+#include <string>
 
 class GDiscreteSpringSet;
 class vec3d;
@@ -35,4 +36,4 @@ int FindOrMakeNode(vec3d r, double tol);
 
 void IntersectWithObject(vec3d& r0, vec3d& r1, double tol);
 
-void meshFromCurve(std::vector<vec3d> points, double radius, int div, int seg, double ratio);
+void meshFromCurve(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio);

@@ -109,8 +109,8 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
     m.def("openFile", openFile);
     m.def("FindOrMakeNode", FindOrMakeNode);
     m.def("IntersectWithObject", IntersectWithObject);
-    m.def("MeshFromCurve", meshFromCurve, pybind11::arg("points"), pybind11::arg("radius"), pybind11::arg("divisions") = 6, 
-        pybind11::arg("segments") = 6, pybind11::arg("ratio") = 0.5);
+    m.def("MeshFromCurve", meshFromCurve, pybind11::arg("points"), pybind11::arg("radius"), pybind11::arg("name") = "Curve", 
+        pybind11::arg("divisions") = 6, pybind11::arg("segments") = 6, pybind11::arg("ratio") = 0.5);
 
     m.def("setProgressText", PySetProgressText);
     m.def("setProgress", static_cast<void (*) (int)>(PySetProgress));

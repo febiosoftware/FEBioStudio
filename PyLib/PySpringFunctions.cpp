@@ -176,7 +176,7 @@ void IntersectWithObject(vec3d& r0, vec3d& r1, double tol)
 }
 
 
-void meshFromCurve(std::vector<vec3d> points, double radius, int div, int seg, double ratio)
+void meshFromCurve(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio)
 {
 	auto wnd = PRV::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
@@ -194,12 +194,12 @@ void meshFromCurve(std::vector<vec3d> points, double radius, int div, int seg, d
 	mesher->SetIntValue(FEShellDisc::NSEG, seg);
 	mesher->SetFloatValue(FEShellDisc::RATIO, ratio);
 	
-	auto mesh = disc.BuildMesh();
+	auto discMesh = disc.BuildMesh();
 
 	vector<vec3d> nodePositions;
-
 	for(int point = 0; point < points.size(); point++)
 	{
+		// Rotate the disc 
 		if(point == 0)
 		{
 			vec3d vec1(0,0,1);
@@ -215,55 +215,58 @@ void meshFromCurve(std::vector<vec3d> points, double radius, int div, int seg, d
 			disc.GetTransform().Rotate(quatd(vec1, vec2), points[point - 1]);
 		}
 
-
+		// Move the disc into position
 		disc.GetTransform().SetPosition(points[point]);
 		
-		for(int node = 0; node < mesh->Nodes(); node++)
+		// Add all of the node locations to our vector
+		for(int node = 0; node < discMesh->Nodes(); node++)
 		{
-			nodePositions.push_back(mesh->NodePosition(node));
+			nodePositions.push_back(discMesh->NodePosition(node));
 		}
 	}
 
-	FEMesh* pm = new FEMesh();
-	pm->Create(nodePositions.size(), mesh->Elements() * (points.size() - 1));
+	// Create and allocate a new mesh. This is the mesh that we'll add to the model. 
+	FEMesh* newMesh = new FEMesh();
+	newMesh->Create(nodePositions.size(), discMesh->Elements() * (points.size() - 1));
 
-	for(int node = 0; node < pm->Nodes(); node++)
+	// Update the positions of all of the nodes in the new mesh
+	for(int node = 0; node < newMesh->Nodes(); node++)
 	{
-		pm->Node(node).r = nodePositions[node];
+		newMesh->Node(node).r = nodePositions[node];
 	}
 
 	for(int point = 0; point < points.size() - 1; point++)
 	{
-		for(int element = 0; element < mesh->Elements(); element++)
+		for(int element = 0; element < discMesh->Elements(); element++)
 		{
-			auto discElement = mesh->ElementPtr(element);
-			auto current = pm->ElementPtr(element + mesh->Elements() * point);
+			// For each element, grab the corresponding element from the disc mesh so 
+			// that we can use that node connectivity.
+			auto discElement = discMesh->ElementPtr(element);
+
+			// The current element on our new mesh corresponds to an element on the disc
+			// mesh, but is offset by the number of elements in the disc mesh times the 
+			// number of previous points in our curve
+			auto current = newMesh->ElementPtr(element + discMesh->Elements() * point);
 			current->SetType(FE_HEX8);
 
 			for(int node = 0; node < discElement->Nodes(); node++)
 			{
-				current->m_node[node] = discElement->m_node[node] + mesh->Nodes() * point;
-				current->m_node[node + discElement->Nodes()] = discElement->m_node[node] + mesh->Nodes() * (point + 1);
+				// Grab the node number from the disc element, but them offset it by the 
+				// number of nodes that were used in previous points in our curve
+				current->m_node[node] = discElement->m_node[node] + discMesh->Nodes() * point;
+
+				// Here we do the same, but the node in question lies on the next point, as it's
+				// on the far face of the hex element
+				current->m_node[node + discElement->Nodes()] = discElement->m_node[node] + discMesh->Nodes() * (point + 1);
 			}
 		}
 	}
 
-	pm->RebuildMesh();
+	newMesh->RebuildMesh();
 
-	GMeshObject* gmesh = new GMeshObject(pm);
-	gmesh->SetName("Test");
-
+	GMeshObject* gmesh = new GMeshObject(newMesh);
+	gmesh->SetName(name);
 
 	auto fem = doc->GetFEModel();
-
-	
 	fem->GetModel().AddObject(gmesh);
-
-
-
-	// for(auto pos : nodePositions)
-	// {
-	// 	FindOrMakeNode(pos, 0);
-	// }
-	
 }

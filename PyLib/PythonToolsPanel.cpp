@@ -292,12 +292,14 @@ void CPythonToolsPanel::finalizeTools() {}
 void CPythonToolsPanel::endThread() {}
 void CPythonToolsPanel::on_importScript_triggered() {}
 void CPythonToolsPanel::on_refresh_triggered() {}
-void CPythonToolsPanel::startRunning(const QString& msg);
+void CPythonToolsPanel::startRunning(const QString& msg) {}
 CPythonInputHandler* CPythonToolsPanel::getInputHandler() {return nullptr;}
 void CPythonToolsPanel::addInputPage(QWidget* wgt) {}
 QWidget* CPythonToolsPanel::getInputWgt() {return nullptr;}
 void CPythonToolsPanel::removeInputPage() {}
 void CPythonToolsPanel::addLog(QString txt) {}
+void CPythonToolsPanel::setProgressText(const QString& txt) {}
+void CPythonToolsPanel::setProgress(int prog) {}
 void CPythonToolsPanel::on_buttons_idClicked(int id) {}
 void CPythonToolsPanel::hideEvent(QHideEvent* ev) {}
 void CPythonToolsPanel::showEvent(QShowEvent* ev) {}

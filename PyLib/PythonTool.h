@@ -29,12 +29,12 @@ SOFTWARE.*/
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
 #else
+// Since objects of this type are member variables of these classes, they require
+// "full" class definitions, rather than just forward declarations
 namespace pybind11
 {
-    class function
-    {
-
-    };
+    class function {};
+    class dict {};
 }
 #endif
 
