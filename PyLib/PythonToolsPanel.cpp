@@ -27,7 +27,7 @@ SOFTWARE.*/
 
 
 #ifdef HAS_PYTHON
-#include "PyFBS.h"
+#include "PyFBS.cpp"
 
 #include "PythonToolsPanel.h"
 #include "ui_pythontoolspanel.h"

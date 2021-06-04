@@ -26,16 +26,28 @@ SOFTWARE.*/
 
 #ifdef HAS_PYTHON
 
+#ifdef PY_EXTERNAL
+#define PY_MODULE_TYPE PYBIND11_MODULE
+#else
+#define PY_MODULE_TYPE PYBIND11_EMBEDDED_MODULE
+#endif
+
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 
 #include "PyFBSCore.h"
-#include "PyFBSUI.h"
 
-PYBIND11_EMBEDDED_MODULE(fbs, m)
+#ifndef PY_EXTERNAL
+#include "PyFBSUI.h"
+#endif
+
+PY_MODULE_TYPE(fbs, m)
 {
     init_FBSCore(m);
+
+#ifndef PY_EXTERNAL
     init_FBSUI(m);
+#endif
 }
 
 #endif
