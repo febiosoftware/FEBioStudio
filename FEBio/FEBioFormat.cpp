@@ -1616,7 +1616,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 				XMLAtt* asbm = tag.AttributePtr("sbm");
 				if (asol) {
 					int sid; asol->value(sid); sid -= 1;
-					psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "vR"));
+					psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "Reactant"));
 					assert(psr);
 					psr->SetIndex(sid);
 					psr->SetReactantType(FEReactionMaterial::SOLUTE_SPECIES);
@@ -1625,7 +1625,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 				}
 				else if (asbm) {
 					int sid; asbm->value(sid); sid -= 1;
-					psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "vR"));
+					psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "Reactant"));
 					assert(psr);
 					psr->SetIndex(sid);
 					psr->SetReactantType(FEReactionMaterial::SBM_SPECIES);
@@ -1642,7 +1642,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 				XMLAtt* asbm = tag.AttributePtr("sbm");
 				if (asol) {
 					int sid; asol->value(sid); sid -= 1;
-					psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "vP"));
+					psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "Product"));
 					assert(psp);
 					psp->SetIndex(sid);
 					psp->SetProductType(FEReactionMaterial::SOLUTE_SPECIES);
@@ -1651,7 +1651,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 				}
 				else if (asbm) {
 					int sid; asbm->value(sid); sid -= 1;
-					psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "vP"));
+					psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "Product"));
 					assert(psp);
 					psp->SetIndex(sid);
 					psp->SetProductType(FEReactionMaterial::SBM_SPECIES);

@@ -393,8 +393,8 @@ FEReactionMaterial::FEReactionMaterial(int ntype) : FEMaterial(ntype)
 	AddProperty("forward_rate", FE_MAT_REACTION_RATE);
 	AddProperty("reverse_rate", FE_MAT_REACTION_RATE);
 
-	AddProperty("vR", FE_MAT_REACTION_REACTANTS, FEMaterialProperty::NO_FIXED_SIZE);
-	AddProperty("vP", FE_MAT_REACTION_PRODUCTS , FEMaterialProperty::NO_FIXED_SIZE);
+	AddProperty("vR", FE_MAT_REACTION_REACTANTS, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
+	AddProperty("vP", FE_MAT_REACTION_PRODUCTS , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
 }
 
 
@@ -554,12 +554,12 @@ FEMembraneReactionMaterial::FEMembraneReactionMaterial(int ntype) : FEMaterial(n
     AddProperty("forward_rate", FE_MAT_MREACTION_RATE);
     AddProperty("reverse_rate", FE_MAT_MREACTION_RATE);
     
-    AddProperty("vR" , FE_MAT_REACTION_REACTANTS  , FEMaterialProperty::NO_FIXED_SIZE);
-    AddProperty("vP" , FE_MAT_REACTION_PRODUCTS   , FEMaterialProperty::NO_FIXED_SIZE);
-    AddProperty("vRi", FE_MAT_MREACTION_IREACTANTS, FEMaterialProperty::NO_FIXED_SIZE);
-    AddProperty("vPi", FE_MAT_MREACTION_IPRODUCTS , FEMaterialProperty::NO_FIXED_SIZE);
-    AddProperty("vRe", FE_MAT_MREACTION_EREACTANTS, FEMaterialProperty::NO_FIXED_SIZE);
-    AddProperty("vPe", FE_MAT_MREACTION_EPRODUCTS , FEMaterialProperty::NO_FIXED_SIZE);
+    AddProperty("vR" , FE_MAT_REACTION_REACTANTS  , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
+    AddProperty("vP" , FE_MAT_REACTION_PRODUCTS   , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
+    AddProperty("vRi", FE_MAT_MREACTION_IREACTANTS, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
+    AddProperty("vPi", FE_MAT_MREACTION_IPRODUCTS , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
+    AddProperty("vRe", FE_MAT_MREACTION_EREACTANTS, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
+    AddProperty("vPe", FE_MAT_MREACTION_EPRODUCTS , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
 }
 
 
@@ -889,10 +889,10 @@ FEMultiphasicMaterial::FEMultiphasicMaterial() : FEMultiMaterial(FE_MULTIPHASIC_
 	AddProperty("solid_bound", FE_MAT_SBM, FEMaterialProperty::NO_FIXED_SIZE);
 
 	// add reaction material
-	AddProperty("reaction", FE_MAT_REACTION, FEMaterialProperty::NO_FIXED_SIZE, 0);
+	AddProperty("reaction", FE_MAT_REACTION, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::NON_EXTENDABLE);
 
     // add reaction material
-    AddProperty("membrane_reaction", FE_MAT_MREACTION, FEMaterialProperty::NO_FIXED_SIZE, 0);
+    AddProperty("membrane_reaction", FE_MAT_MREACTION, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::NON_EXTENDABLE);
 }
 
 // set/get elastic component 
@@ -1008,99 +1008,74 @@ bool FEMultiphasicMaterial::HasSBM(int nid)
 }
 
 //=============================================================================
+FEReactionSpecies::FEReactionSpecies(int ntype) : FEMaterial(ntype)
+{
+    // add the stoichiometric coefficient
+    AddIntParam(1, "v", "v"); // stoichiometric coefficient
+    // add the type
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+    // add the index
+    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+}
+
+//=============================================================================
 //								REACTANT
 //=============================================================================
 
-REGISTER_MATERIAL(FEReactantMaterial, MODULE_REACTIONS, FE_REACTANT_MATERIAL, FE_MAT_REACTION_REACTANTS, "vR", 0);
+REGISTER_MATERIAL(FEReactantMaterial, MODULE_REACTIONS, FE_REACTANT_MATERIAL, FE_MAT_REACTION_REACTANTS, "Reactant", 0);
 
-FEReactantMaterial::FEReactantMaterial() : FEMaterial(FE_REACTANT_MATERIAL)
+FEReactantMaterial::FEReactantMaterial() : FEReactionSpecies(FE_REACTANT_MATERIAL)
 {
-	// add the stoichiometric coefficient
-	AddIntParam(1, "vR", "vR"); // reactant stoichiometric coefficient
-	// add the type
-	AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
-	// add the index
-	AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
 }
 
 //=============================================================================
 //								PRODUCT
 //=============================================================================
 
-REGISTER_MATERIAL(FEProductMaterial, MODULE_REACTIONS, FE_PRODUCT_MATERIAL, FE_MAT_REACTION_PRODUCTS, "vP", 0);
+REGISTER_MATERIAL(FEProductMaterial, MODULE_REACTIONS, FE_PRODUCT_MATERIAL, FE_MAT_REACTION_PRODUCTS, "Product", 0);
 
-FEProductMaterial::FEProductMaterial() : FEMaterial(FE_PRODUCT_MATERIAL)
+FEProductMaterial::FEProductMaterial() : FEReactionSpecies(FE_PRODUCT_MATERIAL)
 {
-	// add the stoichiometric coefficient
-	AddIntParam(1, "vP", "vP"); // product stoichiometric coefficient
-	// add the type
-	AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
-	// add the index
-	AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
 }
 
 //=============================================================================
 //                          INTERNAL REACTANT
 //=============================================================================
 
-REGISTER_MATERIAL(FEInternalReactantMaterial, MODULE_REACTIONS, FE_INT_REACTANT_MATERIAL, FE_MAT_MREACTION_IREACTANTS, "vRi", 0);
+REGISTER_MATERIAL(FEInternalReactantMaterial, MODULE_REACTIONS, FE_INT_REACTANT_MATERIAL, FE_MAT_MREACTION_IREACTANTS, "Internal Reactant", 0);
 
-FEInternalReactantMaterial::FEInternalReactantMaterial() : FEMaterial(FE_INT_REACTANT_MATERIAL)
+FEInternalReactantMaterial::FEInternalReactantMaterial() : FEReactionSpecies(FE_INT_REACTANT_MATERIAL)
 {
-    // add the stoichiometric coefficient
-    AddIntParam(1, "vRi", "vRi"); // reactant stoichiometric coefficient
-    // add the type
-    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
-    // add the index
-    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
 }
 
 //=============================================================================
 //                           INTERNAL PRODUCT
 //=============================================================================
 
-REGISTER_MATERIAL(FEInternalProductMaterial, MODULE_REACTIONS, FE_INT_PRODUCT_MATERIAL, FE_MAT_MREACTION_IPRODUCTS, "vPi", 0);
+REGISTER_MATERIAL(FEInternalProductMaterial, MODULE_REACTIONS, FE_INT_PRODUCT_MATERIAL, FE_MAT_MREACTION_IPRODUCTS, "Internal Product", 0);
 
-FEInternalProductMaterial::FEInternalProductMaterial() : FEMaterial(FE_INT_PRODUCT_MATERIAL)
+FEInternalProductMaterial::FEInternalProductMaterial() : FEReactionSpecies(FE_INT_PRODUCT_MATERIAL)
 {
-    // add the stoichiometric coefficient
-    AddIntParam(1, "vPi", "vPi"); // product stoichiometric coefficient
-    // add the type
-    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
-    // add the index
-    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
 }
 
 //=============================================================================
 //                          EXTERNAL REACTANT
 //=============================================================================
 
-REGISTER_MATERIAL(FEExternalReactantMaterial, MODULE_REACTIONS, FE_EXT_REACTANT_MATERIAL, FE_MAT_MREACTION_EREACTANTS, "vRe", 0);
+REGISTER_MATERIAL(FEExternalReactantMaterial, MODULE_REACTIONS, FE_EXT_REACTANT_MATERIAL, FE_MAT_MREACTION_EREACTANTS, "External Reactant", 0);
 
-FEExternalReactantMaterial::FEExternalReactantMaterial() : FEMaterial(FE_EXT_REACTANT_MATERIAL)
+FEExternalReactantMaterial::FEExternalReactantMaterial() : FEReactionSpecies(FE_EXT_REACTANT_MATERIAL)
 {
-    // add the stoichiometric coefficient
-    AddIntParam(1, "vRe", "vRe"); // reactant stoichiometric coefficient
-    // add the type
-    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
-    // add the index
-    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
 }
 
 //=============================================================================
 //                           EXTERNAL PRODUCT
 //=============================================================================
 
-REGISTER_MATERIAL(FEExternalProductMaterial, MODULE_REACTIONS, FE_EXT_PRODUCT_MATERIAL, FE_MAT_MREACTION_EPRODUCTS, "vPe", 0);
+REGISTER_MATERIAL(FEExternalProductMaterial, MODULE_REACTIONS, FE_EXT_PRODUCT_MATERIAL, FE_MAT_MREACTION_EPRODUCTS, "External Product", 0);
 
-FEExternalProductMaterial::FEExternalProductMaterial() : FEMaterial(FE_EXT_PRODUCT_MATERIAL)
+FEExternalProductMaterial::FEExternalProductMaterial() : FEReactionSpecies(FE_EXT_PRODUCT_MATERIAL)
 {
-    // add the stoichiometric coefficient
-    AddIntParam(1, "vPe", "vPe"); // product stoichiometric coefficient
-    // add the type
-    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
-    // add the index
-    AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
 }
 
 //=============================================================================

@@ -35,7 +35,8 @@ public:
 	enum { NO_FIXED_SIZE = 0 };
 
 	enum Flags {
-		EDITABLE = 0x01			// the property can be edited in the material editor
+		EDITABLE = 0x01,			// the property can be edited in the material editor
+		NON_EXTENDABLE = 0x02		// cannot be modified after created in material editor
 	};
 
 public:

@@ -370,162 +370,101 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-// The FEReactantMaterial is used as a component of a chemical reaction material
-class FEReactantMaterial : public FEMaterial
+class FEReactionSpecies : public FEMaterial
 {
 public:
-	// material parameters
-	enum { MP_NU , MP_TYPE , MP_ID };
-    
+    // material parameters
+    enum { MP_NU, MP_TYPE, MP_ID };
+
+public:
+    FEReactionSpecies(int ntype);
+
+    // get/set type (solute or sbm)
+    void SetSpeciesType(int i) { SetIntValue(MP_TYPE, i); }
+    int GetSpeciesType() { return GetIntValue(MP_TYPE); }
+
+    // get/set (solute or sbm) index
+    void SetIndex(int i) { SetIntValue(MP_ID, i); }
+    int GetIndex() { return GetIntValue(MP_ID); }
+
+    // get stoichiometric coefficient
+    int GetCoef() { return GetIntValue(MP_NU); }
+    void SetCoeff(int n) { SetIntValue(MP_NU, n); }
+};
+
+//-----------------------------------------------------------------------------
+// The FEReactantMaterial is used as a component of a chemical reaction material
+class FEReactantMaterial : public FEReactionSpecies
+{
 public:
 	FEReactantMaterial();
-    
-	// get/set type (solute or sbm)
-	void SetReactantType(int i) { SetIntValue(MP_TYPE, i); }
-	int GetReactantType() { return GetIntValue(MP_TYPE); }
-    
-	// get/set (solute or sbm) index
-	void SetIndex(int i) { SetIntValue(MP_ID, i); }
-	int GetIndex() { return GetIntValue(MP_ID); }
-    
-	// get stoichiometric coefficient
-	int GetCoef() { return GetIntValue(MP_NU); }
-	void SetCoeff(int n) { SetIntValue(MP_NU, n); }
+    int GetReactantType() { return GetSpeciesType(); }
+    void SetReactantType(int i) { SetSpeciesType(i); }
 
 protected:
 	DECLARE_REGISTERED(FEReactantMaterial);
 };
 
 //-----------------------------------------------------------------------------
-// The FEInternalReactantMaterial is used as a component of a membrane reaction material
-class FEInternalReactantMaterial : public FEMaterial
+// The FEProductMaterial is used as a component of a chemical reaction material
+class FEProductMaterial : public FEReactionSpecies
 {
 public:
-    // material parameters
-    enum { MP_NU , MP_TYPE , MP_ID };
-    
+    FEProductMaterial();
+    int GetProductType() { return GetSpeciesType(); }
+    void SetProductType(int i) { SetSpeciesType(i); }
+
+protected:
+    DECLARE_REGISTERED(FEProductMaterial);
+};
+
+//-----------------------------------------------------------------------------
+// The FEInternalReactantMaterial is used as a component of a membrane reaction material
+class FEInternalReactantMaterial : public FEReactionSpecies
+{
 public:
     FEInternalReactantMaterial();
-    
-    // get/set type (solute or sbm)
-    void SetReactantType(int i) { SetIntValue(MP_TYPE, i); }
-    int GetReactantType() { return GetIntValue(MP_TYPE); }
-    
-    // get/set (solute or sbm) index
-    void SetIndex(int i) { SetIntValue(MP_ID, i); }
-    int GetIndex() { return GetIntValue(MP_ID); }
-    
-    // get stoichiometric coefficient
-    int GetCoef() { return GetIntValue(MP_NU); }
-    void SetCoeff(int n) { SetIntValue(MP_NU, n); }
-    
+    void SetReactantType(int i) { SetSpeciesType(i); }
+    int GetReactantType() { return GetSpeciesType(); }
+   
 protected:
     DECLARE_REGISTERED(FEInternalReactantMaterial);
 };
 
 //-----------------------------------------------------------------------------
 // The FEExternalReactantMaterial is used as a component of a membrane reaction material
-class FEExternalReactantMaterial : public FEMaterial
+class FEExternalReactantMaterial : public FEReactionSpecies
 {
 public:
-    // material parameters
-    enum { MP_NU , MP_TYPE , MP_ID };
-    
-public:
     FEExternalReactantMaterial();
-    
-    // get/set type (solute or sbm)
-    void SetReactantType(int i) { SetIntValue(MP_TYPE, i); }
-    int GetReactantType() { return GetIntValue(MP_TYPE); }
-    
-    // get/set (solute or sbm) index
-    void SetIndex(int i) { SetIntValue(MP_ID, i); }
-    int GetIndex() { return GetIntValue(MP_ID); }
-    
-    // get stoichiometric coefficient
-    int GetCoef() { return GetIntValue(MP_NU); }
-    void SetCoeff(int n) { SetIntValue(MP_NU, n); }
-    
+    void SetReactantType(int i) { SetSpeciesType(i); }
+    int GetReactantType() { return GetSpeciesType(); }
+
 protected:
     DECLARE_REGISTERED(FEExternalReactantMaterial);
 };
 
 //-----------------------------------------------------------------------------
-// The FEProductMaterial is used as a component of a chemical reaction material
-class FEProductMaterial : public FEMaterial
-{
-public:
-	// material parameters
-	enum { MP_NU , MP_TYPE , MP_ID };
-    
-public:
-	FEProductMaterial();
-    
-	// get/set type (solute or sbm)
-	void SetProductType(int i) { SetIntValue(MP_TYPE, i); }
-	int GetProductType() { return GetIntValue(MP_TYPE); }
-    
-	// get/set (solute or sbm) index
-	void SetIndex(int i) { SetIntValue(MP_ID, i); }
-	int GetIndex() { return GetIntValue(MP_ID); }
-	
-	// get stoichiometric coefficient
-	int GetCoef() { return GetIntValue(MP_NU); }
-	void SetCoeff(int n) { SetIntValue(MP_NU, n); }
-
-protected:
-	DECLARE_REGISTERED(FEProductMaterial);
-};
-
-//-----------------------------------------------------------------------------
 // The FEInternalProductMaterial is used as a component of a membrane reaction material
-class FEInternalProductMaterial : public FEMaterial
+class FEInternalProductMaterial : public FEReactionSpecies
 {
-public:
-    // material parameters
-    enum { MP_NU , MP_TYPE , MP_ID };
-    
 public:
     FEInternalProductMaterial();
-    
-    // get/set type (solute or sbm)
-    void SetProductType(int i) { SetIntValue(MP_TYPE, i); }
-    int GetProductType() { return GetIntValue(MP_TYPE); }
-    
-    // get/set (solute or sbm) index
-    void SetIndex(int i) { SetIntValue(MP_ID, i); }
-    int GetIndex() { return GetIntValue(MP_ID); }
-    
-    // get stoichiometric coefficient
-    int GetCoef() { return GetIntValue(MP_NU); }
-    void SetCoeff(int n) { SetIntValue(MP_NU, n); }
-    
+    void SetProductType(int i) { SetSpeciesType(i); }
+    int GetProductType() { return GetSpeciesType(); }
+   
 protected:
     DECLARE_REGISTERED(FEInternalProductMaterial);
 };
 
 //-----------------------------------------------------------------------------
 // The FEExternalProductMaterial is used as a component of a membrane reaction material
-class FEExternalProductMaterial : public FEMaterial
+class FEExternalProductMaterial : public FEReactionSpecies
 {
 public:
-    // material parameters
-    enum { MP_NU , MP_TYPE , MP_ID };
-    
-public:
     FEExternalProductMaterial();
-    
-    // get/set type (solute or sbm)
-    void SetProductType(int i) { SetIntValue(MP_TYPE, i); }
-    int GetProductType() { return GetIntValue(MP_TYPE); }
-    
-    // get/set (solute or sbm) index
-    void SetIndex(int i) { SetIntValue(MP_ID, i); }
-    int GetIndex() { return GetIntValue(MP_ID); }
-    
-    // get stoichiometric coefficient
-    int GetCoef() { return GetIntValue(MP_NU); }
-    void SetCoeff(int n) { SetIntValue(MP_NU, n); }
+    void SetProductType(int i) { SetSpeciesType(i); }
+    int GetProductType() { return GetSpeciesType(); }
     
 protected:
     DECLARE_REGISTERED(FEExternalProductMaterial);
