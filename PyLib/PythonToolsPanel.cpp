@@ -27,8 +27,7 @@ SOFTWARE.*/
 
 
 #ifdef HAS_PYTHON
-#include <PyLib/pyBindtest.cpp>
-#include <pybind11/embed.h>
+#include "PyFBS.h"
 
 #include "PythonToolsPanel.h"
 #include "ui_pythontoolspanel.h"
@@ -51,7 +50,7 @@ void CPythonToolsPanel::initPython()
  
 	// setup output
  	auto sysm = pybind11::module::import("sys");
-	auto output = pybind11::module::import("fbs").attr("PyOutput");
+	auto output = pybind11::module::import("fbs").attr("ui").attr("PyOutput");
 	sysm.attr("stdout") = output();
 	sysm.attr("stderr") = output();
 }

@@ -24,10 +24,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include "PyFBSUI.h"
+
 #ifdef HAS_PYTHON
 
 #include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 #include <FEBioStudio/FEBioStudio.h>
@@ -38,15 +39,14 @@ SOFTWARE.*/
 #include "PythonToolsPanel.h"
 #include "PyExceptions.h"
 #include "PySpringFunctions.h"
-#include <QEventLoop>
 #include <GeomLib/GPrimitive.h>
 
 #include <MeshTools/GDiscreteObject.h>
-#include <MathLib/mat3d.h>
 
 #include "PyCallBack.h"
 #include "PythonInputHandler.h"
 #include "PyOutput.h"
+
 
 void openFile(const char *fileName)
 {
@@ -85,14 +85,16 @@ GBox* GBox_init(vec3d pos, double width, double height, double depth)
     return gbox;
 }
 
-PYBIND11_EMBEDDED_MODULE(fbs, m)
+void init_FBSUI(pybind11::module& m)
 {
-    pybind11::class_<CPyOutput>(m, "PyOutput")
+    pybind11::module ui = m.def_submodule("ui", "Module used to interact with the FEBio Studio GUI");
+
+    pybind11::class_<CPyOutput>(ui, "PyOutput")
         .def(pybind11::init())
         .def("write", &CPyOutput::write)
         .def("flush", &CPyOutput::flush);
 
-    pybind11::class_<GBox, std::unique_ptr<GBox, pybind11::nodelete>>(m, "GBox")
+    pybind11::class_<GBox, std::unique_ptr<GBox, pybind11::nodelete>>(ui, "GBox")
         .def(pybind11::init(&GBox_init))
         .def_property("position", 
                 [](const GBox& g){
@@ -102,49 +104,25 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
                     g->GetTransform().SetPosition(pos);
                 });
 
-    pybind11::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, pybind11::nodelete>>(m, "SpringSet")
+    pybind11::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, pybind11::nodelete>>(ui, "SpringSet")
         .def(pybind11::init(&SpringSet_init))
         .def("addSpring", static_cast<void (GDiscreteSpringSet::*)(int,int)>(&GDiscreteSpringSet::AddElement));
 
-    m.def("openFile", openFile);
-    m.def("FindOrMakeNode", FindOrMakeNode);
-    m.def("IntersectWithObject", IntersectWithObject);
-    m.def("MeshFromCurve", meshFromCurve, pybind11::arg("points"), pybind11::arg("radius"), pybind11::arg("name") = "Curve", 
+    ui.def("openFile", openFile);
+
+    ui.def("FindOrMakeNode", FindOrMakeNode);
+    ui.def("IntersectWithObject", IntersectWithObject);
+    ui.def("MeshFromCurve", meshFromCurve, pybind11::arg("points"), pybind11::arg("radius"), pybind11::arg("name") = "Curve", 
         pybind11::arg("divisions") = 6, pybind11::arg("segments") = 6, pybind11::arg("ratio") = 0.5);
 
-    m.def("setProgressText", PySetProgressText);
-    m.def("setProgress", static_cast<void (*) (int)>(PySetProgress));
-    m.def("setProgress", static_cast<void (*) (float)>(PySetProgress));
-    m.def("getUserString", PyGetString);
-    m.def("getUserInt", PyGetInt);
-    m.def("getUserSelection", PyGetSelection);
+    ui.def("setProgressText", PySetProgressText);
+    ui.def("setProgress", static_cast<void (*) (int)>(PySetProgress));
+    ui.def("setProgress", static_cast<void (*) (float)>(PySetProgress));
+    ui.def("getUserString", PyGetString);
+    ui.def("getUserInt", PyGetInt);
+    ui.def("getUserSelection", PyGetSelection);
 
-    pybind11::class_<vec3d>(m, "vec3d")
-        .def(pybind11::init<>())
-        .def(pybind11::init<double, double, double>())
-        .def(pybind11::self + pybind11::self)
-        .def(pybind11::self - pybind11::self)
-        .def(pybind11::self * pybind11::self)
-        .def(pybind11::self ^ pybind11::self)
-        .def(pybind11::self == pybind11::self)
-        .def(-pybind11::self)
-        .def(pybind11::self * double())
-        .def(pybind11::self / double())
-        .def("Length", &vec3d::Length)
-        .def("SqrLength", &vec3d::SqrLength)
-        .def("Normalize", &vec3d::Normalize)
-        .def("Normalized", &vec3d::Normalized)
-        .def_readwrite("x", &vec3d::x)
-        .def_readwrite("y", &vec3d::y)
-        .def_readwrite("z", &vec3d::z)
-        .def("__repr__",
-            [](const vec3d& v){
-                return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
-            }
-        
-    );
-
-    pybind11::class_<CPythonDummyTool, std::unique_ptr<CPythonDummyTool, pybind11::nodelete>>(m, "PythonTool")
+    pybind11::class_<CPythonDummyTool, std::unique_ptr<CPythonDummyTool, pybind11::nodelete>>(ui, "PythonTool")
         .def(pybind11::init(&PythonTool_init))
         .def("addBoolProperty", &CPythonDummyTool::addBoolProperty, pybind11::arg("name"), pybind11::arg("value") = true)
         .def("addIntProperty", &CPythonDummyTool::addIntProperty, pybind11::arg("name"), pybind11::arg("value") = 0)
@@ -155,4 +133,6 @@ PYBIND11_EMBEDDED_MODULE(fbs, m)
         .def("addResourceProperty", &CPythonDummyTool::addResourceProperty, pybind11::arg("name"), pybind11::arg("value") = "");
 }
 
+#else
+void init_FBSUI(pybind11::module_& m) {}
 #endif
