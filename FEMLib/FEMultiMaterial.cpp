@@ -449,7 +449,7 @@ void FEReactionMaterial::GetSoluteReactants(vector<int>& solR)
 	for (int i=0; i<N; ++i)
 	{
 		FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-		if (ri && (ri->GetReactantType() == FEReactionMaterial::SOLUTE_SPECIES)) solR.push_back(ri->GetIndex());
+		if (ri && (ri->GetReactantType() == FEReactionSpecies::SOLUTE_SPECIES)) solR.push_back(ri->GetIndex());
 	}
 }
 
@@ -461,7 +461,7 @@ void FEReactionMaterial::GetSBMReactants(vector<int>& sbmR)
 	for (int i = 0; i<N; ++i)
 	{
 		FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-		if (ri && (ri->GetReactantType() == FEReactionMaterial::SBM_SPECIES)) sbmR.push_back(ri->GetIndex());
+		if (ri && (ri->GetReactantType() == FEReactionSpecies::SBM_SPECIES)) sbmR.push_back(ri->GetIndex());
 	}
 }
 
@@ -473,7 +473,7 @@ void FEReactionMaterial::GetSoluteProducts(vector<int>& solP)
 	for (int i = 0; i<N; ++i)
 	{
 		FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
-		if (ri && (ri->GetProductType() == FEReactionMaterial::SOLUTE_SPECIES)) solP.push_back(ri->GetIndex());
+		if (ri && (ri->GetProductType() == FEReactionSpecies::SOLUTE_SPECIES)) solP.push_back(ri->GetIndex());
 	}
 }
 
@@ -485,7 +485,7 @@ void FEReactionMaterial::GetSBMProducts(vector<int>& sbmP)
 	for (int i = 0; i<N; ++i)
 	{
 		FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
-		if (ri && (ri->GetProductType() == FEReactionMaterial::SBM_SPECIES)) sbmP.push_back(ri->GetIndex());
+		if (ri && (ri->GetProductType() == FEReactionSpecies::SBM_SPECIES)) sbmP.push_back(ri->GetIndex());
 	}
 }
 
@@ -500,7 +500,7 @@ string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem)
 		string name;
 		int m = rm->GetIndex();
 		int ntype = rm->GetReactantType();
-		if (ntype == FEReactionMaterial::SOLUTE_SPECIES)
+		if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
 			name = fem.GetSoluteData(m).GetName();
 		else
 			name = fem.GetSBMData(m).GetName();
@@ -525,7 +525,7 @@ string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem)
 		string name;
 		int m = pm->GetIndex();
 		int ntype = pm->GetProductType();
-		if (ntype == FEReactionMaterial::SOLUTE_SPECIES)
+		if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
 			name = fem.GetSoluteData(m).GetName();
 		else
 			name = fem.GetSBMData(m).GetName();
@@ -646,7 +646,7 @@ void FEMembraneReactionMaterial::GetSoluteReactants(vector<int>& solR)
     for (int i=0; i<N; ++i)
     {
         FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetReactantType() == FEMembraneReactionMaterial::SOLUTE_SPECIES)) solR.push_back(ri->GetIndex());
+        if (ri && (ri->GetReactantType() == FEReactionSpecies::SOLUTE_SPECIES)) solR.push_back(ri->GetIndex());
     }
 }
 
@@ -658,7 +658,7 @@ void FEMembraneReactionMaterial::GetInternalSoluteReactants(vector<int>& solRi)
     for (int i=0; i<N; ++i)
     {
         FEInternalReactantMaterial* ri = dynamic_cast<FEInternalReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetReactantType() == FEMembraneReactionMaterial::INT_SPECIES)) solRi.push_back(ri->GetIndex());
+        if (ri && (ri->GetReactantType() == FEReactionSpecies::SOLUTE_SPECIES)) solRi.push_back(ri->GetIndex());
     }
 }
 
@@ -670,7 +670,7 @@ void FEMembraneReactionMaterial::GetExternalSoluteReactants(vector<int>& solRe)
     for (int i=0; i<N; ++i)
     {
         FEExternalReactantMaterial* ri = dynamic_cast<FEExternalReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetReactantType() == FEMembraneReactionMaterial::EXT_SPECIES)) solRe.push_back(ri->GetIndex());
+        if (ri && (ri->GetReactantType() == FEReactionSpecies::SOLUTE_SPECIES)) solRe.push_back(ri->GetIndex());
     }
 }
 
@@ -682,7 +682,7 @@ void FEMembraneReactionMaterial::GetSBMReactants(vector<int>& sbmR)
     for (int i = 0; i<N; ++i)
     {
         FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetReactantType() == FEMembraneReactionMaterial::SBM_SPECIES)) sbmR.push_back(ri->GetIndex());
+        if (ri && (ri->GetReactantType() == FEReactionSpecies::SBM_SPECIES)) sbmR.push_back(ri->GetIndex());
     }
 }
 
@@ -694,7 +694,7 @@ void FEMembraneReactionMaterial::GetSoluteProducts(vector<int>& solP)
     for (int i = 0; i<N; ++i)
     {
         FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetProductType() == FEMembraneReactionMaterial::SOLUTE_SPECIES)) solP.push_back(ri->GetIndex());
+        if (ri && (ri->GetProductType() == FEReactionSpecies::SOLUTE_SPECIES)) solP.push_back(ri->GetIndex());
     }
 }
 
@@ -706,7 +706,7 @@ void FEMembraneReactionMaterial::GetInternalSoluteProducts(vector<int>& solPi)
     for (int i = 0; i<N; ++i)
     {
         FEInternalProductMaterial* ri = dynamic_cast<FEInternalProductMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetProductType() == FEMembraneReactionMaterial::INT_SPECIES)) solPi.push_back(ri->GetIndex());
+        if (ri && (ri->GetProductType() == FEReactionSpecies::SOLUTE_SPECIES)) solPi.push_back(ri->GetIndex());
     }
 }
 
@@ -718,7 +718,7 @@ void FEMembraneReactionMaterial::GetExternalSoluteProducts(vector<int>& solPe)
     for (int i = 0; i<N; ++i)
     {
         FEExternalProductMaterial* ri = dynamic_cast<FEExternalProductMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetProductType() == FEMembraneReactionMaterial::EXT_SPECIES)) solPe.push_back(ri->GetIndex());
+        if (ri && (ri->GetProductType() == FEReactionSpecies::SOLUTE_SPECIES)) solPe.push_back(ri->GetIndex());
     }
 }
 
@@ -730,7 +730,7 @@ void FEMembraneReactionMaterial::GetSBMProducts(vector<int>& sbmP)
     for (int i = 0; i<N; ++i)
     {
         FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetProductType() == FEMembraneReactionMaterial::SBM_SPECIES)) sbmP.push_back(ri->GetIndex());
+        if (ri && (ri->GetProductType() == FEReactionSpecies::SBM_SPECIES)) sbmP.push_back(ri->GetIndex());
     }
 }
 
@@ -745,7 +745,7 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
         string name;
         int m = rm->GetIndex();
         int ntype = rm->GetReactantType();
-        if (ntype == FEMembraneReactionMaterial::SOLUTE_SPECIES)
+        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         else
             name = fem.GetSBMData(m).GetName();
@@ -766,7 +766,7 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
         string name;
         int m = rm->GetIndex();
         int ntype = rm->GetReactantType();
-        if (ntype == FEMembraneReactionMaterial::INT_SPECIES)
+        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         
         int n = rm->GetCoef();
@@ -785,7 +785,7 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
         string name;
         int m = rm->GetIndex();
         int ntype = rm->GetReactantType();
-        if (ntype == FEMembraneReactionMaterial::EXT_SPECIES)
+        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         
         int n = rm->GetCoef();
@@ -808,7 +808,7 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
         string name;
         int m = pm->GetIndex();
         int ntype = pm->GetProductType();
-        if (ntype == FEMembraneReactionMaterial::SOLUTE_SPECIES)
+        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         else
             name = fem.GetSBMData(m).GetName();
@@ -829,7 +829,7 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
         string name;
         int m = pm->GetIndex();
         int ntype = pm->GetProductType();
-        if (ntype == FEMembraneReactionMaterial::INT_SPECIES)
+        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         
         int n = pm->GetCoef();
@@ -848,7 +848,7 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
         string name;
         int m = pm->GetIndex();
         int ntype = pm->GetProductType();
-        if (ntype == FEMembraneReactionMaterial::EXT_SPECIES)
+        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         
         int n = pm->GetCoef();
@@ -1016,6 +1016,15 @@ FEReactionSpecies::FEReactionSpecies(int ntype) : FEMaterial(ntype)
     AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
     // add the index
     AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
+}
+
+void FEReactionSpecies::Load(IArchive& ar)
+{
+    FEMaterial::Load(ar);
+
+    // This is a temporary hack to remove species type > 2, which should now all be solutes
+    if (GetSpeciesType() > 2) SetSpeciesType(SOLUTE_SPECIES);
+
 }
 
 //=============================================================================

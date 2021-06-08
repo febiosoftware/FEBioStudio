@@ -376,6 +376,12 @@ public:
     // material parameters
     enum { MP_NU, MP_TYPE, MP_ID };
 
+    // types for the rectant and product species
+    enum SpeciesType {
+        SOLUTE_SPECIES = 1,
+        SBM_SPECIES = 2
+    };
+
 public:
     FEReactionSpecies(int ntype);
 
@@ -390,6 +396,9 @@ public:
     // get stoichiometric coefficient
     int GetCoef() { return GetIntValue(MP_NU); }
     void SetCoeff(int n) { SetIntValue(MP_NU, n); }
+
+private:
+    void Load(IArchive& ar) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -479,13 +488,6 @@ public:
 	enum { MP_VBAR , MP_OVRD };
 
 public:
-	// types for the rectant and product species
-	enum SpeciesType{
-		SOLUTE_SPECIES = 1,
-		SBM_SPECIES    = 2
-	};
-    
-public:
     FEReactionMaterial(int ntype);
 
     void SetOvrd(bool bovrd);
@@ -528,15 +530,6 @@ class FEMembraneReactionMaterial : public FEMaterial
 public:
     // material parameters
     enum { MP_VBAR , MP_OVRD };
-    
-public:
-    // types for the rectant and product species
-    enum SpeciesType{
-        SOLUTE_SPECIES = 1,
-        SBM_SPECIES    = 2,
-        INT_SPECIES    = 3,
-        EXT_SPECIES    = 4
-    };
     
 public:
     FEMembraneReactionMaterial(int ntype);

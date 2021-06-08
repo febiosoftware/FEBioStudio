@@ -541,7 +541,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
             FEReactantMaterial* rm = mat->Reactant(j);
             
             int index = spec.second;
-            if (rm->GetReactantType() == FEMembraneReactionMaterial::SBM_SPECIES) index -= 0x100;
+            if (rm->GetReactantType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -583,7 +583,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
             FEProductMaterial* rm = mat->Product(j);
             
             int index = spec.second;
-            if (rm->GetProductType() == FEMembraneReactionMaterial::SBM_SPECIES) index -= 0x100;
+            if (rm->GetProductType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -625,7 +625,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
             FEInternalReactantMaterial* rm = mat->InternalReactant(j);
             
             int index = spec.second;
-            if (rm->GetReactantType() == FEMembraneReactionMaterial::SBM_SPECIES) index -= 0x100;
+            if (rm->GetReactantType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -667,7 +667,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
             FEInternalProductMaterial* rm = mat->InternalProduct(j);
             
             int index = spec.second;
-            if (rm->GetProductType() == FEMembraneReactionMaterial::SBM_SPECIES) index -= 0x100;
+            if (rm->GetProductType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -709,7 +709,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
             FEExternalReactantMaterial* rm = mat->ExternalReactant(j);
             
             int index = spec.second;
-            if (rm->GetReactantType() == FEMembraneReactionMaterial::SBM_SPECIES) index -= 0x100;
+            if (rm->GetReactantType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -751,7 +751,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
             FEExternalProductMaterial* rm = mat->ExternalProduct(j);
             
             int index = spec.second;
-            if (rm->GetProductType() == FEMembraneReactionMaterial::SBM_SPECIES) index -= 0x100;
+            if (rm->GetProductType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -906,7 +906,7 @@ void CDlgAddMembraneReaction::apply()
         {
             FEReactantMaterial* ps = new FEReactantMaterial;
             ps->SetIndex(m_solR[i]);
-            ps->SetReactantType(FEMembraneReactionMaterial::SOLUTE_SPECIES);
+            ps->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddReactantMaterial(ps);
         }
         
@@ -915,7 +915,7 @@ void CDlgAddMembraneReaction::apply()
         {
             FEInternalReactantMaterial* ps = new FEInternalReactantMaterial;
             ps->SetIndex(m_solRi[i]);
-            ps->SetReactantType(FEMembraneReactionMaterial::INT_SPECIES);
+            ps->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddInternalReactantMaterial(ps);
         }
         
@@ -924,7 +924,7 @@ void CDlgAddMembraneReaction::apply()
         {
             FEExternalReactantMaterial* ps = new FEExternalReactantMaterial;
             ps->SetIndex(m_solRe[i]);
-            ps->SetReactantType(FEMembraneReactionMaterial::EXT_SPECIES);
+            ps->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddExternalReactantMaterial(ps);
         }
         
@@ -933,7 +933,7 @@ void CDlgAddMembraneReaction::apply()
         {
             FEReactantMaterial* ps = new FEReactantMaterial;
             ps->SetIndex(m_sbmR[i]);
-            ps->SetReactantType(FEMembraneReactionMaterial::SBM_SPECIES);
+            ps->SetReactantType(FEReactionSpecies::SBM_SPECIES);
             m_reaction->AddReactantMaterial(ps);
         }
     }
@@ -953,7 +953,7 @@ void CDlgAddMembraneReaction::apply()
         {
             FEProductMaterial* ps = new FEProductMaterial;
             ps->SetIndex(m_solP[i]);
-            ps->SetProductType(FEMembraneReactionMaterial::SOLUTE_SPECIES);
+            ps->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddProductMaterial(ps);
         }
         
@@ -962,7 +962,7 @@ void CDlgAddMembraneReaction::apply()
         {
             FEInternalProductMaterial* ps = new FEInternalProductMaterial;
             ps->SetIndex(m_solPi[i]);
-            ps->SetProductType(FEMembraneReactionMaterial::INT_SPECIES);
+            ps->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddInternalProductMaterial(ps);
         }
         
@@ -971,7 +971,7 @@ void CDlgAddMembraneReaction::apply()
         {
             FEExternalProductMaterial* ps = new FEExternalProductMaterial;
             ps->SetIndex(m_solPe[i]);
-            ps->SetProductType(FEMembraneReactionMaterial::EXT_SPECIES);
+            ps->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddExternalProductMaterial(ps);
         }
         
@@ -980,7 +980,7 @@ void CDlgAddMembraneReaction::apply()
         {
             FEProductMaterial* ps = new FEProductMaterial;
             ps->SetIndex(m_sbmP[i]);
-            ps->SetProductType(FEMembraneReactionMaterial::SBM_SPECIES);
+            ps->SetProductType(FEReactionSpecies::SBM_SPECIES);
             m_reaction->AddProductMaterial(ps);
         }
     }

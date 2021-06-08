@@ -1499,16 +1499,16 @@ bool ProcessReactionEquation(FEModel& fem, FEReactionMaterial* pm, const char* s
 			if (m == 0)
 			{
 				FEReactantMaterial* vR = new FEReactantMaterial;
-				if (nsol != -1) { vR->SetReactantType(FEReactionMaterial::SOLUTE_SPECIES); vR->SetIndex(nsol); }
-				else { vR->SetReactantType(FEReactionMaterial::SBM_SPECIES); vR->SetIndex(nsbm); }
+				if (nsol != -1) { vR->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES); vR->SetIndex(nsol); }
+				else { vR->SetReactantType(FEReactionSpecies::SBM_SPECIES); vR->SetIndex(nsbm); }
 				vR->SetCoeff(nu);
 				pm->AddReactantMaterial(vR);
 			}
 			else
 			{
 				FEProductMaterial* vP = new FEProductMaterial;
-				if (nsol != -1) { vP->SetProductType(FEReactionMaterial::SOLUTE_SPECIES); vP->SetIndex(nsol); }
-				else { vP->SetProductType(FEReactionMaterial::SBM_SPECIES); vP->SetIndex(nsbm); }
+				if (nsol != -1) { vP->SetProductType(FEReactionSpecies::SOLUTE_SPECIES); vP->SetIndex(nsol); }
+				else { vP->SetProductType(FEReactionSpecies::SBM_SPECIES); vP->SetIndex(nsbm); }
 				vP->SetCoeff(nu);
 				pm->AddProductMaterial(vP);
 			}
@@ -1619,7 +1619,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 					psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "Reactant"));
 					assert(psr);
 					psr->SetIndex(sid);
-					psr->SetReactantType(FEReactionMaterial::SOLUTE_SPECIES);
+					psr->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
 					ReadParam(*psr, tag);
 					pm->AddReactantMaterial(psr);
 				}
@@ -1628,7 +1628,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 					psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "Reactant"));
 					assert(psr);
 					psr->SetIndex(sid);
-					psr->SetReactantType(FEReactionMaterial::SBM_SPECIES);
+					psr->SetReactantType(FEReactionSpecies::SBM_SPECIES);
 					ReadParam(*psr, tag);
 					pm->AddReactantMaterial(psr);
 				}
@@ -1645,7 +1645,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 					psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "Product"));
 					assert(psp);
 					psp->SetIndex(sid);
-					psp->SetProductType(FEReactionMaterial::SOLUTE_SPECIES);
+					psp->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
 					ReadParam(*psp, tag);
 					pm->AddProductMaterial(psp);
 				}
@@ -1654,7 +1654,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 					psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "Product"));
 					assert(psp);
 					psp->SetIndex(sid);
-					psp->SetProductType(FEReactionMaterial::SBM_SPECIES);
+					psp->SetProductType(FEReactionSpecies::SBM_SPECIES);
 					ReadParam(*psp, tag);
 					pm->AddProductMaterial(psp);
 				}
@@ -1733,7 +1733,7 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
                     psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "vR"));
                     assert(psr);
                     psr->SetIndex(sid);
-                    psr->SetReactantType(FEReactionMaterial::SOLUTE_SPECIES);
+                    psr->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
                     ReadParam(*psr, tag);
                     pm->AddReactantMaterial(psr);
                 }
@@ -1742,7 +1742,7 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
                     psr = dynamic_cast<FEReactantMaterial*>(ParseMaterial(tag, "vR"));
                     assert(psr);
                     psr->SetIndex(sid);
-                    psr->SetReactantType(FEReactionMaterial::SBM_SPECIES);
+                    psr->SetReactantType(FEReactionSpecies::SBM_SPECIES);
                     ReadParam(*psr, tag);
                     pm->AddReactantMaterial(psr);
                 }
@@ -1758,7 +1758,7 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
                     psri = dynamic_cast<FEInternalReactantMaterial*>(ParseMaterial(tag, "vRi"));
                     assert(psri);
                     psri->SetIndex(sid);
-                    psri->SetReactantType(FEMembraneReactionMaterial::INT_SPECIES);
+                    psri->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
                     ReadParam(*psri, tag);
                     pm->AddInternalReactantMaterial(psri);
                 }
@@ -1774,7 +1774,7 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
                     psre = dynamic_cast<FEExternalReactantMaterial*>(ParseMaterial(tag, "vRe"));
                     assert(psre);
                     psre->SetIndex(sid);
-                    psre->SetReactantType(FEMembraneReactionMaterial::EXT_SPECIES);
+                    psre->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
                     ReadParam(*psre, tag);
                     pm->AddExternalReactantMaterial(psre);
                 }
@@ -1791,7 +1791,7 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
                     psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "vP"));
                     assert(psp);
                     psp->SetIndex(sid);
-                    psp->SetProductType(FEReactionMaterial::SOLUTE_SPECIES);
+                    psp->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
                     ReadParam(*psp, tag);
                     pm->AddProductMaterial(psp);
                 }
@@ -1800,7 +1800,7 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
                     psp = dynamic_cast<FEProductMaterial*>(ParseMaterial(tag, "vP"));
                     assert(psp);
                     psp->SetIndex(sid);
-                    psp->SetProductType(FEReactionMaterial::SBM_SPECIES);
+                    psp->SetProductType(FEReactionSpecies::SBM_SPECIES);
                     ReadParam(*psp, tag);
                     pm->AddProductMaterial(psp);
                 }
@@ -1816,7 +1816,7 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
                     pspi = dynamic_cast<FEInternalProductMaterial*>(ParseMaterial(tag, "vPi"));
                     assert(pspi);
                     pspi->SetIndex(sid);
-                    pspi->SetProductType(FEMembraneReactionMaterial::INT_SPECIES);
+                    pspi->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
                     ReadParam(*pspi, tag);
                     pm->AddInternalProductMaterial(pspi);
                 }
@@ -1832,7 +1832,7 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
                     pspe = dynamic_cast<FEExternalProductMaterial*>(ParseMaterial(tag, "vPe"));
                     assert(pspe);
                     pspe->SetIndex(sid);
-                    pspe->SetProductType(FEMembraneReactionMaterial::EXT_SPECIES);
+                    pspe->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
                     ReadParam(*pspe, tag);
                     pm->AddExternalProductMaterial(pspe);
                 }
