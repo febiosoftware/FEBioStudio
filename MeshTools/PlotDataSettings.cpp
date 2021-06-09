@@ -200,6 +200,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_BIPHASIC, "fluid flux");
     AddPlotVariable(MODULE_BIPHASIC, "fluid flow rate", false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_BIPHASIC, "fluid force"                       );
+    AddPlotVariable(MODULE_BIPHASIC, "permeability"                      );
     AddPlotVariable(MODULE_BIPHASIC, "porosity"                          );
     AddPlotVariable(MODULE_BIPHASIC, "pressure gap"                      );
     AddPlotVariable(MODULE_BIPHASIC, "referential solid volume fraction" );
@@ -256,6 +257,8 @@ void CPlotDataSettings::Init()
 
     AddPlotVariable(MODULE_FLUID_FSI, "nodal fluid flux"              );
     AddPlotVariable(MODULE_FLUID_FSI, "fluid flux"                    );
+    AddPlotVariable(MODULE_FLUID_FSI, "permeability"                  );
+    AddPlotVariable(MODULE_FLUID_FSI, "porosity"                      );
     AddPlotVariable(MODULE_FLUID_FSI, "relative fluid velocity"       );
     AddPlotVariable(MODULE_FLUID_FSI, "solid stress"                  );
 }

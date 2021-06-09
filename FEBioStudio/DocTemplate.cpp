@@ -89,7 +89,7 @@ void TemplateManager::Init()
 	AddTemplate(doc);
 
 	doc.title = "Fluid-Structure Interaction";
-	doc.description = "FSI analysis where a fluid interacts with a mechanical domain";
+	doc.description = "FSI analysis where a fluid interacts with a rigid, solid or biphasic structure";
 	doc.module = MODULE_MECH | MODULE_FLUID | MODULE_FLUID_FSI;
 	AddTemplate(doc);
 
