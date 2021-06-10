@@ -45,6 +45,8 @@ SOFTWARE.*/
 #include <QImage>
 #include <QFileDialog>
 #include <QRgb>
+#include <QDropEvent>
+#include <QtCore/QMimeData>
 
 //-----------------------------------------------------------------------------
 class CDlgPlotWidgetProps_Ui
@@ -335,6 +337,9 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 	if (h < 200) h = 200;
 	m_sizeHint = QSize(w, h);
 
+	// allow drop events
+	setAcceptDrops(true);
+
 	m_img = nullptr;
 
 	m_pZoomToFit = new QAction(QIcon(QString(":/icons/zoom_fit.png")), tr("Zoom to fit"), this);
@@ -537,18 +542,46 @@ void CPlotWidget::mapToUserRect(QRect rt, QRectF rng)
 }
 
 //-----------------------------------------------------------------------------
+void CPlotWidget::dragEnterEvent(QDragEnterEvent* e)
+{
+	if (e->mimeData()->hasUrls()) {
+		e->acceptProposedAction();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CPlotWidget::dropEvent(QDropEvent* e)
+{
+	QList<QUrl> urls = e->mimeData()->urls();
+	if (urls.empty()) return;
+	QString fileName = urls.at(0).toLocalFile();
+	if (fileName.isEmpty() == false)
+	{
+		LoadBackgroundImage(fileName);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CPlotWidget::OnBGImage()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, "Select Image", "", "PNG Images (*png)");
 	if (fileName.isEmpty() == false)
 	{
-		QImage* img = new QImage(fileName);
-		SetBackgroundImage(img);
-
-		emit backgroundImageChanged();
-
-		repaint();
+		LoadBackgroundImage(fileName);
 	}
+}
+
+//-----------------------------------------------------------------------------
+bool CPlotWidget::LoadBackgroundImage(const QString& fileName)
+{
+	QImage* img = new QImage(fileName);
+	SetBackgroundImage(img);
+
+	emit backgroundImageChanged();
+
+	repaint();
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------

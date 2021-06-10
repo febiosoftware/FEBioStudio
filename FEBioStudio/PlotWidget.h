@@ -184,6 +184,8 @@ public:
 
 	std::vector<QPointF> SelectedPoints() const;
 
+	bool LoadBackgroundImage(const QString& fileName);
+
 signals:
 	void doneZoomToRect();
 	void doneSelectingRect(QRect rt);
@@ -201,6 +203,8 @@ protected:
 	void mouseReleaseEvent(QMouseEvent* ev);
 	void contextMenuEvent (QContextMenuEvent* ev);
 	void wheelEvent       (QWheelEvent* ev);
+	void dropEvent        (QDropEvent* e);
+	void dragEnterEvent   (QDragEnterEvent* e);
 
 	void regionSelect(QRect rt);
 
