@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <unordered_map>
 #include <JlCompress.h>
 #include <QStandardPaths>
+#include <QDesktopServices>
 #include <QDateTime>
 #include <QXmlStreamReader>
 #include "RepoConnectionHandler.h"
@@ -939,7 +940,7 @@ void CRepositoryPanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 
 	QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, type));
 
-	m_wnd->OpenFile(fileInfo.absolutePath());
+	QDesktopServices::openUrl(QUrl::fromLocalFile(fileInfo.absolutePath()));
 }
 
 void CRepositoryPanel::on_treeWidget_itemSelectionChanged()
