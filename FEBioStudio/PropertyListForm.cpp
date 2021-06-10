@@ -695,7 +695,7 @@ void CPropertyListForm::onDataChanged()
 				}
 			}
 
-			bool itemModified = m_list->IsModified();
+			bool itemModified = (m_list ? m_list->IsModified() : false);
 			if (itemModified)
 			{
 				setPropertyList(m_list);

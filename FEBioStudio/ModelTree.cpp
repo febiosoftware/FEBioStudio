@@ -372,12 +372,19 @@ private:
 class CPlotfileProperties : public CObjectProps
 {
 public:
-	CPlotfileProperties(CModelViewer* wnd, FEProject& prj) : CObjectProps(0), m_wnd(wnd)
+	CPlotfileProperties(CModelViewer* wnd, FEProject& prj) : CObjectProps(0), m_wnd(wnd), m_prj(prj)
 	{
-		CPlotDataSettings& plt = prj.GetPlotDataSettings();
+		Update();
+	}
+
+	void Update() override
+	{
+		Clear();
+
+		CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 
 		int ncount = 0;
-		for (int i = 0; i<plt.PlotVariables(); ++i)
+		for (int i = 0; i < plt.PlotVariables(); ++i)
 		{
 			FEPlotVariable& var = plt.PlotVariable(i);
 			if (var.isShown() && var.isActive())
@@ -406,6 +413,7 @@ public:
 
 private:
 	CModelViewer*	m_wnd;
+	FEProject&		m_prj;
 	int	m_actionIndex;
 };
 
@@ -1787,6 +1795,6 @@ void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* 
 //-----------------------------------------------------------------------------
 void CModelTree::UpdateOutput(QTreeWidgetItem* t1, FEProject& prj)
 {
-	AddTreeItem(t1, "plotfile", MT_PROJECT_OUTPUT, 0, 0, new CPlotfileProperties(m_view, prj), 0, 1);
+	AddTreeItem(t1, "plotfile", MT_PROJECT_OUTPUT_PLT, 0, 0, new CPlotfileProperties(m_view, prj), 0, 1);
 	AddTreeItem(t1, "logfile", MT_PROJECT_OUTPUT_LOG, 0, 0, new CLogfileProperties(prj), 0, 1);
 }

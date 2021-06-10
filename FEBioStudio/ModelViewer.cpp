@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <GeomLib/MeshLayer.h>
 #include <MeshTools/GModel.h>
 #include "Commands.h"
+#include "PropertyList.h"
 
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
@@ -154,6 +155,17 @@ void CModelViewer::SetCurrentItem(int item)
 		ui->props->SetObjectProps(0, 0, 0);
 		m_currentObject = 0;
 	}
+}
+
+void CModelViewer::SetCurrentItem(CModelTreeItem& it)
+{
+	CPropertyList* props = it.props;
+	FSObject* po = it.obj;
+	if (it.flag & CModelTree::OBJECT_NOT_EDITABLE)
+		ui->props->SetObjectProps(0, 0, 0);
+	else
+		ui->props->SetObjectProps(po, props, it.flag);
+	m_currentObject = po;
 }
 
 void CModelViewer::on_searchButton_toggled(bool b)
@@ -1431,7 +1443,7 @@ void CModelViewer::OnEditOutput()
 
 	CDlgEditOutput dlg(prj, this);
 	dlg.exec();	
-	Update();
+	UpdateCurrentItem();
 }
 
 void CModelViewer::OnEditOutputLog()
@@ -1441,7 +1453,18 @@ void CModelViewer::OnEditOutputLog()
 
 	CDlgEditOutput dlg(prj, this, 1);
 	dlg.exec();
-	Update();
+	UpdateCurrentItem();
+}
+
+void CModelViewer::UpdateCurrentItem()
+{
+	CModelTreeItem* item = ui->tree->GetCurrentData();
+	if (item)
+	{
+		CPropertyList* prop = item->props;
+		if (prop) prop->Update();
+		SetCurrentItem(*item);
+	}
 }
 
 void CModelViewer::OnRemoveEmptySelections()
@@ -1575,6 +1598,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllSteps()));
 		break;
 	case MT_PROJECT_OUTPUT:
+	case MT_PROJECT_OUTPUT_PLT:
 		menu.addAction("Edit output...", this, SLOT(OnEditOutput()));
 		break;
 	case MT_PROJECT_OUTPUT_LOG:

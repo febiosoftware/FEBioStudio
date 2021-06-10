@@ -136,6 +136,8 @@ public:
 	virtual QVariant GetPropertyValue(int i) = 0;
 	virtual void SetPropertyValue(int i, const QVariant& v) = 0;
 
+	virtual void Update() {}
+
 public:
 	bool IsModified() const { return m_bmodified; }
 	void SetModified(bool b) { m_bmodified = b; }

@@ -64,6 +64,7 @@ public:
 
 	// set the current item
 	void SetCurrentItem(int item);
+	void SetCurrentItem(CModelTreeItem& item);
 
 	// show the context menu
 	void ShowContextMenu(CModelTreeItem* data, QPoint pt);
@@ -89,6 +90,8 @@ public:
 	void RefreshProperties();
 
 	void blockUpdate(bool block);
+
+	void UpdateCurrentItem();
 
 public slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);

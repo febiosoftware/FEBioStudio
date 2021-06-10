@@ -74,6 +74,7 @@ enum ModelTreeType
 	MT_DISCRETE,
 	MT_STEP_LIST,
 	MT_PROJECT_OUTPUT,
+	MT_PROJECT_OUTPUT_PLT,
 	MT_PROJECT_OUTPUT_LOG,
 	MT_PART_GROUP,
 	MT_FACE_GROUP,
@@ -141,7 +142,7 @@ public:
 
 	void Select(FSObject* po);
 	void Select(const std::vector<FSObject*>& objList);
-
+	
 	void UpdateObject(FSObject* po);
 	void UpdateItem(QTreeWidgetItem* item);
 
