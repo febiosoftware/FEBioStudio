@@ -920,12 +920,33 @@ void CRepositoryPanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 {
 	int ID;
 	int type;
+	int depth = 0;
 
 	if(item->type() == PROJECTITEM)
 	{
 		ProjectItem* projItem = static_cast<ProjectItem*>(item);
 		ID = projItem->getProjectID();
 		type = FULL;
+	}
+	else if(item->type() == FOLDERITEM)
+	{
+		CustomTreeWidgetItem* current = item;
+		while(current->childCount() > 0)
+		{
+			current = static_cast<CustomTreeWidgetItem*>(current->child(0));
+			depth++;
+		}
+
+		if(current->type() == FILEITEM)
+		{
+			FileItem* fileItem = static_cast<FileItem*>(current);
+			ID = fileItem->getFileID();
+			type = PART;
+		}
+		else
+		{
+			return;
+		}
 	}
 	else if (item->type() == FILEITEM)
 	{
@@ -940,7 +961,26 @@ void CRepositoryPanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 
 	QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, type));
 
-	QDesktopServices::openUrl(QUrl::fromLocalFile(fileInfo.absolutePath()));
+	QString filepath;
+	if(item->type() == FOLDERITEM)
+	{
+		QDir dir = fileInfo.dir();
+
+		while(depth > 1)
+		{
+			dir.cdUp();
+			depth--;
+		}
+
+		filepath = dir.absolutePath();
+
+	}
+	else
+	{
+		filepath = fileInfo.absolutePath();
+	}
+
+	QDesktopServices::openUrl(QUrl::fromLocalFile(filepath));
 }
 
 void CRepositoryPanel::on_treeWidget_itemSelectionChanged()
