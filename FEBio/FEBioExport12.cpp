@@ -1059,8 +1059,8 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 		el.value(psb->GetCoef());
 		switch (type)
 		{
-		case FEReactionMaterial::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
-		case FEReactionMaterial::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
+		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+		case FEReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
 		default:
 			assert(false);
 		}
@@ -1075,8 +1075,8 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 		el.value(psb->GetCoef());
 		switch (type)
 		{
-		case FEReactionMaterial::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
-		case FEReactionMaterial::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
+		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+		case FEReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
 		default:
 			assert(false);
 		}

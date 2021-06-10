@@ -1695,8 +1695,8 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
         el.value(psb->GetCoef());
         switch (type)
         {
-		case FEReactionMaterial::SOLUTE_SPECIES: el.add_attribute("sol", idx+1); break;
-		case FEReactionMaterial::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
+		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx+1); break;
+		case FEReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
 		default:
 			assert(false);
         }
@@ -1711,8 +1711,8 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
         el.value(psb->GetCoef());
         switch (type)
         {
-		case FEReactionMaterial::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
-		case FEReactionMaterial::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
+		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+		case FEReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
         default:
 			assert(false);
         }
@@ -1982,8 +1982,8 @@ void FEBioExport25::WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el)
 			int v = ri->GetCoef();
 			int idx = ri->GetIndex();
 			int type = ri->GetReactantType();
-			if      (type == FEReactionMaterial::SOLUTE_SPECIES) sz = fem.GetSoluteData(idx).GetName().c_str();
-			else if (type == FEReactionMaterial::SBM_SPECIES   ) sz = fem.GetSBMData(idx).GetName().c_str();
+			if      (type == FEReactionSpecies::SOLUTE_SPECIES) sz = fem.GetSoluteData(idx).GetName().c_str();
+			else if (type == FEReactionSpecies::SBM_SPECIES   ) sz = fem.GetSBMData(idx).GetName().c_str();
 			else { assert(false); }
 
 			if (v != 1) ss << v << "*" << sz;
@@ -2002,8 +2002,8 @@ void FEBioExport25::WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el)
 			int v = pi->GetCoef();
 			int idx = pi->GetIndex();
 			int type = pi->GetProductType();
-			if      (type == FEReactionMaterial::SOLUTE_SPECIES) sz = fem.GetSoluteData(idx).GetName().c_str();
-			else if (type == FEReactionMaterial::SBM_SPECIES   ) sz = fem.GetSBMData(idx).GetName().c_str();
+			if      (type == FEReactionSpecies::SOLUTE_SPECIES) sz = fem.GetSoluteData(idx).GetName().c_str();
+			else if (type == FEReactionSpecies::SBM_SPECIES   ) sz = fem.GetSBMData(idx).GetName().c_str();
 			else { assert(false); }
 
 			if (v != 1) ss << v << "*" << sz;

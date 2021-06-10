@@ -406,15 +406,17 @@ public:
 						int ntype = prm->GetSpeciesType();
 						int index = prm->GetIndex();
 						const char* sz = nullptr;
-						if ((ntype == FEReactionMaterial::SOLUTE_SPECIES) ||
-							(ntype == FEMembraneReactionMaterial::INT_SPECIES) ||
-							(ntype == FEMembraneReactionMaterial::EXT_SPECIES))
+						if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
 						{
 							sz = fem->GetVariableName("$(Solutes)", index);
 						}
-						else if (ntype == FEReactionMaterial::SBM_SPECIES)
+						else if (ntype == FEReactionSpecies::SBM_SPECIES)
 						{
 							sz = fem->GetVariableName("$(SBMs)", index);
+						}
+						else
+						{
+							assert(false);
 						}
 
 						return (sz ? sz : "(invalid species)");
@@ -759,13 +761,17 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				int ntype = rs->GetSpeciesType();
 				int index = rs->GetIndex();
 				char buf[1024] = { 0 };
-				if (ntype == FEReactionMaterial::SBM_SPECIES)
+				if (ntype == FEReactionSpecies::SBM_SPECIES)
 				{
 					fem.GetVariableNames("$(SBMs)", buf);
 				}
-				else
+				else if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
 				{
 					fem.GetVariableNames("$(Solutes)", buf);
+				}
+				else
+				{
+					assert(false);
 				}
 
 				int n = 0;
