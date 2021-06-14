@@ -284,6 +284,7 @@
 #define FE_VF_CARREAU_YASUDA        1102
 #define FE_VF_POWELL_EYRING         1103
 #define FE_VF_CROSS                 1104
+#define FE_VF_BINGHAM               1105
 
 // solvent supplies
 #define FE_STARLING_SUPPLY			1200
@@ -2193,6 +2194,17 @@ public:
 public:
     FEVFNewtonian();
     DECLARE_REGISTERED(FEVFNewtonian);
+};
+
+//-----------------------------------------------------------------------------
+// Viscous Bingham fluid
+class FEVFBingham : public FEMaterial
+{
+public:
+    enum { MP_MU, MP_TAUY, MP_N };
+public:
+    FEVFBingham();
+    DECLARE_REGISTERED(FEVFBingham);
 };
 
 //-----------------------------------------------------------------------------

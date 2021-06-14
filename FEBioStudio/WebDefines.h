@@ -321,6 +321,7 @@ SOFTWARE.*/
 #define General_Specification_of_Fluid_Materials "FEBio_um_3-0-Subsection-4.13.1.html"
 #define Viscous_Fluid_Materials "FEBio_um_3-0-Subsection-4.13.2.html"
 #define Newtonian_Fluid "FEBio_um_3-0-4.13.2.1.html"
+#define Bingham_Fluid "FEBio_um_3-0-Section-4.13.html"
 #define Carreau_Model "FEBio_um_3-0-4.13.2.2.html"
 #define Carreau_Yasuda_Model "FEBio_um_3-0-4.13.2.3.html"
 #define Powell_Eyring_Model "FEBio_um_3-0-4.13.2.4.html"

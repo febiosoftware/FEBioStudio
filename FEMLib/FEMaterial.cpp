@@ -2888,6 +2888,19 @@ FEVFNewtonian::FEVFNewtonian() : FEMaterial(FE_VF_NEWTONIAN)
 }
 
 //=============================================================================
+// Viscous Bingham fluid
+//=============================================================================
+
+REGISTER_MATERIAL(FEVFBingham, MODULE_FLUID, FE_VF_BINGHAM, FE_MAT_FLUID_VISCOSITY, "Bingham", 0, Bingham_Fluid);
+
+FEVFBingham::FEVFBingham() : FEMaterial(FE_VF_BINGHAM)
+{
+    AddScienceParam(0, UNIT_VISCOSITY, "mu"  , "shear viscosity"); // viscosity at infinite shear rate
+    AddScienceParam(0, UNIT_PRESSURE , "tauy", "yield stress"   );
+    AddScienceParam(0, UNIT_NONE     , "n"   , "exponent"       );
+}
+
+//=============================================================================
 // Viscous Carreau fluid
 //=============================================================================
 
