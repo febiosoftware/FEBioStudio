@@ -319,11 +319,6 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
-# This shouldn't cause any errors.
-if(${Qt_Version}WebEngineWidgets_FOUND)
-    add_definitions(-DWEBHELP)
-endif()
-
 include_directories(${ZLIB_INCLUDE_DIR})
 
 ##### Find Source Files #####
@@ -348,10 +343,6 @@ link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Q
 
 if(Qt_Ver VERSION_EQUAL 6)
   link_libraries(Qt6::Core5Compat Qt6::OpenGLWidgets)
-endif()
-
-if(${Qt_Version}WebEngineWidgets_FOUND)
-	link_libraries(${Qt_Version}::WebEngineWidgets)
 endif()
 
 if(WIN32)

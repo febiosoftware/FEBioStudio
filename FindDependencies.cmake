@@ -4,15 +4,10 @@ find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED)
 if(Qt_Ver VERSION_EQUAL 6)
   find_package(${Qt_Version} COMPONENTS Core5Compat OpenGLWidgets REQUIRED)
 endif()
-find_package(${Qt_Version} COMPONENTS WebEngineWidgets QUIET)
 mark_as_advanced(${Qt_Version}_DIR ${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR 
     ${Qt_Version}Positioning_DIR ${Qt_Version}PrintSupport_DIR ${Qt_Version}QmlModels_DIR ${Qt_Version}Qml_DIR ${Qt_Version}Quick_DIR
     ${Qt_Version}Widgets_DIR ${Qt_Version}Core5Compat_DIR ${Qt_Version}GuiTools_DIR ${Qt_Version}CoreTools_DIR ${Qt_Version}OpenGLWidgets_DIR
-    ${Qt_Version}WidgetsTools_DIR ${Qt_Version}WebEngineWidgets_DIR XKB_INCLUDE_DIR XKB_LIBRARY)
-	
-#~ if(Qt_Ver VERSION_EQUAL 5)
-  mark_as_advanced(Qt5Charts_DIR Qt5WebEngineWidgets_DIR Qt5WebChannel_DIR Qt5WebEngineCore_DIR)
-#~ endif()
+    ${Qt_Version}WidgetsTools_DIR XKB_INCLUDE_DIR XKB_LIBRARY)
 
 #Teem
 if(WIN32)
