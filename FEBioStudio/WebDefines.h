@@ -427,7 +427,7 @@ SOFTWARE.*/
 #define GUIDELINES_FOR_FLUID_ANALYSES_HTML "Guidelines_for_Fluid_Analyses.html"
 #define DEGREES_OF_FREEDOM_AND_BOUNDARY_CONDITIONS_HTML "Degrees_of_Freedom_and_Boundary_Conditions.html"
 #define BIASED_MESHES_FOR_BOUNDARY_LAYERS_HTML "Biased_Meshes_for_Boundary_Layers.html"
-#define COMPUTATIONAL_EFFICIENCY:_BROYDENS_METHOD_HTML "Computational_Efficiency:_Broydens_Method.html"
+#define COMPUTATIONAL_EFFICIENCY_BROYDENS_METHOD_HTML "Computational_Efficiency_Broydens_Method.html"
 #define DYNAMIC_VERSUS_STEADY_STATE_ANALYSES_HTML "Dynamic_versus_Steady_State_Analyses.html"
 #define ISOTHERMAL_COMPRESSIBLE_FLOW_VERSUS_ACOUSTICS_HTML "Isothermal_Compressible_Flow_versus_Acoustics.html"
 #define FLUID_STRUCTURE_INTERACTIONS_HTML "Fluid_Structure_Interactions.html"
