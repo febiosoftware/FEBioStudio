@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include <QListWidget>
 #include <QPlainTextEdit>
+#include <QSplitter>
 #include <unordered_map>
 
 #include "DlgEditLConfigs.h"
@@ -153,11 +154,16 @@ public:
 		baseForm->addRow("Launch Type:", launchType = new QComboBox);
 		launchType->addItem("Local");
 
+		QToolButton* editLocalPath = new QToolButton; editLocalPath->setText("...");
+		QHBoxLayout* localPathLayout = new QHBoxLayout;
+		localPathLayout->addWidget(localPath = new QLineEdit);
+		localPathLayout->addWidget(editLocalPath);
+
 		localPage = new QWidget;
 		localForm = new QFormLayout;
 		localForm->setLabelAlignment(Qt::AlignRight);
 		localForm->setContentsMargins(0,0,0,0);
-		localForm->addRow("FEBio Executable:", localPath = new QLineEdit);
+		localForm->addRow("FEBio Executable:", localPathLayout);
 		localPage->setLayout(localForm);
 
 		stack->addWidget(localPage);
@@ -292,18 +298,20 @@ public:
 			item->setFlags (item->flags () | Qt::ItemIsEditable);
 			tempLaunchConfigs[item] = launchConfigs->at(row);
 		}
-		launchConfigList->setFixedWidth(launchConfigList->sizeHintForColumn(0) + 10);
+//		launchConfigList->setFixedWidth(launchConfigList->sizeHintForColumn(0) + 10);
 
 
 		QAction* addConfig = new QAction;
 		addConfig->setIcon(QIcon(":/icons/selectAdd.png"));
 		QToolButton* addConfigBtn = new QToolButton;
 		addConfigBtn->setDefaultAction(addConfig);
+		addConfigBtn->setToolTip("Add a new launch configuration");
 
 		QAction* delConfig = new QAction;
 		delConfig->setIcon(QIcon(":/icons/selectSub.png"));
 		QToolButton* delConfigBtn = new QToolButton;
 		delConfigBtn->setDefaultAction(delConfig);
+		delConfigBtn->setToolTip("Remove launch configuration");
 
 		QHBoxLayout* h1 = new QHBoxLayout;
 		h1->addWidget(addConfigBtn);
@@ -314,13 +322,18 @@ public:
 		v2->addWidget(launchConfigList);
 		v2->addLayout(h1);
 
-		QHBoxLayout* h2 = new QHBoxLayout;
-		h2->addLayout(v2);
-		h2->addLayout(v1);
+		QWidget* leftPane = new QWidget;
+		leftPane->setLayout(v2);
+		QWidget* rightPane = new QWidget;
+		rightPane->setLayout(v1);
+		QSplitter* split = new QSplitter;
+		split->setOrientation(Qt::Horizontal);
+		split->addWidget(leftPane);
+		split->addWidget(rightPane);
+
 
 		QVBoxLayout* v3 = new QVBoxLayout;
-		v3->addLayout(h2);
-
+		v3->addWidget(split);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		v3->addWidget(bb);
@@ -334,6 +347,7 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 		QObject::connect(launchType, QOverload<int>::of(&QComboBox::activated), stack, &QStackedWidget::setCurrentIndex);
 		QObject::connect(launchConfigList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), dlg, SLOT(on_selection_change(QListWidgetItem*, QListWidgetItem*)));
+		QObject::connect(editLocalPath, SIGNAL(clicked()), dlg, SLOT(on_editLocalPath_clicked()));
 	}
 };
 
@@ -405,7 +419,7 @@ void CDlgEditPath::UpdateConfig(QListWidgetItem* item)
 	}
 
 	// Set width for launch config list
-	ui->launchConfigList->setFixedWidth(ui->launchConfigList->sizeHintForColumn(0) + 10);
+//	ui->launchConfigList->setFixedWidth(ui->launchConfigList->sizeHintForColumn(0) + 10);
 }
 
 void CDlgEditPath::on_selection_change(QListWidgetItem* current, QListWidgetItem* previous)
@@ -522,6 +536,21 @@ void CDlgEditPath::on_delConfigBtn_Clicked()
 	delete current;
 
 	ui->launchConfigList->setCurrentRow(0);
+}
+
+void CDlgEditPath::on_editLocalPath_clicked()
+{
+#ifdef WIN32
+	QString filter("Executables (*.exe)");
+#else
+	QString filter("All files (*)");
+#endif
+
+	QString exePath = QFileDialog::getOpenFileName(this, "Edit Local Path", "", filter);
+	if (exePath.isEmpty() == false)
+	{
+		ui->localPath->setText(exePath);
+	}
 }
 
 int CDlgEditPath::GetLCIndex()
