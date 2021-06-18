@@ -52,6 +52,7 @@ public slots:
 	void on_dblClick(QListWidgetItem* item);
 	void on_addConfigBtn_Clicked();
 	void on_delConfigBtn_Clicked();
+	void on_editLocalPath_clicked();
 
 private:
 	Ui::CDlgEditPath* ui;
