@@ -462,7 +462,7 @@ public:
 		actionFindInTree = new QAction("Show in Project Tree", parent);
 		actionFindInTree->setObjectName("actionFindInTree");
 
-		QSplitter* splitter = new QSplitter;
+		QSplitter* splitter = new QSplitter;            
 		splitter->setOrientation(Qt::Vertical);
 
 		treeStack = new QStackedWidget;

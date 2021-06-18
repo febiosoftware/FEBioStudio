@@ -1581,6 +1581,11 @@ bool CMainWindow::updateAvailable()
 	return ui->m_updateAvailable;
 }
 
+bool CMainWindow::helpAvailable()
+{
+	return ui->m_helpAvailable;
+}
+
 // set/get default unit system for new models
 void CMainWindow::SetDefaultUnitSystem(int n)
 {

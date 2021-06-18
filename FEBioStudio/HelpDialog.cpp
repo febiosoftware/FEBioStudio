@@ -24,26 +24,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <QCoreApplication>
 #include <QBoxLayout>
 #include <QDialogButtonBox>
 #include <QPushButton>
+#include <QTextBrowser>
 #include <MeshTools/FEProject.h>
 #include "HelpDialog.h"
 #include "WebDefines.h"
-
-#ifdef WEBHELP
-	#include <QWebEngineView>
-#endif
+#include "FEBioStudio.h"
+#include "MainWindow.h"
 
 class Ui::CHelpDialog
 {
 public:
-#ifdef WEBHELP
 	QPushButton* helpButton;
-	QWebEngineView* helpView;
-#endif
+	QTextBrowser* helpView;
 
 	QHBoxLayout* helpLayout;
+
+	bool m_helpAvailable;
 
 public:
 	void setupUi(QWidget* parent)
@@ -51,22 +51,28 @@ public:
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		helpLayout = new QHBoxLayout;
 
-#ifdef WEBHELP
-		helpLayout->addWidget(helpView = new QWebEngineView, 2);
-		helpView->setMinimumSize(600,400);
-		helpView->setVisible(false);
-#endif
+		m_helpAvailable = PRV::getMainWindow()->helpAvailable();
+
+		if(m_helpAvailable)
+		{
+			helpLayout->addWidget(helpView = new QTextBrowser, 2);
+			helpView->setMinimumSize(600,400);
+			helpView->setVisible(false);
+			helpView->setSearchPaths(QStringList() << QCoreApplication::applicationDirPath() + MANUAL_PATH);
+		}
+		
 
 		mainLayout->addLayout(helpLayout);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
-#ifdef WEBHELP
-		helpButton = new QPushButton("Help");
-		helpButton->setCheckable(true);
+		if(m_helpAvailable)
+		{
+			helpButton = new QPushButton("Help");
+			helpButton->setCheckable(true);
 
-		bb->addButton(helpButton, QDialogButtonBox::HelpRole);
-#endif
+			bb->addButton(helpButton, QDialogButtonBox::HelpRole);
+		}	
 
 		mainLayout->addWidget(bb);
 
@@ -90,25 +96,26 @@ CHelpDialog::~CHelpDialog() { delete ui; }
 
 void CHelpDialog::on_help_clicked()
 {
-#ifdef WEBHELP
-	if(ui->helpButton->isChecked())
+	if(ui->m_helpAvailable)
 	{
-		m_withoutHelp = size();
-		// reset min size
-		setMinimumSize(0,0);
-		ui->helpView->setVisible(true);
-		LoadPage();
-		resize(m_withHelp);
+		if(ui->helpButton->isChecked())
+		{
+			m_withoutHelp = size();
+			// reset min size
+			setMinimumSize(0,0);
+			ui->helpView->setVisible(true);
+			LoadPage();
+			resize(m_withHelp);
+		}
+		else
+		{
+			m_withHelp = size();
+			ui->helpView->setVisible(false);
+			// reset min size
+			setMinimumSize(0,0);
+			resize(m_withoutHelp);
+		}
 	}
-	else
-	{
-		m_withHelp = size();
-		ui->helpView->setVisible(false);
-		// reset min size
-		setMinimumSize(0,0);
-		resize(m_withoutHelp);
-	}
-#endif
 }
 
 void CHelpDialog::SetLeftSideLayout(QLayout* layout)
@@ -118,32 +125,33 @@ void CHelpDialog::SetLeftSideLayout(QLayout* layout)
 
 void CHelpDialog::LoadPage()
 {
-#ifdef WEBHELP
-	// Make sure the help view is actually visible
-	if (ui->helpView->isVisible() == false) return;
-
-	QString oldURL = m_url;
-
-	SetURL();
-
-	if(!m_url.isEmpty())
+	if(ui->m_helpAvailable)
 	{
-		if(m_url == UNSELECTED_HELP)
+		// Make sure the help view is actually visible
+		if (ui->helpView->isVisible() == false) return;
+
+		QString oldURL = m_url;
+
+		SetURL();
+
+		if(!m_url.isEmpty())
 		{
-			ui->helpView->setHtml(QString("<html><body><p><b>%1</b></p></body></html>").arg(m_unselectedHelp));
-			return;
+			if(m_url == UNSELECTED_HELP)
+			{
+				ui->helpView->setHtml(QString("<html><body><p><b>%1</b></p></body></html>").arg(m_unselectedHelp));
+				return;
+			}
+
+			m_url.insert(0, QCoreApplication::applicationDirPath() + MANUAL_PATH);
+
+			if(m_url != oldURL)
+			{
+				ui->helpView->setSource(m_url);
+			}
 		}
-
-		m_url.insert(0, currentManualURL);
-
-		if(m_url != oldURL)
+		else
 		{
-			ui->helpView->load(m_url);
+			ui->helpView->setHtml("<html><body><p><b>There is currently no help article available for this item.</b></p></body></html>");
 		}
 	}
-	else
-	{
-		ui->helpView->setHtml("<html><body><p><b>There is currently no help article available for this item.</b></p></body></html>");
-	}
-#endif
 }

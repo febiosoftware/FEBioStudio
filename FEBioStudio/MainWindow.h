@@ -190,6 +190,9 @@ public:
 	bool updaterPresent();
 	bool updateAvailable();
 
+	// htmlManual Check
+	bool helpAvailable();
+
 	// set/get default unit system for new models
 	void SetDefaultUnitSystem(int n);
 	int GetDefaultUnitSystem() const;
