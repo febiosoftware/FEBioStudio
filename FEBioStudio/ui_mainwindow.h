@@ -485,6 +485,7 @@ public:
 		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 		QAction* actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
+		QAction* actionFEBioInfo = addAction("FEBio Info ...", "actionFEBioInfo");
 		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
 #ifdef _DEBUG
@@ -760,6 +761,7 @@ public:
 		menuFEBio->addAction(actionFEBioRun);
 		menuFEBio->addAction(actionFEBioStop);
 		menuFEBio->addAction(actionFEBioOptimize);
+		menuFEBio->addAction(actionFEBioInfo);
 
 		// Post menu
 		menuBar->addAction(menuPost->menuAction());

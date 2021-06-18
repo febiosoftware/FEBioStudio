@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <QMessageBox>
 #include <QFileDialog>
+#include "DlgFEBioInfo.h"
 
 void CMainWindow::on_actionFEBioRun_triggered()
 {
@@ -292,4 +293,10 @@ void CMainWindow::on_actionFEBioOptimize_triggered()
 			}
 		}
 	}
+}
+
+void CMainWindow::on_actionFEBioInfo_triggered()
+{
+	CDlgFEBioInfo dlg(this);
+	dlg.exec();
 }
