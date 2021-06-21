@@ -329,7 +329,7 @@ void CDlgEditOutput::showEvent(QShowEvent* ev)
 	for (int i = 0; i < pltClasses.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& feb = pltClasses[i];
-		FEPlotVariable tmp(0, feb.sztype, feb.sztype, false, true, DOMAIN_MESH);
+		FEPlotVariable tmp(0, feb.sztype, false, true, DOMAIN_MESH);
 
 		FEPlotVariable* var = plt.FindVariable(feb.sztype);
 		if (var)

@@ -35,12 +35,11 @@ class FEProject;
 class FEPlotVariable
 {
 public:
-	FEPlotVariable(int module, const string& name, const string& displayName, bool bactive, bool bshow, DOMAIN_TYPE type);
+	FEPlotVariable(int module, const string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
 	FEPlotVariable(const FEPlotVariable& v);
 	void operator = (const FEPlotVariable& v);
 
 	const string& name() const { return m_name; }
-	const string& displayName() const { return m_displayName; }
 
 	bool isActive() const { return m_bactive; }
 	bool isShown() const { return m_bshow; }
@@ -63,7 +62,6 @@ public:
 private:
 	int				m_module;					// name of module this variable belongs to
 	string			m_name;						// name of variable (as in FEBio file)
-	string			m_displayName;				// display name
 	bool			m_bactive;					// active flag
 	bool			m_bshow;					// show flag
 	unsigned int	m_domainType;				// domain type for variable

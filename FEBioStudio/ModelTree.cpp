@@ -389,7 +389,7 @@ public:
 			FEPlotVariable& var = plt.PlotVariable(i);
 			if (var.isShown() && var.isActive())
 			{
-				addProperty(QString::fromStdString(var.displayName()), CProperty::Bool)->setFlags(CProperty::Visible);
+				addProperty(QString::fromStdString(var.name()), CProperty::Bool)->setFlags(CProperty::Visible);
 				ncount++;
 			}
 		}

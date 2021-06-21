@@ -29,11 +29,10 @@ SOFTWARE.*/
 #include "FEProject.h"
 #include "GModel.h"
 
-FEPlotVariable::FEPlotVariable(int module, const string& name, const string& displayName, bool bactive, bool bshow, DOMAIN_TYPE type)
+FEPlotVariable::FEPlotVariable(int module, const string& name, bool bactive, bool bshow, DOMAIN_TYPE type)
 {
 	m_module = module;
 	m_name = name;
-	m_displayName = displayName;
 	m_bactive = bactive;
 	m_bshow = bshow;
 	m_domainType = type;
@@ -43,7 +42,6 @@ FEPlotVariable::FEPlotVariable(const FEPlotVariable& v)
 {
 	m_module = v.m_module;
 	m_name = v.m_name;
-	m_displayName = v.m_displayName;
 	m_bactive = v.m_bactive;
 	m_bshow = v.m_bshow;
 	m_domainType = v.m_domainType;
@@ -54,7 +52,6 @@ void FEPlotVariable::operator = (const FEPlotVariable& v)
 {
 	m_module = v.m_module;
 	m_name = v.m_name;
-	m_displayName = v.m_displayName;
 	m_bactive = v.m_bactive;
 	m_bshow = v.m_bshow;
 	m_domainType = v.m_domainType;
@@ -277,7 +274,7 @@ FEPlotVariable* CPlotDataSettings::AddPlotVariable(int module, const std::string
 	FEPlotVariable* pv = FindVariable(var, module);
 	if (pv) return pv;
 
-	FEPlotVariable v(module, var, var, b, s, type);
+	FEPlotVariable v(module, var, b, s, type);
 	m_plot.push_back(v);
 	return &m_plot[ m_plot.size() - 1];
 }
