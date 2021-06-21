@@ -50,7 +50,7 @@ public slots:
 protected slots:
 	void on_help_clicked();
 
-protected:
+public:
 	void SetLeftSideLayout(QLayout* layout);
 
 	virtual void SetURL() = 0;

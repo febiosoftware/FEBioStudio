@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include "HelpDialog.h"
 
 class QListWidget;
+class QLineEdit;
+class QComboBox;
 
 class CDlgAddPhysicsItem : public CHelpDialog
 {
@@ -55,8 +57,12 @@ public:
 //	int		m_module;
 };
 
+class UIDlgAddPhysicsItem2;
+
 class CDlgAddPhysicsItem2 : public CHelpDialog
 {
+	Q_OBJECT
+
 public:
 	CDlgAddPhysicsItem2(QString windowName, int superID, FEProject& prj, QWidget* parent);
 
@@ -66,11 +72,11 @@ public:
 
 protected:
 	void SetURL();
+	void Update();
+
+public slots:
+	void OnFilterChanged();
 
 private:
-	QListWidget* type;
-	QLineEdit* name;
-	QComboBox* step;
-
-	int m_superID;
+	UIDlgAddPhysicsItem2*	ui;
 };

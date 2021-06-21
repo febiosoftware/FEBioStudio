@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <QListWidgetItem>
 #include <QFormLayout>
 #include <QBoxLayout>
+#include <QLabel>
 #include <FEMLib/FEMKernel.h>
 #include "MeshTools/FEProject.h"
 #include "DlgAddPhysicsItem.h"
@@ -112,76 +113,121 @@ void CDlgAddPhysicsItem::SetURL()
 
 
 //=================================================================================================
+
+class UIDlgAddPhysicsItem2
+{
+public:
+	QListWidget* type;
+	QLineEdit* name;
+	QComboBox* step;
+	QLineEdit* flt;
+
+	int m_superID;
+
+public:
+	void setup(CDlgAddPhysicsItem2* dlg)
+	{
+		// Setup UI
+		QString placeHolder = "(leave blank for default)";
+		name = new QLineEdit; name->setPlaceholderText(placeHolder);
+		name->setMinimumWidth(name->fontMetrics().size(Qt::TextSingleLine, placeHolder).width() * 1.3);
+
+		step = new QComboBox;
+		type = new QListWidget;
+
+		QFormLayout* form = new QFormLayout;
+		form->setLabelAlignment(Qt::AlignRight);
+		form->addRow("Name:", name);
+		form->addRow("Step:", step);
+
+		QVBoxLayout* layout = new QVBoxLayout;
+
+		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(new QLabel("Filter:"));
+		h->addWidget(flt = new QLineEdit());
+		flt->setPlaceholderText("enter filter text");
+
+		layout->addLayout(form);
+		layout->addLayout(h);
+		layout->addWidget(type);
+
+		dlg->SetLeftSideLayout(layout);
+
+		QObject::connect(type, SIGNAL(itemDoubleClicked(QListWidgetItem*)), dlg, SLOT(accept()));
+		QObject::connect(type, &QListWidget::currentRowChanged, dlg, &CHelpDialog::LoadPage);
+		QObject::connect(flt, SIGNAL(textChanged(const QString&)), dlg, SLOT(OnFilterChanged()));
+
+		flt->setFocus();
+	}
+};
+
 CDlgAddPhysicsItem2::CDlgAddPhysicsItem2(QString windowName, int superID, FEProject& prj, QWidget* parent)
-	: CHelpDialog(prj, parent), m_superID(superID)
+	: CHelpDialog(prj, parent), ui(new UIDlgAddPhysicsItem2)
 {
 	setWindowTitle(windowName);
-
-	// Setup UI
-	QString placeHolder = "(leave blank for default)";
-	name = new QLineEdit; name->setPlaceholderText(placeHolder);
-	name->setMinimumWidth(name->fontMetrics().size(Qt::TextSingleLine, placeHolder).width() * 1.3);
-
-	step = new QComboBox;
-	type = new QListWidget;
-
-	QFormLayout* form = new QFormLayout;
-	form->setLabelAlignment(Qt::AlignRight);
-	form->addRow("Name:", name);
-	form->addRow("Step:", step);
-
-	QVBoxLayout* layout = new QVBoxLayout;
-
-	layout->addLayout(form);
-	layout->addWidget(type);
-
-	SetLeftSideLayout(layout);
-
+	ui->m_superID = superID;
+	ui->setup(this);
 
 	// add the steps
 	FEModel& fem = prj.GetFEModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
+		ui->step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
 	}
 
 	m_module = prj.GetModule();
 
+	Update();
+}
+
+void CDlgAddPhysicsItem2::Update()
+{
+	ui->type->clear();
+
+	QString filter = ui->flt->text();
+
 	// set the types
-	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, superID);
+	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID);
 	for (int i = 0; i < (int)l.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& fac = l[i];
 
-		QListWidgetItem* item = new QListWidgetItem(QString(fac.sztype));
-		item->setData(Qt::UserRole, fac.classId);
-		type->addItem(item);
+		QString type = QString(fac.sztype);
+
+		if (filter.isEmpty() || type.contains(filter, Qt::CaseInsensitive))
+		{
+			QListWidgetItem* item = new QListWidgetItem(type);
+			item->setData(Qt::UserRole, fac.classId);
+			ui->type->addItem(item);
+		}
 	}
-
-	type->setCurrentRow(0);
-
-	QObject::connect(type, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(accept()));
-	QObject::connect(type, &QListWidget::currentRowChanged, this, &CHelpDialog::LoadPage);
+	ui->type->model()->sort(0);
+	if (ui->type->count() > 0) ui->type->setCurrentRow(0);
 }
 
 std::string CDlgAddPhysicsItem2::GetName()
 {
-	return name->text().toStdString();
+	return ui->name->text().toStdString();
 }
 
 int CDlgAddPhysicsItem2::GetStep()
 {
-	return step->currentIndex();
+	return ui->step->currentIndex();
 }
 
 int CDlgAddPhysicsItem2::GetClassID()
 {
-	return type->currentItem()->data(Qt::UserRole).toInt();
+	return ui->type->currentItem()->data(Qt::UserRole).toInt();
 }
 
 void CDlgAddPhysicsItem2::SetURL()
 {
-	int classID = type->currentItem()->data(Qt::UserRole).toInt();
+	int classID = ui->type->currentItem()->data(Qt::UserRole).toInt();
 
 //	m_url = FEMKernel::FindClass(m_module, m_superID, classID)->GetHelpURL();
+}
+
+void CDlgAddPhysicsItem2::OnFilterChanged()
+{
+	Update();
 }
