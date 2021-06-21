@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <MeshLib/FEElementLibrary.h>
 #include <QSplashScreen>
 #include <QDebug>
+#include "FEBioInit.h"
 
 #ifdef __APPLE__
 #include <QFileOpenEvent>
@@ -71,6 +72,9 @@ int main(int argc, char* argv[])
 	// Initialize the libraries
 	FEElementLibrary::InitLibrary();
 	Post::Initialize();
+
+	// initialize the FEBio library
+	FEBio::InitFEBioLibrary();
 
 #ifndef __APPLE__
 

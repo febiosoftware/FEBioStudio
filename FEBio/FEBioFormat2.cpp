@@ -890,8 +890,8 @@ void FEBioFormat2::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 
 	// create the nodal load
 	FEModel& fem = GetFEModel();
-	FENodalLoad* pbc = new FENodalLoad(&fem, pg, bc, 1, pstep->GetID());
-	sprintf(szname, "ForceLoad%02d", CountLoads<FENodalLoad>(fem)+1);
+	FENodalDOFLoad* pbc = new FENodalDOFLoad(&fem, pg, bc, 1, pstep->GetID());
+	sprintf(szname, "ForceLoad%02d", CountLoads<FENodalDOFLoad>(fem)+1);
 	pbc->SetName(szname);
 	febio.AddParamCurve(pbc->GetLoadCurve(), lc);
 	pstep->AddComponent(pbc);

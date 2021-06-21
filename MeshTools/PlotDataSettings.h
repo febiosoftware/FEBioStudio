@@ -86,10 +86,14 @@ public:
 	//! initialize all plot variables
 	void Init();
 
+	// Clear all plot variables
+	void Clear();
+
 public:
 	int PlotVariables() { return (int)m_plot.size(); }
 	FEPlotVariable& PlotVariable(int i) { return m_plot[i]; }
 	FEPlotVariable* AddPlotVariable(int module, const std::string& var, bool bactive = false, bool bshown = true, DOMAIN_TYPE type = DOMAIN_MESH);
+	void AddPlotVariable(FEPlotVariable& var);
 	FEPlotVariable* FindVariable(const std::string& var, int module = -1);
 
 	void SetAllVariables(bool b);

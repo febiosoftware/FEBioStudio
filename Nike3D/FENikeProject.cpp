@@ -1027,7 +1027,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 	int i, k;
 	for (i=0; i<s.Loads(); ++i)
 	{
-		FENodalLoad* pbc = dynamic_cast<FENodalLoad*>(s.Load(i));
+		FENodalDOFLoad* pbc = dynamic_cast<FENodalDOFLoad*>(s.Load(i));
 		if (pbc)
 		{
 			FELoadCurve& lc = *pbc->GetLoadCurve();

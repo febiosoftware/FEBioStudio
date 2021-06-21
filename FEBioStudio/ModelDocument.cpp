@@ -344,7 +344,7 @@ void CModelDocument::Load(IArchive& ar)
 		{
 			nret = ar.read(version);
 			if (nret != IArchive::IO_OK) throw ReadError("Error occurred when parsing CID_VERSION (CDocument::Load)");
-			if (version < MIN_PRV_VERSION)
+			if (version < MIN_FSM_VERSION)
 			{
 				throw InvalidVersion();
 			}

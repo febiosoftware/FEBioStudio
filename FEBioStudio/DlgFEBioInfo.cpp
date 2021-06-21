@@ -263,7 +263,6 @@ CDlgFEBioInfo::CDlgFEBioInfo(QWidget* parent) : QDialog(parent), ui(new CDlgFEBi
 
 	if (initFEBio == false)
 	{
-		febio::InitLibrary();
 		initMap();
 	}
 

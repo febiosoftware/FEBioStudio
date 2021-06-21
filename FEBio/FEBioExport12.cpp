@@ -2949,7 +2949,7 @@ void FEBioExport12::WriteLoadNodal(FEStep& s)
 {
 	for (int j = 0; j<s.Loads(); ++j)
 	{
-		FENodalLoad* pbc = dynamic_cast<FENodalLoad*>(s.Load(j));
+		FENodalDOFLoad* pbc = dynamic_cast<FENodalDOFLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			m_xml.add_branch("force");

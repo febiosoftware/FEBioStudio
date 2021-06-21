@@ -1664,7 +1664,7 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	FEItemListBuilder* pg = febio.BuildItemList(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
 	char szbuf[256];
-	sprintf(szbuf, "ForceNodeset%02d", CountLoads<FENodalLoad>(fem)+1);
+	sprintf(szbuf, "ForceNodeset%02d", CountLoads<FENodalDOFLoad>(fem)+1);
 	pg->SetName(szbuf);
 
 	// get the (optional) name
@@ -1673,13 +1673,13 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	if (szname == nullptr)
 	{
 		char szname[256];
-		sprintf(szname, "ForceNodeset%02d", CountLoads<FENodalLoad>(fem) + 1);
+		sprintf(szname, "ForceNodeset%02d", CountLoads<FENodalDOFLoad>(fem) + 1);
 		name = szname;
 	}
 	else name = szname;
 
 	// create the nodal load
-	FENodalLoad* pbc = new FENodalLoad(&fem, pg, 0, 1, pstep->GetID());
+	FENodalDOFLoad* pbc = new FENodalDOFLoad(&fem, pg, 0, 1, pstep->GetID());
 	pbc->SetName(name);
 	pstep->AddComponent(pbc);
 

@@ -144,7 +144,7 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 			if (pl->IsActive())
 			{
 				// we need to exclude nodal loads
-				if (dynamic_cast<FENodalLoad*>(pl)) pl = 0;
+				if (dynamic_cast<FENodalDOFLoad*>(pl)) pl = 0;
 				if (pl)
 				{
 					FEItemListBuilder* ps = pl->GetItemList();
@@ -3795,7 +3795,7 @@ void FEBioExport2::WriteLoadNodal(FEStep& s)
 {
 	for (int j=0; j<s.Loads(); ++j)
 	{
-		FENodalLoad* pbc = dynamic_cast<FENodalLoad*>(s.Load(j));
+		FENodalDOFLoad* pbc = dynamic_cast<FENodalDOFLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 

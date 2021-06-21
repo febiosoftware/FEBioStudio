@@ -455,3 +455,11 @@ public:
 	int GetSoluteID();
 	void SetSoluteID(int n);
 };
+
+//-----------------------------------------------------------------------------
+class FEBioSurfaceLoad : public FESurfaceLoad
+{
+public:
+    FEBioSurfaceLoad(FEModel* ps);
+    FELoadCurve* GetLoadCurve();
+};

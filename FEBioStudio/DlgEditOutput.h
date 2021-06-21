@@ -77,6 +77,7 @@ protected slots:
 	void onLogRemove();
 	void UpdateLogItemList();
 	void onItemChanged(QTableWidgetItem* item);
+	void accept();
 
 private:
 	FEProject&	m_prj;

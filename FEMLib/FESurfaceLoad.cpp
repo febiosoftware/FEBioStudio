@@ -414,3 +414,11 @@ void FEConcentrationFlux::SetSoluteID(int n)
 {
 	SetIntValue(SOL_ID, n);
 }
+
+//=======================================================================================
+FEBioSurfaceLoad::FEBioSurfaceLoad(FEModel* ps) : FESurfaceLoad(FE_FEBIO_SURFACE_LOAD, ps)
+{
+
+}
+
+FELoadCurve* FEBioSurfaceLoad::GetLoadCurve() { assert(false); return nullptr; }

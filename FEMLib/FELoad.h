@@ -13,14 +13,22 @@ public:
 //=============================================================================
 // NODAL LOADS
 //=============================================================================
+
 class FENodalLoad : public FELoad
+{
+public:
+	FENodalLoad(int ntype, FEModel* fem) : FELoad(ntype, fem) {}
+	FENodalLoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep) {}
+};
+
+class FENodalDOFLoad : public FENodalLoad
 {
 public:
 	enum { DOF, LOAD };
 
 public:
-	FENodalLoad(FEModel* ps);
-	FENodalLoad(FEModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep = 0);
+	FENodalDOFLoad(FEModel* ps);
+	FENodalDOFLoad(FEModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep = 0);
 
 	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
 
@@ -29,4 +37,10 @@ public:
 
 	void SetLoad(double f) { SetFloatValue(LOAD, f); }
 	double GetLoad() { return GetFloatValue(LOAD); }
+};
+
+class FEBioNodalLoad : public FENodalLoad
+{
+public:
+	FEBioNodalLoad(FEModel* ps);
 };

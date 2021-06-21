@@ -1491,7 +1491,7 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 			FELoad* pl = s.Load(i);
 
 			// nodal forces
-			FENodalLoad* pfc = dynamic_cast<FENodalLoad*>(pl);
+			FENodalDOFLoad* pfc = dynamic_cast<FENodalDOFLoad*>(pl);
 			if (pfc)
 			{
 				plc = pfc->GetLoadCurve();

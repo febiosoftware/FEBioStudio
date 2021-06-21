@@ -409,7 +409,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
 			// this is only for nodal loads
-			FENodalLoad* pl = dynamic_cast<FENodalLoad*>(pstep->Load(j));
+			FENodalDOFLoad* pl = dynamic_cast<FENodalDOFLoad*>(pstep->Load(j));
 			if (pl && pl->IsActive())
 			{
 				FEItemListBuilder* ps = pl->GetItemList();
@@ -478,7 +478,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 			if (pl->IsActive())
 			{
 				// we need to exclude nodal loads and body loads
-				if (dynamic_cast<FENodalLoad*>(pl)) pl = 0;
+				if (dynamic_cast<FENodalDOFLoad*>(pl)) pl = 0;
 				if (dynamic_cast<FEBodyLoad*>(pl)) pl = 0;
 				if (pl && pl->IsActive())
 				{
@@ -4157,7 +4157,7 @@ void FEBioExport3::WriteLoadNodal(FEStep& s)
 
 	for (int j = 0; j<s.Loads(); ++j)
 	{
-		FENodalLoad* pbc = dynamic_cast<FENodalLoad*>(s.Load(j));
+		FENodalDOFLoad* pbc = dynamic_cast<FENodalDOFLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pbc);
@@ -4176,7 +4176,7 @@ void FEBioExport3::WriteLoadNodal(FEStep& s)
 			m_xml.add_branch(load);
 			{
 				m_xml.add_leaf("dof", bc[l]);
-				WriteParam(pbc->GetParam(FENodalLoad::LOAD));
+				WriteParam(pbc->GetParam(FENodalDOFLoad::LOAD));
 			}
 			m_xml.close_branch(); // nodal_load
 		}
@@ -4217,6 +4217,9 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
             case FE_FLUID_PRESSURE_LOAD      : WriteSurfaceLoad(s, pbc, "fluid pressure"); break;
 			// NOTE: Fluid rotational velocity is a boundary condition in FEBio3!
 			case FE_FLUID_ROTATIONAL_VELOCITY: break;// WriteSurfaceLoad(s, pbc, "fluid rotational velocity"); break;
+
+			// NOTE: temporary hack!
+			case FE_FEBIO_SURFACE_LOAD: WriteSurfaceLoad(s, pbc, pbc->GetTypeString()); break;
 			default:
 				assert(false);
 			}

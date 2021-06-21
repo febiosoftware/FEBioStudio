@@ -124,7 +124,7 @@ CPlotDataSettings::CPlotDataSettings(FEProject& prj) : m_prj(prj)
 void CPlotDataSettings::Init()
 {
 	m_plot.clear();
-
+/*
 	// add default plot file variables
 	AddPlotVariable(MODULE_MECH, "acceleration"                      );
 	AddPlotVariable(MODULE_MECH, "contact area"                      );
@@ -262,6 +262,13 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_FLUID_FSI, "porosity"                      );
     AddPlotVariable(MODULE_FLUID_FSI, "relative fluid velocity"       );
     AddPlotVariable(MODULE_FLUID_FSI, "solid stress"                  );
+*/
+}
+
+//-----------------------------------------------------------------------------
+void CPlotDataSettings::Clear()
+{
+	m_plot.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -270,6 +277,17 @@ FEPlotVariable* CPlotDataSettings::AddPlotVariable(int module, const std::string
 	FEPlotVariable v(module, var, var, b, s, type);
 	m_plot.push_back(v);
 	return &m_plot[ m_plot.size() - 1];
+}
+
+//-----------------------------------------------------------------------------
+void CPlotDataSettings::AddPlotVariable(FEPlotVariable& var)
+{
+	FEPlotVariable* pv = FindVariable(var.name());
+	if (pv)
+	{
+		pv->setActive(var.isActive());
+	}
+	else m_plot.push_back(var);
 }
 
 //-----------------------------------------------------------------------------

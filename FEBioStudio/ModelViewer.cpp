@@ -1300,8 +1300,8 @@ void CModelViewer::OnCopyLoad()
 		plCopy = dynamic_cast<FELoad*>(fecore->Create(fem, FE_SURFACE_LOAD, pl->Type()));
 	else if (dynamic_cast<FEBodyLoad*>(pl))
 		plCopy = dynamic_cast<FELoad*>(fecore->Create(fem, FE_BODY_LOAD, pl->Type()));
-	else if (dynamic_cast<FENodalLoad*>(pl))
-		plCopy = new FENodalLoad(fem);
+	else if (dynamic_cast<FENodalDOFLoad*>(pl))
+		plCopy = new FENodalDOFLoad(fem);
 	assert(plCopy);
 
 	// create a name

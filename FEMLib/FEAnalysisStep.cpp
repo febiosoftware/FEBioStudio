@@ -697,7 +697,7 @@ void FEStep::Load(IArchive &ar)
 
 					FELoad* pl = 0;
 
-					if (ntype == FE_NODAL_LOAD) pl = new FENodalLoad(m_pfem);
+					if (ntype == FE_NODAL_DOF_LOAD) pl = new FENodalDOFLoad(m_pfem);
 					else
 					{
 						// see if it's a surface load

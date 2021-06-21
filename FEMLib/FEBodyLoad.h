@@ -84,3 +84,9 @@ public:
     void SetLoad(double v) { SetFloatValue(ANGSPD, v); }
 };
 
+//-------------------------------------------------------------------------------
+class FEBioBodyLoad : public FEBodyLoad
+{
+public:
+	FEBioBodyLoad(FEModel* ps, int nstep = 0);
+};

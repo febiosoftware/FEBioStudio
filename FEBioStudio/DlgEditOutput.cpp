@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QInputDialog>
+#include "FEBioClass.h"
 
 class Ui::CDlgAddDomain
 {
@@ -107,6 +108,8 @@ public:
 	QTableWidget* table;
 	QComboBox* logList;
 	QLineEdit* logEdit;
+
+	vector<FEPlotVariable>	m_plt;
 
 public:
 	void setup(QDialog* dlg)
@@ -202,7 +205,7 @@ public:
 		tab->addTab(plotTab, "Plotfile");
 		tab->addTab(logTab, "Logfile");
 		
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Cancel | QDialogButtonBox::Save);
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addWidget(tab);
@@ -213,6 +216,7 @@ public:
 		filter->setFocus();
 
 		QObject::connect(filter, SIGNAL(textEdited(const QString&)), dlg, SLOT(onFilterChanged(const QString&)));
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 		QObject::connect(add, SIGNAL(clicked()), dlg, SLOT(OnAddDomain()));
 		QObject::connect(del, SIGNAL(clicked()), dlg, SLOT(OnRemoveDomain()));
@@ -317,6 +321,24 @@ CDlgEditOutput::CDlgEditOutput(FEProject& prj, QWidget* parent, int tab) : QDial
 void CDlgEditOutput::showEvent(QShowEvent* ev)
 {
 	ui->clearLists();
+
+	// get all the FEBio plot classes
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+	ui->m_plt.clear();
+	vector<FEBio::FEBioClassInfo> pltClasses = FEBio::FindAllClasses(0, 10);
+	for (int i = 0; i < pltClasses.size(); ++i)
+	{
+		FEBio::FEBioClassInfo& feb = pltClasses[i];
+		FEPlotVariable tmp(0, feb.sztype, feb.sztype, false, true, DOMAIN_MESH);
+
+		FEPlotVariable* var = plt.FindVariable(feb.sztype);
+		if (var)
+		{
+			tmp.setActive(var->isActive());
+		}
+		ui->m_plt.push_back(tmp);
+	}
+
 	UpdateVariables("");
 	UpdateLogTable();
 	UpdateLogItemList();
@@ -327,12 +349,18 @@ void CDlgEditOutput::UpdateVariables(const QString& flt)
 	bool filter = (flt.isEmpty() == false);
 
 	ui->varList->clear();
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 	int module = m_prj.GetModule();
-	int N = plt.PlotVariables();
+	int N = ui->m_plt.size();
 	for (int i = 0; i<N; ++i)
 	{
-		FEPlotVariable& var = plt.PlotVariable(i);
+		FEPlotVariable& tmp = ui->m_plt[i];
+		QString t = QString::fromStdString(tmp.name());
+		if ((filter == false) || (t.contains(flt, Qt::CaseInsensitive)))
+		{
+			ui->addVariable(t, tmp.isActive(), i);
+		}
+
+/*		FEPlotVariable& var = plt.PlotVariable(i);
 		if (var.isShown() && (var.GetModule() & module))
 		{
 			QString t = QString::fromStdString(var.name());
@@ -341,13 +369,14 @@ void CDlgEditOutput::UpdateVariables(const QString& flt)
 				ui->addVariable(t, var.isActive(), i);
 			}
 		}
+*/
 	}
 	ui->varList->sortItems();
 }
 
 void CDlgEditOutput::OnVariable(int nrow)
 {
-	ui->clearDomainList();
+/*	ui->clearDomainList();
 	if (nrow >= 0)
 	{
 		int nvar = ui->currentVariable();
@@ -355,20 +384,19 @@ void CDlgEditOutput::OnVariable(int nrow)
 		FEPlotVariable& var = plt.PlotVariable(nvar);
 		ui->setCurrentVariable(var);
 	}
+*/
 }
 
 void CDlgEditOutput::OnItemClicked(QListWidgetItem* item)
 {
 	int nvar = item->data(Qt::UserRole).toInt();
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	FEPlotVariable& var = plt.PlotVariable(nvar);
-
+	FEPlotVariable& var = ui->m_plt[nvar];
 	var.setActive(item->checkState() == Qt::Checked);
 }
 
 void CDlgEditOutput::OnAddDomain()
 {
-	int nvar = ui->currentVariable();
+/*	int nvar = ui->currentVariable();
 	if (nvar == -1)
 	{
 		QMessageBox::information(this, "Add Domain", "Please select a plot variable first");
@@ -399,10 +427,12 @@ void CDlgEditOutput::OnAddDomain()
 			ui->setCurrentVariable(var);
 		}
 	}
+*/
 }
 
 void CDlgEditOutput::OnRemoveDomain()
 {
+/*
 	int nvar = ui->currentVariable();
 	if (nvar == -1)
 	{
@@ -423,6 +453,7 @@ void CDlgEditOutput::OnRemoveDomain()
 	int nrow = ui->domList->currentRow();
 	var.removeDomain(nrow);
 	ui->setCurrentVariable(var);
+*/
 }
 
 void CDlgEditOutput::onFilterChanged(const QString& txt)
@@ -649,4 +680,21 @@ void CDlgEditOutput::onItemChanged(QTableWidgetItem* item)
 		QString t = item->text();
 		ld.fileName = t.toStdString();
 	}
+}
+
+void CDlgEditOutput::accept()
+{
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+	plt.Clear();
+
+	for (int i = 0; i < ui->m_plt.size(); ++i)
+	{
+		FEPlotVariable& plti = ui->m_plt[i];
+		if (plti.isActive())
+		{
+			plt.AddPlotVariable(plti);
+		}
+	}
+
+	QDialog::accept();
 }

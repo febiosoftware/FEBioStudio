@@ -762,7 +762,7 @@ void FEBioFormatOld::ParseForceLoad(FEStep *pstep, XMLTag &tag)
 
 	// create the force loads
 	char szname[256];
-	vector<FENodalLoad*> pFC(nns);
+	vector<FENodalDOFLoad*> pFC(nns);
 	vector<FENodeSet*> pNS(nns);
 	FEMesh* pm = &GetFEMesh();
 	GMeshObject* po = GetGObject();
@@ -775,7 +775,7 @@ void FEBioFormatOld::ParseForceLoad(FEStep *pstep, XMLTag &tag)
 			sprintf(szname, "ForceNodeset%02d", i + 1);
 			pg->SetName(szname);
 
-			FENodalLoad* pbc = new FENodalLoad(&fem, pg, j, 1, pstep->GetID());
+			FENodalDOFLoad* pbc = new FENodalDOFLoad(&fem, pg, j, 1, pstep->GetID());
 			sprintf(szname, "ForceLoad%02d", i + 1);
 			pbc->SetName(szname);
 			pFC[cc[j][i]] = pbc;

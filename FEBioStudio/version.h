@@ -49,10 +49,11 @@ SOFTWARE.*/
 // 3.12: Added shell nodal normal flag to GPart
 // 3.13: Added "relative" flag to FERigidDisplacement. 
 // 3.14: Added additional meshing parameters to FEQuartDogBone.
-#define SAVE_VERSION	0x0003000E
+// 4.0: new version starting with FEBio Studio 2.
+#define SAVE_VERSION	0x00040000
 
 // lowest supported version number
-#define MIN_PRV_VERSION	0x0001000D
+#define MIN_FSM_VERSION	0x0001000D
 
 //-----------------------------------------------------------------------------
 // SVN VERSION

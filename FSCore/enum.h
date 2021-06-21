@@ -580,7 +580,7 @@ SOFTWARE.*/
 // Boundary Condition types
 #define FE_FIXED_DISPLACEMENT				0x0001
 #define FE_PRESCRIBED_DISPLACEMENT			0x0002
-#define FE_NODAL_LOAD						0x0003
+#define FE_NODAL_DOF_LOAD					0x0003
 #define FE_PRESSURE_LOAD					0x0004
 #define FE_NODAL_VELOCITIES					0x0005
 #define FE_SURFACE_TRACTION					0x0006
@@ -631,6 +631,10 @@ SOFTWARE.*/
 #define FE_CENTRIFUGAL_BODY_FORCE           0x0033
 #define FE_BFSI_TRACTION                    0x0034
 #define FE_FLUID_PRESSURE_LOAD              0x0035
+
+#define FE_FEBIO_NODAL_LOAD					0x0036
+#define FE_FEBIO_SURFACE_LOAD				0x0037
+#define FE_FEBIO_BODY_LOAD					0x0038
 
 //--------------------------------------------------------
 // Interface types

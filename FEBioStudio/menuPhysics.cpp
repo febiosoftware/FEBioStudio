@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEModelConstraint.h>
 #include "Commands.h"
+#include "FEBioInterface.h"
 #include <QMessageBox>
 #include <sstream>
 
@@ -55,10 +56,11 @@ void CMainWindow::on_actionAddBC_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = prj.GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, this);
+//	CDlgAddPhysicsItem dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, this);
+	CDlgAddPhysicsItem2 dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, this);
 	if (dlg.exec())
 	{
-		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, dlg.GetClassID()); assert(pbc);
+/*		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, dlg.GetClassID()); assert(pbc);
 		if (pbc)
 		{
 			FEStep* step = fem.GetStep(dlg.GetStep());
@@ -93,6 +95,7 @@ void CMainWindow::on_actionAddBC_triggered()
 			step->AddBC(pbc);
 			UpdateModel(pbc);
 		}
+*/
 	}
 }
 
@@ -101,40 +104,46 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
+	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-	CDlgAddNodalLoad dlg(fem, this);
+//	CDlgAddNodalLoad dlg(fem, this);
+	CDlgAddPhysicsItem2 dlg("Add Nodal Load", FE_NODAL_LOAD, prj, this);
 	if (dlg.exec())
 	{
-		FENodalLoad* pnl = new FENodalLoad(&fem, 0, dlg.m_nvar, dlg.m_val, dlg.m_nstep);
-
-		std::string name = dlg.m_name;
-		if (name.empty()) name = defaultLoadName(&fem, pnl);
-		pnl->SetName(name);
-		FEStep* step = fem.GetStep(dlg.m_nstep);
-
-		// figure out the selection
-		FESelection* psel = doc->GetCurrentSelection();
-		if (psel && psel->Size())
+//		FENodalDOFLoad* pnl = new FENodalDOFLoad(&fem, 0, dlg.m_nvar, dlg.m_val, dlg.m_nstep);
+		FENodalLoad* pnl = fecore_new<FENodalLoad>(&fem, FE_NODAL_LOAD, FE_FEBIO_NODAL_LOAD); assert(pnl);
+		FEBio::CreateFSObject(dlg.GetClassID(), pnl);
+		if (pnl)
 		{
-			int ntype = psel->Type();
-			switch (ntype)
+			string name = dlg.GetName();
+			if (name.empty()) name = defaultLoadName(&fem, pnl);
+			pnl->SetName(name);
+
+			// figure out the selection
+			FESelection* psel = doc->GetCurrentSelection();
+			if (psel && psel->Size())
 			{
-			case SELECT_SURFACES:
-			case SELECT_CURVES:
-			case SELECT_NODES:
-			case SELECT_FE_FACES:
-			case SELECT_FE_EDGES:
-			case SELECT_FE_NODES:
+				int ntype = psel->Type();
+				switch (ntype)
+				{
+				case SELECT_SURFACES:
+				case SELECT_CURVES:
+				case SELECT_NODES:
+				case SELECT_FE_FACES:
+				case SELECT_FE_EDGES:
+				case SELECT_FE_NODES:
 				{
 					FEItemListBuilder* items = psel->CreateItemList();
 					pnl->SetItemList(items);
 				}
 				break;
+				}
 			}
-		}
 
-		step->AddLoad(pnl);
-		UpdateModel(pnl);
+			FEStep* step = fem.GetStep(dlg.GetStep());
+			step->AddLoad(pnl);
+			UpdateModel(pnl);
+		}
 	}
 }
 
@@ -145,10 +154,13 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = prj.GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Surface Load", FE_SURFACE_LOAD, prj, this);
+//	CDlgAddPhysicsItem dlg("Add Surface Load", FE_SURFACE_LOAD, prj, this);
+	CDlgAddPhysicsItem2 dlg("Add Surface Load", FE_SURFACE_LOAD, prj, this);
 	if (dlg.exec())
 	{
-		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, dlg.GetClassID()); assert(psl);
+//		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, dlg.GetClassID()); assert(psl);
+		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, FE_FEBIO_SURFACE_LOAD); assert(psl);
+		FEBio::CreateFSObject(dlg.GetClassID(), psl);
 		if (psl)
 		{
 			string name = dlg.GetName();
@@ -187,10 +199,13 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Body Load", FE_BODY_LOAD, prj, this);
+//	CDlgAddPhysicsItem dlg("Add Body Load", FE_BODY_LOAD, prj, this);
+	CDlgAddPhysicsItem2 dlg("Add Body Load", FE_BODY_LOAD, prj, this);
 	if (dlg.exec())
 	{
-		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, dlg.GetClassID());
+//		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, dlg.GetClassID());
+		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, FE_FEBIO_BODY_LOAD); assert(pbl);
+		FEBio::CreateFSObject(dlg.GetClassID(), pbl);
 		if (pbl)
 		{
 			std::string name = dlg.GetName();
@@ -263,10 +278,11 @@ void CMainWindow::on_actionAddContact_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Contact Interface", FE_INTERFACE, prj, this);
+//	CDlgAddPhysicsItem dlg("Add Contact Interface", FE_INTERFACE, prj, this);
+	CDlgAddPhysicsItem2 dlg("Add Contact Interface", FE_INTERFACE, prj, this);
 	if (dlg.exec())
 	{
-		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
+/*		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
 		if (pi)
 		{
 			// create a name
@@ -303,6 +319,7 @@ void CMainWindow::on_actionAddContact_triggered()
 			step->AddInterface(pi);
 			UpdateModel(pi);
 		}
+*/
 	}
 }
 
@@ -423,11 +440,12 @@ void CMainWindow::on_actionAddMaterial_triggered()
 
 	FEProject& prj = doc->GetProject();
 
-	CMaterialEditor dlg(prj, this);
+//	CMaterialEditor dlg(prj, this);
 //	dlg.SetModules(prj.GetModule());
+	CDlgAddPhysicsItem2 dlg("Add Material", FE_MATERIAL, prj, this);
 	if (dlg.exec())
 	{
-		FEMaterial* pmat = dlg.GetMaterial();
+/*		FEMaterial* pmat = dlg.GetMaterial();
 		if (pmat)
 		{
 			FEModel& fem = *doc->GetFEModel();
@@ -446,6 +464,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 
 			UpdateModel(gmat);
 		}
+*/
 	}
 }
 

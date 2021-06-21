@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,54 +23,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "HelpDialog.h"
+#include <vector>
+#include <string>
 
-class QListWidget;
+class FEModelComponent;
 
-class CDlgAddPhysicsItem : public CHelpDialog
-{
-public:
-	CDlgAddPhysicsItem(QString windowName, int superID, FEProject& prj, QWidget* parent);
+namespace FEBio {
 
-	std::string GetName();
-	int GetStep();
-	int GetClassID();
-
-protected:
-	void SetURL();
-
-private:
-	QListWidget* type;
-	QLineEdit* name;
-	QComboBox* step;
-
-	int m_superID;
-
-public:
-//	QString	m_name;
-//	int		m_nstep;
-//	int		m_ntype;
-//	int		m_module;
-};
-
-class CDlgAddPhysicsItem2 : public CHelpDialog
-{
-public:
-	CDlgAddPhysicsItem2(QString windowName, int superID, FEProject& prj, QWidget* parent);
-
-	std::string GetName();
-	int GetStep();
-	int GetClassID();
-
-protected:
-	void SetURL();
-
-private:
-	QListWidget* type;
-	QLineEdit* name;
-	QComboBox* step;
-
-	int m_superID;
-};
+	void CreateFSObject(int classId, FEModelComponent* po);
+}
