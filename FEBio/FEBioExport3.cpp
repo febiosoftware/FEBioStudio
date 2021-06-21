@@ -1668,7 +1668,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
     }
 
 	// get the type string    
-	const char* sztype = FEMaterialFactory::TypeStr(pm);
+	const char* sztype = pm->TypeStr();
 	assert(sztype);
 
 	// set the type attribute
@@ -3554,15 +3554,46 @@ void FEBioExport3::WriteNodeDataSection()
 
 void FEBioExport3::WriteBoundarySection(FEStep& s)
 {
-	// --- B O U N D A R Y   C O N D I T I O N S ---
-	// fixed constraints
-	WriteBCFixed(s);
+	FEModel& fem = m_prj.GetFEModel();
 
-	// prescribed displacements
-	WriteBCPrescribed(s);
+	for (int i = 0; i < s.BCs(); ++i)
+	{
+		FEBoundaryCondition* pbc = s.BC(i);
+		if (pbc && pbc->IsActive())
+		{
+			if (dynamic_cast<FEFixedDOF*>(pbc)) WriteBCFixed(s, pbc);
+			else if (dynamic_cast<FEPrescribedDOF*>(pbc)) WriteBCPrescribed(s, pbc);
+			else WriteBC(s, pbc);
+		}
+	}
 
 	// rigid contact 
 	WriteBCRigid(s);
+
+	// The fluid-rotational-velocity is a boundary condition in FEBio3
+	for (int j = 0; j < s.Loads(); ++j)
+	{
+		FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(s.Load(j));
+		if (psl && psl->IsActive() && (psl->Type() == FE_FLUID_ROTATIONAL_VELOCITY))
+		{
+			FEItemListBuilder* pitem = psl->GetItemList();
+			if (pitem == 0) throw InvalidItemListBuilder(psl);
+
+			stringstream ss;
+			ss << "@surface:" << GetSurfaceName(pitem);
+			string nodeSetName = ss.str();
+
+			XMLElement e("bc");
+			e.add_attribute("name", psl->GetName());
+			e.add_attribute("type", "fluid rotational velocity");
+			e.add_attribute("node_set", nodeSetName.c_str());
+			m_xml.add_branch(e);
+			{
+				WriteParamList(*psl);
+			}
+			m_xml.close_branch();
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -3633,7 +3664,7 @@ void FEBioExport3::WriteContactSection(FEStep& s)
 void FEBioExport3::WriteLoadsSection(FEStep& s)
 {
 	// nodal loads
-	WriteLoadNodal(s);
+	WriteNodalLoads(s);
 
 	// surface loads
 	WriteSurfaceLoads(s);
@@ -4036,54 +4067,140 @@ void FEBioExport3::WriteConstraints(FEStep& s)
 	}
 }
 
+
 //-----------------------------------------------------------------------------
 // Write the fixed boundary conditions
-void FEBioExport3::WriteBCFixed(FEStep &s)
+void FEBioExport3::WriteBC(FEStep& s, FEBoundaryCondition* pbc)
 {
 	FEModel& fem = m_prj.GetFEModel();
 
-	for (int i = 0; i<s.BCs(); ++i)
+	if (m_writeNotes) WriteNote(pbc);
+
+	// get the item list
+	FEItemListBuilder* pitem = pbc->GetItemList();
+	if (pitem == 0) throw InvalidItemListBuilder(pbc);
+
+	// get node set name
+	string nodeSetName = GetNodeSetName(pitem);
+
+	XMLElement tag("bc");
+	tag.add_attribute("name", pbc->GetName());
+	tag.add_attribute("type", pbc->GetTypeString());
+	tag.add_attribute("node_set", nodeSetName);
+
+	// write the tag
+	m_xml.add_branch(tag);
 	{
-		FEFixedDOF* pbc = dynamic_cast<FEFixedDOF*>(s.BC(i));
+		WriteParamList(*pbc);
+	}
+	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+// Write the fixed boundary conditions
+void FEBioExport3::WriteBCFixed(FEStep &s, FEBoundaryCondition* febc)
+{
+	FEModel& fem = m_prj.GetFEModel();
+	FEFixedDOF* pbc = dynamic_cast<FEFixedDOF*>(febc); assert(pbc);
+	if (pbc == nullptr) return;
+
+	if (m_writeNotes) WriteNote(pbc);
+
+	// get the item list
+	FEItemListBuilder* pitem = pbc->GetItemList();
+	if (pitem == 0) throw InvalidItemListBuilder(pbc);
+
+	// build the BC string
+	int bc = pbc->GetBC();
+	FEDOFVariable& var = fem.Variable(pbc->GetVarID());
+	std::stringstream ss;
+	int n = 0;
+	for (int i = 0; i<var.DOFs(); ++i)
+	{
+		if (bc & (1 << i))
+		{
+			if (n != 0) ss << ",";
+			ss << var.GetDOF(i).symbol();
+			n++;
+		}
+	}
+	std::string sbc = ss.str();
+
+	// create the fix tag
+	if (n > 0)
+	{
+		// get node set name
+		string nodeSetName = GetNodeSetName(pitem);
+
+		XMLElement tag("bc");
+		tag.add_attribute("name", pbc->GetName());
+		tag.add_attribute("type", "fix");
+		tag.add_attribute("node_set", nodeSetName);
+
+		// write the tag
+		m_xml.add_branch(tag);
+		{
+			m_xml.add_leaf("dofs", sbc.c_str());
+		}
+		m_xml.close_branch();
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Export prescribed boundary conditions
+void FEBioExport3::WriteBCPrescribed(FEStep &s, FEBoundaryCondition* febc)
+{
+	FEModel& fem = m_prj.GetFEModel();
+	FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(febc); assert(febc);
+	if (pbc == nullptr) return;
+
+	if (m_writeNotes) WriteNote(pbc);
+
+	FEDOFVariable& var = fem.Variable(pbc->GetVarID());
+	const char* szbc = var.GetDOF(pbc->GetDOF()).symbol();
+
+	FEItemListBuilder* pitem = pbc->GetItemList();
+	if (pitem == 0) throw InvalidItemListBuilder(pbc);
+
+	XMLElement e("bc");
+	e.add_attribute("name", pbc->GetName());
+	e.add_attribute("type", "prescribe");
+	e.add_attribute("node_set", GetNodeSetName(pitem));
+	m_xml.add_branch(e);
+	{
+		m_xml.add_leaf("dof", szbc);
+		WriteParamList(*pbc);
+	}
+	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+// export nodal loads
+//
+
+void FEBioExport3::WriteNodalLoads(FEStep& s)
+{
+	for (int j = 0; j < s.Loads(); ++j)
+	{
+		FENodalLoad* pbc = dynamic_cast<FENodalLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
-			if (m_writeNotes) WriteNote(pbc);
-
-			// get the item list
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-			// build the BC string
-			int bc = pbc->GetBC();
-			FEDOFVariable& var = fem.Variable(pbc->GetVarID());
-			std::stringstream ss;
-			int n = 0;
-			for (int i = 0; i<var.DOFs(); ++i)
+			if (pbc->Type() == FE_NODAL_DOF_LOAD) WriteDOFNodalLoad(s, pbc);
+			else
 			{
-				if (bc & (1 << i))
+				if (m_writeNotes) WriteNote(pbc);
+
+				FEItemListBuilder* pitem = pbc->GetItemList();
+				if (pitem == 0) throw InvalidItemListBuilder(pbc);
+
+				XMLElement load("nodal_load");
+				load.add_attribute("name", pbc->GetName());
+				load.add_attribute("type", pbc->GetTypeString());
+				load.add_attribute("node_set", GetNodeSetName(pitem));
+
+				m_xml.add_branch(load);
 				{
-					if (n != 0) ss << ",";
-					ss << var.GetDOF(i).symbol();
-					n++;
-				}
-			}
-			std::string sbc = ss.str();
-
-			// create the fix tag
-			if (n > 0)
-			{
-				// get node set name
-				string nodeSetName = GetNodeSetName(pitem);
-
-				XMLElement tag("bc");
-				tag.add_attribute("name", pbc->GetName());
-				tag.add_attribute("type", "fix");
-				tag.add_attribute("node_set", nodeSetName);
-
-				// write the tag
-				m_xml.add_branch(tag);
-				{
-					m_xml.add_leaf("dofs", sbc.c_str());
+					WriteParamList(*pbc);
 				}
 				m_xml.close_branch();
 			}
@@ -4091,96 +4208,32 @@ void FEBioExport3::WriteBCFixed(FEStep &s)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Export prescribed boundary conditions
-void FEBioExport3::WriteBCPrescribed(FEStep &s)
-{
-	FEModel& fem = m_prj.GetFEModel();
-	for (int i = 0; i < s.BCs(); ++i)
-	{
-		FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(s.BC(i));
-		if (pbc && pbc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(pbc);
-
-			FEDOFVariable& var = fem.Variable(pbc->GetVarID());
-			const char* szbc = var.GetDOF(pbc->GetDOF()).symbol();
-
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-			XMLElement e("bc");
-			e.add_attribute("name", pbc->GetName());
-			e.add_attribute("type", "prescribe");
-			e.add_attribute("node_set", GetNodeSetName(pitem));
-			m_xml.add_branch(e);
-			{
-				m_xml.add_leaf("dof", szbc);
-				WriteParamList(*pbc);
-			}
-			m_xml.close_branch();
-		}
-	}
-
-	// The fluid-rotational-velocity is a boundary condition in FEBio3
-	for (int j = 0; j < s.Loads(); ++j)
-	{
-		FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(s.Load(j));
-		if (psl && psl->IsActive() && (psl->Type() == FE_FLUID_ROTATIONAL_VELOCITY))
-		{
-			FEItemListBuilder* pitem = psl->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(psl);
-
-			stringstream ss;
-			ss << "@surface:" << GetSurfaceName(pitem);
-			string nodeSetName = ss.str();
-
-			XMLElement e("bc");
-			e.add_attribute("name", psl->GetName());
-			e.add_attribute("type", "fluid rotational velocity");
-			e.add_attribute("node_set", nodeSetName.c_str());
-			m_xml.add_branch(e);
-			{
-				WriteParamList(*psl);
-			}
-			m_xml.close_branch();
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// export nodal loads
-//
-void FEBioExport3::WriteLoadNodal(FEStep& s)
+void FEBioExport3::WriteDOFNodalLoad(FEStep& s, FENodalLoad* pnl)
 {
 	char bc[][3] = { "x", "y", "z", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
 
-	for (int j = 0; j<s.Loads(); ++j)
+	FENodalDOFLoad* pbc = dynamic_cast<FENodalDOFLoad*>(pnl); assert(pbc);
+	if (pbc == nullptr) return;
+
+	if (m_writeNotes) WriteNote(pbc);
+
+	FEItemListBuilder* pitem = pbc->GetItemList();
+	if (pitem == 0) throw InvalidItemListBuilder(pbc);
+
+	int l = pbc->GetDOF();
+	FELoadCurve* plc = pbc->GetLoadCurve();
+
+	XMLElement load("nodal_load");
+	load.add_attribute("name", pbc->GetName());
+	load.add_attribute("type", "nodal_load");
+	load.add_attribute("node_set", GetNodeSetName(pitem));
+
+	m_xml.add_branch(load);
 	{
-		FENodalDOFLoad* pbc = dynamic_cast<FENodalDOFLoad*>(s.Load(j));
-		if (pbc && pbc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(pbc);
-
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-			int l = pbc->GetDOF();
-			FELoadCurve* plc = pbc->GetLoadCurve();
-
-			XMLElement load("nodal_load");
-			load.add_attribute("name", pbc->GetName());
-			load.add_attribute("type", "nodal_load");
-			load.add_attribute("node_set", GetNodeSetName(pitem));
-
-			m_xml.add_branch(load);
-			{
-				m_xml.add_leaf("dof", bc[l]);
-				WriteParam(pbc->GetParam(FENodalDOFLoad::LOAD));
-			}
-			m_xml.close_branch(); // nodal_load
-		}
+		m_xml.add_leaf("dof", bc[l]);
+		WriteParam(pbc->GetParam(FENodalDOFLoad::LOAD));
 	}
+	m_xml.close_branch(); // nodal_load
 }
 
 //----------------------------------------------------------------------------

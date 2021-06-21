@@ -494,3 +494,9 @@ FEPrescribedFluidDilatation::FEPrescribedFluidDilatation(FEModel* ps, FEItemList
     SetTypeString("Prescribed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("Fluid Dilatation"));
 }
+
+//=============================================================================
+FEBioBoundaryCondition::FEBioBoundaryCondition(FEModel* ps) : FEBoundaryCondition(FE_FEBIO_BC, ps)
+{
+
+}

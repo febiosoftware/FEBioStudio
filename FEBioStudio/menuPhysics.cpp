@@ -60,7 +60,9 @@ void CMainWindow::on_actionAddBC_triggered()
 	CDlgAddPhysicsItem2 dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, this);
 	if (dlg.exec())
 	{
-/*		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, dlg.GetClassID()); assert(pbc);
+//		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, dlg.GetClassID()); assert(pbc);
+		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, FE_FEBIO_BC); assert(pbc);
+		FEBio::CreateFSObject(dlg.GetClassID(), pbc);
 		if (pbc)
 		{
 			FEStep* step = fem.GetStep(dlg.GetStep());
@@ -95,7 +97,6 @@ void CMainWindow::on_actionAddBC_triggered()
 			step->AddBC(pbc);
 			UpdateModel(pbc);
 		}
-*/
 	}
 }
 

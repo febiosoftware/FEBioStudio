@@ -297,6 +297,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FENonConstBodyForce          , MODULE_MECH, FE_BODY_LOAD        , FE_NON_CONST_BODY_FORCE         , "Non-const body force", NON_CONSTANT_BODY_FORCE_HTML);
     REGISTER_FE_CLASS(FECentrifugalBodyForce       , MODULE_MECH, FE_BODY_LOAD        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force", CENTRIFUGAL_BODY_FORCE_HTML);
 
+	REGISTER_FE_CLASS(FEBioBoundaryCondition, MODULE_MECH, FE_ESSENTIAL_BC, FE_FEBIO_BC, "[febio]");
 	REGISTER_FE_CLASS(FEBioNodalLoad  , MODULE_MECH, FE_NODAL_LOAD  , FE_FEBIO_NODAL_LOAD, "[febio]");
 	REGISTER_FE_CLASS(FEBioSurfaceLoad, MODULE_MECH, FE_SURFACE_LOAD, FE_FEBIO_SURFACE_LOAD, "[febio]");
 	REGISTER_FE_CLASS(FEBioBodyLoad   , MODULE_MECH, FE_BODY_LOAD   , FE_FEBIO_BODY_LOAD, "[febio]");
@@ -408,35 +409,36 @@ void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
 	switch (pstep->GetType())
 	{
 	case FE_STEP_MECHANICS:
-		plt.FindVariable("displacement")->setActive(true);
-		plt.FindVariable("stress")->setActive(true);
-        plt.FindVariable("relative volume")->setActive(true);
+		plt.AddPlotVariable(MODULE_MECH, "displacement", true);
+		plt.AddPlotVariable(MODULE_MECH, "stress", true);
 		if (pstep->GetSettings().nanalysis == FE_DYNAMIC)
 		{
-			plt.FindVariable("velocity")->setActive(true);
-			plt.FindVariable("acceleration")->setActive(true);
+			plt.AddPlotVariable(MODULE_MECH, "velocity", true);
+			plt.AddPlotVariable(MODULE_MECH, "acceleration", true);
 		}
 		break;
 	case FE_STEP_HEAT_TRANSFER:
-		plt.FindVariable("temperature")->setActive(true);
+		plt.AddPlotVariable(MODULE_HEAT, "temperature", true);
 		break;
 	case FE_STEP_BIPHASIC:
-		plt.FindVariable("displacement")->setActive(true);
-        plt.FindVariable("solid stress")->setActive(true);
-		plt.FindVariable("stress")->setActive(true);
-		plt.FindVariable("effective fluid pressure")->setActive(true);
-		plt.FindVariable("fluid flux")->setActive(true);
+		plt.AddPlotVariable(MODULE_MECH, "displacement", true);
+		plt.AddPlotVariable(MODULE_MECH, "stress", true);
+		plt.AddPlotVariable(MODULE_MECH, "relative volume", true);
+		plt.AddPlotVariable(MODULE_BIPHASIC, "solid stress", true);
+		plt.AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure", true);
+		plt.AddPlotVariable(MODULE_BIPHASIC, "fluid flux", true);
 		break;
 	case FE_STEP_BIPHASIC_SOLUTE:
 	case FE_STEP_MULTIPHASIC:
-		plt.FindVariable("displacement")->setActive(true);
-        plt.FindVariable("solid stress")->setActive(true);
-		plt.FindVariable("stress")->setActive(true);
-		plt.FindVariable("fluid flux")->setActive(true);
-		plt.FindVariable("effective fluid pressure")->setActive(true);
-		plt.FindVariable("effective solute concentration")->setActive(true);
-		plt.FindVariable("solute concentration")->setActive(true);
-		plt.FindVariable("solute flux")->setActive(true);
+		plt.AddPlotVariable(MODULE_MECH, "displacement", true);
+		plt.AddPlotVariable(MODULE_MECH, "stress", true);
+		plt.AddPlotVariable(MODULE_MECH, "relative volume", true);
+		plt.AddPlotVariable(MODULE_BIPHASIC, "solid stress", true);
+		plt.AddPlotVariable(MODULE_BIPHASIC, "fluid flux", true);
+		plt.AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure", true);
+		plt.AddPlotVariable(MODULE_SOLUTES, "effective solute concentration", true);
+		plt.AddPlotVariable(MODULE_SOLUTES, "solute concentration", true);
+		plt.AddPlotVariable(MODULE_SOLUTES, "solute flux", true);
 /*		for (int i = 0; i<pfem->Solutes(); ++i)
 		{
 			char sz[256] = { 0 };
@@ -461,65 +463,28 @@ void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
 		plt.SetAllModuleVariables(MODULE_REACTION_DIFFUSION, true);
 		break;
 	case FE_STEP_FLUID:
-		plt.FindVariable("displacement")->setActive(true);
-		plt.FindVariable("fluid pressure", MODULE_FLUID)->setActive(true);
-		plt.FindVariable("nodal fluid velocity")->setActive(true);
-		plt.FindVariable("fluid stress")->setActive(true);
-		plt.FindVariable("fluid velocity")->setActive(true);
-		plt.FindVariable("fluid acceleration")->setActive(true);
-		plt.FindVariable("fluid vorticity")->setActive(true);
-		plt.FindVariable("fluid rate of deformation")->setActive(true);
-		plt.FindVariable("fluid stress power density")->setActive(false);
-		plt.FindVariable("fluid heat supply density")->setActive(false);
-		plt.FindVariable("fluid density")->setActive(false);
-		plt.FindVariable("fluid dilatation")->setActive(true);
-		plt.FindVariable("fluid volume ratio")->setActive(true);
-		plt.FindVariable("fluid surface force")->setActive(false);
-		plt.FindVariable("fluid surface traction power")->setActive(false);
-		plt.FindVariable("fluid surface energy flux")->setActive(false);
-		plt.FindVariable("fluid shear viscosity")->setActive(false);
-		plt.FindVariable("fluid mass flow rate")->setActive(false);
-		plt.FindVariable("fluid strain energy density")->setActive(false);
-		plt.FindVariable("fluid kinetic energy density")->setActive(false);
-		plt.FindVariable("fluid energy density")->setActive(false);
-		plt.FindVariable("fluid element strain energy")->setActive(false);
-		plt.FindVariable("fluid element kinetic energy")->setActive(false);
-		plt.FindVariable("fluid element linear momentum")->setActive(false);
-		plt.FindVariable("fluid element angular momentum")->setActive(false);
-		plt.FindVariable("fluid element center of mass")->setActive(false);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid pressure", true);
+		plt.AddPlotVariable(MODULE_FLUID, "nodal fluid velocity", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid stress", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid velocity", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid acceleration", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid vorticity", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid rate of deformation" ,true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid dilatation", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid volume ratio", true);
 		break;
 	case FE_STEP_FLUID_FSI:
-		plt.FindVariable("displacement")->setActive(true);
-		plt.FindVariable("velocity")->setActive(true);
-		plt.FindVariable("acceleration")->setActive(true);
-		plt.FindVariable("fluid pressure", MODULE_FLUID)->setActive(true);
-		plt.FindVariable("nodal fluid velocity")->setActive(false);
-		plt.FindVariable("fluid stress")->setActive(true);
-		plt.FindVariable("fluid velocity")->setActive(true);
-		plt.FindVariable("fluid acceleration")->setActive(true);
-		plt.FindVariable("fluid vorticity")->setActive(true);
-		plt.FindVariable("fluid rate of deformation")->setActive(true);
-		plt.FindVariable("fluid stress power density")->setActive(false);
-		plt.FindVariable("fluid heat supply density")->setActive(false);
-		plt.FindVariable("fluid density")->setActive(false);
-		plt.FindVariable("fluid dilatation")->setActive(true);
-		plt.FindVariable("fluid volume ratio")->setActive(true);
-        plt.FindVariable("solid stress")->setActive(false);
-		plt.FindVariable("fluid surface force")->setActive(false);
-		plt.FindVariable("fluid surface traction power")->setActive(false);
-		plt.FindVariable("fluid surface energy flux")->setActive(false);
-		plt.FindVariable("fluid shear viscosity")->setActive(false);
-		plt.FindVariable("fluid mass flow rate")->setActive(false);
-		plt.FindVariable("fluid strain energy density")->setActive(false);
-		plt.FindVariable("fluid kinetic energy density")->setActive(false);
-		plt.FindVariable("fluid energy density")->setActive(false);
-		plt.FindVariable("fluid element strain energy")->setActive(false);
-		plt.FindVariable("fluid element kinetic energy")->setActive(false);
-		plt.FindVariable("fluid element linear momentum")->setActive(false);
-		plt.FindVariable("fluid element angular momentum")->setActive(false);
-		plt.FindVariable("fluid element center of mass")->setActive(false);
-        plt.FindVariable("nodal fluid flux")->setActive(true);
-		plt.FindVariable("relative fluid velocity")->setActive(false);
+		plt.AddPlotVariable(MODULE_MECH, "displacement", true);
+		plt.AddPlotVariable(MODULE_MECH, "velocity", true);
+		plt.AddPlotVariable(MODULE_MECH, "acceleration", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid pressure", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid stress", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid velocity", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid acceleration", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid vorticity", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid rate of deformation", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid dilatation", true);
+		plt.AddPlotVariable(MODULE_FLUID, "fluid volume ratio", true);
 		break;
 	}
 }

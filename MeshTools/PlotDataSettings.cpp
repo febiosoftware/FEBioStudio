@@ -274,6 +274,9 @@ void CPlotDataSettings::Clear()
 //-----------------------------------------------------------------------------
 FEPlotVariable* CPlotDataSettings::AddPlotVariable(int module, const std::string& var, bool b, bool s, DOMAIN_TYPE type)
 {
+	FEPlotVariable* pv = FindVariable(var, module);
+	if (pv) return pv;
+
 	FEPlotVariable v(module, var, var, b, s, type);
 	m_plot.push_back(v);
 	return &m_plot[ m_plot.size() - 1];

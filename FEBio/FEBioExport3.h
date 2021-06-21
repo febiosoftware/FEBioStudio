@@ -278,8 +278,9 @@ protected:
 	void WriteFluidFSIControlParams(FEAnalysisStep* pstep);
 	void WriteReactionDiffusionControlParams(FEAnalysisStep* pstep);
 
-	void WriteBCFixed(FEStep& s);
-	void WriteBCPrescribed(FEStep& s);
+	void WriteBC(FEStep& s, FEBoundaryCondition* pbc);
+	void WriteBCFixed(FEStep& s, FEBoundaryCondition* pbc);
+	void WriteBCPrescribed(FEStep& s, FEBoundaryCondition* pbc);
 	void WriteBCRigid(FEStep& s);
 
 	void WriteInitVelocity(FENodalVelocities&        iv);
@@ -292,8 +293,9 @@ protected:
     void WriteInitFluidDilatation(FEInitFluidDilatation&  it);
 	void WriteInitPrestrain(FEInitPrestrain&          ip);
 
-	void WriteLoadNodal(FEStep& s);
+	void WriteDOFNodalLoad(FEStep& s, FENodalLoad* pbc);
 
+	void WriteNodalLoads(FEStep& s);
 	void WriteSurfaceLoads(FEStep& s);
 	void WriteSurfaceLoad(FEStep& s, FESurfaceLoad* psl, const char* sztype);
 

@@ -260,3 +260,10 @@ public:
     FEPrescribedFluidDilatation(FEModel* ps);
     FEPrescribedFluidDilatation(FEModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
 };
+
+//=============================================================================
+class FEBioBoundaryCondition : public FEBoundaryCondition
+{
+public:
+	FEBioBoundaryCondition(FEModel* ps);
+};

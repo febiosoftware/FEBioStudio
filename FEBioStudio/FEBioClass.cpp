@@ -126,6 +126,11 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 //			feb->AddParameter(p.name(), p.type(), val);
 		}
 		break;
+		case FEBIO_PARAM_STD_VECTOR_INT:
+		{
+			// Don't know how to handle this.
+		}
+		break;
 		default:
 			assert(false);
 		}
