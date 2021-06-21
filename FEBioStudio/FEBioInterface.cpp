@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioInterface.h"
 #include "FEBioClass.h"
-#include <FEMLib/FEModelComponent.h>
+#include <FEMLib/FEStepComponent.h>
 using namespace std;
 
 vec3d qvariant_to_vec3d(const QVariant& v)
@@ -39,7 +39,7 @@ vec3d qvariant_to_vec3d(const QVariant& v)
 	return w;
 }
 
-void FEBio::CreateFSObject(int classId, FEModelComponent* po)
+void FEBio::CreateFSObject(int classId, FEStepComponent* po)
 {
 	// create the FEBioClass object
 	FEBioClass* feb = FEBio::CreateFEBioClass(classId);

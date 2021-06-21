@@ -27,7 +27,11 @@ SOFTWARE.*/
 #include "FEBioClass.h"
 #include <FECore/FECoreKernel.h>
 #include <FECore/FECoreBase.h>
+#include <FEBioLib/FEBioModel.h>
 using namespace FEBio;
+
+// dummy model used for allocating temporary FEBio classes.
+FEBioModel febioModel;
 
 std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId)
 {
@@ -76,7 +80,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 	if (fac == nullptr) return nullptr;
 
 	// try to create a temporary FEBio object
-	FECoreBase* pc = fac->Create(nullptr); assert(pc);
+	FECoreBase* pc = fac->Create(&febioModel); assert(pc);
 	if (pc == nullptr) return nullptr;
 
 	const char* sztype = fac->GetTypeStr();

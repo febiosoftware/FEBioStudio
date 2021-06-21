@@ -635,6 +635,7 @@ SOFTWARE.*/
 #define FE_FEBIO_NODAL_LOAD					0x0036
 #define FE_FEBIO_SURFACE_LOAD				0x0037
 #define FE_FEBIO_BODY_LOAD					0x0038
+#define FE_FEBIO_INITIAL_CONDITION			0x0039
 
 //--------------------------------------------------------
 // Interface types
@@ -658,6 +659,8 @@ SOFTWARE.*/
 #define FE_TIEDMULTIPHASIC_INTERFACE	0x0014	// added in 2.0
 #define FE_TIED_ELASTIC_INTERFACE       0x0016	// added in 2.0
 #define FE_GAPHEATFLUX_INTERFACE		0x0017	// added in 2.1
+
+#define FE_FEBIO_INTERFACE				0x0018
 
 //--------------------------------------------------------
 // Connector types

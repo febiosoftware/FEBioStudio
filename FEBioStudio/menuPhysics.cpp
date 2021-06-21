@@ -227,10 +227,13 @@ void CMainWindow::on_actionAddIC_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, this);
+//	CDlgAddPhysicsItem dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, this);
+	CDlgAddPhysicsItem2 dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, this);
 	if (dlg.exec())
 	{
-		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, dlg.GetClassID()); assert(pic);
+//		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, dlg.GetClassID()); assert(pic);
+		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, FE_FEBIO_INITIAL_CONDITION); assert(pic);
+		FEBio::CreateFSObject(dlg.GetClassID(), pic);
 		if (pic)
 		{
 			std::string name = dlg.GetName();
@@ -282,7 +285,9 @@ void CMainWindow::on_actionAddContact_triggered()
 	CDlgAddPhysicsItem2 dlg("Add Contact Interface", FE_INTERFACE, prj, this);
 	if (dlg.exec())
 	{
-/*		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
+//		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
+		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, FE_FEBIO_INTERFACE); assert(pi);
+		FEBio::CreateFSObject(dlg.GetClassID(), pi);
 		if (pi)
 		{
 			// create a name
@@ -319,7 +324,6 @@ void CMainWindow::on_actionAddContact_triggered()
 			step->AddInterface(pi);
 			UpdateModel(pi);
 		}
-*/
 	}
 }
 

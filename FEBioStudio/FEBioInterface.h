@@ -27,9 +27,9 @@ SOFTWARE.*/
 #include <vector>
 #include <string>
 
-class FEModelComponent;
+class FEStepComponent;
 
 namespace FEBio {
 
-	void CreateFSObject(int classId, FEModelComponent* po);
+	void CreateFSObject(int classId, FEStepComponent* po);
 }

@@ -142,3 +142,10 @@ class FEInitPrestrain : public FEInitialCondition
 public:
 	FEInitPrestrain(FEModel* ps);
 };
+
+//-----------------------------------------------------------------------------
+class FEBioInitialCondition : public FEInitialCondition
+{
+public:
+	FEBioInitialCondition(FEModel* ps);
+};

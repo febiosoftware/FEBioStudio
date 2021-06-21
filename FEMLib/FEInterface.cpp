@@ -919,3 +919,9 @@ FELinearConstraintSet& FELinearConstraintSet::operator = (const FELinearConstrai
 
 	return (*this);
 }
+
+//=============================================================================
+FEBioInterface::FEBioInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_FEBIO_INTERFACE, ps, nstep)
+{
+
+}

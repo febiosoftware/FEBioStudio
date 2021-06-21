@@ -47,7 +47,7 @@ enum FEPlotLevel {
 
 //-----------------------------------------------------------------------------
 // FE Super classes
-// NOTE: The values of this enum must correspond to the super class IDs in FEBio!
+// NOTE: The values of this enum must correspond to the super class IDs in FEBio (defined in fecore_enum.h)!
 enum FESuperClass
 {
 	FE_ANALYSIS,
@@ -56,8 +56,8 @@ enum FESuperClass
 	FE_BODY_LOAD = 5,
 	FE_SURFACE_LOAD = 6,
 	FE_NODAL_LOAD = 8,
-	FE_INITIAL_CONDITION,
 	FE_INTERFACE = 12,
+	FE_INITIAL_CONDITION = 23,
 	FE_RIGID_CONSTRAINT,
 	FE_RIGID_CONNECTOR,
 	FE_CONSTRAINT,

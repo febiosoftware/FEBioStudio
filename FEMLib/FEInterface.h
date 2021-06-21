@@ -345,6 +345,13 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FEBioInterface : public FEPairedInterface
+{
+public:
+	FEBioInterface(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
 // This class implements a linear constraint
 // TODO: Figure out a way to integrate this
 class FELinearConstraintSet : public FSObject

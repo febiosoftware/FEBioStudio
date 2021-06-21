@@ -143,3 +143,9 @@ FEInitPrestrain::FEInitPrestrain(FEModel* ps) : FEInitialCondition(FE_INIT_PREST
 	AddBoolParam(true, "init");
 	AddBoolParam(true, "reset");
 }
+
+//-----------------------------------------------------------------------------
+FEBioInitialCondition::FEBioInitialCondition(FEModel* ps) : FEInitialCondition(FE_FEBIO_INITIAL_CONDITION, ps)
+{
+
+}
