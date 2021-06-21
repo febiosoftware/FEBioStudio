@@ -70,6 +70,7 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 		case FEBio::FEBIO_PARAM_DOUBLE: po->AddDoubleParam(v.toDouble(), szname); break;
 		case FEBio::FEBIO_PARAM_VEC3D : po->AddVecParam(qvariant_to_vec3d(v), szname); break;
 		case FEBio::FEBIO_PARAM_MAT3D : po->AddMat3dParam(qvariant_to_mat3d(v), szname); break;
+		case FEBio::FEBIO_PARAM_STD_STRING: po->AddStringParam(v.toString().toStdString(), szname); break;
 		case FEBio::FEBIO_PARAM_DOUBLE_MAPPED: po->AddDoubleParam(v.toDouble(), szname)->MakeVariable(true); break;
 		case FEBio::FEBIO_PARAM_VEC3D_MAPPED : po->AddVecParam(qvariant_to_vec3d(v), szname); break;
 		case FEBio::FEBIO_PARAM_MAT3D_MAPPED : po->AddMat3dParam(qvariant_to_mat3d(v), szname); break;

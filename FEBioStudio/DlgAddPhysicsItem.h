@@ -42,10 +42,9 @@ public:
 
 protected:
 	void SetURL();
-	void Update();
 
 public slots:
-	void OnFilterChanged();
+	void Update();
 
 private:
 	UIDlgAddPhysicsItem*	ui;

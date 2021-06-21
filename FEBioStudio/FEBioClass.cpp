@@ -31,22 +31,41 @@ SOFTWARE.*/
 using namespace FEBio;
 
 // dummy model used for allocating temporary FEBio classes.
-FEBioModel febioModel;
+static FEBioModel febioModel;
+
+bool in_vector(const vector<int>& v, int n)
+{
+	for (int j = 0; j < v.size(); ++j)
+	{
+		if (v[j] == n) return true;
+	}
+	return false;
+}
 
 std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId)
 {
 	vector<FEBio::FEBioClassInfo> facs;
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	vector<int> mods;
+	if (mod != -1)
+	{
+		mods = fecore.GetModuleDependencies(mod - 1);
+	}
 
 	for (int i = 0; i < fecore.FactoryClasses(); ++i)
 	{
 		const FECoreFactory* fac = fecore.GetFactoryClass(i);
+		int facmod = fac->GetModuleID();
+
 		if (fac->GetSuperClassID() == superId)
 		{
-			const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
-			FEBio::FEBioClassInfo febc = { fac->GetTypeStr(), szmod, i };
-			facs.push_back(febc);
+			if ((mod == -1) || (mod == facmod) || in_vector(mods, facmod))
+			{
+				const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
+				FEBio::FEBioClassInfo febc = { fac->GetTypeStr(), szmod, i };
+				facs.push_back(febc);
+			}
 		}
 	}
 
@@ -112,6 +131,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		case FE_PARAM_DOUBLE: feb->AddParameter(p.name(), p.type(), p.value<double>()); break;
 		case FE_PARAM_VEC3D : feb->AddParameter(p.name(), p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
 		case FE_PARAM_MAT3D : feb->AddParameter(p.name(), p.type(), mat3d_to_qvariant(p.value<mat3d>())); break;
+		case FE_PARAM_STD_STRING: feb->AddParameter(p.name(), p.type(), QString::fromStdString(p.value<std::string>())); break;
 		case FE_PARAM_DOUBLE_MAPPED: feb->AddParameter(p.name(), p.type(), 0.0); break;
 		case FE_PARAM_VEC3D_MAPPED: 
 		{
@@ -139,4 +159,22 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 
 	// all done!
 	return feb;
+}
+
+
+vector<FEBio::FEBioModule>	FEBio::GetAllModules()
+{
+	// Get the kernel
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+
+	vector<FEBio::FEBioModule> mods;
+	for (int i = 0; i < fecore.Modules(); ++i)
+	{
+		FEBio::FEBioModule mod;
+		mod.m_szname = fecore.GetModuleName(i);
+		mod.m_id = i + 1;
+		mods.push_back(mod);
+	}
+
+	return mods;
 }

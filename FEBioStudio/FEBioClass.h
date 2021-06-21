@@ -146,4 +146,12 @@ namespace FEBio {
 	};
 
 	FEBioClass* CreateFEBioClass(int classId);
+
+	struct FEBioModule
+	{
+		const char* m_szname;
+		int				m_id;
+	};
+
+	std::vector<FEBioModule> GetAllModules();
 }

@@ -41,7 +41,7 @@ using namespace std;
 
 static bool initFEBio = false;
 
-//static FEBioModel febioModel;
+static FEBioModel febioModel;
 
 class CDlgFEBioInfoUI
 {
@@ -191,7 +191,7 @@ void CDlgFEBioInfo::onTreeChanged()
 		if (fac)
 		{
 			try {
-				ui->m_pcb = fac->Create(nullptr);
+				ui->m_pcb = fac->Create(&febioModel);
 			}
 			catch (...)
 			{

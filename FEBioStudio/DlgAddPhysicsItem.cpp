@@ -26,11 +26,13 @@ SOFTWARE.*/
 
 #include <QLineEdit>
 #include <QComboBox>
-#include <QListWidget>
-#include <QListWidgetItem>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 #include <QFormLayout>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QToolButton>
+#include <QHeaderView>
 #include <FEMLib/FEMKernel.h>
 #include "MeshTools/FEProject.h"
 #include "DlgAddPhysicsItem.h"
@@ -39,10 +41,11 @@ SOFTWARE.*/
 class UIDlgAddPhysicsItem
 {
 public:
-	QListWidget* type;
+	QTreeWidget* type;
 	QLineEdit* name;
 	QComboBox* step;
 	QLineEdit* flt;
+	QToolButton* tb;
 
 	int m_superID;
 
@@ -55,7 +58,11 @@ public:
 		name->setMinimumWidth(name->fontMetrics().size(Qt::TextSingleLine, placeHolder).width() * 1.3);
 
 		step = new QComboBox;
-		type = new QListWidget;
+		type = new QTreeWidget;
+		type->setColumnCount(2);
+		type->setHeaderLabels(QStringList() << "Type" << "Module");
+		type->header()->setStretchLastSection(true);
+		type->header()->resizeSection(0, 400);
 
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
@@ -68,6 +75,7 @@ public:
 		h->addWidget(new QLabel("Filter:"));
 		h->addWidget(flt = new QLineEdit());
 		flt->setPlaceholderText("enter filter text");
+		h->addWidget(tb = new QToolButton); tb->setText("Aa"); tb->setToolTip("Match case"); tb->setCheckable(true);
 
 		layout->addLayout(form);
 		layout->addLayout(h);
@@ -75,9 +83,10 @@ public:
 
 		dlg->SetLeftSideLayout(layout);
 
-		QObject::connect(type, SIGNAL(itemDoubleClicked(QListWidgetItem*)), dlg, SLOT(accept()));
-		QObject::connect(type, &QListWidget::currentRowChanged, dlg, &CHelpDialog::LoadPage);
-		QObject::connect(flt, SIGNAL(textChanged(const QString&)), dlg, SLOT(OnFilterChanged()));
+		QObject::connect(type, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), dlg, SLOT(accept()));
+		QObject::connect(type, &QTreeWidget::currentItemChanged, dlg, &CHelpDialog::LoadPage);
+		QObject::connect(flt, SIGNAL(textChanged(const QString&)), dlg, SLOT(Update()));
+		QObject::connect(tb, SIGNAL(clicked()), dlg, SLOT(Update()));
 
 		flt->setFocus();
 	}
@@ -87,6 +96,8 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FEProjec
 	: CHelpDialog(prj, parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
+	setMinimumSize(600, 400);
+
 	ui->m_superID = superID;
 	ui->setup(this);
 
@@ -116,16 +127,15 @@ void CDlgAddPhysicsItem::Update()
 
 		QString type = QString(fac.sztype);
 
-		if (filter.isEmpty() || type.contains(filter, Qt::CaseInsensitive))
+		if (filter.isEmpty() || type.contains(filter, (ui->tb->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive)))
 		{
-			QString name = QString("%1 (%2)").arg(type).arg(fac.szmod);
-			QListWidgetItem* item = new QListWidgetItem(name);
-			item->setData(Qt::UserRole, fac.classId);
-			ui->type->addItem(item);
+			QTreeWidgetItem* item = new QTreeWidgetItem(ui->type);
+			item->setText(0, type);
+			item->setText(1, fac.szmod);
+			item->setData(0, Qt::UserRole, fac.classId);
 		}
 	}
 	ui->type->model()->sort(0);
-	if (ui->type->count() > 0) ui->type->setCurrentRow(0);
 }
 
 std::string CDlgAddPhysicsItem::GetName()
@@ -140,16 +150,11 @@ int CDlgAddPhysicsItem::GetStep()
 
 int CDlgAddPhysicsItem::GetClassID()
 {
-	return ui->type->currentItem()->data(Qt::UserRole).toInt();
+	return ui->type->currentItem()->data(0, Qt::UserRole).toInt();
 }
 
 void CDlgAddPhysicsItem::SetURL()
 {
-	int classID = ui->type->currentItem()->data(Qt::UserRole).toInt();
+	int classID = ui->type->currentItem()->data(0, Qt::UserRole).toInt();
 //	m_url = FEMKernel::FindClass(m_module, m_superID, classID)->GetHelpURL();
-}
-
-void CDlgAddPhysicsItem::OnFilterChanged()
-{
-	Update();
 }

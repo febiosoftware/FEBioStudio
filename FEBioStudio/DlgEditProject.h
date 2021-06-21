@@ -42,10 +42,6 @@ public:
 
 	void accept();
 
-private slots:
-	void onAllClicked();
-	void onNoneClicked();
-
 private:
 	Ui::CDlgEditProject*	ui;
 	FEProject&				m_prj;
