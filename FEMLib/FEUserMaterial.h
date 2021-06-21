@@ -9,8 +9,8 @@ public:
 	FEUserMaterial(int ntype) : FEMaterial(ntype) {}
 	~FEUserMaterial();
 
-	void SetTypeStr(const char* sz);
-	const char* GetTypeStr() { return m_sztype; }
+	void SetTypeString(const char* sz) override;
+	const char* TypeStr() override { return m_sztype; }
 
 	void AddParameter(const char* szname, double v);
 

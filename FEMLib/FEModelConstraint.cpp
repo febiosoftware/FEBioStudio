@@ -135,3 +135,9 @@ FEInSituStretchConstraint::FEInSituStretchConstraint(FEModel* ps, int nstep) : F
 	AddDoubleParam(0.0, "max_stretch");
 	AddBoolParam(true, "isochoric");
 }
+
+//=============================================================================
+FEBioNLConstraint::FEBioNLConstraint(FEModel* fem, int nstep) : FEModelConstraint(FE_FEBIO_NLCONSTRAINT, fem, nstep)
+{
+
+}

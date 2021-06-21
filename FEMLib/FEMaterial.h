@@ -168,6 +168,8 @@
 #define FE_REACTIVE_PLASTIC_DAMAGE  130
 #define FE_BIPHASIC_FSI_MATERIAL    131
 
+#define FE_FEBIO_MATERIAL			132
+
 // permeability materials
 #define FE_PERM_CONST				200
 #define FE_PERM_HOLMES_MOW			201
@@ -2279,4 +2281,19 @@ public:
 public:
 	FEPrestrainInSituGradient();
 	DECLARE_REGISTERED(FEPrestrainInSituGradient);
+};
+
+//-----------------------------------------------------------------------------
+class FEBioMaterial : public FEMaterial
+{
+public:
+	FEBioMaterial();
+
+	void SetTypeString(const char* sz) override;
+	const char* TypeStr() override;
+
+	DECLARE_REGISTERED(FEBioMaterial);
+
+private:
+	std::string	m_stype;
 };

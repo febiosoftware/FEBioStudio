@@ -448,6 +448,12 @@ const char* FEMaterial::TypeStr()
 }
 
 //-----------------------------------------------------------------------------
+void FEMaterial::SetTypeString(const char* sz)
+{
+	assert(false);
+}
+
+//-----------------------------------------------------------------------------
 void FEMaterial::SetParentMaterial(FEMaterial* pmat)
 {
 	assert((m_parent==0) || (m_parent == pmat));

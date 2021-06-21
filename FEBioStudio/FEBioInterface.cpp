@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEBioInterface.h"
 #include "FEBioClass.h"
 #include <FEMLib/FEStepComponent.h>
+#include <FEMLib/FEMaterial.h>
 using namespace std;
 
 vec3d qvariant_to_vec3d(const QVariant& v)
@@ -39,16 +40,18 @@ vec3d qvariant_to_vec3d(const QVariant& v)
 	return w;
 }
 
-void FEBio::CreateFSObject(int classId, FEStepComponent* po)
+mat3d qvariant_to_mat3d(const QVariant& v)
 {
-	// create the FEBioClass object
-	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
-	if (feb == nullptr) return;
+	QList<QVariant> val = v.value<QList<QVariant> >();
+	mat3d w;
+	int n = 0;
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j) w[i][j] = val.at(n++).toDouble();
+	return w;
+}
 
-	// set the type string
-	string typeStr = feb->TypeString();
-	po->SetTypeString(strdup(typeStr.c_str()));
-
+void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
+{
 	// copy the parameters from the FEBioClass to the FSObject
 	for (int i = 0; i < feb->Parameters(); ++i)
 	{
@@ -66,12 +69,45 @@ void FEBio::CreateFSObject(int classId, FEStepComponent* po)
 		case FEBio::FEBIO_PARAM_BOOL  : po->AddBoolParam(v.toBool(), szname); break;
 		case FEBio::FEBIO_PARAM_DOUBLE: po->AddDoubleParam(v.toDouble(), szname); break;
 		case FEBio::FEBIO_PARAM_VEC3D : po->AddVecParam(qvariant_to_vec3d(v), szname); break;
+		case FEBio::FEBIO_PARAM_MAT3D : po->AddMat3dParam(qvariant_to_mat3d(v), szname); break;
 		case FEBio::FEBIO_PARAM_DOUBLE_MAPPED: po->AddDoubleParam(v.toDouble(), szname)->MakeVariable(true); break;
 		case FEBio::FEBIO_PARAM_VEC3D_MAPPED : po->AddVecParam(qvariant_to_vec3d(v), szname); break;
+		case FEBio::FEBIO_PARAM_MAT3D_MAPPED : po->AddMat3dParam(qvariant_to_mat3d(v), szname); break;
 		default:
 			assert(false);
 		}
 	}
+}
+
+void FEBio::CreateFSObject(int classId, FEStepComponent* po)
+{
+	// create the FEBioClass object
+	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
+	if (feb == nullptr) return;
+
+	// set the type string
+	string typeStr = feb->TypeString();
+	po->SetTypeString(strdup(typeStr.c_str()));
+
+	// map the FEBioClass parameters to the FSObject
+	map_parameters(po, feb);
+
+	// don't forget to cleanup
+	delete feb;
+}
+
+void FEBio::CreateMaterial(int classId, FEMaterial* po)
+{
+	// create the FEBioClass object
+	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
+	if (feb == nullptr) return;
+
+	// set the type string
+	string typeStr = feb->TypeString();
+	po->SetTypeString(strdup(typeStr.c_str()));
+
+	// map the parameters
+	map_parameters(po, feb);
 
 	delete feb;
 }

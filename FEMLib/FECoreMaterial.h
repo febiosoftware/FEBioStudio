@@ -108,7 +108,8 @@ public:
 	int Type() { return m_ntype; }
 
 	// return a string for the material type
-	const char* TypeStr();
+	virtual const char* TypeStr();
+	virtual void SetTypeString(const char* sz);
 
 	// return the class ID this material belongs to
 	int ClassID();

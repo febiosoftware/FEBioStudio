@@ -42,7 +42,7 @@ FEUserMaterial::~FEUserMaterial()
 	m_pname.clear();
 }
 
-void FEUserMaterial::SetTypeStr(const char* sz)
+void FEUserMaterial::SetTypeString(const char* sz)
 {
 	strcpy(m_sztype, sz);
 }
@@ -52,7 +52,7 @@ void FEUserMaterial::copy(FEMaterial* pmat)
 {
 	FEUserMaterial* pm = dynamic_cast<FEUserMaterial*>(pmat);
 	assert(pm);
-	if (pm) SetTypeStr(pm->GetTypeStr());
+	if (pm) SetTypeString(pm->TypeStr());
 	FEMaterial::copy(pmat);
 }
 

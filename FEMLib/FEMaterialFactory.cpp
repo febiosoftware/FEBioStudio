@@ -134,7 +134,7 @@ const char* FEMaterialFactory::TypeStr(FEMaterial *pm)
 
 	// A user material will not be registered, but instead contains its own type str
 	// TODO: Should I make TypeStr a member of each material?
-	if (dynamic_cast<FEUserMaterial*>(pm)) return (dynamic_cast<FEUserMaterial*>(pm))->GetTypeStr();
+	if (dynamic_cast<FEUserMaterial*>(pm)) return (dynamic_cast<FEUserMaterial*>(pm))->TypeStr();
 
 	FEMaterialFactory* pmf = GetInstance();
 

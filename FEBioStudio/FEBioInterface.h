@@ -28,8 +28,10 @@ SOFTWARE.*/
 #include <string>
 
 class FEStepComponent;
+class FEMaterial;
 
 namespace FEBio {
 
 	void CreateFSObject(int classId, FEStepComponent* po);
+	void CreateMaterial(int classId, FEMaterial* po);
 }

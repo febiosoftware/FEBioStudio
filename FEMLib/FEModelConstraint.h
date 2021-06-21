@@ -78,3 +78,10 @@ class FEInSituStretchConstraint : public FEModelConstraint
 public:
 	FEInSituStretchConstraint(FEModel* ps, int nstep = 0);
 };
+
+//-----------------------------------------------------------------------------
+class FEBioNLConstraint : public FEModelConstraint
+{
+public:
+	FEBioNLConstraint(FEModel* fem, int nstep = 0);
+};

@@ -2991,3 +2991,21 @@ FEPrestrainInSituGradient::FEPrestrainInSituGradient() : FEMaterial(FE_PRESTRAIN
 	AddScienceParam(1.0, UNIT_NONE, "stretch", "fiber stretch");
 	AddBoolParam(false, "isochoric", "isochoric prestrain");
 }
+
+
+//=============================================================================
+REGISTER_MATERIAL(FEBioMaterial, MODULE_MECH, FE_FEBIO_MATERIAL, FE_MAT_ELASTIC, "[febio]", 0);
+
+FEBioMaterial::FEBioMaterial() : FEMaterial(FE_FEBIO_MATERIAL)
+{
+}
+
+void FEBioMaterial::SetTypeString(const char* sz)
+{
+	m_stype = sz;
+}
+
+const char* FEBioMaterial::TypeStr()
+{
+	return m_stype.c_str();
+}

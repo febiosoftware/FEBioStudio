@@ -51,16 +51,16 @@ enum FEPlotLevel {
 enum FESuperClass
 {
 	FE_ANALYSIS,
-	FE_ESSENTIAL_BC = 17,
 	FE_MATERIAL = 4,
 	FE_BODY_LOAD = 5,
 	FE_SURFACE_LOAD = 6,
 	FE_NODAL_LOAD = 8,
+	FE_CONSTRAINT = 9,
 	FE_INTERFACE = 12,
+	FE_ESSENTIAL_BC = 17,
 	FE_INITIAL_CONDITION = 23,
 	FE_RIGID_CONSTRAINT,
-	FE_RIGID_CONNECTOR,
-	FE_CONSTRAINT,
+	FE_RIGID_CONNECTOR
 };
 
 //-----------------------------------------------------------------------------

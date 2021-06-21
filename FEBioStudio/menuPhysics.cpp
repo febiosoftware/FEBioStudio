@@ -334,10 +334,13 @@ void CMainWindow::on_actionAddConstraint_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Constraint", FE_CONSTRAINT, prj, this);
+//	CDlgAddPhysicsItem dlg("Add Constraint", FE_CONSTRAINT, prj, this);
+	CDlgAddPhysicsItem2 dlg("Add Constraint", FE_CONSTRAINT, prj, this);
 	if (dlg.exec())
 	{
-		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, dlg.GetClassID()); assert(pi);
+//		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, dlg.GetClassID()); assert(pi);
+		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, FE_FEBIO_NLCONSTRAINT); assert(pi);
+		FEBio::CreateFSObject(dlg.GetClassID(), pi);
 		if (pi)
 		{
 			// create a name
@@ -443,13 +446,16 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	if (doc == nullptr) return;
 
 	FEProject& prj = doc->GetProject();
+	FEModel& fem = *doc->GetFEModel();
 
 //	CMaterialEditor dlg(prj, this);
 //	dlg.SetModules(prj.GetModule());
 	CDlgAddPhysicsItem2 dlg("Add Material", FE_MATERIAL, prj, this);
 	if (dlg.exec())
 	{
-/*		FEMaterial* pmat = dlg.GetMaterial();
+//		FEMaterial* pmat = dlg.GetMaterial();
+		FEMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
+		FEBio::CreateMaterial(dlg.GetClassID(), pmat);
 		if (pmat)
 		{
 			FEModel& fem = *doc->GetFEModel();
@@ -459,7 +465,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 			GMaterial* gmat = new GMaterial(pmat);
 
 			// override name if specified
-			std::string sname = dlg.GetMaterialName().toStdString();
+			std::string sname = dlg.GetName();
 			const char* sz = sname.c_str();
 			if (sz && (strlen(sz) > 0)) gmat->SetName(sz);
 
@@ -468,7 +474,6 @@ void CMainWindow::on_actionAddMaterial_triggered()
 
 			UpdateModel(gmat);
 		}
-*/
 	}
 }
 

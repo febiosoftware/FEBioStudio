@@ -685,3 +685,4 @@ SOFTWARE.*/
 #define FE_FRICTIONLESS_FLUID_WALL      0x002F  // added in 2.0
 #define FE_INSITUSTRETCH_CONSTRAINT		0x0030	// added in FS 1.0
 #define FE_PRESTRAIN_CONSTRAINT		    0x0031	// added in FS 1.0
+#define FE_FEBIO_NLCONSTRAINT			0x0032	// added in FS 2.0

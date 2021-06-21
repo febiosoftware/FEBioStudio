@@ -70,6 +70,14 @@ QVariant vec3d_to_qvariant(const vec3d& v)
 	return val;
 }
 
+QVariant mat3d_to_qvariant(const mat3d& m)
+{
+	QList<QVariant> val;
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j) val.push_back(m[i][j]);
+	return val;
+}
+
 FEBioClass* FEBio::CreateFEBioClass(int classId)
 {
 	// Get the kernel
@@ -80,7 +88,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 	if (fac == nullptr) return nullptr;
 
 	// try to create a temporary FEBio object
-	FECoreBase* pc = fac->Create(&febioModel); assert(pc);
+	unique_ptr<FECoreBase> pc(fac->Create(&febioModel)); assert(pc);
 	if (pc == nullptr) return nullptr;
 
 	const char* sztype = fac->GetTypeStr();
@@ -98,10 +106,11 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		FEParam& p = *it;
 		switch (p.type())
 		{
-		case FE_PARAM_INT: feb->AddParameter(p.name(), p.type(), p.value<int>()); break;
-		case FE_PARAM_BOOL: feb->AddParameter(p.name(), p.type(), p.value<bool>()); break;
+		case FE_PARAM_INT   : feb->AddParameter(p.name(), p.type(), p.value<int>()); break;
+		case FE_PARAM_BOOL  : feb->AddParameter(p.name(), p.type(), p.value<bool>()); break;
 		case FE_PARAM_DOUBLE: feb->AddParameter(p.name(), p.type(), p.value<double>()); break;
-		case FE_PARAM_VEC3D: feb->AddParameter(p.name(), p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
+		case FE_PARAM_VEC3D : feb->AddParameter(p.name(), p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
+		case FE_PARAM_MAT3D : feb->AddParameter(p.name(), p.type(), mat3d_to_qvariant(p.value<mat3d>())); break;
 		case FE_PARAM_DOUBLE_MAPPED: feb->AddParameter(p.name(), p.type(), 0.0); break;
 		case FE_PARAM_VEC3D_MAPPED: 
 		{
@@ -110,13 +119,17 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 			feb->AddParameter(p.name(), p.type(), val);
 		}
 		break;
+		case FE_PARAM_MAT3D_MAPPED:
+		{
+			mat3d M; M.unit(); // TODO: Grab const value from FEParamMat3d
+			QVariant val = mat3d_to_qvariant(M);
+//			feb->AddParameter(p.name(), p.type(), val);
+		}
+		break;
 		default:
 			assert(false);
 		}
 	}
-
-	// don't forget to delete the temp object
-	delete pc;
 
 	// all done!
 	return feb;
