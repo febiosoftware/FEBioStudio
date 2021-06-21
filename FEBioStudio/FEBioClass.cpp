@@ -44,7 +44,8 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId)
 		const FECoreFactory* fac = fecore.GetFactoryClass(i);
 		if (fac->GetSuperClassID() == superId)
 		{
-			FEBio::FEBioClassInfo febc = { fac->GetTypeStr(), i };
+			const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
+			FEBio::FEBioClassInfo febc = { fac->GetTypeStr(), szmod, i };
 			facs.push_back(febc);
 		}
 	}

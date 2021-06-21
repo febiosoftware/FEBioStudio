@@ -196,7 +196,8 @@ void CDlgAddPhysicsItem2::Update()
 
 		if (filter.isEmpty() || type.contains(filter, Qt::CaseInsensitive))
 		{
-			QListWidgetItem* item = new QListWidgetItem(type);
+			QString name = QString("%1 (%2)").arg(type).arg(fac.szmod);
+			QListWidgetItem* item = new QListWidgetItem(name);
 			item->setData(Qt::UserRole, fac.classId);
 			ui->type->addItem(item);
 		}

@@ -60,6 +60,7 @@ namespace FEBio {
 	struct FEBioClassInfo
 	{
 		const char* sztype;
+		const char* szmod;
 		unsigned int	classId;
 	};
 
