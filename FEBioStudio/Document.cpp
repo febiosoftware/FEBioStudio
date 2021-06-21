@@ -636,9 +636,8 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		FEMaterial* mat = gmat->GetMaterialProperties();
 		if (mat)
 		{
-			FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 			std::stringstream ss;
-			const char* sztype = MF.TypeStr(mat);
+			const char* sztype = mat->TypeStr();
 			if (sztype == 0) sztype = "";
 			ss << "Material" << " [" << sztype << "]";
 			return ss.str();
