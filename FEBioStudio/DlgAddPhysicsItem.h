@@ -27,44 +27,14 @@ SOFTWARE.*/
 #pragma once
 #include "HelpDialog.h"
 
-class QListWidget;
-class QLineEdit;
-class QComboBox;
+class UIDlgAddPhysicsItem;
 
 class CDlgAddPhysicsItem : public CHelpDialog
-{
-public:
-	CDlgAddPhysicsItem(QString windowName, int superID, FEProject& prj, QWidget* parent);
-
-	std::string GetName();
-	int GetStep();
-	int GetClassID();
-
-protected:
-	void SetURL();
-
-private:
-	QListWidget* type;
-	QLineEdit* name;
-	QComboBox* step;
-
-	int m_superID;
-
-public:
-//	QString	m_name;
-//	int		m_nstep;
-//	int		m_ntype;
-//	int		m_module;
-};
-
-class UIDlgAddPhysicsItem2;
-
-class CDlgAddPhysicsItem2 : public CHelpDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgAddPhysicsItem2(QString windowName, int superID, FEProject& prj, QWidget* parent);
+	CDlgAddPhysicsItem(QString windowName, int superID, FEProject& prj, QWidget* parent);
 
 	std::string GetName();
 	int GetStep();
@@ -78,5 +48,5 @@ public slots:
 	void OnFilterChanged();
 
 private:
-	UIDlgAddPhysicsItem2*	ui;
+	UIDlgAddPhysicsItem*	ui;
 };

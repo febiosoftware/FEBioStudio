@@ -56,11 +56,9 @@ void CMainWindow::on_actionAddBC_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = prj.GetFEModel();
-//	CDlgAddPhysicsItem dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, this);
-	CDlgAddPhysicsItem2 dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, this);
+	CDlgAddPhysicsItem dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, this);
 	if (dlg.exec())
 	{
-//		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, dlg.GetClassID()); assert(pbc);
 		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, FE_FEBIO_BC); assert(pbc);
 		FEBio::CreateFSObject(dlg.GetClassID(), pbc);
 		if (pbc)
@@ -107,11 +105,9 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-//	CDlgAddNodalLoad dlg(fem, this);
-	CDlgAddPhysicsItem2 dlg("Add Nodal Load", FE_NODAL_LOAD, prj, this);
+	CDlgAddPhysicsItem dlg("Add Nodal Load", FE_NODAL_LOAD, prj, this);
 	if (dlg.exec())
 	{
-//		FENodalDOFLoad* pnl = new FENodalDOFLoad(&fem, 0, dlg.m_nvar, dlg.m_val, dlg.m_nstep);
 		FENodalLoad* pnl = fecore_new<FENodalLoad>(&fem, FE_NODAL_LOAD, FE_FEBIO_NODAL_LOAD); assert(pnl);
 		FEBio::CreateFSObject(dlg.GetClassID(), pnl);
 		if (pnl)
@@ -155,11 +151,9 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = prj.GetFEModel();
-//	CDlgAddPhysicsItem dlg("Add Surface Load", FE_SURFACE_LOAD, prj, this);
-	CDlgAddPhysicsItem2 dlg("Add Surface Load", FE_SURFACE_LOAD, prj, this);
+	CDlgAddPhysicsItem dlg("Add Surface Load", FE_SURFACE_LOAD, prj, this);
 	if (dlg.exec())
 	{
-//		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, dlg.GetClassID()); assert(psl);
 		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, FE_FEBIO_SURFACE_LOAD); assert(psl);
 		FEBio::CreateFSObject(dlg.GetClassID(), psl);
 		if (psl)
@@ -200,11 +194,9 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-//	CDlgAddPhysicsItem dlg("Add Body Load", FE_BODY_LOAD, prj, this);
-	CDlgAddPhysicsItem2 dlg("Add Body Load", FE_BODY_LOAD, prj, this);
+	CDlgAddPhysicsItem dlg("Add Body Load", FE_BODY_LOAD, prj, this);
 	if (dlg.exec())
 	{
-//		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, dlg.GetClassID());
 		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, FE_FEBIO_BODY_LOAD); assert(pbl);
 		FEBio::CreateFSObject(dlg.GetClassID(), pbl);
 		if (pbl)
@@ -228,8 +220,7 @@ void CMainWindow::on_actionAddIC_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-//	CDlgAddPhysicsItem dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, this);
-	CDlgAddPhysicsItem2 dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, this);
+	CDlgAddPhysicsItem dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, this);
 	if (dlg.exec())
 	{
 //		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, dlg.GetClassID()); assert(pic);
@@ -282,8 +273,7 @@ void CMainWindow::on_actionAddContact_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-//	CDlgAddPhysicsItem dlg("Add Contact Interface", FE_INTERFACE, prj, this);
-	CDlgAddPhysicsItem2 dlg("Add Contact Interface", FE_INTERFACE, prj, this);
+	CDlgAddPhysicsItem dlg("Add Contact Interface", FE_INTERFACE, prj, this);
 	if (dlg.exec())
 	{
 //		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
@@ -335,8 +325,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-//	CDlgAddPhysicsItem dlg("Add Constraint", FE_CONSTRAINT, prj, this);
-	CDlgAddPhysicsItem2 dlg("Add Constraint", FE_CONSTRAINT, prj, this);
+	CDlgAddPhysicsItem dlg("Add Constraint", FE_CONSTRAINT, prj, this);
 	if (dlg.exec())
 	{
 //		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, dlg.GetClassID()); assert(pi);
@@ -449,12 +438,9 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
 
-//	CMaterialEditor dlg(prj, this);
-//	dlg.SetModules(prj.GetModule());
-	CDlgAddPhysicsItem2 dlg("Add Material", FE_MATERIAL, prj, this);
+	CDlgAddPhysicsItem dlg("Add Material", FE_MATERIAL, prj, this);
 	if (dlg.exec())
 	{
-//		FEMaterial* pmat = dlg.GetMaterial();
 		FEMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
 		FEBio::CreateMaterial(dlg.GetClassID(), pmat);
 		if (pmat)
