@@ -64,7 +64,7 @@ namespace FEBio {
 		unsigned int	classId;
 	};
 
-	std::vector<FEBioClassInfo> FindAllClasses(int mod, int superId);
+	std::vector<FEBioClassInfo> FindAllClasses(int mod, int superId, bool includeModuleDependencies = true);
 
 	class FEBioParam
 	{
