@@ -120,6 +120,7 @@ void initMap()
 	idmap[FETASK_ID                    ] = "FETASK_ID";
 	idmap[FESOLVER_ID                  ] = "FESOLVER_ID";
 	idmap[FEMATERIAL_ID                ] = "FEMATERIAL_ID";
+	idmap[FEMATERIALPROP_ID            ] = "FEMATERIALPROP_ID";
 	idmap[FEBODYLOAD_ID                ] = "FEBODYLOAD_ID";
 	idmap[FESURFACELOAD_ID             ] = "FESURFACELOAD_ID";
 	idmap[FEEDGELOAD_ID                ] = "FEEDGELOAD_ID";

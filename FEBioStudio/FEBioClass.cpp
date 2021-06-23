@@ -42,15 +42,16 @@ bool in_vector(const vector<int>& v, int n)
 	return false;
 }
 
-std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId)
+std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, bool includeModuleDependencies)
 {
 	vector<FEBio::FEBioClassInfo> facs;
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	vector<int> mods;
-	if (mod != -1)
+	if ((mod != -1) && includeModuleDependencies)
 	{
 		mods = fecore.GetModuleDependencies(mod - 1);
+		mods.push_back(0);
 	}
 
 	for (int i = 0; i < fecore.FactoryClasses(); ++i)

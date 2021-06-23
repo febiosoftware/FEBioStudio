@@ -48,6 +48,7 @@ public:
 	QToolButton* tb;
 
 	int m_superID;
+	bool	m_modDepends;
 
 public:
 	void setup(CDlgAddPhysicsItem* dlg)
@@ -92,13 +93,14 @@ public:
 	}
 };
 
-CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FEProject& prj, QWidget* parent)
+CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FEProject& prj, bool includeModuleDependencies, QWidget* parent)
 	: CHelpDialog(prj, parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
 	setMinimumSize(600, 400);
 
 	ui->m_superID = superID;
+	ui->m_modDepends = includeModuleDependencies;
 	ui->setup(this);
 
 	// add the steps
@@ -120,7 +122,7 @@ void CDlgAddPhysicsItem::Update()
 	QString filter = ui->flt->text();
 
 	// set the types
-	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID);
+	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, ui->m_modDepends);
 	for (int i = 0; i < (int)l.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& fac = l[i];
