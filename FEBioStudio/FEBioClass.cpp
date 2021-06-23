@@ -64,7 +64,7 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, b
 			if ((mod == -1) || (mod == facmod) || in_vector(mods, facmod))
 			{
 				const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
-				FEBio::FEBioClassInfo febc = { fac->GetTypeStr(), szmod, i };
+				FEBio::FEBioClassInfo febc = { fac->GetTypeStr(), szmod, (unsigned int) i };
 				facs.push_back(febc);
 			}
 		}
