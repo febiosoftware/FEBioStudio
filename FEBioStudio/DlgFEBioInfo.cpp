@@ -34,6 +34,8 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSplitter>
+#include <QLineEdit>
+#include <QHeaderView>
 #include <FECore/FECoreKernel.h>
 #include <FEBioLib/febio.h>
 #include <map>
@@ -52,6 +54,7 @@ public:
 	QComboBox* modules;
 	FECoreBase* m_pcb;
 	QPushButton* pb;
+	QLineEdit* search;
 
 public:
 	void setup(QDialog* dlg)
@@ -72,14 +75,16 @@ public:
 		h->addWidget(pc = new QComboBox);
 		h->addWidget(new QLabel("Modules:"));
 		h->addWidget(modules = new QComboBox);
-		h->addStretch();
+		h->addWidget(new QLabel("Search:"));
+		h->addWidget(search = new QLineEdit);
+//		h->addStretch();
 		h->addWidget(pb = new QPushButton("Load Plugin ..."));
 
 		l->addLayout(h);
 
 		l->addWidget(pw = new QTreeWidget, 2);
-		pw->setColumnCount(5);
-		pw->setHeaderLabels(QStringList() << "type string" << "class ID" << "class name" << "module" << "source");
+		pw->setColumnCount(6);
+		pw->setHeaderLabels(QStringList() << "type string" << "class ID" << "class name" << "base class" << "module" << "source");
 
 		pane1->setLayout(l);
 
@@ -101,11 +106,6 @@ public:
 		l->addWidget(bb);
 
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
-		QObject::connect(pc, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onFilterChanged()));
-		QObject::connect(modules, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onModulesChanged()));
-		QObject::connect(pw, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), dlg, SLOT(onTreeChanged()));
-		QObject::connect(pb, SIGNAL(clicked()), dlg, SLOT(onLoadPlugin()));
-
 		dlg->setLayout(l);
 	}
 };
@@ -159,16 +159,6 @@ void initMap()
 	idmap[FEEIGENSOLVER_ID             ] = "FEEIGENSOLVER_ID";
     idmap[FESURFACEPAIRINTERACTIONNL_ID] = "FESURFACEPAIRINTERACTIONNL_ID";
 	idmap[FEDATARECORD_ID              ] = "FEDATARECORD_ID";
-}
-
-void CDlgFEBioInfo::onFilterChanged()
-{
-	Update();
-}
-
-void CDlgFEBioInfo::onModulesChanged()
-{
-	Update();
 }
 
 void CDlgFEBioInfo::onTreeChanged()
@@ -246,9 +236,11 @@ void CDlgFEBioInfo::onTreeChanged()
 			for (int i = 0; i < Props; ++i)
 			{
 				FEProperty* prop = ui->m_pcb->PropertyClass(i);
+				const char* szclass = prop->GetClassName();
+				if (szclass == nullptr) szclass = "(unknown)";
 				QTreeWidgetItem* twi = new QTreeWidgetItem(ui->params);
 				twi->setText(0, prop->GetName());
-				twi->setText(1, "(Property)");
+				twi->setText(1, szclass);
 			}
 		}
 	}
@@ -275,6 +267,14 @@ CDlgFEBioInfo::CDlgFEBioInfo(QWidget* parent) : QDialog(parent), ui(new CDlgFEBi
 	ui->pc->model()->sort(0);
 
 	UpdateModules();
+	Update();
+	ui->pw->header()->resizeSections(QHeaderView::ResizeToContents);
+
+	QObject::connect(ui->pc, SIGNAL(currentIndexChanged(int)), this, SLOT(Update()));
+	QObject::connect(ui->modules, SIGNAL(currentIndexChanged(int)), this, SLOT(Update()));
+	QObject::connect(ui->pw, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(onTreeChanged()));
+	QObject::connect(ui->pb, SIGNAL(clicked()), this, SLOT(onLoadPlugin()));
+	QObject::connect(ui->search, SIGNAL(textChanged(const QString&)), this, SLOT(Update()));
 }
 
 void CDlgFEBioInfo::UpdateModules()
@@ -304,11 +304,17 @@ void CDlgFEBioInfo::Update()
 
 	int mods = fecore.Modules();
 
+	QString searchString = ui->search->text();
+	bool search = (searchString.isEmpty() == false);
+
+	bool addModuleDependencies = false;
+
 	for (int i = 0; i < fecore.FactoryClasses(); ++i)
 	{
 		const FECoreFactory* fac = fecore.GetFactoryClass(i);
 		const char* sztype = fac->GetTypeStr();
 		const char* szclass = fac->GetClassName();
+		const char* szbase = fac->GetBaseClassName();
 		unsigned int mod = fac->GetModuleID();
 		SUPER_CLASS_ID sid = fac->GetSuperClassID();
 		int allocId = fac->GetAllocatorID();
@@ -322,15 +328,19 @@ void CDlgFEBioInfo::Update()
 			{
 				modules.append(fecore.GetModuleName(mod - 1));
 				if (nmod == mod - 1) add = true;
-				vector<int> moddeps = fecore.GetModuleDependencies(mod - 1);
-				for (int j = 0; j < moddeps.size(); ++j)
-				{
-					modules.append(", ");
-					modules.append(fecore.GetModuleName(moddeps[j] - 1));
 
-					if (nmod == moddeps[j] - 1)
+				if (addModuleDependencies)
+				{
+					vector<int> moddeps = fecore.GetModuleDependencies(mod - 1);
+					for (int j = 0; j < moddeps.size(); ++j)
 					{
-						add = true;
+						modules.append(", ");
+						modules.append(fecore.GetModuleName(moddeps[j] - 1));
+
+						if (nmod == moddeps[j] - 1)
+						{
+							add = true;
+						}
 					}
 				}
 			}
@@ -343,12 +353,27 @@ void CDlgFEBioInfo::Update()
 				const char* szalloc = febio::GetPluginName(allocId);
 				if (szalloc == nullptr) szalloc = "";
 
-				QTreeWidgetItem* it = new QTreeWidgetItem(ui->pw);
-				it->setText(0, QString(sztype));
-				it->setText(1, QString(szid)); it->setData(1, Qt::UserRole, sid);
-				it->setText(2, QString(szclass));
-				it->setText(3, modules);
-				it->setText(4, QString(szalloc));
+				QString typeStr(sztype);
+				QString idStr(szid);
+				QString classStr(szclass);
+				QString baseStr(szbase);
+				QString allocStr(szalloc);
+
+				if ((search == false) ||
+					typeStr.contains(searchString, Qt::CaseInsensitive) ||
+					idStr.contains(searchString, Qt::CaseInsensitive) ||
+					classStr.contains(searchString, Qt::CaseInsensitive) ||
+					baseStr.contains(searchString, Qt::CaseInsensitive) ||
+					allocStr.contains(searchString, Qt::CaseInsensitive))
+				{
+					QTreeWidgetItem* it = new QTreeWidgetItem(ui->pw);
+					it->setText(0, typeStr);
+					it->setText(1, idStr); it->setData(1, Qt::UserRole, sid);
+					it->setText(2, classStr);
+					it->setText(3, baseStr);
+					it->setText(4, modules);
+					it->setText(5, allocStr);
+				}
 			}
 		}
 	}

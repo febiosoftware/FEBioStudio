@@ -122,7 +122,7 @@ void CDlgAddPhysicsItem::Update()
 	QString filter = ui->flt->text();
 
 	// set the types
-	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, ui->m_modDepends);
+	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, -1, ui->m_modDepends);
 	for (int i = 0; i < (int)l.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& fac = l[i];

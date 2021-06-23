@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include "units.h"
 #include "PropertyList.h"
 #include <MeshTools/FEModel.h>
+#include "FEBioInterface.h"
 
 
 QStringList GetEnumValues(FEModel* fem, const char* ch)
@@ -509,7 +510,17 @@ public:
 					}
 
 					FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-					FEMaterial* pmat = MF.Create(value.toInt());
+					FEMaterial* pmat = nullptr;
+					if (matProp.GetClassID() < FE_FEBIO_MATERIAL_CLASS)
+					{
+						pmat = MF.Create(value.toInt());
+					}
+					else
+					{
+						pmat = MF.Create(FE_FEBIO_MATERIAL);
+						FEBio::CreateMaterial(matId, pmat);
+					}
+
 					if (pmat)
 					{
 						if (m_matIndex >= 0)
@@ -692,6 +703,7 @@ CMaterialPropsDelegate::CMaterialPropsDelegate(QObject* parent) : QStyledItemDel
 
 // in MaterialEditor.cpp
 void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly);
+void FillComboBox2(QComboBox* pc, int nclass, int module, bool btoplevelonly);
 
 QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -785,7 +797,7 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 			}
 			else
 			{
-				FillComboBox(pc, matProp.GetClassID(), 0xFFFF, false);
+				FillComboBox2(pc, matProp.GetClassID(), 0xFFFF, false);
 
 				pc->insertSeparator(pc->count());
 				pc->addItem("(remove)", -2);

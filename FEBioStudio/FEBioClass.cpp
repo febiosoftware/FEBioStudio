@@ -33,6 +33,24 @@ using namespace FEBio;
 // dummy model used for allocating temporary FEBio classes.
 static FEBioModel febioModel;
 
+static std::map<std::string, int> classIndex;
+
+int baseClassIndex(const char* sz)
+{
+	if (sz == nullptr) return -1;
+
+	int n = -1;
+	auto it = classIndex.find(sz);
+	if (it == classIndex.end())
+	{
+		n = classIndex.size();
+		classIndex[sz] = n;
+	}
+	else n = classIndex[sz];
+
+	return n;
+}
+
 bool in_vector(const vector<int>& v, int n)
 {
 	for (int j = 0; j < v.size(); ++j)
@@ -42,7 +60,7 @@ bool in_vector(const vector<int>& v, int n)
 	return false;
 }
 
-std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, bool includeModuleDependencies)
+std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, int baseClassId, bool includeModuleDependencies)
 {
 	vector<FEBio::FEBioClassInfo> facs;
 
@@ -59,7 +77,9 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, b
 		const FECoreFactory* fac = fecore.GetFactoryClass(i);
 		int facmod = fac->GetModuleID();
 
-		if (fac->GetSuperClassID() == superId)
+		int baseId = baseClassIndex(fac->GetBaseClassName());
+
+		if ((fac->GetSuperClassID() == superId) && ((baseClassId == -1) || (baseId == baseClassId)))
 		{
 			if ((mod == -1) || (mod == facmod) || in_vector(mods, facmod))
 			{
@@ -80,6 +100,14 @@ void FEBioClass::AddParameter(const std::string& paramName, int paramType, const
 	p.m_name = paramName;
 	p.m_val  = val;
 	m_Param.push_back(p);
+}
+
+void FEBioClass::AddProperty(const std::string& propName, int baseClassId)
+{
+	FEBioProperty prop;
+	prop.m_name = propName;
+	prop.m_baseClassId = baseClassId;
+	m_Props.push_back(prop);
 }
 
 QVariant vec3d_to_qvariant(const vec3d& v)
@@ -156,6 +184,20 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		default:
 			assert(false);
 		}
+	}
+
+	// copy properties
+	int props = pc->PropertyClasses();
+	for (int i = 0; i < props; ++i)
+	{
+		FEProperty* prop = pc->PropertyClass(i);
+		const char* sz = prop->GetClassName();
+
+		// lookup the base class ID.
+		int n = baseClassIndex(sz);
+
+		// add it
+		feb->AddProperty(prop->GetName(), n);
 	}
 
 	// all done!

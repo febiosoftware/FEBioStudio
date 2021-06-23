@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ui_materialeditor.h"
 #include <QComboBox>
 #include <FEMLib/FEMaterialFactory.h>
+#include "FEBioClass.h"
 #include <assert.h>
 
 #ifndef WIN32
@@ -85,6 +86,25 @@ void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly)
 	{
 		pc->addItem(it->mat_name, it->mat_typeid);
 	}
+}
+
+void FillComboBox2(QComboBox* pc, int nclass, int module, bool btoplevelonly)
+{
+	if (nclass < FE_FEBIO_MATERIAL_CLASS) {
+		FillComboBox(pc, nclass, module, btoplevelonly); return;
+	}
+
+	nclass -= FE_FEBIO_MATERIAL_CLASS;
+	vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllClasses(-1, FESuperClass::FE_MATERIALPROP, nclass, true);
+
+	pc->clear();
+	int classes = classInfo.size();
+	for (int i = 0; i < classes; ++i)
+	{
+		FEBio::FEBioClassInfo& ci = classInfo[i];
+		pc->addItem(ci.sztype, ci.classId);
+	}
+	pc->model()->sort(0);
 }
 
 void CMaterialEditor::SetMaterial(FEMaterial* mat)

@@ -64,7 +64,7 @@ namespace FEBio {
 		unsigned int	classId;
 	};
 
-	std::vector<FEBioClassInfo> FindAllClasses(int mod, int superId, bool includeModuleDependencies = true);
+	std::vector<FEBioClassInfo> FindAllClasses(int mod, int superId, int baseClassId = -1, bool includeModuleDependencies = true);
 
 	class FEBioParam
 	{
@@ -97,19 +97,22 @@ namespace FEBio {
 	class FEBioProperty
 	{
 	public:
-		FEBioProperty() {}
+		FEBioProperty() { m_baseClassId = -1; }
 		FEBioProperty(const FEBioProperty& p)
 		{
+			m_baseClassId = p.m_baseClassId;
 			m_name = p.m_name;
 			m_comp = p.m_comp;
 		}
 		void operator = (const FEBioProperty& p)
 		{
+			m_baseClassId = p.m_baseClassId;
 			m_name = p.m_name;
 			m_comp = p.m_comp;
 		}
 
 	public:
+		int	m_baseClassId;	// Id that identifies the base class of the property
 		std::string	m_name;
 		std::vector<FEBioClass>	m_comp;
 	};
@@ -138,6 +141,10 @@ namespace FEBio {
 		int Parameters() const { return (int)m_Param.size(); }
 		void AddParameter(const std::string& paramName, int paramType, const QVariant& val);
 		FEBioParam& GetParameter(int i) { return m_Param[i]; }
+
+		int Properties() const { return (int)m_Props.size(); }
+		void AddProperty(const std::string& propName, int baseClassId = -1);
+		FEBioProperty& GetProperty(int i) { return m_Props[i]; }
 
 	private:
 		std::string		m_typeString;

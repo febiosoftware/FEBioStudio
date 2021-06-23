@@ -36,14 +36,12 @@ public:
 	CDlgFEBioInfo(QWidget* parent);
 
 public slots:
-	void onFilterChanged();
-	void onModulesChanged();
 	void onTreeChanged();
 	void onLoadPlugin();
+	void Update();
 
 private:
 	void UpdateModules();
-	void Update();
 
 private:
 	CDlgFEBioInfoUI* ui;

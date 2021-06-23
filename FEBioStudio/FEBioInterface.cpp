@@ -110,5 +110,12 @@ void FEBio::CreateMaterial(int classId, FEMaterial* po)
 	// map the parameters
 	map_parameters(po, feb);
 
+	// map the properties
+	for (int i = 0; i < feb->Properties(); ++i)
+	{
+		FEBio::FEBioProperty& prop = feb->GetProperty(i);
+		po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, 1);
+	}
+
 	delete feb;
 }

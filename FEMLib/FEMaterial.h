@@ -55,6 +55,10 @@
 #define FE_MAT_MREACTION_EREACTANTS     0x00210000
 #define FE_MAT_MREACTION_EPRODUCTS      0x00220000
 
+
+// Classes with IDs above this refer to FEBio base classes.
+#define FE_FEBIO_MATERIAL_CLASS			0x00FF0000
+
 // --- Material Types ---
 // These values are stored in the prv file so don't change!
 //

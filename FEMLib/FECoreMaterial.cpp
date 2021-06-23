@@ -108,7 +108,7 @@ void FEMaterialProperty::AddMaterial(FEMaterial* pm)
 //-----------------------------------------------------------------------------
 void FEMaterialProperty::SetMaterial(FEMaterial* pm, int i) 
 { 
-	if (pm) assert(pm->ClassID() & m_nClassID);
+//	if (pm) assert(pm->ClassID() & m_nClassID);
 	if (pm) pm->SetParentMaterial(m_parent);
 	if (m_mat.empty() == false)
 	{
