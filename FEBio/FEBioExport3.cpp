@@ -1873,7 +1873,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 					if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);
 					else
 					{
-						el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
+						el.add_attribute("type", pc->TypeStr());
 
 						// We need some special formatting for some fiber generator materials
 						bool bdone = false;

@@ -79,7 +79,8 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 
 		int baseId = baseClassIndex(fac->GetBaseClassName());
 
-		if ((fac->GetSuperClassID() == superId) && ((baseClassId == -1) || (baseId == baseClassId)))
+		if (((superId     == -1) || (fac->GetSuperClassID() == superId)) && 
+			((baseClassId == -1) || (baseId == baseClassId)))
 		{
 			if ((mod == -1) || (mod == facmod) || in_vector(mods, facmod))
 			{
