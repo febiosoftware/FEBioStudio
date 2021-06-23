@@ -242,6 +242,20 @@ if(USE_FFMPEG)
     unset(FFMPEG_LIB_NAMES)
 endif()
 
+# Find FEBio Libs
+set(FEBio_LIBS "")
+
+set(FEBio_LIB_NAMES fecore febiolib)
+
+foreach(name IN LISTS FEBio_LIB_NAMES)
+    findLib(FEBio_LIB_DIR FEBio_LIB ${name})
+    list(APPEND FEBio_LIBS ${FEBio_LIB})
+    unset(FEBio_LIB)
+endforeach(name)
+
+unset(FEBio_LIB_NAMES)
+
+
 ##### Set appropriate defines and includes #####
 
 if(WIN32)
@@ -320,6 +334,8 @@ if(USE_FFMPEG)
 endif()
 
 include_directories(${ZLIB_INCLUDE_DIR})
+
+include_directories(${FEBio_INC})
 
 ##### Find Source Files #####
 
@@ -421,6 +437,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
     endif()
 endif()
 
+
 ##### Link Libraries #####
 
 if(WIN32)
@@ -479,6 +496,8 @@ endif()
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
+
+target_link_libraries(FEBioStudio ${FEBio_LIBS})
 
 if(WIN32)
     target_link_libraries(FEBioStudio vfw32.lib)
