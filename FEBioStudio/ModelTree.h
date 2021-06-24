@@ -96,7 +96,8 @@ enum ModelTreeType
 	MT_POST_PLOT,
 	MT_3DIMAGE,
 	MT_3DIMAGE_RENDER,
-	MT_MESH_DATA
+	MT_MESH_DATA,
+	MT_MESH_ADAPTOR_LIST
 };
 
 enum ModelTreeFilter
@@ -177,6 +178,7 @@ protected:
 	void UpdateJobs       (QTreeWidgetItem* t1, CModelDocument* doc);
 	void UpdateImages     (QTreeWidgetItem* t1, CModelDocument* doc);
 	void UpdateMeshData   (QTreeWidgetItem* t1, FEModel& fem);
+	void UpdateMeshAdaptors(QTreeWidgetItem* t1, FEModel& fem);
 
 	void AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FEMaterial* pmat, FEModel& fem, bool topLevel);
 	void AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* mat, FEModel& fem);

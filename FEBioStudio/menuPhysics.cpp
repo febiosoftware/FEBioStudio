@@ -464,6 +464,21 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	}
 }
 
+void CMainWindow::on_actionAddMeshAdaptor_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
+	FEModel& fem = *doc->GetFEModel();
+
+	CDlgAddPhysicsItem dlg("Add Mesh Adaptor", FE_MESH_ADAPTOR, prj, true, this);
+	if (dlg.exec())
+	{
+
+	}
+}
+
 void CMainWindow::on_actionAddStep_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

@@ -894,6 +894,13 @@ void CModelTree::Build(CModelDocument* doc)
 		UpdateMeshData(t2, fem);
 	}
 
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		// Mesh adaptors
+		t2 = AddTreeItem(t1, "Mesh Adaptors", MT_MESH_ADAPTOR_LIST);
+		UpdateMeshAdaptors(t2, fem);
+	}
+
 	// add the materials
 	if ((m_nfilter == ModelTreeFilter::FILTER_NONE)||(m_nfilter == ModelTreeFilter::FILTER_MATERIALS))
 	{
@@ -1386,6 +1393,12 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FEModel& fem)
 			}
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CModelTree::UpdateMeshAdaptors(QTreeWidgetItem* t1, FEModel& fem)
+{
+
 }
 
 //-----------------------------------------------------------------------------

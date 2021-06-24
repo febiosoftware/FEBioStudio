@@ -384,6 +384,7 @@ public slots:
 	void on_actionAddRigidConstraint_triggered();
 	void on_actionAddRigidConnector_triggered();
 	void on_actionAddMaterial_triggered();
+	void on_actionAddMeshAdaptor_triggered();
 	void on_actionAddStep_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();

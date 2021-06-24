@@ -1483,6 +1483,17 @@ void CModelViewer::OnRemoveAllSelections()
 	Update();
 }
 
+void CModelViewer::OnAddMeshAdaptor()
+{
+	CMainWindow* wnd = GetMainWindow();
+	wnd->on_actionAddMeshAdaptor_triggered();
+}
+
+void CModelViewer::OnDeleteAllMeshAdaptors()
+{
+
+}
+
 // clear current FSObject selection
 void CModelViewer::ClearSelection()
 {
@@ -1607,6 +1618,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_NAMED_SELECTION:
 		menu.addAction("Remove empty", this, SLOT(OnRemoveEmptySelections()));
 		menu.addAction("Remove all", this, SLOT(OnRemoveAllSelections()));
+		break;
+	case MT_MESH_ADAPTOR_LIST:
+		menu.addAction("Add Mesh Adaptor", this, SLOT(OnAddMeshAdaptor()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllMeshAdaptors()));
 		break;
 	case MT_OBJECT:
 	{
