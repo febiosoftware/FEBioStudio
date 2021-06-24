@@ -62,11 +62,37 @@ else()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 endif()
 
+add_compile_options(-fPIC)
+
 include_directories(.)
 include_directories(..)
 
 add_definitions(-DHAS_PYTHON -DPY_EXTERNAL)
 
+macro(findHdrSrc name)
+	file(GLOB HDR_${name} "../${name}/*.h")
+	file(GLOB SRC_${name} "../${name}/*.cpp")
+endmacro()
+
+set(FEBIOSTUDIO_LIBS GeomLib MeshIO MeshTools MeshLib FEMLib FSCore MathLib)
+
+foreach(name IN LISTS FEBIOSTUDIO_LIBS)
+	findHdrSrc(${name})
+endforeach(name)
+
+macro(addLib name)
+	add_library(${name} ${HDR_${name}} ${SRC_${name}})
+	set_property(TARGET ${name} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/${name}_autogen)
+endmacro()
+
+foreach(name IN LISTS FEBIOSTUDIO_LIBS)
+	addLib(${name})
+endforeach(name)
+
 add_subdirectory(${PYBIND11_DIR} ./pybind11)
 
+#~ link_libraries(-L/home/mherron/Projects/FEBioStudio/build/Release/lib/ -lMeshTools -lMeshIO -lGeomLib)
+
 pybind11_add_module(fbs PyFBS.cpp PyFBSCore.cpp)
+
+target_link_libraries(fbs PRIVATE -Wl,--start-group ${FEBIOSTUDIO_LIBS} -Wl,--end-group)

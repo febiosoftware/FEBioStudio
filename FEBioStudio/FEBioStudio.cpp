@@ -69,7 +69,6 @@ public:
 int main(int argc, char* argv[])
 {
 	// Initialize the libraries
-	FEElementLibrary::InitLibrary();
 	Post::Initialize();
 
 #ifndef __APPLE__

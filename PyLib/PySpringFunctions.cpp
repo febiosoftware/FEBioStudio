@@ -175,7 +175,6 @@ void IntersectWithObject(vec3d& r0, vec3d& r1, double tol)
 	}
 }
 
-
 void meshFromCurve(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio)
 {
 	auto wnd = PRV::getMainWindow();
