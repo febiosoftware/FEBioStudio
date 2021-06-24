@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "DocTemplate.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
+#include "FEBioClass.h"
 
 class Ui::CDlgNew
 {
@@ -63,7 +64,22 @@ public:
 		m_list = new QListWidget;
 		QStackedWidget* s = new QStackedWidget;
 
-		int ntemp = TemplateManager::Templates();
+		vector<FEBio::FEBioModule> modules = FEBio::GetAllModules();
+		for (int i = 0; i < modules.size(); ++i)
+		{
+			FEBio::FEBioModule& modi = modules[i];
+			QListWidgetItem* it = new QListWidgetItem(m_list);
+			it->setText(modi.m_szname);
+			it->setData(Qt::UserRole, modi.m_id);
+
+			QLabel* label = new QLabel;
+			label->setWordWrap(true);
+			label->setText(modi.m_szname);
+			label->setAlignment(Qt::AlignTop | Qt::AlignLeft); 
+			s->addWidget(label);
+		}
+
+/*		int ntemp = TemplateManager::Templates();
 		for (int i = 0; i<ntemp; ++i)
 		{
 			const DocTemplate& doc = TemplateManager::GetTemplate(i);
@@ -74,6 +90,7 @@ public:
 			m_list->addItem(doc.title.c_str());
 			s->addWidget(label);
 		}
+*/
 
 		m_list->setCurrentRow(0);
 
@@ -174,7 +191,9 @@ void CDlgNew::accept()
 	QDialog::accept();
 }
 
-int CDlgNew::getTemplate()
+int CDlgNew::GetModule()
 {
-	return ui->m_list->currentRow();
+	QListWidgetItem* it = ui->m_list->currentItem();
+	if (it == nullptr) return -1;
+	return it->data(Qt::UserRole).toInt();
 }

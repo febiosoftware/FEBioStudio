@@ -113,7 +113,7 @@ FEProject::FEProject(void) : m_plt(*this)
 	m_title = "untitled";
 
 	// activate all modules
-	m_module = MODULE_ALL;
+	m_module = -1;
 
 	static bool init = false;
 	if (init == false)

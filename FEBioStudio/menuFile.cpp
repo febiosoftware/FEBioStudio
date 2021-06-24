@@ -162,14 +162,14 @@ void CMainWindow::on_actionNewModel_triggered()
 	} while (bok == false);
 
 	// show the dialog box
-	int ntemplate = -1;
+	int nmodule = -1;
 	if (ui->m_showNewDialog)
 	{
 		CDlgNew dlg(this);
 		dlg.SetModelName(QString::fromStdString(docTitle));
 		if (dlg.exec())
 		{
-			ntemplate = dlg.getTemplate();
+			nmodule = dlg.GetModule();
 			docTitle = dlg.GetModelName().toStdString();
 		}
 		else return;
@@ -179,7 +179,7 @@ void CMainWindow::on_actionNewModel_triggered()
 
 	// create a new model doc
 	CModelDocument* doc = CreateNewDocument();
-	if (ntemplate != -1) doc->LoadTemplate(ntemplate);
+	doc->GetProject().SetModule(nmodule);
 	doc->SetDocTitle(docTitle);
 	AddDocument(doc);
 }
