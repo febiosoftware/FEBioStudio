@@ -114,6 +114,7 @@ void FEBioExport::WriteParam(Param &p)
 	case Param_VEC3D : e.value(p.GetVec3dValue()); break;
 	case Param_VEC2I : e.value(p.GetVec2iValue()); break;
 	case Param_MAT3D : e.value(p.GetMat3dValue()); break;
+	case Param_MAT3DS : e.value(p.GetMat3dsValue()); break;
 	case Param_MATH  :
 	{
 		e.add_attribute("type", "math");

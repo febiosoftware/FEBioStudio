@@ -51,6 +51,7 @@ public:
 		ColorMap,
 		Vec3,
 		Mat3,
+		Mat3s,
 		Vec2i,
 
 		// from PostView
@@ -179,6 +180,8 @@ public:
 QString Vec3dToString(const vec3d& r);
 vec3d StringToVec3d(const QString& s);
 mat3d StringToMat3d(const QString& s);
+mat3ds StringToMat3ds(const QString& s);
 QString Mat3dToString(const mat3d& a);
+QString Mat3dsToString(const mat3ds& a);
 QString Vec2iToString(const vec2i& r);
 vec2i StringToVec2i(const QString& s);

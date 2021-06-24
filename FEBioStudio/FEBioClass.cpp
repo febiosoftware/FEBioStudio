@@ -128,6 +128,18 @@ QVariant mat3d_to_qvariant(const mat3d& m)
 	return val;
 }
 
+QVariant mat3ds_to_qvariant(const mat3ds& m)
+{
+	QList<QVariant> val;
+	val.push_back(m.xx());
+	val.push_back(m.yy());
+	val.push_back(m.zz());
+	val.push_back(m.xy());
+	val.push_back(m.yz());
+	val.push_back(m.xz());
+	return val;
+}
+
 FEBioClass* FEBio::CreateFEBioClass(int classId)
 {
 	// Get the kernel
@@ -175,6 +187,13 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 			mat3d M; M.unit(); // TODO: Grab const value from FEParamMat3d
 			QVariant val = mat3d_to_qvariant(M);
 //			feb->AddParameter(p.name(), p.type(), val);
+		}
+		break;
+		case FE_PARAM_MAT3DS_MAPPED:
+		{
+			mat3ds M; M.unit(); // TODO: Grab const value from FEParamMat3d
+			QVariant val = mat3ds_to_qvariant(M);
+			feb->AddParameter(p.name(), p.type(), val);
 		}
 		break;
 		case FEBIO_PARAM_STD_VECTOR_INT:

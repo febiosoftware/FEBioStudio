@@ -50,6 +50,19 @@ mat3d qvariant_to_mat3d(const QVariant& v)
 	return w;
 }
 
+mat3ds qvariant_to_mat3ds(const QVariant& v)
+{
+	QList<QVariant> val = v.value<QList<QVariant> >();
+	mat3ds m;
+	m.xx() = val.at(0).toDouble();
+	m.yy() = val.at(1).toDouble();
+	m.zz() = val.at(2).toDouble();
+	m.xy() = val.at(3).toDouble();
+	m.yz() = val.at(4).toDouble();
+	m.xz() = val.at(5).toDouble();
+	return m;
+}
+
 void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 {
 	// copy the parameters from the FEBioClass to the FSObject
@@ -74,6 +87,7 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 		case FEBio::FEBIO_PARAM_DOUBLE_MAPPED: po->AddDoubleParam(v.toDouble(), szname)->MakeVariable(true); break;
 		case FEBio::FEBIO_PARAM_VEC3D_MAPPED : po->AddVecParam(qvariant_to_vec3d(v), szname); break;
 		case FEBio::FEBIO_PARAM_MAT3D_MAPPED : po->AddMat3dParam(qvariant_to_mat3d(v), szname); break;
+		case FEBio::FEBIO_PARAM_MAT3DS_MAPPED : po->AddMat3dsParam(qvariant_to_mat3ds(v), szname); break;
 		default:
 			assert(false);
 		}

@@ -158,6 +158,13 @@ void XMLTag::value(mat3d& m)
 	m = mat3d(a);
 }
 
+void XMLTag::value(mat3ds& m)
+{
+	double a[6] = { 0 };
+	sscanf(m_szval, "%lg,%lg,%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3, a + 4, a + 5);
+	m = mat3ds(a[0], a[1], a[2], a[3], a[4], a[5]);
+}
+
 void XMLTag::value(GLColor& c)
 {
 	sscanf(m_szval, "%c,%c,%c", &c.r, &c.g, &c.b);

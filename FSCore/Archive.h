@@ -170,6 +170,14 @@ public:
 		return IO_OK; 
 	}
 
+	IOResult read(mat3ds& a)
+	{
+		double d[6];
+		read(d, 6);
+		a = mat3ds(d[0], d[1], d[2], d[3], d[4], d[5]);
+		return IO_OK;
+	}
+
 	IOResult read(char* sz)
 	{
 		IOResult ret;

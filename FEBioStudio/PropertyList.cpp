@@ -51,6 +51,15 @@ mat3d StringToMat3d(const QString& s)
 	return mat3d(a);
 }
 
+mat3ds StringToMat3ds(const QString& s)
+{
+	string st = s.toStdString();
+	const char* sz = st.c_str();
+	double a[6];
+	sscanf(sz, "%lg,%lg,%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3, a + 4, a + 5);
+	return mat3ds(a[0], a[1], a[2], a[3], a[4], a[5]);
+}
+
 vec2i StringToVec2i(const QString& s)
 {
 	std::string str = s.toStdString();
@@ -80,6 +89,18 @@ QString Mat3dToString(const mat3d& a)
 
 			if ((i != 2) || (j != 2)) s += ",";
 		}
+	return s;
+}
+
+QString Mat3dsToString(const mat3ds& a)
+{
+	QString s;
+	s = QString("%1").arg(a.xx());
+	s += QString(",%1").arg(a.yy());
+	s += QString(",%1").arg(a.zz());
+	s += QString(",%1").arg(a.xy());
+	s += QString(",%1").arg(a.yz());
+	s += QString(",%1").arg(a.xz());
 	return s;
 }
 

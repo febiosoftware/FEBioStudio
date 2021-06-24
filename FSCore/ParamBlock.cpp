@@ -153,6 +153,7 @@ void Param::clear()
 		case Param_VEC3D : delete ((vec3d*) m_pd); break;
 		case Param_VEC2I : delete ((vec2i*)m_pd); break;
 		case Param_MAT3D : delete ((mat3d*)m_pd); break;
+		case Param_MAT3DS: delete ((mat3ds*)m_pd); break;
 		case Param_STRING: delete ((std::string*) m_pd); break;
 		case Param_MATH  : delete ((std::string*) m_pd); break;
 		case Param_COLOR : delete ((GLColor*)m_pd); break;
@@ -175,6 +176,7 @@ void Param::SetParamType(Param_Type t)
 	case Param_VEC3D : m_pd = new vec3d; break;
 	case Param_VEC2I : m_pd = new vec2i; break;
 	case Param_MAT3D : m_pd = new mat3d; break;
+	case Param_MAT3DS: m_pd = new mat3ds; break;
 	case Param_STRING: m_pd = new std::string; break;
 	case Param_MATH  : m_pd = new std::string; break;
 	case Param_COLOR : m_pd = new GLColor; break;
@@ -258,6 +260,7 @@ Param::Param(const Param& p)
 	case Param_VEC3D : { vec3d*	 pv = new vec3d ; m_pd = pv; *pv = *((vec3d* )p.m_pd); } break;
 	case Param_VEC2I : { vec2i*	 pv = new vec2i ; m_pd = pv; *pv = *((vec2i* )p.m_pd); } break;
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
+	case Param_MAT3DS: { mat3ds* pv = new mat3ds; m_pd = pv; *pv = *((mat3ds* )p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
@@ -294,6 +297,7 @@ Param& Param::operator = (const Param& p)
 	case Param_VEC3D : { vec3d*	 pv = new vec3d ; m_pd = pv; *pv = *((vec3d* )p.m_pd); } break;
 	case Param_VEC2I : { vec2i*	 pv = new vec2i ; m_pd = pv; *pv = *((vec2i* )p.m_pd); } break;
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
+	case Param_MAT3DS: { mat3ds* pv = new mat3ds; m_pd = pv; *pv = *((mat3ds*)p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
@@ -502,6 +506,30 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 }
 
 //-----------------------------------------------------------------------------
+Param::Param(mat3ds v, const char* szb, const char* szn)
+{
+	mat3ds* pv = new mat3ds;
+	*pv = v;
+	m_pd = pv;
+	m_ntype = Param_MAT3DS;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_plc = 0;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
+}
+
+//-----------------------------------------------------------------------------
 Param::Param(GLColor c, const char* szb, const char* szn)
 {
 	GLColor* pc = new GLColor(c);
@@ -677,6 +705,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_VEC3D : { vec3d  v = p.GetVec3dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_VEC2I : { vec2i  v = p.GetVec2iValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_MAT3D : { mat3d  v = p.GetMat3dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_MAT3DS: { mat3ds v = p.GetMat3dsValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STRING: { std::string s = p.GetStringValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_MATH  : { std::string s = p.GetMathString(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_COLOR : { GLColor c = p.GetColorValue(); ar.WriteChunk(CID_PARAM_VALUE, c); } break;
@@ -737,6 +766,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_VEC3D : p.SetParamType(Param_VEC3D); break;
 			case Param_VEC2I : p.SetParamType(Param_VEC2I); break;
 			case Param_MAT3D : p.SetParamType(Param_MAT3D); break;
+			case Param_MAT3DS: p.SetParamType(Param_MAT3DS); break;
 			case Param_CHOICE: p.SetParamType(Param_CHOICE); break;
 			case Param_STRING: p.SetParamType(Param_STRING); break;
 			case Param_MATH  : p.SetParamType(Param_MATH); break;
@@ -754,6 +784,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_VEC3D : { vec3d  v; ar.read(v); p.SetVec3dValue (v); } break;
 			case Param_VEC2I : { vec2i  v; ar.read(v); p.SetVec2iValue (v); } break;
 			case Param_MAT3D : { mat3d  m; ar.read(m); p.SetMat3dValue (m); } break;
+			case Param_MAT3DS: { mat3ds m; ar.read(m); p.SetMat3dsValue (m); } break;
 			case Param_STRING: { std::string s; ar.read(s); p.SetStringValue(s); } break;
 			case Param_MATH  : { std::string s; ar.read(s); p.SetMathString(s); } break;
 			case Param_COLOR : { GLColor c; ar.read(c); p.SetColorValue(c); break; }

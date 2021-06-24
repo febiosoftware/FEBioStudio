@@ -144,6 +144,7 @@ public:
 	void value(vec3d& v);
 	void value(vec2i& v);
 	void value(mat3d& v);
+	void value(mat3ds& v);
 	void value(vec3f& v);
 	void value(bool& b) { b = (atoi(m_szval) == 1); }
 	void value(vector<int>& l);
