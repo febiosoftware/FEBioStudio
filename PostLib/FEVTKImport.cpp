@@ -183,6 +183,8 @@ bool FEVTKimport::Load(const char* szfile)
 	m_ps = ps;
 	fem.AddState(ps);
 
+	string dataName = "data";
+
 	while (ch != NULL) //making sure the file doesn't ends here
 	{
 		bool floatFormat = true;
@@ -201,8 +203,20 @@ bool FEVTKimport::Load(const char* szfile)
 				size = atoi(ch + 9);
 				isCellData = true;
 			}
-			if (strstr(ch, "SCALARS") != 0) isScalar = true;
-			if ((strstr(ch, "int") != 0) || (strstr(ch, "INT") != 0)) floatFormat = false;
+			if (strstr(ch, "SCALARS") != 0)
+			{
+				isScalar = true;
+				ch += 8;
+				char* ch2 = strchr(ch, ' ');
+				if (ch2)
+				{
+					char tmp[256] = { 0 };
+					strncpy(tmp, ch, (int)(ch2 - ch));
+					dataName = tmp;
+				}
+				else dataName = ch;
+				if ((strstr(ch, "int") != 0) || (strstr(ch, "INT") != 0)) floatFormat = false;
+			}
 			if (strstr(ch, "ShellThickness") != 0) isShellThickness = true;
 			ch = fgets(szline, 255, m_fp);
 		}
@@ -244,7 +258,7 @@ bool FEVTKimport::Load(const char* szfile)
 				}
 			}
 
-			fem.AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), "data");
+			fem.AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), dataName);
 
 			FENodeData<float>& df = dynamic_cast<FENodeData<float>&>(ps->m_Data[0]);
 			for (int j=0; j<pm->Nodes(); ++j) df[j] = (float) data[j];
