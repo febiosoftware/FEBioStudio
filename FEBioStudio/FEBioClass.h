@@ -157,6 +157,7 @@ namespace FEBio {
 	struct FEBioModule
 	{
 		const char* m_szname;
+		const char* m_szdesc;
 		int				m_id;
 	};
 

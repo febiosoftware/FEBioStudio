@@ -46,6 +46,8 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include "FEBioClass.h"
+#include <QJSonDocument>
+#include <QJSonObject>
 
 class Ui::CDlgNew
 {
@@ -68,13 +70,58 @@ public:
 		for (int i = 0; i < modules.size(); ++i)
 		{
 			FEBio::FEBioModule& modi = modules[i];
+
+			QString modName(modi.m_szname);
+			QString labelTxt(modi.m_szname);
+			if (modi.m_szdesc)
+			{
+				QJsonDocument json;
+				QJsonParseError error;
+				json = QJsonDocument::fromJson(QByteArray(modi.m_szdesc), &error);
+				if (error.error == QJsonParseError::NoError)
+				{
+					const QJsonObject& jo = json.object();
+					int n = jo.count();
+
+					QString title;
+					if (jo.contains("title") && jo["title"].isString())
+					{
+						title = jo["title"].toString();
+						modName = title;
+					}
+					else title = modi.m_szname;
+					labelTxt = QString("<h1>%1</h1>").arg(title);
+
+					QString info;
+					if (jo.contains("info") && jo["info"].isString())
+					{
+						info = jo["info"].toString();
+						labelTxt += QString("<p>%1</p>").arg(info);
+					}
+
+					QString author;
+					if (jo.contains("author") && jo["author"].isString())
+					{
+						author = jo["author"].toString();
+						labelTxt += QString("<p>author: %1</p>").arg(author);
+					}
+
+					QString version;
+					if (jo.contains("version") && jo["version"].isString())
+					{
+						version = jo["version"].toString();
+						labelTxt += QString("<p>version: %1</p>").arg(version);
+					}
+				}
+			}
+
 			QListWidgetItem* it = new QListWidgetItem(m_list);
-			it->setText(modi.m_szname);
+			it->setText(modName);
 			it->setData(Qt::UserRole, modi.m_id);
 
 			QLabel* label = new QLabel;
 			label->setWordWrap(true);
-			label->setText(modi.m_szname);
+			label->setText(labelTxt);
 			label->setAlignment(Qt::AlignTop | Qt::AlignLeft); 
 			s->addWidget(label);
 		}

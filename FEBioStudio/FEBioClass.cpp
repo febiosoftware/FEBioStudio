@@ -235,6 +235,7 @@ vector<FEBio::FEBioModule>	FEBio::GetAllModules()
 	{
 		FEBio::FEBioModule mod;
 		mod.m_szname = fecore.GetModuleName(i);
+		mod.m_szdesc = fecore.GetModuleDescription(i);
 		mod.m_id = i + 1;
 		mods.push_back(mod);
 	}
