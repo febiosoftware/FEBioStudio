@@ -4619,7 +4619,7 @@ void FEBioExport3::WriteLoadDataSection()
 				//		case FELoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
 			case FELoadCurve::EXT_EXTRAPOLATE  : m_xml.add_leaf("extend", "EXTRAPOLATE"); break;
 			case FELoadCurve::EXT_REPEAT       : m_xml.add_leaf("extend", "REPEAT"); break;
-			case FELoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "REPEAT_OFFSET"); break;
+			case FELoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "REPEAT OFFSET"); break;
 			}
 
 			m_xml.add_branch("points");
