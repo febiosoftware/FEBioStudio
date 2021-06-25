@@ -56,7 +56,7 @@ vec2i StringToVec2i(const QString& s)
 	std::string str = s.toStdString();
 	const char* sz = str.c_str();
 	vec2i r;
-	sscanf(sz, "%ld,%ld", &r.x, &r.y);
+	sscanf(sz, "%d,%d", &r.x, &r.y);
 	return r;
 }
 
