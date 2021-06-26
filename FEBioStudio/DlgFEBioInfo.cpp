@@ -395,6 +395,7 @@ void CDlgFEBioInfo::onLoadPlugin()
 		}
 		else
 		{
+			QMessageBox::information(this, "Load Plugin", "The plugin loaded successfully.");
 			UpdateModules();
 			Update();
 		}
