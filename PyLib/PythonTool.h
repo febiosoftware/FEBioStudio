@@ -85,8 +85,8 @@ public:
 	void addEnumProperty(const std::string& name, const std::string& labels, int value = 0);
 	void addDoubleProperty(const std::string& name, double value = 0);
     void addVec3Property(const std::string& name, vec3d value = vec3d());
-    void addStringProperty(const std::string& name, char* value = "");
-    void addResourceProperty(const std::string& name, char* value = "");
+    void addStringProperty(const std::string& name, const char* value = "");
+    void addResourceProperty(const std::string& name, const char* value = "");
 
 
     std::string name;

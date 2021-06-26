@@ -247,13 +247,13 @@ void CPythonDummyTool::addVec3Property(const std::string& name, vec3d value)
     vec3Props.emplace(name, value);
 }
 
-void CPythonDummyTool::addStringProperty(const std::string& name, char* value)
+void CPythonDummyTool::addStringProperty(const std::string& name, const char* value)
 {
     propOrder.push_back(CProperty::String);
     strProps.emplace(name, value);
 }
 
-void CPythonDummyTool::addResourceProperty(const std::string& name, char* value)
+void CPythonDummyTool::addResourceProperty(const std::string& name, const char* value)
 {
     propOrder.push_back(CProperty::Resource);
     rscProps.emplace(name, value);

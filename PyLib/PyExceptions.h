@@ -29,9 +29,9 @@ SOFTWARE.*/
 class pyGenericExcept: public std::exception
 {
 public:
-    char * err;
+    const char * err;
 
-    pyGenericExcept(char* err) : err(err) { }
+    pyGenericExcept(const char* err) : err(err) { }
 
     virtual const char* what() const throw()
     {
