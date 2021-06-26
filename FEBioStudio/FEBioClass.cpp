@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioClass.h"
+#include "FEBioModule.h"
 #include <FECore/FECoreKernel.h>
 #include <FECore/FECoreBase.h>
 #include <FEBioLib/FEBioModel.h>
@@ -241,4 +242,10 @@ vector<FEBio::FEBioModule>	FEBio::GetAllModules()
 	}
 
 	return mods;
+}
+
+const char* FEBio::GetModuleName(int moduleId)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	return fecore.GetModuleNameFromId(moduleId);
 }

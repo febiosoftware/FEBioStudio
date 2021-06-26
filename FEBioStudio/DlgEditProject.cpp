@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QLabel>
 #include "FEBioClass.h"
+#include "FEBioModule.h"
 
 class Ui::CDlgEditProject
 {

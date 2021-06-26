@@ -349,4 +349,4 @@ std::string defaultInterfaceName(FEModel* fem, FEInterface* pi);
 std::string defaultConstraintName(FEModel* fem, FEModelConstraint* pi);
 std::string defaultRigidConnectorName(FEModel* fem, FERigidConnector* pc);
 std::string defaultRigidConstraintName(FEModel* fem, FERigidConstraint* pc);
-std::string defaultStepName(FEModel* fem, FEAnalysisStep* ps);
+std::string defaultStepName(FEModel* fem, FEStep* ps);

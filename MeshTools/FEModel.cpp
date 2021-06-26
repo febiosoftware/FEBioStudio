@@ -150,7 +150,7 @@ std::string defaultRigidConstraintName(FEModel* fem, FERigidConstraint* pc)
 	return  ss.str();
 }
 
-std::string defaultStepName(FEModel* fem, FEAnalysisStep* ps)
+std::string defaultStepName(FEModel* fem, FEStep* ps)
 {
 	int nsteps = fem->Steps();
 	stringstream ss;
@@ -950,6 +950,7 @@ void FEModel::LoadSteps(IArchive& ar)
         case FE_STEP_FLUID              : ps = new FEFluidAnalysis      (this); break;
         case FE_STEP_FLUID_FSI          : ps = new FEFluidFSIAnalysis   (this); break;
 		case FE_STEP_REACTION_DIFFUSION : ps = new FEReactionDiffusionAnalysis(this); break;
+		case FE_STEP_FEBIO_ANALYSIS     : ps = new FEBioAnalysisStep(this); break;
 		default:
 			throw ReadError("unknown CID in FEModel::LoadSteps");
 		}

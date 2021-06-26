@@ -1329,3 +1329,12 @@ vector<string> FEReactionDiffusionAnalysis::GetAnalysisStrings() const
 	s.push_back("transient");
 	return s;
 }
+
+//==================================================================================
+FEBioAnalysisStep::FEBioAnalysisStep(FEModel* ps) : FEStep(ps, FE_STEP_FEBIO_ANALYSIS)
+{
+	SetTypeString("Step");
+
+	AddIntParam(10, "time_steps", "Time steps");
+	AddDoubleParam(0.1, "step_size", "Time step size");
+}

@@ -1613,7 +1613,7 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEModel& fem)
 		{
 			t2 = AddTreeItem(t1, name, MT_STEP, 0, analysis, new CAnalysisTimeSettings(analysis), 0, 1);
 		}
-		else t2 = AddTreeItem(t1, name, 0, 0, pstep);
+		else t2 = AddTreeItem(t1, name, MT_STEP, 0, pstep, new CObjectProps(pstep), 0, 1);
 
 		// add the boundary conditions
 		t3 = AddTreeItem(t2, "Boundary Conditions", MT_BC_LIST, pstep->BCs());

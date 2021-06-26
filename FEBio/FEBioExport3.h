@@ -219,8 +219,8 @@ protected:
 
 	GPartList* BuildPartList(GMaterial* mat);
 
-	void WriteModuleSection(FEAnalysisStep* pstep);
-	void WriteControlSection(FEAnalysisStep* pstep);
+	void WriteModuleSection(FEStep* pstep);
+	void WriteControlSection(FEStep& s);
 	void WriteMaterialSection();
 	void WriteGeometrySection();
 	void WriteGeometrySectionOld();	// old, global node and element list

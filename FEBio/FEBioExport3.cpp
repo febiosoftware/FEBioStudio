@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
+#include <FEBioStudio/FEBioModule.h>
 #include <memory>
 #include <sstream>
 //using namespace std;
@@ -768,8 +769,8 @@ bool FEBioExport3::Write(const char* szfile)
 		bool bsingle_step = (m_nsteps <= 1);
 		if (m_nsteps == 2)
 		{
-			FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
-			if (pstep == 0) return errf("Step 1 is not an analysis step.");
+//			FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+//			if (pstep == 0) return errf("Step 1 is not an analysis step.");
 			ntype = pstep->GetType();
 			if (pstep->BCs() + pstep->Loads() + pstep->ICs() + pstep->Interfaces() + pstep->LinearConstraints() + pstep->RigidConstraints() + pstep->RigidConnectors() == 0) bsingle_step = true;
 		}
@@ -795,8 +796,7 @@ bool FEBioExport3::Write(const char* szfile)
 			// (This is verified in PrepareExport)
 			if (m_nsteps > 1)
 			{
-				FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
-				if (pstep == 0) return errf("Step 1 is not an analysis step.");
+				FEStep* pstep = fem.GetStep(1);
 				if (m_section[FEBIO_MODULE]) WriteModuleSection(pstep);
 			}
 
@@ -807,7 +807,7 @@ bool FEBioExport3::Write(const char* szfile)
 				{
 					m_xml.add_branch("Control");
 					{
-						FEAnalysisStep* step = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+						FEStep& step = *fem.GetStep(1);
 						WriteControlSection(step);
 					}
 					m_xml.close_branch();
@@ -1019,7 +1019,7 @@ bool FEBioExport3::Write(const char* szfile)
 
 //-----------------------------------------------------------------------------
 // Write the MODULE section
-void FEBioExport3::WriteModuleSection(FEAnalysisStep* pstep)
+void FEBioExport3::WriteModuleSection(FEStep* pstep)
 {
 	XMLElement t;
 	t.name("Module");
@@ -1033,28 +1033,43 @@ void FEBioExport3::WriteModuleSection(FEAnalysisStep* pstep)
 	case FE_STEP_FLUID: t.add_attribute("type", "fluid"); break;
 	case FE_STEP_FLUID_FSI: t.add_attribute("type", "fluid-FSI"); break;
 	case FE_STEP_REACTION_DIFFUSION: t.add_attribute("type", "reaction-diffusion"); m_useReactionMaterial2 = true; break;
+	case FE_STEP_FEBIO_ANALYSIS:
+	{
+		int mod = m_prj.GetModule();
+		const char* szmod = FEBio::GetModuleName(mod);
+		t.add_attribute("type", szmod);
+	}
+	break;
 	};
 
 	m_xml.add_empty(t);
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteControlSection(FEAnalysisStep* pstep)
+void FEBioExport3::WriteControlSection(FEStep& step)
 {
-	STEP_SETTINGS& ops = pstep->GetSettings();
-	int ntype = pstep->GetType();
-	switch (ntype)
+	FEAnalysisStep* analysis = dynamic_cast<FEAnalysisStep*>(&step);
+	if (analysis)
 	{
-	case FE_STEP_MECHANICS: WriteSolidControlParams(pstep); break;
-	case FE_STEP_HEAT_TRANSFER: WriteHeatTransferControlParams(pstep); break;
-	case FE_STEP_BIPHASIC: WriteBiphasicControlParams(pstep); break;
-	case FE_STEP_BIPHASIC_SOLUTE: WriteBiphasicSoluteControlParams(pstep); break;
-	case FE_STEP_MULTIPHASIC: WriteBiphasicSoluteControlParams(pstep); break;
-	case FE_STEP_FLUID: WriteFluidControlParams(pstep); break;
-	case FE_STEP_FLUID_FSI: WriteFluidFSIControlParams(pstep); break;
-	case FE_STEP_REACTION_DIFFUSION: WriteReactionDiffusionControlParams(pstep); break;
-	default:
-		assert(false);
+		STEP_SETTINGS& ops = analysis->GetSettings();
+		int ntype = analysis->GetType();
+		switch (ntype)
+		{
+		case FE_STEP_MECHANICS: WriteSolidControlParams(analysis); break;
+		case FE_STEP_HEAT_TRANSFER: WriteHeatTransferControlParams(analysis); break;
+		case FE_STEP_BIPHASIC: WriteBiphasicControlParams(analysis); break;
+		case FE_STEP_BIPHASIC_SOLUTE: WriteBiphasicSoluteControlParams(analysis); break;
+		case FE_STEP_MULTIPHASIC: WriteBiphasicSoluteControlParams(analysis); break;
+		case FE_STEP_FLUID: WriteFluidControlParams(analysis); break;
+		case FE_STEP_FLUID_FSI: WriteFluidFSIControlParams(analysis); break;
+		case FE_STEP_REACTION_DIFFUSION: WriteReactionDiffusionControlParams(analysis); break;
+		default:
+			assert(false);
+		}
+	}
+	else
+	{
+		WriteParamList(step);
 	}
 }
 
@@ -4897,75 +4912,75 @@ void FEBioExport3::WriteStepSection()
 	// so now we simply output all the analysis steps
 	for (int i = 1; i<m_pfem->Steps(); ++i)
 	{
-		FEAnalysisStep& s = dynamic_cast<FEAnalysisStep&>(*m_pfem->GetStep(i));
+		FEStep& step = *m_pfem->GetStep(i);
 
-		if (m_writeNotes) WriteNote(&s);
+		if (m_writeNotes) WriteNote(&step);
 
 		XMLElement e;
 		e.name("step");
 		e.add_attribute("id", i);
-		if (s.GetName().empty() == false) e.add_attribute("name", s.GetName().c_str());
+		if (step.GetName().empty() == false) e.add_attribute("name", step.GetName().c_str());
 
 		m_xml.add_branch(e);
 		{
 			// output control section
 			m_xml.add_branch("Control");
 			{
-				WriteControlSection(&s);
+				WriteControlSection(step);
 			}
 			m_xml.close_branch(); // Control
 
 			// output boundary section
-			int nbc = s.BCs() + s.Interfaces();
+			int nbc = step.BCs() + step.Interfaces();
 			if (nbc>0)
 			{
 				m_xml.add_branch("Boundary");
 				{
-					WriteBoundarySection(s);
+					WriteBoundarySection(step);
 				}
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = s.RigidConstraints();
+			int nrc = step.RigidConstraints();
 			if (nrc > 0)
 			{
 				m_xml.add_branch("Rigid");
 				{
-					WriteRigidSection(s);
+					WriteRigidSection(step);
 				}
 				m_xml.close_branch();
 
 			}
 
 			// output loads section
-			int nlc = s.Loads();
+			int nlc = step.Loads();
 			if (nlc>0)
 			{
 				m_xml.add_branch("Loads");
 				{
-					WriteLoadsSection(s);
+					WriteLoadsSection(step);
 				}
 				m_xml.close_branch(); // Loads
 			}
 
 			// output contact section
-			int nci = s.Interfaces();
+			int nci = step.Interfaces();
 			if (nci)
 			{
 				m_xml.add_branch("Contact");
 				{
-					WriteContactSection(s);
+					WriteContactSection(step);
 				}
 				m_xml.close_branch();
 			}
 
 			// output constraint section
-			int nnlc = s.RigidConstraints() + CountConstraints<FEModelConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
+			int nnlc = step.RigidConstraints() + CountConstraints<FEModelConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
 			if (nnlc > 0)
 			{
 				m_xml.add_branch("Constraints");
 				{
-					WriteConstraintSection(s);
+					WriteConstraintSection(step);
 				}
 				m_xml.close_branch(); // Constraints
 			}

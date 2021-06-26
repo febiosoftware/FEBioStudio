@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include "FEBioClass.h"
+#include "FEBioModule.h"
 #include <QJSonDocument>
 #include <QJSonObject>
 

@@ -297,14 +297,6 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FENonConstBodyForce          , MODULE_MECH, FE_BODY_LOAD        , FE_NON_CONST_BODY_FORCE         , "Non-const body force", NON_CONSTANT_BODY_FORCE_HTML);
     REGISTER_FE_CLASS(FECentrifugalBodyForce       , MODULE_MECH, FE_BODY_LOAD        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force", CENTRIFUGAL_BODY_FORCE_HTML);
 
-	REGISTER_FE_CLASS(FEBioBoundaryCondition, MODULE_MECH, FE_ESSENTIAL_BC, FE_FEBIO_BC, "[febio]");
-	REGISTER_FE_CLASS(FEBioNodalLoad  , MODULE_MECH, FE_NODAL_LOAD  , FE_FEBIO_NODAL_LOAD, "[febio]");
-	REGISTER_FE_CLASS(FEBioSurfaceLoad, MODULE_MECH, FE_SURFACE_LOAD, FE_FEBIO_SURFACE_LOAD, "[febio]");
-	REGISTER_FE_CLASS(FEBioBodyLoad   , MODULE_MECH, FE_BODY_LOAD   , FE_FEBIO_BODY_LOAD, "[febio]");
-	REGISTER_FE_CLASS(FEBioInterface  , MODULE_MECH, FE_INTERFACE   , FE_FEBIO_INTERFACE, "[febio]");
-	REGISTER_FE_CLASS(FEBioInitialCondition, MODULE_MECH, FE_INITIAL_CONDITION, FE_FEBIO_INITIAL_CONDITION, "[febio]");
-	REGISTER_FE_CLASS(FEBioNLConstraint    , MODULE_MECH, FE_CONSTRAINT       , FE_FEBIO_NLCONSTRAINT     , "[febio]");
-
 	REGISTER_FE_CLASS(FERigidFixed			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
 	REGISTER_FE_CLASS(FERigidDisplacement	, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
 	REGISTER_FE_CLASS(FERigidForce			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FORCE				, "Prescribed rigid force", PRESCRIBE_RIGID_CONSTRAINT_HTML);
@@ -397,6 +389,16 @@ void FEProject::InitModules()
 	// --- REACTION-DIFFUSION MODULE ---
 	REGISTER_FE_CLASS(FEReactionDiffusionAnalysis, MODULE_REACTION_DIFFUSION, FE_ANALYSIS, FE_STEP_REACTION_DIFFUSION, "Reaction-Diffusion");
 	REGISTER_FE_CLASS(FEConcentrationFlux        , MODULE_REACTION_DIFFUSION, FE_SURFACE_LOAD, FE_CONCENTRATION_FLUX, "Concentration Flux");
+
+	// FEBio interface classes
+	REGISTER_FE_CLASS(FEBioBoundaryCondition, 0, FE_ESSENTIAL_BC     , FE_FEBIO_BC               , "[febio]");
+	REGISTER_FE_CLASS(FEBioNodalLoad        , 0, FE_NODAL_LOAD       , FE_FEBIO_NODAL_LOAD       , "[febio]");
+	REGISTER_FE_CLASS(FEBioSurfaceLoad      , 0, FE_SURFACE_LOAD     , FE_FEBIO_SURFACE_LOAD     , "[febio]");
+	REGISTER_FE_CLASS(FEBioBodyLoad         , 0, FE_BODY_LOAD        , FE_FEBIO_BODY_LOAD        , "[febio]");
+	REGISTER_FE_CLASS(FEBioInterface        , 0, FE_INTERFACE        , FE_FEBIO_INTERFACE        , "[febio]");
+	REGISTER_FE_CLASS(FEBioInitialCondition , 0, FE_INITIAL_CONDITION, FE_FEBIO_INITIAL_CONDITION, "[febio]");
+	REGISTER_FE_CLASS(FEBioNLConstraint     , 0, FE_CONSTRAINT       , FE_FEBIO_NLCONSTRAINT     , "[febio]");
+	REGISTER_FE_CLASS(FEBioAnalysisStep     , 0, FE_ANALYSIS         , FE_STEP_FEBIO_ANALYSIS    , "[febio]");
 }
 
 //-------------------------------------------------------------------------------------------------

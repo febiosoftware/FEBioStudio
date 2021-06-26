@@ -486,19 +486,21 @@ void CMainWindow::on_actionAddStep_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel* fem = doc->GetFEModel();
-	CDlgAddStep dlg(prj, this);
-	if (dlg.exec())
+//	CDlgAddStep dlg(prj, this);
+//	if (dlg.exec())
 	{
-		FEAnalysisStep* ps = fecore_new<FEAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
+//		FEAnalysisStep* ps = fecore_new<FEAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
+		FEStep* ps = fecore_new<FEStep>(fem, FE_ANALYSIS, FE_STEP_FEBIO_ANALYSIS); 
 		assert(ps);
 		if (ps)
 		{
-			std::string name = dlg.m_name;
-			if (name.empty()) name = defaultStepName(fem, ps);
+//			std::string name = dlg.m_name;
+//			if (name.empty()) name = defaultStepName(fem, ps);
+			std::string name = defaultStepName(fem, ps);
 
 			ps->SetName(name);
-			doc->DoCommand(new CCmdAddStep(fem, ps, dlg.insertPosition()));
-			prj.ActivatePlotVariables(ps);
+			doc->DoCommand(new CCmdAddStep(fem, ps, -1));
+//			prj.ActivatePlotVariables(ps);
 			UpdateModel(ps);
 		}
 	}

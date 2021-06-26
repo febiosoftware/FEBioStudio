@@ -27,6 +27,7 @@ class FEModelConstraint;
 #define FE_STEP_FLUID               7
 #define FE_STEP_REACTION_DIFFUSION	8
 #define FE_STEP_FLUID_FSI           9
+#define FE_STEP_FEBIO_ANALYSIS		10
 
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
@@ -325,4 +326,12 @@ public:
 
 	// get the analysis types
 	vector<string> GetAnalysisStrings() const;
+};
+
+//==============================================================================
+class FEBioAnalysisStep : public FEStep
+{
+public:
+	FEBioAnalysisStep(FEModel* ps);
+
 };
