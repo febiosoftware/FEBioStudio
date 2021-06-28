@@ -49,6 +49,7 @@ protected:
 	void BuildParamList(FSObject* po, bool showNonPersistent = false);
 
 	void AddParameter(Param& p);
+	void AddParameterList(FSObject* po);
 	QVariant GetPropertyValue(Param& p);
 	void SetPropertyValue(Param& p, const QVariant& v);
 

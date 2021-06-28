@@ -154,6 +154,19 @@ void CObjectProps::BuildParamList(FSObject* po, bool showNonPersistent)
 	}
 }
 
+void CObjectProps::AddParameterList(FSObject* po)
+{
+	int NP = po->Parameters();
+	for (int i = 0; i < NP; ++i)
+	{
+		Param& p = po->GetParam(i);
+		if (p.IsEditable() || p.IsVisible())
+		{
+			AddParameter(p);
+		}
+	}
+}
+
 QVariant CObjectProps::GetPropertyValue(Param& p)
 {
 	switch (p.GetParamType())

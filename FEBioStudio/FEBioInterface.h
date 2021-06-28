@@ -29,9 +29,11 @@ SOFTWARE.*/
 
 class FEStepComponent;
 class FEMaterial;
+class FEStep;
 
 namespace FEBio {
 
-	void CreateFSObject(int classId, FEStepComponent* po);
+	void CreateStepComponent(int classId, FEStepComponent* po);
 	void CreateMaterial(int classId, FEMaterial* po);
+	void CreateStep(int moduleId, int classId, FEStep* po);
 }

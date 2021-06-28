@@ -30,6 +30,18 @@ class FEModelConstraint;
 #define FE_STEP_FEBIO_ANALYSIS		10
 
 //-----------------------------------------------------------------------------
+class FEControlProperty : public FSObject
+{
+public:
+	FEControlProperty() { m_prop = nullptr; m_nClassID = -1; }
+	~FEControlProperty() { delete m_prop; }
+
+public:
+	int					m_nClassID;		// the material class ID for this property
+	FEStepComponent*	m_prop;			// point to component class.
+};
+
+//-----------------------------------------------------------------------------
 // This is the base class for step classes
 //-----------------------------------------------------------------------------
 class FEStep : public FSObject
@@ -129,7 +141,11 @@ public:
 	// convenience functions for working with components
 	void AddComponent(FEStepComponent* pc);
 	void RemoveComponent(FEStepComponent* pc);
-    
+
+	// control properties
+	int ControlProperties() const;
+	FEControlProperty& GetControlProperty(int i);
+	void AddControlProperty(FEControlProperty* pc);
 
 public: // ref counting
 	static void ResetCounter();
@@ -333,5 +349,6 @@ class FEBioAnalysisStep : public FEStep
 {
 public:
 	FEBioAnalysisStep(FEModel* ps);
+
 
 };

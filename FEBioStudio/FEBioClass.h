@@ -69,18 +69,20 @@ namespace FEBio {
 	class FEBioParam
 	{
 	public:
-		FEBioParam() {}
+		FEBioParam() { m_enums = nullptr; }
 		FEBioParam(const FEBioParam& p)
 		{
 			m_name = p.m_name;
 			m_type = p.m_type;
 			m_val  = p.m_val;
+			m_enums = p.m_enums;
 		}
 		void operator = (const FEBioParam& p)
 		{
 			m_name = p.m_name;
 			m_type = p.m_type;
 			m_val = p.m_val;
+			m_enums = p.m_enums;
 		}
 
 		int type() const { return m_type; }
@@ -89,6 +91,7 @@ namespace FEBio {
 	public:
 		std::string		m_name;
 		int				m_type;
+		const char*		m_enums;	// enum values, only for int parameters
 		QVariant		m_val;
 	};
 
@@ -97,22 +100,25 @@ namespace FEBio {
 	class FEBioProperty
 	{
 	public:
-		FEBioProperty() { m_baseClassId = -1; }
+		FEBioProperty() { m_baseClassId = -1; m_superClassId = -1; }
 		FEBioProperty(const FEBioProperty& p)
 		{
 			m_baseClassId = p.m_baseClassId;
+			m_superClassId = p.m_superClassId;
 			m_name = p.m_name;
 			m_comp = p.m_comp;
 		}
 		void operator = (const FEBioProperty& p)
 		{
 			m_baseClassId = p.m_baseClassId;
+			m_superClassId = p.m_superClassId;
 			m_name = p.m_name;
 			m_comp = p.m_comp;
 		}
 
 	public:
-		int	m_baseClassId;	// Id that identifies the base class of the property
+		int	m_baseClassId;	// Id that identifies the base class of the property (this is an index!)
+		int	m_superClassId;	// Id that identifies the super class (this is an enum!)
 		std::string	m_name;
 		std::vector<FEBioClass>	m_comp;
 	};
@@ -139,11 +145,11 @@ namespace FEBio {
 		void SetTypeString(const std::string& s) { m_typeString = s; }
 
 		int Parameters() const { return (int)m_Param.size(); }
-		void AddParameter(const std::string& paramName, int paramType, const QVariant& val);
+		FEBioParam& AddParameter(const std::string& paramName, int paramType, const QVariant& val);
 		FEBioParam& GetParameter(int i) { return m_Param[i]; }
 
 		int Properties() const { return (int)m_Props.size(); }
-		void AddProperty(const std::string& propName, int baseClassId = -1);
+		void AddProperty(const std::string& propName, int superClassId, int baseClassId = -1);
 		FEBioProperty& GetProperty(int i) { return m_Props[i]; }
 
 	private:

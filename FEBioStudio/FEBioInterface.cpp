@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include "FEBioClass.h"
 #include <FEMLib/FEStepComponent.h>
 #include <FEMLib/FEMaterial.h>
+#include <FEMLib/FEAnalysisStep.h>
+#include <sstream>
 using namespace std;
 
 vec3d qvariant_to_vec3d(const QVariant& v)
@@ -78,7 +80,15 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 
 		switch (type)
 		{
-		case FEBio::FEBIO_PARAM_INT   : po->AddIntParam(v.toInt(), szname); break;
+		case FEBio::FEBIO_PARAM_INT   : 
+		{
+			Param* p = po->AddIntParam(v.toInt(), szname);
+			if (param.m_enums)
+			{
+				p->CopyEnumNames(param.m_enums);
+			}
+		}
+		break;
 		case FEBio::FEBIO_PARAM_BOOL  : po->AddBoolParam(v.toBool(), szname); break;
 		case FEBio::FEBIO_PARAM_DOUBLE: po->AddDoubleParam(v.toDouble(), szname); break;
 		case FEBio::FEBIO_PARAM_VEC3D : po->AddVecParam(qvariant_to_vec3d(v), szname); break;
@@ -94,7 +104,7 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 	}
 }
 
-void FEBio::CreateFSObject(int classId, FEStepComponent* po)
+void FEBio::CreateStepComponent(int classId, FEStepComponent* po)
 {
 	// create the FEBioClass object
 	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
@@ -106,6 +116,49 @@ void FEBio::CreateFSObject(int classId, FEStepComponent* po)
 
 	// map the FEBioClass parameters to the FSObject
 	map_parameters(po, feb);
+
+	// don't forget to cleanup
+	delete feb;
+}
+
+void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
+{
+	// create the FEBioClass object
+	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
+	if (feb == nullptr) return;
+
+	// set the type string
+	string typeStr = feb->TypeString();
+	po->SetTypeString(strdup(typeStr.c_str()));
+
+	// map the FEBioClass parameters to the FSObject
+	map_parameters(po, feb);
+
+	// map the properties
+	for (int i = 0; i < feb->Properties(); ++i)
+	{
+		FEBio::FEBioProperty& prop = feb->GetProperty(i);
+
+		FEControlProperty* pc = new FEControlProperty;
+
+		string name = prop.m_name;
+
+		vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(moduleId, prop.m_superClassId, -1);
+		if (fci.size() > 0)
+		{
+			FEStepComponent* psc = new FEStepComponent;
+			CreateStepComponent(fci[0].classId, psc);
+			pc->m_prop = psc;
+
+			stringstream ss;
+			ss << name << " [" << fci[0].sztype << "]";
+			name = ss.str();
+		}
+		
+		pc->SetName(name);
+		pc->m_nClassID = prop.m_baseClassId;
+		po->AddControlProperty(pc);
+	}
 
 	// don't forget to cleanup
 	delete feb;

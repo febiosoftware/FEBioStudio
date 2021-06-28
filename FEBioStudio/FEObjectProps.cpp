@@ -220,6 +220,30 @@ void CAnalysisTimeSettings::SetPropertyValue(int i, const QVariant& v)
 	}
 }
 
+CStepSettings::CStepSettings(FEStep* step) : CObjectProps(0)
+{
+	m_step = step;
+
+	BuildParamList(step);
+	for (int i = 0; i < step->ControlProperties(); ++i)
+	{
+		FEControlProperty& prop = step->GetControlProperty(i);
+		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group);
+		FEStepComponent* pc = prop.m_prop;
+		if (pc) BuildParamList(pc);
+	}
+}
+
+QVariant CStepSettings::GetPropertyValue(int i)
+{
+	return 0;
+}
+
+void CStepSettings::SetPropertyValue(int i, const QVariant& v)
+{
+
+}
+
 //=======================================================================================
 CRigidInterfaceSettings::CRigidInterfaceSettings(FEModel& fem, FERigidInterface* pi) : m_ri(pi)
 {

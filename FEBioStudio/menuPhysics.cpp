@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include "Commands.h"
 #include "FEBioInterface.h"
+#include "FEBioClass.h"
 #include <QMessageBox>
 #include <sstream>
 
@@ -60,7 +61,7 @@ void CMainWindow::on_actionAddBC_triggered()
 	if (dlg.exec())
 	{
 		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, FE_FEBIO_BC); assert(pbc);
-		FEBio::CreateFSObject(dlg.GetClassID(), pbc);
+		FEBio::CreateStepComponent(dlg.GetClassID(), pbc);
 		if (pbc)
 		{
 			FEStep* step = fem.GetStep(dlg.GetStep());
@@ -109,7 +110,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 	if (dlg.exec())
 	{
 		FENodalLoad* pnl = fecore_new<FENodalLoad>(&fem, FE_NODAL_LOAD, FE_FEBIO_NODAL_LOAD); assert(pnl);
-		FEBio::CreateFSObject(dlg.GetClassID(), pnl);
+		FEBio::CreateStepComponent(dlg.GetClassID(), pnl);
 		if (pnl)
 		{
 			string name = dlg.GetName();
@@ -155,7 +156,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 	if (dlg.exec())
 	{
 		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, FE_FEBIO_SURFACE_LOAD); assert(psl);
-		FEBio::CreateFSObject(dlg.GetClassID(), psl);
+		FEBio::CreateStepComponent(dlg.GetClassID(), psl);
 		if (psl)
 		{
 			string name = dlg.GetName();
@@ -198,7 +199,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 	if (dlg.exec())
 	{
 		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, FE_FEBIO_BODY_LOAD); assert(pbl);
-		FEBio::CreateFSObject(dlg.GetClassID(), pbl);
+		FEBio::CreateStepComponent(dlg.GetClassID(), pbl);
 		if (pbl)
 		{
 			std::string name = dlg.GetName();
@@ -225,7 +226,7 @@ void CMainWindow::on_actionAddIC_triggered()
 	{
 //		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, dlg.GetClassID()); assert(pic);
 		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, FE_FEBIO_INITIAL_CONDITION); assert(pic);
-		FEBio::CreateFSObject(dlg.GetClassID(), pic);
+		FEBio::CreateStepComponent(dlg.GetClassID(), pic);
 		if (pic)
 		{
 			std::string name = dlg.GetName();
@@ -278,7 +279,7 @@ void CMainWindow::on_actionAddContact_triggered()
 	{
 //		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
 		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, FE_FEBIO_INTERFACE); assert(pi);
-		FEBio::CreateFSObject(dlg.GetClassID(), pi);
+		FEBio::CreateStepComponent(dlg.GetClassID(), pi);
 		if (pi)
 		{
 			// create a name
@@ -330,7 +331,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 	{
 //		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, dlg.GetClassID()); assert(pi);
 		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, FE_FEBIO_NLCONSTRAINT); assert(pi);
-		FEBio::CreateFSObject(dlg.GetClassID(), pi);
+		FEBio::CreateStepComponent(dlg.GetClassID(), pi);
 		if (pi)
 		{
 			// create a name
@@ -490,7 +491,12 @@ void CMainWindow::on_actionAddStep_triggered()
 //	if (dlg.exec())
 	{
 //		FEAnalysisStep* ps = fecore_new<FEAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
-		FEStep* ps = fecore_new<FEStep>(fem, FE_ANALYSIS, FE_STEP_FEBIO_ANALYSIS); 
+
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(0, FE_ANALYSIS, -1);
+		assert(l.size() == 1);
+
+		FEStep* ps = fecore_new<FEStep>(fem, FE_ANALYSIS, FE_STEP_FEBIO_ANALYSIS);
+		FEBio::CreateStep(prj.GetModule(), l[0].classId, ps);
 		assert(ps);
 		if (ps)
 		{

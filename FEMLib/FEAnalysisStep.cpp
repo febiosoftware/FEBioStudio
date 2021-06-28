@@ -44,6 +44,9 @@ int FEStep::m_ncount = 0;
 class FEStep::Imp
 {
 public:
+	// control properties (i.e. time stepper, solver, etc.)
+	FSObjectList<FEControlProperty>	m_Prop;
+
 	// boundary conditions
 	FSObjectList<FEBoundaryCondition>	m_BC;
 
@@ -424,6 +427,22 @@ void FEStep::RemoveComponent(FEStepComponent* pc)
 	else if TryRemoveComponent(FERigidConstraint  , m_RC);
 	else if TryRemoveComponent(FERigidConnector   , m_CN);
 	else assert(false);
+}
+
+//-----------------------------------------------------------------------------
+int FEStep::ControlProperties() const
+{
+	return imp->m_Prop.Size();
+}
+
+FEControlProperty& FEStep::GetControlProperty(int i)
+{
+	return *imp->m_Prop[i];
+}
+
+void FEStep::AddControlProperty(FEControlProperty* pc)
+{
+	imp->m_Prop.Add(pc);
 }
 
 //-----------------------------------------------------------------------------
@@ -1333,8 +1352,4 @@ vector<string> FEReactionDiffusionAnalysis::GetAnalysisStrings() const
 //==================================================================================
 FEBioAnalysisStep::FEBioAnalysisStep(FEModel* ps) : FEStep(ps, FE_STEP_FEBIO_ANALYSIS)
 {
-	SetTypeString("Step");
-
-	AddIntParam(10, "time_steps", "Time steps");
-	AddDoubleParam(0.1, "step_size", "Time step size");
 }

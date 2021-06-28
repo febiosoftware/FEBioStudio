@@ -237,12 +237,15 @@ Param::Param(const Param& p)
 	m_ntype = p.m_ntype;
 	m_szbrev = p.m_szbrev;
 	m_szname = p.m_szname;
-	m_szenum = p.m_szenum;
 	m_szunit = p.m_szunit;
 	m_nstate = p.m_nstate;
     m_szindx = p.m_szindx;
     m_nindx = p.m_nindx;
+
 	m_bcopy = false;
+	if (p.m_bcopy) CopyEnumNames(p.m_szenum);
+	else m_szenum = p.m_szenum;
+
 	m_offset = p.m_offset;
 	m_isVariable = p.m_isVariable;
 	m_floatRange = p.m_floatRange;

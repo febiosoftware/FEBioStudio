@@ -95,20 +95,22 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 	return facs;
 }
 
-void FEBioClass::AddParameter(const std::string& paramName, int paramType, const QVariant& val)
+FEBioParam& FEBioClass::AddParameter(const std::string& paramName, int paramType, const QVariant& val)
 {
 	FEBioParam p;
 	p.m_type = paramType;
 	p.m_name = paramName;
 	p.m_val  = val;
 	m_Param.push_back(p);
+	return m_Param[m_Param.size() - 1];
 }
 
-void FEBioClass::AddProperty(const std::string& propName, int baseClassId)
+void FEBioClass::AddProperty(const std::string& propName, int superClassId, int baseClassId)
 {
 	FEBioProperty prop;
 	prop.m_name = propName;
 	prop.m_baseClassId = baseClassId;
+	prop.m_superClassId = superClassId;
 	m_Props.push_back(prop);
 }
 
@@ -169,7 +171,15 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		FEParam& p = *it;
 		switch (p.type())
 		{
-		case FE_PARAM_INT   : feb->AddParameter(p.name(), p.type(), p.value<int>()); break;
+		case FE_PARAM_INT   : 
+		{
+			FEBioParam& param = feb->AddParameter(p.name(), p.type(), p.value<int>());
+			if (p.enums())
+			{
+				param.m_enums = p.enums();
+			}
+		}
+		break;
 		case FE_PARAM_BOOL  : feb->AddParameter(p.name(), p.type(), p.value<bool>()); break;
 		case FE_PARAM_DOUBLE: feb->AddParameter(p.name(), p.type(), p.value<double>()); break;
 		case FE_PARAM_VEC3D : feb->AddParameter(p.name(), p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
@@ -202,6 +212,11 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 			// Don't know how to handle this.
 		}
 		break;
+		case FEBIO_PARAM_STD_VECTOR_DOUBLE:
+		{
+			// Don't know how to handle this.
+		}
+		break;
 		default:
 			assert(false);
 		}
@@ -218,7 +233,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		int n = baseClassIndex(sz);
 
 		// add it
-		feb->AddProperty(prop->GetName(), n);
+		feb->AddProperty(prop->GetName(), prop->GetSuperClassID(), n);
 	}
 
 	// all done!

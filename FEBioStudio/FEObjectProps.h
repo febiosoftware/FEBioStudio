@@ -42,6 +42,7 @@ class Param;
 class FEReactionMaterial;
 class FEMaterial;
 class GPart;
+class FEStep;
 
 class FEObjectProps : public CObjectProps
 {
@@ -79,6 +80,16 @@ public:
 
 private:
 	FEAnalysisStep*	m_step;
+};
+
+class CStepSettings : public CObjectProps
+{
+public:
+	CStepSettings(FEStep* step);
+	QVariant GetPropertyValue(int i);
+	void SetPropertyValue(int i, const QVariant& v);
+private:
+	FEStep* m_step;
 };
 
 class CRigidInterfaceSettings : public CPropertyList
