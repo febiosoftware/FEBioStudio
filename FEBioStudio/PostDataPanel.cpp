@@ -188,6 +188,7 @@ public:
 	{
 		addProperty("Assign to surface1", CProperty::Action, "");
 		addProperty("Assign to surface2", CProperty::Action, "");
+		addProperty("Signed distance", CProperty::Bool);
 		addProperty("", CProperty::Action, "Apply");
 	}
 
@@ -202,6 +203,10 @@ public:
 		{
 			int n = m_map->GetSurfaceSize(1);
 			return QString("(%1 Faces)").arg(n);
+		}
+		if (i == 2)
+		{
+			return m_map->m_bsigned;
 		}
 		return QVariant();
 	}
@@ -219,6 +224,11 @@ public:
 			SetModified(true);
 		}
 		else if (i == 2)
+		{
+			bool b = v.toBool();
+			m_map->m_bsigned = b;
+		}
+		else if (i == 3)
 		{
 			m_map->Apply();
 		}
