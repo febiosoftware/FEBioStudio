@@ -2643,6 +2643,17 @@ FEDCvonMisesStress::FEDCvonMisesStress() : FEMaterial(FE_DC_VMS)
 }
 
 //=============================================================================
+// DC Drucker Shear Stress
+//=============================================================================
+
+REGISTER_MATERIAL(FEDCDruckerShearStress, MODULE_MECH, FE_DC_DRUCKER, FE_MAT_DAMAGE_CRITERION, "DC Drucker shear stress", 0, VON_MISES_STRESS_HTML);
+
+FEDCDruckerShearStress::FEDCDruckerShearStress() : FEMaterial(FE_DC_DRUCKER)
+{
+    AddScienceParam(1, UNIT_NONE, "c" , "c" ); // Maximum allowable damage (0 ≤ Dmax ≤ 1)
+}
+
+//=============================================================================
 // DC Maximum Shear Stress
 //=============================================================================
 

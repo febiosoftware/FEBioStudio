@@ -1378,15 +1378,15 @@ FEReactivePlasticDamage::FEReactivePlasticDamage() : FEMaterial(FE_REACTIVE_PLAS
     AddProperty("yield_criterion", FE_MAT_DAMAGE_CRITERION);
     
     // Add yield damage material
-    AddProperty("yield_damage", FE_MAT_DAMAGE);
+    AddProperty("plastic_damage", FE_MAT_DAMAGE);
 
     // Add yield damage criterion component
-    AddProperty("yield_damage_criterion", FE_MAT_DAMAGE_CRITERION);
+    AddProperty("plastic_damage_criterion", FE_MAT_DAMAGE_CRITERION);
     
     // Add intact damage material
-    AddProperty("intact_damage", FE_MAT_DAMAGE);
+    AddProperty("elastic_damage", FE_MAT_DAMAGE);
     
     // Add intact damage criterion component
-    AddProperty("intact_damage_criterion", FE_MAT_DAMAGE_CRITERION);
+    AddProperty("elastic_damage_criterion", FE_MAT_DAMAGE_CRITERION);
     
 }
