@@ -45,7 +45,7 @@ class FEStep::Imp
 {
 public:
 	// control properties (i.e. time stepper, solver, etc.)
-	FSObjectList<FEControlProperty>	m_Prop;
+	FSObjectList<FEStepControlProperty>	m_Prop;
 
 	// boundary conditions
 	FSObjectList<FEBoundaryCondition>	m_BC;
@@ -435,12 +435,12 @@ int FEStep::ControlProperties() const
 	return imp->m_Prop.Size();
 }
 
-FEControlProperty& FEStep::GetControlProperty(int i)
+FEStepControlProperty& FEStep::GetControlProperty(int i)
 {
 	return *imp->m_Prop[i];
 }
 
-void FEStep::AddControlProperty(FEControlProperty* pc)
+void FEStep::AddControlProperty(FEStepControlProperty* pc)
 {
 	imp->m_Prop.Add(pc);
 }

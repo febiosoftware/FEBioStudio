@@ -139,7 +139,7 @@ void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
 	{
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
 
-		FEControlProperty* pc = new FEControlProperty;
+		FEStepControlProperty* pc = new FEStepControlProperty;
 
 		string name = prop.m_name;
 

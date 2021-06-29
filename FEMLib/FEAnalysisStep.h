@@ -30,11 +30,11 @@ class FEModelConstraint;
 #define FE_STEP_FEBIO_ANALYSIS		10
 
 //-----------------------------------------------------------------------------
-class FEControlProperty : public FSObject
+class FEStepControlProperty : public FSObject
 {
 public:
-	FEControlProperty() { m_prop = nullptr; m_nClassID = -1; m_nSuperClassId = -1; }
-	~FEControlProperty() { delete m_prop; }
+	FEStepControlProperty() { m_prop = nullptr; m_nClassID = -1; m_nSuperClassId = -1; }
+	~FEStepControlProperty() { delete m_prop; }
 
 public:
 	int					m_nClassID;			// the class ID for this property
@@ -145,8 +145,8 @@ public:
 
 	// control properties
 	int ControlProperties() const;
-	FEControlProperty& GetControlProperty(int i);
-	void AddControlProperty(FEControlProperty* pc);
+	FEStepControlProperty& GetControlProperty(int i);
+	void AddControlProperty(FEStepControlProperty* pc);
 
 public: // ref counting
 	static void ResetCounter();

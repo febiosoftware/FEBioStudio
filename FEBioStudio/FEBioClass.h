@@ -64,7 +64,13 @@ namespace FEBio {
 		unsigned int	classId;
 	};
 
-	std::vector<FEBioClassInfo> FindAllClasses(int mod, int superId, int baseClassId = -1, bool includeModuleDependencies = true);
+	enum ClassSearchFlags {
+		IncludeModuleDependencies = 0x01,
+		IncludeFECoreClasses = 0x02,
+		AllFlags = 0xFF
+	};
+
+	std::vector<FEBioClassInfo> FindAllClasses(int mod, int superId, int baseClassId = -1, unsigned int flags = ClassSearchFlags::AllFlags);
 
 	class FEBioParam
 	{

@@ -247,7 +247,7 @@ void CStepSettings::BuildStepProperties()
 	BuildParamList(m_step);
 	for (int i = 0; i < m_step->ControlProperties(); ++i)
 	{
-		FEControlProperty& prop = m_step->GetControlProperty(i);
+		FEStepControlProperty& prop = m_step->GetControlProperty(i);
 		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group);
 
 		QStringList ops = GetFEBioChoices(m_moduleId, prop.m_nSuperClassId);
@@ -267,7 +267,7 @@ QVariant CStepSettings::GetPropertyValue(int n)
 	n -= params;
 	for (int i = 0; i < m_step->ControlProperties(); ++i)
 	{
-		FEControlProperty& prop = m_step->GetControlProperty(i);
+		FEStepControlProperty& prop = m_step->GetControlProperty(i);
 		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
 		if (n == 0)
 		{
@@ -304,7 +304,7 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 	n -= params;
 	for (int i = 0; i < m_step->ControlProperties(); ++i)
 	{
-		FEControlProperty& prop = m_step->GetControlProperty(i);
+		FEStepControlProperty& prop = m_step->GetControlProperty(i);
 		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
 		if (n == 0)
 		{

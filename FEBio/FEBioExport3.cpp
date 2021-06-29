@@ -1070,6 +1070,17 @@ void FEBioExport3::WriteControlSection(FEStep& step)
 	else
 	{
 		WriteParamList(step);
+		for (int i = 0; i < step.ControlProperties(); ++i)
+		{
+			FEStepControlProperty& prop = step.GetControlProperty(i);
+			FEStepComponent* pc = prop.m_prop;
+			if (pc)
+			{
+				m_xml.add_branch(prop.GetName().c_str());
+				WriteParamList(*pc);
+				m_xml.close_branch();
+			}
+		}
 	}
 }
 
