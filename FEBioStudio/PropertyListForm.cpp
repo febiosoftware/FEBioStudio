@@ -241,11 +241,23 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		{
 			if (pi.isEditable())
 			{
-				QSpinBox* spin = new QSpinBox;
-				spin->setRange(pi.imin, pi.imax);
-				spin->setValue(v.toInt());
-				connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
-				return spin;
+				if (pi.brange)
+				{
+					QSpinBox* spin = new QSpinBox;
+					spin->setRange(pi.imin, pi.imax);
+					spin->setValue(v.toInt());
+					spin->setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
+					connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
+					return spin;
+				}
+				else
+				{
+					QLineEdit* edit = new QLineEdit;
+					edit->setValidator(new QIntValidator);
+					edit->setText(QString::number(v.toInt()));
+					connect(edit, SIGNAL(textChanged(const QString&)), this, SLOT(onDataChanged()));
+					return edit;
+				}
 			}
 			else
 			{
@@ -280,6 +292,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 				pc->setMinimumWidth(100);
 				pc->addItems(pi.values);
 				pc->setCurrentIndex(v.toInt());
+				pc->setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
 				connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
 				return pc;
 			}
@@ -578,6 +591,11 @@ void CPropertyListForm::onDataChanged()
 					{
 						QSpinBox* spin = qobject_cast<QSpinBox*>(pw);
 						if (spin) m_list->SetPropertyValue(i, spin->value());
+						else
+						{
+							QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+							if (edit) m_list->SetPropertyValue(i, edit->text().toInt());
+						}
 					}
 					break;
 				case CProperty::Float:

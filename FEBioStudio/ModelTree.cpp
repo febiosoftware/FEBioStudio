@@ -1030,9 +1030,9 @@ void CModelTree::Build(CModelDocument* doc)
 		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 		{
 			t2 = AddTreeItem(t1, "Steps", MT_STEP_LIST, fem.Steps() - 1, 0, 0, new CStepValidator(&fem));
-			UpdateSteps(t2, fem);
+			UpdateSteps(t2, prj);
 		}
-		else if (fem.Steps()) UpdateSteps(t1, fem);
+		else if (fem.Steps()) UpdateSteps(t1, prj);
 	}
 
 	// add the output
@@ -1597,9 +1597,11 @@ void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FEModel& fem, FEStep* ps
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEModel& fem)
+void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEProject& prj)
 {
 	QTreeWidgetItem* t2, *t3;
+
+	FEModel& fem = prj.GetFEModel();
 
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
@@ -1613,7 +1615,7 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEModel& fem)
 		{
 			t2 = AddTreeItem(t1, name, MT_STEP, 0, analysis, new CAnalysisTimeSettings(analysis), 0, 1);
 		}
-		else t2 = AddTreeItem(t1, name, MT_STEP, 0, pstep, new CStepSettings(pstep), 0, 1);
+		else t2 = AddTreeItem(t1, name, MT_STEP, 0, pstep, new CStepSettings(prj, pstep), 0, 1);
 
 		// add the boundary conditions
 		t3 = AddTreeItem(t2, "Boundary Conditions", MT_BC_LIST, pstep->BCs());

@@ -149,14 +149,11 @@ void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
 			FEStepComponent* psc = new FEStepComponent;
 			CreateStepComponent(fci[0].classId, psc);
 			pc->m_prop = psc;
-
-			stringstream ss;
-			ss << name << " [" << fci[0].sztype << "]";
-			name = ss.str();
 		}
 		
 		pc->SetName(name);
 		pc->m_nClassID = prop.m_baseClassId;
+		pc->m_nSuperClassId = prop.m_superClassId;
 		po->AddControlProperty(pc);
 	}
 

@@ -85,11 +85,16 @@ private:
 class CStepSettings : public CObjectProps
 {
 public:
-	CStepSettings(FEStep* step);
+	CStepSettings(FEProject& prj, FEStep* step);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
+
+private:
+	void BuildStepProperties();
+
 private:
 	FEStep* m_step;
+	int		m_moduleId;
 };
 
 class CRigidInterfaceSettings : public CPropertyList

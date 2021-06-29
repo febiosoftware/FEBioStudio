@@ -171,7 +171,7 @@ protected:
 	void UpdateConstraints(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
 	void UpdateRC         (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
 	void UpdateConnectors (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
-	void UpdateSteps      (QTreeWidgetItem* t1, FEModel& fem);
+	void UpdateSteps      (QTreeWidgetItem* t1, FEProject& fem);
 	void UpdateMaterials  (QTreeWidgetItem* t1, FEModel& fem);
 	void UpdateDiscrete   (QTreeWidgetItem* t1, FEModel& fem);
 	void UpdateOutput     (QTreeWidgetItem* t1, FEProject& prj);

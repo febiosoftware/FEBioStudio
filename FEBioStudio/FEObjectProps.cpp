@@ -34,6 +34,8 @@ SOFTWARE.*/
 #include <MeshTools/GMaterial.h>
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include "FEBioInterface.h"
+#include "FEBioClass.h"
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FEModel* fem) : CObjectProps(nullptr)
@@ -220,28 +222,118 @@ void CAnalysisTimeSettings::SetPropertyValue(int i, const QVariant& v)
 	}
 }
 
-CStepSettings::CStepSettings(FEStep* step) : CObjectProps(0)
+QStringList GetFEBioChoices(int moduleId, int superClassId)
+{
+	vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(moduleId, superClassId, -1);
+
+	QStringList ops;
+	for (int i = 0; i < fci.size(); ++i)
+	{
+		ops << QString(fci[i].sztype);
+	}
+	return ops;
+}
+
+CStepSettings::CStepSettings(FEProject& prj, FEStep* step) : CObjectProps(0)
 {
 	m_step = step;
+	m_moduleId = prj.GetModule();
+	BuildStepProperties();
+}
 
-	BuildParamList(step);
-	for (int i = 0; i < step->ControlProperties(); ++i)
+void CStepSettings::BuildStepProperties()
+{
+	Clear();
+	BuildParamList(m_step);
+	for (int i = 0; i < m_step->ControlProperties(); ++i)
 	{
-		FEControlProperty& prop = step->GetControlProperty(i);
+		FEControlProperty& prop = m_step->GetControlProperty(i);
 		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group);
+
+		QStringList ops = GetFEBioChoices(m_moduleId, prop.m_nSuperClassId);
+		addProperty(QString::fromStdString(prop.GetName()), CProperty::Enum)->setEnumValues(ops);
 		FEStepComponent* pc = prop.m_prop;
 		if (pc) BuildParamList(pc);
 	}
 }
 
-QVariant CStepSettings::GetPropertyValue(int i)
+QVariant CStepSettings::GetPropertyValue(int n)
 {
+	int params = m_step->Parameters();
+	if (n < params)
+	{
+		return CObjectProps::GetPropertyValue(m_step->GetParam(n));
+	}
+	n -= params;
+	for (int i = 0; i < m_step->ControlProperties(); ++i)
+	{
+		FEControlProperty& prop = m_step->GetControlProperty(i);
+		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
+		if (n == 0)
+		{
+			// This is the group property. I don't think we ever get here.
+			return 0;
+		}
+		else if (n == 1)
+		{
+			// this is the control property selection.
+			if (prop.m_prop == nullptr) return -1;
+			QString typeStr(prop.m_prop->GetTypeString());
+			QStringList ops = GetFEBioChoices(m_moduleId, prop.m_nSuperClassId);
+			int n = ops.indexOf(typeStr);
+			return n;
+		}
+		else if (n <= params+1)
+		{
+			return CObjectProps::GetPropertyValue(prop.m_prop->GetParam(n - 2));
+		}
+		n -= params + 2;
+	}
+
 	return 0;
 }
 
-void CStepSettings::SetPropertyValue(int i, const QVariant& v)
+void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 {
-
+	int params = m_step->Parameters();
+	if (n < params)
+	{
+		CObjectProps::SetPropertyValue(m_step->GetParam(n), v);
+		return;
+	}
+	n -= params;
+	for (int i = 0; i < m_step->ControlProperties(); ++i)
+	{
+		FEControlProperty& prop = m_step->GetControlProperty(i);
+		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
+		if (n == 0)
+		{
+			// This is the group property. I don't think we ever get here.
+			return;
+		}
+		else if (n == 1)
+		{
+			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(m_moduleId, prop.m_nSuperClassId, -1);
+			delete prop.m_prop;
+			prop.m_prop = nullptr;
+			int m = v.toInt();
+			if ((m >= 0) && (m < fci.size()))
+			{
+				FEStepComponent* pc = new FEStepComponent;
+				FEBio::CreateStepComponent(fci[m].classId, pc);
+				prop.m_prop = pc;
+			}
+			BuildStepProperties();
+			SetModified(true);
+			return;
+		}
+		else if (n <= params + 1)
+		{
+			CObjectProps::SetPropertyValue(prop.m_prop->GetParam(n - 2), v);
+			return;
+		}
+		n -= params + 2;
+	}
 }
 
 //=======================================================================================

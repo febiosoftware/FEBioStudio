@@ -33,12 +33,13 @@ class FEModelConstraint;
 class FEControlProperty : public FSObject
 {
 public:
-	FEControlProperty() { m_prop = nullptr; m_nClassID = -1; }
+	FEControlProperty() { m_prop = nullptr; m_nClassID = -1; m_nSuperClassId = -1; }
 	~FEControlProperty() { delete m_prop; }
 
 public:
-	int					m_nClassID;		// the material class ID for this property
-	FEStepComponent*	m_prop;			// point to component class.
+	int					m_nClassID;			// the class ID for this property
+	int					m_nSuperClassId;	// the super class ID for this property
+	FEStepComponent*	m_prop;				// pointer to component class.
 };
 
 //-----------------------------------------------------------------------------
