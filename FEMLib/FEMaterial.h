@@ -278,6 +278,7 @@
 #define FE_DC_MSS_UC                964
 #define FE_DC_MNS_UC                965
 #define FE_DC_MNLE_UC               966
+#define FE_DC_DRUCKER               967
 
 // elastic pressure materials (fluid)
 #define FE_EP_IDEAL_GAS             1001
@@ -1998,6 +1999,16 @@ class FEDCvonMisesStress : public FEMaterial
 public:
     FEDCvonMisesStress();
     DECLARE_REGISTERED(FEDCvonMisesStress);
+};
+
+//-----------------------------------------------------------------------------
+class FEDCDruckerShearStress : public FEMaterial
+{
+public:
+    enum { MP_C };
+public:
+    FEDCDruckerShearStress();
+    DECLARE_REGISTERED(FEDCDruckerShearStress);
 };
 
 //-----------------------------------------------------------------------------
