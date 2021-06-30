@@ -93,3 +93,35 @@ FEBioBodyLoad::FEBioBodyLoad(FEModel* ps, int nstep) : FEBodyLoad(FE_FEBIO_BODY_
 {
 
 }
+
+void FEBioBodyLoad::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEBodyLoad::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioBodyLoad::Load(IArchive& ar)
+{
+	TRACE("FEBioBodyLoad::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEBodyLoad::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}

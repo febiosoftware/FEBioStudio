@@ -51,3 +51,35 @@ FEBioNodalLoad::FEBioNodalLoad(FEModel* ps) : FENodalLoad(FE_FEBIO_NODAL_LOAD, p
 {
 
 }
+
+void FEBioNodalLoad::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FENodalLoad::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioNodalLoad::Load(IArchive& ar)
+{
+	TRACE("FEBioBoundaryCondition::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FENodalLoad::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}

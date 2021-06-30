@@ -17,8 +17,8 @@ public:
 class FENodalLoad : public FELoad
 {
 public:
-	FENodalLoad(int ntype, FEModel* fem) : FELoad(ntype, fem) {}
-	FENodalLoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep) {}
+	FENodalLoad(int ntype, FEModel* fem) : FELoad(ntype, fem) { m_superClassID = FE_NODAL_LOAD; }
+	FENodalLoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep) { m_superClassID = FE_NODAL_LOAD; }
 };
 
 class FENodalDOFLoad : public FENodalLoad
@@ -43,4 +43,6 @@ class FEBioNodalLoad : public FENodalLoad
 {
 public:
 	FEBioNodalLoad(FEModel* ps);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

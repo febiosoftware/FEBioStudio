@@ -34,6 +34,7 @@ class FEStep;
 namespace FEBio {
 
 	void CreateStepComponent(int classId, FEStepComponent* po);
+	void CreateStepComponent(int superClassId, const std::string& typeStr, FEStepComponent* po);
 	void CreateMaterial(int classId, FEMaterial* po);
 	void CreateStep(int moduleId, int classId, FEStep* po);
 }

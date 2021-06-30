@@ -33,8 +33,8 @@ class FEModelConstraint;
 class FEStepControlProperty : public FSObject
 {
 public:
-	FEStepControlProperty() { m_prop = nullptr; m_nClassID = -1; m_nSuperClassId = -1; }
-	~FEStepControlProperty() { delete m_prop; }
+	FEStepControlProperty();
+	~FEStepControlProperty();
 
 public:
 	int					m_nClassID;			// the class ID for this property

@@ -7,8 +7,12 @@
 class FESurfaceLoad : public FELoad
 {
 public:
-	FESurfaceLoad(int ntype, FEModel* ps) : FELoad(ntype, ps) {}
-	FESurfaceLoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep){}
+	FESurfaceLoad(int ntype, FEModel* ps) : FELoad(ntype, ps) {
+        m_superClassID = FE_SURFACE_LOAD;
+    }
+	FESurfaceLoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep){
+        m_superClassID = FE_SURFACE_LOAD;
+    }
 
 	// return the "primary" load curve
 	// TODO: remove this
@@ -462,4 +466,6 @@ class FEBioSurfaceLoad : public FESurfaceLoad
 public:
     FEBioSurfaceLoad(FEModel* ps);
     FELoadCurve* GetLoadCurve();
+    void Save(OArchive& ar);
+    void Load(IArchive& ar);
 };

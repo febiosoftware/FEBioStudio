@@ -120,6 +120,12 @@ void FEBio::CreateStepComponent(int classId, FEStepComponent* po)
 	delete feb;
 }
 
+void FEBio::CreateStepComponent(int superClassId, const std::string& typeStr, FEStepComponent* po)
+{
+	int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId);
+	CreateStepComponent(classId, po);
+}
+
 void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
 {
 	// create the FEBioClass object

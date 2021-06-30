@@ -43,6 +43,7 @@ FEInterface::FEInterface(int ntype, FEModel* ps, int nstep)
 {
 	m_ntype = ntype;
 	m_nstepID = nstep;
+	m_superClassID = FE_INTERFACE;
 	m_bActive = true;
 	m_ps = ps;
 	m_sztype = "(not defined)";
@@ -924,4 +925,36 @@ FELinearConstraintSet& FELinearConstraintSet::operator = (const FELinearConstrai
 FEBioInterface::FEBioInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_FEBIO_INTERFACE, ps, nstep)
 {
 
+}
+
+void FEBioInterface::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEPairedInterface::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioInterface::Load(IArchive& ar)
+{
+	TRACE("FEBioInterface::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEPairedInterface::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
 }

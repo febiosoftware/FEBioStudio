@@ -6,8 +6,8 @@
 class FEInitialCondition : public FEModelComponent
 {
 public:
-	FEInitialCondition(int ntype, FEModel* ps, int nstep = 0) : FEModelComponent(ntype, ps, nstep) {}
-	FEInitialCondition(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEModelComponent(ntype, ps, pi, nstep) {}
+	FEInitialCondition(int ntype, FEModel* ps, int nstep = 0) : FEModelComponent(ntype, ps, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
+	FEInitialCondition(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEModelComponent(ntype, ps, pi, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
 };
 
 //-----------------------------------------------------------------------------
@@ -148,4 +148,6 @@ class FEBioInitialCondition : public FEInitialCondition
 {
 public:
 	FEBioInitialCondition(FEModel* ps);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

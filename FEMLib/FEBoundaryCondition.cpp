@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEModel.h>
 #include <MeshTools/GGroup.h>
 #include <FSCore/paramunit.h>
+#include "enums.h"
 
 //-----------------------------------------------------------------------------
 // FEModelComponent
@@ -498,5 +499,36 @@ FEPrescribedFluidDilatation::FEPrescribedFluidDilatation(FEModel* ps, FEItemList
 //=============================================================================
 FEBioBoundaryCondition::FEBioBoundaryCondition(FEModel* ps) : FEBoundaryCondition(FE_FEBIO_BC, ps)
 {
+}
 
+void FEBioBoundaryCondition::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEBoundaryCondition::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioBoundaryCondition::Load(IArchive& ar)
+{
+	TRACE("FEBioBoundaryCondition::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEBoundaryCondition::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
 }

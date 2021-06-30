@@ -38,6 +38,10 @@ SOFTWARE.*/
 int FEStep::m_ncount = 0;
 
 //-----------------------------------------------------------------------------
+FEStepControlProperty::FEStepControlProperty() { m_prop = nullptr; m_nClassID = -1; m_nSuperClassId = -1; }
+FEStepControlProperty::~FEStepControlProperty() { delete m_prop; }
+
+//-----------------------------------------------------------------------------
 // FEStep
 //-----------------------------------------------------------------------------
 
@@ -634,6 +638,7 @@ void FEStep::Load(IArchive &ar)
                     case FE_PRESCRIBED_DILATATION    : pb = new FEPrescribedFluidDilatation (m_pfem); break;
 					case FE_FIXED_SHELL_DISPLACEMENT : pb = new FEFixedShellDisplacement    (m_pfem); break;
 					case FE_PRESCRIBED_SHELL_DISPLACEMENT: pb = new FEPrescribedShellDisplacement(m_pfem); break;
+					case FE_FEBIO_BC                 : pb = new FEBioBoundaryCondition(m_pfem); break;
 					default:
 						if (ar.Version() < 0x00020000)
 						{
@@ -717,6 +722,7 @@ void FEStep::Load(IArchive &ar)
 					FELoad* pl = 0;
 
 					if (ntype == FE_NODAL_DOF_LOAD) pl = new FENodalDOFLoad(m_pfem);
+					else if (ntype == FE_FEBIO_NODAL_LOAD) pl = new FEBioNodalLoad(m_pfem);
 					else
 					{
 						// see if it's a surface load
@@ -762,6 +768,7 @@ void FEStep::Load(IArchive &ar)
 					case FE_NODAL_SHELL_VELOCITIES   : pi = new FENodalShellVelocities  (m_pfem); break;
                     case FE_INIT_FLUID_DILATATION    : pi = new FEInitFluidDilatation   (m_pfem); break;
 					case FE_INIT_PRESTRAIN           : pi = new FEInitPrestrain         (m_pfem); break;
+					case FE_FEBIO_INITIAL_CONDITION  : pi = new FEBioInitialCondition   (m_pfem); break;
 					default:
 						throw ReadError("error parsing CID_IC_SECTION FEStep::Load");
 					}

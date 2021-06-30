@@ -504,6 +504,12 @@ SOFTWARE.*/
 #define CID_RESOURCE_SECTION		0x00100000
 #define CID_RESOURCE_IMAGEMODEL		0x00101000
 
+// --- info for reconstructing FEBio classes
+#define CID_FEBIO_META_DATA			0x00200001
+#define CID_FEBIO_BASE_DATA			0x00200002
+#define CID_FEBIO_SUPER_CLASS		0x00200003
+#define CID_FEBIO_TYPE_STRING		0x00200004
+
 //--------------------------------------------------------
 // Mesh type
 #define FE_MESH					0x0000

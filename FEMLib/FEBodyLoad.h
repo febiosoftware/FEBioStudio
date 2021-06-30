@@ -8,7 +8,7 @@
 class FEBodyLoad : public FELoad
 {
 public:
-	FEBodyLoad(int ntype, FEModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep) {}
+	FEBodyLoad(int ntype, FEModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep) { m_superClassID = FE_BODY_LOAD; }
 };
 
 //-----------------------------------------------------------------------------
@@ -89,4 +89,6 @@ class FEBioBodyLoad : public FEBodyLoad
 {
 public:
 	FEBioBodyLoad(FEModel* ps, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

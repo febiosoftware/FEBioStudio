@@ -84,4 +84,6 @@ class FEBioNLConstraint : public FEModelConstraint
 {
 public:
 	FEBioNLConstraint(FEModel* fem, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

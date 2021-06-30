@@ -10,8 +10,12 @@
 class FEBoundaryCondition : public FEModelComponent
 {
 public:
-	FEBoundaryCondition(int ntype, FEModel* fem, int nstep = 0) : FEModelComponent(ntype, fem, nstep){}
-	FEBoundaryCondition(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEModelComponent(ntype, fem, pi, nstep){}
+	FEBoundaryCondition(int ntype, FEModel* fem, int nstep = 0) : FEModelComponent(ntype, fem, nstep){
+		m_superClassID = FE_ESSENTIAL_BC;
+	}
+	FEBoundaryCondition(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEModelComponent(ntype, fem, pi, nstep){
+		m_superClassID = FE_ESSENTIAL_BC;
+	}
 };
 
 //=============================================================================
@@ -266,4 +270,6 @@ class FEBioBoundaryCondition : public FEBoundaryCondition
 {
 public:
 	FEBioBoundaryCondition(FEModel* ps);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

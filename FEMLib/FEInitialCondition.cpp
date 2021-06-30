@@ -149,3 +149,35 @@ FEBioInitialCondition::FEBioInitialCondition(FEModel* ps) : FEInitialCondition(F
 {
 
 }
+
+void FEBioInitialCondition::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEInitialCondition::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioInitialCondition::Load(IArchive& ar)
+{
+	TRACE("FEBioInitialCondition::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEInitialCondition::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}

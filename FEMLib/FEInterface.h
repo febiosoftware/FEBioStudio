@@ -349,6 +349,8 @@ class FEBioInterface : public FEPairedInterface
 {
 public:
 	FEBioInterface(FEModel* ps, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };
 
 //-----------------------------------------------------------------------------

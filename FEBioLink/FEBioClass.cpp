@@ -97,6 +97,12 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 	return facs;
 }
 
+int FEBio::GetClassId(int superClassId, const std::string& typeStr)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	return fecore.GetFactoryIndex(superClassId, typeStr.c_str());
+}
+
 FEBioParam& FEBioClass::AddParameter(const std::string& paramName, int paramType, const QVariant& val)
 {
 	FEBioParam p;
@@ -264,7 +270,8 @@ vector<FEBio::FEBioModule>	FEBio::GetAllModules()
 const char* FEBio::GetModuleName(int moduleId)
 {
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
-	return fecore.GetModuleNameFromId(moduleId);
+	const char* szmodName = fecore.GetModuleNameFromId(moduleId); assert(szmodName);
+	return szmodName;
 }
 
 int FEBio::GetModuleId(const std::string& moduleName)

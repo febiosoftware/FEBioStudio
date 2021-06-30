@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 FEModelConstraint::FEModelConstraint(int ntype, FEModel* fem, int nstep) : FEModelComponent(ntype, fem, nstep)
 {
-
+	m_superClassID = FE_CONSTRAINT;
 }
 
 FESurfaceConstraint::FESurfaceConstraint(int ntype, FEModel* fem, int nstep) : FEModelConstraint(ntype, fem, nstep)
@@ -140,4 +140,36 @@ FEInSituStretchConstraint::FEInSituStretchConstraint(FEModel* ps, int nstep) : F
 FEBioNLConstraint::FEBioNLConstraint(FEModel* fem, int nstep) : FEModelConstraint(FE_FEBIO_NLCONSTRAINT, fem, nstep)
 {
 
+}
+
+void FEBioNLConstraint::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEModelConstraint::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioNLConstraint::Load(IArchive& ar)
+{
+	TRACE("FEBioNLConstraint::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEModelConstraint::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
 }

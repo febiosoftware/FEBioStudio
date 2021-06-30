@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "FESurfaceLoad.h"
 #include <FSCore/paramunit.h>
+#include "enums.h"
 
 //-----------------------------------------------------------------------------
 FEPressureLoad::FEPressureLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_PRESSURE_LOAD, ps, pi, nstep)
@@ -418,7 +419,38 @@ void FEConcentrationFlux::SetSoluteID(int n)
 //=======================================================================================
 FEBioSurfaceLoad::FEBioSurfaceLoad(FEModel* ps) : FESurfaceLoad(FE_FEBIO_SURFACE_LOAD, ps)
 {
-
 }
 
 FELoadCurve* FEBioSurfaceLoad::GetLoadCurve() { assert(false); return nullptr; }
+
+void FEBioSurfaceLoad::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FESurfaceLoad::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioSurfaceLoad::Load(IArchive& ar)
+{
+	TRACE("FEBioSurfaceLoad::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FESurfaceLoad::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
