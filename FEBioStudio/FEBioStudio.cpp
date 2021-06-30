@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <MeshLib/FEElementLibrary.h>
 #include <QSplashScreen>
 #include <QDebug>
-#include "FEBioInit.h"
+#include <FEBioLink/FEBioInit.h>
 
 #ifdef __APPLE__
 #include <QFileOpenEvent>

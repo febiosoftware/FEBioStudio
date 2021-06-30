@@ -33,8 +33,8 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QPushButton>
 #include <QLabel>
-#include "FEBioClass.h"
-#include "FEBioModule.h"
+#include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioModule.h>
 
 class Ui::CDlgEditProject
 {

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "ui_materialeditor.h"
 #include <QComboBox>
 #include <FEMLib/FEMaterialFactory.h>
-#include "FEBioClass.h"
+#include <FEBioLink/FEBioClass.h>
 #include <assert.h>
 
 #ifndef WIN32

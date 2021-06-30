@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMKernel.h>
 #include "MeshTools/FEProject.h"
 #include "DlgAddPhysicsItem.h"
-#include "FEBioClass.h"
+#include <FEBioLink/FEBioClass.h>
 
 class UIDlgAddPhysicsItem
 {

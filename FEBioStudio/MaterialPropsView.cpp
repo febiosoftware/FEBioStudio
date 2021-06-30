@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include "units.h"
 #include "PropertyList.h"
 #include <MeshTools/FEModel.h>
-#include "FEBioInterface.h"
+#include <FEBioLink/FEBioInterface.h>
 
 
 QStringList GetEnumValues(FEModel* fem, const char* ch)

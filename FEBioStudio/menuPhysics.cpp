@@ -45,8 +45,8 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEModelConstraint.h>
 #include "Commands.h"
-#include "FEBioInterface.h"
-#include "FEBioClass.h"
+#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include <QMessageBox>
 #include <sstream>
 

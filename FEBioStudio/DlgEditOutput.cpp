@@ -46,7 +46,7 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QInputDialog>
-#include "FEBioClass.h"
+#include <FEBioLink/FEBioClass.h>
 
 class Ui::CDlgAddDomain
 {

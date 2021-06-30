@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
-#include <FEBioStudio/FEBioModule.h>
+#include <FEBioLink/FEBioModule.h>
 #include <memory>
 #include <sstream>
 //using namespace std;

@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <string>
 
 namespace FEBio {
 
@@ -13,5 +14,5 @@ namespace FEBio {
 	std::vector<FEBioModule> GetAllModules();
 
 	const char* GetModuleName(int moduleId);
-
+	int GetModuleId(const std::string& moduleName);
 }

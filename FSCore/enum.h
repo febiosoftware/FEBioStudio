@@ -101,7 +101,8 @@ SOFTWARE.*/
 #define CID_PRJ_NPLOT				0x00020013
 //#define CID_PRJ_PSTIFFNESS			0x00020014	// no longer used
 //#define CID_PRJ_SHELLSTRAIN         0x00020015	// no longer used
-#define CID_PRJ_MODULES				0x00020016
+#define CID_PRJ_MODULES				0x00020016	// obsolete
+#define CID_PRJ_MODULE_NAME			0x00020017
 #define CID_PRJ_PLOTMAP             0x00020100
 #define CID_PRJ_PLOTFIELD1			0x00020101
 #define CID_PRJ_PLOTFIELD2			0x00020102

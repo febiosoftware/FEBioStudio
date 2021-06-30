@@ -34,8 +34,8 @@ SOFTWARE.*/
 #include <MeshTools/GMaterial.h>
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FEMultiMaterial.h>
-#include "FEBioInterface.h"
-#include "FEBioClass.h"
+#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FEModel* fem) : CObjectProps(nullptr)

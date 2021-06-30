@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include "GGroup.h"
 #include "GModel.h"
 #include <FEBioStudio/WebDefines.h>
+#include <FEBioLink/FEBioModule.h>
 #include <GeomLib/GObject.h>
 #include <string>
 //using namespace std;
@@ -163,7 +164,8 @@ void FEProject::Save(OArchive& ar)
 	ar.WriteChunk(CID_PRJ_TITLE   , m_title);
 
 	// save the modules flag
-	ar.WriteChunk(CID_PRJ_MODULES, m_module);
+	string modName(FEBio::GetModuleName(m_module));
+	ar.WriteChunk(CID_PRJ_MODULE_NAME, modName);
 
 	// save the model data
 	ar.BeginChunk(CID_FEM);
@@ -196,6 +198,19 @@ void FEProject::Save(OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
+int MapOldToNewModules(int oldId)
+{
+	if (oldId & MODULE_FLUID_FSI  ) return FEBio::GetModuleId("fluid-FSI");
+	if (oldId & MODULE_FLUID      ) return FEBio::GetModuleId("fluid");
+	if (oldId & MODULE_MULTIPHASIC) return FEBio::GetModuleId("multiphasic");
+	if (oldId & MODULE_BIPHASIC   ) return FEBio::GetModuleId("biphasic");
+	if (oldId & MODULE_HEAT       ) return FEBio::GetModuleId("heat");
+	if (oldId & MODULE_MECH       ) return FEBio::GetModuleId("solid");
+	assert(false);
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
 // load project data from archive
 void FEProject::Load(IArchive &ar)
 {
@@ -207,7 +222,14 @@ void FEProject::Load(IArchive &ar)
 		switch (nid)
 		{
 		case CID_PRJ_TITLE  : ar.read(m_title); break;
-		case CID_PRJ_MODULES: ar.read(m_module); break;
+		case CID_PRJ_MODULES: { int oldModuleId = 0;  ar.read(oldModuleId); m_module = MapOldToNewModules(oldModuleId); } break;
+		case CID_PRJ_MODULE_NAME:
+		{
+			string modName;
+			ar.read(modName);
+			m_module = FEBio::GetModuleId(modName); assert(m_module > 0);
+		}
+		break;
 		case CID_FEM        : m_fem.Load(ar); break;
 		case CID_PRJ_OUTPUT : m_plt.Load(ar); break;
 		case CID_PRJ_LOGDATA: m_log.Load(ar); break;
