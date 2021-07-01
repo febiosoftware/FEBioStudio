@@ -637,7 +637,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		if (mat)
 		{
 			std::stringstream ss;
-			const char* sztype = mat->TypeStr();
+			const char* sztype = mat->GetTypeString();
 			if (sztype == 0) sztype = "";
 			ss << "Material" << " [" << sztype << "]";
 			return ss.str();
@@ -681,9 +681,8 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		FEMaterial* mat = dynamic_cast<FEMaterial*>(po);
 		if (mat)
 		{
-			FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 			std::stringstream ss;
-			const char* sztype = MF.TypeStr(mat);
+			const char* sztype = mat->GetTypeString();
 			if (sztype == 0) sztype = "";
 			ss << "Material" << " [" << sztype << "]";
 			return ss.str();

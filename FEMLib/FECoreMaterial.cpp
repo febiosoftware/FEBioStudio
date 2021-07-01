@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FECoreMaterial.h"
 #include "FEMaterialFactory.h"
 #include "FEMaterial.h"
+#include "enums.h"
 #include <FSCore/paramunit.h>
 
 //=============================================================================
@@ -424,6 +425,7 @@ FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
 	m_parent = 0;
 	m_owner = 0;
 	m_axes = nullptr;
+	m_superClassID = FE_MATERIAL;
 }
 
 //-----------------------------------------------------------------------------
@@ -441,7 +443,7 @@ int FEMaterial::ClassID()
 }
 
 //-----------------------------------------------------------------------------
-const char* FEMaterial::TypeStr()
+const char* FEMaterial::GetTypeString()
 {
 	FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 	return MF.TypeStr(this);

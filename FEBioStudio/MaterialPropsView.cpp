@@ -436,7 +436,7 @@ public:
 
 						return (sz ? sz : "(invalid species)");
 					}
-					else return pm->TypeStr();
+					else return pm->GetTypeString();
 				}
 			}
 			else return "No data";

@@ -3,11 +3,11 @@
 
 //-----------------------------------------------------------------------------
 // Base class for initial conditions
-class FEInitialCondition : public FEModelComponent
+class FEInitialCondition : public FEDomainComponent
 {
 public:
-	FEInitialCondition(int ntype, FEModel* ps, int nstep = 0) : FEModelComponent(ntype, ps, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
-	FEInitialCondition(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEModelComponent(ntype, ps, pi, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
+	FEInitialCondition(int ntype, FEModel* ps, int nstep = 0) : FEDomainComponent(ntype, ps, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
+	FEInitialCondition(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEDomainComponent(ntype, ps, pi, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
 };
 
 //-----------------------------------------------------------------------------

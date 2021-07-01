@@ -1,5 +1,5 @@
 #pragma once
-#include <FSCore/FSObject.h>
+#include <FEMLib/FEModelComponent.h>
 #include <vector>
 //using namespace std;
 
@@ -45,7 +45,7 @@ public:
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
 //-----------------------------------------------------------------------------
-class FEStep : public FSObject
+class FEStep : public FEModelComponent
 {
 	class Imp;
 
@@ -61,10 +61,6 @@ public:
 
 	// get the step type
 	int GetType() { return m_ntype; }
-
-	// get/set type string
-	void SetTypeString(const char* sztype) { m_sztype = sztype; }
-	const char* GetTypeString() { return m_sztype; }
 
 	//! get the model
 	//! \todo I don't think this is being used)
@@ -160,7 +156,6 @@ protected:
 private:
 	Imp*		imp;			// implementation class
 	int			m_ntype;		// type of step
-	const char*	m_sztype;		// type string (set by c'tor of derived classes)
 	int			m_nID;			// ID of step
 	static int	m_ncount;		// counter to set the ID in c'tor
 };
@@ -350,6 +345,6 @@ class FEBioAnalysisStep : public FEStep
 {
 public:
 	FEBioAnalysisStep(FEModel* ps);
-
-
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

@@ -80,7 +80,7 @@ public:
 FEStep::FEStep(FEModel* ps, int ntype) : m_ntype(ntype), m_pfem(ps), imp(new FEStep::Imp)
 {
 	m_nID = ++m_ncount;
-	m_sztype = "(undefined)";
+	m_superClassID = FE_ANALYSIS;
 }
 
 //-----------------------------------------------------------------------------
@@ -619,7 +619,7 @@ void FEStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FEModelComponent* pb = 0;
+					FEDomainComponent* pb = 0;
 					switch (ntype)
 					{
 					case FE_FIXED_DISPLACEMENT		 : pb = new FEFixedDisplacement         (m_pfem); break;
@@ -1360,3 +1360,36 @@ vector<string> FEReactionDiffusionAnalysis::GetAnalysisStrings() const
 FEBioAnalysisStep::FEBioAnalysisStep(FEModel* ps) : FEStep(ps, FE_STEP_FEBIO_ANALYSIS)
 {
 }
+
+void FEBioAnalysisStep::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEStep::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioAnalysisStep::Load(IArchive& ar)
+{
+	TRACE("FEBioAnalysisStep::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEStep::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+

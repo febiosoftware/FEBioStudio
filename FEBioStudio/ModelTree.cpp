@@ -85,7 +85,7 @@ private:
 class CBCValidator : public CObjectValidator
 {
 public:
-	CBCValidator(FEModelComponent* pbc) : m_pbc(pbc), m_err(0) {}
+	CBCValidator(FEDomainComponent* pbc) : m_pbc(pbc), m_err(0) {}
 
 	QString GetErrorString() const 
 	{ 
@@ -116,7 +116,7 @@ public:
 	}
 
 private:
-	FEModelComponent* m_pbc;
+	FEDomainComponent* m_pbc;
 	int	m_err;
 };
 
@@ -1699,7 +1699,7 @@ void CModelTree::UpdateMaterials(QTreeWidgetItem* t1, FEModel& fem)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
 		FEMaterial* mat = pm->GetMaterialProperties();
-		QString name = QString("%1 [%2]").arg(QString::fromStdString(pm->GetName())).arg(mat->TypeStr());
+		QString name = QString("%1 [%2]").arg(QString::fromStdString(pm->GetName())).arg(mat->GetTypeString());
 		AddMaterial(t1, name, pm, mat, fem, true);
 	}
 }
@@ -1736,7 +1736,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 				FEMaterial* pj = p.GetMaterial();
 				if (pj)
 				{
-					QString typeName = (pj->TypeStr() ? QString(pj->TypeStr()) : "error");
+					QString typeName = (pj->TypeStr() ? QString(pj->GetTypeString()) : "error");
 					QString name;
 					if (pj->GetName().empty())
 					{
@@ -1756,14 +1756,14 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 					FEMaterial* pj = p.GetMaterial(j);
 					if (pj)
 					{
-						QString typeName = (pj->TypeStr() ? QString(pj->TypeStr()) : "error");
+						QString typeName = (pj->TypeStr() ? QString(pj->GetTypeString()) : "error");
 						QString name;
 						if (pj->GetName().empty())
 						{
 							if (propName == typeName)
 								name = QString("%1:%2").arg(propName).arg(j + 1);
 							else
-								name = QString("%1:%2 [%3]").arg(propName).arg(j + 1).arg(pj->TypeStr());
+								name = QString("%1:%2 [%3]").arg(propName).arg(j + 1).arg(pj->GetTypeString());
 						}
 						else name = QString("%1:%2 [%3]").arg(propName).arg(j + 1).arg(QString::fromStdString(pj->GetName()));
 						AddMaterial(t2, name, 0, pj, fem, false);
@@ -1796,11 +1796,11 @@ void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* 
 
 	// add forward rate
 	FEMaterial* fwd = mat->GetForwardRate();
-	if (fwd) AddMaterial(t2, QString("%1 [%2]").arg("forward rate").arg(fwd->TypeStr()), 0, fwd, fem, false);
+	if (fwd) AddMaterial(t2, QString("%1 [%2]").arg("forward rate").arg(fwd->GetTypeString()), 0, fwd, fem, false);
 
 	// add reverse rate
 	FEMaterial* rev = mat->GetReverseRate();
-	if (rev) AddMaterial(t2, QString("%1 [%2]").arg("reverse rate").arg(rev->TypeStr()), 0, rev, fem, false);
+	if (rev) AddMaterial(t2, QString("%1 [%2]").arg("reverse rate").arg(rev->GetTypeString()), 0, rev, fem, false);
 
 	// add reactants and products
 	AddTreeItem(t2, "reactants", 0, 0, 0, new CReactionReactantProperties(mat, fem));

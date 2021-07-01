@@ -1,7 +1,7 @@
 #pragma once
 #include "FEBase.h"
 
-class FEComponent;
+class FEModelComponent;
 
 //-------------------------------------------------------------------
 // Class that represents a data map, which is mapped to a model parameter

@@ -3016,7 +3016,40 @@ void FEBioMaterial::SetTypeString(const char* sz)
 	m_stype = sz;
 }
 
-const char* FEBioMaterial::TypeStr()
+const char* FEBioMaterial::GetTypeString()
 {
 	return m_stype.c_str();
+}
+
+
+void FEBioMaterial::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEMaterial::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioMaterial::Load(IArchive& ar)
+{
+	TRACE("FEBioMaterial::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEMaterial::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
 }

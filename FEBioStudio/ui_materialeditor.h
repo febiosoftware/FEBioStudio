@@ -75,8 +75,7 @@ public:
 		// add the properties
 		if (pmat)
 		{
-			FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-			setText(1, QString(MF.TypeStr(pmat)));
+			setText(1, QString(pmat->GetTypeString()));
 
 			for (int i=0; i<pmat->Properties(); ++i)
 			{

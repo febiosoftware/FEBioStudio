@@ -715,7 +715,7 @@ void CCurveEditor::AddMultiMaterial(FEMaterial* pm, QTreeWidgetItem* tp)
 			if (pmat)
 			{
 				QString name = QString::fromStdString(pmc.GetName());
-				const char* sztype = FEMaterialFactory::TypeStr(pmat);
+				const char* sztype = pmat->GetTypeString();
 				if (sztype) name = QString("%1 [%2]").arg(name).arg(sztype);
 				QTreeWidgetItem* tc = ui->addTreeItem(tp, name);
 				int n = pmat->Parameters();

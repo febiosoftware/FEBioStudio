@@ -1,5 +1,5 @@
 #pragma once
-#include "FEModelComponent.h"
+#include "FEDomainComponent.h"
 #include "MeshTools/FEGroup.h"
 #include "MeshTools/FEItemListBuilder.h"
 #include <list>
@@ -7,13 +7,13 @@
 
 //=============================================================================
 // Base class for fixed and prescribed BCs
-class FEBoundaryCondition : public FEModelComponent
+class FEBoundaryCondition : public FEDomainComponent
 {
 public:
-	FEBoundaryCondition(int ntype, FEModel* fem, int nstep = 0) : FEModelComponent(ntype, fem, nstep){
+	FEBoundaryCondition(int ntype, FEModel* fem, int nstep = 0) : FEDomainComponent(ntype, fem, nstep){
 		m_superClassID = FE_ESSENTIAL_BC;
 	}
-	FEBoundaryCondition(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEModelComponent(ntype, fem, pi, nstep){
+	FEBoundaryCondition(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEDomainComponent(ntype, fem, pi, nstep){
 		m_superClassID = FE_ESSENTIAL_BC;
 	}
 };

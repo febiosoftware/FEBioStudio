@@ -103,7 +103,7 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 	}
 }
 
-void FEBio::CreateStepComponent(int classId, FEStepComponent* po)
+void FEBio::CreateModelComponent(int classId, FEModelComponent* po)
 {
 	// create the FEBioClass object
 	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
@@ -120,10 +120,10 @@ void FEBio::CreateStepComponent(int classId, FEStepComponent* po)
 	delete feb;
 }
 
-void FEBio::CreateStepComponent(int superClassId, const std::string& typeStr, FEStepComponent* po)
+void FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po)
 {
 	int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId);
-	CreateStepComponent(classId, po);
+	CreateModelComponent(classId, po);
 }
 
 void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
@@ -152,7 +152,7 @@ void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
 		if (fci.size() > 0)
 		{
 			FEStepComponent* psc = new FEStepComponent;
-			CreateStepComponent(fci[0].classId, psc);
+			CreateModelComponent(fci[0].classId, psc);
 			pc->m_prop = psc;
 		}
 		

@@ -908,7 +908,7 @@ void CModelPropsPanel::addSelection(int n)
 	assert(m_currentObject);
 	if (m_currentObject == 0) return;
 
-	FEModelComponent* pmc = dynamic_cast<FEModelComponent*>(m_currentObject);
+	FEDomainComponent* pmc = dynamic_cast<FEDomainComponent*>(m_currentObject);
 	if (pmc)
 	{
 		// don't allow object selections 
@@ -1329,7 +1329,7 @@ void CModelPropsPanel::delSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	FEModelComponent* pmc = dynamic_cast<FEModelComponent*>(m_currentObject);
+	FEDomainComponent* pmc = dynamic_cast<FEDomainComponent*>(m_currentObject);
 	if (pmc)
 	{
 		pl = pmc->GetItemList();
@@ -1415,9 +1415,9 @@ void CModelPropsPanel::clearSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	if (dynamic_cast<FEModelComponent*>(m_currentObject))
+	if (dynamic_cast<FEDomainComponent*>(m_currentObject))
 	{
-		FEModelComponent* pmc = dynamic_cast<FEModelComponent*>(m_currentObject);
+		FEDomainComponent* pmc = dynamic_cast<FEDomainComponent*>(m_currentObject);
 		pl = pmc->GetItemList();
 		if (pl)
 		{
@@ -1505,7 +1505,7 @@ void CModelPropsPanel::selSelection(int n)
 	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
 	if (psi) pl = psi->GetItemList();
 
-	FEModelComponent* pmc = dynamic_cast<FEModelComponent*>(m_currentObject);
+	FEDomainComponent* pmc = dynamic_cast<FEDomainComponent*>(m_currentObject);
 	if (pmc) pl = pmc->GetItemList();
 
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);

@@ -1343,14 +1343,14 @@ protected:
 class CCmdSetModelComponentItemList : public CCommand
 {
 public:
-	CCmdSetModelComponentItemList(FEModelComponent* pbc, FEItemListBuilder* pl);
+	CCmdSetModelComponentItemList(FEDomainComponent* pbc, FEItemListBuilder* pl);
 	~CCmdSetModelComponentItemList();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModelComponent*	m_pbc;
+	FEDomainComponent*	m_pbc;
 	FEItemListBuilder*	m_pl;
 };
 
@@ -1403,7 +1403,7 @@ protected:
 class CCmdRemoveItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveItemListBuilder(FEModelComponent* pmc);
+	CCmdRemoveItemListBuilder(FEDomainComponent* pmc);
 	CCmdRemoveItemListBuilder(FESoloInterface* pmc);
 	CCmdRemoveItemListBuilder(FEPairedInterface* pmc, int n);
 	~CCmdRemoveItemListBuilder();
@@ -1415,7 +1415,7 @@ private:
 	FEItemListBuilder*	m_pitem;
 	FESoloInterface*	m_psi;
 	FEPairedInterface*	m_ppi;
-	FEModelComponent*	m_pmc;
+	FEDomainComponent*	m_pmc;
 	int	m_index;
 };
 

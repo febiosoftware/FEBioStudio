@@ -39,7 +39,7 @@ class FEMaterial;
 class FEReactionMaterial;
 class GMaterial;
 class FEProject;
-class FEComponent;
+class FEModelComponent;
 
 class CObjectValidator;
 

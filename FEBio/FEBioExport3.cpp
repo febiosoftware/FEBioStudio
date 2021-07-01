@@ -1694,7 +1694,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
     }
 
 	// get the type string    
-	const char* sztype = pm->TypeStr();
+	const char* sztype = pm->GetTypeString();
 	assert(sztype);
 
 	// set the type attribute
@@ -1899,13 +1899,13 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 					if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);
 					else
 					{
-						el.add_attribute("type", pc->TypeStr());
+						el.add_attribute("type", pc->GetTypeString());
 
 						// We need some special formatting for some fiber generator materials
 						bool bdone = false;
 						if (pc->Parameters() == 1)
 						{
-							const char* sztype = pc->TypeStr();
+							const char* sztype = pc->GetTypeString();
 							Param& p = pc->GetParam(0);
 							if (sztype && (strcmp(p.GetShortName(), sztype) == 0))
 							{
@@ -1995,7 +1995,7 @@ void FEBioExport3::WriteReactionMaterial(FEMaterial* pmat, XMLElement& el)
 					if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);
 					else
 					{
-						el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
+						el.add_attribute("type", pc->GetTypeString());
 						m_xml.add_branch(el);
 						{
 							WriteMaterialParams(pc);
@@ -2148,7 +2148,7 @@ void FEBioExport3::WriteMembraneReactionMaterial(FEMaterial* pmat, XMLElement& e
                     if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);
                     else
                     {
-                        el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
+                        el.add_attribute("type", pc->GetTypeString());
                         m_xml.add_branch(el);
                         {
                             WriteMaterialParams(pc);

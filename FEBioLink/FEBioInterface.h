@@ -27,14 +27,14 @@ SOFTWARE.*/
 #include <vector>
 #include <string>
 
-class FEStepComponent;
+class FEModelComponent;
 class FEMaterial;
 class FEStep;
 
 namespace FEBio {
 
-	void CreateStepComponent(int classId, FEStepComponent* po);
-	void CreateStepComponent(int superClassId, const std::string& typeStr, FEStepComponent* po);
+	void CreateModelComponent(int classId, FEModelComponent* po);
+	void CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po);
 	void CreateMaterial(int classId, FEMaterial* po);
 	void CreateStep(int moduleId, int classId, FEStep* po);
 }

@@ -892,7 +892,7 @@ void FEBioExport12::WriteMaterialSection()
 //-----------------------------------------------------------------------------
 void FEBioExport12::WriteMaterial(FEMaterial *pm, XMLElement& el)
 {
-	const char* sztype = FEMaterialFactory::TypeStr(pm);
+	const char* sztype = pm->GetTypeString();
 	el.add_attribute("type", sztype);
 	m_xml.add_branch(el);
 	{
@@ -1139,7 +1139,7 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 					if ((pc->Properties() > 0) || is_multi) WriteMultiMaterial(pc, el);
 					else
 					{
-						el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
+						el.add_attribute("type", pc->GetTypeString());
 						m_xml.add_branch(el);
 						{
 							WriteMaterialParams(pc);

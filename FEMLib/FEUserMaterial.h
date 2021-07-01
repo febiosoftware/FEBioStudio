@@ -10,7 +10,7 @@ public:
 	~FEUserMaterial();
 
 	void SetTypeString(const char* sz) override;
-	const char* TypeStr() override { return m_sztype; }
+	const char* GetTypeString() override { return m_sztype; }
 
 	void AddParameter(const char* szname, double v);
 

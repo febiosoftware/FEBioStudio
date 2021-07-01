@@ -1,7 +1,7 @@
 #pragma once
 #include <FSCore/FSObject.h>
 #include <MeshLib/FECoreMesh.h>
-#include "FEComponent.h"
+#include "FEModelComponent.h"
 
 // material axes generators
 #define FE_AXES_LOCAL			0
@@ -98,7 +98,7 @@ class FEAxisMaterial;
 //! FEMaterial is the base class for all materials
 //! It essentially collects material parameters (via the FEParamContainer base class) and
 //! contains a list of material properties. 
-class FEMaterial : public FEComponent
+class FEMaterial : public FEModelComponent
 {
 public:
 	FEMaterial(int ntype);
@@ -108,8 +108,8 @@ public:
 	int Type() { return m_ntype; }
 
 	// return a string for the material type
-	virtual const char* TypeStr();
-	virtual void SetTypeString(const char* sz);
+	const char* GetTypeString() override;
+	void SetTypeString(const char* sz) override;
 
 	// return the class ID this material belongs to
 	int ClassID();

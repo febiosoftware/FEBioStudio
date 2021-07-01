@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEModelConstraint.h"
 
-FEModelConstraint::FEModelConstraint(int ntype, FEModel* fem, int nstep) : FEModelComponent(ntype, fem, nstep)
+FEModelConstraint::FEModelConstraint(int ntype, FEModel* fem, int nstep) : FEDomainComponent(ntype, fem, nstep)
 {
 	m_superClassID = FE_CONSTRAINT;
 }

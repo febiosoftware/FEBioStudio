@@ -302,9 +302,9 @@ void CModelViewer::on_selectButton_clicked()
 		GObject* pm = dynamic_cast<GObject*>(po);
 		if (pm->IsVisible() && !pm->IsSelected()) pcmd = new CCmdSelectObject(pdoc->GetGModel(), pm, false);
 	}
-	else if (dynamic_cast<FEModelComponent*>(po))
+	else if (dynamic_cast<FEDomainComponent*>(po))
 	{
-		FEModelComponent* pbc = dynamic_cast<FEModelComponent*>(po);
+		FEDomainComponent* pbc = dynamic_cast<FEDomainComponent*>(po);
 		if (dynamic_cast<FEConstBodyForce*>(pbc) == 0)
 		{
 			FEItemListBuilder* pitem = pbc->GetItemList();

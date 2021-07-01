@@ -23,9 +23,60 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "FEModelComponent.h"
+#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 
-#include "FEComponent.h"
 
-FEComponent::FEComponent()
+FEModelComponent::FEModelComponent()
 {
+	m_superClassID = -1;
+	m_sztype = "(unknown)";
+}
+
+int FEModelComponent::GetSuperClassID() const 
+{ 
+	return m_superClassID; 
+}
+
+void FEModelComponent::SetTypeString(const char* sztype)
+{ 
+	m_sztype = sztype; 
+}
+
+const char* FEModelComponent::GetTypeString() 
+{ 
+	return m_sztype; 
+}
+
+//==============================================================================
+void SaveClassMetaData(FEModelComponent* pc, OArchive& ar)
+{
+	string typeStr(pc->GetTypeString());
+	int superClassId = pc->GetSuperClassID(); assert(superClassId > 0);
+	ar.WriteChunk(CID_FEBIO_SUPER_CLASS, superClassId);
+	ar.WriteChunk(CID_FEBIO_TYPE_STRING, typeStr);
+}
+
+void LoadClassMetaData(FEModelComponent* pc, IArchive& ar)
+{
+	TRACE("LoadClassMetaData");
+	int superClassId = -1;
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_SUPER_CLASS: ar.read(superClassId); break;
+		case CID_FEBIO_TYPE_STRING:
+		{
+			string typeStr;
+			ar.read(typeStr);
+			assert(superClassId != -1);
+			FEBio::CreateModelComponent(superClassId, typeStr, pc);
+		}
+		break;
+		}
+		ar.CloseChunk();
+	}
 }

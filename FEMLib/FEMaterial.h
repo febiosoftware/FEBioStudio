@@ -2305,7 +2305,11 @@ public:
 	FEBioMaterial();
 
 	void SetTypeString(const char* sz) override;
-	const char* TypeStr() override;
+	const char* GetTypeString() override;
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
 
 	DECLARE_REGISTERED(FEBioMaterial);
 

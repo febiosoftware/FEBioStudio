@@ -52,7 +52,7 @@ void FEUserMaterial::copy(FEMaterial* pmat)
 {
 	FEUserMaterial* pm = dynamic_cast<FEUserMaterial*>(pmat);
 	assert(pm);
-	if (pm) SetTypeString(pm->TypeStr());
+	if (pm) SetTypeString(pm->GetTypeString());
 	FEMaterial::copy(pmat);
 }
 

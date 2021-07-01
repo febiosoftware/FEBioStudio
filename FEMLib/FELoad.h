@@ -1,13 +1,13 @@
 #pragma once
-#include "FEModelComponent.h"
+#include "FEDomainComponent.h"
 
 //=============================================================================
 // Base class for all nodal, edge, surface, and body loads
-class FELoad : public FEModelComponent
+class FELoad : public FEDomainComponent
 {
 public:
-	FELoad(int ntype, FEModel* fem) : FEModelComponent(ntype, fem) {}
-	FELoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FEModelComponent(ntype, ps, pi, nstep) {}
+	FELoad(int ntype, FEModel* fem) : FEDomainComponent(ntype, fem) {}
+	FELoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FEDomainComponent(ntype, ps, pi, nstep) {}
 };
 
 //=============================================================================
