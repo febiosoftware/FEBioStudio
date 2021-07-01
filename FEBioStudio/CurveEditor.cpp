@@ -446,12 +446,19 @@ void CCurveEditor::BuildModelTree()
 			int nbc = pstep->BCs();
 			for (int j = 0; j<nbc; ++j)
 			{
-				FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(pstep->BC(j));
+				FEBoundaryCondition* pbc = pstep->BC(j);
 				if (pbc)
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()));
-					Param& p = pbc->GetParam(FEPrescribedDOF::SCALE);
-					ui->addTreeItem(t3, QString::fromStdString(pbc->GetName()), p.GetLoadCurve(), &p);
+					for (int n = 0; n < pbc->Parameters(); ++n)
+					{
+						Param& param = pbc->GetParam(n);
+						if (param.GetParamType() == Param_FLOAT)
+						{
+							Param& p = pbc->GetParam(FEPrescribedDOF::SCALE);
+							ui->addTreeItem(t3, QString::fromStdString(p.GetShortName()), p.GetLoadCurve(), &p);
+						}
+					}
 				}
 			}
 		}
