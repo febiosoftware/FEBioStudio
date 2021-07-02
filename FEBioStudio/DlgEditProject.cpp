@@ -98,15 +98,15 @@ CDlgEditProject::CDlgEditProject(FEProject& prj, QWidget* parent): QDialog(paren
 
 void CDlgEditProject::accept()
 {
-	unsigned int module = ui->getModule();
+	unsigned int moduleId = ui->getModule();
 
-	if (module == 0)
+	if (moduleId == 0)
 	{
 		QMessageBox::critical(this, "Edit Properties", "You must select at least one module.");
 		return;
 	}
 	
-	m_prj.SetModule(module);
+	m_prj.SetModule(moduleId);
 
 	QDialog::accept();
 }

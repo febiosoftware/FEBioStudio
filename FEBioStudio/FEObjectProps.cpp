@@ -224,7 +224,7 @@ void CAnalysisTimeSettings::SetPropertyValue(int i, const QVariant& v)
 
 QStringList GetFEBioChoices(int moduleId, int superClassId)
 {
-	vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(moduleId, superClassId, -1);
+	vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(moduleId, superClassId, -1, FEBio::ClassSearchFlags::IncludeFECoreClasses);
 
 	QStringList ops;
 	for (int i = 0; i < fci.size(); ++i)
