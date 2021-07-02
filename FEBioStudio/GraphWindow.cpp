@@ -1612,6 +1612,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		}
 		else
 		{
+			n -= fem.PlotObjects();
 			Post::CGLModel* glm = doc->GetGLModel();
 			int m = 0;
 			for (int i = 0; i < glm->Plots(); ++i)
