@@ -91,7 +91,7 @@ public:
 						modName = title;
 					}
 					else title = modi.m_szname;
-					labelTxt = QString("<h1>%1</h1>").arg(title);
+					labelTxt = QString("<h2>%1</h2>").arg(title);
 
 					QString info;
 					if (jo.contains("info") && jo["info"].isString())
