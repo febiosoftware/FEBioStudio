@@ -11,6 +11,10 @@ public:
 
 	int GetSuperClassID() const;
 
+	// Set the super class ID. This should not be called directly,
+	// but now some material classes need to set their super class to FEMATERIALPROP_ID
+	void SetSuperClassID(int superClassID);
+
 	virtual void SetTypeString(const char* sztype);
 	virtual const char* GetTypeString();
 

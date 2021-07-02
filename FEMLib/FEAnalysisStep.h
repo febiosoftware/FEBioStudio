@@ -142,6 +142,7 @@ public:
 	// control properties
 	int ControlProperties() const;
 	FEStepControlProperty& GetControlProperty(int i);
+	FEStepControlProperty* FindControlProperty(const std::string& propertyName);
 	void AddControlProperty(FEStepControlProperty* pc);
 
 public: // ref counting

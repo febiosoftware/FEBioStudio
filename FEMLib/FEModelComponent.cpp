@@ -39,6 +39,11 @@ int FEModelComponent::GetSuperClassID() const
 	return m_superClassID; 
 }
 
+void FEModelComponent::SetSuperClassID(int superClassID)
+{
+	m_superClassID = superClassID;
+}
+
 void FEModelComponent::SetTypeString(const char* sztype)
 { 
 	m_sztype = sztype; 
@@ -53,21 +58,18 @@ const char* FEModelComponent::GetTypeString()
 void SaveClassMetaData(FEModelComponent* pc, OArchive& ar)
 {
 	string typeStr(pc->GetTypeString());
-	int superClassId = pc->GetSuperClassID(); assert(superClassId > 0);
-	ar.WriteChunk(CID_FEBIO_SUPER_CLASS, superClassId);
 	ar.WriteChunk(CID_FEBIO_TYPE_STRING, typeStr);
 }
 
 void LoadClassMetaData(FEModelComponent* pc, IArchive& ar)
 {
 	TRACE("LoadClassMetaData");
-	int superClassId = -1;
+	int superClassId = pc->GetSuperClassID(); assert(superClassId > 0);
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_FEBIO_SUPER_CLASS: ar.read(superClassId); break;
 		case CID_FEBIO_TYPE_STRING:
 		{
 			string typeStr;

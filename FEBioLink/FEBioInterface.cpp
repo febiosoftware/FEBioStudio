@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioInterface.h"
 #include "FEBioClass.h"
+#include "FEBioModule.h"
 #include <FEMLib/FEStepComponent.h>
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
@@ -122,11 +123,35 @@ void FEBio::CreateModelComponent(int classId, FEModelComponent* po)
 
 void FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po)
 {
-	int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId);
-	CreateModelComponent(classId, po);
+	if (superClassId == FE_MATERIAL)
+	{
+		FEMaterial* pmat = dynamic_cast<FEMaterial*>(po); assert(pmat);
+		CreateMaterial(typeStr.c_str(), pmat);
+	}
+	else if (superClassId == FE_MATERIALPROP)
+	{
+		FEMaterial* pmat = dynamic_cast<FEMaterial*>(po); assert(pmat);
+		CreateMaterialProperty(typeStr.c_str(), pmat);
+	}
+	else if (superClassId == FE_ANALYSIS)
+	{
+		FEStep* pstep = dynamic_cast<FEStep*>(po);
+		CreateStep(typeStr.c_str(), pstep);
+	}
+	else
+	{
+		int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId);
+		CreateModelComponent(classId, po);
+	}
 }
 
-void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
+void FEBio::CreateStep(const char* sztype, FEStep* po)
+{
+	int classId = FEBio::GetClassId(FE_ANALYSIS, sztype); assert(classId);
+	CreateStep(classId, po, false);
+}
+
+void FEBio::CreateStep(int classId, FEStep* po, bool initDefaultProps)
 {
 	// create the FEBioClass object
 	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
@@ -139,6 +164,9 @@ void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
 	// map the FEBioClass parameters to the FSObject
 	map_parameters(po, feb);
 
+	// get the active module
+	int modId = FEBio::GetActiveModule();
+
 	// map the properties
 	for (int i = 0; i < feb->Properties(); ++i)
 	{
@@ -148,12 +176,15 @@ void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
 
 		string name = prop.m_name;
 
-		vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(moduleId, prop.m_superClassId, -1);
-		if (fci.size() > 0)
+		if (initDefaultProps)
 		{
-			FEStepComponent* psc = new FEStepComponent;
-			CreateModelComponent(fci[0].classId, psc);
-			pc->m_prop = psc;
+			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(modId, prop.m_superClassId, -1, ClassSearchFlags::IncludeFECoreClasses);
+			if (fci.size() > 0)
+			{
+				FEStepComponent* psc = new FEStepComponent;
+				CreateModelComponent(fci[0].classId, psc);
+				pc->m_prop = psc;
+			}
 		}
 		
 		pc->SetName(name);
@@ -166,15 +197,32 @@ void FEBio::CreateStep(int moduleId, int classId, FEStep* po)
 	delete feb;
 }
 
+void FEBio::CreateMaterial(const char* sztype, FEMaterial* po)
+{
+	int classId = FEBio::GetClassId(FE_MATERIAL, sztype); assert(classId);
+	CreateMaterial(classId, po);
+}
+
+void FEBio::CreateMaterialProperty(const char* sztype, FEMaterial* po)
+{
+	int classId = FEBio::GetClassId(FE_MATERIALPROP, sztype); assert(classId);
+	CreateMaterial(classId, po);
+}
+
 void FEBio::CreateMaterial(int classId, FEMaterial* po)
 {
 	// create the FEBioClass object
 	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
 	if (feb == nullptr) return;
 
+	// check the super class ID
+	int superClassID = feb->GetSuperClassID();
+	assert((superClassID == FE_MATERIAL) || (superClassID == FE_MATERIALPROP));
+
 	// set the type string
 	string typeStr = feb->TypeString();
 	po->SetTypeString(strdup(typeStr.c_str()));
+	po->SetSuperClassID(superClassID);
 
 	// map the parameters
 	map_parameters(po, feb);
@@ -183,7 +231,8 @@ void FEBio::CreateMaterial(int classId, FEMaterial* po)
 	for (int i = 0; i < feb->Properties(); ++i)
 	{
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
-		po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, 1);
+		FEMaterialProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, 1); assert(matProp);
+		matProp->SetSuperClassID(prop.m_superClassId);
 	}
 
 	delete feb;

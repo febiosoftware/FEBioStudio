@@ -40,6 +40,7 @@ FEMaterialProperty::FEMaterialProperty()
 	m_parent = 0;
 	m_nClassID = -1;
 	m_maxSize = NO_FIXED_SIZE;
+	m_nsuperClassID = FE_MATERIAL;
 }
 
 //-----------------------------------------------------------------------------
@@ -49,6 +50,7 @@ FEMaterialProperty::FEMaterialProperty(const std::string& name, int nClassID, FE
 	m_name = name;
 	m_flag = flags;
 	m_maxSize = nsize;
+	m_nsuperClassID = FE_MATERIAL;
 	if (nsize > 0)
 	{
 		m_mat.assign(nsize, 0);
@@ -497,10 +499,11 @@ void FEMaterial::ClearProperties()
 
 //-----------------------------------------------------------------------------
 // Add a component to the material
-void FEMaterial::AddProperty(const std::string& name, int nClassID, int maxSize, unsigned int flags)
+FEMaterialProperty* FEMaterial::AddProperty(const std::string& name, int nClassID, int maxSize, unsigned int flags)
 {
 	FEMaterialProperty* m = new FEMaterialProperty(name, nClassID, this, maxSize, flags);
 	m_Mat.push_back(m);
+	return m;
 }
 
 //-----------------------------------------------------------------------------
@@ -769,6 +772,7 @@ void FEMaterial::Load(IArchive &ar)
                             case FE_ACTIVE_CONTRACT_TISO_UC_OLD : pm = new FEPrescribedActiveContractionTransIsoUCOld; break;
                             default:
                                 pm = FEMaterialFactory::Create(nid);
+								pm->SetSuperClassID(prop->GetSuperClassID());
                             }
 							assert(pm);
 							pm->Load(ar);

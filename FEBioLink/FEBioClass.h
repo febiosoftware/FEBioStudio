@@ -136,12 +136,14 @@ namespace FEBio {
 		FEBioClass() {}
 		FEBioClass(const FEBioClass& c)
 		{
+			m_superClassID = c.m_superClassID;
 			m_typeString = c.m_typeString;
 			m_Param = c.m_Param;
 			m_Props = c.m_Props;
 		}
 		void operator = (const FEBioClass& c)
 		{
+			m_superClassID = c.m_superClassID;
 			m_typeString = c.m_typeString;
 			m_Param = c.m_Param;
 			m_Props = c.m_Props;
@@ -159,7 +161,11 @@ namespace FEBio {
 		void AddProperty(const std::string& propName, int superClassId, int baseClassId = -1);
 		FEBioProperty& GetProperty(int i) { return m_Props[i]; }
 
+		void SetSuperClassID(int scid) { m_superClassID = scid; }
+		int GetSuperClassID() const { return m_superClassID; }
+
 	private:
+		int			m_superClassID;
 		std::string		m_typeString;
 		std::vector<FEBioParam>		m_Param;
 		std::vector<FEBioProperty>	m_Props;

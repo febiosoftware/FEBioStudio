@@ -496,7 +496,7 @@ void CMainWindow::on_actionAddStep_triggered()
 		assert(l.size() == 1);
 
 		FEStep* ps = fecore_new<FEStep>(fem, FE_ANALYSIS, FE_STEP_FEBIO_ANALYSIS);
-		FEBio::CreateStep(prj.GetModule(), l[0].classId, ps);
+		FEBio::CreateStep(l[0].classId, ps);
 		assert(ps);
 		if (ps)
 		{

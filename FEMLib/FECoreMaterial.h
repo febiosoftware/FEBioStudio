@@ -80,9 +80,13 @@ public:
 	// return property flags
 	unsigned int GetFlags() const { return m_flag; }
 
+	void SetSuperClassID(int superClassID) { m_nsuperClassID = superClassID; }
+	int GetSuperClassID() const { return m_nsuperClassID; }
+
 private:
 	std::string			m_name;			// name of this property
 	int					m_nClassID;		// the material class ID for this property
+	int					m_nsuperClassID;// super class ID (used to distinguish between materials and material properties)
 	int					m_maxSize;		// max number of properties (0 for no limit)
 	unsigned int		m_flag;			// property flags
 	FEMaterial*			m_parent;		// parent material this material is a property off
@@ -145,7 +149,7 @@ public:
 	FEMaterialProperty* FindProperty(FEMaterial* pm);
 
 	// add a property to the material
-	void AddProperty(const std::string& name, int nClassID, int maxSize = 1, unsigned int flags = FEMaterialProperty::EDITABLE);
+	FEMaterialProperty* AddProperty(const std::string& name, int nClassID, int maxSize = 1, unsigned int flags = FEMaterialProperty::EDITABLE);
 
 	// add a material to property with index propID
 	int AddProperty(int propID, FEMaterial* pm);

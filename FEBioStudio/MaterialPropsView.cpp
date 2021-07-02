@@ -530,7 +530,7 @@ public:
 					{
 						pmat = MF.Create(value.toInt());
 					}
-					else
+					else if (matId > 0)
 					{
 						pmat = MF.Create(FE_FEBIO_MATERIAL);
 						FEBio::CreateMaterial(matId, pmat);

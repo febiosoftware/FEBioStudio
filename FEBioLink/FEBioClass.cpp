@@ -72,7 +72,10 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 	if ((mod != -1) && includeModuleDependencies)
 	{
 		mods = fecore.GetModuleDependencies(mod - 1);
-		if (includeFECoreClasses) mods.push_back(0);
+	}
+	if ((mod != -1) && includeFECoreClasses) 
+	{
+		mods.push_back(0);
 	}
 
 	for (int i = 0; i < fecore.FactoryClasses(); ++i)
@@ -168,6 +171,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 
 	// create the interface class
 	FEBioClass* feb = new FEBioClass;
+	feb->SetSuperClassID(fac->GetSuperClassID());
 	feb->SetTypeString(sztype);
 
 	// copy parameter info
@@ -285,4 +289,16 @@ int FEBio::GetModuleId(const std::string& moduleName)
 	}
 	assert(false);
 	return -1;
+}
+
+void FEBio::SetActiveModule(int moduleID)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	fecore.SetActiveModule(moduleID);
+}
+
+int FEBio::GetActiveModule()
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	return fecore.GetActiveModule();
 }

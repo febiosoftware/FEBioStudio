@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "FESurfaceLoad.h"
 #include "FEMKernel.h"
 #include "FEInterface.h"
+#include <FEBioLink/FEBioInterface.h>
 #include "FEModelConstraint.h"
 #include <FSCore/FSObjectList.h>
 
@@ -444,6 +445,16 @@ FEStepControlProperty& FEStep::GetControlProperty(int i)
 	return *imp->m_Prop[i];
 }
 
+FEStepControlProperty* FEStep::FindControlProperty(const std::string& propertyName)
+{
+	for (int i = 0; i < ControlProperties(); ++i)
+	{
+		FEStepControlProperty& prop = GetControlProperty(i);
+		if (prop.GetName() == propertyName) return &prop;
+	}
+	return nullptr;
+}
+
 void FEStep::AddControlProperty(FEStepControlProperty* pc)
 {
 	imp->m_Prop.Add(pc);
@@ -458,6 +469,42 @@ void FEStep::Save(OArchive &ar)
 
 	// write the step
 	ar.WriteChunk(CID_STEP_ID, m_nID);
+
+	// save the step parameters
+	ar.BeginChunk(CID_STEP_PARAMS);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+
+	// save the control properties
+	if (ControlProperties() > 0)
+	{
+		for (int i = 0; i < ControlProperties(); ++i)
+		{
+			FEStepControlProperty& prop = GetControlProperty(i);
+			ar.BeginChunk(CID_STEP_PROPERTY);
+			{
+				// store the property name
+				ar.WriteChunk(CID_STEP_PROPERTY_NAME, prop.GetName());
+
+				// store the property data
+				if (prop.m_prop)
+				{
+					FEStepComponent* pc = prop.m_prop;
+
+					string typeStr = pc->GetTypeString();
+					ar.WriteChunk(CID_STEP_PROPERTY_TYPESTR, typeStr);
+					ar.BeginChunk(CID_STEP_PROPERTY_DATA);
+					{
+						pc->Save(ar);
+					}
+					ar.EndChunk();
+				}
+			}
+			ar.EndChunk();
+		}
+	}
 
 	// save the boundary conditions
 	int nbc = BCs();
@@ -613,6 +660,44 @@ void FEStep::Load(IArchive &ar)
 		case CID_STEP_NAME      : { string name; ar.read(name); SetName(name); } break;
 		case CID_FEOBJ_INFO     : { string info; ar.read(info); SetInfo(info); } break;
 		case CID_STEP_ID        : { int nid; ar.read(nid); SetID(nid); } break;
+		case CID_STEP_PARAMS:
+		{
+			ParamContainer::Load(ar);
+		}
+		break;
+		case CID_STEP_PROPERTY:
+		{
+			FEStepControlProperty* pc = nullptr;
+			string typeString;
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int cid = ar.GetChunkID();
+				switch (cid)
+				{
+				case CID_STEP_PROPERTY_NAME:
+				{
+					std::string propName;
+					ar.read(propName);
+					pc = FindControlProperty(propName); assert(pc);
+				}
+				break;
+				case CID_STEP_PROPERTY_TYPESTR: ar.read(typeString); break;
+				case CID_STEP_PROPERTY_DATA: 
+				{
+					FEStepComponent* psc = new FEStepComponent;
+					FEBio::CreateModelComponent(pc->m_nSuperClassId, typeString, psc);
+					psc->Load(ar);
+					assert(pc->m_prop == nullptr);
+					pc->m_prop = psc;
+				}
+				break;
+				default:
+					assert(false);
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
 		case CID_BC_SECTION: // boundary conditions
 			{
 				while (IArchive::IO_OK == ar.OpenChunk())
