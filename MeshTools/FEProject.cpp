@@ -147,6 +147,7 @@ unsigned int FEProject::GetModule() const
 //-----------------------------------------------------------------------------
 void FEProject::SetModule(unsigned int mod)
 {
+	FEBio::SetActiveModule(mod);
 	m_module = mod;
 }
 
@@ -227,7 +228,8 @@ void FEProject::Load(IArchive &ar)
 		{
 			string modName;
 			ar.read(modName);
-			m_module = FEBio::GetModuleId(modName); assert(m_module > 0);
+			int moduleId = FEBio::GetModuleId(modName); assert(m_module > 0);
+			SetModule(moduleId);
 		}
 		break;
 		case CID_FEM        : m_fem.Load(ar); break;

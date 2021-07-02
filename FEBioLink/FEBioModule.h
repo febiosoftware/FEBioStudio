@@ -15,4 +15,7 @@ namespace FEBio {
 
 	const char* GetModuleName(int moduleId);
 	int GetModuleId(const std::string& moduleName);
+
+	void SetActiveModule(int moduleID);
+	int GetActiveModule();
 }
