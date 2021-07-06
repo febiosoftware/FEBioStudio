@@ -153,6 +153,7 @@ void initMap()
 	idmap[FEMESHADAPTOR_ID             ] = "FEMESHADAPTOR_ID";
 	idmap[FEMESHADAPTORCRITERION_ID    ] = "FEMESHADAPTORCRITERION_ID";
 	idmap[FERIGIDBC_ID                 ] = "FERIGIDBC_ID";
+	idmap[FERIGIDLOAD_ID               ] = "FERIGIDLOAD_ID";
 	idmap[FENEWTONSTRATEGY_ID          ] = "FENEWTONSTRATEGY_ID";
 	idmap[FEITEMLIST_ID                ] = "FEITEMLIST_ID";
 	idmap[FETIMECONTROLLER_ID          ] = "FETIMECONTROLLER_ID";
