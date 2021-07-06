@@ -55,6 +55,7 @@ public:
 	}
 
 	void name(const char* sz) { strcpy(m_sztag, sz); }
+	const char* name() const { return m_sztag; }
 
 	void value(const char* sz) { strcpy(m_szval, sz); }
 	void value(int    n) { sprintf(m_szval, "%d" , n); }

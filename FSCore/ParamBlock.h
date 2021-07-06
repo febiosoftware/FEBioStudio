@@ -192,11 +192,16 @@ public:
 	void SetChecked(bool b);
 	bool IsChecked() const;
 
+	unsigned int GetFlags() const { return m_flags; }
+	void SetFlags(unsigned int flags) { m_flags = flags; }
+
 protected:
 	int				m_nID;		// parameter ID
 	Param_Type		m_ntype;	// parameter type
 	const char*		m_szunit;	// scientific unit (see paramunit.h)
 	int				m_nstate;	// parameter state
+
+	unsigned int	m_flags;	// FEBio parameter flags
 	
 	bool			m_checkable;
 	bool			m_checked;

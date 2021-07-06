@@ -344,6 +344,27 @@ const char* FEModel::GetVariableName(const char* szvar, int n)
 }
 
 //-----------------------------------------------------------------------------
+int FEModel::GetVariableIntValue(const char* szvar, int n)
+{
+	if (strcmp(szvar, "$(Solutes)") == 0)
+	{
+		if ((n >= 0) && (n < m_Sol.Size()))
+			return n + 1;
+		else
+			return -1;
+	}
+	else if (strcmp(szvar, "$(SBMs)") == 0)
+	{
+		if ((n >= 0) && (n < m_SBM.Size()))
+			return n + 1;
+		else
+			return -1;
+	}
+	assert(false);
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
 const char* FEModel::GetEnumValue(const char* szenum, int n)
 {
 	if (szenum == nullptr) return nullptr;
@@ -359,6 +380,15 @@ const char* FEModel::GetEnumValue(const char* szenum, int n)
 	}
 
 	return ch;
+}
+
+//-----------------------------------------------------------------------------
+int FEModel::GetEnumIntValue(Param& param)
+{
+	const char* szenum = param.GetEnumNames();
+	if (szenum == nullptr) return 0;
+	if (szenum[0] == '$') return GetVariableIntValue(szenum, param.GetIntValue());
+	return param.GetIntValue();
 }
 
 //-----------------------------------------------------------------------------

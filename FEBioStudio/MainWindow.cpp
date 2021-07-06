@@ -2417,12 +2417,12 @@ void CMainWindow::UpdatePhysicsUi()
 	FEProject& prj = doc->GetProject();
 	int module = prj.GetModule();
 
-	ui->actionAddRigidConstraint->setVisible(module & MODULE_MECH);
-	ui->actionAddRigidConnector->setVisible(module & MODULE_MECH);
-	ui->actionSoluteTable->setVisible(module & MODULE_SOLUTES);
-	ui->actionSBMTable->setVisible(module & MODULE_SOLUTES);
-	ui->actionAddReaction->setVisible(module & MODULE_REACTIONS);
-    ui->actionAddMembraneReaction->setVisible(module & MODULE_REACTIONS);
+//	ui->actionAddRigidConstraint->setVisible(module & MODULE_MECH);
+//	ui->actionAddRigidConnector->setVisible(module & MODULE_MECH);
+//	ui->actionSoluteTable->setVisible(module & MODULE_SOLUTES);
+//	ui->actionSBMTable->setVisible(module & MODULE_SOLUTES);
+//	ui->actionAddReaction->setVisible(module & MODULE_REACTIONS);
+//	ui->actionAddMembraneReaction->setVisible(module & MODULE_REACTIONS);
 }
 
 //-----------------------------------------------------------------------------

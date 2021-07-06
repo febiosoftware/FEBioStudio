@@ -141,7 +141,12 @@ void FEBioExport::WriteParam(Param &p)
 void FEBioExport::WriteParamList(ParamContainer& c)
 {
 	int NP = c.Parameters();
-	for (int i = 0; i<NP; ++i) WriteParam(c.GetParam(i));
+	for (int i = 0; i < NP; ++i)
+	{
+		Param& p = c.GetParam(i);
+		// don't write attribute params
+		if ((p.GetFlags() & 0x01) == 0) WriteParam(p);
+	}
 }
 
 //-----------------------------------------------------------------------------

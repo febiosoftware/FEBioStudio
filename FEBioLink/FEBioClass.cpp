@@ -186,6 +186,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		case FE_PARAM_INT   : 
 		{
 			FEBioParam& param = feb->AddParameter(p.name(), p.type(), p.value<int>());
+			param.m_flags = p.GetFlags();
 			if (p.enums())
 			{
 				param.m_enums = p.enums();

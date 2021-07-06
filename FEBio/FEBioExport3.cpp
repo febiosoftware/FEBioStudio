@@ -1854,7 +1854,35 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 		return;
 	}
 	else
-		el.add_attribute("type", sztype);
+	{
+		if (strcmp(el.name(), sztype) != 0)
+			el.add_attribute("type", sztype);
+	}
+
+	// see if there are any attribute parameters
+	FEModel& fem = m_prj.GetFEModel();
+	for (int i = 0; i < pm->Parameters(); ++i)
+	{
+		Param& p = pm->GetParam(i);
+		if (p.GetFlags() & 0x01)
+		{
+			switch (p.GetParamType())
+			{
+			case Param_INT: 
+			{
+				// this assumes that the value is actually the index into the enums. 
+				// the enums may have an implied value associated that may differ from its index, so we need to acquire that.
+				if (p.GetEnumNames())
+				{
+					int v = fem.GetEnumIntValue(p);
+					el.add_attribute(p.GetShortName(), v);
+				}
+				else el.add_attribute(p.GetShortName(), p.GetIntValue());
+			}
+			break;
+			}
+		}
+	}
 
 	m_xml.add_branch(el);
 	{

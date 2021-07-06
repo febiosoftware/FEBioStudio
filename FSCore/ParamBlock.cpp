@@ -48,6 +48,7 @@ Param::Param()
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_flags = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -241,6 +242,7 @@ Param::Param(const Param& p)
 	m_nstate = p.m_nstate;
     m_szindx = p.m_szindx;
     m_nindx = p.m_nindx;
+	m_flags = p.m_flags;
 
 	m_bcopy = false;
 	if (p.m_bcopy) CopyEnumNames(p.m_szenum);
@@ -290,6 +292,7 @@ Param& Param::operator = (const Param& p)
 	m_isVariable = p.m_isVariable;
 //	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
+//	m_flags = p.m_flags;
 
 	switch (m_ntype)
 	{

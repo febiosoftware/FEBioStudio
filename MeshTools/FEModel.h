@@ -162,7 +162,9 @@ public:
 	void GetVariableNames(const char* szvar, char* szbuf);
 	
 	const char* GetVariableName(const char* szvar, int n);
+	int GetVariableIntValue(const char* szvar, int n);
 	const char* GetEnumValue(const char* szenum, int n);
+	int GetEnumIntValue(Param& param);
 
 	FESoluteData& GetSBMData(int i);
 	int SBMs();
