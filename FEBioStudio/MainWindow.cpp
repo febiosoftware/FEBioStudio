@@ -439,6 +439,13 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	// stop any animation
 	if (ui->m_isAnimating) ui->postToolBar->CheckPlayButton(false);
 
+	if(filePath.startsWith("fbs://"))
+	{
+		ui->databasePanel->OpenLink(filePath);
+		ui->databasePanel->Raise();
+		return;
+	}
+
 	// convert to native separators
 	QString fileName = QDir::toNativeSeparators(filePath);
 

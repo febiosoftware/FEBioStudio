@@ -33,9 +33,13 @@ SOFTWARE.*/
 #include <unordered_map>
 #include <JlCompress.h>
 #include <QStandardPaths>
+#include <QDockWidget>
 #include <QDesktopServices>
 #include <QDateTime>
 #include <QXmlStreamReader>
+#include <QUrl>
+#include <QUrlQuery>
+#include <QClipboard>
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
@@ -54,8 +58,8 @@ SOFTWARE.*/
 #include <iostream>
 #include <QDebug>
 
-CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent)
-	: QWidget(parent), m_wnd(pwnd), ui(new Ui::CRepositoryPanel)
+CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent)
+	: QWidget(parent), m_wnd(pwnd), dock(parent), ui(new Ui::CRepositoryPanel)
 {
 	// build Ui
 	ui->setupUi(this);
@@ -73,6 +77,33 @@ CRepositoryPanel::~CRepositoryPanel()
 	delete repoHandler;
 	delete dbHandler;
 	delete ui;
+}
+
+void CRepositoryPanel::OpenLink(const QString& link)
+{
+	// Connect to the repository if we haven't already
+	if(ui->stack->currentIndex() == 0)
+	{
+		linkToOpen = link;
+		on_connectButton_clicked();
+		return;
+	}
+
+	QUrl url(link);
+	QString type(url.path());
+	QUrlQuery query(url.query());
+	if(type == "/project")
+
+	{
+		ui->selectProjectByID(query.queryItemValue("ID").toInt());
+	}
+
+	linkToOpen.clear();
+}
+
+void CRepositoryPanel::Raise()
+{
+	dock->raise();
 }
 
 void CRepositoryPanel::SetModelList()
@@ -115,6 +146,11 @@ void CRepositoryPanel::SetModelList()
 	}
 
 	ui->stack->setCurrentIndex(1);
+
+	if(!linkToOpen.isEmpty())
+	{
+		OpenLink(linkToOpen);
+	}
 }
 
 void CRepositoryPanel::ShowMessage(QString message)
@@ -462,6 +498,15 @@ void CRepositoryPanel::on_actionDelete_triggered()
 	}
 
 	on_treeWidget_itemSelectionChanged();
+}
+
+void CRepositoryPanel::on_actionCopyPermalink_triggered()
+{
+	ProjectItem* item = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0]);
+
+	QString permalink = QString("https://%1:%2/permalink/project/%3").arg(REPO_URL).arg(REPO_PORT).arg(item->getProjectID());
+
+	QGuiApplication::clipboard()->setText(permalink);
 }
 
 void CRepositoryPanel::on_actionUpload_triggered()
@@ -1029,6 +1074,8 @@ void CRepositoryPanel::on_treeWidget_customContextMenuRequested(const QPoint &po
 
 	if(item->type() == PROJECTITEM)
 	{
+		menu.addAction(ui->actionCopyPermalink);
+
 		if(static_cast<ProjectItem*>(item)->ownedByUser())
 			{
 				menu.addSeparator();
@@ -1208,6 +1255,8 @@ void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal)
 
 CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent){}
 CRepositoryPanel::~CRepositoryPanel(){}
+void CRepositoryPanel::OpenLink(const QString& link) {}
+// void CRepositoryPanel::Raise() {}
 void CRepositoryPanel::SetModelList(){}
 void CRepositoryPanel::ShowMessage(QString message) {}
 void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages) {}

@@ -352,6 +352,7 @@ public:
 	QAction* actionOpen;
 	QAction* actionOpenFileLocation;
 	QAction* actionDelete;
+	QAction* actionCopyPermalink;
 
 	QAction* actionUpload;
 
@@ -427,6 +428,9 @@ public:
 		actionDelete->setObjectName("actionDelete");
 		actionDelete->setIconVisibleInMenu(false);
 		toolbar->addAction(actionDelete);
+
+		actionCopyPermalink = new QAction("Copy Permalink", parent);
+		actionCopyPermalink->setObjectName("actionCopyPermalink");
 
 		toolbar->addSeparator();
 		QWidget* empty = new QWidget();
@@ -668,6 +672,28 @@ public:
 			fileTags->show();
 			fileTags->setTagList(currentFileTags);
 		}
+	}
+
+	void selectProjectByID(int ID)
+	{
+		for(int cat = 0; cat < projectTree->topLevelItemCount(); cat++)
+		{
+			QTreeWidgetItem* current = projectTree->topLevelItem(cat);
+			for(int child = 0; child < current->childCount(); child++)
+			{
+				QTreeWidgetItem* childItem = current->child(child);
+				if(childItem->type() == PROJECTITEM)
+				{
+					if(ID == static_cast<ProjectItem*>(childItem)->getProjectID())
+					{
+						projectTree->setCurrentItem(childItem);
+						childItem->setExpanded(true);
+						return;
+					}
+				}
+			}
+		}
+
 	}
 
 
