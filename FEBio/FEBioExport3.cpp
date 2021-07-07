@@ -1868,6 +1868,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 		{
 			switch (p.GetParamType())
 			{
+			case Param_CHOICE:
 			case Param_INT: 
 			{
 				// this assumes that the value is actually the index into the enums. 

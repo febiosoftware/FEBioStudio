@@ -82,11 +82,12 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 		{
 		case FEBio::FEBIO_PARAM_INT   : 
 		{
-			p = po->AddIntParam(v.toInt(), szname);
 			if (param.m_enums)
 			{
+				p = po->AddChoiceParam(v.toInt(), szname);
 				p->CopyEnumNames(param.m_enums);
 			}
+			else p = po->AddIntParam(v.toInt(), szname);
 		}
 		break;
 		case FEBio::FEBIO_PARAM_BOOL  : p = po->AddBoolParam(v.toBool(), szname); break;

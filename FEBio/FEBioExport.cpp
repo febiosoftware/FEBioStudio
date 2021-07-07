@@ -82,6 +82,8 @@ void FEBioExport::WriteParam(Param &p)
 	const char* szindex = p.GetIndexName();
 	int nindex = p.GetIndexValue();
 
+	FEModel& fem = m_prj.GetFEModel();
+
 	// setup the xml-element
 	XMLElement e;
 	e.name(szname);
@@ -100,6 +102,11 @@ void FEBioExport::WriteParam(Param &p)
 			{
 				const char* sz = GetEnumValue(p);
 				e.value(sz);
+			}
+			else if (p.GetEnumNames()[0] == '$')
+			{
+				int n = fem.GetEnumIntValue(p);
+				e.value(n);
 			}
 			else
 			{
