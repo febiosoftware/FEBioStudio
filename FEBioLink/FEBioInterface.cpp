@@ -103,7 +103,11 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 			assert(false);
 		}
 		assert(p);
-		if (p) p->SetFlags(param.m_flags);
+		if (p)
+		{
+			p->SetFlags(param.m_flags);
+			if (param.m_szunit) p->SetUnit(param.m_szunit);
+		}
 	}
 }
 

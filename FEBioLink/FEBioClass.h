@@ -76,7 +76,7 @@ namespace FEBio {
 	class FEBioParam
 	{
 	public:
-		FEBioParam() { m_enums = nullptr; m_type = -1; m_flags = 0; }
+		FEBioParam() { m_enums = nullptr; m_type = -1; m_flags = 0; m_szunit = nullptr; }
 		FEBioParam(const FEBioParam& p)
 		{
 			m_name = p.m_name;
@@ -84,6 +84,7 @@ namespace FEBio {
 			m_val  = p.m_val;
 			m_flags = p.m_flags;
 			m_enums = p.m_enums;
+			m_szunit = p.m_szunit;
 		}
 		void operator = (const FEBioParam& p)
 		{
@@ -92,6 +93,7 @@ namespace FEBio {
 			m_val = p.m_val;
 			m_flags = p.m_flags;
 			m_enums = p.m_enums;
+			m_szunit = p.m_szunit;
 		}
 
 		int type() const { return m_type; }
@@ -101,6 +103,7 @@ namespace FEBio {
 		std::string		m_name;
 		int				m_type;
 		const char*		m_enums;	// enum values, only for int parameters
+		const char*		m_szunit;
 		unsigned int	m_flags;
 		QVariant		m_val;
 	};

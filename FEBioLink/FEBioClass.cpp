@@ -233,6 +233,12 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		default:
 			assert(false);
 		}
+
+		if (feb->Parameters() > 0)
+		{
+			FEBioParam& febParam = feb->GetParameter(feb->Parameters() - 1);
+			if (p.units()) febParam.m_szunit = p.units();
+		}
 	}
 
 	// copy properties
