@@ -46,6 +46,7 @@ class CustomTreeWidgetItem;
 class ProjectItem;
 class FileItem;
 class ZipThread;
+class QDockWidget;
 
 enum FILETYPE {FULL=0, PART=1};
 
@@ -54,8 +55,11 @@ class CRepositoryPanel : public QWidget
 	Q_OBJECT
 
 public:
-	CRepositoryPanel(CMainWindow* pwnd, QWidget* parent = 0);
+	CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent);
 	~CRepositoryPanel();
+
+	void OpenLink(const QString& link);
+	void Raise();
 
 	void SetModelList();
 	void ShowMessage(QString message);
@@ -100,6 +104,7 @@ private slots:
 	void on_actionOpen_triggered();
 	void on_actionOpenFileLocation_triggered();
 	void on_actionDelete_triggered();
+	void on_actionCopyPermalink_triggered();
 	void on_actionUpload_triggered();
 	void on_actionSearch_triggered();
 	void on_actionClearSearch_triggered();
@@ -124,12 +129,14 @@ private:
 
 private:
 	CMainWindow*		m_wnd;
+	QDockWidget* dock;
 	CRepoConnectionHandler*	repoHandler;
 	CLocalDatabaseHandler* dbHandler;
 	QString m_repositoryFolder;
+	QString linkToOpen;
 	qint64 lastMessageTime;
-  const QString MESSAGE = "message";
-  const QString MESSAGES = "messages";
+	const QString MESSAGE = "message";
+	const QString MESSAGES = "messages";
 
 	Ui::CRepositoryPanel*	ui;
 };
