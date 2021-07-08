@@ -69,7 +69,7 @@ protected:
 	// common parse functions
 	virtual bool ParseControlSection (XMLTag& tag);
 	bool ParseGlobalsSection (XMLTag& tag);
-	bool ParseMaterialSection(XMLTag& tag);
+	virtual bool ParseMaterialSection(XMLTag& tag);
 	bool ParseOutputSection  (XMLTag& tag);
 	virtual bool ParseLoadDataSection(XMLTag& tag);
 	bool ParsePlotfileSection(XMLTag& tag);

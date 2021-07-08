@@ -34,9 +34,9 @@ class FEStep;
 namespace FEBio {
 
 	void CreateModelComponent(int classId, FEModelComponent* po);
-	void CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po);
+	bool CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po);
 	void CreateMaterial(int classId, FEMaterial* po);
-	void CreateMaterial(const char* sztype, FEMaterial* po);
+	bool CreateMaterial(const char* sztype, FEMaterial* po);
 	void CreateMaterialProperty(const char* sztype, FEMaterial* po);
 	void CreateStep(int classId, FEStep* po, bool initDefaultProps = true);
 	void CreateStep(const char* sztype, FEStep* po);

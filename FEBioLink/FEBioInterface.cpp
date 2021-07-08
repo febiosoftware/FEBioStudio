@@ -128,7 +128,7 @@ void FEBio::CreateModelComponent(int classId, FEModelComponent* po)
 	delete feb;
 }
 
-void FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po)
+bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po)
 {
 	if (superClassId == FE_MATERIAL)
 	{
@@ -150,6 +150,8 @@ void FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, F
 		int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId);
 		CreateModelComponent(classId, po);
 	}
+
+	return true;
 }
 
 void FEBio::CreateStep(const char* sztype, FEStep* po)
@@ -204,10 +206,12 @@ void FEBio::CreateStep(int classId, FEStep* po, bool initDefaultProps)
 	delete feb;
 }
 
-void FEBio::CreateMaterial(const char* sztype, FEMaterial* po)
+bool FEBio::CreateMaterial(const char* sztype, FEMaterial* po)
 {
-	int classId = FEBio::GetClassId(FE_MATERIAL, sztype); assert(classId);
+	int classId = FEBio::GetClassId(FE_MATERIAL, sztype); assert(classId >= 0);
+	if (classId < 0) return false;
 	CreateMaterial(classId, po);
+	return true;
 }
 
 void FEBio::CreateMaterialProperty(const char* sztype, FEMaterial* po)
