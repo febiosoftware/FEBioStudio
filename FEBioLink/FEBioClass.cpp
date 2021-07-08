@@ -230,6 +230,11 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 			// Don't know how to handle this.
 		}
 		break;
+		case FE_PARAM_DATA_ARRAY:
+		{
+			// Don't know how to handle this.
+		}
+		break;
 		default:
 			assert(false);
 		}
