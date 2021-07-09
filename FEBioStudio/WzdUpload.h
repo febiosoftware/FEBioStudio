@@ -128,6 +128,7 @@ public slots:
 	void on_addFolder_triggered();
 	void on_addFiles_triggered();
 	void on_rename_triggered();
+	void on_replaceFile_triggered();
 	void on_fileTree_currentItemChanged(QTreeWidgetItem *current);
 	void on_fileTree_itemChanged(QTreeWidgetItem *item, int column);
 	void on_fileTree_itemDoubleClicked(QTreeWidgetItem * item, int column);
