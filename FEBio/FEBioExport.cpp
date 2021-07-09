@@ -223,8 +223,21 @@ void FEBioExport::BuildLoadCurveList(FEModel& fem)
 	// must point load curves
 	for (int j = 0; j<fem.Steps(); ++j)
 	{
-		FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(j));
-		if (pstep && pstep->GetSettings().bmust) AddLoadCurve(pstep->GetMustPointLoadCurve());
+		FEStep* step = fem.GetStep(j);
+		FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(step);
+		if (pstep)
+		{
+			if (pstep->GetSettings().bmust) AddLoadCurve(pstep->GetMustPointLoadCurve());
+		}
+		else
+		{
+			AddLoadCurves(*step);
+			for (int i = 0; i < step->ControlProperties(); ++i)
+			{
+				FEStepControlProperty& prop = step->GetControlProperty(i);
+				if (prop.m_prop) AddLoadCurves(*prop.m_prop);
+			}
+		}
 	}
 
 	// material curves

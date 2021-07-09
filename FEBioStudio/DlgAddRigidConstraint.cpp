@@ -94,7 +94,7 @@ CDlgAddRigidConstraint::CDlgAddRigidConstraint(FEProject& prj, QWidget* parent) 
 	for (int i=0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			ui->mat->addItem(QString::fromStdString(pm->GetName()));
 			m_mat.push_back(pm);

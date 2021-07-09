@@ -4265,8 +4265,7 @@ void FEBioExport12::WriteConstraintSection(FEStep &s)
 
 		GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
 		if (pgm == 0) throw MissingRigidBody(ps->GetName());
-		FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
-		if (pm == 0) throw InvalidMaterialReference();
+		if (pgm->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
 
 		// see if any DOF's are active
 		if (ps->Type() == FE_RIGID_FIXED)

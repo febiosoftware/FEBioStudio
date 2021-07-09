@@ -132,6 +132,8 @@ public:
 	// set the axis material
 	virtual void SetAxisMaterial(FEAxisMaterial* Q);
 
+	virtual bool IsRigid();
+
 public:
 	// get the number of properties of this material
 	int Properties() { return (int) m_Mat.size(); }

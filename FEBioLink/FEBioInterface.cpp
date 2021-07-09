@@ -216,8 +216,13 @@ bool FEBio::CreateMaterial(const char* sztype, FEMaterial* po)
 
 void FEBio::CreateMaterialProperty(const char* sztype, FEMaterial* po)
 {
-	int classId = FEBio::GetClassId(FE_MATERIALPROP, sztype); assert(classId);
-	CreateMaterial(classId, po);
+	int classId = FEBio::GetClassId(FE_MATERIALPROP, sztype);
+
+	// some material properties actually require material classes, so check those as well. 
+	if (classId == -1) classId = FEBio::GetClassId(FE_MATERIAL, sztype); assert(classId != -1);
+
+	// If we found it, allocate the material
+	if (classId >= 0) CreateMaterial(classId, po);
 }
 
 void FEBio::CreateMaterial(int classId, FEMaterial* po)

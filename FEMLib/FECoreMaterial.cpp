@@ -632,6 +632,12 @@ void FEMaterial::SetAxisMaterial(FEAxisMaterial* Q)
 }
 
 //-----------------------------------------------------------------------------
+bool FEMaterial::IsRigid()
+{
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 // Save the material data to the archive
 void FEMaterial::Save(OArchive& ar)
 {

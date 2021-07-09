@@ -128,7 +128,7 @@ public:
 			{
 				GMaterial* mat = m_fem->GetMaterial(i);
 				FEMaterial* matProps = mat->GetMaterialProperties();
-				if (dynamic_cast<FERigidMaterial*>(matProps)) {
+				if (matProps->IsRigid()) {
 					QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(mat->GetName()), 3);
 					matItem->addChild(new QTreeWidgetItem(QStringList() << "Fx", 2));
 					matItem->addChild(new QTreeWidgetItem(QStringList() << "Fy", 2));

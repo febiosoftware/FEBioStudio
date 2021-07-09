@@ -2865,13 +2865,11 @@ void FEBioExport2::WriteConnectors(FEStep& s)
 
 			GMaterial* pgA = m_pfem->GetMaterialFromID(pj->m_rbA);
 			if (pgA == 0) throw MissingRigidBody(pj->GetName().c_str());
-			FERigidMaterial* pA = dynamic_cast<FERigidMaterial*>(pgA->GetMaterialProperties());
-			if (pA == 0) throw InvalidMaterialReference();
+			if (pgA->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
 
 			GMaterial* pgB = m_pfem->GetMaterialFromID(pj->m_rbB);
 			if (pgB == 0) throw MissingRigidBody(pj->GetName().c_str());
-			FERigidMaterial* pB = dynamic_cast<FERigidMaterial*>(pgB->GetMaterialProperties());
-			if (pB == 0) throw InvalidMaterialReference();
+			if (pgB->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
 
 			const char* sz = pj->GetName().c_str();
 			ec.add_attribute("name", sz);
@@ -5074,8 +5072,7 @@ void FEBioExport2::WriteConstraintSection(FEStep &s)
 
 		GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
 		if (pgm == 0) throw MissingRigidBody(ps->GetName());
-		FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
-		if (pm == 0) throw InvalidMaterialReference();
+		if (pgm->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
 
 		if (ps->Type() == FE_RIGID_FIXED)
 		{

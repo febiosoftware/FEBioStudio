@@ -290,7 +290,7 @@ void check_006(FEProject& prj, std::vector<FSObject*>& objList)
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		GMaterial* mat = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(mat->GetMaterialProperties()))
+		if (mat->GetMaterialProperties()->IsRigid())
 		{
 			int matId = mat->GetID();
 			bool matUsed = false;
@@ -516,7 +516,7 @@ void check_013(FEProject& prj, std::vector<FSObject*>& objList)
 					if (pm)
 					{
 						FEMaterial* mat = pm->GetMaterialProperties();
-						if (mat && (dynamic_cast<FERigidMaterial*>(mat)))
+						if (mat && mat->IsRigid())
 						{
 							// we allow zero thickness for rigid parts
 							zeroShells = 0;

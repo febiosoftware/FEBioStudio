@@ -289,7 +289,7 @@ void FEModel::GetRigidMaterialNames(char* szbuf)
 	for (int i = 0; i<Materials(); ++i)
 	{
 		GMaterial* pm = GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			const char* szi = pm->GetName().c_str();
 			strcat(ch, szi);

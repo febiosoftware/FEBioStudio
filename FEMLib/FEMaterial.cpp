@@ -1127,6 +1127,11 @@ void FERigidMaterial::copy(FEMaterial* pmat)
 	m_pid = (dynamic_cast<FERigidMaterial*>(pmat))->m_pid;
 }
 
+bool FERigidMaterial::IsRigid()
+{
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////
 // FETCNonlinearOrthotropic - Tension-Compression Nonlinear Orthotropic
 ////////////////////////////////////////////////////////////////////////
@@ -3021,6 +3026,10 @@ const char* FEBioMaterial::GetTypeString()
 	return m_stype.c_str();
 }
 
+bool FEBioMaterial::IsRigid()
+{
+	return (strcmp(GetTypeString(), "rigid body") == 0);
+}
 
 void FEBioMaterial::Save(OArchive& ar)
 {

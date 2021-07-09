@@ -99,7 +99,7 @@ CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : 
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			ui->matA->addItem(QString::fromStdString(pm->GetName()), pm->GetID());
 			ui->matB->addItem(QString::fromStdString(pm->GetName()), pm->GetID());

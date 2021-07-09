@@ -345,7 +345,7 @@ CRigidInterfaceSettings::CRigidInterfaceSettings(FEModel& fem, FERigidInterface*
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			m_mat.push_back(pm);
 			mats.push_back(QString::fromStdString(pm->GetName()));
@@ -379,7 +379,7 @@ CRigidConstraintSettings::CRigidConstraintSettings(FEModel& fem, FERigidConstrai
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			m_mat.push_back(pm);
 			mats.push_back(QString::fromStdString(pm->GetName()));
@@ -419,7 +419,7 @@ CRigidConnectorSettings::CRigidConnectorSettings(FEModel& fem, FERigidConnector*
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			m_mat.push_back(pm);
 			mats.push_back(QString::fromStdString(pm->GetName()));

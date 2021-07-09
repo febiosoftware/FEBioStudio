@@ -816,6 +816,8 @@ public:
 
 	vec3d GetCenterOfMass() const;
 
+	bool IsRigid() override;
+
 public:
 	int	m_pid;	// parent ID
 
@@ -2310,6 +2312,7 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
+	bool IsRigid() override;
 
 	DECLARE_REGISTERED(FEBioMaterial);
 
