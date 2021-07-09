@@ -51,7 +51,17 @@ public:
 	{
 		if (event->type() == QEvent::FileOpen) {
 			QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
-			QString fileName = openEvent->file();
+			
+			QString fileName;
+			// Handle custom URL scheme
+			if (!openEvent->url().isEmpty())
+        	{
+				fileName =openEvent->url().toString();
+			}
+			else
+			{	
+				fileName = openEvent->file();
+			}
 
 			m_pWnd->OpenFile(fileName);
 		}
