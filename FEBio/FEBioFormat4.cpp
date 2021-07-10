@@ -200,13 +200,14 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 	FEModel& fem = GetFEModel();
 
 	// create a new analysis step from these control settings
-	FEBioAnalysisStep* pstep = nullptr;
+	FEStep* pstep = nullptr;
 	if (m_pstep == 0)
 	{
 		pstep = new FEBioAnalysisStep(&fem);
 		FEBio::CreateStep("analysis", pstep);
 		m_pstep = pstep;
 	}
+	else pstep = m_pstep;
 
 	if (pstep)
 	{
