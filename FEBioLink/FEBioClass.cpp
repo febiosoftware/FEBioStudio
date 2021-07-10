@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEBioModule.h"
 #include <FECore/FECoreKernel.h>
 #include <FECore/FECoreBase.h>
+#include <FECore/FEModelParam.h>
 #include <FEBioLib/FEBioModel.h>
 using namespace FEBio;
 
@@ -181,6 +182,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 	for (int i = 0; i < params; ++i, ++it)
 	{
 		FEParam& p = *it;
+		int ndim = p.dim();
 		switch (p.type())
 		{
 		case FE_PARAM_INT   : 
@@ -194,11 +196,42 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		}
 		break;
 		case FE_PARAM_BOOL  : feb->AddParameter(p.name(), p.type(), p.value<bool>()); break;
-		case FE_PARAM_DOUBLE: feb->AddParameter(p.name(), p.type(), p.value<double>()); break;
+		case FE_PARAM_DOUBLE: 
+		{
+			if (ndim == 1)
+				feb->AddParameter(p.name(), p.type(), p.value<double>());
+			else if (ndim == 3)
+			{
+				vec3d v(0, 0, 0);
+				v.x = p.value<double>(0);
+				v.y = p.value<double>(1);
+				v.z = p.value<double>(2);
+				feb->AddParameter(p.name(), FE_PARAM_VEC3D, vec3d_to_qvariant(v));
+			}
+			else assert(false);
+		}
+		break;
 		case FE_PARAM_VEC3D : feb->AddParameter(p.name(), p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
 		case FE_PARAM_MAT3D : feb->AddParameter(p.name(), p.type(), mat3d_to_qvariant(p.value<mat3d>())); break;
 		case FE_PARAM_STD_STRING: feb->AddParameter(p.name(), p.type(), QString::fromStdString(p.value<std::string>())); break;
-		case FE_PARAM_DOUBLE_MAPPED: feb->AddParameter(p.name(), p.type(), 0.0); break;
+		case FE_PARAM_DOUBLE_MAPPED: 
+		{
+			if (ndim == 1)
+			{
+				FEParamDouble& v = p.value<FEParamDouble>();
+				feb->AddParameter(p.name(), p.type(), v.constValue());
+			}
+			else if (ndim == 3)
+			{
+				vec3d v(0, 0, 0);
+				v.x = p.value<FEParamDouble>(0).constValue();
+				v.y = p.value<FEParamDouble>(1).constValue();
+				v.z = p.value<FEParamDouble>(2).constValue();
+				feb->AddParameter(p.name(), FE_PARAM_VEC3D, vec3d_to_qvariant(v));
+			}
+			else assert(false);
+		}
+		break;
 		case FE_PARAM_VEC3D_MAPPED: 
 		{
 			vec3d v(0,0,0); // TODO: Grab const value from FEParamVec3d
