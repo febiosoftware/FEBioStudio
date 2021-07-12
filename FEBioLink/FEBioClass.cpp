@@ -347,3 +347,42 @@ int FEBio::GetActiveModule()
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	return fecore.GetActiveModule();
 }
+
+class FBSLogStream : public LogStream
+{
+public:
+	FBSLogStream(FEBioOutputHandler* outputHandler) : m_outputHandler(outputHandler) {}
+
+	void print(const char* sz) override
+	{
+		if (m_outputHandler) m_outputHandler->write(sz);
+	}
+
+private:
+	FEBioOutputHandler* m_outputHandler;
+};
+
+bool FEBio::runModel(const std::string& fileName, FEBioOutputHandler* outputHandler)
+{
+	FEBioModel fem;
+
+	if (outputHandler)
+	{
+		fem.GetLogFile().SetLogStream(new FBSLogStream(outputHandler));
+	}
+
+	// try to read the input file
+	if (fem.Input(fileName.c_str()) == false)
+	{
+		return false;
+	}
+
+	// do model initialization
+	if (fem.Init() == false)
+	{
+		return false;
+	}
+
+	// solve the model
+	return fem.Solve();
+}

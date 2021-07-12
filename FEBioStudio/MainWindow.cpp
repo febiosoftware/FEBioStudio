@@ -77,6 +77,7 @@ SOFTWARE.*/
 #include "units.h"
 #include "version.h"
 #include "LocalJobProcess.h"
+#include "FEBioThread.h"
 #include <PostLib/FEVTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #ifdef HAS_QUAZIP
@@ -2264,6 +2265,12 @@ void CMainWindow::AddLogEntry(const QString& txt)
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::updateOutput(const QString& txt)
+{
+	ui->logPanel->AddText(txt, 1);
+}
+
+//-----------------------------------------------------------------------------
 // add to the output window
 void CMainWindow::AddOutputEntry(const QString& txt)
 {
@@ -2856,13 +2863,15 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	// clear output for next job
 	ClearOutput();
 	ShowLogPanel();
+	ui->logPanel->ShowOutput();
 
 	// set this as the active job
 	CFEBioJob::SetActiveJob(job);
 
 	if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)
 	{
-		QMessageBox::information(this, "FEBio Studio", "Coming soon to an FEBio Studio version near you!");
+		CFEBioThread* pthread = new CFEBioThread(this, job);
+		pthread->start();
 	}
 	else if(job->GetLaunchConfig()->type == LOCAL)
 	{

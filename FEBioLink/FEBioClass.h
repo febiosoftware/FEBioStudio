@@ -178,4 +178,14 @@ namespace FEBio {
 	};
 
 	FEBioClass* CreateFEBioClass(int classId);
+
+	class FEBioOutputHandler
+	{
+	public:
+		FEBioOutputHandler() {}
+		virtual ~FEBioOutputHandler() {}
+		virtual void write(const char* sztxt) = 0;
+	};
+
+	bool runModel(const std::string& fileName, FEBioOutputHandler* outputHandler = nullptr);
 }

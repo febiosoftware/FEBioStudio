@@ -601,6 +601,8 @@ public slots:
 
 	void autoUpdateCheck(bool update);
 
+	void updateOutput(const QString& txt);
+
 public:
 	QStringList GetRecentFileList();
 	QStringList GetRecentProjectsList();
