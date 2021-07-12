@@ -76,6 +76,7 @@ SOFTWARE.*/
 #include "TextDocument.h"
 #include "units.h"
 #include "version.h"
+#include "LocalJobProcess.h"
 #include <PostLib/FEVTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #ifdef HAS_QUAZIP
@@ -198,6 +199,11 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	if (reset == false)
 	{
 		readSettings();
+	}
+	else
+	{
+		// Add the default launch configuration
+		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
 	}
 
 	// allow drop events
@@ -1659,27 +1665,33 @@ void CMainWindow::writeSettings()
 	}
 
 	settings.beginGroup("LaunchConfigurations");
+	
 	// Create and save a list of launch config names
+	// NOTE: We do not save the first config, which should be the DEFAULT one
+	assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0].type == launchTypes::DEFAULT));
 	QStringList launch_config_names;
-	for(CLaunchConfig conf : ui->m_launch_configs)
+	for(int i=1; i<ui->m_launch_configs.size(); ++i)
 	{
-		launch_config_names.append(QString::fromStdString(conf.name));
+		CLaunchConfig& confi = ui->m_launch_configs[i];
+		launch_config_names.append(QString::fromStdString(confi.name));
 	}
 	settings.setValue("launchConfigNames", launch_config_names);
 
 	// Save launch configs
 	for(int i = 0; i < launch_config_names.count(); i++)
 	{
+		CLaunchConfig& confi = ui->m_launch_configs[i+1];
+
 		QString configName = "launchConfigs/" + launch_config_names[i];
 
-		settings.setValue(configName + "/type", ui->m_launch_configs[i].type);
-		settings.setValue(configName + "/path", ui->m_launch_configs[i].path.c_str());
-		settings.setValue(configName + "/server", ui->m_launch_configs[i].server.c_str());
-		settings.setValue(configName + "/port", ui->m_launch_configs[i].port);
-		settings.setValue(configName + "/userName", ui->m_launch_configs[i].userName.c_str());
-		settings.setValue(configName + "/remoteDir", ui->m_launch_configs[i].remoteDir.c_str());
-		settings.setValue(configName + "/customFile", ui->m_launch_configs[i].customFile.c_str());
-		settings.setValue(configName + "/text", ui->m_launch_configs[i].getText().c_str());
+		settings.setValue(configName + "/type", confi.type);
+		settings.setValue(configName + "/path", confi.path.c_str());
+		settings.setValue(configName + "/server", confi.server.c_str());
+		settings.setValue(configName + "/port", confi.port);
+		settings.setValue(configName + "/userName", confi.userName.c_str());
+		settings.setValue(configName + "/remoteDir", confi.remoteDir.c_str());
+		settings.setValue(configName + "/customFile", confi.customFile.c_str());
+		settings.setValue(configName + "/text", confi.getText().c_str());
 	}
 	settings.endGroup();
 }
@@ -1755,6 +1767,8 @@ void CMainWindow::readSettings()
 	if(launch_config_names.count() > 0)
 	{
 		ui->m_launch_configs.clear();
+		// create the default launch configuration
+		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
 	}
 
 	for(QString conf : launch_config_names)
@@ -1775,18 +1789,6 @@ void CMainWindow::readSettings()
 
 	}
 	settings.endGroup();
-
-	// This is to fix an issue with the 1.0 installers where the location of the 
-	// FEBio executable was changed. 
-	if (versionString.isEmpty())
-	{
-#ifdef WIN32
-		if (ui->m_launch_configs.size() > 0)
-		{
-			ui->m_launch_configs[0].path = std::string("$(FEBioDir)\\febio3.exe");
-		}
-#endif
-	}
 
 	// Read UUID. Generate if not present. 
 	QString UUID = settings.value("UUID").toString();
@@ -2851,65 +2853,29 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		return;
 	}
 
-	QString cmd = QString::fromStdString(job->m_cmd);
-
-	// get the FEBio job file path
-	string febFile = job->GetFEBFileName();
-
 	// clear output for next job
 	ClearOutput();
 	ShowLogPanel();
 
-	// extract the working directory and file title from the file path
-	QFileInfo fileInfo(QString::fromStdString(febFile));
-	QString workingDir = fileInfo.absolutePath();
-	QString fileName = fileInfo.fileName();
-
 	// set this as the active job
 	CFEBioJob::SetActiveJob(job);
 
-	if(job->GetLaunchConfig()->type == LOCAL)
+	if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)
+	{
+		QMessageBox::information(this, "FEBio Studio", "Coming soon to an FEBio Studio version near you!");
+	}
+	else if(job->GetLaunchConfig()->type == LOCAL)
 	{
 		// create new process
-		ui->m_process = new QProcess(this);
-		ui->m_process->setProcessChannelMode(QProcess::MergedChannels);
-		if (workingDir.isEmpty() == false)
-		{
-			AddLogEntry(QString("Setting current working directory to: %1\n").arg(workingDir));
-			ui->m_process->setWorkingDirectory(workingDir);
-		}
-		QString program = QString::fromStdString(job->GetLaunchConfig()->path);
-
-		// do string substitution
-		string sprogram = program.toStdString();
-		sprogram = FSDir::expandMacros(sprogram);
-		program = QString::fromStdString(sprogram);
-
-		// extract the arguments
-		QStringList args = cmd.split(" ", Qt::SkipEmptyParts);
-
-		std::string configFile = job->GetConfigFileName();
-
-		args.replaceInStrings("$(Filename)", fileName);
-		args.replaceInStrings("$(ConfigFile)", QString::fromStdString(configFile));
-
-		// get ready
-		AddLogEntry(QString("Starting FEBio: %1\n").arg(args.join(" ")));
-		QObject::connect(ui->m_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onRunFinished(int, QProcess::ExitStatus)));
-		QObject::connect(ui->m_process, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-		QObject::connect(ui->m_process, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(onErrorOccurred(QProcess::ProcessError)));
+		CLocalJobProcess* process = new CLocalJobProcess(this, job);
+		ui->m_process = process;
 
 		// don't forget to reset the kill flag
 		ui->m_bkillProcess = false;
 
-		// go!
-		job->SetStatus(CFEBioJob::RUNNING);
+		// go! 
+		process->run();
 		UpdateModel(job, false);
-		ui->m_process->start(program, args);
-
-		// show the output window
-		ui->logPanel->parentWidget()->raise();
-		ui->logPanel->ShowOutput();
 	}
 	else
 	{
@@ -2924,10 +2890,6 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 			QObject::connect(sshThread, &CSSHThread::FinishedPart, this, &CMainWindow::NextSSHFunction);
 			sshThread->start();
 		}
-
-		// show the output window
-		ui->logPanel->parentWidget()->raise();
-		ui->logPanel->ShowOutput();
 
 		CFEBioJob::SetActiveJob(nullptr);
 #endif

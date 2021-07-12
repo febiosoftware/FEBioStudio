@@ -26,6 +26,15 @@ SOFTWARE.*/
 
 #include "LaunchConfig.h"
 
+CLaunchConfig::CLaunchConfig() {}
+CLaunchConfig::~CLaunchConfig() {}
+
+CLaunchConfig::CLaunchConfig(launchTypes launchType, const std::string& configName)
+{
+	type = launchType;
+	name = configName;
+}
+
 CLaunchConfig::CLaunchConfig(const CLaunchConfig &old)
 {
 	type = old.type;

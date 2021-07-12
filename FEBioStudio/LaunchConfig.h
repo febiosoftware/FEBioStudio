@@ -29,14 +29,16 @@ SOFTWARE.*/
 #include <string>
 #include <FSCore/FSObject.h>
 
-enum launchTypes{LOCAL=0, REMOTE, PBS, SLURM, CUSTOM};
+enum launchTypes{LOCAL=0, REMOTE, PBS, SLURM, CUSTOM, DEFAULT};
 
 class CLaunchConfig : public FSObject
 {
 
 public:
-	CLaunchConfig(){}
-	~CLaunchConfig(){}
+	CLaunchConfig();
+	CLaunchConfig(launchTypes launchType, const std::string& configName);
+
+	~CLaunchConfig();
 	CLaunchConfig(const CLaunchConfig &old);
 	void operator=(const CLaunchConfig &old);
 
