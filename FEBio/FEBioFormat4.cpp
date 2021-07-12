@@ -206,21 +206,18 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 		pstep = new FEBioAnalysisStep(&fem);
 		FEBio::CreateStep("analysis", pstep);
 		m_pstep = pstep;
-	}
-	else pstep = m_pstep;
 
-	if (pstep)
-	{
 		const char* szname = tag.AttributeValue("name", true);
 		if ((szname == 0) || (strlen(szname) == 0))
 		{
 			char sz[256] = { 0 };
-			sprintf(sz, "Step%02d", fem.Steps() + 1);
+			sprintf(sz, "Step%02d", fem.Steps());
 			pstep->SetName(sz);
 		}
 		else pstep->SetName(szname);
 		fem.AddStep(pstep);
 	}
+	else pstep = m_pstep;
 
 	// parse the settings
 	++tag;
@@ -2350,7 +2347,7 @@ void FEBioFormat4::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 				GMaterial* pgm = 0;
 				if (mid > 0) pgm = febio.GetMaterial(mid - 1);
 				int matid = (pgm ? pgm->GetID() : -1);
-				assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+				assert(pgm->GetMaterialProperties()->IsRigid());
 
 				pc->SetMaterialID(matid);
 			}
@@ -2375,7 +2372,7 @@ void FEBioFormat4::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 				GMaterial* pgm = 0;
 				if (mid > 0) pgm = febio.GetMaterial(mid - 1);
 				int matid = (pgm ? pgm->GetID() : -1);
-				assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+				assert(pgm->GetMaterialProperties()->IsRigid());
 
 				pv->SetMaterialID(matid);
 			}
@@ -2400,7 +2397,7 @@ void FEBioFormat4::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 				GMaterial* pgm = 0;
 				if (mid > 0) pgm = febio.GetMaterial(mid - 1);
 				int matid = (pgm ? pgm->GetID() : -1);
-				assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+				assert(pgm->GetMaterialProperties()->IsRigid());
 
 				pv->SetMaterialID(matid);
 			}
@@ -2905,7 +2902,21 @@ bool FEBioFormat4::ParseStep(XMLTag& tag)
 	if (m_nAnalysis < 0) return false;
 
 	// create a new step (unless this is the first step)
-	if (m_pstep == 0) m_pstep = NewStep(GetFEModel(), m_nAnalysis, szname);
+	if (m_pstep == 0)
+	{
+		FEModel& fem = GetFEModel();
+		m_pstep = new FEBioAnalysisStep(&fem);
+		FEBio::CreateStep("analysis", m_pstep);
+		const char* szname = tag.AttributeValue("name", true);
+		if ((szname == 0) || (strlen(szname) == 0))
+		{
+			char sz[256] = { 0 };
+			sprintf(sz, "Step%02d", fem.Steps());
+			m_pstep->SetName(sz);
+		}
+		else m_pstep->SetName(szname);
+		fem.AddStep(m_pstep);
+	}
 	m_pBCStep = m_pstep;
 
 	do
