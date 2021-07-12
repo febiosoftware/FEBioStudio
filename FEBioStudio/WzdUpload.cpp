@@ -81,6 +81,7 @@ public:
 	QAction* addFolder;
 	QAction* addFiles;
 	QAction* rename;
+	QAction* replaceFile;
 
 	QTreeWidget* fileTree;
 	QTreeWidgetItem* projectItem;
@@ -185,6 +186,15 @@ public:
 		addFiles->setObjectName("addFiles");
 		toolbar->addAction(rename = new QAction(CIconProvider::GetIcon("rename"), "Rename", wzd));
 		rename->setObjectName("rename");
+		
+		replaceFile = new QAction(CIconProvider::GetIcon("document", "swap"), "Replace File", wzd);
+		replaceFile->setObjectName("replaceFile");
+		replaceFile->setDisabled(true);
+		if(m_modify)
+		{
+			toolbar->addAction(replaceFile);
+		}
+
 		filesLayout->addWidget(toolbar);
 
 		fileTree = new QTreeWidget;
@@ -1113,6 +1123,39 @@ void CWzdUpload::on_rename_triggered()
 	}
 }
 
+void CWzdUpload::on_replaceFile_triggered()
+{
+	QTreeWidgetItem* oldItem = ui->fileTree->selectedItems()[0];
+
+	QFileDialog dlg(this, "Replace/Update File");
+	dlg.setFileMode(QFileDialog::ExistingFile);
+
+	if (dlg.exec())
+	{
+		QString file = dlg.selectedFiles()[0];
+
+		QTreeWidgetItem* newItem = ui->NewFile(file);
+
+		// Add the new item to the old item's parent
+		oldItem->parent()->addChild(newItem);
+
+		// Copy the data from the old item to the new one
+		newItem->setText(0, oldItem->text(0));
+		newItem->setData(0, DESCRIPTION, oldItem->data(0, DESCRIPTION));
+		newItem->setData(0, TAGS, oldItem->data(0, TAGS));
+
+		// Rename and uncheck old item
+		oldItem->setText(0, "(Old Version)" + oldItem->text(0));
+		oldItem->setCheckState(0, Qt::Unchecked);
+
+		ui->updateSizes();
+
+		ui->fileTree->expandAll();
+
+		ui->fileTree->setCurrentItem(newItem);
+	}
+}
+
 void CWzdUpload::on_fileTree_currentItemChanged(QTreeWidgetItem *current)
 {
 	if(current)
@@ -1136,6 +1179,19 @@ void CWzdUpload::on_fileTree_currentItemChanged(QTreeWidgetItem *current)
 
 			ui->fileInfoEnabled(false);
 		}
+
+		if(ui->fileTree->selectedItems().count() == 1 && current->text(1).startsWith("{Repository}/"))	
+		{
+			ui->replaceFile->setEnabled(true);
+		}
+		else
+		{
+			ui->replaceFile->setEnabled(false);
+		}
+	}
+	else
+	{
+		ui->replaceFile->setEnabled(false);
 	}
 }
 

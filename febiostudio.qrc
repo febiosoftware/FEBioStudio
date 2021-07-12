@@ -168,5 +168,7 @@
         <file>icons/video.png</file>
         <file>icons/html.png</file>
         <file>icons/revolve.png</file>
+        <file>icons/document.png</file>
+        <file>icons/swap.png</file>
 	</qresource>
 </RCC>

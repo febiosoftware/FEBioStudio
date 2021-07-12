@@ -1244,6 +1244,11 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
+
+	if (ops.plot_stride != 1)
+	{
+		m_xml.add_leaf("plot_stride", ops.plot_stride);
+	}
 }
 
 
@@ -1300,6 +1305,11 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
+
+	if (ops.plot_stride != 1)
+	{
+		m_xml.add_leaf("plot_stride", ops.plot_stride);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1354,6 +1364,11 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
+	}
+
+	if (ops.plot_stride != 1)
+	{
+		m_xml.add_leaf("plot_stride", ops.plot_stride);
 	}
 }
 
@@ -1410,6 +1425,11 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
+
+	if (ops.plot_stride != 1)
+	{
+		m_xml.add_leaf("plot_stride", ops.plot_stride);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1458,6 +1478,11 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
+	}
+
+	if (ops.plot_stride != 1)
+	{
+		m_xml.add_leaf("plot_stride", ops.plot_stride);
 	}
 }
 
