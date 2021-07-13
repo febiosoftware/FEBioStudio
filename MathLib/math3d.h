@@ -322,6 +322,8 @@ public:
 		n.Normalize();
 
 		double d = v1*v2;
+		if (d >  1.0) d =  1.0;
+		if (d < -1.0) d = -1.0;
 
 		double sina = (double) sqrt((1.0-d)*0.5);
 		double cosa = (double) sqrt((1.0+d)*0.5);

@@ -35,6 +35,13 @@ class CGLLinePlot : public CGLPlot
 {
 	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH, SHOW_ALWAYS };
 
+	enum COLOR_MODE {
+		COLOR_SOLID,
+		COLOR_SEGMENT,
+		COLOR_LINE_DATA,
+		COLOR_MODEL_DATA
+	};
+
 public:
 	CGLLinePlot(CGLModel* po);
 	virtual ~CGLLinePlot();
@@ -66,6 +73,7 @@ public:
 protected:
 	void RenderLines(FEState& s);
 	void Render3DLines(FEState& s);
+	void Render3DSmoothLines(FEState& s);
 	bool ShowLine(LINEDATA& l, FEState& s);
 
 private:
