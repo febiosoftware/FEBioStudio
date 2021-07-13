@@ -427,30 +427,38 @@ public:
 	void run() Q_DECL_OVERRIDE
 	{
 		// process the line data
-		m_pct = 0.0;
-		for (int nstate = 0; nstate < m_fem.GetStates(); ++nstate)
+		int states = m_fem.GetStates();
+		m_completed = 0;
+#pragma omp parallel for schedule(dynamic)
+		for (int nstate = 0; nstate < states; ++nstate)
 		{
 			Post::FEState& s = *m_fem.GetState(nstate);
 			Post::LineData& lineData = s.GetLineData();
 			lineData.processLines();
 			double f = (double)nstate / m_fem.GetStates();
-			m_pct = 100.0 * (f*f);
+
+#pragma omp atomic
+			m_completed++;
 		}
-		m_pct = 100.0;
+		m_completed = m_fem.GetStates();
 		emit resultReady(true);
 	}
 
 public:
 	bool hasProgress() override { return true; }
 
-	double progress() override { return m_pct; }
+	double progress() override 
+	{ 
+		double pct = 100.0 * m_completed / m_fem.GetStates();
+		return pct; 
+	}
 
 	const char* currentTask() override { return "processing line data"; }
 
 	void stop() override {}
 
 private:
-	double	m_pct;
+	int		m_completed;
 	Post::FEPostModel& m_fem;
 };
 
