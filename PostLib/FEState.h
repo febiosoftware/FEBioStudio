@@ -74,17 +74,44 @@ struct FACEDATA
 
 struct LINEDATA
 {
+	// nodal coordinates
 	vec3f	m_r0;
 	vec3f	m_r1;
+
+	// tangents
+	vec3d	m_t0;
+	vec3d	m_t1;
+
+	// values
 	float	m_val[2];
 	float	m_user_data[2];
 	int		m_elem[2];
+
+	// segment ID
+	int	m_segId;
 };
 
 struct POINTDATA
 {
 	int		nlabel;
 	vec3f	m_r;
+};
+
+class LineData
+{
+public:
+	LineData() {}
+
+	int Lines() const { return (int)m_Line.size(); }
+	LINEDATA& Line(int n) { return m_Line[n]; }
+	const LINEDATA& Line(int n) const { return m_Line[n]; }
+
+	void Add(LINEDATA& line) { m_Line.push_back(line); }
+
+	void processLines();
+
+private:
+	vector<LINEDATA>	m_Line;
 };
 
 class ObjectData
@@ -162,8 +189,7 @@ public:
 
 	void AddPoint(vec3f a, int nlabel = 0);
 
-	LINEDATA& Line(int n) { return m_Line[n]; }
-	int Lines() { return (int) m_Line.size(); }
+	LineData& GetLineData() { return m_Line; }
 
 	POINTDATA& Point(int n) { return m_Point[n]; }
 	int Points() { return (int) m_Point.size(); }
@@ -188,7 +214,7 @@ public:
 	vector<EDGEDATA>	m_EDGE;		// edge data
 	vector<FACEDATA>	m_FACE;		// face data
 	vector<ELEMDATA>	m_ELEM;		// element data
-	vector<LINEDATA>	m_Line;		// line data
+	LineData			m_Line;		// line data
 	vector<POINTDATA>	m_Point;	// point data
 
 	vector<OBJ_POINT_DATA>	m_objPt;		// object data

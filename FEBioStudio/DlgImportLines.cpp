@@ -218,7 +218,7 @@ vec3f GetCoordinatesFromFrag(Post::FEPostModel& fem, int nstate, FRAG& a)
 int CDlgImportLines::ReadAng2Format(const char* szfile)
 {
 	CPostDocument* doc = ui->m_wnd->GetPostDocument();
-	if (doc == nullptr) return false;
+	if (doc == nullptr) return 0;
 
 	FILE* fp = fopen(szfile, "rb");
 	if (fp == 0) return 0;
@@ -364,9 +364,9 @@ int CDlgImportLines::ReadAng2Format(const char* szfile)
 	// restore mesh' nodal positions
 	for (int i = 0; i < N; ++i) mesh.Node(i).r = tmp[i];
 
+	// all done
 	return nret;
 }
-
 
 //=============================================================================
 

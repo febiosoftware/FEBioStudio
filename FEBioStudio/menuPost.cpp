@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "MainWindow.h"
+#include "DlgStartThread.h"
 #include "ui_mainwindow.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLMirrorPlane.h>
@@ -42,6 +43,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLProbe.h>
+#include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
 #include "PostDocument.h"
@@ -414,10 +416,57 @@ void CMainWindow::on_actionImportPoints_triggered()
 	dlg.exec();
 }
 
+class processLinesThread : public CustomThread
+{
+public:
+	processLinesThread(Post::FEPostModel& fem) : m_fem(fem)
+	{
+
+	}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		// process the line data
+		m_pct = 0.0;
+		for (int nstate = 0; nstate < m_fem.GetStates(); ++nstate)
+		{
+			Post::FEState& s = *m_fem.GetState(nstate);
+			Post::LineData& lineData = s.GetLineData();
+			lineData.processLines();
+			double f = (double)nstate / m_fem.GetStates();
+			m_pct = 100.0 * (f*f);
+		}
+		m_pct = 100.0;
+		emit resultReady(true);
+	}
+
+public:
+	bool hasProgress() override { return true; }
+
+	double progress() override { return m_pct; }
+
+	const char* currentTask() override { return "processing line data"; }
+
+	void stop() override {}
+
+private:
+	double	m_pct;
+	Post::FEPostModel& m_fem;
+};
+
 void CMainWindow::on_actionImportLines_triggered()
 {
 	CDlgImportLines dlg(this);
-	dlg.exec();
+	if (dlg.exec())
+	{
+		CPostDocument* doc = ui->m_wnd->GetPostDocument();
+		if (doc == nullptr) return;
+		Post::FEPostModel& fem = *doc->GetFEModel();
+
+		processLinesThread* thread = new processLinesThread(fem);
+		CDlgStartThread dlg2(this, thread);
+		dlg2.exec();
+	}
 }
 
 //-----------------------------------------------------------------------------
