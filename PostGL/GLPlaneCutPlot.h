@@ -35,7 +35,7 @@ namespace Post {
 
 class CGLPlaneCutPlot : public CGLPlot  
 {
-	enum { SHOW_PLANE, CUT_HIDDEN, SHOW_MESH, TRANSPARENCY, NORMAL_X, NORMAL_Y, NORMAL_Z, OFFSET };
+	enum { SHOW_PLANE, CUT_HIDDEN, SHOW_MESH, MESH_COLOR, TRANSPARENCY, NORMAL_X, NORMAL_Y, NORMAL_Z, OFFSET };
 
 	class GLSlice
 	{
@@ -124,6 +124,7 @@ public:
 	bool	m_bcut_hidden;	// cut hidden materials
 	bool	m_bshow_mesh;
 	float	m_transparency;
+	GLColor	m_meshColor;
 
 protected:
 	vec3d		m_normal;	// plane normal (not normalized yet!)
