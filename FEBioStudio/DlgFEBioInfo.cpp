@@ -335,11 +335,11 @@ void CDlgFEBioInfo::onLoadPlugin()
 		bool bsuccess = febio::ImportPlugin(sfile.c_str());
 		if (bsuccess == false)
 		{
-			QMessageBox::critical(this, "Load Plugin", "The plugin failed to load.");
+			QMessageBox::critical(this, "Load Plugin", QString("The plugin failed to load:\n%1").arg(fileName));
 		}
 		else
 		{
-			QMessageBox::information(this, "Load Plugin", "The plugin loaded successfully.");
+			QMessageBox::information(this, "Load Plugin", QString("The plugin loaded successfully:\n%1").arg(fileName));
 			UpdateModules();
 			Update();
 		}
