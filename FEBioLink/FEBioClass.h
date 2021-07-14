@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <string>
+#include <map>
 #include <QVariant>
 
 namespace FEBio {
@@ -188,4 +189,8 @@ namespace FEBio {
 	};
 
 	bool runModel(const std::string& fileName, FEBioOutputHandler* outputHandler = nullptr);
+
+	const char* GetSuperClassString(int superClassID);
+
+	std::map<int, const char*> GetSuperClassMap();
 }

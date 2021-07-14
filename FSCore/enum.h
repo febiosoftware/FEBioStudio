@@ -340,6 +340,7 @@ SOFTWARE.*/
 #define CID_PARAM_TYPE				0x000C0002
 #define CID_PARAM_VALUE				0x000C0003
 #define CID_PARAM_CHECKED			0x000C0004
+#define CID_PARAM_NAME				0x000C0005
 
 // --- boundary conditions ---
 #define CID_BC_SECTION					0x000D0000

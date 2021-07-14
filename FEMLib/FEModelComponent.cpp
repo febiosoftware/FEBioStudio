@@ -26,7 +26,8 @@ SOFTWARE.*/
 #include "FEModelComponent.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
-
+#include <exception>
+#include <sstream>
 
 FEModelComponent::FEModelComponent()
 {
@@ -75,7 +76,18 @@ void LoadClassMetaData(FEModelComponent* pc, IArchive& ar)
 			string typeStr;
 			ar.read(typeStr);
 			assert(superClassId != -1);
-			FEBio::CreateModelComponent(superClassId, typeStr, pc);
+			if (FEBio::CreateModelComponent(superClassId, typeStr, pc) == false)
+			{
+				const char* szsuperclass = FEBio::GetSuperClassString(superClassId);
+				if (szsuperclass == nullptr) szsuperclass = "(unknown)";
+				std::stringstream ss;
+				ss << "Failed to allocate model component:\n";
+				ss << "super class : " << szsuperclass << std::endl;
+				ss << "type string : \"" << typeStr << "\"";
+				ss << "\n\nIt is possible that this file requires an FEBio plugin before it can be loaded.";
+				string s = ss.str();
+				throw std::exception(s.c_str());
+			}
 		}
 		break;
 		}

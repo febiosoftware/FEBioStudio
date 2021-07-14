@@ -279,7 +279,7 @@ Param::Param(const Param& p)
 Param& Param::operator = (const Param& p)
 {
 	clear();
-	m_nID = p.m_nID;
+//	m_nID = p.m_nID;
 	m_ntype = p.m_ntype;
 //	m_szbrev = p.m_szbrev;
 //	m_szname = p.m_szname;
@@ -698,9 +698,10 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	int nid = p.GetParamID();
 	int ntype = (int) p.GetParamType();
 
-	ar.WriteChunk(CID_PARAM_ID, nid);
+//	ar.WriteChunk(CID_PARAM_ID, nid);
 	ar.WriteChunk(CID_PARAM_TYPE, ntype);
 	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
+	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());
 
 	switch (ntype)
 	{
@@ -751,17 +752,19 @@ void ParamContainer::Load(IArchive &ar)
 //-----------------------------------------------------------------------------
 void ParamContainer::LoadParam(IArchive& ar)
 {
-	int npid;
+	int npid = -1;
 	bool b;
 	Param p;
 	int ntype = -1;
+	string paramName;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_PARAM_ID: ar.read(npid); p.SetParamID(npid); break;
+		case CID_PARAM_ID: ar.read(npid); break;
 		case CID_PARAM_CHECKED: ar.read(b); p.SetChecked(b); break;
+		case CID_PARAM_NAME: ar.read(paramName); break;
 		case CID_PARAM_TYPE: 
 			ar.read(ntype); 
 			switch (ntype)
@@ -825,38 +828,62 @@ void ParamContainer::LoadParam(IArchive& ar)
 	// For old versions, call LoadParam which could be overriden by classes if the order of parameters has changed
 	if (ar.Version() < 0x00020000)
 	{
+		p.SetParamID(npid);
 		LoadParam(p);
 	}
 	else
 	{
-		Param& param = GetParam(p.GetParamID());
+		// Now, we'll try to find the correct parameter in the class' parameter list. 
+		Param* param = nullptr;
 
-		// some boolean parameters are replaced with int parameters (e.g. laugon contact parameters)
-		if ((p.GetParamType() == Param_BOOL) && (param.GetParamType() == Param_INT))
-		{
-			bool b = p.GetBoolValue();
-			p.SetParamType(Param_INT);
-			p.SetIntValue(b ? 1 : 0);
-		}
+		// As of FEBio Studio 2, the parameter name is stored instead of its ID. To safeguard against
+		// changes in the parameter definition of a class, we now use the parameter name
+		// as the primary mechanism for finding the parameter. 
+		if (paramName.empty() == false)
+			param = GetParam(paramName.c_str());
 
-		bool var = param.IsVariable();
-		if (param.GetParamType() == p.GetParamType())
+		// Of course, older files may not have stored the parameter name, so let's try
+		// the param ID, which should be an index into the container's parameter list. 
+		if ((param == nullptr) && (npid >= 0))
+			param = GetParamPtr(npid);
+
+		// if we find the parameter, let's try to process it
+		if (param)
 		{
-			param = p;
-		}
-		else
-		{
-			if (param.IsVariable())
+			// some boolean parameters are replaced with int parameters (e.g. laugon contact parameters)
+			if ((p.GetParamType() == Param_BOOL) && (param->GetParamType() == Param_INT))
 			{
-				param.SetParamType(p.GetParamType());
-				param = p;
+				bool b = p.GetBoolValue();
+				p.SetParamType(Param_INT);
+				p.SetIntValue(b ? 1 : 0);
+			}
+
+			bool var = param->IsVariable();
+			if (param->GetParamType() == p.GetParamType())
+			{
+				*param = p;
 			}
 			else
 			{
-				// TODO: print some type of error message that parameters are mismatched	
+				if (param->IsVariable())
+				{
+					param->SetParamType(p.GetParamType());
+					*param = p;
+				}
+				else
+				{
+					// TODO: print some type of error message that parameters are mismatched	
+					ar.log("Failed to map parameter.");
+				}
 			}
+			if (var) param->MakeVariable(true);
 		}
-		if (var) param.MakeVariable(true);
+		else
+		{
+			// TODO: print some type of error message that parameters are mismatched
+			const char* szname = (paramName.empty() ? "(unknown)" : paramName.c_str());
+			ar.log("Failed to map parameter: %s", szname);
+		}
 	}
 }
 

@@ -111,11 +111,11 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 	}
 }
 
-void FEBio::CreateModelComponent(int classId, FEModelComponent* po)
+bool FEBio::CreateModelComponent(int classId, FEModelComponent* po)
 {
 	// create the FEBioClass object
 	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
-	if (feb == nullptr) return;
+	if (feb == nullptr) return false;
 
 	// set the type string
 	string typeStr = feb->TypeString();
@@ -126,14 +126,18 @@ void FEBio::CreateModelComponent(int classId, FEModelComponent* po)
 
 	// don't forget to cleanup
 	delete feb;
+
+	return true;
 }
 
 bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po)
 {
+	bool ret = true;
+
 	if (superClassId == FE_MATERIAL)
 	{
 		FEMaterial* pmat = dynamic_cast<FEMaterial*>(po); assert(pmat);
-		CreateMaterial(typeStr.c_str(), pmat);
+		ret = CreateMaterial(typeStr.c_str(), pmat);
 	}
 	else if (superClassId == FE_MATERIALPROP)
 	{
@@ -148,10 +152,10 @@ bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, F
 	else
 	{
 		int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId);
-		CreateModelComponent(classId, po);
+		ret = CreateModelComponent(classId, po);
 	}
 
-	return true;
+	return ret;
 }
 
 void FEBio::CreateStep(const char* sztype, FEStep* po)
