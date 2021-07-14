@@ -456,7 +456,7 @@ public:
 
 	int addNode(vector<vec3d>& points, const vec3d& r)
 	{
-		const double eps = 1e-7;
+		const double eps = 1e-12;
 		if (m_level == 0)
 		{
 			if (m_box.IsInside(r))
