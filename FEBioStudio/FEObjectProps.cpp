@@ -248,10 +248,9 @@ void CStepSettings::BuildStepProperties()
 	for (int i = 0; i < m_step->ControlProperties(); ++i)
 	{
 		FEStepControlProperty& prop = m_step->GetControlProperty(i);
-		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group);
-
 		QStringList ops = GetFEBioChoices(m_moduleId, prop.m_nSuperClassId);
-		addProperty(QString::fromStdString(prop.GetName()), CProperty::Enum)->setEnumValues(ops);
+		if (prop.IsRequired() == false) ops << "(none)";
+		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group)->setEnumValues(ops);
 		FEStepComponent* pc = prop.m_prop;
 		if (pc) BuildParamList(pc);
 	}
@@ -271,23 +270,23 @@ QVariant CStepSettings::GetPropertyValue(int n)
 		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
 		if (n == 0)
 		{
-			// This is the group property. I don't think we ever get here.
-			return 0;
-		}
-		else if (n == 1)
-		{
-			// this is the control property selection.
-			if (prop.m_prop == nullptr) return -1;
-			QString typeStr(prop.m_prop->GetTypeString());
 			QStringList ops = GetFEBioChoices(m_moduleId, prop.m_nSuperClassId);
+
+			// this is the control property selection.
+			if (prop.m_prop == nullptr)
+			{
+				if (prop.IsRequired() == false) return ops.size();
+				else return -1;
+			}
+			QString typeStr(prop.m_prop->GetTypeString());
 			int n = ops.indexOf(typeStr);
 			return n;
 		}
-		else if (n <= params+1)
+		else if (n <= params)
 		{
-			return CObjectProps::GetPropertyValue(prop.m_prop->GetParam(n - 2));
+			return CObjectProps::GetPropertyValue(prop.m_prop->GetParam(n - 1));
 		}
-		n -= params + 2;
+		n -= params + 1;
 	}
 
 	return 0;
@@ -308,11 +307,6 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
 		if (n == 0)
 		{
-			// This is the group property. I don't think we ever get here.
-			return;
-		}
-		else if (n == 1)
-		{
 			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(m_moduleId, prop.m_nSuperClassId, -1);
 			delete prop.m_prop;
 			prop.m_prop = nullptr;
@@ -327,12 +321,12 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 			SetModified(true);
 			return;
 		}
-		else if (n <= params + 1)
+		else if (n <= params)
 		{
-			CObjectProps::SetPropertyValue(prop.m_prop->GetParam(n - 2), v);
+			CObjectProps::SetPropertyValue(prop.m_prop->GetParam(n - 1), v);
 			return;
 		}
-		n -= params + 2;
+		n -= params + 1;
 	}
 }
 

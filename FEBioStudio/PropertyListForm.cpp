@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QPushButton>
 #include <QListWidget>
+#include <QToolButton>
 #include "CIntInput.h"
 #include "GLHighlighter.h"
 #include "ResourceEdit.h"
@@ -103,6 +104,49 @@ QString unitString(CProperty& p)
 	return s;
 }
 
+//================================================================================
+CWrapperBox::CWrapperBox(const QString& name, QWidget* parent) : QFrame(parent)
+{
+	setFrameStyle(QFrame::StyledPanel);
+
+	setSizePolicy(sizePolicy().horizontalPolicy(), QSizePolicy::Maximum);
+
+	m_pc = new QComboBox;
+	m_pc->setSizePolicy(QSizePolicy::Expanding, m_pc->sizePolicy().verticalPolicy());
+	QHBoxLayout* h = new QHBoxLayout;
+	h->setContentsMargins(0, 0, 0, 0);
+	m_tb = new QToolButton;
+	m_tb->setText(QChar(0x25BC));
+	m_tb->setAutoRaise(true);
+	h->addWidget(m_tb);
+	h->addWidget(new QLabel(QString("<b>%1</b>").arg(name)));
+	h->addWidget(m_pc);
+	QVBoxLayout* vl = new QVBoxLayout;
+	vl->addLayout(h);
+	m_pg = new QGroupBox;
+	vl->addWidget(m_pg);
+	setLayout(vl);
+
+	QObject::connect(m_tb, SIGNAL(clicked()), SLOT(OnExpandClicked()));
+}
+
+void CWrapperBox::addItems(const QStringList& items) { m_pc->addItems(items); }
+void CWrapperBox::setCurrentIndex(int n) { m_pc->setCurrentIndex(n); }
+
+void CWrapperBox::OnExpandClicked()
+{
+	if (m_pg->isVisible())
+	{
+		m_pg->hide();
+		m_tb->setText(QChar(0x2BC8));
+	}
+	else
+	{
+		m_pg->show();
+		m_tb->setText(QChar(0x2BC6));
+	}
+}
+
 //-----------------------------------------------------------------------------
 // get the property list
 CPropertyList* CPropertyListForm::getPropertyList()
@@ -140,14 +184,30 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 		// see if we need to create a group
 		if (pi.type == CProperty::Group)
 		{
-			pg = new QGroupBox(pi.name);
-			ui->addWidget(pg);
-			m_widget.push_back(pw);
-			pg->setFlat(true);
+			if (pi.values.isEmpty())
+			{
+				pg = new QGroupBox(pi.name);
+				ui->addWidget(pg);
+				m_widget.push_back(pw);
+				pg->setFlat(true);
 
-			pg->setStyleSheet("QGroupBox { font-weight: bold; } ");
+				pg->setStyleSheet("QGroupBox { font-weight: bold; } ");
 
-			pg->setAlignment(Qt::AlignCenter);
+				pg->setAlignment(Qt::AlignCenter);
+			}
+			else
+			{
+				CWrapperBox* pw = new CWrapperBox(pi.name);
+				pw->addItems(pi.values);
+				pg = pw->m_pg;
+				ui->addWidget(pw);
+
+				int index = v.toInt();
+				pw->setCurrentIndex(index);
+
+				m_widget.push_back(pw->m_pc);
+				connect(pw->m_pc, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
+			}
 
 			// we must create a new form
 			form = 0;
@@ -220,7 +280,8 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 			// This is because the m_widget list must have the same size as the property list
 			m_widget.push_back(pw);
 		}
-	}		
+	}
+	ui->addStretch();
 }
 
 //-----------------------------------------------------------------------------
@@ -614,6 +675,7 @@ void CPropertyListForm::onDataChanged()
 					}
 					break;
 				case CProperty::Enum:
+				case CProperty::Group:
 					{
 						QComboBox* pc = qobject_cast<QComboBox*>(pw);
 						if (pc) m_list->SetPropertyValue(i, pc->currentIndex());

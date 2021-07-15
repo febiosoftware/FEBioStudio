@@ -188,8 +188,9 @@ void FEBio::CreateStep(int classId, FEStep* po, bool initDefaultProps)
 		FEStepControlProperty* pc = new FEStepControlProperty;
 
 		string name = prop.m_name;
+		pc->m_brequired = prop.m_brequired;
 
-		if (initDefaultProps)
+		if (initDefaultProps && pc->m_brequired)
 		{
 			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(modId, prop.m_superClassId, -1, ClassSearchFlags::IncludeFECoreClasses);
 			if (fci.size() > 0)

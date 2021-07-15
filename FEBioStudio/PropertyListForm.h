@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <QWidget>
+#include <QFrame>
 
 class QFormLayout;
 class CPropertyList;
@@ -35,6 +36,29 @@ class QPushButton;
 class GItem;
 class QListWidget;
 class QVBoxLayout;
+class QComboBox;
+class QGroupBox;
+class QToolButton;
+
+//-----------------------------------------------------------------------------
+class CWrapperBox : public QFrame
+{
+	Q_OBJECT
+
+public:
+	QComboBox* m_pc;
+	QGroupBox* m_pg;
+	QToolButton* m_tb;
+
+public:
+	CWrapperBox(const QString& name, QWidget* parent = nullptr);
+
+	void addItems(const QStringList& items);
+	void setCurrentIndex(int n);
+
+public slots:
+	void OnExpandClicked();
+};
 
 //-----------------------------------------------------------------------------
 // builds a Ui for editing properties using a form view

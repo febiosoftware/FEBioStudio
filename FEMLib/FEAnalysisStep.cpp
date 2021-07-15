@@ -39,7 +39,7 @@ SOFTWARE.*/
 int FEStep::m_ncount = 0;
 
 //-----------------------------------------------------------------------------
-FEStepControlProperty::FEStepControlProperty() { m_prop = nullptr; m_nClassID = -1; m_nSuperClassId = -1; }
+FEStepControlProperty::FEStepControlProperty() { m_prop = nullptr; m_nClassID = -1; m_nSuperClassId = -1; m_brequired = false; }
 FEStepControlProperty::~FEStepControlProperty() { delete m_prop; }
 
 //-----------------------------------------------------------------------------

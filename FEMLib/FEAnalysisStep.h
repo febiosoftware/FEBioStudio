@@ -36,9 +36,12 @@ public:
 	FEStepControlProperty();
 	~FEStepControlProperty();
 
+	bool IsRequired() const { return m_brequired; }
+
 public:
 	int					m_nClassID;			// the class ID for this property
 	int					m_nSuperClassId;	// the super class ID for this property
+	bool				m_brequired;		// is this an optional property or required.
 	FEStepComponent*	m_prop;				// pointer to component class.
 };
 

@@ -171,10 +171,11 @@ FEBioParam& FEBioClass::AddParameter(const std::string& paramName, int paramType
 	return m_Param[m_Param.size() - 1];
 }
 
-void FEBioClass::AddProperty(const std::string& propName, int superClassId, int baseClassId)
+void FEBioClass::AddProperty(const std::string& propName, int superClassId, int baseClassId, bool required)
 {
 	FEBioProperty prop;
 	prop.m_name = propName;
+	prop.m_brequired = required;
 	prop.m_baseClassId = baseClassId;
 	prop.m_superClassId = superClassId;
 	m_Props.push_back(prop);
@@ -349,7 +350,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		int n = baseClassIndex(sz);
 
 		// add it
-		feb->AddProperty(prop->GetName(), prop->GetSuperClassID(), n);
+		feb->AddProperty(prop->GetName(), prop->GetSuperClassID(), n, prop->IsRequired());
 	}
 
 	// all done!
