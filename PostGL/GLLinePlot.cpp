@@ -336,6 +336,7 @@ void CGLLinePlot::Render3DLines(FEState& s)
 	Post::LineData& lineData = s.GetLineData();
 	if (m_ncolor == COLOR_SOLID)
 	{
+		glColor3ub(m_col.r, m_col.g, m_col.b);
 		int NL = lineData.Lines();
 		for (int i = 0; i < NL; ++i)
 		{
