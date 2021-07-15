@@ -237,7 +237,6 @@ void FEBio::CreateMaterial(int classId, FEMaterial* po)
 
 	// check the super class ID
 	int superClassID = feb->GetSuperClassID();
-	assert((superClassID == FE_MATERIAL) || (superClassID == FE_MATERIALPROP));
 
 	// set the type string
 	string typeStr = feb->TypeString();

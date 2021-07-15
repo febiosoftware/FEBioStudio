@@ -819,11 +819,11 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 
 				if (pmat)
 				{
-					int index = pmat->Type();
+					QString typeStr = pmat->GetTypeString();
 					for (int i = 0; i < pc->count(); ++i)
 					{
-						int matid = pc->itemData(i, Qt::UserRole).toInt();
-						if (matid == index)
+						QString txti = pc->itemText(i);
+						if (typeStr == txti)
 						{
 							pc->setCurrentIndex(i);
 							break;

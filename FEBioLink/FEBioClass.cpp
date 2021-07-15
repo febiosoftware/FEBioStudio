@@ -322,6 +322,11 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 			// Don't know how to handle this.
 		}
 		break;
+		case FE_PARAM_STD_VECTOR_VEC2D:
+		{
+			// don't know how to handle this.
+		}
+		break;
 		default:
 			assert(false);
 		}
