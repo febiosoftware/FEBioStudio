@@ -114,7 +114,7 @@ CWrapperBox::CWrapperBox(const QString& name, QWidget* parent) : QFrame(parent)
 	m_pc = new QComboBox;
 	m_pc->setSizePolicy(QSizePolicy::Expanding, m_pc->sizePolicy().verticalPolicy());
 	QHBoxLayout* h = new QHBoxLayout;
-	h->setContentsMargins(0, 0, 0, 0);
+	h->setContentsMargins(1, 1, 1, 1);
 	m_tb = new QToolButton;
 	m_tb->setText(QChar(0x25BC));
 	m_tb->setAutoRaise(true);
@@ -122,6 +122,7 @@ CWrapperBox::CWrapperBox(const QString& name, QWidget* parent) : QFrame(parent)
 	h->addWidget(new QLabel(QString("<b>%1</b>").arg(name)));
 	h->addWidget(m_pc);
 	QVBoxLayout* vl = new QVBoxLayout;
+	vl->setContentsMargins(0, 0, 0, 0);
 	vl->addLayout(h);
 	m_pg = new QGroupBox;
 	vl->addWidget(m_pg);

@@ -296,9 +296,13 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		break;
 		case FE_PARAM_MAT3D_MAPPED:
 		{
-			mat3d M; M.unit(); // TODO: Grab const value from FEParamMat3d
-			QVariant val = mat3d_to_qvariant(M);
-//			feb->AddParameter(p.name(), p.type(), val);
+			if (strcmp(p.name(), "mat_axis") != 0)
+			{
+				FEParamMat3d& v = p.value<FEParamMat3d>();
+				mat3d M = v.constValue();
+				QVariant val = mat3d_to_qvariant(M);
+				feb->AddParameter(p.name(), p.type(), val);
+			}
 		}
 		break;
 		case FE_PARAM_MAT3DS_MAPPED:

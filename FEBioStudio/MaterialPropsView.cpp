@@ -754,6 +754,16 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				QLineEdit* pw = new QLineEdit(parent);
 				return pw;
 			}
+			if (p->GetParamType() == Param_MAT3D)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
+			if (p->GetParamType() == Param_MAT3DS)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
 			if ((p->GetParamType() == Param_INT) || (p->GetParamType() == Param_CHOICE))
 			{
 				if (p->GetEnumNames())
@@ -838,7 +848,9 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 			return pc;
 		}
 	}
-	return QStyledItemDelegate::createEditor(parent, option, index);
+	QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
+	pw->setSizePolicy(QSizePolicy::Expanding, pw->sizePolicy().verticalPolicy());
+	return pw;
 }
 
 void CMaterialPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const

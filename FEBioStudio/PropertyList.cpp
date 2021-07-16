@@ -37,8 +37,11 @@ vec3d StringToVec3d(const QString& s)
 {
 	string st = s.toStdString();
 	const char* sz = st.c_str();
-	vec3d r;
-	sscanf(sz, "%lg,%lg,%lg", &r.x, &r.y, &r.z);
+	vec3d r(0,0,0);
+	if (sz[0] == '{')
+		sscanf(sz, "{%lg,%lg,%lg}", &r.x, &r.y, &r.z);
+	else
+		sscanf(sz, "%lg,%lg,%lg", &r.x, &r.y, &r.z);
 	return r;
 }
 
@@ -46,8 +49,15 @@ mat3d StringToMat3d(const QString& s)
 {
 	string st = s.toStdString();
 	const char* sz = st.c_str();
-	double a[9];
-	sscanf(sz, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", a, a+1, a+2, a+3, a+4, a+5, a+6, a+7, a+8);
+	double a[9] = { 0 };
+	if (sz[0] == '{')
+	{
+		sscanf(sz, "{{%lg,%lg,%lg},{%lg,%lg,%lg},{%lg,%lg,%lg}}", a, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8);
+	}
+	else
+	{
+		sscanf(sz, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8);
+	}
 	return mat3d(a);
 }
 
@@ -55,8 +65,11 @@ mat3ds StringToMat3ds(const QString& s)
 {
 	string st = s.toStdString();
 	const char* sz = st.c_str();
-	double a[6];
-	sscanf(sz, "%lg,%lg,%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3, a + 4, a + 5);
+	double a[6] = { 0 };
+	if (sz[0] == '{')
+		sscanf(sz, "{%lg,%lg,%lg,%lg,%lg,%lg}", a, a + 1, a + 2, a + 3, a + 4, a + 5);
+	else
+		sscanf(sz, "%lg,%lg,%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3, a + 4, a + 5);
 	return mat3ds(a[0], a[1], a[2], a[3], a[4], a[5]);
 }
 
@@ -71,7 +84,7 @@ vec2i StringToVec2i(const QString& s)
 
 QString Vec3dToString(const vec3d& r)
 {
-	return QString("%1,%2,%3").arg(r.x).arg(r.y).arg(r.z);
+	return QString("{%1,%2,%3}").arg(r.x).arg(r.y).arg(r.z);
 }
 
 QString Vec2iToString(const vec2i& r)
@@ -82,25 +95,31 @@ QString Vec2iToString(const vec2i& r)
 QString Mat3dToString(const mat3d& a)
 {
 	QString s;
-	for (int i = 0; i<3; ++i)
-		for (int j=0; j<3; ++j)
-		{ 
+	s += "{";
+	for (int i = 0; i < 3; ++i)
+	{
+		s += "{";
+		for (int j = 0; j < 3; ++j)
+		{
 			s += QString("%1").arg(a(i, j));
-
-			if ((i != 2) || (j != 2)) s += ",";
+			if (j != 2) s += ",";
 		}
+		s += "}";
+		if (i != 2) s += ",";
+	}
+	s += "}";
 	return s;
 }
 
 QString Mat3dsToString(const mat3ds& a)
 {
 	QString s;
-	s = QString("%1").arg(a.xx());
+	s = QString("{%1").arg(a.xx());
 	s += QString(",%1").arg(a.yy());
 	s += QString(",%1").arg(a.zz());
 	s += QString(",%1").arg(a.xy());
 	s += QString(",%1").arg(a.yz());
-	s += QString(",%1").arg(a.xz());
+	s += QString(",%1}").arg(a.xz());
 	return s;
 }
 
