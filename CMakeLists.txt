@@ -321,6 +321,11 @@ endif()
 
 include_directories(${ZLIB_INCLUDE_DIR})
 
+if(USE_ITK)
+    add_definitions(-DHAS_ITK)
+    include(${ITK_USE_FILE})
+endif()
+
 ##### Find Source Files #####
 
 macro(findHdrSrc name)
@@ -474,6 +479,10 @@ endif()
 
 if(USE_FFMPEG)
     target_link_libraries(FEBioStudio ${FFMPEG_LIBS})
+endif()
+
+if(USE_ITK)
+    target_link_libraries(FEBioStudio ${ITK_LIBRARIES})
 endif()
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})

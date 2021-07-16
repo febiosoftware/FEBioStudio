@@ -1408,15 +1408,20 @@ void CMainWindow::on_actionImportGeometry_triggered()
 void CMainWindow::on_actionImportImage_triggered()
 {
 	QStringList filters;
-  #ifdef HAS_TEEM && HAS_DICOM
-	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)" << "Dicom files (*.dicom, *.dcm)";
-  #elif HAS_DICOM
-      filters << "RAW files (*.raw)" << "Dicom files (*.dicom, *.dcm)";
-  #elif HAS_TEEM 
-	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)";
-  #else
-	  filters << "RAW files (*.raw)";
-  #endif
+//   #ifdef HAS_TEEM && HAS_DICOM
+// 	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)" << "Dicom files (*.dicom, *.dcm)";
+//   #elif HAS_DICOM
+//       filters << "RAW files (*.raw)" << "Dicom files (*.dicom, *.dcm)";
+//   #elif HAS_TEEM 
+// 	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)";
+//   #else
+// 	  filters << "RAW files (*.raw)";
+//   #endif
+
+	filters << "RAW files (*.raw)";
+	#ifdef HAS_ITK
+		filters << "DICOM files (*.dcm)" << "TIFF files (*.tiff, *.tif)";
+	#endif
 
 	CGLDocument* doc = GetGLDocument();
 
@@ -1445,8 +1450,8 @@ void CMainWindow::on_actionImportImage_triggered()
     
       if(ext == "tiff" || ext == "tif")
       {
-        #ifdef HAS_TEEM
-        imageModel = doc->ImportTiff(sfile);
+        #ifdef HAS_ITK
+        imageModel = doc->ImportITK(sfile);
         #endif
         if (imageModel == nullptr)
         {
@@ -1467,8 +1472,8 @@ void CMainWindow::on_actionImportImage_triggered()
 	  }
 	  else if (ext == "dcm" || ext == "dicom")
 	  {
-        #ifdef HAS_DICOM
-        imageModel = doc->ImportDicom(sfile);
+        #ifdef HAS_ITK
+        imageModel = doc->ImportITK(sfile);
         #endif
         if (imageModel == nullptr)
         {

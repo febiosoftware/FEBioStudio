@@ -59,8 +59,8 @@ public:
   bool LoadNrrdData(std::wstring& filename);
 #endif
 
-#ifdef HAS_DICOM
-  bool LoadDicomData(const std::string &filename);
+#ifdef HAS_ITK
+  bool LoadITKData(const std::string &filename);
 #endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
 
@@ -107,8 +107,8 @@ public:
   bool LoadNrrdData(std::wstring& filename);
 #endif
 
-#ifdef HAS_DICOM
-  bool LoadDicomData(const std::string &filename);
+#ifdef HAS_ITK
+  bool LoadITKData(const std::string &filename);
 #endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
 

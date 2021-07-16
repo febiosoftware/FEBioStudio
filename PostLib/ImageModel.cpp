@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
+#include <ImageLib/ITKImage.h>
 #include "GLImageRenderer.h"
 #include <FSCore/FSDir.h>
 #include <assert.h>
@@ -152,65 +153,21 @@ bool CImageSource::LoadNrrdData(std::wstring& filename)
 }
 #endif
 
-#ifdef HAS_DICOM
-bool CImageSource::LoadDicomData(const std::string& filename)
+#ifdef HAS_ITK
+bool CImageSource::LoadITKData(const std::string& filename)
 {
-  C3DImage* im = new C3DImage();
-  DicomImage* dicomImage = new DicomImage(filename.c_str());
+  CITKImage* im = new CITKImage();  
 
-  int nx = dicomImage->getWidth();
-  int ny = dicomImage->getHeight();
-  int nz = dicomImage->getNumberOfFrames(); 
-  int dataSize = nx * ny * nz;
-
-  const DiPixel* rawData = dicomImage->getInterData();
-
-  EP_Representation type = rawData->getRepresentation();  // An Enum that gets the type 
-  const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
-  Byte* dataBuf = new Byte[rawData->getCount()]; //may not need dataSize
-
-  std::cout << "Image depth in pixels: " << dicomImage->getDepth() << std::endl;
-  std::cout << "Is it monochrome? " << dicomImage->isMonochrome() << std::endl;
-
-  if (type == EPR_Uint16 && dicomImage->getDepth() == 16)
-  {
-    const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
-    for(int i = 0; i < rawData->getCount(); ++i)
-    { 
-      dataBuf[i] = data[i] >> 8;
-    }
-  }
-  else if (type == EPR_Uint16 && dicomImage->getDepth() == 10)
-  {
-    const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
-    std::vector<std::bitset<10>> tenBitVec(rawData->getCount());
- 
-    for(int i = 0; i < rawData->getCount(); ++i)
-      tenBitVec.at(i) = data[i];
-
-    for(int i = 0; i < rawData->getCount(); ++i)
-    {
-      dataBuf[i] = 256 * tenBitVec[i].to_ulong()/1024;
-    }
-  }
-  else
-  {
-    for(int i = 0; i < rawData->getCount(); ++i)
-    { 
-      dataBuf[i] = data[i];
-    }
-  }
-
-  BOX box(nx, ny, nz, nx+dicomImage->getWidthHeightRatio(), ny+dicomImage->getHeightWidthRatio(), nz+1.0);
-  m_imgModel->SetBoundingBox(box);
-
-  if (im->Create(nx, ny, nz, dataBuf) == false)
+  if(im->LoadFromFile(filename.c_str()))
   {
     delete im;
     return false;
   }
 
-  SetValues(filename,nx,ny,nz);
+  BOX box(0,0,0,1,1,1);
+  m_imgModel->SetBoundingBox(box);
+
+  SetValues(filename,im->Width(),im->Height(),im->Depth());
   AssignImage(im);
 
   return true;
@@ -359,12 +316,12 @@ bool CImageModel::LoadNrrdData(std::wstring& filename)
 }
 #endif
 
-#ifdef HAS_DICOM
-bool CImageModel::LoadDicomData(const std::string& filename)
+#ifdef HAS_ITK
+bool CImageModel::LoadITKData(const std::string& filename)
 {
 	if (m_img == nullptr) m_img = new CImageSource(this);
 
-	if (m_img->LoadDicomData(filename) == false)
+	if (m_img->LoadITKData(filename) == false)
 	{
 		delete m_img;
 		m_img = nullptr;
