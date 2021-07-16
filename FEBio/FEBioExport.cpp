@@ -122,6 +122,18 @@ void FEBioExport::WriteParam(Param &p)
 	case Param_VEC2I : e.value(p.GetVec2iValue()); break;
 	case Param_MAT3D : e.value(p.GetMat3dValue()); break;
 	case Param_MAT3DS : e.value(p.GetMat3dsValue()); break;
+	case Param_STD_VECTOR_INT:
+	{
+		if (p.GetEnumNames())
+		{
+			std::vector<int> l = p.GetVectorIntValue();
+			char buf[256] = { 0 };
+			fem.GetEnumValues(buf, l, p.GetEnumNames());
+			e.value(buf);
+		}
+		else e.value(p.GetVectorIntValue());
+	}
+	break;
 	case Param_MATH  :
 	{
 		e.add_attribute("type", "math");

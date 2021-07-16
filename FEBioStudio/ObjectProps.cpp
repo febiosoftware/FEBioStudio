@@ -116,6 +116,17 @@ void CObjectProps::AddParameter(Param& p)
 		}
 	}
 	break;
+	case Param_STD_VECTOR_INT:
+	{
+		prop = addProperty(p.GetLongName(), CProperty::Std_Vector_Int);
+		const char* szenum = p.GetEnumNames();
+		if (szenum)
+		{
+			QStringList ops = GetEnumValues(szenum);
+			prop->setEnumValues(ops);
+		}
+	}
+	break;
 	default:
 		prop = addProperty(p.GetLongName(), CProperty::String);
 		prop->setFlags(CProperty::Visible);
@@ -217,6 +228,13 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 		return qcol;
 	}
 	break;
+	case Param_STD_VECTOR_INT:
+	{
+		std::vector<int> v = p.GetVectorIntValue();
+		QString t = VectorIntToString(v);
+		return t;
+	}
+	break;
 	default:
 		return "(not supported)";
 	}
@@ -278,6 +296,13 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 		QColor qcol = v.value<QColor>();
 		GLColor c = toGLColor(qcol);
 		p.SetColorValue(c);
+	}
+	break;
+	case Param_STD_VECTOR_INT:
+	{
+		QString s = v.toString();
+		std::vector<int> val = StringToVectorInt(s);
+		p.SetVectorIntValue(val);
 	}
 	break;
 	default:

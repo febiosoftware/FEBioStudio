@@ -314,7 +314,10 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		break;
 		case FEBIO_PARAM_STD_VECTOR_INT:
 		{
-			// Don't know how to handle this.
+			std::vector<int>& v = p.value<std::vector<int> >();
+			QVariant val = QVariant::fromValue(v);
+			FEBioParam& param = feb->AddParameter(p.name(), p.type(), val);
+			if (p.enums()) param.m_enums = p.enums();
 		}
 		break;
 		case FEBIO_PARAM_STD_VECTOR_DOUBLE:

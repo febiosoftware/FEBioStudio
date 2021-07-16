@@ -82,6 +82,32 @@ vec2i StringToVec2i(const QString& s)
 	return r;
 }
 
+QString VectorIntToString(const std::vector<int>& v)
+{
+	QString s;
+	for (int i = 0; i < v.size(); ++i)
+	{
+		s += QString::number(v[i]);
+		if (i != v.size() - 1) s += ",";
+	}
+	return s;
+}
+
+std::vector<int> StringToVectorInt(const QString& s)
+{
+	vector<int> v;
+	if (s.isEmpty()) return v;
+	std::string str = s.toStdString();
+	const char* sz = str.c_str();
+	while (sz && *sz) {
+		const char* ch = strchr(sz, ',');
+		int n = atoi(sz);
+		v.push_back(n);
+		if (ch) sz = ch + 1; else sz = nullptr;
+	};
+	return v;
+}
+
 QString Vec3dToString(const vec3d& r)
 {
 	return QString("{%1,%2,%3}").arg(r.x).arg(r.y).arg(r.z);
@@ -261,6 +287,7 @@ QVariant CDataPropertyList::GetPropertyValue(int i)
 	case CProperty::Vec3: { vec3d v = *((vec3d*)(p.pdata)); return Vec3dToString(v); } break;
 	case CProperty::Vec2i: { vec2i v = *((vec2i*)(p.pdata)); return Vec2iToString(v); } break;
 	case CProperty::Mat3: { mat3d v = *((mat3d*)(p.pdata)); return Mat3dToString(v); } break;
+	case CProperty::Std_Vector_Int: { std::vector<int> v = *((std::vector<int>*)(p.pdata)); return VectorIntToString(v); } break;
 	}
 
 	return QVariant();
@@ -283,5 +310,6 @@ void CDataPropertyList::SetPropertyValue(int i, const QVariant& v)
 	case CProperty::Vec3: { vec3d& d = *((vec3d*)p.pdata); d = StringToVec3d(v.value<QString>()); } break;
 	case CProperty::Vec2i: { vec2i& d = *((vec2i*)p.pdata); d = StringToVec2i(v.value<QString>()); } break;
 	case CProperty::Mat3: { mat3d& d = *((mat3d*)p.pdata); d = StringToMat3d(v.value<QString>()); } break;
+	case CProperty::Std_Vector_Int: { std::vector<int>& d = *((std::vector<int>*)p.pdata); d = StringToVectorInt(v.value<QString>()); } break;
 	}
 }

@@ -159,12 +159,15 @@ public:
 	void GetSBMNames(char* szbuf);
 	void GetRigidMaterialNames(char* szbuf);
 	void GetDOFNames(FEDOFVariable& var, char* szbuf);
+	void GetDOFNames(FEDOFVariable& var, vector<string>& dofList);
+	void GetDOFSymbols(FEDOFVariable& var, vector<string>& dofList);
 	void GetVariableNames(const char* szvar, char* szbuf);
 	
 	const char* GetVariableName(const char* szvar, int n);
 	int GetVariableIntValue(const char* szvar, int n);
 	const char* GetEnumValue(const char* szenum, int n);
 	int GetEnumIntValue(Param& param);
+	bool GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum);
 
 	FESoluteData& GetSBMData(int i);
 	int SBMs();

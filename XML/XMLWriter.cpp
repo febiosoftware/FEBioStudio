@@ -96,6 +96,21 @@ void XMLElement::value(const mat3d& a)
 	}
 }
 
+void XMLElement::value(const std::vector<int>& v)
+{
+	m_szval[0] = 0;
+	if (v.empty()) return;
+
+	sprintf(m_szval, intFormat, v[0]);
+	int l = (int)strlen(m_szval);
+	for (int i = 1; i < v.size(); ++i)
+	{
+		sprintf(m_szval + l, ",");
+		sprintf(m_szval + l + 1, intFormat, v[i]);
+		l = (int)strlen(m_szval);
+	}
+}
+
 int XMLElement::add_attribute(const char* szn, const char* szv)
 {
 	strcpy(m_attn[m_natt], szn);

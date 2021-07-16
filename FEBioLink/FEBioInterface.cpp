@@ -99,6 +99,13 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 		case FEBio::FEBIO_PARAM_VEC3D_MAPPED : p = po->AddVecParam(qvariant_to_vec3d(v), szname); break;
 		case FEBio::FEBIO_PARAM_MAT3D_MAPPED : p = po->AddMat3dParam(qvariant_to_mat3d(v), szname); break;
 		case FEBio::FEBIO_PARAM_MAT3DS_MAPPED : p = po->AddMat3dsParam(qvariant_to_mat3ds(v), szname); break;
+		case FEBio::FEBIO_PARAM_STD_VECTOR_INT:
+		{
+			std::vector<int> val = v.value<std::vector<int> >();
+			p = po->AddVectorIntParam(val, szname);
+			if (param.m_enums) p->CopyEnumNames(param.m_enums);
+		}
+		break;
 		default:
 			assert(false);
 		}

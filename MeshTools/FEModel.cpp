@@ -167,34 +167,34 @@ FEModel::FEModel()
 	// define degrees of freedom
 	m_DOF.clear();
 
-	FEDOFVariable* varDisp = AddVariable("Displacement");
+	FEDOFVariable* varDisp = AddVariable("displacement");
 	varDisp->AddDOF("X-displacement", "x");
 	varDisp->AddDOF("Y-displacement", "y");
 	varDisp->AddDOF("Z-displacement", "z");
 
-	FEDOFVariable* varRot = AddVariable("Rotation");
+	FEDOFVariable* varRot = AddVariable("shell rotation");
 	varRot->AddDOF("X-rotation", "u");
 	varRot->AddDOF("Y-rotation", "v");
 	varRot->AddDOF("Z-rotation", "w");
 
-	FEDOFVariable* varPressure = AddVariable("Effective Fluid Pressure");
+	FEDOFVariable* varPressure = AddVariable("fluid pressure");
 	varPressure->AddDOF("pressure", "p");
 
-	FEDOFVariable* varTemperature = AddVariable("Temperature");
+	FEDOFVariable* varTemperature = AddVariable("temperature");
 	varTemperature->AddDOF("temperature", "T");
 
-    FEDOFVariable* varSolute = AddVariable("Effective Solute Concentration");
+    FEDOFVariable* varSolute = AddVariable("concentration");
     // (start with an empty solute variable)
     
-    FEDOFVariable* varVel = AddVariable("Fluid Velocity");
+    FEDOFVariable* varVel = AddVariable("relative fluid velocity");
     varVel->AddDOF("X-fluid velocity", "wx");
     varVel->AddDOF("Y-fluid velocity", "wy");
     varVel->AddDOF("Z-fluid velocity", "wz");
     
-	FEDOFVariable* varDil = AddVariable("Fluid Dilatation");
+	FEDOFVariable* varDil = AddVariable("fluid dilatation");
 	varDil->AddDOF("dilatation", "ef");
 
-	FEDOFVariable* varSDisp = AddVariable("Shell Displacement");
+	FEDOFVariable* varSDisp = AddVariable("shell displacement");
 	varSDisp->AddDOF("Shell X-displacement", "sx");
 	varSDisp->AddDOF("Shell Y-displacement", "sy");
 	varSDisp->AddDOF("Shell Z-displacement", "sz");
@@ -307,15 +307,17 @@ void FEModel::GetVariableNames(const char* szvar, char* szbuf)
 	const char* chr = strchr(szvar, ')'); assert(chr);
 	strncpy(var, chl+1, chr-chl-1);
 
-	if (strcmp(var, "Solutes") == 0) { GetSoluteNames(szbuf); return; }
+	if      (strcmp(var, "Solutes") == 0) { GetSoluteNames(szbuf); return; }
 	else if (strcmp(var, "SBMs") == 0) { GetSBMNames(szbuf); return; }
 	else
 	{
+		const char* szvar = var;
+		if (strncmp(var, "dof_list", 8) == 0) szvar = var + 9;
 		int NVAR = Variables();
 		for (int i=0; i<NVAR; ++i)
 		{
 			FEDOFVariable& v = Variable(i);
-			if (strcmp(v.name(), var) == 0) { GetDOFNames(v, szbuf); return; }
+			if (strcmp(v.name(), szvar) == 0) { GetDOFNames(v, szbuf); return; }
 		}
 	}
 	assert(false);
@@ -402,6 +404,63 @@ void FEModel::GetDOFNames(FEDOFVariable& var, char* szbuf)
 		ch += strlen(szi);
 		*ch++ = '\0';
 	}
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::GetDOFNames(FEDOFVariable& var, vector<string>& dofList)
+{
+	dofList.clear();
+	for (int i = 0; i < var.DOFs(); ++i)
+	{
+		const char* szi = var.GetDOF(i).name();
+		dofList.push_back(szi);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::GetDOFSymbols(FEDOFVariable& var, vector<string>& dofList)
+{
+	dofList.clear();
+	for (int i = 0; i < var.DOFs(); ++i)
+	{
+		const char* szi = var.GetDOF(i).symbol();
+		dofList.push_back(szi);
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool FEModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum)
+{
+	assert(szbuf);
+	if (szbuf == nullptr) return false;
+	if (szenum == nullptr) return false;
+	if (szenum[0] == '$')
+	{
+		char var[256] = { 0 };
+		const char* chl = strchr(szenum, '('); assert(chl);
+		const char* chr = strchr(szenum, ')'); assert(chr);
+		strncpy(var, chl + 1, chr - chl - 1);
+
+		if (strncmp(var, "dof_list", 8) == 0)
+		{
+			const char* szvar = var + 9;
+			FEDOFVariable& var = GetVariable(szvar);
+
+			vector<string> dofList; 
+			GetDOFSymbols(var, dofList);
+
+			char* sz = szbuf;
+			for (int i = 0; i < l.size(); ++i)
+			{
+				strcat(sz, dofList[i].c_str());
+				int n = strlen(sz);
+				if (i != l.size()-1) sz[n] = ',';
+				sz += n + 1;
+			}
+		}
+	}
+	
+	return false;
 }
 
 //-----------------------------------------------------------------------------

@@ -53,6 +53,7 @@ public:
 		Mat3,
 		Mat3s,
 		Vec2i,
+		Std_Vector_Int,
 
 		// from PostView
 		DataScalar,
@@ -185,3 +186,5 @@ QString Mat3dToString(const mat3d& a);
 QString Mat3dsToString(const mat3ds& a);
 QString Vec2iToString(const vec2i& r);
 vec2i StringToVec2i(const QString& s);
+std::vector<int> StringToVectorInt(const QString& s);
+QString VectorIntToString(const std::vector<int>& v);

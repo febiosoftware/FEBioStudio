@@ -282,7 +282,7 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 			m_widget.push_back(pw);
 		}
 	}
-	ui->addStretch();
+//	ui->addStretch();
 }
 
 //-----------------------------------------------------------------------------
@@ -480,6 +480,38 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			edit->setText(v.toString());
 			connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
 			return edit;
+		}
+		break;
+	case CProperty::Std_Vector_Int:
+		{
+			if (pi.values.empty())
+			{
+				QLineEdit* edit = new QLineEdit;
+				edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+				edit->setText(v.toString());
+				connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
+				return edit;
+			}
+			else
+			{
+				std::vector<int> l = StringToVectorInt(v.toString());
+				QListWidget* pw = new QListWidget;
+				for (int i = 0; i < pi.values.size(); ++i)
+				{
+					QListWidgetItem* it = new QListWidgetItem;
+					it->setFlags(it->flags() | Qt::ItemFlag::ItemIsUserCheckable);
+
+					if (std::find(l.begin(), l.end(), i) != l.end())
+						it->setCheckState(Qt::Checked);
+					else
+						it->setCheckState(Qt::Unchecked);
+
+					it->setText(pi.values[i]);
+					pw->addItem(it);
+				}
+				connect(pw, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onDataChanged()));
+				return pw;
+			}
 		}
 		break;
 	default:
@@ -771,6 +803,28 @@ void CPropertyListForm::onDataChanged()
 					{
 						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
 						if (edit) m_list->SetPropertyValue(i, edit->text());
+					}
+					break;
+				case CProperty::Std_Vector_Int:
+					{
+						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+						if (edit) m_list->SetPropertyValue(i, edit->text());
+
+						QListWidget* plist = qobject_cast<QListWidget*>(pw);
+						if (plist)
+						{
+							QString s;
+							for (int i = 0; i < plist->count(); ++i)
+							{
+								QListWidgetItem* it = plist->item(i);
+								if (it->checkState() == Qt::Checked)
+								{
+									if (s.isEmpty() == false) s += ",";
+									s += QString::number(i);
+								}
+							}
+							m_list->SetPropertyValue(i, s);
+						}
 					}
 					break;
 				}

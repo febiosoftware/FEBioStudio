@@ -224,6 +224,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		case Param_FLOAT: { double d; tag.value(d); pp->SetFloatValue(d); } break;
 		case Param_MATH: { string s; tag.value(s); pp->SetMathString(s); } break;
 		case Param_STRING: { string s; tag.value(s); pp->SetStringValue(s); } break;
+		case Param_STD_VECTOR_INT: { std::vector<int> v; tag.value(v); pp->SetVectorIntValue(v); } break;
 		default:
 			assert(false);
 			return false;
