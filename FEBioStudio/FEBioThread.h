@@ -35,9 +35,11 @@ class CFEBioThread : public QThread
 	Q_OBJECT
 
 public:
-	CFEBioThread(CMainWindow* wnd, CFEBioJob* job);
+	CFEBioThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent);
 
 	void run() Q_DECL_OVERRIDE;
+
+	void KillThread();
 
 signals:
 	void resultsReady(int exitCode, QProcess::ExitStatus es);

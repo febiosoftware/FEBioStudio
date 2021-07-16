@@ -46,10 +46,10 @@ private:
 	CFEBioThread* m_thread;
 };
 
-CFEBioThread::CFEBioThread(CMainWindow* wnd, CFEBioJob* job) : m_wnd(wnd), m_job(job)
+CFEBioThread::CFEBioThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent) : m_wnd(wnd), m_job(job)
 {
 	QObject::connect(this, SIGNAL(finished()), this, SIGNAL(QObject::deleteLater()));
-	QObject::connect(this, SIGNAL(resultsReady(int, QProcess::ExitStatus)), wnd, SLOT(onRunFinished(int, QProcess::ExitStatus)));
+	QObject::connect(this, SIGNAL(resultsReady(int, QProcess::ExitStatus)), parent, SLOT(onRunFinished(int, QProcess::ExitStatus)));
 	QObject::connect(this, SIGNAL(sendLog(const QString&)), wnd, SLOT(updateOutput(const QString&)));
 }
 
@@ -69,4 +69,9 @@ void CFEBioThread::run()
 	bool b = FEBio::runModel(febFile, &threadOutput);
 
 	emit resultsReady((b ? 0 : 1), QProcess::ExitStatus::NormalExit);
+}
+
+void CFEBioThread::KillThread()
+{
+	FEBio::TerminateRun();
 }

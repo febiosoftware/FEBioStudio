@@ -557,10 +557,6 @@ public slots:
 	void on_glview_pointPicked(const vec3d& r);
 	void on_glview_selectionChanged();
 
-	void onRunFinished(int exitCode, QProcess::ExitStatus es);
-	void onReadyRead();
-	void onErrorOccurred(QProcess::ProcessError err);
-
 	void onExportMaterials(const vector<GMaterial*>& matList);
 	void onExportAllMaterials();
 	void onImportMaterials();

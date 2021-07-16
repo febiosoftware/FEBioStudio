@@ -71,7 +71,7 @@ SOFTWARE.*/
 #include "UpdateChecker.h"
 #include "XMLEditor.h"
 #include "WebDefines.h"
-
+#include "FEBioJobManager.h"
 #include <vector>
 
 class QProcess;
@@ -248,8 +248,7 @@ public:
 
 	QString		m_defaultProjectParent;
 
-	QProcess*	m_process;
-	bool		m_bkillProcess;
+	CFEBioJobManager*	m_jobManager;
 
 	int			m_theme;	// 0 = default, 1 = dark
 	bool		m_clearUndoOnSave;
@@ -297,9 +296,7 @@ public:
 #ifdef WIN32
 		m_defaultProjectParent = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #endif
-
-		m_process = 0;
-		m_bkillProcess = false;
+		m_jobManager = new CFEBioJobManager(wnd);
 
 		m_isAnimating = false;
 

@@ -2865,45 +2865,13 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	ShowLogPanel();
 	ui->logPanel->ShowOutput();
 
-	// set this as the active job
-	CFEBioJob::SetActiveJob(job);
-
-	if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)
+	// start the job
+	if (ui->m_jobManager->StartJob(job) == false)
 	{
-		CFEBioThread* pthread = new CFEBioThread(this, job);
-		pthread->start();
-	}
-	else if(job->GetLaunchConfig()->type == LOCAL)
-	{
-		// create new process
-		CLocalJobProcess* process = new CLocalJobProcess(this, job);
-		ui->m_process = process;
-
-		// don't forget to reset the kill flag
-		ui->m_bkillProcess = false;
-
-		// go! 
-		process->run();
-		UpdateModel(job, false);
-	}
-	else
-	{
-#ifdef HAS_SSH
-		CSSHHandler* handler = job->GetSSHHandler();
-
-		if(!handler->IsBusy())
-		{
-			handler->SetTargetFunction(STARTREMOTEJOB);
-
-			CSSHThread* sshThread = new CSSHThread(handler, STARTSSHSESSION);
-			QObject::connect(sshThread, &CSSHThread::FinishedPart, this, &CMainWindow::NextSSHFunction);
-			sshThread->start();
-		}
-
-		CFEBioJob::SetActiveJob(nullptr);
-#endif
+		QMessageBox::critical(this, "FEBio Studio", "Failed to start job!");
 	}
 
+	UpdateModel(job, false);
 }
 
 void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)

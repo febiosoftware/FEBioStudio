@@ -429,29 +429,61 @@ private:
 	FEBioOutputHandler* m_outputHandler;
 };
 
+static bool terminateRun = false;
+
+bool interrup_cb(FEModel* fem, unsigned int nwhen, void* pd)
+{
+	if (terminateRun)
+	{
+		terminateRun = false;
+		throw std::exception("terminated febio run");
+	}
+	return true;
+}
+
+void FEBio::TerminateRun()
+{
+	terminateRun = true;
+}
+
 bool FEBio::runModel(const std::string& fileName, FEBioOutputHandler* outputHandler)
 {
+	terminateRun = false;
+
 	FEBioModel fem;
 
+	// attach the output handler
 	if (outputHandler)
 	{
 		fem.GetLogFile().SetLogStream(new FBSLogStream(outputHandler));
 	}
 
-	// try to read the input file
-	if (fem.Input(fileName.c_str()) == false)
+	// attach a callback to interrupt
+	fem.AddCallback(interrup_cb, CB_ALWAYS, nullptr);
+
+	try {
+
+		// try to read the input file
+		if (fem.Input(fileName.c_str()) == false)
+		{
+			return false;
+		}
+
+		// do model initialization
+		if (fem.Init() == false)
+		{
+			return false;
+		}
+
+		// solve the model
+		return fem.Solve();
+	}
+	catch (...)
 	{
-		return false;
+
 	}
 
-	// do model initialization
-	if (fem.Init() == false)
-	{
-		return false;
-	}
-
-	// solve the model
-	return fem.Solve();
+	return false;
 }
 
 const char* FEBio::GetSuperClassString(int superClassID)

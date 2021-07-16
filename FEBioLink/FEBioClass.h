@@ -192,6 +192,7 @@ namespace FEBio {
 	};
 
 	bool runModel(const std::string& fileName, FEBioOutputHandler* outputHandler = nullptr);
+	void TerminateRun();
 
 	const char* GetSuperClassString(int superClassID);
 

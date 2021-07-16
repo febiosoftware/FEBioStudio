@@ -24,19 +24,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
+#include <QObject>
 #include <QProcess>
 
 class CMainWindow;
 class CFEBioJob;
 
-class CLocalJobProcess : public QProcess
+class CFEBioJobManager : public QObject
 {
-public:
-	CLocalJobProcess(CMainWindow* wnd, CFEBioJob* job, QObject* parent);
+	Q_OBJECT
 
-	void run();
+	class Impl;
+public:
+	CFEBioJobManager(CMainWindow* wnd);
+
+	bool StartJob(CFEBioJob* job);
+
+	bool IsJobRunning() const;
+
+	void KillJob();
+
+public slots:
+	void onRunFinished(int exitCode, QProcess::ExitStatus es);
+	void onReadyRead();
+	void onErrorOccurred(QProcess::ProcessError err);
 
 private:
-	CMainWindow*	m_wnd;
-	CFEBioJob*		m_job;
+	Impl* im;
 };

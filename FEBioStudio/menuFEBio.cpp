@@ -38,7 +38,7 @@ SOFTWARE.*/
 void CMainWindow::on_actionFEBioRun_triggered()
 {
 	// First, check that a job is not running yet
-	if (ui->m_process && (ui->m_process->state() != QProcess::NotRunning))
+	if (ui->m_jobManager->IsJobRunning())
 	{
 		QMessageBox::information(this, "FEBio Studio", "An FEBio job is already running.\nYou must wait till the job is finished or stop it.");
 		return;
@@ -249,17 +249,9 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 void CMainWindow::on_actionFEBioStop_triggered()
 {
-	if (ui->m_process && (ui->m_process->state() == QProcess::Running))
+	if (ui->m_jobManager->IsJobRunning())
 	{
-		ui->m_bkillProcess = true;
-		ui->m_process->kill();
-
-		CFEBioJob* job = CFEBioJob::GetActiveJob();
-		if (job)
-		{
-			job->SetStatus(CFEBioJob::CANCELLED);
-			CFEBioJob::SetActiveJob(nullptr);
-		}
+		ui->m_jobManager->KillJob();
 	}
 	else QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
 }

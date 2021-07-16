@@ -30,15 +30,14 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <QFileInfo>
 
-CLocalJobProcess::CLocalJobProcess(CMainWindow* wnd, CFEBioJob* job) : m_wnd(wnd), m_job(job)
+CLocalJobProcess::CLocalJobProcess(CMainWindow* wnd, CFEBioJob* job, QObject* parent) : m_wnd(wnd), m_job(job)
 {
 	setProcessChannelMode(QProcess::MergedChannels);
 
-	QObject::connect(this, SIGNAL(finished(int, QProcess::ExitStatus)), wnd, SLOT(onRunFinished(int, QProcess::ExitStatus)));
-	QObject::connect(this, SIGNAL(readyRead()), wnd, SLOT(onReadyRead()));
-	QObject::connect(this, SIGNAL(errorOccurred(QProcess::ProcessError)), wnd, SLOT(onErrorOccurred(QProcess::ProcessError)));
+	QObject::connect(this, SIGNAL(finished(int, QProcess::ExitStatus)), parent, SLOT(onRunFinished(int, QProcess::ExitStatus)));
+	QObject::connect(this, SIGNAL(readyRead()), parent, SLOT(onReadyRead()));
+	QObject::connect(this, SIGNAL(errorOccurred(QProcess::ProcessError)), parent, SLOT(onErrorOccurred(QProcess::ProcessError)));
 }
-
 
 void CLocalJobProcess::run()
 {
