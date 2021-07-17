@@ -64,10 +64,6 @@ SOFTWARE.*/
 
 using std::stringstream;
 
-#ifdef HAS_TEEM
-#include <ImageLib/compatibility.h>
-#endif
-
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
 
@@ -772,64 +768,6 @@ void CGLDocument::LoadResources(IArchive& ar)
 		ar.CloseChunk();
 	}
 }
-
-
-#ifdef HAS_TEEM
-// Load Tiff Data
-Post::CImageModel* CGLDocument::ImportTiff(const std::string& fileName)
-{
-	static int n = 1;
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-  // Need to convert relFile to wstring maybe? 
-  std::wstring relativeFile = s2ws(relFile);
-	if (po->LoadTiffData(relativeFile) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-
-}
-
-Post::CImageModel* CGLDocument::ImportNrrd(const std::string& filename)
-{
-	static int n = 1;
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-  // Need to convert relFile to wstring maybe? 
-  std::wstring relativeFile = s2ws(relFile);
-	if (po->LoadNrrdData(relativeFile) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-
-}
-#endif
 
 #ifdef HAS_ITK
 Post::CImageModel* CGLDocument::ImportITK(const std::string& filename)

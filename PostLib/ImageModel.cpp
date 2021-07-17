@@ -32,15 +32,6 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <assert.h>
 
-#ifdef HAS_TEEM
-#include <ImageLib/compatibility.h>
-#endif
-
-#ifdef HAS_DICOM
-#include <dcmtk/dcmimgle/dcmimage.h>
-#include <bitset>
-#endif
-
 using namespace Post;
 
 CImageSource::CImageSource(CImageModel* imgModel)
@@ -78,80 +69,6 @@ std::string CImageSource::GetFileName() const
 {
 	return GetStringValue(0);
 }
-
-
-#ifdef HAS_TEEM
-
-//TODO: Maybe see if we can break this function up a bit? 
-//      See much how much of Yong's code we can break off.
-bool CImageSource::LoadTiffData(std::wstring &fileName)
-{
-  C3DImage* im = new C3DImage;
-  std::unique_ptr<TIFReader> reader = std::make_unique<TIFReader>();
-
-  // Returns a nrrd based on templated function
-  Nrrd* nrrdStruct = GetNrrd<TIFReader>(reader,fileName);
-
-  auto [nx,ny,npages,bits] = reader->GetTiffInfo();
-
-  BOX box(nx, ny, npages, nx + reader->GetXSpc(), ny+reader->GetYSpc(), npages+reader->GetZSpc());
-  m_imgModel->SetBoundingBox(box);
- 
-  if(im->Create(nx,ny,npages,reader->GetRawImage()) == false)
-  {
-	delete im;
-	return false;
-  }
-
-  SetValues(ws2s(fileName),nx,ny,npages);
-  AssignImage(im);
-
-  return true;
-}
-
-bool CImageSource::LoadNrrdData(std::wstring& filename)
-{
-  C3DImage* im = new C3DImage();
-  std::unique_ptr<NRRDReader> reader = std::make_unique<NRRDReader>();
-
-  Nrrd* nrrdStruct = GetNrrd<NRRDReader>(reader,filename);
-  
-  int nx = reader->GetXSize();
-  int ny = reader->GetYSize();
-  int nz = reader->GetSliceNum();
-  int dataSize = nx * ny * nz;
-
-  Byte* data = static_cast<Byte*>(nrrdStruct->data);
-
-  Byte* dataBuf;
-
-  if (nrrdStruct->type == nrrdTypeUShort || nrrdStruct->type == nrrdTypeShort)
-  {
-    dataBuf = new Byte[dataSize];
-    for (int i = 0; i < dataSize; ++i)
-    {
-      dataBuf[i] = data[2*i];
-    }
-  }
-  else
-    dataBuf = data;
-
-
-  BOX box(nx, ny, nz, nx+reader->GetXSpc(), ny+reader->GetYSpc(), nz+reader->GetZSpc());
-  m_imgModel->SetBoundingBox(box);
-
-  if (im->Create(nx, ny, nz, dataBuf) == false)
-  {
-    delete im;
-    return false;
-  }
-
-  SetValues(ws2s(filename),nx,ny,nz);
-  AssignImage(im);
-
-  return true;
-}
-#endif
 
 #ifdef HAS_ITK
 bool CImageSource::LoadITKData(const std::string& filename)
@@ -275,46 +192,6 @@ bool CImageModel::UpdateData(bool bsave)
 
 	return false;
 }
-
-#ifdef HAS_TEEM
-bool CImageModel::LoadTiffData(std::wstring &fileName)
-{
-	if (m_img == nullptr) m_img = new CImageSource(this);
-
-	if (m_img->LoadTiffData(fileName) == false)
-	{
-		delete m_img;
-		m_img = nullptr;
-		return false;
-	}
-
-	// set the default name by extracting the base of the file name
-	string fileBase = FSDir::fileBase(ws2s(fileName));
-	m_img->SetName(fileBase);
-
-	UpdateData(false);
-
-	return true;
-}
-
-bool CImageModel::LoadNrrdData(std::wstring& filename)
-{
-  if(m_img == nullptr) m_img = new CImageSource(this);
-
-  if (m_img->LoadNrrdData(filename) == false)
-  {
-    delete m_img;
-    m_img = nullptr;
-    return false;
-  }
-  std::string fileBase = FSDir::fileBase(ws2s(filename));
-  m_img->SetName(fileBase);
-
-  UpdateData(false);
-
-  return true;
-}
-#endif
 
 #ifdef HAS_ITK
 bool CImageModel::LoadITKData(const std::string& filename)

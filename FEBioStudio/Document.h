@@ -250,12 +250,6 @@ public:
 	void SetFileWriter(FileWriter* fileWriter);
 	FileWriter* GetFileWriter();
 
-	// import image data
-#ifdef HAS_TEEM
-  Post::CImageModel* ImportTiff(const std::string& filename);
-  Post::CImageModel* ImportNrrd(const std::string& filename);
-#endif
-
 #ifdef HAS_ITK
   Post::CImageModel* ImportITK(const std::string& filename);
 #endif

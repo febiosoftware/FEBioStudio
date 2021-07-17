@@ -33,11 +33,6 @@ SOFTWARE.*/
 #include "GLImageRenderer.h"
 #include "GLObject.h"
 
-#ifdef HAS_TEEM
-  #include <ImageLib/tif_reader.h>
-  #include <ImageLib/nrrd_reader.h>
-#endif
-
 class C3DImage;
 
 namespace Post {
@@ -53,11 +48,6 @@ public:
 
 	void SetFileName(const std::string& fileName);
 	std::string GetFileName() const;
-
-#ifdef HAS_TEEM
-  bool LoadTiffData(std::wstring& filename);
-  bool LoadNrrdData(std::wstring& filename);
-#endif
 
 #ifdef HAS_ITK
   bool LoadITKData(const std::string &filename);
@@ -78,17 +68,6 @@ public:
 	void SetImageModel(CImageModel* imgModel);
 
 private:
-#ifdef HAS_TEEM
-    //works for Tiff and Nrrd structs. Returns a nrrd*.
-    template<class Reader>
-	Nrrd* GetNrrd(std::unique_ptr<Reader>& reader, std::wstring &fileName)
-	{
-	  reader->SetFile(fileName);
-      reader->Preprocess();
-      return reader->Convert(0,0,0);
-	}
-#endif
-
     void SetValues(const std::string &fileName, int x, int y, int z);
     void AssignImage(C3DImage* im);
 
@@ -102,10 +81,6 @@ class CImageModel : public CGLObject
 public:
 	CImageModel(CGLModel* mdl);
 	~CImageModel();
-#ifdef HAS_TEEM
-  bool LoadTiffData(std::wstring& filename);
-  bool LoadNrrdData(std::wstring& filename);
-#endif
 
 #ifdef HAS_ITK
   bool LoadITKData(const std::string &filename);
