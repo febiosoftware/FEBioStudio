@@ -1329,13 +1329,15 @@ void FEBioFormat4::ParseBCFixed(FEStep* pstep, XMLTag& tag)
 		FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero displacement", pbc);
 
 		// map the dofs
+		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "x") { Param* p = pbc->GetParam("x_displacement"); assert(p); if (p) p->SetBoolValue(true); }
-			if (di == "y") { Param* p = pbc->GetParam("y_displacement"); assert(p); if (p) p->SetBoolValue(true); }
-			if (di == "z") { Param* p = pbc->GetParam("z_displacement"); assert(p); if (p) p->SetBoolValue(true); }
+			if (di == "x") { dofList.push_back(0); }
+			if (di == "y") { dofList.push_back(1); }
+			if (di == "z") { dofList.push_back(2); }
 		}			
+		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
 
 		// set the name
 		if (name.empty())
@@ -1349,13 +1351,15 @@ void FEBioFormat4::ParseBCFixed(FEStep* pstep, XMLTag& tag)
 		FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero rotation", pbc);
 
 		// map the dofs
+		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "u") { Param* p = pbc->GetParam("x_rotation"); assert(p); if (p) p->SetBoolValue(true); }
-			if (di == "v") { Param* p = pbc->GetParam("y_rotation"); assert(p); if (p) p->SetBoolValue(true); }
-			if (di == "w") { Param* p = pbc->GetParam("z_rotation"); assert(p); if (p) p->SetBoolValue(true); }
+			if (di == "u") { dofList.push_back(0); }
+			if (di == "v") { dofList.push_back(1); }
+			if (di == "w") { dofList.push_back(2); }
 		}
+		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
 
 		// set the name
 		if (name.empty())
@@ -1391,13 +1395,15 @@ void FEBioFormat4::ParseBCFixed(FEStep* pstep, XMLTag& tag)
 		bool b = FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero fluid velocity", pbc); assert(b);
 
 		// map the dofs
+		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "wx") { Param* p = pbc->GetParam("x_fluid_velocity"); assert(p); if (p) p->SetBoolValue(true); }
-			if (di == "wy") { Param* p = pbc->GetParam("y_fluid_velocity"); assert(p); if (p) p->SetBoolValue(true); }
-			if (di == "wz") { Param* p = pbc->GetParam("z_fluid_velocity"); assert(p); if (p) p->SetBoolValue(true); }
+			if (di == "wx") { dofList.push_back(0); }
+			if (di == "wy") { dofList.push_back(1); }
+			if (di == "wz") { dofList.push_back(2); }
 		}
+		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
 
 		// set the name
 		if (name.empty())
@@ -1422,13 +1428,15 @@ void FEBioFormat4::ParseBCFixed(FEStep* pstep, XMLTag& tag)
 		FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero shell displacement", pbc);
 
 		// map the dofs
+		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "sx") { Param* p = pbc->GetParam("x_shell_displacement"); assert(p); if (p) p->SetBoolValue(true); }
-			if (di == "sy") { Param* p = pbc->GetParam("y_shell_displacement"); assert(p); if (p) p->SetBoolValue(true); }
-			if (di == "sz") { Param* p = pbc->GetParam("z_shell_displacement"); assert(p); if (p) p->SetBoolValue(true); }
+			if (di == "sx") { dofList.push_back(0); }
+			if (di == "sy") { dofList.push_back(1); }
+			if (di == "sz") { dofList.push_back(2); }
 		}			
+		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
 
 		// set the name
 		if (name.empty())

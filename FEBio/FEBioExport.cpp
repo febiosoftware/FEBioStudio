@@ -103,6 +103,11 @@ void FEBioExport::WriteParam(Param &p)
 				const char* sz = GetEnumValue(p);
 				e.value(sz);
 			}
+			else if (m_exportEnumStrings && (p.GetEnumNames()[0] == '$'))
+			{
+				const char* sz = GetEnumValue(p);
+				e.value(sz);
+			}
 			else if (p.GetEnumNames()[0] == '$')
 			{
 				int n = fem.GetEnumIntValue(p);

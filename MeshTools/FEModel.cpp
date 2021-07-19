@@ -327,19 +327,39 @@ void FEModel::GetVariableNames(const char* szvar, char* szbuf)
 //-----------------------------------------------------------------------------
 const char* FEModel::GetVariableName(const char* szvar, int n)
 {
-	if (strcmp(szvar, "$(Solutes)") == 0)
+	if (szvar[0] != '$') return nullptr;
+
+	char var[256] = { 0 };
+	const char* chl = strchr(szvar, '('); assert(chl);
+	const char* chr = strchr(szvar, ')'); assert(chr);
+	strncpy(var, chl + 1, chr - chl - 1);
+
+	if (strcmp(var, "Solutes") == 0)
 	{
 		if ((n >= 0) && (n < m_Sol.Size()))
 			return m_Sol[n]->GetName().c_str();
 		else
 			return "(invalid)";
 	}
-	else if (strcmp(szvar, "$(SBMs)") == 0)
+	else if (strcmp(var, "SBMs") == 0)
 	{
 		if ((n >= 0) && (n < m_SBM.Size()))
 			return m_SBM[n]->GetName().c_str();
 		else
 			return "(invalid)";
+	}
+	else if (strncmp(var, "dof_list", 8) == 0)
+	{
+		szvar = var + 9;
+		int NVAR = Variables();
+		for (int i = 0; i < NVAR; ++i)
+		{
+			FEDOFVariable& v = Variable(i);
+			if (strcmp(v.name(), szvar) == 0) 
+			{ 
+				return v.GetDOF(n).symbol();
+			}
+		}
 	}
 	assert(false);
 	return nullptr;
@@ -452,7 +472,7 @@ bool FEModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum
 			char* sz = szbuf;
 			for (int i = 0; i < l.size(); ++i)
 			{
-				strcat(sz, dofList[i].c_str());
+				strcat(sz, dofList[l[i]].c_str());
 				int n = strlen(sz);
 				if (i != l.size()-1) sz[n] = ',';
 				sz += n + 1;
