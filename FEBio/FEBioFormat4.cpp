@@ -336,6 +336,38 @@ bool FEBioFormat4::ParseMaterialSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat4::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
 {
+	// first, process potential attribute parameters
+	// (e.g. for solutes)
+	for (int i = 0; i < tag.m_natt; ++i)
+	{
+		XMLAtt& att = tag.m_att[i];
+		Param* param = pmat->GetParam(att.m_sztag);
+		if (param)
+		{
+			switch (param->GetParamType())
+			{
+			case Param_INT:
+			{
+				int n = atoi(att.m_szval);
+				param->SetIntValue(n);
+			}
+			break;
+			case Param_CHOICE:
+			{
+				if (param->GetEnumNames())
+				{
+					// TODO: This is hack for reading solute IDs.
+					int n = atoi(att.m_szval);
+					param->SetIntValue(n - 1);
+				}
+			}
+			break;
+			default:
+				assert(false);
+			}
+		}
+	}
+
 	if (tag.isleaf()) return;
 
 	// read the tags
@@ -1550,12 +1582,13 @@ void FEBioFormat4::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	else if (bc == "u" ) { FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "prescribed rotation", pbc); pbc->GetParam("dof")->SetIntValue(0); }
 	else if (bc == "v" ) { FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "prescribed rotation", pbc); pbc->GetParam("dof")->SetIntValue(1); }
 	else if (bc == "w" ) { FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "prescribed rotation", pbc); pbc->GetParam("dof")->SetIntValue(2); }
-/*	else if (bc.compare(0, 1, "c") == 0) {
+	else if (bc.compare(0, 1, "c") == 0) {
 		int isol;
 		sscanf(bc.substr(1).c_str(), "%d", &isol);
-		pbc = new FEPrescribedConcentration(&fem, pg, isol - 1, 1.0, pstep->GetID());
+		FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "prescribed concentration", pbc);
+		pbc->GetParam("dof")->SetIntValue(isol - 1);
 	}
-*/	else { assert(false); }
+	else { assert(false); }
 
 	// assign item list
 	pbc->SetItemList(pg);
