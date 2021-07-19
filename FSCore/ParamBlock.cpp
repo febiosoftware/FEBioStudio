@@ -159,6 +159,7 @@ void Param::clear()
 		case Param_MATH  : delete ((std::string*) m_pd); break;
 		case Param_COLOR : delete ((GLColor*)m_pd); break;
 		case Param_STD_VECTOR_INT: delete ((std::vector<int>*)m_pd); break;
+		case Param_STD_VECTOR_DOUBLE: delete ((std::vector<double>*)m_pd); break;
 		default:
 			assert(false);
 		}
@@ -183,6 +184,7 @@ void Param::SetParamType(Param_Type t)
 	case Param_MATH  : m_pd = new std::string; break;
 	case Param_COLOR : m_pd = new GLColor; break;
 	case Param_STD_VECTOR_INT: m_pd = new std::vector<int>(); break;
+	case Param_STD_VECTOR_DOUBLE: m_pd = new std::vector<double>(); break;
 	default:
 		assert(false);
 	}
@@ -272,6 +274,7 @@ Param::Param(const Param& p)
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
+	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
@@ -311,6 +314,7 @@ Param& Param::operator = (const Param& p)
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
+	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
@@ -585,6 +589,28 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_checked = false;
 }
 
+Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
+{
+	std::vector<double>* pc = new std::vector<double>(v);
+	m_pd = pc;
+	m_ntype = Param_STD_VECTOR_DOUBLE;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_plc = 0;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
+}
+
 Param::Param(const std::string& val, const char* szb, const char* szn)
 {
 	std::string* pv = new std::string;
@@ -744,6 +770,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_MATH  : { std::string s = p.GetMathString(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_COLOR : { GLColor c = p.GetColorValue(); ar.WriteChunk(CID_PARAM_VALUE, c); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int> v = p.GetVectorIntValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_STD_VECTOR_DOUBLE: { std::vector<double> v = p.GetVectorDoubleValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	default:
 		assert(false);
 	}
@@ -810,6 +837,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_COLOR : p.SetParamType(Param_COLOR); break;
 			case Param_CURVE_OBSOLETE: p.SetParamType(Param_FLOAT); break;
 			case Param_STD_VECTOR_INT: p.SetParamType(Param_STD_VECTOR_INT); break;
+			case Param_STD_VECTOR_DOUBLE: p.SetParamType(Param_STD_VECTOR_DOUBLE); break;
 			}
 			break;
 		case CID_PARAM_VALUE:
@@ -827,6 +855,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_MATH  : { std::string s; ar.read(s); p.SetMathString(s); } break;
 			case Param_COLOR : { GLColor c; ar.read(c); p.SetColorValue(c); break; }
 			case Param_STD_VECTOR_INT: { std::vector<int> v; ar.read(v); p.SetVectorIntValue(v); break; }
+			case Param_STD_VECTOR_DOUBLE: { std::vector<double> v; ar.read(v); p.SetVectorDoubleValue(v); break; }
 			case Param_CURVE_OBSOLETE:
 				{
 					// This is obsolete but remains for backward compatibility.

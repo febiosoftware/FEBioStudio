@@ -50,6 +50,7 @@ enum Param_Type {
 	Param_MAT3DS,
 	Param_VEC2I,
 	Param_STD_VECTOR_INT,
+	Param_STD_VECTOR_DOUBLE,
 	Param_CHOICE = 0x0020		// like INT but imported/exported as one-based numbers
 };
 
@@ -107,6 +108,7 @@ public:
 	explicit Param(double d, const char* szi, int idx, const char* szunit = 0, const char* szb = 0, const char* szn = 0);
 	explicit Param(GLColor c, const char* szb, const char* szn = 0);
 	explicit Param(const std::vector<int>& v, const char* szb, const char* szn = 0);
+	explicit Param(const std::vector<double>& v, const char* szb, const char* szn = 0);
 	Param(const std::string& val, const char* szb, const char* szn = 0);
 
 	void SetParamType(Param_Type t);
@@ -147,6 +149,7 @@ public:
 	void SetMathString (const std::string& v) { assert(m_ntype == Param_MATH); val<std::string>() = v; }
 	void SetColorValue(const GLColor& c) { assert(m_ntype == Param_COLOR); val<GLColor>() = c; }
 	void SetVectorIntValue(const std::vector<int>& v) { assert(m_ntype == Param_STD_VECTOR_INT); val<std::vector<int> >() = v; }
+	void SetVectorDoubleValue(const std::vector<double>& v) { assert(m_ntype == Param_STD_VECTOR_DOUBLE); val<std::vector<double> >() = v; }
 
 	double GetFloatValue () const {assert(m_ntype == Param_FLOAT ); return val<double>(); }
 	int    GetIntValue   () const {assert((m_ntype == Param_INT)||(m_ntype == Param_CHOICE)); return val<int>  (); }
@@ -159,6 +162,7 @@ public:
 	std::string GetMathString() const { assert(m_ntype == Param_MATH); return val<std::string>(); }
 	GLColor GetColorValue() const { assert(m_ntype == Param_COLOR); return val<GLColor>(); }
 	std::vector<int> GetVectorIntValue() const { assert(m_ntype == Param_STD_VECTOR_INT); return val<std::vector<int> >(); }
+	std::vector<double> GetVectorDoubleValue() const { assert(m_ntype == Param_STD_VECTOR_DOUBLE); return val<std::vector<double> >(); }
 
 	const char* GetUnit() const { return m_szunit; }
 	void SetUnit(const char* szunit) { m_szunit = szunit; }
@@ -379,6 +383,15 @@ public:
 		return LastParam();
 	}
 
+	Param* AddVectorDoubleParam(const std::vector<double>& v, const char* szb, const char* szn = 0)
+	{
+		int ns = (int)m_Param.size();
+		Param p(v, szb, szn);
+		p.m_nID = ns;
+		m_Param.push_back(p);
+		return LastParam();
+	}
+
 	const Param& operator [] (int n) const { return m_Param[n]; }
 	Param& operator [] (int n)	{ return m_Param[n]; }
 	int Size() const { return (int)m_Param.size(); }
@@ -500,6 +513,7 @@ public:
 	Param* AddMat3dsParam(mat3ds v, const char* szb = 0, const char* szn = 0) { return m_Param.AddMat3dsParam(v, szb, szn); }
 	Param* AddMathParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddMathParam(s, szb, szn); }
 	Param* AddVectorIntParam(const std::vector<int>& v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVectorIntParam(v, szb, szn); }
+	Param* AddVectorDoubleParam(const std::vector<double>& v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVectorDoubleParam(v, szb, szn); }
 
 	// get a parameter from its name
 	Param* GetParam(const char* sz) { return m_Param.Find(sz); }

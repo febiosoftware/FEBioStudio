@@ -148,6 +148,7 @@ public:
 	void value(vec3f& v);
 	void value(bool& b) { b = (atoi(m_szval) == 1); }
 	void value(vector<int>& l);
+	void value(vector<double>& l);
 	void value(GLColor& c);
 	void value(std::string& s);
 

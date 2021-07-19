@@ -111,6 +111,20 @@ void XMLElement::value(const std::vector<int>& v)
 	}
 }
 
+void XMLElement::value(const std::vector<double>& v)
+{
+	m_szval[0] = 0;
+	if (v.empty()) return;
+
+	sprintf(m_szval, "%lg", v[0]);
+	int l = (int)strlen(m_szval);
+	for (int i = 1; i < v.size(); ++i)
+	{
+		sprintf(m_szval + l, ",%lg", v[i]);
+		l = (int)strlen(m_szval);
+	}
+}
+
 int XMLElement::add_attribute(const char* szn, const char* szv)
 {
 	strcpy(m_attn[m_natt], szn);

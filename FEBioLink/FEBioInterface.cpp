@@ -106,6 +106,12 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 			if (param.m_enums) p->CopyEnumNames(param.m_enums);
 		}
 		break;
+		case FEBio::FEBIO_PARAM_STD_VECTOR_DOUBLE:
+		{
+			std::vector<double> val = v.value<std::vector<double> >();
+			p = po->AddVectorDoubleParam(val, szname);
+		}
+		break;
 		default:
 			assert(false);
 		}

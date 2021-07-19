@@ -134,6 +134,11 @@ void FEBioExport::WriteParam(Param &p)
 		else e.value(p.GetVectorIntValue());
 	}
 	break;
+	case Param_STD_VECTOR_DOUBLE:
+	{
+		e.value(p.GetVectorDoubleValue());
+	}
+	break;
 	case Param_MATH  :
 	{
 		e.add_attribute("type", "math");

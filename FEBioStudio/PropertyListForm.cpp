@@ -514,6 +514,15 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			}
 		}
 		break;
+	case CProperty::Std_Vector_Double:
+	{
+		QLineEdit* edit = new QLineEdit;
+		edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+		edit->setText(v.toString());
+		connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
+		return edit;
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -825,6 +834,12 @@ void CPropertyListForm::onDataChanged()
 							}
 							m_list->SetPropertyValue(i, s);
 						}
+					}
+					break;
+				case CProperty::Std_Vector_Double:
+					{
+						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+						if (edit) m_list->SetPropertyValue(i, edit->text());
 					}
 					break;
 				}

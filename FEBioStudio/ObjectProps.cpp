@@ -133,6 +133,11 @@ void CObjectProps::AddParameter(Param& p)
 		}
 	}
 	break;
+	case Param_STD_VECTOR_DOUBLE:
+	{
+		prop = addProperty(paramName, CProperty::Std_Vector_Double);
+	}
+	break;
 	default:
 		prop = addProperty(paramName, CProperty::String);
 		prop->setFlags(CProperty::Visible);
@@ -241,6 +246,13 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 		return t;
 	}
 	break;
+	case Param_STD_VECTOR_DOUBLE:
+	{
+		std::vector<double> v = p.GetVectorDoubleValue();
+		QString t = VectorDoubleToString(v);
+		return t;
+	}
+	break;
 	default:
 		return "(not supported)";
 	}
@@ -309,6 +321,25 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 		QString s = v.toString();
 		std::vector<int> val = StringToVectorInt(s);
 		p.SetVectorIntValue(val);
+	}
+	break;
+	case Param_STD_VECTOR_DOUBLE:
+	{
+		QString s = v.toString();
+		std::vector<double> val = StringToVectorDouble(s);
+		if (val.empty() == false)
+		{
+			// Make sure we don't change the vector's size
+			int n = p.GetVectorDoubleValue().size();
+			if ((n != 0) && (n != val.size()))
+			{
+				std::vector<double> tmp = p.GetVectorDoubleValue();
+				if (val.size() < n) n = val.size();
+				for (int i = 0; i < n; ++i) tmp[i] = val[i];
+				val = tmp;
+			}
+			p.SetVectorDoubleValue(val);
+		}
 	}
 	break;
 	default:

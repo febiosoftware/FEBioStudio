@@ -67,6 +67,7 @@ public:
 	void value(const mat3d& a);
 	void value(const vec2i& r);
 	void value(const std::vector<int>& v);
+	void value(const std::vector<double>& v);
 
 	int add_attribute(const char* szn, const char* szv);
 	int add_attribute(const char* szn, int n);

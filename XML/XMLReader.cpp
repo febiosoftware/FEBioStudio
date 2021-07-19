@@ -245,6 +245,24 @@ void XMLTag::value(vector<int>& l)
 	free(szval);
 }
 
+void XMLTag::value(vector<double>& l)
+{
+	l.clear();
+	char* sz = m_szval;
+	int nr = 0;
+	while (sz && *sz)
+	{
+		char* sze = strchr(sz, ',');
+
+		double f = atof(sz);
+		l.push_back(f);
+		nr++;
+
+		if (sze) sz = sze + 1;
+		else break;
+	}
+}
+
 //////////////////////////////////////////////////////////////////////
 
 const char* XMLTag::AttributeValue(const char* szat, bool bopt)

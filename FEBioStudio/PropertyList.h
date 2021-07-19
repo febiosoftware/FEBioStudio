@@ -54,6 +54,7 @@ public:
 		Mat3s,
 		Vec2i,
 		Std_Vector_Int,
+		Std_Vector_Double,
 
 		// from PostView
 		DataScalar,
@@ -188,3 +189,5 @@ QString Vec2iToString(const vec2i& r);
 vec2i StringToVec2i(const QString& s);
 std::vector<int> StringToVectorInt(const QString& s);
 QString VectorIntToString(const std::vector<int>& v);
+std::vector<double> StringToVectorDouble(const QString& s);
+QString VectorDoubleToString(const std::vector<double>& v);

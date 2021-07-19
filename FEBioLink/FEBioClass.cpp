@@ -270,7 +270,12 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 					v.z = p.value<double>(2);
 					feb->AddParameter(p.name(), FE_PARAM_VEC3D, vec3d_to_qvariant(v));
 				}
-				else assert(false);
+				else if (ndim > 3)
+				{
+					vector<double> v(ndim);
+					for (int i = 0; i < ndim; ++i) v[i] = p.value<double>(i);
+					feb->AddParameter(p.name(), FE_PARAM_STD_VECTOR_DOUBLE, QVariant::fromValue(v));
+				}
 			}
 			break;
 			case FE_PARAM_VEC3D: feb->AddParameter(p.name(), p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
@@ -329,7 +334,9 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 			break;
 			case FEBIO_PARAM_STD_VECTOR_DOUBLE:
 			{
-				// Don't know how to handle this.
+				std::vector<double>& v = p.value<std::vector<double> >();
+				QVariant val = QVariant::fromValue(v);
+				FEBioParam& param = feb->AddParameter(p.name(), p.type(), val);
 			}
 			break;
 			case FE_PARAM_DATA_ARRAY:
