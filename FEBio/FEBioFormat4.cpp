@@ -1490,19 +1490,26 @@ void FEBioFormat4::ParseBCFixed(FEStep* pstep, XMLTag& tag)
 	}
 	else if (bc.compare(0, 1, "c") == 0)
 	{
-		assert(false);
-/*		int isol = 0;
-		sscanf(bc.substr(1).c_str(), "%d", &isol);
-		if (isol > 0)
+		FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero concentration", pbc);
+
+		// map the dofs
+		vector<int> dofList;
+		for (int i = 0; i < dofs.size(); ++i)
 		{
-			FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, isol, pstep->GetID());
-			if (name.empty())
+			string& di = dofs[i];
+			if (di.size() == 2)
 			{
-				sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
-				name = szbuf;
+				int n = atoi(di.c_str() + 1);
+				dofList.push_back(n - 1);
 			}
 		}
-*/
+		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
+
+		if (name.empty())
+		{
+			sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEBioBoundaryCondition>(fem) + 1);
+			name = szbuf;
+		}
 	}
 
 	// assign the name
