@@ -171,6 +171,7 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 	}
 	CFEBioJob::SetActiveJob(nullptr);
 
+	im->febThread = nullptr;
 	delete im->process;
 	im->process = nullptr;
 }
