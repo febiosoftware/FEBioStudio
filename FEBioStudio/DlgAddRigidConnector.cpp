@@ -37,6 +37,8 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
+#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 
 class Ui::CDlgAddRigidConnector
 {
@@ -108,14 +110,16 @@ CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : 
 
 	// add the rigid connectors
 	unsigned int mod = prj.GetModule();
-	vector<FEClassFactory*> v =  FEMKernel::FindAllClasses(mod, FE_RIGID_CONNECTOR);
+//	vector<FEClassFactory*> v =  FEMKernel::FindAllClasses(mod, FE_RIGID_CONNECTOR);
+	int rigidConnectorId = FEBio::GetBaseClassIndex("class FERigidConnector"); assert(rigidConnectorId != -1);
+	vector<FEBio::FEBioClassInfo> v = FEBio::FindAllClasses(m_module, FE_CONSTRAINT, rigidConnectorId);
 	for (int i=0; i<(int)v.size(); ++i)
 	{
-		FEClassFactory* fac = v[i];
+		FEBio::FEBioClassInfo& fac = v[i];
 
 		QListWidgetItem* item = new QListWidgetItem;
-		item->setText(QString::fromStdString(fac->GetTypeStr()));
-		item->setData(Qt::UserRole, fac->GetClassID());
+		item->setText(QString::fromStdString(fac.sztype));
+		item->setData(Qt::UserRole, fac.classId);
 
 		ui->list->addItem(item);
 	}

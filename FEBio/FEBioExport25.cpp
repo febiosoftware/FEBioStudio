@@ -5359,11 +5359,11 @@ void FEBioExport25::WriteConnectors(FEStep& s)
             else
                 assert(false);
             
-			GMaterial* pgA = m_pfem->GetMaterialFromID(pj->m_rbA);
+			GMaterial* pgA = m_pfem->GetMaterialFromID(pj->GetRigidBody1());
 			if (pgA == 0) throw MissingRigidBody(pj->GetName().c_str());
 			if (pgA->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
 
-			GMaterial* pgB = m_pfem->GetMaterialFromID(pj->m_rbB);
+			GMaterial* pgB = m_pfem->GetMaterialFromID(pj->GetRigidBody2());
 			if (pgB == 0) throw MissingRigidBody(pj->GetName().c_str());
 			if (pgB->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
 

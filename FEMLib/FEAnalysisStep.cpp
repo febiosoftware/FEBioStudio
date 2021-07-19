@@ -960,6 +960,7 @@ void FEStep::Load(IArchive &ar)
 						case FE_RIGID_FORCE            : rc = new FERigidForce          (m_pfem, GetID()); break;
 						case FE_RIGID_INIT_VELOCITY    : rc = new FERigidVelocity       (m_pfem, GetID()); break;
 						case FE_RIGID_INIT_ANG_VELOCITY: rc = new FERigidAngularVelocity(m_pfem, GetID()); break;
+						case FE_FEBIO_RIGID_CONSTRAINT : rc = new FEBioRigidConstraint  (m_pfem, GetID()); break;
 						default:
 							assert(false);
 						}
@@ -995,6 +996,7 @@ void FEStep::Load(IArchive &ar)
                         case FE_RC_ANGULAR_DAMPER       : pi = new FERigidAngularDamper     (m_pfem); break;
                         case FE_RC_CONTRACTILE_FORCE    : pi = new FERigidContractileForce  (m_pfem); break;
 						case FE_RC_GENERIC_JOINT        : pi = new FEGenericRigidJoint      (m_pfem); break;
+						case FE_FEBIO_RIGID_CONNECTOR   : pi = new FEBioRigidConnector      (m_pfem); break;
                         default:
                             throw ReadError("error parsing unknown CID_CONNECTOR_SECTION FEStep::Load");
                     }

@@ -417,8 +417,8 @@ CRigidConnectorSettings::CRigidConnectorSettings(FEModel& fem, FERigidConnector*
 		{
 			m_mat.push_back(pm);
 			mats.push_back(QString::fromStdString(pm->GetName()));
-			if (pm->GetID() == pi->m_rbA) m_rbA = (int)m_mat.size() - 1;
-			if (pm->GetID() == pi->m_rbB) m_rbB = (int)m_mat.size() - 1;
+			if (pm->GetID() == pi->GetRigidBody1()) m_rbA = (int)m_mat.size() - 1;
+			if (pm->GetID() == pi->GetRigidBody2()) m_rbB = (int)m_mat.size() - 1;
 		}
 	}
 	addProperty("Rigid Material A", CProperty::Enum)->setEnumValues(mats);
@@ -448,7 +448,7 @@ void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 		m_rbA = v.toInt();
 		if (m_mat.empty() == false)
 		{
-			m_rc->m_rbA = m_mat[m_rbA]->GetID();
+			m_rc->SetRigidBody1(m_mat[m_rbA]->GetID());
 		}
 	}
 	else if (i == 1)
@@ -456,7 +456,7 @@ void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 		m_rbB = v.toInt();
 		if (m_mat.empty() == false)
 		{
-			m_rc->m_rbB = m_mat[m_rbB]->GetID();
+			m_rc->SetRigidBody2(m_mat[m_rbB]->GetID());
 		}
 	}
 	else CObjectProps::SetPropertyValue(i - 2, v);

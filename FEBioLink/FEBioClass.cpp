@@ -106,6 +106,11 @@ int baseClassIndex(const char* sz)
 	return n;
 }
 
+int FEBio::GetBaseClassIndex(const std::string& baseClassName)
+{
+	return baseClassIndex(baseClassName.c_str());
+}
+
 bool in_vector(const vector<int>& v, int n)
 {
 	for (int j = 0; j < v.size(); ++j)
@@ -237,106 +242,109 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 	for (int i = 0; i < params; ++i, ++it)
 	{
 		FEParam& p = *it;
-		int ndim = p.dim();
-		switch (p.type())
+		if ((p.GetFlags() & FE_PARAM_HIDDEN) == 0)
 		{
-		case FE_PARAM_INT   : 
-		{
-			FEBioParam& param = feb->AddParameter(p.name(), p.type(), p.value<int>());
-			param.m_flags = p.GetFlags();
-			if (p.enums())
+			int ndim = p.dim();
+			switch (p.type())
 			{
-				param.m_enums = p.enums();
+			case FE_PARAM_INT:
+			{
+				FEBioParam& param = feb->AddParameter(p.name(), p.type(), p.value<int>());
+				param.m_flags = p.GetFlags();
+				if (p.enums())
+				{
+					param.m_enums = p.enums();
+				}
 			}
-		}
-		break;
-		case FE_PARAM_BOOL  : feb->AddParameter(p.name(), p.type(), p.value<bool>()); break;
-		case FE_PARAM_DOUBLE: 
-		{
-			if (ndim == 1)
-				feb->AddParameter(p.name(), p.type(), p.value<double>());
-			else if (ndim == 3)
+			break;
+			case FE_PARAM_BOOL: feb->AddParameter(p.name(), p.type(), p.value<bool>()); break;
+			case FE_PARAM_DOUBLE:
 			{
-				vec3d v(0, 0, 0);
-				v.x = p.value<double>(0);
-				v.y = p.value<double>(1);
-				v.z = p.value<double>(2);
-				feb->AddParameter(p.name(), FE_PARAM_VEC3D, vec3d_to_qvariant(v));
+				if (ndim == 1)
+					feb->AddParameter(p.name(), p.type(), p.value<double>());
+				else if (ndim == 3)
+				{
+					vec3d v(0, 0, 0);
+					v.x = p.value<double>(0);
+					v.y = p.value<double>(1);
+					v.z = p.value<double>(2);
+					feb->AddParameter(p.name(), FE_PARAM_VEC3D, vec3d_to_qvariant(v));
+				}
+				else assert(false);
 			}
-			else assert(false);
-		}
-		break;
-		case FE_PARAM_VEC3D : feb->AddParameter(p.name(), p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
-		case FE_PARAM_MAT3D : feb->AddParameter(p.name(), p.type(), mat3d_to_qvariant(p.value<mat3d>())); break;
-		case FE_PARAM_STD_STRING: feb->AddParameter(p.name(), p.type(), QString::fromStdString(p.value<std::string>())); break;
-		case FE_PARAM_DOUBLE_MAPPED: 
-		{
-			if (ndim == 1)
+			break;
+			case FE_PARAM_VEC3D: feb->AddParameter(p.name(), p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
+			case FE_PARAM_MAT3D: feb->AddParameter(p.name(), p.type(), mat3d_to_qvariant(p.value<mat3d>())); break;
+			case FE_PARAM_STD_STRING: feb->AddParameter(p.name(), p.type(), QString::fromStdString(p.value<std::string>())); break;
+			case FE_PARAM_DOUBLE_MAPPED:
 			{
-				FEParamDouble& v = p.value<FEParamDouble>();
-				feb->AddParameter(p.name(), p.type(), v.constValue());
+				if (ndim == 1)
+				{
+					FEParamDouble& v = p.value<FEParamDouble>();
+					feb->AddParameter(p.name(), p.type(), v.constValue());
+				}
+				else if (ndim == 3)
+				{
+					vec3d v(0, 0, 0);
+					v.x = p.value<FEParamDouble>(0).constValue();
+					v.y = p.value<FEParamDouble>(1).constValue();
+					v.z = p.value<FEParamDouble>(2).constValue();
+					feb->AddParameter(p.name(), FE_PARAM_VEC3D, vec3d_to_qvariant(v));
+				}
+				else assert(false);
 			}
-			else if (ndim == 3)
+			break;
+			case FE_PARAM_VEC3D_MAPPED:
 			{
-				vec3d v(0, 0, 0);
-				v.x = p.value<FEParamDouble>(0).constValue();
-				v.y = p.value<FEParamDouble>(1).constValue();
-				v.z = p.value<FEParamDouble>(2).constValue();
-				feb->AddParameter(p.name(), FE_PARAM_VEC3D, vec3d_to_qvariant(v));
-			}
-			else assert(false);
-		}
-		break;
-		case FE_PARAM_VEC3D_MAPPED: 
-		{
-			vec3d v(0,0,0); // TODO: Grab const value from FEParamVec3d
-			QVariant val = vec3d_to_qvariant(v);
-			feb->AddParameter(p.name(), p.type(), val);
-		}
-		break;
-		case FE_PARAM_MAT3D_MAPPED:
-		{
-			if (strcmp(p.name(), "mat_axis") != 0)
-			{
-				FEParamMat3d& v = p.value<FEParamMat3d>();
-				mat3d M = v.constValue();
-				QVariant val = mat3d_to_qvariant(M);
+				vec3d v(0, 0, 0); // TODO: Grab const value from FEParamVec3d
+				QVariant val = vec3d_to_qvariant(v);
 				feb->AddParameter(p.name(), p.type(), val);
 			}
-		}
-		break;
-		case FE_PARAM_MAT3DS_MAPPED:
-		{
-			mat3ds M; M.unit(); // TODO: Grab const value from FEParamMat3d
-			QVariant val = mat3ds_to_qvariant(M);
-			feb->AddParameter(p.name(), p.type(), val);
-		}
-		break;
-		case FEBIO_PARAM_STD_VECTOR_INT:
-		{
-			std::vector<int>& v = p.value<std::vector<int> >();
-			QVariant val = QVariant::fromValue(v);
-			FEBioParam& param = feb->AddParameter(p.name(), p.type(), val);
-			if (p.enums()) param.m_enums = p.enums();
-		}
-		break;
-		case FEBIO_PARAM_STD_VECTOR_DOUBLE:
-		{
-			// Don't know how to handle this.
-		}
-		break;
-		case FE_PARAM_DATA_ARRAY:
-		{
-			// Don't know how to handle this.
-		}
-		break;
-		case FE_PARAM_STD_VECTOR_VEC2D:
-		{
-			// don't know how to handle this.
-		}
-		break;
-		default:
-			assert(false);
+			break;
+			case FE_PARAM_MAT3D_MAPPED:
+			{
+				if (strcmp(p.name(), "mat_axis") != 0)
+				{
+					FEParamMat3d& v = p.value<FEParamMat3d>();
+					mat3d M = v.constValue();
+					QVariant val = mat3d_to_qvariant(M);
+					feb->AddParameter(p.name(), p.type(), val);
+				}
+			}
+			break;
+			case FE_PARAM_MAT3DS_MAPPED:
+			{
+				mat3ds M; M.unit(); // TODO: Grab const value from FEParamMat3d
+				QVariant val = mat3ds_to_qvariant(M);
+				feb->AddParameter(p.name(), p.type(), val);
+			}
+			break;
+			case FEBIO_PARAM_STD_VECTOR_INT:
+			{
+				std::vector<int>& v = p.value<std::vector<int> >();
+				QVariant val = QVariant::fromValue(v);
+				FEBioParam& param = feb->AddParameter(p.name(), p.type(), val);
+				if (p.enums()) param.m_enums = p.enums();
+			}
+			break;
+			case FEBIO_PARAM_STD_VECTOR_DOUBLE:
+			{
+				// Don't know how to handle this.
+			}
+			break;
+			case FE_PARAM_DATA_ARRAY:
+			{
+				// Don't know how to handle this.
+			}
+			break;
+			case FE_PARAM_STD_VECTOR_VEC2D:
+			{
+				// don't know how to handle this.
+			}
+			break;
+			default:
+				assert(false);
+			}
 		}
 
 		if (feb->Parameters() > 0)

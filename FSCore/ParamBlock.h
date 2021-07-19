@@ -411,6 +411,18 @@ public:
 		return 0;
 	}
 
+	const Param* Find(const char* sz) const
+	{
+		int N = (int)m_Param.size();
+		for (int i = 0; i < N; ++i)
+		{
+			const Param& p = m_Param[i];
+			const char* szname = p.GetShortName();
+			if ((szname) && (strcmp(szname, sz) == 0)) return &p;
+		}
+		return 0;
+	}
+
 	Param* Find(const char* sz, const char*szi, int idx)
 	{
 		int N = (int)m_Param.size();
@@ -491,6 +503,7 @@ public:
 
 	// get a parameter from its name
 	Param* GetParam(const char* sz) { return m_Param.Find(sz); }
+	const Param* GetParam(const char* sz) const { return m_Param.Find(sz); }
 	Param* GetParam(const char* sz, const char* szi, int idx) { return m_Param.Find(sz, szi, idx); }
 
 	void Save(OArchive& ar);

@@ -423,6 +423,8 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FEBioInitialCondition , 0, FE_INITIAL_CONDITION, FE_FEBIO_INITIAL_CONDITION, "[febio]");
 	REGISTER_FE_CLASS(FEBioNLConstraint     , 0, FE_CONSTRAINT       , FE_FEBIO_NLCONSTRAINT     , "[febio]");
 	REGISTER_FE_CLASS(FEBioAnalysisStep     , 0, FE_ANALYSIS         , FE_STEP_FEBIO_ANALYSIS    , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidConstraint  , 0, FE_RIGID_CONSTRAINT , FE_FEBIO_RIGID_CONSTRAINT , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidConnector   , 0, FE_RIGID_CONNECTOR  , FE_FEBIO_RIGID_CONNECTOR  , "[febio]");
 }
 
 //-------------------------------------------------------------------------------------------------

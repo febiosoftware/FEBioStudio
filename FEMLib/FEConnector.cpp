@@ -406,3 +406,41 @@ FEGenericRigidJoint::FEGenericRigidJoint(FEModel* ps, int nstep) : FERigidConnec
 	AddDoubleParam(0, "prescribe_Ry", "Ry")->SetCheckable(true);
 	AddDoubleParam(0, "prescribe_Rz", "Rz")->SetCheckable(true);
 }
+
+//=============================================================================
+FEBioRigidConnector::FEBioRigidConnector(FEModel* ps, int nstep) : FERigidConnector(FE_FEBIO_RIGID_CONNECTOR, ps, nstep)
+{
+
+}
+
+void FEBioRigidConnector::Save(OArchive& ar)
+{
+    ar.BeginChunk(CID_FEBIO_META_DATA);
+    {
+        SaveClassMetaData(this, ar);
+    }
+    ar.EndChunk();
+
+    ar.BeginChunk(CID_FEBIO_BASE_DATA);
+    {
+        FERigidConnector::Save(ar);
+    }
+    ar.EndChunk();
+}
+
+void FEBioRigidConnector::Load(IArchive& ar)
+{
+    TRACE("FEBioRigidConnector::Load");
+    while (IArchive::IO_OK == ar.OpenChunk())
+    {
+        int nid = ar.GetChunkID();
+        switch (nid)
+        {
+        case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+        case CID_FEBIO_BASE_DATA: FERigidConnector::Load(ar); break;
+        default:
+            assert(false);
+        }
+        ar.CloseChunk();
+    }
+}

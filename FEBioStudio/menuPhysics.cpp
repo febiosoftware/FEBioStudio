@@ -379,7 +379,8 @@ void CMainWindow::on_actionAddRigidConstraint_triggered()
 	if (dlg.exec())
 	{
 		FEModel* fem = &prj.GetFEModel();
-		FERigidConstraint* prc = fecore_new<FERigidConstraint>(fem, FE_RIGID_CONSTRAINT, dlg.m_type);
+		FERigidConstraint* prc = fecore_new<FERigidConstraint>(fem, FE_RIGID_CONSTRAINT, FE_FEBIO_RIGID_CONSTRAINT);
+		FEBio::CreateModelComponent(dlg.m_type, prc);
 		assert(prc);
 		if (prc)
 		{
@@ -409,13 +410,14 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 	if (dlg.exec())
 	{
 		FEModel* fem = doc->GetFEModel();
-		FERigidConnector* pc = fecore_new<FERigidConnector>(fem, FE_RIGID_CONNECTOR, dlg.GetType());
+		FERigidConnector* pc = fecore_new<FERigidConnector>(fem, FE_RIGID_CONNECTOR, FE_FEBIO_RIGID_CONNECTOR);
+		FEBio::CreateModelComponent(dlg.GetType(), pc);
 		assert(pc);
 		if (pc)
 		{
 			pc->SetPosition(GetGLView()->Get3DCursor());
-			pc->m_rbA = dlg.GetMaterialA();
-			pc->m_rbB = dlg.GetMaterialB();
+			pc->SetRigidBody1(dlg.GetMaterialA());
+			pc->SetRigidBody2(dlg.GetMaterialB());
 
 			FEStep* step = fem->GetStep(dlg.GetStep());
 			int stepID = step->GetID();

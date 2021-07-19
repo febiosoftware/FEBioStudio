@@ -314,7 +314,7 @@ void check_006(FEProject& prj, std::vector<FSObject*>& objList)
 				for (int j = 0; j < pstep->RigidConnectors(); ++j)
 				{
 					FERigidConnector* prc = pstep->RigidConnector(j);
-					if ((prc->m_rbA == matId) || (prc->m_rbB == matId))
+					if ((prc->GetRigidBody1() == matId) || (prc->GetRigidBody2() == matId))
 					{
 						matUsed = true;
 						break;
@@ -544,7 +544,7 @@ void check_014(FEProject& prj, std::vector<FSObject*>& objList)
 		for (int j = 0; j < nrc; ++j)
 		{
 			FERigidConnector* rc = pstep->RigidConnector(j);
-			if (rc->m_rbA == rc->m_rbB)
+			if (rc->GetRigidBody1() == rc->GetRigidBody2())
 			{
 				objList.push_back(rc);
 			}
@@ -563,7 +563,7 @@ void check_015(FEProject& prj, std::vector<FSObject*>& objList)
 		for (int j = 0; j < nrc; ++j)
 		{
 			FERigidConnector* rc = pstep->RigidConnector(j);
-			if ((rc->m_rbA == -1) || (rc->m_rbB == -1))
+			if ((rc->GetRigidBody1() == -1) || (rc->GetRigidBody2() == -1))
 			{
 				objList.push_back(rc);
 			}

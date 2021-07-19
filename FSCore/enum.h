@@ -687,6 +687,7 @@ SOFTWARE.*/
 #define FE_RC_CONTRACTILE_FORCE		0x0009
 #define FE_RC_RIGID_LOCK            0x000A
 #define FE_RC_GENERIC_JOINT			0x000B
+#define FE_FEBIO_RIGID_CONNECTOR	0x000C
 
 //--------------------------------------------------------
 // Constraint types

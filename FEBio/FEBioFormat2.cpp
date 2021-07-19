@@ -2562,11 +2562,11 @@ void FEBioFormat2::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 	{
 		if (tag == "body_a") {
 			tag.value(na);
-			if (na >= 0) pi->m_rbA = febio.GetMaterial(na - 1)->GetID();
+			if (na >= 0) pi->SetRigidBody1(febio.GetMaterial(na - 1)->GetID());
 		}
 		else if (tag == "body_b") {
 			tag.value(nb);
-			if (nb >= 0) pi->m_rbB = febio.GetMaterial(nb - 1)->GetID();
+			if (nb >= 0) pi->SetRigidBody2(febio.GetMaterial(nb - 1)->GetID());
 		}
 		else
 		{

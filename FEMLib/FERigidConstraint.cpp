@@ -229,6 +229,45 @@ FERigidAngularVelocity::FERigidAngularVelocity(FEModel* fem, int nstep) : FERigi
 	AddVecParam(vec3d(0, 0, 0), "value", "angular velocity")->SetUnit(UNIT_ANGULAR_VELOCITY);
 }
 
+//===============================================================================================
+FEBioRigidConstraint::FEBioRigidConstraint(FEModel* fem, int nstep) : FERigidConstraint(FE_FEBIO_RIGID_CONSTRAINT, nstep)
+{
+
+}
+
+void FEBioRigidConstraint::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FERigidConstraint::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioRigidConstraint::Load(IArchive& ar)
+{
+	TRACE("FEBioRigidConstraint::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FERigidConstraint::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+
+//===============================================================================================
 vector<FERigidConstraint*> convertOldToNewRigidConstraint(FEModel* fem, FERigidConstraintOld* rc)
 {
 	vector<FERigidConstraint*> rc_new;

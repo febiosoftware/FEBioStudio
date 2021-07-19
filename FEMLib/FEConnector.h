@@ -20,6 +20,13 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
+public:
+    void SetRigidBody1(int rb) { m_rbA = rb; }
+    void SetRigidBody2(int rb) { m_rbB = rb; }
+
+    int GetRigidBody1() const { return m_rbA; }
+    int GetRigidBody2() const { return m_rbB; }
+
 protected:
 	void SaveList(FEItemListBuilder* pitem, OArchive& ar);
 	FEItemListBuilder* LoadList(IArchive& ar);
@@ -27,8 +34,6 @@ protected:
 protected:
 	FEModel* m_ps;
 	int		m_ntype;
-
-public:
 	int	m_rbA;
 	int	m_rbB;
 };
@@ -170,4 +175,13 @@ class FEGenericRigidJoint : public FERigidConnector
 {
 public:
 	FEGenericRigidJoint(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FEBioRigidConnector : public FERigidConnector
+{
+public:
+    FEBioRigidConnector(FEModel* ps, int nstep = 0);
+    void Save(OArchive& ar);
+    void Load(IArchive& ar);
 };

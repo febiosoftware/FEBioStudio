@@ -10,6 +10,7 @@ class FEModel;
 #define FE_RIGID_FORCE				3
 #define FE_RIGID_INIT_VELOCITY		4
 #define FE_RIGID_INIT_ANG_VELOCITY	5
+#define FE_FEBIO_RIGID_CONSTRAINT	6
 
 // old rigid constraint class, retained for backward compatibility
 class FERigidConstraintOld : public FSObject
@@ -136,6 +137,14 @@ public:
 
 	void SetVelocity(const vec3d& v) { SetVecValue(VEL, v); }
 	vec3d GetVelocity() const { return GetVecValue(VEL); }
+};
+
+class FEBioRigidConstraint : public FERigidConstraint
+{
+public:
+	FEBioRigidConstraint(FEModel* fem, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };
 
 
