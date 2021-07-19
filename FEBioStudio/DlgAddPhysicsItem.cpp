@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "MeshTools/FEProject.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
+#include <FSCore/FSCore.h>
 
 class UIDlgAddPhysicsItem
 {
@@ -129,7 +130,7 @@ void CDlgAddPhysicsItem::Update()
 	{
 		FEBio::FEBioClassInfo& fac = l[i];
 
-		QString type = QString(fac.sztype);
+		QString type = QString::fromStdString(FSCore::beautify_string(fac.sztype));
 
 		if (filter.isEmpty() || type.contains(filter, (ui->tb->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive)))
 		{

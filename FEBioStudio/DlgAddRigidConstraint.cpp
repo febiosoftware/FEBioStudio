@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMKernel.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
+#include <FSCore/FSCore.h>
 
 class Ui::CDlgAddRigidConstraint
 {
@@ -113,8 +114,11 @@ CDlgAddRigidConstraint::CDlgAddRigidConstraint(FEProject& prj, QWidget* parent) 
 	{
 		FEBio::FEBioClassInfo& fac = v[i];
 
+		const char* sztype = fac.sztype;
+		QString typeStr = QString::fromStdString(FSCore::beautify_string(sztype));
+
 		QListWidgetItem* item = new QListWidgetItem(ui->list);
-		item->setText(QString::fromStdString(fac.sztype));
+		item->setText(typeStr);
 		item->setData(Qt::UserRole, fac.classId);
 	}
 
