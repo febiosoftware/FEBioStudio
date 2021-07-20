@@ -266,6 +266,16 @@ void FEBio::CreateMaterial(int classId, FEMaterial* po)
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
 		FEMaterialProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, 1); assert(matProp);
 		matProp->SetSuperClassID(prop.m_superClassId);
+
+		if (prop.m_comp.empty() == false)
+		{
+			FEBioClass& fbc = prop.m_comp[0];
+			FEBioMaterial* pmi = new FEBioMaterial;
+			pmi->SetTypeString(strdup(fbc.TypeString().c_str()));
+			pmi->SetSuperClassID(fbc.GetSuperClassID());
+			map_parameters(pmi, &fbc);
+			matProp->AddMaterial(pmi);
+		}
 	}
 
 	delete feb;

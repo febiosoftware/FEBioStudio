@@ -170,7 +170,7 @@ namespace FEBio {
 		FEBioParam& GetParameter(int i) { return m_Param[i]; }
 
 		int Properties() const { return (int)m_Props.size(); }
-		void AddProperty(const std::string& propName, int superClassId, int baseClassId = -1, bool required = false);
+		FEBioProperty& AddProperty(const std::string& propName, int superClassId, int baseClassId = -1, bool required = false);
 		FEBioProperty& GetProperty(int i) { return m_Props[i]; }
 
 		void SetSuperClassID(int scid) { m_superClassID = scid; }

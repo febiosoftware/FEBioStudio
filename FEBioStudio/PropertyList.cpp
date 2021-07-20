@@ -38,6 +38,9 @@ vec3d StringToVec3d(const QString& s)
 	string st = s.toStdString();
 	const char* sz = st.c_str();
 	vec3d r(0,0,0);
+	if (strcmp(sz, "x") == 0) return vec3d(1, 0, 0);
+	if (strcmp(sz, "y") == 0) return vec3d(0, 1, 0);
+	if (strcmp(sz, "z") == 0) return vec3d(0, 0, 1);
 	if (sz[0] == '{')
 		sscanf(sz, "{%lg,%lg,%lg}", &r.x, &r.y, &r.z);
 	else
@@ -50,15 +53,19 @@ mat3d StringToMat3d(const QString& s)
 	string st = s.toStdString();
 	const char* sz = st.c_str();
 	double a[9] = { 0 };
+	int n = 0;
 	if (sz[0] == '{')
 	{
-		sscanf(sz, "{{%lg,%lg,%lg},{%lg,%lg,%lg},{%lg,%lg,%lg}}", a, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8);
+		n = sscanf(sz, "{{%lg,%lg,%lg},{%lg,%lg,%lg},{%lg,%lg,%lg}}", a, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8);
 	}
 	else
 	{
-		sscanf(sz, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8);
+		n = sscanf(sz, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8);
 	}
-	return mat3d(a);
+
+	if (n == 1) return mat3d(mat3dd(a[0]));
+	else if (n == 3) return mat3d(mat3dd(a[0], a[1], a[2]));
+	else return mat3d(a);
 }
 
 mat3ds StringToMat3ds(const QString& s)

@@ -176,7 +176,7 @@ FEBioParam& FEBioClass::AddParameter(const std::string& paramName, int paramType
 	return m_Param[m_Param.size() - 1];
 }
 
-void FEBioClass::AddProperty(const std::string& propName, int superClassId, int baseClassId, bool required)
+FEBioProperty& FEBioClass::AddProperty(const std::string& propName, int superClassId, int baseClassId, bool required)
 {
 	FEBioProperty prop;
 	prop.m_name = propName;
@@ -184,6 +184,7 @@ void FEBioClass::AddProperty(const std::string& propName, int superClassId, int 
 	prop.m_baseClassId = baseClassId;
 	prop.m_superClassId = superClassId;
 	m_Props.push_back(prop);
+	return m_Props.back();
 }
 
 QVariant vec3d_to_qvariant(const vec3d& v)
@@ -215,26 +216,8 @@ QVariant mat3ds_to_qvariant(const mat3ds& m)
 	return val;
 }
 
-FEBioClass* FEBio::CreateFEBioClass(int classId)
+void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 {
-	// Get the kernel
-	FECoreKernel& fecore = FECoreKernel::GetInstance();
-
-	// find the factory
-	const FECoreFactory* fac = fecore.GetFactoryClass(classId);
-	if (fac == nullptr) return nullptr;
-
-	// try to create a temporary FEBio object
-	unique_ptr<FECoreBase> pc(fac->Create(&febioModel)); assert(pc);
-	if (pc == nullptr) return nullptr;
-
-	const char* sztype = fac->GetTypeStr();
-
-	// create the interface class
-	FEBioClass* feb = new FEBioClass;
-	feb->SetSuperClassID(fac->GetSuperClassID());
-	feb->SetTypeString(sztype);
-
 	// copy parameter info
 	FEParameterList& pl = pc->GetParameterList();
 	int params = pl.Parameters();
@@ -301,9 +284,18 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 			break;
 			case FE_PARAM_VEC3D_MAPPED:
 			{
-				vec3d v(0, 0, 0); // TODO: Grab const value from FEParamVec3d
-				QVariant val = vec3d_to_qvariant(v);
-				feb->AddParameter(p.name(), p.type(), val);
+				FEParamVec3& v = p.value<FEParamVec3>();
+				FEVec3dValuator* val = v.valuator(); assert(val);
+				FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEVECTORGENERATOR_ID, baseClassIndex("class FEVec3dValuator"), true);
+
+				FEBioClass fbc;
+				fbc.SetSuperClassID(FEVECTORGENERATOR_ID);
+				fbc.SetTypeString(val->GetTypeStr());
+
+				// copy the class data
+				CopyFECoreClass(&fbc, val);
+
+				prop.m_comp.push_back(fbc);
 			}
 			break;
 			case FE_PARAM_MAT3D_MAPPED:
@@ -311,9 +303,17 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 				if (strcmp(p.name(), "mat_axis") != 0)
 				{
 					FEParamMat3d& v = p.value<FEParamMat3d>();
-					mat3d M = v.constValue();
-					QVariant val = mat3d_to_qvariant(M);
-					feb->AddParameter(p.name(), p.type(), val);
+					FEMat3dValuator* val = v.valuator(); assert(val);
+					FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEMAT3DGENERATOR_ID, baseClassIndex("class FEMat3dValuator"), true);
+
+					FEBioClass fbc;
+					fbc.SetSuperClassID(FEMAT3DGENERATOR_ID);
+					fbc.SetTypeString(val->GetTypeStr());
+
+					// copy the class data
+					CopyFECoreClass(&fbc, val);
+
+					prop.m_comp.push_back(fbc);
 				}
 			}
 			break;
@@ -374,11 +374,36 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 		// add it
 		feb->AddProperty(prop->GetName(), prop->GetSuperClassID(), n, prop->IsRequired());
 	}
+}
+
+FEBioClass* FEBio::CreateFEBioClass(int classId)
+{
+	// Get the kernel
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+
+	// find the factory
+	const FECoreFactory* fac = fecore.GetFactoryClass(classId);
+	if (fac == nullptr) return nullptr;
+
+	// try to create a temporary FEBio object
+	FECoreBase* pc = fac->Create(&febioModel); assert(pc);
+	if (pc == nullptr) return nullptr;
+
+	const char* sztype = fac->GetTypeStr();
+
+	// create the interface class
+	FEBioClass* feb = new FEBioClass;
+	feb->SetSuperClassID(fac->GetSuperClassID());
+	feb->SetTypeString(sztype);
+
+	// copy the class data
+	CopyFECoreClass(feb, pc);
+
+	delete pc;
 
 	// all done!
 	return feb;
 }
-
 
 vector<FEBio::FEBioModule>	FEBio::GetAllModules()
 {
