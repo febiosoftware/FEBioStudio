@@ -386,7 +386,7 @@ void FEBioFormat4::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
 				if (sztype == 0) sztype = tag.Name();
 				
 				FEBioMaterial* propMat = new FEBioMaterial;
-				FEBio::CreateMaterialProperty(sztype, propMat);
+				FEBio::CreateMaterialProperty(pmc->GetSuperClassID(), sztype, propMat);
 
 				if (pmc)
 				{

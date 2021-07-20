@@ -319,9 +319,18 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 			break;
 			case FE_PARAM_MAT3DS_MAPPED:
 			{
-				mat3ds M; M.unit(); // TODO: Grab const value from FEParamMat3d
-				QVariant val = mat3ds_to_qvariant(M);
-				feb->AddParameter(p.name(), p.type(), val);
+				FEParamMat3ds& v = p.value<FEParamMat3ds>();
+				FEMat3dsValuator* val = v.valuator(); assert(val);
+				FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEMAT3DSGENERATOR_ID, baseClassIndex("class FEMat3dsValuator"), true);
+
+				FEBioClass fbc;
+				fbc.SetSuperClassID(FEMAT3DSGENERATOR_ID);
+				fbc.SetTypeString(val->GetTypeStr());
+
+				// copy the class data
+				CopyFECoreClass(&fbc, val);
+
+				prop.m_comp.push_back(fbc);
 			}
 			break;
 			case FEBIO_PARAM_STD_VECTOR_INT:

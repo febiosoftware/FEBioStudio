@@ -155,7 +155,7 @@ bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, F
 	else if (superClassId == FE_MATERIALPROP)
 	{
 		FEMaterial* pmat = dynamic_cast<FEMaterial*>(po); assert(pmat);
-		CreateMaterialProperty(typeStr.c_str(), pmat);
+		CreateMaterialProperty(FE_MATERIALPROP, typeStr.c_str(), pmat);
 	}
 	else if (superClassId == FE_ANALYSIS)
 	{
@@ -232,12 +232,9 @@ bool FEBio::CreateMaterial(const char* sztype, FEMaterial* po)
 	return true;
 }
 
-void FEBio::CreateMaterialProperty(const char* sztype, FEMaterial* po)
+void FEBio::CreateMaterialProperty(int superClassID, const char* sztype, FEMaterial* po)
 {
-	int classId = FEBio::GetClassId(FE_MATERIALPROP, sztype);
-
-	// some material properties actually require material classes, so check those as well. 
-	if (classId == -1) classId = FEBio::GetClassId(FE_MATERIAL, sztype); assert(classId != -1);
+	int classId = FEBio::GetClassId(superClassID, sztype); assert(classId != -1);
 
 	// If we found it, allocate the material
 	if (classId >= 0) CreateMaterial(classId, po);
