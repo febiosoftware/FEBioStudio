@@ -93,7 +93,6 @@ private:
 private:
 	// contact input functions
 	void ParseContact(FEStep* pstep, XMLTag& tag);
-	void ParseContactJoint(FEStep* pstep, XMLTag& tag);
 	void ParseRigidWall         (FEStep* pstep, XMLTag& tag);
 	void ParseLinearConstraint  (FEStep* pstep, XMLTag& tag);
 
@@ -109,9 +108,8 @@ private:
 
 private:
 	// rigid input functions
-	void ParseRigidConnector(FEStep* pstep, XMLTag& tag, const int rc);
+	void ParseRigidConnector(FEStep* pstep, XMLTag& tag);
 	void ParseRigidConstraint(FEStep* pstep, XMLTag& tag);
-	void ParseRigidJoint(FEStep* pstep, XMLTag& tag);
 
 	// helper functions (version 2.5 and up)
 	FEBioModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);

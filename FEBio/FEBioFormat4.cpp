@@ -1698,28 +1698,9 @@ bool FEBioFormat4::ParseRigidSection(XMLTag& tag)
 	++tag;
 	do
 	{
-		if (tag == "rigid_constraint")
-		{
-			ParseRigidConstraint(m_pBCStep, tag);
-		}
-		else if (tag == "rigid_connector")
-		{ 
-			const char* sztype = tag.AttributeValue("type");
-			if      (strcmp(sztype, "rigid spherical joint"  ) == 0) ParseRigidConnector(m_pBCStep, tag, 0);
-			else if (strcmp(sztype, "rigid revolute joint"   ) == 0) ParseRigidConnector(m_pBCStep, tag, 1);
-			else if (strcmp(sztype, "rigid prismatic joint"  ) == 0) ParseRigidConnector(m_pBCStep, tag, 2);
-			else if (strcmp(sztype, "rigid cylindrical joint") == 0) ParseRigidConnector(m_pBCStep, tag, 3);
-			else if (strcmp(sztype, "rigid planar joint"     ) == 0) ParseRigidConnector(m_pBCStep, tag, 4);
-			else if (strcmp(sztype, "rigid lock"             ) == 0) ParseRigidConnector(m_pBCStep, tag, 5);
-			else if (strcmp(sztype, "rigid spring"           ) == 0) ParseRigidConnector(m_pBCStep, tag, 6);
-			else if (strcmp(sztype, "rigid damper"           ) == 0) ParseRigidConnector(m_pBCStep, tag, 7);
-			else if (strcmp(sztype, "rigid angular damper"   ) == 0) ParseRigidConnector(m_pBCStep, tag, 8);
-			else if (strcmp(sztype, "rigid contractile force") == 0) ParseRigidConnector(m_pBCStep, tag, 9);
-			else if (strcmp(sztype, "generic rigid joint"    ) == 0) ParseRigidConnector(m_pBCStep, tag, 10);
-			else if (strcmp(sztype, "rigid joint"            ) == 0) ParseRigidJoint(m_pBCStep, tag);
-		}
+		if      (tag == "rigid_constraint") ParseRigidConstraint(m_pBCStep, tag);
+		else if (tag == "rigid_connector" ) ParseRigidConnector (m_pBCStep, tag);
 		else ParseUnknownTag(tag);
-
 		++tag;
 	}
 	while (!tag.isend());
@@ -2231,298 +2212,78 @@ void FEBioFormat4::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat4::ParseContactJoint(FEStep *pstep, XMLTag &tag)
+void FEBioFormat4::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 {
+	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
-	FERigidJoint* pi = new FERigidJoint(&fem, pstep->GetID());
-	char szname[256];
-	sprintf(szname, "RigidJoint%02d", CountInterfaces<FERigidJoint>(fem)+1);
-	const char* szn = tag.AttributeValue("name", true);
-	if (szn) strcpy(szname, szn);
-	pi->SetName(szname);
-	pstep->AddComponent(pi);
+	// get the name 
+	const char* szname = tag.AttributeValue("name", true);
+	char name[256];
+	if (szname == nullptr)
+	{
+		sprintf(name, "RigidConstraint%02d", CountConnectors<FERigidConstraint>(fem) + 1);
+		szname = name;
+	}
 
-	int na = -1, nb = -1;
+	// get the type attribute
+	const char* sztype = tag.AttributeValue("type");
 
-	double tol = 0, pen = 0;
-	vec3d rj;
+	// check for some special cases
+	if      (strcmp(sztype, "fix"      ) == 0) sztype = "rigid_fixed";
+	else if (strcmp(sztype, "prescribe") == 0) sztype = "rigid_prescribed";
+
+	// allocate class
+	FEBioRigidConstraint* pi = new FEBioRigidConstraint(&fem, pstep->GetID());
+	if (FEBio::CreateModelComponent(FE_RIGID_CONSTRAINT, sztype, pi) == false)
+	{
+		throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+	}
+	pstep->AddRC(pi);
+
 	++tag;
 	do
 	{
-		if (tag == "tolerance") tag.value(tol);
-		else if (tag == "penalty") tag.value(pen);
-		else if (tag == "body_a") tag.value(na);
-		else if (tag == "body_b") tag.value(nb);
-		else if (tag == "joint") tag.value(rj);
-		else ParseUnknownTag(tag);
-
+		if (ReadParam(*pi, tag) == false)
+		{
+			if (tag == "rb")
+			{
+				int na = -1;
+				tag.value(na);
+				if (na >= 0) pi->SetMaterialID(febio.GetMaterial(na - 1)->GetID());
+			}
+			else ParseUnknownTag(tag);
+		}
 		++tag;
 	} while (!tag.isend());
-
-	pi->SetFloatValue(FERigidJoint::TOL, tol);
-	pi->SetFloatValue(FERigidJoint::PENALTY, pen);
-	pi->SetVecValue(FERigidJoint::RJ, rj);
-
-	FEBioModel& febio = GetFEBioModel();
-
-	if (na >= 0) pi->m_pbodyA = febio.GetMaterial(na - 1);
-	if (nb >= 0) pi->m_pbodyB = febio.GetMaterial(nb - 1);
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat4::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
+void FEBioFormat4::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 {
-	const char* szdof[6] = { "Rx", "Ry", "Rz", "Ru", "Rv", "Rw" };
-
-	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
-	// get the name attribute
-	string name;
+	// get the name 
 	const char* szname = tag.AttributeValue("name", true);
-	if (szname) name = szname;
+	char name[256];
+	if (szname == nullptr)
+	{
+		sprintf(name, "RigidConnector%02d", CountConnectors<FERigidConnector>(fem) + 1);
+		szname = name;
+	}
 
 	// get the type attribute
-	XMLAtt& type = tag.Attribute("type");
+	const char* sztype = tag.AttributeValue("type");
 
-	if (type == "fix")
+	// allocate class
+	FEBioRigidConnector* pi = new FEBioRigidConnector(&fem, pstep->GetID());
+	if (FEBio::CreateModelComponent(FE_RIGID_CONNECTOR, sztype, pi) == false)
 	{
-		FERigidFixed* pc = CREATE_RIGID_CONSTRAINT(FERigidFixed);
-		if (name.empty() == false) pc->SetName(name);
-
-		++tag;
-		do
-		{
-			if (tag == "dofs")
-			{
-				const char* sz = tag.szvalue();
-
-				const char* ch = sz;
-				while (ch)
-				{
-					const char* ch2 = strchr(ch, ',');
-					int n = (ch2 ? ch2 - ch : strlen(ch));
-					if (strncmp(ch, szdof[0], n) == 0) pc->SetDOF(0, true);
-					if (strncmp(ch, szdof[1], n) == 0) pc->SetDOF(1, true);
-					if (strncmp(ch, szdof[2], n) == 0) pc->SetDOF(2, true);
-					if (strncmp(ch, szdof[3], n) == 0) pc->SetDOF(3, true);
-					if (strncmp(ch, szdof[4], n) == 0) pc->SetDOF(4, true);
-					if (strncmp(ch, szdof[5], n) == 0) pc->SetDOF(5, true);
-
-					if (ch2) ch = ch2 + 1; else ch = 0;
-				}
-			}
-			else if (tag == "rb")
-			{
-				int mid = -1;
-				tag.value(mid);
-
-				// get the rigid material
-				GMaterial* pgm = 0;
-				if (mid > 0) pgm = febio.GetMaterial(mid - 1);
-				int matid = (pgm ? pgm->GetID() : -1);
-
-				FEMaterial* pmat = pgm->GetMaterialProperties();
-				assert(pmat->IsRigid());
-
-				pc->SetMaterialID(matid);
-			}
-			++tag;
-		} while (!tag.isend());
-        pstep->AddComponent(pc);
+		throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 	}
-	else if (type == "prescribe")
-	{
-		FERigidDisplacement* pc = CREATE_RIGID_CONSTRAINT(FERigidDisplacement);
-		if (name.empty() == false) pc->SetName(name);
-
-		++tag;
-		do
-		{
-			if (tag == "dof")
-			{
-				const char* sz = tag.szvalue();
-				if (strcmp(sz, szdof[0]) == 0) pc->SetDOF(0);
-				if (strcmp(sz, szdof[1]) == 0) pc->SetDOF(1);
-				if (strcmp(sz, szdof[2]) == 0) pc->SetDOF(2);
-				if (strcmp(sz, szdof[3]) == 0) pc->SetDOF(3);
-				if (strcmp(sz, szdof[4]) == 0) pc->SetDOF(4);
-				if (strcmp(sz, szdof[5]) == 0) pc->SetDOF(5);
-			}
-			else if (tag == "rb")
-			{
-				int mid = -1;
-				tag.value(mid);
-
-				// get the rigid material
-				GMaterial* pgm = 0;
-				if (mid > 0) pgm = febio.GetMaterial(mid - 1);
-				int matid = (pgm ? pgm->GetID() : -1);
-				assert(pgm->GetMaterialProperties()->IsRigid());
-
-				pc->SetMaterialID(matid);
-			}
-			else ReadParam(*pc, tag);
-			++tag;
-		} while (!tag.isend());
-        pstep->AddComponent(pc);
-	}
-	else if (type == "force")
-	{
-		FERigidForce* pc = CREATE_RIGID_CONSTRAINT(FERigidForce);
-		if (name.empty() == false) pc->SetName(name);
-
-		++tag;
-		do
-		{
-			if (tag == "dof")
-			{
-				const char* sz = tag.szvalue();
-				if (strcmp(sz, szdof[0]) == 0) pc->SetDOF(0);
-				if (strcmp(sz, szdof[1]) == 0) pc->SetDOF(1);
-				if (strcmp(sz, szdof[2]) == 0) pc->SetDOF(2);
-				if (strcmp(sz, szdof[3]) == 0) pc->SetDOF(3);
-				if (strcmp(sz, szdof[4]) == 0) pc->SetDOF(4);
-				if (strcmp(sz, szdof[5]) == 0) pc->SetDOF(5);
-			}
-			else if (tag == "rb")
-			{
-				int mid = -1;
-				tag.value(mid);
-
-				// get the rigid material
-				GMaterial* pgm = 0;
-				if (mid > 0) pgm = febio.GetMaterial(mid - 1);
-				int matid = (pgm ? pgm->GetID() : -1);
-				assert(pgm->GetMaterialProperties()->IsRigid());
-
-				pc->SetMaterialID(matid);
-			}
-			else ReadParam(*pc, tag);
-			++tag;
-		} while (!tag.isend());
-        pstep->AddComponent(pc);
-	}
-	else if (type == "rigid_velocity")
-	{
-		FERigidVelocity* pv = CREATE_RIGID_CONSTRAINT(FERigidVelocity);
-		if (name.empty() == false) pv->SetName(name);
-		++tag;
-		do
-		{
-			if (tag == "rb")
-			{
-				int mid = -1;
-				tag.value(mid);
-
-				// get the rigid material
-				GMaterial* pgm = 0;
-				if (mid > 0) pgm = febio.GetMaterial(mid - 1);
-				int matid = (pgm ? pgm->GetID() : -1);
-				assert(pgm->GetMaterialProperties()->IsRigid());
-
-				pv->SetMaterialID(matid);
-			}
-			else ReadParam(*pv, tag);
-			++tag;
-		} while (!tag.isend());
-        pstep->AddComponent(pv);
-	}
-	else if (type == "rigid_angular_velocity")
-	{
-		FERigidAngularVelocity* pv = CREATE_RIGID_CONSTRAINT(FERigidAngularVelocity);
-		if (name.empty() == false) pv->SetName(name);
-		++tag;
-		do
-		{
-			if (tag == "rb")
-			{
-				int mid = -1;
-				tag.value(mid);
-
-				// get the rigid material
-				GMaterial* pgm = 0;
-				if (mid > 0) pgm = febio.GetMaterial(mid - 1);
-				int matid = (pgm ? pgm->GetID() : -1);
-				assert(pgm->GetMaterialProperties()->IsRigid());
-
-				pv->SetMaterialID(matid);
-			}
-			else ReadParam(*pv, tag);
-			++tag;
-		} while (!tag.isend());
-        pstep->AddComponent(pv);
-	}
-	else ParseUnknownTag(tag);
-}
-
-//-----------------------------------------------------------------------------
-void FEBioFormat4::ParseRigidConnector(FEStep *pstep, XMLTag &tag, const int rc)
-{
-	FEModel& fem = GetFEModel();
-
-	FERigidConnector* pi = nullptr;
-	char szname[256];
-
-	switch (rc) {
-	case 0:
-		pi = new FERigidSphericalJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidSphericalJoint%02d", CountConnectors<FERigidSphericalJoint>(fem)+1);
-		break;
-	case 1:
-		pi = new FERigidRevoluteJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidrevoluteJoint%02d", CountConnectors<FERigidRevoluteJoint>(fem)+1);
-		break;
-	case 2:
-		pi = new FERigidPrismaticJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidPrismaticJoint%02d", CountConnectors<FERigidPrismaticJoint>(fem)+1);
-		break;
-	case 3:
-		pi = new FERigidCylindricalJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidCylindricalJoint%02d", CountConnectors<FERigidCylindricalJoint>(fem)+1);
-		break;
-	case 4:
-		pi = new FERigidPlanarJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidPlanarJoint%02d", CountConnectors<FERigidPlanarJoint>(fem)+1);
-		break;
-    case 5:
-        pi = new FERigidLock(&fem, pstep->GetID());
-        sprintf(szname, "RigidLock%02d", CountConnectors<FERigidLock>(fem)+1);
-        break;
-	case 6:
-		pi = new FERigidSpring(&fem, pstep->GetID());
-		sprintf(szname, "RigidSpring%02d", CountConnectors<FERigidSpring>(fem)+1);
-		break;
-	case 7:
-		pi = new FERigidDamper(&fem, pstep->GetID());
-		sprintf(szname, "RigidDamper%02d", CountConnectors<FERigidDamper>(fem)+1);
-		break;
-	case 8:
-		pi = new FERigidAngularDamper(&fem, pstep->GetID());
-		sprintf(szname, "RigidAngularDamper%02d", CountConnectors<FERigidAngularDamper>(fem)+1);
-		break;
-	case 9:
-		pi = new FERigidContractileForce(&fem, pstep->GetID());
-		sprintf(szname, "RigidContractileForce%02d", CountConnectors<FERigidContractileForce>(fem)+1);
-		break;
-	case 10:
-		pi = new FEGenericRigidJoint(&fem, pstep->GetID());
-		sprintf(szname, "GenericRigidJoint%02d", CountConnectors<FEGenericRigidJoint>(fem) + 1);
-		break;
-	default:
-		assert(false);
-		break;
-	}
-	const char* szn = tag.AttributeValue("name", true);
-	if (szn) strcpy(szname, szn);
-	pi->SetName(szname);
 	pstep->AddRigidConnector(pi);
 
-	int na = -1, nb = -1;
-
 	FEBioModel& febio = GetFEBioModel();
-
 	++tag;
 	do
 	{
@@ -2530,11 +2291,13 @@ void FEBioFormat4::ParseRigidConnector(FEStep *pstep, XMLTag &tag, const int rc)
 		{
 			if (tag == "body_a") 
 			{
+				int na = -1;
 				tag.value(na);
 				if (na >= 0) pi->SetRigidBody1(febio.GetMaterial(na - 1)->GetID());
 			}
 			else if (tag == "body_b") 
 			{
+				int nb = -1;
 				tag.value(nb);
 				if (nb >= 0) pi->SetRigidBody2(febio.GetMaterial(nb - 1)->GetID());
 			}
@@ -2543,46 +2306,6 @@ void FEBioFormat4::ParseRigidConnector(FEStep *pstep, XMLTag &tag, const int rc)
 		++tag;
 	}
 	while (!tag.isend());
-}
-
-//-----------------------------------------------------------------------------
-void FEBioFormat4::ParseRigidJoint(FEStep* pstep, XMLTag& tag)
-{
-	FEModel& fem = GetFEModel();
-
-	FERigidJoint* pi = new FERigidJoint(&fem, pstep->GetID());
-	char szname[256];
-	sprintf(szname, "RigidJoint%02d", CountInterfaces<FERigidJoint>(fem) + 1);
-	const char* szn = tag.AttributeValue("name", true);
-	if (szn) strcpy(szname, szn);
-	pi->SetName(szname);
-	pstep->AddComponent(pi);
-
-	int na = -1, nb = -1;
-
-	double tol = 0, pen = 0;
-	vec3d rj;
-	++tag;
-	do
-	{
-		if (tag == "tolerance") tag.value(tol);
-		else if (tag == "penalty") tag.value(pen);
-		else if (tag == "body_a") tag.value(na);
-		else if (tag == "body_b") tag.value(nb);
-		else if (tag == "joint") tag.value(rj);
-		else ParseUnknownTag(tag);
-
-		++tag;
-	} while (!tag.isend());
-
-	pi->SetFloatValue(FERigidJoint::TOL, tol);
-	pi->SetFloatValue(FERigidJoint::PENALTY, pen);
-	pi->SetVecValue(FERigidJoint::RJ, rj);
-
-	FEBioModel& febio = GetFEBioModel();
-
-	if (na >= 0) pi->m_pbodyA = febio.GetMaterial(na - 1);
-	if (nb >= 0) pi->m_pbodyB = febio.GetMaterial(nb - 1);
 }
 
 //-----------------------------------------------------------------------------
