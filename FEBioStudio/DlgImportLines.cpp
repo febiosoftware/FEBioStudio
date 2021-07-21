@@ -128,10 +128,6 @@ void CDlgImportLines::OnApply()
 			Post::CGLLinePlot* pgl = new Post::CGLLinePlot(doc->GetGLModel());
 			doc->GetGLModel()->AddPlot(pgl);
 			pgl->SetName(ui->name->text().toStdString());
-
-			ui->m_ncount++;
-			ui->name->setText(QString("Lines%1").arg(ui->m_ncount));
-
 			ui->m_wnd->UpdatePostPanel(false, pgl);
 
 			accept();

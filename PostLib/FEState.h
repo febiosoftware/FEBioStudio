@@ -89,6 +89,9 @@ struct LINEDATA
 
 	// segment ID
 	int	m_segId;
+
+	// flags to identify ends
+	int m_end[2];
 };
 
 struct POINTDATA
