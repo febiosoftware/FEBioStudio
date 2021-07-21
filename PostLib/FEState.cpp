@@ -400,6 +400,7 @@ void FEState::AddLine(vec3f a, vec3f b, float data_a, float data_b, int el0, int
 	L.m_user_data[1] = data_b;
 	L.m_elem[0] = el0;
 	L.m_elem[1] = el1;
+	L.m_end[0] = L.m_end[1] = 0;
 	m_Line.Add(L);
 }
 
@@ -726,6 +727,17 @@ void LineData::processLines()
 			Segment::LINE& seg = segn.GetLineSegment(i);
 
 			Post::LINEDATA& line = Line(seg.m_index);
+
+			if (i == 0)
+			{
+				if (seg.m_orient > 0) line.m_end[0] = 1;
+				if (seg.m_orient < 0) line.m_end[1] = 1;
+			}
+			else if (i == nseg - 1)
+			{
+				if (seg.m_orient > 0) line.m_end[1] = 1;
+				if (seg.m_orient < 0) line.m_end[0] = 1;
+			}
 
 			line.m_t0 = t[seg.m_ln[0]];
 			line.m_t1 = t[seg.m_ln[1]];

@@ -319,6 +319,71 @@ void glxCylinder(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, con
 }
 
 //-----------------------------------------------------------------------------
+void glxSphere(const vec3d& r0, float R, const vec3d& n0, float tex = 0.f)
+{
+	quatd q0(vec3d(0, 0, 1), n0);
+
+	const int M = 5;
+	const int N = 16;
+	for (int j = 0; j < M; ++j)
+	{
+		double th0 = 0.5*PI * j / (double)M;
+		double th1 = 0.5*PI * (j+1) / (double)M;
+		double z1 = sin(th0);
+		double z2 = sin(th1);
+
+		double r1 = R * cos(th0);
+		double r2 = R * cos(th1);
+
+		if (j < M - 1)
+		{
+			glBegin(GL_QUAD_STRIP);
+			for (int i = 0; i <= N; ++i)
+			{
+				double w = 2 * PI * i / (double)N;
+				double x = cos(w);
+				double y = sin(w);
+
+				vec3d ri0(r1 * x, r1 * y, R * z1); q0.RotateVector(ri0);
+				vec3d ri1(r2 * x, r2 * y, R * z2); q0.RotateVector(ri1);
+				vec3d ra = r0 + ri0;
+				vec3d rb = r0 + ri1;
+
+				vec3d na(x, y, z1); q0.RotateVector(na);
+				vec3d nb(x, y, z2); q0.RotateVector(nb);
+
+				glTexCoord1d(tex); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+				glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+			}
+			glEnd();
+		}
+		else
+		{ 
+			glBegin(GL_TRIANGLE_FAN);
+			{
+				vec3d ri1(0, 0, R); q0.RotateVector(ri1);
+				vec3d rb = r0 + ri1;
+				vec3d nb(0, 0, R); q0.RotateVector(nb);
+				glTexCoord1d(tex); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+
+				for (int i = 0; i <= N; ++i)
+				{
+					double w = 2 * PI * i / (double)N;
+					double x = cos(w);
+					double y = sin(w);
+
+					vec3d ri0(r1 * x, r1 * y, R * z1); q0.RotateVector(ri0);
+					vec3d ra = r0 + ri0;
+					vec3d na(x, y, z1); q0.RotateVector(na);
+					glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+				}
+			}
+			glEnd();
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 bool CGLLinePlot::ShowLine(LINEDATA& l, FEState& s)
 {
 	if ((l.m_elem[0] == -1) || (l.m_elem[1] == -1)) return true;
@@ -432,6 +497,10 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 
 				// render cylinder
 				glxCylinder(l.m_r0, l.m_r1, m_line, e1, e2);
+
+				// render caps
+				if (l.m_end[0] == 1) glxSphere(l.m_r0, m_line, e1); 
+				if (l.m_end[1] == 1) glxSphere(l.m_r1, m_line, e2);
 			}
 		}
 	}
@@ -466,6 +535,10 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 
 				// render cylinder
 				glxCylinder(l.m_r0, l.m_r1, m_line, e1, e2);
+
+				// render caps
+				if (l.m_end[0] == 1) glxSphere(l.m_r0, m_line, e1);
+				if (l.m_end[1] == 1) glxSphere(l.m_r1, m_line, e2);
 			}
 		}
 	}
@@ -499,6 +572,10 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 
 				// render cylinder
 				glxCylinder(l.m_r0, l.m_r1, m_line, e1, e2, f0, f1);
+
+				// render caps
+				if (l.m_end[0] == 1) glxSphere(l.m_r0, m_line, e1, f0);
+				if (l.m_end[1] == 1) glxSphere(l.m_r1, m_line, e2, f1);
 			}
 		}
 		glPopAttrib();
