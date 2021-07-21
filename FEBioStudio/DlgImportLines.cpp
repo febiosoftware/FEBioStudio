@@ -329,7 +329,7 @@ int CDlgImportLines::ReadAng2Format(const char* szfile)
 			vec3f a0 = vec3f(c[0], c[1], c[2]); c += 3 + ndataFields;
 			vec3f b0 = vec3f(c[0], c[1], c[2]);
 
-			float va = 0.f, vb = 0.f;
+			float va = ftime, vb = ftime;
 			if (ndataFields > 0)
 			{
 				va = d[3];

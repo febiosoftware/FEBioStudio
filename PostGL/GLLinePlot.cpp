@@ -44,6 +44,7 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
 	AddIntParam(0, "render mode")->SetEnumNames("lines\0lines 3D\0smooth lines 3D\0");
 	AddDoubleParam(1.0, "line width");
+	AddIntParam(0, "Max Range type")->SetEnumNames("dynamic\0static\0");
 	AddBoolParam(true, "Show on hidden elements");
 
 	m_line = 4.f;
@@ -52,6 +53,7 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
 	m_col = GLColor(255, 0, 0);
 	m_nfield = -1;
 	m_show = true;
+	m_rangeMode = 0;
 
 	m_rng.x = 0.f;
 	m_rng.y = 1.f;
@@ -74,6 +76,7 @@ bool CGLLinePlot::UpdateData(bool bsave)
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		m_nmode = GetIntValue(RENDER_MODE);
 		m_line = GetFloatValue(LINE_WIDTH);
+		m_rangeMode = GetIntValue(RANGE_MODE);
 		m_show = GetBoolValue(SHOW_ALWAYS);
 	}
 	else
@@ -83,6 +86,7 @@ bool CGLLinePlot::UpdateData(bool bsave)
 		SetColorValue(SOLID_COLOR, m_col);
 		SetIntValue(RENDER_MODE, m_nmode);
 		SetFloatValue(LINE_WIDTH, m_line);
+		SetIntValue(RANGE_MODE, m_rangeMode);
 		SetBoolValue(SHOW_ALWAYS, m_show);
 	}
 
@@ -638,8 +642,16 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 		}
 	}
 
-	m_rng.x = vmin;
-	m_rng.y = vmax;
+	if (breset || (m_rangeMode == 0))
+	{
+		m_rng.x = vmin;
+		m_rng.y = vmax;
+	}
+	else
+	{
+		if (vmin < m_rng.x) m_rng.x = vmin;
+		if (vmax > m_rng.y) m_rng.y = vmax;
+	}
 }
 
 //=============================================================================
