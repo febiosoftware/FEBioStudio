@@ -95,6 +95,7 @@ class FESurfaceModifier;
 class GSurfaceMeshObject;
 class FileReader;
 class FileWriter;
+enum class ImageFileType;
 
 namespace Post {
 	class CImageModel;
@@ -251,7 +252,7 @@ public:
 	FileWriter* GetFileWriter();
 
 #ifdef HAS_ITK
-  Post::CImageModel* ImportITK(const std::string& filename);
+  Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
 #endif
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 

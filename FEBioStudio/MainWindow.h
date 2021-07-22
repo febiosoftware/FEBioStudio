@@ -55,6 +55,7 @@ class QueuedFile;
 class FEBioStudioProject;
 class CGLView;
 class GObject;
+enum class ImageFileType;
 
 namespace Ui {
 	class CMainWindow;
@@ -312,6 +313,8 @@ private:
 	void ShowWelcomePage();
 	void CloseWelcomePage();
 
+	void ProcessITKImage(const QString& fileName, ImageFileType type);
+
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
@@ -328,7 +331,11 @@ public slots:
 	void on_actionExportGeometry_triggered();
 	void on_actionImportProject_triggered();
 	void on_actionExportProject_triggered();
-	void on_actionImportImage_triggered();
+	void on_actionImportRawImage_triggered();
+	void on_actionImportDICOMImage_triggered();
+	void on_actionImportTiffImage_triggered();
+	void on_actionImportOEMTiffImage_triggered();
+	void on_actionImportImageSequence_triggered();
 	void on_actionConvertFeb_triggered();
 	void on_actionConvertGeo_triggered();
 	void on_actionExit_triggered();

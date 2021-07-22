@@ -144,6 +144,7 @@ public:
 	QMenu* menuRecentFiles;
 	QMenu* menuRecentProjects;
 	QMenu* menuRecentGeomFiles;
+	QMenu* menuImportImage;
 	QMenu* menuWindows;
 	QMenu* menuViews;
 
@@ -417,7 +418,11 @@ public:
 		QAction* actionOpenProject   = addAction("Open Project ...", "actionOpenProject");
 		QAction* actionImportProject = addAction("Import Project Archive ...", "actionImportProject");
 		QAction* actionExportProject = addAction("Export Project Archive ...", "actionExportProject");
-		QAction* actionImportImg  = addAction("Import Image ...", "actionImportImage");
+		QAction* actionImportRawImage  = addAction("Raw ...", "actionImportRawImage");
+		QAction* actionImportDICOMImage  = addAction("DICOM/DICOM Sequence ...", "actionImportDICOMImage");
+		QAction* actionImportTiffImage  = addAction("Tiff ...", "actionImportTiffImage");
+		QAction* actionImportOMETiffImage  = addAction("OME Tiff ...", "actionImportOMETiffImage");
+		QAction* actionImportImageSequence  = addAction("Image Sequence ...", "actionImportImageSequence");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
 		QAction* actionConvertGeo = addAction("Geometry Files ...", "actionConvertGeo");
 		QAction* actionExit       = addAction("Exit"       , "actionExit"  );
@@ -658,6 +663,8 @@ public:
 		recentGeomFilesActionGroup = new QActionGroup(mainWindow);
 		recentGeomFilesActionGroup->setObjectName("recentGeomFiles");
 
+		menuImportImage = new QMenu("Import Image");
+
 		// File menu
 		menuBar->addAction(menuFile->menuAction());
 
@@ -684,7 +691,13 @@ public:
 		menuFile->addAction(actionExportProject);
 #endif
 		menuFile->addSeparator();
-		menuFile->addAction(actionImportImg);
+		menuFile->addAction(menuImportImage->menuAction());
+		menuImportImage->addAction(actionImportRawImage);
+		menuImportImage->addAction(actionImportDICOMImage);
+		menuImportImage->addAction(actionImportTiffImage);
+		menuImportImage->addAction(actionImportOMETiffImage);
+		menuImportImage->addAction(actionImportImageSequence);
+		
 
 		QMenu* ConvertMenu = new QMenu("Batch convert");
 		ConvertMenu->addAction(actionConvertFeb);

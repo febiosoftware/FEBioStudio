@@ -33,6 +33,8 @@ SOFTWARE.*/
 #include "GLImageRenderer.h"
 #include "GLObject.h"
 
+enum class ImageFileType {RAW, DICOM, TIFF, OEMTIFF, SEQUENCE};
+
 class C3DImage;
 
 namespace Post {
@@ -50,7 +52,7 @@ public:
 	std::string GetFileName() const;
 
 #ifdef HAS_ITK
-  bool LoadITKData(const std::string &filename);
+	bool LoadITKData(const std::string &filename, ImageFileType type);
 #endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
 
@@ -83,7 +85,7 @@ public:
 	~CImageModel();
 
 #ifdef HAS_ITK
-  bool LoadITKData(const std::string &filename);
+	bool LoadITKData(const std::string &filename, ImageFileType type);
 #endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
 

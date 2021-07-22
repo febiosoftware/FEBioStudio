@@ -83,6 +83,7 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
+#include <PostLib/VolRender.h>
 
 extern GLColor col[];
 
@@ -3081,3 +3082,44 @@ void CMainWindow::CloseWelcomePage()
 		ui->tab->tabCloseRequested(n);
 	}
 }
+
+#ifdef HAS_ITK
+	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type)
+	{
+		CGLDocument* doc = GetGLDocument();
+
+		Post::CImageModel* imageModel = nullptr;
+
+		imageModel = doc->ImportITK(fileName.toStdString(), type);
+		if (imageModel == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+			return;
+		}
+
+		if(imageModel)
+		{
+			Update(0, true);
+			ZoomTo(imageModel->GetBoundingBox());
+
+			// only for model docs
+			if (dynamic_cast<CModelDocument*>(doc))
+			{
+				Post::CVolRender* vr = new Post::CVolRender(imageModel);
+				vr->Create();
+				imageModel->AddImageRenderer(vr);
+
+				Update(0, true);
+				ShowInModelViewer(imageModel);
+			}
+			else
+			{
+				Update(0, true);
+			}
+			ZoomTo(imageModel->GetBoundingBox());
+		}
+
+	}
+#else
+	void CMainWindow::ProcessITKImage(const QString& fileName, ImageType type) {}
+#endif

@@ -27,144 +27,114 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include "ITKImage.h"
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkGDCMSeriesFileNames.h>
+#include <itkImageSeriesReader.h>
+// #include <itkImageIOBase.h>
+#include <itkImageFileReader.h>
+#include <itkGDCMImageIO.h>
+#include <gdcmGlobal.h>
+#include <itkMetaDataObject.h>
 
-bool CITKImage::LoadFromFile(const char* filename)
+#include <QFileInfo>
+
+bool CITKImage::LoadFromFile(const char* filename, ImageFileType type)
 {
     m_filename = filename;
+    m_type = type;
 
-    QFileInfo info(m_filename);
-    m_isDicom = info.suffix().toLower() == "dcm" || info.suffix().toLower() == "dicom";
-
-    itk::ImageIOBase::Pointer imageIO =
-        itk::ImageIOFactory::CreateImageIO(m_filename, itk::CommonEnums::IOFileMode::ReadMode);
-
-    imageIO->SetFileName(m_filename);
-    imageIO->ReadImageInformation();
-
-    pixelType = imageIO->GetPixelType();
-    componentType = imageIO->GetComponentType();
-    const unsigned int imageDimension = imageIO->GetNumberOfDimensions();
-
-    switch (pixelType)
+    switch(m_type)
     {
-        case itk::IOPixelEnum::SCALAR:
-        {
-            if (imageDimension == 3)
-            {
-                if(!ReadScalarImage()) return false;
-                break;
-            }
-            else
-            {
-                return false;
-            }
-            
-        }
+        case ImageFileType::OEMTIFF:
+            if(!ParseOEMTiffXML()) return false;
+            m_imageFilename = sequenceFiles[0].c_str();
+            break;
+        case ImageFileType::SEQUENCE:
+            GetNamesForSequence();
+            m_imageFilename = sequenceFiles[0].c_str();
+            break;
         default:
-        {
-            std::cerr << "not implemented yet!" << std::endl;
-            return false;
-        }
-            
+            m_imageFilename = filename;
     }
 
-    m_pb = finalImage->GetBufferPointer();
+    if(!ParseImageHeader()) return false;
 
-    const typename FinalImageType::SizeType& sz = finalImage->GetBufferedRegion().GetSize();
-    m_cx = sz[0];
-    m_cy = sz[1];
-    m_cz = sz[2];
+    if(!ReadScalarImage()) return false;   
 
-    typename FinalImageType::SpacingType spacing = finalImage->GetSpacing();
+    FinalizeImage();
 
-    std::cout << spacing[0] << " " << spacing[1] << " " << spacing[2] << std::endl;
-
-    typename FinalImageType::PointType origin = finalImage->GetOrigin();
-    std::cout << origin[0] << " " << origin[1] << " " << origin[2] << std::endl;
-
+    return true;
 }
 
-template <class TImage>
-bool
-CITKImage::ReadImage()
+std::vector<int> CITKImage::GetSize()
 {
-    using ImageType = TImage;
-    
-    using SeriesReaderType = itk::ImageSeriesReader<ImageType>;
-    typename SeriesReaderType::Pointer seriesReader;
-    using ImageIOType = itk::GDCMImageIO;
-    ImageIOType::Pointer gdcmImageIO;
+    std::vector<int> size;
+    FinalImageType::RegionType::SizeType itkSize = finalImage->GetBufferedRegion().GetSize();
 
-    using ImageReaderType = itk::ImageFileReader<ImageType>;
-    typename ImageReaderType::Pointer reader;
-
-    using RescaleType = itk::RescaleIntensityImageFilter<ImageType, ImageType>;
-    itk::SmartPointer<RescaleType> rescale = RescaleType::New();
-    rescale->SetOutputMinimum(0);
-    rescale->SetOutputMaximum(itk::NumericTraits<unsigned char>::max());
-
-    if(m_isDicom)
+    for(auto itksz : itkSize)
     {
-        using ImageIOType = itk::GDCMImageIO;
-        gdcmImageIO = ImageIOType::New();
-        
-        seriesReader = SeriesReaderType::New();
-        seriesReader->SetImageIO(gdcmImageIO);
-
-        using NamesGeneratorType = itk::GDCMSeriesFileNames;
-        itk::SmartPointer<NamesGeneratorType> nameGenerator = NamesGeneratorType::New();
-        nameGenerator->SetUseSeriesDetails(true);
-
-        QFileInfo info(m_filename);
-        nameGenerator->SetDirectory(info.absolutePath().toStdString().c_str());
-
-        using SeriesIdContainer = std::vector<std::string>;
-
-        const SeriesIdContainer & seriesUID = nameGenerator->GetSeriesUIDs();
-
-        auto seriesItr = seriesUID.begin();
-        auto seriesEnd = seriesUID.end();
-        while (seriesItr != seriesEnd)
-        {
-        std::cout << seriesItr->c_str() << std::endl;
-            ++seriesItr;
-        }
-        std::string seriesIdentifier = seriesUID.begin()->c_str();
-
-        std::cout << seriesIdentifier << std::endl;
-
-        using FileNamesContainer = std::vector<std::string>;
-        FileNamesContainer fileNames;
-
-        fileNames = nameGenerator->GetFileNames(seriesIdentifier);
-        seriesReader->SetFileNames(fileNames);
-
-        rescale->SetInput(seriesReader->GetOutput());
-    }
-    else
-    {
-        reader = ImageReaderType::New();   
-        reader->SetFileName(m_filename);
-
-        rescale->SetInput(reader->GetOutput());
+        size.push_back(itksz);
     }
 
-    using CastType = itk::CastImageFilter<ImageType, FinalImageType>;
-    itk::SmartPointer<CastType> castFilter = CastType::New();
-    castFilter->SetInput(rescale->GetOutput());
+    return size;
+}
 
-    try
+std::vector<double> CITKImage::GetOrigin()
+{
+    std::vector<double> origin;
+    FinalImageType::PointType itkOrigin = finalImage->GetOrigin();
+
+    for(auto itkCoord : itkOrigin)
     {
-        castFilter->Update();
+        origin.push_back(itkCoord);
     }
-    catch (const itk::ExceptionObject & e)
+
+    return origin;
+}
+
+std::vector<double> CITKImage::GetSpacing()
+{
+    std::vector<double> spacing;
+    FinalImageType::SpacingType itkSpacing = finalImage->GetSpacing();
+
+    for(auto itkCoord : itkSpacing)
     {
-        std::cerr << "exception in file reader " << std::endl;
-        std::cerr << e << std::endl;
+        spacing.push_back(itkCoord);
+    }
+
+    return spacing;
+}
+
+bool CITKImage::ParseImageHeader()
+{
+    itk::ImageIOBase::Pointer imageIO =
+        itk::ImageIOFactory::CreateImageIO(m_imageFilename, itk::CommonEnums::IOFileMode::ReadMode);
+
+    if(!imageIO)
+    {
+        std::cerr << "Cannot read image pixel type" << std::endl;
         return false;
     }
 
-    finalImage = castFilter->GetOutput();
+    imageIO->SetFileName(m_imageFilename);
+    imageIO->ReadImageInformation();
+
+    pixelType = imageIO->GetPixelType();
+    if(pixelType != itk::IOPixelEnum::SCALAR)
+    {
+        std::cerr << "We only support scalar pixel types." << std::endl;
+        return false;
+    }
+    
+    
+    componentType = imageIO->GetComponentType();
+    
+    if(imageIO->GetNumberOfDimensions() != 3)
+    {
+        std::cerr << "We only support 3D images." << std::endl;
+            return false;
+    }
 
     return true;
 }
@@ -187,7 +157,7 @@ int CITKImage::ReadScalarImage()
 
             using ImageReaderType = itk::ImageFileReader<ImageType>;
             typename ImageReaderType::Pointer reader = ImageReaderType::New();
-            reader->SetFileName(m_filename);
+            reader->SetFileName(m_imageFilename);
             
             try
             {
@@ -279,4 +249,236 @@ int CITKImage::ReadScalarImage()
     }
     return EXIT_SUCCESS;
 
+}
+
+template <class TImage>
+bool
+CITKImage::ReadImage()
+{
+    using ImageType = TImage;
+    
+    using SeriesReaderType = itk::ImageSeriesReader<ImageType>;
+    typename SeriesReaderType::Pointer seriesReader;
+    using ImageIOType = itk::GDCMImageIO;
+    ImageIOType::Pointer gdcmImageIO;
+
+    using ImageReaderType = itk::ImageFileReader<ImageType>;
+    typename ImageReaderType::Pointer reader;
+
+    using RescaleType = itk::RescaleIntensityImageFilter<ImageType, ImageType>;
+    itk::SmartPointer<RescaleType> rescale = RescaleType::New();
+    rescale->SetOutputMinimum(0);
+    rescale->SetOutputMaximum(itk::NumericTraits<unsigned char>::max());
+
+    using CastType = itk::CastImageFilter<ImageType, FinalImageType>;
+    itk::SmartPointer<CastType> castFilter = CastType::New();
+
+    if(m_type == ImageFileType::DICOM)
+    {
+        using ImageIOType = itk::GDCMImageIO;
+        gdcmImageIO = ImageIOType::New();
+        
+        seriesReader = SeriesReaderType::New();
+        seriesReader->SetImageIO(gdcmImageIO);
+
+        using NamesGeneratorType = itk::GDCMSeriesFileNames;
+        itk::SmartPointer<NamesGeneratorType> nameGenerator = NamesGeneratorType::New();
+        nameGenerator->SetUseSeriesDetails(true);
+
+        QFileInfo info(m_imageFilename);
+        nameGenerator->SetDirectory(info.absolutePath().toStdString().c_str());
+
+        using SeriesIdContainer = std::vector<std::string>;
+
+        const SeriesIdContainer & seriesUID = nameGenerator->GetSeriesUIDs();
+
+        using FileNamesContainer = std::vector<std::string>;
+        FileNamesContainer fileNames;
+
+        auto seriesItr = seriesUID.begin();
+        auto seriesEnd = seriesUID.end();
+        bool found = false;
+        while (seriesItr != seriesEnd && !found)
+        {
+            fileNames = nameGenerator->GetFileNames(seriesItr->c_str());
+
+            for(auto name : fileNames)
+            {
+                if(name == m_imageFilename)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            ++seriesItr;
+        }
+        
+        seriesReader->SetFileNames(fileNames);
+
+        rescale->SetInput(seriesReader->GetOutput());
+
+        castFilter->SetInput(rescale->GetOutput());
+
+        try
+        {
+            castFilter->Update();
+        }
+        catch (const itk::ExceptionObject & e)
+        {
+            std::cerr << "exception in file reader " << std::endl;
+            std::cerr << e << std::endl;
+            return false;
+        }
+
+        finalImage = castFilter->GetOutput();
+
+        const itk::MetaDataDictionary & dictionary = gdcmImageIO->GetMetaDataDictionary();
+        using MetaDataStringType = itk::MetaDataObject<std::string>;
+
+        FinalImageType::SpacingType spacing = finalImage->GetSpacing();
+
+        std::string sliceSpacingID = "0018|0088";
+        auto tagItr = dictionary.Find(sliceSpacingID);
+
+        if(tagItr != dictionary.End())
+        {
+            MetaDataStringType::ConstPointer entryvalue =
+                dynamic_cast<const MetaDataStringType *>(tagItr->second.GetPointer());
+
+            if (entryvalue)
+            {
+                std::string tagvalue = entryvalue->GetMetaDataObjectValue();
+
+                try
+                {
+                    spacing[2] = std::stod(tagvalue);
+                }
+                catch(const std::exception& e){}
+            }
+        }
+
+        std::string pixelSpacingID = "0028|0030";
+        tagItr = dictionary.Find(pixelSpacingID);
+
+        if(tagItr != dictionary.End())
+        {
+            MetaDataStringType::ConstPointer entryvalue =
+                dynamic_cast<const MetaDataStringType *>(tagItr->second.GetPointer());
+
+            if (entryvalue)
+            {
+                std::string tagvalue = entryvalue->GetMetaDataObjectValue();
+
+                int index = tagvalue.find("\\");
+
+                
+                try
+                {
+                    spacing[0] = std::stod(tagvalue.substr(0, index));
+                }
+                catch(const std::exception& e){}
+
+                try
+                {
+                    spacing[1] = std::stod(tagvalue.substr(index+1));
+                }
+                catch(const std::exception& e){}
+            }
+        }
+
+        finalImage->SetSpacing(spacing);
+
+        FinalImageType::PointType origin = finalImage->GetOrigin();
+
+        std::string originID = "0020|0032";
+        tagItr = dictionary.Find(originID);
+
+        if(tagItr != dictionary.End())
+        {
+            MetaDataStringType::ConstPointer entryvalue =
+                dynamic_cast<const MetaDataStringType *>(tagItr->second.GetPointer());
+
+            if (entryvalue)
+            {
+                std::string tagvalue = entryvalue->GetMetaDataObjectValue();
+
+                int index1 = tagvalue.find("\\");
+                int index2 = tagvalue.find("\\", index1+1);
+
+                
+                try
+                {
+                    origin[0] = std::stod(tagvalue.substr(0, index1));
+                }
+                catch(const std::exception& e){}
+
+                try
+                {
+                    origin[1] = std::stod(tagvalue.substr(index1+1, index2-index1));
+                }
+                catch(const std::exception& e){}
+
+                try
+                {
+                    origin[2] = std::stod(tagvalue.substr(index2));
+                }
+                catch(const std::exception& e){}
+            }
+        }
+
+        finalImage->SetOrigin(origin);
+
+    }
+    else
+    {
+        reader = ImageReaderType::New();   
+        reader->SetFileName(m_imageFilename);
+
+        rescale->SetInput(reader->GetOutput());
+
+        castFilter->SetInput(rescale->GetOutput());
+
+        try
+        {
+            castFilter->Update();
+        }
+        catch (const itk::ExceptionObject & e)
+        {
+            std::cerr << "exception in file reader " << std::endl;
+            std::cerr << e << std::endl;
+            return false;
+        }
+
+        finalImage = castFilter->GetOutput();
+    }
+
+    return true;
+}
+
+bool CITKImage::ParseOEMTiffXML()
+{
+    return false;
+}
+
+void CITKImage::GetNamesForSequence()
+{
+    
+}
+
+bool CITKImage::FinalizeImage()
+{
+    m_pb = finalImage->GetBufferPointer();
+
+    const typename FinalImageType::SizeType& sz = finalImage->GetBufferedRegion().GetSize();
+    m_cx = sz[0];
+    m_cy = sz[1];
+    m_cz = sz[2];
+
+    typename FinalImageType::SpacingType spacing = finalImage->GetSpacing();
+
+    std::cout << spacing[0] << " " << spacing[1] << " " << spacing[2] << std::endl;
+
+    typename FinalImageType::PointType origin = finalImage->GetOrigin();
+    std::cout << origin[0] << " " << origin[1] << " " << origin[2] << std::endl;
 }

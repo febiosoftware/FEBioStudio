@@ -1405,98 +1405,119 @@ void CMainWindow::on_actionImportGeometry_triggered()
 	}
 }
 
-void CMainWindow::on_actionImportImage_triggered()
+void CMainWindow::on_actionImportRawImage_triggered()
 {
-	QStringList filters;
-	filters << "RAW files (*.raw)";
-	#ifdef HAS_ITK
-		filters << "DICOM files (*.dcm)" << "TIFF files (*.tiff, *.tif)";
-	#endif
-
 	CGLDocument* doc = GetGLDocument();
 
 	// present the file selection dialog box
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "RAW Files (*.raw)" << "All Files (*)";
 	filedlg.setNameFilters(filters);
 
 	if (filedlg.exec())
 	{
-	  // store the current path
-	  QDir dir = filedlg.directory();
-	  SetCurrentFolder(dir.absolutePath());
+		Post::CImageModel* imageModel = nullptr;
+		
+		CDlgRAWImport dlg(this);
+		if (dlg.exec())
+		{
+			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-	  // get the file name
-	  QStringList files = filedlg.selectedFiles();
-	  QString fileName = files.at(0);
+			imageModel = doc->ImportImage(filedlg.selectedFiles()[0].toStdString(), dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+			if (imageModel == nullptr)
+			{
+				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+				return;
+			}
+		}
 
-      std::string sfile = fileName.toStdString();
-      QFileInfo fileInfo(fileName);
-      QString ext = fileInfo.suffix();
-      ext = ext.toLower();
+		if(imageModel)
+		{
+			Update(0, true);
+			ZoomTo(imageModel->GetBoundingBox());
 
-      Post::CImageModel* imageModel = nullptr;
-    
-      if(ext == "tiff" || ext == "tif")
-      {
-        #ifdef HAS_ITK
-        imageModel = doc->ImportITK(sfile);
-        #endif
-        if (imageModel == nullptr)
-        {
-          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-          return;
-        }
-      }
-	  else if (ext == "dcm" || ext == "dicom")
-	  {
-        #ifdef HAS_ITK
-        imageModel = doc->ImportITK(sfile);
-        #endif
-        if (imageModel == nullptr)
-        {
-          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-          return;
-        }
-	  }
-      else
-      {
-        CDlgRAWImport dlg(this);
-        if (dlg.exec())
-        {
-          BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
+			// only for model docs
+			if (dynamic_cast<CModelDocument*>(doc))
+			{
+				Post::CVolRender* vr = new Post::CVolRender(imageModel);
+				vr->Create();
+				imageModel->AddImageRenderer(vr);
 
-          imageModel = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-          if (imageModel == nullptr)
-          {
-            QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-            return;
-          }
-        }
-      }
-      if(imageModel)
-      {
-        Update(0, true);
-        ZoomTo(imageModel->GetBoundingBox());
+				Update(0, true);
+				ShowInModelViewer(imageModel);
+			}
+			else
+			{
+				Update(0, true);
+			}
+			ZoomTo(imageModel->GetBoundingBox());
+		}
+	}
+}
+void CMainWindow::on_actionImportDICOMImage_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
-        // only for model docs
-        if (dynamic_cast<CModelDocument*>(doc))
-        {
-          Post::CVolRender* vr = new Post::CVolRender(imageModel);
-          vr->Create();
-          imageModel->AddImageRenderer(vr);
+	QStringList filters;
+	filters << "DICOM Files (*.dcm *.dicom)" << "All Files (*)";
+	filedlg.setNameFilters(filters);
 
-          Update(0, true);
-          ShowInModelViewer(imageModel);
-        }
-        else
-        {
-          Update(0, true);
-        }
-        ZoomTo(imageModel->GetBoundingBox());
-      }
-    }
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::DICOM);
+	}
+}
+
+void CMainWindow::on_actionImportTiffImage_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "Tiff Files (*.tif *.tiff)" << "All Files (*)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
+	}
+
+}
+
+void CMainWindow::on_actionImportOEMTiffImage_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "OEM Tiff XML Files (*.xml)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OEMTIFF);
+	}
+}
+
+void CMainWindow::on_actionImportImageSequence_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::Directory);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::SEQUENCE);
+	}
+
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()

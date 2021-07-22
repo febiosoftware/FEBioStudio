@@ -25,57 +25,57 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
+
 #ifdef HAS_ITK
 #pragma once
 
 #include "3DImage.h"
+#include <itkImage.h>
+#include <PostLib/ImageModel.h>
 
-#include "itkImage.h"
-#include <itkImageFileReader.h>
-#include <itkGDCMImageIO.h>
-#include <itkRescaleIntensityImageFilter.h>
-#include <itkCastImageFilter.h>
-#include <itkGDCMSeriesFileNames.h>
-#include <itkImageSeriesReader.h>
-#include <itkImageIOBase.h>
-#include <QFileInfo>
+enum class ImageFileType;
 
-// enum IMAGETYPE {DICOMTYPE, TIFFTYPE};
-
-// template <typename pType>
 class CITKImage : public C3DImage
 {
     using IOPixelType = itk::IOPixelEnum;
     using IOComponentType = itk::IOComponentEnum;
 
-    // using ImageType = itk::Image<pType, 3>;
-    // using ReaderType = itk::ImageFileReader<ImageType>;
-    // using ReaderType = itk::ImageSeriesReader<ImageType>;
-
     using FinalImageType = itk::Image<unsigned char, 3>;
-    // using CastType = itk::CastImageFilter<ImageType, FinalImageType>;
 
 public:
     CITKImage() {}
-    ~CITKImage() override {}
+    ~CITKImage() override { m_pb = nullptr; }
 
-    bool LoadFromFile(const char* filename);
+    bool LoadFromFile(const char* filename, ImageFileType type);
+
+    std::vector<int> GetSize();
+    std::vector<double> GetOrigin();
+    std::vector<double> GetSpacing();
 
 private:
+    bool ParseImageHeader();
+
     int ReadScalarImage();
 
     template<class TImage>
     bool ReadImage();
 
+    bool ParseOEMTiffXML();
+    void GetNamesForSequence();
+
+    bool FinalizeImage();
+
 
 private:
     const char* m_filename;
-    bool m_isDicom;
+    const char* m_imageFilename;
+    ImageFileType m_type;
     IOPixelType pixelType;
     IOComponentType componentType;
     // itk::ImageBase<3> originalImage;
-    // itk::SmartPointer<ImageType> image;
     itk::SmartPointer<FinalImageType> finalImage;
+
+    std::vector<std::string> sequenceFiles;
 };
 
 #endif

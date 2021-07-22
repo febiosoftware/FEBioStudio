@@ -770,7 +770,7 @@ void CGLDocument::LoadResources(IArchive& ar)
 }
 
 #ifdef HAS_ITK
-Post::CImageModel* CGLDocument::ImportITK(const std::string& filename)
+Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFileType type)
 {
 	static int n = 1;
 	// we pass the relative path to the image model
@@ -778,7 +778,7 @@ Post::CImageModel* CGLDocument::ImportITK(const std::string& filename)
 
 	Post::CImageModel* po = new Post::CImageModel(nullptr);
 
-	if (po->LoadITKData(relFile) == false)
+	if (po->LoadITKData(relFile, type) == false)
 	{
 		delete po;
 		return nullptr;

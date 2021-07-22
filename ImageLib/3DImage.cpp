@@ -60,7 +60,7 @@ C3DImage::~C3DImage()
 
 void C3DImage::CleanUp()
 {
-	delete [] m_pb;
+	if(m_pb) delete [] m_pb;
 	m_pb = 0;
 	m_cx = m_cy = m_cz = 0;
 }

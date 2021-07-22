@@ -71,23 +71,27 @@ std::string CImageSource::GetFileName() const
 }
 
 #ifdef HAS_ITK
-bool CImageSource::LoadITKData(const std::string& filename)
+bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type)
 {
-  CITKImage* im = new CITKImage();  
+	CITKImage* im = new CITKImage();  
 
-  if(im->LoadFromFile(filename.c_str()))
-  {
-    delete im;
-    return false;
-  }
+	if(!im->LoadFromFile(filename.c_str(), type))
+	{
+		delete im;
+		return false;
+	}
 
-  BOX box(0,0,0,1,1,1);
-  m_imgModel->SetBoundingBox(box);
+	std::vector<int> size = im->GetSize();
+	std::vector<double> origin = im->GetOrigin();
+	std::vector<double> spacing = im->GetSpacing();
 
-  SetValues(filename,im->Width(),im->Height(),im->Depth());
-  AssignImage(im);
+	BOX box(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
+	m_imgModel->SetBoundingBox(box);
 
-  return true;
+	SetValues(filename,im->Width(),im->Height(),im->Depth());
+	AssignImage(im);
+
+	return true;
 }
 #endif
 
@@ -194,11 +198,11 @@ bool CImageModel::UpdateData(bool bsave)
 }
 
 #ifdef HAS_ITK
-bool CImageModel::LoadITKData(const std::string& filename)
+bool CImageModel::LoadITKData(const std::string& filename, ImageFileType type)
 {
 	if (m_img == nullptr) m_img = new CImageSource(this);
 
-	if (m_img->LoadITKData(filename) == false)
+	if (m_img->LoadITKData(filename, type) == false)
 	{
 		delete m_img;
 		m_img = nullptr;
