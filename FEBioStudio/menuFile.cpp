@@ -1491,19 +1491,19 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 }
 
-void CMainWindow::on_actionImportOEMTiffImage_triggered()
+void CMainWindow::on_actionImportOMETiffImage_triggered()
 {
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
 	QStringList filters;
-	filters << "OEM Tiff XML Files (*.xml)";
+	filters << "OME Tiff XML Files (*.xml)";
 	filedlg.setNameFilters(filters);
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OEMTIFF);
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OMETIFF);
 	}
 }
 

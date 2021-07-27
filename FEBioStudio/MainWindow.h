@@ -334,7 +334,7 @@ public slots:
 	void on_actionImportRawImage_triggered();
 	void on_actionImportDICOMImage_triggered();
 	void on_actionImportTiffImage_triggered();
-	void on_actionImportOEMTiffImage_triggered();
+	void on_actionImportOMETiffImage_triggered();
 	void on_actionImportImageSequence_triggered();
 	void on_actionConvertFeb_triggered();
 	void on_actionConvertGeo_triggered();

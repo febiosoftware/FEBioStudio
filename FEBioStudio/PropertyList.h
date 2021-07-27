@@ -39,6 +39,7 @@ public:
 	{
 		Bool,
 		Int,
+		IntSlider,
 		Float,
 		String,
 		Enum,
@@ -159,6 +160,7 @@ public:
 
 	CProperty* addBoolProperty     (bool*   pd, const QString& name);
 	CProperty* addIntProperty      (int*    pd, const QString& name);
+	CProperty* addIntSliderProperty(int*    pd, const QString& name);
 	CProperty* addEnumProperty     (int*    pd, const QString& name);
 	CProperty* addDoubleProperty   (double* pd, const QString& name);
 	CProperty* addColorProperty    (QColor* pd, const QString& name);

@@ -268,3 +268,35 @@ void CObjectProps::SetPropertyValue(int i, const QVariant& v)
 		SetModified(true);
 	}
 }
+
+CImgRndrProps::CImgRndrProps(FSObject* po)
+{
+	m_po = 0;
+	if (po) BuildParamList(po);
+}
+
+
+void CImgRndrProps::AddParameter(Param& p)
+{
+	CProperty* prop = nullptr;
+	if(p.GetParamType() == Param_INT)
+	{
+		prop = addProperty(p.GetLongName(), CProperty::IntSlider);
+		if (p.UseRange())
+		{
+			prop->setIntRange(p.GetIntMin(), p.GetIntMax());
+		}
+
+		if (prop && (p.IsVisible() && (p.IsEditable() == false))) prop->flags = CProperty::Visible;
+		if (prop && p.IsVariable() && (p.IsEditable())) prop->flags |= CProperty::Variable;
+		if (prop) prop->param = &p;
+
+		m_params.push_back(&p);
+	}
+	else
+	{
+		CObjectProps::AddParameter(p);
+	}
+
+	
+}

@@ -46,10 +46,6 @@ bool CITKImage::LoadFromFile(const char* filename, ImageFileType type)
 
     switch(m_type)
     {
-        case ImageFileType::OEMTIFF:
-            if(!ParseOEMTiffXML()) return false;
-            m_imageFilename = sequenceFiles[0].c_str();
-            break;
         case ImageFileType::SEQUENCE:
             GetNamesForSequence();
             m_imageFilename = sequenceFiles[0].c_str();
@@ -454,11 +450,6 @@ CITKImage::ReadImage()
     }
 
     return true;
-}
-
-bool CITKImage::ParseOEMTiffXML()
-{
-    return false;
 }
 
 void CITKImage::GetNamesForSequence()

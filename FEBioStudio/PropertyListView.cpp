@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QHeaderView>
 #include <QLabel>
+#include <QSlider>
 #include <QComboBox>
 #include <QApplication>
 #include <QLineEdit>
@@ -46,6 +47,53 @@ SOFTWARE.*/
 #include <PostLib/ColorMap.h>
 #include "DragBox.h"
 #include "units.h"
+
+class CIntSlider : public QWidget
+{
+public:
+	CIntSlider(QWidget* parent) : QWidget(parent)
+	{
+		QHBoxLayout* layout = new QHBoxLayout;
+		layout->setContentsMargins(0,0,0,0);
+
+		box = new QSpinBox(parent);
+		slider = new QSlider(parent);
+		slider->setOrientation(Qt::Horizontal);
+
+		layout->addWidget(box);
+		layout->addWidget(slider);
+
+		setLayout(layout);
+
+		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
+
+		QObject::connect(box, &QSpinBox::valueChanged, slider, &QSlider::setValue);
+		QObject::connect(slider, &QSlider::valueChanged, box, &QSpinBox::setValue);
+	}
+
+	void setRange(int min, int max)
+	{
+		box->setRange(min, max);
+		slider->setRange(min, max);
+	}
+
+	void setValue(int val)
+	{
+		box->setValue(val);
+		slider->setValue(val);
+	}
+
+	int getValue()
+	{
+		return box->value();
+	}
+
+public:
+	QSpinBox* box;
+	QSlider* slider;
+
+};
+
 
 //-----------------------------------------------------------------------------
 CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent)
@@ -456,6 +504,16 @@ public:
 				m_view->connect(pc, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
 				return pc;
 			}
+			else if (prop.type == CProperty::IntSlider)
+			{
+				CIntSlider* pc = new CIntSlider(parent);
+				pc->setRange(prop.imin, prop.imax);
+				pc->setValue(data.toInt());
+				// pc->setAccelerated(true);
+				// if (prop.bauto) pc->setSpecialValueText("auto");
+				m_view->connect(pc->box, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
+				return pc;
+			}
 			else if (prop.type == CProperty::Enum)
 			{
 				if (prop.values.isEmpty() == false)
@@ -488,6 +546,11 @@ public:
 
 		CColorButton* col = qobject_cast<CColorButton*>(editor);
 		if (col) { model->setData(index, col->color(), Qt::EditRole); return; }
+
+		CIntSlider* slider = dynamic_cast<CIntSlider*>(editor);
+		if(slider) { 
+			model->setData(index, slider->getValue()); return;
+			}
 
 		QStyledItemDelegate::setModelData(editor, model, index);
 	}

@@ -60,7 +60,6 @@ private:
     template<class TImage>
     bool ReadImage();
 
-    bool ParseOEMTiffXML();
     void GetNamesForSequence();
 
     bool FinalizeImage();

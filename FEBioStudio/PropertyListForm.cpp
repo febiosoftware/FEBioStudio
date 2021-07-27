@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QPushButton>
 #include <QListWidget>
+#include <QSlider>
 #include "CIntInput.h"
 #include "GLHighlighter.h"
 #include "ResourceEdit.h"
@@ -246,6 +247,25 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 				spin->setValue(v.toInt());
 				connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
 				return spin;
+			}
+			else
+			{
+				QLineEdit* pw = new QLineEdit;
+				pw->setReadOnly(true);
+				pw->setText(QString::number(v.toInt()));
+				return pw;
+			}
+		}
+		break;
+	case CProperty::IntSlider:
+		{
+			if (pi.isEditable())
+			{
+				QSlider* slider = new QSlider;
+				slider->setRange(pi.imin, pi.imax);
+				slider->setValue(v.toInt());
+				connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
+				return slider;
 			}
 			else
 			{

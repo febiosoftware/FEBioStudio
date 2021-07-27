@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "GLImageRenderer.h"
 #include "GLObject.h"
 
-enum class ImageFileType {RAW, DICOM, TIFF, OEMTIFF, SEQUENCE};
+enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
 
 class C3DImage;
 
