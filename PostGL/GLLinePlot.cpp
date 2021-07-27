@@ -39,19 +39,21 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
 	SetName(szname);
 
 	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
-	AddIntParam(0, "Color mode")->SetEnumNames("Solid\0Line Data\0Model Data\0");
+	AddIntParam(0, "Color mode")->SetEnumNames("Solid\0Segments\0Line Data\0Model Data\0");
 	AddColorParam(GLColor(255, 0, 0), "Solid color");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddIntParam(0, "render mode")->SetEnumNames("lines\0lines 3D\0");
+	AddIntParam(0, "render mode")->SetEnumNames("lines\0lines 3D\0smooth lines 3D\0");
 	AddDoubleParam(1.0, "line width");
+	AddIntParam(0, "Max Range type")->SetEnumNames("dynamic\0static\0");
 	AddBoolParam(true, "Show on hidden elements");
 
 	m_line = 4.f;
 	m_nmode = 0;
-	m_ncolor = 0;
+	m_ncolor = COLOR_SOLID;
 	m_col = GLColor(255, 0, 0);
 	m_nfield = -1;
 	m_show = true;
+	m_rangeMode = 0;
 
 	m_rng.x = 0.f;
 	m_rng.y = 1.f;
@@ -74,6 +76,7 @@ bool CGLLinePlot::UpdateData(bool bsave)
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		m_nmode = GetIntValue(RENDER_MODE);
 		m_line = GetFloatValue(LINE_WIDTH);
+		m_rangeMode = GetIntValue(RANGE_MODE);
 		m_show = GetBoolValue(SHOW_ALWAYS);
 	}
 	else
@@ -83,6 +86,7 @@ bool CGLLinePlot::UpdateData(bool bsave)
 		SetColorValue(SOLID_COLOR, m_col);
 		SetIntValue(RENDER_MODE, m_nmode);
 		SetFloatValue(LINE_WIDTH, m_line);
+		SetIntValue(RANGE_MODE, m_rangeMode);
 		SetBoolValue(SHOW_ALWAYS, m_show);
 	}
 
@@ -124,22 +128,17 @@ void CGLLinePlot::Render(CGLContext& rc)
 	if ((ns >= 0) && (ns <fem.GetStates()))
 	{
 		FEState& s = *fem.GetState(ns);
-		int NL = s.Lines();
+		Post::LineData& lineData = s.GetLineData();
+		int NL = lineData.Lines();
 		if (NL > 0)
 		{
 			glPushAttrib(GL_ENABLE_BIT);
 			{
-				glColor3ub(m_col.r, m_col.g, m_col.b);
-
 				switch (m_nmode)
 				{
-				case 0: 
-					glDisable(GL_LIGHTING);
-					RenderLines(s); 
-					break;
-				case 1:
-					Render3DLines(s);
-					break;
+				case 0: RenderLines(s); break;
+				case 1: Render3DLines(s); break;
+				case 2: Render3DSmoothLines(s); break;
 				}
 			}
 			glPopAttrib();
@@ -149,16 +148,59 @@ void CGLLinePlot::Render(CGLContext& rc)
 }
 
 //-----------------------------------------------------------------------------
+int randomize(int n, int nmax)
+{
+	int a = nmax / 3; if (a == 0) a = 1;
+	int b = nmax / 2;
+	return (a * n + b) % nmax;
+}
+
+//-----------------------------------------------------------------------------
 void CGLLinePlot::RenderLines(FEState& s)
 {
-	if (m_ncolor == 0)
+	glDisable(GL_LIGHTING);
+	Post::LineData& lineData = s.GetLineData();
+	if (m_ncolor == COLOR_SOLID)
 	{
+		glColor3ub(m_col.r, m_col.g, m_col.b);
 		glBegin(GL_LINES);
 		{
-			int NL = s.Lines();
+			int NL = lineData.Lines();
 			for (int i = 0; i < NL; ++i)
 			{
-				LINEDATA& l = s.Line(i);
+				LINEDATA& l = lineData.Line(i);
+				if (m_show || ShowLine(l, s))
+				{
+					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
+					glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
+				}
+			}
+		}
+		glEnd();
+	}
+	else if (m_ncolor == COLOR_SEGMENT)
+	{
+		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+
+		int maxseg = 0;
+		int NL = lineData.Lines();
+		for (int i = 0; i < NL; ++i)
+		{
+			if (lineData.Line(i).m_segId > maxseg) maxseg = lineData.Line(i).m_segId;
+		}
+		if (maxseg == 0) maxseg = 1;
+
+		glBegin(GL_LINES);
+		{
+			for (int i = 0; i < NL; ++i)
+			{
+				LINEDATA& l = lineData.Line(i);
+
+				int n = l.m_segId;// randomize(l.m_segId, maxseg);
+				float f = (float)n / (float)maxseg;
+				GLColor c = map.map(f);
+				glColor3ub(c.r, c.g, c.b);
+				
 				if (m_show || ShowLine(l, s))
 				{
 					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
@@ -176,12 +218,13 @@ void CGLLinePlot::RenderLines(FEState& s)
 		float vmax = m_rng.y;
 		if (vmin == vmax) vmax++;
 
+		Post::LineData& lineData = s.GetLineData();
 		glBegin(GL_LINES);
 		{
-			int NL = s.Lines();
+			int NL = lineData.Lines();
 			for (int i = 0; i < NL; ++i)
 			{
-				LINEDATA& l = s.Line(i);
+				LINEDATA& l = lineData.Line(i);
 				if (m_show || ShowLine(l, s))
 				{
 					float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
@@ -219,6 +262,131 @@ void glxCylinder(float H, float R, float t0 = 0.f, float t1 = 1.f)
 	glEnd();
 }
 
+vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t)
+{
+	double ax[4], ay[4], az[4];
+	ax[0] = r0.x; ax[1] = n0.x; ax[2] = 3.0 * (r1.x - r0.x) - 2.0 * n0.x - n1.x; ax[3] = n1.x + n0.x - 2.0 * (r1.x - r0.x);
+	ay[0] = r0.y; ay[1] = n0.y; ay[2] = 3.0 * (r1.y - r0.y) - 2.0 * n0.y - n1.y; ay[3] = n1.y + n0.y - 2.0 * (r1.y - r0.y);
+	az[0] = r0.z; az[1] = n0.z; az[2] = 3.0 * (r1.z - r0.z) - 2.0 * n0.z - n1.z; az[3] = n1.z + n0.z - 2.0 * (r1.z - r0.z);
+
+	vec3d r;
+	r.x = ((ax[3] * t + ax[2]) * t + ax[1]) * t + ax[0];
+	r.y = ((ay[3] * t + ay[2]) * t + ay[1]) * t + ay[0];
+	r.z = ((az[3] * t + az[2]) * t + az[1]) * t + az[0];
+
+	return r;
+}
+
+//-----------------------------------------------------------------------------
+void glxCylinder(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0 = 0.f, float t1 = 1.f)
+{
+	quatd q0(vec3d(0, 0, 1), n0);
+	quatd q1(vec3d(0, 0, 1), n1);
+
+	double L = (r1 - r0).Length();
+	vec3d m0 = n0 * L;
+	vec3d m1 = n1 * L;
+
+	const int M = 5;
+	const int N = 16;
+	for (int j = 0; j < M; ++j)
+	{
+		quatd qa = quatd::slerp(q0, q1, (double) j / M);
+		quatd qb = quatd::slerp(q0, q1, (double)(j+1) / M);
+
+		vec3d rj0 = interpolate(r0, r1, m0, m1, (double)j / M);
+		vec3d rj1 = interpolate(r0, r1, m0, m1, (double)(j+1.0) / M);
+
+		float ta = t0 + j * (t1 - t0) / M;
+		float tb = t0 + (j+1) * (t1 - t0) / M;
+
+		glBegin(GL_QUAD_STRIP);
+		for (int i = 0; i <= N; ++i)
+		{
+			double w = 2 * PI * i / (double)N;
+			double x = cos(w);
+			double y = sin(w);
+
+			vec3d ri0(R * x, R * y, 0); qa.RotateVector(ri0);
+			vec3d ri1(R * x, R * y, 0); qb.RotateVector(ri1);
+			vec3d ra = rj0 + ri0;
+			vec3d rb = rj1 + ri1;
+
+			vec3d na(x, y, 0.0); qa.RotateVector(na);
+			vec3d nb(x, y, 0.0); qb.RotateVector(nb);
+
+			glTexCoord1d(ta); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+			glTexCoord1d(tb); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+		}
+		glEnd();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void glxSphere(const vec3d& r0, float R, const vec3d& n0, float tex = 0.f)
+{
+	quatd q0(vec3d(0, 0, 1), n0);
+
+	const int M = 5;
+	const int N = 16;
+	for (int j = 0; j < M; ++j)
+	{
+		double th0 = 0.5*PI * j / (double)M;
+		double th1 = 0.5*PI * (j+1) / (double)M;
+		double z1 = sin(th0);
+		double z2 = sin(th1);
+
+		double r1 = R * cos(th0);
+		double r2 = R * cos(th1);
+
+		if (j < M - 1)
+		{
+			glBegin(GL_QUAD_STRIP);
+			for (int i = 0; i <= N; ++i)
+			{
+				double w = 2 * PI * i / (double)N;
+				double x = cos(w);
+				double y = sin(w);
+
+				vec3d ri0(r1 * x, r1 * y, R * z1); q0.RotateVector(ri0);
+				vec3d ri1(r2 * x, r2 * y, R * z2); q0.RotateVector(ri1);
+				vec3d ra = r0 + ri0;
+				vec3d rb = r0 + ri1;
+
+				vec3d na(x, y, z1); q0.RotateVector(na);
+				vec3d nb(x, y, z2); q0.RotateVector(nb);
+
+				glTexCoord1d(tex); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+				glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+			}
+			glEnd();
+		}
+		else
+		{ 
+			glBegin(GL_TRIANGLE_FAN);
+			{
+				vec3d ri1(0, 0, R); q0.RotateVector(ri1);
+				vec3d rb = r0 + ri1;
+				vec3d nb(0, 0, R); q0.RotateVector(nb);
+				glTexCoord1d(tex); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+
+				for (int i = 0; i <= N; ++i)
+				{
+					double w = 2 * PI * i / (double)N;
+					double x = cos(w);
+					double y = sin(w);
+
+					vec3d ri0(r1 * x, r1 * y, R * z1); q0.RotateVector(ri0);
+					vec3d ra = r0 + ri0;
+					vec3d na(x, y, z1); q0.RotateVector(na);
+					glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+				}
+			}
+			glEnd();
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------
 bool CGLLinePlot::ShowLine(LINEDATA& l, FEState& s)
 {
@@ -234,12 +402,14 @@ bool CGLLinePlot::ShowLine(LINEDATA& l, FEState& s)
 //-----------------------------------------------------------------------------
 void CGLLinePlot::Render3DLines(FEState& s)
 {
-	if (m_ncolor == 0)
+	Post::LineData& lineData = s.GetLineData();
+	if (m_ncolor == COLOR_SOLID)
 	{
-		int NL = s.Lines();
+		glColor3ub(m_col.r, m_col.g, m_col.b);
+		int NL = lineData.Lines();
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& l = s.Line(i);
+			LINEDATA& l = lineData.Line(i);
 			if (m_show || ShowLine(l, s))
 			{
 				vec3f n = l.m_r1 - l.m_r0;
@@ -275,10 +445,10 @@ void CGLLinePlot::Render3DLines(FEState& s)
 		float vmax = m_rng.y;
 		if (vmin == vmax) vmax++;
 
-		int NL = s.Lines();
+		int NL = lineData.Lines();
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& l = s.Line(i);
+			LINEDATA& l = lineData.Line(i);
 			if (m_show || ShowLine(l, s))
 			{
 				vec3f n = l.m_r1 - l.m_r0;
@@ -309,23 +479,131 @@ void CGLLinePlot::Render3DLines(FEState& s)
 	}
 }
 
+//-----------------------------------------------------------------------------
+void CGLLinePlot::Render3DSmoothLines(FEState& s)
+{
+	Post::LineData& lineData = s.GetLineData();
+	if (m_ncolor == COLOR_SOLID)
+	{
+		glColor3ub(m_col.r, m_col.g, m_col.b);
+		int NL = lineData.Lines();
+		for (int i = 0; i < NL; ++i)
+		{
+			LINEDATA& l = lineData.Line(i);
+			if (m_show || ShowLine(l, s))
+			{
+				vec3f n = l.m_r1 - l.m_r0;
+				float L = n.Length();
+				n.Normalize();
+
+				vec3d e1 = l.m_t0; e1.Normalize();
+				vec3d e2 = l.m_t1; e2.Normalize();
+
+				// render cylinder
+				glxCylinder(l.m_r0, l.m_r1, m_line, e1, e2);
+
+				// render caps
+				if (l.m_end[0] == 1) glxSphere(l.m_r0, m_line, e1); 
+				if (l.m_end[1] == 1) glxSphere(l.m_r1, m_line, e2);
+			}
+		}
+	}
+	else if (m_ncolor == COLOR_SEGMENT)
+	{
+		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+
+		int maxseg = 0;
+		int NL = lineData.Lines();
+		for (int i = 0; i < NL; ++i)
+		{
+			if (lineData.Line(i).m_segId > maxseg) maxseg = lineData.Line(i).m_segId;
+		}
+		if (maxseg == 0) maxseg = 1;
+
+		for (int i = 0; i < NL; ++i)
+		{
+			LINEDATA& l = lineData.Line(i);
+			if (m_show || ShowLine(l, s))
+			{
+				vec3f n = l.m_r1 - l.m_r0;
+				float L = n.Length();
+				n.Normalize();
+
+				vec3d e1 = l.m_t0; e1.Normalize();
+				vec3d e2 = l.m_t1; e2.Normalize();
+
+				int nid = l.m_segId;// randomize(l.m_segId, maxseg);
+				float f = (float)nid / (float)maxseg;
+				GLColor c = map.map(f);
+				glColor3ub(c.r, c.g, c.b);
+
+				// render cylinder
+				glxCylinder(l.m_r0, l.m_r1, m_line, e1, e2);
+
+				// render caps
+				if (l.m_end[0] == 1) glxSphere(l.m_r0, m_line, e1);
+				if (l.m_end[1] == 1) glxSphere(l.m_r1, m_line, e2);
+			}
+		}
+	}
+	else
+	{
+		glColor3ub(255, 255, 255);
+
+		glPushAttrib(GL_ENABLE_BIT);
+		glEnable(GL_TEXTURE_1D);
+		m_Col.GetTexture().MakeCurrent();
+
+		float vmin = m_rng.x;
+		float vmax = m_rng.y;
+		if (vmin == vmax) vmax++;
+
+		int NL = lineData.Lines();
+		for (int i = 0; i < NL; ++i)
+		{
+			LINEDATA& l = lineData.Line(i);
+			if (m_show || ShowLine(l, s))
+			{
+				vec3f n = l.m_r1 - l.m_r0;
+				float L = n.Length();
+				n.Normalize();
+
+				vec3d e1 = l.m_t0; e1.Normalize();
+				vec3d e2 = l.m_t1; e2.Normalize();
+
+				float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
+				float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
+
+				// render cylinder
+				glxCylinder(l.m_r0, l.m_r1, m_line, e1, e2, f0, f1);
+
+				// render caps
+				if (l.m_end[0] == 1) glxSphere(l.m_r0, m_line, e1, f0);
+				if (l.m_end[1] == 1) glxSphere(l.m_r1, m_line, e2, f1);
+			}
+		}
+		glPopAttrib();
+	}
+}
+
 void CGLLinePlot::Update(int ntime, float dt, bool breset)
 {
-	if ((m_ncolor == 0) || ((m_ncolor==2)&&(m_nfield == -1))) return;
+	if ((m_ncolor == COLOR_SOLID) || ((m_ncolor==COLOR_MODEL_DATA)&&(m_nfield == -1))) return;
 
 	float vmax = -1e20f;
 	float vmin = 1e20f;
-	if (m_ncolor == 1)
+	if (m_ncolor == COLOR_LINE_DATA)
 	{
 		CGLModel& glm = *GetModel();
 		FEPostModel& fem = *glm.GetFEModel();
 
 		FEState& s = *fem.GetState(ntime);
-		int NL = s.Lines();
+		Post::LineData& lineData = s.GetLineData();
+		int NL = lineData.Lines();
 
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& line = s.Line(i);
+			LINEDATA& line = lineData.Line(i);
 
 			line.m_val[0] = line.m_user_data[0];
 			line.m_val[1] = line.m_user_data[1];
@@ -337,18 +615,19 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 			if (line.m_val[1] < vmin) vmin = line.m_val[1];
 		}
 	}
-	else if (m_ncolor == 2)
+	else if (m_ncolor == COLOR_MODEL_DATA)
 	{
 		CGLModel& glm = *GetModel();
 		FEPostModel& fem = *glm.GetFEModel();
 
 		FEState& s = *fem.GetState(ntime);
-		int NL = s.Lines();
+		Post::LineData& lineData = s.GetLineData();
+		int NL = lineData.Lines();
 
 		NODEDATA nd1, nd2;
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& line = s.Line(i);
+			LINEDATA& line = lineData.Line(i);
 
 			fem.EvaluateNode(line.m_r0, ntime, m_nfield, nd1);
 			fem.EvaluateNode(line.m_r1, ntime, m_nfield, nd2);
@@ -363,8 +642,16 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 		}
 	}
 
-	m_rng.x = vmin;
-	m_rng.y = vmax;
+	if (breset || (m_rangeMode == 0))
+	{
+		m_rng.x = vmin;
+		m_rng.y = vmax;
+	}
+	else
+	{
+		if (vmin < m_rng.x) m_rng.x = vmin;
+		if (vmax > m_rng.y) m_rng.y = vmax;
+	}
 }
 
 //=============================================================================

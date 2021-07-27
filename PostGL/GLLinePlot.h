@@ -33,7 +33,14 @@ namespace Post {
 // Line rendering of imported line data
 class CGLLinePlot : public CGLPlot
 {
-	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH, SHOW_ALWAYS };
+	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH, RANGE_MODE, SHOW_ALWAYS };
+
+	enum COLOR_MODE {
+		COLOR_SOLID,
+		COLOR_SEGMENT,
+		COLOR_LINE_DATA,
+		COLOR_MODEL_DATA
+	};
 
 public:
 	CGLLinePlot(CGLModel* po);
@@ -66,6 +73,7 @@ public:
 protected:
 	void RenderLines(FEState& s);
 	void Render3DLines(FEState& s);
+	void Render3DSmoothLines(FEState& s);
 	bool ShowLine(LINEDATA& l, FEState& s);
 
 private:
@@ -75,6 +83,7 @@ private:
 	int			m_ncolor;	//!< color option
 	int			m_nfield;
 	bool		m_show;		//!< hide when containing elements are hidden
+	int			m_rangeMode;
 	CColorTexture	m_Col;	//!< line color (when m_ncolor is not solid)
 
 private:

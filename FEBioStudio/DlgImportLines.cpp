@@ -128,10 +128,6 @@ void CDlgImportLines::OnApply()
 			Post::CGLLinePlot* pgl = new Post::CGLLinePlot(doc->GetGLModel());
 			doc->GetGLModel()->AddPlot(pgl);
 			pgl->SetName(ui->name->text().toStdString());
-
-			ui->m_ncount++;
-			ui->name->setText(QString("Lines%1").arg(ui->m_ncount));
-
 			ui->m_wnd->UpdatePostPanel(false, pgl);
 
 			accept();
@@ -218,7 +214,7 @@ vec3f GetCoordinatesFromFrag(Post::FEPostModel& fem, int nstate, FRAG& a)
 int CDlgImportLines::ReadAng2Format(const char* szfile)
 {
 	CPostDocument* doc = ui->m_wnd->GetPostDocument();
-	if (doc == nullptr) return false;
+	if (doc == nullptr) return 0;
 
 	FILE* fp = fopen(szfile, "rb");
 	if (fp == 0) return 0;
@@ -333,7 +329,7 @@ int CDlgImportLines::ReadAng2Format(const char* szfile)
 			vec3f a0 = vec3f(c[0], c[1], c[2]); c += 3 + ndataFields;
 			vec3f b0 = vec3f(c[0], c[1], c[2]);
 
-			float va = 0.f, vb = 0.f;
+			float va = ftime, vb = ftime;
 			if (ndataFields > 0)
 			{
 				va = d[3];
@@ -364,9 +360,9 @@ int CDlgImportLines::ReadAng2Format(const char* szfile)
 	// restore mesh' nodal positions
 	for (int i = 0; i < N; ++i) mesh.Node(i).r = tmp[i];
 
+	// all done
 	return nret;
 }
-
 
 //=============================================================================
 

@@ -63,7 +63,8 @@ CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
 
 	AddBoolParam(true, "Show plane");
 	AddBoolParam(true, "Cut hidden");
-	AddBoolParam(true, "Show Mesh" );
+	AddBoolParam(true, "Show mesh" );
+	AddColorParam(GLColor(0, 0, 0), "Mesh color");
 	AddDoubleParam(0, "Transparency")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(0, "X-normal")->SetFloatRange(-1.0, 1.0);
 	AddDoubleParam(0, "Y-normal")->SetFloatRange(-1.0, 1.0);
@@ -79,6 +80,8 @@ CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
 	m_bcut_hidden = false;
 	m_bshowplane = true;
 	m_bshow_mesh = false;
+
+	m_meshColor = GLColor(0, 0, 0);
 
 	m_nclip = GetFreePlane();
 	if (m_nclip >= 0) m_pcp[m_nclip] = this;
@@ -98,6 +101,7 @@ bool CGLPlaneCutPlot::UpdateData(bool bsave)
 		m_bshowplane  = GetBoolValue(SHOW_PLANE);
 		m_bcut_hidden = GetBoolValue(CUT_HIDDEN);
 		m_bshow_mesh  = GetBoolValue(SHOW_MESH);
+		m_meshColor = GetColorValue(MESH_COLOR);
 		m_transparency = GetFloatValue(TRANSPARENCY);
 		m_normal.x = GetFloatValue(NORMAL_X);
 		m_normal.y = GetFloatValue(NORMAL_Y);
@@ -111,6 +115,7 @@ bool CGLPlaneCutPlot::UpdateData(bool bsave)
 		SetBoolValue(SHOW_PLANE, m_bshowplane);
 		SetBoolValue(CUT_HIDDEN, m_bcut_hidden);
 		SetBoolValue(SHOW_MESH, m_bshow_mesh);
+		SetColorValue(MESH_COLOR, m_meshColor);
 		SetFloatValue(TRANSPARENCY, m_transparency);
 		SetFloatValue(NORMAL_X, m_normal.x);
 		SetFloatValue(NORMAL_Y, m_normal.y);
@@ -387,7 +392,8 @@ void CGLPlaneCutPlot::RenderMesh()
 	FEPostModel* ps = mdl->GetFEModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
-	glColor3ub(0,0,0);
+	GLColor c = m_meshColor;
+	glColor3ub(c.r, c.g, c.b);	
 
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
