@@ -25,6 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+#include <QHBoxLayout>
+#include <QSpinBox>
+#include <QSlider>
 #include <QLineEdit>
 #include <QValidator>
 #include <MathLib/math3d.h>
@@ -70,3 +73,50 @@ public:
 QString vecToString(const vec3f& f);
 
 vec3f stringToVec(const QString& s);
+
+//-----------------------------------------------------------------------------
+class CIntSlider : public QWidget
+{
+public:
+	CIntSlider(QWidget* parent) : QWidget(parent)
+	{
+		QHBoxLayout* layout = new QHBoxLayout;
+		layout->setContentsMargins(0,0,0,0);
+
+		box = new QSpinBox(parent);
+		slider = new QSlider(parent);
+		slider->setOrientation(Qt::Horizontal);
+
+		layout->addWidget(box);
+		layout->addWidget(slider);
+
+		setLayout(layout);
+
+		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
+
+		QObject::connect(box, &QSpinBox::valueChanged, slider, &QSlider::setValue);
+		QObject::connect(slider, &QSlider::valueChanged, box, &QSpinBox::setValue);
+	}
+
+	void setRange(int min, int max)
+	{
+		box->setRange(min, max);
+		slider->setRange(min, max);
+	}
+
+	void setValue(int val)
+	{
+		box->setValue(val);
+		slider->setValue(val);
+	}
+
+	int getValue()
+	{
+		return box->value();
+	}
+
+public:
+	QSpinBox* box;
+	QSlider* slider;
+
+};
