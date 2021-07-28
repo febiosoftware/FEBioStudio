@@ -77,6 +77,9 @@ vec3f stringToVec(const QString& s);
 //-----------------------------------------------------------------------------
 class CIntSlider : public QWidget
 {
+
+	Q_OBJECT
+
 public:
 	CIntSlider(QWidget* parent) : QWidget(parent)
 	{
@@ -96,6 +99,8 @@ public:
 
 		QObject::connect(box, &QSpinBox::valueChanged, slider, &QSlider::setValue);
 		QObject::connect(slider, &QSlider::valueChanged, box, &QSpinBox::setValue);
+		
+		QObject::connect(box, &QSpinBox::valueChanged, this, &CIntSlider::valueChanged);
 	}
 
 	void setRange(int min, int max)
@@ -115,7 +120,11 @@ public:
 		return box->value();
 	}
 
-public:
+signals:
+
+	void valueChanged(int val);
+
+private:
 	QSpinBox* box;
 	QSlider* slider;
 

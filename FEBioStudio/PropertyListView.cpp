@@ -465,7 +465,7 @@ public:
 				pc->setValue(data.toInt());
 				// pc->setAccelerated(true);
 				// if (prop.bauto) pc->setSpecialValueText("auto");
-				m_view->connect(pc->box, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
+				m_view->connect(pc, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
 				return pc;
 			}
 			else if (prop.type == CProperty::Enum)
