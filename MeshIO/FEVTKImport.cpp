@@ -530,7 +530,6 @@ bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 	pm->Create(nodes, elems);
 
 	// copy nodal data
-#pragma omp parallel for
 	for (int i = 0; i < nodes; ++i)
 	{
 		FENode& node = pm->Node(i);
@@ -539,7 +538,6 @@ bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 	}
 
 	// copy element data
-#pragma omp parallel for
 	for (int i = 0; i < elems; ++i)
 	{
 		FEElement& el = pm->Element(i);
