@@ -278,6 +278,7 @@ public:
 	QDialogButtonBox* buttonBox;
 	QComboBox* placement;
 	QComboBox* orientation;
+	QDoubleSpinBox* plineThick;
 
 public:
 	void setupUi(QDialog* parent)
@@ -303,13 +304,13 @@ public:
 					ph->addStretch();
 				labelsPageLayout->addLayout(ph);
 
-				QHBoxLayout* pol = new QHBoxLayout;
-				QLabel* pl = new QLabel("Orientation:");
+				QFormLayout* pol = new QFormLayout;
 				orientation = new QComboBox;
 				orientation->addItems(QStringList() << "Horizontal" << "Vertical");
-				pol->addWidget(pl);
-				pol->addWidget(orientation);
-				pol->addStretch();
+				plineThick = new QDoubleSpinBox;
+				plineThick->setRange(0.0, 100.0);
+				pol->addRow("Orientation", orientation);
+				pol->addRow("Line thickness", plineThick);
 				labelsPageLayout->addLayout(pol);
 				plabelFont = new CFontWidget;
 				labelsPageLayout->addWidget(plabelFont);
@@ -319,7 +320,7 @@ public:
 		ppos = new CPositionWidget;
 
 		// add all the tabs
-		tab->addTab(labelsPage, "Labels");
+		tab->addTab(labelsPage, "Options");
 		tab->addTab(ppos, "Position");
 		pv->addWidget(tab);
 
@@ -342,6 +343,7 @@ CDlgLegendProps::CDlgLegendProps(GLWidget* widget, CMainWindow* parent) : QDialo
 	ui->pshowLabels->setChecked(pb->ShowLabels());
 	ui->pprec->setValue(pb->GetPrecision());
 	ui->orientation->setCurrentIndex(pb->Orientation());
+	ui->plineThick->setValue(pb->LineThickness());
 
 	QFont labelFont = pb->get_font();
 	ui->plabelFont->setFont(labelFont, toQColor(pb->get_fg_color()));
@@ -364,6 +366,8 @@ void CDlgLegendProps::apply()
 	QFont labelFont = ui->plabelFont->getFont();
 	pb->set_font(labelFont);
 	pb->set_fg_color(toGLColor(ui->plabelFont->getFontColor()));
+
+	pb->SetLineThickness((float)ui->plineThick->value());
 
 	if (oldOrient != newOrient)
 	{

@@ -42,6 +42,7 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLLegendPlot(po)
 	AddIntParam(0, "Data field")->SetEnumNames("@data_mat3");
 	AddIntParam(0, "Calculate")->SetEnumNames("Eigenvectors\0Columns\0Rows\0");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddIntParam(10, "Range divisions")->SetIntRange(1, 50);
 	AddBoolParam(true, "Allow clipping");
 	AddBoolParam(true, "Show hidden"   );
 	AddDoubleParam(0.0, "Scale");
@@ -58,6 +59,8 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLLegendPlot(po)
 
 	m_scale = 1;
 	m_dens = 1;
+
+	m_ndivs = 10;
 
 	m_ntime = -1;
 	m_ntensor = 0;
@@ -115,6 +118,7 @@ bool GLTensorPlot::UpdateData(bool bsave)
 		m_gcl = GetColorValue(SOLID_COLOR);
 		m_bautoscale = GetBoolValue(AUTO_SCALE);
 		m_bnormalize = GetBoolValue(NORMALIZE);
+		m_ndivs = GetIntValue(RANGE_DIVS);
 
 		m_range.maxtype = GetIntValue(MAX_RANGE_TYPE);
 		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
@@ -159,6 +163,7 @@ bool GLTensorPlot::UpdateData(bool bsave)
 		SetColorValue(SOLID_COLOR, m_gcl);
 		SetBoolValue(AUTO_SCALE, m_bautoscale);
 		SetBoolValue(NORMALIZE, m_bnormalize);
+		SetIntValue(RANGE_DIVS, m_ndivs);
 	}
 
 	return false;
@@ -415,6 +420,8 @@ static double frand() { return (double)rand() / (double)RAND_MAX; }
 
 void GLTensorPlot::Render(CGLContext& rc)
 {
+	GetLegendBar()->SetDivisions(m_ndivs);
+
 	if (m_ntensor == 0) return;
 
 	GLfloat ambient[] = { 0.1f,0.1f,0.1f,1.f };
