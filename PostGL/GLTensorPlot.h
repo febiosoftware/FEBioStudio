@@ -37,7 +37,7 @@ namespace Post {
 
 class GLTensorPlot : public CGLLegendPlot
 {
-	enum { DATA_FIELD, METHOD, COLOR_MAP, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN };
+	enum { DATA_FIELD, METHOD, COLOR_MAP, RANGE_DIVS, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN };
 
 public:
 	enum Glyph_Type {
@@ -121,6 +121,7 @@ protected:
 	int		m_ntensor;	// tensor field
 	int		m_nglyph;	// glyph type
 	int		m_ncol;		// color type
+	int		m_ndivs;	// range divisions
 	DATA_RANGE	m_range;
 
 	float	m_scale;

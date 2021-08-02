@@ -215,6 +215,9 @@ public:
 	int GetDivisions();
 	void SetDivisions(int n);
 
+	float LineThickness() const { return m_lineWidth; }
+	void SetLineThickness(float f) { m_lineWidth = f; }
+
 protected:
 	void draw_gradient_vert(QPainter* painter);
 	void draw_gradient_horz(QPainter* painter);
@@ -230,6 +233,7 @@ protected:
 	int		m_nprec;	// precision
 	float	m_fmin;		// min of range
 	float	m_fmax;		// max of range
+	float	m_lineWidth;	// line width
 
 	Post::CColorTexture*		m_pMap;
 };
