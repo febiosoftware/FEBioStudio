@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include "PropertyListView.h"
 #include "units.h"
+#include "CIntInput.h"
 
 //=================================================================================================
 
@@ -242,30 +243,23 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		{
 			if (pi.isEditable())
 			{
-				QSpinBox* spin = new QSpinBox;
-				spin->setRange(pi.imin, pi.imax);
-				spin->setValue(v.toInt());
-				connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
-				return spin;
-			}
-			else
-			{
-				QLineEdit* pw = new QLineEdit;
-				pw->setReadOnly(true);
-				pw->setText(QString::number(v.toInt()));
-				return pw;
-			}
-		}
-		break;
-	case CProperty::IntSlider:
-		{
-			if (pi.isEditable())
-			{
-				QSlider* slider = new QSlider;
-				slider->setRange(pi.imin, pi.imax);
-				slider->setValue(v.toInt());
-				connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
-				return slider;
+				if(pi.brange)
+				{
+					CIntSlider* pc = new CIntSlider;
+					pc->setRange(pi.imin, pi.imax);
+					pc->setValue(v.toInt());
+					QObject::connect(pc, &CIntSlider::valueChanged, this, &CPropertyListForm::onDataChanged);
+					return pc;
+				}
+				else
+				{
+					QSpinBox* spin = new QSpinBox;
+					spin->setRange(pi.imin, pi.imax);
+					spin->setValue(v.toInt());
+					connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
+					return spin;
+				}
+				
 			}
 			else
 			{
@@ -470,6 +464,12 @@ void CPropertyListForm::updateData()
 						{
 							edit->setText(QString::number(v.toInt()));
 						}
+
+						CIntSlider* slider = dynamic_cast<CIntSlider*>(pw);
+						if (slider) 
+						{ 
+							slider->setValue(v.toInt());
+						}
 					}
 					break;
 				case CProperty::Float:
@@ -598,6 +598,9 @@ void CPropertyListForm::onDataChanged()
 					{
 						QSpinBox* spin = qobject_cast<QSpinBox*>(pw);
 						if (spin) m_list->SetPropertyValue(i, spin->value());
+
+						CIntSlider* slider = dynamic_cast<CIntSlider*>(pw);
+						if (slider) { m_list->SetPropertyValue(i, slider->getValue());}
 					}
 					break;
 				case CProperty::Float:

@@ -46,7 +46,6 @@ public:
 	int Params() const { return (int) m_params.size(); }
 
 protected:
-	CObjectProps() {}
 	void BuildParamList(FSObject* po, bool showNonPersistent = false);
 
 	virtual void AddParameter(Param& p);
@@ -58,14 +57,4 @@ protected:
 protected:
 	FSObject*			m_po;
 	std::vector<Param*>	m_params;
-};
-
-class CImgRndrProps : public CObjectProps
-{
-public:
-	CImgRndrProps(FSObject* po);
-
-protected:
-	void AddParameter(Param& p) override;
-
 };

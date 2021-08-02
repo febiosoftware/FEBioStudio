@@ -81,7 +81,7 @@ class CIntSlider : public QWidget
 	Q_OBJECT
 
 public:
-	CIntSlider(QWidget* parent) : QWidget(parent)
+	CIntSlider(QWidget* parent = nullptr) : QWidget(parent)
 	{
 		QHBoxLayout* layout = new QHBoxLayout;
 		layout->setContentsMargins(0,0,0,0);

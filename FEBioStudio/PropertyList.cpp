@@ -144,11 +144,6 @@ CProperty* CDataPropertyList::addIntProperty(int* pd, const QString& name)
 	return addProperty(name, CProperty::Int)->setData(pd);
 }
 
-CProperty* CDataPropertyList::addIntSliderProperty(int* pd, const QString& name)
-{
-	return addProperty(name, CProperty::IntSlider)->setData(pd);
-}
-
 CProperty* CDataPropertyList::addEnumProperty(int* pd, const QString& name)
 {
 	return addProperty(name, CProperty::Enum)->setData(pd);

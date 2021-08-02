@@ -1135,7 +1135,7 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 		for (int j = 0; j < img->ImageRenderers(); ++j)
 		{
 			Post::CGLImageRenderer* imgRender = img->GetImageRenderer(j);
-			AddTreeItem(t2, QString::fromStdString(imgRender->GetName()), MT_3DIMAGE_RENDER, 0, imgRender, new CImgRndrProps(imgRender), 0);
+			AddTreeItem(t2, QString::fromStdString(imgRender->GetName()), MT_3DIMAGE_RENDER, 0, imgRender, new CObjectProps(imgRender), 0);
 		}
 	}
 }
