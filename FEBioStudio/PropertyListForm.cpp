@@ -248,7 +248,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 					CIntSlider* pc = new CIntSlider;
 					pc->setRange(pi.imin, pi.imax);
 					pc->setValue(v.toInt());
-					QObject::connect(pc, &CIntSlider::valueChanged, this, &CPropertyListForm::onDataChanged);
+					connect(pc, &CIntSlider::valueChanged, this, &CPropertyListForm::onDataChanged);
 					return pc;
 				}
 				else

@@ -97,10 +97,10 @@ public:
 
 		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
 
-		QObject::connect(box, &QSpinBox::valueChanged, slider, &QSlider::setValue);
-		QObject::connect(slider, &QSlider::valueChanged, box, &QSpinBox::setValue);
+		connect(box, &QSpinBox::valueChanged, slider, &QSlider::setValue);
+		connect(slider, &QSlider::valueChanged, box, &QSpinBox::setValue);
 		
-		QObject::connect(box, &QSpinBox::valueChanged, this, &CIntSlider::valueChanged);
+		connect(box, &QSpinBox::valueChanged, this, &CIntSlider::valueChanged);
 	}
 
 	void setRange(int min, int max)
