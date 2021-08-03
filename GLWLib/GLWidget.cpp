@@ -994,12 +994,20 @@ bool GLSafeFrame::is_inside(int x, int y)
 	int x1 = m_x+m_w;
 	int y1 = m_y+m_h;
 
+	// see if it's on the border
 	int a = 2;
-
 	if ((x>=x0-a) && (x<=x0+a) && (y >= y0) && (y <= y1)) return true;
 	if ((x>=x1-a) && (x<=x1+a) && (y >= y0) && (y <= y1)) return true;
 	if ((y>=y0-a) && (y<=y0+a) && (x >= x0) && (x <= x1)) return true;
 	if ((y>=y1-a) && (y<=y1+a) && (x >= x0) && (x <= x1)) return true;
+
+	// see if it's in the resize triangle
+	double r = (m_x + m_w - x) / 20.0;
+	double s = (m_y + m_h - y) / 20.0;
+	if ((r >= 0) && (s >= 0) && (r + s <= 1.0))
+	{
+		return true;
+	}
 
 	return false;
 }
