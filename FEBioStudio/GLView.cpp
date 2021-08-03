@@ -1611,7 +1611,7 @@ void CGLView::paintGL()
 		if (m_video->Write(im) == false)
 		{
 			StopAnimation();
-			QMessageBox::critical(this, "FEBio Studio", "An error occurred while recording.");
+			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
 		}
 	}
 
