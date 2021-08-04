@@ -280,6 +280,8 @@ GLLegendBar::GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orie
 
 	m_fmin = 0.0f;
 	m_fmax = 1.0f;
+
+	m_lineWidth = 1.f;
 }
 
 void GLLegendBar::draw(QPainter* painter)
@@ -391,20 +393,23 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 	}
 	else ipow = 0;
 
-	glColor3ub(m_fgc.r,m_fgc.g,m_fgc.b);
-	glLineWidth(1.f);
-	glBegin(GL_LINES);
+	if (m_lineWidth > 0.f)
 	{
-		for (i=0; i<=nsteps; i++)
+		glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
+		glLineWidth(m_lineWidth);
+		glBegin(GL_LINES);
 		{
-			yt = y0 + i*(y1 - y0)/nsteps;
-			f = m_fmax + i*(m_fmin - m_fmax)/nsteps;
-		
-			glVertex2i(x0+1, yt);
-			glVertex2i(x1-1, yt);
+			for (i = 0; i <= nsteps; i++)
+			{
+				yt = y0 + i * (y1 - y0) / nsteps;
+				f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
+
+				glVertex2i(x0 + 1, yt);
+				glVertex2i(x1 - 1, yt);
+			}
 		}
+		glEnd();
 	}
-	glEnd();
 
 	glDepthFunc(dfnc);
 
@@ -522,20 +527,23 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 	}
 	else ipow = 0;
 
-	glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
-	glLineWidth(1.f);
-	glBegin(GL_LINES);
+	if (m_lineWidth > 0.f)
 	{
-		for (i = 0; i <= nsteps; i++)
+		glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
+		glLineWidth(m_lineWidth);
+		glBegin(GL_LINES);
 		{
-			int xt = x0 + i*(x1 - x0) / nsteps;
-			double f = m_fmax + i*(m_fmin - m_fmax) / nsteps;
+			for (i = 0; i <= nsteps; i++)
+			{
+				int xt = x0 + i * (x1 - x0) / nsteps;
+				double f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
 
-			glVertex2i(xt, y0 + 1);
-			glVertex2i(xt, y1 - 1);
+				glVertex2i(xt, y0 + 1);
+				glVertex2i(xt, y1 - 1);
+			}
 		}
+		glEnd();
 	}
-	glEnd();
 
 	glDepthFunc(dfnc);
 
@@ -687,6 +695,9 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 
 		float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
 
+		float lineWidth = m_lineWidth;
+		if (lineWidth <= 0.f) lineWidth = 1.f;
+
 		// render the lines and text
 		for (i=1; i<nsteps+1; i++)
 		{
@@ -700,7 +711,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 				GLColor c = map.map((float) f);
 				glColor3ub(c.r, c.g, c.b);
 
-				glLineWidth(5.f);
+				glLineWidth(lineWidth);
 				glBegin(GL_LINES);
 				{
 					glVertex2i(x0+1, yt);
@@ -718,7 +729,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 				GLColor c = map.map((float)f);
 				glColor3ub(c.r, c.g, c.b);
 
-				glLineWidth(5.f);
+				glLineWidth(lineWidth);
 				glBegin(GL_LINES);
 				{
 					glVertex2i(xt, y0+1);
@@ -983,12 +994,20 @@ bool GLSafeFrame::is_inside(int x, int y)
 	int x1 = m_x+m_w;
 	int y1 = m_y+m_h;
 
+	// see if it's on the border
 	int a = 2;
-
 	if ((x>=x0-a) && (x<=x0+a) && (y >= y0) && (y <= y1)) return true;
 	if ((x>=x1-a) && (x<=x1+a) && (y >= y0) && (y <= y1)) return true;
 	if ((y>=y0-a) && (y<=y0+a) && (x >= x0) && (x <= x1)) return true;
 	if ((y>=y1-a) && (y<=y1+a) && (x >= x0) && (x <= x1)) return true;
+
+	// see if it's in the resize triangle
+	double r = (m_x + m_w - x) / 20.0;
+	double s = (m_y + m_h - y) / 20.0;
+	if ((r >= 0) && (s >= 0) && (r + s <= 1.0))
+	{
+		return true;
+	}
 
 	return false;
 }

@@ -902,11 +902,16 @@ void CPostModelPanel::on_nameEdit_editingFinished()
 	if (item) item->setText(0, name);
 
 	FSObject* po = selectedObject();
-	if (po)
+	if (dynamic_cast<Post::CGLLegendPlot*>(po))
+	{
+		Post::CGLLegendPlot* plot = dynamic_cast<Post::CGLLegendPlot*>(po); assert(plot);
+		if (plot) plot->ChangeName(name.toStdString());
+	}
+	else if (po)
 	{
 		po->SetName(name.toStdString());
-		GetMainWindow()->RedrawGL();
 	}
+	GetMainWindow()->RedrawGL();
 }
 
 void CPostModelPanel::on_deleteButton_clicked()
