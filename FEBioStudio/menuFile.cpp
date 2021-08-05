@@ -115,6 +115,7 @@ SOFTWARE.*/
 #include <PostLib/BYUExport.h>
 #include <PostLib/FEVTKImport.h>
 #include <PostLib/VolRender.h>
+#include <PostLib/VolumeRender2.h>
 #include <sstream>
 
 using std::stringstream;
@@ -1499,7 +1500,9 @@ void CMainWindow::on_actionImportImage_triggered()
         // only for model docs
         if (dynamic_cast<CModelDocument*>(doc))
         {
-          Post::CVolRender* vr = new Post::CVolRender(imageModel);
+//          Post::CVolRender* vr = new Post::CVolRender(imageModel);
+          Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+		  vr->SetName("volume render");
           vr->Create();
           imageModel->AddImageRenderer(vr);
 
