@@ -70,6 +70,27 @@ std::string CImageSource::GetFileName() const
 	return GetStringValue(0);
 }
 
+bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, int nz)
+{
+  C3DImage* im = new C3DImage;
+  if (im->Create(nx, ny, nz) == false)
+  {
+    delete im;
+    return false;
+  }
+
+  if (im->LoadFromFile(fileName.c_str(), 8) == false)
+  {
+    delete im;
+    return false;
+  }
+
+  SetValues(fileName,nx,ny,nz);
+  AssignImage(im);
+
+  return true;
+}
+
 #ifdef HAS_ITK
 bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type)
 {
@@ -93,28 +114,9 @@ bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type)
 
 	return true;
 }
+#else
+bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type) { return false; }
 #endif
-
-bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, int nz)
-{
-  C3DImage* im = new C3DImage;
-  if (im->Create(nx, ny, nz) == false)
-  {
-    delete im;
-    return false;
-  }
-
-  if (im->LoadFromFile(fileName.c_str(), 8) == false)
-  {
-    delete im;
-    return false;
-  }
-
-  SetValues(fileName,nx,ny,nz);
-  AssignImage(im);
-
-  return true;
-}
 
 void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)
 {
@@ -197,28 +199,6 @@ bool CImageModel::UpdateData(bool bsave)
 	return false;
 }
 
-#ifdef HAS_ITK
-bool CImageModel::LoadITKData(const std::string& filename, ImageFileType type)
-{
-	if (m_img == nullptr) m_img = new CImageSource(this);
-
-	if (m_img->LoadITKData(filename, type) == false)
-	{
-		delete m_img;
-		m_img = nullptr;
-		return false;
-	}
-
-	// set the default name by extracting the base of the file name
-	string fileBase = FSDir::fileBase(filename);
-	m_img->SetName(fileBase);
-
-	UpdateData(false);
-
-	return true;
-}
-#endif
-
 bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box)
 {
 	if (m_img == nullptr) m_img = new CImageSource(this);
@@ -239,6 +219,30 @@ bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int
 
 	return true;
 }
+
+#ifdef HAS_ITK
+bool CImageModel::LoadITKData(const std::string& filename, ImageFileType type)
+{
+	if (m_img == nullptr) m_img = new CImageSource(this);
+
+	if (m_img->LoadITKData(filename, type) == false)
+	{
+		delete m_img;
+		m_img = nullptr;
+		return false;
+	}
+
+	// set the default name by extracting the base of the file name
+	string fileBase = FSDir::fileBase(filename);
+	m_img->SetName(fileBase);
+
+	UpdateData(false);
+
+	return true;
+}
+#else
+bool CImageModel::LoadITKData(const std::string& filename, ImageFileType type) { return false; }
+#endif
 
 bool CImageModel::ShowBox() const
 {

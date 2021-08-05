@@ -51,10 +51,8 @@ public:
 	void SetFileName(const std::string& fileName);
 	std::string GetFileName() const;
 
-#ifdef HAS_ITK
-	bool LoadITKData(const std::string &filename, ImageFileType type);
-#endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
+	bool LoadITKData(const std::string &filename, ImageFileType type);
 
 	C3DImage* Get3DImage() { return m_img; }
 
@@ -84,10 +82,8 @@ public:
 	CImageModel(CGLModel* mdl);
 	~CImageModel();
 
-#ifdef HAS_ITK
-	bool LoadITKData(const std::string &filename, ImageFileType type);
-#endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
+	bool LoadITKData(const std::string &filename, ImageFileType type);
 
 	int ImageRenderers() const { return (int)m_render.Size(); }
 	CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }
