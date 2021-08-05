@@ -610,6 +610,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 			else if (szicmp(sz, "CPE3"  )) ntype = FE_TRI3;
             else if (szicmp(sz, "STRI3" )) ntype = FE_TRI3;
             else if (szicmp(sz, "STRI65")) ntype = FE_TRI6;
+            else if (szicmp(sz, "S6"    )) ntype = FE_TRI6;
             else if (szicmp(sz, "S8R"   )) ntype = FE_QUAD8;
             else if (szicmp(sz, "S9R5"  )) ntype = FE_QUAD9;
 			else if (szicmp(sz, "SPRINGA"))

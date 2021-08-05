@@ -252,11 +252,11 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					else if (tag == "max_ups")
 					{
 						tag.value(ops.ilimit);
-						if (ops.ilimit == 0)
-						{
-							ops.mthsol = 1;
-							ops.ilimit = 10;
-						}
+//						if (ops.ilimit == 0)
+//						{
+//							ops.mthsol = 1;
+//							ops.ilimit = 10;
+//						}
 					}
 					else if (tag == "symmetric_stiffness")
 					{

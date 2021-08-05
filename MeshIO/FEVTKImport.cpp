@@ -296,12 +296,12 @@ bool FEVTKimport::read_CELLS(VTKMesh& vtk)
         int offsetsRead = 0;
         while (offsetsRead < elems)
         {
-            if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+            if (nextLine() == false) return errf("An unexpected error occured while reading the file data in CELLS OFFSETS section.");
             
             // There can be up to 9 offsets defined per line
             int nread = sscanf(m_szline, "%d%d%d%d%d%d%d%d%d", &temp[0], &temp[1], &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7], &temp[8]);
             if (nread > 9)
-                return errf("An error occured while reading the nodal coordinates.");
+                return errf("An error occured while reading the cell offsets.");
             
             for (int j = 0; j < nread; ++j)
                 vtk.m_celloffsets[offsetsRead+j] = temp[j];
@@ -311,7 +311,7 @@ bool FEVTKimport::read_CELLS(VTKMesh& vtk)
         assert(offsetsRead == elems);
         
         // now check for connectivity
-        if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+        if (nextLine() == false) return errf("An unexpected error occured while reading the file data after the CELLS OFFSETS section.");
         if (checkLine("CONNECTIVITY") == true) {
             vtk.m_cellcnctvty.resize(size);
             // read the connectivity
@@ -319,12 +319,12 @@ bool FEVTKimport::read_CELLS(VTKMesh& vtk)
             int cnctvtyRead = 0;
             while (cnctvtyRead < size)
             {
-                if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+                if (nextLine() == false) return errf("An unexpected error occured while reading the file data in the CELLS CONNECTIVITY section.");
                 
                 // There can be up to 9 offsets defined per line
                 int nread = sscanf(m_szline, "%d%d%d%d%d%d%d%d%d", &temp[0], &temp[1], &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7], &temp[8]);
                 if (nread > 9)
-                    return errf("An error occured while reading the nodal coordinates.");
+                    return errf("An error occured while reading the cell connectivity.");
                 
                 for (int j = 0; j < nread; ++j)
                     vtk.m_cellcnctvty[cnctvtyRead+j] = temp[j];
@@ -334,7 +334,7 @@ bool FEVTKimport::read_CELLS(VTKMesh& vtk)
             assert(cnctvtyRead == size);
         }
         else
-            return errf("An error occured while reading the nodal coordinates.");
+            return errf("An error occured due to missing or incorrect cell connectivity data.");
         
         // now generate cell data from offsets and connectivity
         // adjust element number by one
@@ -362,7 +362,7 @@ bool FEVTKimport::read_CELLS(VTKMesh& vtk)
             VTKMesh::CELL& cell = vtk.m_cellList[i];
             int* n = cell.node;
             int numNodes;
-            if ((i > 0) && (nextLine() == false)) return errf("An unexpected error occured while reading the file data.");
+            if ((i > 0) && (nextLine() == false)) return errf("An unexpected error occured while reading the file data in the CELLS section.");
             int nread = sscanf(m_szline, "%d%d%d%d%d%d%d%d%d%d%d", &numNodes, &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6], &n[7], &n[8], &n[9]);
             cell.numNodes = numNodes;
             cell.cellType = VTK_INVALID; // must be determined by CELL_TYPES
