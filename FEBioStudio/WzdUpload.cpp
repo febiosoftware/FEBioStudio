@@ -48,6 +48,13 @@ SOFTWARE.*/
 #include <QApplication>
 #include <QLocale>
 #include <QPalette>
+#include <QByteArray>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QStringList>
+#include <QVariantList>
 #include <unordered_map>
 #include "WzdUpload.h"
 #include "IconProvider.h"
@@ -55,6 +62,8 @@ SOFTWARE.*/
 #include "PublicationWidgetView.h"
 #include "LocalDatabaseHandler.h"
 #include "RepoConnectionHandler.h"
+
+#include <iostream>
 
 using std::unordered_map;
 using std::out_of_range;
@@ -78,6 +87,7 @@ public:
 
 	QWizardPage* filesPage;
 
+	QAction* loadJson;
 	QAction* addFolder;
 	QAction* addFiles;
 	QAction* rename;
@@ -180,6 +190,9 @@ public:
 		QVBoxLayout* filesLayout = new QVBoxLayout;
 
 		QToolBar* toolbar = new QToolBar;
+		toolbar->addAction(loadJson = new QAction(CIconProvider::GetIcon("open", Emblem::Plus), "Open", wzd));
+		loadJson->setObjectName("loadJson");
+		toolbar->addSeparator();
 		toolbar->addAction(addFolder = new QAction(CIconProvider::GetIcon("folder", Emblem::Plus), "New Folder", wzd));
 		addFolder->setObjectName("addFolder");
 		toolbar->addAction(addFiles = new QAction(CIconProvider::GetIcon("new"), "Add Files", wzd));
@@ -293,13 +306,22 @@ public:
 		fileTree->setColumnWidth(1, 310);
 	}
 
-	QTreeWidgetItem* NewFile(QString path, QString description = "", qint64 size = -1, QStringList tags = QStringList())
+	QTreeWidgetItem* NewFile(QString path, QString description = "", qint64 size = -1, QStringList tags = QStringList(), QString filename = "")
 	{
 		QFileInfo info(path);
 
 		QTreeWidgetItem* fileItem = new QTreeWidgetItem(FILEITEM);
 		fileItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEditable);
-		fileItem->setText(0, info.fileName());
+		
+		if(filename.isEmpty())
+		{
+			fileItem->setText(0, info.fileName());
+		}
+		else
+		{
+			fileItem->setText(0, filename);
+		}
+		
 		fileItem->setCheckState(0,Qt::Checked);
 		fileItem->setData(0, DESCRIPTION, description);
 		fileItem->setData(0, TAGS, tags);
@@ -1048,6 +1070,18 @@ void CWzdUpload::on_delTagBtn_clicked()
 	}
 }
 
+void CWzdUpload::on_loadJson_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+	filedlg.setNameFilter("Json Files (*.json)");
+
+	if (filedlg.exec())
+	{
+		loadProjectJson(filedlg.selectedFiles()[0]);
+	}
+}
 
 void CWzdUpload::on_addFolder_triggered()
 {
@@ -1277,4 +1311,203 @@ void CWzdUpload::on_delFileTagBtn_clicked()
 	}
 }
 
+
+void CWzdUpload::loadProjectJson(QString& filename)
+{
+	QFile file(filename);
+	file.open(QIODevice::ReadOnly);
+	QByteArray ba = file.readAll();
+	file.close();
+
+	QJsonParseError err;
+	QJsonDocument doc = QJsonDocument::fromJson(ba, &err);
+
+	std::cout << err.errorString().toStdString() << std::endl;
+
+	QJsonObject obj = doc.object();
+
+	if(obj.contains("Name"))
+	{
+		setName(obj["Name"].toString());
+	}
+
+	if(obj.contains("Description"))
+	{
+		setDescription(obj["Description"].toString());
+	}
+
+	if(obj.contains("Category"))
+	{
+		setCategory(obj["Category"].toString());
+	}
+
+	if(obj.contains("Tags"))
+	{
+		QStringList tags;
+
+		QVariantList jsonArray = obj["Tags"].toArray().toVariantList();
+		for(auto tag : jsonArray)
+		{
+			tags.append(tag.toString());
+		}
+
+		setTags(tags);
+	}
+
+	if(obj.contains("Publications"))
+	{
+		QJsonArray pubs = obj["Publications"].toArray();
+
+		for(auto pub : pubs)
+		{
+			QJsonObject pubObject = pub.toObject();
+
+			QString title, journal, year, volume, issue, pages, DOI;
+			QStringList authorGiven, authorFamily;
+
+			if(pubObject.contains("Title"))
+			{
+				title = pubObject["Title"].toString();
+			}
+
+			if(pubObject.contains("Journal"))
+			{
+				journal = pubObject["Journal"].toString();
+			}
+
+			if(pubObject.contains("Year"))
+			{
+				year = pubObject["Year"].toString();
+			}
+
+			if(pubObject.contains("Volume"))
+			{
+				volume = pubObject["Volume"].toString();
+			}
+
+			if(pubObject.contains("Issue"))
+			{
+				issue = pubObject["Issue"].toString();
+			}
+
+			if(pubObject.contains("Pages"))
+			{
+				pages = pubObject["Pages"].toString();
+			}
+
+			if(pubObject.contains("DOI"))
+			{
+				DOI = pubObject["DOI"].toString();
+			}
+
+			if(pubObject.contains("Authors"))
+			{
+				QJsonArray authors = pubObject["Authors"].toArray();
+				for(auto author : authors)
+				{
+					QJsonObject auth = author.toObject();
+
+					if(auth.contains("Given"))
+					{
+						authorGiven.append(auth["Given"].toString());
+					}
+					else
+					{
+						authorGiven.append("");
+					}
+
+					if(auth.contains("Family"))
+					{
+						authorFamily.append(auth["Family"].toString());
+					}
+					else
+					{
+						authorFamily.append("");
+					}
+				}
+			}
+
+			ui->pubs->addPublication(title, year, journal, volume, issue, pages, DOI, authorGiven, authorFamily);
+		}
+	}
+
+	if(obj.contains("Files"))
+	{
+		QJsonArray files = obj["Files"].toArray();
+		for(auto f : files)
+		{
+			QJsonObject fileObject = f.toObject();
+			QTreeWidgetItem* child = addJsonFile(fileObject);
+
+			if(child) ui->projectItem->addChild(child);
+		}
+		
+	}
+}
+
+QTreeWidgetItem* CWzdUpload::addJsonFile(QJsonObject& file)
+{
+	if(file.contains("Files"))
+	{
+		QString name;
+
+		if(file.contains("Name"))
+		{
+			name = file["Name"].toString();
+		}
+		else
+		{
+			return nullptr;
+		}
+
+		QTreeWidgetItem* folder = ui->NewFolder(name);
+
+		QJsonArray files = file["Files"].toArray();
+
+		for(auto f : files)
+		{
+			QJsonObject fileObject = f.toObject();
+			QTreeWidgetItem* child = addJsonFile(fileObject);
+
+			if(child) folder->addChild(child);
+		}
+
+		return folder;
+	}
+	else
+	{
+		QString name, description, location;
+		QStringList tags;
+
+		if(file.contains("Name"))
+		{
+			name = file["Name"].toString();
+		}
+
+		if(file.contains("Location"))
+		{
+			location = file["Location"].toString();
+		}
+		else
+		{
+			return nullptr;
+		}
+
+		if(file.contains("Description"))
+		{
+			description = file["Description"].toString();
+		}
+
+		if(file.contains("Tags"))
+		{
+			QJsonArray tagArray = file["Tags"].toArray();
+			for(auto tag : tagArray)
+			{
+				tags.append(tag.toString());
+			}
+		}
+
+		return ui->NewFile(location, description, -1, tags, name);
+	}
+}
 

@@ -125,6 +125,7 @@ public slots:
 	void on_addTagBtn_clicked();
 	void on_delTagBtn_clicked();
 
+	void on_loadJson_triggered();
 	void on_addFolder_triggered();
 	void on_addFiles_triggered();
 	void on_rename_triggered();
@@ -137,6 +138,10 @@ public slots:
 
 	void on_addFileTagBtn_clicked();
 	void on_delFileTagBtn_clicked();
+
+private:
+	void loadProjectJson(QString& filename);
+	QTreeWidgetItem* addJsonFile(QJsonObject& file);
 
 private:
 	Ui::CWzdUpload*	ui;
