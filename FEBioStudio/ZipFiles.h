@@ -47,7 +47,7 @@ public slots:
 	void abort();
 
 signals:
-	void resultReady(bool success);
+	void resultReady(bool success, QString message);
 	void progress(qint64 bytesSent, qint64 bytesTotal);
 
 private:

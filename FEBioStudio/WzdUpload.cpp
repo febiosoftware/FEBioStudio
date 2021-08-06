@@ -55,6 +55,7 @@ SOFTWARE.*/
 #include <QJsonArray>
 #include <QStringList>
 #include <QVariantList>
+#include <QVariantMap>
 #include <unordered_map>
 #include "WzdUpload.h"
 #include "IconProvider.h"
@@ -75,6 +76,8 @@ class Ui::CWzdUpload
 {
 public:
 	QWizardPage* infoPage;
+	// QAction* infoLoadJson;
+	// QAction* infoSaveJson;
 	QLineEdit* name;
 	QPlainTextEdit* description;
 	QLabel* owner;
@@ -88,6 +91,7 @@ public:
 	QWizardPage* filesPage;
 
 	QAction* loadJson;
+	QAction* saveJson;
 	QAction* addFolder;
 	QAction* addFiles;
 	QAction* rename;
@@ -120,6 +124,20 @@ public:
 
 		// Project info page
 		infoPage = new QWizardPage;
+		QVBoxLayout* outerInfoLayout = new QVBoxLayout;
+		outerInfoLayout->setContentsMargins(0,0,0,0);
+
+		if(!modify)
+		{
+			QToolBar* infoToolbar = new QToolBar;
+			infoToolbar->addAction(loadJson = new QAction(CIconProvider::GetIcon("open"), "Open", wzd));
+			loadJson->setObjectName("loadJson");
+			infoToolbar->addAction(saveJson = new QAction(CIconProvider::GetIcon("save"), "Save", wzd));
+			saveJson->setObjectName("saveJson");
+			outerInfoLayout->addWidget(infoToolbar);
+		}
+		
+
 		QHBoxLayout* infoLayout = new QHBoxLayout;
 
 		QFormLayout* leftLayout = new QFormLayout;
@@ -182,22 +200,28 @@ public:
 		rightLayout->addWidget(pubs);
 
 		infoLayout->addLayout(rightLayout);
-		infoPage->setLayout(infoLayout);
+		outerInfoLayout->addLayout(infoLayout);
+		infoPage->setLayout(outerInfoLayout);
 		wzd->addPage(infoPage);
 
 		// Files page
 		filesPage = new QWizardPage;
 		QVBoxLayout* filesLayout = new QVBoxLayout;
+		filesLayout->setContentsMargins(0,0,0,0);
 
-		QToolBar* toolbar = new QToolBar;
-		toolbar->addAction(loadJson = new QAction(CIconProvider::GetIcon("open", Emblem::Plus), "Open", wzd));
-		loadJson->setObjectName("loadJson");
-		toolbar->addSeparator();
-		toolbar->addAction(addFolder = new QAction(CIconProvider::GetIcon("folder", Emblem::Plus), "New Folder", wzd));
+		QToolBar* filesToolbar = new QToolBar;
+		if(!modify)
+		{
+			filesToolbar->addAction(loadJson);
+			filesToolbar->addAction(saveJson);
+			filesToolbar->addSeparator();
+		}
+		
+		filesToolbar->addAction(addFolder = new QAction(CIconProvider::GetIcon("folder", Emblem::Plus), "New Folder", wzd));
 		addFolder->setObjectName("addFolder");
-		toolbar->addAction(addFiles = new QAction(CIconProvider::GetIcon("new"), "Add Files", wzd));
+		filesToolbar->addAction(addFiles = new QAction(CIconProvider::GetIcon("new"), "Add Files", wzd));
 		addFiles->setObjectName("addFiles");
-		toolbar->addAction(rename = new QAction(CIconProvider::GetIcon("rename"), "Rename", wzd));
+		filesToolbar->addAction(rename = new QAction(CIconProvider::GetIcon("rename"), "Rename", wzd));
 		rename->setObjectName("rename");
 		
 		replaceFile = new QAction(CIconProvider::GetIcon("document", "swap"), "Replace File", wzd);
@@ -205,10 +229,10 @@ public:
 		replaceFile->setDisabled(true);
 		if(m_modify)
 		{
-			toolbar->addAction(replaceFile);
+			filesToolbar->addAction(replaceFile);
 		}
 
-		filesLayout->addWidget(toolbar);
+		filesLayout->addWidget(filesToolbar);
 
 		fileTree = new QTreeWidget;
 		fileTree->setObjectName("fileTree");
@@ -598,6 +622,26 @@ public:
 		}
 
 		return false;
+	}
+
+	void clearUI()
+	{
+		name->setText("");
+		description->setPlainText("");
+		tags->clear();
+		pubs->clear();
+
+		delete projectItem;
+
+		projectItem = new QTreeWidgetItem(PROJECTITEM);
+		projectItem->setFirstColumnSpanned(true);
+		projectItem->setText(0, "Project");
+		projectItem->setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
+		projectItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDropEnabled);
+		qint64 size = 0;
+		projectItem->setData(2, SIZE, size);
+		fileTree->addTopLevelItem(projectItem);
+		fileTree->setCurrentItem(projectItem);
 	}
 
 };
@@ -1079,7 +1123,31 @@ void CWzdUpload::on_loadJson_triggered()
 
 	if (filedlg.exec())
 	{
-		loadProjectJson(filedlg.selectedFiles()[0]);
+		QFile file(filedlg.selectedFiles()[0]);
+		file.open(QIODevice::ReadOnly);
+		QByteArray ba = file.readAll();
+		file.close();
+
+		setProjectJson(&ba);
+	}
+}
+
+void CWzdUpload::on_saveJson_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::AnyFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptSave);
+	filedlg.setNameFilter("Json Files (*.json)");
+
+	if (filedlg.exec())
+	{
+		QByteArray projectInfo;
+		getProjectJson(&projectInfo);
+
+		QFile file(filedlg.selectedFiles()[0]);
+		file.open(QIODeviceBase::WriteOnly);
+		file.write(projectInfo);
+		file.close();
 	}
 }
 
@@ -1311,41 +1379,37 @@ void CWzdUpload::on_delFileTagBtn_clicked()
 	}
 }
 
-
-void CWzdUpload::loadProjectJson(QString& filename)
+void CWzdUpload::setProjectJson(QByteArray* json)
 {
-	QFile file(filename);
-	file.open(QIODevice::ReadOnly);
-	QByteArray ba = file.readAll();
-	file.close();
-
 	QJsonParseError err;
-	QJsonDocument doc = QJsonDocument::fromJson(ba, &err);
+	QJsonDocument doc = QJsonDocument::fromJson(*json, &err);
 
 	std::cout << err.errorString().toStdString() << std::endl;
 
+	ui->clearUI();
+
 	QJsonObject obj = doc.object();
 
-	if(obj.contains("Name"))
+	if(obj.contains("name"))
 	{
-		setName(obj["Name"].toString());
+		setName(obj["name"].toString());
 	}
 
-	if(obj.contains("Description"))
+	if(obj.contains("description"))
 	{
-		setDescription(obj["Description"].toString());
+		setDescription(obj["description"].toString());
 	}
 
-	if(obj.contains("Category"))
+	if(obj.contains("category"))
 	{
-		setCategory(obj["Category"].toString());
+		setCategory(obj["category"].toString());
 	}
 
-	if(obj.contains("Tags"))
+	if(obj.contains("tags"))
 	{
 		QStringList tags;
 
-		QVariantList jsonArray = obj["Tags"].toArray().toVariantList();
+		QVariantList jsonArray = obj["tags"].toArray().toVariantList();
 		for(auto tag : jsonArray)
 		{
 			tags.append(tag.toString());
@@ -1354,9 +1418,9 @@ void CWzdUpload::loadProjectJson(QString& filename)
 		setTags(tags);
 	}
 
-	if(obj.contains("Publications"))
+	if(obj.contains("publications"))
 	{
-		QJsonArray pubs = obj["Publications"].toArray();
+		QJsonArray pubs = obj["publications"].toArray();
 
 		for(auto pub : pubs)
 		{
@@ -1365,34 +1429,34 @@ void CWzdUpload::loadProjectJson(QString& filename)
 			QString title, journal, year, volume, issue, pages, DOI;
 			QStringList authorGiven, authorFamily;
 
-			if(pubObject.contains("Title"))
+			if(pubObject.contains("title"))
 			{
-				title = pubObject["Title"].toString();
+				title = pubObject["title"].toString();
 			}
 
-			if(pubObject.contains("Journal"))
+			if(pubObject.contains("journal"))
 			{
-				journal = pubObject["Journal"].toString();
+				journal = pubObject["journal"].toString();
 			}
 
-			if(pubObject.contains("Year"))
+			if(pubObject.contains("year"))
 			{
-				year = pubObject["Year"].toString();
+				year = pubObject["year"].toString();
 			}
 
-			if(pubObject.contains("Volume"))
+			if(pubObject.contains("volume"))
 			{
-				volume = pubObject["Volume"].toString();
+				volume = pubObject["volume"].toString();
 			}
 
-			if(pubObject.contains("Issue"))
+			if(pubObject.contains("issue"))
 			{
-				issue = pubObject["Issue"].toString();
+				issue = pubObject["issue"].toString();
 			}
 
-			if(pubObject.contains("Pages"))
+			if(pubObject.contains("pages"))
 			{
-				pages = pubObject["Pages"].toString();
+				pages = pubObject["pages"].toString();
 			}
 
 			if(pubObject.contains("DOI"))
@@ -1400,25 +1464,25 @@ void CWzdUpload::loadProjectJson(QString& filename)
 				DOI = pubObject["DOI"].toString();
 			}
 
-			if(pubObject.contains("Authors"))
+			if(pubObject.contains("authors"))
 			{
-				QJsonArray authors = pubObject["Authors"].toArray();
+				QJsonArray authors = pubObject["authors"].toArray();
 				for(auto author : authors)
 				{
 					QJsonObject auth = author.toObject();
 
-					if(auth.contains("Given"))
+					if(auth.contains("given"))
 					{
-						authorGiven.append(auth["Given"].toString());
+						authorGiven.append(auth["given"].toString());
 					}
 					else
 					{
 						authorGiven.append("");
 					}
 
-					if(auth.contains("Family"))
+					if(auth.contains("family"))
 					{
-						authorFamily.append(auth["Family"].toString());
+						authorFamily.append(auth["family"].toString());
 					}
 					else
 					{
@@ -1431,29 +1495,30 @@ void CWzdUpload::loadProjectJson(QString& filename)
 		}
 	}
 
-	if(obj.contains("Files"))
+	if(obj.contains("files"))
 	{
-		QJsonArray files = obj["Files"].toArray();
+		QJsonArray files = obj["files"].toArray();
 		for(auto f : files)
 		{
 			QJsonObject fileObject = f.toObject();
-			QTreeWidgetItem* child = addJsonFile(fileObject);
+			QTreeWidgetItem* child = addFileFromJson(fileObject);
 
 			if(child) ui->projectItem->addChild(child);
 		}
-		
 	}
+
+	ui->fileTree->expandAll();
 }
 
-QTreeWidgetItem* CWzdUpload::addJsonFile(QJsonObject& file)
+QTreeWidgetItem* CWzdUpload::addFileFromJson(QJsonObject& file)
 {
-	if(file.contains("Files"))
+	if(file.contains("files"))
 	{
 		QString name;
 
-		if(file.contains("Name"))
+		if(file.contains("name"))
 		{
-			name = file["Name"].toString();
+			name = file["name"].toString();
 		}
 		else
 		{
@@ -1462,12 +1527,12 @@ QTreeWidgetItem* CWzdUpload::addJsonFile(QJsonObject& file)
 
 		QTreeWidgetItem* folder = ui->NewFolder(name);
 
-		QJsonArray files = file["Files"].toArray();
+		QJsonArray files = file["files"].toArray();
 
 		for(auto f : files)
 		{
 			QJsonObject fileObject = f.toObject();
-			QTreeWidgetItem* child = addJsonFile(fileObject);
+			QTreeWidgetItem* child = addFileFromJson(fileObject);
 
 			if(child) folder->addChild(child);
 		}
@@ -1476,38 +1541,96 @@ QTreeWidgetItem* CWzdUpload::addJsonFile(QJsonObject& file)
 	}
 	else
 	{
+		bool active = true;
 		QString name, description, location;
 		QStringList tags;
 
-		if(file.contains("Name"))
+		// A size of -1 will force the dialog to find the size on the disc
+		qint64 size = -1;
+
+		if(file.contains("active"))
 		{
-			name = file["Name"].toString();
+			active = file["active"].toBool();
 		}
 
-		if(file.contains("Location"))
+		if(file.contains("name"))
 		{
-			location = file["Location"].toString();
+			name = file["name"].toString();
+		}
+
+		if(file.contains("location"))
+		{
+			location = file["location"].toString();
 		}
 		else
 		{
 			return nullptr;
 		}
 
-		if(file.contains("Description"))
+		if(file.contains("description"))
 		{
-			description = file["Description"].toString();
+			description = file["description"].toString();
 		}
 
-		if(file.contains("Tags"))
+		if(file.contains("tags"))
 		{
-			QJsonArray tagArray = file["Tags"].toArray();
+			QJsonArray tagArray = file["tags"].toArray();
 			for(auto tag : tagArray)
 			{
 				tags.append(tag.toString());
 			}
 		}
 
-		return ui->NewFile(location, description, -1, tags, name);
+		QTreeWidgetItem* fileItem = ui->NewFile(location, description, size, tags, name);
+
+		if(!active)	fileItem->setCheckState(0, Qt::Unchecked);
+
+		return fileItem;
 	}
 }
 
+void CWzdUpload::getProjectJson(QByteArray* json)
+{
+	QVariantMap project;
+
+	project["name"] = getName();
+	project["description"] = getDescription();
+	project["category"] = getCategory();
+	project["tags"] = getTags();
+	project["publications"] = ui->pubs->getPublicationInfo();
+
+	QVariantList files;
+	addFileToJson(ui->projectItem, files);
+	project["files"] = files;
+
+	*json = QJsonDocument::fromVariant(project).toJson();
+}
+
+void CWzdUpload::addFileToJson(QTreeWidgetItem* item, QVariantList& list)
+{
+	for(int index = 0; index < item->childCount(); index++)
+	{
+		QTreeWidgetItem* child = item->child(index);
+		QVariantMap childInfo;
+		childInfo["name"] = child->text(0);
+
+		if(child->type() == FILEITEM)
+		{
+			childInfo["active"] = child->checkState(0) == Qt::Checked;
+			childInfo["description"] = child->data(0, DESCRIPTION);
+			childInfo["location"] = child->text(1);
+			childInfo["tags"] = child->data(0, TAGS);
+			
+			list.append(childInfo);
+		}
+		else
+		{
+			QVariantList files;
+			addFileToJson(child, files);
+
+			childInfo["files"] = files;
+
+			list.append(childInfo);
+		}
+	}
+}

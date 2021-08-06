@@ -710,11 +710,8 @@ void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
 		message += std::to_string(statusCode).c_str();
 
-		imp->dbPanel->ShowMessage(message);
-
 		imp->dbPanel->updateUploadReady(false);
 	}
-
 }
 
 void CRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
@@ -739,11 +736,19 @@ void CRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
 
 	if(statusCode)
 	{
-		imp->dbPanel->ShowMessage(r->readAll());
+		if(statusCode == 200)
+		{
+			imp->dbPanel->UploadFinished(true, r->readAll());
+		}
+		else
+		{
+			imp->dbPanel->UploadFinished(false, r->readAll());
+		}
+		
 	}
 	else
 	{
-		imp->dbPanel->ShowMessage("Upload cancelled.");
+		imp->dbPanel->UploadFinished(false, "Upload cancelled.");
 	}
 }
 
