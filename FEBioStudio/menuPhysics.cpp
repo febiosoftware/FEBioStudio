@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include "Commands.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
@@ -210,6 +211,32 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 			pbl->SetStep(step->GetID());
 			step->AddLoad(pbl);
 			UpdateModel(pbl);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddRigidLoad_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
+	FEModel& fem = *doc->GetFEModel();
+	CDlgAddPhysicsItem dlg("Add Rigid Load", FE_RIGID_LOAD, prj, true, this);
+	if (dlg.exec())
+	{
+		FERigidLoad* prl = fecore_new<FERigidLoad>(&fem, FE_RIGID_LOAD, FE_FEBIO_RIGID_LOAD); assert(prl);
+		FEBio::CreateModelComponent(dlg.GetClassID(), prl);
+		if (prl)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultLoadName(&fem, prl);
+			prl->SetName(name);
+
+			FEStep* step = fem.GetStep(dlg.GetStep());
+			prl->SetStep(step->GetID());
+			step->AddLoad(prl);
+			UpdateModel(prl);
 		}
 	}
 }

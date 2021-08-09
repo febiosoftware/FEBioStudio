@@ -378,6 +378,7 @@ public slots:
 	void on_actionAddNodalLoad_triggered();
 	void on_actionAddSurfLoad_triggered();
 	void on_actionAddBodyLoad_triggered();
+	void on_actionAddRigidLoad_triggered();
 	void on_actionAddIC_triggered();
 	void on_actionAddContact_triggered();
 	void on_actionAddConstraint_triggered();

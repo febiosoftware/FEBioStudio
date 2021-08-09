@@ -75,8 +75,10 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 
 		int type = param.type();
 
-		// TODO: The name needs to copied in the FSObject class!! 
+		// TODO: The name needs to be copied in the FSObject class!! 
+		//       This is a memory leak!!!!
 		const char* szname = strdup(param.name().c_str());
+		const char* szlongname = strdup(param.longName().c_str());
 		Param* p = nullptr;
 		switch (type)
 		{
@@ -84,32 +86,32 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 		{
 			if (param.m_enums)
 			{
-				p = po->AddChoiceParam(v.toInt(), szname);
+				p = po->AddChoiceParam(v.toInt(), szname, szlongname);
 				p->CopyEnumNames(param.m_enums);
 			}
-			else p = po->AddIntParam(v.toInt(), szname);
+			else p = po->AddIntParam(v.toInt(), szname, szlongname);
 		}
 		break;
-		case FEBio::FEBIO_PARAM_BOOL  : p = po->AddBoolParam(v.toBool(), szname); break;
-		case FEBio::FEBIO_PARAM_DOUBLE: p = po->AddDoubleParam(v.toDouble(), szname); break;
-		case FEBio::FEBIO_PARAM_VEC3D : p = po->AddVecParam(qvariant_to_vec3d(v), szname); break;
-		case FEBio::FEBIO_PARAM_MAT3D : p = po->AddMat3dParam(qvariant_to_mat3d(v), szname); break;
-		case FEBio::FEBIO_PARAM_STD_STRING: p = po->AddStringParam(v.toString().toStdString(), szname); break;
-		case FEBio::FEBIO_PARAM_DOUBLE_MAPPED: p = po->AddDoubleParam(v.toDouble(), szname)->MakeVariable(true); break;
-		case FEBio::FEBIO_PARAM_VEC3D_MAPPED : p = po->AddVecParam(qvariant_to_vec3d(v), szname); break;
-		case FEBio::FEBIO_PARAM_MAT3D_MAPPED : p = po->AddMat3dParam(qvariant_to_mat3d(v), szname); break;
-		case FEBio::FEBIO_PARAM_MAT3DS_MAPPED : p = po->AddMat3dsParam(qvariant_to_mat3ds(v), szname); break;
+		case FEBio::FEBIO_PARAM_BOOL          : p = po->AddBoolParam(v.toBool(), szname, szlongname); break;
+		case FEBio::FEBIO_PARAM_DOUBLE        : p = po->AddDoubleParam(v.toDouble(), szname, szlongname); break;
+		case FEBio::FEBIO_PARAM_VEC3D         : p = po->AddVecParam(qvariant_to_vec3d(v), szname, szlongname); break;
+		case FEBio::FEBIO_PARAM_MAT3D         : p = po->AddMat3dParam(qvariant_to_mat3d(v), szname, szlongname); break;
+		case FEBio::FEBIO_PARAM_STD_STRING    : p = po->AddStringParam(v.toString().toStdString(), szname, szlongname); break;
+		case FEBio::FEBIO_PARAM_DOUBLE_MAPPED : p = po->AddDoubleParam(v.toDouble(), szname, szlongname)->MakeVariable(true); break;
+		case FEBio::FEBIO_PARAM_VEC3D_MAPPED  : p = po->AddVecParam(qvariant_to_vec3d(v), szname, szlongname); break;
+		case FEBio::FEBIO_PARAM_MAT3D_MAPPED  : p = po->AddMat3dParam(qvariant_to_mat3d(v), szname, szlongname); break;
+		case FEBio::FEBIO_PARAM_MAT3DS_MAPPED : p = po->AddMat3dsParam(qvariant_to_mat3ds(v), szname, szlongname); break;
 		case FEBio::FEBIO_PARAM_STD_VECTOR_INT:
 		{
 			std::vector<int> val = v.value<std::vector<int> >();
-			p = po->AddVectorIntParam(val, szname);
+			p = po->AddVectorIntParam(val, szname, szlongname);
 			if (param.m_enums) p->CopyEnumNames(param.m_enums);
 		}
 		break;
 		case FEBio::FEBIO_PARAM_STD_VECTOR_DOUBLE:
 		{
 			std::vector<double> val = v.value<std::vector<double> >();
-			p = po->AddVectorDoubleParam(val, szname);
+			p = po->AddVectorDoubleParam(val, szname, szlongname);
 		}
 		break;
 		default:

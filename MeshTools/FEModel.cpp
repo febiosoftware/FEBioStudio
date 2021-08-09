@@ -309,6 +309,10 @@ void FEModel::GetVariableNames(const char* szvar, char* szbuf)
 
 	if      (strcmp(var, "Solutes") == 0) { GetSoluteNames(szbuf); return; }
 	else if (strcmp(var, "SBMs") == 0) { GetSBMNames(szbuf); return; }
+	else if (strcmp(var, "rigid_materials") == 0) 
+	{
+		GetRigidMaterialNames(szbuf); return;
+	}
 	else
 	{
 		const char* szvar = var;

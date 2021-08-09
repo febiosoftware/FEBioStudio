@@ -192,6 +192,7 @@ public:
 	QAction* actionAddNodalLoad;
 	QAction* actionAddSurfLoad;
 	QAction* actionAddBodyLoad;
+	QAction* actionAddRigidLoad;
 	QAction* actionAddIC;
 	QAction* actionAddContact;
 	QAction* actionAddConstraint;
@@ -453,6 +454,7 @@ public:
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
 		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier + Qt::Key_L);
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
+		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier + Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
 		actionAddConstraint      = addAction("Add Constraint..."             , "actionAddConstraint");

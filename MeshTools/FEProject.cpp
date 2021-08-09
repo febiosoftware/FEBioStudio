@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <FEBioStudio/WebDefines.h>
@@ -419,6 +420,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FEBioNodalLoad        , 0, FE_NODAL_LOAD       , FE_FEBIO_NODAL_LOAD       , "[febio]");
 	REGISTER_FE_CLASS(FEBioSurfaceLoad      , 0, FE_SURFACE_LOAD     , FE_FEBIO_SURFACE_LOAD     , "[febio]");
 	REGISTER_FE_CLASS(FEBioBodyLoad         , 0, FE_BODY_LOAD        , FE_FEBIO_BODY_LOAD        , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidLoad        , 0, FE_RIGID_LOAD       , FE_FEBIO_RIGID_LOAD       , "[febio]");
 	REGISTER_FE_CLASS(FEBioInterface        , 0, FE_INTERFACE        , FE_FEBIO_INTERFACE        , "[febio]");
 	REGISTER_FE_CLASS(FEBioInitialCondition , 0, FE_INITIAL_CONDITION, FE_FEBIO_INITIAL_CONDITION, "[febio]");
 	REGISTER_FE_CLASS(FEBioNLConstraint     , 0, FE_CONSTRAINT       , FE_FEBIO_NLCONSTRAINT     , "[febio]");

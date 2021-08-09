@@ -621,18 +621,6 @@ void CModelViewer::OnAddBC()
 	wnd->on_actionAddBC_triggered();
 }
 
-void CModelViewer::OnAddSurfaceLoad()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddSurfLoad_triggered();
-}
-
-void CModelViewer::OnAddBodyLoad()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddBodyLoad_triggered();
-}
-
 void CModelViewer::OnAddInitialCondition()
 {
 	CMainWindow* wnd = GetMainWindow();
@@ -1572,9 +1560,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllBC()));
 		break;
 	case MT_LOAD_LIST:
-		menu.addAction("Add Nodal Load ...", wnd, SLOT(on_actionAddNodalLoad_triggered()));
-		menu.addAction("Add Surface Load ...", this, SLOT(OnAddSurfaceLoad()));
-		menu.addAction("Add Body Load ...", this, SLOT(OnAddBodyLoad()));
+		menu.addAction("Add Nodal Load ..."  , wnd, SLOT(on_actionAddNodalLoad_triggered()));
+		menu.addAction("Add Surface Load ...", wnd, SLOT(on_actionAddSurfLoad_triggered()));
+		menu.addAction("Add Body Load ..."   , wnd, SLOT(on_actionAddBodyLoad_triggered()));
+		menu.addAction("Add Rigid Load ..."  , wnd, SLOT(on_actionAddRigidLoad_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllLoads()));
 		break;

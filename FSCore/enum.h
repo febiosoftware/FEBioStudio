@@ -648,6 +648,7 @@ SOFTWARE.*/
 #define FE_FEBIO_SURFACE_LOAD				0x0038
 #define FE_FEBIO_BODY_LOAD					0x0039
 #define FE_FEBIO_INITIAL_CONDITION			0x003A
+#define FE_FEBIO_RIGID_LOAD					0x003B
 
 //--------------------------------------------------------
 // Interface types

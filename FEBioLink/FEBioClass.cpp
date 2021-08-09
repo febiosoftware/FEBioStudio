@@ -166,11 +166,12 @@ int FEBio::GetClassId(int superClassId, const std::string& typeStr)
 	return fecore.GetFactoryIndex(superClassId, typeStr.c_str());
 }
 
-FEBioParam& FEBioClass::AddParameter(const std::string& paramName, int paramType, const QVariant& val)
+FEBioParam& FEBioClass::AddParameter(const std::string& paramName, const std::string& paramLongName, int paramType, const QVariant& val)
 {
 	FEBioParam p;
 	p.m_type = paramType;
 	p.m_name = paramName;
+	p.m_longName = paramLongName;
 	p.m_val  = val;
 	m_Param.push_back(p);
 	return m_Param[m_Param.size() - 1];
@@ -228,11 +229,13 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 		if ((p.GetFlags() & FE_PARAM_HIDDEN) == 0)
 		{
 			int ndim = p.dim();
+			const char* szname = p.name();
+			const char* szlongname = p.longName();
 			switch (p.type())
 			{
 			case FE_PARAM_INT:
 			{
-				FEBioParam& param = feb->AddParameter(p.name(), p.type(), p.value<int>());
+				FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), p.value<int>());
 				param.m_flags = p.GetFlags();
 				if (p.enums())
 				{
@@ -240,36 +243,36 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 				}
 			}
 			break;
-			case FE_PARAM_BOOL: feb->AddParameter(p.name(), p.type(), p.value<bool>()); break;
+			case FE_PARAM_BOOL: feb->AddParameter(szname, szlongname, p.type(), p.value<bool>()); break;
 			case FE_PARAM_DOUBLE:
 			{
 				if (ndim == 1)
-					feb->AddParameter(p.name(), p.type(), p.value<double>());
+					feb->AddParameter(szname, szlongname, p.type(), p.value<double>());
 				else if (ndim == 3)
 				{
 					vec3d v(0, 0, 0);
 					v.x = p.value<double>(0);
 					v.y = p.value<double>(1);
 					v.z = p.value<double>(2);
-					feb->AddParameter(p.name(), FE_PARAM_VEC3D, vec3d_to_qvariant(v));
+					feb->AddParameter(szname, szlongname, FE_PARAM_VEC3D, vec3d_to_qvariant(v));
 				}
 				else if (ndim > 3)
 				{
 					vector<double> v(ndim);
 					for (int i = 0; i < ndim; ++i) v[i] = p.value<double>(i);
-					feb->AddParameter(p.name(), FE_PARAM_STD_VECTOR_DOUBLE, QVariant::fromValue(v));
+					feb->AddParameter(szname, szlongname, FE_PARAM_STD_VECTOR_DOUBLE, QVariant::fromValue(v));
 				}
 			}
 			break;
-			case FE_PARAM_VEC3D: feb->AddParameter(p.name(), p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
-			case FE_PARAM_MAT3D: feb->AddParameter(p.name(), p.type(), mat3d_to_qvariant(p.value<mat3d>())); break;
-			case FE_PARAM_STD_STRING: feb->AddParameter(p.name(), p.type(), QString::fromStdString(p.value<std::string>())); break;
+			case FE_PARAM_VEC3D: feb->AddParameter(szname, szlongname, p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
+			case FE_PARAM_MAT3D: feb->AddParameter(szname, szlongname, p.type(), mat3d_to_qvariant(p.value<mat3d>())); break;
+			case FE_PARAM_STD_STRING: feb->AddParameter(szname, szlongname, p.type(), QString::fromStdString(p.value<std::string>())); break;
 			case FE_PARAM_DOUBLE_MAPPED:
 			{
 				if (ndim == 1)
 				{
 					FEParamDouble& v = p.value<FEParamDouble>();
-					feb->AddParameter(p.name(), p.type(), v.constValue());
+					feb->AddParameter(szname, szlongname, p.type(), v.constValue());
 				}
 				else if (ndim == 3)
 				{
@@ -277,7 +280,7 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 					v.x = p.value<FEParamDouble>(0).constValue();
 					v.y = p.value<FEParamDouble>(1).constValue();
 					v.z = p.value<FEParamDouble>(2).constValue();
-					feb->AddParameter(p.name(), FE_PARAM_VEC3D, vec3d_to_qvariant(v));
+					feb->AddParameter(szname, szlongname, FE_PARAM_VEC3D, vec3d_to_qvariant(v));
 				}
 				else assert(false);
 			}
@@ -337,7 +340,7 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 			{
 				std::vector<int>& v = p.value<std::vector<int> >();
 				QVariant val = QVariant::fromValue(v);
-				FEBioParam& param = feb->AddParameter(p.name(), p.type(), val);
+				FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), val);
 				if (p.enums()) param.m_enums = p.enums();
 			}
 			break;
@@ -345,7 +348,7 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 			{
 				std::vector<double>& v = p.value<std::vector<double> >();
 				QVariant val = QVariant::fromValue(v);
-				FEBioParam& param = feb->AddParameter(p.name(), p.type(), val);
+				FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), val);
 			}
 			break;
 			case FE_PARAM_DATA_ARRAY:

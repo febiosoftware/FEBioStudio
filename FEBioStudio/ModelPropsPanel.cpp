@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include <QGridLayout>
 #include <QComboBox>
 #include <QCheckBox>
@@ -680,6 +681,13 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 
 		FEInitialCondition* pic = dynamic_cast<FEInitialCondition*>(m_currentObject);
 		if (pic) { SetSelection(0, pic->GetItemList()); return; }
+
+		FERigidLoad* prl = dynamic_cast<FERigidLoad*>(m_currentObject);
+		if (prl)
+		{
+			ui->showSelectionPanel1(false);
+			return;
+		}
 
 		FELoad* pbl = dynamic_cast<FELoad*>(m_currentObject);
 		if (pbl) { SetSelection(0, pbl->GetItemList()); return; }

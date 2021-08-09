@@ -83,6 +83,7 @@ namespace FEBio {
 		FEBioParam(const FEBioParam& p)
 		{
 			m_name = p.m_name;
+			m_longName = p.m_longName;
 			m_type = p.m_type;
 			m_val  = p.m_val;
 			m_flags = p.m_flags;
@@ -92,6 +93,7 @@ namespace FEBio {
 		void operator = (const FEBioParam& p)
 		{
 			m_name = p.m_name;
+			m_longName = p.m_longName;
 			m_type = p.m_type;
 			m_val = p.m_val;
 			m_flags = p.m_flags;
@@ -101,9 +103,11 @@ namespace FEBio {
 
 		int type() const { return m_type; }
 		const std::string& name() const { return m_name; }
+		const std::string& longName() const { return m_longName; }
 
 	public:
 		std::string		m_name;
+		std::string		m_longName;
 		int				m_type;
 		const char*		m_enums;	// enum values, only for int parameters
 		const char*		m_szunit;
@@ -166,7 +170,7 @@ namespace FEBio {
 		void SetTypeString(const std::string& s) { m_typeString = s; }
 
 		int Parameters() const { return (int)m_Param.size(); }
-		FEBioParam& AddParameter(const std::string& paramName, int paramType, const QVariant& val);
+		FEBioParam& AddParameter(const std::string& paramName, const std::string& paramLongName, int paramType, const QVariant& val);
 		FEBioParam& GetParameter(int i) { return m_Param[i]; }
 
 		int Properties() const { return (int)m_Props.size(); }
