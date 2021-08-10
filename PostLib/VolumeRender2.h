@@ -32,7 +32,7 @@ class CImageModel;
 
 class CVolumeRender2 : public CGLImageRenderer
 {
-	enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, MIN_ALPHA, MAX_ALPHA};
+	enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, COLOR_MAP};
 
 public:
 	CVolumeRender2(CImageModel* img);
