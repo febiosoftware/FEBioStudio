@@ -145,7 +145,6 @@ public slots:
 
 private:
 	QTreeWidgetItem* addFileFromJson(QJsonObject& file);
-
 	void addFileToJson(QTreeWidgetItem* item, QVariantList& list);
 
 private:

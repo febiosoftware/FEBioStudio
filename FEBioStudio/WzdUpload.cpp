@@ -1384,7 +1384,20 @@ void CWzdUpload::setProjectJson(QByteArray* json)
 	QJsonParseError err;
 	QJsonDocument doc = QJsonDocument::fromJson(*json, &err);
 
-	std::cout << err.errorString().toStdString() << std::endl;
+	if(err.error)
+	{
+		QByteArray leftSide = json->left(err.offset);
+		int line = leftSide.count("\n") + 1;
+		int position = err.offset - leftSide.lastIndexOf("\n") - 1;
+
+		QString message = QString("There was an error while parsing this JSON file:\n\n%1\n\n"
+			"This error was found on line %2 at position %3 in the file.")
+			.arg(err.errorString()).arg(line).arg(position);
+
+		QMessageBox::warning(this, "JSON Parse Error", message);
+
+		return;
+	}
 
 	ui->clearUI();
 
@@ -1409,7 +1422,7 @@ void CWzdUpload::setProjectJson(QByteArray* json)
 	{
 		QStringList tags;
 
-		QVariantList jsonArray = obj["tags"].toArray().toVariantList();
+		QJsonArray jsonArray = obj["tags"].toArray();
 		for(auto tag : jsonArray)
 		{
 			tags.append(tag.toString());
@@ -1545,7 +1558,7 @@ QTreeWidgetItem* CWzdUpload::addFileFromJson(QJsonObject& file)
 		QString name, description, location;
 		QStringList tags;
 
-		// A size of -1 will force the dialog to find the size on the disc
+		// A size of -1 will force the dialog to find the size on the disk
 		qint64 size = -1;
 
 		if(file.contains("active"))
@@ -1633,4 +1646,9 @@ void CWzdUpload::addFileToJson(QTreeWidgetItem* item, QVariantList& list)
 			list.append(childInfo);
 		}
 	}
+}
+
+void CWzdUpload::JsonValueTypeError(QString value, QString type)
+{
+	QMessageBox::warning(this, "JSON Type Error", QString("The value for %1 is supposed to be a %2, but is not.").arg(value).arg(type));
 }
