@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QFrame>
 #include <QAction>
 #include <QToolBar>
@@ -76,8 +77,6 @@ class Ui::CWzdUpload
 {
 public:
 	QWizardPage* infoPage;
-	// QAction* infoLoadJson;
-	// QAction* infoSaveJson;
 	QLineEdit* name;
 	QPlainTextEdit* description;
 	QLabel* owner;
@@ -117,7 +116,7 @@ public:
 	::CWzdUpload* m_wzd;
 
 public:
-	void setup(::CWzdUpload* wzd, int uploadPermissions, int modify) //, FEBioStudioProject* project)
+	void setup(::CWzdUpload* wzd, int uploadPermissions, int modify)
 	{
 		m_wzd = wzd;
 		m_modify = modify;
@@ -1594,6 +1593,34 @@ QTreeWidgetItem* CWzdUpload::addFileFromJson(QJsonObject& file)
 			}
 		}
 
+		QFileInfo info(location);
+		if(!info.exists())
+		{
+			QMessageBox box(QMessageBox::Warning, "File Not Found", 
+				QString("Could not locate file:\n\n%1\n\nWould you like to skip this file, or relocate it?").arg(location));
+
+			box.addButton("Skip", QMessageBox::RejectRole);
+			QPushButton* relocate = box.addButton("Relocate", QMessageBox::AcceptRole);
+
+			box.exec();
+
+			if(box.clickedButton() == relocate)
+			{
+				QString selection = QFileDialog::getOpenFileName(this, "Select File", info.filePath());
+				
+				if(selection.isEmpty())
+				{
+					return nullptr;
+				}
+				
+				location = selection;
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
+
 		QTreeWidgetItem* fileItem = ui->NewFile(location, description, size, tags, name);
 
 		if(!active)	fileItem->setCheckState(0, Qt::Unchecked);
@@ -1646,9 +1673,4 @@ void CWzdUpload::addFileToJson(QTreeWidgetItem* item, QVariantList& list)
 			list.append(childInfo);
 		}
 	}
-}
-
-void CWzdUpload::JsonValueTypeError(QString value, QString type)
-{
-	QMessageBox::warning(this, "JSON Type Error", QString("The value for %1 is supposed to be a %2, but is not.").arg(value).arg(type));
 }
