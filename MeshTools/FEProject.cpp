@@ -162,6 +162,13 @@ void FEProject::SetModule(unsigned int mod)
 			m_plt.AddPlotVariable(mod, "displacement", true);
 			m_plt.AddPlotVariable(mod, "stress", true);
 		}
+		else if (strcmp(szmod, "biphasic") == 0)
+		{
+			m_plt.AddPlotVariable(mod, "displacement", true);
+			m_plt.AddPlotVariable(mod, "stress", true);
+			m_plt.AddPlotVariable(mod, "effective fluid pressure", true);
+			m_plt.AddPlotVariable(mod, "fluid flux", true);
+		}
 	}
 }
 
