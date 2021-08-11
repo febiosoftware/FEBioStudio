@@ -45,6 +45,8 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
+#include "DlgAddPhysicsItem.h"
+#include <FEBioLink/FEBioInterface.h>
 
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
@@ -1048,17 +1050,22 @@ void CModelViewer::OnChangeMaterial()
 	if (gmat == 0) return;
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEProject& prj = doc->GetProject();
+	if (doc == nullptr) return;
 
-	CMaterialEditor dlg(prj, this);
-	dlg.SetInitMaterial(gmat);
+	FEProject& prj = doc->GetProject();
+	FEModel& fem = *doc->GetFEModel();
+
+	CDlgAddPhysicsItem dlg("Add Material", FE_MATERIAL, prj, false, this);
 	if (dlg.exec())
 	{
-		FEMaterial* pmat = dlg.GetMaterial();
-		gmat->SetMaterialProperties(pmat);
-		gmat->SetName(dlg.GetMaterialName().toStdString());
-		Update();
-		Select(gmat);
+		FEMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
+		FEBio::CreateMaterial(dlg.GetClassID(), pmat);
+		if (pmat)
+		{
+			gmat->SetMaterialProperties(pmat);
+			Update();
+			Select(gmat);
+		}
 	}
 }
 
