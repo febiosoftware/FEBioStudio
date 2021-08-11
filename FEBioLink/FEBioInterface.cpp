@@ -121,6 +121,7 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 		if (p)
 		{
 			p->SetFlags(param.m_flags);
+			if (param.m_flags & 0x08) p->SetLoadCurve();
 			if (param.m_szunit) p->SetUnit(param.m_szunit);
 		}
 	}

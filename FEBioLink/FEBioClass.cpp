@@ -248,7 +248,10 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 			case FE_PARAM_DOUBLE:
 			{
 				if (ndim == 1)
-					feb->AddParameter(szname, szlongname, p.type(), p.value<double>());
+				{
+					FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), p.value<double>());
+					param.m_flags = p.GetFlags();
+				}
 				else if (ndim == 3)
 				{
 					vec3d v(0, 0, 0);
@@ -273,7 +276,8 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 				if (ndim == 1)
 				{
 					FEParamDouble& v = p.value<FEParamDouble>();
-					feb->AddParameter(szname, szlongname, p.type(), v.constValue());
+					FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), v.constValue());
+					param.m_flags = p.GetFlags();
 				}
 				else if (ndim == 3)
 				{

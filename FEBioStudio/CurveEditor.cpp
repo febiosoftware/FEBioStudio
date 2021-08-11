@@ -299,7 +299,7 @@ void CCurveEditor::BuildLoadCurves()
 		int nbc = pstep->BCs();
 		for (int j = 0; j<nbc; ++j)
 		{
-			FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(pstep->BC(j));
+			FEBoundaryCondition* pbc = pstep->BC(j);
 			if (pbc) BuildLoadCurves(t1, pbc);
 		}
 	}
