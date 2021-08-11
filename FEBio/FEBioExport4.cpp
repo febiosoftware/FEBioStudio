@@ -883,6 +883,7 @@ void FEBioExport4::WriteMaterialSection()
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		GMaterial* pgm = fem.GetMaterial(i);
+		FEMaterial* pmat = pgm->GetMaterialProperties();
 
 		if (m_writeNotes) WriteNote(pgm);
 
@@ -893,7 +894,6 @@ void FEBioExport4::WriteMaterialSection()
 		el.add_attribute("id", pgm->m_ntag);
 		el.add_attribute("name", name.c_str());
 
-		FEMaterial* pmat = pgm->GetMaterialProperties();
 		if (pmat)
 		{
 			WriteMaterial(pmat, el);
@@ -911,6 +911,7 @@ void FEBioExport4::WriteMaterial(FEMaterial* pm, XMLElement& el)
 {
 	// get the type string    
 	const char* sztype = pm->GetTypeString(); assert(sztype);
+	el.add_attribute("type", pm->GetTypeString());
 
 	// see if there are any attribute parameters
 	FEModel& fem = m_prj.GetFEModel();
