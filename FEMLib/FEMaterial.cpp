@@ -2277,6 +2277,44 @@ FEReactionRateHuiskes::FEReactionRateHuiskes() : FEMaterial(FE_REACTION_RATE_HUI
 }
 
 //=============================================================================
+REGISTER_MATERIAL(FEBioReactionRate, MODULE_REACTIONS, FE_REACTION_RATE_FEBIO, FE_MAT_REACTION_RATE, "", 0);
+FEBioReactionRate::FEBioReactionRate() : FEMaterial(FE_REACTION_RATE_FEBIO)
+{
+
+}
+void FEBioReactionRate::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEBioReactionRate::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioReactionRate::Load(IArchive& ar)
+{
+	TRACE("FEBioReactionRate::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEBioReactionRate::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+
+//=============================================================================
 // Membrane constant reaction rate
 //=============================================================================
 

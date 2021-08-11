@@ -120,12 +120,13 @@ namespace FEBio {
 	class FEBioProperty
 	{
 	public:
-		FEBioProperty() { m_baseClassId = -1; m_superClassId = -1; m_brequired = false; }
+		FEBioProperty() { m_baseClassId = -1; m_superClassId = -1; m_brequired = false; m_isArray = false; }
 		FEBioProperty(const FEBioProperty& p)
 		{
 			m_baseClassId = p.m_baseClassId;
 			m_superClassId = p.m_superClassId;
 			m_brequired = p.m_brequired;
+			m_isArray = p.m_isArray;
 			m_name = p.m_name;
 			m_comp = p.m_comp;
 		}
@@ -134,6 +135,7 @@ namespace FEBio {
 			m_baseClassId = p.m_baseClassId;
 			m_superClassId = p.m_superClassId;
 			m_brequired = p.m_brequired;
+			m_isArray = p.m_isArray;
 			m_name = p.m_name;
 			m_comp = p.m_comp;
 		}
@@ -142,6 +144,7 @@ namespace FEBio {
 		int	m_baseClassId;	// Id that identifies the base class of the property (this is an index!)
 		int	m_superClassId;	// Id that identifies the super class (this is an enum!)
 		bool	m_brequired;
+		bool	m_isArray;
 		std::string	m_name;
 		std::vector<FEBioClass>	m_comp;
 	};
@@ -174,7 +177,7 @@ namespace FEBio {
 		FEBioParam& GetParameter(int i) { return m_Param[i]; }
 
 		int Properties() const { return (int)m_Props.size(); }
-		FEBioProperty& AddProperty(const std::string& propName, int superClassId, int baseClassId = -1, bool required = false);
+		FEBioProperty& AddProperty(const std::string& propName, int superClassId, int baseClassId = -1, bool required = false, bool isArray = false);
 		FEBioProperty& GetProperty(int i) { return m_Props[i]; }
 
 		void SetSuperClassID(int scid) { m_superClassID = scid; }

@@ -263,7 +263,8 @@ void FEBio::CreateMaterial(int classId, FEMaterial* po)
 	for (int i = 0; i < feb->Properties(); ++i)
 	{
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
-		FEMaterialProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, 1); assert(matProp);
+		int maxSize = (prop.m_isArray ? 0 : 1);
+		FEMaterialProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, maxSize); assert(matProp);
 		matProp->SetSuperClassID(prop.m_superClassId);
 
 		if (prop.m_comp.empty() == false)

@@ -309,6 +309,7 @@ void FEModel::GetVariableNames(const char* szvar, char* szbuf)
 
 	if      (strcmp(var, "Solutes") == 0) { GetSoluteNames(szbuf); return; }
 	else if (strcmp(var, "SBMs") == 0) { GetSBMNames(szbuf); return; }
+	else if (strcmp(var, "species") == 0) { GetSpeciesNames(szbuf); return; }
 	else if (strcmp(var, "rigid_materials") == 0) 
 	{
 		GetRigidMaterialNames(szbuf); return;
@@ -351,6 +352,20 @@ const char* FEModel::GetVariableName(const char* szvar, int n)
 			return m_SBM[n]->GetName().c_str();
 		else
 			return "(invalid)";
+	}
+	else if (strcmp(var, "species") == 0)
+	{
+		if ((n >= 0) && (n < m_Sol.Size()))
+			return m_Sol[n]->GetName().c_str();
+		else
+		{
+			n -= m_Sol.Size();
+			if ((n >= 0) && (n < m_SBM.Size()))
+				return m_SBM[n]->GetName().c_str();
+			else
+				return "(invalid)";
+		}
+
 	}
 	else if (strncmp(var, "dof_list", 8) == 0)
 	{
@@ -511,6 +526,22 @@ void FEModel::GetSBMNames(char* szbuf)
 		ch += strlen(szi);
 		*ch++ = '\0';
 	}
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::GetSpeciesNames(char* szbuf)
+{
+	// get the solute names
+	GetSoluteNames(szbuf);
+
+	// wind the buffer forward
+	while (szbuf[0])
+	{
+		szbuf = szbuf + strlen(szbuf) + 1;
+	}
+
+	// add the SBM names
+	GetSBMNames(szbuf);
 }
 
 //-----------------------------------------------------------------------------

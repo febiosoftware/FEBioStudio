@@ -177,11 +177,12 @@ FEBioParam& FEBioClass::AddParameter(const std::string& paramName, const std::st
 	return m_Param[m_Param.size() - 1];
 }
 
-FEBioProperty& FEBioClass::AddProperty(const std::string& propName, int superClassId, int baseClassId, bool required)
+FEBioProperty& FEBioClass::AddProperty(const std::string& propName, int superClassId, int baseClassId, bool required, bool isArray)
 {
 	FEBioProperty prop;
 	prop.m_name = propName;
 	prop.m_brequired = required;
+	prop.m_isArray = isArray;
 	prop.m_baseClassId = baseClassId;
 	prop.m_superClassId = superClassId;
 	m_Props.push_back(prop);
@@ -384,7 +385,7 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 		int n = baseClassIndex(sz);
 
 		// add it
-		feb->AddProperty(prop->GetName(), prop->GetSuperClassID(), n, prop->IsRequired());
+		feb->AddProperty(prop->GetName(), prop->GetSuperClassID(), n, prop->IsRequired(), prop->IsArray());
 	}
 }
 

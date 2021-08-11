@@ -157,6 +157,7 @@ public:
 
 	void GetSoluteNames(char* szbuf);
 	void GetSBMNames(char* szbuf);
+	void GetSpeciesNames(char* szbuf);
 	void GetRigidMaterialNames(char* szbuf);
 	void GetDOFNames(FEDOFVariable& var, char* szbuf);
 	void GetDOFNames(FEDOFVariable& var, vector<string>& dofList);

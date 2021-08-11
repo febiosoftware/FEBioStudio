@@ -203,6 +203,7 @@
 #define FE_MICHAELIS_MENTEN         604
 #define FE_REACTION_RATE_CONST      605
 #define FE_REACTION_RATE_HUISKES    606
+#define FE_REACTION_RATE_FEBIO		607
 
 // membrane reactions
 #define FE_INT_REACTANT_MATERIAL    650
@@ -1697,6 +1698,16 @@ public:
 public:
 	FEReactionRateHuiskes();
 	DECLARE_REGISTERED(FEReactionRateHuiskes);
+};
+
+//-----------------------------------------------------------------------------
+class FEBioReactionRate : public FEMaterial
+{
+public:
+	FEBioReactionRate();
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+	DECLARE_REGISTERED(FEBioReactionRate);
 };
 
 //-----------------------------------------------------------------------------
