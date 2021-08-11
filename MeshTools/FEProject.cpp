@@ -150,6 +150,19 @@ void FEProject::SetModule(unsigned int mod)
 {
 	FEBio::SetActiveModule(mod);
 	m_module = mod;
+
+	if (m_plt.PlotVariables() == 0)
+	{
+		// add some default variables
+		// TODO: Maybe I can pull this info from FEBio somehow
+		const char* szmod = FEBio::GetModuleName(m_module); assert(szmod); 
+		if (szmod == nullptr) return;
+		if (strcmp(szmod, "solid") == 0)
+		{
+			m_plt.AddPlotVariable(mod, "displacement", true);
+			m_plt.AddPlotVariable(mod, "stress", true);
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
