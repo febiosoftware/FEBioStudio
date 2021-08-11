@@ -389,3 +389,7 @@ MigrationBackup/
 
 # VS Code
 .vscode/
+
+# Documentation
+Documentation/Doxygen
+Documentation/htmlManual
