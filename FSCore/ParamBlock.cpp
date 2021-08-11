@@ -932,7 +932,8 @@ void ParamContainer::LoadParam(IArchive& ar)
 				else
 				{
 					// TODO: print some type of error message that parameters are mismatched	
-					ar.log("Failed to map parameter.");
+					const char* szname = (paramName.empty() ? "(unknown)" : paramName.c_str());
+					ar.log("Failed to map parameter \"%s\" due to type mismatch.", szname);
 				}
 			}
 			if (var) param->MakeVariable(true);
