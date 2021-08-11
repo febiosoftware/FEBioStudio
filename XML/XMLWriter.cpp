@@ -29,160 +29,153 @@ SOFTWARE.*/
 //////////////////////////////////////////////////////////////////////
 
 #include "XMLWriter.h"
+#include <sstream>
+using namespace std;
 
 const char* XMLElement::intFormat = "%6d";
 
-void XMLElement::setDefautlFormats()
+void XMLElement::setDefaultFormats()
 {
 	intFormat = "%6d";
 }
 
+void XMLElement::value(int    n) { stringstream ss; ss << n; m_val = ss.str(); }
+void XMLElement::value(bool   b) { int n = (b ? 1 : 0); stringstream ss; ss << n; m_val = ss.str(); }
+void XMLElement::value(double g) { stringstream ss; ss << g; m_val = ss.str(); }
+
 void XMLElement::value(int* pi, int n)
 {
-	m_szval[0] = 0;
+	m_val.clear();
 	if (n==0) return;
 
-	sprintf(m_szval, intFormat, pi[0]);
-	int l = (int)strlen(m_szval);
+	stringstream ss;
+	ss << pi[0];
 	for (int i=1; i<n; ++i)
 	{
-		sprintf(m_szval+l, ",");
-		sprintf(m_szval + l + 1, intFormat, pi[i]);
-		l = (int)strlen(m_szval);
+		ss << "," << pi[i];
 	}
+	m_val = ss.str();
 }
 
 void XMLElement::value(double* pg, int n)
 {
-	m_szval[0] = 0;
+	m_val.clear();
 	if (n==0) return;
-
-	sprintf(m_szval, "%lg", pg[0]);
-	int l = (int)strlen(m_szval);
+	stringstream ss;
+	ss << pg[0];
 	for (int i=1; i<n; ++i)
 	{
-		sprintf(m_szval+l, ",%lg", pg[i]);
-		l = (int)strlen(m_szval);
+		ss << "," << pg[i];
 	}
+	m_val = ss.str();
 }
 
 void XMLElement::value(const vec3d& r)
 { 
-	if (XMLWriter::GetFloatFormat() == XMLWriter::ScientificFormat)
-		sprintf(m_szval, "%15.7e,%15.7e,%15.7e", r.x, r.y, r.z); 
-	else
-		sprintf(m_szval, "%.9lg,%.9lg,%.9lg", r.x, r.y, r.z);
+	stringstream ss;
+	ss << r.x << "," << r.y << "," << r.z;
+	m_val = ss.str();
 }
 
 void XMLElement::value(const vec2i& r)
 {
-	sprintf(m_szval, "%d,%d", r.x, r.y);
+	stringstream ss;
+	ss << r.x << "," << r.y;
+	m_val = ss.str();
 }
 
 void XMLElement::value(const mat3d& a)
 {
-	char* s = m_szval;
-	if (XMLWriter::GetFloatFormat() == XMLWriter::ScientificFormat)
-	{
-		sprintf(s, "%15.7e,%15.7e,%15.7e,", a(0, 0), a(0, 1), a(0, 2)); s += strlen(s);
-		sprintf(s, "%15.7e,%15.7e,%15.7e,", a(1, 0), a(1, 1), a(1, 2)); s += strlen(s);
-		sprintf(s, "%15.7e,%15.7e,%15.7e" , a(2, 0), a(2, 1), a(2, 2));
-	}
-	else
-	{
-		sprintf(s, "%lg,%lg,%lg,", a(0,0), a(0,1), a(0,2)); s += strlen(s);
-		sprintf(s, "%lg,%lg,%lg,", a(1,0), a(1,1), a(1,2)); s += strlen(s);
-		sprintf(s, "%lg,%lg,%lg,", a(2,0), a(2,1), a(2,2));
-	}
+	stringstream ss;
+	ss << a(0,0) << "," << a(0,1) << "," << a(0,2) << ",";
+	ss << a(1,0) << "," << a(1,1) << "," << a(1,2) << ",";
+	ss << a(2,0) << "," << a(2,1) << "," << a(2,2);
+	m_val = ss.str();
 }
 
 void XMLElement::value(const std::vector<int>& v)
 {
-	m_szval[0] = 0;
+	m_val.clear();
 	if (v.empty()) return;
 
-	sprintf(m_szval, intFormat, v[0]);
-	int l = (int)strlen(m_szval);
+	stringstream ss;
+	ss << v[0];
 	for (int i = 1; i < v.size(); ++i)
 	{
-		sprintf(m_szval + l, ",");
-		sprintf(m_szval + l + 1, intFormat, v[i]);
-		l = (int)strlen(m_szval);
+		ss << "," << v[i];
 	}
+	m_val = ss.str();
 }
 
 void XMLElement::value(const std::vector<double>& v)
 {
-	m_szval[0] = 0;
+	m_val.clear();
 	if (v.empty()) return;
 
-	sprintf(m_szval, "%lg", v[0]);
-	int l = (int)strlen(m_szval);
+	stringstream ss;
+	ss << v[0];
 	for (int i = 1; i < v.size(); ++i)
 	{
-		sprintf(m_szval + l, ",%lg", v[i]);
-		l = (int)strlen(m_szval);
+		ss << "," << v[i];
 	}
+	m_val = ss.str();
 }
 
 int XMLElement::add_attribute(const char* szn, const char* szv)
 {
-	strcpy(m_attn[m_natt], szn);
-	strcpy(m_attv[m_natt], szv);
-	m_natt++;
-	return m_natt-1;
+	m_att.push_back(XMLAtt(szn, szv));
+	return (int) m_att.size()-1;
 }
 
 int XMLElement::add_attribute(const char* szn, int n)
 {
-	strcpy(m_attn[m_natt], szn);
-	sprintf(m_attv[m_natt], "%d", n);
-	m_natt++;
-	return m_natt-1;
+	stringstream ss; ss << n;
+	m_att.push_back(XMLAtt(szn, ss.str()));
+	return (int)m_att.size() - 1;
 }
 
 int XMLElement::add_attribute(const char* szn, bool b)
 {
-	strcpy(m_attn[m_natt], szn);
-	sprintf(m_attv[m_natt], "%d", (int) b);
-	m_natt++;
-	return m_natt-1;
+	int n = (b ? 1 : 0);
+	stringstream ss; ss << n;
+	m_att.push_back(XMLAtt(szn, ss.str()));
+	return (int)m_att.size() - 1;
 }
 
 int XMLElement::add_attribute(const char* szn, double g)
 {
-	strcpy(m_attn[m_natt], szn);
-	sprintf(m_attv[m_natt], "%lg", g);
-	m_natt++;
-	return m_natt-1;
+	stringstream ss; ss << g;
+	m_att.push_back(XMLAtt(szn, ss.str()));
+	return (int)m_att.size() - 1;
 }
 
 int XMLElement::add_attribute(const char* szn, const std::string& s)
 {
-	strcpy(m_attn[m_natt], szn);
-	strcpy(m_attv[m_natt], s.c_str());
-	m_natt++;
-	return m_natt - 1;
+	m_att.push_back(XMLAtt(szn, s));
+	return (int)m_att.size() - 1;
 }
 
 void XMLElement::set_attribute(int nid, const char* szv)
 {
-	strcpy(m_attv[nid], szv);
+	m_att[nid].m_val = szv;
 }
 
 void XMLElement::set_attribute(int nid, int n)
 {
-	sprintf(m_attv[nid], "%d", n);
+	stringstream ss; ss << n;
+	m_att[nid].m_val = ss.str();
 }
 
 void XMLElement::set_attribute(int nid, bool b)
 {
-	sprintf(m_attv[nid], "%d", (int) b);
+	stringstream ss; ss << (b?(int)1:(int)0);
+	m_att[nid].m_val = ss.str();
 }
 
 void XMLElement::set_attribute(int nid, double g)
 {
-	sprintf(m_attv[nid], "%lg", g);
+	stringstream ss; ss << g;
+	m_att[nid].m_val = ss.str();
 }
 
 
@@ -209,7 +202,7 @@ XMLWriter::XMLWriter()
 
 	m_sztab[0] = 0;
 
-	XMLElement::setDefautlFormats();
+	XMLElement::setDefaultFormats();
 }
 
 XMLWriter::~XMLWriter()
@@ -271,16 +264,17 @@ void XMLWriter::add_branch(XMLElement& el, bool bclear)
 	char szformat[256] = {0};
 	sprintf(szformat, "%s<%%s", m_sztab);
 
-	fprintf(m_fp, szformat, el.m_sztag);
+	fprintf(m_fp, szformat, el.m_tag.c_str());
 
-	for (int i=0; i<el.m_natt; ++i)
+	for (int i=0; i<el.attributes(); ++i)
 	{
-		fprintf(m_fp, " %s=\"%s\"", el.m_attn[i], el.m_attv[i]);
+		const XMLElement::XMLAtt& att = el.attribute(i);
+		fprintf(m_fp, " %s=\"%s\"", att.name(), att.value());
 	}
 
-	fprintf(m_fp, ">%s\n", el.m_szval);
+	fprintf(m_fp, ">%s\n", el.m_val.c_str());
 
-	strcpy(m_tag[m_level], el.m_sztag);
+	strcpy(m_tag[m_level], el.m_tag.c_str());
 
 	inc_level();
 
@@ -302,11 +296,12 @@ void XMLWriter::add_empty(XMLElement& el, bool bclear)
 	char szformat[256] = {0};
 	sprintf(szformat, "%s<%%s", m_sztab);
 
-	fprintf(m_fp, szformat, el.m_sztag);
+	fprintf(m_fp, szformat, el.m_tag.c_str());
 
-	for (int i=0; i<el.m_natt; ++i)
+	for (int i=0; i<el.attributes(); ++i)
 	{
-		fprintf(m_fp, " %s=\"%s\"", el.m_attn[i], el.m_attv[i]);
+		const XMLElement::XMLAtt& att = el.attribute(i);
+		fprintf(m_fp, " %s=\"%s\"", att.name(), att.value());
 	}
 
 	fprintf(m_fp, "/>\n");
@@ -319,14 +314,15 @@ void XMLWriter::add_leaf(XMLElement& el, bool bclear)
 	char szformat[256] = {0};
 	sprintf(szformat, "%s<%%s", m_sztab);
 
-	fprintf(m_fp, szformat, el.m_sztag);
+	fprintf(m_fp, szformat, el.m_tag.c_str());
 
-	for (int i=0; i<el.m_natt; ++i)
+	for (int i=0; i<el.attributes(); ++i)
 	{
-		fprintf(m_fp, " %s=\"%s\"", el.m_attn[i], el.m_attv[i]);
+		const XMLElement::XMLAtt& att = el.attribute(i);
+		fprintf(m_fp, " %s=\"%s\"", att.name(), att.value());
 	}
 
-	fprintf(m_fp, ">%s</%s>\n", el.m_szval, el.m_sztag);
+	fprintf(m_fp, ">%s</%s>\n", el.m_val.c_str(), el.m_tag.c_str());
 
 	if (bclear) el.clear();
 }
@@ -402,11 +398,12 @@ void XMLWriter::add_leaf(XMLElement& el, const std::vector<int>& A)
 	char szformat[256] = {0};
 	sprintf(szformat, "%s<%%s", m_sztab);
 
-	fprintf(m_fp, szformat, el.m_sztag);
+	fprintf(m_fp, szformat, el.m_tag.c_str());
 
-	for (int i=0; i<el.m_natt; ++i)
+	for (int i=0; i<el.attributes(); ++i)
 	{
-		fprintf(m_fp, " %s=\"%s\"", el.m_attn[i], el.m_attv[i]);
+		const XMLElement::XMLAtt& att = el.attribute(i);
+		fprintf(m_fp, " %s=\"%s\"", att.name(), att.value());
 	}
 
 	fprintf(m_fp, ">\n%s", m_sztab);
@@ -421,7 +418,7 @@ void XMLWriter::add_leaf(XMLElement& el, const std::vector<int>& A)
 			if (l > 80) { fprintf(m_fp, "\n%s", m_sztab); l=0; }
 		}
 	}
-	fprintf(m_fp,"\n%s</%s>\n", m_sztab, el.m_sztag);
+	fprintf(m_fp,"\n%s</%s>\n", m_sztab, el.m_tag.c_str());
 }
 
 

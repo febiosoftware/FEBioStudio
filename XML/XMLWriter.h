@@ -33,35 +33,49 @@ SOFTWARE.*/
 #include <vector>
 #include <string>
 
-#define MAX_TAGS	32
-#define MAX_ATTR	32
-
 class XMLWriter;
 
 class XMLElement
 {
 public:
+	class XMLAtt
+	{
+	public:
+		XMLAtt() {}
+		XMLAtt(const std::string& name, const std::string& val) : m_name(name), m_val(val) {}
+		XMLAtt(const XMLAtt& att) : m_name(att.m_name), m_val(att.m_val) {}
+		void operator = (const XMLAtt& att) { m_name = att.m_name; m_val = att.m_val; }
+
+		const char* name() const { return m_name.c_str(); }
+		const char* value() const { return m_val.c_str(); }
+
+	public:
+		std::string m_name;
+		std::string m_val;
+	};
+
+public:
 	XMLElement(const char* szname = 0)
 	{
 		clear();
-		if (szname) strcpy(m_sztag, szname);
+		if (szname) m_tag = szname;
 	}
 
 	void clear()
 	{
-		m_natt = 0;
-		m_sztag[0] = 0;
-		m_szval[0] = 0;
+		m_att.clear();
+		m_tag.clear();
+		m_val.clear();
 	}
 
-	void name(const char* sz) { strcpy(m_sztag, sz); }
-	const char* name() const { return m_sztag; }
+	void name(const char* sz) { if (sz) m_tag = sz; else m_tag.clear(); }
+	const char* name() const { return m_tag.c_str(); }
 
-	void value(const char* sz) { strcpy(m_szval, sz); }
-	void value(int    n) { sprintf(m_szval, "%d" , n); }
+	void value(const char* sz) { if (sz) m_val = sz; else m_val.clear(); }
+	void value(int    n);
 	void value(int* pi, int n);
-	void value(bool   b) { sprintf(m_szval, "%d" , (int) b); }
-	void value(double g) { sprintf(m_szval, "%.9lg", g); }
+	void value(bool   b);
+	void value(double g);
 	void value(double* pg, int n);
 	void value(const vec3d& r);
 	void value(const mat3d& a);
@@ -80,16 +94,17 @@ public:
 	void set_attribute(int nid, bool b);
 	void set_attribute(int nid, double g);
 
-protected:
-	char	m_sztag[128];	// element name
-	char	m_szval[512];	// element value
+	int attributes() const { return (int) m_att.size(); }
+	const XMLAtt& attribute(int i) const { return m_att[i]; }
 
-	int	m_natt;	// number of attributes
-	char m_attn[MAX_ATTR][128];	// attribute name
-	char m_attv[MAX_ATTR][128]; // attribute value
+protected:
+	std::string	m_tag;		// element name
+	std::string	m_val;		// element value
+
+	std::vector<XMLAtt> m_att; // attributes
 
 public:
-	static void setDefautlFormats();
+	static void setDefaultFormats();
 	static const char* intFormat;
 
 	friend class XMLWriter;
@@ -97,6 +112,8 @@ public:
 
 class XMLWriter  
 {
+	enum {MAX_TAGS = 32};
+
 public:
 	enum XMLFloatFormat {
 		ScientificFormat,

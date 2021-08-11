@@ -104,7 +104,8 @@ public:
 		febioFile = new QComboBox;
 		febioFile->addItem("FEBio 2.5 format");
 		febioFile->addItem("FEBio 3.0 format");
-		febioFile->setCurrentIndex(1);
+		febioFile->addItem("FEBio 4.0 format");
+		febioFile->setCurrentIndex(2);
 
 		autoSave = new QCheckBox("Save model before running FEBio");
 		autoSave->setChecked(true);

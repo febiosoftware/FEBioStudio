@@ -50,6 +50,7 @@ public:
 		// format selector
 		QLabel* l = new QLabel("format:");
 		combo = new QComboBox;
+		combo->addItem("febio_spec 4.0");
 		combo->addItem("febio_spec 3.0");
 		combo->addItem("febio_spec 2.5");
 		combo->addItem("febio_spec 2.0");

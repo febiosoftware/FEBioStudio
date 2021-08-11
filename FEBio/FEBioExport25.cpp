@@ -1605,7 +1605,7 @@ void FEBioExport25::WriteMaterialParams(FEMaterial* pm, bool topLevel)
 			}
 			m_xml.close_branch();
 		}
-		XMLElement::setDefautlFormats();
+		XMLElement::setDefaultFormats();
 	}
 }
 

@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <FEBio/FEBioExport2.h>
 #include <FEBio/FEBioExport25.h>
 #include <FEBio/FEBioExport3.h>
+#include <FEBio/FEBioExport4.h>
 #include <Nike3D/FENIKEExport.h>
 #include <MeshIO/FEBYUExport.h>
 #include <MeshIO/FEHypersurfaceExport.h>
@@ -1240,6 +1241,17 @@ void CMainWindow::on_actionExportFEModel_triggered()
 				try {
 					if (dlg.m_nversion == 0)
 					{
+						// write version 4.0
+						FEBioExport4 writer(fem);
+						writer.SetPlotfileCompressionFlag(dlg.m_compress);
+						writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
+						writer.SetWriteNotesFlag(dlg.m_writeNotes);
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						bsuccess = writer.Write(szfile);
+						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+					}
+					else if (dlg.m_nversion == 1)
+					{
 						// write version 3.0
 						FEBioExport3 writer(fem);
 						writer.SetPlotfileCompressionFlag(dlg.m_compress);
@@ -1249,7 +1261,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 1)
+					else if (dlg.m_nversion == 2)
 					{
 						// write version 2.5
 						FEBioExport25 writer(fem);
@@ -1260,7 +1272,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 2)
+					else if (dlg.m_nversion == 3)
 					{
 						// Write version 2.0
 						FEBioExport2 writer(fem);
@@ -1269,7 +1281,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 3)
+					else if (dlg.m_nversion == 4)
 					{
 						// Write version 1.x
 						FEBioExport12 writer(fem);
@@ -1561,23 +1573,29 @@ void CMainWindow::on_actionConvertFeb_triggered()
 					FEFileExport* exporter = 0;
 					if (dlg.m_nversion == 0)
 					{
+						// write version 4
+						FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+					}
+					else if (dlg.m_nversion == 1)
+					{
 						// write version 3
 						FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
 						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 					}
-					else if (dlg.m_nversion == 1)
+					else if (dlg.m_nversion == 2)
 					{
 						// write version 2.5
 						FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
 						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 					}
-					else if (dlg.m_nversion == 2)
+					else if (dlg.m_nversion == 3)
 					{
 						// Write version 2.0
 						FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
 						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 					}
-					else if (dlg.m_nversion == 3)
+					else if (dlg.m_nversion == 4)
 					{
 						// Write version 1.x
 						FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;

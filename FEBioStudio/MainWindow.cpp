@@ -55,6 +55,7 @@ SOFTWARE.*/
 #include "DlgWidgetProps.h"
 #include <FEBio/FEBioExport25.h>
 #include <FEBio/FEBioExport3.h>
+#include <FEBio/FEBioExport4.h>
 #include "FEBioJob.h"
 #include <PostLib/ColorMap.h>
 #include <FSCore/FSDir.h>
@@ -2826,6 +2827,12 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 		else if (febioFileVersion == 1)
 		{
 			FEBioExport3 feb(doc->GetProject());
+			ret = feb.Write(febFile.c_str());
+			if (ret == false) err = feb.GetErrorMessage();
+		}
+		else if (febioFileVersion == 2)
+		{
+			FEBioExport4 feb(doc->GetProject());
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}
