@@ -146,8 +146,8 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 			{
 				xp = x;
 				yp = y;
-				double r = (pw->m_x+pw->m_w-x)/15.0;
-				double s = (pw->m_y+pw->m_h-y)/15.0;
+				double r = (pw->m_x+pw->m_w-x)/20.0;
+				double s = (pw->m_y+pw->m_h-y)/20.0;
 				if ((r >= 0) && (s >= 0) && (r+s <= 1.0))
 				{
 					bresize = true; 
@@ -273,6 +273,7 @@ void CGLWidgetManager::DrawWidget(GLWidget* pw, QPainter* painter)
 
 			painter->setPen(QPen(QColor::fromRgb(0, 0, 128)));
 			painter->fillRect(x0, y0, pw->m_w, pw->m_h, QBrush(QColor::fromRgb(200, 200, 200, 128)));
+			painter->drawLine(x1 - 20, y1, x1 - 1, y1 - 19);
 			painter->drawLine(x1 - 15, y1, x1 - 1, y1 - 14);
 			painter->drawLine(x1 - 10, y1, x1 - 1, y1 -  9);
 			painter->drawLine(x1 -  5, y1, x1 - 1, y1 -  4);

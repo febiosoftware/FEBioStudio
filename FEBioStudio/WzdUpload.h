@@ -116,7 +116,11 @@ public:
 	QStringList GetZipFilePaths();
 	QList<QVariant> getFileInfo();
 
+	void getProjectJson(QByteArray* json);
+	void setProjectJson(QByteArray* json);
+
 	void accept() override;
+	void reject() override;
 
 protected:
 	void keyPressEvent(QKeyEvent* e) override;
@@ -125,6 +129,8 @@ public slots:
 	void on_addTagBtn_clicked();
 	void on_delTagBtn_clicked();
 
+	void on_loadJson_triggered();
+	void on_saveJson_triggered();
 	void on_addFolder_triggered();
 	void on_addFiles_triggered();
 	void on_rename_triggered();
@@ -137,6 +143,10 @@ public slots:
 
 	void on_addFileTagBtn_clicked();
 	void on_delFileTagBtn_clicked();
+
+private:
+	QTreeWidgetItem* addFileFromJson(QJsonObject& file);
+	void addFileToJson(QTreeWidgetItem* item, QVariantList& list);
 
 private:
 	Ui::CWzdUpload*	ui;
