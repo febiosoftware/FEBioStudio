@@ -390,12 +390,6 @@ MigrationBackup/
 # VS Code
 .vscode/
 
-<<<<<<< HEAD
-# Extra Documentation
-Documentation/Doxygen
-Documentation/htmlManual
-=======
 # Documentation
 Documentation/Doxygen
 Documentation/htmlManual
->>>>>>> 69c01dc26594d9e7c44692fde1daee5c4c72eaba
