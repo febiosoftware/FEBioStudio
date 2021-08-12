@@ -65,8 +65,6 @@ SOFTWARE.*/
 #include "LocalDatabaseHandler.h"
 #include "RepoConnectionHandler.h"
 
-#include <iostream>
-
 using std::unordered_map;
 using std::out_of_range;
 
@@ -643,6 +641,19 @@ public:
 		fileTree->setCurrentItem(projectItem);
 	}
 
+	bool edited()
+	{
+		bool edited = false;
+
+		edited |= !name->text().isEmpty();
+		edited |= !description->toPlainText().isEmpty();
+		edited |= tags->count() != 0;
+		edited |= pubs->count() != 0;
+		edited |= projectItem->childCount() !=0;
+
+		return edited;
+	}
+
 };
 
 CWzdUpload::CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, int modify)//, FEBioStudioProject* project)
@@ -1081,6 +1092,34 @@ void CWzdUpload::accept()
 	}
 
 	QWizard::accept();
+}
+
+void CWzdUpload::reject()
+{
+	if(!ui->m_modify)
+	{
+		if(ui->edited())
+		{
+			QMessageBox box(QMessageBox::Warning, "Save Project", "Would you like to save this data to a file for later upload?");
+
+			QPushButton* save = box.addButton("Save", QMessageBox::AcceptRole);
+			box.addButton("Discard", QMessageBox::RejectRole);
+			QPushButton* cancel = box.addButton(QMessageBox::Cancel);
+
+			box.exec();
+
+			if(box.clickedButton() == save)
+			{
+				on_saveJson_triggered();
+			}
+			else if(box.clickedButton() == cancel)
+			{
+				return;
+			}
+		}
+	}
+
+	QWizard::reject();
 }
 
 void CWzdUpload::keyPressEvent(QKeyEvent* e)

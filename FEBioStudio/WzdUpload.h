@@ -120,6 +120,7 @@ public:
 	void setProjectJson(QByteArray* json);
 
 	void accept() override;
+	void reject() override;
 
 protected:
 	void keyPressEvent(QKeyEvent* e) override;
