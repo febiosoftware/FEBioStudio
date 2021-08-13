@@ -371,7 +371,7 @@ public:
 	QPushButton* loadingCancel;
 
 public:
-	CRepositoryPanel() : currentProject(nullptr), openAfterDownload(nullptr){}
+	CRepositoryPanel() : currentProject(nullptr), openAfterDownload(nullptr), projectInfo(nullptr){}
 
 	void setupUi(::CRepositoryPanel* parent)
 	{
@@ -704,6 +704,7 @@ public:
 	QStringList currentFileTags;
 	std::unordered_map<int, ProjectItem*> projectItemsByID;
 	std::unordered_map<int, FileItem*> fileItemsByID;
+	QByteArray* projectInfo;
 
 	CustomTreeWidgetItem* openAfterDownload;
 };

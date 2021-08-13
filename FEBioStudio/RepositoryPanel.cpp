@@ -314,6 +314,28 @@ void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 	on_treeWidget_itemSelectionChanged();
 }
 
+void CRepositoryPanel::UploadFinished(bool ok, QString message)
+{
+	if(!message.isEmpty())
+	{
+		ShowMessage(message);
+	}
+	
+	if(ui->projectInfo)
+	{
+		if(!ok)
+		{
+			on_actionUpload_triggered();
+		}
+		else
+		{
+			delete ui->projectInfo;
+			ui->projectInfo = nullptr;
+		}
+	}
+	
+}
+
 void CRepositoryPanel::AddCategory(char **data)
 {
 	QString category(data[0]);
@@ -536,9 +558,13 @@ void CRepositoryPanel::on_actionUpload_triggered()
 		QStringList tags = dbHandler->GetTags();
 		dlg.setTagList(tags);
 
+		if(ui->projectInfo) dlg.setProjectJson(ui->projectInfo);
 
 		if (dlg.exec())
 		{
+			ui->projectInfo = new QByteArray;
+			dlg.getProjectJson(ui->projectInfo);
+
 			QVariantMap projectInfo;
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
@@ -576,6 +602,14 @@ void CRepositoryPanel::on_actionUpload_triggered()
 			QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
 			QObject::connect(zip, &ZipThread::progress, this, &CRepositoryPanel::loadingPageProgress);
 			zip->start();
+		}
+		else
+		{
+			if(ui->projectInfo)
+			{
+				delete ui->projectInfo;
+				ui->projectInfo = nullptr;
+			}
 		}
 	}
 	else
@@ -1127,7 +1161,7 @@ void CRepositoryPanel::on_fileTags_linkActivated(const QString& link)
 	on_actionSearch_triggered();
 }
 
-void CRepositoryPanel::updateUploadReady(bool ready)
+void CRepositoryPanel::updateUploadReady(bool ready, QString message)
 {
 	if(ready)
 	{
@@ -1139,10 +1173,12 @@ void CRepositoryPanel::updateUploadReady(bool ready)
 	{
 		repoHandler->cancelUpload();
 		ui->stack->setCurrentIndex(1);
+
+		UploadFinished(false, message);
 	}
 }
 
-void CRepositoryPanel::updateModifyReady(bool ready)
+void CRepositoryPanel::updateModifyReady(bool ready, QString message)
 {
 	if(ready)
 	{
@@ -1263,6 +1299,7 @@ void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages) {}
 void CRepositoryPanel::LoginTimeout() {}
 void CRepositoryPanel::NetworkInaccessible() {}
 void CRepositoryPanel::DownloadFinished(int fileID, int fileType) {}
+void CRepositoryPanel::UploadFinished(bool error, QString message) {}
 void CRepositoryPanel::AddCategory(char **argv) {}
 void CRepositoryPanel::AddProject(char **argv) {}
 void CRepositoryPanel::AddProjectFile(char **argv) {}
@@ -1294,8 +1331,8 @@ void CRepositoryPanel::on_connectButton_clicked() {}
 void CRepositoryPanel::on_actionRefresh_triggered() {}
 void CRepositoryPanel::on_projectTags_linkActivated(const QString& link) {}
 void CRepositoryPanel::on_fileTags_linkActivated(const QString& link) {}
-void CRepositoryPanel::updateUploadReady(bool ready) {}
-void CRepositoryPanel::updateModifyReady(bool ready) {}
+void CRepositoryPanel::updateUploadReady(bool ready, QString message) {}
+void CRepositoryPanel::updateModifyReady(bool ready, QString message) {}
 void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal) {}
 void CRepositoryPanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {}
 void CRepositoryPanel::on_actionFindInTree_triggered() {}
