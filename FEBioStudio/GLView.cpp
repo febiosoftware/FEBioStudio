@@ -586,7 +586,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		if (mdoc)
 		{
 			FESelection* ps = mdoc->GetCurrentSelection();
-			if (m_coord == COORD_LOCAL)
+			if (ps && (m_coord == COORD_LOCAL))
 			{
 				quatd q = ps->GetOrientation();
 				q.RotateVector(m_ds);
@@ -7689,10 +7689,12 @@ void CGLView::RenderFEElements(GObject* po)
 	if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
+	vector<int> selectedElements;
 	int NE = pm->Elements();
 	for (i = 0; i<NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
+		if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 
 		if (!el.IsSelected() && el.IsVisible())
 		{
@@ -7804,13 +7806,12 @@ void CGLView::RenderFEElements(GObject* po)
 
 	// render the selected faces
 	if (pdoc == nullptr) return;
-	FEElementSelection* psel = dynamic_cast<FEElementSelection*>(pdoc->GetCurrentSelection());
-	if (psel && psel->Size() > 0)
+	if (selectedElements.empty() == false)
 	{
-		int NE = psel->Size();
+		int NE = (int)selectedElements.size();
 		for (i = 0; i<NE; ++i)
 		{
-			FEElement_& el = *psel->Element(i);
+			FEElement_& el = pm->Element(selectedElements[i]);
 			if (el.IsVisible())
 			{
 				switch (el.Type())
@@ -7850,7 +7851,7 @@ void CGLView::RenderFEElements(GObject* po)
 		glBegin(GL_LINES);
 		for (i = 0; i < NE; ++i)
 		{
-			FEElement_& el = *psel->Element(i);
+			FEElement_& el = pm->Element(selectedElements[i]);
 			int ne = el.Nodes();
 			if (el.IsVisible())
 			{
