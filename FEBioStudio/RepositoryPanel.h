@@ -67,6 +67,7 @@ public:
 	void LoginTimeout();
 	void NetworkInaccessible();
 	void DownloadFinished(int fileID, int fileType);
+	void UploadFinished(bool error, QString message);
 
 	// SQLite callbacks
 	void AddCategory(char **argv);
@@ -88,8 +89,8 @@ public:
 	void showLoadingPage(QString message, bool progress = false);
 
 public slots:
-	void updateUploadReady(bool ready);
-	void updateModifyReady(bool ready);
+	void updateUploadReady(bool ready, QString message = "");
+	void updateModifyReady(bool ready, QString message = "");
 	void loadingPageProgress(qint64 bytesSent, qint64 bytesTotal);
 
 signals:

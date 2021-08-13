@@ -303,7 +303,6 @@ QList<QVariant> CPublicationWidgetView::getPublicationInfo()
 			QVariantMap names;
 			names["given"] = pub->getAuthorGiven()[name];
 			names["family"] = pub->getAuthorFamily()[name];
-//			names["order"] = name;
 
 			authors.push_back(names);
 		}

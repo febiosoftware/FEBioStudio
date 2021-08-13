@@ -314,7 +314,7 @@ void ZipThread::run()
 		return;
 	}
 
-	emit resultReady(true);
+	emit resultReady(true, "");
 }
 
 void ZipThread::abort()
@@ -331,7 +331,7 @@ void ZipThread::failed()
 		zip.remove();
 	}
 
-	emit resultReady(false);
+	emit resultReady(false, "Failed to zip project files.");
 }
 
 
