@@ -51,9 +51,60 @@ FEMMGRemesh::FEMMGRemesh() : FEModifier("MMG Remesh")
 FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
-	if (pm->IsType(FE_TET4)) return RemeshTET4(pm);
+	if (pm->IsType(FE_TET4))
+	{
+		pm->TagAllElements(0);
+		return RemeshTET4(pm);
+	}
 	else if (pm->IsType(FE_TRI3)) return RemeshTRI3(pm);
 	else { SetError("This is not a TET4 mesh"); return 0; }
+}
+
+FEMesh* FEMMGRemesh::Apply(FEGroup* pg)
+{
+	if (pg == nullptr) return nullptr;
+	FEMesh* pm = pg->GetMesh();
+	if (pm == nullptr) return nullptr;
+	if (pm->IsType(FE_TET4) == false) return Apply(pm);
+
+	if (dynamic_cast<FEPart*>(pg))
+	{
+		pm->TagAllElements(0);
+		for (int i = 0; i < pm->Elements(); ++i)
+		{
+			if (pm->Element(i).IsSelected()) pm->Element(i).m_ntag = 1;
+		}
+		return RemeshTET4(pm);
+	}
+	else if (dynamic_cast<FESurface*>(pg))
+	{
+		pm->TagAllNodes(0);
+		pm->TagAllElements(0);
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			if (pm->Face(i).IsSelected())
+			{
+				FEFace& face = pm->Face(i);
+				int nn = face.Nodes();
+				for (int j = 0; j < nn; ++j) pm->Node(face.n[j]).m_ntag = 1;
+			}
+		}
+		for (int i = 0; i < pm->Elements(); ++i)
+		{
+			FEElement& el = pm->Element(i);
+			int ne = el.Nodes();
+			for (int j = 0; j < ne; ++j)
+			{
+				if (pm->Node(el.m_node[j]).m_ntag == 1)
+				{
+					el.m_ntag = 1;
+					break;
+				}
+			}
+		}
+		return RemeshTET4(pm);
+	}
+	else return Apply(pg->GetMesh());
 }
 
 FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
@@ -149,7 +200,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 	for (int i = 0; i < NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
-		if (el.IsSelected()) nsel++;
+		if (el.m_ntag == 1) nsel++;
 	}
 
 	if (nsel == 0)
@@ -166,7 +217,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 			for (int i = 0; i < NE; ++i)
 			{
 				FEElement& e = pm->Element(i);
-				if (e.IsSelected() == false) MMG3D_Set_requiredTetrahedron(mmgMesh, i + 1);
+				if (e.m_ntag != 1) MMG3D_Set_requiredTetrahedron(mmgMesh, i + 1);
 			}
 		}
 
@@ -200,7 +251,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 		for (int i = 0; i < NE; ++i)
 		{
 			FEElement& el = pm->Element(i);
-			if (el.IsSelected())
+			if (el.m_ntag == 1)
 			{
 				for (int j = 0; j < el.Nodes(); ++j)
 				{
