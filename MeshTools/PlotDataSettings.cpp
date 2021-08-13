@@ -29,9 +29,8 @@ SOFTWARE.*/
 #include "FEProject.h"
 #include "GModel.h"
 
-FEPlotVariable::FEPlotVariable(int module, const string& name, bool bactive, bool bshow, DOMAIN_TYPE type)
+FEPlotVariable::FEPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type)
 {
-	m_module = module;
 	m_name = name;
 	m_bactive = bactive;
 	m_bshow = bshow;
@@ -40,7 +39,6 @@ FEPlotVariable::FEPlotVariable(int module, const string& name, bool bactive, boo
 
 FEPlotVariable::FEPlotVariable(const FEPlotVariable& v)
 {
-	m_module = v.m_module;
 	m_name = v.m_name;
 	m_bactive = v.m_bactive;
 	m_bshow = v.m_bshow;
@@ -50,7 +48,6 @@ FEPlotVariable::FEPlotVariable(const FEPlotVariable& v)
 
 void FEPlotVariable::operator = (const FEPlotVariable& v)
 {
-	m_module = v.m_module;
 	m_name = v.m_name;
 	m_bactive = v.m_bactive;
 	m_bshow = v.m_bshow;
@@ -269,12 +266,12 @@ void CPlotDataSettings::Clear()
 }
 
 //-----------------------------------------------------------------------------
-FEPlotVariable* CPlotDataSettings::AddPlotVariable(int module, const std::string& var, bool b, bool s, DOMAIN_TYPE type)
+FEPlotVariable* CPlotDataSettings::AddPlotVariable(const std::string& var, bool b, bool s, DOMAIN_TYPE type)
 {
-	FEPlotVariable* pv = FindVariable(var, module);
+	FEPlotVariable* pv = FindVariable(var);
 	if (pv) return pv;
 
-	FEPlotVariable v(module, var, b, s, type);
+	FEPlotVariable v(var, b, s, type);
 	m_plot.push_back(v);
 	return &m_plot[ m_plot.size() - 1];
 }
@@ -292,41 +289,15 @@ void CPlotDataSettings::AddPlotVariable(FEPlotVariable& var)
 
 //-----------------------------------------------------------------------------
 // Find a plot file variable
-FEPlotVariable* CPlotDataSettings::FindVariable(const std::string& var, int module)
+FEPlotVariable* CPlotDataSettings::FindVariable(const std::string& var)
 {
 	int N = (int)m_plot.size();
 	for (int i = 0; i<N; ++i) 
 	{
 		FEPlotVariable& pv = m_plot[i];
-		if ((module == -1) || (pv.GetModule() == module))
-		{
-			if (var == m_plot[i].name()) return &m_plot[i];
-		}
+		if (var == m_plot[i].name()) return &m_plot[i];
 	}
 	return 0;
-}
-
-void CPlotDataSettings::SetAllVariables(bool b)
-{
-	int N = PlotVariables();
-	for (int i=0; i<N; ++i)
-	{
-		FEPlotVariable& var = PlotVariable(i);
-		var.setActive(b);
-	}
-}
-
-void CPlotDataSettings::SetAllModuleVariables(int module, bool b)
-{
-	int N = PlotVariables();
-	for (int i = 0; i<N; ++i)
-	{
-		FEPlotVariable& var = PlotVariable(i);
-		if (var.GetModule() == module)
-		{
-			var.setActive(b);
-		}
-	}
 }
 
 void CPlotDataSettings::Save(OArchive& ar)
@@ -338,7 +309,6 @@ void CPlotDataSettings::Save(OArchive& ar)
 		{
 			FEPlotVariable& v = m_plot[i];
 			ar.WriteChunk(CID_PRJ_OUTPUT_VAR_NAME, v.name());
-			ar.WriteChunk(CID_PRJ_OUTPUT_VAR_MODULE, v.GetModule());
 			int n = (v.isActive()? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_ACTIVE, n);
 			int m = (v.isShown() ? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_VISIBLE, m);
 			for (int j=0; j<v.Domains(); ++j)
@@ -367,7 +337,6 @@ void CPlotDataSettings::Load(IArchive& ar)
 				switch (ar.GetChunkID())
 				{
 				case CID_PRJ_OUTPUT_VAR_NAME   : ar.read(tmp); break;
-				case CID_PRJ_OUTPUT_VAR_MODULE : ar.read(module); break;
 				case CID_PRJ_OUTPUT_VAR_ACTIVE : ar.read(n); break;
 				case CID_PRJ_OUTPUT_VAR_VISIBLE: ar.read(m); break;
 				case CID_PRJ_OUTPUT_VAR_DOMAINID: 
@@ -380,8 +349,8 @@ void CPlotDataSettings::Load(IArchive& ar)
 				ar.CloseChunk();
 			}
 
-			FEPlotVariable* pv = FindVariable(tmp, module);
-			if (pv == 0) pv = AddPlotVariable(MODULE_ALL, tmp);
+			FEPlotVariable* pv = FindVariable(tmp);
+			if (pv == 0) pv = AddPlotVariable(tmp);
 
 			pv->setActive(n != 0);
 			pv->setShown(m != 0);

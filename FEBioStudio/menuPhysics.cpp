@@ -535,7 +535,6 @@ void CMainWindow::on_actionAddStep_triggered()
 
 			ps->SetName(name);
 			doc->DoCommand(new CCmdAddStep(fem, ps, -1));
-//			prj.ActivatePlotVariables(ps);
 			UpdateModel(ps);
 		}
 	}

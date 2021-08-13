@@ -331,7 +331,7 @@ void CDlgEditOutput::showEvent(QShowEvent* ev)
 	for (int i = 0; i < pltClasses.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& feb = pltClasses[i];
-		FEPlotVariable tmp(0, feb.sztype, false, true, DOMAIN_MESH);
+		FEPlotVariable tmp(feb.sztype, false, true, DOMAIN_MESH);
 
 		FEPlotVariable* var = plt.FindVariable(feb.sztype);
 		if (var)
@@ -665,7 +665,7 @@ void CDlgEditOutput::OnNewVariable()
 	if (s.isEmpty() == false)
 	{
 		CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-		plt.AddPlotVariable(MODULE_ALL, s.toStdString(), true, true);
+		plt.AddPlotVariable(s.toStdString(), true, true);
 		UpdateVariables("");
 	}
 }

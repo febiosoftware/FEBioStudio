@@ -155,20 +155,7 @@ void FEProject::SetModule(unsigned int mod)
 	{
 		// add some default variables
 		// TODO: Maybe I can pull this info from FEBio somehow
-		const char* szmod = FEBio::GetModuleName(m_module); assert(szmod); 
-		if (szmod == nullptr) return;
-		if (strcmp(szmod, "solid") == 0)
-		{
-			m_plt.AddPlotVariable(mod, "displacement", true);
-			m_plt.AddPlotVariable(mod, "stress", true);
-		}
-		else if (strcmp(szmod, "biphasic") == 0)
-		{
-			m_plt.AddPlotVariable(mod, "displacement", true);
-			m_plt.AddPlotVariable(mod, "stress", true);
-			m_plt.AddPlotVariable(mod, "effective fluid pressure", true);
-			m_plt.AddPlotVariable(mod, "fluid flux", true);
-		}
+		SetDefaultPlotVariables();
 	}
 }
 
@@ -450,91 +437,65 @@ void FEProject::InitModules()
 }
 
 //-------------------------------------------------------------------------------------------------
-void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
+void FEProject::SetDefaultPlotVariables()
 {
-	FEModel* pfem = pstep->GetFEModel();
-
-	// add default plot variables for step
-	CPlotDataSettings& plt = GetPlotDataSettings();
-	switch (pstep->GetType())
+	const char* szmod = FEBio::GetModuleName(m_module); assert(szmod);
+	if (szmod == nullptr) return;
+	if (strcmp(szmod, "solid") == 0)
 	{
-	case FE_STEP_MECHANICS:
-		plt.AddPlotVariable(MODULE_MECH, "displacement", true);
-		plt.AddPlotVariable(MODULE_MECH, "stress", true);
-		if (pstep->GetSettings().nanalysis == FE_DYNAMIC)
-		{
-			plt.AddPlotVariable(MODULE_MECH, "velocity", true);
-			plt.AddPlotVariable(MODULE_MECH, "acceleration", true);
-		}
-		break;
-	case FE_STEP_HEAT_TRANSFER:
-		plt.AddPlotVariable(MODULE_HEAT, "temperature", true);
-		break;
-	case FE_STEP_BIPHASIC:
-		plt.AddPlotVariable(MODULE_MECH, "displacement", true);
-		plt.AddPlotVariable(MODULE_MECH, "stress", true);
-		plt.AddPlotVariable(MODULE_MECH, "relative volume", true);
-		plt.AddPlotVariable(MODULE_BIPHASIC, "solid stress", true);
-		plt.AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure", true);
-		plt.AddPlotVariable(MODULE_BIPHASIC, "fluid flux", true);
-		break;
-	case FE_STEP_BIPHASIC_SOLUTE:
-	case FE_STEP_MULTIPHASIC:
-		plt.AddPlotVariable(MODULE_MECH, "displacement", true);
-		plt.AddPlotVariable(MODULE_MECH, "stress", true);
-		plt.AddPlotVariable(MODULE_MECH, "relative volume", true);
-		plt.AddPlotVariable(MODULE_BIPHASIC, "solid stress", true);
-		plt.AddPlotVariable(MODULE_BIPHASIC, "fluid flux", true);
-		plt.AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure", true);
-		plt.AddPlotVariable(MODULE_SOLUTES, "effective solute concentration", true);
-		plt.AddPlotVariable(MODULE_SOLUTES, "solute concentration", true);
-		plt.AddPlotVariable(MODULE_SOLUTES, "solute flux", true);
-/*		for (int i = 0; i<pfem->Solutes(); ++i)
-		{
-			char sz[256] = { 0 };
-			FEPlotVariable* pv = 0;
-
-			sprintf(sz, "effective solute %d concentration", i + 1);
-			pv = plt.FindVariable(sz);
-			if (pv) pv->setActive(true);
-
-			sprintf(sz, "solute %d concentration", i + 1);
-			pv = plt.FindVariable(sz);
-			if (pv) pv->setActive(true);
-
-			sprintf(sz, "solute %d flux", i + 1);
-			pv = plt.FindVariable(sz);
-			if (pv) pv->setActive(true);
-		}
-*/
-		break;
-	case FE_STEP_REACTION_DIFFUSION:
-		plt.SetAllVariables(false);
-		plt.SetAllModuleVariables(MODULE_REACTION_DIFFUSION, true);
-		break;
-	case FE_STEP_FLUID:
-		plt.AddPlotVariable(MODULE_FLUID, "fluid pressure", true);
-		plt.AddPlotVariable(MODULE_FLUID, "nodal fluid velocity", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid stress", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid velocity", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid acceleration", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid vorticity", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid rate of deformation" ,true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid dilatation", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid volume ratio", true);
-		break;
-	case FE_STEP_FLUID_FSI:
-		plt.AddPlotVariable(MODULE_MECH, "displacement", true);
-		plt.AddPlotVariable(MODULE_MECH, "velocity", true);
-		plt.AddPlotVariable(MODULE_MECH, "acceleration", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid pressure", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid stress", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid velocity", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid acceleration", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid vorticity", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid rate of deformation", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid dilatation", true);
-		plt.AddPlotVariable(MODULE_FLUID, "fluid volume ratio", true);
-		break;
+		m_plt.AddPlotVariable("displacement", true);
+		m_plt.AddPlotVariable("stress", true);
+	}
+	else if (strcmp(szmod, "biphasic") == 0)
+	{
+		m_plt.AddPlotVariable("displacement", true);
+		m_plt.AddPlotVariable("stress", true);
+		m_plt.AddPlotVariable("relative volume", true);
+		m_plt.AddPlotVariable("solid stress", true);
+		m_plt.AddPlotVariable("effective fluid pressure", true);
+		m_plt.AddPlotVariable("fluid flux", true);
+	}
+	else if (strcmp(szmod, "heat") == 0)
+	{
+		m_plt.AddPlotVariable("temperature", true);
+		m_plt.AddPlotVariable("heat flux", true);
+	}
+	else if ((strcmp(szmod, "multiphasic") == 0) || (strcmp(szmod, "solute") == 0))
+	{
+		m_plt.AddPlotVariable("displacement", true);
+		m_plt.AddPlotVariable("stress", true);
+		m_plt.AddPlotVariable("relative volume", true);
+		m_plt.AddPlotVariable("solid stress", true);
+		m_plt.AddPlotVariable("fluid flux", true);
+		m_plt.AddPlotVariable("effective fluid pressure", true);
+		m_plt.AddPlotVariable("effective solute concentration", true);
+		m_plt.AddPlotVariable("solute concentration", true);
+		m_plt.AddPlotVariable("solute flux", true);
+	}
+	else if (strcmp(szmod, "fluid") == 0)
+	{
+		m_plt.AddPlotVariable("fluid pressure", true);
+		m_plt.AddPlotVariable("nodal fluid velocity", true);
+		m_plt.AddPlotVariable("fluid stress", true);
+		m_plt.AddPlotVariable("fluid velocity", true);
+		m_plt.AddPlotVariable("fluid acceleration", true);
+		m_plt.AddPlotVariable("fluid vorticity", true);
+		m_plt.AddPlotVariable("fluid rate of deformation", true);
+		m_plt.AddPlotVariable("fluid dilatation", true);
+		m_plt.AddPlotVariable("fluid volume ratio", true);
+	}
+	else if (strcmp(szmod, "fluid-FSI") == 0)
+	{
+		m_plt.AddPlotVariable("displacement", true);
+		m_plt.AddPlotVariable("velocity", true);
+		m_plt.AddPlotVariable("acceleration", true);
+		m_plt.AddPlotVariable("fluid pressure", true);
+		m_plt.AddPlotVariable("fluid stress", true);
+		m_plt.AddPlotVariable("fluid velocity", true);
+		m_plt.AddPlotVariable("fluid acceleration", true);
+		m_plt.AddPlotVariable("fluid vorticity", true);
+		m_plt.AddPlotVariable("fluid rate of deformation", true);
+		m_plt.AddPlotVariable("fluid dilatation", true);
+		m_plt.AddPlotVariable("fluid volume ratio", true);
 	}
 }

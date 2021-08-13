@@ -35,7 +35,7 @@ class FEProject;
 class FEPlotVariable
 {
 public:
-	FEPlotVariable(int module, const string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
+	FEPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
 	FEPlotVariable(const FEPlotVariable& v);
 	void operator = (const FEPlotVariable& v);
 
@@ -57,10 +57,7 @@ public:
 	void removeDomain(FEItemListBuilder* pi);
 	void removeDomain(int n);
 
-	int GetModule() const { return m_module; }
-
 private:
-	int				m_module;					// name of module this variable belongs to
 	string			m_name;						// name of variable (as in FEBio file)
 	bool			m_bactive;					// active flag
 	bool			m_bshow;					// show flag
@@ -90,12 +87,9 @@ public:
 public:
 	int PlotVariables() { return (int)m_plot.size(); }
 	FEPlotVariable& PlotVariable(int i) { return m_plot[i]; }
-	FEPlotVariable* AddPlotVariable(int module, const std::string& var, bool bactive = false, bool bshown = true, DOMAIN_TYPE type = DOMAIN_MESH);
+	FEPlotVariable* AddPlotVariable(const std::string& var, bool bactive = false, bool bshown = true, DOMAIN_TYPE type = DOMAIN_MESH);
 	void AddPlotVariable(FEPlotVariable& var);
-	FEPlotVariable* FindVariable(const std::string& var, int module = -1);
-
-	void SetAllVariables(bool b);
-	void SetAllModuleVariables(int module, bool b);
+	FEPlotVariable* FindVariable(const std::string& var);
 
 private:
 	FEProject&	m_prj;

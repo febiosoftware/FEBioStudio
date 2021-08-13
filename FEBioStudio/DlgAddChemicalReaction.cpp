@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <sstream>
 #include <QMessageBox>
 #include <FEMLib/FEMultiMaterial.h>
-
+#include <FEBioLink/FEBioClass.h>
 using std::stringstream;
 
 //=================================================================================================
@@ -369,23 +369,27 @@ void CDlgAddChemicalReaction::InitDialog()
 	FEModel& fem = *doc->GetFEModel();
 
 	// fill in the reactions
-	list<FEMatDescriptor*> mats = FEMaterialFactory::Enumerate(FE_MAT_REACTION);
+//	list<FEMatDescriptor*> mats = FEMaterialFactory::Enumerate(FE_MAT_REACTION);
+	int reactionClassIndex = FEBio::GetBaseClassIndex("class FEChemicalReaction");
+	vector<FEBio::FEBioClassInfo> mats = FEBio::FindAllClasses(-1, FE_MATERIALPROP, reactionClassIndex, 1);
 	if (mats.empty() == false)
 	{
-        for (FEMatDescriptor* it : mats)
+        for (FEBio::FEBioClassInfo& it : mats)
 		{
-			ui->type->addItem(it->GetTypeString(), it->GetTypeID());
+			ui->type->addItem(it.sztype, it.classId);
 		}
 	}
 
 	// fill in reaction rate options
-	mats = FEMaterialFactory::Enumerate(FE_MAT_REACTION_RATE);
-	if (mats.empty() == false)
+//	mats = FEMaterialFactory::Enumerate(FE_MAT_REACTION_RATE);
+	int baseClassIndex = FEBio::GetBaseClassIndex("class FEReactionRate");
+	vector<FEBio::FEBioClassInfo> rates = FEBio::FindAllClasses(-1, FE_MATERIALPROP, baseClassIndex, 1);
+	if (rates.empty() == false)
 	{
-        for (FEMatDescriptor* it : mats)
+        for (FEBio::FEBioClassInfo& it : rates)
 		{
-			ui->fwdRate->addItem(it->GetTypeString(), it->GetTypeID());
-			ui->revRate->addItem(it->GetTypeString(), it->GetTypeID());
+			ui->fwdRate->addItem(it.sztype, it.classId);
+			ui->revRate->addItem(it.sztype, it.classId);
 		}
 	}
 
@@ -407,7 +411,7 @@ void CDlgAddChemicalReaction::InitDialog()
 	{
 		GMaterial& mat = *fem.GetMaterial(i);
 		FEMaterial& props = *mat.GetMaterialProperties();
-		if (props.FindProperty(FE_MAT_REACTION))
+		if (props.FindProperty("reaction"))
 		{
 			ui->mat->addItem(QString::fromStdString(mat.GetName()), i);
 		}
@@ -443,7 +447,7 @@ void CDlgAddChemicalReaction::onReactionChanged(int n)
 		ui->dummy->setEnabled(true);
 
 		FEMaterial& props = *m_pmp->GetMaterialProperties();
-		FEMaterialProperty* react = props.FindProperty(FE_MAT_REACTION); assert(react);
+		FEMaterialProperty* react = props.FindProperty("reaction"); assert(react);
 		if (react)
 		{
 			FEReactionMaterial* r = dynamic_cast<FEReactionMaterial*>(react->GetMaterial(n));
@@ -467,7 +471,7 @@ void CDlgAddChemicalReaction::SetMaterial(GMaterial* mat, FEModel& fem)
 	m_pmp = mat;
 
 	FEMaterial& props = *mat->GetMaterialProperties();
-	FEMaterialProperty* react = props.FindProperty(FE_MAT_REACTION); assert(react);
+	FEMaterialProperty* react = props.FindProperty("reaction"); assert(react);
 
 	ui->reactions->Clear();
 	if (react)
@@ -495,7 +499,7 @@ void CDlgAddChemicalReaction::onAddReaction()
 	if (m_pmp == 0) return;
 
 	FEMaterial& props = *m_pmp->GetMaterialProperties();
-	FEMaterialProperty* react = props.FindProperty(FE_MAT_REACTION); assert(react);
+	FEMaterialProperty* react = props.FindProperty("reaction"); assert(react);
 
 	// create a default material
 	FEReactionMaterial* r = dynamic_cast<FEReactionMaterial*>(FEMaterialFactory::Create(FE_MASS_ACTION_FORWARD)); assert(r);
@@ -732,7 +736,7 @@ void CDlgAddChemicalReaction::apply()
 	if ((m_pmp == 0) || (m_reaction == 0)) return;
 
 	FEMaterial* mat = m_pmp->GetMaterialProperties();
-	FEMaterialProperty* reactProp = mat->FindProperty(FE_MAT_REACTION);
+	FEMaterialProperty* reactProp = mat->FindProperty(FE_MAT_REACTION); assert(reactProp);
 	if (reactProp == 0) return;
 
 	// create the reaction material and set its type

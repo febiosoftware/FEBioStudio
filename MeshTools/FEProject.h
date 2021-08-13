@@ -164,8 +164,8 @@ public:
 	//! Get the log file settings
 	CLogDataSettings& GetLogDataSettings() { return m_log; }
 
-	//! activate plot variables for a new step
-	void ActivatePlotVariables(FEAnalysisStep* step);
+	//! set default plot variables
+	void SetDefaultPlotVariables();
 
 	unsigned int GetModule() const;
 	void SetModule(unsigned int mod);

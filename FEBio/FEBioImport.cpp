@@ -408,7 +408,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 		FEPlotVariable* pv = plt.FindVariable(name);
 		if (pv == 0)
 		{
-			pv = plt.AddPlotVariable(MODULE_ALL, name, true, true, v.domainType());
+			pv = plt.AddPlotVariable(name, true, true, v.domainType());
 		}
 		pv->setActive(true);
 		pv->setShown(true);
