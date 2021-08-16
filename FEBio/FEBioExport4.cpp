@@ -869,7 +869,10 @@ void FEBioExport4::WriteControlSection(FEStep& step)
 		FEStepComponent* pc = prop.m_prop;
 		if (pc)
 		{
-			m_xml.add_branch(prop.GetName().c_str());
+			XMLElement el(prop.GetName().c_str());
+			const char* sztype = pc->GetTypeString();
+			if (sztype) el.add_attribute("type", sztype);
+			m_xml.add_branch(el);
 			WriteParamList(*pc);
 			m_xml.close_branch();
 		}

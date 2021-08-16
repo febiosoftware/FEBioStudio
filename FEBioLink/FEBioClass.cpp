@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <FECore/FECoreKernel.h>
 #include <FECore/FECoreBase.h>
 #include <FECore/FEModelParam.h>
+#include <FECore/FEModule.h>
 #include <FEBioLib/FEBioModel.h>
 using namespace FEBio;
 
@@ -86,7 +87,7 @@ void initMap()
 }
 
 // dummy model used for allocating temporary FEBio classes.
-static FEBioModel febioModel;
+static FEBioModel* febioModel = nullptr;
 
 static std::map<std::string, int> classIndex;
 
@@ -403,7 +404,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 	if (fac == nullptr) return nullptr;
 
 	// try to create a temporary FEBio object
-	FECoreBase* pc = fac->Create(&febioModel); assert(pc);
+	FECoreBase* pc = fac->Create(febioModel); assert(pc);
 	if (pc == nullptr) return nullptr;
 
 	const char* sztype = fac->GetTypeStr();
@@ -462,14 +463,19 @@ int FEBio::GetModuleId(const std::string& moduleName)
 
 void FEBio::SetActiveModule(int moduleID)
 {
+	// create a new model
+	delete febioModel; febioModel = new FEBioModel;
+
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	fecore.SetActiveModule(moduleID);
+
+	fecore.GetActiveModule()->InitModel(febioModel);
 }
 
 int FEBio::GetActiveModule()
 {
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
-	return fecore.GetActiveModule();
+	return fecore.GetActiveModuleID();
 }
 
 class FBSLogStream : public LogStream
