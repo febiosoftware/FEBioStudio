@@ -2072,6 +2072,19 @@ FEFiberDamageExpLinear::FEFiberDamageExpLinear() : FEFiberMaterial(FE_FIBER_DAMA
 }
 
 //=============================================================================
+// Fiber-Kiousis-Uncoupled
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberKiousisUncoupled, MODULE_MECH, FE_FIBER_KIOUSIS_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-Kiousis-uncoupled", 0);
+
+FEFiberKiousisUncoupled::FEFiberKiousisUncoupled() : FEFiberMaterial(FE_FIBER_KIOUSIS_UNCOUPLED)
+{
+    AddDoubleParam(0.0, "d1", "d1");
+    AddDoubleParam(1.0, "d2", "d2");
+    AddDoubleParam(2.0, "n", "n");
+}
+
+//=============================================================================
 // Fiber-Exp-Pow Uncoupled
 //=============================================================================
 

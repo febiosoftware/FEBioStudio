@@ -143,6 +143,7 @@
 #define FE_FIBER_DAMAGE_EXP				79	// added in FS 1.1
 #define FE_FIBER_DAMAGE_EXPLINEAR		80	// added in FS 1.2
 #define FE_HOLZAPFEL_UNCONSTRAINED      81
+#define FE_FIBER_KIOUSIS_UNCOUPLED      82
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -1447,6 +1448,17 @@ public:
 public:
 	FEFiberDamageExpLinear();
 	DECLARE_REGISTERED(FEFiberDamageExpLinear);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberKiousisUncoupled : public FEFiberMaterial
+{
+public:
+    enum { MP_D1, MP_D2, M_N };
+public:
+    FEFiberKiousisUncoupled();
+    
+    DECLARE_REGISTERED(FEFiberKiousisUncoupled);
 };
 
 //=============================================================================

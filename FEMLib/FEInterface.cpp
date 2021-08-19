@@ -563,11 +563,11 @@ FEPoroContact::FEPoroContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO
     AddIntParam   (0    , "seg_up"             , "segment updates"       );
     AddDoubleParam(0    , "minaug"             , "min augmentations"     );
     AddDoubleParam(10   , "maxaug"             , "max augmentations"     );
-    AddBoolParam(false  , "smooth_aug"         , "augmentation smoothing");
-    AddIntParam   (0    , "knmult"             , "higher-order stiffness");
+    AddBoolParam  (false, "smooth_aug"         , "augmentation smoothing");
+    AddIntParam   (1    , "knmult"             , "higher-order stiffness");
     AddBoolParam  (false, "node_reloc"         , "relocated nodes"       );
 	AddDoubleParam(0.01 , "search_tol"         , "search tolerance"      );
-	AddBoolParam(false  , "update_penalty"     , "update-penalty"        );
+	AddBoolParam  (false, "update_penalty"     , "update-penalty"        );
     AddBoolParam  (false, "flip_primary"       , "flip normal on primary"  );
     AddBoolParam  (false, "flip_secondary"     , "flip normal on secondary");
     AddBoolParam  (false, "shell_bottom_primary"  , "use shell bottom on primary"  );
