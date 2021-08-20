@@ -745,6 +745,18 @@ FETiedElasticInterface::FETiedElasticInterface(FEModel* ps, int nstep) : FEPaire
 }
 
 //=============================================================================
+FEContactPotentialInterface::FEContactPotentialInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_CONTACTPOTENTIAL_CONTACT, ps, nstep)
+{
+	SetTypeString("contact potential");
+
+	AddDoubleParam(0, "kc");
+	AddDoubleParam(4, "p", "power");
+	AddDoubleParam(1, "R_in");
+	AddDoubleParam(2, "R_out");
+	AddDoubleParam(0, "w_tol");
+}
+
+//=============================================================================
 // FEGapHeatFluxInterface
 //-----------------------------------------------------------------------------
 

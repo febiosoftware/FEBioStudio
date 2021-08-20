@@ -87,3 +87,10 @@ FECentrifugalBodyForce::FECentrifugalBodyForce(FEModel* ps, int nstep) : FEBodyL
     AddVecParam(vec3d(0,0,1),"rotation_axis", "rotation axis");
     AddVecParam(vec3d(0,0,0),"rotation_center", "rotation center");
 }
+
+//-----------------------------------------------------------------------------
+FEMassDamping::FEMassDamping(FEModel* ps, int nstep) : FEBodyLoad(FE_MASSDAMPING_LOAD, ps, nstep)
+{
+	SetTypeString("mass damping");
+	AddDoubleParam(1, "C");
+}

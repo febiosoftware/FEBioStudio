@@ -3639,6 +3639,7 @@ void FEBioExport3::WriteContactSection(FEStep& s)
 			case FE_PERIODIC_BOUNDARY: WriteContactInterface(s, "periodic boundary", pi); break;
 			case FE_TIED_ELASTIC_INTERFACE: WriteContactInterface(s, "tied-elastic", pi); break;
 			case FE_GAPHEATFLUX_INTERFACE: WriteContactInterface(s, "gap heat flux", pi); break;
+			case FE_CONTACTPOTENTIAL_CONTACT: WriteContactInterface(s, "contact potential", pi); break;
 			}
 		}
 	}

@@ -84,3 +84,18 @@ public:
     void SetLoad(double v) { SetFloatValue(ANGSPD, v); }
 };
 
+//-----------------------------------------------------------------------------
+// mass damping "load"
+class FEMassDamping : public FEBodyLoad
+{
+public:
+	enum { C };
+
+public:
+	FEMassDamping(FEModel* ps, int nstep = 0);
+
+	FELoadCurve* GetLoadCurve() { return GetParamLC(C); }
+
+	double GetLoad() { return GetFloatValue(C); }
+	void SetLoad(double v) { SetFloatValue(C, v); }
+};
