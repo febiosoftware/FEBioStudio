@@ -72,7 +72,11 @@ void CModelViewer::Update(bool breset)
 	// update the props panel
 	ui->props->Update();
 
-//	if (po) Select(po);
+	if (doc)
+	{
+		FSObject* po = doc->GetActiveItem();
+		if (po) Select(po);
+	}
 }
 
 // get the currently selected object
@@ -155,6 +159,9 @@ void CModelViewer::SetCurrentItem(int item)
 		ui->props->SetObjectProps(0, 0, 0);
 		m_currentObject = 0;
 	}
+
+	CModelDocument* doc = GetMainWindow()->GetModelDocument();
+	if (doc) doc->SetActiveItem(m_currentObject);
 }
 
 void CModelViewer::SetCurrentItem(CModelTreeItem& it)
