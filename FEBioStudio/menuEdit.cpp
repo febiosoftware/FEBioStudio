@@ -695,14 +695,19 @@ void CMainWindow::on_actionCollapseTransform_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	GObject* po = doc->GetActiveObject();
-	if (po == 0) QMessageBox::critical(this, "FEBio Studio", "Please select an object");
-	else
+	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(doc->GetCurrentSelection());
+	if ((sel == nullptr) || (sel->Size() == 0))
 	{
-		po->CollapseTransform();
-		UpdateModel(po);
-		RedrawGL();
+		QMessageBox::critical(this, "FEBio Studio", "Please select an object");
+		return;
 	}
+
+	for (int i = 0; i < sel->Size(); ++i)
+	{
+		GObject* po = sel->Object(i);
+		po->CollapseTransform();
+	}
+	RedrawGL();
 }
 
 void CMainWindow::on_actionClone_triggered()
