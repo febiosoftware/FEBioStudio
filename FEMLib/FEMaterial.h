@@ -140,6 +140,7 @@
 #define FE_FIBER_DAMAGE_EXPLINEAR		80	// added in FS 1.2
 #define FE_HOLZAPFEL_UNCONSTRAINED      81
 #define FE_FIBER_KIOUSIS_UNCOUPLED      82
+#define FE_NEWTONIAN_VISCOUS_SOLID      83
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -543,6 +544,20 @@ public:
 	FECarterHayes();
     
 	DECLARE_REGISTERED(FECarterHayes);
+};
+
+//-----------------------------------------------------------------------------
+// Newtonian viscous solid
+//
+class FENewtonianViscousSolid : public FEMaterial
+{
+public:
+    enum { MP_DENSITY, MP_MU, MP_K };
+    
+public:
+    FENewtonianViscousSolid();
+    
+    DECLARE_REGISTERED(FENewtonianViscousSolid);
 };
 
 //-----------------------------------------------------------------------------
