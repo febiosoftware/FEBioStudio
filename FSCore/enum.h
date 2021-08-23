@@ -675,7 +675,7 @@ SOFTWARE.*/
 #define FE_GAPHEATFLUX_INTERFACE		0x0017	// added in 2.1
 #define FE_CONTACTPOTENTIAL_CONTACT		0x0018
 
-#define FE_FEBIO_INTERFACE				0x0018
+#define FE_FEBIO_INTERFACE				0x0100
 
 //--------------------------------------------------------
 // Connector types
