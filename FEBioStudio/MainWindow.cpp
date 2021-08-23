@@ -2458,11 +2458,11 @@ void CMainWindow::onExportMaterials(const vector<GMaterial*>& matList)
 		return;
 	}
 
-	QString fileName = QFileDialog::getSaveFileName(this, "Export Materials", "", "PreView Materials (*.pvm)");
+	QString fileName = QFileDialog::getSaveFileName(this, "Export Materials", "", "FEBio Studio Materials (*.pvm)");
 	if (fileName.isEmpty() == false)
 	{
-		CDocument* doc = GetDocument();
-//		if (doc->ExportMaterials(fileName.toStdString(), matList) == false)
+		CModelDocument* doc = GetModelDocument();
+		if (doc && (doc->ExportMaterials(fileName.toStdString(), matList) == false))
 		{
 			QMessageBox::critical(this, "Export Materials", "Failed exporting materials");
 		}
@@ -2475,7 +2475,7 @@ void CMainWindow::onImportMaterials()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "PreView Materials (*.pvm)");
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "FEBio Studio Materials (*.pvm)");
 	if (fileNames.isEmpty() == false)
 	{
 		for (int i=0; i<fileNames.size(); ++i)
