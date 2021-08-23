@@ -406,7 +406,6 @@ public:
 		{
 			m_wnd->blockUpdate(true);
 			m_wnd->OnEditOutput();
-			SetModified(true);
 			m_wnd->blockUpdate(false);
 		}
 	}
