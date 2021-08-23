@@ -392,6 +392,19 @@ FECarterHayes::FECarterHayes() : FEMaterial(FE_CARTER_HAYES)
 }
 
 //////////////////////////////////////////////////////////////////////
+// FENewtonianViscousSolid - Newtonian viscous solid
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FENewtonianViscousSolid, MODULE_MECH, FE_NEWTONIAN_VISCOUS_SOLID, FE_MAT_ELASTIC, "Newtonian viscous solid",0, NEWTONIAN_SOLID_HTML);
+
+FENewtonianViscousSolid::FENewtonianViscousSolid() : FEMaterial(FE_NEWTONIAN_VISCOUS_SOLID)
+{
+    AddScienceParam(1, UNIT_DENSITY, "density", "true density");
+    AddScienceParam(0, UNIT_VISCOSITY, "mu"  , "shear viscosity");
+    AddScienceParam(0, UNIT_VISCOSITY, "kappa", "bulk viscosity");
+}
+
+//////////////////////////////////////////////////////////////////////
 // FEPRLig - Poission-Ratio Ligament
 //////////////////////////////////////////////////////////////////////
 

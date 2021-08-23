@@ -215,6 +215,7 @@ SOFTWARE.*/
 #define MOONEY_RIVLIN_VON_MISES_DISTRIBUTED_FIBERS_HTML "Mooney_Rivlin_Von_Mises_Distributed_Fibers.html"
 #define UNCONSTRAINED_MATERIALS_HTML "Unconstrained_Materials.html"
 #define CARTER_HAYES_HTML "Carter_Hayes.html"
+#define NEWTONIAN_SOLID_HTML "index.html"
 #define CELL_GROWTH_HTML "Cell_Growth.html"
 #define CUBIC_CLE_HTML "Cubic_CLE.html"
 #define DONNAN_EQUILIBRIUM_SWELLING_HTML "Donnan_Equilibrium_Swelling.html"
