@@ -684,6 +684,7 @@ void CMainWindow::on_actionTransform_triggered()
 			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.z*dlg.m_relScl.z / scl.z, s3, pos));
 
 			doc->DoCommand(pcmd);
+			doc->GetGModel()->UpdateBoundingBox();
 			UpdateGLControlBar();
 			RedrawGL();
 		}
