@@ -320,6 +320,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FETiedInterface              , MODULE_MECH, FE_INTERFACE        , FE_TIED_INTERFACE               , "Tied node-on-facet", TIED_INTERFACES_HTML);
 	REGISTER_FE_CLASS(FEF2FTiedInterface           , MODULE_MECH, FE_INTERFACE        , FE_FACET_ON_FACET_TIED          , "Tied facet-on-facet", TIED_INTERFACES_HTML);
     REGISTER_FE_CLASS(FETiedElasticInterface       , MODULE_MECH, FE_INTERFACE        , FE_TIED_ELASTIC_INTERFACE       , "Tied elastic", TIED_INTERFACES_HTML);
+    REGISTER_FE_CLASS(FEContactPotentialInterface  , MODULE_MECH, FE_INTERFACE        , FE_CONTACTPOTENTIAL_CONTACT     , "contact potential");
 	REGISTER_FE_CLASS(FEStickyInterface            , MODULE_MECH, FE_INTERFACE        , FE_STICKY_INTERFACE             , "Sticky", STICKY_INTERFACES_HTML);
 	REGISTER_FE_CLASS(FEPeriodicBoundary           , MODULE_MECH, FE_INTERFACE        , FE_PERIODIC_BOUNDARY            , "Periodic boundary");
 	REGISTER_FE_CLASS(FERigidWallInterface         , MODULE_MECH, FE_INTERFACE        , FE_RIGID_WALL                   , "Rigid wall", RIGID_WALL_INTERFACES_HTML);
@@ -328,6 +329,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FEConstBodyForce             , MODULE_MECH, FE_BODY_LOAD        , FE_CONST_BODY_FORCE             , "Const body force", CONSTANT_BODY_FORCE_HTML);
 	REGISTER_FE_CLASS(FENonConstBodyForce          , MODULE_MECH, FE_BODY_LOAD        , FE_NON_CONST_BODY_FORCE         , "Non-const body force", NON_CONSTANT_BODY_FORCE_HTML);
     REGISTER_FE_CLASS(FECentrifugalBodyForce       , MODULE_MECH, FE_BODY_LOAD        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force", CENTRIFUGAL_BODY_FORCE_HTML);
+    REGISTER_FE_CLASS(FEMassDamping                , MODULE_MECH, FE_BODY_LOAD        , FE_MASSDAMPING_LOAD             , "Mass damping");
 
 	REGISTER_FE_CLASS(FERigidFixed			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
 	REGISTER_FE_CLASS(FERigidDisplacement	, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);

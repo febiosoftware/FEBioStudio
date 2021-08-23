@@ -89,6 +89,13 @@ FECentrifugalBodyForce::FECentrifugalBodyForce(FEModel* ps, int nstep) : FEBodyL
 }
 
 //-----------------------------------------------------------------------------
+FEMassDamping::FEMassDamping(FEModel* ps, int nstep) : FEBodyLoad(FE_MASSDAMPING_LOAD, ps, nstep)
+{
+	SetTypeString("mass damping");
+	AddDoubleParam(1, "C");
+}
+
+//-----------------------------------------------------------------------------
 FEBioBodyLoad::FEBioBodyLoad(FEModel* ps, int nstep) : FEBodyLoad(FE_FEBIO_BODY_LOAD, ps, nstep)
 {
 
