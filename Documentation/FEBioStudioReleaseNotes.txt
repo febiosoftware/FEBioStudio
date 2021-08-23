@@ -6,6 +6,68 @@
 
 ===========================================================================
 
+ R E L E A S E   1.6   8/27/2021
+
+===========================================================================
+
+* Added "contact potential" contact interface and "mass damping" body load features.
+* Modified tet4 split modifier so that it works without an element selection.
+* MMG remesh now also works with face selections.
+* Repository Upload wizard now asks if you want to save when you cancel with information in the wizard.
+* Upload wizard now allows projects to be saved and loaded via json. If an upload fails for any reason, the upload dialog should reopen with the same data.
+* Added ability to load info into the upload wizard from a json file.
+* Point Distance tool now also works with editable surfaces.
+* Added "pressure" field to old xplt file reader when "stress" field is present.
+* Fixed issue with import max_ups parameter of FEBio input file.
+* Added option to import Abaqus S6 element type.
+* Improved clarity of error messages in VTK import
+* Fixed issue with grabbing resize area on capture frame.
+* Clarified error message on video write fail.
+* Fixed issue with changing name of a plot item in the Post model tree.
+* Added option to set line thickness of legend bar. 
+* Added range division option for tensor plot.
+* Updated sliding-biphasic contact interface to include friction coefficient, solid-solid contact area fraction, smooth fluid load support, flip primary or secondary surface, use shell bottom on primary or secondary surface.
+* Updated VTK import to handle files with VTU-like format (including OFFSETS and CONNECTIVITY in the CELL_DATA field).  Added QUAD and TRIANGLE elements as import option.
+* The time parameter of line data is now mapped to line user data. Added "range mode" parameter to line plot.
+* Line plots can now be rendered with a "smooth lines 3D" option, which creates more smoothed renderings of the line data compared to the "lines 3D" option.
+* Fixed minor issue with default name of lines in line import tool.
+* Fixed bug in line plot with 3D lines not having the right color.
+* Added mesh color parameter to plane cut plot.
+* Exporting FEBio plot_stride parameter for other modules as well. (Previously this parameter was only exported for solid mechanics problems.)
+* Added option to replace existing file when modifying a project on the repository.
+* Added code to allow MacOS to handle custom URL scheme.
+* Fixed issue with hyperlinks in Repo Project descriptions.
+* Added support for handling a custom URL scheme.
+* Fixed bug with processing probe data in graphs.
+* Added option to calculate signed distance in distance map.
+* Added Drucker shear stress criterion to list of damage criterion materials. In reactive plastic damage materials, renamed tags yield_damage, yield_damage_criterion, intact_damage and intact_damage_criterion to plastic_damage, plastic_damage_criterion, elastic_damage and elastic_damage_criterion, respectively.
+* Fixed issue with reading data from a VTK file.
+* Fixed typo in "extend" load curve parameter value.
+* An issue with fixed with input of vec2i (i.e. a vector with two integer) parameters.
+* WebHelp feature now relies on local HTML files.
+* Added Bingham viscous fluid.
+* Added material axes as plot variable.
+* Plot and log properties are now updated without rebuilding entire model tree.
+* Added support for dropping images onto curve editor to set the background image.
+* Added "Open File Location" option for folders in repo panel.
+* Set default settings for Show Mesh Lines and Show Edge Lines.
+* Added "permeability" plot variable to Biphasic and Fluid-FSI modules, renamed BFSI plot variable "fluid volume fraction" to "porosity".
+* Fixed bug in displacement map update that caused crash when reloading plot file.
+* Added zooming and scrolling functionality to time line widget.
+* The curve fitting tool in the graph window can now fit to a user-defined selection of points.
+* Updated ability to import and export linear constraints involving DOFs other than x y z, using FEBio format 3.
+* Implemented auto-partition for face selection.
+* Element partitions are now preserved with Boundary Layer modifier tool.
+* Sorted modifiers on create panel alphabetically.
+* Added model tree context menu items to show/hide discrete objects.
+* Fixed lighting issue when using mirror planes.
+* Added option to set the line color for the undeformed outline.
+* Fixed bug that caused crash in Preferences->Display when there is no default multiview projection setting.
+* Fixed some issues with export/import of nodal loads.
+* Added support for binary PLY format and quad elements.
+
+===========================================================================
+
  R E L E A S E   1.5   5/17/2021
 
 ===========================================================================
