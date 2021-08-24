@@ -2494,6 +2494,49 @@ void CMainWindow::onImportMaterials()
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if ((doc == nullptr) || (doc == srcDoc) || (srcDoc == nullptr)) return;
+
+	FEModel* fem = srcDoc->GetFEModel();
+	if (fem->Materials() == 0)
+	{
+		QMessageBox::information(this, "Import Materials", "The selected source file does not contain any materials.");
+		return;
+	}
+
+	QStringList items;
+	for (int i = 0; i < fem->Materials(); ++i)
+	{
+		GMaterial* gm = fem->GetMaterial(i);
+		items.push_back(gm->GetFullName());
+	}
+
+	QInputDialog input;
+	input.setOption(QInputDialog::UseListViewForComboBoxItems);
+	input.setLabelText("Select material:");
+	input.setComboBoxItems(items);
+	if (input.exec())
+	{
+		QString item = input.textValue();
+
+		for (int i = 0; i < fem->Materials(); ++i)
+		{
+			GMaterial* gm = fem->GetMaterial(i);
+			QString name = gm->GetFullName();
+			if (name == item)
+			{
+				GMaterial* newMat = gm->Clone();
+				doc->DoCommand(new CCmdAddMaterial(doc->GetFEModel(), newMat));
+				UpdateModel(newMat);
+				return;
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllMaterials()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

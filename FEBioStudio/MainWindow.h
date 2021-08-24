@@ -562,6 +562,7 @@ public slots:
 	void onExportMaterials(const vector<GMaterial*>& matList);
 	void onExportAllMaterials();
 	void onImportMaterials();
+	void onImportMaterialsFromModel(CModelDocument* src);
 
 	void DeleteAllMaterials();
 	void DeleteAllBC();
