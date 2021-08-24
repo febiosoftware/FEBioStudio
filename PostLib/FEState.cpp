@@ -534,7 +534,7 @@ public:
 			m_seg[i].m_ln[0] = addPoint(edge.n[0]); assert(m_seg[i].m_ln[0] >= 0);
 			m_seg[i].m_ln[1] = addPoint(edge.n[1]); assert(m_seg[i].m_ln[1] >= 0);
 		}
-		assert(m_pt.size() == m_seg.size() + 1);
+		assert((m_pt.size() == m_seg.size() + 1) || (m_pt.size() == m_seg.size()));
 
 		Sort();
 	}
@@ -574,11 +574,19 @@ private:
 				break;
 			}
 		}
+
+		int nltsize = pts;
+		if (NLT.empty())
+		{
+			// this is probably a loop, so just pick the first point
+			NLT.push_back(0);
+			nltsize++;
+		}
 		assert(NLT.size() == 1);
 
 		int nsegs = m_seg.size();
 		int seg0 = 0;
-		while (NLT.size() != pts)
+		while (NLT.size() != nltsize)
 		{
 			int n0 = NLT.back();
 
