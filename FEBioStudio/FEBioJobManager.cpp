@@ -163,6 +163,8 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		{
 			QMessageBox::critical(im->wnd, "Run FEBio", msg);
 		}
+
+		im->wnd->UpdateTab(job->GetDocument());
 	}
 	else
 	{
