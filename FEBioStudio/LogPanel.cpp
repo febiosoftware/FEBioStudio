@@ -130,9 +130,7 @@ void CLogPanel::AddText(const QString& txt, int n)
 	}
 	cursor.setCharFormat(ui->defaultTextCharFormat);
 	cursor.movePosition(QTextCursor::End);
-
-	// TODO: for some reason this crashes sometimes. 
-//	ui->txt[n]->setTextCursor(cursor);
+	ui->txt[n]->ensureCursorVisible();
 }
 
 void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
