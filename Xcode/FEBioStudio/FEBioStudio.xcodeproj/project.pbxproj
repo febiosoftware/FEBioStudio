@@ -35,24 +35,6 @@
 		D524F6C0258C3CE500A403CD /* XMLEditor.h in Sources */ = {isa = PBXBuildFile; fileRef = D524F6BD258C3B2A00A403CD /* XMLEditor.h */; };
 		D5349B3825F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5349B3625F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp */; };
 		D5349B3A25F18B7C002D2CC4 /* DlgMeshDiagnostics.h in Sources */ = {isa = PBXBuildFile; fileRef = D5349B3725F18AB1002D2CC4 /* DlgMeshDiagnostics.h */; };
-		D5400FD3266AA8E200D31248 /* libTKernel.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FC1266AA8E100D31248 /* libTKernel.7.5.1.dylib */; };
-		D5400FD4266AA8E200D31248 /* libTKSTEP.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FC2266AA8E100D31248 /* libTKSTEP.7.5.1.dylib */; };
-		D5400FD5266AA8E200D31248 /* libTKFillet.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FC3266AA8E100D31248 /* libTKFillet.7.5.1.dylib */; };
-		D5400FD6266AA8E200D31248 /* libTKGeomAlgo.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FC4266AA8E100D31248 /* libTKGeomAlgo.7.5.1.dylib */; };
-		D5400FD7266AA8E200D31248 /* libTKMath.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FC5266AA8E100D31248 /* libTKMath.7.5.1.dylib */; };
-		D5400FD8266AA8E200D31248 /* libTKIGES.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FC6266AA8E100D31248 /* libTKIGES.7.5.1.dylib */; };
-		D5400FD9266AA8E200D31248 /* libTKSTL.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FC7266AA8E100D31248 /* libTKSTL.7.5.1.dylib */; };
-		D5400FDA266AA8E200D31248 /* libTKXMesh.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FC8266AA8E100D31248 /* libTKXMesh.7.5.1.dylib */; };
-		D5400FDB266AA8E200D31248 /* libTKXSBase.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FC9266AA8E100D31248 /* libTKXSBase.7.5.1.dylib */; };
-		D5400FDC266AA8E200D31248 /* libTKTopAlgo.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FCA266AA8E100D31248 /* libTKTopAlgo.7.5.1.dylib */; };
-		D5400FDD266AA8E200D31248 /* libTKBRep.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FCB266AA8E100D31248 /* libTKBRep.7.5.1.dylib */; };
-		D5400FDE266AA8E200D31248 /* libTKMesh.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FCC266AA8E100D31248 /* libTKMesh.7.5.1.dylib */; };
-		D5400FDF266AA8E200D31248 /* libTKSTEPBase.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FCD266AA8E200D31248 /* libTKSTEPBase.7.5.1.dylib */; };
-		D5400FE0266AA8E200D31248 /* libTKPrim.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FCE266AA8E200D31248 /* libTKPrim.7.5.1.dylib */; };
-		D5400FE1266AA8E200D31248 /* libTKVCAF.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FCF266AA8E200D31248 /* libTKVCAF.7.5.1.dylib */; };
-		D5400FE2266AA8E200D31248 /* libTKGeomBase.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FD0266AA8E200D31248 /* libTKGeomBase.7.5.1.dylib */; };
-		D5400FE3266AA8E200D31248 /* libTKG3d.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FD1266AA8E200D31248 /* libTKG3d.7.5.1.dylib */; };
-		D5400FE4266AA8E200D31248 /* libTKBO.7.5.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5400FD2266AA8E200D31248 /* libTKBO.7.5.1.dylib */; };
 		D5404BF72646C15700282C3D /* libquazip1-qt6.1.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5404BF62646C15700282C3D /* libquazip1-qt6.1.1.dylib */; };
 		D541E81A264C98C100F473C9 /* libssl.1.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D541E818264C98C000F473C9 /* libssl.1.1.dylib */; };
 		D541E81B264C98C100F473C9 /* libcrypto.1.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D541E819264C98C100F473C9 /* libcrypto.1.1.dylib */; };
@@ -400,6 +382,24 @@
 		D5F7D90722FA39500089B08E /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F7D90322FA39500089B08E /* CoreAudio.framework */; };
 		D5F7D90922FA39740089B08E /* Tcl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F7D90822FA39730089B08E /* Tcl.framework */; };
 		D5F7D90B22FA397D0089B08E /* Tk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F7D90A22FA397D0089B08E /* Tk.framework */; };
+		D5F9982026D5564600AF0A2E /* libTKFillet.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9980E26D5564400AF0A2E /* libTKFillet.7.5.3.dylib */; };
+		D5F9982126D5564600AF0A2E /* libTKSTL.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9980F26D5564400AF0A2E /* libTKSTL.7.5.3.dylib */; };
+		D5F9982226D5564600AF0A2E /* libTKMath.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981026D5564400AF0A2E /* libTKMath.7.5.3.dylib */; };
+		D5F9982326D5564600AF0A2E /* libTKXMesh.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981126D5564400AF0A2E /* libTKXMesh.7.5.3.dylib */; };
+		D5F9982426D5564600AF0A2E /* libTKXSBase.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981226D5564400AF0A2E /* libTKXSBase.7.5.3.dylib */; };
+		D5F9982526D5564600AF0A2E /* libTKPrim.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981326D5564500AF0A2E /* libTKPrim.7.5.3.dylib */; };
+		D5F9982626D5564600AF0A2E /* libTKernel.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981426D5564500AF0A2E /* libTKernel.7.5.3.dylib */; };
+		D5F9982726D5564600AF0A2E /* libTKGeomAlgo.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981526D5564500AF0A2E /* libTKGeomAlgo.7.5.3.dylib */; };
+		D5F9982826D5564600AF0A2E /* libTKGeomBase.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981626D5564500AF0A2E /* libTKGeomBase.7.5.3.dylib */; };
+		D5F9982926D5564600AF0A2E /* libTKG3d.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981726D5564500AF0A2E /* libTKG3d.7.5.3.dylib */; };
+		D5F9982A26D5564600AF0A2E /* libTKBRep.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981826D5564500AF0A2E /* libTKBRep.7.5.3.dylib */; };
+		D5F9982B26D5564600AF0A2E /* libTKTopAlgo.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981926D5564500AF0A2E /* libTKTopAlgo.7.5.3.dylib */; };
+		D5F9982C26D5564600AF0A2E /* libTKBO.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981A26D5564600AF0A2E /* libTKBO.7.5.3.dylib */; };
+		D5F9982D26D5564600AF0A2E /* libTKIGES.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981B26D5564600AF0A2E /* libTKIGES.7.5.3.dylib */; };
+		D5F9982E26D5564600AF0A2E /* libTKMesh.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981C26D5564600AF0A2E /* libTKMesh.7.5.3.dylib */; };
+		D5F9982F26D5564600AF0A2E /* libTKSTEP.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981D26D5564600AF0A2E /* libTKSTEP.7.5.3.dylib */; };
+		D5F9983026D5564600AF0A2E /* libTKSTEPBase.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981E26D5564600AF0A2E /* libTKSTEPBase.7.5.3.dylib */; };
+		D5F9983126D5564600AF0A2E /* libTKVCAF.7.5.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F9981F26D5564600AF0A2E /* libTKVCAF.7.5.3.dylib */; };
 		D5FF05522501AB2700D768FA /* TimelinePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF054D2501AB2700D768FA /* TimelinePanel.cpp */; };
 		D5FF05542501AB2800D768FA /* TimelineWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF054F2501AB2700D768FA /* TimelineWidget.cpp */; };
 /* End PBXBuildFile section */
@@ -492,24 +492,6 @@
 		D5349B3625F18AB1002D2CC4 /* DlgMeshDiagnostics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgMeshDiagnostics.cpp; sourceTree = "<group>"; };
 		D5349B3725F18AB1002D2CC4 /* DlgMeshDiagnostics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgMeshDiagnostics.h; sourceTree = "<group>"; };
 		D5349B3925F18ACD002D2CC4 /* ui_repositorypanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_repositorypanel.h; sourceTree = "<group>"; };
-		D5400FC1266AA8E100D31248 /* libTKernel.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKernel.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKernel.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FC2266AA8E100D31248 /* libTKSTEP.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTEP.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKSTEP.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FC3266AA8E100D31248 /* libTKFillet.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKFillet.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKFillet.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FC4266AA8E100D31248 /* libTKGeomAlgo.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomAlgo.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKGeomAlgo.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FC5266AA8E100D31248 /* libTKMath.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMath.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKMath.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FC6266AA8E100D31248 /* libTKIGES.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKIGES.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKIGES.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FC7266AA8E100D31248 /* libTKSTL.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTL.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKSTL.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FC8266AA8E100D31248 /* libTKXMesh.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKXMesh.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKXMesh.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FC9266AA8E100D31248 /* libTKXSBase.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKXSBase.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKXSBase.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FCA266AA8E100D31248 /* libTKTopAlgo.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKTopAlgo.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKTopAlgo.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FCB266AA8E100D31248 /* libTKBRep.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKBRep.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKBRep.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FCC266AA8E100D31248 /* libTKMesh.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMesh.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKMesh.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FCD266AA8E200D31248 /* libTKSTEPBase.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTEPBase.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKSTEPBase.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FCE266AA8E200D31248 /* libTKPrim.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKPrim.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKPrim.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FCF266AA8E200D31248 /* libTKVCAF.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKVCAF.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKVCAF.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FD0266AA8E200D31248 /* libTKGeomBase.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomBase.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKGeomBase.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FD1266AA8E200D31248 /* libTKG3d.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKG3d.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKG3d.7.5.1.dylib; sourceTree = "<group>"; };
-		D5400FD2266AA8E200D31248 /* libTKBO.7.5.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKBO.7.5.1.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.1_1/lib/libTKBO.7.5.1.dylib; sourceTree = "<group>"; };
 		D5404BF62646C15700282C3D /* libquazip1-qt6.1.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libquazip1-qt6.1.1.dylib"; path = "../../../../../../../usr/local/lib/libquazip1-qt6.1.1.dylib"; sourceTree = "<group>"; };
 		D541E818264C98C000F473C9 /* libssl.1.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.1.dylib; path = "../../../../../../../usr/local/Cellar/openssl@1.1/1.1.1k/lib/libssl.1.1.dylib"; sourceTree = "<group>"; };
 		D541E819264C98C100F473C9 /* libcrypto.1.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.1.dylib; path = "../../../../../../../usr/local/Cellar/openssl@1.1/1.1.1k/lib/libcrypto.1.1.dylib"; sourceTree = "<group>"; };
@@ -947,6 +929,24 @@
 		D5F7D90322FA39500089B08E /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		D5F7D90822FA39730089B08E /* Tcl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tcl.framework; path = System/Library/Frameworks/Tcl.framework; sourceTree = SDKROOT; };
 		D5F7D90A22FA397D0089B08E /* Tk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tk.framework; path = System/Library/Frameworks/Tk.framework; sourceTree = SDKROOT; };
+		D5F9980E26D5564400AF0A2E /* libTKFillet.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKFillet.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKFillet.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9980F26D5564400AF0A2E /* libTKSTL.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTL.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKSTL.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981026D5564400AF0A2E /* libTKMath.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMath.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKMath.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981126D5564400AF0A2E /* libTKXMesh.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKXMesh.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKXMesh.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981226D5564400AF0A2E /* libTKXSBase.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKXSBase.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKXSBase.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981326D5564500AF0A2E /* libTKPrim.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKPrim.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKPrim.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981426D5564500AF0A2E /* libTKernel.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKernel.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKernel.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981526D5564500AF0A2E /* libTKGeomAlgo.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomAlgo.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKGeomAlgo.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981626D5564500AF0A2E /* libTKGeomBase.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomBase.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKGeomBase.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981726D5564500AF0A2E /* libTKG3d.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKG3d.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKG3d.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981826D5564500AF0A2E /* libTKBRep.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKBRep.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKBRep.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981926D5564500AF0A2E /* libTKTopAlgo.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKTopAlgo.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKTopAlgo.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981A26D5564600AF0A2E /* libTKBO.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKBO.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKBO.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981B26D5564600AF0A2E /* libTKIGES.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKIGES.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKIGES.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981C26D5564600AF0A2E /* libTKMesh.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMesh.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKMesh.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981D26D5564600AF0A2E /* libTKSTEP.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTEP.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKSTEP.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981E26D5564600AF0A2E /* libTKSTEPBase.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTEPBase.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKSTEPBase.7.5.3.dylib; sourceTree = "<group>"; };
+		D5F9981F26D5564600AF0A2E /* libTKVCAF.7.5.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKVCAF.7.5.3.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.5.3/lib/libTKVCAF.7.5.3.dylib; sourceTree = "<group>"; };
 		D5FF054B2501AB2700D768FA /* TimelineWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TimelineWidget.h; sourceTree = "<group>"; };
 		D5FF054D2501AB2700D768FA /* TimelinePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TimelinePanel.cpp; sourceTree = "<group>"; };
 		D5FF054F2501AB2700D768FA /* TimelineWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TimelineWidget.cpp; sourceTree = "<group>"; };
@@ -958,6 +958,24 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5F9982026D5564600AF0A2E /* libTKFillet.7.5.3.dylib in Frameworks */,
+				D5F9982126D5564600AF0A2E /* libTKSTL.7.5.3.dylib in Frameworks */,
+				D5F9982226D5564600AF0A2E /* libTKMath.7.5.3.dylib in Frameworks */,
+				D5F9982326D5564600AF0A2E /* libTKXMesh.7.5.3.dylib in Frameworks */,
+				D5F9982426D5564600AF0A2E /* libTKXSBase.7.5.3.dylib in Frameworks */,
+				D5F9982526D5564600AF0A2E /* libTKPrim.7.5.3.dylib in Frameworks */,
+				D5F9982626D5564600AF0A2E /* libTKernel.7.5.3.dylib in Frameworks */,
+				D5F9982726D5564600AF0A2E /* libTKGeomAlgo.7.5.3.dylib in Frameworks */,
+				D5F9982826D5564600AF0A2E /* libTKGeomBase.7.5.3.dylib in Frameworks */,
+				D5F9982926D5564600AF0A2E /* libTKG3d.7.5.3.dylib in Frameworks */,
+				D5F9982A26D5564600AF0A2E /* libTKBRep.7.5.3.dylib in Frameworks */,
+				D5F9982B26D5564600AF0A2E /* libTKTopAlgo.7.5.3.dylib in Frameworks */,
+				D5F9982C26D5564600AF0A2E /* libTKBO.7.5.3.dylib in Frameworks */,
+				D5F9982D26D5564600AF0A2E /* libTKIGES.7.5.3.dylib in Frameworks */,
+				D5F9982E26D5564600AF0A2E /* libTKMesh.7.5.3.dylib in Frameworks */,
+				D5F9982F26D5564600AF0A2E /* libTKSTEP.7.5.3.dylib in Frameworks */,
+				D5F9983026D5564600AF0A2E /* libTKSTEPBase.7.5.3.dylib in Frameworks */,
+				D5F9983126D5564600AF0A2E /* libTKVCAF.7.5.3.dylib in Frameworks */,
 				D57F0B8E269718FA00C8FFC8 /* QtNetwork.framework in Frameworks */,
 				D57F0B87269718DB00C8FFC8 /* QtGui.framework in Frameworks */,
 				D57F0B88269718DB00C8FFC8 /* QtCore5Compat.framework in Frameworks */,
@@ -974,24 +992,6 @@
 				D57F0B7B2697172A00C8FFC8 /* libswscale.5.9.100.dylib in Frameworks */,
 				D57F0B7C2697172A00C8FFC8 /* libavutil.56.70.100.dylib in Frameworks */,
 				D5057609266C2D0A005374AC /* libdcmimgle.16.3.6.6.dylib in Frameworks */,
-				D5400FD3266AA8E200D31248 /* libTKernel.7.5.1.dylib in Frameworks */,
-				D5400FD4266AA8E200D31248 /* libTKSTEP.7.5.1.dylib in Frameworks */,
-				D5400FD5266AA8E200D31248 /* libTKFillet.7.5.1.dylib in Frameworks */,
-				D5400FD6266AA8E200D31248 /* libTKGeomAlgo.7.5.1.dylib in Frameworks */,
-				D5400FD7266AA8E200D31248 /* libTKMath.7.5.1.dylib in Frameworks */,
-				D5400FD8266AA8E200D31248 /* libTKIGES.7.5.1.dylib in Frameworks */,
-				D5400FD9266AA8E200D31248 /* libTKSTL.7.5.1.dylib in Frameworks */,
-				D5400FDA266AA8E200D31248 /* libTKXMesh.7.5.1.dylib in Frameworks */,
-				D5400FDB266AA8E200D31248 /* libTKXSBase.7.5.1.dylib in Frameworks */,
-				D5400FDC266AA8E200D31248 /* libTKTopAlgo.7.5.1.dylib in Frameworks */,
-				D5400FDD266AA8E200D31248 /* libTKBRep.7.5.1.dylib in Frameworks */,
-				D5400FDE266AA8E200D31248 /* libTKMesh.7.5.1.dylib in Frameworks */,
-				D5400FDF266AA8E200D31248 /* libTKSTEPBase.7.5.1.dylib in Frameworks */,
-				D5400FE0266AA8E200D31248 /* libTKPrim.7.5.1.dylib in Frameworks */,
-				D5400FE1266AA8E200D31248 /* libTKVCAF.7.5.1.dylib in Frameworks */,
-				D5400FE2266AA8E200D31248 /* libTKGeomBase.7.5.1.dylib in Frameworks */,
-				D5400FE3266AA8E200D31248 /* libTKG3d.7.5.1.dylib in Frameworks */,
-				D5400FE4266AA8E200D31248 /* libTKBO.7.5.1.dylib in Frameworks */,
 				D50E1579264CB2470014F7B1 /* libcsgvis.so in Frameworks */,
 				D50E1576264CB2140014F7B1 /* libgeom2dvis.dylib in Frameworks */,
 				D50E1573264CB1DE0014F7B1 /* libstlvis.dylib in Frameworks */,
@@ -1489,6 +1489,24 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D5F9981A26D5564600AF0A2E /* libTKBO.7.5.3.dylib */,
+				D5F9981826D5564500AF0A2E /* libTKBRep.7.5.3.dylib */,
+				D5F9981426D5564500AF0A2E /* libTKernel.7.5.3.dylib */,
+				D5F9980E26D5564400AF0A2E /* libTKFillet.7.5.3.dylib */,
+				D5F9981726D5564500AF0A2E /* libTKG3d.7.5.3.dylib */,
+				D5F9981526D5564500AF0A2E /* libTKGeomAlgo.7.5.3.dylib */,
+				D5F9981626D5564500AF0A2E /* libTKGeomBase.7.5.3.dylib */,
+				D5F9981B26D5564600AF0A2E /* libTKIGES.7.5.3.dylib */,
+				D5F9981026D5564400AF0A2E /* libTKMath.7.5.3.dylib */,
+				D5F9981C26D5564600AF0A2E /* libTKMesh.7.5.3.dylib */,
+				D5F9981326D5564500AF0A2E /* libTKPrim.7.5.3.dylib */,
+				D5F9981D26D5564600AF0A2E /* libTKSTEP.7.5.3.dylib */,
+				D5F9981E26D5564600AF0A2E /* libTKSTEPBase.7.5.3.dylib */,
+				D5F9980F26D5564400AF0A2E /* libTKSTL.7.5.3.dylib */,
+				D5F9981926D5564500AF0A2E /* libTKTopAlgo.7.5.3.dylib */,
+				D5F9981F26D5564600AF0A2E /* libTKVCAF.7.5.3.dylib */,
+				D5F9981126D5564400AF0A2E /* libTKXMesh.7.5.3.dylib */,
+				D5F9981226D5564400AF0A2E /* libTKXSBase.7.5.3.dylib */,
 				D57F0B7F2697180700C8FFC8 /* libp11-kit.0.dylib */,
 				D57F0B7D2697176400C8FFC8 /* libsqlite3.0.dylib */,
 				D57F0B752697172A00C8FFC8 /* libavcodec.58.134.100.dylib */,
@@ -1503,24 +1521,6 @@
 				D50E156B264CAF3A0014F7B1 /* libcsg.so */,
 				D50E156A264CAF3A0014F7B1 /* libgeom2d.so */,
 				D50E1569264CAF3A0014F7B1 /* libmesh.so */,
-				D5400FD2266AA8E200D31248 /* libTKBO.7.5.1.dylib */,
-				D5400FCB266AA8E100D31248 /* libTKBRep.7.5.1.dylib */,
-				D5400FC1266AA8E100D31248 /* libTKernel.7.5.1.dylib */,
-				D5400FC3266AA8E100D31248 /* libTKFillet.7.5.1.dylib */,
-				D5400FD1266AA8E200D31248 /* libTKG3d.7.5.1.dylib */,
-				D5400FC4266AA8E100D31248 /* libTKGeomAlgo.7.5.1.dylib */,
-				D5400FD0266AA8E200D31248 /* libTKGeomBase.7.5.1.dylib */,
-				D5400FC6266AA8E100D31248 /* libTKIGES.7.5.1.dylib */,
-				D5400FC5266AA8E100D31248 /* libTKMath.7.5.1.dylib */,
-				D5400FCC266AA8E100D31248 /* libTKMesh.7.5.1.dylib */,
-				D5400FCE266AA8E200D31248 /* libTKPrim.7.5.1.dylib */,
-				D5400FC2266AA8E100D31248 /* libTKSTEP.7.5.1.dylib */,
-				D5400FCD266AA8E200D31248 /* libTKSTEPBase.7.5.1.dylib */,
-				D5400FC7266AA8E100D31248 /* libTKSTL.7.5.1.dylib */,
-				D5400FCA266AA8E100D31248 /* libTKTopAlgo.7.5.1.dylib */,
-				D5400FCF266AA8E200D31248 /* libTKVCAF.7.5.1.dylib */,
-				D5400FC8266AA8E100D31248 /* libTKXMesh.7.5.1.dylib */,
-				D5400FC9266AA8E100D31248 /* libTKXSBase.7.5.1.dylib */,
 				D541E852264C9A3200F473C9 /* libx265.199.dylib */,
 				D541E846264C99DF00F473C9 /* libxvidcore.a */,
 				D541E844264C99C400F473C9 /* libssh.4.8.6.dylib */,
@@ -2120,7 +2120,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Netgen.app/Contents/MacOS,
-					/usr/local/opt/opencascade/lib,
 					/usr/local/opt/ffmpeg/lib,
 					/usr/local/opt/xvid/lib,
 					/usr/local/opt/lame/lib,
@@ -2132,12 +2131,12 @@
 					/usr/local/lib,
 					/usr/local/opt/libomp,
 					/usr/local/opt/libffi/lib,
-					/usr/local/Cellar/opencascade/7.5.1_1/lib,
 					/usr/local/Cellar/dcmtk/3.6.6/lib,
 					/usr/local/Cellar/ffmpeg/4.4_2/lib,
 					/usr/local/Cellar/sqlite/3.36.0/lib,
 					"/usr/local/Cellar/p11-kit/0.24.0/lib",
 					/usr/local/Cellar/libffi/3.3_3/lib,
+					/usr/local/Cellar/opencascade/7.5.3/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2180,7 +2179,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Netgen.app/Contents/MacOS,
-					/usr/local/opt/opencascade/lib,
 					/usr/local/opt/ffmpeg/lib,
 					/usr/local/opt/xvid/lib,
 					/usr/local/opt/lame/lib,
@@ -2192,12 +2190,12 @@
 					/usr/local/lib,
 					/usr/local/opt/libomp,
 					/usr/local/opt/libffi/lib,
-					/usr/local/Cellar/opencascade/7.5.1_1/lib,
 					/usr/local/Cellar/dcmtk/3.6.6/lib,
 					/usr/local/Cellar/ffmpeg/4.4_2/lib,
 					/usr/local/Cellar/sqlite/3.36.0/lib,
 					"/usr/local/Cellar/p11-kit/0.24.0/lib",
 					/usr/local/Cellar/libffi/3.3_3/lib,
+					/usr/local/Cellar/opencascade/7.5.3/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
