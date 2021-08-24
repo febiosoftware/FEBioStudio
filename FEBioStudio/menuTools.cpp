@@ -269,6 +269,8 @@ void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		{
 			QMessageBox::critical(this, "Run FEBio", msg);
 		}
+
+		UpdateTab(job->GetDocument());
 	}
 	else
 	{
