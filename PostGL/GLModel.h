@@ -202,6 +202,8 @@ public:
 
 	void RenderSelection(CGLContext& rc);
 
+	void RenderMinMaxMarkers(CGLContext& rc);
+
 	void RenderDecorations();
 
 	void RenderMeshLines(FEPostModel* ps, int nmat);

@@ -38,7 +38,7 @@ class CGLModel;
 
 class CGLColorMap : public CGLDataMap
 {
-	enum { DATA_FIELD, DATA_SMOOTH, COLOR_MAP, NODAL_VALS, RANGE_DIVS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN };
+	enum { DATA_FIELD, DATA_SMOOTH, COLOR_MAP, NODAL_VALS, RANGE_DIVS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN, SHOW_MINMAX_MARKERS };
 
 public:
 	CGLColorMap(CGLModel* po);
@@ -54,6 +54,9 @@ public:
 	void GetRange(float* pd) { pd[0] = m_range.min; pd[1] = m_range.max; }
 	int GetMaxRangeType() { return m_range.maxtype; }
 	int GetMinRangeType() { return m_range.mintype; }
+	vec3d GetMinPosition() const { return m_rmin; }
+	vec3d GetMaxPosition() const { return m_rmax; }
+	bool ShowMinMaxMarkers() const;
 
 	void SetRange(float* pd) { m_range.min = pd[0]; m_range.max = pd[1]; }
 	void SetRangeMax(float f) { m_range.max = f; }
@@ -84,6 +87,7 @@ protected:
 	int		m_nfield;
 	bool	m_breset;	// reset the range when the field has changed
 	DATA_RANGE	m_range;	// range for legend
+	vec3d	m_rmin, m_rmax;	// global indicators of min, max
 
 public:
 	bool	m_bDispNodeVals;	// render nodal values

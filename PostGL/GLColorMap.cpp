@@ -47,9 +47,11 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	AddDoubleParam(0, "User max");
 	AddIntParam (0, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "User min");
+	AddBoolParam(false, "Show min/max markers");
 
 	m_range.min = m_range.max = 0;
 	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
+	m_rmin = m_rmax = vec3d(0, 0, 0);
 
 	m_nfield = 0;
 	m_breset = true;
@@ -119,6 +121,12 @@ bool CGLColorMap::UpdateData(bool bsave)
 }
 
 //-----------------------------------------------------------------------------
+bool CGLColorMap::ShowMinMaxMarkers() const
+{
+	return GetBoolValue(SHOW_MINMAX_MARKERS);
+}
+
+//-----------------------------------------------------------------------------
 void CGLColorMap::SetEvalField(int n)
 {
 	if (n != m_nfield)
@@ -178,6 +186,8 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 
 	float w = dt / df;
 
+	m_rmin = m_rmax = vec3d(0, 0, 0);
+
 	// update the range
 	float fmin = 1e29f, fmax = -1e29f;
 	ValArray& faceData0 = s0.m_FaceData;
@@ -195,11 +205,12 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 				ELEMDATA& d1 = s1.m_ELEM[i];
 				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
 				{
+					vec3d r = pm->ElementCenter(el);
 					float f0 = d0.m_val;
 					float f1 = d1.m_val;
 					float f = f0 + (f1 - f0)*w;
-					if (f > fmax) fmax = f;
-					if (f < fmin) fmin = f;
+					if (f > fmax) { fmax = f; m_rmax = r; }
+					if (f < fmin) { fmin = f; m_rmin = r; }
 				}
 			}
 		}
@@ -220,8 +231,8 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 						float f0 = elemData0.value(i, j);
 						float f1 = elemData1.value(i, j);
 						float f = f0 + (f1 - f0)*w;
-						if (f > fmax) fmax = f;
-						if (f < fmin) fmin = f;
+						if (f > fmax) { fmax = f; m_rmax = pm->Node(el.m_node[j]).r; }
+						if (f < fmin) { fmin = f; m_rmin = pm->Node(el.m_node[j]).r; }
 					}
 				}
 			}
@@ -241,8 +252,8 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 				float f1 = d1.m_val;
 				float f = f0 + (f1 - f0)*w;
 				node.m_ntag = 1;
-				if (f > fmax) fmax = f;
-				if (f < fmin) fmin = f;
+				if (f > fmax) { fmax = f; m_rmax = pm->Node(i).r; }
+				if (f < fmin) { fmin = f; m_rmin = pm->Node(i).r; }
 			}
 			else node.m_ntag = 0;
 		}
