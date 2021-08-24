@@ -407,10 +407,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
-				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
-					/usr/local/opt/opencascade/include/opencascade,
-				);
+				HEADER_SEARCH_PATHS = /usr/local/include/opencascade;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DHAS_OCC",
@@ -425,10 +422,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
-				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
-					/usr/local/opt/opencascade/include/opencascade,
-				);
+				HEADER_SEARCH_PATHS = /usr/local/include/opencascade;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DHAS_OCC",
