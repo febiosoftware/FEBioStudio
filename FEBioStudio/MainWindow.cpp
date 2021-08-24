@@ -330,10 +330,16 @@ void CMainWindow::UpdateTab(CDocument* doc)
 	{
 		QString file = QString::fromStdString(doc->GetDocTitle());
 		if (doc->IsModified()) file += "*";
-		ui->tab->setTabText(n, file);
 
 		QString path = QString::fromStdString(doc->GetDocFilePath());
 		if (path.isEmpty() == false) ui->tab->setTabToolTip(n, path); else ui->tab->setTabToolTip(n, "");
+
+		CFEBioJob* activeJob = CFEBioJob::GetActiveJob();
+		if (activeJob && (activeJob->GetDocument() == doc))
+		{
+			file += "[running]";
+		}
+		ui->tab->setTabText(n, file);
 	}
 
 	ui->fileViewer->Update();
@@ -2083,6 +2089,14 @@ void CMainWindow::CloseView(int n, bool forceClose)
 {
 	CDocument* doc = ui->tab->getDocument(n);
 
+	// make sure this doc has no active jobs running.
+	CFEBioJob* activeJob = CFEBioJob::GetActiveJob();
+	if (activeJob && (activeJob->GetDocument() == doc))
+	{
+		QMessageBox::warning(this, "FEBio Studio", "This model has an active job running and cannot be closed.\n");
+		return;
+	}
+
 	if (doc->IsModified() && (forceClose == false))
 	{
 		if (maybeSave(doc) == false) return;
@@ -2915,6 +2929,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	ShowLogPanel();
 	ui->logPanel->ShowOutput();
 
+	UpdateTab(job->GetDocument());
 	// start the job
 	if (ui->m_jobManager->StartJob(job) == false)
 	{
