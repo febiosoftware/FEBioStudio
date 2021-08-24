@@ -401,8 +401,9 @@ public slots:
 	void on_actionFEBioStop_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionOptions_triggered();
+#ifdef _DEBUG
 	void on_actionLayerInfo_triggered();
-
+#endif
 	// Post menu actions
 	void on_actionPlaneCut_triggered();
 	void on_actionMirrorPlane_triggered();
