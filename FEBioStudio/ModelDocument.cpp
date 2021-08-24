@@ -51,6 +51,8 @@ public:
 		m_nodes = 0;
 		m_steps = 0;
 		m_mats = 1;	// needs to be initialized to 1
+
+		m_activeItem = nullptr;
 	}
 
 	void Push()
@@ -76,6 +78,9 @@ public:
 		GMaterial::SetCounter(m_mats);
 	}
 
+	void SetActiveItem(FSObject* po) { m_activeItem = po; }
+	FSObject* GetActiveItem() { return m_activeItem; }
+
 private:
 	CModelDocument*	m_doc;
 
@@ -87,6 +92,9 @@ private:
 	int m_nodes;
 	int m_steps;
 	int m_mats;
+
+	// active item in model tree
+	FSObject* m_activeItem;
 };
 
 CModelDocument::~CModelDocument()
@@ -130,6 +138,18 @@ void CModelDocument::Activate()
 void CModelDocument::Deactivate()
 {
 	m_context->Push();
+}
+
+//-----------------------------------------------------------------------------
+void CModelDocument::SetActiveItem(FSObject* po)
+{
+	m_context->SetActiveItem(po);
+}
+
+//-----------------------------------------------------------------------------
+FSObject* CModelDocument::GetActiveItem()
+{
+	return m_context->GetActiveItem();
 }
 
 //-----------------------------------------------------------------------------

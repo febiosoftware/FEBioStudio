@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
+#include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
 
@@ -74,7 +75,11 @@ void CModelViewer::Update(bool breset)
 	// update the props panel
 	ui->props->Update();
 
-//	if (po) Select(po);
+	if (doc)
+	{
+		FSObject* po = doc->GetActiveItem();
+		if (po) Select(po);
+	}
 }
 
 // get the currently selected object
@@ -157,6 +162,9 @@ void CModelViewer::SetCurrentItem(int item)
 		ui->props->SetObjectProps(0, 0, 0);
 		m_currentObject = 0;
 	}
+
+	CModelDocument* doc = GetMainWindow()->GetModelDocument();
+	if (doc) doc->SetActiveItem(m_currentObject);
 }
 
 void CModelViewer::SetCurrentItem(CModelTreeItem& it)
@@ -1023,17 +1031,7 @@ void CModelViewer::OnCopyMaterial()
 	if (pmat == 0) return;
 
 	// create a copy of the material
-	FEMaterial* pm = pmat->GetMaterialProperties();
-	FEMaterial* pmCopy = 0;
-	if (pm)
-	{
-		pmCopy = FEMaterialFactory::Create(pm->Type());
-		pmCopy->copy(pm);
-	}
-	GMaterial* pmat2 = new GMaterial(pmCopy);
-
-	// get material ID
-	int nid = pmat2->GetID();
+	GMaterial* pmat2 = pmat->Clone();
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1555,12 +1553,31 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Show All Parts", this, SLOT(OnUnhideAllParts()));
 		break;
 	case MT_MATERIAL_LIST:
+	{
 		menu.addAction("Add Material ...", this, SLOT(OnAddMaterial()));
 		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
-		menu.addAction("Import Materials ...", this, SLOT(OnImportMaterials()));
+
+		QMenu* sub = new QMenu("Import Materials");
+		QAction* ac = sub->addAction("From file ...");
+		ac->setData(-1);
+
+		CDocManager* docMng = wnd->GetDocManager();
+		for (int i = 0; i < docMng->Documents(); ++i)
+		{
+			CModelDocument* doci = dynamic_cast<CModelDocument*>(docMng->GetDocument(i));
+			if (doci && (doc != doci))
+			{
+				QAction* ac = sub->addAction(QString::fromStdString(doci->GetDocFileName()));
+				ac->setData(i);
+			}
+		}
+		QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnImportMaterials(QAction*)));
+
+		menu.addAction(sub->menuAction());
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllMaterials()));
-		break;
+	}
+	break;
 	case MT_BC_LIST:
 		menu.addAction("Add Boundary Condition ...", this, SLOT(OnAddBC()));
 		menu.addSeparator();
@@ -1789,9 +1806,18 @@ void CModelViewer::OnExportAllMaterials()
 	GetMainWindow()->onExportAllMaterials();
 }
 
-void CModelViewer::OnImportMaterials()
+void CModelViewer::OnImportMaterials(QAction* action)
 {
-	GetMainWindow()->onImportMaterials();
+	CMainWindow* wnd = GetMainWindow();
+	int n = action->data().toInt();
+	if (n == -1)
+		wnd->onImportMaterials();
+	else
+	{
+		CDocManager* docMng = wnd->GetDocManager();
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(docMng->GetDocument(n)); assert(doc);
+		if (doc) wnd->onImportMaterialsFromModel(doc);
+	}
 }
 
 void CModelViewer::OnDeleteAllMaterials()

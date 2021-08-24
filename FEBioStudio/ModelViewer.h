@@ -163,7 +163,7 @@ public slots:
 	void OnMaterialHideOtherParts();
 	void OnExportMaterials();
 	void OnExportAllMaterials();
-	void OnImportMaterials();
+	void OnImportMaterials(QAction*);
 	void OnDeleteAllMaterials();
 	void OnSwapMasterSlave();
 	void OnDeleteAllBC();

@@ -115,6 +115,7 @@ void CInfoPanel::on_edit_textChanged()
 		QString txt = ui->edit->toPlainText();
 		std::string s = txt.toStdString();
 		ui->po->SetInfo(s);
+		ui->m_wnd->UpdateModel(ui->po, false);
 	}
 }
 

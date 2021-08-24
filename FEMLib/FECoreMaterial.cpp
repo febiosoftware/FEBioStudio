@@ -612,6 +612,14 @@ void FEMaterial::copy(FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
+FEMaterial* FEMaterial::Clone()
+{
+	FEMaterial* pmCopy = FEMaterialFactory::Create(Type());
+	pmCopy->copy(this);
+	return pmCopy;
+}
+
+//-----------------------------------------------------------------------------
 bool FEMaterial::HasMaterialAxes() const
 {
 	return (m_axes != nullptr);

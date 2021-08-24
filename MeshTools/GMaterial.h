@@ -60,6 +60,8 @@ public:
 		m_nref = (nid >= m_nref ? nid+1:m_nref);
 	}
 
+	GMaterial* Clone();
+
 	const char* GetFullName();
 
 	void Save(OArchive& ar);

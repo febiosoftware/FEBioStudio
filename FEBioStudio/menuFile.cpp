@@ -1090,9 +1090,14 @@ void CMainWindow::on_actionSaveAs_triggered()
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	if (dlg.exec())
 	{
+		// clear the jobs
+		doc->DeleteAllJobs();
+
 		QStringList fileNames = dlg.selectedFiles();
 		doc->SetFileWriter(new CModelFileWriter(doc));
 		SaveDocument(QDir::toNativeSeparators(fileNames[0]));
+
+		UpdateModel();
 	}
 }
 

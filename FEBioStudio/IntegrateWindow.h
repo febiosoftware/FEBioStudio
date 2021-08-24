@@ -55,9 +55,13 @@ private:
 	void IntegrateSelection(CPlotData& data);
 	void IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& data);
 
+private slots:
+	void OnConfigChanged(int i);
+
 private:
 	std::vector<Post::CGLPlaneCutPlot*>	m_src;
 	int		m_nsrc;
+	int		m_nconf;
 	bool	m_updating;
 };
 
