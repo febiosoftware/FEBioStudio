@@ -395,7 +395,7 @@ FECarterHayes::FECarterHayes() : FEMaterial(FE_CARTER_HAYES)
 // FENewtonianViscousSolid - Newtonian viscous solid
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FENewtonianViscousSolid, MODULE_MECH, FE_NEWTONIAN_VISCOUS_SOLID, FE_MAT_ELASTIC, "Newtonian viscous solid",0, NEWTONIAN_SOLID_HTML);
+REGISTER_MATERIAL(FENewtonianViscousSolid, MODULE_MECH, FE_NEWTONIAN_VISCOUS_SOLID, FE_MAT_ELASTIC, "Newtonian viscous solid",0);
 
 FENewtonianViscousSolid::FENewtonianViscousSolid() : FEMaterial(FE_NEWTONIAN_VISCOUS_SOLID)
 {

@@ -146,7 +146,7 @@ void CHelpDialog::LoadPage()
 
 			if(m_url != oldURL)
 			{
-				ui->helpView->setSource(m_url);
+				ui->helpView->setSource(QUrl::fromLocalFile(m_url));
 			}
 		}
 		else
