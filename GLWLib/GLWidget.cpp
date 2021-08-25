@@ -355,6 +355,14 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 
 	glDisable(GL_BLEND);
 
+	// provide some room for the title
+	int titleHeight = 0;
+	if (m_btitle && m_szlabel)
+	{
+		QFontMetrics fm(m_font);
+		titleHeight = fm.height() + 2;
+	}
+
 	int x0 = x() + w() - 50;
 	int y0 = y() + 30;
 	int x1 = x0 + 25;
@@ -470,9 +478,14 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 	// render the title
 	if (m_btitle && m_szlabel)
 	{
+		QFontMetrics fm(m_font);
+		int w = fm.horizontalAdvance(m_szlabel);
+		int x = (x0 + x1) / 2 - w/2;
+		int y = y0 - fm.height() - 2;
+
 		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
 		painter->setFont(m_font);
-		painter->drawText(x(), y(), w(), h(), Qt::AlignHCenter | Qt::AlignTop, m_szlabel);
+		painter->drawText(x, y, m_szlabel);
 	}
 }
 
