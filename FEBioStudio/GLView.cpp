@@ -1421,17 +1421,21 @@ void CGLView::StopAnimation()
 		// stop the animation
 		m_videoMode = VIDEO_STOPPED;
 
-		if (m_video->Frames() == 0)
-		{
-			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
-		}
+		// get the nr of frames before we close
+		int nframes = m_video->Frames();
 
 		// close the stream
 		m_video->Close();
 
 		// delete the object
 		delete m_video;
-		m_video = 0;
+		m_video = nullptr;
+
+		// say something if frames is 0. 
+		if (nframes == 0)
+		{
+			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
+		}
 
 		// unlock the frame
 		m_pframe->SetState(GLSafeFrame::FREE);
