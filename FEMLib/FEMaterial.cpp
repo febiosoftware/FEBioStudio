@@ -1636,6 +1636,32 @@ FEPrescribedActiveContractionIsotropicUC::FEPrescribedActiveContractionIsotropic
 }
 
 //////////////////////////////////////////////////////////////////////
+REGISTER_MATERIAL(FEFungIsotropic, MODULE_MECH, FE_FUNG_ISOTROPIC, FE_MAT_ELASTIC, "Fung isotropic", MaterialFlags::TOPLEVEL);
+
+FEFungIsotropic::FEFungIsotropic() : FEMaterial(FE_FUNG_ISOTROPIC)
+{
+	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "c0");
+	AddScienceParam(0, UNIT_PRESSURE, "c1");
+	AddScienceParam(0, UNIT_NONE    , "c2");
+	AddScienceParam(0, UNIT_PRESSURE, "k");
+	AddScienceParam(1, UNIT_NONE    , "tangent_scale");
+}
+
+//////////////////////////////////////////////////////////////////////
+REGISTER_MATERIAL(FEFungIsotropicUncoupled, MODULE_MECH, FE_FUNG_ISOTROPIC_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Fung isotropic uncoupled", MaterialFlags::TOPLEVEL);
+
+FEFungIsotropicUncoupled::FEFungIsotropicUncoupled() : FEMaterial(FE_FUNG_ISOTROPIC_UNCOUPLED)
+{
+	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "c0");
+	AddScienceParam(0, UNIT_PRESSURE, "c1");
+	AddScienceParam(0, UNIT_NONE    , "c2");
+	AddScienceParam(0, UNIT_PRESSURE, "k");
+	AddScienceParam(1, UNIT_NONE    , "tangent_scale");
+}
+
+//////////////////////////////////////////////////////////////////////
 // FEIsotropicFourier - Isotropic Fourier
 //////////////////////////////////////////////////////////////////////
 
