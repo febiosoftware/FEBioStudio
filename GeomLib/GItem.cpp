@@ -422,17 +422,23 @@ bool GFace::HasEdge(int nid)
 GPart::GPart() : GItem_T<GPart>(0) 
 { 
 	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-	m_matid = -1; 
+    AddBoolParam(false, "laugon", "incompressibility constraint");
+    AddDoubleParam(0.01, "atol", "incompressibility tolerance");
+	m_matid = -1;
 }
 GPart::GPart(GBaseObject* po) : GItem_T<GPart>(po) 
 { 
 	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
+    AddBoolParam(false, "laugon", "incompressibility constraint");
+    AddDoubleParam(0.01, "atol", "incompressibility tolerance");
 	m_matid = -1;
 }
 
 GPart::GPart(const GPart& p)
 {
 	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
+    AddBoolParam(false, "laugon", "incompressibility constraint");
+    AddDoubleParam(0.01, "atol", "incompressibility tolerance");
 	CopyParams(p);
 
 	m_matid = p.m_matid;
@@ -465,4 +471,24 @@ void GPart::setShellNormalNodal(bool b)
 bool GPart::shellNormalNodal() const
 {
 	return GetBoolValue(0);
+}
+
+void GPart::setLaugon(bool b)
+{
+    SetBoolValue(1, b);
+}
+
+bool GPart::laugon() const
+{
+    return GetBoolValue(1);
+}
+
+void GPart::setAugTol(double d)
+{
+    SetFloatValue(2, d);
+}
+
+double GPart::augTol() const
+{
+    return GetFloatValue(2);
 }
