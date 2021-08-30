@@ -1636,9 +1636,9 @@ FEPrescribedActiveContractionIsotropicUC::FEPrescribedActiveContractionIsotropic
 }
 
 //////////////////////////////////////////////////////////////////////
-REGISTER_MATERIAL(FEFungIsotropic, MODULE_MECH, FE_FUNG_ISOTROPIC, FE_MAT_ELASTIC, "Fung isotropic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FEKamensky, MODULE_MECH, FE_KAMENSKY, FE_MAT_ELASTIC, "Kamensky", MaterialFlags::TOPLEVEL);
 
-FEFungIsotropic::FEFungIsotropic() : FEMaterial(FE_FUNG_ISOTROPIC)
+FEKamensky::FEKamensky() : FEMaterial(FE_KAMENSKY)
 {
 	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c0");
@@ -1649,9 +1649,9 @@ FEFungIsotropic::FEFungIsotropic() : FEMaterial(FE_FUNG_ISOTROPIC)
 }
 
 //////////////////////////////////////////////////////////////////////
-REGISTER_MATERIAL(FEFungIsotropicUncoupled, MODULE_MECH, FE_FUNG_ISOTROPIC_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Fung isotropic uncoupled", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FEKamenskyUncoupled, MODULE_MECH, FE_KAMENSKY_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Kamensky uncoupled", MaterialFlags::TOPLEVEL);
 
-FEFungIsotropicUncoupled::FEFungIsotropicUncoupled() : FEMaterial(FE_FUNG_ISOTROPIC_UNCOUPLED)
+FEKamenskyUncoupled::FEKamenskyUncoupled() : FEMaterial(FE_KAMENSKY_UNCOUPLED)
 {
 	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c0");
