@@ -6,10 +6,29 @@
 
 ===========================================================================
 
- R E L E A S E   1.6   8/27/2021
+ R E L E A S E   1.6   8/30/2021
 
 ===========================================================================
 
+* The help feature on the physics dialog boxes has been restored. 
+* Added support for new "Kamensky" material, an isotropic Fung-type material from Kamensky, CMAME 2018.
+* An issue was fixed that could cause a crash when starting a recording fails.
+* Legend bars of plots are now hidden when the plot is disabled.
+* Title is now shown for vertical legend bars.
+* Added feature to show location of min/max. (github issue #9)
+* A model with active jobs cannot be closed. Tab title now also indicates whether the model is running.
+* Fixed issue with processing line data when there are duplicate edges or circular segments.
+* Added feature to import materials from other open models.
+* Added option to choose current or reference configuration on Integrate window.
+* Materials can be exported and imported again.
+* Entering notes immediately updates the corresponding item in the model tree.
+* Added Newtonian viscous solid material.
+* Jobs are deleted when saving a model with Saving As.
+* Fixed issue with z-clipping range when objects are scaled. (github issue #28)
+* Object info now shows global box dimensions, instead of local.
+* Collapse transform can now be applied to a selection of objects.
+* Made T0 of prescribed uniaxial active contraction a variable parameter. (github issue #39)
+* Added shell_bottom flag for pressure surface load.
 * Added "contact potential" contact interface and "mass damping" body load features.
 * Modified tet4 split modifier so that it works without an element selection.
 * MMG remesh now also works with face selections.
