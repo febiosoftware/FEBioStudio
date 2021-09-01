@@ -195,6 +195,8 @@ void CModelDocument::DeleteObject(FSObject* po)
 {
 	FEModel& fem = *GetFEModel();
 
+	if (po == GetActiveItem()) SetActiveItem(nullptr);
+
 	if (dynamic_cast<FEStep*>(po))
 	{
 		if (dynamic_cast<FEInitialStep*>(po))
