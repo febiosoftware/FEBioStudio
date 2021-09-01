@@ -28,16 +28,16 @@ SOFTWARE.*/
 #include <string>
 
 class FEModelComponent;
-class FEMaterial;
+class FEBioMaterial;
 class FEStep;
 
 namespace FEBio {
 
 	bool CreateModelComponent(int classId, FEModelComponent* po);
 	bool CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po);
-	void CreateMaterial(int classId, FEMaterial* po);
-	bool CreateMaterial(const char* sztype, FEMaterial* po);
-	void CreateMaterialProperty(int superClassID, const char* sztype, FEMaterial* po);
+	void CreateMaterial(int classId, FEBioMaterial* po);
+	bool CreateMaterial(const char* sztype, FEBioMaterial* po);
+	void CreateMaterialProperty(int superClassID, const char* sztype, FEBioMaterial* po);
 	void CreateStep(int classId, FEStep* po, bool initDefaultProps = true);
 	void CreateStep(const char* sztype, FEStep* po);
 }

@@ -533,7 +533,7 @@ public:
 					else if (matId > 0)
 					{
 						pmat = MF.Create(FE_FEBIO_MATERIAL);
-						FEBio::CreateMaterial(matId, pmat);
+						FEBio::CreateMaterial(matId, dynamic_cast<FEBioMaterial*>(pmat));
 					}
 
 					if (pmat)

@@ -1057,7 +1057,7 @@ void CModelViewer::OnChangeMaterial()
 	if (dlg.exec())
 	{
 		FEMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
-		FEBio::CreateMaterial(dlg.GetClassID(), pmat);
+		FEBio::CreateMaterial(dlg.GetClassID(), dynamic_cast<FEBioMaterial*>(pmat));
 		if (pmat)
 		{
 			gmat->SetMaterialProperties(pmat);

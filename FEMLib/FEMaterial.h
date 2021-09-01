@@ -2370,6 +2370,7 @@ class FEBioMaterial : public FEMaterial
 {
 public:
 	FEBioMaterial();
+	~FEBioMaterial();
 
 	void SetTypeString(const char* sz) override;
 	const char* GetTypeString() override;
@@ -2379,8 +2380,17 @@ public:
 
 	bool IsRigid() override;
 
+	bool HasFibers() override;
+
+	vec3d GetFiber(FEElementRef& el) override;
+
+	void SetFEBioMaterial(void* febioMat);
+	void* GetFEBioMaterial();
+
 	DECLARE_REGISTERED(FEBioMaterial);
 
 private:
 	std::string	m_stype;
+
+	void* m_febioMat;	// pointer to FEBio material class.
 };

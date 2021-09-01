@@ -152,13 +152,14 @@ namespace FEBio {
 	class FEBioClass
 	{
 	public:
-		FEBioClass() {}
+		FEBioClass() { m_febClass = nullptr; }
 		FEBioClass(const FEBioClass& c)
 		{
 			m_superClassID = c.m_superClassID;
 			m_typeString = c.m_typeString;
 			m_Param = c.m_Param;
 			m_Props = c.m_Props;
+			m_febClass = c.m_febClass;
 		}
 		void operator = (const FEBioClass& c)
 		{
@@ -166,6 +167,7 @@ namespace FEBio {
 			m_typeString = c.m_typeString;
 			m_Param = c.m_Param;
 			m_Props = c.m_Props;
+			m_febClass = c.m_febClass;
 		}
 
 	public:
@@ -183,11 +185,15 @@ namespace FEBio {
 		void SetSuperClassID(int scid) { m_superClassID = scid; }
 		int GetSuperClassID() const { return m_superClassID; }
 
+		void SetFEBioClass(void* febClass) { m_febClass = febClass; }
+		void* GetFEBioClass() { return m_febClass; }
+
 	private:
-		int			m_superClassID;
+		int				m_superClassID;
 		std::string		m_typeString;
 		std::vector<FEBioParam>		m_Param;
 		std::vector<FEBioProperty>	m_Props;
+		void* m_febClass;	// pointer to FEBio class
 	};
 
 	FEBioClass* CreateFEBioClass(int classId);
@@ -206,4 +212,13 @@ namespace FEBio {
 	const char* GetSuperClassString(int superClassID);
 
 	std::map<int, const char*> GetSuperClassMap();
+
+	struct Vec3
+	{
+		double	x, y, z;
+	};
+
+	Vec3 GetMaterialFiber(void* vec3dvaluator);
+
+	void DeleteClass(void* p);
 }

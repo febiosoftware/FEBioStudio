@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <FSCore/paramunit.h>
 #include <FEBioStudio/WebDefines.h>
+#include <FEBioLink/FEBioClass.h>
 
 //////////////////////////////////////////////////////////////////////
 // FEFiberGeneratorLocal
@@ -3106,6 +3107,11 @@ FEBioMaterial::FEBioMaterial() : FEMaterial(FE_FEBIO_MATERIAL)
 {
 }
 
+FEBioMaterial::~FEBioMaterial()
+{
+	FEBio::DeleteClass(m_febioMat);
+}
+
 void FEBioMaterial::SetTypeString(const char* sz)
 {
 	m_stype = sz;
@@ -3119,6 +3125,21 @@ const char* FEBioMaterial::GetTypeString()
 bool FEBioMaterial::IsRigid()
 {
 	return (strcmp(GetTypeString(), "rigid body") == 0);
+}
+
+bool FEBioMaterial::HasFibers()
+{
+	if (FindProperty("fiber"))
+	{
+		return true;
+	}
+	else return false;
+}
+
+vec3d FEBioMaterial::GetFiber(FEElementRef& el)
+{
+	FEBio::Vec3 v = FEBio::GetMaterialFiber(m_febioMat);
+	return vec3d(v.x, v.y, v.z);
 }
 
 void FEBioMaterial::Save(OArchive& ar)
@@ -3151,4 +3172,14 @@ void FEBioMaterial::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+}
+
+void FEBioMaterial::SetFEBioMaterial(void* febioMat)
+{
+	m_febioMat = febioMat;
+}
+
+void* FEBioMaterial::GetFEBioMaterial()
+{
+	return m_febioMat;
 }

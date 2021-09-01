@@ -472,7 +472,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	if (dlg.exec())
 	{
 		FEMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
-		FEBio::CreateMaterial(dlg.GetClassID(), pmat);
+		FEBio::CreateMaterial(dlg.GetClassID(), dynamic_cast<FEBioMaterial*>(pmat));
 		if (pmat)
 		{
 			FEModel& fem = *doc->GetFEModel();

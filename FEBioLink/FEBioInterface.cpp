@@ -152,12 +152,12 @@ bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, F
 
 	if (superClassId == FE_MATERIAL)
 	{
-		FEMaterial* pmat = dynamic_cast<FEMaterial*>(po); assert(pmat);
+		FEBioMaterial* pmat = dynamic_cast<FEBioMaterial*>(po); assert(pmat);
 		ret = CreateMaterial(typeStr.c_str(), pmat);
 	}
 	else if (superClassId == FE_MATERIALPROP)
 	{
-		FEMaterial* pmat = dynamic_cast<FEMaterial*>(po); assert(pmat);
+		FEBioMaterial* pmat = dynamic_cast<FEBioMaterial*>(po); assert(pmat);
 		CreateMaterialProperty(FE_MATERIALPROP, typeStr.c_str(), pmat);
 	}
 	else if (superClassId == FE_ANALYSIS)
@@ -227,7 +227,7 @@ void FEBio::CreateStep(int classId, FEStep* po, bool initDefaultProps)
 	delete feb;
 }
 
-bool FEBio::CreateMaterial(const char* sztype, FEMaterial* po)
+bool FEBio::CreateMaterial(const char* sztype, FEBioMaterial* po)
 {
 	int classId = FEBio::GetClassId(FE_MATERIAL, sztype); assert(classId >= 0);
 	if (classId < 0) return false;
@@ -235,7 +235,7 @@ bool FEBio::CreateMaterial(const char* sztype, FEMaterial* po)
 	return true;
 }
 
-void FEBio::CreateMaterialProperty(int superClassID, const char* sztype, FEMaterial* po)
+void FEBio::CreateMaterialProperty(int superClassID, const char* sztype, FEBioMaterial* po)
 {
 	int classId = FEBio::GetClassId(superClassID, sztype); assert(classId != -1);
 
@@ -243,7 +243,7 @@ void FEBio::CreateMaterialProperty(int superClassID, const char* sztype, FEMater
 	if (classId >= 0) CreateMaterial(classId, po);
 }
 
-void FEBio::CreateMaterial(int classId, FEMaterial* po)
+void FEBio::CreateMaterial(int classId, FEBioMaterial* po)
 {
 	// create the FEBioClass object
 	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
@@ -256,6 +256,9 @@ void FEBio::CreateMaterial(int classId, FEMaterial* po)
 	string typeStr = feb->TypeString();
 	po->SetTypeString(strdup(typeStr.c_str()));
 	po->SetSuperClassID(superClassID);
+
+	// pass the FEBio object to the FEBio Studio object
+	po->SetFEBioMaterial(feb->GetFEBioClass());
 
 	// map the parameters
 	map_parameters(po, feb);
@@ -274,6 +277,7 @@ void FEBio::CreateMaterial(int classId, FEMaterial* po)
 			FEBioMaterial* pmi = new FEBioMaterial;
 			pmi->SetTypeString(strdup(fbc.TypeString().c_str()));
 			pmi->SetSuperClassID(fbc.GetSuperClassID());
+			pmi->SetFEBioMaterial(fbc.GetFEBioClass());
 			map_parameters(pmi, &fbc);
 			matProp->AddMaterial(pmi);
 		}

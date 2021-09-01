@@ -403,7 +403,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 	const FECoreFactory* fac = fecore.GetFactoryClass(classId);
 	if (fac == nullptr) return nullptr;
 
-	// try to create a temporary FEBio object
+	// try to create the FEBio object
 	FECoreBase* pc = fac->Create(febioModel); assert(pc);
 	if (pc == nullptr) return nullptr;
 
@@ -413,11 +413,10 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 	FEBioClass* feb = new FEBioClass;
 	feb->SetSuperClassID(fac->GetSuperClassID());
 	feb->SetTypeString(sztype);
+	feb->SetFEBioClass((void*)pc);
 
 	// copy the class data
 	CopyFECoreClass(feb, pc);
-
-	delete pc;
 
 	// all done!
 	return feb;
@@ -562,4 +561,21 @@ std::map<int, const char*> FEBio::GetSuperClassMap()
 {
 	if (idmap.empty()) initMap();
 	return idmap;
+}
+
+FEBio::Vec3 FEBio::GetMaterialFiber(void* vec3dvaluator)
+{
+	FECoreBase* pc = (FECoreBase*)vec3dvaluator;
+	FEVec3dValuator* val = dynamic_cast<FEVec3dValuator*>(pc); assert(val);
+	if (val == nullptr) return Vec3{ 0,0,0 };
+	FEMaterialPoint mp;
+	vec3d v = (*val)(mp);
+	Vec3 r = { v.x, v.y, v.z };
+	return r; 
+}
+
+void FEBio::DeleteClass(void* p)
+{
+	FECoreBase* pc = (FECoreBase*)p;
+	delete pc;
 }
