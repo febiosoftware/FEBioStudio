@@ -31,16 +31,16 @@ SOFTWARE.*/
 // These functions are defined in colsol.cpp
 void lubksb(double**a, int n, int *indx, double b[]);
 void ludcmp(double**a, int n, int* indx);
-
+/*
 //-----------------------------------------------------------------------------
 quatd quatd::slerp(quatd &q1, quatd &q2, double t) 
 {
 	quatd q3;
 	double dot = quatd::dot(q1, q2);
 
-	/*	dot = cos(theta)
-		if (dot < 0), q1 and q2 are more than 90 degrees apart,
-		so we can invert one to reduce spinning	*/
+	//	dot = cos(theta)
+	//	if (dot < 0), q1 and q2 are more than 90 degrees apart,
+	//	so we can invert one to reduce spinning
 	if (dot < 0)
 	{
 		dot = -dot;
@@ -54,7 +54,9 @@ quatd quatd::slerp(quatd &q1, quatd &q2, double t)
 	} else // if the angle is small, use linear interpolation								
 		return quatd::lerp(q1,q3,t);
 }
+*/
 
+/*
 //-----------------------------------------------------------------------------
 quatd::quatd(const mat3d& m)
 {
@@ -92,8 +94,8 @@ quatd::quatd(const mat3d& m)
 	q.z *= s;
 	q.w *= s;
 }
-
-
+*/
+/*
 //-----------------------------------------------------------------------------
 void quatd::SetEuler(double X, double Y, double Z)
 {
@@ -141,6 +143,7 @@ void quatd::GetEuler(double& X, double& Y, double& Z) const
 	Y *= DEG2RAD;
 	Z *= DEG2RAD;
 }
+*/
 
 //-----------------------------------------------------------------------------
 bool matrix::solve(vector<double>& x, vector<double>& b)

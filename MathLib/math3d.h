@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <assert.h>
 #include <vector>
 #include <FECore/vec3d.h>
+#include <FECore/mat3d.h>
+#include <FECore/quatd.h>
 //using namespace std;
 
 using std::vector;
@@ -54,13 +56,6 @@ using std::vector;
 #ifndef MIN
 #define MIN(a, b) ((a)<(b)?(a):(b))
 #endif
-
-//-----------------------------------------------------------------------------
-// The following classes are defined in this file
-class mat3d;     // general 3D matrix of doubles
-class mat3ds;    // symmetric 3D matrix of doubles
-class mat3da;    // anti-symmetric 3D matrix of doubles
-class mat3dd;    // diagonal matrix of doubles
 
 //-----------------------------------------------------------------------------
 class vec2i
@@ -303,7 +298,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////
 // quatd
-
+/*
 class quatd
 {
 public:
@@ -497,7 +492,7 @@ public:
 	}
 */
 
-
+/*
 	// use only when *this is unit vector
 	void RotateVector(vec3d& v) const
 	{
@@ -555,6 +550,7 @@ public:
 		return a;
 	}
 */
+/*
 	void RotateVectorP(double* v, double* r) const
 	{
 		static double fx, fy, fz, fw;
@@ -598,6 +594,7 @@ inline quatd operator * (const double a, const quatd& q)
 {
 	return q*a;
 }
+*/
 
 //-----------------------------------------------------------------------------
 // This class stores a 2nd order diagonal tensor

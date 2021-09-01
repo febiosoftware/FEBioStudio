@@ -66,7 +66,7 @@ FEMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 		FEFace* pf = pms->FacePtr(*pi);
 
 		// get the average facet normal
-		vec3d n = pf->m_fn;
+		vec3d n = to_vec3d(pf->m_fn);
 
 		// get the slave nodes
 		np = pf->Nodes();

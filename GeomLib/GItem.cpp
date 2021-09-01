@@ -248,8 +248,8 @@ vec3d GEdge::Point(double l)
 			q.RotateVector(r2);
 			GM_CIRCLE_ARC c(vec2d(0,0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y));
 			vec2d a = c.Point(l);
-			p.x = a.x;
-			p.y = a.y;
+			p.x = a.x();
+			p.y = a.y();
 			p.z = 0;
 			qi.RotateVector(p);
 			p += r0;
@@ -266,8 +266,8 @@ vec3d GEdge::Point(double l)
 			q.RotateVector(r2);
 			GM_ARC c(vec2d(0,0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y));
 			vec2d a = c.Point(l);
-			p.x = a.x;
-			p.y = a.y;
+			p.x = a.x();
+			p.y = a.y();
 			p.z = 0;
 			qi.RotateVector(p);
 			p += r0;

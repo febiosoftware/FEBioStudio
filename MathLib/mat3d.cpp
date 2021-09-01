@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 #include "mat3d.h"
 #include "eig3.h"
-
+/*
 #define ROTATE(a, i, j, k, l) g=a[i][j]; h=a[k][l];a[i][j]=g-s*(h+g*tau); a[k][l] = h + s*(g - h*tau);
 
 void mat3ds::eigen(double l[3], vec3d r[3])
@@ -178,3 +178,4 @@ void mat3ds::eigen2(double l[3], vec3d r[3])
         r[2] = vec3d(V[0][2],V[1][2],V[2][2]);
     }
 }
+*/

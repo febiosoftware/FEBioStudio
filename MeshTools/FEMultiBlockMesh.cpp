@@ -195,7 +195,7 @@ void FEMultiBlockMesh::BuildNodes(FEMesh *pm)
 					// create an arc object
 					GM_CIRCLE_ARC ca(c, a, b, e.m_winding);
 					vec2d p = ca.Point(r);
-					pn->r = vec3d(p.x, p.y, r1.z);
+					pn->r = vec3d(p.x(), p.y(), r1.z);
 					}
 					break;
 				case EDGE_3P_CIRC_ARC:

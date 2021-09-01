@@ -1095,8 +1095,8 @@ void GObject::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 				GMesh::NODE& n1 = m.Node(2*i+1);
 				vec2d p0 = c0.Point(t);
 				vec2d p1 = c1.Point(t);
-				n0.r = vec3d(p0.x, y0, p0.y);
-				n1.r = vec3d(p1.x, y1, p1.y);
+				n0.r = vec3d(p0.x(), y0, p0.y());
+				n1.r = vec3d(p1.x(), y1, p1.y());
 				n0.pid = -1;
 				n1.pid = -1;
 			}
@@ -1167,7 +1167,7 @@ void GObject::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 							double t = (double) j / (double) M;
 
 							vec2d p = c.Point(t);
-							vec3d r = vec3d(p.x, y, p.y);
+							vec3d r = vec3d(p.x(), y, p.y());
 
 							GMesh::NODE& nd = m.Node(i*(M+1)+j);
 							nd.r = r;
@@ -1187,7 +1187,7 @@ void GObject::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 							double t = (double) j / (double) M;
 
 							vec2d p = c.Point(t);
-							vec3d r = vec3d(p.x, p.y, z);
+							vec3d r = vec3d(p.x(), p.y(), z);
 
 							GMesh::NODE& nd = m.Node(i*(M+1)+j);
 							nd.r = r;
@@ -1320,7 +1320,7 @@ void GObject::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 
 					GMesh::NODE& n0 = m.Node(i+1);
 					vec2d p0 = c0.Point(t);
-					n0.r = vec3d(p0.x, y1, p0.y);
+					n0.r = vec3d(p0.x(), y1, p0.y());
 					n0.pid = -1;
 				}
 			}
@@ -1346,7 +1346,7 @@ void GObject::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 
 					GMesh::NODE& n0 = m.Node(i+1);
 					vec2d p0 = c0.Point(t);
-					n0.r = vec3d(p0.x, p0.y, z1);
+					n0.r = vec3d(p0.x(), p0.y(), z1);
 					n0.pid = -1;
 				}
 			}

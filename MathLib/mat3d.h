@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <assert.h>
 #include "math3d.h"
-
+/*
 //-----------------------------------------------------------------------------
 // The following classes are defined in this file
 class mat3d;	// general 3D matrix of doubles
@@ -383,3 +383,4 @@ inline mat3ds dyads(const vec3d& a, const vec3d& b)
 
 // The following file contains the actual definition of the class functions
 #include "mat3d.hpp"
+*/

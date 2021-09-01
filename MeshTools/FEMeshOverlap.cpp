@@ -45,7 +45,7 @@ std::vector<int> MeshTools::FindSurfaceOverlap(FEMesh* mesh, FEMeshBase* trg)
 		int nf = f.Nodes();
 		for (int j = 0; j < nf; ++j)
 		{
-			normalList[f.n[j]] += f.m_nn[j];
+			normalList[f.n[j]] += to_vec3d(f.m_nn[j]);
 			mesh->Node(f.n[j]).m_ntag = 1;
 		}
 	}

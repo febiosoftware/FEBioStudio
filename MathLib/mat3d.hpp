@@ -30,7 +30,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // class mat3dd : class describing diagonal 3D matrices of doubles
 //-----------------------------------------------------------------------------
-
+/*
 // constructor
 inline mat3dd::mat3dd(double a) { d[0] = d[1] = d[2] = a; }
 inline mat3dd::mat3dd(double a0, double a1, double a2) { d[0] = a0; d[1] = a1; d[2] = a2; }
@@ -876,3 +876,4 @@ inline double mat3d::norm() const
 	sc = fabs(d[0][2]) + fabs(d[1][2]) + fabs(d[2][2]); if (sc > s) s = sc;
 	return s;
 }
+*/
