@@ -71,7 +71,7 @@ bool CMeasureVolumeTool::OnApply()
 		// get the average position, area and normal
 		vec3d r = mesh->FaceCenter(f);
 		double area = mesh->FaceArea(f);
-		vec3d N = f.m_fn;
+		vec3d N = to_vec3d(f.m_fn);
 
 		switch (m_nformula)
 		{

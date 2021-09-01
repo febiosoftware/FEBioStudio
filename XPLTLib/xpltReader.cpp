@@ -1076,7 +1076,7 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 		NODE& N = m_Node[i];
 
 		// assign coordinates
-		n.r = N.r;
+		n.r = to_vec3d(N.r);
 	}
 
 	fem.AddMesh(pmesh);

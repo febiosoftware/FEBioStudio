@@ -70,6 +70,13 @@ void XMLElement::value(double* pg, int n)
 	m_val = ss.str();
 }
 
+void XMLElement::value(const vec3f& r)
+{
+	stringstream ss;
+	ss << r.x << "," << r.y << "," << r.z;
+	m_val = ss.str();
+}
+
 void XMLElement::value(const vec3d& r)
 { 
 	stringstream ss;

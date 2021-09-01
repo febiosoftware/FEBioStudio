@@ -647,16 +647,16 @@ void CGLMesh::Project(vec3f norm, float rot)
 
 	// rotate to plane and the range
 	vec3f n0(0, 0, 1);
-	quatd q(norm, n0);
+	quatd q(to_vec3d(norm), to_vec3d(n0));
 	q.Inverse();
-	quatd qz(-rot, vec3f(0,0,1));
+	quatd qz(-rot, vec3d(0,0,1));
 	q = qz*q;
 	pn = Node(0);
 	float xmin = 0.f, xmax = 1.f, ymin = 0.f, ymax = 1.f;
 	xmin = xmax = pn->m_pos.x; ymin = ymax = pn->m_pos.y;
 	for (i=0; i<nodes; i++, pn++)
 	{
-		vec3d p = pn->m_pos;
+		vec3d p = to_vec3d(pn->m_pos);
 		q.RotateVector(p);
 
 		if (p.x < xmin) xmin = p.x;

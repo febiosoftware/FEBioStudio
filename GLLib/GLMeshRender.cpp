@@ -59,7 +59,7 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_HEX8));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4;
-	vec3d n1, n2, n3, n4;
+	vec3f n1, n2, n3, n4;
 	glBegin(GL_QUADS);
 	{
 		for (int i = 0; i<6; ++i)
@@ -86,14 +86,14 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 				{
 					vec3d n = (r2 - r1) ^ (r3 - r1);
 					n.Normalize();
-					n1 = n2 = n3 = n4 = n;
+					n1 = n2 = n3 = n4 = to_vec3f(n);
 				}
 			}
 			else
 			{
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n4 = n;
+				n1 = n2 = n3 = n4 = to_vec3f(n);
 			}
 
 			if ((pen == 0) || ((!pen->IsVisible()) || (pen->IsSelected() && pen->IsSolid() && bsel)))
@@ -123,7 +123,7 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
 	assert(pe->IsType(FE_HEX8));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4;
-	vec3d n1, n2, n3, n4;
+	vec3f n1, n2, n3, n4;
 	GLColor c[4];
 	glBegin(GL_QUADS);
 	{
@@ -156,14 +156,14 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
 				{
 					vec3d n = (r2 - r1) ^ (r3 - r1);
 					n.Normalize();
-					n1 = n2 = n3 = n4 = n;
+					n1 = n2 = n3 = n4 = to_vec3f(n);
 				}
 			}
 			else
 			{
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n4 = n;
+				n1 = n2 = n3 = n4 = to_vec3f(n);
 			}
 
 			if ((pen == 0) || (!pen->IsVisible()))
@@ -187,7 +187,7 @@ void GLMeshRender::RenderHEX20(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_HEX20));
 	FEElement_& e = *pe;
 	vec3d r[9];
-	vec3d n[9];
+	vec3f n[9];
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = 0; i<6; ++i)
@@ -223,14 +223,14 @@ void GLMeshRender::RenderHEX20(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 				{
 					vec3d nn = (r[1] - r[0]) ^ (r[2] - r[0]);
 					nn.Normalize();
-					n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = n[8] = nn;
+					n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = n[8] = to_vec3f(nn);
 				}
 			}
 			else
 			{
 				vec3d nn = (r[1] - r[0]) ^ (r[2] - r[0]);
 				nn.Normalize();
-				n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = n[8] = nn;
+				n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = n[8] = to_vec3f(nn);
 			}
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -281,7 +281,7 @@ void GLMeshRender::RenderHEX27(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_HEX27));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4, r5, r6, r7, r8;
-	vec3d n1, n2, n3, n4, n5, n6, n7, n8;
+	vec3f n1, n2, n3, n4, n5, n6, n7, n8;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = 0; i<6; ++i)
@@ -315,14 +315,14 @@ void GLMeshRender::RenderHEX27(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 				{
 					vec3d n = (r2 - r1) ^ (r3 - r1);
 					n.Normalize();
-					n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = n;
+					n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
 				}
 			}
 			else
 			{
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = n;
+				n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
 			}
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -381,10 +381,10 @@ void GLMeshRender::RenderPENTA(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[j]);
 				assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-				n[0] = pf->m_nn[0];
-				n[1] = pf->m_nn[1];
-				n[2] = pf->m_nn[2];
-				n[3] = pf->m_nn[3];
+				n[0] = to_vec3d(pf->m_nn[0]);
+				n[1] = to_vec3d(pf->m_nn[1]);
+				n[2] = to_vec3d(pf->m_nn[2]);
+				n[3] = to_vec3d(pf->m_nn[3]);
 			}
 			else
 			{
@@ -445,7 +445,7 @@ void GLMeshRender::RenderPENTA15(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_PENTA15));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4, r5, r6, r7, r8;
-	vec3d n1, n2, n3, n4, n5, n6, n7, n8;
+	vec3f n1, n2, n3, n4, n5, n6, n7, n8;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int j = 0; j<3; j++)
@@ -479,14 +479,14 @@ void GLMeshRender::RenderPENTA15(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 				{
 					vec3d n = (r2 - r1) ^ (r3 - r1);
 					n.Normalize();
-					n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = n;
+					n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
 				}
 			}
 			else
 			{
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = n;
+				n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
 			}
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -548,14 +548,14 @@ void GLMeshRender::RenderPENTA15(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 				{
 					vec3d n = (r2 - r1) ^ (r3 - r1);
 					n.Normalize();
-					n1 = n2 = n3 = n4 = n5 = n6 = n;
+					n1 = n2 = n3 = n4 = n5 = n6 = to_vec3f(n);
 				}
 			}
 			else
 			{
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n4 = n5 = n6 = n;
+				n1 = n2 = n3 = n4 = n5 = n6 = to_vec3f(n);
 			}
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -587,7 +587,7 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_TET4) || pe->IsType(FE_TET5));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
-	vec3d n1, n2, n3;
+	vec3f n1, n2, n3;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = 0; i<4; ++i)
@@ -617,7 +617,7 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n;
+				n1 = n2 = n3 = to_vec3f(n);
 
 				bdraw = (!pen->IsVisible()) || (pen->IsSelected() && bsel);
 			}
@@ -639,7 +639,7 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
 	assert(pe->IsType(FE_TET4) || pe->IsType(FE_TET5));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
-	vec3d n1, n2, n3;
+	vec3f n1, n2, n3;
 	GLColor c[3];
 	glBegin(GL_TRIANGLES);
 	{
@@ -668,7 +668,7 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
 
 					vec3d n = (r2 - r1) ^ (r3 - r1);
 					n.Normalize();
-					n1 = n2 = n3 = n;
+					n1 = n2 = n3 = to_vec3f(n);
 				}
 
 				c[0] = col[FTTET[i][0]];
@@ -692,7 +692,7 @@ void GLMeshRender::RenderTRI3(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
 	FEFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[3];
-	vec3d n[3];
+	vec3f n[3];
 
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
@@ -719,7 +719,7 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
 	FEFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
-	vec3d n[4];
+	vec3f n[4];
 
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
@@ -750,7 +750,7 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_TET10));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
-	vec3d n1, n2, n3;
+	vec3f n1, n2, n3;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = 0; i<4; ++i)
@@ -777,7 +777,7 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n;
+				n1 = n2 = n3 = to_vec3f(n);
 			}
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -797,7 +797,7 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FECoreMesh *pm, GLColor* c)
 	assert(pe->IsType(FE_TET10));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
-	vec3d n1, n2, n3;
+	vec3f n1, n2, n3;
 	GLColor c1, c2, c3;
 	glBegin(GL_TRIANGLES);
 	{
@@ -821,7 +821,7 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FECoreMesh *pm, GLColor* c)
 			{
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n;
+				n1 = n2 = n3 = to_vec3f(n);
 			}
 
 			c1 = c[FTTET10[i][0]];
@@ -845,7 +845,7 @@ void GLMeshRender::RenderTET15(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_TET15));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
-	vec3d n1, n2, n3;
+	vec3f n1, n2, n3;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = 0; i<4; ++i)
@@ -872,7 +872,7 @@ void GLMeshRender::RenderTET15(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n;
+				n1 = n2 = n3 = to_vec3f(n);
 			}
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -892,7 +892,7 @@ void GLMeshRender::RenderTET20(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	assert(pe->IsType(FE_TET20));
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
-	vec3d n1, n2, n3;
+	vec3f n1, n2, n3;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = 0; i<4; ++i)
@@ -919,7 +919,7 @@ void GLMeshRender::RenderTET20(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 				vec3d n = (r2 - r1) ^ (r3 - r1);
 				n.Normalize();
-				n1 = n2 = n3 = n;
+				n1 = n2 = n3 = to_vec3f(n);
 			}
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
@@ -949,10 +949,10 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	r[2] = pm->Node(e.m_node[2]).r;
 	r[3] = pm->Node(e.m_node[3]).r;
 
-	n[0] = pf->m_nn[0];
-	n[1] = pf->m_nn[1];
-	n[2] = pf->m_nn[2];
-	n[3] = pf->m_nn[3];
+	n[0] = to_vec3d(pf->m_nn[0]);
+	n[1] = to_vec3d(pf->m_nn[1]);
+	n[2] = to_vec3d(pf->m_nn[2]);
+	n[3] = to_vec3d(pf->m_nn[3]);
 
 	glBegin(GL_TRIANGLES);
 	{
@@ -976,10 +976,10 @@ void GLMeshRender::RenderQUAD8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	r[2] = pm->Node(e.m_node[2]).r;
 	r[3] = pm->Node(e.m_node[3]).r;
 
-	n[0] = pf->m_nn[0];
-	n[1] = pf->m_nn[1];
-	n[2] = pf->m_nn[2];
-	n[3] = pf->m_nn[3];
+	n[0] = to_vec3d(pf->m_nn[0]);
+	n[1] = to_vec3d(pf->m_nn[1]);
+	n[2] = to_vec3d(pf->m_nn[2]);
+	n[3] = to_vec3d(pf->m_nn[3]);
 
 	glBegin(GL_TRIANGLES);
 	{
@@ -1003,10 +1003,10 @@ void GLMeshRender::RenderQUAD9(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	r[2] = pm->Node(e.m_node[2]).r;
 	r[3] = pm->Node(e.m_node[3]).r;
 
-	n[0] = pf->m_nn[0];
-	n[1] = pf->m_nn[1];
-	n[2] = pf->m_nn[2];
-	n[3] = pf->m_nn[3];
+	n[0] = to_vec3d(pf->m_nn[0]);
+	n[1] = to_vec3d(pf->m_nn[1]);
+	n[2] = to_vec3d(pf->m_nn[2]);
+	n[3] = to_vec3d(pf->m_nn[3]);
 
 	glBegin(GL_TRIANGLES);
 	{
@@ -1085,9 +1085,9 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[j]);
-				n[0] = pf->m_nn[0];
-				n[1] = pf->m_nn[1];
-				n[2] = pf->m_nn[2];
+				n[0] = to_vec3d(pf->m_nn[0]);
+				n[1] = to_vec3d(pf->m_nn[1]);
+				n[2] = to_vec3d(pf->m_nn[2]);
 			}
 			else
 			{
@@ -1118,10 +1118,10 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 		{
 			FEFace* pf = pm->FacePtr(e.m_face[4]);
 			assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-			n[0] = pf->m_nn[0];
-			n[1] = pf->m_nn[1];
-			n[2] = pf->m_nn[2];
-			n[3] = pf->m_nn[3];
+			n[0] = to_vec3d(pf->m_nn[0]);
+			n[1] = to_vec3d(pf->m_nn[1]);
+			n[2] = to_vec3d(pf->m_nn[2]);
+			n[3] = to_vec3d(pf->m_nn[3]);
 		}
 		else
 		{
@@ -1158,9 +1158,9 @@ void GLMeshRender::RenderPYRA13(FEElement_ *pe, FECoreMesh *pm, bool bsel)
             if (pen == 0)
             {
                 FEFace* pf = pm->FacePtr(e.m_face[j]);
-                n[0] = pf->m_nn[0];
-                n[1] = pf->m_nn[1];
-                n[2] = pf->m_nn[2];
+                n[0] = to_vec3d(pf->m_nn[0]);
+                n[1] = to_vec3d(pf->m_nn[1]);
+                n[2] = to_vec3d(pf->m_nn[2]);
             }
             else
             {
@@ -1191,10 +1191,10 @@ void GLMeshRender::RenderPYRA13(FEElement_ *pe, FECoreMesh *pm, bool bsel)
         {
             FEFace* pf = pm->FacePtr(e.m_face[4]);
             assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-            n[0] = pf->m_nn[0];
-            n[1] = pf->m_nn[1];
-            n[2] = pf->m_nn[2];
-            n[3] = pf->m_nn[3];
+            n[0] = to_vec3d(pf->m_nn[0]);
+            n[1] = to_vec3d(pf->m_nn[1]);
+            n[2] = to_vec3d(pf->m_nn[2]);
+            n[3] = to_vec3d(pf->m_nn[3]);
         }
         else
         {
@@ -1739,10 +1739,10 @@ void GLMeshRender::RenderThickQuad(FEFace &face, FECoreMesh* pm)
 	vec3d r3 = pm->Node(face.n[2]).r;
 	vec3d r4 = pm->Node(face.n[3]).r;
 
-	vec3f n1 = face.m_nn[0];
-	vec3f n2 = face.m_nn[1];
-	vec3f n3 = face.m_nn[2];
-	vec3f n4 = face.m_nn[3];
+	vec3d n1 = to_vec3d(face.m_nn[0]);
+	vec3d n2 = to_vec3d(face.m_nn[1]);
+	vec3d n3 = to_vec3d(face.m_nn[2]);
+	vec3d n4 = to_vec3d(face.m_nn[3]);
 
 	vec3d r1a, r2a, r3a, r4a;
 	vec3d r1b, r2b, r3b, r4b;
@@ -1827,9 +1827,9 @@ void GLMeshRender::RenderThickTri(FEFace &face, FECoreMesh* pm)
 	//h[0] = (h[0] + h[1] + h[2])/3;
 	//h[1] = h[0];
 	//h[2] = h[0];
-	vec3d n1 = face.m_nn[0];
-	vec3d n2 = face.m_nn[1];
-	vec3d n3 = face.m_nn[2];
+	vec3d n1 = to_vec3d(face.m_nn[0]);
+	vec3d n2 = to_vec3d(face.m_nn[1]);
+	vec3d n3 = to_vec3d(face.m_nn[2]);
 
 	vec3d r1a, r2a, r3a;
 	vec3d r1b, r2b, r3b;
@@ -1903,10 +1903,10 @@ void GLMeshRender::RenderThickShellOutline(FEFace &face, FECoreMesh* pm)
 	vec3d r3 = pm->Node(face.n[2]).r;
 	vec3d r4 = pm->Node(face.n[3]).r;
 
-	vec3f n1 = face.m_nn[0];
-	vec3f n2 = face.m_nn[1];
-	vec3f n3 = face.m_nn[2];
-	vec3f n4 = face.m_nn[3];
+	vec3d n1 = to_vec3d(face.m_nn[0]);
+	vec3d n2 = to_vec3d(face.m_nn[1]);
+	vec3d n3 = to_vec3d(face.m_nn[2]);
+	vec3d n4 = to_vec3d(face.m_nn[3]);
 
 	vec3d r1a, r2a, r3a, r4a;
 	vec3d r1b, r2b, r3b, r4b;
@@ -2381,7 +2381,7 @@ void RenderFace3Outline(FECoreMesh* pm, FEFace& face, int ndivs)
 		for (int n = 0; n<M; ++n)
 		{
 			double t = n / (double)M;
-			vec3d p = e.eval(a, t);
+			vec3f p = e.eval(a, t);
 			glVertex3f(p.x, p.y, p.z);
 		}
 	}
@@ -2614,12 +2614,12 @@ void GLMeshRender::RenderFaceEdge(FEFace& f, int j, FEMeshBase* pm, int ndivs)
 		r[2] = to_vec3f(pm->Node(e.n[2]).r);
 		r[3] = to_vec3f(pm->Node(e.n[3]).r);
 
-		vec3d p = r[0], q;
+		vec3f p = r[0];
 		int n = (ndivs < 3 ? 3 : ndivs);
 		for (int i = 1; i<=n; ++i)
 		{
 			float w = (float) i / n;
-			q = e.eval(r, w);
+			vec3f q = e.eval(r, w);
 			glVertex3f(p.x, p.y, p.z);
 			glVertex3f(q.x, q.y, q.z);
 			p = q;

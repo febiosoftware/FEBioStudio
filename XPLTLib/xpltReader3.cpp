@@ -1220,7 +1220,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		NODE& N = m_xmesh.node(i);
 
 		// assign coordinates
-		n.r = vec3f(N.x[0], N.x[1], N.x[2]);
+		n.r = vec3d(N.x[0], N.x[1], N.x[2]);
 	}
 
 	// set the enabled-ness of the elements and the nodes

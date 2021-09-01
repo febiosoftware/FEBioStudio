@@ -101,8 +101,8 @@ bool ProjectToElement(FEElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f
 {
 	int ne = el.Nodes();
 	BOX box;
-	for (int i = 0; i < ne; ++i) box += x0[i];
-	if (box.IsInside(p) == false) return false;
+	for (int i = 0; i < ne; ++i) box += to_vec3d(x0[i]);
+	if (box.IsInside(to_vec3d(p)) == false) return false;
 
 	double r[3] = { 0,0,0 };
 	project_inside_element(el, p, r, x0);
@@ -171,7 +171,7 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 			vec3f q;
 			if (ProjectToElement(el, r0, x0, xt, q))
 			{
-				rt = q;
+				rt = to_vec3d(q);
 				nelem = i;
 				break;
 			}
@@ -181,7 +181,7 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 			vec3f q;
 			if (ProjectToElement(el, r0, x0, x0, q))
 			{
-				rt = q;
+				rt = to_vec3d(q);
 				nelem = i;
 				break;
 			}

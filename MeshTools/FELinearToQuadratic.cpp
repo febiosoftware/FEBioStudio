@@ -658,7 +658,7 @@ void FESolidSmooth::Apply(FEMesh* pmesh)
     for (int i=0; i<NF; ++i)
     {
         FEFace& f = pmesh->Face(i);
-        for (int j=0; j<f.Nodes(); ++j) sn[f.n[j]] += f.m_nn[j];
+        for (int j=0; j<f.Nodes(); ++j) sn[f.n[j]] += to_vec3d(f.m_nn[j]);
     }
     for (int i=0; i<NN; ++i) sn[i].Normalize();
     

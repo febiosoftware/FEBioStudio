@@ -420,7 +420,7 @@ void CGLLinePlot::Render3DLines(FEState& s)
 				{
 					glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
 
-					quatd q(vec3f(0, 0, 1), n);
+					quatd q(vec3d(0, 0, 1), to_vec3d(n));
 					vec3d r = q.GetVector();
 					double angle = 180 * q.GetAngle() / PI;
 					if ((angle != 0.0) && (r.Length() > 0))
@@ -459,7 +459,7 @@ void CGLLinePlot::Render3DLines(FEState& s)
 				{
 					glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
 
-					quatd q(vec3f(0, 0, 1), n);
+					quatd q(vec3d(0, 0, 1), to_vec3d(n));
 					vec3d r = q.GetVector();
 					double angle = 180 * q.GetAngle() / PI;
 					if ((angle != 0.0) && (r.Length() > 0))
@@ -500,11 +500,11 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				vec3d e2 = l.m_t1; e2.Normalize();
 
 				// render cylinder
-				glxCylinder(l.m_r0, l.m_r1, m_line, e1, e2);
+				glxCylinder(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
 
 				// render caps
-				if (l.m_end[0] == 1) glxSphere(l.m_r0, m_line, e1); 
-				if (l.m_end[1] == 1) glxSphere(l.m_r1, m_line, e2);
+				if (l.m_end[0] == 1) glxSphere(to_vec3d(l.m_r0), m_line, e1); 
+				if (l.m_end[1] == 1) glxSphere(to_vec3d(l.m_r1), m_line, e2);
 			}
 		}
 	}
@@ -538,11 +538,11 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				glColor3ub(c.r, c.g, c.b);
 
 				// render cylinder
-				glxCylinder(l.m_r0, l.m_r1, m_line, e1, e2);
+				glxCylinder(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
 
 				// render caps
-				if (l.m_end[0] == 1) glxSphere(l.m_r0, m_line, e1);
-				if (l.m_end[1] == 1) glxSphere(l.m_r1, m_line, e2);
+				if (l.m_end[0] == 1) glxSphere(to_vec3d(l.m_r0), m_line, e1);
+				if (l.m_end[1] == 1) glxSphere(to_vec3d(l.m_r1), m_line, e2);
 			}
 		}
 	}
@@ -575,11 +575,11 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
 
 				// render cylinder
-				glxCylinder(l.m_r0, l.m_r1, m_line, e1, e2, f0, f1);
+				glxCylinder(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2, f0, f1);
 
 				// render caps
-				if (l.m_end[0] == 1) glxSphere(l.m_r0, m_line, e1, f0);
-				if (l.m_end[1] == 1) glxSphere(l.m_r1, m_line, e2, f1);
+				if (l.m_end[0] == 1) glxSphere(to_vec3d(l.m_r0), m_line, e1, f0);
+				if (l.m_end[1] == 1) glxSphere(to_vec3d(l.m_r1), m_line, e2, f1);
 			}
 		}
 		glPopAttrib();

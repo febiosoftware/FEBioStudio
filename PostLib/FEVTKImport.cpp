@@ -97,7 +97,7 @@ bool FEVTKimport::Load(const char* szfile)
 			r.x = (float)temp[k];
 			r.y = (float)temp[k + 1];
 			r.z = (float)temp[k + 2];
-			n.r = r;
+			n.r = to_vec3d(r);
 			k +=3;
 		}
 		ch = fgets(szline, 255, m_fp);

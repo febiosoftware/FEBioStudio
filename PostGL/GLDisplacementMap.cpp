@@ -88,7 +88,7 @@ void CGLDisplacementMap::Activate(bool b)
 		FEState* state = po->GetActiveState();
 		Post::FERefState& ref = *state->m_ref;
 		FEMeshBase* pm = state->GetFEMesh();
-		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).r = ref.m_Node[i].m_rt;
+		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).r = to_vec3d(ref.m_Node[i].m_rt);
 		pm->UpdateNormals();
 	}
 }
@@ -230,7 +230,7 @@ void CGLDisplacementMap::UpdateNodes()
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
 		FENode& node = pm->Node(i);
-		vec3d r0 = ref.m_Node[i].m_rt;
+		vec3d r0 = to_vec3d(ref.m_Node[i].m_rt);
 		node.r.x = r0.x + m_du[i].x * m_scl.x;
 		node.r.y = r0.y + m_du[i].y * m_scl.y;
 		node.r.z = r0.z + m_du[i].z * m_scl.z;

@@ -285,7 +285,7 @@ void CVolRender::CalcAttenuation()
 		for (int j = 0; j < m_ny; ++j)
 			for (int i = 0; i < m_nx; ++i)
 			{
-				vec3d f = map.Value(i, j, k); f.Normalize();
+				vec3d f = to_vec3d(map.Value(i, j, k)); f.Normalize();
 				double a = f*l;
 				if (a < 0.0) a = 0.0;
 				m_att.value(i, j, k) = (Byte)(255.0*a);

@@ -160,7 +160,7 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 		for (int j = 0; j<n; ++j)
 		{
 			int n1 = pm->Node(face.n[j]).m_ntag;
-			ed[n1] += face.m_nn[j];
+			ed[n1] += to_vec3d(face.m_nn[j]);
 		}
 	}
 

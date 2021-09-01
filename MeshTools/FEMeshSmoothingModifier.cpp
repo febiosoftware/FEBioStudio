@@ -209,7 +209,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int
 	for(int i =0; i< pnew->Faces();i++)
 	{
 		FEFace& fa = pnew->Face(i);
-		m_R.push_back(fa.m_fn);
+		m_R.push_back(to_vec3d(fa.m_fn));
 	}
 	for (int iter = 0 ; iter< m_iteration;iter++)
 	{				

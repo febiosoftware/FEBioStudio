@@ -232,7 +232,7 @@ vec3d ClosestNodeOnSurface(FEMesh& mesh, const vec3d& r, const vec3d& t)
 	{
 		// only pick faces that are facing r
 		FEFace& f = mesh.Face(i);
-		if (t*f.m_fn < 0)
+		if (t* to_vec3d(f.m_fn) < 0)
 		{
 			int n = f.Nodes();
 			for (int j = 0; j<n; ++j) mesh.Node(f.n[j]).m_ntag = 1;

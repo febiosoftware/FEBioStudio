@@ -190,7 +190,7 @@ void BuildFrontMesh(vector<int> front, vector<FRONT_NODE>& nodeList, vector<FRON
 
 		// propose a new node, positioned such that it creates a "perfect" triangle
 		vec2d e = rb - ra;
-		vec2d t(-e.y, e.x); // rotate 90 degrees counter-clockwise
+		vec2d t(-e.y(), e.x()); // rotate 90 degrees counter-clockwise
 		vec2d c = (ra + rb)*0.5;
 		double w = e.norm();
 		double h = sqrt(3.0)*0.5;	// height of equilateral triangle

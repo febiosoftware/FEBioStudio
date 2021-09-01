@@ -48,7 +48,7 @@ public:
 
 		OCTREE_BOX* Find(const vec3f& r);
 
-		bool IsInside(const vec3f& r) const { return m_box.IsInside(r); }
+		bool IsInside(const vec3f& r) const { return m_box.IsInside(to_vec3d(r)); }
 
 		void Add(BOX& b, int nelem);
 	};

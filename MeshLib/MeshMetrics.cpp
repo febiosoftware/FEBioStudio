@@ -241,7 +241,7 @@ double ShellJacobian(const FEMesh& mesh, const FEElement& el, int flag)
 		for (i = 0; i<n; ++i) r[i] = mesh.Node(el.m_node[i]).r;
 	}
 	const FEFace& face = mesh.Face(el.m_face[0]);
-	for (i = 0; i<n; ++i) D[i] = face.m_nn[i];//normal node
+	for (i = 0; i<n; ++i) D[i] = to_vec3d(face.m_nn[i]);//normal node
 	for (i = 0; i<n; ++i) h[i] = el.m_h[i];//shell thickness
 
 	for (k = 0; k<2; ++k)

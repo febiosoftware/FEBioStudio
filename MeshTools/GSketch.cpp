@@ -60,7 +60,7 @@ int GSketch::AddPoint(vec2d r)
 	for (int i=0; i<N; ++i)
 	{
 		vec2d& a = m_pt[i].r;
-		if ((fabs(a.x - r.x) < eps) && (fabs(a.y - r.y) < eps))
+		if ((fabs(a.x() - r.x()) < eps) && (fabs(a.y() - r.y()) < eps))
 		{
 			n = i;
 			break;

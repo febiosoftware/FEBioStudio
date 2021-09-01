@@ -277,7 +277,7 @@ int CDlgImportLines::ReadAng2Format(const char* szfile)
 	for (int i = 0; i < N; ++i)
 	{
 		tmp[i] = mesh.Node(i).r;
-		mesh.Node(i).r = fem.NodePosition(i, 0);
+		mesh.Node(i).r = to_vec3d(fem.NodePosition(i, 0));
 	}
 
 	// build search tool

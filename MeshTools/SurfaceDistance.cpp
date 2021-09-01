@@ -113,7 +113,7 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 		int nf = fi.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
-			nu[fi.n[j]] += fi.m_nn[j];
+			nu[fi.n[j]] += to_vec3d(fi.m_nn[j]);
 		}
 	}
 

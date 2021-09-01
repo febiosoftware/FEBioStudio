@@ -61,7 +61,7 @@ bool BivariatePolynomialSpline::GetSplineCoeficients()
         for (int j=0; j<=2*m_n; ++j) {
             sum[i][j] = 0;
             for (int k=0; k<np; ++k)
-                sum[i][j] += pow(m_pc->m_u[k].x, i)*pow(m_pc->m_u[k].y, j);
+                sum[i][j] += pow(m_pc->m_u[k].x(), i)*pow(m_pc->m_u[k].y(), j);
         }
     }
     
@@ -91,7 +91,7 @@ bool BivariatePolynomialSpline::GetSplineCoeficients()
         for (int j=0; j<N; ++j) {
             irow = i + j*N;
             for (int l=0; l<np; ++l) {
-                uv = pow(m_pc->m_u[l].x, i)*pow(m_pc->m_u[l].y, j);
+                uv = pow(m_pc->m_u[l].x(), i)*pow(m_pc->m_u[l].y(), j);
                 m_c[0][irow] += m_pc->m_p[l].x*uv;
                 m_c[1][irow] += m_pc->m_p[l].y*uv;
                 m_c[2][irow] += m_pc->m_p[l].z*uv;

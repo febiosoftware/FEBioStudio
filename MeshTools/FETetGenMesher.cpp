@@ -1102,7 +1102,7 @@ bool PLC::BuildEdges()
 				{
 					double l = (double) j / (double) n;
 					vec2d p = c.Point(l);
-					vec3d r(p.x, y, p.y);
+					vec3d r(p.x(), y, p.y());
 					ed.node.push_back(AddNode(r, -1));
 				}
 				ed.node.push_back(FindNode(es.m_node[1]));
@@ -1256,7 +1256,7 @@ bool PLC::BuildFaceRevolve(GFace& fs)
 				GM_CIRCLE_ARC c(vec2d(0, 0), a, b);
 				double l = (double)j / (double)ny;
 				vec2d p = c.Point(l);
-				vec3d r(p.x, ra.y, p.y);
+				vec3d r(p.x(), ra.y, p.y());
 				nb[i] = AddNode(r, -1);
 			}
 			nb[nx - 1] = e1.node[j + 1];
@@ -1341,7 +1341,7 @@ bool PLC::BuildFaceRevolveWedge(GFace& fs)
 				GM_CIRCLE_ARC c(vec2d(0, 0), a, b);
 				double l = (double)j / (double)ny;
 				vec2d p = c.Point(l);
-				vec3d r(p.x, ra.y, p.y);
+				vec3d r(p.x(), ra.y, p.y());
 				nb[i] = AddNode(r, -1);
 			}
 			nb[nx - 1] = (fs.m_edge[1].nwn == 1 ? e1.node[j + 1] : e1.node[ny - j - 2]);

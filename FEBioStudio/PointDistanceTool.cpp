@@ -53,7 +53,7 @@ CPointDistanceTool::CPointDistanceTool(CMainWindow* wnd) : CBasicTool(wnd, "Poin
 { 
 	m_node1 = 0; 
 	m_node2 = 0; 
-	m_d = vec3f(0,0,0); 
+	m_d = vec3d(0,0,0); 
 
 	addProperty("node 1", CProperty::Int);
 	addProperty("node 2", CProperty::Int);
@@ -72,7 +72,7 @@ void CPointDistanceTool::Activate()
 void CPointDistanceTool::Update()
 {
 	SetDecoration(nullptr);
-	m_d = vec3f(0.f, 0.f, 0.f);
+	m_d = vec3d(0, 0, 0);
 
 	FEMeshBase* mesh = GetActiveEditMesh();
 	if (mesh == nullptr) return;

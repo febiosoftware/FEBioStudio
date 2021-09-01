@@ -132,7 +132,7 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 
 	// get the initial coordinates
 	vector<vec3d> r0(NN);
-	for (int i=0; i<NN; ++i) r0[i] = fem.NodePosition(i, 0);
+	for (int i=0; i<NN; ++i) r0[i] = to_vec3d(fem.NodePosition(i, 0));
 
 	int NS = (int)m_State.size();
 	if (m_n0 >= NS) return false;

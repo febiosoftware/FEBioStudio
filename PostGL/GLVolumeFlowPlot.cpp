@@ -111,7 +111,7 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 		{
 			float x = box.x0 + ((float)i)*(box.x1 - box.x0) / (nx - 1.f);
 			Slice& slice = m_slice_X[i];
-			CreateSlice(slice, vec3f(1, 0, 0), x);
+			CreateSlice(slice, vec3d(1, 0, 0), x);
 		}
 
 #pragma omp for
@@ -119,7 +119,7 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 		{
 			float y = box.y0 + ((float)i)*(box.y1 - box.y0) / (ny - 1.f);
 			Slice& slice = m_slice_Y[i];
-			CreateSlice(slice, vec3f(0, 1, 0), y);
+			CreateSlice(slice, vec3d(0, 1, 0), y);
 		}
 
 #pragma omp for
@@ -127,7 +127,7 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 		{
 			float z = box.z0 + ((float)i)*(box.z1 - box.z0) / (nz - 1.f);
 			Slice& slice = m_slice_Z[i];
-			CreateSlice(slice, vec3f(0, 0, 1), z);
+			CreateSlice(slice, vec3d(0, 0, 1), z);
 		}
 	}
 }

@@ -689,7 +689,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 			{
 				FENode& node = pm->Node(el.m_node[nt[k]]);
 				nf[k] = (node.IsExterior() ? 1 : 0);
-				ex[k] = to_vec3f(node.r);
+				ex[k] = node.r;
 				en[k] = el.m_node[nt[k]];
 				ev[k] = state.m_NODE[el.m_node[nt[k]]].m_val;
 			}
@@ -896,7 +896,7 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 					for (int k = 0; k<4; ++k)
 					{
 						FENode& node = pm->Node(face.n[nt[k]]);
-						ex[k] = to_vec3f(node.r);
+						ex[k] = node.r;
 						en[k] = el.m_node[nt[k]];
 						ev[k] = state.m_NODE[el.m_node[nt[k]]].m_val;
 					}
@@ -1009,7 +1009,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 				FENode& node = pm->Node(el.m_node[nt[k]]);
 				en[k] = el.m_node[k];
 				ev[k] = ps->m_NODE[en[k]].m_val;
-				ex[k] = ps->m_NODE[en[k]].m_rt;
+				ex[k] = to_vec3d(ps->m_NODE[en[k]].m_rt);
 			}
 
 			// calculate the case of the element

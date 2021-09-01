@@ -271,7 +271,7 @@ void FEAreaCoverage::projectSurface(FEAreaCoverage::Surface& surf1, FEAreaCovera
 		Intersection q;
 		if (intersect(ri, Ni, surf2, q))
 		{
-			vec3d e = q.point - ri;
+			vec3f e = to_vec3f(q.point) - ri;
 			double L1 = e.Length();
 			if (e*Ni < 0.f) L1 = -L1;
 
@@ -295,7 +295,8 @@ void FEAreaCoverage::projectSurface(FEAreaCoverage::Surface& surf1, FEAreaCovera
 bool FEAreaCoverage::intersect(const vec3f& r, const vec3f& N, FEAreaCoverage::Surface& surf, Intersection& qmin)
 {
 	// create the ray
-	Ray ray = {r, N};
+	vec3d rd = to_vec3d(r);
+	Ray ray = {rd, to_vec3d(N)};
 
 	// loop over all facets connected to this node
 	Intersection q;
@@ -306,7 +307,7 @@ bool FEAreaCoverage::intersect(const vec3f& r, const vec3f& N, FEAreaCoverage::S
 		// see if the ray intersects this face
 		if (faceIntersect(surf, ray, i, q))
 		{
-			double L = (q.point - r).Length();
+			double L = (q.point - rd).Length();
 			if ((imin == -1) || (L < Lmin))
 			{
 				imin = i;
@@ -344,7 +345,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 			rn[i] = surf.m_pos[surf.m_lnode[MN * nface + i]];
 		}
 
-		Triangle tri = { rn[0], rn[1], rn[2], surf.m_fnorm[nface] };
+		Triangle tri = { to_vec3d(rn[0]), to_vec3d(rn[1]), to_vec3d(rn[2]), to_vec3d(surf.m_fnorm[nface]) };
 		bfound = IntersectTriangle(ray, tri, q, false);
 
 		bfound = (bfound && (ray.direction * tri.fn < -m_angleThreshold));
@@ -359,7 +360,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 			rn[i] = surf.m_pos[surf.m_lnode[MN * nface + i]];
 		}
 
-		Quad quad = { rn[0], rn[1], rn[2], rn[3] };
+		Quad quad = { to_vec3d(rn[0]), to_vec3d(rn[1]), to_vec3d(rn[2]), to_vec3d(rn[3]) };
 		bfound = FastIntersectQuad(ray, quad, q);
 	}
 	break;

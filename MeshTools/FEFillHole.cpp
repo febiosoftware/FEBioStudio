@@ -52,7 +52,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		FEFace &Face = pm->Face(i);
 		for (int j = 0; j < Face.Nodes(); j++)
 		{
-			m_node_normals[Face.n[j]] += Face.m_nn[j];
+			m_node_normals[Face.n[j]] += to_vec3d(Face.m_nn[j]);
 		}
 	}
 	for (int i = 0; i < m_node_normals.size(); ++i) m_node_normals[i].Normalize();
@@ -171,7 +171,7 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 		FEFace &Face = pm->Face(i);
 		for (int j = 0; j < Face.Nodes(); j++)
 		{
-			m_node_normals[Face.n[j]] += Face.m_nn[j];
+			m_node_normals[Face.n[j]] += to_vec3d(Face.m_nn[j]);
 		}
 	}
 	for (int i = 0; i < m_node_normals.size(); ++i) m_node_normals[i].Normalize();
@@ -949,7 +949,7 @@ bool FEFillHole::AFM(FESurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list
 		FEFace &Face = mesh.Face(i);
 		for(int j = 0; j < Face.Nodes(); j++)
 		{
-			node_normals[Face.n[j]] = Face.m_nn[j];
+			node_normals[Face.n[j]] = to_vec3d(Face.m_nn[j]);
 		}
 	}
 

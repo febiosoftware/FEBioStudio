@@ -226,7 +226,7 @@ void CGLCamera::SetViewDirection(const vec3d &r)
 {
 	if (r.Length() != 0.f)
 	{
-		m_rot.Target(quatd(vec3f(0, 0, 1.f), r).Inverse());
+		m_rot.Target(quatd(vec3d(0, 0, 1.f), r).Inverse());
 	}
 }
 

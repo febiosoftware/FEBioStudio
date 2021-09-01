@@ -70,7 +70,7 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 			int nf = f.Nodes();
 			for (int j=0; j<nf; ++j)
 			{
-				if (tag[f.n[j]] != 0) normals[f.n[j]] += f.m_nn[j];
+				if (tag[f.n[j]] != 0) normals[f.n[j]] += to_vec3d(f.m_nn[j]);
 			}
 		}
 	}

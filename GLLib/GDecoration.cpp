@@ -132,10 +132,10 @@ void GArcDecoration::render()
 	if (m_divs == 0) return;
 
 	quatd Q0(0.0, vec3d(0, 0, 1));
-	quatd Q1(m_e0, m_e1);
+	quatd Q1(to_vec3d(m_e0), to_vec3d(m_e1));
 
-	vec3d c(m_c);
-	vec3d p0 = c + m_e0*m_scale;
+	vec3d c(to_vec3d(m_c));
+	vec3d p0 = c + to_vec3d(m_e0)*m_scale;
 
 	glColor3ub(m_col.r, m_col.g, m_col.b);
 	glBegin(GL_LINES);
@@ -144,7 +144,7 @@ void GArcDecoration::render()
 		double t = i / (double)m_divs;
 		quatd Q = quatd::lerp(Q0, Q1, t);
 
-		vec3d rt = m_e0;
+		vec3d rt = to_vec3d(m_e0);
 		Q.RotateVector(rt);
 
 		vec3d p1 = c + rt*m_scale;
@@ -159,7 +159,7 @@ void GArcDecoration::render()
 
 GSphereDecoration::GSphereDecoration(const vec3f& a, double R)
 {
-	m_c = a;
+	m_c = to_vec3d(a);
 	m_R = R;
 	m_col = GLColor(255, 255, 0, 64);
 }
@@ -286,11 +286,11 @@ void GPlaneCutDecoration::render()
 		{
 			int k1 = (k + 1) % 3;
 
-			vec3d rk = (r[k] + r[k1])*0.5;
-			if (box.IsInside(rk) == false)
+			vec3f rk = (r[k] + r[k1])*0.5f;
+			if (box.IsInside(to_vec3d(rk)) == false)
 			{
-				vec3d ek = r[k1] - r[k];
-				rc += to_vec3f(rk)*ek.Length(); lc += ek.Length();
+				vec3f ek = r[k1] - r[k];
+				rc += rk*ek.Length(); lc += ek.Length();
 				glBegin(GL_LINES);
 				{
 					glVertex3f(r[k].x, r[k].y, r[k].z);
@@ -353,7 +353,7 @@ void GPlaneCutDecoration::render()
 	double R2 = R * 0.15;
 	if (lc > 0)
 	{
-		quatd q(vec3d(0, 0, 1), Nc);
+		quatd q(vec3d(0, 0, 1), to_vec3d(Nc));
 		vec3d e1( R2*0.6, 0, -R2);
 		vec3d e2(-R2*0.6, 0, -R2);
 		q.RotateVector(e1);

@@ -205,7 +205,7 @@ bool FECVDDecimationModifier::Initialize(FESurfaceMesh* pm)
 			{
 				//normal vector to the jth node of the face
 				//step -1
-				vec3d p = fi.m_nn[j];
+				vec3d p = to_vec3d(fi.m_nn[j]);
 				vec3d r0 = pm->Node(fi.n[j]).r;
 
 				//step -2 

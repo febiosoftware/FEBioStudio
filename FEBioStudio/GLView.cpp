@@ -1813,7 +1813,7 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 
 			float inf = box.Radius()*100.f;
 
-			vec3d lpv = GetLightPosition();
+			vec3d lpv = to_vec3d(GetLightPosition());
 
 			quatd q = cam.GetOrientation();
 			q.Inverse().RotateVector(lpv);
@@ -2392,7 +2392,7 @@ void CGLView::RenderNormals(GObject* po, double scale)
 			bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
 			if (face.IsVisible() && bvis)
 			{
-				vec3d fn = face.m_fn;
+				vec3d fn = to_vec3d(face.m_fn);
 
 				int n = face.Nodes();
 				vec3d p = vec3d(0, 0, 0);
@@ -4543,7 +4543,7 @@ void CGLView::SelectFEElements(int x, int y)
 			if (pe->IsShell())
 			{
 				assert(pe->m_face[0] >= 0);
-				t = pm->Face(pe->m_face[0]).m_fn; tr = cos(PI*view.m_fconn / 180.0);
+				t = to_vec3d(pm->Face(pe->m_face[0]).m_fn); tr = cos(PI*view.m_fconn / 180.0);
 			}
 
 			// get the respect partition boundary flag
@@ -6378,7 +6378,7 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 				int m = pf->FindNode(num);
 				if (m >= 0)
 				{
-					t += pf->m_fn;
+					t += to_vec3d(pf->m_fn);
 					stack.push(pf);
 					pf->m_ntag = -1;
 				}
@@ -7288,7 +7288,7 @@ void CGLView::RenderFENodes(GObject* po)
 				int n = face.Nodes();
 				for (int j = 0; j<n; ++j)
 				{
-					vec3d nn = face.m_nn[j];
+					vec3d nn = to_vec3d(face.m_nn[j]);
 					f = q*nn;
 					if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
 				}
@@ -7345,7 +7345,7 @@ void CGLView::RenderFENodes(GObject* po)
 					int n = face.Nodes();
 					for (int j = 0; j<n; ++j)
 					{
-						vec3d nn = face.m_nn[j];
+						vec3d nn = to_vec3d(face.m_nn[j]);
 						f = q*nn;
 						if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
 					}
@@ -7616,7 +7616,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 				int n = face.Nodes();
 				for (int j = 0; j<n; ++j)
 				{
-					vec3d nn = face.m_nn[j];
+					vec3d nn = to_vec3d(face.m_nn[j]);
 					f = q*nn;
 					if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
 				}
@@ -9241,7 +9241,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 						for (int k = 0; k < 8; ++k)
 						{
 							FENode& node = mesh->Node(el.m_node[nt[k]]);
-							ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
+							ex[k] = mesh->LocalToGlobal(node.r);
 							en[k] = el.m_node[nt[k]];
 						}
 

@@ -214,7 +214,7 @@ FEMesh* FEFlattenFaces::Apply(FEMesh *pm)
 		for (i=0; i<m.Faces(); ++i)
 		{
 			FEFace& f = m.Face(i);
-			if (f.IsSelected()) na += f.m_fn;
+			if (f.IsSelected()) na += to_vec3d(f.m_fn);
 		}
 	}
 	else na = m_na;

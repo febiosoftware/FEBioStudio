@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <math.h>
 #include <assert.h>
 #include <vector>
+#include <FECore/vec3d.h>
 //using namespace std;
 
 using std::vector;
@@ -83,6 +84,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // class vec2d defines a 2D vector
+/*
 class vec2d
 {
 public:
@@ -112,6 +114,7 @@ public:
 public:
 	double	x, y;
 };
+*/
 
 //-----------------------------------------------------------------------------
 class vec3f
@@ -156,9 +159,12 @@ public:
 	float x, y, z;
 };
 
+inline vec3d to_vec3d(const vec3f& r) { return vec3d((double)r.x, (double)r.y, (double)r.z); }
+
 //-----------------------------------------------------------------------------
 // class vec3d defines a 3D vector
 //
+/*
 class vec3d
 {
 public:
@@ -236,6 +242,7 @@ public:
 public:
 	double x, y, z;
 };
+*/
 
 ///////////////////////////////////////////////////////////////////
 // vec6d
@@ -316,7 +323,7 @@ public:
 		z = v.z*sina;
 	}
 
-	quatd (vec3d v1, vec3d v2)
+	quatd (const vec3d& v1, const vec3d& v2)
 	{
 		vec3d n = v1^v2;
 		n.Normalize();

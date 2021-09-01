@@ -135,7 +135,7 @@ void CGLSlicePlot::Render(CGLContext& rc)
 	glDisable(GL_LIGHTING);
 	tex.MakeCurrent();
 	double fmin, fmax;
-	vec3d n = m_norm;
+	vec3d n = to_vec3d(m_norm);
 	n.Normalize();
 	m_box.Range(n, fmin, fmax);
 	float Df = fabs(fmax - fmin);
@@ -189,7 +189,7 @@ void CGLSlicePlot::RenderSlice(float ref)
 	FEPostModel* ps = mdl->GetFEModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
-	vec3f norm = m_norm;
+	vec3d norm = to_vec3d(m_norm);
 	norm.Normalize();
 
 	vec2f rng = m_crng;

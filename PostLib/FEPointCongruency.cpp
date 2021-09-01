@@ -147,7 +147,7 @@ bool FEPointCongruency::Project(int nid, int& nface, vec3f& q, double rs[2], vec
 
 	// find the intersection of the ray with the surface makin sure not to intersect
 	// faces that contain this node
-	Ray ray = {nr, sn};
+	Ray ray = { to_vec3d(nr), to_vec3d(sn)};
 	return Intersect(ray, nface, nid, q, rs);
 }
 
@@ -195,9 +195,9 @@ bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, do
 
 	FEMesh* pm = m_mesh;
 
-	vec3f n1 = to_vec3f(pm->Node(face.n[0]).pos());
-	vec3f n2 = to_vec3f(pm->Node(face.n[1]).pos());
-	vec3f n3 = to_vec3f(pm->Node(face.n[2]).pos());
+	vec3d n1 = pm->Node(face.n[0]).pos();
+	vec3d n2 = pm->Node(face.n[1]).pos();
+	vec3d n3 = pm->Node(face.n[2]).pos();
 
 	Triangle tri = {n1, n2, n3};
 
@@ -226,11 +226,11 @@ bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, d
 		IntersectTri3(ray, tri2, q, rs))
 	{
 		FEMesh* pm = m_mesh;
-		vec3f y[4];
-		y[0] = to_vec3f(pm->Node(face.n[0]).pos());
-		y[1] = to_vec3f(pm->Node(face.n[1]).pos());
-		y[2] = to_vec3f(pm->Node(face.n[2]).pos());
-		y[3] = to_vec3f(pm->Node(face.n[3]).pos());
+		vec3d y[4];
+		y[0] = pm->Node(face.n[0]).pos();
+		y[1] = pm->Node(face.n[1]).pos();
+		y[2] = pm->Node(face.n[2]).pos();
+		y[3] = pm->Node(face.n[3]).pos();
 
 		Quad quad = {y[0], y[1], y[2], y[3]};
 		Intersection intersect;

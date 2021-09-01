@@ -106,7 +106,7 @@ FEFindElement::OCTREE_BOX* FEFindElement::OCTREE_BOX::Find(const vec3f& r)
 {
 	if (m_level == 0)
 	{
-		bool inside = m_box.IsInside(r);
+		bool inside = m_box.IsInside(to_vec3d(r));
 		return (inside ? this : 0);
 	}
 
@@ -170,11 +170,11 @@ void FEFindElement::InitReferenceFrame(vector<bool>& flags)
 	int NE = m_mesh.Elements();
 	if ((NN == 0) || (NE == 0)) return;
 
-	vec3f r = to_vec3f(m_mesh.Node(0).r);
+	vec3d r = m_mesh.Node(0).r;
 	BOX box(r, r);
 	for (int i = 1; i<m_mesh.Nodes(); ++i)
 	{
-		r = to_vec3f(m_mesh.Node(i).r);
+		r = m_mesh.Node(i).r;
 		box += r;
 	}
 	double R = box.GetMaxExtent();
@@ -206,12 +206,12 @@ void FEFindElement::InitReferenceFrame(vector<bool>& flags)
 			int ne = e.Nodes();
 
 			// do a quick bounding box test
-			vec3f r0 = to_vec3f(m_mesh.Node(e.m_node[0]).r);
-			vec3f r1 = r0;
+			vec3d r0 = m_mesh.Node(e.m_node[0]).r;
+			vec3d r1 = r0;
 			BOX box(r0, r1);
 			for (int j = 1; j<ne; ++j)
 			{
-				vec3f rj = to_vec3f(m_mesh.Node(e.m_node[j]).r);
+				vec3d rj = m_mesh.Node(e.m_node[j]).r;
 				box += rj;
 			}
 			double R = box.GetMaxExtent();
@@ -321,7 +321,7 @@ bool FEFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, double r[3]
 		nelem = nid;
 
 		// do a quick bounding box test
-		if (c->m_box.IsInside(x))
+		if (c->m_box.IsInside(to_vec3d(x)))
 		{
 			// do a more complete search
 			if (ProjectInsideReferenceElement(m_mesh, e, x, r)) return true;
@@ -353,7 +353,7 @@ bool FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double r[3])
 		nelem = nid;
 
 		// do a quick bounding box test
-		if (c->m_box.IsInside(x))
+		if (c->m_box.IsInside(to_vec3d(x)))
 		{
 			// do a more complete search
 			if (ProjectInsideElement(m_mesh, e, x, r)) return true;

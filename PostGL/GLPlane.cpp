@@ -100,7 +100,7 @@ void CGLPlane::Render(CGLContext& rc)
 	glPushMatrix();
 	glTranslatef(m_rc.x, m_rc.y, m_rc.z);
 
-	quatd q(vec3f(0,0,1), m_e[2]);
+	quatd q(vec3d(0,0,1), m_e[2]);
 	double w = q.GetAngle();
 	if (w != 0)
 	{

@@ -235,7 +235,7 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 			FEFace& f = pm->Face(i);
 			for (j=0; j<f.Nodes(); ++j) 
 			{
-				N[f.n[j]] += f.m_nn[j];
+				N[f.n[j]] += to_vec3d(f.m_nn[j]);
 				pm->Node(f.n[j]).m_ntag = 1;
 			}
 		}

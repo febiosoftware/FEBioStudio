@@ -829,8 +829,8 @@ void FEVolRatio::eval(int n, float* pv)
 	for (int i=0; i<N; i++) 
 	{ 
 		int node = pe->m_node[i];
-		X[i] = fem.NodePosition(node, 0); 
-		x[i] = fem.NodePosition(node, ntime);
+		X[i] = to_vec3d(fem.NodePosition(node, 0)); 
+		x[i] = to_vec3d(fem.NodePosition(node, ntime));
 	}
 
 	double v0 = element_volume(pe->Type(), X);
@@ -1162,7 +1162,7 @@ void FENodePosition::eval(int n, vec3f* pv)
 //-----------------------------------------------------------------------------
 void FENodeInitPos::eval(int n, vec3f* pv)
 {
-	*pv = to_vec3f(GetFEModel()->NodePosition(n, 0));
+	*pv = GetFEModel()->NodePosition(n, 0);
 }
 
 //=============================================================================

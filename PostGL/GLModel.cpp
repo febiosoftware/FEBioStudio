@@ -351,7 +351,7 @@ void CGLModel::ResetMesh()
 	for (int i = 0; i<NN; ++i)
 	{
 		FENode& node = mesh.Node(i);
-		node.r = ref.m_Node[i].m_rt;
+		node.r = to_vec3d(ref.m_Node[i].m_rt);
 	}
 
 	// reevaluate normals
@@ -1038,7 +1038,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 			GLubyte a[4];
 			for (int j = 0; j < face.Nodes(); ++j)
 			{
-				vec3d r = face.m_nn[j];
+				vec3d r = to_vec3d(face.m_nn[j]);
 				q.RotateVector(r);
 				double z = 1 - fabs(r.z);
 				a[j] = (GLubyte)(255 * (tm + 0.5*(1 - tm)*(z*z)));
@@ -1076,7 +1076,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 				GLubyte a[4];
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
-					vec3d r = face.m_nn[j];
+					vec3d r = to_vec3d(face.m_nn[j]);
 					q.RotateVector(r);
 					double z = 1 - fabs(r.z);
 					a[j] = (GLubyte)(255 * (tm + 0.5*(1 - tm)*(z*z)));
@@ -1114,7 +1114,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 				GLubyte a[4];
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
-					vec3d r = face.m_nn[j];
+					vec3d r = to_vec3d(face.m_nn[j]);
 					q.RotateVector(r);
 					double z = 1 - fabs(r.z);
 					a[j] = (GLubyte)(255 * (tm + 0.5*(1 - tm)*(z*z)));
@@ -1570,8 +1570,8 @@ void CGLModel::RenderGhost(CGLContext &rc)
 					}
 					else
 					{
-						vec3d n1 = f.m_fn;
-						vec3d n2 = f2.m_fn;
+						vec3d n1 = to_vec3d(f.m_fn);
+						vec3d n2 = to_vec3d(f2.m_fn);
 						q.RotateVector(n1);
 						q.RotateVector(n2);
 						if (n1.z*n2.z <= 0) 
@@ -1588,8 +1588,8 @@ void CGLModel::RenderGhost(CGLContext &rc)
 
 					if (a > b) { a ^= b; b ^= a; a ^= b; }
 
-					r1 = ref->m_Node[a].m_rt;
-					r2 = ref->m_Node[b].m_rt;
+					r1 = to_vec3d(ref->m_Node[a].m_rt);
+					r2 = to_vec3d(ref->m_Node[b].m_rt);
 
 					glBegin(GL_LINES);
 					{
@@ -1796,7 +1796,7 @@ void CGLModel::RenderShadows(FEPostModel* ps, const vec3d& lp, float inf)
 		if (bvalid)
 		{
 			// only look at front facing faces
-			fn = f.m_fn;
+			fn = to_vec3d(f.m_fn);
 			if (fn*n > 0)
 			{
 				for (int j=0; j<m; j++)
@@ -1806,7 +1806,7 @@ void CGLModel::RenderShadows(FEPostModel* ps, const vec3d& lp, float inf)
 
 					if (pf2)
 					{
-						fn2 = pf2->m_fn;
+						fn2 = to_vec3d(pf2->m_fn);
 					}
 
 					// we got one!
@@ -1909,7 +1909,7 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 			int n = face.Nodes();
 			for (int j = 0; j<n; ++j)
 			{
-				vec3d f = face.m_nn[j];
+				vec3d f = to_vec3d(face.m_nn[j]);
 				q.RotateVector(f);
 				if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
 			}

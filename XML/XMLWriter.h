@@ -77,6 +77,7 @@ public:
 	void value(bool   b);
 	void value(double g);
 	void value(double* pg, int n);
+	void value(const vec3f& r);
 	void value(const vec3d& r);
 	void value(const mat3d& a);
 	void value(const vec2i& r);

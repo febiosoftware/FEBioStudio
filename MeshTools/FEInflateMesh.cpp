@@ -101,7 +101,7 @@ void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
 			int nn = face.Nodes();
 			for (int j = 0; j < nn; ++j)
 			{
-				vec3d fn = face.m_nn[j];
+				vec3d fn = to_vec3d(face.m_nn[j]);
 				int ntag = mesh.Node(face.n[j]).m_ntag; assert(ntag >= 0);
 				normal[ntag] += fn;
 			}

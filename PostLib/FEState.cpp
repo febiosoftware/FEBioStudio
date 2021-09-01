@@ -395,7 +395,7 @@ void FEState::AddLine(vec3f a, vec3f b, float data_a, float data_b, int el0, int
 	L.m_segId = 0;
 	L.m_r0 = a;
 	L.m_r1 = b;
-	L.m_t0 = L.m_t1 = t;
+	L.m_t0 = L.m_t1 = to_vec3d(t);
 	L.m_user_data[0] = data_a;
 	L.m_user_data[1] = data_b;
 	L.m_elem[0] = el0;
@@ -657,8 +657,8 @@ void LineData::processLines()
 	for (int i = 0; i < lines; ++i)
 	{
 		Post::LINEDATA& line = Line(i);
-		box += vec3d(line.m_r0);
-		box += vec3d(line.m_r1);
+		box += to_vec3d(line.m_r0);
+		box += to_vec3d(line.m_r1);
 	}
 
 	// inflate a little
@@ -675,8 +675,8 @@ void LineData::processLines()
 	for (int i = 0; i < lines; ++i)
 	{
 		Post::LINEDATA& line = Line(i);
-		ptIndex[i].first  = ocb.addNode(points, line.m_r0); assert(ptIndex[i].first  >= 0);
-		ptIndex[i].second = ocb.addNode(points, line.m_r1); assert(ptIndex[i].second >= 0);
+		ptIndex[i].first  = ocb.addNode(points, to_vec3d(line.m_r0)); assert(ptIndex[i].first  >= 0);
+		ptIndex[i].second = ocb.addNode(points, to_vec3d(line.m_r1)); assert(ptIndex[i].second >= 0);
 		assert(ptIndex[i].first != ptIndex[i].second);
 	}
 
