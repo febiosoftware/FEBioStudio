@@ -164,7 +164,13 @@ public:
 
 	void setShellNormalNodal(bool b);
 	bool shellNormalNodal() const;
+    
+    void setLaugon(bool b);
+    bool laugon() const;
 
+    void setAugTol(double d);
+    double augTol() const;
+    
 protected:
 	int		m_matid;
 };

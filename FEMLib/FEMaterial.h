@@ -145,6 +145,8 @@
 #define FE_HOLZAPFEL_UNCONSTRAINED      81
 #define FE_FIBER_KIOUSIS_UNCOUPLED      82
 #define FE_NEWTONIAN_VISCOUS_SOLID      83
+#define FE_KAMENSKY						84
+#define FE_KAMENSKY_UNCOUPLED			85
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -1079,6 +1081,31 @@ public:
 
 	DECLARE_REGISTERED(FEEFDVerondaWestmann);
 };
+
+//-----------------------------------------------------------------------------
+class FEKamensky: public FEMaterial
+{
+public:
+	enum { MP_DENSITY, MP_C0, MP_C1, MP_C2, MP_K, MP_TANGENT_SCALE };
+
+public:
+	FEKamensky();
+
+	DECLARE_REGISTERED(FEKamensky);
+};
+
+//-----------------------------------------------------------------------------
+class FEKamenskyUncoupled : public FEMaterial
+{
+public:
+	enum { MP_DENSITY, MP_C0, MP_C1, MP_C2, MP_K, MP_TANGENT_SCALE };
+
+public:
+	FEKamenskyUncoupled();
+
+	DECLARE_REGISTERED(FEKamenskyUncoupled);
+};
+
 
 //-----------------------------------------------------------------------------
 // Isotropic Fourier

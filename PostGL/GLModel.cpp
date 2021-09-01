@@ -535,6 +535,13 @@ void CGLModel::Render(CGLContext& rc)
 	// (i.e. planecuts)
 	RenderPlots(rc, 1);
 
+	// render min/max markers
+	Post::CGLColorMap* pcm = GetColorMap();
+	if (pcm && pcm->ShowMinMaxMarkers())
+	{
+		RenderMinMaxMarkers(rc);
+	}
+
 	// render decorations
 	RenderDecorations();
 
@@ -2136,6 +2143,45 @@ void CGLModel::RenderObjects(CGLContext& rc)
 		}
 		glPopMatrix();
 	}
+
+	glPopAttrib();
+}
+
+void CGLModel::RenderMinMaxMarkers(CGLContext& rc)
+{
+	Post::CGLColorMap* pcm = GetColorMap();
+	if ((pcm == nullptr) || (pcm->IsActive() == false)) return;
+
+	vec3d rmin = pcm->GetMinPosition();
+	vec3d rmax = pcm->GetMaxPosition();
+
+	Post::CColorTexture* tex = pcm->GetColorMap();
+	CColorMap& map = tex->ColorMap();
+
+	GLColor c0 = map.GetColor(0);
+	GLColor c1 = map.GetColor(map.Colors() - 1);
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+
+	float pointSize;
+	glGetFloatv(GL_POINT_SIZE, &pointSize);
+
+	glPointSize(15.f);
+	glBegin(GL_POINTS);
+	glColor3ub(255, 255, 255);
+	glVertex3d(rmin.x, rmin.y, rmin.z);
+	glVertex3d(rmax.x, rmax.y, rmax.z);
+	glEnd();
+
+	glPointSize(10.f);
+	glBegin(GL_POINTS);
+	glColor3ub(c0.r, c0.g, c0.b); glVertex3d(rmin.x, rmin.y, rmin.z);
+	glColor3ub(c1.r, c1.g, c1.b); glVertex3d(rmax.x, rmax.y, rmax.z);
+	glEnd();
+
+	glPointSize(pointSize);
 
 	glPopAttrib();
 }

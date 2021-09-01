@@ -424,6 +424,14 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 							{
 								if (dom) tag.value(dom->m_bshellNodalNormals);
 							}
+                            else if (tag == "laugon")
+                            {
+                                if (dom) tag.value(dom->m_blaugon);
+                            }
+                            else if (tag == "atol")
+                            {
+                                if (dom) tag.value(dom->m_augtol);
+                            }
 							else ParseUnknownTag(tag);
 							++tag;
 						}

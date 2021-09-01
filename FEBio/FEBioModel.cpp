@@ -587,6 +587,8 @@ FEPart* FEBioModel::PartInstance::BuildFEPart(const char* szname)
 FEBioModel::Domain::Domain(Part* part) : m_part(part)
 {
 	m_bshellNodalNormals = true;
+    m_blaugon = false;
+    m_augtol = 0.01;
 }
 
 FEBioModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_part(part)
@@ -594,6 +596,8 @@ FEBioModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_p
 	m_name = name;
 	m_matID = matID;
 	m_bshellNodalNormals = true;
+    m_blaugon = false;
+    m_augtol = 0.01;
 }
 
 FEBioModel::Domain::Domain(const Domain& part)
@@ -603,6 +607,8 @@ FEBioModel::Domain::Domain(const Domain& part)
 	m_matID = part.m_matID;
 	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_elem = part.m_elem;
+    m_blaugon = part.m_blaugon;
+    m_augtol = part.m_augtol;
 }
 
 void FEBioModel::Domain::operator = (const Domain& part)
@@ -612,6 +618,8 @@ void FEBioModel::Domain::operator = (const Domain& part)
 	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_matID = part.m_matID;
 	m_elem = part.m_elem;
+    m_blaugon = part.m_blaugon;
+    m_augtol = part.m_augtol;
 }
 
 //=============================================================================
@@ -840,7 +848,11 @@ void FEBioModel::UpdateGeometry()
 			gpart.SetName(name.c_str());
 
 			gpart.setShellNormalNodal(elSet.m_bshellNodalNormals);
-		}
+            
+            gpart.setLaugon(elSet.m_blaugon);
+            
+            gpart.setAugTol(elSet.m_augtol);
+        }
 	}
 }
 

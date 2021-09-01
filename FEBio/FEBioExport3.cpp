@@ -2287,10 +2287,25 @@ void FEBioExport3::WriteMeshDomainsSection()
 		XMLElement el;
 		if (dom->m_elemClass == ELEM_SOLID)
 		{
+            GPart* pg = dom->m_pg;
 			el.name("SolidDomain");
 			el.add_attribute("name", dom->m_name);
 			el.add_attribute("mat", dom->m_matName);
-			m_xml.add_empty(el);
+            if (pg && pg->Parameters())
+            {
+                // for solid domains, hide the shell node normal state
+                pg->GetParam(0).SetState(0);
+                if (pg->GetParam(1).GetBoolValue() == false)
+                    m_xml.add_empty(el);
+                else {
+                    m_xml.add_branch(el);
+                    {
+                        WriteParamList(*pg);
+                    }
+                    m_xml.close_branch();
+                }
+            }
+            else m_xml.add_empty(el);
 		}
 		else if (dom->m_elemClass == ELEM_SHELL)
 		{
@@ -2301,6 +2316,11 @@ void FEBioExport3::WriteMeshDomainsSection()
 
 			if (pg && pg->Parameters())
 			{
+                // if there is no incompressibility constraint, hide parameters
+                if (pg->GetParam(1).GetBoolValue() == false) {
+                    pg->GetParam(1).SetState(0);
+                    pg->GetParam(2).SetState(0);
+                }
 				m_xml.add_branch(el);
 				{
 					WriteParamList(*pg);

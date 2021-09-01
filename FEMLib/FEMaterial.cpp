@@ -395,7 +395,7 @@ FECarterHayes::FECarterHayes() : FEMaterial(FE_CARTER_HAYES)
 // FENewtonianViscousSolid - Newtonian viscous solid
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FENewtonianViscousSolid, MODULE_MECH, FE_NEWTONIAN_VISCOUS_SOLID, FE_MAT_ELASTIC, "Newtonian viscous solid",0, NEWTONIAN_SOLID_HTML);
+REGISTER_MATERIAL(FENewtonianViscousSolid, MODULE_MECH, FE_NEWTONIAN_VISCOUS_SOLID, FE_MAT_ELASTIC, "Newtonian viscous solid",0);
 
 FENewtonianViscousSolid::FENewtonianViscousSolid() : FEMaterial(FE_NEWTONIAN_VISCOUS_SOLID)
 {
@@ -1638,6 +1638,32 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionIsotropicUC, MODULE_MECH, FE_ACTI
 FEPrescribedActiveContractionIsotropicUC::FEPrescribedActiveContractionIsotropicUC() : FEMaterial(FE_ACTIVE_CONTRACT_ISO_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
+}
+
+//////////////////////////////////////////////////////////////////////
+REGISTER_MATERIAL(FEKamensky, MODULE_MECH, FE_KAMENSKY, FE_MAT_ELASTIC, "Kamensky", MaterialFlags::TOPLEVEL);
+
+FEKamensky::FEKamensky() : FEMaterial(FE_KAMENSKY)
+{
+	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "c0");
+	AddScienceParam(0, UNIT_PRESSURE, "c1");
+	AddScienceParam(0, UNIT_NONE    , "c2");
+	AddScienceParam(0, UNIT_PRESSURE, "k");
+	AddScienceParam(1, UNIT_NONE    , "tangent_scale");
+}
+
+//////////////////////////////////////////////////////////////////////
+REGISTER_MATERIAL(FEKamenskyUncoupled, MODULE_MECH, FE_KAMENSKY_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Kamensky uncoupled", MaterialFlags::TOPLEVEL);
+
+FEKamenskyUncoupled::FEKamenskyUncoupled() : FEMaterial(FE_KAMENSKY_UNCOUPLED)
+{
+	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "c0");
+	AddScienceParam(0, UNIT_PRESSURE, "c1");
+	AddScienceParam(0, UNIT_NONE    , "c2");
+	AddScienceParam(0, UNIT_PRESSURE, "k");
+	AddScienceParam(1, UNIT_NONE    , "tangent_scale");
 }
 
 //////////////////////////////////////////////////////////////////////
