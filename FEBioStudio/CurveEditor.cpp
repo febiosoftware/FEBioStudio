@@ -1212,7 +1212,6 @@ void CCurveEditor::on_math_triggered()
 		QString math = dlg.GetMath();
 		std::string smath = math.toStdString();
 
-		CMathParser m;
 		bool insertMode = dlg.Insert();
 		if (insertMode == false) plc->Clear();
 		plc->SetName(smath.c_str());
