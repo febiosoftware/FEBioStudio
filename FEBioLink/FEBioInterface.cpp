@@ -32,26 +32,6 @@ SOFTWARE.*/
 #include <sstream>
 using namespace std;
 
-vec3d qvariant_to_vec3d(const QVariant& v)
-{
-	QList<QVariant> val = v.value<QList<QVariant> >();
-	vec3d w;
-	w.x = val.at(0).toDouble();
-	w.y = val.at(1).toDouble();
-	w.z = val.at(2).toDouble();
-	return w;
-}
-
-mat3d qvariant_to_mat3d(const QVariant& v)
-{
-	QList<QVariant> val = v.value<QList<QVariant> >();
-	mat3d w;
-	int n = 0;
-	for (int i = 0; i < 3; ++i)
-		for (int j = 0; j < 3; ++j) w[i][j] = val.at(n++).toDouble();
-	return w;
-}
-
 mat3ds qvariant_to_mat3ds(const QVariant& v)
 {
 	QList<QVariant> val = v.value<QList<QVariant> >();
@@ -123,6 +103,42 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 			p->SetFlags(param.m_flags);
 			if (param.m_flags & 0x08) p->SetLoadCurve();
 			if (param.m_szunit) p->SetUnit(param.m_szunit);
+		}
+	}
+}
+
+void map_parameters(FEBio::FEBioClass* feb, FSObject* po)
+{
+	assert(feb->Parameters() == po->Parameters());
+	int NP = feb->Parameters();
+	for (int i = 0; i < NP; ++i)
+	{
+		FEBio::FEBioParam& febParam = feb->GetParameter(i);
+		Param& fsParam = po->GetParam(i);
+
+		switch (febParam.type())
+		{
+		case FEBio::FEBIO_PARAM_VEC3D:
+		{
+			vec3d v = fsParam.GetVec3dValue();
+			febParam.m_val = vec3d_to_qvariant(v);
+		}
+		break;
+		case FEBio::FEBIO_PARAM_STD_STRING:
+		{
+			string s = fsParam.GetStringValue();
+			febParam.m_val = QString::fromStdString(s);
+		}
+		break;
+		case FEBio::FEBIO_PARAM_DOUBLE_MAPPED:
+		{
+			if (fsParam.GetParamType() == Param_FLOAT)
+			{
+				double v = fsParam.GetFloatValue();
+				febParam.m_val = v;
+			}
+		}
+		break;
 		}
 	}
 }
@@ -258,7 +274,7 @@ void FEBio::CreateMaterial(int classId, FEBioMaterial* po)
 	po->SetSuperClassID(superClassID);
 
 	// pass the FEBio object to the FEBio Studio object
-	po->SetFEBioMaterial(feb->GetFEBioClass());
+	po->SetFEBioMaterial(feb);
 
 	// map the parameters
 	map_parameters(po, feb);
@@ -277,11 +293,20 @@ void FEBio::CreateMaterial(int classId, FEBioMaterial* po)
 			FEBioMaterial* pmi = new FEBioMaterial;
 			pmi->SetTypeString(strdup(fbc.TypeString().c_str()));
 			pmi->SetSuperClassID(fbc.GetSuperClassID());
-			pmi->SetFEBioMaterial(fbc.GetFEBioClass());
+			pmi->SetFEBioMaterial(&fbc);
 			map_parameters(pmi, &fbc);
 			matProp->AddMaterial(pmi);
 		}
 	}
+}
 
-	delete feb;
+void FEBio::UpdateFEBioMaterial(FEBioMaterial* pm)
+{
+	FEBioClass* febClass = pm->GetFEBioMaterial();
+
+	// first map the parameters to the FEBioClass
+	map_parameters(febClass, pm);
+
+	// then write the parameters to the FEBio class
+	febClass->UpdateData();
 }

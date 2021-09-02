@@ -189,6 +189,8 @@ namespace FEBio {
 		void SetFEBioClass(void* febClass) { m_febClass = febClass; }
 		void* GetFEBioClass() { return m_febClass; }
 
+		void UpdateData();
+
 	private:
 		int				m_superClassID;
 		std::string		m_typeString;
@@ -214,7 +216,12 @@ namespace FEBio {
 
 	std::map<int, const char*> GetSuperClassMap();
 
-	vec3d GetMaterialFiber(void* vec3dvaluator);
+	vec3d GetMaterialFiber(void* vec3dvaluator, const vec3d& p);
 
 	void DeleteClass(void* p);
 }
+
+QVariant vec3d_to_qvariant(const vec3d& v);
+QVariant mat3d_to_qvariant(const mat3d& m);
+vec3d qvariant_to_vec3d(const QVariant& v);
+mat3d qvariant_to_mat3d(const QVariant& v);

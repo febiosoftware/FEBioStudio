@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <FSCore/paramunit.h>
 #include <FEBioStudio/WebDefines.h>
 #include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioInterface.h>
 
 //////////////////////////////////////////////////////////////////////
 // FEFiberGeneratorLocal
@@ -2345,7 +2346,7 @@ void FEBioReactionRate::Save(OArchive& ar)
 
 	ar.BeginChunk(CID_FEBIO_BASE_DATA);
 	{
-		FEBioReactionRate::Save(ar);
+		FEMaterial::Save(ar);
 	}
 	ar.EndChunk();
 }
@@ -2359,7 +2360,7 @@ void FEBioReactionRate::Load(IArchive& ar)
 		switch (nid)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FEBioReactionRate::Load(ar); break;
+		case CID_FEBIO_BASE_DATA: FEMaterial::Load(ar); break;
 		default:
 			assert(false);
 		}
@@ -3109,7 +3110,7 @@ FEBioMaterial::FEBioMaterial() : FEMaterial(FE_FEBIO_MATERIAL)
 
 FEBioMaterial::~FEBioMaterial()
 {
-	FEBio::DeleteClass(m_febioMat);
+//	delete m_febClass;
 }
 
 void FEBioMaterial::SetTypeString(const char* sz)
@@ -3138,7 +3139,14 @@ bool FEBioMaterial::HasFibers()
 
 vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 {
-	vec3d v = FEBio::GetMaterialFiber(m_febioMat);
+	FEMaterialProperty* pm = FindProperty("fiber");
+	FEBioMaterial* fiber = dynamic_cast<FEBioMaterial*>(pm->GetMaterial());
+
+	// evaluate the element's center
+	vec3d p = el.center();
+
+	// evaluate the fiber direction
+	vec3d v = FEBio::GetMaterialFiber(fiber->m_febClass->GetFEBioClass(), p);
 	return v;
 }
 
@@ -3174,12 +3182,21 @@ void FEBioMaterial::Load(IArchive& ar)
 	}
 }
 
-void FEBioMaterial::SetFEBioMaterial(void* febioMat)
+void FEBioMaterial::SetFEBioMaterial(FEBio::FEBioClass* febClass)
 {
-	m_febioMat = febioMat;
+	m_febClass = febClass;
 }
 
-void* FEBioMaterial::GetFEBioMaterial()
+FEBio::FEBioClass* FEBioMaterial::GetFEBioMaterial()
 {
-	return m_febioMat;
+	return m_febClass;
+}
+
+bool FEBioMaterial::UpdateData(bool bsave)
+{
+	if (m_febClass)
+	{
+		if (bsave) FEBio::UpdateFEBioMaterial(this);
+	}
+	return false;
 }

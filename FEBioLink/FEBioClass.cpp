@@ -32,7 +32,25 @@ SOFTWARE.*/
 #include <FEBioLib/FEBioModel.h>
 using namespace FEBio;
 
+vec3d qvariant_to_vec3d(const QVariant& v)
+{
+	QList<QVariant> val = v.value<QList<QVariant> >();
+	vec3d w;
+	w.x = val.at(0).toDouble();
+	w.y = val.at(1).toDouble();
+	w.z = val.at(2).toDouble();
+	return w;
+}
 
+mat3d qvariant_to_mat3d(const QVariant& v)
+{
+	QList<QVariant> val = v.value<QList<QVariant> >();
+	mat3d w;
+	int n = 0;
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j) w[i][j] = val.at(n++).toDouble();
+	return w;
+}
 
 std::map<int, const char*> idmap;
 void initMap()
@@ -300,6 +318,7 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 				FEBioClass fbc;
 				fbc.SetSuperClassID(FEVECTORGENERATOR_ID);
 				fbc.SetTypeString(val->GetTypeStr());
+				fbc.SetFEBioClass(val);
 
 				// copy the class data
 				CopyFECoreClass(&fbc, val);
@@ -318,6 +337,7 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 					FEBioClass fbc;
 					fbc.SetSuperClassID(FEMAT3DGENERATOR_ID);
 					fbc.SetTypeString(val->GetTypeStr());
+					fbc.SetFEBioClass(val);
 
 					// copy the class data
 					CopyFECoreClass(&fbc, val);
@@ -563,13 +583,15 @@ std::map<int, const char*> FEBio::GetSuperClassMap()
 	return idmap;
 }
 
-vec3d FEBio::GetMaterialFiber(void* vec3dvaluator)
+vec3d FEBio::GetMaterialFiber(void* vec3dvaluator, const vec3d& p)
 {
 	FECoreBase* pc = (FECoreBase*)vec3dvaluator;
 	FEVec3dValuator* val = dynamic_cast<FEVec3dValuator*>(pc); assert(val);
 	if (val == nullptr) return vec3d(0,0,0);
 	FEMaterialPoint mp;
+	mp.m_r0 = mp.m_rt = p;
 	vec3d v = (*val)(mp);
+	v.unit();
 	return v; 
 }
 
@@ -577,4 +599,44 @@ void FEBio::DeleteClass(void* p)
 {
 	FECoreBase* pc = (FECoreBase*)p;
 	delete pc;
+}
+
+// Copy parameters from FEBioClass back to the FECoreBase parameter list
+void FEBioClass::UpdateData()
+{
+	FECoreBase* pc = (FECoreBase*)GetFEBioClass();
+	for (int i = 0; i < Parameters(); ++i)
+	{
+		FEBioParam& param = GetParameter(i);
+		FEParam* pp = pc->FindParameter(param.m_name.c_str()); assert(pp);
+		switch (param.m_type)
+		{
+		case FEBIO_PARAM_VEC3D:
+		{
+			vec3d v = qvariant_to_vec3d(param.m_val);
+			pp->value<vec3d>() = v;
+		}
+		break;
+		case FEBIO_PARAM_STD_STRING:
+		{
+			std::string s = param.m_val.toString().toStdString();
+			pp->value<std::string>() = s;
+		}
+		break;
+		case FEBIO_PARAM_DOUBLE_MAPPED:
+		{
+			FEParamDouble& val = pp->value<FEParamDouble>();
+			if (val.isConst())
+			{
+				double v = param.m_val.toDouble();
+				FEConstValue* a = dynamic_cast<FEConstValue*>(val.valuator()); assert(a);
+				if (a) *(a->constValue()) = v;
+			}
+		}
+		break;
+		default:
+			break;
+		}
+	}
+	pc->UpdateParams();
 }

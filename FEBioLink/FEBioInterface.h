@@ -40,4 +40,6 @@ namespace FEBio {
 	void CreateMaterialProperty(int superClassID, const char* sztype, FEBioMaterial* po);
 	void CreateStep(int classId, FEStep* po, bool initDefaultProps = true);
 	void CreateStep(const char* sztype, FEStep* po);
+
+	void UpdateFEBioMaterial(FEBioMaterial* pm);
 }

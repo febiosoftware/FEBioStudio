@@ -2366,6 +2366,10 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+namespace FEBio {
+	class FEBioClass;
+}
+
 class FEBioMaterial : public FEMaterial
 {
 public:
@@ -2384,13 +2388,15 @@ public:
 
 	vec3d GetFiber(FEElementRef& el) override;
 
-	void SetFEBioMaterial(void* febioMat);
-	void* GetFEBioMaterial();
+	void SetFEBioMaterial(FEBio::FEBioClass* febClass);
+	FEBio::FEBioClass* GetFEBioMaterial();
+
+	bool UpdateData(bool bsave) override;
 
 	DECLARE_REGISTERED(FEBioMaterial);
 
 private:
 	std::string	m_stype;
 
-	void* m_febioMat;	// pointer to FEBio material class.
+	FEBio::FEBioClass* m_febClass;	// pointer to FEBio interface class.
 };

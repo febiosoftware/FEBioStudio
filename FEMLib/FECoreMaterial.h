@@ -18,6 +18,12 @@ public:
 	FECoreMesh*	m_pmesh;	// mesh to which this element belongs
 	int		m_nelem;	// index of element
 
+	vec3d center() 
+	{
+		FEElement_* pe = m_pmesh->ElementPtr(m_nelem);
+		return m_pmesh->ElementCenter(*pe);
+	}
+
 	FEElement_* operator -> () {return m_pmesh->ElementPtr(m_nelem);}
 	operator FEElement_*(){ return m_pmesh->ElementPtr(m_nelem); }
 };
