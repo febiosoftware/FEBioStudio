@@ -518,7 +518,7 @@ bool interrup_cb(FEModel* fem, unsigned int nwhen, void* pd)
 	if (terminateRun)
 	{
 		terminateRun = false;
-		throw std::exception("terminated febio run");
+        throw std::exception();
 	}
 	return true;
 }

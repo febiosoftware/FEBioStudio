@@ -86,7 +86,7 @@ void LoadClassMetaData(FEModelComponent* pc, IArchive& ar)
 				ss << "type string : \"" << typeStr << "\"";
 				ss << "\n\nIt is possible that this file requires an FEBio plugin before it can be loaded.";
 				string s = ss.str();
-				throw std::exception(s.c_str());
+                throw std::exception();
 			}
 		}
 		break;

@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <OpenGL/gl.h>
 #endif
 #ifdef LINUX
-#include <GL/gl.h>
+#include <GL/glew.h>
 #endif
 #include "ImageModel.h"
 #include <GLLib/GLContext.h>

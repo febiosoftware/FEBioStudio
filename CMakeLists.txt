@@ -346,7 +346,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MathLib MeshIO MeshLib MeshTools Nike3D PostGL PostLib XML XPLTLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MathLib MeshIO MeshLib MeshTools Nike3D PostGL PostLib XML XPLTLib FEBioLink)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -495,6 +495,7 @@ endif()
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
+target_link_libraries(FEBioStudio ${GLEW_LIBRARIES})
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 target_link_libraries(FEBioStudio ${FEBio_LIBS})

@@ -47,8 +47,8 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
-#include <QJSonDocument>
-#include <QJSonObject>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 class Ui::CDlgNew
 {
