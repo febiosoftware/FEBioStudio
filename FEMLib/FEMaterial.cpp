@@ -3180,6 +3180,8 @@ void FEBioMaterial::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+	// We call this to make sure that the FEBio class has the same parameters
+	UpdateData(true);
 }
 
 void FEBioMaterial::SetFEBioMaterial(FEBio::FEBioClass* febClass)

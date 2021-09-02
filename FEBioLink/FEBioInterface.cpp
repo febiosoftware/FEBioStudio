@@ -156,8 +156,12 @@ bool FEBio::CreateModelComponent(int classId, FEModelComponent* po)
 	// map the FEBioClass parameters to the FSObject
 	map_parameters(po, feb);
 
-	// don't forget to cleanup
-	delete feb;
+	if (dynamic_cast<FEBioMaterial*>(po))
+	{
+		FEBioMaterial* febMat = dynamic_cast<FEBioMaterial*>(po);
+		febMat->SetFEBioMaterial(feb);
+	}
+	else delete feb;
 
 	return true;
 }
