@@ -782,6 +782,11 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				QObject::connect(pw, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 				return pw;
 			}
+			if (p->GetParamType() == Param_STRING)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
 		}
 		else if (item->isProperty())
 		{
