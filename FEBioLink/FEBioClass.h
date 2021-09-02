@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <string>
 #include <map>
 #include <QVariant>
+#include <MathLib/math3d.h>
 
 namespace FEBio {
 
@@ -213,12 +214,7 @@ namespace FEBio {
 
 	std::map<int, const char*> GetSuperClassMap();
 
-	struct Vec3
-	{
-		double	x, y, z;
-	};
-
-	Vec3 GetMaterialFiber(void* vec3dvaluator);
+	vec3d GetMaterialFiber(void* vec3dvaluator);
 
 	void DeleteClass(void* p);
 }

@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <FECore/vec3d.h>
 #include <FECore/mat3d.h>
 #include <FECore/quatd.h>
+#include <FECore/matrix.h>
 //using namespace std;
 
 using std::vector;
@@ -254,7 +255,7 @@ public:
 
 ///////////////////////////////////////////////////////////////////
 // matrix
-
+/*
 class matrix
 {
 public:
@@ -294,7 +295,7 @@ private:
 	int		m_nr, m_nc;
 	int		m_ne;
 };
-
+*/
 
 ///////////////////////////////////////////////////////////////////
 // quatd

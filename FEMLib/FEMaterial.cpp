@@ -3138,8 +3138,8 @@ bool FEBioMaterial::HasFibers()
 
 vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 {
-	FEBio::Vec3 v = FEBio::GetMaterialFiber(m_febioMat);
-	return vec3d(v.x, v.y, v.z);
+	vec3d v = FEBio::GetMaterialFiber(m_febioMat);
+	return v;
 }
 
 void FEBioMaterial::Save(OArchive& ar)

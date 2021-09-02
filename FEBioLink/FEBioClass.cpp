@@ -563,15 +563,14 @@ std::map<int, const char*> FEBio::GetSuperClassMap()
 	return idmap;
 }
 
-FEBio::Vec3 FEBio::GetMaterialFiber(void* vec3dvaluator)
+vec3d FEBio::GetMaterialFiber(void* vec3dvaluator)
 {
 	FECoreBase* pc = (FECoreBase*)vec3dvaluator;
 	FEVec3dValuator* val = dynamic_cast<FEVec3dValuator*>(pc); assert(val);
-	if (val == nullptr) return Vec3{ 0,0,0 };
+	if (val == nullptr) return vec3d(0,0,0);
 	FEMaterialPoint mp;
 	vec3d v = (*val)(mp);
-	Vec3 r = { v.x, v.y, v.z };
-	return r; 
+	return v; 
 }
 
 void FEBio::DeleteClass(void* p)

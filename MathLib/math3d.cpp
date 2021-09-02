@@ -146,6 +146,7 @@ void quatd::GetEuler(double& X, double& Y, double& Z) const
 */
 
 //-----------------------------------------------------------------------------
+/*
 bool matrix::solve(vector<double>& x, vector<double>& b)
 {
 	// check sizes
@@ -503,6 +504,7 @@ matrix matrix::inverse()
 
 	return ai;
 }
+*/
 
 //-----------------------------------------------------------------------------
 void mat3fs::Principals(float e[3]) const

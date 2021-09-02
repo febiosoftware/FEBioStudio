@@ -271,7 +271,7 @@ bool findCircumSphere(const vec3d* r, vec3d& c, double& R)
 
 	// solve it
 	vector<double> x(3);
-	if (A.solve(x, y) == false) return false;
+	A.solve(x, y);
 
 	// this will give us the center of the sphere
 	c = vec3d(x[0], x[1], x[2]);
