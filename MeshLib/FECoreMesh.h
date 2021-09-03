@@ -92,6 +92,7 @@ public:
 	double PentaVolume(const FEElement_& el);
 	double TetVolume(const FEElement_& el);
 	double PyramidVolume(const FEElement_& el);
+	double QuadVolume(const FEElement_& el);
 
 	//! see if this is a shell mesh
 	bool IsShell() const;
@@ -150,6 +151,8 @@ double penta6_volume(vec3d* r, bool bJ = false);
 double penta15_volume(vec3d* r, bool bJ = false);
 double pyra5_volume(vec3d* r, bool bJ = false);
 double pyra13_volume(vec3d* r, bool bJ = false);
+double tri3_volume(vec3d* r, vec3d* D, bool bJ = false);
+double quad4_volume(vec3d* r, vec3d* D, bool bJ = false);
 
 // helper functions
 void ForAllElements(FECoreMesh& mesh, std::function<void(FEElement_& el)> f);
