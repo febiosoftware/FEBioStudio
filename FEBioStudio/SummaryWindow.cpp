@@ -52,13 +52,25 @@ CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGrap
 	AddToolBarWidget(selectionOnly);
 	QObject::connect(selectionOnly, SIGNAL(stateChanged(int)), this, SLOT(onSelectionOnlyChanged(int)));
 
+	QCheckBox* volAvg = new QCheckBox("Volume average");
+	volAvg->setChecked(true);
+	AddToolBarWidget(volAvg);
+	QObject::connect(volAvg, SIGNAL(stateChanged(int)), this, SLOT(onVolumeAverageChanged(int)));
+
 	m_bselectionOnly = false;
+	m_bvolumeAverage = true;
 	m_ncurrentData = -1;
 }
 
 void CSummaryWindow::onSelectionOnlyChanged(int n)
 {
 	m_bselectionOnly = (n == Qt::Checked);
+	Update(false, true);
+}
+
+void CSummaryWindow::onVolumeAverageChanged(int n)
+{
+	m_bvolumeAverage = (n == Qt::Checked);
 	Update(false, true);
 }
 
@@ -96,7 +108,7 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	bool bsel = m_bselectionOnly;
 
 	// see if volume average is checked
-	bool bvol = true; // ui->volumeAverage->isChecked();
+	bool bvol = m_bvolumeAverage;
 
 	// decide if we want to find the node/face/elem stat
 	int neval = -1;
