@@ -167,6 +167,8 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "octahedral plastic strain"         );
     AddPlotVariable(MODULE_MECH, "reaction forces"                   );
     AddPlotVariable(MODULE_MECH, "relative volume");
+    AddPlotVariable(MODULE_MECH, "right stretch"                     );
+    AddPlotVariable(MODULE_MECH, "right Hencky"                      );
     AddPlotVariable(MODULE_MECH, "rigid acceleration"                );
     AddPlotVariable(MODULE_MECH, "rigid angular acceleration"        );
     AddPlotVariable(MODULE_MECH, "rigid angular momentum"            );
