@@ -156,6 +156,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "intact bond fraction"              );
     AddPlotVariable(MODULE_MECH, "kinetic energy density"            );
     AddPlotVariable(MODULE_MECH, "Lagrange strain"                   );
+    AddPlotVariable(MODULE_MECH, "left Hencky"                       );
     AddPlotVariable(MODULE_MECH, "material axes"                     );
     AddPlotVariable(MODULE_MECH, "nested damage"                     );
     AddPlotVariable(MODULE_MECH, "nodal contact gap"                 );
