@@ -5178,6 +5178,18 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				}
 				m_xml.close_branch();
 			}
+			else
+			{
+				XMLElement el("rigid_constraint");
+				el.add_attribute("name", ps->GetName());
+				el.add_attribute("type", ps->GetTypeString());
+				m_xml.add_branch(el);
+				{
+					m_xml.add_leaf("rb", pgm->m_ntag);
+					WriteParamList(*ps);
+				}
+				m_xml.close_branch();
+			}
 		}
 	}
 }

@@ -236,6 +236,21 @@ const char* Param::GetEnumName(int n) const
 }
 
 //-----------------------------------------------------------------------------
+int Param::FindEnum(const char* sz) const
+{
+	if (m_szenum == nullptr) return -1;
+	const char* c = m_szenum;
+	int n = 0;
+	while (c && *c)
+	{
+		if (strcmp(c, sz) == 0) return n;
+		n++;
+		c += strlen(c)+1;
+	}
+	return n;
+}
+
+//-----------------------------------------------------------------------------
 Param::Param(const Param& p)
 {
 	m_nID = p.m_nID;

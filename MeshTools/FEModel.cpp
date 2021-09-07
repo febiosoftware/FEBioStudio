@@ -496,6 +496,8 @@ bool FEModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum
 				if (i != l.size()-1) sz[n] = ',';
 				sz += n + 1;
 			}
+
+			return true;
 		}
 	}
 	

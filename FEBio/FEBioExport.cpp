@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
+#include <sstream>
 
 FEBioExport::FEBioExport(FEProject& prj) : FEFileExport(prj)
 {
@@ -133,8 +134,22 @@ void FEBioExport::WriteParam(Param &p)
 		{
 			std::vector<int> l = p.GetVectorIntValue();
 			char buf[256] = { 0 };
-			fem.GetEnumValues(buf, l, p.GetEnumNames());
-			e.value(buf);
+			if (fem.GetEnumValues(buf, l, p.GetEnumNames()))
+			{
+				e.value(buf);
+			}
+			else
+			{
+				std::stringstream ss;
+				for (int i = 0; i < l.size(); ++i)
+				{
+					if (i != 0) ss << ",";
+					const char* sz = p.GetEnumName(l[i]); assert(sz);
+					if (sz) ss << sz;
+				}
+				string s = ss.str();
+				e.value(s.c_str());
+			}
 		}
 		else e.value(p.GetVectorIntValue());
 	}

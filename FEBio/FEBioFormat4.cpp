@@ -2239,6 +2239,7 @@ void FEBioFormat4::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 	{
 		throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 	}
+	pi->SetName(szname);
 	pstep->AddRC(pi);
 
 	++tag;

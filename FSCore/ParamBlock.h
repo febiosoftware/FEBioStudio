@@ -129,6 +129,7 @@ public:
 	const char* GetIndexName() const { return m_szindx; }
 
 	const char* GetEnumName(int n) const;
+	int FindEnum(const char* sz) const;
 
 	Param* SetEnumNames(const char* sz);
 	Param* CopyEnumNames(const char* sz);

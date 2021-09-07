@@ -174,6 +174,19 @@ bool FEBioFormat::ReadChoiceParam(Param& p, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
+vector<string> split_string(string sz)
+{
+	vector<string> items;
+	int nc = 0;
+	while (nc != -1) {
+		nc = (int)sz.find(",");
+		items.push_back(sz.substr(0, nc));
+		sz = sz.substr(nc + 1);
+	}
+	return items;
+}
+
+//-----------------------------------------------------------------------------
 // read a parameter from file
 bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 {
@@ -224,7 +237,27 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		case Param_FLOAT: { double d; tag.value(d); pp->SetFloatValue(d); } break;
 		case Param_MATH: { string s; tag.value(s); pp->SetMathString(s); } break;
 		case Param_STRING: { string s; tag.value(s); pp->SetStringValue(s); } break;
-		case Param_STD_VECTOR_INT: { std::vector<int> v; tag.value(v); pp->SetVectorIntValue(v); } break;
+		case Param_STD_VECTOR_INT: 
+		{ 
+			if (pp->GetEnumNames())
+			{
+				// figure out the bc value
+				std::vector<string> ops = split_string(tag.szvalue());
+				std::vector<int> v;
+				for (int i = 0; i < ops.size(); ++i)
+				{
+					int n = pp->FindEnum(ops[i].c_str());
+					if (n == -1) throw XMLReader::InvalidValue(tag);
+					v.push_back(n);
+				}
+				pp->SetVectorIntValue(v);
+			}
+			else
+			{
+				std::vector<int> v; tag.value(v); pp->SetVectorIntValue(v);
+			}
+		} 
+		break;
 		case Param_STD_VECTOR_DOUBLE: { std::vector<double> v; tag.value(v); pp->SetVectorDoubleValue(v); } break;
 		default:
 			assert(false);
