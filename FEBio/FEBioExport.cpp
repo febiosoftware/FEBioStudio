@@ -322,6 +322,17 @@ void FEBioExport::BuildLoadCurveList(FEModel& fem)
 		}
 	}
 
+	// add rigid constraints loadcurves
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		for (int j = 0; j < pstep->RigidConstraints(); ++j)
+		{
+			FERigidConstraint* prc = pstep->RigidConstraint(j);
+			if (prc->IsActive()) AddLoadCurves(*prc);
+		}
+	}
+
 	// add connector loadcurves
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
