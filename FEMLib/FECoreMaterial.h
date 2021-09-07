@@ -42,7 +42,8 @@ public:
 
 	enum Flags {
 		EDITABLE = 0x01,			// the property can be edited in the material editor
-		NON_EXTENDABLE = 0x02		// cannot be modified after created in material editor
+		NON_EXTENDABLE = 0x02,		// cannot be modified after created in material editor
+		REQUIRED = 0x04				// property is required
 	};
 
 public:
@@ -85,6 +86,8 @@ public:
 
 	// return property flags
 	unsigned int GetFlags() const { return m_flag; }
+
+	void SetFlags(unsigned int flags) { m_flag = flags; }
 
 	void SetSuperClassID(int superClassID) { m_nsuperClassID = superClassID; }
 	int GetSuperClassID() const { return m_nsuperClassID; }

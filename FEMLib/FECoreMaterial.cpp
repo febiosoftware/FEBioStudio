@@ -41,6 +41,7 @@ FEMaterialProperty::FEMaterialProperty()
 	m_nClassID = -1;
 	m_maxSize = NO_FIXED_SIZE;
 	m_nsuperClassID = FE_MATERIAL;
+	m_flag = EDITABLE;
 }
 
 //-----------------------------------------------------------------------------

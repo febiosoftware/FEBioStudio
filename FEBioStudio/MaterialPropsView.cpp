@@ -412,7 +412,11 @@ public:
 				else
 				{
 					FEMaterial* pm = (m_matIndex >= 0 ? p.GetMaterial(m_matIndex) : nullptr);
-					if (pm == nullptr) return QString("(select)");
+					if (pm == nullptr)
+					{
+						bool required = (p.GetFlags() & FEMaterialProperty::REQUIRED);
+						return QString(required ? "(select)" : "(none)");
+					}
 					else   if (dynamic_cast<FEReactionSpecies*>(pm))
 					{
 						FEModel* fem = GetFEModel();
