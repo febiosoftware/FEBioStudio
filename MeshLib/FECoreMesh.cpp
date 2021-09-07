@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include "tet.h"
 #include "penta.h"
 #include "pyra.h"
+#include "tri3.h"
+#include "quad4.h"
 
 //-----------------------------------------------------------------------------
 //! constructor
@@ -164,6 +166,7 @@ double FECoreMesh::ElementVolume(const FEElement_& el)
 	case FE_PENTA15: return PentaVolume(el); break;
 	case FE_PYRA5  : return PyramidVolume(el); break;
     case FE_PYRA13 : return PyramidVolume(el); break;
+    case FE_QUAD4  : return QuadVolume(el); break;
 	}
 
 	return 0.0;
@@ -744,6 +747,166 @@ double FECoreMesh::PyramidVolume(const FEElement_& el)
         case FE_PYRA13:
             return pyra13_volume(rt);
             break;
+    }
+    return 0.0;
+}
+
+//-----------------------------------------------------------------------------
+double tri3_volume(vec3d* r, vec3d* D, bool bJ)
+{
+    const int NELN = 3;
+    const int NINT = 6;
+
+    static double gr[NINT] = { 0 };
+    static double gs[NINT] = { 0 };
+    static double gt[NINT] = { 0 };
+    static double gw[NINT] = { 0 };
+
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+
+    if (bfirst)
+    {
+        TRI3::gauss_data(gr, gs, gt, gw);
+        for (int n = 0; n < NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            TRI3::shape(H[n], gr[n], gs[n]);
+
+            // calculate local derivatives of shape functions at gauss points
+            TRI3::shape_deriv(Gr[n], Gs[n], gr[n], gs[n]);
+        }
+
+        bfirst = false;
+    }
+
+    double V = 0;
+    vec3d g[3];
+    for (int n = 0; n < NINT; ++n)
+    {
+        // jacobian matrix
+        double eta = gt[n];
+
+        double* Mr = Gr[n];
+        double* Ms = Gs[n];
+        double* M = H[n];
+
+        // evaluate covariant basis vectors
+        g[0] = g[1] = g[2] = vec3d(0, 0, 0);
+        for (int i = 0; i < NELN; ++i)
+        {
+            g[0] += (r[i] + D[i] * eta / 2) * Mr[i];
+            g[1] += (r[i] + D[i] * eta / 2) * Ms[i];
+            g[2] += D[i] * (M[i] / 2);
+        }
+
+        mat3d J = mat3d(g[0].x, g[1].x, g[2].x,
+            g[0].y, g[1].y, g[2].y,
+            g[0].z, g[1].z, g[2].z);
+
+        // calculate the determinant
+        double detJ = J.det();
+
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < V) || (n == 0)) V = detJ;
+        }
+        else V += detJ * gw[n];
+    }
+
+    return V;
+}
+
+//-----------------------------------------------------------------------------
+double quad4_volume(vec3d* r, vec3d* D, bool bJ)
+{
+    const int NELN = 4;
+    const int NINT = 8;
+
+    static double gr[NINT] = { 0 };
+    static double gs[NINT] = { 0 };
+    static double gt[NINT] = { 0 };
+    static double gw[NINT] = { 0 };
+
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+
+    if (bfirst)
+    {
+        QUAD4::gauss_data(gr, gs, gt, gw);
+        for (int n = 0; n < NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            QUAD4::shape(H[n], gr[n], gs[n]);
+
+            // calculate local derivatives of shape functions at gauss points
+            QUAD4::shape_deriv(Gr[n], Gs[n], gr[n], gs[n]);
+        }
+
+        bfirst = false;
+    }
+
+    double V = 0;
+    vec3d g[3];
+    for (int n = 0; n < NINT; ++n)
+    {
+        // jacobian matrix
+        double eta = gt[n];
+
+        double* Mr = Gr[n];
+        double* Ms = Gs[n];
+        double* M = H[n];
+
+        // evaluate covariant basis vectors
+        g[0] = g[1] = g[2] = vec3d(0, 0, 0);
+        for (int i = 0; i < NELN; ++i)
+        {
+            g[0] += (r[i] + D[i] * eta / 2) * Mr[i];
+            g[1] += (r[i] + D[i] * eta / 2) * Ms[i];
+            g[2] += D[i] * (M[i] / 2);
+        }
+
+        mat3d J = mat3d(g[0].x, g[1].x, g[2].x,
+            g[0].y, g[1].y, g[2].y,
+            g[0].z, g[1].z, g[2].z);
+
+        // calculate the determinant
+        double detJ = J.det();
+
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < V) || (n == 0)) V = detJ;
+        }
+        else V += detJ * gw[n];
+    }
+
+    return V;
+}
+
+//-----------------------------------------------------------------------------
+// Calculate the volume of a pyramid element
+double FECoreMesh::QuadVolume(const FEElement_& el)
+{
+    assert(el.Type() == FE_QUAD4);
+
+    FEFace& face = Face(el.m_face[0]);
+
+    vec3d rt[FEElement::MAX_NODES];
+    vec3d Dt[FEElement::MAX_NODES];
+    for (int i = 0; i < el.Nodes(); ++i)
+    {
+        rt[i] = m_Node[el.m_node[i]].r;
+        Dt[i] = face.m_nn[i]*el.m_h[i];
+    }
+
+    switch (el.Type())
+    {
+    case FE_TRI3 : return tri3_volume(rt, Dt); break;
+    case FE_QUAD4: return quad4_volume(rt, Dt); break;
     }
     return 0.0;
 }

@@ -59,8 +59,10 @@ private:
 
 private slots:
 	void onSelectionOnlyChanged(int n);
+	void onVolumeAverageChanged(int n);
 
 private:
 	int		m_ncurrentData;
 	bool	m_bselectionOnly;
+	bool	m_bvolumeAverage;
 };

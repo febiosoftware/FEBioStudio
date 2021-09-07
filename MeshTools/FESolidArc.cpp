@@ -105,7 +105,7 @@ FEMesh* FESolidArc::BuildMultiBlockMesh()
 	MBBlock& b1 = m_MBlock[0];
 	b1.SetID(0);
 	b1.SetNodes(0, 1, 2, 3, 4, 5, 6, 7);
-	b1.SetSizes(m_nd, m_nd, m_nz);
+	b1.SetSizes(m_nd, m_ns, m_nz);
 	b1.SetZoning(1, m_gr, m_gz, false, m_br, m_bz);
 
 	// build MB data structures
