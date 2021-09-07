@@ -900,7 +900,7 @@ double FECoreMesh::QuadVolume(const FEElement_& el)
     for (int i = 0; i < el.Nodes(); ++i)
     {
         rt[i] = m_Node[el.m_node[i]].r;
-        Dt[i] = face.m_nn[i]*el.m_h[i];
+        Dt[i] = to_vec3d(face.m_nn[i]*el.m_h[i]);
     }
 
     switch (el.Type())
