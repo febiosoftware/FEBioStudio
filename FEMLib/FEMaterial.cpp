@@ -259,9 +259,9 @@ REGISTER_MATERIAL(FENaturalNeoHookean, MODULE_MECH, FE_NATURAL_NEO_HOOKEAN, FE_M
 
 FENaturalNeoHookean::FENaturalNeoHookean() : FEMaterial(FE_NATURAL_NEO_HOOKEAN)
 {
-    AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->MakeVariable(true)->SetPersistent(false);
-    AddScienceParam(0, UNIT_PRESSURE ,       "G", "shear modulus"  )->MakeVariable(true);
-    AddScienceParam(0, UNIT_PRESSURE ,       "k", "bulk modulus"   )->MakeVariable(true)->SetPersistent(false);
+    AddScienceParam(1, UNIT_DENSITY , "density", "density"        )->MakeVariable(true)->SetPersistent(false);
+    AddScienceParam(0, UNIT_PRESSURE,       "E", "Young's modulus")->MakeVariable(true);
+    AddScienceParam(0, UNIT_NONE    ,       "v", "Poisson's ratio")->MakeVariable(true);
 }
 
 //////////////////////////////////////////////////////////////////////
