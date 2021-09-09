@@ -819,7 +819,7 @@ void CModelTree::Select(FSObject* po)
 		++it;
 	}
 
-	assert((false) || (m_nfilter != 0));
+//	assert((false) || (m_nfilter != 0));
 }
 
 void CModelTree::Select(const std::vector<FSObject*>& objList)
