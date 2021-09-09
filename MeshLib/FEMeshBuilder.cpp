@@ -1335,6 +1335,7 @@ void FEMeshBuilder::PartitionElementSelection(int gid)
 	m_mesh.UpdateFacePartitions();
 	m_mesh.UpdateFaceElementTable();
 	m_mesh.UpdateFaceNeighbors();
+	m_mesh.UpdateNormals();
 
 	// assign new face partitions where necessary
 	nfp = m_mesh.CountFacePartitions();
