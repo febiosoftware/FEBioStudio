@@ -54,6 +54,7 @@
 #define FE_MAT_MREACTION_IPRODUCTS      0x00200000
 #define FE_MAT_MREACTION_EREACTANTS     0x00210000
 #define FE_MAT_MREACTION_EPRODUCTS      0x00220000
+#define FE_MAT_PLASTIC_FLOW_RULE		0x00230000
 
 // --- Material Types ---
 // These values are stored in the prv file so don't change!
@@ -308,6 +309,11 @@
 
 // 1D functions
 #define FE_FNC1D_POINT		1501
+
+// plastic flow rules
+#define FE_MAT_PLASTIC_FLOW_PAPER		1601
+#define FE_MAT_PLASTIC_FLOW_USER		1602
+#define FE_MAT_PLASTIC_FLOW_MATH		1603
 
 //-----------------------------------------------------------------------------
 class FEFiberGenerator : public FEMaterial
@@ -2344,4 +2350,28 @@ public:
 public:
 	FEPrestrainInSituGradient();
 	DECLARE_REGISTERED(FEPrestrainInSituGradient);
+};
+
+//-----------------------------------------------------------------------------
+class FEPlasticFlowCurvePaper : public FEMaterial
+{
+public:
+	FEPlasticFlowCurvePaper();
+	DECLARE_REGISTERED(FEPlasticFlowCurvePaper);
+};
+
+//-----------------------------------------------------------------------------
+class FEPlasticFlowCurveUser : public FEMaterial
+{
+public:
+	FEPlasticFlowCurveUser();
+	DECLARE_REGISTERED(FEPlasticFlowCurveUser);
+};
+
+//-----------------------------------------------------------------------------
+class FEPlasticFlowCurveMath : public FEMaterial
+{
+public:
+	FEPlasticFlowCurveMath();
+	DECLARE_REGISTERED(FEPlasticFlowCurveMath);
 };

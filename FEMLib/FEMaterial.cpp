@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <FSCore/paramunit.h>
 #include <FEBioStudio/WebDefines.h>
+#include "FEDiscreteMaterial.h"
 
 //////////////////////////////////////////////////////////////////////
 // FEFiberGeneratorLocal
@@ -3053,4 +3054,37 @@ FEPrestrainInSituGradient::FEPrestrainInSituGradient() : FEMaterial(FE_PRESTRAIN
 {
 	AddScienceParam(1.0, UNIT_NONE, "stretch", "fiber stretch");
 	AddBoolParam(false, "isochoric", "isochoric prestrain");
+}
+
+//=============================================================================
+REGISTER_MATERIAL(FEPlasticFlowCurvePaper, MODULE_MECH, FE_MAT_PLASTIC_FLOW_PAPER, FE_MAT_PLASTIC_FLOW_RULE, "PFC paper", 0);
+
+FEPlasticFlowCurvePaper::FEPlasticFlowCurvePaper() : FEMaterial(FE_MAT_PLASTIC_FLOW_PAPER)
+{
+	AddDoubleParam(0, "Y0");
+	AddDoubleParam(0, "Ymax");
+	AddDoubleParam(1, "w0");
+	AddDoubleParam(0, "we");
+	AddIntParam(1, "nf");
+	AddDoubleParam(0.9, "r");
+}
+
+//=============================================================================
+REGISTER_MATERIAL(FEPlasticFlowCurveUser, MODULE_MECH, FE_MAT_PLASTIC_FLOW_USER, FE_MAT_PLASTIC_FLOW_RULE, "PFC user", 0);
+
+FEPlasticFlowCurveUser::FEPlasticFlowCurveUser() : FEMaterial(FE_MAT_PLASTIC_FLOW_USER)
+{
+	AddProperty("plastic_response", FE_MAT_1DFUNC);
+	AddProperty(0, new FE1DPointFunction);
+}
+
+//=============================================================================
+REGISTER_MATERIAL(FEPlasticFlowCurveMath, MODULE_MECH, FE_MAT_PLASTIC_FLOW_MATH, FE_MAT_PLASTIC_FLOW_RULE, "PFC math", 0);
+
+FEPlasticFlowCurveMath::FEPlasticFlowCurveMath() : FEMaterial(FE_MAT_PLASTIC_FLOW_MATH)
+{
+	AddIntParam(1, "nf");
+	AddDoubleParam(0, "emin");
+	AddDoubleParam(1, "emax");
+	AddMathParam("", "plastic_response");
 }
