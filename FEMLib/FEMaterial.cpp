@@ -3084,7 +3084,7 @@ REGISTER_MATERIAL(FEPlasticFlowCurveMath, MODULE_MECH, FE_MAT_PLASTIC_FLOW_MATH,
 FEPlasticFlowCurveMath::FEPlasticFlowCurveMath() : FEMaterial(FE_MAT_PLASTIC_FLOW_MATH)
 {
 	AddIntParam(1, "nf");
-	AddDoubleParam(0, "emin");
+	AddDoubleParam(0, "e0");
 	AddDoubleParam(1, "emax");
 	AddMathParam("", "plastic_response");
 }

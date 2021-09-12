@@ -1338,7 +1338,6 @@ FEReactivePlasticity::FEReactivePlasticity() : FEMaterial(FE_REACTIVE_PLASTICITY
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
     AddBoolParam   (true,"isochoric", "isochoric plastic flow");
-    AddDoubleParam(1e-4, "rtol");
     
     // Add one component for the elastic material
     AddProperty("elastic", FE_MAT_ELASTIC);
@@ -1360,7 +1359,6 @@ FEReactivePlasticDamage::FEReactivePlasticDamage() : FEMaterial(FE_REACTIVE_PLAS
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
     AddBoolParam(true, "isochoric", "isochoric plastic flow");
-    AddDoubleParam(1e-4, "rtol");
 
     // Add one component for the elastic material
     AddProperty("elastic", FE_MAT_ELASTIC);
