@@ -1045,24 +1045,24 @@ void CMainWindow::on_actionEditProject_triggered()
 
 void CMainWindow::on_actionFaceToElem_triggered()
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FESelection* sel = doc->GetCurrentSelection();
-	if (sel->Type() == SELECT_FE_FACES)
+	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
+	if (doc->GetItemMode() != ITEM_FACE) return;
+
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr) return;
+
+	FEMesh* mesh = po->GetFEMesh();
+	if (mesh == nullptr) return;
+
+	vector<int> selectedElems = mesh->GetElementsFromSelectedFaces();
+	if (selectedElems.empty() == false)
 	{
-		FEFaceSelection* selectedFaces = dynamic_cast<FEFaceSelection*>(sel);
-		FEMesh* mesh = dynamic_cast<FEMesh*>(selectedFaces->GetMesh());
-		if (mesh)
-		{
-			vector<int> selectedElems = mesh->GetElementsFromSelectedFaces();
-			if (selectedElems.empty() == false)
-			{
-				SetItemSelectionMode(SELECT_OBJECT, ITEM_ELEM);
-				CCmdSelectElements* cmd = new CCmdSelectElements(mesh, selectedElems, false);
-				doc->DoCommand(cmd);
-			}
-		}
+		SetItemSelectionMode(SELECT_OBJECT, ITEM_ELEM);
+		CCmdSelectElements* cmd = new CCmdSelectElements(mesh, selectedElems, false);
+		doc->DoCommand(cmd);
 	}
 }
 

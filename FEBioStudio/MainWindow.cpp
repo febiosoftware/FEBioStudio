@@ -1865,7 +1865,7 @@ void CMainWindow::SetSelectionMode(int nselect)
 //! set item selection mode
 void CMainWindow::SetItemSelectionMode(int nselect, int nitem)
 {
-	CModelDocument* doc = GetModelDocument();
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	doc->SetSelectionMode(nselect);
