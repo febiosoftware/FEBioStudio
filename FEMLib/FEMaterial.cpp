@@ -3086,5 +3086,5 @@ FEPlasticFlowCurveMath::FEPlasticFlowCurveMath() : FEMaterial(FE_MAT_PLASTIC_FLO
 	AddIntParam(1, "nf");
 	AddDoubleParam(0, "e0");
 	AddDoubleParam(1, "emax");
-	AddMathParam("", "plastic_response");
+	AddMathParam("<enter math formula>", "plastic_response", "plastic flow curve")->MakeVariable(true);
 }

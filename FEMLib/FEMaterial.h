@@ -2356,6 +2356,8 @@ public:
 class FEPlasticFlowCurvePaper : public FEMaterial
 {
 public:
+    enum { MP_Y0, MP_YM, MP_W0, MP_WE, MP_NF, MP_R };
+public:
 	FEPlasticFlowCurvePaper();
 	DECLARE_REGISTERED(FEPlasticFlowCurvePaper);
 };
@@ -2371,6 +2373,8 @@ public:
 //-----------------------------------------------------------------------------
 class FEPlasticFlowCurveMath : public FEMaterial
 {
+public:
+    enum { MP_NF, MP_E0, MP_EM, M_PR };
 public:
 	FEPlasticFlowCurveMath();
 	DECLARE_REGISTERED(FEPlasticFlowCurveMath);
