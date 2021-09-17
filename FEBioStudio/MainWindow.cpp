@@ -2035,7 +2035,7 @@ void CMainWindow::on_tab_currentChanged(int n)
 	CDocument* newDoc = GetDocument();
 	CDocument::SetActiveDocument(newDoc);
 
-	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->hide();
+	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->close();
 	GetGLView()->ClearCommandStack();
 
 	UpdateUIConfig();
