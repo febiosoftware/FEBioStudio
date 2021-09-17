@@ -1064,6 +1064,8 @@ void CMainWindow::on_actionFaceToElem_triggered()
 		CCmdSelectElements* cmd = new CCmdSelectElements(mesh, selectedElems, false);
 		doc->DoCommand(cmd);
 	}
+
+	RedrawGL();
 }
 
 void CMainWindow::on_actionSelectOverlap_triggered()
