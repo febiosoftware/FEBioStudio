@@ -2011,6 +2011,7 @@ FEFiberExpPow::FEFiberExpPow() : FEFiberMaterial(FE_FIBEREXPPOW_COUPLED)
     AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
     AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
     AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
+    AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
 }
 
 void FEFiberExpPow::Convert(FEFiberExpPowOld* pold)
@@ -2052,6 +2053,29 @@ FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEFiberMaterial(FE_FIBE
 	AddDoubleParam(0.0, "c4", "c4");
 	AddDoubleParam(0.0, "c5", "c5");
 	AddDoubleParam(0.0, "lambda", "lambda");
+}
+
+//=============================================================================
+// Fiber-Neo-Hookean
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberNeoHookean, MODULE_MECH, FE_FIBER_NEO_HOOKEAN, FE_MAT_ELASTIC, "fiber-NH", 0);
+
+FEFiberNeoHookean::FEFiberNeoHookean() : FEFiberMaterial(FE_FIBER_NEO_HOOKEAN)
+{
+    AddDoubleParam(0.0, "mu", "mu");
+}
+
+//=============================================================================
+// Fiber-Natural-Neo-Hookean
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberNaturalNH, MODULE_MECH, FE_FIBER_NATURAL_NH, FE_MAT_ELASTIC, "fiber-natural-NH", 0);
+
+FEFiberNaturalNH::FEFiberNaturalNH() : FEFiberMaterial(FE_FIBER_NATURAL_NH)
+{
+    AddDoubleParam(0.0, "ksi", "ksi");
+    AddDoubleParam(1.0, "lam0", "lam0");
 }
 
 //=============================================================================

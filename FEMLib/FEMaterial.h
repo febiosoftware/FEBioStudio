@@ -144,6 +144,8 @@
 #define FE_NEWTONIAN_VISCOUS_SOLID      83
 #define FE_KAMENSKY						84
 #define FE_KAMENSKY_UNCOUPLED			85
+#define FE_FIBER_NEO_HOOKEAN            86
+#define FE_FIBER_NATURAL_NH             87
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -1386,7 +1388,7 @@ public:
 class FEFiberExpPow : public FEFiberMaterial
 {
 public:
-    enum { MP_ALPHA, MP_BETA, MP_KSI };
+    enum { MP_ALPHA, MP_BETA, MP_KSI, M_L0 };
 
 public:
     FEFiberExpPow();
@@ -1457,6 +1459,28 @@ public:
 public:
 	FEFiberExpLinearUncoupled();
 	DECLARE_REGISTERED(FEFiberExpLinearUncoupled);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberNeoHookean : public FEFiberMaterial
+{
+public:
+    enum { MP_MU };
+public:
+    FEFiberNeoHookean();
+    
+    DECLARE_REGISTERED(FEFiberNeoHookean);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberNaturalNH : public FEFiberMaterial
+{
+public:
+    enum { MP_KSI, MP_LAM0 };
+public:
+    FEFiberNaturalNH();
+    
+    DECLARE_REGISTERED(FEFiberNaturalNH);
 };
 
 //-----------------------------------------------------------------------------
