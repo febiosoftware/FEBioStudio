@@ -465,8 +465,9 @@ void CDlgImportPoints::OnApply()
 		doc->GetGLModel()->AddPlot(pgl);
 		pgl->SetName(name.c_str());
 
-		ui->m_ncount++;
 		ui->name->setText(QString("Points%1").arg(ui->m_ncount));
+
+		ui->m_wnd->UpdatePostPanel(false, pgl);
 
 		accept();
 	}

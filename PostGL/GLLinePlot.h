@@ -94,39 +94,32 @@ private:
 // point cloud rendering of imported point data
 class CGLPointPlot : public CGLPlot
 {
-	enum {MAX_SETTINGS = 4};
-
 	enum { POINT_SIZE, COLOR, RENDER_MODE };
-
-	struct SETTINGS
-	{
-		float		size;		//!< point size
-		GLColor		col;		//!< rendering color
-		int			nmode;		//!< rendering mode
-		int			nvisible;	//!< visible flag
-	};
 
 public:
 	CGLPointPlot(CGLModel* po);
 	virtual ~CGLPointPlot();
 
+	void SetPointData(int pointData) { m_data = pointData; }
+
 	void Render(CGLContext& rc) override;
 
-	float GetPointSize(int n = 0) { return m_set[n].size; }
-	void SetPointSize(float f, int n = 0) { m_set[n].size = f; }
+	float GetPointSize() { return m_size; }
+	void SetPointSize(float f) { m_size = f; }
 
-	GLColor GetPointColor(int n = 0) { return m_set[n].col; }
-	void SetPointColor(GLColor c, int n = 0) { m_set[n].col = c; }
+	GLColor GetPointColor() { return m_col; }
+	void SetPointColor(GLColor c) { m_col = c; }
 
-	int GetRenderMode(int n = 0) { return m_set[n].nmode; }
-	void SetRenderMode(int m, int n = 0) { m_set[n].nmode = m; }
-
-	int GetVisible(int n = 0) { return m_set[n].nvisible; }
-	void SetVisible(int nvis, int n = 0) { m_set[n].nvisible = nvis; }
+	int GetRenderMode() { return m_nmode; }
+	void SetRenderMode(int m) { m_nmode = m; }
 
 	bool UpdateData(bool bsave = true) override;
 
 private:
-	SETTINGS	m_set[MAX_SETTINGS];
+	int		m_data;
+
+	float		m_size;		//!< point size
+	GLColor		m_col;		//!< rendering color
+	int			m_nmode;	//!< rendering mode
 };
 }

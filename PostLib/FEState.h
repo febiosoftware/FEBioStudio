@@ -196,6 +196,7 @@ public:
 
 	POINTDATA& Point(int n) { return m_Point[n]; }
 	int Points() { return (int) m_Point.size(); }
+	void ClearPoints() { m_Point.clear(); }
 
 	void SetFEMesh(FEPostMesh* pm) { m_mesh = pm; }
 	FEPostMesh* GetFEMesh() { return m_mesh; }

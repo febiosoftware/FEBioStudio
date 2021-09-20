@@ -666,15 +666,11 @@ CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLPlot(po)
 
 	AddDoubleParam(8.0, "point size");
 	AddColorParam(GLColor::White(), "color");
-	AddIntParam(0, "render mode")->SetEnumNames("points\0");
+	AddIntParam(0, "render mode")->SetEnumNames("points\0sphere\0");
 
-	for (int i=0; i<MAX_SETTINGS; ++i)
-	{
-		m_set[i].size = 8.f;
-		m_set[i].nmode = 1;
-		m_set[i].col = GLColor(0, 0, 255);
-		m_set[i].nvisible = 1;
-	}
+	m_size = 8.f;
+	m_nmode = 0;
+	m_col = GLColor(0, 0, 255);
 
 	UpdateData(false);
 }
@@ -682,6 +678,15 @@ CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLPlot(po)
 //-----------------------------------------------------------------------------
 CGLPointPlot::~CGLPointPlot()
 {
+	FEPostModel* fem = GetModel()->GetFEModel();
+	if (fem)
+	{
+		for (int i = 0; i < fem->GetStates(); ++i)
+		{
+			FEState& state = *fem->GetState(i);
+			state.ClearPoints();
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -689,11 +694,15 @@ bool CGLPointPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
-
+		m_size  = GetFloatValue(POINT_SIZE);
+		m_col   = GetColorValue(COLOR);
+		m_nmode = GetIntValue(RENDER_MODE);
 	}
 	else
 	{
-
+		SetFloatValue(POINT_SIZE, m_size);
+		SetColorValue(COLOR, m_col);
+		SetIntValue(RENDER_MODE, m_nmode);
 	}
 
 	return false;
@@ -702,7 +711,7 @@ bool CGLPointPlot::UpdateData(bool bsave)
 //-----------------------------------------------------------------------------
 void CGLPointPlot::Render(CGLContext& rc)
 {
-	FEPostModel& fem = *GetModel()->GetFEModel();;
+	FEPostModel& fem = *GetModel()->GetFEModel();
 	int ns = GetModel()->CurrentTimeIndex();
 
 	GLfloat size_old;
@@ -715,32 +724,43 @@ void CGLPointPlot::Render(CGLContext& rc)
 		{
 			glPushAttrib(GL_ENABLE_BIT);
 			{
-				glDisable(GL_LIGHTING);
-				glDisable(GL_DEPTH_TEST);
+				glColor3ub(m_col.r, m_col.g, m_col.b);
 
-				int NC = 0;
-				for (int n=0; n<MAX_SETTINGS; ++n)
+				if (m_nmode == 0)
 				{
-					glPointSize(m_set[n].size);
-					glColor3ub(m_set[n].col.r, m_set[n].col.g, m_set[n].col.b);
+					glPointSize(m_size);
+					glDisable(GL_LIGHTING);
+					glDisable(GL_DEPTH_TEST);
 
 					glBegin(GL_POINTS);
 					{
-						for (int i=0; i<NP; ++i)
+						for (int i = 0; i < NP; ++i)
 						{
 							POINTDATA& p = s.Point(i);
-							if (p.nlabel == n) 
-							{
-								if (m_set[n].nvisible) glVertex3f(p.m_r.x, p.m_r.y, p.m_r.z);
-								NC++;
-							}
+
+							glVertex3f(p.m_r.x, p.m_r.y, p.m_r.z);
 						}
 					}
 					glEnd();
-
-					if (NC >= NP) break;
 				}
-				assert(NC == NP);
+				else if (m_nmode == 1)
+				{
+					GLUquadricObj* pobj = gluNewQuadric();
+
+					for (int i = 0; i < NP; ++i)
+					{
+						POINTDATA& p = s.Point(i);
+						vec3f& c = p.m_r;
+
+						glPushMatrix();
+						{
+							glTranslatef(c.x, c.y, c.z);
+							gluSphere(pobj, m_size, 32, 32);
+						}
+						glPopMatrix();
+					}
+					gluDeleteQuadric(pobj);
+				}
 			}
 			glPopAttrib();
 		}
