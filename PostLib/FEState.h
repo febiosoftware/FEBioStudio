@@ -97,6 +97,7 @@ struct LINEDATA
 struct POINTDATA
 {
 	int		nlabel;
+	float	val;
 	vec3f	m_r;
 };
 
@@ -190,7 +191,7 @@ public:
 
 	void AddLine(vec3f a, vec3f b, float data_a = 0.f, float data_b = 0.f, int el0 = -1, int el1 = -1);
 
-	void AddPoint(vec3f a, int nlabel = 0);
+	void AddPoint(vec3f a, int nlabel = 0, float v = 0.f);
 
 	LineData& GetLineData() { return m_Line; }
 

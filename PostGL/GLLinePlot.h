@@ -94,32 +94,31 @@ private:
 // point cloud rendering of imported point data
 class CGLPointPlot : public CGLPlot
 {
-	enum { POINT_SIZE, COLOR, RENDER_MODE };
+	enum { POINT_SIZE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP };
 
 public:
 	CGLPointPlot(CGLModel* po);
 	virtual ~CGLPointPlot();
 
-	void SetPointData(int pointData) { m_data = pointData; }
-
 	void Render(CGLContext& rc) override;
 
-	float GetPointSize() { return m_size; }
-	void SetPointSize(float f) { m_size = f; }
+	float GetPointSize() { return m_pointSize; }
+	void SetPointSize(float f) { m_pointSize = f; }
 
-	GLColor GetPointColor() { return m_col; }
-	void SetPointColor(GLColor c) { m_col = c; }
-
-	int GetRenderMode() { return m_nmode; }
-	void SetRenderMode(int m) { m_nmode = m; }
+	GLColor GetPointColor() { return m_solidColor; }
+	void SetPointColor(GLColor c) { m_solidColor = c; }
 
 	bool UpdateData(bool bsave = true) override;
 
 private:
-	int		m_data;
+	void RenderPoints();
+	void RenderSpheres();
 
-	float		m_size;		//!< point size
-	GLColor		m_col;		//!< rendering color
-	int			m_nmode;	//!< rendering mode
+private:
+	float		m_pointSize;	//!< point size
+	int			m_renderMode;	//!< render mode
+	int			m_colorMode;	//!< color mode
+	GLColor		m_solidColor;	//!< rendering color
+	int			m_colorMap;		//!< color map
 };
 }

@@ -446,14 +446,14 @@ void CDlgImportPoints::OnApply()
 			if (fgets(szline, 255, fp))
 			{
 				int nstate, id;
-				float x, y, z;
-				int n = sscanf(szline, "%d%d%g%g%g", &nstate, &id, &x, &y, &z);
-				if (n == 5)
+				float x, y, z, v = 0.0f;
+				int n = sscanf(szline, "%d%d%g%g%g%g", &nstate, &id, &x, &y, &z, &v);
+				if ((n == 5)||(n == 6))
 				{
 					if ((nstate >= 0) && (nstate < fem.GetStates()))
 					{
 						Post::FEState& s = *fem.GetState(nstate);
-						s.AddPoint(vec3f(x, y, z), id);
+						s.AddPoint(vec3f(x, y, z), id, v);
 					}
 				}
 			}
