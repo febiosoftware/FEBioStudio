@@ -36,6 +36,7 @@ SOFTWARE.*/
 enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
 
 class C3DImage;
+class CImageFilter;
 
 namespace Post {
 
@@ -91,6 +92,8 @@ public:
 
 	void AddImageRenderer(CGLImageRenderer* render);
 
+	void AddImageFilter(CImageFilter* imageFilter);
+
 	const BOX& GetBoundingBox() const { return m_box; }
 
 	void SetBoundingBox(BOX b) { m_box = b; }
@@ -100,6 +103,8 @@ public:
 	void ShowBox(bool b);
 
 	void Render(CGLContext& rc);
+
+	void ApplyFilters();
 
 	bool UpdateData(bool bsave = true) override;
 
@@ -112,6 +117,7 @@ private:
 	BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
 	FSObjectList<CGLImageRenderer>	m_render;	//!< image renderers
+	FSObjectList<CImageFilter> m_filters;
 
 	CImageSource*	m_img;
 };

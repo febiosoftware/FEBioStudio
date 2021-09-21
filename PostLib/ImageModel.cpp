@@ -28,7 +28,9 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ITKImage.h>
+#include <ImageLib/ImageFilter.h>
 #include "GLImageRenderer.h"
+#include <PostLib/VolRender.h>
 #include <FSCore/FSDir.h>
 #include <assert.h>
 
@@ -272,6 +274,21 @@ void CImageModel::Render(CGLContext& rc)
 	}
 }
 
+void CImageModel::ApplyFilters()
+{
+	for(int index = 0; index < m_filters.Size(); index++)
+	{
+		m_filters[index]->ApplyFilter();
+	}
+
+	for (int i = 0; i < (int)m_render.Size(); ++i)
+	{
+		Post::CVolRender* render = dynamic_cast<Post::CVolRender*>(m_render[i]);
+
+		if(render) render->Create();
+	} 
+}
+
 size_t CImageModel::RemoveRenderer(CGLImageRenderer* render)
 {
 	return m_render.Remove(render);
@@ -281,6 +298,11 @@ void CImageModel::AddImageRenderer(CGLImageRenderer* render)
 {
 	assert(render);
 	m_render.Add(render);
+}
+
+void CImageModel::AddImageFilter(CImageFilter* imageFilter)
+{
+	m_filters.Add(imageFilter);
 }
 
 void CImageModel::Save(OArchive& ar)

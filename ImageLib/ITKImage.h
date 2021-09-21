@@ -44,13 +44,16 @@ class CITKImage : public C3DImage
 
 public:
     CITKImage() {}
-    ~CITKImage() override { m_pb = nullptr; }
+    ~CITKImage();
 
     bool LoadFromFile(const char* filename, ImageFileType type);
 
     std::vector<int> GetSize();
     std::vector<double> GetOrigin();
     std::vector<double> GetSpacing();
+
+    itk::SmartPointer<itk::Image<unsigned char, 3>> GetItkImage();
+    void SetItkImage(itk::SmartPointer<itk::Image<unsigned char, 3>> image);
 
 private:
     bool ParseImageHeader();
@@ -62,7 +65,7 @@ private:
 
     void GetNamesForSequence();
 
-    bool FinalizeImage();
+    void FinalizeImage();
 
 
 private:
@@ -71,8 +74,8 @@ private:
     ImageFileType m_type;
     IOPixelType pixelType;
     IOComponentType componentType;
-    // itk::ImageBase<3> originalImage;
-    itk::SmartPointer<FinalImageType> finalImage;
+    // itk::SmartPointer<FinalImageType> originalImage;
+    typename FinalImageType::Pointer finalImage;
 
     std::vector<std::string> sequenceFiles;
 };

@@ -45,6 +45,8 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
+#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageFilter.h>
 
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
@@ -1737,6 +1739,11 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Rerun job", this, SLOT(OnRerunJob()));
 		del = true;
 		break;
+	case MT_3DIMAGE:
+		menu.addAction("Add Mean Image Fitler", this, SLOT(OnAddMeanImageFilter()));
+		menu.addAction("Add Gaussian Image Fitler", this, SLOT(OnAddGaussianImageFilter()));
+		del = true;
+		break;
 	default:
 		return;
 	}
@@ -1795,6 +1802,34 @@ void CModelViewer::OnSwapMasterSlave()
 	{
 		pci->SwapPrimarySecondary();
 		UpdateObject(m_currentObject);
+	}
+}
+
+void CModelViewer::OnAddMeanImageFilter()
+{
+	Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
+	
+	if(model)
+	{
+		MeanImageFilter* filter = new MeanImageFilter(model);
+
+		model->AddImageFilter(filter);
+
+		model->ApplyFilters();
+	}
+}
+
+void CModelViewer::OnAddGaussianImageFilter()
+{
+	Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
+	
+	if(model)
+	{
+		GaussianImageFilter* filter = new GaussianImageFilter(model);
+
+		model->AddImageFilter(filter);
+
+		model->ApplyFilters();
 	}
 }
 

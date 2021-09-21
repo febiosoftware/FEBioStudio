@@ -166,6 +166,8 @@ public slots:
 	void OnImportMaterials();
 	void OnDeleteAllMaterials();
 	void OnSwapMasterSlave();
+	void OnAddMeanImageFilter();
+	void OnAddGaussianImageFilter();
 	void OnDeleteAllBC();
 	void OnDeleteAllLoads();
 	void OnDeleteAllIC();

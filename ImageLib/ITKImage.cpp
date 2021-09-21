@@ -39,6 +39,15 @@ DEALINGS IN THE SOFTWARE.
 
 #include <QFileInfo>
 
+#include <iostream>
+
+CITKImage::~CITKImage()
+{
+    m_pb = nullptr;
+    // std::cout << "Ref count: " << originalImage->GetReferenceCount() << std::endl;
+    std::cout << "Ref count: " << finalImage->GetReferenceCount() << std::endl;
+}
+
 bool CITKImage::LoadFromFile(const char* filename, ImageFileType type)
 {
     m_filename = filename;
@@ -102,6 +111,17 @@ std::vector<double> CITKImage::GetSpacing()
     return spacing;
 }
 
+itk::SmartPointer<itk::Image<unsigned char, 3>> CITKImage::GetItkImage()
+{
+    return finalImage;
+}
+
+void CITKImage::SetItkImage(itk::SmartPointer<itk::Image<unsigned char, 3>> image)
+{
+    finalImage = image;
+    m_pb = finalImage->GetBufferPointer();
+}
+
 bool CITKImage::ParseImageHeader()
 {
     itk::ImageIOBase::Pointer imageIO =
@@ -154,10 +174,12 @@ int CITKImage::ReadScalarImage()
             using ImageReaderType = itk::ImageFileReader<ImageType>;
             typename ImageReaderType::Pointer reader = ImageReaderType::New();
             reader->SetFileName(m_imageFilename);
+
+            finalImage = reader->GetOutput();
             
             try
             {
-                reader->Update();
+                finalImage->Update();
             }
             catch (const itk::ExceptionObject & e)
             {
@@ -165,8 +187,6 @@ int CITKImage::ReadScalarImage()
                 std::cerr << e << std::endl;
                 return false;
             }
-
-            finalImage = reader->GetOutput();
 
             return true;
         }
@@ -262,12 +282,12 @@ CITKImage::ReadImage()
     typename ImageReaderType::Pointer reader;
 
     using RescaleType = itk::RescaleIntensityImageFilter<ImageType, ImageType>;
-    itk::SmartPointer<RescaleType> rescale = RescaleType::New();
+    typename RescaleType::Pointer rescale = RescaleType::New();
     rescale->SetOutputMinimum(0);
     rescale->SetOutputMaximum(itk::NumericTraits<unsigned char>::max());
 
     using CastType = itk::CastImageFilter<ImageType, FinalImageType>;
-    itk::SmartPointer<CastType> castFilter = CastType::New();
+    typename CastType::Pointer castFilter = CastType::New();
 
     if(m_type == ImageFileType::DICOM)
     {
@@ -278,7 +298,7 @@ CITKImage::ReadImage()
         seriesReader->SetImageIO(gdcmImageIO);
 
         using NamesGeneratorType = itk::GDCMSeriesFileNames;
-        itk::SmartPointer<NamesGeneratorType> nameGenerator = NamesGeneratorType::New();
+        typename NamesGeneratorType::Pointer nameGenerator = NamesGeneratorType::New();
         nameGenerator->SetUseSeriesDetails(true);
 
         QFileInfo info(m_imageFilename);
@@ -425,6 +445,20 @@ CITKImage::ReadImage()
 
         finalImage->SetOrigin(origin);
 
+        
+        std::cout << "Reader ref count: " << seriesReader->GetReferenceCount() << std::endl;
+        std::cout << "Rescale ref count: " << rescale->GetReferenceCount() << std::endl;
+        std::cout << "Cast Filter ref count: " << castFilter->GetReferenceCount() << std::endl;
+
+        finalImage->DisconnectPipeline();
+        // seriesReader->UnRegister();
+        // rescale->UnRegister();
+        // castFilter->UnRegister();
+
+        // std::cout << "Reader ref count: " << seriesReader->GetReferenceCount() << std::endl;
+        // std::cout << "Rescale ref count: " << rescale->GetReferenceCount() << std::endl;
+        // std::cout << "Cast Filter ref count: " << castFilter->GetReferenceCount() << std::endl;
+
     }
     else
     {
@@ -457,8 +491,9 @@ void CITKImage::GetNamesForSequence()
     
 }
 
-bool CITKImage::FinalizeImage()
+void CITKImage::FinalizeImage()
 {
+    // finalImage = originalImage;
     m_pb = finalImage->GetBufferPointer();
 
     const typename FinalImageType::SizeType& sz = finalImage->GetBufferedRegion().GetSize();

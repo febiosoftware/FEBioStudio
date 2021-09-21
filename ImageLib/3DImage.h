@@ -65,6 +65,7 @@ public:
 	void Invert();
 
 	Byte* GetBytes() { return m_pb; }
+	void SetBytes(Byte* bytes) {m_pb = bytes; }
 
 	void Zero();
 
