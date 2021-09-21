@@ -461,7 +461,7 @@ public:
 
 		// --- Edit (txt) menu ---
 		QAction* actionFindTxt = addAction("Find ...", "actionFindTxt"); actionFindTxt->setShortcut(Qt::Key_F + Qt::ControlModifier);
-		QAction* actionFindAgain = addAction("Find Again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::Key_F3);
+		QAction* actionFindAgain = addAction("Find Again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::Key_F | Qt::ControlModifier | Qt::ShiftModifier);
 		QAction* actionToggleComment = addAction("Toggle Line Comment", "actionToggleComment"); actionToggleComment->setShortcut(Qt::ControlModifier + Qt::Key_Slash);
 		QAction* actionDuplicateLine = addAction("Copy Line Down", "actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::ControlModifier + Qt::Key_D);
 		QAction* actionDeleteLine = addAction("Delete Line", "actionDeleteLine"); actionDeleteLine->setShortcut(Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_L);
@@ -516,7 +516,7 @@ public:
 		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
 		QAction* actionAddProbe = addAction("Add Probe", "actionAddProbe");
-		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); // actionGraph->setShortcut(Qt::Key_F3);
+		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
 		QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", "integrate");

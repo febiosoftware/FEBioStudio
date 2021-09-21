@@ -856,6 +856,7 @@ public:
 	QAction* actionType;
 	QAction* actionPlot;
 	QAction* actionSource;
+	QAction* actionShowTools;
 
 public:
 	void setupUi(::CGraphWindow* parent, int flags)
@@ -945,7 +946,7 @@ public:
 		QPushButton* showTools = new QPushButton("Tools");
 		showTools->setCheckable(true);
 		showTools->setChecked(false);
-		toolBar->addWidget(showTools);
+		actionShowTools = toolBar->addWidget(showTools);
 
 		zoomBar = new QToolBar(parent);
 		QAction* actionZoomWidth  = zoomBar->addAction(QIcon(QString(":/icons/zoom_x.png" )), "Zoom Width" ); actionZoomWidth->setObjectName("actionZoomWidth" );
@@ -1241,7 +1242,7 @@ void CGraphWindow::SetDataSource(const QStringList& names)
 //-----------------------------------------------------------------------------
 void CGraphWindow::AddToolBarWidget(QWidget* w)
 {
-	ui->toolBar->addWidget(w);
+	ui->toolBar->insertWidget(ui->actionShowTools, w);
 }
 
 //-----------------------------------------------------------------------------

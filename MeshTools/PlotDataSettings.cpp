@@ -156,6 +156,8 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "intact bond fraction"              );
     AddPlotVariable(MODULE_MECH, "kinetic energy density"            );
     AddPlotVariable(MODULE_MECH, "Lagrange strain"                   );
+    AddPlotVariable(MODULE_MECH, "left Hencky"                       );
+    AddPlotVariable(MODULE_MECH, "left stretch"                      );
     AddPlotVariable(MODULE_MECH, "material axes"                     );
     AddPlotVariable(MODULE_MECH, "nested damage"                     );
     AddPlotVariable(MODULE_MECH, "nodal contact gap"                 );
@@ -167,6 +169,8 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "octahedral plastic strain"         );
     AddPlotVariable(MODULE_MECH, "reaction forces"                   );
     AddPlotVariable(MODULE_MECH, "relative volume");
+    AddPlotVariable(MODULE_MECH, "right Hencky"                      );
+    AddPlotVariable(MODULE_MECH, "right stretch"                     );
     AddPlotVariable(MODULE_MECH, "rigid acceleration"                );
     AddPlotVariable(MODULE_MECH, "rigid angular acceleration"        );
     AddPlotVariable(MODULE_MECH, "rigid angular momentum"            );

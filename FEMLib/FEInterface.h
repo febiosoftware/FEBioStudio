@@ -303,6 +303,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FEContactPotentialInterface : public FEPairedInterface
+{
+public:
+	enum { KC, POWER, RIN, ROUT, WTOL };
+public:
+	FEContactPotentialInterface(FEModel* ps, int nstep = 0);
+};
+
+
+//-----------------------------------------------------------------------------
 class FEGapHeatFluxInterface : public FEPairedInterface
 {
 public:

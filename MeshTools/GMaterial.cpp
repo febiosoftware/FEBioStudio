@@ -97,6 +97,13 @@ FEMaterial* GMaterial::GetMaterialProperties()
 	return m_pm; 
 }
 
+GMaterial* GMaterial::Clone()
+{
+	FEMaterial* pmCopy = 0;
+	if (m_pm) pmCopy = m_pm->Clone();
+	return new GMaterial(pmCopy);
+}
+
 const char* GMaterial::GetFullName()
 {
 	static char sz[256];

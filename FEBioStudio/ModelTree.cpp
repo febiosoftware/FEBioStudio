@@ -406,7 +406,6 @@ public:
 		{
 			m_wnd->blockUpdate(true);
 			m_wnd->OnEditOutput();
-			SetModified(true);
 			m_wnd->blockUpdate(false);
 		}
 	}
@@ -760,6 +759,24 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 
 void CModelTree::UpdateObject(FSObject* po)
 {
+	// make sure there is something to update
+	if (po == nullptr) return;
+
+	// Often, this will be the currently active object,
+	// so check that first, before doing a potentially expensive search
+	QTreeWidgetItem* current = currentItem();
+	if (current)
+	{
+		QVariant data = current->data(0, Qt::UserRole);
+		int n = data.toInt();
+		if (m_data[n].obj == po)
+		{
+			UpdateItem(current);
+			return;
+		}
+	}
+
+	// Ok, it was not the current object, so let's do a more extensive search
 	QTreeWidgetItemIterator it(this);
 	while (*it)
 	{
@@ -802,7 +819,7 @@ void CModelTree::Select(FSObject* po)
 		++it;
 	}
 
-	assert((false) || (m_nfilter != 0));
+//	assert((false) || (m_nfilter != 0));
 }
 
 void CModelTree::Select(const std::vector<FSObject*>& objList)

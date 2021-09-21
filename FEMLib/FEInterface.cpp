@@ -546,29 +546,29 @@ FEPoroContact::FEPoroContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO
 {
 	SetTypeString("Biphasic contact");
 
-	AddBoolParam  (false, "laugon"             , "augmented Lagrangian"  );
-	AddDoubleParam(0.2  , "tolerance"          , "augmentation tolerance");
-    AddDoubleParam(0    , "gaptol"             , "gap tolerance"         );
-    AddDoubleParam(0    , "ptol"               , "pressure tolerance"    );
-	AddBoolParam  (false, "two_pass"           , "two pass"              );
-    AddDoubleParam(1.0  , "penalty"            , "penalty factor"        );
-    AddDoubleParam(0.0  , "pressure_penalty"   , "pressure penalty"      );
-	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"          );
-    AddDoubleParam(0    , "fric_coeff"         , "friction coefficient"  );
-    AddDoubleParam(0    , "contact_frac"       , "solid-solid area fraction");
-    AddBoolParam  (false, "smooth_fls"         , "smooth fluid load support");
-	AddBoolParam  (false, "symmetric_stiffness", "symmetric stiffness"   );
-	AddDoubleParam(1.0  , "search_radius"      , "search radius"         );
-    AddIntParam   (0    , "seg_up"             , "segment updates"       );
-    AddDoubleParam(0    , "minaug"             , "min augmentations"     );
-    AddDoubleParam(10   , "maxaug"             , "max augmentations"     );
-    AddBoolParam(false  , "smooth_aug"         , "augmentation smoothing");
-    AddIntParam   (0    , "knmult"             , "higher-order stiffness");
-    AddBoolParam  (false, "node_reloc"         , "relocated nodes"       );
-	AddDoubleParam(0.01 , "search_tol"         , "search tolerance"      );
-	AddBoolParam(false  , "update_penalty"     , "update-penalty"        );
-    AddBoolParam  (false, "flip_primary"       , "flip normal on primary"  );
-    AddBoolParam  (false, "flip_secondary"     , "flip normal on secondary");
+	AddBoolParam  (false, "laugon"                , "augmented Lagrangian"         );
+	AddDoubleParam(0.2  , "tolerance"             , "augmentation tolerance"       );
+    AddDoubleParam(0    , "gaptol"                , "gap tolerance"                );
+    AddDoubleParam(0    , "ptol"                  , "pressure tolerance"           );
+    AddDoubleParam(1.0  , "penalty"               , "penalty factor"               );
+	AddBoolParam  (false, "two_pass"              , "two pass"                     );
+	AddBoolParam  (false, "auto_penalty"          , "auto-penalty"                 );
+	AddDoubleParam(0.0  , "pressure_penalty"      , "pressure penalty"             );
+	AddBoolParam  (false, "symmetric_stiffness"   , "symmetric stiffness"          );
+	AddDoubleParam(1.0  , "search_radius"         , "search radius"                );
+	AddIntParam   (0    , "seg_up"                , "segment updates"              );
+	AddDoubleParam(0    , "minaug"                , "min augmentations"            );
+	AddDoubleParam(10   , "maxaug"                , "max augmentations"            );
+	AddDoubleParam(0.01 , "search_tol"            , "search tolerance"             );
+	AddBoolParam  (false, "update_penalty"        , "update-penalty"               );
+	AddBoolParam  (false, "smooth_aug"            , "augmentation smoothing"       );
+	AddDoubleParam(0    , "fric_coeff"            , "friction coefficient"         );
+    AddDoubleParam(0    , "contact_frac"          , "solid-solid area fraction"    );
+    AddBoolParam  (false, "smooth_fls"            , "smooth fluid load support"    );
+    AddIntParam   (1    , "knmult"                , "higher-order stiffness"       );
+    AddBoolParam  (false, "node_reloc"            , "relocated nodes"              );
+    AddBoolParam  (false, "flip_primary"          , "flip normal on primary"       );
+    AddBoolParam  (false, "flip_secondary"        , "flip normal on secondary"     );
     AddBoolParam  (false, "shell_bottom_primary"  , "use shell bottom on primary"  );
     AddBoolParam  (false, "shell_bottom_secondary", "use shell bottom on secondary");
 }
@@ -647,26 +647,26 @@ FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int ns
 {
 	SetTypeString("Sliding-elastic contact");
 
-	AddBoolParam  (false, "laugon"             , "augmented Lagrangian"  );
-	AddDoubleParam(0.2  , "tolerance"          , "augmentation tolerance");
-	AddDoubleParam(0.0  , "gaptol"             , "gap tolerance"         );
-	AddDoubleParam(1.0  , "penalty"            , "penalty factor"        );
-	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"          );
-	AddBoolParam  (false, "two_pass"           , "two pass"              );
-	AddDoubleParam(0.01 , "search_tol"         , "projection tolerance"  );
-	AddBoolParam  (false, "symmetric_stiffness", "symmetric stiffness"   );
-	AddDoubleParam(1.0  , "search_radius"      , "search radius"         );
-	AddIntParam   (0    , "seg_up"             , "segment updates"       );
-	AddBoolParam  (false, "tension"            , "Tension contact"       );
-	AddDoubleParam(0    , "minaug"             , "min augmentations"     );
-	AddDoubleParam(10   , "maxaug"             , "max augmentations"     );
-	AddDoubleParam(0    , "fric_coeff"         , "friction coefficient"  );
-	AddBoolParam  (false, "smooth_aug"         , "Augmentation smoothing");
-    AddIntParam   (0    , "knmult"             , "higher-order stiffness");
-	AddBoolParam  (false, "node_reloc"         , "Relocated nodes"       );
-    AddBoolParam  (false, "flip_primary"       , "flip normal on primary"  );
-    AddBoolParam  (false, "flip_secondary"     , "flip normal on secondary");
-	AddBoolParam  (false, "update_penalty"     , "update-penalty");
+	AddBoolParam  (false, "laugon"                , "augmented Lagrangian"         );
+	AddDoubleParam(0.2  , "tolerance"             , "augmentation tolerance"       );
+	AddDoubleParam(0.0  , "gaptol"                , "gap tolerance"                );
+	AddDoubleParam(1.0  , "penalty"               , "penalty factor"               );
+	AddBoolParam  (false, "auto_penalty"          , "auto-penalty"                 );
+	AddBoolParam  (false, "two_pass"              , "two pass"                     );
+	AddDoubleParam(0.01 , "search_tol"            , "projection tolerance"         );
+	AddBoolParam  (false, "symmetric_stiffness"   , "symmetric stiffness"          );
+	AddDoubleParam(1.0  , "search_radius"         , "search radius"                );
+	AddIntParam   (0    , "seg_up"                , "segment updates"              );
+	AddBoolParam  (false, "tension"               , "Tension contact"              );
+	AddDoubleParam(0    , "minaug"                , "min augmentations"            );
+	AddDoubleParam(10   , "maxaug"                , "max augmentations"            );
+	AddDoubleParam(0    , "fric_coeff"            , "friction coefficient"         );
+	AddBoolParam  (false, "smooth_aug"            , "Augmentation smoothing"       );
+	AddBoolParam  (false, "node_reloc"            , "Relocated nodes"              );
+    AddBoolParam  (false, "flip_primary"          , "flip normal on primary"       );
+    AddBoolParam  (false, "flip_secondary"        , "flip normal on secondary"     );
+	AddIntParam   (0    , "knmult"                , "higher-order stiffness"       );
+	AddBoolParam  (false, "update_penalty"        , "update-penalty"               );
     AddBoolParam  (false, "shell_bottom_primary"  , "use shell bottom on primary"  );
     AddBoolParam  (false, "shell_bottom_secondary", "use shell bottom on secondary");
 }
@@ -742,6 +742,18 @@ FETiedElasticInterface::FETiedElasticInterface(FEModel* ps, int nstep) : FEPaire
 	AddDoubleParam(0, "minaug", "min augmentations");
 	AddDoubleParam(10, "maxaug", "max augmentations");
 	AddBoolParam(false, "update_penalty", "update-penalty");
+}
+
+//=============================================================================
+FEContactPotentialInterface::FEContactPotentialInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_CONTACTPOTENTIAL_CONTACT, ps, nstep)
+{
+	SetTypeString("contact potential");
+
+	AddDoubleParam(0, "kc");
+	AddDoubleParam(4, "p", "power");
+	AddDoubleParam(1, "R_in");
+	AddDoubleParam(2, "R_out");
+	AddDoubleParam(0, "w_tol");
 }
 
 //=============================================================================

@@ -2232,10 +2232,25 @@ void FEBioExport3::WriteMeshDomainsSection()
 		XMLElement el;
 		if (dom->m_elemClass == ELEM_SOLID)
 		{
+            GPart* pg = dom->m_pg;
 			el.name("SolidDomain");
 			el.add_attribute("name", dom->m_name);
 			el.add_attribute("mat", dom->m_matName);
-			m_xml.add_empty(el);
+            if (pg && pg->Parameters())
+            {
+                // for solid domains, hide the shell node normal state
+                pg->GetParam(0).SetState(0);
+                if (pg->GetParam(1).GetBoolValue() == false)
+                    m_xml.add_empty(el);
+                else {
+                    m_xml.add_branch(el);
+                    {
+                        WriteParamList(*pg);
+                    }
+                    m_xml.close_branch();
+                }
+            }
+            else m_xml.add_empty(el);
 		}
 		else if (dom->m_elemClass == ELEM_SHELL)
 		{
@@ -2246,6 +2261,11 @@ void FEBioExport3::WriteMeshDomainsSection()
 
 			if (pg && pg->Parameters())
 			{
+                // if there is no incompressibility constraint, hide parameters
+                if (pg->GetParam(1).GetBoolValue() == false) {
+                    pg->GetParam(1).SetState(0);
+                    pg->GetParam(2).SetState(0);
+                }
 				m_xml.add_branch(el);
 				{
 					WriteParamList(*pg);
@@ -3639,6 +3659,7 @@ void FEBioExport3::WriteContactSection(FEStep& s)
 			case FE_PERIODIC_BOUNDARY: WriteContactInterface(s, "periodic boundary", pi); break;
 			case FE_TIED_ELASTIC_INTERFACE: WriteContactInterface(s, "tied-elastic", pi); break;
 			case FE_GAPHEATFLUX_INTERFACE: WriteContactInterface(s, "gap heat flux", pi); break;
+			case FE_CONTACTPOTENTIAL_CONTACT: WriteContactInterface(s, "contact potential", pi); break;
 			}
 		}
 	}
@@ -4895,7 +4916,7 @@ void FEBioExport3::WriteStepSection()
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = s.RigidConstraints();
+			int nrc = s.RigidConstraints() + s.RigidConnectors();
 			if (nrc > 0)
 			{
 				m_xml.add_branch("Rigid");

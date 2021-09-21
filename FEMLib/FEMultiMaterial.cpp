@@ -1337,13 +1337,6 @@ REGISTER_MATERIAL(FEReactivePlasticity, MODULE_MECH, FE_REACTIVE_PLASTICITY, FE_
 FEReactivePlasticity::FEReactivePlasticity() : FEMaterial(FE_REACTIVE_PLASTICITY)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
-    
-    AddScienceParam(1, UNIT_NONE    , "nf"  , "no. of bond families");
-    AddScienceParam(0, UNIT_PRESSURE, "Y0"  , "minimum yield threshold");
-    AddScienceParam(0, UNIT_PRESSURE, "Ymax", "maximum yield threshold");
-    AddScienceParam(1, UNIT_NONE    , "w0"  , "initial fraction of yielding bonds");
-    AddScienceParam(0, UNIT_NONE    , "we"  , "fraction of unyielding bonds");
-    AddScienceParam(1, UNIT_NONE    , "r"   , "bias");
     AddBoolParam   (true,"isochoric", "isochoric plastic flow");
     
     // Add one component for the elastic material
@@ -1351,6 +1344,9 @@ FEReactivePlasticity::FEReactivePlasticity() : FEMaterial(FE_REACTIVE_PLASTICITY
     
     // Add criterion component
     AddProperty("yield_criterion", FE_MAT_DAMAGE_CRITERION);
+
+    // add flow curve property
+    AddProperty("flow_curve", FE_MAT_PLASTIC_FLOW_RULE);
 }
 
 //=============================================================================
@@ -1362,21 +1358,17 @@ REGISTER_MATERIAL(FEReactivePlasticDamage, MODULE_MECH, FE_REACTIVE_PLASTIC_DAMA
 FEReactivePlasticDamage::FEReactivePlasticDamage() : FEMaterial(FE_REACTIVE_PLASTIC_DAMAGE)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
-    
-    AddScienceParam(1, UNIT_NONE    , "nf"  , "no. of bond families");
-    AddScienceParam(0, UNIT_PRESSURE, "Y0"  , "minimum yield threshold");
-    AddScienceParam(0, UNIT_PRESSURE, "Ymax", "maximum yield threshold");
-    AddScienceParam(1, UNIT_NONE    , "w0"  , "initial fraction of yielding bonds");
-    AddScienceParam(0, UNIT_NONE    , "we"  , "fraction of unyielding bonds");
-    AddScienceParam(1, UNIT_NONE    , "r"   , "bias");
-    AddBoolParam   (true,"isochoric", "isochoric plastic flow");
-    
+    AddBoolParam(true, "isochoric", "isochoric plastic flow");
+
     // Add one component for the elastic material
     AddProperty("elastic", FE_MAT_ELASTIC);
     
     // Add criterion component
     AddProperty("yield_criterion", FE_MAT_DAMAGE_CRITERION);
     
+    // add flow curve property
+    AddProperty("flow_curve", FE_MAT_PLASTIC_FLOW_RULE);
+
     // Add yield damage material
     AddProperty("plastic_damage", FE_MAT_DAMAGE);
 
@@ -1387,6 +1379,5 @@ FEReactivePlasticDamage::FEReactivePlasticDamage() : FEMaterial(FE_REACTIVE_PLAS
     AddProperty("elastic_damage", FE_MAT_DAMAGE);
     
     // Add intact damage criterion component
-    AddProperty("elastic_damage_criterion", FE_MAT_DAMAGE_CRITERION);
-    
+    AddProperty("elastic_damage_criterion", FE_MAT_DAMAGE_CRITERION);    
 }

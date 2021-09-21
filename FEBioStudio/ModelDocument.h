@@ -68,6 +68,9 @@ public:
 	void Activate() override;
 	void Deactivate() override;
 
+	void SetActiveItem(FSObject* po);
+	FSObject* GetActiveItem();
+
 public:
 	void AddObject(GObject* po);
 

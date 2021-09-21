@@ -324,11 +324,11 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 			else if (tag == "max_ups")
 			{
 				tag.value(ops.ilimit);
-				if (ops.ilimit == 0)
-				{
-					ops.mthsol = 1;
-					ops.ilimit = 10;
-				}
+//				if (ops.ilimit == 0)
+//				{
+//					ops.mthsol = 1;
+//					ops.ilimit = 10;
+//				}
 			}
 			else if (tag == "time_stepper")
 			{
@@ -818,7 +818,7 @@ void FixUncoupledMaterial(FEMaterial* mat)
 	if (mat->ClassID() != FE_MAT_ELASTIC_UNCOUPLED) return;
 
 	// find the bulk-modulus parameter
-	Param* pk = mat->GetParam("k"); assert(pk);
+	Param* pk = mat->GetParam("k");
 	if (pk == nullptr) return;
 
 	// loop over all child materials
@@ -832,7 +832,7 @@ void FixUncoupledMaterial(FEMaterial* mat)
 			FEMaterial* mat_j =  prop.GetMaterial(j);
 			if (mat_j && (mat_j->ClassID() == FE_MAT_ELASTIC_UNCOUPLED))
 			{
-				Param* pk_j = mat_j->GetParam("k"); assert(pk_j);
+				Param* pk_j = mat_j->GetParam("k");
 				if (pk_j)
 				{
 					FixUncoupledMaterial(mat_j);

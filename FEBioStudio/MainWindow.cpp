@@ -323,10 +323,16 @@ void CMainWindow::UpdateTab(CDocument* doc)
 	{
 		QString file = QString::fromStdString(doc->GetDocTitle());
 		if (doc->IsModified()) file += "*";
-		ui->tab->setTabText(n, file);
 
 		QString path = QString::fromStdString(doc->GetDocFilePath());
 		if (path.isEmpty() == false) ui->tab->setTabToolTip(n, path); else ui->tab->setTabToolTip(n, "");
+
+		CFEBioJob* activeJob = CFEBioJob::GetActiveJob();
+		if (activeJob && (activeJob->GetDocument() == doc))
+		{
+			file += "[running]";
+		}
+		ui->tab->setTabText(n, file);
 	}
 
 	ui->fileViewer->Update();
@@ -1860,7 +1866,7 @@ void CMainWindow::SetSelectionMode(int nselect)
 //! set item selection mode
 void CMainWindow::SetItemSelectionMode(int nselect, int nitem)
 {
-	CModelDocument* doc = GetModelDocument();
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	doc->SetSelectionMode(nselect);
@@ -2030,7 +2036,7 @@ void CMainWindow::on_tab_currentChanged(int n)
 	CDocument* newDoc = GetDocument();
 	CDocument::SetActiveDocument(newDoc);
 
-	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->hide();
+	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->close();
 	GetGLView()->ClearCommandStack();
 
 	UpdateUIConfig();
@@ -2079,6 +2085,14 @@ void CMainWindow::OnPostObjectPropsChanged(FSObject* po)
 void CMainWindow::CloseView(int n, bool forceClose)
 {
 	CDocument* doc = ui->tab->getDocument(n);
+
+	// make sure this doc has no active jobs running.
+	CFEBioJob* activeJob = CFEBioJob::GetActiveJob();
+	if (activeJob && (activeJob->GetDocument() == doc))
+	{
+		QMessageBox::warning(this, "FEBio Studio", "This model has an active job running and cannot be closed.\n");
+		return;
+	}
 
 	if (doc->IsModified() && (forceClose == false))
 	{
@@ -2459,11 +2473,11 @@ void CMainWindow::onExportMaterials(const vector<GMaterial*>& matList)
 		return;
 	}
 
-	QString fileName = QFileDialog::getSaveFileName(this, "Export Materials", "", "PreView Materials (*.pvm)");
+	QString fileName = QFileDialog::getSaveFileName(this, "Export Materials", "", "FEBio Studio Materials (*.pvm)");
 	if (fileName.isEmpty() == false)
 	{
-		CDocument* doc = GetDocument();
-//		if (doc->ExportMaterials(fileName.toStdString(), matList) == false)
+		CModelDocument* doc = GetModelDocument();
+		if (doc && (doc->ExportMaterials(fileName.toStdString(), matList) == false))
 		{
 			QMessageBox::critical(this, "Export Materials", "Failed exporting materials");
 		}
@@ -2476,7 +2490,7 @@ void CMainWindow::onImportMaterials()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "PreView Materials (*.pvm)");
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "FEBio Studio Materials (*.pvm)");
 	if (fileNames.isEmpty() == false)
 	{
 		for (int i=0; i<fileNames.size(); ++i)
@@ -2491,6 +2505,49 @@ void CMainWindow::onImportMaterials()
 
 		UpdateModel();
 		RedrawGL();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if ((doc == nullptr) || (doc == srcDoc) || (srcDoc == nullptr)) return;
+
+	FEModel* fem = srcDoc->GetFEModel();
+	if (fem->Materials() == 0)
+	{
+		QMessageBox::information(this, "Import Materials", "The selected source file does not contain any materials.");
+		return;
+	}
+
+	QStringList items;
+	for (int i = 0; i < fem->Materials(); ++i)
+	{
+		GMaterial* gm = fem->GetMaterial(i);
+		items.push_back(gm->GetFullName());
+	}
+
+	QInputDialog input;
+	input.setOption(QInputDialog::UseListViewForComboBoxItems);
+	input.setLabelText("Select material:");
+	input.setComboBoxItems(items);
+	if (input.exec())
+	{
+		QString item = input.textValue();
+
+		for (int i = 0; i < fem->Materials(); ++i)
+		{
+			GMaterial* gm = fem->GetMaterial(i);
+			QString name = gm->GetFullName();
+			if (name == item)
+			{
+				GMaterial* newMat = gm->Clone();
+				doc->DoCommand(new CCmdAddMaterial(doc->GetFEModel(), newMat));
+				UpdateModel(newMat);
+				return;
+			}
+		}
 	}
 }
 
@@ -2868,6 +2925,8 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 
 	// set this as the active job
 	CFEBioJob::SetActiveJob(job);
+
+	UpdateTab(job->GetDocument());
 
 	if(job->GetLaunchConfig()->type == LOCAL)
 	{

@@ -36,6 +36,7 @@ FEPressureLoad::FEPressureLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : 
 	p->MakeVariable(true);
 	AddBoolParam(false, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
 	AddBoolParam(true , "symmetric_stiffness", "Formulation")->SetEnumNames("Nonsymmetric\0Symmetric\0");
+	AddBoolParam(false, "shell_bottom", "Apply to shell bottom");
 }
 
 // used only for reading parameters for old file formats

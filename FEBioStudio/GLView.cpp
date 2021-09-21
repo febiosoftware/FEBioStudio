@@ -586,7 +586,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		if (mdoc)
 		{
 			FESelection* ps = mdoc->GetCurrentSelection();
-			if (m_coord == COORD_LOCAL)
+			if (ps && (m_coord == COORD_LOCAL))
 			{
 				quatd q = ps->GetOrientation();
 				q.RotateVector(m_ds);
@@ -1421,17 +1421,21 @@ void CGLView::StopAnimation()
 		// stop the animation
 		m_videoMode = VIDEO_STOPPED;
 
-		if (m_video->Frames() == 0)
-		{
-			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
-		}
+		// get the nr of frames before we close
+		int nframes = m_video->Frames();
 
 		// close the stream
 		m_video->Close();
 
 		// delete the object
 		delete m_video;
-		m_video = 0;
+		m_video = nullptr;
+
+		// say something if frames is 0. 
+		if (nframes == 0)
+		{
+			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
+		}
 
 		// unlock the frame
 		m_pframe->SetState(GLSafeFrame::FREE);
@@ -1996,9 +2000,11 @@ void CGLView::SetupProjection()
 	double R = box.Radius();
 	VIEW_SETTINGS& vs = GetViewSettings();
 
+	// NOTE: For some reason the camera position is coming back with the opposite sign
+	//       so I need to add p and c, instead of subtract. Need to look into this closer. 
 	vec3d p = cam.GlobalPosition();
 	vec3d c = box.Center();
-	double L = (c - p).Length();
+	double L = (c + p).Length();
 
 	view.m_ffar = (L + R) * 2;
 	view.m_fnear = 0.01f*view.m_ffar;
@@ -7689,10 +7695,12 @@ void CGLView::RenderFEElements(GObject* po)
 	if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
+	vector<int> selectedElements;
 	int NE = pm->Elements();
 	for (i = 0; i<NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
+		if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 
 		if (!el.IsSelected() && el.IsVisible())
 		{
@@ -7804,13 +7812,12 @@ void CGLView::RenderFEElements(GObject* po)
 
 	// render the selected faces
 	if (pdoc == nullptr) return;
-	FEElementSelection* psel = dynamic_cast<FEElementSelection*>(pdoc->GetCurrentSelection());
-	if (psel && psel->Size() > 0)
+	if (selectedElements.empty() == false)
 	{
-		int NE = psel->Size();
+		int NE = (int)selectedElements.size();
 		for (i = 0; i<NE; ++i)
 		{
-			FEElement_& el = *psel->Element(i);
+			FEElement_& el = pm->Element(selectedElements[i]);
 			if (el.IsVisible())
 			{
 				switch (el.Type())
@@ -7850,7 +7857,7 @@ void CGLView::RenderFEElements(GObject* po)
 		glBegin(GL_LINES);
 		for (i = 0; i < NE; ++i)
 		{
-			FEElement_& el = *psel->Element(i);
+			FEElement_& el = pm->Element(selectedElements[i]);
 			int ne = el.Nodes();
 			if (el.IsVisible())
 			{

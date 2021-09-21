@@ -173,6 +173,8 @@ public:
 
 	public:
 		bool		m_bshellNodalNormals;
+        bool        m_blaugon;        //!< augmented lagrangian flag
+        double      m_augtol;        //!< augmented lagrangian tolerance
 
 	private:
 		int			m_matID;	// zero-based material index

@@ -56,4 +56,19 @@ namespace TRI3 {
 		case 2: q[0] = 0; q[1] = 1; break;
 		}
 	}
+
+	inline void gauss_data(double* gr, double* gs, double* gt, double* gw)
+	{
+		//gauss intergration points
+		const double a = 1.0 / 6.0;
+		const double b = 2.0 / 3.0;
+		const double c = 1.0 / sqrt(3.0);
+
+		gr[0] = a; gs[0] = a; gt[0] = -c; gw[0] = a;
+		gr[1] = b; gs[1] = a; gt[1] = -c; gw[1] = a;
+		gr[2] = a; gs[2] = b; gt[2] = -c; gw[2] = a;
+		gr[3] = a; gs[3] = a; gt[3] =  c; gw[3] = a;
+		gr[4] = b; gs[4] = a; gt[4] =  c; gw[4] = a;
+		gr[5] = a; gs[5] = b; gt[5] =  c; gw[5] = a;
+	}
 }

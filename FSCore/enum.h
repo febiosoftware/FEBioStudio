@@ -631,6 +631,7 @@ SOFTWARE.*/
 #define FE_CENTRIFUGAL_BODY_FORCE           0x0033
 #define FE_BFSI_TRACTION                    0x0034
 #define FE_FLUID_PRESSURE_LOAD              0x0035
+#define FE_MASSDAMPING_LOAD					0x0036
 
 //--------------------------------------------------------
 // Interface types
@@ -654,6 +655,7 @@ SOFTWARE.*/
 #define FE_TIEDMULTIPHASIC_INTERFACE	0x0014	// added in 2.0
 #define FE_TIED_ELASTIC_INTERFACE       0x0016	// added in 2.0
 #define FE_GAPHEATFLUX_INTERFACE		0x0017	// added in 2.1
+#define FE_CONTACTPOTENTIAL_CONTACT		0x0018
 
 //--------------------------------------------------------
 // Connector types

@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FELSDYNAExport.h"
+#include <iostream>
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -284,8 +285,19 @@ bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 						n[3] = e.m_node[3];
 						n[4] = e.m_node[4];
 						break;
+					default:
+						assert(false);
 					}
-					for (j=0; j<8; ++j) n[j] = m.Node(n[j]).m_ntag;
+					for (j = 0; j < 8; ++j) {
+						if ((n[j] >= 0 && (n[j] < m.Nodes())))
+						{
+							int tmp = m.Node(n[j]).m_ntag; n[j] = tmp;
+						}
+						else {
+							fclose(fp);
+							return false;
+						}
+					}
 					fprintf(fp, "%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d\n", i+1, e.m_MatID+1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7]);
 				}
 			}

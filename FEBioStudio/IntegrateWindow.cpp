@@ -42,12 +42,35 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include "PostDocument.h"
+#include <QComboBox>
+#include <QBoxLayout>
 
 CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
+	QWidget* d = new QWidget;
+	QHBoxLayout* l = new QHBoxLayout;
+	l->setContentsMargins(2, 0, 2, 0);
+	l->addWidget(new QLabel("configuration"));
+	QComboBox* config = new QComboBox();
+	l->addWidget(config);
+	d->setLayout(l);
+	config->addItem("Current");
+	config->addItem("Reference");
+	AddToolBarWidget(d);
+
+	QObject::connect(config, SIGNAL(currentIndexChanged(int)), this, SLOT(OnConfigChanged(int)));
+
 	QString title = "FEBio Studio: Integrate";
 	setWindowTitle(title);
 	m_nsrc = -1;
+	m_nconf = 0;
+}
+
+void CIntegrateWindow::OnConfigChanged(int i)
+{
+	if ((i < 0) || (i > 1)) return;
+	m_nconf = i;
+	Update(true, true);
 }
 
 void CIntegrateWindow::Update(bool breset, bool bfit)
@@ -166,11 +189,23 @@ void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 
 			// evaluate sum/integration
 			double res = 0.0;
-			if      (nview == Post::SELECT_NODES) res = IntegrateNodes(mesh, ps);
-			else if (nview == Post::SELECT_EDGES) res = IntegrateEdges(mesh, ps);
-			else if (nview == Post::SELECT_FACES) res = IntegrateFaces(mesh, ps);
-			else if (nview == Post::SELECT_ELEMS) res = IntegrateElems(mesh, ps);
-			else assert(false);
+
+			if (m_nconf == 0)
+			{
+				if      (nview == Post::SELECT_NODES) res = IntegrateNodes(mesh, ps);
+				else if (nview == Post::SELECT_EDGES) res = IntegrateEdges(mesh, ps);
+				else if (nview == Post::SELECT_FACES) res = IntegrateFaces(mesh, ps);
+				else if (nview == Post::SELECT_ELEMS) res = IntegrateElems(mesh, ps);
+				else assert(false);
+			}
+			else
+			{
+				if      (nview == Post::SELECT_NODES) res = IntegrateNodes(mesh, ps);
+				else if (nview == Post::SELECT_EDGES) res = IntegrateEdges(mesh, ps);
+				else if (nview == Post::SELECT_FACES) res = IntegrateReferenceFaces(mesh, ps);
+				else if (nview == Post::SELECT_ELEMS) res = IntegrateReferenceElems(mesh, ps);
+				else assert(false);
+			}
 
 			data.addPoint(ps->m_time, res);
 		}

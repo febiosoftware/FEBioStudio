@@ -183,13 +183,23 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 	// build the element-edge table
 	FEElementEdgeList EET(*pm, ET);
 
+	// tag all selected elements
+	pm->TagAllElements(0);
+	int nsel = 0;
+	for (int i = 0; i < NT0; i++)
+	{
+		FEElement& el = pm->Element(i);
+		if (el.IsSelected()) { el.m_ntag = 1; nsel++; }
+	}
+	if (nsel == 0) pm->TagAllElements(1);
+
 	// mark all edges that will be split
 	// this will make all selected elements case 63
 	vector<int> EM; EM.assign(NE, -1);
 	for (int i=0; i<NT0; i++)
 	{
 		FEElement& el = pm->Element(i);
-		if (el.IsSelected())
+		if (el.m_ntag == 1)
 		{
 			vector<int>& EETi = EET[i];
 			EM[ EETi[0] ] =  1;
@@ -209,7 +219,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 		for (int i=0; i<NT0; ++i)
 		{
 			FEElement& el = pm->Element(i);
-			if (el.IsSelected())
+			if (el.m_ntag == 1)
 			{
 				pm->Node(el.m_node[0]).m_ntag = 1;
 				pm->Node(el.m_node[1]).m_ntag = 1;
@@ -220,7 +230,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 		for (int i=0; i<NT0; ++i)
 		{
 			FEElement& el = pm->Element(i);
-			if (el.IsSelected() == false)
+			if (el.m_ntag != 1)
 			{
 				vector<int>& EETi = EET[i];
 				for (int j=0; j<6; ++j)
@@ -393,7 +403,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 		FEElement& el = pm->Element(i);
 		vector<int>& EETi = EET[i];
 		int ncase    = EC[i][0];
-		bool bsel = el.IsSelected();
+		bool bsel = (el.m_ntag == 1);
 
 		// get the global node numbers
 		NL[0] = el.m_node[0];

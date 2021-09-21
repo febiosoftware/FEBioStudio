@@ -116,6 +116,8 @@ public:
 	// copy the material
 	virtual void copy(FEMaterial* pmat);
 
+	FEMaterial* Clone();
+
 	// fiber stuff
 	virtual bool HasFibers() { return false; }
 	virtual vec3d GetFiber(FEElementRef& el) { return vec3d(0,0,0); };

@@ -81,7 +81,7 @@ void CMeshInfoPanel::setInfo(GObject* po)
 {
 	if (po)
 	{
-		BOX box = po->GetLocalBox();
+		BOX box = po->GetGlobalBox();
 		setDimensions(box.Width(), box.Height(), box.Depth());
 
 		FEMesh* pm = po->GetFEMesh();

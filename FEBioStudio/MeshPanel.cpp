@@ -458,6 +458,9 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 	GObject* po = pdoc->GetActiveObject();
 	GModel* mdl = pdoc->GetGModel();
 
+	// Make sure that this object is not the active item 
+	if (pdoc->GetActiveItem() == po) pdoc->SetActiveItem(nullptr);
+
 	int convertOption = pa->data().toInt();
 
 	if (convertOption == CObjectPanel::CONVERT_TO_EDITABLE_SURFACE)

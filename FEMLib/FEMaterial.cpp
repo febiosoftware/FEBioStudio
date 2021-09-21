@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <FSCore/paramunit.h>
 #include <FEBioStudio/WebDefines.h>
+#include "FEDiscreteMaterial.h"
 
 //////////////////////////////////////////////////////////////////////
 // FEFiberGeneratorLocal
@@ -259,9 +260,9 @@ REGISTER_MATERIAL(FENaturalNeoHookean, MODULE_MECH, FE_NATURAL_NEO_HOOKEAN, FE_M
 
 FENaturalNeoHookean::FENaturalNeoHookean() : FEMaterial(FE_NATURAL_NEO_HOOKEAN)
 {
-    AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->MakeVariable(true)->SetPersistent(false);
-    AddScienceParam(0, UNIT_PRESSURE ,       "G", "shear modulus"  )->MakeVariable(true);
-    AddScienceParam(0, UNIT_PRESSURE ,       "k", "bulk modulus"   )->MakeVariable(true)->SetPersistent(false);
+    AddScienceParam(1, UNIT_DENSITY , "density", "density"        )->MakeVariable(true)->SetPersistent(false);
+    AddScienceParam(0, UNIT_PRESSURE,       "E", "Young's modulus")->MakeVariable(true);
+    AddScienceParam(0, UNIT_NONE    ,       "v", "Poisson's ratio")->MakeVariable(true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -389,6 +390,19 @@ FECarterHayes::FECarterHayes() : FEMaterial(FE_CARTER_HAYES)
 	AddScienceParam(0, UNIT_NONE   , "gamma", "gamma");
 	AddScienceParam(0, UNIT_NONE   , "v", "Poisson's ratio");
 	AddIntParam    (-1, "sbm", "sbm");
+}
+
+//////////////////////////////////////////////////////////////////////
+// FENewtonianViscousSolid - Newtonian viscous solid
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FENewtonianViscousSolid, MODULE_MECH, FE_NEWTONIAN_VISCOUS_SOLID, FE_MAT_ELASTIC, "Newtonian viscous solid",0);
+
+FENewtonianViscousSolid::FENewtonianViscousSolid() : FEMaterial(FE_NEWTONIAN_VISCOUS_SOLID)
+{
+    AddScienceParam(1, UNIT_DENSITY, "density", "true density");
+    AddScienceParam(0, UNIT_VISCOSITY, "mu"  , "shear viscosity");
+    AddScienceParam(0, UNIT_VISCOSITY, "kappa", "bulk viscosity");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1486,7 +1500,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxial, MODULE_MECH, FE_ACTIVE_
 
 FEPrescribedActiveContractionUniaxial::FEPrescribedActiveContractionUniaxial() : FEMaterial(FE_ACTIVE_CONTRACT_UNI)
 {
-    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
+    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0")->MakeVariable(true);
 	SetAxisMaterial(new FEAxisMaterial);
 }
 
@@ -1620,6 +1634,32 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionIsotropicUC, MODULE_MECH, FE_ACTI
 FEPrescribedActiveContractionIsotropicUC::FEPrescribedActiveContractionIsotropicUC() : FEMaterial(FE_ACTIVE_CONTRACT_ISO_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
+}
+
+//////////////////////////////////////////////////////////////////////
+REGISTER_MATERIAL(FEKamensky, MODULE_MECH, FE_KAMENSKY, FE_MAT_ELASTIC, "Kamensky", MaterialFlags::TOPLEVEL);
+
+FEKamensky::FEKamensky() : FEMaterial(FE_KAMENSKY)
+{
+	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "c0");
+	AddScienceParam(0, UNIT_PRESSURE, "c1");
+	AddScienceParam(0, UNIT_NONE    , "c2");
+	AddScienceParam(0, UNIT_PRESSURE, "k");
+	AddScienceParam(1, UNIT_NONE    , "tangent_scale");
+}
+
+//////////////////////////////////////////////////////////////////////
+REGISTER_MATERIAL(FEKamenskyUncoupled, MODULE_MECH, FE_KAMENSKY_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Kamensky uncoupled", MaterialFlags::TOPLEVEL);
+
+FEKamenskyUncoupled::FEKamenskyUncoupled() : FEMaterial(FE_KAMENSKY_UNCOUPLED)
+{
+	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "c0");
+	AddScienceParam(0, UNIT_PRESSURE, "c1");
+	AddScienceParam(0, UNIT_NONE    , "c2");
+	AddScienceParam(0, UNIT_PRESSURE, "k");
+	AddScienceParam(1, UNIT_NONE    , "tangent_scale");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1971,6 +2011,7 @@ FEFiberExpPow::FEFiberExpPow() : FEFiberMaterial(FE_FIBEREXPPOW_COUPLED)
     AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
     AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
     AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
+    AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
 }
 
 void FEFiberExpPow::Convert(FEFiberExpPowOld* pold)
@@ -2012,6 +2053,29 @@ FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEFiberMaterial(FE_FIBE
 	AddDoubleParam(0.0, "c4", "c4");
 	AddDoubleParam(0.0, "c5", "c5");
 	AddDoubleParam(0.0, "lambda", "lambda");
+}
+
+//=============================================================================
+// Fiber-Neo-Hookean
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberNeoHookean, MODULE_MECH, FE_FIBER_NEO_HOOKEAN, FE_MAT_ELASTIC, "fiber-NH", 0);
+
+FEFiberNeoHookean::FEFiberNeoHookean() : FEFiberMaterial(FE_FIBER_NEO_HOOKEAN)
+{
+    AddDoubleParam(0.0, "mu", "mu");
+}
+
+//=============================================================================
+// Fiber-Natural-Neo-Hookean
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberNaturalNH, MODULE_MECH, FE_FIBER_NATURAL_NH, FE_MAT_ELASTIC, "fiber-natural-NH", 0);
+
+FEFiberNaturalNH::FEFiberNaturalNH() : FEFiberMaterial(FE_FIBER_NATURAL_NH)
+{
+    AddDoubleParam(0.0, "ksi", "ksi");
+    AddDoubleParam(1.0, "lam0", "lam0");
 }
 
 //=============================================================================
@@ -2064,6 +2128,19 @@ FEFiberDamageExpLinear::FEFiberDamageExpLinear() : FEFiberMaterial(FE_FIBER_DAMA
 	AddDoubleParam(0.0, "Dmax", "Dmax");
 	AddDoubleParam(0.0, "beta_s", "beta_s");
 	AddDoubleParam(0.0, "gamma_max", "gamma_max");
+}
+
+//=============================================================================
+// Fiber-Kiousis-Uncoupled
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberKiousisUncoupled, MODULE_MECH, FE_FIBER_KIOUSIS_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-Kiousis-uncoupled", 0);
+
+FEFiberKiousisUncoupled::FEFiberKiousisUncoupled() : FEFiberMaterial(FE_FIBER_KIOUSIS_UNCOUPLED)
+{
+    AddDoubleParam(0.0, "d1", "d1");
+    AddDoubleParam(1.0, "d2", "d2");
+    AddDoubleParam(2.0, "n", "n");
 }
 
 //=============================================================================
@@ -3001,4 +3078,37 @@ FEPrestrainInSituGradient::FEPrestrainInSituGradient() : FEMaterial(FE_PRESTRAIN
 {
 	AddScienceParam(1.0, UNIT_NONE, "stretch", "fiber stretch");
 	AddBoolParam(false, "isochoric", "isochoric prestrain");
+}
+
+//=============================================================================
+REGISTER_MATERIAL(FEPlasticFlowCurvePaper, MODULE_MECH, FE_MAT_PLASTIC_FLOW_PAPER, FE_MAT_PLASTIC_FLOW_RULE, "PFC paper", 0);
+
+FEPlasticFlowCurvePaper::FEPlasticFlowCurvePaper() : FEMaterial(FE_MAT_PLASTIC_FLOW_PAPER)
+{
+	AddDoubleParam(0, "Y0");
+	AddDoubleParam(0, "Ymax");
+	AddDoubleParam(1, "w0");
+	AddDoubleParam(0, "we");
+	AddIntParam(1, "nf");
+	AddDoubleParam(0.9, "r");
+}
+
+//=============================================================================
+REGISTER_MATERIAL(FEPlasticFlowCurveUser, MODULE_MECH, FE_MAT_PLASTIC_FLOW_USER, FE_MAT_PLASTIC_FLOW_RULE, "PFC user", 0);
+
+FEPlasticFlowCurveUser::FEPlasticFlowCurveUser() : FEMaterial(FE_MAT_PLASTIC_FLOW_USER)
+{
+	AddProperty("plastic_response", FE_MAT_1DFUNC);
+	AddProperty(0, new FE1DPointFunction);
+}
+
+//=============================================================================
+REGISTER_MATERIAL(FEPlasticFlowCurveMath, MODULE_MECH, FE_MAT_PLASTIC_FLOW_MATH, FE_MAT_PLASTIC_FLOW_RULE, "PFC math", 0);
+
+FEPlasticFlowCurveMath::FEPlasticFlowCurveMath() : FEMaterial(FE_MAT_PLASTIC_FLOW_MATH)
+{
+	AddIntParam(1, "nf");
+	AddDoubleParam(0, "e0");
+	AddDoubleParam(1, "emax");
+	AddMathParam("<enter math formula>", "plastic_response", "plastic flow curve")->MakeVariable(true);
 }
