@@ -78,6 +78,7 @@ public:
 	}
 
 	virtual CustomTreeWidgetItem* getProjectItem() = 0;
+    virtual void justDownloaded(qint64 time) = 0;
 
 	bool LocalCopy() { return localCopy >= totalCopies; }
 
@@ -205,6 +206,16 @@ public:
 		return this;
 	}
 
+    void justDownloaded(qint64 time)
+    {
+        for(int index = 0; index < childCount(); index++)
+		{
+			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
+
+            current->justDownloaded(time);
+        }
+    }
+
 	void setProjectID(int project) {m_projectID = project;}
 	int getProjectID() {return m_projectID;}
 	bool ownedByUser() {return m_ownedByUser;}
@@ -230,35 +241,47 @@ public:
 		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
 	}
 
+    void justDownloaded(qint64 time)
+    {
+        for(int index = 0; index < childCount(); index++)
+		{
+			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
+
+            current->justDownloaded(time);
+        }
+    }
+
 };
 
 class FileItem : public CustomTreeWidgetItem
 {
 public:
-	FileItem(QString name, int fileID, bool lc, qint64 size)
-		: CustomTreeWidgetItem(name, FILEITEM), m_fileID(fileID)
+	FileItem(QString name, int fileID, bool lc, qint64 size, qint64 uploadTime, qint64 downloadTime)
+		: CustomTreeWidgetItem(name, FILEITEM), m_fileID(fileID),
+            m_downloadTime(downloadTime), m_outOfDate(lc && (uploadTime >= downloadTime))
 	{
 		if(name.endsWith(".fsp"))
 		{
-			setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
+			iconName = "FEBioStudio";
 		}
 		else if(name.endsWith(".fsm") || name.endsWith(".fsprj") || name.endsWith(".prv"))
 		{
-			setIcon(0, CIconProvider::GetIcon("PreView"));
+			iconName = "PreView";
 		}
 		else if(name.endsWith(".feb"))
 		{
-			setIcon(0, CIconProvider::GetIcon("febio"));
+			iconName = "febio";
 		}
 		else if(name.endsWith(".xplt"))
 		{
-			setIcon(0, CIconProvider::GetIcon("PostView"));
+			iconName = "PostView";
 		}
 		else
 		{
-			setIcon(0, CIconProvider::GetIcon("new"));
+			iconName = "new";
 		}
 
+        updateIcon();
 
 		localCopy = (lc ? 1 : 0);
 
@@ -266,21 +289,66 @@ public:
 
 		UpdateLocalCopyColor();
 
-		m_size = size;
+        m_size = size;
 	}
+
+    void updateIcon()
+    {
+        if(m_outOfDate)
+        {
+            setIcon(0, CIconProvider::GetIcon(iconName, Emblem::Caution));
+        }
+        else
+        {
+            setIcon(0, CIconProvider::GetIcon(iconName));
+        }
+    }
 
 	virtual CustomTreeWidgetItem* getProjectItem()
 	{
 		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
 	}
 
+    void justDownloaded(qint64 time)
+    {
+        m_downloadTime = time;
+        m_outOfDate = false;
+
+        updateIcon();
+
+        if(!localCopy) AddLocalCopy();
+    }
+
+    void justDeleted()
+    {
+        m_downloadTime = 0;
+        m_outOfDate = false;
+
+        updateIcon();
+
+        SubtractLocalCopy();
+    }
+
 	int getFileID()
 	{
 		return m_fileID;
 	}
 
+    bool outOfDate()
+    {
+        return m_outOfDate;
+    }
+
+    qint64 downloadTime()
+    {
+        return downloadTime();
+    }
+
 private:
 	int m_fileID;
+    bool m_outOfDate;
+    qint64 m_downloadTime;
+    QString iconName;
 
 };
 
@@ -292,14 +360,14 @@ public:
 	{
 		setText(0, realItem->text(0));
 		setText(1, realItem->text(1));
-		UpdateColor();
-		setIcon(0,realItem->icon(0));
+		Update();
 	}
 
-	void UpdateColor()
+	void Update()
 	{
 		setForeground(0, realItem->foreground(0));
 		setForeground(1, realItem->foreground(1));
+        setIcon(0,realItem->icon(0));
 	}
 
 	FileItem* getRealItem()
@@ -581,20 +649,20 @@ public:
 		// setLoginVisible(true);
 	}
 
-	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, qint64 size)
+	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, qint64 size, qint64 uploadTime, qint64 downloadTime)
 	{
 		int pos = path.right(path.length() - index).indexOf("/");
 
 		if(pos == -1)
 		{
-			FileItem* child = new FileItem(path.right(path.length() - index), fileID, localCopy, size);
+			FileItem* child = new FileItem(path.right(path.length() - index), fileID, localCopy, size, uploadTime, downloadTime);
 
 			fileItemsByID[fileID] = child;
 
 			return child;
 		}
 
-		CustomTreeWidgetItem* child = addFile(path, index + (pos + 1), fileID, localCopy, size);
+		CustomTreeWidgetItem* child = addFile(path, index + (pos + 1), fileID, localCopy, size, uploadTime, downloadTime);
 		CustomTreeWidgetItem* parent;
 
 		try

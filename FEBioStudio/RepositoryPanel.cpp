@@ -275,6 +275,8 @@ void CRepositoryPanel::NetworkInaccessible()
 
 void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 {
+    qint64 now;
+
 	if(fileType == FULL)
 	{
 		// Extract the files from the archive
@@ -287,21 +289,27 @@ void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 		JlCompress::extractFiles(filename, JlCompress::getFileList(filename), dir);
 		m_wnd->ShowIndeterminateProgress(false);
 
-		// Set the appropriate local copy flags
-		ui->projectItemsByID[fileID]->setLocalCopyRecursive(true);
+        // Get the current time and update the tree items
+        now = QDateTime::currentSecsSinceEpoch();
+		ui->projectItemsByID[fileID]->justDownloaded(now);
 
 	}
 	else
 	{
-		ui->fileItemsByID[fileID]->AddLocalCopy();
+        // Get the current time and update the tree item
+        now = QDateTime::currentSecsSinceEpoch();
+		ui->fileItemsByID[fileID]->justDownloaded(now);
 	}
 
-	// Update fileSearchItem's color if there's a current file search
+    // Update the download time(s)
+    dbHandler->setDownloadTime(fileID, fileType, now);
+
+	// Update fileSearchItem's color and icon if there's a current file search
 	if(ui->treeStack->currentIndex() == 1)
 	{
 		if(ui->fileSearchTree->selectedItems().count() > 0)
 		{
-			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->UpdateColor();
+			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->Update();
 		}
 	}
 
@@ -402,8 +410,10 @@ void CRepositoryPanel::AddProjectFile(char **data)
 	QString filename(data[1]);
 	bool localCopy = std::stoi(data[2]);
 	qint64 size = QString(data[3]).toLongLong();
+    qint64 uploadTime = QString(data[4]).toLongLong();
+    qint64 downloadTime = QString(data[5]).toLongLong();
 
-	ui->currentProject->addChild(ui->addFile(filename, 0, ID, localCopy, size));
+	ui->currentProject->addChild(ui->addFile(filename, 0, ID, localCopy, size, uploadTime, downloadTime));
 }
 
 void CRepositoryPanel::on_connectButton_clicked()
@@ -973,7 +983,7 @@ void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item)
 		ID = fileItem->getFileID();
 		type = PART;
 
-		item->SubtractLocalCopy();
+		fileItem->justDeleted();
 	}
 	else
 	{
@@ -985,7 +995,7 @@ void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item)
 	{
 		if(ui->fileSearchTree->selectedItems().count() > 0)
 		{
-			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->UpdateColor();
+			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->Update();
 		}
 	}
 
