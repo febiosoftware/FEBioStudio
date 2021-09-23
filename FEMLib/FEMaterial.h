@@ -786,7 +786,7 @@ class FECoupledTransIsoMooneyRivlin : public FETransverselyIsotropic
 {
 public:
 	// this material's material parameters
-	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_LAMBDA, MP_K };
+	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_K, MP_LAMBDA };
 
 public:
 	FECoupledTransIsoMooneyRivlin();
