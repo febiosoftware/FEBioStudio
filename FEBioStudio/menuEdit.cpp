@@ -1169,7 +1169,7 @@ void CMainWindow::on_actionGrowSelection_triggered()
 		if (pmb == nullptr) return;
 	}
 
-	CModelDocument* doc = GetModelDocument();
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
 
