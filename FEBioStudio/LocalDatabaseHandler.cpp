@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
-//#include <QStringList>
 #include <QVariantMap>
 #include "RepositoryPanel.h"
 
@@ -107,6 +106,9 @@ public:
 	{
 		char *zErrMsg = 0;
 
+        // Before we close and delete it, we need to copy the downloaded date for the files
+        saveDownloadDates();
+
 		// When the repository is refreshed, this is called again, and the current db needs to be closed
 		// before it is deleted.
 		if(db) sqlite3_close(db);
@@ -132,6 +134,37 @@ public:
 		}
 
 	}
+
+    void saveDownloadDates()
+    {
+        if(!db)
+        {
+            int rc = sqlite3_open(dbPath.toStdString().c_str(), &db);
+
+            if( rc )
+            {
+                fprintf(stderr, "Can't open database: %s\nError: %s\n", dbPath.toStdString().c_str(), sqlite3_errmsg(db));
+                sqlite3_close(db);
+                return;
+            }
+        }
+
+        char **table;
+		int rows, cols;
+
+		std::string query = "SELECT ID, downloadTime FROM filenames";
+		getTable(query, &table, &rows, &cols);
+
+        if(rows != 0)
+        {
+            for(int row = 1; row < rows + 1; row++)
+            {
+                downloadTimes[QString(table[row*cols]).toLongLong()] = QString(table[row*cols + 1]).toLongLong();
+            }
+        }
+
+        sqlite3_free_table(table);
+    }
 
 	void execute(std::string& query, int (*callback)(void*,int,char**,char**)=NULL, void* arg = NULL)
 	{
@@ -162,19 +195,19 @@ public:
 	}
 
 	void insert(std::string& tableName, std::vector<std::string>& columns, std::string& values, std::string conflict = "")
-		{
-			std::string query("INSERT INTO ");
-			query += tableName;
-			query += "(" + columns[0];
-			for(int index = 1; index < columns.size(); index++)
-			{
-				query += ", " + columns[index];
-			}
-			query += ") ";
-			query += "VALUES " + values;
+    {
+        std::string query("INSERT INTO ");
+        query += tableName;
+        query += "(" + columns[0];
+        for(int index = 1; index < columns.size(); index++)
+        {
+            query += ", " + columns[index];
+        }
+        query += ") ";
+        query += "VALUES " + values;
 
-			execute(query);
-		}
+        execute(query);
+    }
 
 	void upsert(std::string& tableName, std::vector<std::string>& columns, std::string& values, std::string conflict = "")
 	{
@@ -212,25 +245,45 @@ public:
 
 		std::string hasCopy = "UPDATE filenames set localCopy = 1 WHERE ID IN (";
 		std::string noCopy = "UPDATE filenames set localCopy = 0 WHERE ID IN (";
+        std::string dtimes;
 
 		bool updateHasCopy = false;
 		bool updateNoCopy = false;
 
 		for(int row = 1; row < rows + 1; row++)
 		{
-			QString filename = GetFullFilename(std::stoi(table[row]), 1);
+            char* ID = table[row];
 
+			QString filename = GetFullFilename(std::stoi(ID), 1);
 
-			QFile file(filename);
-			if(file.exists())
+			QFileInfo info(filename);
+			if(info.exists())
 			{
-				hasCopy += table[row];
+				hasCopy += ID;
 				hasCopy += ", ";
 				updateHasCopy = true;
+
+                std::string downloadTime = "0";
+
+                // Grab the download time from the map if it's there. 
+                try
+                {
+                    downloadTime = QString::number(downloadTimes.at(std::stoi(ID))).toStdString();
+                }
+                catch(const std::out_of_range& e) {}
+
+                // If it wasn't there, or is 0, set it equal to the last modified time of the file
+                if(downloadTime.compare("0") == 0)
+                {
+                    downloadTime = QString::number(info.lastModified().toSecsSinceEpoch()).toStdString();
+                }
+                
+                // Build the SQL string to add the download times
+                dtimes += "UPDATE filenames SET downloadTime=" + downloadTime + " WHERE ID=" + ID + "; ";
 			}
 			else
 			{
-				noCopy += table[row];
+				noCopy += ID;
 				noCopy += ", ";
 				updateNoCopy = true;
 			}
@@ -251,6 +304,9 @@ public:
 
 		if(updateHasCopy) execute(hasCopy);
 		if(updateNoCopy) execute(noCopy);
+        execute(dtimes);
+
+        downloadTimes.clear();
 	}
 
 	QString ProjectNameFromID(int ID)
@@ -414,6 +470,24 @@ public:
 		return projID;
 	}
 
+    void FileIDsFromProjectID(int ID, std::vector<int>& ids)
+    {
+        char **table;
+		int rows, cols;
+
+        std::string query("SELECT ID FROM filenames WHERE project = ");
+        query += std::to_string(ID);
+
+        getTable(query, &table, &rows, &cols);
+
+        for(int row = 1; row < rows + 1; row++)
+        {
+            ids.push_back(std::stoi(table[row]));
+        }
+
+        sqlite3_free_table(table);
+    }
+
 	int CategoryIDFromName(std::string name)
 	{
 		char **table;
@@ -493,10 +567,42 @@ public:
 		return totalSize;
 	}
 
+    void setDownloadTime(int ID, int type, qint64 time)
+    {
+        std::string query = "UPDATE filenames SET downloadTime=" +
+            std::to_string(time) + " WHERE ID";
+
+        if(type == FULL)
+        {
+            std::vector<int> fileIDs;
+            FileIDsFromProjectID(ID, fileIDs);
+
+            query += " in (";
+
+            for(int fileID : fileIDs)
+            {
+                query += std::to_string(fileID) + ",";
+            }
+
+            // Remove the last comma
+            query.pop_back();
+
+            query += ");";
+        }
+        else
+        {
+            query += "=" + std::to_string(ID);
+        }
+
+        execute(query);
+    }
+
 public:
 	sqlite3* db;
 	CRepositoryPanel* dbPanel;
 	QString dbPath;
+
+    std::map<qint64, qint64> downloadTimes;
 };
 
 CLocalDatabaseHandler::CLocalDatabaseHandler(CRepositoryPanel* dbPanel)
@@ -580,7 +686,7 @@ QStringList CLocalDatabaseHandler::GetTags()
 
 void CLocalDatabaseHandler::GetProjectFiles(int ID)
 {
-	std::string query("SELECT ID, filename, localCopy, size from filenames where project = ");
+	std::string query("SELECT ID, filename, localCopy, size, uploadTime, downloadTime from filenames where project = ");
 	query += std::to_string(ID);
 
 	imp->execute(query, addProjectFilesCallback, imp->dbPanel);
@@ -898,7 +1004,10 @@ qint64 CLocalDatabaseHandler::projectsSize(int ID)
 	return imp->projectSize(ID);
 }
 
-
+void CLocalDatabaseHandler::setDownloadTime(int ID, int type, qint64 time)
+{
+    imp->setDownloadTime(ID, type, time);
+}
 
 #else
 
@@ -909,5 +1018,7 @@ bool CLocalDatabaseHandler::isValidUpload(QString& projectName, QString& categor
 qint64 CLocalDatabaseHandler::currentProjectsSize(QString username) { return 0; }
 QString CLocalDatabaseHandler::ProjectNameFromID(int ID) { return ""; }
 qint64 CLocalDatabaseHandler::projectsSize(int ID) { return 0; }
+
+void setDownloadTime(int ID, int type, qint64 time) {}
 #endif
 
