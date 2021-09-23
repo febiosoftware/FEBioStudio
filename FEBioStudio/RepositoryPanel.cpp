@@ -289,10 +289,12 @@ void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 		JlCompress::extractFiles(filename, JlCompress::getFileList(filename), dir);
 		m_wnd->ShowIndeterminateProgress(false);
 
+        // Delete archive
+        QFile::remove(filename);
+
         // Get the current time and update the tree items
         now = QDateTime::currentSecsSinceEpoch();
 		ui->projectItemsByID[fileID]->justDownloaded(now);
-
 	}
 	else
 	{
@@ -301,7 +303,7 @@ void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 		ui->fileItemsByID[fileID]->justDownloaded(now);
 	}
 
-    // Update the download time(s)
+    // Update the download time(s) in the database
     dbHandler->setDownloadTime(fileID, fileType, now);
 
 	// Update fileSearchItem's color and icon if there's a current file search
@@ -458,9 +460,8 @@ void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, in
 
 	if(!customItem->LocalCopy())
 	{
-		DownloadItem(customItem);
-
 		ui->openAfterDownload = customItem;
+        DownloadItem(customItem);
 	}
 	else
 	{
@@ -875,11 +876,24 @@ void CRepositoryPanel::UpdateInfo(CustomTreeWidgetItem *item)
 		ui->projectInfoBox->getToolItem(2)->hide();
 	}
 
-
-	ui->actionDownload->setDisabled(false);
-	if(item->LocalCopy())
+    if(item->type() == FOLDERITEM)
+    {
+        ui->actionDownload->setDisabled(true);
+    }
+    else
+    {
+        ui->actionDownload->setDisabled(false);
+    }
+	
+    // We don't just use item->LocalCopy() because this allows these to work 
+    // for partially downloaded projects or folders
+	if(item->GetLocalCopy() > 0)
 	{
-		ui->actionOpen->setDisabled(false);
+        if(item->type() == FILEITEM)
+        {
+            ui->actionOpen->setDisabled(false);
+        }
+		
 		ui->actionOpenFileLocation->setDisabled(false);
 		ui->actionDelete->setDisabled(false);
 	}
@@ -913,12 +927,38 @@ void CRepositoryPanel::DownloadItem(CustomTreeWidgetItem *item)
 		ProjectItem* projItem = static_cast<ProjectItem*>(item);
 		ID = projItem->getProjectID();
 		type = FULL;
+
+        if(projectModified(projItem))
+        {
+            int ret = QMessageBox::question(this, "Overwrite File", "You have modifed at least one file in this project after downloading it.\n"
+                "Downloading again will overwrite these changes.\n\nWould you like to continue?");
+
+            if(ret == QMessageBox::No)
+            {
+                ui->openAfterDownload = nullptr;
+                return;
+            }
+        }
+
 	}
 	else if (item->type() == FILEITEM)
 	{
 		FileItem* fileItem = static_cast<FileItem*>(item);
 		ID = fileItem->getFileID();
 		type = PART;
+
+        if(fileModified(fileItem))
+        {
+            int ret = QMessageBox::question(this, "Overwrite File", "You have modifed this file after downloading it.\n"
+                "Downloading again will overwrite these changes.\n\nWould you like to continue?");
+
+            if(ret == QMessageBox::No)
+            {
+                ui->openAfterDownload = nullptr;
+                return;
+            }
+        }
+
 	}
 	else
 	{
@@ -935,141 +975,156 @@ void CRepositoryPanel::DownloadItem(CustomTreeWidgetItem *item)
 
 void CRepositoryPanel::OpenItem(CustomTreeWidgetItem *item)
 {
-	int ID;
-	int type;
+    if (item->type() != FILEITEM)
+    {
+        ui->openAfterDownload = nullptr;
+        return;
+    }
 
-	if(item->type() == PROJECTITEM)
-	{
-		ProjectItem* projItem = static_cast<ProjectItem*>(item);
-		ID = projItem->getProjectID();
-		type = FULL;
-	}
-	else if (item->type() == FILEITEM)
-	{
-		FileItem* fileItem = static_cast<FileItem*>(item);
-		ID = fileItem->getFileID();
-		type = PART;
-	}
-	else
-	{
-		return;
-	}
+    FileItem* fileItem = static_cast<FileItem*>(item);
+    int ID = fileItem->getFileID();
 
-	QString filename = dbHandler->FullFileNameFromID(ID, type);
+    if(fileItem->outOfDate())
+    {
+        int answer = QMessageBox::question(this, "File Out of Date", "There is a newer version of this file "
+            "available on the repository.\n\nWould you like to download it first?");
+        
+        if(answer == QMessageBox::Yes)
+        {
+            ui->openAfterDownload = fileItem;
+            DownloadItem(fileItem);
+            return;
+        }
+
+    }
+
+	QString filename = dbHandler->FullFileNameFromID(ID, PART);
 
 	m_wnd->OpenFile(filename);
 }
 
 void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item)
 {
+    // This prevents file items from lowering their parents copy count
+    // when they don't already exist
+    if(item->GetLocalCopy() <= 0) return;
+
 	int children = item->childCount();
 	for(int child = 0; child < children; child++)
 	{
 		DeleteItem(static_cast<CustomTreeWidgetItem*>(item->child(child)));
 	}
 
-	int ID;
-	int type;
+    if(item->type() != FILEITEM)
+    {
+        QDir dir;
 
-	if(item->type() == PROJECTITEM)
-	{
-		ProjectItem* projItem = static_cast<ProjectItem*>(item);
-		ID = projItem->getProjectID();
-		type = FULL;
-	}
-	else if (item->type() == FILEITEM)
-	{
-		FileItem* fileItem = static_cast<FileItem*>(item);
-		ID = fileItem->getFileID();
-		type = PART;
+        // Removes the directory, only if it is empty. 
+        dir.rmdir(getLocalPath(item));
 
-		fileItem->justDeleted();
-	}
-	else
-	{
-		return;
-	}
+        return;
+    }
 
-	// Update fileSearchItem's color if there's a current file search
-	if(ui->treeStack->currentIndex() == 1)
-	{
-		if(ui->fileSearchTree->selectedItems().count() > 0)
-		{
-			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->Update();
-		}
-	}
+    FileItem* fileItem = static_cast<FileItem*>(item);
+    int ID = fileItem->getFileID();
 
-	QString filename = dbHandler->FullFileNameFromID(ID, type);
+    QString filename = dbHandler->FullFileNameFromID(ID, PART);
 
-	QFile::remove(filename);
+    QFile::remove(filename);
 
+    // Update FileItem in tree
+    fileItem->justDeleted();
+
+    // Update fileSearchItem if there's a current file search
+    if(ui->treeStack->currentIndex() == 1)
+    {
+        if(ui->fileSearchTree->selectedItems().count() > 0)
+        {
+            static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->Update();
+        }
+    }
 }
 
 void CRepositoryPanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 {
-	int ID;
-	int type;
-	int depth = 0;
+	QDesktopServices::openUrl(QUrl::fromLocalFile(getLocalPath(item)));
+}
 
+bool CRepositoryPanel::projectModified(ProjectItem* item)
+{
+    QList<CustomTreeWidgetItem*> fileItems = item->getFileItems();
+
+    for(auto item : fileItems)
+    {
+        FileItem* fileItem = static_cast<FileItem*>(item);
+        if(fileModified(fileItem)) return true;
+    }
+
+    return false;
+}
+
+bool CRepositoryPanel::fileModified(FileItem* item)
+{
+    if(!item->LocalCopy())
+    {
+        return false;
+    }
+
+    QFileInfo info(dbHandler->FullFileNameFromID(item->getFileID(), PART));
+
+    return info.lastModified().toSecsSinceEpoch() > item->downloadTime();
+}
+
+QString CRepositoryPanel::getLocalPath(CustomTreeWidgetItem* item)
+{
 	if(item->type() == PROJECTITEM)
 	{
 		ProjectItem* projItem = static_cast<ProjectItem*>(item);
-		ID = projItem->getProjectID();
-		type = FULL;
-	}
-	else if(item->type() == FOLDERITEM)
-	{
-		CustomTreeWidgetItem* current = item;
-		while(current->childCount() > 0)
-		{
-			current = static_cast<CustomTreeWidgetItem*>(current->child(0));
-			depth++;
-		}
+		int ID = projItem->getProjectID();
 
-		if(current->type() == FILEITEM)
-		{
-			FileItem* fileItem = static_cast<FileItem*>(current);
-			ID = fileItem->getFileID();
-			type = PART;
-		}
-		else
-		{
-			return;
-		}
+        QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, FULL));
+
+        return fileInfo.absolutePath() + "/" + fileInfo.baseName();
+	}
+    else if(item->type() == FOLDERITEM)
+	{
+        int depth = 0;
+
+        CustomTreeWidgetItem* current = item;
+        while(current->childCount() > 0)
+        {
+            current = static_cast<CustomTreeWidgetItem*>(current->child(0));
+            depth++;
+        }
+
+        FileItem* fileItem = static_cast<FileItem*>(current);
+        int ID = fileItem->getFileID();
+
+        QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, PART));
+
+        QDir dir = fileInfo.dir();
+
+        while(depth > 1)
+        {
+            dir.cdUp();
+            depth--;
+        }
+
+        return dir.absolutePath();
 	}
 	else if (item->type() == FILEITEM)
 	{
 		FileItem* fileItem = static_cast<FileItem*>(item);
-		ID = fileItem->getFileID();
-		type = PART;
+		int ID = fileItem->getFileID();
+
+        QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, PART));
+
+        return fileInfo.absolutePath();
 	}
 	else
 	{
-		return;
+		return "";
 	}
-
-	QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, type));
-
-	QString filepath;
-	if(item->type() == FOLDERITEM)
-	{
-		QDir dir = fileInfo.dir();
-
-		while(depth > 1)
-		{
-			dir.cdUp();
-			depth--;
-		}
-
-		filepath = dir.absolutePath();
-
-	}
-	else
-	{
-		filepath = fileInfo.absolutePath();
-	}
-
-	QDesktopServices::openUrl(QUrl::fromLocalFile(filepath));
 }
 
 void CRepositoryPanel::on_treeWidget_itemSelectionChanged()
@@ -1106,14 +1161,24 @@ void CRepositoryPanel::on_treeWidget_customContextMenuRequested(const QPoint &po
 	QMenu menu(this);
 
 	menu.addAction(ui->actionRefresh);
+    menu.addSeparator();
 
-	menu.addAction(ui->actionDownload);
+    if(item->type() != FOLDERITEM)
+    {
+        menu.addAction(ui->actionDownload);
+    }
 
-	if(item->LocalCopy())
+    // We don't just use item->LocalCopy() because this allows these to work 
+    // for partially downloaded projects or folders
+	if(item->GetLocalCopy() > 0)
 	{
-		menu.addAction(ui->actionDelete);
-		menu.addAction(ui->actionOpen);
+        if(item->type() == FILEITEM)
+        {
+            menu.addAction(ui->actionOpen);
+        }
+
 		menu.addAction(ui->actionOpenFileLocation);
+        menu.addAction(ui->actionDelete);
 	}
 
 	if(item->type() == PROJECTITEM)
@@ -1151,9 +1216,9 @@ void CRepositoryPanel::on_fileSearchTree_customContextMenuRequested(const QPoint
 
 	if(item->getRealItem()->LocalCopy())
 	{
-		menu.addAction(ui->actionDelete);
 		menu.addAction(ui->actionOpen);
 		menu.addAction(ui->actionOpenFileLocation);
+        menu.addAction(ui->actionDelete);
 	}
 
 	menu.exec(ui->fileSearchTree->viewport()->mapToGlobal(pos));
@@ -1337,6 +1402,9 @@ void CRepositoryPanel::DownloadItem(CustomTreeWidgetItem *item) {}
 void CRepositoryPanel::OpenItem(CustomTreeWidgetItem *item) {}
 void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item) {}
 void CRepositoryPanel::ShowItemInBrowser(CustomTreeWidgetItem *item) {}
+bool CRepositoryPanel::fileModified(FileItem* item) {return false;}
+QString CRepositoryPanel::getLocalPath(CustomTreeWidgetItem* item) {return "";}
+bool CRepositoryPanel::projectModified(ProjectItem* item) {return false;}
 void CRepositoryPanel::on_connectButton_clicked() {}
 void CRepositoryPanel::on_actionRefresh_triggered() {}
 void CRepositoryPanel::on_projectTags_linkActivated(const QString& link) {}

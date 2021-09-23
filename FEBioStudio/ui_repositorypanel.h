@@ -78,6 +78,7 @@ public:
 	}
 
 	virtual CustomTreeWidgetItem* getProjectItem() = 0;
+    virtual QList<CustomTreeWidgetItem*> getFileItems() = 0;
     virtual void justDownloaded(qint64 time) = 0;
 
 	bool LocalCopy() { return localCopy >= totalCopies; }
@@ -206,6 +207,25 @@ public:
 		return this;
 	}
 
+    QList<CustomTreeWidgetItem*> getFileItems()
+    {
+        QList<CustomTreeWidgetItem*> fileItems;
+
+        for(int index = 0; index < childCount(); index++)
+		{
+			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
+
+            QList<CustomTreeWidgetItem*> tempList = current->getFileItems();
+
+            for(auto item : tempList)
+            {
+                fileItems.append(item);
+            }
+        }
+
+        return fileItems;
+    }
+
     void justDownloaded(qint64 time)
     {
         for(int index = 0; index < childCount(); index++)
@@ -240,6 +260,25 @@ public:
 	{
 		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
 	}
+
+    QList<CustomTreeWidgetItem*> getFileItems()
+    {
+        QList<CustomTreeWidgetItem*> fileItems;
+
+        for(int index = 0; index < childCount(); index++)
+		{
+			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
+
+            QList<CustomTreeWidgetItem*> tempList = current->getFileItems();
+
+            for(auto item : tempList)
+            {
+                fileItems.append(item);
+            }
+        }
+
+        return fileItems;
+    }
 
     void justDownloaded(qint64 time)
     {
@@ -308,6 +347,11 @@ public:
 	{
 		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
 	}
+    
+    QList<CustomTreeWidgetItem*> getFileItems()
+    {
+        return QList<CustomTreeWidgetItem*>() << this;
+    }
 
     void justDownloaded(qint64 time)
     {
@@ -341,7 +385,7 @@ public:
 
     qint64 downloadTime()
     {
-        return downloadTime();
+        return m_downloadTime;
     }
 
 private:
@@ -763,7 +807,6 @@ public:
 		}
 
 	}
-
 
 public:
 	ProjectItem* currentProject;
