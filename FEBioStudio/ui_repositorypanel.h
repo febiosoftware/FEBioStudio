@@ -320,7 +320,7 @@ public:
 			iconName = "new";
 		}
 
-        updateIcon();
+        Update();
 
 		localCopy = (lc ? 1 : 0);
 
@@ -331,15 +331,17 @@ public:
         m_size = size;
 	}
 
-    void updateIcon()
+    void Update()
     {
         if(m_outOfDate)
         {
             setIcon(0, CIconProvider::GetIcon(iconName, Emblem::Caution));
+            setToolTip(0,"Out of Date");
         }
         else
         {
             setIcon(0, CIconProvider::GetIcon(iconName));
+            setToolTip(0,"");
         }
     }
 
@@ -358,7 +360,7 @@ public:
         m_downloadTime = time;
         m_outOfDate = false;
 
-        updateIcon();
+        Update();
 
         if(!localCopy) AddLocalCopy();
     }
@@ -368,7 +370,7 @@ public:
         m_downloadTime = 0;
         m_outOfDate = false;
 
-        updateIcon();
+        Update();
 
         SubtractLocalCopy();
     }
