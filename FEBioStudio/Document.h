@@ -309,6 +309,16 @@ public:
 	Post::CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
 
+public:
+	void GrowNodeSelection(FEMeshBase* pm);
+	void GrowFaceSelection(FEMeshBase* pm, bool respectPartitions = true);
+	void GrowEdgeSelection(FEMeshBase* pm);
+	void GrowElementSelection(FEMesh* pm, bool respectPartitions = true);
+	void ShrinkNodeSelection(FEMeshBase* pm);
+	void ShrinkFaceSelection(FEMeshBase* pm);
+	void ShrinkEdgeSelection(FEMeshBase* pm);
+	void ShrinkElementSelection(FEMesh* pm);
+
 protected:
 	void SaveResources(OArchive& ar);
 	void LoadResources(IArchive& ar);

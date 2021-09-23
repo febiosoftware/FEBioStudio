@@ -1865,7 +1865,7 @@ void CMainWindow::SetSelectionMode(int nselect)
 //! set item selection mode
 void CMainWindow::SetItemSelectionMode(int nselect, int nitem)
 {
-	CModelDocument* doc = GetModelDocument();
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	doc->SetSelectionMode(nselect);
@@ -2035,7 +2035,7 @@ void CMainWindow::on_tab_currentChanged(int n)
 	CDocument* newDoc = GetDocument();
 	CDocument::SetActiveDocument(newDoc);
 
-	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->hide();
+	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->close();
 	GetGLView()->ClearCommandStack();
 
 	UpdateUIConfig();
@@ -2868,12 +2868,14 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 		if (febioFileVersion == 0)
 		{
 			FEBioExport25 feb(doc->GetProject());
+			feb.SetExportSelectionsFlag(true);
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}
 		else if (febioFileVersion == 1)
 		{
 			FEBioExport3 feb(doc->GetProject());
+			feb.SetExportSelectionsFlag(true);
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}

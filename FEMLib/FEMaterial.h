@@ -54,6 +54,7 @@
 #define FE_MAT_MREACTION_IPRODUCTS      0x00200000
 #define FE_MAT_MREACTION_EREACTANTS     0x00210000
 #define FE_MAT_MREACTION_EPRODUCTS      0x00220000
+#define FE_MAT_PLASTIC_FLOW_RULE		0x00230000
 
 // --- Material Types ---
 // These values are stored in the prv file so don't change!
@@ -143,6 +144,8 @@
 #define FE_NEWTONIAN_VISCOUS_SOLID      83
 #define FE_KAMENSKY						84
 #define FE_KAMENSKY_UNCOUPLED			85
+#define FE_FIBER_NEO_HOOKEAN            86
+#define FE_FIBER_NATURAL_NH             87
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -308,6 +311,11 @@
 
 // 1D functions
 #define FE_FNC1D_POINT		1501
+
+// plastic flow rules
+#define FE_MAT_PLASTIC_FLOW_PAPER		1601
+#define FE_MAT_PLASTIC_FLOW_USER		1602
+#define FE_MAT_PLASTIC_FLOW_MATH		1603
 
 //-----------------------------------------------------------------------------
 class FEFiberGenerator : public FEMaterial
@@ -778,7 +786,7 @@ class FECoupledTransIsoMooneyRivlin : public FETransverselyIsotropic
 {
 public:
 	// this material's material parameters
-	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_LAMBDA, MP_K };
+	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_K, MP_LAMBDA };
 
 public:
 	FECoupledTransIsoMooneyRivlin();
@@ -1380,7 +1388,7 @@ public:
 class FEFiberExpPow : public FEFiberMaterial
 {
 public:
-    enum { MP_ALPHA, MP_BETA, MP_KSI };
+    enum { MP_ALPHA, MP_BETA, MP_KSI, M_L0 };
 
 public:
     FEFiberExpPow();
@@ -1451,6 +1459,28 @@ public:
 public:
 	FEFiberExpLinearUncoupled();
 	DECLARE_REGISTERED(FEFiberExpLinearUncoupled);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberNeoHookean : public FEFiberMaterial
+{
+public:
+    enum { MP_MU };
+public:
+    FEFiberNeoHookean();
+    
+    DECLARE_REGISTERED(FEFiberNeoHookean);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberNaturalNH : public FEFiberMaterial
+{
+public:
+    enum { MP_KSI, MP_LAM0 };
+public:
+    FEFiberNaturalNH();
+    
+    DECLARE_REGISTERED(FEFiberNaturalNH);
 };
 
 //-----------------------------------------------------------------------------
@@ -2344,4 +2374,32 @@ public:
 public:
 	FEPrestrainInSituGradient();
 	DECLARE_REGISTERED(FEPrestrainInSituGradient);
+};
+
+//-----------------------------------------------------------------------------
+class FEPlasticFlowCurvePaper : public FEMaterial
+{
+public:
+    enum { MP_Y0, MP_YM, MP_W0, MP_WE, MP_NF, MP_R };
+public:
+	FEPlasticFlowCurvePaper();
+	DECLARE_REGISTERED(FEPlasticFlowCurvePaper);
+};
+
+//-----------------------------------------------------------------------------
+class FEPlasticFlowCurveUser : public FEMaterial
+{
+public:
+	FEPlasticFlowCurveUser();
+	DECLARE_REGISTERED(FEPlasticFlowCurveUser);
+};
+
+//-----------------------------------------------------------------------------
+class FEPlasticFlowCurveMath : public FEMaterial
+{
+public:
+    enum { MP_NF, MP_E0, MP_EM, M_PR };
+public:
+	FEPlasticFlowCurveMath();
+	DECLARE_REGISTERED(FEPlasticFlowCurveMath);
 };
