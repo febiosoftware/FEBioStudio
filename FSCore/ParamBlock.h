@@ -551,6 +551,13 @@ public:
 	void SetColorValue (int n, const GLColor& c) { m_Param[n].SetColorValue(c); }
 	void Clear() { m_Param.clear(); }
 
+	void SetParamInt   (const char* szparam, int n               ) { GetParam(szparam)->SetIntValue   (n); }
+	void SetParamFloat (const char* szparam, double g            ) { GetParam(szparam)->SetFloatValue (g); }
+	void SetParamBool  (const char* szparam, bool b              ) { GetParam(szparam)->SetBoolValue  (b); }
+	void SetParamVec3d (const char* szparam, const vec3d& v      ) { GetParam(szparam)->SetVec3dValue (v); }
+	void SetParamColor (const char* szparam, const GLColor& c    ) { GetParam(szparam)->SetColorValue (c); }
+	void SetParamString(const char* szparam, const std::string& s) { GetParam(szparam)->SetStringValue(s); }
+
 public:
 	ParamBlock& GetParamBlock() { return m_Param; }
 	const ParamBlock& GetParamBlock() const { return m_Param; }
