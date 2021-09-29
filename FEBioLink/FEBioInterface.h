@@ -28,8 +28,14 @@ SOFTWARE.*/
 #include <string>
 
 class FEModelComponent;
+class FEMaterial;
 class FEBioMaterial;
 class FEStep;
+class FEBoundaryCondition;
+class FESurfaceLoad;
+class FEBodyLoad;
+class FEPairedInterface;
+class FEModel;
 
 namespace FEBio {
 
@@ -42,4 +48,11 @@ namespace FEBio {
 	void CreateStep(const char* sztype, FEStep* po);
 
 	void UpdateFEBioMaterial(FEBioMaterial* pm);
+
+	// helper functions for creating FEBio classes.
+	FEMaterial*          CreateMaterial         (const char* sztype, FEModel* fem);
+	FEBoundaryCondition* CreateBoundaryCondition(const char* sztype, FEModel* fem);
+	FESurfaceLoad*       CreateSurfaceLoad      (const char* sztype, FEModel* fem);
+	FEBodyLoad*          CreateBodyLoad         (const char* sztype, FEModel* fem);
+	FEPairedInterface*   CreatePairedInterface  (const char* sztype, FEModel* fem);
 }

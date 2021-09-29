@@ -77,9 +77,6 @@ private:
 
 	// boundary condition input functions
 	void ParseBC		  (FEStep* pstep, XMLTag& tag);
-	void ParseBCFixed     (FEStep* pstep, XMLTag& tag);
-	void ParseBCPrescribed(FEStep* pstep, XMLTag& tag);
-	void ParseBCRigid     (FEStep* pstep, XMLTag& tag);
 
 	// mesh data sections
 	bool ParseElementDataSection(XMLTag& tag);

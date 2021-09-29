@@ -311,8 +311,8 @@ bool FEBioImport::ParseVersion(XMLTag& tag)
 	case 0x0102: m_fmt = new FEBioFormat12 (this, *m_febio); break;
 	case 0x0200: m_fmt = new FEBioFormat2  (this, *m_febio); break;
 	case 0x0205: m_fmt = new FEBioFormat25 (this, *m_febio); break;
-//	case 0x0300: m_fmt = new FEBioFormat3  (this, *m_febio); break;
-	case 0x0300: m_fmt = new FEBioFormat4  (this, *m_febio); break;
+	case 0x0300: m_fmt = new FEBioFormat3  (this, *m_febio); break;
+	case 0x0400: m_fmt = new FEBioFormat4  (this, *m_febio); break;
 	default:
 		return false;
 	}

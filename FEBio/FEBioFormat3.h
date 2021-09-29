@@ -44,6 +44,7 @@ public:
 private:
 	// parsers for parent sections
 	bool ParseModuleSection    (XMLTag& tag);
+	bool ParseMaterialSection  (XMLTag& tag) override;
 	bool ParseMeshSection      (XMLTag& tag);
 	bool ParseMeshDomainsSection(XMLTag& tag);
 	bool ParseMeshDataSection  (XMLTag& tag);
@@ -59,6 +60,9 @@ private:
 	bool ParseControlSection   (XMLTag& tag) override;
 
 private:
+	// parse materials
+	void ParseMaterial(XMLTag& tag, FEMaterial* pmat);
+
 	// geometry parsing functions (version 2.0 and up)
 	void ParseGeometryNodes      (FEBioModel::Part* part, XMLTag& tag);
 	void ParseGeometryElements   (FEBioModel::Part* part, XMLTag& tag);
@@ -89,20 +93,6 @@ private:
 private:
 	// contact input functions
 	void ParseContact(FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactSliding        (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactF2FSliding     (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactBiphasic       (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactSolute         (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactMultiphasic    (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTied           (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTiedElastic    (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactF2FTied        (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactSticky         (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactPeriodic       (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTC             (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTiedPoro       (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTiedMultiphasic(FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactGapHeatFlux    (FEStep* pstep, XMLTag& tag);
 	void ParseContactJoint(FEStep* pstep, XMLTag& tag);
 	void ParseRigidWall         (FEStep* pstep, XMLTag& tag);
 	void ParseLinearConstraint  (FEStep* pstep, XMLTag& tag);
@@ -124,7 +114,7 @@ private:
 
 private:
 	// rigid input functions
-	void ParseRigidConnector(FEStep* pstep, XMLTag& tag, const int rc);
+	void ParseRigidConnector(FEStep* pstep, XMLTag& tag);
 	void ParseRigidConstraint(FEStep* pstep, XMLTag& tag);
 	void ParseRigidJoint(FEStep* pstep, XMLTag& tag);
 

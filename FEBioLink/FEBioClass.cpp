@@ -314,6 +314,7 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 				FEParamVec3& v = p.value<FEParamVec3>();
 				FEVec3dValuator* val = v.valuator(); assert(val);
 				FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEVECTORGENERATOR_ID, baseClassIndex("class FEVec3dValuator"), true);
+				prop.m_defType = "vector";
 
 				FEBioClass fbc;
 				fbc.SetSuperClassID(FEVECTORGENERATOR_ID);
@@ -476,7 +477,6 @@ int FEBio::GetModuleId(const std::string& moduleName)
 		string modName(mod.m_szname);
 		if (modName == moduleName) return mod.m_id;
 	}
-	assert(false);
 	return -1;
 }
 

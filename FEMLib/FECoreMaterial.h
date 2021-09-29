@@ -92,8 +92,12 @@ public:
 	void SetSuperClassID(int superClassID) { m_nsuperClassID = superClassID; }
 	int GetSuperClassID() const { return m_nsuperClassID; }
 
+	const std::string& GetDefaultType() { return m_defaultType; }
+	void SetDefaultType(const std::string& s) { m_defaultType = s; }
+
 private:
 	std::string			m_name;			// name of this property
+	std::string			m_defaultType;	// default type string, when type attributed is ommitted.
 	int					m_nClassID;		// the material class ID for this property
 	int					m_nsuperClassID;// super class ID (used to distinguish between materials and material properties)
 	int					m_maxSize;		// max number of properties (0 for no limit)

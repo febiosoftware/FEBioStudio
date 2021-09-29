@@ -27,8 +27,12 @@ SOFTWARE.*/
 #include "FEBioClass.h"
 #include "FEBioModule.h"
 #include <FEMLib/FEStepComponent.h>
+#include <FEMLib/FEBoundaryCondition.h>
+#include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
+#include <FEMLib/FEInterface.h>
 #include <sstream>
 using namespace std;
 
@@ -292,6 +296,7 @@ void FEBio::CreateMaterial(int classId, FEBioMaterial* po)
 		matProp->SetSuperClassID(prop.m_superClassId);
 		if (prop.m_brequired)
 			matProp->SetFlags(matProp->GetFlags() | FEMaterialProperty::REQUIRED);
+		matProp->SetDefaultType(prop.m_defType);
 
 		if (prop.m_comp.empty() == false)
 		{
@@ -315,4 +320,59 @@ void FEBio::UpdateFEBioMaterial(FEBioMaterial* pm)
 
 	// then write the parameters to the FEBio class
 	febClass->UpdateData();
+}
+
+FEMaterial* FEBio::CreateMaterial(const char* sztype, FEModel* fem)
+{
+	FEBioMaterial* pmat = new FEBioMaterial;
+	if (CreateMaterial(sztype, pmat) == false)
+	{
+		delete pmat;
+		return nullptr;
+	}
+	return pmat;
+}
+
+FEBoundaryCondition* FEBio::CreateBoundaryCondition(const char* sztype, FEModel* fem)
+{
+	FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
+	if (FEBio::CreateModelComponent(FE_ESSENTIAL_BC, sztype, pbc) == false)
+	{
+		delete pbc;
+		return nullptr;
+	}
+	return pbc;
+}
+
+FESurfaceLoad* FEBio::CreateSurfaceLoad(const char* sztype, FEModel* fem)
+{
+	FEBioSurfaceLoad* psl = new FEBioSurfaceLoad(fem);
+	if (FEBio::CreateModelComponent(FE_SURFACE_LOAD, sztype, psl) == false)
+	{
+		delete psl;
+		return nullptr;
+	}
+	return psl;
+}
+
+FEBodyLoad* FEBio::CreateBodyLoad(const char* sztype, FEModel* fem)
+{
+	FEBioBodyLoad* pbl = new FEBioBodyLoad(fem);
+	if (FEBio::CreateModelComponent(FE_BODY_LOAD, sztype, pbl) == false)
+	{
+		delete pbl;
+		return nullptr;
+	}
+	return pbl;
+}
+
+FEPairedInterface* FEBio::CreatePairedInterface(const char* sztype, FEModel* fem)
+{
+	FEPairedInterface* pci = new FEBioInterface(fem);
+	if (CreateModelComponent(FE_INTERFACE, sztype, pci) == false)
+	{
+		delete pci;
+		return nullptr;
+	}
+	return pci;
 }

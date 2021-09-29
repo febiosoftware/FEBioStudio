@@ -401,7 +401,16 @@ int FEModel::GetVariableIntValue(const char* szvar, int n)
 		else
 			return -1;
 	}
-	assert(false);
+	else if (strcmp(szvar, "$(species)") == 0)
+	{
+		if ((n >= 0) && (n < m_Sol.Size())) return n + 1;
+		else
+		{
+			n -= m_Sol.Size();
+			if ((n >= 0) && (n < m_SBM.Size())) return n + m_Sol.Size() + 1;
+		}
+	}
+//	assert(false);
 	return -1;
 }
 

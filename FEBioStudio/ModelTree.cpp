@@ -283,13 +283,14 @@ public:
 		addProperty("Plot File" , CProperty::InternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 		addProperty("Log File" , CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 
-		if(job->GetLaunchConfig()->type != LOCAL)
+		int launchType = job->GetLaunchConfig()->type;
+		if ((launchType != LOCAL) && (launchType != DEFAULT))
 		{
 			addProperty("", CProperty::Action)->info = QString("Get Remote Files");
 //			addProperty("", CProperty::Action)->info = QString("Orphan Process");
 		}
 
-		if(job->GetLaunchConfig()->type == PBS || job->GetLaunchConfig()->type == SLURM)
+		if(launchType == PBS || launchType == SLURM)
 		{
 			addProperty("", CProperty::Action)->info = QString("Get Queue Status");
 		}

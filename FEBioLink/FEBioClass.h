@@ -130,6 +130,7 @@ namespace FEBio {
 			m_isArray = p.m_isArray;
 			m_name = p.m_name;
 			m_comp = p.m_comp;
+			m_defType = p.m_defType;
 		}
 		void operator = (const FEBioProperty& p)
 		{
@@ -139,6 +140,7 @@ namespace FEBio {
 			m_isArray = p.m_isArray;
 			m_name = p.m_name;
 			m_comp = p.m_comp;
+			m_defType = p.m_defType;
 		}
 
 	public:
@@ -147,6 +149,7 @@ namespace FEBio {
 		bool	m_brequired;
 		bool	m_isArray;
 		std::string	m_name;
+		std::string m_defType;
 		std::vector<FEBioClass>	m_comp;
 	};
 

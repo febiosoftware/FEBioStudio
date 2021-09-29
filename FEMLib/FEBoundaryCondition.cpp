@@ -251,7 +251,7 @@ FEPrescribedDisplacement::FEPrescribedDisplacement(FEModel* ps) : FEPrescribedDO
 FEPrescribedDisplacement::FEPrescribedDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_DISPLACEMENT, ps, pi, bc, s, nstep)
 {
 	SetTypeString("Prescribed Displacement");
-	SetVarID(ps->GetVariableIndex("Displacement"));
+	SetVarID(ps->GetVariableIndex("displacement"));
 	SetScaleUnit(UNIT_LENGTH);
 }
 
@@ -261,7 +261,7 @@ FEPrescribedDisplacement::FEPrescribedDisplacement(FEModel* ps, FEItemListBuilde
 FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FEModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_SHELL_DISPLACEMENT, ps)
 {
 	SetTypeString("Prescribed Shell Displacement");
-	SetVarID(ps->GetVariableIndex("Shell Displacement"));
+	SetVarID(ps->GetVariableIndex("shell displacement"));
 	SetScaleUnit(UNIT_LENGTH);
 }
 
@@ -269,7 +269,7 @@ FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FEModel* ps) : FEPr
 FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_SHELL_DISPLACEMENT, ps, pi, bc, s, nstep)
 {
 	SetTypeString("Prescribed Shell Displacement");
-	SetVarID(ps->GetVariableIndex("Shell Displacement"));
+	SetVarID(ps->GetVariableIndex("shell displacement"));
 	SetScaleUnit(UNIT_LENGTH);
 }
 
