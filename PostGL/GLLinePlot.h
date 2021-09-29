@@ -94,17 +94,7 @@ private:
 // point cloud rendering of imported point data
 class CGLPointPlot : public CGLPlot
 {
-	enum {MAX_SETTINGS = 4};
-
-	enum { POINT_SIZE, COLOR, RENDER_MODE };
-
-	struct SETTINGS
-	{
-		float		size;		//!< point size
-		GLColor		col;		//!< rendering color
-		int			nmode;		//!< rendering mode
-		int			nvisible;	//!< visible flag
-	};
+	enum { POINT_SIZE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP };
 
 public:
 	CGLPointPlot(CGLModel* po);
@@ -112,21 +102,23 @@ public:
 
 	void Render(CGLContext& rc) override;
 
-	float GetPointSize(int n = 0) { return m_set[n].size; }
-	void SetPointSize(float f, int n = 0) { m_set[n].size = f; }
+	float GetPointSize() { return m_pointSize; }
+	void SetPointSize(float f) { m_pointSize = f; }
 
-	GLColor GetPointColor(int n = 0) { return m_set[n].col; }
-	void SetPointColor(GLColor c, int n = 0) { m_set[n].col = c; }
-
-	int GetRenderMode(int n = 0) { return m_set[n].nmode; }
-	void SetRenderMode(int m, int n = 0) { m_set[n].nmode = m; }
-
-	int GetVisible(int n = 0) { return m_set[n].nvisible; }
-	void SetVisible(int nvis, int n = 0) { m_set[n].nvisible = nvis; }
+	GLColor GetPointColor() { return m_solidColor; }
+	void SetPointColor(GLColor c) { m_solidColor = c; }
 
 	bool UpdateData(bool bsave = true) override;
 
 private:
-	SETTINGS	m_set[MAX_SETTINGS];
+	void RenderPoints();
+	void RenderSpheres();
+
+private:
+	float		m_pointSize;	//!< point size
+	int			m_renderMode;	//!< render mode
+	int			m_colorMode;	//!< color mode
+	GLColor		m_solidColor;	//!< rendering color
+	int			m_colorMap;		//!< color map
 };
 }

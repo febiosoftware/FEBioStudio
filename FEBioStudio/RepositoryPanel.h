@@ -126,6 +126,11 @@ private:
 	void DeleteItem(CustomTreeWidgetItem *item);
 	void ShowItemInBrowser(CustomTreeWidgetItem *item);
 
+    bool projectModified(ProjectItem* item);
+    bool fileModified(FileItem* item);
+
+    QString getLocalPath(CustomTreeWidgetItem* item);
+
 	QStringList GetCategories();
 
 private:

@@ -444,7 +444,7 @@ vec3d Post::IntegrateSurfaceNormal(Post::FEPostMesh& mesh, Post::FEState* ps)
 //-----------------------------------------------------------------------------
 // This function calculates the integral over a volume. Note that if the volume
 // is not hexahedral, then we calculate the integral from a degenerate hex.
-double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
+double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	Post::FERefState& ref = *ps->m_ref;
 	double res = 0.0;
@@ -497,7 +497,7 @@ double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 //-----------------------------------------------------------------------------
 // This function calculates the integral over a volume. Note that if the volume
 // is not hexahedral, then we calculate the integral from a degenerate hex.
-double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, Post::FEState* ps)
+double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	double res = 0.0;
 	float v[FEElement::MAX_NODES];

@@ -768,7 +768,7 @@ void CPostModelPanel::BuildModelTree()
 		for (int i = 0; i < pdoc->ImageModels(); ++i)
 		{
 			Post::CImageModel* img = pdoc->GetImageModel(i);
-			ui->AddItem(nullptr, img, QString::fromStdString(img->GetName()), "image", new CImageModelProps(img));
+			pi1 = ui->AddItem(nullptr, img, QString::fromStdString(img->GetName()), "image", new CImageModelProps(img));
 
 			for (int j = 0; j < img->ImageRenderers(); ++j)
 			{

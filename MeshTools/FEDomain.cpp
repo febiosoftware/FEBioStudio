@@ -671,7 +671,7 @@ void FEDomain::SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2])
                 vlist[j] = box.v[wdg_opt1[i][iedge][j]];
         }
         // create the wedge
-        iwdg[i] = AddWedge(vlist,box.m_ntag);
+        iwdg[i] = AddWedge(vlist,box.m_ntag, box.m_gid);
     }
     
     // tag the box to be excluded from the domain
@@ -708,7 +708,7 @@ void FEDomain::SplitWedgeIntoTets(int iwdg, int ivtx, int itet[3])
         for (int j=0; j<4; ++j)
             vlist[j] = wdg.v[tet[ivtx][i][j]];
         // create the tet
-        itet[i] = AddTet(vlist,wdg.m_ntag);
+        itet[i] = AddTet(vlist,wdg.m_ntag,wdg.m_gid);
     }
     
     // tag the wedge to be excluded from the domain

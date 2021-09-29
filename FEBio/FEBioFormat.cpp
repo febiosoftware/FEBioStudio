@@ -927,6 +927,18 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int class
 				{
 					ParseMatAxis(tag, pm);
 				}
+				else if ((tag == "lambda") && (pm->Type() == FE_COUPLED_TRANS_ISO_MR))
+				{
+					// hack for mapping old lambda parameter to new lam_max parameter
+					FECoupledTransIsoMooneyRivlin* mat = dynamic_cast<FECoupledTransIsoMooneyRivlin*>(pm);
+					if (mat)
+					{
+						float v = 0.f;
+						tag.value(v);
+						mat->SetFloatValue(FECoupledTransIsoMooneyRivlin::MP_LAMBDA, v);
+					}
+					++tag;
+				}
 				else if (tag == "fiber")
 				{
 					FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pm);

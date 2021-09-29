@@ -212,6 +212,7 @@ void CMainWindow::on_actionImageSlicer_triggered()
 	else if (postDoc)
 	{
 		ui->postPanel->Update();
+		ui->postPanel->SelectObject(slicer);
 	}
 	RedrawGL();
 }
@@ -250,13 +251,27 @@ void CMainWindow::on_actionVolumeRender_triggered()
 	else if (postDoc)
 	{
 		ui->postPanel->Update();
+		ui->postPanel->SelectObject(vr);
 	}
 	RedrawGL();
 }
 
 void CMainWindow::on_actionMarchingCubes_triggered()
 {
-	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	// get the document
+	CDocument* modelDoc = GetModelDocument();
+	CDocument* postDoc = GetPostDocument();
+
+	Post::CImageModel* img = nullptr;
+	if (modelDoc)
+	{
+		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	}
+	else if (postDoc)
+	{
+		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+	}
+
 	if (img == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
@@ -266,8 +281,16 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 	Post::CMarchingCubes* mc = new Post::CMarchingCubes(img);
 	mc->Create();
 	img->AddImageRenderer(mc);
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(mc);
+	if (modelDoc)
+	{
+		ui->modelViewer->Update();
+		ui->modelViewer->Select(mc);
+	}
+	else if (postDoc)
+	{
+		ui->postPanel->Update();
+		ui->postPanel->SelectObject(mc);
+	}
 	RedrawGL();
 }
 

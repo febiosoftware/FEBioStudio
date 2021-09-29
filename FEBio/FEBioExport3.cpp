@@ -5028,7 +5028,7 @@ void FEBioExport3::WriteStepSection()
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = step.RigidConstraints();
+			int nrc = step.RigidConstraints() + step.RigidConnectors();
 			if (nrc > 0)
 			{
 				m_xml.add_branch("Rigid");

@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <FSCore/paramunit.h>
 #include <FEBioStudio/WebDefines.h>
+#include "FEDiscreteMaterial.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInterface.h>
 
@@ -1014,7 +1015,7 @@ FECoupledTransIsoMooneyRivlin::FECoupledTransIsoMooneyRivlin() : FETransverselyI
 	AddScienceParam(0, UNIT_NONE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
 	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
-	AddScienceParam(0, UNIT_NONE, "lam_max", "lambda");
+	AddScienceParam(0, UNIT_NONE, "lam_max", "lambda max");
 }
 
 void FECoupledTransIsoMooneyRivlin::Convert(FECoupledTransIsoMooneyRivlinOld* pold)
@@ -2017,6 +2018,7 @@ FEFiberExpPow::FEFiberExpPow() : FEFiberMaterial(FE_FIBEREXPPOW_COUPLED)
     AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
     AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
     AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
+    AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
 }
 
 void FEFiberExpPow::Convert(FEFiberExpPowOld* pold)
@@ -2058,6 +2060,29 @@ FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEFiberMaterial(FE_FIBE
 	AddDoubleParam(0.0, "c4", "c4");
 	AddDoubleParam(0.0, "c5", "c5");
 	AddDoubleParam(0.0, "lambda", "lambda");
+}
+
+//=============================================================================
+// Fiber-Neo-Hookean
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberNeoHookean, MODULE_MECH, FE_FIBER_NEO_HOOKEAN, FE_MAT_ELASTIC, "fiber-NH", 0);
+
+FEFiberNeoHookean::FEFiberNeoHookean() : FEFiberMaterial(FE_FIBER_NEO_HOOKEAN)
+{
+    AddDoubleParam(0.0, "mu", "mu");
+}
+
+//=============================================================================
+// Fiber-Natural-Neo-Hookean
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberNaturalNH, MODULE_MECH, FE_FIBER_NATURAL_NH, FE_MAT_ELASTIC, "fiber-natural-NH", 0);
+
+FEFiberNaturalNH::FEFiberNaturalNH() : FEFiberMaterial(FE_FIBER_NATURAL_NH)
+{
+    AddDoubleParam(0.0, "ksi", "ksi");
+    AddDoubleParam(1.0, "lam0", "lam0");
 }
 
 //=============================================================================
@@ -3098,6 +3123,39 @@ FEPrestrainInSituGradient::FEPrestrainInSituGradient() : FEMaterial(FE_PRESTRAIN
 {
 	AddScienceParam(1.0, UNIT_NONE, "stretch", "fiber stretch");
 	AddBoolParam(false, "isochoric", "isochoric prestrain");
+}
+
+//=============================================================================
+REGISTER_MATERIAL(FEPlasticFlowCurvePaper, MODULE_MECH, FE_MAT_PLASTIC_FLOW_PAPER, FE_MAT_PLASTIC_FLOW_RULE, "PFC paper", 0);
+
+FEPlasticFlowCurvePaper::FEPlasticFlowCurvePaper() : FEMaterial(FE_MAT_PLASTIC_FLOW_PAPER)
+{
+	AddDoubleParam(0, "Y0");
+	AddDoubleParam(0, "Ymax");
+	AddDoubleParam(1, "w0");
+	AddDoubleParam(0, "we");
+	AddIntParam(1, "nf");
+	AddDoubleParam(0.9, "r");
+}
+
+//=============================================================================
+REGISTER_MATERIAL(FEPlasticFlowCurveUser, MODULE_MECH, FE_MAT_PLASTIC_FLOW_USER, FE_MAT_PLASTIC_FLOW_RULE, "PFC user", 0);
+
+FEPlasticFlowCurveUser::FEPlasticFlowCurveUser() : FEMaterial(FE_MAT_PLASTIC_FLOW_USER)
+{
+	AddProperty("plastic_response", FE_MAT_1DFUNC);
+	AddProperty(0, new FE1DPointFunction);
+}
+
+//=============================================================================
+REGISTER_MATERIAL(FEPlasticFlowCurveMath, MODULE_MECH, FE_MAT_PLASTIC_FLOW_MATH, FE_MAT_PLASTIC_FLOW_RULE, "PFC math", 0);
+
+FEPlasticFlowCurveMath::FEPlasticFlowCurveMath() : FEMaterial(FE_MAT_PLASTIC_FLOW_MATH)
+{
+	AddIntParam(1, "nf");
+	AddDoubleParam(0, "e0");
+	AddDoubleParam(1, "emax");
+	AddMathParam("<enter math formula>", "plastic_response", "plastic flow curve")->MakeVariable(true);
 }
 
 

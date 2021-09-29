@@ -67,7 +67,6 @@ public:
 
 	QList<QList<QVariant>> GetProjectFileInfo(int projID);
 
-
 	std::unordered_set<int> FullTextSearch(QString term);
 	std::unordered_set<int> FileSearch(QString term);
 
@@ -83,6 +82,7 @@ public:
 	qint64 currentProjectsSize(QString username);
 	qint64 projectsSize(int ID);
 
+    void setDownloadTime(int ID, int type, qint64 time);
 
 private:
 	Imp* imp;

@@ -405,11 +405,12 @@ void FEState::AddLine(vec3f a, vec3f b, float data_a, float data_b, int el0, int
 }
 
 //-----------------------------------------------------------------------------
-void FEState::AddPoint(vec3f a, int nlabel)
+void FEState::AddPoint(vec3f a, int nlabel, float v)
 {
 	POINTDATA p;
 	p.m_r = a;
 	p.nlabel = nlabel;
+	p.val = v;
 	m_Point.push_back(p);
 }
 

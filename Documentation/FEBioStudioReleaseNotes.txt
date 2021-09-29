@@ -6,6 +6,44 @@
 
 ===========================================================================
 
+ R E L E A S E   1.6.1   9/28/2021
+
+===========================================================================
+
+* Re-implemented default mesher for sphere-in-box primitive. This mesher can now create a mesh that conforms to the outer mesh of a sphere.
+* Added Out of Date tooltip for files in the repository.
+* Repo now asks to redownload out of date files. Repo asks to overwrite modified files. Various other changes and fixes to the tree.
+* Repository now records download and upload times for files.
+* Fixed bug with integrating element data. (reference and current configurations were switched).
+* Fixed some issues with creating 3D image visualizations on post side.
+* Shrink/grow selection methods are now available on both build and post sides.
+* Added little hack to convert lambda parameter to lam_max for coupled trans-iso MR.
+* Made sure that user selections are exported when running model from FEBio Studio.
+* Fixed bug in Boundary Layer meshing tool pertaining to setting element IDs when splitting box into wedges or splitting wedge into tets
+* Added improved support for point data and point visualization on post side, including ability to render points as spheres.
+* Added support for fiber-NH and fiber-natural-NH to library of materials. Updated fiber-exp-pow to accept new parameter lam0.
+* Fixed issue with closing model when plane cut tool is active.
+* Forced redraw when converting face to element selection.
+* Modified "Face to element selection" so it works with model and post documents.
+* Fixed issue with exporting rigid section in multi-step analyses.
+* Fixed method of specifying plastic flow curve parameters (PFC paper) and math formula (PFC math).
+* Updated definition of reactive plasticity and reactive damage plasticity to reflect latest changes in definitions of plastic flow curves. Removed rtol from list of material parameters.
+* Added F3 back as shortcut for opening new graph. (And assigned ctrl+shift+F to "Find again").
+* Face normals are now re-evaluated after partitioning.
+* Updated natural neo-Hookean material to use Young's modulus and Poisson's ratio, instead of shear and bulk moduli.
+* Added left stretch tensor as plot variable.
+* Added left Hencky plot variable.
+* Implemented shell volume calculation for tri3 and quad4.
+* Added option to volume average back to summary window.
+* Fixed issue with meshing of solid arc.
+* Added "right stretch" and "right Hencky" plot variables.
+* Fixed issue with importing max_ups from older FEBio formats.
+* Fixed crash due to deleting active item in model tree.
+* Added some error checking to LSDYNA export.
+* Added ability to import/export laugon and atol parameters in SolidDomain and ShellDomain sections of MeshDomain.
+
+===========================================================================
+
  R E L E A S E   1.6   8/30/2021
 
 ===========================================================================

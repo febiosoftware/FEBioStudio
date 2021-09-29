@@ -97,6 +97,7 @@ struct LINEDATA
 struct POINTDATA
 {
 	int		nlabel;
+	float	val;
 	vec3f	m_r;
 };
 
@@ -190,12 +191,13 @@ public:
 
 	void AddLine(vec3f a, vec3f b, float data_a = 0.f, float data_b = 0.f, int el0 = -1, int el1 = -1);
 
-	void AddPoint(vec3f a, int nlabel = 0);
+	void AddPoint(vec3f a, int nlabel = 0, float v = 0.f);
 
 	LineData& GetLineData() { return m_Line; }
 
 	POINTDATA& Point(int n) { return m_Point[n]; }
 	int Points() { return (int) m_Point.size(); }
+	void ClearPoints() { m_Point.clear(); }
 
 	void SetFEMesh(FEPostMesh* pm) { m_mesh = pm; }
 	FEPostMesh* GetFEMesh() { return m_mesh; }
