@@ -26,15 +26,17 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEModelConstraint.h"
+#include <MeshTools/FEItemListBuilder.h>
 
 FEModelConstraint::FEModelConstraint(int ntype, FEModel* fem, int nstep) : FEDomainComponent(ntype, fem, nstep)
 {
 	m_superClassID = FE_CONSTRAINT;
+	SetMeshItemType(0);
 }
 
 FESurfaceConstraint::FESurfaceConstraint(int ntype, FEModel* fem, int nstep) : FEModelConstraint(ntype, fem, nstep)
 {
-
+	SetMeshItemType(FE_FACE_FLAG);
 }
 
 //=============================================================================

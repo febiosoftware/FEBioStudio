@@ -674,29 +674,19 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		}
 		else ui->showPropsPanel(false);
 
-		ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
+		ui->showSelectionPanel1(false); ui->setSelection1Title("Selection");
 		ui->showSelectionPanel2(false);
-		FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
-		if (pbc) { SetSelection(0, pbc->GetItemList()); return; }
 
-		FEInitialCondition* pic = dynamic_cast<FEInitialCondition*>(m_currentObject);
-		if (pic) { SetSelection(0, pic->GetItemList()); return; }
-
-		FERigidLoad* prl = dynamic_cast<FERigidLoad*>(m_currentObject);
-		if (prl)
+		FEDomainComponent* pbc = dynamic_cast<FEDomainComponent*>(m_currentObject);
+		if (pbc && (pbc->GetMeshItemType() != 0))
 		{
-			ui->showSelectionPanel1(false);
+			ui->showSelectionPanel1(true);
+			SetSelection(0, pbc->GetItemList()); 
 			return;
 		}
 
-		FELoad* pbl = dynamic_cast<FELoad*>(m_currentObject);
-		if (pbl) { SetSelection(0, pbl->GetItemList()); return; }
-
 		FESoloInterface* solo = dynamic_cast<FESoloInterface*>(m_currentObject);
 		if (solo) { SetSelection(0, solo->GetItemList()); return; }
-
-		FESurfaceConstraint* psc = dynamic_cast<FESurfaceConstraint*>(m_currentObject);
-		if (psc) { SetSelection(0, psc->GetItemList()); return;	}
 
 		GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject);
 		if (mat) { SetSelection(mat); return;	}
