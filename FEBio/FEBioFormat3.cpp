@@ -1427,10 +1427,10 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	// create the constraint
  	char szbuf[256] = { 0 };
 	string bc = dofs[0];
-	FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(&fem);
+	FEBoundaryCondition* pbc = nullptr;
 	if ((bc == "x") || (bc == "y") || (bc == "z"))
 	{
-		FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero displacement", pbc);
+		pbc = FEBio::CreateBoundaryCondition("zero displacement", &fem); assert(pbc);
 
 		// map the dofs
 		vector<int> dofList;
@@ -1441,7 +1441,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			if (di == "y") { dofList.push_back(1); }
 			if (di == "z") { dofList.push_back(2); }
 		}			
-		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
+		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
@@ -1452,7 +1452,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	}
 	else if ((bc == "u") || (bc == "v") || (bc == "w"))
 	{
-		FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero rotation", pbc);
+		pbc = FEBio::CreateBoundaryCondition("zero rotation", &fem); assert(pbc);
 
 		// map the dofs
 		vector<int> dofList;
@@ -1463,7 +1463,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			if (di == "v") { dofList.push_back(1); }
 			if (di == "w") { dofList.push_back(2); }
 		}
-		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
+		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
@@ -1474,7 +1474,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	}
 	else if (bc == "T")
 	{
-		bool b = FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero temperature", pbc); assert(b);
+		pbc = FEBio::CreateBoundaryCondition("zero temperature", &fem); assert(pbc);
 
 		// set the name
 		if (name.empty())
@@ -1485,7 +1485,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	}
 	else if (bc == "p")
 	{
-		bool b = FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero fluid pressure", pbc); assert(b);
+		pbc = FEBio::CreateBoundaryCondition("zero fluid pressure", &fem); assert(pbc);
 
 		// set the name
 		if (name.empty())
@@ -1496,7 +1496,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	}
 	else if ((bc == "wx") || (bc == "wy") || (bc == "wz"))
 	{
-		bool b = FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero fluid velocity", pbc); assert(b);
+		pbc = FEBio::CreateBoundaryCondition("zero fluid velocity", &fem); assert(pbc);
 
 		// map the dofs
 		vector<int> dofList;
@@ -1507,7 +1507,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			if (di == "wy") { dofList.push_back(1); }
 			if (di == "wz") { dofList.push_back(2); }
 		}
-		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
+		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
@@ -1518,7 +1518,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	}
 	else if (bc == "ef")
 	{
-		bool b = FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero fluid dilatation", pbc); assert(b);
+		pbc = FEBio::CreateBoundaryCondition("zero fluid dilatation", &fem); assert(pbc);
 
 		// set the name
 		if (name.empty())
@@ -1529,7 +1529,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	}
 	else if ((bc == "sx") || (bc == "sy") || (bc == "sz"))
 	{
-		FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero shell displacement", pbc);
+		pbc = FEBio::CreateBoundaryCondition("zero shell displacement", &fem); assert(pbc);
 
 		// map the dofs
 		vector<int> dofList;
@@ -1540,7 +1540,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			if (di == "sy") { dofList.push_back(1); }
 			if (di == "sz") { dofList.push_back(2); }
 		}			
-		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
+		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
@@ -1562,7 +1562,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	}
 	else if (bc.compare(0, 1, "c") == 0)
 	{
-		FEBio::CreateModelComponent(FE_ESSENTIAL_BC, "zero concentration", pbc);
+		pbc = FEBio::CreateBoundaryCondition("zero concentration", &fem); assert(pbc);
 
 		// map the dofs
 		vector<int> dofList;
@@ -1646,29 +1646,137 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	while (!tag.isend());
 
 	// make a new boundary condition
-	FEPrescribedDOF* pbc = 0;
-    if (bc=="x") pbc = new FEPrescribedDisplacement (&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="y") pbc = new FEPrescribedDisplacement (&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="z") pbc = new FEPrescribedDisplacement (&fem, pg, 2, 1, pstep->GetID());
-    else if (bc=="T") pbc = new FEPrescribedTemperature  (&fem, pg, 1, pstep->GetID());
-    else if (bc=="p") pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
-    else if (bc=="vx") pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="vy") pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="vz") pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
-    else if (bc=="wx") pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="wy") pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="wz") pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
-    else if (bc=="ef") pbc = new FEPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
-    else if (bc=="sx") pbc = new FEPrescribedShellDisplacement(&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="sy") pbc = new FEPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="sz") pbc = new FEPrescribedShellDisplacement(&fem, pg, 2, 1, pstep->GetID());
-    else if (bc=="u") pbc = new FEPrescribedRotation(&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="v") pbc = new FEPrescribedRotation(&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="w") pbc = new FEPrescribedRotation(&fem, pg, 2, 1, pstep->GetID());
+	FEBoundaryCondition* pbc = 0;
+	if (bc == "x")
+	{
+//		pbc = new FEPrescribedDisplacement(&fem, pg, 0, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 0);
+	}
+	else if (bc == "y")
+	{
+//		pbc = new FEPrescribedDisplacement(&fem, pg, 1, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 1);
+	}
+	else if (bc == "z")
+	{
+//		pbc = new FEPrescribedDisplacement(&fem, pg, 2, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 2);
+	}
+	else if (bc == "T")
+	{
+//		pbc = new FEPrescribedTemperature(&fem, pg, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed temperature", &fem);
+		pbc->SetItemList(pg);
+	}
+	else if (bc == "p")
+	{
+//		pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed fluid pressure", &fem);
+		pbc->SetItemList(pg);
+	}
+	else if (bc == "vx")
+	{
+//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 0);
+	}
+	else if (bc == "vy")
+	{
+//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 1);
+	}
+	else if (bc == "vz")
+	{
+//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 2);
+	}
+	else if (bc == "wx")
+	{
+//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 0);
+	}
+	else if (bc == "wy")
+	{
+//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 1);
+	}
+	else if (bc == "wz")
+	{
+//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 2);
+	}
+	else if (bc == "ef")
+	{
+//		pbc = new FEPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed fluid dilatation", &fem);
+		pbc->SetItemList(pg);
+	}
+	else if (bc == "sx")
+	{
+//		pbc = new FEPrescribedShellDisplacement(&fem, pg, 0, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 0);
+	}
+	else if (bc == "sy")
+	{
+//		pbc = new FEPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 1);
+	}
+	else if (bc == "sz")
+	{
+//		pbc = new FEPrescribedShellDisplacement(&fem, pg, 2, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 2);
+	}
+	else if (bc == "u")
+	{
+//		pbc = new FEPrescribedRotation(&fem, pg, 0, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed rotation", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 0);
+	}
+	else if (bc == "v")
+	{
+//		pbc = new FEPrescribedRotation(&fem, pg, 1, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed rotation", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 1);
+	}
+	else if (bc == "w")
+	{
+//		pbc = new FEPrescribedRotation(&fem, pg, 2, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed rotation", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", 2);
+	}
     else if (bc.compare(0,1,"c") == 0) {
         int isol;
         sscanf(bc.substr(1).c_str(),"%d",&isol);
-        pbc = new FEPrescribedConcentration(&fem, pg, isol-1, 1.0, pstep->GetID());
+ //       pbc = new FEPrescribedConcentration(&fem, pg, isol-1, 1.0, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed concentration", &fem);
+		pbc->SetItemList(pg);
+		pbc->SetParamInt("dof", isol - 1);
     }
 
 	// get the optional name
@@ -1677,7 +1785,7 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	pstep->AddComponent(pbc);
 
 	// process scale value
-	Param* pp = pbc->GetParam("scale"); assert(pp);
+	Param* pp = pbc->GetParam("value"); assert(pp);
 	if (scaleType == "math")
 	{
 		pp->SetParamType(Param_MATH);
@@ -1695,9 +1803,9 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		pp->SetFloatValue(s);
 	}
 
-	pbc->SetRelativeFlag(relative);
+	pbc->SetParamBool("relative", relative);
 	
-	if (lc != -1) febio.AddParamCurve(pbc->GetLoadCurve(), lc - 1);
+	if (lc != -1) febio.AddParamCurve(pp, lc - 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -1864,10 +1972,7 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 
 	// create the node set
 	FEItemListBuilder* pg = febio.BuildItemList(aset.cvalue());
-	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
-	char szbuf[256];
-	sprintf(szbuf, "ForceNodeset%02d", CountLoads<FENodalDOFLoad>(fem)+1);
-	pg->SetName(szbuf);
+	if (pg == 0) FileReader()->AddLogEntry("Cannot find node set \"%s\" (line %d)", aset.cvalue(), tag.m_nstart_line);
 
 	// get the (optional) name
 	string name;

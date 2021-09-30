@@ -919,55 +919,34 @@ void CModelPropsPanel::addSelection(int n)
 	FEDomainComponent* pmc = dynamic_cast<FEDomainComponent*>(m_currentObject);
 	if (pmc)
 	{
-		// don't allow object selections 
-		if (dynamic_cast<GObjectSelection*>(ps)) 
+		// create the item list from the selection
+		FEItemListBuilder* pg = ps->CreateItemList();
+		if (pg == nullptr)
 		{
-			QMessageBox::critical(this, "FEBio Studio", "You cannot apply an object to a boundary condition's selection.");
+			QMessageBox::critical(this, "FEBio Studio", "You cannot assign an empty selection.");
 			return;
 		}
 
-		// for body loads, only allow part selections
-		if (dynamic_cast<FEBodyLoad*>(pmc) && (dynamic_cast<GPartSelection*>(ps) == 0))
-		{
-			QMessageBox::critical(this, "FEBio Studio", "You cannot apply this selection to a body load.");
-			return;
-		}
-
-		// don't allow part selections, except for initial conditions
-		//		if (dynamic_cast<GPartSelection*>(ps) && (dynamic_cast<FEInitialCondition*>(m_pbc)==0)) return;
-
-		// only allow surface selections for surface loads
-		if (dynamic_cast<FESurfaceLoad*>(pmc) && (dynamic_cast<GFaceSelection*>(ps) == 0) && (dynamic_cast<FEFaceSelection*>(ps) == 0))
-		{
-			QMessageBox::critical(this, "FEBio Studio", "You cannot apply this selection to a surface load.");
-			return;
-		}
-
+		// get the current item list
 		FEItemListBuilder* pl = pmc->GetItemList();
-		if (pl == 0)
+
+		// see whether the current list exists or not
+		if (pl == nullptr)
 		{
-			FEItemListBuilder* item = ps->CreateItemList();
-			if (item == nullptr)
+			// see if we can assign it
+			int itemType = pmc->GetMeshItemType();
+			if (pg->Supports(itemType) == false)
 			{
-				QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.");
+				QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
+				delete pg;
 				return;
 			}
-			else
-			{
-				pdoc->DoCommand(new CCmdSetModelComponentItemList(pmc, item));
-				SetSelection(0, pmc->GetItemList());
-			}
+
+			pdoc->DoCommand(new CCmdSetModelComponentItemList(pmc, pg));
+			SetSelection(0, pmc->GetItemList());
 		}
 		else
 		{
-			// create the item list builder
-			FEItemListBuilder* pg = ps->CreateItemList();
-			if (pg == nullptr)
-			{
-				QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.");
-				return;
-			}
-
 			// merge with the current list
 			if (pg->Type() != pl->Type())
 			{
@@ -991,9 +970,7 @@ void CModelPropsPanel::addSelection(int n)
 			SetSelection(0, pmc->GetItemList());
 			delete pg;
 		}
-
 		emit selectionChanged();
-
 		return;
 	}
 

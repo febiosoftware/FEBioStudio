@@ -41,7 +41,7 @@ class GObject;
 class FEGroup : public FEItemListBuilder
 {
 public:
-	FEGroup(GObject* po, int ntype);
+	FEGroup(GObject* po, int ntype, unsigned int flags);
 	virtual ~FEGroup();
 
 	FEMesh* GetMesh();
@@ -83,7 +83,7 @@ protected:
 class FEPart : public FEGroup
 {
 public:
-	FEPart(GObject* po) : FEGroup(po, FE_PART) {}
+	FEPart(GObject* po) : FEGroup(po, FE_PART, FE_NODE_FLAG | FE_ELEM_FLAG) {}
 	FEPart(GObject* po, const vector<int>&  elset);
 	~FEPart(){}
 
@@ -103,7 +103,7 @@ public:
 class FESurface : public FEGroup
 {
 public:
-	FESurface(GObject* po) : FEGroup(po, FE_SURFACE) {}
+	FESurface(GObject* po) : FEGroup(po, FE_SURFACE, FE_NODE_FLAG | FE_FACE_FLAG) {}
 	FESurface(GObject* po, vector<int>& face);
 	~FESurface(){}
 
@@ -119,7 +119,7 @@ public:
 class FEEdgeSet : public FEGroup
 {
 public:
-	FEEdgeSet(GObject* po) : FEGroup(po, FE_EDGESET) {}
+	FEEdgeSet(GObject* po) : FEGroup(po, FE_EDGESET, FE_NODE_FLAG) {}
 	FEEdgeSet(GObject* po, vector<int>& edge);
 	~FEEdgeSet(){}
 
@@ -138,7 +138,7 @@ public:
 class FENodeSet : public FEGroup
 {
 public:
-	FENodeSet(GObject* po) : FEGroup(po, FE_NODESET) {}
+	FENodeSet(GObject* po) : FEGroup(po, FE_NODESET, FE_NODE_FLAG) {}
 	FENodeSet(GObject* po, const vector<int>& node);
 	~FENodeSet(){}
 

@@ -165,6 +165,14 @@ bool FEBio::CreateModelComponent(int classId, FEModelComponent* po)
 		FEBioMaterial* febMat = dynamic_cast<FEBioMaterial*>(po);
 		febMat->SetFEBioMaterial(feb);
 	}
+	else if (dynamic_cast<FEBioBoundaryCondition*>(po))
+	{
+		FEBioBoundaryCondition* pbc = dynamic_cast<FEBioBoundaryCondition*>(po);
+		if (feb->FindProperty("surface"))
+		{
+			pbc->SetMeshItemType(FE_FACE_FLAG);
+		}
+	}
 	else delete feb;
 
 	return true;

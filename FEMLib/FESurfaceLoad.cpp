@@ -26,7 +26,20 @@ SOFTWARE.*/
 
 #include "FESurfaceLoad.h"
 #include <FSCore/paramunit.h>
+#include <MeshTools/FEItemListBuilder.h>
 #include "enums.h"
+
+FESurfaceLoad::FESurfaceLoad(int ntype, FEModel* ps) : FELoad(ntype, ps) 
+{
+	m_superClassID = FE_SURFACE_LOAD;
+	SetMeshItemType(FE_FACE_FLAG);
+}
+
+FESurfaceLoad::FESurfaceLoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep) 
+{
+	m_superClassID = FE_SURFACE_LOAD;
+	SetMeshItemType(FE_FACE_FLAG);
+}
 
 //-----------------------------------------------------------------------------
 FEPressureLoad::FEPressureLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_PRESSURE_LOAD, ps, pi, nstep)

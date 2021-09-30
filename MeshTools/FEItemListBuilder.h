@@ -53,6 +53,17 @@ enum DOMAIN_TYPE
 };
 
 //-----------------------------------------------------------------------------
+enum MESH_ITEM_FLAGS
+{
+	FE_NODE_FLAG = 0x01,
+	FE_EDGE_FLAG = 0x02,
+	FE_FACE_FLAG = 0x04,
+	FE_ELEM_FLAG = 0x08,
+
+	FE_ALL_FLAGS = 0xFF
+};
+
+//-----------------------------------------------------------------------------
 // This class is an abstract base class for any class that can build FEItem lists.
 // Currently this is the GItem class for geometry objects and FEGroup class for
 // FE meshes. Each derived class must be able to define how to build FEItem lists.
@@ -66,7 +77,7 @@ public:
 	typedef std::list<int>::const_iterator ConstIterator;
 
 public:
-	FEItemListBuilder(int ntype);
+	FEItemListBuilder(int ntype, unsigned int flags);
 
 	virtual FENodeList*	BuildNodeList() = 0;
 	virtual FEFaceList*	BuildFaceList() = 0;
@@ -75,6 +86,8 @@ public:
 	virtual FEItemListBuilder* Copy() = 0;
 
 	virtual bool IsValid() const;
+
+	bool Supports(unsigned int itemFlag) const;
 
 	void clear() { m_Item.clear(); }
 	void add(int n) { m_Item.push_back(n); }
@@ -104,6 +117,8 @@ protected:
 	list<int>	m_Item;
 
 	int	m_ntype;
+
+	unsigned int	m_flags;
 
 	int	m_nID;	// the unique group ID
 	static int m_ncount;

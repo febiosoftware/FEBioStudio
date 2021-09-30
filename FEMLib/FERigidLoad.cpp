@@ -30,6 +30,7 @@ SOFTWARE.*/
 FERigidLoad::FERigidLoad(int ntype, FEModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep)
 { 
 	m_superClassID = FE_RIGID_LOAD; 
+	SetMeshItemType(0);
 }
 
 //=============================================================================

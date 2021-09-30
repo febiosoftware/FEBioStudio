@@ -38,7 +38,7 @@ SOFTWARE.*/
 // FEGroup
 //////////////////////////////////////////////////////////////////////
 
-FEGroup::FEGroup(GObject* po, int ntype) : FEItemListBuilder(ntype)
+FEGroup::FEGroup(GObject* po, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
 {
 	// store a ptr to the mesh this group belongs to
 	m_pObj = po;
@@ -129,7 +129,7 @@ void FEGroup::Load(IArchive &ar)
 // FEPart
 //////////////////////////////////////////////////////////////////////
 
-FEPart::FEPart(GObject* po, const vector<int>& elset) : FEGroup(po, FE_PART)
+FEPart::FEPart(GObject* po, const vector<int>& elset) : FEGroup(po, FE_PART, FE_NODE_FLAG | FE_ELEM_FLAG)
 {
 	int nsel = (int) elset.size();
 	if (nsel > 0)
@@ -207,7 +207,7 @@ FENodeList* FEPart::BuildNodeList()
 // FESurface
 //////////////////////////////////////////////////////////////////////
 
-FESurface::FESurface(GObject* po, vector<int>& face) : FEGroup(po, FE_SURFACE)
+FESurface::FESurface(GObject* po, vector<int>& face) : FEGroup(po, FE_SURFACE, FE_NODE_FLAG | FE_FACE_FLAG)
 {
 	int n = (int) face.size();
 	if (n > 0)
@@ -277,7 +277,7 @@ FENodeList* FESurface::BuildNodeList()
 // FEEdgeSet
 //////////////////////////////////////////////////////////////////////
 
-FEEdgeSet::FEEdgeSet(GObject* po, vector<int>& edge) : FEGroup(po, FE_EDGESET)
+FEEdgeSet::FEEdgeSet(GObject* po, vector<int>& edge) : FEGroup(po, FE_EDGESET, FE_NODE_FLAG)
 {
 	int n = (int) edge.size();
 	if (n > 0)
@@ -341,7 +341,7 @@ FENodeList* FEEdgeSet::BuildNodeList()
 // FENodeSet
 //////////////////////////////////////////////////////////////////////
 
-FENodeSet::FENodeSet(GObject* po, const vector<int>& node) : FEGroup(po, FE_NODESET)
+FENodeSet::FENodeSet(GObject* po, const vector<int>& node) : FEGroup(po, FE_NODESET, FE_NODE_FLAG)
 {
 	int n = (int) node.size();
 	if (n > 0)

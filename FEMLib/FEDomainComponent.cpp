@@ -9,6 +9,8 @@ FEDomainComponent::FEDomainComponent(int ntype, FEModel* ps, int nstep)
 	m_nstepID = nstep;
 	m_ntype = ntype;
 	m_sztype = "(not defined)";
+
+	m_itemType = FE_NODE_FLAG;
 }
 
 FEDomainComponent::FEDomainComponent(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep)
@@ -18,11 +20,23 @@ FEDomainComponent::FEDomainComponent(int ntype, FEModel* ps, FEItemListBuilder* 
 	m_nstepID = nstep;
 	m_pItem = pi;
 	m_sztype = "(not defined)";
+
+	m_itemType = FE_NODE_FLAG;
 }
 
 FEDomainComponent::~FEDomainComponent(void)
 {
 	if (m_pItem) delete m_pItem;
+}
+
+unsigned int FEDomainComponent::GetMeshItemType() const
+{
+	return m_itemType;
+}
+
+void FEDomainComponent::SetMeshItemType(unsigned int itemType)
+{
+	m_itemType = itemType;
 }
 
 void FEDomainComponent::Save(OArchive& ar)

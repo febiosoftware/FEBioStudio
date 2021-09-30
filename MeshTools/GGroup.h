@@ -43,7 +43,7 @@ class GNodeSelection;
 class GGroup : public FEItemListBuilder
 {
 public:
-	GGroup(FEModel* ps, int ntype);
+	GGroup(FEModel* ps, int ntype, unsigned int flags);
 	~GGroup(void);
 
 	FENodeList*	BuildNodeList() { return 0; }
@@ -59,7 +59,7 @@ protected:
 class GNodeList : public GGroup
 {
 public:
-	GNodeList(FEModel* ps) : GGroup(ps, GO_NODE){}
+	GNodeList(FEModel* ps) : GGroup(ps, GO_NODE, FE_NODE_FLAG){}
 	GNodeList(FEModel* ps, GNodeSelection* pn);
 
 	vector<GNode*>	GetNodeList();
@@ -76,7 +76,7 @@ public:
 class GFaceList : public GGroup
 {
 public:
-	GFaceList(FEModel* ps) : GGroup(ps, GO_FACE){}
+	GFaceList(FEModel* ps) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG){}
 	GFaceList(FEModel* ps, GFaceSelection* pf);
 
 	vector<GFace*>	GetFaceList();
@@ -94,7 +94,7 @@ public:
 class GEdgeList : public GGroup
 {
 public:
-	GEdgeList(FEModel* ps) : GGroup(ps, GO_EDGE){}
+	GEdgeList(FEModel* ps) : GGroup(ps, GO_EDGE, FE_NODE_FLAG){}
 	GEdgeList(FEModel* ps, GEdgeSelection* pe);
 
 	vector<GEdge*>	GetEdgeList();
@@ -113,7 +113,7 @@ public:
 class GPartList : public GGroup
 {
 public:
-	GPartList(FEModel* ps) : GGroup(ps, GO_PART){}
+	GPartList(FEModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG){}
 	GPartList(FEModel* ps, GPartSelection* pg);
 
 	void Create(GObject* po);

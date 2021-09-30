@@ -29,7 +29,13 @@ public:
 
 	FEModel* GetFEModel() { return m_ps; }
 
+	unsigned int GetMeshItemType() const;
+
+	void SetMeshItemType(unsigned int meshItem);
+
 protected:
+	unsigned int	m_itemType;	// the type of mesh item that can be assigned to this list
+
 	int			m_ntype;	// type of boundary condition
 	FEModel*	m_ps;		// pointer to model
 

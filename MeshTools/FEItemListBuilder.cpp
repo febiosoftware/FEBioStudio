@@ -28,12 +28,14 @@ SOFTWARE.*/
 
 int FEItemListBuilder::m_ncount = 1;
 
-FEItemListBuilder::FEItemListBuilder(int ntype)
+FEItemListBuilder::FEItemListBuilder(int ntype, unsigned int flags)
 {
 	// set the unique group ID
 	m_nID = m_ncount++;
 
 	m_ntype = ntype;
+
+	m_flags = flags;
 }
 
 void FEItemListBuilder::SetID(int nid)
@@ -45,6 +47,11 @@ void FEItemListBuilder::SetID(int nid)
 bool FEItemListBuilder::IsValid() const
 { 
 	return (m_Item.empty() == false); 
+}
+
+bool FEItemListBuilder::Supports(unsigned int itemFlag) const
+{
+	return (m_flags & itemFlag);
 }
 
 void FEItemListBuilder::Save(OArchive& ar)

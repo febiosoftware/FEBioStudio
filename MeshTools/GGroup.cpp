@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "GModel.h"
 #include <GeomLib/GObject.h>
 
-GGroup::GGroup(FEModel* ps, int ntype) : FEItemListBuilder(ntype)
+GGroup::GGroup(FEModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
 {
 	m_ps = ps;
 }
@@ -72,7 +72,7 @@ FENodeList* GNodeList::BuildNodeList()
 }
 
 //-----------------------------------------------------------------------------
-GNodeList::GNodeList(FEModel* ps, GNodeSelection* pg) : GGroup(ps, GO_NODE)
+GNodeList::GNodeList(FEModel* ps, GNodeSelection* pg) : GGroup(ps, GO_NODE, FE_NODE_FLAG)
 {
 	int N = pg->Count();
 	assert(N);
@@ -125,7 +125,7 @@ bool GNodeList::IsValid() const
 // GEdgeList
 //-----------------------------------------------------------------------------
 
-GEdgeList::GEdgeList(FEModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE)
+GEdgeList::GEdgeList(FEModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE, FE_NODE_FLAG)
 {
 	int N = pg->Count();
 	if (N > 0)
@@ -251,7 +251,7 @@ bool GEdgeList::IsValid() const
 // GFaceList
 //-----------------------------------------------------------------------------
 
-GFaceList::GFaceList(FEModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE)
+GFaceList::GFaceList(FEModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG)
 {
 	int N = pg->Count();
 	if (N > 0)
@@ -410,7 +410,7 @@ void GPartList::SetModel(FEModel* mdl)
 	m_model = mdl;
 }
 
-GPartList::GPartList(FEModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART)
+GPartList::GPartList(FEModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG)
 {
 	int N = pg->Count();
 	GPartSelection::Iterator it(pg);

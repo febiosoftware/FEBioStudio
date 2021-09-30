@@ -208,6 +208,15 @@ FEBioProperty& FEBioClass::AddProperty(const std::string& propName, int superCla
 	return m_Props.back();
 }
 
+FEBioProperty* FEBioClass::FindProperty(const std::string& propName)
+{
+	for (FEBioProperty& prop : m_Props)
+	{
+		if (prop.m_name == propName) return &prop;
+	}
+	return nullptr;
+}
+
 QVariant vec3d_to_qvariant(const vec3d& v)
 {
 	QList<QVariant> val;

@@ -26,7 +26,14 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBodyLoad.h"
+#include <MeshTools/FEItemListBuilder.h>
 #include <FSCore/paramunit.h>
+
+FEBodyLoad::FEBodyLoad(int ntype, FEModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep)
+{
+	m_superClassID = FE_BODY_LOAD;
+	SetMeshItemType(FE_ELEM_FLAG);
+}
 
 //-----------------------------------------------------------------------------
 FEConstBodyForce::FEConstBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_CONST_BODY_FORCE, ps, nstep)

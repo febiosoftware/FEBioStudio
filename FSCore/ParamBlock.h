@@ -557,6 +557,8 @@ public:
 	void SetParamVec3d (const char* szparam, const vec3d& v      ) { GetParam(szparam)->SetVec3dValue (v); }
 	void SetParamColor (const char* szparam, const GLColor& c    ) { GetParam(szparam)->SetColorValue (c); }
 	void SetParamString(const char* szparam, const std::string& s) { GetParam(szparam)->SetStringValue(s); }
+	void SetParamVectorInt   (const char* szparam, const std::vector<int   >& a) { GetParam(szparam)->SetVectorIntValue(a); }
+	void SetParamVectorDouble(const char* szparam, const std::vector<double>& a) { GetParam(szparam)->SetVectorDoubleValue(a); }
 
 public:
 	ParamBlock& GetParamBlock() { return m_Param; }

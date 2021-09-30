@@ -186,6 +186,8 @@ namespace FEBio {
 		FEBioProperty& AddProperty(const std::string& propName, int superClassId, int baseClassId = -1, bool required = false, bool isArray = false);
 		FEBioProperty& GetProperty(int i) { return m_Props[i]; }
 
+		FEBioProperty* FindProperty(const std::string& propName);
+
 		void SetSuperClassID(int scid) { m_superClassID = scid; }
 		int GetSuperClassID() const { return m_superClassID; }
 

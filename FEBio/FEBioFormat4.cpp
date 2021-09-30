@@ -1292,10 +1292,7 @@ void FEBioFormat4::ParseBC(FEStep* pstep, XMLTag& tag)
 
 	// create the node set
 	FEItemListBuilder* pg = febio.BuildItemList(aset.cvalue());
-	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
-	char szbuf[256];
-	sprintf(szbuf, "NodalLoad%02d", CountLoads<FENodalLoad>(fem) + 1);
-	pg->SetName(szbuf);
+	if (pg == 0) FileReader()->AddLogEntry("Unknown node set \"%s\". (line %d)", aset.cvalue(), tag.m_nstart_line);
 
 	// get the type attribute
 	const char* sztype = tag.AttributeValue("type");

@@ -42,7 +42,7 @@ class FEPostMesh;
 class FEGroup : public ::FEGroup
 {
 public:
-	FEGroup(FECoreMesh* pm, int ntype) :  ::FEGroup(nullptr, ntype) { m_pm = pm; }
+	FEGroup(FECoreMesh* pm, int ntype) :  ::FEGroup(nullptr, ntype, 0) { m_pm = pm; }
 	virtual ~FEGroup(void) {}
 
 	FECoreMesh* GetMesh() const { return m_pm; }
