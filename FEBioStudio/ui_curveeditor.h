@@ -106,6 +106,7 @@ public:
 		filter->addItem("Boundary Conditions");
 		filter->addItem("Loads");
 		filter->addItem("Contact");
+		filter->addItem("Nonlinear Constraints");
 		filter->addItem("Rigid Constraints");
 		filter->addItem("Rigid Connectors");
 		filter->addItem("Discrete Materials");
@@ -268,6 +269,9 @@ public:
 	QTreeWidgetItem* addTreeItem(QTreeWidgetItem* item, const QString& txt, FELoadCurve* plc = 0, Param* pp = 0)
 	{
 		CCurveEditorItem* child = new CCurveEditorItem(item);
+		if (plc) {
+			QFont f = child->font(0); f.setBold(true); child->setFont(0, f);
+		}
 		child->SetLoadCurve(plc);
 		child->SetParam(pp);
 		child->setText(0, txt);

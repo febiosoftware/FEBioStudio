@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GModel.h>
 #include <sstream>
 
@@ -327,7 +328,18 @@ void CCurveEditor::BuildLoadCurves()
 		}
 	}
 
-	// add constraints
+	// add nonlinear constraints
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		for (int j = 0; j < pstep->Constraints(); ++j)
+		{
+			FEModelConstraint* pmc = pstep->Constraint(j);
+			BuildLoadCurves(t1, pmc);
+		}
+	}
+
+	// add rigid constraints
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		FEStep* pstep = fem.GetStep(i);
@@ -590,8 +602,36 @@ void CCurveEditor::BuildModelTree()
 		}
 	}
 
-	// add constraints
-	if (Filter(FLT_CONSTRAINT))
+	// add nonlinear constraints
+	if (Filter(FLT_NLCONSTRAINT))
+	{
+		t2 = ui->addTreeItem(t1, "Constraints");
+		for (int i = 0; i < fem.Steps(); ++i)
+		{
+			FEStep* pstep = fem.GetStep(i);
+			for (int j = 0; j < pstep->Constraints(); ++j)
+			{
+				FEModelConstraint* pmc = pstep->Constraint(j);
+				int NP = pmc->Parameters();
+				if (NP > 0)
+				{
+					t3 = ui->addTreeItem(t2, QString::fromStdString(pmc->GetName()));
+					for (int n = 0; n < NP; ++n)
+					{
+						Param& p = pmc->GetParam(n);
+						if (p.IsEditable())
+						{
+							FELoadCurve* plc = p.GetLoadCurve();
+							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// add rigid constraints
+	if (Filter(FLT_RIGID_CONSTRAINT))
 	{
 		t2 = ui->addTreeItem(t1, "Rigid Constraints");
 		for (int i = 0; i<fem.Steps(); ++i)
@@ -618,7 +658,7 @@ void CCurveEditor::BuildModelTree()
 	}
 
 	// add rigid connectors
-	if (Filter(FLT_CONNECTOR))
+	if (Filter(FLT_RIGID_CONNECTOR))
 	{
 		t2 = ui->addTreeItem(t1, "Rigid Connectors");
 		for (int i = 0; i<fem.Steps(); ++i)
