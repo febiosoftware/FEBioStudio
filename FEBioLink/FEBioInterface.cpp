@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FEInterface.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <sstream>
 using namespace std;
 
@@ -383,4 +384,15 @@ FEPairedInterface* FEBio::CreatePairedInterface(const char* sztype, FEModel* fem
 		return nullptr;
 	}
 	return pci;
+}
+
+FEModelConstraint* FEBio::CreateNLConstraint(const char* sztype, FEModel* fem)
+{
+	FEModelConstraint* pmc = new FEBioNLConstraint(fem);
+	if (CreateModelComponent(FE_CONSTRAINT, sztype, pmc) == false)
+	{
+		delete pmc;
+		return nullptr;
+	}
+	return pmc;
 }

@@ -2378,7 +2378,7 @@ void FEBioFormat3::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	FEModel& fem = GetFEModel();
 
 	// create a new interface
-	FERigidWallInterface* pci = new FERigidWallInterface(&fem, pstep->GetID());
+	FEModelConstraint* pci = FEBio::CreateNLConstraint("rigid_wall", &fem);
 
 	// set name
 	char szname[256];
@@ -2396,45 +2396,8 @@ void FEBioFormat3::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 		pci->SetItemList(psurf);
 	}
 
-	++tag;
-	do
-	{
-		// read parameters
-		if      (tag == "laugon"   ) { int n; tag.value(n); pci->SetBoolValue(FERigidWallInterface::LAUGON, (n == 0 ? false : true)); }
-		else if (tag == "tolerance") { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::ALTOL, f); }
-		else if (tag == "penalty"  ) { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::PENALTY, f); }
-		else if (tag == "offset")
-		{
-			Param* pp = pci->GetParamPtr(FERigidWallInterface::OFFSET); assert(pp);
-			if (pp)
-			{
-				double v = 0.0;
-				tag.value(v);
-				pp->SetFloatValue(v);
-
-				const char* szlc = tag.AttributeValue("lc", true);
-				if (szlc)
-				{
-					int n = atoi(szlc);
-					if (pp) febio.AddParamCurve(pp, n - 1);
-				}
-			}
-		}
-		if (tag == "plane")
-		{
-			double n[4];
-			tag.value(n, 4);
-			pci->SetFloatValue(FERigidWallInterface::PA, n[0]);
-			pci->SetFloatValue(FERigidWallInterface::PB, n[1]);
-			pci->SetFloatValue(FERigidWallInterface::PC, n[2]);
-			pci->SetFloatValue(FERigidWallInterface::PD, n[3]);
-
-			const char* szlc = tag.AttributeValue("lc", true);
-			if (szlc) febio.AddParamCurve(&pci->GetParam(FERigidWallInterface::OFFSET), atoi(szlc) - 1);
-		}
-		++tag;
-	}
-	while (!tag.isend());
+	// read parameters
+	ReadParameters(*pci, tag);
 
 	// add interface to step
 	pstep->AddComponent(pci);
