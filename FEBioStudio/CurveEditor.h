@@ -63,6 +63,8 @@ private:
 	bool Filter(int n) { if ((m_nflt == FLT_ALL) || (m_nflt == n)) return true; return false; }
 	void AddMaterial(FEMaterial* pm, QTreeWidgetItem* tp);
 	void AddMultiMaterial(FEMaterial* pm, QTreeWidgetItem* tp);
+	void AddParameterList(QTreeWidgetItem* t1, FSObject* po);
+
 	void SetLoadCurve(FELoadCurve* plc);
 	void UpdateLoadCurve();
 

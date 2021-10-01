@@ -393,6 +393,19 @@ void CCurveEditor::BuildLoadCurves()
 	}
 }
 
+void CCurveEditor::AddParameterList(QTreeWidgetItem* t1, FSObject* po)
+{
+	for (int n = 0; n < po->Parameters(); ++n)
+	{
+		Param& param = po->GetParam(n);
+		if (param.IsEditable())
+		{
+			FELoadCurve* plc = param.GetLoadCurve();
+			ui->addTreeItem(t1, QString::fromStdString(param.GetShortName()), plc, &param);
+		}
+	}
+}
+
 void CCurveEditor::BuildModelTree()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
@@ -461,16 +474,8 @@ void CCurveEditor::BuildModelTree()
 				FEBoundaryCondition* pbc = pstep->BC(j);
 				if (pbc)
 				{
-					t3 = ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()));
-					for (int n = 0; n < pbc->Parameters(); ++n)
-					{
-						Param& param = pbc->GetParam(n);
-						if (param.GetParamType() == Param_FLOAT)
-						{
-							Param& p = pbc->GetParam(FEPrescribedDOF::SCALE);
-							ui->addTreeItem(t3, QString::fromStdString(p.GetShortName()), p.GetLoadCurve(), &p);
-						}
-					}
+					QTreeWidgetItem* t3 = ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()));
+					AddParameterList(t3, pbc);
 				}
 			}
 		}
@@ -534,16 +539,7 @@ void CCurveEditor::BuildModelTree()
 						else
 						{
 							t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-							int N = plj->Parameters();
-							for (int k = 0; k < N; ++k)
-							{
-								Param& pk = plj->GetParam(k);
-								if (pk.IsEditable() && (pk.GetParamType() != Param_INT))
-								{
-									FELoadCurve* plc = pk.GetLoadCurve();
-									ui->addTreeItem(t3, pk.GetLongName(), plc, &pk);
-								}
-							}
+							AddParameterList(t3, plj);
 						}
 					}
 				}
@@ -586,15 +582,7 @@ void CCurveEditor::BuildModelTree()
 						if (NP > 0)
 						{
 							t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-							for (int n = 0; n<NP; ++n)
-							{
-								Param& p = pc->GetParam(n);
-								if (p.IsEditable())
-								{
-									FELoadCurve* plc = p.GetLoadCurve();
-									ui->addTreeItem(t3, p.GetLongName(), plc, &p);
-								}
-							}
+							AddParameterList(t3, pc);
 						}
 					}
 				}
@@ -616,15 +604,7 @@ void CCurveEditor::BuildModelTree()
 				if (NP > 0)
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pmc->GetName()));
-					for (int n = 0; n < NP; ++n)
-					{
-						Param& p = pmc->GetParam(n);
-						if (p.IsEditable())
-						{
-							FELoadCurve* plc = p.GetLoadCurve();
-							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
-						}
-					}
+					AddParameterList(t3, pmc);
 				}
 			}
 		}
@@ -640,18 +620,10 @@ void CCurveEditor::BuildModelTree()
 			for (int j = 0; j<pstep->RigidConstraints(); ++j)
 			{
 				FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RigidConstraint(j));
-				if (pc)
+				if (pc && (pc->Parameters() > 0))
 				{
-					for (int n = 0; n < pc->Parameters(); ++n)
-					{
-						Param& p = pc->GetParam(n);
-						if (p.IsEditable())
-						{
-							FELoadCurve* plc = p.GetLoadCurve();
-							t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
-						}
-					}
+					t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
+					AddParameterList(t3, pc);
 				}
 			}
 		}
@@ -667,19 +639,10 @@ void CCurveEditor::BuildModelTree()
 			for (int j = 0; j<pstep->RigidConnectors(); ++j)
 			{
 				FERigidConnector* pc = pstep->RigidConnector(j);
-				int NP = pc->Parameters();
-				if (NP > 0)
+				if (pc && (pc->Parameters() > 0))
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-					for (int n = 0; n<NP; ++n)
-					{
-						Param& p = pc->GetParam(n);
-						if (p.IsEditable())
-						{
-							FELoadCurve* plc = p.GetLoadCurve();
-							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
-						}
-					}
+					AddParameterList(t3, pc);
 				}
 			}
 		}
@@ -692,19 +655,10 @@ void CCurveEditor::BuildModelTree()
 		for (int i = 0; i < model.DiscreteObjects(); ++i)
 		{
 			GDiscreteObject* po = model.DiscreteObject(i);
-			int NP = po->Parameters();
-			if (NP > 0)
+			if (po && (po->Parameters() > 0))
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(po->GetName()));
-				for (int n = 0; n<NP; ++n)
-				{
-					Param& p = po->GetParam(n);
-					if (p.IsEditable())
-					{
-						FELoadCurve* plc = p.GetLoadCurve();
-						ui->addTreeItem(t3, p.GetLongName(), plc, &p);
-					}
-				}
+				AddParameterList(t3, po);
 			}
 
 			GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(po);
@@ -737,16 +691,7 @@ void CCurveEditor::BuildModelTree()
 //-----------------------------------------------------------------------------
 void CCurveEditor::AddMaterial(FEMaterial* pm, QTreeWidgetItem* tp)
 {
-	int n = pm->Parameters();
-	for (int j = 0; j<n; ++j)
-	{
-		Param& p = pm->GetParam(j);
-		if (p.IsEditable())
-		{
-			FELoadCurve* plc = p.GetLoadCurve();
-			ui->addTreeItem(tp, p.GetLongName(), plc, &p);
-		}
-	}
+	AddParameterList(tp, pm);
 	AddMultiMaterial(pm, tp);
 }
 
@@ -765,16 +710,7 @@ void CCurveEditor::AddMultiMaterial(FEMaterial* pm, QTreeWidgetItem* tp)
 				const char* sztype = pmat->GetTypeString();
 				if (sztype) name = QString("%1 [%2]").arg(name).arg(sztype);
 				QTreeWidgetItem* tc = ui->addTreeItem(tp, name);
-				int n = pmat->Parameters();
-				for (int j = 0; j<n; ++j)
-				{
-					Param& p = pmat->GetParam(j);
-					if (p.IsEditable())
-					{
-						FELoadCurve* plc = p.GetLoadCurve();
-						ui->addTreeItem(tc, p.GetLongName(), plc, &p);
-					}
-				}
+				AddParameterList(tc, pmat);
 				AddMultiMaterial(pmat, tc);
 			}
 		}
