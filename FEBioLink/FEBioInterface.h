@@ -36,6 +36,7 @@ class FESurfaceLoad;
 class FEBodyLoad;
 class FEPairedInterface;
 class FEModelConstraint;
+class FERigidConnector;
 class FEModel;
 
 namespace FEBio {
@@ -57,4 +58,5 @@ namespace FEBio {
 	FEBodyLoad*          CreateBodyLoad         (const char* sztype, FEModel* fem);
 	FEPairedInterface*   CreatePairedInterface  (const char* sztype, FEModel* fem);
 	FEModelConstraint*	 CreateNLConstraint     (const char* sztype, FEModel* fem);
+	FERigidConnector*	 CreateRigidConnector   (const char* sztype, FEModel* fem);
 }

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FEInterface.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FEConnector.h>
 #include <sstream>
 using namespace std;
 
@@ -395,4 +396,15 @@ FEModelConstraint* FEBio::CreateNLConstraint(const char* sztype, FEModel* fem)
 		return nullptr;
 	}
 	return pmc;
+}
+
+FERigidConnector* FEBio::CreateRigidConnector(const char* sztype, FEModel* fem)
+{
+	FERigidConnector* pi = new FEBioRigidConnector(fem);
+	if (FEBio::CreateModelComponent(FE_RIGID_CONNECTOR, sztype, pi) == false)
+	{
+		delete pi;
+		return nullptr;
+	}
+	return pi;
 }

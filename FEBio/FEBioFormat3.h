@@ -105,18 +105,12 @@ private:
 
 private:
 	// constraint input functions
-	void ParseVolumeConstraint     (FEStep* pstep, XMLTag& tag);
-	void ParseSymmetryPlane        (FEStep* pstep, XMLTag& tag);
-    void ParseNrmlFldVlctSrf       (FEStep* pstep, XMLTag& tag);
-    void ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag);
-	void ParseInSituStretchConstraint(FEStep* pstep, XMLTag& tag);
-	void ParsePrestrainConstraint    (FEStep* pste, XMLTag& tag);
+	void ParseConstraint(FEStep* pstep, XMLTag& tag);
 
 private:
 	// rigid input functions
 	void ParseRigidConnector(FEStep* pstep, XMLTag& tag);
 	void ParseRigidConstraint(FEStep* pstep, XMLTag& tag);
-	void ParseRigidJoint(FEStep* pstep, XMLTag& tag);
 
 	// helper functions (version 2.5 and up)
 	FEBioModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);

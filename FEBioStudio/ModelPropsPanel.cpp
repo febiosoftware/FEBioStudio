@@ -335,9 +335,9 @@ public:
 
 		// compose toolbox
 		tool = new CToolBox;
-		tool->addTool("Object", obj);
-		tool->addTool("Object", bcobj);
-		tool->addTool("Object", gitem);
+		tool->addTool("Info", obj);
+		tool->addTool("Info", bcobj);
+		tool->addTool("Info", gitem);
 		tool->addTool("Mesh Info", mesh);
 		tool->addTool("Mesh Info", part);
 		tool->addTool("Properties", propStack);
