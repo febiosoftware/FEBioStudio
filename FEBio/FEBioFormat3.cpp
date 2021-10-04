@@ -2188,28 +2188,37 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
                 }
                 else if (bc == "vx")
                 {
-					pic = new FENodalVelocities(&fem, pg, vec3d(val, 0, 0), m_pBCStep->GetID());
+					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					pic->SetParamVec3d("value", vec3d(val, 0, 0));
                 }
                 else if (bc == "vy")
                 {
-					pic = new FENodalVelocities(&fem, pg, vec3d(0, val, 0), m_pBCStep->GetID());
-                }
+					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					pic->SetParamVec3d("value", vec3d(0, val, 0));
+				}
                 else if (bc == "vz")
                 {
-					pic = new FENodalVelocities(&fem, pg, vec3d(0, 0, val), m_pBCStep->GetID());
-                }
+					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					pic->SetParamVec3d("value", vec3d(0, 0, val));
+				}
 				else if (bc == "svx")
                 {
-					pic = new FENodalShellVelocities(&fem, pg, vec3d(val, 0, 0), m_pBCStep->GetID());
-                }
+					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					pic->SetParamVec3d("value", vec3d(val, 0, 0));
+					pic->SetParamBool("shell_bottom", true);
+				}
                 else if (bc == "svy")
                 {
-					pic = new FENodalShellVelocities(&fem, pg, vec3d(0, val, 0), m_pBCStep->GetID());
-                }
+					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					pic->SetParamVec3d("value", vec3d(0, val, 0));
+					pic->SetParamBool("shell_bottom", true);
+				}
                 else if (bc == "svz")
                 {
-					pic = new FENodalShellVelocities(&fem, pg, vec3d(0, 0, val), m_pBCStep->GetID());
-                }
+					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					pic->SetParamVec3d("value", vec3d(0, 0, val));
+					pic->SetParamBool("shell_bottom", true);
+				}
                 else if (bc == "ef")
                 {
 					pic = FEBio::CreateInitialCondition("initial fluid dilatation", &fem);
@@ -2218,13 +2227,18 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
                 {
                     int nsol;
                     sscanf(bc.substr(1).c_str(),"%d",&nsol);
-                    pic = new FEInitConcentration(&fem, pg, nsol-1, val, m_pBCStep->GetID());
+                    pic = FEBio::CreateInitialCondition("initial concentration", &fem);
+					pic->SetItemList(pg);
+					pic->SetParamInt("dof", nsol - 1);
                 }
                 else if (bc.compare(0,1,"d") == 0)
                 {
                     int nsol;
                     sscanf(bc.substr(1).c_str(),"%d",&nsol);
-                    pic = new FEInitShellConcentration(&fem, pg, nsol-1, val, m_pBCStep->GetID());
+					pic = FEBio::CreateInitialCondition("initial concentration", &fem);
+					pic->SetItemList(pg);
+					pic->SetParamInt("dof", nsol - 1);
+					pic->SetParamBool("shell_bottom", true);
 				}
 
 				if (pic)
