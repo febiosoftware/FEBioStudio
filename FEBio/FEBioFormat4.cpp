@@ -1520,181 +1520,47 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
-	char szname[256] = {0};
-
 	++tag;
 	do
 	{
 		if (tag == "ic")
 		{
+			// get the type attribute
 			const char* sztype = tag.AttributeValue("type");
 
+			// get the (optional) name
 			char szbuf[64] = { 0 };
 			const char* szname = tag.AttributeValue("name", true);
-
-			if (strcmp(sztype, "init_dof") == 0)
+			if (szname == nullptr)
 			{
-				const char* szset = tag.AttributeValue("node_set");
-				FEItemListBuilder* pg = febio.BuildItemList(szset);
-				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
-
-				string scaleType("");
-				string scaleValue("");
-				string bc;
-				++tag;
-				do
-				{
-					if (tag == "value")
-					{
-						const char* sztype = tag.AttributeValue("type", true);
-						if (sztype) scaleType = sztype;
-						scaleValue = tag.szvalue();
-					}
-					else if (tag == "dof")
-					{
-						bc = tag.szvalue();
-						if (validate_dof(bc) == false) throw XMLReader::InvalidValue(tag);
-					}
-					else ParseUnknownTag(tag);
-					++tag;
-				} while (!tag.isend());
-
-				double val = 0.0;
-				if (scaleType.empty())
-				{
-					val = atof(scaleValue.c_str());
-				}
-
-				// create a new initial velocity BC
-				FEInitialCondition* pic = 0;
-				char szname[64] = { 0 };
-                if (bc == "T")
-                {
-					pic = new FEInitTemperature(&fem, pg, val, m_pBCStep->GetID());
-					sprintf(szname, "InitialTemperature%02d", CountICs<FEInitTemperature>(fem) + 1);
-                }
-                else if (bc == "p")
-				{
-					pic = new FEInitFluidPressure(&fem, pg, val, m_pBCStep->GetID());
-					sprintf(szname, "InitialFluidPressure%02d", CountICs<FEInitFluidPressure>(fem) + 1);
-
-					// process value value
-					Param* pp = pic->GetParam("value"); assert(pp);
-					if (scaleType == "math")
-					{
-						pp->SetParamType(Param_MATH);
-						pp->SetMathString(scaleValue);
-					}
-					else if (scaleType == "map")
-					{
-						pp->SetParamType(Param_STRING);
-						pp->SetStringValue(scaleValue);
-					}
-				}
-                else if (bc == "q")
-                {
-                    pic = new FEInitShellFluidPressure(&fem, pg, val, m_pBCStep->GetID());
-                    sprintf(szname, "InitialShellFluidPressure%02d", CountICs<FEInitShellFluidPressure>(fem) + 1);
-                }
-                else if (bc == "vx")
-                {
-					pic = new FENodalVelocities(&fem, pg, vec3d(val, 0, 0), m_pBCStep->GetID());
-					sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
-                }
-                else if (bc == "vy")
-                {
-					pic = new FENodalVelocities(&fem, pg, vec3d(0, val, 0), m_pBCStep->GetID());
-					sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
-                }
-                else if (bc == "vz")
-                {
-					pic = new FENodalVelocities(&fem, pg, vec3d(0, 0, val), m_pBCStep->GetID());
-					sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
-                }
-				else if (bc == "svx")
-                {
-					pic = new FENodalShellVelocities(&fem, pg, vec3d(val, 0, 0), m_pBCStep->GetID());
-					sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) + 1);
-                }
-                else if (bc == "svy")
-                {
-					pic = new FENodalShellVelocities(&fem, pg, vec3d(0, val, 0), m_pBCStep->GetID());
-					sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) + 1);
-                }
-                else if (bc == "svz")
-                {
-					pic = new FENodalShellVelocities(&fem, pg, vec3d(0, 0, val), m_pBCStep->GetID());
-					sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) + 1);
-                }
-                else if (bc == "ef")
-                {
-					pic = new FEInitFluidDilatation(&fem, pg, val, m_pBCStep->GetID());
-					sprintf(szname, "InitialFluidDilatation%02d", CountICs<FEInitFluidDilatation>(fem) + 1);
-                }
-                else if (bc.compare(0,1,"c") == 0)
-                {
-                    int nsol;
-                    sscanf(bc.substr(1).c_str(),"%d",&nsol);
-                    pic = new FEInitConcentration(&fem, pg, nsol-1, val, m_pBCStep->GetID());
-                    sprintf(szname, "InitConcentration%02d", CountICs<FEInitConcentration>(fem) + 1);
-                }
-                else if (bc.compare(0,1,"d") == 0)
-                {
-                    int nsol;
-                    sscanf(bc.substr(1).c_str(),"%d",&nsol);
-                    pic = new FEInitShellConcentration(&fem, pg, nsol-1, val, m_pBCStep->GetID());
-                    sprintf(szname, "InitShellConcentration%02d", CountICs<FEInitShellConcentration>(fem) + 1);
-				}
-
-				if (pic)
-				{
-					pic->SetName(szname);
-					m_pBCStep->AddComponent(pic);
-				}
+				sprintf(szbuf, "IC%d", CountICs<FEInitialCondition>(fem) + 1);
+				szname = szbuf;
 			}
-			else if (strcmp(sztype, "velocity") == 0)
+
+			// allocate initial condition
+			FEInitialCondition* pic = FEBio::CreateInitialCondition(sztype, &fem); assert(pic);
+			if (pic == nullptr)
 			{
+				ParseUnknownTag(tag);
+			}
+			else
+			{
+				// get the node set
 				const char* szset = tag.AttributeValue("node_set");
 				FEItemListBuilder* pg = febio.BuildItemList(szset);
-				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
+				if (pg == 0) AddLogEntry("Failed to create nodeset %s for %s", szset, szname);
 
-				vec3d v(0, 0, 0);
-				++tag;
-				do
-				{
-					if (tag == "value") tag.value(v);
-					++tag;
-				} while (!tag.isend());
-				FENodalVelocities* pic = new FENodalVelocities(&fem, pg, v, m_pBCStep->GetID());
-
-				if (szname == nullptr)
-				{
-					sprintf(szbuf, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
-					szname = szbuf;
-				}
-
+				// process initial condition
+				pic->SetItemList(pg);
 				pic->SetName(szname);
 				m_pBCStep->AddComponent(pic);
+				ReadParameters(*pic, tag);
 			}
-			else if (strcmp(sztype, "prestrain") == 0)
-			{
-				FEInitPrestrain* pip = new FEInitPrestrain(&fem);
-
-				if (szname == nullptr)
-				{
-					sprintf(szbuf, "InitPrestrain%d", CountConstraints<FEInitPrestrain>(fem) + 1);
-					szname = szbuf;
-				}
-				pip->SetName(szname);
-				m_pBCStep->AddComponent(pip);
-
-				ReadParameters(*pip, tag);
-			}
-			else throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 		}
 		else ParseUnknownTag(tag);
 		++tag;
-	} while (!tag.isend());
+	} 
+	while (!tag.isend());
 
 	return true;
 }
@@ -1773,75 +1639,6 @@ void FEBioFormat4::ParseContact(FEStep *pstep, XMLTag &tag)
 	}
 
 	// add to the analysis step
-	pstep->AddComponent(pci);
-}
-
-//-----------------------------------------------------------------------------
-void FEBioFormat4::ParseRigidWall(FEStep* pstep, XMLTag& tag)
-{
-	FEBioModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
-
-	// create a new interface
-	FERigidWallInterface* pci = new FERigidWallInterface(&fem, pstep->GetID());
-
-	// set name
-	char szname[256];
-	sprintf(szname, "RigidWall%02d", CountInterfaces<FERigidWallInterface>(fem)+1);
-	const char* szn = tag.AttributeValue("name", true);
-	if (szn) strcpy(szname, szn);
-	pci->SetName(szname);
-
-	// get the surface
-	const char* szsurf = tag.AttributeValue("surface", true);
-	if (szsurf)
-	{
-		FESurface* psurf = febio.BuildFESurface(szsurf);
-		if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
-		pci->SetItemList(psurf);
-	}
-
-	++tag;
-	do
-	{
-		// read parameters
-		if      (tag == "laugon"   ) { int n; tag.value(n); pci->SetBoolValue(FERigidWallInterface::LAUGON, (n == 0 ? false : true)); }
-		else if (tag == "tolerance") { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::ALTOL, f); }
-		else if (tag == "penalty"  ) { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::PENALTY, f); }
-		else if (tag == "offset")
-		{
-			Param* pp = pci->GetParamPtr(FERigidWallInterface::OFFSET); assert(pp);
-			if (pp)
-			{
-				double v = 0.0;
-				tag.value(v);
-				pp->SetFloatValue(v);
-
-				const char* szlc = tag.AttributeValue("lc", true);
-				if (szlc)
-				{
-					int n = atoi(szlc);
-					if (pp) febio.AddParamCurve(pp, n - 1);
-				}
-			}
-		}
-		if (tag == "plane")
-		{
-			double n[4];
-			tag.value(n, 4);
-			pci->SetFloatValue(FERigidWallInterface::PA, n[0]);
-			pci->SetFloatValue(FERigidWallInterface::PB, n[1]);
-			pci->SetFloatValue(FERigidWallInterface::PC, n[2]);
-			pci->SetFloatValue(FERigidWallInterface::PD, n[3]);
-
-			const char* szlc = tag.AttributeValue("lc", true);
-			if (szlc) febio.AddParamCurve(&pci->GetParam(FERigidWallInterface::OFFSET), atoi(szlc) - 1);
-		}
-		++tag;
-	}
-	while (!tag.isend());
-
-	// add interface to step
 	pstep->AddComponent(pci);
 }
 
