@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <FEMLib/FEInterface.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FEConnector.h>
+#include <FEMLib/FEInitialCondition.h>
 #include <sstream>
 using namespace std;
 
@@ -407,4 +408,15 @@ FERigidConnector* FEBio::CreateRigidConnector(const char* sztype, FEModel* fem)
 		return nullptr;
 	}
 	return pi;
+}
+
+FEInitialCondition* FEBio::CreateInitialCondition(const char* sztype, FEModel* fem)
+{
+	FEInitialCondition* pic = new FEBioInitialCondition(fem);
+	if (FEBio::CreateModelComponent(FE_INITIAL_CONDITION, sztype, pic) == false)
+	{
+		delete pic;
+		return nullptr;
+	}
+	return pic;
 }

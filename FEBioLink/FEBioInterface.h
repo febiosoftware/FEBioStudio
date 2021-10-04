@@ -34,6 +34,7 @@ class FEStep;
 class FEBoundaryCondition;
 class FESurfaceLoad;
 class FEBodyLoad;
+class FEInitialCondition;
 class FEPairedInterface;
 class FEModelConstraint;
 class FERigidConnector;
@@ -59,4 +60,5 @@ namespace FEBio {
 	FEPairedInterface*   CreatePairedInterface  (const char* sztype, FEModel* fem);
 	FEModelConstraint*	 CreateNLConstraint     (const char* sztype, FEModel* fem);
 	FERigidConnector*	 CreateRigidConnector   (const char* sztype, FEModel* fem);
+	FEInitialCondition*  CreateInitialCondition (const char* sztype, FEModel* fem);
 }

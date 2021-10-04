@@ -1680,6 +1680,13 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid pressure", &fem);
 		pbc->SetItemList(pg);
 	}
+	else if (bc == "q")
+	{
+//		pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
+		pbc = FEBio::CreateBoundaryCondition("prescribed fluid pressure", &fem);
+		pbc->SetParamBool("shell_bottom", true);
+		pbc->SetItemList(pg);
+	}
 	else if (bc == "vx")
 	{
 //		pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
@@ -1731,23 +1738,26 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	else if (bc == "sx")
 	{
 //		pbc = new FEPrescribedShellDisplacement(&fem, pg, 0, 1, pstep->GetID());
-		pbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", &fem);
+		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 0);
+		pbc->SetParamBool("shell_bottom", true);
 	}
 	else if (bc == "sy")
 	{
 //		pbc = new FEPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
-		pbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", &fem);
+		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 1);
+		pbc->SetParamBool("shell_bottom", true);
 	}
 	else if (bc == "sz")
 	{
 //		pbc = new FEPrescribedShellDisplacement(&fem, pg, 2, 1, pstep->GetID());
-		pbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", &fem);
+		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 2);
+		pbc->SetParamBool("shell_bottom", true);
 	}
 	else if (bc == "u")
 	{
@@ -2108,6 +2118,11 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 
 			char szbuf[64] = { 0 };
 			const char* szname = tag.AttributeValue("name", true);
+			if (szname == nullptr)
+			{
+				sprintf(szbuf, "IC%d", CountICs<FEInitialCondition>(fem));
+				szname = szbuf;
+			}
 
 			if (strcmp(sztype, "init_dof") == 0)
 			{
@@ -2147,13 +2162,11 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				char szname[64] = { 0 };
                 if (bc == "T")
                 {
-					pic = new FEInitTemperature(&fem, pg, val, m_pBCStep->GetID());
-					sprintf(szname, "InitialTemperature%02d", CountICs<FEInitTemperature>(fem) + 1);
+					pic = FEBio::CreateInitialCondition("initial temperature", &fem);
                 }
                 else if (bc == "p")
 				{
-					pic = new FEInitFluidPressure(&fem, pg, val, m_pBCStep->GetID());
-					sprintf(szname, "InitialFluidPressure%02d", CountICs<FEInitFluidPressure>(fem) + 1);
+					pic = FEBio::CreateInitialCondition("initial fluid pressure", &fem);
 
 					// process value value
 					Param* pp = pic->GetParam("value"); assert(pp);
@@ -2170,57 +2183,48 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				}
                 else if (bc == "q")
                 {
-                    pic = new FEInitShellFluidPressure(&fem, pg, val, m_pBCStep->GetID());
-                    sprintf(szname, "InitialShellFluidPressure%02d", CountICs<FEInitShellFluidPressure>(fem) + 1);
+					pic = FEBio::CreateInitialCondition("initial fluid pressure", &fem);
+					pic->SetParamBool("shell_bottom", true);
                 }
                 else if (bc == "vx")
                 {
 					pic = new FENodalVelocities(&fem, pg, vec3d(val, 0, 0), m_pBCStep->GetID());
-					sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
                 }
                 else if (bc == "vy")
                 {
 					pic = new FENodalVelocities(&fem, pg, vec3d(0, val, 0), m_pBCStep->GetID());
-					sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
                 }
                 else if (bc == "vz")
                 {
 					pic = new FENodalVelocities(&fem, pg, vec3d(0, 0, val), m_pBCStep->GetID());
-					sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
                 }
 				else if (bc == "svx")
                 {
 					pic = new FENodalShellVelocities(&fem, pg, vec3d(val, 0, 0), m_pBCStep->GetID());
-					sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) + 1);
                 }
                 else if (bc == "svy")
                 {
 					pic = new FENodalShellVelocities(&fem, pg, vec3d(0, val, 0), m_pBCStep->GetID());
-					sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) + 1);
                 }
                 else if (bc == "svz")
                 {
 					pic = new FENodalShellVelocities(&fem, pg, vec3d(0, 0, val), m_pBCStep->GetID());
-					sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) + 1);
                 }
                 else if (bc == "ef")
                 {
-					pic = new FEInitFluidDilatation(&fem, pg, val, m_pBCStep->GetID());
-					sprintf(szname, "InitialFluidDilatation%02d", CountICs<FEInitFluidDilatation>(fem) + 1);
+					pic = FEBio::CreateInitialCondition("initial fluid dilatation", &fem);
                 }
                 else if (bc.compare(0,1,"c") == 0)
                 {
                     int nsol;
                     sscanf(bc.substr(1).c_str(),"%d",&nsol);
                     pic = new FEInitConcentration(&fem, pg, nsol-1, val, m_pBCStep->GetID());
-                    sprintf(szname, "InitConcentration%02d", CountICs<FEInitConcentration>(fem) + 1);
                 }
                 else if (bc.compare(0,1,"d") == 0)
                 {
                     int nsol;
                     sscanf(bc.substr(1).c_str(),"%d",&nsol);
                     pic = new FEInitShellConcentration(&fem, pg, nsol-1, val, m_pBCStep->GetID());
-                    sprintf(szname, "InitShellConcentration%02d", CountICs<FEInitShellConcentration>(fem) + 1);
 				}
 
 				if (pic)
@@ -2235,36 +2239,16 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				FEItemListBuilder* pg = febio.BuildItemList(szset);
 				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
 
-				vec3d v(0, 0, 0);
-				++tag;
-				do
-				{
-					if (tag == "value") tag.value(v);
-					++tag;
-				} while (!tag.isend());
-				FENodalVelocities* pic = new FENodalVelocities(&fem, pg, v, m_pBCStep->GetID());
-
-				if (szname == nullptr)
-				{
-					sprintf(szbuf, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem) + 1);
-					szname = szbuf;
-				}
-
+				FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 				pic->SetName(szname);
 				m_pBCStep->AddComponent(pic);
+				ReadParameters(*pic, tag);
 			}
 			else if (strcmp(sztype, "prestrain") == 0)
 			{
-				FEInitPrestrain* pip = new FEInitPrestrain(&fem);
-
-				if (szname == nullptr)
-				{
-					sprintf(szbuf, "InitPrestrain%d", CountConstraints<FEInitPrestrain>(fem) + 1);
-					szname = szbuf;
-				}
+				FEInitialCondition* pip = FEBio::CreateInitialCondition("prestrain", &fem);
 				pip->SetName(szname);
 				m_pBCStep->AddComponent(pip);
-
 				ReadParameters(*pip, tag);
 			}
 			else throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
