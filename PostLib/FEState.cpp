@@ -405,12 +405,23 @@ void FEState::AddLine(vec3f a, vec3f b, float data_a, float data_b, int el0, int
 }
 
 //-----------------------------------------------------------------------------
-void FEState::AddPoint(vec3f a, int nlabel, float v)
+void FEState::AddPoint(vec3f a, int nlabel)
 {
 	POINTDATA p;
 	p.m_r = a;
 	p.nlabel = nlabel;
-	p.val = v;
+	m_Point.push_back(p);
+}
+
+//-----------------------------------------------------------------------------
+void FEState::AddPoint(vec3f a, const std::vector<float>& data, int nlabel)
+{
+	POINTDATA p;
+	p.m_r = a;
+	p.nlabel = nlabel;
+	int n = data.size();
+	if (n > MAX_POINT_DATA_FIELDS) n = MAX_POINT_DATA_FIELDS;
+	for (int i = 0; i < n; ++i) p.val[i] = data[i];
 	m_Point.push_back(p);
 }
 
