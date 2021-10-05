@@ -5009,19 +5009,31 @@ Managinig Your Uploads
 \begin_layout Standard
 In order to upload projects to the repository, or to manage projects that
  you have already uploaded, you must first log in to the repository by clicking
- the login button, and entering your febio.org username and password into
- the dialog that appears.
+ the 
+\emph on
+Upload
+\emph default
+ button, and entering your febio.org username and password into the dialog
+ that appears.
 \end_layout
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename Figures/repoLogin.png
-	scale 50
+	filename Figures/upload.png
+	width 0.25in
 
 \end_inset
 
-This button will allow you to log in to the model repository using your
- febio.org username and password, in order to manage your own uploads.
+If you are not currently logged in to the model repository, and you click
+ this button, you will be prompted to log in using your febio.org username
+ and password, in order to manage your own uploads.
+ Once you have logged in, the repository will refresh, and a new category
+ of projects will appear in the project list, called 
+\emph on
+My Projects
+\emph default
+.
+ Any projects owned by your account will now appear in this category.
 \end_layout
 
 \begin_layout Standard
@@ -5038,20 +5050,40 @@ literal "false"
 \end_layout
 
 \begin_layout Standard
-Once you have logged in, the repository will refresh, and a new category
- of projects will appear in the project list, called 
+If you currently have permission to upload projects to the repository, the
+ 
 \emph on
-My Projects
+Upload
 \emph default
-.
- Any projects owned by your account will now appear in this category.
- The 
+ button will open the 
 \emph on
-Login
+Upload/Modfiy Wizard
 \emph default
- button will be replaced with buttons used to manage your uploads.
- These buttons will only be enabled when you have selected a project that
- you own.
+ (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:The-Upload/Modify-Dialog"
+
+\end_inset
+
+) to allow you to upload a new project.
+ If you do not currently have permission to upload projects, the 
+\emph on
+Upload
+\emph default
+ button will open the 
+\emph on
+Upload Permission Request Dialog
+\emph default
+ (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Upload-Permission-Request."
+
+\end_inset
+
+).
+ 
 \end_layout
 
 \begin_layout Standard
@@ -5094,49 +5126,6 @@ reference "subsec:The-Upload/Modify-Dialog"
 \end_inset
 
 ).
-\end_layout
-
-\begin_layout Standard
-\begin_inset Graphics
-	filename Figures/upload.png
-	width 0.25in
-
-\end_inset
-
-If you currently have permission to upload projects to the repository, the
- 
-\emph on
-Upload
-\emph default
- button will open the 
-\emph on
-Upload/Modfiy Wizard
-\emph default
- (see Section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "subsec:The-Upload/Modify-Dialog"
-
-\end_inset
-
-) to allow you to upload a new project.
- If you do not currently have permission to upload projects, the 
-\emph on
-Upload
-\emph default
- button will open the 
-\emph on
-Upload Permission Request Dialog
-\emph default
- (see Section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "subsec:Upload-Permission-Request."
-
-\end_inset
-
-).
- 
 \end_layout
 
 \begin_layout Subsection
@@ -5192,7 +5181,7 @@ name "fig:repo-2"
 The repository is meant to be a means whereby users may share well-built,
  thoroughly-tested models with the FEBio community.
  In order to ensure the quality of uploads to the repository, users are
- not given permission to upload projects by default, but must request them.
+ not given permission to upload projects by default, but must request it.
  If you do not currently have permission to upload, you may request permission
  by logging in to the repository and clicking the 
 \emph on
@@ -5286,6 +5275,46 @@ name "fig:repo-3"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The buttons on the top of this page provide access to various functions:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/save.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Save
+\emph default
+ button allows you to save all of the information in this dialog to a JSON
+ file.
+ This is useful when you are working on creating a large project that may
+ need to be worked on across multiple sessions, or if you are simply worried
+ about losing this information before the upload is complete.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/open.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Open
+\emph default
+ button allows you to load a previously saved JSON file that contains informatio
+n about a project that you are preparing to upload.
+ Please note that all information currently entered in the wizard will be
+ cleared before the wizard loads the information in the file.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -5629,6 +5658,27 @@ Rename
  button allows you to rename the currently selected file or folder.
  You can also rename a file or folder by double-clicking on the desired
  item.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/replaceFile.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Replace File
+\emph default
+ button only appears when you are modifying an existing project.
+ It will allow you to replace a currently selected file that is already
+ on the repository with another one on your machine.
+ It will copy the name, description, and tags from the currently selected
+ file to the newly added file.
+ The primary purpose of this button is to allow you to easily replace an
+ existing file with a more up-to-date version of that file.
+ 
 \end_layout
 
 \begin_layout Standard

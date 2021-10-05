@@ -2869,12 +2869,14 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 		if (febioFileVersion == 0)
 		{
 			FEBioExport25 feb(doc->GetProject());
+			feb.SetExportSelectionsFlag(true);
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}
 		else if (febioFileVersion == 1)
 		{
 			FEBioExport3 feb(doc->GetProject());
+			feb.SetExportSelectionsFlag(true);
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}

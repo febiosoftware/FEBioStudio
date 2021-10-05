@@ -76,6 +76,8 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 	}
 
 	// map faces to their element
+    // and mark those elements
+    pm->TagAllElements(-1);
 	std::map<int, vector<int>> efm;
 	for (int i = 0; i<ne1; ++i)
 	{
@@ -84,6 +86,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 		int iel = face.m_elem[0].eid;
 		// store faces that share this element
 		efm[iel].push_back(i);
+        pm->Element(iel).m_ntag = 1;
 	}
 
 	// mark all nodes on the selected faces
@@ -98,14 +101,16 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 	std::map<int, vector<int>> fne;
 	for (int i = 0; i<pm->Elements(); ++i) {
 		FEElement el = pm->Element(i);
-		vector<int> shared_nodes;
-		shared_nodes.reserve(el.Nodes());
-		for (int j = 0; j<el.Nodes(); ++j) {
-			if (pm->Node(el.m_node[j]).m_ntag == 1)
-				shared_nodes.push_back(el.m_node[j]);
-		}
-		if (shared_nodes.size() > 0)
-			fne[i] = shared_nodes;
+        if (pm->Element(i).m_ntag == -1) {
+            vector<int> shared_nodes;
+            shared_nodes.reserve(el.Nodes());
+            for (int j = 0; j<el.Nodes(); ++j) {
+                if (pm->Node(el.m_node[j]).m_ntag == 1)
+                    shared_nodes.push_back(el.m_node[j]);
+            }
+            if (shared_nodes.size() > 0)
+                fne[i] = shared_nodes;
+        }
 	}
 
 	// create a domain from all selected elements
