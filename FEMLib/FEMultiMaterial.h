@@ -319,7 +319,7 @@ class FEReactiveViscoelasticMaterial : public FEMaterial
 {
 public:
     // material parameters
-    enum { MP_KNTCS, MP_TRGGR };
+    enum { MP_KNTCS, MP_TRGGR, MP_WMIN, MP_EMIN };
     
 public:
     // constructor
@@ -347,8 +347,8 @@ class FEReactiveViscoelasticMaterialUC : public FEMaterial
 {
 public:
     // material parameters
-    enum { MP_KNTCS, MP_TRGGR };
-    
+    enum { MP_KNTCS, MP_TRGGR, MP_WMIN, MP_EMIN };
+
 public:
     // constructor
     FEReactiveViscoelasticMaterialUC();

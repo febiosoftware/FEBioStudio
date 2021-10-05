@@ -344,7 +344,9 @@ FEReactiveViscoelasticMaterial::FEReactiveViscoelasticMaterial() : FEMaterial(FE
     AddScienceParam(1, UNIT_DENSITY, "density", "density");
     AddIntParam(1, "kinetics", "kinetics"); // "bond kinetics type (1 or 2)");
     AddIntParam(0, "trigger" , "trigger" ); // "bond breaking trigger (0=any, 1=distortion, or 2=dilatation)");
-    
+    AddScienceParam(0, UNIT_NONE, "wmin", "wmin");
+    AddScienceParam(0, UNIT_NONE, "emin", "emin");
+
     // Add elastic material component
     AddProperty("elastic", FE_MAT_ELASTIC);
     
@@ -368,6 +370,8 @@ FEReactiveViscoelasticMaterialUC::FEReactiveViscoelasticMaterialUC() : FEMateria
     AddIntParam(0, "trigger" , "trigger" ); // "bond breaking trigger (0=any, 1=distortion, or 2=dilatation)");
     AddScienceParam(1, UNIT_DENSITY, "density", "density");
     AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus" );
+    AddScienceParam(0, UNIT_NONE, "wmin", "wmin");
+    AddScienceParam(0, UNIT_NONE, "emin", "emin");
 
     // Add elastic material component
     AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
