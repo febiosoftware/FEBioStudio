@@ -56,3 +56,29 @@ public:
 	void SetPointCurve(FELoadCurve& lc);
 	DECLARE_REGISTERED(FE1DPointFunction);
 };
+
+//===================================================================
+class FEBioDiscreteMaterial : public FEDiscreteMaterial
+{
+public:
+	FEBioDiscreteMaterial();
+	~FEBioDiscreteMaterial();
+
+	void SetTypeString(const char* sz) override;
+	const char* GetTypeString() override;
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+	void SetFEBioMaterial(FEBio::FEBioClass* febClass);
+	FEBio::FEBioClass* GetFEBioMaterial();
+
+	bool UpdateData(bool bsave) override;
+
+	DECLARE_REGISTERED(FEBioDiscreteMaterial);
+
+private:
+	std::string	m_stype;
+
+	FEBio::FEBioClass* m_febClass;	// pointer to FEBio interface class.
+};

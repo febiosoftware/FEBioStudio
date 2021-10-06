@@ -35,7 +35,9 @@ SOFTWARE.*/
 #include <FEMLib/FEInterface.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FEConnector.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
+#include <FEMLib/FEDiscreteMaterial.h>
 #include <sstream>
 using namespace std;
 
@@ -333,6 +335,17 @@ void FEBio::UpdateFEBioMaterial(FEBioMaterial* pm)
 	febClass->UpdateData();
 }
 
+void FEBio::UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm)
+{
+	FEBioClass* febClass = pm->GetFEBioMaterial();
+
+	// first map the parameters to the FEBioClass
+	map_parameters(febClass, pm);
+
+	// then write the parameters to the FEBio class
+	febClass->UpdateData();
+}
+
 FEMaterial* FEBio::CreateMaterial(const char* sztype, FEModel* fem)
 {
 	FEBioMaterial* pmat = new FEBioMaterial;
@@ -353,6 +366,17 @@ FEBoundaryCondition* FEBio::CreateBoundaryCondition(const char* sztype, FEModel*
 		return nullptr;
 	}
 	return pbc;
+}
+
+FENodalLoad* FEBio::CreateNodalLoad(const char* sztype, FEModel* fem)
+{
+	FEBioNodalLoad* pnl = new FEBioNodalLoad(fem);
+	if (FEBio::CreateModelComponent(FE_NODAL_LOAD, sztype, pnl) == false)
+	{
+		delete pnl;
+		return nullptr;
+	}
+	return pnl;
 }
 
 FESurfaceLoad* FEBio::CreateSurfaceLoad(const char* sztype, FEModel* fem)
@@ -397,6 +421,17 @@ FEModelConstraint* FEBio::CreateNLConstraint(const char* sztype, FEModel* fem)
 		return nullptr;
 	}
 	return pmc;
+}
+
+FERigidConstraint* FEBio::CreateRigidConstraint(const char* sztype, FEModel* fem)
+{
+	FERigidConstraint* pi = new FEBioRigidConstraint(fem);
+	if (FEBio::CreateModelComponent(FE_RIGID_CONSTRAINT, sztype, pi) == false)
+	{
+		delete pi;
+		return nullptr;
+	}
+	return pi;
 }
 
 FERigidConnector* FEBio::CreateRigidConnector(const char* sztype, FEModel* fem)

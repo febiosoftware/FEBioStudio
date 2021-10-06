@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <FSCore/ParamBlock.h>
 #include <FSCore/paramunit.h>
+#include <FEBioLink/FEBioInterface.h>
 
 //===================================================================
 FEDiscreteMaterial::FEDiscreteMaterial(int ntype) : FEMaterial(ntype)
@@ -109,4 +110,78 @@ FELoadCurve* FE1DPointFunction::GetPointCurve()
 void FE1DPointFunction::SetPointCurve(FELoadCurve& lc)
 {
 	GetParam(0).SetLoadCurve(lc);
+}
+
+//===================================================================
+FEBioDiscreteMaterial::FEBioDiscreteMaterial() : FEDiscreteMaterial(FE_DISCRETE_FEBIO_MATERIAL)
+{
+
+}
+
+FEBioDiscreteMaterial::~FEBioDiscreteMaterial()
+{
+
+}
+
+void FEBioDiscreteMaterial::SetTypeString(const char* sz)
+{
+	m_stype = sz;
+}
+
+const char* FEBioDiscreteMaterial::GetTypeString()
+{
+	return m_stype.c_str();
+}
+
+void FEBioDiscreteMaterial::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEDiscreteMaterial::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioDiscreteMaterial::Load(IArchive& ar)
+{
+	TRACE("FEBioDiscreteMaterial::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEDiscreteMaterial::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+	// We call this to make sure that the FEBio class has the same parameters
+	UpdateData(true);
+}
+
+void FEBioDiscreteMaterial::SetFEBioMaterial(FEBio::FEBioClass* febClass)
+{
+	m_febClass = febClass;
+}
+
+FEBio::FEBioClass* FEBioDiscreteMaterial::GetFEBioMaterial()
+{
+	return m_febClass;
+}
+
+bool FEBioDiscreteMaterial::UpdateData(bool bsave)
+{
+	if (m_febClass)
+	{
+		if (bsave) FEBio::UpdateFEBioDiscreteMaterial(this);
+	}
+	return false;
 }

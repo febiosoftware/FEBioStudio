@@ -1392,7 +1392,7 @@ void FEBioFormat4::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	FEItemListBuilder* pg = febio.BuildItemList(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
 	char szbuf[256];
-	sprintf(szbuf, "ForceNodeset%02d", CountLoads<FENodalDOFLoad>(fem)+1);
+	sprintf(szbuf, "NodalLoadSet%02d", CountLoads<FENodalLoad>(fem)+1);
 	pg->SetName(szbuf);
 
 	// get the (optional) name
@@ -1401,46 +1401,24 @@ void FEBioFormat4::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	if (szname == nullptr)
 	{
 		char szname[256];
-		sprintf(szname, "ForceNodeset%02d", CountLoads<FENodalDOFLoad>(fem) + 1);
+		sprintf(szname, "NodalLoad%02d", CountLoads<FENodalLoad>(fem) + 1);
 		name = szname;
 	}
 	else name = szname;
 
+	const char* sztype = tag.AttributeValue("type");
+
 	// create the nodal load
-	FENodalDOFLoad* pbc = new FENodalDOFLoad(&fem, pg, 0, 1, pstep->GetID());
-	pbc->SetName(name);
-	pstep->AddComponent(pbc);
-
-	// assign nodes to node sets
-	++tag;
-	do
+	FENodalLoad* pnl = FEBio::CreateNodalLoad(sztype, &fem);
+	if (pnl == nullptr)
 	{
-		if (tag == "scale")
-		{
-			ReadParam(*pbc, tag);
-		}
-		else if (tag == "dof")
-		{
-			// read the bc attribute
-			string abc = tag.szvalue();
-			int bc = 0;
-			if      (abc == "x") bc = 0;
-			else if (abc == "y") bc = 1;
-			else if (abc == "z") bc = 2;
-			else if (abc == "p") bc = 3;
-            else if (abc.compare(0,1,"c") == 0) {
-                int isol = 0;
-                sscanf(abc.substr(1).c_str(),"%d",&isol);
-                bc = isol+3;
-            }
-			else throw XMLReader::InvalidValue(tag);
-
-			pbc->SetDOF(bc);
-		}
-		else ParseUnknownTag(tag);
-		++tag;
+		ParseUnknownAttribute(tag, "type");
+		return;
 	}
-	while (!tag.isend());
+	pnl->SetName(name);
+	pstep->AddComponent(pnl);
+
+	ReadParameters(*pnl, tag);
 }
 
 //-----------------------------------------------------------------------------
@@ -1657,10 +1635,11 @@ void FEBioFormat4::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 	const char* sztype = tag.AttributeValue("type");
 
 	// allocate class
-	FEBioRigidConstraint* pi = new FEBioRigidConstraint(&fem, pstep->GetID());
-	if (FEBio::CreateModelComponent(FE_RIGID_CONSTRAINT, sztype, pi) == false)
+	FERigidConstraint* pi = FEBio::CreateRigidConstraint(sztype, &fem);
+	if (pi == nullptr)
 	{
-		throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+		ParseUnknownAttribute(tag, "type");
+		return;
 	}
 	pi->SetName(name);
 	pstep->AddRC(pi);
@@ -1700,10 +1679,11 @@ void FEBioFormat4::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 	const char* sztype = tag.AttributeValue("type");
 
 	// allocate class
-	FEBioRigidConnector* pi = new FEBioRigidConnector(&fem, pstep->GetID());
-	if (FEBio::CreateModelComponent(FE_RIGID_CONNECTOR, sztype, pi) == false)
+	FERigidConnector* pi = FEBio::CreateRigidConnector(sztype, &fem);
+	if (pi == nullptr)
 	{
-		throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+		ParseUnknownAttribute(tag, "type");
+		return;
 	}
 	pstep->AddRigidConnector(pi);
 
@@ -1801,79 +1781,20 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 		{
 			const char* sztype = tag.AttributeValue("type");
 			const char* szname = tag.AttributeValue("name");
-			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
+
+			FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
+			if (FEBio::CreateModelComponent(FE_MATERIAL, sztype, pdm) == false)
 			{
-				FELinearSpringMaterial* mat = new FELinearSpringMaterial();
-				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
-				pg->SetMaterial(mat);
-				pg->SetName(szname);
-				fem.GetModel().AddDiscreteObject(pg);
-				++tag;
-				do
-				{
-					if (tag == "E")
-					{
-						double E;
-						tag.value(E);
-						mat->SetSpringConstant(E);
-					}
-					else ParseUnknownTag(tag);
-					++tag;
-				} while (!tag.isend());
-				set.push_back(pg);
+				delete pdm;
+				throw XMLReader::InvalidTag(tag);
 			}
-			else if (strcmp(sztype, "nonlinear spring") == 0)
-			{
-				FENonLinearSpringMaterial* mat = new FENonLinearSpringMaterial();
-				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
-				pg->SetMaterial(mat);
-				pg->SetName(szname);
-				fem.GetModel().AddDiscreteObject(pg);
-				++tag;
-				do
-				{
-					if (tag == "force")
-					{
-						double F;
-						tag.value(F);
-						int lc = tag.AttributeValue<int>("lc", -1);
-						// TODO: assign the force to the material
-					}
-					else ParseUnknownTag(tag);
-					++tag;
-				} while (!tag.isend());
-				set.push_back(pg);
-			}
-			else if (strcmp(sztype, "Hill") == 0)
-			{
-				FEHillContractileMaterial* mat = new FEHillContractileMaterial();
-				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
-				pg->SetMaterial(mat);
-				pg->SetName(szname);
-				fem.GetModel().AddDiscreteObject(pg);
-				++tag;
-				do
-				{
-					if (ReadParam(*mat, tag) == false)
-					{
-						FEMaterialProperty* prop = mat->FindProperty(tag.m_sztag);
-						FE1DPointFunction* pf1d = dynamic_cast<FE1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
-						if (pf1d)
-						{
-							FELoadCurve lc;
-							ParseLoadCurve(tag, lc);
-							pf1d->SetPointCurve(lc);
-						}
-						else ParseUnknownTag(tag);
-					}
-					++tag;
-				} while (!tag.isend());
-				set.push_back(pg);
-			}
-			else
-			{
-				assert(false);
-			}
+
+			GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
+			pg->SetMaterial(pdm);
+			pg->SetName(szname);
+			fem.GetModel().AddDiscreteObject(pg);
+
+			ReadParameters(*pdm, tag);
 		}
 		else if (tag == "discrete")
 		{
@@ -1939,18 +1860,21 @@ void FEBioFormat4::ParseNLConstraint(FEStep* pstep, XMLTag& tag)
 	}
 
 	// find the surface
-	const char* szsurf = tag.AttributeValue("surface");
-	FESurface* psurf = febio.BuildFESurface(szsurf);
-	if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
+	FESurface* psurf = nullptr;
+	const char* szsurf = tag.AttributeValue("surface", true);
+	if (szsurf)
+	{
+		febio.BuildFESurface(szsurf);
+		if (psurf == 0) AddLogEntry("Failed creating surface %s", szsurf);
+	}
 
 	// get the type
 	const char* sztype = tag.AttributeValue("type");
 
 	// create a new constraint
-	FEBioNLConstraint* pi = new FEBioNLConstraint(&fem);
-	if (FEBio::CreateModelComponent(FE_CONSTRAINT, sztype, pi) == false)
+	FEModelConstraint* pi = FEBio::CreateNLConstraint(sztype, &fem);
+	if (pi == nullptr)
 	{
-		delete pi;
 		ParseUnknownTag(tag);
 		return;
 	}

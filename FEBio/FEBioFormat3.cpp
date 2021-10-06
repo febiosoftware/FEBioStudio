@@ -2589,9 +2589,15 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			const char* szname = tag.AttributeValue("name");
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
-				FELinearSpringMaterial* mat = new FELinearSpringMaterial();
+				FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
+				if (FEBio::CreateModelComponent(FE_MATERIAL, sztype, pdm) == false)
+				{
+					delete pdm;
+					throw XMLReader::InvalidTag(tag);
+				}
+
 				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
-				pg->SetMaterial(mat);
+				pg->SetMaterial(pdm);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
 				++tag;
@@ -2601,7 +2607,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 					{
 						double E;
 						tag.value(E);
-						mat->SetSpringConstant(E);
+						pdm->SetParamFloat("E", E);
 					}
 					else ParseUnknownTag(tag);
 					++tag;
@@ -2610,9 +2616,15 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			}
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
-				FENonLinearSpringMaterial* mat = new FENonLinearSpringMaterial();
+				FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
+				if (FEBio::CreateModelComponent(FE_MATERIAL, sztype, pdm) == false)
+				{
+					delete pdm;
+					throw XMLReader::InvalidTag(tag);
+				}
+
 				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
-				pg->SetMaterial(mat);
+				pg->SetMaterial(pdm);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
 				++tag;
@@ -2632,17 +2644,23 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			}
 			else if (strcmp(sztype, "Hill") == 0)
 			{
-				FEHillContractileMaterial* mat = new FEHillContractileMaterial();
+				FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
+				if (FEBio::CreateModelComponent(FE_MATERIAL, sztype, pdm) == false)
+				{
+					delete pdm;
+					throw XMLReader::InvalidTag(tag);
+				}
+
 				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
-				pg->SetMaterial(mat);
+				pg->SetMaterial(pdm);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
 				++tag;
 				do
 				{
-					if (ReadParam(*mat, tag) == false)
+					if (ReadParam(*pdm, tag) == false)
 					{
-						FEMaterialProperty* prop = mat->FindProperty(tag.m_sztag);
+						FEMaterialProperty* prop = pdm->FindProperty(tag.m_sztag);
 						FE1DPointFunction* pf1d = dynamic_cast<FE1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
 						if (pf1d)
 						{

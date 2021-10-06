@@ -30,13 +30,16 @@ SOFTWARE.*/
 class FEModelComponent;
 class FEMaterial;
 class FEBioMaterial;
+class FEBioDiscreteMaterial;
 class FEStep;
 class FEBoundaryCondition;
+class FENodalLoad;
 class FESurfaceLoad;
 class FEBodyLoad;
 class FEInitialCondition;
 class FEPairedInterface;
 class FEModelConstraint;
+class FERigidConstraint;
 class FERigidConnector;
 class FEModel;
 
@@ -51,14 +54,17 @@ namespace FEBio {
 	void CreateStep(const char* sztype, FEStep* po);
 
 	void UpdateFEBioMaterial(FEBioMaterial* pm);
+	void UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm);
 
 	// helper functions for creating FEBio classes.
 	FEMaterial*          CreateMaterial         (const char* sztype, FEModel* fem);
 	FEBoundaryCondition* CreateBoundaryCondition(const char* sztype, FEModel* fem);
+	FENodalLoad*         CreateNodalLoad        (const char* sztype, FEModel* fem);
 	FESurfaceLoad*       CreateSurfaceLoad      (const char* sztype, FEModel* fem);
 	FEBodyLoad*          CreateBodyLoad         (const char* sztype, FEModel* fem);
 	FEPairedInterface*   CreatePairedInterface  (const char* sztype, FEModel* fem);
 	FEModelConstraint*	 CreateNLConstraint     (const char* sztype, FEModel* fem);
+	FERigidConstraint*	 CreateRigidConstraint  (const char* sztype, FEModel* fem);
 	FERigidConnector*	 CreateRigidConnector   (const char* sztype, FEModel* fem);
 	FEInitialCondition*  CreateInitialCondition (const char* sztype, FEModel* fem);
 }
