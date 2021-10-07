@@ -49,6 +49,9 @@ void drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColo
 void drawArc(const vec3d& c, double R, double w0, double w1, int N);
 void drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N);
 
+void drawSphere(const vec3d& r0, float R, const vec3d& n0, float tex = 0.f);
+void drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0 = 0.f, float t1 = 1.f);
+
 void quad4(vec3d r[4], vec3d n[4]);
 void quad4(vec3d r[4], vec3f n[4], float t[4]);
 void quad8(vec3d r[8], vec3f n[8], float t[8]);

@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
+#include <GLLib/glx.h>
+#include <sstream>
 using namespace Post;
 
 GLProbe::GLProbe(CGLModel* fem) : CGLPlot(fem)
@@ -213,4 +215,63 @@ double GLProbe::DataValue(int nfield, int nstep)
 		fem.EvaluateElement(nelem, nstep, nfield, data, val);
 	}
 	return val;
+}
+
+//==============================================================================
+
+static int n = 1;
+GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
+{
+	AddIntParam(0, "start point");
+	AddIntParam(0, "end point");
+	AddDoubleParam(5.0, "size");
+	AddColorParam(GLColor(255, 0, 0), "color");
+
+	std::stringstream ss;
+	ss << "MusclePath" << n++;
+	SetName(ss.str());
+}
+
+void GLMusclePath::Render(CGLContext& rc)
+{
+	CGLModel* glm = GetModel();
+	FEPostMesh& mesh = *glm->GetActiveMesh();
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+	double R = GetFloatValue(SIZE);
+	GLColor c = GetColorValue(COLOR);
+	
+	int NN = mesh.Nodes();
+	if ((n0 < 0) || (n0 >= NN)) return;
+	if ((n1 < 0) || (n1 >= NN)) return;
+
+	vec3d r0 = mesh.NodePosition(n0);
+	vec3d r1 = mesh.NodePosition(n1);
+	vec3d t = r1 - r0; t.Normalize();
+
+	glColor3ub(c.r, c.g, c.b);
+	glx::drawSphere(r0, 1.5*R, vec3d(0, 0, 1));
+	glx::drawSphere(r1, 1.5*R, vec3d(0, 0, 1));
+	glx::drawSmoothPath(r0, r1, R, t, t);
+}
+
+void GLMusclePath::Update()
+{
+
+}
+
+void GLMusclePath::Update(int ntime, float dt, bool breset)
+{
+
+}
+
+bool GLMusclePath::UpdateData(bool bsave)
+{
+	return false;
+}
+
+double GLMusclePath::DataValue(int field, int step)
+{
+	return (double) step;
 }
