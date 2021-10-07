@@ -669,6 +669,7 @@ CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLPlot(po)
 	AddIntParam(0, "color mode")->SetEnumNames("solid\0color map\0");
 	AddColorParam(GLColor::White(), "solid color");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddChoiceParam(0, "Data Field");
 
 	m_pointSize = 8.f;
 	m_renderMode = 0;
@@ -677,6 +678,35 @@ CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLPlot(po)
 	m_colorMap = 0;
 
 	UpdateData(false);
+}
+
+void CGLPointPlot::AddDataField(const std::string& dataName)
+{
+	m_dataNames.push_back(dataName);
+
+	int nsize = 0;
+	for (int i = 0; i < m_dataNames.size(); ++i)
+	{
+		nsize += m_dataNames[i].length();
+		nsize += 1; // null character
+	}
+	nsize++; // final null character
+
+	char* buf = new char[nsize];
+	char* c = buf;
+	for (int i = 0; i < m_dataNames.size(); ++i)
+	{
+		string& s = m_dataNames[i];
+		strcpy(c, s.c_str());
+		c += s.length();
+		*c++ = 0;
+	}
+	*c++ = 0;
+
+	Param& p = GetParam(DATA_FIELD);
+	p.CopyEnumNames(buf);
+
+	delete buf;
 }
 
 //-----------------------------------------------------------------------------
@@ -739,13 +769,16 @@ void CGLPointPlot::RenderPoints()
 	int ns = fem.CurrentTimeIndex();
 	FEState& s = *fem.GetState(ns);
 
+	int ndata = GetIntValue(DATA_FIELD);
+	if (ndata < 0) ndata = 0;
+
 	// evaluate the range
 	float fmin = 1e99, fmax = -1e99;
 	int NP = s.Points();
 	for (int i = 0; i < NP; ++i)
 	{
 		POINTDATA& p = s.Point(i);
-		float v = p.val;
+		float v = p.val[ndata];
 
 		if (v < fmin) fmin = v;
 		if (v > fmax) fmax = v;
@@ -773,7 +806,7 @@ void CGLPointPlot::RenderPoints()
 
 				if (m_colorMode == 1)
 				{
-					GLColor c = map.map(p.val);
+					GLColor c = map.map(p.val[ndata]);
 					glColor3ub(c.r, c.g, c.b);
 				}
 
@@ -792,13 +825,24 @@ void CGLPointPlot::RenderSpheres()
 	int ns = fem.CurrentTimeIndex();
 	FEState& s = *fem.GetState(ns);
 
+	int ndata = 0;
+	int colorMode = m_colorMode;
+	if (colorMode == 1)
+	{
+		if (m_dataNames.empty()) colorMode = 0;
+		else ndata = GetIntValue(DATA_FIELD);
+		if (ndata < 0) {
+			colorMode = 0; ndata = 0;
+		}
+	}
+
 	// evaluate the range
 	float fmin = 1e99, fmax = -1e99;
 	int NP = s.Points();
 	for (int i = 0; i < NP; ++i)
 	{
 		POINTDATA& p = s.Point(i);
-		float v = p.val;
+		float v = p.val[ndata];
 
 		if (v < fmin) fmin = v;
 		if (v > fmax) fmax = v;
@@ -819,7 +863,7 @@ void CGLPointPlot::RenderSpheres()
 
 		if (m_colorMode == 1)
 		{
-			GLColor c = map.map(p.val);
+			GLColor c = map.map(p.val[ndata]);
 			glColor3ub(c.r, c.g, c.b);
 		}
 
