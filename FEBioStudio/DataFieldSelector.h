@@ -70,6 +70,14 @@ public:
 	void BuildMenu(QMenu* menu) override;
 };
 
+// Derived class that selects Time or Steps
+class CMusclePathDataSelector : public CDataSelector
+{
+public:
+	CMusclePathDataSelector();
+	void BuildMenu(QMenu* menu) override;
+};
+
 // Derived class that builds the menu of a CDataSelectorButton from the model's data
 class CModelDataSelector : public CDataSelector, public Post::FEModelDependant
 {

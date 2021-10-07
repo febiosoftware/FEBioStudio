@@ -312,6 +312,22 @@ void CMainWindow::on_actionAddProbe_triggered()
 	RedrawGL();
 }
 
+void CMainWindow::on_actionMusclePath_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLMusclePath* musclePath = new Post::GLMusclePath(glm);
+	glm->AddPlot(musclePath);
+
+	UpdatePostPanel(true, musclePath);
+	RedrawGL();
+}
+
 void CMainWindow::on_actionIsosurfacePlot_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();

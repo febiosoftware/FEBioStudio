@@ -394,6 +394,7 @@ private:
 
 namespace Post {
 	class GLProbe;
+	class GLMusclePath;
 }
 
 class CModelGraphWindow : public CGraphWindow
@@ -417,6 +418,7 @@ private:
 	void addSelectedElems();
 	void addObjectData(int n);
 	void addProbeData(Post::GLProbe* probe);
+	void addMusclePathData(Post::GLMusclePath* musclePath);
 
 	CPlotData* nextData();
 

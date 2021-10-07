@@ -71,6 +71,11 @@ void CTimeStepSelector::BuildMenu(QMenu* menu)
 	QAction* stepAction = menu->addAction("Steps"); stepAction->setData(1);
 }
 
+CMusclePathDataSelector::CMusclePathDataSelector() {}
+void CMusclePathDataSelector::BuildMenu(QMenu* menu)
+{
+	QAction* lengthAction = menu->addAction("Length"); lengthAction->setData(1);
+}
 
 CModelDataSelector::CModelDataSelector(FEPostModel* fem, Data_Tensor_Type ntype, bool btvec)
 {

@@ -63,4 +63,25 @@ private:
 	double		m_lastdt;
 	int			m_elem;
 };
+
+//===================================================================
+class GLMusclePath : public CGLPlot
+{
+	enum { START_POINT, END_POINT, SIZE, COLOR };
+
+public:
+	GLMusclePath(CGLModel* fem);
+
+	void Render(CGLContext& rc) override;
+
+	void Update() override;
+	void Update(int ntime, float dt, bool breset) override;
+
+	bool UpdateData(bool bsave = true) override;
+
+	double DataValue(int field, int step);
+
+private:
+};
+
 }
