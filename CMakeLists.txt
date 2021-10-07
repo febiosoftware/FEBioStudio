@@ -319,6 +319,7 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
+include_directories(${GLEW_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIR})
 
 if(USE_ITK)

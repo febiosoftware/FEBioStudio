@@ -46,11 +46,13 @@ private:
 	void Init();
 	void InitTexture();
 	void InitShaders();
+	void ReloadTexture();
 
 private:
 	unsigned int m_texID;
 	unsigned int m_prgID;
 	bool	m_vrInit;
+	bool	m_vrReset;
 };
 
 }
