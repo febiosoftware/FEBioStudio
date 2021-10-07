@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/VolRender.h>
+#include <PostLib/VolumeRender2.h>
 #include <PostLib/MarchingCubes.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
@@ -239,7 +240,8 @@ void CMainWindow::on_actionVolumeRender_triggered()
 		return;
 	}
 
-	Post::CVolRender* vr = new Post::CVolRender(img);
+//	Post::CVolRender* vr = new Post::CVolRender(img);
+	Post::CVolumeRender2* vr = new Post::CVolumeRender2(img);
 	vr->Create();
 	img->AddImageRenderer(vr);
 
