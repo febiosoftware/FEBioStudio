@@ -1757,10 +1757,15 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_3DIMAGE:
+        menu.addAction("Apply Filters", this, SLOT(OnApplyImageFilters()));
 		menu.addAction("Add Mean Image Fitler", this, SLOT(OnAddMeanImageFilter()));
 		menu.addAction("Add Gaussian Image Fitler", this, SLOT(OnAddGaussianImageFilter()));
+        menu.addAction("Add Threshold Image Fitler", this, SLOT(OnAddThresholdImageFilter()));
 		del = true;
 		break;
+    case MT_3DIMAGE_FILTER:
+        del = true;
+        break;
 	default:
 		return;
 	}
@@ -1831,6 +1836,16 @@ void CModelViewer::OnSwapMasterSlave()
 	}
 }
 
+void CModelViewer::OnApplyImageFilters()
+{
+    Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
+	
+	if(model)
+	{
+        model->ApplyFilters();
+    }
+}
+
 void CModelViewer::OnAddMeanImageFilter()
 {
 	Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
@@ -1840,9 +1855,9 @@ void CModelViewer::OnAddMeanImageFilter()
 		MeanImageFilter* filter = new MeanImageFilter(model);
 
 		model->AddImageFilter(filter);
-
-		model->ApplyFilters();
 	}
+
+    Update();
 }
 
 void CModelViewer::OnAddGaussianImageFilter()
@@ -1854,9 +1869,23 @@ void CModelViewer::OnAddGaussianImageFilter()
 		GaussianImageFilter* filter = new GaussianImageFilter(model);
 
 		model->AddImageFilter(filter);
-
-		model->ApplyFilters();
 	}
+
+    Update();
+}
+
+void CModelViewer::OnAddThresholdImageFilter()
+{
+	Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
+	
+	if(model)
+	{
+		ThresholdImageFilter* filter = new ThresholdImageFilter(model);
+
+		model->AddImageFilter(filter);
+	}
+
+    Update();
 }
 
 void CModelViewer::OnDeleteAllBC()

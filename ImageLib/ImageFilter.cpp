@@ -43,7 +43,16 @@ CImageFilter::CImageFilter(Post::CImageModel* model) : model(model)
 
 MeanImageFilter::MeanImageFilter(Post::CImageModel* model) : CImageFilter(model)
 {
+    static int n = 1;
 
+    char sz[64];
+    sprintf(sz, "MeanImageFilter%02d", n);
+    n += 1;
+    SetName(sz);
+
+    AddIntParam(1, "x Radius");
+    AddIntParam(1, "y Radius");
+    AddIntParam(1, "z Radius");
 }
 
 void MeanImageFilter::ApplyFilter()
@@ -51,15 +60,6 @@ void MeanImageFilter::ApplyFilter()
     CITKImage* image = dynamic_cast<CITKImage*>(model->GetImageSource()->Get3DImage());
 
     if(!image) return;
-
-    // Byte* bytes = image->GetBytes();
-
-    // int size = image->Width()*image->Height()*image->Depth();
-
-    // for(int index = 0; index < size; index++)
-    // {
-    //     bytes[index] = 0;
-    // }
 
     auto start = std::chrono::system_clock::now();
 
@@ -71,35 +71,37 @@ void MeanImageFilter::ApplyFilter()
 
     ImageType::SizeType indexRadius;
 
-    indexRadius[0] = 1; // radius along x
-    indexRadius[1] = 1; // radius along y
-    indexRadius[2] = 1; // radius along z
+    indexRadius[0] = GetIntValue(0); // radius along x
+    indexRadius[1] = GetIntValue(1); // radius along y
+    indexRadius[2] = GetIntValue(2); // radius along z
 
     filter->SetRadius(indexRadius);
 
     itk::SmartPointer<itk::Image<unsigned char, 3>> itkImage = image->GetItkImage();
 
     filter->SetInput(itkImage);
-    filter->Update();
 
-    image->SetItkImage(filter->GetOutput());
+    model->GetImageSource()->GetImageToFilter()->SetItkImage(filter->GetOutput());
+    model->GetImageSource()->GetImageToFilter()->Update();
 
     auto end = std::chrono::system_clock::now();
 
     std::chrono::duration<double> elapsed_seconds = end-start;
 
     std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
-
-    // image->SetBytes(itkImage->GetBufferPointer());
-
-    // itkImage->Update();
-
 }
 
 GaussianImageFilter::GaussianImageFilter(Post::CImageModel* model)
     : CImageFilter(model)
 {
+    static int n = 1;
 
+    char sz[64];
+    sprintf(sz, "GaussianImageFilter%02d", n);
+    n += 1;
+    SetName(sz);
+
+    AddDoubleParam(2.0, "sigma");
 }
 
 void GaussianImageFilter::ApplyFilter()
@@ -122,18 +124,67 @@ void GaussianImageFilter::ApplyFilter()
 
     filter->SetInput(itkImage);
 
-    const double sigma = 2.0;
+    const double sigma = GetFloatValue(0);
+    std::cout << sigma << std::endl;
     filter->SetSigma(sigma);
 
-    filter->Update();
+    model->GetImageSource()->GetImageToFilter()->SetItkImage(filter->GetOutput());
 
-    image->SetItkImage(filter->GetOutput());
+    model->GetImageSource()->GetImageToFilter()->Update();
 
     auto end = std::chrono::system_clock::now();
 
     std::chrono::duration<double> elapsed_seconds = end-start;
 
     std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+}
 
+ThresholdImageFilter::ThresholdImageFilter(Post::CImageModel* model)
+    : CImageFilter(model)
+{
+    static int n = 1;
 
+    char sz[64];
+    sprintf(sz, "ThresholdImageFilter%02d", n);
+    n += 1;
+    SetName(sz);
+
+    AddIntParam(255, "max");
+    AddIntParam(0, "min");
+}
+
+void ThresholdImageFilter::ApplyFilter()
+{
+    C3DImage* image = model->GetImageSource()->Get3DImage();
+
+    int max = GetIntValue(0);
+    int min = GetIntValue(1);
+
+    if(min >= max) return;
+
+    auto start = std::chrono::system_clock::now();
+
+    Byte* originalBytes = image->GetBytes();
+    Byte* filteredBytes = model->GetImageSource()->GetImageToFilter(true)->GetBytes();
+
+    int factor = 255;
+
+    for(int i = 0; i < image->Width()*image->Height()*image->Depth(); i++)
+    {
+        if(originalBytes[i] > max || originalBytes[i] < min)
+        {
+            filteredBytes[i] = 0;
+        }
+        else
+        {
+            filteredBytes[i] = originalBytes[i];
+        }
+
+    }
+
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> elapsed_seconds = end-start;
+
+    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 }

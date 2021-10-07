@@ -44,9 +44,11 @@ class CITKImage : public C3DImage
 
 public:
     CITKImage() {}
+    CITKImage(int nx, int ny, int nz);
     ~CITKImage();
 
     bool LoadFromFile(const char* filename, ImageFileType type);
+    bool Allocate(int nx, int ny, int nz, int x0, int y0, int z0);
 
     std::vector<int> GetSize();
     std::vector<double> GetOrigin();
@@ -54,6 +56,8 @@ public:
 
     itk::SmartPointer<itk::Image<unsigned char, 3>> GetItkImage();
     void SetItkImage(itk::SmartPointer<itk::Image<unsigned char, 3>> image);
+
+    void Update();
 
 private:
     bool ParseImageHeader();

@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
+#include <ImageLib/ImageFilter.h>
 #include <MeshTools/GModel.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -673,6 +674,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GModel*>(po)) return "model";
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po)) return "volume image renderer";
 	else if (dynamic_cast<Post::CImageSource*>(po)) return "3D Image source";
+    else if (dynamic_cast<CImageFilter*>(po)) return "Image filter";
 	else if (dynamic_cast<FEMaterial*>(po))
 	{
 		FEMaterial* mat = dynamic_cast<FEMaterial*>(po);

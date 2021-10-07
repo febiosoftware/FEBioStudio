@@ -166,8 +166,10 @@ public slots:
 	void OnImportMaterials(QAction*);
 	void OnDeleteAllMaterials();
 	void OnSwapMasterSlave();
+    void OnApplyImageFilters();
 	void OnAddMeanImageFilter();
 	void OnAddGaussianImageFilter();
+    void OnAddThresholdImageFilter();
 	void OnDeleteAllBC();
 	void OnDeleteAllLoads();
 	void OnDeleteAllIC();

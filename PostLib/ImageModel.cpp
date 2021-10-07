@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageFilter.h>
 #include "GLImageRenderer.h"
 #include <PostLib/VolRender.h>
+#include <PostLib/VolumeRender2.h>
 #include <FSCore/FSDir.h>
 #include <assert.h>
 
@@ -44,6 +45,7 @@ CImageSource::CImageSource(CImageModel* imgModel)
 	AddIntParam(2, "NZ")->SetState(Param_VISIBLE);
 
 	m_img = nullptr;
+    m_originalImage = nullptr;
 	m_imgModel = imgModel;
 }
 
@@ -60,6 +62,7 @@ void CImageSource::SetImageModel(CImageModel* imgModel)
 CImageSource::~CImageSource()
 {
 	delete m_img;
+    delete m_originalImage;
 }
 
 void CImageSource::SetFileName(const std::string& file)
@@ -120,6 +123,40 @@ bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type)
 bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type) { return false; }
 #endif
 
+void CImageSource::ClearFilters()
+{
+    if( m_img != m_originalImage)
+    {
+        delete m_img;
+        m_img = m_originalImage;
+    }
+}
+
+CITKImage* CImageSource::GetImageToFilter(bool allocate)
+{
+    if(m_img == m_originalImage)
+    {
+        int nx = m_originalImage->Width();
+        int ny = m_originalImage->Height();
+        int nz = m_originalImage->Depth();
+
+        m_img = new CITKImage(nx, ny, nz);
+
+        if(allocate)
+        {
+            BOX box = m_imgModel->GetBoundingBox();
+            int x0 = box.x0;
+            int y0 = box.y0;
+            int z0 = box.z0;
+
+            static_cast<CITKImage*>(m_img)->Allocate(nx, ny, nz, x0, y0, z0);
+        }
+        
+    }
+
+    return static_cast<CITKImage*>(m_img);
+}
+
 void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)
 {
 	SetStringValue(0, fileName);
@@ -130,8 +167,12 @@ void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)
 
 void CImageSource::AssignImage(C3DImage* im)
 {
-  delete m_img;
-  m_img = im;
+//   delete m_img;
+//   m_img = im;
+
+    delete m_originalImage;
+    m_originalImage = im;
+    m_img = im;
 }
 
 void CImageSource::Save(OArchive& ar)
@@ -276,6 +317,8 @@ void CImageModel::Render(CGLContext& rc)
 
 void CImageModel::ApplyFilters()
 {
+    m_img->ClearFilters();
+
 	for(int index = 0; index < m_filters.Size(); index++)
 	{
 		m_filters[index]->ApplyFilter();
@@ -283,9 +326,12 @@ void CImageModel::ApplyFilters()
 
 	for (int i = 0; i < (int)m_render.Size(); ++i)
 	{
-		Post::CVolRender* render = dynamic_cast<Post::CVolRender*>(m_render[i]);
+		Post::CVolumeRender2* render = dynamic_cast<Post::CVolumeRender2*>(m_render[i]);
 
-		if(render) render->Create();
+		if(render)
+        {
+            render->Create();
+        }
 	} 
 }
 
@@ -298,6 +344,11 @@ void CImageModel::AddImageRenderer(CGLImageRenderer* render)
 {
 	assert(render);
 	m_render.Add(render);
+}
+
+size_t CImageModel::RemoveFilter(CImageFilter* filter)
+{
+    return m_filters.Remove(filter);
 }
 
 void CImageModel::AddImageFilter(CImageFilter* imageFilter)

@@ -31,12 +31,13 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <FSCore/FSObjectList.h>
 #include "GLImageRenderer.h"
+#include <ImageLib/ImageFilter.h>
 #include "GLObject.h"
 
 enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
 
 class C3DImage;
-class CImageFilter;
+class CITKImage;
 
 namespace Post {
 
@@ -57,6 +58,9 @@ public:
 
 	C3DImage* Get3DImage() { return m_img; }
 
+    void ClearFilters();
+    CITKImage* GetImageToFilter(bool allocate = false);
+
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
@@ -73,6 +77,7 @@ private:
     void AssignImage(C3DImage* im);
 
 	C3DImage*	m_img;
+    C3DImage*   m_originalImage;
 	CImageModel*	m_imgModel;
     unsigned char* data = nullptr;
 };
@@ -91,6 +96,10 @@ public:
 	size_t RemoveRenderer(CGLImageRenderer* render);
 
 	void AddImageRenderer(CGLImageRenderer* render);
+
+    int ImageFilters() const { return (int)m_filters.Size(); }
+	CImageFilter* GetImageFilter(int i) { return m_filters[i]; }
+	size_t RemoveFilter(CImageFilter* filter);
 
 	void AddImageFilter(CImageFilter* imageFilter);
 

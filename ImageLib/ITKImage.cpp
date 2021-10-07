@@ -41,11 +41,16 @@ DEALINGS IN THE SOFTWARE.
 
 #include <iostream>
 
+CITKImage::CITKImage(int nx, int ny, int nz)
+{
+    m_cx = nx;
+    m_cy = ny;
+    m_cz = nz;
+}
+
 CITKImage::~CITKImage()
 {
     m_pb = nullptr;
-    // std::cout << "Ref count: " << originalImage->GetReferenceCount() << std::endl;
-    std::cout << "Ref count: " << finalImage->GetReferenceCount() << std::endl;
 }
 
 bool CITKImage::LoadFromFile(const char* filename, ImageFileType type)
@@ -70,6 +75,45 @@ bool CITKImage::LoadFromFile(const char* filename, ImageFileType type)
     FinalizeImage();
 
     return true;
+}
+
+bool CITKImage::Allocate(int nx, int ny, int nz, int x0, int y0, int z0)
+{
+    // std::cout << "Got here 15." << std::endl;
+    m_cx = nx;
+    m_cy = ny;
+    m_cz = nz;
+
+    // std::cout << "Got here 16." << std::endl;
+    finalImage = FinalImageType::New();
+
+    // std::cout << "Got here 17." << std::endl;
+    FinalImageType::SizeType size;
+    size[0] = nx;
+    size[1] = ny;
+    size[2] = nz;
+    
+    // std::cout << "Got here 18." << std::endl;
+    FinalImageType::IndexType start;
+    start[0] = x0;
+    start[1] = y0;
+    start[2] = z0;
+
+    // std::cout << "Got here 19." << std::endl;
+    FinalImageType::RegionType region;
+    region.SetSize(size);
+    region.SetIndex(start);
+
+    // std::cout << "Got here 20." << std::endl;
+    finalImage->SetRegions(region);
+    // std::cout << "Got here 21." << std::endl;
+    finalImage->Allocate();
+
+    // std::cout << "Got here 22." << std::endl;
+    m_pb = finalImage->GetBufferPointer();
+    // std::cout << "Got here 23." << std::endl;
+
+    // m_pb = new Byte[nx*ny*nz];
 }
 
 std::vector<int> CITKImage::GetSize()
@@ -119,6 +163,13 @@ itk::SmartPointer<itk::Image<unsigned char, 3>> CITKImage::GetItkImage()
 void CITKImage::SetItkImage(itk::SmartPointer<itk::Image<unsigned char, 3>> image)
 {
     finalImage = image;
+    m_pb = finalImage->GetBufferPointer();
+}
+
+void CITKImage::Update()
+{
+    finalImage->Update();
+
     m_pb = finalImage->GetBufferPointer();
 }
 

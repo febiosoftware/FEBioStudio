@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
+#include <ImageLib/ImageFilter.h>
 #include <QMessageBox>
 #include <QtCore/QFileInfo>
 #include <FEMLib/FERigidConstraint.h>
@@ -682,6 +683,7 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 
 	return t2;
 }
+
 void CModelTree::ClearData()
 {
 	for (size_t i=0; i<m_data.size(); ++i) 
@@ -1146,10 +1148,21 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 		Post::CImageModel* img = doc->GetImageModel(i);
 		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CObjectProps(img), 0);
 
+        if(img->ImageFilters() > 0)
+        {
+            QTreeWidgetItem* filterItem = AddTreeItem(t2, "Filters", MT_3DIMAGE_FILTER_LIST);
+            
+            for (int j = 0; j < img->ImageFilters(); ++j)
+            {
+                CImageFilter* filter = img->GetImageFilter(j);
+                AddTreeItem(filterItem, QString::fromStdString(filter->GetName()), MT_3DIMAGE_FILTER, 0, filter, new CObjectProps(filter), 0);
+            }
+        } 
+
 		Post::CImageSource* src = img->GetImageSource();
 		AddTreeItem(t2, QString::fromStdString(src->GetName()), MT_3DIMAGE, 0, src, new CObjectProps(src), 0);
 
-		for (int j = 0; j < img->ImageRenderers(); ++j)
+        for (int j = 0; j < img->ImageRenderers(); ++j)
 		{
 			Post::CGLImageRenderer* imgRender = img->GetImageRenderer(j);
 			AddTreeItem(t2, QString::fromStdString(imgRender->GetName()), MT_3DIMAGE_RENDER, 0, imgRender, new CObjectProps(imgRender), 0);
