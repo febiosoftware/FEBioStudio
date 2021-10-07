@@ -1161,7 +1161,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					/usr/local/include,
-					/usr/local/include/opencascade,
+					/usr/local/opt/opencascade/include/opencascade,
 					/Applications/Netgen.app/Contents/Resources/include,
 					/Applications/Netgen.app/Contents/Resources/include/include,
 				);
@@ -1181,7 +1181,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					/usr/local/include,
-					/usr/local/include/opencascade,
+					/usr/local/opt/opencascade/include/opencascade,
 					/Applications/Netgen.app/Contents/Resources/include,
 					/Applications/Netgen.app/Contents/Resources/include/include,
 				);
