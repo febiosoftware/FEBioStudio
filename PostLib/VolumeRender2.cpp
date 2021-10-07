@@ -36,15 +36,17 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <GLLib/GLContext.h>
 #include <ImageLib/3DImage.h>
-
+#include <sstream>
 using namespace Post;
 
 static bool initGlew = false;
 
+static int n = 1;
+
 CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
 {
-	AddDoubleParam(1.0, "alpha scale")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(0.0, "min intensity")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.1, "alpha scale")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.5, "min intensity")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(1.0, "max intensity")->SetFloatRange(0.0, 1.0);
 	AddChoiceParam(0, "Color map")->SetEnumNames("Grayscale\0Red\0Green\0Blue\0Fire\0");
 
@@ -55,6 +57,12 @@ CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
 		glewInit();
 		initGlew = true;
 	}
+
+	std::stringstream ss;
+	ss << "VolumeRender" << n++;
+	SetName(ss.str());
+
+	m_vrInit = false;
 }
 
 CVolumeRender2::~CVolumeRender2()

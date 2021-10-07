@@ -53,6 +53,7 @@ SOFTWARE.*/
 #include <PostGL/GLTensorPlot.h>
 #include <ImageLib/3DImage.h>
 #include <PostLib/VolRender.h>
+#include <PostLib/VolumeRender2.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
@@ -778,6 +779,12 @@ void CPostModelPanel::BuildModelTree()
 				if (volRender)
 				{
 					ui->AddItem(pi1, volRender, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender));
+				}
+
+				Post::CVolumeRender2* volRender2 = dynamic_cast<Post::CVolumeRender2*>(render);
+				if (volRender2)
+				{
+					ui->AddItem(pi1, volRender2, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender2));
 				}
 
 				Post::CImageSlicer* imgSlice = dynamic_cast<Post::CImageSlicer*>(render);

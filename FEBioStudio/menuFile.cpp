@@ -1519,7 +1519,6 @@ void CMainWindow::on_actionImportImage_triggered()
         {
 //          Post::CVolRender* vr = new Post::CVolRender(imageModel);
           Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
-		  vr->SetName("volume render");
           vr->Create();
           imageModel->AddImageRenderer(vr);
 
