@@ -46,6 +46,8 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <MeshLib/FEFindElement.h>
 #include <PostGL/GLModel.h>
+#include <sstream>
+using namespace std;
 
 class CDlgImportLinesUI
 {
@@ -441,22 +443,99 @@ void CDlgImportPoints::OnApply()
 		Post::FEPostModel& fem = *doc->GetFEModel();
 
 		char szline[256] = { 0 };
+
+		// get the first line
+		fgets(szline, 255, fp);
+
+		vector<string> header;
+
+		// if the line starts with an asterisk, it is the header
+		if (szline[0] == '*')
+		{
+			// remove trailing newline
+			char* eol = strrchr(szline, '\n');
+			if (eol) *eol = 0;
+			else {
+				eol = strrchr(szline, '\r');
+				if (eol) *eol = 0;
+			}
+
+			// process header
+			char tmp[256] = { 0 };
+			char* sz = szline + 1;
+			do {
+				char* c = strchr(sz, ',');
+				if (c)
+				{
+					int l = c - sz;
+					strncpy(tmp, sz, l);
+					tmp[l] = 0;
+					header.push_back(tmp);
+					c++;
+				}
+				else header.push_back(sz);
+				sz = c;
+			}
+			while (sz);
+
+			// read the next line
+			fgets(szline, 255, fp);
+		}
+
+		// count the nr of fields in the line
+		char* sz = szline;
+		int nfields = 1;
+		while (sz = strchr(sz, ',')) { nfields++; ++sz; }
+
+		if (nfields < 5) 
+		{ 
+			fclose(fp); 
+			QMessageBox::critical(this, "FEBio Studio", "Hmm, that does not look the correct file format.");
+			return; 
+		}
+
+		int ndataFields = nfields - 5; assert(ndataFields >= 0);
+		assert(ndataFields <= MAX_POINT_DATA_FIELDS);
+
 		while (!feof(fp))
 		{
-			if (fgets(szline, 255, fp))
-			{
-				int nstate, id;
-				float x, y, z, v = 0.0f;
-				int n = sscanf(szline, "%d%d%g%g%g%g", &nstate, &id, &x, &y, &z, &v);
-				if ((n == 5)||(n == 6))
+			// process line
+			int nstate, id;
+			float x, y, z;
+			vector<float> v;
+			if (ndataFields > 0) v.assign(ndataFields, 0.f);
+
+			sz = szline;
+			int n = 0;
+			do {
+				switch (n)
 				{
-					if ((nstate >= 0) && (nstate < fem.GetStates()))
-					{
-						Post::FEState& s = *fem.GetState(nstate);
-						s.AddPoint(vec3f(x, y, z), id, v);
-					}
+				case 0: nstate = atoi(sz); break;
+				case 1: id = atoi(sz); break;
+				case 2: x = atof(sz); break;
+				case 3: y = atof(sz); break;
+				case 4: z = atof(sz); break;
+				default:
+					if (n - 5 < MAX_POINT_DATA_FIELDS) v[n - 5] = atof(sz); else assert(false);
 				}
+
+				sz = strchr(sz, ',');
+				if (sz) sz++;
+				n++;
+			} 
+			while (sz);
+
+			if ((nstate >= 0) && (nstate < fem.GetStates()))
+			{
+				Post::FEState& s = *fem.GetState(nstate);
+				if (ndataFields > 0)
+					s.AddPoint(vec3f(x, y, z), v, id);
+				else
+					s.AddPoint(vec3f(x, y, z), id);
 			}
+
+			// read the next line
+			if (fgets(szline, 255, fp) == nullptr) break;
 		}
 		fclose(fp);
 
@@ -464,6 +543,21 @@ void CDlgImportPoints::OnApply()
 		Post::CGLPointPlot* pgl = new Post::CGLPointPlot(doc->GetGLModel());
 		doc->GetGLModel()->AddPlot(pgl);
 		pgl->SetName(name.c_str());
+
+		for (int i = 0; i < ndataFields; ++i)
+		{
+			string dataName;
+			int m = i + 5;
+			if (m < header.size()) dataName = header[m];
+			else
+			{
+				stringstream ss;
+				ss << "Data" << i + 1;
+				dataName = ss.str();
+			}
+
+			pgl->AddDataField(dataName);
+		}
 
 		ui->name->setText(QString("Points%1").arg(ui->m_ncount));
 

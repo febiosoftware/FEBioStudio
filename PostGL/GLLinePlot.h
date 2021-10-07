@@ -94,7 +94,7 @@ private:
 // point cloud rendering of imported point data
 class CGLPointPlot : public CGLPlot
 {
-	enum { POINT_SIZE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP };
+	enum { POINT_SIZE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP, DATA_FIELD };
 
 public:
 	CGLPointPlot(CGLModel* po);
@@ -110,6 +110,8 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+	void AddDataField(const std::string& dataName);
+
 private:
 	void RenderPoints();
 	void RenderSpheres();
@@ -120,5 +122,7 @@ private:
 	int			m_colorMode;	//!< color mode
 	GLColor		m_solidColor;	//!< rendering color
 	int			m_colorMap;		//!< color map
+
+	std::vector<std::string>	m_dataNames;
 };
 }

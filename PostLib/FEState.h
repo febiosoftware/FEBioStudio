@@ -94,11 +94,23 @@ struct LINEDATA
 	int m_end[2];
 };
 
-struct POINTDATA
+#define MAX_POINT_DATA_FIELDS	32
+
+class POINTDATA
 {
+public:
 	int		nlabel;
-	float	val;
 	vec3f	m_r;
+	float	val[MAX_POINT_DATA_FIELDS];
+
+public:
+	POINTDATA() : val{ 0.f } {}
+	POINTDATA(const POINTDATA& p)
+	{
+		nlabel = p.nlabel;
+		m_r = p.m_r;
+		for (int i = 0; i < MAX_POINT_DATA_FIELDS; ++i) val[i] = p.val[i];
+	}
 };
 
 class LineData
@@ -191,7 +203,8 @@ public:
 
 	void AddLine(vec3f a, vec3f b, float data_a = 0.f, float data_b = 0.f, int el0 = -1, int el1 = -1);
 
-	void AddPoint(vec3f a, int nlabel = 0, float v = 0.f);
+	void AddPoint(vec3f a, int nlabel = 0);
+	void AddPoint(vec3f a, const std::vector<float>& data, int nlabel = 0);
 
 	LineData& GetLineData() { return m_Line; }
 

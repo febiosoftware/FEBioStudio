@@ -115,6 +115,7 @@ SOFTWARE.*/
 #include <PostLib/BYUExport.h>
 #include <PostLib/FEVTKImport.h>
 #include <PostLib/VolRender.h>
+#include <PostLib/VolumeRender2.h>
 #include <sstream>
 
 using std::stringstream;

@@ -487,6 +487,7 @@ endif()
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
+target_link_libraries(FEBioStudio ${GLEW_LIBRARIES})
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 if(WIN32)
