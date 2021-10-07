@@ -517,6 +517,7 @@ endif()
 
 # OpenGL
 find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
 
 # ZLIB
 find_package(ZLIB REQUIRED)
