@@ -103,6 +103,7 @@ SOFTWARE.*/
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>
 #include "ModelDocument.h"
+#include "ImageDocument.h"
 #include "FileThread.h"
 #include "DlgExportAscii.h"
 #include "DlgExportVTK.h"
@@ -194,6 +195,15 @@ void CMainWindow::on_actionNewProject_triggered()
 		ui->fileViewer->Update();
 		ui->m_defaultProjectParent = dlg.GetProjectFolder();
 	}
+}
+
+void CMainWindow::on_actionNewImageDoc_triggered()
+{
+    CImageDocument* doc = new CImageDocument(this);
+    doc->SetDocTitle("ImageDocument");
+    AddDocument(doc);
+
+    on_actionImportDICOMImage_triggered();
 }
 
 void CMainWindow::on_actionOpen_triggered()

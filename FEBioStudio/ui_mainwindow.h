@@ -405,6 +405,7 @@ public:
 		// --- File menu ---
 		QAction* actionNewModel   = addAction("New Model ...", "actionNewModel", "new");
 		QAction* actionNewProject = addAction("New Project ...", "actionNewProject");
+        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
 		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
 		QAction* actionSaveAs     = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
@@ -670,6 +671,7 @@ public:
 
 		menuFile->addAction(actionNewModel);
 		menuFile->addAction(actionNewProject);
+        menuFile->addAction(actionNewImageDoc);
 		menuFile->addSeparator();
 		menuFile->addAction(actionOpen);
 		menuFile->addAction(menuRecentFiles->menuAction());
@@ -1329,6 +1331,30 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
+		}
+        else if (config == ::CMainWindow::IMAGE_CONFIG)
+		{
+			stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+
+			// build mode
+			// menuEdit->menuAction()->setVisible(true);
+			// menuEditTxt->menuAction()->setVisible(false);
+			// menuPhysics->menuAction()->setVisible(true);
+			// menuPost->menuAction()->setVisible(false);
+			// menuRecord->menuAction()->setVisible(true);
+
+			// buildToolBar->show();
+			// postToolBar->hide();
+			// pFontToolBar->show();
+
+			glw->glc->show();
+
+			modelViewer->parentWidget()->show();
+			// buildPanel->parentWidget()->show();
+			// postPanel->parentWidget()->hide();
+			// logPanel->parentWidget()->show();
+			// infoPanel->parentWidget()->show();
+			// timePanel->parentWidget()->hide();
 		}
 	}
 };

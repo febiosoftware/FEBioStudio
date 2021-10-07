@@ -60,6 +60,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <PostLib/ImageModel.h>
 #include "PostDocument.h"
+#include "ImageDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/GModel.h>
@@ -1492,9 +1493,10 @@ void CGLView::paintGL()
 
 	// get the active view
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
+    if(postDoc) RenderPostView(postDoc);
 
-	if (postDoc == nullptr) RenderModelView();
-	else RenderPostView(postDoc);
+    CModelDocument* mDoc = m_pWnd->GetModelDocument();
+	if (mDoc) RenderModelView();
 
 	// render the grid
 	if (view.m_bgrid && (postDoc == nullptr)) m_grid.Render(m_rc);
@@ -1983,15 +1985,23 @@ void CGLView::SetupProjection()
 	if (doc == nullptr) return;
 
 	BOX box;
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
-	{
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-		box = mdoc->GetModelBox();
-	}
-	else if (postDoc->IsValid())
+
+    CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if(mdoc)
+    {
+        box = mdoc->GetModelBox();
+    }
+
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
+    if (postDoc && postDoc->IsValid())
 	{
 		box = postDoc->GetPostObject()->GetBoundingBox();
+	}
+
+    CImageDocument* imgDoc = dynamic_cast<CImageDocument*>(GetDocument());
+    if (imgDoc)
+	{
+		box = BOX(0, 0, 0, 1, 1, 1);
 	}
 
 	CGView& view = *doc->GetView();

@@ -61,7 +61,11 @@ void CImageSource::SetImageModel(CImageModel* imgModel)
 
 CImageSource::~CImageSource()
 {
-	delete m_img;
+    if(m_img != m_originalImage)
+    {
+        delete m_img;
+    }
+	
     delete m_originalImage;
 }
 

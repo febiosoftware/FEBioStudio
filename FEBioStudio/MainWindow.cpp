@@ -74,6 +74,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "TextDocument.h"
+#include "ImageDocument.h"
 #include "units.h"
 #include "version.h"
 #include <PostLib/FEVTKImport.h>
@@ -1917,7 +1918,7 @@ void CMainWindow::UpdateUIConfig()
 		if (modelDoc)
 		{
 			// Build Mode
-			ui->setUIConfig(1);
+			ui->setUIConfig(CMainWindow::MODEL_CONFIG);
 			ui->modelViewer->parentWidget()->raise();
 
 			RedrawGL();
@@ -1943,7 +1944,18 @@ void CMainWindow::UpdateUIConfig()
 			}
 			else
 			{
-				ui->setUIConfig(0);
+                CImageDocument* imgDoc = dynamic_cast<CImageDocument*>(GetDocument());
+                if (imgDoc)
+                {
+                    imgDoc->Activate();
+                    ui->setUIConfig(CMainWindow::IMAGE_CONFIG);
+
+                    RedrawGL();
+                }
+				else
+                {
+                    ui->setUIConfig(0);
+                }
 			}
 			ui->fileViewer->parentWidget()->raise();
 		}
@@ -1952,7 +1964,7 @@ void CMainWindow::UpdateUIConfig()
 	else
 	{
 		// Post Mode
-		ui->setUIConfig(2);
+		ui->setUIConfig(CMainWindow::POST_CONFIG);
 
 		UpdatePostPanel();
 		if (postDoc->IsValid()) ui->postToolBar->Update();
@@ -3165,7 +3177,7 @@ void CMainWindow::CloseWelcomePage()
 			ZoomTo(imageModel->GetBoundingBox());
 
 			// only for model docs
-			if (dynamic_cast<CModelDocument*>(doc))
+			if (dynamic_cast<CModelDocument*>(doc) || dynamic_cast<CImageDocument*>(doc))
 			{
                 // Post::CVolRender* vr = new Post::CVolRender(imageModel);
 				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);

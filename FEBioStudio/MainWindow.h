@@ -76,6 +76,7 @@ public:
 		MODEL_CONFIG,		// model document	(i.e. fsm file)
 		POST_CONFIG,		// post document	(i.e. xplt file)
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
+        IMAGE_CONFIG,		// Image document	(i.e. image file)
 	};
 
 public:
@@ -318,6 +319,7 @@ private:
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
+    void on_actionNewImageDoc_triggered();
 	void on_actionOpenProject_triggered();
 	void on_actionOpen_triggered();
 	void on_actionSave_triggered();
