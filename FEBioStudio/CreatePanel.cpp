@@ -55,6 +55,7 @@ REGISTER_CLASS2(GQuartDogBone      , CLASS_OBJECT, "Dog bone"       , ":/icons/d
 REGISTER_CLASS2(GCylinderInBox     , CLASS_OBJECT, "Cylinder in Box", ":/icons/cylinderinbox.png", 0);
 REGISTER_CLASS2(GSphereInBox       , CLASS_OBJECT, "Sphere in Box"  , ":/icons/sphereinbox.png"  , 0);
 REGISTER_CLASS2(GHollowSphere      , CLASS_OBJECT, "Hollow Sphere"  , ":/icons/hollowsphere.png" , 0);
+REGISTER_CLASS2(GBoxInBox          , CLASS_OBJECT, "Box in box"     , ":/icons/boxinbox.png"     , 0);
 REGISTER_CLASS2(GThinTube          , CLASS_OBJECT, "Thin Tube"      , ":/icons/thintube.png"     , 0);
 REGISTER_CLASS2(GPatch             , CLASS_OBJECT, "Patch"          , ":/icons/square.png"       , 0);
 REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "Disc"           , ":/icons/disc.png"         , 0);
