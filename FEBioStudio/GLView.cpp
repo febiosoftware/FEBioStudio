@@ -3772,6 +3772,12 @@ void CGLView::ShowPlaneCut(bool b)
 }
 
 //-----------------------------------------------------------------------------
+bool CGLView::ShowPlaneCut() const
+{
+	return m_showPlaneCut;
+}
+
+//-----------------------------------------------------------------------------
 void CGLView::SetPlaneCutMode(int nmode)
 {
 	m_planeCutMode = nmode;
