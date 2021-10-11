@@ -31,7 +31,7 @@ SOFTWARE.*/
 using namespace Post;
 
 //-----------------------------------------------------------------------------
-CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
+CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLLegendPlot(po)
 {
 	static int n = 1;
 	char szname[128] = { 0 };
@@ -46,6 +46,7 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
 	AddDoubleParam(1.0, "line width");
 	AddIntParam(0, "Max Range type")->SetEnumNames("dynamic\0static\0");
 	AddBoolParam(true, "Show on hidden elements");
+	AddBoolParam(true, "Show legend");
 
 	m_line = 4.f;
 	m_nmode = 0;
@@ -54,9 +55,16 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
 	m_nfield = -1;
 	m_show = true;
 	m_rangeMode = 0;
+	m_showLegend = true;
 
 	m_rng.x = 0.f;
 	m_rng.y = 1.f;
+
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
+	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
+	bar->copy_label(szname);
+	bar->hide();
+	SetLegendBar(bar);
 
 	UpdateData(false);
 }
@@ -78,16 +86,25 @@ bool CGLLinePlot::UpdateData(bool bsave)
 		m_line = GetFloatValue(LINE_WIDTH);
 		m_rangeMode = GetIntValue(RANGE_MODE);
 		m_show = GetBoolValue(SHOW_ALWAYS);
+		m_showLegend = GetBoolValue(SHOW_LEGEND);
+
+		if (GetLegendBar())
+		{
+			bool b = (m_showLegend && (m_ncolor != 0));
+			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
+		}
 	}
 	else
 	{
 		SetIntValue(DATA_FIELD, m_nfield);
 		SetIntValue(COLOR_MODE, m_ncolor);
 		SetColorValue(SOLID_COLOR, m_col);
+		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
 		SetIntValue(RENDER_MODE, m_nmode);
 		SetFloatValue(LINE_WIDTH, m_line);
 		SetIntValue(RANGE_MODE, m_rangeMode);
 		SetBoolValue(SHOW_ALWAYS, m_show);
+		SetBoolValue(SHOW_LEGEND, m_showLegend);
 	}
 
 	return false;
@@ -652,12 +669,17 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 		if (vmin < m_rng.x) m_rng.x = vmin;
 		if (vmax > m_rng.y) m_rng.y = vmax;
 	}
+
+	if (GetLegendBar())
+	{
+		GetLegendBar()->SetRange(m_rng.x, m_rng.y);
+	}
 }
 
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLPlot(po)
+CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLLegendPlot(po)
 {
 	static int n = 1;
 	char szname[128] = { 0 };
@@ -669,13 +691,20 @@ CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLPlot(po)
 	AddIntParam(0, "color mode")->SetEnumNames("solid\0color map\0");
 	AddColorParam(GLColor::White(), "solid color");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddChoiceParam(0, "Data Field");
+	AddChoiceParam(0, "Data field");
+	AddBoolParam(true, "Show legend");
 
 	m_pointSize = 8.f;
 	m_renderMode = 0;
 	m_colorMode = 0;
 	m_solidColor = GLColor(0, 0, 255);
-	m_colorMap = 0;
+	m_showLegend = true;
+
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
+	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
+	bar->copy_label(szname);
+	bar->hide();
+	SetLegendBar(bar);
 
 	UpdateData(false);
 }
@@ -732,7 +761,14 @@ bool CGLPointPlot::UpdateData(bool bsave)
 		m_renderMode = GetIntValue(RENDER_MODE);
 		m_colorMode  = GetIntValue(COLOR_MODE);
 		m_solidColor = GetColorValue(SOLID_COLOR);
-		m_colorMap   = GetIntValue(COLOR_MAP);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		m_showLegend = GetBoolValue(SHOW_LEGEND);
+
+		if (GetLegendBar())
+		{
+			bool b = (m_showLegend && (m_colorMode != 0));
+			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
+		}
 	}
 	else
 	{
@@ -740,7 +776,7 @@ bool CGLPointPlot::UpdateData(bool bsave)
 		SetIntValue  (RENDER_MODE, m_renderMode);
 		SetIntValue  (COLOR_MODE , m_colorMode );
 		SetColorValue(SOLID_COLOR, m_solidColor);
-		SetIntValue  (COLOR_MAP  , m_colorMap  );
+		SetIntValue  (COLOR_MAP  , m_Col.GetColorMap());
 	}
 
 	return false;
@@ -785,7 +821,12 @@ void CGLPointPlot::RenderPoints()
 	}
 	if (fmax == fmin) fmax++;
 
-	CColorMap& map = ColorMapManager::GetColorMap(m_colorMap);
+	if (GetLegendBar())
+	{
+		GetLegendBar()->SetRange(fmin, fmax);
+	}
+
+	CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 	map.SetRange(fmin, fmax);
 
 	GLfloat size_old;
@@ -849,7 +890,7 @@ void CGLPointPlot::RenderSpheres()
 	}
 	if (fmax == fmin) fmax++;
 
-	CColorMap& map = ColorMapManager::GetColorMap(m_colorMap);
+	CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 	map.SetRange(fmin, fmax);
 
 	glColor3ub(m_solidColor.r, m_solidColor.g, m_solidColor.b);
