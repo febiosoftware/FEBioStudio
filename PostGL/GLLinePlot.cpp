@@ -45,7 +45,10 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLLegendPlot(po)
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
 	AddIntParam(0, "render mode")->SetEnumNames("lines\0lines 3D\0smooth lines 3D\0");
 	AddDoubleParam(1.0, "line width");
-	AddIntParam(0, "Max Range type")->SetEnumNames("dynamic\0static\0");
+	AddIntParam(0, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(0, "User max");
+	AddIntParam(0, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(0, "User min");
 	AddBoolParam(true, "Show on hidden elements");
 	AddBoolParam(true, "Show legend");
 
@@ -55,11 +58,10 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLLegendPlot(po)
 	m_col = GLColor(255, 0, 0);
 	m_nfield = -1;
 	m_show = true;
-	m_rangeMode = 0;
 	m_showLegend = true;
 
-	m_rng.x = 0.f;
-	m_rng.y = 1.f;
+	m_range.min = 0.0; m_range.max = 1.0;
+	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
 
 	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
 	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
@@ -85,9 +87,13 @@ bool CGLLinePlot::UpdateData(bool bsave)
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		m_nmode = GetIntValue(RENDER_MODE);
 		m_line = GetFloatValue(LINE_WIDTH);
-		m_rangeMode = GetIntValue(RANGE_MODE);
 		m_show = GetBoolValue(SHOW_ALWAYS);
 		m_showLegend = GetBoolValue(SHOW_LEGEND);
+
+		m_range.maxtype = GetIntValue(MAX_RANGE_TYPE);
+		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
+		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
+		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
 
 		if (GetLegendBar())
 		{
@@ -103,9 +109,12 @@ bool CGLLinePlot::UpdateData(bool bsave)
 		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
 		SetIntValue(RENDER_MODE, m_nmode);
 		SetFloatValue(LINE_WIDTH, m_line);
-		SetIntValue(RANGE_MODE, m_rangeMode);
 		SetBoolValue(SHOW_ALWAYS, m_show);
 		SetBoolValue(SHOW_LEGEND, m_showLegend);
+		SetIntValue(MAX_RANGE_TYPE, m_range.maxtype);
+		SetIntValue(MIN_RANGE_TYPE, m_range.mintype);
+		SetFloatValue(USER_MAX, m_range.max);
+		SetFloatValue(USER_MIN, m_range.min);
 	}
 
 	return false;
@@ -232,8 +241,8 @@ void CGLLinePlot::RenderLines(FEState& s)
 	{
 		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
-		float vmin = m_rng.x;
-		float vmax = m_rng.y;
+		float vmin = m_range.min;
+		float vmax = m_range.max;
 		if (vmin == vmax) vmax++;
 
 		Post::LineData& lineData = s.GetLineData();
@@ -334,8 +343,8 @@ void CGLLinePlot::Render3DLines(FEState& s)
 		glEnable(GL_TEXTURE_1D);
 		m_Col.GetTexture().MakeCurrent();
 
-		float vmin = m_rng.x;
-		float vmax = m_rng.y;
+		float vmin = m_range.min;
+		float vmax = m_range.max;
 		if (vmin == vmax) vmax++;
 
 		int NL = lineData.Lines();
@@ -447,8 +456,8 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 		glEnable(GL_TEXTURE_1D);
 		m_Col.GetTexture().MakeCurrent();
 
-		float vmin = m_rng.x;
-		float vmax = m_rng.y;
+		float vmin = m_range.min;
+		float vmax = m_range.max;
 		if (vmin == vmax) vmax++;
 
 		int NL = lineData.Lines();
@@ -534,21 +543,26 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 			if (line.m_val[1] < vmin) vmin = line.m_val[1];
 		}
 	}
+	if (vmin == vmax) vmax++;
 
-	if (breset || (m_rangeMode == 0))
+	switch (m_range.mintype)
 	{
-		m_rng.x = vmin;
-		m_rng.y = vmax;
+	case 1:	if (vmin > m_range.min) vmin = m_range.min; break;
+	case 2: vmin = m_range.min; break;
 	}
-	else
+
+	switch (m_range.maxtype)
 	{
-		if (vmin < m_rng.x) m_rng.x = vmin;
-		if (vmax > m_rng.y) m_rng.y = vmax;
+	case 1:	if (vmax < m_range.max) vmax = m_range.max; break;
+	case 2: vmax = m_range.max; break;
 	}
+
+	m_range.min = vmin;
+	m_range.max = vmax;
 
 	if (GetLegendBar())
 	{
-		GetLegendBar()->SetRange(m_rng.x, m_rng.y);
+		GetLegendBar()->SetRange(m_range.min, m_range.max);
 	}
 }
 
@@ -569,12 +583,19 @@ CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLLegendPlot(po)
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
 	AddChoiceParam(0, "Data field");
 	AddBoolParam(true, "Show legend");
+	AddIntParam(0, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(0, "User max");
+	AddIntParam(0, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(0, "User min");
 
 	m_pointSize = 8.f;
 	m_renderMode = 0;
 	m_colorMode = 0;
 	m_solidColor = GLColor(0, 0, 255);
 	m_showLegend = true;
+
+	m_range.min = 0.0; m_range.max = 1.0;
+	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
 
 	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
 	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
@@ -640,6 +661,11 @@ bool CGLPointPlot::UpdateData(bool bsave)
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		m_showLegend = GetBoolValue(SHOW_LEGEND);
 
+		m_range.maxtype = GetIntValue(MAX_RANGE_TYPE);
+		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
+		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
+		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
+
 		if (GetLegendBar())
 		{
 			bool b = (m_showLegend && (m_colorMode != 0));
@@ -653,6 +679,10 @@ bool CGLPointPlot::UpdateData(bool bsave)
 		SetIntValue  (COLOR_MODE , m_colorMode );
 		SetColorValue(SOLID_COLOR, m_solidColor);
 		SetIntValue  (COLOR_MAP  , m_Col.GetColorMap());
+		SetIntValue(MAX_RANGE_TYPE, m_range.maxtype);
+		SetIntValue(MIN_RANGE_TYPE, m_range.mintype);
+		SetFloatValue(USER_MAX, m_range.max);
+		SetFloatValue(USER_MIN, m_range.min);
 	}
 
 	return false;
@@ -696,6 +726,21 @@ void CGLPointPlot::RenderPoints()
 		if (v > fmax) fmax = v;
 	}
 	if (fmax == fmin) fmax++;
+
+	switch (m_range.mintype)
+	{
+	case 1: if (fmin > m_range.min) fmin = m_range.min; break;
+	case 2: fmin = m_range.min; break;
+	}
+
+	switch (m_range.maxtype)
+	{
+	case 1: if (fmax < m_range.max) fmax = m_range.max; break;
+	case 2: fmax = m_range.max; break;
+	}
+
+	m_range.min = fmin;
+	m_range.max = fmax;
 
 	if (GetLegendBar())
 	{
