@@ -273,5 +273,16 @@ bool GLMusclePath::UpdateData(bool bsave)
 
 double GLMusclePath::DataValue(int field, int step)
 {
-	return (double) step;
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+
+	CGLModel* glm = GetModel();
+
+	Post::FEPostModel& fem = *glm->GetFEModel();
+
+
+	vec3d r0 = fem.NodePosition(n0, step);
+	vec3d r1 = fem.NodePosition(n1, step);
+
+	return (r1 - r0).Length();
 }
