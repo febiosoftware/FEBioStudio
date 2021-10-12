@@ -142,7 +142,7 @@ public:
 class Ui::CMeshInspector
 {
 public:
-	enum { MAX_EVAL_FIELDS = 11 };
+	enum { MAX_EVAL_FIELDS = 13 };
 
 public:
 	CMeshInfo*		info;
@@ -319,6 +319,8 @@ public:
 		items << "Tet10 midside node offset";
 		items << "Minimum element edge length";
 		items << "Maximum element edge length";
+		items << "1-Principal curvature";
+		items << "2-Principal curvature";
 		var->clear();
 		var->addItems(items);
 

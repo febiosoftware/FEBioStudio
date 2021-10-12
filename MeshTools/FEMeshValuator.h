@@ -29,6 +29,8 @@ SOFTWARE.*/
 
 class FEMeshValuator
 {
+	enum { MAX_DEFAULT_FIELDS = 13 };
+
 public:
 	// constructor
 	FEMeshValuator(FEMesh& mesh);

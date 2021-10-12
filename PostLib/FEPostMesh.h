@@ -60,7 +60,6 @@ public:
 	void ClearAll();
 
 	const vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
-	const vector<NodeFaceRef>& NodeFaceList(int n) const { return m_NFL.FaceList(n); }
 
 public:
 	// --- G E O M E T R Y ---
@@ -121,7 +120,6 @@ protected:
 	vector<FENodeSet*>	m_NSet;	// node sets
 
 	FENodeElementList	m_NEL;
-	FENodeFaceList		m_NFL;
 };
 
 // find the element and the iso-parametric coordinates of a point inside the mesh

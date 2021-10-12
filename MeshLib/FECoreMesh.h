@@ -80,7 +80,7 @@ public:
 	void ShowAllElements();
 
 public:
-	vec3d ElementCenter(FEElement_& el) const;
+	vec3d ElementCenter(const FEElement_& el) const;
 
 	// get the local positions of an element
 	void ElementNodeLocalPositions(const FEElement_& e, vec3d* r) const;

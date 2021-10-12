@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "FEEdge.h"
 #include "FEFace.h"
 #include "FELineMesh.h"
+#include "FENodeFaceList.h"
 
 //-------------------------------------------------------------------
 // Base class for mesh classes.
@@ -79,6 +80,8 @@ public:
 
 	void ClearFaceSelection();
 
+	void GetNodeNeighbors(int inode, int levels, std::set<int>& nl1);
+
 public: // interface for accessing mesh items
 	int Faces() const { return (int)m_Face.size(); }
 	FEFace& Face(int n) { return m_Face[n]; }
@@ -105,12 +108,16 @@ public:
 
 	bool IsCreaseEdge(int n0, int n1);
 
+	const vector<NodeFaceRef>& NodeFaceList(int n) const;
+
 protected:
 	void RemoveEdges(int ntag);
 	void RemoveFaces(int ntag);
 
 protected:
 	std::vector<FEFace>		m_Face;	//!< FE faces
+
+	FENodeFaceList		m_NFL;
 };
 
 //-------------------------------------------------------------------
