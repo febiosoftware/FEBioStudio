@@ -65,6 +65,7 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLLegendPlot(po)
 	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
 	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
 	bar->copy_label(szname);
+	bar->ShowTitle(true);
 	bar->hide();
 	SetLegendBar(bar);
 
@@ -724,6 +725,7 @@ CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLLegendPlot(po)
 	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
 	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
 	bar->copy_label(szname);
+	bar->ShowTitle(true);
 	bar->hide();
 	SetLegendBar(bar);
 
