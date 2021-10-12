@@ -841,7 +841,7 @@ void CGLPointPlot::RenderPoints()
 	if (ndata < 0) ndata = 0;
 
 	// evaluate the range
-	float fmin = 1e99, fmax = -1e99;
+	float fmin = 1e34f, fmax = -1e34f;
 	int NP = s.Points();
 	for (int i = 0; i < NP; ++i)
 	{
@@ -873,8 +873,7 @@ void CGLPointPlot::RenderPoints()
 		GetLegendBar()->SetRange(fmin, fmax);
 	}
 
-	CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-	map.SetRange(fmin, fmax);
+	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 	GLfloat size_old;
 	glGetFloatv(GL_POINT_SIZE, &size_old);
@@ -894,7 +893,8 @@ void CGLPointPlot::RenderPoints()
 
 				if (m_colorMode == 1)
 				{
-					GLColor c = map.map(p.val[ndata]);
+					double w = (p.val[ndata] - fmin) / (fmax - fmin);
+					GLColor c = map.map(w);
 					glColor3ub(c.r, c.g, c.b);
 				}
 
@@ -925,7 +925,7 @@ void CGLPointPlot::RenderSpheres()
 	}
 
 	// evaluate the range
-	float fmin = 1e99, fmax = -1e99;
+	float fmin = 1e34f, fmax = -1e34f;
 	int NP = s.Points();
 	for (int i = 0; i < NP; ++i)
 	{
@@ -937,8 +937,27 @@ void CGLPointPlot::RenderSpheres()
 	}
 	if (fmax == fmin) fmax++;
 
-	CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-	map.SetRange(fmin, fmax);
+	switch (m_range.mintype)
+	{
+	case 1: if (fmin > m_range.min) fmin = m_range.min; break;
+	case 2: fmin = m_range.min; break;
+	}
+
+	switch (m_range.maxtype)
+	{
+	case 1: if (fmax < m_range.max) fmax = m_range.max; break;
+	case 2: fmax = m_range.max; break;
+	}
+
+	m_range.min = fmin;
+	m_range.max = fmax;
+
+	if (GetLegendBar())
+	{
+		GetLegendBar()->SetRange(fmin, fmax);
+	}
+
+	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
 	glColor3ub(m_solidColor.r, m_solidColor.g, m_solidColor.b);
 
@@ -951,7 +970,8 @@ void CGLPointPlot::RenderSpheres()
 
 		if (m_colorMode == 1)
 		{
-			GLColor c = map.map(p.val[ndata]);
+			double w = (p.val[ndata] - fmin) / (fmax - fmin);
+			GLColor c = map.map(w);
 			glColor3ub(c.r, c.g, c.b);
 		}
 
