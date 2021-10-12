@@ -76,7 +76,7 @@ public:
 		MODEL_CONFIG,		// model document	(i.e. fsm file)
 		POST_CONFIG,		// post document	(i.e. xplt file)
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
-        IMAGE_CONFIG,		// Image document	(i.e. image file)
+        IMAGE_CONFIG,	    // Image document	(i.e. image file)
 	};
 
 public:
@@ -274,6 +274,8 @@ public:
 
 	// set the current time of the current post doc
 	void SetCurrentTime(int n);
+
+    void UpdateImageView();
 
 private:
 	void writeSettings();

@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "RepositoryPanel.h"
 #include "GLView.h"
+#include "ImageSliceView.h"
 #include <QApplication>
 #include <QAction>
 #include <QActionGroup>
@@ -64,6 +65,7 @@ SOFTWARE.*/
 #include "DlgMeasure.h"
 #include "DlgPlaneCut.h"
 #include "PostToolBar.h"
+#include "ImageToolBar.h"
 #include "FEBioStudioProject.h"
 #include "welcomePage.h"
 #include "IconProvider.h"
@@ -119,6 +121,7 @@ public:
 	enum Viewer {
 		HTML_VIEWER,
 		TEXT_VIEWER,
+        IMG_SLICE,
 		GL_VIEWER
 	};
 
@@ -130,6 +133,7 @@ public:
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
+    CImageSliceView* sliceView;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -173,6 +177,7 @@ public:
 
 	CPostToolBar*	postToolBar;
 	QToolBar*	buildToolBar;
+    CImageToolBar* imageToolBar;
 
 	QToolBar* pFontToolBar;
 	QFontComboBox*	pFontStyle;
@@ -353,6 +358,10 @@ public:
 		xmlEdit = new XMLEditor(wnd);
 		xmlEdit->setObjectName("xmledit");
 		stack->addWidget(xmlEdit);
+
+        sliceView = new ::CImageSliceView(wnd);
+        sliceView->setObjectName("sliceView");
+        stack->addWidget(sliceView);
 
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);
@@ -963,6 +972,13 @@ public:
 		postToolBar->setDisabled(true);
 		postToolBar->hide();
 
+        // Image tool bar
+        imageToolBar = new CImageToolBar(mainWindow);
+        imageToolBar->setObjectName("imageToolBar");
+		imageToolBar->setWindowTitle("Image Toolbar");
+        mainWindow->addToolBar(Qt::TopToolBarArea, imageToolBar);
+		imageToolBar->hide();
+
 		// Font tool bar
 		pFontToolBar = new QToolBar(mainWindow);
 		pFontToolBar->setObjectName("FontToolBar");
@@ -1248,6 +1264,7 @@ public:
 
 			buildToolBar->hide();
 			postToolBar->hide();
+            imageToolBar->hide();
 			pFontToolBar->hide();
 
 			glw->glc->hide();
@@ -1272,6 +1289,7 @@ public:
 
 			buildToolBar->show();
 			postToolBar->hide();
+            imageToolBar->hide();
 			pFontToolBar->show();
 
 			glw->glc->show();
@@ -1296,6 +1314,7 @@ public:
 
 			buildToolBar->hide();
 			postToolBar->show();
+            imageToolBar->hide();
 			pFontToolBar->show();
 
 			glw->glc->show();
@@ -1321,6 +1340,7 @@ public:
 
 			buildToolBar->hide();
 			postToolBar->hide();
+            imageToolBar->hide();
 			pFontToolBar->hide();
 
 			glw->glc->hide();
@@ -1334,7 +1354,14 @@ public:
 		}
         else if (config == ::CMainWindow::IMAGE_CONFIG)
 		{
-			stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+            if(imageToolBar->GetView() == CImageToolBar::SLICE_VIEW)
+            {
+                stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
+            }
+            else
+            {
+                stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+            }
 
 			// build mode
 			// menuEdit->menuAction()->setVisible(true);
@@ -1345,11 +1372,12 @@ public:
 
 			// buildToolBar->show();
 			// postToolBar->hide();
+            imageToolBar->show();
 			// pFontToolBar->show();
 
 			glw->glc->show();
 
-			modelViewer->parentWidget()->show();
+			// modelViewer->parentWidget()->show();
 			// buildPanel->parentWidget()->show();
 			// postPanel->parentWidget()->hide();
 			// logPanel->parentWidget()->show();

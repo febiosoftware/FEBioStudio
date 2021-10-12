@@ -97,6 +97,7 @@
 		<file>icons/distort.png</file>
 		<file>icons/streamlines.png</file>
 		<file>icons/particle.png</file>
+        <file>icons/Image.png</file>
 		<file>icons/imageslice.png</file>
 		<file>icons/volrender.png</file>
 		<file>icons/marching_cubes.png</file>

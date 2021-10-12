@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "GLView.h"
+#include "ImageSliceView.h"
 #include "ModelDocument.h"
 #include "ModelFileReader.h"
 #include <QApplication>
@@ -1950,11 +1951,11 @@ void CMainWindow::UpdateUIConfig()
                     imgDoc->Activate();
                     ui->setUIConfig(CMainWindow::IMAGE_CONFIG);
 
-                    RedrawGL();
+                    UpdateImageView();               
                 }
 				else
                 {
-                    ui->setUIConfig(0);
+                    ui->setUIConfig(HTML_CONFIG);
                 }
 			}
 			ui->fileViewer->parentWidget()->raise();
