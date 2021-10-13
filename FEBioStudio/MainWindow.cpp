@@ -2152,7 +2152,9 @@ void CMainWindow::UpdatePostPanel(bool braise, Post::CGLObject* po)
 //-----------------------------------------------------------------------------
 void CMainWindow::RedrawGL()
 {
-	GetGLView()->repaint();
+	CGLView* view = GetGLView();
+	if (view->ShowPlaneCut()) view->UpdatePlaneCut(true);
+	view->repaint();
 }
 
 //-----------------------------------------------------------------------------

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GL/glew.h>
 #endif
 #ifdef __APPLE__
-#include <OpenGL/gl.h>
+#include <GL/glew.h>
 #endif
 #ifdef LINUX
 #include <GL/glew.h>
@@ -63,6 +63,7 @@ CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
 	SetName(ss.str());
 
 	m_vrInit = false;
+	m_vrReset = false;
 }
 
 CVolumeRender2::~CVolumeRender2()
@@ -72,6 +73,7 @@ CVolumeRender2::~CVolumeRender2()
 
 void CVolumeRender2::Create()
 {
+	m_vrReset = true;
 }
 
 void CVolumeRender2::Init()
@@ -113,6 +115,24 @@ void CVolumeRender2::InitTexture()
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	// This will copy the image data to texture memory, so in principle we won't need im3d anymore
+	glTexImage3D(GL_TEXTURE_3D, 0, 1, nx, ny, nz, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, im3d.GetBytes());
+}
+
+void CVolumeRender2::ReloadTexture()
+{
+	// load texture data
+	CImageModel& img = *GetImageModel();
+	CImageSource* src = img.GetImageSource();
+	if (src == nullptr) return;
+
+	C3DImage& im3d = *src->Get3DImage();
+
+	// get the original image dimensions
+	int nx = im3d.Width();
+	int ny = im3d.Height();
+	int nz = im3d.Depth();
+
+	glBindTexture(GL_TEXTURE_3D, m_texID);
 	glTexImage3D(GL_TEXTURE_3D, 0, 1, nx, ny, nz, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, im3d.GetBytes());
 }
 
@@ -201,6 +221,12 @@ void CVolumeRender2::Render(CGLContext& rc)
 	CImageModel& img = *GetImageModel();
 	CImageSource* src = img.GetImageSource();
 	if (src == nullptr) return;
+
+	if (m_vrReset)
+	{
+		ReloadTexture();
+		m_vrReset = false;
+	}
 
 	C3DImage& im3d = *src->Get3DImage();
 

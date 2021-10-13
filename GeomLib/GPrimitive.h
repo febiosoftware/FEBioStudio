@@ -427,3 +427,23 @@ public:
 public:
 	void UpdateMesh();
 };
+
+//-----------------------------------------------------------------------------
+class GBoxInBox : public GPrimitive
+{
+public:
+	GBoxInBox();
+	bool Update(bool b = true) override;
+
+	double OuterWidth() const;
+	double OuterHeight() const;
+	double OuterDepth() const;
+
+	double InnerWidth() const;
+	double InnerHeight() const;
+	double InnerDepth() const;
+
+private:
+	void Create() override;
+	FEMesher* CreateDefaultMesher() override;
+};

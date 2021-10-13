@@ -35,6 +35,7 @@ FEMeshBase::FEMeshBase()
 //-----------------------------------------------------------------------------
 FEMeshBase::~FEMeshBase()
 {
+	m_NFL.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -90,6 +91,12 @@ bool FEMeshBase::IsCreaseEdge(int n0, int n1)
 		if ((e.n[0] == n1) && (e.n[1] == n0)) return (e.m_gid != -1);
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+const vector<NodeFaceRef>& FEMeshBase::NodeFaceList(int n) const 
+{ 
+	return m_NFL.FaceList(n); 
 }
 
 //-----------------------------------------------------------------------------
@@ -637,4 +644,55 @@ std::vector<int> MeshTools::GetConnectedFaces(FEMeshBase* pm, int nface, double 
 	}
 
 	return faceList;
+}
+
+void FEMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
+{
+	// add the first node
+	nl1.insert(inode);
+
+	// loop over all levels
+	vector<int> nl2; nl2.reserve(64);
+	for (int k = 0; k <= levels; ++k)
+	{
+		// reset face marks
+		std::set<int>::iterator it;
+		for (it = nl1.begin(); it != nl1.end(); ++it)
+		{
+			// get the node-face list
+			const vector<NodeFaceRef>& nfl = NodeFaceList(*it);
+			int NF = nfl.size();
+
+			// add the other nodes
+			for (int i = 0; i < NF; ++i)
+			{
+				FEFace& f = Face(nfl[i].fid);
+				f.m_ntag = 0;
+			}
+		}
+
+		// loop over all nodes
+		nl2.clear();
+		for (it = nl1.begin(); it != nl1.end(); ++it)
+		{
+			// get the node-face list
+			const vector<NodeFaceRef>& nfl = NodeFaceList(*it);
+			int NF = nfl.size();
+
+			// add the other nodes
+			for (int i = 0; i < NF; ++i)
+			{
+				FEFace& f = Face(nfl[i].fid);
+				if (f.m_ntag == 0)
+				{
+					int ne = f.Nodes();
+					for (int j = 0; j < ne; ++j) if (f.n[j] != *it) nl2.push_back(f.n[j]);
+					f.m_ntag = 1;
+				}
+			}
+		}
+
+		// merge sets
+		if (!nl2.empty()) nl1.insert(nl2.begin(), nl2.end());
+	}
 }

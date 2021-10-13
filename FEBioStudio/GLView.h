@@ -414,6 +414,7 @@ public:
 	void RemoveDecoration(GDecoration* deco);
 
 	void ShowPlaneCut(bool b);
+	bool ShowPlaneCut() const;
 	void SetPlaneCut(double d[4]);
 	void SetPlaneCutMode(int nmode);
 	void UpdatePlaneCut(bool breset = false);

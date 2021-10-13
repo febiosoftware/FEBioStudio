@@ -178,6 +178,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "rigid rotation vector"             );
     AddPlotVariable(MODULE_MECH, "rigid torque"                      );
     AddPlotVariable(MODULE_MECH, "rigid velocity"                    );
+    AddPlotVariable(MODULE_MECH, "RVE generations"                   );
 	AddPlotVariable(MODULE_MECH, "Euler angle"                       );
     AddPlotVariable(MODULE_MECH, "shell director"                    );
     AddPlotVariable(MODULE_MECH, "shell relative volume"             );

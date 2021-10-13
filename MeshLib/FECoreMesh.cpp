@@ -73,7 +73,7 @@ int FECoreMesh::GetMeshType() const
 }
 
 //-----------------------------------------------------------------------------
-vec3d FECoreMesh::ElementCenter(FEElement_& el) const
+vec3d FECoreMesh::ElementCenter(const FEElement_& el) const
 {
 	vec3d r;
 	int N = el.Nodes();
