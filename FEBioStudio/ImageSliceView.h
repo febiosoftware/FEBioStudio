@@ -34,6 +34,7 @@ class QGraphicsView;
 class QSlider;
 class QGridLayout;
 class QResizeEvent;
+class QWheelEvent;
 
 class C3DImage;
 class CMainWindow;
@@ -58,6 +59,9 @@ public:
 private slots:
     void on_slider_changed(int val);
 
+protected:
+    void wheelEvent(QWheelEvent* event) override;
+
 private:
     C3DImage* m_img;
     
@@ -80,10 +84,11 @@ public:
 
     void Update();
 
-    void resizeEvent(QResizeEvent* event);
-
 public slots:
     void SetImage();
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     CMainWindow* m_wnd;

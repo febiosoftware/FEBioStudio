@@ -99,17 +99,20 @@ void CImageSlice::Update()
     int slice = m_slider->value();
 
     CImage img;
-
+    QString text;
     switch (m_sliceDir)
     {
     case X:
         m_img->GetSliceX(img, slice);
+        text = "X";
         break;
     case Y:
         m_img->GetSliceY(img, slice);
+        text = "Y";
         break;
     case Z:
         m_img->GetSliceZ(img, slice);
+        text = "Z";
         break;
     
     default:
@@ -121,9 +124,14 @@ void CImageSlice::Update()
     QImage qImg(img.GetBytes(), img.Width(), img.Height(), img.Width(), QImage::Format::Format_Grayscale8);
 
     QPixmap pixmap = QPixmap::fromImage(qImg);
-
     m_scene->setSceneRect(0, 0, img.Width(), img.Height());
     QGraphicsPixmapItem* item = m_scene->addPixmap(pixmap);
+
+    QGraphicsTextItem* textItem = new QGraphicsTextItem();
+    textItem->setPos(0,0);
+    textItem->setPlainText(text += QString(": %1").arg(slice));
+    m_scene->addItem(textItem);
+
     m_view->fitInView(item, Qt::AspectRatioMode::KeepAspectRatio);
 }
 
@@ -131,6 +139,13 @@ void CImageSlice::on_slider_changed(int val)
 {
     Update();
 }
+
+void CImageSlice::wheelEvent(QWheelEvent* event)
+{
+    m_slider->event(event);
+}
+
+///////
 
 CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     : QWidget(parent), m_wnd(wnd)
