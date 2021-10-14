@@ -29,9 +29,11 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "IconProvider.h"
 #include "ImageToolBar.h"
+#include "ImageDocument.h"
+#include <GLLib/GView.h> 
 
 CImageToolBar::CImageToolBar(CMainWindow* wnd)
-    : m_wnd(wnd), view(GL_VIEW)
+    : m_wnd(wnd)
 {
     m_showGLView = new QAction(CIconProvider::GetIcon("volrender"), "GL View");
     m_showGLView->setCheckable(true);
@@ -52,13 +54,17 @@ CImageToolBar::CImageToolBar(CMainWindow* wnd)
 
 void CImageToolBar::on_viewAction_triggered(QAction* action)
 {
+    CImageDocument* doc = m_wnd->GetImageDocument();
+
+    if(!doc) return;
+
     if(action == m_showGLView) 
     {
-        view = GL_VIEW;
+        doc->GetView()->imgView = CGView::GL_VIEW;
     }
     else if(action == m_showSliceView)
     {
-        view = SLICE_VIEW;
+        doc->GetView()->imgView = CGView::SLICE_VIEW;
     }
 
     m_wnd->UpdateUIConfig();

@@ -66,6 +66,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "Commands.h"
 #include "PostObject.h"
+#include <PostLib/ImageSlicer.h>
 #include <iostream>
 
 static GLubyte poly_mask[128] = {
@@ -1498,8 +1499,11 @@ void CGLView::paintGL()
     CModelDocument* mDoc = m_pWnd->GetModelDocument();
 	if (mDoc) RenderModelView();
 
+    CImageDocument* imgDoc = m_pWnd->GetImageDocument();
+	if (imgDoc) RenderImageView();
+
 	// render the grid
-	if (view.m_bgrid && (postDoc == nullptr)) m_grid.Render(m_rc);
+	if (view.m_bgrid && (mDoc)) m_grid.Render(m_rc);
 
 	// render the image data
 	RenderImageData();
@@ -1519,7 +1523,7 @@ void CGLView::paintGL()
 	}
 
 	// render the 3D cursor
-	if (postDoc == nullptr)
+	if (mDoc)
 	{
 		// render the highlights
 		GLHighlighter::draw();
@@ -1882,6 +1886,17 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 	}
 
 	Post::CGLPlaneCutPlot::DisableClipPlanes();
+}
+
+void CGLView::RenderImageView()
+{    
+    CImageDocument* doc = m_pWnd->GetImageDocument();
+
+    if(!doc->ImageModels() || doc->GetView()->imgView != CGView::SLICE_VIEW) return;
+
+    doc->GetXSlicer()->Render(m_rc);
+    doc->GetYSlicer()->Render(m_rc);
+    doc->GetZSlicer()->Render(m_rc);
 }
 
 //-----------------------------------------------------------------------------

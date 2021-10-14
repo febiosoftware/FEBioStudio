@@ -717,7 +717,7 @@ void CMainWindow::SetCurrentTime(int n)
 
 void CMainWindow::UpdateImageView()
 {
-    if(ui->imageToolBar->GetView() == CImageToolBar::SLICE_VIEW)
+    if(GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
     {
         ui->sliceView->SetImage();
         ui->sliceView->Update();

@@ -300,7 +300,7 @@ public:
 
 public:
 	int ImageModels() const;
-	void AddImageModel(Post::CImageModel* img);
+	virtual void AddImageModel(Post::CImageModel* img);
 	Post::CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
 

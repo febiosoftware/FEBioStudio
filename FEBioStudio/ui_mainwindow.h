@@ -1354,7 +1354,7 @@ public:
 		}
         else if (config == ::CMainWindow::IMAGE_CONFIG)
 		{
-            if(imageToolBar->GetView() == CImageToolBar::SLICE_VIEW)
+            if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
             {
                 stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
             }
@@ -1363,26 +1363,26 @@ public:
                 stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
             }
 
-			// build mode
-			// menuEdit->menuAction()->setVisible(true);
-			// menuEditTxt->menuAction()->setVisible(false);
-			// menuPhysics->menuAction()->setVisible(true);
-			// menuPost->menuAction()->setVisible(false);
-			// menuRecord->menuAction()->setVisible(true);
+			// image mode
+			menuEdit->menuAction()->setVisible(false);
+			menuEditTxt->menuAction()->setVisible(false);
+			menuPhysics->menuAction()->setVisible(false);
+			menuPost->menuAction()->setVisible(false);
+			menuRecord->menuAction()->setVisible(false);
 
-			// buildToolBar->show();
-			// postToolBar->hide();
+			buildToolBar->hide();
+			postToolBar->hide();
             imageToolBar->show();
-			// pFontToolBar->show();
+			pFontToolBar->hide();
 
 			glw->glc->show();
 
-			// modelViewer->parentWidget()->show();
-			// buildPanel->parentWidget()->show();
-			// postPanel->parentWidget()->hide();
-			// logPanel->parentWidget()->show();
-			// infoPanel->parentWidget()->show();
-			// timePanel->parentWidget()->hide();
+			modelViewer->parentWidget()->hide();
+			buildPanel->parentWidget()->hide();
+			postPanel->parentWidget()->hide();
+			logPanel->parentWidget()->hide();
+			infoPanel->parentWidget()->hide();
+			timePanel->parentWidget()->hide();
 		}
 	}
 };

@@ -36,8 +36,13 @@ class QGridLayout;
 class QResizeEvent;
 class QWheelEvent;
 
-class C3DImage;
+class CGLView;
 class CMainWindow;
+
+namespace Post
+{
+    class CImageModel;
+}
 
 class CImageSlice : public QWidget
 {
@@ -50,11 +55,14 @@ public:
     };
 
 public:
-    CImageSlice(SliceDir sliceDir);
+    CImageSlice(CMainWindow* wnd, SliceDir sliceDir);
 
-    void SetImage(C3DImage* img);
+    void SetImage(Post::CImageModel* imgModel);
 
     void Update();
+
+signals:
+    void updated();
 
 private slots:
     void on_slider_changed(int val);
@@ -63,7 +71,8 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
 
 private:
-    C3DImage* m_img;
+    CMainWindow* m_wnd;
+    Post::CImageModel* m_imgModel;
     
     QVBoxLayout* m_layout;
     QGraphicsScene* m_scene;
@@ -86,6 +95,7 @@ public:
 
 public slots:
     void SetImage();
+    void RepaintGLView();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -94,9 +104,11 @@ private:
     CMainWindow* m_wnd;
 
     public:
-    QGridLayout* layout;
+    QGridLayout* m_layout;
 
-    CImageSlice* xSlice;
-    CImageSlice* ySlice;
-    CImageSlice* zSlice;
+    CImageSlice* m_xSlice;
+    CImageSlice* m_ySlice;
+    CImageSlice* m_zSlice;
+
+    CGLView* m_glView;
 };

@@ -36,22 +36,13 @@ class CImageToolBar : public QToolBar
     Q_OBJECT
 
 public:
-    enum View
-    {
-        GL_VIEW, SLICE_VIEW
-    };
-
-public:
     CImageToolBar(CMainWindow* wnd);
-
-    View GetView() { return view; }
 
 private slots:
     void on_viewAction_triggered(QAction* action);
 
 private:
     CMainWindow* m_wnd;
-    View view;
 
     QAction* m_showGLView;
     QAction* m_showSliceView;

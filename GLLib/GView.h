@@ -32,6 +32,12 @@ SOFTWARE.*/
 class CGView : public FSObject
 {
 public:
+    enum ImageView
+    {
+        GL_VIEW, SLICE_VIEW
+    };
+
+public:
 	CGView();
 	~CGView();
 
@@ -68,6 +74,7 @@ public:
 	double	m_ffar;
 	double	m_fov;
 	double	m_ar;
+    ImageView imgView;
 
 protected:
 	CGLCamera m_cam;	//!< current camera

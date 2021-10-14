@@ -25,8 +25,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "ImageDocument.h"
+#include <PostLib/ImageSlicer.h>
 
-CImageDocument::CImageDocument(CMainWindow* wnd) : CGLDocument(wnd)
+CImageDocument::CImageDocument(CMainWindow* wnd) : CGLDocument(wnd),
+    m_xSlice(nullptr), m_ySlice(nullptr), m_zSlice(nullptr)
 {
     
+}
+
+CImageDocument::~CImageDocument()
+{
+    CleanSlices();
+}
+
+void CImageDocument::AddImageModel(Post::CImageModel* img)
+{
+    CGLDocument::AddImageModel(img);
+
+    CleanSlices();
+
+    m_xSlice = new Post::CImageSlicer(img);
+    m_ySlice = new Post::CImageSlicer(img);
+    m_zSlice = new Post::CImageSlicer(img);
+    
+    m_xSlice->SetOrientation(0);
+    m_ySlice->SetOrientation(1);
+    m_zSlice->SetOrientation(2);
+
+    m_xSlice->Create();
+    m_ySlice->Create();
+    m_zSlice->Create();
+}
+
+void CImageDocument::CleanSlices()
+{
+    if(m_xSlice) delete m_xSlice;
+    if(m_ySlice) delete m_ySlice;
+    if(m_zSlice) delete m_zSlice;
 }

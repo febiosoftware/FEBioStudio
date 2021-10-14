@@ -24,11 +24,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#pragma once 
+
 #include "Document.h"
+#include <vector>
+
+namespace Post
+{
+    class CImageSlicer;
+}
 
 class CImageDocument : public CGLDocument
 {
 public:
     CImageDocument(CMainWindow* wnd);
+    ~CImageDocument();
 
+    void AddImageModel(Post::CImageModel* img) override;
+
+    Post::CImageSlicer* GetXSlicer() { return m_xSlice; }
+    Post::CImageSlicer* GetYSlicer() { return m_ySlice; }
+    Post::CImageSlicer* GetZSlicer() { return m_zSlice; }
+
+private:
+    void CleanSlices();
+
+private:
+    Post::CImageSlicer* m_xSlice;
+    Post::CImageSlicer* m_ySlice;
+    Post::CImageSlicer* m_zSlice;
+
+    
 };

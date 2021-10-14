@@ -29,22 +29,28 @@ SOFTWARE.*/
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QPixmap>
+#include <QTransform>
 #include <QGraphicsPixmapItem>
 #include <QSlider>
 #include <QToolBar>
 #include "MainWindow.h"
 #include "ImageDocument.h"
+#include "GLView.h"
+#include <ImageLib/3DImage.h>
+#include <PostLib/ImageSlicer.h>
+#include <PostLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 
 
 #include "ImageSliceView.h"
 
-CImageSlice::CImageSlice(SliceDir sliceDir)
-    : m_img(nullptr)
+CImageSlice::CImageSlice(CMainWindow* wnd, SliceDir sliceDir)
+    : m_wnd(wnd), m_imgModel(nullptr)
 {
     m_sliceDir = sliceDir;
 
     m_layout = new QVBoxLayout;
+    m_layout->setContentsMargins(0,0,0,0);
 
     m_scene = new QGraphicsScene;
     m_view = new QGraphicsView;
@@ -63,27 +69,30 @@ CImageSlice::CImageSlice(SliceDir sliceDir)
     setLayout(m_layout);
 }
 
-void CImageSlice::SetImage(C3DImage* img)
+void CImageSlice::SetImage(Post::CImageModel* imgModel)
 {
-    m_img = img;
+    m_imgModel = imgModel;
+
+    C3DImage* img = imgModel->GetImageSource()->Get3DImage();
 
     int n;
     switch (m_sliceDir)
     {
     case X:
-        n = m_img->Width();
+        n = img->Width();
         break;
     case Y:
-        n = m_img->Height();
+        n = img->Height();
         break;
     case Z:
-        n = m_img->Depth();
+        n = img->Depth();
         break;        
     default:
         break;
     }
     
     m_slider->setRange(0, n-1);
+    m_slider->setValue(n/2);
 
     int m = n / 100 + 1;
     m_slider->setTickInterval(m);
@@ -94,38 +103,90 @@ void CImageSlice::SetImage(C3DImage* img)
 
 void CImageSlice::Update()
 {
-    if(!m_img) return;
+    if(!m_imgModel) return;
 
     int slice = m_slider->value();
 
-    CImage img;
+    CImageDocument* doc = m_wnd->GetImageDocument();
+    float sliceOffset = float(slice)/float(m_slider->maximum());
+
+    C3DImage* img = m_imgModel->GetImageSource()->Get3DImage();    
+
+    CImage imgSlice;
     QString text;
     switch (m_sliceDir)
     {
     case X:
-        m_img->GetSliceX(img, slice);
+        img->GetSliceX(imgSlice, slice);
         text = "X";
+        
+        if(doc)
+        {
+            doc->GetXSlicer()->SetOffset(sliceOffset);
+            doc->GetXSlicer()->Update();
+        }
         break;
     case Y:
-        m_img->GetSliceY(img, slice);
+        img->GetSliceY(imgSlice, slice);
         text = "Y";
+        
+        if(doc)
+        {
+            doc->GetYSlicer()->SetOffset(sliceOffset);
+            doc->GetYSlicer()->Update();
+        }
         break;
     case Z:
-        m_img->GetSliceZ(img, slice);
+        img->GetSliceZ(imgSlice, slice);
         text = "Z";
+        
+        if(doc)
+        {
+            doc->GetZSlicer()->SetOffset(sliceOffset);
+            doc->GetZSlicer()->Update();
+        }
         break;
-    
     default:
         break;
     }
 
     m_slider->setToolTip(QString::number(slice));
 
-    QImage qImg(img.GetBytes(), img.Width(), img.Height(), img.Width(), QImage::Format::Format_Grayscale8);
+    QImage qImg(imgSlice.GetBytes(), imgSlice.Width(), imgSlice.Height(), imgSlice.Width(), QImage::Format::Format_Grayscale8);
 
-    QPixmap pixmap = QPixmap::fromImage(qImg);
-    m_scene->setSceneRect(0, 0, img.Width(), img.Height());
+
+    BOX box = m_imgModel->GetBoundingBox();
+    double xScale, yScale;
+
+    switch (m_sliceDir)
+    {
+    case X:
+        xScale = box.Height()/img->Height();
+        yScale = box.Depth()/img->Depth();
+        
+        m_scene->setSceneRect(0, 0, box.Height(), box.Depth());
+        break;
+    case Y:
+        xScale = box.Width()/img->Width();
+        yScale = box.Depth()/img->Depth();
+        
+        m_scene->setSceneRect(0, 0, box.Width(), box.Depth());
+        break;
+    case Z:
+        xScale = box.Width()/img->Width();
+        yScale = box.Height()/img->Height();
+
+        m_scene->setSceneRect(0, 0, box.Width(), box.Height());
+        break;
+    default:
+        break;
+    }
+
+    // Flip the image using QTransform.scale(1,-1)
+    QPixmap pixmap = QPixmap::fromImage(qImg).transformed(QTransform().scale(1,-1));
+    
     QGraphicsPixmapItem* item = m_scene->addPixmap(pixmap);
+    item->setTransform(QTransform().scale(xScale, yScale));
 
     QGraphicsTextItem* textItem = new QGraphicsTextItem();
     textItem->setPos(0,0);
@@ -133,6 +194,8 @@ void CImageSlice::Update()
     m_scene->addItem(textItem);
 
     m_view->fitInView(item, Qt::AspectRatioMode::KeepAspectRatio);
+
+    emit updated();
 }
 
 void CImageSlice::on_slider_changed(int val)
@@ -150,25 +213,31 @@ void CImageSlice::wheelEvent(QWheelEvent* event)
 CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     : QWidget(parent), m_wnd(wnd)
 {
-    layout = new QGridLayout;
+    m_layout = new QGridLayout;
 
-    xSlice = new CImageSlice(CImageSlice::X);
-    ySlice = new CImageSlice(CImageSlice::Y);
-    zSlice = new CImageSlice(CImageSlice::Z);
+    m_xSlice = new CImageSlice(wnd, CImageSlice::X);
+    m_ySlice = new CImageSlice(wnd, CImageSlice::Y);
+    m_zSlice = new CImageSlice(wnd, CImageSlice::Z);
 
-    layout->addWidget(xSlice, 0, 0);
-    layout->addWidget(ySlice, 0, 1);
-    layout->addWidget(zSlice, 1, 0);
-    layout->addWidget(new QWidget, 1, 1);
+    m_layout->addWidget(m_xSlice, 0, 0);
+    m_layout->addWidget(m_ySlice, 0, 1);
+    m_layout->addWidget(m_zSlice, 1, 0);
 
-    setLayout(layout);
+    m_glView = new CGLView(m_wnd);
+    m_layout->addWidget(m_glView, 1, 1);
+
+    setLayout(m_layout);
+
+    connect(m_xSlice, &CImageSlice::updated, this, &CImageSliceView::RepaintGLView);
+    connect(m_ySlice, &CImageSlice::updated, this, &CImageSliceView::RepaintGLView);
+    connect(m_zSlice, &CImageSlice::updated, this, &CImageSliceView::RepaintGLView);
 }
 
 void CImageSliceView::Update()
 {
-    xSlice->Update();
-    ySlice->Update();
-    zSlice->Update();
+    m_xSlice->Update();
+    m_ySlice->Update();
+    m_zSlice->Update();
 }
 
 void CImageSliceView::resizeEvent(QResizeEvent* event)
@@ -186,12 +255,17 @@ void CImageSliceView::SetImage()
     {
         if(!doc->ImageModels()) return;
         
-        C3DImage* img = doc->GetImageModel(0)->GetImageSource()->Get3DImage();
+        Post::CImageModel* img = doc->GetImageModel(0);
 
-        xSlice->SetImage(img);
-        ySlice->SetImage(img);
-        zSlice->SetImage(img);
+        m_xSlice->SetImage(img);
+        m_ySlice->SetImage(img);
+        m_zSlice->SetImage(img);
     }
 
     Update();
+}
+
+void CImageSliceView::RepaintGLView()
+{
+    m_glView->repaint();
 }

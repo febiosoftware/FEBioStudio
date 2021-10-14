@@ -47,6 +47,7 @@ class CRepositoryPanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
+class CImageDocument;
 class CFEBioJob;
 class CSSHHandler;
 class xpltFileReader;
@@ -95,6 +96,7 @@ public:
 	CGLDocument* GetGLDocument();
 	CModelDocument* GetModelDocument();
 	CPostDocument* GetPostDocument();
+    CImageDocument* GetImageDocument();
 
 	// get the document manager
 	CDocManager* GetDocManager();

@@ -340,6 +340,7 @@ public:
 	void RenderSelectionBox();
 	void RenderModelView();
 	void RenderPostView(CPostDocument* postDoc);
+    void RenderImageView();
 	void RenderTags();
 	void RenderImageData();
 	void RenderTrack();

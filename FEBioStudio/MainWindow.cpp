@@ -1186,6 +1186,7 @@ CDocument* CMainWindow::GetDocument()
 CGLDocument* CMainWindow::GetGLDocument() { return dynamic_cast<CGLDocument*>(GetDocument()); }
 CModelDocument* CMainWindow::GetModelDocument() { return dynamic_cast<CModelDocument*>(GetDocument()); }
 CPostDocument* CMainWindow::GetPostDocument() { return dynamic_cast<CPostDocument*>(GetDocument()); }
+CImageDocument* CMainWindow::GetImageDocument() { return dynamic_cast<CImageDocument*>(GetDocument()); }
 
 //-----------------------------------------------------------------------------
 // get the document manager
