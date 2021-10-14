@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,58 +23,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <GLLib/GLTexture1D.h>
-#include <PostLib/GLObject.h>
-#include <PostLib/DataMap.h>
-#include <PostLib/ColorMap.h>
-#include <FSCore/box.h>
+#include "FEMultiBlockMesh.h"
 
-class GLLegendBar;
+class GBoxInBox;
 
-namespace Post {
-
-class CGLModel;
-
-class CGLPlot : public CGLVisual
+class FEBoxInBox : public FEMultiBlockMesh
 {
+public:
+	// parameters
+	enum { NX, NY, NZ, NSEG, GX, GY, GZ, GR, GX2, GY2, GZ2, GR2};
+
+public:
+	FEBoxInBox();
+	FEBoxInBox(GBoxInBox* po);
+	FEMesh* BuildMesh() override;
+
 protected:
-	struct SUBELEMENT
-	{
-		float   vf[8];		// vector values
-		float    h[8][8];	// shapefunctions
-	};
-
-public:
-	CGLPlot(CGLModel* po = 0);
-	virtual ~CGLPlot();
-
-	virtual void UpdateTexture();
-
-	void SetRenderOrder(int renderOrder);
-	int GetRenderOrder() const;
-
-private:
-	int	m_renderOrder;
+	GBoxInBox* m_pobj;
 };
-
-class CGLLegendPlot : public CGLPlot
-{
-public:
-	CGLLegendPlot(CGLModel* po = 0);
-	virtual ~CGLLegendPlot();
-
-	void SetLegendBar(GLLegendBar* bar);
-	GLLegendBar* GetLegendBar();
-
-	void ChangeName(const std::string& name) override;
-
-	bool ShowLegend() const;
-	void ShowLegend(bool b);
-
-private:
-	GLLegendBar*	m_pbar;
-};
-
-}

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GL/glew.h>
 #endif
 #ifdef __APPLE__
-#include <OpenGL/gl.h>
+#include <GL/glew.h>
 #endif
 #ifdef LINUX
 #include <GL/glew.h>

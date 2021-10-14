@@ -98,9 +98,3 @@ void CGLLegendPlot::ShowLegend(bool b)
 		if (b) m_pbar->show(); else m_pbar->hide();
 	}
 }
-
-void CGLLegendPlot::Activate(bool bact)
-{
-	CGLPlot::Activate(bact);
-	ShowLegend(bact);
-}

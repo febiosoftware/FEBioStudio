@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FENodeFaceList.h"
+#include "FEMeshBase.h"
+#include "FEFace.h"
 
 //-----------------------------------------------------------------------------
 FENodeFaceList::FENodeFaceList()

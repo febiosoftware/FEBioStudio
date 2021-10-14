@@ -3782,6 +3782,12 @@ void CGLView::ShowPlaneCut(bool b)
 }
 
 //-----------------------------------------------------------------------------
+bool CGLView::ShowPlaneCut() const
+{
+	return m_showPlaneCut;
+}
+
+//-----------------------------------------------------------------------------
 void CGLView::SetPlaneCutMode(int nmode)
 {
 	m_planeCutMode = nmode;
@@ -9171,7 +9177,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					FEElement& el = mesh->Element(i);
 					el.Show(); el.Unhide();
 				}
-				mesh->UpdateItemVisibility();
+				po->UpdateItemVisibility();
 			}
 		}
 	}
@@ -9208,9 +9214,9 @@ void CGLView::UpdatePlaneCut(bool breset)
 				{
 					// render only when visible
 					FEElement& el = mesh->Element(i);
-					if (el.IsVisible() && el.IsSolid())
+					GPart* pg = po->Part(el.m_gid);
+					if (el.IsVisible() && el.IsSolid() && (pg && pg->IsVisible()))
 					{
-						GPart* pg = po->Part(el.m_gid);
 						int mid = pg->GetMaterialID();
 						if (mid != matId)
 						{
@@ -9432,7 +9438,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					}
 				}
 
-				mesh->UpdateItemVisibility();
+				po->UpdateItemVisibility();
 			}
 		}
 	}

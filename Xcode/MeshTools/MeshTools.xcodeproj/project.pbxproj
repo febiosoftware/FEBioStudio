@@ -22,6 +22,8 @@
 		D56912BD2633496D00A337A0 /* FEMultiQuadMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D56912BB2633496D00A337A0 /* FEMultiQuadMesh.h */; };
 		D5AE8C4325901AEF003AC08B /* QuadricFit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5AE8C4125901AEF003AC08B /* QuadricFit.cpp */; };
 		D5AE8C4425901AEF003AC08B /* QuadricFit.h in Headers */ = {isa = PBXBuildFile; fileRef = D5AE8C4225901AEF003AC08B /* QuadricFit.h */; };
+		D5B6DF562710E61D008A9926 /* FEBoxInBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5B6DF542710E61D008A9926 /* FEBoxInBox.cpp */; };
+		D5B6DF572710E61D008A9926 /* FEBoxInBox.h in Headers */ = {isa = PBXBuildFile; fileRef = D5B6DF552710E61D008A9926 /* FEBoxInBox.h */; };
 		D5ED280423197DE400C16BF7 /* FEShellDisc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */; };
 		D5ED280523197DE400C16BF7 /* ConchoidFit.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED272923197DE200C16BF7 /* ConchoidFit.h */; };
 		D5ED280623197DE400C16BF7 /* FECurveIntersect2D.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED272A23197DE200C16BF7 /* FECurveIntersect2D.h */; };
@@ -252,6 +254,8 @@
 		D56912BB2633496D00A337A0 /* FEMultiQuadMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMultiQuadMesh.h; sourceTree = "<group>"; };
 		D5AE8C4125901AEF003AC08B /* QuadricFit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QuadricFit.cpp; sourceTree = "<group>"; };
 		D5AE8C4225901AEF003AC08B /* QuadricFit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QuadricFit.h; sourceTree = "<group>"; };
+		D5B6DF542710E61D008A9926 /* FEBoxInBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBoxInBox.cpp; sourceTree = "<group>"; };
+		D5B6DF552710E61D008A9926 /* FEBoxInBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBoxInBox.h; sourceTree = "<group>"; };
 		D5ED271923197DD200C16BF7 /* libMeshTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMeshTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellDisc.cpp; sourceTree = "<group>"; };
 		D5ED272923197DE200C16BF7 /* ConchoidFit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConchoidFit.h; sourceTree = "<group>"; };
@@ -513,6 +517,8 @@
 				D5ED27DB23197DE400C16BF7 /* FEBoundaryLayerMesher.h */,
 				D5ED27F423197DE400C16BF7 /* FEBox.cpp */,
 				D5ED27AA23197DE300C16BF7 /* FEBox.h */,
+				D5B6DF542710E61D008A9926 /* FEBoxInBox.cpp */,
+				D5B6DF552710E61D008A9926 /* FEBoxInBox.h */,
 				D5ED275E23197DE300C16BF7 /* FECone.cpp */,
 				D5ED278D23197DE300C16BF7 /* FECone.h */,
 				D5ED278B23197DE300C16BF7 /* FECreateShells.cpp */,
@@ -806,6 +812,7 @@
 				D5ED281D23197DE400C16BF7 /* GModel.h in Headers */,
 				D550436E24705E12007DCB29 /* FEMeshOverlap.h in Headers */,
 				D5ED28BD23197DE400C16BF7 /* FETruncatedEllipsoid.h in Headers */,
+				D5B6DF572710E61D008A9926 /* FEBoxInBox.h in Headers */,
 				D5ED28AF23197DE400C16BF7 /* FEAutoPartition.h in Headers */,
 				D5ED280723197DE400C16BF7 /* PlotDataSettings.h in Headers */,
 				D5ED28A623197DE400C16BF7 /* FENNQuery.h in Headers */,
@@ -976,6 +983,7 @@
 				D5ED28AE23197DE400C16BF7 /* FETet4ToTet10.cpp in Sources */,
 				D5ED283223197DE400C16BF7 /* FETet4ToTet20.cpp in Sources */,
 				D5ED28CE23197DE400C16BF7 /* FEMMGRemesh.cpp in Sources */,
+				D5B6DF562710E61D008A9926 /* FEBoxInBox.cpp in Sources */,
 				D5058A9924EB261000DF1A73 /* FERezoneMesh.cpp in Sources */,
 				D5ED285123197DE400C16BF7 /* FEShellPatch.cpp in Sources */,
 				D5ED282823197DE400C16BF7 /* GHollowSphere.cpp in Sources */,
@@ -1161,7 +1169,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					/usr/local/include,
-					/usr/local/include/opencascade,
+					/usr/local/opt/opencascade/include/opencascade,
 					/Applications/Netgen.app/Contents/Resources/include,
 					/Applications/Netgen.app/Contents/Resources/include/include,
 				);
@@ -1181,7 +1189,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					/usr/local/include,
-					/usr/local/include/opencascade,
+					/usr/local/opt/opencascade/include/opencascade,
 					/Applications/Netgen.app/Contents/Resources/include,
 					/Applications/Netgen.app/Contents/Resources/include/include,
 				);

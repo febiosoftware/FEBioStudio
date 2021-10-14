@@ -671,6 +671,9 @@ void FEMesh::RebuildFaceData()
 	// update face neighbours
 	// (Depends on element neighbors)
 	UpdateFaceNeighbors();
+
+	// build the node-face list
+	m_NFL.Build(this);
 }
 
 //-----------------------------------------------------------------------------

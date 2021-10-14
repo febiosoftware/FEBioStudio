@@ -494,7 +494,7 @@ void CDlgImportPoints::OnApply()
 			return; 
 		}
 
-		int ndataFields = nfields - 5; assert(ndataFields >= 0);
+		int ndataFields = nfields - 1; assert(ndataFields >= 0);
 		assert(ndataFields <= MAX_POINT_DATA_FIELDS);
 
 		while (!feof(fp))
@@ -511,12 +511,12 @@ void CDlgImportPoints::OnApply()
 				switch (n)
 				{
 				case 0: nstate = atoi(sz); break;
-				case 1: id = atoi(sz); break;
-				case 2: x = atof(sz); break;
-				case 3: y = atof(sz); break;
-				case 4: z = atof(sz); break;
+				case 1: id = atoi(sz); v[n - 1] = (float)id; break;
+				case 2: x  = atof(sz); v[n - 1] = (float) x; break;
+				case 3: y  = atof(sz); v[n - 1] = (float) y; break;
+				case 4: z  = atof(sz); v[n - 1] = (float) z; break;
 				default:
-					if (n - 5 < MAX_POINT_DATA_FIELDS) v[n - 5] = atof(sz); else assert(false);
+					if (n - 1 < MAX_POINT_DATA_FIELDS) v[n - 1] = atof(sz); else assert(false);
 				}
 
 				sz = strchr(sz, ',');
@@ -547,7 +547,7 @@ void CDlgImportPoints::OnApply()
 		for (int i = 0; i < ndataFields; ++i)
 		{
 			string dataName;
-			int m = i + 5;
+			int m = i + 1;
 			if (m < header.size()) dataName = header[m];
 			else
 			{

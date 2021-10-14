@@ -31,9 +31,9 @@ namespace Post {
 
 //-----------------------------------------------------------------------------
 // Line rendering of imported line data
-class CGLLinePlot : public CGLPlot
+class CGLLinePlot : public CGLLegendPlot
 {
-	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH, RANGE_MODE, SHOW_ALWAYS };
+	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN, SHOW_ALWAYS, SHOW_LEGEND };
 
 	enum COLOR_MODE {
 		COLOR_SOLID,
@@ -83,18 +83,16 @@ private:
 	int			m_ncolor;	//!< color option
 	int			m_nfield;
 	bool		m_show;		//!< hide when containing elements are hidden
-	int			m_rangeMode;
+	DATA_RANGE	m_range;	// range for legend
+	bool		m_showLegend;
 	CColorTexture	m_Col;	//!< line color (when m_ncolor is not solid)
-
-private:
-	vec2f	m_rng;
 };
 
 //-----------------------------------------------------------------------------
 // point cloud rendering of imported point data
-class CGLPointPlot : public CGLPlot
+class CGLPointPlot : public CGLLegendPlot
 {
-	enum { POINT_SIZE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP, DATA_FIELD };
+	enum { POINT_SIZE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP, DATA_FIELD, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
 
 public:
 	CGLPointPlot(CGLModel* po);
@@ -121,7 +119,9 @@ private:
 	int			m_renderMode;	//!< render mode
 	int			m_colorMode;	//!< color mode
 	GLColor		m_solidColor;	//!< rendering color
-	int			m_colorMap;		//!< color map
+	CColorTexture	m_Col;		//!< line color (when m_ncolor is not solid)
+	bool		m_showLegend;	//!< show legend bar or not
+	DATA_RANGE	m_range;	// range for legend
 
 	std::vector<std::string>	m_dataNames;
 };

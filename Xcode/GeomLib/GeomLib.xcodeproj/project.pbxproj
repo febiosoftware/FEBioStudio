@@ -47,6 +47,7 @@
 		D56584071F05BC3300594E72 /* GCurveMeshObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D56584031F05BC3300594E72 /* GCurveMeshObject.h */; };
 		D56584081F05BC3300594E72 /* GSurfaceMeshObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56584041F05BC3300594E72 /* GSurfaceMeshObject.cpp */; };
 		D56584091F05BC3300594E72 /* GSurfaceMeshObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D56584051F05BC3300594E72 /* GSurfaceMeshObject.h */; };
+		D5B6DF532710E5F9008A9926 /* GBoxInBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5B6DF522710E5F9008A9926 /* GBoxInBox.cpp */; };
 		D5CA211B23EF7041001AE230 /* MeshLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211923EF7041001AE230 /* MeshLayer.cpp */; };
 		D5CA211C23EF7041001AE230 /* MeshLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5CA211A23EF7041001AE230 /* MeshLayer.h */; };
 /* End PBXBuildFile section */
@@ -93,6 +94,7 @@
 		D56584031F05BC3300594E72 /* GCurveMeshObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCurveMeshObject.h; sourceTree = "<group>"; };
 		D56584041F05BC3300594E72 /* GSurfaceMeshObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSurfaceMeshObject.cpp; sourceTree = "<group>"; };
 		D56584051F05BC3300594E72 /* GSurfaceMeshObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GSurfaceMeshObject.h; sourceTree = "<group>"; };
+		D5B6DF522710E5F9008A9926 /* GBoxInBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GBoxInBox.cpp; sourceTree = "<group>"; };
 		D5CA211923EF7041001AE230 /* MeshLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshLayer.cpp; sourceTree = "<group>"; };
 		D5CA211A23EF7041001AE230 /* MeshLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshLayer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -130,6 +132,7 @@
 				D5215F261F01907100838680 /* GBaseObject.cpp */,
 				D5215F271F01907100838680 /* GBaseObject.h */,
 				D5215F281F01907100838680 /* GBox.cpp */,
+				D5B6DF522710E5F9008A9926 /* GBoxInBox.cpp */,
 				D5215F291F01907100838680 /* GCone.cpp */,
 				D56584021F05BC3300594E72 /* GCurveMeshObject.cpp */,
 				D56584031F05BC3300594E72 /* GCurveMeshObject.h */,
@@ -261,6 +264,7 @@
 				D5215F4F1F01907100838680 /* GDisc.cpp in Sources */,
 				D5215F6B1F01907100838680 /* GTube.cpp in Sources */,
 				D5215F4E1F01907100838680 /* GCylinderInBox.cpp in Sources */,
+				D5B6DF532710E5F9008A9926 /* GBoxInBox.cpp in Sources */,
 				D5215F661F01907100838680 /* GSphere.cpp in Sources */,
 				D5215F681F01907100838680 /* GTorus.cpp in Sources */,
 				D5215F571F01907100838680 /* GMeshObject.cpp in Sources */,
@@ -407,7 +411,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
-				HEADER_SEARCH_PATHS = /usr/local/include/opencascade;
+				HEADER_SEARCH_PATHS = /usr/local/opt/opencascade/include/opencascade;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DHAS_OCC",
@@ -422,7 +426,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
-				HEADER_SEARCH_PATHS = /usr/local/include/opencascade;
+				HEADER_SEARCH_PATHS = /usr/local/opt/opencascade/include/opencascade;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DHAS_OCC",

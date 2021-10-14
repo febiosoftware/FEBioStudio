@@ -93,22 +93,6 @@ void CImageSlicer::Create()
 	CImageSource* src = GetImageModel()->GetImageSource();
 	if (src == nullptr) return;
 
-	C3DImage& im3d = *src->Get3DImage();
-
-	// get the original image dimensions
-	int w = im3d.Width();
-	int h = im3d.Height();
-	int d = im3d.Depth();
-
-	// find new image dimenions
-	int nx = closest_pow2(w);
-	int ny = closest_pow2(h);
-	int nz = closest_pow2(d);
-	m_im3d.Create(nx, ny, nz);
-
-	// resample image
-	im3d.StretchBlt(m_im3d);
-
 	// call update to initialize all other data
 	Update();
 }
@@ -121,29 +105,34 @@ void CImageSlicer::Update()
 
 void CImageSlicer::UpdateSlice()
 {
+	CImageSource* src = GetImageModel()->GetImageSource();
+	C3DImage& im3d = *src->Get3DImage();
+
 	// get the 2D image
 	CImage im2d;
 	switch (m_op)
 	{
 	case 0: // X
-		m_im3d.GetSampledSliceX(im2d, m_off);
+		im3d.GetSampledSliceX(im2d, m_off);
 		break;
 	case 1: // Y
-		m_im3d.GetSampledSliceY(im2d, m_off);
+		im3d.GetSampledSliceY(im2d, m_off);
 		break;
 	case 2: // Z
-		m_im3d.GetSampledSliceZ(im2d, m_off);
+		im3d.GetSampledSliceZ(im2d, m_off);
 		break;
 	default:
 		assert(false);
 	}
 
+	// get the image dimensions
+	int W = im2d.Width();
+	int H = im2d.Height();
+
 	// build the looktp table
 	BuildLUT();
 
 	// create the 2D image
-	int W = im2d.Width();
-	int H = im2d.Height();
 	m_im.Create(W, H);
 
 	// colorize the image
