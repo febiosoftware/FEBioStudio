@@ -52,13 +52,11 @@ CImageSlicer::CImageSlicer(CImageModel* img) : CGLImageRenderer(img)
 	SetName(ss.str());
 
 	AddIntParam(0, "Image orientation")->SetEnumNames("X\0Y\0Z\0");
-	AddDoubleParam(0, "Image offset")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.5, "Image offset")->SetFloatRange(0.0, 1.0);
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
 
 	m_Col.SetColorMap(ColorMapManager::GRAY);
 
-	m_op = 0;
-	m_off = 0.5;
 	m_texID = 0;
 	m_reloadTexture = true;
 
@@ -69,19 +67,21 @@ CImageSlicer::~CImageSlicer()
 {
 }
 
+int CImageSlicer::GetOrientation() const { return GetIntValue(ORIENTATION); }
+void CImageSlicer::SetOrientation(int n) { SetIntValue(ORIENTATION, n); };
+
+double CImageSlicer::GetOffset() const { return GetFloatValue(OFFSET); }
+void CImageSlicer::SetOffset(double f) { SetFloatValue(OFFSET, f); }
+
 bool CImageSlicer::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
-		m_op = GetIntValue(ORIENTATION);
-		m_off = GetFloatValue(OFFSET);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		UpdateSlice();
 	}
 	else
 	{
-		SetIntValue(ORIENTATION, m_op);
-		SetFloatValue(OFFSET, m_off);
 		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
 	}
 
@@ -108,18 +108,21 @@ void CImageSlicer::UpdateSlice()
 	CImageSource* src = GetImageModel()->GetImageSource();
 	C3DImage& im3d = *src->Get3DImage();
 
+	int nop = GetOrientation();
+	double off = GetOffset();
+
 	// get the 2D image
 	CImage im2d;
-	switch (m_op)
+	switch (nop)
 	{
 	case 0: // X
-		im3d.GetSampledSliceX(im2d, m_off);
+		im3d.GetSampledSliceX(im2d, off);
 		break;
 	case 1: // Y
-		im3d.GetSampledSliceY(im2d, m_off);
+		im3d.GetSampledSliceY(im2d, off);
 		break;
 	case 2: // Z
-		im3d.GetSampledSliceZ(im2d, m_off);
+		im3d.GetSampledSliceZ(im2d, off);
 		break;
 	default:
 		assert(false);
@@ -201,24 +204,27 @@ void CImageSlicer::Render(CGLContext& rc)
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 
+	int nop = GetOrientation();
+	double off = GetOffset();
+
 	//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glColor4d(1, 1, 1, 1);
 
 	double x[4], y[4], z[4];
-	switch (m_op)
+	switch (nop)
 	{
 	case 0:
-		x[0] = x[1] = x[2] = x[3] = box.x0 + m_off*(box.x1 - box.x0);
+		x[0] = x[1] = x[2] = x[3] = box.x0 + off*(box.x1 - box.x0);
 		y[0] = y[3] = box.y1;  y[1] = y[2] = box.y0;
 		z[0] = z[1] = box.z0;  z[2] = z[3] = box.z1;
 		break;
 	case 1:
-		y[0] = y[1] = y[2] = y[3] = box.y0 + m_off*(box.y1 - box.y0);
+		y[0] = y[1] = y[2] = y[3] = box.y0 + off*(box.y1 - box.y0);
 		x[0] = x[3] = box.x1;  x[1] = x[2] = box.x0;
 		z[0] = z[1] = box.z0;  z[2] = z[3] = box.z1;
 		break;
 	case 2:
-		z[0] = z[1] = z[2] = z[3] = box.z0 + m_off*(box.z1 - box.z0);
+		z[0] = z[1] = z[2] = z[3] = box.z0 + off*(box.z1 - box.z0);
 		x[0] = x[3] = box.x1;  x[1] = x[2] = box.x0;
 		y[0] = y[1] = box.y0;  y[2] = y[3] = box.y1;
 		break;
