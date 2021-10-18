@@ -1892,7 +1892,7 @@ void CGLView::RenderImageView()
 {    
     CImageDocument* doc = m_pWnd->GetImageDocument();
 
-    if(!doc->ImageModels() || doc->GetView()->imgView != CGView::SLICE_VIEW) return;
+    if(!doc->GetActiveModel() || doc->GetView()->imgView != CGView::SLICE_VIEW) return;
 
     doc->GetXSlicer()->Render(m_rc);
     doc->GetYSlicer()->Render(m_rc);
@@ -2859,16 +2859,35 @@ void CGLView::RenderImageData()
 	glLoadIdentity();
 	cam.Transform();
 
-	for (int i = 0; i < doc->ImageModels(); ++i)
-	{
-		Post::CImageModel* img = doc->GetImageModel(i);
-		BOX box = img->GetBoundingBox();
-//		GLColor c = img->GetColor();
-		GLColor c(255, 128, 128);
-		glColor3ub(c.r, c.g, c.b);
-		if (img->ShowBox()) RenderBox(box, false);
-		img->Render(m_rc);
-	}
+    CImageDocument* imgDoc = dynamic_cast<CImageDocument*>(doc);
+
+    if(imgDoc)
+    {
+        Post::CImageModel* img = imgDoc->GetActiveModel();
+        if(img)
+        {
+            BOX box = img->GetBoundingBox();
+            GLColor c(255, 128, 128);
+            glColor3ub(c.r, c.g, c.b);
+            if (img->ShowBox()) RenderBox(box, false);
+            img->Render(m_rc);
+        }
+    }
+    else
+    {
+        for (int i = 0; i < doc->ImageModels(); ++i)
+        {
+            Post::CImageModel* img = doc->GetImageModel(i);
+            BOX box = img->GetBoundingBox();
+    		// GLColor c = img->GetColor();
+            GLColor c(255, 128, 128);
+            glColor3ub(c.r, c.g, c.b);
+            if (img->ShowBox()) RenderBox(box, false);
+            img->Render(m_rc);
+        }
+    }
+
+	
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();

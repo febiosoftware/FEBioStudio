@@ -715,19 +715,6 @@ void CMainWindow::SetCurrentTime(int n)
 	ui->postToolBar->SetSpinValue(n + 1);
 }
 
-void CMainWindow::UpdateImageView()
-{
-    if(GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
-    {
-        ui->sliceView->SetImage();
-        ui->sliceView->Update();
-    }
-    else
-    {
-        RedrawGL();
-    }  
-}
-
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionFirst_triggered()
 {

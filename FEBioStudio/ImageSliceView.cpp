@@ -152,8 +152,9 @@ void CImageSlice::Update()
 
     m_slider->setToolTip(QString::number(slice));
 
-    QImage qImg(imgSlice.GetBytes(), imgSlice.Width(), imgSlice.Height(), imgSlice.Width(), QImage::Format::Format_Grayscale8);
+    m_scene->clear();
 
+    QImage qImg(imgSlice.GetBytes(), imgSlice.Width(), imgSlice.Height(), imgSlice.Width(), QImage::Format::Format_Grayscale8);
 
     BOX box = m_imgModel->GetBoundingBox();
     double xScale, yScale;
@@ -247,16 +248,16 @@ void CImageSliceView::resizeEvent(QResizeEvent* event)
     Update();
 }
 
-void CImageSliceView::SetImage()
+void CImageSliceView::UpdateImage()
 {
     CImageDocument* doc = dynamic_cast<CImageDocument*>(m_wnd->GetDocument());
 
     if(doc)
     {
-        if(!doc->ImageModels()) return;
-        
-        Post::CImageModel* img = doc->GetImageModel(0);
+        Post::CImageModel* img = doc->GetActiveModel();
 
+        if(!img) return;
+        
         m_xSlice->SetImage(img);
         m_ySlice->SetImage(img);
         m_zSlice->SetImage(img);

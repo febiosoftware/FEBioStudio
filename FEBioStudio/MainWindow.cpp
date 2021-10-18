@@ -1121,6 +1121,8 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(breset);
+    
+    if (ui->imagePanel && ui->imagePanel->isVisible()) ui->imagePanel->Update();
 
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
@@ -1131,6 +1133,19 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	{
 		(*it)->Update(breset);
 	}
+}
+
+void CMainWindow::UpdateImageView()
+{
+    if(GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
+    {
+        ui->sliceView->UpdateImage();
+        ui->sliceView->Update();
+    }
+    else
+    {
+        RedrawGL();
+    }  
 }
 
 //-----------------------------------------------------------------------------
@@ -1912,7 +1927,18 @@ void CMainWindow::UpdateGLControlBar()
 void CMainWindow::UpdateUIConfig()
 {
 	CPostDocument* postDoc = GetPostDocument();
-	if (postDoc == nullptr)
+    CImageDocument* imgDoc = GetImageDocument();
+
+    if(imgDoc)
+    {
+        imgDoc->Activate();
+        ui->setUIConfig(CMainWindow::IMAGE_CONFIG);
+
+        UpdateImageView();
+
+        ui->imagePanel->parentWidget()->raise();
+    }
+	else if (postDoc == nullptr)
 	{
 		Update(0, true);
 
@@ -1944,21 +1970,10 @@ void CMainWindow::UpdateUIConfig()
 					ui->setUIConfig(CMainWindow::TEXT_CONFIG);
 				}
 			}
-			else
-			{
-                CImageDocument* imgDoc = dynamic_cast<CImageDocument*>(GetDocument());
-                if (imgDoc)
-                {
-                    imgDoc->Activate();
-                    ui->setUIConfig(CMainWindow::IMAGE_CONFIG);
-
-                    UpdateImageView();               
-                }
-				else
-                {
-                    ui->setUIConfig(HTML_CONFIG);
-                }
-			}
+            else
+            {
+                ui->setUIConfig(HTML_CONFIG);
+            }
 			ui->fileViewer->parentWidget()->raise();
 		}
 		return;

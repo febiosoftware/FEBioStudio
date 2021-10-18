@@ -24,38 +24,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once 
+#pragma once
 
-#include "Document.h"
-#include <vector>
+#include "CommandPanel.h"
+
+namespace Ui
+{
+    class CImagePanel;
+}
 
 namespace Post
 {
-    class CImageSlicer;
+    class CImageModel;
 }
 
-class CImageDocument : public CGLDocument
+class CImagePanel : public CCommandPanel
 {
+    Q_OBJECT
+
 public:
-    CImageDocument(CMainWindow* wnd);
-    ~CImageDocument();
+    CImagePanel(CMainWindow* wnd, QWidget* parent);
 
-    void AddImageModel(Post::CImageModel* img) override;
+    void Update();
+
     Post::CImageModel* GetActiveModel() { return activeModel; }
-    void SetActiveModel(Post::CImageModel* imgModel);
-    void SetActiveModel(int index);
 
-    Post::CImageSlicer* GetXSlicer() { return m_xSlice; }
-    Post::CImageSlicer* GetYSlicer() { return m_ySlice; }
-    Post::CImageSlicer* GetZSlicer() { return m_zSlice; }
+public slots:
+    void on_tree_itemSelectionChanged();
 
 private:
-    void CleanSlices();
+    Ui::CImagePanel* ui;
 
-private:
     Post::CImageModel* activeModel;
 
-    Post::CImageSlicer* m_xSlice;
-    Post::CImageSlicer* m_ySlice;
-    Post::CImageSlicer* m_zSlice;
 };

@@ -94,7 +94,7 @@ public:
     void Update();
 
 public slots:
-    void SetImage();
+    void UpdateImage();
     void RepaintGLView();
 
 protected:

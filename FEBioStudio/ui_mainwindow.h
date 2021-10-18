@@ -55,6 +55,7 @@ SOFTWARE.*/
 #include "MeshInspector.h"
 #include "LogPanel.h"
 #include "BuildPanel.h"
+#include "ImagePanel.h"
 #include "GLControlBar.h"
 #include "Document.h"
 #include "DataFieldSelector.h"
@@ -169,6 +170,7 @@ public:
 	::CDlgMeasure*	measureTool;
 	::CDlgPlaneCut*	planeCutTool;
 	::CTimelinePanel*	timePanel;
+    ::CImagePanel*	imagePanel;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -1075,6 +1077,12 @@ public:
 		menuWindows->addAction(dock8->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock8);
 
+        QDockWidget* dock9 = new QDockWidget("Images", m_wnd); dock8->setObjectName("dockImages");
+		imagePanel = new ::CImagePanel(wnd, dock9);
+		dock9->setWidget(imagePanel);
+		menuWindows->addAction(dock9->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock1, dock9);
+
 		// make sure the file viewer is the visible tab
 		dock1->raise();
 	}
@@ -1275,6 +1283,7 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
+            imagePanel->parentWidget()->hide();
 		}
 		else if (config == ::CMainWindow::MODEL_CONFIG)
 		{
@@ -1300,6 +1309,7 @@ public:
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
 			timePanel->parentWidget()->hide();
+            imagePanel->parentWidget()->hide();
 		}
 		else if (config == ::CMainWindow::POST_CONFIG)
 		{
@@ -1325,6 +1335,7 @@ public:
 			timePanel->parentWidget()->show();
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
+            imagePanel->parentWidget()->hide();
 
 			showTimeline();
 		}
@@ -1351,6 +1362,7 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
+            imagePanel->parentWidget()->hide();
 		}
         else if (config == ::CMainWindow::IMAGE_CONFIG)
 		{
@@ -1383,6 +1395,7 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
+            imagePanel->parentWidget()->show();
 		}
 	}
 };

@@ -26,9 +26,10 @@ SOFTWARE.*/
 
 #include "ImageDocument.h"
 #include <PostLib/ImageSlicer.h>
+#include "MainWindow.h"
 
 CImageDocument::CImageDocument(CMainWindow* wnd) : CGLDocument(wnd),
-    m_xSlice(nullptr), m_ySlice(nullptr), m_zSlice(nullptr)
+    activeModel(nullptr), m_xSlice(nullptr), m_ySlice(nullptr), m_zSlice(nullptr)
 {
     
 }
@@ -41,12 +42,17 @@ CImageDocument::~CImageDocument()
 void CImageDocument::AddImageModel(Post::CImageModel* img)
 {
     CGLDocument::AddImageModel(img);
+}
+
+void CImageDocument::SetActiveModel(Post::CImageModel* imgModel)
+{
+    activeModel = imgModel;
 
     CleanSlices();
 
-    m_xSlice = new Post::CImageSlicer(img);
-    m_ySlice = new Post::CImageSlicer(img);
-    m_zSlice = new Post::CImageSlicer(img);
+    m_xSlice = new Post::CImageSlicer(activeModel);
+    m_ySlice = new Post::CImageSlicer(activeModel);
+    m_zSlice = new Post::CImageSlicer(activeModel);
     
     m_xSlice->SetOrientation(0);
     m_ySlice->SetOrientation(1);
@@ -55,6 +61,16 @@ void CImageDocument::AddImageModel(Post::CImageModel* img)
     m_xSlice->Create();
     m_ySlice->Create();
     m_zSlice->Create();
+
+    GetMainWindow()->UpdateImageView();
+}
+
+void CImageDocument::SetActiveModel(int index)
+{
+    if(index >= 0 && index < ImageModels())
+    {
+        SetActiveModel(GetImageModel(index));
+    }
 }
 
 void CImageDocument::CleanSlices()
