@@ -29,7 +29,7 @@ SOFTWARE.*/
 //////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "LoadCurve.h"
-#include "BSpline.h"
+#include <FECore/BSpline.h>
 #include <algorithm>
 
 using std::min;
@@ -511,19 +511,28 @@ void FELoadCurve::Update()
         int korder = min(N,4);
         if (m_spline) delete m_spline;
         m_spline = new BSpline();
-        valid = m_spline->init_interpolation(korder, m_Pt);
+
+		vector<vec2d> pt(N);
+		for (int i = 0; i < N; ++i) { pt[i].x() = m_Pt[i].time; pt[i].y() = m_Pt[i].load; }
+        valid = m_spline->init_interpolation(korder, pt);
     }
     else if (m_ntype == LC_CPOINTS) {
         int korder = min(N,4);
         if (m_spline) delete m_spline;
         m_spline = new BSpline();
-        valid = m_spline->init(korder, m_Pt);
+
+		vector<vec2d> pt(N);
+		for (int i = 0; i < N; ++i) { pt[i].x() = m_Pt[i].time; pt[i].y() = m_Pt[i].load; }
+		valid = m_spline->init(korder, pt);
     }
     else if (m_ntype == LC_APPROX) {
         int korder = min(N/2+1,4);
         if (m_spline) delete m_spline;
         m_spline = new BSpline();
-        valid = m_spline->init_approximation(korder, N/2+1, m_Pt);
+
+		vector<vec2d> pt(N);
+		for (int i = 0; i < N; ++i) { pt[i].x() = m_Pt[i].time; pt[i].y() = m_Pt[i].load; }
+		valid = m_spline->init_approximation(korder, N/2+1, pt);
     }
     if (!valid) m_spline = nullptr;
 }
