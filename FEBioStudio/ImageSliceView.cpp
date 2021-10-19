@@ -71,6 +71,8 @@ CImageSlice::CImageSlice(CMainWindow* wnd, SliceDir sliceDir)
 
 void CImageSlice::SetImage(Post::CImageModel* imgModel)
 {
+    if(m_imgModel == imgModel) return;
+
     m_imgModel = imgModel;
 
     C3DImage* img = imgModel->GetImageSource()->Get3DImage();
