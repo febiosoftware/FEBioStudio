@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <XML/XMLWriter.h>
 #include "FEBioException.h"
 #include <MeshTools/FEProject.h>
+#include <sstream>
 
 // export sections
 enum FEBioExportSections
@@ -90,3 +91,11 @@ protected:
 
 	bool	m_exportNonPersistentParams;
 };
+
+template <> std::string type_to_string<vec2f>(const vec2f& v);
+template <> std::string type_to_string<vec2d>(const vec2d& v);
+template <> std::string type_to_string<vec3f>(const vec3f& v);
+template <> std::string type_to_string<vec3d>(const vec3d& v);
+template <> std::string type_to_string<quatd>(const quatd& v);
+template <> std::string type_to_string<mat3ds>(const mat3ds& v);
+template <> std::string type_to_string<mat3d>(const mat3d& v);

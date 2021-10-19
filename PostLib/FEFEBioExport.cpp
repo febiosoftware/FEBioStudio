@@ -30,6 +30,9 @@ SOFTWARE.*/
 #include "FEPostModel.h"
 using namespace Post;
 
+// defined in FEBio/FEBioExport.h
+template <> std::string type_to_string<vec3f>(const vec3f& v);
+
 const char* elementTypeStr(int ntype)
 {
 	const char* szeltype = 0;

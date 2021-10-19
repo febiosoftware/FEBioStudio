@@ -110,3 +110,10 @@ protected: // TODO: Move to FEBioModel?
 
 // return the DOF code from a bc string.
 int GetDOFCode(const char* sz);
+
+// convertors for custom types
+template <> void string_to_type<vec2i>(const std::string& s, vec2i& v);
+template <> void string_to_type<vec3f>(const std::string& s, vec3f& v);
+template <> void string_to_type<vec3d>(const std::string& s, vec3d& v);
+template <> void string_to_type<mat3d>(const std::string& s, mat3d& v);
+template <> void string_to_type<GLColor>(const std::string& s, GLColor& v);

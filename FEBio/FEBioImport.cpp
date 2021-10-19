@@ -153,38 +153,13 @@ bool FEBioImport::Load(const char* szfile)
 		// parse the file
 		if (ReadFile(tag) == false) return false;
 	}
-	catch (XMLReader::XMLSyntaxError)
-	{
-		return errf("FATAL ERROR: Syntax error (line %d)\n", xml.GetCurrentLine());
-	}
-	catch (XMLReader::InvalidTag e)
-	{
-		return errf("FATAL ERROR: unrecognized tag \"%s\" (line %d)\n", e.tag.m_sztag, e.tag.m_nstart_line);
-	}
-	catch (XMLReader::InvalidAttributeValue e)
-	{
-		const char* szt = e.tag.m_sztag;
-		const char* sza = e.szatt;
-		const char* szv = e.szval;
-		int l = e.tag.m_nstart_line;
-		return errf("FATAL ERROR: unrecognized value \"%s\" for attribute \"%s.%s\" (line %d)\n", szv, szt, sza, l);
-	}
-	catch (XMLReader::MissingAttribute e)
-	{
-		return errf("FATAL ERROR: Missing attribute \"%s\" of tag \"%s\" (line %d)\n", e.szatt, e.tag.m_sztag, e.tag.m_nstart_line);
-	}
-	catch (XMLReader::MissingTag e)
-	{
-		return errf("FATAL ERROR: Missing tag \"%s\" (line %d)\n", e.tag.m_sztag, e.tag.m_nstart_line);
-	}
-	catch (XMLReader::UnmatchedEndTag e)
-	{
-		const char* sz = e.tag.m_szroot[e.tag.m_nlevel];
-		return errf("FATAL ERROR: Unmatched end tag for \"%s\" (line %d)\n", sz, e.tag.m_nstart_line);
-	}
 	catch (XMLReader::EndOfFile e)
 	{
 		// this is fine. Moving on ...
+	}
+	catch (std::runtime_error e)
+	{
+		return errf("FATAL ERROR: %s (line %d)\n", e.what(), xml.GetCurrentLine());
 	}
 	catch (...)
 	{

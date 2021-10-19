@@ -340,14 +340,14 @@ void FEBioFormat4::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
 	for (int i = 0; i < tag.m_natt; ++i)
 	{
 		XMLAtt& att = tag.m_att[i];
-		Param* param = pmat->GetParam(att.m_sztag);
+		Param* param = pmat->GetParam(att.name());
 		if (param)
 		{
 			switch (param->GetParamType())
 			{
 			case Param_INT:
 			{
-				int n = atoi(att.m_szval);
+				int n = atoi(att.cvalue());
 				param->SetIntValue(n);
 			}
 			break;
@@ -356,7 +356,7 @@ void FEBioFormat4::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
 				if (param->GetEnumNames())
 				{
 					// TODO: This is hack for reading solute IDs.
-					int n = atoi(att.m_szval);
+					int n = atoi(att.cvalue());
 					param->SetIntValue(n - 1);
 				}
 			}

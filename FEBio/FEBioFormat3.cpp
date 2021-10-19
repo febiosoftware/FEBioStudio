@@ -63,7 +63,7 @@ static vector<string> GetDOFList(string sz)
     while (nc != -1) {
         nc = (int)sz.find(",");
         dofs.push_back(sz.substr(0,nc));
-        sz = sz.substr(nc+1);
+        if (nc != -1) sz = sz.substr(nc+1);
     }
     
     return dofs;
@@ -93,7 +93,7 @@ static int GetROTDir(vector<string> sz)
     return dof;
 }
 
-static bool validate_dof(string bc)
+static bool validate_dof(const string& bc)
 {
     if      (bc == "x") return true;
     else if (bc == "y") return true;
@@ -429,14 +429,14 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
 	for (int i = 0; i < tag.m_natt; ++i)
 	{
 		XMLAtt& att = tag.m_att[i];
-		Param* param = pmat->GetParam(att.m_sztag);
+		Param* param = pmat->GetParam(att.name());
 		if (param)
 		{
 			switch (param->GetParamType())
 			{
 			case Param_INT:
 			{
-				int n = atoi(att.m_szval);
+				int n = atoi(att.cvalue());
 				param->SetIntValue(n);
 			}
 			break;
@@ -445,7 +445,7 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
 				if (param->GetEnumNames())
 				{
 					// TODO: This is hack for reading solute IDs.
-					int n = atoi(att.m_szval);
+					int n = atoi(att.cvalue());
 					param->SetIntValue(n - 1);
 				}
 			}

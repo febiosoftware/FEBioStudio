@@ -35,6 +35,60 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <sstream>
 
+//=============================================================================
+
+template <> std::string type_to_string<vec2f>(const vec2f& v)
+{
+	std::stringstream ss;
+	ss << v.x << "," << v.y;
+	return ss.str();
+}
+
+template <> std::string type_to_string<vec2d>(const vec2d& v)
+{
+	std::stringstream ss;
+	ss << v.x() << "," << v.y();
+	return ss.str();
+}
+
+template <> std::string type_to_string<vec3f>(const vec3f& v)
+{
+	std::stringstream ss;
+	ss << v.x << "," << v.y << "," << v.z;
+	return ss.str();
+}
+
+template <> std::string type_to_string<vec3d>(const vec3d& v)
+{
+	std::stringstream ss;
+	ss << v.x << "," << v.y << "," << v.z;
+	return ss.str();
+}
+
+template <> std::string type_to_string<quatd>(const quatd& v)
+{
+	std::stringstream ss;
+	ss << v.x << "," << v.y << "," << v.z << "," << v.w;
+	return ss.str();
+}
+
+template <> std::string type_to_string<mat3ds>(const mat3ds& v)
+{
+	std::stringstream ss;
+	ss << v.xx() << "," << v.yy() << "," << v.zz() << "," << v.xy() << "," << v.yz() << "," << v.xz();
+	return ss.str();
+}
+
+template <> std::string type_to_string<mat3d>(const mat3d& v)
+{
+	std::stringstream ss;
+	ss << v[0][0] << "," << v[0][1] << "," << v[0][2] << ",";
+	ss << v[1][0] << "," << v[1][1] << "," << v[1][2] << ",";
+	ss << v[2][0] << "," << v[2][1] << "," << v[2][2];
+	return ss.str();
+}
+
+//=============================================================================
 FEBioExport::FEBioExport(FEProject& prj) : FEFileExport(prj)
 {
 	m_compress = false;

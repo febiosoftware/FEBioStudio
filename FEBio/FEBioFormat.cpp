@@ -36,6 +36,36 @@ SOFTWARE.*/
 #define stricmp strcmp
 #endif
 
+//=============================================================================
+template <> void string_to_type<vec2i>(const std::string& s, vec2i& v)
+{
+	sscanf(s.c_str(), "%d,%d", &v.x, &v.y);
+}
+
+template <> void string_to_type<vec3f>(const std::string& s, vec3f& v)
+{
+	sscanf(s.c_str(), "%g,%g,%g", &v.x, &v.y, &v.z);
+}
+
+template <> void string_to_type<vec3d>(const std::string& s, vec3d& v)
+{
+	sscanf(s.c_str(), "%lg,%lg,%lg", &v.x, &v.y, &v.z);
+}
+
+template <> void string_to_type<mat3d>(const std::string& s, mat3d& v)
+{
+	double a[9] = { 0 };
+	sscanf(s.c_str(), "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", a, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8);
+	v = mat3d(a);
+}
+
+template <> void string_to_type<GLColor>(const std::string& s, GLColor& v)
+{
+	sscanf(s.c_str(), "%c,%c,%c", &v.r, &v.g, &v.b);
+}
+
+//=============================================================================
+
 //-----------------------------------------------------------------------------
 int GetDOFCode(const char* sz)
 {
@@ -194,9 +224,9 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
     const char* szi = 0;
     int idx = 0;
     for (int i=0; i<tag.m_natt; ++i) {
-        if (strcmp(tag.m_att[i].m_sztag, "lc") != 0) {
-            szi = tag.m_att[i].m_sztag;
-            idx = atoi(tag.m_att[i].m_szval);
+        if (strcmp(tag.m_att[i].name(), "lc") != 0) {
+            szi = tag.m_att[i].name();
+            idx = atoi(tag.m_att[i].cvalue());
             break;
         }
     }
@@ -509,7 +539,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				if (tag == "solute")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
-					const char* sz = tag.Attribute("name").m_szval;
+					const char* sz = tag.Attribute("name").cvalue();
 					int z = 0;
 					double M = 1;
 					double d = 1;
@@ -542,7 +572,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				if (tag == "solid_bound")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
-					const char* sz = tag.Attribute("name").m_szval;
+					const char* sz = tag.Attribute("name").cvalue();
 					int z = 0;
 					double M = 1;
 					double d = 1;
@@ -1598,7 +1628,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 		{
 			if (tag == "equation")
 			{
-				ProcessReactionEquation(GetFEModel(), pm, tag.m_szval);
+				ProcessReactionEquation(GetFEModel(), pm, tag.szvalue());
 			}
 			else if (tag == "rate_constant")
 			{
