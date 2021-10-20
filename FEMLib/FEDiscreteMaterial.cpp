@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEDiscreteMaterial.h"
 #include <MeshTools/FEProject.h>
 #include <FSCore/ParamBlock.h>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 #include <FEBioLink/FEBioInterface.h>
 
 //===================================================================

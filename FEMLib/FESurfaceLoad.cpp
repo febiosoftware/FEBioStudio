@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FESurfaceLoad.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 #include <MeshTools/FEItemListBuilder.h>
 #include "enums.h"
 

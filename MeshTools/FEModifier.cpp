@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include "FESplitModifier.h"
 #include <GeomLib/GObject.h>
 #include <stdarg.h>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 #include <MeshLib/FEMeshBuilder.h>
 
 std::string FEModifier::m_error;

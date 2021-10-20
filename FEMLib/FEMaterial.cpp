@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEMaterial.h"
 #include <MeshTools/FEProject.h>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 #include <FEBioStudio/WebDefines.h>
 #include "FEDiscreteMaterial.h"
 #include <FEBioLink/FEBioClass.h>

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/FEModel.h>
 #include <MeshTools/GGroup.h>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 #include "enums.h"
 
 //=============================================================================

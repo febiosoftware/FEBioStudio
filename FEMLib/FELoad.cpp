@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FELoad.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 //=============================================================================
 // NODAL LOAD

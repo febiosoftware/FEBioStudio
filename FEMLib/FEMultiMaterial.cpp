@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FEMaterialFactory.h"
 #include <MeshTools/FEProject.h>
 #include <sstream>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 using std::stringstream;
 

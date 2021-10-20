@@ -208,7 +208,7 @@ public:
 protected:
 	int				m_nID;		// parameter ID
 	Param_Type		m_ntype;	// parameter type
-	const char*		m_szunit;	// scientific unit (see paramunit.h)
+	const char*		m_szunit;	// scientific unit (see FECore\units.h)
 	int				m_nstate;	// parameter state
 
 	unsigned int	m_flags;	// FEBio parameter flags

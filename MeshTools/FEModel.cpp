@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 #include <FSCore/ParamBlock.h>
 #include "GGroup.h"
 #include "GModel.h"

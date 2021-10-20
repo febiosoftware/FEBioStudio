@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEMaterialFactory.h"
 #include "FEMaterial.h"
 #include "enums.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 //=============================================================================
 // FEMaterialProperty

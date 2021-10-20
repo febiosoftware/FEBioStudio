@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <GeomLib/GObject.h>
 #include "units.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 CMeshInfoPanel::CMeshInfoPanel(QWidget* parent) : QWidget(parent)
 {

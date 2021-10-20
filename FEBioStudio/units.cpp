@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "units.h"
 #include "UnitParser.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 #ifdef _DEBUG
 static int unit_system = Units::SI;

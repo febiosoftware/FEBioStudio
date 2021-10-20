@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEInitialCondition.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 //-----------------------------------------------------------------------------
 FENodalVelocities::FENodalVelocities(FEModel* ps) : FEInitialNodalDOF(FE_NODAL_VELOCITIES, ps)

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FERigidConstraint.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 FERigidConstraintOld::FERigidConstraintOld(int ntype, int nstep)
 {
