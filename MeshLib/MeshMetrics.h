@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -79,6 +79,11 @@ double MinEdgeLength(const FEMesh& mesh, const FEElement& e);
 
 // get the max edge length of an element
 double MaxEdgeLength(const FEMesh& mesh, const FEElement& e);
+
+float eval_curvature(const vector<vec3f>& x, const vec3f& r0, vec3f sn, int measure, bool useExtendedFit, int maxIter);
+
+// curvature measures (see for values for measure in FEMeshData_T.h, in FECurvatureField
+double Curvature(FEMesh& mesh, const FEElement& e, int measure);
 
 }
 

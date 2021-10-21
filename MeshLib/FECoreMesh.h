@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -80,7 +80,7 @@ public:
 	void ShowAllElements();
 
 public:
-	vec3d ElementCenter(FEElement_& el) const;
+	vec3d ElementCenter(const FEElement_& el) const;
 
 	// get the local positions of an element
 	void ElementNodeLocalPositions(const FEElement_& e, vec3d* r) const;

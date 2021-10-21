@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,13 +23,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-
 #include <vector>
-//using namespace std;
 
-#include "FEMeshBase.h"
+class FEFace;
+class FEMeshBase;
 
 struct NodeFaceRef {
 	int		fid;	// face index (into mesh' Face array)
@@ -60,12 +58,12 @@ public:
 
 	int FindFace(int inode, int n[10], int m);
 
-	const vector<NodeFaceRef>& FaceList(int n) const;
+	const std::vector<NodeFaceRef>& FaceList(int n) const;
 
 protected:
 	bool Sort(int node);
 
 protected:
 	FEMeshBase*	m_pm;
-	vector< vector<NodeFaceRef> >	m_face;
+	std::vector< std::vector<NodeFaceRef> >	m_face;
 };

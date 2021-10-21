@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "MeshMetrics.h"
 #include "triangulate.h"
 #include "MeshTools.h"
+#include "FENodeFaceList.h"
 #include "hex.h"
 #include "tet.h"
 #include "penta.h"
@@ -1069,6 +1070,252 @@ double MaxEdgeLength(const FEMesh& mesh, const FEElement& e)
 	}
 
 	return Lmax;
+}
+
+double Curvature(FEMesh& mesh, const FEElement& e, int measure)
+{
+	if (e.IsShell() == false) return 0.0;
+
+	// get the reference nodal position
+	int n = e.m_node[0];
+	vec3f r0 = to_vec3f(mesh.Node(n).pos());
+
+	// get the node-face list
+	const vector<NodeFaceRef>& nfl = mesh.NodeFaceList(n);
+	int NF = nfl.size();
+
+	// estimate surface normal
+	vec3f sn(0, 0, 0);
+	for (int i = 0; i < NF; ++i)
+	{
+		const FEFace& f = mesh.Face(nfl[i].fid);
+		sn += f.m_fn;
+	}
+	sn.Normalize();
+
+	// array of nodal points
+	vector<vec3f> x; x.reserve(128);
+
+	// number of levels
+	int nlevels = 1;// m_pdf->m_nlevels - 1;
+	if (nlevels < 0) nlevels = 0;
+	if (nlevels > 10) nlevels = 10;
+
+	// get the neighbors
+	set<int> nl1;
+	mesh.GetNodeNeighbors(n, nlevels, nl1);
+
+	// get the node coordinates
+	set<int>::iterator it;
+	for (it = nl1.begin(); it != nl1.end(); ++it)
+	{
+		if (*it != n) x.push_back(to_vec3f(mesh.Node(*it).pos()));
+	}
+
+	// evaluate curvature
+	float K = eval_curvature(x, r0, sn, measure, false, 10);
+
+	return K;
+}
+
+float eval_curvature(const vector<vec3f>& x, const vec3f& r0, vec3f sn, int measure, bool useExtendedFit, int maxIter)
+{
+	vector<vec3f> y; y.reserve(128);
+	y.resize(x.size());
+	int nn = x.size();
+
+	// for less than three neighbors, we assume K = 0
+	double K = 0.0;
+	if (nn < 3) K = 0;
+	else if ((nn < 5) || (useExtendedFit == false))
+	{
+		// for less than 5 points, or if the extended quadric flag is zero,
+		// we use the quadric method
+
+		// construct local coordinate system
+		vec3f e3 = sn;
+
+		vec3f qx(1.f - sn.x * sn.x, -sn.y * sn.x, -sn.z * sn.x);
+		if (qx.Length() < 1e-5) qx = vec3f(-sn.x * sn.y, 1.f - sn.y * sn.y, -sn.z * sn.y);
+		qx.Normalize();
+		vec3f e1 = qx;
+
+		vec3f e2 = e3 ^ e1;
+
+		Mat3d Q;
+		Q[0][0] = e1.x; Q[1][0] = e2.x; Q[2][0] = e3.x;
+		Q[0][1] = e1.y; Q[1][1] = e2.y; Q[2][1] = e3.y;
+		Q[0][2] = e1.z; Q[1][2] = e2.z; Q[2][2] = e3.z;
+		Mat3d Qt = Q.transpose();
+
+		// map coordinates
+		for (int i = 0; i < nn; ++i)
+		{
+			vec3f tmp = x[i] - r0;
+			y[i] = Q * tmp;
+		}
+
+		// setup the linear system
+		Matrix R(nn, 3);
+		vector<double> r(nn);
+		for (int i = 0; i < nn; ++i)
+		{
+			vec3f& p = y[i];
+			R[i][0] = p.x * p.x;
+			R[i][1] = p.x * p.y;
+			R[i][2] = p.y * p.y;
+			r[i] = p.z;
+		}
+
+		// solve for quadric coefficients
+		vector<double> q(3);
+		R.lsq_solve(q, r);
+		double a = q[0], b = q[1], c = q[2];
+
+		// calculate curvature
+		switch (measure)
+		{
+		case 0: // Gaussian
+			K = 4 * a * c - b * b;
+			break;
+		case 1:	// Mean
+			K = a + c;
+			break;
+		case 2:	// 1-principal
+			K = a + c + sqrt((a - c) * (a - c) + b * b);
+			break;
+		case 3:	// 2-principal
+			K = a + c - sqrt((a - c) * (a - c) + b * b);
+			break;
+		case 4:	// rms
+		{
+			double k1 = a + c + sqrt((a - c) * (a - c) + b * b);
+			double k2 = a + c - sqrt((a - c) * (a - c) + b * b);
+			K = sqrt(0.5 * (k1 * k1 + k2 * k2));
+		}
+		break;
+		case 5: // diff
+		{
+			double k1 = a + c + sqrt((a - c) * (a - c) + b * b);
+			double k2 = a + c - sqrt((a - c) * (a - c) + b * b);
+			K = k1 - k2;
+		}
+		break;
+		default:
+			assert(false);
+			K = 0;
+		}
+	}
+	else
+	{
+		// loop until converged
+		const int NMAX = 100;
+		int nmax = maxIter;
+		if (nmax > NMAX) nmax = NMAX;
+		if (nmax < 1) nmax = 1;
+		int niter = 0;
+		while (niter < nmax)
+		{
+			// construct local coordinate system
+			vec3f e3 = sn;
+
+			vec3f qx(1.f - sn.x * sn.x, -sn.y * sn.x, -sn.z * sn.x);
+			if (qx.Length() < 1e-5) qx = vec3f(-sn.x * sn.y, 1.f - sn.y * sn.y, -sn.z * sn.y);
+			qx.Normalize();
+			vec3f e1 = qx;
+
+			vec3f e2 = e3 ^ e1;
+
+			Mat3d Q;
+			Q[0][0] = e1.x; Q[1][0] = e2.x; Q[2][0] = e3.x;
+			Q[0][1] = e1.y; Q[1][1] = e2.y; Q[2][1] = e3.y;
+			Q[0][2] = e1.z; Q[1][2] = e2.z; Q[2][2] = e3.z;
+			Mat3d Qt = Q.transpose();
+
+			// map coordinates
+			for (int i = 0; i < nn; ++i)
+			{
+				vec3f tmp = x[i] - r0;
+				y[i] = Q * tmp;
+			}
+
+			// setup the linear system
+			Matrix R(nn, 5);
+			vector<double> r(nn);
+			for (int i = 0; i < nn; ++i)
+			{
+				vec3f& p = y[i];
+				R[i][0] = p.x * p.x;
+				R[i][1] = p.x * p.y;
+				R[i][2] = p.y * p.y;
+				R[i][3] = p.x;
+				R[i][4] = p.y;
+				r[i] = p.z;
+			}
+
+			// solve for quadric coefficients
+			vector<double> q(5);
+			R.lsq_solve(q, r);
+			double a = q[0], b = q[1], c = q[2], d = q[3], e = q[4];
+
+			// calculate curvature
+			double D = 1.0 + d * d + e * e;
+			switch (measure)
+			{
+			case 0: // Gaussian
+				K = (4 * a * c - b * b) / (D * D);
+				break;
+			case 1: // Mean
+				K = (a + c + a * e * e + c * d * d - b * d * e) / pow(D, 1.5);
+				break;
+			case 2: // 1-principal
+			{
+				double H = (a + c + a * e * e + c * d * d - b * d * e) / pow(D, 1.5);
+				double G = (4 * a * c - b * b) / (D * D);
+				K = H + sqrt(H * H - G);
+			}
+			break;
+			case 3: // 2-principal
+			{
+				double H = (a + c + a * e * e + c * d * d - b * d * e) / pow(D, 1.5);
+				double G = (4 * a * c - b * b) / (D * D);
+				K = H - sqrt(H * H - G);
+			}
+			break;
+			case 4: // RMS
+			{
+				double H = (a + c + a * e * e + c * d * d - b * d * e) / pow(D, 1.5);
+				double G = (4 * a * c - b * b) / (D * D);
+				double k1 = H + sqrt(H * H - G);
+				double k2 = H - sqrt(H * H - G);
+				K = sqrt((k1 * k1 + k2 * k2) * 0.5);
+			}
+			break;
+			case 5:
+			{
+				double H = (a + c + a * e * e + c * d * d - b * d * e) / pow(D, 1.5);
+				double G = (4 * a * c - b * b) / (D * D);
+				double k1 = H + sqrt(H * H - G);
+				double k2 = H - sqrt(H * H - G);
+				K = k1 - k2;
+			}
+			break;
+			default:
+				assert(false);
+				K = 0;
+			}
+
+			// setup the new normal
+			sn = vec3f(-(float)d, -(float)e, 1.f);
+			sn.Normalize();
+			sn = Qt * sn;
+
+			// increase counter
+			niter++;
+		}
+	}
+
+	return K;
 }
 
 }

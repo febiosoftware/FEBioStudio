@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,7 +47,7 @@ void FEMeshValuator::Evaluate(int nfield)
 	int NE = m_mesh.Elements();
 	Mesh_Data& data = m_mesh.GetMeshData();
 	data.Init(&m_mesh, 0.0, 0);
-	if (nfield < 11)
+	if (nfield < MAX_DEFAULT_FIELDS)
 	{
 		for (int i = 0; i < NE; ++i)
 		{
@@ -69,7 +69,7 @@ void FEMeshValuator::Evaluate(int nfield)
 	}
 	else
 	{
-		nfield -= 11;
+		nfield -= MAX_DEFAULT_FIELDS;
 		if ((nfield >= 0) && (nfield < m_mesh.MeshDataFields()))
 		{
 			FEMeshData* meshData = m_mesh.GetMeshDataField(nfield);
@@ -195,6 +195,18 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 		break;
 	case 10:
 		val = FEMeshMetrics::MaxEdgeLength(m_mesh, el);
+		break;
+	case 11:
+		if (el.IsShell())
+		{
+			val = FEMeshMetrics::Curvature(m_mesh, el, 2);
+		}
+		break;
+	case 12:
+		if (el.IsShell())
+		{
+			val = FEMeshMetrics::Curvature(m_mesh, el, 3);
+		}
 		break;
 	default:
 		val = 0.0;

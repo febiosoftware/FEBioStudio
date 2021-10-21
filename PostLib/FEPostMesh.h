@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -60,7 +60,6 @@ public:
 	void ClearAll();
 
 	const vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
-	const vector<NodeFaceRef>& NodeFaceList(int n) const { return m_NFL.FaceList(n); }
 
 public:
 	// --- G E O M E T R Y ---
@@ -121,7 +120,6 @@ protected:
 	vector<FENodeSet*>	m_NSet;	// node sets
 
 	FENodeElementList	m_NEL;
-	FENodeFaceList		m_NFL;
 };
 
 // find the element and the iso-parametric coordinates of a point inside the mesh

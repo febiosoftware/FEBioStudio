@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -97,10 +97,4 @@ void CGLLegendPlot::ShowLegend(bool b)
 	{
 		if (b) m_pbar->show(); else m_pbar->hide();
 	}
-}
-
-void CGLLegendPlot::Activate(bool bact)
-{
-	CGLPlot::Activate(bact);
-	ShowLegend(bact);
 }
