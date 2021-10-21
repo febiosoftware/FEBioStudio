@@ -224,6 +224,7 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 {
 	AddIntParam(0, "start point");
 	AddIntParam(0, "end point");
+	AddVecParam(vec3d(0, 0, 0), "Center of rotation");
 	AddDoubleParam(5.0, "size");
 	AddColorParam(GLColor(255, 0, 0), "color");
 
@@ -250,10 +251,16 @@ void GLMusclePath::Render(CGLContext& rc)
 	vec3d r1 = mesh.NodePosition(n1);
 	vec3d t = r1 - r0; t.Normalize();
 
+	// draw the muscle path
 	glColor3ub(c.r, c.g, c.b);
 	glx::drawSphere(r0, 1.5*R, vec3d(0, 0, 1));
 	glx::drawSphere(r1, 1.5*R, vec3d(0, 0, 1));
 	glx::drawSmoothPath(r0, r1, R, t, t);
+
+	// draw the rotation center
+	vec3d o = GetVecValue(ROTATION_CENTER);
+	glColor3ub(255, 255, 0);
+	glx::drawSphere(o, R, vec3d(0, 0, 1));
 }
 
 void GLMusclePath::Update()
@@ -280,9 +287,24 @@ double GLMusclePath::DataValue(int field, int step)
 
 	Post::FEPostModel& fem = *glm->GetFEModel();
 
-
 	vec3d r0 = fem.NodePosition(n0, step);
 	vec3d r1 = fem.NodePosition(n1, step);
 
-	return (r1 - r0).Length();
+	vec3d c = GetVecValue(ROTATION_CENTER);
+
+	switch (field)
+	{
+	case 1: return (r1 - r0).Length(); break;
+	case 2: 
+	{
+		vec3d e = r1 - r0; e.Normalize();
+		vec3d t = r1 - c;
+		vec3d n = e ^ t;
+		return n.Length();
+		break;
+	}
+	break;
+	}
+
+	return 0.0;
 }

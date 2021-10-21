@@ -67,7 +67,7 @@ private:
 //===================================================================
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, SIZE, COLOR };
+	enum { START_POINT, END_POINT, ROTATION_CENTER, SIZE, COLOR };
 
 public:
 	GLMusclePath(CGLModel* fem);
