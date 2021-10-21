@@ -49,10 +49,10 @@ bool BivariatePolynomialSpline::GetSplineCoeficients()
     
     // create solver and matrix
     LUSolver        solver;
-    DenseMatrix     matrix;
+    FECore::DenseMatrix     matrix;
     solver.SetMatrix(&matrix);
     int N = m_n + 1;
-    matrix.Create(N*N);
+    matrix.Create(N*N, N*N);
     
     // get summations of the powers of u and v
     int np = m_pc->Points();

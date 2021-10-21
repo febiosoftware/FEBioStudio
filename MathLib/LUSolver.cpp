@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "LUSolver.h"
 #include <math.h>
+using namespace FECore;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 LUSolver::LUSolver() : m_pA(0)
@@ -41,7 +43,8 @@ bool LUSolver::Factor()
 	int i, imax, j, k;
 	double big, dum, sum, temp;
 
-	int n = a.Size();
+	int n = a.Rows();
+	assert(n == a.Columns());
 	// create index vector
 	indx.resize(n);
 
@@ -110,7 +113,7 @@ bool LUSolver::BackSolve(vector<double>& x, vector<double>& b)
 	int i, ii=0, ip, j;
 	double sum;
 
-	int n = a.Size();
+	int n = a.Rows();
 	for (i=0; i<n; ++i)
 	{
 		ip = indx[i];

@@ -25,12 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "DenseMatrix.h"
+#include <FECore/DenseMatrix.h>
 #include <vector>
-
-//using namespace std;
-
-using std::vector;
 
 //-----------------------------------------------------------------------------
 //! LU decomposition solver
@@ -57,9 +53,9 @@ public:
 	void Destroy();
 
 	//! Set the matrix
-    void SetMatrix(DenseMatrix* pA) { m_pA = pA; }
+    void SetMatrix(FECore::DenseMatrix* pA) { m_pA = pA; }
     
 protected:
-	vector<int>		indx;	//!< indices
-	DenseMatrix*	m_pA;	//!< sparse matrix
+	std::vector<int>		indx;	//!< indices
+	FECore::DenseMatrix*	m_pA;	//!< sparse matrix
 };
