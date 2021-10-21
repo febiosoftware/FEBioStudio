@@ -67,7 +67,7 @@ private:
 //===================================================================
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, ROTATION_CENTER, SIZE, COLOR };
+	enum { START_POINT, MID_POINT, END_POINT, ROTATION_CENTER, SIZE, COLOR };
 
 public:
 	GLMusclePath(CGLModel* fem);
@@ -82,6 +82,7 @@ public:
 	double DataValue(int field, int step);
 
 private:
+	std::vector<vec3d>	m_path;	// points defining the path
 };
 
 }

@@ -198,7 +198,20 @@ void glx::drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N)
 }
 
 //-----------------------------------------------------------------------------
-void glx::drawSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
+void glx::drawSphere(const vec3d& r, float R)
+{
+	GLUquadricObj* pobj = gluNewQuadric();
+	glPushMatrix();
+	{
+		glTranslated(r.x, r.y, r.z);
+		gluSphere(pobj, R, 32, 32);
+	}
+	glPopMatrix();
+	gluDeleteQuadric(pobj);
+}
+
+//-----------------------------------------------------------------------------
+void glx::drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 {
 	quatd q0(vec3d(0, 0, 1), n0);
 
@@ -211,8 +224,11 @@ void glx::drawSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 		double z1 = sin(th0);
 		double z2 = sin(th1);
 
-		double r1 = R * cos(th0);
-		double r2 = R * cos(th1);
+		double ct0 = cos(th0);
+		double ct1 = cos(th1);
+
+		double r1 = R * ct0;
+		double r2 = R * ct1;
 
 		if (j < M - 1)
 		{
@@ -228,8 +244,8 @@ void glx::drawSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 				vec3d ra = r0 + ri0;
 				vec3d rb = r0 + ri1;
 
-				vec3d na(x, y, z1); q0.RotateVector(na);
-				vec3d nb(x, y, z2); q0.RotateVector(nb);
+				vec3d na(ct0*x, ct0*y, z1); q0.RotateVector(na);
+				vec3d nb(ct1*x, ct1*y, z2); q0.RotateVector(nb);
 
 				glTexCoord1d(tex); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
 				glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
@@ -253,7 +269,7 @@ void glx::drawSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 
 					vec3d ri0(r1 * x, r1 * y, R * z1); q0.RotateVector(ri0);
 					vec3d ra = r0 + ri0;
-					vec3d na(x, y, z1); q0.RotateVector(na);
+					vec3d na(ct0*x, ct0*y, z1); q0.RotateVector(na);
 					glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
 				}
 			}
@@ -279,7 +295,7 @@ static vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, cons
 }
 
 //-----------------------------------------------------------------------------
-void glx::drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0, float t1)
+void glx::drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0, float t1, int nsegs)
 {
 	quatd q0(vec3d(0, 0, 1), n0);
 	quatd q1(vec3d(0, 0, 1), n1);
@@ -288,7 +304,9 @@ void glx::drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d&
 	vec3d m0 = n0 * L;
 	vec3d m1 = n1 * L;
 
-	const int M = 5;
+	int M = nsegs;
+	if (M < 2) M = 2;
+
 	const int N = 16;
 	for (int j = 0; j < M; ++j)
 	{
@@ -320,6 +338,43 @@ void glx::drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d&
 			glTexCoord1d(tb); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
 		}
 		glEnd();
+	}
+}
+
+void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
+{
+	int NP = (int)path.size();
+	if (NP < 2) return;
+
+	vec3d r0 = path[0];
+	vec3d r1 = path[1];
+	vec3d e1 = r1 - r0; e1.Normalize();
+	vec3d r2;
+
+	for (int i = 0; i < NP-1; ++i)
+	{
+		vec3d e2 = e1;
+		r2 = r1;
+		if (i < NP - 2)
+		{
+			r2 = path[i + 2];
+			e2 = r2 - r0; e2.Normalize();
+		}
+		else {
+			e2 = r1 - r0; e2.Normalize();
+		}
+
+		// render cylinder
+		glx::drawSmoothPath(r0, r1, R, e1, e2, 0.f, 0.f, 32);
+		
+		// render caps
+		if (i ==    0) glx::drawHalfSphere(r0, R, -e1);
+		if (i == NP-2) glx::drawHalfSphere(r1, R,  e2);
+
+		// prep for next segment
+		r0 = r1;
+		r1 = r2;
+		e1 = e2;
 	}
 }
 

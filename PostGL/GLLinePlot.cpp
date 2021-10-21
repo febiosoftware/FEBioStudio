@@ -406,8 +406,8 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				glx::drawSmoothPath(l.m_r0, l.m_r1, m_line, e1, e2);
 
 				// render caps
-				if (l.m_end[0] == 1) glx::drawSphere(l.m_r0, m_line, e1); 
-				if (l.m_end[1] == 1) glx::drawSphere(l.m_r1, m_line, e2);
+				if (l.m_end[0] == 1) glx::drawHalfSphere(l.m_r0, m_line, e1);
+				if (l.m_end[1] == 1) glx::drawHalfSphere(l.m_r1, m_line, e2);
 			}
 		}
 	}
@@ -444,8 +444,8 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				glx::drawSmoothPath(l.m_r0, l.m_r1, m_line, e1, e2);
 
 				// render caps
-				if (l.m_end[0] == 1) glx::drawSphere(l.m_r0, m_line, e1);
-				if (l.m_end[1] == 1) glx::drawSphere(l.m_r1, m_line, e2);
+				if (l.m_end[0] == 1) glx::drawHalfSphere(l.m_r0, m_line, e1);
+				if (l.m_end[1] == 1) glx::drawHalfSphere(l.m_r1, m_line, e2);
 			}
 		}
 	}
@@ -481,8 +481,8 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				glx::drawSmoothPath(l.m_r0, l.m_r1, m_line, e1, e2, f0, f1);
 
 				// render caps
-				if (l.m_end[0] == 1) glx::drawSphere(l.m_r0, m_line, e1, f0);
-				if (l.m_end[1] == 1) glx::drawSphere(l.m_r1, m_line, e2, f1);
+				if (l.m_end[0] == 1) glx::drawHalfSphere(l.m_r0, m_line, e1, f0);
+				if (l.m_end[1] == 1) glx::drawHalfSphere(l.m_r1, m_line, e2, f1);
 			}
 		}
 		glPopAttrib();

@@ -223,6 +223,7 @@ static int n = 1;
 GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 {
 	AddIntParam(0, "start point");
+	AddIntParam(0, "mid point");
 	AddIntParam(0, "end point");
 	AddVecParam(vec3d(0, 0, 0), "Center of rotation");
 	AddDoubleParam(5.0, "size");
@@ -235,32 +236,27 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 
 void GLMusclePath::Render(CGLContext& rc)
 {
-	CGLModel* glm = GetModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
+	if (m_path.empty()) return;
 
-	int n0 = GetIntValue(START_POINT) - 1;
-	int n1 = GetIntValue(END_POINT) - 1;
+	CGLModel* glm = GetModel();
+
 	double R = GetFloatValue(SIZE);
 	GLColor c = GetColorValue(COLOR);
+
+	int N = (int)m_path.size();
+	vec3d r0 = m_path[0];
+	vec3d r1 = m_path[N-1];
 	
-	int NN = mesh.Nodes();
-	if ((n0 < 0) || (n0 >= NN)) return;
-	if ((n1 < 0) || (n1 >= NN)) return;
-
-	vec3d r0 = mesh.NodePosition(n0);
-	vec3d r1 = mesh.NodePosition(n1);
-	vec3d t = r1 - r0; t.Normalize();
-
 	// draw the muscle path
 	glColor3ub(c.r, c.g, c.b);
-	glx::drawSphere(r0, 1.5*R, vec3d(0, 0, 1));
-	glx::drawSphere(r1, 1.5*R, vec3d(0, 0, 1));
-	glx::drawSmoothPath(r0, r1, R, t, t);
+	glx::drawSphere(r0, 1.5*R);
+	glx::drawSphere(r1, 1.5*R);
+	glx::drawSmoothPath(m_path, R);
 
 	// draw the rotation center
 	vec3d o = GetVecValue(ROTATION_CENTER);
 	glColor3ub(255, 255, 0);
-	glx::drawSphere(o, R, vec3d(0, 0, 1));
+	glx::drawSphere(o, R);
 }
 
 void GLMusclePath::Update()
@@ -270,7 +266,38 @@ void GLMusclePath::Update()
 
 void GLMusclePath::Update(int ntime, float dt, bool breset)
 {
+	m_path.clear();
 
+	CGLModel* glm = GetModel();
+	FEPostMesh& mesh = *glm->GetActiveMesh();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(MID_POINT  ) - 1;
+	int n2 = GetIntValue(END_POINT  ) - 1;
+
+	int NN = mesh.Nodes();
+	if ((n0 < 0) || (n0 >= NN)) return;
+	if ((n2 < 0) || (n2 >= NN)) return;
+
+	if ((n1 < 0) || (n1 >= NN))
+	{
+		vec3d r0 = fem.NodePosition(n0, ntime);
+		vec3d r2 = fem.NodePosition(n2, ntime);
+
+		m_path.push_back(r0);
+		m_path.push_back(r2);
+	}
+	else
+	{
+		vec3d r0 = fem.NodePosition(n0, ntime);
+		vec3d r1 = fem.NodePosition(n1, ntime);
+		vec3d r2 = fem.NodePosition(n2, ntime);
+
+		m_path.push_back(r0);
+		m_path.push_back(r1);
+		m_path.push_back(r2);
+	}
 }
 
 bool GLMusclePath::UpdateData(bool bsave)
