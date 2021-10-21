@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "BivariatePolynomialSpline.h"
-#include "MathLib/LUSolver.h"
+#include <FECore/LUSolver.h>
 #include <stdio.h>
 
 inline int Factorial(int n) {
@@ -48,7 +48,7 @@ bool BivariatePolynomialSpline::GetSplineCoeficients()
     }
     
     // create solver and matrix
-    LUSolver        solver;
+    LUSolver solver;
     FECore::DenseMatrix     matrix;
     solver.SetMatrix(&matrix);
     int N = m_n + 1;
@@ -100,9 +100,9 @@ bool BivariatePolynomialSpline::GetSplineCoeficients()
     }
     
     // perform the back substitution
-    solver.BackSolve(m_c[0], m_c[0]);
-    solver.BackSolve(m_c[1], m_c[1]);
-    solver.BackSolve(m_c[2], m_c[2]);
+    solver.BackSolve(m_c[0].data(), m_c[0].data());
+    solver.BackSolve(m_c[1].data(), m_c[1].data());
+    solver.BackSolve(m_c[2].data(), m_c[2].data());
     
     return true;
 }
