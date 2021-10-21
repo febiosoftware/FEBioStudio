@@ -26,6 +26,8 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 
+class FEMesh;
+
 namespace Post {
 
 class GLProbe : public CGLPlot
@@ -67,7 +69,7 @@ private:
 //===================================================================
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, MID_POINT, END_POINT, ROTATION_CENTER, SIZE, COLOR };
+	enum { START_POINT, END_POINT, ROTATION_CENTER, SIZE, COLOR };
 
 public:
 	GLMusclePath(CGLModel* fem);
@@ -82,7 +84,10 @@ public:
 	double DataValue(int field, int step);
 
 private:
+	std::vector<int>	m_selNodes;	// selected nodes
 	std::vector<vec3d>	m_path;	// points defining the path
+
+	::FEMesh* m_hull;
 };
 
 }
