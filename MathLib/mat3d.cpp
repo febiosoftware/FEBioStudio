@@ -29,7 +29,7 @@ SOFTWARE.*/
 //////////////////////////////////////////////////////////////////////
 
 #include "mat3d.h"
-#include "eig3.h"
+
 /*
 #define ROTATE(a, i, j, k, l) g=a[i][j]; h=a[k][l];a[i][j]=g-s*(h+g*tau); a[k][l] = h + s*(g - h*tau);
 
