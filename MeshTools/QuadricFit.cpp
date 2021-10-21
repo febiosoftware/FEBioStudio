@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "QuadricFit.h"
-#include <MathLib/powell.h>
+#include <FECore/tools.h>
 #include <stdio.h>
 
 using std::swap;

@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ConchoidFit.h"
 #include "SphereFit.h"
-#include <MathLib/powell.h>
+#include <FECore/tools.h>
 #include <stdio.h>
 
 //////////////////////////////////////////////////////////////////////
