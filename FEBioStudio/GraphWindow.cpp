@@ -60,6 +60,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostLib/evaluate.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLMusclePath.h>
 
 class TimeRangeOptionsUI
 {

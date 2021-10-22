@@ -30,12 +30,12 @@ class FEMesh;
 
 namespace Post {
 
-class GLProbe : public CGLPlot
+class GLMusclePath : public CGLPlot
 {
-	enum { INIT_POS, SIZE, COLOR, FOLLOW };
+	enum { START_POINT, END_POINT, ROTATION_CENTER, SIZE, COLOR };
 
 public:
-	GLProbe(CGLModel* fem);
+	GLMusclePath(CGLModel* fem);
 
 	void Render(CGLContext& rc) override;
 
@@ -44,25 +44,13 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
-	double DataValue(int nfield, int nstep);
-
-public:
-	GLColor GetColor() const;
-	void SetColor(const GLColor& c);
+	double DataValue(int field, int step);
 
 private:
-	int ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt);
+	std::vector<int>	m_selNodes;	// selected nodes
+	std::vector<vec3d>	m_path;	// points defining the path
 
-private:
-	vec3d	m_initPos;
-	GLColor	m_col;
-	double	m_size;
-	bool	m_bfollow;
-
-	vec3d		m_pos;
-	double		m_R;
-	int			m_lastTime;
-	double		m_lastdt;
-	int			m_elem;
+	::FEMesh* m_hull;
 };
+
 }

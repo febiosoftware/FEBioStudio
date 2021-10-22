@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLMusclePath.h>
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
