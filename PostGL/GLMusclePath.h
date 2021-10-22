@@ -36,6 +36,7 @@ class GLMusclePath : public CGLPlot
 
 public:
 	GLMusclePath(CGLModel* fem);
+	~GLMusclePath();
 
 	void Render(CGLContext& rc) override;
 
@@ -46,11 +47,16 @@ public:
 
 	double DataValue(int field, int step);
 
-private:
-	std::vector<int>	m_selNodes;	// selected nodes
-	std::vector<vec3d>	m_path;	// points defining the path
+protected:
+	void UpdatePath(int ntime);
+	void UpdatePathData(int ntime);
+	void ClearPaths();
 
-	::FEMesh* m_hull;
+private:
+	class PathData;
+	std::vector<PathData*>	m_path;	// points defining the path
+
+	std::vector<int>	m_selNodes;	// selected nodes
 };
 
 }

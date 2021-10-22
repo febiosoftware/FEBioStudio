@@ -34,6 +34,28 @@ SOFTWARE.*/
 #include <sstream>
 using namespace Post;
 
+class GLMusclePath::PathData
+{
+public:
+	enum { PathLength, MomentArm };
+
+public:
+	PathData() : m_hull(nullptr) {}
+	~PathData()
+	{
+		if (m_hull) delete m_hull;
+	}
+
+public:
+	std::vector<vec3d>	m_points;		// points defining the path
+	::FEMesh*			m_hull;			// the convex hull
+
+	double		m_data[2];	// 0 = length, 1 = moment arm
+
+private:
+	PathData(const PathData& path) {}
+};
+
 static int n = 1;
 GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 {
@@ -46,8 +68,6 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 	std::stringstream ss;
 	ss << "MusclePath" << n++;
 	SetName(ss.str());
-
-	m_hull = nullptr;
 
 	// we need the active face selection 
 	if (fem)
@@ -71,35 +91,60 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 	}
 }
 
+GLMusclePath::~GLMusclePath()
+{
+	ClearPaths();
+}
+
+void GLMusclePath::ClearPaths()
+{
+	for (int i = 0; i < m_path.size(); ++i)
+	{
+		delete m_path[i];
+	}
+	m_path.clear();
+}
+
 void GLMusclePath::Render(CGLContext& rc)
 {
 	if (m_path.empty()) return;
 
 	CGLModel* glm = GetModel();
 
+	int nstate = glm->CurrentTimeIndex();
+	if ((nstate < 0) || (nstate >= m_path.size())) return;
+
+	PathData* path = m_path[nstate];
+	if (path == nullptr) return;
+
 	double R = GetFloatValue(SIZE);
 	GLColor c = GetColorValue(COLOR);
 
-	int N = (int)m_path.size();
-	vec3d r0 = m_path[0];
-	vec3d r1 = m_path[N - 1];
+	// draw the path
+	int N = (int) path->m_points.size();
+	if (N > 1)
+	{
+		vec3d r0 = path->m_points[0];
+		vec3d r1 = path->m_points[N - 1];
 
-	// draw the muscle path
-	glColor3ub(c.r, c.g, c.b);
-	glx::drawSphere(r0, 1.5 * R);
-	glx::drawSphere(r1, 1.5 * R);
-	glx::drawSmoothPath(m_path, R);
+		// draw the muscle path
+		glColor3ub(c.r, c.g, c.b);
+		glx::drawSphere(r0, 1.5 * R);
+		glx::drawSphere(r1, 1.5 * R);
+		glx::drawSmoothPath(path->m_points, R);
+	}
 
 	// draw the rotation center
 	vec3d o = GetVecValue(ROTATION_CENTER);
 	glColor3ub(255, 255, 0);
 	glx::drawSphere(o, R);
 
-	if (m_hull)
+	// draw the convex hull for the path
+	if (path->m_hull)
 	{
 		GLMeshRender gl;
 		glColor3ub(255, 64, 164);
-		gl.RenderMeshLines(m_hull);
+		gl.RenderMeshLines(path->m_hull);
 	}
 }
 
@@ -188,12 +233,31 @@ std::vector<vec3d> FindShortestPath(FEMesh& mesh, int m0, int m1)
 
 void GLMusclePath::Update(int ntime, float dt, bool breset)
 {
-	m_path.clear();
-	delete m_hull; m_hull = nullptr;
-
 	CGLModel* glm = GetModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
 	Post::FEPostModel& fem = *glm->GetFEModel();
+
+	if (breset)
+	{
+		// clear current path data
+		ClearPaths();
+
+		// allocate new path data
+		m_path.assign(fem.GetStates(), nullptr);
+	}
+
+	if ((ntime < 0) || (ntime >= m_path.size())) return;
+
+	// If we already calculated the path for this time step, we're done
+	if (m_path[ntime] != nullptr) return;
+
+	UpdatePath(ntime);
+}
+
+void GLMusclePath::UpdatePath(int ntime)
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+	FEPostMesh& mesh = *glm->GetActiveMesh();
 
 	int n0 = GetIntValue(START_POINT) - 1;
 	int n1 = GetIntValue(END_POINT) - 1;
@@ -205,10 +269,12 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 	vec3d r0 = fem.NodePosition(n0, ntime);
 	vec3d r1 = fem.NodePosition(n1, ntime);
 
+	PathData* path = new PathData;
+
 	if (m_selNodes.size() < 2)
 	{
-		m_path.push_back(r0);
-		m_path.push_back(r1);
+		path->m_points.push_back(r0);
+		path->m_points.push_back(r1);
 	}
 	else
 	{
@@ -227,27 +293,71 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 		// calculate the convex hull
 		FEConvexHullMesher mesher;
 
-		m_hull = mesher.Create(v);
-		if (m_hull == nullptr) return;
+		path->m_hull = mesher.Create(v);
+		if (path->m_hull == nullptr) {
+			delete path; return;
+		}
 
 		// make sure our initial points are still outside
-		FEMesh& mesh = *m_hull;
+		FEMesh& mesh = *path->m_hull;
 		mesh.TagAllNodes(0);
 		for (int i = 0; i < mesh.Faces(); ++i)
 		{
 			FEFace& face = mesh.Face(i);
 			for (int j = 0; j < face.Nodes(); ++j) mesh.Node(face.n[j]).m_ntag = 1;
 		}
-		if (mesh.Node(0).m_ntag != 1) { assert(false); return; }
-		if (mesh.Node(1).m_ntag != 1) { assert(false); return; }
+		if (mesh.Node(0).m_ntag != 1) { assert(false); delete path; return; }
+		if (mesh.Node(1).m_ntag != 1) { assert(false); delete path; return; }
 
 		// extract the outide surface
 		FEMesh* surf = mesh.ExtractFaces(false);
 
 		// calculate the shortest path
 		// NOTE: This assumes that the first and last nodes remain at indices 0 and 1 of the surface mesh!
-		m_path = FindShortestPath(*surf, 0, 1);
+		path->m_points = FindShortestPath(*surf, 0, 1);
 	}
+
+	// All is well, so assign the new path
+	m_path[ntime] = path;
+
+	// also update the path data
+	UpdatePathData(ntime);
+}
+
+void GLMusclePath::UpdatePathData(int ntime)
+{
+	if ((ntime < 0) || (ntime >= m_path.size())) return;
+
+	PathData* path = m_path[ntime];
+	if (path == nullptr) return;
+
+	// calculate path length
+	vector<vec3d>& pt = path->m_points;
+	double L = 0.0;
+	for (int i = 0; i < pt.size() - 1; ++i)
+	{
+		vec3d& r0 = pt[i];
+		vec3d& r1 = pt[i + 1];
+		L += (r1 - r0).Length();
+	}
+	path->m_data[PathData::PathLength] = L;
+
+	// calculate moment arm
+	if (pt.size() >= 2)
+	{
+		int n = pt.size();
+		vec3d& r0 = pt[n - 2];
+		vec3d& r1 = pt[n - 1];
+
+		vec3d c = GetVecValue(ROTATION_CENTER);
+
+		vec3d e = r1 - r0; e.Normalize();
+		vec3d t = r1 - c;
+		vec3d m = e ^ t;
+
+		path->m_data[PathData::MomentArm] = m.Length();
+	}
+	else path->m_data[PathData::MomentArm] = 0.0;
 }
 
 bool GLMusclePath::UpdateData(bool bsave)
@@ -257,31 +367,24 @@ bool GLMusclePath::UpdateData(bool bsave)
 
 double GLMusclePath::DataValue(int field, int step)
 {
-	int n0 = GetIntValue(START_POINT) - 1;
-	int n1 = GetIntValue(END_POINT) - 1;
+	// make sure the range is valid
+	if ((step < 0) || (step >= m_path.size())) return 0.0;
 
-	CGLModel* glm = GetModel();
+	// see if we should update the data
+	if (m_path[step] == nullptr) UpdatePath(step);
 
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	// get the path
+	PathData* path = m_path[step];
+	if (path == nullptr) return 0.0;
 
-	vec3d r0 = fem.NodePosition(n0, step);
-	vec3d r1 = fem.NodePosition(n1, step);
-
-	vec3d c = GetVecValue(ROTATION_CENTER);
-
+	// get the data field
+	double val = 0.0;
 	switch (field)
 	{
-	case 1: return (r1 - r0).Length(); break;
-	case 2:
-	{
-		vec3d e = r1 - r0; e.Normalize();
-		vec3d t = r1 - c;
-		vec3d n = e ^ t;
-		return n.Length();
-		break;
-	}
-	break;
+	case 1: val = path->m_data[PathData::PathLength]; break;
+	case 2: val = path->m_data[PathData::MomentArm ]; break;
 	}
 
-	return 0.0;
+	// return 
+	return val;
 }
