@@ -50,6 +50,8 @@ public:
 	std::vector<vec3d>	m_points;		// points defining the path
 	::FEMesh*			m_hull;			// the convex hull
 
+	vec3d	m_ro;		// position of origin
+
 	double		m_data[2];	// 0 = length, 1 = moment arm
 
 private:
@@ -64,10 +66,13 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 	AddVecParam(vec3d(0, 0, 0), "Center of rotation");
 	AddDoubleParam(5.0, "size");
 	AddColorParam(GLColor(255, 0, 0), "color");
+	AddBoolParam(true, "Draw convex hull");
 
 	std::stringstream ss;
 	ss << "MusclePath" << n++;
 	SetName(ss.str());
+
+	m_closestFace = -1;
 
 	// we need the active face selection 
 	if (fem)
@@ -129,18 +134,23 @@ void GLMusclePath::Render(CGLContext& rc)
 
 		// draw the muscle path
 		glColor3ub(c.r, c.g, c.b);
-		glx::drawSphere(r0, 1.5 * R);
-		glx::drawSphere(r1, 1.5 * R);
 		glx::drawSmoothPath(path->m_points, R);
+
+		// draw the end points
+		glx::drawSphere(r0, 1.5 * R);
+
+		glColor3ub(255, 0, 255);
+		glx::drawSphere(r1, 1.5 * R);
 	}
 
 	// draw the rotation center
-	vec3d o = GetVecValue(ROTATION_CENTER);
+	vec3d o = path->m_ro;
 	glColor3ub(255, 255, 0);
 	glx::drawSphere(o, R);
 
 	// draw the convex hull for the path
-	if (path->m_hull)
+	bool bdrawDebug = GetBoolValue(DRAW_DEBUG);
+	if (path->m_hull && bdrawDebug)
 	{
 		GLMeshRender gl;
 		glColor3ub(255, 64, 164);
@@ -150,7 +160,7 @@ void GLMusclePath::Render(CGLContext& rc)
 
 void GLMusclePath::Update()
 {
-
+	Update(GetModel()->CurrentTimeIndex(), 0.f, false);
 }
 
 std::vector<vec3d> FindShortestPath(FEMesh& mesh, int m0, int m1)
@@ -206,7 +216,13 @@ std::vector<vec3d> FindShortestPath(FEMesh& mesh, int m0, int m1)
 		}
 
 		// choose the next node
-		assert(nmin != -1);
+//		assert(nmin != -1);
+		if (nmin == -1)
+		{
+			// hhmm, something went wrong
+			return std::vector<vec3d>();
+		}
+
 		L0 = dist[nmin];
 		dist[nmin] = -1.0;
 		ncurrent = nmin;
@@ -214,19 +230,31 @@ std::vector<vec3d> FindShortestPath(FEMesh& mesh, int m0, int m1)
 
 	// build the path
 	// NOTE: This traverses the path in reverse!
-	std::vector<vec3d> path;
+	std::vector<vec3d> tmp;
 	ncurrent = m1;
-	path.push_back(mesh.Node(m1).pos());
+	tmp.push_back(mesh.Node(m1).pos());
 	do
 	{
 		int parentNode = mesh.Node(ncurrent).m_ntag;
 
 		vec3d rc = mesh.Node(parentNode).pos();
-		path.push_back(rc);
+		tmp.push_back(rc);
 
 		ncurrent = parentNode;
 
 	} while (ncurrent != m0);
+
+	// invert the temp path to get the final path
+	std::vector<vec3d> path;
+	int n = tmp.size();
+	if (n > 0)
+	{
+		path.resize(n);
+		for (int i = 0; i < n; ++i)
+		{
+			path[i] = tmp[n - i - 1];
+		}
+	}
 
 	return path;
 }
@@ -238,6 +266,8 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 
 	if (breset)
 	{
+		m_closestFace = -1;
+
 		// clear current path data
 		ClearPaths();
 
@@ -331,6 +361,9 @@ void GLMusclePath::UpdatePathData(int ntime)
 	PathData* path = m_path[ntime];
 	if (path == nullptr) return;
 
+	// update the location of the reference configuration first
+	path->m_ro = UpdateOrigin(ntime);
+
 	// calculate path length
 	vector<vec3d>& pt = path->m_points;
 	double L = 0.0;
@@ -349,7 +382,7 @@ void GLMusclePath::UpdatePathData(int ntime)
 		vec3d& r0 = pt[n - 2];
 		vec3d& r1 = pt[n - 1];
 
-		vec3d c = GetVecValue(ROTATION_CENTER);
+		vec3d c = path->m_ro;
 
 		vec3d e = r1 - r0; e.Normalize();
 		vec3d t = r1 - c;
@@ -362,6 +395,11 @@ void GLMusclePath::UpdatePathData(int ntime)
 
 bool GLMusclePath::UpdateData(bool bsave)
 {
+	if (bsave)
+	{
+		// TODO: This will recalculate everything! 
+		Update(GetModel()->CurrentTimeIndex(), 0.f, true);
+	}
 	return false;
 }
 
@@ -387,4 +425,96 @@ double GLMusclePath::DataValue(int field, int step)
 
 	// return 
 	return val;
+}
+
+vec3d GLMusclePath::UpdateOrigin(int ntime)
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+	FEPostMesh& mesh = *glm->GetActiveMesh();
+
+	if (m_closestFace == -1)
+	{
+		vec3d r0 = GetVecValue(ROTATION_CENTER);
+		mesh.TagAllFaces(0);
+		int nmin = -1;
+		vec3d rmin;
+		double L2min;
+		// find the closest node on the surface
+		for (int i = 0; i < mesh.Faces(); ++i)
+		{
+			FEFace& f = mesh.Face(i);
+			vec3d ri(0,0,0);
+			for (int j = 0; j < f.Nodes(); ++j)
+			{
+				FENode& nj = mesh.Node(f.n[j]);
+				vec3d rj = fem.NodePosition(f.n[j], 0);
+				ri += rj;
+			}
+			ri /= f.Nodes();
+
+			// get the distance
+			double L2 = (ri - r0).SqrLength();
+
+			if ((nmin == -1) || (L2 < L2min))
+			{
+				nmin = i;
+				L2min = L2;
+				rmin = ri;
+			}
+		}
+		if (nmin == -1) return r0;
+
+		m_closestFace = nmin;
+
+		vec3d dr = r0 - rmin;
+
+		FEFace& f = mesh.Face(nmin);
+		vec3d a0 = fem.NodePosition(f.n[0], 0);
+		vec3d a1 = fem.NodePosition(f.n[1], 0);
+		vec3d a2 = fem.NodePosition(f.n[2], 0);
+
+		vec3d e1 = a1 - a0; e1.Normalize();
+		vec3d e2 = a2 - a0; e2.Normalize();
+		vec3d e3 = e1 ^ e2; e3.Normalize();
+		e2 = e3 ^ e1; e2.Normalize();
+
+		mat3d QT(				\
+			e1.x, e1.y, e1.z,	\
+			e2.x, e2.y, e2.z,	\
+			e3.x, e3.y, e3.z	\
+		);
+
+		m_qr = QT * dr;
+	}
+
+	// calculate current position of origin
+	FEFace& f = mesh.Face(m_closestFace);
+	vec3d ri(0, 0, 0);
+	for (int j = 0; j < f.Nodes(); ++j)
+	{
+		FENode& nj = mesh.Node(f.n[j]);
+		vec3d rj = fem.NodePosition(f.n[j], ntime);
+		ri += rj;
+	}
+	ri /= f.Nodes();
+
+	vec3d a0 = fem.NodePosition(f.n[0], ntime);
+	vec3d a1 = fem.NodePosition(f.n[1], ntime);
+	vec3d a2 = fem.NodePosition(f.n[2], ntime);
+
+	vec3d e1 = a1 - a0; e1.Normalize();
+	vec3d e2 = a2 - a0; e2.Normalize();
+	vec3d e3 = e1 ^ e2; e3.Normalize();
+	e2 = e3 ^ e1; e2.Normalize();
+
+	mat3d Q(\
+		e1.x, e2.x, e3.x, \
+		e1.y, e2.y, e3.y, \
+		e1.z, e2.z, e3.z	\
+	);
+
+	vec3d dr = Q * m_qr;
+
+	return ri + dr;
 }

@@ -32,7 +32,7 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, ROTATION_CENTER, SIZE, COLOR };
+	enum { START_POINT, END_POINT, ROTATION_CENTER, SIZE, COLOR, DRAW_DEBUG };
 
 public:
 	GLMusclePath(CGLModel* fem);
@@ -51,12 +51,17 @@ protected:
 	void UpdatePath(int ntime);
 	void UpdatePathData(int ntime);
 	void ClearPaths();
+	vec3d UpdateOrigin(int ntime);
 
 private:
 	class PathData;
 	std::vector<PathData*>	m_path;	// points defining the path
 
 	std::vector<int>	m_selNodes;	// selected nodes
+
+	// information to track motion of origin
+	int		m_closestFace;	// surface face closest to origin
+	vec3d	m_qr;
 };
 
 }
