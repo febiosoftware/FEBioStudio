@@ -108,6 +108,7 @@ FEBiphasic::FEBiphasic() : FEMultiMaterial(FE_BIPHASIC_MATERIAL)
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
     AddScienceParam(1.0, UNIT_DENSITY, "fluid_density", "fluid density");
+    AddDoubleParam(0.0, "tau", "tau");
 
 	// Add elastic component
 	AddProperty("solid", FE_MAT_ELASTIC | FE_MAT_ELASTIC_UNCOUPLED);
