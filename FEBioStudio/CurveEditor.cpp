@@ -32,7 +32,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QPainter>
 #include "DlgFormula.h"
-#include <MathLib/MathParser.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEBodyLoad.h>

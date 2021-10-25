@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include <MathLib/math3d.h>
-#include <MathLib/MathParser.h>
+#include <FECore/MathObject.h>
 #include <string>
 //using namespace std;
 
@@ -53,5 +53,5 @@ private:
 protected:
 	string		m_v[3];
 	int			m_nID;
-	CMathParser	m_mth;
+	MSimpleExpression	m_mth[3];
 };

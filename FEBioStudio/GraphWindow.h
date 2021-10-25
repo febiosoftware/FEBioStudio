@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include <QMainWindow>
-#include <MathLib/MathParser.h>
 #include "PlotWidget.h"
 #include "Document.h"
 

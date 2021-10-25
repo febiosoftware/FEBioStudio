@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QMessageBox>
 #include <QCheckBox>
-#include <MathLib/MathParser.h>
+#include <FECore/MathObject.h>
 
 CDlgFormula::CDlgFormula(QWidget* parent) : QDialog(parent)
 {
@@ -138,23 +138,17 @@ std::vector<LOADPOINT> CDlgFormula::GetPoints()
 	int samples = GetSamples();
 
 	std::vector<LOADPOINT> pts;
-	CMathParser m;
+	MSimpleExpression m;
+	MVariable* tvar = m.AddVariable("t");
+	m.Create(smath);
 	int ierr;
 	LOADPOINT pt;
 	for (int i = 0; i<samples; ++i)
 	{
 		pt.time = fmin + i*(fmax - fmin) / (samples - 1);
-		m.set_variable("t", pt.time);
-
-		pt.load = m.eval(smath.c_str(), ierr);
-
+		tvar->value(pt.time);
+		pt.load = m.value();
 		pts.push_back(pt);
-
-		if (ierr != 0)
-		{
-			pts.clear();
-			break;
-		}
 	}
 
 	return pts;

@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMeshData_T.h"
-#include <MathLib/MathParser.h>
 
 namespace Post {
 

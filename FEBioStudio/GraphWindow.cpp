@@ -61,6 +61,7 @@ SOFTWARE.*/
 #include <PostLib/evaluate.h>
 #include <PostGL/GLProbe.h>
 #include <PostGL/GLMusclePath.h>
+#include <FECore/MathObject.h>
 
 class TimeRangeOptionsUI
 {
@@ -645,7 +646,9 @@ void MathPlot::draw(QPainter& p)
 
 	p.setPen(QPen(m_col, 2));
 
-	CMathParser mp;
+	MSimpleExpression m;
+	MVariable* xvar = m.AddVariable("x");
+	m.Create(m_math);
 
 	QRectF vr = m_graph->m_viewRect;
 	QRect sr = m_graph->ScreenRect();
@@ -655,9 +658,10 @@ void MathPlot::draw(QPainter& p)
 	for (int i=sr.left(); i < sr.right(); i += 2)
 	{
 		double x = vr.left() + (i - sr.left())*(vr.right() - vr.left())/ (sr.right() - sr.left());
-		mp.set_variable("x", x);
 
-		double y = mp.eval(m_math.c_str(), ierr);
+		xvar->value(x);
+
+		double y = m.value();
 		
 		p1 = m_graph->ViewToScreen(QPointF(x,y));
 

@@ -35,9 +35,9 @@ FEDataVariable::FEDataVariable()
 	m_v[1] = "";
 	m_v[2] = "";
 
-	m_mth.set_variable("x", 0);
-	m_mth.set_variable("y", 0);
-	m_mth.set_variable("z", 0);
+	m_mth[0].AddVariable("x"); m_mth[0].AddVariable("y"); m_mth[0].AddVariable("z");
+	m_mth[1].AddVariable("x"); m_mth[1].AddVariable("y"); m_mth[1].AddVariable("z");
+	m_mth[2].AddVariable("x"); m_mth[2].AddVariable("y"); m_mth[2].AddVariable("z");
 }
 
 //-----------------------------------------------------------------------------
@@ -49,14 +49,15 @@ void FEDataVariable::SetString(int n, const char* sz)
 //-----------------------------------------------------------------------------
 vec3d FEDataVariable::Value(vec3d &r)
 {
-	m_mth.set_variable("x", r.x);
-	m_mth.set_variable("y", r.y);
-	m_mth.set_variable("z", r.z);
+	m_mth[0].Clear(); m_mth[0].Create(m_v[0]);
+	m_mth[1].Clear(); m_mth[1].Create(m_v[1]);
+	m_mth[2].Clear(); m_mth[2].Create(m_v[2]);
 
-	vec3d v(0,0,0);
-	int ierr;
-	v.x = m_mth.eval(m_v[0].c_str(), ierr);
-	v.y = m_mth.eval(m_v[1].c_str(), ierr);
-	v.z = m_mth.eval(m_v[2].c_str(), ierr);
+	vector<double> xyz = { r.x, r.y, r.z };
+
+	vec3d v;
+	v.x = m_mth[0].value_s(xyz);
+	v.y = m_mth[1].value_s(xyz);
+	v.z = m_mth[2].value_s(xyz);
 	return v;
 }
