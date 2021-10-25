@@ -126,3 +126,6 @@ inline bool Intersect(const vec2d& a, const vec2d& b, const vec2d& c, const vec2
 //-----------------------------------------------------------------------------
 GLMesh* triangulate(GTriangulate& c);
 GLMesh* triangulate(GFace& face);
+
+//-----------------------------------------------------------------------------
+std::vector<vec3d> convex_hull2d(const std::vector<vec3d>& p);
