@@ -817,6 +817,18 @@ void FEElement_::iso_coord(int n, double q[3])
     }
 }
 
+void FEElement_::setAxes(const vec3d& a, const vec3d& d)
+{
+	vec3d e1(a); e1.Normalize();
+	vec3d e3 = e1 ^ d; e3.Normalize();
+	vec3d e2 = e3 ^ e1; e2.Normalize();
+	m_Q = mat3d(
+		e1.x, e2.x, e3.x,
+		e1.y, e2.y, e3.y,
+		e1.z, e2.z, e3.z);
+	m_Qactive = true;
+}
+
 //=============================================================================
 // FEElement
 //-----------------------------------------------------------------------------

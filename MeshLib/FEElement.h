@@ -177,6 +177,9 @@ public:
 	// get iso-param coordinates of the nodes
 	void iso_coord(int n, double q[3]);
 
+	// set the material axis
+	void setAxes(const vec3d& a, const vec3d& d);
+
 protected:
 	// help class for copy-ing element data
 	void copy(const FEElement_& el);

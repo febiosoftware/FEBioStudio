@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLMusclePath.h>
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
@@ -309,6 +310,22 @@ void CMainWindow::on_actionAddProbe_triggered()
 	glm->AddPlot(probe);
 
 	UpdatePostPanel(true, probe);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionMusclePath_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLMusclePath* musclePath = new Post::GLMusclePath(glm);
+	glm->AddPlot(musclePath);
+
+	UpdatePostPanel(true, musclePath);
 	RedrawGL();
 }
 

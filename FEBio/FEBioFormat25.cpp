@@ -816,7 +816,6 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 		{
 			FEMesh* mesh = dom->GetPart()->GetFEMesh();
 
-			vec3d a, b, c, d;
 			++tag;
 			do
 			{
@@ -826,25 +825,52 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 					int id = dom->ElementID(lid);
 					FEElement& el = mesh->Element(id);
 
+					vec3d a, d;
 					++tag;
 					do
 					{
-						if (tag == "a") tag.value(a);
+						if      (tag == "a") tag.value(a);
 						else if (tag == "d") tag.value(d);
 						++tag;
 					} while (!tag.isend());
-					a.Normalize();
-					c = a ^ d; c.Normalize();
-					b = c ^ a; b.Normalize();
-					el.m_Q = mat3d(a.x, b.x, c.x,
-						a.y, b.y, c.y,
-						a.z, b.z, c.z);
-					el.m_Qactive = true;
+					el.setAxes(a, d);
 				}
 				++tag;
 			} while (!tag.isend());
 		}
-		else ParseUnknownTag(tag);
+		else
+		{
+			FEPart* pg = feb.BuildFEPart(szset);
+			if (pg == nullptr) ParseUnknownAttribute(tag, "elem_set");
+			else
+			{
+				list<int> items = pg->CopyItems();
+				list<int>::iterator it = items.begin();
+				FEMesh* mesh = pg->GetMesh();
+				++tag;
+				do
+				{
+					int lid = tag.AttributeValue<int>("lid", 0) - 1;
+					if ((lid >= 0) && (it != items.end()))
+					{
+						int id = *it; // looks like this is already zero-based
+						FEElement& el = mesh->Element(id);
+						vec3d a, d;
+						++tag;
+						do
+						{
+							if      (tag == "a") tag.value(a);
+							else if (tag == "d") tag.value(d);
+							++tag;
+						} while (!tag.isend());
+						el.setAxes(a, d);
+					}
+					++it;
+					++tag;
+				} while (!tag.isend());
+				delete pg;
+			}
+		}
 	}
 	else
 	{
@@ -871,30 +897,32 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 					{
 						FELoadCurve& lc = s2s->m_points;
 
-						++tag;
-						do {
-							if (tag == "points")
-							{
-								// read the points
-								double d[2];
-								++tag;
-								do
-								{
-
-									tag.value(d, 2);
-
-									LOADPOINT pt;
-									pt.time = d[0];
-									pt.load = d[1];
-									lc.Add(pt);
-
-									++tag;
-								} while (!tag.isend());
-							}
-							else ParseUnknownTag(tag);
+						if (tag.isleaf() == false)
+						{
 							++tag;
+							do {
+								if (tag == "points")
+								{
+									// read the points
+									double d[2];
+									++tag;
+									do
+									{
+
+										tag.value(d, 2);
+
+										LOADPOINT pt;
+										pt.time = d[0];
+										pt.load = d[1];
+										lc.Add(pt);
+
+										++tag;
+									} while (!tag.isend());
+								}
+								else ParseUnknownTag(tag);
+								++tag;
+							} while (!tag.isend());
 						}
-						while (!tag.isend());
 					}
 					else ParseUnknownTag(tag);
 					++tag;

@@ -28,6 +28,10 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
+#include <MeshTools/FETetGenMesher.h>
+#include <MeshLib/FENodeNodeList.h>
+#include <GLLib/glx.h>
+#include <sstream>
 using namespace Post;
 
 GLProbe::GLProbe(CGLModel* fem) : CGLPlot(fem)
@@ -150,7 +154,7 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 
 	Post::FEState* state = mdl->GetFEModel()->GetState(nstate);
 	Post::FERefState* ps = state->m_ref;
-	FEMesh& mesh = *state->GetFEMesh();
+	Post::FEPostMesh& mesh = *state->GetFEMesh();
 
 	int nelem = -1;
 	vec3f x0[FEElement::MAX_NODES];

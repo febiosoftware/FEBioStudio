@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLLinePlot.h"
 #include <PostGL/GLModel.h>
 #include <PostLib/FEPostModel.h>
+#include <GLLib/glx.h>
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -289,131 +290,6 @@ void glxCylinder(float H, float R, float t0 = 0.f, float t1 = 1.f)
 	glEnd();
 }
 
-vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t)
-{
-	double ax[4], ay[4], az[4];
-	ax[0] = r0.x; ax[1] = n0.x; ax[2] = 3.0 * (r1.x - r0.x) - 2.0 * n0.x - n1.x; ax[3] = n1.x + n0.x - 2.0 * (r1.x - r0.x);
-	ay[0] = r0.y; ay[1] = n0.y; ay[2] = 3.0 * (r1.y - r0.y) - 2.0 * n0.y - n1.y; ay[3] = n1.y + n0.y - 2.0 * (r1.y - r0.y);
-	az[0] = r0.z; az[1] = n0.z; az[2] = 3.0 * (r1.z - r0.z) - 2.0 * n0.z - n1.z; az[3] = n1.z + n0.z - 2.0 * (r1.z - r0.z);
-
-	vec3d r;
-	r.x = ((ax[3] * t + ax[2]) * t + ax[1]) * t + ax[0];
-	r.y = ((ay[3] * t + ay[2]) * t + ay[1]) * t + ay[0];
-	r.z = ((az[3] * t + az[2]) * t + az[1]) * t + az[0];
-
-	return r;
-}
-
-//-----------------------------------------------------------------------------
-void glxCylinder(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0 = 0.f, float t1 = 1.f)
-{
-	quatd q0(vec3d(0, 0, 1), n0);
-	quatd q1(vec3d(0, 0, 1), n1);
-
-	double L = (r1 - r0).Length();
-	vec3d m0 = n0 * L;
-	vec3d m1 = n1 * L;
-
-	const int M = 5;
-	const int N = 16;
-	for (int j = 0; j < M; ++j)
-	{
-		quatd qa = quatd::slerp(q0, q1, (double) j / M);
-		quatd qb = quatd::slerp(q0, q1, (double)(j+1) / M);
-
-		vec3d rj0 = interpolate(r0, r1, m0, m1, (double)j / M);
-		vec3d rj1 = interpolate(r0, r1, m0, m1, (double)(j+1.0) / M);
-
-		float ta = t0 + j * (t1 - t0) / M;
-		float tb = t0 + (j+1) * (t1 - t0) / M;
-
-		glBegin(GL_QUAD_STRIP);
-		for (int i = 0; i <= N; ++i)
-		{
-			double w = 2 * PI * i / (double)N;
-			double x = cos(w);
-			double y = sin(w);
-
-			vec3d ri0(R * x, R * y, 0); qa.RotateVector(ri0);
-			vec3d ri1(R * x, R * y, 0); qb.RotateVector(ri1);
-			vec3d ra = rj0 + ri0;
-			vec3d rb = rj1 + ri1;
-
-			vec3d na(x, y, 0.0); qa.RotateVector(na);
-			vec3d nb(x, y, 0.0); qb.RotateVector(nb);
-
-			glTexCoord1d(ta); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
-			glTexCoord1d(tb); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
-		}
-		glEnd();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void glxSphere(const vec3d& r0, float R, const vec3d& n0, float tex = 0.f)
-{
-	quatd q0(vec3d(0, 0, 1), n0);
-
-	const int M = 5;
-	const int N = 16;
-	for (int j = 0; j < M; ++j)
-	{
-		double th0 = 0.5*PI * j / (double)M;
-		double th1 = 0.5*PI * (j+1) / (double)M;
-		double z1 = sin(th0);
-		double z2 = sin(th1);
-
-		double r1 = R * cos(th0);
-		double r2 = R * cos(th1);
-
-		if (j < M - 1)
-		{
-			glBegin(GL_QUAD_STRIP);
-			for (int i = 0; i <= N; ++i)
-			{
-				double w = 2 * PI * i / (double)N;
-				double x = cos(w);
-				double y = sin(w);
-
-				vec3d ri0(r1 * x, r1 * y, R * z1); q0.RotateVector(ri0);
-				vec3d ri1(r2 * x, r2 * y, R * z2); q0.RotateVector(ri1);
-				vec3d ra = r0 + ri0;
-				vec3d rb = r0 + ri1;
-
-				vec3d na(x, y, z1); q0.RotateVector(na);
-				vec3d nb(x, y, z2); q0.RotateVector(nb);
-
-				glTexCoord1d(tex); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
-				glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
-			}
-			glEnd();
-		}
-		else
-		{ 
-			glBegin(GL_TRIANGLE_FAN);
-			{
-				vec3d ri1(0, 0, R); q0.RotateVector(ri1);
-				vec3d rb = r0 + ri1;
-				vec3d nb(0, 0, R); q0.RotateVector(nb);
-				glTexCoord1d(tex); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
-
-				for (int i = 0; i <= N; ++i)
-				{
-					double w = 2 * PI * i / (double)N;
-					double x = cos(w);
-					double y = sin(w);
-
-					vec3d ri0(r1 * x, r1 * y, R * z1); q0.RotateVector(ri0);
-					vec3d ra = r0 + ri0;
-					vec3d na(x, y, z1); q0.RotateVector(na);
-					glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
-				}
-			}
-			glEnd();
-		}
-	}
-}
-
 //-----------------------------------------------------------------------------
 bool CGLLinePlot::ShowLine(LINEDATA& l, FEState& s)
 {
@@ -527,11 +403,11 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				vec3d e2 = l.m_t1; e2.Normalize();
 
 				// render cylinder
-				glxCylinder(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
+				glx::drawSmoothPath(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
 
 				// render caps
-				if (l.m_end[0] == 1) glxSphere(to_vec3d(l.m_r0), m_line, e1); 
-				if (l.m_end[1] == 1) glxSphere(to_vec3d(l.m_r1), m_line, e2);
+				if (l.m_end[0] == 1) glx::drawHalfSphere(to_vec3d(l.m_r0), m_line, e1);
+				if (l.m_end[1] == 1) glx::drawHalfSphere(to_vec3d(l.m_r1), m_line, e2);
 			}
 		}
 	}
@@ -565,11 +441,11 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				glColor3ub(c.r, c.g, c.b);
 
 				// render cylinder
-				glxCylinder(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
+				glx::drawSmoothPath(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
 
 				// render caps
-				if (l.m_end[0] == 1) glxSphere(to_vec3d(l.m_r0), m_line, e1);
-				if (l.m_end[1] == 1) glxSphere(to_vec3d(l.m_r1), m_line, e2);
+				if (l.m_end[0] == 1) glx::drawHalfSphere(to_vec3d(l.m_r0), m_line, e1);
+				if (l.m_end[1] == 1) glx::drawHalfSphere(to_vec3d(l.m_r1), m_line, e2);
 			}
 		}
 	}
@@ -602,11 +478,11 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
 
 				// render cylinder
-				glxCylinder(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2, f0, f1);
+				glx::drawSmoothPath(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2, f0, f1);
 
 				// render caps
-				if (l.m_end[0] == 1) glxSphere(to_vec3d(l.m_r0), m_line, e1, f0);
-				if (l.m_end[1] == 1) glxSphere(to_vec3d(l.m_r1), m_line, e2, f1);
+				if (l.m_end[0] == 1) glx::drawHalfSphere(to_vec3d(l.m_r0), m_line, e1, f0);
+				if (l.m_end[1] == 1) glx::drawHalfSphere(to_vec3d(l.m_r1), m_line, e2, f1);
 			}
 		}
 		glPopAttrib();
