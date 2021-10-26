@@ -419,6 +419,26 @@ void CCurveEditor::BuildModelTree()
 		}
 	}
 
+	// add data maps
+	if (Filter(FLT_MESH_DATA))
+	{
+		t2 = ui->addTreeItem(t1, "Mesh data");
+		for (int i = 0; i < fem.DataMaps(); ++i)
+		{
+			FEDataMapGenerator* map = fem.GetDataMap(i);
+			t3 = ui->addTreeItem(t2, QString::fromStdString(map->GetName()));
+			for (int i = 0; i < map->Parameters(); ++i)
+			{
+				Param& pi = map->GetParam(i);
+				if (pi.GetParamType() == Param_FLOAT)
+				{
+					FELoadCurve* plc = pi.GetLoadCurve();
+					ui->addTreeItem(t3, pi.GetLongName(), plc);
+				}
+			}
+		}
+	}
+
 	// add the materials
 	if (Filter(FLT_MAT))
 	{
