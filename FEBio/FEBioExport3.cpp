@@ -3285,23 +3285,29 @@ void FEBioExport3::WriteMeshData(FEDataMapGenerator* map)
 		FESurfaceToSurfaceMap* s2s = dynamic_cast<FESurfaceToSurfaceMap*>(map);
 		if (s2s)
 		{
-			m_xml.add_leaf("bottom_surface", s2s->m_bottomSurface);
-			m_xml.add_leaf("top_surface"   , s2s->m_topSurface);
+			string bottomSurf = s2s->GetBottomSurface();
+			string topSurf    = s2s->GetTopSurface();
+			m_xml.add_leaf("bottom_surface", bottomSurf);
+			m_xml.add_leaf("top_surface"   , topSurf);
 			
 			XMLElement e("function");
 			e.add_attribute("type", "point");
 			m_xml.add_branch(e);
 			{
-				FELoadCurve& lc = s2s->m_points;
-				m_xml.add_branch("points");
+				Param* p = s2s->GetParam("function");
+				if (p->GetLoadCurve())
 				{
-					for (int i = 0; i < lc.Size(); ++i)
+					FELoadCurve& lc = *p->GetLoadCurve();
+					m_xml.add_branch("points");
 					{
-						double v[2] = { lc[i].time, lc[i].load };
-						m_xml.add_leaf("point", v, 2);
+						for (int i = 0; i < lc.Size(); ++i)
+						{
+							double v[2] = { lc[i].time, lc[i].load };
+							m_xml.add_leaf("point", v, 2);
+						}
 					}
+					m_xml.close_branch();
 				}
-				m_xml.close_branch();
 			}
 			m_xml.close_branch();
 		}

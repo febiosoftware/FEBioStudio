@@ -64,6 +64,7 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 	AddIntParam(0, "start point");
 	AddIntParam(0, "end point");
 	AddVecParam(vec3d(0, 0, 0), "Center of rotation");
+	AddChoiceParam(0, "Shortest path method")->SetEnumNames("Straight line\0 3-point trace\0Shortest path\0");
 	AddDoubleParam(5.0, "size");
 	AddColorParam(GLColor(255, 0, 0), "color");
 	AddBoolParam(true, "Draw convex hull");
@@ -141,6 +142,19 @@ void GLMusclePath::Render(CGLContext& rc)
 
 		glColor3ub(255, 0, 255);
 		glx::drawSphere(r1, 1.5 * R);
+
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_DEPTH_TEST);
+		glBegin(GL_LINES);
+		for (int i = 0; i < N - 1; ++i)
+		{
+			vec3d r0 = path->m_points[i];
+			vec3d r1 = path->m_points[i + 1];
+			glx::vertex3d(r0);
+			glx::vertex3d(r1);
+		}
+		glEnd();
+		glPopAttrib();
 	}
 
 	// draw the rotation center
@@ -301,6 +315,133 @@ void GLMusclePath::UpdatePath(int ntime)
 
 	PathData* path = new PathData;
 
+	// update the location of the reference configuration first
+	// since the 3-point path method needs this
+	path->m_ro = UpdateOrigin(ntime);
+
+	// see which method we're going to use
+	int method = GetIntValue(METHOD);
+	bool b = false;
+	switch (method)
+	{
+	case 0: b = UpdateStraighLine (path, ntime); break;
+	case 1: b = Update3PointPath  (path, ntime); break;
+	case 2: b = UpdateShortestPath(path, ntime); break;
+	}
+	if (b == false) { delete path; path = nullptr; }
+
+	// All is well, so assign the new path
+	m_path[ntime] = path;
+
+	// also update the path data
+	UpdatePathData(ntime);
+}
+
+bool GLMusclePath::UpdateStraighLine(GLMusclePath::PathData* path, int ntime)
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+
+	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
+	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
+
+	path->m_points.clear();
+	path->m_points.push_back(r0);
+	path->m_points.push_back(r1);
+
+	return true;
+}
+
+bool GLMusclePath::Update3PointPath(GLMusclePath::PathData* path, int ntime)
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+
+	// determine the three points on plane
+	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
+	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
+	vec3d rc = path->m_ro;
+
+	// determine plane normal
+	vec3d N = (r1 - rc) ^ (r0 - rc);
+	N.Normalize();
+
+	// determine initial length
+	double L0 = (r1 - r0).Length();
+
+	// find all points of the mesh that intersect with this plane
+	vector<vec3d> pt;
+	pt.push_back(r0);
+	vec3d ra = r0;
+	const double dr = 0.1*L0;
+	FEPostMesh& mesh = *glm->GetActiveMesh();
+	do
+	{
+		// determine step direction
+		vec3d t = r1 - ra; 
+		t.Normalize();
+
+		vec3d rb = ra + t * dr;
+
+		// make sure we don't overstep
+		double w = t * (r1 - ra);
+		if (((rb - ra).Length() < 1e-12) || (w <= dr))
+		{
+			pt.push_back(r1);
+			break;
+		}
+
+		vec3d n = rb - rc; n.Normalize();
+
+		// find all intersections from origin to b
+		vector<vec3d> q = FindAllIntersections(mesh, rc, n, false);
+		if (q.empty() == false)
+		{
+			double Lmax = 0;
+			int imax = -1;
+			for (int i = 0; i < q.size(); ++i)
+			{
+				double Li = (q[i] - rc) * n;
+				if ((imax == -1) || (Li > Lmax))
+				{
+					imax = i;
+					Lmax = Li;
+				}
+			}
+			assert(imax != -1);
+
+			// add the farthest one
+			rb = q[imax];
+		}
+		
+		pt.push_back(rb);
+		if (pt.size() > 20) break;
+		ra = rb;
+	} 
+	while (true);
+
+	path->m_points = pt;
+
+	return true;
+}
+
+bool GLMusclePath::UpdateShortestPath(GLMusclePath::PathData* path, int ntime)
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+
+	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
+	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
+
 	if (m_selNodes.size() < 2)
 	{
 		path->m_points.push_back(r0);
@@ -324,9 +465,7 @@ void GLMusclePath::UpdatePath(int ntime)
 		FEConvexHullMesher mesher;
 
 		path->m_hull = mesher.Create(v);
-		if (path->m_hull == nullptr) {
-			delete path; return;
-		}
+		if (path->m_hull == nullptr) { return false; }
 
 		// make sure our initial points are still outside
 		FEMesh& mesh = *path->m_hull;
@@ -336,8 +475,8 @@ void GLMusclePath::UpdatePath(int ntime)
 			FEFace& face = mesh.Face(i);
 			for (int j = 0; j < face.Nodes(); ++j) mesh.Node(face.n[j]).m_ntag = 1;
 		}
-		if (mesh.Node(0).m_ntag != 1) { assert(false); delete path; return; }
-		if (mesh.Node(1).m_ntag != 1) { assert(false); delete path; return; }
+		if (mesh.Node(0).m_ntag != 1) { assert(false); return false; }
+		if (mesh.Node(1).m_ntag != 1) { assert(false); return false; }
 
 		// extract the outide surface
 		FEMesh* surf = mesh.ExtractFaces(false);
@@ -347,11 +486,7 @@ void GLMusclePath::UpdatePath(int ntime)
 		path->m_points = FindShortestPath(*surf, 0, 1);
 	}
 
-	// All is well, so assign the new path
-	m_path[ntime] = path;
-
-	// also update the path data
-	UpdatePathData(ntime);
+	return true;
 }
 
 void GLMusclePath::UpdatePathData(int ntime)
@@ -360,9 +495,6 @@ void GLMusclePath::UpdatePathData(int ntime)
 
 	PathData* path = m_path[ntime];
 	if (path == nullptr) return;
-
-	// update the location of the reference configuration first
-	path->m_ro = UpdateOrigin(ntime);
 
 	// calculate path length
 	vector<vec3d>& pt = path->m_points;

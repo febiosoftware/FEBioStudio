@@ -688,9 +688,16 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
 			{
 				e0.m_h[k] = e1.m_h[k];
 			}
-            e0.m_Q = e1.m_Q;
-            e0.m_Qactive = e1.m_Qactive;
-            e0.m_fiber = e1.m_fiber;
+
+			// TODO: Not sure if this is always true! Looks like some 
+			// data is read into the actual mesh. The test for Qactive
+			// is a hack! Need to figure this out! 
+			if (e1.m_Qactive)
+			{
+				e0.m_Q = e1.m_Q;
+				e0.m_Qactive = e1.m_Qactive;
+				e0.m_fiber = e1.m_fiber;
+			}
 		}
 	}
 
@@ -876,6 +883,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 	{
 		// Read the data and store it as a mesh data section
 		FEBioModel& feb = GetFEBioModel();
+		FEModel& fem = feb.GetFEModel();
 
 		const char* szgen = tag.AttributeValue("generator", true);
 		if (szgen)
@@ -888,17 +896,42 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 				s2s->m_var = var->cvalue();
 				s2s->m_elset = szset;
 
+				// get the name
+				const char* szname = tag.AttributeValue("name", true);
+				string sname;
+				if (szname == nullptr)
+				{
+					stringstream ss;
+					ss << "DataMap" << fem.DataMaps() + 1;
+					sname = ss.str();
+				}
+				else sname = szname;
+				s2s->SetName(sname);
+
+				string tmp;
 				++tag;
 				do
 				{
-					if      (tag == "bottom_surface") tag.value(s2s->m_bottomSurface);
-					else if (tag == "top_surface"   ) tag.value(s2s->m_topSurface);
+					if      (tag == "bottom_surface") { tag.value(tmp); s2s->SetBottomSurface(tmp); }
+					else if (tag == "top_surface"   ) { tag.value(tmp); s2s->SetTopSurface(tmp); }
 					else if (tag == "function")
 					{
-						FELoadCurve& lc = s2s->m_points;
+						Param* p = s2s->GetParam("function"); assert(p);
 
+						const char* szlc = tag.AttributeValue("lc", true);
+						if (szlc)
+						{
+							int lc = atoi(szlc);
+							GetFEBioModel().AddParamCurve(p, lc - 1);
+
+							double v = 0.0;
+							tag.value(v);
+							p->SetFloatValue(v);
+						}
+												
 						if (tag.isleaf() == false)
 						{
+							FELoadCurve lc; lc.Clear();
 							++tag;
 							do {
 								if (tag == "points")
@@ -908,7 +941,6 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 									++tag;
 									do
 									{
-
 										tag.value(d, 2);
 
 										LOADPOINT pt;
@@ -922,6 +954,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 								else ParseUnknownTag(tag);
 								++tag;
 							} while (!tag.isend());
+							p->SetLoadCurve(lc);
 						}
 					}
 					else ParseUnknownTag(tag);

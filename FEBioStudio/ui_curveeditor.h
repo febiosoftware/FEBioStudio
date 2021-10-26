@@ -102,6 +102,7 @@ public:
 		filter->setObjectName("filter");
 		filter->addItem("All");
 		filter->addItem("Geometry");
+		filter->addItem("Model Data");
 		filter->addItem("Materials");
 		filter->addItem("Boundary Conditions");
 		filter->addItem("Loads");

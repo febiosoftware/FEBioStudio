@@ -809,6 +809,8 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(false);
 
+	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
+
 	int graphs = ui->graphList.size();
 	QList<CGraphWindow*>::iterator it = ui->graphList.begin();
 	for (int i = 0; i < graphs; ++i, ++it)
