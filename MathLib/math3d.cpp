@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "math3d.h"
-#include "mat3d.h"
 
 //-----------------------------------------------------------------------------
 // These functions are defined in colsol.cpp

@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "Serializable.h"
 #include "color.h"
-#include <MathLib/mat3d.h>
+#include <FECore/mat3d.h>
 #include "LoadCurve.h"
 #include <vector>
 #include <string.h>

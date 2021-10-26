@@ -26,13 +26,16 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/color.h>
-#include <MathLib/mat3d.h>
+#include <FECore/mat3d.h>
+#include <FECore/quatd.h>
+#include <MathLib/math3d.h>
 #include <qopengl.h>
 #ifdef __APPLE__
     #include <OpenGL/GLU.h>
 #else
     #include <GL/glu.h>
 #endif
+#include <vector>
 
 namespace glx {
 

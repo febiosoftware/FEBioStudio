@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <stdio.h>
 #include <string.h>
 #include <MathLib/math3d.h>
-#include <MathLib/mat3d.h>
+#include <FECore/mat3d.h>
 #include "color.h"
 #include "CallTracer.h"
 #include <stack>

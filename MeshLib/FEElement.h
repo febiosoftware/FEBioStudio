@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include <assert.h>
-#include "MathLib/mat3d.h"
+#include <FECore/mat3d.h>
 #include "FEItem.h"
 #include "FEEdge.h"
 #include "FEFace.h"

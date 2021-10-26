@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "MathLib/mat3d.h"
+#include <FECore/mat3d.h>
 #include "MathLib/math3d.h"
 
 class Plane

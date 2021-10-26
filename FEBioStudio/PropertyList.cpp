@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "PropertyList.h"
-#include <MathLib/mat3d.h>
+#include <FECore/mat3d.h>
 
 #include <string>
 #include <QDebug>
