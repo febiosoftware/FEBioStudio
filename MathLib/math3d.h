@@ -57,7 +57,7 @@ using std::vector;
 #ifndef MIN
 #define MIN(a, b) ((a)<(b)?(a):(b))
 #endif
-
+/*
 //-----------------------------------------------------------------------------
 class vec2i
 {
@@ -77,7 +77,7 @@ public:
 public:
 	float	x, y;
 };
-
+*/
 //-----------------------------------------------------------------------------
 // class vec2d defines a 2D vector
 /*
@@ -111,7 +111,7 @@ public:
 	double	x, y;
 };
 */
-
+/*
 //-----------------------------------------------------------------------------
 class vec3f
 {
@@ -156,7 +156,7 @@ public:
 };
 
 inline vec3d to_vec3d(const vec3f& r) { return vec3d((double)r.x, (double)r.y, (double)r.z); }
-
+*/
 //-----------------------------------------------------------------------------
 // class vec3d defines a 3D vector
 //
@@ -242,7 +242,7 @@ public:
 
 ///////////////////////////////////////////////////////////////////
 // vec6d
-
+/*
 class vec6d
 {
 public:
@@ -252,7 +252,7 @@ public:
 	double x, y, z;
 	double xy, yz, xz;
 };
-
+*/
 ///////////////////////////////////////////////////////////////////
 // matrix
 /*
@@ -596,7 +596,7 @@ inline quatd operator * (const double a, const quatd& q)
 	return q*a;
 }
 */
-
+/*
 //-----------------------------------------------------------------------------
 // This class stores a 2nd order diagonal tensor
 class mat3fd
@@ -608,7 +608,7 @@ public:
 public:
 	float x, y, z;
 };
-
+*/
 //-----------------------------------------------------------------------------
 // mat3fs stores a 2nd order symmetric tensor
 //
