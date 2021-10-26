@@ -688,9 +688,16 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
 			{
 				e0.m_h[k] = e1.m_h[k];
 			}
-            e0.m_Q = e1.m_Q;
-            e0.m_Qactive = e1.m_Qactive;
-            e0.m_fiber = e1.m_fiber;
+
+			// TODO: Not sure if this is always true! Looks like some 
+			// data is read into the actual mesh. The test for Qactive
+			// is a hack! Need to figure this out! 
+			if (e1.m_Qactive)
+			{
+				e0.m_Q = e1.m_Q;
+				e0.m_Qactive = e1.m_Qactive;
+				e0.m_fiber = e1.m_fiber;
+			}
 		}
 	}
 
