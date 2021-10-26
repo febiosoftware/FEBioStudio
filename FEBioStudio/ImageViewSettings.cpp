@@ -23,37 +23,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include "GLImageRenderer.h"
 
-namespace Post {
+#include "ImageViewSettings.h"
 
-class CImageModel;
-
-class CVolumeRender2 : public CGLImageRenderer
+CImageViewSettings::CImageViewSettings()
 {
-	// enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, COLOR_MAP};
-    enum {COLOR_MAP};
-
-public:
-	CVolumeRender2(CImageModel* img);
-	~CVolumeRender2();
-
-	void Create();
-
-	void Render(CGLContext& rc) override;
-
-private:
-	void Init();
-	void InitTexture();
-	void InitShaders();
-	void ReloadTexture();
-
-private:
-	unsigned int m_texID;
-	unsigned int m_prgID;
-	bool	m_vrInit;
-	bool	m_vrReset;
-};
-
+    AddDoubleParam(0.1, "Alpha Scale")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.5, "Min Intensity")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(1.0, "Max Intensity")->SetFloatRange(0.0, 1.0);
 }
+

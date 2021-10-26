@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
+#include "ImageViewSettings.h"
 
 
 #include "ImageSliceView.h"
@@ -114,12 +115,15 @@ void CImageSlice::Update()
 
     C3DImage* img = m_imgModel->GetImageSource()->Get3DImage();    
 
+    int min = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
+    int max = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
+
     CImage imgSlice;
     QString text;
     switch (m_sliceDir)
     {
     case X:
-        img->GetSliceX(imgSlice, slice);
+        img->GetThresholdedSliceX(imgSlice, slice, min, max);
         text = "X";
         
         if(doc)
@@ -129,7 +133,7 @@ void CImageSlice::Update()
         }
         break;
     case Y:
-        img->GetSliceY(imgSlice, slice);
+        img->GetThresholdedSliceY(imgSlice, slice, min, max);
         text = "Y";
         
         if(doc)
@@ -139,7 +143,7 @@ void CImageSlice::Update()
         }
         break;
     case Z:
-        img->GetSliceZ(imgSlice, slice);
+        img->GetThresholdedSliceZ(imgSlice, slice, min, max);
         text = "Z";
         
         if(doc)

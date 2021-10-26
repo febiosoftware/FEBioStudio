@@ -1171,6 +1171,11 @@ CRepositoryPanel* CMainWindow::GetDatabasePanel()
 	return ui->databasePanel;
 }
 
+CImagePanel* CMainWindow::GetImagePanel()
+{
+    return ui->imagePanel;
+}
+
 //-----------------------------------------------------------------------------
 //! close the current open project
 void CMainWindow::CloseProject()

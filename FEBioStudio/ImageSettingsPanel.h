@@ -24,34 +24,49 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "stdafx.h"
-#include "CIntInput.h"
+#pragma once
 
-QString vecToString(const vec3f& v)
+#include "CommandPanel.h"
+
+namespace Ui
 {
-	return QString("%1,%2,%3").arg(v.x).arg(v.y).arg(v.z);
+    class CImageParam;
+    class CImageSettingsPanel;
 }
 
-vec3f stringToVec(const QString& s)
+class CMainWindow;
+class FSObject;
+class Param;
+
+class CImageParam : public QWidget
 {
-	QStringList l = s.split(',');
-	int N = l.size();
-	vec3f v(0.f, 0.f, 0.f);
-	v.x = (N > 0 ? l[0].toFloat() : 0.f);
-	v.y = (N > 1 ? l[1].toFloat() : 0.f);
-	v.z = (N > 2 ? l[2].toFloat() : 0.f);
+    Q_OBJECT
 
-	return v;
-}
+public:
+    CImageParam(Param* param);
 
-CVec3Input::CVec3Input(QWidget* parent) : QLineEdit(parent) {}
+public slots:
+    void updateParam();
 
-void CVec3Input::setValue(const vec3f& v)
+signals:
+    void paramChanged();
+
+private:
+    Ui::CImageParam* ui;
+};
+
+class CImageSettingsPanel : public CCommandPanel
 {
-	setText(vecToString(v));
-}
+    Q_OBJECT
 
-vec3f CVec3Input::value() const
-{
-	return stringToVec(text());
-}
+public:
+    CImageSettingsPanel(CMainWindow* wnd, QWidget* parent);
+
+public slots:
+    void ImageModelChanged();
+    void ParamChanged();
+
+
+private:
+    Ui::CImageSettingsPanel* ui;
+};

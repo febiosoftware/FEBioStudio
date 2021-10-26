@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <GLLib/GLContext.h>
 #include <ImageLib/3DImage.h>
+#include <FEBioStudio/ImageViewSettings.h>
 #include <sstream>
 using namespace Post;
 
@@ -45,9 +46,9 @@ static int n = 1;
 
 CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
 {
-	AddDoubleParam(0.1, "alpha scale")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(0.5, "min intensity")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(1.0, "max intensity")->SetFloatRange(0.0, 1.0);
+	// AddDoubleParam(0.1, "alpha scale")->SetFloatRange(0.0, 1.0);
+	// AddDoubleParam(0.5, "min intensity")->SetFloatRange(0.0, 1.0);
+	// AddDoubleParam(1.0, "max intensity")->SetFloatRange(0.0, 1.0);
 	AddChoiceParam(0, "Color map")->SetEnumNames("Grayscale\0Red\0Green\0Blue\0Fire\0");
 
 	m_texID = 0;
@@ -252,8 +253,12 @@ void CVolumeRender2::Render(CGLContext& rc)
 	GLint ImaxID = glGetUniformLocation(m_prgID, "Imax");
 	GLint cmapID = glGetUniformLocation(m_prgID, "cmap");
 
-	float Imin = (float) GetFloatValue(MIN_INTENSITY);
-	float Imax = (float) GetFloatValue(MAX_INTENSITY);
+	// float Imin = (float) GetFloatValue(MIN_INTENSITY);
+	// float Imax = (float) GetFloatValue(MAX_INTENSITY);
+	// int cmap = (int)GetIntValue(COLOR_MAP);
+
+    float Imin = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
+	float Imax = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
 	int cmap = (int)GetIntValue(COLOR_MAP);
 
 	glUniform1f(IminID, Imin);
@@ -292,7 +297,7 @@ void CVolumeRender2::Render(CGLContext& rc)
 	}
 
 	// Prepare for rendering of the scene
-	double alphaScale = GetFloatValue(ALPHA_SCALE);
+	double alphaScale = GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::ALPHA_SCALE);
 	glColor4f(1.f, 1.f, 1.f, alphaScale);
 	glBegin(GL_TRIANGLES);
 

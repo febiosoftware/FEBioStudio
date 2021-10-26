@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QListWidget>
 #include <QSlider>
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include "GLHighlighter.h"
 #include "ResourceEdit.h"
 #include "LinkPropertyEdit.h"
@@ -45,7 +45,7 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include "PropertyListView.h"
 #include "units.h"
-#include "CIntInput.h"
+#include "InputWidgets.h"
 
 //=================================================================================================
 

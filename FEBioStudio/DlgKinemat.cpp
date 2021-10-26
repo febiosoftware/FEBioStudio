@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DlgKinemat.h"
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include <QListWidget>
 #include <QBoxLayout>
 #include <QPushButton>

@@ -47,14 +47,12 @@ public:
 
     void Update();
 
-    Post::CImageModel* GetActiveModel() { return activeModel; }
-
 public slots:
     void on_tree_itemSelectionChanged();
 
+signals:
+    void ImageModelChanged();
+
 private:
     Ui::CImagePanel* ui;
-
-    Post::CImageModel* activeModel;
-
 };

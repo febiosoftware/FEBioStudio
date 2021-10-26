@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include "GLImageRenderer.h"
 #include <ImageLib/ImageFilter.h>
 #include "GLObject.h"
+#include <FEBioStudio/ImageViewSettings.h>
 
 enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
 
@@ -122,6 +123,8 @@ public:
 
 	CImageSource* GetImageSource();
 
+    CImageViewSettings* GetViewSettings() { return &viewSettings; }
+
 private:
 	BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
@@ -129,5 +132,7 @@ private:
 	FSObjectList<CImageFilter> m_filters;
 
 	CImageSource*	m_img;
+
+    CImageViewSettings viewSettings;
 };
 }

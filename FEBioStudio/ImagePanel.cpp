@@ -110,6 +110,8 @@ void CImagePanel::on_tree_itemSelectionChanged()
         if(current->type() == IMGMODEL)
         {
             doc->SetActiveModel(current->data(0, INDEX).toInt());
+
+            emit ImageModelChanged();
         }
     }
 }

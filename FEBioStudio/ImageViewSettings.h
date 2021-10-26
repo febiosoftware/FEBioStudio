@@ -4,7 +4,6 @@ listed below.
 See Copyright-FEBio-Studio.txt for details.
 
 Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
-the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +22,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #pragma once
-#include "GLImageRenderer.h"
 
-namespace Post {
+#include <FSCore/FSObject.h>
 
-class CImageModel;
-
-class CVolumeRender2 : public CGLImageRenderer
+class CImageViewSettings : public FSObject
 {
-	// enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, COLOR_MAP};
-    enum {COLOR_MAP};
+public:
+    enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY};
 
 public:
-	CVolumeRender2(CImageModel* img);
-	~CVolumeRender2();
+    CImageViewSettings();
 
-	void Create();
-
-	void Render(CGLContext& rc) override;
-
-private:
-	void Init();
-	void InitTexture();
-	void InitShaders();
-	void ReloadTexture();
-
-private:
-	unsigned int m_texID;
-	unsigned int m_prgID;
-	bool	m_vrInit;
-	bool	m_vrReset;
 };
-
-}

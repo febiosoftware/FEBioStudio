@@ -44,7 +44,7 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include <PostLib/FEMeshData.h>
 #include <PostLib/ColorMap.h>
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include "DragBox.h"
 #include "units.h"
 

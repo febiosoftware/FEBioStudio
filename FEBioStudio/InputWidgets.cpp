@@ -23,37 +23,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include "GLImageRenderer.h"
 
-namespace Post {
+#include "stdafx.h"
+#include "InputWidgets.h"
 
-class CImageModel;
-
-class CVolumeRender2 : public CGLImageRenderer
+QString vecToString(const vec3f& v)
 {
-	// enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, COLOR_MAP};
-    enum {COLOR_MAP};
+	return QString("%1,%2,%3").arg(v.x).arg(v.y).arg(v.z);
+}
 
-public:
-	CVolumeRender2(CImageModel* img);
-	~CVolumeRender2();
+vec3f stringToVec(const QString& s)
+{
+	QStringList l = s.split(',');
+	int N = l.size();
+	vec3f v(0.f, 0.f, 0.f);
+	v.x = (N > 0 ? l[0].toFloat() : 0.f);
+	v.y = (N > 1 ? l[1].toFloat() : 0.f);
+	v.z = (N > 2 ? l[2].toFloat() : 0.f);
 
-	void Create();
+	return v;
+}
 
-	void Render(CGLContext& rc) override;
+CVec3Input::CVec3Input(QWidget* parent) : QLineEdit(parent) {}
 
-private:
-	void Init();
-	void InitTexture();
-	void InitShaders();
-	void ReloadTexture();
+void CVec3Input::setValue(const vec3f& v)
+{
+	setText(vecToString(v));
+}
 
-private:
-	unsigned int m_texID;
-	unsigned int m_prgID;
-	bool	m_vrInit;
-	bool	m_vrReset;
-};
-
+vec3f CVec3Input::value() const
+{
+	return stringToVec(text());
 }

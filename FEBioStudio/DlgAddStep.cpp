@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QMessageBox>
 #include <MeshTools/FEModel.h>
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include <FEMLib/FEMKernel.h>
 #include <MeshTools/FEProject.h>
 

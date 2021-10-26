@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QHBoxLayout>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QSlider>
 #include <QLineEdit>
 #include <QValidator>
@@ -127,5 +128,93 @@ signals:
 private:
 	QSpinBox* box;
 	QSlider* slider;
+
+};
+
+//-----------------------------------------------------------------------------
+class CDoubleSlider : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CDoubleSlider(QWidget* parent = nullptr)
+        : QWidget(parent), m_min(0), m_max(1)
+	{
+		QHBoxLayout* layout = new QHBoxLayout;
+		layout->setContentsMargins(0,0,0,0);
+
+		box = new QDoubleSpinBox(parent);
+        box->setRange(m_min, m_max);
+        box->setSingleStep((m_max - m_min)/100);
+
+		slider = new QSlider(parent);
+		slider->setOrientation(Qt::Horizontal);
+        slider->setRange(0,100);
+
+		layout->addWidget(box);
+		layout->addWidget(slider);
+
+		setLayout(layout);
+
+		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
+
+		connect(box, &QDoubleSpinBox::valueChanged, this, &CDoubleSlider::boxValueChanged);
+		connect(slider, &QSlider::valueChanged, this, &CDoubleSlider::sliderValueChanged);
+	}
+
+	void setRange(double min, double max)
+	{
+        m_min = min;
+        m_max = max;
+
+		box->setRange(min, max);
+        box->setSingleStep((max - min)/100);
+	}
+
+	void setValue(double val)
+	{
+        if(val > m_max) val = m_max;
+        else if(val < m_min) val = m_min;
+
+		box->setValue(val);
+
+        slider->setValue(100 * (val-m_min)/(m_max-m_min));
+	}
+
+	double getValue()
+	{
+		return box->value();
+	}
+
+signals:
+
+	void valueChanged(double val);
+
+private slots:
+    void boxValueChanged(double val)
+    {
+        slider->blockSignals(true);
+        slider->setValue(100 * (val-m_min)/(m_max-m_min));
+        slider->blockSignals(false);
+
+        emit valueChanged(val);
+    }
+
+    void sliderValueChanged(int val)
+    {
+        double realVal = (double)val/100*(m_max-m_min) + m_min;
+
+        box->blockSignals(true);
+        box->setValue(realVal);
+        box->blockSignals(false);
+
+        emit valueChanged(realVal); 
+    }
+
+private:
+	QDoubleSpinBox* box;
+	QSlider* slider;
+
+    double m_min, m_max;
 
 };

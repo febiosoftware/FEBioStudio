@@ -56,6 +56,7 @@ SOFTWARE.*/
 #include "LogPanel.h"
 #include "BuildPanel.h"
 #include "ImagePanel.h"
+#include "ImageSettingsPanel.h"
 #include "GLControlBar.h"
 #include "Document.h"
 #include "DataFieldSelector.h"
@@ -171,6 +172,7 @@ public:
 	::CDlgPlaneCut*	planeCutTool;
 	::CTimelinePanel*	timePanel;
     ::CImagePanel*	imagePanel;
+    ::CImageSettingsPanel*	imageSettingsPanel;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -1083,6 +1085,14 @@ public:
 		menuWindows->addAction(dock9->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock1, dock9);
 
+        QDockWidget* dock10 = new QDockWidget("View Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+		imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock10);
+		dock10->setWidget(imageSettingsPanel);
+		menuWindows->addAction(dock10->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock4, dock10);
+
+        QObject::connect(imagePanel, &::CImagePanel::ImageModelChanged, imageSettingsPanel, &::CImageSettingsPanel::ImageModelChanged);
+
 		// make sure the file viewer is the visible tab
 		dock1->raise();
 	}
@@ -1284,6 +1294,7 @@ public:
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
             imagePanel->parentWidget()->hide();
+            imageSettingsPanel->parentWidget()->hide();
 		}
 		else if (config == ::CMainWindow::MODEL_CONFIG)
 		{
@@ -1310,6 +1321,7 @@ public:
 			infoPanel->parentWidget()->show();
 			timePanel->parentWidget()->hide();
             imagePanel->parentWidget()->hide();
+            imageSettingsPanel->parentWidget()->hide();
 		}
 		else if (config == ::CMainWindow::POST_CONFIG)
 		{
@@ -1336,6 +1348,7 @@ public:
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
             imagePanel->parentWidget()->hide();
+            imageSettingsPanel->parentWidget()->hide();
 
 			showTimeline();
 		}
@@ -1363,6 +1376,7 @@ public:
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
             imagePanel->parentWidget()->hide();
+            imageSettingsPanel->parentWidget()->hide();
 		}
         else if (config == ::CMainWindow::IMAGE_CONFIG)
 		{
@@ -1396,6 +1410,7 @@ public:
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
             imagePanel->parentWidget()->show();
+            imageSettingsPanel->parentWidget()->show();
 		}
 	}
 };
