@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FECore/vec3d.h>
 #include <FECore/quatd.h>
-#include <MathLib/Interpolator.h>
+#include "Interpolator.h"
 #include <PostLib/GLObject.h>
 #include <string>
 

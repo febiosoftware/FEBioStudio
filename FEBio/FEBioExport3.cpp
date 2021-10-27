@@ -42,7 +42,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioModule.h>
 #include <memory>
 #include <sstream>
-//using namespace std;
+#include <FECore/FETransform.h>
 
 using std::stringstream;
 using std::unique_ptr;

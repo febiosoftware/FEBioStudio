@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/GGroup.h>
 #include <memory>
-//using namespace std;
+#include <FECore/FETransform.h>
 
 using std::unique_ptr;
 

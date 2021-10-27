@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GItem.h"
-#include <MathLib/Transform.h>
+#include <FECore/FETransform.h>
 
 //-----------------------------------------------------------------------------
 // This is a base class for GObject. I hope to describe all geometry in terms 

@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <memory>
 #include <sstream>
-//using namespace std;
+#include <FECore/FETransform.h>
 
 using std::unique_ptr;
 using std::stringstream;

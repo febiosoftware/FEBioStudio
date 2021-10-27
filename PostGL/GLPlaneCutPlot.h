@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include <MathLib/Transform.h>
+#include <FECore/FETransform.h>
 #include <vector>
 
 namespace Post {

@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <GeomLib/GObject.h>
 #include <memory>
-//using namespace std;
+#include <FECore/FETransform.h>
 
 using std::unique_ptr;
 
