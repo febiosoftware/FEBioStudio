@@ -53,7 +53,7 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QComboBox>
 #include <QSpinBox>
-#include <MathLib/LinearRegression.h>
+#include <FECore/tools.h>
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
 #include "PostDocument.h"
