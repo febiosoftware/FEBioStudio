@@ -36,9 +36,8 @@ SOFTWARE.*/
 #include "FEFixSurfaceMesh.h"
 #include <algorithm>
 #include <stack>
-
-using std::min;
-using std::stack;
+#include <FECore/matrix.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 //! Constructor

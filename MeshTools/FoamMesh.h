@@ -25,9 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <vector>
-//using namespace std;
 
 class FEModel;
 class GObject;
@@ -109,13 +108,13 @@ protected:
 	void SelectFace(int i, FEMesh* pm);
 
 protected:
-	vector<NODE>	m_Node;
-	vector<CELL>	m_Cell;
-	vector<CELL2D>	m_Cell2D[6];
-	vector<NODE>	m_Seed;
-	vector<EDGE>	m_Edge;
-	vector<FACE>	m_Face;
-	vector<N2E>		m_NET;
+	std::vector<NODE>	m_Node;
+	std::vector<CELL>	m_Cell;
+	std::vector<CELL2D>	m_Cell2D[6];
+	std::vector<NODE>	m_Seed;
+	std::vector<EDGE>	m_Edge;
+	std::vector<FACE>	m_Face;
+	std::vector<N2E>	m_NET;
 	
 	int		m_nface[8];
 };

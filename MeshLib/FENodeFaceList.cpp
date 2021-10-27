@@ -27,6 +27,8 @@ SOFTWARE.*/
 #include "FENodeFaceList.h"
 #include "FEMeshBase.h"
 #include "FEFace.h"
+#include <assert.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FENodeFaceList::FENodeFaceList()

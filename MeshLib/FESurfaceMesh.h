@@ -84,11 +84,11 @@ public:
 	void PartitionNodeSelection();
 
 public:
-	void ShowFaces(const vector<int>& face, bool bshow = true);
+	void ShowFaces(const std::vector<int>& face, bool bshow = true);
 	void ShowAllFaces();
 	void UpdateItemVisibility() override;
 
-	void SelectFaces(const vector<int>& faceList);
+	void SelectFaces(const std::vector<int>& faceList);
 
 public:
 	void DeleteSelectedNodes();

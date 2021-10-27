@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FELinearToQuadratic.h"
+#include <FECore/matrix.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FELinearToQuadratic::FELinearToQuadratic() : FEModifier("Linear-to-Quadratic")

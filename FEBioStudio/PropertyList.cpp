@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <QDebug>
 #include <iostream>
 
-using std::string;
+using namespace std;
 
 vec3d StringToVec3d(const QString& s)
 {

@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLMesh.h"
-#include <MathLib/math3d.h>
+#include <FECore/quatd.h>
 #include <stack>
 #include <cstring>
 //using namespace std;

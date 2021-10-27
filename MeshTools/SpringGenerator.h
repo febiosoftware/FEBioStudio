@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 using std::vector;
 using std::pair;

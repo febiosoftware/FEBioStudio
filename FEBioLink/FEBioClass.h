@@ -28,7 +28,8 @@ SOFTWARE.*/
 #include <string>
 #include <map>
 #include <QVariant>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
+#include <FECore/mat3d.h>
 
 namespace FEBio {
 

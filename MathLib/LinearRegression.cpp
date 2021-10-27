@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "LinearRegression.h"
-#include "math3d.h"
+#include <FECore/matrix.h>
 #include <assert.h>
 
 bool LinearRegression(const vector<pair<double, double> >& data, pair<double, double>& res)
@@ -153,7 +153,7 @@ bool NonlinearRegression(const vector<pair<double, double> >& data, vector<doubl
 	if (f == 0) return false;
 
 	vector<double> R(m, 0.0), da(m, 0.0);
-	Matrix K(m, m); K.zero();
+	matrix K(m, m); K.zero();
 
 	const double absTol = 1e-15;
 	const double relTol = 1e-3;

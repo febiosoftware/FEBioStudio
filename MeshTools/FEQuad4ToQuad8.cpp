@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEModifier.h"
+#include <FECore/matrix.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FEQuad4ToQuad8::FEQuad4ToQuad8(bool bsmooth) : FEModifier("Quad4-to-Quad8")

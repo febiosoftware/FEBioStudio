@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <GL/gl.h>
 #include <GL/glu.h>
 #endif
+#include <FECore/quatd.h>
 
 void GPointDecoration::render()
 {

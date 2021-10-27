@@ -365,7 +365,7 @@ FEDataField* FEPostModel::CopyDataField(FEDataField* pd, const char* sznewname)
 			else if (pd->Type() == DATA_MAT3FS) copy_node_data<mat3fs>(dst, src);
 			else if (pd->Type() == DATA_MAT3FD) copy_node_data<mat3fd>(dst, src);
 			else if (pd->Type() == DATA_MAT3F ) copy_node_data<mat3f >(dst, src);
-			else if (pd->Type() == DATA_MAT3D ) copy_node_data<Mat3d >(dst, src);
+			else if (pd->Type() == DATA_MAT3D ) copy_node_data<mat3d >(dst, src);
 		}
 		else if (IS_FACE_FIELD(pd->GetFieldID()))
 		{
@@ -442,7 +442,7 @@ FEDataField* createCachedDataField(FEDataField* pd)
 		else if (ntype == DATA_VEC3F ) newField = new FEDataField_T<FENodeData<vec3f > >(fem);
 		else if (ntype == DATA_MAT3FS) newField = new FEDataField_T<FENodeData<mat3fs> >(fem);
 		else if (ntype == DATA_MAT3FD) newField = new FEDataField_T<FENodeData<mat3fd> >(fem);
-		else if (ntype == DATA_MAT3D ) newField = new FEDataField_T<FENodeData<Mat3d > >(fem);
+		else if (ntype == DATA_MAT3D ) newField = new FEDataField_T<FENodeData<mat3d > >(fem);
 		else if (ntype == DATA_MAT3F ) newField = new FEDataField_T<FENodeData<mat3f > >(fem);
 		else assert(false);
 	}

@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "PropertyList.h"
 #include <QtCore/QString>
-#include <MathLib/math3d.h>
 #include <vector>
 
 class FSObject;

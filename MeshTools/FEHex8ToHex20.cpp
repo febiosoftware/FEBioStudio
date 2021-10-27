@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEModifier.h"
+#include <FECore/matrix.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FEHex8ToHex20::FEHex8ToHex20(bool bsmooth) : FEModifier("Hex8-to-Hex20")

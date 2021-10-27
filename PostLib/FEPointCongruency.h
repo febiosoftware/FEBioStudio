@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <MeshLib/Intersect.h>
 #include <MeshLib/FENodeFaceList.h>
 #include <set>
@@ -70,7 +70,7 @@ private:
 	bool IntersectTri3 (const Ray& ray, FEFace& face, vec3f& q, double rs[2]);
 	bool IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, double rs[2]);
 	float nodal_curvature(int nid, vec3f& nn, int m);
-	void level(int n, int l, set<int>& nl1);
+	void level(int n, int l, std::set<int>& nl1);
 
 	float face_curvature(FEFace& face, double rs[2], vec3f& sn, int m);
 

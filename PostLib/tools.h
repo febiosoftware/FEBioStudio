@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 // closest point projection of x onto the triangle defined by y
 bool ProjectToTriangle(vec3f* y, vec3f& x, vec3f& q, double tol);

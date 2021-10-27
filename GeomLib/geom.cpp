@@ -25,6 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "geom.h"
+#include <assert.h>
+#include <FECore/mat3d.h>
+#include <FECore/quatd.h>
 
 //-----------------------------------------------------------------------------
 // solves the quadratic: a*x^2 + b*x + c = 0

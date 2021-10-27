@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "pyra.h"
 #include "tri3.h"
 #include "quad4.h"
+using namespace std;
 
 //-----------------------------------------------------------------------------
 //! constructor

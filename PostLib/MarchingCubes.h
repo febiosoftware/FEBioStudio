@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLImageRenderer.h"
 #include <vector>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <FSCore/color.h>
 
 namespace Post {

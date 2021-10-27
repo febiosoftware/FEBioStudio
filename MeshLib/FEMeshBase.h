@@ -71,7 +71,7 @@ public:
 
 	// face area
 	double FaceArea(FEFace& f);
-	double FaceArea(const vector<vec3d>& f, int faceType);
+	double FaceArea(const std::vector<vec3d>& f, int faceType);
 
 	// --- F A C E   D A T A ---
 	void FaceNodePosition(const FEFace& f, vec3d* r) const;
@@ -108,7 +108,7 @@ public:
 
 	bool IsCreaseEdge(int n0, int n1);
 
-	const vector<NodeFaceRef>& NodeFaceList(int n) const;
+	const std::vector<NodeFaceRef>& NodeFaceList(int n) const;
 
 protected:
 	void RemoveEdges(int ntag);

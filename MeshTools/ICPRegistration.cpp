@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include "ICPRegistration.h"
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
+#include <FECore/matrix.h>
+using namespace std;
 
 GICPRegistration::GICPRegistration()
 {

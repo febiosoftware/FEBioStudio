@@ -647,7 +647,7 @@ public:
 	void set_facelist(vector<int>& l);
 
 private:
-	void level(int n, int l, set<int>& nl1);
+	void level(int n, int l, std::set<int>& nl1);
 
 	float nodal_curvature(int n, int m);
 
@@ -714,7 +714,7 @@ protected:
 
 	void eval(int n, vec3f* f, int m);
 
-	void level(int n, int l, set<int>& nl1);
+	void level(int n, int l, std::set<int>& nl1);
 
 	vec3f nodal_curvature(int n, int m);
 
@@ -768,11 +768,11 @@ public:
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-class FEDeformationGradient : public FEElemData_T<Mat3d, DATA_COMP>
+class FEDeformationGradient : public FEElemData_T<mat3d, DATA_COMP>
 {
 public:
 	FEDeformationGradient(FEState* pstate, FEDataField* pdf);
-	void eval(int n, Mat3d* pv);
+	void eval(int n, mat3d* pv);
 };
 
 //-----------------------------------------------------------------------------

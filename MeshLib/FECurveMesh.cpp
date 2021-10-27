@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FECurveMesh.h"
 #include <stack>
-//using namespace std;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // Creates an empty curve mesh

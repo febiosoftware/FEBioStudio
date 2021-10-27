@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/box.h>
+#include <vector>
 
 class FECoreMesh;
 
@@ -36,7 +37,7 @@ public:
 	{
 	public:
 		BOX					m_box;
-		vector<OCTREE_BOX*>	m_child;
+		std::vector<OCTREE_BOX*>	m_child;
 		int					m_elem;
 		int					m_level;
 
@@ -57,15 +58,15 @@ public:
 	FEFindElement(FECoreMesh& mesh);
 
 	void Init(int nframe = 0);
-	void Init(vector<bool>& flags, int nframe = 0);
+	void Init(std::vector<bool>& flags, int nframe = 0);
 
 	bool FindElement(const vec3f& x, int& nelem, double r[3]);
 
 	BOX BoundingBox() const { return m_bound.m_box; }
 
 private:
-	void InitReferenceFrame(vector<bool>& flags);
-	void InitCurrentFrame(vector<bool>& flags);
+	void InitReferenceFrame(std::vector<bool>& flags);
+	void InitCurrentFrame(std::vector<bool>& flags);
 
 	bool FindInReferenceFrame(const vec3f& x, int& nelem, double r[3]);
 	bool FindInCurrentFrame(const vec3f& x, int& nelem, double r[3]);

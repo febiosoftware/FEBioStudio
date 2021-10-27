@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "FEMesh.h"
 #include "FESurfaceMesh.h"
 #include <assert.h>
+using namespace std;
 
 FENodeNodeTable::FENodeNodeTable(const FESurfaceMesh& mesh)
 {

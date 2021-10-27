@@ -23,12 +23,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-
 #include <vector>
-//using namespace std;
-
 #include "FECoreMesh.h"
 
 //-----------------------------------------------------------------------------
@@ -58,10 +54,10 @@ public:
 
 	bool HasElement(int node, int iel) const;
 
-	vector<int> ElementIndexList(int n) const;
-	const vector<NodeElemRef>& ElementList(int n) const { return m_elem[n]; }
+	std::vector<int> ElementIndexList(int n) const;
+	const std::vector<NodeElemRef>& ElementList(int n) const { return m_elem[n]; }
 
 protected:
 	FECoreMesh*	m_pm;
-	vector< vector<NodeElemRef> >	m_elem;
+	std::vector< std::vector<NodeElemRef> >	m_elem;
 };

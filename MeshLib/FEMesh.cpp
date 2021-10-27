@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include <algorithm>
 #include <unordered_set>
 #include <map>
-//using namespace std;
+using namespace std;
 
 double bias(double b, double x)
 {

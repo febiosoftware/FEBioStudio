@@ -43,6 +43,6 @@ private:
 	static void addElement(int ntype, int nshape, int nclass, int nodes, int faces, int edges);
 
 private:
-	static vector<FEElemTraits>	m_lib;
+	static std::vector<FEElemTraits>	m_lib;
 };
 

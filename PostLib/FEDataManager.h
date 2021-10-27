@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "FEDataField.h"
 #include <vector>
-//using namespace std;
 
 namespace Post {
 
@@ -68,7 +67,7 @@ public:
 	bool IsValid(int fieldId) const;
 
 protected:
-	vector<FEDataField*>	m_Data;
+	std::vector<FEDataField*>	m_Data;
 	FEPostModel*	m_pm;
 };
 }

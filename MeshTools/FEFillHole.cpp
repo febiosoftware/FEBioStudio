@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FENodeEdgeList.h>
+#include <FECore/matrix.h>
 #include <limits.h>
 
 //-----------------------------------------------------------------------------

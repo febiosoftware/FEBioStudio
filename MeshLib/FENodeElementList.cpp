@@ -54,7 +54,7 @@ void FENodeElementList::Build(FECoreMesh* pm)
 		{
 			int n = el.m_node[j];
 
-			vector<NodeElemRef>& lj = m_elem[n];
+			std::vector<NodeElemRef>& lj = m_elem[n];
 
 			NodeElemRef ref;
 			ref.eid = i;
@@ -85,9 +85,9 @@ bool FENodeElementList::HasElement(int node, int iel) const
 	return false;
 }
 
-vector<int> FENodeElementList::ElementIndexList(int n) const
+std::vector<int> FENodeElementList::ElementIndexList(int n) const
 {
-	vector<int> l;
+	std::vector<int> l;
 	int nval = Valence(n);
 	for (int i=0; i<nval; ++i)
 	{

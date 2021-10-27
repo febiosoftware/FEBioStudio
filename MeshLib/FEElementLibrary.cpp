@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEElementLibrary.h"
-
+using namespace std;
 
 vector<FEElemTraits> FEElementLibrary::m_lib;
 

@@ -25,12 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include "FENode.h"
 #include "FEElement.h"
 #include "FELineMesh.h"
 #include <FSCore/box.h>
 #include <FSCore/Serializable.h>
+#include <vector>
 
 // A class that represents a mesh for a curve
 // This mesh only consists of nodes and edges
@@ -92,10 +93,10 @@ public:
 	void Invert();
 
 	// reorder nodes based on look-up table
-	void ReorderNodes(vector<int>& NLT);
+	void ReorderNodes(std::vector<int>& NLT);
 
 	// reorder edges based on look-up table
-	void ReorderEdges(vector<int>& ELT);
+	void ReorderEdges(std::vector<int>& ELT);
 
 	// attach another curve to this one
 	void Attach(const FECurveMesh& c);
@@ -110,7 +111,7 @@ public:
 	int EndPoints() const;
 
 	// return a list of end points
-	vector<int> EndPointList() const;
+	std::vector<int> EndPointList() const;
 
 	// count the curve segments (a segment is a simply-connected curve)
 	int Segments() const;

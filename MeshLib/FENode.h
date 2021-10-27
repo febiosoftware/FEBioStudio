@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEItem.h"
-#include "MathLib/math3d.h"
+#include <FECore/vec3d.h>
 
 //-----------------------------------------------------------------------------
 // The FENode class stores the nodal data.

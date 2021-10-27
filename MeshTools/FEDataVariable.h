@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <FECore/MathObject.h>
 #include <string>
 //using namespace std;

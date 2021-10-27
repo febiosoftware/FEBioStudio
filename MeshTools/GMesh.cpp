@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <stack>
 #include <algorithm>
 #include <MeshLib/quad8.h>
-//using namespace std;
+#include <assert.h>
 
 using std::stack;
 

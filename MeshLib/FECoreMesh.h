@@ -31,8 +31,6 @@ SOFTWARE.*/
 #include <vector>
 #include <functional>
 
-using std::vector;
-
 //-----------------------------------------------------------------------------
 //! This class defines a simple mesh structure that provides basic container
 //! services for storing mesh data. It only stores nodes, edges, faces. It implements 
@@ -72,10 +70,10 @@ public: // interface for accessing elements
 	void TagAllElements(int ntag);
 
 	// select a list of elements
-	void SelectElements(const vector<int>& elem);
+	void SelectElements(const std::vector<int>& elem);
 
 public:
-	void ShowElements(vector<int>& elem, bool show = true);
+	void ShowElements(std::vector<int>& elem, bool show = true);
 	void UpdateItemVisibility();
 	void ShowAllElements();
 
@@ -119,7 +117,7 @@ public:
 	void MarkExteriorNodes();
 
 	// returns a list of node indices that belong to a part with part ID gid
-	void FindNodesFromPart(int gid, vector<int>& node);
+	void FindNodesFromPart(int gid, std::vector<int>& node);
 
 	// find a node from its ID
 	FENode* FindNodeFromID(int gid);

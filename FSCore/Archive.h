@@ -27,7 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include <stdio.h>
 #include <string.h>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
+#include <FECore/quatd.h>
 #include <FECore/mat3d.h>
 #include "color.h"
 #include "CallTracer.h"
@@ -370,10 +371,10 @@ protected:
 };
 
 template <typename T>
-class OLeaf<vector<T> > : public OChunk
+class OLeaf < std::vector<T> > : public OChunk
 {
 public:
-	OLeaf(unsigned int nid, const vector<T>& a) : OChunk(nid)
+	OLeaf(unsigned int nid, const std::vector<T>& a) : OChunk(nid)
 	{
 		m_nsize = (int)a.size();
 		assert(m_nsize > 0);

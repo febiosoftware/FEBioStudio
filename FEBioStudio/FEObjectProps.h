@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "ObjectProps.h"
+#include <vector>
 
 class GObject;
 class FEModel;
@@ -108,7 +109,7 @@ public:
 
 private:
 	FERigidInterface*	m_ri;
-	vector<GMaterial*>	m_mat;
+	std::vector<GMaterial*>	m_mat;
 	int					m_sel;
 };
 
@@ -123,7 +124,7 @@ public:
 
 private:
 	FERigidConstraint*	m_rc;
-	vector<GMaterial*>	m_mat;
+	std::vector<GMaterial*>	m_mat;
 	int					m_sel;
 };
 
@@ -138,7 +139,7 @@ public:
 
 private:
 	FERigidConnector*	m_rc;
-	vector<GMaterial*>	m_mat;
+	std::vector<GMaterial*>	m_mat;
 	int					m_rbA;
 	int					m_rbB;
 };

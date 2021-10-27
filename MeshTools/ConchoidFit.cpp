@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "SphereFit.h"
 #include <FECore/tools.h>
 #include <stdio.h>
+using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

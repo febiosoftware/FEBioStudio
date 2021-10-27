@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <string>
+#include <vector>
 #include "ViewSettings.h"
 
 class CDocument;
@@ -78,7 +79,7 @@ protected:
 	friend class CCommandManager;
 };
 
-typedef vector<CCommand*> CCmdPtrArray;
+typedef std::vector<CCommand*> CCmdPtrArray;
 
 //----------------------------------------------------------------
 // CCmdGroup

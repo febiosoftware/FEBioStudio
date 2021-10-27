@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FECore/BSpline.h>
 #include <algorithm>
 
-using std::min;
+using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -151,7 +151,7 @@ void FELoadCurve::Delete(int n)
 void FELoadCurve::Delete(const vector<int>& indexList)
 {
 	vector<int> tmp;
-	int N = indexList.size();
+	int N = (int)indexList.size();
 	for (int i = 0; i < N; ++i)
 	{
 		int n = indexList[i];

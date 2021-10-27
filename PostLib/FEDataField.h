@@ -98,8 +98,8 @@ public:
 	void SetArraySize(int n) { m_arraySize = n; }
 	int GetArraySize() const { return m_arraySize; }
 
-	void SetArrayNames(vector<string>& n);
-	vector<string> GetArrayNames() const;
+	void SetArrayNames(std::vector<string>& n);
+	std::vector<string> GetArrayNames() const;
 
 	FEPostModel* GetModel() { return m_fem; }
 
@@ -112,7 +112,7 @@ protected:
 	std::string		m_name;		//!< data field name
 
 	int				m_arraySize;	//!< data size for arrays
-	vector<string>	m_arrayNames;	//!< (optional) names of array components
+	std::vector<string>	m_arrayNames;	//!< (optional) names of array components
 
 	FEPostModel*	m_fem;
 
@@ -140,7 +140,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-typedef vector<FEDataField*>::iterator FEDataFieldPtr;
+typedef std::vector<FEDataField*>::iterator FEDataFieldPtr;
 
 
 //-----------------------------------------------------------------------------

@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "Serializable.h"
 #include <vector>
-//using namespace std;
 
 class BSpline;
 
@@ -83,7 +82,7 @@ public:
 	void Add(double x, double y);
 	int Add(const LOADPOINT& pt);
 	void Delete(int n);
-	void Delete(const vector<int>& indexList);
+	void Delete(const std::vector<int>& indexList);
 	void Clear() { m_Pt.clear(); }
 
 	double Value(double time);
@@ -141,7 +140,7 @@ protected:
 
 	double	m_ref;		// reference value (for n==0)
 
-	vector<LOADPOINT>	m_Pt;	// array of points
+	std::vector<LOADPOINT>	m_Pt;	// array of points
     
     BSpline*    m_spline;   // B-spline pointer
 };

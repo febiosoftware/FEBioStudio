@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 namespace Post {
 
@@ -50,7 +50,7 @@ class FEStrainMap
 		std::vector<vec3f>	m_norm;		// node normals
 		std::vector<vec3f>	m_pos;		// node positions
 
-		std::vector<vector<int> >	m_NLT;	// node-facet look-up table
+		std::vector<std::vector<int> >	m_NLT;	// node-facet look-up table
 	};
 
 public:

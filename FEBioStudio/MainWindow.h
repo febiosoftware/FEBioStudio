@@ -27,10 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <QMainWindow>
 #include <QCloseEvent>
-#include <MathLib/math3d.h>
 #include <QtCore/QProcess>
 #include <FSCore/box.h>
 #include <MeshTools/GMaterial.h>
+#include <FECore/vec3d.h>
 
 class FSObject;
 class CDocument;

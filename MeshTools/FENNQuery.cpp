@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FENNQuery.h"
 #include <stdlib.h>
-//using namespace std;
+#include <assert.h>
 
 int cmp_node(const void* e1, const void* e2)
 {
@@ -45,7 +45,7 @@ int cmp_node(const void* e1, const void* e2)
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FENNQuery::FENNQuery(vector<vec3d>* ps)
+FENNQuery::FENNQuery(std::vector<vec3d>* ps)
 {
 	m_ps = ps;
 }

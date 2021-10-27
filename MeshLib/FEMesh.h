@@ -31,11 +31,6 @@ SOFTWARE.*/
 #include <vector>
 #include <set>
 #include <string>
-//using namespace std;
-
-using std::vector;
-using std::set;
-using std::string;
 
 //-----------------------------------------------------------------------------
 class FESurfaceMesh;
@@ -191,28 +186,28 @@ public:
 public:
 	int MeshDataFields() const;
 	FEMeshData* GetMeshDataField(int i);
-	FEMeshData* FindMeshDataField(const string& sz);
+	FEMeshData* FindMeshDataField(const std::string& sz);
 	void RemoveMeshDataField(int i);
 	int GetMeshDataIndex(FEMeshData* data);
 	void InsertMeshData(int i, FEMeshData* data);
 	void AddMeshDataField(FEMeshData* data);
 
-	FENodeData* AddNodeDataField(const string& name, double v = 0.0);
-	FENodeData*    AddNodeDataField   (const string& name, FENodeSet* nodeset, FEMeshData::DATA_TYPE dataType);
-	FESurfaceData* AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType);
-	FEElementData* AddElementDataField(const string& name, FEPart* part, FEMeshData::DATA_TYPE dataType);
+	FENodeData* AddNodeDataField(const std::string& name, double v = 0.0);
+	FENodeData*    AddNodeDataField   (const std::string& name, FENodeSet* nodeset, FEMeshData::DATA_TYPE dataType);
+	FESurfaceData* AddSurfaceDataField(const std::string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType);
+	FEElementData* AddElementDataField(const std::string& name, FEPart* part, FEMeshData::DATA_TYPE dataType);
 	void ClearMeshData();
 
 	Mesh_Data& GetMeshData();
 
 public: // --- M E S H   Q U E R I E S ---
-	void BuildSurfaceNodeNodeTable(vector< set<int> >& NNT);
+	void BuildSurfaceNodeNodeTable(std::vector< std::set<int> >& NNT);
 
-	void FindDuplicateFaces(vector<int>& l);
-	void FindDuplicateEdges(vector<int>& l);
+	void FindDuplicateFaces(std::vector<int>& l);
+	void FindDuplicateEdges(std::vector<int>& l);
 
 	// select elements based on face selection
-	vector<int> GetElementsFromSelectedFaces();
+	std::vector<int> GetElementsFromSelectedFaces();
 
 protected:
 	// elements
@@ -222,7 +217,7 @@ protected:
 	Mesh_Data	m_data;
 
 	// data fields
-	vector<FEMeshData*>		m_meshData;
+	std::vector<FEMeshData*>		m_meshData;
 
 	friend class FEMeshBuilder;
 };

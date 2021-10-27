@@ -54,5 +54,5 @@ protected:
 
 private:
 	IArchive			m_ar;
-	vector<GObject*>	m_objList;
+	std::vector<GObject*>	m_objList;
 };

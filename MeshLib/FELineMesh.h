@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FENode.h"
 #include "FEEdge.h"
 #include <FSCore/box.h>
+#include <vector>
 
 class GObject;
 
@@ -94,6 +95,6 @@ protected:
 	GObject*	m_pobj;		//!< owning object
 	BOX			m_box;		//!< bounding box
 
-	vector<FENode>	m_Node;		//!< Node list
-	vector<FEEdge>	m_Edge;		//!< Edge list
+	std::vector<FENode>	m_Node;		//!< Node list
+	std::vector<FEEdge>	m_Edge;		//!< Edge list
 };

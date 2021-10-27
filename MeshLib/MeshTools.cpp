@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "MeshTools.h"
+using namespace std;
 
 // calculate the closest-fitting circle of a triangle
 // This assumes a are in fact 2D vectors
@@ -1059,7 +1060,7 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 
 	int ne = el.Nodes();
 	double dr[3], R[3];
-	Mat3d K;
+	mat3d K;
 	double u2, N[FEElement::MAX_NODES], G[3][FEElement::MAX_NODES];
 	int n = 0;
 	do
@@ -1085,7 +1086,7 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 			K[2][0] -= G[0][i] * x[i].z; K[2][1] -= G[1][i] * x[i].z; K[2][2] -= G[2][i] * x[i].z;
 		}
 
-		K.Invert();
+		K.invert();
 
 		dr[0] = K[0][0] * R[0] + K[0][1] * R[1] + K[0][2] * R[2];
 		dr[1] = K[1][0] * R[0] + K[1][1] * R[1] + K[1][2] * R[2];

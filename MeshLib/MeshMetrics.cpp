@@ -34,6 +34,8 @@ SOFTWARE.*/
 #include "pyra.h"
 #include "tri3.h"
 #include "quad4.h"
+#include <FECore/matrix.h>
+using namespace std;
 
 int FTHEX8[6][4] = {
 	{ 0, 1, 5, 4 },
@@ -1142,11 +1144,11 @@ float eval_curvature(const vector<vec3f>& x, const vec3f& r0, vec3f sn, int meas
 
 		vec3f e2 = e3 ^ e1;
 
-		Mat3d Q;
+		mat3f Q;
 		Q[0][0] = e1.x; Q[1][0] = e2.x; Q[2][0] = e3.x;
 		Q[0][1] = e1.y; Q[1][1] = e2.y; Q[2][1] = e3.y;
 		Q[0][2] = e1.z; Q[1][2] = e2.z; Q[2][2] = e3.z;
-		Mat3d Qt = Q.transpose();
+		mat3f Qt = Q.transpose();
 
 		// map coordinates
 		for (int i = 0; i < nn; ++i)
@@ -1156,7 +1158,7 @@ float eval_curvature(const vector<vec3f>& x, const vec3f& r0, vec3f sn, int meas
 		}
 
 		// setup the linear system
-		Matrix R(nn, 3);
+		matrix R(nn, 3);
 		vector<double> r(nn);
 		for (int i = 0; i < nn; ++i)
 		{
@@ -1226,11 +1228,11 @@ float eval_curvature(const vector<vec3f>& x, const vec3f& r0, vec3f sn, int meas
 
 			vec3f e2 = e3 ^ e1;
 
-			Mat3d Q;
+			mat3f Q;
 			Q[0][0] = e1.x; Q[1][0] = e2.x; Q[2][0] = e3.x;
 			Q[0][1] = e1.y; Q[1][1] = e2.y; Q[2][1] = e3.y;
 			Q[0][2] = e1.z; Q[1][2] = e2.z; Q[2][2] = e3.z;
-			Mat3d Qt = Q.transpose();
+			mat3f Qt = Q.transpose();
 
 			// map coordinates
 			for (int i = 0; i < nn; ++i)
@@ -1240,7 +1242,7 @@ float eval_curvature(const vector<vec3f>& x, const vec3f& r0, vec3f sn, int meas
 			}
 
 			// setup the linear system
-			Matrix R(nn, 5);
+			matrix R(nn, 5);
 			vector<double> r(nn);
 			for (int i = 0; i < nn; ++i)
 			{

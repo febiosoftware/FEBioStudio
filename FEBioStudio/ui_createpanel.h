@@ -43,7 +43,7 @@ SOFTWARE.*/
 #include <QListWidget>
 #include "PropertyListForm.h"
 #include "CIntInput.h"
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include "ToolBox.h"

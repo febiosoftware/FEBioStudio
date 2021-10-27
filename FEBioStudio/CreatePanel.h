@@ -27,8 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include "CommandPanel.h"
 #include <QDialog>
-#include <MathLib/math3d.h>
 #include "PropertyListForm.h"
+#include <FECore/vec3d.h>
+#include <vector>
 
 class QLineEdit;
 class QCheckBox;
@@ -220,7 +221,7 @@ private slots:
 	void itemPicked(GItem*);
 
 protected:
-	vector<GEdge*>		m_edge;
+	std::vector<GEdge*>	m_edge;
 	QComboBox*			m_combo;
 	QSpinBox*			m_divs;
 	QListWidget*		m_list;

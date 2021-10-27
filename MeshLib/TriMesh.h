@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <list>
-//using namespace std;
+#include <vector>
 
 using std::list;
 using std::pair;
@@ -306,4 +306,4 @@ TriMesh::NODEP insertDelaunyPoint(TriMesh& mesh, const vec3d& r, bool remesh = t
 TriMesh::EDGEP insertDelaunyEdge(TriMesh& mesh, TriMesh::NODEP n0, TriMesh::NODEP n1);
 
 //-----------------------------------------------------------------------------
-void insertEdge(TriMesh& mesh, TriMesh::NODEP n0, TriMesh::NODEP n1, vector<TriMesh::NODEP>& nodeList, int tag, const double eps = 1e-2);
+void insertEdge(TriMesh& mesh, TriMesh::NODEP n0, TriMesh::NODEP n1, std::vector<TriMesh::NODEP>& nodeList, int tag, const double eps = 1e-2);

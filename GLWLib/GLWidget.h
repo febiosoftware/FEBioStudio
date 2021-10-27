@@ -38,7 +38,7 @@ SOFTWARE.*/
 
 #include <QPainter>
 #include <PostLib/ColorMap.h>
-#include <MathLib/math3d.h>
+#include <FECore/quatd.h>
 
 class CGLView;
 class CGLWidgetManager;

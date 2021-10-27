@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "FENodeEdgeList.h"
 #include "FELineMesh.h"
+#include <assert.h>
+using namespace std;
 
 FENodeEdgeList::FENodeEdgeList(FELineMesh* mesh) : m_mesh(mesh)
 {

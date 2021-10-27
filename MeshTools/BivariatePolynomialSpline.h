@@ -45,6 +45,6 @@ public:
     vec3d SurfaceDerivative(const double u, const double v, const int nu, const int nv);
     
 public:
-    vector< vector<double> >    m_c;    // spline coefficients
+    std::vector< std::vector<double> >    m_c;    // spline coefficients
     int                         m_n;    // spline degree
 };

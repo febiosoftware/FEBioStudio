@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QLineEdit>
 #include <QValidator>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 //-----------------------------------------------------------------------------
 class CIntInput : public QLineEdit

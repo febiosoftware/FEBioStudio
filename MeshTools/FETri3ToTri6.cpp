@@ -27,6 +27,8 @@ SOFTWARE.*/
 #include <stdio.h>
 #include "stdafx.h"
 #include "FEModifier.h"
+#include <FECore/matrix.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FETri3ToTri6::FETri3ToTri6(bool bsmooth) : FEModifier("Tri3-to-Tri6")

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FECore/mat3d.h>
-#include "MathLib/math3d.h"
+#include <FECore/vec3d.h>
 
 class Plane
 {

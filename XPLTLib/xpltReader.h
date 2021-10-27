@@ -154,17 +154,17 @@ public:
 		unsigned int	index;	// index into data manager list
 
 		unsigned int	arraySize;	// only used for array variables (plt version 0x05)
-		vector<string>	arrayNames;	// (optional) names of array components
+		std::vector<string>	arrayNames;	// (optional) names of array components
 	};
 
 	class Dictionary
 	{
 	public:
-		vector<DICT_ITEM>	m_Glb;
-		vector<DICT_ITEM>	m_Mat;
-		vector<DICT_ITEM>	m_Node;
-		vector<DICT_ITEM>	m_Elem;
-		vector<DICT_ITEM>	m_Face;
+		std::vector<DICT_ITEM>	m_Glb;
+		std::vector<DICT_ITEM>	m_Mat;
+		std::vector<DICT_ITEM>	m_Node;
+		std::vector<DICT_ITEM>	m_Elem;
+		std::vector<DICT_ITEM>	m_Face;
 
 	public:
 		void Clear()
@@ -210,8 +210,8 @@ public:
 		int		ne;
 		int		nid;	// domain ID
 		char	szname[64];
-		vector<int>		elist;
-		vector<ELEM>	elem;
+		std::vector<int>		elist;
+		std::vector<ELEM>	elem;
 
 	public:
 		Domain() { ne = 0; szname[0] = 0; }
@@ -224,7 +224,7 @@ public:
 	public:
 		int				sid;
 		int				nf;
-		vector<FACE>	face;
+		std::vector<FACE>	face;
 		char			szname[64];
 
 	public:
@@ -239,7 +239,7 @@ public:
 		int		nid;
 		int		nn;
 		char	szname[64];
-		vector<int>	node;
+		std::vector<int>	node;
 
 	public:
 		NodeSet() { nn = 0; szname[0] = 0; }
@@ -296,11 +296,11 @@ protected:
 
 protected:
 	Dictionary			m_dic;
-	vector<MATERIAL>	m_Mat;
-	vector<NODE>		m_Node;
-	vector<Domain>		m_Dom;
-	vector<Surface>		m_Surf;
-	vector<NodeSet>		m_NodeSet;
+	std::vector<MATERIAL>	m_Mat;
+	std::vector<NODE>		m_Node;
+	std::vector<Domain>		m_Dom;
+	std::vector<Surface>		m_Surf;
+	std::vector<NodeSet>		m_NodeSet;
 
 	bool	m_bHasDispl;			// has displacement field
 	bool	m_bHasStress;			// has stress field

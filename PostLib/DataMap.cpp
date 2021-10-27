@@ -56,7 +56,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	double f[8];
 	vec3f x[8];
 
-	Mat3d J;
+	mat3d J;
 	double j;
 	int node;
 
@@ -132,8 +132,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 			}
 
 			// invert jacobian
-			j = J.Invert();
-			if (j <= 0) return;
+			if (J.invert() == false) return;
 
 			// evaluate df/dr = SUM( dH[k]/dr * f[k] )
 			dfdr[0] = dfdr[1] = dfdr[2] = 0;

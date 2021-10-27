@@ -26,8 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-#include <MathLib/math3d.h>
-//using namespace std;
+#include <FECore/vec3d.h>
+#include <FECore/mat3d.h>
+#include <FECore/tens4d.h>
 
 namespace Post {
 
@@ -131,7 +132,7 @@ public:
 	void erase(int i) { m_data.erase(m_data.begin() + i); }
 
 protected:
-	vector<FEMeshData*>		m_data;
+	std::vector<FEMeshData*>		m_data;
 };
 
 //-----------------------------------------------------------------------------
@@ -140,7 +141,7 @@ template <class T> class FEMeshDataTraits {};
 
 template <> class FEMeshDataTraits<float>  { public: static Data_Type Type() { return DATA_FLOAT;   }};
 template <> class FEMeshDataTraits<vec3f>  { public: static Data_Type Type() { return DATA_VEC3F;   }};
-template <> class FEMeshDataTraits<Mat3d>  { public: static Data_Type Type() { return DATA_MAT3D;   }};
+template <> class FEMeshDataTraits<mat3d>  { public: static Data_Type Type() { return DATA_MAT3D;   }};
 template <> class FEMeshDataTraits<mat3f>  { public: static Data_Type Type() { return DATA_MAT3F;   }};
 template <> class FEMeshDataTraits<mat3fs> { public: static Data_Type Type() { return DATA_MAT3FS;  }};
 template <> class FEMeshDataTraits<mat3fd> { public: static Data_Type Type() { return DATA_MAT3FD;  }};
@@ -152,7 +153,7 @@ template <Data_Type t> class FEDataTypeTraits {};
 
 template <> class FEDataTypeTraits<DATA_FLOAT > { public: typedef float dataType; };
 template <> class FEDataTypeTraits<DATA_VEC3F > { public: typedef vec3f dataType; };
-template <> class FEDataTypeTraits<DATA_MAT3D > { public: typedef Mat3d dataType; };
+template <> class FEDataTypeTraits<DATA_MAT3D > { public: typedef mat3d dataType; };
 template <> class FEDataTypeTraits<DATA_MAT3F > { public: typedef mat3f dataType; };
 template <> class FEDataTypeTraits<DATA_MAT3FS> { public: typedef mat3fs dataType; };
 template <> class FEDataTypeTraits<DATA_MAT3FD> { public: typedef mat3fd dataType; };

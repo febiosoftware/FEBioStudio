@@ -249,7 +249,7 @@ double PointCloud3d::FitPlane(Plane& p)
 //-------------------------------------------------------------------------------
 // Extract points closest to plane (within dist)
 void PointCloud3d::ExtractPlanarPoints(Plane plane, double dist,
-                                       PointCloud3d& pcex, vector<bool>& slct)
+                                       PointCloud3d& pcex, std::vector<bool>& slct)
 {
     pcex.Clear();
     if (slct.size() == 0) slct.resize(Points(),false);

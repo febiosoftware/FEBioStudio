@@ -175,9 +175,9 @@ protected:
 	bool WriteElemData(FEPostModel& fem, FEState& state);
 	bool WriteFaceData(FEPostModel& fem, FEState& state);
 
-	bool FillNodeDataArray(vector<float>& val, FEMeshData& data);
-	bool FillElemDataArray(vector<float>& val, FEMeshData& data, FEPart& part);
-	bool FillFaceDataArray(vector<float>& val, FEMeshData& data, FESurface& part);
+	bool FillNodeDataArray(std::vector<float>& val, FEMeshData& data);
+	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data, FEPart& part);
+	bool FillFaceDataArray(std::vector<float>& val, FEMeshData& data, FESurface& part);
 
 	bool error(const char* sz);
 
