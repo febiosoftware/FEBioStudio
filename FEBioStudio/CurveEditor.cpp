@@ -39,6 +39,67 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GModel.h>
 #include <sstream>
+#include <QDialogButtonBox>
+#include <QComboBox>
+#include <QFormLayout>
+#include <QLineEdit>
+
+class CDlgImportCurve : public QDialog
+{
+private:
+	QLineEdit* m_skip;
+	QComboBox*	m_delim;
+	QLineEdit* m_xColumn;
+	QLineEdit* m_yColumn;
+	
+
+public:
+	CDlgImportCurve(QWidget* parent) : QDialog(parent)
+	{
+		QFormLayout* l = new QFormLayout;
+
+		m_skip = new QLineEdit;	m_skip->setValidator(new QIntValidator(0, 1000)); m_skip->setText("0");
+		l->addRow("Skip lines (header):", m_skip);
+		
+		m_delim = new QComboBox;
+		m_delim->addItems(QStringList() << "Space" << "Comma" << "Tab");
+		l->addRow("Delimiter:", m_delim);
+
+		m_xColumn = new QLineEdit; m_xColumn->setValidator(new QIntValidator(0, 1000)); m_xColumn->setText("0");
+		m_yColumn = new QLineEdit; m_yColumn->setValidator(new QIntValidator(0, 1000)); m_yColumn->setText("1");
+
+		l->addRow("X column index:", m_xColumn);
+		l->addRow("Y column index:", m_yColumn);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		
+		QVBoxLayout* v = new QVBoxLayout;
+		v->addLayout(l);
+		v->addWidget(bb);
+
+		setLayout(v);
+
+		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	char GetDelimiter() 
+	{
+		int n = m_delim->currentIndex();
+		switch (n)
+		{
+		case 0: return ' '; break;
+		case 1: return ','; break;
+		case 2: return '\t'; break;
+		}
+		return ' ';
+	}
+
+	int GetSkipLines() { return m_skip->text().toInt(); }
+
+	int GetXColumnIndex() { return m_xColumn->text().toInt(); }
+	int GetYColumnIndex() { return m_yColumn->text().toInt(); }
+};
 
 CCmdAddPoint::CCmdAddPoint(FELoadCurve* plc, LOADPOINT& pt) : CCommand("Add point")
 {
@@ -950,21 +1011,126 @@ void CCurveEditor::on_plot_draggingEnd(QPoint p)
 	}
 }
 
+
+vector<double> processLine(const char* szline, char delim)
+{
+	vector<double> v;
+	const char* sz = szline;
+	while (sz)
+	{
+		double w = atof(sz);
+		v.push_back(w);
+		sz = strchr(sz, delim);
+		if (sz) sz++;
+	}
+	return v;
+}
+
+bool ReadLoadCurve(FELoadCurve& lc, const char* szfile, char delim = ' ', int nskip = 0, int xColumnIndex = 0, int yColumnIndex = 1)
+{
+	// sanity checks
+	if (xColumnIndex < 0) { assert(false); return false; }
+	if (yColumnIndex < 0) { assert(false); return false; }
+
+	// create the file
+	FILE* fp = fopen(szfile, "rt");
+	if (fp == 0) return false;
+
+	// make sure the load curve is empty
+	lc.Clear();
+
+	// read the file
+	char szline[256];
+	fgets(szline, 255, fp);
+	int nlines = 0;
+	while (!feof(fp))
+	{
+		// process line
+		if (nlines >= nskip)
+		{
+			vector<double> d;
+			const char* sz = szline;
+			while (sz)
+			{
+				double w = atof(sz);
+				d.push_back(w);
+				sz = strchr(sz, delim);
+				if (sz) sz++;
+			}
+			if (d.empty()) break;
+
+			double x = 0.0, y = 0.0;
+			if (xColumnIndex < d.size()) x = d[xColumnIndex];
+			if (yColumnIndex < d.size()) y = d[yColumnIndex];
+
+			lc.Add(x, y);
+		}
+
+		fgets(szline, 255, fp);
+		nlines++;
+	}
+
+	fclose(fp);
+
+	return true;
+}
+
+bool WriteLoadCurve(FELoadCurve& lc, const char* szfile)
+{
+	FILE* fp = fopen(szfile, "wt");
+	if (fp == 0) return false;
+
+	for (int i = 0; i < lc.Size(); ++i)
+	{
+		LOADPOINT& pt = lc.Item(i);
+		fprintf(fp, "%lg %lg\n", pt.time, pt.load);
+	}
+	fclose(fp);
+	return true;
+}
+
+
 void CCurveEditor::on_open_triggered()
 {
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	if ((m_currentItem == nullptr) || ((m_currentItem->GetLoadCurve() == nullptr) && (m_currentItem->GetParam() == nullptr)))
+	{
+		QMessageBox::warning(this, "FEBio Studio", "You must select a model parameter first.");
+		return;
+	}
 
 	QString fileName = QFileDialog::getOpenFileName(this, "Open File", "", "All files (*)");
 	if (fileName.isEmpty() == false)
 	{
-		std::string sfile = fileName.toStdString();
-		const char* szfile = sfile.c_str();
-		if (plc->LoadData(szfile))
+		CDlgImportCurve dlg(this);
+		if (dlg.exec())
 		{
-			SetLoadCurve(plc);
+			char delim = dlg.GetDelimiter();
+			int nskip = dlg.GetSkipLines();
+			int nx = dlg.GetXColumnIndex();
+			int ny = dlg.GetYColumnIndex();
+			FELoadCurve lc;
+			std::string sfile = fileName.toStdString();
+			const char* szfile = sfile.c_str();
+			if (ReadLoadCurve(lc, szfile, delim, nskip, nx, ny))
+			{
+				FELoadCurve* plc = m_currentItem->GetLoadCurve();
+				if (plc == nullptr)
+				{
+					Param* pp = m_currentItem->GetParam();
+					if (pp)
+					{
+						assert(pp->GetLoadCurve() == 0);
+						pp->SetLoadCurve();
+						plc = pp->GetLoadCurve();
+						plc->Clear();
+						m_currentItem->SetLoadCurve(plc);
+					}
+				}
+				if (plc) *plc = lc;
+				SetLoadCurve(plc);
+			}
+			else QMessageBox::critical(this, "Open File", QString("Failed loading curve data from file %1").arg(szfile));
 		}
-		else QMessageBox::critical(this, "Open File", QString("Failed loading curve data from file %1").arg(szfile));
 	}
 }
 
@@ -1003,7 +1169,12 @@ void CCurveEditor::on_plot_doneSelectingRect(QRect rt)
 
 void CCurveEditor::on_save_triggered()
 {
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
+	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0))
+	{
+		QMessageBox::warning(this, "FEBio Studio", "Nothing to export!");
+		return;
+	}
+
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	QString fileName = QFileDialog::getSaveFileName(this, "Open File", "", "All files (*)");
@@ -1011,7 +1182,7 @@ void CCurveEditor::on_save_triggered()
 	{
 		std::string sfile = fileName.toStdString();
 		const char* szfile = sfile.c_str();
-		if (plc->WriteData(szfile) == false)
+		if (WriteLoadCurve(*plc, szfile) == false)
 		{
 			QMessageBox::critical(this, "Save File", QString("Failed saving curve data to file %1").arg(szfile));
 		}

@@ -110,9 +110,6 @@ public:
 
 	void Scale(double s);
 
-	bool LoadData(const char* szfile);
-	bool WriteData(const char* szfile);
-
 	void SetExtend(int nmode) { m_nextend = nmode; }
 	int GetExtend() { return m_nextend; }
 
