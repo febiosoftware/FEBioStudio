@@ -454,54 +454,6 @@ void FELoadCurve::Scale(double s)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-bool FELoadCurve::LoadData(const char* szfile)
-{
-	FILE* fp = fopen(szfile, "rt");
-	if (fp == 0) return false;
-
-	FELoadCurve lc;
-	lc.Clear();
-
-	char szline[256];
-	fgets(szline, 255, fp);
-
-	int n;
-	LOADPOINT pt;
-	while (!feof(fp))
-	{
-		n = sscanf(szline, "%lg%lg", &pt.time, &pt.load);
-		if (n != 2) { fclose(fp); return false; }
-		lc.Add(pt);
-		fgets(szline, 255, fp);
-	}
-
-	fclose(fp);
-
-	// copy data
-	n = lc.Size();
-	m_Pt.resize(n);
-	for (int i=0; i<n; ++i) m_Pt[i] = lc[i];
-    Update();
-
-	return true;
-}
-
-bool FELoadCurve::WriteData(const char* szfile)
-{
-	FILE* fp = fopen(szfile, "wt");
-	if (fp == 0) return false;
-
-	for (int i = 0; i < m_Pt.size(); ++i)
-	{
-		LOADPOINT& pt = m_Pt[i];
-		fprintf(fp, "%lg %lg\n", pt.time, pt.load);
-	}
-	fclose(fp);
-	return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 void FELoadCurve::Update()
 {
     // check if using spline
