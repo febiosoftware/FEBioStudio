@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ITKImage.h>
+#include <ImageLib/SITKImage.h>
 #include <ImageLib/ImageFilter.h>
 #include "GLImageRenderer.h"
 #include <PostLib/VolRender.h>
@@ -103,15 +104,15 @@ bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, in
 #ifdef HAS_ITK
 bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type)
 {
-	CITKImage* im = new CITKImage();  
+	SITKImage* im = new SITKImage();  
 
-	if(!im->LoadFromFile(filename.c_str(), type))
+	if(!im->LoadFromFile(filename.c_str(), type == ImageFileType::DICOM))
 	{
 		delete im;
 		return false;
 	}
 
-	std::vector<int> size = im->GetSize();
+	std::vector<unsigned int> size = im->GetSize();
 	std::vector<double> origin = im->GetOrigin();
 	std::vector<double> spacing = im->GetSpacing();
 

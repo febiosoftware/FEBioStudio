@@ -327,6 +327,8 @@ if(USE_ITK)
     include(${ITK_USE_FILE})
 endif()
 
+include_directories(${SimpleITK_INCLUDE_DIRS})
+
 ##### Find Source Files #####
 
 macro(findHdrSrc name)
@@ -485,6 +487,8 @@ endif()
 if(USE_ITK)
     target_link_libraries(FEBioStudio ${ITK_LIBRARIES})
 endif()
+
+target_link_libraries(FEBioStudio ${SimpleITK_LIBRARIES})
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})

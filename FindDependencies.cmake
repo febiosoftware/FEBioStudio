@@ -538,3 +538,6 @@ if(DEFINED ITK_USE_FILE)
 else()
 	option(USE_ITK "Required to import most image files." OFF)
 endif()
+
+# SITK
+find_package(SimpleITK)
