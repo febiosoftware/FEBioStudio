@@ -77,6 +77,9 @@ private:
 	void MultiMaterialCurves(FEMaterial* pm);
 	void BuildLoadCurveList(FEModel& fem);
 
+public: // helper functions for writing to the xml file directly
+	XMLWriter& GetXMLWriter();
+
 protected:
 	XMLWriter		m_xml;
 

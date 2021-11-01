@@ -56,6 +56,12 @@ void FEBioExport::SetExportSelectionsFlag(bool b)
 }
 
 //-----------------------------------------------------------------------------
+XMLWriter& FEBioExport::GetXMLWriter()
+{
+	return m_xml;
+}
+
+//-----------------------------------------------------------------------------
 const char* FEBioExport::GetEnumValue(Param& p)
 {
 	assert(p.GetParamType() == Param_CHOICE);
