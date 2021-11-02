@@ -39,6 +39,16 @@ SITKImage::SITKImage()
 
 }
 
+SITKImage::SITKImage(int nx, int ny, int nz)
+    : m_sitkImage(nx, ny, nz, sitk::sitkUInt8)
+{
+    m_cx = nx;
+    m_cy = ny;
+    m_cz = nz;
+
+    FinalizeImage();
+}
+
 SITKImage::~SITKImage()
 {
     m_pb = nullptr;
@@ -56,24 +66,24 @@ bool SITKImage::LoadFromFile(const char* filename, bool isDicom)
         const std::vector<std::string> dicom_names = sitk::ImageSeriesReader::GetGDCMSeriesFileNames( info.absolutePath().toStdString().c_str() );
         reader.SetFileNames( dicom_names );
 
-        sitkImage = reader.Execute();
+        m_sitkImage = reader.Execute();
     }
     else
     {
         sitk::ImageFileReader reader;
         reader.SetFileName(filename);
 
-        sitkImage = reader.Execute();
+        m_sitkImage = reader.Execute();
     }
 
     sitk::RescaleIntensityImageFilter rescaleFiler;
     rescaleFiler.SetOutputMinimum(0);
     rescaleFiler.SetOutputMaximum(255);
-    sitkImage = rescaleFiler.Execute(sitkImage);
+    m_sitkImage = rescaleFiler.Execute(m_sitkImage);
 
     sitk::CastImageFilter castFilter;
     castFilter.SetOutputPixelType(sitk::sitkUInt8);
-    sitkImage = castFilter.Execute(sitkImage);
+    m_sitkImage = castFilter.Execute(m_sitkImage);
 
     FinalizeImage();
 
@@ -83,31 +93,52 @@ bool SITKImage::LoadFromFile(const char* filename, bool isDicom)
 void SITKImage::FinalizeImage()
 {
     // finalImage = originalImage;
-    m_pb = sitkImage.GetBufferAsUInt8();
+    m_pb = m_sitkImage.GetBufferAsUInt8();
 
-    m_cx = sitkImage.GetWidth();
-    m_cy = sitkImage.GetHeight();
-    m_cz = sitkImage.GetDepth();
+    m_cx = m_sitkImage.GetWidth();
+    m_cy = m_sitkImage.GetHeight();
+    m_cz = m_sitkImage.GetDepth();
 
-    std::vector<double> spacing = sitkImage.GetSpacing();
+    std::vector<double> spacing = m_sitkImage.GetSpacing();
 
     std::cout << spacing[0] << " " << spacing[1] << " " << spacing[2] << std::endl;
 
-    std::vector<double> origin = sitkImage.GetOrigin();
+    std::vector<double> origin = m_sitkImage.GetOrigin();
     std::cout << origin[0] << " " << origin[1] << " " << origin[2] << std::endl;
 }
 
 std::vector<unsigned int> SITKImage::GetSize()
 {
-    return sitkImage.GetSize();
+    return m_sitkImage.GetSize();
 }
 
 std::vector<double> SITKImage::GetOrigin()
 {
-    return sitkImage.GetOrigin();
+    return m_sitkImage.GetOrigin();
 }
 
 std::vector<double> SITKImage::GetSpacing()
 {
-    return sitkImage.GetSpacing();
+    return m_sitkImage.GetSpacing();
+}
+
+itk::simple::Image SITKImage::GetSItkImage()
+{
+    return m_sitkImage;
+}
+
+void SITKImage::SetItkImage(itk::simple::Image image)
+{
+    if(image.GetPixelID() != sitk::sitkUInt8)
+    {
+        sitk::CastImageFilter castFilter;
+        castFilter.SetOutputPixelType(sitk::sitkUInt8);
+        m_sitkImage = castFilter.Execute(image);
+    }
+    else
+    {
+        m_sitkImage = image;
+    }
+
+    m_pb = m_sitkImage.GetBufferAsUInt8();
 }

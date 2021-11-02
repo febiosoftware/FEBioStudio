@@ -324,7 +324,7 @@ include_directories(${ZLIB_INCLUDE_DIR})
 
 if(USE_ITK)
     add_definitions(-DHAS_ITK)
-    include(${ITK_USE_FILE})
+    #~ include(${ITK_USE_FILE})
 endif()
 
 include_directories(${SimpleITK_INCLUDE_DIRS})
@@ -485,7 +485,7 @@ if(USE_FFMPEG)
 endif()
 
 if(USE_ITK)
-    target_link_libraries(FEBioStudio ${ITK_LIBRARIES})
+    #~ target_link_libraries(FEBioStudio ${ITK_LIBRARIES})
 endif()
 
 target_link_libraries(FEBioStudio ${SimpleITK_LIBRARIES})

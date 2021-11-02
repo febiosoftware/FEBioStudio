@@ -26,15 +26,14 @@ SOFTWARE.*/
 
 #include "ImageFilter.h"
 #include <PostLib/ImageModel.h>
-#include <ImageLib/ITKImage.h>
-
-#include "itkImage.h"
-#include "itkMeanImageFilter.h"
-#include "itkSmoothingRecursiveGaussianImageFilter.h"
+#include <ImageLib/SITKImage.h>
+#include <sitkSmoothingRecursiveGaussianImageFilter.h>
+#include <sitkMeanImageFilter.h>
 #include <chrono>
 #include <ctime>
 #include <iostream>
 
+namespace sitk = itk::simple;
 
 CImageFilter::CImageFilter(Post::CImageModel* model) : model(model)
 {
@@ -57,32 +56,23 @@ MeanImageFilter::MeanImageFilter(Post::CImageModel* model) : CImageFilter(model)
 
 void MeanImageFilter::ApplyFilter()
 {
-    CITKImage* image = dynamic_cast<CITKImage*>(model->GetImageSource()->Get3DImage());
+    SITKImage* image = dynamic_cast<SITKImage*>(model->GetImageSource()->Get3DImage());
 
     if(!image) return;
 
     auto start = std::chrono::system_clock::now();
 
-    using PixelType = unsigned char;
-    using ImageType = itk::Image<PixelType, 3>;
+    sitk::MeanImageFilter filter;
 
-    using FilterType = itk::MeanImageFilter<ImageType, ImageType>;
-    FilterType::Pointer filter = FilterType::New();
+    std::vector<unsigned int> indexRadius;
 
-    ImageType::SizeType indexRadius;
+    indexRadius.push_back(GetIntValue(0)); // radius along x
+    indexRadius.push_back(GetIntValue(1)); // radius along y
+    indexRadius.push_back(GetIntValue(2)); // radius along z
 
-    indexRadius[0] = GetIntValue(0); // radius along x
-    indexRadius[1] = GetIntValue(1); // radius along y
-    indexRadius[2] = GetIntValue(2); // radius along z
+    filter.SetRadius(indexRadius);
 
-    filter->SetRadius(indexRadius);
-
-    itk::SmartPointer<itk::Image<unsigned char, 3>> itkImage = image->GetItkImage();
-
-    filter->SetInput(itkImage);
-
-    model->GetImageSource()->GetImageToFilter()->SetItkImage(filter->GetOutput());
-    model->GetImageSource()->GetImageToFilter()->Update();
+    image->SetItkImage(filter.Execute(image->GetSItkImage()));
 
     auto end = std::chrono::system_clock::now();
 
@@ -106,37 +96,26 @@ GaussianImageFilter::GaussianImageFilter(Post::CImageModel* model)
 
 void GaussianImageFilter::ApplyFilter()
 {
-    CITKImage* image = dynamic_cast<CITKImage*>(model->GetImageSource()->Get3DImage());
+    SITKImage* image = dynamic_cast<SITKImage*>(model->GetImageSource()->Get3DImage());
 
     if(!image) return;
 
     auto start = std::chrono::system_clock::now();
 
-    using PixelType = unsigned char;
-    using ImageType = itk::Image<PixelType, 3>;
-
-    using FilterType = itk::SmoothingRecursiveGaussianImageFilter<ImageType, ImageType>;
-
-    FilterType::Pointer filter = FilterType::New();
-    filter->SetNormalizeAcrossScale(false);
-
-    itk::SmartPointer<itk::Image<unsigned char, 3>> itkImage = image->GetItkImage();
-
-    filter->SetInput(itkImage);
+    sitk::SmoothingRecursiveGaussianImageFilter filter;
 
     const double sigma = GetFloatValue(0);
     std::cout << sigma << std::endl;
-    filter->SetSigma(sigma);
+    filter.SetSigma(sigma);
 
-    model->GetImageSource()->GetImageToFilter()->SetItkImage(filter->GetOutput());
-
-    model->GetImageSource()->GetImageToFilter()->Update();
+    image->SetItkImage(filter.Execute(image->GetSItkImage()));
 
     auto end = std::chrono::system_clock::now();
 
     std::chrono::duration<double> elapsed_seconds = end-start;
 
     std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+
 }
 
 ThresholdImageFilter::ThresholdImageFilter(Post::CImageModel* model)

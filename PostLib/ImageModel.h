@@ -38,7 +38,7 @@ SOFTWARE.*/
 enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
 
 class C3DImage;
-class CITKImage;
+class SITKImage;
 
 namespace Post {
 
@@ -60,7 +60,7 @@ public:
 	C3DImage* Get3DImage() { return m_img; }
 
     void ClearFilters();
-    CITKImage* GetImageToFilter(bool allocate = false);
+    SITKImage* GetImageToFilter(bool allocate = false);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);

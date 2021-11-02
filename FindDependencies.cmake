@@ -531,7 +531,7 @@ if(NOT WIN32)
 endif()
 
 #ITK
-find_package(ITK)
+#~ find_package(ITK)
 
 if(DEFINED ITK_USE_FILE)
 	option(USE_ITK "Required to import most image files." ON)

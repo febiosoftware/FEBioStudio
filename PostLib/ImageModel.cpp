@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
-#include <ImageLib/ITKImage.h>
+// #include <ImageLib/ITKImage.h>
 #include <ImageLib/SITKImage.h>
 #include <ImageLib/ImageFilter.h>
 #include "GLImageRenderer.h"
@@ -137,29 +137,25 @@ void CImageSource::ClearFilters()
     }
 }
 
-CITKImage* CImageSource::GetImageToFilter(bool allocate)
+SITKImage* CImageSource::GetImageToFilter(bool allocate)
 {
     if(m_img == m_originalImage)
     {
-        int nx = m_originalImage->Width();
-        int ny = m_originalImage->Height();
-        int nz = m_originalImage->Depth();
-
-        m_img = new CITKImage(nx, ny, nz);
-
         if(allocate)
         {
-            BOX box = m_imgModel->GetBoundingBox();
-            int x0 = box.x0;
-            int y0 = box.y0;
-            int z0 = box.z0;
+            int nx = m_originalImage->Width();
+            int ny = m_originalImage->Height();
+            int nz = m_originalImage->Depth();
 
-            static_cast<CITKImage*>(m_img)->Allocate(nx, ny, nz, x0, y0, z0);
+            m_img = new SITKImage(nx, ny, nz);
         }
-        
+        else
+        {
+            m_img = new SITKImage();
+        }
     }
 
-    return static_cast<CITKImage*>(m_img);
+    return static_cast<SITKImage*>(m_img);
 }
 
 void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)

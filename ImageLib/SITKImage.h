@@ -37,14 +37,13 @@ public:
     ~SITKImage();
 
     bool LoadFromFile(const char* filename, bool isDicom);
-    // bool Allocate(int nx, int ny, int nz, int x0, int y0, int z0);
 
     std::vector<unsigned int> GetSize();
     std::vector<double> GetOrigin();
     std::vector<double> GetSpacing();
 
-    // itk::SmartPointer<itk::Image<unsigned char, 3>> GetItkImage();
-    // void SetItkImage(itk::SmartPointer<itk::Image<unsigned char, 3>> image);
+    itk::simple::Image GetSItkImage();
+    void SetItkImage(itk::simple::Image image);
 
     void Update();
 
@@ -63,6 +62,8 @@ private:
 
 private:
     const char* m_filename;
+
+    bool m_delBuffer;
     // const char* m_imageFilename;
     // ImageFileType m_type;
     // IOPixelType pixelType;
@@ -70,7 +71,7 @@ private:
     // itk::SmartPointer<FinalImageType> originalImage;
     // typename FinalImageType::Pointer finalImage;
 
-    itk::simple::Image sitkImage;
+    itk::simple::Image m_sitkImage;
 
     // std::vector<std::string> sequenceFiles;
 };
