@@ -292,3 +292,34 @@ void CMainWindow::on_actionFEBioInfo_triggered()
 	CDlgFEBioInfo dlg(this);
 	dlg.exec();
 }
+
+void CMainWindow::on_actionFEBioTangent_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	CDlgFEBioTangent dlg(this);
+	if (dlg.exec() == QDialog::Accepted)
+	{
+		QString fileName = QFileDialog::getSaveFileName(this, "Save", "", "*.feb");
+		if (fileName.isEmpty() == false)
+		{
+			try {
+				FEBioTangentDiagnostic data = dlg.GetData();
+
+				if (data.WriteDiagnosticFile(doc, fileName.toStdString()) == false)
+				{
+					QMessageBox::critical(this, "Generate FEBio Diagnostic file", "Something went terribly wrong!");
+				}
+				else
+				{
+					QMessageBox::information(this, "Generate FEBio Diagnostic file", "Success writing FEBio Tangent Diagnostic file!");
+				}
+			}
+			catch (...)
+			{
+				QMessageBox::critical(this, "Generate FEBio Tangent Diagnostic", "Exception detection. Diagnostic file might be incorrect.");
+			}
+		}
+	}
+}

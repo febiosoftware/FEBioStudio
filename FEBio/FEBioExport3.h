@@ -219,6 +219,7 @@ protected:
 
 	GPartList* BuildPartList(GMaterial* mat);
 
+public:
 	void WriteModuleSection(FEStep* pstep);
 	void WriteControlSection(FEStep& s);
 	void WriteMaterialSection();

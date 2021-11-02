@@ -512,7 +512,7 @@ public:
 					// check if this is a different type
 					if (m_matIndex >= 0)
 					{
-						FEMaterial* oldMat = m_pm->GetProperty(m_propId).GetMaterial();
+						FEMaterial* oldMat = m_pm->GetProperty(m_propId).GetMaterial(m_matIndex);
 
 						if (dynamic_cast<FEReactionSpecies*>(oldMat))
 						{

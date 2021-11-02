@@ -23,90 +23,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <QWizard>
-#include "FEBioOpt.h"
-#include "FEBioDiagnostic.h"
+#include <string>
+class CModelDocument;
 
-class FEModel;
-
-class CMainWindow;
-class QLineEdit;
-class QPushButton;
-
-namespace Ui {
-	class CDlgFEBioOptimize;
-	class CDlgSelectParam;
-}
-
-class CDlgFEBioOptimize : public QWizard
+//================================================================
+class FEBioTangentDiagnostic
 {
-	Q_OBJECT
+public:
+	int		m_matIndex;
+	int		m_scenario;
+	double	m_strain;
 
 public:
-	CDlgFEBioOptimize(CMainWindow* parent);
-
-	FEBioOpt GetFEBioOpt();
-
-protected slots:
-	void on_addParameter_clicked();
-	void on_addData_clicked();
-	void on_pasteData_clicked();
-
-private:
-	Ui::CDlgFEBioOptimize*	ui;
-};
-
-class CSelectParam : public QWidget
-{
-	Q_OBJECT
-
-private:
-	QLineEdit*		m_edit;
-	QPushButton*	m_push;
-	FEModel*		m_fem;
-	int				m_paramOption;
-
-public:
-	CSelectParam(FEModel* fem, int paramOption = 0, QWidget* parent = nullptr);
-
-	void clear();
-	QString text();
-
-private slots:
-	void onSelectClicked();
-};
-
-class CDlgSelectParam : public QDialog
-{
-	Q_OBJECT
-
-public:
-	CDlgSelectParam(FEModel* fem, int paramOption, QWidget* parent = nullptr);
-
-	void accept() override;
-
-	QString text();
-
-private:
-	Ui::CDlgSelectParam*	ui;
-};
-
-//=================================================================================================
-class CDlgFEBioTangentUI;
-
-class CDlgFEBioTangent : public QDialog
-{
-
-public:
-	CDlgFEBioTangent(CMainWindow* parent);
-
-	FEBioTangentDiagnostic GetData();
-
-private:
-	void accept() override;
-
-private:
-	CDlgFEBioTangentUI* ui;
+	FEBioTangentDiagnostic();
+	bool WriteDiagnosticFile(CModelDocument* doc, const std::string& fileName);
 };

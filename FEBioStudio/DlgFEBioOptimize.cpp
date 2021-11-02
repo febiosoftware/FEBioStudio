@@ -523,3 +523,76 @@ void CDlgFEBioOptimize::on_pasteData_clicked()
 	}
 
 }
+
+//==========================================================================================================
+
+class CDlgFEBioTangentUI
+{
+public:
+	FEBioTangentDiagnostic data;
+
+public:
+	QComboBox* matList;
+	QComboBox* scenarios;
+	QLineEdit* strain;
+
+	void setup(CDlgFEBioTangent* dlg)
+	{
+		matList = new QComboBox;
+		scenarios = new QComboBox;
+		strain = new QLineEdit;
+		strain->setValidator(new QDoubleValidator);
+
+		QFormLayout* form = new QFormLayout;
+		form->addRow("Material:", matList);
+		form->addRow("Scenario:", scenarios);
+		form->addRow("strain:", strain);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addLayout(form);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		l->addWidget(bb);
+
+		dlg->setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+	}
+};
+
+CDlgFEBioTangent::CDlgFEBioTangent(CMainWindow* parent) : QDialog(parent), ui(new CDlgFEBioTangentUI)
+{
+	ui->setup(this);
+
+	CModelDocument* doc = parent->GetModelDocument();
+	if (doc)
+	{
+		FEModel* fem = doc->GetFEModel(); assert(fem);
+		int nmat = fem->Materials();
+		for (int i = 0; i < nmat; ++i)
+		{
+			GMaterial* mat = fem->GetMaterial(i);
+			ui->matList->addItem(QString::fromStdString(mat->GetName()));
+		}
+	}
+
+	ui->scenarios->addItem("uni-axial");
+	ui->scenarios->addItem("simple shear");
+
+	ui->strain->setText(QString::number(0.1));
+}
+
+FEBioTangentDiagnostic CDlgFEBioTangent::GetData()
+{
+	return ui->data;
+}
+
+void CDlgFEBioTangent::accept()
+{
+	ui->data.m_matIndex = ui->matList->currentIndex();
+	ui->data.m_scenario = ui->scenarios->currentIndex();
+	ui->data.m_strain = ui->strain->text().toDouble();
+
+	QDialog::accept();
+}
