@@ -60,6 +60,8 @@ void MeanImageFilter::ApplyFilter()
 
     if(!image) return;
 
+    SITKImage* filteredImage = model->GetImageSource()->GetImageToFilter();
+
     auto start = std::chrono::system_clock::now();
 
     sitk::MeanImageFilter filter;
@@ -72,7 +74,7 @@ void MeanImageFilter::ApplyFilter()
 
     filter.SetRadius(indexRadius);
 
-    image->SetItkImage(filter.Execute(image->GetSItkImage()));
+    filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
 
     auto end = std::chrono::system_clock::now();
 
@@ -100,6 +102,8 @@ void GaussianImageFilter::ApplyFilter()
 
     if(!image) return;
 
+    SITKImage* filteredImage = model->GetImageSource()->GetImageToFilter();
+
     auto start = std::chrono::system_clock::now();
 
     sitk::SmoothingRecursiveGaussianImageFilter filter;
@@ -108,7 +112,7 @@ void GaussianImageFilter::ApplyFilter()
     std::cout << sigma << std::endl;
     filter.SetSigma(sigma);
 
-    image->SetItkImage(filter.Execute(image->GetSItkImage()));
+    filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
 
     auto end = std::chrono::system_clock::now();
 

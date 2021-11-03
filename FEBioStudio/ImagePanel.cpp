@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include <QVBoxLayout>
 #include <QTreeWidget>
+#include "ImageFilterWidget.h"
 #include "ImagePanel.h"
 #include "ImageDocument.h"
 
@@ -39,6 +40,8 @@ class Ui::CImagePanel
 public:
     QVBoxLayout* layout;
     QTreeWidget* tree;
+
+    CImageFilterWidget* filterWidget;
 
 
     QTreeWidgetItem* imagesItem;
@@ -56,6 +59,10 @@ public:
         tree->setHeaderHidden(true);
         layout->addWidget(tree);
 
+        filterWidget = new CImageFilterWidget;
+
+        layout->addWidget(filterWidget);
+
         m_panel->setLayout(layout);
     }
 
@@ -70,6 +77,8 @@ CImagePanel::CImagePanel(CMainWindow* wnd, QWidget* parent)
 {
     ui->setup(this);
     QMetaObject::connectSlotsByName(this);
+
+    connect(this, &CImagePanel::ImageModelChanged, ui->filterWidget, &CImageFilterWidget::Update);
 
     Update();
 }

@@ -140,5 +140,9 @@ void SITKImage::SetItkImage(itk::simple::Image image)
         m_sitkImage = image;
     }
 
+    m_cx = m_sitkImage.GetWidth();
+    m_cy = m_sitkImage.GetHeight();;
+    m_cz = m_sitkImage.GetDepth();;
+
     m_pb = m_sitkImage.GetBufferAsUInt8();
 }
