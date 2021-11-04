@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QBoxLayout>
-#include <QListWidget>
 #include <QAction>
 #include <QToolButton>
 #include <QPushButton>
@@ -51,10 +50,11 @@ CImageFilterWidget::CImageFilterWidget()
 
     QWidget* listWidget = new QWidget;
     
-    m_list = new QListWidget;
+    m_list = new FilterListWidget;
     m_list->setObjectName("list");
     m_list->setSelectionMode(QAbstractItemView::SingleSelection);
     m_list->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_list->setDragDropMode(QAbstractItemView::InternalMove);
     listLayout->addWidget(m_list);
 
     QVBoxLayout* buttonLayout = new QVBoxLayout;
@@ -132,6 +132,15 @@ void CImageFilterWidget::on_list_itemSelectionChanged()
             m_filterProps->Update(new CObjectProps(m_imgModel->GetImageFilter(filterIndex)));
         }
     }
+}
+
+void CImageFilterWidget::on_list_internalMove(int fromIndex, int toIndex)
+{
+    m_imgModel->MoveFilter(fromIndex, toIndex);
+
+    Update();
+
+    m_list->setCurrentRow(toIndex);
 }
 
 void CImageFilterWidget::on_addFilterBtn_clicked()

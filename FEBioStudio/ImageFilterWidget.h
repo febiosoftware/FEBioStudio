@@ -25,6 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QWidget>
+#include <QListWidget>
+#include <QDropEvent>
+#include <QModelIndex>
+#include <iostream>
 
 class QListWidget;
 class CPropertyListView;
@@ -33,6 +37,34 @@ namespace Post
 {
     class CImageModel;
 }
+
+class QModelIndex;
+
+class FilterListWidget : public QListWidget
+{
+    Q_OBJECT
+
+public:
+    FilterListWidget() {}
+
+signals:
+    void internalMove(int fromIndex, int toIndex);
+
+protected:
+    void dropEvent(QDropEvent *event)
+    {
+        int fromIndex = currentRow();
+
+        QListWidget::dropEvent(event);
+
+        int toIndex = currentRow();
+
+        if(fromIndex != toIndex)
+        {
+            emit internalMove(fromIndex, toIndex);
+        }
+    }
+};
 
 
 class CImageFilterWidget : public QWidget
@@ -45,11 +77,9 @@ public:
 public slots:
     void Update();
 
-signals:
-    void FilterChanged();
-
 private slots:
     void on_list_itemSelectionChanged();
+    void on_list_internalMove(int fromIndex, int toIndex);
     void on_addFilterBtn_clicked();
     void on_delFilterBtn_clicked();
     void on_applyFilters_clicked();

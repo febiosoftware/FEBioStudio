@@ -101,6 +101,7 @@ public:
     int ImageFilters() const { return (int)m_filters.Size(); }
 	CImageFilter* GetImageFilter(int i) { return m_filters[i]; }
 	size_t RemoveFilter(CImageFilter* filter);
+    void MoveFilter(int fromIndex, int toIndex) { m_filters.Move(fromIndex, toIndex); }
 
 	void AddImageFilter(CImageFilter* imageFilter);
 
