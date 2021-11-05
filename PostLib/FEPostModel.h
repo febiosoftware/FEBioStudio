@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "FEMaterial.h"
 #include "FEState.h"
 #include "FEDataManager.h"
+#include "GLObject.h"
 #include <FSCore/box.h>
 #include <vector>
 //using namespace std;
@@ -64,7 +65,7 @@ public:
 class FEPostModel  
 {
 public:
-	class PlotObject : public FSObject
+	class PlotObject : public CGLObject
 	{
 	public:
 		PlotObject();
