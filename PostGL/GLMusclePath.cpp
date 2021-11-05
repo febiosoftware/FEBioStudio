@@ -59,16 +59,20 @@ private:
 	PathData(const PathData& path) {}
 };
 
+REGISTER_CLASS(GLMusclePath, CLASS_PLOT, "muscle-path", 0);
+
 static int n = 1;
-GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
+GLMusclePath::GLMusclePath()
 {
-	AddIntParam(0, "start point");
-	AddIntParam(0, "end point");
-	AddVecParam(vec3d(0, 0, 0), "Center of rotation");
-	AddChoiceParam(0, "Shortest path method")->SetEnumNames("Straight line\0 3-point trace\0Shortest path 2D\0Shortest path\0");
+	SetTypeString("muscle-path");
+
+	AddIntParam(0, "point0", "start point");
+	AddIntParam(0, "point1", "end point");
+	AddVecParam(vec3d(0, 0, 0), "center", "Center of rotation");
+	AddChoiceParam(0, "method", "Shortest path method")->SetEnumNames("Straight line\0 3-point trace\0Shortest path 2D\0Shortest path\0");
 	AddDoubleParam(5.0, "size");
 	AddColorParam(GLColor(255, 0, 0), "color");
-	AddBoolParam(true, "Draw convex hull");
+	AddBoolParam(true, "show_convex_hull", "Draw convex hull");
 
 	std::stringstream ss;
 	ss << "MusclePath" << n++;
@@ -77,7 +81,7 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 	m_closestFace = -1;
 
 	// we need the active face selection 
-	if (fem)
+/*/	if (fem)
 	{
 		FEPostMesh& mesh = *fem->GetActiveMesh();
 		mesh.TagAllNodes(0);
@@ -96,6 +100,7 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 			if (mesh.Node(i).m_ntag == 1) m_selNodes.push_back(i);
 		}
 	}
+*/
 }
 
 GLMusclePath::~GLMusclePath()

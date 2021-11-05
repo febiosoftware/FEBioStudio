@@ -160,7 +160,11 @@ void XMLTag::value(mat3d& m)
 
 void XMLTag::value(GLColor& c)
 {
-	sscanf(m_szval, "%c,%c,%c", &c.r, &c.g, &c.b);
+	int n[3] = { 0,0,0 };
+	sscanf(m_szval, "%d,%d,%d", &n[0], &n[1], &n[2]);
+	c.r = (Byte)n[0];
+	c.g = (Byte)n[1];
+	c.b = (Byte)n[2];
 }
 
 void XMLTag::value(std::string& s)

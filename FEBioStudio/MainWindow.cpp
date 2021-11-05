@@ -464,7 +464,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		OpenDocument(fileName);
 	}
 	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
-		     (ext.compare("vtk", Qt::CaseInsensitive) == 0))
+		     (ext.compare("vtk" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("fsps", Qt::CaseInsensitive) == 0))
 	{
 		// load the post file
 		OpenPostFile(fileName, nullptr, showLoadOptions);
@@ -868,6 +869,14 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		{
 			Post::FEVTKimport* vtk = new Post::FEVTKimport(doc->GetFEModel());
 			ReadFile(doc, fileName, vtk, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("fsps", Qt::CaseInsensitive) == 0)
+		{
+			bool b = doc->OpenPostSession(fileName.toStdString());
+
+			// we exploit the queue mechanism here to finish up
+			QueuedFile queueFile(doc, fileName, nullptr, QueuedFile::NEW_DOCUMENT);
+			finishedReadingFile(b, queueFile, "");
 		}
 		else if (ext.isEmpty())
 		{

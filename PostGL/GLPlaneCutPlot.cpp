@@ -51,9 +51,12 @@ const int TRI_NT[4]  = { 0, 1, 2, 2 };
 vector<int> CGLPlaneCutPlot::m_clip;
 vector<CGLPlaneCutPlot*> CGLPlaneCutPlot::m_pcp;
 
+REGISTER_CLASS(CGLPlaneCutPlot, CLASS_PLOT, "planecut", 0);
 
-CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
+CGLPlaneCutPlot::CGLPlaneCutPlot()
 {
+	SetTypeString("planecut");
+
 	SetRenderOrder(1);
 
 	static int n = 1;

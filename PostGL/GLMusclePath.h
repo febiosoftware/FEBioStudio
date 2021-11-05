@@ -37,7 +37,7 @@ class GLMusclePath : public CGLPlot
 	class PathData;
 
 public:
-	GLMusclePath(CGLModel* fem);
+	GLMusclePath();
 	~GLMusclePath();
 
 	void Render(CGLContext& rc) override;

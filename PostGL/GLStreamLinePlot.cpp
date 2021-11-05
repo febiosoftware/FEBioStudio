@@ -33,8 +33,12 @@ using namespace Post;
 
 //=================================================================================================
 
-CGLStreamLinePlot::CGLStreamLinePlot(CGLModel* fem) : CGLLegendPlot(fem), m_find(*fem->GetActiveMesh())
+REGISTER_CLASS(CGLStreamLinePlot, CLASS_PLOT, "streamlines", 0);
+
+CGLStreamLinePlot::CGLStreamLinePlot()
 {
+	SetTypeString("streamlines");
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "StreamLines.%02d", n++);
@@ -50,6 +54,8 @@ CGLStreamLinePlot::CGLStreamLinePlot(CGLModel* fem) : CGLLegendPlot(fem), m_find
 	AddIntParam(0, "Range divisions")->SetIntRange(1, 100);
 	AddDoubleParam(0., "User Range Max");
 	AddDoubleParam(0., "User Range Min");
+
+	m_find = nullptr;
 
 	m_density = 1.f;
 	m_vtol = 1e-5f;
@@ -175,8 +181,9 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
+		if (m_find == nullptr) m_find = new FEFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
-		m_find.Init(bdisp ? 1 : 0);
+		m_find->Init(bdisp ? 1 : 0);
 	}
 
 	if (m_map.States() == 0)
@@ -262,7 +269,7 @@ vec3f CGLStreamLinePlot::Velocity(const vec3f& r, bool& ok)
 	FEPostMesh& mesh = *GetModel()->GetActiveMesh();
 	int nelem;
 	double q[3];
-	if (m_find.FindElement(r, nelem, q))
+	if (m_find->FindElement(r, nelem, q))
 	{
 		ok = true;
 		FEElement_& el = mesh.ElementRef(nelem);
@@ -300,7 +307,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 	// get the mesh
 	FEPostMesh& mesh = *mdl->GetActiveMesh();
 
-	BOX box = m_find.BoundingBox();
+	BOX box = m_find->BoundingBox();
 	float R = box.GetMaxExtent();
 	float maxStep = m_inc*R;
 

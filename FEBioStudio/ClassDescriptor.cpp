@@ -71,3 +71,18 @@ Class_Iterator ClassKernel::LastCD()
 	ClassKernel* pCK = ClassKernel::GetInstance();
 	return pCK->m_CD.end();
 }
+
+//-----------------------------------------------------------------------------
+FSObject* ClassKernel::CreateClass(Class_Type classType, const char* typeStr)
+{
+	Class_Iterator it;
+	for (it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
+	{
+		ClassDescriptor* pcd = *it;
+		if ((pcd->GetType() == classType) && (strcmp(pcd->GetName(), typeStr) == 0))
+		{
+			return pcd->Create();
+		}
+	}
+	return nullptr;
+}

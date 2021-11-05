@@ -3493,6 +3493,7 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 
 void CGLModel::AddPlot(CGLPlot* pplot)
 {
+	pplot->SetModel(this);
 	m_pPlot.Add(pplot);
 	pplot->Update(CurrentTime(), 0.f, true);
 }

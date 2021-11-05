@@ -33,8 +33,12 @@ using namespace Post;
 extern int LUT[256][15];
 extern int ET_HEX[12][2];
 
-GLVolumeFlowPlot::GLVolumeFlowPlot(CGLModel* mdl) : CGLLegendPlot(mdl)
+REGISTER_CLASS(GLVolumeFlowPlot, CLASS_PLOT, "volume-flow", 0);
+
+GLVolumeFlowPlot::GLVolumeFlowPlot()
 {
+	SetTypeString("volume-flow");
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "VolumeFlow%d", n++);

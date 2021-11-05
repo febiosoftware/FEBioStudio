@@ -74,7 +74,7 @@ class CGLPlaneCutPlot : public CGLPlot
 	};
 
 public:
-	CGLPlaneCutPlot(CGLModel* po);
+	CGLPlaneCutPlot();
 	virtual ~CGLPlaneCutPlot();
 
 	void SetTransform(Transform& T) { m_T = T; }

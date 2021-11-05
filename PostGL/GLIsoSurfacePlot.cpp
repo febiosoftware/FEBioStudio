@@ -38,8 +38,12 @@ extern int ET_HEX[12][2];
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CGLIsoSurfacePlot::CGLIsoSurfacePlot(CGLModel* po) : CGLLegendPlot(po)
+REGISTER_CLASS(CGLIsoSurfacePlot, CLASS_PLOT, "iso-surface", 0);
+
+CGLIsoSurfacePlot::CGLIsoSurfacePlot()
 {
+	SetTypeString("iso-surface");
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "Isosurface.%02d", n++);

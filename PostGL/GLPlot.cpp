@@ -53,7 +53,7 @@ int CGLPlot::GetRenderOrder() const
 	return m_renderOrder;
 }
 
-CGLLegendPlot::CGLLegendPlot(CGLModel* po) : CGLPlot(po)
+CGLLegendPlot::CGLLegendPlot()
 {
 	m_pbar = nullptr;
 }

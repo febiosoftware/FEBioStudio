@@ -29,8 +29,12 @@ SOFTWARE.*/
 #include "GLModel.h"
 using namespace Post;
 
-CGLMirrorPlane::CGLMirrorPlane(CGLModel* fem) : CGLPlot(fem)
+REGISTER_CLASS(CGLMirrorPlane, CLASS_PLOT, "mirror", 0);
+
+CGLMirrorPlane::CGLMirrorPlane()
 {
+	SetTypeString("mirror");
+
 	static int n = 1;
 	m_id = n;
 	char szname[128] = { 0 };

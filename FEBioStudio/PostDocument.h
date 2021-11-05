@@ -174,6 +174,13 @@ public:
 	BOX GetSelectionBox();
 
 public:
+	//! save to session file
+	bool SavePostSession(const std::string& fileName);
+
+	//! open session file
+	bool OpenPostSession(const std::string& fileName);
+
+public:
 	int Graphs() const;
 	void AddGraph(const CGraphData& data);
 	const CGraphData* GetGraphData(int i);

@@ -34,6 +34,10 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/GModel.h>
+#include <XML/XMLWriter.h>
+#include <XML/XMLReader.h>
+#include <XPLTLib/xpltFileReader.h>
+#include "ClassDescriptor.h"
 
 void TIMESETTINGS::Defaults()
 {
@@ -633,4 +637,142 @@ bool CPostDocument::MergeFEModel(Post::FEPostModel* fem)
 	// we assume that the merge did not break the model
 	// so we can always reinitialize
 	return Initialize() && bret;
+}
+
+//-------------------------------------------------------------------------------------------
+//! save to session file
+bool CPostDocument::SavePostSession(const std::string& fileName)
+{
+	if (fileName.empty()) return false;
+
+	Post::FEPostModel* fem = GetFEModel();
+	if (fem == nullptr) return false;
+
+	XMLWriter xml;
+	if (xml.open(fileName.c_str()) == false) return false;
+
+	XMLElement root("febiostudio_post_session");
+	root.add_attribute("version", "1.0");
+	xml.add_branch(root);
+	{
+		std::string plotFile = GetDocFilePath();
+		XMLElement plt("plotfile");
+		plt.add_attribute("file", plotFile);
+		xml.add_empty(plt);
+
+		Post::CGLModel* glm = GetGLModel();
+		if (glm)
+		{
+			for (int i = 0; i < glm->Plots(); ++i)
+			{
+				Post::CGLPlot* plot = glm->Plot(i);
+
+				std::string typeStr = plot->GetTypeString();
+					
+				XMLElement el("plot");
+				el.add_attribute("type", typeStr);
+				xml.add_branch(el);
+				{
+					for (int i = 0; i < plot->Parameters(); ++i)
+					{
+						Param& pi = plot->GetParam(i);
+						const char* sz = pi.GetShortName();
+
+						el.name(sz);
+						switch (pi.GetParamType())
+						{
+						case Param_BOOL  : { bool b = pi.GetBoolValue(); el.value(b); } break;
+						case Param_INT   : { int n = pi.GetIntValue(); el.value(n); } break;
+						case Param_CHOICE: { int n = pi.GetIntValue(); el.value(n); } break;
+						case Param_FLOAT : { double v = pi.GetFloatValue(); el.value(v); } break;
+						case Param_VEC3D : { vec3d v = pi.GetVec3dValue(); el.value(v); } break;
+						case Param_COLOR : { GLColor c = pi.GetColorValue(); int v[3] = { c.r, c.g, c.b }; el.value(v, 3); } break;
+						}
+
+						xml.add_leaf(el);
+					}
+				}
+				xml.close_branch();
+			}
+		}
+	}
+	xml.close_branch(); // root
+
+	xml.close();
+
+	return true;
+}
+
+//-------------------------------------------------------------------------------------------
+//! open session file
+bool CPostDocument::OpenPostSession(const std::string& fileName)
+{
+	if (fileName.empty()) return false;
+
+	XMLReader xml;
+	if (xml.Open(fileName.c_str()) == false) return false;
+
+	XMLTag tag;
+	if (xml.FindTag("febiostudio_post_session", tag) == false)
+	{
+		return false;
+	}
+
+	if (m_glm) {
+		delete m_glm; m_glm = nullptr;
+	}
+	try {
+		++tag;
+		do
+		{
+			if (tag == "plotfile")
+			{
+				const char* szfile = tag.AttributeValue("file");
+				xpltFileReader xplt(GetFEModel());
+				if (xplt.Load(szfile) == false)
+				{
+					return false;
+				}
+
+				// now create a GL model
+				m_glm = new Post::CGLModel(m_fem);
+			}
+			else if (tag == "plot")
+			{
+				const char* sztype = tag.AttributeValue("type");
+				Post::CGLPlot* plot = FSCore::CreateClass<Post::CGLPlot>(CLASS_PLOT, sztype);
+
+				m_glm->AddPlot(plot);
+
+				++tag;
+				do
+				{
+					Param* p = plot->GetParam(tag.Name());
+					if (p)
+					{
+						switch (p->GetParamType())
+						{
+						case Param_BOOL  : { bool b; tag.value(b); p->SetBoolValue(b); } break;
+						case Param_INT   : { int n; tag.value(n); p->SetIntValue(n); } break;
+						case Param_CHOICE: { int n; tag.value(n); p->SetIntValue(n); } break;
+						case Param_FLOAT : { double g; tag.value(g); p->SetFloatValue(g); } break;
+						case Param_VEC3D : { vec3d v; tag.value(v); p->SetVec3dValue(v); } break;
+						case Param_COLOR : { GLColor c; tag.value(c); p->SetColorValue(c); } break;
+						}
+					}
+					++tag;
+				} while (!tag.isend());
+			}
+			else xml.SkipTag(tag);
+			++tag;
+		} while (!tag.isend());
+	}
+	catch (...)
+	{
+		// TODO: We need this for catching end-of-file. 
+	}
+
+	xml.Close();
+
+	return true;
 }

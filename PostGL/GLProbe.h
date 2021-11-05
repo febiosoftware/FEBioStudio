@@ -35,7 +35,7 @@ class GLProbe : public CGLPlot
 	enum { INIT_POS, SIZE, COLOR, FOLLOW };
 
 public:
-	GLProbe(CGLModel* fem);
+	GLProbe();
 
 	void Render(CGLContext& rc) override;
 
