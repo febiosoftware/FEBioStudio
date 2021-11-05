@@ -55,9 +55,10 @@ protected:
 	void ClearPaths();
 	vec3d UpdateOrigin(int ntime);
 
-	bool UpdateStraighLine (PathData* path, int ntime);
-	bool Update3PointPath  (PathData* path, int ntime);
-	bool UpdateShortestPath(PathData* path, int ntime);
+	bool UpdateStraighLine   (PathData* path, int ntime);
+	bool Update3PointPath    (PathData* path, int ntime);
+	bool UpdateShortestPath2D(PathData* path, int ntime);
+	bool UpdateShortestPath  (PathData* path, int ntime);
 
 private:
 	std::vector<PathData*>	m_path;	// points defining the path

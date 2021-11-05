@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/triangulate.h>
 #include <GLLib/glx.h>
 #include <sstream>
 using namespace Post;
@@ -64,7 +65,7 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 	AddIntParam(0, "start point");
 	AddIntParam(0, "end point");
 	AddVecParam(vec3d(0, 0, 0), "Center of rotation");
-	AddChoiceParam(0, "Shortest path method")->SetEnumNames("Straight line\0 3-point trace\0Shortest path\0");
+	AddChoiceParam(0, "Shortest path method")->SetEnumNames("Straight line\0 3-point trace\0Shortest path 2D\0Shortest path\0");
 	AddDoubleParam(5.0, "size");
 	AddColorParam(GLColor(255, 0, 0), "color");
 	AddBoolParam(true, "Draw convex hull");
@@ -324,9 +325,10 @@ void GLMusclePath::UpdatePath(int ntime)
 	bool b = false;
 	switch (method)
 	{
-	case 0: b = UpdateStraighLine (path, ntime); break;
-	case 1: b = Update3PointPath  (path, ntime); break;
-	case 2: b = UpdateShortestPath(path, ntime); break;
+	case 0: b = UpdateStraighLine   (path, ntime); break;
+	case 1: b = Update3PointPath    (path, ntime); break;
+	case 2: b = UpdateShortestPath2D(path, ntime); break;
+	case 3: b = UpdateShortestPath  (path, ntime); break;
 	}
 	if (b == false) { delete path; path = nullptr; }
 
@@ -426,10 +428,148 @@ bool GLMusclePath::Update3PointPath(GLMusclePath::PathData* path, int ntime)
 	} 
 	while (true);
 
+	// add the last point
+	if ((ra - r1).Length() > 1e-7) pt.push_back(r1);
+
 	path->m_points = pt;
 
 	return true;
 }
+
+bool GLMusclePath::UpdateShortestPath2D(GLMusclePath::PathData* path, int ntime)
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+
+	// determine the three points on plane
+	vec3d r0 = fem.NodePosition(n0, ntime);
+	vec3d r1 = fem.NodePosition(n1, ntime);
+	vec3d rc = path->m_ro;
+
+	// determine plane normal
+	vec3d N = (r1 - rc) ^ (r0 - rc);
+	N.Normalize();
+
+	quatd Q(N, vec3d(0, 0, 1));
+
+	// find all edge-intersections with this plane
+	FEPostMesh& mesh = *glm->GetActiveMesh();
+	vector<vec3d> pt;
+	for (int i = 0; i < mesh.Edges(); ++i)
+	{
+		FEEdge& edge = mesh.Edge(i);
+		vec3d ra = fem.NodePosition(edge.n[0], ntime);
+		vec3d rb = fem.NodePosition(edge.n[1], ntime);
+
+		double D = N * (rb - ra);
+		if (D != 0.0)
+		{
+			double lam = N * (rc - ra) / D;
+			if ((lam >= 0.0) && (lam <= 1.0))
+			{
+				vec3d q = ra + (rb - ra) * lam;
+
+				// make sure the point q projects onto the r0-r1 line
+				vec3d t = r1 - r0;
+				double mu = (t * (q - r0)) / (t * t);
+
+				if ((mu >= 0) && (mu <= 1.0))
+				{
+					vec3d q2 = Q * (q - rc);
+					pt.push_back(q2);
+				}
+			}
+		}
+	}
+
+	// calculate convex hull
+	std::vector<vec3d> ch = convex_hull2d(pt);
+
+	// find the original nodes on this hull
+	int m0 = -1;
+	int m1 = -1;
+	double L0min, L1min;
+	vec3d ra = Q * (r0 - rc);
+	vec3d rb = Q * (r1 - rc);
+	int n = ch.size();
+	for (int i = 0; i < n; ++i)
+	{
+		vec3d ri = ch[i];
+		double L0 = (ra - ri).SqrLength();
+		double L1 = (rb - ri).SqrLength();
+
+		if ((m0 == -1) || (L0 < L0min))
+		{
+			m0 = i;
+			L0min = L0;
+		}
+
+		if ((m1 == -1) || (L1 < L1min))
+		{
+			m1 = i;
+			L1min = L1;
+		}
+	}
+
+	// there should be two paths. Find the shortest
+	double L1 = 0.0;
+	for (int i = m0; i != m1;)
+	{
+		int ip1 = (i + 1) % n;
+		double dL = (ch[i] - ch[ip1]).Length();
+		L1 += dL;
+		++i;
+		if (i >= n) i = 0;
+	}
+
+	double L2 = 0.0;
+	for (int i = m1; i != m0;)
+	{
+		int ip1 = (i + 1) % n;
+		double dL = (ch[i] - ch[ip1]).Length();
+		L2 += dL;
+		++i;
+		if (i >= n) i = 0;
+	}
+
+	pt.clear();
+	if (L1 < L2)
+	{
+		for (int i = m0; i != m1;)
+		{
+			pt.push_back(ch[i]);
+			++i;
+			if (i >= n) i = 0;
+		}
+		pt.push_back(ch[m1]);
+	}
+	else
+	{
+		for (int i = m1; i != m0;)
+		{
+			pt.push_back(ch[i]);
+			++i;
+			if (i >= n) i = 0;
+		}
+		pt.push_back(ch[m0]);
+	}
+
+	// transform back to 3D
+	quatd Qi = Q.Inverse();
+	for (int i = 0; i < pt.size(); ++i)
+	{
+		vec3d r = pt[i];
+		pt[i] = rc + Qi * r;
+	}
+
+	path->m_points = pt;
+
+	return true;
+}
+
 
 bool GLMusclePath::UpdateShortestPath(GLMusclePath::PathData* path, int ntime)
 {
