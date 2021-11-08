@@ -126,7 +126,7 @@ public:
 	void add_leaf(const char* szn, double* pg, int n);
 	void add_leaf(const char* szn, const vec3d& r){ char szv[256]; sprintf(szv, "%g,%g,%g", r.x, r.y, r.z); add_leaf(szn, szv); }
 	void add_leaf(const char* szn, const quatd& q){ char szv[256]; sprintf(szv, "%g,%g,%g,%g", q.x, q.y, q.z, q.w); add_leaf(szn, szv); }
-	void add_leaf(const char* szn, const GLColor& c) { char szv[256]; sprintf(szv, "%d,%d,%d", c.r, c.g, c.b); }
+	void add_leaf(const char* szn, const GLColor& c) { char szv[256]; sprintf(szv, "%d,%d,%d", c.r, c.g, c.b); add_leaf(szn, szv); }
 	void add_leaf(XMLElement& el, const std::vector<int>& A);
 
 	void close_branch();

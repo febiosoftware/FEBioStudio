@@ -1026,7 +1026,10 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		{
 			CGLDocument* doc = dynamic_cast<CGLDocument*>(file.m_doc); assert(doc);
 			doc->SetFileReader(file.m_fileReader);
-			doc->SetDocFilePath(file.m_fileName.toStdString());
+			if (doc->GetDocFilePath().empty())
+			{
+				doc->SetDocFilePath(file.m_fileName.toStdString());
+			}
 			bool b = doc->Initialize();
 			if (b == false)
 			{

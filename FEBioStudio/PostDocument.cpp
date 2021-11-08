@@ -219,6 +219,8 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_postObj = nullptr;
 	m_glm = nullptr;
 
+	m_binitPalette = false;
+
 	SetItemMode(ITEM_ELEM);
 }
 
@@ -252,8 +254,12 @@ bool CPostDocument::Initialize()
 	m_fem->UpdateBoundingBox();
 
 	// assign default material attributes
-	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
-	ApplyPalette(pal);
+	if (m_binitPalette == false)
+	{
+		const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+		ApplyPalette(pal);
+		m_binitPalette = true;
+	}
 
 	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
 	if (m_postObj) delete m_postObj; m_postObj = new CPostObject(m_glm);
@@ -655,11 +661,33 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 	root.add_attribute("version", "1.0");
 	xml.add_branch(root);
 	{
+		// save plot file
 		std::string plotFile = GetDocFilePath();
 		XMLElement plt("plotfile");
 		plt.add_attribute("file", plotFile);
 		xml.add_empty(plt);
 
+		// save material settings
+		for (int i = 0; i < fem->Materials(); ++i)
+		{
+			Post::FEMaterial* mat = fem->GetMaterial(i);
+			XMLElement el("material");
+			el.add_attribute("id", i + 1);
+			el.add_attribute("name", mat->GetName());
+			xml.add_branch(el);
+			{
+				xml.add_leaf("diffuse"     , mat->diffuse);
+				xml.add_leaf("ambient"     , mat->ambient);
+				xml.add_leaf("specular"    , mat->specular);
+				xml.add_leaf("emission"    , mat->emission);
+				xml.add_leaf("mesh_color"  , mat->meshcol);
+				xml.add_leaf("shininess"   , mat->shininess);
+				xml.add_leaf("transparency", mat->transparency);
+			}
+			xml.close_branch(); // material
+		}
+
+		// save post model components
 		Post::CGLModel* glm = GetGLModel();
 		if (glm)
 		{
@@ -718,6 +746,11 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 		return false;
 	}
 
+	// initialize the color palette here, since we might be overriding some settings
+	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+	ApplyPalette(pal);
+	m_binitPalette = true;
+
 	if (m_glm) {
 		delete m_glm; m_glm = nullptr;
 	}
@@ -736,6 +769,32 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 
 				// now create a GL model
 				m_glm = new Post::CGLModel(m_fem);
+
+				// save the plot file as the document's path
+				SetDocFilePath(szfile);
+			}
+			else if (tag == "material")
+			{
+				const char* szid = tag.AttributeValue("id");
+				int nid = atoi(szid) - 1;
+				if ((nid >= 0) && (nid < m_fem->Materials()))
+				{
+					Post::FEMaterial* mat = m_fem->GetMaterial(nid);
+
+					++tag;
+					do
+					{
+						if (tag == "diffuse"     ) tag.value(mat->diffuse     );
+						if (tag == "ambient"     ) tag.value(mat->ambient     );
+						if (tag == "specular"    ) tag.value(mat->specular    );
+						if (tag == "emission"    ) tag.value(mat->emission    );
+						if (tag == "mesh_color"  ) tag.value(mat->meshcol     );
+						if (tag == "shininess"   ) tag.value(mat->shininess   );
+						if (tag == "transparency") tag.value(mat->transparency);
+						++tag;
+					} 
+					while (!tag.isend());
+				}
 			}
 			else if (tag == "plot")
 			{

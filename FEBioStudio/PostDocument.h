@@ -206,4 +206,6 @@ private:
 	CPostObject*	m_postObj;
 
 	TIMESETTINGS m_timeSettings;
+
+	bool	m_binitPalette;	// was the palette initialized?
 };
