@@ -187,21 +187,23 @@ bool FELSDYNAexport::write_ELEMENT_SHELL()
 				FEElement& el = m.Element(j);
 				el.m_ntag = n;
 
+				int npart = m_npart + el.m_gid;
+
 				for (int k=0; k<el.Nodes(); ++k) nn[k] = m.Node(el.m_node[k]).m_ntag;
 
 				switch (el.Type())
 				{
 				case FE_TRI3:
-					fprintf(m_fp, "%8d%8d%8d%8d%8d%8d\n", n, m_npart, nn[0], nn[1], nn[2], nn[2]);
+					fprintf(m_fp, "%8d%8d%8d%8d%8d%8d\n", n, npart, nn[0], nn[1], nn[2], nn[2]);
 					break;
 				case FE_QUAD4:
-					fprintf(m_fp, "%8d%8d%8d%8d%8d%8d\n", n, m_npart, nn[0], nn[1], nn[2], nn[3]);
+					fprintf(m_fp, "%8d%8d%8d%8d%8d%8d\n", n, npart, nn[0], nn[1], nn[2], nn[3]);
 					break;
 				}
 				++n;
 			}
+			m_npart += po->Parts();
 		}
-		++m_npart;
 	}
 
 	return true;
