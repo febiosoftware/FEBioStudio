@@ -58,6 +58,11 @@ void FEKinemat::SetRange(int n0, int n1, int ni)
 	m_ni = ni;
 }
 
+int FEKinemat::States() const
+{
+	return m_State.size();
+}
+
 //-----------------------------------------------------------------------------
 bool FEKinemat::Apply(Post::FEPostModel* fem, const char* szkine)
 {

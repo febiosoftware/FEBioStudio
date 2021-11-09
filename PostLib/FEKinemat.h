@@ -61,6 +61,8 @@ public:
 	bool Apply(Post::FEPostModel* fem, const char* szkine);
 	void SetRange(int n0, int n1, int ni);
 
+	int States() const;
+
 protected:
 	bool ReadKine(const char* szkine);
 	bool BuildStates(Post::FEPostModel* glm);
