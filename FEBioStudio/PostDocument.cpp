@@ -38,6 +38,9 @@ SOFTWARE.*/
 #include <XML/XMLReader.h>
 #include <XPLTLib/xpltFileReader.h>
 #include "ClassDescriptor.h"
+#include <PostLib/FELSDYNAimport.h>
+#include <PostLib/FEKinemat.h>
+#include <QtCore/QDir>
 
 void TIMESETTINGS::Defaults()
 {
@@ -737,6 +740,10 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 {
 	if (fileName.empty()) return false;
 
+	// we'll use this for converting to absolute file paths.
+	QFileInfo fi(QString::fromStdString(fileName));
+	QDir currentDir(fi.absolutePath());
+
 	XMLReader xml;
 	if (xml.Open(fileName.c_str()) == false) return false;
 
@@ -746,11 +753,6 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 		return false;
 	}
 
-	// initialize the color palette here, since we might be overriding some settings
-	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
-	ApplyPalette(pal);
-	m_binitPalette = true;
-
 	if (m_glm) {
 		delete m_glm; m_glm = nullptr;
 	}
@@ -758,7 +760,7 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 		++tag;
 		do
 		{
-			if (tag == "plotfile")
+			if (tag == "open")
 			{
 				const char* szfile = tag.AttributeValue("file");
 				xpltFileReader xplt(GetFEModel());
@@ -772,6 +774,52 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 
 				// save the plot file as the document's path
 				SetDocFilePath(szfile);
+
+				// initialize the color palette here, since we might be overriding some settings
+				const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+				ApplyPalette(pal);
+				m_binitPalette = true;
+			}
+			else if (tag == "kinemat")
+			{
+				int n[3] = { 1,999,1 };
+				std::string modelFile, kineFile;
+				++tag;
+				do
+				{
+					if (tag == "model_file") tag.value(modelFile);
+					if (tag == "kine_file" ) tag.value(kineFile);
+					if (tag == "range"     ) tag.value(n, 3);
+					++tag;
+				} 
+				while (!tag.isend());
+
+				// create absolute file names for model and kine files
+				modelFile = currentDir.absoluteFilePath(QString::fromStdString(modelFile)).toStdString();
+				kineFile  = currentDir.absoluteFilePath(QString::fromStdString(kineFile)).toStdString();
+
+				// read the model
+				Post::FELSDYNAimport reader(m_fem);
+				reader.read_displacements(true);
+				bool bret = reader.Load(modelFile.c_str());
+				if (bret == false) return false;
+
+				// apply kine
+				FEKinemat kine;
+				kine.SetRange(n[0], n[1], n[2]);
+				if (kine.Apply(m_fem, kineFile.c_str()) == false) return false;
+
+				// update post document
+				Initialize();
+
+				// update displacements on all states
+				Post::CGLModel& mdl = *GetGLModel();
+				if (mdl.GetDisplacementMap() == nullptr)
+				{
+					mdl.AddDisplacementMap("Displacement");
+				}
+				int nstates = mdl.GetFEModel()->GetStates();
+				for (int i = 0; i < nstates; ++i) mdl.UpdateDisplacements(i, true);
 			}
 			else if (tag == "material")
 			{
@@ -784,22 +832,24 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 					++tag;
 					do
 					{
-						if (tag == "diffuse"     ) tag.value(mat->diffuse     );
-						if (tag == "ambient"     ) tag.value(mat->ambient     );
-						if (tag == "specular"    ) tag.value(mat->specular    );
-						if (tag == "emission"    ) tag.value(mat->emission    );
-						if (tag == "mesh_color"  ) tag.value(mat->meshcol     );
-						if (tag == "shininess"   ) tag.value(mat->shininess   );
+						if (tag == "diffuse") tag.value(mat->diffuse);
+						if (tag == "ambient") tag.value(mat->ambient);
+						if (tag == "specular") tag.value(mat->specular);
+						if (tag == "emission") tag.value(mat->emission);
+						if (tag == "mesh_color") tag.value(mat->meshcol);
+						if (tag == "shininess") tag.value(mat->shininess);
 						if (tag == "transparency") tag.value(mat->transparency);
 						++tag;
-					} 
-					while (!tag.isend());
+					} while (!tag.isend());
 				}
 			}
 			else if (tag == "plot")
 			{
 				const char* sztype = tag.AttributeValue("type");
 				Post::CGLPlot* plot = FSCore::CreateClass<Post::CGLPlot>(CLASS_PLOT, sztype);
+
+				const char* szname = tag.AttributeValue("name", true);
+				if (szname) plot->SetName(szname);
 
 				m_glm->AddPlot(plot);
 
@@ -811,18 +861,19 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 					{
 						switch (p->GetParamType())
 						{
-						case Param_BOOL  : { bool b; tag.value(b); p->SetBoolValue(b); } break;
-						case Param_INT   : { int n; tag.value(n); p->SetIntValue(n); } break;
+						case Param_BOOL: { bool b; tag.value(b); p->SetBoolValue(b); } break;
+						case Param_INT: { int n; tag.value(n); p->SetIntValue(n); } break;
 						case Param_CHOICE: { int n; tag.value(n); p->SetIntValue(n); } break;
-						case Param_FLOAT : { double g; tag.value(g); p->SetFloatValue(g); } break;
-						case Param_VEC3D : { vec3d v; tag.value(v); p->SetVec3dValue(v); } break;
-						case Param_COLOR : { GLColor c; tag.value(c); p->SetColorValue(c); } break;
+						case Param_FLOAT: { double g; tag.value(g); p->SetFloatValue(g); } break;
+						case Param_VEC3D: { vec3d v; tag.value(v); p->SetVec3dValue(v); } break;
+						case Param_COLOR: { GLColor c; tag.value(c); p->SetColorValue(c); } break;
 						}
 					}
 					++tag;
 				} while (!tag.isend());
 			}
-			else xml.SkipTag(tag);
+			//			else xml.SkipTag(tag);
+			else return false;
 			++tag;
 		} while (!tag.isend());
 	}
