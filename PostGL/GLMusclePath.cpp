@@ -183,102 +183,6 @@ void GLMusclePath::Update()
 	Update(GetModel()->CurrentTimeIndex(), 0.f, false);
 }
 
-std::vector<vec3d> FindShortestPath(FEMesh& mesh, int m0, int m1)
-{
-	// helper class for finding neighbors
-	FENodeNodeList NNL(&mesh);
-
-	const double INF = 1e34;
-	int N = mesh.Nodes();
-	vector<double> dist(N, INF);
-
-	mesh.TagAllNodes(-1);
-
-	int ncurrent = m0;
-	mesh.Node(m0).m_ntag = m0;
-	dist[m0] = 0.0;
-	double L0 = 0.0;
-	while (ncurrent != m1)
-	{
-		// get the position of the current node
-		FENode& node0 = mesh.Node(ncurrent);
-		vec3d rc = node0.pos();
-
-		// update neighbor distances
-		int nval = NNL.Valence(ncurrent);
-		int nmin = -1;
-		double dmin = 0.0;
-		for (int i = 0; i < nval; ++i)
-		{
-			int mi = NNL.Node(ncurrent, i);
-			assert(mi != ncurrent);
-
-			FENode& nodei = mesh.Node(mi);
-			if (dist[mi] >= 0)
-			{
-				vec3d ri = mesh.Node(mi).pos();
-				double dL = (ri - rc).Length();
-
-				double L1 = L0 + dL;
-				if (L1 < dist[mi])
-				{
-					dist[mi] = L1;
-					nodei.m_ntag = ncurrent;
-				}
-				else L1 = dist[mi];
-
-				if ((nmin == -1) || (L1 < dmin))
-				{
-					nmin = mi;
-					dmin = L1;
-				}
-			}
-		}
-
-		// choose the next node
-//		assert(nmin != -1);
-		if (nmin == -1)
-		{
-			// hhmm, something went wrong
-			return std::vector<vec3d>();
-		}
-
-		L0 = dist[nmin];
-		dist[nmin] = -1.0;
-		ncurrent = nmin;
-	}
-
-	// build the path
-	// NOTE: This traverses the path in reverse!
-	std::vector<vec3d> tmp;
-	ncurrent = m1;
-	tmp.push_back(mesh.Node(m1).pos());
-	do
-	{
-		int parentNode = mesh.Node(ncurrent).m_ntag;
-
-		vec3d rc = mesh.Node(parentNode).pos();
-		tmp.push_back(rc);
-
-		ncurrent = parentNode;
-
-	} while (ncurrent != m0);
-
-	// invert the temp path to get the final path
-	std::vector<vec3d> path;
-	int n = tmp.size();
-	if (n > 0)
-	{
-		path.resize(n);
-		for (int i = 0; i < n; ++i)
-		{
-			path[i] = tmp[n - i - 1];
-		}
-	}
-
-	return path;
-}
-
 void GLMusclePath::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* glm = GetModel();
@@ -293,6 +197,11 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 
 		// allocate new path data
 		m_path.assign(fem.GetStates(), nullptr);
+
+		// update point selection
+		FEMesh& mesh = *glm->GetActiveMesh();
+		m_selNodes.clear();
+//		for (int i = 0; i < mesh.Nodes(); ++i) m_selNodes.push_back(i);
 	}
 
 	if ((ntime < 0) || (ntime >= m_path.size())) return;
@@ -614,21 +523,46 @@ bool GLMusclePath::UpdateShortestPath(GLMusclePath::PathData* path, int ntime)
 
 		// make sure our initial points are still outside
 		FEMesh& mesh = *path->m_hull;
+		int m0 = -1, m1 = -1;
+		for (int i = 0; i < mesh.Nodes(); ++i)
+		{
+			vec3d ri = mesh.Node(i).pos();
+			if ((ri - r0).SqrLength() < 1e-12) m0 = i;
+			if ((ri - r1).SqrLength() < 1e-12) m1 = i;
+
+			if ((m0 != -1) && ((m1 != -1))) break;
+		}
+		assert(m0 != -1);
+		assert(m1 != -1);
+
 		mesh.TagAllNodes(0);
 		for (int i = 0; i < mesh.Faces(); ++i)
 		{
 			FEFace& face = mesh.Face(i);
 			for (int j = 0; j < face.Nodes(); ++j) mesh.Node(face.n[j]).m_ntag = 1;
 		}
-		if (mesh.Node(0).m_ntag != 1) { assert(false); return false; }
-		if (mesh.Node(1).m_ntag != 1) { assert(false); return false; }
+
+		if (mesh.Node(m0).m_ntag != 1) { assert(false); return false; }
+		if (mesh.Node(m1).m_ntag != 1) { assert(false); return false; }
 
 		// extract the outide surface
 		FEMesh* surf = mesh.ExtractFaces(false);
 
+		m0 = m1 = -1;
+		for (int i = 0; i < surf->Nodes(); ++i)
+		{
+			vec3d ri = surf->Node(i).pos();
+			if ((ri - r0).SqrLength() < 1e-12) m0 = i;
+			if ((ri - r1).SqrLength() < 1e-12) m1 = i;
+
+			if ((m0 != -1) && ((m1 != -1))) break;
+		}
+		assert(m0 != -1);
+		assert(m1 != -1);
+
 		// calculate the shortest path
 		// NOTE: This assumes that the first and last nodes remain at indices 0 and 1 of the surface mesh!
-		path->m_points = FindShortestPath(*surf, 0, 1);
+		path->m_points = FindShortestPath(*surf, m0, m1);
 	}
 
 	return true;
@@ -641,8 +575,16 @@ void GLMusclePath::UpdatePathData(int ntime)
 	PathData* path = m_path[ntime];
 	if (path == nullptr) return;
 
-	// calculate path length
+	// get the path's points
 	vector<vec3d>& pt = path->m_points;
+	if (pt.empty())
+	{
+		path->m_data[PathData::PathLength] = 0.0;
+		path->m_data[PathData::MomentArm ] = 0.0;
+		return;
+	}
+
+	// calculate path length
 	double L = 0.0;
 	for (int i = 0; i < pt.size() - 1; ++i)
 	{
