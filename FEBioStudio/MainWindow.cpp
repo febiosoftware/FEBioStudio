@@ -1140,11 +1140,15 @@ void CMainWindow::UpdateImageView()
     if(GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
     {
         ui->sliceView->UpdateImage();
-        ui->sliceView->Update();
+        RedrawGL();
+    }
+    else if(GetGLDocument()->GetView()->imgView == CGView::GL_VIEW)
+    {
+        RedrawGL();
     }
     else
     {
-        RedrawGL();
+        ui->timeView2D->UpdateImage();
     }  
 }
 

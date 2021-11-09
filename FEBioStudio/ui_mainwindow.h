@@ -57,6 +57,7 @@ SOFTWARE.*/
 #include "BuildPanel.h"
 #include "ImagePanel.h"
 #include "ImageSettingsPanel.h"
+#include "2DImageTimeView.h"
 #include "GLControlBar.h"
 #include "Document.h"
 #include "DataFieldSelector.h"
@@ -124,7 +125,8 @@ public:
 		HTML_VIEWER,
 		TEXT_VIEWER,
         IMG_SLICE,
-		GL_VIEWER
+		TIME_VIEW_2D,
+        GL_VIEWER
 	};
 
 public:
@@ -136,6 +138,7 @@ public:
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
     CImageSliceView* sliceView;
+    ::C2DImageTimeView* timeView2D;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -366,6 +369,10 @@ public:
         sliceView = new ::CImageSliceView(wnd);
         sliceView->setObjectName("sliceView");
         stack->addWidget(sliceView);
+
+        timeView2D = new ::C2DImageTimeView(wnd);
+        timeView2D->setObjectName("timeView2D");
+        stack->addWidget(timeView2D);
 
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);
@@ -1384,9 +1391,13 @@ public:
             {
                 stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
             }
-            else
+            else if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::GL_VIEW)
             {
                 stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+            }
+            else
+            {
+                stack->setCurrentIndex(Ui::CMainWindow::TIME_VIEW_2D);
             }
 
 			// image mode

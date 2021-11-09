@@ -36,6 +36,8 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "ImageFilterWidget.h"
 #include <ImageLib/ImageFilter.h>
+#include "DlgImageFilter.h"
+#include "ClassDescriptor.h"
 
 CImageFilterWidget::CImageFilterWidget()
     : m_imgModel(nullptr)
@@ -147,7 +149,12 @@ void CImageFilterWidget::on_addFilterBtn_clicked()
 {
     if(m_imgModel)
     {
-        m_imgModel->AddImageFilter(new GaussianImageFilter(m_imgModel));
+        CDlgImageFilter dlg;
+
+        if(dlg.exec())
+        {
+            m_imgModel->AddImageFilter(static_cast<CImageFilter*>(dlg.GetClassDescriptor()->Create()));
+        }
     }
 
     Update();

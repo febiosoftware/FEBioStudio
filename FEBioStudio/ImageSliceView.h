@@ -31,10 +31,10 @@ SOFTWARE.*/
 class QVBoxLayout;
 class QGraphicsScene;
 class QGraphicsView;
-class QSlider;
 class QGridLayout;
 class QResizeEvent;
 class QWheelEvent;
+class CIntSlider;
 
 class CGLView;
 class CMainWindow;
@@ -55,14 +55,18 @@ public:
     };
 
 public:
-    CImageSlice(CMainWindow* wnd, SliceDir sliceDir);
+    CImageSlice(SliceDir sliceDir);
 
     void SetImage(Post::CImageModel* imgModel);
 
     void Update();
 
+    int GetIndex();
+    void SetIndex(int index);
+    int GetSliceCount();
+
 signals:
-    void updated();
+    void updated(int direction, float offset);
 
 private slots:
     void on_slider_changed(int val);
@@ -71,13 +75,12 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
 
 private:
-    CMainWindow* m_wnd;
     Post::CImageModel* m_imgModel;
     
     QVBoxLayout* m_layout;
     QGraphicsScene* m_scene;
     QGraphicsView* m_view;
-    QSlider* m_slider;
+    CIntSlider* m_slider;
 
     SliceDir m_sliceDir;
 
@@ -95,7 +98,7 @@ public:
 
 public slots:
     void UpdateImage();
-    void RepaintGLView();
+    void SliceUpdated(int direction, float offset);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -103,7 +106,7 @@ protected:
 private:
     CMainWindow* m_wnd;
 
-    public:
+public:
     QGridLayout* m_layout;
 
     CImageSlice* m_xSlice;

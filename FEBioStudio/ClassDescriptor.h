@@ -40,7 +40,8 @@ typedef enum {
 	CLASS_MESHER,
 	CLASS_SKETCH,
 	CLASS_DISCRETE,
-	CLASS_SURFACE_MODIFIER
+	CLASS_SURFACE_MODIFIER,
+    CLASS_IMAGE_FILTER
 } Class_Type;
 
 //-----------------------------------------------------------------------------

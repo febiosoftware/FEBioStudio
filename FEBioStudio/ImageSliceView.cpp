@@ -25,7 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QGridLayout>
-#include <QVBoxLayout>
+#include <QBoxLayout>
+#include <QLabel>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QPixmap>
@@ -41,12 +42,13 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include "ImageViewSettings.h"
+#include "InputWidgets.h"
 
 
 #include "ImageSliceView.h"
 
-CImageSlice::CImageSlice(CMainWindow* wnd, SliceDir sliceDir)
-    : m_wnd(wnd), m_imgModel(nullptr)
+CImageSlice::CImageSlice(SliceDir sliceDir)
+    : m_imgModel(nullptr)
 {
     m_sliceDir = sliceDir;
 
@@ -59,15 +61,35 @@ CImageSlice::CImageSlice(CMainWindow* wnd, SliceDir sliceDir)
 
     m_layout->addWidget(m_view);
 
-    m_slider = new QSlider;
-    m_slider->setOrientation(Qt::Horizontal);
-    m_slider->setTickPosition(QSlider::TicksBelow);
+    QHBoxLayout* sliderLayout = new QHBoxLayout;
+    sliderLayout->setContentsMargins(0,0,0,0);
 
-    connect(m_slider, &QSlider::valueChanged, this, &CImageSlice::on_slider_changed);
+    QString txt;
+    switch (m_sliceDir)
+    {
+    case X:
+        txt = "X:";
+        break;
+    case Y:
+        txt = "Y:";
+        break;
+    case Z:
+        txt = "Z:";
+        break;
+    default:
+        break;
+    }
+    
+    sliderLayout->addWidget(new QLabel(txt));
 
-    m_layout->addWidget(m_slider);
+    m_slider = new CIntSlider;
+    sliderLayout->addWidget(m_slider);
+
+    m_layout->addLayout(sliderLayout);
 
     setLayout(m_layout);
+
+    connect(m_slider, &CIntSlider::valueChanged, this, &CImageSlice::on_slider_changed);
 }
 
 void CImageSlice::SetImage(Post::CImageModel* imgModel)
@@ -96,22 +118,13 @@ void CImageSlice::SetImage(Post::CImageModel* imgModel)
     
     m_slider->setRange(0, n-1);
     m_slider->setValue(n/2);
-
-    int m = n / 100 + 1;
-    m_slider->setTickInterval(m);
-
-    m_slider->setSingleStep(1);
-    m_slider->setPageStep(m);
 }
 
 void CImageSlice::Update()
 {
     if(!m_imgModel) return;
 
-    int slice = m_slider->value();
-
-    CImageDocument* doc = m_wnd->GetImageDocument();
-    float sliceOffset = float(slice)/float(m_slider->maximum());
+    int slice = m_slider->getValue();
 
     C3DImage* img = m_imgModel->GetImageSource()->Get3DImage();    
 
@@ -119,38 +132,16 @@ void CImageSlice::Update()
     int max = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
 
     CImage imgSlice;
-    QString text;
     switch (m_sliceDir)
     {
     case X:
         img->GetThresholdedSliceX(imgSlice, slice, min, max);
-        text = "X";
-        
-        if(doc)
-        {
-            doc->GetXSlicer()->SetOffset(sliceOffset);
-            doc->GetXSlicer()->Update();
-        }
         break;
     case Y:
         img->GetThresholdedSliceY(imgSlice, slice, min, max);
-        text = "Y";
-        
-        if(doc)
-        {
-            doc->GetYSlicer()->SetOffset(sliceOffset);
-            doc->GetYSlicer()->Update();
-        }
         break;
     case Z:
         img->GetThresholdedSliceZ(imgSlice, slice, min, max);
-        text = "Z";
-        
-        if(doc)
-        {
-            doc->GetZSlicer()->SetOffset(sliceOffset);
-            doc->GetZSlicer()->Update();
-        }
         break;
     default:
         break;
@@ -195,14 +186,25 @@ void CImageSlice::Update()
     QGraphicsPixmapItem* item = m_scene->addPixmap(pixmap);
     item->setTransform(QTransform().scale(xScale, yScale));
 
-    QGraphicsTextItem* textItem = new QGraphicsTextItem();
-    textItem->setPos(0,0);
-    textItem->setPlainText(text += QString(": %1").arg(slice));
-    m_scene->addItem(textItem);
-
     m_view->fitInView(item, Qt::AspectRatioMode::KeepAspectRatio);
 
-    emit updated();
+    float sliceOffset = float(slice)/float(m_slider->maximum());
+    emit updated(m_sliceDir, sliceOffset);
+}
+
+int CImageSlice::GetIndex()
+{
+    return m_slider->getValue();
+}
+
+void CImageSlice::SetIndex(int index)
+{
+    m_slider->setValue(index);
+}
+
+int CImageSlice::GetSliceCount()
+{
+    return m_slider->maximum();
 }
 
 void CImageSlice::on_slider_changed(int val)
@@ -212,7 +214,7 @@ void CImageSlice::on_slider_changed(int val)
 
 void CImageSlice::wheelEvent(QWheelEvent* event)
 {
-    m_slider->event(event);
+    m_slider->passEvent(event);
 }
 
 ///////
@@ -222,9 +224,9 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
 {
     m_layout = new QGridLayout;
 
-    m_xSlice = new CImageSlice(wnd, CImageSlice::X);
-    m_ySlice = new CImageSlice(wnd, CImageSlice::Y);
-    m_zSlice = new CImageSlice(wnd, CImageSlice::Z);
+    m_xSlice = new CImageSlice(CImageSlice::X);
+    m_ySlice = new CImageSlice(CImageSlice::Y);
+    m_zSlice = new CImageSlice(CImageSlice::Z);
 
     m_layout->addWidget(m_xSlice, 0, 0);
     m_layout->addWidget(m_ySlice, 0, 1);
@@ -235,9 +237,9 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
 
     setLayout(m_layout);
 
-    connect(m_xSlice, &CImageSlice::updated, this, &CImageSliceView::RepaintGLView);
-    connect(m_ySlice, &CImageSlice::updated, this, &CImageSliceView::RepaintGLView);
-    connect(m_zSlice, &CImageSlice::updated, this, &CImageSliceView::RepaintGLView);
+    connect(m_xSlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
+    connect(m_ySlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
+    connect(m_zSlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
 }
 
 void CImageSliceView::Update()
@@ -272,7 +274,29 @@ void CImageSliceView::UpdateImage()
     Update();
 }
 
-void CImageSliceView::RepaintGLView()
+void CImageSliceView::SliceUpdated(int direction, float offset)
 {
+    CImageDocument* doc = m_wnd->GetImageDocument();
+
+    if(!doc) return;
+    
+    switch (direction)
+    {
+    case CImageSlice::X:
+        doc->GetXSlicer()->SetOffset(offset);
+        doc->GetXSlicer()->Update();
+        break;
+    case CImageSlice::Y:
+        doc->GetYSlicer()->SetOffset(offset);
+        doc->GetYSlicer()->Update();
+        break;
+    case CImageSlice::Z:
+        doc->GetZSlicer()->SetOffset(offset);
+        doc->GetZSlicer()->Update();
+        break;
+    default:
+        break;
+    }
+
     m_glView->repaint();
 }

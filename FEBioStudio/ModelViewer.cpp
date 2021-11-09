@@ -1852,7 +1852,7 @@ void CModelViewer::OnAddMeanImageFilter()
 	
 	if(model)
 	{
-		MeanImageFilter* filter = new MeanImageFilter(model);
+		MeanImageFilter* filter = new MeanImageFilter();
 
 		model->AddImageFilter(filter);
 	}
@@ -1866,7 +1866,7 @@ void CModelViewer::OnAddGaussianImageFilter()
 	
 	if(model)
 	{
-		GaussianImageFilter* filter = new GaussianImageFilter(model);
+		GaussianImageFilter* filter = new GaussianImageFilter();
 
 		model->AddImageFilter(filter);
 	}
@@ -1880,7 +1880,7 @@ void CModelViewer::OnAddThresholdImageFilter()
 	
 	if(model)
 	{
-		ThresholdImageFilter* filter = new ThresholdImageFilter(model);
+		ThresholdImageFilter* filter = new ThresholdImageFilter();
 
 		model->AddImageFilter(filter);
 	}

@@ -354,6 +354,7 @@ size_t CImageModel::RemoveFilter(CImageFilter* filter)
 
 void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 {
+    imageFilter->SetImageModel(this);
 	m_filters.Add(imageFilter);
 }
 

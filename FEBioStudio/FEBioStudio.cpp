@@ -194,7 +194,18 @@ int main(int argc, char* argv[])
 
 CMainWindow* PRV::getMainWindow()
 {
-	CMainWindow* wnd = dynamic_cast<CMainWindow*>(QApplication::activeWindow()); assert(wnd);
+    CMainWindow* wnd = nullptr;
+
+    for(QWidget* widget : QApplication::topLevelWidgets())
+    {
+        if(CMainWindow* wnd = dynamic_cast<CMainWindow*>(widget))
+        {
+            assert(wnd);
+            return wnd;
+        }
+    }
+
+    assert(wnd);
 	return wnd;
 }
 

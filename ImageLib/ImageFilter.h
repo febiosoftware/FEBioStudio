@@ -35,18 +35,20 @@ class CImageModel;
 class CImageFilter : public FSObject
 {
 public:
-    CImageFilter(Post::CImageModel* model);
+    CImageFilter();
 
     virtual void ApplyFilter() = 0;
 
+    void SetImageModel(Post::CImageModel* model);
+
 protected:
-    Post::CImageModel* model;
+    Post::CImageModel* m_model;
 };
 
 class MeanImageFilter : public CImageFilter
 {
 public:
-    MeanImageFilter(Post::CImageModel* model);
+    MeanImageFilter();
 
     void ApplyFilter() override;
 };
@@ -54,7 +56,7 @@ public:
 class GaussianImageFilter : public CImageFilter
 {
 public:
-    GaussianImageFilter(Post::CImageModel* model);
+    GaussianImageFilter();
 
     void ApplyFilter() override;
 };
@@ -62,7 +64,7 @@ public:
 class ThresholdImageFilter : public CImageFilter
 {
 public:
-    ThresholdImageFilter(Post::CImageModel* model);
+    ThresholdImageFilter();
 
     void ApplyFilter() override;
 };

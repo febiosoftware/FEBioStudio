@@ -96,13 +96,18 @@ public:
 
 		setLayout(layout);
 
-		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
+		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
 		connect(box, &QSpinBox::valueChanged, slider, &QSlider::setValue);
 		connect(slider, &QSlider::valueChanged, box, &QSpinBox::setValue);
 		
 		connect(box, &QSpinBox::valueChanged, this, &CIntSlider::valueChanged);
 	}
+
+    void passEvent(QEvent* event)
+    {
+        slider->event(event);
+    }
 
 	void setRange(int min, int max)
 	{
@@ -118,8 +123,18 @@ public:
 
 	int getValue()
 	{
-		return box->value();
+		return slider->value();
 	}
+
+    int maximum()
+    {
+        return slider->maximum();
+    }
+
+    int minimum()
+    {
+        return slider->minimum();
+    }
 
 signals:
 

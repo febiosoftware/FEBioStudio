@@ -40,10 +40,12 @@ public:
 
 private slots:
     void on_viewAction_triggered(QAction* action);
+    void on_dlgDIC_triggered();
 
 private:
     CMainWindow* m_wnd;
 
     QAction* m_showGLView;
     QAction* m_showSliceView;
+    QAction* m_show2dImageView;
 };

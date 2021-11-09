@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "ImageFilter.h"
+#include <FEBioStudio/ClassDescriptor.h>
 #include <PostLib/ImageModel.h>
 #include <ImageLib/SITKImage.h>
 #include <sitkSmoothingRecursiveGaussianImageFilter.h>
@@ -35,12 +36,18 @@ SOFTWARE.*/
 
 namespace sitk = itk::simple;
 
-CImageFilter::CImageFilter(Post::CImageModel* model) : model(model)
+CImageFilter::CImageFilter() : m_model(nullptr)
 {
 
 }
 
-MeanImageFilter::MeanImageFilter(Post::CImageModel* model) : CImageFilter(model)
+void CImageFilter::SetImageModel(Post::CImageModel* model)
+{
+    m_model = model;
+}
+
+REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
+MeanImageFilter::MeanImageFilter()
 {
     static int n = 1;
 
@@ -56,11 +63,13 @@ MeanImageFilter::MeanImageFilter(Post::CImageModel* model) : CImageFilter(model)
 
 void MeanImageFilter::ApplyFilter()
 {
-    SITKImage* image = dynamic_cast<SITKImage*>(model->GetImageSource()->Get3DImage());
+    if(!m_model) return;
+
+    SITKImage* image = dynamic_cast<SITKImage*>(m_model->GetImageSource()->Get3DImage());
 
     if(!image) return;
 
-    SITKImage* filteredImage = model->GetImageSource()->GetImageToFilter();
+    SITKImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     auto start = std::chrono::system_clock::now();
 
@@ -83,8 +92,8 @@ void MeanImageFilter::ApplyFilter()
     std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 }
 
-GaussianImageFilter::GaussianImageFilter(Post::CImageModel* model)
-    : CImageFilter(model)
+REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
+GaussianImageFilter::GaussianImageFilter()
 {
     static int n = 1;
 
@@ -98,11 +107,13 @@ GaussianImageFilter::GaussianImageFilter(Post::CImageModel* model)
 
 void GaussianImageFilter::ApplyFilter()
 {
-    SITKImage* image = dynamic_cast<SITKImage*>(model->GetImageSource()->Get3DImage());
+    if(!m_model) return;
+
+    SITKImage* image = dynamic_cast<SITKImage*>(m_model->GetImageSource()->Get3DImage());
 
     if(!image) return;
 
-    SITKImage* filteredImage = model->GetImageSource()->GetImageToFilter();
+    SITKImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     auto start = std::chrono::system_clock::now();
 
@@ -122,8 +133,8 @@ void GaussianImageFilter::ApplyFilter()
 
 }
 
-ThresholdImageFilter::ThresholdImageFilter(Post::CImageModel* model)
-    : CImageFilter(model)
+REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
+ThresholdImageFilter::ThresholdImageFilter()
 {
     static int n = 1;
 
@@ -138,7 +149,9 @@ ThresholdImageFilter::ThresholdImageFilter(Post::CImageModel* model)
 
 void ThresholdImageFilter::ApplyFilter()
 {
-    C3DImage* image = model->GetImageSource()->Get3DImage();
+    if(!m_model) return;
+
+    C3DImage* image = m_model->GetImageSource()->Get3DImage();
 
     int max = GetIntValue(0);
     int min = GetIntValue(1);
@@ -148,7 +161,7 @@ void ThresholdImageFilter::ApplyFilter()
     auto start = std::chrono::system_clock::now();
 
     Byte* originalBytes = image->GetBytes();
-    Byte* filteredBytes = model->GetImageSource()->GetImageToFilter(true)->GetBytes();
+    Byte* filteredBytes = m_model->GetImageSource()->GetImageToFilter(true)->GetBytes();
 
     int factor = 255;
 

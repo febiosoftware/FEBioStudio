@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "ImageToolBar.h"
 #include "ImageDocument.h"
 #include <GLLib/GView.h> 
+#include "DlgDIC.h"
 
 CImageToolBar::CImageToolBar(CMainWindow* wnd)
     : m_wnd(wnd)
@@ -41,15 +42,24 @@ CImageToolBar::CImageToolBar(CMainWindow* wnd)
     m_showSliceView = new QAction(CIconProvider::GetIcon("Image"), "Slice View");
     m_showSliceView->setCheckable(true);
 
+    m_show2dImageView = new QAction(CIconProvider::GetIcon("Play"), "2D Time View");
+    m_show2dImageView->setCheckable(true);
+
     QActionGroup* viewGroup = new QActionGroup(this);
     viewGroup->addAction(m_showGLView);
     viewGroup->addAction(m_showSliceView);
+    viewGroup->addAction(m_show2dImageView);
     
     m_showGLView->setChecked(true);
 
     connect(viewGroup, &QActionGroup::triggered, this, &CImageToolBar::on_viewAction_triggered);
 
     addActions(viewGroup->actions());
+
+    QAction* dlgDIC = new QAction("DIC");
+    connect(dlgDIC, &QAction::triggered, this, &CImageToolBar::on_dlgDIC_triggered);
+    addAction(dlgDIC);
+
 }
 
 void CImageToolBar::on_viewAction_triggered(QAction* action)
@@ -66,8 +76,27 @@ void CImageToolBar::on_viewAction_triggered(QAction* action)
     {
         doc->GetView()->imgView = CGView::SLICE_VIEW;
     }
+    else if(action == m_show2dImageView)
+    {
+        doc->GetView()->imgView = CGView::TIME_VIEW_2D;
+    }
 
     m_wnd->UpdateUIConfig();
 
     action->setChecked(true);
+}
+
+void CImageToolBar::on_dlgDIC_triggered()
+{
+    CImageDocument* doc = m_wnd->GetImageDocument();
+
+    if(!doc) return;
+
+    Post::CImageModel* model = doc->GetActiveModel();
+
+    if(!model) return;
+
+    CDlgDIC dlg(model);
+
+    dlg.exec();
 }

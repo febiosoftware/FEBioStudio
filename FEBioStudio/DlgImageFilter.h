@@ -24,3 +24,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <QDialog>
+#include <vector>
+
+class QComboBox;
+class ClassDescriptor;
+
+class CDlgImageFilter : public QDialog
+{
+public:
+    CDlgImageFilter();
+
+    ClassDescriptor* GetClassDescriptor();
+
+private:
+    std::vector<ClassDescriptor*> m_classDesc;
+
+    QComboBox* m_comboBox;
+};
