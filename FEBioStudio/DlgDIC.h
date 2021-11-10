@@ -34,6 +34,7 @@ namespace Post
 
 class QGraphicsView;
 class QPixmap;
+class CDrawROI;
 
 class CROIShape
 {
@@ -42,8 +43,8 @@ public:
 
     virtual void SetActive(int active) = 0;
     virtual void MoveActive(QPointF pos) = 0;
-    virtual void Draw(QPainter& painter) = 0;
-    virtual void DrawMask(QPainter& painter) = 0;
+    virtual void Draw(QPainter& painter, CDrawROI* parent) = 0;
+    virtual void DrawMask(QPainter& painter, CDrawROI* parent) = 0;
     bool PointClicked(QPointF point);
     
 
@@ -55,17 +56,35 @@ protected:
 
 };
 
-class CROIRect : public CROIShape
+class CROI8Node : public CROIShape
+{
+public:
+    CROI8Node(bool neg, QPointF start);
+
+    void SetActive(int active);
+    void MoveActive(QPointF pos);
+};
+
+class CROIRect : public CROI8Node
 {
 public:
     CROIRect(bool neg, QPointF start);
 
-    void SetActive(int active);
-    void MoveActive(QPointF pos);
-    void Draw(QPainter& painter);
-    void DrawMask(QPainter& painter);
+    void Draw(QPainter& painter, CDrawROI* parent);
+    void DrawMask(QPainter& painter, CDrawROI* parent);
 
 };
+
+class CROICircle : public CROI8Node
+{
+public:
+    CROICircle(bool neg, QPointF start);
+
+    void Draw(QPainter& painter, CDrawROI* parent);
+    void DrawMask(QPainter& painter, CDrawROI* parent);
+
+};
+
 
 class CDrawROI : public QWidget
 {
@@ -73,12 +92,19 @@ class CDrawROI : public QWidget
 
 public:
     CDrawROI(Post::CImageModel* model);
+    ~CDrawROI();
 
+    QSize PixmapSize();
     void GetMask(QPixmap* pix);
+
+    QPointF WidgetToImageCoords(QPointF& widgetPoint);
+    QPointF ImageToWidgetCoords(QPointF& imagePoint);
 
 public slots:
     void startNewRect();
     void startNewRectNeg();
+    void startNewCircle();
+    void startNewCircleNeg();
 
 signals:
     void inputDone();
@@ -91,17 +117,13 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
-    QPointF WidgetToImageCoords(QPointF& widgetPoint);
-    QPointF ImageToWidgetCoords(QPointF& imagePoint);
-
-
-private:
     Post::CImageModel* m_model;
     QPixmap m_slice;
     QRect m_bounds;
     float m_scale;
 
     bool m_newRect;
+    bool m_newCircle;
     bool m_makeNeg;
 
     std::vector<CROIShape*> m_shapes;
@@ -116,6 +138,7 @@ class CDlgDIC : public QDialog
 
 public:
     CDlgDIC(Post::CImageModel* model);
+    ~CDlgDIC();
 
 public slots:
     void inputDone();

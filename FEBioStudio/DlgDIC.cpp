@@ -47,7 +47,6 @@ CROIShape::CROIShape(bool neg)
 
 }
 
-
 bool CROIShape::PointClicked(QPointF point)
 {
     int active = -1;
@@ -69,7 +68,7 @@ bool CROIShape::PointClicked(QPointF point)
     return m_active != -1;
 }
 
-CROIRect::CROIRect(bool neg, QPointF start)
+CROI8Node::CROI8Node(bool neg, QPointF start)
     : CROIShape(neg)
 {
     points.push_back(start);
@@ -82,7 +81,7 @@ CROIRect::CROIRect(bool neg, QPointF start)
     SetActive(7);
 }
 
-void CROIRect::SetActive(int active)
+void CROI8Node::SetActive(int active)
 {
     m_active = active;
 
@@ -118,7 +117,7 @@ void CROIRect::SetActive(int active)
 
 }
 
-void CROIRect::MoveActive(QPointF pos)
+void CROI8Node::MoveActive(QPointF pos)
 {
     if(m_anchor.x() != -1)
     {
@@ -175,7 +174,13 @@ void CROIRect::MoveActive(QPointF pos)
    }
 }
 
-void CROIRect::Draw(QPainter& painter)
+CROIRect::CROIRect(bool neg, QPointF start)
+    : CROI8Node(neg, start)
+{
+    
+}
+
+void CROIRect::Draw(QPainter& painter, CDrawROI* parent)
 {
     QPen backup = painter.pen();
 
@@ -193,17 +198,20 @@ void CROIRect::Draw(QPainter& painter)
     pen.setColor(color);
     painter.setPen(pen);
 
-    painter.drawRect(QRectF(points[0], points[7]));
+    painter.drawRect(QRectF(parent->ImageToWidgetCoords(points[0]), parent->ImageToWidgetCoords(points[7])));
 
     pen.setWidth(6);
     painter.setPen(pen);
 
-    painter.drawPoints(points.data(), 8);
+    for(auto point : points)
+    {
+        painter.drawPoint(parent->ImageToWidgetCoords(point));
+    }
 
     painter.setPen(backup);
 }
 
-void CROIRect::DrawMask(QPainter& painter)
+void CROIRect::DrawMask(QPainter& painter, CDrawROI* parent)
 {
     Qt::GlobalColor color;
     if(m_neg)
@@ -215,11 +223,76 @@ void CROIRect::DrawMask(QPainter& painter)
         color = Qt::white;
     }
 
-    painter.fillRect(QRectF(points[0], points[7]), color);
+    painter.fillRect(QRectF(parent->ImageToWidgetCoords(points[0]), parent->ImageToWidgetCoords(points[7])), color);
+}
+
+CROICircle::CROICircle(bool neg, QPointF start)
+    : CROI8Node(neg, start)
+{
+
+}
+
+void CROICircle::Draw(QPainter& painter, CDrawROI* parent)
+{
+    QPen backup = painter.pen();
+
+    Qt::GlobalColor color;
+    if(m_neg)
+    {
+        color = Qt::red;
+    }
+    else
+    {
+        color = Qt::green;
+    }
+
+    QPen pen = painter.pen();
+    pen.setColor(color);
+    painter.setPen(pen);
+
+    painter.drawEllipse(QRectF(parent->ImageToWidgetCoords(points[0]), parent->ImageToWidgetCoords(points[7])));
+
+    pen.setStyle(Qt::DashLine);
+    painter.setPen(pen);
+    painter.drawRect(QRectF(parent->ImageToWidgetCoords(points[0]), parent->ImageToWidgetCoords(points[7])));
+
+    pen.setStyle(Qt::SolidLine);
+    pen.setWidth(6);
+    painter.setPen(pen);
+
+    for(auto point : points)
+    {
+        painter.drawPoint(parent->ImageToWidgetCoords(point));
+    }
+
+    painter.setPen(backup);
+}
+
+void CROICircle::DrawMask(QPainter& painter, CDrawROI* parent)
+{
+    Qt::GlobalColor color;
+    if(m_neg)
+    {
+        color = Qt::black;
+    }
+    else
+    {
+        color = Qt::white;
+    }
+
+    QBrush backup = painter.brush();
+    QPen penBackup = painter.pen();
+
+    painter.setBrush(QBrush(color));
+    painter.setPen(QPen(color));
+    painter.drawEllipse(QRectF(parent->ImageToWidgetCoords(points[0]), parent->ImageToWidgetCoords(points[7])));
+
+    painter.setBrush(backup);
+    painter.setPen(penBackup);
 }
 
 CDrawROI::CDrawROI(Post::CImageModel* model)
-    : m_model(model), m_newRect(false), m_active(nullptr), m_makeNeg(false)
+    : m_model(model), m_newRect(false), m_newCircle(false), m_active(nullptr), m_makeNeg(false)
 {
     setMinimumSize(300,300);
 
@@ -232,6 +305,19 @@ CDrawROI::CDrawROI(Post::CImageModel* model)
 
 }
 
+CDrawROI::~CDrawROI()
+{
+    for(auto shape : m_shapes)
+    {
+        delete shape;
+    }
+}
+
+QSize CDrawROI::PixmapSize()
+{
+    return m_slice.size();
+}
+
 void CDrawROI::GetMask(QPixmap* pix)
 {
     QPainter painter(pix);
@@ -240,7 +326,7 @@ void CDrawROI::GetMask(QPixmap* pix)
 
     for(auto shape : m_shapes)
     {
-        shape->DrawMask(painter);
+        shape->DrawMask(painter, this);
     }
 }
 
@@ -253,6 +339,18 @@ void CDrawROI::startNewRect()
 void CDrawROI::startNewRectNeg()
 {
     m_newRect = true;
+    m_makeNeg = true;
+}
+
+void CDrawROI::startNewCircle()
+{
+    m_newCircle = true;
+    m_makeNeg = false;
+}
+
+void CDrawROI::startNewCircleNeg()
+{
+    m_newCircle = true;
     m_makeNeg = true;
 }
 
@@ -287,7 +385,7 @@ void CDrawROI::paintEvent(QPaintEvent* event)
 
     for(auto shape : m_shapes)
     {
-        shape->Draw(painter);
+        shape->Draw(painter, this);
     }
 }
 
@@ -295,23 +393,30 @@ void CDrawROI::mousePressEvent(QMouseEvent* event)
 {
     QPointF pos = event->localPos();
 
-    if(m_newRect)
+    if(m_newRect || m_newCircle)
     {
         if(pos.x() < m_bounds.left()) pos.setX(m_bounds.left());
         if(pos.x() > m_bounds.right()) pos.setX(m_bounds.right());
         if(pos.y() < m_bounds.top()) pos.setY(m_bounds.top());
         if(pos.y() > m_bounds.bottom()) pos.setY(m_bounds.bottom());
 
-        // m_start = WidgetToImageCoords(pos);
+        if(m_newRect)
+        {
+            m_shapes.push_back(new CROIRect(m_makeNeg, WidgetToImageCoords(pos)));
+        }
+        else
+        {
+            m_shapes.push_back(new CROICircle(m_makeNeg, WidgetToImageCoords(pos)));
+        }
 
-        m_shapes.push_back(new CROIRect(m_makeNeg, pos));
+        
         m_active = m_shapes[m_shapes.size() - 1];
     }
     else
     {
         for(auto shape : m_shapes)
         {
-            if(shape->PointClicked(pos))
+            if(shape->PointClicked(WidgetToImageCoords(pos)))
             {
                 m_active = shape;
                 break;
@@ -331,7 +436,7 @@ void CDrawROI::mouseMoveEvent(QMouseEvent* event)
         if(pos.y() < m_bounds.top()) pos.setY(m_bounds.top());
         if(pos.y() > m_bounds.bottom()) pos.setY(m_bounds.bottom());
 
-        m_active->MoveActive(pos);
+        m_active->MoveActive(WidgetToImageCoords(pos));
 
         repaint();
     }
@@ -351,6 +456,7 @@ void CDrawROI::mouseMoveEvent(QMouseEvent* event)
 void CDrawROI::mouseReleaseEvent(QMouseEvent* event)
 {
     m_newRect = false;
+    m_newCircle = false;
     m_makeNeg = false;
     m_active = nullptr;
 
@@ -373,6 +479,8 @@ QPointF CDrawROI::ImageToWidgetCoords(QPointF& imagePoint)
     QPointF widgetPoint;
     widgetPoint.setX(imagePoint.x()/m_slice.width()*m_bounds.width());
     widgetPoint.setY(imagePoint.y()/m_slice.height()*m_bounds.height());
+
+    return widgetPoint;
 }
 
 CDlgDIC::CDlgDIC(Post::CImageModel* model)
@@ -397,6 +505,18 @@ CDlgDIC::CDlgDIC(Post::CImageModel* model)
     
     buttonLayout->addWidget(newRectNeg);
 
+    QPushButton* newCircle = new QPushButton("Circle +");
+    connect(newCircle, &QPushButton::clicked, drawROI, &CDrawROI::startNewCircle);
+    newCircle->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+
+    buttonLayout->addWidget(newCircle);
+
+    QPushButton* newCircleNeg = new QPushButton("Circle -");
+    connect(newCircleNeg, &QPushButton::clicked, drawROI, &CDrawROI::startNewCircleNeg);
+    newCircleNeg->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+
+    buttonLayout->addWidget(newCircleNeg);
+
     layout->addLayout(buttonLayout);
 
     layout->addWidget(m_mask = new QGraphicsView);
@@ -405,9 +525,12 @@ CDlgDIC::CDlgDIC(Post::CImageModel* model)
 
     connect(drawROI, &CDrawROI::inputDone, this, &CDlgDIC::inputDone);
 
-    BOX box = m_model->GetBoundingBox();
+    m_maskPix = new QPixmap(drawROI->PixmapSize());
+}
 
-    m_maskPix = new QPixmap(box.Height(), box.Depth());
+CDlgDIC::~CDlgDIC()
+{
+    delete m_maskPix;
 }
 
 void CDlgDIC::inputDone()
