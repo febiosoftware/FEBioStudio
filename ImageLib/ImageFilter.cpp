@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "ImageFilter.h"
 #include <FEBioStudio/ClassDescriptor.h>
 #include <PostLib/ImageModel.h>
-#include <ImageLib/SITKImage.h>
+#include <ImageLib/ImageSITK.h>
 #include <sitkSmoothingRecursiveGaussianImageFilter.h>
 #include <sitkMeanImageFilter.h>
 #include <chrono>

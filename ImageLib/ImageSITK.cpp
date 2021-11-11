@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 */
 
 
-#include "SITKImage.h"
+#include "ImageSITK.h"
 #include <QFileInfo>
 
 #pragma once

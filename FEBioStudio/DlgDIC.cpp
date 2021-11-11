@@ -460,7 +460,6 @@ void CDrawROI::mouseReleaseEvent(QMouseEvent* event)
     m_makeNeg = false;
     m_active = nullptr;
 
-
     emit inputDone();
 }
 

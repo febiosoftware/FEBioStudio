@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
 // #include <ImageLib/ITKImage.h>
-#include <ImageLib/SITKImage.h>
+#include <ImageLib/ImageSITK.h>
 #include <ImageLib/ImageFilter.h>
 #include "GLImageRenderer.h"
 #include <PostLib/VolRender.h>
