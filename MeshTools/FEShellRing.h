@@ -32,21 +32,12 @@ class GRing;
 class FEShellRing : public FEMesher
 {
 public:
-	enum { T, NSLICE, NDIV };
+	enum { T, NSLICE, NDIV, ELEM_TYPE };
 
 public:
 	FEShellRing(){}
 	FEShellRing(GRing* po);
 	FEMesh* BuildMesh();
-
-protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiQuadMesh();
-
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
-
-	int NodeIndex(int i, int j) { return (j%m_ns)*(m_nr+1)+ i; }
 
 protected:
 	GRing* m_pobj;

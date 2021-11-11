@@ -127,11 +127,21 @@ class MBFace : public MBItem
 public:
 	int	m_node[4];	// face nodes
 	int	m_edge[4];	// edge indices
+	int	m_edgeWinding[4];	// edge winding 1 = positive, -1 is negative
 	int	m_block[2];	// owning blocks
 	int	m_nx, m_ny;	// face tesselation
 	double m_gx, m_gy;	// zoning
 	bool m_bx, m_by;	// single or double zoning
 	int	m_nbr[4];	// the neighbour faces
+
+	// data for sphere sections
+	bool	m_isSphere;
+	vec3d	m_sphereCenter;
+	double	m_sphereRadius;
+
+	// data for revolve sections
+	bool	m_isRevolve;
+	int		m_nrevolveEdge;
 
 public:
 	MBFace()
@@ -143,6 +153,10 @@ public:
 		m_gx = m_gy = 1.0;
 		m_bx = m_by = false;
 		m_nbr[0] = m_nbr[1] = m_nbr[2] = m_nbr[3] = -1;
+		m_edgeWinding[0] = m_edgeWinding[1] = m_edgeWinding[2] = m_edgeWinding[3] = 0;
+
+		m_isSphere  = false;
+		m_isRevolve = false;
 	}
 
 	bool operator == (const MBFace& f) const

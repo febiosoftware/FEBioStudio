@@ -32,23 +32,12 @@ class GDisc;
 class FEShellDisc : public FEMesher
 {
 public:
-	enum {RATIO, T, NDIV, NSEG };
+	enum {RATIO, T, NDIV, NSEG, ELEM_TYPE };
 
 public:
 	FEShellDisc(){}
 	FEShellDisc(GDisc* po);
 	FEMesh* BuildMesh();
-
-protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiQuadMesh();
-
-protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
-
-	int NodeIndex(int i, int j) { return i*(m_nd+1)+j; }
-	int NodeIndex2(int i, int j);
 
 protected:
 	GDisc*	m_pobj;
