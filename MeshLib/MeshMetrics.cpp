@@ -231,8 +231,8 @@ double ShellJacobian(const FEMesh& mesh, const FEElement& el, int flag)
 	int i, j, k;
 	int n = el.Nodes();
 	double d, dmin = 1e99;
-	vec3d r[8], D[8];
-	double h[8];
+	vec3d r[9], D[9];
+	double h[9];
 	if (flag == 1)
 	{
 		for (i = 0; i<n; ++i) r[i] = mesh.NodePosition(el.m_node[i]);
