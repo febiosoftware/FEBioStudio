@@ -90,6 +90,8 @@ public:
 	int	m_nx;		// tesselation
 	double	m_gx;	// zoning
 	bool	m_bx;	// single or double zoning
+	
+	int		m_mx;	// size of fenodes (don't set this manually!)
 
 	int Node(int i) const { return edge.m_node[i]; }
 
@@ -133,6 +135,7 @@ public:
 	double m_gx, m_gy;	// zoning
 	bool m_bx, m_by;	// single or double zoning
 	int	m_nbr[4];	// the neighbour faces
+	int	m_sid;		// surface smoothgin ID
 
 	// data for sphere sections
 	bool	m_isSphere;
@@ -142,6 +145,8 @@ public:
 	// data for revolve sections
 	bool	m_isRevolve;
 	int		m_nrevolveEdge;
+
+	int		m_mx, m_my;
 
 public:
 	MBFace()
@@ -154,6 +159,7 @@ public:
 		m_bx = m_by = false;
 		m_nbr[0] = m_nbr[1] = m_nbr[2] = m_nbr[3] = -1;
 		m_edgeWinding[0] = m_edgeWinding[1] = m_edgeWinding[2] = m_edgeWinding[3] = 0;
+		m_sid = -1; // -1 = use GID instead
 
 		m_isSphere  = false;
 		m_isRevolve = false;
@@ -194,6 +200,8 @@ public:
 	int	m_nx, m_ny, m_nz;	// tesselation in x,y,z
 	double	m_gx, m_gy, m_gz;	// zoning
 	bool	m_bx, m_by, m_bz;	// single or double zoning
+
+	int		m_mx, m_my, m_mz;
 
 	int m_Nbr[6];	// indices to neighbouring blocks
 	int	m_face[6];	// indices to faces
@@ -289,6 +297,7 @@ protected:
 	int AddFENode(const vec3d& r, int gid = -1);
 	int AddFEEdgeNode(MBEdge& E, const MQPoint& q);
 	int AddFEFaceNode(MBFace& F, const MQPoint& q);
+	int AddFEElemNode(MBBlock& B, const MQPoint& q);
 
 protected:
 	vector<MBBlock>	m_MBlock;

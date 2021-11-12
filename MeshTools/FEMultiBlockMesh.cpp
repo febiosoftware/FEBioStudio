@@ -146,9 +146,11 @@ FEMesh* FEMultiBlockMesh::BuildMesh()
 
 	// build the mesh
 	BuildFENodes(pm);
-	BuildFEElements(pm);
-	BuildFEFaces(pm);
 	BuildFEEdges(pm);
+	BuildFEFaces(pm);
+	BuildFEElements(pm);
+
+	assert(pm->Nodes() == m_nodes);
 
 	// update the mesh
 	pm->BuildMesh();
@@ -224,8 +226,8 @@ vec3d FEMultiBlockMesh::FacePosition(MBFace& F, const MQPoint& q)
 	double N3 = r * s;
 	double N4 = (1 - r) * s;
 
-	int nx = F.m_nx;
-	int ny = F.m_ny;
+	int mx = F.m_mx;
+	int my = F.m_my;
 
 	int i = q.m_i;
 	int j = q.m_j;
@@ -234,8 +236,8 @@ vec3d FEMultiBlockMesh::FacePosition(MBFace& F, const MQPoint& q)
 	vec3d e[4];
 	e[0] = m_pm->Node(GetFaceEdgeNodeIndex(F, 0, i)).r;
 	e[1] = m_pm->Node(GetFaceEdgeNodeIndex(F, 1, j)).r;
-	e[2] = m_pm->Node(GetFaceEdgeNodeIndex(F, 2, nx - i)).r;
-	e[3] = m_pm->Node(GetFaceEdgeNodeIndex(F, 3, ny - j)).r;
+	e[2] = m_pm->Node(GetFaceEdgeNodeIndex(F, 2, mx - i - 1)).r;
+	e[3] = m_pm->Node(GetFaceEdgeNodeIndex(F, 3, my - j - 1)).r;
 
 	vec3d p = e[0] * (1 - s) + e[1] * r + e[2] * s + e[3] * (1 - r) \
 		- (r1 * N1 + r2 * N2 + r3 * N3 + r4 * N4);
@@ -291,20 +293,20 @@ vec3d FEMultiBlockMesh::BlockPosition(MBBlock& B, const MQPoint& q)
 	// tri-linear interpolation
 //	pn->r = r1*N1 + r2*N2 + r3*N3 + r4*N4 + r5*N5 + r6*N6 + r7*N7 + r8*N8;
 
-	int nx = B.m_nx;
-	int ny = B.m_ny;
-	int nz = B.m_nz;
+	int mx = B.m_mx;
+	int my = B.m_my;
+	int mz = B.m_mz;
 
 	int i = q.m_i;
 	int j = q.m_j;
 	int k = q.m_k;
 
 	// transfinite interpolation
-	vec3d f1 = m_pm->Node(GetBlockFaceNodeIndex(B, 4, i, ny - j)).r;
+	vec3d f1 = m_pm->Node(GetBlockFaceNodeIndex(B, 4, i, my - j - 1)).r;
 	vec3d f2 = m_pm->Node(GetBlockFaceNodeIndex(B, 0, i, k)).r;
-	vec3d f3 = m_pm->Node(GetBlockFaceNodeIndex(B, 3, ny - j, k)).r;
+	vec3d f3 = m_pm->Node(GetBlockFaceNodeIndex(B, 3, my - j - 1, k)).r;
 	vec3d f4 = m_pm->Node(GetBlockFaceNodeIndex(B, 5, i, j)).r;
-	vec3d f5 = m_pm->Node(GetBlockFaceNodeIndex(B, 2, nx - i, k)).r;
+	vec3d f5 = m_pm->Node(GetBlockFaceNodeIndex(B, 2, mx - i - 1, k)).r;
 	vec3d f6 = m_pm->Node(GetBlockFaceNodeIndex(B, 1, j, k)).r;
 
 	vec3d p = (f1 * (1 - t) + f2 * (1 - s) + f3 * (1 - r) + f4 * t + f5 * s + f6 * r \
@@ -344,17 +346,32 @@ void FEMultiBlockMesh::BuildFENodes(FEMesh *pm)
 	for (int i = 0; i < NE; ++i)
 	{
 		MBEdge& E = m_MBEdge[i];
-		nodes += (E.m_nx - 1);
+		nodes += (m_quadMesh ? 2*E.m_nx - 1 : E.m_nx -1 );
 	}
 	for (int i = 0; i < NF; ++i)
 	{
 		MBFace& F = m_MBFace[i];
-		nodes += (F.m_nx - 1)*(F.m_ny - 1);
+		switch (m_elemType)
+		{
+		case FE_HEX8 : nodes += (F.m_nx - 1) * (F.m_ny - 1); break;
+		case FE_HEX20: nodes += (F.m_nx - 1) * (F.m_ny - 1) + (F.m_nx - 1)*F.m_ny + (F.m_ny - 1)*F.m_nx; break;
+		case FE_HEX27: nodes += (2*F.m_nx - 1) * (2*F.m_ny - 1); break;
+		}
 	}
 	for (int i=0; i<NB; ++i)
 	{
 		MBBlock& B = m_MBlock[i];
-		nodes += (B.m_nx-1)*(B.m_ny-1)*(B.m_nz-1);
+		switch (m_elemType)
+		{
+		case FE_HEX8 : nodes += (B.m_nx - 1) * (B.m_ny - 1) * (B.m_nz - 1); break;
+		case FE_HEX20:
+			nodes += (B.m_nx - 1) * (B.m_ny - 1) * (B.m_nz - 1);
+			nodes += (B.m_nz - 1) * (B.m_nx - 1) * B.m_ny;
+			nodes += (B.m_nz - 1) * (B.m_ny - 1) * B.m_nx;
+			nodes += B.m_nz * (B.m_nx - 1) * (B.m_ny - 1);
+			break;
+		case FE_HEX27: nodes += (2*B.m_nx - 1) * (2*B.m_ny - 1) * (2*B.m_nz - 1); break;
+		}
 	}
 
 	// create storage
@@ -374,9 +391,6 @@ void FEMultiBlockMesh::BuildFENodes(FEMesh *pm)
 		}
 		else node.m_ntag = -1;
 	}
-
-	// make sure we have the right number of nodes
-	assert(m_nodes == pm->Nodes());
 }
 
 //-----------------------------------------------------------------------------
@@ -406,7 +420,8 @@ void FEMultiBlockMesh::BuildFEEdges(FEMesh* pm)
 	for (int i = 0; i < (int)m_MBEdge.size(); ++i)
 	{
 		MBEdge& e = m_MBEdge[i];
-		if (e.m_gid >= 0) edges += e.m_nx;
+		if (e.m_gid >= 0)
+			edges += e.m_nx;
 	}
 
 	// allocate faces
@@ -419,32 +434,42 @@ void FEMultiBlockMesh::BuildFEEdges(FEMesh* pm)
 		MBEdge& e = m_MBEdge[k];
 		e.m_ntag = edges;
 
-		int ne = (m_quadMesh ? 2 * e.m_nx + 1 : e.m_nx + 1);
-		e.m_fenodes.assign(ne, -1);
+		// allocate fenodes array
+		e.m_mx = (m_quadMesh ? 2 * e.m_nx + 1 : e.m_nx + 1);
+		e.m_fenodes.assign(e.m_mx, -1);
 
 		// discretize edge
 		Sampler1D dx(e.m_nx, e.m_gx, e.m_bx);
 		int n = 0;
 		int nn = (m_quadMesh ? 2 : 1);
-		for (int i = 0; i < e.m_nx; ++i, ++pe)
+		int en[3];
+		for (int i = 0; i < e.m_nx; ++i)
 		{
-			pe->m_gid = e.m_gid;
-			pe->SetType(m_quadMesh ? FE_EDGE3 : FE_EDGE2);
-
 			double r = dx.value();
 			double dr = dx.increment();
 
-			pe->n[0] = AddFEEdgeNode(e, MQPoint(n, r));
+			en[0] = AddFEEdgeNode(e, MQPoint(n, r));
 			if (m_quadMesh)
 			{
 				// Note that we insert the middle node before the right edge node!
-				pe->n[2] = AddFEEdgeNode(e, MQPoint(n + 1, r + 0.5 * dr));
+				en[2] = AddFEEdgeNode(e, MQPoint(n + 1, r + 0.5 * dr));
 			}
-			else pe->n[2] = -1;
-			pe->n[1] = AddFEEdgeNode(e, MQPoint(n + nn, r + dr));
+			else en[2] = -1;
+			en[1] = AddFEEdgeNode(e, MQPoint(n + nn, r + dr));
+
+			if (e.m_gid >= 0)
+			{
+				pe->m_gid = e.m_gid;
+				pe->SetType(m_quadMesh ? FE_EDGE3 : FE_EDGE2);
+				pe->n[0] = en[0];
+				pe->n[1] = en[1];
+				pe->n[2] = en[2];
+				pe++;
+				edges++;
+			}
+
 
 			dx.advance();
-			edges++;
 			n += nn;
 		}
 	}
@@ -457,16 +482,16 @@ int FEMultiBlockMesh::AddFEFaceNode(MBFace& F, const MQPoint& q)
 	int i = q.m_i;
 	int j = q.m_j;
 
-	int nx = (m_quadMesh ? (2 * F.m_nx + 1) : F.m_nx + 1);
-	int ny = (m_quadMesh ? (2 * F.m_ny + 1) : F.m_ny + 1);
+	int mx = F.m_mx;
+	int my = F.m_my;
 
 	if      (j == 0     ) return GetFaceEdgeNodeIndex(F, 0, i);
-	else if (i == nx - 1) return GetFaceEdgeNodeIndex(F, 1, j);
-	else if (j == ny - 1) return GetFaceEdgeNodeIndex(F, 2, nx - i - 1);
-	else if (i == 0     ) return GetFaceEdgeNodeIndex(F, 3, ny - j - 1);
+	else if (i == mx - 1) return GetFaceEdgeNodeIndex(F, 1, j);
+	else if (j == my - 1) return GetFaceEdgeNodeIndex(F, 2, mx - i - 1);
+	else if (i == 0     ) return GetFaceEdgeNodeIndex(F, 3, my - j - 1);
 	else
 	{
-		int n = j * nx + i;
+		int n = j * mx + i;
 		if (F.m_fenodes[n] == -1)
 		{
 			vec3d p = FacePosition(F, q);
@@ -490,7 +515,10 @@ void FEMultiBlockMesh::BuildFEFaces(FEMesh* pm)
 	for (int i = 0; i < (int)m_MBFace.size(); ++i)
 	{
 		MBFace& f = m_MBFace[i];
-		if (f.m_gid >= 0) faces += f.m_nx * f.m_ny;
+		if (f.m_gid >= 0)
+		{
+			faces += f.m_nx * f.m_ny;
+		}
 	}
 
 	// allocate faces
@@ -502,11 +530,12 @@ void FEMultiBlockMesh::BuildFEFaces(FEMesh* pm)
 	for (int n = 0; n < (int)m_MBFace.size(); ++n)
 	{
 		MBFace& F = m_MBFace[n];
-		F.m_ntag = faces;
+		F.m_ntag = (F.m_gid >= 0 ? faces : -1);
 
-		int nf = 0;
-		if (m_quadMesh) nf = (2 * F.m_nx + 1) * (2 * F.m_ny + 1);
-		else nf = (F.m_nx + 1) * (F.m_ny + 1);
+		F.m_mx = (m_quadMesh ? (2 * F.m_nx + 1) : F.m_nx + 1);
+		F.m_my = (m_quadMesh ? (2 * F.m_ny + 1) : F.m_ny + 1);
+
+		int nf = F.m_mx*F.m_my;
 		F.m_fenodes.assign(nf, -1);
 
 		int nx = F.m_nx;
@@ -526,17 +555,8 @@ void FEMultiBlockMesh::BuildFEFaces(FEMesh* pm)
 			double ds = dy.increment();
 
 			int ni = 0;
-			for (int i = 0; i < nx; ++i, faces++)
+			for (int i = 0; i < nx; ++i)
 			{
-				FEFace* pf = pm->FacePtr(faces);
-				pf->m_gid = F.m_gid;
-				switch (m_elemType)
-				{
-				case FE_HEX8 : pf->SetType(FE_FACE_QUAD4); break;
-				case FE_HEX20: pf->SetType(FE_FACE_QUAD8); break;
-				case FE_HEX27: pf->SetType(FE_FACE_QUAD9); break;
-				};
-
 				r = dx.value();
 				dr = dx.increment();
 
@@ -556,7 +576,19 @@ void FEMultiBlockMesh::BuildFEFaces(FEMesh* pm)
 						fn[8] = AddFEFaceNode(F, MQPoint(ni + 1, nj + 1, r + 0.5 * dr, s + 0.5 * ds));
 				}
 
-				for (int k = 0; k < 9; k++) pf->n[k] = fn[k];
+				if (F.m_gid >= 0)
+				{
+					FEFace* pf = pm->FacePtr(faces++);
+					pf->m_gid = F.m_gid;
+					pf->m_sid = (F.m_sid < 0 ? F.m_gid : F.m_sid);
+					switch (m_elemType)
+					{
+					case FE_HEX8 : pf->SetType(FE_FACE_QUAD4); break;
+					case FE_HEX20: pf->SetType(FE_FACE_QUAD8); break;
+					case FE_HEX27: pf->SetType(FE_FACE_QUAD9); break;
+					};
+					for (int k = 0; k < 9; k++) pf->n[k] = fn[k];
+				}
 
 				dx.advance();
 				ni += nn;
@@ -565,6 +597,47 @@ void FEMultiBlockMesh::BuildFEFaces(FEMesh* pm)
 			dy.advance();
 			nj += nn;
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+int FEMultiBlockMesh::AddFEElemNode(MBBlock& B, const MQPoint& q)
+{
+	int mx = B.m_mx, my = B.m_my, mz = B.m_mz;
+	int i = q.m_i, j = q.m_j, k = q.m_k;
+	if (i == 0)
+	{
+		return GetBlockFaceNodeIndex(B, 3, my - j - 1, k);
+	}
+	else if (i == mx-1)
+	{
+		return GetBlockFaceNodeIndex(B, 1, j, k);
+	}
+	else if (j == 0)
+	{
+		return GetBlockFaceNodeIndex(B, 0, i, k);
+	}
+	else if (j == my-1)
+	{
+		return GetBlockFaceNodeIndex(B, 2, mx - i - 1, k);
+	}
+	else if (k == 0)
+	{
+		return GetBlockFaceNodeIndex(B, 4, i, my - j - 1);
+	}
+	else if (k == mz-1)
+	{
+		return GetBlockFaceNodeIndex(B, 5, i, j);
+	}
+	else
+	{
+		int n = k*mx*my + j * mx + i;
+		if (B.m_fenodes[n] == -1)
+		{
+			vec3d p = BlockPosition(B, q);
+			B.m_fenodes[n] = AddFENode(p);
+		}
+		return B.m_fenodes[n];
 	}
 }
 
@@ -597,9 +670,18 @@ void FEMultiBlockMesh::BuildFEElements(FEMesh* pm)
 		int ny = b.m_ny;
 		int nz = b.m_nz;
 
+		b.m_mx = (m_quadMesh ? (2 * b.m_nx + 1) : b.m_nx + 1);
+		b.m_my = (m_quadMesh ? (2 * b.m_ny + 1) : b.m_ny + 1);
+		b.m_mz = (m_quadMesh ? (2 * b.m_nz + 1) : b.m_nz + 1);
+		int nb = b.m_mx * b.m_my * b.m_mz;
+		b.m_fenodes.assign(nb, -1);
+
 		Sampler1D dx(nx, b.m_gx, b.m_bx);
 		Sampler1D dy(ny, b.m_gy, b.m_by);
 		Sampler1D dz(ny, b.m_gy, b.m_by);
+
+		int nn = (m_quadMesh ? 2 : 1);
+		int nk = 0;
 
 		for (int k=0; k<nz; ++k)
 		{
@@ -609,39 +691,67 @@ void FEMultiBlockMesh::BuildFEElements(FEMesh* pm)
 			double s = dy.value(); double ds = dy.increment();
 			double t = dz.value(); double dt = dz.increment();
 
+			int nj = 0;
 			for (int j=0; j<ny; ++j)
 			{
 				dx.reset();
 				double r = dx.value(); double dr = dx.increment();
 				double s = dy.value(); double ds = dy.increment();
 
+				int ni = 0;
 				for (int i=0; i<nx; ++i)
 				{
 					FEElement_* pe = pm->ElementPtr(eid++);
+					pe->m_gid = b.m_gid;
+					pe->SetType(m_elemType);
 
 					double r = dx.value();
 					double dr = dx.increment();
 
-					vec3d p = BlockPosition(b, MQPoint(i, j, k, r, s, t));
-					int n = AddFENode(p);
-					b.m_fenodes.push_back(n);
+					pe->m_node[0] = AddFEElemNode(b, MQPoint(ni     , nj     , nk     , r     , s     , t     ));
+					pe->m_node[1] = AddFEElemNode(b, MQPoint(ni + nn, nj     , nk     , r + dr, s     , t     ));
+					pe->m_node[2] = AddFEElemNode(b, MQPoint(ni + nn, nj + nn, nk     , r + dr, s + ds, t     ));
+					pe->m_node[3] = AddFEElemNode(b, MQPoint(ni     , nj + nn, nk     , r     , s + ds, t    ));
+					pe->m_node[4] = AddFEElemNode(b, MQPoint(ni     , nj     , nk + nn, r     , s     , t + dt));
+					pe->m_node[5] = AddFEElemNode(b, MQPoint(ni + nn, nj     , nk + nn, r + dr, s     , t + dt));
+					pe->m_node[6] = AddFEElemNode(b, MQPoint(ni + nn, nj + nn, nk + nn, r + dr, s + ds, t + dt));
+					pe->m_node[7] = AddFEElemNode(b, MQPoint(ni     , nj + nn, nk + nn, r     , s + ds, t + dt));
 
-					pe->m_node[0] = GetBlockNodeIndex(b, l  , k  , j);
-					pe->m_node[1] = GetBlockNodeIndex(b, l+1, k  , j);
-					pe->m_node[2] = GetBlockNodeIndex(b, l+1, k+1, j);
-					pe->m_node[3] = GetBlockNodeIndex(b, l  , k+1, j);
-					pe->m_node[4] = GetBlockNodeIndex(b, l  , k  , j+1);
-					pe->m_node[5] = GetBlockNodeIndex(b, l+1, k  , j+1);
-					pe->m_node[6] = GetBlockNodeIndex(b, l+1, k+1, j+1);
-					pe->m_node[7] = GetBlockNodeIndex(b, l  , k+1, j+1);
-					pe->SetType(FE_HEX8);
-					pe->m_gid = b.m_gid;
+					if (m_elemType != FE_HEX8)
+					{
+						pe->m_node[ 8] = AddFEElemNode(b, MQPoint(ni + 1, nj    , nk    , r + 0.5*dr, s         , t         ));
+						pe->m_node[ 9] = AddFEElemNode(b, MQPoint(ni + 2, nj + 1, nk    , r +     dr, s + 0.5*ds, t         ));
+						pe->m_node[10] = AddFEElemNode(b, MQPoint(ni + 1, nj + 2, nk    , r + 0.5*dr, s +     ds, t         ));
+						pe->m_node[11] = AddFEElemNode(b, MQPoint(ni    , nj + 1, nk    , r         , s + 0.5*ds, t         ));
+						pe->m_node[12] = AddFEElemNode(b, MQPoint(ni + 1, nj    , nk + 2, r + 0.5*dr, s         , t + dt    ));
+						pe->m_node[13] = AddFEElemNode(b, MQPoint(ni + 2, nj + 1, nk + 2, r +     dr, s + 0.5*ds, t + dt    ));
+						pe->m_node[14] = AddFEElemNode(b, MQPoint(ni + 1, nj + 2, nk + 2, r + 0.5*dr, s +     ds, t + dt    ));
+						pe->m_node[15] = AddFEElemNode(b, MQPoint(ni    , nj + 1, nk + 2, r         , s + 0.5*ds, t + dt    ));
+						pe->m_node[16] = AddFEElemNode(b, MQPoint(ni    , nj    , nk + 1, r         , s         , t + 0.5*dt));
+						pe->m_node[17] = AddFEElemNode(b, MQPoint(ni + 2, nj    , nk + 1, r  +    dr, s         , t + 0.5*dt));
+						pe->m_node[18] = AddFEElemNode(b, MQPoint(ni + 2, nj + 2, nk + 1, r  +    dr, s  +    ds, t + 0.5*dt));
+						pe->m_node[19] = AddFEElemNode(b, MQPoint(ni    , nj + 2, nk + 1, r         , s  +    ds, t + 0.5*dt));
+
+						if (m_elemType == FE_HEX27)
+						{
+							pe->m_node[20] = AddFEElemNode(b, MQPoint(ni + 1, nj    , nk + 1, r + 0.5*dr, s         , t + 0.5*dt));
+							pe->m_node[21] = AddFEElemNode(b, MQPoint(ni + 2, nj + 1, nk + 1, r +     dr, s + 0.5*ds, t + 0.5*dt));
+							pe->m_node[22] = AddFEElemNode(b, MQPoint(ni + 1, nj + 2, nk + 1, r + 0.5*dr, s +     ds, t + 0.5*dt));
+							pe->m_node[23] = AddFEElemNode(b, MQPoint(ni    , nj + 1, nk + 1, r         , s + 0.5*ds, t + 0.5*dt));
+							pe->m_node[24] = AddFEElemNode(b, MQPoint(ni + 1, nj + 1, nk    , r + 0.5*dr, s + 0.5*ds, t         ));
+							pe->m_node[25] = AddFEElemNode(b, MQPoint(ni + 1, nj + 1, nk + 2, r + 0.5*dr, s + 0.5*ds, t +     dt));
+							pe->m_node[26] = AddFEElemNode(b, MQPoint(ni + 1, nj + 1, nk + 1, r + 0.5*dr, s + 0.5*ds, t + 0.5*dt));
+						}
+					}
 
 					dx.advance();
+					ni += nn;
 				}
 				dy.advance();
+				nj += nn;
 			}
 			dz.advance();
+			nk += nn;
 		}
 	}
 }
@@ -957,36 +1067,42 @@ MBFace FEMultiBlockMesh::BuildBlockFace(MBBlock& B, int j)
 	case 0: 
 		n[0] = bn[0]; n[1] = bn[1]; n[2] = bn[5]; n[3] = bn[4]; 
 		f.m_nx = B.m_nx; f.m_ny = B.m_nz;
+		f.m_mx = B.m_mx; f.m_my = B.m_mz;
 		f.m_gx = B.m_gx; f.m_gy = B.m_gz;
 		f.m_bx = B.m_bx; f.m_by = B.m_bz;
 		break;
 	case 1: 
 		n[0] = bn[1]; n[1] = bn[2]; n[2] = bn[6]; n[3] = bn[5]; 
 		f.m_nx = B.m_ny; f.m_ny = B.m_nz;
+		f.m_mx = B.m_my; f.m_my = B.m_mz;
 		f.m_gx = B.m_gy; f.m_gy = B.m_gz;
 		f.m_bx = B.m_by; f.m_by = B.m_bz;
 		break;
 	case 2: 
 		n[0] = bn[2]; n[1] = bn[3]; n[2] = bn[7]; n[3] = bn[6]; 
 		f.m_nx = B.m_nx; f.m_ny = B.m_nz;
+		f.m_mx = B.m_mx; f.m_my = B.m_mz;
 		f.m_gx = (B.m_bx?B.m_gx:1/B.m_gx); f.m_gy = B.m_gz;
 		f.m_bx = B.m_bx; f.m_by = B.m_bz;
 		break;
 	case 3: 
 		n[0] = bn[3]; n[1] = bn[0]; n[2] = bn[4]; n[3] = bn[7]; 
 		f.m_nx = B.m_ny; f.m_ny = B.m_nz;
+		f.m_mx = B.m_my; f.m_my = B.m_mz;
 		f.m_gx = (B.m_by?B.m_gy:1/B.m_gy); f.m_gy = B.m_gz;
 		f.m_bx = B.m_by; f.m_by = B.m_bz;
 		break;
 	case 4: 
 		n[0] = bn[3]; n[1] = bn[2]; n[2] = bn[1]; n[3] = bn[0]; 
 		f.m_nx = B.m_nx; f.m_ny = B.m_ny;
+		f.m_mx = B.m_mx; f.m_my = B.m_my;
 		f.m_gx = B.m_gx; f.m_gy = (B.m_by?B.m_gy:1/B.m_gy);
 		f.m_bx = B.m_bx; f.m_by = B.m_by;
 		break;
 	case 5: 
 		n[0] = bn[4]; n[1] = bn[5]; n[2] = bn[6]; n[3] = bn[7]; 
 		f.m_nx = B.m_nx; f.m_ny = B.m_ny;
+		f.m_mx = B.m_mx; f.m_my = B.m_my;
 		f.m_gx = B.m_gx; f.m_gy = B.m_gy;
 		f.m_bx = B.m_bx; f.m_by = B.m_by;
 		break;
@@ -1189,16 +1305,16 @@ int FEMultiBlockMesh::GetBlockFaceNodeIndex(MBBlock &b, int nf, int i, int j)
 		else return GetFaceNodeIndex(f, j, i);
 		break;
 	case 1:
-		if (m==1) return GetFaceNodeIndex(f, j, bf.m_nx-i);
-		else return GetFaceNodeIndex(f, bf.m_nx-i, j);
+		if (m==1) return GetFaceNodeIndex(f, j, bf.m_mx-i-1);
+		else return GetFaceNodeIndex(f, bf.m_mx-i-1, j);
 		break;
 	case 2:
-		if (m==1) return GetFaceNodeIndex(f, bf.m_nx-i, bf.m_ny-j);
-		else return GetFaceNodeIndex(f, bf.m_ny-j, bf.m_nx-i);
+		if (m==1) return GetFaceNodeIndex(f, bf.m_mx-i-1, bf.m_my-j-1);
+		else return GetFaceNodeIndex(f, bf.m_my-j-1, bf.m_mx-i-1);
 		break;
 	case 3:
-		if (m==1) return GetFaceNodeIndex(f, bf.m_ny-j, i);
-		else return GetFaceNodeIndex(f, i, bf.m_ny-j);
+		if (m==1) return GetFaceNodeIndex(f, bf.m_my-j-1, i);
+		else return GetFaceNodeIndex(f, i, bf.m_my-j-1);
 		break;
 	}
 
@@ -1211,9 +1327,9 @@ int FEMultiBlockMesh::GetFaceNodeIndex(MBFace& f, int i, int j)
 {
 	if (i==0) 
 	{
-		return GetFaceEdgeNodeIndex(f, 3, f.m_ny-j);
+		return GetFaceEdgeNodeIndex(f, 3, f.m_my-j-1);
 	}
-	else if (i==f.m_nx)
+	else if (i==f.m_mx-1)
 	{
 		return GetFaceEdgeNodeIndex(f, 1, j);
 	}
@@ -1221,19 +1337,18 @@ int FEMultiBlockMesh::GetFaceNodeIndex(MBFace& f, int i, int j)
 	{
 		return GetFaceEdgeNodeIndex(f, 0, i);
 	}
-	else if (j==f.m_ny)
+	else if (j==f.m_my-1)
 	{
-		return GetFaceEdgeNodeIndex(f, 2, f.m_nx-i);
+		return GetFaceEdgeNodeIndex(f, 2, f.m_mx-i-1);
 	}
 	else
 	{
-		return f.m_ntag + (i-1) + (j-1)*(f.m_nx-1);
+		int n = j * f.m_mx + i;
+		return f.m_fenodes[n];
 	}
 }
 
 //-----------------------------------------------------------------------------
-
-
 int FEMultiBlockMesh::GetFaceEdgeNodeIndex(MBFace& f, int ne, int i)
 {
 	// get the edge
@@ -1248,7 +1363,7 @@ int FEMultiBlockMesh::GetFaceEdgeNodeIndex(MBFace& f, int ne, int i)
 	else if (e.Node(1) == f.m_node[ne])
 	{
 		// do flip the edge
-		return GetEdgeNodeIndex(e, e.m_nx-i);
+		return GetEdgeNodeIndex(e, e.m_mx-i-1);
 	}
 	assert(false);
 	return -1;
@@ -1284,13 +1399,13 @@ int FEMultiBlockMesh::GetEdgeNodeIndex(MBEdge& e, int i)
 	{
 		return m_MBNode[e.Node(0)].m_ntag;
 	}
-	else if (i==e.m_nx)
+	else if (i==e.m_mx-1)
 	{
 		return m_MBNode[e.Node(1)].m_ntag;
 	}
 	else
 	{
-		return e.m_ntag + (i-1);
+		return e.m_fenodes[i];
 	}
 }
 
