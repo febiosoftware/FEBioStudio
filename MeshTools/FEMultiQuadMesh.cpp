@@ -399,7 +399,8 @@ void FEMultiQuadMesh::BuildFEEdges(FEMesh* pm)
 	for (int i = 0; i < (int)m_MBEdge.size(); ++i)
 	{
 		MBEdge& e = m_MBEdge[i];
-		edges += e.m_nx;
+		if (e.m_gid >= 0)
+			edges += e.m_nx;
 	}
 
 	// allocate edges
@@ -420,25 +421,33 @@ void FEMultiQuadMesh::BuildFEEdges(FEMesh* pm)
 		Sampler1D dx(e.m_nx, e.m_gx, e.m_bx);
 		int n = 0;
 		int nn = (m_bquadMesh ? 2 : 1);
-		for (int i = 0; i < e.m_nx; ++i, ++pe)
+		int en[3];
+		for (int i = 0; i < e.m_nx; ++i)
 		{
-			pe->m_gid = e.m_gid;
-			pe->SetType(m_bquadMesh ? FE_EDGE3 : FE_EDGE2);
-
 			double r = dx.value();
 			double dr = dx.increment();
 
-			pe->n[0] = AddFEEdgeNode(e, MQPoint(n, r));
+			en[0] = AddFEEdgeNode(e, MQPoint(n, r));
 			if (m_bquadMesh)
 			{
 				// Note that we insert the middle node before the right edge node!
-				pe->n[2] = AddFEEdgeNode(e, MQPoint(n + 1, r + 0.5 * dr));
+				en[2] = AddFEEdgeNode(e, MQPoint(n + 1, r + 0.5 * dr));
 			}
-			else pe->n[2] = -1;
-			pe->n[1] = AddFEEdgeNode(e, MQPoint(n + nn, r + dr));
+			else en[2] = -1;
+			en[1] = AddFEEdgeNode(e, MQPoint(n + nn, r + dr));
+
+			if (e.m_gid >= 0)
+			{
+				pe->m_gid = e.m_gid;
+				pe->SetType(m_bquadMesh ? FE_EDGE3 : FE_EDGE2);
+				pe->n[0] = en[0];
+				pe->n[1] = en[1];
+				pe->n[2] = en[2];
+				pe++;
+				edges++;
+			}
 
 			dx.advance();
-			edges++;
 			n += nn;
 		}
 	}
