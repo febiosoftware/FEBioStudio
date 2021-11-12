@@ -201,14 +201,23 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 	// set edges
 	for (int i = 0; i < 4; ++i)
 	{
-		GetBlockEdge( 4+i*12, 1).SetEdge(EDGE_ZARC,  1);
-		GetBlockEdge( 5+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 6+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 7+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 8+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 9+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge(10+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge(11+i*12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 0 + i * 12, 3).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 0 + i * 12, 1).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 1 + i * 12, 1).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 2 + i * 12, 3).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 2 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 3 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 2 + i * 12, 7).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 2 + i * 12, 5).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 3 + i * 12, 5).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 4 + i * 12, 1).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 5 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 6 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 7 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 8 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 9 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge(10 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge(11 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
 
 		for (int j=0; j<8; ++j)
 			GetBlockEdge(4 + j + i*12, 9).SetEdge(EDGE_3P_CIRC_ARC, 1, 4 + i*17);
