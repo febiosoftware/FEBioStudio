@@ -62,6 +62,8 @@ FECylinder::FECylinder(GCylinder* po)
 
 	AddBoolParam(m_bz, "bz", "Z-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
+
+	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("HEX8\0HEX20\0HEX27\0");
 }
 
 //-----------------------------------------------------------------------------
@@ -300,6 +302,15 @@ FEMesh* FECylinder::BuildButterfly()
 	m_MBNode[31].SetID(5);
 	m_MBNode[33].SetID(6);
 	m_MBNode[27].SetID(7);
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();

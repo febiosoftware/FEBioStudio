@@ -48,9 +48,7 @@ protected:
 	FEMesh* CreateButterfly3D();
 	FEMesh* CreateButterfly2D();
 
-	FEMesh* CreateRegularHEX8 ();
-	FEMesh* CreateRegularHEX20();
-	FEMesh* CreateRegularHEX27();
+	FEMesh* CreateRegularHEX  ();
 	FEMesh* CreateRegularTET4 ();
 	FEMesh* CreateRegularTET10();
 	FEMesh* CreateRegularTET15();
@@ -61,27 +59,9 @@ protected:
 	void BuildTetFaces(FEMesh* pm);
 	void BuildEdges(FEMesh* pm);
 
-	void BuildHex20Faces(FEMesh* pm, vector<int>& LUT);
-	void BuildHex20Edges(FEMesh* pm, vector<int>& LUT);
-
-	void BuildHex27Faces(FEMesh* pm);
-	void BuildHex27Edges(FEMesh* pm);
-
 	int NodeIndex(int i, int j, int k) 
 	{
 		return i*(m_ny+1)*(m_nz+1) + j*(m_nz+1) + k;
-	}
-
-	int NodeIndex2(int i, int j, int k, vector<int>& LUT)
-	{
-		int m = k + j*(2*m_nz+1) + i*(2*m_ny+1)*(2*m_nz+1);
-		assert(LUT[m] != -1);
-		return LUT[m];
-	}
-
-	int NodeIndex3(int i, int j, int k) 
-	{
-		return i*(2*m_ny+1)*(2*m_nz+1) + j*(2*m_nz+1) + k;
 	}
 
 protected:

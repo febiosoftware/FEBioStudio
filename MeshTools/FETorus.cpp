@@ -48,6 +48,8 @@ FETorus::FETorus(GTorus* po)
 
 	AddIntParam(m_nd, "nd", "Divisions");
 	AddIntParam(m_ns, "ns", "Segments" );
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 FEMesh* FETorus::BuildMesh()
@@ -177,6 +179,9 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 
 	UpdateMB();
 
+	// set uniform smoothing ID
+	for (int i = 0; i < m_MBFace.size(); ++i) m_MBFace[i].m_sid = 0;
+
 	for (int i=0; i<4; ++i)
 	{
 		SetBlockFaceID(B[ 0 + 12*i], -1, -1, -1, -1, -1, -1);
@@ -270,6 +275,15 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 	m_MBNode[49].SetID(13);
 	m_MBNode[47].SetID(14);
 	m_MBNode[45].SetID(15);
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	return FEMultiBlockMesh::BuildMesh();
 }

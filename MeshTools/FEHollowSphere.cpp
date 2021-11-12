@@ -51,6 +51,8 @@ FEHollowSphere::FEHollowSphere(GHollowSphere* po)
 
 	AddDoubleParam(m_gr, "gr", "R-bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 double gain2(double x, double r, double n)
@@ -386,6 +388,15 @@ FEMesh* FEHollowSphere::BuildMesh()
 	m_MBNode[10].SetID(9);
 	m_MBNode[ 4].SetID(10);
 	m_MBNode[21].SetID(11);
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();

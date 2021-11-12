@@ -60,6 +60,8 @@ FESphere::FESphere(GSphere* po)
 	AddDoubleParam(m_gr, "gr", "R-bias");
 	AddBoolParam(m_bd, "bd", "D-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
+
+	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("HEX8\0HEX20\0HEX27\0");
 }
 
 FEMesh* FESphere::BuildMesh()
@@ -336,6 +338,15 @@ FEMesh* FESphere::BuildMesh()
 	m_MBNode[37].SetID(3);
 	m_MBNode[31].SetID(4);
 	m_MBNode[48].SetID(5);
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();

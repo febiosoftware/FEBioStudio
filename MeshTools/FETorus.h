@@ -32,7 +32,7 @@ class GTorus;
 class FETorus : public FEMultiBlockMesh
 {
 public:
-	enum { NDIV, NSEG };
+	enum { NDIV, NSEG, ELEM_TYPE };
 
 public:
 	FETorus(){}

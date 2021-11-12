@@ -77,10 +77,11 @@ FEMesh* FEBox::BuildMesh()
 	FEMesh* pm = 0;
 
 	m_ctype = GetIntValue(CTYPE);
+	m_nelem = GetIntValue(NELEM);
 
 	switch (m_ctype)
 	{
-	case SIMPLE: pm = CreateRegular(); break;
+	case SIMPLE     : pm = CreateRegular(); break;
 	case BUTTERFLY3D: pm = CreateButterfly3D(); break;
 	case BUTTERFLY2D: pm = CreateButterfly2D(); break;
 	default:
@@ -235,6 +236,16 @@ FEMesh* FEBox::CreateButterfly3D()
 	GetMBNode(6).SetID(6);
 	GetMBNode(7).SetID(7);
 
+	switch (m_nelem)
+	{
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	default:
+		assert(false);
+		break;
+	}
+
 	// create the MB
 	return FEMultiBlockMesh::BuildMesh();
 }
@@ -380,6 +391,16 @@ FEMesh* FEBox::CreateButterfly2D()
 	GetMBNode(6).SetID(6);
 	GetMBNode(7).SetID(7);
 
+	switch (m_nelem)
+	{
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	default:
+		assert(false);
+		break;
+	}
+
 	// create the MB
 	return FEMultiBlockMesh::BuildMesh();
 }
@@ -387,12 +408,11 @@ FEMesh* FEBox::CreateButterfly2D()
 //-----------------------------------------------------------------------------
 FEMesh* FEBox::CreateRegular()
 {
-	m_nelem = GetIntValue(NELEM);
 	switch (m_nelem)
 	{
-	case 0: return CreateRegularHEX8 (); break;
-	case 1: return CreateRegularHEX20(); break;
-	case 2: return CreateRegularHEX27(); break;
+	case 0: return CreateRegularHEX  (); break;
+	case 1: return CreateRegularHEX  (); break;
+	case 2: return CreateRegularHEX  (); break;
 	case 3: return CreateRegularTET4(); break;
 	case 4: return CreateRegularTET10(); break;
 	case 5: return CreateRegularTET15(); break;
@@ -405,172 +425,80 @@ FEMesh* FEBox::CreateRegular()
 
 //-----------------------------------------------------------------------------
 // Create a regular mesh
-FEMesh* FEBox::CreateRegularHEX8()
+FEMesh* FEBox::CreateRegularHEX()
 {
-	int i, j, k;
-
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
-	double w = param[GBox::WIDTH ].GetFloatValue();
-	double h = param[GBox::HEIGHT].GetFloatValue();
-	double d = param[GBox::DEPTH ].GetFloatValue();
+	double w = 0.5 * param[GBox::WIDTH].GetFloatValue();
+	double h = 0.5 * param[GBox::HEIGHT].GetFloatValue();
+	double d = param[GBox::DEPTH].GetFloatValue();
 
 	// get mesh parameters
 	m_nx = GetIntValue(NX);
 	m_ny = GetIntValue(NY);
 	m_nz = GetIntValue(NZ);
 
-	m_bx = GetBoolValue(GX2);
-	m_by = GetBoolValue(GY2);
-	m_bz = GetBoolValue(GZ2);
-
 	m_gx = GetFloatValue(GX);
 	m_gy = GetFloatValue(GY);
 	m_gz = GetFloatValue(GZ);
 
-	// check parameters
-	if (m_nx < 1) m_nx = 1;
-	if (m_ny < 1) m_ny = 1;
-	if (m_nz < 1) m_nz = 1;
+	m_bx = GetBoolValue(GX2);
+	m_by = GetBoolValue(GY2);
+	m_bz = GetBoolValue(GZ2);
 
-	if (m_nx == 1) m_bx = false;
-	if (m_ny == 1) m_by = false;
-	if (m_nz == 1) m_bz = false;
+	// create the MB nodes
+	m_MBNode.resize(8);
+	m_MBNode[0].m_r = vec3d(-w, -h, 0);
+	m_MBNode[1].m_r = vec3d(w, -h, 0);
+	m_MBNode[2].m_r = vec3d(w, h, 0);
+	m_MBNode[3].m_r = vec3d(-w, h, 0);
+	m_MBNode[4].m_r = vec3d(-w, -h, d);
+	m_MBNode[5].m_r = vec3d(w, -h, d);
+	m_MBNode[6].m_r = vec3d(w, h, d);
+	m_MBNode[7].m_r = vec3d(-w, h, d);
 
-	int nodes = (m_nx+1)*(m_ny+1)*(m_nz+1);
-	int elems = m_nx*m_ny*m_nz;
+	// create the MB blocks
+	m_MBlock.resize(1);
+	MBBlock& b1 = m_MBlock[0];
+	b1.SetID(0);
+	b1.SetNodes(0, 1, 2, 3, 4, 5, 6, 7);
+	b1.SetSizes(m_nx, m_ny, m_nz);
+	b1.SetZoning(m_gx, m_gy, m_gz, m_bx, m_by, m_bz);
 
-	// allocate storage
-	FEMesh* pm = new FEMesh;
-	pm->Create(nodes, elems);
+	// update the MB data
+	UpdateMB();
 
-	double gx = 1;
-	double gy = 1;
-	double gz = 1;
+	// assign face ID's
+	SetBlockFaceID(b1, 0, 1, 2, 3, 4, 5);
 
-	double fx = m_gx;
-	double fy = m_gy;
-	double fz = m_gz;
+	MBFace& F1 = GetBlockFace(0, 0); SetFaceEdgeID(F1, 0,  9,  4, 8);
+	MBFace& F2 = GetBlockFace(0, 1); SetFaceEdgeID(F2, 1, 10,  5, 9);
+	MBFace& F3 = GetBlockFace(0, 2); SetFaceEdgeID(F3, 2, 11,  6, 10);
+	MBFace& F4 = GetBlockFace(0, 3); SetFaceEdgeID(F4, 3,  8,  7, 11);
+	MBFace& F5 = GetBlockFace(0, 4); SetFaceEdgeID(F5, 2,  1,  0,  3);
+	MBFace& F6 = GetBlockFace(0, 5); SetFaceEdgeID(F6, 4,  5,  6,  7);
 
-	if (m_bx)
+	m_MBNode[0].SetID(0);
+	m_MBNode[1].SetID(1);
+	m_MBNode[2].SetID(2);
+	m_MBNode[3].SetID(3);
+	m_MBNode[4].SetID(4);
+	m_MBNode[5].SetID(5);
+	m_MBNode[6].SetID(6);
+	m_MBNode[7].SetID(7);
+
+	switch (m_nelem)
 	{
-		gx = 2; if (m_nx%2) gx += fx;
-		for (i=0; i<m_nx/2-1; ++i) gx = fx*gx+2;
-		gx = w / gx;
-	}
-	else 
-	{
-		for (i=0; i<m_nx-1; ++i) gx = fx*gx+1; 
-		gx = w / gx;
-	}
-
-	if (m_by)
-	{
-		gy = 2; if (m_ny%2) gy += fy;
-		for (i=0; i<m_ny/2-1; ++i) gy = fy*gy+2;
-		gy = h / gy;
-	}
-	else 
-	{
-		for (i=0; i<m_ny-1; ++i) gy = fy*gy+1; 
-		gy = h / gy;
-	}
-
-	if (m_bz)
-	{
-		gz = 2; if (m_nz%2) gz += fz;
-		for (i=0; i<m_nz/2-1; ++i) gz = fz*gz+2;
-		gz = d / gz;
-	}
-	else 
-	{
-		for (i=0; i<m_nz-1; ++i) gz = fz*gz+1; 
-		gz = d / gz;
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	default:
+		assert(false);
+		break;
 	}
 
-	// position the nodes
-	double x, y, z;
-	double dx, dy, dz;
-	FENode* pn = pm->NodePtr();
-	dx = gx;
-	x = -w/2;
-	for (i=0; i<=m_nx; i++)
-	{
-		dy = gy;
-		y = -h/2;
-		for (j=0; j<=m_ny; j++)
-		{
-			dz = gz;
-			z = 0;
-			for (k=0; k<=m_nz; k++, pn++)
-			{
-				pn->r = vec3d(x, y, z);
-
-				z += dz;
-				dz *= fz;
-				if (m_bz && (k == m_nz/2-1))
-				{
-					if (m_nz%2 == 0) dz /= fz;
-					fz = 1.0/fz;
-				}
-			}
-			if (m_bz) fz = 1.0/fz;
-			y += dy;
-			dy *= fy;
-			if (m_by && (j == m_ny/2-1))
-			{
-				if (m_ny%2 == 0) dy /= fy;
-				fy = 1.0/fy;
-			}
-		}
-		if (m_by) fy = 1.0/fy;
-		x += dx;
-		dx *= fx;
-		if (m_bx && (i == m_nx/2-1))
-		{
-			if (m_nx%2 == 0) dx /= fx;
-			fx = 1.0/fx;
-		}
-	}
-
-	// assign the node ID's
-	pm->Node( NodeIndex(   0,    0,    0) ).m_gid = 0;
-	pm->Node( NodeIndex(m_nx,    0,    0) ).m_gid = 1;
-	pm->Node( NodeIndex(m_nx, m_ny,    0) ).m_gid = 2;
-	pm->Node( NodeIndex(   0, m_ny,    0) ).m_gid = 3;
-	pm->Node( NodeIndex(   0,    0, m_nz) ).m_gid = 4;
-	pm->Node( NodeIndex(m_nx,    0, m_nz) ).m_gid = 5;
-	pm->Node( NodeIndex(m_nx, m_ny, m_nz) ).m_gid = 6;
-	pm->Node( NodeIndex(   0, m_ny, m_nz) ).m_gid = 7;
-
-	// create the connectivity
-	int n = 0;
-	for (i=0; i<m_nx; i++)
-		for (j=0; j<m_ny; j++)
-			for (k=0; k<m_nz; k++)
-			{
-				FEElement_* pe = pm->ElementPtr(n++);
-
-				pe->m_node[0] = NodeIndex(i  ,j  ,k);
-				pe->m_node[1] = NodeIndex(i+1,j  ,k);
-				pe->m_node[2] = NodeIndex(i+1,j+1,k);
-				pe->m_node[3] = NodeIndex(i  ,j+1,k);
-				pe->m_node[4] = NodeIndex(i  ,j  ,k+1);
-				pe->m_node[5] = NodeIndex(i+1,j  ,k+1);
-				pe->m_node[6] = NodeIndex(i+1,j+1,k+1);
-				pe->m_node[7] = NodeIndex(i  ,j+1,k+1);
-
-				pe->m_gid = 0;
-				pe->SetType(FE_HEX8);
-			}
-	// build faces
-	BuildHexFaces(pm);
-
-	// build edges
-	BuildEdges(pm);
-
-	// update mesh
-	pm->BuildMesh();
+	// create the MB
+	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	return pm;
 }
@@ -763,494 +691,6 @@ FEMesh* FEBox::CreateRegularTET4()
 }
 
 //-----------------------------------------------------------------------------
-// Create a regular mesh
-FEMesh* FEBox::CreateRegularHEX27()
-{
-	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
-	double w = 0.5*param[GBox::WIDTH ].GetFloatValue();
-	double h = 0.5*param[GBox::HEIGHT].GetFloatValue();
-	double d = param[GBox::DEPTH ].GetFloatValue();
-
-	// get mesh parameters
-	m_nx = GetIntValue(NX);
-	m_ny = GetIntValue(NY);
-	m_nz = GetIntValue(NZ);
-
-	m_gx = GetFloatValue(GX);
-	m_gy = GetFloatValue(GY);
-	m_gz = GetFloatValue(GZ);
-
-	m_bx = GetBoolValue(GX2);
-	m_by = GetBoolValue(GY2);
-	m_bz = GetBoolValue(GZ2);
-
-	// create the MB nodes
-	m_MBNode.resize(8);
-	m_MBNode[0].m_r = vec3d(-w, -h, 0);
-	m_MBNode[1].m_r = vec3d( w, -h, 0);
-	m_MBNode[2].m_r = vec3d( w,  h, 0);
-	m_MBNode[3].m_r = vec3d(-w,  h, 0);
-	m_MBNode[4].m_r = vec3d(-w, -h, d);
-	m_MBNode[5].m_r = vec3d( w, -h, d);
-	m_MBNode[6].m_r = vec3d( w,  h, d);
-	m_MBNode[7].m_r = vec3d(-w,  h, d);
-
-	// create the MB blocks
-	m_MBlock.resize(1);
-	MBBlock& b1 = m_MBlock[0];
-	b1.SetID(0);
-	b1.SetNodes(0, 1, 2, 3, 4, 5, 6, 7);
-	b1.SetSizes(m_nx, m_ny, m_nz);
-	b1.SetZoning(m_gx, m_gy, m_gz, m_bx, m_by, m_bz);
-
-	// update the MB data
-	UpdateMB();
-
-	// assign face ID's
-	SetBlockFaceID(b1, 0, 1, 2, 3, 4, 5);
-
-	MBFace& F1 = GetBlockFace(0, 0); SetFaceEdgeID(F1, 0,  9,  4,  8);
-	MBFace& F2 = GetBlockFace(0, 1); SetFaceEdgeID(F2, 1, 10,  5,  9);
-	MBFace& F3 = GetBlockFace(0, 2); SetFaceEdgeID(F3, 2, 11,  6, 10);
-	MBFace& F4 = GetBlockFace(0, 3); SetFaceEdgeID(F4, 3,  8,  7, 11);
-	MBFace& F5 = GetBlockFace(0, 4); SetFaceEdgeID(F5, 3,  2,  1,  0);
-	MBFace& F6 = GetBlockFace(0, 5); SetFaceEdgeID(F6, 4,  5,  6,  7);
-
-	m_MBNode[0].SetID(0);
-	m_MBNode[1].SetID(1);
-	m_MBNode[2].SetID(2);
-	m_MBNode[3].SetID(3);
-	m_MBNode[4].SetID(4);
-	m_MBNode[5].SetID(5);
-	m_MBNode[6].SetID(6);
-	m_MBNode[7].SetID(7);
-
-	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
-
-	return pm;
-}
-
-FEMesh* FEBox::CreateRegularHEX20()
-{
-	int i, j, k;
-
-	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
-	double w = param[GBox::WIDTH ].GetFloatValue();
-	double h = param[GBox::HEIGHT].GetFloatValue();
-	double d = param[GBox::DEPTH ].GetFloatValue();
-
-	// get mesh parameters
-	m_nx = GetIntValue(NX);
-	m_ny = GetIntValue(NY);
-	m_nz = GetIntValue(NZ);
-
-	m_bx = GetBoolValue(GX2);
-	m_by = GetBoolValue(GY2);
-	m_bz = GetBoolValue(GZ2);
-
-	m_gx = GetFloatValue(GX);
-	m_gy = GetFloatValue(GY);
-	m_gz = GetFloatValue(GZ);
-
-	m_nelem = GetIntValue(NELEM);
-
-	// check parameters
-	if (m_nx < 1) m_nx = 1;
-	if (m_ny < 1) m_ny = 1;
-	if (m_nz < 1) m_nz = 1;
-
-	if (m_nx == 1) m_bx = false;
-	if (m_ny == 1) m_by = false;
-	if (m_nz == 1) m_bz = false;
-
-	int nodes = (2*m_nx+1)*(2*m_ny+1)*(2*m_nz+1) - m_nx*m_ny*m_nz - 6*m_nx*m_ny*m_nz + (m_nx-1)*m_ny*m_nz + (m_ny-1)*m_nx*m_nz + (m_nz-1)*m_nx*m_ny;
-	int elems = m_nx*m_ny*m_nz;
-
-	// allocate storage
-	FEMesh* pm = new FEMesh;
-	pm->Create(nodes, elems);
-
-	double gx = 1;
-	double gy = 1;
-	double gz = 1;
-
-	double fx = m_gx;
-	double fy = m_gy;
-	double fz = m_gz;
-
-	if (m_bx)
-	{
-		gx = 2; if ((2*m_nx)%2) gx += fx;
-		for (i=0; i<(2*m_nx)/2-1; ++i) gx = fx*gx+2;
-		gx = w / gx;
-	}
-	else 
-	{
-		for (i=0; i<2*m_nx-1; ++i) gx = fx*gx+1; 
-		gx = w / gx;
-	}
-
-	if (m_by)
-	{
-		gy = 2; if ((2*m_ny)%2) gy += fy;
-		for (i=0; i<(2*m_ny)/2-1; ++i) gy = fy*gy+2;
-		gy = h / gy;
-	}
-	else 
-	{
-		for (i=0; i<2*m_ny-1; ++i) gy = fy*gy+1; 
-		gy = h / gy;
-	}
-
-	if (m_bz)
-	{
-		gz = 2; if ((2*m_nz)%2) gz += fz;
-		for (i=0; i<(2*m_nz)/2-1; ++i) gz = fz*gz+2;
-		gz = d / gz;
-	}
-	else 
-	{
-		for (i=0; i<2*m_nz-1; ++i) gz = fz*gz+1; 
-		gz = d / gz;
-	}
-
-	// position the nodes
-	double x, y, z;
-	double dx, dy, dz;
-	int NN = (2*m_nx + 1)*(2*m_ny + 1)*(2*m_nz + 1);
-	vector<vec3d> r(NN);
-	int nn = 0;
-	dx = gx;
-	x = -w/2;
-	for (i=0; i<=2*m_nx; i++)
-	{
-		dy = gy;
-		y = -h/2;
-		for (j=0; j<=2*m_ny; j++)
-		{
-			dz = gz;
-			z = 0;
-			for (k=0; k<=2*m_nz; k++, nn++)
-			{
-				r[nn] = vec3d(x, y, z);
-
-				z += dz;
-				dz *= fz;
-				if (m_bz && (k == m_nz-1))
-				{
-					if (m_nz%2 == 0) dz /= fz;
-					fz = 1.0/fz;
-				}
-			}
-			if (m_bz) fz = 1.0/fz;
-			y += dy;
-			dy *= fy;
-			if (m_by && (j == m_ny-1))
-			{
-				if (m_ny%2 == 0) dy /= fy;
-				fy = 1.0/fy;
-			}
-		}
-		if (m_by) fy = 1.0/fy;
-		x += dx;
-		dx *= fx;
-		if (m_bx && (i == m_nx-1))
-		{
-			if (m_nx%2 == 0) dx /= fx;
-			fx = 1.0/fx;
-		}
-	}
-
-	// Build the LUT
-	vector<int> LUT(NN);
-	nn = 0;
-	int mx = 2*m_nx;
-	int my = 2*m_ny;
-	int mz = 2*m_nz;
-	for (i=0; i<=mx;++i)
-	{
-		for (j=0; j<=my;++j)
-		{
-			for (k=0; k<=mz;++k)
-			{
-				int mm = k + j*(mz+1) + i*(my+1)*(mz+1);
-				LUT[mm] = -1;
-
-				if ((i%2==0)&&(j%2==0)&&(k%2==0)) LUT[mm] = nn++;
-				else if ((i%2==0)&&(j%2==1)&&(k%2==0)) LUT[mm] = nn++;
-				else if ((i%2==0)&&(j%2==0)&&(k%2==1)) LUT[mm] = nn++;
-				else if ((j%2==0)&&(i%2==1)&&(k%2==0)) LUT[mm] = nn++;
-				else if ((j%2==0)&&(i%2==0)&&(k%2==1)) LUT[mm] = nn++;
-				else if ((k%2==0)&&(i%2==1)&&(j%2==0)) LUT[mm] = nn++;
-				else if ((k%2==0)&&(i%2==0)&&(j%2==1)) LUT[mm] = nn++;
-			}
-		}
-	}
-
-	// assign nodal positions
-	for (i=0; i<NN; ++i) if (LUT[i] != -1) pm->Node(LUT[i]).r = r[i];
-
-	// assign the node ID's
-	pm->Node( NodeIndex2( 0,  0,  0, LUT) ).m_gid = 0;
-	pm->Node( NodeIndex2(mx,  0,  0, LUT) ).m_gid = 1;
-	pm->Node( NodeIndex2(mx, my,  0, LUT) ).m_gid = 2;
-	pm->Node( NodeIndex2( 0, my,  0, LUT) ).m_gid = 3;
-	pm->Node( NodeIndex2( 0,  0, mz, LUT) ).m_gid = 4;
-	pm->Node( NodeIndex2(mx,  0, mz, LUT) ).m_gid = 5;
-	pm->Node( NodeIndex2(mx, my, mz, LUT) ).m_gid = 6;
-	pm->Node( NodeIndex2( 0, my, mz, LUT) ).m_gid = 7;
-
-	// create the connectivity
-	int eid = 0;
-	for (i=0; i<2*m_nx; i+=2)
-		for (j=0; j<2*m_ny; j+=2)
-			for (k=0; k<2*m_nz; k+=2)
-			{
-				FEElement_* pe = pm->ElementPtr(eid++);
-
-				pe->m_node[0] = NodeIndex2(i  ,j  ,k, LUT);
-				pe->m_node[1] = NodeIndex2(i+2,j  ,k, LUT);
-				pe->m_node[2] = NodeIndex2(i+2,j+2,k, LUT);
-				pe->m_node[3] = NodeIndex2(i  ,j+2,k, LUT);
-				pe->m_node[4] = NodeIndex2(i  ,j  ,k+2, LUT);
-				pe->m_node[5] = NodeIndex2(i+2,j  ,k+2, LUT);
-				pe->m_node[6] = NodeIndex2(i+2,j+2,k+2, LUT);
-				pe->m_node[7] = NodeIndex2(i  ,j+2,k+2, LUT);
-
-				pe->m_node[ 8] = NodeIndex2(i+1,j  ,k, LUT);
-				pe->m_node[ 9] = NodeIndex2(i+2,j+1,k, LUT);
-				pe->m_node[10] = NodeIndex2(i+1,j+2,k, LUT);
-				pe->m_node[11] = NodeIndex2(i  ,j+1,k, LUT);
-				pe->m_node[12] = NodeIndex2(i+1,j  ,k+2, LUT);
-				pe->m_node[13] = NodeIndex2(i+2,j+1,k+2, LUT);
-				pe->m_node[14] = NodeIndex2(i+1,j+2,k+2, LUT);
-				pe->m_node[15] = NodeIndex2(i  ,j+1,k+2, LUT);
-				pe->m_node[16] = NodeIndex2(i  ,j  ,k+1, LUT);
-				pe->m_node[17] = NodeIndex2(i+2,j  ,k+1, LUT);
-				pe->m_node[18] = NodeIndex2(i+2,j+2,k+1, LUT);
-				pe->m_node[19] = NodeIndex2(i  ,j+2,k+1, LUT);
-
-				pe->m_gid = 0;
-				pe->SetType(FE_HEX20);
-			}
-
-	// build faces
-	BuildHex20Faces(pm, LUT);
-
-	// build edges
-	BuildHex20Edges(pm, LUT);
-
-	// update mesh
-	pm->BuildMesh();
-
-	return pm;
-}
-
-//-----------------------------------------------------------------------------
-// Create a regular mesh
-/*
-FEMesh* FEBox::CreateRegularHEX27()
-{
-	int i, j, k;
-
-	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
-	double w = param[GBox::WIDTH ].GetFloatValue();
-	double h = param[GBox::HEIGHT].GetFloatValue();
-	double d = param[GBox::DEPTH ].GetFloatValue();
-
-	// get mesh parameters
-	m_nx = GetIntValue(NX);
-	m_ny = GetIntValue(NY);
-	m_nz = GetIntValue(NZ);
-
-	m_bx = GetBoolValue(GX2);
-	m_by = GetBoolValue(GY2);
-	m_bz = GetBoolValue(GZ2);
-
-	m_gx = GetFloatValue(GX);
-	m_gy = GetFloatValue(GY);
-	m_gz = GetFloatValue(GZ);
-
-	m_nelem = GetIntValue(NELEM);
-
-	// check parameters
-	if (m_nx < 1) m_nx = 1;
-	if (m_ny < 1) m_ny = 1;
-	if (m_nz < 1) m_nz = 1;
-
-	if (m_nx == 1) m_bx = false;
-	if (m_ny == 1) m_by = false;
-	if (m_nz == 1) m_bz = false;
-
-	int nodes = (2*m_nx+1)*(2*m_ny+1)*(2*m_nz+1);
-	int elems = m_nx*m_ny*m_nz;
-
-	// allocate storage
-	FEMesh* pm = new FEMesh;
-	pm->Create(nodes, elems);
-
-	double gx = 1;
-	double gy = 1;
-	double gz = 1;
-
-	double fx = m_gx;
-	double fy = m_gy;
-	double fz = m_gz;
-
-	if (m_bx)
-	{
-		gx = 2; if ((2*m_nx)%2) gx += fx;
-		for (i=0; i<(2*m_nx)/2-1; ++i) gx = fx*gx+2;
-		gx = w / gx;
-	}
-	else 
-	{
-		for (i=0; i<2*m_nx-1; ++i) gx = fx*gx+1; 
-		gx = w / gx;
-	}
-
-	if (m_by)
-	{
-		gy = 2; if ((2*m_ny)%2) gy += fy;
-		for (i=0; i<(2*m_ny)/2-1; ++i) gy = fy*gy+2;
-		gy = h / gy;
-	}
-	else 
-	{
-		for (i=0; i<2*m_ny-1; ++i) gy = fy*gy+1; 
-		gy = h / gy;
-	}
-
-	if (m_bz)
-	{
-		gz = 2; if ((2*m_nz)%2) gz += fz;
-		for (i=0; i<(2*m_nz)/2-1; ++i) gz = fz*gz+2;
-		gz = d / gz;
-	}
-	else 
-	{
-		for (i=0; i<2*m_nz-1; ++i) gz = fz*gz+1; 
-		gz = d / gz;
-	}
-
-	// position the nodes
-	double x, y, z;
-	double dx, dy, dz;
-	int nn = 0;
-	dx = gx;
-	x = -w/2;
-	for (i=0; i<=2*m_nx; i++)
-	{
-		dy = gy;
-		y = -h/2;
-		for (j=0; j<=2*m_ny; j++)
-		{
-			dz = gz;
-			z = 0;
-			for (k=0; k<=2*m_nz; k++, nn++)
-			{
-				pm->Node(nn).r = vec3d(x, y, z);
-
-				z += dz;
-				dz *= fz;
-				if (m_bz && (k == m_nz-1))
-				{
-					if (m_nz%2 == 0) dz /= fz;
-					fz = 1.0/fz;
-				}
-			}
-			if (m_bz) fz = 1.0/fz;
-			y += dy;
-			dy *= fy;
-			if (m_by && (j == m_ny-1))
-			{
-				if (m_ny%2 == 0) dy /= fy;
-				fy = 1.0/fy;
-			}
-		}
-		if (m_by) fy = 1.0/fy;
-		x += dx;
-		dx *= fx;
-		if (m_bx && (i == m_nx-1))
-		{
-			if (m_nx%2 == 0) dx /= fx;
-			fx = 1.0/fx;
-		}
-	}
-
-	// assign the node ID's
-	int mx = 2*m_nx;
-	int my = 2*m_ny;
-	int mz = 2*m_nz;
-	pm->Node( NodeIndex3( 0,  0,  0) ).m_gid = 0;
-	pm->Node( NodeIndex3(mx,  0,  0) ).m_gid = 1;
-	pm->Node( NodeIndex3(mx, my,  0) ).m_gid = 2;
-	pm->Node( NodeIndex3( 0, my,  0) ).m_gid = 3;
-	pm->Node( NodeIndex3( 0,  0, mz) ).m_gid = 4;
-	pm->Node( NodeIndex3(mx,  0, mz) ).m_gid = 5;
-	pm->Node( NodeIndex3(mx, my, mz) ).m_gid = 6;
-	pm->Node( NodeIndex3( 0, my, mz) ).m_gid = 7;
-
-	// create the connectivity
-	int eid = 0;
-	for (i=0; i<mx; i+=2)
-		for (j=0; j<my; j+=2)
-			for (k=0; k<mz; k+=2)
-			{
-				FEElement_* pe = pm->ElementPtr(eid++);
-
-				pe->m_node[0] = NodeIndex3(i  ,j  ,k);
-				pe->m_node[1] = NodeIndex3(i+2,j  ,k);
-				pe->m_node[2] = NodeIndex3(i+2,j+2,k);
-				pe->m_node[3] = NodeIndex3(i  ,j+2,k);
-				pe->m_node[4] = NodeIndex3(i  ,j  ,k+2);
-				pe->m_node[5] = NodeIndex3(i+2,j  ,k+2);
-				pe->m_node[6] = NodeIndex3(i+2,j+2,k+2);
-				pe->m_node[7] = NodeIndex3(i  ,j+2,k+2);
-
-				pe->m_node[ 8] = NodeIndex3(i+1,j  ,k);
-				pe->m_node[ 9] = NodeIndex3(i+2,j+1,k);
-				pe->m_node[10] = NodeIndex3(i+1,j+2,k);
-				pe->m_node[11] = NodeIndex3(i  ,j+1,k);
-				pe->m_node[12] = NodeIndex3(i+1,j  ,k+2);
-				pe->m_node[13] = NodeIndex3(i+2,j+1,k+2);
-				pe->m_node[14] = NodeIndex3(i+1,j+2,k+2);
-				pe->m_node[15] = NodeIndex3(i  ,j+1,k+2);
-				pe->m_node[16] = NodeIndex3(i  ,j  ,k+1);
-				pe->m_node[17] = NodeIndex3(i+2,j  ,k+1);
-				pe->m_node[18] = NodeIndex3(i+2,j+2,k+1);
-				pe->m_node[19] = NodeIndex3(i  ,j+2,k+1);
-
-				pe->m_node[20] = NodeIndex3(i+1,j  ,k+1);
-				pe->m_node[21] = NodeIndex3(i+2,j+1,k+1);
-				pe->m_node[22] = NodeIndex3(i+1,j+2,k+1);
-				pe->m_node[23] = NodeIndex3(i  ,j+1,k+1);
-				pe->m_node[24] = NodeIndex3(i+1,j+1,k  );
-				pe->m_node[25] = NodeIndex3(i+1,j+1,k+2);
-				pe->m_node[26] = NodeIndex3(i+1,j+1,k+1);
-
-				pe->m_gid = 0;
-				pe->SetType(FE_HEX27);
-			}
-
-	// build faces
-	BuildHex27Faces(pm);
-
-	// build edges
-	BuildHex27Edges(pm);
-
-	// update mesh
-	pm->BuildMesh();
-
-	return pm;
-}
-*/
-
-//-----------------------------------------------------------------------------
 // Build faces of a regular hex mesh
 void FEBox::BuildHexFaces(FEMesh* pm)
 {
@@ -1347,135 +787,6 @@ void FEBox::BuildHexFaces(FEMesh* pm)
 			f.n[3] = NodeIndex(i  , j+1, m_nz);
 		}
 }
-
-//-----------------------------------------------------------------------------
-// Build faces of a regular hex mesh
-void FEBox::BuildHex20Faces(FEMesh* pm, vector<int>& LUT)
-{
-	int i, j, k;
-
-	// calculate the nr of faces
-	int faces = 2*(m_nx*m_ny + m_ny*m_nz + m_nx*m_nz);
-	pm->Create(0,0,faces);
-
-	// build the faces
-	FEFace* pf = pm->FacePtr();
-
-	// -Y face
-	for (i=0; i<m_nx; ++i)
-		for (k=0; k<m_nz; ++k, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD8);
-			f.m_gid = 0;
-			f.m_sid = 0;
-			f.n[0] = NodeIndex2(2*i  , 0, 2*k  , LUT);
-			f.n[1] = NodeIndex2(2*i+2, 0, 2*k  , LUT);
-			f.n[2] = NodeIndex2(2*i+2, 0, 2*k+2, LUT);
-			f.n[3] = NodeIndex2(2*i  , 0, 2*k+2, LUT);
-
-			f.n[4] = NodeIndex2(2*i+1  , 0, 2*k  , LUT);
-			f.n[5] = NodeIndex2(2*i+2  , 0, 2*k+1, LUT);
-			f.n[6] = NodeIndex2(2*i+1  , 0, 2*k+2, LUT);
-			f.n[7] = NodeIndex2(2*i    , 0, 2*k+1, LUT);
-		}
-
-	// +X face
-	for (j=0; j<m_ny; ++j)
-		for (k=0; k<m_nz; ++k, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD8);
-			f.m_gid = 1;
-			f.m_sid = 1;
-			f.n[0] = NodeIndex2(2*m_nx, 2*j  , 2*k  , LUT);
-			f.n[1] = NodeIndex2(2*m_nx, 2*j+2, 2*k  , LUT);
-			f.n[2] = NodeIndex2(2*m_nx, 2*j+2, 2*k+2, LUT);
-			f.n[3] = NodeIndex2(2*m_nx, 2*j  , 2*k+2, LUT);
-
-			f.n[4] = NodeIndex2(2*m_nx, 2*j+1, 2*k  , LUT);
-			f.n[5] = NodeIndex2(2*m_nx, 2*j+2, 2*k+1, LUT);
-			f.n[6] = NodeIndex2(2*m_nx, 2*j+1, 2*k+2, LUT);
-			f.n[7] = NodeIndex2(2*m_nx, 2*j  , 2*k+1, LUT);
-		}
-
-	// +Y face
-	for (i=m_nx-1; i>=0; --i)
-		for (k=0; k<m_nz; ++k, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD8);
-			f.m_gid = 2;
-			f.m_sid = 2;
-			f.n[0] = NodeIndex2(2*i+2, 2*m_ny, 2*k  , LUT);
-			f.n[1] = NodeIndex2(2*i  , 2*m_ny, 2*k  , LUT);
-			f.n[2] = NodeIndex2(2*i  , 2*m_ny, 2*k+2, LUT);
-			f.n[3] = NodeIndex2(2*i+2, 2*m_ny, 2*k+2, LUT);
-
-			f.n[4] = NodeIndex2(2*i+1, 2*m_ny, 2*k  , LUT);
-			f.n[5] = NodeIndex2(2*i  , 2*m_ny, 2*k+1, LUT);
-			f.n[6] = NodeIndex2(2*i+1, 2*m_ny, 2*k+2, LUT);
-			f.n[7] = NodeIndex2(2*i+2, 2*m_ny, 2*k+1, LUT);
-		}
-
-	// -X face
-	for (j=m_ny-1; j>=0; --j)
-		for (k=0; k<m_nz; ++k, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD8);
-			f.m_gid = 3;
-			f.m_sid = 3;
-			f.n[0] = NodeIndex2(0, 2*j+2, 2*k  , LUT);
-			f.n[1] = NodeIndex2(0, 2*j  , 2*k  , LUT);
-			f.n[2] = NodeIndex2(0, 2*j  , 2*k+2, LUT);
-			f.n[3] = NodeIndex2(0, 2*j+2, 2*k+2, LUT);
-
-			f.n[4] = NodeIndex2(0, 2*j+1, 2*k  , LUT);
-			f.n[5] = NodeIndex2(0, 2*j  , 2*k+1, LUT);
-			f.n[6] = NodeIndex2(0, 2*j+1, 2*k+2, LUT);
-			f.n[7] = NodeIndex2(0, 2*j+2, 2*k+1, LUT);
-		}
-
-	// -Z face
-	for (i=0; i<m_nx; ++i)
-		for (j=m_ny-1; j>=0; --j, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD8);
-			f.m_gid = 4;
-			f.m_sid = 4;
-			f.n[0] = NodeIndex2(2*i  , 2*j  , 0, LUT);
-			f.n[1] = NodeIndex2(2*i  , 2*j+2, 0, LUT);
-			f.n[2] = NodeIndex2(2*i+2, 2*j+2, 0, LUT);
-			f.n[3] = NodeIndex2(2*i+2, 2*j  , 0, LUT);
-
-			f.n[4] = NodeIndex2(2*i  , 2*j+1, 0, LUT);
-			f.n[5] = NodeIndex2(2*i+1, 2*j+2, 0, LUT);
-			f.n[6] = NodeIndex2(2*i+2, 2*j+1, 0, LUT);
-			f.n[7] = NodeIndex2(2*i+1, 2*j  , 0, LUT);
-		}
-
-	// +Z face
-	for (i=0; i<m_nx; ++i)
-		for (j=0; j<m_ny; ++j, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD8);
-			f.m_gid = 5;
-			f.m_sid = 5;
-			f.n[0] = NodeIndex2(2*i  , 2*j  , 2*m_nz, LUT);
-			f.n[1] = NodeIndex2(2*i+2, 2*j  , 2*m_nz, LUT);
-			f.n[2] = NodeIndex2(2*i+2, 2*j+2, 2*m_nz, LUT);
-			f.n[3] = NodeIndex2(2*i  , 2*j+2, 2*m_nz, LUT);
-
-			f.n[4] = NodeIndex2(2*i+1, 2*j  , 2*m_nz, LUT);
-			f.n[5] = NodeIndex2(2*i+2, 2*j+1, 2*m_nz, LUT);
-			f.n[6] = NodeIndex2(2*i+1, 2*j+2, 2*m_nz, LUT);
-			f.n[7] = NodeIndex2(2*i  , 2*j+1, 2*m_nz, LUT);
-		}
-}
-
 
 //-----------------------------------------------------------------------------
 // Build the faces of a regular tet mesh
@@ -1654,208 +965,6 @@ void FEBox::BuildEdges(FEMesh* pm)
 	for (i=0   ; i<m_nz; ++i, ++pe)  { pe->SetType(FE_EDGE2); pe->m_gid =  9; pe->n[0] = NodeIndex(m_nx,    0, i); pe->n[1] = NodeIndex(m_nx,    0,  i+1); }
 	for (i=0   ; i<m_nz; ++i, ++pe)  { pe->SetType(FE_EDGE2); pe->m_gid = 10; pe->n[0] = NodeIndex(m_nx, m_ny, i); pe->n[1] = NodeIndex(m_nx, m_ny,  i+1); }
 	for (i=0   ; i<m_nz; ++i, ++pe)  { pe->SetType(FE_EDGE2); pe->m_gid = 11; pe->n[0] = NodeIndex(   0, m_ny, i); pe->n[1] = NodeIndex(   0, m_ny,  i+1); }
-}
-
-//-----------------------------------------------------------------------------
-// Build the edges of a box mesh
-void FEBox::BuildHex20Edges(FEMesh* pm, vector<int>& LUT)
-{
-	int i;
-
-	int nx = m_nx;
-	int ny = m_ny;
-	int nz = m_nz;
-
-	// calculate the nr of edges
-	int edges = 4*(nx + ny + nz);
-	pm->Create(0,0,0,edges);
-	FEEdge* pe = pm->EdgePtr();
-
-	for (i=   0; i<nx; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  0; pe->n[0] = NodeIndex2( 2*i,    0, 0, LUT); pe->n[1] = NodeIndex2(2*i+2,    0, 0, LUT); pe->n[2] = NodeIndex2(2*i+1,    0, 0, LUT); }
-	for (i=   0; i<ny; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  1; pe->n[0] = NodeIndex2(2*nx,  2*i, 0, LUT); pe->n[1] = NodeIndex2(2*nx ,2*i+2, 0, LUT); pe->n[2] = NodeIndex2(2*nx , 2*i+1, 0, LUT);}
-	for (i=nx; i>=  1; --i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  2; pe->n[0] = NodeIndex2( 2*i, 2*ny, 0, LUT); pe->n[1] = NodeIndex2(2*i-2,2*ny , 0, LUT); pe->n[2] = NodeIndex2(2*i-1, 2*ny , 0, LUT);}
-	for (i=ny; i>=  1; --i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  3; pe->n[0] = NodeIndex2(   0,  2*i, 0, LUT); pe->n[1] = NodeIndex2(    0,2*i-2, 0, LUT); pe->n[2] = NodeIndex2(    0, 2*i-1, 0, LUT);}
-
-	for (i=   0; i<nx; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  4; pe->n[0] = NodeIndex2( 2*i,    0, 2*nz, LUT); pe->n[1] = NodeIndex2(2*i+2,    0, 2*nz, LUT); pe->n[2] = NodeIndex2(2*i+1,    0, 2*nz, LUT);}
-	for (i=   0; i<ny; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  5; pe->n[0] = NodeIndex2(2*nx,  2*i, 2*nz, LUT); pe->n[1] = NodeIndex2(2*nx ,2*i+2, 2*nz, LUT); pe->n[2] = NodeIndex2(2*nx ,2*i+1, 2*nz, LUT);}
-	for (i=nx; i>=  1; --i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  6; pe->n[0] = NodeIndex2( 2*i, 2*ny, 2*nz, LUT); pe->n[1] = NodeIndex2(2*i-2,2* ny, 2*nz, LUT); pe->n[2] = NodeIndex2(2*i-1,2* ny, 2*nz, LUT);}
-	for (i=ny; i>=  1; --i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  7; pe->n[0] = NodeIndex2(   0,  2*i, 2*nz, LUT); pe->n[1] = NodeIndex2(    0,2*i-2, 2*nz, LUT); pe->n[2] = NodeIndex2(    0,2*i-1, 2*nz, LUT);}
-
-	for (i=0   ; i<nz; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  8; pe->n[0] = NodeIndex2(   0,    0, 2*i, LUT); pe->n[1] = NodeIndex2(   0,    0, 2*i+2, LUT); pe->n[2] = NodeIndex2(   0,    0, 2*i+1, LUT);}
-	for (i=0   ; i<nz; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  9; pe->n[0] = NodeIndex2(2*nx,    0, 2*i, LUT); pe->n[1] = NodeIndex2(2*nx,    0, 2*i+2, LUT); pe->n[2] = NodeIndex2(2*nx,    0, 2*i+1, LUT);}
-	for (i=0   ; i<nz; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid = 10; pe->n[0] = NodeIndex2(2*nx, 2*ny, 2*i, LUT); pe->n[1] = NodeIndex2(2*nx, 2*ny, 2*i+2, LUT); pe->n[2] = NodeIndex2(2*nx, 2*ny, 2*i+1, LUT);}
-	for (i=0   ; i<nz; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid = 11; pe->n[0] = NodeIndex2(   0, 2*ny, 2*i, LUT); pe->n[1] = NodeIndex2(   0, 2*ny, 2*i+2, LUT); pe->n[2] = NodeIndex2(   0, 2*ny, 2*i+1, LUT);}
-}
-
-//-----------------------------------------------------------------------------
-// Build faces of a regular hex mesh
-void FEBox::BuildHex27Faces(FEMesh* pm)
-{
-	int i, j, k;
-
-	// calculate the nr of faces
-	int faces = 2*(m_nx*m_ny + m_ny*m_nz + m_nx*m_nz);
-	pm->Create(0,0,faces);
-
-	// build the faces
-	FEFace* pf = pm->FacePtr();
-
-	// -Y face
-	for (i=0; i<m_nx; ++i)
-		for (k=0; k<m_nz; ++k, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD9);
-			f.m_gid = 0;
-			f.m_sid = 0;
-			f.n[0] = NodeIndex3(2*i  , 0, 2*k  );
-			f.n[1] = NodeIndex3(2*i+2, 0, 2*k  );
-			f.n[2] = NodeIndex3(2*i+2, 0, 2*k+2);
-			f.n[3] = NodeIndex3(2*i  , 0, 2*k+2);
-
-			f.n[4] = NodeIndex3(2*i+1  , 0, 2*k  );
-			f.n[5] = NodeIndex3(2*i+2  , 0, 2*k+1);
-			f.n[6] = NodeIndex3(2*i+1  , 0, 2*k+2);
-			f.n[7] = NodeIndex3(2*i    , 0, 2*k+1);
-
-			f.n[8] = NodeIndex3(2*i+1, 0, 2*k+1);
-		}
-
-	// +X face
-	for (j=0; j<m_ny; ++j)
-		for (k=0; k<m_nz; ++k, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD9);
-			f.m_gid = 1;
-			f.m_sid = 1;
-			f.n[0] = NodeIndex3(2*m_nx, 2*j  , 2*k  );
-			f.n[1] = NodeIndex3(2*m_nx, 2*j+2, 2*k  );
-			f.n[2] = NodeIndex3(2*m_nx, 2*j+2, 2*k+2);
-			f.n[3] = NodeIndex3(2*m_nx, 2*j  , 2*k+2);
-
-			f.n[4] = NodeIndex3(2*m_nx, 2*j+1, 2*k  );
-			f.n[5] = NodeIndex3(2*m_nx, 2*j+2, 2*k+1);
-			f.n[6] = NodeIndex3(2*m_nx, 2*j+1, 2*k+2);
-			f.n[7] = NodeIndex3(2*m_nx, 2*j  , 2*k+1);
-
-			f.n[8] = NodeIndex3(2*m_nx, 2*j+1, 2*k+1);
-		}
-
-	// +Y face
-	for (i=m_nx-1; i>=0; --i)
-		for (k=0; k<m_nz; ++k, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD9);
-			f.m_gid = 2;
-			f.m_sid = 2;
-			f.n[0] = NodeIndex3(2*i+2, 2*m_ny, 2*k  );
-			f.n[1] = NodeIndex3(2*i  , 2*m_ny, 2*k  );
-			f.n[2] = NodeIndex3(2*i  , 2*m_ny, 2*k+2);
-			f.n[3] = NodeIndex3(2*i+2, 2*m_ny, 2*k+2);
-
-			f.n[4] = NodeIndex3(2*i+1, 2*m_ny, 2*k  );
-			f.n[5] = NodeIndex3(2*i  , 2*m_ny, 2*k+1);
-			f.n[6] = NodeIndex3(2*i+1, 2*m_ny, 2*k+2);
-			f.n[7] = NodeIndex3(2*i+2, 2*m_ny, 2*k+1);
-
-			f.n[8] = NodeIndex3(2*i+1, 2*m_ny, 2*k+1);
-		}
-
-	// -X face
-	for (j=m_ny-1; j>=0; --j)
-		for (k=0; k<m_nz; ++k, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD9);
-			f.m_gid = 3;
-			f.m_sid = 3;
-			f.n[0] = NodeIndex3(0, 2*j+2, 2*k  );
-			f.n[1] = NodeIndex3(0, 2*j  , 2*k  );
-			f.n[2] = NodeIndex3(0, 2*j  , 2*k+2);
-			f.n[3] = NodeIndex3(0, 2*j+2, 2*k+2);
-
-			f.n[4] = NodeIndex3(0, 2*j+1, 2*k  );
-			f.n[5] = NodeIndex3(0, 2*j  , 2*k+1);
-			f.n[6] = NodeIndex3(0, 2*j+1, 2*k+2);
-			f.n[7] = NodeIndex3(0, 2*j+2, 2*k+1);
-
-			f.n[8] = NodeIndex3(0, 2*j+1, 2*k+1);
-		}
-
-	// -Z face
-	for (i=0; i<m_nx; ++i)
-		for (j=m_ny-1; j>=0; --j, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD9);
-			f.m_gid = 4;
-			f.m_sid = 4;
-			f.n[0] = NodeIndex3(2*i  , 2*j  , 0);
-			f.n[1] = NodeIndex3(2*i  , 2*j+2, 0);
-			f.n[2] = NodeIndex3(2*i+2, 2*j+2, 0);
-			f.n[3] = NodeIndex3(2*i+2, 2*j  , 0);
-
-			f.n[4] = NodeIndex3(2*i  , 2*j+1, 0);
-			f.n[5] = NodeIndex3(2*i+1, 2*j+2, 0);
-			f.n[6] = NodeIndex3(2*i+2, 2*j+1, 0);
-			f.n[7] = NodeIndex3(2*i+1, 2*j  , 0);
-
-			f.n[8] = NodeIndex3(2*i+1, 2*j+1, 0);
-		}
-
-	// +Z face
-	for (i=0; i<m_nx; ++i)
-		for (j=0; j<m_ny; ++j, ++pf)
-		{
-			FEFace& f = *pf;
-			f.SetType(FE_FACE_QUAD9);
-			f.m_gid = 5;
-			f.m_sid = 5;
-			f.n[0] = NodeIndex3(2*i  , 2*j  , 2*m_nz);
-			f.n[1] = NodeIndex3(2*i+2, 2*j  , 2*m_nz);
-			f.n[2] = NodeIndex3(2*i+2, 2*j+2, 2*m_nz);
-			f.n[3] = NodeIndex3(2*i  , 2*j+2, 2*m_nz);
-
-			f.n[4] = NodeIndex3(2*i+1, 2*j  , 2*m_nz);
-			f.n[5] = NodeIndex3(2*i+2, 2*j+1, 2*m_nz);
-			f.n[6] = NodeIndex3(2*i+1, 2*j+2, 2*m_nz);
-			f.n[7] = NodeIndex3(2*i  , 2*j+1, 2*m_nz);
-
-			f.n[8] = NodeIndex3(2*i+1, 2*j+1, 2*m_nz);
-		}
-}
-
-//-----------------------------------------------------------------------------
-// Build the edges of a box mesh
-void FEBox::BuildHex27Edges(FEMesh* pm)
-{
-	int i;
-
-	int nx = m_nx;
-	int ny = m_ny;
-	int nz = m_nz;
-
-	// calculate the nr of edges
-	int edges = 4*(nx + ny + nz);
-	pm->Create(0,0,0,edges);
-	FEEdge* pe = pm->EdgePtr();
-
-	for (i=   0; i<nx; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  0; pe->n[0] = NodeIndex3( 2*i,    0, 0); pe->n[1] = NodeIndex3(2*i+2,    0, 0); pe->n[2] = NodeIndex3(2*i+1,     0, 0); }
-	for (i=   0; i<ny; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  1; pe->n[0] = NodeIndex3(2*nx,  2*i, 0); pe->n[1] = NodeIndex3(2*nx ,2*i+2, 0); pe->n[2] = NodeIndex3(2*nx , 2*i+1, 0);}
-	for (i=nx; i>=  1; --i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  2; pe->n[0] = NodeIndex3( 2*i, 2*ny, 0); pe->n[1] = NodeIndex3(2*i-2,2*ny , 0); pe->n[2] = NodeIndex3(2*i-1, 2*ny , 0);}
-	for (i=ny; i>=  1; --i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  3; pe->n[0] = NodeIndex3(   0,  2*i, 0); pe->n[1] = NodeIndex3(    0,2*i-2, 0); pe->n[2] = NodeIndex3(    0, 2*i-1, 0);}
-
-	for (i=   0; i<nx; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  4; pe->n[0] = NodeIndex3( 2*i,    0, 2*nz); pe->n[1] = NodeIndex3(2*i+2,    0, 2*nz); pe->n[2] = NodeIndex3(2*i+1,    0, 2*nz);}
-	for (i=   0; i<ny; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  5; pe->n[0] = NodeIndex3(2*nx,  2*i, 2*nz); pe->n[1] = NodeIndex3(2*nx ,2*i+2, 2*nz); pe->n[2] = NodeIndex3(2*nx ,2*i+1, 2*nz);}
-	for (i=nx; i>=  1; --i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  6; pe->n[0] = NodeIndex3( 2*i, 2*ny, 2*nz); pe->n[1] = NodeIndex3(2*i-2,2* ny, 2*nz); pe->n[2] = NodeIndex3(2*i-1,2* ny, 2*nz);}
-	for (i=ny; i>=  1; --i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  7; pe->n[0] = NodeIndex3(   0,  2*i, 2*nz); pe->n[1] = NodeIndex3(    0,2*i-2, 2*nz); pe->n[2] = NodeIndex3(    0,2*i-1, 2*nz);}
-
-	for (i=0   ; i<nz; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  8; pe->n[0] = NodeIndex3(   0,    0, 2*i); pe->n[1] = NodeIndex3(   0,    0, 2*i+2); pe->n[2] = NodeIndex3(   0,    0, 2*i+1);}
-	for (i=0   ; i<nz; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid =  9; pe->n[0] = NodeIndex3(2*nx,    0, 2*i); pe->n[1] = NodeIndex3(2*nx,    0, 2*i+2); pe->n[2] = NodeIndex3(2*nx,    0, 2*i+1);}
-	for (i=0   ; i<nz; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid = 10; pe->n[0] = NodeIndex3(2*nx, 2*ny, 2*i); pe->n[1] = NodeIndex3(2*nx, 2*ny, 2*i+2); pe->n[2] = NodeIndex3(2*nx, 2*ny, 2*i+1);}
-	for (i=0   ; i<nz; ++i, ++pe)  { pe->SetType(FE_EDGE3); pe->m_gid = 11; pe->n[0] = NodeIndex3(   0, 2*ny, 2*i); pe->n[1] = NodeIndex3(   0, 2*ny, 2*i+2); pe->n[2] = NodeIndex3(   0, 2*ny, 2*i+1);}
 }
 
 FEMesh* FEBox::CreateRegularTET10()

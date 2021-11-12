@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBoxInBox.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEElement.h>
 
 //-----------------------------------------------------------------------------
 FEBoxInBox::FEBoxInBox()
@@ -52,6 +53,8 @@ FEBoxInBox::FEBoxInBox(GBoxInBox* po)
 	AddBoolParam(false, "by", "Y-mirrored bias");
 	AddBoolParam(false, "bz", "Z-mirrored bias");
 	AddBoolParam(false, "br", "R-mirrored bias");
+
+	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("HEX8\0HEX20\0HEX27\0");
 }
 
 //-----------------------------------------------------------------------------
@@ -221,6 +224,15 @@ FEMesh* FEBoxInBox::BuildMesh()
 	GetMBNode(13).SetID(13);
 	GetMBNode(14).SetID(14);
 	GetMBNode(15).SetID(15);
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// create the MB
 	return FEMultiBlockMesh::BuildMesh();

@@ -48,6 +48,8 @@ FESphereInBox::FESphereInBox(GSphereInBox* po)
 
 	AddDoubleParam(1.0, "gr", "R-bias");
 	AddBoolParam(false, "br", "R-mirrored bias");
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 //-----------------------------------------------------------------------------
@@ -429,6 +431,15 @@ FEMesh* FESphereInBox::BuildMesh()
 	m_MBNode[46].SetID(13);
 	m_MBNode[48].SetID(14);
 	m_MBNode[50].SetID(15);
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();

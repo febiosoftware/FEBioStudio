@@ -33,7 +33,7 @@ class GCylinder2;
 class FECylinder : public FEMultiBlockMesh
 {
 public:
-	enum {RATIO, NDIV, NSEG, NSTACK, ZZ, GR, CTYPE, GZ2, GR2};
+	enum {RATIO, NDIV, NSEG, NSTACK, ZZ, GR, CTYPE, GZ2, GR2, ELEM_TYPE};
 
 	// creation types
 	enum { BUTTERFLY, WEDGED };

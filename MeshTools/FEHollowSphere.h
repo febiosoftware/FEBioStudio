@@ -32,7 +32,7 @@ class GHollowSphere;
 class FEHollowSphere : public FEMultiBlockMesh
 {
 public:
-	enum { NDIV, NSEG, GR, GR2 };
+	enum { NDIV, NSEG, GR, GR2, ELEM_TYPE };
 
 public:
 	FEHollowSphere(){}
