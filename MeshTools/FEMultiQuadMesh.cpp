@@ -248,66 +248,6 @@ vec3d FEMultiQuadMesh::FacePosition(MBFace& f, const FEMultiQuadMesh::MQPoint& q
 	return p;
 }
 
-class Sampler1D
-{
-public:
-	Sampler1D(int n, double bias, bool symm) : m_steps(n), m_bias(bias), m_symm(symm)
-	{
-		m_fr = bias;
-		m_gr = 1;
-		if (symm)
-		{
-			m_gr = 2; if (n % 2) m_gr += bias;
-			for (int j = 0; j < n / 2 - 1; ++j) m_gr = bias * m_gr + 2;
-			m_gr = 1 / m_gr;
-		}
-		else
-		{
-			for (int j = 0; j < n - 1; ++j) m_gr = bias * m_gr + 1;
-			m_gr = 1 / m_gr;
-		}
-
-		m_n = 0;
-		m_r = 0;
-		m_dr = m_gr;
-	}
-
-	double value() const { return m_r; }
-
-	double increment() const { return m_dr; }
-
-	void advance()
-	{
-		m_r += m_dr;
-		m_dr *= m_fr;
-		if (m_symm && (m_n == m_steps / 2 - 1))
-		{
-			if (m_steps % 2 == 0) m_dr /= m_fr;
-			m_fr = 1.0 / m_fr;
-		}
-		m_n++;
-	}
-
-	void reset()
-	{
-		m_n = 0;
-		m_r = 0;
-		m_dr = m_gr;
-		m_fr = m_bias;
-	}
-
-private:
-	int		m_n;
-	int		m_steps;
-	double	m_bias;
-	bool	m_symm;
-
-	double	m_r;
-	double	m_dr;
-	double	m_gr;
-	double	m_fr;
-};
-
 //-----------------------------------------------------------------------------
 // build the FE nodes
 //

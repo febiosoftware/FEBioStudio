@@ -212,6 +212,8 @@ public:
 	// destructor
 	~FEMultiBlockMesh();
 
+	void SetElementType(int elemType);
+
 	// build the mesh
 	FEMesh* BuildMesh();
 
@@ -242,10 +244,10 @@ protected:
 	void BuildMBEdges();
 
 	// build the mesh items
-	void BuildNodes   (FEMesh* pm);
-	void BuildElements(FEMesh* pm);
-	void BuildFaces   (FEMesh* pm);
-	void BuildEdges   (FEMesh* pm);
+	void BuildFENodes   (FEMesh* pm);
+	void BuildFEElements(FEMesh* pm);
+	void BuildFEFaces   (FEMesh* pm);
+	void BuildFEEdges   (FEMesh* pm);
 
 	void BuildNodeBlockTable(vector< vector<int> >& NBT);
 	void BuildNodeFaceTable(vector< vector<int> >& NFT);
@@ -262,14 +264,102 @@ protected:
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
 
 protected:
+	class MQPoint
+	{
+	public:
+		int	m_i, m_j, m_k;
+		double	m_r, m_s, m_t;
+
+		MQPoint() { m_i = m_j = m_k = -1; m_r = m_s = m_t = 0.0; }
+		MQPoint(int i, double r) { m_i = i; m_j = m_k = -1; m_r = r; m_s = m_t = 0.0; }
+		MQPoint(int i, int j, double r, double s) { m_i = i; m_j = j; m_k = -1;  m_r = r; m_s = s; m_t = 0.0; }
+		MQPoint(int i, int j, int k, double r, double s, double t) { m_i = i; m_j = j; m_k = k;  m_r = r; m_s = s; m_t = t; }
+	};
+
+	vec3d EdgePosition (MBEdge& E, const MQPoint& q);
+	vec3d FacePosition (MBFace& F, const MQPoint& q);
+	vec3d BlockPosition(MBBlock& B, const MQPoint& q);
+
+protected:
 	int GetFENode(MBNode& node);
 	vector<int> GetFENodeList(MBEdge& node);
 	vector<int> GetFENodeList(MBFace& node);
 	vector<int> GetFENodeList(MBBlock& node);
+
+	int AddFENode(const vec3d& r, int gid = -1);
+	int AddFEEdgeNode(MBEdge& E, const MQPoint& q);
+	int AddFEFaceNode(MBFace& F, const MQPoint& q);
 
 protected:
 	vector<MBBlock>	m_MBlock;
 	vector<MBFace>	m_MBFace;
 	vector<MBEdge>	m_MBEdge;
 	vector<MBNode>	m_MBNode;
+
+	int		m_elemType;
+	bool	m_quadMesh;
+
+	FEMesh* m_pm;
+	FENode* m_currentNode;
+	int		m_nodes;
+};
+
+class Sampler1D
+{
+public:
+	Sampler1D(int n, double bias, bool symm) : m_steps(n), m_bias(bias), m_symm(symm)
+	{
+		m_fr = bias;
+		m_gr = 1;
+		if (symm)
+		{
+			m_gr = 2; if (n % 2) m_gr += bias;
+			for (int j = 0; j < n / 2 - 1; ++j) m_gr = bias * m_gr + 2;
+			m_gr = 1 / m_gr;
+		}
+		else
+		{
+			for (int j = 0; j < n - 1; ++j) m_gr = bias * m_gr + 1;
+			m_gr = 1 / m_gr;
+		}
+
+		m_n = 0;
+		m_r = 0;
+		m_dr = m_gr;
+	}
+
+	double value() const { return m_r; }
+
+	double increment() const { return m_dr; }
+
+	void advance()
+	{
+		m_r += m_dr;
+		m_dr *= m_fr;
+		if (m_symm && (m_n == m_steps / 2 - 1))
+		{
+			if (m_steps % 2 == 0) m_dr /= m_fr;
+			m_fr = 1.0 / m_fr;
+		}
+		m_n++;
+	}
+
+	void reset()
+	{
+		m_n = 0;
+		m_r = 0;
+		m_dr = m_gr;
+		m_fr = m_bias;
+	}
+
+private:
+	int		m_n;
+	int		m_steps;
+	double	m_bias;
+	bool	m_symm;
+
+	double	m_r;
+	double	m_dr;
+	double	m_gr;
+	double	m_fr;
 };

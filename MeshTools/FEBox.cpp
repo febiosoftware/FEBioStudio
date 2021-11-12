@@ -764,6 +764,74 @@ FEMesh* FEBox::CreateRegularTET4()
 
 //-----------------------------------------------------------------------------
 // Create a regular mesh
+FEMesh* FEBox::CreateRegularHEX27()
+{
+	// get object parameters
+	ParamBlock& param = m_pobj->GetParamBlock();
+	double w = 0.5*param[GBox::WIDTH ].GetFloatValue();
+	double h = 0.5*param[GBox::HEIGHT].GetFloatValue();
+	double d = param[GBox::DEPTH ].GetFloatValue();
+
+	// get mesh parameters
+	m_nx = GetIntValue(NX);
+	m_ny = GetIntValue(NY);
+	m_nz = GetIntValue(NZ);
+
+	m_gx = GetFloatValue(GX);
+	m_gy = GetFloatValue(GY);
+	m_gz = GetFloatValue(GZ);
+
+	m_bx = GetBoolValue(GX2);
+	m_by = GetBoolValue(GY2);
+	m_bz = GetBoolValue(GZ2);
+
+	// create the MB nodes
+	m_MBNode.resize(8);
+	m_MBNode[0].m_r = vec3d(-w, -h, 0);
+	m_MBNode[1].m_r = vec3d( w, -h, 0);
+	m_MBNode[2].m_r = vec3d( w,  h, 0);
+	m_MBNode[3].m_r = vec3d(-w,  h, 0);
+	m_MBNode[4].m_r = vec3d(-w, -h, d);
+	m_MBNode[5].m_r = vec3d( w, -h, d);
+	m_MBNode[6].m_r = vec3d( w,  h, d);
+	m_MBNode[7].m_r = vec3d(-w,  h, d);
+
+	// create the MB blocks
+	m_MBlock.resize(1);
+	MBBlock& b1 = m_MBlock[0];
+	b1.SetID(0);
+	b1.SetNodes(0, 1, 2, 3, 4, 5, 6, 7);
+	b1.SetSizes(m_nx, m_ny, m_nz);
+	b1.SetZoning(m_gx, m_gy, m_gz, m_bx, m_by, m_bz);
+
+	// update the MB data
+	UpdateMB();
+
+	// assign face ID's
+	SetBlockFaceID(b1, 0, 1, 2, 3, 4, 5);
+
+	MBFace& F1 = GetBlockFace(0, 0); SetFaceEdgeID(F1, 0,  9,  4,  8);
+	MBFace& F2 = GetBlockFace(0, 1); SetFaceEdgeID(F2, 1, 10,  5,  9);
+	MBFace& F3 = GetBlockFace(0, 2); SetFaceEdgeID(F3, 2, 11,  6, 10);
+	MBFace& F4 = GetBlockFace(0, 3); SetFaceEdgeID(F4, 3,  8,  7, 11);
+	MBFace& F5 = GetBlockFace(0, 4); SetFaceEdgeID(F5, 3,  2,  1,  0);
+	MBFace& F6 = GetBlockFace(0, 5); SetFaceEdgeID(F6, 4,  5,  6,  7);
+
+	m_MBNode[0].SetID(0);
+	m_MBNode[1].SetID(1);
+	m_MBNode[2].SetID(2);
+	m_MBNode[3].SetID(3);
+	m_MBNode[4].SetID(4);
+	m_MBNode[5].SetID(5);
+	m_MBNode[6].SetID(6);
+	m_MBNode[7].SetID(7);
+
+	// create the MB
+	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+
+	return pm;
+}
+
 FEMesh* FEBox::CreateRegularHEX20()
 {
 	int i, j, k;
@@ -983,6 +1051,7 @@ FEMesh* FEBox::CreateRegularHEX20()
 
 //-----------------------------------------------------------------------------
 // Create a regular mesh
+/*
 FEMesh* FEBox::CreateRegularHEX27()
 {
 	int i, j, k;
@@ -1179,6 +1248,7 @@ FEMesh* FEBox::CreateRegularHEX27()
 
 	return pm;
 }
+*/
 
 //-----------------------------------------------------------------------------
 // Build faces of a regular hex mesh
