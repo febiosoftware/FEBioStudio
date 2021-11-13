@@ -1098,6 +1098,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		{
 			string s = ps->GetName();
 			pdoc->AddCommand(cmd, s);
+			mdoc->GetGModel()->UpdateBoundingBox();
 		}
 
 		// TODO: Find a better way to update the GMesh when necessary. 
@@ -3796,10 +3797,27 @@ void CGLView::SetPlaneCut(double d[4])
 	double R = box.GetMaxExtent();
 	if (R < 1e-12) R = 1.0;
 
-	vec3d n(d[0], d[1], d[2]); n.Normalize();
+	vec3d n(d[0], d[1], d[2]);
 
-	double d0 = box.r0()*n;
-	double d1 = box.r1()*n;
+	vec3d a = box.r0();
+	vec3d b = box.r1();
+	vec3d r[8];
+	r[0] = vec3d(a.x, a.y, a.z);
+	r[1] = vec3d(b.x, a.y, a.z);
+	r[2] = vec3d(b.x, b.y, a.z);
+	r[3] = vec3d(a.x, b.y, a.z);
+	r[4] = vec3d(a.x, a.y, b.z);
+	r[5] = vec3d(b.x, a.y, b.z);
+	r[6] = vec3d(b.x, b.y, b.z);
+	r[7] = vec3d(a.x, b.y, b.z);
+	double d0 = n * r[0];
+	double d1 = d0;
+	for (int i = 1; i < 8; ++i)
+	{
+		double d = n * r[i];
+		if (d < d0) d0 = d;
+		if (d > d1) d1 = d;
+	}
 
 	double d3 = d0 + 0.5*(d[3] + 1)*(d1 - d0);
 
@@ -9428,7 +9446,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					}
 				}
 
-				po->UpdateItemVisibility();
+				mesh->UpdateItemVisibility();
 			}
 		}
 	}
