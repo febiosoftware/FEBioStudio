@@ -1072,16 +1072,13 @@ double MaxEdgeLength(const FEMesh& mesh, const FEElement& e)
 	return Lmax;
 }
 
-double Curvature(FEMesh& mesh, const FEElement& e, int measure)
+double Curvature(FEMesh& mesh, int node, int measure, int levels, int maxIters, bool extQuad)
 {
-	if (e.IsShell() == false) return 0.0;
-
 	// get the reference nodal position
-	int n = e.m_node[0];
-	vec3f r0 = to_vec3f(mesh.Node(n).pos());
+	vec3f r0 = to_vec3f(mesh.Node(node).pos());
 
 	// get the node-face list
-	const vector<NodeFaceRef>& nfl = mesh.NodeFaceList(n);
+	const vector<NodeFaceRef>& nfl = mesh.NodeFaceList(node);
 	int NF = nfl.size();
 
 	// estimate surface normal
@@ -1097,23 +1094,23 @@ double Curvature(FEMesh& mesh, const FEElement& e, int measure)
 	vector<vec3f> x; x.reserve(128);
 
 	// number of levels
-	int nlevels = 1;// m_pdf->m_nlevels - 1;
+	int nlevels = levels;
 	if (nlevels < 0) nlevels = 0;
 	if (nlevels > 10) nlevels = 10;
 
 	// get the neighbors
 	set<int> nl1;
-	mesh.GetNodeNeighbors(n, nlevels, nl1);
+	mesh.GetNodeNeighbors(node, nlevels, nl1);
 
 	// get the node coordinates
 	set<int>::iterator it;
 	for (it = nl1.begin(); it != nl1.end(); ++it)
 	{
-		if (*it != n) x.push_back(to_vec3f(mesh.Node(*it).pos()));
+		if (*it != node) x.push_back(to_vec3f(mesh.Node(*it).pos()));
 	}
 
 	// evaluate curvature
-	float K = eval_curvature(x, r0, sn, measure, false, 10);
+	float K = eval_curvature(x, r0, sn, measure, extQuad, maxIters);
 
 	return K;
 }

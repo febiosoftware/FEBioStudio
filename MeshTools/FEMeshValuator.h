@@ -40,7 +40,18 @@ public:
 
 	// evaluate just one element
 	double EvaluateElement(int i, int nfield, int* err = 0);
+	double EvaluateNode(int i, int nfield, int* err = 0);
+
+public:
+	void SetCurvatureLevels(int levels);
+	void SetCurvatureMaxIters(int maxIters);
+	void SetCurvatureExtQuad(bool b);
 
 private:
 	FEMesh& m_mesh;
+
+	// properties for curvature
+	int	m_curvature_levels;
+	int	m_curvature_maxiters;
+	bool m_curvature_extquad;
 };

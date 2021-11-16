@@ -36,6 +36,27 @@ SOFTWARE.*/
 // constructor
 FEMeshValuator::FEMeshValuator(FEMesh& mesh) : m_mesh(mesh)
 {
+	m_curvature_levels = 1;
+	m_curvature_maxiters = 10;
+	m_curvature_extquad = false;
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshValuator::SetCurvatureLevels(int levels)
+{
+	m_curvature_levels = levels;
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshValuator::SetCurvatureMaxIters(int maxIters)
+{
+	m_curvature_maxiters = maxIters;
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshValuator::SetCurvatureExtQuad(bool b)
+{
+	m_curvature_extquad = b;
 }
 
 //-----------------------------------------------------------------------------
@@ -49,22 +70,59 @@ void FEMeshValuator::Evaluate(int nfield)
 	data.Init(&m_mesh, 0.0, 0);
 	if (nfield < MAX_DEFAULT_FIELDS)
 	{
-		for (int i = 0; i < NE; ++i)
+		if ((nfield == 11) || (nfield == 12))
 		{
-			FEElement& el = m_mesh.Element(i);
-			if (el.IsVisible())
+			if (m_mesh.IsShell())
 			{
-				try {
-					double val = EvaluateElement(i, nfield);
-					data.SetElementValue(i, val);
-					data.SetElementDataTag(i, 1);
-				}
-				catch (...)
+				int NN = m_mesh.Nodes();
+				vector<double> nodeData(NN, 0.0);
+				for (int i = 0; i < NN; ++i)
 				{
-					data.SetElementDataTag(i, 0);
+					try {
+						double val = EvaluateNode(i, nfield);
+						nodeData[i] = val;
+					}
+					catch (...)
+					{
+
+					}
+				}
+
+				for (int i = 0; i < NE; ++i)
+				{
+					FEElement& el = m_mesh.Element(i);
+					if (el.IsVisible())
+					{
+						data.SetElementDataTag(i, 1);
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							double vj = nodeData[el.m_node[j]];
+							data.SetElementValue(i, j, vj);
+						}
+					}
 				}
 			}
-			else data.SetElementDataTag(i, 0);
+		}
+		else
+		{
+			for (int i = 0; i < NE; ++i)
+			{
+				FEElement& el = m_mesh.Element(i);
+				if (el.IsVisible())
+				{
+					try {
+						double val = EvaluateElement(i, nfield);
+						data.SetElementValue(i, val);
+						data.SetElementDataTag(i, 1);
+					}
+					catch (...)
+					{
+						data.SetElementDataTag(i, 0);
+					}
+				}
+				else data.SetElementDataTag(i, 0);
+			}
 		}
 	}
 	else
@@ -199,18 +257,36 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 	case 11:
 		if (el.IsShell())
 		{
-			val = FEMeshMetrics::Curvature(m_mesh, el, 2);
+			val = 0.0;
 		}
 		break;
 	case 12:
 		if (el.IsShell())
 		{
-			val = FEMeshMetrics::Curvature(m_mesh, el, 3);
+			val = 0.0;
 		}
 		break;
 	default:
 		val = 0.0;
 	}
 
+	return val;
+}
+
+//-----------------------------------------------------------------------------
+// Evaluate element data
+double FEMeshValuator::EvaluateNode(int n, int nfield, int* err)
+{
+	if (err) *err = 0;
+	double val = 0, sum = 0;
+	switch (nfield)
+	{
+	case 11:
+		val = FEMeshMetrics::Curvature(m_mesh, n, 2, m_curvature_levels, m_curvature_maxiters, m_curvature_extquad);
+		break;
+	case 12:
+		val = FEMeshMetrics::Curvature(m_mesh, n, 3, m_curvature_levels, m_curvature_maxiters, m_curvature_extquad);
+		break;
+	}
 	return val;
 }

@@ -52,6 +52,9 @@ private slots:
 	void on_var_currentIndexChanged(int n);
 	void on_col_currentIndexChanged(int n);
 	void on_select_clicked();
+	void on_curvatureLevels_valueChanged(int n);
+	void on_curvatureMaxIters_valueChanged(int n);
+	void on_curvatureExtQuad_stateChanged(int n);
 
 private:
 	void UpdateData(int ndata);

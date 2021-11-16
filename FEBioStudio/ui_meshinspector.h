@@ -36,6 +36,8 @@ SOFTWARE.*/
 #include "PlotWidget.h"
 #include <QGroupBox>
 #include <QLineEdit>
+#include <QSpinBox>
+#include <QCheckBox>
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 
@@ -144,6 +146,23 @@ class Ui::CMeshInspector
 public:
 	enum { MAX_EVAL_FIELDS = 13 };
 
+	// NOTE: 
+	enum DataFields {
+		ELEMENT_VOLUME,
+		JACOBIAN,
+		SHELL_THICKNESS,
+		SHELL_AREA,
+		TET_QUALITY,
+		TET_MIN_DIHEDRAL_ANGLE,
+		TET_MAX_DIHEDRAL_ANGLE,
+		TRIANGLE_QUALITY,
+		TET10_MID_NODE_OFFSET,
+		MIN_EDGE_LENGTH,
+		MAX_EDGE_LENGTH,
+		PRINC_CURVE_1,
+		PRINC_CURVE_2
+	};
+
 public:
 	CMeshInfo*		info;
 	QTableWidget*	table;
@@ -153,7 +172,14 @@ public:
 	CStatsInfo*		stats;
 	CSelectionInfo*	sel;
 
+	QWidget* propsWidget;
+	QSpinBox* curvatureLevels;
+	QSpinBox* curvatureMaxIters;
+	QCheckBox* curvatureExtQuad;
+
 	FEMesh*		m_pm;
+
+	
 
 	int		m_map;
 
@@ -181,11 +207,20 @@ public:
 		var = new QComboBox;
 		var->setObjectName("var");
 
+		propsWidget = new QWidget;
+		QFormLayout* propsForm = new QFormLayout;
+		propsForm->addRow("Smoothness", curvatureLevels = new QSpinBox); curvatureLevels->setObjectName("curvatureLevels"); curvatureLevels->setRange(1, 10); curvatureLevels->setValue(1);
+		propsForm->addRow("Max. Iterations", curvatureMaxIters = new QSpinBox); curvatureMaxIters->setObjectName("curvatureMaxIters"); curvatureMaxIters->setRange(1, 50); curvatureMaxIters->setValue(10);
+		propsForm->addRow("Use Extended Quadric", curvatureExtQuad = new QCheckBox); curvatureExtQuad->setObjectName("curvatureExtQuad");
+		propsWidget->setLayout(propsForm);
+		propsWidget->hide();
+
 		col = new QComboBox;
 		col->setObjectName("col");
 
 		QFormLayout* varForm = new QFormLayout;
 		varForm->addRow("Variable:", var);
+		varForm->addRow("Parameters:", propsWidget);
 		varForm->addRow("Color map", col);
 
 		QHBoxLayout* topLayout = new QHBoxLayout;
@@ -306,7 +341,7 @@ public:
 			}
 		}
 
-		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above.
+		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above as well as the DataFields enum.
 		QStringList items;
 		items << "Element Volume";
 		items << "Jacobian";
