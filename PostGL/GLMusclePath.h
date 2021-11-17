@@ -59,6 +59,7 @@ protected:
 	bool Update3PointPath    (PathData* path, int ntime);
 	bool UpdateShortestPath2D(PathData* path, int ntime);
 	bool UpdateShortestPath  (PathData* path, int ntime);
+	bool UpdateSpringPath    (PathData* path, int ntime);
 
 private:
 	std::vector<PathData*>	m_path;	// points defining the path

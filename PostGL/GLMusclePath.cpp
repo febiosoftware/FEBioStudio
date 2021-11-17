@@ -69,7 +69,7 @@ GLMusclePath::GLMusclePath()
 	AddIntParam(0, "point0", "start point");
 	AddIntParam(0, "point1", "end point");
 	AddVecParam(vec3d(0, 0, 0), "center", "Center of rotation");
-	AddChoiceParam(0, "method", "Shortest path method")->SetEnumNames("Straight line\0 3-point trace\0Shortest path 2D\0Shortest path\0");
+	AddChoiceParam(0, "method", "Shortest path method")->SetEnumNames("Straight line\0 3-point trace\0Shortest path 2D\0Shortest path\0Spring\0");
 	AddDoubleParam(5.0, "size");
 	AddColorParam(GLColor(255, 0, 0), "color");
 	AddBoolParam(true, "show_convex_hull", "Draw convex hull");
@@ -161,6 +161,12 @@ void GLMusclePath::Render(CGLContext& rc)
 		}
 		glEnd();
 		glPopAttrib();
+
+		for (int i = 0; i < N; ++i)
+		{
+			vec3d r0 = path->m_points[i];
+			glx::drawSphere(r0, 1.5 * R);
+		}
 	}
 
 	// draw the rotation center
@@ -243,6 +249,7 @@ void GLMusclePath::UpdatePath(int ntime)
 	case 1: b = Update3PointPath    (path, ntime); break;
 	case 2: b = UpdateShortestPath2D(path, ntime); break;
 	case 3: b = UpdateShortestPath  (path, ntime); break;
+	case 4: b = UpdateSpringPath    (path, ntime); break;
 	}
 	if (b == false) { delete path; path = nullptr; }
 
@@ -736,4 +743,223 @@ vec3d GLMusclePath::UpdateOrigin(int ntime)
 	vec3d dr = Q * m_qr;
 
 	return ri + dr;
+}
+
+bool ClosestPointOnRing(CGLModel& glm, int ntime, const vec3d& rc, const vec3d& t, vec3d& q, vec3d& qn)
+{
+	Post::FEPostModel& fem = *glm.GetFEModel();
+	FEPostMesh& mesh = *glm.GetActiveMesh();
+	int NF = mesh.Faces();
+	int imin = -1;
+	double Dmin = 0.0;
+	vec3d re[FEFace::MAX_NODES];
+	for (int i = 0; i < NF; ++i)
+	{
+		// get the nodal positions
+		FEFace* face = mesh.FacePtr(i);
+		int ne = face->Edges();
+		for (int j = 0; j < ne; ++j) re[j] = fem.NodePosition(face->n[j], ntime);
+
+		// figure out the case
+		double s[FEFace::MAX_NODES] = { 0 };
+		int ncase = 0;
+		for (int j = 0; j < ne; ++j)
+		{
+			s[j] = (re[j] - rc) * t;
+			if (s[j] > 0) ncase |= (1 << j);
+		}
+
+		const int LUT[8][2] = {{-1,-1}, {0,2},{0,1},{1,2},{1,2},{0,1},{0,2},{-1,-1}};
+
+		if ((ncase != 0) && (ncase != 7))
+		{
+			int e[2] = { LUT[ncase][0], LUT[ncase][1] };
+
+			vec3d er[2];
+			for (int j = 0; j < 2; ++j)
+			{
+				int n = e[j];
+				int n0 = n;
+				int n1 = (n + 1) % ne;
+				vec3d ra = re[n0];
+				vec3d rb = re[n1];
+				double la = t * (ra - rc);
+				double lb = t * (rb - rc);
+
+				assert(la * lb < 0);
+
+				double L = (rb - ra).Length();
+				vec3d p = ra + (rb - ra) * (la / L);
+
+				er[j] = p;
+			}
+
+			double l = (rc - er[0]) * (er[1] - er[0]) / (er[1] - er[0]).SqrLength();
+
+			vec3d p; 
+			if (l <= 0.0) p = er[0];
+			else if (l >= 1.0) p = er[1];
+			else p = er[0] + (er[1] - er[0]) * l;
+
+			double D2 = (p - rc).SqrLength();
+			if ((imin == -1) || (D2 < Dmin))
+			{
+				imin = i;
+				Dmin = D2;
+				q = p;
+
+				vec3d fn = face->m_fn;
+				qn = fn;
+			}
+		}
+	}
+
+	return (imin != -1);
+}
+
+struct RINGPOINT
+{
+	vec3d	p;	// point on ring
+	vec3d	n;	// local surface normal
+	vec3d	t;	// normal to ring
+};
+
+void ProcessPath(vector<RINGPOINT>& pt)
+{
+	for (size_t i = 1; i < pt.size() - 1; ++i)
+	{
+		RINGPOINT& rm = pt[i - 1];
+		RINGPOINT& ri = pt[i    ];
+		RINGPOINT& rp = pt[i + 1];
+
+		vec3d e1 = ri.p - rm.p;
+		vec3d e2 = rp.p - ri.p;
+
+		vec3d t = (e2 - e1); t.Normalize();
+		if (t * pt[i].n >= 0.0)
+		{
+			// remove this point
+			pt.erase(pt.begin() + i);
+			i--;
+		}
+	}
+}
+
+bool SmoothenPath(Post::CGLModel* glm, int ntime, vector<RINGPOINT>& pt)
+{
+	// evaluate the initial length
+	int NP = pt.size();
+	double L0 = 0;
+	for (int i = 0; i < NP - 1; ++i)
+	{
+		RINGPOINT& ri = pt[i];
+		RINGPOINT& rp = pt[i + 1];
+		L0 += (rp.p - ri.p).Length();
+	}
+
+	// see if we can shrink the path
+	const int MAX_ITERS = 10;
+	int niter = 0;
+	bool done = false;
+	do
+	{
+		double DL = 0.0;
+		for (int i = 1; i < NP - 1; ++i)
+		{
+			RINGPOINT& rm = pt[i - 1];
+			RINGPOINT& ri = pt[i    ];
+			RINGPOINT& rp = pt[i + 1];
+
+			vec3d rc = (rm.p + rp.p) * 0.5;
+			vec3d t = (rp.p - rm.p); t.Normalize();
+
+			rc -= t*((rc - ri.p) * t);
+
+			double DL0 = (rp.p - ri.p).Length() + (ri.p - rm.p).Length();
+
+			vec3d q, qn;
+			if (ClosestPointOnRing(*glm, ntime, rc, t, q, qn))
+			{
+				double DL1 = (rp.p - q).Length() + (q - rm.p).Length();
+				if (DL1 < DL0)
+				{
+					ri.p = q;
+					ri.n = qn;
+
+					DL += DL0 - DL1;
+				}
+			}
+		}
+
+		done = (DL / L0 < 1e-6);
+		niter++;
+		if (niter > MAX_ITERS) done = true;
+	} 
+	while (!done);
+
+	return done;
+}
+
+bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+
+	FEPostMesh& mesh = *glm->GetActiveMesh();
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+
+	vec3d r0 = fem.NodePosition(n0, ntime);
+	vec3d r1 = fem.NodePosition(n1, ntime);
+
+	vec3d t = r1 - r0; t.Normalize();
+
+	const int STEPS = 50;
+	double dr = (r1 - r0).Length() / STEPS;
+	vector<RINGPOINT> pt;
+	RINGPOINT rp = { r0, vec3d(0,0,0), vec3d(0,0,0) };
+	pt.push_back(rp);
+	int nsteps = STEPS;
+	int n = 1;
+	for (int i = 1; i < STEPS; ++i, ++n)
+	{
+		// get the next point
+		vec3d ri = r0 + t * dr;
+
+		// find the closest point on ring
+		vec3d q, qn;
+		if (ClosestPointOnRing(*glm, ntime, ri, t, q, qn))
+		{
+			if ((ri - q) * qn < 0.0)
+			{
+				// if it's inside, project it to the closest point
+				RINGPOINT rp = { q, qn, t };
+				pt.push_back(rp);
+				r0 = q;
+				t = r1 - r0; t.Normalize();
+				dr = (r1 - r0).Length() / (STEPS - i);
+
+				// process path and remove any points that left contact. 
+				ProcessPath(pt);
+			}
+			else r0 = ri;
+		}
+		else
+		{
+			r0 = ri;
+		}
+	}
+	RINGPOINT endPoint = { r1, vec3d(0,0,0) };
+	pt.push_back(endPoint);
+
+	// smoothen the path
+	SmoothenPath(glm, ntime, pt);
+
+	// copy the points to the PathData
+	path->m_points.clear();
+	for (size_t i=0; i < pt.size(); ++i) path->m_points.push_back(pt[i].p);
+
+	// all done
+	return true;
 }
