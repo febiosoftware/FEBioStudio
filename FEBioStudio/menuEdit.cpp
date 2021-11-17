@@ -911,9 +911,6 @@ void CMainWindow::on_actionMerge_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	CDlgMergeObjects dlg(this);
-	if (dlg.exec() == QDialog::Rejected) return;
-
 	// make sure we have an object selection
 	FESelection* currentSelection = doc->GetCurrentSelection();
 	if (currentSelection->Type() != SELECT_OBJECTS)
@@ -922,6 +919,14 @@ void CMainWindow::on_actionMerge_triggered()
 		return;
 	}
 	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(currentSelection);
+	if ((sel == nullptr) || (sel->Count() < 2))
+	{
+		QMessageBox::critical(this, "Merge Objects", "You need to select at least two objects.");
+		return;
+	}
+
+	CDlgMergeObjects dlg(this);
+	if (dlg.exec() == QDialog::Rejected) return;
 
 	// merge the objects
 	GModel& m = *doc->GetGModel();

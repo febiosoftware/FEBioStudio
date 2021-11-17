@@ -1758,7 +1758,7 @@ vector<GObject*> GModel::CloneRevolve(GObject* po, int count, double range, doub
 GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newObjectName, bool weld, double tol)
 {
 	// make sure we have more than one object
-	if (sel->Count() == 1) return 0;
+	if (sel->Count() <= 1) return nullptr;
 
 	// check for some special cases first.
 	// See if one of the objects is a "discrete" object, an object that has only nodes and springs are attached to them
