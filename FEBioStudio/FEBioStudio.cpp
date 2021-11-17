@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
 
 CMainWindow* PRV::getMainWindow()
 {
-	CMainWindow* wnd = dynamic_cast<CMainWindow*>(QApplication::activeWindow()); assert(wnd);
+	CMainWindow* wnd = CMainWindow::GetInstance(); assert(wnd);
 	return wnd;
 }
 

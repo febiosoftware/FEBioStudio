@@ -121,9 +121,18 @@ void darkStyle()
 	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
 }
 
+CMainWindow* CMainWindow::m_mainWnd = nullptr;
+
+//-----------------------------------------------------------------------------
+CMainWindow* CMainWindow::GetInstance()
+{
+	return m_mainWnd;
+}
+
 //-----------------------------------------------------------------------------
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
+	m_mainWnd = this;
 
 #ifdef LINUX
 	// Set locale to avoid issues with reading and writing feb files in other languages.
