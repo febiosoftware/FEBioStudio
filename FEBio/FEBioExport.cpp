@@ -37,6 +37,13 @@ SOFTWARE.*/
 
 //=============================================================================
 
+template <> std::string type_to_string<vec2i>(const vec2i& v)
+{
+	std::stringstream ss;
+	ss << v.x << "," << v.y;
+	return ss.str();
+}
+
 template <> std::string type_to_string<vec2f>(const vec2f& v)
 {
 	std::stringstream ss;

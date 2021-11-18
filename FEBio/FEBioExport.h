@@ -95,6 +95,7 @@ protected:
 	bool	m_exportNonPersistentParams;
 };
 
+template <> std::string type_to_string<vec2i>(const vec2i& v);
 template <> std::string type_to_string<vec2f>(const vec2f& v);
 template <> std::string type_to_string<vec2d>(const vec2d& v);
 template <> std::string type_to_string<vec3f>(const vec3f& v);

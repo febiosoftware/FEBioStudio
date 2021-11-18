@@ -48,6 +48,13 @@ SOFTWARE.*/
 #include <PostLib/FEKinemat.h>
 #include <QtCore/QDir>
 
+template <> std::string type_to_string<GLColor>(const GLColor& v)
+{
+	std::stringstream ss;
+	ss << v.r << "," << v.g << "," << v.b;
+	return ss.str();
+}
+
 void TIMESETTINGS::Defaults()
 {
 	m_mode = MODE_FORWARD;

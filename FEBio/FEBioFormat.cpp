@@ -61,7 +61,11 @@ template <> void string_to_type<mat3d>(const std::string& s, mat3d& v)
 
 template <> void string_to_type<GLColor>(const std::string& s, GLColor& v)
 {
-	sscanf(s.c_str(), "%c,%c,%c", &v.r, &v.g, &v.b);
+	int c[3];
+	sscanf(s.c_str(), "%d,%d,%d", &c[0], &c[1], &c[2]);
+	v.r = (Byte)c[0];
+	v.g = (Byte)c[1];
+	v.b = (Byte)c[2];
 }
 
 //=============================================================================
