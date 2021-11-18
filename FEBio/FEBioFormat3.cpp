@@ -202,6 +202,23 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 //
 //=============================================================================
 
+FEStep* FEBioFormat3::NewStep(FEModel& fem, int nanalysis, const char* szname)
+{
+	FEStep* pstep = new FEBioAnalysisStep(&fem);
+	FEBio::CreateStep("analysis", pstep);
+
+	if ((szname == 0) || (strlen(szname) == 0))
+	{
+		char sz[256] = { 0 };
+		sprintf(sz, "Step%02d", fem.Steps());
+		pstep->SetName(sz);
+	}
+	else pstep->SetName(szname);
+	fem.AddStep(pstep);
+
+	return pstep;
+}
+
 //-----------------------------------------------------------------------------
 //  This function parses the control section from the xml file
 //
@@ -210,19 +227,12 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	// initialize default settings
-	STEP_SETTINGS ops; ops.Defaults();
-	ops.bauto = false;
-	int nmplc = -1;
-	ops.nanalysis = -1;
-
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// create a new analysis step from these control settings
 	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
-	FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(m_pstep);
-	assert(pstep);
+	FEStep* pstep = m_pstep; assert(pstep);
 
 	// parse the settings
 	++tag;
@@ -230,120 +240,36 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 	{
 		if (ReadParam(*pstep, tag) == false)
 		{
-			if (tag == "analysis")
+			if (pstep->ControlProperties() > 0)
 			{
-				string analysis = tag.szvalue();
-				if      ((analysis == "static"      )||(analysis == "STATIC"      )) ops.nanalysis = FE_STATIC;
-				else if ((analysis == "steady-state")||(analysis == "STEADY-STATE")) ops.nanalysis = FE_STATIC;
-				else if ((analysis == "dynamic"     )||(analysis == "DYNAMIC"     )) ops.nanalysis = FE_DYNAMIC;
-				else if ((analysis == "transient"   )||(analysis == "TRANSIENT"   )) ops.nanalysis = FE_DYNAMIC;
-				else FileReader()->AddLogEntry("unknown type in analysis. Assuming static analysis (line %d)", tag.currentLine());
-			}
-			else if (tag == "time_steps") tag.value(ops.ntime);
-			else if (tag == "final_time") tag.value(ops.tfinal);
-			else if (tag == "step_size") tag.value(ops.dt);
-			else if (tag == "solver")
-			{
-				++tag;
-				do
-				{
-					if      (tag == "max_refs") tag.value(ops.maxref);
-					else if (tag == "max_ups")
-					{
-						tag.value(ops.ilimit);
-//						if (ops.ilimit == 0)
-//						{
-//							ops.mthsol = 1;
-//							ops.ilimit = 10;
-//						}
-					}
-					else if (tag == "symmetric_stiffness")
-					{
-						int nval; tag.value(nval);
-						if (nval == 1) ops.nmatfmt = 1; else ops.nmatfmt = 2;
-					}
-					else if (tag == "diverge_reform") tag.value(ops.bdivref);
-					else if (tag == "reform_each_time_step") tag.value(ops.brefstep);
-					else ReadParam(*pstep, tag);
-					++tag;
-				}
-				while (!tag.isend());
-			}
-			else if (tag == "time_stepper")
-			{
-				ops.bauto = true;
-				++tag;
-				do
-				{
-					if (tag == "dtmin") tag.value(ops.dtmin);
-					else if (tag == "dtmax")
-					{
-						tag.value(ops.dtmax);
-						XMLAtt* pa = tag.AttributePtr("lc");
-						if (pa)
-						{
-							pa->value(nmplc);
-						}
-					}
-					else if (tag == "max_retries") tag.value(ops.mxback);
-					else if (tag == "opt_iter") tag.value(ops.iteopt);
-					else if (tag == "aggressiveness") tag.value(ops.ncut);
-					else ParseUnknownTag(tag);
+				const char* sztag = tag.Name();
+				FEStepControlProperty* pc = pstep->FindControlProperty(sztag); assert(pc);
 
-					++tag;
-				} while (!tag.isend());
-			}
-			else if (tag == "alpha") 
-			{
-				tag.value(ops.alpha); ops.override_rhoi = true;
-			}
-			else if (tag == "beta") tag.value(ops.beta);
-			else if (tag == "gamma") tag.value(ops.gamma);
-			else if (tag == "optimize_bw") tag.value(ops.bminbw);
-			else if (tag == "plot_level")
-			{
-				char sz[256]; tag.value(sz);
-				ops.plot_level = FE_PLOT_MAJOR_ITRS;
-				if      (strcmp(sz, "PLOT_NEVER"        ) == 0) ops.plot_level = FE_PLOT_NEVER;
-				else if (strcmp(sz, "PLOT_MAJOR_ITRS"   ) == 0) ops.plot_level = FE_PLOT_MAJOR_ITRS;
-				else if (strcmp(sz, "PLOT_MINOR_ITRS"   ) == 0) ops.plot_level = FE_PLOT_MINOR_ITRS;
-				else if (strcmp(sz, "PLOT_MUST_POINTS"  ) == 0) ops.plot_level = FE_PLOT_MUST_POINTS;
-				else if (strcmp(sz, "PLOT_FINAL"        ) == 0) ops.plot_level = FE_PLOT_FINAL;
-				else if (strcmp(sz, "PLOT_AUGMENTATIONS") == 0) ops.plot_level = FE_PLOT_AUGMENTS;
-				else if (strcmp(sz, "PLOT_STEP_FINAL"   ) == 0) ops.plot_level = FE_PLOT_STEP_FINAL;
-				else
+				// see if this is a property
+				const char* sztype = tag.AttributeValue("type", true);
+				if (sztype == 0)
 				{
-					FileReader()->AddLogEntry("unknown plot_level (line %d)", tag.currentLine());
+					sztype = tag.Name();
+
+					// The default solver should be the solver with the same name as the module
+					if (strcmp(sztype, "solver") == 0) sztype = FEBio::GetModuleName(m_nAnalysis);
 				}
+
+				if (pc->m_prop == nullptr)
+				{
+					FEStepComponent* psc = new FEStepComponent;
+					FEBio::CreateModelComponent(pc->m_nSuperClassId, sztype, psc);
+					pc->m_prop = psc;
+				}
+
+				// read the parameters
+				ReadParameters(*pc->m_prop, tag);
 			}
 			else ParseUnknownTag(tag);
 		}
 		++tag;
 	} 
 	while (!tag.isend());
-
-	// check the analysis flag
-	if (ops.nanalysis == -1)
-	{
-		// default analysis depends on step type
-		int ntype = m_pstep->GetType();
-		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI)) ops.nanalysis = FE_DYNAMIC;
-		else ops.nanalysis = FE_STATIC;
-	}
-
-	// check if final_time was set on import
-	if ((ops.tfinal > 0) && (ops.dt > 0)) ops.ntime = (int)(ops.tfinal / ops.dt);
-
-	// copy settings
-	pstep->GetSettings() = ops;
-	if (nmplc >= 0)
-	{
-		STEP_SETTINGS& ops = pstep->GetSettings();
-		ops.bmust = true;
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
-		febio.AddParamCurve(plc, nmplc - 1);
-	}
-	else ops.bmust = false;
 
 	return true;
 }

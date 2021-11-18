@@ -59,7 +59,7 @@ protected:
 	void ReadParameters(ParamContainer& PC, XMLTag& tag);
 
 
-	FEAnalysisStep* NewStep(FEModel& fem, int nanalysis, const char* sz = 0);
+	virtual FEStep* NewStep(FEModel& fem, int nanalysis, const char* sz = 0);
 
 	FEBioModel& GetFEBioModel() { return m_febio; }
 

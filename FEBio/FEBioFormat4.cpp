@@ -188,6 +188,23 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 //
 //=============================================================================
 
+FEStep* FEBioFormat4::NewStep(FEModel& fem, int nanalysis, const char* szname)
+{
+	FEStep* pstep = new FEBioAnalysisStep(&fem);
+	FEBio::CreateStep("analysis", pstep);
+
+	if ((szname == 0) || (strlen(szname) == 0))
+	{
+		char sz[256] = { 0 };
+		sprintf(sz, "Step%02d", fem.Steps());
+		pstep->SetName(sz);
+	}
+	else pstep->SetName(szname);
+	fem.AddStep(pstep);
+
+	return pstep;
+}
+
 //-----------------------------------------------------------------------------
 //  This function parses the control section from the xml file
 //
@@ -200,24 +217,8 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 	FEModel& fem = GetFEModel();
 
 	// create a new analysis step from these control settings
-	FEStep* pstep = nullptr;
-	if (m_pstep == 0)
-	{
-		pstep = new FEBioAnalysisStep(&fem);
-		FEBio::CreateStep("analysis", pstep);
-		m_pstep = pstep;
-
-		const char* szname = tag.AttributeValue("name", true);
-		if ((szname == 0) || (strlen(szname) == 0))
-		{
-			char sz[256] = { 0 };
-			sprintf(sz, "Step%02d", fem.Steps());
-			pstep->SetName(sz);
-		}
-		else pstep->SetName(szname);
-		fem.AddStep(pstep);
-	}
-	else pstep = m_pstep;
+	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
+	FEStep* pstep = m_pstep; assert(pstep);
 
 	// parse the settings
 	++tag;

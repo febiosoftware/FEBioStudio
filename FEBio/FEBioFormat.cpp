@@ -151,7 +151,7 @@ void FEBioFormat::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 
 //-----------------------------------------------------------------------------
 //! Create a new step
-FEAnalysisStep* FEBioFormat::NewStep(FEModel& fem, int nanalysis, const char* szname)
+FEStep* FEBioFormat::NewStep(FEModel& fem, int nanalysis, const char* szname)
 {
 	FEAnalysisStep* pstep = 0;
 	switch (nanalysis)
