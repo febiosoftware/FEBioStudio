@@ -126,7 +126,7 @@ void CRepoConnectionHandler::authenticate(QString username, QString password)
 	QByteArray payload=QJsonDocument::fromVariant(feed).toJson();
 
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + "authenticate");
@@ -148,7 +148,7 @@ void CRepoConnectionHandler::authenticate(QString username, QString password)
 void CRepoConnectionHandler::getSchema()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + "schema");
@@ -166,7 +166,7 @@ void CRepoConnectionHandler::getSchema()
 void CRepoConnectionHandler::getTables()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + "tables");
@@ -185,7 +185,7 @@ void CRepoConnectionHandler::getTables()
 void CRepoConnectionHandler::getFile(int id, int type)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + QString("files/%1/%2").arg(type).arg(id));
@@ -207,7 +207,7 @@ void CRepoConnectionHandler::getFile(int id, int type)
 void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + "uploadFileRequest");
@@ -229,7 +229,7 @@ void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 void CRepoConnectionHandler::uploadFile()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + "uploadFile");
@@ -262,7 +262,7 @@ void CRepoConnectionHandler::uploadFile()
 void CRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + "requestUploaderPermissions");
@@ -283,7 +283,7 @@ void CRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
 void CRepoConnectionHandler::getMessages()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + "messages");
@@ -300,7 +300,7 @@ void CRepoConnectionHandler::getMessages()
 void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + QString("projects/%1").arg(id));
@@ -322,7 +322,7 @@ void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 void CRepoConnectionHandler::modifyProjectUpload()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + "modifyProjectUpload");
@@ -355,7 +355,7 @@ void CRepoConnectionHandler::modifyProjectUpload()
 void CRepoConnectionHandler::deleteProject(int id)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + QString("projects/%1").arg(id));
@@ -376,7 +376,7 @@ void CRepoConnectionHandler::deleteProject(int id)
 void CRepoConnectionHandler::cancelUpload()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
+	myurl.setScheme(SCHEME);
 	myurl.setHost(REPO_URL);
 	myurl.setPort(REPO_PORT);
 	myurl.setPath(QString(API_URL) + QString("cancelUpload"));
@@ -496,7 +496,7 @@ bool CRepoConnectionHandler::NetworkAccessibleCheck()
 //bool CRepoConnectionHandler::AuthCheck()
 //{
 //	QUrl myurl;
-//	myurl.setScheme("https");
+//	myurl.setScheme(SCHEME);
 //	myurl.setHost(REPO_URL);
 //	myurl.setPort(REPO_PORT);
 //	myurl.setPath(QString(API_URL) + "authCheck");

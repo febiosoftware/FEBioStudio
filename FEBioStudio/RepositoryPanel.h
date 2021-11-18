@@ -99,7 +99,7 @@ signals:
 private slots:
 	void on_connectButton_clicked();
 	void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
-	void on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
+	void on_searchTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
 	void on_actionRefresh_triggered();
 	void on_actionDownload_triggered();
 	void on_actionOpen_triggered();
@@ -114,8 +114,10 @@ private slots:
 	void on_actionFindInTree_triggered();
 	void on_treeWidget_itemSelectionChanged();
 	void on_treeWidget_customContextMenuRequested(const QPoint &pos);
-	void on_fileSearchTree_itemSelectionChanged();
-	void on_fileSearchTree_customContextMenuRequested(const QPoint &pos);
+	void on_searchTree_itemSelectionChanged();
+	void on_searchTree_customContextMenuRequested(const QPoint &pos);
+    void on_showProjectsCB_stateChanged(int state);
+    void on_showFilesCB_stateChanged(int state);
 	void on_projectTags_linkActivated(const QString& link);
 	void on_fileTags_linkActivated(const QString& link);
 

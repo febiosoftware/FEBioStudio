@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 #ifdef MODEL_REPO
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <JlCompress.h>
 #include <QStandardPaths>
 #include <QDockWidget>
@@ -40,6 +40,9 @@ SOFTWARE.*/
 #include <QUrl>
 #include <QUrlQuery>
 #include <QClipboard>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
@@ -57,6 +60,10 @@ SOFTWARE.*/
 
 #include <iostream>
 #include <QDebug>
+
+using std::vector;
+using std::pair;
+using std::map;
 
 CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent)
 	: QWidget(parent), m_wnd(pwnd), dock(parent), ui(new Ui::CRepositoryPanel)
@@ -309,9 +316,9 @@ void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 	// Update fileSearchItem's color and icon if there's a current file search
 	if(ui->treeStack->currentIndex() == 1)
 	{
-		if(ui->fileSearchTree->selectedItems().count() > 0)
+		if(ui->searchTree->selectedItems().count() > 0)
 		{
-			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->Update();
+			static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->Update();
 		}
 	}
 
@@ -435,7 +442,7 @@ void CRepositoryPanel::on_connectButton_clicked()
 		defaultPath += "/FEBio Studio Repo Files";
 
 		// set proper separators.
-		std::string sPath = FSDir::filePath(defaultPath.toStdString());
+		string sPath = FSDir::filePath(defaultPath.toStdString());
 
 		CDlgSetRepoFolder dlg(sPath.c_str(), this);
 
@@ -469,9 +476,9 @@ void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, in
 	}
 }
 
-void CRepositoryPanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column)
+void CRepositoryPanel::on_searchTree_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
-	FileSearchItem* searchItem = static_cast<FileSearchItem*>(item);
+	SearchItem* searchItem = static_cast<SearchItem*>(item);
 
 	on_treeWidget_itemDoubleClicked(searchItem->getRealItem(),0);
 }
@@ -490,7 +497,7 @@ void CRepositoryPanel::on_actionDownload_triggered()
 	}
 	else
 	{
-		DownloadItem(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+		DownloadItem(static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->getRealItem());
 	}
 
 }
@@ -503,7 +510,7 @@ void CRepositoryPanel::on_actionOpen_triggered()
 	}
 	else
 	{
-		OpenItem(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+		OpenItem(static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->getRealItem());
 	}
 }
 
@@ -515,7 +522,7 @@ void CRepositoryPanel::on_actionOpenFileLocation_triggered()
 	}
 	else
 	{
-		ShowItemInBrowser(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+		ShowItemInBrowser(static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->getRealItem());
 	}
 }
 
@@ -527,7 +534,7 @@ void CRepositoryPanel::on_actionDelete_triggered()
 	}
 	else
 	{
-		DeleteItem(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+		DeleteItem(static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->getRealItem());
 	}
 
 	on_treeWidget_itemSelectionChanged();
@@ -646,68 +653,191 @@ void CRepositoryPanel::on_actionUpload_triggered()
 
 void CRepositoryPanel::on_actionSearch_triggered()
 {
-	ui->unhideAll();
-
 	QString searchTerm = ui->searchLineEdit->text();
 	if(searchTerm.isEmpty()) return;
 
-	QString projectSearch;
-	QString fileSearch;
-	if(searchTerm.contains("files:"))
-	{
-		QStringList parts = searchTerm.split("files:");
-		projectSearch = parts[0];
-		fileSearch = parts[1];
+    searchTerm = "all:" + searchTerm;
+    vector<pair<QString, QStringList>> termList;
 
-		if(!fileSearch.isEmpty())
-		{
-			std::unordered_set<int> fileIDs = dbHandler->FileSearch(fileSearch);
+    QRegularExpression regex("\\w*:.*?(?=(?:\\w*:)|$)");
 
-			ui->fileSearchTree->blockSignals(true);
+    QRegularExpressionMatchIterator i = regex.globalMatch(searchTerm);
+    while(i.hasNext())
+    {
+        QRegularExpressionMatch match = i.next();
+        QStringList splitResult = match.captured().split(":");
+        QString key = splitResult[0];
 
-			ui->fileSearchTree->clear();
-			ui->fileSearchTree->setColumnWidth(0, ui->projectTree->columnWidth(0));
+        QStringList values = splitResult[1].trimmed().split(" ", Qt::SkipEmptyParts);
 
-			for(int id : fileIDs)
-			{
-				FileSearchItem* item = new FileSearchItem(ui->fileItemsByID[id]);
+        if(!values.empty())
+        {
+            termList.emplace_back(key,values);
+        }
+    }
 
-				ui->fileSearchTree->addTopLevelItem(item);
-			}
+    map<pair<int, bool>,int> IDs;
 
-			ui->fileSearchTree->blockSignals(false);
+    ui->searchTree->blockSignals(true);
+    ui->searchTree->clear();
+	ui->searchTree->setColumnWidth(0, ui->projectTree->columnWidth(0));
 
-			ui->treeStack->setCurrentIndex(1);
-		}
-	}
-	else
-	{
-		projectSearch = searchTerm;
+    bool firstTerm = true;
+    for(auto& item : termList)
+    {
+        QString dataType = item.first;
+        QStringList terms = item.second;
 
-		std::unordered_set<int> projIDs = dbHandler->FullTextSearch(projectSearch);
+        map<int,int> itemIDs;
 
-		ui->projectTree->blockSignals(true);
+        for(auto term : terms)
+        {
+            set<int> tempIDs = dbHandler->ProjectSearch(dataType, term);
 
-		for(auto current : ui->projectItemsByID)
-		{
-			if(projIDs.count(current.first) == 0)
-			{
-				current.second->setHidden(true);
-			}
-		}
+            for(int ID : tempIDs)
+            {
+                try
+                {
+                    int val = itemIDs.at(ID);
 
-		ui->projectTree->blockSignals(false);
-		ui->treeStack->setCurrentIndex(0);
-	}
+                    itemIDs[ID] = val + 1;
+                }
+                catch(const std::out_of_range& e)
+                {
+                    itemIDs[ID] = 1;
+                }
+            }
+        }
 
+        if(firstTerm)
+        {
+            for(auto& item : itemIDs)
+            {
+                pair<int,bool> pair(item.first, true);
 
+                IDs[pair] = item.second;
+            }
+        }
+        else
+        {
+            vector<pair<int, bool>> remove;
+
+            for(auto& item : IDs)
+            {
+                if(item.first.second)
+                {
+                    if(itemIDs.count(item.first.first) == 0)
+                    {
+                        remove.push_back(item.first);
+                    }
+                    else
+                    {
+                        IDs[item.first] += itemIDs[item.first.first];
+                    }
+                }
+            }
+
+            for(auto item : remove)
+            {
+                IDs.erase(item);
+            }
+        }
+
+        itemIDs.clear();
+
+        for(auto term : terms)
+        {
+            set<int> tempIDs = dbHandler->FileSearch(dataType, term);
+
+            for(int ID : tempIDs)
+            {
+                try
+                {
+                    int val = itemIDs.at(ID);
+
+                    itemIDs[ID] = val + 1;
+                }
+                catch(const std::out_of_range& e)
+                {
+                    itemIDs[ID] = 1;
+                }
+            }
+        }
+
+        if(firstTerm)
+        {
+            for(auto& item : itemIDs)
+            {
+                pair<int,bool> pair(item.first, false);
+
+                IDs[pair] = item.second;
+            }
+        }
+        else
+        {
+            vector<pair<int, bool>> remove;
+
+            for(auto& item : IDs)
+            {
+                if(!item.first.second)
+                {
+                    if(itemIDs.count(item.first.first) == 0)
+                    {
+                        remove.push_back(item.first);
+                    }
+                    else
+                    {
+                        IDs[item.first] += itemIDs[item.first.first];
+                    }
+                }
+            }
+
+            for(auto item : remove)
+            {
+                IDs.erase(item);
+            }
+        }
+        
+        firstTerm = false;
+    }
+
+    vector<pair<pair<int,bool>,int>> results;
+
+    for(auto item : IDs)
+    {
+        results.push_back(item);
+    }
+
+    sort(results.begin(), results.end(), 
+        [](pair<pair<int,bool>,int> a,
+        pair<pair<int,bool>,int> b)
+        {
+            return a.second > b.second;
+        }
+    );
+
+    SearchItem* searchItem;
+    for(auto item : results)
+    {
+        if(item.first.second)
+        {
+            searchItem = new SearchItem(ui->projectItemsByID[item.first.first]);
+        }
+        else
+        {
+            searchItem = new SearchItem(ui->fileItemsByID[item.first.first]);
+        }
+
+        ui->searchTree->addTopLevelItem(searchItem);
+    }
+
+    ui->searchTree->blockSignals(false);
+    ui->treeStack->setCurrentIndex(1);
 }
 
 void CRepositoryPanel::on_actionClearSearch_triggered()
 {
 	ui->searchLineEdit->clear();
-
-	ui->unhideAll();
 
 	ui->treeStack->setCurrentIndex(0);
 }
@@ -820,7 +950,7 @@ void CRepositoryPanel::on_actionModify_triggered()
 
 void CRepositoryPanel::on_actionFindInTree_triggered()
 {
-	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0]);
+	SearchItem* item = static_cast<SearchItem*>(ui->searchTree->selectedItems()[0]);
 
 	ui->projectTree->setCurrentItem(item->getRealItem());
 
@@ -1038,9 +1168,9 @@ void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item)
     // Update fileSearchItem if there's a current file search
     if(ui->treeStack->currentIndex() == 1)
     {
-        if(ui->fileSearchTree->selectedItems().count() > 0)
+        if(ui->searchTree->selectedItems().count() > 0)
         {
-            static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->Update();
+            static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->Update();
         }
     }
 }
@@ -1196,16 +1326,16 @@ void CRepositoryPanel::on_treeWidget_customContextMenuRequested(const QPoint &po
 	menu.exec(ui->projectTree->viewport()->mapToGlobal(pos));
 }
 
-void CRepositoryPanel::on_fileSearchTree_itemSelectionChanged()
+void CRepositoryPanel::on_searchTree_itemSelectionChanged()
 {
-	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0]);
+	SearchItem* item = static_cast<SearchItem*>(ui->searchTree->selectedItems()[0]);
 
 	UpdateInfo(item->getRealItem());
 }
 
-void CRepositoryPanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos)
+void CRepositoryPanel::on_searchTree_customContextMenuRequested(const QPoint &pos)
 {
-	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->itemAt(pos));
+	SearchItem* item = static_cast<SearchItem*>(ui->searchTree->itemAt(pos));
 	item->setSelected(true);
 
 	QMenu menu(this);
@@ -1221,7 +1351,33 @@ void CRepositoryPanel::on_fileSearchTree_customContextMenuRequested(const QPoint
         menu.addAction(ui->actionDelete);
 	}
 
-	menu.exec(ui->fileSearchTree->viewport()->mapToGlobal(pos));
+	menu.exec(ui->searchTree->viewport()->mapToGlobal(pos));
+}
+
+void CRepositoryPanel::on_showProjectsCB_stateChanged(int state)
+{
+    for(int child = 0; child < ui->searchTree->topLevelItemCount(); child++)
+    {
+        SearchItem* item = static_cast<SearchItem*>(ui->searchTree->topLevelItem(child));
+
+        if(dynamic_cast<ProjectItem*>(item->getRealItem()))
+        {
+            item->setHidden(state == Qt::Unchecked);
+        }
+    }
+}
+
+void CRepositoryPanel::on_showFilesCB_stateChanged(int state)
+{
+    for(int child = 0; child < ui->searchTree->topLevelItemCount(); child++)
+    {
+        SearchItem* item = static_cast<SearchItem*>(ui->searchTree->topLevelItem(child));
+
+        if(dynamic_cast<FileItem*>(item->getRealItem()))
+        {
+            item->setHidden(state == Qt::Unchecked);
+        }
+    }
 }
 
 void CRepositoryPanel::on_projectTags_linkActivated(const QString& link)
@@ -1232,7 +1388,7 @@ void CRepositoryPanel::on_projectTags_linkActivated(const QString& link)
 
 void CRepositoryPanel::on_fileTags_linkActivated(const QString& link)
 {
-	ui->searchLineEdit->setText(QString("files:") + link);
+	ui->searchLineEdit->setText(link);
 	on_actionSearch_triggered();
 }
 
@@ -1272,7 +1428,7 @@ QStringList CRepositoryPanel::GetCategories()
 {
 	int permission = repoHandler->getUploadPermission();
 
-	std::map<int, std::string> categoryMap;
+	map<int, string> categoryMap;
 
 	dbHandler->GetCategoryMap(categoryMap);
 
@@ -1412,8 +1568,10 @@ void CRepositoryPanel::on_fileTags_linkActivated(const QString& link) {}
 void CRepositoryPanel::updateUploadReady(bool ready, QString message) {}
 void CRepositoryPanel::updateModifyReady(bool ready, QString message) {}
 void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal) {}
-void CRepositoryPanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {}
+void CRepositoryPanel::on_searchTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {}
 void CRepositoryPanel::on_actionFindInTree_triggered() {}
-void CRepositoryPanel::on_fileSearchTree_itemSelectionChanged() {}
-void CRepositoryPanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos) {}
+void CRepositoryPanel::on_searchTree_itemSelectionChanged() {}
+void CRepositoryPanel::on_searchTree_customContextMenuRequested(const QPoint &pos) {}
+void CRepositoryPanel::on_showProjectsCB_stateChanged(int state) {}
+void CRepositoryPanel::on_showFilesCB_stateChanged(int state) {}
 #endif

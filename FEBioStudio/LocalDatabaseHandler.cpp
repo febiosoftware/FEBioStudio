@@ -854,18 +854,37 @@ void CLocalDatabaseHandler::GetProjectPubs(int ID)
 
 }
 
-std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
+std::set<int> CLocalDatabaseHandler::ProjectSearch(QString dataType, QString term)
 {
-	if(term.isEmpty()) return std::unordered_set<int>();
+	if(term.isEmpty()) return std::set<int>();
 
+    dataType = dataType.toLower();
+
+    QString query;
+    if(dataType == "all")
+    {
+        query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner=users.ID WHERE username LIKE '%%1%' "
+            "OR name LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "user")
+    {
+        query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner=users.ID WHERE username LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "name")
+    {
+        query = QString("SELECT projects.ID FROM projects WHERE name LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "desc")
+    {
+        query = QString("SELECT projects.ID FROM projects WHERE description LIKE '%%1%'").arg(term);
+    }
+    
 	char **table;
 	int rows, cols;
 
-	std::unordered_set<int> projects;
+	std::set<int> projects;
 
-	// Matches owners, names, and descriptions of projects
-	QString query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner=users.ID WHERE username LIKE '%%1%' OR name LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
-	std::string queryStd = query.toStdString();
+    std::string queryStd = query.toStdString();
 
 	imp->getTable(queryStd, &table, &rows, &cols);
 
@@ -876,57 +895,55 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 
 	sqlite3_free_table(table);
 
-	// Matches filenames and descriptions
-	query = QString("SELECT project FROM filenames WHERE filename LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
-	queryStd = query.toStdString();
+    if(dataType == "all" || dataType == "tag")
+    {
+        // Matches project tags
+        query = QString("SELECT projectTags.project FROM tags JOIN projectTags ON tags.ID = projectTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
+        queryStd = query.toStdString();
 
-	imp->getTable(queryStd, &table, &rows, &cols);
+        imp->getTable(queryStd, &table, &rows, &cols);
 
-	for(int row = 1; row <= rows; row++)
-	{
-		projects.insert(std::stoi(table[row]));
-	}
+        for(int row = 1; row <= rows; row++)
+        {
+            projects.insert(std::stoi(table[row]));
+        }
 
-	sqlite3_free_table(table);
-
-	// Matches project tags
-	query = QString("SELECT projectTags.project FROM tags JOIN projectTags ON tags.ID = projectTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
-	queryStd = query.toStdString();
-
-	imp->getTable(queryStd, &table, &rows, &cols);
-
-	for(int row = 1; row <= rows; row++)
-	{
-		projects.insert(std::stoi(table[row]));
-	}
-
-	sqlite3_free_table(table);
-
-	// Matches file tags
-//	query = QString("SELECT filenames.project FROM tags JOIN fileTags ON tags.ID = fileTags.tag JOIN filenames ON fileNames.ID = fileTags.file WHERE tags.tag LIKE '%%1%'").arg(term);
-//	queryStd = query.toStdString();
-//
-//	imp->getTable(queryStd, &table, &rows, &cols);
-//
-//	for(int row = 1; row <= rows; row++)
-//	{
-//		projects.insert(stoi(table[row]));
-//	}
-//
-//	sqlite3_free_table(table);
+        sqlite3_free_table(table);
+    }
 
 	return projects;
 }
 
-std::unordered_set<int> CLocalDatabaseHandler::FileSearch(QString term)
+std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
 {
+    if(term.isEmpty()) return std::set<int>();
+
+    dataType = dataType.toLower();
+
 	char **table;
 	int rows, cols;
 
-	std::unordered_set<int> files;
+	std::set<int> files;
 
-	// Matches filenames and descriptions
-	QString query = QString("SELECT ID FROM filenames WHERE filename LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
+    bool otherType = true;
+
+    QString query;
+    if(dataType == "all")
+    {
+        otherType = false;
+        query = QString("SELECT ID FROM filenames WHERE filename LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "name")
+    {
+        otherType = false;
+        query = QString("SELECT ID FROM filenames WHERE filename LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "desc")
+    {
+        otherType = false;
+        query = QString("SELECT ID FROM filenames WHERE description LIKE '%%1%'").arg(term);
+    }
+
 	std::string queryStd = query.toStdString();
 
 	imp->getTable(queryStd, &table, &rows, &cols);
@@ -938,9 +955,74 @@ std::unordered_set<int> CLocalDatabaseHandler::FileSearch(QString term)
 
 	sqlite3_free_table(table);
 
-	// Matches file tags
-	query = QString("SELECT fileTags.file FROM tags JOIN fileTags ON tags.ID = fileTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
-	queryStd = query.toStdString();
+    if(dataType == "all" || dataType == "tag")
+    {
+        otherType = false;
+
+        // Matches file tags
+        query = QString("SELECT fileTags.file FROM tags JOIN fileTags ON tags.ID = fileTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
+        queryStd = query.toStdString();
+
+        imp->getTable(queryStd, &table, &rows, &cols);
+
+        for(int row = 1; row <= rows; row++)
+        {
+            files.insert(std::stoi(table[row]));
+        }
+
+        sqlite3_free_table(table);
+    }
+
+    if(dataType == "all")
+    {
+        // Matches file data types
+        query = QString("SELECT filenames.ID FROM filenames JOIN filedatatypes ON filenames.ID=fileDataTypes.file JOIN "
+            "dataTypes ON fileDataTypes.type=dataTypes.ID WHERE dataTypes.type LIKE '%%1%'").arg(term);
+        queryStd = query.toStdString();
+
+        imp->getTable(queryStd, &table, &rows, &cols);
+
+        for(int row = 1; row <= rows; row++)
+        {
+            files.insert(std::stoi(table[row]));
+        }
+
+        sqlite3_free_table(table);
+    }
+	
+    if(otherType)
+    {
+        // Matches file data types
+        QString query = QString("SELECT filenames.ID FROM filenames JOIN filedatatypes ON filenames.ID=fileDataTypes.file JOIN "
+            "dataTypes ON fileDataTypes.type=dataTypes.ID JOIN sections ON dataTypes.section=sections.ID WHERE sections.section "
+            "LIKE '%%1%' and dataTypes.type LIKE '%%2%'").arg(dataType).arg(term);
+        std::string queryStd = query.toStdString();
+
+        imp->getTable(queryStd, &table, &rows, &cols);
+
+        for(int row = 1; row <= rows; row++)
+        {
+            files.insert(std::stoi(table[row]));
+        }
+
+        sqlite3_free_table(table);
+    }
+
+	return files;
+}
+
+std::set<int> CLocalDatabaseHandler::FileDataSearch(QString dataType, QString term)
+{
+    char **table;
+	int rows, cols;
+
+	std::set<int> files;
+
+	// Matches file data types
+	QString query = QString("SELECT filenames.ID FROM filenames JOIN filedatatypes ON filenames.ID=fileDataTypes.file JOIN "
+        "dataTypes ON fileDataTypes.type=dataTypes.ID JOIN sections ON dataTypes.section=sections.ID WHERE sections.section "
+        "LIKE '%%1%' and dataTypes.type LIKE '%%2%'").arg(dataType).arg(term);
+	std::string queryStd = query.toStdString();
 
 	imp->getTable(queryStd, &table, &rows, &cols);
 

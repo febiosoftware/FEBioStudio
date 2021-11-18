@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QSplitter>
 #include <QToolButton>
+#include <QCheckBox>
 #include <QStackedLayout>
 #include <QStackedWidget>
 #include <QFormLayout>
@@ -398,33 +399,44 @@ private:
 
 };
 
-class FileSearchItem : public QTreeWidgetItem
+class SearchItem : public QTreeWidgetItem
 {
 public:
-	FileSearchItem(FileItem* item)
+	SearchItem(CustomTreeWidgetItem* item)
 		: QTreeWidgetItem(), realItem(item)
 	{
 		setText(0, realItem->text(0));
 		setText(1, realItem->text(1));
+
+        for(int index = 0; index < realItem->childCount(); index++)
+        {
+            addChild(new SearchItem(static_cast<CustomTreeWidgetItem*>(realItem->child(index))));
+        }
+
 		Update();
 	}
 
 	void Update()
 	{
+        for(int index = 0; index < childCount(); index++)
+        {
+            static_cast<SearchItem*>(child(index))->Update();
+        }
+
 		setForeground(0, realItem->foreground(0));
 		setForeground(1, realItem->foreground(1));
         setIcon(0,realItem->icon(0));
 	}
 
-	FileItem* getRealItem()
+	CustomTreeWidgetItem* getRealItem()
 	{
 		return realItem;
 	}
 
 private:
-	FileItem* realItem;
-
+	CustomTreeWidgetItem* realItem;
 };
+
 
 class Ui::CRepositoryPanel
 {
@@ -440,7 +452,9 @@ public:
 	QWidget* modelPage;
 	QStackedWidget* treeStack;
 	QTreeWidget* projectTree;
-	QTreeWidget* fileSearchTree;
+	QTreeWidget* searchTree;
+    QCheckBox* showProjectsCB;
+    QCheckBox* showFilesCB;
 
 	CToolBox* projectInfoBox;
 
@@ -596,16 +610,46 @@ public:
 		projectTree->header()->setStretchLastSection(false);
 		treeStack->addWidget(projectTree);
 
-		fileSearchTree = new QTreeWidget;
-		fileSearchTree->setObjectName("fileSearchTree");
-		fileSearchTree->setColumnCount(2);
-		fileSearchTree->setHeaderLabels(QStringList() << "Files" << "Size");
-		fileSearchTree->setSelectionMode(QAbstractItemView::SingleSelection);
-		fileSearchTree->setContextMenuPolicy(Qt::CustomContextMenu);
-		fileSearchTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-		fileSearchTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-		fileSearchTree->header()->setStretchLastSection(false);
-		treeStack->addWidget(fileSearchTree);
+        QWidget* searchTreeWidget = new QWidget;
+        QVBoxLayout* searchTreeLayout = new QVBoxLayout;
+        searchTreeLayout->setContentsMargins(0,0,0,0);
+
+        QHBoxLayout* checkboxLayout = new QHBoxLayout;
+        checkboxLayout->setContentsMargins(0,0,0,0);
+        checkboxLayout->addStretch();
+
+        showProjectsCB = new QCheckBox("Projects");
+        showProjectsCB->setObjectName("showProjectsCB");
+        showProjectsCB->setChecked(true);
+
+        checkboxLayout->addWidget(showProjectsCB);
+
+        checkboxLayout->addStretch();
+
+        showFilesCB = new QCheckBox("Files");
+        showFilesCB->setObjectName("showFilesCB");
+        showFilesCB->setChecked(true);
+
+        checkboxLayout->addWidget(showFilesCB);
+
+        checkboxLayout->addStretch();
+
+        searchTreeLayout->addLayout(checkboxLayout);
+
+		searchTree = new QTreeWidget;
+		searchTree->setObjectName("searchTree");
+		searchTree->setColumnCount(2);
+		searchTree->setHeaderLabels(QStringList() << "Results" << "Size");
+		searchTree->setSelectionMode(QAbstractItemView::SingleSelection);
+		searchTree->setContextMenuPolicy(Qt::CustomContextMenu);
+		searchTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+		searchTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+		searchTree->header()->setStretchLastSection(false);
+		searchTreeLayout->addWidget(searchTree);
+
+        searchTreeWidget->setLayout(searchTreeLayout);
+
+        treeStack->addWidget(searchTreeWidget);
 
 		splitter->addWidget(treeStack);
 
@@ -659,8 +703,9 @@ public:
 		fileInfoForm = new QFormLayout;
 		fileInfoForm->setHorizontalSpacing(10);
 		fileInfoForm->addRow("Filename:", filenameLabel = new MultiLineLabel);
-		fileInfoForm->addRow("Description:", fileDescLabel = new MultiLineLabel);
 		fileInfoLayout->addLayout(fileInfoForm);
+
+        fileInfoLayout->addWidget(fileDescLabel = new MultiLineLabel);
 
 		fileInfoLayout->addWidget(fileTags = new TagLabel);
 		fileTags->setObjectName("fileTags");
@@ -727,19 +772,6 @@ public:
 		return parent;
 	}
 
-	void unhideAll()
-	{
-		for(auto current : projectItemsByID)
-		{
-			current.second->setHidden(false);
-		}
-
-		for(auto current : fileItemsByID)
-		{
-			current.second->setHidden(false);
-		}
-	}
-
 	void showLoadingPage(QString message, bool progress = false)
 	{
 		loadingLabel->setText(message);
@@ -766,13 +798,15 @@ public:
 
 	void setFileDescription(QString description)
 	{
-		fileInfoForm->removeRow(fileDescLabel);
-
-		if(!description.isEmpty())
-		{
-			fileInfoForm->insertRow(1, "Description:", fileDescLabel = new MultiLineLabel(description));
-		}
-
+        if(description.isEmpty())
+        {
+            fileDescLabel->hide();
+        }
+        else
+        {
+            fileDescLabel->setText(description);
+            fileDescLabel->show();
+        }
 	}
 
 	void setFileTags()
