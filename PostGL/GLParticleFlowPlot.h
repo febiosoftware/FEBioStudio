@@ -71,7 +71,7 @@ class CGLParticleFlowPlot : public CGLPlot
 	};
 
 public:
-	CGLParticleFlowPlot(CGLModel* mdl);
+	CGLParticleFlowPlot();
 
 	void Update(int ntime, float dt, bool breset) override;
 
@@ -134,7 +134,7 @@ private:
 	float	m_lastTime;
 	float	m_lastDt;
 
-	FEFindElement	m_find;
+	FEFindElement*	m_find;
 
 	vector<FlowParticle>	m_particles;
 };

@@ -70,7 +70,7 @@ public:
 	};
 
 public:
-	CGLVectorPlot(CGLModel* po);
+	CGLVectorPlot();
 
 	void Render(CGLContext& rc) override;
 

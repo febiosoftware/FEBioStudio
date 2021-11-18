@@ -55,6 +55,8 @@ FESolidArc::FESolidArc(GSolidArc* po)
 
 	AddBoolParam(m_bz, "bz", "Z-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 FEMesh* FESolidArc::BuildMesh()
@@ -126,6 +128,15 @@ FEMesh* FESolidArc::BuildMultiBlockMesh()
 	GetFaceEdge(F1, 2).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
 	GetFaceEdge(F3, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
 	GetFaceEdge(F3, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// build mesh and return
 	return FEMultiBlockMesh::BuildMesh();

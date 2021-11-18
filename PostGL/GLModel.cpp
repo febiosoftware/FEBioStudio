@@ -2096,52 +2096,56 @@ void CGLModel::RenderObjects(CGLContext& rc)
 	for (int i = 0; i < fem->PointObjects(); ++i)
 	{
 		Post::FEPostModel::PointObject & ob = *fem->GetPointObject(i);
-
-		glPushMatrix();
-		glx::translate(ob.m_pos);
-		glx::rotate(ob.m_rot);
-
-		glx::translate(ob.m_rt);
-
-		GLColor c = ob.Color();
-		glColor3ub(c.r, c.g, c.b);
-		switch (ob.m_tag)
+		if (ob.IsActive())
 		{
-		case 1: glx::renderRigidBody(R); break;
-		case 2: glx::renderJoint(R); break;
-        case 3: glx::renderJoint(R); break;
-		case 4: glx::renderPrismaticJoint(R); break;
-		case 5: glx::renderRevoluteJoint(R); break;
-		case 6: glx::renderCylindricalJoint(R); break;
-        case 7: glx::renderPlanarJoint(R); break;
-		default:
-			glx::renderAxis(R);
+			glPushMatrix();
+			glx::translate(ob.m_pos);
+			glx::rotate(ob.m_rot);
+
+			glx::translate(ob.m_rt);
+
+			GLColor c = ob.Color();
+			glColor3ub(c.r, c.g, c.b);
+			switch (ob.m_tag)
+			{
+			case 1: glx::renderRigidBody(R); break;
+			case 2: glx::renderJoint(R); break;
+			case 3: glx::renderJoint(R); break;
+			case 4: glx::renderPrismaticJoint(R); break;
+			case 5: glx::renderRevoluteJoint(R); break;
+			case 6: glx::renderCylindricalJoint(R); break;
+			case 7: glx::renderPlanarJoint(R); break;
+			default:
+				glx::renderAxis(R);
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
 	}
 
 	for (int i = 0; i < fem->LineObjects(); ++i)
 	{
 		Post::FEPostModel::LineObject & ob = *fem->GetLineObject(i);
-
-		glPushMatrix();
-		glx::translate(ob.m_pos);
-		glx::rotate(ob.m_rot);
-
-		vec3d a = ob.m_r1;
-		vec3d b = ob.m_r2;
-
-		GLColor c = ob.Color();
-		glColor3ub(c.r, c.g, c.b);
-		switch (ob.m_tag)
+		if (ob.IsActive())
 		{
-		case 1: glx::renderSpring(a, b, R); break;
-		case 2: glx::renderDamper(a, b, R); break;
-		case 4: glx::renderContractileForce(a, b, R); break;
-		default:
-			glx::drawLine(a, b);
+			glPushMatrix();
+			glx::translate(ob.m_pos);
+			glx::rotate(ob.m_rot);
+
+			vec3d a = ob.m_r1;
+			vec3d b = ob.m_r2;
+
+			GLColor c = ob.Color();
+			glColor3ub(c.r, c.g, c.b);
+			switch (ob.m_tag)
+			{
+			case 1: glx::renderSpring(a, b, R); break;
+			case 2: glx::renderDamper(a, b, R); break;
+			case 4: glx::renderContractileForce(a, b, R); break;
+			default:
+				glx::drawLine(a, b);
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
 	}
 
 	glPopAttrib();
@@ -3489,6 +3493,7 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 
 void CGLModel::AddPlot(CGLPlot* pplot)
 {
+	pplot->SetModel(this);
 	m_pPlot.Add(pplot);
 	pplot->Update(CurrentTime(), 0.f, true);
 }

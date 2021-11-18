@@ -34,7 +34,7 @@ class GTube2;
 class FETube : public FEMesher
 {
 public:
-	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2 };
+	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2, ELEM_TYPE };
 
 public:
 	FETube(){}

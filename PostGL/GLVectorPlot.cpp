@@ -36,8 +36,12 @@ using namespace Post;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLLegendPlot(po)
+REGISTER_CLASS(CGLVectorPlot, CLASS_PLOT, "vector", 0);
+
+CGLVectorPlot::CGLVectorPlot()
 {
+	SetTypeString("vector");
+
 	static int n = 1;
 	char szname[128] = {0};
 	sprintf(szname, "VectorPlot.%02d", n++);

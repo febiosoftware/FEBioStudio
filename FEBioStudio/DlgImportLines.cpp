@@ -127,7 +127,7 @@ void CDlgImportLines::OnApply()
 		if (bsuccess)
 		{
 			// add a line plot for visualizing the line data
-			Post::CGLLinePlot* pgl = new Post::CGLLinePlot(doc->GetGLModel());
+			Post::CGLLinePlot* pgl = new Post::CGLLinePlot();
 			doc->GetGLModel()->AddPlot(pgl);
 			pgl->SetName(ui->name->text().toStdString());
 			ui->m_wnd->UpdatePostPanel(false, pgl);
@@ -540,7 +540,7 @@ void CDlgImportPoints::OnApply()
 		fclose(fp);
 
 		// add a line plot
-		Post::CGLPointPlot* pgl = new Post::CGLPointPlot(doc->GetGLModel());
+		Post::CGLPointPlot* pgl = new Post::CGLPointPlot();
 		doc->GetGLModel()->AddPlot(pgl);
 		pgl->SetName(name.c_str());
 

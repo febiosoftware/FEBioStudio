@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "ParamBlock.h"
+#include <FEBioStudio/ClassDescriptor.h>
 #include <string>
 
 //-----------------------------------------------------------------------------
@@ -53,6 +54,8 @@ public:
 	// return true if parameter list was modified
 	virtual bool UpdateData(bool bsave = true);
 
+	const char* GetTypeString() const { return m_sztypeStr; }
+
 public:
 	void SetParent(FSObject* parent);
 	FSObject* GetParent();
@@ -60,9 +63,15 @@ public:
 	virtual size_t RemoveChild(FSObject* po);
 	virtual void InsertChild(size_t pos, FSObject* po);
 
+protected:
+	void SetTypeString(const char* sz) { m_sztypeStr = sz; }
+
 private:
 	std::string		m_name;
 	std::string		m_info;
 	FSObject*		m_parent;
+
+private:
+	const char* m_sztypeStr;
 };
 

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/triangulate.h>
 #include <GLLib/glx.h>
 #include <sstream>
 using namespace Post;
@@ -58,16 +59,23 @@ private:
 	PathData(const PathData& path) {}
 };
 
+REGISTER_CLASS(GLMusclePath, CLASS_PLOT, "muscle-path", 0);
+
 static int n = 1;
-GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
+GLMusclePath::GLMusclePath()
 {
-	AddIntParam(0, "start point");
-	AddIntParam(0, "end point");
-	AddVecParam(vec3d(0, 0, 0), "Center of rotation");
-	AddChoiceParam(0, "Shortest path method")->SetEnumNames("Straight line\0 3-point trace\0Shortest path\0");
+	SetTypeString("muscle-path");
+
+	AddIntParam(0, "point0", "start point");
+	AddIntParam(0, "point1", "end point");
+	AddVecParam(vec3d(0, 0, 0), "center", "Center of rotation");
+	AddChoiceParam(0, "method", "Shortest path method")->SetEnumNames("Straight line\0 3-point trace\0Shortest path 2D\0Shortest path\0Spring\0");
 	AddDoubleParam(5.0, "size");
 	AddColorParam(GLColor(255, 0, 0), "color");
-	AddBoolParam(true, "Draw convex hull");
+	AddBoolParam(true, "show_convex_hull", "Draw convex hull");
+	AddBoolParam(true, "Smoothen path");
+	AddIntParam(10, "Max smoothness iters.")->SetIntRange(1, 100);
+	AddDoubleParam(1e-6, "Smoothness tol.");
 
 	std::stringstream ss;
 	ss << "MusclePath" << n++;
@@ -76,7 +84,7 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 	m_closestFace = -1;
 
 	// we need the active face selection 
-	if (fem)
+/*/	if (fem)
 	{
 		FEPostMesh& mesh = *fem->GetActiveMesh();
 		mesh.TagAllNodes(0);
@@ -95,6 +103,7 @@ GLMusclePath::GLMusclePath(CGLModel* fem) : CGLPlot(fem)
 			if (mesh.Node(i).m_ntag == 1) m_selNodes.push_back(i);
 		}
 	}
+*/
 }
 
 GLMusclePath::~GLMusclePath()
@@ -155,6 +164,12 @@ void GLMusclePath::Render(CGLContext& rc)
 		}
 		glEnd();
 		glPopAttrib();
+
+		for (int i = 0; i < N; ++i)
+		{
+			vec3d r0 = path->m_points[i];
+			glx::drawSphere(r0, 1.5 * R);
+		}
 	}
 
 	// draw the rotation center
@@ -177,102 +192,6 @@ void GLMusclePath::Update()
 	Update(GetModel()->CurrentTimeIndex(), 0.f, false);
 }
 
-std::vector<vec3d> FindShortestPath(FEMesh& mesh, int m0, int m1)
-{
-	// helper class for finding neighbors
-	FENodeNodeList NNL(&mesh);
-
-	const double INF = 1e34;
-	int N = mesh.Nodes();
-	vector<double> dist(N, INF);
-
-	mesh.TagAllNodes(-1);
-
-	int ncurrent = m0;
-	mesh.Node(m0).m_ntag = m0;
-	dist[m0] = 0.0;
-	double L0 = 0.0;
-	while (ncurrent != m1)
-	{
-		// get the position of the current node
-		FENode& node0 = mesh.Node(ncurrent);
-		vec3d rc = node0.pos();
-
-		// update neighbor distances
-		int nval = NNL.Valence(ncurrent);
-		int nmin = -1;
-		double dmin = 0.0;
-		for (int i = 0; i < nval; ++i)
-		{
-			int mi = NNL.Node(ncurrent, i);
-			assert(mi != ncurrent);
-
-			FENode& nodei = mesh.Node(mi);
-			if (dist[mi] >= 0)
-			{
-				vec3d ri = mesh.Node(mi).pos();
-				double dL = (ri - rc).Length();
-
-				double L1 = L0 + dL;
-				if (L1 < dist[mi])
-				{
-					dist[mi] = L1;
-					nodei.m_ntag = ncurrent;
-				}
-				else L1 = dist[mi];
-
-				if ((nmin == -1) || (L1 < dmin))
-				{
-					nmin = mi;
-					dmin = L1;
-				}
-			}
-		}
-
-		// choose the next node
-//		assert(nmin != -1);
-		if (nmin == -1)
-		{
-			// hhmm, something went wrong
-			return std::vector<vec3d>();
-		}
-
-		L0 = dist[nmin];
-		dist[nmin] = -1.0;
-		ncurrent = nmin;
-	}
-
-	// build the path
-	// NOTE: This traverses the path in reverse!
-	std::vector<vec3d> tmp;
-	ncurrent = m1;
-	tmp.push_back(mesh.Node(m1).pos());
-	do
-	{
-		int parentNode = mesh.Node(ncurrent).m_ntag;
-
-		vec3d rc = mesh.Node(parentNode).pos();
-		tmp.push_back(rc);
-
-		ncurrent = parentNode;
-
-	} while (ncurrent != m0);
-
-	// invert the temp path to get the final path
-	std::vector<vec3d> path;
-	int n = tmp.size();
-	if (n > 0)
-	{
-		path.resize(n);
-		for (int i = 0; i < n; ++i)
-		{
-			path[i] = tmp[n - i - 1];
-		}
-	}
-
-	return path;
-}
-
 void GLMusclePath::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* glm = GetModel();
@@ -287,6 +206,11 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 
 		// allocate new path data
 		m_path.assign(fem.GetStates(), nullptr);
+
+		// update point selection
+		FEMesh& mesh = *glm->GetActiveMesh();
+		m_selNodes.clear();
+//		for (int i = 0; i < mesh.Nodes(); ++i) m_selNodes.push_back(i);
 	}
 
 	if ((ntime < 0) || (ntime >= m_path.size())) return;
@@ -324,9 +248,11 @@ void GLMusclePath::UpdatePath(int ntime)
 	bool b = false;
 	switch (method)
 	{
-	case 0: b = UpdateStraighLine (path, ntime); break;
-	case 1: b = Update3PointPath  (path, ntime); break;
-	case 2: b = UpdateShortestPath(path, ntime); break;
+	case 0: b = UpdateStraighLine   (path, ntime); break;
+	case 1: b = Update3PointPath    (path, ntime); break;
+	case 2: b = UpdateShortestPath2D(path, ntime); break;
+	case 3: b = UpdateShortestPath  (path, ntime); break;
+	case 4: b = UpdateSpringPath    (path, ntime); break;
 	}
 	if (b == false) { delete path; path = nullptr; }
 
@@ -426,10 +352,148 @@ bool GLMusclePath::Update3PointPath(GLMusclePath::PathData* path, int ntime)
 	} 
 	while (true);
 
+	// add the last point
+	if ((ra - r1).Length() > 1e-7) pt.push_back(r1);
+
 	path->m_points = pt;
 
 	return true;
 }
+
+bool GLMusclePath::UpdateShortestPath2D(GLMusclePath::PathData* path, int ntime)
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+
+	// determine the three points on plane
+	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
+	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
+	vec3d rc = path->m_ro;
+
+	// determine plane normal
+	vec3d N = (r1 - rc) ^ (r0 - rc);
+	N.Normalize();
+
+	quatd Q(N, vec3d(0, 0, 1));
+
+	// find all edge-intersections with this plane
+	FEPostMesh& mesh = *glm->GetActiveMesh();
+	vector<vec3d> pt;
+	for (int i = 0; i < mesh.Edges(); ++i)
+	{
+		FEEdge& edge = mesh.Edge(i);
+		vec3d ra = to_vec3d(fem.NodePosition(edge.n[0], ntime));
+		vec3d rb = to_vec3d(fem.NodePosition(edge.n[1], ntime));
+
+		double D = N * (rb - ra);
+		if (D != 0.0)
+		{
+			double lam = N * (rc - ra) / D;
+			if ((lam >= 0.0) && (lam <= 1.0))
+			{
+				vec3d q = ra + (rb - ra) * lam;
+
+				// make sure the point q projects onto the r0-r1 line
+				vec3d t = r1 - r0;
+				double mu = (t * (q - r0)) / (t * t);
+
+				if ((mu >= 0) && (mu <= 1.0))
+				{
+					vec3d q2 = Q * (q - rc);
+					pt.push_back(q2);
+				}
+			}
+		}
+	}
+
+	// calculate convex hull
+	std::vector<vec3d> ch = convex_hull2d(pt);
+
+	// find the original nodes on this hull
+	int m0 = -1;
+	int m1 = -1;
+	double L0min, L1min;
+	vec3d ra = Q * (r0 - rc);
+	vec3d rb = Q * (r1 - rc);
+	int n = ch.size();
+	for (int i = 0; i < n; ++i)
+	{
+		vec3d ri = ch[i];
+		double L0 = (ra - ri).SqrLength();
+		double L1 = (rb - ri).SqrLength();
+
+		if ((m0 == -1) || (L0 < L0min))
+		{
+			m0 = i;
+			L0min = L0;
+		}
+
+		if ((m1 == -1) || (L1 < L1min))
+		{
+			m1 = i;
+			L1min = L1;
+		}
+	}
+
+	// there should be two paths. Find the shortest
+	double L1 = 0.0;
+	for (int i = m0; i != m1;)
+	{
+		int ip1 = (i + 1) % n;
+		double dL = (ch[i] - ch[ip1]).Length();
+		L1 += dL;
+		++i;
+		if (i >= n) i = 0;
+	}
+
+	double L2 = 0.0;
+	for (int i = m1; i != m0;)
+	{
+		int ip1 = (i + 1) % n;
+		double dL = (ch[i] - ch[ip1]).Length();
+		L2 += dL;
+		++i;
+		if (i >= n) i = 0;
+	}
+
+	pt.clear();
+	if (L1 < L2)
+	{
+		for (int i = m0; i != m1;)
+		{
+			pt.push_back(ch[i]);
+			++i;
+			if (i >= n) i = 0;
+		}
+		pt.push_back(ch[m1]);
+	}
+	else
+	{
+		for (int i = m1; i != m0;)
+		{
+			pt.push_back(ch[i]);
+			++i;
+			if (i >= n) i = 0;
+		}
+		pt.push_back(ch[m0]);
+	}
+
+	// transform back to 3D
+	quatd Qi = Q.Inverse();
+	for (int i = 0; i < pt.size(); ++i)
+	{
+		vec3d r = pt[i];
+		pt[i] = rc + Qi * r;
+	}
+
+	path->m_points = pt;
+
+	return true;
+}
+
 
 bool GLMusclePath::UpdateShortestPath(GLMusclePath::PathData* path, int ntime)
 {
@@ -469,21 +533,46 @@ bool GLMusclePath::UpdateShortestPath(GLMusclePath::PathData* path, int ntime)
 
 		// make sure our initial points are still outside
 		FEMesh& mesh = *path->m_hull;
+		int m0 = -1, m1 = -1;
+		for (int i = 0; i < mesh.Nodes(); ++i)
+		{
+			vec3d ri = mesh.Node(i).pos();
+			if ((ri - r0).SqrLength() < 1e-12) m0 = i;
+			if ((ri - r1).SqrLength() < 1e-12) m1 = i;
+
+			if ((m0 != -1) && ((m1 != -1))) break;
+		}
+		assert(m0 != -1);
+		assert(m1 != -1);
+
 		mesh.TagAllNodes(0);
 		for (int i = 0; i < mesh.Faces(); ++i)
 		{
 			FEFace& face = mesh.Face(i);
 			for (int j = 0; j < face.Nodes(); ++j) mesh.Node(face.n[j]).m_ntag = 1;
 		}
-		if (mesh.Node(0).m_ntag != 1) { assert(false); return false; }
-		if (mesh.Node(1).m_ntag != 1) { assert(false); return false; }
+
+		if (mesh.Node(m0).m_ntag != 1) { assert(false); return false; }
+		if (mesh.Node(m1).m_ntag != 1) { assert(false); return false; }
 
 		// extract the outide surface
 		FEMesh* surf = mesh.ExtractFaces(false);
 
+		m0 = m1 = -1;
+		for (int i = 0; i < surf->Nodes(); ++i)
+		{
+			vec3d ri = surf->Node(i).pos();
+			if ((ri - r0).SqrLength() < 1e-12) m0 = i;
+			if ((ri - r1).SqrLength() < 1e-12) m1 = i;
+
+			if ((m0 != -1) && ((m1 != -1))) break;
+		}
+		assert(m0 != -1);
+		assert(m1 != -1);
+
 		// calculate the shortest path
 		// NOTE: This assumes that the first and last nodes remain at indices 0 and 1 of the surface mesh!
-		path->m_points = FindShortestPath(*surf, 0, 1);
+		path->m_points = FindShortestPath(*surf, m0, m1);
 	}
 
 	return true;
@@ -496,8 +585,16 @@ void GLMusclePath::UpdatePathData(int ntime)
 	PathData* path = m_path[ntime];
 	if (path == nullptr) return;
 
-	// calculate path length
+	// get the path's points
 	vector<vec3d>& pt = path->m_points;
+	if (pt.empty())
+	{
+		path->m_data[PathData::PathLength] = 0.0;
+		path->m_data[PathData::MomentArm ] = 0.0;
+		return;
+	}
+
+	// calculate path length
 	double L = 0.0;
 	for (int i = 0; i < pt.size() - 1; ++i)
 	{
@@ -649,4 +746,356 @@ vec3d GLMusclePath::UpdateOrigin(int ntime)
 	vec3d dr = Q * m_qr;
 
 	return ri + dr;
+}
+
+struct RINGPOINT
+{
+	vec3d	p;	// point on ring
+	vec3d	n;	// local surface normal
+	int		nface;	// face index
+};
+
+bool ClosestPointOnRing(CGLModel& glm, int ntime, const vec3d& rc, const vec3d& t, RINGPOINT& pt)
+{
+	Post::FEPostModel& fem = *glm.GetFEModel();
+	FEPostMesh& mesh = *glm.GetActiveMesh();
+	int NF = mesh.Faces();
+	int imin = -1;
+	double Dmin = 0.0;
+	vec3d re[FEFace::MAX_NODES];
+	for (int i = 0; i < NF; ++i)
+	{
+		// get the nodal positions
+		FEFace* face = mesh.FacePtr(i);
+		int ne = face->Edges();
+		for (int j = 0; j < ne; ++j) re[j] = to_vec3d(fem.NodePosition(face->n[j], ntime));
+
+		// figure out the case
+		double s[FEFace::MAX_NODES] = { 0 };
+		int ncase = 0;
+		for (int j = 0; j < ne; ++j)
+		{
+			s[j] = (re[j] - rc) * t;
+			if (s[j] > 0) ncase |= (1 << j);
+		}
+
+		const int LUT[8][2] = {{-1,-1}, {0,2},{0,1},{1,2},{1,2},{0,1},{0,2},{-1,-1}};
+
+		if ((ncase != 0) && (ncase != 7))
+		{
+			int e[2] = { LUT[ncase][0], LUT[ncase][1] };
+
+			vec3d er[2];
+			for (int j = 0; j < 2; ++j)
+			{
+				int n = e[j];
+				int n0 = n;
+				int n1 = (n + 1) % ne;
+				vec3d ra = re[n0];
+				vec3d rb = re[n1];
+				double la = t * (ra - rc);
+				double lb = t * (rb - rc);
+
+				assert(la * lb < 0);
+
+				double L = (rb - ra).Length();
+				vec3d p = ra + (rb - ra) * (la / L);
+
+				er[j] = p;
+			}
+
+			double l = (rc - er[0]) * (er[1] - er[0]) / (er[1] - er[0]).SqrLength();
+
+			vec3d p; 
+			if (l <= 0.0) p = er[0];
+			else if (l >= 1.0) p = er[1];
+			else p = er[0] + (er[1] - er[0]) * l;
+
+			double D2 = (p - rc).SqrLength();
+			if ((imin == -1) || (D2 < Dmin))
+			{
+				imin = i;
+				Dmin = D2;
+				pt.p = p;
+
+				// calculate face normal
+				vec3d e1 = re[1] - re[0];
+				vec3d e2 = re[2] - re[0];
+				vec3d fn = e1 ^ e2; fn.Normalize();
+				pt.n = fn;
+
+				pt.nface = i;
+			}
+		}
+	}
+
+	return (imin != -1);
+}
+
+bool ShortestDistanceOnRing(CGLModel& glm, int ntime, const vec3d& rc, const vec3d& t, const vec3d& a, const vec3d& b, RINGPOINT& rp)
+{
+	vec3d c = (a + b) * 0.5;
+
+	Post::FEPostModel& fem = *glm.GetFEModel();
+	FEPostMesh& mesh = *glm.GetActiveMesh();
+
+	// find all neighbors of the face
+	// NOTE: This assumes all face tags are zero!
+	vector<int> faceList;
+	faceList.push_back(rp.nface);
+	int n = 0;
+	FEFace& face = *mesh.FacePtr(rp.nface);
+	face.m_ntag = 1;
+	const int MAX_TAG = 3;
+	while (n < faceList.size())
+	{
+		FEFace& face = *mesh.FacePtr(faceList[n++]);
+		if (face.m_ntag < MAX_TAG)
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				int nfi = face.m_nbr[i];
+				if (nfi >= 0)
+				{
+					FEFace& face2 = *mesh.FacePtr(nfi);
+					if (face2.m_ntag == 0)
+					{
+						face2.m_ntag = face.m_ntag + 1;
+						faceList.push_back(nfi);
+					}
+				}
+			}
+		}
+	}
+
+	int NF = (int) faceList.size();
+	int imin = -1;
+	double Dmin = 0.0;
+	vec3d re[FEFace::MAX_NODES];
+	for (int i = 0; i < NF; ++i)
+	{
+		// get the nodal positions
+		FEFace* face = mesh.FacePtr(faceList[i]);
+		int ne = face->Edges();
+		for (int j = 0; j < ne; ++j) re[j] = to_vec3d(fem.NodePosition(face->n[j], ntime));
+
+		// figure out the case
+		double s[FEFace::MAX_NODES] = { 0 };
+		int ncase = 0;
+		for (int j = 0; j < ne; ++j)
+		{
+			s[j] = (re[j] - rc) * t;
+			if (s[j] > 0) ncase |= (1 << j);
+		}
+
+		const int LUT[8][2] = { {-1,-1}, {0,2},{0,1},{1,2},{1,2},{0,1},{0,2},{-1,-1} };
+
+		if ((ncase != 0) && (ncase != 7))
+		{
+			int e[2] = { LUT[ncase][0], LUT[ncase][1] };
+
+			vec3d er[2];
+			for (int j = 0; j < 2; ++j)
+			{
+				int n = e[j];
+				int n0 = n;
+				int n1 = (n + 1) % ne;
+				vec3d ra = re[n0];
+				vec3d rb = re[n1];
+				double la = t * (ra - rc);
+				double lb = t * (rb - rc);
+
+				assert(la * lb < 0);
+
+				double l = t * (rc - ra) / (t*(rb - ra));
+
+				vec3d p = ra + (rb - ra) * l;
+
+				er[j] = p;
+			}
+
+			vec3d dr = er[1] - er[0];
+			double D = dr.SqrLength();
+			if (D != 0.0)
+			{
+				double l = (c*dr - er[0]*dr)/D;
+
+				vec3d p;
+				if      (l <= 0.0) p = er[0];
+				else if (l >= 1.0) p = er[1];
+				else p = er[0] + (er[1] - er[0]) * l;
+
+				double D2 = (p - a).SqrLength() + (p - b).SqrLength();
+				if ((imin == -1) || (D2 < Dmin))
+				{
+					imin = i;
+					Dmin = D2;
+					rp.p = p;
+
+					double e = t * (rp.p - rc);
+					assert(fabs(e) < 1e-12);
+
+					// calculate face normal
+					vec3d e1 = re[1] - re[0];
+					vec3d e2 = re[2] - re[0];
+					vec3d fn = e1 ^ e2; fn.Normalize();
+
+					rp.n = fn;
+
+					rp.nface = faceList[i];
+				}
+			}
+		}
+	}
+
+	// clear all tags
+	for (int i = 0; i < faceList.size(); ++i) mesh.Face(faceList[i]).m_ntag = 0;
+
+	return (imin != -1);
+}
+
+void ProcessPath(vector<RINGPOINT>& pt)
+{
+	for (size_t i = 1; i < pt.size() - 1; ++i)
+	{
+		RINGPOINT& rm = pt[i - 1];
+		RINGPOINT& ri = pt[i    ];
+		RINGPOINT& rp = pt[i + 1];
+
+		vec3d e1 = ri.p - rm.p;
+		vec3d e2 = rp.p - ri.p;
+
+		vec3d t = (e2 - e1); t.Normalize();
+		if (t * ri.n >= 0.0)
+		{
+			// remove this point
+			pt.erase(pt.begin() + i);
+			i--;
+		}
+	}
+}
+
+bool SmoothenPath(Post::CGLModel* glm, int ntime, vector<RINGPOINT>& pt, int maxIters = 10, double tol = 1e-6)
+{
+	// evaluate the initial length
+	int NP = pt.size();
+	double L0 = 0;
+	for (int i = 0; i < NP - 1; ++i)
+	{
+		RINGPOINT& ri = pt[i];
+		RINGPOINT& rp = pt[i + 1];
+		L0 += (rp.p - ri.p).Length();
+	}
+
+	// see if we can shrink the path
+	int niter = 0;
+	bool done = false;
+	do
+	{
+		double DL = 0.0;
+		for (int i = 1; i < NP - 1; ++i)
+		{
+			RINGPOINT& ri = pt[i];
+
+			vec3d a = pt[i - 1].p;
+			vec3d b = pt[i + 1].p;
+			vec3d p = ri.p;
+
+			vec3d t = (b - a); t.Normalize();
+
+			double DL0 = (b - p).Length() + (p - a).Length();
+
+			RINGPOINT rp(ri);
+			if (ShortestDistanceOnRing(*glm, ntime, p, t, a, b, rp))
+			{
+				double DL1 = (b - rp.p).Length() + (rp.p - a).Length();
+				if (DL1 < DL0)
+				{
+					ri = rp;
+					DL += DL0 - DL1;
+				}
+			}
+		}
+
+		done = (DL / L0 < tol);
+		niter++;
+		if (niter > maxIters) done = true;
+	} 
+	while (!done);
+
+	return done;
+}
+
+bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFEModel();
+
+	FEPostMesh& mesh = *glm->GetActiveMesh();
+
+	mesh.TagAllFaces(0);
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+
+	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
+	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
+
+	vec3d t = r1 - r0; t.Normalize();
+
+	const int STEPS = 50;
+	double dr = (r1 - r0).Length() / STEPS;
+	vector<RINGPOINT> pt;
+	RINGPOINT rp = { r0, vec3d(0,0,0) };
+	pt.push_back(rp);
+	int nsteps = STEPS;
+	int n = 1;
+	for (int i = 1; i < STEPS; ++i, ++n)
+	{
+		// get the next point
+		vec3d ri = r0 + t * dr;
+
+		// find the closest point on ring
+		RINGPOINT rp;
+		if (ClosestPointOnRing(*glm, ntime, ri, t, rp))
+		{
+			if ((ri - rp.p) * rp.n < 0.0)
+			{
+				// if it's inside, project it to the closest point
+				pt.push_back(rp);
+				r0 = rp.p;
+				t = r1 - r0; t.Normalize();
+				dr = (r1 - r0).Length() / (STEPS - i);
+
+				// process path and remove any points that left contact. 
+				ProcessPath(pt);
+			}
+			else r0 = ri;
+		}
+		else
+		{
+			r0 = ri;
+		}
+	}
+	RINGPOINT endPoint = { r1, vec3d(0,0,0) };
+	pt.push_back(endPoint);
+
+	// smoothen the path
+	bool bsmoothPath = GetBoolValue(SMOOTH_PATH);
+	if (bsmoothPath)
+	{
+		int maxIters = GetIntValue(MAX_SMOOTH_ITERS);
+		double tol = GetFloatValue(SMOOTH_TOL);
+		SmoothenPath(glm, ntime, pt, maxIters, tol);
+
+		// one more time
+		ProcessPath(pt);
+	}
+
+	// copy the points to the PathData
+	path->m_points.clear();
+	for (size_t i=0; i < pt.size(); ++i) path->m_points.push_back(pt[i].p);
+
+	// all done
+	return true;
 }

@@ -43,7 +43,7 @@ class CGLLinePlot : public CGLLegendPlot
 	};
 
 public:
-	CGLLinePlot(CGLModel* po);
+	CGLLinePlot();
 	virtual ~CGLLinePlot();
 
 	void Render(CGLContext& rc) override;
@@ -95,7 +95,7 @@ class CGLPointPlot : public CGLLegendPlot
 	enum { POINT_SIZE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP, DATA_FIELD, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
 
 public:
-	CGLPointPlot(CGLModel* po);
+	CGLPointPlot();
 	virtual ~CGLPointPlot();
 
 	void Render(CGLContext& rc) override;

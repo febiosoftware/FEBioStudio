@@ -200,10 +200,11 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk)";
+	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
 	filters << "FEBioStudio Model (*.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
+	filters << "FEBioStudio Post Session (*.fsps)";
 	filters << "PreView files (*.prv)";
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
@@ -886,7 +887,8 @@ void CMainWindow::on_recentGeomFiles_triggered(QAction* action)
 void CMainWindow::SavePostDoc()
 {
 	QStringList filters;
-	filters << "FEBio xplt files (*.xplt)"
+	filters << "FEBio Studio Post Session (*.fsps)"
+		<< "FEBio xplt files (*.xplt)"
 		<< "FEBio files (*.feb)"
 		<< "ASCII files (*.*)"
 		<< "VRML files (*.wrl)"
@@ -924,6 +926,11 @@ void CMainWindow::SavePostDoc()
 		{
 		case 0:
 		{
+			bret = doc->SavePostSession(fileName.toStdString());
+		}
+		break;
+		case 1:
+		{
 			CDlgExportXPLT dlg(this);
 			if (dlg.exec() == QDialog::Accepted)
 			{
@@ -934,13 +941,13 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 1:
+		case 2:
 		{
 			Post::FEFEBioExport fr;
 			bret = fr.Save(fem, szfilename);
 		}
 		break;
-		case 2:
+		case 3:
 		{
 			CDlgExportAscii dlg(this);
 			if (dlg.exec() == QDialog::Accepted)
@@ -968,13 +975,13 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 3:
+		case 4:
 		{
 			Post::VRMLExporter exporter;
 			bret = exporter.Save(&fem, szfilename);
 		}
 		break;
-		case 4:
+		case 5:
 		{
 			CDlgExportLSDYNA dlg(this);
 			if (dlg.exec())
@@ -987,19 +994,19 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 5:
+		case 6:
 		{
 			Post::BYUExport exporter;
 			bret = exporter.Save(fem, szfilename);
 		}
 		break;
-		case 6:
+		case 7:
 		{
 			Post::FENikeExport fr;
 			bret = fr.Save(fem, szfilename);
 		}
 		break;
-		case 7:
+		case 8:
 		{
 			CDlgExportVTK dlg(this);
 			if (dlg.exec())
@@ -1011,7 +1018,7 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 8:
+		case 9:
 		{
 			CDlgExportLSDYNAPlot dlg(&fem, this);
 			if (dlg.exec())
@@ -1022,7 +1029,7 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 9:
+		case 10:
 		{
 			Post::FEAbaqusExport w;
 			stringstream ss;

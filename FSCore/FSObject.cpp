@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FSObject.h"
 
-FSObject::FSObject(FSObject* parent) : m_parent(parent)
+FSObject::FSObject(FSObject* parent) : m_parent(parent), m_sztypeStr(nullptr)
 {
 
 }

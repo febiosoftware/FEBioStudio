@@ -37,10 +37,16 @@ class CDlgKinemat : public QDialog
 public:
 	CDlgKinemat(CMainWindow* parent);
 
+	int StartIndex() const;
+	int EndIndex() const;
+	int Increment() const;
+
+	QString GetModelFile() const;
+	QString GetKineFile() const;
+
 private slots:
 	void OnBrowse1();
 	void OnBrowse2();
-	void OnApply();
 
 private:
 	CDlgKinematUI*	ui;

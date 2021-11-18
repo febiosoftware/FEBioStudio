@@ -32,7 +32,7 @@ class FEBoxInBox : public FEMultiBlockMesh
 {
 public:
 	// parameters
-	enum { NX, NY, NZ, NSEG, GX, GY, GZ, GR, GX2, GY2, GZ2, GR2};
+	enum { NX, NY, NZ, NSEG, GX, GY, GZ, GR, GX2, GY2, GZ2, GR2, ELEM_TYPE};
 
 public:
 	FEBoxInBox();

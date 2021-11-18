@@ -31,9 +31,13 @@ SOFTWARE.*/
 #include <GLLib/glx.h>
 using namespace Post;
 
+REGISTER_CLASS(CGLLinePlot, CLASS_PLOT, "lines", 0);
+
 //-----------------------------------------------------------------------------
-CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLLegendPlot(po)
+CGLLinePlot::CGLLinePlot()
 {
+	SetTypeString("lines");
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "Line.%02d", n++);
@@ -569,9 +573,13 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 
 //=============================================================================
 
+REGISTER_CLASS(CGLPointPlot, CLASS_PLOT, "points", 0);
+
 //-----------------------------------------------------------------------------
-CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLLegendPlot(po)
+CGLPointPlot::CGLPointPlot()
 {
+	SetTypeString("points");
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "Points.%02d", n++);

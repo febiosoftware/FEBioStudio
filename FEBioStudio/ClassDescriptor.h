@@ -40,7 +40,8 @@ typedef enum {
 	CLASS_MESHER,
 	CLASS_SKETCH,
 	CLASS_DISCRETE,
-	CLASS_SURFACE_MODIFIER
+	CLASS_SURFACE_MODIFIER,
+	CLASS_PLOT
 } Class_Type;
 
 //-----------------------------------------------------------------------------
@@ -97,6 +98,8 @@ public:
 	static Class_Iterator FirstCD();
 	static Class_Iterator LastCD ();
 
+	static FSObject* CreateClass(Class_Type classType, const char* typeStr);
+
 private:
 	static ClassKernel*	m_pInst;
 	
@@ -123,3 +126,22 @@ public:
 
 #define REGISTER_CLASS2(theClass, theType, theName, theResource, theFlag) \
 	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theName, theResource, theFlag));
+
+namespace FSCore {
+
+	template <class T> T* CreateClass(Class_Type classType, const char* sztype)
+	{
+		FSObject* po = ClassKernel::CreateClass(classType, sztype);
+		if (po)
+		{
+			T* pt = dynamic_cast<T*>(po);
+			if (pt == nullptr)
+			{
+				delete po;
+				return nullptr;
+			}
+			else return pt;
+		}
+		else return nullptr;
+	}
+}

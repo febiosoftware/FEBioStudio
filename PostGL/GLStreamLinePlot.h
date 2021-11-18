@@ -72,7 +72,7 @@ public:
 	};
 
 public:
-	CGLStreamLinePlot(CGLModel* fem);
+	CGLStreamLinePlot();
 
 	void Render(CGLContext& rc) override;
 
@@ -135,7 +135,7 @@ private:
 	vector<StreamLine>	m_streamLines;
 	vector<float>		m_prob;
 
-	FEFindElement	m_find;
+	FEFindElement*	m_find;
 
 	int		m_rangeType;				//!< dynamic, static, or user-defined
 	double	m_userMin, m_userMax;		//!< range for user-defined range

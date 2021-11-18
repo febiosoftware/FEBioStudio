@@ -48,6 +48,8 @@ FETorus::FETorus(GTorus* po)
 
 	AddIntParam(m_nd, "nd", "Divisions");
 	AddIntParam(m_ns, "ns", "Segments" );
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 FEMesh* FETorus::BuildMesh()
@@ -177,6 +179,9 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 
 	UpdateMB();
 
+	// set uniform smoothing ID
+	for (int i = 0; i < m_MBFace.size(); ++i) m_MBFace[i].m_sid = 0;
+
 	for (int i=0; i<4; ++i)
 	{
 		SetBlockFaceID(B[ 0 + 12*i], -1, -1, -1, -1, -1, -1);
@@ -196,14 +201,23 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 	// set edges
 	for (int i = 0; i < 4; ++i)
 	{
-		GetBlockEdge( 4+i*12, 1).SetEdge(EDGE_ZARC,  1);
-		GetBlockEdge( 5+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 6+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 7+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 8+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 9+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge(10+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge(11+i*12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 0 + i * 12, 3).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 0 + i * 12, 1).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 1 + i * 12, 1).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 2 + i * 12, 3).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 2 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 3 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 2 + i * 12, 7).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 2 + i * 12, 5).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 3 + i * 12, 5).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 4 + i * 12, 1).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 5 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 6 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 7 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 8 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 9 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge(10 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge(11 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
 
 		for (int j=0; j<8; ++j)
 			GetBlockEdge(4 + j + i*12, 9).SetEdge(EDGE_3P_CIRC_ARC, 1, 4 + i*17);
@@ -270,6 +284,15 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 	m_MBNode[49].SetID(13);
 	m_MBNode[47].SetID(14);
 	m_MBNode[45].SetID(15);
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	return FEMultiBlockMesh::BuildMesh();
 }

@@ -116,3 +116,6 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 // project the point p in the reference frame of element el. This returns the iso-parametric coordinates in r.
 // The return value is true or false depending if the point is actually inside the element
 bool ProjectInsideReferenceElement(FECoreMesh& m, FEElement_& el, const vec3f& p, double r[3]);
+
+// find the shortest path on a mesh (along the mesh' edges)
+std::vector<vec3d> FindShortestPath(FEMesh& mesh, int m0, int m1);

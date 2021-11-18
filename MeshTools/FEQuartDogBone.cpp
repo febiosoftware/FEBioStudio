@@ -41,6 +41,8 @@ FEQuartDogBone::FEQuartDogBone(GQuartDogBone* po)
 	AddDoubleParam(1, "R-bias");
 	AddDoubleParam(1, "Z-bias");
 	AddBoolParam(false, "bz", "Z-mirrored bias");
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 //-----------------------------------------------------------------------------
@@ -189,6 +191,15 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
 	m_MBNode[17].SetID(12);
 	m_MBNode[18].SetID(13);
 	m_MBNode[19].SetID(14);
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
@@ -356,6 +367,15 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	m_MBNode[24].SetID(12);
 	m_MBNode[26].SetID(13);
 	m_MBNode[25].SetID(14);
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();

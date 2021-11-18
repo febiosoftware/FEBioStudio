@@ -622,6 +622,8 @@ public:
 	int FindView(CDocument* doc);
 	GObject* GetActiveObject();
 
+	static CMainWindow* GetInstance();
+
 private:
 	Ui::CMainWindow*	ui;
 
@@ -629,6 +631,8 @@ private:
 
 	CFileThread*		m_fileThread;
 	vector<QueuedFile>	m_fileQueue;
+
+	static CMainWindow*		m_mainWnd;
 };
 
 class CResource

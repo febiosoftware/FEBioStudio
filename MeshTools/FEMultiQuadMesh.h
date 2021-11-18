@@ -45,6 +45,9 @@ public:
 	// build the mesh
 	FEMesh* BuildMesh();
 
+	// set the quad mesh flag
+	void SetElementType(int elemType);
+
 	// build the mesh from the object
 	bool Build(GObject* po);
 
@@ -69,29 +72,54 @@ protected:
 	void BuildMBEdges();
 
 	// build the mesh items
-	void BuildNodes(FEMesh* pm);
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildFENodes(FEMesh* pm);
+	void BuildFEFaces(FEMesh* pm);
+	void BuildFEEdges(FEMesh* pm);
 
 	void BuildNodeFaceTable(vector< vector<int> >& NFT);
 	int FindEdgeIndex(MBFace& F, int n1, int n2);
 	int FindEdge(int n1, int n2);
 
-	int GetFaceNodeIndex(MBFace& f, int i, int j);
 	int GetEdgeNodeIndex(MBEdge& e, int i);
 
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
 
 protected:
+	class MQPoint
+	{
+	public:
+		int	m_i, m_j;
+		double	m_r, m_s;
 
+		MQPoint() { m_i = m_j = -1; m_r = m_s = 0.0; }
+		MQPoint(int i, double r) { m_i = i; m_j = -1; m_r = r; m_s = 0.0; }
+		MQPoint(int i, int j, double r, double s) { m_i = i; m_j = j; m_r = r; m_s = s; }
+	};
+
+protected:
 	int GetFENode(MBNode& node);
-	vector<int> GetFENodeList(MBEdge& node);
-	vector<int> GetFENodeList(MBFace& node);
+
+	vec3d EdgePosition(MBEdge& edge, const MQPoint& q);
+	vec3d FacePosition(MBFace& face, const MQPoint& q);
+
+	int AddFENode(const vec3d& r, int gid = -1);
+
+protected:
+	int AddFENode(MBNode& N);
+	int AddFEEdgeNode(MBEdge& E, const MQPoint& q);
+	int AddFEFaceNode(MBFace& F, const MQPoint& q);
+
+private:
+	int		m_elemType;	// element type to generate
+	bool	m_bquadMesh;
 
 protected:
 	GObject*		m_po;
 	vector<MBFace>	m_MBFace;
 	vector<MBEdge>	m_MBEdge;
 	vector<MBNode>	m_MBNode;
-};
 
+	FEMesh* m_pm;
+	FENode* m_currentNode;
+	int		m_nodes;
+};

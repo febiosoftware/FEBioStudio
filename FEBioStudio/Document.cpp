@@ -705,6 +705,11 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		assert(false);
 		return "Mesh data";
 	}
+	else if (dynamic_cast<Post::CGLPlot*>(po))
+	{
+		Post::CGLPlot* plt = dynamic_cast<Post::CGLPlot*>(po); assert(plt);
+		return plt->GetTypeString();
+	}
 	else
 	{
 		assert(false);

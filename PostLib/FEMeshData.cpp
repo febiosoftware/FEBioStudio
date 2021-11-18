@@ -1294,7 +1294,7 @@ float FECurvature::nodal_curvature(int n, int measure)
 	vector<vec3f> x; x.reserve(128);
 
 	// number of levels
-	int nlevels = 1; m_pdf->m_nlevels - 1;
+	int nlevels = m_pdf->m_nlevels - 1;
 	if (nlevels <  0) nlevels = 0;
 	if (nlevels > 10) nlevels = 10;
 

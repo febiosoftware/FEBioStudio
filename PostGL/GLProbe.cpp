@@ -34,8 +34,12 @@ SOFTWARE.*/
 #include <sstream>
 using namespace Post;
 
-GLProbe::GLProbe(CGLModel* fem) : CGLPlot(fem)
+REGISTER_CLASS(GLProbe, CLASS_PLOT, "probe", 0);
+
+GLProbe::GLProbe()
 {
+	SetTypeString("probe");
+
 	static int n = 1;
 	char sz[256] = { 0 };
 	sprintf(sz, "Probe%d", n++);

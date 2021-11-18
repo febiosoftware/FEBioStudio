@@ -1775,12 +1775,12 @@ FEMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
 	int NN = (int)pointCloud.size();
 	in.numberofpoints = NN;
 	in.pointlist = new REAL[3 * NN];
-	for (int i = 0, n = 0; i < NN; ++i, ++n)
+	for (int i = 0; i < NN; ++i)
 	{
 		const vec3d& r = pointCloud[i];
-		in.pointlist[3 * n] = r.x;
-		in.pointlist[3 * n + 1] = r.y;
-		in.pointlist[3 * n + 2] = r.z;
+		in.pointlist[3 * i    ] = r.x;
+		in.pointlist[3 * i + 1] = r.y;
+		in.pointlist[3 * i + 2] = r.z;
 	}
 
 	try

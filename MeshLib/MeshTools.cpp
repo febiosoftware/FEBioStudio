@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "MeshTools.h"
+#include "FENodeNodeList.h"
 using namespace std;
 
 // calculate the closest-fitting circle of a triangle
@@ -1112,4 +1113,107 @@ bool ProjectInsideReferenceElement(FECoreMesh& m, FEElement_& el, const vec3f& p
 	project_inside_element(el, p, r, x);
 
 	return IsInsideElement(el, r, 0.001);
+}
+
+//-------------------------------------------------------------------------------
+std::vector<vec3d> FindShortestPath(FEMesh& mesh, int m0, int m1)
+{
+	// helper class for finding neighbors
+	FENodeNodeList NNL(&mesh);
+
+	const double INF = 1e34;
+	int N = mesh.Nodes();
+	vector<double> dist(N, INF);
+
+	mesh.TagAllNodes(-1);
+
+	int ncurrent = m0;
+	mesh.Node(m0).m_ntag = m0;
+	dist[m0] = 0.0;
+	double L0 = 0.0;
+	while (ncurrent != m1)
+	{
+		// get the position of the current node
+		FENode& node0 = mesh.Node(ncurrent);
+		vec3d rc = node0.pos();
+
+		// update neighbor distances
+		int nval = NNL.Valence(ncurrent);
+		for (int i = 0; i < nval; ++i)
+		{
+			int mi = NNL.Node(ncurrent, i);
+			assert(mi != ncurrent);
+
+			FENode& nodei = mesh.Node(mi);
+			if (dist[mi] > 0)
+			{
+				vec3d ri = mesh.Node(mi).pos();
+				double dL = (ri - rc).Length();
+
+				double L1 = L0 + dL;
+				if (L1 < dist[mi])
+				{
+					dist[mi] = L1;
+					nodei.m_ntag = ncurrent;
+				}
+				else L1 = dist[mi];
+			}
+		}
+
+		// choose the next node as the unvisited node with the smallest distance
+		int nmin = -1;
+		double dmin = 0.0;
+		for (int i = 0; i < mesh.Nodes(); ++i)
+		{
+			if (dist[i] > 0)
+			{
+				if ((nmin == -1) || (dist[i] < dmin))
+				{
+					nmin = i;
+					dmin = dist[i];
+				}
+			}
+		}
+
+		if (nmin == -1)
+		{
+			// hmmm, something went wrong
+			assert(false);
+			return std::vector<vec3d>();
+		}
+
+		L0 = dist[nmin];
+		dist[nmin] = -1.0;
+		ncurrent = nmin;
+	}
+
+	// build the path
+	// NOTE: This traverses the path in reverse!
+	std::vector<vec3d> tmp;
+	ncurrent = m1;
+	tmp.push_back(mesh.Node(m1).pos());
+	do
+	{
+		int parentNode = mesh.Node(ncurrent).m_ntag;
+
+		vec3d rc = mesh.Node(parentNode).pos();
+		tmp.push_back(rc);
+
+		ncurrent = parentNode;
+
+	} while (ncurrent != m0);
+
+	// invert the temp path to get the final path
+	std::vector<vec3d> path;
+	int n = tmp.size();
+	if (n > 0)
+	{
+		path.resize(n);
+		for (int i = 0; i < n; ++i)
+		{
+			path[i] = tmp[n - i - 1];
+		}
+	}
+
+	return path;
 }

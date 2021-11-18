@@ -29,8 +29,12 @@ SOFTWARE.*/
 #include "GLModel.h"
 using namespace Post;
 
-CGLParticleFlowPlot::CGLParticleFlowPlot(CGLModel* mdl) : CGLPlot(mdl), m_find(*mdl->GetActiveMesh())
+REGISTER_CLASS(CGLParticleFlowPlot, CLASS_PLOT, "particle-flow", 0);
+
+CGLParticleFlowPlot::CGLParticleFlowPlot()
 {
+	SetTypeString("particle-flow");
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "ParticleFlow.%02d", n++);
@@ -45,6 +49,8 @@ CGLParticleFlowPlot::CGLParticleFlowPlot(CGLModel* mdl) : CGLPlot(mdl), m_find(*
 	AddDoubleParam(0, "Step size");
 	AddBoolParam(false, "Show path lines");
 	AddIntParam(0, "Path line length");
+
+	m_find = nullptr;
 
 	m_nvec = -1;
 	m_showPath = false;
@@ -215,8 +221,9 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
+		if (m_find == nullptr) m_find = new FEFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
-		m_find.Init(bdisp ? 1 : 0);
+		m_find->Init(bdisp ? 1 : 0);
 	}
 
 	FEMeshBase* pm = mdl->GetActiveMesh();
@@ -357,7 +364,7 @@ vec3f CGLParticleFlowPlot::Velocity(const vec3f& r, int ntime, float w, bool& ok
 
 	int nelem;
 	double q[3];
-	if (m_find.FindElement(r, nelem, q))
+	if (m_find->FindElement(r, nelem, q))
 	{
 		ok = true;
 		FEElement_& el = mesh.ElementRef(nelem);
@@ -389,7 +396,7 @@ void CGLParticleFlowPlot::AdvanceParticles(int n0, int n1)
 	// get the mesh
 	FEMeshBase& mesh = *mdl->GetActiveMesh();
 
-	BOX box = m_find.BoundingBox();
+	BOX box = m_find->BoundingBox();
 	float R = box.GetMaxExtent();
 	float dt = m_dt;
 	if (dt <= 0.f) return;

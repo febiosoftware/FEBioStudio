@@ -214,19 +214,29 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 		}
 	}
 	// add mid-layer nodes for quadratic elements
-	if (!linear) {
+	if (!linear) 
+	{
+		dd = gd;
+		d = 0;
 		for (int l = 1; l <= nseg; ++l)
 		{
-			double D = (l - 1)*dist / nseg + (dist / 2) / nseg;
 			for (int i = 0; i<n0; ++i)
 			{
 				FENode& node = pm->Node(i);
 				if (node.m_ntag >= 0)
 				{
 					FENode& node2 = pm->Node(n0 + nseg*nn + (l - 1)*nn + node.m_ntag);
-					node2.r = node.r + ed[node.m_ntag] * D;
+					node2.r = node.r + ed[node.m_ntag] * (d  + dd* 0.5);
 					node2.m_ntag = node.m_ntag;
 				}
+			}
+
+			d += dd;
+			dd *= fd;
+			if (bd && ((l - 1) == nseg / 2 - 1))
+			{
+				if (nseg % 2 == 0) dd /= fd;
+				fd = 1.0 / fd;
 			}
 		}
 	}

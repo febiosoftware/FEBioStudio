@@ -43,7 +43,7 @@ public:
 	};
 
 public:
-	CGLIsoSurfacePlot(CGLModel* po);
+	CGLIsoSurfacePlot();
 
 	int GetSlices();
 	void SetSlices(int nslices);
