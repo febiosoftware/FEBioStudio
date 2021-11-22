@@ -46,7 +46,8 @@ SOFTWARE.*/
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
-	ui->showCurveEditor();
+	CModelDocument* doc = GetModelDocument();
+	if (doc) ui->showCurveEditor();
 }
 
 void CMainWindow::on_actionMeshInspector_triggered()
