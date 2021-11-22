@@ -1902,7 +1902,7 @@ void CMainWindow::SetItemSelectionMode(int nselect, int nitem)
 //! \param po pointer to object that will be selected in the model editor
 void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 {
-	if (ui->modelViewer && ui->modelViewer->isVisible())
+	if (ui->modelViewer && GetModelDocument())
 	{
 		if (bupdate)
 		{
@@ -1915,7 +1915,7 @@ void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 		}
 		else ui->modelViewer->UpdateObject(po);
 	}
-	else if (ui->postPanel && ui->postPanel->isVisible())
+	else if (ui->postPanel && GetPostDocument())
 	{
 		ui->postPanel->Update(bupdate);
 		if (po) ui->postPanel->SelectObject(po);
