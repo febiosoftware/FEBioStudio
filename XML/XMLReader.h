@@ -75,8 +75,8 @@ public:
 	enum {MAX_LEVEL =  16};
 
 public:
-	char	m_sztag[MAX_TAG];			// tag name
-	char	m_szval[MAX_TAG];			// tag value
+	char		m_sztag[MAX_TAG];	// tag name
+	std::string	m_sval;				// tag value
 
 	XMLAtt	m_att[MAX_ATT];		// attributes
 
@@ -104,7 +104,7 @@ public:
 	void clear()
 	{
 		m_sztag[0] = 0;
-		m_szval[0] = 0;
+		m_sval.clear();
 		m_natt = 0;
 		m_bend = false;
 		m_bleaf = true;
@@ -125,6 +125,8 @@ public:
 
 	int children();
 
+	void skip();
+
 public:
 	const char* AttributeValue(const char* szat, bool bopt = false);
 	XMLAtt* AttributePtr(const char* szat);
@@ -134,10 +136,10 @@ public:
 
 	const char* Name() { return m_sztag; }
 
-	void value(char* szstr) { strcpy(szstr, m_szval); }
-	void value(double& val) { val = atof(m_szval); } 
-	void value(float& val)  { val = (float) atof(m_szval); }
-	void value(int& val) { val = atoi(m_szval); }
+	void value(char* szstr) { strcpy(szstr, m_sval.c_str()); }
+	void value(double& val) { val = atof(m_sval.c_str()); } 
+	void value(float& val)  { val = (float) atof(m_sval.c_str()); }
+	void value(int& val) { val = atoi(m_sval.c_str()); }
 	int value(double* pf, int n);
 	int value(float* pf, int n);
 	int value(int* pi, int n);
@@ -145,12 +147,14 @@ public:
 	void value(vec2i& v);
 	void value(mat3d& v);
 	void value(vec3f& v);
-	void value(bool& b) { b = (atoi(m_szval) == 1); }
-	void value(vector<int>& l);
+	void value(bool& b) { b = (atoi(m_sval.c_str()) == 1); }
+	void value(std::vector<int>& l);
+	void value2(std::vector<int>& l);
+	void value(std::vector<double>& l);
 	void value(GLColor& c);
 	void value(std::string& s);
 
-	const char* szvalue() { return m_szval; }
+	const char* szvalue() { return m_sval.c_str(); }
 
 	const std::string& comment();
 };
@@ -266,7 +270,7 @@ public:
 	FILE* GetFilePtr() { return m_fp; } 
 
 	// Open a file. 
-	bool Open(const char* szfile);
+	bool Open(const char* szfile, bool checkForXMLTag = true);
 
 	void Close();
 
@@ -359,3 +363,5 @@ protected:
 inline void XMLTag::operator ++ () { m_preader->NextTag(*this); }
 
 inline const std::string& XMLTag::comment() { return m_preader->GetLastComment(); }
+
+inline void XMLTag::skip() { m_preader->SkipTag(*this); }

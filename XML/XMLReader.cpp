@@ -63,7 +63,6 @@ XMLTag::XMLTag()
 	m_bend = false;
 
 	m_sztag[0] = 0;
-	m_szval[0] = 0;
 	m_nlevel = 0;
 
 	m_natt = 0;
@@ -81,11 +80,11 @@ XMLTag::XMLTag()
 
 int XMLTag::value(double* pf, int n)
 {
-	char* sz = m_szval;
+	const char* sz = m_sval.c_str();
 	int nr = 0;
 	for (int i=0; i<n; ++i)
 	{
-		char* sze = strchr(sz, ',');
+		const char* sze = strchr(sz, ',');
 
 		pf[i] = atof(sz);
 		nr++;
@@ -100,11 +99,11 @@ int XMLTag::value(double* pf, int n)
 
 int XMLTag::value(float* pf, int n)
 {
-	char* sz = m_szval;
+	const char* sz = m_sval.c_str();
 	int nr = 0;
 	for (int i=0; i<n; ++i)
 	{
-		char* sze = strchr(sz, ',');
+		const char* sze = strchr(sz, ',');
 
 		pf[i] = (float) atof(sz);
 		nr++;
@@ -115,15 +114,59 @@ int XMLTag::value(float* pf, int n)
 	return nr;
 }
 
+void XMLTag::value(std::vector<double>& l)
+{
+	l.clear();
+	const char *sz = m_sval.c_str();
+	while (sz && *sz)
+	{
+		// skip space
+		while (*sz == ' ') ++sz;
+
+		// read the value
+		if (sz && *sz)
+		{
+			double v = atof(sz);
+			l.push_back(v);
+
+			// find next space or comma
+			while (*sz && (*sz != ' ') && (*sz != ',')) sz++;
+			if (*sz == ',') sz++;
+		}
+	}
+}
+
+void XMLTag::value2(std::vector<int>& l)
+{
+	l.clear();
+	const char* sz = m_sval.c_str();
+	while (sz && *sz)
+	{
+		// skip space
+		while (*sz == ' ') ++sz;
+
+		// read the value
+		if (sz && *sz)
+		{
+			int v = (int)atoi(sz);
+			l.push_back(v);
+
+			// find next space or comma
+			while (*sz && (*sz != ' ') && (*sz != ',')) sz++;
+			if (*sz == ',') sz++;
+		}
+	}
+}
+
 //////////////////////////////////////////////////////////////////////
 
 int XMLTag::value(int* pi, int n)
 {
-	char* sz = m_szval;
+	const char* sz = m_sval.c_str();
 	int nr = 0;
 	for (int i=0; i<n; ++i)
 	{
-		char* sze = strchr(sz, ',');
+		const char* sze = strchr(sz, ',');
 
 		pi[i] = atoi(sz);
 		nr++;
@@ -138,30 +181,30 @@ int XMLTag::value(int* pi, int n)
 
 void XMLTag::value(vec3d& v)
 {
-	sscanf(m_szval, "%lg,%lg,%lg", &v.x, &v.y, &v.z);
+	sscanf(m_sval.c_str(), "%lg,%lg,%lg", &v.x, &v.y, &v.z);
 }
 
 void XMLTag::value(vec2i& v)
 {
-	sscanf(m_szval, "%d,%d", &v.x, &v.y);
+	sscanf(m_sval.c_str(), "%d,%d", &v.x, &v.y);
 }
 
 void XMLTag::value(vec3f& v)
 {
-	sscanf(m_szval, "%g,%g,%g", &v.x, &v.y, &v.z);
+	sscanf(m_sval.c_str(), "%g,%g,%g", &v.x, &v.y, &v.z);
 }
 
 void XMLTag::value(mat3d& m)
 {
 	double a[9] = { 0 };
-	sscanf(m_szval, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", a, a+1, a+2,a+3,a+4,a+5,a+6,a+7,a+8);
+	sscanf(m_sval.c_str(), "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", a, a+1, a+2,a+3,a+4,a+5,a+6,a+7,a+8);
 	m = mat3d(a);
 }
 
 void XMLTag::value(GLColor& c)
 {
 	int n[3] = { 0,0,0 };
-	sscanf(m_szval, "%d,%d,%d", &n[0], &n[1], &n[2]);
+	sscanf(m_sval.c_str(), "%d,%d,%d", &n[0], &n[1], &n[2]);
 	c.r = (Byte)n[0];
 	c.g = (Byte)n[1];
 	c.b = (Byte)n[2];
@@ -169,14 +212,14 @@ void XMLTag::value(GLColor& c)
 
 void XMLTag::value(std::string& s)
 {
-	s = m_szval;
+	s = m_sval;
 }
 
 //-----------------------------------------------------------------------------
 void XMLTag::value(vector<int>& l)
 {
 	int i, n = 0, n0, n1, nn;
-	char* szval = strdup(m_szval);
+	char* szval = strdup(m_sval.c_str());
 	char* ch;
 	char* sz = szval;
 	int nread;
@@ -328,7 +371,7 @@ void XMLReader::Close()
 //////////////////////////////////////////////////////////////////////
 
 // Open a file. 
-bool XMLReader::Open(const char* szfile)
+bool XMLReader::Open(const char* szfile, bool checkForXMLTag)
 {
 	// try to open the file
 	m_fp = fopen(szfile, "rb");
@@ -342,11 +385,14 @@ bool XMLReader::Open(const char* szfile)
 	fgets(szline, 255, m_fp);
 
 	// make sure it is correct
-	if (strncmp(szline, "<?xml", 5) != 0)
+	if (checkForXMLTag)
 	{
-		// This file is not an XML file
-		Close();
-		return false;
+		if (strncmp(szline, "<?xml", 5) != 0)
+		{
+			// This file is not an XML file
+			Close();
+			return false;
+		}
 	}
 
 	// This file is ready to be processed
@@ -591,9 +637,8 @@ void XMLReader::ReadValue(XMLTag& tag)
 	char ch;
 	if (!tag.isend())
 	{
-		char *sz = tag.m_szval;
-		while ((ch=GetChar())!='<') *sz++ = ch;
-		*sz=0;
+		tag.m_sval.clear();
+		while ((ch=GetChar())!='<') tag.m_sval += ch;
 	}
 	else while ((ch=GetChar())!='<');
 }
