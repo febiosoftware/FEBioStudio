@@ -1077,6 +1077,8 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 					}
 					++tag;
 				} while (!tag.isend());
+
+				plot->UpdateData(true);
 			}
 			//			else xml.SkipTag(tag);
 			else return false;
