@@ -34,7 +34,7 @@ protected:
 	enum Token_value {
 		NAME,	NUMBER, END,
 		PLUS='+', MINUS='-', MUL='*', DIV='/', POW='^',
-		LP='(',	RP=')', PRINT
+		LP='(',	RP=')', COMMA=',', PRINT
 	};
 
 public:
