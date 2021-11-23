@@ -1632,7 +1632,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 		{
 			if (tag == "equation")
 			{
-				ProcessReactionEquation(GetFEModel(), pm, tag.szvalue());
+				ProcessReactionEquation(GetFEModel(), pm, tag.m_szval.c_str());
 			}
 			else if (tag == "rate_constant")
 			{

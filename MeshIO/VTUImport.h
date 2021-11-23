@@ -23,49 +23,31 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+
 #pragma once
-#include "GLPlot.h"
+#include "FileReader.h"
+#include <MeshTools/FEProject.h>
 
-class FEMesh;
+class XMLTag;
+class VTKDataArray;
+class VTKPiece;
+class VTKModel;
 
-namespace Post {
-
-class GLProbe : public CGLPlot
+class VTUimport : public FEFileImport
 {
-	enum { INIT_POS, SIZE, COLOR, FOLLOW, SHOW_PATH, PATH_COLOR };
 
 public:
-	GLProbe();
+	VTUimport(FEProject& prj);
+	~VTUimport(void);
 
-	void Render(CGLContext& rc) override;
-
-	void Update() override;
-	void Update(int ntime, float dt, bool breset) override;
-
-	bool UpdateData(bool bsave = true) override;
-
-	double DataValue(int nfield, int nstep);
-
-public:
-	GLColor GetColor() const;
-	void SetColor(const GLColor& c);
+	bool Load(const char* szfile);
 
 private:
-	int ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt);
+	bool ParseUnstructuredGrid(XMLTag& tag, VTKModel& vtk);
+	bool ParsePiece(XMLTag& tag, VTKModel& vtk);
+	bool ParsePoints(XMLTag& tag, VTKPiece& piece);
+	bool ParseCells(XMLTag& tag, VTKPiece& piece);
+	bool ParseDataArray(XMLTag& tag, VTKDataArray& vtkDataArray);
 
-private:
-	vec3d	m_initPos;
-	GLColor	m_col;
-	double	m_size;
-	bool	m_bfollow;
-	bool	m_bshowPath;
-
-	vec3d		m_pos;
-	double		m_R;
-	int			m_lastTime;
-	double		m_lastdt;
-	int			m_elem;
-
-	std::vector<vec3d>	m_path;
+	bool BuildMesh(VTKModel& vtk);
 };
-}

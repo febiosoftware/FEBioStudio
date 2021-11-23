@@ -50,6 +50,7 @@ SOFTWARE.*/
 #include <MeshIO/FEViewpointExport.h>
 #include <MeshIO/FETetGenExport.h>
 #include <MeshIO/FEVTKExport.h>
+#include <MeshIO/VTUImport.h>
 #include <MeshIO/FEPLYExport.h>
 #include <GeomLib/GPrimitive.h>
 #include <FEBio/FEBioImport.h>
@@ -418,6 +419,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("ele", Qt::CaseInsensitive) == 0) return new FETetGenImport(prj);
 	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new FEIGESFileImport(prj);
 	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new FEVTKimport(prj);
+	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
 	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
 	{
 		CDlgRAWImport dlg(this);
