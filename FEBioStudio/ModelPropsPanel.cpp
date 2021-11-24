@@ -674,7 +674,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		}
 		else ui->showPropsPanel(false);
 
-		ui->showSelectionPanel1(false); ui->setSelection1Title("Selection");
+		ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
 		ui->showSelectionPanel2(false);
 
 		FEDomainComponent* pbc = dynamic_cast<FEDomainComponent*>(m_currentObject);
