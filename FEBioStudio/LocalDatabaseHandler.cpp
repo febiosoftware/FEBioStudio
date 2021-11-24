@@ -1011,29 +1011,36 @@ std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
 	return files;
 }
 
-std::set<int> CLocalDatabaseHandler::FileDataSearch(QString dataType, QString term)
+std::map<QString, QStringList> CLocalDatabaseHandler::GetDataTypeInfo()
 {
+    std::map<QString, QStringList> info;
+
     char **table;
 	int rows, cols;
 
-	std::set<int> files;
+    std::string query = "SELECT sections.section, type FROM sections JOIN dataTypes on sections.ID = dataTypes.section";
 
-	// Matches file data types
-	QString query = QString("SELECT filenames.ID FROM filenames JOIN filedatatypes ON filenames.ID=fileDataTypes.file JOIN "
-        "dataTypes ON fileDataTypes.type=dataTypes.ID JOIN sections ON dataTypes.section=sections.ID WHERE sections.section "
-        "LIKE '%%1%' and dataTypes.type LIKE '%%2%'").arg(dataType).arg(term);
-	std::string queryStd = query.toStdString();
-
-	imp->getTable(queryStd, &table, &rows, &cols);
+    imp->getTable(query, &table, &rows, &cols);
 
 	for(int row = 1; row <= rows; row++)
 	{
-		files.insert(std::stoi(table[row]));
+        QString section = table[row*cols];
+        QString dataType = table[row*cols+1];
+        
+        try
+        {
+            info.at(section).append(dataType);
+        }
+        catch(const std::out_of_range& e)
+        {
+            info[section] = QStringList(dataType);
+        }
+        
 	}
 
-	sqlite3_free_table(table);
+    sqlite3_free_table(table);
 
-	return files;
+    return info;
 }
 
 QString CLocalDatabaseHandler::ProjectNameFromID(int ID)

@@ -109,6 +109,7 @@ private slots:
 	void on_actionUpload_triggered();
 	void on_actionSearch_triggered();
 	void on_actionClearSearch_triggered();
+    void on_actionShowAdvanced_triggered();
 	void on_actionDeleteRemote_triggered();
 	void on_actionModify_triggered();
 	void on_actionFindInTree_triggered();
@@ -121,7 +122,13 @@ private slots:
 	void on_projectTags_linkActivated(const QString& link);
 	void on_fileTags_linkActivated(const QString& link);
 
+    void on_actionAdvnacedSearch_triggered();
+    void on_actionAdvnacedClear_triggered();
+    void on_actionAdvnacedHide_triggered();
+
 private:
+    void SearchDatabase(QString searchTerm);
+
 	void UpdateInfo(CustomTreeWidgetItem *item);
 	void DownloadItem(CustomTreeWidgetItem *item);
 	void OpenItem(CustomTreeWidgetItem *item);

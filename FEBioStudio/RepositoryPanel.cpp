@@ -70,8 +70,12 @@ CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent)
 {
 	// build Ui
 	ui->setupUi(this);
-	QObject::connect(ui->searchLineEdit, &QLineEdit::returnPressed, this, &CRepositoryPanel::on_actionSearch_triggered);
-	QObject::connect(ui->loadingCancel, SIGNAL(clicked(bool)), this, SIGNAL(cancelClicked()));
+	connect(ui->searchLineEdit, &QLineEdit::returnPressed, this, &CRepositoryPanel::on_actionSearch_triggered);
+	connect(ui->loadingCancel, SIGNAL(clicked(bool)), this, SIGNAL(cancelClicked()));
+
+    connect(ui->advancedSearch->actionSearch, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedSearch_triggered);
+    connect(ui->advancedSearch->actionClear, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedClear_triggered);
+    connect(ui->advancedSearch->actionHide, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedHide_triggered);
 
 	dbHandler = new CLocalDatabaseHandler(this);
 	repoHandler = new CRepoConnectionHandler(this, dbHandler, m_wnd);
@@ -151,6 +155,9 @@ void CRepositoryPanel::SetModelList()
 	{
 		ui->projectTree->topLevelItem(0)->setSelected(true);
 	}
+
+    // Set Fields in the advanced search box
+    ui->advancedSearch->Reset(dbHandler->GetDataTypeInfo());
 
 	ui->stack->setCurrentIndex(1);
 
@@ -657,6 +664,143 @@ void CRepositoryPanel::on_actionSearch_triggered()
 	if(searchTerm.isEmpty()) return;
 
     searchTerm = "all:" + searchTerm;
+
+    SearchDatabase(searchTerm);
+}
+
+void CRepositoryPanel::on_actionClearSearch_triggered()
+{
+	ui->searchLineEdit->clear();
+    ui->advancedSearch->Clear();
+
+	ui->treeStack->setCurrentIndex(0);
+}
+
+void CRepositoryPanel::on_actionShowAdvanced_triggered()
+{
+    ui->searchBar->hide();
+    ui->advancedSearch->show();
+}
+
+void CRepositoryPanel::on_actionDeleteRemote_triggered()
+{
+	if(repoHandler->getUploadPermission())
+	{
+		int response = QMessageBox::question(this, "Delete Project", "Are you sure that you want to permanently "
+				"delete this project from the repository?\n\nThis action cannot be undone.", QMessageBox::Yes | QMessageBox::No);
+
+		if(response == QMessageBox::Yes)
+		{
+			int projID = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0])->getProjectID();
+
+			repoHandler->deleteProject(projID);
+		}
+	}
+	else
+	{
+		QMessageBox::information(this, "Permission Denied", "You do not have permission to delete this project.", QMessageBox::Ok);
+	}
+
+}
+
+void CRepositoryPanel::on_actionModify_triggered()
+{
+	if(repoHandler->getUploadPermission())
+	{
+		int projID = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0])->getProjectID();
+
+		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, projID);
+		dlg.setName(ui->projectName->text());
+		dlg.setOwner(repoHandler->getUsername());
+
+		QStringList categories = GetCategories();
+		dlg.setCategories(categories);
+
+		dlg.setCategory(dbHandler->CategoryFromID(projID));
+
+		dlg.setDescription(ui->projectDesc->toPlainText());
+		dlg.setTags(ui->currentTags);
+		dlg.setPublications(ui->projectPubs->getPublications());
+
+		QStringList tags = dbHandler->GetTags();
+		dlg.setTagList(tags);
+
+		QList<QList<QVariant>> fileInfo = dbHandler->GetProjectFileInfo(projID);
+		dlg.setFileInfo(fileInfo);
+
+		if (dlg.exec())
+		{
+			QVariantMap projectInfo;
+			projectInfo.insert("name", dlg.getName());
+			projectInfo.insert("description", dlg.getDescription());
+			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
+
+			QList<QVariant> tags;
+			for(QString tag : dlg.getTags())
+			{
+				tags.append(tag);
+			}
+			projectInfo.insert("tags", tags);
+
+			projectInfo.insert("publications", dlg.getPublicationInfo());
+
+			projectInfo.insert("files", dlg.getFileInfo());
+
+			QStringList filePaths = dlg.GetFilePaths();
+			QStringList zipFilePaths = dlg.GetZipFilePaths();
+
+			if(filePaths.size() > 0)
+			{
+				projectInfo.insert("uploadRequired", true);
+			}
+			else
+			{
+				projectInfo.insert("uploadRequired", false);
+			}
+
+			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
+
+			ui->showLoadingPage("Modifying Project...");
+			repoHandler->setUploadReady(false);
+
+			repoHandler->modifyProject(projID, payload);
+
+			if(filePaths.size() > 0)
+			{
+				QString archiveName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
+
+				ui->showLoadingPage("Compressing Files...", true);
+
+				ZipThread* zip = new ZipThread(archiveName, filePaths, zipFilePaths);
+				QObject::connect(zip, &ZipThread::resultReady, this, &CRepositoryPanel::updateModifyReady);
+				QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
+				QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
+				QObject::connect(zip, &ZipThread::progress, this, &CRepositoryPanel::loadingPageProgress);
+				zip->start();
+			}
+		}
+	}
+	else
+	{
+		QMessageBox box;
+		box.setText("You do not have permission to modify the repository.");
+	}
+
+}
+
+void CRepositoryPanel::on_actionFindInTree_triggered()
+{
+	SearchItem* item = static_cast<SearchItem*>(ui->searchTree->selectedItems()[0]);
+
+	ui->projectTree->setCurrentItem(item->getRealItem());
+
+	ui->treeStack->setCurrentIndex(0);
+
+	ui->searchLineEdit->clear();
+}
+
+void CRepositoryPanel::SearchDatabase(QString searchTerm)
+{
     vector<pair<QString, QStringList>> termList;
 
     QRegularExpression regex("\\w*:.*?(?=(?:\\w*:)|$)");
@@ -833,130 +977,6 @@ void CRepositoryPanel::on_actionSearch_triggered()
 
     ui->searchTree->blockSignals(false);
     ui->treeStack->setCurrentIndex(1);
-}
-
-void CRepositoryPanel::on_actionClearSearch_triggered()
-{
-	ui->searchLineEdit->clear();
-
-	ui->treeStack->setCurrentIndex(0);
-}
-
-void CRepositoryPanel::on_actionDeleteRemote_triggered()
-{
-	if(repoHandler->getUploadPermission())
-	{
-		int response = QMessageBox::question(this, "Delete Project", "Are you sure that you want to permanently "
-				"delete this project from the repository?\n\nThis action cannot be undone.", QMessageBox::Yes | QMessageBox::No);
-
-		if(response == QMessageBox::Yes)
-		{
-			int projID = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0])->getProjectID();
-
-			repoHandler->deleteProject(projID);
-		}
-	}
-	else
-	{
-		QMessageBox::information(this, "Permission Denied", "You do not have permission to delete this project.", QMessageBox::Ok);
-	}
-
-}
-
-void CRepositoryPanel::on_actionModify_triggered()
-{
-	if(repoHandler->getUploadPermission())
-	{
-		int projID = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0])->getProjectID();
-
-		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, projID);
-		dlg.setName(ui->projectName->text());
-		dlg.setOwner(repoHandler->getUsername());
-
-		QStringList categories = GetCategories();
-		dlg.setCategories(categories);
-
-		dlg.setCategory(dbHandler->CategoryFromID(projID));
-
-		dlg.setDescription(ui->projectDesc->toPlainText());
-		dlg.setTags(ui->currentTags);
-		dlg.setPublications(ui->projectPubs->getPublications());
-
-		QStringList tags = dbHandler->GetTags();
-		dlg.setTagList(tags);
-
-		QList<QList<QVariant>> fileInfo = dbHandler->GetProjectFileInfo(projID);
-		dlg.setFileInfo(fileInfo);
-
-		if (dlg.exec())
-		{
-			QVariantMap projectInfo;
-			projectInfo.insert("name", dlg.getName());
-			projectInfo.insert("description", dlg.getDescription());
-			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
-
-			QList<QVariant> tags;
-			for(QString tag : dlg.getTags())
-			{
-				tags.append(tag);
-			}
-			projectInfo.insert("tags", tags);
-
-			projectInfo.insert("publications", dlg.getPublicationInfo());
-
-			projectInfo.insert("files", dlg.getFileInfo());
-
-			QStringList filePaths = dlg.GetFilePaths();
-			QStringList zipFilePaths = dlg.GetZipFilePaths();
-
-			if(filePaths.size() > 0)
-			{
-				projectInfo.insert("uploadRequired", true);
-			}
-			else
-			{
-				projectInfo.insert("uploadRequired", false);
-			}
-
-			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
-
-			ui->showLoadingPage("Modifying Project...");
-			repoHandler->setUploadReady(false);
-
-			repoHandler->modifyProject(projID, payload);
-
-			if(filePaths.size() > 0)
-			{
-				QString archiveName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
-
-				ui->showLoadingPage("Compressing Files...", true);
-
-				ZipThread* zip = new ZipThread(archiveName, filePaths, zipFilePaths);
-				QObject::connect(zip, &ZipThread::resultReady, this, &CRepositoryPanel::updateModifyReady);
-				QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
-				QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
-				QObject::connect(zip, &ZipThread::progress, this, &CRepositoryPanel::loadingPageProgress);
-				zip->start();
-			}
-		}
-	}
-	else
-	{
-		QMessageBox box;
-		box.setText("You do not have permission to modify the repository.");
-	}
-
-}
-
-void CRepositoryPanel::on_actionFindInTree_triggered()
-{
-	SearchItem* item = static_cast<SearchItem*>(ui->searchTree->selectedItems()[0]);
-
-	ui->projectTree->setCurrentItem(item->getRealItem());
-
-	ui->treeStack->setCurrentIndex(0);
-
-	ui->searchLineEdit->clear();
 }
 
 void CRepositoryPanel::UpdateInfo(CustomTreeWidgetItem *item)
@@ -1392,6 +1412,27 @@ void CRepositoryPanel::on_fileTags_linkActivated(const QString& link)
 	on_actionSearch_triggered();
 }
 
+void CRepositoryPanel::on_actionAdvnacedSearch_triggered()
+{
+    QString searchTerm = ui->advancedSearch->GetSearchTerm();
+    SearchDatabase(searchTerm);
+    ui->searchLineEdit->setText(searchTerm);
+    on_actionAdvnacedHide_triggered();
+}
+
+void CRepositoryPanel::on_actionAdvnacedClear_triggered()
+{
+    ui->advancedSearch->Clear();
+    ui->searchLineEdit->clear();
+    ui->treeStack->setCurrentIndex(0);
+}
+
+void CRepositoryPanel::on_actionAdvnacedHide_triggered()
+{
+    ui->searchBar->show();
+    ui->advancedSearch->hide();
+}
+
 void CRepositoryPanel::updateUploadReady(bool ready, QString message)
 {
 	if(ready)
@@ -1550,6 +1591,7 @@ void CRepositoryPanel::on_actionDelete_triggered() {}
 void CRepositoryPanel::on_actionUpload_triggered() {}
 void CRepositoryPanel::on_actionSearch_triggered() {}
 void CRepositoryPanel::on_actionClearSearch_triggered() {}
+void CRepositoryPanel::on_actionShowAdvanced_triggered() {}
 void CRepositoryPanel::on_actionDeleteRemote_triggered() {}
 void CRepositoryPanel::on_actionModify_triggered() {}
 void CRepositoryPanel::on_treeWidget_itemSelectionChanged() {}
@@ -1574,4 +1616,8 @@ void CRepositoryPanel::on_searchTree_itemSelectionChanged() {}
 void CRepositoryPanel::on_searchTree_customContextMenuRequested(const QPoint &pos) {}
 void CRepositoryPanel::on_showProjectsCB_stateChanged(int state) {}
 void CRepositoryPanel::on_showFilesCB_stateChanged(int state) {}
+void CRepositoryPanel::on_actionAdvnacedSearch_triggered() {}
+void CRepositoryPanel::on_actionAdvnacedClear_triggered() {}
+void CRepositoryPanel::on_actionAdvnacedHide_triggered() {}
+void CRepositoryPanel::SearchDatabase(QString searchTerm) {}
 #endif

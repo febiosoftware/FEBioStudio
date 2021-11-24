@@ -36,6 +36,8 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QToolButton>
 #include <QToolBar>
+#include <QCompleter>
+#include <QScrollBar>
 #include <QBoxLayout>
 #include <QSplitter>
 #include <QToolButton>
@@ -44,6 +46,7 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QKeyEvent>
 #include <QTextBrowser>
 #include <QProgressBar>
 #include <QLabel>
@@ -437,6 +440,270 @@ private:
 	CustomTreeWidgetItem* realItem;
 };
 
+class CustomLineEdit : public QLineEdit
+{
+    Q_OBJECT
+public:
+    explicit CustomLineEdit(QWidget *parent = 0) 
+        : QLineEdit(parent), c(nullptr)
+    {
+
+    }
+
+    void setMultipleCompleter(QCompleter* completer)
+    {
+        c = completer;
+        c->setWidget(this);
+        connect(c, SIGNAL(activated(QString)),
+                this, SLOT(insertCompletion(QString)));
+    }
+
+protected:
+    void keyPressEvent(QKeyEvent *e)
+    {
+        switch (e->key()) 
+        {
+            case Qt::Key_Enter:
+            case Qt::Key_Return:
+                if (c && c->popup()->isVisible()) 
+                {
+                    e->ignore();
+                    return; // let the completer do default behavior
+                }
+                else
+                {
+                    QLineEdit::keyPressEvent(e);
+                    return;
+                }
+            default:
+                break;
+        }
+
+        QLineEdit::keyPressEvent(e);
+        
+        if (!c) return;
+
+        c->setCompletionPrefix(cursorWord(this->text()));
+
+        QRect cr = cursorRect();
+            cr.setWidth(c->popup()->sizeHintForColumn(0)
+                        + c->popup()->verticalScrollBar()->sizeHint().width());
+        c->complete(cr);
+    }
+
+    void focusInEvent(QFocusEvent* e)
+    {
+        QLineEdit::focusInEvent(e);
+
+        if(!c) return;
+
+        c->setCompletionPrefix(cursorWord(this->text()));
+
+        QRect cr = cursorRect();
+            cr.setWidth(c->popup()->sizeHintForColumn(0)
+                        + c->popup()->verticalScrollBar()->sizeHint().width());
+        c->complete(cr);
+    }
+
+private:
+    QString cursorWord(const QString& sentence) const
+    {
+        return sentence.mid(sentence.left(cursorPosition()).lastIndexOf(" ") + 1,
+                            cursorPosition() -
+                            sentence.left(cursorPosition()).lastIndexOf(" ") - 1);
+    }
+
+private slots:
+    void insertCompletion(QString arg)
+    {
+        setText(text().replace(text().left(cursorPosition()).lastIndexOf(" ") + 1,
+                            cursorPosition() -
+                            text().left(cursorPosition()).lastIndexOf(" ") - 1,
+                            arg));
+    }
+
+private:
+    QCompleter* c;
+};
+
+class SearchBox : public QWidget
+{
+public:
+    SearchBox(QString name) : name(name)
+    {
+        QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+        layout->addWidget(label = new QLabel(name + ":"));
+        layout->addWidget(lineEdit = new CustomLineEdit);
+
+        setLayout(layout);
+    }
+
+public:
+    QString name;
+    QLabel* label;
+    CustomLineEdit* lineEdit;
+};
+
+class AdvancedSearchBox : public QWidget
+{
+public:
+    AdvancedSearchBox()
+    {
+        layout = new QVBoxLayout;
+
+        layout->addWidget(new QLabel("General:"));
+
+        toolbar = new QToolBar;
+        toolbar->setContentsMargins(0,0,0,0);
+		toolbar->addWidget(general = new QLineEdit);
+		actionSearch = new QAction(CIconProvider::GetIcon("search"), "Search");
+		toolbar->addAction(actionSearch);
+		actionClear = new QAction(CIconProvider::GetIcon("clear"), "Clear");
+		toolbar->addAction(actionClear);
+        actionHide = new QAction(CIconProvider::GetIcon("collapse"), "Hide");
+		toolbar->addAction(actionHide);
+        layout->addWidget(toolbar);
+
+        gridLayout = new QGridLayout;
+        gridLayout->setContentsMargins(0,0,0,0);
+
+        layout->addLayout(gridLayout);
+
+        setLayout(layout);
+    }
+
+    void Reset(std::map<QString, QStringList> typeInfo)
+    {
+        QList<SearchBox*> boxes;
+        
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                boxes.append(box);
+            }
+        }
+
+        for(auto box : boxes)
+        {
+            delete box;
+        }
+
+
+        // These fields are not automatically pulled from the database
+        QStringList staticFields;
+        staticFields << "Name" << "Desc" << "User" << "Tag";
+        AddSearchBoxes(staticFields, typeInfo);
+    }
+
+    void AddSearchBoxes(QStringList staticFields, std::map<QString, QStringList>& typeInfo)
+    {
+        int boxes = 0;
+
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                boxes++;
+            }
+        }
+
+        // Add in the fields that aren't automatically pulled from the database
+        for(QString name : staticFields)
+        {
+            int row = (boxes)/2;
+            int col = (boxes)%2;
+
+            SearchBox* box = new SearchBox(name);
+            QObject::connect(box->lineEdit, &QLineEdit::returnPressed, this, [this]{emit actionSearch->triggered();});
+
+            gridLayout->addWidget(box, row, col);
+
+            boxes++;
+        }
+
+        // Add in the fields that are automatically pulled from the database
+        for(auto info : typeInfo)
+        {
+            int row = (boxes)/2;
+            int col = (boxes)%2;
+
+            SearchBox* box = new SearchBox(info.first);
+            QCompleter* completer = new QCompleter(info.second);
+            completer->setCaseSensitivity(Qt::CaseInsensitive);
+            // completer->setCompletionMode(QCompleter::InlineCompletion);
+            completer->setFilterMode(Qt::MatchContains);
+
+            box->lineEdit->setMultipleCompleter(completer);
+
+            QObject::connect(box->lineEdit, &QLineEdit::returnPressed, this, [this]{emit actionSearch->triggered();});
+
+            gridLayout->addWidget(box, row, col);
+
+            boxes++;
+        }
+    }
+
+    void Clear()
+    {
+        general->clear();
+
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                box->lineEdit->clear();
+            }
+        }
+    }
+
+    QString GetSearchTerm()
+    {
+        QString searchTerm;
+
+        QString generalText = general->text().trimmed();
+
+        if(!generalText.isEmpty())
+        {
+            searchTerm += "all:" + generalText;
+        }
+
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                QString boxText = box->lineEdit->text().trimmed();
+
+                if(!boxText.isEmpty())
+                {
+                    searchTerm += " " + box->name.toLower() + ":" + boxText;
+                }
+
+            }
+        }
+
+        return searchTerm.trimmed();
+    }
+
+public:
+    QToolBar* toolbar;
+    QAction* actionSearch;
+    QAction* actionClear;
+    QAction* actionHide;
+
+
+private:
+    QVBoxLayout* layout;
+    QLineEdit* general;
+    QGridLayout* gridLayout;
+};
+
 
 class Ui::CRepositoryPanel
 {
@@ -489,9 +756,13 @@ public:
 
 	QAction* actionFindInTree;
 
+    QToolBar* searchBar;
 	QLineEdit* searchLineEdit;
 	QAction* actionSearch;
 	QAction* actionClearSearch;
+    QAction* actionShowAdvanced;
+
+    AdvancedSearchBox* advancedSearch;
 
 	QWidget* loadingPage;
 	QLabel* loadingLabel;
@@ -580,17 +851,25 @@ public:
 
 		modelVBLayout->addWidget(toolbar);
 
-		QToolBar* searchBar = new QToolBar;
+		searchBar = new QToolBar;
+        searchBar->setContentsMargins(0,0,0,0);
 		searchBar->addWidget(searchLineEdit = new QLineEdit);
 		actionSearch = new QAction(CIconProvider::GetIcon("search"), "Search", parent);
 		actionSearch->setObjectName("actionSearch");
 		searchBar->addAction(actionSearch);
 		actionClearSearch = new QAction(CIconProvider::GetIcon("clear"), "Clear", parent);
 		actionClearSearch->setObjectName("actionClearSearch");
-		searchBar->addAction(actionClearSearch);
+        searchBar->addAction(actionClearSearch);
+        actionShowAdvanced = new QAction(CIconProvider::GetIcon("expand"), "Show", parent);
+		actionShowAdvanced->setObjectName("actionShowAdvanced");
+        searchBar->addAction(actionShowAdvanced);
 
-		modelVBLayout->addWidget(searchBar);
+        modelVBLayout->addWidget(searchBar);
 
+        advancedSearch = new AdvancedSearchBox;
+        advancedSearch->hide();
+        modelVBLayout->addWidget(advancedSearch);
+		
 		actionFindInTree = new QAction("Show in Project Tree", parent);
 		actionFindInTree->setObjectName("actionFindInTree");
 
@@ -656,6 +935,7 @@ public:
 		projectInfoBox = new CToolBox;
 		QWidget* projectDummy = new QWidget;
 		QVBoxLayout* modelInfoLayout = new QVBoxLayout;
+        modelInfoLayout->setContentsMargins(0,0,0,10);
 		projectDummy->setLayout(modelInfoLayout);
 
 		modelInfoLayout->addWidget(unauthorized = new QLabel("<font color='red'>This project has not yet been approved by our "
@@ -698,6 +978,7 @@ public:
 
 		QWidget* fileDummy = new QWidget;
 		QVBoxLayout* fileInfoLayout = new QVBoxLayout;
+        fileInfoLayout->setContentsMargins(0,0,0,0);
 		fileDummy->setLayout(fileInfoLayout);
 
 		fileInfoForm = new QFormLayout;
