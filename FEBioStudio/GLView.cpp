@@ -4679,7 +4679,7 @@ void CGLView::SelectFEElements(int x, int y)
 		for (int i = 0; i < NE; ++i)
 		{
 			FEElement& del = pm->Element(i);
-			if (del.IsBeam())
+			if (del.IsBeam() && del.IsVisible())
 			{
 				vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[0]).r);
 				vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[1]).r);

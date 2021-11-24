@@ -1422,11 +1422,12 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	{
 		FEFace& face = dom.Face(i);
 
+		// assume no-draw
+		face.m_ntag = 0;
+
 		if (face.IsExternal())
 		{
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
-			// assume no-draw
-			face.m_ntag = 0;
 
 			// check render state
 			if (el.IsVisible())
