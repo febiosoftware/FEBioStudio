@@ -1098,6 +1098,8 @@ void FEBioExport4::WriteGeometryObject(FEBioExport4::Part* part)
 		el.add_attribute("name", es->m_name);
 		m_xml.add_branch(el);
 		{
+			// TODO: This writes the old format. Need to fix it, if I still want this Geometry section. 
+			assert(false);
 			WriteElementList(*es->m_elemList);
 		}
 		m_xml.close_branch();
@@ -1128,17 +1130,7 @@ bool FEBioExport4::WriteNodeSet(const string& name, FENodeList* pl)
 
 	XMLElement el("NodeSet");
 	el.add_attribute("name", name.c_str());
-	m_xml.add_branch(el);
-	{
-		XMLElement nd("n");
-		nd.add_attribute("id", 0);
-		for (int n = 0; n < nn; ++n)
-		{
-			nd.set_attribute(0, m[n]);
-			m_xml.add_empty(nd, false);
-		}
-	}
-	m_xml.close_branch();
+	m_xml.add_leaf(el, m);
 	return true;
 }
 
@@ -1330,11 +1322,17 @@ void FEBioExport4::WriteGeometryElementSets()
 		unique_ptr<FEElemList> ps(pl->BuildElemList());
 		XMLElement el("ElementSet");
 		el.add_attribute("name", m_pESet[i].m_name.c_str());
-		m_xml.add_branch(el);
+
+		int NE = ps->Size();
+		vector<int> elemIds;
+		FEElemList::Iterator pe = ps->First();
+		for (int i = 0; i < NE; ++i, ++pe)
 		{
-			WriteElementList(*ps);
+			FEElement_& el = *(pe->m_pi);
+			elemIds.push_back(el.m_nid);
 		}
-		m_xml.close_branch();
+
+		m_xml.add_leaf(el, elemIds);
 	}
 }
 
