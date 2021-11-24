@@ -416,12 +416,12 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
 					{
 						pmc->AddMaterial(propMat);
 						ParseMaterial(tag, propMat);
+
+						++tag;
 					}
 				}
 			}
 			else ParseUnknownTag(tag);
-
-			++tag;
 		}
 		else ++tag;
 	} while (!tag.isend());
