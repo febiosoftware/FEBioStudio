@@ -1973,6 +1973,11 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 									el.value(p.GetVec3dValue());
 									m_xml.add_leaf(el);
 								}
+								else if (p.GetParamType() == Param_MAT3D)
+								{
+									el.value(p.GetMat3dValue());
+									m_xml.add_leaf(el);
+								}
 								bdone = true;
 							}
 						}

@@ -338,8 +338,8 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 			break;
 			case FE_PARAM_MAT3D_MAPPED:
 			{
-				if (strcmp(p.name(), "mat_axis") != 0)
-				{
+//				if (strcmp(p.name(), "mat_axis") != 0)
+//				{
 					FEParamMat3d& v = p.value<FEParamMat3d>();
 					FEMat3dValuator* val = v.valuator(); assert(val);
 					FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEMAT3DGENERATOR_ID, baseClassIndex("class FEMat3dValuator"), true);
@@ -353,7 +353,7 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 					CopyFECoreClass(&fbc, val);
 
 					prop.m_comp.push_back(fbc);
-				}
+//				}
 			}
 			break;
 			case FE_PARAM_MAT3DS_MAPPED:
