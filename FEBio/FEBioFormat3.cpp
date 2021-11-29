@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
+#include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEElementData.h>
@@ -409,15 +410,23 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
 						else sztype = tag.Name();
 					}
 
-					FEBioMaterial* propMat = new FEBioMaterial;
-					FEBio::CreateMaterialProperty(pmc->GetSuperClassID(), sztype, propMat);
-
-					if (pmc)
+					// skip obsolete "user" type
+					if (strcmp(sztype, "user") == 0)
 					{
-						pmc->AddMaterial(propMat);
-						ParseMaterial(tag, propMat);
+						ParseUnknownAttribute(tag, "type");
+					}
+					else
+					{
+						FEBioMaterial* propMat = new FEBioMaterial;
+						FEBio::CreateMaterialProperty(pmc->GetSuperClassID(), sztype, propMat);
 
-						++tag;
+						if (pmc)
+						{
+							pmc->AddMaterial(propMat);
+							ParseMaterial(tag, propMat);
+
+							++tag;
+						}
 					}
 				}
 			}
@@ -1019,7 +1028,6 @@ bool FEBioFormat3::ParseMeshDataSection(XMLTag& tag)
 			if (ParseSurfaceDataSection(tag) == false) return false;
 		}
 		else ParseUnknownTag(tag);
-		++tag;
     }
 	while (!tag.isend());
 
@@ -1069,27 +1077,33 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-	FENodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
-	FEMesh* feMesh = nodeSet->GetMesh();
-
-	FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
-
-	double val;
-	int lid;
-	++tag;
-	do
+	// see if the "generator" tag is present
+	const char* szgen = tag.AttributeValue("generator", true);
+	
+	// TODO: skip generators for now, but need to add support for this.
+	if (szgen) ParseUnknownTag(tag);
+	else
 	{
-		tag.AttributePtr("lid")->value(lid);
-		tag.value(val);
+		FENodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
+		FEMesh* feMesh = nodeSet->GetMesh();
 
-		nodeData->set(lid - 1, val);
+		FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
 
+		double val;
+		int lid;
 		++tag;
+		do
+		{
+			tag.AttributePtr("lid")->value(lid);
+			tag.value(val);
+
+			nodeData->set(lid - 1, val);
+
+			++tag;
+		} while (!tag.isend());
 	}
-	while (!tag.isend());
 
 	return true;
-
 }
 
 bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
@@ -1542,7 +1556,9 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	}
 	else if ((bc == "sx") || (bc == "sy") || (bc == "sz"))
 	{
-		pbc = FEBio::CreateBoundaryCondition("zero shell displacement", &fem); assert(pbc);
+		pbc = FEBio::CreateBoundaryCondition("zero displacement", &fem); assert(pbc);
+
+		pbc->SetParamBool("shell_bottom", true);
 
 		// map the dofs
 		vector<int> dofList;
@@ -2449,18 +2465,39 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
-	// get the name 
-	stringstream ss;
-	ss << "RigidConstraint" << CountConnectors<FERigidConstraint>(fem) + 1;
-	std::string name = tag.AttributeValue("name", ss.str());
-
 	// get the type attribute
 	const char* sztype = tag.AttributeValue("type");
 
 	// check for some special cases
 	if      (strcmp(sztype, "fix"      ) == 0) sztype = "rigid_fixed";
 	else if (strcmp(sztype, "prescribe") == 0) sztype = "rigid_prescribed";
-	else if (strcmp(sztype, "force"    ) == 0) sztype = "rigid_force";
+	else if (strcmp(sztype, "force") == 0)
+	{
+		// This actually is a rigid load
+		sztype = "rigid_force";
+
+		// get the name 
+		stringstream ss;
+		ss << "RigidLoad" << CountLoads<FERigidLoad>(fem) + 1;
+		std::string name = tag.AttributeValue("name", ss.str());
+
+		// allocate class
+		FEBioRigidLoad* pi = new FEBioRigidLoad(&fem, pstep->GetID());
+		if (FEBio::CreateModelComponent(FE_RIGID_LOAD, sztype, pi) == false)
+		{
+			throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+		}
+		pi->SetName(name);
+		pstep->AddLoad(pi);
+
+		ReadParameters(*pi, tag);
+		return;
+	}
+
+	// get the name 
+	stringstream ss;
+	ss << "RigidConstraint" << CountConnectors<FERigidConstraint>(fem) + 1;
+	std::string name = tag.AttributeValue("name", ss.str());
 
 	// allocate class
 	FEBioRigidConstraint* pi = new FEBioRigidConstraint(&fem, pstep->GetID());
@@ -2603,7 +2640,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
 				FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-				if (FEBio::CreateModelComponent(FE_MATERIAL, sztype, pdm) == false)
+				if (FEBio::CreateModelComponent(FE_DISCRETE_MATERIAL, sztype, pdm) == false)
 				{
 					delete pdm;
 					throw XMLReader::InvalidTag(tag);
@@ -2630,7 +2667,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
 				FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-				if (FEBio::CreateModelComponent(FE_MATERIAL, sztype, pdm) == false)
+				if (FEBio::CreateModelComponent(FE_DISCRETE_MATERIAL, sztype, pdm) == false)
 				{
 					delete pdm;
 					throw XMLReader::InvalidTag(tag);
@@ -2658,7 +2695,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			else if (strcmp(sztype, "Hill") == 0)
 			{
 				FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-				if (FEBio::CreateModelComponent(FE_MATERIAL, sztype, pdm) == false)
+				if (FEBio::CreateModelComponent(FE_DISCRETE_MATERIAL, sztype, pdm) == false)
 				{
 					delete pdm;
 					throw XMLReader::InvalidTag(tag);

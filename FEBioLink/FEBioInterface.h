@@ -50,6 +50,7 @@ namespace FEBio {
 	void CreateMaterial(int classId, FEBioMaterial* po);
 	bool CreateMaterial(const char* sztype, FEBioMaterial* po);
 	void CreateMaterialProperty(int superClassID, const char* sztype, FEBioMaterial* po);
+	bool CreateDiscreteMaterial(int superClassID, const char* sztype, FEBioDiscreteMaterial* po);
 	void CreateStep(int classId, FEStep* po, bool initDefaultProps = true);
 	void CreateStep(const char* sztype, FEStep* po);
 
