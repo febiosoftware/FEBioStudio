@@ -332,7 +332,7 @@ void FEBioFormat::ReadParameters(ParamContainer& PC, XMLTag& tag)
 	{
 		// try to read the parameters
 		if (ReadParam(PC, tag) == false) ParseUnknownTag(tag);
-		else ++tag;
+		++tag;
 	}
 	while (!tag.isend());
 }

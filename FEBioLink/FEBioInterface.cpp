@@ -165,6 +165,23 @@ bool FEBio::CreateModelComponent(int classId, FEModelComponent* po)
 	// map the FEBioClass parameters to the FSObject
 	map_parameters(po, feb);
 
+	// map the properties
+	if (dynamic_cast<FEStepComponent*>(po))
+	{
+		FEStepComponent* pc = dynamic_cast<FEStepComponent*>(po);
+		for (int i = 0; i < feb->Properties(); ++i)
+		{
+			// TODO: mapped vectors are added as properties, but they should be parameters instead. 
+			//       This is a bit of a hack that I need to clean up.
+			FEBio::FEBioProperty& prop = feb->GetProperty(i);
+			int maxSize = (prop.m_isArray ? 0 : 1);
+			if (prop.m_superClassId == FE_VECTORGENERATOR)
+			{
+				po->AddVecParam(vec3d(0, 0, 0), prop.m_name.c_str());
+			}
+		}
+	}
+
 	if (dynamic_cast<FEBioMaterial*>(po))
 	{
 		FEBioMaterial* febMat = dynamic_cast<FEBioMaterial*>(po);

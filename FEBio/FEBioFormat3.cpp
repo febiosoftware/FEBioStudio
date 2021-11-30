@@ -435,15 +435,13 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
 						{
 							pmc->AddMaterial(propMat);
 							ParseMaterial(tag, propMat);
-
-							++tag;
 						}
 					}
 				}
 			}
 			else ParseUnknownTag(tag);
 		}
-		else ++tag;
+		++tag;
 	} while (!tag.isend());
 }
 
@@ -471,9 +469,9 @@ bool FEBioFormat3::ParseMeshSection(XMLTag& tag)
 		else if (tag == "DiscreteSet") ParseGeometryDiscreteSet(DefaultPart(), tag);
 		else if (tag == "SurfacePair") ParseGeometrySurfacePair(DefaultPart(), tag);
 		else ParseUnknownTag(tag);
-
 		++tag;
-	} while (!tag.isend());
+	}
+	while (!tag.isend());
 
 	// create a new instance
 	FEBioModel& febio = GetFEBioModel();
@@ -523,11 +521,11 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
                             else if (tag == "laugon")
                             {
                                 if (dom) tag.value(dom->m_blaugon);
-                            }
+							}
                             else if (tag == "atol")
                             {
                                 if (dom) tag.value(dom->m_augtol);
-                            }
+							}
 							else ParseUnknownTag(tag);
 							++tag;
 						}
@@ -1039,6 +1037,7 @@ bool FEBioFormat3::ParseMeshDataSection(XMLTag& tag)
 			if (ParseSurfaceDataSection(tag) == false) return false;
 		}
 		else ParseUnknownTag(tag);
+		++tag;
     }
 	while (!tag.isend());
 
@@ -1184,8 +1183,6 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				}
 				++tag;
 			} while (!tag.isend());
-
-			++tag;
 		}
 		else ParseUnknownTag(tag);
 	}
@@ -1225,8 +1222,6 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				}
 				++tag;
 			} while (!tag.isend());
-
-			++tag;
 		}
 		else ParseUnknownTag(tag);
 	}
@@ -1267,8 +1262,6 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				}
 				++tag;
 			} while (!tag.isend());
-
-			++tag;
 		}
 		else ParseUnknownTag(tag);
 	}
@@ -1353,9 +1346,6 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 					else ParseUnknownTag(tag);
 					++tag;
 				} while (!tag.isend());
-
-				++tag;
-
 				feb.GetFEModel().AddDataMap(s2s);
 			}
 		}
@@ -1422,9 +1412,9 @@ bool FEBioFormat3::ParseBoundarySection(XMLTag& tag)
 		if (tag == "bc")
 		{
 			string type = tag.AttributeValue("type");
-			if      (type == "fix"       ) ParseBCFixed(m_pBCStep, tag);
+			if      (type == "fix"       ) ParseBCFixed     (m_pBCStep, tag);
 			else if (type == "prescribe" ) ParseBCPrescribed(m_pBCStep, tag);
-			else if (type == "rigid"     ) ParseBCRigid(m_pBCStep, tag);
+			else if (type == "rigid"     ) ParseBCRigid     (m_pBCStep, tag);
 			else if (type == "fluid rotational velocity")
 			{
 				ParseBCFluidRotationalVelocity(m_pBCStep, tag);
@@ -2045,7 +2035,6 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 		if (tag == "scale")
 		{
 			ReadParam(*pbc, tag);
-			++tag;
 		}
 		else if (tag == "dof")
 		{
@@ -2064,10 +2053,9 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 			else throw XMLReader::InvalidValue(tag);
 
 			pbc->SetDOF(bc);
-
-			++tag;
 		}
 		else ParseUnknownTag(tag);
+		++tag;
 	}
 	while (!tag.isend());
 }
@@ -2305,6 +2293,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 
 				FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 				pic->SetName(szname);
+				pic->SetItemList(pg);
 				m_pBCStep->AddComponent(pic);
 				ReadParameters(*pic, tag);
 			}
@@ -2573,14 +2562,12 @@ void FEBioFormat3::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 			int na = -1;
 			tag.value(na);
 			if (na >= 0) pi->SetRigidBody1(febio.GetMaterial(na - 1)->GetID());
-			++tag;
 		}
 		else if (tag == "body_b") 
 		{
 			int nb = -1;
 			tag.value(nb);
 			if (nb >= 0) pi->SetRigidBody2(febio.GetMaterial(nb - 1)->GetID());
-			++tag;
 		}
 		else
 		{
@@ -2588,8 +2575,8 @@ void FEBioFormat3::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 			{
 				ParseUnknownTag(tag);
 			}
-			else ++tag;
 		}
+		++tag;
 	}
 	while (!tag.isend());
 }
@@ -2689,7 +2676,6 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 					++tag;
 				} while (!tag.isend());
 				set.push_back(pg);
-				++tag;
 			}
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
@@ -2718,7 +2704,6 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 					++tag;
 				} while (!tag.isend());
 				set.push_back(pg);
-				++tag;
 			}
 			else if (strcmp(sztype, "Hill") == 0)
 			{
@@ -2769,9 +2754,9 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			{
 				assert(false);
 			}
-			++tag;
 		}
 		else ParseUnknownTag(tag);
+		++tag;
 	}
 	while (!tag.isend());
 
