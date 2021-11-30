@@ -331,7 +331,11 @@ void ZipThread::failed()
 		zip.remove();
 	}
 
-	emit resultReady(false, "Failed to zip project files.");
+    // If we manually aborted, don't show an error
+    if(!aborted)
+    {
+        emit resultReady(false, "Failed to zip project files.");
+    }
 }
 
 

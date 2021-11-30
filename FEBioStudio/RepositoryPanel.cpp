@@ -167,7 +167,7 @@ void CRepositoryPanel::SetModelList()
 	}
 }
 
-void CRepositoryPanel::ShowMessage(QString message)
+void CRepositoryPanel::ShowMessage(QString message, bool logout)
 {
 	QDialog *dlg = new QDialog(this);
 	QVBoxLayout* l = new QVBoxLayout;
@@ -181,14 +181,17 @@ void CRepositoryPanel::ShowMessage(QString message)
 	QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 
 	dlg->exec();
+
+    if(logout)
+    {
+        ui->stack->setCurrentIndex(0);
+    }
 }
 
 void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages)
 {
 	QString message;
 
-	qDebug() << lastMessageTime;
-	
 	if(lastMessageTime == -1)
 	{
 	 	message += "<h2>Welcome to the FEBio Project Repository!</h2><p>This repository is a way for FEBio users to easily access models "
@@ -277,9 +280,15 @@ void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages)
 
 void CRepositoryPanel::LoginTimeout()
 {
-	ShowMessage("Your login to the model repository has timed out.");
+    // This will stop files from being zipped if that's currently happening
+    emit cancelClicked();
 
-	ui->stack->setCurrentIndex(1);
+	ShowMessage("Your login to the model repository has timed out.", true);
+
+	// ui->stack->setCurrentIndex(1);
+
+    // Prompt for login again
+    on_actionUpload_triggered();
 }
 
 void CRepositoryPanel::NetworkInaccessible()
@@ -568,11 +577,8 @@ void CRepositoryPanel::on_actionUpload_triggered()
 
 			ui->showLoadingPage("Logging in...");
 		}
-
-		return;
 	}
-
-	if(repoHandler->getUploadPermission())
+	else if(repoHandler->getUploadPermission())
 	{
 		CWzdUpload dlg(this,repoHandler->getUploadPermission(), dbHandler, repoHandler);
 		dlg.setOwner(repoHandler->getUsername());
@@ -611,8 +617,6 @@ void CRepositoryPanel::on_actionUpload_triggered()
 
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
 
-			qDebug() << payload;
-
 			repoHandler->setUploadReady(false);
 
 			repoHandler->uploadFileRequest(payload);
@@ -624,7 +628,7 @@ void CRepositoryPanel::on_actionUpload_triggered()
 			ZipThread* zip = new ZipThread(archiveName, filePaths, zipFilePaths);
 			QObject::connect(zip, &ZipThread::resultReady, this, &CRepositoryPanel::updateUploadReady);
 			QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
-			QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
+			QObject::connect(this, &CRepositoryPanel::cancelClicked, zip, &ZipThread::abort);
 			QObject::connect(zip, &ZipThread::progress, this, &CRepositoryPanel::loadingPageProgress);
 			zip->start();
 		}
@@ -1621,7 +1625,7 @@ CRepositoryPanel::~CRepositoryPanel(){}
 void CRepositoryPanel::OpenLink(const QString& link) {}
 // void CRepositoryPanel::Raise() {}
 void CRepositoryPanel::SetModelList(){}
-void CRepositoryPanel::ShowMessage(QString message) {}
+void CRepositoryPanel::ShowMessage(QString message, bool logout) {}
 void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages) {}
 void CRepositoryPanel::LoginTimeout() {}
 void CRepositoryPanel::NetworkInaccessible() {}

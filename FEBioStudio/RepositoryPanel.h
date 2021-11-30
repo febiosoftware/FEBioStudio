@@ -62,7 +62,7 @@ public:
 	void Raise();
 
 	void SetModelList();
-	void ShowMessage(QString message);
+	void ShowMessage(QString message, bool logout = false);
 	void ShowWelcomeMessage(QByteArray messages);
 	void LoginTimeout();
 	void NetworkInaccessible();
