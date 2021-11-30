@@ -869,9 +869,6 @@ void CRepositoryPanel::SearchDatabase(QString searchTerm)
         if(!values.empty())
         {
             termList.emplace_back(key,values);
-
-            qDebug() << key;
-            qDebug() << values;
         }
     }
 
