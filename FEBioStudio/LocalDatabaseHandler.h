@@ -69,7 +69,7 @@ public:
 
 	std::set<int> ProjectSearch(QString dataType, QString term);
 	std::set<int> FileSearch(QString dataType, QString term);
-    std::map<QString, QStringList> GetDataTypeInfo();
+    std::vector<std::pair<QString, QStringList>> GetAdvancedSearchInfo();
 
 	QString ProjectNameFromID(int ID);
 	QString FilePathFromID(int ID, int type);

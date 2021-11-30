@@ -157,7 +157,7 @@ void CRepositoryPanel::SetModelList()
 	}
 
     // Set Fields in the advanced search box
-    ui->advancedSearch->Reset(dbHandler->GetDataTypeInfo());
+    ui->advancedSearch->Reset(dbHandler->GetAdvancedSearchInfo());
 
 	ui->stack->setCurrentIndex(1);
 
@@ -1494,14 +1494,17 @@ void CRepositoryPanel::SetProjectData(char **data)
 
 	// Fix new lines
 	QString desc(data[1]);
-	desc.replace("\\n", "\n");
+	desc.replace("\\n", "<br>");
 	ui->projectDesc->setText(desc);
 }
 
 void CRepositoryPanel::SetFileData(char **data)
 {
 	ui->filenameLabel->setText(data[0]);
-	ui->setFileDescription(data[1]);
+
+    QString desc(data[1]);
+	desc.replace("\\n", "<br>");
+	ui->setFileDescription(desc);
 }
 
 void CRepositoryPanel::AddCurrentTag(char **data)

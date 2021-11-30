@@ -574,7 +574,7 @@ public:
         setLayout(layout);
     }
 
-    void Reset(std::map<QString, QStringList> typeInfo)
+    void Reset(std::vector<std::pair<QString, QStringList>> typeInfo)
     {
         QList<SearchBox*> boxes;
         
@@ -592,14 +592,10 @@ public:
             delete box;
         }
 
-
-        // These fields are not automatically pulled from the database
-        QStringList staticFields;
-        staticFields << "Name" << "Desc" << "User" << "Tag";
-        AddSearchBoxes(staticFields, typeInfo);
+        AddSearchBoxes(typeInfo);
     }
 
-    void AddSearchBoxes(QStringList staticFields, std::map<QString, QStringList>& typeInfo)
+    void AddSearchBoxes(std::vector<std::pair<QString, QStringList>> typeInfo)
     {
         int boxes = 0;
 
@@ -612,33 +608,21 @@ public:
             }
         }
 
-        // Add in the fields that aren't automatically pulled from the database
-        for(QString name : staticFields)
-        {
-            int row = (boxes)/2;
-            int col = (boxes)%2;
-
-            SearchBox* box = new SearchBox(name);
-            QObject::connect(box->lineEdit, &QLineEdit::returnPressed, this, [this]{emit actionSearch->triggered();});
-
-            gridLayout->addWidget(box, row, col);
-
-            boxes++;
-        }
-
-        // Add in the fields that are automatically pulled from the database
         for(auto info : typeInfo)
         {
             int row = (boxes)/2;
             int col = (boxes)%2;
 
             SearchBox* box = new SearchBox(info.first);
-            QCompleter* completer = new QCompleter(info.second);
-            completer->setCaseSensitivity(Qt::CaseInsensitive);
-            // completer->setCompletionMode(QCompleter::InlineCompletion);
-            completer->setFilterMode(Qt::MatchContains);
 
-            box->lineEdit->setMultipleCompleter(completer);
+            if(!info.second.empty())
+            {
+                QCompleter* completer = new QCompleter(info.second);
+                completer->setCaseSensitivity(Qt::CaseInsensitive);
+                completer->setFilterMode(Qt::MatchContains);
+
+                box->lineEdit->setMultipleCompleter(completer);
+            }
 
             QObject::connect(box->lineEdit, &QLineEdit::returnPressed, this, [this]{emit actionSearch->triggered();});
 

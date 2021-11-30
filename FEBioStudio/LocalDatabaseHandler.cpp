@@ -874,7 +874,7 @@ std::set<int> CLocalDatabaseHandler::ProjectSearch(QString dataType, QString ter
     {
         query = QString("SELECT projects.ID FROM projects WHERE name LIKE '%%1%'").arg(term);
     }
-    else if(dataType == "desc")
+    else if(dataType == "description")
     {
         query = QString("SELECT projects.ID FROM projects WHERE description LIKE '%%1%'").arg(term);
     }
@@ -938,7 +938,7 @@ std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
         otherType = false;
         query = QString("SELECT ID FROM filenames WHERE filename LIKE '%%1%'").arg(term);
     }
-    else if(dataType == "desc")
+    else if(dataType == "description")
     {
         otherType = false;
         query = QString("SELECT ID FROM filenames WHERE description LIKE '%%1%'").arg(term);
@@ -1011,17 +1011,53 @@ std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
 	return files;
 }
 
-std::map<QString, QStringList> CLocalDatabaseHandler::GetDataTypeInfo()
+std::vector<std::pair<QString, QStringList>> CLocalDatabaseHandler::GetAdvancedSearchInfo()
 {
-    std::map<QString, QStringList> info;
+    std::vector<std::pair<QString, QStringList>> info;
+
+    // Add in some standard fields first
+    info.emplace_back("Name", QStringList());
+    info.emplace_back("Description", QStringList());
 
     char **table;
 	int rows, cols;
 
-    std::string query = "SELECT sections.section, type FROM sections JOIN dataTypes on sections.ID = dataTypes.section";
+    // Get users from database
+    std::string query = "SELECT username FROM users";
+    imp->getTable(query, &table, &rows, &cols);
+
+    QStringList users;
+    for(int row = 1; row <= rows; row++)
+    {
+        users.append(table[row]);
+    }
+
+    info.emplace_back("User", users);
+
+    sqlite3_free_table(table);
+
+    // Get tags from database
+    query = "SELECT tag FROM tags";
+    imp->getTable(query, &table, &rows, &cols);
+
+    QStringList tags;
+    for(int row = 1; row <= rows; row++)
+    {
+        tags.append(table[row]);
+    }
+
+    info.emplace_back("Tag", tags);
+
+    sqlite3_free_table(table);
+
+    // Get section names and associated datatypes from database
+    query = "SELECT sections.section, type FROM sections JOIN dataTypes on sections.ID = dataTypes.section";
 
     imp->getTable(query, &table, &rows, &cols);
 
+    // Since the query doesn't return a sorted list, it's easier to first add the data to a map
+    // and then transfer it to our vector
+    std::map<QString, QStringList> dataTypeInfo;
 	for(int row = 1; row <= rows; row++)
 	{
         QString section = table[row*cols];
@@ -1029,16 +1065,22 @@ std::map<QString, QStringList> CLocalDatabaseHandler::GetDataTypeInfo()
         
         try
         {
-            info.at(section).append(dataType);
+            dataTypeInfo.at(section).append(dataType);
         }
         catch(const std::out_of_range& e)
         {
-            info[section] = QStringList(dataType);
+            dataTypeInfo[section] = QStringList(dataType);
         }
         
 	}
 
     sqlite3_free_table(table);
+
+    // Here we copy the data to the vector
+    for(auto item : dataTypeInfo)
+    {
+        info.emplace_back(item.first, item.second);
+    }
 
     return info;
 }
