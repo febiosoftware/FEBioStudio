@@ -5219,19 +5219,9 @@ void FEBioExport3::WriteConnectors(FEStep& s)
 			if (m_writeNotes) WriteNote(pj);
 
 			XMLElement ec("rigid_connector");
-			if (dynamic_cast<FERigidSphericalJoint*  >(pj)) ec.add_attribute("type", "rigid spherical joint");
-			else if (dynamic_cast<FERigidRevoluteJoint*   >(pj)) ec.add_attribute("type", "rigid revolute joint");
-			else if (dynamic_cast<FERigidPrismaticJoint*  >(pj)) ec.add_attribute("type", "rigid prismatic joint");
-			else if (dynamic_cast<FERigidCylindricalJoint*>(pj)) ec.add_attribute("type", "rigid cylindrical joint");
-			else if (dynamic_cast<FERigidPlanarJoint*     >(pj)) ec.add_attribute("type", "rigid planar joint");
-            else if (dynamic_cast<FERigidLock*            >(pj)) ec.add_attribute("type", "rigid lock");
-			else if (dynamic_cast<FERigidSpring*          >(pj)) ec.add_attribute("type", "rigid spring");
-			else if (dynamic_cast<FERigidDamper*          >(pj)) ec.add_attribute("type", "rigid damper");
-			else if (dynamic_cast<FERigidAngularDamper*   >(pj)) ec.add_attribute("type", "rigid angular damper");
-			else if (dynamic_cast<FERigidContractileForce*>(pj)) ec.add_attribute("type", "rigid contractile force");
-			else if (dynamic_cast<FEGenericRigidJoint*    >(pj)) ec.add_attribute("type", "generic rigid joint");
-			else
-				assert(false);
+			ec.add_attribute("name", pj->GetName());
+			const char* sztype = pj->GetTypeString(); assert(sztype);
+			ec.add_attribute("type", sztype);
 
 			GMaterial* pgA = m_pfem->GetMaterialFromID(pj->GetRigidBody1());
 			if (pgA == 0) throw MissingRigidBody(pj->GetName().c_str());
