@@ -242,6 +242,7 @@ protected:
 
 	void WriteRigidSection(FEStep& s);
 	void WriteRigidConstraints(FEStep& s);
+	void WriteRigidLoads(FEStep& s);
 
 	void WriteBodyLoads(FEStep& s);
 

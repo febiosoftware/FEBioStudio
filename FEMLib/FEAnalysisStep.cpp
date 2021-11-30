@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEAnalysisStep.h"
 #include <MeshTools/FEModel.h>
 #include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include <MeshTools/FEProject.h>
 #include "FEInitialCondition.h"
 #include "FESurfaceLoad.h"
@@ -69,6 +70,9 @@ public:
 
 	// rigid constraints	
 	FSObjectList<FERigidConstraint>	m_RC;
+
+	// rigid loads
+	FSObjectList<FERigidLoad>	m_RL;
 
 	// linear constraints
 	FSObjectList<FELinearConstraintSet>	m_LC;
@@ -349,6 +353,47 @@ int FEStep::RemoveRC(FERigidConstraint* prc)
 void FEStep::RemoveAllRigidConstraints()
 {
 	imp->m_RC.Clear();
+}
+
+//-----------------------------------------------------------------------------
+int FEStep::RigidLoads()
+{
+	return imp->m_RL.Size();
+}
+
+int FEStep::RigidLoads(int ntype)
+{
+	int nrl = 0;
+	for (int i = 0; i < (int)imp->m_RL.Size(); ++i)
+	{
+		if (imp->m_RL[i]->Type() == ntype) nrl++;
+	}
+	return nrl;
+}
+
+FERigidLoad* FEStep::RigidLoad(int i)
+{
+	return imp->m_RL[i];
+}
+
+void FEStep::AddRigidLoad(FERigidLoad* prc)
+{
+	imp->m_RL.Add(prc);
+}
+
+void FEStep::InsertRigidLoad(int n, FERigidLoad* prc)
+{
+	imp->m_RL.Insert(n, prc);
+}
+
+int FEStep::RemoveRigidLoad(FERigidLoad* prc)
+{
+	return imp->m_RL.Remove(prc);
+}
+
+void FEStep::RemoveAllRigidLoads()
+{
+	imp->m_RL.Clear();
 }
 
 //-----------------------------------------------------------------------------

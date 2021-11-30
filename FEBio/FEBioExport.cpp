@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FELoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
@@ -409,6 +410,17 @@ void FEBioExport::BuildLoadCurveList(FEModel& fem)
 		{
 			FEModelConstraint* pw = step->Constraint(j);
 			if (pw && pw->IsActive()) AddLoadCurves(*pw);
+		}
+	}
+
+	// add rigid load loadcurves
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		for (int j = 0; j < pstep->RigidLoads(); ++j)
+		{
+			FERigidLoad* prl = pstep->RigidLoad(j);
+			if (prl->IsActive()) AddLoadCurves(*prl);
 		}
 	}
 

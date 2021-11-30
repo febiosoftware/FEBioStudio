@@ -190,9 +190,14 @@ bool FEBioFormat3::ParseSection(XMLTag& tag)
 bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 {
 	m_nAnalysis = -1;
-	XMLAtt& atype = tag.Attribute("type");
-	m_nAnalysis = FEBio::GetModuleId(atype.cvalue());
-	if (m_nAnalysis < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", atype.cvalue()); }
+	const char* sztype = tag.AttributeValue("type");
+
+	// a few special cases.
+	if (strcmp(sztype, "explicit-solid") == 0) { sztype = "solid"; m_defaultSolver = "explicit-solid"; }
+	if (strcmp(sztype, "CG-solid"      ) == 0) { sztype = "solid"; m_defaultSolver = "CG-solid"; }
+
+	m_nAnalysis = FEBio::GetModuleId(sztype);
+	if (m_nAnalysis < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
 	FEBio::SetActiveModule(m_nAnalysis);
 	FileReader()->GetProject().SetModule(m_nAnalysis);
 	return (m_nAnalysis != -1);
@@ -253,7 +258,13 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					sztype = tag.Name();
 
 					// The default solver should be the solver with the same name as the module
-					if (strcmp(sztype, "solver") == 0) sztype = FEBio::GetModuleName(m_nAnalysis);
+					if (strcmp(sztype, "solver") == 0)
+					{
+						if (m_defaultSolver.empty())
+							sztype = FEBio::GetModuleName(m_nAnalysis);
+						else
+							sztype = m_defaultSolver.c_str();
+					}
 				}
 
 				if (pc->m_prop == nullptr)
@@ -1173,6 +1184,8 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				}
 				++tag;
 			} while (!tag.isend());
+
+			++tag;
 		}
 		else ParseUnknownTag(tag);
 	}
@@ -1212,6 +1225,8 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				}
 				++tag;
 			} while (!tag.isend());
+
+			++tag;
 		}
 		else ParseUnknownTag(tag);
 	}
@@ -1252,6 +1267,8 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				}
 				++tag;
 			} while (!tag.isend());
+
+			++tag;
 		}
 		else ParseUnknownTag(tag);
 	}
@@ -1337,6 +1354,8 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 					++tag;
 				} while (!tag.isend());
 
+				++tag;
+
 				feb.GetFEModel().AddDataMap(s2s);
 			}
 		}
@@ -1377,6 +1396,8 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 
 			++tag;
 		} while (!tag.isend());
+
+		++tag;
 	}
 	else ParseUnknownTag(tag);
 
@@ -2024,6 +2045,7 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 		if (tag == "scale")
 		{
 			ReadParam(*pbc, tag);
+			++tag;
 		}
 		else if (tag == "dof")
 		{
@@ -2042,9 +2064,10 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 			else throw XMLReader::InvalidValue(tag);
 
 			pbc->SetDOF(bc);
+
+			++tag;
 		}
 		else ParseUnknownTag(tag);
-		++tag;
 	}
 	while (!tag.isend());
 }
@@ -2188,7 +2211,6 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 
 				// create a new initial velocity BC
 				FEInitialCondition* pic = 0;
-				char szname[64] = { 0 };
                 if (bc == "T")
                 {
 					pic = FEBio::CreateInitialCondition("initial temperature", &fem);
@@ -2257,7 +2279,6 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
                     int nsol;
                     sscanf(bc.substr(1).c_str(),"%d",&nsol);
                     pic = FEBio::CreateInitialCondition("initial concentration", &fem);
-					pic->SetItemList(pg);
 					pic->SetParamInt("dof", nsol - 1);
                 }
                 else if (bc.compare(0,1,"d") == 0)
@@ -2265,7 +2286,6 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
                     int nsol;
                     sscanf(bc.substr(1).c_str(),"%d",&nsol);
 					pic = FEBio::CreateInitialCondition("initial concentration", &fem);
-					pic->SetItemList(pg);
 					pic->SetParamInt("dof", nsol - 1);
 					pic->SetParamBool("shell_bottom", true);
 				}
@@ -2273,6 +2293,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				if (pic)
 				{
 					pic->SetName(szname);
+					pic->SetItemList(pg);
 					m_pBCStep->AddComponent(pic);
 				}
 			}
@@ -2488,7 +2509,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 		}
 		pi->SetName(name);
-		pstep->AddLoad(pi);
+		pstep->AddRigidLoad(pi);
 
 		ReadParameters(*pi, tag);
 		return;
@@ -2547,23 +2568,28 @@ void FEBioFormat3::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 	++tag;
 	do
 	{
-		if (ReadParam(*pi, tag) == false)
+		if (tag == "body_a") 
 		{
-			if (tag == "body_a") 
-			{
-				int na = -1;
-				tag.value(na);
-				if (na >= 0) pi->SetRigidBody1(febio.GetMaterial(na - 1)->GetID());
-			}
-			else if (tag == "body_b") 
-			{
-				int nb = -1;
-				tag.value(nb);
-				if (nb >= 0) pi->SetRigidBody2(febio.GetMaterial(nb - 1)->GetID());
-			}
-			else ParseUnknownTag(tag);
+			int na = -1;
+			tag.value(na);
+			if (na >= 0) pi->SetRigidBody1(febio.GetMaterial(na - 1)->GetID());
+			++tag;
 		}
-		++tag;
+		else if (tag == "body_b") 
+		{
+			int nb = -1;
+			tag.value(nb);
+			if (nb >= 0) pi->SetRigidBody2(febio.GetMaterial(nb - 1)->GetID());
+			++tag;
+		}
+		else
+		{
+			if (ReadParam(*pi, tag) == false)
+			{
+				ParseUnknownTag(tag);
+			}
+			else ++tag;
+		}
 	}
 	while (!tag.isend());
 }
@@ -2663,6 +2689,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 					++tag;
 				} while (!tag.isend());
 				set.push_back(pg);
+				++tag;
 			}
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
@@ -2691,6 +2718,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 					++tag;
 				} while (!tag.isend());
 				set.push_back(pg);
+				++tag;
 			}
 			else if (strcmp(sztype, "Hill") == 0)
 			{
@@ -2728,6 +2756,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			{
 				assert(false);
 			}
+			++tag;
 		}
 		else if (tag == "discrete")
 		{
@@ -2740,9 +2769,9 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			{
 				assert(false);
 			}
+			++tag;
 		}
 		else ParseUnknownTag(tag);
-		++tag;
 	}
 	while (!tag.isend());
 
@@ -2800,10 +2829,13 @@ void FEBioFormat3::ParseConstraint(FEStep* pstep, XMLTag& tag)
 	pmc->SetName(szname);
 
 	// find the surface
-	const char* szsurf = tag.AttributeValue("surface");
-	FESurface* psurf = febio.BuildFESurface(szsurf);
-	if (psurf == 0) AddLogEntry("Failed creating surface \"%s\"", szsurf);
-	else pmc->SetItemList(psurf);
+	const char* szsurf = tag.AttributeValue("surface", true);
+	if (szsurf)
+	{
+		FESurface* psurf = febio.BuildFESurface(szsurf);
+		if (psurf == 0) AddLogEntry("Failed creating surface \"%s\"", szsurf);
+		else pmc->SetItemList(psurf);
+	}
 
 	// read parameters
 	ReadParameters(*pmc, tag);

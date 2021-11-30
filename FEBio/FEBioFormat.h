@@ -106,6 +106,8 @@ protected: // TODO: Move to FEBioModel?
 	int			m_nAnalysis;	// analysis type
 	FEStep*		m_pstep;		// current analysis step
 	FEStep*		m_pBCStep;		// step to which BCs are assigned
+
+	std::string		m_defaultSolver;
 };
 
 // return the DOF code from a bc string.

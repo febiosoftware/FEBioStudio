@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEDataMap.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/FENodeData.h>
@@ -2285,6 +2286,9 @@ void FEBioExport4::WriteRigidSection(FEStep& s)
 	// rigid body constraints
 	WriteRigidConstraints(s);
 
+	// rigid loads
+	WriteRigidLoads(s);
+
 	// rigid connectors
 	WriteConnectors(s);
 }
@@ -3165,6 +3169,29 @@ void FEBioExport4::WriteRigidConstraints(FEStep& s)
 			m_xml.add_branch(el);
 			{
 				WriteParamList(*prc);
+			}
+			m_xml.close_branch();
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport4::WriteRigidLoads(FEStep& s)
+{
+	for (int i = 0; i < s.RigidLoads(); ++i)
+	{
+		FERigidLoad* prl = s.RigidLoad(i);
+		if (prl && prl->IsActive())
+		{
+			if (m_writeNotes) WriteNote(prl);
+
+			XMLElement el;
+			el.name("rigid_load");
+			el.add_attribute("name", prl->GetName());
+			el.add_attribute("type", prl->GetTypeString());
+			m_xml.add_branch(el);
+			{
+				WriteParamList(*prl);
 			}
 			m_xml.close_branch();
 		}

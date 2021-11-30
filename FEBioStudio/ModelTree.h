@@ -68,6 +68,7 @@ enum ModelTreeType
 	MT_CONTACT_LIST,
 	MT_CONSTRAINT_LIST,
 	MT_RIGID_CONSTRAINT_LIST,
+	MT_RIGID_LOAD_LIST,
 	MT_RIGID_CONNECTOR_LIST,
 	MT_DISCRETE_LIST,
 	MT_DISCRETE_SET,
@@ -87,6 +88,7 @@ enum ModelTreeType
 	MT_CONSTRAINT,
 	MT_STEP,
 	MT_RIGID_CONSTRAINT,
+	MT_RIGID_LOAD,
 	MT_RIGID_CONNECTOR,
 	MT_MATERIAL,
 	MT_DATAMAP,
@@ -170,6 +172,7 @@ protected:
 	void UpdateContact    (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
 	void UpdateConstraints(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
 	void UpdateRC         (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
+	void UpdateRigidLoads (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
 	void UpdateConnectors (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
 	void UpdateSteps      (QTreeWidgetItem* t1, FEProject& fem);
 	void UpdateMaterials  (QTreeWidgetItem* t1, FEModel& fem);

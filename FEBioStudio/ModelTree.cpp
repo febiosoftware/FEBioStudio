@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshTools/FEModel.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
+#include <FEMLib/FERigidLoad.h>
 #include <QTreeWidgetItemIterator>
 #include <QContextMenuEvent>
 #include <QDesktopServices>
@@ -1019,6 +1020,20 @@ void CModelTree::Build(CModelDocument* doc)
 
 	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
 	{
+		// add the rigid loads
+		int nrc = 0;
+		for (int i = 0; i < fem.Steps(); ++i) nrc += fem.GetStep(i)->RigidLoads();
+
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Rigid Loads", MT_RIGID_LOAD_LIST, nrc);
+			UpdateRigidLoads(t2, fem, 0);
+		}
+		else if (nrc) UpdateRigidLoads(t1, fem, 0);
+	}
+
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
+	{
 		// add the connectors
 		int nrc = 0;
 		for (int i = 0; i < fem.Steps(); ++i) nrc += fem.GetStep(i)->RigidConnectors();
@@ -1689,6 +1704,29 @@ void CModelTree::UpdateRC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				if (pstep) flags |= DUPLICATE_ITEM;
 				QString name = QString("%1 [%2]").arg(QString::fromStdString(prc->GetName())).arg(prc->GetTypeString());
 				AddTreeItem(t1, name, MT_RIGID_CONSTRAINT, 0, prc, pl, new CRigidConstraintValidator(prc), flags);
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+{
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FEStep* ps = fem.GetStep(i);
+		if ((pstep == 0) || (ps == pstep))
+		{
+			for (int j = 0; j < ps->RigidLoads(); ++j)
+			{
+				FERigidLoad* prl = ps->RigidLoad(j);
+
+				CPropertyList* pl = new CObjectProps(prl);
+
+				int flags = SHOW_PROPERTY_FORM;
+				if (pstep) flags |= DUPLICATE_ITEM;
+				QString name = QString("%1 [%2]").arg(QString::fromStdString(prl->GetName())).arg(prl->GetTypeString());
+				AddTreeItem(t1, name, MT_RIGID_LOAD, 0, prl, pl, nullptr, flags);
 			}
 		}
 	}

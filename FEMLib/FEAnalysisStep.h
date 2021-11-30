@@ -13,6 +13,7 @@ class FERigidConnector;
 class FEInitialCondition;
 class FEStepComponent;
 class FEModelConstraint;
+class FERigidLoad;
 
 //-----------------------------------------------------------------------------
 // Analysis types
@@ -123,6 +124,15 @@ public:
 	void InsertRC(int n, FERigidConstraint* prc);
 	int RemoveRC(FERigidConstraint* prc);
 	void RemoveAllRigidConstraints();
+
+	// rigid lodas
+	int RigidLoads();
+	int RigidLoads(int ntype);
+	FERigidLoad* RigidLoad(int i);
+	void AddRigidLoad(FERigidLoad* prc);
+	void InsertRigidLoad(int n, FERigidLoad* prc);
+	int RemoveRigidLoad(FERigidLoad* prc);
+	void RemoveAllRigidLoads();
 
 	// linear constraints
 	int LinearConstraints();
