@@ -812,11 +812,66 @@ void CRepositoryPanel::SearchDatabase(QString searchTerm)
         QStringList splitResult = match.captured().split(":");
         QString key = splitResult[0];
 
-        QStringList values = splitResult[1].trimmed().split(" ", Qt::SkipEmptyParts);
+        // Loop over characters to split terms at spaces, unless the space occurs in a quote
+        QStringList values;
+        QString value;
+        bool inQuote = false;
+        for(QChar chr : splitResult[1].trimmed())
+        {
+            if(chr == '"')
+            {
+                if(inQuote)
+                {
+                    inQuote = false;
+                    if(!value.isEmpty())
+                    {
+                        values.push_back(value);
+                        value.clear();
+                    }
+                }
+                else
+                {
+                    inQuote = true;
+                    if(!value.isEmpty())
+                    {
+                        values.push_back(value);
+                        value.clear();
+                    }
+                }
+            }
+            else if(chr == ' ')
+            {
+                if(inQuote)
+                {
+                    value.push_back(chr);
+                }
+                else
+                {
+                    if(!value.isEmpty())
+                    {
+                        values.push_back(value);
+                        value.clear();
+                    }
+                }
+            }
+            else
+            {
+                value.push_back(chr);
+            }
+        }
+        
+        // Add the last term
+        if(!value.isEmpty())
+        {
+            values.push_back(value);
+        }
 
         if(!values.empty())
         {
             termList.emplace_back(key,values);
+
+            qDebug() << key;
+            qDebug() << values;
         }
     }
 

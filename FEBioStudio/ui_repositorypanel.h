@@ -516,6 +516,12 @@ private:
 private slots:
     void insertCompletion(QString arg)
     {
+        // Surround the term in quotes if there's a space in it
+        if(arg.contains(' '))
+        {
+            arg = "\"" + arg + "\"";
+        }
+
         setText(text().replace(text().left(cursorPosition()).lastIndexOf(" ") + 1,
                             cursorPosition() -
                             text().left(cursorPosition()).lastIndexOf(" ") - 1,
