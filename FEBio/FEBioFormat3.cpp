@@ -2741,7 +2741,6 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			{
 				assert(false);
 			}
-			++tag;
 		}
 		else if (tag == "discrete")
 		{
