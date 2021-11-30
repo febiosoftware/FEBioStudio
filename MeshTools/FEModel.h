@@ -78,6 +78,7 @@ public:
 	void DeleteAllContact();
 	void DeleteAllConstraints();
 	void DeleteAllRigidConstraints();
+	void DeleteAllRigidLoads();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
 

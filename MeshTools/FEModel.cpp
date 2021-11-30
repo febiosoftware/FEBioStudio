@@ -1368,6 +1368,16 @@ void FEModel::DeleteAllConstraints()
 }
 
 //-----------------------------------------------------------------------------
+void FEModel::DeleteAllRigidLoads()
+{
+	for (int i = 0; i<Steps(); ++i)
+	{
+		FEStep* pstep = GetStep(i);
+		pstep->RemoveAllRigidLoads();
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FEModel::DeleteAllRigidConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)

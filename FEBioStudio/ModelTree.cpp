@@ -1721,7 +1721,7 @@ void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pst
 			{
 				FERigidLoad* prl = ps->RigidLoad(j);
 
-				CPropertyList* pl = new CObjectProps(prl);
+				CPropertyList* pl = new FEObjectProps(prl, &fem);
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep) flags |= DUPLICATE_ITEM;

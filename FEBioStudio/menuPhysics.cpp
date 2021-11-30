@@ -235,7 +235,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 
 			FEStep* step = fem.GetStep(dlg.GetStep());
 			prl->SetStep(step->GetID());
-			step->AddLoad(prl);
+			step->AddRigidLoad(prl);
 			UpdateModel(prl);
 		}
 	}

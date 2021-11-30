@@ -2694,6 +2694,21 @@ void CMainWindow::DeleteAllRigidConstraints()
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::DeleteAllRigidLoads()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FEModel& fem = *doc->GetFEModel();
+		fem.DeleteAllRigidLoads();
+		UpdateModel();
+		RedrawGL();
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllRigidConnectors()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

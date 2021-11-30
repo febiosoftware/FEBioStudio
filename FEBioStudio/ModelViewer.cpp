@@ -661,6 +661,12 @@ void CModelViewer::OnAddRigidConnector()
 	wnd->on_actionAddRigidConnector_triggered();
 }
 
+void CModelViewer::OnAddRigidLoad()
+{
+	CMainWindow* wnd = GetMainWindow();
+	wnd->on_actionAddRigidLoad_triggered();
+}
+
 void CModelViewer::OnAddStep()
 {
 	CMainWindow* wnd = GetMainWindow();
@@ -1587,7 +1593,6 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Add Nodal Load ..."  , wnd, SLOT(on_actionAddNodalLoad_triggered()));
 		menu.addAction("Add Surface Load ...", wnd, SLOT(on_actionAddSurfLoad_triggered()));
 		menu.addAction("Add Body Load ..."   , wnd, SLOT(on_actionAddBodyLoad_triggered()));
-		menu.addAction("Add Rigid Load ..."  , wnd, SLOT(on_actionAddRigidLoad_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllLoads()));
 		break;
@@ -1615,6 +1620,11 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Add Rigid Connector ...", this, SLOT(OnAddRigidConnector()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConnectors()));
+		break;
+	case MT_RIGID_LOAD_LIST:
+		menu.addAction("Add Rigid Load ...", this, SLOT(OnAddRigidLoad()));
+		menu.addSeparator();
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidLoads()));
 		break;
 	case MT_STEP_LIST:
 		menu.addAction("Add Analysis Step ...", this, SLOT(OnAddStep()));
@@ -1863,6 +1873,11 @@ void CModelViewer::OnDeleteAllConstraints()
 void CModelViewer::OnDeleteAllRigidConstraints()
 {
 	GetMainWindow()->DeleteAllRigidConstraints();
+}
+
+void CModelViewer::OnDeleteAllRigidLoads()
+{
+	GetMainWindow()->DeleteAllRigidLoads();
 }
 
 void CModelViewer::OnDeleteAllRigidConnectors()

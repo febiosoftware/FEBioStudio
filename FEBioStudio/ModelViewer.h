@@ -119,6 +119,7 @@ public slots:
 	void OnAddConstraint();
 	void OnAddRigidConstraint();
 	void OnAddRigidConnector();
+	void OnAddRigidLoad();
 	void OnAddStep();
 	void OnHideObject();
 	void OnShowObject();
@@ -172,6 +173,7 @@ public slots:
 	void OnDeleteAllContact();
 	void OnDeleteAllConstraints();
 	void OnDeleteAllRigidConstraints();
+	void OnDeleteAllRigidLoads();
 	void OnDeleteAllRigidConnectors();
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();

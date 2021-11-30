@@ -572,6 +572,7 @@ public slots:
 	void DeleteAllIC();
 	void DeleteAllContact();
 	void DeleteAllConstraints();
+	void DeleteAllRigidLoads();
 	void DeleteAllRigidConstraints();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
