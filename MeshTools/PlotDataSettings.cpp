@@ -161,6 +161,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "nodal surface traction"            );
     AddPlotVariable(MODULE_MECH, "nodal vector gap"                  );
     AddPlotVariable(MODULE_MECH, "octahedral plastic strain"         );
+    AddPlotVariable(MODULE_MECH, "rate of deformation"               );
     AddPlotVariable(MODULE_MECH, "reaction forces"                   );
     AddPlotVariable(MODULE_MECH, "relative volume");
     AddPlotVariable(MODULE_MECH, "right Hencky"                      );

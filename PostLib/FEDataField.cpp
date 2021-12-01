@@ -91,7 +91,7 @@ int FEDataField::components(Data_Tensor_Type ntype)
 		case DATA_VEC3F: return 7; break;
 		case DATA_MAT3F: return 9; break;
 		case DATA_MAT3D: return 9; break;
-		case DATA_MAT3FS: return 15; break;
+		case DATA_MAT3FS: return 18; break;
 		case DATA_MAT3FD: return 3; break;
 		case DATA_TENS4FS: return 21; break;
 		case DATA_ARRAY: return GetArraySize(); break;
@@ -237,6 +237,9 @@ std::string FEDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 			else if (ncomp == 12) sprintf(szline, "3 Dev Principal %s", sz);
 			else if (ncomp == 13) sprintf(szline, "Max Shear %s", sz);
 			else if (ncomp == 14) sprintf(szline, "%s Magnitude", sz);
+            else if (ncomp == 15) sprintf(szline, "1 Invariant of %s", sz);
+            else if (ncomp == 16) sprintf(szline, "2 Invariant of %s", sz);
+            else if (ncomp == 17) sprintf(szline, "3 Invariant of %s", sz);
 			return szline;
 		}
 		break;
