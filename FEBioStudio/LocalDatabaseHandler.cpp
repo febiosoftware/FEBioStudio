@@ -102,30 +102,38 @@ public:
 		dbPath = dbPanel->GetRepositoryFolder() += "/localdb.db";
 	}
 
-	void openDatabase(std::string schema)
+    bool openDatabase()
+    {
+        int rc = sqlite3_open(dbPath.toStdString().c_str(), &db);
+
+		if( rc )
+		{
+			fprintf(stderr, "Can't open database: %s\nError: %s\n", dbPath.toStdString().c_str(), sqlite3_errmsg(db));
+			sqlite3_close(db);
+			return false;
+		}
+
+        return true;
+    }
+
+    void closeDatabase()
+    {
+        sqlite3_close(db);
+    }
+
+	void initDatabase(std::string schema)
 	{
 		char *zErrMsg = 0;
 
         // Before we close and delete it, we need to copy the downloaded date for the files
         saveDownloadDates();
 
-		// When the repository is refreshed, this is called again, and the current db needs to be closed
-		// before it is deleted.
-		if(db) sqlite3_close(db);
-
 		// Delete local copy of the model database in order to write a new one.
 		QFile::remove(dbPath);
 
-		int rc = sqlite3_open(dbPath.toStdString().c_str(), &db);
+		if(!openDatabase()) return;
 
-		if( rc )
-		{
-			fprintf(stderr, "Can't open database: %s\nError: %s\n", dbPath.toStdString().c_str(), sqlite3_errmsg(db));
-			sqlite3_close(db);
-			return;
-		}
-
-		rc = sqlite3_exec(db,schema.c_str(), NULL, NULL, &zErrMsg);
+		int rc = sqlite3_exec(db,schema.c_str(), NULL, NULL, &zErrMsg);
 
 		if( rc!=SQLITE_OK )
 		{
@@ -133,21 +141,12 @@ public:
 			sqlite3_free(zErrMsg);
 		}
 
+        closeDatabase();
 	}
 
     void saveDownloadDates()
     {
-        if(!db)
-        {
-            int rc = sqlite3_open(dbPath.toStdString().c_str(), &db);
-
-            if( rc )
-            {
-                fprintf(stderr, "Can't open database: %s\nError: %s\n", dbPath.toStdString().c_str(), sqlite3_errmsg(db));
-                sqlite3_close(db);
-                return;
-            }
-        }
+        if(!openDatabase()) return;
 
         char **table;
 		int rows, cols;
@@ -164,34 +163,42 @@ public:
         }
 
         sqlite3_free_table(table);
+
+        closeDatabase();
     }
 
 	void execute(std::string& query, int (*callback)(void*,int,char**,char**)=NULL, void* arg = NULL)
 	{
-		int rc;
+        if(!openDatabase()) return;
+
 		char *zErrMsg = 0;
 
-		rc = sqlite3_exec(db, query.c_str(), callback, arg, &zErrMsg);
+		int rc = sqlite3_exec(db, query.c_str(), callback, arg, &zErrMsg);
 
 		if( rc!=SQLITE_OK )
 		{
 			fprintf(stderr, "SQL error: %s\n", zErrMsg);
 			sqlite3_free(zErrMsg);
 		}
+
+        closeDatabase();
 	}
 
 	void getTable(std::string& query, char ***table, int* rows, int* cols)
 	{
-		int rc;
+        if(!openDatabase()) return;
+
 		char *zErrMsg = 0;
 
-		rc = sqlite3_get_table(db, query.c_str(), table, rows, cols, &zErrMsg);
+		int rc = sqlite3_get_table(db, query.c_str(), table, rows, cols, &zErrMsg);
 
 		if( rc!=SQLITE_OK )
 		{
 			fprintf(stderr, "SQL error: %s\n", zErrMsg);
 			sqlite3_free(zErrMsg);
 		}
+
+        closeDatabase();
 	}
 
 	void insert(std::string& tableName, std::vector<std::string>& columns, std::string& values, std::string conflict = "")
@@ -616,7 +623,7 @@ void CLocalDatabaseHandler::init(std::string schema)
 {
 	imp->updateDBPath();
 
-	imp->openDatabase(schema);
+	imp->initDatabase(schema);
 }
 
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc)
