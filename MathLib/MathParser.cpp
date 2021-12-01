@@ -149,25 +149,37 @@ double CMathParser::prim()
 			{
 				// check for functions
 
-				double (*fnc)(double) = 0;
+				double (*fnc1)(double) = 0;
+				double (*fnc2)(double, double) = 0;
 
-				if (strcmp(string_value, "cos" )==0) fnc = cos;
-				if (strcmp(string_value, "sin" )==0) fnc = sin;
-				if (strcmp(string_value, "tan" )==0) fnc = tan;
-				if (strcmp(string_value, "ln"  )==0) fnc = log;
-				if (strcmp(string_value, "log" )==0) fnc = log10;
-				if (strcmp(string_value, "sqrt")==0) fnc = sqrt;
-				if (strcmp(string_value, "exp" )==0) fnc = exp;
+				if (strcmp(string_value, "cos" )==0) fnc1 =   cos;
+				if (strcmp(string_value, "sin" )==0) fnc1 =   sin;
+				if (strcmp(string_value, "tan" )==0) fnc1 =   tan;
+				if (strcmp(string_value, "ln"  )==0) fnc1 =   log;
+				if (strcmp(string_value, "log" )==0) fnc1 = log10;
+				if (strcmp(string_value, "sqrt")==0) fnc1 =  sqrt;
+				if (strcmp(string_value, "exp" )==0) fnc1 =   exp;
+				if (strcmp(string_value, "atan2") == 0) fnc2 = atan2;
 
 				get_token();
 
-				if (fnc)
+				if (fnc1)
 				{
 					if (curr_tok != LP) return error("'(' expected");
-					double v = fnc( expr() );
+					double v = fnc1( expr() );
 					if (curr_tok != RP) return error("')' expected");
 					get_token(); // eat ')'
 					return v;
+				}
+				else if (fnc2)
+				{
+					if (curr_tok != LP) return error("'(' expected");
+					double x = expr();
+					if (curr_tok != COMMA) return error("',' expected");
+					double y = expr();
+					if (curr_tok != RP) return error("')' expected");
+					get_token(); // eat ')'
+					return fnc2(x, y);
 				}
 				else return error("unknown variable or function name");
 			}
@@ -205,6 +217,7 @@ CMathParser::Token_value CMathParser::get_token()
 	case '-':
 	case '(':
 	case ')':
+	case ',':
 		return curr_tok = Token_value(ch);
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':

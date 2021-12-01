@@ -480,15 +480,22 @@ void CMainWindow::on_actionNameSelection_triggered()
 
 	char szname[256] = { 0 };
 
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEModel* pfem = doc->GetFEModel();
-	GModel* mdl = doc->GetGModel();
+	// we need a bit more for model docs
+	FEModel* pfem = nullptr;
+	GModel* mdl = nullptr;
+	if (GetModelDocument())
+	{
+		CModelDocument* modelDoc = GetModelDocument();
+		pfem = modelDoc->GetFEModel();
+		mdl = modelDoc->GetGModel();
+	}
 
 	// make sure there is a selection
 	FESelection* psel = doc->GetCurrentSelection();
-	if (psel->Size() == 0) return;
+	if ((psel == nullptr) || (psel->Size() == 0)) return;
 
 	// set the name
 	int item = doc->GetItemMode();
@@ -573,6 +580,8 @@ void CMainWindow::on_actionNameSelection_triggered()
 		break;
 		case ITEM_MESH:
 		{
+			assert(pfem);
+			assert(mdl);
 			int nsel = doc->GetSelectionMode();
 			switch (nsel)
 			{

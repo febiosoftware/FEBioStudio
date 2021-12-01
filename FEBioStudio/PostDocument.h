@@ -173,6 +173,9 @@ public:
 	// get the selection bounding box
 	BOX GetSelectionBox();
 
+	// Get current selection
+	FESelection* GetCurrentSelection() override;
+
 public:
 	//! save to session file
 	bool SavePostSession(const std::string& fileName);
@@ -207,5 +210,7 @@ private:
 
 	TIMESETTINGS m_timeSettings;
 
-	bool	m_binitPalette;	// was the palette initialized?
+	bool	m_binit;
+
+	FESelection* m_sel;
 };

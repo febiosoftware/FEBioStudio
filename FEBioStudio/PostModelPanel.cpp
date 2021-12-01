@@ -725,6 +725,34 @@ void CPostModelPanel::BuildModelTree()
 					Post::FEPart& part = mesh.Part(i);
 					ui->AddItem(pi2, &part, QString::fromStdString(part.GetName()), "", nullptr, CModelTreeItem::ALL_FLAGS);
 				}
+
+				GObject* po = pdoc->GetActiveObject();
+				if (po)
+				{
+					for (int i = 0; i < po->FENodeSets(); ++i)
+					{
+						FENodeSet* pg = po->GetFENodeSet(i);
+						ui->AddItem(pi2, pg, QString::fromStdString(pg->GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
+					}
+
+					for (int i = 0; i < po->FEEdgeSets(); ++i)
+					{
+						FEEdgeSet* pg = po->GetFEEdgeSet(i);
+						ui->AddItem(pi2, pg, QString::fromStdString(pg->GetName()), "selEdge", nullptr, CModelTreeItem::CANNOT_DISABLE);
+					}
+
+					for (int i = 0; i < po->FESurfaces(); ++i)
+					{
+						FESurface* pg = po->GetFESurface(i);
+						ui->AddItem(pi2, pg, QString::fromStdString(pg->GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
+					}
+
+					for (int i = 0; i < po->FEParts(); ++i)
+					{
+						FEPart* pg = po->GetFEPart(i);
+						ui->AddItem(pi2, pg, QString::fromStdString(pg->GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
+					}
+				}
 			}
 
 			Post::CGLDisplacementMap* map = mdl->GetDisplacementMap();
@@ -899,6 +927,47 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		w->setWindowTitle(QString::fromStdString(graph->GetName()));
 		w->show();
 	}
+
+	CGLDocument* doc = GetDocument();
+
+	FENodeSet* pn = dynamic_cast<FENodeSet*>(po);
+	if (pn)
+	{
+		std::list<int> items = pn->CopyItems();
+		std::vector<int> vitems(items.begin(), items.end());
+		doc->SetItemMode(ITEM_NODE);
+		doc->DoCommand(new CCmdSelectFENodes(pn->GetMesh(), vitems, false));
+	}
+
+	FEEdgeSet* pe = dynamic_cast<FEEdgeSet*>(po);
+	if (pe)
+	{
+		std::list<int> items = pe->CopyItems();
+		std::vector<int> vitems(items.begin(), items.end());
+		doc->SetItemMode(ITEM_EDGE);
+		doc->DoCommand(new CCmdSelectFEEdges(pe->GetMesh(), vitems, false));
+	}
+
+	FESurface* ps = dynamic_cast<FESurface*>(po);
+	if (ps)
+	{
+		std::list<int> items = ps->CopyItems();
+		std::vector<int> vitems(items.begin(), items.end());
+		doc->SetItemMode(ITEM_FACE);
+		doc->DoCommand(new CCmdSelectFaces(ps->GetMesh(), vitems, false));
+	}
+
+	FEPart* pg = dynamic_cast<FEPart*>(po);
+	if (pg)
+	{
+		std::list<int> items = pg->CopyItems();
+		std::vector<int> vitems(items.begin(), items.end());
+		doc->SetItemMode(ITEM_ELEM);
+		doc->DoCommand(new CCmdSelectElements(pg->GetMesh(), vitems, false));
+	}
+
+	GetMainWindow()->UpdateGLControlBar();
+	GetMainWindow()->RedrawGL();
 }
 
 void CPostModelPanel::on_nameEdit_editingFinished()
@@ -928,6 +997,8 @@ void CPostModelPanel::on_deleteButton_clicked()
 
 	FSObject* pobj = item->Object();
 
+	CPostDocument* doc = GetActiveDocument();
+
 	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(pobj);
 	CGraphData* graph = dynamic_cast<CGraphData*>(pobj);
 	if (po)
@@ -936,17 +1007,53 @@ void CPostModelPanel::on_deleteButton_clicked()
 		//       after the image model is deleted. 
 		ui->HideImageViewer();
 		
-		GetActiveDocument()->DeleteObject(po);
+		doc->DeleteObject(po);
 		item->SetObject(0);
 		Update(true);
 		GetMainWindow()->RedrawGL();
 	}
 	else if (graph)
 	{
-		GetActiveDocument()->DeleteGraph(graph);
+		doc->DeleteGraph(graph);
 		item->SetObject(0);
 		Update(true);
 		GetMainWindow()->RedrawGL();
+	}
+	else if (dynamic_cast<FENodeSet*>(po))
+	{
+		GObject* poa = doc->GetActiveObject();
+		if (poa)
+		{
+			poa->RemoveFENodeSet(dynamic_cast<FENodeSet*>(po));
+			Update(true);
+		}
+	}
+	else if (dynamic_cast<FEEdgeSet*>(po))
+	{
+		GObject* poa = doc->GetActiveObject();
+		if (poa)
+		{
+			poa->RemoveFEEdgeSet(dynamic_cast<FEEdgeSet*>(po));
+			Update(true);
+		}
+	}
+	else if (dynamic_cast<FESurface*>(po))
+	{
+		GObject* poa = doc->GetActiveObject();
+		if (poa)
+		{
+			poa->RemoveFESurface(dynamic_cast<FESurface*>(po));
+			Update(true);
+		}
+	}
+	else if (dynamic_cast<FEPart*>(po))
+	{
+		GObject* poa = doc->GetActiveObject();
+		if (poa)
+		{
+			poa->RemoveFEPart(dynamic_cast<FEPart*>(po));
+			Update(true);
+		}
 	}
 	else QMessageBox::information(this, "FEBio Studio", "Cannot delete this object");
 }

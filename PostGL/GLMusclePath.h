@@ -32,7 +32,7 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, ROTATION_CENTER, METHOD, SIZE, COLOR, DRAW_DEBUG };
+	enum { START_POINT, END_POINT, ROTATION_CENTER, METHOD, PERSIST_PATH, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SEARCH_RADIUS, PATH_RADIUS, COLOR, RENDER_MODE };
 
 	class PathData;
 
@@ -56,19 +56,25 @@ protected:
 	vec3d UpdateOrigin(int ntime);
 
 	bool UpdateStraighLine   (PathData* path, int ntime);
-	bool Update3PointPath    (PathData* path, int ntime);
-	bool UpdateShortestPath2D(PathData* path, int ntime);
-	bool UpdateShortestPath  (PathData* path, int ntime);
 	bool UpdateSpringPath    (PathData* path, int ntime);
 
 private:
 	std::vector<PathData*>	m_path;	// points defining the path
 
-	std::vector<int>	m_selNodes;	// selected nodes
-
 	// information to track motion of origin
 	int		m_closestFace;	// surface face closest to origin
 	vec3d	m_qr;
+
+	// values that require re-evaluation upon change
+	int		m_node0;
+	int		m_node1;
+	vec3d	m_rc;
+	int		m_method;
+	int		m_ndiv;
+	int		m_maxIter;
+	double	m_tol;
+	bool	m_persist;
+	double	m_searchRadius;
 };
 
 }

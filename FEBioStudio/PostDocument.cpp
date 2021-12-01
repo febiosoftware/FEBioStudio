@@ -221,8 +221,9 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_fem = new Post::FEPostModel;
 	m_postObj = nullptr;
 	m_glm = nullptr;
+	m_sel = nullptr;
 
-	m_binitPalette = false;
+	m_binit = false;
 
 	SetItemMode(ITEM_ELEM);
 }
@@ -237,6 +238,7 @@ CPostDocument::~CPostDocument()
 
 	delete m_glm; m_glm = nullptr;
 	delete m_fem;
+	if (m_sel) delete m_sel;
 }
 
 void CPostDocument::Clear()
@@ -253,16 +255,19 @@ void CPostDocument::Clear()
 
 bool CPostDocument::Initialize()
 {
+	// the init flag is only used when reading a session to prevent Initialize from getting called twice
+	if (m_binit)
+	{
+		m_binit = false;
+		return true;
+	}
+
 	assert(m_fem);
 	m_fem->UpdateBoundingBox();
 
 	// assign default material attributes
-	if (m_binitPalette == false)
-	{
-		const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
-		ApplyPalette(pal);
-		m_binitPalette = true;
-	}
+	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+	ApplyPalette(pal);
 
 	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
 	if (m_postObj) delete m_postObj; m_postObj = new CPostObject(m_glm);
@@ -558,6 +563,24 @@ BOX CPostDocument::GetSelectionBox()
 	return box;
 }
 
+FESelection* CPostDocument::GetCurrentSelection()
+{
+	if (m_sel) { delete m_sel; m_sel = nullptr; }
+
+	FEMesh* pm = GetGLModel()->GetActiveMesh();
+
+	int selectionMode = m_vs.nitem;
+	switch (selectionMode)
+	{
+	case ITEM_NODE: m_sel = new FENodeSelection(nullptr, pm); break;
+	case ITEM_EDGE: m_sel = new FEEdgeSelection(nullptr, pm); break;
+	case ITEM_FACE: m_sel = new FEFaceSelection(nullptr, pm); break;
+	case ITEM_ELEM: m_sel = new FEElementSelection(nullptr, pm); break;
+	}
+
+	return m_sel;
+}
+
 std::string CPostDocument::GetFileName()
 {
 	return m_fileName;
@@ -666,7 +689,7 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 	{
 		// save plot file
 		std::string plotFile = GetDocFilePath();
-		XMLElement plt("plotfile");
+		XMLElement plt("open");
 		plt.add_attribute("file", plotFile);
 		xml.add_empty(plt);
 
@@ -688,6 +711,99 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 				xml.add_leaf("transparency", mat->transparency);
 			}
 			xml.close_branch(); // material
+		}
+
+		// save selections
+		GObject* po = GetActiveObject();
+		if (po)
+		{
+			for (int i = 0; i < po->FENodeSets(); ++i)
+			{
+				FENodeSet* pg = po->GetFENodeSet(i);
+
+				XMLElement el("mesh:nodeset");
+				el.add_attribute("name", pg->GetName());
+				xml.add_branch(el);
+				{
+					std::list<int> items = pg->CopyItems();
+					std::list<int>::iterator it = items.begin();
+					int N = items.size();
+					int l[16];
+					for (int n = 0; n < N; n += 16)
+					{
+						int m = (n + 16 <= N ? 16 : N - n);
+						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
+						xml.add_leaf("nodes", l, m);
+					}
+				}
+				xml.close_branch();
+			}
+
+			for (int i = 0; i < po->FEEdgeSets(); ++i)
+			{
+				FEEdgeSet* pg = po->GetFEEdgeSet(i);
+
+				XMLElement el("mesh:edgeset");
+				el.add_attribute("name", pg->GetName());
+				xml.add_branch(el);
+				{
+					std::list<int> items = pg->CopyItems();
+					std::list<int>::iterator it = items.begin();
+					int N = items.size();
+					int l[16];
+					for (int n = 0; n < N; n += 16)
+					{
+						int m = (n + 16 <= N ? 16 : N - n);
+						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
+						xml.add_leaf("edges", l, m);
+					}
+				}
+				xml.close_branch();
+			}
+
+			for (int i = 0; i < po->FESurfaces(); ++i)
+			{
+				FESurface* pg = po->GetFESurface(i);
+
+				XMLElement el("mesh:surface");
+				el.add_attribute("name", pg->GetName());
+				xml.add_branch(el);
+				{
+					std::list<int> items = pg->CopyItems();
+					std::list<int>::iterator it = items.begin();
+					int N = items.size();
+					int l[16];
+					for (int n = 0; n < N; n += 16)
+					{
+						int m = (n + 16 <= N ? 16 : N - n);
+						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
+						xml.add_leaf("faces", l, m);
+					}
+				}
+				xml.close_branch();
+			}
+
+			for (int i = 0; i < po->FEParts(); ++i)
+			{
+				FEPart* pg = po->GetFEPart(i);
+
+				XMLElement el("mesh:part");
+				el.add_attribute("name", pg->GetName());
+				xml.add_branch(el);
+				{
+					std::list<int> items = pg->CopyItems();
+					std::list<int>::iterator it = items.begin();
+					int N = items.size();
+					int l[16];
+					for (int n = 0; n < N; n += 16)
+					{
+						int m = (n + 16 <= N ? 16 : N - n);
+						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
+						xml.add_leaf("elems", l, m);
+					}
+				}
+				xml.close_branch();
+			}
 		}
 
 		// save post model components
@@ -775,10 +891,8 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 				// save the plot file as the document's path
 				SetDocFilePath(szfile);
 
-				// initialize the color palette here, since we might be overriding some settings
-				const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
-				ApplyPalette(pal);
-				m_binitPalette = true;
+				if (Initialize() == false) return false;
+				m_binit = true;
 			}
 			else if (tag == "kinemat")
 			{
@@ -843,6 +957,98 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 					} while (!tag.isend());
 				}
 			}
+			else if (tag == "mesh:nodeset")
+			{
+				const char* szname = tag.AttributeValue("name");
+				vector<int> nodeList;
+				++tag;
+				do {
+					if (tag == "nodes")
+					{
+						int l[16];
+						int m = tag.value(l, 16);
+						for (int i = 0; i < m; ++i) nodeList.push_back(l[i] - 1);
+					}
+					++tag;
+				} while (!tag.isend());
+
+				GObject* po = GetActiveObject();
+				if (po)
+				{
+					FENodeSet* pg = new FENodeSet(po, nodeList);
+					pg->SetName(szname);
+					po->AddFENodeSet(pg);
+				}
+			}
+			else if (tag == "mesh:edgeset")
+			{
+				const char* szname = tag.AttributeValue("name");
+				vector<int> edgeList;
+				++tag;
+				do {
+					if (tag == "edges")
+					{
+						int l[16];
+						int m = tag.value(l, 16);
+						for (int i = 0; i < m; ++i) edgeList.push_back(l[i] - 1);
+					}
+					++tag;
+				} while (!tag.isend());
+
+				GObject* po = GetActiveObject();
+				if (po)
+				{
+					FEEdgeSet* pg = new FEEdgeSet(po, edgeList);
+					pg->SetName(szname);
+					po->AddFEEdgeSet(pg);
+				}
+			}
+			else if (tag == "mesh:surface")
+			{
+				const char* szname = tag.AttributeValue("name");
+				vector<int> faceList;
+				++tag;
+				do {
+					if (tag == "faces")
+					{
+						int l[16];
+						int m = tag.value(l, 16);
+						for (int i = 0; i < m; ++i) faceList.push_back(l[i] - 1);
+					}
+					++tag;
+				} while (!tag.isend());
+
+				GObject* po = GetActiveObject();
+				if (po)
+				{
+					FESurface* pg = new FESurface(po, faceList);
+					pg->SetName(szname);
+					po->AddFESurface(pg);
+				}
+			}
+			else if (tag == "mesh:part")
+			{
+				const char* szname = tag.AttributeValue("name");
+				vector<int> elemList;
+				++tag;
+				do {
+					if (tag == "elems")
+					{
+						int l[16];
+						int m = tag.value(l, 16);
+						for (int i = 0; i < m; ++i) elemList.push_back(l[i] - 1);
+					}
+					++tag;
+				} while (!tag.isend());
+
+				GObject* po = GetActiveObject();
+				if (po)
+				{
+					FEPart* pg = new FEPart(po, elemList);
+					pg->SetName(szname);
+					po->AddFEPart(pg);
+				}
+			}
 			else if (tag == "plot")
 			{
 				const char* sztype = tag.AttributeValue("type");
@@ -871,6 +1077,8 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 					}
 					++tag;
 				} while (!tag.isend());
+
+				plot->UpdateData(true);
 			}
 			//			else xml.SkipTag(tag);
 			else return false;
