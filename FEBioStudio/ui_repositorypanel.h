@@ -934,17 +934,16 @@ public:
 		unauthorized->setWordWrap(true);
 		unauthorized->hide();
 
-		QHBoxLayout* centerName = new QHBoxLayout;
-		centerName->addStretch();
-		centerName->addWidget(projectName = new QLabel);
-		centerName->addStretch();
-
-		modelInfoLayout->addLayout(centerName);
+        projectName = new QLabel;
+        projectName->setWordWrap(true);
+        projectName->setAlignment(Qt::AlignCenter);
 
 		QFont font = projectName->font();
 		font.setBold(true);
 		font.setPointSize(14);
 		projectName->setFont(font);
+
+        modelInfoLayout->addWidget(projectName);
 
 		modelInfoLayout->addWidget(projectDesc = new MultiLineLabel);
 
