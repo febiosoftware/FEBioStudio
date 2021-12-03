@@ -1699,6 +1699,34 @@ void FEBioExport3::WriteRigidMaterial(FEMaterial* pmat, XMLElement& el)
 }
 
 //-----------------------------------------------------------------------------
+void WriteAttributeParameters(XMLElement& el, FEMaterial* pm, FEModel& fem)
+{
+	for (int i = 0; i < pm->Parameters(); ++i)
+	{
+		Param& p = pm->GetParam(i);
+		if (p.GetFlags() & 0x01)
+		{
+			switch (p.GetParamType())
+			{
+			case Param_CHOICE:
+			case Param_INT:
+			{
+				// this assumes that the value is actually the index into the enums. 
+				// the enums may have an implied value associated that may differ from its index, so we need to acquire that.
+				if (p.GetEnumNames())
+				{
+					int v = fem.GetEnumIntValue(p);
+					el.add_attribute(p.GetShortName(), v);
+				}
+				else el.add_attribute(p.GetShortName(), p.GetIntValue());
+			}
+			break;
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 {
 	// redirect chemical reactions
@@ -1886,29 +1914,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 
 	// see if there are any attribute parameters
 	FEModel& fem = m_prj.GetFEModel();
-	for (int i = 0; i < pm->Parameters(); ++i)
-	{
-		Param& p = pm->GetParam(i);
-		if (p.GetFlags() & 0x01)
-		{
-			switch (p.GetParamType())
-			{
-			case Param_CHOICE:
-			case Param_INT: 
-			{
-				// this assumes that the value is actually the index into the enums. 
-				// the enums may have an implied value associated that may differ from its index, so we need to acquire that.
-				if (p.GetEnumNames())
-				{
-					int v = fem.GetEnumIntValue(p);
-					el.add_attribute(p.GetShortName(), v);
-				}
-				else el.add_attribute(p.GetShortName(), p.GetIntValue());
-			}
-			break;
-			}
-		}
-	}
+	WriteAttributeParameters(el, pm, fem);
 
 	m_xml.add_branch(el);
 	{
@@ -1953,7 +1959,13 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 					if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);
 					else
 					{
-						el.add_attribute("type", pc->GetTypeString());
+						// only add type if the string is different than the tag name
+						const char* sztype2 = pc->GetTypeString();
+						if (strcmp(el.name(), sztype2) != 0)
+							el.add_attribute("type", sztype2);
+
+						// write any attribute parameters
+						WriteAttributeParameters(el, pc, fem);
 
 						// We need some special formatting for some fiber generator materials
 						bool bdone = false;
