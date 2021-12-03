@@ -2754,6 +2754,26 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				assert(false);
 			}
 		}
+		else if (tag == "rigid_cable")
+		{
+			const char* sztype = "rigid_cable";
+
+			// get the name 
+			stringstream ss;
+			ss << "RigidCable" << CountLoads<FERigidLoad>(fem) + 1;
+			std::string name = tag.AttributeValue("name", ss.str());
+
+			// allocate class
+			FEBioRigidLoad* pi = new FEBioRigidLoad(&fem, m_pBCStep->GetID());
+			if (FEBio::CreateModelComponent(FE_RIGID_LOAD, sztype, pi) == false)
+			{
+				throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+			}
+			pi->SetName(name);
+			m_pBCStep->AddRigidLoad(pi);
+
+			ReadParameters(*pi, tag);
+		}
 		else ParseUnknownTag(tag);
 		++tag;
 	}
