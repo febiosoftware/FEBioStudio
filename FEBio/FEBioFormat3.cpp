@@ -981,14 +981,14 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	FEBioModel& feb = GetFEBioModel();
 
 	XMLAtt* name = tag.AttributePtr("name");
-	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+	XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 	XMLAtt* nset = tag.AttributePtr("node_set");
 
 	FEMeshData::DATA_TYPE dataType;
 	if (dataTypeAtt)
 	{
 		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-//		else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+		else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
 		else return false;
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
@@ -998,19 +998,26 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 
 	FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
 
-	double val;
-	int lid;
-	++tag;
-	do
+	const char* szgen = tag.AttributeValue("generator", true);
+	if (szgen)
 	{
-		tag.AttributePtr("lid")->value(lid);
-		tag.value(val);
-
-		nodeData->set(lid - 1, val);
-
-		++tag;
+		tag.skip();
 	}
-	while (!tag.isend());
+	else
+	{
+		double val;
+		int lid;
+		++tag;
+		do
+		{
+			tag.AttributePtr("lid")->value(lid);
+			tag.value(val);
+
+			nodeData->set(lid - 1, val);
+
+			++tag;
+		} while (!tag.isend());
+	}
 
 	return true;
 
