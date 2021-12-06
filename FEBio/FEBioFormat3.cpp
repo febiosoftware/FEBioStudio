@@ -1413,11 +1413,12 @@ bool FEBioFormat3::ParseBoundarySection(XMLTag& tag)
 			if      (type == "fix"       ) ParseBCFixed     (m_pBCStep, tag);
 			else if (type == "prescribe" ) ParseBCPrescribed(m_pBCStep, tag);
 			else if (type == "rigid"     ) ParseBCRigid     (m_pBCStep, tag);
+			else if (type == "linear constraint") ParseBCLinearConstraint(m_pBCStep, tag);
 			else if (type == "fluid rotational velocity")
 			{
 				ParseBCFluidRotationalVelocity(m_pBCStep, tag);
 			}
-			else ParseUnknownTag(tag);
+			else ParseUnknownAttribute(tag, "type");
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -1899,6 +1900,35 @@ void FEBioFormat3::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 	pstep->AddComponent(pi);
 }
 
+void FEBioFormat3::ParseBCLinearConstraint(FEStep* pstep, XMLTag& tag)
+{
+	FEModel& fem = GetFEModel();
+	FEBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("linear constraint", &fem); assert(pbc);
+	if (pbc == nullptr) throw XMLReader::InvalidTag(tag);
+
+	// read the (optional) name
+	string name; 
+	const char* szname = tag.AttributeValue("name", true);
+	if (szname) name = szname;
+	else
+	{
+		int n = CountBCs<FEBoundaryCondition>(fem);
+		stringstream ss; ss << "BC" << n + 1;
+		name = ss.str();
+	}
+	pbc->SetName(name);
+
+	// set the comment if any
+	std::string comment = tag.comment();
+	pbc->SetInfo(comment);
+
+	// read the parameters
+	ReadParameters(*pbc, tag);
+
+	// add to the step
+	pstep->AddComponent(pbc);
+}
+
 void FEBioFormat3::ParseBCFluidRotationalVelocity(FEStep* pstep, XMLTag& tag)
 {
 	FEBioModel& febio = GetFEBioModel();
@@ -2372,9 +2402,9 @@ void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 	XMLAtt& atype = tag.Attribute("type");
 
 	// check special cases
-	if      (atype == "rigid_wall"       ) ParseRigidWall       (pstep, tag);
-	else if (atype == "linear constraint") ParseLinearConstraint(pstep, tag);
-	else if (atype == "rigid joint"      ) ParseContactJoint    (pstep, tag);
+	if      (atype == "rigid_wall"       ) ParseRigidWall         (pstep, tag);
+	else if (atype == "linear constraint") ParseALLinearConstraint(pstep, tag);
+	else if (atype == "rigid joint"      ) ParseContactJoint      (pstep, tag);
 	else
 	{
 		const char* szpair = tag.AttributeValue("surface_pair");
@@ -2608,7 +2638,7 @@ void FEBioFormat3::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
+void FEBioFormat3::ParseALLinearConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FEModel& fem = GetFEModel();
 

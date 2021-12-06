@@ -81,6 +81,7 @@ private:
 	void ParseBCFixed     (FEStep* pstep, XMLTag& tag);
 	void ParseBCPrescribed(FEStep* pstep, XMLTag& tag);
 	void ParseBCRigid     (FEStep* pstep, XMLTag& tag);
+	void ParseBCLinearConstraint(FEStep* pstep, XMLTag& tag);
 	void ParseBCFluidRotationalVelocity(FEStep* pstep, XMLTag& tag);
 
 	// mesh data sections
@@ -97,7 +98,7 @@ private:
 	void ParseContact(FEStep* pstep, XMLTag& tag);
 	void ParseContactJoint(FEStep* pstep, XMLTag& tag);
 	void ParseRigidWall         (FEStep* pstep, XMLTag& tag);
-	void ParseLinearConstraint  (FEStep* pstep, XMLTag& tag);
+	void ParseALLinearConstraint(FEStep* pstep, XMLTag& tag);
 
 private:
 	// loads parse functions
