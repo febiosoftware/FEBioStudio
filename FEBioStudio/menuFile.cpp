@@ -120,6 +120,7 @@ SOFTWARE.*/
 #include <PostLib/VolRender.h>
 #include <PostLib/VolumeRender2.h>
 #include <sstream>
+#include "PostObject.h"
 
 using std::stringstream;
 
@@ -536,7 +537,8 @@ void CMainWindow::ExportPostGeometry()
 		//		<< "FEBio files (*.feb)"
 		//		<< "ASCII files (*.*)"
 		//		<< "VRML files (*.wrl)"
-		<< "LSDYNA Keyword (*.k)";
+		<< "LSDYNA Keyword (*.k)"
+		<< "STL file (*.stl)";
 	//		<< "BYU files(*.byu)"
 	//		<< "NIKE3D files (*.n)"
 	//		<< "VTK files (*.vtk)"
@@ -628,6 +630,14 @@ void CMainWindow::ExportPostGeometry()
 			w.m_bnode = dlg.m_bnode;
 			bret = w.Save(fem, doc->GetActiveState(), szfilename);
 		}
+	}
+	break;
+	case 2:
+	{
+		// We need a dummy project
+		FEProject prj;
+		FESTLExport stl(prj);
+		bret = stl.Write(szfilename, doc->GetPostObject());
 	}
 	break;
 	/*	case 5:

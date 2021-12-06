@@ -1075,30 +1075,30 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	FEBioModel& feb = GetFEBioModel();
 
 	XMLAtt* name = tag.AttributePtr("name");
-	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+	XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 	XMLAtt* nset = tag.AttributePtr("node_set");
 
 	FEMeshData::DATA_TYPE dataType;
 	if (dataTypeAtt)
 	{
 		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-//		else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+		else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
 		else return false;
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-	// see if the "generator" tag is present
+	FENodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
+	FEMesh* feMesh = nodeSet->GetMesh();
+
+	FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
+
 	const char* szgen = tag.AttributeValue("generator", true);
-	
-	// TODO: skip generators for now, but need to add support for this.
-	if (szgen) ParseUnknownTag(tag);
+	if (szgen)
+	{
+		tag.skip();
+	}
 	else
 	{
-		FENodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
-		FEMesh* feMesh = nodeSet->GetMesh();
-
-		FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
-
 		double val;
 		int lid;
 		++tag;

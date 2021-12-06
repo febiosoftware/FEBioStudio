@@ -29,6 +29,53 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
+void stl_write_face(FILE* fp, const vec3d& fn, const vec3d& r0, const vec3d& r1, const vec3d& r2)
+{
+	fprintf(fp, "facet normal %g %g %g\n", fn.x, fn.y, fn.z);
+	fprintf(fp, "outer loop\n");
+
+	fprintf(fp, "vertex %g %g %g\n", r0.x, r0.y, r0.z);
+	fprintf(fp, "vertex %g %g %g\n", r1.x, r1.y, r1.z);
+	fprintf(fp, "vertex %g %g %g\n", r2.x, r2.y, r2.z);
+
+	fprintf(fp, "endloop\n");
+	fprintf(fp, "endfacet\n");
+}
+
+void stl_write_solid(FILE* fp, FEMeshBase* pm, const char* solidName)
+{
+	fprintf(fp, "solid %s\n", solidName);
+
+	vec3d r[FEFace::MAX_NODES];
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FEFace& face = pm->Face(i);
+
+		vec3d fn = to_vec3d(face.m_fn);
+
+		for (int j = 0; j < face.Nodes(); ++j)
+		{
+			vec3d& p = pm->Node(face.n[j]).r;
+			r[j] = pm->LocalToGlobal(p);
+		}
+
+		vec3d q[3];
+		switch (face.Type())
+		{
+		case FE_FACE_TRI3:
+			stl_write_face(fp, fn, r[0], r[1], r[2]);
+			break;
+		case FE_FACE_QUAD4:
+			stl_write_face(fp, fn, r[0], r[1], r[2]);
+			stl_write_face(fp, fn, r[2], r[3], r[0]);
+			break;
+		default:
+			assert(false);
+		}
+	}
+	fprintf(fp, "endsolid\n");
+}
+
 FESTLExport::FESTLExport(FEProject& prj) : FEFileExport(prj)
 {
 }
@@ -67,26 +114,27 @@ bool FESTLExport::Write(const char* szfile)
 			const char* szname = po->GetName().c_str();
 			if (strlen(szname) == 0) szname = "object";
 
-			fprintf(fp, "solid %s\n", szname);
-
-			for (i=0; i<pm->Faces(); ++i)
-			{
-				FEFace& face = pm->Face(i);
-				fprintf(fp, "facet normal %g %g %g\n", face.m_fn.x, face.m_fn.y, face.m_fn.z);
-				fprintf(fp, "outer loop\n");
-				for (j=0; j<face.Nodes(); ++j)
-				{
-					vec3d& p = pm->Node(face.n[j]).r;
-					vec3d r = pm->LocalToGlobal(p);
-					fprintf(fp, "vertex %g %g %g\n", r.x, r.y, r.z);
-				}
-				fprintf(fp, "endloop\n");
-				fprintf(fp, "endfacet\n");
-			}
-			fprintf(fp, "endsolid\n");
+			stl_write_solid(fp, pm, szname);
 		}
 	}
+	fclose(fp);
 
+	return true;
+}
+
+bool FESTLExport::Write(const char* szfile, GObject* po)
+{
+	FILE* fp = fopen(szfile, "wt");
+	if (fp == 0) return false;
+
+	FEMeshBase* pm = po->GetEditableMesh();
+	if (pm == 0) return errf("Not all objects are meshed.");
+	const char* szname = po->GetName().c_str();
+	if (strlen(szname) == 0) szname = "object";
+
+	// write the solid
+	stl_write_solid(fp, pm, szname);
+	
 	fclose(fp);
 
 	return true;
