@@ -38,7 +38,8 @@ using namespace Post;
 class GLMusclePath::PathData
 {
 public:
-	enum { PathLength, MomentArm };
+	enum { MUSCLE_PATH_PARAMS = 8 };
+	enum { PathLength, MomentArm, START_X, START_Y, START_Z, END_X, END_Y, END_Z };
 
 	struct Point
 	{
@@ -76,7 +77,7 @@ public:
 
 	vec3d	m_ro;		// position of origin
 
-	double		m_data[2];	// 0 = length, 1 = moment arm
+	double		m_data[MUSCLE_PATH_PARAMS];	// 0 = length; 1 = moment arm; 2,3,4 = start point; 5,6,7 = end point
 
 private:
 	PathData(const PathData& path) {}
@@ -299,10 +300,19 @@ void GLMusclePath::UpdatePathData(int ntime)
 	// get the path's points
 	if (path->m_points.empty())
 	{
-		path->m_data[PathData::PathLength] = 0.0;
-		path->m_data[PathData::MomentArm ] = 0.0;
+		for (int i=0; i< PathData::MUSCLE_PATH_PARAMS; ++i) path->m_data[i] = 0.0;
 		return;
 	}
+
+	// start and end point coordinates
+	vec3d r0 = path->m_points[0].r;
+	vec3d r1 = path->m_points[path->Points() - 1].r;
+	path->m_data[PathData::START_X] = r0.x;
+	path->m_data[PathData::START_Y] = r0.y;
+	path->m_data[PathData::START_Z] = r0.z;
+	path->m_data[PathData::END_X  ] = r1.x;
+	path->m_data[PathData::END_Y  ] = r1.y;
+	path->m_data[PathData::END_Z  ] = r1.z;
 
 	// calculate path length
 	double L = 0.0;
@@ -371,6 +381,14 @@ double GLMusclePath::DataValue(int field, int step)
 	{
 	case 1: val = path->m_data[PathData::PathLength]; break;
 	case 2: val = path->m_data[PathData::MomentArm ]; break;
+	case 3: val = path->m_data[PathData::START_X   ]; break;
+	case 4: val = path->m_data[PathData::START_Y   ]; break;
+	case 5: val = path->m_data[PathData::START_Z   ]; break;
+	case 6: val = path->m_data[PathData::END_X     ]; break;
+	case 7: val = path->m_data[PathData::END_Y     ]; break;
+	case 8: val = path->m_data[PathData::END_Z     ]; break;
+	default:
+		assert(false);
 	}
 
 	// return 

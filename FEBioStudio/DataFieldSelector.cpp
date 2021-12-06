@@ -74,8 +74,14 @@ void CTimeStepSelector::BuildMenu(QMenu* menu)
 CMusclePathDataSelector::CMusclePathDataSelector() {}
 void CMusclePathDataSelector::BuildMenu(QMenu* menu)
 {
-	QAction* lengthAction = menu->addAction("Length"    ); lengthAction->setData(1);
-	QAction* momarmAction = menu->addAction("Moment arm"); momarmAction->setData(2);
+	QAction* lengthAction = menu->addAction("Length"       ); lengthAction->setData(1);
+	QAction* momarmAction = menu->addAction("Moment arm"   ); momarmAction->setData(2);
+	QAction* startXAction = menu->addAction("Start Point X"); startXAction->setData(3);
+	QAction* startYAction = menu->addAction("Start Point Y"); startYAction->setData(4);
+	QAction* startZAction = menu->addAction("Start Point Z"); startZAction->setData(5);
+	QAction* endXAction   = menu->addAction("End Point X"  ); endXAction  ->setData(6);
+	QAction* endYAction   = menu->addAction("End Point Y"  ); endYAction  ->setData(7);
+	QAction* endZAction   = menu->addAction("End Point Z"  ); endZAction  ->setData(8);
 }
 
 CModelDataSelector::CModelDataSelector(FEPostModel* fem, Data_Tensor_Type ntype, bool btvec)
