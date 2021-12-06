@@ -1386,8 +1386,6 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 
 			++tag;
 		} while (!tag.isend());
-
-		++tag;
 	}
 	else ParseUnknownTag(tag);
 
@@ -2096,7 +2094,35 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	pstep->AddComponent(psl);
 
 	// read the parameters
-	ReadParameters(*psl, tag);
+	if (tag.isleaf()) return;
+
+	// read parameters
+	++tag;
+	do
+	{
+		// try to read the parameters
+		if (ReadParam(*psl, tag) == false)
+		{
+			if (tag == "value")
+			{
+				const char* szatt = tag.AttributeValue("surface_data", true);
+				if (szatt)
+				{
+					// TODO: What to do if the value for velocity is not 1?
+					Param* p = psl->GetParam("velocity"); assert(p);
+					if (p && p->IsVariable())
+					{
+						p->SetParamType(Param_Type::Param_STRING);
+						p->SetStringValue(szatt);
+					}
+					else ParseUnknownTag(tag);
+				}
+				else ParseUnknownTag(tag);
+			}
+			else ParseUnknownTag(tag);
+		}
+		++tag;
+	} while (!tag.isend());
 }
 
 //-----------------------------------------------------------------------------
