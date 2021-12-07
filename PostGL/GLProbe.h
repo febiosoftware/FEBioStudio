@@ -32,7 +32,7 @@ namespace Post {
 
 class GLProbe : public CGLPlot
 {
-	enum { INIT_POS, SIZE, COLOR, FOLLOW, SHOW_PATH, PATH_COLOR };
+	enum { TRACK_DATA, INIT_POS, SIZE, COLOR, FOLLOW, SHOW_PATH, PATH_COLOR };
 
 public:
 	GLProbe();
@@ -45,6 +45,8 @@ public:
 	bool UpdateData(bool bsave = true) override;
 
 	double DataValue(int nfield, int nstep);
+
+	bool TrackModelData() const;
 
 public:
 	GLColor GetColor() const;

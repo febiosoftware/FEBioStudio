@@ -102,6 +102,16 @@ void CMusclePathDataSelector::BuildMenu(QMenu* menu)
 	menu->addMenu(tng);
 }
 
+CProbeDataSelector::CProbeDataSelector(){}
+void CProbeDataSelector::BuildMenu(QMenu* menu)
+{
+	QMenu* pos = new QMenu("Position");
+	QAction* posXAction = pos->addAction("X-Position"); posXAction->setData(1);
+	QAction* posYAction = pos->addAction("Y-Position"); posYAction->setData(2);
+	QAction* posZAction = pos->addAction("Z-Position"); posZAction->setData(3);
+	menu->addMenu(pos);
+}
+
 CModelDataSelector::CModelDataSelector(FEPostModel* fem, Data_Tensor_Type ntype, bool btvec)
 {
 	m_fem = fem;
