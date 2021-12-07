@@ -1700,7 +1700,14 @@ void CModelGraphWindow::setDataSource(int n)
 				{
 					if (m == n)
 					{
-						SetYDataSelector(new CModelDataSelector(&fem, Post::DATA_SCALAR));
+						if (probe->TrackModelData())
+						{
+							SetYDataSelector(new CModelDataSelector(&fem, Post::DATA_SCALAR));
+						}
+						else
+						{
+							SetYDataSelector(new CProbeDataSelector());
+						}
 
 						Update(false, true);
 						break;
