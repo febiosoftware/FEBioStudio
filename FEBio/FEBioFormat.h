@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
-#include "FEBioModel.h"
+#include "FEBioInputModel.h"
 
 //-----------------------------------------------------------------------------
 class FEBioImport;
@@ -40,7 +40,7 @@ class FEBioImport;
 class FEBioFormat
 {
 public:
-	FEBioFormat(FEBioImport* fileReader, FEBioModel& febio);
+	FEBioFormat(FEBioImport* fileReader, FEBioInputModel& febio);
 	virtual ~FEBioFormat();
 
 	// override this function for processing the top-level sections
@@ -61,7 +61,7 @@ protected:
 
 	virtual FEStep* NewStep(FEModel& fem, int nanalysis, const char* sz = 0);
 
-	FEBioModel& GetFEBioModel() { return m_febio; }
+	FEBioInputModel& GetFEBioModel() { return m_febio; }
 
 	FEModel& GetFEModel() { return m_febio.GetFEModel(); }
 
@@ -98,10 +98,10 @@ protected:
 	void ParseMappedParameter(XMLTag& tag, Param* param);
 
 private:
-	FEBioModel&		m_febio;
+	FEBioInputModel&		m_febio;
 	FEBioImport*	m_fileReader;
 
-protected: // TODO: Move to FEBioModel?
+protected: // TODO: Move to FEBioInputModel?
 	bool		m_geomOnly;	// read only geometry section
 	int			m_nAnalysis;	// analysis type
 	FEStep*		m_pstep;		// current analysis step

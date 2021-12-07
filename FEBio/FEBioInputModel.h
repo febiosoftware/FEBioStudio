@@ -62,7 +62,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // Helper class that stores the components read from the FEBio file
-class FEBioModel
+class FEBioInputModel
 {
 public:
 	struct NODE
@@ -411,8 +411,8 @@ public:
 	};
 
 public:
-	FEBioModel(FEModel& fem);
-	~FEBioModel();
+	FEBioInputModel(FEModel& fem);
+	~FEBioInputModel();
 
 	void UpdateGeometry();
 

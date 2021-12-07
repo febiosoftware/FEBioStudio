@@ -118,7 +118,7 @@ int GetDOFCode(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-FEBioFormat::FEBioFormat(FEBioImport* fileReader, FEBioModel& febio) : m_febio(febio)
+FEBioFormat::FEBioFormat(FEBioImport* fileReader, FEBioInputModel& febio) : m_febio(febio)
 {
 	m_fileReader = fileReader;
 
@@ -244,7 +244,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 
 	assert(pp->IsReadWrite());
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 
 	// read (optional) load curve
 	XMLAtt* pa = tag.AttributePtr("lc");
@@ -357,7 +357,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	int nmplc = -1;
 	ops.nanalysis = -1;
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// create a new analysis step from these control settings
@@ -376,7 +376,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	++tag;
 	do
 	{
-		// This flag needs to be read into the FEBioModel.
+		// This flag needs to be read into the FEBioInputModel.
 		// The problem is that this flag is defined in the multi-phasic analysis step
 		// so we need to read this flag before the usual parameter processing
 		if (tag == "shell_normal_nodal")
@@ -621,7 +621,7 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	++tag;
@@ -2034,7 +2034,7 @@ bool FEBioFormat::ParseLoadDataSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEBioModel &febio = GetFEBioModel();
+	FEBioInputModel &febio = GetFEBioModel();
 
 	// read all loadcurves
 	++tag;
@@ -2130,15 +2130,15 @@ bool FEBioFormat::ParseOutputSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 bool FEBioFormat::ParsePlotfileSection(XMLTag &tag)
 {
-	FEBioModel &fem = GetFEBioModel();
+	FEBioInputModel &fem = GetFEBioModel();
 
 	XMLAtt* pat = tag.AttributePtr("type");
 	if ((pat == 0) || ((*pat != "febio") && (*pat != "febio2"))) { ParseUnknownAttribute(tag, "type"); return true; }
 	if (tag.isleaf())
 	{
 		// add the default ones
-		fem.AddPlotVariable(FEBioModel::PlotVariable("displacement"));
-		fem.AddPlotVariable(FEBioModel::PlotVariable("stress"));
+		fem.AddPlotVariable(FEBioInputModel::PlotVariable("displacement"));
+		fem.AddPlotVariable(FEBioInputModel::PlotVariable("stress"));
 		return true;
 	}
 
@@ -2151,11 +2151,11 @@ bool FEBioFormat::ParsePlotfileSection(XMLTag &tag)
 			const char* szsurf = tag.AttributeValue("surface", true);
 			if (szsurf) 
 			{
-				fem.AddPlotVariable(FEBioModel::PlotVariable(avar.cvalue(), szsurf, DOMAIN_SURFACE));
+				fem.AddPlotVariable(FEBioInputModel::PlotVariable(avar.cvalue(), szsurf, DOMAIN_SURFACE));
 			}
 			else
 			{
-				fem.AddPlotVariable(FEBioModel::PlotVariable(avar.cvalue()));
+				fem.AddPlotVariable(FEBioInputModel::PlotVariable(avar.cvalue()));
 			}
 		}
 		else if (tag == "compression")
@@ -2175,7 +2175,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 {
 	static int n = 1;
 
-	FEBioModel &fem = GetFEBioModel();
+	FEBioInputModel &fem = GetFEBioModel();
 	
 	++tag;
 	do
@@ -2185,7 +2185,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";
 
-			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(FELogData::LD_NODE, szdata);
+			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FELogData::LD_NODE, szdata);
 
 			const char* szfile = tag.AttributeValue("file", true);
 			if (szfile) logVar.setFile(szfile);
@@ -2212,7 +2212,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					for (int i = 0; i < l.size(); ++i) l[i] -= 1;
 
 					// create a new node set for this
-					FEBioModel::PartInstance* inst = fem.GetInstance(0);
+					FEBioInputModel::PartInstance* inst = fem.GetInstance(0);
 					GMeshObject* po = inst->GetGObject();
 					FEMesh* pm = po->GetFEMesh();
 
@@ -2232,7 +2232,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";
 
-			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(FELogData::LD_ELEM, szdata);
+			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FELogData::LD_ELEM, szdata);
 
 			const char* szfile = tag.AttributeValue("file", true);
 			if (szfile) logVar.setFile(szfile);
@@ -2259,7 +2259,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					for (int i = 0; i < l.size(); ++i) l[i] -= 1;
 
 					// create a new element set for this
-					FEBioModel::PartInstance* inst = fem.GetInstance(0);
+					FEBioInputModel::PartInstance* inst = fem.GetInstance(0);
 					GMeshObject* po = inst->GetGObject();
 
 					char sz[32] = { 0 };
@@ -2278,13 +2278,13 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 		{
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";
-			fem.AddLogVariable(FEBioModel::LogVariable(FELogData::LD_RIGID, szdata));
+			fem.AddLogVariable(FEBioInputModel::LogVariable(FELogData::LD_RIGID, szdata));
 		}
         else if (tag == "rigid_connector_data")
         {
             const char* szdata = tag.AttributeValue("data", true);
             if (szdata == 0) szdata = "";
-            fem.AddLogVariable(FEBioModel::LogVariable(FELogData::LD_CNCTR, szdata));
+            fem.AddLogVariable(FEBioInputModel::LogVariable(FELogData::LD_CNCTR, szdata));
         }
 		else ParseUnknownTag(tag);
 		++tag;
