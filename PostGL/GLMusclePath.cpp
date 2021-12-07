@@ -38,22 +38,40 @@ using namespace Post;
 class GLMusclePath::PathData
 {
 public:
-	enum { MUSCLE_PATH_PARAMS = 8 };
-	enum { PathLength, MomentArm, START_X, START_Y, START_Z, END_X, END_Y, END_Z };
+	struct Data
+	{
+		double	pathLength = 0.0;
+		double	momentArm = 0.0;
+		vec3d	r0;	// start point
+		vec3d	r1;	// end point
+		vec3d	rd;	// departure point
+		vec3d	tng;	// tangent at departure point (towards start point)
+
+		void Zero()
+		{
+			pathLength = 0.0;
+			momentArm = 0.0;
+			r0 = vec3d(0, 0, 0);
+			r1 = vec3d(0, 0, 0);
+			rd = vec3d(0, 0, 0);
+			tng = vec3d(0, 0, 0);
+		}
+	};
 
 	struct Point
 	{
 		vec3d	r;
 		int		tag;
+		int		mat;	// material tag of part this point is on
 	};
 
 public:
-	PathData() { m_data[0] = m_data[1] = 0.0; }
+	PathData() {}
 	~PathData() {}
 
-	void push_back(const vec3d& r, int tag = 0)
+	void push_back(const vec3d& r, int tag = 0, int mat = -1)
 	{
-		Point p = { r, tag };
+		Point p = { r, tag, mat };
 		m_points.push_back(p);
 	}
 
@@ -77,7 +95,7 @@ public:
 
 	vec3d	m_ro;		// position of origin
 
-	double		m_data[MUSCLE_PATH_PARAMS];	// 0 = length; 1 = moment arm; 2,3,4 = start point; 5,6,7 = end point
+	Data m_data;
 
 private:
 	PathData(const PathData& path) {}
@@ -100,6 +118,7 @@ GLMusclePath::GLMusclePath()
 	m_persist = false;
 	m_searchRadius = 0.0;
 
+	m_part[0] = m_part[1] = -1;
 
 	AddIntParam(m_node0, "point0", "start point");
 	AddIntParam(m_node1, "point1", "end point");
@@ -172,7 +191,7 @@ void GLMusclePath::Render(CGLContext& rc)
 		glColor3ub(255, 0, 255);
 		glx::drawSphere(r1, 1.5 * R);
 
-		glPushAttrib(GL_ENABLE_BIT);
+/*		glPushAttrib(GL_ENABLE_BIT);
 		glDisable(GL_DEPTH_TEST);
 		glBegin(GL_LINES);
 		for (int i = 0; i < N - 1; ++i)
@@ -184,14 +203,20 @@ void GLMusclePath::Render(CGLContext& rc)
 		}
 		glEnd();
 		glPopAttrib();
-
+*/
 		if (renderMode == 0)
 		{
 			for (int i = 0; i < N; ++i)
 			{
 				int ntag = path->m_points[i].tag;
-				if (ntag == 0) glColor3ub(0, 128, 0);
-				else glColor3ub(0, 255, 0);
+				switch (ntag)
+				{
+				case 0: glColor3ub(0, 128, 0); break;
+				case 1: glColor3ub(0, 255, 0); break;
+				case 2: glColor3ub(255, 255, 255); break;
+				default:
+					glColor3ub(0, 0, 0);
+				}
 				vec3d r0 = path->m_points[i].r;
 				glx::drawSphere(r0, 1.5 * R);
 			}
@@ -220,6 +245,35 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 
 		// clear current path data
 		ClearPaths();
+
+		// find the materials of start and end point
+		m_part[0] = m_part[1] = -1;
+		int n0 = GetIntValue(START_POINT) - 1;
+		int n1 = GetIntValue(END_POINT) - 1;
+		FEMesh& mesh = *fem.GetState(ntime)->GetFEMesh();
+		int NF = mesh.Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			FEFace& face = mesh.Face(i);
+			if (face.HasNode(n0))
+			{
+				if (face.m_elem[0].eid >= 0)
+				{
+					FEElement& el = mesh.Element(face.m_elem[0].eid);
+					m_part[0] = el.m_MatID;
+				}
+			}
+			else if (face.HasNode(n1))
+			{
+				if (face.m_elem[0].eid >= 0)
+				{
+					FEElement& el = mesh.Element(face.m_elem[0].eid);
+					m_part[1] = el.m_MatID;
+				}
+			}
+
+			if ((m_part[0] != -1) && (m_part[1] != -1)) break;
+		}
 
 		// allocate new path data
 		m_path.assign(fem.GetStates(), nullptr);
@@ -284,8 +338,8 @@ bool GLMusclePath::UpdateStraighLine(GLMusclePath::PathData* path, int ntime)
 	vec3d r1 = fem.NodePosition(n1, ntime);
 
 	path->m_points.clear();
-	path->push_back(r0);
-	path->push_back(r1);
+	path->push_back(r0, 0, m_part[0]);
+	path->push_back(r1, 0, m_part[1]);
 
 	return true;
 }
@@ -300,19 +354,37 @@ void GLMusclePath::UpdatePathData(int ntime)
 	// get the path's points
 	if (path->m_points.empty())
 	{
-		for (int i=0; i< PathData::MUSCLE_PATH_PARAMS; ++i) path->m_data[i] = 0.0;
+		path->m_data.Zero();
 		return;
 	}
 
-	// start and end point coordinates
-	vec3d r0 = path->m_points[0].r;
-	vec3d r1 = path->m_points[path->Points() - 1].r;
-	path->m_data[PathData::START_X] = r0.x;
-	path->m_data[PathData::START_Y] = r0.y;
-	path->m_data[PathData::START_Z] = r0.z;
-	path->m_data[PathData::END_X  ] = r1.x;
-	path->m_data[PathData::END_Y  ] = r1.y;
-	path->m_data[PathData::END_Z  ] = r1.z;
+	int n = path->Points();
+	if (n >= 2)
+	{
+		// start and end point coordinates
+		vec3d r0 = path->m_points[0].r;
+		vec3d r1 = path->m_points[n - 1].r;
+		path->m_data.r0 = r0;
+		path->m_data.r1 = r1;
+
+		// find the first point in contact with the end-point's object
+		for (int i = 0; i < n; ++i)
+		{
+			PathData::Point& pt = path->m_points[i];
+			if (pt.tag == 2)
+			{
+				path->m_data.rd = pt.r;
+
+				if (i > 0)
+				{
+					PathData::Point& pp = path->m_points[i - 1];
+					vec3d t = pp.r - pt.r; t.Normalize();
+					path->m_data.tng = t;
+				}
+				break;
+			}
+		}
+	}
 
 	// calculate path length
 	double L = 0.0;
@@ -322,10 +394,9 @@ void GLMusclePath::UpdatePathData(int ntime)
 		vec3d& r1 = path->m_points[i + 1].r;
 		L += (r1 - r0).Length();
 	}
-	path->m_data[PathData::PathLength] = L;
+	path->m_data.pathLength = L;
 
 	// calculate moment arm
-	int n = path->Points();
 	if (n >= 2)
 	{
 		vec3d& r0 = path->m_points[n - 2].r;
@@ -337,9 +408,9 @@ void GLMusclePath::UpdatePathData(int ntime)
 		vec3d t = r1 - c;
 		vec3d m = e ^ t;
 
-		path->m_data[PathData::MomentArm] = m.Length();
+		path->m_data.momentArm = m.Length();
 	}
-	else path->m_data[PathData::MomentArm] = 0.0;
+	else path->m_data.momentArm = 0.0;
 }
 
 bool GLMusclePath::UpdateData(bool bsave)
@@ -379,14 +450,20 @@ double GLMusclePath::DataValue(int field, int step)
 	double val = 0.0;
 	switch (field)
 	{
-	case 1: val = path->m_data[PathData::PathLength]; break;
-	case 2: val = path->m_data[PathData::MomentArm ]; break;
-	case 3: val = path->m_data[PathData::START_X   ]; break;
-	case 4: val = path->m_data[PathData::START_Y   ]; break;
-	case 5: val = path->m_data[PathData::START_Z   ]; break;
-	case 6: val = path->m_data[PathData::END_X     ]; break;
-	case 7: val = path->m_data[PathData::END_Y     ]; break;
-	case 8: val = path->m_data[PathData::END_Z     ]; break;
+	case 1: val = path->m_data.pathLength; break;
+	case 2: val = path->m_data.momentArm; break;
+	case 3: val = path->m_data.r0.x; break;
+	case 4: val = path->m_data.r0.y; break;
+	case 5: val = path->m_data.r0.z; break;
+	case 6: val = path->m_data.r1.x; break;
+	case 7: val = path->m_data.r1.y; break;
+	case 8: val = path->m_data.r1.z; break;
+	case  9: val = path->m_data.rd.x; break;
+	case 10: val = path->m_data.rd.y; break;
+	case 11: val = path->m_data.rd.z; break;
+	case 12: val = path->m_data.tng.x; break;
+	case 13: val = path->m_data.tng.y; break;
+	case 14: val = path->m_data.tng.z; break;
 	default:
 		assert(false);
 	}
@@ -506,6 +583,7 @@ public:
 	{
 		vec3d	r[3];
 		vec3d	fn;
+		int		mat;
 	};
 
 	size_t Faces() const { return m_Face.size(); }
@@ -793,6 +871,12 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 				fd.r[j] = fem.NodePosition(fs.n[j], ntime);
 			}
 
+			if (fs.m_elem[0].eid >= 0)
+			{
+				FEElement& el = mesh.Element(fs.m_elem[0].eid);
+				fd.mat = el.m_MatID;
+			}
+
 			vec3d e1 = fd.r[1] - fd.r[0];
 			vec3d e2 = fd.r[2] - fd.r[0];
 			fd.fn = e1 ^ e2; fd.fn.Normalize();
@@ -867,7 +951,30 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 
 	// copy the points to the PathData
 	path->m_points.clear();
-	for (size_t i=0; i < pt.size(); ++i) path->push_back(pt[i].p, (pt[i].nface == -1 ? 0 : 1));
+	for (size_t i = 0; i < pt.size(); ++i)
+	{
+		int nface = pt[i].nface;
+		int mat = -1;
+		if (nface != -1)
+		{
+			mat = faceMesh.Face(nface).mat;
+		}
+		path->push_back(pt[i].p, (nface == -1 ? 0 : 1), mat);
+	}
+
+	// tag departure point
+	int mat = m_part[1];	// get material at end-point
+
+	// the first point in contact with this material is the departure point
+	for (int i = 0; i < path->Points(); ++i)
+	{
+		PathData::Point& pt = path->m_points[i];
+		if (pt.mat == mat)
+		{
+			pt.tag = 2;
+			break;
+		}
+	}
 
 	// all done
 	return true;
