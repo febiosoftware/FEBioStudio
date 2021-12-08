@@ -298,6 +298,26 @@ bool FEGMshImport::ReadElements()
             el.node[9] = m[8] - 1;
             Elem.push_back(el);
             break;
+        case 14: // 14-node pyramid
+            {
+                if (nread != 3 + ntags + 14) return errf("Invalid number of entries when reading element %d", n[0]);
+                el.ntype = FE_PYRA13;
+                el.node[0] = m[0] - 1;
+                el.node[1] = m[1] - 1;
+                el.node[2] = m[2] - 1;
+                el.node[3] = m[3] - 1;
+                el.node[4] = m[4] - 1;
+                el.node[ 5] = m[ 5] - 1;
+                el.node[ 6] = m[ 8] - 1;
+                el.node[ 7] = m[10] - 1;
+                el.node[ 8] = m[ 6] - 1;
+                el.node[ 9] = m[ 7] - 1;
+                el.node[10] = m[ 9] - 1;
+                el.node[11] = m[11] - 1;
+                el.node[12] = m[12] - 1;
+                Elem.push_back(el);
+            }
+                break;
         case 19: // 13-node pyramid
             {
                 if (nread != 3 + ntags + 13) return errf("Invalid number of entries when reading element %d", n[0]);
