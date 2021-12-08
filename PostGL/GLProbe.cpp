@@ -51,6 +51,7 @@ GLProbe::GLProbe()
 	m_bfollow = true;
 	m_bshowPath = true;
 
+	AddBoolParam(true, "track_data", "Track Model Data");
 	AddVecParam(m_initPos, "position", "Initial position");
 	AddDoubleParam(m_size, "size", "Size scale factor");
 	AddColorParam(m_col, "color", "Color");
@@ -314,6 +315,11 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 	return nelem;
 }
 
+bool GLProbe::TrackModelData() const
+{
+	return GetBoolValue(TRACK_DATA);
+}
+
 GLColor GLProbe::GetColor() const
 {
 	return m_col;
@@ -326,14 +332,32 @@ void GLProbe::SetColor(const GLColor& c)
 
 double GLProbe::DataValue(int nfield, int nstep)
 {
-	FEPostModel& fem = *GetModel()->GetFEModel();
-	float val = 0.f;
-	vec3f p0 = to_vec3f(m_initPos);
-	int nelem = ProjectToMesh(nstep, p0, m_pos);
-	if (nelem >= 0)
+	if (TrackModelData())
 	{
-		float data[FEElement::MAX_NODES];
-		fem.EvaluateElement(nelem, nstep, nfield, data, val);
+		FEPostModel& fem = *GetModel()->GetFEModel();
+		float val = 0.f;
+		vec3f p0 = to_vec3f(m_initPos);
+		int nelem = ProjectToMesh(nstep, p0, m_pos);
+		if (nelem >= 0)
+		{
+			float data[FEElement::MAX_NODES];
+			fem.EvaluateElement(nelem, nstep, nfield, data, val);
+		}
+		return val;
 	}
-	return val;
+	else
+	{
+		double val = 0.0;
+		if ((nstep >= 0) && (nstep < m_path.size()))
+		{
+			vec3d r = m_path[nstep];
+			switch (nfield)
+			{
+			case 1: val = r.x; break;
+			case 2: val = r.y; break;
+			case 3: val = r.z; break;
+			}
+		}
+		return val;
+	}
 }

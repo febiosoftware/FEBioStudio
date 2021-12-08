@@ -70,11 +70,19 @@ public:
 	void BuildMenu(QMenu* menu) override;
 };
 
-// Derived class that selects Time or Steps
+// Derived class for muscle paths
 class CMusclePathDataSelector : public CDataSelector
 {
 public:
 	CMusclePathDataSelector();
+	void BuildMenu(QMenu* menu) override;
+};
+
+// Derived class for probes
+class CProbeDataSelector : public CDataSelector
+{
+public:
+	CProbeDataSelector();
 	void BuildMenu(QMenu* menu) override;
 };
 
