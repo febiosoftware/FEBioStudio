@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "FEBioModel.h"
+#include "FEBioInputModel.h"
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
@@ -185,42 +185,42 @@ int FEBioMesh::FindFace(const vector<int>& n, int noff)
 }
 
 //=============================================================================
-FEBioModel::NodeSet::NodeSet()
+FEBioInputModel::NodeSet::NodeSet()
 {
 }
 
-FEBioModel::NodeSet::NodeSet(const NodeSet& nodeSet)
+FEBioInputModel::NodeSet::NodeSet(const NodeSet& nodeSet)
 {
 	m_name = nodeSet.m_name;
 	m_node = nodeSet.m_node;
 }
 
-FEBioModel::NodeSet::NodeSet(const std::string& name, const vector<int>& node)
+FEBioInputModel::NodeSet::NodeSet(const std::string& name, const vector<int>& node)
 {
 	m_name = name;
 	m_node = node;
 }
 
-void FEBioModel::NodeSet::operator = (const NodeSet& nodeSet)
+void FEBioInputModel::NodeSet::operator = (const NodeSet& nodeSet)
 {
 	m_name = nodeSet.m_name;
 	m_node = nodeSet.m_node;
 }
 
 //=============================================================================
-FEBioModel::Surface::Surface()
+FEBioInputModel::Surface::Surface()
 {
 	m_refs = 0;
 }
 
-FEBioModel::Surface::Surface(const FEBioModel::Surface& s)
+FEBioInputModel::Surface::Surface(const FEBioInputModel::Surface& s)
 {
 	m_name = s.m_name;
 	m_face = s.m_face;
 	m_refs = s.m_refs;
 }
 
-void FEBioModel::Surface::operator = (const FEBioModel::Surface& s)
+void FEBioInputModel::Surface::operator = (const FEBioInputModel::Surface& s)
 {
 	m_name = s.m_name;
 	m_face = s.m_face;
@@ -228,56 +228,56 @@ void FEBioModel::Surface::operator = (const FEBioModel::Surface& s)
 }
 
 //=============================================================================
-FEBioModel::ElementSet::ElementSet()
+FEBioInputModel::ElementSet::ElementSet()
 {
 }
 
-FEBioModel::ElementSet::ElementSet(const string& name, const vector<int>& elem)
+FEBioInputModel::ElementSet::ElementSet(const string& name, const vector<int>& elem)
 {
 	m_name = name;
 	m_elem = elem;
 }
 
-FEBioModel::ElementSet::ElementSet(const FEBioModel::ElementSet& s)
+FEBioInputModel::ElementSet::ElementSet(const FEBioInputModel::ElementSet& s)
 {
 	m_name = s.m_name;
 	m_elem = s.m_elem;
 }
 
-void FEBioModel::ElementSet::operator = (const FEBioModel::ElementSet& s)
+void FEBioInputModel::ElementSet::operator = (const FEBioInputModel::ElementSet& s)
 {
 	m_name = s.m_name;
 	m_elem = s.m_elem;
 }
 
 //=============================================================================
-FEBioModel::Part::Part()
+FEBioInputModel::Part::Part()
 {
 	
 }
 
-void FEBioModel::Part::SetName(const char* szname)
+void FEBioInputModel::Part::SetName(const char* szname)
 {
 	m_name = szname;
 }
 
-const char* FEBioModel::Part::GetName()
+const char* FEBioInputModel::Part::GetName()
 {
 	return m_name.c_str();
 }
 
-FEBioModel::Part::~Part()
+FEBioInputModel::Part::~Part()
 {
 	
 }
 
-FEBioModel::Domain* FEBioModel::Part::AddDomain(const string& name, int matID)
+FEBioInputModel::Domain* FEBioInputModel::Part::AddDomain(const string& name, int matID)
 {
 	m_dom.push_back(Domain(this, name, matID));
 	return &m_dom[m_dom.size() - 1];
 }
 
-FEBioModel::NodeSet* FEBioModel::Part::FindNodeSet(const std::string& name)
+FEBioInputModel::NodeSet* FEBioInputModel::Part::FindNodeSet(const std::string& name)
 {
 	for (int i = 0; i<(int)m_nset.size(); ++i)
 	{
@@ -287,7 +287,7 @@ FEBioModel::NodeSet* FEBioModel::Part::FindNodeSet(const std::string& name)
 	return 0;
 }
 
-FEBioModel::Surface* FEBioModel::Part::FindSurface(const std::string& name)
+FEBioInputModel::Surface* FEBioInputModel::Part::FindSurface(const std::string& name)
 {
 	for (int i = 0; i<(int)m_surf.size(); ++i)
 	{
@@ -297,7 +297,7 @@ FEBioModel::Surface* FEBioModel::Part::FindSurface(const std::string& name)
 	return 0;
 }
 
-int FEBioModel::Part::FindSurfaceIndex(const std::string& name)
+int FEBioInputModel::Part::FindSurfaceIndex(const std::string& name)
 {
 	for (int i = 0; i<(int)m_surf.size(); ++i)
 	{
@@ -307,7 +307,7 @@ int FEBioModel::Part::FindSurfaceIndex(const std::string& name)
 	return -1;
 }
 
-FEBioModel::ElementSet* FEBioModel::Part::FindElementSet(const std::string& name)
+FEBioInputModel::ElementSet* FEBioInputModel::Part::FindElementSet(const std::string& name)
 {
 	for (int i = 0; i<(int)m_eset.size(); ++i)
 	{
@@ -317,7 +317,7 @@ FEBioModel::ElementSet* FEBioModel::Part::FindElementSet(const std::string& name
 	return 0;
 }
 
-int FEBioModel::Part::FindElementSetIndex(const std::string& name)
+int FEBioInputModel::Part::FindElementSetIndex(const std::string& name)
 {
 	for (int i = 0; i<(int)m_eset.size(); ++i)
 	{
@@ -328,7 +328,7 @@ int FEBioModel::Part::FindElementSetIndex(const std::string& name)
 }
 
 
-FEBioModel::DiscreteSet* FEBioModel::Part::FindDiscreteSet(const std::string& name)
+FEBioInputModel::DiscreteSet* FEBioInputModel::Part::FindDiscreteSet(const std::string& name)
 {
 	for (int i = 0; i<(int)m_des.size(); ++i)
 	{
@@ -338,7 +338,7 @@ FEBioModel::DiscreteSet* FEBioModel::Part::FindDiscreteSet(const std::string& na
 	return 0;
 }
 
-FEBioModel::SurfacePair* FEBioModel::Part::FindSurfacePair(const std::string& name)
+FEBioInputModel::SurfacePair* FEBioInputModel::Part::FindSurfacePair(const std::string& name)
 {
 	for (int i = 0; i<(int)m_spr.size(); ++i)
 	{
@@ -348,7 +348,7 @@ FEBioModel::SurfacePair* FEBioModel::Part::FindSurfacePair(const std::string& na
 	return 0;
 }
 
-FEBioModel::Domain* FEBioModel::Part::FindDomain(const std::string& name)
+FEBioInputModel::Domain* FEBioInputModel::Part::FindDomain(const std::string& name)
 {
 	for (int i = 0; i<(int)m_dom.size(); ++i)
 	{
@@ -358,7 +358,7 @@ FEBioModel::Domain* FEBioModel::Part::FindDomain(const std::string& name)
 	return 0;
 }
 
-void FEBioModel::Part::Update()
+void FEBioInputModel::Part::Update()
 {
 	if (GetFEMesh() == 0) return;
 
@@ -392,19 +392,19 @@ void FEBioModel::Part::Update()
 
 
 //=============================================================================
-FEBioModel::PartInstance::PartInstance(FEBioModel::Part* part) : m_part(part), m_po(nullptr)
+FEBioInputModel::PartInstance::PartInstance(FEBioInputModel::Part* part) : m_part(part), m_po(nullptr)
 {
 	m_scl = vec3d(1,1,1);
 }
 
-FEBioModel::PartInstance::~PartInstance()
+FEBioInputModel::PartInstance::~PartInstance()
 {
 	if (m_po) delete m_po; m_po = nullptr;
 }
 
-FEMesh* FEBioModel::PartInstance::GetMesh() { return m_po->GetFEMesh(); }
+FEMesh* FEBioInputModel::PartInstance::GetMesh() { return m_po->GetFEMesh(); }
 
-FENodeSet* FEBioModel::PartInstance::BuildFENodeSet(const char* szname)
+FENodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 {
 	NodeSet* nodeSet = m_part->FindNodeSet(szname);
 	if (nodeSet == 0) return 0;
@@ -420,7 +420,7 @@ FENodeSet* FEBioModel::PartInstance::BuildFENodeSet(const char* szname)
 	return pns;
 }
 
-FESurface* FEBioModel::PartInstance::BuildFESurface(FEBioModel::Surface& surf)
+FESurface* FEBioInputModel::PartInstance::BuildFESurface(FEBioInputModel::Surface& surf)
 {
 	// create face list
 	vector<int> faceList;
@@ -458,7 +458,7 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(FEBioModel::Surface& surf)
 	return ps;
 }
 
-FENodeSet* FEBioModel::PartInstance::BuildFENodeSet(const FEBioModel::NodeSet& nset)
+FENodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const FEBioInputModel::NodeSet& nset)
 {
 	// create the surface
 	FENodeSet* pns = new FENodeSet(m_po, nset.nodeList());
@@ -496,7 +496,7 @@ bool check_winding(const vector<int>& nodeList, const FEFace& face)
 	return false;
 }
 
-FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
+FESurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 {
 	Surface* surface = m_part->FindSurface(szname);
 	if (surface == 0) return 0;
@@ -563,7 +563,7 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
 	return ps;
 }
 
-FEPart* FEBioModel::PartInstance::BuildFEPart(const char* szname)
+FEPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 {
 	ElementSet* set = m_part->FindElementSet(szname);
 	if (set == 0) return 0;
@@ -588,14 +588,14 @@ FEPart* FEBioModel::PartInstance::BuildFEPart(const char* szname)
 
 
 //=============================================================================
-FEBioModel::Domain::Domain(Part* part) : m_part(part)
+FEBioInputModel::Domain::Domain(Part* part) : m_part(part)
 {
 	m_bshellNodalNormals = true;
     m_blaugon = false;
     m_augtol = 0.01;
 }
 
-FEBioModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_part(part)
+FEBioInputModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_part(part)
 {
 	m_name = name;
 	m_matID = matID;
@@ -604,7 +604,7 @@ FEBioModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_p
     m_augtol = 0.01;
 }
 
-FEBioModel::Domain::Domain(const Domain& part)
+FEBioInputModel::Domain::Domain(const Domain& part)
 {
 	m_part = part.m_part;
 	m_name = part.m_name;
@@ -615,7 +615,7 @@ FEBioModel::Domain::Domain(const Domain& part)
     m_augtol = part.m_augtol;
 }
 
-void FEBioModel::Domain::operator = (const Domain& part)
+void FEBioInputModel::Domain::operator = (const Domain& part)
 {
 	m_part = part.m_part;
 	m_name = part.m_name;
@@ -627,12 +627,12 @@ void FEBioModel::Domain::operator = (const Domain& part)
 }
 
 //=============================================================================
-FEBioModel::DiscreteSet::DiscreteSet()
+FEBioInputModel::DiscreteSet::DiscreteSet()
 {
 	m_part = 0;
 }
 
-FEBioModel::DiscreteSet::DiscreteSet(const FEBioModel::DiscreteSet& s)
+FEBioInputModel::DiscreteSet::DiscreteSet(const FEBioInputModel::DiscreteSet& s)
 {
 	m_name = s.m_name;
 	m_elem = s.m_elem;
@@ -640,7 +640,7 @@ FEBioModel::DiscreteSet::DiscreteSet(const FEBioModel::DiscreteSet& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioModel::DiscreteSet::operator = (const FEBioModel::DiscreteSet& s)
+void FEBioInputModel::DiscreteSet::operator = (const FEBioInputModel::DiscreteSet& s)
 {
 	m_name = s.m_name;
 	m_elem = s.m_elem;
@@ -648,13 +648,13 @@ void FEBioModel::DiscreteSet::operator = (const FEBioModel::DiscreteSet& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioModel::DiscreteSet::SetName(const char* sz)
+void FEBioInputModel::DiscreteSet::SetName(const char* sz)
 {
 	m_name = sz;
 }
 
 //-----------------------------------------------------------------------------
-void FEBioModel::DiscreteSet::Add(int n0, int n1)
+void FEBioInputModel::DiscreteSet::Add(int n0, int n1)
 {
 	DISCRETE_ELEMENT el = { n0, n1 };
 	m_elem.push_back(el);
@@ -662,18 +662,18 @@ void FEBioModel::DiscreteSet::Add(int n0, int n1)
 
 
 //=============================================================================
-FEBioModel::SurfacePair::SurfacePair() : m_part(0)
+FEBioInputModel::SurfacePair::SurfacePair() : m_part(0)
 {
 }
 
-FEBioModel::SurfacePair::SurfacePair(const std::string& name, int masterID, int slaveID) : m_part(0)
+FEBioInputModel::SurfacePair::SurfacePair(const std::string& name, int masterID, int slaveID) : m_part(0)
 {
 	m_name = name;
 	m_masterID = masterID;
 	m_slaveID = slaveID;
 }
 
-FEBioModel::SurfacePair::SurfacePair(const SurfacePair& sp)
+FEBioInputModel::SurfacePair::SurfacePair(const SurfacePair& sp)
 {
 	m_part = sp.m_part;
 	m_name = sp.m_name;
@@ -681,7 +681,7 @@ FEBioModel::SurfacePair::SurfacePair(const SurfacePair& sp)
 	m_slaveID  = sp.m_slaveID;
 }
 
-void FEBioModel::SurfacePair::operator = (const SurfacePair& sp)
+void FEBioInputModel::SurfacePair::operator = (const SurfacePair& sp)
 {
 	m_part = sp.m_part;
 	m_name = sp.m_name;
@@ -690,47 +690,47 @@ void FEBioModel::SurfacePair::operator = (const SurfacePair& sp)
 }
 
 //=============================================================================
-FEBioModel::PlotVariable::PlotVariable()
+FEBioInputModel::PlotVariable::PlotVariable()
 {
 	m_type = DOMAIN_MESH;
 }
 
-FEBioModel::PlotVariable::PlotVariable(const std::string& name) : m_name(name)
+FEBioInputModel::PlotVariable::PlotVariable(const std::string& name) : m_name(name)
 {
 	m_type = DOMAIN_MESH;
 }
 
-FEBioModel::PlotVariable::PlotVariable(const std::string& name, const std::string& domain, DOMAIN_TYPE domType) : m_name(name), m_domain(domain), m_type(domType)
+FEBioInputModel::PlotVariable::PlotVariable(const std::string& name, const std::string& domain, DOMAIN_TYPE domType) : m_name(name), m_domain(domain), m_type(domType)
 {
 }
 
-FEBioModel::PlotVariable::PlotVariable(const FEBioModel::PlotVariable& s)
+FEBioInputModel::PlotVariable::PlotVariable(const FEBioInputModel::PlotVariable& s)
 {
 	m_name = s.m_name;
     m_domain = s.m_domain;
 	m_type = s.m_type;
 }
 
-DOMAIN_TYPE FEBioModel::PlotVariable::domainType()
+DOMAIN_TYPE FEBioInputModel::PlotVariable::domainType()
 {
 	return m_type;
 }
 
 //-----------------------------------------------------------------------------
-void FEBioModel::PlotVariable::operator = (const FEBioModel::PlotVariable& s)
+void FEBioInputModel::PlotVariable::operator = (const FEBioInputModel::PlotVariable& s)
 {
 	m_name = s.m_name;
 	m_domain = s.m_domain;
 }
 
 //=============================================================================
-FEBioModel::LogVariable::LogVariable()
+FEBioInputModel::LogVariable::LogVariable()
 {
 	m_type = -1;
 	m_groupID = -1;
 }
 
-FEBioModel::LogVariable::LogVariable(const LogVariable& log)
+FEBioInputModel::LogVariable::LogVariable(const LogVariable& log)
 {
 	m_type = log.m_type;
 	m_data = log.m_data;
@@ -738,7 +738,7 @@ FEBioModel::LogVariable::LogVariable(const LogVariable& log)
 	m_file = log.m_file;
 }
 
-void FEBioModel::LogVariable::operator=(const LogVariable& log)
+void FEBioInputModel::LogVariable::operator=(const LogVariable& log)
 {
 	m_type = log.m_type;
 	m_data = log.m_data;
@@ -746,7 +746,7 @@ void FEBioModel::LogVariable::operator=(const LogVariable& log)
 	m_file = log.m_file;
 }
 
-FEBioModel::LogVariable::LogVariable(int ntype, const std::string& data)
+FEBioInputModel::LogVariable::LogVariable(int ntype, const std::string& data)
 {
 	m_type = ntype;
 	m_data = data;
@@ -754,12 +754,12 @@ FEBioModel::LogVariable::LogVariable(int ntype, const std::string& data)
 }
 
 //=============================================================================
-FEBioModel::FEBioModel(FEModel& fem) : m_fem(fem)
+FEBioInputModel::FEBioInputModel(FEModel& fem) : m_fem(fem)
 {
 	m_shellNodalNormals = true;
 }
 
-FEBioModel::~FEBioModel()
+FEBioInputModel::~FEBioInputModel()
 {
 	for (int i = 0; i<Parts(); ++i) delete m_part[i];
 	m_part.clear();
@@ -768,19 +768,19 @@ FEBioModel::~FEBioModel()
 	m_Inst.clear();
 }
 
-void FEBioModel::AddParamCurve(FELoadCurve* plc, int lc)
+void FEBioInputModel::AddParamCurve(FELoadCurve* plc, int lc)
 {
 	PARAM_CURVE pc = { 0, plc, lc };
 	m_PC.push_back(pc);
 }
 
-void FEBioModel::AddParamCurve(Param* p, int lc)
+void FEBioInputModel::AddParamCurve(Param* p, int lc)
 {
 	PARAM_CURVE pc = {p, 0, lc};
 	m_PC.push_back(pc);
 }
 
-FEBioModel::Part* FEBioModel::AddPart(const char* szname)
+FEBioInputModel::Part* FEBioInputModel::AddPart(const char* szname)
 {
 	Part* newPart = new Part;
 	newPart->SetName(szname);
@@ -788,7 +788,7 @@ FEBioModel::Part* FEBioModel::AddPart(const char* szname)
 	return newPart;
 }
 
-FEBioModel::Part* FEBioModel::FindPart(const char* szname)
+FEBioInputModel::Part* FEBioInputModel::FindPart(const char* szname)
 {
 	for (int i=0; i<Parts(); ++i)
 	{
@@ -799,7 +799,7 @@ FEBioModel::Part* FEBioModel::FindPart(const char* szname)
 }
 
 // Call this function after all geometry was processed.
-void FEBioModel::UpdateGeometry()
+void FEBioInputModel::UpdateGeometry()
 {
 	// update all the part mesh data
 	for (int i=0; i<Parts(); ++i)
@@ -860,7 +860,7 @@ void FEBioModel::UpdateGeometry()
 	}
 }
 
-FEBioModel::PartInstance* FEBioModel::FindInstance(const char* szname)
+FEBioInputModel::PartInstance* FEBioInputModel::FindInstance(const char* szname)
 {
 	int N = Instances();
 	for (int i=0; i<N; ++i)
@@ -871,7 +871,7 @@ FEBioModel::PartInstance* FEBioModel::FindInstance(const char* szname)
 	return 0;
 }
 
-FEItemListBuilder* FEBioModel::BuildItemList(const char* szname)
+FEItemListBuilder* FEBioInputModel::BuildItemList(const char* szname)
 {
 	if ((szname == 0) || (strlen(szname) == 0)) return nullptr;
 
@@ -893,7 +893,7 @@ FEItemListBuilder* FEBioModel::BuildItemList(const char* szname)
 	else return BuildFENodeSet(szname);
 }
 
-FENodeSet* FEBioModel::BuildFENodeSet(const char* szname)
+FENodeSet* FEBioInputModel::BuildFENodeSet(const char* szname)
 {
 	// see if there is a dot
 	const char* ch = 0;
@@ -932,10 +932,10 @@ FENodeSet* FEBioModel::BuildFENodeSet(const char* szname)
 	}
 }
 
-FEBioModel::Surface* FEBioModel::FindSurface(const char* szname)
+FEBioInputModel::Surface* FEBioInputModel::FindSurface(const char* szname)
 {
 	// the surface that will be returned
-	FEBioModel::Surface* surf = 0;
+	FEBioInputModel::Surface* surf = 0;
 
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -974,11 +974,11 @@ FEBioModel::Surface* FEBioModel::FindSurface(const char* szname)
 	return surf;
 }
 
-bool FEBioModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szname)
+bool FEBioInputModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szname)
 {
 	// find the set
-	FEBioModel::PartInstance* part = 0;
-	FEBioModel::DiscreteSet* dset = 0;
+	FEBioInputModel::PartInstance* part = 0;
+	FEBioInputModel::DiscreteSet* dset = 0;
 
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -1025,7 +1025,7 @@ bool FEBioModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szname)
 		int ns = dset->size();
 		for (int i = 0; i<ns; ++i)
 		{
-			const FEBioModel::DiscreteSet::DISCRETE_ELEMENT& el = dset->Element(i);
+			const FEBioInputModel::DiscreteSet::DISCRETE_ELEMENT& el = dset->Element(i);
 
 			int n0 = el.n0;
 			int n1 = el.n1;
@@ -1048,10 +1048,10 @@ bool FEBioModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szname)
 	return true;
 }
 
-FEBioModel::Domain* FEBioModel::FindDomain(const char* szname)
+FEBioInputModel::Domain* FEBioInputModel::FindDomain(const char* szname)
 {
 	// the domain that will be returned
-	FEBioModel::Domain* dom = 0;
+	FEBioInputModel::Domain* dom = 0;
 
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -1090,7 +1090,7 @@ FEBioModel::Domain* FEBioModel::FindDomain(const char* szname)
 	return dom;
 }
 
-FEBioModel::ElementSet* FEBioModel::FindElementSet(const char* szname)
+FEBioInputModel::ElementSet* FEBioInputModel::FindElementSet(const char* szname)
 {
 	assert(Instances() == 1);
 	if (Instances() != 1) return nullptr;
@@ -1102,7 +1102,7 @@ FEBioModel::ElementSet* FEBioModel::FindElementSet(const char* szname)
 }
 
 
-FESurface* FEBioModel::BuildFESurface(const char* szname)
+FESurface* FEBioInputModel::BuildFESurface(const char* szname)
 {
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -1140,7 +1140,7 @@ FESurface* FEBioModel::BuildFESurface(const char* szname)
 	}
 }
 
-FEPart* FEBioModel::BuildFEPart(const char* szname)
+FEPart* FEBioInputModel::BuildFEPart(const char* szname)
 {
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -1178,7 +1178,7 @@ FEPart* FEBioModel::BuildFEPart(const char* szname)
 	}
 }
 
-FEPart* FEBioModel::BuildFEPart(FEBioModel::Domain* dom)
+FEPart* FEBioInputModel::BuildFEPart(FEBioInputModel::Domain* dom)
 {
 	assert(Instances() == 1);
 	PartInstance* part = GetInstance(0);
@@ -1190,7 +1190,7 @@ FEPart* FEBioModel::BuildFEPart(FEBioModel::Domain* dom)
 	return pg;
 }
 
-FEBioModel::SurfacePair* FEBioModel::FindSurfacePair(const char* szname)
+FEBioInputModel::SurfacePair* FEBioInputModel::FindSurfacePair(const char* szname)
 {
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -1228,7 +1228,7 @@ FEBioModel::SurfacePair* FEBioModel::FindSurfacePair(const char* szname)
 	}
 }
 
-int FEBioModel::GetMaterialIndex(const char* szmat)
+int FEBioInputModel::GetMaterialIndex(const char* szmat)
 {
 	for (int i=0; i<Materials(); ++i)
 	{

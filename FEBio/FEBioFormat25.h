@@ -36,7 +36,7 @@ class GMeshObject;
 class FEBioFormat25 : public FEBioFormat
 {
 public:
-	FEBioFormat25(FEBioImport* fileReader, FEBioModel& febio);
+	FEBioFormat25(FEBioImport* fileReader, FEBioInputModel& febio);
 	~FEBioFormat25();
 
 	bool ParseSection(XMLTag& tag);
@@ -62,13 +62,13 @@ private:
 
 private:
 	// geometry parsing functions (version 2.0 and up)
-	void ParseGeometryNodes      (FEBioModel::Part* part, XMLTag& tag);
-	void ParseGeometryElements   (FEBioModel::Part* part, XMLTag& tag);
-	void ParseGeometryNodeSet    (FEBioModel::Part* part, XMLTag& tag);
-	void ParseGeometrySurface    (FEBioModel::Part* part, XMLTag& tag);
-	void ParseGeometryElementSet (FEBioModel::Part* part, XMLTag& tag);
-	void ParseGeometryDiscreteSet(FEBioModel::Part* part, XMLTag& tag);
-	void ParseGeometrySurfacePair(FEBioModel::Part* part, XMLTag& tag);
+	void ParseGeometryNodes      (FEBioInputModel::Part* part, XMLTag& tag);
+	void ParseGeometryElements   (FEBioInputModel::Part* part, XMLTag& tag);
+	void ParseGeometryNodeSet    (FEBioInputModel::Part* part, XMLTag& tag);
+	void ParseGeometrySurface    (FEBioInputModel::Part* part, XMLTag& tag);
+	void ParseGeometryElementSet (FEBioInputModel::Part* part, XMLTag& tag);
+	void ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag& tag);
+	void ParseGeometrySurfacePair(FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryPart       (XMLTag& tag);
 	void ParseGeometryInstance   (XMLTag& tag);
 
@@ -149,10 +149,10 @@ private:
 	void ParseConnector(FEStep* pstep, XMLTag& tag, const int rc);
 
 	// helper functions (version 2.5 and up)
-	FEBioModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);
+	FEBioInputModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);
 
 private:
-	FEBioModel::Part* DefaultPart();
+	FEBioInputModel::Part* DefaultPart();
 
 private:
 	// Geometry format flag

@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
 
-FEBioFormat12::FEBioFormat12(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
+FEBioFormat12::FEBioFormat12(FEBioImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
 }
 
@@ -103,7 +103,7 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 	if (tag.isleaf()) return true;
 
 	// create a new mesh
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 
 	// keep track of how many elements are assigned to each material
 	// MAT[0] is the number of elements that don't have a material assigned
@@ -114,7 +114,7 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 
 	// make sure we haven't been here before
 	if (febio.Parts() != 0) throw XMLReader::InvalidTag(tag);
-	FEBioModel::Part& part = *febio.AddPart("Object01");
+	FEBioInputModel::Part& part = *febio.AddPart("Object01");
 	FEMesh* pm = part.GetFEMesh();
 
 	++tag;
@@ -343,7 +343,7 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 
 	// add a new instance
 	assert(febio.Instances() == 0);
-	FEBioModel::PartInstance* instance = new FEBioModel::PartInstance(&part);
+	FEBioInputModel::PartInstance* instance = new FEBioInputModel::PartInstance(&part);
 	febio.AddInstance(instance);
 
 	// don't forget to update the mesh data
@@ -666,7 +666,7 @@ void FEBioFormat12::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	}
 
 	// assign nodes to node sets
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	int ng, n, lc, bc;
 	for (i = 0; i<ndis; ++i)
 	{
@@ -779,7 +779,7 @@ void FEBioFormat12::ParseForceLoad(FEStep *pstep, XMLTag &tag)
 	}
 
 	// assign nodes to node sets
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	int ng;
 	for (i = 0; i<ncnf; ++i)
 	{
@@ -894,7 +894,7 @@ void FEBioFormat12::ParsePressureLoad(FEStep *pstep, XMLTag &tag)
 	}
 
 	// set the correct face group ID's
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	for (i = 0; i<pm->Faces(); ++i)
 	{
 		FEFace& face = pm->Face(i);
@@ -993,7 +993,7 @@ void FEBioFormat12::ParseTractionLoad(FEStep* pstep, XMLTag& tag)
 	}
 
 	// set the correct face group ID's
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FEFace& face = pm->Face(i);
@@ -1112,7 +1112,7 @@ void FEBioFormat12::ParseFluidFlux(FEStep *pstep, XMLTag &tag)
 	}
 
 	// set the correct face group ID's
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FEFace& face = pm->Face(i);
@@ -1231,7 +1231,7 @@ void FEBioFormat12::ParseBPNormalTraction(FEStep *pstep, XMLTag &tag)
 	}
 
 	// set the correct face group ID's
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FEFace& face = pm->Face(i);
@@ -1333,7 +1333,7 @@ void FEBioFormat12::ParseHeatFlux(FEStep *pstep, XMLTag &tag)
 	}
 
 	// set the correct face group ID's
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FEFace& face = pm->Face(i);
@@ -1440,7 +1440,7 @@ void FEBioFormat12::ParseSoluteFlux(FEStep *pstep, XMLTag &tag)
 	}
 
 	// set the correct face group ID's
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FEFace& face = pm->Face(i);
@@ -2330,7 +2330,7 @@ void FEBioFormat12::ParseContactTiedPoro(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat12::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// create a new interface
@@ -2390,7 +2390,7 @@ void FEBioFormat12::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat12::ParseContactRigid(FEStep *pstep, XMLTag &tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 	FEMesh* pm = &GetFEMesh();
 
@@ -2458,7 +2458,7 @@ void FEBioFormat12::ParseContactRigid(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat12::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 
 	FEModel& fem = GetFEModel();
 
@@ -2532,7 +2532,7 @@ void FEBioFormat12::ParseSprings(FEStep *pstep, XMLTag &tag)
 
 	int N = fem.GetModel().DiscreteObjects() + 1;
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	GDiscreteObject* pd = 0;
 	switch (ntype)
 	{
@@ -2634,7 +2634,7 @@ void FEBioFormat12::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat12::ParseHeatSource(FEStep *pstep, XMLTag &tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	FEHeatSource* phs = new FEHeatSource(&fem, pstep->GetID());
@@ -2672,7 +2672,7 @@ bool FEBioFormat12::ParseConstraintSection(XMLTag& tag)
 {
 	if (tag.isleaf()) return true;
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel* fem = &febio.GetFEModel();
 
 	FEStep* pstep = m_pBCStep;
@@ -2912,7 +2912,7 @@ bool FEBioFormat12::ParseConstraintSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat12::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel* fem = &febio.GetFEModel();
 
 	// get the material ID

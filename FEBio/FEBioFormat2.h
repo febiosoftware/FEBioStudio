@@ -33,7 +33,7 @@ SOFTWARE.*/
 class FEBioFormat2 : public FEBioFormat
 {
 public:
-	FEBioFormat2(FEBioImport* fileReader, FEBioModel& febio);
+	FEBioFormat2(FEBioImport* fileReader, FEBioInputModel& febio);
 	~FEBioFormat2();
 
 	bool ParseSection(XMLTag& tag);
@@ -115,17 +115,17 @@ private:
 	FESurface* ParseLoadSurface     (XMLTag& tag);
 
 	// geometry parsing functions (version 2.0 and up)
-	void ParseGeometryNodes      (FEBioModel::Part& part, XMLTag& tag);
-	void ParseGeometryElements   (FEBioModel::Part& part, XMLTag& tag);
-	void ParseGeometryElementData(FEBioModel::Part& part, XMLTag& tag);
-	void ParseGeometryNodeSet    (FEBioModel::Part& part, XMLTag& tag);
-	void ParseGeometrySurface    (FEBioModel::Part& part, XMLTag& tag);
+	void ParseGeometryNodes      (FEBioInputModel::Part& part, XMLTag& tag);
+	void ParseGeometryElements   (FEBioInputModel::Part& part, XMLTag& tag);
+	void ParseGeometryElementData(FEBioInputModel::Part& part, XMLTag& tag);
+	void ParseGeometryNodeSet    (FEBioInputModel::Part& part, XMLTag& tag);
+	void ParseGeometrySurface    (FEBioInputModel::Part& part, XMLTag& tag);
 
 	// helper functions (version 2.5 and up)
 	FENodeSet* ParseNodeSet(XMLTag& tag);
 
 private:
-	FEBioModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
+	FEBioInputModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
 	FEMesh& GetFEMesh() { return *GetInstance().GetMesh(); }
 	FEBioMesh& GetFEBioMesh() { return GetFEBioModel().GetPart(0).GetFEBioMesh(); }
 	GMeshObject* GetGObject() { return GetInstance().GetGObject(); }

@@ -134,9 +134,9 @@ bool FEBioImport::Load(const char* szfile)
 	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
 
-	// create a new FEBioModel
+	// create a new FEBioInputModel
 	InitLog(this);
-	m_febio = new FEBioModel(fem);
+	m_febio = new FEBioInputModel(fem);
 
 	// loop over all child tags
 	try
@@ -341,7 +341,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	int NPC = m_febio->ParamCurves();
 	for (int i=0; i<NPC; ++i)
 	{
-		FEBioModel::PARAM_CURVE pc = m_febio->GetParamCurve(i);
+		FEBioInputModel::PARAM_CURVE pc = m_febio->GetParamCurve(i);
 		assert(pc.m_lc >= 0);
 		assert(pc.m_p || pc.m_plc);
 		if ((pc.m_lc >= 0) && (pc.m_lc < m_febio->LoadCurves()))
@@ -361,7 +361,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	// (only for older versions)
 	if ((m_nversion < 0x0205) && (m_febio->Parts() == 1))
 	{
-		FEBioModel::PartInstance& part = *m_febio->GetInstance(0);
+		FEBioInputModel::PartInstance& part = *m_febio->GetInstance(0);
 		GMeshObject* po = part.GetGObject();
 		if (po)
 		{
@@ -376,7 +376,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	GModel& mdl = fem.GetModel();
 	for (int i=0; i<m_febio->PlotVariables(); ++i)
 	{
-		FEBioModel::PlotVariable& v = m_febio->GetPlotVariable(i);
+		FEBioInputModel::PlotVariable& v = m_febio->GetPlotVariable(i);
 		std::string name = v.name();
 
 		// try to find it
@@ -399,7 +399,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 			}
 			else 
 			{
-				FEBioModel::Surface* surf = m_febio->FindSurface(domain.c_str());
+				FEBioInputModel::Surface* surf = m_febio->FindSurface(domain.c_str());
 				if (surf)
 				{
 					FESurface* ps = m_febio->BuildFESurface(domain.c_str());
@@ -422,12 +422,12 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	for (int i = 0; i < m_febio->Instances(); ++i)
 	{
 		// get the next instance
-		FEBioModel::PartInstance& partInstance = *m_febio->GetInstance(i);
-		FEBioModel::Part* part = partInstance.GetPart();
+		FEBioInputModel::PartInstance& partInstance = *m_febio->GetInstance(i);
+		FEBioInputModel::Part* part = partInstance.GetPart();
 		GMeshObject* po = partInstance.GetGObject();
 		for (int j = 0; j < part->Surfaces(); ++j)
 		{
-			FEBioModel::Surface& surf = part->GetSurface(j);
+			FEBioInputModel::Surface& surf = part->GetSurface(j);
 			if (surf.m_refs == 0)
 			{
 				FESurface* psurf = partInstance.BuildFESurface(surf.name().c_str());
@@ -444,7 +444,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	for (int i = 0; i<m_febio->Instances(); ++i)
 	{
 		// get the next instance
-		FEBioModel::PartInstance& part = *m_febio->GetInstance(i);
+		FEBioInputModel::PartInstance& part = *m_febio->GetInstance(i);
 
 		// Take the GObject from the part (the part no longer keeps a pointer to this object)
 		GMeshObject* po = part.TakeGObject();
@@ -461,7 +461,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	log.ClearLogData();
 	for (int i = 0; i<m_febio->LogVariables(); ++i)
 	{
-		FEBioModel::LogVariable& v = m_febio->GetLogVariable(i);
+		FEBioInputModel::LogVariable& v = m_febio->GetLogVariable(i);
 
 		FELogData ld;
 		ld.type = v.type();

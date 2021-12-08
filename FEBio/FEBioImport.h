@@ -63,7 +63,7 @@ protected: // Error handling
 
 protected:
 	FEBioFormat*	m_fmt;
-	FEBioModel*		m_febio;
+	FEBioInputModel*		m_febio;
 	int				m_nversion;
 	char			m_szpath[1024];
 

@@ -128,7 +128,7 @@ static bool validate_dof(const string& bc)
 }
 
 //-----------------------------------------------------------------------------
-FEBioFormat3::FEBioFormat3(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
+FEBioFormat3::FEBioFormat3(FEBioImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
 	m_geomFormat = 0;
 }
@@ -137,9 +137,9 @@ FEBioFormat3::~FEBioFormat3()
 {
 }
 
-FEBioModel::Part* FEBioFormat3::DefaultPart()
+FEBioInputModel::Part* FEBioFormat3::DefaultPart()
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	if (m_geomFormat == 0)
 	{
 		m_geomFormat = 1;
@@ -233,7 +233,7 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// create a new analysis step from these control settings
@@ -302,7 +302,7 @@ bool FEBioFormat3::ParseMaterialSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	++tag;
@@ -474,10 +474,10 @@ bool FEBioFormat3::ParseMeshSection(XMLTag& tag)
 	while (!tag.isend());
 
 	// create a new instance
-	FEBioModel& febio = GetFEBioModel();
-	FEBioModel::Part* part = DefaultPart();
+	FEBioInputModel& febio = GetFEBioModel();
+	FEBioInputModel::Part* part = DefaultPart();
 	part->Update();
-	FEBioModel::PartInstance* instance = new FEBioModel::PartInstance(part);
+	FEBioInputModel::PartInstance* instance = new FEBioInputModel::PartInstance(part);
 	febio.AddInstance(instance);
 	instance->SetName(part->GetName());
 
@@ -490,7 +490,7 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (!tag.isleaf())
 	{
-		FEBioModel::Part* part = DefaultPart();
+		FEBioInputModel::Part* part = DefaultPart();
 
 		// loop over all sections
 		++tag;
@@ -502,11 +502,11 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 				const char* szmat = tag.AttributeValue("mat", true);
 				if (szmat)
 				{
-					FEBioModel& febio = GetFEBioModel();
+					FEBioInputModel& febio = GetFEBioModel();
 					int matID = febio.GetMaterialIndex(szmat);
 					if (matID == -1) matID = atoi(szmat) - 1;
 
-					FEBioModel::Domain* dom = part->FindDomain(szname);
+					FEBioInputModel::Domain* dom = part->FindDomain(szname);
 					if (dom) dom->SetMatID(matID);
 
 					if (tag.isleaf() == false)
@@ -545,11 +545,11 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
+void FEBioFormat3::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
-	vector<FEBioModel::NODE> nodes; nodes.reserve(10000);
+	vector<FEBioInputModel::NODE> nodes; nodes.reserve(10000);
 
 	// create a node set if the name is definde
 	const char* szname = tag.AttributeValue("name", true);
@@ -560,7 +560,7 @@ void FEBioFormat3::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 	++tag;
 	do
 	{
-		FEBioModel::NODE node;
+		FEBioInputModel::NODE node;
 		tag.value(node.r);
 		int nid = tag.AttributeValue<int>("id", -1); assert(nid != -1);
 		node.id = nid;
@@ -577,7 +577,7 @@ void FEBioFormat3::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 
 	for (int i = 0; i < nn; ++i)
 	{
-		FEBioModel::NODE& nd = nodes[i];
+		FEBioInputModel::NODE& nd = nodes[i];
 		FENode& node = mesh.Node(N0 + i);
 		node.m_ntag = nd.id;
 		node.r = nd.r;
@@ -588,13 +588,13 @@ void FEBioFormat3::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 	{
 		vector<int> nodeList(nn);
 		for (int i = 0; i < nn; ++i) nodeList[i] = nodes[i].id - 1;
-		FEBioModel::NodeSet nset(name, nodeList);
+		FEBioInputModel::NodeSet nset(name, nodeList);
 		part->AddNodeSet(nset);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
+void FEBioFormat3::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
@@ -662,7 +662,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 	int matID = -1;
 	if (szmat)
 	{
-		FEBioModel& febio = GetFEBioModel();
+		FEBioInputModel& febio = GetFEBioModel();
 		matID = febio.GetMaterialIndex(szmat);
 		if (matID == -1) matID = atoi(szmat)-1;
 	}
@@ -686,7 +686,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 	}
 
 	// add domain to list
-	FEBioModel::Domain* dom = part->AddDomain(name, matID);
+	FEBioInputModel::Domain* dom = part->AddDomain(name, matID);
 	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// create elements
@@ -719,13 +719,13 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 	}
 
 	// create new element set
-	FEBioModel::ElementSet* set = new FEBioModel::ElementSet(szname, elemSet);
+	FEBioInputModel::ElementSet* set = new FEBioInputModel::ElementSet(szname, elemSet);
 	part->AddElementSet(*set);
 }
 
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseGeometryNodeSet(FEBioModel::Part* part, XMLTag& tag)
+void FEBioFormat3::ParseGeometryNodeSet(FEBioInputModel::Part* part, XMLTag& tag)
 {
 	// make sure there is a name attribute
 	std::string name = tag.AttributeValue("name");
@@ -747,7 +747,7 @@ void FEBioFormat3::ParseGeometryNodeSet(FEBioModel::Part* part, XMLTag& tag)
 			const char* szset = tag.szvalue();
 			if (part)
 			{
-				FEBioModel::NodeSet* ps = part->FindNodeSet(szset);
+				FEBioInputModel::NodeSet* ps = part->FindNodeSet(szset);
 				if (ps == 0) throw XMLReader::InvalidValue(tag);
 				list.insert(list.end(), ps->nodeList().begin(), ps->nodeList().end());
 			}
@@ -758,16 +758,16 @@ void FEBioFormat3::ParseGeometryNodeSet(FEBioModel::Part* part, XMLTag& tag)
 	while (!tag.isend());
 
 	// create a new node set
-	part->AddNodeSet(FEBioModel::NodeSet(name, list));
+	part->AddNodeSet(FEBioInputModel::NodeSet(name, list));
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseGeometryDiscreteSet(FEBioModel::Part* part, XMLTag& tag)
+void FEBioFormat3::ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag& tag)
 {
 	if (tag.isempty()) return;
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
-	FEBioModel::DiscreteSet ds;
+	FEBioInputModel::DiscreteSet ds;
 	const char* szname = tag.AttributeValue("name");
 	ds.SetName(szname);
 	ds.SetPart(part);
@@ -789,7 +789,7 @@ void FEBioFormat3::ParseGeometryDiscreteSet(FEBioModel::Part* part, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseGeometrySurfacePair(FEBioModel::Part* part, XMLTag& tag)
+void FEBioFormat3::ParseGeometrySurfacePair(FEBioInputModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
@@ -821,11 +821,11 @@ void FEBioFormat3::ParseGeometrySurfacePair(FEBioModel::Part* part, XMLTag& tag)
 	}
 	while (!tag.isend());
 
-	part->AddSurfacePair(FEBioModel::SurfacePair(name, surf2, surf1));
+	part->AddSurfacePair(FEBioInputModel::SurfacePair(name, surf2, surf1));
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseGeometrySurface(FEBioModel::Part* part, XMLTag& tag)
+void FEBioFormat3::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
@@ -834,11 +834,11 @@ void FEBioFormat3::ParseGeometrySurface(FEBioModel::Part* part, XMLTag& tag)
 
 	// see if a surface with this name is already defined
 	// if found, we'll continue, but we'll generate a warning.
-	FEBioModel::Surface* ps = part->FindSurface(szname);
+	FEBioInputModel::Surface* ps = part->FindSurface(szname);
 	if (ps) FileReader()->AddLogEntry("A surface named %s is already defined.", szname);
 
 	// create a new surface
-	FEBioModel::Surface s;
+	FEBioInputModel::Surface s;
 	s.m_name = szname;
 
 	if (tag.isleaf() == false)
@@ -873,7 +873,7 @@ void FEBioFormat3::ParseGeometrySurface(FEBioModel::Part* part, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseGeometryElementSet(FEBioModel::Part* part, XMLTag& tag)
+void FEBioFormat3::ParseGeometryElementSet(FEBioInputModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
@@ -884,7 +884,7 @@ void FEBioFormat3::ParseGeometryElementSet(FEBioModel::Part* part, XMLTag& tag)
 
 	// see if a set with this name is already defined
 	// if found, we'll continue, but we'll generate a warning.
-	FEBioModel::ElementSet* ps = part->FindElementSet(szname);
+	FEBioInputModel::ElementSet* ps = part->FindElementSet(szname);
 	if (ps) FileReader()->AddLogEntry("An element set named %s is already defined.", szname);
 
 	vector<int> elem;
@@ -899,7 +899,7 @@ void FEBioFormat3::ParseGeometryElementSet(FEBioModel::Part* part, XMLTag& tag)
 	}
 	while (!tag.isend());
 
-	part->AddElementSet(FEBioModel::ElementSet(sname, elem));
+	part->AddElementSet(FEBioInputModel::ElementSet(sname, elem));
 }
 
 //-----------------------------------------------------------------------------
@@ -909,8 +909,8 @@ void FEBioFormat3::ParseGeometryPart(XMLTag& tag)
 	if (szname == 0) throw XMLReader::InvalidAttributeValue(tag, "name", szname);
 
 	// create a new object with this name
-	FEBioModel& febio = GetFEBioModel();
-	FEBioModel::Part* part = febio.AddPart(szname);
+	FEBioInputModel& febio = GetFEBioModel();
+	FEBioInputModel::Part* part = febio.AddPart(szname);
 
 	// make sure we set the format flag in case of an error
 	m_geomFormat = 2;
@@ -947,12 +947,12 @@ void FEBioFormat3::ParseGeometryInstance(XMLTag& tag)
 	if (szname == 0) szname = szpart;
 
 	// see if the part exists
-	FEBioModel& febio = GetFEBioModel();
-	FEBioModel::Part* part = febio.FindPart(szpart);
+	FEBioInputModel& febio = GetFEBioModel();
+	FEBioInputModel::Part* part = febio.FindPart(szpart);
 	if (part == 0) throw XMLReader::InvalidAttributeValue(tag, "part", szpart);
 
 	// create a new instance
-	FEBioModel::PartInstance* instance = new FEBioModel::PartInstance(part);
+	FEBioInputModel::PartInstance* instance = new FEBioInputModel::PartInstance(part);
 	febio.AddInstance(instance);
 	instance->SetName(szname);
 
@@ -1043,10 +1043,10 @@ bool FEBioFormat3::ParseMeshDataSection(XMLTag& tag)
 
 	// TODO: The shell thickness/fiber/mat axis data was read into the part's mesh, not the instance's mesh
 	// This is a hack to copy that data from the part to the instance
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	for (int i=0; i<febio.Instances(); ++i)
 	{
-		FEBioModel::PartInstance* instance = febio.GetInstance(i);
+		FEBioInputModel::PartInstance* instance = febio.GetInstance(i);
 		FEMesh* pdst = instance->GetMesh();
 		FEMesh* psrc = instance->GetPart()->GetFEMesh();
 
@@ -1072,7 +1072,7 @@ bool FEBioFormat3::ParseMeshDataSection(XMLTag& tag)
 
 bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 {
-	FEBioModel& feb = GetFEBioModel();
+	FEBioInputModel& feb = GetFEBioModel();
 
 	XMLAtt* name = tag.AttributePtr("name");
 	XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
@@ -1118,7 +1118,7 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 
 bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 {
-	FEBioModel& feb = GetFEBioModel();
+	FEBioInputModel& feb = GetFEBioModel();
 
 	XMLAtt* name = tag.AttributePtr("name");
 	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
@@ -1160,9 +1160,9 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 	if (var && (*var == "shell thickness"))
 	{
 		const char* szset = tag.AttributeValue("elem_set");
-		FEBioModel& feb = GetFEBioModel();
+		FEBioInputModel& feb = GetFEBioModel();
 
-		FEBioModel::Domain* dom = feb.FindDomain(szset);
+		FEBioInputModel::Domain* dom = feb.FindDomain(szset);
 		if (dom)
 		{
 			FEMesh* mesh = dom->GetPart()->GetFEMesh();
@@ -1189,9 +1189,9 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 	else if (var && (*var == "fiber"))
 	{
 		const char* szset = tag.AttributeValue("elem_set");
-		FEBioModel& feb = GetFEBioModel();
+		FEBioInputModel& feb = GetFEBioModel();
 
-		FEBioModel::Domain* dom = feb.FindDomain(szset);
+		FEBioInputModel::Domain* dom = feb.FindDomain(szset);
 		if (dom)
 		{
 			FEMesh* mesh = dom->GetPart()->GetFEMesh();
@@ -1228,9 +1228,9 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 	else if (var && (*var == "mat_axis"))
 	{
 		const char* szset = tag.AttributeValue("elem_set");
-		FEBioModel& feb = GetFEBioModel();
+		FEBioInputModel& feb = GetFEBioModel();
 
-		FEBioModel::Domain* dom = feb.FindDomain(szset);
+		FEBioInputModel::Domain* dom = feb.FindDomain(szset);
 		if (dom)
 		{
 			FEMesh* mesh = dom->GetPart()->GetFEMesh();
@@ -1271,7 +1271,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		if (szgen)
 		{
 			// Read the data and store it as a mesh data section
-			FEBioModel& feb = GetFEBioModel();
+			FEBioInputModel& feb = GetFEBioModel();
 			FEModel& fem = feb.GetFEModel();
 
 			const char* szset = tag.AttributeValue("elem_set");
@@ -1353,7 +1353,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 	}
 	else if (var == nullptr)
 	{
-		FEBioModel& feb = GetFEBioModel();
+		FEBioInputModel& feb = GetFEBioModel();
 
 		XMLAtt* name = tag.AttributePtr("name");
 		XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
@@ -1431,7 +1431,7 @@ bool FEBioFormat3::ParseBoundarySection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// get the name attribute
@@ -1637,7 +1637,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 
 void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// get the name attribute
@@ -1874,7 +1874,7 @@ void FEBioFormat3::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 
 	// read node set
 	const char* szset = tag.AttributeValue("node_set");
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEItemListBuilder* pg = febio.BuildItemList(szset);
 
 	GMaterial* pmat = 0;
@@ -1931,7 +1931,7 @@ void FEBioFormat3::ParseBCLinearConstraint(FEStep* pstep, XMLTag& tag)
 
 void FEBioFormat3::ParseBCFluidRotationalVelocity(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	std::string comment = tag.comment();
@@ -2030,7 +2030,7 @@ bool FEBioFormat3::ParseLoadsSection(XMLTag& tag)
 //! Parses the nodal_load section.
 void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// get the load curve ID
@@ -2092,7 +2092,7 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 //! Parses the surface_load section.
 void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	std::string comment = tag.comment();
@@ -2200,7 +2200,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	char szname[256] = {0};
@@ -2395,7 +2395,7 @@ bool FEBioFormat3::ParseContactSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel* fem = &febio.GetFEModel();
 
 	// get the contact interface type
@@ -2408,7 +2408,7 @@ void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 	else
 	{
 		const char* szpair = tag.AttributeValue("surface_pair");
-		FEBioModel::SurfacePair* surfPair = febio.FindSurfacePair(szpair);
+		FEBioInputModel::SurfacePair* surfPair = febio.FindSurfacePair(szpair);
 		if (surfPair == 0) throw XMLReader::InvalidAttributeValue(tag, "surface_pair", szpair);
 
 		// create a new interfaces
@@ -2428,7 +2428,7 @@ void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 		ReadParameters(*pci, tag);
 
 		// assign surfaces
-		FEBioModel::Part* part = surfPair->GetPart();
+		FEBioInputModel::Part* part = surfPair->GetPart();
 		assert(part);
 		if (part)
 		{
@@ -2455,7 +2455,7 @@ void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat3::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// create a new interface
@@ -2519,7 +2519,7 @@ void FEBioFormat3::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 	pi->SetFloatValue(FERigidJoint::PENALTY, pen);
 	pi->SetVecValue(FERigidJoint::RJ, rj);
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 
 	if (na >= 0) pi->SetRigidBody1(na - 1);
 	if (nb >= 0) pi->SetRigidBody2(nb - 1);
@@ -2528,7 +2528,7 @@ void FEBioFormat3::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// get the type attribute
@@ -2609,7 +2609,7 @@ void FEBioFormat3::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 	pi->SetName(name);
 	pstep->AddRigidConnector(pi);
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	++tag;
 	do
 	{
@@ -2694,7 +2694,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 	GModel& gm = fem.GetModel();
 
@@ -2804,7 +2804,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			GDiscreteElementSet* ps = set[mid - 1];
 			const char* szset = tag.AttributeValue("discrete_set");
 
-			FEBioModel& feb = GetFEBioModel();
+			FEBioInputModel& feb = GetFEBioModel();
 			if (feb.BuildDiscreteSet(*ps, szset) == false)
 			{
 				assert(false);
@@ -2869,7 +2869,7 @@ bool FEBioFormat3::ParseConstraintSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat3::ParseConstraint(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// allocate model constraint
@@ -2915,7 +2915,7 @@ bool FEBioFormat3::ParseLoadDataSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEBioModel &febio = GetFEBioModel();
+	FEBioInputModel &febio = GetFEBioModel();
 
 	// read all loadcurves
 	++tag;
@@ -3061,24 +3061,24 @@ bool FEBioFormat3::ParseStep(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FEBioModel::DiscreteSet FEBioFormat3::ParseDiscreteSet(XMLTag& tag)
+FEBioInputModel::DiscreteSet FEBioFormat3::ParseDiscreteSet(XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 
 	const char* szset = tag.AttributeValue("dset", true);
 	if (szset)
 	{
-/*		FEBioModel::DiscreteSet* ps = febio.FindDiscreteSet(szset);
+/*		FEBioInputModel::DiscreteSet* ps = febio.FindDiscreteSet(szset);
 		if (ps) return *ps;
 		else
 */		{
-			FEBioModel::DiscreteSet ds;
+			FEBioInputModel::DiscreteSet ds;
 			return ds;
 		}
 	}
 	else
 	{
-		FEBioModel::DiscreteSet ds;
+		FEBioInputModel::DiscreteSet ds;
 		++tag;
 		do
 		{

@@ -45,7 +45,7 @@ class FEBioFormat12 : public FEBioFormat
 	};
 
 public:
-	FEBioFormat12(FEBioImport* fileReader, FEBioModel& febio);
+	FEBioFormat12(FEBioImport* fileReader, FEBioInputModel& febio);
 	~FEBioFormat12();
 
 	bool ParseSection(XMLTag& tag);
@@ -100,7 +100,7 @@ private:
 	void ParseSymmetryPlane   (FEStep* pstep, XMLTag& tag);
 
 private:
-	FEBioModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
+	FEBioInputModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
 	FEMesh& GetFEMesh() { return *GetInstance().GetMesh(); }
 	FEBioMesh& GetFEBioMesh() { return GetFEBioModel().GetPart(0).GetFEBioMesh(); }
 	GMeshObject* GetGObject() { return GetInstance().GetGObject(); }

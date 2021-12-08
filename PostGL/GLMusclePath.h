@@ -65,6 +65,9 @@ private:
 	int		m_closestFace;	// surface face closest to origin
 	vec3d	m_qr;
 
+	// the material IDs of the start and end points
+	int		m_part[2];
+
 	// values that require re-evaluation upon change
 	int		m_node0;
 	int		m_node1;

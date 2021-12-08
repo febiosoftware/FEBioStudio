@@ -45,7 +45,7 @@ class FEBioFormatOld : public FEBioFormat
 	};
 
 public:
-	FEBioFormatOld(FEBioImport* fileReader, FEBioModel& febio);
+	FEBioFormatOld(FEBioImport* fileReader, FEBioInputModel& febio);
 	~FEBioFormatOld();
 
 	bool ParseSection(XMLTag& tag);
@@ -98,7 +98,7 @@ private:
 	void ParseVolumeConstraint(FEStep* pstep, XMLTag& tag);
 
 private:
-	FEBioModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
+	FEBioInputModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
 	FEMesh& GetFEMesh() { return *GetInstance().GetMesh(); }
 	FEBioMesh& GetFEBioMesh() { return GetFEBioModel().GetPart(0).GetFEBioMesh(); }
 	GMeshObject* GetGObject() { return GetInstance().GetGObject(); }

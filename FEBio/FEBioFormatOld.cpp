@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
 
-FEBioFormatOld::FEBioFormatOld(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
+FEBioFormatOld::FEBioFormatOld(FEBioImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
 }
 
@@ -102,15 +102,15 @@ bool FEBioFormatOld::ParseGeometrySection(XMLTag& tag)
 	if (tag.isleaf()) return true;
 
 	// make sure we haven't been here before
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	if (febio.Parts() != 0) throw XMLReader::InvalidTag(tag);
 
 	// Add the one-and-only part
-	FEBioModel::Part& part = *febio.AddPart("Object01");
+	FEBioInputModel::Part& part = *febio.AddPart("Object01");
 
 	// Add an instance
 	assert(febio.Instances() == 0);
-	FEBioModel::PartInstance* instance = new FEBioModel::PartInstance(&part);
+	FEBioInputModel::PartInstance* instance = new FEBioInputModel::PartInstance(&part);
 	instance->SetName(part.GetName());
 	febio.AddInstance(instance);
 
@@ -2301,7 +2301,7 @@ void FEBioFormatOld::ParseContactTiedPoro(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormatOld::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
 	// create a new interface
@@ -2361,7 +2361,7 @@ void FEBioFormatOld::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormatOld::ParseContactRigid(FEStep *pstep, XMLTag &tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 	FEMesh* pm = &GetFEMesh();
 
@@ -2429,7 +2429,7 @@ void FEBioFormatOld::ParseContactRigid(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormatOld::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 
 	FEModel& fem = GetFEModel();
 
@@ -2640,7 +2640,7 @@ bool FEBioFormatOld::ParseConstraintSection(XMLTag& tag)
 {
 	if (tag.isleaf()) return true;
 
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel& fem = febio.GetFEModel();
 
 	FEStep* pstep = m_pBCStep;
@@ -2881,7 +2881,7 @@ bool FEBioFormatOld::ParseConstraintSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormatOld::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 {
-	FEBioModel& febio = GetFEBioModel();
+	FEBioInputModel& febio = GetFEBioModel();
 	FEModel* fem = &febio.GetFEModel();
 	// get the material ID
 	int nid = tag.Attribute("mat").value<int>() - 1;
