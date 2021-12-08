@@ -245,7 +245,7 @@ endif()
 # Find FEBio Libs
 set(FEBio_LIBS "")
 
-set(FEBio_LIB_NAMES fecore febiolib)
+set(FEBio_LIB_NAMES fecore febiolib febiomech xml)
 
 foreach(name IN LISTS FEBio_LIB_NAMES)
     findLib(FEBio_LIB_DIR FEBio_LIB ${name})
