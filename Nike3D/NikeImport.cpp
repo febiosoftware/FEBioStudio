@@ -538,17 +538,17 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 		{
 		case 1:		// isotropic elastic
 			{
-				FEIsotropicElastic* pm = new FEIsotropicElastic();
+				FSIsotropicElastic* pm = new FSIsotropicElastic();
 				pmat = pm;
 
-				pm->SetFloatValue(FEIsotropicElastic::MP_E, m.m[0][0]);
-				pm->SetFloatValue(FEIsotropicElastic::MP_v, m.m[1][0]);
-				pm->SetFloatValue(FEIsotropicElastic::MP_DENSITY, m.dens);
+				pm->SetFloatValue(FSIsotropicElastic::MP_E, m.m[0][0]);
+				pm->SetFloatValue(FSIsotropicElastic::MP_v, m.m[1][0]);
+				pm->SetFloatValue(FSIsotropicElastic::MP_DENSITY, m.dens);
 			}
 			break;
 		case 15:	// mooney-rivlin
 			{
-				FEMooneyRivlin* pm = new FEMooneyRivlin;
+				FSMooneyRivlin* pm = new FSMooneyRivlin;
 				pmat = pm;
 
 				double A = m.m[0][0];
@@ -556,19 +556,19 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 				double v = m.m[2][0];
 				double K = 4*(A + B)*(1 + v)/(3*(1-2*v));
 
-				pm->SetFloatValue(FEMooneyRivlin::MP_A, A);
-				pm->SetFloatValue(FEMooneyRivlin::MP_B, B);
-				pm->SetFloatValue(FEMooneyRivlin::MP_K, K);
-				pm->SetFloatValue(FEMooneyRivlin::MP_DENSITY, m.dens);
+				pm->SetFloatValue(FSMooneyRivlin::MP_A, A);
+				pm->SetFloatValue(FSMooneyRivlin::MP_B, B);
+				pm->SetFloatValue(FSMooneyRivlin::MP_K, K);
+				pm->SetFloatValue(FSMooneyRivlin::MP_DENSITY, m.dens);
 			}
 			break;
 		case 20:
 			{
-				FERigidMaterial* pm = new FERigidMaterial;
+				FSRigidMaterial* pm = new FSRigidMaterial;
 				pmat = pm;
-				pm->SetFloatValue(FERigidMaterial::MP_DENSITY, m.dens);
-				pm->SetFloatValue(FERigidMaterial::MP_E, m.m[0][0]);
-				pm->SetFloatValue(FERigidMaterial::MP_V, m.m[1][0]);
+				pm->SetFloatValue(FSRigidMaterial::MP_DENSITY, m.dens);
+				pm->SetFloatValue(FSRigidMaterial::MP_E, m.m[0][0]);
+				pm->SetFloatValue(FSRigidMaterial::MP_V, m.m[1][0]);
 
 /*				FSRigidConstraint* pc = 0;
 				FSRigidConstraint* pd = 0;
@@ -591,8 +591,8 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 				}
 */
 				bool bcom = (m.m[3][0] == 0);
-				pm->SetBoolValue(FERigidMaterial::MP_COM, bcom);
-				pm->SetVecValue(FERigidMaterial::MP_RC, vec3d(m.m[3][1], m.m[3][2], m.m[3][3]));
+				pm->SetBoolValue(FSRigidMaterial::MP_COM, bcom);
+				pm->SetVecValue(FSRigidMaterial::MP_RC, vec3d(m.m[3][1], m.m[3][2], m.m[3][3]));
 			}
 			break;
 		case 18:
@@ -608,30 +608,30 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 				if ((beta[0]>=2) && (beta[1] >= 2) && (beta[2] >= 2))
 				{
 					// it's the EFD material
-					FEEFDMooneyRivlin* pm = new FEEFDMooneyRivlin;
+					FSEFDMooneyRivlin* pm = new FSEFDMooneyRivlin;
 					pmat = pm;
-					pm->SetFloatValue(FEEFDMooneyRivlin::MP_C1, m.m[0][0]);
-					pm->SetFloatValue(FEEFDMooneyRivlin::MP_C2, m.m[0][1]);
-					pm->SetFloatValue(FEEFDMooneyRivlin::MP_K , m.m[1][0]);
-					pm->SetVecValue(FEEFDMooneyRivlin::MP_BETA, vec3d(beta[0], beta[1], beta[2]));
-					pm->SetVecValue(FEEFDMooneyRivlin::MP_KSI , vec3d(ksi [0], ksi [1], ksi [2]));
+					pm->SetFloatValue(FSEFDMooneyRivlin::MP_C1, m.m[0][0]);
+					pm->SetFloatValue(FSEFDMooneyRivlin::MP_C2, m.m[0][1]);
+					pm->SetFloatValue(FSEFDMooneyRivlin::MP_K , m.m[1][0]);
+					pm->SetVecValue(FSEFDMooneyRivlin::MP_BETA, vec3d(beta[0], beta[1], beta[2]));
+					pm->SetVecValue(FSEFDMooneyRivlin::MP_KSI , vec3d(ksi [0], ksi [1], ksi [2]));
 				}
 				else
 				{
 					// assume normal trans-iso MR
-					FETransMooneyRivlin* pm = new FETransMooneyRivlin;
+					FSTransMooneyRivlin* pm = new FSTransMooneyRivlin;
 					pmat = pm;
-					pm->SetFloatValue(FETransMooneyRivlin::MP_DENSITY, m.dens);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C1, m.m[0][0]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C2, m.m[0][1]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C3, m.m[0][2]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C4, m.m[0][3]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C5, m.m[0][4]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_LAM, m.m[1][1]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_K, m.m[1][0]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_DENSITY, m.dens);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C1, m.m[0][0]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C2, m.m[0][1]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C3, m.m[0][2]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C4, m.m[0][3]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C5, m.m[0][4]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_LAM, m.m[1][1]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_K, m.m[1][0]);
 
 					// read fiber parameters
-					FEOldFiberMaterial* pf = pm->GetFiberMaterial();
+					FSOldFiberMaterial* pf = pm->GetFiberMaterial();
 					int naopt = (int) m.m[3][0];
 					switch (naopt)
 					{
@@ -648,7 +648,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 			break;
 		default:
 			{
-				pmat = new FEIsotropicElastic;
+				pmat = new FSIsotropicElastic;
 /*				FENIKEMaterial* pm = new FENIKEMaterial();
 				pmat = pm;
 				pm->SetIntValue(FENIKEMaterial::MP_TYPE, m.ntype);
@@ -696,7 +696,7 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 		int nrb = pf->nrb;
 		GMaterial* pgm = m_pMat[nrb-1];
 		FSMaterial* pmat = pgm->GetMaterialProperties();
-		if (dynamic_cast<FERigidMaterial*>(pmat) == 0) { delete pn; pn = 0; }
+		if (dynamic_cast<FSRigidMaterial*>(pmat) == 0) { delete pn; pn = 0; }
 
 		do
 		{

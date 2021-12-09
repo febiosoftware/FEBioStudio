@@ -141,7 +141,7 @@ protected:
 	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteMultiMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteMaterialParams(FSMaterial* pm);
-	void WriteFiberMaterial(FEOldFiberMaterial& f);
+	void WriteFiberMaterial(FSOldFiberMaterial& f);
 	void WriteRigidMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteTCNLOrthoMaterial(FSMaterial* pmat, XMLElement& el);
 

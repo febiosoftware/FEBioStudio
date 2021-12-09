@@ -1001,15 +1001,15 @@ void FEBioExport2::WriteRigidMaterial(FSMaterial* pmat, XMLElement& el)
 {
 	FSModel& s = *m_pfem;
 
-	FERigidMaterial* pm = dynamic_cast<FERigidMaterial*> (pmat);
+	FSRigidMaterial* pm = dynamic_cast<FSRigidMaterial*> (pmat);
 	el.add_attribute("type", "rigid body");
 	m_xml.add_branch(el);
 	{
-		m_xml.add_leaf("density", pm->GetFloatValue(FERigidMaterial::MP_DENSITY));
+		m_xml.add_leaf("density", pm->GetFloatValue(FSRigidMaterial::MP_DENSITY));
 
-		if (pm->GetBoolValue(FERigidMaterial::MP_COM) == false)
+		if (pm->GetBoolValue(FSRigidMaterial::MP_COM) == false)
 		{
-			vec3d v = pm->GetParam(FERigidMaterial::MP_RC).GetVec3dValue();
+			vec3d v = pm->GetParam(FSRigidMaterial::MP_RC).GetVec3dValue();
 			m_xml.add_leaf("center_of_mass", v);
 		}
 
@@ -1026,30 +1026,30 @@ void FEBioExport2::WriteRigidMaterial(FSMaterial* pmat, XMLElement& el)
 //-----------------------------------------------------------------------------
 void FEBioExport2::WriteTCNLOrthoMaterial(FSMaterial* pmat, XMLElement& el)
 {
-	FETCNonlinearOrthotropic* pm = dynamic_cast<FETCNonlinearOrthotropic*>(pmat);
+	FSTCNonlinearOrthotropic* pm = dynamic_cast<FSTCNonlinearOrthotropic*>(pmat);
 	el.add_attribute("type", "TC nonlinear orthotropic");
 	double C1, C2, K, beta[3], ksi[3], a[3], d[3];
 	vec3d v;
-	C1 = pm->GetParam(FETCNonlinearOrthotropic::MP_C1).GetFloatValue();
-	C2 = pm->GetParam(FETCNonlinearOrthotropic::MP_C2).GetFloatValue();
-	K = pm->GetParam(FETCNonlinearOrthotropic::MP_K).GetFloatValue();
+	C1 = pm->GetParam(FSTCNonlinearOrthotropic::MP_C1).GetFloatValue();
+	C2 = pm->GetParam(FSTCNonlinearOrthotropic::MP_C2).GetFloatValue();
+	K = pm->GetParam(FSTCNonlinearOrthotropic::MP_K).GetFloatValue();
 
-	v = pm->GetParam(FETCNonlinearOrthotropic::MP_BETA).GetVec3dValue();
+	v = pm->GetParam(FSTCNonlinearOrthotropic::MP_BETA).GetVec3dValue();
 	beta[0] = v.x;
 	beta[1] = v.y;
 	beta[2] = v.z;
 
-	v = pm->GetParam(FETCNonlinearOrthotropic::MP_KSI).GetVec3dValue();
+	v = pm->GetParam(FSTCNonlinearOrthotropic::MP_KSI).GetVec3dValue();
 	ksi[0] = v.x;
 	ksi[1] = v.y;
 	ksi[2] = v.z;
 
-	v = pm->GetParam(FETCNonlinearOrthotropic::MP_A).GetVec3dValue();
+	v = pm->GetParam(FSTCNonlinearOrthotropic::MP_A).GetVec3dValue();
 	a[0] = v.x;
 	a[1] = v.y;
 	a[2] = v.z;
 
-	v = pm->GetParam(FETCNonlinearOrthotropic::MP_D).GetVec3dValue();
+	v = pm->GetParam(FSTCNonlinearOrthotropic::MP_D).GetVec3dValue();
 	d[0] = v.x;
 	d[1] = v.y;
 	d[2] = v.z;
@@ -1110,9 +1110,9 @@ void FEBioExport2::WriteMaterial(FSMaterial *pm, XMLElement& el)
 	m_xml.close_branch();
 }
 
-void FEBioExport2::WriteFiberMaterial(FEOldFiberMaterial& fiber)
+void FEBioExport2::WriteFiberMaterial(FSOldFiberMaterial& fiber)
 {
-	FEOldFiberMaterial& f = fiber;
+	FSOldFiberMaterial& f = fiber;
 	XMLElement el;
 	el.name("fiber");
 	if (f.m_naopt == FE_FIBER_LOCAL) 
@@ -1186,17 +1186,17 @@ void FEBioExport2::WriteMaterialParams(FSMaterial* pm)
 	WriteParamList(*pm);
 
 	// if the material is transversely-isotropic, we need to write the fiber data as well
-	FETransMooneyRivlin* ptmr = dynamic_cast<FETransMooneyRivlin*>(pm);
+	FSTransMooneyRivlin* ptmr = dynamic_cast<FSTransMooneyRivlin*>(pm);
 	if (ptmr)
 	{
-		FEOldFiberMaterial& f = *(ptmr->GetFiberMaterial());
+		FSOldFiberMaterial& f = *(ptmr->GetFiberMaterial());
 		WriteFiberMaterial(f);
 	}
 
-	FETransVerondaWestmann* ptvw = dynamic_cast<FETransVerondaWestmann*>(pm);
+	FSTransVerondaWestmann* ptvw = dynamic_cast<FSTransVerondaWestmann*>(pm);
 	if (ptvw)
 	{
-		FEOldFiberMaterial& f = *(ptvw->GetFiberMaterial());
+		FSOldFiberMaterial& f = *(ptvw->GetFiberMaterial());
 		WriteFiberMaterial(f);
 	}
 }
@@ -1239,24 +1239,24 @@ void FEBioExport2::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
 	// set the type attribute
     if (pm->Type() == FE_SOLUTE_MATERIAL)
     {
-        FESoluteMaterial* psm = dynamic_cast<FESoluteMaterial*>(pm); assert(psm);
+        FSSoluteMaterial* psm = dynamic_cast<FSSoluteMaterial*>(pm); assert(psm);
         el.add_attribute("sol", psm->GetSoluteIndex()+1);
     }
     else if (pm->Type() == FE_SBM_MATERIAL)
     {
-        FESBMMaterial* psb = dynamic_cast<FESBMMaterial*>(pm); assert(psb);
+        FSSBMMaterial* psb = dynamic_cast<FSSBMMaterial*>(pm); assert(psb);
         el.add_attribute("sbm", psb->GetSBMIndex()+1);
     }
     else if (pm->Type() == FE_REACTANT_MATERIAL)
     {
-        FEReactantMaterial* psb = dynamic_cast<FEReactantMaterial*>(pm); assert(psb);
+        FSReactantMaterial* psb = dynamic_cast<FSReactantMaterial*>(pm); assert(psb);
         int idx = psb->GetIndex();
         int type = psb->GetReactantType();
         el.value(psb->GetCoef());
         switch (type)
         {
-		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
-		case FEReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
+		case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+		case FSReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
 		default:
 			assert(false);
         }
@@ -1265,14 +1265,14 @@ void FEBioExport2::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
     }
     else if (pm->Type() == FE_PRODUCT_MATERIAL)
     {
-        FEProductMaterial* psb = dynamic_cast<FEProductMaterial*>(pm); assert(psb);
+        FSProductMaterial* psb = dynamic_cast<FSProductMaterial*>(pm); assert(psb);
         int idx = psb->GetIndex();
         int type = psb->GetProductType();
         el.value(psb->GetCoef());
         switch (type)
         {
-		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
-		case FEReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
+		case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+		case FSReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
 		default:
 			assert(false);
         }
@@ -1371,7 +1371,7 @@ void FEBioExport2::WriteGeometrySection()
 	if (model.ShellElements() > 0) bdata = true;
 	for (int i=0; i<s.Materials(); ++i)
 	{
-		FETransverselyIsotropic* pmat = dynamic_cast<FETransverselyIsotropic*>(s.GetMaterial(i)->GetMaterialProperties());
+		FSTransverselyIsotropic* pmat = dynamic_cast<FSTransverselyIsotropic*>(s.GetMaterial(i)->GetMaterialProperties());
 		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) bdata = true;
 	}
 	for (int i=0; i<model.Objects(); ++i)
@@ -1668,8 +1668,8 @@ void FEBioExport2::WriteGeometryElementData()
 		{
 			FEElement_& e = pm->ElementRef(j);
 			GMaterial* pmat = s.GetMaterialFromID(po->Part(e.m_gid)->GetMaterialID());
-			FETransverselyIsotropic* ptiso = 0;
-			if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
+			FSTransverselyIsotropic* ptiso = 0;
+			if (pmat) ptiso = dynamic_cast<FSTransverselyIsotropic*>(pmat->GetMaterialProperties());
 
 			elem.set_attribute(nid, e.m_nid);
 			if (e.IsShell() || e.m_Qactive || (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) || (ND > 0))

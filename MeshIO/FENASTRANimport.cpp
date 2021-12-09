@@ -344,10 +344,10 @@ bool FENASTRANimport::BuildMesh(FSModel& fem)
 		for (i=0; i<(int) m_Mat.size(); ++i, ++im)
 		{
 			MAT1& mat = *im;
-			FEIsotropicElastic* pmat = new FEIsotropicElastic;
-			pmat->SetFloatValue(FEIsotropicElastic::MP_DENSITY, mat.d);
-			pmat->SetFloatValue(FEIsotropicElastic::MP_E, mat.E);
-			pmat->SetFloatValue(FEIsotropicElastic::MP_v, mat.v);
+			FSIsotropicElastic* pmat = new FSIsotropicElastic;
+			pmat->SetFloatValue(FSIsotropicElastic::MP_DENSITY, mat.d);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_E, mat.E);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_v, mat.v);
 
 			GMaterial* pgm = new GMaterial(pmat);
 			pgm->AmbientDiffuse(col[i%16]);

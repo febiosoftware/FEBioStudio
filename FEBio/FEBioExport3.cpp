@@ -359,7 +359,7 @@ bool FEBioExport3::PrepareExport(FEProject& prj)
 	if (model.ShellElements() > 0) m_bdata = true;	// for shell thicknesses
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
-		FETransverselyIsotropic* pmat = dynamic_cast<FETransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
+		FSTransverselyIsotropic* pmat = dynamic_cast<FSTransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
 		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) m_bdata = true;
 	}
 	for (int i = 0; i<model.Objects(); ++i)
@@ -1520,9 +1520,9 @@ void FEBioExport3::WriteMaterialSection()
 	}
 }
 
-void FEBioExport3::WriteFiberMaterial(FEOldFiberMaterial& fiber)
+void FEBioExport3::WriteFiberMaterial(FSOldFiberMaterial& fiber)
 {
-	FEOldFiberMaterial& f = fiber;
+	FSOldFiberMaterial& f = fiber;
 	XMLElement el;
 	el.name("fiber");
 	if (f.m_naopt == FE_FIBER_LOCAL)
@@ -1602,10 +1602,10 @@ void FEBioExport3::WriteMaterialParams(FSMaterial* pm, bool isTopLevel)
 	m_exportNonPersistentParams = true;
 
 	// if the material is transversely-isotropic, we need to write the fiber data as well
-	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pm);
+	FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(pm);
 	if (ptiso)
 	{
-		FEOldFiberMaterial& f = *(ptiso->GetFiberMaterial());
+		FSOldFiberMaterial& f = *(ptiso->GetFiberMaterial());
 		WriteFiberMaterial(f);
 	}
 
@@ -1670,22 +1670,22 @@ void FEBioExport3::WriteRigidMaterial(FSMaterial* pmat, XMLElement& el)
 {
 	FSModel& s = *m_pfem;
 
-	FERigidMaterial* pm = dynamic_cast<FERigidMaterial*> (pmat);
+	FSRigidMaterial* pm = dynamic_cast<FSRigidMaterial*> (pmat);
 	el.add_attribute("type", "rigid body");
 	m_xml.add_branch(el);
 	{
-		m_xml.add_leaf("density", pm->GetFloatValue(FERigidMaterial::MP_DENSITY));
+		m_xml.add_leaf("density", pm->GetFloatValue(FSRigidMaterial::MP_DENSITY));
 
-		if (pm->GetBoolValue(FERigidMaterial::MP_COM) == false)
+		if (pm->GetBoolValue(FSRigidMaterial::MP_COM) == false)
 		{
-			vec3d v = pm->GetParam(FERigidMaterial::MP_RC).GetVec3dValue();
+			vec3d v = pm->GetParam(FSRigidMaterial::MP_RC).GetVec3dValue();
 			m_xml.add_leaf("center_of_mass", v);
 		}
 
-        if (pm->GetFloatValue(FERigidMaterial::MP_E) != 0)
+        if (pm->GetFloatValue(FSRigidMaterial::MP_E) != 0)
         {
-            m_xml.add_leaf("E", pm->GetFloatValue(FERigidMaterial::MP_E));
-            m_xml.add_leaf("v", pm->GetFloatValue(FERigidMaterial::MP_V));
+            m_xml.add_leaf("E", pm->GetFloatValue(FSRigidMaterial::MP_E));
+            m_xml.add_leaf("v", pm->GetFloatValue(FSRigidMaterial::MP_V));
         }
         
 		if (pm->m_pid != -1)
@@ -1753,17 +1753,17 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 	// set the type attribute
 	if (pm->Type() == FE_SOLUTE_MATERIAL)
 	{
-		FESoluteMaterial* psm = dynamic_cast<FESoluteMaterial*>(pm); assert(psm);
+		FSSoluteMaterial* psm = dynamic_cast<FSSoluteMaterial*>(pm); assert(psm);
 		el.add_attribute("sol", psm->GetSoluteIndex() + 1);
 	}
 	else if (pm->Type() == FE_SBM_MATERIAL)
 	{
-		FESBMMaterial* psb = dynamic_cast<FESBMMaterial*>(pm); assert(psb);
+		FSSBMMaterial* psb = dynamic_cast<FSSBMMaterial*>(pm); assert(psb);
 		el.add_attribute("sbm", psb->GetSBMIndex() + 1);
 	}
 	else if (pm->Type() == FE_SPECIES_MATERIAL)
 	{
-		FESpeciesMaterial* psm = dynamic_cast<FESpeciesMaterial*>(pm); assert(psm);
+		FSSpeciesMaterial* psm = dynamic_cast<FSSpeciesMaterial*>(pm); assert(psm);
 
 		int nsol = psm->GetSpeciesIndex();
 		if (nsol >= 0)
@@ -1775,7 +1775,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 	}
 	else if (pm->Type() == FE_SOLID_SPECIES_MATERIAL)
 	{
-		FESolidSpeciesMaterial* psm = dynamic_cast<FESolidSpeciesMaterial*>(pm); assert(psm);
+		FSSolidSpeciesMaterial* psm = dynamic_cast<FSSolidSpeciesMaterial*>(pm); assert(psm);
 		int nsbm = psm->GetSBMIndex();
 		if (nsbm >= 0)
 		{
@@ -1786,14 +1786,14 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 	}
 	else if (pm->Type() == FE_REACTANT_MATERIAL)
 	{
-		FEReactantMaterial* psb = dynamic_cast<FEReactantMaterial*>(pm); assert(psb);
+		FSReactantMaterial* psb = dynamic_cast<FSReactantMaterial*>(pm); assert(psb);
 		int idx = psb->GetIndex();
 		int type = psb->GetReactantType();
 		el.value(psb->GetCoef());
 		switch (type)
 		{
-		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
-		case FEReactionSpecies::SBM_SPECIES: el.add_attribute("sbm", idx + 1); break;
+		case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+		case FSReactionSpecies::SBM_SPECIES: el.add_attribute("sbm", idx + 1); break;
 		default:
 			assert(false);
 		}
@@ -1802,14 +1802,14 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 	}
 	else if (pm->Type() == FE_PRODUCT_MATERIAL)
 	{
-		FEProductMaterial* psb = dynamic_cast<FEProductMaterial*>(pm); assert(psb);
+		FSProductMaterial* psb = dynamic_cast<FSProductMaterial*>(pm); assert(psb);
 		int idx = psb->GetIndex();
 		int type = psb->GetProductType();
 		el.value(psb->GetCoef());
 		switch (type)
 		{
-		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
-		case FEReactionSpecies::SBM_SPECIES: el.add_attribute("sbm", idx + 1); break;
+		case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+		case FSReactionSpecies::SBM_SPECIES: el.add_attribute("sbm", idx + 1); break;
 		default:
 			assert(false);
 		}
@@ -1818,13 +1818,13 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 	}
     else if (pm->Type() == FE_INT_REACTANT_MATERIAL)
     {
-        FEInternalReactantMaterial* psb = dynamic_cast<FEInternalReactantMaterial*>(pm); assert(psb);
+        FSInternalReactantMaterial* psb = dynamic_cast<FSInternalReactantMaterial*>(pm); assert(psb);
         int idx = psb->GetIndex();
         int type = psb->GetReactantType();
         el.value(psb->GetCoef());
         switch (type)
         {
-            case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+            case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
             default:
                 assert(false);
         }
@@ -1833,13 +1833,13 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
     }
     else if (pm->Type() == FE_INT_PRODUCT_MATERIAL)
     {
-        FEInternalProductMaterial* psb = dynamic_cast<FEInternalProductMaterial*>(pm); assert(psb);
+        FSInternalProductMaterial* psb = dynamic_cast<FSInternalProductMaterial*>(pm); assert(psb);
         int idx = psb->GetIndex();
         int type = psb->GetProductType();
         el.value(psb->GetCoef());
         switch (type)
         {
-            case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+            case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
             default:
                 assert(false);
         }
@@ -1848,13 +1848,13 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
     }
     else if (pm->Type() == FE_EXT_REACTANT_MATERIAL)
     {
-        FEExternalReactantMaterial* psb = dynamic_cast<FEExternalReactantMaterial*>(pm); assert(psb);
+        FSExternalReactantMaterial* psb = dynamic_cast<FSExternalReactantMaterial*>(pm); assert(psb);
         int idx = psb->GetIndex();
         int type = psb->GetReactantType();
         el.value(psb->GetCoef());
         switch (type)
         {
-            case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+            case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
             default:
                 assert(false);
         }
@@ -1863,13 +1863,13 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
     }
     else if (pm->Type() == FE_EXT_PRODUCT_MATERIAL)
     {
-        FEExternalProductMaterial* psb = dynamic_cast<FEExternalProductMaterial*>(pm); assert(psb);
+        FSExternalProductMaterial* psb = dynamic_cast<FSExternalProductMaterial*>(pm); assert(psb);
         int idx = psb->GetIndex();
         int type = psb->GetProductType();
         el.value(psb->GetCoef());
         switch (type)
         {
-            case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+            case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
             default:
                 assert(false);
         }
@@ -1878,7 +1878,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
     }
     else if (pm->Type() == FE_OSMO_WM)
     {
-        FEOsmoWellsManning* pwm = dynamic_cast<FEOsmoWellsManning*>(pm); assert(pwm);
+        FSOsmoWellsManning* pwm = dynamic_cast<FSOsmoWellsManning*>(pm); assert(pwm);
         el.add_attribute("co_ion", pwm->GetCoIonIndex()+1);
         m_xml.add_leaf(el);
         return;
@@ -1925,7 +1925,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 			// a multi-material then we treat this property as top-level
 			// so that non-persistent properties are written
 			const FSMaterial* parentMat = pm->GetParentMaterial();
-			bool topLevel = (parentMat == nullptr) || (dynamic_cast<const FEMultiMaterial*>(parentMat) != nullptr);
+			bool topLevel = (parentMat == nullptr) || (dynamic_cast<const FSMultiMaterial*>(parentMat) != nullptr);
 			WriteMaterialParams(pm, topLevel);
 		}
 
@@ -2003,7 +2003,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 									// NOTE: This is a little hack, but if the parent material is 
 									// a multi-material then we treat this property as top-level
 									// so that non-persistent properties are written
-									bool topLevel = (dynamic_cast<FEMultiMaterial*>(pm) != nullptr);
+									bool topLevel = (dynamic_cast<FSMultiMaterial*>(pm) != nullptr);
 									WriteMaterialParams(pc, topLevel);
 								}
 								m_xml.close_branch();
@@ -2085,7 +2085,7 @@ void FEBioExport3::WriteReactionMaterial(FSMaterial* pmat, XMLElement& el)
 void FEBioExport3::WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el)
 {
 	// get the reaction material
-	FEReactionMaterial* prm = dynamic_cast<FEReactionMaterial*>(pmat);
+	FSReactionMaterial* prm = dynamic_cast<FSReactionMaterial*>(pmat);
 	assert(prm);
 	if (prm == 0) return;
 
@@ -2114,14 +2114,14 @@ void FEBioExport3::WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el)
 		int nreact = prm->Reactants();
 		for (int i = 0; i<nreact; ++i)
 		{
-			FEReactantMaterial* ri = prm->Reactant(i);
+			FSReactantMaterial* ri = prm->Reactant(i);
 
 			const char* sz = 0;
 			int v = ri->GetCoef();
 			int idx = ri->GetIndex();
 			int type = ri->GetReactantType();
-			if (type == FEReactionSpecies::SOLUTE_SPECIES) sz = fem.GetSoluteData(idx).GetName().c_str();
-			else if (type == FEReactionSpecies::SBM_SPECIES) sz = fem.GetSBMData(idx).GetName().c_str();
+			if (type == FSReactionSpecies::SOLUTE_SPECIES) sz = fem.GetSoluteData(idx).GetName().c_str();
+			else if (type == FSReactionSpecies::SBM_SPECIES) sz = fem.GetSBMData(idx).GetName().c_str();
 			else { assert(false); }
 
 			if (v != 1) ss << v << "*" << sz;
@@ -2134,14 +2134,14 @@ void FEBioExport3::WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el)
 		int nprod = prm->Products();
 		for (int i = 0; i<nprod; ++i)
 		{
-			FEProductMaterial* pi = prm->Product(i);
+			FSProductMaterial* pi = prm->Product(i);
 
 			const char* sz = 0;
 			int v = pi->GetCoef();
 			int idx = pi->GetIndex();
 			int type = pi->GetProductType();
-			if (type == FEReactionSpecies::SOLUTE_SPECIES) sz = fem.GetSoluteData(idx).GetName().c_str();
-			else if (type == FEReactionSpecies::SBM_SPECIES) sz = fem.GetSBMData(idx).GetName().c_str();
+			if (type == FSReactionSpecies::SOLUTE_SPECIES) sz = fem.GetSoluteData(idx).GetName().c_str();
+			else if (type == FSReactionSpecies::SBM_SPECIES) sz = fem.GetSBMData(idx).GetName().c_str();
 			else { assert(false); }
 
 			if (v != 1) ss << v << "*" << sz;
@@ -2154,7 +2154,7 @@ void FEBioExport3::WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el)
 		// write the reaction
 		m_xml.add_leaf("equation", s.c_str());
 
-		FEReactionRateConst* rate = dynamic_cast<FEReactionRateConst*>(prm->GetForwardRate());
+		FSReactionRateConst* rate = dynamic_cast<FSReactionRateConst*>(prm->GetForwardRate());
 		if (rate)
 		{
 			m_xml.add_leaf("rate_constant", rate->GetRateConstant());
@@ -3393,8 +3393,8 @@ void FEBioExport3::WriteMeshDataMaterialFibers()
 		const Transform& T = po->GetTransform();
 
 		GMaterial* pmat = fem.GetMaterialFromID(elSet.m_matID);
-		FETransverselyIsotropic* ptiso = 0;
-		if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
+		FSTransverselyIsotropic* ptiso = 0;
+		if (pmat) ptiso = dynamic_cast<FSTransverselyIsotropic*>(pmat->GetMaterialProperties());
 
 		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 		{

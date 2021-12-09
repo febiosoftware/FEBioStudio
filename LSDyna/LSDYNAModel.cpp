@@ -440,53 +440,53 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 		FSMaterial* gpmat = nullptr;
 		if (dynamic_cast<MAT_ELASTIC*>(glmat)) {
 			MAT_ELASTIC& lmat = *dynamic_cast<MAT_ELASTIC*>(glmat);
-			FEIsotropicElastic* pmat = new FEIsotropicElastic;
+			FSIsotropicElastic* pmat = new FSIsotropicElastic;
 			gpmat = pmat;
-			pmat->SetFloatValue(FEIsotropicElastic::MP_DENSITY, lmat.ro);
-			pmat->SetFloatValue(FEIsotropicElastic::MP_E, lmat.e);
-			pmat->SetFloatValue(FEIsotropicElastic::MP_v, lmat.pr);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_DENSITY, lmat.ro);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_E, lmat.e);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_v, lmat.pr);
 			pmat->SetName(lmat.szname);
 		}
 		else if (dynamic_cast<MAT_RIGID*>(glmat)) {
 			MAT_RIGID& lmat = *dynamic_cast<MAT_RIGID*>(glmat);
-			FERigidMaterial* pmat = new FERigidMaterial;
+			FSRigidMaterial* pmat = new FSRigidMaterial;
 			gpmat = pmat;
-			pmat->SetFloatValue(FERigidMaterial::MP_DENSITY, lmat.ro);
-			pmat->SetFloatValue(FERigidMaterial::MP_E, lmat.e);
-			pmat->SetFloatValue(FERigidMaterial::MP_V, lmat.pr);
+			pmat->SetFloatValue(FSRigidMaterial::MP_DENSITY, lmat.ro);
+			pmat->SetFloatValue(FSRigidMaterial::MP_E, lmat.e);
+			pmat->SetFloatValue(FSRigidMaterial::MP_V, lmat.pr);
 			pmat->SetName(lmat.szname);
 		}
 		else if (dynamic_cast<MAT_VISCOELASTIC*>(glmat)) {
 			MAT_VISCOELASTIC& lmat = *dynamic_cast<MAT_VISCOELASTIC*>(glmat);
-			FEUncoupledViscoElastic* pmat = new FEUncoupledViscoElastic;
-			FEMooneyRivlin* emat = new FEMooneyRivlin;
+			FSUncoupledViscoElastic* pmat = new FSUncoupledViscoElastic;
+			FSMooneyRivlin* emat = new FSMooneyRivlin;
 			gpmat = pmat;
-			emat->SetFloatValue(FEMooneyRivlin::MP_DENSITY, lmat.ro);
-			emat->SetFloatValue(FEMooneyRivlin::MP_A, lmat.gi/2.);
-			emat->SetFloatValue(FEMooneyRivlin::MP_B, 0);
-			emat->SetFloatValue(FEMooneyRivlin::MP_K, lmat.bulk);
+			emat->SetFloatValue(FSMooneyRivlin::MP_DENSITY, lmat.ro);
+			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi/2.);
+			emat->SetFloatValue(FSMooneyRivlin::MP_B, 0);
+			emat->SetFloatValue(FSMooneyRivlin::MP_K, lmat.bulk);
 			pmat->SetElasticMaterial(emat);
-			pmat->SetFloatValue(FEUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
-			pmat->SetFloatValue(FEUncoupledViscoElastic::MP_T1, 1.0 / lmat.beta);
+			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
+			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_T1, 1.0 / lmat.beta);
 			pmat->SetName(lmat.szname);
 		}
 		else if (dynamic_cast<MAT_KELVIN_MAXWELL_VISCOELASTIC*>(glmat)) {
 			MAT_KELVIN_MAXWELL_VISCOELASTIC& lmat = *dynamic_cast<MAT_KELVIN_MAXWELL_VISCOELASTIC*>(glmat);
-			FEUncoupledViscoElastic* pmat = new FEUncoupledViscoElastic;
-			FEMooneyRivlin* emat = new FEMooneyRivlin;
+			FSUncoupledViscoElastic* pmat = new FSUncoupledViscoElastic;
+			FSMooneyRivlin* emat = new FSMooneyRivlin;
 			gpmat = pmat;
-			emat->SetFloatValue(FEMooneyRivlin::MP_DENSITY, lmat.ro);
-			emat->SetFloatValue(FEMooneyRivlin::MP_A, lmat.gi/2.);
-			emat->SetFloatValue(FEMooneyRivlin::MP_B, 0);
-			emat->SetFloatValue(FEMooneyRivlin::MP_K, lmat.bulk);
+			emat->SetFloatValue(FSMooneyRivlin::MP_DENSITY, lmat.ro);
+			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi/2.);
+			emat->SetFloatValue(FSMooneyRivlin::MP_B, 0);
+			emat->SetFloatValue(FSMooneyRivlin::MP_K, lmat.bulk);
 			pmat->SetElasticMaterial(emat);
-			pmat->SetFloatValue(FEUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
-			pmat->SetFloatValue(FEUncoupledViscoElastic::MP_T1, 1.0 / lmat.dc);
+			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
+			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_T1, 1.0 / lmat.dc);
 			pmat->SetName(lmat.szname);
 		}
 		// For unknown materials, use MAT_ELASTIC
 		else {
-			FEIsotropicElastic* pmat = new FEIsotropicElastic;
+			FSIsotropicElastic* pmat = new FSIsotropicElastic;
 			gpmat = pmat;
 			pmat->SetName(glmat->szname);
 		}

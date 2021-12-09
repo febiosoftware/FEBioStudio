@@ -311,7 +311,7 @@ public:
 	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteRigidMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteMaterialParams(FSMaterial* pm, bool isTopLevel = false);
-	void WriteFiberMaterial(FEOldFiberMaterial& f);
+	void WriteFiberMaterial(FSOldFiberMaterial& f);
 	void WriteReactionMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el);
     void WriteMembraneReactionMaterial(FSMaterial* pmat, XMLElement& el);

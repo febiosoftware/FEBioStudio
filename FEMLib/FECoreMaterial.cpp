@@ -777,14 +777,14 @@ void FSMaterial::Load(IArchive &ar)
 
                             switch (nid)
                             {
-                            case FE_FIBEREXPPOW_COUPLED_OLD     : pm = new FEFiberExpPowOld; break;
-                            case FE_FIBEREXPPOW_UNCOUPLED_OLD   : pm = new FEFiberExpPowUncoupledOld; break;
-                            case FE_FIBERPOWLIN_COUPLED_OLD     : pm = new FEFiberPowLinOld; break;
-                            case FE_FIBERPOWLIN_UNCOUPLED_OLD   : pm = new FEFiberPowLinUncoupledOld; break;
-                            case FE_ACTIVE_CONTRACT_UNI_OLD     : pm = new FEPrescribedActiveContractionUniaxialOld; break;
-                            case FE_ACTIVE_CONTRACT_TISO_OLD    : pm = new FEPrescribedActiveContractionTransIsoOld; break;
-                            case FE_ACTIVE_CONTRACT_UNI_UC_OLD  : pm = new FEPrescribedActiveContractionUniaxialUCOld; break;
-                            case FE_ACTIVE_CONTRACT_TISO_UC_OLD : pm = new FEPrescribedActiveContractionTransIsoUCOld; break;
+                            case FE_FIBEREXPPOW_COUPLED_OLD     : pm = new FSFiberExpPowOld; break;
+                            case FE_FIBEREXPPOW_UNCOUPLED_OLD   : pm = new FSFiberExpPowUncoupledOld; break;
+                            case FE_FIBERPOWLIN_COUPLED_OLD     : pm = new FSFiberPowLinOld; break;
+                            case FE_FIBERPOWLIN_UNCOUPLED_OLD   : pm = new FSFiberPowLinUncoupledOld; break;
+                            case FE_ACTIVE_CONTRACT_UNI_OLD     : pm = new FSPrescribedActiveContractionUniaxialOld; break;
+                            case FE_ACTIVE_CONTRACT_TISO_OLD    : pm = new FSPrescribedActiveContractionTransIsoOld; break;
+                            case FE_ACTIVE_CONTRACT_UNI_UC_OLD  : pm = new FSPrescribedActiveContractionUniaxialUCOld; break;
+                            case FE_ACTIVE_CONTRACT_TISO_UC_OLD : pm = new FSPrescribedActiveContractionTransIsoUCOld; break;
                             default:
                                 pm = FEMaterialFactory::Create(nid);
 								pm->SetSuperClassID(prop->GetSuperClassID());
@@ -794,68 +794,68 @@ void FSMaterial::Load(IArchive &ar)
 
 							if (nid == FE_TRANS_MOONEY_RIVLIN_OLD)
 							{
-								FETransMooneyRivlin* pnewMat = new FETransMooneyRivlin;
-								pnewMat->Convert(dynamic_cast<FETransMooneyRivlinOld*>(pm));
+								FSTransMooneyRivlin* pnewMat = new FSTransMooneyRivlin;
+								pnewMat->Convert(dynamic_cast<FSTransMooneyRivlinOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_TRANS_VERONDA_WESTMANN_OLD)
 							{
-								FETransVerondaWestmann* pnewMat = new FETransVerondaWestmann;
-								pnewMat->Convert(dynamic_cast<FETransVerondaWestmannOld*>(pm));
+								FSTransVerondaWestmann* pnewMat = new FSTransVerondaWestmann;
+								pnewMat->Convert(dynamic_cast<FSTransVerondaWestmannOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_COUPLED_TRANS_ISO_MR_OLD)
 							{
-								FECoupledTransIsoMooneyRivlin* pnewMat = new FECoupledTransIsoMooneyRivlin;
-								pnewMat->Convert(dynamic_cast<FECoupledTransIsoMooneyRivlinOld*>(pm));
+								FSCoupledTransIsoMooneyRivlin* pnewMat = new FSCoupledTransIsoMooneyRivlin;
+								pnewMat->Convert(dynamic_cast<FSCoupledTransIsoMooneyRivlinOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_ACTIVE_CONTRACT_UNI_OLD)
 							{
-								FEPrescribedActiveContractionUniaxial* pnewMat = new FEPrescribedActiveContractionUniaxial;
-								pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionUniaxialOld*>(pm));
+								FSPrescribedActiveContractionUniaxial* pnewMat = new FSPrescribedActiveContractionUniaxial;
+								pnewMat->Convert(dynamic_cast<FSPrescribedActiveContractionUniaxialOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_ACTIVE_CONTRACT_TISO_OLD)
 							{
-								FEPrescribedActiveContractionTransIso* pnewMat = new FEPrescribedActiveContractionTransIso;
-								pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionTransIsoOld*>(pm));
+								FSPrescribedActiveContractionTransIso* pnewMat = new FSPrescribedActiveContractionTransIso;
+								pnewMat->Convert(dynamic_cast<FSPrescribedActiveContractionTransIsoOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_ACTIVE_CONTRACT_UNI_UC_OLD)
 							{
-								FEPrescribedActiveContractionUniaxialUC* pnewMat = new FEPrescribedActiveContractionUniaxialUC;
-								pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionUniaxialUCOld*>(pm));
+								FSPrescribedActiveContractionUniaxialUC* pnewMat = new FSPrescribedActiveContractionUniaxialUC;
+								pnewMat->Convert(dynamic_cast<FSPrescribedActiveContractionUniaxialUCOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_ACTIVE_CONTRACT_TISO_UC_OLD)
 							{
-								FEPrescribedActiveContractionTransIsoUC* pnewMat = new FEPrescribedActiveContractionTransIsoUC;
-								pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionTransIsoUCOld*>(pm));
+								FSPrescribedActiveContractionTransIsoUC* pnewMat = new FSPrescribedActiveContractionTransIsoUC;
+								pnewMat->Convert(dynamic_cast<FSPrescribedActiveContractionTransIsoUCOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_FIBEREXPPOW_COUPLED_OLD)
 							{
-								FEFiberExpPow* pnewMat = new FEFiberExpPow;
-								pnewMat->Convert(dynamic_cast<FEFiberExpPowOld*>(pm));
+								FSFiberExpPow* pnewMat = new FSFiberExpPow;
+								pnewMat->Convert(dynamic_cast<FSFiberExpPowOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_FIBEREXPPOW_UNCOUPLED_OLD)
 							{
-								FEFiberExpPowUncoupled* pnewMat = new FEFiberExpPowUncoupled;
-								pnewMat->Convert(dynamic_cast<FEFiberExpPowUncoupledOld*>(pm));
+								FSFiberExpPowUncoupled* pnewMat = new FSFiberExpPowUncoupled;
+								pnewMat->Convert(dynamic_cast<FSFiberExpPowUncoupledOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_FIBERPOWLIN_COUPLED_OLD)
 							{
-								FEFiberPowLin* pnewMat = new FEFiberPowLin;
-								pnewMat->Convert(dynamic_cast<FEFiberPowLinOld*>(pm));
+								FSFiberPowLin* pnewMat = new FSFiberPowLin;
+								pnewMat->Convert(dynamic_cast<FSFiberPowLinOld*>(pm));
 								pm = pnewMat;
 							}
 							else if (nid == FE_FIBERPOWLIN_UNCOUPLED_OLD)
 							{
-								FEFiberPowLinUncoupled* pnewMat = new FEFiberPowLinUncoupled;
-								pnewMat->Convert(dynamic_cast<FEFiberPowLinUncoupledOld*>(pm));
+								FSFiberPowLinUncoupled* pnewMat = new FSFiberPowLinUncoupled;
+								pnewMat->Convert(dynamic_cast<FSFiberPowLinUncoupledOld*>(pm));
 								pm = pnewMat;
 							}
 
@@ -877,9 +877,9 @@ void FSMaterial::Load(IArchive &ar)
 						FSMaterial* pm = 0;
 						switch (nid)
 						{
-						case FE_TRANS_MOONEY_RIVLIN_OLD   : pm = new FETransMooneyRivlinOld; break;
-						case FE_TRANS_VERONDA_WESTMANN_OLD: pm = new FETransVerondaWestmannOld; break;
-						case FE_COUPLED_TRANS_ISO_MR_OLD  : pm = new FECoupledTransIsoMooneyRivlinOld; break;
+						case FE_TRANS_MOONEY_RIVLIN_OLD   : pm = new FSTransMooneyRivlinOld; break;
+						case FE_TRANS_VERONDA_WESTMANN_OLD: pm = new FSTransVerondaWestmannOld; break;
+						case FE_COUPLED_TRANS_ISO_MR_OLD  : pm = new FSCoupledTransIsoMooneyRivlinOld; break;
 						default:
 							pm = FEMaterialFactory::Create(nid);
 						}

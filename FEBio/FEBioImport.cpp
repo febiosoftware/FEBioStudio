@@ -324,13 +324,13 @@ bool FEBioImport::UpdateFEModel(FSModel& fem)
 		GMaterial* pm = fem.GetMaterial(i);
 		if (pm)
 		{
-			FERigidMaterial* pr = dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties());
+			FSRigidMaterial* pr = dynamic_cast<FSRigidMaterial*>(pm->GetMaterialProperties());
 			if (pr && (pr->m_pid != -1))
 			{
 				int pid = pr->m_pid - 1;
 				if ((pid < 0) || (pid >= nmat)) return errf("Invalid material ID for rigid body");
 				GMaterial* pp = fem.GetMaterial(pid);
-				if ((pp == 0) || (dynamic_cast<FERigidMaterial*>(pp->GetMaterialProperties()) == 0)) return errf("Invalid material for rigid body parent");
+				if ((pp == 0) || (dynamic_cast<FSRigidMaterial*>(pp->GetMaterialProperties()) == 0)) return errf("Invalid material for rigid body parent");
 				pr->m_pid = pp->GetID();
 			}
 		}

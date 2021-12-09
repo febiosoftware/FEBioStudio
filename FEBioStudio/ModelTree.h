@@ -36,7 +36,7 @@ class FEStep;
 class FSObject;
 class CObjectProps;
 class FSMaterial;
-class FEReactionMaterial;
+class FSReactionMaterial;
 class GMaterial;
 class FEProject;
 class FSModelComponent;
@@ -184,7 +184,7 @@ protected:
 	void UpdateMeshAdaptors(QTreeWidgetItem* t1, FSModel& fem);
 
 	void AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FSMaterial* pmat, FSModel& fem, bool topLevel);
-	void AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* mat, FSModel& fem);
+	void AddReactionMaterial(QTreeWidgetItem* item, FSReactionMaterial* mat, FSModel& fem);
 
 	CModelTreeItem* GetCurrentData();
 

@@ -1510,19 +1510,19 @@ bool AbaqusImport::build_physics()
 		case AbaqusModel::ELASTIC:
 			if (pm->ntype == 1)
 			{
-				pmat = new FEIsotropicElastic;
-				pmat->SetFloatValue(FEIsotropicElastic::MP_DENSITY, pm->dens);
-				pmat->SetFloatValue(FEIsotropicElastic::MP_E, pm->d[0]);
-				pmat->SetFloatValue(FEIsotropicElastic::MP_v, pm->d[1]);
+				pmat = new FSIsotropicElastic;
+				pmat->SetFloatValue(FSIsotropicElastic::MP_DENSITY, pm->dens);
+				pmat->SetFloatValue(FSIsotropicElastic::MP_E, pm->d[0]);
+				pmat->SetFloatValue(FSIsotropicElastic::MP_v, pm->d[1]);
 			}
 			break;
 		case AbaqusModel::HYPERELASTIC:
 			if (pm->ntype == 1)
 			{
-				pmat = new FEIncompNeoHookean;
-				pmat->SetFloatValue(FEIncompNeoHookean::MP_DENSITY, pm->dens);
-				pmat->SetFloatValue(FEIncompNeoHookean::MP_G, 2.0*pm->d[0]);
-				pmat->SetFloatValue(FEIncompNeoHookean::MP_K, 1.0 / pm->d[1]);
+				pmat = new FSIncompNeoHookean;
+				pmat->SetFloatValue(FSIncompNeoHookean::MP_DENSITY, pm->dens);
+				pmat->SetFloatValue(FSIncompNeoHookean::MP_G, 2.0*pm->d[0]);
+				pmat->SetFloatValue(FSIncompNeoHookean::MP_K, 1.0 / pm->d[1]);
 			}
 			break;
 		}

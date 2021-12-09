@@ -1316,7 +1316,7 @@ void FEBioFormat25::ParseBCRigidBody(FEStep* pstep, XMLTag& tag)
 	GMaterial* pgm = 0;
 	if (nid >= 0) pgm = febio.GetMaterial(nid);
 	int matid = (pgm ? pgm->GetID() : -1);
-	assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+	assert(dynamic_cast<FSRigidMaterial*>(pgm->GetMaterialProperties()));
 
 	// get the (optional) name 
 	bool hasName = false;
@@ -2266,7 +2266,7 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 			GMaterial* pgm = 0;
 			if (nid >= 0) pgm = febio.GetMaterial(nid);
 			int matid = (pgm ? pgm->GetID() : -1);
-			assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+			assert(dynamic_cast<FSRigidMaterial*>(pgm->GetMaterialProperties()));
 
 			++tag;
 			do

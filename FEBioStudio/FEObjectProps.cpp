@@ -481,10 +481,10 @@ void CMaterialProps::BuildPropertyList()
 	if (pm) BuildParamList(pm, true);
 
 	// add the fiber parameters
-	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pm);
+	FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(pm);
 	if (ptiso)
 	{
-		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
+		FSOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 
 		int NP = fiber->Parameters();
 		for (int i = 0; i<NP; ++i)
@@ -575,10 +575,10 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 	if (i<m_params.size()) return CObjectProps::GetPropertyValue(i);
 	i -= (int)m_params.size();
 
-	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(m_mat);
+	FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(m_mat);
 	if (ptiso)
 	{
-		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
+		FSOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 		if (i == 0) return fiber->m_naopt;
 
 		switch (fiber->m_naopt)
@@ -646,10 +646,10 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 	if (i<m_params.size()) CObjectProps::SetPropertyValue(i, v);
 	i -= (int)m_params.size();
 
-	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(m_mat);
+	FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(m_mat);
 	if (ptiso)
 	{
-		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
+		FSOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 		if (i == 0)
 		{
 			int naopt = v.toInt();
@@ -759,12 +759,12 @@ void CLogfileProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CReactionReactantProperties::CReactionReactantProperties(FEReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
+CReactionReactantProperties::CReactionReactantProperties(FSReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
 {
 	int NR = m_mat->Reactants();
 	for (int i = 0; i<NR; ++i)
 	{
-		FEReactantMaterial* pr = m_mat->Reactant(i);
+		FSReactantMaterial* pr = m_mat->Reactant(i);
 		int index = pr->GetIndex();
 
 		if (pr->GetReactantType() == 1)
@@ -784,23 +784,23 @@ CReactionReactantProperties::CReactionReactantProperties(FEReactionMaterial* mat
 
 QVariant CReactionReactantProperties::GetPropertyValue(int i)
 {
-	FEReactantMaterial* pr = m_mat->Reactant(i);
+	FSReactantMaterial* pr = m_mat->Reactant(i);
 	return pr->GetCoef();
 }
 
 void CReactionReactantProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	FEReactantMaterial* pr = m_mat->Reactant(i);
+	FSReactantMaterial* pr = m_mat->Reactant(i);
 	pr->SetCoeff(v.toInt());
 }
 
 //=======================================================================================
-CReactionProductProperties::CReactionProductProperties(FEReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
+CReactionProductProperties::CReactionProductProperties(FSReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
 {
 	int NP = m_mat->Products();
 	for (int i = 0; i<NP; ++i)
 	{
-		FEProductMaterial* pr = m_mat->Product(i);
+		FSProductMaterial* pr = m_mat->Product(i);
 		int index = pr->GetIndex();
 
 		if (pr->GetProductType() == 1)
@@ -820,13 +820,13 @@ CReactionProductProperties::CReactionProductProperties(FEReactionMaterial* mat, 
 
 QVariant CReactionProductProperties::GetPropertyValue(int i)
 {
-	FEProductMaterial* pr = m_mat->Product(i);
+	FSProductMaterial* pr = m_mat->Product(i);
 	return pr->GetCoef();
 }
 
 void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	FEProductMaterial* pr = m_mat->Product(i);
+	FSProductMaterial* pr = m_mat->Product(i);
 	pr->SetCoeff(v.toInt());
 }
 

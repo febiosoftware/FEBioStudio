@@ -311,39 +311,39 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 		case FE_ISOTROPIC_ELASTIC:
 			{
 				mat.ntype = 1;
-				FEIsotropicElastic* pm = dynamic_cast<FEIsotropicElastic*>(pmat);
-				mat.m[0][0] = pm->GetParam(FEIsotropicElastic::MP_E).GetFloatValue();
-				mat.m[1][0] = pm->GetParam(FEIsotropicElastic::MP_v).GetFloatValue();
-				mat.dens = pm->GetParam(FEIsotropicElastic::MP_DENSITY).GetFloatValue();
+				FSIsotropicElastic* pm = dynamic_cast<FSIsotropicElastic*>(pmat);
+				mat.m[0][0] = pm->GetParam(FSIsotropicElastic::MP_E).GetFloatValue();
+				mat.m[1][0] = pm->GetParam(FSIsotropicElastic::MP_v).GetFloatValue();
+				mat.dens = pm->GetParam(FSIsotropicElastic::MP_DENSITY).GetFloatValue();
 			}
 			break;
 		case FE_MOONEY_RIVLIN:
 			{
 				mat.ntype = 15;
-				FEMooneyRivlin* pm = dynamic_cast<FEMooneyRivlin*>(pmat);
-				double A = pm->GetParam(FEMooneyRivlin::MP_A).GetFloatValue();
-				double B = pm->GetParam(FEMooneyRivlin::MP_B).GetFloatValue();
-				double K = pm->GetParam(FEMooneyRivlin::MP_K).GetFloatValue();
+				FSMooneyRivlin* pm = dynamic_cast<FSMooneyRivlin*>(pmat);
+				double A = pm->GetParam(FSMooneyRivlin::MP_A).GetFloatValue();
+				double B = pm->GetParam(FSMooneyRivlin::MP_B).GetFloatValue();
+				double K = pm->GetParam(FSMooneyRivlin::MP_K).GetFloatValue();
 
 				mat.m[0][0] = A;
 				mat.m[1][0] = B;
 				mat.m[2][0] = (3*K - 4*(A+B))/(6*K+4*(A+B));
-				mat.dens = pm->GetParam(FEMooneyRivlin::MP_DENSITY).GetFloatValue();
+				mat.dens = pm->GetParam(FSMooneyRivlin::MP_DENSITY).GetFloatValue();
 			}
 			break;
 		case FE_OGDEN_MATERIAL:
 			{
 				mat.ntype = 63;
-				FEOgdenMaterial* pm = dynamic_cast<FEOgdenMaterial*>(pmat);
+				FSOgdenMaterial* pm = dynamic_cast<FSOgdenMaterial*>(pmat);
 				double c[3], m[3];
 				for (int i=0; i<3; ++i)
 				{
-					c[i] = pm->GetParam(FEOgdenMaterial::MP_C1+i).GetFloatValue();
-					m[i] = pm->GetParam(FEOgdenMaterial::MP_M1+i).GetFloatValue();
+					c[i] = pm->GetParam(FSOgdenMaterial::MP_C1+i).GetFloatValue();
+					m[i] = pm->GetParam(FSOgdenMaterial::MP_M1+i).GetFloatValue();
 				}
-				mat.dens = pm->GetParam(FEOgdenMaterial::MP_DENSITY).GetFloatValue();
+				mat.dens = pm->GetParam(FSOgdenMaterial::MP_DENSITY).GetFloatValue();
 
-				mat.m[0][0] = pm->GetParam(FEOgdenMaterial::MP_K).GetFloatValue();
+				mat.m[0][0] = pm->GetParam(FSOgdenMaterial::MP_K).GetFloatValue();
 				mat.m[0][1] = c[0] / m[0];
 				mat.m[0][2] = m[0];
 				mat.m[0][3] = c[1] / m[1];
@@ -355,18 +355,18 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 		case FE_TRANS_ISO_MOONEY_RIVLIN:
 			{
 				mat.ntype = 18;
-				FETransMooneyRivlin* pm = dynamic_cast<FETransMooneyRivlin*>(pmat);
-				FEOldFiberMaterial& f = *pm->GetFiberMaterial();
-				mat.m[0][0] = pm->GetFloatValue(FETransMooneyRivlin::MP_C1);
-				mat.m[0][1] = pm->GetFloatValue(FETransMooneyRivlin::MP_C2);
-				mat.m[0][2] = f.GetFloatValue(FETransMooneyRivlin::MP_C3);
-				mat.m[0][3] = f.GetFloatValue(FETransMooneyRivlin::MP_C4);
-				mat.m[0][4] = f.GetFloatValue(FETransMooneyRivlin::MP_C5);
+				FSTransMooneyRivlin* pm = dynamic_cast<FSTransMooneyRivlin*>(pmat);
+				FSOldFiberMaterial& f = *pm->GetFiberMaterial();
+				mat.m[0][0] = pm->GetFloatValue(FSTransMooneyRivlin::MP_C1);
+				mat.m[0][1] = pm->GetFloatValue(FSTransMooneyRivlin::MP_C2);
+				mat.m[0][2] = f.GetFloatValue(FSTransMooneyRivlin::MP_C3);
+				mat.m[0][3] = f.GetFloatValue(FSTransMooneyRivlin::MP_C4);
+				mat.m[0][4] = f.GetFloatValue(FSTransMooneyRivlin::MP_C5);
 						
-				mat.m[1][0] = pm->GetFloatValue(FETransMooneyRivlin::MP_K);
-				mat.m[1][1] = f.GetFloatValue(FETransMooneyRivlin::MP_LAM);
+				mat.m[1][0] = pm->GetFloatValue(FSTransMooneyRivlin::MP_K);
+				mat.m[1][1] = f.GetFloatValue(FSTransMooneyRivlin::MP_LAM);
 
-				mat.dens = pm->GetParam(FETransMooneyRivlin::MP_DENSITY).GetFloatValue();
+				mat.dens = pm->GetParam(FSTransMooneyRivlin::MP_DENSITY).GetFloatValue();
 					
 				if (f.m_naopt == FE_FIBER_LOCAL) 
 				{
@@ -407,11 +407,11 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 		case FE_RIGID_MATERIAL:
 			{
 				mat.ntype = 20;
-				FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pmat);
-				mat.dens = pm->GetFloatValue(FERigidMaterial::MP_DENSITY);
+				FSRigidMaterial* pm = dynamic_cast<FSRigidMaterial*>(pmat);
+				mat.dens = pm->GetFloatValue(FSRigidMaterial::MP_DENSITY);
 
-				mat.m[0][0] = pm->GetFloatValue(FERigidMaterial::MP_E);
-				mat.m[1][0] = pm->GetFloatValue(FERigidMaterial::MP_V);
+				mat.m[0][0] = pm->GetFloatValue(FSRigidMaterial::MP_E);
+				mat.m[1][0] = pm->GetFloatValue(FSRigidMaterial::MP_V);
 
 				// we need to loop over all the rigid constraints for this step
 				// and set the material properties accordingly
@@ -440,8 +440,8 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 					}
 				}
 				
-				vec3d rc = pm->GetVecValue(FERigidMaterial::MP_RC);
-				bool bcom = pm->GetBoolValue(FERigidMaterial::MP_COM);
+				vec3d rc = pm->GetVecValue(FSRigidMaterial::MP_RC);
+				bool bcom = pm->GetBoolValue(FSRigidMaterial::MP_COM);
 				mat.m[3][0] = (bcom? 1 : 0);
 				mat.m[3][1] = (bcom? rc.x: 0);
 				mat.m[3][2] = (bcom? rc.y: 0);
@@ -451,11 +451,11 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 		case FE_VISCO_ELASTIC:
 			{
 				mat.ntype = 18;
-				FEViscoElastic* pm = dynamic_cast<FEViscoElastic*>(pmat);
+				FSViscoElastic* pm = dynamic_cast<FSViscoElastic*>(pmat);
 				FSMaterial* psub = pm->GetElasticMaterial();
 
-				int G1 = FEViscoElastic::MP_G1;
-				int T1 = FEViscoElastic::MP_T1;
+				int G1 = FSViscoElastic::MP_G1;
+				int T1 = FSViscoElastic::MP_T1;
 
 				mat.m[0][5] = pm->GetFloatValue(G1  ); mat.m[0][6] = pm->GetFloatValue(G1+1); mat.m[0][7] = pm->GetFloatValue(G1+2);
 				mat.m[1][5] = pm->GetFloatValue(T1  ); mat.m[1][6] = pm->GetFloatValue(T1+1); mat.m[1][7] = pm->GetFloatValue(T1+2);
@@ -464,10 +464,10 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 
 				if (psub && (psub->Type() == FE_MOONEY_RIVLIN))
 				{
-					FEMooneyRivlin* pmat = dynamic_cast<FEMooneyRivlin*>(psub);
-					double A = pmat->GetParam(FEMooneyRivlin::MP_A).GetFloatValue();
-					double B = pmat->GetParam(FEMooneyRivlin::MP_B).GetFloatValue();
-					double K = pmat->GetParam(FEMooneyRivlin::MP_K).GetFloatValue();
+					FSMooneyRivlin* pmat = dynamic_cast<FSMooneyRivlin*>(psub);
+					double A = pmat->GetParam(FSMooneyRivlin::MP_A).GetFloatValue();
+					double B = pmat->GetParam(FSMooneyRivlin::MP_B).GetFloatValue();
+					double K = pmat->GetParam(FSMooneyRivlin::MP_K).GetFloatValue();
 
 					mat.m[0][0] = A;
 					mat.m[1][0] = B;

@@ -211,7 +211,7 @@ bool FEBioExport4::PrepareExport(FEProject& prj)
 	if (model.ShellElements() > 0) m_bdata = true;	// for shell thicknesses
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
-		FETransverselyIsotropic* pmat = dynamic_cast<FETransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
+		FSTransverselyIsotropic* pmat = dynamic_cast<FSTransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
 		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) m_bdata = true;
 	}
 	for (int i = 0; i < model.Objects(); ++i)
@@ -1986,8 +1986,8 @@ void FEBioExport4::WriteMeshDataMaterialFibers()
 		const Transform& T = po->GetTransform();
 
 		GMaterial* pmat = fem.GetMaterialFromID(elSet.m_matID);
-		FETransverselyIsotropic* ptiso = 0;
-		if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
+		FSTransverselyIsotropic* ptiso = 0;
+		if (pmat) ptiso = dynamic_cast<FSTransverselyIsotropic*>(pmat->GetMaterialProperties());
 
 		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 		{

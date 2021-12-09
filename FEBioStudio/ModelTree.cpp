@@ -1770,9 +1770,9 @@ void CModelTree::UpdateMaterials(QTreeWidgetItem* t1, FSModel& fem)
 void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FSMaterial* pmat, FSModel& fem, bool topLevel)
 {
 /*	// reaction materials's structure is somewhat cumbersome, so we provide an alternative representation
-	if (dynamic_cast<FEReactionMaterial*>(pmat))
+	if (dynamic_cast<FSReactionMaterial*>(pmat))
 	{
-		AddReactionMaterial(item, dynamic_cast<FEReactionMaterial*>(pmat), fem);
+		AddReactionMaterial(item, dynamic_cast<FSReactionMaterial*>(pmat), fem);
 		return;
 	}
 */
@@ -1841,7 +1841,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* mat, FSModel& fem)
+void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FSReactionMaterial* mat, FSModel& fem)
 {
 	// add reaction material first
 	QString name;

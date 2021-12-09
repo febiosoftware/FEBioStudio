@@ -33,14 +33,14 @@ class FSModel;
 class GMaterial;
 class FSFixedDOF;
 class FSPrescribedDOF;
-class FESoluteMaterial;
+class FSSoluteMaterial;
 class FSAnalysisStep;
 class FSRigidInterface;
 class FSRigidConstraint;
 class FSRigidConnector;
 class FEProject;
 class Param;
-class FEReactionMaterial;
+class FSReactionMaterial;
 class FSMaterial;
 class GPart;
 class FEStep;
@@ -173,28 +173,28 @@ public:
 class CReactionReactantProperties : public CObjectProps
 {
 public:
-	CReactionReactantProperties(FEReactionMaterial* mat, FSModel& fem);
+	CReactionReactantProperties(FSReactionMaterial* mat, FSModel& fem);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FEReactionMaterial*	m_mat;
+	FSReactionMaterial*	m_mat;
 	int					m_nsols;
 };
 
 class CReactionProductProperties : public CObjectProps
 {
 public:
-	CReactionProductProperties(FEReactionMaterial* mat, FSModel& fem);
+	CReactionProductProperties(FSReactionMaterial* mat, FSModel& fem);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FEReactionMaterial*	m_mat;
+	FSReactionMaterial*	m_mat;
 	int					m_nsols;
 };
 

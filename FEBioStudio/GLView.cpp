@@ -2858,7 +2858,7 @@ void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& 
 
 		// This vector is defined in global coordinates, except for user-defined fibers, which
 		// are assumed to be in local coordinates
-		FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat);
+		FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(pmat);
 		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 		{
 			q = po->GetTransform().LocalToGlobalNormal(q);
@@ -3495,14 +3495,14 @@ void CGLView::RenderRigidBodies()
 	for (int i = 0; i<ps->Materials(); ++i)
 	{
 		GMaterial* pm = ps->GetMaterial(i);
-		FERigidMaterial* pb = dynamic_cast<FERigidMaterial*> (pm->GetMaterialProperties());
+		FSRigidMaterial* pb = dynamic_cast<FSRigidMaterial*> (pm->GetMaterialProperties());
 		if (pb)
 		{
 			GLColor c = pm->Diffuse();
 
 			glColor3ub(c.r, c.g, c.b);
 
-			vec3d r = pb->GetVecValue(FERigidMaterial::MP_RC);
+			vec3d r = pb->GetVecValue(FSRigidMaterial::MP_RC);
 
 			glPushMatrix();
 			glTranslatef((float)r.x, (float)r.y, (float)r.z);
@@ -3514,12 +3514,12 @@ void CGLView::RenderRigidBodies()
 			// get the parent
 			if (pb->m_pid != -1)
 			{
-				FERigidMaterial* pp = dynamic_cast<FERigidMaterial*>(ps->GetMaterialFromID(pb->m_pid)->GetMaterialProperties());
+				FSRigidMaterial* pp = dynamic_cast<FSRigidMaterial*>(ps->GetMaterialFromID(pb->m_pid)->GetMaterialProperties());
 				assert(pp);
 
 				glColor3ub(50, 50, 255);
-				vec3d r0 = pb->GetVecValue(FERigidMaterial::MP_RC);
-				vec3d r1 = pp->GetVecValue(FERigidMaterial::MP_RC);
+				vec3d r0 = pb->GetVecValue(FSRigidMaterial::MP_RC);
+				vec3d r1 = pp->GetVecValue(FSRigidMaterial::MP_RC);
 
 				double l = (r1 - r0).Length();
 				vec3d el = r0 - r1; el.Normalize();
@@ -9055,7 +9055,7 @@ void CGLView::RenderRigidLabels()
 	for (int i = 0; i < fem->Materials(); ++i)
 	{
 		GMaterial* mat = fem->GetMaterial(i);
-		FERigidMaterial* rb = dynamic_cast<FERigidMaterial*>(mat->GetMaterialProperties());
+		FSRigidMaterial* rb = dynamic_cast<FSRigidMaterial*>(mat->GetMaterialProperties());
 		if (rb)
 		{
 			GLTAG tag;

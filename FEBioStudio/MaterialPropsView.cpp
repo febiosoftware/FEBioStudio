@@ -177,7 +177,7 @@ public:
 			return item;
 		}
 
-		void addFiberParameters(FEOldFiberMaterial* pm)
+		void addFiberParameters(FSOldFiberMaterial* pm)
 		{
 			pm->UpdateData(false);
 			for (int i = 0; i < pm->Parameters(); ++i)
@@ -204,7 +204,7 @@ public:
 						addChild(pm, i, -1, 0);
 					else if (p.IsPersistent() == false)
 					{
-						const FEMultiMaterial* mmat = dynamic_cast<const FEMultiMaterial*>(pm->GetParentMaterial());
+						const FSMultiMaterial* mmat = dynamic_cast<const FSMultiMaterial*>(pm->GetParentMaterial());
 						if (mmat)
 						{
 							addChild(pm, i, -1, 0);
@@ -218,9 +218,9 @@ public:
 		{
 			addParameters(pm);
 
-			if (dynamic_cast<FETransverselyIsotropic*>(pm))
+			if (dynamic_cast<FSTransverselyIsotropic*>(pm))
 			{
-				FETransverselyIsotropic* tiso = dynamic_cast<FETransverselyIsotropic*>(pm);
+				FSTransverselyIsotropic* tiso = dynamic_cast<FSTransverselyIsotropic*>(pm);
 				addFiberParameters(tiso->GetFiberMaterial());
 			}
 			else if (pm->HasMaterialAxes())
@@ -417,19 +417,19 @@ public:
 						bool required = (p.GetFlags() & FSMaterialProperty::REQUIRED);
 						return QString(required ? "(select)" : "(none)");
 					}
-					else   if (dynamic_cast<FEReactionSpecies*>(pm))
+					else   if (dynamic_cast<FSReactionSpecies*>(pm))
 					{
 						FSModel* fem = GetFSModel();
-						FEReactionSpecies* prm = dynamic_cast<FEReactionSpecies*>(pm);
+						FSReactionSpecies* prm = dynamic_cast<FSReactionSpecies*>(pm);
 
 						int ntype = prm->GetSpeciesType();
 						int index = prm->GetIndex();
 						const char* sz = nullptr;
-						if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+						if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
 						{
 							sz = fem->GetVariableName("$(Solutes)", index);
 						}
-						else if (ntype == FEReactionSpecies::SBM_SPECIES)
+						else if (ntype == FSReactionSpecies::SBM_SPECIES)
 						{
 							sz = fem->GetVariableName("$(SBMs)", index);
 						}
@@ -514,9 +514,9 @@ public:
 					{
 						FSMaterial* oldMat = m_pm->GetProperty(m_propId).GetMaterial(m_matIndex);
 
-						if (dynamic_cast<FEReactionSpecies*>(oldMat))
+						if (dynamic_cast<FSReactionSpecies*>(oldMat))
 						{
-							FEReactionSpecies* rs = dynamic_cast<FEReactionSpecies*>(oldMat);
+							FSReactionSpecies* rs = dynamic_cast<FSReactionSpecies*>(oldMat);
 							rs->SetIndex(matId);
 							return true;
 						}
@@ -800,18 +800,18 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 
 			QComboBox* pc = new QComboBox(parent);
 
-			if (dynamic_cast<FEReactionSpecies*>(pmat))
+			if (dynamic_cast<FSReactionSpecies*>(pmat))
 			{
-				FEReactionSpecies* rs = dynamic_cast<FEReactionSpecies*>(pmat);
+				FSReactionSpecies* rs = dynamic_cast<FSReactionSpecies*>(pmat);
 				FSModel& fem = *item->GetFSModel();
 				int ntype = rs->GetSpeciesType();
 				int index = rs->GetIndex();
 				char buf[1024] = { 0 };
-				if (ntype == FEReactionSpecies::SBM_SPECIES)
+				if (ntype == FSReactionSpecies::SBM_SPECIES)
 				{
 					fem.GetVariableNames("$(SBMs)", buf);
 				}
-				else if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+				else if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
 				{
 					fem.GetVariableNames("$(Solutes)", buf);
 				}

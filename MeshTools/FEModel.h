@@ -51,7 +51,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class GModel;
-class FEReactionMaterial;
+class FSReactionMaterial;
 
 //-----------------------------------------------------------------------------
 //! The FE model stores all FE data.
@@ -179,7 +179,7 @@ public:
 	void ClearSBMs();
     
     int Reactions();
-    FEReactionMaterial* GetReaction(int id);
+    FSReactionMaterial* GetReaction(int id);
 
 	// find (and assign) the group's parent
 	bool FindGroupParent(FEGroup* pg);

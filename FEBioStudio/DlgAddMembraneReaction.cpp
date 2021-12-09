@@ -376,7 +376,7 @@ void CDlgAddMembraneReaction::onReactionChanged(int n)
         FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
         if (react)
         {
-            FEMembraneReactionMaterial* r = dynamic_cast<FEMembraneReactionMaterial*>(react->GetMaterial(n));
+            FSMembraneReactionMaterial* r = dynamic_cast<FSMembraneReactionMaterial*>(react->GetMaterial(n));
             SetReaction(r);
         }
     }
@@ -405,7 +405,7 @@ void CDlgAddMembraneReaction::SetMaterial(GMaterial* mat, FSModel& fem)
         int N = react->Size();
         for (int i=0; i<N; ++i)
         {
-            FEMembraneReactionMaterial* r = dynamic_cast<FEMembraneReactionMaterial*>(react->GetMaterial(i)); assert(r);
+            FSMembraneReactionMaterial* r = dynamic_cast<FSMembraneReactionMaterial*>(react->GetMaterial(i)); assert(r);
             if (r)
             {
                 string name = r->GetName();
@@ -428,7 +428,7 @@ void CDlgAddMembraneReaction::onAddReaction()
     FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     // create a default material
-    FEMembraneReactionMaterial* r = dynamic_cast<FEMembraneReactionMaterial*>(FEMaterialFactory::Create(FE_MMASS_ACTION_FORWARD)); assert(r);
+    FSMembraneReactionMaterial* r = dynamic_cast<FSMembraneReactionMaterial*>(FEMaterialFactory::Create(FE_MMASS_ACTION_FORWARD)); assert(r);
     react->AddMaterial(r);
     
     stringstream ss;
@@ -470,7 +470,7 @@ void CDlgAddMembraneReaction::onRemoveReaction()
     SetMaterial(m_pmp, fem);
 }
 
-void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
+void CDlgAddMembraneReaction::SetReaction(FSMembraneReactionMaterial* mat)
 {
     // see if we have a reaction present
     if (m_reaction)
@@ -522,7 +522,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         
         // see if the parent material has this reactant
         bool bvalid = true;
-        FEMultiphasicMaterial* mp = dynamic_cast<FEMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
+        FSMultiphasicMaterial* mp = dynamic_cast<FSMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
         if (mp)
         {
             if (spec.second < 0x100)
@@ -538,10 +538,10 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         bool bfound = false;
         for (int j=0; j<nr; ++j)
         {
-            FEReactantMaterial* rm = mat->Reactant(j);
+            FSReactantMaterial* rm = mat->Reactant(j);
             
             int index = spec.second;
-            if (rm->GetReactantType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
+            if (rm->GetReactantType() == FSReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -564,7 +564,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         
         // see if the parent material has this product
         bool bvalid = true;
-        FEMultiphasicMaterial* mp = dynamic_cast<FEMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
+        FSMultiphasicMaterial* mp = dynamic_cast<FSMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
         if (mp)
         {
             if (spec.second < 0x100)
@@ -580,10 +580,10 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         bool bfound = false;
         for (int j = 0; j<np; ++j)
         {
-            FEProductMaterial* rm = mat->Product(j);
+            FSProductMaterial* rm = mat->Product(j);
             
             int index = spec.second;
-            if (rm->GetProductType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
+            if (rm->GetProductType() == FSReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -606,7 +606,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         
         // see if the parent material has this reactant
         bool bvalid = true;
-        FEMultiphasicMaterial* mp = dynamic_cast<FEMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
+        FSMultiphasicMaterial* mp = dynamic_cast<FSMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
         if (mp)
         {
             if (spec.second < 0x100)
@@ -622,10 +622,10 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         bool bfound = false;
         for (int j=0; j<nri; ++j)
         {
-            FEInternalReactantMaterial* rm = mat->InternalReactant(j);
+            FSInternalReactantMaterial* rm = mat->InternalReactant(j);
             
             int index = spec.second;
-            if (rm->GetReactantType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
+            if (rm->GetReactantType() == FSReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -648,7 +648,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         
         // see if the parent material has this product
         bool bvalid = true;
-        FEMultiphasicMaterial* mp = dynamic_cast<FEMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
+        FSMultiphasicMaterial* mp = dynamic_cast<FSMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
         if (mp)
         {
             if (spec.second < 0x100)
@@ -664,10 +664,10 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         bool bfound = false;
         for (int j = 0; j<npi; ++j)
         {
-            FEInternalProductMaterial* rm = mat->InternalProduct(j);
+            FSInternalProductMaterial* rm = mat->InternalProduct(j);
             
             int index = spec.second;
-            if (rm->GetProductType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
+            if (rm->GetProductType() == FSReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -690,7 +690,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         
         // see if the parent material has this reactant
         bool bvalid = true;
-        FEMultiphasicMaterial* mp = dynamic_cast<FEMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
+        FSMultiphasicMaterial* mp = dynamic_cast<FSMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
         if (mp)
         {
             if (spec.second < 0x100)
@@ -706,10 +706,10 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         bool bfound = false;
         for (int j=0; j<nre; ++j)
         {
-            FEExternalReactantMaterial* rm = mat->ExternalReactant(j);
+            FSExternalReactantMaterial* rm = mat->ExternalReactant(j);
             
             int index = spec.second;
-            if (rm->GetReactantType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
+            if (rm->GetReactantType() == FSReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -732,7 +732,7 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         
         // see if the parent material has this product
         bool bvalid = true;
-        FEMultiphasicMaterial* mp = dynamic_cast<FEMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
+        FSMultiphasicMaterial* mp = dynamic_cast<FSMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
         if (mp)
         {
             if (spec.second < 0x100)
@@ -748,10 +748,10 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
         bool bfound = false;
         for (int j = 0; j<npe; ++j)
         {
-            FEExternalProductMaterial* rm = mat->ExternalProduct(j);
+            FSExternalProductMaterial* rm = mat->ExternalProduct(j);
             
             int index = spec.second;
-            if (rm->GetProductType() == FEReactionSpecies::SBM_SPECIES) index -= 0x100;
+            if (rm->GetProductType() == FSReactionSpecies::SBM_SPECIES) index -= 0x100;
             
             if (index == rm->GetIndex())
             {
@@ -853,7 +853,7 @@ void CDlgAddMembraneReaction::apply()
     if (m_reactionMat != m_reaction->Type())
     {
         // we need to create a new material
-        FEMembraneReactionMaterial* pmat = dynamic_cast<FEMembraneReactionMaterial*>(FEMaterialFactory::Create(m_reactionMat)); assert(pmat);
+        FSMembraneReactionMaterial* pmat = dynamic_cast<FSMembraneReactionMaterial*>(FEMaterialFactory::Create(m_reactionMat)); assert(pmat);
         if (pmat == 0) return;
         
         // find the property
@@ -904,36 +904,36 @@ void CDlgAddMembraneReaction::apply()
         // add the solute reactants
         for (int i = 0; i<(int)m_solR.size(); ++i)
         {
-            FEReactantMaterial* ps = new FEReactantMaterial;
+            FSReactantMaterial* ps = new FSReactantMaterial;
             ps->SetIndex(m_solR[i]);
-            ps->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
+            ps->SetReactantType(FSReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddReactantMaterial(ps);
         }
         
         // add the internal solute reactants
         for (int i = 0; i<(int)m_solRi.size(); ++i)
         {
-            FEInternalReactantMaterial* ps = new FEInternalReactantMaterial;
+            FSInternalReactantMaterial* ps = new FSInternalReactantMaterial;
             ps->SetIndex(m_solRi[i]);
-            ps->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
+            ps->SetReactantType(FSReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddInternalReactantMaterial(ps);
         }
         
         // add the external solute reactants
         for (int i = 0; i<(int)m_solRe.size(); ++i)
         {
-            FEExternalReactantMaterial* ps = new FEExternalReactantMaterial;
+            FSExternalReactantMaterial* ps = new FSExternalReactantMaterial;
             ps->SetIndex(m_solRe[i]);
-            ps->SetReactantType(FEReactionSpecies::SOLUTE_SPECIES);
+            ps->SetReactantType(FSReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddExternalReactantMaterial(ps);
         }
         
         // add the sbm reactants
         for (int i = 0; i<(int)m_sbmR.size(); ++i)
         {
-            FEReactantMaterial* ps = new FEReactantMaterial;
+            FSReactantMaterial* ps = new FSReactantMaterial;
             ps->SetIndex(m_sbmR[i]);
-            ps->SetReactantType(FEReactionSpecies::SBM_SPECIES);
+            ps->SetReactantType(FSReactionSpecies::SBM_SPECIES);
             m_reaction->AddReactantMaterial(ps);
         }
     }
@@ -951,36 +951,36 @@ void CDlgAddMembraneReaction::apply()
         // add the solute products
         for (int i = 0; i<(int)m_solP.size(); ++i)
         {
-            FEProductMaterial* ps = new FEProductMaterial;
+            FSProductMaterial* ps = new FSProductMaterial;
             ps->SetIndex(m_solP[i]);
-            ps->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
+            ps->SetProductType(FSReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddProductMaterial(ps);
         }
         
         // add the internal solute products
         for (int i = 0; i<(int)m_solPi.size(); ++i)
         {
-            FEInternalProductMaterial* ps = new FEInternalProductMaterial;
+            FSInternalProductMaterial* ps = new FSInternalProductMaterial;
             ps->SetIndex(m_solPi[i]);
-            ps->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
+            ps->SetProductType(FSReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddInternalProductMaterial(ps);
         }
         
         // add the external solute products
         for (int i = 0; i<(int)m_solPe.size(); ++i)
         {
-            FEExternalProductMaterial* ps = new FEExternalProductMaterial;
+            FSExternalProductMaterial* ps = new FSExternalProductMaterial;
             ps->SetIndex(m_solPe[i]);
-            ps->SetProductType(FEReactionSpecies::SOLUTE_SPECIES);
+            ps->SetProductType(FSReactionSpecies::SOLUTE_SPECIES);
             m_reaction->AddExternalProductMaterial(ps);
         }
         
         // add the sbm products
         for (int i = 0; i<(int)m_sbmP.size(); ++i)
         {
-            FEProductMaterial* ps = new FEProductMaterial;
+            FSProductMaterial* ps = new FSProductMaterial;
             ps->SetIndex(m_sbmP[i]);
-            ps->SetProductType(FEReactionSpecies::SBM_SPECIES);
+            ps->SetProductType(FSReactionSpecies::SBM_SPECIES);
             m_reaction->AddProductMaterial(ps);
         }
     }
