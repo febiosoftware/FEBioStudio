@@ -29,40 +29,40 @@ SOFTWARE.*/
 #include <exception>
 #include <sstream>
 
-FEModelComponent::FEModelComponent()
+FSModelComponent::FSModelComponent()
 {
 	m_superClassID = -1;
 	m_sztype = "(unknown)";
 }
 
-int FEModelComponent::GetSuperClassID() const 
+int FSModelComponent::GetSuperClassID() const
 { 
 	return m_superClassID; 
 }
 
-void FEModelComponent::SetSuperClassID(int superClassID)
+void FSModelComponent::SetSuperClassID(int superClassID)
 {
 	m_superClassID = superClassID;
 }
 
-void FEModelComponent::SetTypeString(const char* sztype)
+void FSModelComponent::SetTypeString(const char* sztype)
 { 
 	m_sztype = sztype; 
 }
 
-const char* FEModelComponent::GetTypeString() 
+const char* FSModelComponent::GetTypeString() 
 { 
 	return m_sztype; 
 }
 
 //==============================================================================
-void SaveClassMetaData(FEModelComponent* pc, OArchive& ar)
+void SaveClassMetaData(FSModelComponent* pc, OArchive& ar)
 {
 	string typeStr(pc->GetTypeString());
 	ar.WriteChunk(CID_FEBIO_TYPE_STRING, typeStr);
 }
 
-void LoadClassMetaData(FEModelComponent* pc, IArchive& ar)
+void LoadClassMetaData(FSModelComponent* pc, IArchive& ar)
 {
 	TRACE("LoadClassMetaData");
 	int superClassId = pc->GetSuperClassID(); assert(superClassId > 0);

@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <vector>
 #include <string>
 
-class FEModelComponent;
+class FSModelComponent;
 class FEMaterial;
 class FEBioMaterial;
 class FEBioDiscreteMaterial;
@@ -45,8 +45,8 @@ class FSModel;
 
 namespace FEBio {
 
-	bool CreateModelComponent(int classId, FEModelComponent* po);
-	bool CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po);
+	bool CreateModelComponent(int classId, FSModelComponent* po);
+	bool CreateModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po);
 	void CreateMaterial(int classId, FEBioMaterial* po);
 	bool CreateMaterial(const char* sztype, FEBioMaterial* po);
 	void CreateMaterialProperty(int superClassID, const char* sztype, FEBioMaterial* po);

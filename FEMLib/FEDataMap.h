@@ -1,11 +1,11 @@
 #pragma once
 #include "FEBase.h"
 
-class FEModelComponent;
+class FSModelComponent;
 
 //-------------------------------------------------------------------
 // Class that represents a data map, which is mapped to a model parameter
-class FEDataMapGenerator : public FEBase
+class FEDataMapGenerator : public FSBase
 {
 public:
 	FEDataMapGenerator();

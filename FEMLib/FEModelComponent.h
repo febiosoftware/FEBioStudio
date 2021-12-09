@@ -4,10 +4,10 @@
 
 //-----------------------------------------------------------------------------
 // Base class for components of an FSModel
-class FEModelComponent : public FEBase
+class FSModelComponent : public FSBase
 {
 public:
-	FEModelComponent();
+	FSModelComponent();
 
 	int GetSuperClassID() const;
 
@@ -24,5 +24,5 @@ protected:
 };
 
 
-void SaveClassMetaData(FEModelComponent* pc, OArchive& ar);
-void LoadClassMetaData(FEModelComponent* pc, IArchive& ar);
+void SaveClassMetaData(FSModelComponent* pc, OArchive& ar);
+void LoadClassMetaData(FSModelComponent* pc, IArchive& ar);

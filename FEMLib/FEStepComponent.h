@@ -4,7 +4,7 @@
 
 //-----------------------------------------------------------------------------
 // Base class for all objects that are assigned to a step
-class FEStepComponent : public FEModelComponent
+class FEStepComponent : public FSModelComponent
 {
 public:
 	FEStepComponent();

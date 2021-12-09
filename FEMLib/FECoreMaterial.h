@@ -115,7 +115,7 @@ class FEAxisMaterial;
 //! FEMaterial is the base class for all materials
 //! It essentially collects material parameters (via the FEParamContainer base class) and
 //! contains a list of material properties. 
-class FEMaterial : public FEModelComponent
+class FEMaterial : public FSModelComponent
 {
 public:
 	FEMaterial(int ntype);

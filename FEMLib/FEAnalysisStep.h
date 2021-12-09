@@ -49,7 +49,7 @@ public:
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
 //-----------------------------------------------------------------------------
-class FEStep : public FEModelComponent
+class FEStep : public FSModelComponent
 {
 	class Imp;
 

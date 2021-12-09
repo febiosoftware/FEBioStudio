@@ -152,7 +152,7 @@ void map_parameters(FEBio::FEBioClass* feb, FSObject* po)
 	}
 }
 
-bool FEBio::CreateModelComponent(int classId, FEModelComponent* po)
+bool FEBio::CreateModelComponent(int classId, FSModelComponent* po)
 {
 	// create the FEBioClass object
 	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
@@ -200,7 +200,7 @@ bool FEBio::CreateModelComponent(int classId, FEModelComponent* po)
 	return true;
 }
 
-bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, FEModelComponent* po)
+bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po)
 {
 	bool ret = true;
 
