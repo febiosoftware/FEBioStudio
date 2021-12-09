@@ -58,7 +58,7 @@ public:
 	bool Load(const char* szfile);
 
 protected:
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 
 protected:
 	list<NODE>	m_Node;

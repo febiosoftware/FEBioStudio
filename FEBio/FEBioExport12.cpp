@@ -79,7 +79,7 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 {
 	if (FEBioExport::PrepareExport(prj) == false) return false;
 
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 	GModel& model = fem.GetModel();
 
 	m_nodes = model.FENodes();
@@ -138,7 +138,7 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 bool FEBioExport12::Write(const char* szfile)
 {
 	// get the project and model
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// prepare for export
@@ -583,7 +583,7 @@ void FEBioExport12::WriteMaterialSection()
 {
 	XMLElement el;
 
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 
 
 	for (int i = 0; i<s.Materials(); ++i)
@@ -1158,7 +1158,7 @@ void FEBioExport12::WriteGeometrySection()
 {
 	XMLElement el;
 
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	vec3d r;
@@ -1198,7 +1198,7 @@ void FEBioExport12::WriteGeometrySection()
 //-----------------------------------------------------------------------------
 void FEBioExport12::WriteGeometryNodes()
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	XMLWriter::SetFloatFormat(XMLWriter::ScientificFormat);
@@ -1234,7 +1234,7 @@ void FEBioExport12::WriteGeometryNodes()
 //-----------------------------------------------------------------------------
 void FEBioExport12::WriteGeometryElements()
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	// elements
@@ -1450,7 +1450,7 @@ void FEBioExport12::WriteGeometryElements()
 //-----------------------------------------------------------------------------
 void FEBioExport12::WriteGeometryElementData()
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	m_xml.add_branch("ElementData");
@@ -1614,7 +1614,7 @@ void FEBioExport12::WriteLoadsSection(FEStep& s)
 //
 void FEBioExport12::WriteDiscrete()
 {
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 	GModel& model = fem.GetModel();
 	for (int i = 0; i<model.DiscreteObjects(); ++i)
 	{
@@ -3681,7 +3681,7 @@ void FEBioExport12::WriteLoadTraction(FEStep& s)
 //
 void FEBioExport12::WriteInitialSection()
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	FEStep& s = *fem.GetStep(0);
 
 	vector<int> VC; VC.resize(m_nodes);
@@ -3900,7 +3900,7 @@ void FEBioExport12::WriteHeatSources(FEStep& s)
 void FEBioExport12::WriteGlobalsSection()
 {
 	XMLElement el;
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 
 	if (fem.Parameters())
 	{
@@ -4119,7 +4119,7 @@ void FEBioExport12::WriteOutputSection()
 		else m_xml.add_empty(p);
 	}
 
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	N = log.LogDataSize();

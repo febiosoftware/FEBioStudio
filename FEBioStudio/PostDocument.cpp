@@ -117,7 +117,7 @@ void ModelData::ReadData(Post::CGLModel* po)
 	}
 
 	// displacement map
-	Post::FEPostModel* ps = po->GetFEModel();
+	Post::FEPostModel* ps = po->GetFSModel();
 	m_dmap.m_nfield = ps->GetDisplacementField();
 
 	// materials 
@@ -164,7 +164,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 	}
 
 	// displacement map
-	Post::FEPostModel* ps = po->GetFEModel();
+	Post::FEPostModel* ps = po->GetFSModel();
 	ps->SetDisplacementField(m_dmap.m_nfield);
 
 	// materials
@@ -314,7 +314,7 @@ bool CPostDocument::Initialize()
 		// map colors from modeldoc
 		if (m_doc)
 		{
-			::FEModel& docfem = *m_doc->GetFEModel();
+			FSModel& docfem = *m_doc->GetFSModel();
 			GModel* mdl = m_doc->GetGModel();
 
 			int mats = docfem.Materials();
@@ -359,7 +359,7 @@ int CPostDocument::GetStates()
 	return m_fem->GetStates();
 }
 
-Post::FEPostModel* CPostDocument::GetFEModel()
+Post::FEPostModel* CPostDocument::GetFSModel()
 {
 	return m_fem;
 }
@@ -458,7 +458,7 @@ std::string CPostDocument::GetFieldString()
 	if (IsValid())
 	{
 		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFEModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
 	}
 	else return "";
 }
@@ -471,7 +471,7 @@ float CPostDocument::GetTimeValue()
 
 float CPostDocument::GetTimeValue(int n)
 {
-	if (m_glm) return m_glm->GetFEModel()->GetTimeValue(n);
+	if (m_glm) return m_glm->GetFSModel()->GetTimeValue(n);
 	else return 0.f;
 }
 
@@ -602,7 +602,7 @@ std::string CPostDocument::GetFileName()
 
 bool CPostDocument::IsValid()
 {
-	return ((m_glm != nullptr) && (m_glm->GetFEModel() != nullptr) && (m_postObj != nullptr));
+	return ((m_glm != nullptr) && (m_glm->GetFSModel() != nullptr) && (m_postObj != nullptr));
 }
 
 void CPostDocument::ApplyPalette(const Post::CPalette& pal)
@@ -690,7 +690,7 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 {
 	if (fileName.empty()) return false;
 
-	Post::FEPostModel* fem = GetFEModel();
+	Post::FEPostModel* fem = GetFSModel();
 	if (fem == nullptr) return false;
 
 	XMLWriter xml;
@@ -892,7 +892,7 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 			if (tag == "open")
 			{
 				const char* szfile = tag.AttributeValue("file");
-				xpltFileReader xplt(GetFEModel());
+				xpltFileReader xplt(GetFSModel());
 				if (xplt.Load(szfile) == false)
 				{
 					return false;
@@ -945,7 +945,7 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 				{
 					mdl.AddDisplacementMap("Displacement");
 				}
-				int nstates = mdl.GetFEModel()->GetStates();
+				int nstates = mdl.GetFSModel()->GetStates();
 				for (int i = 0; i < nstates; ++i) mdl.UpdateDisplacements(i, true);
 			}
 			else if (tag == "material")

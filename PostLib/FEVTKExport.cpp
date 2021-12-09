@@ -234,7 +234,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 	int nodes = mesh.Nodes();
 
 	fprintf(m_fp, "\nPOINT_DATA %d\n", nodes);
-	FEPostModel& fem = *ps->GetFEModel();
+	FEPostModel& fem = *ps->GetFSModel();
 	FEDataManager& DM = *fem.GetDataManager();
 	FEDataFieldPtr pd = DM.FirstDataField();
 	for (int n = 0; n<NDATA; ++n, ++pd)
@@ -332,7 +332,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 //-----------------------------------------------------------------------------
 void FEVTKExport::WriteCellData(FEState* ps)
 {
-	FEPostModel& fem = *ps->GetFEModel();
+	FEPostModel& fem = *ps->GetFSModel();
     FEDataManager& DM = *fem.GetDataManager();
     FEDataFieldPtr pd = DM.FirstDataField();
 
@@ -439,7 +439,7 @@ inline void write_data(vector<float>& val, int index, const mat3fd& v)
 //-----------------------------------------------------------------------------
 bool FEVTKExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& meshData)
 {
-	FEPostModel& fem = *meshData.GetFEModel();
+	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();
@@ -643,7 +643,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 //-----------------------------------------------------------------------------
 bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FEPart& part)
 {
-	FEPostModel& fem = *meshData.GetFEModel();
+	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();

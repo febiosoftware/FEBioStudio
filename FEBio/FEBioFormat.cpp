@@ -123,7 +123,7 @@ FEBioFormat::FEBioFormat(FEBioImport* fileReader, FEBioInputModel& febio) : m_fe
 	m_fileReader = fileReader;
 
 	m_pstep = 0;
-	m_pBCStep = febio.GetFEModel().GetStep(0);
+	m_pBCStep = febio.GetFSModel().GetStep(0);
 
 	m_geomOnly = false;
 
@@ -151,7 +151,7 @@ void FEBioFormat::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 
 //-----------------------------------------------------------------------------
 //! Create a new step
-FEStep* FEBioFormat::NewStep(FEModel& fem, int nanalysis, const char* szname)
+FEStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* szname)
 {
 	FEAnalysisStep* pstep = 0;
 	switch (nanalysis)
@@ -358,7 +358,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	ops.nanalysis = -1;
 
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new analysis step from these control settings
 	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
@@ -514,7 +514,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	++tag;
 	do
@@ -622,7 +622,7 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 	if (tag.isleaf()) return true;
 
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	++tag;
 	do
@@ -1504,7 +1504,7 @@ FEMaterial* FEBioFormat::ParseReactionDiffusion(FEMaterial* mat, XMLTag& tag)
 	FEReactionDiffusionMaterial* pm = dynamic_cast<FEReactionDiffusionMaterial*>(mat);
 	if (pm == 0) return 0;
 
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	++tag;
 	do
@@ -1548,7 +1548,7 @@ FEMaterial* FEBioFormat::ParseReactionDiffusion(FEMaterial* mat, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-bool ProcessReactionEquation(FEModel& fem, FEReactionMaterial* pm, const char* szeq)
+bool ProcessReactionEquation(FSModel& fem, FEReactionMaterial* pm, const char* szeq)
 {
 	if (szeq == 0) return true;
 
@@ -1632,7 +1632,7 @@ FEReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 		{
 			if (tag == "equation")
 			{
-				ProcessReactionEquation(GetFEModel(), pm, tag.m_szval.c_str());
+				ProcessReactionEquation(GetFSModel(), pm, tag.m_szval.c_str());
 			}
 			else if (tag == "rate_constant")
 			{

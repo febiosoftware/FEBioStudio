@@ -104,7 +104,7 @@ void FEGroup::Load(IArchive &ar)
 		case MESHID: ar.read(m_objID); break;
 /*			{
 				PRVArchive& prv = dynamic_cast<PRVArchive&>(ar);
-				FEModel& fem = *prv.GetFEModel();
+				FSModel& fem = *prv.GetFSModel();
 				int meshid;
 				ar.read(meshid);
 				if (meshid != -1)

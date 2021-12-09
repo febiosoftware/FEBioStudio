@@ -1,7 +1,7 @@
 #pragma once
 #include "FEStepComponent.h"
 
-class FEModel;
+class FSModel;
 class FEItemListBuilder;
 
 //-----------------------------------------------------------------------------
@@ -14,8 +14,8 @@ public:
 	enum { NAME, PARAMS, LIST, STEP };
 
 public:
-	FEDomainComponent(int ntype, FEModel* ps, int nstep = 0);
-	FEDomainComponent(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0);
+	FEDomainComponent(int ntype, FSModel* ps, int nstep = 0);
+	FEDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
 
 	virtual ~FEDomainComponent(void);
 
@@ -27,7 +27,7 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	FEModel* GetFEModel() { return m_ps; }
+	FSModel* GetFSModel() { return m_ps; }
 
 	unsigned int GetMeshItemType() const;
 
@@ -37,7 +37,7 @@ protected:
 	unsigned int	m_itemType;	// the type of mesh item that can be assigned to this list
 
 	int			m_ntype;	// type of boundary condition
-	FEModel*	m_ps;		// pointer to model
+	FSModel*	m_ps;		// pointer to model
 
 	FEItemListBuilder*	m_pItem;	// list of item indices to apply the BC too
 };

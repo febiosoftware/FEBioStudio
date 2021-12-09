@@ -254,7 +254,7 @@ protected:
 	void WritePointCurve(FE1DPointFunction* f1d, XMLElement& el);
 
 protected:
-	FEModel*		m_pfem;
+	FSModel*		m_pfem;
 
 	bool	m_useReactionMaterial2;
 	bool	m_writeNotes;

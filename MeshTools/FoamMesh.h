@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FECore/vec3d.h>
 #include <vector>
 
-class FEModel;
+class FSModel;
 class GObject;
 class FEMesh;
 

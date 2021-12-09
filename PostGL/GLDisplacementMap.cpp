@@ -48,7 +48,7 @@ bool CGLDisplacementMap::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
-		FEPostModel* pfem = GetModel()->GetFEModel();
+		FEPostModel* pfem = GetModel()->GetFSModel();
 
 		bool bupdate = false;
 		int dispField = GetIntValue(DATA_FIELD);
@@ -69,7 +69,7 @@ bool CGLDisplacementMap::UpdateData(bool bsave)
 	}
 	else
 	{
-		FEPostModel* pfem = GetModel()->GetFEModel();
+		FEPostModel* pfem = GetModel()->GetFSModel();
 		if (pfem) SetIntValue(DATA_FIELD, pfem->GetDisplacementField());
 		SetVecValue(SCALE, m_scl);
 	}
@@ -101,7 +101,7 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 
 	CGLModel* po = GetModel();
 	FEMeshBase* pm = po->GetActiveMesh();
-	FEPostModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFSModel();
 
 	// get the number of states and make sure we have something
 	int N = pfem->GetStates();
@@ -171,7 +171,7 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 {
 	CGLModel* po = GetModel();
-	FEPostModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFSModel();
 	if (pfem == nullptr)
 	{
 		m_ntag.clear();

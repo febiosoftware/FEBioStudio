@@ -42,7 +42,7 @@ bool FEPLYImport::Load(const char* szfile)
 	// make sure the mesh pointer is reset
 	m_mesh = nullptr;
 
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	if (read_file(szfile) == false)
 	{

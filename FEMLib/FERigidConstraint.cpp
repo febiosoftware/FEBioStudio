@@ -144,7 +144,7 @@ void FERigidConstraint::Load(IArchive &ar)
 	}
 }
 
-FERigidFixed::FERigidFixed(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID_FIXED, nstep)
+FERigidFixed::FERigidFixed(FSModel* fem, int nstep) : FERigidConstraint(FE_RIGID_FIXED, nstep)
 {
 	SetTypeString("Rigid fixed");
 
@@ -160,7 +160,7 @@ FERigidPrescribed::FERigidPrescribed(int ntype, int nstep) : FERigidConstraint(n
 {
 }
 
-FERigidDisplacement::FERigidDisplacement(FEModel* fem, int nstep) : FERigidPrescribed(FE_RIGID_DISPLACEMENT, nstep)
+FERigidDisplacement::FERigidDisplacement(FSModel* fem, int nstep) : FERigidPrescribed(FE_RIGID_DISPLACEMENT, nstep)
 {
 	SetTypeString("Rigid displacement/rotation");
 
@@ -185,7 +185,7 @@ bool FERigidDisplacement::GetRelativeFlag() const
 	return GetBoolValue(2);
 }
 
-FERigidForce::FERigidForce(FEModel* fem, int nstep) : FERigidPrescribed(FE_RIGID_FORCE, nstep)
+FERigidForce::FERigidForce(FSModel* fem, int nstep) : FERigidPrescribed(FE_RIGID_FORCE, nstep)
 {
 	SetTypeString("Rigid force");
 
@@ -215,14 +215,14 @@ void FERigidForce::SetForceType(int n)
 	SetIntValue(2, n);
 }
 
-FERigidVelocity::FERigidVelocity(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID_INIT_VELOCITY, nstep)
+FERigidVelocity::FERigidVelocity(FSModel* fem, int nstep) : FERigidConstraint(FE_RIGID_INIT_VELOCITY, nstep)
 {
 	SetTypeString("Rigid velocity");
 
 	AddVecParam(vec3d(0, 0, 0), "value", "velocity")->SetUnit(UNIT_VELOCITY);
 }
 
-FERigidAngularVelocity::FERigidAngularVelocity(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep)
+FERigidAngularVelocity::FERigidAngularVelocity(FSModel* fem, int nstep) : FERigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep)
 {
 	SetTypeString("Rigid angular velocity");
 
@@ -230,7 +230,7 @@ FERigidAngularVelocity::FERigidAngularVelocity(FEModel* fem, int nstep) : FERigi
 }
 
 //===============================================================================================
-FEBioRigidConstraint::FEBioRigidConstraint(FEModel* fem, int nstep) : FERigidConstraint(FE_FEBIO_RIGID_CONSTRAINT, nstep)
+FEBioRigidConstraint::FEBioRigidConstraint(FSModel* fem, int nstep) : FERigidConstraint(FE_FEBIO_RIGID_CONSTRAINT, nstep)
 {
 
 }
@@ -268,7 +268,7 @@ void FEBioRigidConstraint::Load(IArchive& ar)
 }
 
 //===============================================================================================
-vector<FERigidConstraint*> convertOldToNewRigidConstraint(FEModel* fem, FERigidConstraintOld* rc)
+vector<FERigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FERigidConstraintOld* rc)
 {
 	vector<FERigidConstraint*> rc_new;
 	switch (rc->Type())

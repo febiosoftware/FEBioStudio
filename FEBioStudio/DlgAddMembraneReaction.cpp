@@ -296,7 +296,7 @@ CDlgAddMembraneReaction::CDlgAddMembraneReaction(CMainWindow* wnd) : m_wnd(wnd),
 void CDlgAddMembraneReaction::InitDialog()
 {
     CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-    FEModel& fem = *doc->GetFEModel();
+    FSModel& fem = *doc->GetFSModel();
     
     // fill in the reactions
     list<FEMatDescriptor*> mats = FEMaterialFactory::Enumerate(FE_MAT_MREACTION);
@@ -356,7 +356,7 @@ void CDlgAddMembraneReaction::onClicked(QAbstractButton* button)
 void CDlgAddMembraneReaction::onMaterialChanged(int n)
 {
     CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-    FEModel& fem = *doc->GetFEModel();
+    FSModel& fem = *doc->GetFSModel();
     
     int nmat = ui->mat->currentData().toInt();
     GMaterial* gmat = fem.GetMaterial(nmat);
@@ -392,7 +392,7 @@ void CDlgAddMembraneReaction::onReactionType(int n)
     else ui->revRate->setEnabled(false);
 }
 
-void CDlgAddMembraneReaction::SetMaterial(GMaterial* mat, FEModel& fem)
+void CDlgAddMembraneReaction::SetMaterial(GMaterial* mat, FSModel& fem)
 {
     m_pmp = mat;
     
@@ -463,7 +463,7 @@ void CDlgAddMembraneReaction::onRemoveReaction()
     react->RemoveMaterial(m_reaction);
     
     CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-    FEModel& fem = *doc->GetFEModel();
+    FSModel& fem = *doc->GetFSModel();
     
     // update the list
     m_reaction = 0;

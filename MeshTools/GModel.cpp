@@ -179,7 +179,7 @@ public:
 
 public:
 	GModel*				m_parent;
-	FEModel*			m_ps;	//!< pointer to model
+	FSModel*			m_ps;	//!< pointer to model
 	BOX					m_box;	//!< bounding box
 
 	MeshLayerManager*	m_mlm;
@@ -254,7 +254,7 @@ void GModel::Imp::ValidateNames(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-GModel::GModel(FEModel* ps): imp(new GModel::Imp)
+GModel::GModel(FSModel* ps): imp(new GModel::Imp)
 {
 	SetName("Model");
 	imp->m_parent = this;

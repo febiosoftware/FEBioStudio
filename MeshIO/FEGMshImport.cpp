@@ -41,7 +41,7 @@ FEGMshImport::FEGMshImport(FEProject& prj) : FEFileImport(prj)
 
 bool FEGMshImport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// open the file

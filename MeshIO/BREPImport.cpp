@@ -64,7 +64,7 @@ bool BREPImport::Load(const char* szfile)
 		FileTitle(szname);
 		occ->SetName(szname);
 
-		GModel& mdl = prj.GetFEModel().GetModel();
+		GModel& mdl = prj.GetFSModel().GetModel();
 		mdl.AddObject(occ);
 		return true;
 	}
@@ -105,7 +105,7 @@ bool IGESImport::Load( const char* szfile)
 		FileTitle(szname);
 		occ->SetName(szname);
 
-		GModel& mdl = prj.GetFEModel().GetModel();
+		GModel& mdl = prj.GetFSModel().GetModel();
 		mdl.AddObject(occ);
 	}
 	else return false;

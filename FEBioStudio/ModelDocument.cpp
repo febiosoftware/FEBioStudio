@@ -160,15 +160,15 @@ FEProject& CModelDocument::GetProject()
 }
 
 //-----------------------------------------------------------------------------
-FEModel* CModelDocument::GetFEModel()
+FSModel* CModelDocument::GetFSModel()
 { 
-	return &m_Project.GetFEModel(); 
+	return &m_Project.GetFSModel(); 
 }
 
 //-----------------------------------------------------------------------------
 GModel* CModelDocument::GetGModel()
 {
-	return &m_Project.GetFEModel().GetModel();
+	return &m_Project.GetFSModel().GetModel();
 }
 
 //-----------------------------------------------------------------------------
@@ -176,13 +176,13 @@ GModel* CModelDocument::GetGModel()
 GObject* CModelDocument::GetActiveObject()
 {
 	GObject* po = nullptr;
-	GObjectSelection sel(GetFEModel());
+	GObjectSelection sel(GetFSModel());
 	if (sel.Count() == 1) po = sel.Object(0);
 	return po;
 }
 
 //-----------------------------------------------------------------------------
-BOX CModelDocument::GetModelBox() { return m_Project.GetFEModel().GetModel().GetBoundingBox(); }
+BOX CModelDocument::GetModelBox() { return m_Project.GetFSModel().GetModel().GetBoundingBox(); }
 
 //-----------------------------------------------------------------------------
 void CModelDocument::AddObject(GObject* po)
@@ -193,7 +193,7 @@ void CModelDocument::AddObject(GObject* po)
 
 void CModelDocument::DeleteObject(FSObject* po)
 {
-	FEModel& fem = *GetFEModel();
+	FSModel& fem = *GetFSModel();
 
 	if (po == GetActiveItem()) SetActiveItem(nullptr);
 
@@ -565,7 +565,7 @@ bool CModelDocument::ImportMaterials(const std::string& fileName)
 	IArchive ar;
 	if (ar.Open(fileName.c_str(), 0x0050564D) == false) return false;
 
-	FEModel& fem = *GetFEModel();
+	FSModel& fem = *GetFSModel();
 	IArchive::IOResult nret = IArchive::IO_OK;
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
@@ -626,7 +626,7 @@ void CModelDocument::UpdateSelection(bool report)
 	if (m_psel) delete m_psel;
 	m_psel = 0;
 
-	FEModel* ps = GetFEModel();
+	FSModel* ps = GetFSModel();
 
 	// figure out if there is a mesh selected
 	GObject* po = GetActiveObject();

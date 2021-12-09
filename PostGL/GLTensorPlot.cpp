@@ -208,7 +208,7 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (m_map.States() == 0)
 	{
@@ -448,11 +448,11 @@ void GLTensorPlot::Render(CGLContext& rc)
 	gluQuadricNormals(pglyph, GLU_SMOOTH);
 
 	CGLModel* mdl = GetModel();
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 
 	srand(m_seed);
 
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	float scale = 0.02f*m_scale*pfem->GetBoundingBox().Radius();

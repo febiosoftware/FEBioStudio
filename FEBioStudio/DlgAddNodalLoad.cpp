@@ -75,7 +75,7 @@ public:
 	}
 };
 
-CDlgAddNodalLoad::CDlgAddNodalLoad(FEModel& fem, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddNodalLoad)
+CDlgAddNodalLoad::CDlgAddNodalLoad(FSModel& fem, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddNodalLoad)
 {
 	setWindowTitle("Add Nodal Load");
 

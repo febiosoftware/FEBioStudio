@@ -3,7 +3,7 @@
 #include <FSCore/Archive.h>
 #include <FSCore/LoadCurve.h>
 
-class FEModel;
+class FSModel;
 
 #define FE_RIGID_FIXED				1
 #define FE_RIGID_DISPLACEMENT		2
@@ -74,7 +74,7 @@ class FERigidFixed : public FERigidConstraint
 	enum { BC1, BC2, BC3, BC4, BC5, BC6 };
 
 public:
-	FERigidFixed(FEModel* fem, int nstep = 0);
+	FERigidFixed(FSModel* fem, int nstep = 0);
 
 	bool GetDOF(int i) const { return GetBoolValue(BC1+i); }
 	void SetDOF(int i, bool b) { SetBoolValue(BC1+i, b); }
@@ -101,7 +101,7 @@ public:
 class FERigidDisplacement : public FERigidPrescribed
 {
 public:
-	FERigidDisplacement(FEModel* fem, int nstep = 0);
+	FERigidDisplacement(FSModel* fem, int nstep = 0);
 	FERigidDisplacement(int bc, int matid, double v, int nstep);
 
 	bool GetRelativeFlag() const;
@@ -110,7 +110,7 @@ public:
 class FERigidForce : public FERigidPrescribed
 {
 public:
-	FERigidForce(FEModel* fem, int nstep = 0);
+	FERigidForce(FSModel* fem, int nstep = 0);
 	FERigidForce(int bc, int matid, double v, int nstep);
 
 	int GetForceType() const;
@@ -122,7 +122,7 @@ class FERigidVelocity : public FERigidConstraint
 	enum { VEL };
 
 public:
-	FERigidVelocity(FEModel* fem, int nstep = 0);
+	FERigidVelocity(FSModel* fem, int nstep = 0);
 
 	void SetVelocity(const vec3d& v) { SetVecValue(VEL, v); }
 	vec3d GetVelocity() const { return GetVecValue(VEL); }
@@ -133,7 +133,7 @@ class FERigidAngularVelocity : public FERigidConstraint
 	enum { VEL };
 
 public:
-	FERigidAngularVelocity(FEModel* fem, int nstep = 0);
+	FERigidAngularVelocity(FSModel* fem, int nstep = 0);
 
 	void SetVelocity(const vec3d& v) { SetVecValue(VEL, v); }
 	vec3d GetVelocity() const { return GetVecValue(VEL); }
@@ -142,10 +142,10 @@ public:
 class FEBioRigidConstraint : public FERigidConstraint
 {
 public:
-	FEBioRigidConstraint(FEModel* fem, int nstep = 0);
+	FEBioRigidConstraint(FSModel* fem, int nstep = 0);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 };
 
 
-vector<FERigidConstraint*> convertOldToNewRigidConstraint(FEModel* fem, FERigidConstraintOld* rc);
+vector<FERigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FERigidConstraintOld* rc);

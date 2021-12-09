@@ -129,7 +129,7 @@ XMLWriter& FEBioExport::GetXMLWriter()
 const char* FEBioExport::GetEnumValue(Param& p)
 {
 	assert(p.GetParamType() == Param_CHOICE);
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	return fem.GetEnumValue(p.GetEnumNames(), p.GetIntValue());
 }
 
@@ -152,7 +152,7 @@ void FEBioExport::WriteParam(Param &p)
 	const char* szindex = p.GetIndexName();
 	int nindex = p.GetIndexValue();
 
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	// setup the xml-element
 	XMLElement e;
@@ -302,7 +302,7 @@ bool FEBioExport::PrepareExport(FEProject& prj)
 {
 	Clear();
 
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 
 	// set nodal ID's
 	GModel& model = fem.GetModel();
@@ -324,7 +324,7 @@ bool FEBioExport::PrepareExport(FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport::BuildLoadCurveList(FEModel& fem)
+void FEBioExport::BuildLoadCurveList(FSModel& fem)
 {
 	// must point load curves
 	for (int j = 0; j<fem.Steps(); ++j)

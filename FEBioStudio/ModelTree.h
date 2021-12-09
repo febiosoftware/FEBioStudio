@@ -31,7 +31,7 @@ SOFTWARE.*/
 class CModelViewer;
 class CModelDocument;
 class CPropertyList;
-class FEModel;
+class FSModel;
 class FEStep;
 class FSObject;
 class CObjectProps;
@@ -163,28 +163,28 @@ protected:
 
 	QTreeWidgetItem* AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype = 0, int ncount = 0, FSObject* po = 0, CPropertyList* props = 0, CObjectValidator* val = 0, int flags = 0);
 
-	void UpdateModelData  (QTreeWidgetItem* t1, FEModel& fem);
-	void UpdateObjects    (QTreeWidgetItem* t1, FEModel& fem);
-	void UpdateGroups     (QTreeWidgetItem* t1, FEModel& fem);
-	void UpdateBC         (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
-	void UpdateLoads      (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
-	void UpdateICs        (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
-	void UpdateContact    (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
-	void UpdateConstraints(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
-	void UpdateRC         (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
-	void UpdateRigidLoads (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
-	void UpdateConnectors (QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep);
+	void UpdateModelData  (QTreeWidgetItem* t1, FSModel& fem);
+	void UpdateObjects    (QTreeWidgetItem* t1, FSModel& fem);
+	void UpdateGroups     (QTreeWidgetItem* t1, FSModel& fem);
+	void UpdateBC         (QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep);
+	void UpdateLoads      (QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep);
+	void UpdateICs        (QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep);
+	void UpdateContact    (QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep);
+	void UpdateConstraints(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep);
+	void UpdateRC         (QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep);
+	void UpdateRigidLoads (QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep);
+	void UpdateConnectors (QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep);
 	void UpdateSteps      (QTreeWidgetItem* t1, FEProject& fem);
-	void UpdateMaterials  (QTreeWidgetItem* t1, FEModel& fem);
-	void UpdateDiscrete   (QTreeWidgetItem* t1, FEModel& fem);
+	void UpdateMaterials  (QTreeWidgetItem* t1, FSModel& fem);
+	void UpdateDiscrete   (QTreeWidgetItem* t1, FSModel& fem);
 	void UpdateOutput     (QTreeWidgetItem* t1, FEProject& prj);
 	void UpdateJobs       (QTreeWidgetItem* t1, CModelDocument* doc);
 	void UpdateImages     (QTreeWidgetItem* t1, CModelDocument* doc);
-	void UpdateMeshData   (QTreeWidgetItem* t1, FEModel& fem);
-	void UpdateMeshAdaptors(QTreeWidgetItem* t1, FEModel& fem);
+	void UpdateMeshData   (QTreeWidgetItem* t1, FSModel& fem);
+	void UpdateMeshAdaptors(QTreeWidgetItem* t1, FSModel& fem);
 
-	void AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FEMaterial* pmat, FEModel& fem, bool topLevel);
-	void AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* mat, FEModel& fem);
+	void AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FEMaterial* pmat, FSModel& fem, bool topLevel);
+	void AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* mat, FSModel& fem);
 
 	CModelTreeItem* GetCurrentData();
 

@@ -65,7 +65,7 @@ bool AnsysImport::Load(const char* szfile)
 	Close();
 
 	// build the mesh
-	return BuildMesh(m_prj.GetFEModel());
+	return BuildMesh(m_prj.GetFSModel());
 }
 
 //-----------------------------------------------------------------------------
@@ -154,7 +154,7 @@ bool AnsysImport::read_EBLOCK()
 }
 
 //-----------------------------------------------------------------------------
-bool AnsysImport::BuildMesh(FEModel &fem)
+bool AnsysImport::BuildMesh(FSModel &fem)
 {
 	int i;
 

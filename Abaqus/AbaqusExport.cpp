@@ -53,7 +53,7 @@ bool FEAbaqusExport::Write(const char* szfile)
 	fprintf(fp, "*HEADING\n");
 	fprintf(fp, "%s\n", m_heading.c_str());
 
-	GModel& model = m_prj.GetFEModel().GetModel();
+	GModel& model = m_prj.GetFSModel().GetModel();
 
 	// write nodes
 	int nc = 1;

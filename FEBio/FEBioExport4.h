@@ -279,7 +279,7 @@ protected:
 	void WriteElementList(FEElemList& el);
 
 protected:
-	FEModel* m_pfem;
+	FSModel* m_pfem;
 
 	bool	m_writeControlSection;	// write Control section for single step analysis
 

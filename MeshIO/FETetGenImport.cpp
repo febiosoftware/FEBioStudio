@@ -135,11 +135,11 @@ bool FETetGenImport::Load(const char* szfile)
 
 	Close();
 
-	return BuildMesh(m_prj.GetFEModel());
+	return BuildMesh(m_prj.GetFSModel());
 }
 
 //-----------------------------------------------------------------------------
-bool FETetGenImport::BuildMesh(FEModel& fem)
+bool FETetGenImport::BuildMesh(FSModel& fem)
 {
 	// counts
 	int nodes = (int) m_Node.size();

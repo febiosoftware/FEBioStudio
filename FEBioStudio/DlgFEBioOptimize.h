@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FEBioOpt.h"
 #include "FEBioDiagnostic.h"
 
-class FEModel;
+class FSModel;
 
 class CMainWindow;
 class QLineEdit;
@@ -65,11 +65,11 @@ class CSelectParam : public QWidget
 private:
 	QLineEdit*		m_edit;
 	QPushButton*	m_push;
-	FEModel*		m_fem;
+	FSModel*		m_fem;
 	int				m_paramOption;
 
 public:
-	CSelectParam(FEModel* fem, int paramOption = 0, QWidget* parent = nullptr);
+	CSelectParam(FSModel* fem, int paramOption = 0, QWidget* parent = nullptr);
 
 	void clear();
 	QString text();
@@ -83,7 +83,7 @@ class CDlgSelectParam : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgSelectParam(FEModel* fem, int paramOption, QWidget* parent = nullptr);
+	CDlgSelectParam(FSModel* fem, int paramOption, QWidget* parent = nullptr);
 
 	void accept() override;
 

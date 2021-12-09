@@ -408,7 +408,7 @@ void CDlgEditOutput::OnAddDomain()
 	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 	FEPlotVariable& var = plt.PlotVariable(nvar);
 
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	vector<FEItemListBuilder*> list = fem.GetModel().AllNamedSelections(var.domainType());
 
 	QStringList names;
@@ -465,7 +465,7 @@ void CDlgEditOutput::onFilterChanged(const QString& txt)
 
 void CDlgEditOutput::UpdateLogTable()
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	ui->clearLogTable();
@@ -523,7 +523,7 @@ void CDlgEditOutput::UpdateLogTable()
 void CDlgEditOutput::UpdateLogItemList()
 {
 	ui->logList->clear();
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 
 	int ntype = ui->logType->currentIndex();

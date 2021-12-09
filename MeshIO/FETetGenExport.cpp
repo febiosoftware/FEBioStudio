@@ -40,7 +40,7 @@ FETetGenExport::~FETetGenExport()
 bool FETetGenExport::Write(const char *szfile)
 {
 	// get the model
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	char sznode[256] = {0};

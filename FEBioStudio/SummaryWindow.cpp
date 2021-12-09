@@ -81,13 +81,13 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	{
 		if (doc->IsValid())
 		{
-			SetYDataSelector(new CModelDataSelector(doc->GetFEModel(), Post::DATA_SCALAR));
+			SetYDataSelector(new CModelDataSelector(doc->GetFSModel(), Post::DATA_SCALAR));
 		}
 		else return;
 	}
 
 	Post::CGLModel* po = doc->GetGLModel();
-	Post::FEPostModel* pfem = doc->GetFEModel();
+	Post::FEPostModel* pfem = doc->GetFSModel();
 	Post::FEPostMesh* pfe = po->GetActiveMesh();
 	int nodes = pfe->Nodes();
 

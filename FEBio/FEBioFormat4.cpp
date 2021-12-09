@@ -188,7 +188,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 //
 //=============================================================================
 
-FEStep* FEBioFormat4::NewStep(FEModel& fem, int nanalysis, const char* szname)
+FEStep* FEBioFormat4::NewStep(FSModel& fem, int nanalysis, const char* szname)
 {
 	FEStep* pstep = new FEBioAnalysisStep(&fem);
 	FEBio::CreateStep("analysis", pstep);
@@ -214,7 +214,7 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 	if (tag.isleaf()) return true;
 
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new analysis step from these control settings
 	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
@@ -277,7 +277,7 @@ bool FEBioFormat4::ParseMaterialSection(XMLTag& tag)
 	if (tag.isleaf()) return true;
 
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	++tag;
 	do
@@ -1286,7 +1286,7 @@ bool FEBioFormat4::ParseBoundarySection(XMLTag& tag)
 void FEBioFormat4::ParseBC(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// get the node set
 	XMLAtt& aset = tag.Attribute("node_set");
@@ -1384,7 +1384,7 @@ bool FEBioFormat4::ParseLoadsSection(XMLTag& tag)
 void FEBioFormat4::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// get the load curve ID
 	XMLAtt& aset = tag.Attribute("node_set");
@@ -1427,7 +1427,7 @@ void FEBioFormat4::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 void FEBioFormat4::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	std::string comment = tag.comment();
 
@@ -1465,7 +1465,7 @@ void FEBioFormat4::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 //! Parses the body_load section.
 void FEBioFormat4::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// read the comment
 	std::string comment = tag.comment();
@@ -1497,7 +1497,7 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 	if (tag.isleaf()) return true;
 
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	++tag;
 	do
@@ -1571,7 +1571,7 @@ bool FEBioFormat4::ParseContactSection(XMLTag& tag)
 void FEBioFormat4::ParseContact(FEStep *pstep, XMLTag &tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel* fem = &febio.GetFEModel();
+	FSModel* fem = &febio.GetFSModel();
 
 	// get the contact interface type
 	XMLAtt& atype = tag.Attribute("type");
@@ -1625,7 +1625,7 @@ void FEBioFormat4::ParseContact(FEStep *pstep, XMLTag &tag)
 void FEBioFormat4::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// get the name 
 	stringstream ss;
@@ -1665,7 +1665,7 @@ void FEBioFormat4::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat4::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// get the name 
 	const char* szname = tag.AttributeValue("name", true);
@@ -1716,7 +1716,7 @@ void FEBioFormat4::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat4::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	FELinearConstraintSet* pset = new FELinearConstraintSet;
 	pstep->AddLinearConstraint(pset);
@@ -1771,7 +1771,7 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 	if (tag.isleaf()) return true;
 
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 	GModel& gm = fem.GetModel();
 
 	vector<GDiscreteElementSet*> set;
@@ -1846,7 +1846,7 @@ bool FEBioFormat4::ParseConstraintSection(XMLTag& tag)
 void FEBioFormat4::ParseNLConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// make sure there is something to read
 	if (tag.isempty()) return;
@@ -2024,7 +2024,7 @@ bool FEBioFormat4::ParseStep(XMLTag& tag)
 	// create a new step (unless this is the first step)
 	if (m_pstep == 0)
 	{
-		FEModel& fem = GetFEModel();
+		FSModel& fem = GetFSModel();
 		m_pstep = new FEBioAnalysisStep(&fem);
 		FEBio::CreateStep("analysis", m_pstep);
 		const char* szname = tag.AttributeValue("name", true);

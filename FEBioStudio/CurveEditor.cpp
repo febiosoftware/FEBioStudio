@@ -311,7 +311,7 @@ void CCurveEditor::BuildLoadCurves()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	if (doc == nullptr) return;
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GModel& model = fem.GetModel();
 
 	for (int i = 0; i<model.DiscreteObjects(); ++i)
@@ -474,7 +474,7 @@ void CCurveEditor::BuildModelTree()
 	t1->setExpanded(true);
 	t1->setText(0, "Model");
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GModel& model = fem.GetModel();
 
 	QTreeWidgetItem *t2, *t3;

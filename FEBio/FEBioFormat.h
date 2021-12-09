@@ -59,11 +59,11 @@ protected:
 	void ReadParameters(ParamContainer& PC, XMLTag& tag);
 
 
-	virtual FEStep* NewStep(FEModel& fem, int nanalysis, const char* sz = 0);
+	virtual FEStep* NewStep(FSModel& fem, int nanalysis, const char* sz = 0);
 
 	FEBioInputModel& GetFEBioModel() { return m_febio; }
 
-	FEModel& GetFEModel() { return m_febio.GetFEModel(); }
+	FSModel& GetFSModel() { return m_febio.GetFSModel(); }
 
 protected:
 	// common parse functions

@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "FEGroup.h"
 #include "FESelection.h"
 
-class FEModel;
+class FSModel;
 class GPartSelection;
 class GFaceSelection;
 class GEdgeSelection;
@@ -43,7 +43,7 @@ class GNodeSelection;
 class GGroup : public FEItemListBuilder
 {
 public:
-	GGroup(FEModel* ps, int ntype, unsigned int flags);
+	GGroup(FSModel* ps, int ntype, unsigned int flags);
 	~GGroup(void);
 
 	FENodeList*	BuildNodeList() { return 0; }
@@ -51,7 +51,7 @@ public:
 	FEElemList*	BuildElemList() { return 0; }
 
 protected:
-	FEModel*	m_ps;
+	FSModel*	m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -59,8 +59,8 @@ protected:
 class GNodeList : public GGroup
 {
 public:
-	GNodeList(FEModel* ps) : GGroup(ps, GO_NODE, FE_NODE_FLAG){}
-	GNodeList(FEModel* ps, GNodeSelection* pn);
+	GNodeList(FSModel* ps) : GGroup(ps, GO_NODE, FE_NODE_FLAG){}
+	GNodeList(FSModel* ps, GNodeSelection* pn);
 
 	vector<GNode*>	GetNodeList();
 
@@ -76,8 +76,8 @@ public:
 class GFaceList : public GGroup
 {
 public:
-	GFaceList(FEModel* ps) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG){}
-	GFaceList(FEModel* ps, GFaceSelection* pf);
+	GFaceList(FSModel* ps) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG){}
+	GFaceList(FSModel* ps, GFaceSelection* pf);
 
 	vector<GFace*>	GetFaceList();
 
@@ -94,8 +94,8 @@ public:
 class GEdgeList : public GGroup
 {
 public:
-	GEdgeList(FEModel* ps) : GGroup(ps, GO_EDGE, FE_NODE_FLAG){}
-	GEdgeList(FEModel* ps, GEdgeSelection* pe);
+	GEdgeList(FSModel* ps) : GGroup(ps, GO_EDGE, FE_NODE_FLAG){}
+	GEdgeList(FSModel* ps, GEdgeSelection* pe);
 
 	vector<GEdge*>	GetEdgeList();
 
@@ -113,8 +113,8 @@ public:
 class GPartList : public GGroup
 {
 public:
-	GPartList(FEModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG){}
-	GPartList(FEModel* ps, GPartSelection* pg);
+	GPartList(FSModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG){}
+	GPartList(FSModel* ps, GPartSelection* pg);
 
 	void Create(GObject* po);
 
@@ -129,6 +129,6 @@ public:
 	bool IsValid() const override;
 
 	static GPartList* CreateNew();
-	static void SetModel(FEModel* mdl);
-	static FEModel* m_model;
+	static void SetModel(FSModel* mdl);
+	static FSModel* m_model;
 };

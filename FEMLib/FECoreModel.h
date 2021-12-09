@@ -3,9 +3,9 @@
 
 //-----------------------------------------------------------------------------
 // base class for model classes
-class FECoreModel : public FSObject
+class FSCoreModel : public FSObject
 {
 public:
-	FECoreModel(){}
-	~FECoreModel(){}
+	FSCoreModel(){}
+	~FSCoreModel(){}
 };

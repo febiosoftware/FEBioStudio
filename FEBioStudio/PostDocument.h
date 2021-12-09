@@ -137,7 +137,7 @@ public:
 
 	void SetDataField(int n);
 
-	Post::FEPostModel* GetFEModel();
+	Post::FEPostModel* GetFSModel();
 
 	Post::CGLModel* GetGLModel();
 

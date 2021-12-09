@@ -172,12 +172,12 @@ bool FEHMASCIIimport::Load(const char* szfile)
 	// close the file
 	Close();
 
-	return BuildMesh(prj.GetFEModel());
+	return BuildMesh(prj.GetFSModel());
 }
 
 //-----------------------------------------------------------------------------
 
-bool FEHMASCIIimport::BuildMesh(FEModel &fem)
+bool FEHMASCIIimport::BuildMesh(FSModel& fem)
 {
 	// make sure there is something
 	if (m_Node.empty() || m_Elem.empty()) return false;

@@ -125,7 +125,7 @@ void CFiberGeneratorTool::Activate()
 	ui->m_matList->clear();
 	if (doc)
 	{
-		FEModel* fem = doc->GetFEModel();
+		FSModel* fem = doc->GetFSModel();
 		if (fem)
 		{
 			int nmat = fem->Materials();
@@ -242,7 +242,7 @@ void CFiberGeneratorTool::OnApply()
 		CModelDocument* doc = GetMainWindow()->GetModelDocument();
 		if (doc)
 		{
-			FEModel* fem = doc->GetFEModel();
+			FSModel* fem = doc->GetFSModel();
 			if (fem)
 			{
 				GMaterial* mat = fem->GetMaterial(n);

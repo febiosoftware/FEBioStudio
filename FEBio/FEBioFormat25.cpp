@@ -883,7 +883,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 	{
 		// Read the data and store it as a mesh data section
 		FEBioInputModel& feb = GetFEBioModel();
-		FEModel& fem = feb.GetFEModel();
+		FSModel& fem = feb.GetFSModel();
 
 		const char* szgen = tag.AttributeValue("generator", true);
 		if (szgen)
@@ -961,7 +961,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 					++tag;
 				} while (!tag.isend());
 
-				feb.GetFEModel().AddDataMap(s2s);
+				feb.GetFSModel().AddDataMap(s2s);
 			}
 		}
 		else 
@@ -1075,7 +1075,7 @@ void FEBioFormat25::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	FEBioInputModel& febio = GetFEBioModel();
 
 	// get the mesh
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// get the node set
 	const char* szset = tag.AttributeValue("node_set");
@@ -1153,7 +1153,7 @@ void FEBioFormat25::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// determine bc
 	XMLAtt& abc = tag.Attribute("bc");
@@ -1273,7 +1273,7 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat25::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// read the name attribute
 	string name;
@@ -1312,7 +1312,7 @@ void FEBioFormat25::ParseBCRigidBody(FEStep* pstep, XMLTag& tag)
 
 	// get the rigid material
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel* fem = &febio.GetFEModel();
+	FSModel* fem = &febio.GetFSModel();
 	GMaterial* pgm = 0;
 	if (nid >= 0) pgm = febio.GetMaterial(nid);
 	int matid = (pgm ? pgm->GetID() : -1);
@@ -1424,7 +1424,7 @@ bool FEBioFormat25::ParseLoadsSection(XMLTag& tag)
 void FEBioFormat25::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// read the bc attribute
 	XMLAtt& abc = tag.Attribute("bc");
@@ -1546,7 +1546,7 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadPressure(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new surface load
 	FEPressureLoad* pbc = new FEPressureLoad(&fem);
@@ -1566,7 +1566,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadPressure(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadTraction(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new surface load
 	FESurfaceTraction* pbc = new FESurfaceTraction(&fem);
@@ -1605,7 +1605,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadTraction(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidTraction(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new surface load
 	FEFluidTraction* pbc = new FEFluidTraction(&fem);
@@ -1643,7 +1643,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidTraction(XMLTag& tag)
 //-----------------------------------------------------------------------------
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidPressure(XMLTag& tag)
 {
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     
     // create a new surface load
     FEFluidPressureLoad* pbc = new FEFluidPressureLoad(&fem);
@@ -1662,7 +1662,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidPressure(XMLTag& tag)
 //-----------------------------------------------------------------------------
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidVelocity(XMLTag& tag)
 {
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     FEFluidVelocity* psl = new FEFluidVelocity(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "FluidVelocity%02d", CountLoads<FEFluidVelocity>(fem)+1);
@@ -1677,7 +1677,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidVelocity(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidNormalVelocity(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     FEFluidNormalVelocity* psl = new FEFluidNormalVelocity(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "FluidNormalVelocity%02d", CountLoads<FEFluidNormalVelocity>(fem)+1);
@@ -1717,7 +1717,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidNormalVelocity(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidRotationalVelocity(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     FEFluidRotationalVelocity* psl = new FEFluidRotationalVelocity(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "FluidRotationalVelocity%02d", CountLoads<FEFluidRotationalVelocity>(fem)+1);
@@ -1752,7 +1752,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidRotationalVelocity(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     FEFluidFlowResistance* psl = new FEFluidFlowResistance(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "FluidFlowResistance%02d", CountLoads<FEFluidFlowResistance>(fem)+1);
@@ -1788,7 +1788,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     FEFluidFlowRCR* psl = new FEFluidFlowRCR(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "FluidFlowRCR%02d", CountLoads<FEFluidFlowRCR>(fem)+1);
@@ -1853,7 +1853,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidBackFlowStabilization(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     FEFluidBackflowStabilization* psl = new FEFluidBackflowStabilization(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "FluidBackflowStabilization%02d", CountLoads<FEFluidBackflowStabilization>(fem)+1);
@@ -1881,7 +1881,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidBackFlowStabilization(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidTangentialStabilization(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     FEFluidTangentialStabilization* psl = new FEFluidTangentialStabilization(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "FluidTangentialStabilization%02d", CountLoads<FEFluidTangentialStabilization>(fem)+1);
@@ -1909,7 +1909,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidTangentialStabilization(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadFSITraction(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     FEFSITraction* psl = new FEFSITraction(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "FSInterfaceTraction%02d", CountLoads<FEFSITraction>(fem)+1);
@@ -1922,7 +1922,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFSITraction(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadBFSITraction(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     FEBFSITraction* psl = new FEBFSITraction(&fem);
     char szname[128] = { 0 };
     sprintf(szname, "BFSInterfaceTraction%02d", CountLoads<FEBFSITraction>(fem)+1);
@@ -1935,7 +1935,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadBFSITraction(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new surface load
 	FEFluidFlux* pbc = new FEFluidFlux(&fem);
@@ -1978,7 +1978,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlux(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadSoluteFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new surface load
 	FESoluteFlux* pbc = new FESoluteFlux(&fem);
@@ -2025,7 +2025,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadSoluteFlux(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseConcentrationFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new surface load
 	FEConcentrationFlux* pcf = new FEConcentrationFlux(&fem);
@@ -2072,7 +2072,7 @@ FESurfaceLoad* FEBioFormat25::ParseConcentrationFlux(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadNormalTraction(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new surface load
 	FEBPNormalTraction* pbc = new FEBPNormalTraction(&fem);
@@ -2122,7 +2122,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadNormalTraction(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadMatchingOsmoticCoefficient(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
 
     // create a new surface load
     FEMatchingOsmoticCoefficient* pbc = new FEMatchingOsmoticCoefficient(&fem);
@@ -2166,7 +2166,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadMatchingOsmoticCoefficient(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadHeatFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new surface load
 	FEHeatFlux* pbc = new FEHeatFlux(&fem);
@@ -2198,7 +2198,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadHeatFlux(XMLTag& tag)
 FESurfaceLoad* FEBioFormat25::ParseLoadConvectiveHeatFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new surface load
 	FEConvectiveHeatFlux* pbc = new FEConvectiveHeatFlux(&fem);
@@ -2250,7 +2250,7 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 	if (tag.isleaf()) return true;
 
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	char szname[256] = {0};
 
@@ -2580,7 +2580,7 @@ void FEBioFormat25::ParseContact(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactSliding(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new sliding interface
 	FESlidingWithGapsInterface* pi = new FESlidingWithGapsInterface(&fem, pstep->GetID());
@@ -2598,7 +2598,7 @@ FEPairedInterface* FEBioFormat25::ParseContactSliding(FEStep* pstep, XMLTag& tag
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactF2FSliding(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new sliding interface
 	FEFacetOnFacetInterface* pi = new FEFacetOnFacetInterface(&fem, pstep->GetID());
@@ -2616,7 +2616,7 @@ FEPairedInterface* FEBioFormat25::ParseContactF2FSliding(FEStep* pstep, XMLTag& 
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactBiphasic(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new contact interface
 	FEPoroContact* pi = new FEPoroContact(&fem, pstep->GetID());
@@ -2634,7 +2634,7 @@ FEPairedInterface* FEBioFormat25::ParseContactBiphasic(FEStep* pstep, XMLTag& ta
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactSolute(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FEPoroSoluteContact* pi = new FEPoroSoluteContact(&fem, pstep->GetID());
@@ -2652,7 +2652,7 @@ FEPairedInterface* FEBioFormat25::ParseContactSolute(FEStep* pstep, XMLTag& tag)
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactMultiphasic(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FEMultiphasicContact* pi = new FEMultiphasicContact(&fem, pstep->GetID());
@@ -2670,7 +2670,7 @@ FEPairedInterface* FEBioFormat25::ParseContactMultiphasic(FEStep* pstep, XMLTag&
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactTied(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FETiedInterface* pi = new FETiedInterface(&fem, pstep->GetID());
@@ -2688,7 +2688,7 @@ FEPairedInterface* FEBioFormat25::ParseContactTied(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactF2FTied(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FEF2FTiedInterface* pi = new FEF2FTiedInterface(&fem, pstep->GetID());
@@ -2706,7 +2706,7 @@ FEPairedInterface* FEBioFormat25::ParseContactF2FTied(FEStep *pstep, XMLTag &tag
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactTiedElastic(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FETiedElasticInterface* pi = new FETiedElasticInterface(&fem, pstep->GetID());
@@ -2724,7 +2724,7 @@ FEPairedInterface* FEBioFormat25::ParseContactTiedElastic(FEStep* pstep, XMLTag&
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactSticky(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FEStickyInterface* pi = new FEStickyInterface(&fem, pstep->GetID());
@@ -2742,7 +2742,7 @@ FEPairedInterface* FEBioFormat25::ParseContactSticky(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactPeriodic(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FEPeriodicBoundary* pi = new FEPeriodicBoundary(&fem, pstep->GetID());
@@ -2760,7 +2760,7 @@ FEPairedInterface* FEBioFormat25::ParseContactPeriodic(FEStep *pstep, XMLTag &ta
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactTC(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FETensionCompressionInterface* pi = new FETensionCompressionInterface(&fem, pstep->GetID());
@@ -2778,7 +2778,7 @@ FEPairedInterface* FEBioFormat25::ParseContactTC(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactTiedPoro(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FETiedBiphasicInterface* pi = new FETiedBiphasicInterface(&fem, pstep->GetID());
@@ -2796,7 +2796,7 @@ FEPairedInterface* FEBioFormat25::ParseContactTiedPoro(FEStep *pstep, XMLTag &ta
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactTiedMultiphasic(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FETiedMultiphasicInterface* pi = new FETiedMultiphasicInterface(&fem, pstep->GetID());
@@ -2814,7 +2814,7 @@ FEPairedInterface* FEBioFormat25::ParseContactTiedMultiphasic(FEStep *pstep, XML
 //-----------------------------------------------------------------------------
 FEPairedInterface* FEBioFormat25::ParseContactGapHeatFlux(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create new interface
 	FEGapHeatFluxInterface* pi = new FEGapHeatFluxInterface(&fem, pstep->GetID());
@@ -2833,7 +2833,7 @@ FEPairedInterface* FEBioFormat25::ParseContactGapHeatFlux(FEStep* pstep, XMLTag&
 void FEBioFormat25::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// create a new interface
 	FERigidWallInterface* pci = new FERigidWallInterface(&fem, pstep->GetID());
@@ -2882,7 +2882,7 @@ void FEBioFormat25::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat25::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	FERigidJoint* pi = new FERigidJoint(&fem, pstep->GetID());
 	char szname[256];
@@ -2922,7 +2922,7 @@ void FEBioFormat25::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	FERigidConnector* pi = nullptr;
 	char szname[256];
@@ -3014,7 +3014,7 @@ void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 //-----------------------------------------------------------------------------
 void FEBioFormat25::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	FELinearConstraintSet* pset = new FELinearConstraintSet;
 	pstep->AddLinearConstraint(pset);
@@ -3070,7 +3070,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 	if (tag.isleaf()) return true;
 
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 	GModel& gm = fem.GetModel();
 
 	char buf[256] = { 0 };
@@ -3171,7 +3171,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat25::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	FEConstBodyForce* pbl = new FEConstBodyForce(&fem, pstep->GetID());
 	pstep->AddComponent(pbl);
@@ -3192,7 +3192,7 @@ void FEBioFormat25::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat25::ParseNonConstBodyForce(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	FENonConstBodyForce* pbl = new FENonConstBodyForce(&fem, pstep->GetID());
 	pstep->AddComponent(pbl);
@@ -3213,7 +3213,7 @@ void FEBioFormat25::ParseNonConstBodyForce(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat25::ParseHeatSource(FEStep *pstep, XMLTag &tag)
 {
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	FEHeatSource* phs = new FEHeatSource(&fem, pstep->GetID());
 	pstep->AddComponent(phs);
@@ -3242,7 +3242,7 @@ void FEBioFormat25::ParseHeatSource(FEStep *pstep, XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat25::ParseCentrifugalBodyForce(FEStep *pstep, XMLTag &tag)
 {
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     
     FECentrifugalBodyForce* phs = new FECentrifugalBodyForce(&fem, pstep->GetID());
     pstep->AddComponent(phs);
@@ -3319,7 +3319,7 @@ bool FEBioFormat25::ParseConstraintSection(XMLTag& tag)
 void FEBioFormat25::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// make sure there is something to read
 	if (tag.isempty()) return;
@@ -3352,7 +3352,7 @@ void FEBioFormat25::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 void FEBioFormat25::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// make sure there is something to read
 	if (tag.isempty()) return;
@@ -3385,7 +3385,7 @@ void FEBioFormat25::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
 void FEBioFormat25::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
     
     // make sure there is something to read
     if (tag.isempty()) return;
@@ -3418,7 +3418,7 @@ void FEBioFormat25::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
 void FEBioFormat25::ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
-    FEModel& fem = GetFEModel();
+    FSModel& fem = GetFSModel();
 
     // make sure there is something to read
     if (tag.isempty()) return;
@@ -3451,7 +3451,7 @@ void FEBioFormat25::ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag)
 void FEBioFormat25::ParseInSituStretchConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// make sure there is something to read
 	if (tag.isempty()) return;
@@ -3478,7 +3478,7 @@ void FEBioFormat25::ParseInSituStretchConstraint(FEStep* pstep, XMLTag& tag)
 void FEBioFormat25::ParsePrestrainConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
-	FEModel& fem = GetFEModel();
+	FSModel& fem = GetFSModel();
 
 	// make sure there is something to read
 	if (tag.isempty()) return;
@@ -3524,7 +3524,7 @@ bool FEBioFormat25::ParseStepSection(XMLTag &tag)
 	if (m_nAnalysis < 0) return false;
 
 	// create a new step (unless this is the first step)
-	if (m_pstep == 0) m_pstep = NewStep(GetFEModel(), m_nAnalysis, szname);
+	if (m_pstep == 0) m_pstep = NewStep(GetFSModel(), m_nAnalysis, szname);
 	m_pBCStep = m_pstep;
 
 	do

@@ -91,7 +91,7 @@ CDlgSoluteTable::CDlgSoluteTable(int mode, CMainWindow* wnd) : m_wnd(wnd), QDial
 void CDlgSoluteTable::Update()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel* fem = doc->GetFEModel();
+	FSModel* fem = doc->GetFSModel();
 
 	switch (m_mode)
 	{
@@ -135,7 +135,7 @@ void CDlgSoluteTable::Update()
 void CDlgSoluteTable::on_addButton_clicked()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel* fem = doc->GetFEModel();
+	FSModel* fem = doc->GetFSModel();
 
 	switch (m_mode)
 	{
@@ -167,7 +167,7 @@ void CDlgSoluteTable::on_table_itemChanged(QTableWidgetItem* item)
 	int ncol = item->column();
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel* fem = doc->GetFEModel();
+	FSModel* fem = doc->GetFSModel();
 
 	QString txt = item->text();
 
@@ -218,7 +218,7 @@ void CDlgSoluteTable::on_table_itemChanged(QTableWidgetItem* item)
 void CDlgSoluteTable::on_removeButton_clicked()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel* fem = doc->GetFEModel();
+	FSModel* fem = doc->GetFSModel();
 	QItemSelectionModel* mdl = ui->table->selectionModel();
 	QModelIndexList selRows = mdl->selectedRows();
 	if (selRows.isEmpty() == false)

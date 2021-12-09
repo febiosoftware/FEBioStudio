@@ -28,13 +28,13 @@ SOFTWARE.*/
 #include "FEModelConstraint.h"
 #include <MeshTools/FEItemListBuilder.h>
 
-FEModelConstraint::FEModelConstraint(int ntype, FEModel* fem, int nstep) : FEDomainComponent(ntype, fem, nstep)
+FEModelConstraint::FEModelConstraint(int ntype, FSModel* fem, int nstep) : FEDomainComponent(ntype, fem, nstep)
 {
 	m_superClassID = FE_CONSTRAINT;
 	SetMeshItemType(0);
 }
 
-FESurfaceConstraint::FESurfaceConstraint(int ntype, FEModel* fem, int nstep) : FEModelConstraint(ntype, fem, nstep)
+FESurfaceConstraint::FESurfaceConstraint(int ntype, FSModel* fem, int nstep) : FEModelConstraint(ntype, fem, nstep)
 {
 	SetMeshItemType(FE_FACE_FLAG);
 }
@@ -43,7 +43,7 @@ FESurfaceConstraint::FESurfaceConstraint(int ntype, FEModel* fem, int nstep) : F
 // FEVolumeConstraint
 //-----------------------------------------------------------------------------
 
-FEVolumeConstraint::FEVolumeConstraint(FEModel* ps, int nstep) : FESurfaceConstraint(FE_VOLUME_CONSTRAINT, ps, nstep)
+FEVolumeConstraint::FEVolumeConstraint(FSModel* ps, int nstep) : FESurfaceConstraint(FE_VOLUME_CONSTRAINT, ps, nstep)
 {
 	SetTypeString("volume");
 
@@ -56,7 +56,7 @@ FEVolumeConstraint::FEVolumeConstraint(FEModel* ps, int nstep) : FESurfaceConstr
 // FEWarpingConstraint
 //-----------------------------------------------------------------------------
 
-FEWarpingConstraint::FEWarpingConstraint(FEModel* fem) : FEModelConstraint(FE_WARP_CONSTRAINT, fem)
+FEWarpingConstraint::FEWarpingConstraint(FSModel* fem) : FEModelConstraint(FE_WARP_CONSTRAINT, fem)
 {
 	SetTypeString("warp-image");
 
@@ -72,7 +72,7 @@ FEWarpingConstraint::FEWarpingConstraint(FEModel* fem) : FEModelConstraint(FE_WA
 // FENormalFlowSurface
 //-----------------------------------------------------------------------------
 
-FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESurfaceConstraint(FE_NORMAL_FLUID_FLOW, ps, nstep)
+FENormalFlowSurface::FENormalFlowSurface(FSModel* ps, int nstep) : FESurfaceConstraint(FE_NORMAL_FLUID_FLOW, ps, nstep)
 {
 	SetTypeString("normal fluid flow");
 
@@ -88,7 +88,7 @@ FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESurfaceCons
 // FESymmetryPlane
 //-----------------------------------------------------------------------------
 
-FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FESurfaceConstraint(FE_SYMMETRY_PLANE, ps, nstep)
+FESymmetryPlane::FESymmetryPlane(FSModel* ps, int nstep) : FESurfaceConstraint(FE_SYMMETRY_PLANE, ps, nstep)
 {
 	SetTypeString("symmetry plane");
 
@@ -103,7 +103,7 @@ FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FESurfaceConstraint(F
 // FEFrictionlessFluidWall
 //-----------------------------------------------------------------------------
 
-FEFrictionlessFluidWall::FEFrictionlessFluidWall(FEModel* ps, int nstep) : FESurfaceConstraint(FE_FRICTIONLESS_FLUID_WALL, ps, nstep)
+FEFrictionlessFluidWall::FEFrictionlessFluidWall(FSModel* ps, int nstep) : FESurfaceConstraint(FE_FRICTIONLESS_FLUID_WALL, ps, nstep)
 {
     SetTypeString("frictionless fluid wall");
 
@@ -115,7 +115,7 @@ FEFrictionlessFluidWall::FEFrictionlessFluidWall(FEModel* ps, int nstep) : FESur
 }
 
 //=============================================================================
-FEPrestrainConstraint::FEPrestrainConstraint(FEModel* ps, int nstep) : FEModelConstraint(FE_PRESTRAIN_CONSTRAINT, ps, nstep)
+FEPrestrainConstraint::FEPrestrainConstraint(FSModel* ps, int nstep) : FEModelConstraint(FE_PRESTRAIN_CONSTRAINT, ps, nstep)
 {
 	SetTypeString("prestrain");
 
@@ -126,7 +126,7 @@ FEPrestrainConstraint::FEPrestrainConstraint(FEModel* ps, int nstep) : FEModelCo
 }
 
 //=============================================================================
-FEInSituStretchConstraint::FEInSituStretchConstraint(FEModel* ps, int nstep) : FEModelConstraint(FE_INSITUSTRETCH_CONSTRAINT, ps, nstep)
+FEInSituStretchConstraint::FEInSituStretchConstraint(FSModel* ps, int nstep) : FEModelConstraint(FE_INSITUSTRETCH_CONSTRAINT, ps, nstep)
 {
 	SetTypeString("in-situ stretch");
 
@@ -139,7 +139,7 @@ FEInSituStretchConstraint::FEInSituStretchConstraint(FEModel* ps, int nstep) : F
 }
 
 //=============================================================================
-FEBioNLConstraint::FEBioNLConstraint(FEModel* fem, int nstep) : FEModelConstraint(FE_FEBIO_NLCONSTRAINT, fem, nstep)
+FEBioNLConstraint::FEBioNLConstraint(FSModel* fem, int nstep) : FEModelConstraint(FE_FEBIO_NLCONSTRAINT, fem, nstep)
 {
 
 }

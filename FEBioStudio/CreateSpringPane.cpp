@@ -128,7 +128,7 @@ CCreateSpringPane::CCreateSpringPane(CCreatePanel* parent) : CCreatePane(parent)
 void CCreateSpringPane::showEvent(QShowEvent* ev)
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
-	GModel& geom = doc->GetFEModel()->GetModel();
+	GModel& geom = doc->GetFSModel()->GetModel();
 
 	ui->m_type[0] = ui->m_type[1] = -1;
 	ui->m_mesh[0] = ui->m_mesh[1] = 0;
@@ -171,7 +171,7 @@ void CCreateSpringPane::on_newSet_clicked()
 	if (dlg.exec())
 	{
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
-		GModel& geom = doc->GetFEModel()->GetModel();
+		GModel& geom = doc->GetFSModel()->GetModel();
 
 		QString name = dlg.m_name;
 		int ntype = dlg.m_type;
@@ -222,7 +222,7 @@ bool CCreateSpringPane::updateTempObject()
 	ui->m_curves->ClearMesh();
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
-	GModel& geom = doc->GetFEModel()->GetModel();
+	GModel& geom = doc->GetFSModel()->GetModel();
 
 	if (ui->m_list->count() == 0) return true;
 
@@ -492,7 +492,7 @@ void CCreateSpringPane::on_node2_selButtonClicked()
 FSObject* CCreateSpringPane::Create()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
-	GModel& geom = doc->GetFEModel()->GetModel();
+	GModel& geom = doc->GetFSModel()->GetModel();
 
 	if (ui->m_list->count() == 0)
 	{

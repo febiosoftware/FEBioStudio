@@ -74,7 +74,7 @@ private:
 	void ParseGeometryPart       (XMLTag& tag);
 	void ParseGeometryInstance   (XMLTag& tag);
 
-	FEStep* NewStep(FEModel& fem, int nanalysis, const char* szname = nullptr) override;
+	FEStep* NewStep(FSModel& fem, int nanalysis, const char* szname = nullptr) override;
 
 private:
 	// boundary condition input functions

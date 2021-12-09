@@ -141,7 +141,7 @@ void CGLLinePlot::SetDataField(int n)
 void CGLLinePlot::Render(CGLContext& rc)
 {
 	CGLModel& glm = *GetModel();
-	FEPostModel& fem = *glm.GetFEModel();
+	FEPostModel& fem = *glm.GetFSModel();
 	int ns = glm.CurrentTimeIndex();
 
 	GLfloat zero[4] = { 0.f };
@@ -502,7 +502,7 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 	if (m_ncolor == COLOR_LINE_DATA)
 	{
 		CGLModel& glm = *GetModel();
-		FEPostModel& fem = *glm.GetFEModel();
+		FEPostModel& fem = *glm.GetFSModel();
 
 		FEState& s = *fem.GetState(ntime);
 		Post::LineData& lineData = s.GetLineData();
@@ -525,7 +525,7 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 	else if (m_ncolor == COLOR_MODEL_DATA)
 	{
 		CGLModel& glm = *GetModel();
-		FEPostModel& fem = *glm.GetFEModel();
+		FEPostModel& fem = *glm.GetFSModel();
 
 		FEState& s = *fem.GetState(ntime);
 		Post::LineData& lineData = s.GetLineData();
@@ -648,7 +648,7 @@ void CGLPointPlot::AddDataField(const std::string& dataName)
 //-----------------------------------------------------------------------------
 CGLPointPlot::~CGLPointPlot()
 {
-	FEPostModel* fem = GetModel()->GetFEModel();
+	FEPostModel* fem = GetModel()->GetFSModel();
 	if (fem)
 	{
 		for (int i = 0; i < fem->GetStates(); ++i)
@@ -701,7 +701,7 @@ bool CGLPointPlot::UpdateData(bool bsave)
 //-----------------------------------------------------------------------------
 void CGLPointPlot::Render(CGLContext& rc)
 {
-	FEPostModel& fem = *GetModel()->GetFEModel();
+	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = GetModel()->CurrentTimeIndex();
 	if ((ns < 0) || (ns >= fem.GetStates())) return;
 	FEState& s = *fem.GetState(ns);
@@ -717,7 +717,7 @@ void CGLPointPlot::Render(CGLContext& rc)
 
 void CGLPointPlot::RenderPoints()
 {
-	FEPostModel& fem = *GetModel()->GetFEModel();
+	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = fem.CurrentTimeIndex();
 	FEState& s = *fem.GetState(ns);
 
@@ -793,7 +793,7 @@ void CGLPointPlot::RenderPoints()
 
 void CGLPointPlot::RenderSpheres()
 {
-	FEPostModel& fem = *GetModel()->GetFEModel();
+	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = fem.CurrentTimeIndex();
 	FEState& s = *fem.GetState(ns);
 

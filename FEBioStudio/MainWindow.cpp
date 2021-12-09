@@ -861,7 +861,7 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		QString ext = QFileInfo(fileName).suffix();
 		if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
 		{
-			xpltFileReader* xplt = new xpltFileReader(doc->GetFEModel());
+			xpltFileReader* xplt = new xpltFileReader(doc->GetFSModel());
 			if (showLoadOptions)
 			{
 				CDlgImportXPLT dlg(this);
@@ -884,7 +884,7 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		}
 		else if (ext.compare("vtk", Qt::CaseInsensitive) == 0)
 		{
-			Post::FEVTKimport* vtk = new Post::FEVTKimport(doc->GetFEModel());
+			Post::FEVTKimport* vtk = new Post::FEVTKimport(doc->GetFSModel());
 			ReadFile(doc, fileName, vtk, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.compare("fsps", Qt::CaseInsensitive) == 0)
@@ -898,7 +898,7 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		else if (ext.isEmpty())
 		{
 			// Assume this is an LSDYNA database
-			Post::FELSDYNAPlotImport* lsdyna = new Post::FELSDYNAPlotImport(doc->GetFEModel());
+			Post::FELSDYNAPlotImport* lsdyna = new Post::FELSDYNAPlotImport(doc->GetFSModel());
 			ReadFile(doc, fileName, lsdyna, QueuedFile::NEW_DOCUMENT);
 		}
 	}
@@ -2490,7 +2490,7 @@ void CMainWindow::onExportAllMaterials()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	vector<GMaterial*> matList;
 	for (int i=0; i<fem.Materials(); ++i)
@@ -2551,7 +2551,7 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if ((doc == nullptr) || (doc == srcDoc) || (srcDoc == nullptr)) return;
 
-	FEModel* fem = srcDoc->GetFEModel();
+	FSModel* fem = srcDoc->GetFSModel();
 	if (fem->Materials() == 0)
 	{
 		QMessageBox::information(this, "Import Materials", "The selected source file does not contain any materials.");
@@ -2580,7 +2580,7 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 			if (name == item)
 			{
 				GMaterial* newMat = gm->Clone();
-				doc->DoCommand(new CCmdAddMaterial(doc->GetFEModel(), newMat));
+				doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), newMat));
 				UpdateModel(newMat);
 				return;
 			}
@@ -2596,7 +2596,7 @@ void CMainWindow::DeleteAllMaterials()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all materials?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllMaterials();
 		UpdateModel();
 		RedrawGL();
@@ -2611,7 +2611,7 @@ void CMainWindow::DeleteAllBC()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all boundary conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllBC();
 		UpdateModel();
 		RedrawGL();
@@ -2626,7 +2626,7 @@ void CMainWindow::DeleteAllLoads()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllLoads();
 		UpdateModel();
 		RedrawGL();
@@ -2641,7 +2641,7 @@ void CMainWindow::DeleteAllIC()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllIC();
 		UpdateModel();
 		RedrawGL();
@@ -2656,7 +2656,7 @@ void CMainWindow::DeleteAllContact()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all contact interfaces?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllContact();
 		UpdateModel();
 		RedrawGL();
@@ -2671,7 +2671,7 @@ void CMainWindow::DeleteAllConstraints()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllConstraints();
 		UpdateModel();
 		RedrawGL();
@@ -2686,7 +2686,7 @@ void CMainWindow::DeleteAllRigidConstraints()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllRigidConstraints();
 		UpdateModel();
 		RedrawGL();
@@ -2701,7 +2701,7 @@ void CMainWindow::DeleteAllRigidLoads()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllRigidLoads();
 		UpdateModel();
 		RedrawGL();
@@ -2716,7 +2716,7 @@ void CMainWindow::DeleteAllRigidConnectors()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid connectors?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllRigidConnectors();
 		UpdateModel();
 		RedrawGL();
@@ -2733,7 +2733,7 @@ void CMainWindow::DeleteAllSteps()
 
 	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllSteps();
 		doc->SetModifiedFlag(true);
 		UpdateTab(doc);

@@ -511,7 +511,7 @@ void CMainWindow::on_actionImportLines_triggered()
 	{
 		CPostDocument* doc = ui->m_wnd->GetPostDocument();
 		if (doc == nullptr) return;
-		Post::FEPostModel& fem = *doc->GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFSModel();
 
 		processLinesThread* thread = new processLinesThread(fem);
 		CDlgStartThread dlg2(this, thread);
@@ -552,7 +552,7 @@ void CMainWindow::onTimer()
 
 	TIMESETTINGS& time = doc->GetTimeSettings();
 
-	int N = doc->GetFEModel()->GetStates();
+	int N = doc->GetFSModel()->GetStates();
 	int N0 = time.m_start;
 	int N1 = time.m_end;
 

@@ -55,7 +55,7 @@ public:
 	bool Load(const char* szfile);
 
 protected:
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 
 	bool ReadHeader(bool& bend);
 	bool ReadNodes(bool& bend);
@@ -64,5 +64,5 @@ protected:
 protected:
 	list<NODE>		m_Node;
 	list<ELEMENT>	m_Elem;
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 };

@@ -133,7 +133,7 @@ SOFTWARE.*/
 #define CID_MODELINFO_COMMENT		0x00030001
 #define CID_MODELINFO_UNITS			0x00030002
 
-// FEModel Data
+// FSModel Data
 #define CID_FEM						0x00040000
 #define CID_FEM_MUST_POINT			0x00040001		//---> obsolete (1.3)
 #define CID_FEM_DATA				0x00041000

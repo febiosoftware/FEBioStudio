@@ -165,13 +165,13 @@ void GLProbe::Update(int ntime, float dt, bool breset)
 	if (breset)
 	{
 		m_path.clear();
-		FEPostModel* fem = mdl->GetFEModel();
+		FEPostModel* fem = mdl->GetFSModel();
 		int nstates = fem->GetStates();
 		m_path.resize(nstates);
 	}
 
 	// update the size of the probe
-	BOX box = mdl->GetFEModel()->GetBoundingBox();
+	BOX box = mdl->GetFSModel()->GetBoundingBox();
 	m_R = 0.05*box.GetMaxExtent();
 
 	// see if we need to revaluate the FEFindElement object
@@ -190,10 +190,10 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 	CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return -1;
 
-	Post::FEState* state = mdl->GetFEModel()->GetState(nstate);
+	Post::FEState* state = mdl->GetFSModel()->GetState(nstate);
 	Post::FERefState* ps = state->m_ref;
 	Post::FEPostMesh& mesh = *state->GetFEMesh();
-	Post::FEPostModel& fem = *mdl->GetFEModel();
+	Post::FEPostModel& fem = *mdl->GetFSModel();
 
 	rt = to_vec3d(r0);
 
@@ -334,7 +334,7 @@ double GLProbe::DataValue(int nfield, int nstep)
 {
 	if (TrackModelData())
 	{
-		FEPostModel& fem = *GetModel()->GetFEModel();
+		FEPostModel& fem = *GetModel()->GetFSModel();
 		float val = 0.f;
 		vec3f p0 = to_vec3f(m_initPos);
 		int nelem = ProjectToMesh(nstep, p0, m_pos);

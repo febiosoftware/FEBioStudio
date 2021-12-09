@@ -41,7 +41,7 @@ public:
 	bool Load(const char* szfile);
 
 protected:
-	void UpdateFEModel(FEModel& fem);
+	void UpdateFEModel(FSModel& fem);
 	void UpdateMesh(FEMesh& mesh);
 	int FindFace(int n[4], int noff = 0);
 
@@ -76,7 +76,7 @@ private:
 
 private:
 	GObject*	m_po;
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 
 	int		m_nmat;	// nr of materials
 	int		m_nmplc;	// nr of must point load curve

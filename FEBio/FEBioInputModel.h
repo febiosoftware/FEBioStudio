@@ -411,12 +411,12 @@ public:
 	};
 
 public:
-	FEBioInputModel(FEModel& fem);
+	FEBioInputModel(FSModel& fem);
 	~FEBioInputModel();
 
 	void UpdateGeometry();
 
-	FEModel& GetFEModel() { return m_fem; }
+	FSModel& GetFSModel() { return m_fem; }
 
 public:
 	int Parts() { return (int) m_part.size(); }
@@ -474,7 +474,7 @@ public:
 	bool	m_shellNodalNormals;
 
 private:
-	FEModel&				m_fem;
+	FSModel&				m_fem;
 	vector<GMaterial*>		m_mat;
 	vector<Part*>			m_part;
 	vector<PartInstance*>	m_Inst;

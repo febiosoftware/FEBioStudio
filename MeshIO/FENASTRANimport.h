@@ -82,7 +82,7 @@ protected:
 	bool read_MAT1  (CARD& c);
 	bool read_CHEXA (CARD& c);
 
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 
 protected:
 	list<GRID>		m_Node;

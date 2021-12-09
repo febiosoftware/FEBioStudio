@@ -40,7 +40,7 @@ FEIDEASimport::~FEIDEASimport()
 
 bool FEIDEASimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// open the file 
@@ -104,7 +104,7 @@ bool FEIDEASimport::Load(const char* szfile)
 	return true;
 }
 
-bool FEIDEASimport::BuildMesh(FEModel& fem)
+bool FEIDEASimport::BuildMesh(FSModel& fem)
 {
 	int i, j;
 

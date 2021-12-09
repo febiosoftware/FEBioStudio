@@ -63,7 +63,7 @@ public:
 
 	void Clear();
 
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 
 protected:
 	list<NODE>			m_Node;

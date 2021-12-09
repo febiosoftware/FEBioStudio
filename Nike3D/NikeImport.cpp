@@ -123,10 +123,10 @@ bool FENIKEImport::Load(const char* szfile)
 
 	// store a pointer to the project
 	m_po = 0;
-	m_fem = &m_prj.GetFEModel();
+	m_fem = &m_prj.GetFSModel();
 
 	// get the model
-	FEModel& fem = *m_fem;
+	FSModel& fem = *m_fem;
 
 	// create a nike project
 	FENikeProject nike;
@@ -182,7 +182,7 @@ void FENIKEImport::build_model(FENikeProject& nike)
 void FENIKEImport::build_control(FENikeProject& nike)
 {
 	FENikeProject::CONTROL& c = nike.m_Ctrl;
-	FEModel& fem = *m_fem;
+	FSModel& fem = *m_fem;
 	FENonLinearMechanics* pstep = new FENonLinearMechanics(&fem);
 	pstep->SetName("Step01");
 	fem.AddStep(pstep);
@@ -220,7 +220,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	int i, j;
 
 	// get the model
-	FEModel& fem = *m_fem;
+	FSModel& fem = *m_fem;
 
 	int nodes = (int)nike.m_Node.size();
 	int nhel  = (int)nike.m_Brick.size();
@@ -330,7 +330,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 void FENIKEImport::build_constraints(FENikeProject& nike)
 {
 	// get the model
-	FEModel& fem = *m_fem;
+	FSModel& fem = *m_fem;
 	FEMesh* pm = m_po->GetFEMesh();
 	FEStep& s = *fem.GetStep(0);
 
@@ -523,7 +523,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 {
 	int i;
 
-	FEModel& fem = *m_fem;
+	FSModel& fem = *m_fem;
 	FEStep& step = *fem.GetStep(0);
 
 	// assign materials to elements
@@ -681,7 +681,7 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 {
 	list<FENikeProject::RIGID_FACET>::iterator pf = nike.m_Rigid.begin();
 
-	FEModel* ps = m_fem;
+	FSModel* ps = m_fem;
 	FEMesh* pm = m_po->GetFEMesh();
 
 	int nrns = 1;
@@ -763,7 +763,7 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 {
 	int i, j;
 
-	FEModel* ps = m_fem;
+	FSModel* ps = m_fem;
 	FEMesh* pm = m_po->GetFEMesh();
 	char szname[256];
 
@@ -1449,7 +1449,7 @@ bool FENIKEImport::ReadVelocities(FENikeProject &prj)
 }
 
 //-----------------------------------------------------------------------------
-void FENIKEImport::UpdateFEModel(FEModel& fem)
+void FENIKEImport::UpdateFEModel(FSModel& fem)
 {
 	int i, n;
 	FELoadCurve* plc;

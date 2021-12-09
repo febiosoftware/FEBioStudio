@@ -34,7 +34,7 @@ class FSObject;
 class QListWidget;
 class QListWidgetItem;
 class QLineEdit;
-class FEModel;
+class FSModel;
 class CModelViewer;
 class CModelTree;
 

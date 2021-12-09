@@ -224,7 +224,7 @@ GPartSelection::Iterator::Iterator(GPartSelection* ps)
 {
 	m_npart = -1;
 	m_pg = 0;
-	m_ps = ps->GetFEModel();
+	m_ps = ps->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	int N = m.Parts();
 	for (int i=0; i<N; ++i)
@@ -359,7 +359,7 @@ FEItemListBuilder* GPartSelection::CreateItemList()
 
 GFaceSelection::Iterator::Iterator(GFaceSelection* ps)
 {
-	m_ps = ps->GetFEModel();
+	m_ps = ps->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	m_nsurf = -1;
 	m_pf = 0;
@@ -520,7 +520,7 @@ FEItemListBuilder* GFaceSelection::CreateItemList()
 
 GEdgeSelection::Iterator::Iterator(GEdgeSelection* pg)
 {
-	m_ps = pg->GetFEModel();
+	m_ps = pg->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	m_nedge = -1;
 	m_pe = 0;
@@ -653,7 +653,7 @@ FEItemListBuilder* GEdgeSelection::CreateItemList()
 
 GNodeSelection::Iterator::Iterator(GNodeSelection* pg)
 {
-	m_ps = pg->GetFEModel();
+	m_ps = pg->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	m_node = -1;
 	m_pn = 0;
@@ -802,7 +802,7 @@ FEItemListBuilder* GNodeSelection::CreateItemList()
 
 GDiscreteSelection::Iterator::Iterator(GDiscreteSelection* pg)
 {
-	m_ps = pg->GetFEModel();
+	m_ps = pg->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	m_item = -1;
 	m_pn = 0;

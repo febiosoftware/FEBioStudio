@@ -32,7 +32,7 @@ SOFTWARE.*/
 // GShellSphere
 //=============================================================================
 
-GShellSphere::GShellSphere(FEModel* ps) : GPrimitive(ps, GSHELL_SPHERE)
+GShellSphere::GShellSphere(FSModel* ps) : GPrimitive(ps, GSHELL_SPHERE)
 {
 	m_R = 1;
 

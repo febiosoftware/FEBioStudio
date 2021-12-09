@@ -216,7 +216,7 @@ public:
 	void SetFEMesh(FEPostMesh* pm) { m_mesh = pm; }
 	FEPostMesh* GetFEMesh() { return m_mesh; }
 
-	FEPostModel* GetFEModel() { return m_fem; }
+	FEPostModel* GetFSModel() { return m_fem; }
 
 	OBJECT_DATA& GetObjectData(int n);
 

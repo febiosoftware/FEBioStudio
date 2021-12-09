@@ -66,7 +66,7 @@ bool PRVObjectExport::SaveObjects(OArchive& ar, FEProject& prj)
 	ar.WriteChunk(PVO_VERSION, version);
 
 	// write objects
-	GModel& model = prj.GetFEModel().GetModel();
+	GModel& model = prj.GetFSModel().GetModel();
 	int objects = model.Objects();
 	for (int i = 0; i<objects; ++i)
 	{

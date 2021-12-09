@@ -329,7 +329,7 @@ void CPlotDataSettings::Save(OArchive& ar)
 
 void CPlotDataSettings::Load(IArchive& ar)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{

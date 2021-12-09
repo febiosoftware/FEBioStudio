@@ -44,7 +44,7 @@ bool FEBYUExport::Write(const char* szfile)
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// for now we put everything in one part

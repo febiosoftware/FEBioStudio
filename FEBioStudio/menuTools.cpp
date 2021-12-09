@@ -89,7 +89,7 @@ public:
 		m_kine = nullptr;
 		m_task = 0;
 		m_fileReader = nullptr;
-		m_fem = doc->GetFEModel();
+		m_fem = doc->GetFSModel();
 		m_currentState = 0;
 	}
 
@@ -129,7 +129,7 @@ public:
 		{
 			mdl.AddDisplacementMap("Displacement");
 		}
-		int nstates = mdl.GetFEModel()->GetStates();
+		int nstates = mdl.GetFSModel()->GetStates();
 		for (m_currentState = 0; m_currentState < nstates; ++m_currentState) mdl.UpdateDisplacements(m_currentState, true);
 
 		// all done
@@ -200,7 +200,7 @@ void CMainWindow::on_actionKinemat_triggered()
 		std::string modelFile = dlg.GetModelFile().toStdString();
 		std::string kineFile  = dlg.GetKineFile().toStdString();
 
-		Post::FEPostModel& fem = *postDoc->GetFEModel();
+		Post::FEPostModel& fem = *postDoc->GetFSModel();
 		LoadKineFile* kinethread = new LoadKineFile(postDoc);
 		kinethread->m_n0 = dlg.StartIndex();
 		kinethread->m_n1 = dlg.EndIndex();

@@ -320,7 +320,7 @@ public:
 		endResetModel();
 	}
 
-	Post::FEPostModel* GetFEModel() { return m_fem; }
+	Post::FEPostModel* GetFSModel() { return m_fem; }
 
 	int rowCount(const QModelIndex& index) const
 	{
@@ -819,13 +819,13 @@ void CPostDataPanel::Update(bool breset)
 	CPostDocument* pdoc = GetActiveDocument();
 	if (pdoc)
 	{
-		Post::FEPostModel* oldFem = ui->data->GetFEModel();
-		Post::FEPostModel* newFem = pdoc->GetFEModel();
+		Post::FEPostModel* oldFem = ui->data->GetFSModel();
+		Post::FEPostModel* newFem = pdoc->GetFSModel();
 
 		if ((oldFem != newFem) || breset)
 		{
 			ui->m_prop->setPropertyList(nullptr);
-			ui->data->SetFEModel(pdoc->GetFEModel());
+			ui->data->SetFEModel(pdoc->GetFSModel());
 		}
 	}
 	else
@@ -851,7 +851,7 @@ void CPostDataPanel::on_AddStandard_triggered()
 	if (ok)
 	{
 		Post::CGLModel* glm = GetActiveDocument()->GetGLModel();
-		Post::FEPostModel* fem = glm->GetFEModel();
+		Post::FEPostModel* fem = glm->GetFSModel();
 
 		vector<int> L;
 		if (glm->GetSelectionMode() == Post::SELECT_FACES)
@@ -882,7 +882,7 @@ void CPostDataPanel::on_AddFromFile_triggered()
 	CDlgAddDataFile dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel* fem = doc->GetFEModel();
+		Post::FEPostModel* fem = doc->GetFSModel();
 		bool bret = false;
 		switch (dlg.m_nclass)
 		{
@@ -912,7 +912,7 @@ void CPostDataPanel::on_AddEquation_triggered()
 	CDlgAddEquation dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 
 		QString name = dlg.GetDataName();
 
@@ -950,7 +950,7 @@ void CPostDataPanel::on_AddEquation_triggered()
 			pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString());
 
 			// add it to the model
-			Post::FEPostModel& fem = *doc.GetFEModel();
+			Post::FEPostModel& fem = *doc.GetFSModel();
 			fem.AddDataField(pd, name.toStdString());
 		}
 		break;
@@ -964,7 +964,7 @@ void CPostDataPanel::on_AddEquation_triggered()
 			for (int i=0; i<9; ++i) pd->SetEquationString(i, s.at(i).toStdString());
 
 			// add it to the model
-			Post::FEPostModel& fem = *doc.GetFEModel();
+			Post::FEPostModel& fem = *doc.GetFSModel();
 			fem.AddDataField(pd, name.toStdString());
 		}
 		};
@@ -983,7 +983,7 @@ void CPostDataPanel::on_CopyButton_clicked()
 	{
 		int nsel = selRow.at(0).row();
 		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::FEDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1009,7 +1009,7 @@ void CPostDataPanel::on_DeleteButton_clicked()
 	{
 		int nsel = selRow.at(0).row();
 		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::FEDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1034,7 +1034,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 	{
 		int nsel = selRow.at(0).row();
 		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::FEDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1164,7 +1164,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 	{
 		int nsel = selRow.at(0).row();
 		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::FEDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1238,7 +1238,7 @@ void CPostDataPanel::on_fieldName_editingFinished()
 		ui->m_activeField->SetName(t.toStdString());
 		Update(true);
 		CPostDocument& doc = *GetActiveDocument();
-//		doc.GetFEModel()->UpdateDependants();
+//		doc.GetFSModel()->UpdateDependants();
 	}
 }
 

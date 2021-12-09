@@ -40,7 +40,7 @@ class QListWidgetItem;
 
 class FEMaterial;
 class FEMembraneReactionMaterial;
-class FEModel;
+class FSModel;
 class GMaterial;
 class QAbstractButton;
 class QSelectBox;
@@ -87,7 +87,7 @@ private:
     void InitDialog();
     void apply();
     void accept();
-    void SetMaterial(GMaterial* mat, FEModel& fem);
+    void SetMaterial(GMaterial* mat, FSModel& fem);
     void SetReaction(FEMembraneReactionMaterial* mat);
     bool hasChanged();
     

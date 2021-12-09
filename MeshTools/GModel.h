@@ -31,7 +31,7 @@ SOFTWARE.*/
 //using namespace std;
 
 class GObject;
-class FEModel;
+class FSModel;
 class FENodeSet;
 class FESurface;
 class GPart;
@@ -60,7 +60,7 @@ class GModel : public FSObject
 
 public:
 	//! default constructor
-	GModel(FEModel*);
+	GModel(FSModel*);
 
 	//! destructor
 	~GModel(void);

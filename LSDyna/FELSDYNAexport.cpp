@@ -53,7 +53,7 @@ bool FELSDYNAexport::Write(const char *szfile)
 	m_fp = fopen(szfile, "wt");
 	if (m_fp == 0) return errf("Failed creating LSDYNA file %s", szfile);
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// reset part counter
@@ -96,7 +96,7 @@ bool FELSDYNAexport::Write(const char *szfile)
 //-----------------------------------------------------------------------------
 bool FELSDYNAexport::write_NODE()
 {
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 
 	fprintf(m_fp, "*NODE\n");
@@ -127,7 +127,7 @@ bool FELSDYNAexport::write_ELEMENT_SOLID()
 	int nn[8];
 	int n = 1;
 
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 
 	fprintf(m_fp, "*ELEMENT_SOLID\n");
@@ -171,7 +171,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL()
 	int nn[8];
 	int n = 1;
 
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 		
 	fprintf(m_fp, "*ELEMENT_SHELL\n");
@@ -215,7 +215,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 	int nn[8];
 	int n = 1;
 
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 		
 	fprintf(m_fp, "*ELEMENT_SHELL_THICKNESS\n");
@@ -257,7 +257,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 //-----------------------------------------------------------------------------
 bool FELSDYNAexport::write_SET_SHELL_LIST()
 {
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 
 	// export the parts

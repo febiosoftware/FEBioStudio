@@ -232,7 +232,7 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 	}
 	else
 	{
-		BOX box = GetModel()->GetFEModel()->GetBoundingBox();
+		BOX box = GetModel()->GetFSModel()->GetBoundingBox();
 		m_T.SetPosition(-box.Center());
 		m_T.SetRotation(quatd(0.0, vec3d(1, 0, 0)));
 	}
@@ -294,7 +294,7 @@ void CGLPlaneCutPlot::RenderSlice()
 {
 	CGLModel* mdl = GetModel();
 
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	FEMeshBase* pm = mdl->GetActiveMesh();
 
 	CGLColorMap* pcol = mdl->GetColorMap();
@@ -392,7 +392,7 @@ void CGLPlaneCutPlot::RenderMesh()
 
 	CGLModel* mdl = GetModel();
 
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	GLColor c = m_meshColor;
@@ -553,7 +553,7 @@ void CGLPlaneCutPlot::RenderOutline()
 {
 	CGLModel* mdl = GetModel();
 
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	FEMeshBase* pm = mdl->GetActiveMesh();
 
 	// store attributes
@@ -599,7 +599,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 {
 	// Get the bounding box. We need it for determining the scale
 	CGLModel* mdl = GetModel();
-	BOX box = GetModel()->GetFEModel()->GetBoundingBox();
+	BOX box = GetModel()->GetFSModel()->GetBoundingBox();
 	double R = box.Radius();
 	m_scl = (R == 0.0 ? 1.0 : R);
 
@@ -612,7 +612,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 
 	double ref = -a[3];
 
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	m_slice.Clear();
@@ -660,7 +660,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 	CGLModel* mdl = GetModel();
 	int ndivs = mdl->GetSubDivisions();
 
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	Post::FEState& state = *ps->CurrentState();
 
 	// repeat over all elements
@@ -855,7 +855,7 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 	EDGE edge[15];
 	int en[8];
 	CGLModel* mdl = GetModel();
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	Post::FEState& state = *ps->CurrentState();
 
 	// get the plane equations
@@ -959,7 +959,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 
 	CGLModel* mdl = GetModel();
 
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	float ev[8];

@@ -96,7 +96,7 @@ int LSDYNAModel::FindShellDomain(int pid)
     return -1;
 }
 
-bool LSDYNAModel::BuildModel(FEModel& fem)
+bool LSDYNAModel::BuildModel(FSModel& fem)
 {
 	// build the mesh and object
 	if (BuildFEMesh(fem) == false) return false;
@@ -108,7 +108,7 @@ bool LSDYNAModel::BuildModel(FEModel& fem)
 	return true;
 }
 
-bool LSDYNAModel::BuildFEMesh(FEModel& fem)
+bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 {
 	int nodes = (int)m_node.size();
 	int shells = (int)m_shell.size();
@@ -428,7 +428,7 @@ void LSDYNAModel::UpdateMesh(FEMesh& mesh)
 	}
 }
 
-bool LSDYNAModel::BuildMaterials(FEModel& fem)
+bool LSDYNAModel::BuildMaterials(FSModel& fem)
 {
 	if (m_Mat.empty()) return true;
 

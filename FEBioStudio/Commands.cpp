@@ -2332,7 +2332,7 @@ CCmdHideSelection::CCmdHideSelection(CModelDocument* doc) : CCommand("Hide")
 	int m = 0;
 
 	// get the model
-	GModel& model = m_doc->GetFEModel()->GetModel();
+	GModel& model = m_doc->GetFSModel()->GetModel();
 	GObject* po = m_doc->GetActiveObject();
 
 	m_nitem = doc->GetItemMode();
@@ -2389,7 +2389,7 @@ CCmdHideSelection::CCmdHideSelection(CModelDocument* doc) : CCommand("Hide")
 void CCmdHideSelection::Execute()
 {
 	// get the model
-	GModel& m = m_doc->GetFEModel()->GetModel();
+	GModel& m = m_doc->GetFSModel()->GetModel();
 	GObject* po = m_doc->GetActiveObject();
 	int N = m_item.size();
 	switch (m_nitem)
@@ -2418,7 +2418,7 @@ void CCmdHideSelection::Execute()
 void CCmdHideSelection::UnExecute()
 {
 	GObject* po = m_doc->GetActiveObject();
-	GModel& m = m_doc->GetFEModel()->GetModel();
+	GModel& m = m_doc->GetFSModel()->GetModel();
 	m_doc->SetItemMode(m_nitem);
 	int N = m_item.size();
 	switch (m_nitem)
@@ -2470,7 +2470,7 @@ CCmdHideUnselected::CCmdHideUnselected(CModelDocument* doc) : CCommand("Hide")
 	int m = 0;
 
 	GObject* po = m_doc->GetActiveObject();
-	GModel& model = m_doc->GetFEModel()->GetModel();
+	GModel& model = m_doc->GetFSModel()->GetModel();
 	m_nitem = doc->GetItemMode();
 	m_nselect = doc->GetSelectionMode();
 
@@ -2520,7 +2520,7 @@ CCmdHideUnselected::CCmdHideUnselected(CModelDocument* doc) : CCommand("Hide")
 void CCmdHideUnselected::Execute()
 {
 	GObject* po = m_doc->GetActiveObject();
-	GModel& m = m_doc->GetFEModel()->GetModel();
+	GModel& m = m_doc->GetFSModel()->GetModel();
 	int N = m_item.size();
 	if (N == 0) return;
 	switch (m_nitem)
@@ -2549,7 +2549,7 @@ void CCmdHideUnselected::Execute()
 void CCmdHideUnselected::UnExecute()
 {
 	GObject* po = m_doc->GetActiveObject();
-	GModel& m = m_doc->GetFEModel()->GetModel();
+	GModel& m = m_doc->GetFSModel()->GetModel();
 	int N = m_item.size();
 	if (N == 0) return;
 	switch (m_nitem)
@@ -2584,7 +2584,7 @@ CCmdUnhideAll::CCmdUnhideAll(CModelDocument* doc) : CCommand("Unhide all")
 	m_doc = doc;
 	m_nitem = doc->GetItemMode();
 	m_nselect = doc->GetSelectionMode();
-	GModel& model = m_doc->GetFEModel()->GetModel();
+	GModel& model = m_doc->GetFSModel()->GetModel();
 	m_bunhide = true;
 
 	if (m_nitem == ITEM_MESH)
@@ -2655,7 +2655,7 @@ void CCmdUnhideAll::Execute()
 {
 	if (m_item.empty()) return;
 
-	GModel& model = m_doc->GetFEModel()->GetModel();
+	GModel& model = m_doc->GetFSModel()->GetModel();
 	int N = m_item.size();
 	if (m_nitem == ITEM_MESH)
 	{
@@ -2776,7 +2776,7 @@ void CCmdApplyFEModifier::Execute()
 
 void CCmdApplyFEModifier::UnExecute()
 {
-	// get the FEModel
+	// get the FSModel
 	if (m_pnew)
 	{
 		// replace the old mesh with the new
@@ -2856,7 +2856,7 @@ void CCmdApplySurfaceModifier::Execute()
 
 void CCmdApplySurfaceModifier::UnExecute()
 {
-	// get the FEModel
+	// get the FSModel
 	if (m_pnew)
 	{
 		// replace the old mesh with the new
@@ -3163,7 +3163,7 @@ void CCmdAddModifier::UnExecute()
 // CCmdAddStep
 //-----------------------------------------------------------------------------
 
-CCmdAddStep::CCmdAddStep(FEModel* fem, FEStep* pstep, int insertAfter) : CCommand("Add step")
+CCmdAddStep::CCmdAddStep(FSModel* fem, FEStep* pstep, int insertAfter) : CCommand("Add step")
 {
 	m_fem = fem;
 	m_pstep = pstep;
@@ -3192,7 +3192,7 @@ void CCmdAddStep::UnExecute()
 // CCmdSwapSteps
 //-----------------------------------------------------------------------------
 
-CCmdSwapSteps::CCmdSwapSteps(FEModel* fem, FEStep* step0, FEStep* step1) : CCommand("Swap steps")
+CCmdSwapSteps::CCmdSwapSteps(FSModel* fem, FEStep* step0, FEStep* step1) : CCommand("Swap steps")
 {
 	m_fem = fem;
 	m_step0 = step0;
@@ -3214,7 +3214,7 @@ void CCmdSwapSteps::UnExecute()
 // CCmdAddMaterial
 //-----------------------------------------------------------------------------
 
-CCmdAddMaterial::CCmdAddMaterial(FEModel* fem, GMaterial* pm) : CCommand("Add material")
+CCmdAddMaterial::CCmdAddMaterial(FSModel* fem, GMaterial* pm) : CCommand("Add material")
 {
 	m_fem = fem;
 	m_pm = pm;

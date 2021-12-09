@@ -29,14 +29,14 @@ SOFTWARE.*/
 #include <MeshTools/FEItemListBuilder.h>
 #include <FECore/units.h>
 
-FEBodyLoad::FEBodyLoad(int ntype, FEModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep)
+FEBodyLoad::FEBodyLoad(int ntype, FSModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep)
 {
 	m_superClassID = FE_BODY_LOAD;
 	SetMeshItemType(FE_ELEM_FLAG);
 }
 
 //-----------------------------------------------------------------------------
-FEConstBodyForce::FEConstBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_CONST_BODY_FORCE, ps, nstep)
+FEConstBodyForce::FEConstBodyForce(FSModel* ps, int nstep) : FEBodyLoad(FE_CONST_BODY_FORCE, ps, nstep)
 {
 	SetTypeString("const");
 	AddDoubleParam(0, "x")->SetLoadCurve();
@@ -54,7 +54,7 @@ double FEConstBodyForce::GetLoad(int n) { return GetFloatValue(FORCE_X + n); }
 void FEConstBodyForce::SetLoad(int n, double v) { SetFloatValue(FORCE_X + n, v); }
 
 //-----------------------------------------------------------------------------
-FENonConstBodyForce::FENonConstBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_NON_CONST_BODY_FORCE, ps, nstep)
+FENonConstBodyForce::FENonConstBodyForce(FSModel* ps, int nstep) : FEBodyLoad(FE_NON_CONST_BODY_FORCE, ps, nstep)
 {
 	SetTypeString("non-const");
 	AddMathParam("0", "x")->SetLoadCurve();
@@ -68,14 +68,14 @@ FELoadCurve* FENonConstBodyForce::GetLoadCurve(int n)
 }
 
 //-----------------------------------------------------------------------------
-FEHeatSource::FEHeatSource(FEModel* ps, int nstep) : FEBodyLoad(FE_HEAT_SOURCE, ps, nstep)
+FEHeatSource::FEHeatSource(FSModel* ps, int nstep) : FEBodyLoad(FE_HEAT_SOURCE, ps, nstep)
 {
 	SetTypeString("heat_source");
 	AddDoubleParam(0, "Q", "Q")->SetLoadCurve();
 }
 
 //-----------------------------------------------------------------------------
-FESBMPointSource::FESBMPointSource(FEModel* ps, int nstep) : FEBodyLoad(FE_SBM_POINT_SOURCE, ps, nstep)
+FESBMPointSource::FESBMPointSource(FSModel* ps, int nstep) : FEBodyLoad(FE_SBM_POINT_SOURCE, ps, nstep)
 {
 	SetTypeString("SBM Point Source");
 	AddIntParam(1, "sbm", "sbm");
@@ -87,7 +87,7 @@ FESBMPointSource::FESBMPointSource(FEModel* ps, int nstep) : FEBodyLoad(FE_SBM_P
 }
 
 //-----------------------------------------------------------------------------
-FECentrifugalBodyForce::FECentrifugalBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
+FECentrifugalBodyForce::FECentrifugalBodyForce(FSModel* ps, int nstep) : FEBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
 {
     SetTypeString("centrifugal");
     AddScienceParam(0, UNIT_RADIAN, "angular_speed", "angular speed")->SetLoadCurve();
@@ -96,14 +96,14 @@ FECentrifugalBodyForce::FECentrifugalBodyForce(FEModel* ps, int nstep) : FEBodyL
 }
 
 //-----------------------------------------------------------------------------
-FEMassDamping::FEMassDamping(FEModel* ps, int nstep) : FEBodyLoad(FE_MASSDAMPING_LOAD, ps, nstep)
+FEMassDamping::FEMassDamping(FSModel* ps, int nstep) : FEBodyLoad(FE_MASSDAMPING_LOAD, ps, nstep)
 {
 	SetTypeString("mass damping");
 	AddDoubleParam(1, "C");
 }
 
 //-----------------------------------------------------------------------------
-FEBioBodyLoad::FEBioBodyLoad(FEModel* ps, int nstep) : FEBodyLoad(FE_FEBIO_BODY_LOAD, ps, nstep)
+FEBioBodyLoad::FEBioBodyLoad(FSModel* ps, int nstep) : FEBodyLoad(FE_FEBIO_BODY_LOAD, ps, nstep)
 {
 
 }

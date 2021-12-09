@@ -45,7 +45,7 @@ typedef off_t off_type;
 
 //-----------------------------------------------------------------------------
 // forward declaration of model class
-class FEModel;
+class FSModel;
 class FEProject;
 
 //-----------------------------------------------------------------------------

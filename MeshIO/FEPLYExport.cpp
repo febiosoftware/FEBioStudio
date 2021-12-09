@@ -48,7 +48,7 @@ struct PLY_FACE {
 bool FEPLYExport::Write(const char* szfile)
 {
 	// get the GModel
-	GModel& mdl = m_prj.GetFEModel().GetModel();
+	GModel& mdl = m_prj.GetFSModel().GetModel();
 
 	// the vertex and face list
 	vector<vec3d> vertices; vertices.reserve(100000);

@@ -78,5 +78,5 @@ protected:
 
 	list<POLYFACE*>	m_Obj;
 	list<FACE3D>	m_Face;
-	FEModel*		m_pfem;
+	FSModel*		m_pfem;
 };

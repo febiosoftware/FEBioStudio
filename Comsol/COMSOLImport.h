@@ -57,7 +57,7 @@ protected:
 	};
 	typedef list<ELEMENT_SET>::iterator Telset_itr;
 		
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 	bool ReadHeader(char* szline);
 	bool ReadNodes(char* szline);
 	bool ReadElementType(char* szline);
@@ -75,7 +75,7 @@ protected:
 	typedef map<int,string>::iterator Telsetmap_itr;
 
 	list<ELEMENT_SET>	m_ElSet;	// element sets, one per comsol domain/element type combination
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
     int m_totalelems;
     int m_node0;
 };

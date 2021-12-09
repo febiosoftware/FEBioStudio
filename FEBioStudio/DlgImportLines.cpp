@@ -158,7 +158,7 @@ bool CDlgImportLines::ReadOldFormat(const char* szfile)
 	FILE* fp = fopen(szfile, "rt");
 	if (fp == 0) return false;
 
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	char szline[256] = { 0 };
 	while (!feof(fp))
@@ -221,7 +221,7 @@ int CDlgImportLines::ReadAng2Format(const char* szfile)
 	FILE* fp = fopen(szfile, "rb");
 	if (fp == 0) return 0;
 
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	// read the magic number
@@ -440,7 +440,7 @@ void CDlgImportPoints::OnApply()
 			return;
 		}
 
-		Post::FEPostModel& fem = *doc->GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFSModel();
 
 		char szline[256] = { 0 };
 

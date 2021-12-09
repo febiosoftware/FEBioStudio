@@ -138,7 +138,7 @@ public:
 	virtual ~FEProject(void);
 
 	// get the FE data
-	FEModel& GetFEModel() { return m_fem; }
+	FSModel& GetFSModel() { return m_fem; }
 
 	//! save project to file
 	void Save(OArchive& ar);
@@ -175,7 +175,7 @@ public:
 private:
 	unsigned int		m_module;	// active module
 	string				m_title;	// Project Title
-	FEModel				m_fem;		// FE model data
+	FSModel				m_fem;		// FE model data
 	CPlotDataSettings	m_plt;		// plot file settings
 	CLogDataSettings	m_log;		// log file settings
 };

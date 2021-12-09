@@ -39,7 +39,7 @@ using std::unique_ptr;
 // FEInterface
 //-----------------------------------------------------------------------------
 
-FEInterface::FEInterface(int ntype, FEModel* ps, int nstep)
+FEInterface::FEInterface(int ntype, FSModel* ps, int nstep)
 {
 	m_ntype = ntype;
 	m_nstepID = nstep;
@@ -113,7 +113,7 @@ FEItemListBuilder* FEInterface::LoadList(IArchive& ar)
 // FEPairedInterface
 //-----------------------------------------------------------------------------
 
-FEPairedInterface::FEPairedInterface(int ntype, FEModel* ps, int nstep) : FEInterface(ntype, ps, nstep)
+FEPairedInterface::FEPairedInterface(int ntype, FSModel* ps, int nstep) : FEInterface(ntype, ps, nstep)
 {
 	m_surf1 = 0;
 	m_surf2 = 0;
@@ -207,7 +207,7 @@ void FEPairedInterface::Load(IArchive &ar)
 // FESoloInterface
 //-----------------------------------------------------------------------------
 
-FESoloInterface::FESoloInterface(int ntype, FEModel* ps, int nstep) : FEInterface(ntype, ps, nstep)
+FESoloInterface::FESoloInterface(int ntype, FSModel* ps, int nstep) : FEInterface(ntype, ps, nstep)
 {
 	m_pItem = 0;
 }
@@ -266,14 +266,14 @@ void FESoloInterface::Load(IArchive &ar)
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-FERigidInterface::FERigidInterface(FEModel* ps, int nstep) : FESoloInterface(FE_RIGID_INTERFACE, ps, nstep)
+FERigidInterface::FERigidInterface(FSModel* ps, int nstep) : FESoloInterface(FE_RIGID_INTERFACE, ps, nstep)
 { 
 	SetTypeString("Rigid");
 	m_pmat = 0; 
 }
 
 //-----------------------------------------------------------------------------
-FERigidInterface::FERigidInterface(FEModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep) : FESoloInterface(FE_RIGID_INTERFACE, ps, nstep)
+FERigidInterface::FERigidInterface(FSModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep) : FESoloInterface(FE_RIGID_INTERFACE, ps, nstep)
 {
 	SetTypeString("Rigid");
 	m_pmat = pm; 
@@ -341,7 +341,7 @@ void FERigidInterface::Load(IArchive &ar)
 // FERigidWallInterface
 //-----------------------------------------------------------------------------
 
-FERigidWallInterface::FERigidWallInterface(FEModel* ps, int nstep) : FESoloInterface(FE_RIGID_WALL, ps, nstep)
+FERigidWallInterface::FERigidWallInterface(FSModel* ps, int nstep) : FESoloInterface(FE_RIGID_WALL, ps, nstep)
 {
 	SetTypeString("Rigid Wall");
 
@@ -368,7 +368,7 @@ void FERigidWallInterface::GetPlaneEquation(double a[4])
 // FERigidSphereInterface
 //-----------------------------------------------------------------------------
 
-FERigidSphereInterface::FERigidSphereInterface(FEModel* ps, int nstep) : FESoloInterface(FE_RIGID_SPHERE_CONTACT, ps, nstep)
+FERigidSphereInterface::FERigidSphereInterface(FSModel* ps, int nstep) : FESoloInterface(FE_RIGID_SPHERE_CONTACT, ps, nstep)
 {
 	SetTypeString("Rigid Sphere");
 
@@ -411,7 +411,7 @@ vec3d FERigidSphereInterface::Center()
 // FESlidingInterface
 //-----------------------------------------------------------------------------
 
-FESlidingInterface::FESlidingInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_SLIDING_INTERFACE, ps, nstep)
+FESlidingInterface::FESlidingInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_SLIDING_INTERFACE, ps, nstep)
 {
 	SetTypeString("Sliding contact");
 
@@ -435,7 +435,7 @@ FESlidingInterface::FESlidingInterface(FEModel* ps, int nstep) : FEPairedInterfa
 // FESlidingWithGapsInterface
 //-----------------------------------------------------------------------------
 
-FESlidingWithGapsInterface::FESlidingWithGapsInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_SLIDING_WITH_GAPS, ps, nstep)
+FESlidingWithGapsInterface::FESlidingWithGapsInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_SLIDING_WITH_GAPS, ps, nstep)
 {
 	SetTypeString("Sliding with gaps");
 
@@ -458,7 +458,7 @@ FESlidingWithGapsInterface::FESlidingWithGapsInterface(FEModel* ps, int nstep) :
 // FEFacetOnFacetInterface
 //-----------------------------------------------------------------------------
 
-FEFacetOnFacetInterface::FEFacetOnFacetInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_FACET_ON_FACET_SLIDING, ps, nstep)
+FEFacetOnFacetInterface::FEFacetOnFacetInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_FACET_ON_FACET_SLIDING, ps, nstep)
 {
 	SetTypeString("Facet-on-facet sliding");
 
@@ -482,7 +482,7 @@ FEFacetOnFacetInterface::FEFacetOnFacetInterface(FEModel* ps, int nstep) : FEPai
 // FETiedInterface
 //-----------------------------------------------------------------------------
 
-FETiedInterface::FETiedInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TIED_INTERFACE, ps, nstep)
+FETiedInterface::FETiedInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_TIED_INTERFACE, ps, nstep)
 {
 	SetTypeString("Tied contact");
 
@@ -497,7 +497,7 @@ FETiedInterface::FETiedInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_
 // FEF2FTiedInterface
 //-----------------------------------------------------------------------------
 
-FEF2FTiedInterface::FEF2FTiedInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_FACET_ON_FACET_TIED, ps, nstep)
+FEF2FTiedInterface::FEF2FTiedInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_FACET_ON_FACET_TIED, ps, nstep)
 {
 	SetTypeString("Tied facet-on-facet");
 
@@ -512,7 +512,7 @@ FEF2FTiedInterface::FEF2FTiedInterface(FEModel* ps, int nstep) : FEPairedInterfa
 // FEStickyInterface
 //-----------------------------------------------------------------------------
 
-FEStickyInterface::FEStickyInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_STICKY_INTERFACE, ps, nstep)
+FEStickyInterface::FEStickyInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_STICKY_INTERFACE, ps, nstep)
 {
 	SetTypeString("Sticky contact");
 
@@ -529,7 +529,7 @@ FEStickyInterface::FEStickyInterface(FEModel* ps, int nstep) : FEPairedInterface
 // FEPeriodicBoundary
 //-----------------------------------------------------------------------------
 
-FEPeriodicBoundary::FEPeriodicBoundary(FEModel* ps, int nstep) : FEPairedInterface(FE_PERIODIC_BOUNDARY, ps, nstep)
+FEPeriodicBoundary::FEPeriodicBoundary(FSModel* ps, int nstep) : FEPairedInterface(FE_PERIODIC_BOUNDARY, ps, nstep)
 {
 	SetTypeString("periodic boundary");
 
@@ -543,7 +543,7 @@ FEPeriodicBoundary::FEPeriodicBoundary(FEModel* ps, int nstep) : FEPairedInterfa
 // FEPoroContact
 //-----------------------------------------------------------------------------
 
-FEPoroContact::FEPoroContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO_INTERFACE, ps, nstep)
+FEPoroContact::FEPoroContact(FSModel* ps, int nstep) : FEPairedInterface(FE_PORO_INTERFACE, ps, nstep)
 {
 	SetTypeString("Biphasic contact");
 
@@ -578,7 +578,7 @@ FEPoroContact::FEPoroContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO
 // FEPoroSoluteContact
 //-----------------------------------------------------------------------------
 
-FEPoroSoluteContact::FEPoroSoluteContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO_SOLUTE_INTERFACE, ps, nstep)
+FEPoroSoluteContact::FEPoroSoluteContact(FSModel* ps, int nstep) : FEPairedInterface(FE_PORO_SOLUTE_INTERFACE, ps, nstep)
 {
 	SetTypeString("Biphasic-solute contact");
 
@@ -607,7 +607,7 @@ FEPoroSoluteContact::FEPoroSoluteContact(FEModel* ps, int nstep) : FEPairedInter
 // FEMultiphasicContact
 //-----------------------------------------------------------------------------
 
-FEMultiphasicContact::FEMultiphasicContact(FEModel* ps, int nstep) : FEPairedInterface(FE_MULTIPHASIC_INTERFACE, ps, nstep)
+FEMultiphasicContact::FEMultiphasicContact(FSModel* ps, int nstep) : FEPairedInterface(FE_MULTIPHASIC_INTERFACE, ps, nstep)
 {
 	SetTypeString("Multiphasic contact");
 
@@ -644,7 +644,7 @@ FEMultiphasicContact::FEMultiphasicContact(FEModel* ps, int nstep) : FEPairedInt
 // FETensionCompressionInterface
 //-----------------------------------------------------------------------------
 
-FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TENSCOMP_INTERFACE, ps, nstep)
+FETensionCompressionInterface::FETensionCompressionInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_TENSCOMP_INTERFACE, ps, nstep)
 {
 	SetTypeString("Sliding-elastic contact");
 
@@ -676,7 +676,7 @@ FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int ns
 // FETiedBiphasicInterface
 //-----------------------------------------------------------------------------
 
-FETiedBiphasicInterface::FETiedBiphasicInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TIEDBIPHASIC_INTERFACE, ps, nstep)
+FETiedBiphasicInterface::FETiedBiphasicInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_TIEDBIPHASIC_INTERFACE, ps, nstep)
 {
 	SetTypeString("Tied biphasic contact");
 
@@ -700,7 +700,7 @@ FETiedBiphasicInterface::FETiedBiphasicInterface(FEModel* ps, int nstep) : FEPai
 // FETiedMultiphasicInterface
 //-----------------------------------------------------------------------------
 
-FETiedMultiphasicInterface::FETiedMultiphasicInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TIEDMULTIPHASIC_INTERFACE, ps, nstep)
+FETiedMultiphasicInterface::FETiedMultiphasicInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_TIEDMULTIPHASIC_INTERFACE, ps, nstep)
 {
 	SetTypeString("Tied multiphasic contact");
 
@@ -726,7 +726,7 @@ FETiedMultiphasicInterface::FETiedMultiphasicInterface(FEModel* ps, int nstep) :
 // FETiedElasticInterface
 //-----------------------------------------------------------------------------
 
-FETiedElasticInterface::FETiedElasticInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TIED_ELASTIC_INTERFACE, ps, nstep)
+FETiedElasticInterface::FETiedElasticInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_TIED_ELASTIC_INTERFACE, ps, nstep)
 {
 	SetTypeString("Tied-elastic");
 
@@ -746,7 +746,7 @@ FETiedElasticInterface::FETiedElasticInterface(FEModel* ps, int nstep) : FEPaire
 }
 
 //=============================================================================
-FEContactPotentialInterface::FEContactPotentialInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_CONTACTPOTENTIAL_CONTACT, ps, nstep)
+FEContactPotentialInterface::FEContactPotentialInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_CONTACTPOTENTIAL_CONTACT, ps, nstep)
 {
 	SetTypeString("contact potential");
 
@@ -761,7 +761,7 @@ FEContactPotentialInterface::FEContactPotentialInterface(FEModel* ps, int nstep)
 // FEGapHeatFluxInterface
 //-----------------------------------------------------------------------------
 
-FEGapHeatFluxInterface::FEGapHeatFluxInterface(FEModel* fem, int nstep) : FEPairedInterface(FE_GAPHEATFLUX_INTERFACE, fem, nstep)
+FEGapHeatFluxInterface::FEGapHeatFluxInterface(FSModel* fem, int nstep) : FEPairedInterface(FE_GAPHEATFLUX_INTERFACE, fem, nstep)
 {
 	SetTypeString("Gap heat flux");
 
@@ -773,7 +773,7 @@ FEGapHeatFluxInterface::FEGapHeatFluxInterface(FEModel* fem, int nstep) : FEPair
 // FERigidJoint
 //-----------------------------------------------------------------------------
 
-FERigidJoint::FERigidJoint(FEModel* ps, int nstep) : FEInterface(FE_RIGID_JOINT, ps, nstep)
+FERigidJoint::FERigidJoint(FSModel* ps, int nstep) : FEInterface(FE_RIGID_JOINT, ps, nstep)
 { 
 	m_pbodyA = m_pbodyB = 0;
 
@@ -842,7 +842,7 @@ void FERigidJoint::Load(IArchive& ar)
 // FESpringTiedInterface
 //-----------------------------------------------------------------------------
 
-FESpringTiedInterface::FESpringTiedInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_SPRINGTIED_INTERFACE,ps, nstep)
+FESpringTiedInterface::FESpringTiedInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_SPRINGTIED_INTERFACE,ps, nstep)
 {
 	SetTypeString("Spring-tied contact");
 
@@ -943,7 +943,7 @@ FELinearConstraintSet& FELinearConstraintSet::operator = (const FELinearConstrai
 }
 
 //=============================================================================
-FEBioInterface::FEBioInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_FEBIO_INTERFACE, ps, nstep)
+FEBioInterface::FEBioInterface(FSModel* ps, int nstep) : FEPairedInterface(FE_FEBIO_INTERFACE, ps, nstep)
 {
 
 }

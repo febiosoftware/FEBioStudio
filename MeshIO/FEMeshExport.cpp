@@ -41,7 +41,7 @@ FEMeshExport::~FEMeshExport(void)
 
 bool FEMeshExport::Write(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& model = fem.GetModel();
 
 	FILE* fp = fopen(szfile, "wt");

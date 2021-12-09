@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <vector>
 
 class GObject;
-class FEModel;
+class FSModel;
 class GMaterial;
 class FEFixedDOF;
 class FEPrescribedDOF;
@@ -48,13 +48,13 @@ class FEStep;
 class FEObjectProps : public CObjectProps
 {
 public:
-	FEObjectProps(FSObject* po, FEModel* fem = nullptr);
+	FEObjectProps(FSObject* po, FSModel* fem = nullptr);
 
 protected:
 	QStringList GetEnumValues(const char* ch) override;
 
 private:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 };
 
 class CFixedDOFProps : public CPropertyList
@@ -101,7 +101,7 @@ private:
 class CRigidInterfaceSettings : public CPropertyList
 {
 public:
-	CRigidInterfaceSettings(FEModel&fem, FERigidInterface* pi);
+	CRigidInterfaceSettings(FSModel&fem, FERigidInterface* pi);
 
 	QVariant GetPropertyValue(int i);
 
@@ -116,7 +116,7 @@ private:
 class CRigidConstraintSettings : public CObjectProps
 {
 public:
-	CRigidConstraintSettings(FEModel& fem, FERigidConstraint* rc);
+	CRigidConstraintSettings(FSModel& fem, FERigidConstraint* rc);
 
 	QVariant GetPropertyValue(int i);
 
@@ -131,7 +131,7 @@ private:
 class CRigidConnectorSettings : public CObjectProps
 {
 public:
-	CRigidConnectorSettings(FEModel& fem, FERigidConnector* rc);
+	CRigidConnectorSettings(FSModel& fem, FERigidConnector* rc);
 
 	QVariant GetPropertyValue(int i);
 
@@ -148,7 +148,7 @@ private:
 class CMaterialProps : public FEObjectProps
 {
 public:
-	CMaterialProps(FEModel& fem, FEMaterial* mat);
+	CMaterialProps(FSModel& fem, FEMaterial* mat);
 
 	QVariant GetPropertyValue(int i);
 
@@ -173,7 +173,7 @@ public:
 class CReactionReactantProperties : public CObjectProps
 {
 public:
-	CReactionReactantProperties(FEReactionMaterial* mat, FEModel& fem);
+	CReactionReactantProperties(FEReactionMaterial* mat, FSModel& fem);
 
 	QVariant GetPropertyValue(int i);
 
@@ -187,7 +187,7 @@ private:
 class CReactionProductProperties : public CObjectProps
 {
 public:
-	CReactionProductProperties(FEReactionMaterial* mat, FEModel& fem);
+	CReactionProductProperties(FEReactionMaterial* mat, FSModel& fem);
 
 	QVariant GetPropertyValue(int i);
 
@@ -201,11 +201,11 @@ private:
 class CPartProperties : public CObjectProps
 {
 public:
-	CPartProperties(GPart* pg, FEModel& fem);
+	CPartProperties(GPart* pg, FSModel& fem);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 private:
 	int	m_lid;
 	GPart*	m_pg;
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 };

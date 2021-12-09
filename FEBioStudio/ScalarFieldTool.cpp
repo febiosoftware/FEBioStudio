@@ -169,7 +169,7 @@ void CScalarFieldTool::Activate()
 	ui->m_matList->clear();
 	if (doc)
 	{
-		FEModel* fem = doc->GetFEModel();
+		FSModel* fem = doc->GetFSModel();
 		if (fem)
 		{
 			int nmat = fem->Materials();
@@ -228,7 +228,7 @@ void CScalarFieldTool::OnApply()
 	}
 
 	//get the model and nodeset
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int NN = pm->Nodes();
@@ -274,7 +274,7 @@ void CScalarFieldTool::OnApply()
 			CModelDocument* doc = GetMainWindow()->GetModelDocument();
 			if (doc)
 			{
-				FEModel* fem = doc->GetFEModel();
+				FSModel* fem = doc->GetFSModel();
 				if (fem)
 				{
 					GMaterial* mat = fem->GetMaterial(n);

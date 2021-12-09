@@ -10,7 +10,7 @@
 class FERigidConnector : public FEStepComponent
 {
 public:
-	FERigidConnector(int ntype, FEModel* ps, int nstep);
+	FERigidConnector(int ntype, FSModel* ps, int nstep);
 	virtual ~FERigidConnector();
 
 	int Type();
@@ -32,7 +32,7 @@ protected:
 	FEItemListBuilder* LoadList(IArchive& ar);
 
 protected:
-	FEModel* m_ps;
+	FSModel* m_ps;
 	int		m_ntype;
 	int	m_rbA;
 	int	m_rbB;
@@ -48,7 +48,7 @@ public:
         MIN_AUG, MAX_AUG, B_ROT, ROT_X, ROT_Y, ROT_Z, MX, MY, MZ };
     
 public:
-    FERigidSphericalJoint(FEModel* ps, int nstep = 0);
+    FERigidSphericalJoint(FSModel* ps, int nstep = 0);
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -62,7 +62,7 @@ public:
         MIN_AUG, MAX_AUG, B_ROT, ROT, MOMENT };
     
 public:
-    FERigidRevoluteJoint(FEModel* ps, int nstep = 0);
+    FERigidRevoluteJoint(FSModel* ps, int nstep = 0);
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -76,7 +76,7 @@ public:
         MIN_AUG, MAX_AUG, B_TRANS, TRANS, FORCE };
     
 public:
-    FERigidPrismaticJoint(FEModel* ps, int nstep = 0);
+    FERigidPrismaticJoint(FSModel* ps, int nstep = 0);
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -90,7 +90,7 @@ public:
         MIN_AUG, MAX_AUG, B_TRANS, TRANS, FORCE, B_ROT, ROT, MOMENT };
     
 public:
-    FERigidCylindricalJoint(FEModel* ps, int nstep = 0);
+    FERigidCylindricalJoint(FSModel* ps, int nstep = 0);
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -104,7 +104,7 @@ public:
         MIN_AUG, MAX_AUG, B_TRANS1, TRANS1, B_TRANS2, TRANS2, B_ROT, ROT };
     
 public:
-    FERigidPlanarJoint(FEModel* ps, int nstep = 0);
+    FERigidPlanarJoint(FSModel* ps, int nstep = 0);
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -118,7 +118,7 @@ public:
         MIN_AUG, MAX_AUG };
     
 public:
-    FERigidLock(FEModel* ps, int nstep = 0);
+    FERigidLock(FSModel* ps, int nstep = 0);
     void SetPosition(const vec3d& r) override;
 };
 
@@ -131,7 +131,7 @@ public:
     enum { K, XA, XB };
     
 public:
-    FERigidSpring(FEModel* ps, int nstep = 0);
+    FERigidSpring(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -143,7 +143,7 @@ public:
     enum { C, XA, XB };
     
 public:
-    FERigidDamper(FEModel* ps, int nstep = 0);
+    FERigidDamper(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -155,7 +155,7 @@ public:
     enum { C };
     
 public:
-    FERigidAngularDamper(FEModel* ps, int nstep = 0);
+    FERigidAngularDamper(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -167,21 +167,21 @@ public:
     enum { F, XA, XB };
     
 public:
-    FERigidContractileForce(FEModel* ps, int nstep = 0);
+    FERigidContractileForce(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 class FEGenericRigidJoint : public FERigidConnector
 {
 public:
-	FEGenericRigidJoint(FEModel* ps, int nstep = 0);
+	FEGenericRigidJoint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 class FEBioRigidConnector : public FERigidConnector
 {
 public:
-    FEBioRigidConnector(FEModel* ps, int nstep = 0);
+    FEBioRigidConnector(FSModel* ps, int nstep = 0);
     void Save(OArchive& ar);
     void Load(IArchive& ar);
 };

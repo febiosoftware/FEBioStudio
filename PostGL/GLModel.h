@@ -112,7 +112,7 @@ public:
 
 	CGLDisplacementMap* GetDisplacementMap() { return m_pdis; }
 	CGLColorMap* GetColorMap() { return m_pcol; }
-	FEPostModel* GetFEModel() { return m_ps; }
+	FEPostModel* GetFSModel() { return m_ps; }
 
 	bool Update(bool breset) override;
 	void UpdateDisplacements(int nstate, bool breset = false);

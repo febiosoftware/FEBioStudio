@@ -1378,7 +1378,7 @@ void CGraphWindow::on_range_optionsChanged()
 		if (doc)
 		{
 			// check the range. Note that user min and max are one-based!
-			Post::FEPostModel* fem = doc->GetFEModel();
+			Post::FEPostModel* fem = doc->GetFSModel();
 			int N = fem->GetStates();
 			if (m_nUserMin < 1) m_nUserMin = 1;
 			if (m_nUserMin > N) m_nUserMin = N;
@@ -1483,7 +1483,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	if (breset)
 	{
 		Post::CGLModel* glm = doc->GetGLModel();
-		Post::FEPostModel* fem = doc->GetFEModel();
+		Post::FEPostModel* fem = doc->GetFSModel();
 
 		// update the data sources
 		QStringList sourceNames;
@@ -1572,7 +1572,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	//	pview->SetCurrentTimeIndex(ntime);
 
 	Post::CGLModel* po = doc->GetGLModel();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
@@ -1674,7 +1674,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 void CModelGraphWindow::setDataSource(int n)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	if (n == 0)
 	{
@@ -1752,7 +1752,7 @@ CPlotData* CModelGraphWindow::nextData()
 void CModelGraphWindow::addObjectData(int n)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	if ((n < 0) || (n >= fem.PlotObjects())) return;
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -1809,7 +1809,7 @@ void CModelGraphWindow::addObjectData(int n)
 void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = m_lastState - m_firstState + 1;
 	vector<float> xdata(nsteps);
@@ -1832,7 +1832,7 @@ void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
 void CModelGraphWindow::addMusclePathData(Post::GLMusclePath* musclePath)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = m_lastState - m_firstState + 1;
 	vector<float> xdata(nsteps);
@@ -1856,7 +1856,7 @@ void CModelGraphWindow::addMusclePathData(Post::GLMusclePath* musclePath)
 void CModelGraphWindow::addSelectedNodes()
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -1997,7 +1997,7 @@ void CModelGraphWindow::addSelectedNodes()
 void CModelGraphWindow::addSelectedEdges()
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -2038,7 +2038,7 @@ void CModelGraphWindow::addSelectedEdges()
 void CModelGraphWindow::addSelectedFaces()
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -2159,7 +2159,7 @@ void CModelGraphWindow::addSelectedFaces()
 void CModelGraphWindow::addSelectedElems()
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -2284,7 +2284,7 @@ void CModelGraphWindow::addSelectedElems()
 void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -2306,7 +2306,7 @@ void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int 
 void CModelGraphWindow::TrackEdgeHistory(int edge, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -2328,7 +2328,7 @@ void CModelGraphWindow::TrackEdgeHistory(int edge, float* pval, int nfield, int 
 void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -2350,7 +2350,7 @@ void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int
 void CModelGraphWindow::TrackElementHistory(int nelem, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;

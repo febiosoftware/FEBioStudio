@@ -50,7 +50,7 @@ bool FEVTKExport::Write(const char* szfile)
 	bool isTet4 = false;
 	bool isTet10 = false;
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int totElems = 0;

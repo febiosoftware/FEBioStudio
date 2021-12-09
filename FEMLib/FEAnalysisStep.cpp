@@ -82,7 +82,7 @@ public:
 };
 
 
-FEStep::FEStep(FEModel* ps, int ntype) : m_ntype(ntype), m_pfem(ps), imp(new FEStep::Imp)
+FEStep::FEStep(FSModel* ps, int ntype) : m_ntype(ntype), m_pfem(ps), imp(new FEStep::Imp)
 {
 	m_nID = ++m_ncount;
 	m_superClassID = FE_ANALYSIS;
@@ -1065,7 +1065,7 @@ void FEStep::Load(IArchive &ar)
 // FEInitialStep
 //-----------------------------------------------------------------------------
 
-FEInitialStep::FEInitialStep(FEModel* ps) : FEStep(ps, FE_STEP_INITIAL)
+FEInitialStep::FEInitialStep(FSModel* ps) : FEStep(ps, FE_STEP_INITIAL)
 { 
 	SetName("Initial"); 
 	SetTypeString("Initial");
@@ -1147,7 +1147,7 @@ void STEP_SETTINGS::Defaults()
 //	Ta = 0; //298;
 }
 
-FEAnalysisStep::FEAnalysisStep(FEModel* ps, int ntype) : FEStep(ps, ntype)
+FEAnalysisStep::FEAnalysisStep(FSModel* ps, int ntype) : FEStep(ps, ntype)
 {
 	// set default options
 	m_ops.Defaults();
@@ -1306,7 +1306,7 @@ void FEAnalysisStep::Load(IArchive &ar)
 }
 
 //-----------------------------------------------------------------------------
-FENonLinearMechanics::FENonLinearMechanics(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_MECHANICS)
+FENonLinearMechanics::FENonLinearMechanics(FSModel* ps) : FEAnalysisStep(ps, FE_STEP_MECHANICS)
 {
 	SetTypeString("Structural Mechanics");
 
@@ -1330,7 +1330,7 @@ void FENonLinearMechanics::SetResidualTolerance(double rtol) { GetParam(MP_RTOL)
 void FENonLinearMechanics::SetLineSearchTolerance(double lstol) { GetParam(MP_LSTOL).SetFloatValue(lstol); }
 
 //-----------------------------------------------------------------------------
-FEHeatTransfer::FEHeatTransfer(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_HEAT_TRANSFER)
+FEHeatTransfer::FEHeatTransfer(FSModel* ps) : FEAnalysisStep(ps, FE_STEP_HEAT_TRANSFER)
 {
 	SetTypeString("Heat Transfer");
 }
@@ -1344,7 +1344,7 @@ vector<string> FEHeatTransfer::GetAnalysisStrings() const
 }
 
 //-----------------------------------------------------------------------------
-FENonLinearBiphasic::FENonLinearBiphasic(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_BIPHASIC)
+FENonLinearBiphasic::FENonLinearBiphasic(FSModel* ps) : FEAnalysisStep(ps, FE_STEP_BIPHASIC)
 {
 	SetTypeString("Biphasic");
 
@@ -1369,7 +1369,7 @@ vector<string> FENonLinearBiphasic::GetAnalysisStrings() const
 }
 
 //-----------------------------------------------------------------------------
-FEBiphasicSolutes::FEBiphasicSolutes(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_BIPHASIC_SOLUTE)
+FEBiphasicSolutes::FEBiphasicSolutes(FSModel* ps) : FEAnalysisStep(ps, FE_STEP_BIPHASIC_SOLUTE)
 {
 	SetTypeString("Biphasic-solute");
 
@@ -1394,7 +1394,7 @@ vector<string> FEBiphasicSolutes::GetAnalysisStrings() const
 }
 
 //-----------------------------------------------------------------------------
-FEMultiphasicAnalysis::FEMultiphasicAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_MULTIPHASIC)
+FEMultiphasicAnalysis::FEMultiphasicAnalysis(FSModel* ps) : FEAnalysisStep(ps, FE_STEP_MULTIPHASIC)
 {
 	SetTypeString("Multiphasic");
 
@@ -1425,7 +1425,7 @@ vector<string> FEMultiphasicAnalysis::GetAnalysisStrings() const
 }
 
 //-----------------------------------------------------------------------------
-FEFluidAnalysis::FEFluidAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_FLUID)
+FEFluidAnalysis::FEFluidAnalysis(FSModel* ps) : FEAnalysisStep(ps, FE_STEP_FLUID)
 {
     SetTypeString("Fluid");
 
@@ -1445,7 +1445,7 @@ FEFluidAnalysis::FEFluidAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_FLUID
 }
 
 //-----------------------------------------------------------------------------
-FEFluidFSIAnalysis::FEFluidFSIAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_FLUID_FSI)
+FEFluidFSIAnalysis::FEFluidFSIAnalysis(FSModel* ps) : FEAnalysisStep(ps, FE_STEP_FLUID_FSI)
 {
     SetTypeString("Fluid-FSI");
     
@@ -1465,7 +1465,7 @@ FEFluidFSIAnalysis::FEFluidFSIAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP
 }
 
 //-----------------------------------------------------------------------------
-FEReactionDiffusionAnalysis::FEReactionDiffusionAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_REACTION_DIFFUSION)
+FEReactionDiffusionAnalysis::FEReactionDiffusionAnalysis(FSModel* ps) : FEAnalysisStep(ps, FE_STEP_REACTION_DIFFUSION)
 {
 	SetTypeString("Reaction diffusion");
 
@@ -1489,7 +1489,7 @@ vector<string> FEReactionDiffusionAnalysis::GetAnalysisStrings() const
 }
 
 //==================================================================================
-FEBioAnalysisStep::FEBioAnalysisStep(FEModel* ps) : FEStep(ps, FE_STEP_FEBIO_ANALYSIS)
+FEBioAnalysisStep::FEBioAnalysisStep(FSModel* ps) : FEStep(ps, FE_STEP_FEBIO_ANALYSIS)
 {
 }
 

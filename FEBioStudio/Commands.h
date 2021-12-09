@@ -1297,14 +1297,14 @@ protected:
 class CCmdAddStep : public CCommand
 {
 public:
-	CCmdAddStep(FEModel* fem, FEStep* ps, int insertAfter = -1);
+	CCmdAddStep(FSModel* fem, FEStep* ps, int insertAfter = -1);
 	~CCmdAddStep();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 	FEStep*		m_pstep;
 	int			m_pos;
 };
@@ -1313,13 +1313,13 @@ protected:
 class CCmdSwapSteps : public CCommand
 {
 public:
-	CCmdSwapSteps(FEModel* fem, FEStep* step0, FEStep* step1);
+	CCmdSwapSteps(FSModel* fem, FEStep* step0, FEStep* step1);
 
 	void Execute();
 	void UnExecute();
 
 private:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 	FEStep*		m_step0;
 	FEStep*		m_step1;
 };
@@ -1328,14 +1328,14 @@ private:
 class CCmdAddMaterial : public CCommand
 {
 public:
-	CCmdAddMaterial(FEModel* fem, GMaterial* pm);
+	CCmdAddMaterial(FSModel* fem, GMaterial* pm);
 	~CCmdAddMaterial();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 	GMaterial*	m_pm;
 };
 

@@ -38,7 +38,7 @@ FEHyperSurfImport::~FEHyperSurfImport(void)
 
 bool FEHyperSurfImport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	// open the file
 	if (Open(szfile, "rt") == false) return errf("Failed opening file %s", szfile);

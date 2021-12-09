@@ -12,7 +12,7 @@ using std::list;
 class FEInterface : public FEStepComponent
 {
 public:
-	FEInterface(int ntype, FEModel* ps, int nstep);
+	FEInterface(int ntype, FSModel* ps, int nstep);
 	virtual ~FEInterface();
 
 	int Type() { return m_ntype; }
@@ -22,7 +22,7 @@ protected:
 	FEItemListBuilder* LoadList(IArchive& ar);
 
 protected:
-	FEModel* m_ps;
+	FSModel* m_ps;
 	int		m_ntype;
 };
 
@@ -32,7 +32,7 @@ protected:
 class FESoloInterface : public FEInterface
 {
 public:
-	FESoloInterface(int ntype, FEModel* ps, int nstep);
+	FESoloInterface(int ntype, FSModel* ps, int nstep);
 	~FESoloInterface();
 
 	FEItemListBuilder* GetItemList() { return m_pItem; }
@@ -51,7 +51,7 @@ protected:
 class FEPairedInterface : public FEInterface
 {
 public:
-	FEPairedInterface(int ntype, FEModel* ps, int nstep);
+	FEPairedInterface(int ntype, FSModel* ps, int nstep);
 	~FEPairedInterface();
 
 	void SetPrimarySurface(FEItemListBuilder* pg) { m_surf1 = pg; }
@@ -79,8 +79,8 @@ public:
 class FERigidInterface : public FESoloInterface
 {
 public:
-	FERigidInterface(FEModel* ps, int nstep = 0);
-	FERigidInterface(FEModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep = 0);
+	FERigidInterface(FSModel* ps, int nstep = 0);
+	FERigidInterface(FSModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep = 0);
 	
 	GMaterial* GetRigidBody() { return m_pmat; }
 	void SetRigidBody(GMaterial* pm) { m_pmat = pm; }
@@ -101,7 +101,7 @@ public:
 	enum { LAUGON, ALTOL, PENALTY, PA, PB, PC, PD, OFFSET };
 
 public:
-	FERigidWallInterface(FEModel* ps, int nstep = 0);
+	FERigidWallInterface(FSModel* ps, int nstep = 0);
 	~FERigidWallInterface(){}
 
 	FELoadCurve* GetLoadCurve() { return GetParamLC(OFFSET); }
@@ -118,7 +118,7 @@ public:
 	enum { LAUGON, ALTOL, PENALTY, RADIUS, CENTER, UX, UY, UZ};
 
 public:
-	FERigidSphereInterface(FEModel* ps, int nstep = 0);
+	FERigidSphereInterface(FSModel* ps, int nstep = 0);
 	~FERigidSphereInterface(){}
 
 	FELoadCurve* GetLoadCurve(int i);
@@ -137,7 +137,7 @@ public:
 	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, NTYPE, MINAUG, MAXAUG, GAPTOL, SEGUP };
 
 public:
-	FESlidingInterface(FEModel* ps, int nstep = 0);
+	FESlidingInterface(FSModel* ps, int nstep = 0);
 	~FESlidingInterface() {}
 };
 
@@ -148,7 +148,7 @@ public:
 	enum { LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, MINAUG, MAXAUG, GAPTOL, SEGUP };
 
 public:
-	FESlidingWithGapsInterface(FEModel* ps, int nstep = 0);
+	FESlidingWithGapsInterface(FSModel* ps, int nstep = 0);
 	~FESlidingWithGapsInterface() {}
 };
 
@@ -159,7 +159,7 @@ public:
 	enum { LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, MINAUG, MAXAUG, GAPTOL, SEGUP, SEARCH_RADIUS };
 
 public:
-	FEFacetOnFacetInterface(FEModel* ps, int nstep = 0);
+	FEFacetOnFacetInterface(FSModel* ps, int nstep = 0);
 	~FEFacetOnFacetInterface() {}
 };
 
@@ -171,7 +171,7 @@ class FETiedInterface : public FEPairedInterface
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 public:
-	FETiedInterface(FEModel* ps, int nstep = 0);
+	FETiedInterface(FSModel* ps, int nstep = 0);
 	~FETiedInterface(){}
 };
 
@@ -183,7 +183,7 @@ class FEF2FTiedInterface : public FEPairedInterface
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 public:
-	FEF2FTiedInterface(FEModel* ps, int nstep = 0);
+	FEF2FTiedInterface(FSModel* ps, int nstep = 0);
 	~FEF2FTiedInterface(){}
 };
 
@@ -195,7 +195,7 @@ class FEStickyInterface : public FEPairedInterface
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 public:
-	FEStickyInterface(FEModel* ps, int nstep = 0);
+	FEStickyInterface(FSModel* ps, int nstep = 0);
 	~FEStickyInterface(){}
 };
 
@@ -207,7 +207,7 @@ public:
 	enum { LAUGON, ALTOL, PENALTY, TWOPASS };
 
 public:
-	FEPeriodicBoundary(FEModel* ps, int nstep = 0);
+	FEPeriodicBoundary(FSModel* ps, int nstep = 0);
 	~FEPeriodicBoundary(){}
 };
 
@@ -219,7 +219,7 @@ public:
 	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, PRESSPEN, SYMMETRIC, SEARCHRAD };
 
 public:
-	FEPoroContact(FEModel* ps, int nstep = 0);
+	FEPoroContact(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -229,7 +229,7 @@ public:
 	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, PRESSPEN, SYMMETRIC, CONCPEN, AMBPRESS, AMBCONC, SEARCHRAD };
 
 public:
-	FEPoroSoluteContact(FEModel* ps, int nstep = 0);
+	FEPoroSoluteContact(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -239,7 +239,7 @@ public:
 	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, PRESSPEN, SYMMETRIC, CONCPEN, AMBPRESS, AMBCONC, SEARCHRAD };
     
 public:
-	FEMultiphasicContact(FEModel* ps, int nstep = 0);
+	FEMultiphasicContact(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -269,7 +269,7 @@ public:
 	};
 
 public:
-	FETensionCompressionInterface(FEModel* ps, int nstep = 0);
+	FETensionCompressionInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -279,7 +279,7 @@ public:
 	enum {LAUGON, ALTOL, GAPTOL, PTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD};
 
 public:
-	FETiedBiphasicInterface(FEModel* ps, int nstep = 0);
+	FETiedBiphasicInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -289,7 +289,7 @@ public:
 	enum { LAUGON, ALTOL, GAPTOL, PTOL, CTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD };
 
 public:
-	FETiedMultiphasicInterface(FEModel* ps, int nstep = 0);
+	FETiedMultiphasicInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -299,7 +299,7 @@ public:
 	enum { LAUGON, ALTOL, GAPTOL, PTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD };
 
 public:
-	FETiedElasticInterface(FEModel* ps, int nstep = 0);
+	FETiedElasticInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -308,7 +308,7 @@ class FEContactPotentialInterface : public FEPairedInterface
 public:
 	enum { KC, POWER, RIN, ROUT, WTOL };
 public:
-	FEContactPotentialInterface(FEModel* ps, int nstep = 0);
+	FEContactPotentialInterface(FSModel* ps, int nstep = 0);
 };
 
 
@@ -316,7 +316,7 @@ public:
 class FEGapHeatFluxInterface : public FEPairedInterface
 {
 public:
-	FEGapHeatFluxInterface(FEModel* ps, int nstep = 0);
+	FEGapHeatFluxInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -328,7 +328,7 @@ public:
 	enum {TOL, PENALTY, RJ};
 
 public:
-	FERigidJoint(FEModel* ps, int nstep = 0);
+	FERigidJoint(FSModel* ps, int nstep = 0);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
@@ -347,7 +347,7 @@ public:
 	enum { ECONST };
 
 public:
-	FESpringTiedInterface(FEModel* ps, int nstep = 0);
+	FESpringTiedInterface(FSModel* ps, int nstep = 0);
 
 	double SpringConstant() const;
 
@@ -358,7 +358,7 @@ public:
 class FEBioInterface : public FEPairedInterface
 {
 public:
-	FEBioInterface(FEModel* ps, int nstep = 0);
+	FEBioInterface(FSModel* ps, int nstep = 0);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 };

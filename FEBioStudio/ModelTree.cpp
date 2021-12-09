@@ -124,7 +124,7 @@ private:
 class CStepValidator : public CObjectValidator
 {
 public:
-	CStepValidator(FEModel* fem) : m_fem(fem) {}
+	CStepValidator(FSModel* fem) : m_fem(fem) {}
 
 	QString GetErrorString() const { return "No steps defined"; }
 
@@ -136,13 +136,13 @@ public:
 	}
 
 private:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 };
 
 class CMaterialValidator : public CObjectValidator
 {
 public:
-	CMaterialValidator(FEModel* fem, GMaterial* mat) : m_fem(fem), m_mat(mat), m_err(0) {}
+	CMaterialValidator(FSModel* fem, GMaterial* mat) : m_fem(fem), m_mat(mat), m_err(0) {}
 
 	QString GetErrorString() const 
 	{ 
@@ -183,7 +183,7 @@ public:
 	}
 
 private:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 	GMaterial*	m_mat;
 	int			m_err;
 };
@@ -862,7 +862,7 @@ void CModelTree::Build(CModelDocument* doc)
 
 	// get the model
 	FEProject& prj = doc->GetProject();
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GModel& mdl = fem.GetModel();
 
 	std::string modelName = doc->GetDocFileBase();
@@ -1181,7 +1181,7 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateModelData(QTreeWidgetItem* t1, FEModel& fem)
+void CModelTree::UpdateModelData(QTreeWidgetItem* t1, FSModel& fem)
 {
 	int NSOL = fem.Solutes();
 	if (NSOL > 0)
@@ -1207,7 +1207,7 @@ void CModelTree::UpdateModelData(QTreeWidgetItem* t1, FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FEModel& fem)
+void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FSModel& fem)
 {
 	GModel& model = fem.GetModel();
 	for (int i = 0; i<model.DiscreteObjects(); ++i)
@@ -1240,7 +1240,7 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
+void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 {
 	QTreeWidgetItem* t2, *t3, *t4;
 
@@ -1309,7 +1309,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FEModel& fem)
+void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 {
 	// get the model
 	GModel& model = fem.GetModel();
@@ -1410,7 +1410,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FEModel& fem)
+void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FSModel& fem)
 {
 	GModel& mdl = fem.GetModel();
 	for (int i = 0; i < mdl.Objects(); ++i)
@@ -1435,13 +1435,13 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateMeshAdaptors(QTreeWidgetItem* t1, FEModel& fem)
+void CModelTree::UpdateMeshAdaptors(QTreeWidgetItem* t1, FSModel& fem)
 {
 
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateBC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+void CModelTree::UpdateBC(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 {
 	QTreeWidgetItem* t2;
 
@@ -1470,7 +1470,7 @@ void CModelTree::UpdateBC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 }
 
 //----------------------------------------------------------------------------
-void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 {
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
@@ -1492,7 +1492,7 @@ void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateICs(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+void CModelTree::UpdateICs(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 {
 	QTreeWidgetItem* t2;
 
@@ -1529,7 +1529,7 @@ void setInactive(QTreeWidgetItem* ti)
 	ti->setFont(0, f);
 }
 
-void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 {
 	int n, i;
 	QTreeWidgetItem* t2;
@@ -1607,7 +1607,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 {
 	QTreeWidgetItem* t2;
 	for (int n = 0; n<fem.Steps(); ++n)
@@ -1640,7 +1640,7 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEProject& prj)
 {
 	QTreeWidgetItem* t2, *t3;
 
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
@@ -1687,7 +1687,7 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateRC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+void CModelTree::UpdateRC(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 {
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
@@ -1710,7 +1710,7 @@ void CModelTree::UpdateRC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 {
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
@@ -1733,7 +1733,7 @@ void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pst
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 {
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
@@ -1755,7 +1755,7 @@ void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FEModel& fem, FEStep* pst
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateMaterials(QTreeWidgetItem* t1, FEModel& fem)
+void CModelTree::UpdateMaterials(QTreeWidgetItem* t1, FSModel& fem)
 {
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
@@ -1767,7 +1767,7 @@ void CModelTree::UpdateMaterials(QTreeWidgetItem* t1, FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FEMaterial* pmat, FEModel& fem, bool topLevel)
+void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FEMaterial* pmat, FSModel& fem, bool topLevel)
 {
 /*	// reaction materials's structure is somewhat cumbersome, so we provide an alternative representation
 	if (dynamic_cast<FEReactionMaterial*>(pmat))
@@ -1841,7 +1841,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* mat, FEModel& fem)
+void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* mat, FSModel& fem)
 {
 	// add reaction material first
 	QString name;

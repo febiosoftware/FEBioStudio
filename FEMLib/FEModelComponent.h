@@ -3,7 +3,7 @@
 #include "FEDataMap.h"
 
 //-----------------------------------------------------------------------------
-// Base class for components of an FEModel
+// Base class for components of an FSModel
 class FEModelComponent : public FEBase
 {
 public:

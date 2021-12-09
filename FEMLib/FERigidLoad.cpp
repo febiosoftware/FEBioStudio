@@ -27,14 +27,14 @@ SOFTWARE.*/
 #include "FERigidLoad.h"
 
 //=============================================================================
-FERigidLoad::FERigidLoad(int ntype, FEModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep)
+FERigidLoad::FERigidLoad(int ntype, FSModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep)
 { 
 	m_superClassID = FE_RIGID_LOAD; 
 	SetMeshItemType(0);
 }
 
 //=============================================================================
-FEBioRigidLoad::FEBioRigidLoad(FEModel* ps, int nstep) : FERigidLoad(FE_FEBIO_RIGID_LOAD, ps, nstep) 
+FEBioRigidLoad::FEBioRigidLoad(FSModel* ps, int nstep) : FERigidLoad(FE_FEBIO_RIGID_LOAD, ps, nstep) 
 {
 
 }

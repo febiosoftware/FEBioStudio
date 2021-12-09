@@ -222,7 +222,7 @@ void CMaterialPanel::Update(bool breset)
 	CPostDocument* pdoc = GetActiveDocument();
 	if (pdoc == nullptr) return;
 
-	Post::FEPostModel* fem = pdoc->GetFEModel();
+	Post::FEPostModel* fem = pdoc->GetFSModel();
 	if (fem)
 	{
 		int nmat = fem->Materials();
@@ -246,7 +246,7 @@ void CMaterialPanel::Update(bool breset)
 void CMaterialPanel::UpdateStates()
 {
 	CPostDocument* pdoc = GetActiveDocument();
-	Post::FEPostModel* fem = pdoc->GetFEModel();
+	Post::FEPostModel* fem = pdoc->GetFSModel();
 	if (fem == 0) return;
 
 	int nmat = fem->Materials();
@@ -277,7 +277,7 @@ void CMaterialPanel::on_materialList_currentRowChanged(int nrow)
 	CPostDocument* doc = GetActiveDocument();
 	if (doc && doc->IsValid())
 	{
-		Post::FEPostModel& fem = *doc->GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFSModel();
 		if ((nrow >= 0) && (nrow < fem.Materials()))
 		{
 			Post::FEMaterial* pmat = fem.GetMaterial(nrow);
@@ -301,7 +301,7 @@ void CMaterialPanel::on_showButton_toggled(bool b)
 	if (doc.IsValid() == false) return;
 
 	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFEModel();
+	Post::FEPostModel& fem = *doc.GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	QItemSelectionModel* pselect = ui->m_list->selectionModel();
@@ -337,7 +337,7 @@ void CMaterialPanel::on_enableButton_toggled(bool b)
 	if (doc.IsValid() == false) return;
 
 	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFEModel();
+	Post::FEPostModel& fem = *doc.GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	QItemSelectionModel* pselect = ui->m_list->selectionModel();
@@ -368,7 +368,7 @@ void CMaterialPanel::on_editName_editingFinished()
 	{
 		int nmat = n.row();
 
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEMaterial& mat = *fem.GetMaterial(nmat);
 
 		QListWidgetItem* item = ui->m_list->item(nmat);
@@ -389,7 +389,7 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 	// Get the model
 	CPostDocument& doc = *GetActiveDocument();
 	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFEModel();
+	Post::FEPostModel& fem = *doc.GetFSModel();
 
 	// get the current material
 	QModelIndex currentIndex = ui->m_list->currentIndex();

@@ -51,7 +51,7 @@ bool FEViewpointExport::Write(const char* szfile)
 	FILE* fp = fopen(szfcor, "wt");
 	if (fp == 0) return false;
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int nn = 1;

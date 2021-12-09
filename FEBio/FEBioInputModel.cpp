@@ -754,7 +754,7 @@ FEBioInputModel::LogVariable::LogVariable(int ntype, const std::string& data)
 }
 
 //=============================================================================
-FEBioInputModel::FEBioInputModel(FEModel& fem) : m_fem(fem)
+FEBioInputModel::FEBioInputModel(FSModel& fem) : m_fem(fem)
 {
 	m_shellNodalNormals = true;
 }

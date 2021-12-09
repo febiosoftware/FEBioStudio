@@ -4,14 +4,14 @@
 class FEModelConstraint : public FEDomainComponent
 {
 public:
-	FEModelConstraint(int ntype, FEModel* fem, int nstep = 0);
+	FEModelConstraint(int ntype, FSModel* fem, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 class FESurfaceConstraint : public FEModelConstraint
 {
 public:
-	FESurfaceConstraint(int ntype, FEModel* fem, int nstep = 0);
+	FESurfaceConstraint(int ntype, FSModel* fem, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ public:
 	enum { LAUGON, ALTOL, PENALTY };
 
 public:
-	FEVolumeConstraint(FEModel* ps, int nstep = 0);
+	FEVolumeConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG, RHS };
 
 public:
-	FENormalFlowSurface(FEModel* ps, int nstep = 0);
+	FENormalFlowSurface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -44,14 +44,14 @@ public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 
 public:
-	FESymmetryPlane(FEModel* ps, int nstep = 0);
+	FESymmetryPlane(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 class FEWarpingConstraint : public FEModelConstraint
 {
 public:
-	FEWarpingConstraint(FEModel* fem);
+	FEWarpingConstraint(FSModel* fem);
 };
 
 //-----------------------------------------------------------------------------
@@ -62,28 +62,28 @@ public:
     enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 
 public:
-    FEFrictionlessFluidWall(FEModel* ps, int nstep = 0);
+    FEFrictionlessFluidWall(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 class FEPrestrainConstraint : public FEModelConstraint
 {
 public:
-	FEPrestrainConstraint(FEModel* ps, int nstep = 0);
+	FEPrestrainConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 class FEInSituStretchConstraint : public FEModelConstraint
 {
 public:
-	FEInSituStretchConstraint(FEModel* ps, int nstep = 0);
+	FEInSituStretchConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 class FEBioNLConstraint : public FEModelConstraint
 {
 public:
-	FEBioNLConstraint(FEModel* fem, int nstep = 0);
+	FEBioNLConstraint(FSModel* fem, int nstep = 0);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 };

@@ -231,7 +231,7 @@ FEElemList* FEPartData::BuildElemList()
 	return elemList;
 }
 
-GPartList* FEPartData::GetPartList(FEModel* fem)
+GPartList* FEPartData::GetPartList(FSModel* fem)
 {
 	GObject* po = GetMesh()->GetGObject();
 	GPartList* partList = new GPartList(fem);

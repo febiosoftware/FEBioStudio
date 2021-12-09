@@ -494,7 +494,7 @@ void FEReactionMaterial::GetSBMProducts(vector<int>& sbmP)
 	}
 }
 
-string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem)
+string buildReactionEquation(FEReactionMaterial* mat, FSModel& fem)
 {
 	stringstream ss;
 	int NR = mat->Reactants();
@@ -739,7 +739,7 @@ void FEMembraneReactionMaterial::GetSBMProducts(vector<int>& sbmP)
     }
 }
 
-string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& fem)
+string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FSModel& fem)
 {
     stringstream ss;
     int NR = mat->Reactants();

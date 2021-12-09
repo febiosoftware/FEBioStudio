@@ -149,7 +149,7 @@ protected:
 	void WriteSurface(XMLElement& el, FEItemListBuilder* pl);
 
 protected:
-	FEModel*		m_pfem;
+	FSModel*		m_pfem;
 
 protected:
 	bool HasSurface(FEItemListBuilder* pl);

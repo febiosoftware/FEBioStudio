@@ -66,7 +66,7 @@ bool FESTLimport::read_line(char* szline, const char* sz)
 // Load an STL model
 bool FESTLimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// try to read ascii STL
@@ -179,7 +179,7 @@ bool FESTLimport::read_facet(FESTLimport::FACET& f)
 // Load an STL model
 bool FESTLimport::read_binary(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// try to open the file

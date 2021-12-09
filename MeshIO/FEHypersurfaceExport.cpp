@@ -55,7 +55,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 	fprintf(fp, "\t}\n");
 	fprintf(fp, "}\n\n");
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// count total nr of faces

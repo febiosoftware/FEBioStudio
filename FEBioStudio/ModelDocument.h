@@ -54,7 +54,7 @@ public:
 	FEProject& GetProject();
 
 	// get the FE model
-	FEModel* GetFEModel();
+	FSModel* GetFSModel();
 
 	// get the geometry
 	GModel* GetGModel();

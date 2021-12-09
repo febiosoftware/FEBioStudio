@@ -1576,7 +1576,7 @@ void CGLView::paintGL()
 		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
 		if (mdoc)
 		{
-			FEModel* ps = mdoc->GetFEModel();
+			FSModel* ps = mdoc->GetFSModel();
 			GModel& model = ps->GetModel();
 
 			painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
@@ -1841,7 +1841,7 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 			glCullFace(GL_FRONT);
 			glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
 
-			Post::FEPostModel* fem = glm->GetFEModel();
+			Post::FEPostModel* fem = glm->GetFSModel();
 			glm->RenderShadows(fem, lpv, inf);
 
 			glCullFace(GL_BACK);
@@ -2060,7 +2060,7 @@ void CGLView::PositionCamera()
 		int* nt = m_ntrack;
 		if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { m_btrack = false; return; }
 
-		Post::FEPostModel& fem = *pdoc->GetFEModel();
+		Post::FEPostModel& fem = *pdoc->GetFSModel();
 
 		vec3d a = pm->Node(nt[0]).r;
 		vec3d b = pm->Node(nt[1]).r;
@@ -2124,7 +2124,7 @@ void CGLView::SetTrackingData(int n[3])
 	int* nt = m_ntrack;
 	if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { assert(false); return; }
 
-	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFSModel();
 	vec3d a = pm->Node(nt[0]).r;
 	vec3d b = pm->Node(nt[1]).r;
 	vec3d c = pm->Node(nt[2]).r;
@@ -2425,7 +2425,7 @@ void CGLView::RenderModel()
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// Get the item mode
@@ -2584,7 +2584,7 @@ void CGLView::RenderSelectionBox()
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// Get the item mode
@@ -2657,7 +2657,7 @@ void CGLView::RenderDiscrete()
 	bool bsel = (nsel == SELECT_DISCRETE);
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// render the discrete objects
@@ -2895,7 +2895,7 @@ void CGLView::RenderMaterialFibers()
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	FEElementRef rel;
@@ -2960,7 +2960,7 @@ void CGLView::RenderLocalMaterialAxes()
 	if (pdoc == nullptr) return;
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	FEElementRef rel;
@@ -3161,7 +3161,7 @@ void CGLView::RenderRigidWalls()
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	BOX box = ps->GetModel().GetBoundingBox();
 	double R = box.GetMaxExtent();
 	vec3d c = box.Center();
@@ -3247,7 +3247,7 @@ void CGLView::RenderRigidJoints()
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 
 	double scale = 0.05*(double)cam.GetTargetDistance();
 	double R = 0.5*scale;
@@ -3286,7 +3286,7 @@ void CGLView::RenderRigidConnectors()
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 
 	double scale = 0.05*(double)cam.GetTargetDistance();
 	double R = 0.5*scale;
@@ -3480,7 +3480,7 @@ void CGLView::RenderRigidBodies()
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 
 	double scale = 0.03*(double)cam.GetTargetDistance();
 	double R = 0.5*scale;
@@ -3913,7 +3913,7 @@ void CGLView::SelectObjects(int x, int y)
 
 	makeCurrent();
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// convert the point to a ray
@@ -3968,7 +3968,7 @@ void CGLView::SelectParts(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	if (model.Parts() == 0) return;
@@ -4067,7 +4067,7 @@ void CGLView::SelectSurfaces(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	if (model.Surfaces() == 0) return;
@@ -4145,7 +4145,7 @@ void CGLView::SelectEdges(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int NE = model.Edges();
@@ -4219,7 +4219,7 @@ void CGLView::HighlightEdge(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// set up selection buffer
@@ -4285,7 +4285,7 @@ void CGLView::SelectNodes(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int X = x;
@@ -4356,7 +4356,7 @@ void CGLView::SelectDiscrete(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int ND = model.DiscreteObjects();
@@ -4651,7 +4651,7 @@ void CGLView::SelectFEElements(int x, int y)
 					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
 					if (cmap && cmap->IsActive())
 					{
-						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_ELEM[num].m_val;
 						FEElement& el = pm->Element(num);
@@ -4773,7 +4773,7 @@ void CGLView::SelectFEFaces(int x, int y)
 					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
 					if (cmap && cmap->IsActive())
 					{
-						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_FACE[index].m_val;
 						FEFace& face = pm->Face(index);
@@ -4926,7 +4926,7 @@ void CGLView::SelectFEEdges(int x, int y)
 					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
 					if (cmap && cmap->IsActive())
 					{
-						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_EDGE[num].m_val;
 						FEEdge& ed = pm->Edge(num);
@@ -5303,7 +5303,7 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 	if (model.Objects() == 0) return;
 
@@ -5375,7 +5375,7 @@ void CGLView::RegionSelectParts(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	if (model.Parts() == 0) return;
@@ -5443,7 +5443,7 @@ void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int nSurfaces = model.Surfaces();
@@ -5509,7 +5509,7 @@ void CGLView::RegionSelectEdges(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -5566,7 +5566,7 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = doc->GetFEModel();
+	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -5614,7 +5614,7 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = doc->GetFEModel();
+	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -6291,7 +6291,7 @@ void CGLView::SelectFENodes(int x, int y)
 				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
 				if (postDoc && postDoc->IsValid())
 				{
-					Post::FEPostModel* fem = postDoc->GetFEModel();
+					Post::FEPostModel* fem = postDoc->GetFSModel();
 					Post::FEState* state = fem->CurrentState();
 					FENode& node = pm->Node(index);
 					vec3f r = state->m_NODE[index].m_rt;
@@ -6570,7 +6570,7 @@ void CGLView::RenderFeatureEdges()
 	glDisable(GL_LIGHTING);
 	glColor3ub(0, 0, 0);
 
-	FEModel* ps = doc->GetFEModel();
+	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	for (int k = 0; k<model.Objects(); ++k)
@@ -6821,7 +6821,7 @@ void CGLView::RenderSurfaces(GObject* po)
 	VIEW_SETTINGS& vs = GetViewSettings();
 
 	// get the GLMesh
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GLMesh* pm = po->GetRenderMesh();
 	assert(pm);
 
@@ -7055,7 +7055,7 @@ void CGLView::RenderParts(GObject* po)
 	VIEW_SETTINGS& vs = GetViewSettings();
 
 	// get the GLMesh
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GLMesh* pm = po->GetRenderMesh();
 	assert(pm);
 
@@ -7173,7 +7173,7 @@ void CGLView::RenderObject(GObject* po)
 	VIEW_SETTINGS& vs = GetViewSettings();
 
 	// get the GLMesh
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GLMesh* pm = po->GetRenderMesh();
 	if (pm == 0) return;
 	assert(pm);
@@ -7397,7 +7397,7 @@ void CGLView::RenderFEFaces(GObject* po)
 	if (doc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0)
 	{
@@ -7534,7 +7534,7 @@ void CGLView::RenderSurfaceMeshFaces(GObject* po)
 	if (doc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	GLColor col = po->GetColor();
 	SetMatProps(0);
@@ -7570,7 +7570,7 @@ void CGLView::RenderSurfaceMeshEdges(GObject* po)
 	if (doc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	FELineMesh* pm = po->GetEditableLineMesh();
 	assert(pm);
 	if (pm == 0) return;
@@ -7668,7 +7668,7 @@ void CGLView::RenderFEEdges(GObject* po)
 	if (doc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
@@ -7695,7 +7695,7 @@ void CGLView::RenderFEElements(GObject* po)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	FEModel& fem = *pdoc->GetFEModel();
+	FSModel& fem = *pdoc->GetFSModel();
 	FEMesh* pm = po->GetFEMesh();
 	assert(pm);
 	if (pm == 0) return;
@@ -9045,7 +9045,7 @@ void CGLView::RenderRigidLabels()
 	CModelDocument* pdoc = m_pWnd->GetModelDocument();
 	if (pdoc == nullptr) return;
 
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 	if (fem == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
@@ -9154,7 +9154,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	GModel& mdl = *doc->GetGModel();
 	if (mdl.Objects() == 0) return;
@@ -9464,7 +9464,7 @@ void CGLView::RenderPlaneCut()
 	glColor3ub(200, 0, 200);
 	RenderBox(box, false);
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	int MAT = fem.Materials();
 
 	// render the unselected faces

@@ -154,7 +154,7 @@ void CGLModel::ShellReferenceSurface(int n) { m_render.m_nshellref = n; }
 //-----------------------------------------------------------------------------
 Post::FEPostMesh* CGLModel::GetActiveMesh()
 {
-	FEPostModel* pfem = GetFEModel();
+	FEPostModel* pfem = GetFSModel();
 	if (pfem)
 	{
 		if (pfem->GetStates() > 0) return m_ps->CurrentState()->GetFEMesh();
@@ -166,7 +166,7 @@ Post::FEPostMesh* CGLModel::GetActiveMesh()
 //-----------------------------------------------------------------------------
 Post::FEState* CGLModel::GetActiveState()
 {
-	FEPostModel* pfem = GetFEModel();
+	FEPostModel* pfem = GetFSModel();
 	if (pfem && (pfem->GetStates() > 0)) return m_ps->CurrentState();
 	return nullptr;
 }
@@ -174,7 +174,7 @@ Post::FEState* CGLModel::GetActiveState()
 //-----------------------------------------------------------------------------
 void CGLModel::ResetAllStates()
 {
-	FEPostModel* fem = GetFEModel();
+	FEPostModel* fem = GetFSModel();
 	if ((fem == 0) || (fem->GetStates() == 0)) return;
 
 	int N = fem->GetStates();
@@ -217,7 +217,7 @@ bool CGLModel::Update(bool breset)
 	float dt = fem.CurrentTime() - fem.GetTimeValue(ntime);
 
 	// update the state of the mesh
-	GetFEModel()->UpdateMeshState(ntime);
+	GetFSModel()->UpdateMeshState(ntime);
 
 	// Calling this will rebuild the internal surfaces
 	// This should only be done when the mesh has changed
@@ -236,7 +236,7 @@ bool CGLModel::Update(bool breset)
 
 	// NOTE: commenting this out since this would cause the FieldDataSelector's menu
 	//       to be rebuild each time a user selected a new field
-//	GetFEModel()->UpdateDependants();
+//	GetFSModel()->UpdateDependants();
 
 	// update the plot list
 	for (int i = 0; i < (int)m_pPlot.Size(); ++i)
@@ -291,7 +291,7 @@ void CGLModel::SetSmoothingAngle(double w)
 { 
 	m_stol = w;
 
-	FEPostModel* ps = GetFEModel();
+	FEPostModel* ps = GetFSModel();
 	if (ps == 0) return;
 
 	FEMeshBase* pm = ps->GetFEMesh(0);
@@ -303,7 +303,7 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 {
 	if (szvectorField == nullptr) szvectorField = "displacement";
 
-	FEPostModel* ps = GetFEModel();
+	FEPostModel* ps = GetFSModel();
 
 	// see if the mesh has any vector fields
 	// which can be used for displacement maps
@@ -336,13 +336,13 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 bool CGLModel::HasDisplacementMap()
 {
 	if (m_pdis == 0) return false;
-	return (GetFEModel()->GetDisplacementField() != 0);
+	return (GetFSModel()->GetDisplacementField() != 0);
 }
 
 //-----------------------------------------------------------------------------
 void CGLModel::ResetMesh()
 {
-	FEPostModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	Post::FERefState& ref = *fem.GetState(0)->m_ref;
@@ -362,7 +362,7 @@ void CGLModel::ResetMesh()
 //! Toggle element visibility
 void CGLModel::ToggleVisibleElements()
 {
-	FEPostModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	for (int i = 0; i < mesh.Elements(); ++i)
@@ -440,7 +440,7 @@ void CGLModel::ToggleVisibleElements()
 //-----------------------------------------------------------------------------
 void CGLModel::RemoveDisplacementMap()
 {
-	FEPostModel* ps = GetFEModel();
+	FEPostModel* ps = GetFSModel();
 	ps->SetDisplacementField(0);
 	delete m_pdis;
 	m_pdis = 0;
@@ -455,7 +455,7 @@ void CGLModel::RemoveDisplacementMap()
 //-----------------------------------------------------------------------------
 void CGLModel::Render(CGLContext& rc)
 {
-	if (GetFEModel() == nullptr) return;
+	if (GetFSModel() == nullptr) return;
 
 	// activate all clipping planes
 	CGLPlaneCutPlot::EnableClipPlanes();
@@ -470,7 +470,7 @@ void CGLModel::Render(CGLContext& rc)
 	RenderInteriorNodes(rc.m_bext == false);
 
 	// get the FE model
-	FEPostModel* fem = GetFEModel();
+	FEPostModel* fem = GetFSModel();
 
 	m_bshowMesh = rc.m_showMesh;
 
@@ -2084,7 +2084,7 @@ void CGLModel::RenderEdges(FEPostModel* ps, CGLContext& rc)
 // render all the objects
 void CGLModel::RenderObjects(CGLContext& rc)
 {
-	Post::FEPostModel* fem = GetFEModel();
+	Post::FEPostModel* fem = GetFSModel();
 	if ((fem->PointObjects() == 0) && (fem->LineObjects() == 0)) return;
 
 	double scale = 0.05*(double)rc.m_cam->GetTargetDistance();
@@ -2506,7 +2506,7 @@ void CGLModel::ShowMaterial(int nmat)
 void CGLModel::UpdateMeshState()
 {
 	Post::FEPostMesh& mesh = *GetActiveMesh();
-	FEPostModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFSModel();
 
 	// update the elements
 	for (int i=0; i<mesh.Elements(); ++i)
@@ -3440,7 +3440,7 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 {
 	if (newMode == SELECT_NODES)
 	{
-		Post::FEPostMesh& mesh = *GetFEModel()->GetFEMesh(0);
+		Post::FEPostMesh& mesh = *GetFSModel()->GetFEMesh(0);
 
 		if (oldMode == SELECT_EDGES)
 		{

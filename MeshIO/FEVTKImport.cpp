@@ -519,7 +519,7 @@ bool FEVTKimport::read_FIELD(VTKMesh& vtkMesh)
 
 bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	// get the number of nodes and elements
 	int nodes = vtk.nodes();

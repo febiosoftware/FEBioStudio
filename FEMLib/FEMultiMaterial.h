@@ -4,7 +4,7 @@
 //using namespace std;
 
 class FEMultiphasicMaterial;
-class FEModel;
+class FSModel;
 
 //-----------------------------------------------------------------------------
 // visco-elastic
@@ -521,7 +521,7 @@ public:
 	void ClearProducts();
 };
 
-string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem);
+string buildReactionEquation(FEReactionMaterial* mat, FSModel& fem);
 
 //-----------------------------------------------------------------------------
 // membrane reaction parent class
@@ -585,7 +585,7 @@ public:
     void ClearProducts();
 };
 
-string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& fem);
+string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FSModel& fem);
 
 //-----------------------------------------------------------------------------
 // multiphasic

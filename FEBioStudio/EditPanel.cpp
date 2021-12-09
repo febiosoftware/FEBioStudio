@@ -331,7 +331,7 @@ void CEditPanel::on_buttons_buttonSelected(int id)
 
 			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 
-			GModel* geo = &doc->GetFEModel()->GetModel();
+			GModel* geo = &doc->GetFSModel()->GetModel();
 
 			CPropertyList* pl = 0;
 			if (dynamic_cast<FECurveIntersect*>(ui->m_mod)) pl = new CCurveIntersectProps(geo, dynamic_cast<FECurveIntersect*>(ui->m_mod));

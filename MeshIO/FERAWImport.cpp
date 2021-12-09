@@ -83,7 +83,7 @@ bool FERAWImport::Load(const char* szfile)
 	for (int i=0; i<N; ++i) { pb[i] = bin[pb[i]]; assert(pb[i] >= 0); }
 
 	// get the FE Model
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	// create a new mesh
 	int nodes = (m_nx+1)*(m_ny+1)*(m_nz+1);

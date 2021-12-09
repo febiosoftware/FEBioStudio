@@ -57,12 +57,12 @@ class FEReactionMaterial;
 //! The FE model stores all FE data.
 //
 //! It stores the geometry, the material list, and the analysis data.
-class FEModel : public FECoreModel 
+class FSModel : public FSCoreModel
 {
 public:
 	// constructor/destructor
-	FEModel();
-	virtual ~FEModel();
+	FSModel();
+	virtual ~FSModel();
 
 	// clear the model
 	void Clear();
@@ -228,7 +228,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of interfaces of a specific type that have been defined.
-template <class T> int CountInterfaces(FEModel& fem)
+template <class T> int CountInterfaces(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
@@ -245,7 +245,7 @@ template <class T> int CountInterfaces(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of constraints of a specific type that have been defined.
-template <class T> int CountConstraints(FEModel& fem)
+template <class T> int CountConstraints(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
@@ -262,7 +262,7 @@ template <class T> int CountConstraints(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
-template <class T> int CountBCs(FEModel& fem)
+template <class T> int CountBCs(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
@@ -279,7 +279,7 @@ template <class T> int CountBCs(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
-template <class T> int CountICs(FEModel& fem)
+template <class T> int CountICs(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
@@ -296,7 +296,7 @@ template <class T> int CountICs(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
-template <class T> int CountLoads(FEModel& fem)
+template <class T> int CountLoads(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
@@ -313,7 +313,7 @@ template <class T> int CountLoads(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
-template <class T> int CountConnectors(FEModel& fem)
+template <class T> int CountConnectors(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
@@ -330,7 +330,7 @@ template <class T> int CountConnectors(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of rigid constraints of a specific type that have been defined.
-template <class T> int CountRigidConstraints(FEModel& fem)
+template <class T> int CountRigidConstraints(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
@@ -349,11 +349,11 @@ template <class T> int CountRigidConstraints(FEModel& fem)
 std::string Namify(const char* sz);
 
 // functions for creating default names
-std::string defaultBCName(FEModel* fem, FEBoundaryCondition* pbc);
-std::string defaultICName(FEModel* fem, FEInitialCondition* pic);
-std::string defaultLoadName(FEModel* fem, FELoad* pbc);
-std::string defaultInterfaceName(FEModel* fem, FEInterface* pi);
-std::string defaultConstraintName(FEModel* fem, FEModelConstraint* pi);
-std::string defaultRigidConnectorName(FEModel* fem, FERigidConnector* pc);
-std::string defaultRigidConstraintName(FEModel* fem, FERigidConstraint* pc);
-std::string defaultStepName(FEModel* fem, FEStep* ps);
+std::string defaultBCName(FSModel* fem, FEBoundaryCondition* pbc);
+std::string defaultICName(FSModel* fem, FEInitialCondition* pic);
+std::string defaultLoadName(FSModel* fem, FELoad* pbc);
+std::string defaultInterfaceName(FSModel* fem, FEInterface* pi);
+std::string defaultConstraintName(FSModel* fem, FEModelConstraint* pi);
+std::string defaultRigidConnectorName(FSModel* fem, FERigidConnector* pc);
+std::string defaultRigidConstraintName(FSModel* fem, FERigidConstraint* pc);
+std::string defaultStepName(FSModel* fem, FEStep* ps);

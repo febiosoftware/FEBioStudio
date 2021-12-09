@@ -49,7 +49,7 @@ FEMKernel* FEMKernel::Instance()
 	return m_This;
 }
 
-FSObject* FEMKernel::Create(FEModel* fem, int superID, int classID)
+FSObject* FEMKernel::Create(FSModel* fem, int superID, int classID)
 {
 	for (size_t i=0; i<m_Class.size(); ++i)
 	{
@@ -62,7 +62,7 @@ FSObject* FEMKernel::Create(FEModel* fem, int superID, int classID)
 	return 0;
 }
 
-FSObject* FEMKernel::Create(FEModel* fem, int superID, const char* szTypeString)
+FSObject* FEMKernel::Create(FSModel* fem, int superID, const char* szTypeString)
 {
 	for (size_t i = 0; i < m_Class.size(); ++i)
 	{

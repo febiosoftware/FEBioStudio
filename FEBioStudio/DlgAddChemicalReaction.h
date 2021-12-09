@@ -44,7 +44,7 @@ class QListWidgetItem;
 
 class FEMaterial;
 class FEReactionMaterial;
-class FEModel;
+class FSModel;
 class GMaterial;
 class QAbstractButton;
 
@@ -115,7 +115,7 @@ private:
 	void InitDialog();
 	void apply();
 	void accept();
-	void SetMaterial(GMaterial* mat, FEModel& fem);
+	void SetMaterial(GMaterial* mat, FSModel& fem);
 	void SetReaction(FEReactionMaterial* mat);
 	bool hasChanged();
 

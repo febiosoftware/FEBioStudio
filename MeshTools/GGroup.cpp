@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "GModel.h"
 #include <GeomLib/GObject.h>
 
-GGroup::GGroup(FEModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
+GGroup::GGroup(FSModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
 {
 	m_ps = ps;
 }
@@ -45,7 +45,7 @@ GGroup::~GGroup(void)
 
 FENodeList* GNodeList::BuildNodeList()
 {
-	FEModel* pfem = dynamic_cast<FEModel*>(m_ps);
+	FSModel* pfem = dynamic_cast<FSModel*>(m_ps);
 	GModel& m = pfem->GetModel();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -72,7 +72,7 @@ FENodeList* GNodeList::BuildNodeList()
 }
 
 //-----------------------------------------------------------------------------
-GNodeList::GNodeList(FEModel* ps, GNodeSelection* pg) : GGroup(ps, GO_NODE, FE_NODE_FLAG)
+GNodeList::GNodeList(FSModel* ps, GNodeSelection* pg) : GGroup(ps, GO_NODE, FE_NODE_FLAG)
 {
 	int N = pg->Count();
 	assert(N);
@@ -125,7 +125,7 @@ bool GNodeList::IsValid() const
 // GEdgeList
 //-----------------------------------------------------------------------------
 
-GEdgeList::GEdgeList(FEModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE, FE_NODE_FLAG)
+GEdgeList::GEdgeList(FSModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE, FE_NODE_FLAG)
 {
 	int N = pg->Count();
 	if (N > 0)
@@ -138,7 +138,7 @@ GEdgeList::GEdgeList(FEModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE, FE_N
 //-----------------------------------------------------------------------------
 FENodeList* GEdgeList::BuildNodeList()
 {
-	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	FENodeList* ps = new FENodeList();
 	int N = m_Item.size(), i, n;
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -251,7 +251,7 @@ bool GEdgeList::IsValid() const
 // GFaceList
 //-----------------------------------------------------------------------------
 
-GFaceList::GFaceList(FEModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG)
+GFaceList::GFaceList(FSModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG)
 {
 	int N = pg->Count();
 	if (N > 0)
@@ -264,7 +264,7 @@ GFaceList::GFaceList(FEModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_N
 //-----------------------------------------------------------------------------
 FENodeList* GFaceList::BuildNodeList()
 {
-	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	int N = m_Item.size(), n, i;
 	FEItemListBuilder::Iterator it = m_Item.begin();
 
@@ -331,7 +331,7 @@ FENodeList* GFaceList::BuildNodeList()
 //-----------------------------------------------------------------------------
 FEFaceList* GFaceList::BuildFaceList()
 {
-	GModel& m = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& m = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	FEFaceList* ps = new FEFaceList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -397,7 +397,7 @@ bool GFaceList::IsValid() const
 // GPartList
 //-----------------------------------------------------------------------------
 
-FEModel* GPartList::m_model = nullptr;
+FSModel* GPartList::m_model = nullptr;
 
 GPartList* GPartList::CreateNew()
 {
@@ -405,12 +405,12 @@ GPartList* GPartList::CreateNew()
 	return new GPartList(m_model);
 }
 
-void GPartList::SetModel(FEModel* mdl)
+void GPartList::SetModel(FSModel* mdl)
 {
 	m_model = mdl;
 }
 
-GPartList::GPartList(FEModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG)
+GPartList::GPartList(FSModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG)
 {
 	int N = pg->Count();
 	GPartSelection::Iterator it(pg);
@@ -428,7 +428,7 @@ void GPartList::Create(GObject* po)
 //-----------------------------------------------------------------------------
 FEElemList* GPartList::BuildElemList()
 {
-	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	FEElemList* ps = new FEElemList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -450,7 +450,7 @@ FEElemList* GPartList::BuildElemList()
 //-----------------------------------------------------------------------------
 FENodeList* GPartList::BuildNodeList()
 {
-	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	int N = m_Item.size(), n, i, j;
 	FEItemListBuilder::Iterator it = m_Item.begin();
 
@@ -518,7 +518,7 @@ FENodeList* GPartList::BuildNodeList()
 //-----------------------------------------------------------------------------
 FEFaceList*	GPartList::BuildFaceList()
 {
-	GModel& m = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& m = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	FEFaceList* ps = new FEFaceList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();

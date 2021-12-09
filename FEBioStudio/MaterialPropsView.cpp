@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 
 
-QStringList GetEnumValues(FEModel* fem, const char* ch)
+QStringList GetEnumValues(FSModel* fem, const char* ch)
 {
 	QStringList ops;
 	char sz[256] = { 0 };
@@ -241,7 +241,7 @@ public:
 			}
 		}
 
-		FEModel* GetFEModel();
+		FSModel* GetFSModel();
 
 		QVariant data(int column, int role)
 		{
@@ -281,7 +281,7 @@ public:
 						int n = p.val<int>();
 						if (p.GetEnumNames())
 						{
-							return GetFEModel()->GetEnumValue(p.GetEnumNames(), n);
+							return GetFSModel()->GetEnumValue(p.GetEnumNames(), n);
 						}
 						return n;
 					}
@@ -419,7 +419,7 @@ public:
 					}
 					else   if (dynamic_cast<FEReactionSpecies*>(pm))
 					{
-						FEModel* fem = GetFEModel();
+						FSModel* fem = GetFSModel();
 						FEReactionSpecies* prm = dynamic_cast<FEReactionSpecies*>(pm);
 
 						int ntype = prm->GetSpeciesType();
@@ -712,7 +712,7 @@ private:
 	bool		m_valid;
 };
 
-FEModel* CMaterialPropsModel::Item::GetFEModel()
+FSModel* CMaterialPropsModel::Item::GetFSModel()
 {
 	return m_model->m_mat->GetModel();
 }
@@ -773,7 +773,7 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				if (p->GetEnumNames())
 				{
 					QComboBox* box = new QComboBox(parent);
-					QStringList enumValues = GetEnumValues(item->GetFEModel(), p->GetEnumNames());
+					QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
 					box->addItems(enumValues);
 					QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 					return box;
@@ -803,7 +803,7 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 			if (dynamic_cast<FEReactionSpecies*>(pmat))
 			{
 				FEReactionSpecies* rs = dynamic_cast<FEReactionSpecies*>(pmat);
-				FEModel& fem = *item->GetFEModel();
+				FSModel& fem = *item->GetFSModel();
 				int ntype = rs->GetSpeciesType();
 				int index = rs->GetIndex();
 				char buf[1024] = { 0 };

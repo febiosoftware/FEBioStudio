@@ -127,7 +127,7 @@ void FEMeshImport::ReadTri(FILE* fp)
 
 void FEMeshImport::BuildMesh(FEProject& prj)
 {
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 
 	int i;
 	int nodes = m_Node.size();

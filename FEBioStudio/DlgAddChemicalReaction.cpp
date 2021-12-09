@@ -366,7 +366,7 @@ CDlgAddChemicalReaction::CDlgAddChemicalReaction(CMainWindow* wnd) : m_wnd(wnd),
 void CDlgAddChemicalReaction::InitDialog()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	// fill in the reactions
 //	list<FEMatDescriptor*> mats = FEMaterialFactory::Enumerate(FE_MAT_REACTION);
@@ -430,7 +430,7 @@ void CDlgAddChemicalReaction::onClicked(QAbstractButton* button)
 void CDlgAddChemicalReaction::onMaterialChanged(int n)
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	int nmat = ui->mat->currentData().toInt();
 	GMaterial* gmat = fem.GetMaterial(nmat);
@@ -466,7 +466,7 @@ void CDlgAddChemicalReaction::onReactionType(int n)
 	else ui->revRate->setEnabled(false);
 }
 
-void CDlgAddChemicalReaction::SetMaterial(GMaterial* mat, FEModel& fem)
+void CDlgAddChemicalReaction::SetMaterial(GMaterial* mat, FSModel& fem)
 {
 	m_pmp = mat;
 
@@ -537,7 +537,7 @@ void CDlgAddChemicalReaction::onRemoveReaction()
 	react->RemoveMaterial(m_reaction);
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	// update the list
 	m_reaction = 0;
@@ -730,7 +730,7 @@ bool CDlgAddChemicalReaction::hasChanged()
 void CDlgAddChemicalReaction::apply()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	// make sure we have something to do
 	if ((m_pmp == 0) || (m_reaction == 0)) return;

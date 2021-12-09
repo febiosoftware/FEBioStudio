@@ -89,7 +89,7 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 {
 	if (FEBioExport::PrepareExport(prj) == false) return false;
 
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 	GModel& model = fem.GetModel();
 
 	m_nodes  = model.FENodes();
@@ -264,7 +264,7 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 bool FEBioExport2::Write(const char* szfile)
 {
 	// get the project and model
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// prepare for export
@@ -946,7 +946,7 @@ void FEBioExport2::WriteMaterialSection()
 {
 	XMLElement el;
 
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 
 
 	for (int i=0; i<s.Materials(); ++i)
@@ -999,7 +999,7 @@ void FEBioExport2::WriteMaterialSection()
 //-----------------------------------------------------------------------------
 void FEBioExport2::WriteRigidMaterial(FEMaterial* pmat, XMLElement& el)
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 
 	FERigidMaterial* pm = dynamic_cast<FERigidMaterial*> (pmat);
 	el.add_attribute("type", "rigid body");
@@ -1355,7 +1355,7 @@ void FEBioExport2::WriteGeometrySection()
 {
 	XMLElement el;
 
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	vec3d r;
@@ -1433,7 +1433,7 @@ bool FEBioExport2::WriteNodeSet(const string& name, FENodeList* pl)
 void FEBioExport2::WriteGeometryNodeSets()
 {
 	// Write the user-defined node sets
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 	GModel& model = fem.GetModel();
 	int nobj = model.Objects();
 	for (int i=0; i<nobj; ++i)
@@ -1489,7 +1489,7 @@ void FEBioExport2::WriteGeometrySurfaces()
 //-----------------------------------------------------------------------------
 void FEBioExport2::WriteGeometryNodes()
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	XMLWriter::SetFloatFormat(XMLWriter::ScientificFormat);
@@ -1525,7 +1525,7 @@ void FEBioExport2::WriteGeometryNodes()
 //-----------------------------------------------------------------------------
 void FEBioExport2::WriteGeometryElements()
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	// reset element counter
@@ -1552,7 +1552,7 @@ void FEBioExport2::WriteGeometryElements()
 //-----------------------------------------------------------------------------
 void FEBioExport2::WriteGeometryPart(GPart* pg)
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	FECoreMesh* pm = po->GetFEMesh();
@@ -1648,7 +1648,7 @@ void FEBioExport2::WriteGeometryPart(GPart* pg)
 //-----------------------------------------------------------------------------
 void FEBioExport2::WriteGeometryElementData()
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	m_xml.add_branch("ElementData");
@@ -1846,7 +1846,7 @@ void FEBioExport2::WriteLoadsSection(FEStep& s)
 //
 void FEBioExport2::WriteDiscreteSection(FEStep& s)
 {
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 	GModel& model = fem.GetModel();
 	for (int i=0; i<model.DiscreteObjects(); ++i)
 	{
@@ -4440,7 +4440,7 @@ void FEBioExport2::WriteFSITraction(FEStep& s)
 //
 void FEBioExport2::WriteInitialSection()
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	FEStep& s = *fem.GetStep(0);
 
 	vector<int> VC; VC.resize(m_nodes);
@@ -4663,7 +4663,7 @@ void FEBioExport2::WriteHeatSources(FEStep& s)
 void FEBioExport2::WriteGlobalsSection()
 {
 	XMLElement el;
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 
 	if (fem.Parameters())
 	{
@@ -4914,7 +4914,7 @@ void FEBioExport2::WriteOutputSection()
 		else m_xml.add_empty(p);
 	}
 
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	N = log.LogDataSize();

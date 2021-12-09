@@ -62,7 +62,7 @@ void PRVObjectImport::Close()
 
 bool PRVObjectImport::LoadObjects(IArchive& ar, FEProject& prj)
 {
-	GModel& model = prj.GetFEModel().GetModel();
+	GModel& model = prj.GetFSModel().GetModel();
 	m_objList.clear();
 	IArchive::IOResult nret = IArchive::IO_OK;
 	while (ar.OpenChunk() == IArchive::IO_OK)
@@ -138,7 +138,7 @@ GObject* PRVObjectImport::LoadObject(IArchive& ar, FEProject& prj)
 GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& prj)
 {
 	GDiscreteObject* po = 0;
-	GModel* gm = &prj.GetFEModel().GetModel();
+	GModel* gm = &prj.GetFSModel().GetModel();
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();

@@ -51,7 +51,7 @@ public:
 	void SetGeometryOnlyFlag(bool b);
 
 protected:
-	bool UpdateFEModel(FEModel& fem);
+	bool UpdateFEModel(FSModel& fem);
 
 private:
 	bool ParseVersion(XMLTag& tag);

@@ -237,7 +237,7 @@ void GLMusclePath::Update()
 void GLMusclePath::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
 
 	if (breset)
 	{
@@ -290,7 +290,7 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 void GLMusclePath::UpdatePath(int ntime)
 {
 	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
 	FEPostMesh& mesh = *glm->GetActiveMesh();
 
 	int n0 = GetIntValue(START_POINT) - 1;
@@ -329,7 +329,7 @@ void GLMusclePath::UpdatePath(int ntime)
 bool GLMusclePath::UpdateStraighLine(GLMusclePath::PathData* path, int ntime)
 {
 	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
 
 	int n0 = GetIntValue(START_POINT) - 1;
 	int n1 = GetIntValue(END_POINT) - 1;
@@ -475,7 +475,7 @@ double GLMusclePath::DataValue(int field, int step)
 vec3d GLMusclePath::UpdateOrigin(int ntime)
 {
 	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
 	FEPostMesh& mesh = *glm->GetActiveMesh();
 
 	if (m_closestFace == -1)
@@ -800,7 +800,7 @@ bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters = 10, doub
 bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 {
 	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
 	FEPostMesh& mesh = *glm->GetActiveMesh();
 
 	int n0 = GetIntValue(START_POINT) - 1;

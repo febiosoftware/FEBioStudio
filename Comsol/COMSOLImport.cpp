@@ -52,7 +52,7 @@ COMSOLimport::~COMSOLimport()
 
 bool COMSOLimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 	
 	char szline[256] = {0};
@@ -350,7 +350,7 @@ bool COMSOLimport::ReadElementType(char* szline)
 	// no errors encountered
 	return true;
 }
-bool COMSOLimport::BuildMesh(FEModel& fem)
+bool COMSOLimport::BuildMesh(FSModel& fem)
 {
 	int i, j;
     

@@ -3,7 +3,7 @@
 #include <vector>
 //using namespace std;
 
-class FEModel;
+class FSModel;
 class FEBoundaryCondition;
 class FELoad;
 class FEInterface;
@@ -54,7 +54,7 @@ class FEStep : public FEModelComponent
 	class Imp;
 
 public:
-	FEStep(FEModel* ps, int ntype);
+	FEStep(FSModel* ps, int ntype);
 	virtual ~FEStep();
 
 	// get the unique step ID
@@ -68,7 +68,7 @@ public:
 
 	//! get the model
 	//! \todo I don't think this is being used)
-	FEModel* GetFEModel() { return m_pfem; }
+	FSModel* GetFSModel() { return m_pfem; }
 
 	// I/O
 	void Load(IArchive& ar);
@@ -165,7 +165,7 @@ public: // ref counting
 	static void DecreaseCounter();
 
 protected:
-	FEModel*	m_pfem;	// pointer to FEModel class
+	FSModel*	m_pfem;	// pointer to FSModel class
 
 private:
 	Imp*		imp;			// implementation class
@@ -180,7 +180,7 @@ private:
 class FEInitialStep : public FEStep
 {
 public:
-	FEInitialStep(FEModel* ps);
+	FEInitialStep(FSModel* ps);
 	virtual ~FEInitialStep(){}
 
 	// I/O
@@ -264,7 +264,7 @@ public:
 
 protected:
 	// constructor is private since we don't want to create instances of the base class
-	FEAnalysisStep(FEModel* ps, int ntype);
+	FEAnalysisStep(FSModel* ps, int ntype);
 
 protected:
 	STEP_SETTINGS	m_ops;		// step options
@@ -277,7 +277,7 @@ class FENonLinearMechanics : public FEAnalysisStep
 	enum { MP_DTOL, MP_ETOL, MP_RTOL, MP_LSTOL, MP_MINRES, MP_QNMETHOD };
 
 public:
-	FENonLinearMechanics(FEModel* ps);
+	FENonLinearMechanics(FSModel* ps);
 
 	double GetDisplacementTolerance();
 	double GetEnergyTolerance();
@@ -294,7 +294,7 @@ public:
 class FEHeatTransfer : public FEAnalysisStep
 {
 public:
-	FEHeatTransfer(FEModel* ps);
+	FEHeatTransfer(FSModel* ps);
 
 	// get the analysis types
 	vector<string> GetAnalysisStrings() const;
@@ -304,7 +304,7 @@ public:
 class FENonLinearBiphasic : public FEAnalysisStep
 {
 public:
-	FENonLinearBiphasic(FEModel* ps);
+	FENonLinearBiphasic(FSModel* ps);
 
 	// get the analysis types
 	vector<string> GetAnalysisStrings() const;
@@ -314,7 +314,7 @@ public:
 class FEBiphasicSolutes : public FEAnalysisStep
 {
 public:
-	FEBiphasicSolutes(FEModel* ps);
+	FEBiphasicSolutes(FSModel* ps);
 
 	// get the analysis types
 	vector<string> GetAnalysisStrings() const;
@@ -324,7 +324,7 @@ public:
 class FEMultiphasicAnalysis : public FEAnalysisStep
 {
 public:
-	FEMultiphasicAnalysis(FEModel* ps);
+	FEMultiphasicAnalysis(FSModel* ps);
 
 	// get the analysis types
 	vector<string> GetAnalysisStrings() const;
@@ -334,21 +334,21 @@ public:
 class FEFluidFSIAnalysis : public FEAnalysisStep
 {
 public:
-	FEFluidFSIAnalysis(FEModel* ps);
+	FEFluidFSIAnalysis(FSModel* ps);
 };
 
 //-----------------------------------------------------------------------------
 class FEFluidAnalysis : public FEAnalysisStep
 {
 public:
-    FEFluidAnalysis(FEModel* ps);
+    FEFluidAnalysis(FSModel* ps);
 };
 
 //-----------------------------------------------------------------------------
 class FEReactionDiffusionAnalysis : public FEAnalysisStep
 {
 public:
-	FEReactionDiffusionAnalysis(FEModel* ps);
+	FEReactionDiffusionAnalysis(FSModel* ps);
 
 	// get the analysis types
 	vector<string> GetAnalysisStrings() const;
@@ -358,7 +358,7 @@ public:
 class FEBioAnalysisStep : public FEStep
 {
 public:
-	FEBioAnalysisStep(FEModel* ps);
+	FEBioAnalysisStep(FSModel* ps);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 };

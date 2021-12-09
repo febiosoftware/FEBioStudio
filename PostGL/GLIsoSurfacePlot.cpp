@@ -193,7 +193,7 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
     const int PYR_NT[8] = {0, 1, 2, 3, 4, 4, 4, 4};
 
 	CGLModel* mdl = GetModel();
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 
 	// get the mesh
 	FEPostMesh* pm = mdl->GetActiveMesh();
@@ -320,7 +320,7 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 	CGLModel* mdl = GetModel();
 
 	FEPostMesh* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
 	int NS = pfem->GetStates();

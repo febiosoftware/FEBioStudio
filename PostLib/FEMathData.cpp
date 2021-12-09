@@ -39,7 +39,7 @@ FEMathData::FEMathData(FEState* state, FEMathDataField* pdf) : FENodeData_T<floa
 // evaluate all the nodal data for this state
 void FEMathData::eval(int n, float* pv)
 {
-	FEPostModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFSModel();
 
 
 	double time = m_state->m_time;
@@ -74,7 +74,7 @@ FEMathVec3Data::FEMathVec3Data(FEState* state, FEMathVec3DataField* pdf) : FENod
 // evaluate all the nodal data for this state
 void FEMathVec3Data::eval(int n, vec3f* pv)
 {
-	FEPostModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFSModel();
 
 	FEState& state = *m_state;
 	int ntime = state.GetID();
@@ -115,7 +115,7 @@ void FEMathMat3Data::eval(int n, mat3f* pv)
 {
 	if (pv == nullptr) return;
 
-	FEPostModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFSModel();
 
 	FEState& state = *m_state;
 	int ntime = state.GetID();

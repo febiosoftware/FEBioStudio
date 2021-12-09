@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 
 //-----------------------------------------------------------------------------
-class FEModel;
+class FSModel;
 class FEMaterial;
 
 //-----------------------------------------------------------------------------
@@ -50,8 +50,8 @@ public:
 	void SetMaterialProperties(FEMaterial* pm);
 	FEMaterial* GetMaterialProperties();
 
-	void SetModel(FEModel* ps) { m_ps = ps; }
-	FEModel* GetModel() { return m_ps; }
+	void SetModel(FSModel* ps) { m_ps = ps; }
+	FSModel* GetModel() { return m_ps; }
 
 	int GetID() { return m_nID; }
 	void SetID(int nid)
@@ -99,6 +99,6 @@ protected:
 protected:
 	int			m_nID;	//!< unique material ID
 	FEMaterial*	m_pm;	//!< the material properties
-	FEModel*	m_ps;	//!< the model to which this material belongs \todo is this being used?
+	FSModel*	m_ps;	//!< the model to which this material belongs \todo is this being used?
 	static	int	m_nref;
 };

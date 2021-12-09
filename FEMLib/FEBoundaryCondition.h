@@ -10,10 +10,10 @@
 class FEBoundaryCondition : public FEDomainComponent
 {
 public:
-	FEBoundaryCondition(int ntype, FEModel* fem, int nstep = 0) : FEDomainComponent(ntype, fem, nstep){
+	FEBoundaryCondition(int ntype, FSModel* fem, int nstep = 0) : FEDomainComponent(ntype, fem, nstep){
 		m_superClassID = FE_ESSENTIAL_BC;
 	}
-	FEBoundaryCondition(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEDomainComponent(ntype, fem, pi, nstep){
+	FEBoundaryCondition(int ntype, FSModel* fem, FEItemListBuilder* pi, int nstep) : FEDomainComponent(ntype, fem, pi, nstep){
 		m_superClassID = FE_ESSENTIAL_BC;
 	}
 };
@@ -24,8 +24,8 @@ class FEFixedDOF : public FEBoundaryCondition
 	enum {BC};
 
 public:
-	FEFixedDOF(int ntype, FEModel* fem);
-	FEFixedDOF(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0);
+	FEFixedDOF(int ntype, FSModel* fem);
+	FEFixedDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
 
 	int GetVarID() const { return m_nvar; }
 
@@ -58,8 +58,8 @@ private:
 class FEFixedDisplacement : public FEFixedDOF
 {
 public:
-	FEFixedDisplacement(FEModel* ps);
-	FEFixedDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+	FEFixedDisplacement(FSModel* ps);
+	FEFixedDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
 };
 
 //=============================================================================
@@ -72,8 +72,8 @@ public:
 class FEFixedShellDisplacement : public FEFixedDOF
 {
 public:
-	FEFixedShellDisplacement(FEModel* ps);
-	FEFixedShellDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+	FEFixedShellDisplacement(FSModel* ps);
+	FEFixedShellDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
 };
 
 
@@ -88,8 +88,8 @@ public:
 class FEFixedRotation : public FEFixedDOF
 {
 public:
-	FEFixedRotation(FEModel* ps);
-	FEFixedRotation(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+	FEFixedRotation(FSModel* ps);
+	FEFixedRotation(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
 };
 
 //=============================================================================
@@ -98,8 +98,8 @@ public:
 class FEFixedFluidPressure : public FEFixedDOF
 {
 public:
-	FEFixedFluidPressure(FEModel* ps);
-	FEFixedFluidPressure(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep);
+	FEFixedFluidPressure(FSModel* ps);
+	FEFixedFluidPressure(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep);
 };
 
 //=============================================================================
@@ -108,8 +108,8 @@ public:
 class FEFixedTemperature : public FEFixedDOF
 {
 public:
-	FEFixedTemperature(FEModel* ps);
-	FEFixedTemperature(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep);
+	FEFixedTemperature(FSModel* ps);
+	FEFixedTemperature(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep);
 };
 
 //=============================================================================
@@ -118,8 +118,8 @@ public:
 class FEFixedConcentration : public FEFixedDOF
 {
 public:
-	FEFixedConcentration(FEModel* ps);
-	FEFixedConcentration(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep);
+	FEFixedConcentration(FSModel* ps);
+	FEFixedConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep);
 };
 
 //=============================================================================
@@ -133,8 +133,8 @@ public:
 class FEFixedFluidVelocity : public FEFixedDOF
 {
 public:
-    FEFixedFluidVelocity(FEModel* ps);
-    FEFixedFluidVelocity(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+    FEFixedFluidVelocity(FSModel* ps);
+    FEFixedFluidVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
 };
 
 //=============================================================================
@@ -146,8 +146,8 @@ public:
     enum {BC};
     
 public:
-    FEFixedFluidDilatation(FEModel* ps);
-    FEFixedFluidDilatation(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep);
+    FEFixedFluidDilatation(FSModel* ps);
+    FEFixedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep);
 };
 
 //=============================================================================
@@ -159,8 +159,8 @@ public:
 	enum { BC, SCALE, NTYPE };
 
 public:
-	FEPrescribedDOF(int ntype, FEModel* ps, int nstep = 0);
-	FEPrescribedDOF(int ntype, FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+	FEPrescribedDOF(int ntype, FSModel* ps, int nstep = 0);
+	FEPrescribedDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
 
 	int GetVarID() const { return m_nvar; }
 	void SetVarID(int n);
@@ -191,8 +191,8 @@ private:
 class FEPrescribedDisplacement : public FEPrescribedDOF
 {
 public:
-	FEPrescribedDisplacement(FEModel* ps);
-	FEPrescribedDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+	FEPrescribedDisplacement(FSModel* ps);
+	FEPrescribedDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -201,8 +201,8 @@ public:
 class FEPrescribedShellDisplacement : public FEPrescribedDOF
 {
 public:
-	FEPrescribedShellDisplacement(FEModel* ps);
-	FEPrescribedShellDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+	FEPrescribedShellDisplacement(FSModel* ps);
+	FEPrescribedShellDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -211,8 +211,8 @@ public:
 class FEPrescribedRotation : public FEPrescribedDOF
 {
 public:
-	FEPrescribedRotation(FEModel* ps);
-	FEPrescribedRotation(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+	FEPrescribedRotation(FSModel* ps);
+	FEPrescribedRotation(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -221,8 +221,8 @@ public:
 class FEPrescribedFluidPressure : public FEPrescribedDOF
 {
 public:
-	FEPrescribedFluidPressure(FEModel* ps);
-	FEPrescribedFluidPressure(FEModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
+	FEPrescribedFluidPressure(FSModel* ps);
+	FEPrescribedFluidPressure(FSModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -231,8 +231,8 @@ public:
 class FEPrescribedTemperature : public FEPrescribedDOF
 {
 public:
-	FEPrescribedTemperature(FEModel* ps);
-	FEPrescribedTemperature(FEModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
+	FEPrescribedTemperature(FSModel* ps);
+	FEPrescribedTemperature(FSModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -241,8 +241,8 @@ public:
 class FEPrescribedConcentration : public FEPrescribedDOF
 {
 public:
-	FEPrescribedConcentration(FEModel* ps);
-	FEPrescribedConcentration(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep);
+	FEPrescribedConcentration(FSModel* ps);
+	FEPrescribedConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep);
 };
 
 //=============================================================================
@@ -251,8 +251,8 @@ public:
 class FEPrescribedFluidVelocity : public FEPrescribedDOF
 {
 public:
-    FEPrescribedFluidVelocity(FEModel* ps);
-    FEPrescribedFluidVelocity(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
+    FEPrescribedFluidVelocity(FSModel* ps);
+    FEPrescribedFluidVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================
@@ -261,15 +261,15 @@ public:
 class FEPrescribedFluidDilatation : public FEPrescribedDOF
 {
 public:
-    FEPrescribedFluidDilatation(FEModel* ps);
-    FEPrescribedFluidDilatation(FEModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
+    FEPrescribedFluidDilatation(FSModel* ps);
+    FEPrescribedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
 };
 
 //=============================================================================
 class FEBioBoundaryCondition : public FEBoundaryCondition
 {
 public:
-	FEBioBoundaryCondition(FEModel* ps);
+	FEBioBoundaryCondition(FSModel* ps);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 };

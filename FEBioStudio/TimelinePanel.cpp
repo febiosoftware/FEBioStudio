@@ -61,13 +61,13 @@ void CTimelinePanel::Update(bool reset)
 	CPostDocument* doc = m_wnd->GetPostDocument();
 	if (doc && doc->IsValid())
 	{
-		FEPostModel* fem = doc->GetFEModel();
+		FEPostModel* fem = doc->GetFSModel();
 		if (fem)
 		{
 			if (reset)
 			{
 				ui->timeline->clearData();
-				FEPostModel& fem = *doc->GetFEModel();
+				FEPostModel& fem = *doc->GetFSModel();
 				vector< pair<double, int> > data(fem.GetStates());
 				int nstates = fem.GetStates();
 				for (int i = 0; i < nstates; ++i)

@@ -419,7 +419,7 @@ bool VTUimport::ParseDataArray(XMLTag& tag, VTKDataArray& vtkDataArray)
 
 bool VTUimport::BuildMesh(VTKModel& vtk)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	for (int n = 0; n < vtk.Pieces(); ++n)
 	{

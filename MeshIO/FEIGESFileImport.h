@@ -82,5 +82,5 @@ protected:
 	bool ReadTerminateSection(RECORD& rec);
 
 protected:
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 };

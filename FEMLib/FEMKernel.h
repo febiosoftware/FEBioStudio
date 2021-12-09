@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 //using namespace std;
 
-class FEModel;
+class FSModel;
 
 class FEClassFactory
 {
@@ -36,7 +36,7 @@ public:
 	FEClassFactory(int module, int superID, int classID, const char* sztype, const char* helpURL);
 	~FEClassFactory();
 
-	virtual FSObject* Create(FEModel* fem) = 0;
+	virtual FSObject* Create(FSModel* fem) = 0;
 
 	int GetModule() const { return m_Module; }
 	int GetSuperID() const { return m_SuperID; }
@@ -57,7 +57,7 @@ template <class T> class FEClassFactory_T : public FEClassFactory
 {
 public:
 	FEClassFactory_T(int module, int superID, int classID, const char* sztype, const char* helpURL = "") : FEClassFactory(module, superID, classID, sztype, helpURL){}
-	FSObject* Create(FEModel* fem) { return new T(fem); }
+	FSObject* Create(FSModel* fem) { return new T(fem); }
 };
 
 class FEMKernel
@@ -65,8 +65,8 @@ class FEMKernel
 public:
 	static FEMKernel* Instance();
 
-	FSObject* Create(FEModel* fem, int superID, int classID);
-	FSObject* Create(FEModel* fem, int superID, const char* szTypeString);
+	FSObject* Create(FSModel* fem, int superID, int classID);
+	FSObject* Create(FSModel* fem, int superID, const char* szTypeString);
 
 	void RegisterClass(FEClassFactory* fac);
 
@@ -85,12 +85,12 @@ private:
 #define REGISTER_FE_CLASS(theClass, theModule, theSuperID, theClassID, ...) \
 	FEMKernel::Instance()->RegisterClass(new FEClassFactory_T<theClass>(theModule, theSuperID, theClassID, __VA_ARGS__));
 
-template <class T> T* fecore_new(FEModel* fem, int superID, int classID)
+template <class T> T* fecore_new(FSModel* fem, int superID, int classID)
 {
 	return dynamic_cast<T*>(FEMKernel::Instance()->Create(fem, superID, classID));
 }
 
-template <class T> T* fecore_new(FEModel* fem, int superID, const char* sztype)
+template <class T> T* fecore_new(FSModel* fem, int superID, const char* sztype)
 {
 	return dynamic_cast<T*>(FEMKernel::Instance()->Create(fem, superID, sztype));
 }

@@ -116,7 +116,7 @@ bool szicmp(const char* sz1, const char* sz2)
 //! Load an Abaqus model file
 bool AbaqusImport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pprj = &m_prj;
 	m_pfem = &fem;
 
@@ -1426,7 +1426,7 @@ bool AbaqusImport::build_model()
 // Build the model geometry
 bool AbaqusImport::build_mesh()
 {
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 
 	const char* szdefaultName = "Object";
 
@@ -1497,7 +1497,7 @@ bool AbaqusImport::build_mesh()
 //-----------------------------------------------------------------------------
 bool AbaqusImport::build_physics()
 {
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 
 	// add the materials
 	list<AbaqusModel::MATERIAL>& Mat = m_inp.MaterialList();
@@ -1631,7 +1631,7 @@ bool AbaqusImport::build_physics()
 // Build a part
 GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 {
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 	GModel& gm = fem.GetModel();
 
 	AbaqusModel::PART& part = *pg;

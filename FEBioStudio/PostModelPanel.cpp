@@ -705,7 +705,7 @@ void CPostModelPanel::BuildModelTree()
 	CPostDocument* pdoc = GetActiveDocument();
 	if (pdoc && pdoc->IsValid())
 	{
-		Post::FEPostModel* fem = pdoc->GetFEModel();
+		Post::FEPostModel* fem = pdoc->GetFSModel();
 		Post::CGLModel* mdl = pdoc->GetGLModel();
 
 		CModelTreeItem* pi1 = nullptr;
@@ -1122,7 +1122,7 @@ void CPostModelPanel::OnSelectElements()
 	if (pg)
 	{
 		CPostDocument* pdoc = GetActiveDocument();
-		FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
+		FEMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_ELEM);
         vector<int>pgl = pg->GetElementList();
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
@@ -1140,7 +1140,7 @@ void CPostModelPanel::OnHideElements()
 	if (pg)
 	{
 		CPostDocument* pdoc = GetActiveDocument();
-		FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
+		FEMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 
 		pdoc->DoCommand(new CCmdHideElements(mesh, pg->GetElementList()));
 		GetMainWindow()->RedrawGL();
@@ -1152,7 +1152,7 @@ void CPostModelPanel::OnShowAllElements()
 	CPostDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-	FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
+	FEMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 	if (mesh)
 	{
 		ForAllElements(*mesh, [](FEElement_& el) {

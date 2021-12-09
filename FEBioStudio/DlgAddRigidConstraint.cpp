@@ -86,7 +86,7 @@ CDlgAddRigidConstraint::CDlgAddRigidConstraint(FEProject& prj, QWidget* parent) 
 	SetLeftSideLayout(ui->mainLayout);
 
 	// add the steps
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		ui->step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));

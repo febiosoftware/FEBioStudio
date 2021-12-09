@@ -154,7 +154,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 	{
 		GDiscreteSelection* pds = dynamic_cast<GDiscreteSelection*>(psel);
 		CCmdGroup* pcmd = new CCmdGroup("Delete Discrete");
-		FEModel* ps = doc->GetFEModel();
+		FSModel* ps = doc->GetFSModel();
 		GModel& model = ps->GetModel();
 		for (int i = 0; i<model.DiscreteObjects(); ++i)
 		{
@@ -228,7 +228,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			if (nsel == SELECT_OBJECT)
 			{
 				CCmdGroup* pcmd = new CCmdGroup("Delete");
-				FEModel* ps = doc->GetFEModel();
+				FSModel* ps = doc->GetFSModel();
 				GModel& model = ps->GetModel();
 				for (int i = 0; i<model.Objects(); ++i)
 				{
@@ -484,12 +484,12 @@ void CMainWindow::on_actionNameSelection_triggered()
 	if (doc == nullptr) return;
 
 	// we need a bit more for model docs
-	FEModel* pfem = nullptr;
+	FSModel* pfem = nullptr;
 	GModel* mdl = nullptr;
 	if (GetModelDocument())
 	{
 		CModelDocument* modelDoc = GetModelDocument();
-		pfem = modelDoc->GetFEModel();
+		pfem = modelDoc->GetFSModel();
 		mdl = modelDoc->GetGModel();
 	}
 
@@ -1038,7 +1038,7 @@ void CMainWindow::on_actionPurge_triggered()
 	CDlgPurge dlg(this);
 	if (dlg.exec())
 	{
-		FEModel* ps = doc->GetFEModel();
+		FSModel* ps = doc->GetFSModel();
 		ps->Purge(dlg.getOption());
 		doc->ClearCommandStack();
 		doc->SetModifiedFlag(true);

@@ -104,7 +104,7 @@ public:
 
 	FEPostMesh* GetFEMesh();
 
-	FEPostModel* GetFEModel();
+	FEPostModel* GetFSModel();
 
 protected:
 	FEState*	m_state;

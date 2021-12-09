@@ -704,7 +704,7 @@ inline void write_data(vector<float>& val, int index, const mat3fd& v)
 //-----------------------------------------------------------------------------
 bool xpltFileExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& meshData)
 {
-	FEPostModel& fem = *meshData.GetFEModel();
+	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();
@@ -742,7 +742,7 @@ bool xpltFileExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& mes
 //-----------------------------------------------------------------------------
 bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FEPart& part)
 {
-	FEPostModel& fem = *meshData.GetFEModel();
+	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();
@@ -980,7 +980,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 //-----------------------------------------------------------------------------
 bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FESurface& surf)
 {
-	FEPostModel& fem = *meshData.GetFEModel();
+	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();

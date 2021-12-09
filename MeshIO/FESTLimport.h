@@ -89,7 +89,7 @@ private:
 	bool read_facet(FACET& f);
 
 protected:
-	FEModel*		m_pfem;
+	FSModel*		m_pfem;
 	list<FACET>		m_Face;
 	vector<NODE>	m_Node;
 	int				m_nline;	// line counter

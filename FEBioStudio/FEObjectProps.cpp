@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 
 //=======================================================================================
-FEObjectProps::FEObjectProps(FSObject* po, FEModel* fem) : CObjectProps(nullptr)
+FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
 {
 	m_fem = fem;
 	if (po) BuildParamList(po);
@@ -70,7 +70,7 @@ QStringList FEObjectProps::GetEnumValues(const char* ch)
 //=======================================================================================
 CFixedDOFProps::CFixedDOFProps(FEFixedDOF* pbc) : m_bc(pbc)
 {
-	FEModel& fem = *pbc->GetFEModel();
+	FSModel& fem = *pbc->GetFSModel();
 	FEDOFVariable& var = fem.Variable(pbc->GetVarID());
 	for (int i = 0; i<var.DOFs(); ++i)
 	{
@@ -331,7 +331,7 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidInterfaceSettings::CRigidInterfaceSettings(FEModel& fem, FERigidInterface* pi) : m_ri(pi)
+CRigidInterfaceSettings::CRigidInterfaceSettings(FSModel& fem, FERigidInterface* pi) : m_ri(pi)
 {
 	QStringList mats;
 	m_sel = -1;
@@ -366,7 +366,7 @@ void CRigidInterfaceSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidConstraintSettings::CRigidConstraintSettings(FEModel& fem, FERigidConstraint* pi) : CObjectProps(0), m_rc(pi)
+CRigidConstraintSettings::CRigidConstraintSettings(FSModel& fem, FERigidConstraint* pi) : CObjectProps(0), m_rc(pi)
 {
 	QStringList mats;
 	m_sel = -1;
@@ -406,7 +406,7 @@ void CRigidConstraintSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidConnectorSettings::CRigidConnectorSettings(FEModel& fem, FERigidConnector* pi) : CObjectProps(0), m_rc(pi)
+CRigidConnectorSettings::CRigidConnectorSettings(FSModel& fem, FERigidConnector* pi) : CObjectProps(0), m_rc(pi)
 {
 	QStringList mats;
 	m_rbA = -1, m_rbB = -1;
@@ -463,7 +463,7 @@ void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CMaterialProps::CMaterialProps(FEModel& fem, FEMaterial* mat) : FEObjectProps(0, &fem), m_mat(mat)
+CMaterialProps::CMaterialProps(FSModel& fem, FEMaterial* mat) : FEObjectProps(0, &fem), m_mat(mat)
 {
 	BuildPropertyList();
 }
@@ -759,7 +759,7 @@ void CLogfileProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CReactionReactantProperties::CReactionReactantProperties(FEReactionMaterial* mat, FEModel& fem) : CObjectProps(0), m_mat(mat)
+CReactionReactantProperties::CReactionReactantProperties(FEReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
 {
 	int NR = m_mat->Reactants();
 	for (int i = 0; i<NR; ++i)
@@ -795,7 +795,7 @@ void CReactionReactantProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CReactionProductProperties::CReactionProductProperties(FEReactionMaterial* mat, FEModel& fem) : CObjectProps(0), m_mat(mat)
+CReactionProductProperties::CReactionProductProperties(FEReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
 {
 	int NP = m_mat->Products();
 	for (int i = 0; i<NP; ++i)
@@ -831,7 +831,7 @@ void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CPartProperties::CPartProperties(GPart* pg, FEModel& fem) : CObjectProps(pg)
+CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(pg)
 {
 	m_fem = &fem;
 	m_pg = pg;

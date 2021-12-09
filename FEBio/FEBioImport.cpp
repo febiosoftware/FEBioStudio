@@ -131,7 +131,7 @@ bool FEBioImport::Load(const char* szfile)
 	XMLReader xml;
 	if (xml.Attach(m_fp) == false) return errf("This is not a valid FEBio input file");
 
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 
 	// create a new FEBioInputModel
@@ -315,7 +315,7 @@ void FEBioImport::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 // TODO: Register parameters that require load curves in a list.
 // Or store the load curves directly. 
 // I think this would eliminate all these dynamic_casts
-bool FEBioImport::UpdateFEModel(FEModel& fem)
+bool FEBioImport::UpdateFEModel(FSModel& fem)
 {
 	// set the parent ID's for rigid bodies
 	int nmat = m_febio->Materials();

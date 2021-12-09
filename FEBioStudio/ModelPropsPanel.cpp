@@ -520,7 +520,7 @@ void CModelPropsPanel::Update()
 	if (doc == nullptr) return;
 
 	// rebuild the step list
-	FEModel* fem = doc->GetFEModel();
+	FSModel* fem = doc->GetFSModel();
 	int N = fem->Steps();
 	vector<pair<QString,int> > steps(N);
 	for (int i=0; i<N; ++i)
@@ -840,7 +840,7 @@ void CModelPropsPanel::SetSelection(GMaterial* pmat)
 {
 	// get the document
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GModel& mdl = fem.GetModel();
 
 	// clear the name
@@ -1458,7 +1458,7 @@ void CModelPropsPanel::selSelection(int n)
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	GModel* mdl = pdoc->GetGModel();
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 
 	assert(m_currentObject);
 	if (m_currentObject == 0) return;
@@ -1633,7 +1633,7 @@ void CModelPropsPanel::on_bcobject_stepChanged(int n)
 	{
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 
-		FEModel* fem = doc->GetFEModel();
+		FSModel* fem = doc->GetFSModel();
 
 		fem->AssignComponentToStep(pc, fem->GetStep(n));
 

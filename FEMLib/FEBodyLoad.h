@@ -8,7 +8,7 @@
 class FEBodyLoad : public FELoad
 {
 public:
-	FEBodyLoad(int ntype, FEModel* ps, int nstep);
+	FEBodyLoad(int ntype, FSModel* ps, int nstep);
 };
 
 //-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ public:
 	void SetLoad(int n, double v);
 
 public:
-	FEConstBodyForce(FEModel* ps, int nstep = 0);
+	FEConstBodyForce(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -38,7 +38,7 @@ public:
 	FELoadCurve* GetLoadCurve(int n);
 
 public:
-	FENonConstBodyForce(FEModel* ps, int nstep = 0);
+	FENonConstBodyForce(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ public:
 	enum { LOAD };
 
 public:
-	FEHeatSource(FEModel* ps, int nstep = 0);
+	FEHeatSource(FSModel* ps, int nstep = 0);
 
 	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
 
@@ -65,7 +65,7 @@ public:
 	enum { SBM, VALUE, POS_X, POS_Y, POS_Z };
 
 public:
-	FESBMPointSource(FEModel* ps, int nstep = 0);
+	FESBMPointSource(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ public:
     enum { ANGSPD, ROT_AXIS, ROT_CNTR };
     
 public:
-    FECentrifugalBodyForce(FEModel* ps, int nstep = 0);
+    FECentrifugalBodyForce(FSModel* ps, int nstep = 0);
     
     FELoadCurve* GetLoadCurve() { return GetParamLC(ANGSPD); }
     
@@ -92,7 +92,7 @@ public:
 	enum { C };
 
 public:
-	FEMassDamping(FEModel* ps, int nstep = 0);
+	FEMassDamping(FSModel* ps, int nstep = 0);
 
 	FELoadCurve* GetLoadCurve() { return GetParamLC(C); }
 
@@ -103,7 +103,7 @@ public:
 class FEBioBodyLoad : public FEBodyLoad
 {
 public:
-	FEBioBodyLoad(FEModel* ps, int nstep = 0);
+	FEBioBodyLoad(FSModel* ps, int nstep = 0);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 };

@@ -34,7 +34,7 @@ extern GLColor col[];
 //-----------------------------------------------------------------------------
 bool FENASTRANimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	// clear all data
 	m_Node.clear();
@@ -280,7 +280,7 @@ bool FENASTRANimport::read_MAT1(FENASTRANimport::CARD &c)
 
 //-----------------------------------------------------------------------------
 
-bool FENASTRANimport::BuildMesh(FEModel &fem)
+bool FENASTRANimport::BuildMesh(FSModel& fem)
 {
 	int i, n;
 

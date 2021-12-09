@@ -34,13 +34,13 @@ SOFTWARE.*/
 class FERigidLoad : public FELoad
 {
 public:
-	FERigidLoad(int ntype, FEModel* ps, int nstep);
+	FERigidLoad(int ntype, FSModel* ps, int nstep);
 };
 
 class FEBioRigidLoad : public FERigidLoad
 {
 public:
-	FEBioRigidLoad(FEModel* ps, int nstep = 0);
+	FEBioRigidLoad(FSModel* ps, int nstep = 0);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 };

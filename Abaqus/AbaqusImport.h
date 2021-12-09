@@ -127,7 +127,7 @@ private:
 	char		m_szTitle[AbaqusModel::Max_Title + 1];
 	FEProject*	m_pprj;
 
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 
 	AbaqusModel		m_inp;
 

@@ -36,7 +36,7 @@ SOFTWARE.*/
 class GObject;
 class FEMesh;
 class GMesh;
-class FEModel;
+class FSModel;
 
 //-----------------------------------------------------------------------------
 class GModifier : public FSObject
@@ -56,7 +56,7 @@ class GTwistModifier : public GModifier
 public:
 	enum { ORIENT, TWIST, SCALE, SMIN, SMAX };
 public:
-	GTwistModifier(FEModel* ps = 0);
+	GTwistModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po);
 	FEMesh* BuildFEMesh(GObject* po);
@@ -69,7 +69,7 @@ public:
 	enum {SCALE, ORIENT};
 
 public:
-	GPinchModifier(FEModel* ps = 0);
+	GPinchModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po);
 	FEMesh* BuildFEMesh(GObject* po);
@@ -82,7 +82,7 @@ public:
 	enum { ORIENT, ANGLE, SMIN, SMAX, XPIVOT, YPIVOT, ZPIVOT };
 
 public:
-	GBendModifier(FEModel* ps = 0);
+	GBendModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po);
 	FEMesh* BuildFEMesh(GObject* po);
@@ -107,7 +107,7 @@ public:
 	enum { ORIENT, SKEW };
 
 public:
-	GSkewModifier(FEModel* ps = 0);
+	GSkewModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po);
 	FEMesh* BuildFEMesh(GObject* po);

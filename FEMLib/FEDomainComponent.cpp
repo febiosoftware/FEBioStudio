@@ -2,7 +2,7 @@
 #include "FEDomainComponent.h"
 #include <MeshTools/GGroup.h>
 
-FEDomainComponent::FEDomainComponent(int ntype, FEModel* ps, int nstep)
+FEDomainComponent::FEDomainComponent(int ntype, FSModel* ps, int nstep)
 {
 	m_ps = ps;
 	m_pItem = 0;
@@ -13,7 +13,7 @@ FEDomainComponent::FEDomainComponent(int ntype, FEModel* ps, int nstep)
 	m_itemType = FE_NODE_FLAG;
 }
 
-FEDomainComponent::FEDomainComponent(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep)
+FEDomainComponent::FEDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep)
 {
 	m_ps = ps;
 	m_ntype = ntype;

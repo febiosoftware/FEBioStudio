@@ -48,7 +48,7 @@ SOFTWARE.*/
 class Ui::CDlgSelectParam
 {
 public:
-	FEModel*		m_fem;
+	FSModel*		m_fem;
 	QTreeWidget*	tree;
 	QString			m_text;
 	int				m_paramOption;
@@ -177,14 +177,14 @@ QString CDlgSelectParam::text()
 }
 
 
-CDlgSelectParam::CDlgSelectParam(FEModel* fem, int paramOption, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgSelectParam)
+CDlgSelectParam::CDlgSelectParam(FSModel* fem, int paramOption, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgSelectParam)
 {
 	ui->m_fem = fem;
 	ui->m_paramOption = paramOption;
 	ui->setup(this);
 }
 
-CSelectParam::CSelectParam(FEModel* fem, int paramOption, QWidget* parent) : m_fem(fem), QWidget(parent)
+CSelectParam::CSelectParam(FSModel* fem, int paramOption, QWidget* parent) : m_fem(fem), QWidget(parent)
 {
 	m_paramOption = paramOption;
 
@@ -214,7 +214,7 @@ void CSelectParam::onSelectClicked()
 class Ui::CDlgFEBioOptimize
 {
 public:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 	FEBioOpt	opt;
 	int			m_theme;
 
@@ -452,7 +452,7 @@ CDlgFEBioOptimize::CDlgFEBioOptimize(CMainWindow* parent) : QWizard(parent), ui(
 
 	setWindowTitle("Generate FEBio optimization");
 	ui->m_theme = parent->currentTheme();
-	ui->m_fem = doc->GetFEModel();
+	ui->m_fem = doc->GetFSModel();
 	ui->setup(this);
 
 	QMetaObject::connectSlotsByName(this);
@@ -568,7 +568,7 @@ CDlgFEBioTangent::CDlgFEBioTangent(CMainWindow* parent) : QDialog(parent), ui(ne
 	CModelDocument* doc = parent->GetModelDocument();
 	if (doc)
 	{
-		FEModel* fem = doc->GetFEModel(); assert(fem);
+		FSModel* fem = doc->GetFSModel(); assert(fem);
 		int nmat = fem->Materials();
 		for (int i = 0; i < nmat; ++i)
 		{

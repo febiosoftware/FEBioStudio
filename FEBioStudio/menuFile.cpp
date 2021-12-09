@@ -561,7 +561,7 @@ void CMainWindow::ExportPostGeometry()
 	string sfilename = fileName.toStdString();
 	const char* szfilename = sfilename.c_str();
 
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	bool bret = false;
 	QString error("(unknown)");
@@ -931,7 +931,7 @@ void CMainWindow::SavePostDoc()
 		CPostDocument* doc = GetPostDocument();
 		if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
-		Post::FEPostModel& fem = *doc->GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFSModel();
 
 		bool bret = false;
 		QString error("(unknown)");
@@ -1434,7 +1434,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 					QMessageBox::critical(this, "FEBio Studio", QString("Failed importing file:\n%1").arg(fileName));
 				}
 				delete dummyFem;
-				Post::FEPostModel::SetInstance(postDoc->GetFEModel());
+				Post::FEPostModel::SetInstance(postDoc->GetFSModel());
 			}
 
 			ui->postPanel->Update(true);

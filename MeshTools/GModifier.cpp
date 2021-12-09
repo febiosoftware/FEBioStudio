@@ -206,7 +206,7 @@ void GModifierStack::Copy(GModifierStack* ps)
 //=============================================================================
 // GTwistModifier
 //-----------------------------------------------------------------------------
-GTwistModifier::GTwistModifier(FEModel* ps)
+GTwistModifier::GTwistModifier(FSModel* ps)
 {
 	AddIntParam(2, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0, "twist", "twist");
@@ -490,7 +490,7 @@ FEMesh* GTwistModifier::BuildFEMesh(GObject* po)
 //=============================================================================
 // GPinchModifier
 //-----------------------------------------------------------------------------
-GPinchModifier::GPinchModifier(FEModel* ps)
+GPinchModifier::GPinchModifier(FSModel* ps)
 {
 	AddDoubleParam(1.0, "scale", "scale");
 	AddIntParam(0, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
@@ -609,7 +609,7 @@ FEMesh* GPinchModifier::BuildFEMesh(GObject* po)
 //=============================================================================
 // GBendModifier
 //-----------------------------------------------------------------------------
-GBendModifier::GBendModifier(FEModel* ps)
+GBendModifier::GBendModifier(FSModel* ps)
 {
 	AddIntParam(2, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0, "angle", "angle");
@@ -790,7 +790,7 @@ void GBendModifier::Apply(vec3d& r)
 //=============================================================================
 // GSkewModifier
 //-----------------------------------------------------------------------------
-GSkewModifier::GSkewModifier(FEModel* ps)
+GSkewModifier::GSkewModifier(FSModel* ps)
 {
 	AddIntParam(0, "orientation", "Orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0, "distance", "Skew distance");

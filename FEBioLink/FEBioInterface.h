@@ -41,7 +41,7 @@ class FEPairedInterface;
 class FEModelConstraint;
 class FERigidConstraint;
 class FERigidConnector;
-class FEModel;
+class FSModel;
 
 namespace FEBio {
 
@@ -58,14 +58,14 @@ namespace FEBio {
 	void UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm);
 
 	// helper functions for creating FEBio classes.
-	FEMaterial*          CreateMaterial         (const char* sztype, FEModel* fem);
-	FEBoundaryCondition* CreateBoundaryCondition(const char* sztype, FEModel* fem);
-	FENodalLoad*         CreateNodalLoad        (const char* sztype, FEModel* fem);
-	FESurfaceLoad*       CreateSurfaceLoad      (const char* sztype, FEModel* fem);
-	FEBodyLoad*          CreateBodyLoad         (const char* sztype, FEModel* fem);
-	FEPairedInterface*   CreatePairedInterface  (const char* sztype, FEModel* fem);
-	FEModelConstraint*	 CreateNLConstraint     (const char* sztype, FEModel* fem);
-	FERigidConstraint*	 CreateRigidConstraint  (const char* sztype, FEModel* fem);
-	FERigidConnector*	 CreateRigidConnector   (const char* sztype, FEModel* fem);
-	FEInitialCondition*  CreateInitialCondition (const char* sztype, FEModel* fem);
+	FEMaterial*          CreateMaterial         (const char* sztype, FSModel* fem);
+	FEBoundaryCondition* CreateBoundaryCondition(const char* sztype, FSModel* fem);
+	FENodalLoad*         CreateNodalLoad        (const char* sztype, FSModel* fem);
+	FESurfaceLoad*       CreateSurfaceLoad      (const char* sztype, FSModel* fem);
+	FEBodyLoad*          CreateBodyLoad         (const char* sztype, FSModel* fem);
+	FEPairedInterface*   CreatePairedInterface  (const char* sztype, FSModel* fem);
+	FEModelConstraint*	 CreateNLConstraint     (const char* sztype, FSModel* fem);
+	FERigidConstraint*	 CreateRigidConstraint  (const char* sztype, FSModel* fem);
+	FERigidConnector*	 CreateRigidConnector   (const char* sztype, FSModel* fem);
+	FEInitialCondition*  CreateInitialCondition (const char* sztype, FSModel* fem);
 }

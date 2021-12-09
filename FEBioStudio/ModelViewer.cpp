@@ -351,7 +351,7 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<GDiscreteObject*>(po))
 	{
 		GDiscreteObject* ps = dynamic_cast<GDiscreteObject*>(po);
-		GModel& fem = pdoc->GetFEModel()->GetModel();
+		GModel& fem = pdoc->GetFSModel()->GetModel();
 		int n = fem.FindDiscreteObjectIndex(ps);
 		pcmd = new CCmdSelectDiscrete(&fem, &n, 1, false);
 	}
@@ -403,7 +403,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	for (int i = 0; i<n; ++i, ++it) pi[i] = *it;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel* mdl = pdoc->GetGModel();
 
 	switch (pitem->Type())
@@ -676,7 +676,7 @@ void CModelViewer::OnAddStep()
 void CModelViewer::OnHideObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i=0; i<m_selection.size(); ++i)
 	{
@@ -697,7 +697,7 @@ void CModelViewer::OnHideObject()
 void CModelViewer::OnShowObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i=0; i<(int)m_selection.size(); ++i)
 	{
@@ -717,7 +717,7 @@ void CModelViewer::OnShowObject()
 void CModelViewer::OnSelectObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	CMainWindow* wnd = GetMainWindow();
 	wnd->SetSelectionMode(SELECT_OBJECT);
@@ -743,7 +743,7 @@ void CModelViewer::OnDeleteAllDiscete()
 	{
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument()); assert(doc);
 		if (doc == nullptr) return;
-		GModel& m = doc->GetFEModel()->GetModel();
+		GModel& m = doc->GetFSModel()->GetModel();
 		m.ClearDiscrete();
 
 		Select(nullptr);
@@ -756,7 +756,7 @@ void CModelViewer::OnShowAllDiscrete()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument()); assert(doc);
 	if (doc == nullptr) return;
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 	
 	for (int i = 0; i < m.DiscreteObjects(); ++i)
 	{
@@ -770,7 +770,7 @@ void CModelViewer::OnHideAllDiscrete()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument()); assert(doc);
 	if (doc == nullptr) return;
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i = 0; i < m.DiscreteObjects(); ++i)
 	{
@@ -783,7 +783,7 @@ void CModelViewer::OnHideAllDiscrete()
 void CModelViewer::OnSelectDiscreteObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	CMainWindow* wnd = GetMainWindow();
 	wnd->SetSelectionMode(SELECT_DISCRETE);
@@ -809,7 +809,7 @@ void CModelViewer::OnDetachDiscreteObject()
 
 	CMainWindow* wnd = GetMainWindow();
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	GObject* po = m.DetachDiscreteSet(set);
 	if (po)
@@ -878,7 +878,7 @@ void CModelViewer::OnChangeDiscreteType()
 void CModelViewer::OnHidePart()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i=0; i<(int)m_selection.size(); ++i)
 	{
@@ -899,7 +899,7 @@ void CModelViewer::OnHidePart()
 void CModelViewer::OnSelectPartElements()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	if (m_selection.size() != 1) return;
 	GPart* pg = dynamic_cast<GPart*>(m_selection[0]); assert(pg);
@@ -936,7 +936,7 @@ void CModelViewer::OnSelectPartElements()
 void CModelViewer::OnShowPart()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i = 0; i<(int)m_selection.size(); ++i)
 	{
@@ -1041,7 +1041,7 @@ void CModelViewer::OnCopyMaterial()
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	doc->DoCommand(new CCmdAddMaterial(doc->GetFEModel(), pmat2));
+	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2));
 
 	// update the model viewer
 	Update();
@@ -1057,7 +1057,7 @@ void CModelViewer::OnChangeMaterial()
 	if (doc == nullptr) return;
 
 	FEProject& prj = doc->GetProject();
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	CDlgAddPhysicsItem dlg("Add Material", FE_MATERIAL, prj, false, this);
 	if (dlg.exec())
@@ -1076,7 +1076,7 @@ void CModelViewer::OnChangeMaterial()
 void CModelViewer::OnMaterialHideParts()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 	GModel& mdl = fem->GetModel();
 	list<GPart*> partList;
 	for (int i = 0; i < m_selection.size(); ++i)
@@ -1102,7 +1102,7 @@ void CModelViewer::OnMaterialHideParts()
 void CModelViewer::OnMaterialShowParts()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 	GModel& mdl = fem->GetModel();
 	list<GPart*> partList;
 	for (int i = 0; i < m_selection.size(); ++i)
@@ -1132,7 +1132,7 @@ void CModelViewer::OnMaterialHideOtherParts()
 	if (mat == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 	GModel& mdl = fem->GetModel();
 	list<GPart*> partList = mdl.FindPartsFromMaterial(mat->GetID(), false);
 
@@ -1146,7 +1146,7 @@ void CModelViewer::OnCopyInterface()
 	if (pic == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the interface
 	FEMKernel* fecore = FEMKernel::Instance();
@@ -1175,7 +1175,7 @@ void CModelViewer::OnCopyBC()
 	if (pbc == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the bc
 	FEMKernel* fecore = FEMKernel::Instance();
@@ -1204,7 +1204,7 @@ void CModelViewer::OnCopyIC()
 	if (pic == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the ic
 	FEMKernel* fecore = FEMKernel::Instance();
@@ -1233,7 +1233,7 @@ void CModelViewer::OnCopyRigidConnector()
 	if (pc == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
@@ -1261,7 +1261,7 @@ void CModelViewer::OnCopyConstraint()
 	FEModelConstraint* pc = dynamic_cast<FEModelConstraint*>(m_currentObject); assert(pc);
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
@@ -1290,7 +1290,7 @@ void CModelViewer::OnCopyLoad()
 	if (pl == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
@@ -1325,7 +1325,7 @@ void CModelViewer::OnCopyRigidConstraint()
 	if (pc == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
@@ -1354,7 +1354,7 @@ void CModelViewer::OnCopyStep()
 	if (ps == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the step
 	FEMKernel* fecore = FEMKernel::Instance();
@@ -1383,7 +1383,7 @@ void CModelViewer::OnStepMoveUp()
 	if (ps == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n > 1)
@@ -1400,7 +1400,7 @@ void CModelViewer::OnStepMoveDown()
 	if (ps == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n < fem->Steps() - 1)
@@ -1469,7 +1469,7 @@ void CModelViewer::UpdateCurrentItem()
 void CModelViewer::OnRemoveEmptySelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& mdl = pdoc->GetFEModel()->GetModel();
+	GModel& mdl = pdoc->GetFSModel()->GetModel();
 	mdl.RemoveEmptySelections();
 	Update();
 }
@@ -1477,7 +1477,7 @@ void CModelViewer::OnRemoveEmptySelections()
 void CModelViewer::OnRemoveAllSelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& mdl = pdoc->GetFEModel()->GetModel();
+	GModel& mdl = pdoc->GetFSModel()->GetModel();
 	mdl.RemoveNamedSelections();
 	Update();
 }

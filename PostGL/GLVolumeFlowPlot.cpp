@@ -125,7 +125,7 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 	// get the model
 	CGLModel& mdl = *GetModel();
 
-	FEPostModel* fem = mdl.GetFEModel();
+	FEPostModel* fem = mdl.GetFSModel();
 	FEState* state = fem->CurrentState();
 
 	// get the current mesh
@@ -183,7 +183,7 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 	CGLModel* mdl = GetModel();
 
 	FEMeshBase* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
 	int NS = pfem->GetStates();
@@ -280,7 +280,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 
 	// get the mesh
 	CGLModel* mdl = GetModel();
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	vec2f rng;

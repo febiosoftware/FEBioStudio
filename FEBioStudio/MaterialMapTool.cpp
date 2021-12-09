@@ -64,7 +64,7 @@ bool CMaterialMapTool::OnApply()
 	}
 	else
 	{
-		FEModel& fem = *pdoc->GetFEModel();
+		FSModel& fem = *pdoc->GetFSModel();
 		GObject* po = fem.GetModel().Object(0);
 		FEMesh& mesh = *po->GetFEMesh();
 		int N = mesh.Nodes();

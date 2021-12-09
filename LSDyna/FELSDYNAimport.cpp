@@ -148,7 +148,7 @@ char* FELSDYNAimport::get_line(char* szline)
 
 bool FELSDYNAimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// open the file

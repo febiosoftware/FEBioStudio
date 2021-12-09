@@ -33,7 +33,7 @@ SOFTWARE.*/
 
 class FEPart;
 class GPartList;
-class FEModel;
+class FSModel;
 
 //-----------------------------------------------------------------------------
 // Element data field
@@ -104,7 +104,7 @@ public:
 	FEElemList* BuildElemList();
 
 	// get the partlist
-	GPartList* GetPartList(FEModel* fem);
+	GPartList* GetPartList(FSModel* fem);
 
 public:
 	void Save(OArchive& ar);

@@ -91,7 +91,7 @@ bool FESTLExport::Write(const char* szfile)
 
 	int i, j, n;
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// only the selected object is exported, unless no object is selected, 

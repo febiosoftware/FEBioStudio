@@ -95,6 +95,6 @@ protected:
 
 	char			m_szline[256];
     size_t      m_lineno;
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 	FEProject*	m_pprj;
 };

@@ -32,13 +32,13 @@ SOFTWARE.*/
 #include "enums.h"
 
 //=============================================================================
-FEFixedDOF::FEFixedDOF(int ntype, FEModel* fem) : FEBoundaryCondition(ntype, fem)
+FEFixedDOF::FEFixedDOF(int ntype, FSModel* fem) : FEBoundaryCondition(ntype, fem)
 {
 	m_nvar = -1;
 	AddIntParam(0)->SetState(Param_HIDDEN); // the BC parameter
 }
 
-FEFixedDOF::FEFixedDOF(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEBoundaryCondition(ntype, fem, pi, nstep)
+FEFixedDOF::FEFixedDOF(int ntype, FSModel* fem, FEItemListBuilder* pi, int nstep) : FEBoundaryCondition(ntype, fem, pi, nstep)
 {
 	m_nvar = -1;
 	AddIntParam(0)->SetState(Param_HIDDEN); // the BC parameter
@@ -46,7 +46,7 @@ FEFixedDOF::FEFixedDOF(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep
 
 void FEFixedDOF::SetVarID(int nid)
 {
-	FEModel& fem = *GetFEModel();
+	FSModel& fem = *GetFSModel();
 	FEDOFVariable& var = fem.Variable(nid);
 	m_nvar = nid;
 	char sz[128]= {0};
@@ -55,14 +55,14 @@ void FEFixedDOF::SetVarID(int nid)
 }
 
 //=============================================================================
-FEFixedDisplacement::FEFixedDisplacement(FEModel* ps) : FEFixedDOF(FE_FIXED_DISPLACEMENT, ps)
+FEFixedDisplacement::FEFixedDisplacement(FSModel* ps) : FEFixedDOF(FE_FIXED_DISPLACEMENT, ps)
 {
 	SetTypeString("Fixed Displacement");
 	SetVarID(ps->GetVariableIndex("displacement"));
 }
 
 //-----------------------------------------------------------------------------
-FEFixedDisplacement::FEFixedDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_DISPLACEMENT, ps, pi, nstep)
+FEFixedDisplacement::FEFixedDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_DISPLACEMENT, ps, pi, nstep)
 {
 	SetTypeString("Fixed Displacement");
 	SetVarID(ps->GetVariableIndex("displacement"));
@@ -70,14 +70,14 @@ FEFixedDisplacement::FEFixedDisplacement(FEModel* ps, FEItemListBuilder* pi, int
 }
 
 //=============================================================================
-FEFixedShellDisplacement::FEFixedShellDisplacement(FEModel* ps) : FEFixedDOF(FE_FIXED_SHELL_DISPLACEMENT, ps)
+FEFixedShellDisplacement::FEFixedShellDisplacement(FSModel* ps) : FEFixedDOF(FE_FIXED_SHELL_DISPLACEMENT, ps)
 {
 	SetTypeString("Fixed Shell Displacement");
 	SetVarID(ps->GetVariableIndex("shell displacement"));
 }
 
 //-----------------------------------------------------------------------------
-FEFixedShellDisplacement::FEFixedShellDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_SHELL_DISPLACEMENT, ps, pi, nstep)
+FEFixedShellDisplacement::FEFixedShellDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_SHELL_DISPLACEMENT, ps, pi, nstep)
 {
 	SetTypeString("Fixed Shell Displacement");
 	SetVarID(ps->GetVariableIndex("shell displacement"));
@@ -85,14 +85,14 @@ FEFixedShellDisplacement::FEFixedShellDisplacement(FEModel* ps, FEItemListBuilde
 }
 
 //=============================================================================
-FEFixedRotation::FEFixedRotation(FEModel* ps) : FEFixedDOF(FE_FIXED_ROTATION, ps)
+FEFixedRotation::FEFixedRotation(FSModel* ps) : FEFixedDOF(FE_FIXED_ROTATION, ps)
 {
 	SetTypeString("Fixed Rotation");
 	SetVarID(ps->GetVariableIndex("shell rotation"));
 }
 
 //-----------------------------------------------------------------------------
-FEFixedRotation::FEFixedRotation(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_ROTATION, ps, pi, nstep)
+FEFixedRotation::FEFixedRotation(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_ROTATION, ps, pi, nstep)
 {
 	SetTypeString("Fixed Rotation");
 	SetVarID(ps->GetVariableIndex("shell rotation"));
@@ -100,14 +100,14 @@ FEFixedRotation::FEFixedRotation(FEModel* ps, FEItemListBuilder* pi, int bc, int
 }
 
 //=============================================================================
-FEFixedFluidPressure::FEFixedFluidPressure(FEModel* ps) : FEFixedDOF(FE_FIXED_FLUID_PRESSURE, ps)
+FEFixedFluidPressure::FEFixedFluidPressure(FSModel* ps) : FEFixedDOF(FE_FIXED_FLUID_PRESSURE, ps)
 {
 	SetTypeString("Fixed Effective Fluid Pressure");
 	SetVarID(ps->GetVariableIndex("fluid pressure"));
 }
 
 //-----------------------------------------------------------------------------
-FEFixedFluidPressure::FEFixedFluidPressure(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_FLUID_PRESSURE, ps, pi, nstep)
+FEFixedFluidPressure::FEFixedFluidPressure(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_FLUID_PRESSURE, ps, pi, nstep)
 {
 	SetTypeString("Fixed Effective Fluid Pressure");
 	SetVarID(ps->GetVariableIndex("fluid pressure"));
@@ -115,14 +115,14 @@ FEFixedFluidPressure::FEFixedFluidPressure(FEModel* ps, FEItemListBuilder* pi, i
 }
 
 //=============================================================================
-FEFixedTemperature::FEFixedTemperature(FEModel* ps) : FEFixedDOF(FE_FIXED_TEMPERATURE, ps)
+FEFixedTemperature::FEFixedTemperature(FSModel* ps) : FEFixedDOF(FE_FIXED_TEMPERATURE, ps)
 {
 	SetTypeString("Fixed Temperature");
 	SetVarID(ps->GetVariableIndex("temperature"));
 }
 
 //-----------------------------------------------------------------------------
-FEFixedTemperature::FEFixedTemperature(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_TEMPERATURE, ps, pi, nstep)
+FEFixedTemperature::FEFixedTemperature(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_TEMPERATURE, ps, pi, nstep)
 {
 	SetTypeString("Fixed Temperature");
 	SetVarID(ps->GetVariableIndex("temperature"));
@@ -132,14 +132,14 @@ FEFixedTemperature::FEFixedTemperature(FEModel* ps, FEItemListBuilder* pi, int b
 //=============================================================================
 // FIXED CONCENTRATION
 //=============================================================================
-FEFixedConcentration::FEFixedConcentration(FEModel* ps) : FEFixedDOF(FE_FIXED_CONCENTRATION, ps)
+FEFixedConcentration::FEFixedConcentration(FSModel* ps) : FEFixedDOF(FE_FIXED_CONCENTRATION, ps)
 {
 	SetTypeString("Fixed Effective Concentration");
 	SetVarID(ps->GetVariableIndex("concentration"));
 }
 
 //-----------------------------------------------------------------------------
-FEFixedConcentration::FEFixedConcentration(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_CONCENTRATION, ps, pi, nstep)
+FEFixedConcentration::FEFixedConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_CONCENTRATION, ps, pi, nstep)
 {
 	SetTypeString("Fixed Effective Concentration");
 	SetVarID(ps->GetVariableIndex("concentration"));
@@ -149,14 +149,14 @@ FEFixedConcentration::FEFixedConcentration(FEModel* ps, FEItemListBuilder* pi, i
 //=============================================================================
 // FIXED FLUID VELOCITY
 //=============================================================================
-FEFixedFluidVelocity::FEFixedFluidVelocity(FEModel* ps) : FEFixedDOF(FE_FIXED_FLUID_VELOCITY, ps)
+FEFixedFluidVelocity::FEFixedFluidVelocity(FSModel* ps) : FEFixedDOF(FE_FIXED_FLUID_VELOCITY, ps)
 {
     SetTypeString("Fixed Fluid Velocity");
 	SetVarID(ps->GetVariableIndex("relative fluid velocity"));
 }
 
 //-----------------------------------------------------------------------------
-FEFixedFluidVelocity::FEFixedFluidVelocity(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_FLUID_VELOCITY, ps, pi, nstep)
+FEFixedFluidVelocity::FEFixedFluidVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_FLUID_VELOCITY, ps, pi, nstep)
 {
     SetTypeString("Fixed Fluid Velocity");
 	SetVarID(ps->GetVariableIndex("relative fluid velocity"));
@@ -166,14 +166,14 @@ FEFixedFluidVelocity::FEFixedFluidVelocity(FEModel* ps, FEItemListBuilder* pi, i
 //=============================================================================
 // FIXED FLUID DILATATION
 //=============================================================================
-FEFixedFluidDilatation::FEFixedFluidDilatation(FEModel* ps) : FEFixedDOF(FE_FIXED_DILATATION, ps)
+FEFixedFluidDilatation::FEFixedFluidDilatation(FSModel* ps) : FEFixedDOF(FE_FIXED_DILATATION, ps)
 {
     SetTypeString("Fixed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("fluid dilatation"));
 }
 
 //-----------------------------------------------------------------------------
-FEFixedFluidDilatation::FEFixedFluidDilatation(FEModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_DILATATION, ps, pi, nstep)
+FEFixedFluidDilatation::FEFixedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FEFixedDOF(FE_FIXED_DILATATION, ps, pi, nstep)
 {
     SetTypeString("Fixed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("fluid dilatation"));
@@ -184,7 +184,7 @@ FEFixedFluidDilatation::FEFixedFluidDilatation(FEModel* ps, FEItemListBuilder* p
 // PRESCRIBED DOF
 //=============================================================================
 
-FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, int nstep) : FEBoundaryCondition(ntype, ps, nstep)
+FEPrescribedDOF::FEPrescribedDOF(int ntype, FSModel* ps, int nstep) : FEBoundaryCondition(ntype, ps, nstep)
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom
@@ -192,7 +192,7 @@ FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, int nstep) : FEBoundary
 	AddBoolParam(0, "relative", "relative");
 }
 
-FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEBoundaryCondition(ntype, ps, pi, nstep)
+FEPrescribedDOF::FEPrescribedDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEBoundaryCondition(ntype, ps, pi, nstep)
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom
@@ -203,7 +203,7 @@ FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, FEItemListBuilder* pi, 
 
 void FEPrescribedDOF::SetVarID(int nid)
 {
-	FEModel& fem = *GetFEModel();
+	FSModel& fem = *GetFSModel();
 	FEDOFVariable& var = fem.Variable(nid);
 	m_nvar = nid;
 	char sz[128] = { 0 };
@@ -222,7 +222,7 @@ void FEPrescribedDOF::LoadParam(const Param& p)
 			// Therefor it is possible that the BC value read may not fit in the variable's range.
 			// Fortunately, in most such situations, the dof can be set to zero. 
 			int ndof = p.GetIntValue();
-			FEModel& fem = *GetFEModel();
+			FSModel& fem = *GetFSModel();
 			FEDOFVariable& var = fem.Variable(GetVarID());
 			int dofs = var.DOFs();
 			if ((ndof >= 0) && (ndof < dofs))
@@ -240,7 +240,7 @@ void FEPrescribedDOF::LoadParam(const Param& p)
 //=============================================================================
 // PRESCRIBED DISPLACEMENT
 //=============================================================================
-FEPrescribedDisplacement::FEPrescribedDisplacement(FEModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_DISPLACEMENT, ps)
+FEPrescribedDisplacement::FEPrescribedDisplacement(FSModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_DISPLACEMENT, ps)
 {
 	SetTypeString("Prescribed Displacement");
 	SetVarID(ps->GetVariableIndex("Displacement"));
@@ -248,7 +248,7 @@ FEPrescribedDisplacement::FEPrescribedDisplacement(FEModel* ps) : FEPrescribedDO
 }
 
 //-----------------------------------------------------------------------------
-FEPrescribedDisplacement::FEPrescribedDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_DISPLACEMENT, ps, pi, bc, s, nstep)
+FEPrescribedDisplacement::FEPrescribedDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_DISPLACEMENT, ps, pi, bc, s, nstep)
 {
 	SetTypeString("Prescribed Displacement");
 	SetVarID(ps->GetVariableIndex("displacement"));
@@ -258,7 +258,7 @@ FEPrescribedDisplacement::FEPrescribedDisplacement(FEModel* ps, FEItemListBuilde
 //=============================================================================
 // PRESCRIBED SHELL BACK FACE DISPLACEMENT
 //=============================================================================
-FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FEModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_SHELL_DISPLACEMENT, ps)
+FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FSModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_SHELL_DISPLACEMENT, ps)
 {
 	SetTypeString("Prescribed Shell Displacement");
 	SetVarID(ps->GetVariableIndex("shell displacement"));
@@ -266,7 +266,7 @@ FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FEModel* ps) : FEPr
 }
 
 //-----------------------------------------------------------------------------
-FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_SHELL_DISPLACEMENT, ps, pi, bc, s, nstep)
+FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_SHELL_DISPLACEMENT, ps, pi, bc, s, nstep)
 {
 	SetTypeString("Prescribed Shell Displacement");
 	SetVarID(ps->GetVariableIndex("shell displacement"));
@@ -276,7 +276,7 @@ FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FEModel* ps, FEItem
 //=============================================================================
 // PRESCRIBED ROTATION
 //=============================================================================
-FEPrescribedRotation::FEPrescribedRotation(FEModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_ROTATION, ps)
+FEPrescribedRotation::FEPrescribedRotation(FSModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_ROTATION, ps)
 {
 	SetTypeString("Prescribed Rotation");
 	SetVarID(ps->GetVariableIndex("Rotation"));
@@ -284,7 +284,7 @@ FEPrescribedRotation::FEPrescribedRotation(FEModel* ps) : FEPrescribedDOF(FE_PRE
 }
 
 //-----------------------------------------------------------------------------
-FEPrescribedRotation::FEPrescribedRotation(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_ROTATION, ps, pi, bc, s, nstep)
+FEPrescribedRotation::FEPrescribedRotation(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_ROTATION, ps, pi, bc, s, nstep)
 {
 	SetTypeString("Prescribed Rotation");
 	SetVarID(ps->GetVariableIndex("Rotation"));
@@ -294,7 +294,7 @@ FEPrescribedRotation::FEPrescribedRotation(FEModel* ps, FEItemListBuilder* pi, i
 //=============================================================================
 // PRESCRIBED FLUID PRESSURE
 //=============================================================================
-FEPrescribedFluidPressure::FEPrescribedFluidPressure(FEModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_FLUID_PRESSURE, ps)
+FEPrescribedFluidPressure::FEPrescribedFluidPressure(FSModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_FLUID_PRESSURE, ps)
 {
 	SetTypeString("Prescribed Effective Fluid Pressure");
 	SetVarID(ps->GetVariableIndex("Effective Fluid Pressure"));
@@ -302,7 +302,7 @@ FEPrescribedFluidPressure::FEPrescribedFluidPressure(FEModel* ps) : FEPrescribed
 }
 
 //-----------------------------------------------------------------------------
-FEPrescribedFluidPressure::FEPrescribedFluidPressure(FEModel* ps, FEItemListBuilder* pi, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_FLUID_PRESSURE, ps, pi, 0, s, nstep)
+FEPrescribedFluidPressure::FEPrescribedFluidPressure(FSModel* ps, FEItemListBuilder* pi, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_FLUID_PRESSURE, ps, pi, 0, s, nstep)
 {
 	SetTypeString("Prescribed Effective Fluid Pressure");
 	SetVarID(ps->GetVariableIndex("fluid pressure"));
@@ -312,7 +312,7 @@ FEPrescribedFluidPressure::FEPrescribedFluidPressure(FEModel* ps, FEItemListBuil
 //=============================================================================
 // PRESCRIBED TEMPERATURE
 //=============================================================================
-FEPrescribedTemperature::FEPrescribedTemperature(FEModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_TEMPERATURE, ps)
+FEPrescribedTemperature::FEPrescribedTemperature(FSModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_TEMPERATURE, ps)
 {
 	SetTypeString("Prescribed Temperature");
 	SetVarID(ps->GetVariableIndex("temperature"));
@@ -320,7 +320,7 @@ FEPrescribedTemperature::FEPrescribedTemperature(FEModel* ps) : FEPrescribedDOF(
 }
 
 //-----------------------------------------------------------------------------
-FEPrescribedTemperature::FEPrescribedTemperature(FEModel* ps, FEItemListBuilder* pi, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_TEMPERATURE, ps, pi, 0, s, nstep)
+FEPrescribedTemperature::FEPrescribedTemperature(FSModel* ps, FEItemListBuilder* pi, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_TEMPERATURE, ps, pi, 0, s, nstep)
 {
 	SetTypeString("Prescribed Temperature");
 	SetVarID(ps->GetVariableIndex("temperature"));
@@ -330,7 +330,7 @@ FEPrescribedTemperature::FEPrescribedTemperature(FEModel* ps, FEItemListBuilder*
 //=============================================================================
 // PRESCRIBED SOLUTE CONCENTRATION
 //=============================================================================
-FEPrescribedConcentration::FEPrescribedConcentration(FEModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_CONCENTRATION, ps)
+FEPrescribedConcentration::FEPrescribedConcentration(FSModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_CONCENTRATION, ps)
 {
 	SetTypeString("Prescribed Effective Concentration");
 	SetVarID(ps->GetVariableIndex("concentration"));
@@ -338,7 +338,7 @@ FEPrescribedConcentration::FEPrescribedConcentration(FEModel* ps) : FEPrescribed
 }
 
 //-----------------------------------------------------------------------------
-FEPrescribedConcentration::FEPrescribedConcentration(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_CONCENTRATION, ps, pi, bc, s, nstep)
+FEPrescribedConcentration::FEPrescribedConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_CONCENTRATION, ps, pi, bc, s, nstep)
 {
 	SetTypeString("Prescribed Effective Concentration");
 	SetVarID(ps->GetVariableIndex("concentration"));
@@ -348,7 +348,7 @@ FEPrescribedConcentration::FEPrescribedConcentration(FEModel* ps, FEItemListBuil
 //=============================================================================
 // PRESCRIBED FLUID VELOCITY
 //=============================================================================
-FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FEModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_FLUID_VELOCITY, ps)
+FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FSModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_FLUID_VELOCITY, ps)
 {
     SetTypeString("Prescribed Fluid Velocity");
     SetVarID(ps->GetVariableIndex("relative fluid velocity"));
@@ -356,7 +356,7 @@ FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FEModel* ps) : FEPrescribed
 }
 
 //-----------------------------------------------------------------------------
-FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_FLUID_VELOCITY, ps, pi, bc, s, nstep)
+FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_FLUID_VELOCITY, ps, pi, bc, s, nstep)
 {
     SetTypeString("Prescribed Fluid Velocity");
     SetVarID(ps->GetVariableIndex("relative fluid velocity"));
@@ -366,21 +366,21 @@ FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FEModel* ps, FEItemListBuil
 //=============================================================================
 // PRESCRIBED FLUID DILATATION
 //=============================================================================
-FEPrescribedFluidDilatation::FEPrescribedFluidDilatation(FEModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_DILATATION, ps)
+FEPrescribedFluidDilatation::FEPrescribedFluidDilatation(FSModel* ps) : FEPrescribedDOF(FE_PRESCRIBED_DILATATION, ps)
 {
     SetTypeString("Prescribed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("fluid dilatation"));
 }
 
 //-----------------------------------------------------------------------------
-FEPrescribedFluidDilatation::FEPrescribedFluidDilatation(FEModel* ps, FEItemListBuilder* pi, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_DILATATION, ps, pi, 0, s, nstep)
+FEPrescribedFluidDilatation::FEPrescribedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_DILATATION, ps, pi, 0, s, nstep)
 {
     SetTypeString("Prescribed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("fluid dilatation"));
 }
 
 //=============================================================================
-FEBioBoundaryCondition::FEBioBoundaryCondition(FEModel* ps) : FEBoundaryCondition(FE_FEBIO_BC, ps)
+FEBioBoundaryCondition::FEBioBoundaryCondition(FSModel* ps) : FEBoundaryCondition(FE_FEBIO_BC, ps)
 {
 }
 

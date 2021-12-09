@@ -164,7 +164,7 @@ void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 {
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
-	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	Post::CGLModel* po = pdoc->GetGLModel();
 
@@ -217,7 +217,7 @@ void CIntegrateWindow::IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& d
 {
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
-	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFSModel();
 	Post::CGLModel* po = pdoc->GetGLModel();
 
 	data.clear();
@@ -307,7 +307,7 @@ void CIntegrateSurfaceWindow::IntegrateSelection(CPlotData& dataX, CPlotData& da
 {
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
-	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	Post::CGLModel* po = pdoc->GetGLModel();
 

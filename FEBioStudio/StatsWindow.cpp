@@ -57,7 +57,7 @@ void CStatsWindow::Update(bool breset, bool bfit)
 	CPostDocument* doc = GetPostDoc();
 	if (doc->IsValid() == false) return;
 
-	Post::FEPostMesh* pm = doc->GetFEModel()->GetFEMesh(0);
+	Post::FEPostMesh* pm = doc->GetFSModel()->GetFEMesh(0);
 	int N, i, n;
 
 	bool belemfield = IS_ELEM_FIELD(doc->GetEvalField());
