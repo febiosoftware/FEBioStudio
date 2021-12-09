@@ -329,7 +329,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	// must point load curves
 	for (int j = 0; j<fem.Steps(); ++j)
 	{
-		FEStep* step = fem.GetStep(j);
+		FSStep* step = fem.GetStep(j);
 		FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(step);
 		if (pstep)
 		{
@@ -361,7 +361,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	// see if any of the body force load curves are active
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->BCs(); ++j)
 		{
 			FSBoundaryCondition* pbc = pstep->BC(j);
@@ -372,7 +372,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	// see if any of the body force load curves are active
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
 			FSLoad* pl = pstep->Load(j);
@@ -383,7 +383,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	// add interface loadcurves
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
 			FSInterface* pci = pstep->Interface(j);
@@ -394,7 +394,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	// add rigid constraints loadcurves
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->RigidConstraints(); ++j)
 		{
 			FSRigidConstraint* prc = pstep->RigidConstraint(j);
@@ -405,7 +405,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	// add NL constraints
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* step = fem.GetStep(i);
+		FSStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Constraints(); ++j)
 		{
 			FSModelConstraint* pw = step->Constraint(j);
@@ -416,7 +416,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	// add rigid load loadcurves
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->RigidLoads(); ++j)
 		{
 			FSRigidLoad* prl = pstep->RigidLoad(j);
@@ -427,7 +427,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	// add connector loadcurves
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->RigidConnectors(); ++j)
 		{
 			FSRigidConnector* pci = pstep->RigidConnector(j);
@@ -438,10 +438,10 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	// see if there are any rigid body constraints
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->RigidConstraints(); ++j)
 		{
-			FERigidPrescribed* prc = dynamic_cast<FERigidPrescribed*>(ps->RigidConstraint(j));
+			FSRigidPrescribed* prc = dynamic_cast<FSRigidPrescribed*>(ps->RigidConstraint(j));
 			if (prc && prc->IsActive() && (prc->GetDOF() >= 0) && (prc->GetLoadCurve()))
 			{
 				AddLoadCurve(prc->GetLoadCurve());

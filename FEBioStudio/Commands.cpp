@@ -138,7 +138,7 @@ void CCmdAddRigidConnector::UnExecute()
 // CCmdAddConstraint
 //////////////////////////////////////////////////////////////////////
 
-CCmdAddConstraint::CCmdAddConstraint(FEStep* ps, FSModelConstraint* pmc) : CCommand("Add constraint") 
+CCmdAddConstraint::CCmdAddConstraint(FSStep* ps, FSModelConstraint* pmc) : CCommand("Add constraint") 
 { 
 	m_ps = ps; 
 	m_pmc = pmc;
@@ -3163,7 +3163,7 @@ void CCmdAddModifier::UnExecute()
 // CCmdAddStep
 //-----------------------------------------------------------------------------
 
-CCmdAddStep::CCmdAddStep(FSModel* fem, FEStep* pstep, int insertAfter) : CCommand("Add step")
+CCmdAddStep::CCmdAddStep(FSModel* fem, FSStep* pstep, int insertAfter) : CCommand("Add step")
 {
 	m_fem = fem;
 	m_pstep = pstep;
@@ -3192,7 +3192,7 @@ void CCmdAddStep::UnExecute()
 // CCmdSwapSteps
 //-----------------------------------------------------------------------------
 
-CCmdSwapSteps::CCmdSwapSteps(FSModel* fem, FEStep* step0, FEStep* step1) : CCommand("Swap steps")
+CCmdSwapSteps::CCmdSwapSteps(FSModel* fem, FSStep* step0, FSStep* step1) : CCommand("Swap steps")
 {
 	m_fem = fem;
 	m_step0 = step0;

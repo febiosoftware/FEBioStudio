@@ -150,7 +150,7 @@ std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc)
 	return  ss.str();
 }
 
-std::string defaultStepName(FSModel* fem, FEStep* ps)
+std::string defaultStepName(FSModel* fem, FSStep* ps)
 {
 	int nsteps = fem->Steps();
 	stringstream ss;
@@ -812,7 +812,7 @@ FSRigidConnector* FSModel::GetRigidConnectorFromID(int id)
     int lid = -1;
     for (int n = 0; n<Steps(); ++n)
     {
-        FEStep& s = *GetStep(n);
+        FSStep& s = *GetStep(n);
         for (int i = 0; i<s.RigidConnectors(); ++i)
             if (++lid == id) return s.RigidConnector(i);
     }
@@ -961,7 +961,7 @@ void FSModel::Save(OArchive& ar)
 		{
 			for (int i=0; i<nsteps; ++i)
 			{
-				FEStep* ps = GetStep(i);
+				FSStep* ps = GetStep(i);
 				int ntype = ps->GetType();
 				ar.BeginChunk(ntype);
 				{
@@ -1102,7 +1102,7 @@ void FSModel::LoadSteps(IArchive& ar)
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
-		FEStep* ps = 0;
+		FSStep* ps = 0;
 		switch (ntype)
 		{
 		case FE_STEP_INITIAL            : ps = new FSInitialStep        (this); break;
@@ -1241,25 +1241,25 @@ int FSModel::Steps()
 }
 
 //-----------------------------------------------------------------------------
-FEStep* FSModel::GetStep(int i)
+FSStep* FSModel::GetStep(int i)
 { 
 	return m_pStep[i]; 
 }
 
 //-----------------------------------------------------------------------------
-void FSModel::AddStep(FEStep* ps)
+void FSModel::AddStep(FSStep* ps)
 { 
 	m_pStep.Add(ps); 
 }
 
 //-----------------------------------------------------------------------------
-void FSModel::InsertStep(int n, FEStep* ps)
+void FSModel::InsertStep(int n, FSStep* ps)
 { 
 	m_pStep.Insert(n, ps); 
 }
 
 //-----------------------------------------------------------------------------
-void FSModel::SwapSteps(FEStep* ps0, FEStep* ps1)
+void FSModel::SwapSteps(FSStep* ps0, FSStep* ps1)
 {
 	int n0 = GetStepIndex(ps0);
 	assert(n0 >= 0);
@@ -1269,14 +1269,14 @@ void FSModel::SwapSteps(FEStep* ps0, FEStep* ps1)
 
 	if ((n0 >= 0) && (n1 >= 0))
 	{
-		FEStep* tmp = m_pStep[n0];
+		FSStep* tmp = m_pStep[n0];
 		m_pStep.Set(n0, m_pStep[n1]);
 		m_pStep.Set(n1, tmp);
 	}
 }
 
 //-----------------------------------------------------------------------------
-FEStep* FSModel::FindStep(int nid)
+FSStep* FSModel::FindStep(int nid)
 {
 	for (int i=0; i<(int) m_pStep.Size(); ++i)
 	{
@@ -1287,7 +1287,7 @@ FEStep* FSModel::FindStep(int nid)
 }
 
 //-----------------------------------------------------------------------------
-int FSModel::GetStepIndex(FEStep* ps)
+int FSModel::GetStepIndex(FSStep* ps)
 {
 	for (int i = 0; i < (int)m_pStep.Size(); ++i)
 	{
@@ -1298,7 +1298,7 @@ int FSModel::GetStepIndex(FEStep* ps)
 
 //-----------------------------------------------------------------------------
 
-int FSModel::DeleteStep(FEStep* ps)
+int FSModel::DeleteStep(FSStep* ps)
 {
 	return m_pStep.Remove(ps);
 }
@@ -1322,7 +1322,7 @@ void FSModel::DeleteAllBC()
 {
 	for (int i=0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllBCs();
 	}
 }
@@ -1332,7 +1332,7 @@ void FSModel::DeleteAllLoads()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllLoads();
 	}
 }
@@ -1342,7 +1342,7 @@ void FSModel::DeleteAllIC()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllICs();
 	}
 }
@@ -1352,7 +1352,7 @@ void FSModel::DeleteAllContact()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllInterfaces();
 	}
 }
@@ -1362,7 +1362,7 @@ void FSModel::DeleteAllConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllConstraints();
 	}
 }
@@ -1372,7 +1372,7 @@ void FSModel::DeleteAllRigidLoads()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllRigidLoads();
 	}
 }
@@ -1382,7 +1382,7 @@ void FSModel::DeleteAllRigidConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllRigidConstraints();
 	}
 }
@@ -1392,7 +1392,7 @@ void FSModel::DeleteAllRigidConnectors()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllRigidConnectors();
 	}
 }
@@ -1440,7 +1440,7 @@ void FSModel::ClearSelections()
 {
 	for (int i=0; i<Steps(); ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		for (int i=0; i<step->BCs(); ++i)
 		{
@@ -1562,9 +1562,9 @@ void FSModel::UpdateData()
 }
 
 //-----------------------------------------------------------------------------
-void FSModel::AssignComponentToStep(FSStepComponent* pc, FEStep* ps)
+void FSModel::AssignComponentToStep(FSStepComponent* pc, FSStep* ps)
 {
-	FEStep* po = FindStep(pc->GetStep());
+	FSStep* po = FindStep(pc->GetStep());
 	assert(po);
 	if (po == 0) return;
 
@@ -1623,7 +1623,7 @@ int FSModel::CountBCs(int type)
 	int NSTEPS = Steps();
 	for (int i=0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NBC = step->BCs();
 		for (int j=0; j<NBC; ++j)
@@ -1642,7 +1642,7 @@ int FSModel::CountLoads(int type)
 	int NSTEPS = Steps();
 	for (int i = 0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NL = step->Loads();
 		for (int j = 0; j<NL; ++j)
@@ -1661,7 +1661,7 @@ int FSModel::CountICs(int type)
 	int NSTEPS = Steps();
 	for (int i = 0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NL = step->ICs();
 		for (int j = 0; j<NL; ++j)
@@ -1680,7 +1680,7 @@ int FSModel::CountInterfaces(int type)
 	int NSTEPS = Steps();
 	for (int i = 0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NC = step->Interfaces();
 		for (int j = 0; j<NC; ++j)
@@ -1699,7 +1699,7 @@ int FSModel::CountRigidConstraints(int type)
 	int NSTEPS = Steps();
 	for (int i = 0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NRC = step->RigidConstraints();
 		for (int j = 0; j<NRC; ++j)
@@ -1718,7 +1718,7 @@ int FSModel::CountRigidConnectors(int type)
 	int NSTEPS = Steps();
 	for (int i = 0; i < NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NRC = step->RigidConnectors();
 		for (int j = 0; j < NRC; ++j)

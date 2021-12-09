@@ -38,7 +38,7 @@ SOFTWARE.*/
 // 3.1: Added support for mesh layers
 // 3.2: Added support for checkable parameters
 // 3.3: Modified how some discrete element sets are stored
-// 3.4: Added load_type parameter to FERigidForce
+// 3.4: Added load_type parameter to FSRigidForce
 // 3.5: Added density, k to uncoupled-prestrain material
 // 3.6: Added search_radius parameter to f2f contact. 
 // 3.7: Made value parameter of FSInitFluidPressure variable. 
@@ -47,7 +47,7 @@ SOFTWARE.*/
 // 3.10: Added density to prestrain elastic material.
 // 3.11: changes to FEMeshData classes. 
 // 3.12: Added shell nodal normal flag to GPart
-// 3.13: Added "relative" flag to FERigidDisplacement. 
+// 3.13: Added "relative" flag to FSRigidDisplacement. 
 // 3.14: Added additional meshing parameters to FEQuartDogBone.
 // 4.0: new version starting with FEBio Studio 2.
 #define SAVE_VERSION	0x00040000

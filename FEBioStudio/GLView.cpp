@@ -3172,7 +3172,7 @@ void CGLView::RenderRigidWalls()
 
 	for (int n = 0; n<ps->Steps(); ++n)
 	{
-		FEStep& s = *ps->GetStep(n);
+		FSStep& s = *ps->GetStep(n);
 		for (int i = 0; i<s.Interfaces(); ++i)
 		{
 			FSRigidWallInterface* pi = dynamic_cast<FSRigidWallInterface*>(s.Interface(i));
@@ -3259,7 +3259,7 @@ void CGLView::RenderRigidJoints()
 
 	for (int n = 0; n<ps->Steps(); ++n)
 	{
-		FEStep& s = *ps->GetStep(n);
+		FSStep& s = *ps->GetStep(n);
 		for (int i = 0; i<s.Interfaces(); ++i)
 		{
 			FSRigidJoint* pj = dynamic_cast<FSRigidJoint*> (s.Interface(i));
@@ -3298,7 +3298,7 @@ void CGLView::RenderRigidConnectors()
 
 	for (int n = 0; n<ps->Steps(); ++n)
 	{
-		FEStep& s = *ps->GetStep(n);
+		FSStep& s = *ps->GetStep(n);
 		for (int i = 0; i<s.RigidConnectors(); ++i)
 		{
 			FSRigidConnector* rci = s.RigidConnector(i);

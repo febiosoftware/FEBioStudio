@@ -65,7 +65,7 @@ void CMainWindow::on_actionAddBC_triggered()
 		FEBio::CreateModelComponent(dlg.GetClassID(), pbc);
 		if (pbc)
 		{
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 
 			pbc->SetStep(step->GetID());
 
@@ -139,7 +139,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 				}
 			}
 
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			step->AddLoad(pnl);
 			UpdateModel(pnl);
 		}
@@ -181,7 +181,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 				}
 			}
 
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			psl->SetStep(step->GetID());
 			step->AddLoad(psl);
 			UpdateModel(psl);
@@ -207,7 +207,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 			if (name.empty()) name = defaultLoadName(&fem, pbl);
 			pbl->SetName(name);
 
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			pbl->SetStep(step->GetID());
 			step->AddLoad(pbl);
 			UpdateModel(pbl);
@@ -233,7 +233,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 			if (name.empty()) name = defaultLoadName(&fem, prl);
 			prl->SetName(name);
 
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			prl->SetStep(step->GetID());
 			step->AddRigidLoad(prl);
 			UpdateModel(prl);
@@ -286,7 +286,7 @@ void CMainWindow::on_actionAddIC_triggered()
 				}
 			}
 
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			pic->SetStep(step->GetID());
 			step->AddIC(pic);
 			UpdateModel(pic);
@@ -338,7 +338,7 @@ void CMainWindow::on_actionAddContact_triggered()
 			}
 
 			// assign it to the correct step
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			pi->SetStep(step->GetID());
 			step->AddInterface(pi);
 			UpdateModel(pi);
@@ -388,7 +388,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 			}
 
 			// assign it to the correct step
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			pi->SetStep(step->GetID());
 			step->AddConstraint(pi);
 			UpdateModel(pi);
@@ -411,7 +411,7 @@ void CMainWindow::on_actionAddRigidConstraint_triggered()
 		assert(prc);
 		if (prc)
 		{
-			FEStep* step = fem->GetStep(dlg.m_nstep);
+			FSStep* step = fem->GetStep(dlg.m_nstep);
 			prc->SetStep(step->GetID());
 
 			std::string name = dlg.m_name;
@@ -446,7 +446,7 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 			pc->SetRigidBody1(dlg.GetMaterialA());
 			pc->SetRigidBody2(dlg.GetMaterialB());
 
-			FEStep* step = fem->GetStep(dlg.GetStep());
+			FSStep* step = fem->GetStep(dlg.GetStep());
 			int stepID = step->GetID();
 			pc->SetStep(stepID);
 
@@ -524,7 +524,7 @@ void CMainWindow::on_actionAddStep_triggered()
 		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(0, FE_ANALYSIS, -1);
 		assert(l.size() == 1);
 
-		FEStep* ps = fecore_new<FEStep>(fem, FE_ANALYSIS, FE_STEP_FEBIO_ANALYSIS);
+		FSStep* ps = fecore_new<FSStep>(fem, FE_ANALYSIS, FE_STEP_FEBIO_ANALYSIS);
 		FEBio::CreateStep(l[0].classId, ps);
 		assert(ps);
 		if (ps)

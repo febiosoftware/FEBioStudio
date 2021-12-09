@@ -220,8 +220,8 @@ protected:
 	GPartList* BuildPartList(GMaterial* mat);
 
 public:
-	void WriteModuleSection(FEStep* pstep);
-	void WriteControlSection(FEStep& s);
+	void WriteModuleSection(FSStep* pstep);
+	void WriteControlSection(FSStep& s);
 	void WriteMaterialSection();
 	void WriteGeometrySection();
 	void WriteGeometrySectionOld();	// old, global node and element list
@@ -238,21 +238,21 @@ public:
 	void WriteGeometryNodeSets();
 	void WriteGeometryDiscreteSets();
 	void WriteMeshDataSection();
-	void WriteBoundarySection(FEStep& s);
-	void WriteLoadsSection(FEStep& s);
-	void WriteContactSection(FEStep& s);
-	void WriteDiscreteSection(FEStep& s);
+	void WriteBoundarySection(FSStep& s);
+	void WriteLoadsSection(FSStep& s);
+	void WriteContactSection(FSStep& s);
+	void WriteDiscreteSection(FSStep& s);
 	void WriteInitialSection();
 	void WriteGlobalsSection();
 	void WriteLoadDataSection();
 	void WriteOutputSection();
 	void WriteStepSection();
-	void WriteConstraintSection(FEStep& s);
+	void WriteConstraintSection(FSStep& s);
 	
-	void WriteRigidSection(FEStep& s);
-	void WriteRigidConstraints(FEStep& s);
+	void WriteRigidSection(FSStep& s);
+	void WriteRigidConstraints(FSStep& s);
 
-	void WriteBodyLoads(FEStep& s);
+	void WriteBodyLoads(FSStep& s);
 
 	// Used by new Part export feature
 	void WriteGeometryObject(Part* po);
@@ -279,10 +279,10 @@ public:
 	void WriteFluidFSIControlParams(FSAnalysisStep* pstep);
 	void WriteReactionDiffusionControlParams(FSAnalysisStep* pstep);
 
-	void WriteBC(FEStep& s, FSBoundaryCondition* pbc);
-	void WriteBCFixed(FEStep& s, FSBoundaryCondition* pbc);
-	void WriteBCPrescribed(FEStep& s, FSBoundaryCondition* pbc);
-	void WriteBCRigid(FEStep& s);
+	void WriteBC(FSStep& s, FSBoundaryCondition* pbc);
+	void WriteBCFixed(FSStep& s, FSBoundaryCondition* pbc);
+	void WriteBCPrescribed(FSStep& s, FSBoundaryCondition* pbc);
+	void WriteBCRigid(FSStep& s);
 
 	void WriteInitVelocity(FSNodalVelocities&        iv);
 	void WriteInitShellVelocity(FSNodalShellVelocities&   iv);
@@ -294,19 +294,19 @@ public:
     void WriteInitFluidDilatation(FSInitFluidDilatation&  it);
 	void WriteInitPrestrain(FSInitPrestrain&          ip);
 
-	void WriteDOFNodalLoad(FEStep& s, FSNodalLoad* pbc);
+	void WriteDOFNodalLoad(FSStep& s, FSNodalLoad* pbc);
 
-	void WriteNodalLoads(FEStep& s);
-	void WriteSurfaceLoads(FEStep& s);
-	void WriteSurfaceLoad(FEStep& s, FSSurfaceLoad* psl, const char* sztype);
+	void WriteNodalLoads(FSStep& s);
+	void WriteSurfaceLoads(FSStep& s);
+	void WriteSurfaceLoad(FSStep& s, FSSurfaceLoad* psl, const char* sztype);
 
-	void WriteContactInterface(FEStep& s, const char* sztype, FSPairedInterface* pi);
-	void WriteContactWall(FEStep& s);
-	void WriteContactSphere(FEStep& s);
-	void WriteLinearConstraints(FEStep& s);
-	void WriteConnectors(FEStep& s);
-	void WriteRigidJoint(FEStep& s);
-	void WriteConstraints(FEStep& s);
+	void WriteContactInterface(FSStep& s, const char* sztype, FSPairedInterface* pi);
+	void WriteContactWall(FSStep& s);
+	void WriteContactSphere(FSStep& s);
+	void WriteLinearConstraints(FSStep& s);
+	void WriteConnectors(FSStep& s);
+	void WriteRigidJoint(FSStep& s);
+	void WriteConstraints(FSStep& s);
 
 	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
 	void WriteRigidMaterial(FSMaterial* pmat, XMLElement& el);

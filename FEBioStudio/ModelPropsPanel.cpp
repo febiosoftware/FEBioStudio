@@ -525,7 +525,7 @@ void CModelPropsPanel::Update()
 	vector<pair<QString,int> > steps(N);
 	for (int i=0; i<N; ++i)
 	{
-		FEStep* step = fem->GetStep(i);
+		FSStep* step = fem->GetStep(i);
 		steps[i].first = QString::fromStdString(step->GetName());
 		steps[i].second = step->GetID();
 	}

@@ -49,13 +49,13 @@ public:
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
 //-----------------------------------------------------------------------------
-class FEStep : public FSModelComponent
+class FSStep : public FSModelComponent
 {
 	class Imp;
 
 public:
-	FEStep(FSModel* ps, int ntype);
-	virtual ~FEStep();
+	FSStep(FSModel* ps, int ntype);
+	virtual ~FSStep();
 
 	// get the unique step ID
 	int GetID() { return m_nID; }
@@ -177,7 +177,7 @@ private:
 //-----------------------------------------------------------------------------
 // Initial step class. Only one initial step can be defined
 //-----------------------------------------------------------------------------
-class FSInitialStep : public FEStep
+class FSInitialStep : public FSStep
 {
 public:
 	FSInitialStep(FSModel* ps);
@@ -243,7 +243,7 @@ struct STEP_SETTINGS
 //-----------------------------------------------------------------------------
 // This class defines the base class for all analysis steps
 //-----------------------------------------------------------------------------
-class FSAnalysisStep : public FEStep
+class FSAnalysisStep : public FSStep
 {
 public:
 	// destructor
@@ -355,7 +355,7 @@ public:
 };
 
 //==============================================================================
-class FEBioAnalysisStep : public FEStep
+class FEBioAnalysisStep : public FSStep
 {
 public:
 	FEBioAnalysisStep(FSModel* ps);

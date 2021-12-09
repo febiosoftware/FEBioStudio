@@ -648,9 +648,9 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
 		return pc->GetTypeString();
 	}
-	else if (dynamic_cast<FEStep*>(po))
+	else if (dynamic_cast<FSStep*>(po))
 	{
-		FEStep* step = dynamic_cast<FEStep*>(po);
+		FSStep* step = dynamic_cast<FSStep*>(po);
 		return step->GetTypeString();
 	}
 	else if (dynamic_cast<GDiscreteSpringSet*>(po)) return "Discrete element set";

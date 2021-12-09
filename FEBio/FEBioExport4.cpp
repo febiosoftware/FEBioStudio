@@ -193,7 +193,7 @@ bool FEBioExport4::PrepareExport(FEProject& prj)
 	m_nsteps = fem.Steps();
 	if (m_nsteps > 1)
 	{
-		FEStep* pstep = fem.GetStep(1);
+		FSStep* pstep = fem.GetStep(1);
 		int ntype = pstep->GetType();
 		for (int i = 2; i < m_nsteps; ++i)
 		{
@@ -242,7 +242,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 	// get the nodesets (bc's)
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->BCs(); ++j)
 		{
 			FSBoundaryCondition* pl = pstep->BC(j);
@@ -324,7 +324,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 	// get the named surfaces (loads)
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->Loads(); ++j)
 		{
 			FSLoad* pl = pstep->Load(j);
@@ -351,7 +351,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 	char szbuf[256] = { 0 };
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->Interfaces(); ++j)
 		{
 			FSInterface* pj = pstep->Interface(j);
@@ -609,7 +609,7 @@ bool FEBioExport4::Write(const char* szfile)
 		if (PrepareExport(m_prj) == false) return false;
 
 		// get the initial step
-		FEStep* pstep = fem.GetStep(0);
+		FSStep* pstep = fem.GetStep(0);
 
 		// the format for single step versus multi-step
 		// is slightly different, so we need to see if the 
@@ -653,7 +653,7 @@ bool FEBioExport4::Write(const char* szfile)
 				{
 					m_xml.add_branch("Control");
 					{
-						FEStep& step = *fem.GetStep(1);
+						FSStep& step = *fem.GetStep(1);
 						WriteControlSection(step);
 					}
 					m_xml.close_branch();
@@ -861,7 +861,7 @@ void FEBioExport4::WriteModuleSection(FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteControlSection(FEStep& step)
+void FEBioExport4::WriteControlSection(FSStep& step)
 {
 	WriteParamList(step);
 	for (int i = 0; i < step.ControlProperties(); ++i)
@@ -1430,7 +1430,7 @@ void FEBioExport4::WriteGeometrySurfacePairs()
 	FSModel& fem = *m_pfem;
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->Interfaces(); ++j)
 		{
 			FSInterface* pj = pstep->Interface(j);
@@ -1830,7 +1830,7 @@ void FEBioExport4::WriteGeometryDiscreteSets()
 	// write the spring-tied interfaces
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* step = fem.GetStep(i);
+		FSStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Interfaces(); ++j)
 		{
 			FSSpringTiedInterface* pst = dynamic_cast<FSSpringTiedInterface*>(step->Interface(j));
@@ -2267,7 +2267,7 @@ void FEBioExport4::WriteNodeDataSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteBoundarySection(FEStep& s)
+void FEBioExport4::WriteBoundarySection(FSStep& s)
 {
 	FSModel& fem = m_prj.GetFSModel();
 	for (int i = 0; i < s.BCs(); ++i)
@@ -2281,7 +2281,7 @@ void FEBioExport4::WriteBoundarySection(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteRigidSection(FEStep& s)
+void FEBioExport4::WriteRigidSection(FSStep& s)
 {
 	// rigid body constraints
 	WriteRigidConstraints(s);
@@ -2294,7 +2294,7 @@ void FEBioExport4::WriteRigidSection(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteContactSection(FEStep& s)
+void FEBioExport4::WriteContactSection(FSStep& s)
 {
 	// --- C O N T A C T ---
 	for (int i = 0; i < s.Interfaces(); ++i)
@@ -2324,7 +2324,7 @@ void FEBioExport4::WriteContactSection(FEStep& s)
 
 //-----------------------------------------------------------------------------
 // Write the loads section
-void FEBioExport4::WriteLoadsSection(FEStep& s)
+void FEBioExport4::WriteLoadsSection(FSStep& s)
 {
 	// nodal loads
 	WriteNodalLoads(s);
@@ -2339,7 +2339,7 @@ void FEBioExport4::WriteLoadsSection(FEStep& s)
 //-----------------------------------------------------------------------------
 // write discrete elements
 //
-void FEBioExport4::WriteDiscreteSection(FEStep& s)
+void FEBioExport4::WriteDiscreteSection(FSStep& s)
 {
 	FSModel& fem = *m_pfem;
 	GModel& model = fem.GetModel();
@@ -2478,7 +2478,7 @@ void FEBioExport4::WriteDiscreteSection(FEStep& s)
 
 //-----------------------------------------------------------------------------
 // write linear constraints
-void FEBioExport4::WriteLinearConstraints(FEStep& s)
+void FEBioExport4::WriteLinearConstraints(FSStep& s)
 {
 	// This list should be consistent with the list of DOFs in FSModel::FSModel()
 	const char* szbc[] = { "x", "y", "z", "u", "v", "w", "p", "T", "wx", "wy", "wz", "ef", "sx", "sy", "sz" };
@@ -2521,7 +2521,7 @@ void FEBioExport4::WriteLinearConstraints(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteConstraints(FEStep& s)
+void FEBioExport4::WriteConstraints(FSStep& s)
 {
 	for (int i = 0; i < s.Constraints(); ++i)
 	{
@@ -2553,7 +2553,7 @@ void FEBioExport4::WriteConstraints(FEStep& s)
 
 //-----------------------------------------------------------------------------
 // Write the boundary conditions
-void FEBioExport4::WriteBC(FEStep& s, FSBoundaryCondition* pbc)
+void FEBioExport4::WriteBC(FSStep& s, FSBoundaryCondition* pbc)
 {
 	FSModel& fem = m_prj.GetFSModel();
 
@@ -2582,7 +2582,7 @@ void FEBioExport4::WriteBC(FEStep& s, FSBoundaryCondition* pbc)
 //-----------------------------------------------------------------------------
 // export nodal loads
 //
-void FEBioExport4::WriteNodalLoads(FEStep& s)
+void FEBioExport4::WriteNodalLoads(FSStep& s)
 {
 	for (int j = 0; j < s.Loads(); ++j)
 	{
@@ -2611,7 +2611,7 @@ void FEBioExport4::WriteNodalLoads(FEStep& s)
 //----------------------------------------------------------------------------
 // Export pressure loads
 //
-void FEBioExport4::WriteSurfaceLoads(FEStep& s)
+void FEBioExport4::WriteSurfaceLoads(FSStep& s)
 {
 	for (int j = 0; j < s.Loads(); ++j)
 	{
@@ -2644,7 +2644,7 @@ void FEBioExport4::WriteSurfaceLoads(FEStep& s)
 void FEBioExport4::WriteInitialSection()
 {
 	FSModel& fem = m_prj.GetFSModel();
-	FEStep& s = *fem.GetStep(0);
+	FSStep& s = *fem.GetStep(0);
 
 	// initial velocities
 	for (int j = 0; j < s.ICs(); ++j)
@@ -2673,7 +2673,7 @@ void FEBioExport4::WriteInitialSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteBodyLoads(FEStep& s)
+void FEBioExport4::WriteBodyLoads(FSStep& s)
 {
 	for (int i = 0; i < s.Loads(); ++i)
 	{
@@ -3075,7 +3075,7 @@ void FEBioExport4::WriteStepSection()
 	// so now we simply output all the analysis steps
 	for (int i = 1; i < m_pfem->Steps(); ++i)
 	{
-		FEStep& step = *m_pfem->GetStep(i);
+		FSStep& step = *m_pfem->GetStep(i);
 
 		if (m_writeNotes) WriteNote(&step);
 
@@ -3153,7 +3153,7 @@ void FEBioExport4::WriteStepSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteRigidConstraints(FEStep& s)
+void FEBioExport4::WriteRigidConstraints(FSStep& s)
 {
 	for (int i = 0; i < s.RigidConstraints(); ++i)
 	{
@@ -3176,7 +3176,7 @@ void FEBioExport4::WriteRigidConstraints(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteRigidLoads(FEStep& s)
+void FEBioExport4::WriteRigidLoads(FSStep& s)
 {
 	for (int i = 0; i < s.RigidLoads(); ++i)
 	{
@@ -3201,7 +3201,7 @@ void FEBioExport4::WriteRigidLoads(FEStep& s)
 //-----------------------------------------------------------------------------
 // write rigid connectors
 //
-void FEBioExport4::WriteConnectors(FEStep& s)
+void FEBioExport4::WriteConnectors(FSStep& s)
 {
 	for (int i = 0; i < s.RigidConnectors(); ++i)
 	{
@@ -3238,7 +3238,7 @@ void FEBioExport4::WriteConnectors(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteConstraintSection(FEStep& s)
+void FEBioExport4::WriteConstraintSection(FSStep& s)
 {
 	// some contact definitions are actually stored in the constraint section
 	WriteConstraints(s);

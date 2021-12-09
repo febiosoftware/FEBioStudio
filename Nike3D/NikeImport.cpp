@@ -332,7 +332,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 	// get the model
 	FSModel& fem = *m_fem;
 	FEMesh* pm = m_po->GetFEMesh();
-	FEStep& s = *fem.GetStep(0);
+	FSStep& s = *fem.GetStep(0);
 
 	int i;
 	int N = (int)nike.m_Node.size();
@@ -482,7 +482,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			if (nfix > 0)
 			{
 				sprintf(szname, "RigidConstraint%d", nrc++);
-				FERigidFixed* prc = new FERigidFixed(0);
+				FSRigidFixed* prc = new FSRigidFixed(0);
 				prc->SetName(szname);
 				prc->SetMaterialID(fem.GetMaterial(i)->GetID());
 				prc->SetDOF(0, (BC[0] == -1));
@@ -502,7 +502,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 					if (BC[j] > 0)
 					{
 						sprintf(szname, "RigidConstraint%d", nrc++);
-						FERigidDisplacement* prc = new FERigidDisplacement(0);
+						FSRigidDisplacement* prc = new FSRigidDisplacement(0);
 						prc->SetName(szname);
 						prc->SetMaterialID(fem.GetMaterial(i)->GetID());
 
@@ -524,7 +524,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 	int i;
 
 	FSModel& fem = *m_fem;
-	FEStep& step = *fem.GetStep(0);
+	FSStep& step = *fem.GetStep(0);
 
 	// assign materials to elements
 	m_nmat = (int)nike.m_Mat.size();
@@ -1453,7 +1453,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 {
 	int i, n;
 	FELoadCurve* plc;
-	FEStep& s = *fem.GetStep(0);
+	FSStep& s = *fem.GetStep(0);
 
 	// set control settings
 	// TODO: not sure yet how to fix this.
@@ -1547,7 +1547,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 	// rigid constraints
 	for (i=0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(s.RigidConstraint(i));
+		FSRigidPrescribed* rc = dynamic_cast<FSRigidPrescribed*>(s.RigidConstraint(i));
 		if (rc)
 		{
 			FELoadCurve& lc = *rc->GetLoadCurve();

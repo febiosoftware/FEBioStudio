@@ -59,7 +59,7 @@ protected:
 	void ReadParameters(ParamContainer& PC, XMLTag& tag);
 
 
-	virtual FEStep* NewStep(FSModel& fem, int nanalysis, const char* sz = 0);
+	virtual FSStep* NewStep(FSModel& fem, int nanalysis, const char* sz = 0);
 
 	FEBioInputModel& GetFEBioModel() { return m_febio; }
 
@@ -104,8 +104,8 @@ private:
 protected: // TODO: Move to FEBioInputModel?
 	bool		m_geomOnly;	// read only geometry section
 	int			m_nAnalysis;	// analysis type
-	FEStep*		m_pstep;		// current analysis step
-	FEStep*		m_pBCStep;		// step to which BCs are assigned
+	FSStep*		m_pstep;		// current analysis step
+	FSStep*		m_pBCStep;		// step to which BCs are assigned
 
 	std::string		m_defaultSolver;
 };

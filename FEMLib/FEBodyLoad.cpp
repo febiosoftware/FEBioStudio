@@ -54,7 +54,7 @@ double FSConstBodyForce::GetLoad(int n) { return GetFloatValue(FORCE_X + n); }
 void FSConstBodyForce::SetLoad(int n, double v) { SetFloatValue(FORCE_X + n, v); }
 
 //-----------------------------------------------------------------------------
-FENonConstBodyForce::FENonConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_NON_CONST_BODY_FORCE, ps, nstep)
+FSNonConstBodyForce::FSNonConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_NON_CONST_BODY_FORCE, ps, nstep)
 {
 	SetTypeString("non-const");
 	AddMathParam("0", "x")->SetLoadCurve();
@@ -62,20 +62,20 @@ FENonConstBodyForce::FENonConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE
 	AddMathParam("0", "z")->SetLoadCurve();
 }
 
-FELoadCurve* FENonConstBodyForce::GetLoadCurve(int n)
+FELoadCurve* FSNonConstBodyForce::GetLoadCurve(int n)
 {
 	return GetParamLC(FORCE_X + n);
 }
 
 //-----------------------------------------------------------------------------
-FEHeatSource::FEHeatSource(FSModel* ps, int nstep) : FSBodyLoad(FE_HEAT_SOURCE, ps, nstep)
+FSHeatSource::FSHeatSource(FSModel* ps, int nstep) : FSBodyLoad(FE_HEAT_SOURCE, ps, nstep)
 {
 	SetTypeString("heat_source");
 	AddDoubleParam(0, "Q", "Q")->SetLoadCurve();
 }
 
 //-----------------------------------------------------------------------------
-FESBMPointSource::FESBMPointSource(FSModel* ps, int nstep) : FSBodyLoad(FE_SBM_POINT_SOURCE, ps, nstep)
+FSSBMPointSource::FSSBMPointSource(FSModel* ps, int nstep) : FSBodyLoad(FE_SBM_POINT_SOURCE, ps, nstep)
 {
 	SetTypeString("SBM Point Source");
 	AddIntParam(1, "sbm", "sbm");
@@ -87,7 +87,7 @@ FESBMPointSource::FESBMPointSource(FSModel* ps, int nstep) : FSBodyLoad(FE_SBM_P
 }
 
 //-----------------------------------------------------------------------------
-FECentrifugalBodyForce::FECentrifugalBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
+FSCentrifugalBodyForce::FSCentrifugalBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
 {
     SetTypeString("centrifugal");
     AddScienceParam(0, UNIT_RADIAN, "angular_speed", "angular speed")->SetLoadCurve();
@@ -96,7 +96,7 @@ FECentrifugalBodyForce::FECentrifugalBodyForce(FSModel* ps, int nstep) : FSBodyL
 }
 
 //-----------------------------------------------------------------------------
-FEMassDamping::FEMassDamping(FSModel* ps, int nstep) : FSBodyLoad(FE_MASSDAMPING_LOAD, ps, nstep)
+FSMassDamping::FSMassDamping(FSModel* ps, int nstep) : FSBodyLoad(FE_MASSDAMPING_LOAD, ps, nstep)
 {
 	SetTypeString("mass damping");
 	AddDoubleParam(1, "C");

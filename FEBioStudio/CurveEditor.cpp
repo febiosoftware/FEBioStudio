@@ -356,7 +356,7 @@ void CCurveEditor::BuildLoadCurves()
 	// add the boundary condition data
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		int nbc = pstep->BCs();
 		for (int j = 0; j<nbc; ++j)
 		{
@@ -368,7 +368,7 @@ void CCurveEditor::BuildLoadCurves()
 	// add the load data
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		int nbc = pstep->Loads();
 		for (int j = 0; j < nbc; ++j)
 		{
@@ -380,7 +380,7 @@ void CCurveEditor::BuildLoadCurves()
 	// add contact interfaces
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
 			FSInterface* pi = pstep->Interface(j);
@@ -391,7 +391,7 @@ void CCurveEditor::BuildLoadCurves()
 	// add nonlinear constraints
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->Constraints(); ++j)
 		{
 			FSModelConstraint* pmc = pstep->Constraint(j);
@@ -402,10 +402,10 @@ void CCurveEditor::BuildLoadCurves()
 	// add rigid constraints
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->RigidConstraints(); ++j)
 		{
-			FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RigidConstraint(j));
+			FSRigidPrescribed* pc = dynamic_cast<FSRigidPrescribed*>(pstep->RigidConstraint(j));
 			if (pc) BuildLoadCurves(t1, pc);
 		}
 	}
@@ -413,7 +413,7 @@ void CCurveEditor::BuildLoadCurves()
 	// add rigid connectors
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->RigidConnectors(); ++j)
 		{
 			FSRigidConnector* pc = pstep->RigidConnector(j);
@@ -443,7 +443,7 @@ void CCurveEditor::BuildLoadCurves()
 	// must point curves
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		FSAnalysisStep* pas = dynamic_cast<FSAnalysisStep*>(pstep);
 		if (pas && pas->GetSettings().bmust)
 		{
@@ -547,7 +547,7 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "BCs");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			int nbc = pstep->BCs();
 			for (int j = 0; j<nbc; ++j)
 			{
@@ -567,7 +567,7 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "Loads");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			int nbc = pstep->Loads();
 			for (int j = 0; j<nbc; ++j)
 			{
@@ -598,8 +598,8 @@ void CCurveEditor::BuildModelTree()
 						if (pbl->GetLoadCurve(2)) ui->addTreeItem(t3, "z-force", pbl->GetLoadCurve(2));
 					}
 					else {
-						FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pstep->Load(j));
-                        FECentrifugalBodyForce* pcs = dynamic_cast<FECentrifugalBodyForce*>(pstep->Load(j));
+						FSHeatSource* phs = dynamic_cast<FSHeatSource*>(pstep->Load(j));
+                        FSCentrifugalBodyForce* pcs = dynamic_cast<FSCentrifugalBodyForce*>(pstep->Load(j));
 						if (phs)
 						{
 							if (phs->GetLoadCurve())
@@ -633,7 +633,7 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "Contact");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			for (int j = 0; j<pstep->Interfaces(); ++j)
 			{
 				FSInterface* pi = pstep->Interface(j);
@@ -676,7 +676,7 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "Constraints");
 		for (int i = 0; i < fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			for (int j = 0; j < pstep->Constraints(); ++j)
 			{
 				FSModelConstraint* pmc = pstep->Constraint(j);
@@ -696,10 +696,10 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "Rigid Constraints");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			for (int j = 0; j<pstep->RigidConstraints(); ++j)
 			{
-				FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RigidConstraint(j));
+				FSRigidPrescribed* pc = dynamic_cast<FSRigidPrescribed*>(pstep->RigidConstraint(j));
 				if (pc && (pc->Parameters() > 0))
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
@@ -715,7 +715,7 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "Rigid Connectors");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			for (int j = 0; j<pstep->RigidConnectors(); ++j)
 			{
 				FSRigidConnector* pc = pstep->RigidConnector(j);
@@ -760,7 +760,7 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "Steps");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(pstep->GetName()));
 			FSAnalysisStep* pas = dynamic_cast<FSAnalysisStep*>(pstep);
 			if (pas && pas->GetSettings().bmust) ui->addTreeItem(t3, "must point", pas->GetMustPointLoadCurve());

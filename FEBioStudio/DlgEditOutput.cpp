@@ -608,7 +608,7 @@ void CDlgEditOutput::UpdateLogItemList()
         int lid = -1;
         for (int i = 0; i<fem.Steps(); ++i)
         {
-            FEStep* pstep = fem.GetStep(i);
+            FSStep* pstep = fem.GetStep(i);
             for (int j = 0; j<pstep->RigidConnectors(); ++j)
             {
                 FSRigidConnector* pc = pstep->RigidConnector(j);

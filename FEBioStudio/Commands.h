@@ -87,14 +87,14 @@ protected:
 class CCmdAddInterface : public CCommand
 {
 public:
-	CCmdAddInterface(FEStep* ps, FSInterface* pi) : CCommand("Add interface") { m_ps = ps; m_pint = pi; m_bdel = true; }
+	CCmdAddInterface(FSStep* ps, FSInterface* pi) : CCommand("Add interface") { m_ps = ps; m_pint = pi; m_bdel = true; }
 	~CCmdAddInterface() { if (m_bdel) delete m_pint; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*			m_ps;
+	FSStep*			m_ps;
 	FSInterface*	m_pint;
 	bool			m_bdel;
 };
@@ -103,14 +103,14 @@ protected:
 class CCmdAddRigidConnector : public CCommand
 {
 public:
-	CCmdAddRigidConnector(FEStep* ps, FSRigidConnector* pi) : CCommand("Add rigid connector") { m_ps = ps; m_pint = pi; m_bdel = true; }
+	CCmdAddRigidConnector(FSStep* ps, FSRigidConnector* pi) : CCommand("Add rigid connector") { m_ps = ps; m_pint = pi; m_bdel = true; }
 	~CCmdAddRigidConnector() { if (m_bdel) delete m_pint; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*			m_ps;
+	FSStep*			m_ps;
 	FSRigidConnector*	m_pint;
 	bool			m_bdel;
 };
@@ -119,14 +119,14 @@ protected:
 class CCmdAddConstraint : public CCommand
 {
 public:
-	CCmdAddConstraint(FEStep* ps, FSModelConstraint* pmc);
+	CCmdAddConstraint(FSStep* ps, FSModelConstraint* pmc);
 	~CCmdAddConstraint();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*				m_ps;
+	FSStep*				m_ps;
 	FSModelConstraint*	m_pmc;
 	bool				m_bdel;
 };
@@ -268,14 +268,14 @@ protected:
 class CCmdAddBC : public CCommand
 {
 public:
-	CCmdAddBC(FEStep* ps, FSBoundaryCondition* pbc) : CCommand("Add Boundary Condition") { m_ps = ps; m_pbc = pbc; m_bdel = true; }
+	CCmdAddBC(FSStep* ps, FSBoundaryCondition* pbc) : CCommand("Add Boundary Condition") { m_ps = ps; m_pbc = pbc; m_bdel = true; }
 	~CCmdAddBC() { if (m_bdel) delete m_pbc; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*					m_ps;
+	FSStep*					m_ps;
 	FSBoundaryCondition*	m_pbc;
 	bool					m_bdel;
 };
@@ -284,14 +284,14 @@ protected:
 class CCmdAddIC : public CCommand
 {
 public:
-	CCmdAddIC(FEStep* ps, FSInitialCondition* pic) : CCommand("Add Initial Condition") { m_ps = ps; m_pic = pic; m_bdel = true; }
+	CCmdAddIC(FSStep* ps, FSInitialCondition* pic) : CCommand("Add Initial Condition") { m_ps = ps; m_pic = pic; m_bdel = true; }
 	~CCmdAddIC() { if (m_bdel) delete m_pic; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*					m_ps;
+	FSStep*					m_ps;
 	FSInitialCondition*		m_pic;
 	bool					m_bdel;
 };
@@ -300,14 +300,14 @@ protected:
 class CCmdAddLoad : public CCommand
 {
 public:
-	CCmdAddLoad(FEStep* ps, FSLoad* pfc) : CCommand("Add Load") { m_ps = ps; m_pfc = pfc; m_bdel = true; }
+	CCmdAddLoad(FSStep* ps, FSLoad* pfc) : CCommand("Add Load") { m_ps = ps; m_pfc = pfc; m_bdel = true; }
 	~CCmdAddLoad() { if (m_bdel) delete m_pfc; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*		m_ps;
+	FSStep*		m_ps;
 	FSLoad*		m_pfc;
 	bool		m_bdel;
 };
@@ -316,14 +316,14 @@ protected:
 class CCmdAddRC : public CCommand
 {
 public:
-	CCmdAddRC(FEStep* ps, FSRigidConstraint* prc) : CCommand("Add Rigid Constraint") { m_ps = ps; m_prc = prc; m_bdel = true; }
+	CCmdAddRC(FSStep* ps, FSRigidConstraint* prc) : CCommand("Add Rigid Constraint") { m_ps = ps; m_prc = prc; m_bdel = true; }
 	~CCmdAddRC() { if (m_bdel) delete m_prc; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*				m_ps;
+	FSStep*				m_ps;
 	FSRigidConstraint*	m_prc;
 	bool				m_bdel;
 };
@@ -1297,7 +1297,7 @@ protected:
 class CCmdAddStep : public CCommand
 {
 public:
-	CCmdAddStep(FSModel* fem, FEStep* ps, int insertAfter = -1);
+	CCmdAddStep(FSModel* fem, FSStep* ps, int insertAfter = -1);
 	~CCmdAddStep();
 
 	void Execute();
@@ -1305,7 +1305,7 @@ public:
 
 protected:
 	FSModel*	m_fem;
-	FEStep*		m_pstep;
+	FSStep*		m_pstep;
 	int			m_pos;
 };
 
@@ -1313,15 +1313,15 @@ protected:
 class CCmdSwapSteps : public CCommand
 {
 public:
-	CCmdSwapSteps(FSModel* fem, FEStep* step0, FEStep* step1);
+	CCmdSwapSteps(FSModel* fem, FSStep* step0, FSStep* step1);
 
 	void Execute();
 	void UnExecute();
 
 private:
 	FSModel*	m_fem;
-	FEStep*		m_step0;
-	FEStep*		m_step1;
+	FSStep*		m_step0;
+	FSStep*		m_step1;
 };
 
 //----------------------------------------------------------------

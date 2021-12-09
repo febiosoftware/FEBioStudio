@@ -215,7 +215,7 @@ protected:
 	GPartList* BuildPartList(GMaterial* mat);
 
 	void WriteModuleSection(FEProject& prj);
-	void WriteControlSection(FEStep& s);
+	void WriteControlSection(FSStep& s);
 	void WriteMaterialSection();
 	void WriteMeshSection();
 	void WriteMeshElements();
@@ -229,22 +229,22 @@ protected:
 	void WriteGeometryNodeSets();
 	void WriteGeometryDiscreteSets();
 	void WriteMeshDataSection();
-	void WriteBoundarySection(FEStep& s);
-	void WriteLoadsSection(FEStep& s);
-	void WriteContactSection(FEStep& s);
-	void WriteDiscreteSection(FEStep& s);
+	void WriteBoundarySection(FSStep& s);
+	void WriteLoadsSection(FSStep& s);
+	void WriteContactSection(FSStep& s);
+	void WriteDiscreteSection(FSStep& s);
 	void WriteInitialSection();
 	void WriteGlobalsSection();
 	void WriteLoadDataSection();
 	void WriteOutputSection();
 	void WriteStepSection();
-	void WriteConstraintSection(FEStep& s);
+	void WriteConstraintSection(FSStep& s);
 
-	void WriteRigidSection(FEStep& s);
-	void WriteRigidConstraints(FEStep& s);
-	void WriteRigidLoads(FEStep& s);
+	void WriteRigidSection(FSStep& s);
+	void WriteRigidConstraints(FSStep& s);
+	void WriteRigidLoads(FSStep& s);
 
-	void WriteBodyLoads(FEStep& s);
+	void WriteBodyLoads(FSStep& s);
 
 	// Used by new Part export feature
 	void WriteGeometryObject(Part* po);
@@ -263,14 +263,14 @@ protected:
 	void WriteElementDataFields();
 	void WriteMeshData(FEDataMapGenerator* map);
 
-	void WriteBC(FEStep& s, FSBoundaryCondition* pbc);
+	void WriteBC(FSStep& s, FSBoundaryCondition* pbc);
 
-	void WriteNodalLoads(FEStep& s);
-	void WriteSurfaceLoads(FEStep& s);
+	void WriteNodalLoads(FSStep& s);
+	void WriteSurfaceLoads(FSStep& s);
 
-	void WriteLinearConstraints(FEStep& s);
-	void WriteConnectors(FEStep& s);
-	void WriteConstraints(FEStep& s);
+	void WriteLinearConstraints(FSStep& s);
+	void WriteConnectors(FSStep& s);
+	void WriteConstraints(FSStep& s);
 
 	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
 

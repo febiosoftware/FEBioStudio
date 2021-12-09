@@ -221,7 +221,7 @@ bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, F
 	}
 	else if (superClassId == FE_ANALYSIS)
 	{
-		FEStep* pstep = dynamic_cast<FEStep*>(po);
+		FSStep* pstep = dynamic_cast<FSStep*>(po);
 		CreateStep(typeStr.c_str(), pstep);
 	}
 	else
@@ -233,13 +233,13 @@ bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, F
 	return ret;
 }
 
-void FEBio::CreateStep(const char* sztype, FEStep* po)
+void FEBio::CreateStep(const char* sztype, FSStep* po)
 {
 	int classId = FEBio::GetClassId(FE_ANALYSIS, sztype); assert(classId);
 	CreateStep(classId, po, false);
 }
 
-void FEBio::CreateStep(int classId, FEStep* po, bool initDefaultProps)
+void FEBio::CreateStep(int classId, FSStep* po, bool initDefaultProps)
 {
 	// create the FEBioClass object
 	FEBioClass* feb = FEBio::CreateFEBioClass(classId);

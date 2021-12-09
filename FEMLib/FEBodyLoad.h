@@ -30,7 +30,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Non-constant Body Force (Obsolete)
-class FENonConstBodyForce : public FSBodyLoad
+class FSNonConstBodyForce : public FSBodyLoad
 {
 public:
 	enum { FORCE_X, FORCE_Y, FORCE_Z };
@@ -38,18 +38,18 @@ public:
 	FELoadCurve* GetLoadCurve(int n);
 
 public:
-	FENonConstBodyForce(FSModel* ps, int nstep = 0);
+	FSNonConstBodyForce(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // Heat Source
-class FEHeatSource : public FSBodyLoad
+class FSHeatSource : public FSBodyLoad
 {
 public:
 	enum { LOAD };
 
 public:
-	FEHeatSource(FSModel* ps, int nstep = 0);
+	FSHeatSource(FSModel* ps, int nstep = 0);
 
 	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
 
@@ -59,24 +59,24 @@ public:
 
 //-----------------------------------------------------------------------------
 // SBM source (experimental feature)
-class FESBMPointSource : public FSBodyLoad
+class FSSBMPointSource : public FSBodyLoad
 {
 public:
 	enum { SBM, VALUE, POS_X, POS_Y, POS_Z };
 
 public:
-	FESBMPointSource(FSModel* ps, int nstep = 0);
+	FSSBMPointSource(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // Centrifugal body force
-class FECentrifugalBodyForce : public FSBodyLoad
+class FSCentrifugalBodyForce : public FSBodyLoad
 {
 public:
     enum { ANGSPD, ROT_AXIS, ROT_CNTR };
     
 public:
-    FECentrifugalBodyForce(FSModel* ps, int nstep = 0);
+    FSCentrifugalBodyForce(FSModel* ps, int nstep = 0);
     
     FELoadCurve* GetLoadCurve() { return GetParamLC(ANGSPD); }
     
@@ -86,13 +86,13 @@ public:
 
 //-----------------------------------------------------------------------------
 // mass damping "load"
-class FEMassDamping : public FSBodyLoad
+class FSMassDamping : public FSBodyLoad
 {
 public:
 	enum { C };
 
 public:
-	FEMassDamping(FSModel* ps, int nstep = 0);
+	FSMassDamping(FSModel* ps, int nstep = 0);
 
 	FELoadCurve* GetLoadCurve() { return GetParamLC(C); }
 

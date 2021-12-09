@@ -327,15 +327,15 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FSRigidSphereInterface       , MODULE_MECH, FE_INTERFACE        , FE_RIGID_SPHERE_CONTACT         , "Rigid sphere");
 	REGISTER_FE_CLASS(FSRigidJoint                 , MODULE_MECH, FE_INTERFACE        , FE_RIGID_JOINT                  , "Rigid joint");
 	REGISTER_FE_CLASS(FSConstBodyForce             , MODULE_MECH, FE_BODY_LOAD        , FE_CONST_BODY_FORCE             , "Const body force", CONSTANT_BODY_FORCE_HTML);
-	REGISTER_FE_CLASS(FENonConstBodyForce          , MODULE_MECH, FE_BODY_LOAD        , FE_NON_CONST_BODY_FORCE         , "Non-const body force", NON_CONSTANT_BODY_FORCE_HTML);
-    REGISTER_FE_CLASS(FECentrifugalBodyForce       , MODULE_MECH, FE_BODY_LOAD        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force", CENTRIFUGAL_BODY_FORCE_HTML);
-    REGISTER_FE_CLASS(FEMassDamping                , MODULE_MECH, FE_BODY_LOAD        , FE_MASSDAMPING_LOAD             , "Mass damping");
+	REGISTER_FE_CLASS(FSNonConstBodyForce          , MODULE_MECH, FE_BODY_LOAD        , FE_NON_CONST_BODY_FORCE         , "Non-const body force", NON_CONSTANT_BODY_FORCE_HTML);
+    REGISTER_FE_CLASS(FSCentrifugalBodyForce       , MODULE_MECH, FE_BODY_LOAD        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force", CENTRIFUGAL_BODY_FORCE_HTML);
+    REGISTER_FE_CLASS(FSMassDamping                , MODULE_MECH, FE_BODY_LOAD        , FE_MASSDAMPING_LOAD             , "Mass damping");
 
-	REGISTER_FE_CLASS(FERigidFixed			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
-	REGISTER_FE_CLASS(FERigidDisplacement	, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
-	REGISTER_FE_CLASS(FERigidForce			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FORCE				, "Prescribed rigid force", PRESCRIBE_RIGID_CONSTRAINT_HTML);
-	REGISTER_FE_CLASS(FERigidVelocity		, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_INIT_VELOCITY		, "Initial rigid velocity");
-	REGISTER_FE_CLASS(FERigidAngularVelocity, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_INIT_ANG_VELOCITY	, "Initial rigid angular velocity");
+	REGISTER_FE_CLASS(FSRigidFixed			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
+	REGISTER_FE_CLASS(FSRigidDisplacement	, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
+	REGISTER_FE_CLASS(FSRigidForce			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FORCE				, "Prescribed rigid force", PRESCRIBE_RIGID_CONSTRAINT_HTML);
+	REGISTER_FE_CLASS(FSRigidVelocity		, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_INIT_VELOCITY		, "Initial rigid velocity");
+	REGISTER_FE_CLASS(FSRigidAngularVelocity, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_INIT_ANG_VELOCITY	, "Initial rigid angular velocity");
 
 	REGISTER_FE_CLASS(FSRigidSphericalJoint		, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_SPHERICAL_JOINT	, "Spherical joint", RIGID_SPHERICAL_JOINT_HTML);
 	REGISTER_FE_CLASS(FSRigidRevoluteJoint		, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_REVOLUTE_JOINT		, "Revolute joint", RIGID_REVOLUTE_JOINT_HTML);
@@ -361,7 +361,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FSHeatFlux             , MODULE_HEAT, FE_SURFACE_LOAD     , FE_HEAT_FLUX             , "Heat flux", HEAT_FLUX_HTML);
 	REGISTER_FE_CLASS(FSConvectiveHeatFlux   , MODULE_HEAT, FE_SURFACE_LOAD     , FE_CONV_HEAT_FLUX        , "Convective heat flux", CONVECTIVE_HEAT_FLUX_HTML);
 	REGISTER_FE_CLASS(FSInitTemperature      , MODULE_HEAT, FE_INITIAL_CONDITION, FE_INIT_TEMPERATURE      , "Temperature");
-	REGISTER_FE_CLASS(FEHeatSource           , MODULE_HEAT, FE_BODY_LOAD        , FE_HEAT_SOURCE           , "Heat source", HEAT_SOURCE_HTML);
+	REGISTER_FE_CLASS(FSHeatSource           , MODULE_HEAT, FE_BODY_LOAD        , FE_HEAT_SOURCE           , "Heat source", HEAT_SOURCE_HTML);
 	REGISTER_FE_CLASS(FSGapHeatFluxInterface , MODULE_HEAT, FE_INTERFACE        , FE_GAPHEATFLUX_INTERFACE , "Gap heat flux");
 
 	// --- BIPHASIC MODULE ---
@@ -391,7 +391,7 @@ void FEProject::InitModules()
     REGISTER_FE_CLASS(FSMatchingOsmoticCoefficient, MODULE_MULTIPHASIC, FE_SURFACE_LOAD   , FE_MATCHING_OSM_COEF        , "Matching osmotic coefficient", FLUID_NORMAL_TRACTION_HTML);
 
 #ifdef _DEBUG
-	REGISTER_FE_CLASS(FESBMPointSource, MODULE_MULTIPHASIC, FE_BODY_LOAD, FE_SBM_POINT_SOURCE, "SBM point source");
+	REGISTER_FE_CLASS(FSSBMPointSource, MODULE_MULTIPHASIC, FE_BODY_LOAD, FE_SBM_POINT_SOURCE, "SBM point source");
 #endif
 
 	// --- FLUID MODULE ---

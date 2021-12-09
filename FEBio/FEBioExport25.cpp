@@ -346,7 +346,7 @@ bool FEBioExport25::PrepareExport(FEProject& prj)
 	m_nsteps = fem.Steps();
 	if (m_nsteps > 1)
 	{
-		FEStep* pstep = fem.GetStep(1);
+		FSStep* pstep = fem.GetStep(1);
 		int ntype = pstep->GetType();
 		for (int i=2; i<m_nsteps; ++i)
 		{
@@ -406,7 +406,7 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 	// get the named surfaces (loads)
 	for (int i=0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j=0; j<pstep->Loads(); ++j)
 		{
 			FSLoad* pl = pstep->Load(j);
@@ -433,7 +433,7 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 	char szbuf[256] = {0};
 	for (int i=0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j=0; j<pstep->Interfaces(); ++j)
 		{
 			FSInterface* pj = pstep->Interface(j);
@@ -565,7 +565,7 @@ void FEBioExport25::BuildNodeSetList(FEProject& prj)
 	// get the nodesets (bc's)
 	for (int i=0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j=0; j<pstep->BCs(); ++j)
 		{
 			FSBoundaryCondition* pl = pstep->BC(j);
@@ -721,7 +721,7 @@ bool FEBioExport25::Write(const char* szfile)
 		if (PrepareExport(m_prj) == false) return false;
 
 		// get the initial step
-		FEStep* pstep = fem.GetStep(0);
+		FSStep* pstep = fem.GetStep(0);
 
 		// the format for single step versus multi-step
 		// is slightly different, so we need to see if the 
@@ -2468,7 +2468,7 @@ void FEBioExport25::WriteGeometrySurfacePairs()
 	FSModel& fem = *m_pfem;
 	for (int i=0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j=0; j<pstep->Interfaces(); ++j)
 		{
 			FSInterface* pj = pstep->Interface(j);
@@ -2864,7 +2864,7 @@ void FEBioExport25::WriteGeometryDiscreteSets()
 	// write the spring-tied interfaces
 	for (int i=0; i<fem.Steps(); ++i)
 	{
-		FEStep* step = fem.GetStep(i);
+		FSStep* step = fem.GetStep(i);
 		for (int j=0; j<step->Interfaces(); ++j)
 		{
 			FSSpringTiedInterface* pst = dynamic_cast<FSSpringTiedInterface*>(step->Interface(j));
@@ -3172,7 +3172,7 @@ void FEBioExport25::WriteMeshDataFields()
 
 //-----------------------------------------------------------------------------
 
-void FEBioExport25::WriteBoundarySection(FEStep& s)
+void FEBioExport25::WriteBoundarySection(FSStep& s)
 {
 	// --- B O U N D A R Y   C O N D I T I O N S ---
 	// fixed constraints
@@ -3189,7 +3189,7 @@ void FEBioExport25::WriteBoundarySection(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteContactSection(FEStep& s)
+void FEBioExport25::WriteContactSection(FSStep& s)
 {
 	// --- C O N T A C T ---
 	for (int i=0; i<s.Interfaces(); ++i)
@@ -3243,7 +3243,7 @@ void FEBioExport25::WriteContactSection(FEStep& s)
 
 //-----------------------------------------------------------------------------
 
-void FEBioExport25::WriteLoadsSection(FEStep& s)
+void FEBioExport25::WriteLoadsSection(FSStep& s)
 {
 	XMLElement el;
 
@@ -3318,7 +3318,7 @@ void FEBioExport25::WriteLoadsSection(FEStep& s)
 //-----------------------------------------------------------------------------
 // write discrete elements
 //
-void FEBioExport25::WriteDiscreteSection(FEStep& s)
+void FEBioExport25::WriteDiscreteSection(FSStep& s)
 {
 	FSModel& fem = *m_pfem;
 	GModel& model = fem.GetModel();
@@ -3473,7 +3473,7 @@ void FEBioExport25::WriteDiscreteSection(FEStep& s)
 //-----------------------------------------------------------------------------
 // write rigid joints
 //
-void FEBioExport25::WriteRigidJoint(FEStep& s)
+void FEBioExport25::WriteRigidJoint(FSStep& s)
 {
 	for (int i=0; i<s.Interfaces(); ++i)
 	{
@@ -3506,7 +3506,7 @@ void FEBioExport25::WriteRigidJoint(FEStep& s)
 //-----------------------------------------------------------------------------
 // write rigid walls
 //
-void FEBioExport25::WriteContactWall(FEStep& s)
+void FEBioExport25::WriteContactWall(FSStep& s)
 {
 	for (int i=0; i<s.Interfaces(); ++i)
 	{
@@ -3549,7 +3549,7 @@ void FEBioExport25::WriteContactWall(FEStep& s)
 //-----------------------------------------------------------------------------
 // write rigid sphere contact
 //
-void FEBioExport25::WriteContactSphere(FEStep& s)
+void FEBioExport25::WriteContactSphere(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
@@ -3603,7 +3603,7 @@ void FEBioExport25::WriteContactSphere(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteContactInterface(FEStep& s, const char* sztype, FSPairedInterface* pi)
+void FEBioExport25::WriteContactInterface(FSStep& s, const char* sztype, FSPairedInterface* pi)
 {
 	XMLElement ec("contact");
 	ec.add_attribute("type", sztype);
@@ -3621,7 +3621,7 @@ void FEBioExport25::WriteContactInterface(FEStep& s, const char* sztype, FSPaire
 //-----------------------------------------------------------------------------
 // write rigid interfaces
 //
-void FEBioExport25::WriteBCRigid(FEStep& s)
+void FEBioExport25::WriteBCRigid(FSStep& s)
 {
 	for (int i=0; i<s.Interfaces(); ++i)
 	{
@@ -3649,7 +3649,7 @@ void FEBioExport25::WriteBCRigid(FEStep& s)
 
 //-----------------------------------------------------------------------------
 // write linear constraints
-void FEBioExport25::WriteLinearConstraints(FEStep& s)
+void FEBioExport25::WriteLinearConstraints(FSStep& s)
 {
 	const char* szbc[]={"x","y","z"};
 
@@ -3691,7 +3691,7 @@ void FEBioExport25::WriteLinearConstraints(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteConstraints(FEStep& s)
+void FEBioExport25::WriteConstraints(FSStep& s)
 {
 	for (int i = 0; i<s.Constraints(); ++i)
 	{
@@ -3721,7 +3721,7 @@ void FEBioExport25::WriteConstraints(FEStep& s)
 
 //-----------------------------------------------------------------------------
 // Write the fixed boundary conditions
-void FEBioExport25::WriteBCFixed(FEStep &s)
+void FEBioExport25::WriteBCFixed(FSStep &s)
 {
 	FSModel& fem = m_prj.GetFSModel();
 
@@ -3769,7 +3769,7 @@ void FEBioExport25::WriteBCFixed(FEStep &s)
 
 //-----------------------------------------------------------------------------
 // Export prescribed boundary conditions
-void FEBioExport25::WriteBCPrescribed(FEStep &s)
+void FEBioExport25::WriteBCPrescribed(FSStep &s)
 {
 	FSModel& fem = m_prj.GetFSModel();
 	for (int i=0; i<s.BCs(); ++i)
@@ -3801,7 +3801,7 @@ void FEBioExport25::WriteBCPrescribed(FEStep &s)
 //-----------------------------------------------------------------------------
 // export nodal loads
 //
-void FEBioExport25::WriteLoadNodal(FEStep& s)
+void FEBioExport25::WriteLoadNodal(FSStep& s)
 {
 	char bc[][3] = {"x", "y", "z", "p", "c1", "c2", "c3", "c4", "c5", "c6"};
 
@@ -3837,7 +3837,7 @@ void FEBioExport25::WriteLoadNodal(FEStep& s)
 //----------------------------------------------------------------------------
 // Export pressure loads
 //
-void FEBioExport25::WriteLoadPressure(FEStep& s)
+void FEBioExport25::WriteLoadPressure(FSStep& s)
 {
 	for (int j=0; j<s.Loads(); ++j)
 	{
@@ -3866,7 +3866,7 @@ void FEBioExport25::WriteLoadPressure(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid flux
 //
-void FEBioExport25::WriteFluidFlux(FEStep& s)
+void FEBioExport25::WriteFluidFlux(FSStep& s)
 {
 	for (int j=0; j<s.Loads(); ++j)
 	{
@@ -3896,7 +3896,7 @@ void FEBioExport25::WriteFluidFlux(FEStep& s)
 //----------------------------------------------------------------------------
 // Export mixture normal traction
 //
-void FEBioExport25::WriteBPNormalTraction(FEStep& s)
+void FEBioExport25::WriteBPNormalTraction(FSStep& s)
 {
 	for (int j=0; j<s.Loads(); ++j)
 	{
@@ -3924,7 +3924,7 @@ void FEBioExport25::WriteBPNormalTraction(FEStep& s)
 //----------------------------------------------------------------------------
 // Export heat flux
 //
-void FEBioExport25::WriteHeatFlux(FEStep& s)
+void FEBioExport25::WriteHeatFlux(FSStep& s)
 {
 	for (int j=0; j<s.Loads(); ++j)
 	{
@@ -3951,7 +3951,7 @@ void FEBioExport25::WriteHeatFlux(FEStep& s)
 //----------------------------------------------------------------------------
 // Export matching osmotic coefficieny
 //
-void FEBioExport25::WriteMatchingOsmoticCoefficient(FEStep& s)
+void FEBioExport25::WriteMatchingOsmoticCoefficient(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -3979,7 +3979,7 @@ void FEBioExport25::WriteMatchingOsmoticCoefficient(FEStep& s)
 //----------------------------------------------------------------------------
 // Export convective heat flux
 //
-void FEBioExport25::WriteConvectiveHeatFlux(FEStep& s)
+void FEBioExport25::WriteConvectiveHeatFlux(FSStep& s)
 {
 	for (int j=0; j<s.Loads(); ++j)
 	{
@@ -4006,7 +4006,7 @@ void FEBioExport25::WriteConvectiveHeatFlux(FEStep& s)
 //----------------------------------------------------------------------------
 // Export solute flux
 //
-void FEBioExport25::WriteSoluteFlux(FEStep& s)
+void FEBioExport25::WriteSoluteFlux(FSStep& s)
 {
 	for (int j=0; j<s.Loads(); ++j)
 	{
@@ -4033,7 +4033,7 @@ void FEBioExport25::WriteSoluteFlux(FEStep& s)
 }
 
 //----------------------------------------------------------------------------
-void FEBioExport25::WriteConcentrationFlux(FEStep& s)
+void FEBioExport25::WriteConcentrationFlux(FSStep& s)
 {
 	for (int j = 0; j<s.Loads(); ++j)
 	{
@@ -4062,7 +4062,7 @@ void FEBioExport25::WriteConcentrationFlux(FEStep& s)
 //----------------------------------------------------------------------------
 // Export pressure tractions
 //
-void FEBioExport25::WriteLoadTraction(FEStep& s)
+void FEBioExport25::WriteLoadTraction(FSStep& s)
 {
 	for (int j=0; j<s.Loads(); ++j)
 	{
@@ -4089,7 +4089,7 @@ void FEBioExport25::WriteLoadTraction(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid tractions
 //
-void FEBioExport25::WriteFluidTraction(FEStep& s)
+void FEBioExport25::WriteFluidTraction(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4116,7 +4116,7 @@ void FEBioExport25::WriteFluidTraction(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid pressure loads
 //
-void FEBioExport25::WriteFluidPressureLoad(FEStep& s)
+void FEBioExport25::WriteFluidPressureLoad(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4145,7 +4145,7 @@ void FEBioExport25::WriteFluidPressureLoad(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid velocities
 //
-void FEBioExport25::WriteFluidVelocity(FEStep& s)
+void FEBioExport25::WriteFluidVelocity(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4180,7 +4180,7 @@ void FEBioExport25::WriteFluidVelocity(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid normal velocities
 //
-void FEBioExport25::WriteFluidNormalVelocity(FEStep& s)
+void FEBioExport25::WriteFluidNormalVelocity(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4226,7 +4226,7 @@ void FEBioExport25::WriteFluidNormalVelocity(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid rotational velocities
 //
-void FEBioExport25::WriteFluidRotationalVelocity(FEStep& s)
+void FEBioExport25::WriteFluidRotationalVelocity(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4268,7 +4268,7 @@ void FEBioExport25::WriteFluidRotationalVelocity(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid flow resistance
 //
-void FEBioExport25::WriteFluidFlowResistance(FEStep& s)
+void FEBioExport25::WriteFluidFlowResistance(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4309,7 +4309,7 @@ void FEBioExport25::WriteFluidFlowResistance(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid flow RCR
 //
-void FEBioExport25::WriteFluidFlowRCR(FEStep& s)
+void FEBioExport25::WriteFluidFlowRCR(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4378,7 +4378,7 @@ void FEBioExport25::WriteFluidFlowRCR(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid backflow stabilization
 //
-void FEBioExport25::WriteFluidBackflowStabilization(FEStep& s)
+void FEBioExport25::WriteFluidBackflowStabilization(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4411,7 +4411,7 @@ void FEBioExport25::WriteFluidBackflowStabilization(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid tangential stabilization
 //
-void FEBioExport25::WriteFluidTangentialStabilization(FEStep& s)
+void FEBioExport25::WriteFluidTangentialStabilization(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4444,7 +4444,7 @@ void FEBioExport25::WriteFluidTangentialStabilization(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid-FSI traction
 //
-void FEBioExport25::WriteFSITraction(FEStep& s)
+void FEBioExport25::WriteFSITraction(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4468,7 +4468,7 @@ void FEBioExport25::WriteFSITraction(FEStep& s)
 //----------------------------------------------------------------------------
 // Export biphasic-FSI traction
 //
-void FEBioExport25::WriteBFSITraction(FEStep& s)
+void FEBioExport25::WriteBFSITraction(FSStep& s)
 {
     for (int j=0; j<s.Loads(); ++j)
     {
@@ -4492,7 +4492,7 @@ void FEBioExport25::WriteBFSITraction(FEStep& s)
 //-----------------------------------------------------------------------------
 // Export initial conditions
 //
-void FEBioExport25::WriteInitialSection(FEStep& s)
+void FEBioExport25::WriteInitialSection(FSStep& s)
 {
 	FSModel& fem = m_prj.GetFSModel();
 
@@ -4539,7 +4539,7 @@ void FEBioExport25::WriteInitialSection(FEStep& s)
 
 			if (rc->Type() == FE_RIGID_INIT_VELOCITY)
 			{
-				FERigidVelocity* rv = dynamic_cast<FERigidVelocity*>(rc);
+				FSRigidVelocity* rv = dynamic_cast<FSRigidVelocity*>(rc);
 				XMLElement el("rigid_body");
 				el.add_attribute("mat", pgm->m_ntag);
 				m_xml.add_branch(el);
@@ -4550,7 +4550,7 @@ void FEBioExport25::WriteInitialSection(FEStep& s)
 			}
 			else if (rc->Type() == FE_RIGID_INIT_ANG_VELOCITY)
 			{
-				FERigidAngularVelocity* rv = dynamic_cast<FERigidAngularVelocity*>(rc);
+				FSRigidAngularVelocity* rv = dynamic_cast<FSRigidAngularVelocity*>(rc);
 				XMLElement el("rigid_body");
 				el.add_attribute("mat", pgm->m_ntag);
 				m_xml.add_branch(el);
@@ -4730,7 +4730,7 @@ void FEBioExport25::WriteInitPrestrain(FSInitPrestrain& ip)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteBodyLoads(FEStep& s)
+void FEBioExport25::WriteBodyLoads(FSStep& s)
 {
 	for (int i = 0; i<s.Loads(); ++i)
 	{
@@ -4759,10 +4759,10 @@ void FEBioExport25::WriteBodyLoad(FSBodyLoad* pbl, GPart* pg)
 	FSConstBodyForce* pbf = dynamic_cast<FSConstBodyForce*>(pbl);
 	if (pbf) WriteBodyForce(pbf, pg);
 
-	FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pbl);
+	FSHeatSource* phs = dynamic_cast<FSHeatSource*>(pbl);
 	if (phs) WriteHeatSource(phs, pg);
 
-	FESBMPointSource* pps = dynamic_cast<FESBMPointSource*>(pbl);
+	FSSBMPointSource* pps = dynamic_cast<FSSBMPointSource*>(pbl);
 	if (pps)
 	{
 		XMLElement el("body_load");
@@ -4775,7 +4775,7 @@ void FEBioExport25::WriteBodyLoad(FSBodyLoad* pbl, GPart* pg)
 		m_xml.close_branch();	
 	}
 
-    FECentrifugalBodyForce* pcs = dynamic_cast<FECentrifugalBodyForce*>(pbl);
+    FSCentrifugalBodyForce* pcs = dynamic_cast<FSCentrifugalBodyForce*>(pbl);
     if (pcs) WriteCentrifugalBodyForce(pcs, pg);
 }
 
@@ -4802,7 +4802,7 @@ void FEBioExport25::WriteBodyForce(FSConstBodyForce* pbf, GPart* pg)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteHeatSource(FEHeatSource* phs, GPart* pg)
+void FEBioExport25::WriteHeatSource(FSHeatSource* phs, GPart* pg)
 {
 	XMLElement el("body_load");
 	el.add_attribute("type", "heat_source");
@@ -4815,7 +4815,7 @@ void FEBioExport25::WriteHeatSource(FEHeatSource* phs, GPart* pg)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteCentrifugalBodyForce(FECentrifugalBodyForce* pcs, GPart* pg)
+void FEBioExport25::WriteCentrifugalBodyForce(FSCentrifugalBodyForce* pcs, GPart* pg)
 {
     XMLElement el("body_load");
     el.add_attribute("type", "centrifugal");
@@ -5262,7 +5262,7 @@ void FEBioExport25::WriteStepSection()
 
 //-----------------------------------------------------------------------------
 
-void FEBioExport25::WriteRigidConstraints(FEStep &s)
+void FEBioExport25::WriteRigidConstraints(FSStep &s)
 {
 	const char* szbc[6] = { "x", "y", "z", "Rx", "Ry", "Rz" };
 
@@ -5277,7 +5277,7 @@ void FEBioExport25::WriteRigidConstraints(FEStep &s)
 
 			if (ps->Type() == FE_RIGID_FIXED)
 			{
-				FERigidFixed* rc = dynamic_cast<FERigidFixed*>(ps);
+				FSRigidFixed* rc = dynamic_cast<FSRigidFixed*>(ps);
 				XMLElement el;
 				el.name("rigid_body");
 				el.add_attribute("mat", pgm->m_ntag);
@@ -5295,7 +5295,7 @@ void FEBioExport25::WriteRigidConstraints(FEStep &s)
 			}
 			else if (ps->Type() == FE_RIGID_DISPLACEMENT)
 			{
-				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				FSRigidPrescribed* rc = dynamic_cast<FSRigidPrescribed*>(ps);
 				XMLElement el;
 				el.name("rigid_body");
 				el.add_attribute("mat", pgm->m_ntag);
@@ -5311,7 +5311,7 @@ void FEBioExport25::WriteRigidConstraints(FEStep &s)
 			}
 			else if (ps->Type() == FE_RIGID_FORCE)
 			{
-				FERigidForce* rc = dynamic_cast<FERigidForce*>(ps);
+				FSRigidForce* rc = dynamic_cast<FSRigidForce*>(ps);
 				XMLElement el;
 				int forceType = rc->GetForceType();
 				el.name("rigid_body");
@@ -5335,7 +5335,7 @@ void FEBioExport25::WriteRigidConstraints(FEStep &s)
 //-----------------------------------------------------------------------------
 // write rigid connectors
 //
-void FEBioExport25::WriteConnectors(FEStep& s)
+void FEBioExport25::WriteConnectors(FSStep& s)
 {
     for (int i=0; i<s.RigidConnectors(); ++i)
     {
@@ -5386,7 +5386,7 @@ void FEBioExport25::WriteConnectors(FEStep& s)
 
 //-----------------------------------------------------------------------------
 
-void FEBioExport25::WriteConstraintSection(FEStep &s)
+void FEBioExport25::WriteConstraintSection(FSStep &s)
 {
 	// some contact definitions are actually stored in the constraint section
 	WriteConstraints(s);

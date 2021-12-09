@@ -63,7 +63,7 @@ public:
 		m_faces = GFace::GetCounter();
 		m_edges = GEdge::GetCounter();
 		m_nodes = GNode::GetCounter();
-		m_steps = FEStep::GetCounter();
+		m_steps = FSStep::GetCounter();
 		m_mats = GMaterial::GetCounter();
 	}
 
@@ -74,7 +74,7 @@ public:
 		GFace::SetCounter(m_faces);
 		GEdge::SetCounter(m_edges);
 		GNode::SetCounter(m_nodes);
-		FEStep::SetCounter(m_steps);
+		FSStep::SetCounter(m_steps);
 		GMaterial::SetCounter(m_mats);
 	}
 
@@ -197,7 +197,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 
 	if (po == GetActiveItem()) SetActiveItem(nullptr);
 
-	if (dynamic_cast<FEStep*>(po))
+	if (dynamic_cast<FSStep*>(po))
 	{
 		if (dynamic_cast<FSInitialStep*>(po))
 		{

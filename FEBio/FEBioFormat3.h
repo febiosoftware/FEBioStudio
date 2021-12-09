@@ -74,15 +74,15 @@ private:
 	void ParseGeometryPart       (XMLTag& tag);
 	void ParseGeometryInstance   (XMLTag& tag);
 
-	FEStep* NewStep(FSModel& fem, int nanalysis, const char* szname = nullptr) override;
+	FSStep* NewStep(FSModel& fem, int nanalysis, const char* szname = nullptr) override;
 
 private:
 	// boundary condition input functions
-	void ParseBCFixed     (FEStep* pstep, XMLTag& tag);
-	void ParseBCPrescribed(FEStep* pstep, XMLTag& tag);
-	void ParseBCRigid     (FEStep* pstep, XMLTag& tag);
-	void ParseBCLinearConstraint(FEStep* pstep, XMLTag& tag);
-	void ParseBCFluidRotationalVelocity(FEStep* pstep, XMLTag& tag);
+	void ParseBCFixed     (FSStep* pstep, XMLTag& tag);
+	void ParseBCPrescribed(FSStep* pstep, XMLTag& tag);
+	void ParseBCRigid     (FSStep* pstep, XMLTag& tag);
+	void ParseBCLinearConstraint(FSStep* pstep, XMLTag& tag);
+	void ParseBCFluidRotationalVelocity(FSStep* pstep, XMLTag& tag);
 
 	// mesh data sections
 	bool ParseElementDataSection(XMLTag& tag);
@@ -95,25 +95,25 @@ private:
 
 private:
 	// contact input functions
-	void ParseContact(FEStep* pstep, XMLTag& tag);
-	void ParseContactJoint(FEStep* pstep, XMLTag& tag);
-	void ParseRigidWall         (FEStep* pstep, XMLTag& tag);
-	void ParseALLinearConstraint(FEStep* pstep, XMLTag& tag);
+	void ParseContact(FSStep* pstep, XMLTag& tag);
+	void ParseContactJoint(FSStep* pstep, XMLTag& tag);
+	void ParseRigidWall         (FSStep* pstep, XMLTag& tag);
+	void ParseALLinearConstraint(FSStep* pstep, XMLTag& tag);
 
 private:
 	// loads parse functions
-	void ParseNodeLoad   (FEStep* pstep, XMLTag& tag);
-	void ParseSurfaceLoad(FEStep* pstep, XMLTag& tag);
-	void ParseBodyLoad   (FEStep* pstep, XMLTag& tag);
+	void ParseNodeLoad   (FSStep* pstep, XMLTag& tag);
+	void ParseSurfaceLoad(FSStep* pstep, XMLTag& tag);
+	void ParseBodyLoad   (FSStep* pstep, XMLTag& tag);
 
 private:
 	// constraint input functions
-	void ParseConstraint(FEStep* pstep, XMLTag& tag);
+	void ParseConstraint(FSStep* pstep, XMLTag& tag);
 
 private:
 	// rigid input functions
-	void ParseRigidConnector(FEStep* pstep, XMLTag& tag);
-	void ParseRigidConstraint(FEStep* pstep, XMLTag& tag);
+	void ParseRigidConnector(FSStep* pstep, XMLTag& tag);
+	void ParseRigidConstraint(FSStep* pstep, XMLTag& tag);
 
 	// helper functions (version 2.5 and up)
 	FEBioInputModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);

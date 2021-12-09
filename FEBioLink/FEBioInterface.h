@@ -31,7 +31,7 @@ class FSModelComponent;
 class FSMaterial;
 class FEBioMaterial;
 class FEBioDiscreteMaterial;
-class FEStep;
+class FSStep;
 class FSBoundaryCondition;
 class FSNodalLoad;
 class FSSurfaceLoad;
@@ -51,8 +51,8 @@ namespace FEBio {
 	bool CreateMaterial(const char* sztype, FEBioMaterial* po);
 	void CreateMaterialProperty(int superClassID, const char* sztype, FEBioMaterial* po);
 	bool CreateDiscreteMaterial(int superClassID, const char* sztype, FEBioDiscreteMaterial* po);
-	void CreateStep(int classId, FEStep* po, bool initDefaultProps = true);
-	void CreateStep(const char* sztype, FEStep* po);
+	void CreateStep(int classId, FSStep* po, bool initDefaultProps = true);
+	void CreateStep(const char* sztype, FSStep* po);
 
 	void UpdateFEBioMaterial(FEBioMaterial* pm);
 	void UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm);

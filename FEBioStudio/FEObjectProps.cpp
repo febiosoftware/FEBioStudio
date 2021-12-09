@@ -234,7 +234,7 @@ QStringList GetFEBioChoices(int moduleId, int superClassId)
 	return ops;
 }
 
-CStepSettings::CStepSettings(FEProject& prj, FEStep* step) : CObjectProps(0)
+CStepSettings::CStepSettings(FEProject& prj, FSStep* step) : CObjectProps(0)
 {
 	m_step = step;
 	m_moduleId = prj.GetModule();

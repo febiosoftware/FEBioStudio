@@ -506,7 +506,7 @@ bool FEBioFormat2::ParseBoundarySection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
+void FEBioFormat2::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 {
 	// get the bc attribute
 	XMLAtt& abc = tag.Attribute("bc");
@@ -670,7 +670,7 @@ void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 {
 	// check for optional type attribute
 	bool brel = false;
@@ -855,7 +855,7 @@ bool FEBioFormat2::ParseLoadsSection(XMLTag& tag)
 
 //-----------------------------------------------------------------------------
 //! Parses the nodal_load section.
-void FEBioFormat2::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 {
 	// read the bc attribute
 	XMLAtt& abc = tag.Attribute("bc");
@@ -913,7 +913,7 @@ void FEBioFormat2::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 
 //-----------------------------------------------------------------------------
 //! Parses the surface_load section.
-void FEBioFormat2::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 {
 	XMLAtt& att = tag.Attribute("type");
 	if      (att == "pressure"           ) ParseLoadPressure           (pstep, tag);
@@ -983,7 +983,7 @@ FESurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadPressure(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadPressure(FSStep* pstep, XMLTag& tag)
 {
 	// create a new surface load
 	FEBioInputModel& febio = GetFEBioModel();
@@ -1022,7 +1022,7 @@ void FEBioFormat2::ParseLoadPressure(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadTraction(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadTraction(FSStep* pstep, XMLTag& tag)
 {
 	// create a new surface load
 	FEBioInputModel& febio = GetFEBioModel();
@@ -1064,7 +1064,7 @@ void FEBioFormat2::ParseLoadTraction(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadFluidTraction(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadFluidTraction(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 
@@ -1107,7 +1107,7 @@ void FEBioFormat2::ParseLoadFluidTraction(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadFluidVelocity(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadFluidVelocity(FSStep* pstep, XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     // create a new surface load
@@ -1144,7 +1144,7 @@ void FEBioFormat2::ParseLoadFluidVelocity(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadFluidNormalVelocity(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadFluidNormalVelocity(FSStep* pstep, XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     // create a new surface load
@@ -1193,7 +1193,7 @@ void FEBioFormat2::ParseLoadFluidNormalVelocity(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadFluidRotationalVelocity(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadFluidRotationalVelocity(FSStep* pstep, XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     // create a new surface load
@@ -1237,7 +1237,7 @@ void FEBioFormat2::ParseLoadFluidRotationalVelocity(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadFluidFlowResistance(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadFluidFlowResistance(FSStep* pstep, XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     // create a new surface load
@@ -1281,7 +1281,7 @@ void FEBioFormat2::ParseLoadFluidFlowResistance(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadFluidBackflowStabilization(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadFluidBackflowStabilization(FSStep* pstep, XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     // create a new surface load
@@ -1315,7 +1315,7 @@ void FEBioFormat2::ParseLoadFluidBackflowStabilization(FEStep* pstep, XMLTag& ta
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadFluidTangentialStabilization(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadFluidTangentialStabilization(FSStep* pstep, XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     // create a new surface load
@@ -1349,7 +1349,7 @@ void FEBioFormat2::ParseLoadFluidTangentialStabilization(FEStep* pstep, XMLTag& 
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadFSITraction(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadFSITraction(FSStep* pstep, XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     // create a new surface load
@@ -1376,7 +1376,7 @@ void FEBioFormat2::ParseLoadFSITraction(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadFluidFlux(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadFluidFlux(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -1421,7 +1421,7 @@ void FEBioFormat2::ParseLoadFluidFlux(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadSoluteFlux(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadSoluteFlux(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 
@@ -1468,7 +1468,7 @@ void FEBioFormat2::ParseLoadSoluteFlux(FEStep* pstep, XMLTag& tag)
 
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadConcentrationFlux(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadConcentrationFlux(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 
@@ -1510,7 +1510,7 @@ void FEBioFormat2::ParseLoadConcentrationFlux(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadNormalTraction(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadNormalTraction(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 
@@ -1557,7 +1557,7 @@ void FEBioFormat2::ParseLoadNormalTraction(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadHeatFlux(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadHeatFlux(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 
@@ -1593,7 +1593,7 @@ void FEBioFormat2::ParseLoadHeatFlux(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLoadConvectiveHeatFlux(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLoadConvectiveHeatFlux(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 
@@ -1635,7 +1635,7 @@ void FEBioFormat2::ParseLoadConvectiveHeatFlux(FEStep* pstep, XMLTag& tag)
 
 //-----------------------------------------------------------------------------
 //! Parses the body_load section.
-void FEBioFormat2::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseBodyLoad(FSStep* pstep, XMLTag& tag)
 {
 	XMLAtt& att = tag.Attribute("type");
 	if      (att == "const"      ) ParseBodyForce(pstep, tag);
@@ -1812,7 +1812,7 @@ bool FEBioFormat2::ParseContactSection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContact(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseContact(FSStep *pstep, XMLTag &tag)
 {
 	XMLAtt& atype = tag.Attribute("type");
 	if      (atype == "sliding-node-on-facet"  ) ParseContactSliding    (pstep, tag);
@@ -1931,7 +1931,7 @@ FESurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseConstraint(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseConstraint(FSStep* pstep, XMLTag& tag)
 {
 	FSModel* fem = &GetFSModel();
 
@@ -2010,7 +2010,7 @@ void FEBioFormat2::ParseContactParams(XMLTag& tag, FSPairedInterface* pi, int ni
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactSliding(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseContactSliding(FSStep* pstep, XMLTag& tag)
 {
 	char szbuf[256];
 
@@ -2036,7 +2036,7 @@ void FEBioFormat2::ParseContactSliding(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactF2FSliding(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseContactF2FSliding(FSStep* pstep, XMLTag& tag)
 {
 	char szbuf[256];
 
@@ -2058,7 +2058,7 @@ void FEBioFormat2::ParseContactF2FSliding(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactBiphasic(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseContactBiphasic(FSStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
@@ -2081,7 +2081,7 @@ void FEBioFormat2::ParseContactBiphasic(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactSolute(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseContactSolute(FSStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 	FEMesh* pm = &GetFEMesh();
@@ -2106,7 +2106,7 @@ void FEBioFormat2::ParseContactSolute(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactMultiphasic(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseContactMultiphasic(FSStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 	FEMesh* pm = &GetFEMesh();
@@ -2130,7 +2130,7 @@ void FEBioFormat2::ParseContactMultiphasic(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactTiedMultiphasic(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseContactTiedMultiphasic(FSStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 	FEMesh* pm = &GetFEMesh();
@@ -2153,7 +2153,7 @@ void FEBioFormat2::ParseContactTiedMultiphasic(FEStep* pstep, XMLTag& tag)
 	pstep->AddComponent(pi);
 }
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactTied(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseContactTied(FSStep *pstep, XMLTag &tag)
 {
 	FSModel& fem = GetFSModel();
 
@@ -2175,7 +2175,7 @@ void FEBioFormat2::ParseContactTied(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactTiedF2F(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseContactTiedF2F(FSStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
@@ -2197,7 +2197,7 @@ void FEBioFormat2::ParseContactTiedF2F(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactTiedElastic(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseContactTiedElastic(FSStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
@@ -2219,7 +2219,7 @@ void FEBioFormat2::ParseContactTiedElastic(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactSticky(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseContactSticky(FSStep *pstep, XMLTag &tag)
 {
 	FSModel& fem = GetFSModel();
 	FEMesh* pm = &GetFEMesh();
@@ -2243,7 +2243,7 @@ void FEBioFormat2::ParseContactSticky(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactPeriodic(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseContactPeriodic(FSStep *pstep, XMLTag &tag)
 {
 	FSModel& fem = GetFSModel();
 	FEMesh* pm = &GetFEMesh();
@@ -2267,7 +2267,7 @@ void FEBioFormat2::ParseContactPeriodic(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactTC(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseContactTC(FSStep *pstep, XMLTag &tag)
 {
 	FSModel& fem = GetFSModel();
 	FEMesh* pm = &GetFEMesh();
@@ -2291,7 +2291,7 @@ void FEBioFormat2::ParseContactTC(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactTiedPoro(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseContactTiedPoro(FSStep *pstep, XMLTag &tag)
 {
 	FSModel& fem = GetFSModel();
 	FEMesh* pm = &GetFEMesh();
@@ -2315,7 +2315,7 @@ void FEBioFormat2::ParseContactTiedPoro(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseRigidWall(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2387,7 +2387,7 @@ void FEBioFormat2::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactRigid(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2458,7 +2458,7 @@ void FEBioFormat2::ParseContactRigid(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseContactJoint(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseContactJoint(FSStep *pstep, XMLTag &tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2497,7 +2497,7 @@ void FEBioFormat2::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
+void FEBioFormat2::ParseConnector(FSStep *pstep, XMLTag &tag, const int rc)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2577,7 +2577,7 @@ void FEBioFormat2::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseSprings(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseSprings(FSStep *pstep, XMLTag &tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 
@@ -2645,7 +2645,7 @@ void FEBioFormat2::ParseSprings(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseLinearConstraint(FSStep* pstep, XMLTag& tag)
 {
 	FSModel &fem = GetFSModel();
 
@@ -2711,7 +2711,7 @@ bool FEBioFormat2::ParseDiscreteSection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseBodyForce(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseBodyForce(FSStep *pstep, XMLTag &tag)
 {
 	FSModel &fem = GetFSModel();
 
@@ -2732,12 +2732,12 @@ void FEBioFormat2::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseHeatSource(FEStep *pstep, XMLTag &tag)
+void FEBioFormat2::ParseHeatSource(FSStep *pstep, XMLTag &tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel &fem = GetFSModel();
 
-	FEHeatSource* phs = new FEHeatSource(&fem, pstep->GetID());
+	FSHeatSource* phs = new FSHeatSource(&fem, pstep->GetID());
 	pstep->AddComponent(phs);
 
 	++tag;
@@ -2757,7 +2757,7 @@ void FEBioFormat2::ParseHeatSource(FEStep *pstep, XMLTag &tag)
 	} while (!tag.isend());
 
 	char szname[256] = { 0 };
-	sprintf(szname, "HeatSource%02d", CountLoads<FEHeatSource>(fem));
+	sprintf(szname, "HeatSource%02d", CountLoads<FSHeatSource>(fem));
 	phs->SetName(szname);
 }
 
@@ -2772,7 +2772,7 @@ bool FEBioFormat2::ParseConstraintSection(XMLTag& tag)
 {
 	if (tag.isleaf()) return true;
 
-	FEStep* pstep = m_pBCStep;
+	FSStep* pstep = m_pBCStep;
 
 	++tag;
 	do
@@ -2807,7 +2807,7 @@ bool FEBioFormat2::ParseConstraintSection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2827,7 +2827,7 @@ void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 	const char* sz = tag.AttributeValue("name", true);
 	if (sz) { strcpy(szname, sz); hasName = true; }
 
-	FERigidFixed* pc = 0; // fixed constraint
+	FSRigidFixed* pc = 0; // fixed constraint
 	double v;
 
 	++tag;
@@ -2835,7 +2835,7 @@ void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 	{
 		if (tag == "initial_velocity")
 		{
-			FERigidVelocity* pv = new FERigidVelocity(&fem, pstep->GetID());
+			FSRigidVelocity* pv = new FSRigidVelocity(&fem, pstep->GetID());
 			vec3d vi;
 			tag.value(vi);
 			pv->SetVelocity(vi);
@@ -2848,7 +2848,7 @@ void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "initial_angular_velocity")
 		{
-			FERigidAngularVelocity* pv = new FERigidAngularVelocity(&fem, pstep->GetID());
+			FSRigidAngularVelocity* pv = new FSRigidAngularVelocity(&fem, pstep->GetID());
 			vec3d vi;
 			tag.value(vi);
 			pv->SetVelocity(vi);
@@ -2873,14 +2873,14 @@ void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 
 			if (tag == "fixed")
 			{
-				if (pc == 0) pc = new FERigidFixed(&fem, pstep->GetID());
+				if (pc == 0) pc = new FSRigidFixed(&fem, pstep->GetID());
 				pc->SetDOF(nbc, true);
 			}
 			else if (tag == "prescribed")
 			{
 				int lc = tag.AttributeValue<int>("lc", 0);
 				tag.value(v);
-				FERigidDisplacement* pd = new FERigidDisplacement(nbc, matid, v, pstep->GetID());
+				FSRigidDisplacement* pd = new FSRigidDisplacement(nbc, matid, v, pstep->GetID());
 
 				static int n = 1;
 				if (hasName == false) sprintf(szname, "RigidDisplacement%02d", n++);
@@ -2893,7 +2893,7 @@ void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			{
 				int lc = tag.AttributeValue<int>("lc", 0);
 				tag.value(v);
-				FERigidForce* pf = new FERigidForce(nbc, matid, v, pstep->GetID());
+				FSRigidForce* pf = new FSRigidForce(nbc, matid, v, pstep->GetID());
 
 				const char* sztype = tag.AttributeValue("type", true);
 				if (sztype)
@@ -2930,7 +2930,7 @@ void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseVolumeConstraint(FSStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
@@ -2983,7 +2983,7 @@ void FEBioFormat2::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseSymmetryPlane(FSStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
@@ -3032,7 +3032,7 @@ void FEBioFormat2::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseNrmlFldVlctSrf(FSStep* pstep, XMLTag& tag)
 {
     FSModel& fem = GetFSModel();
     
@@ -3081,7 +3081,7 @@ void FEBioFormat2::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat2::ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag)
+void FEBioFormat2::ParseFrictionlessFluidWall(FSStep* pstep, XMLTag& tag)
 {
     FSModel& fem = GetFSModel();
 

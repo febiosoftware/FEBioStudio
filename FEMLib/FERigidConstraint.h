@@ -69,23 +69,23 @@ private:
 };
 
 
-class FERigidFixed : public FSRigidConstraint
+class FSRigidFixed : public FSRigidConstraint
 {
 	enum { BC1, BC2, BC3, BC4, BC5, BC6 };
 
 public:
-	FERigidFixed(FSModel* fem, int nstep = 0);
+	FSRigidFixed(FSModel* fem, int nstep = 0);
 
 	bool GetDOF(int i) const { return GetBoolValue(BC1+i); }
 	void SetDOF(int i, bool b) { SetBoolValue(BC1+i, b); }
 };
 
-class FERigidPrescribed : public FSRigidConstraint
+class FSRigidPrescribed : public FSRigidConstraint
 {
 	enum { DOF, VALUE };
 
 public:
-	FERigidPrescribed(int ntype, int nstep);
+	FSRigidPrescribed(int ntype, int nstep);
 
 	int GetDOF() const { return GetIntValue(DOF); }
 	void SetDOF(int n) { SetIntValue(DOF, n); }
@@ -98,42 +98,42 @@ public:
 	void RemoveLoadcurve() { GetParam(VALUE).DeleteLoadCurve(); }
 };
 
-class FERigidDisplacement : public FERigidPrescribed
+class FSRigidDisplacement : public FSRigidPrescribed
 {
 public:
-	FERigidDisplacement(FSModel* fem, int nstep = 0);
-	FERigidDisplacement(int bc, int matid, double v, int nstep);
+	FSRigidDisplacement(FSModel* fem, int nstep = 0);
+	FSRigidDisplacement(int bc, int matid, double v, int nstep);
 
 	bool GetRelativeFlag() const;
 };
 
-class FERigidForce : public FERigidPrescribed
+class FSRigidForce : public FSRigidPrescribed
 {
 public:
-	FERigidForce(FSModel* fem, int nstep = 0);
-	FERigidForce(int bc, int matid, double v, int nstep);
+	FSRigidForce(FSModel* fem, int nstep = 0);
+	FSRigidForce(int bc, int matid, double v, int nstep);
 
 	int GetForceType() const;
 	void SetForceType(int n);
 };
 
-class FERigidVelocity : public FSRigidConstraint
+class FSRigidVelocity : public FSRigidConstraint
 {
 	enum { VEL };
 
 public:
-	FERigidVelocity(FSModel* fem, int nstep = 0);
+	FSRigidVelocity(FSModel* fem, int nstep = 0);
 
 	void SetVelocity(const vec3d& v) { SetVecValue(VEL, v); }
 	vec3d GetVelocity() const { return GetVecValue(VEL); }
 };
 
-class FERigidAngularVelocity : public FSRigidConstraint
+class FSRigidAngularVelocity : public FSRigidConstraint
 {
 	enum { VEL };
 
 public:
-	FERigidAngularVelocity(FSModel* fem, int nstep = 0);
+	FSRigidAngularVelocity(FSModel* fem, int nstep = 0);
 
 	void SetVelocity(const vec3d& v) { SetVecValue(VEL, v); }
 	vec3d GetVelocity() const { return GetVecValue(VEL); }

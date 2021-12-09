@@ -129,16 +129,16 @@ public:
 
 	// --- Analysis steps ---
 	int Steps();
-	FEStep* GetStep(int i);
-	FEStep* FindStep(int nid);
-	int GetStepIndex(FEStep* ps);
+	FSStep* GetStep(int i);
+	FSStep* FindStep(int nid);
+	int GetStepIndex(FSStep* ps);
 
-	void AddStep(FEStep* ps);
-	int DeleteStep(FEStep* ps);
-	void InsertStep(int n, FEStep* ps);
-	void SwapSteps(FEStep* ps0, FEStep* ps1);
+	void AddStep(FSStep* ps);
+	int DeleteStep(FSStep* ps);
+	void InsertStep(int n, FSStep* ps);
+	void SwapSteps(FSStep* ps0, FSStep* ps1);
 
-	void AssignComponentToStep(FSStepComponent* pc, FEStep* ps);
+	void AssignComponentToStep(FSStepComponent* pc, FSStep* ps);
 
 	// --- data variables ---
 	int DataVariables();
@@ -219,7 +219,7 @@ protected:
 	vector<FEDOFVariable>	m_DOF;		//!< degree of freedom list
 
 	FSObjectList<GMaterial>			m_pMat;		//!< Material list
-	FSObjectList<FEStep>			m_pStep;	//!< Analysis data
+	FSObjectList<FSStep>			m_pStep;	//!< Analysis data
 	FSObjectList<FEDataVariable>	m_Var;		//!< data variables
 	FSObjectList<FESoluteData>		m_Sol;		//!< solute data variables
 	FSObjectList<FESoluteData>		m_SBM;		//!< solid-bound molecule data variables
@@ -233,7 +233,7 @@ template <class T> int CountInterfaces(FSModel& fem)
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->Interfaces(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->Interface(j));
@@ -250,7 +250,7 @@ template <class T> int CountConstraints(FSModel& fem)
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->Constraints(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->Constraint(j));
@@ -267,7 +267,7 @@ template <class T> int CountBCs(FSModel& fem)
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->BCs(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->BC(j));
@@ -284,7 +284,7 @@ template <class T> int CountICs(FSModel& fem)
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->ICs(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->IC(j));
@@ -301,7 +301,7 @@ template <class T> int CountLoads(FSModel& fem)
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->Loads(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->Load(j));
@@ -318,7 +318,7 @@ template <class T> int CountConnectors(FSModel& fem)
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->RigidConnectors(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->RigidConnector(j));
@@ -335,7 +335,7 @@ template <class T> int CountRigidConstraints(FSModel& fem)
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->RigidConstraints(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->RigidConstraint(j));
@@ -356,4 +356,4 @@ std::string defaultInterfaceName(FSModel* fem, FSInterface* pi);
 std::string defaultConstraintName(FSModel* fem, FSModelConstraint* pi);
 std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pc);
 std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc);
-std::string defaultStepName(FSModel* fem, FEStep* ps);
+std::string defaultStepName(FSModel* fem, FSStep* ps);

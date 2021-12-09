@@ -1441,13 +1441,13 @@ void CModelTree::UpdateMeshAdaptors(QTreeWidgetItem* t1, FSModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateBC(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
+void CModelTree::UpdateBC(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
 	QTreeWidgetItem* t2;
 
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
 			for (int j = 0; j<ps->BCs(); ++j)
@@ -1470,11 +1470,11 @@ void CModelTree::UpdateBC(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 }
 
 //----------------------------------------------------------------------------
-void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
+void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
 			for (int j = 0; j<ps->Loads(); ++j)
@@ -1492,13 +1492,13 @@ void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateICs(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
+void CModelTree::UpdateICs(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
 	QTreeWidgetItem* t2;
 
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
 			for (int j = 0; j<ps->ICs(); ++j)
@@ -1529,7 +1529,7 @@ void setInactive(QTreeWidgetItem* ti)
 	ti->setFont(0, f);
 }
 
-void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
+void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
 	int n, i;
 	QTreeWidgetItem* t2;
@@ -1537,7 +1537,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 	// add the rigid interfaces
 	for (n = 0; n<fem.Steps(); ++n)
 	{
-		FEStep* ps = fem.GetStep(n);
+		FSStep* ps = fem.GetStep(n);
 		if ((pstep == 0) || (pstep == ps))
 		{
 			int flags = 0;
@@ -1607,12 +1607,12 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
+void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
 	QTreeWidgetItem* t2;
 	for (int n = 0; n<fem.Steps(); ++n)
 	{
-		FEStep* ps = fem.GetStep(n);
+		FSStep* ps = fem.GetStep(n);
 		if ((pstep == 0) || (pstep == ps))
 		{
 			int flags = 0;
@@ -1644,7 +1644,7 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEProject& prj)
 
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 
 		QString name = (i==0 ? QString::fromStdString(pstep->GetName()) : QString("%1 [%2]").arg(QString::fromStdString(pstep->GetName())).arg(pstep->GetTypeString()));
 
@@ -1687,11 +1687,11 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateRC(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
+void CModelTree::UpdateRC(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
 			for (int j = 0; j<ps->RigidConstraints(); ++j)
@@ -1710,11 +1710,11 @@ void CModelTree::UpdateRC(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
+void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
 			for (int j = 0; j < ps->RigidLoads(); ++j)
@@ -1733,11 +1733,11 @@ void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FSModel& fem, FEStep* pst
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
+void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
 			for (int j = 0; j<ps->RigidConnectors(); ++j)

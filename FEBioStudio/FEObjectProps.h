@@ -43,7 +43,7 @@ class Param;
 class FSReactionMaterial;
 class FSMaterial;
 class GPart;
-class FEStep;
+class FSStep;
 
 class FEObjectProps : public CObjectProps
 {
@@ -86,7 +86,7 @@ private:
 class CStepSettings : public CObjectProps
 {
 public:
-	CStepSettings(FEProject& prj, FEStep* step);
+	CStepSettings(FEProject& prj, FSStep* step);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 
@@ -94,7 +94,7 @@ private:
 	void BuildStepProperties();
 
 private:
-	FEStep* m_step;
+	FSStep* m_step;
 	int		m_moduleId;
 };
 

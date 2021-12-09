@@ -1161,7 +1161,7 @@ void CModelViewer::OnCopyInterface()
 	piCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the interface to the doc
-	FEStep* step = fem->GetStep(pic->GetStep());
+	FSStep* step = fem->GetStep(pic->GetStep());
 	pdoc->DoCommand(new CCmdAddInterface(step, piCopy));
 
 	// update the model viewer
@@ -1190,7 +1190,7 @@ void CModelViewer::OnCopyBC()
 	pbcCopy->GetParamBlock() = pbc->GetParamBlock();
 
 	// add the bc to the doc
-	FEStep* step = fem->GetStep(pbc->GetStep());
+	FSStep* step = fem->GetStep(pbc->GetStep());
 	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy));
 
 	// update the model viewer
@@ -1219,7 +1219,7 @@ void CModelViewer::OnCopyIC()
 	picCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the ic to the doc
-	FEStep* step = fem->GetStep(pic->GetStep());
+	FSStep* step = fem->GetStep(pic->GetStep());
 	pdoc->DoCommand(new CCmdAddIC(step, picCopy));
 
 	// update the model viewer
@@ -1248,7 +1248,7 @@ void CModelViewer::OnCopyRigidConnector()
 	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
-	FEStep* step = fem->GetStep(pc->GetStep());
+	FSStep* step = fem->GetStep(pc->GetStep());
 	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy));
 
 	// update the model viewer
@@ -1276,7 +1276,7 @@ void CModelViewer::OnCopyConstraint()
 	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the constraint to the doc
-	FEStep* step = fem->GetStep(pc->GetStep());
+	FSStep* step = fem->GetStep(pc->GetStep());
 	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy));
 
 	// update the model viewer
@@ -1311,7 +1311,7 @@ void CModelViewer::OnCopyLoad()
 	plCopy->GetParamBlock() = pl->GetParamBlock();
 
 	// add the load to the doc
-	FEStep* step = fem->GetStep(pl->GetStep());
+	FSStep* step = fem->GetStep(pl->GetStep());
 	pdoc->DoCommand(new CCmdAddLoad(step, plCopy));
 
 	// update the model viewer
@@ -1340,7 +1340,7 @@ void CModelViewer::OnCopyRigidConstraint()
 	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
-	FEStep* step = fem->GetStep(pc->GetStep());
+	FSStep* step = fem->GetStep(pc->GetStep());
 	pdoc->DoCommand(new CCmdAddRC(step, pcCopy));
 
 	// update the model viewer

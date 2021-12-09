@@ -296,7 +296,7 @@ void check_006(FEProject& prj, std::vector<FSObject*>& objList)
 			bool matUsed = false;
 			for (int n = 0; n < fem.Steps(); ++n)
 			{
-				FEStep* pstep = fem.GetStep(n);
+				FSStep* pstep = fem.GetStep(n);
 				
 				// see if this material is referenced by any rigid constraints
 				for (int j = 0; j < pstep->RigidConstraints(); ++j)
@@ -368,7 +368,7 @@ void check_007(FEProject& prj, std::vector<FSObject*>& objList)
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* step = fem.GetStep(i);
+		FSStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Interfaces(); ++j)
 		{
 			FSInterface* pi = step->Interface(j);
@@ -390,7 +390,7 @@ void check_008(FEProject& prj, std::vector<FSObject*>& objList)
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* step = fem.GetStep(i);
+		FSStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Interfaces(); ++j)
 		{
 			FSInterface* pi = step->Interface(j);
@@ -412,7 +412,7 @@ void check_009(FEProject& prj, std::vector<FSObject*>& objList)
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* step = fem.GetStep(i);
+		FSStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Loads(); ++j)
 		{
 			FSLoad* pl = step->Load(j);
@@ -430,7 +430,7 @@ void check_010(FEProject& prj, std::vector<FSObject*>& objList)
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* step = fem.GetStep(i);
+		FSStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->BCs(); ++j)
 		{
 			FSBoundaryCondition* pl = step->BC(j);
@@ -448,7 +448,7 @@ void check_011(FEProject& prj, std::vector<FSObject*>& objList)
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* step = fem.GetStep(i);
+		FSStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->ICs(); ++j)
 		{
 			FSInitialNodalDOF* pl = dynamic_cast<FSInitialNodalDOF*>(step->IC(j));
@@ -539,7 +539,7 @@ void check_014(FEProject& prj, std::vector<FSObject*>& objList)
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		int nrc = pstep->RigidConnectors();
 		for (int j = 0; j < nrc; ++j)
 		{
@@ -558,7 +558,7 @@ void check_015(FEProject& prj, std::vector<FSObject*>& objList)
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		int nrc = pstep->RigidConnectors();
 		for (int j = 0; j < nrc; ++j)
 		{
@@ -577,7 +577,7 @@ void check_016(FEProject& prj, std::vector<FSObject*>& objList)
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		int ni = pstep->Interfaces();
 		for (int j = 0; j < ni; ++j)
 		{
