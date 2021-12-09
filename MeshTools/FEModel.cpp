@@ -74,7 +74,7 @@ std::string Namify(const char* sz)
 	return s;
 }
 
-std::string defaultBCName(FSModel* fem, FEBoundaryCondition* pbc)
+std::string defaultBCName(FSModel* fem, FSBoundaryCondition* pbc)
 {
 	const char* ch = pbc->GetTypeString();
 	string type = Namify(ch);
@@ -98,7 +98,7 @@ std::string defaultICName(FSModel* fem, FEInitialCondition* pic)
 	return ss.str();
 }
 
-std::string defaultLoadName(FSModel* fem, FELoad* pbc)
+std::string defaultLoadName(FSModel* fem, FSLoad* pbc)
 {
 	const char* ch = pbc->GetTypeString();
 	string type = Namify(ch);
@@ -110,7 +110,7 @@ std::string defaultLoadName(FSModel* fem, FELoad* pbc)
 	return ss.str();
 }
 
-std::string defaultInterfaceName(FSModel* fem, FEInterface* pi)
+std::string defaultInterfaceName(FSModel* fem, FSInterface* pi)
 {
 	const char* ch = pi->GetTypeString();
 	string type = Namify(ch);
@@ -134,17 +134,17 @@ std::string defaultConstraintName(FSModel* fem, FEModelConstraint* pi)
 	return ss.str();
 }
 
-std::string defaultRigidConnectorName(FSModel* fem, FERigidConnector* pi)
+std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pi)
 {
-	int nrc = CountConnectors<FERigidConnector>(*fem);
+	int nrc = CountConnectors<FSRigidConnector>(*fem);
 	stringstream ss;
 	ss << "RigidConnector" << nrc + 1;
 	return  ss.str();
 }
 
-std::string defaultRigidConstraintName(FSModel* fem, FERigidConstraint* pc)
+std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc)
 {
-	int nrc = CountRigidConstraints<FERigidConstraint>(*fem);
+	int nrc = CountRigidConstraints<FSRigidConstraint>(*fem);
 	stringstream ss;
 	ss << "RigidConstraint" << nrc + 1;
 	return  ss.str();
@@ -383,7 +383,7 @@ const char* FSModel::GetVariableName(const char* szvar, int n)
 	else if (strcmp(var, "rigid_materials") == 0)
 	{
 		GMaterial* mat = GetMaterial(n - 1);
-		FEMaterial* femat = mat->GetMaterialProperties();
+		FSMaterial* femat = mat->GetMaterialProperties();
 		if (femat && femat->IsRigid())
 		{
 			return mat->GetName().c_str();
@@ -658,7 +658,7 @@ int FSModel::Reactions()
     int n = 0;
 	for (int i=0; i<(int) m_pMat.Size(); ++i)
     {
-        FEMaterial* pmat = m_pMat[i]->GetMaterialProperties();
+        FSMaterial* pmat = m_pMat[i]->GetMaterialProperties();
         FEMultiphasicMaterial* pmp = dynamic_cast<FEMultiphasicMaterial*>(pmat);
         if (pmp) n += pmp->Reactions();
     }
@@ -671,7 +671,7 @@ FEReactionMaterial* FSModel::GetReaction(int id)
     int n = -1;
 	for (int i=0; i<(int) m_pMat.Size(); ++i)
     {
-        FEMaterial* pmat = m_pMat[i]->GetMaterialProperties();
+        FSMaterial* pmat = m_pMat[i]->GetMaterialProperties();
         FEMultiphasicMaterial* pmp = dynamic_cast<FEMultiphasicMaterial*>(pmat);
         if (pmp) {
             for (int j=0; j<pmp->Reactions(); ++j) {
@@ -804,7 +804,7 @@ GMaterial* FSModel::FindMaterial(const char* szname)
 }
 
 //-----------------------------------------------------------------------------
-FERigidConnector* FSModel::GetRigidConnectorFromID(int id)
+FSRigidConnector* FSModel::GetRigidConnectorFromID(int id)
 {
     // don't bother looking of ID is invalid
     if (id < 0) return 0;
@@ -930,7 +930,7 @@ void FSModel::Save(OArchive& ar)
 				GMaterial* pm = GetMaterial(i);
 
 				int ntype = 0;
-				FEMaterial* mat = pm->GetMaterialProperties();
+				FSMaterial* mat = pm->GetMaterialProperties();
 				if (mat) ntype = mat->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -1139,7 +1139,7 @@ void FSModel::LoadMaterials(IArchive& ar)
 	{
 		int ntype = ar.GetChunkID();
 
-		FEMaterial* pmat = 0;
+		FSMaterial* pmat = 0;
 		// allocate the material
 		if (ntype == FE_USER_MATERIAL) pmat = new FEUserMaterial(FE_USER_MATERIAL);
 		else if (ntype == FE_TRANS_MOONEY_RIVLIN_OLD) pmat = new FETransMooneyRivlinOld;
@@ -1444,13 +1444,13 @@ void FSModel::ClearSelections()
 
 		for (int i=0; i<step->BCs(); ++i)
 		{
-			FEBoundaryCondition* pbc = step->BC(i);
+			FSBoundaryCondition* pbc = step->BC(i);
 			delete pbc->GetItemList(); pbc->SetItemList(0);
 		}
 
 		for (int i=0; i<step->Loads(); ++i)
 		{
-			FELoad* pl = step->Load(i);
+			FSLoad* pl = step->Load(i);
 			delete pl->GetItemList(); pl->SetItemList(0);
 		}
 
@@ -1462,7 +1462,7 @@ void FSModel::ClearSelections()
 
 		for (int i=0; i<step->Interfaces(); ++i)
 		{
-			FEInterface* pi = step->Interface(i);
+			FSInterface* pi = step->Interface(i);
 
 			if (dynamic_cast<FESoloInterface*>(pi))
 			{
@@ -1562,7 +1562,7 @@ void FSModel::UpdateData()
 }
 
 //-----------------------------------------------------------------------------
-void FSModel::AssignComponentToStep(FEStepComponent* pc, FEStep* ps)
+void FSModel::AssignComponentToStep(FSStepComponent* pc, FEStep* ps)
 {
 	FEStep* po = FindStep(pc->GetStep());
 	assert(po);
@@ -1628,7 +1628,7 @@ int FSModel::CountBCs(int type)
 		int NBC = step->BCs();
 		for (int j=0; j<NBC; ++j)
 		{
-			FEBoundaryCondition* pbc = step->BC(j);
+			FSBoundaryCondition* pbc = step->BC(j);
 			if (pbc->Type() == type) n++;
 		}
 	}
@@ -1647,7 +1647,7 @@ int FSModel::CountLoads(int type)
 		int NL = step->Loads();
 		for (int j = 0; j<NL; ++j)
 		{
-			FELoad* pl = step->Load(j);
+			FSLoad* pl = step->Load(j);
 			if (pl->Type() == type) n++;
 		}
 	}
@@ -1685,7 +1685,7 @@ int FSModel::CountInterfaces(int type)
 		int NC = step->Interfaces();
 		for (int j = 0; j<NC; ++j)
 		{
-			FEInterface* pi = step->Interface(j);
+			FSInterface* pi = step->Interface(j);
 			if (pi->Type() == type) n++;
 		}
 	}
@@ -1704,7 +1704,7 @@ int FSModel::CountRigidConstraints(int type)
 		int NRC = step->RigidConstraints();
 		for (int j = 0; j<NRC; ++j)
 		{
-			FERigidConstraint* prc = step->RigidConstraint(j);
+			FSRigidConstraint* prc = step->RigidConstraint(j);
 			if (prc->Type() == type) n++;
 		}
 	}
@@ -1723,7 +1723,7 @@ int FSModel::CountRigidConnectors(int type)
 		int NRC = step->RigidConnectors();
 		for (int j = 0; j < NRC; ++j)
 		{
-			FERigidConnector* prc = step->RigidConnector(j);
+			FSRigidConnector* prc = step->RigidConnector(j);
 			if (prc->Type() == type) n++;
 		}
 	}

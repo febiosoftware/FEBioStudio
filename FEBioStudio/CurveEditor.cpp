@@ -255,7 +255,7 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po)
 	}
 }
 
-void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FEMaterial* mat, const std::string& name)
+void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, const std::string& name)
 {
 	int NP = mat->Parameters();
 	for (int n = 0; n < NP; ++n)
@@ -278,7 +278,7 @@ void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FEMaterial* mat, con
 		int np = matProp.Size();
 		if (np == 1)
 		{
-			FEMaterial* pm = matProp.GetMaterial(0);
+			FSMaterial* pm = matProp.GetMaterial(0);
 			if (pm)
 			{
 				string paramName = name + "." + matProp.GetName();
@@ -289,7 +289,7 @@ void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FEMaterial* mat, con
 		{
 			for (int j = 0; j < np; ++j)
 			{
-				FEMaterial* pm = matProp.GetMaterial(j);
+				FSMaterial* pm = matProp.GetMaterial(j);
 				if (pm)
 				{
 					std::stringstream ss; 
@@ -346,7 +346,7 @@ void CCurveEditor::BuildLoadCurves()
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pgm = fem.GetMaterial(i);
-		FEMaterial* pm = pgm->GetMaterialProperties();
+		FSMaterial* pm = pgm->GetMaterialProperties();
 		if (pm)
 		{
 			BuildMaterialCurves(t1, pm, pgm->GetName());
@@ -360,7 +360,7 @@ void CCurveEditor::BuildLoadCurves()
 		int nbc = pstep->BCs();
 		for (int j = 0; j<nbc; ++j)
 		{
-			FEBoundaryCondition* pbc = pstep->BC(j);
+			FSBoundaryCondition* pbc = pstep->BC(j);
 			if (pbc) BuildLoadCurves(t1, pbc);
 		}
 	}
@@ -372,7 +372,7 @@ void CCurveEditor::BuildLoadCurves()
 		int nbc = pstep->Loads();
 		for (int j = 0; j < nbc; ++j)
 		{
-			FELoad* plj = pstep->Load(j);
+			FSLoad* plj = pstep->Load(j);
 			BuildLoadCurves(t1, plj);
 		}
 	}
@@ -383,7 +383,7 @@ void CCurveEditor::BuildLoadCurves()
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
-			FEInterface* pi = pstep->Interface(j);
+			FSInterface* pi = pstep->Interface(j);
 			BuildLoadCurves(t1, pi);
 		}
 	}
@@ -416,7 +416,7 @@ void CCurveEditor::BuildLoadCurves()
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->RigidConnectors(); ++j)
 		{
-			FERigidConnector* pc = pstep->RigidConnector(j);
+			FSRigidConnector* pc = pstep->RigidConnector(j);
 			if (pc) BuildLoadCurves(t1, pc);
 		}
 	}
@@ -533,7 +533,7 @@ void CCurveEditor::BuildModelTree()
 			GMaterial* pgm = fem.GetMaterial(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(pgm->GetName()));
 
-			FEMaterial* pm = pgm->GetMaterialProperties();
+			FSMaterial* pm = pgm->GetMaterialProperties();
 			if (pm)
 			{
 				AddMaterial(pm, t3);
@@ -551,7 +551,7 @@ void CCurveEditor::BuildModelTree()
 			int nbc = pstep->BCs();
 			for (int j = 0; j<nbc; ++j)
 			{
-				FEBoundaryCondition* pbc = pstep->BC(j);
+				FSBoundaryCondition* pbc = pstep->BC(j);
 				if (pbc)
 				{
 					QTreeWidgetItem* t3 = ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()));
@@ -571,7 +571,7 @@ void CCurveEditor::BuildModelTree()
 			int nbc = pstep->Loads();
 			for (int j = 0; j<nbc; ++j)
 			{
-				FELoad* plj = pstep->Load(j);
+				FSLoad* plj = pstep->Load(j);
 
                 FEFluidFlowResistance* pfr = dynamic_cast<FEFluidFlowResistance*>(pstep->Load(j));
                 FEFluidFlowRCR* prcr = dynamic_cast<FEFluidFlowRCR*>(pstep->Load(j));
@@ -636,7 +636,7 @@ void CCurveEditor::BuildModelTree()
 			FEStep* pstep = fem.GetStep(i);
 			for (int j = 0; j<pstep->Interfaces(); ++j)
 			{
-				FEInterface* pi = pstep->Interface(j);
+				FSInterface* pi = pstep->Interface(j);
 				FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*>(pi);
 				if (pw) 
 				{
@@ -657,7 +657,7 @@ void CCurveEditor::BuildModelTree()
 					}
 					else
 					{
-						FEInterface* pc = pstep->Interface(j);
+						FSInterface* pc = pstep->Interface(j);
 						int NP = pc->Parameters();
 						if (NP > 0)
 						{
@@ -718,7 +718,7 @@ void CCurveEditor::BuildModelTree()
 			FEStep* pstep = fem.GetStep(i);
 			for (int j = 0; j<pstep->RigidConnectors(); ++j)
 			{
-				FERigidConnector* pc = pstep->RigidConnector(j);
+				FSRigidConnector* pc = pstep->RigidConnector(j);
 				if (pc && (pc->Parameters() > 0))
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
@@ -769,21 +769,21 @@ void CCurveEditor::BuildModelTree()
 }
 
 //-----------------------------------------------------------------------------
-void CCurveEditor::AddMaterial(FEMaterial* pm, QTreeWidgetItem* tp)
+void CCurveEditor::AddMaterial(FSMaterial* pm, QTreeWidgetItem* tp)
 {
 	AddParameterList(tp, pm);
 	AddMultiMaterial(pm, tp);
 }
 
 //-----------------------------------------------------------------------------
-void CCurveEditor::AddMultiMaterial(FEMaterial* pm, QTreeWidgetItem* tp)
+void CCurveEditor::AddMultiMaterial(FSMaterial* pm, QTreeWidgetItem* tp)
 {
 	for (int k = 0; k<pm->Properties(); ++k)
 	{
 		FEMaterialProperty& pmc = pm->GetProperty(k);
 		for (int l=0; l<pmc.Size(); ++l)
 		{
-			FEMaterial* pmat = pmc.GetMaterial(l);
+			FSMaterial* pmat = pmc.GetMaterial(l);
 			if (pmat)
 			{
 				QString name = QString::fromStdString(pmc.GetName());

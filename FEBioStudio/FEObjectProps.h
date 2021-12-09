@@ -36,12 +36,12 @@ class FEPrescribedDOF;
 class FESoluteMaterial;
 class FEAnalysisStep;
 class FERigidInterface;
-class FERigidConstraint;
-class FERigidConnector;
+class FSRigidConstraint;
+class FSRigidConnector;
 class FEProject;
 class Param;
 class FEReactionMaterial;
-class FEMaterial;
+class FSMaterial;
 class GPart;
 class FEStep;
 
@@ -116,14 +116,14 @@ private:
 class CRigidConstraintSettings : public CObjectProps
 {
 public:
-	CRigidConstraintSettings(FSModel& fem, FERigidConstraint* rc);
+	CRigidConstraintSettings(FSModel& fem, FSRigidConstraint* rc);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FERigidConstraint*	m_rc;
+	FSRigidConstraint*	m_rc;
 	std::vector<GMaterial*>	m_mat;
 	int					m_sel;
 };
@@ -131,14 +131,14 @@ private:
 class CRigidConnectorSettings : public CObjectProps
 {
 public:
-	CRigidConnectorSettings(FSModel& fem, FERigidConnector* rc);
+	CRigidConnectorSettings(FSModel& fem, FSRigidConnector* rc);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FERigidConnector*	m_rc;
+	FSRigidConnector*	m_rc;
 	std::vector<GMaterial*>	m_mat;
 	int					m_rbA;
 	int					m_rbB;
@@ -148,7 +148,7 @@ private:
 class CMaterialProps : public FEObjectProps
 {
 public:
-	CMaterialProps(FSModel& fem, FEMaterial* mat);
+	CMaterialProps(FSModel& fem, FSMaterial* mat);
 
 	QVariant GetPropertyValue(int i);
 
@@ -158,7 +158,7 @@ private:
 	void BuildPropertyList();
 
 private:
-	FEMaterial*	m_mat;
+	FSMaterial*	m_mat;
 };
 
 class CLogfileProperties : public CObjectProps

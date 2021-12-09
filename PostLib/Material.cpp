@@ -23,24 +23,31 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
 
+#include "stdafx.h"
+#include "Material.h"
+using namespace Post;
 
-#include "FEPostModel.h"
-#include <stdio.h>
+Material::Material()
+{ 
+	m_szname[0] = 0; 
+	bclip = true; 
+	m_nrender = RENDER_MODE_DEFAULT; 
+	m_ntransmode = RENDER_TRANS_CONSTANT; 
 
-namespace Post {
+	benable = true;
+	bvisible = true;
+	bmesh = true;
+	bcast_shadows = true;
 
-class FEAbaqusExport
-{
-public:
-	FEAbaqusExport();
-	bool Save(FEPostModel& fem, int ntime, const char* szfile);
+	shininess = 0.f;
+	transparency = 1.f;
 
-	void SetHeading(const std::string& s);
-
-private:
-	std::string	m_heading;
-};
-
+	diffuse = GLColor(200, 200, 200);
+	ambient = GLColor(0,0,0);
+	specular = GLColor(0,0,0);
+	emission = GLColor(0,0,0);
 }
+
+const char* Material::GetName() { return m_szname; }
+void Material::SetName(const char* szname) { strcpy(m_szname, szname); }

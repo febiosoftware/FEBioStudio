@@ -75,7 +75,7 @@ protected:
 private:
 	void AddLoadCurve(FELoadCurve* plc);
 	void AddLoadCurves(ParamContainer& PC);
-	void MultiMaterialCurves(FEMaterial* pm);
+	void MultiMaterialCurves(FSMaterial* pm);
 	void BuildLoadCurveList(FSModel& fem);
 
 public: // helper functions for writing to the xml file directly

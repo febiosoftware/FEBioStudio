@@ -2924,7 +2924,7 @@ void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 {
 	FSModel& fem = GetFSModel();
 
-	FERigidConnector* pi = nullptr;
+	FSRigidConnector* pi = nullptr;
 	char szname[256];
 
 	switch (rc) {
@@ -3136,7 +3136,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 			}
 			else
 			{
-				FEMaterial* mat = ParseMaterial(tag, sztype);
+				FSMaterial* mat = ParseMaterial(tag, sztype);
 				FEDiscreteMaterial* dmat = dynamic_cast<FEDiscreteMaterial*>(mat);
 				if (dmat)
 				{

@@ -76,19 +76,19 @@ protected:
 	bool ParseLogfileSection (XMLTag& tag);
 
 	// material section helper functions
-	FEMaterial* ParseMaterial(XMLTag& tag, const char* szmat, int classId = -1);
-	FEMaterial* ParseRigidBody(XMLTag& tag);
+	FSMaterial* ParseMaterial(XMLTag& tag, const char* szmat, int classId = -1);
+	FSMaterial* ParseRigidBody(XMLTag& tag);
 	void ParseFiberMaterial(FEOldFiberMaterial& fiber, XMLTag& tag);
-	FEMaterial* ParseTransIsoMR    (FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseTransIsoVW    (FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseBiphasicSolute(FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseTriphasic     (FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseMultiphasic   (FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseReactionDiffusion(FEMaterial* pm, XMLTag& tag);
-	FEMaterial* Parse1DFunction(FEMaterial* pm, XMLTag& tag);
-    FEMaterial* ParseOsmoManning   (FEMaterial* pm, XMLTag& tag);
-	void ParseMatAxis(XMLTag& tag, FEMaterial* mat);
-	void ParseFiber(XMLTag& tag, FEMaterial* mat);
+	FSMaterial* ParseTransIsoMR    (FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseTransIsoVW    (FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseBiphasicSolute(FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseTriphasic     (FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseMultiphasic   (FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseReactionDiffusion(FSMaterial* pm, XMLTag& tag);
+	FSMaterial* Parse1DFunction(FSMaterial* pm, XMLTag& tag);
+    FSMaterial* ParseOsmoManning   (FSMaterial* pm, XMLTag& tag);
+	void ParseMatAxis(XMLTag& tag, FSMaterial* mat);
+	void ParseFiber(XMLTag& tag, FSMaterial* mat);
 	void ParseFiberProperty(XMLTag& tag, FEFiberMaterial* mat);
 
 	FEReactionMaterial* ParseReaction(XMLTag& tag);

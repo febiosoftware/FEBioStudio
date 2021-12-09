@@ -34,7 +34,7 @@ SOFTWARE.*/
 
 class CMainWindow;
 class FELoadCurve;
-class FEMaterial;
+class FSMaterial;
 class QTreeWidgetItem;
 class CCurveEditorItem;
 class FSObject;
@@ -61,8 +61,8 @@ public:
 
 private:
 	bool Filter(int n) { if ((m_nflt == FLT_ALL) || (m_nflt == n)) return true; return false; }
-	void AddMaterial(FEMaterial* pm, QTreeWidgetItem* tp);
-	void AddMultiMaterial(FEMaterial* pm, QTreeWidgetItem* tp);
+	void AddMaterial(FSMaterial* pm, QTreeWidgetItem* tp);
+	void AddMultiMaterial(FSMaterial* pm, QTreeWidgetItem* tp);
 	void AddParameterList(QTreeWidgetItem* t1, FSObject* po);
 
 	void SetLoadCurve(FELoadCurve* plc);
@@ -72,7 +72,7 @@ private:
 	void BuildLoadCurves();
 	void BuildModelTree();
 	void BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po);
-	void BuildMaterialCurves(QTreeWidgetItem* t1, FEMaterial* mat, const std::string& name);
+	void BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, const std::string& name);
 	void UpdateSelection();
 
 private slots:

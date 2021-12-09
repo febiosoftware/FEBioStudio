@@ -8,16 +8,16 @@ class FEItemListBuilder;
 // Base class for anything applied to a partition of the model's geometry.
 // This includes, boundary conditions, nodal loads, surface loads, body loads,
 // constraints, etc.
-class FEDomainComponent : public FEStepComponent
+class FSDomainComponent : public FSStepComponent
 {
 public:
 	enum { NAME, PARAMS, LIST, STEP };
 
 public:
-	FEDomainComponent(int ntype, FSModel* ps, int nstep = 0);
-	FEDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
+	FSDomainComponent(int ntype, FSModel* ps, int nstep = 0);
+	FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
 
-	virtual ~FEDomainComponent(void);
+	virtual ~FSDomainComponent(void);
 
 	int Type() { return m_ntype; }
 

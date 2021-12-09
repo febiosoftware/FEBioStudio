@@ -3,22 +3,22 @@
 
 //=============================================================================
 // Base class for all nodal, edge, surface, and body loads
-class FELoad : public FEDomainComponent
+class FSLoad : public FSDomainComponent
 {
 public:
-	FELoad(int ntype, FSModel* fem) : FEDomainComponent(ntype, fem) {}
-	FELoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FEDomainComponent(ntype, ps, pi, nstep) {}
+	FSLoad(int ntype, FSModel* fem) : FSDomainComponent(ntype, fem) {}
+	FSLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, ps, pi, nstep) {}
 };
 
 //=============================================================================
 // NODAL LOADS
 //=============================================================================
 
-class FENodalLoad : public FELoad
+class FENodalLoad : public FSLoad
 {
 public:
-	FENodalLoad(int ntype, FSModel* fem) : FELoad(ntype, fem) { m_superClassID = FE_NODAL_LOAD; }
-	FENodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep) { m_superClassID = FE_NODAL_LOAD; }
+	FENodalLoad(int ntype, FSModel* fem) : FSLoad(ntype, fem) { m_superClassID = FE_NODAL_LOAD; }
+	FENodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep) { m_superClassID = FE_NODAL_LOAD; }
 };
 
 class FENodalDOFLoad : public FENodalLoad

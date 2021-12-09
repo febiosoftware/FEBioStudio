@@ -4,7 +4,7 @@
 //=============================================================================
 // Base class for surface loads.
 //
-class FESurfaceLoad : public FELoad
+class FESurfaceLoad : public FSLoad
 {
 public:
     FESurfaceLoad(int ntype, FSModel* ps);

@@ -297,7 +297,7 @@ bool xpltFileExport::WriteMaterials(FEPostModel& fem)
 	int NMAT = fem.Materials();
 	for (int i=0; i<NMAT; ++i)
 	{
-		FEMaterial* pm = fem.GetMaterial(i);
+		Material* pm = fem.GetMaterial(i);
 		m_ar.BeginChunk(PLT_MATERIAL);
 		{
 			unsigned int nid = i+1;

@@ -437,7 +437,7 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 	for (int i = 0; im != m_Mat.end(); ++i, ++im)
 	{
 		MATERIAL* glmat = *im;
-		FEMaterial* gpmat = nullptr;
+		FSMaterial* gpmat = nullptr;
 		if (dynamic_cast<MAT_ELASTIC*>(glmat)) {
 			MAT_ELASTIC& lmat = *dynamic_cast<MAT_ELASTIC*>(glmat);
 			FEIsotropicElastic* pmat = new FEIsotropicElastic;

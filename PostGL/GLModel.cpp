@@ -255,7 +255,7 @@ void CGLModel::UpdateDisplacements(int nstate, bool breset)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::SetMaterialParams(FEMaterial* pm)
+void CGLModel::SetMaterialParams(Material* pm)
 {
 	GLfloat fv[4] = {0,0,0,1};
 	const float f = 1.f / 255.f;
@@ -598,7 +598,7 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 				int mat = edge.mat;
 				if (mat != curMat)
 				{
-					FEMaterial* pmat = m_ps->GetMaterial(mat);
+					Material* pmat = m_ps->GetMaterial(mat);
 					curMat = mat;
 					bvisible = pmat->bvisible;
 					if (!pmat->benable) bvisible = false;
@@ -635,7 +635,7 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 			int mat = edge.mat;
 			if (mat != curMat)
 			{
-				FEMaterial* pmat = m_ps->GetMaterial(mat);
+				Material* pmat = m_ps->GetMaterial(mat);
 				GLColor c = pmat->diffuse;
 				glColor3ub(c.r, c.g, c.b);
 				curMat = mat;
@@ -686,7 +686,7 @@ void CGLModel::RenderFaces(FEPostModel* ps, CGLContext& rc)
 	for (int m=0; m<ps->Materials(); ++m)
 	{
 		// get the material
-		FEMaterial* pmat = ps->GetMaterial(m);
+		Material* pmat = ps->GetMaterial(m);
 
 		// make sure the material is visible
 		if (pmat->bvisible && (pmat->transparency>.99f)) 
@@ -699,7 +699,7 @@ void CGLModel::RenderFaces(FEPostModel* ps, CGLContext& rc)
 	for (int m=0; m<ps->Materials(); ++m)
 	{
 		// get the material
-		FEMaterial* pmat = ps->GetMaterial(m);
+		Material* pmat = ps->GetMaterial(m);
 
 		// make sure the material is visible
 		if (pmat->bvisible && (pmat->transparency<=.99f) && (pmat->transparency>0.001f)) 
@@ -720,7 +720,7 @@ void CGLModel::RenderElems(FEPostModel* ps, CGLContext& rc)
 	for (int m = 0; m<ps->Materials(); ++m)
 	{
 		// get the material
-		FEMaterial* pmat = ps->GetMaterial(m);
+		Material* pmat = ps->GetMaterial(m);
 
 		// make sure the material is visible
 		if (pmat->bvisible && (pmat->transparency>.99f))
@@ -733,7 +733,7 @@ void CGLModel::RenderElems(FEPostModel* ps, CGLContext& rc)
 	for (int m = 0; m<ps->Materials(); ++m)
 	{
 		// get the material
-		FEMaterial* pmat = ps->GetMaterial(m);
+		Material* pmat = ps->GetMaterial(m);
 
 		// make sure the material is visible
 		if (pmat->bvisible && (pmat->transparency <= .99f) && (pmat->transparency>0.001f))
@@ -754,7 +754,7 @@ void CGLModel::RenderSurface(FEPostModel* ps, CGLContext& rc)
 	for (int m = 0; m<ps->Materials(); ++m)
 	{
 		// get the material
-		FEMaterial* pmat = ps->GetMaterial(m);
+		Material* pmat = ps->GetMaterial(m);
 
 		// make sure the material is visible
 		if (pmat->bvisible && (pmat->transparency>.99f))
@@ -767,7 +767,7 @@ void CGLModel::RenderSurface(FEPostModel* ps, CGLContext& rc)
 	for (int m = 0; m<ps->Materials(); ++m)
 	{
 		// get the material
-		FEMaterial* pmat = ps->GetMaterial(m);
+		Material* pmat = ps->GetMaterial(m);
 
 		// make sure the material is visible
 		if (pmat->bvisible && (pmat->transparency <= .99f) && (pmat->transparency>0.001f))
@@ -954,7 +954,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 
 void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 {
-	FEMaterial* pmat = ps->GetMaterial(m);
+	Material* pmat = ps->GetMaterial(m);
 	Post::FEPostMesh* pm = GetActiveMesh();
 
 	// get the camera's orientation
@@ -1327,7 +1327,7 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool 
 void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 {
 	// get the material
-	FEMaterial* pmat = ps->GetMaterial(mat);
+	Material* pmat = ps->GetMaterial(mat);
 
 	// set the rendering mode
 	int nmode = m_nrender;
@@ -1381,7 +1381,7 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	if (m >= pm->Domains()) return;
 
 	// get the material
-	FEMaterial* pmat = ps->GetMaterial(m);
+	Material* pmat = ps->GetMaterial(m);
 
 	// get the transparency value
 	GLubyte alpha = (GLubyte)(255.f*pmat->transparency);
@@ -1461,13 +1461,13 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 			{
 				if (el0.m_MatID == m)
 				{
-					FEMaterial* pm2 = m_ps->GetMaterial(el1.m_MatID);
+					Material* pm2 = m_ps->GetMaterial(el1.m_MatID);
 					float f2 = pm2->transparency;
 					if (alpha > f2) face.m_ntag = (face.IsActive() ? 1 : 2);
 				}
 				else if (el1.m_MatID == m)
 				{
-					FEMaterial* pm2 = m_ps->GetMaterial(el0.m_MatID);
+					Material* pm2 = m_ps->GetMaterial(el0.m_MatID);
 					float f2 = pm2->transparency;
 					if (alpha > f2) face.m_ntag = (face.IsActive() ? 1 : 2);
 				}
@@ -1786,7 +1786,7 @@ void CGLModel::RenderShadows(FEPostModel* ps, const vec3d& lp, float inf)
 		else if (f.n[1] == f.n[2]) bvalid = false;
 
 		FEElement_& el = pm->ElementRef(f.m_elem[0].eid);
-		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
+		Material* pmat = ps->GetMaterial(el.m_MatID);
 
 		// see it this face is visible
 		if (!f.IsVisible() || !pmat->bvisible) bvalid = false;
@@ -3366,7 +3366,7 @@ void CGLModel::BuildInternalSurfaces()
 
 						/*						if ((badd == false) && (el.m_MatID != pen->m_MatID))
 						{
-						FEMaterial* pm2 = m_ps->GetMaterial(pen->m_MatID);
+						Material* pm2 = m_ps->GetMaterial(pen->m_MatID);
 						float f2 = pm2->transparency;
 						if ((f1 > f2) || (pm2->m_nrender == RENDER_MODE_WIRE)) badd = true;
 						}

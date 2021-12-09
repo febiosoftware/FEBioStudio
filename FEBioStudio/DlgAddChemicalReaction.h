@@ -42,7 +42,7 @@ class CMainWindow;
 class QListWidget;
 class QListWidgetItem;
 
-class FEMaterial;
+class FSMaterial;
 class FEReactionMaterial;
 class FSModel;
 class GMaterial;

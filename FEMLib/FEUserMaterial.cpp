@@ -48,12 +48,12 @@ void FEUserMaterial::SetTypeString(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-void FEUserMaterial::copy(FEMaterial* pmat)
+void FEUserMaterial::copy(FSMaterial* pmat)
 {
 	FEUserMaterial* pm = dynamic_cast<FEUserMaterial*>(pmat);
 	assert(pm);
 	if (pm) SetTypeString(pm->GetTypeString());
-	FEMaterial::copy(pmat);
+	FSMaterial::copy(pmat);
 }
 
 //-----------------------------------------------------------------------------

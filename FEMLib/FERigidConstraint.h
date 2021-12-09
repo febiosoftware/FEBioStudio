@@ -44,15 +44,15 @@ private:
 
 // Don't instantiate this object.
 // Instantiate one of the derived classes instead
-class FERigidConstraint : public FEStepComponent
+class FSRigidConstraint : public FSStepComponent
 {
 	enum { MATID, NAME, PARAMS };
 
 protected:
-	FERigidConstraint(int ntype, int nstep);
+	FSRigidConstraint(int ntype, int nstep);
 
 public:
-	~FERigidConstraint(void);
+	~FSRigidConstraint(void);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -69,7 +69,7 @@ private:
 };
 
 
-class FERigidFixed : public FERigidConstraint
+class FERigidFixed : public FSRigidConstraint
 {
 	enum { BC1, BC2, BC3, BC4, BC5, BC6 };
 
@@ -80,7 +80,7 @@ public:
 	void SetDOF(int i, bool b) { SetBoolValue(BC1+i, b); }
 };
 
-class FERigidPrescribed : public FERigidConstraint
+class FERigidPrescribed : public FSRigidConstraint
 {
 	enum { DOF, VALUE };
 
@@ -117,7 +117,7 @@ public:
 	void SetForceType(int n);
 };
 
-class FERigidVelocity : public FERigidConstraint
+class FERigidVelocity : public FSRigidConstraint
 {
 	enum { VEL };
 
@@ -128,7 +128,7 @@ public:
 	vec3d GetVelocity() const { return GetVecValue(VEL); }
 };
 
-class FERigidAngularVelocity : public FERigidConstraint
+class FERigidAngularVelocity : public FSRigidConstraint
 {
 	enum { VEL };
 
@@ -139,7 +139,7 @@ public:
 	vec3d GetVelocity() const { return GetVecValue(VEL); }
 };
 
-class FEBioRigidConstraint : public FERigidConstraint
+class FEBioRigidConstraint : public FSRigidConstraint
 {
 public:
 	FEBioRigidConstraint(FSModel* fem, int nstep = 0);
@@ -148,4 +148,4 @@ public:
 };
 
 
-vector<FERigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FERigidConstraintOld* rc);
+vector<FSRigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FERigidConstraintOld* rc);

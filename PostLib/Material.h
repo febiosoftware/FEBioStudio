@@ -40,13 +40,13 @@ namespace Post {
 
 //-----------------------------------------------------------------------------
 // Class that describes the visual appearance of a material. 
-class FEMaterial
+class Material
 {
 public:
 	enum {MAX_NAME = 64};
 
 public:
-	FEMaterial();
+	Material();
 
 	const char* GetName();
 	void SetName(const char* szname);

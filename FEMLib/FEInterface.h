@@ -9,11 +9,11 @@ using std::list;
 
 //-----------------------------------------------------------------------------
 // Base class for contact interfaces
-class FEInterface : public FEStepComponent
+class FSInterface : public FSStepComponent
 {
 public:
-	FEInterface(int ntype, FSModel* ps, int nstep);
-	virtual ~FEInterface();
+	FSInterface(int ntype, FSModel* ps, int nstep);
+	virtual ~FSInterface();
 
 	int Type() { return m_ntype; }
 
@@ -29,7 +29,7 @@ protected:
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that only require one
 //! surface definition (e.g. rigid interface, rigid wall interface)
-class FESoloInterface : public FEInterface
+class FESoloInterface : public FSInterface
 {
 public:
 	FESoloInterface(int ntype, FSModel* ps, int nstep);
@@ -48,7 +48,7 @@ protected:
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that require two surfaces
 //!
-class FEPairedInterface : public FEInterface
+class FEPairedInterface : public FSInterface
 {
 public:
 	FEPairedInterface(int ntype, FSModel* ps, int nstep);
@@ -322,7 +322,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid joint
 //
-class FERigidJoint : public FEInterface
+class FERigidJoint : public FSInterface
 {
 public:
 	enum {TOL, PENALTY, RJ};

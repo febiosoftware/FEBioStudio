@@ -532,7 +532,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 	{
 		FENikeProject::MATERIAL& m = nike.m_Mat[i];
 
-		FEMaterial* pmat = 0;
+		FSMaterial* pmat = 0;
 
 		switch (m.ntype)
 		{
@@ -570,20 +570,20 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 				pm->SetFloatValue(FERigidMaterial::MP_E, m.m[0][0]);
 				pm->SetFloatValue(FERigidMaterial::MP_V, m.m[1][0]);
 
-/*				FERigidConstraint* pc = 0;
-				FERigidConstraint* pd = 0;
+/*				FSRigidConstraint* pc = 0;
+				FSRigidConstraint* pd = 0;
 
 				for (j=0; j<6; ++j)
 				{
 					int lc = (int) m.m[2][j];
 					if (lc == -1)
 					{
-						if (pc == 0) pc = new FERigidConstraint(FE_RIGID_FIXED, step.GetID());
+						if (pc == 0) pc = new FSRigidConstraint(FE_RIGID_FIXED, step.GetID());
 						pc->m_BC[j] = 1;
 					}
 					else if (lc > 0)
 					{
-						if (pd == 0) pd = new FERigidConstraint(FE_RIGID_PRESCRIBED, step.GetID());
+						if (pd == 0) pd = new FSRigidConstraint(FE_RIGID_PRESCRIBED, step.GetID());
 						pd->m_BC[j] = 1;
 						pd->m_LC[j].SetID(lc-1);
 						pd->m_val[j] = 1;
@@ -695,7 +695,7 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 
 		int nrb = pf->nrb;
 		GMaterial* pgm = m_pMat[nrb-1];
-		FEMaterial* pmat = pgm->GetMaterialProperties();
+		FSMaterial* pmat = pgm->GetMaterialProperties();
 		if (dynamic_cast<FERigidMaterial*>(pmat) == 0) { delete pn; pn = 0; }
 
 		do
@@ -1474,7 +1474,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 		// loop over all boundary conditions
 		for (i=0; i<s.BCs(); ++i)
 		{
-			FEBoundaryCondition* pbc = s.BC(i);
+			FSBoundaryCondition* pbc = s.BC(i);
 
 			// nodal displacements
 			FEPrescribedDisplacement* pdc = dynamic_cast<FEPrescribedDisplacement*>(pbc);
@@ -1488,7 +1488,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 		// loop over all boundary conditions
 		for (i=0; i<s.Loads(); ++i)
 		{
-			FELoad* pl = s.Load(i);
+			FSLoad* pl = s.Load(i);
 
 			// nodal forces
 			FENodalDOFLoad* pfc = dynamic_cast<FENodalDOFLoad*>(pl);
@@ -1514,7 +1514,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 		// find all material loadcurves
 		for (i=0; i<m_nmat; ++i)
 		{
-			FEMaterial* pmat = m_pMat[i]->GetMaterialProperties();
+			FSMaterial* pmat = m_pMat[i]->GetMaterialProperties();
 			ParamBlock& pb = pmat->GetParamBlock();
 			for (int j=0; j<pb.Size(); ++j)
 			{

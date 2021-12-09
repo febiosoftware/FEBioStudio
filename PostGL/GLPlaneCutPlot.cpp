@@ -310,7 +310,7 @@ void CGLPlaneCutPlot::RenderSlice()
 	// loop over all enabled materials
 	for (int n=0; n<ps->Materials(); ++n)
 	{
-		FEMaterial* pmat = ps->GetMaterial(n);
+		Material* pmat = ps->GetMaterial(n);
 		if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
 		{
 			if (pcol->IsActive() && pmat->benable)
@@ -434,7 +434,7 @@ void CGLPlaneCutPlot::RenderMesh()
 	{
 		// render only when visible
 		FEElement_& el = pm->ElementRef(i);
-		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
+		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if ((el.m_ntag > 0) && (pmat->bmesh) && (pmat->bvisible || m_bcut_hidden) && (pmat->bclip))
 		{
 			switch (el.Type())
@@ -626,7 +626,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 		int matId = dom.GetMatID();
 		if ((matId >= 0) && (matId < ps->Materials()))
 		{
-			FEMaterial* pmat = ps->GetMaterial(matId);
+			Material* pmat = ps->GetMaterial(matId);
 			if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
 			{
 				AddDomain(pm, n);
@@ -880,7 +880,7 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 			int matId = dom.GetMatID();
 			if ((matId >= 0) && (matId < ps->Materials()))
 			{
-				FEMaterial* pmat = ps->GetMaterial(matId);
+				Material* pmat = ps->GetMaterial(matId);
 				if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
 				{
 					const int *nt = nullptr;
@@ -984,7 +984,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	{
 		// consider only solid elements that are visible
 		FEElement_& el = pm->ElementRef(i);
-		FEMaterial* pmat = pfem->GetMaterial(el.m_MatID);
+		Material* pmat = pfem->GetMaterial(el.m_MatID);
 		if (el.IsSolid() && el.IsVisible() && pmat->bvisible)
 		{
 			// we consider all elements degenerate hexes

@@ -32,12 +32,12 @@ namespace Post {
 
 class FEState;
 
-class FEVTKimport :	public FEFileReader
+class VTKimport :	public FEFileReader
 {
 
 public:
-	FEVTKimport(FEPostModel* fem);
-	~FEVTKimport(void);
+	VTKimport(FEPostModel* fem);
+	~VTKimport(void);
 
 	bool Load(const char* szfile) override;
 

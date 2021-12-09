@@ -1,12 +1,12 @@
 #pragma once
 #include <FEMLib/FECoreMaterial.h>
 
-class FEUserMaterial : public FEMaterial
+class FEUserMaterial : public FSMaterial
 {
 	enum { SZTYPE, PARAMDATA, PARAMNAME, PARAMVALUE, PARAMTYPE };
 
 public:
-	FEUserMaterial(int ntype) : FEMaterial(ntype) {}
+	FEUserMaterial(int ntype) : FSMaterial(ntype) {}
 	~FEUserMaterial();
 
 	void SetTypeString(const char* sz) override;
@@ -17,7 +17,7 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	void copy(FEMaterial* pm);
+	void copy(FSMaterial* pm);
 
 protected:
 	char			m_sztype[256];	// type name

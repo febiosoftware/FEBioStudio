@@ -30,8 +30,8 @@ SOFTWARE.*/
 // Rigid loads
 //=============================================================================
 // Base class for all rigid body loads
-// TODO: This inherits the item list from FEDomainComponent, which may not be good. 
-class FERigidLoad : public FELoad
+// TODO: This inherits the item list from FSDomainComponent, which may not be good. 
+class FERigidLoad : public FSLoad
 {
 public:
 	FERigidLoad(int ntype, FSModel* ps, int nstep);

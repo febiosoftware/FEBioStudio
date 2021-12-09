@@ -221,7 +221,7 @@ const string& FEPostModel::GetName() const
 
 //-----------------------------------------------------------------------------
 // add a material to the model
-void FEPostModel::AddMaterial(FEMaterial& mat)
+void FEPostModel::AddMaterial(Material& mat)
 { 
 	static int n = 1;
 	if (m_Mat.empty()) n = 1;

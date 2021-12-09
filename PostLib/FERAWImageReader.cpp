@@ -50,7 +50,7 @@ bool FERAWImageReader::Load(const char* szfile)
 	if (Open(szfile, "rb") == false) return errf("Failed opening file.");
 
 	// add one material to the scene
-	FEMaterial mat;
+	Material mat;
 	m_fem->AddMaterial(mat);
 
 	// figure out the mesh dimensions

@@ -24,20 +24,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
-#include "FEAbaqusExport.h"
+#include "AbaqusExport.h"
 using namespace Post;
 
-FEAbaqusExport::FEAbaqusExport()
+AbaqusExport::AbaqusExport()
 {
 
 }
 
-void FEAbaqusExport::SetHeading(const std::string& s)
+void AbaqusExport::SetHeading(const std::string& s)
 {
 	m_heading = s;
 }
 
-bool FEAbaqusExport::Save(FEPostModel &fem, int ntime, const char *szfile)
+bool AbaqusExport::Save(FEPostModel &fem, int ntime, const char *szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == nullptr) return false;

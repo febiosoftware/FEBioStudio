@@ -584,7 +584,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		else
 			ui->showPartInfoPanel(false);
 
-		if (dynamic_cast<FEMaterial*>(m_currentObject))
+		if (dynamic_cast<FSMaterial*>(m_currentObject))
 		{
 			// don't show the object info pane
 			ui->showObjectInfo(false);
@@ -622,9 +622,9 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 					GDiscreteElementSet* pd = dynamic_cast<GDiscreteElementSet*>(po);
 					ui->showObjectInfo(true, true, nameEditable, toQColor(pd->GetColor()));
 				}
-				else if (dynamic_cast<FEStepComponent*>(po))
+				else if (dynamic_cast<FSStepComponent*>(po))
 				{
-					FEStepComponent* pc = dynamic_cast<FEStepComponent*>(po);
+					FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
 
 					ui->showObjectInfo(false, false, nameEditable);
 
@@ -677,7 +677,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
 		ui->showSelectionPanel2(false);
 
-		FEDomainComponent* pbc = dynamic_cast<FEDomainComponent*>(m_currentObject);
+		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(m_currentObject);
 		if (pbc && (pbc->GetMeshItemType() != 0))
 		{
 			ui->showSelectionPanel1(true);
@@ -906,7 +906,7 @@ void CModelPropsPanel::addSelection(int n)
 	assert(m_currentObject);
 	if (m_currentObject == 0) return;
 
-	FEDomainComponent* pmc = dynamic_cast<FEDomainComponent*>(m_currentObject);
+	FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(m_currentObject);
 	if (pmc)
 	{
 		// create the item list from the selection
@@ -1137,7 +1137,7 @@ void CModelPropsPanel::subSelection(int n)
 	FESelection* ps = pdoc->GetCurrentSelection();
 	if ((ps == 0) || (ps->Size() == 0)) return;
 
-	FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
+	FSBoundaryCondition* pbc = dynamic_cast<FSBoundaryCondition*>(m_currentObject);
 	if (pbc)
 	{
 		// don't allow object selections 
@@ -1304,7 +1304,7 @@ void CModelPropsPanel::delSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	FEDomainComponent* pmc = dynamic_cast<FEDomainComponent*>(m_currentObject);
+	FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(m_currentObject);
 	if (pmc)
 	{
 		pl = pmc->GetItemList();
@@ -1366,7 +1366,7 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 {
 	FEItemListBuilder* pl = 0;
 
-	FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
+	FSBoundaryCondition* pbc = dynamic_cast<FSBoundaryCondition*>(m_currentObject);
 	if (pbc) pl = pbc->GetItemList();
 
 	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
@@ -1390,9 +1390,9 @@ void CModelPropsPanel::clearSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	if (dynamic_cast<FEDomainComponent*>(m_currentObject))
+	if (dynamic_cast<FSDomainComponent*>(m_currentObject))
 	{
-		FEDomainComponent* pmc = dynamic_cast<FEDomainComponent*>(m_currentObject);
+		FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(m_currentObject);
 		pl = pmc->GetItemList();
 		if (pl)
 		{
@@ -1439,7 +1439,7 @@ void CModelPropsPanel::on_select2_nameChanged(const QString& t)
 {
 	FEItemListBuilder* pl = 0;
 
-	FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
+	FSBoundaryCondition* pbc = dynamic_cast<FSBoundaryCondition*>(m_currentObject);
 	if (pbc) pl = pbc->GetItemList();
 
 	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
@@ -1480,7 +1480,7 @@ void CModelPropsPanel::selSelection(int n)
 	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
 	if (psi) pl = psi->GetItemList();
 
-	FEDomainComponent* pmc = dynamic_cast<FEDomainComponent*>(m_currentObject);
+	FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(m_currentObject);
 	if (pmc) pl = pmc->GetItemList();
 
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
@@ -1625,7 +1625,7 @@ void CModelPropsPanel::on_bcobject_stepChanged(int n)
 {
 	if (m_isUpdating) return;
 
-	FEStepComponent* pc = dynamic_cast<FEStepComponent*>(m_currentObject);
+	FSStepComponent* pc = dynamic_cast<FSStepComponent*>(m_currentObject);
 	if (pc == 0) return;
 
 	int stepId = ui->current_bcobject_value();
@@ -1646,7 +1646,7 @@ void CModelPropsPanel::on_bcobject_stateChanged(bool isActive)
 {
 	if (m_isUpdating) return;
 
-	FEStepComponent* pc = dynamic_cast<FEStepComponent*>(m_currentObject);
+	FSStepComponent* pc = dynamic_cast<FSStepComponent*>(m_currentObject);
 	if (pc == 0) return;
 
 	pc->Activate(isActive);

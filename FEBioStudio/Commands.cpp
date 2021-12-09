@@ -3244,7 +3244,7 @@ void CCmdAddMaterial::UnExecute()
 // CCmdSetModelComponentItemList
 //-----------------------------------------------------------------------------
 
-CCmdSetModelComponentItemList::CCmdSetModelComponentItemList(FEDomainComponent* pbc, FEItemListBuilder* pl) : CCommand("Assign BC")
+CCmdSetModelComponentItemList::CCmdSetModelComponentItemList(FSDomainComponent* pbc, FEItemListBuilder* pl) : CCommand("Assign BC")
 {
 	m_pbc = pbc;
 	m_pl = pl;
@@ -3271,7 +3271,7 @@ void CCmdSetModelComponentItemList::UnExecute()
 // CCmdUnassignBC
 //-----------------------------------------------------------------------------
 
-CCmdUnassignBC::CCmdUnassignBC(FEBoundaryCondition* pbc) : CCommand("Unassign BC")
+CCmdUnassignBC::CCmdUnassignBC(FSBoundaryCondition* pbc) : CCommand("Unassign BC")
 {
 	m_pbc = pbc;
 	m_pl = 0;
@@ -3356,7 +3356,7 @@ void CCmdRemoveFromItemListBuilder::UnExecute()
 // CCmdRemoveItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FEDomainComponent* pmc) : CCommand("Remove selection")
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSDomainComponent* pmc) : CCommand("Remove selection")
 {
 	m_pmc = pmc;
 	m_psi = nullptr;

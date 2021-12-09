@@ -37,7 +37,7 @@ namespace Ui {
 
 class QTreeWidgetItem;
 class FEProject;
-class FEMaterial;
+class FSMaterial;
 class GMaterial;
 
 class CMaterialEditor : public CHelpDialog
@@ -49,13 +49,13 @@ public:
 
 	void SetInitMaterial(GMaterial* mat);
 
-	FEMaterial* GetMaterial();
+	FSMaterial* GetMaterial();
 
 	QString GetMaterialName() const;
 
 protected:
 	void showEvent(QShowEvent* ev);
-	void SetMaterial(FEMaterial* mat);
+	void SetMaterial(FSMaterial* mat);
 	void SetURL();
 
 private slots:

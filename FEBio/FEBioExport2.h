@@ -138,12 +138,12 @@ protected:
     void WriteNormalFlow        (FEStep& s);
     void WriteFrictionlessFluidWall(FEStep& s);
 
-	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMultiMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMaterialParams(FEMaterial* pm);
+	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteMultiMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteMaterialParams(FSMaterial* pm);
 	void WriteFiberMaterial(FEOldFiberMaterial& f);
-	void WriteRigidMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteTCNLOrthoMaterial(FEMaterial* pmat, XMLElement& el);
+	void WriteRigidMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteTCNLOrthoMaterial(FSMaterial* pmat, XMLElement& el);
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteSurface(XMLElement& el, FEItemListBuilder* pl);

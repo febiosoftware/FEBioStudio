@@ -66,7 +66,7 @@ bool FEBioTangentDiagnostic::WriteDiagnosticFile(CModelDocument* doc, const std:
 		if ((m_matIndex >= 0) && (m_matIndex < fem->Materials()))
 		{
 			GMaterial* gmat = fem->GetMaterial(m_matIndex);
-			FEMaterial* pmat = gmat->GetMaterialProperties();
+			FSMaterial* pmat = gmat->GetMaterialProperties();
 
 			XMLElement m("material");
 			m.add_attribute("id", 1);

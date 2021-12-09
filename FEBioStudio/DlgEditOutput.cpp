@@ -611,7 +611,7 @@ void CDlgEditOutput::UpdateLogItemList()
             FEStep* pstep = fem.GetStep(i);
             for (int j = 0; j<pstep->RigidConnectors(); ++j)
             {
-                FERigidConnector* pc = pstep->RigidConnector(j);
+                FSRigidConnector* pc = pstep->RigidConnector(j);
                 ui->logList->addItem(QString::fromStdString(pc->GetName()), ++lid);
             }
         }

@@ -117,7 +117,7 @@ public:
 	GMaterial* FindMaterial(const char* szname);
 
     // find a rigid connector from its ID
-    FERigidConnector* GetRigidConnectorFromID(int id);
+    FSRigidConnector* GetRigidConnectorFromID(int id);
 
 	// --- serialization ---
 
@@ -138,7 +138,7 @@ public:
 	void InsertStep(int n, FEStep* ps);
 	void SwapSteps(FEStep* ps0, FEStep* ps1);
 
-	void AssignComponentToStep(FEStepComponent* pc, FEStep* ps);
+	void AssignComponentToStep(FSStepComponent* pc, FEStep* ps);
 
 	// --- data variables ---
 	int DataVariables();
@@ -349,11 +349,11 @@ template <class T> int CountRigidConstraints(FSModel& fem)
 std::string Namify(const char* sz);
 
 // functions for creating default names
-std::string defaultBCName(FSModel* fem, FEBoundaryCondition* pbc);
+std::string defaultBCName(FSModel* fem, FSBoundaryCondition* pbc);
 std::string defaultICName(FSModel* fem, FEInitialCondition* pic);
-std::string defaultLoadName(FSModel* fem, FELoad* pbc);
-std::string defaultInterfaceName(FSModel* fem, FEInterface* pi);
+std::string defaultLoadName(FSModel* fem, FSLoad* pbc);
+std::string defaultInterfaceName(FSModel* fem, FSInterface* pi);
 std::string defaultConstraintName(FSModel* fem, FEModelConstraint* pi);
-std::string defaultRigidConnectorName(FSModel* fem, FERigidConnector* pc);
-std::string defaultRigidConstraintName(FSModel* fem, FERigidConstraint* pc);
+std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pc);
+std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc);
 std::string defaultStepName(FSModel* fem, FEStep* ps);

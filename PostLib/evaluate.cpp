@@ -2188,7 +2188,7 @@ vec3f FEPostModel::EvaluateNodeVector(int n, int ntime, int nvec)
 			{
 				int iel = nel[i].eid;
 				FEElement_& el = mesh->ElementRef(iel);
-				FEMaterial* mat = GetMaterial(el.m_MatID);
+				Material* mat = GetMaterial(el.m_MatID);
 				if (mat->benable)
 				{
 					r += EvaluateElemVector(iel, ntime, nvec);

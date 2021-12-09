@@ -1504,7 +1504,7 @@ bool AbaqusImport::build_physics()
 	list<AbaqusModel::MATERIAL>::iterator pm = Mat.begin();
 	for (int i = 0; i<(int)Mat.size(); ++i, ++pm)
 	{
-		FEMaterial* pmat = 0;
+		FSMaterial* pmat = 0;
 		switch (pm->mattype)
 		{
 		case AbaqusModel::ELASTIC:

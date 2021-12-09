@@ -287,7 +287,7 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 	{
 		// get the material and tag it
 		GMaterial* pgm = fem.GetMaterial(i);
-		FEMaterial* pmat = pgm->GetMaterialProperties();
+		FSMaterial* pmat = pgm->GetMaterialProperties();
 		pgm->m_ntag = i;
 
 		// set the default material properties
@@ -418,7 +418,7 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 				for (j=0; j<6; ++j) mat.m[2][j] = 0;
 				for (k=0; k<step.RigidConstraints(); ++k)
 				{
-					FERigidConstraint& rc = *step.RigidConstraint(k);
+					FSRigidConstraint& rc = *step.RigidConstraint(k);
 					if (rc.GetMaterialID() == pgm->GetID())
 					{
 						switch (rc.Type())
@@ -452,7 +452,7 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 			{
 				mat.ntype = 18;
 				FEViscoElastic* pm = dynamic_cast<FEViscoElastic*>(pmat);
-				FEMaterial* psub = pm->GetElasticMaterial();
+				FSMaterial* psub = pm->GetElasticMaterial();
 
 				int G1 = FEViscoElastic::MP_G1;
 				int T1 = FEViscoElastic::MP_T1;
@@ -759,7 +759,7 @@ bool FENikeProject::BuildRigidNodes(FEProject &prj)
 		if (pi && pi->IsActive())
 		{
 			GMaterial* pgm = pi->GetRigidBody();
-			FEMaterial* pm = pgm->GetMaterialProperties();
+			FSMaterial* pm = pgm->GetMaterialProperties();
 			int nRB = (pgm? pgm->m_ntag+1 : 0);
 			RIGID_FACET rf;
 			rf.nrb = nRB;

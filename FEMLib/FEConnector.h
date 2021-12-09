@@ -7,11 +7,11 @@
 
 //-----------------------------------------------------------------------------
 // Base class for contact interfaces
-class FERigidConnector : public FEStepComponent
+class FSRigidConnector : public FSStepComponent
 {
 public:
-	FERigidConnector(int ntype, FSModel* ps, int nstep);
-	virtual ~FERigidConnector();
+	FSRigidConnector(int ntype, FSModel* ps, int nstep);
+	virtual ~FSRigidConnector();
 
 	int Type();
 
@@ -41,7 +41,7 @@ protected:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid spherical joint
 //
-class FERigidSphericalJoint : public FERigidConnector
+class FERigidSphericalJoint : public FSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG,
@@ -55,7 +55,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid revolute joint
 //
-class FERigidRevoluteJoint : public FERigidConnector
+class FERigidRevoluteJoint : public FSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -69,7 +69,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid prismatic joint
 //
-class FERigidPrismaticJoint : public FERigidConnector
+class FERigidPrismaticJoint : public FSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -83,7 +83,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid cylindrical joint
 //
-class FERigidCylindricalJoint : public FERigidConnector
+class FERigidCylindricalJoint : public FSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -97,7 +97,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid planar joint
 //
-class FERigidPlanarJoint : public FERigidConnector
+class FERigidPlanarJoint : public FSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -111,7 +111,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid lock joint
 //
-class FERigidLock : public FERigidConnector
+class FERigidLock : public FSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -125,7 +125,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid spring
 //
-class FERigidSpring : public FERigidConnector
+class FERigidSpring : public FSRigidConnector
 {
 public:
     enum { K, XA, XB };
@@ -137,7 +137,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid damper
 //
-class FERigidDamper : public FERigidConnector
+class FERigidDamper : public FSRigidConnector
 {
 public:
     enum { C, XA, XB };
@@ -149,7 +149,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid angular damper
 //
-class FERigidAngularDamper : public FERigidConnector
+class FERigidAngularDamper : public FSRigidConnector
 {
 public:
     enum { C };
@@ -161,7 +161,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid contractile force
 //
-class FERigidContractileForce : public FERigidConnector
+class FERigidContractileForce : public FSRigidConnector
 {
 public:
     enum { F, XA, XB };
@@ -171,14 +171,14 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEGenericRigidJoint : public FERigidConnector
+class FEGenericRigidJoint : public FSRigidConnector
 {
 public:
 	FEGenericRigidJoint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEBioRigidConnector : public FERigidConnector
+class FEBioRigidConnector : public FSRigidConnector
 {
 public:
     FEBioRigidConnector(FSModel* ps, int nstep = 0);

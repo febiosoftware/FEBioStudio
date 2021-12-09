@@ -350,7 +350,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pgm = fem.GetMaterial(i);
-		FEMaterial* pm = pgm->GetMaterialProperties();
+		FSMaterial* pm = pgm->GetMaterialProperties();
 		if (pm)
 		{
 			AddLoadCurves(*pm);
@@ -364,7 +364,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->BCs(); ++j)
 		{
-			FEBoundaryCondition* pbc = pstep->BC(j);
+			FSBoundaryCondition* pbc = pstep->BC(j);
 			if (pbc && pbc->IsActive()) AddLoadCurves(*pbc);
 		}
 	}
@@ -375,7 +375,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
-			FELoad* pl = pstep->Load(j);
+			FSLoad* pl = pstep->Load(j);
 			if (pl && pl->IsActive()) AddLoadCurves(*pl);
 		}
 	}
@@ -386,7 +386,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
-			FEInterface* pci = pstep->Interface(j);
+			FSInterface* pci = pstep->Interface(j);
 			if (pci && pci->IsActive()) AddLoadCurves(*pci);
 		}
 	}
@@ -397,7 +397,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->RigidConstraints(); ++j)
 		{
-			FERigidConstraint* prc = pstep->RigidConstraint(j);
+			FSRigidConstraint* prc = pstep->RigidConstraint(j);
 			if (prc->IsActive()) AddLoadCurves(*prc);
 		}
 	}
@@ -430,7 +430,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->RigidConnectors(); ++j)
 		{
-			FERigidConnector* pci = pstep->RigidConnector(j);
+			FSRigidConnector* pci = pstep->RigidConnector(j);
 			if (pci->IsActive()) AddLoadCurves(*pci);
 		}
 	}
@@ -466,7 +466,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport::MultiMaterialCurves(FEMaterial* pm)
+void FEBioExport::MultiMaterialCurves(FSMaterial* pm)
 {
 	if (pm->Properties() > 0) {
 		for (int k = 0; k<pm->Properties(); ++k)
@@ -474,7 +474,7 @@ void FEBioExport::MultiMaterialCurves(FEMaterial* pm)
 			FEMaterialProperty& mc = pm->GetProperty(k);
 			for (int l = 0; l<mc.Size(); ++l)
 			{
-				FEMaterial* pmat = mc.GetMaterial(l);
+				FSMaterial* pmat = mc.GetMaterial(l);
 				if (pmat)
 				{
 					AddLoadCurves(*pmat);

@@ -3,7 +3,7 @@
 
 //===================================================================
 // Materials used by discrete element sets
-class FEDiscreteMaterial : public FEMaterial
+class FEDiscreteMaterial : public FSMaterial
 {
 public:
 	FEDiscreteMaterial(int ntype);
@@ -42,10 +42,10 @@ public:
 //===================================================================
 // This is not a material, but currently there is no mechanism to define 
 // properties in anything except a material, so here we are. 
-class FE1DFunction : public FEMaterial
+class FE1DFunction : public FSMaterial
 {
 public:
-	FE1DFunction(int ntype) : FEMaterial(ntype) {}
+	FE1DFunction(int ntype) : FSMaterial(ntype) {}
 };
 
 class FE1DPointFunction : public FE1DFunction

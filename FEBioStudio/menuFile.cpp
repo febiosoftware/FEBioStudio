@@ -100,7 +100,7 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
 #include <PostLib/FELSDYNAExport.h>
-#include <PostLib/FEAbaqusExport.h>
+#include <PostLib/AbaqusExport.h>
 #include <MeshTools/GModel.h>
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
@@ -116,7 +116,7 @@ SOFTWARE.*/
 #include <PostLib/FEVTKExport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
-#include <PostLib/FEVTKImport.h>
+#include <PostLib/VTKImport.h>
 #include <PostLib/VolRender.h>
 #include <PostLib/VolumeRender2.h>
 #include <sstream>
@@ -1044,7 +1044,7 @@ void CMainWindow::SavePostDoc()
 		break;
 		case 10:
 		{
-			Post::FEAbaqusExport w;
+			Post::AbaqusExport w;
 			stringstream ss;
 			ss << "Written by FEBio Studio " << VERSION << "." << SUBVERSION << "." << SUBSUBVERSION;
 			w.SetHeading(ss.str());
@@ -1421,7 +1421,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 
 				// create a dummy post model
 				Post::FEPostModel* dummyFem = new Post::FEPostModel;
-				Post::FEVTKimport vtk(dummyFem);
+				Post::VTKimport vtk(dummyFem);
 				if (vtk.Load(sfile.c_str()))
 				{
 					if (postDoc->MergeFEModel(dummyFem) == false)

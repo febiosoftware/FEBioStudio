@@ -107,7 +107,7 @@ void FillComboBox2(QComboBox* pc, int nclass, int module, bool btoplevelonly)
 	pc->model()->sort(0);
 }
 
-void CMaterialEditor::SetMaterial(FEMaterial* mat)
+void CMaterialEditor::SetMaterial(FSMaterial* mat)
 {
 	ui->ClearTree();
 	MaterialEditorItem* item = ui->topLevelItem(0);
@@ -123,7 +123,7 @@ QString CMaterialEditor::GetMaterialName() const
 	return ui->name->text();
 }
 
-FEMaterial* CMaterialEditor::GetMaterial()
+FSMaterial* CMaterialEditor::GetMaterial()
 {
 	MaterialEditorItem* it = ui->topLevelItem(0);
 	return it->GetMaterial();
@@ -165,10 +165,10 @@ void CMaterialEditor::showEvent(QShowEvent* ev)
 		ui->name->setText(QString::fromStdString(gmat->GetName()));
 
 		// create a copy of the material (just in case we cancel)
-		FEMaterial* pmat = gmat->GetMaterialProperties();
+		FSMaterial* pmat = gmat->GetMaterialProperties();
 		if (pmat)
 		{
-			FEMaterial* pmCopy = FEMaterialFactory::Create(pmat->Type());
+			FSMaterial* pmCopy = FEMaterialFactory::Create(pmat->Type());
 			pmCopy->copy(pmat);
 			SetMaterial(pmCopy);
 			ui->mat = 0;
@@ -222,7 +222,7 @@ void CMaterialEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTree
 		FillComboBox(ui->matList, nclass, m_module, (item->ParentMaterial() == 0));
 
 		int index = -1;
-		FEMaterial* pm = item->GetMaterial();
+		FSMaterial* pm = item->GetMaterial();
 		if (pm)
 		{
 			index = ui->matList->findData(pm->Type());
@@ -243,7 +243,7 @@ void CMaterialEditor::materialChanged(int n)
 	int ntype = ui->matList->itemData(n).toInt();
 
 	FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-	FEMaterial* pmat = MF.Create(ntype); assert(pmat);
+	FSMaterial* pmat = MF.Create(ntype); assert(pmat);
 
 	it->SetMaterial(pmat);
 

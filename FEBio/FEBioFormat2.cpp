@@ -2502,7 +2502,7 @@ void FEBioFormat2::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
 
-	FERigidConnector* pi = nullptr;
+	FSRigidConnector* pi = nullptr;
 	char szname[256];
 
 	switch (rc) {

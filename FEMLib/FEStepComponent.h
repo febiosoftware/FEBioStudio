@@ -4,10 +4,10 @@
 
 //-----------------------------------------------------------------------------
 // Base class for all objects that are assigned to a step
-class FEStepComponent : public FSModelComponent
+class FSStepComponent : public FSModelComponent
 {
 public:
-	FEStepComponent();
+	FSStepComponent();
 
 	int GetStep();
 	void SetStep(int n);

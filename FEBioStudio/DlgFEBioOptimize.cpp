@@ -73,7 +73,7 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), w, SLOT(reject()));
 	}
 
-	void AddMaterial(FEMaterial* mat, QTreeWidgetItem* item)
+	void AddMaterial(FSMaterial* mat, QTreeWidgetItem* item)
 	{
 		for (int j = 0; j < mat->Parameters(); ++j)
 		{
@@ -89,7 +89,7 @@ public:
 			QString propName = QString::fromStdString(prop.GetName());
 			for (int k = 0; k < nsize; ++k)
 			{
-				FEMaterial* mj = mat->GetProperty(j).GetMaterial(k);
+				FSMaterial* mj = mat->GetProperty(j).GetMaterial(k);
 				if (mj)
 				{
 					QString matName = propName;
@@ -114,7 +114,7 @@ public:
 			{
 				GMaterial* mat = m_fem->GetMaterial(i);
 				QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(mat->GetName()), 1);
-				FEMaterial* matProps = mat->GetMaterialProperties();
+				FSMaterial* matProps = mat->GetMaterialProperties();
 
 				AddMaterial(matProps, matItem);
 				root->addChild(matItem);
@@ -127,7 +127,7 @@ public:
 			for (int i = 0; i < NMAT; ++i)
 			{
 				GMaterial* mat = m_fem->GetMaterial(i);
-				FEMaterial* matProps = mat->GetMaterialProperties();
+				FSMaterial* matProps = mat->GetMaterialProperties();
 				if (matProps->IsRigid()) {
 					QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(mat->GetName()), 3);
 					matItem->addChild(new QTreeWidgetItem(QStringList() << "Fx", 2));

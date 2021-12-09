@@ -36,10 +36,10 @@ using std::set;
 using std::unique_ptr;
 
 //=============================================================================
-// FEInterface
+// FSInterface
 //-----------------------------------------------------------------------------
 
-FEInterface::FEInterface(int ntype, FSModel* ps, int nstep)
+FSInterface::FSInterface(int ntype, FSModel* ps, int nstep)
 {
 	m_ntype = ntype;
 	m_nstepID = nstep;
@@ -50,13 +50,13 @@ FEInterface::FEInterface(int ntype, FSModel* ps, int nstep)
 }
 
 //-----------------------------------------------------------------------------
-FEInterface::~FEInterface()
+FSInterface::~FSInterface()
 {
 
 }
 
 //-----------------------------------------------------------------------------
-void FEInterface::SaveList(FEItemListBuilder* pitem, OArchive& ar)
+void FSInterface::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 {
 	if (pitem)
 	{
@@ -67,11 +67,11 @@ void FEInterface::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* FEInterface::LoadList(IArchive& ar)
+FEItemListBuilder* FSInterface::LoadList(IArchive& ar)
 {
 	FEItemListBuilder* pitem = 0;
 
-	if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FEInterface::LoadList");
+	if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FSInterface::LoadList");
 	unsigned int ntype = ar.GetChunkID();
 	switch (ntype)
 	{
@@ -86,13 +86,13 @@ FEItemListBuilder* FEInterface::LoadList(IArchive& ar)
 	default:
 		assert(false);
 	}
-	if (pitem == 0) throw ReadError("unknown item list type (FEInterface::LoadList)");
+	if (pitem == 0) throw ReadError("unknown item list type (FSInterface::LoadList)");
 
 	pitem->Load(ar);
 	ar.CloseChunk();
 
 	int nret = ar.OpenChunk();
-	if (nret != IArchive::IO_END) throw ReadError("error in FEInterface::LoadList");
+	if (nret != IArchive::IO_END) throw ReadError("error in FSInterface::LoadList");
 
 	// set the parent mesh for FEGroup's
 	FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
@@ -100,7 +100,7 @@ FEItemListBuilder* FEInterface::LoadList(IArchive& ar)
 	{
 		if (m_ps->FindGroupParent(pg) == false)
 		{
-			ar.log("Invalid object ID in FEInterface::LoadList");
+			ar.log("Invalid object ID in FSInterface::LoadList");
 			delete pitem;
 			pitem = nullptr;
 		}
@@ -113,7 +113,7 @@ FEItemListBuilder* FEInterface::LoadList(IArchive& ar)
 // FEPairedInterface
 //-----------------------------------------------------------------------------
 
-FEPairedInterface::FEPairedInterface(int ntype, FSModel* ps, int nstep) : FEInterface(ntype, ps, nstep)
+FEPairedInterface::FEPairedInterface(int ntype, FSModel* ps, int nstep) : FSInterface(ntype, ps, nstep)
 {
 	m_surf1 = 0;
 	m_surf2 = 0;
@@ -149,13 +149,13 @@ void FEPairedInterface::Save(OArchive& ar)
 	if (m_surf1)
 	{
 		ar.BeginChunk(CID_INTERFACE_SURFACE1);
-		FEInterface::SaveList(m_surf1, ar);
+		FSInterface::SaveList(m_surf1, ar);
 		ar.EndChunk();
 	}
 	if (m_surf2)
 	{
 		ar.BeginChunk(CID_INTERFACE_SURFACE2);
-		FEInterface::SaveList(m_surf2, ar);
+		FSInterface::SaveList(m_surf2, ar);
 		ar.EndChunk();
 	}
 }
@@ -176,8 +176,8 @@ void FEPairedInterface::Load(IArchive &ar)
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_SURFACE1: m_surf1 = FEInterface::LoadList(ar); break;
-		case CID_INTERFACE_SURFACE2: m_surf2 = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1: m_surf1 = FSInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE2: m_surf2 = FSInterface::LoadList(ar); break;
 		case CID_SI_MASTER: // obsolete in 1.8
 		{
 			// The old master surface is now the secondary surface
@@ -207,7 +207,7 @@ void FEPairedInterface::Load(IArchive &ar)
 // FESoloInterface
 //-----------------------------------------------------------------------------
 
-FESoloInterface::FESoloInterface(int ntype, FSModel* ps, int nstep) : FEInterface(ntype, ps, nstep)
+FESoloInterface::FESoloInterface(int ntype, FSModel* ps, int nstep) : FSInterface(ntype, ps, nstep)
 {
 	m_pItem = 0;
 }
@@ -233,7 +233,7 @@ void FESoloInterface::Save(OArchive& ar)
 	if (m_pItem)
 	{
 		ar.BeginChunk(CID_INTERFACE_SURFACE1);
-		FEInterface::SaveList(m_pItem, ar);
+		FSInterface::SaveList(m_pItem, ar);
 		ar.EndChunk();
 	}
 }
@@ -252,7 +252,7 @@ void FESoloInterface::Load(IArchive &ar)
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP  : ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_SURFACE1 : m_pItem = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1 : m_pItem = FSInterface::LoadList(ar); break;
 		default:
 			throw ReadError("unknown CID in FESoloInterface::Load");
 		}
@@ -291,7 +291,7 @@ void FERigidInterface::Save(OArchive &ar)
 	if (m_pItem) 
 	{ 
 		ar.BeginChunk(CID_INTERFACE_SURFACE2);
-		FEInterface::SaveList(m_pItem, ar);
+		FSInterface::SaveList(m_pItem, ar);
 		ar.EndChunk();
 	}
 }
@@ -320,7 +320,7 @@ void FERigidInterface::Load(IArchive &ar)
 				m_pmat = m_ps->GetMaterialFromID(mid);
 			}
 			break;
-		case CID_INTERFACE_SURFACE2: m_pItem = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE2: m_pItem = FSInterface::LoadList(ar); break;
 		case CID_RI_LIST:	// obsolete in 1.8
 			{
 				int nid; ar.read(nid); 
@@ -773,7 +773,7 @@ FEGapHeatFluxInterface::FEGapHeatFluxInterface(FSModel* fem, int nstep) : FEPair
 // FERigidJoint
 //-----------------------------------------------------------------------------
 
-FERigidJoint::FERigidJoint(FSModel* ps, int nstep) : FEInterface(FE_RIGID_JOINT, ps, nstep)
+FERigidJoint::FERigidJoint(FSModel* ps, int nstep) : FSInterface(FE_RIGID_JOINT, ps, nstep)
 { 
 	m_pbodyA = m_pbodyB = 0;
 

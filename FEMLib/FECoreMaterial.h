@@ -29,7 +29,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEMaterial;
+class FSMaterial;
 class GMaterial;
 
 //-----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ public:
 
 public:
 	FEMaterialProperty();
-	FEMaterialProperty(const std::string& name, int nClassID, FEMaterial* parent, int nsize = 1, unsigned int flags = EDITABLE);
+	FEMaterialProperty(const std::string& name, int nClassID, FSMaterial* parent, int nsize = 1, unsigned int flags = EDITABLE);
 	~FEMaterialProperty();
 
 	// clears the material list for this property
@@ -61,19 +61,19 @@ public:
 	const std::string& GetName();
 
 	// append a material to the material list of this property
-	void AddMaterial(FEMaterial* pm);
+	void AddMaterial(FSMaterial* pm);
 
 	// set the material in the property's material list
-	void SetMaterial(FEMaterial* pm, int i = 0);
+	void SetMaterial(FSMaterial* pm, int i = 0);
 
 	// remove a material from the list (returns false if pm is not part of the list)
-	bool RemoveMaterial(FEMaterial* pm);
+	bool RemoveMaterial(FSMaterial* pm);
 
 	// return a material from the property's material list
-	FEMaterial* GetMaterial(int i = 0);
+	FSMaterial* GetMaterial(int i = 0);
 
 	// return the index of a material (or -1)
-	int GetMaterialIndex(FEMaterial* mat);
+	int GetMaterialIndex(FSMaterial* mat);
 
 	// return the material class ID of this property
 	int GetClassID() const { return m_nClassID; }
@@ -102,8 +102,8 @@ private:
 	int					m_nsuperClassID;// super class ID (used to distinguish between materials and material properties)
 	int					m_maxSize;		// max number of properties (0 for no limit)
 	unsigned int		m_flag;			// property flags
-	FEMaterial*			m_parent;		// parent material this material is a property off
-	vector<FEMaterial*>	m_mat;			// list of materials
+	FSMaterial*			m_parent;		// parent material this material is a property off
+	vector<FSMaterial*>	m_mat;			// list of materials
 };
 
 //-----------------------------------------------------------------------------
@@ -112,14 +112,14 @@ private:
 class FEAxisMaterial;
 
 //-----------------------------------------------------------------------------
-//! FEMaterial is the base class for all materials
+//! FSMaterial is the base class for all materials
 //! It essentially collects material parameters (via the FEParamContainer base class) and
 //! contains a list of material properties. 
-class FEMaterial : public FSModelComponent
+class FSMaterial : public FSModelComponent
 {
 public:
-	FEMaterial(int ntype);
-	virtual ~FEMaterial();
+	FSMaterial(int ntype);
+	virtual ~FSMaterial();
 
 	// return the material type
 	int Type() { return m_ntype; }
@@ -132,9 +132,9 @@ public:
 	int ClassID();
 
 	// copy the material
-	virtual void copy(FEMaterial* pmat);
+	virtual void copy(FSMaterial* pmat);
 
-	FEMaterial* Clone();
+	FSMaterial* Clone();
 
 	// fiber stuff
 	virtual bool HasFibers() { return false; }
@@ -163,27 +163,27 @@ public:
 	FEMaterialProperty* FindProperty(int ntype);
 
 	// find the property by the material
-	FEMaterialProperty* FindProperty(FEMaterial* pm);
+	FEMaterialProperty* FindProperty(FSMaterial* pm);
 
 	// add a property to the material
 	FEMaterialProperty* AddProperty(const std::string& name, int nClassID, int maxSize = 1, unsigned int flags = FEMaterialProperty::EDITABLE);
 
 	// add a material to property with index propID
-	int AddProperty(int propID, FEMaterial* pm);
+	int AddProperty(int propID, FSMaterial* pm);
 
 	// add a material to the property with name
-	void AddProperty(const std::string& name, FEMaterial* pm);
+	void AddProperty(const std::string& name, FSMaterial* pm);
 
 	// replace a property of the material
-	void ReplaceProperty(int propID, FEMaterial* pmat, int matID = 0);
+	void ReplaceProperty(int propID, FSMaterial* pmat, int matID = 0);
     
 	// delete all properties
 	void ClearProperties();
 
 public:
-	void SetParentMaterial(FEMaterial* pmat);
-	const FEMaterial* GetParentMaterial() const;
-	const FEMaterial* GetAncestor() const;
+	void SetParentMaterial(FSMaterial* pmat);
+	const FSMaterial* GetParentMaterial() const;
+	const FSMaterial* GetAncestor() const;
 
 	GMaterial* GetOwner() const;
 	void SetOwner(GMaterial* owner);
@@ -194,7 +194,7 @@ public:
 
 protected:
 	int			m_ntype;		// material type
-	FEMaterial*	m_parent;		// parent material (if this material is a property)
+	FSMaterial*	m_parent;		// parent material (if this material is a property)
 	GMaterial*	m_owner;		// the owner of the material
 	
 public:
@@ -208,7 +208,7 @@ protected:
 //-----------------------------------------------------------------------------
 // TODO: I had to wrap this in a material so that I can show it in the 
 // MaterialPropsView
-class FEAxisMaterial : public FEMaterial
+class FEAxisMaterial : public FSMaterial
 {
 public:
 	int		m_naopt;		// axes option

@@ -8,7 +8,7 @@ using std::list;
 using std::vector;
 using std::string;
 
-class FEMaterial;
+class FSMaterial;
 
 enum MaterialFlags
 {	
@@ -33,7 +33,7 @@ public:
 
 	virtual ~FEMatDescriptor(){}
 
-	virtual FEMaterial* Create() = 0;
+	virtual FSMaterial* Create() = 0;
 
 	int GetModule() const { return m_nModule; }
 
@@ -58,7 +58,7 @@ template <typename T> class FEMatDescriptor_T : public FEMatDescriptor
 {
 public:
 	FEMatDescriptor_T(int nmodule, int ntype, int nclass, const char* szname, unsigned int flags, const char* helpURL = "") : FEMatDescriptor(nmodule, ntype, nclass, szname, flags, helpURL) {}
-	virtual FEMaterial* Create() { return new T; }
+	virtual FSMaterial* Create() { return new T; }
 };
 
 typedef list<FEMatDescriptor*>::iterator FEMatDescIter;
@@ -101,16 +101,16 @@ public:
 	FEMatDescIter FirstMaterial() { return m_Desc.begin(); }
 
 	// create a material from its ID
-	static FEMaterial* Create(int nid);
+	static FSMaterial* Create(int nid);
 
 	// create a material from its name
-	static FEMaterial* Create(const char* szname, int classId = -1);
+	static FSMaterial* Create(const char* szname, int classId = -1);
 
 	// return the type string of the material
-	static const char* TypeStr(FEMaterial* pm);
+	static const char* TypeStr(FSMaterial* pm);
 
 	// return the class ID of the material
-	static int ClassID(FEMaterial* pm);
+	static int ClassID(FSMaterial* pm);
 
 	// return a list of material types for a given material class
 	static list<FEMatDescriptor*> Enumerate(int matClass);

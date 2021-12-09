@@ -5,7 +5,7 @@
 // Body loads
 //=============================================================================
 // Base class for all volumetric body loads
-class FEBodyLoad : public FELoad
+class FEBodyLoad : public FSLoad
 {
 public:
 	FEBodyLoad(int ntype, FSModel* ps, int nstep);

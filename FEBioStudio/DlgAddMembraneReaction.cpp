@@ -336,7 +336,7 @@ void CDlgAddMembraneReaction::InitDialog()
     for (int i = 0; i<fem.Materials(); ++i)
     {
         GMaterial& mat = *fem.GetMaterial(i);
-        FEMaterial& props = *mat.GetMaterialProperties();
+        FSMaterial& props = *mat.GetMaterialProperties();
         if (props.FindProperty(FE_MAT_MREACTION))
         {
             ui->mat->addItem(QString::fromStdString(mat.GetName()), i);
@@ -372,7 +372,7 @@ void CDlgAddMembraneReaction::onReactionChanged(int n)
     {
         ui->dummy->setEnabled(true);
         
-        FEMaterial& props = *m_pmp->GetMaterialProperties();
+        FSMaterial& props = *m_pmp->GetMaterialProperties();
         FEMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
         if (react)
         {
@@ -396,7 +396,7 @@ void CDlgAddMembraneReaction::SetMaterial(GMaterial* mat, FSModel& fem)
 {
     m_pmp = mat;
     
-    FEMaterial& props = *mat->GetMaterialProperties();
+    FSMaterial& props = *mat->GetMaterialProperties();
     FEMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     ui->reactions->Clear();
@@ -424,7 +424,7 @@ void CDlgAddMembraneReaction::onAddReaction()
 {
     if (m_pmp == 0) return;
     
-    FEMaterial& props = *m_pmp->GetMaterialProperties();
+    FSMaterial& props = *m_pmp->GetMaterialProperties();
     FEMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     // create a default material
@@ -456,7 +456,7 @@ void CDlgAddMembraneReaction::onRemoveReaction()
 {
     if ((m_pmp == 0) || (m_reaction == 0)) return;
     
-    FEMaterial& props = *m_pmp->GetMaterialProperties();
+    FSMaterial& props = *m_pmp->GetMaterialProperties();
     FEMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     // remove the reaction
@@ -496,10 +496,10 @@ void CDlgAddMembraneReaction::SetReaction(FEMembraneReactionMaterial* mat)
     if (ntype == FE_MMASS_ACTION_REVERSIBLE) ui->revRate->setEnabled(true);
     else ui->revRate->setEnabled(false);
     
-    FEMaterial* fwd = mat->GetForwardRate();
+    FSMaterial* fwd = mat->GetForwardRate();
     ui->setForwardRateType(fwd ? fwd->Type() : -1);
     
-    FEMaterial* rev = mat->GetReverseRate();
+    FSMaterial* rev = mat->GetReverseRate();
     ui->setReverseRateType(rev ? rev->Type() : -1);
     
     ui->name->setText(QString::fromStdString(mat->GetName()));
@@ -785,7 +785,7 @@ bool CDlgAddMembraneReaction::hasChanged()
     
     // get the forward rate material
     m_fwdMat = ui->fwdRate->currentData().toInt();
-    FEMaterial* fwd = m_reaction->GetForwardRate();
+    FSMaterial* fwd = m_reaction->GetForwardRate();
     if ((fwd == 0) || (fwd->Type() != m_fwdMat)) changed = true;
     
     // see if we have a reverse rate specified
@@ -794,7 +794,7 @@ bool CDlgAddMembraneReaction::hasChanged()
     if (m_brr) m_revMat = ui->revRate->currentData().toInt();
     
     // get the reverse rate material
-    FEMaterial* rev = m_reaction->GetReverseRate();
+    FSMaterial* rev = m_reaction->GetReverseRate();
     if (rev && (m_revMat != rev->Type())) changed = true;
     else if ((rev == 0) && m_brr) changed = true;
 
@@ -845,7 +845,7 @@ void CDlgAddMembraneReaction::apply()
     // make sure we have something to do
     if ((m_pmp == 0) || (m_reaction == 0)) return;
     
-    FEMaterial* mat = m_pmp->GetMaterialProperties();
+    FSMaterial* mat = m_pmp->GetMaterialProperties();
     FEMaterialProperty* reactProp = mat->FindProperty(FE_MAT_MREACTION);
     if (reactProp == 0) return;
     
@@ -874,14 +874,14 @@ void CDlgAddMembraneReaction::apply()
     m_reaction->SetOvrd(m_bovrd);
     
     // set the forward rate
-    FEMaterial* fwd = m_reaction->GetForwardRate();
+    FSMaterial* fwd = m_reaction->GetForwardRate();
     if ((fwd == 0) || (m_fwdMat != fwd->Type()))
     {
         m_reaction->SetForwardRate(FEMaterialFactory::Create(m_fwdMat));
     }
     
     // set the reverse rate
-    FEMaterial* rev = m_reaction->GetReverseRate();
+    FSMaterial* rev = m_reaction->GetReverseRate();
     if (m_brr)
     {
         if ((rev == 0) || (rev->Type() != m_revMat))

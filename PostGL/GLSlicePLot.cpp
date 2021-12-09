@@ -206,7 +206,7 @@ void CGLSlicePlot::RenderSlice(float ref)
 		// render only if the element is visible and
 		// its material is enabled
 		FEElement_& el = pm->ElementRef(i);
-		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
+		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && el.IsVisible() && el.IsSolid())
 		{
 			switch (el.Type())

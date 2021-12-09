@@ -175,7 +175,7 @@ void CModelSearch::UpdateObject(FSObject* po)
 			FSObject* o = treeItem.obj;
 			if (o == po)
 			{
-				FEStepComponent* pc = dynamic_cast<FEStepComponent*>(o);
+				FSStepComponent* pc = dynamic_cast<FSStepComponent*>(o);
 				if (pc)
 				{
 					QFont font = item->font();
@@ -215,7 +215,7 @@ void CModelSearch::UpdateList()
 					it->setText(s);
 					it->setData(Qt::UserRole, i);
 
-					FEStepComponent* pc = dynamic_cast<FEStepComponent*>(o);
+					FSStepComponent* pc = dynamic_cast<FSStepComponent*>(o);
 					if (pc)
 					{
 						QFont font = it->font();

@@ -279,9 +279,9 @@ public:
 	void WriteFluidFSIControlParams(FEAnalysisStep* pstep);
 	void WriteReactionDiffusionControlParams(FEAnalysisStep* pstep);
 
-	void WriteBC(FEStep& s, FEBoundaryCondition* pbc);
-	void WriteBCFixed(FEStep& s, FEBoundaryCondition* pbc);
-	void WriteBCPrescribed(FEStep& s, FEBoundaryCondition* pbc);
+	void WriteBC(FEStep& s, FSBoundaryCondition* pbc);
+	void WriteBCFixed(FEStep& s, FSBoundaryCondition* pbc);
+	void WriteBCPrescribed(FEStep& s, FSBoundaryCondition* pbc);
 	void WriteBCRigid(FEStep& s);
 
 	void WriteInitVelocity(FENodalVelocities&        iv);
@@ -308,13 +308,13 @@ public:
 	void WriteRigidJoint(FEStep& s);
 	void WriteConstraints(FEStep& s);
 
-	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteRigidMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMaterialParams(FEMaterial* pm, bool isTopLevel = false);
+	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteRigidMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteMaterialParams(FSMaterial* pm, bool isTopLevel = false);
 	void WriteFiberMaterial(FEOldFiberMaterial& f);
-	void WriteReactionMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el);
-    void WriteMembraneReactionMaterial(FEMaterial* pmat, XMLElement& el);
+	void WriteReactionMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el);
+    void WriteMembraneReactionMaterial(FSMaterial* pmat, XMLElement& el);
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteSurfaceSection(NamedItemList& l);

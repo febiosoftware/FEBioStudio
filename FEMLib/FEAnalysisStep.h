@@ -4,14 +4,14 @@
 //using namespace std;
 
 class FSModel;
-class FEBoundaryCondition;
-class FELoad;
-class FEInterface;
-class FERigidConstraint;
+class FSBoundaryCondition;
+class FSLoad;
+class FSInterface;
+class FSRigidConstraint;
 class FELinearConstraintSet;
-class FERigidConnector;
+class FSRigidConnector;
 class FEInitialCondition;
-class FEStepComponent;
+class FSStepComponent;
 class FEModelConstraint;
 class FERigidLoad;
 
@@ -43,7 +43,7 @@ public:
 	int					m_nClassID;			// the class ID for this property
 	int					m_nSuperClassId;	// the super class ID for this property
 	bool				m_brequired;		// is this an optional property or required.
-	FEStepComponent*	m_prop;				// pointer to component class.
+	FSStepComponent*	m_prop;				// pointer to component class.
 };
 
 //-----------------------------------------------------------------------------
@@ -76,19 +76,19 @@ public:
 
 	// boundary conditions
 	int BCs();
-	FEBoundaryCondition* BC(int i);
-	void AddBC(FEBoundaryCondition* pbc);
-	void InsertBC(int n, FEBoundaryCondition* pbc);
-	int RemoveBC(FEBoundaryCondition* pbc);
+	FSBoundaryCondition* BC(int i);
+	void AddBC(FSBoundaryCondition* pbc);
+	void InsertBC(int n, FSBoundaryCondition* pbc);
+	int RemoveBC(FSBoundaryCondition* pbc);
 	void RemoveAllBCs();
 	int ActiveBCs();
 
 	// loads
 	int Loads();
-	FELoad* Load(int i);
-	void AddLoad(FELoad* pfc);
-	void InsertLoad(int n, FELoad* pfc);
-	int RemoveLoad(FELoad* pfc);
+	FSLoad* Load(int i);
+	void AddLoad(FSLoad* pfc);
+	void InsertLoad(int n, FSLoad* pfc);
+	int RemoveLoad(FSLoad* pfc);
 	void RemoveAllLoads();
 
 	// initial conditions
@@ -101,10 +101,10 @@ public:
 
 	// contact interfaces
 	int Interfaces();
-	FEInterface* Interface(int i);
-	void AddInterface(FEInterface* pi);
-	void InsertInterface(int n, FEInterface* pi);
-	int RemoveInterface(FEInterface* pi);
+	FSInterface* Interface(int i);
+	void AddInterface(FSInterface* pi);
+	void InsertInterface(int n, FSInterface* pi);
+	int RemoveInterface(FSInterface* pi);
 	void RemoveAllInterfaces();
 
 	// non-linear constraints
@@ -119,10 +119,10 @@ public:
 	// rigid constraints
 	int RigidConstraints();
 	int RigidConstraints(int ntype);
-	FERigidConstraint* RigidConstraint(int i);
-	void AddRC(FERigidConstraint* prc);
-	void InsertRC(int n, FERigidConstraint* prc);
-	int RemoveRC(FERigidConstraint* prc);
+	FSRigidConstraint* RigidConstraint(int i);
+	void AddRC(FSRigidConstraint* prc);
+	void InsertRC(int n, FSRigidConstraint* prc);
+	int RemoveRC(FSRigidConstraint* prc);
 	void RemoveAllRigidConstraints();
 
 	// rigid lodas
@@ -142,15 +142,15 @@ public:
 
     // rigid connectors
 	int RigidConnectors();
-	FERigidConnector* RigidConnector(int i);
-    void AddRigidConnector(FERigidConnector* pi);
-    void InsertRigidConnector(int n, FERigidConnector* pi);
-    int RemoveRigidConnector(FERigidConnector* pi);
+	FSRigidConnector* RigidConnector(int i);
+    void AddRigidConnector(FSRigidConnector* pi);
+    void InsertRigidConnector(int n, FSRigidConnector* pi);
+    int RemoveRigidConnector(FSRigidConnector* pi);
 	void RemoveAllRigidConnectors();
 
 	// convenience functions for working with components
-	void AddComponent(FEStepComponent* pc);
-	void RemoveComponent(FEStepComponent* pc);
+	void AddComponent(FSStepComponent* pc);
+	void RemoveComponent(FSStepComponent* pc);
 
 	// control properties
 	int ControlProperties() const;

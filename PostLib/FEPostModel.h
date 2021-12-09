@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include "FEPostMesh.h"
-#include "FEMaterial.h"
+#include "Material.h"
 #include "FEState.h"
 #include "FEDataManager.h"
 #include "GLObject.h"
@@ -145,13 +145,13 @@ public:
 	int Materials() { return (int) m_Mat.size();  }
 
 	// get a particular material
-	FEMaterial* GetMaterial(int i) { return &m_Mat[i]; }
+	Material* GetMaterial(int i) { return &m_Mat[i]; }
 
 	// clear all materials
 	void ClearMaterials() { m_Mat.clear(); }
 
 	// add a material to the model
-	void AddMaterial(FEMaterial& mat);
+	void AddMaterial(Material& mat);
 
 	// --- S T A T E   M A N A G M E N T ---
 	//! add a state to the mesh
@@ -294,7 +294,7 @@ protected:
 	BOX						m_bbox;		// bounding box of mesh
 
 	// --- M A T E R I A L S ---
-	vector<FEMaterial>	m_Mat;		// array of materials
+	vector<Material>	m_Mat;		// array of materials
 
 	// --- O B J E C T S ---
 	vector<PointObject*>	m_Points;

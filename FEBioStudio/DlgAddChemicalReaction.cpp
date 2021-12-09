@@ -410,7 +410,7 @@ void CDlgAddChemicalReaction::InitDialog()
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial& mat = *fem.GetMaterial(i);
-		FEMaterial& props = *mat.GetMaterialProperties();
+		FSMaterial& props = *mat.GetMaterialProperties();
 		if (props.FindProperty("reaction"))
 		{
 			ui->mat->addItem(QString::fromStdString(mat.GetName()), i);
@@ -446,7 +446,7 @@ void CDlgAddChemicalReaction::onReactionChanged(int n)
 	{
 		ui->dummy->setEnabled(true);
 
-		FEMaterial& props = *m_pmp->GetMaterialProperties();
+		FSMaterial& props = *m_pmp->GetMaterialProperties();
 		FEMaterialProperty* react = props.FindProperty("reaction"); assert(react);
 		if (react)
 		{
@@ -470,7 +470,7 @@ void CDlgAddChemicalReaction::SetMaterial(GMaterial* mat, FSModel& fem)
 {
 	m_pmp = mat;
 
-	FEMaterial& props = *mat->GetMaterialProperties();
+	FSMaterial& props = *mat->GetMaterialProperties();
 	FEMaterialProperty* react = props.FindProperty("reaction"); assert(react);
 
 	ui->reactions->Clear();
@@ -498,7 +498,7 @@ void CDlgAddChemicalReaction::onAddReaction()
 {
 	if (m_pmp == 0) return;
 
-	FEMaterial& props = *m_pmp->GetMaterialProperties();
+	FSMaterial& props = *m_pmp->GetMaterialProperties();
 	FEMaterialProperty* react = props.FindProperty("reaction"); assert(react);
 
 	// create a default material
@@ -530,7 +530,7 @@ void CDlgAddChemicalReaction::onRemoveReaction()
 {
 	if ((m_pmp == 0) || (m_reaction == 0)) return;
 
-	FEMaterial& props = *m_pmp->GetMaterialProperties();
+	FSMaterial& props = *m_pmp->GetMaterialProperties();
 	FEMaterialProperty* react = props.FindProperty(FE_MAT_REACTION); assert(react);
 
 	// remove the reaction
@@ -570,10 +570,10 @@ void CDlgAddChemicalReaction::SetReaction(FEReactionMaterial* mat)
 	if (ntype == FE_MASS_ACTION_REVERSIBLE) ui->revRate->setEnabled(true);
 	else ui->revRate->setEnabled(false);
 
-	FEMaterial* fwd = mat->GetForwardRate(); 
+	FSMaterial* fwd = mat->GetForwardRate(); 
 	ui->setForwardRateType(fwd ? fwd->Type() : -1);
 
-	FEMaterial* rev = mat->GetReverseRate();
+	FSMaterial* rev = mat->GetReverseRate();
 	ui->setReverseRateType(rev ? rev->Type() : -1);
 
 	ui->name->setText(QString::fromStdString(mat->GetName()));
@@ -687,7 +687,7 @@ bool CDlgAddChemicalReaction::hasChanged()
 
 	// get the forward rate material
 	m_fwdMat = ui->fwdRate->currentData().toInt();
-	FEMaterial* fwd = m_reaction->GetForwardRate();
+	FSMaterial* fwd = m_reaction->GetForwardRate();
 	if ((fwd == 0) || (fwd->Type() != m_fwdMat)) changed = true;
 
 	// see if we have a reverse rate specified
@@ -696,7 +696,7 @@ bool CDlgAddChemicalReaction::hasChanged()
 	if (m_brr) m_revMat = ui->revRate->currentData().toInt();
 
 	// get the reverse rate material
-	FEMaterial* rev = m_reaction->GetReverseRate();
+	FSMaterial* rev = m_reaction->GetReverseRate();
 	if (rev && (m_revMat != rev->Type())) changed = true;
 	else if ((rev == 0) && m_brr) changed = true;
 
@@ -735,7 +735,7 @@ void CDlgAddChemicalReaction::apply()
 	// make sure we have something to do
 	if ((m_pmp == 0) || (m_reaction == 0)) return;
 
-	FEMaterial* mat = m_pmp->GetMaterialProperties();
+	FSMaterial* mat = m_pmp->GetMaterialProperties();
 	FEMaterialProperty* reactProp = mat->FindProperty(FE_MAT_REACTION); assert(reactProp);
 	if (reactProp == 0) return;
 
@@ -764,14 +764,14 @@ void CDlgAddChemicalReaction::apply()
 	m_reaction->SetOvrd(m_bovrd);
 
 	// set the forward rate
-	FEMaterial* fwd = m_reaction->GetForwardRate();
+	FSMaterial* fwd = m_reaction->GetForwardRate();
 	if ((fwd == 0) || (m_fwdMat != fwd->Type()))
 	{
 		m_reaction->SetForwardRate(FEMaterialFactory::Create(m_fwdMat));
 	}
 
 	// set the reverse rate
-	FEMaterial* rev = m_reaction->GetReverseRate();
+	FSMaterial* rev = m_reaction->GetReverseRate();
 	if (m_brr)
 	{
 		if ((rev == 0) || (rev->Type() != m_revMat))

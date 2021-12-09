@@ -209,10 +209,10 @@ void CModelDocument::DeleteObject(FSObject* po)
 			DoCommand(new CCmdDeleteFSObject(po));
 		}
 	}
-	else if (dynamic_cast<FEMaterial*>(po))
+	else if (dynamic_cast<FSMaterial*>(po))
 	{
-		FEMaterial* pm = dynamic_cast<FEMaterial*>(po);
-		FEMaterial* parent = const_cast<FEMaterial*>(pm->GetParentMaterial());
+		FSMaterial* pm = dynamic_cast<FSMaterial*>(po);
+		FSMaterial* parent = const_cast<FSMaterial*>(pm->GetParentMaterial());
 		FEMaterialProperty* pp = parent->FindProperty(pm);
 		if (pp)// && (pp->maxSize() == 0))
 		{
@@ -593,7 +593,7 @@ bool CModelDocument::ImportMaterials(const std::string& fileName)
 					int ntype = -1;
 					ar.read(ntype);
 					// allocate the material
-					FEMaterial* pm = 0;
+					FSMaterial* pm = 0;
 					if (ntype == FE_USER_MATERIAL) pm = new FEUserMaterial(FE_USER_MATERIAL);
 					else pm = FEMaterialFactory::Create(ntype);
 

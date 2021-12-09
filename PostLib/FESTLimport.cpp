@@ -130,7 +130,7 @@ void FESTLimport::build_mesh()
 	int i;
 
 	// add one material to the scene
-	FEMaterial mat;
+	Material mat;
 	m_fem->AddMaterial(mat);
 
 	// reserve space for nodes

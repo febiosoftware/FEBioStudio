@@ -1,7 +1,7 @@
 #pragma once
 #include "FEDomainComponent.h"
 
-class FEModelConstraint : public FEDomainComponent
+class FEModelConstraint : public FSDomainComponent
 {
 public:
 	FEModelConstraint(int ntype, FSModel* fem, int nstep = 0);

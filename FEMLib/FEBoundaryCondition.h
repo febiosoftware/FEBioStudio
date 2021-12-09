@@ -7,19 +7,19 @@
 
 //=============================================================================
 // Base class for fixed and prescribed BCs
-class FEBoundaryCondition : public FEDomainComponent
+class FSBoundaryCondition : public FSDomainComponent
 {
 public:
-	FEBoundaryCondition(int ntype, FSModel* fem, int nstep = 0) : FEDomainComponent(ntype, fem, nstep){
+	FSBoundaryCondition(int ntype, FSModel* fem, int nstep = 0) : FSDomainComponent(ntype, fem, nstep){
 		m_superClassID = FE_ESSENTIAL_BC;
 	}
-	FEBoundaryCondition(int ntype, FSModel* fem, FEItemListBuilder* pi, int nstep) : FEDomainComponent(ntype, fem, pi, nstep){
+	FSBoundaryCondition(int ntype, FSModel* fem, FEItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, fem, pi, nstep){
 		m_superClassID = FE_ESSENTIAL_BC;
 	}
 };
 
 //=============================================================================
-class FEFixedDOF : public FEBoundaryCondition
+class FEFixedDOF : public FSBoundaryCondition
 {
 	enum {BC};
 
@@ -153,7 +153,7 @@ public:
 //=============================================================================
 // Prescribed boundary condition base class
 //=============================================================================
-class FEPrescribedDOF : public FEBoundaryCondition
+class FEPrescribedDOF : public FSBoundaryCondition
 {
 public:
 	enum { BC, SCALE, NTYPE };
@@ -266,7 +266,7 @@ public:
 };
 
 //=============================================================================
-class FEBioBoundaryCondition : public FEBoundaryCondition
+class FEBioBoundaryCondition : public FSBoundaryCondition
 {
 public:
 	FEBioBoundaryCondition(FSModel* ps);

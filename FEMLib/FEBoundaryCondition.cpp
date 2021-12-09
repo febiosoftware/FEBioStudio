@@ -32,13 +32,13 @@ SOFTWARE.*/
 #include "enums.h"
 
 //=============================================================================
-FEFixedDOF::FEFixedDOF(int ntype, FSModel* fem) : FEBoundaryCondition(ntype, fem)
+FEFixedDOF::FEFixedDOF(int ntype, FSModel* fem) : FSBoundaryCondition(ntype, fem)
 {
 	m_nvar = -1;
 	AddIntParam(0)->SetState(Param_HIDDEN); // the BC parameter
 }
 
-FEFixedDOF::FEFixedDOF(int ntype, FSModel* fem, FEItemListBuilder* pi, int nstep) : FEBoundaryCondition(ntype, fem, pi, nstep)
+FEFixedDOF::FEFixedDOF(int ntype, FSModel* fem, FEItemListBuilder* pi, int nstep) : FSBoundaryCondition(ntype, fem, pi, nstep)
 {
 	m_nvar = -1;
 	AddIntParam(0)->SetState(Param_HIDDEN); // the BC parameter
@@ -184,7 +184,7 @@ FEFixedFluidDilatation::FEFixedFluidDilatation(FSModel* ps, FEItemListBuilder* p
 // PRESCRIBED DOF
 //=============================================================================
 
-FEPrescribedDOF::FEPrescribedDOF(int ntype, FSModel* ps, int nstep) : FEBoundaryCondition(ntype, ps, nstep)
+FEPrescribedDOF::FEPrescribedDOF(int ntype, FSModel* ps, int nstep) : FSBoundaryCondition(ntype, ps, nstep)
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom
@@ -192,7 +192,7 @@ FEPrescribedDOF::FEPrescribedDOF(int ntype, FSModel* ps, int nstep) : FEBoundary
 	AddBoolParam(0, "relative", "relative");
 }
 
-FEPrescribedDOF::FEPrescribedDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEBoundaryCondition(ntype, ps, pi, nstep)
+FEPrescribedDOF::FEPrescribedDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FSBoundaryCondition(ntype, ps, pi, nstep)
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom
@@ -380,7 +380,7 @@ FEPrescribedFluidDilatation::FEPrescribedFluidDilatation(FSModel* ps, FEItemList
 }
 
 //=============================================================================
-FEBioBoundaryCondition::FEBioBoundaryCondition(FSModel* ps) : FEBoundaryCondition(FE_FEBIO_BC, ps)
+FEBioBoundaryCondition::FEBioBoundaryCondition(FSModel* ps) : FSBoundaryCondition(FE_FEBIO_BC, ps)
 {
 }
 
@@ -394,7 +394,7 @@ void FEBioBoundaryCondition::Save(OArchive& ar)
 
 	ar.BeginChunk(CID_FEBIO_BASE_DATA);
 	{
-		FEBoundaryCondition::Save(ar);
+		FSBoundaryCondition::Save(ar);
 	}
 	ar.EndChunk();
 }
@@ -408,7 +408,7 @@ void FEBioBoundaryCondition::Load(IArchive& ar)
 		switch (nid)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FEBoundaryCondition::Load(ar); break;
+		case CID_FEBIO_BASE_DATA: FSBoundaryCondition::Load(ar); break;
 		default:
 			assert(false);
 		}

@@ -131,7 +131,7 @@ bool FENikeImport::ReadMaterialSection()
 		}
 
 		// add a material to the scene
-		FEMaterial mat;
+		Material mat;
 		m_fem->AddMaterial(mat);
 	}
 

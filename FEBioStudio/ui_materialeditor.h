@@ -41,14 +41,14 @@ public:
 	MaterialEditorItem(QTreeWidget* tree) : QTreeWidgetItem(tree), m_mat(0), m_parent(0) { m_nprop = -1; m_nmat = -1; m_matClass = 0; }
 	MaterialEditorItem(QTreeWidgetItem* item) : QTreeWidgetItem(item), m_mat(0), m_parent(0) { m_nprop = -1; m_nmat = -1; m_matClass = 0; }
 
-	void SetParentMaterial(FEMaterial* pmat)
+	void SetParentMaterial(FSMaterial* pmat)
 	{
 		m_parent = pmat;
 	}
 
 	void SetPropertyIndex(int index, int nmat = 0) { m_nprop = index; m_nmat = nmat; }
 
-	void SetMaterial(FEMaterial* pmat)
+	void SetMaterial(FSMaterial* pmat)
 	{ 
 		int noldmat = m_nmat;
 
@@ -155,16 +155,16 @@ public:
 		}
 	}
 
-	FEMaterial* GetMaterial() const { return m_mat; }
+	FSMaterial* GetMaterial() const { return m_mat; }
 
 	void SetClassID(int nclass) { m_matClass = nclass; }
 	int GetClassID() const { return m_matClass; }
 
-	FEMaterial* ParentMaterial() { return m_parent; }
+	FSMaterial* ParentMaterial() { return m_parent; }
 
 private:
-	FEMaterial*	m_parent;	// parent material (or zero)
-	FEMaterial*	m_mat;		// pointer to material (can be zero!)
+	FSMaterial*	m_parent;	// parent material (or zero)
+	FSMaterial*	m_mat;		// pointer to material (can be zero!)
 	int			m_nprop;	// property index of parent material
 	int			m_nmat;		// material index into property's material list
 	int			m_matClass;	// material category

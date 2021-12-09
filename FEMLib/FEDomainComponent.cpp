@@ -2,7 +2,7 @@
 #include "FEDomainComponent.h"
 #include <MeshTools/GGroup.h>
 
-FEDomainComponent::FEDomainComponent(int ntype, FSModel* ps, int nstep)
+FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep)
 {
 	m_ps = ps;
 	m_pItem = 0;
@@ -13,7 +13,7 @@ FEDomainComponent::FEDomainComponent(int ntype, FSModel* ps, int nstep)
 	m_itemType = FE_NODE_FLAG;
 }
 
-FEDomainComponent::FEDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep)
+FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep)
 {
 	m_ps = ps;
 	m_ntype = ntype;
@@ -24,22 +24,22 @@ FEDomainComponent::FEDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* 
 	m_itemType = FE_NODE_FLAG;
 }
 
-FEDomainComponent::~FEDomainComponent(void)
+FSDomainComponent::~FSDomainComponent(void)
 {
 	if (m_pItem) delete m_pItem;
 }
 
-unsigned int FEDomainComponent::GetMeshItemType() const
+unsigned int FSDomainComponent::GetMeshItemType() const
 {
 	return m_itemType;
 }
 
-void FEDomainComponent::SetMeshItemType(unsigned int itemType)
+void FSDomainComponent::SetMeshItemType(unsigned int itemType)
 {
 	m_itemType = itemType;
 }
 
-void FEDomainComponent::Save(OArchive& ar)
+void FSDomainComponent::Save(OArchive& ar)
 {
 	// write the name
 	ar.WriteChunk(NAME, GetName());
@@ -72,9 +72,9 @@ void FEDomainComponent::Save(OArchive& ar)
 
 //-----------------------------------------------------------------------------
 
-void FEDomainComponent::Load(IArchive& ar)
+void FSDomainComponent::Load(IArchive& ar)
 {
-	TRACE("FEDomainComponent::Load");
+	TRACE("FSDomainComponent::Load");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -105,7 +105,7 @@ void FEDomainComponent::Load(IArchive& ar)
 				case FE_PART: m_pItem = new FEPart((GObject*)0); break;
 				default:
 					assert(false);
-					throw ReadError("Unknown FEItemListBuilder type in FEBoundaryCondition::Load");
+					throw ReadError("Unknown FEItemListBuilder type in FSBoundaryCondition::Load");
 				}
 				m_pItem->Load(ar);
 
@@ -115,7 +115,7 @@ void FEDomainComponent::Load(IArchive& ar)
 				{
 					if (m_ps->FindGroupParent(pg) == false)
 					{
-						ar.log("Invalid mesh ID in FEDomainComponent::Load");
+						ar.log("Invalid mesh ID in FSDomainComponent::Load");
 						delete m_pItem;
 						m_pItem = nullptr;
 					}

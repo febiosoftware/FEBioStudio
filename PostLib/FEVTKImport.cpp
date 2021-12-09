@@ -25,21 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "FEVTKImport.h"
+#include "VTKImport.h"
 #include "FEMeshData_T.h"
 #include "FEPostModel.h"
 
 using namespace Post;
 
-FEVTKimport::FEVTKimport(FEPostModel* fem) : FEFileReader(fem)
+VTKimport::VTKimport(FEPostModel* fem) : FEFileReader(fem)
 {
 }
 
-FEVTKimport::~FEVTKimport(void)
+VTKimport::~VTKimport(void)
 {
 }
 
-bool FEVTKimport::Load(const char* szfile)
+bool VTKimport::Load(const char* szfile)
 {
 	FEPostModel& fem = *m_fem;
 	fem.Clear();
@@ -304,7 +304,7 @@ bool FEVTKimport::Load(const char* szfile)
 	// add one material for each part
 	for (int i = 0; i < nparts; ++i)
 	{
-		FEMaterial mat;
+		Material mat;
 		fem.AddMaterial(mat);
 	}
 
@@ -350,7 +350,7 @@ bool FEVTKimport::Load(const char* szfile)
 	return true;
 }
 
-bool FEVTKimport::readPointData(char* szline)
+bool VTKimport::readPointData(char* szline)
 {
 	int size = atoi(szline + 10);
 	char* ch = fgets(szline, 255, m_fp);

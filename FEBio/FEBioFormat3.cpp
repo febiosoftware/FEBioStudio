@@ -269,7 +269,7 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 
 				if (pc->m_prop == nullptr)
 				{
-					FEStepComponent* psc = new FEStepComponent;
+					FSStepComponent* psc = new FSStepComponent;
 					FEBio::CreateModelComponent(pc->m_nSuperClassId, sztype, psc);
 					pc->m_prop = psc;
 				}
@@ -321,7 +321,7 @@ bool FEBioFormat3::ParseMaterialSection(XMLTag& tag)
 		std::string comment = tag.comment();
 
 		// allocate a new material
-		FEMaterial* pmat = FEBio::CreateMaterial(sztype, &fem);
+		FSMaterial* pmat = FEBio::CreateMaterial(sztype, &fem);
 		if (pmat == nullptr)
 		{
 			ParseUnknownTag(tag);
@@ -360,7 +360,7 @@ bool FEBioFormat3::ParseMaterialSection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseMaterial(XMLTag& tag, FEMaterial* pmat)
+void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 {
 	// first, process potential attribute parameters
 	// (e.g. for solutes)
@@ -1506,7 +1506,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	// create the constraint
  	char szbuf[256] = { 0 };
 	string bc = dofs[0];
-	FEBoundaryCondition* pbc = nullptr;
+	FSBoundaryCondition* pbc = nullptr;
 	if ((bc == "x") || (bc == "y") || (bc == "z"))
 	{
 		pbc = FEBio::CreateBoundaryCondition("zero displacement", &fem); assert(pbc);
@@ -1727,7 +1727,7 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	while (!tag.isend());
 
 	// make a new boundary condition
-	FEBoundaryCondition* pbc = 0;
+	FSBoundaryCondition* pbc = 0;
 	if (bc == "x")
 	{
 //		pbc = new FEPrescribedDisplacement(&fem, pg, 0, 1, pstep->GetID());
@@ -1945,7 +1945,7 @@ void FEBioFormat3::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 void FEBioFormat3::ParseBCLinearConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
-	FEBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("linear constraint", &fem); assert(pbc);
+	FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("linear constraint", &fem); assert(pbc);
 	if (pbc == nullptr) throw XMLReader::InvalidTag(tag);
 
 	// read the (optional) name
@@ -1954,7 +1954,7 @@ void FEBioFormat3::ParseBCLinearConstraint(FEStep* pstep, XMLTag& tag)
 	if (szname) name = szname;
 	else
 	{
-		int n = CountBCs<FEBoundaryCondition>(fem);
+		int n = CountBCs<FSBoundaryCondition>(fem);
 		stringstream ss; ss << "BC" << n + 1;
 		name = ss.str();
 	}
@@ -1990,7 +1990,7 @@ void FEBioFormat3::ParseBCFluidRotationalVelocity(FEStep* pstep, XMLTag& tag)
 	}
 
 	// create the surface load
-	FEBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("fluid rotational velocity", &fem); assert(pbc);
+	FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("fluid rotational velocity", &fem); assert(pbc);
 	if (pbc == nullptr) throw XMLReader::InvalidTag(tag);
 	if (nset) pbc->SetItemList(nset);
 
@@ -2014,7 +2014,7 @@ void FEBioFormat3::ParseBCFluidRotationalVelocity(FEStep* pstep, XMLTag& tag)
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-static FERigidConstraint* createNewRigidConstraint(FERigidConstraint* prc, const char* szclass, int N)
+static FSRigidConstraint* createNewRigidConstraint(FSRigidConstraint* prc, const char* szclass, int N)
 {
 	// set the name
 	char szname[256] = { 0 };
@@ -2531,10 +2531,10 @@ void FEBioFormat3::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 {
 	FSModel& fem = GetFSModel();
 
-	FERigidConnector* pi = FEBio::CreateRigidConnector("rigid joint", &fem);
+	FSRigidConnector* pi = FEBio::CreateRigidConnector("rigid joint", &fem);
 
 	char szname[256];
-	sprintf(szname, "RigidJoint%02d", CountConnectors<FERigidConnector>(fem)+1);
+	sprintf(szname, "RigidJoint%02d", CountConnectors<FSRigidConnector>(fem)+1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2604,7 +2604,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 
 	// get the name 
 	stringstream ss;
-	ss << "RigidConstraint" << CountConnectors<FERigidConstraint>(fem) + 1;
+	ss << "RigidConstraint" << CountConnectors<FSRigidConstraint>(fem) + 1;
 	std::string name = tag.AttributeValue("name", ss.str());
 
 	// allocate class
@@ -2640,14 +2640,14 @@ void FEBioFormat3::ParseRigidConnector(FEStep *pstep, XMLTag &tag)
 
 	// get the name 
 	stringstream ss;
-	ss << "RigidConnector" << CountConnectors<FERigidConnector>(fem) + 1;
+	ss << "RigidConnector" << CountConnectors<FSRigidConnector>(fem) + 1;
 	std::string name = tag.AttributeValue("name", ss.str());
 
 	// get the type attribute
 	const char* sztype = tag.AttributeValue("type");
 
 	// allocate class
-	FERigidConnector* pi = FEBio::CreateRigidConnector(sztype, &fem); assert(pi);
+	FSRigidConnector* pi = FEBio::CreateRigidConnector(sztype, &fem); assert(pi);
 	pi->SetName(name);
 	pstep->AddRigidConnector(pi);
 

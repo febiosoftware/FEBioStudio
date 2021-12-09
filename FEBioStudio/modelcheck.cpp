@@ -301,7 +301,7 @@ void check_006(FEProject& prj, std::vector<FSObject*>& objList)
 				// see if this material is referenced by any rigid constraints
 				for (int j = 0; j < pstep->RigidConstraints(); ++j)
 				{
-					FERigidConstraint* prc = pstep->RigidConstraint(j);
+					FSRigidConstraint* prc = pstep->RigidConstraint(j);
 					if (prc->GetMaterialID() == matId)
 					{
 						matUsed = true;
@@ -313,7 +313,7 @@ void check_006(FEProject& prj, std::vector<FSObject*>& objList)
 				// see if this material is referenced by any rigid connector
 				for (int j = 0; j < pstep->RigidConnectors(); ++j)
 				{
-					FERigidConnector* prc = pstep->RigidConnector(j);
+					FSRigidConnector* prc = pstep->RigidConnector(j);
 					if ((prc->GetRigidBody1() == matId) || (prc->GetRigidBody2() == matId))
 					{
 						matUsed = true;
@@ -371,7 +371,7 @@ void check_007(FEProject& prj, std::vector<FSObject*>& objList)
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Interfaces(); ++j)
 		{
-			FEInterface* pi = step->Interface(j);
+			FSInterface* pi = step->Interface(j);
 			if (dynamic_cast<FESoloInterface*>(pi))
 			{
 				FESoloInterface* psi = dynamic_cast<FESoloInterface*>(pi);
@@ -393,7 +393,7 @@ void check_008(FEProject& prj, std::vector<FSObject*>& objList)
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Interfaces(); ++j)
 		{
-			FEInterface* pi = step->Interface(j);
+			FSInterface* pi = step->Interface(j);
 			if (dynamic_cast<FEPairedInterface*>(pi))
 			{
 				FEPairedInterface* psi = dynamic_cast<FEPairedInterface*>(pi);
@@ -415,7 +415,7 @@ void check_009(FEProject& prj, std::vector<FSObject*>& objList)
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Loads(); ++j)
 		{
-			FELoad* pl = step->Load(j);
+			FSLoad* pl = step->Load(j);
 			if ((dynamic_cast<FEBodyLoad*>(pl) == nullptr) && (pl->GetItemList() == nullptr))
 			{
 				objList.push_back(pl);
@@ -433,7 +433,7 @@ void check_010(FEProject& prj, std::vector<FSObject*>& objList)
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->BCs(); ++j)
 		{
-			FEBoundaryCondition* pl = step->BC(j);
+			FSBoundaryCondition* pl = step->BC(j);
 			if (pl->GetItemList() == nullptr)
 			{
 				objList.push_back(pl);
@@ -515,7 +515,7 @@ void check_013(FEProject& prj, std::vector<FSObject*>& objList)
 					GMaterial* pm = fem.GetMaterialFromID(mid);
 					if (pm)
 					{
-						FEMaterial* mat = pm->GetMaterialProperties();
+						FSMaterial* mat = pm->GetMaterialProperties();
 						if (mat && mat->IsRigid())
 						{
 							// we allow zero thickness for rigid parts
@@ -543,7 +543,7 @@ void check_014(FEProject& prj, std::vector<FSObject*>& objList)
 		int nrc = pstep->RigidConnectors();
 		for (int j = 0; j < nrc; ++j)
 		{
-			FERigidConnector* rc = pstep->RigidConnector(j);
+			FSRigidConnector* rc = pstep->RigidConnector(j);
 			if (rc->GetRigidBody1() == rc->GetRigidBody2())
 			{
 				objList.push_back(rc);
@@ -562,7 +562,7 @@ void check_015(FEProject& prj, std::vector<FSObject*>& objList)
 		int nrc = pstep->RigidConnectors();
 		for (int j = 0; j < nrc; ++j)
 		{
-			FERigidConnector* rc = pstep->RigidConnector(j);
+			FSRigidConnector* rc = pstep->RigidConnector(j);
 			if ((rc->GetRigidBody1() == -1) || (rc->GetRigidBody2() == -1))
 			{
 				objList.push_back(rc);

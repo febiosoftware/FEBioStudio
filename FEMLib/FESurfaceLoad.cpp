@@ -29,13 +29,13 @@ SOFTWARE.*/
 #include <MeshTools/FEItemListBuilder.h>
 #include "enums.h"
 
-FESurfaceLoad::FESurfaceLoad(int ntype, FSModel* ps) : FELoad(ntype, ps) 
+FESurfaceLoad::FESurfaceLoad(int ntype, FSModel* ps) : FSLoad(ntype, ps)
 {
 	m_superClassID = FE_SURFACE_LOAD;
 	SetMeshItemType(FE_FACE_FLAG);
 }
 
-FESurfaceLoad::FESurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep) 
+FESurfaceLoad::FESurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep)
 {
 	m_superClassID = FE_SURFACE_LOAD;
 	SetMeshItemType(FE_FACE_FLAG);

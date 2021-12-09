@@ -114,21 +114,21 @@ FEMatDescriptor* FEMaterialFactory::AtIndex(int index)
 	return (*it);
 }
 
-FEMaterial* FEMaterialFactory::Create(int nid)
+FSMaterial* FEMaterialFactory::Create(int nid)
 {
 	assert(m_pFac);
 	FEMatDescriptor* pd = m_pFac->Find(nid);
 	return (pd?pd->Create():0);
 }
 
-FEMaterial* FEMaterialFactory::Create(const char *szname, int classId)
+FSMaterial* FEMaterialFactory::Create(const char *szname, int classId)
 {
 	assert(m_pFac);
 	FEMatDescriptor* pd = m_pFac->Find(szname, classId);
 	return (pd?pd->Create():0);
 }
 
-const char* FEMaterialFactory::TypeStr(FEMaterial *pm)
+const char* FEMaterialFactory::TypeStr(FSMaterial *pm)
 {
 	if (pm == 0) return 0;
 
@@ -147,7 +147,7 @@ const char* FEMaterialFactory::TypeStr(FEMaterial *pm)
 	return 0;
 }
 
-int FEMaterialFactory::ClassID(FEMaterial *pm)
+int FEMaterialFactory::ClassID(FSMaterial *pm)
 {
 	FEMaterialFactory* pmf = GetInstance();
 

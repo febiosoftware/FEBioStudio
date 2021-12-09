@@ -86,7 +86,7 @@ private:
 class CBCValidator : public CObjectValidator
 {
 public:
-	CBCValidator(FEDomainComponent* pbc) : m_pbc(pbc), m_err(0) {}
+	CBCValidator(FSDomainComponent* pbc) : m_pbc(pbc), m_err(0) {}
 
 	QString GetErrorString() const 
 	{ 
@@ -117,7 +117,7 @@ public:
 	}
 
 private:
-	FEDomainComponent* m_pbc;
+	FSDomainComponent* m_pbc;
 	int	m_err;
 };
 
@@ -212,14 +212,14 @@ private:
 class CRigidConstraintValidator : public CObjectValidator
 {
 public:
-	CRigidConstraintValidator(FERigidConstraint* rc) : m_rc(rc){}
+	CRigidConstraintValidator(FSRigidConstraint* rc) : m_rc(rc){}
 
 	QString GetErrorString() const { return "No rigid material assigned"; }
 
 	bool IsValid() { return (m_rc->GetMaterialID() != -1); }
 
 private:
-	FERigidConstraint*	m_rc;	
+	FSRigidConstraint*	m_rc;	
 };
 
 class CRigidInterfaceValidator : public CObjectValidator
@@ -704,7 +704,7 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 	FSObject* po = m_data[n].obj;
 	if (po)
 	{
-		FEStepComponent* pc = dynamic_cast<FEStepComponent*>(po);
+		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
 		if (pc)
 		{
 			QFont font = item->font(0);
@@ -1452,7 +1452,7 @@ void CModelTree::UpdateBC(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 		{
 			for (int j = 0; j<ps->BCs(); ++j)
 			{
-				FEBoundaryCondition* pbc = ps->BC(j);
+				FSBoundaryCondition* pbc = ps->BC(j);
 				assert(pbc->GetStep() == ps->GetID());
 
 				CPropertyList* pl = 0;
@@ -1479,7 +1479,7 @@ void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 		{
 			for (int j = 0; j<ps->Loads(); ++j)
 			{
-				FELoad* pfc = ps->Load(j);
+				FSLoad* pfc = ps->Load(j);
 				assert(pfc->GetStep() == ps->GetID());
 
 				int flags = SHOW_PROPERTY_FORM;
@@ -1696,7 +1696,7 @@ void CModelTree::UpdateRC(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 		{
 			for (int j = 0; j<ps->RigidConstraints(); ++j)
 			{
-				FERigidConstraint* prc = ps->RigidConstraint(j);
+				FSRigidConstraint* prc = ps->RigidConstraint(j);
 
 				CPropertyList* pl = new CRigidConstraintSettings(fem, prc);
 
@@ -1742,7 +1742,7 @@ void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FSModel& fem, FEStep* pst
 		{
 			for (int j = 0; j<ps->RigidConnectors(); ++j)
 			{
-				FERigidConnector* prc = ps->RigidConnector(j);
+				FSRigidConnector* prc = ps->RigidConnector(j);
 				CPropertyList* pl = new CRigidConnectorSettings(fem, prc);
 
 				int flags = SHOW_PROPERTY_FORM;
@@ -1760,14 +1760,14 @@ void CModelTree::UpdateMaterials(QTreeWidgetItem* t1, FSModel& fem)
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		FEMaterial* mat = pm->GetMaterialProperties();
+		FSMaterial* mat = pm->GetMaterialProperties();
 		QString name = QString("%1 [%2]").arg(QString::fromStdString(pm->GetName())).arg(mat->GetTypeString());
 		AddMaterial(t1, name, pm, mat, fem, true);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FEMaterial* pmat, FSModel& fem, bool topLevel)
+void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FSMaterial* pmat, FSModel& fem, bool topLevel)
 {
 /*	// reaction materials's structure is somewhat cumbersome, so we provide an alternative representation
 	if (dynamic_cast<FEReactionMaterial*>(pmat))
@@ -1795,7 +1795,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 			QString propName = QString::fromStdString(p.GetName());
 			if (p.Size() == 1)
 			{
-				FEMaterial* pj = p.GetMaterial();
+				FSMaterial* pj = p.GetMaterial();
 				if (pj)
 				{
 					QString typeName = (pj->TypeStr() ? QString(pj->GetTypeString()) : "error");
@@ -1815,7 +1815,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 			{
 				for (int j = 0; j<p.Size(); ++j)
 				{
-					FEMaterial* pj = p.GetMaterial(j);
+					FSMaterial* pj = p.GetMaterial(j);
 					if (pj)
 					{
 						QString typeName = (pj->TypeStr() ? QString(pj->GetTypeString()) : "error");
@@ -1857,11 +1857,11 @@ void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* 
 	QTreeWidgetItem* t2 = AddTreeItem(item, name, 0, 0, 0, 0);
 
 	// add forward rate
-	FEMaterial* fwd = mat->GetForwardRate();
+	FSMaterial* fwd = mat->GetForwardRate();
 	if (fwd) AddMaterial(t2, QString("%1 [%2]").arg("forward rate").arg(fwd->GetTypeString()), 0, fwd, fem, false);
 
 	// add reverse rate
-	FEMaterial* rev = mat->GetReverseRate();
+	FSMaterial* rev = mat->GetReverseRate();
 	if (rev) AddMaterial(t2, QString("%1 [%2]").arg("reverse rate").arg(rev->GetTypeString()), 0, rev, fem, false);
 
 	// add reactants and products

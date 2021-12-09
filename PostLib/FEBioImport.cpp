@@ -124,7 +124,7 @@ bool FEBioImport::Load(const char* szfile)
 
 void FEBioImport::ParseMaterialSection(FEPostModel& fem, XMLTag& tag)
 {
-	FEMaterial mat;
+	Material mat;
 
 	// make sure the section is not empty
 	if (tag.isleaf()) return;
@@ -144,7 +144,7 @@ void FEBioImport::ParseMaterialSection(FEPostModel& fem, XMLTag& tag)
 	for (int i=0; i<m_nmat; ++i)
 	{
 		// add a material to the scene
-		FEMaterial mat;
+		Material mat;
 		m_fem->AddMaterial(mat);
 	}
 }

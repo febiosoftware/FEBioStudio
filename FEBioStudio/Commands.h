@@ -87,7 +87,7 @@ protected:
 class CCmdAddInterface : public CCommand
 {
 public:
-	CCmdAddInterface(FEStep* ps, FEInterface* pi) : CCommand("Add interface") { m_ps = ps; m_pint = pi; m_bdel = true; }
+	CCmdAddInterface(FEStep* ps, FSInterface* pi) : CCommand("Add interface") { m_ps = ps; m_pint = pi; m_bdel = true; }
 	~CCmdAddInterface() { if (m_bdel) delete m_pint; }
 
 	void Execute();
@@ -95,7 +95,7 @@ public:
 
 protected:
 	FEStep*			m_ps;
-	FEInterface*	m_pint;
+	FSInterface*	m_pint;
 	bool			m_bdel;
 };
 
@@ -103,7 +103,7 @@ protected:
 class CCmdAddRigidConnector : public CCommand
 {
 public:
-	CCmdAddRigidConnector(FEStep* ps, FERigidConnector* pi) : CCommand("Add rigid connector") { m_ps = ps; m_pint = pi; m_bdel = true; }
+	CCmdAddRigidConnector(FEStep* ps, FSRigidConnector* pi) : CCommand("Add rigid connector") { m_ps = ps; m_pint = pi; m_bdel = true; }
 	~CCmdAddRigidConnector() { if (m_bdel) delete m_pint; }
 
 	void Execute();
@@ -111,7 +111,7 @@ public:
 
 protected:
 	FEStep*			m_ps;
-	FERigidConnector*	m_pint;
+	FSRigidConnector*	m_pint;
 	bool			m_bdel;
 };
 
@@ -268,7 +268,7 @@ protected:
 class CCmdAddBC : public CCommand
 {
 public:
-	CCmdAddBC(FEStep* ps, FEBoundaryCondition* pbc) : CCommand("Add Boundary Condition") { m_ps = ps; m_pbc = pbc; m_bdel = true; }
+	CCmdAddBC(FEStep* ps, FSBoundaryCondition* pbc) : CCommand("Add Boundary Condition") { m_ps = ps; m_pbc = pbc; m_bdel = true; }
 	~CCmdAddBC() { if (m_bdel) delete m_pbc; }
 
 	void Execute();
@@ -276,7 +276,7 @@ public:
 
 protected:
 	FEStep*					m_ps;
-	FEBoundaryCondition*	m_pbc;
+	FSBoundaryCondition*	m_pbc;
 	bool					m_bdel;
 };
 
@@ -300,7 +300,7 @@ protected:
 class CCmdAddLoad : public CCommand
 {
 public:
-	CCmdAddLoad(FEStep* ps, FELoad* pfc) : CCommand("Add Load") { m_ps = ps; m_pfc = pfc; m_bdel = true; }
+	CCmdAddLoad(FEStep* ps, FSLoad* pfc) : CCommand("Add Load") { m_ps = ps; m_pfc = pfc; m_bdel = true; }
 	~CCmdAddLoad() { if (m_bdel) delete m_pfc; }
 
 	void Execute();
@@ -308,7 +308,7 @@ public:
 
 protected:
 	FEStep*		m_ps;
-	FELoad*		m_pfc;
+	FSLoad*		m_pfc;
 	bool		m_bdel;
 };
 
@@ -316,7 +316,7 @@ protected:
 class CCmdAddRC : public CCommand
 {
 public:
-	CCmdAddRC(FEStep* ps, FERigidConstraint* prc) : CCommand("Add Rigid Constraint") { m_ps = ps; m_prc = prc; m_bdel = true; }
+	CCmdAddRC(FEStep* ps, FSRigidConstraint* prc) : CCommand("Add Rigid Constraint") { m_ps = ps; m_prc = prc; m_bdel = true; }
 	~CCmdAddRC() { if (m_bdel) delete m_prc; }
 
 	void Execute();
@@ -324,7 +324,7 @@ public:
 
 protected:
 	FEStep*				m_ps;
-	FERigidConstraint*	m_prc;
+	FSRigidConstraint*	m_prc;
 	bool				m_bdel;
 };
 
@@ -934,21 +934,21 @@ public:
 class CCmdAssignMaterial : public CCommand
 {
 public:
-CCmdAssignMaterial(GObject* po, FEMaterial* pmat, int* pel=0, int N=0);
+CCmdAssignMaterial(GObject* po, FSMaterial* pmat, int* pel=0, int N=0);
 ~CCmdAssignMaterial(){ delete [] m_ppmat; }
 
 void Execute();
 void UnExecute();
 
 protected:
-FEMaterial*	m_pmat;
+FSMaterial*	m_pmat;
 FEMesh*	m_pm;
 GObject* m_po;
 
 int*	m_pel;
 int		m_N;
 
-FEMaterial**	m_ppmat;
+FSMaterial**	m_ppmat;
 };
 */
 
@@ -1343,14 +1343,14 @@ protected:
 class CCmdSetModelComponentItemList : public CCommand
 {
 public:
-	CCmdSetModelComponentItemList(FEDomainComponent* pbc, FEItemListBuilder* pl);
+	CCmdSetModelComponentItemList(FSDomainComponent* pbc, FEItemListBuilder* pl);
 	~CCmdSetModelComponentItemList();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEDomainComponent*	m_pbc;
+	FSDomainComponent*	m_pbc;
 	FEItemListBuilder*	m_pl;
 };
 
@@ -1358,14 +1358,14 @@ protected:
 class CCmdUnassignBC : public CCommand
 {
 public:
-	CCmdUnassignBC(FEBoundaryCondition* pbc);
+	CCmdUnassignBC(FSBoundaryCondition* pbc);
 	~CCmdUnassignBC();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEBoundaryCondition*	m_pbc;
+	FSBoundaryCondition*	m_pbc;
 	FEItemListBuilder*		m_pl;
 };
 
@@ -1403,7 +1403,7 @@ protected:
 class CCmdRemoveItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveItemListBuilder(FEDomainComponent* pmc);
+	CCmdRemoveItemListBuilder(FSDomainComponent* pmc);
 	CCmdRemoveItemListBuilder(FESoloInterface* pmc);
 	CCmdRemoveItemListBuilder(FEPairedInterface* pmc, int n);
 	~CCmdRemoveItemListBuilder();
@@ -1415,7 +1415,7 @@ private:
 	FEItemListBuilder*	m_pitem;
 	FESoloInterface*	m_psi;
 	FEPairedInterface*	m_ppi;
-	FEDomainComponent*	m_pmc;
+	FSDomainComponent*	m_pmc;
 	int	m_index;
 };
 

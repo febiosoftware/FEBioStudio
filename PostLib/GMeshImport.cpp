@@ -164,7 +164,7 @@ bool GMeshImport::BuildMesh(FEPostModel& fem)
 	fem.Clear();
 
 	// add a materials
-	FEMaterial mat;
+	Material mat;
 	fem.AddMaterial(mat);
 
 	// build the mesh

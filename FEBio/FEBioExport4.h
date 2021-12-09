@@ -263,7 +263,7 @@ protected:
 	void WriteElementDataFields();
 	void WriteMeshData(FEDataMapGenerator* map);
 
-	void WriteBC(FEStep& s, FEBoundaryCondition* pbc);
+	void WriteBC(FEStep& s, FSBoundaryCondition* pbc);
 
 	void WriteNodalLoads(FEStep& s);
 	void WriteSurfaceLoads(FEStep& s);
@@ -272,7 +272,7 @@ protected:
 	void WriteConnectors(FEStep& s);
 	void WriteConstraints(FEStep& s);
 
-	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
+	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteSurfaceSection(NamedItemList& l);

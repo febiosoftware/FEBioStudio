@@ -91,7 +91,7 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
-			FELoad* pl = pstep->Load(j);
+			FSLoad* pl = pstep->Load(j);
 			if (pl->IsActive())
 			{
 				FEItemListBuilder* ps = pl->GetItemList();
@@ -594,7 +594,7 @@ void FEBioExport12::WriteMaterialSection()
 		el.add_attribute("id", pgm->m_ntag);
 		el.add_attribute("name", pgm->GetName().c_str());
 
-		FEMaterial* pmat = pgm->GetMaterialProperties();
+		FSMaterial* pmat = pgm->GetMaterialProperties();
 		if (pmat)
 		{
 			switch (pmat->Type())
@@ -890,7 +890,7 @@ void FEBioExport12::WriteMaterialSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteMaterial(FEMaterial *pm, XMLElement& el)
+void FEBioExport12::WriteMaterial(FSMaterial *pm, XMLElement& el)
 {
 	const char* sztype = pm->GetTypeString();
 	el.add_attribute("type", sztype);
@@ -987,7 +987,7 @@ void FEBioExport12::WriteFiberMaterial(FEOldFiberMaterial& f)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteMaterialParams(FEMaterial* pm)
+void FEBioExport12::WriteMaterialParams(FSMaterial* pm)
 {
 	// Write the parameters first
 	WriteParamList(*pm);
@@ -1009,7 +1009,7 @@ void FEBioExport12::WriteMaterialParams(FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
+void FEBioExport12::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
 {
 	const char* sztype = 0;
 
@@ -1119,7 +1119,7 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 			FEMaterialProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j<mc.Size(); ++j)
 			{
-				FEMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = mc.GetMaterial(j);
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
@@ -2332,7 +2332,7 @@ void FEBioExport12::WriteBCFixed(FEStep &s)
 {
 	for (int i = 0; i<s.BCs(); ++i)
 	{
-		FEBoundaryCondition* pbc = s.BC(i);
+		FSBoundaryCondition* pbc = s.BC(i);
 		if (pbc->IsActive())
 		{
 			switch (pbc->Type())
@@ -2606,7 +2606,7 @@ void FEBioExport12::WriteBCPrescribed(FEStep &s)
 {
 	for (int i = 0; i<s.BCs(); ++i)
 	{
-		FEBoundaryCondition* pbc = s.BC(i);
+		FSBoundaryCondition* pbc = s.BC(i);
 		if (pbc->IsActive())
 		{
 			switch (pbc->Type())
@@ -4261,7 +4261,7 @@ void FEBioExport12::WriteConstraintSection(FEStep &s)
 
 	for (int i = 0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* ps = s.RigidConstraint(i);
+		FSRigidConstraint* ps = s.RigidConstraint(i);
 
 		GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
 		if (pgm == 0) throw MissingRigidBody(ps->GetName());

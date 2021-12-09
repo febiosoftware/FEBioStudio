@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEModelConstraint.h"
 #include <MeshTools/FEItemListBuilder.h>
 
-FEModelConstraint::FEModelConstraint(int ntype, FSModel* fem, int nstep) : FEDomainComponent(ntype, fem, nstep)
+FEModelConstraint::FEModelConstraint(int ntype, FSModel* fem, int nstep) : FSDomainComponent(ntype, fem, nstep)
 {
 	m_superClassID = FE_CONSTRAINT;
 	SetMeshItemType(0);

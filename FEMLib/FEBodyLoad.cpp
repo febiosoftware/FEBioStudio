@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEItemListBuilder.h>
 #include <FECore/units.h>
 
-FEBodyLoad::FEBodyLoad(int ntype, FSModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep)
+FEBodyLoad::FEBodyLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0, nstep)
 {
 	m_superClassID = FE_BODY_LOAD;
 	SetMeshItemType(FE_ELEM_FLAG);

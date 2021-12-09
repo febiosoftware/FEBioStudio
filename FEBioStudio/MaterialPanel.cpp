@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "PropertyListView.h"
 #include <PostLib/FEPostModel.h>
-#include <PostLib/FEMaterial.h>
+#include <PostLib/Material.h>
 #include <PostGL/GLModel.h>
 
 class MaterialProps : public CPropertyList
@@ -61,7 +61,7 @@ public:
 		addProperty("Clip"             , CProperty::Bool);
 	}
 
-	void SetMaterial(Post::FEMaterial* pmat) { m_mat = pmat; }
+	void SetMaterial(Post::Material* pmat) { m_mat = pmat; }
 
 	QVariant GetPropertyValue(int i)
 	{
@@ -110,7 +110,7 @@ public:
 	}
 
 private:
-	Post::FEMaterial*	m_mat;
+	Post::Material*	m_mat;
 };
 
 class Ui::CMaterialPanel
@@ -228,7 +228,7 @@ void CMaterialPanel::Update(bool breset)
 		int nmat = fem->Materials();
 		for (int i=0; i<nmat; ++i)
 		{
-			Post::FEMaterial& mat = *fem->GetMaterial(i);
+			Post::Material& mat = *fem->GetMaterial(i);
 
 			QListWidgetItem* it = new QListWidgetItem(mat.GetName());
 			ui->m_list->addItem(it);
@@ -252,7 +252,7 @@ void CMaterialPanel::UpdateStates()
 	int nmat = fem->Materials();
 	for (int i=0; i<nmat; ++i)
 	{
-		Post::FEMaterial& mat = *fem->GetMaterial(i);
+		Post::Material& mat = *fem->GetMaterial(i);
 		QListWidgetItem* pi = ui->m_list->item(i);
 		QFont font = pi->font();
 		if (mat.visible())
@@ -280,7 +280,7 @@ void CMaterialPanel::on_materialList_currentRowChanged(int nrow)
 		Post::FEPostModel& fem = *doc->GetFSModel();
 		if ((nrow >= 0) && (nrow < fem.Materials()))
 		{
-			Post::FEMaterial* pmat = fem.GetMaterial(nrow);
+			Post::Material* pmat = fem.GetMaterial(nrow);
 			m_pmat->SetMaterial(pmat);
 			ui->m_prop->Update(m_pmat);
 			ui->name->setText(QString(pmat->GetName()));
@@ -312,7 +312,7 @@ void CMaterialPanel::on_showButton_toggled(bool b)
 		QModelIndex index = selection.at(i);
 		int nmat = index.row();
 
-		Post::FEMaterial& mat = *fem.GetMaterial(nmat);
+		Post::Material& mat = *fem.GetMaterial(nmat);
 		if (b)
 		{
 			mat.show();
@@ -348,7 +348,7 @@ void CMaterialPanel::on_enableButton_toggled(bool b)
 		QModelIndex index = selection.at(i);
 		int nmat = index.row();
 
-		Post::FEMaterial& mat = *fem.GetMaterial(nmat);
+		Post::Material& mat = *fem.GetMaterial(nmat);
 
 		if (b) mat.enable();
 		else mat.disable();
@@ -369,7 +369,7 @@ void CMaterialPanel::on_editName_editingFinished()
 		int nmat = n.row();
 
 		Post::FEPostModel& fem = *doc.GetFSModel();
-		Post::FEMaterial& mat = *fem.GetMaterial(nmat);
+		Post::Material& mat = *fem.GetMaterial(nmat);
 
 		QListWidgetItem* item = ui->m_list->item(nmat);
 		string name = ui->name->text().toStdString();
@@ -397,7 +397,7 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 
 	// get the current material
 	int nmat = currentIndex.row();
-	Post::FEMaterial& currentMat = *fem.GetMaterial(nmat);
+	Post::Material& currentMat = *fem.GetMaterial(nmat);
 
 	// update color of corresponding item in material list
 	if (nprop == 1) SetItemColor(nmat, currentMat.diffuse);
@@ -412,7 +412,7 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 		if (index.row() != currentIndex.row())
 		{
 			int imat = index.row();
-			Post::FEMaterial& mati = *fem.GetMaterial(imat);
+			Post::Material& mati = *fem.GetMaterial(imat);
 
 			switch (nprop)
 			{

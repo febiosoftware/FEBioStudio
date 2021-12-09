@@ -45,7 +45,7 @@ FEMaterialProperty::FEMaterialProperty()
 }
 
 //-----------------------------------------------------------------------------
-FEMaterialProperty::FEMaterialProperty(const std::string& name, int nClassID, FEMaterial* parent, int nsize, unsigned int flags) : m_parent(parent)
+FEMaterialProperty::FEMaterialProperty(const std::string& name, int nClassID, FSMaterial* parent, int nsize, unsigned int flags) : m_parent(parent)
 {
 	m_nClassID = nClassID;
 	m_name = name;
@@ -84,7 +84,7 @@ void FEMaterialProperty::Clear()
 }
 
 //-----------------------------------------------------------------------------
-void FEMaterialProperty::AddMaterial(FEMaterial* pm)
+void FEMaterialProperty::AddMaterial(FSMaterial* pm)
 {
 	if (pm) pm->SetParentMaterial(m_parent);
 	if (m_maxSize == NO_FIXED_SIZE)
@@ -110,7 +110,7 @@ void FEMaterialProperty::AddMaterial(FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEMaterialProperty::SetMaterial(FEMaterial* pm, int i) 
+void FEMaterialProperty::SetMaterial(FSMaterial* pm, int i) 
 { 
 //	if (pm) assert(pm->ClassID() & m_nClassID);
 	if (pm) pm->SetParentMaterial(m_parent);
@@ -126,7 +126,7 @@ void FEMaterialProperty::SetMaterial(FEMaterial* pm, int i)
 
 //-----------------------------------------------------------------------------
 // remove a material from the list (returns false if pm is not part of the list)
-bool FEMaterialProperty::RemoveMaterial(FEMaterial* pm)
+bool FEMaterialProperty::RemoveMaterial(FSMaterial* pm)
 {
 	// find the material
 	for (int i=0; i<(int)m_mat.size(); ++i)
@@ -142,14 +142,14 @@ bool FEMaterialProperty::RemoveMaterial(FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEMaterialProperty::GetMaterial(int i)
+FSMaterial* FEMaterialProperty::GetMaterial(int i)
 {	
 	if ((i<0) || (i>=(int)m_mat.size())) return 0;
 	return m_mat[i]; 
 }
 
 //-----------------------------------------------------------------------------
-int FEMaterialProperty::GetMaterialIndex(FEMaterial* mat)
+int FEMaterialProperty::GetMaterialIndex(FSMaterial* mat)
 {
 	for (int i=0; i<(int)m_mat.size(); ++i)
 	{
@@ -162,7 +162,7 @@ int FEMaterialProperty::GetMaterialIndex(FEMaterial* mat)
 // FEAxisMaterial
 //=============================================================================
 
-FEAxisMaterial::FEAxisMaterial() : FEMaterial(0)
+FEAxisMaterial::FEAxisMaterial() : FSMaterial(0)
 {
 	m_naopt = -1;
 	m_n[0] = 0; m_n[1] = 1; m_n[2] = 2;
@@ -419,11 +419,11 @@ mat3d FEAxisMaterial::GetMatAxes(FEElementRef& el)
 }
 
 //=============================================================================
-// FEMaterial
+// FSMaterial
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
+FSMaterial::FSMaterial(int ntype) : m_ntype(ntype)
 {
 	m_parent = 0;
 	m_owner = 0;
@@ -432,67 +432,67 @@ FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial::~FEMaterial()
+FSMaterial::~FSMaterial()
 {
 	ClearProperties();
 	delete m_axes;
 }
 
 //-----------------------------------------------------------------------------
-int FEMaterial::ClassID()
+int FSMaterial::ClassID()
 {
 	FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 	return MF.ClassID(this);
 }
 
 //-----------------------------------------------------------------------------
-const char* FEMaterial::GetTypeString()
+const char* FSMaterial::GetTypeString()
 {
 	FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 	return MF.TypeStr(this);
 }
 
 //-----------------------------------------------------------------------------
-void FEMaterial::SetTypeString(const char* sz)
+void FSMaterial::SetTypeString(const char* sz)
 {
 	assert(false);
 }
 
 //-----------------------------------------------------------------------------
-void FEMaterial::SetParentMaterial(FEMaterial* pmat)
+void FSMaterial::SetParentMaterial(FSMaterial* pmat)
 {
 	assert((m_parent==0) || (m_parent == pmat));
 	m_parent = pmat;
 }
 
 //-----------------------------------------------------------------------------
-const FEMaterial* FEMaterial::GetParentMaterial() const
+const FSMaterial* FSMaterial::GetParentMaterial() const
 {
 	return m_parent;
 }
 
 //-----------------------------------------------------------------------------
-const FEMaterial* FEMaterial::GetAncestor() const
+const FSMaterial* FSMaterial::GetAncestor() const
 {
 	if (m_parent) return m_parent->GetAncestor();
 	return this;
 }
 
 //-----------------------------------------------------------------------------
-GMaterial* FEMaterial::GetOwner() const 
+GMaterial* FSMaterial::GetOwner() const 
 { 
 	return m_owner; 
 }
 
 //-----------------------------------------------------------------------------
-void FEMaterial::SetOwner(GMaterial* owner)
+void FSMaterial::SetOwner(GMaterial* owner)
 {
 	m_owner = owner;
 }
 
 //-----------------------------------------------------------------------------
 // delete all material properties
-void FEMaterial::ClearProperties()
+void FSMaterial::ClearProperties()
 {
 	vector<FEMaterialProperty*>::iterator it;
 	for (it = m_Mat.begin(); it != m_Mat.end(); ++it) (*it)->Clear();
@@ -500,7 +500,7 @@ void FEMaterial::ClearProperties()
 
 //-----------------------------------------------------------------------------
 // Add a component to the material
-FEMaterialProperty* FEMaterial::AddProperty(const std::string& name, int nClassID, int maxSize, unsigned int flags)
+FEMaterialProperty* FSMaterial::AddProperty(const std::string& name, int nClassID, int maxSize, unsigned int flags)
 {
 	FEMaterialProperty* m = new FEMaterialProperty(name, nClassID, this, maxSize, flags);
 	m_Mat.push_back(m);
@@ -508,7 +508,7 @@ FEMaterialProperty* FEMaterial::AddProperty(const std::string& name, int nClassI
 }
 
 //-----------------------------------------------------------------------------
-void FEMaterial::AddProperty(const std::string& name, FEMaterial* pm)
+void FSMaterial::AddProperty(const std::string& name, FSMaterial* pm)
 {
 	FEMaterialProperty* p = FindProperty(name);
 	assert(p);
@@ -516,7 +516,7 @@ void FEMaterial::AddProperty(const std::string& name, FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
-int FEMaterial::AddProperty(int propID, FEMaterial* pm)
+int FSMaterial::AddProperty(int propID, FSMaterial* pm)
 {
 	FEMaterialProperty& p = GetProperty(propID);
 	p.AddMaterial(pm);
@@ -525,13 +525,13 @@ int FEMaterial::AddProperty(int propID, FEMaterial* pm)
 
 //-----------------------------------------------------------------------------
 // Replace the material of a component
-void FEMaterial::ReplaceProperty(int propID, FEMaterial* pm, int matID)
+void FSMaterial::ReplaceProperty(int propID, FSMaterial* pm, int matID)
 {
 	m_Mat[propID]->SetMaterial(pm, matID);
 }
 
 //-----------------------------------------------------------------------------
-FEMaterialProperty* FEMaterial::FindProperty(const std::string& name)
+FEMaterialProperty* FSMaterial::FindProperty(const std::string& name)
 {
 	int n = (int) m_Mat.size();
 	for (int i=0; i<n; ++i)
@@ -544,7 +544,7 @@ FEMaterialProperty* FEMaterial::FindProperty(const std::string& name)
 
 //-----------------------------------------------------------------------------
 // find the property by type
-FEMaterialProperty* FEMaterial::FindProperty(int ntype)
+FEMaterialProperty* FSMaterial::FindProperty(int ntype)
 {
 	int n = (int)m_Mat.size();
 	for (int i = 0; i<n; ++i)
@@ -557,7 +557,7 @@ FEMaterialProperty* FEMaterial::FindProperty(int ntype)
 
 //-----------------------------------------------------------------------------
 // find the property by the material
-FEMaterialProperty* FEMaterial::FindProperty(FEMaterial* pm)
+FEMaterialProperty* FSMaterial::FindProperty(FSMaterial* pm)
 {
 	int NP = Properties();
 	for (int i=0; i<NP; ++i)
@@ -573,7 +573,7 @@ FEMaterialProperty* FEMaterial::FindProperty(FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEMaterial::copy(FEMaterial* pm)
+void FSMaterial::copy(FSMaterial* pm)
 {
 	// make sure these materials are the same
 	assert(m_ntype == pm->m_ntype);
@@ -593,7 +593,7 @@ void FEMaterial::copy(FEMaterial* pm)
 		{
 			if (mcs.GetMaterial())
 			{
-				FEMaterial* pm = FEMaterialFactory::Create(mcs.GetMaterial()->Type());
+				FSMaterial* pm = FEMaterialFactory::Create(mcs.GetMaterial()->Type());
 				pm->copy(mcs.GetMaterial());
 				mcd.SetMaterial(pm);
 			}
@@ -603,8 +603,8 @@ void FEMaterial::copy(FEMaterial* pm)
 		{
 			for (int j=0; j<mcs.Size(); ++j)
 			{
-				FEMaterial* pmj = mcs.GetMaterial(j);
-				FEMaterial* pm = FEMaterialFactory::Create(pmj->Type());
+				FSMaterial* pmj = mcs.GetMaterial(j);
+				FSMaterial* pm = FEMaterialFactory::Create(pmj->Type());
 				pm->copy(pmj);
 				mcd.AddMaterial(pm);
 			}
@@ -613,42 +613,42 @@ void FEMaterial::copy(FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEMaterial::Clone()
+FSMaterial* FSMaterial::Clone()
 {
-	FEMaterial* pmCopy = FEMaterialFactory::Create(Type());
+	FSMaterial* pmCopy = FEMaterialFactory::Create(Type());
 	pmCopy->copy(this);
 	return pmCopy;
 }
 
 //-----------------------------------------------------------------------------
-bool FEMaterial::HasMaterialAxes() const
+bool FSMaterial::HasMaterialAxes() const
 {
 	return (m_axes != nullptr);
 }
 
 //-----------------------------------------------------------------------------
-mat3d FEMaterial::GetMatAxes(FEElementRef& el)
+mat3d FSMaterial::GetMatAxes(FEElementRef& el)
 {
 	return (m_axes ? m_axes->GetMatAxes(el) : mat3d(1,0,0, 0,1,0, 0,0,1));
 }
 
 //-----------------------------------------------------------------------------
 // set the axis material
-void FEMaterial::SetAxisMaterial(FEAxisMaterial* Q)
+void FSMaterial::SetAxisMaterial(FEAxisMaterial* Q)
 {
 	if (m_axes) delete m_axes;
 	m_axes = Q;
 }
 
 //-----------------------------------------------------------------------------
-bool FEMaterial::IsRigid()
+bool FSMaterial::IsRigid()
 {
 	return false;
 }
 
 //-----------------------------------------------------------------------------
 // Save the material data to the archive
-void FEMaterial::Save(OArchive& ar)
+void FSMaterial::Save(OArchive& ar)
 {
 	// save the name if there is one
 	string name = GetName();
@@ -685,7 +685,7 @@ void FEMaterial::Save(OArchive& ar)
 				{
 					for (int j = 0; j<mpi.Size(); ++j)
 					{
-						FEMaterial* pm = mpi.GetMaterial(j);
+						FSMaterial* pm = mpi.GetMaterial(j);
 						if (pm)
 						{
 							ar.BeginChunk(pm->Type());
@@ -719,9 +719,9 @@ void FEMaterial::Save(OArchive& ar)
 
 //-----------------------------------------------------------------------------
 // Load the material data from the archive
-void FEMaterial::Load(IArchive &ar)
+void FSMaterial::Load(IArchive &ar)
 {
-	TRACE("FEMaterial::Load");
+	TRACE("FSMaterial::Load");
 
 	char szname[256];
 	while (IArchive::IO_OK == ar.OpenChunk())
@@ -773,7 +773,7 @@ void FEMaterial::Load(IArchive &ar)
 						while (IArchive::IO_OK == ar.OpenChunk())
 						{
 							int nid = ar.GetChunkID();
-                            FEMaterial* pm = 0;
+                            FSMaterial* pm = 0;
 
                             switch (nid)
                             {
@@ -874,7 +874,7 @@ void FEMaterial::Load(IArchive &ar)
 					{
 						// Note that some materials are considered obsolete. Since they are no longer registered
 						// we need to check for them explicitly.
-						FEMaterial* pm = 0;
+						FSMaterial* pm = 0;
 						switch (nid)
 						{
 						case FE_TRANS_MOONEY_RIVLIN_OLD   : pm = new FETransMooneyRivlinOld; break;

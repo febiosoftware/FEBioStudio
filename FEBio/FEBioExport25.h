@@ -241,12 +241,12 @@ protected:
 	void WriteRigidJoint        (FEStep& s);
 	void WriteConstraints       (FEStep& s);
 
-	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteRigidMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMaterialParams(FEMaterial* pm, bool topLevel = true);
+	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteRigidMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteMaterialParams(FSMaterial* pm, bool topLevel = true);
 	void WriteFiberMaterial(FEOldFiberMaterial& f);
-	void WriteReactionMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el);
+	void WriteReactionMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el);
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteElementList(FEElemList& el);

@@ -2850,7 +2850,7 @@ void CGLView::RenderImageData()
 	glPopMatrix();
 }
 
-void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, const vec3d& c, double h)
+void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, double h)
 {
 	if (pmat->HasFibers())
 	{
@@ -2881,7 +2881,7 @@ void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, const vec3d& 
 		FEMaterialProperty& prop = pmat->GetProperty(i);
 		for (int j = 0; j < prop.Size(); ++j)
 		{
-			FEMaterial* matj = prop.GetMaterial(j);
+			FSMaterial* matj = prop.GetMaterial(j);
 			if (matj) RenderFiber(po, matj, rel, c, h);
 		}
 	}
@@ -2927,7 +2927,7 @@ void CGLView::RenderMaterialFibers()
 					if (showFiber)
 					{
 						GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
-						FEMaterial* pmat = 0;
+						FSMaterial* pmat = 0;
 						if (pgm) pmat = pgm->GetMaterialProperties();
 
 						rel.m_nelem = j;
@@ -2995,7 +2995,7 @@ void CGLView::RenderLocalMaterialAxes()
 					if (showAxes)
 					{
 						GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
-						FEMaterial* pmat = 0;
+						FSMaterial* pmat = 0;
 						if (pgm) pmat = pgm->GetMaterialProperties();
 
 						rel.m_nelem = j;
@@ -3301,7 +3301,7 @@ void CGLView::RenderRigidConnectors()
 		FEStep& s = *ps->GetStep(n);
 		for (int i = 0; i<s.RigidConnectors(); ++i)
 		{
-			FERigidConnector* rci = s.RigidConnector(i);
+			FSRigidConnector* rci = s.RigidConnector(i);
 			if (dynamic_cast<FERigidSphericalJoint*> (rci))
 			{
 				FERigidSphericalJoint* pj = dynamic_cast<FERigidSphericalJoint*> (rci);

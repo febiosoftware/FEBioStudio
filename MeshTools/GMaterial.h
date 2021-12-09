@@ -30,11 +30,11 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class FSModel;
-class FEMaterial;
+class FSMaterial;
 
 //-----------------------------------------------------------------------------
 // This class defines a material. It stores the material properties (as a 
-// FEMaterial class), the material name and other attributes, mostly used for rendering
+// FSMaterial class), the material name and other attributes, mostly used for rendering
 //
 class GMaterial : public FSObject
 {
@@ -42,13 +42,13 @@ public:
 	enum {MAX_COLORS = 16};
 
 public:
-	GMaterial(FEMaterial* pm = 0);
+	GMaterial(FSMaterial* pm = 0);
 	~GMaterial(void);
 
 public:
 
-	void SetMaterialProperties(FEMaterial* pm);
-	FEMaterial* GetMaterialProperties();
+	void SetMaterialProperties(FSMaterial* pm);
+	FSMaterial* GetMaterialProperties();
 
 	void SetModel(FSModel* ps) { m_ps = ps; }
 	FSModel* GetModel() { return m_ps; }
@@ -98,7 +98,7 @@ protected:
 
 protected:
 	int			m_nID;	//!< unique material ID
-	FEMaterial*	m_pm;	//!< the material properties
+	FSMaterial*	m_pm;	//!< the material properties
 	FSModel*	m_ps;	//!< the model to which this material belongs \todo is this being used?
 	static	int	m_nref;
 };

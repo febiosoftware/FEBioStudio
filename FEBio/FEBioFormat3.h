@@ -61,7 +61,7 @@ private:
 
 private:
 	// parse materials
-	void ParseMaterial(XMLTag& tag, FEMaterial* pmat);
+	void ParseMaterial(XMLTag& tag, FSMaterial* pmat);
 
 	// geometry parsing functions (version 2.0 and up)
 	void ParseGeometryNodes      (FEBioInputModel::Part* part, XMLTag& tag);

@@ -251,7 +251,7 @@ void CStepSettings::BuildStepProperties()
 		QStringList ops = GetFEBioChoices(m_moduleId, prop.m_nSuperClassId);
 		if (prop.IsRequired() == false) ops << "(none)";
 		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group)->setEnumValues(ops);
-		FEStepComponent* pc = prop.m_prop;
+		FSStepComponent* pc = prop.m_prop;
 		if (pc) BuildParamList(pc);
 	}
 }
@@ -313,7 +313,7 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 			int m = v.toInt();
 			if ((m >= 0) && (m < fci.size()))
 			{
-				FEStepComponent* pc = new FEStepComponent;
+				FSStepComponent* pc = new FSStepComponent;
 				FEBio::CreateModelComponent(fci[m].classId, pc);
 				prop.m_prop = pc;
 			}
@@ -366,7 +366,7 @@ void CRigidInterfaceSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidConstraintSettings::CRigidConstraintSettings(FSModel& fem, FERigidConstraint* pi) : CObjectProps(0), m_rc(pi)
+CRigidConstraintSettings::CRigidConstraintSettings(FSModel& fem, FSRigidConstraint* pi) : CObjectProps(0), m_rc(pi)
 {
 	QStringList mats;
 	m_sel = -1;
@@ -406,7 +406,7 @@ void CRigidConstraintSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidConnectorSettings::CRigidConnectorSettings(FSModel& fem, FERigidConnector* pi) : CObjectProps(0), m_rc(pi)
+CRigidConnectorSettings::CRigidConnectorSettings(FSModel& fem, FSRigidConnector* pi) : CObjectProps(0), m_rc(pi)
 {
 	QStringList mats;
 	m_rbA = -1, m_rbB = -1;
@@ -463,7 +463,7 @@ void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CMaterialProps::CMaterialProps(FSModel& fem, FEMaterial* mat) : FEObjectProps(0, &fem), m_mat(mat)
+CMaterialProps::CMaterialProps(FSModel& fem, FSMaterial* mat) : FEObjectProps(0, &fem), m_mat(mat)
 {
 	BuildPropertyList();
 }
@@ -475,7 +475,7 @@ void CMaterialProps::BuildPropertyList()
 	m_params.clear();
 
 	// get the material properties
-	FEMaterial* pm = m_mat;
+	FSMaterial* pm = m_mat;
 
 	// add the parameters
 	if (pm) BuildParamList(pm, true);

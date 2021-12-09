@@ -204,7 +204,7 @@ void FELSDYNAPlotImport::CreateMaterials(FEPostModel& fem)
 	int nmat = m_hdr.nummat4 + m_hdr.nummat8 + m_hdr.nummat2;
 	for (int i=0; i<nmat; i++)
 	{
-		FEMaterial m;
+		Material m;
 		fem.AddMaterial(m);
 	}
 }
@@ -338,7 +338,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	for (i=0; i<mesh.Elements(); ++i)
 	{
 		FEElement_& el = mesh.ElementRef(i);
-		FEMaterial* pm = fem.GetMaterial(el.m_MatID);
+		Material* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
 

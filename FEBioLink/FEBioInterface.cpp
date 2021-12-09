@@ -166,9 +166,9 @@ bool FEBio::CreateModelComponent(int classId, FSModelComponent* po)
 	map_parameters(po, feb);
 
 	// map the properties
-	if (dynamic_cast<FEStepComponent*>(po))
+	if (dynamic_cast<FSStepComponent*>(po))
 	{
-		FEStepComponent* pc = dynamic_cast<FEStepComponent*>(po);
+		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
 		for (int i = 0; i < feb->Properties(); ++i)
 		{
 			// TODO: mapped vectors are added as properties, but they should be parameters instead. 
@@ -187,9 +187,9 @@ bool FEBio::CreateModelComponent(int classId, FSModelComponent* po)
 		FEBioMaterial* febMat = dynamic_cast<FEBioMaterial*>(po);
 		febMat->SetFEBioMaterial(feb);
 	}
-	else if (dynamic_cast<FEDomainComponent*>(po))
+	else if (dynamic_cast<FSDomainComponent*>(po))
 	{
-		FEDomainComponent* pbc = dynamic_cast<FEDomainComponent*>(po);
+		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(po);
 		if (feb->FindProperty("surface"))
 		{
 			pbc->SetMeshItemType(FE_FACE_FLAG);
@@ -270,7 +270,7 @@ void FEBio::CreateStep(int classId, FEStep* po, bool initDefaultProps)
 			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(modId, prop.m_superClassId, -1, ClassSearchFlags::IncludeFECoreClasses);
 			if (fci.size() > 0)
 			{
-				FEStepComponent* psc = new FEStepComponent;
+				FSStepComponent* psc = new FSStepComponent;
 				CreateModelComponent(fci[0].classId, psc);
 				pc->m_prop = psc;
 			}
@@ -374,7 +374,7 @@ void FEBio::UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm)
 	febClass->UpdateData();
 }
 
-FEMaterial* FEBio::CreateMaterial(const char* sztype, FSModel* fem)
+FSMaterial* FEBio::CreateMaterial(const char* sztype, FSModel* fem)
 {
 	FEBioMaterial* pmat = new FEBioMaterial;
 	if (CreateMaterial(sztype, pmat) == false)
@@ -385,7 +385,7 @@ FEMaterial* FEBio::CreateMaterial(const char* sztype, FSModel* fem)
 	return pmat;
 }
 
-FEBoundaryCondition* FEBio::CreateBoundaryCondition(const char* sztype, FSModel* fem)
+FSBoundaryCondition* FEBio::CreateBoundaryCondition(const char* sztype, FSModel* fem)
 {
 	FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
 	if (FEBio::CreateModelComponent(FE_ESSENTIAL_BC, sztype, pbc) == false)
@@ -451,9 +451,9 @@ FEModelConstraint* FEBio::CreateNLConstraint(const char* sztype, FSModel* fem)
 	return pmc;
 }
 
-FERigidConstraint* FEBio::CreateRigidConstraint(const char* sztype, FSModel* fem)
+FSRigidConstraint* FEBio::CreateRigidConstraint(const char* sztype, FSModel* fem)
 {
-	FERigidConstraint* pi = new FEBioRigidConstraint(fem);
+	FSRigidConstraint* pi = new FEBioRigidConstraint(fem);
 	if (FEBio::CreateModelComponent(FE_RIGID_CONSTRAINT, sztype, pi) == false)
 	{
 		delete pi;
@@ -462,9 +462,9 @@ FERigidConstraint* FEBio::CreateRigidConstraint(const char* sztype, FSModel* fem
 	return pi;
 }
 
-FERigidConnector* FEBio::CreateRigidConnector(const char* sztype, FSModel* fem)
+FSRigidConnector* FEBio::CreateRigidConnector(const char* sztype, FSModel* fem)
 {
-	FERigidConnector* pi = new FEBioRigidConnector(fem);
+	FSRigidConnector* pi = new FEBioRigidConnector(fem);
 	if (FEBio::CreateModelComponent(FE_RIGID_CONNECTOR, sztype, pi) == false)
 	{
 		delete pi;

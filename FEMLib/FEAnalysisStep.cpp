@@ -54,22 +54,22 @@ public:
 	FSObjectList<FEStepControlProperty>	m_Prop;
 
 	// boundary conditions
-	FSObjectList<FEBoundaryCondition>	m_BC;
+	FSObjectList<FSBoundaryCondition>	m_BC;
 
 	// loads
-	FSObjectList<FELoad>	m_FC;
+	FSObjectList<FSLoad>	m_FC;
 
 	// initial condition
 	FSObjectList<FEInitialCondition>		m_IC;
 
 	// contact interfaces
-	FSObjectList<FEInterface>	m_Int;
+	FSObjectList<FSInterface>	m_Int;
 
 	// constraints
 	FSObjectList<FEModelConstraint>	m_NLC;
 
 	// rigid constraints	
-	FSObjectList<FERigidConstraint>	m_RC;
+	FSObjectList<FSRigidConstraint>	m_RC;
 
 	// rigid loads
 	FSObjectList<FERigidLoad>	m_RL;
@@ -78,7 +78,7 @@ public:
 	FSObjectList<FELinearConstraintSet>	m_LC;
 
 	// rigid connectors (nonlinear constraints)
-	FSObjectList<FERigidConnector>	m_CN;
+	FSObjectList<FSRigidConnector>	m_CN;
 };
 
 
@@ -140,24 +140,24 @@ int FEStep::ActiveBCs()
 }
 
 //-----------------------------------------------------------------------------
-FEBoundaryCondition* FEStep::BC(int i) { return imp->m_BC[i]; }
+FSBoundaryCondition* FEStep::BC(int i) { return imp->m_BC[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddBC(FEBoundaryCondition* pbc)
+void FEStep::AddBC(FSBoundaryCondition* pbc)
 { 
 	imp->m_BC.Add(pbc);
 	pbc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertBC(int n, FEBoundaryCondition* pbc)
+void FEStep::InsertBC(int n, FSBoundaryCondition* pbc)
 { 
 	imp->m_BC.Insert(n, pbc);
 	pbc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveBC(FEBoundaryCondition* pbc)
+int FEStep::RemoveBC(FSBoundaryCondition* pbc)
 {
 	return (int)imp->m_BC.Remove(pbc);
 }
@@ -172,24 +172,24 @@ void FEStep::RemoveAllBCs()
 int FEStep::Loads() { return (int)imp->m_FC.Size(); }
 
 //-----------------------------------------------------------------------------
-FELoad* FEStep::Load(int i) { return imp->m_FC[i]; }
+FSLoad* FEStep::Load(int i) { return imp->m_FC[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddLoad(FELoad* pfc)
+void FEStep::AddLoad(FSLoad* pfc)
 { 
 	imp->m_FC.Add(pfc);
 	pfc->SetStep(GetID()); 
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertLoad(int n, FELoad* pfc)
+void FEStep::InsertLoad(int n, FSLoad* pfc)
 { 
 	imp->m_FC.Insert(n, pfc);
 	pfc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveLoad(FELoad* pfc)
+int FEStep::RemoveLoad(FSLoad* pfc)
 {
 	return (int)imp->m_FC.Remove(pfc);
 }
@@ -235,24 +235,24 @@ void FEStep::RemoveAllICs()
 int FEStep::Interfaces() { return (int)imp->m_Int.Size(); }
 
 //-----------------------------------------------------------------------------
-FEInterface* FEStep::Interface(int i) { return imp->m_Int[i]; }
+FSInterface* FEStep::Interface(int i) { return imp->m_Int[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddInterface(FEInterface* pi)
+void FEStep::AddInterface(FSInterface* pi)
 { 
 	imp->m_Int.Add(pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertInterface(int n, FEInterface* pi)
+void FEStep::InsertInterface(int n, FSInterface* pi)
 { 
 	imp->m_Int.Insert(n, pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveInterface(FEInterface* pi)
+int FEStep::RemoveInterface(FSInterface* pi)
 {
 	return (int)imp->m_Int.Remove(pi);
 }
@@ -316,7 +316,7 @@ void FEStep::RemoveAllConstraints()
 int FEStep::RigidConstraints() { return (int)imp->m_RC.Size(); }
 
 //-----------------------------------------------------------------------------
-FERigidConstraint* FEStep::RigidConstraint(int i) { return imp->m_RC[i]; }
+FSRigidConstraint* FEStep::RigidConstraint(int i) { return imp->m_RC[i]; }
 
 //-----------------------------------------------------------------------------
 int FEStep::RigidConstraints(int ntype)
@@ -330,21 +330,21 @@ int FEStep::RigidConstraints(int ntype)
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddRC(FERigidConstraint* prc)
+void FEStep::AddRC(FSRigidConstraint* prc)
 { 
 	imp->m_RC.Add(prc);
 	prc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertRC(int n, FERigidConstraint* prc)
+void FEStep::InsertRC(int n, FSRigidConstraint* prc)
 { 
 	imp->m_RC.Insert(n, prc);
 	prc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveRC(FERigidConstraint* prc)
+int FEStep::RemoveRC(FSRigidConstraint* prc)
 {
 	return (int)imp->m_RC.Remove(prc);
 }
@@ -418,24 +418,24 @@ void FEStep::RemoveAllLinearConstraints()
 int FEStep::RigidConnectors() { return (int)imp->m_CN.Size(); }
 
 //-----------------------------------------------------------------------------
-FERigidConnector* FEStep::RigidConnector(int i) { return imp->m_CN[i]; }
+FSRigidConnector* FEStep::RigidConnector(int i) { return imp->m_CN[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddRigidConnector(FERigidConnector* pi)
+void FEStep::AddRigidConnector(FSRigidConnector* pi)
 {
 	imp->m_CN.Add(pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertRigidConnector(int n, FERigidConnector* pi)
+void FEStep::InsertRigidConnector(int n, FSRigidConnector* pi)
 { 
 	imp->m_CN.Insert(n, pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveRigidConnector(FERigidConnector* pi)
+int FEStep::RemoveRigidConnector(FSRigidConnector* pi)
 {
 	return (int)imp->m_CN.Remove(pi);
 }
@@ -449,16 +449,16 @@ void FEStep::RemoveAllRigidConnectors()
 //-----------------------------------------------------------------------------
 #define MoveComponent(Type, Fnc) (dynamic_cast<Type*>(pc)) Fnc(dynamic_cast<Type*>(pc))
 
-void FEStep::AddComponent(FEStepComponent* pc)
+void FEStep::AddComponent(FSStepComponent* pc)
 {
 	// remove it from the old step
 	pc->SetStep(GetID());
-	if      MoveComponent(FEBoundaryCondition, AddBC);
-	else if MoveComponent(FELoad             , AddLoad);
-	else if MoveComponent(FEInterface        , AddInterface);
+	if      MoveComponent(FSBoundaryCondition, AddBC);
+	else if MoveComponent(FSLoad             , AddLoad);
+	else if MoveComponent(FSInterface        , AddInterface);
 	else if MoveComponent(FEInitialCondition , AddIC);
-	else if MoveComponent(FERigidConstraint  , AddRC);
-	else if MoveComponent(FERigidConnector   , AddRigidConnector);
+	else if MoveComponent(FSRigidConstraint  , AddRC);
+	else if MoveComponent(FSRigidConnector   , AddRigidConnector);
 	else if MoveComponent(FEModelConstraint  , AddConstraint);
 	else assert(false);
 }
@@ -466,16 +466,16 @@ void FEStep::AddComponent(FEStepComponent* pc)
 //-----------------------------------------------------------------------------
 #define TryRemoveComponent(Type, Cont) (dynamic_cast<Type*>(pc)) imp->Cont.Remove(dynamic_cast<Type*>(pc))
 
-void FEStep::RemoveComponent(FEStepComponent* pc)
+void FEStep::RemoveComponent(FSStepComponent* pc)
 {
 	assert(pc->GetStep() == GetID());
-	if      TryRemoveComponent(FEBoundaryCondition, m_BC);
-	else if TryRemoveComponent(FELoad             , m_FC);
+	if      TryRemoveComponent(FSBoundaryCondition, m_BC);
+	else if TryRemoveComponent(FSLoad             , m_FC);
 	else if TryRemoveComponent(FEInitialCondition , m_IC);
-	else if TryRemoveComponent(FEInterface        , m_Int);
+	else if TryRemoveComponent(FSInterface        , m_Int);
 	else if TryRemoveComponent(FEModelConstraint  , m_NLC);
-	else if TryRemoveComponent(FERigidConstraint  , m_RC);
-	else if TryRemoveComponent(FERigidConnector   , m_CN);
+	else if TryRemoveComponent(FSRigidConstraint  , m_RC);
+	else if TryRemoveComponent(FSRigidConnector   , m_CN);
 	else assert(false);
 }
 
@@ -536,7 +536,7 @@ void FEStep::Save(OArchive &ar)
 				// store the property data
 				if (prop.m_prop)
 				{
-					FEStepComponent* pc = prop.m_prop;
+					FSStepComponent* pc = prop.m_prop;
 
 					string typeStr = pc->GetTypeString();
 					ar.WriteChunk(CID_STEP_PROPERTY_TYPESTR, typeStr);
@@ -559,7 +559,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nbc; ++i)
 			{
-				FEBoundaryCondition* pb = BC(i);
+				FSBoundaryCondition* pb = BC(i);
 				int ntype = pb->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -579,7 +579,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nfc; ++i)
 			{
-				FELoad* pb = Load(i);
+				FSLoad* pb = Load(i);
 				int ntype = pb->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -619,7 +619,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nintfs; ++i)
 			{
-				FEInterface* pi = Interface(i);
+				FSInterface* pi = Interface(i);
 				int ntype = pi->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -659,7 +659,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nrc; ++i)
 			{
-				FERigidConstraint* pr = RigidConstraint(i);
+				FSRigidConstraint* pr = RigidConstraint(i);
 				int ntype = pr->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -679,7 +679,7 @@ void FEStep::Save(OArchive &ar)
         {
             for (int i=0; i<ncnct; ++i)
             {
-				FERigidConnector* pi = RigidConnector(i);
+				FSRigidConnector* pi = RigidConnector(i);
                 int ntype = pi->Type();
                 ar.BeginChunk(ntype);
                 {
@@ -729,7 +729,7 @@ void FEStep::Load(IArchive &ar)
 				case CID_STEP_PROPERTY_TYPESTR: ar.read(typeString); break;
 				case CID_STEP_PROPERTY_DATA: 
 				{
-					FEStepComponent* psc = new FEStepComponent;
+					FSStepComponent* psc = new FSStepComponent;
 					FEBio::CreateModelComponent(pc->m_nSuperClassId, typeString, psc);
 					psc->Load(ar);
 					assert(pc->m_prop == nullptr);
@@ -749,7 +749,7 @@ void FEStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FEDomainComponent* pb = 0;
+					FSDomainComponent* pb = 0;
 					switch (ntype)
 					{
 					case FE_FIXED_DISPLACEMENT		 : pb = new FEFixedDisplacement         (m_pfem); break;
@@ -835,9 +835,9 @@ void FEStep::Load(IArchive &ar)
 					if (ar.Version() < 0x00020000)
 					{
 						if (dynamic_cast<FEInitialCondition*>(pb)) AddIC(dynamic_cast<FEInitialCondition*>(pb));
-						else AddBC(dynamic_cast<FEBoundaryCondition*>(pb));
+						else AddBC(dynamic_cast<FSBoundaryCondition*>(pb));
 					}
-					else AddBC(dynamic_cast<FEBoundaryCondition*>(pb));
+					else AddBC(dynamic_cast<FSBoundaryCondition*>(pb));
 
 					ar.CloseChunk();
 				}
@@ -849,18 +849,18 @@ void FEStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FELoad* pl = 0;
+					FSLoad* pl = 0;
 
 					if (ntype == FE_NODAL_DOF_LOAD) pl = new FENodalDOFLoad(m_pfem);
 					else if (ntype == FE_FEBIO_NODAL_LOAD) pl = new FEBioNodalLoad(m_pfem);
 					else
 					{
 						// see if it's a surface load
-						pl = fecore_new<FELoad>(m_pfem, FE_SURFACE_LOAD, ntype);
+						pl = fecore_new<FSLoad>(m_pfem, FE_SURFACE_LOAD, ntype);
 						if (pl == 0)
 						{
 							// could be a body load
-							pl = fecore_new<FELoad>(m_pfem, FE_BODY_LOAD, ntype);
+							pl = fecore_new<FSLoad>(m_pfem, FE_BODY_LOAD, ntype);
 						}
 					}
 
@@ -919,12 +919,12 @@ void FEStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FEInterface* pi = 0;
+					FSInterface* pi = 0;
 
 					// check obsolete interfaces first
 					if      (ntype == FE_SLIDING_INTERFACE   ) pi = new FESlidingInterface(m_pfem);
 					else if (ntype == FE_SPRINGTIED_INTERFACE) pi = new FESpringTiedInterface(m_pfem);
-					else pi = fecore_new<FEInterface>(m_pfem, FE_INTERFACE, ntype);
+					else pi = fecore_new<FSInterface>(m_pfem, FE_INTERFACE, ntype);
 
 					// make sure we were able to allocate an interface
 					if (pi == 0)
@@ -990,14 +990,14 @@ void FEStep::Load(IArchive &ar)
 						// read RC data
 						rc_old->Load(ar);
 
-						vector<FERigidConstraint*> rc = convertOldToNewRigidConstraint(m_pfem, rc_old);
+						vector<FSRigidConstraint*> rc = convertOldToNewRigidConstraint(m_pfem, rc_old);
 
 						// add rigid constraints
 						for (int i=0; i<(int) rc.size(); ++i) AddRC(rc[i]);
 					}
 					else
 					{
-						FERigidConstraint* rc = 0;
+						FSRigidConstraint* rc = 0;
 						switch (ntype)
 						{
 						case FE_RIGID_FIXED            : rc = new FERigidFixed          (m_pfem, GetID()); break;
@@ -1027,7 +1027,7 @@ void FEStep::Load(IArchive &ar)
                 {
                     int ntype = ar.GetChunkID();
                     
-					FERigidConnector* pi = 0;
+					FSRigidConnector* pi = 0;
                     switch (ntype)
                     {
                         case FE_RC_SPHERICAL_JOINT		: pi = new FERigidSphericalJoint    (m_pfem); break;

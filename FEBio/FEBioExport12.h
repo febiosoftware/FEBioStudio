@@ -129,9 +129,9 @@ protected:
 	void WriteSpringTied(FEStep& s);
 
 	void WriteDiscrete();
-	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMultiMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMaterialParams(FEMaterial* pm);
+	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteMultiMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteMaterialParams(FSMaterial* pm);
 	void WriteFiberMaterial(FEOldFiberMaterial& f);
 
 	void WriteSurfaceSection(FEFaceList& s);

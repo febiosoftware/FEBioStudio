@@ -677,7 +677,7 @@ void XpltReader::CreateMaterials(FEPostModel& fem)
 	int nmat = (int)m_Mat.size();
 	for (int i=0; i<nmat; i++)
 	{
-		FEMaterial m;
+		Material m;
 		m.SetName(m_Mat[i].szname);
 		fem.AddMaterial(m);
 	}
@@ -1085,7 +1085,7 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 	for (int i=0; i<NE; ++i)
 	{
 		FEElement_& el = pmesh->ElementRef(i);
-		FEMaterial* pm = fem.GetMaterial(el.m_MatID);
+		Material* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
 

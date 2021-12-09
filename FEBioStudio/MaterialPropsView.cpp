@@ -132,7 +132,7 @@ public:
 	public:
 		CMaterialPropsModel*	m_model;
 
-		FEMaterial*		m_pm;			// material pointer
+		FSMaterial*		m_pm;			// material pointer
 		int				m_paramId;	// index of parameter (or -1 if this is property)
 		int				m_propId;		// index of property (or -1 if this is parameter)
 		int				m_matIndex;	// index into property's material array
@@ -147,7 +147,7 @@ public:
 
 	public:
 		Item() { m_model = nullptr; m_pm = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_matIndex = 0; m_nrow = -1; m_flag = 0;  }
-		Item(FEMaterial* pm, int paramId = -1, int propId = -1, int matIndex = 0, int nrow = -1) {
+		Item(FSMaterial* pm, int paramId = -1, int propId = -1, int matIndex = 0, int nrow = -1) {
 			m_model = nullptr;
 			m_pm = pm; m_paramId = paramId; m_propId = propId; m_matIndex = matIndex; m_nrow = nrow;
 			m_flag = (propId != -1 ? 1 : 0);
@@ -161,7 +161,7 @@ public:
 
 		Param* parameter() { return (m_paramId >= 0 ? m_pm->GetParamPtr(m_paramId) : nullptr); }
 
-		Item* addChild(FEMaterial* pm, int paramId, int propId, int matIndex)
+		Item* addChild(FSMaterial* pm, int paramId, int propId, int matIndex)
 		{
 			Item* item = new Item(pm, paramId, propId, matIndex, (int)m_children.size());
 			item->m_model = m_model; assert(m_model);
@@ -171,7 +171,7 @@ public:
 			if (propId >= 0)
 			{
 				FEMaterialProperty& p = pm->GetProperty(propId);
-				FEMaterial* pm = p.GetMaterial(matIndex);
+				FSMaterial* pm = p.GetMaterial(matIndex);
 				if (pm) item->addChildren(pm);
 			}
 			return item;
@@ -192,7 +192,7 @@ public:
 			}
 		}
 
-		void addParameters(FEMaterial* pm)
+		void addParameters(FSMaterial* pm)
 		{
 			pm->UpdateData(false);
 			for (int i = 0; i < pm->Parameters(); ++i)
@@ -214,7 +214,7 @@ public:
 			}
 		}
 
-		void addChildren(FEMaterial* pm)
+		void addChildren(FSMaterial* pm)
 		{
 			addParameters(pm);
 
@@ -397,7 +397,7 @@ public:
 						if (m_matIndex >= 0)
 						{
 							s += QString(" - %1").arg(m_matIndex + 1);
-							FEMaterial* pm = p.GetMaterial(m_matIndex);
+							FSMaterial* pm = p.GetMaterial(m_matIndex);
 							if (pm && (pm->GetName().empty() == false))
 							{
 								QString name = QString::fromStdString(pm->GetName());
@@ -411,7 +411,7 @@ public:
 				}
 				else
 				{
-					FEMaterial* pm = (m_matIndex >= 0 ? p.GetMaterial(m_matIndex) : nullptr);
+					FSMaterial* pm = (m_matIndex >= 0 ? p.GetMaterial(m_matIndex) : nullptr);
 					if (pm == nullptr)
 					{
 						bool required = (p.GetFlags() & FEMaterialProperty::REQUIRED);
@@ -504,7 +504,7 @@ public:
 
 				if (matId == -2)
 				{
-					FEMaterial* pm = matProp.GetMaterial(m_matIndex);
+					FSMaterial* pm = matProp.GetMaterial(m_matIndex);
 					if (pm) matProp.RemoveMaterial(pm);
 				}
 				else
@@ -512,7 +512,7 @@ public:
 					// check if this is a different type
 					if (m_matIndex >= 0)
 					{
-						FEMaterial* oldMat = m_pm->GetProperty(m_propId).GetMaterial(m_matIndex);
+						FSMaterial* oldMat = m_pm->GetProperty(m_propId).GetMaterial(m_matIndex);
 
 						if (dynamic_cast<FEReactionSpecies*>(oldMat))
 						{
@@ -529,7 +529,7 @@ public:
 					}
 
 					FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-					FEMaterial* pmat = nullptr;
+					FSMaterial* pmat = nullptr;
 					if (matProp.GetClassID() < FE_FEBIO_MATERIAL_CLASS)
 					{
 						pmat = MF.Create(value.toInt());
@@ -794,9 +794,9 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 		}
 		else if (item->isProperty())
 		{
-			FEMaterial* pm = item->m_pm;
+			FSMaterial* pm = item->m_pm;
 			FEMaterialProperty& matProp = pm->GetProperty(item->m_propId);
-			FEMaterial* pmat = pm->GetProperty(item->m_propId).GetMaterial(item->m_matIndex);
+			FSMaterial* pmat = pm->GetProperty(item->m_propId).GetMaterial(item->m_matIndex);
 
 			QComboBox* pc = new QComboBox(parent);
 

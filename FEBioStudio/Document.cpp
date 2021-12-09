@@ -633,7 +633,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GMaterial*          >(po))
 	{
 		GMaterial* gmat = dynamic_cast<GMaterial*>(po);
-		FEMaterial* mat = gmat->GetMaterialProperties();
+		FSMaterial* mat = gmat->GetMaterialProperties();
 		if (mat)
 		{
 			std::stringstream ss;
@@ -643,9 +643,9 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 			return ss.str();
 		}
 	}
-	else if (dynamic_cast<FEStepComponent*>(po))
+	else if (dynamic_cast<FSStepComponent*>(po))
 	{
-		FEStepComponent* pc = dynamic_cast<FEStepComponent*>(po);
+		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
 		return pc->GetTypeString();
 	}
 	else if (dynamic_cast<FEStep*>(po))
@@ -676,9 +676,9 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GModel*>(po)) return "model";
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po)) return "volume image renderer";
 	else if (dynamic_cast<Post::CImageSource*>(po)) return "3D Image source";
-	else if (dynamic_cast<FEMaterial*>(po))
+	else if (dynamic_cast<FSMaterial*>(po))
 	{
-		FEMaterial* mat = dynamic_cast<FEMaterial*>(po);
+		FSMaterial* mat = dynamic_cast<FSMaterial*>(po);
 		if (mat)
 		{
 			std::stringstream ss;

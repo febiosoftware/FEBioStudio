@@ -53,7 +53,7 @@ GLColor col[GMaterial::MAX_COLORS] = {
 	GLColor(120, 0, 240)
 };
 
-GMaterial::GMaterial(FEMaterial* pm)
+GMaterial::GMaterial(FSMaterial* pm)
 {
 	m_pm = pm;
 	if (m_pm) m_pm->SetOwner(this);
@@ -85,21 +85,21 @@ GMaterial::~GMaterial(void)
 	delete m_pm;
 }
 
-void GMaterial::SetMaterialProperties(FEMaterial* pm) 
+void GMaterial::SetMaterialProperties(FSMaterial* pm) 
 { 
 	delete m_pm; 
 	m_pm = pm; 
 	m_pm->SetOwner(this);
 }
 
-FEMaterial* GMaterial::GetMaterialProperties()
+FSMaterial* GMaterial::GetMaterialProperties()
 { 
 	return m_pm; 
 }
 
 GMaterial* GMaterial::Clone()
 {
-	FEMaterial* pmCopy = 0;
+	FSMaterial* pmCopy = 0;
 	if (m_pm) pmCopy = m_pm->Clone();
 	return new GMaterial(pmCopy);
 }

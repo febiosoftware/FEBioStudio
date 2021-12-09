@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FERigidLoad.h"
 
 //=============================================================================
-FERigidLoad::FERigidLoad(int ntype, FSModel* ps, int nstep) : FELoad(ntype, ps, 0, nstep)
+FERigidLoad::FERigidLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0, nstep)
 { 
 	m_superClassID = FE_RIGID_LOAD; 
 	SetMeshItemType(0);

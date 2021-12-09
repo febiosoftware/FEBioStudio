@@ -8,7 +8,7 @@ class FSModel;
 
 //-----------------------------------------------------------------------------
 // visco-elastic
-class FEViscoElastic : public FEMaterial
+class FEViscoElastic : public FSMaterial
 {
 public:
 	// max nr of Prony terms
@@ -25,8 +25,8 @@ public:
 	FEViscoElastic();
 
 	// set the elastic component of the material
-	void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-	FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+	void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+	FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
 
 	DECLARE_REGISTERED(FEViscoElastic);
 };
@@ -34,7 +34,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // uncoupled visco-elastic
-class FEUncoupledViscoElastic : public FEMaterial
+class FEUncoupledViscoElastic : public FSMaterial
 {
 public:
 	// max nr of Prony terms
@@ -52,8 +52,8 @@ public:
 	FEUncoupledViscoElastic();
 
 	// set the elastic component of the material
-	void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-	FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+	void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+	FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
 
 	DECLARE_REGISTERED(FEUncoupledViscoElastic);
 };
@@ -61,7 +61,7 @@ public:
 //-----------------------------------------------------------------------------
 // The FEMultiMaterial class is used as a base class for materials that define
 // material properties for multi-physics problems. 
-class FEMultiMaterial : public FEMaterial
+class FEMultiMaterial : public FSMaterial
 {
 public:
 	FEMultiMaterial(int ntype);
@@ -80,12 +80,12 @@ public:
 	FEBiphasic();
 
 	// set/get solid component 
-	void SetSolidMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-	FEMaterial* GetSolidMaterial() { return GetProperty(0).GetMaterial(); }
+	void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+	FSMaterial* GetSolidMaterial() { return GetProperty(0).GetMaterial(); }
 
 	// set/get permeability
-	void SetPermeability(FEMaterial* pm) { ReplaceProperty(1, pm); }
-	FEMaterial* GetPermeability() { return GetProperty(1).GetMaterial(); }
+	void SetPermeability(FSMaterial* pm) { ReplaceProperty(1, pm); }
+	FSMaterial* GetPermeability() { return GetProperty(1).GetMaterial(); }
 
 	DECLARE_REGISTERED(FEBiphasic);
 };
@@ -93,7 +93,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // The FESoluteMaterial is used as a component of a multiphasic material
-class FESoluteMaterial : public FEMaterial
+class FESoluteMaterial : public FSMaterial
 {
 public:
 	enum { MP_NSOL };
@@ -102,12 +102,12 @@ public:
 	FESoluteMaterial();
 
 	// set/get diffusivity
-	void SetDiffusivity(FEMaterial* pm) { ReplaceProperty(0, pm); }
-	FEMaterial* GetDiffusivity() { return GetProperty(0).GetMaterial(); }
+	void SetDiffusivity(FSMaterial* pm) { ReplaceProperty(0, pm); }
+	FSMaterial* GetDiffusivity() { return GetProperty(0).GetMaterial(); }
 
 	// set/get solubility
-	void SetSolubility(FEMaterial* pm) { ReplaceProperty(1, pm); }
-	FEMaterial* GetSolubility() { return GetProperty(1).GetMaterial(); }
+	void SetSolubility(FSMaterial* pm) { ReplaceProperty(1, pm); }
+	FSMaterial* GetSolubility() { return GetProperty(1).GetMaterial(); }
 
 	// get/set solute index
 	void SetSoluteIndex(int i) { SetIntValue(MP_NSOL, i); }
@@ -119,7 +119,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // The FESBMMaterial is used as a component of a multiphasic material
-class FESBMMaterial : public FEMaterial
+class FESBMMaterial : public FSMaterial
 {
 public:
 	enum { MP_NSBM , MP_RHO0 , MP_RMIN , MP_RMAX };
@@ -149,20 +149,20 @@ public:
 	FEBiphasicSolute();
 
 	// set/get elastic component 
-	void SetSolidMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-	FEMaterial* GetSolidMaterial() { return GetProperty(0).GetMaterial(); }
+	void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+	FSMaterial* GetSolidMaterial() { return GetProperty(0).GetMaterial(); }
 
 	// set/get permeability
-	void SetPermeability(FEMaterial* pm) { ReplaceProperty(1, pm); }
-	FEMaterial* GetPermeability() { return GetProperty(1).GetMaterial(); }
+	void SetPermeability(FSMaterial* pm) { ReplaceProperty(1, pm); }
+	FSMaterial* GetPermeability() { return GetProperty(1).GetMaterial(); }
 
 	// set/get osmotic coefficient
-	void SetOsmoticCoefficient(FEMaterial* pm) { ReplaceProperty(2, pm); }
-	FEMaterial* GetOsmoticCoefficient() { return GetProperty(2).GetMaterial(); }
+	void SetOsmoticCoefficient(FSMaterial* pm) { ReplaceProperty(2, pm); }
+	FSMaterial* GetOsmoticCoefficient() { return GetProperty(2).GetMaterial(); }
 
 	// set/get solute
 	void SetSoluteMaterial(FESoluteMaterial* pm) { ReplaceProperty(3, pm); }
-	FEMaterial* GetSoluteMaterial() { return GetProperty(3).GetMaterial(); }
+	FSMaterial* GetSoluteMaterial() { return GetProperty(3).GetMaterial(); }
 
 	DECLARE_REGISTERED(FEBiphasicSolute);
 };
@@ -179,27 +179,27 @@ public:
 	FETriphasicMaterial();
 
 	// set/get elastic component 
-	void SetSolidMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-	FEMaterial* GetSolidMaterial() { return GetProperty(0).GetMaterial(); }
+	void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+	FSMaterial* GetSolidMaterial() { return GetProperty(0).GetMaterial(); }
 
 	// set/get permeability
-	void SetPermeability(FEMaterial* pm) { ReplaceProperty(1, pm); }
-	FEMaterial* GetPermeability() { return GetProperty(1).GetMaterial(); }
+	void SetPermeability(FSMaterial* pm) { ReplaceProperty(1, pm); }
+	FSMaterial* GetPermeability() { return GetProperty(1).GetMaterial(); }
 
 	// set/get osmotic coefficient
-	void SetOsmoticCoefficient(FEMaterial* pm) { ReplaceProperty(2, pm); }
-	FEMaterial* GetOsmoticCoefficient() { return GetProperty(2).GetMaterial(); }
+	void SetOsmoticCoefficient(FSMaterial* pm) { ReplaceProperty(2, pm); }
+	FSMaterial* GetOsmoticCoefficient() { return GetProperty(2).GetMaterial(); }
 
 	// set/get solute i
 	void SetSoluteMaterial(FESoluteMaterial* pm, int i);
-	FEMaterial* GetSoluteMaterial(int i);
+	FSMaterial* GetSoluteMaterial(int i);
 
 	DECLARE_REGISTERED(FETriphasicMaterial);
 };
 
 //-----------------------------------------------------------------------------
 // solid mixture class
-class FESolidMixture : public FEMaterial
+class FESolidMixture : public FSMaterial
 {
 public:
 	FESolidMixture();
@@ -209,7 +209,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // uncoupled solid mixture class
-class FEUncoupledSolidMixture : public FEMaterial
+class FEUncoupledSolidMixture : public FSMaterial
 {
 public:
 	FEUncoupledSolidMixture();
@@ -219,23 +219,23 @@ public:
 
 //-----------------------------------------------------------------------------
 // continuous fiber distribution
-class FECFDMaterial : public FEMaterial
+class FECFDMaterial : public FSMaterial
 {
 public:
     // constructor
     FECFDMaterial();
     
     // set/get fiber material
-    void SetFiberMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetFiberMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetFiberMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetFiberMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get distribution
-    void SetDistribution(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetDistribution() { return GetProperty(1).GetMaterial(); }
+    void SetDistribution(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetDistribution() { return GetProperty(1).GetMaterial(); }
     
     // set/get scheme
-    void SetScheme(FEMaterial* pm) { ReplaceProperty(2, pm); }
-    FEMaterial* GetScheme() { return GetProperty(2).GetMaterial(); }
+    void SetScheme(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetScheme() { return GetProperty(2).GetMaterial(); }
     
 public:
     DECLARE_REGISTERED(FECFDMaterial);
@@ -243,23 +243,23 @@ public:
 
 //-----------------------------------------------------------------------------
 // continuous fiber distribution uncoupled
-class FECFDUCMaterial : public FEMaterial
+class FECFDUCMaterial : public FSMaterial
 {
 public:
     // constructor
     FECFDUCMaterial();
     
     // set/get fiber material
-    void SetFiberMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetFiberMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetFiberMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetFiberMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get distribution
-    void SetDistribution(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetDistribution() { return GetProperty(1).GetMaterial(); }
+    void SetDistribution(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetDistribution() { return GetProperty(1).GetMaterial(); }
     
     // set/get scheme
-    void SetScheme(FEMaterial* pm) { ReplaceProperty(2, pm); }
-    FEMaterial* GetScheme() { return GetProperty(2).GetMaterial(); }
+    void SetScheme(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetScheme() { return GetProperty(2).GetMaterial(); }
     
 public:
     DECLARE_REGISTERED(FECFDUCMaterial);
@@ -267,23 +267,23 @@ public:
 
 //-----------------------------------------------------------------------------
 // elastic damage material
-class FEElasticDamageMaterial : public FEMaterial
+class FEElasticDamageMaterial : public FSMaterial
 {
 public:
     // constructor
     FEElasticDamageMaterial();
     
     // set/get elastic material
-    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get damage material
-    void SetDamageMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetDamageMaterial() { return GetProperty(1).GetMaterial(); }
+    void SetDamageMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetDamageMaterial() { return GetProperty(1).GetMaterial(); }
     
     // set/get criterion
-    void SetCriterion(FEMaterial* pm) { ReplaceProperty(2, pm); }
-    FEMaterial* GetCriterion() { return GetProperty(2).GetMaterial(); }
+    void SetCriterion(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetCriterion() { return GetProperty(2).GetMaterial(); }
     
 public:
     DECLARE_REGISTERED(FEElasticDamageMaterial);
@@ -291,23 +291,23 @@ public:
 
 //-----------------------------------------------------------------------------
 // uncoupled elastic damage material
-class FEElasticDamageMaterialUC : public FEMaterial
+class FEElasticDamageMaterialUC : public FSMaterial
 {
 public:
     // constructor
     FEElasticDamageMaterialUC();
     
     // set/get elastic material
-    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get damage material
-    void SetDamageMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetDamageMaterial() { return GetProperty(1).GetMaterial(); }
+    void SetDamageMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetDamageMaterial() { return GetProperty(1).GetMaterial(); }
     
     // set/get criterion
-    void SetCriterion(FEMaterial* pm) { ReplaceProperty(2, pm); }
-    FEMaterial* GetCriterion() { return GetProperty(2).GetMaterial(); }
+    void SetCriterion(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetCriterion() { return GetProperty(2).GetMaterial(); }
     
 public:
     DECLARE_REGISTERED(FEElasticDamageMaterialUC);
@@ -315,7 +315,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // reactive viscoelastic material
-class FEReactiveViscoelasticMaterial : public FEMaterial
+class FEReactiveViscoelasticMaterial : public FSMaterial
 {
 public:
     // material parameters
@@ -326,16 +326,16 @@ public:
     FEReactiveViscoelasticMaterial();
     
     // set/get elastic material
-    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get bond material
-    void SetBondMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetBondMaterial() { return GetProperty(1).GetMaterial(); }
+    void SetBondMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetBondMaterial() { return GetProperty(1).GetMaterial(); }
     
     // set/get relaxation
-    void SetRelaxation(FEMaterial* pm) { ReplaceProperty(2, pm); }
-    FEMaterial* GetRelaxation() { return GetProperty(2).GetMaterial(); }
+    void SetRelaxation(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetRelaxation() { return GetProperty(2).GetMaterial(); }
     
 public:
     DECLARE_REGISTERED(FEReactiveViscoelasticMaterial);
@@ -343,7 +343,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // uncoupled reactive viscoelastic material
-class FEReactiveViscoelasticMaterialUC : public FEMaterial
+class FEReactiveViscoelasticMaterialUC : public FSMaterial
 {
 public:
     // material parameters
@@ -354,23 +354,23 @@ public:
     FEReactiveViscoelasticMaterialUC();
     
     // set/get elastic material
-    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get bond material
-    void SetBondMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetBondMaterial() { return GetProperty(1).GetMaterial(); }
+    void SetBondMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetBondMaterial() { return GetProperty(1).GetMaterial(); }
     
     // set/get relaxation
-    void SetRelaxation(FEMaterial* pm) { ReplaceProperty(2, pm); }
-    FEMaterial* GetRelaxation() { return GetProperty(2).GetMaterial(); }
+    void SetRelaxation(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetRelaxation() { return GetProperty(2).GetMaterial(); }
     
 public:
     DECLARE_REGISTERED(FEReactiveViscoelasticMaterialUC);
 };
 
 //-----------------------------------------------------------------------------
-class FEReactionSpecies : public FEMaterial
+class FEReactionSpecies : public FSMaterial
 {
 public:
     // material parameters
@@ -481,7 +481,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // chemical reaction parent class
-class FEReactionMaterial : public FEMaterial
+class FEReactionMaterial : public FSMaterial
 {
 public:
 	// material parameters
@@ -495,12 +495,12 @@ public:
     bool GetOvrd();
     
 	// set forward rate
-	void SetForwardRate(FEMaterial* pm);
-	FEMaterial* GetForwardRate();
+	void SetForwardRate(FSMaterial* pm);
+	FSMaterial* GetForwardRate();
 
 	// set reverse rate
-	void SetReverseRate(FEMaterial* pm);
-	FEMaterial* GetReverseRate();
+	void SetReverseRate(FSMaterial* pm);
+	FSMaterial* GetReverseRate();
 
 	int Reactants();
 	FEReactantMaterial* Reactant(int i);
@@ -525,7 +525,7 @@ string buildReactionEquation(FEReactionMaterial* mat, FSModel& fem);
 
 //-----------------------------------------------------------------------------
 // membrane reaction parent class
-class FEMembraneReactionMaterial : public FEMaterial
+class FEMembraneReactionMaterial : public FSMaterial
 {
 public:
     // material parameters
@@ -539,12 +539,12 @@ public:
     bool GetOvrd();
     
     // set forward rate
-    void SetForwardRate(FEMaterial* pm);
-    FEMaterial* GetForwardRate();
+    void SetForwardRate(FSMaterial* pm);
+    FSMaterial* GetForwardRate();
     
     // set reverse rate
-    void SetReverseRate(FEMaterial* pm);
-    FEMaterial* GetReverseRate();
+    void SetReverseRate(FSMaterial* pm);
+    FSMaterial* GetReverseRate();
     
     int Reactants();
     FEReactantMaterial* Reactant(int i);
@@ -602,13 +602,13 @@ public:
 	FEMultiphasicMaterial();
 
 	// set/get elastic component 
-	void SetSolidMaterial(FEMaterial* pm);
+	void SetSolidMaterial(FSMaterial* pm);
 
 	// set/get permeability
-	void SetPermeability(FEMaterial* pm);
+	void SetPermeability(FSMaterial* pm);
 
 	// set/get osmotic coefficient
-	void SetOsmoticCoefficient(FEMaterial* pm);
+	void SetOsmoticCoefficient(FSMaterial* pm);
 
 	// add solute component
 	void AddSoluteMaterial(FESoluteMaterial* pm);
@@ -710,7 +710,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // fluid
-class FEFluidMaterial : public FEMaterial
+class FEFluidMaterial : public FSMaterial
 {
 public:
     // material parameters
@@ -721,8 +721,8 @@ public:
     FEFluidMaterial();
     
     // set/get viscous component
-    void SetViscousMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetViscousMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetViscousMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetViscousMaterial() { return GetProperty(0).GetMaterial(); }
     
     DECLARE_REGISTERED(FEFluidMaterial);
 };
@@ -736,12 +736,12 @@ public:
     FEFluidFSIMaterial();
     
     // set/get fluid component
-    void SetFluidMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetFluidMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetFluidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetFluidMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get solid component
-    void SetSolidMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetSolidMaterial() { return GetProperty(1).GetMaterial(); }
+    void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetSolidMaterial() { return GetProperty(1).GetMaterial(); }
     
     DECLARE_REGISTERED(FEFluidFSIMaterial);
 };
@@ -759,22 +759,22 @@ public:
     FEBiphasicFSIMaterial();
     
     // set/get fluid component
-    void SetFluidMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetFluidMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetFluidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetFluidMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get solid component
-    void SetSolidMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetSolidMaterial() { return GetProperty(1).GetMaterial(); }
+    void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetSolidMaterial() { return GetProperty(1).GetMaterial(); }
     
     // set/get permeability
-    void SetPermeability(FEMaterial* pm) { ReplaceProperty(2, pm); }
-    FEMaterial* GetPermeability() { return GetProperty(2).GetMaterial(); }
+    void SetPermeability(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetPermeability() { return GetProperty(2).GetMaterial(); }
     
     DECLARE_REGISTERED(FEBiphasicFSIMaterial);
 };
 
 //-----------------------------------------------------------------------------
-class FESpeciesMaterial : public FEMaterial
+class FESpeciesMaterial : public FSMaterial
 {
 public:
 	// parameters
@@ -790,7 +790,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FESolidSpeciesMaterial : public FEMaterial
+class FESolidSpeciesMaterial : public FSMaterial
 {
 public:
 	enum { MP_NSBM, MP_RHO0, MP_RMIN, MP_RMAX };
@@ -808,7 +808,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // Reaction-diffusion
-class FEReactionDiffusionMaterial : public FEMaterial
+class FEReactionDiffusionMaterial : public FSMaterial
 {
 public:
 	// material parameters
@@ -829,7 +829,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // generation
-class FEGeneration : public FEMaterial
+class FEGeneration : public FSMaterial
 {
 public:
     // material parameters
@@ -840,15 +840,15 @@ public:
     FEGeneration();
     
     // set/get solid component
-    void SetSolidMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetSolidMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetSolidMaterial() { return GetProperty(0).GetMaterial(); }
     
     DECLARE_REGISTERED(FEGeneration);
 };
 
 //-----------------------------------------------------------------------------
 // multigeneration material class
-class FEMultiGeneration : public FEMaterial
+class FEMultiGeneration : public FSMaterial
 {
 public:
     FEMultiGeneration();
@@ -858,37 +858,37 @@ public:
 
 //-----------------------------------------------------------------------------
 // prestrain material
-class FEPrestrainMaterial : public FEMaterial
+class FEPrestrainMaterial : public FSMaterial
 {
 public:
 	// constructor
 	FEPrestrainMaterial();
 
 	// set the elastic component of the material
-	void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-	FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+	void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+	FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
 
 	DECLARE_REGISTERED(FEPrestrainMaterial);
 };
 
 //-----------------------------------------------------------------------------
 // uncoupled prestrain material
-class FEUncoupledPrestrainMaterial : public FEMaterial
+class FEUncoupledPrestrainMaterial : public FSMaterial
 {
 public:
 	// constructor
 	FEUncoupledPrestrainMaterial();
 
 	// set the elastic component of the material
-	void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-	FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+	void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+	FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
 
 	DECLARE_REGISTERED(FEUncoupledPrestrainMaterial);
 };
 
 //-----------------------------------------------------------------------------
 // reactive plasticity
-class FEReactivePlasticity : public FEMaterial
+class FEReactivePlasticity : public FSMaterial
 {
 public:
     // material parameters
@@ -899,16 +899,16 @@ public:
     FEReactivePlasticity();
     
     // set the elastic component of the material
-    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get yield criterion
-    void SetCriterion(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetCriterion() { return GetProperty(1).GetMaterial(); }
+    void SetCriterion(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetCriterion() { return GetProperty(1).GetMaterial(); }
 
     // set/get flow curve
-    void SetFlowCurve(FEMaterial* pm) { ReplaceProperty(2, pm); }
-    FEMaterial* GetFlowCurve() { return GetProperty(2).GetMaterial(); }
+    void SetFlowCurve(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetFlowCurve() { return GetProperty(2).GetMaterial(); }
     
     DECLARE_REGISTERED(FEReactivePlasticity);
 };
@@ -916,7 +916,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // reactive plastic damage
-class FEReactivePlasticDamage : public FEMaterial
+class FEReactivePlasticDamage : public FSMaterial
 {
 public:
     // material parameters
@@ -927,32 +927,32 @@ public:
     FEReactivePlasticDamage();
     
     // set the elastic component of the material
-    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
-    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
     
     // set/get yield criterion
-    void SetYieldCriterion(FEMaterial* pm) { ReplaceProperty(1, pm); }
-    FEMaterial* GetYieldCriterion() { return GetProperty(1).GetMaterial(); }
+    void SetYieldCriterion(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetYieldCriterion() { return GetProperty(1).GetMaterial(); }
     
     // set/get flow curve
-    void SetFlowCurve(FEMaterial* pm) { ReplaceProperty(2, pm); }
-    FEMaterial* GetFlowCurve() { return GetProperty(2).GetMaterial(); }
+    void SetFlowCurve(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetFlowCurve() { return GetProperty(2).GetMaterial(); }
     
     // set/get yield damage material
-    void SetYieldDamageMaterial(FEMaterial* pm) { ReplaceProperty(3, pm); }
-    FEMaterial* GetYieldDamageMaterial() { return GetProperty(3).GetMaterial(); }
+    void SetYieldDamageMaterial(FSMaterial* pm) { ReplaceProperty(3, pm); }
+    FSMaterial* GetYieldDamageMaterial() { return GetProperty(3).GetMaterial(); }
     
     // set/get yield damage criterion
-    void SetYieldDamageCriterion(FEMaterial* pm) { ReplaceProperty(4, pm); }
-    FEMaterial* GetYieldDamageCriterion() { return GetProperty(4).GetMaterial(); }
+    void SetYieldDamageCriterion(FSMaterial* pm) { ReplaceProperty(4, pm); }
+    FSMaterial* GetYieldDamageCriterion() { return GetProperty(4).GetMaterial(); }
 
     // set/get damage material
-    void SetIntactDamageMaterial(FEMaterial* pm) { ReplaceProperty(5, pm); }
-    FEMaterial* GetIntactDamageMaterial() { return GetProperty(5).GetMaterial(); }
+    void SetIntactDamageMaterial(FSMaterial* pm) { ReplaceProperty(5, pm); }
+    FSMaterial* GetIntactDamageMaterial() { return GetProperty(5).GetMaterial(); }
     
     // set/get criterion
-    void SetIntactDamageCriterion(FEMaterial* pm) { ReplaceProperty(6, pm); }
-    FEMaterial* GetIntactDamageCriterion() { return GetProperty(6).GetMaterial(); }
+    void SetIntactDamageCriterion(FSMaterial* pm) { ReplaceProperty(6, pm); }
+    FSMaterial* GetIntactDamageCriterion() { return GetProperty(6).GetMaterial(); }
 
     DECLARE_REGISTERED(FEReactivePlasticDamage);
 };

@@ -61,7 +61,7 @@ void CMainWindow::on_actionAddBC_triggered()
 	CDlgAddPhysicsItem dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, true, this);
 	if (dlg.exec())
 	{
-		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, FE_FEBIO_BC); assert(pbc);
+		FSBoundaryCondition* pbc = fecore_new<FSBoundaryCondition>(&fem, FE_ESSENTIAL_BC, FE_FEBIO_BC); assert(pbc);
 		FEBio::CreateModelComponent(dlg.GetClassID(), pbc);
 		if (pbc)
 		{
@@ -304,8 +304,8 @@ void CMainWindow::on_actionAddContact_triggered()
 	CDlgAddPhysicsItem dlg("Add Contact Interface", FE_INTERFACE, prj, true, this);
 	if (dlg.exec())
 	{
-//		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
-		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, FE_FEBIO_INTERFACE); assert(pi);
+//		FSInterface* pi = fecore_new<FSInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
+		FSInterface* pi = fecore_new<FSInterface>(&fem, FE_INTERFACE, FE_FEBIO_INTERFACE); assert(pi);
 		FEBio::CreateModelComponent(dlg.GetClassID(), pi);
 		if (pi)
 		{
@@ -406,7 +406,7 @@ void CMainWindow::on_actionAddRigidConstraint_triggered()
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
-		FERigidConstraint* prc = fecore_new<FERigidConstraint>(fem, FE_RIGID_CONSTRAINT, FE_FEBIO_RIGID_CONSTRAINT);
+		FSRigidConstraint* prc = fecore_new<FSRigidConstraint>(fem, FE_RIGID_CONSTRAINT, FE_FEBIO_RIGID_CONSTRAINT);
 		FEBio::CreateModelComponent(dlg.m_type, prc);
 		assert(prc);
 		if (prc)
@@ -437,7 +437,7 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 	if (dlg.exec())
 	{
 		FSModel* fem = doc->GetFSModel();
-		FERigidConnector* pc = fecore_new<FERigidConnector>(fem, FE_RIGID_CONNECTOR, FE_FEBIO_RIGID_CONNECTOR);
+		FSRigidConnector* pc = fecore_new<FSRigidConnector>(fem, FE_RIGID_CONNECTOR, FE_FEBIO_RIGID_CONNECTOR);
 		FEBio::CreateModelComponent(dlg.GetType(), pc);
 		assert(pc);
 		if (pc)
@@ -471,7 +471,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	CDlgAddPhysicsItem dlg("Add Material", FE_MATERIAL, prj, false, this);
 	if (dlg.exec())
 	{
-		FEMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
+		FSMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
 		FEBio::CreateMaterial(dlg.GetClassID(), dynamic_cast<FEBioMaterial*>(pmat));
 		if (pmat)
 		{

@@ -478,7 +478,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
 			FEElement_& e = pm->ElementRef(i);
-			FEMaterial* mat = ps->GetMaterial(e.m_MatID);
+			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
 				e.m_ntag = 1;
@@ -551,7 +551,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
 			FEElement_& e = pm->ElementRef(i);
-			FEMaterial* mat = ps->GetMaterial(e.m_MatID);
+			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
 				int n = e.Nodes();

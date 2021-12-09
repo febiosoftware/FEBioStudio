@@ -123,7 +123,7 @@ public:
 
 	bool HasDisplacementMap();
 
-	void SetMaterialParams(FEMaterial* pm);
+	void SetMaterialParams(Material* pm);
 
 	//! set the smoothing angle
 	void SetSmoothingAngle(double w);

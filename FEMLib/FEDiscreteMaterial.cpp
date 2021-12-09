@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 
 //===================================================================
-FEDiscreteMaterial::FEDiscreteMaterial(int ntype) : FEMaterial(ntype)
+FEDiscreteMaterial::FEDiscreteMaterial(int ntype) : FSMaterial(ntype)
 {
 
 }
@@ -93,7 +93,7 @@ REGISTER_MATERIAL(FE1DPointFunction, MODULE_MECH, FE_FNC1D_POINT, FE_MAT_1DFUNC,
 
 FE1DPointFunction::FE1DPointFunction() : FE1DFunction(FE_FNC1D_POINT) 
 {
-	// dummy parameter so we can use FEMaterial's serialization for the load curve
+	// dummy parameter so we can use FSMaterial's serialization for the load curve
 	AddDoubleParam(0, "points", "points")->SetLoadCurve();
 
 	// constant value

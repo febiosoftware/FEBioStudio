@@ -266,7 +266,7 @@ void FELSDYNAimport::BuildMaterials(FEPostModel& fem)
 	int nmat = nm1 - nm0 + 1;
 	for (i=0; i<nmat; ++i)
 	{
-		FEMaterial mat;
+		Material mat;
 		fem.AddMaterial(mat);
 	}
 

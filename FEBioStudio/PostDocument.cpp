@@ -179,7 +179,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		Post::FEPostMesh* pmesh = po->GetActiveMesh();
 		for (int i = 0; i<N; ++i)
 		{
-			Post::FEMaterial* pm = ps->GetMaterial(i);
+			Post::Material* pm = ps->GetMaterial(i);
 			if (pm->bvisible == false) po->HideMaterial(i);
 		}
 	}
@@ -325,7 +325,7 @@ bool CPostDocument::Initialize()
 				{
 					GLColor c = docfem.GetMaterial(i)->Diffuse();
 
-					Post::FEMaterial* mat = m_fem->GetMaterial(i);
+					Post::Material* mat = m_fem->GetMaterial(i);
 					mat->ambient = c;
 					mat->diffuse = c;
 				}
@@ -333,7 +333,7 @@ bool CPostDocument::Initialize()
 				for (int i = 0; i < dmats; ++i)
 				{
 					GLColor c = mdl->DiscreteObject(i)->GetColor();
-					Post::FEMaterial* mat = m_fem->GetMaterial(i + mats);
+					Post::Material* mat = m_fem->GetMaterial(i + mats);
 					mat->ambient = c;
 					mat->diffuse = c;
 				}
@@ -613,7 +613,7 @@ void CPostDocument::ApplyPalette(const Post::CPalette& pal)
 	{
 		GLColor c = pal.Color(i % NCOL);
 
-		Post::FEMaterial& m = *m_fem->GetMaterial(i);
+		Post::Material& m = *m_fem->GetMaterial(i);
 		m.diffuse = c;
 		m.ambient = c;
 		m.specular = GLColor(128, 128, 128);
@@ -709,7 +709,7 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 		// save material settings
 		for (int i = 0; i < fem->Materials(); ++i)
 		{
-			Post::FEMaterial* mat = fem->GetMaterial(i);
+			Post::Material* mat = fem->GetMaterial(i);
 			XMLElement el("material");
 			el.add_attribute("id", i + 1);
 			el.add_attribute("name", mat->GetName());
@@ -954,7 +954,7 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 				int nid = atoi(szid) - 1;
 				if ((nid >= 0) && (nid < m_fem->Materials()))
 				{
-					Post::FEMaterial* mat = m_fem->GetMaterial(nid);
+					Post::Material* mat = m_fem->GetMaterial(nid);
 
 					++tag;
 					do

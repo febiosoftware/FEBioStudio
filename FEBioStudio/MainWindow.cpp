@@ -79,7 +79,7 @@ SOFTWARE.*/
 #include "version.h"
 #include "LocalJobProcess.h"
 #include "FEBioThread.h"
-#include <PostLib/FEVTKImport.h>
+#include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
@@ -884,7 +884,7 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		}
 		else if (ext.compare("vtk", Qt::CaseInsensitive) == 0)
 		{
-			Post::FEVTKimport* vtk = new Post::FEVTKimport(doc->GetFSModel());
+			Post::VTKimport* vtk = new Post::VTKimport(doc->GetFSModel());
 			ReadFile(doc, fileName, vtk, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.compare("fsps", Qt::CaseInsensitive) == 0)

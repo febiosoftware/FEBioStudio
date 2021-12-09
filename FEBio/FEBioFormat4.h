@@ -75,7 +75,7 @@ private:
 
 private:
 	// parse materials
-	void ParseMaterial(XMLTag& tag, FEMaterial* pmat);
+	void ParseMaterial(XMLTag& tag, FSMaterial* pmat);
 
 	// boundary condition input functions
 	void ParseBC		  (FEStep* pstep, XMLTag& tag);

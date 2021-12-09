@@ -640,7 +640,7 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 		std::string comment = tag.comment();
 
 		// allocate a new material
-		FEMaterial* pmat = 0;
+		FSMaterial* pmat = 0;
 
 		// see if a material already exists with this name
 		GMaterial* gmat = fem.FindMaterial(szname);
@@ -680,7 +680,7 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
+void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 {
 	FEAxisMaterial* axes = new FEAxisMaterial;
 
@@ -754,7 +754,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat::ParseFiber(XMLTag& tag, FEMaterial* pm)
+void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 {
 	// allow all materials to define mat_axis, even if not required for that material
 	XMLAtt& atype = tag.Attribute("type");
@@ -883,7 +883,7 @@ void FEBioFormat::ParseFiberProperty(XMLTag& tag, FEFiberMaterial* pm)
 //-----------------------------------------------------------------------------
 // helper function for updating uncoupled materials to ensure that the bulk modulus
 // is only defined for the top-level uncoupled material
-void FixUncoupledMaterial(FEMaterial* mat)
+void FixUncoupledMaterial(FSMaterial* mat)
 {
 	if (mat->ClassID() != FE_MAT_ELASTIC_UNCOUPLED) return;
 
@@ -899,7 +899,7 @@ void FixUncoupledMaterial(FEMaterial* mat)
 		int n = prop.Size();
 		for (int j = 0; j < n; ++j)
 		{
-			FEMaterial* mat_j =  prop.GetMaterial(j);
+			FSMaterial* mat_j =  prop.GetMaterial(j);
 			if (mat_j && (mat_j->ClassID() == FE_MAT_ELASTIC_UNCOUPLED))
 			{
 				Param* pk_j = mat_j->GetParam("k");
@@ -918,10 +918,10 @@ void FixUncoupledMaterial(FEMaterial* mat)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int classId)
+FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int classId)
 {
 	// create a material
-	FEMaterial* pm = FEMaterialFactory::Create(szmat, classId);
+	FSMaterial* pm = FEMaterialFactory::Create(szmat, classId);
 	if (pm == 0) 
 	{
 		// HACK: a little hack to read in the "EFD neo-Hookean2" materials of the old datamap plugin. 
@@ -1038,7 +1038,7 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int class
 						int classId = -1;
 						if (pmc) classId = pmc->GetClassID();
 
-						FEMaterial* pms = ParseMaterial(tag, sztype, classId);
+						FSMaterial* pms = ParseMaterial(tag, sztype, classId);
 						if (pms)
 						{
 							if (szname) pms->SetName(szbuf);
@@ -1069,7 +1069,7 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int class
 //-----------------------------------------------------------------------------
 // This function reads the rigid body material
 //
-FEMaterial* FEBioFormat::ParseRigidBody(XMLTag &tag)
+FSMaterial* FEBioFormat::ParseRigidBody(XMLTag &tag)
 {
 	FERigidMaterial* pm = new FERigidMaterial;
 	if (tag.isleaf()) return pm;
@@ -1190,7 +1190,7 @@ void FEBioFormat::ParseFiberMaterial(FEOldFiberMaterial& fibermat, XMLTag& tag)
 
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::ParseTransIsoMR(FEMaterial* pmat, XMLTag& tag)
+FSMaterial* FEBioFormat::ParseTransIsoMR(FSMaterial* pmat, XMLTag& tag)
 {
 	FETransMooneyRivlinOld* pm = dynamic_cast<FETransMooneyRivlinOld*>(pmat);
 	if (pm == 0) return 0;
@@ -1249,7 +1249,7 @@ FEMaterial* FEBioFormat::ParseTransIsoMR(FEMaterial* pmat, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::ParseTransIsoVW(FEMaterial* pmat, XMLTag& tag)
+FSMaterial* FEBioFormat::ParseTransIsoVW(FSMaterial* pmat, XMLTag& tag)
 {
 	FETransVerondaWestmannOld* pm = dynamic_cast<FETransVerondaWestmannOld*>(pmat);
 	if (pm == 0) return 0;
@@ -1303,7 +1303,7 @@ FEMaterial* FEBioFormat::ParseTransIsoVW(FEMaterial* pmat, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::ParseBiphasicSolute(FEMaterial* pmat, XMLTag &tag)
+FSMaterial* FEBioFormat::ParseBiphasicSolute(FSMaterial* pmat, XMLTag &tag)
 {
 	FEBiphasicSolute* pm = dynamic_cast<FEBiphasicSolute*>(pmat);
 	if (pm == 0) return 0;
@@ -1316,7 +1316,7 @@ FEMaterial* FEBioFormat::ParseBiphasicSolute(FEMaterial* pmat, XMLTag &tag)
 			if (tag == "solid")
 			{
 				XMLAtt& atype = tag.Attribute("type");
-				FEMaterial* pme = ParseMaterial(tag, atype.cvalue());
+				FSMaterial* pme = ParseMaterial(tag, atype.cvalue());
 				assert(pme);
 				pm->SetSolidMaterial(pme);
 				++tag;
@@ -1324,7 +1324,7 @@ FEMaterial* FEBioFormat::ParseBiphasicSolute(FEMaterial* pmat, XMLTag &tag)
 			else if (tag == "permeability")
 			{
 				XMLAtt& atype = tag.Attribute("type");
-				FEMaterial* pmp = ParseMaterial(tag, atype.cvalue());
+				FSMaterial* pmp = ParseMaterial(tag, atype.cvalue());
 				assert(pmp);
 				pm->SetPermeability(pmp);
 				++tag;
@@ -1332,7 +1332,7 @@ FEMaterial* FEBioFormat::ParseBiphasicSolute(FEMaterial* pmat, XMLTag &tag)
 			else if (tag == "osmotic_coefficient")
 			{
 				XMLAtt& atype = tag.Attribute("type");
-				FEMaterial* pmc = ParseMaterial(tag, atype.cvalue());
+				FSMaterial* pmc = ParseMaterial(tag, atype.cvalue());
 				assert(pmc);
 				pm->SetOsmoticCoefficient(pmc);
 				++tag;
@@ -1356,7 +1356,7 @@ FEMaterial* FEBioFormat::ParseBiphasicSolute(FEMaterial* pmat, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::ParseTriphasic(FEMaterial* pmat, XMLTag &tag)
+FSMaterial* FEBioFormat::ParseTriphasic(FSMaterial* pmat, XMLTag &tag)
 {
 	FETriphasicMaterial* pm = dynamic_cast<FETriphasicMaterial*>(pmat);
 	if (pm == 0) return 0;
@@ -1372,7 +1372,7 @@ FEMaterial* FEBioFormat::ParseTriphasic(FEMaterial* pmat, XMLTag &tag)
 			if (tag == "solid")
 			{
 				XMLAtt& atype = tag.Attribute("type");
-				FEMaterial* pme = ParseMaterial(tag, atype.cvalue());
+				FSMaterial* pme = ParseMaterial(tag, atype.cvalue());
 				assert(pme);
 				pm->SetSolidMaterial(pme);
 				++tag;
@@ -1380,7 +1380,7 @@ FEMaterial* FEBioFormat::ParseTriphasic(FEMaterial* pmat, XMLTag &tag)
 			else if (tag == "permeability")
 			{
 				XMLAtt& atype = tag.Attribute("type");
-				FEMaterial* pmp = ParseMaterial(tag, atype.cvalue());
+				FSMaterial* pmp = ParseMaterial(tag, atype.cvalue());
 				assert(pmp);
 				pm->SetPermeability(pmp);
 				++tag;
@@ -1388,7 +1388,7 @@ FEMaterial* FEBioFormat::ParseTriphasic(FEMaterial* pmat, XMLTag &tag)
 			else if (tag == "osmotic_coefficient")
 			{
 				XMLAtt& atype = tag.Attribute("type");
-				FEMaterial* pmc = ParseMaterial(tag, atype.cvalue());
+				FSMaterial* pmc = ParseMaterial(tag, atype.cvalue());
 				assert(pmc);
 				pm->SetOsmoticCoefficient(pmc);
 				++tag;
@@ -1416,7 +1416,7 @@ FEMaterial* FEBioFormat::ParseTriphasic(FEMaterial* pmat, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::ParseMultiphasic(FEMaterial* pmat, XMLTag &tag)
+FSMaterial* FEBioFormat::ParseMultiphasic(FSMaterial* pmat, XMLTag &tag)
 {
 	FEMultiphasicMaterial* pm = dynamic_cast<FEMultiphasicMaterial*>(pmat);
 	if (pm == 0) return 0;
@@ -1429,21 +1429,21 @@ FEMaterial* FEBioFormat::ParseMultiphasic(FEMaterial* pmat, XMLTag &tag)
 			if (tag == "solid")
 			{
 				XMLAtt& atype = tag.Attribute("type");
-				FEMaterial* pme = ParseMaterial(tag, atype.cvalue());
+				FSMaterial* pme = ParseMaterial(tag, atype.cvalue());
 				if (pme) pm->SetSolidMaterial(pme);
 				++tag;
 			}
 			else if (tag == "permeability")
 			{
 				XMLAtt& atype = tag.Attribute("type");
-				FEMaterial* pmp = ParseMaterial(tag, atype.cvalue());
+				FSMaterial* pmp = ParseMaterial(tag, atype.cvalue());
 				if (pmp) pm->SetPermeability(pmp);
 				++tag;
 			}
 			else if (tag == "osmotic_coefficient")
 			{
 				XMLAtt& atype = tag.Attribute("type");
-				FEMaterial* pmc = ParseMaterial(tag, atype.cvalue());
+				FSMaterial* pmc = ParseMaterial(tag, atype.cvalue());
 				if (pmc) pm->SetOsmoticCoefficient(pmc);
 				++tag;
 			}
@@ -1499,7 +1499,7 @@ FEMaterial* FEBioFormat::ParseMultiphasic(FEMaterial* pmat, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::ParseReactionDiffusion(FEMaterial* mat, XMLTag& tag)
+FSMaterial* FEBioFormat::ParseReactionDiffusion(FSMaterial* mat, XMLTag& tag)
 {
 	FEReactionDiffusionMaterial* pm = dynamic_cast<FEReactionDiffusionMaterial*>(mat);
 	if (pm == 0) return 0;
@@ -1680,8 +1680,8 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 
 	FEReactantMaterial* psr = 0;
 	FEProductMaterial* psp = 0;
-	FEMaterial* pfr = 0;
-	FEMaterial* prr = 0;
+	FSMaterial* pfr = 0;
+	FSMaterial* prr = 0;
 
 	pm->SetName(szname);
 
@@ -1794,8 +1794,8 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
     FEInternalProductMaterial* pspi = 0;
     FEExternalReactantMaterial* psre = 0;
     FEExternalProductMaterial* pspe = 0;
-    FEMaterial* pfr = 0;
-    FEMaterial* prr = 0;
+    FSMaterial* pfr = 0;
+    FSMaterial* prr = 0;
     
     pm->SetName(szname);
     
@@ -1948,7 +1948,7 @@ FEMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::ParseOsmoManning(FEMaterial* pmat, XMLTag& tag)
+FSMaterial* FEBioFormat::ParseOsmoManning(FSMaterial* pmat, XMLTag& tag)
 {
     FEOsmoWellsManning* pm = dynamic_cast<FEOsmoWellsManning*>(pmat);
     if (pm == 0) return 0;
@@ -1972,7 +1972,7 @@ FEMaterial* FEBioFormat::ParseOsmoManning(FEMaterial* pmat, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::Parse1DFunction(FEMaterial* pm, XMLTag& tag)
+FSMaterial* FEBioFormat::Parse1DFunction(FSMaterial* pm, XMLTag& tag)
 {
 	FE1DPointFunction* fnc = dynamic_cast<FE1DPointFunction*>(pm);
 	if (fnc == nullptr) return 0;

@@ -245,7 +245,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->BCs(); ++j)
 		{
-			FEBoundaryCondition* pl = pstep->BC(j);
+			FSBoundaryCondition* pl = pstep->BC(j);
 			if (pl && pl->IsActive())
 			{
 				FEItemListBuilder* ps = pl->GetItemList();
@@ -327,7 +327,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->Loads(); ++j)
 		{
-			FELoad* pl = pstep->Load(j);
+			FSLoad* pl = pstep->Load(j);
 			if (pl->IsActive())
 			{
 				// we need to exclude nodal loads and body loads
@@ -354,7 +354,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->Interfaces(); ++j)
 		{
-			FEInterface* pj = pstep->Interface(j);
+			FSInterface* pj = pstep->Interface(j);
 			if (pj->IsActive())
 			{
 				FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
@@ -867,7 +867,7 @@ void FEBioExport4::WriteControlSection(FEStep& step)
 	for (int i = 0; i < step.ControlProperties(); ++i)
 	{
 		FEStepControlProperty& prop = step.GetControlProperty(i);
-		FEStepComponent* pc = prop.m_prop;
+		FSStepComponent* pc = prop.m_prop;
 		if (pc)
 		{
 			XMLElement el(prop.GetName().c_str());
@@ -887,7 +887,7 @@ void FEBioExport4::WriteMaterialSection()
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		GMaterial* pgm = fem.GetMaterial(i);
-		FEMaterial* pmat = pgm->GetMaterialProperties();
+		FSMaterial* pmat = pgm->GetMaterialProperties();
 
 		if (m_writeNotes) WriteNote(pgm);
 
@@ -911,7 +911,7 @@ void FEBioExport4::WriteMaterialSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteMaterial(FEMaterial* pm, XMLElement& el)
+void FEBioExport4::WriteMaterial(FSMaterial* pm, XMLElement& el)
 {
 	// get the type string    
 	const char* sztype = pm->GetTypeString(); assert(sztype);
@@ -958,7 +958,7 @@ void FEBioExport4::WriteMaterial(FEMaterial* pm, XMLElement& el)
 			FEMaterialProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j < mc.Size(); ++j)
 			{
-				FEMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = mc.GetMaterial(j);
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
@@ -1433,7 +1433,7 @@ void FEBioExport4::WriteGeometrySurfacePairs()
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->Interfaces(); ++j)
 		{
-			FEInterface* pj = pstep->Interface(j);
+			FSInterface* pj = pstep->Interface(j);
 			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
 
 			// NOTE: don't export spring-tied interfaces!
@@ -2272,7 +2272,7 @@ void FEBioExport4::WriteBoundarySection(FEStep& s)
 	FSModel& fem = m_prj.GetFSModel();
 	for (int i = 0; i < s.BCs(); ++i)
 	{
-		FEBoundaryCondition* pbc = s.BC(i);
+		FSBoundaryCondition* pbc = s.BC(i);
 		if (pbc && pbc->IsActive())
 		{
 			WriteBC(s, pbc);
@@ -2553,7 +2553,7 @@ void FEBioExport4::WriteConstraints(FEStep& s)
 
 //-----------------------------------------------------------------------------
 // Write the boundary conditions
-void FEBioExport4::WriteBC(FEStep& s, FEBoundaryCondition* pbc)
+void FEBioExport4::WriteBC(FEStep& s, FSBoundaryCondition* pbc)
 {
 	FSModel& fem = m_prj.GetFSModel();
 
@@ -3051,7 +3051,7 @@ void FEBioExport4::WriteOutputSection()
 						e.add_attribute("file", d.fileName);
 					}
 
-					FERigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
+					FSRigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
 					if (rc)
 					{
 						e.value(d.rcID);
@@ -3157,7 +3157,7 @@ void FEBioExport4::WriteRigidConstraints(FEStep& s)
 {
 	for (int i = 0; i < s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* prc = s.RigidConstraint(i);
+		FSRigidConstraint* prc = s.RigidConstraint(i);
 		if (prc && prc->IsActive())
 		{
 			if (m_writeNotes) WriteNote(prc);
@@ -3206,7 +3206,7 @@ void FEBioExport4::WriteConnectors(FEStep& s)
 	for (int i = 0; i < s.RigidConnectors(); ++i)
 	{
 		// rigid connectors
-		FERigidConnector* prc = s.RigidConnector(i);
+		FSRigidConnector* prc = s.RigidConnector(i);
 		if (prc && prc->IsActive())
 		{
 			if (m_writeNotes) WriteNote(prc);

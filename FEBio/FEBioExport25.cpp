@@ -409,7 +409,7 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j=0; j<pstep->Loads(); ++j)
 		{
-			FELoad* pl = pstep->Load(j);
+			FSLoad* pl = pstep->Load(j);
 			if (pl->IsActive())
 			{
 				// we need to exclude nodal loads and body loads
@@ -436,7 +436,7 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j=0; j<pstep->Interfaces(); ++j)
 		{
-			FEInterface* pj = pstep->Interface(j);
+			FSInterface* pj = pstep->Interface(j);
 			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
 
 			// Note: Don't export surfaces of tied-spring interfaces
@@ -568,7 +568,7 @@ void FEBioExport25::BuildNodeSetList(FEProject& prj)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j=0; j<pstep->BCs(); ++j)
 		{
-			FEBoundaryCondition* pl = pstep->BC(j);
+			FSBoundaryCondition* pl = pstep->BC(j);
 			if (pl && pl->IsActive())
 			{
 				FEItemListBuilder* ps = pl->GetItemList();
@@ -862,7 +862,7 @@ bool FEBioExport25::Write(const char* szfile)
 			}
 
 			// output constraints section
-			int nnlc = CountConnectors<FERigidConnector>(fem)
+			int nnlc = CountConnectors<FSRigidConnector>(fem)
 			+ CountInterfaces<FERigidJoint>(fem)
 			+ CountConstraints<FEModelConstraint>(fem);
 			if ((nnlc > 0) && (m_section[FEBIO_CONSTRAINTS]))
@@ -1448,7 +1448,7 @@ void FEBioExport25::WriteMaterialSection()
 		el.add_attribute("id", pgm->m_ntag);
 		el.add_attribute("name", name.c_str());
 
-		FEMaterial* pmat = pgm->GetMaterialProperties();
+		FSMaterial* pmat = pgm->GetMaterialProperties();
 		if (pmat)
 		{
 			if (pmat->Type() == FE_RIGID_MATERIAL) WriteRigidMaterial(pmat, el);
@@ -1532,7 +1532,7 @@ void FEBioExport25::WriteFiberMaterial(FEOldFiberMaterial& fiber)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteMaterialParams(FEMaterial* pm, bool topLevel)
+void FEBioExport25::WriteMaterialParams(FSMaterial* pm, bool topLevel)
 {
 	// only export non-persistent parameters for top-level materials
 	m_exportNonPersistentParams = topLevel;
@@ -1610,7 +1610,7 @@ void FEBioExport25::WriteMaterialParams(FEMaterial* pm, bool topLevel)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteRigidMaterial(FEMaterial* pmat, XMLElement& el)
+void FEBioExport25::WriteRigidMaterial(FSMaterial* pmat, XMLElement& el)
 {
 	FSModel& s = *m_pfem;
 
@@ -1637,7 +1637,7 @@ void FEBioExport25::WriteRigidMaterial(FEMaterial* pmat, XMLElement& el)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
+void FEBioExport25::WriteMaterial(FSMaterial* pm, XMLElement& el)
 {
 	// redirect chemical reactions
 	if ((pm->Type() == FE_MASS_ACTION_FORWARD) ||
@@ -1754,7 +1754,7 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
 			FEMaterialProperty& mc = pm->GetProperty(i);
 			for (int j=0; j<mc.Size(); ++j)
 			{
-				FEMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = mc.GetMaterial(j);
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
@@ -1881,7 +1881,7 @@ void FEBioExport25::WritePointCurve(FE1DPointFunction* f1d, XMLElement& el)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteReactionMaterial(FEMaterial* pmat, XMLElement& el)
+void FEBioExport25::WriteReactionMaterial(FSMaterial* pmat, XMLElement& el)
 {
 	const char* sztype = 0;
 	switch (pmat->Type())
@@ -1908,7 +1908,7 @@ void FEBioExport25::WriteReactionMaterial(FEMaterial* pmat, XMLElement& el)
             FEMaterialProperty& mc = pmat->GetProperty(i);
             for (int j = 0; j<mc.Size(); ++j)
             {
-                FEMaterial* pc = mc.GetMaterial(j);
+                FSMaterial* pc = mc.GetMaterial(j);
                 if (pc)
                 {
                     el.name(mc.GetName().c_str());
@@ -1944,7 +1944,7 @@ void FEBioExport25::WriteReactionMaterial(FEMaterial* pmat, XMLElement& el)
 
 //-----------------------------------------------------------------------------
 // This is the format used by the reaction-diffusion module
-void FEBioExport25::WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el)
+void FEBioExport25::WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el)
 {
 	// get the reaction material
 	FEReactionMaterial* prm = dynamic_cast<FEReactionMaterial*>(pmat);
@@ -2471,7 +2471,7 @@ void FEBioExport25::WriteGeometrySurfacePairs()
 		FEStep* pstep = fem.GetStep(i);
 		for (int j=0; j<pstep->Interfaces(); ++j)
 		{
-			FEInterface* pj = pstep->Interface(j);
+			FSInterface* pj = pstep->Interface(j);
 			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
 
 			// NOTE: don't export spring-tied interfaces!
@@ -4530,7 +4530,7 @@ void FEBioExport25::WriteInitialSection(FEStep& s)
 	// write rigid initial conditions
 	for (int i=0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* rc = s.RigidConstraint(i);
+		FSRigidConstraint* rc = s.RigidConstraint(i);
 		if (rc->IsActive())
 		{
 			GMaterial* pgm = fem.GetMaterialFromID(rc->GetMaterialID());
@@ -5161,7 +5161,7 @@ void FEBioExport25::WriteOutputSection()
 							e.add_attribute("file", d.fileName);
 						}
 
-                        FERigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
+                        FSRigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
                         if (rc)
                         {
                             e.value(d.rcID);
@@ -5268,7 +5268,7 @@ void FEBioExport25::WriteRigidConstraints(FEStep &s)
 
 	for (int i=0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* ps = s.RigidConstraint(i);
+		FSRigidConstraint* ps = s.RigidConstraint(i);
 		if (ps->IsActive())
 		{
 			GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
@@ -5340,7 +5340,7 @@ void FEBioExport25::WriteConnectors(FEStep& s)
     for (int i=0; i<s.RigidConnectors(); ++i)
     {
         // rigid connectors
-		FERigidConnector* pj = s.RigidConnector(i);
+		FSRigidConnector* pj = s.RigidConnector(i);
         if (pj && pj->IsActive())
         {
 			if (m_writeNotes) m_xml.add_comment(pj->GetInfo());
