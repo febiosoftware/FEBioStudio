@@ -179,7 +179,7 @@ GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& pr
 			GDiscreteSpringSet* pnew = new GDiscreteSpringSet(gm);
 			pnew->SetName(po->GetName());
 			pnew->CopyDiscreteElementSet(ds);
-			FELinearSpringMaterial* mat = new FELinearSpringMaterial();
+			FSLinearSpringMaterial* mat = new FSLinearSpringMaterial();
 			mat->SetSpringConstant(po->GetFloatValue(GLinearSpringSet::MP_E));
 			pnew->SetMaterial(mat);
 			delete po;
@@ -191,7 +191,7 @@ GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& pr
 			GDiscreteSpringSet* pnew = new GDiscreteSpringSet(gm);
 			pnew->SetName(po->GetName());
 			pnew->CopyDiscreteElementSet(ds);
-			FENonLinearSpringMaterial* mat = new FENonLinearSpringMaterial();
+			FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial();
 			// TODO: map F parameter
 			pnew->SetMaterial(mat);
 			delete po;

@@ -251,7 +251,7 @@ REGISTER_MATERIAL(FECFDMaterial, MODULE_MECH, FE_CFD_MATERIAL, FE_MAT_ELASTIC, "
 
 FECFDMaterial::FECFDMaterial() : FSMaterial(FE_CFD_MATERIAL)
 {
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 
     // add parameters
     AddScienceParam(1, UNIT_DENSITY, "density", "density");
@@ -274,7 +274,7 @@ REGISTER_MATERIAL(FECFDUCMaterial, MODULE_MECH, FE_CFD_MATERIAL_UC, FE_MAT_ELAST
 
 FECFDUCMaterial::FECFDUCMaterial() : FSMaterial(FE_CFD_MATERIAL_UC)
 {
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 
     // add parameters
     AddScienceParam(1, UNIT_DENSITY, "density", "density");

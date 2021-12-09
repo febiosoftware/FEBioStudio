@@ -776,13 +776,13 @@ void FEStep::Load(IArchive &ar)
 							// now have their own section
 							switch(ntype)
 							{
-							case FE_NODAL_VELOCITIES		 : pb = new FENodalVelocities       (m_pfem); break;
-							case FE_NODAL_SHELL_VELOCITIES	 : pb = new FENodalShellVelocities  (m_pfem); break;
-                            case FE_INIT_FLUID_PRESSURE      : pb = new FEInitFluidPressure     (m_pfem); break;
-                            case FE_INIT_SHELL_FLUID_PRESSURE: pb = new FEInitShellFluidPressure(m_pfem); break;
-							case FE_INIT_CONCENTRATION       : pb = new FEInitConcentration     (m_pfem); break;
-                            case FE_INIT_SHELL_CONCENTRATION : pb = new FEInitShellConcentration(m_pfem); break;
-							case FE_INIT_TEMPERATURE         : pb = new FEInitTemperature       (m_pfem); break;
+							case FE_NODAL_VELOCITIES		 : pb = new FSNodalVelocities       (m_pfem); break;
+							case FE_NODAL_SHELL_VELOCITIES	 : pb = new FSNodalShellVelocities  (m_pfem); break;
+                            case FE_INIT_FLUID_PRESSURE      : pb = new FSInitFluidPressure     (m_pfem); break;
+                            case FE_INIT_SHELL_FLUID_PRESSURE: pb = new FSInitShellFluidPressure(m_pfem); break;
+							case FE_INIT_CONCENTRATION       : pb = new FSInitConcentration     (m_pfem); break;
+                            case FE_INIT_SHELL_CONCENTRATION : pb = new FSInitShellConcentration(m_pfem); break;
+							case FE_INIT_TEMPERATURE         : pb = new FSInitTemperature       (m_pfem); break;
 							default:
 								throw ReadError("error parsing CID_BC_SECTION in FEStep::Load");
 							}
@@ -851,7 +851,7 @@ void FEStep::Load(IArchive &ar)
 
 					FSLoad* pl = 0;
 
-					if (ntype == FE_NODAL_DOF_LOAD) pl = new FENodalDOFLoad(m_pfem);
+					if (ntype == FE_NODAL_DOF_LOAD) pl = new FSNodalDOFLoad(m_pfem);
 					else if (ntype == FE_FEBIO_NODAL_LOAD) pl = new FEBioNodalLoad(m_pfem);
 					else
 					{
@@ -889,15 +889,15 @@ void FEStep::Load(IArchive &ar)
 					FSInitialCondition* pi = 0;
 					switch (ntype)
 					{
-					case FE_INIT_FLUID_PRESSURE      : pi = new FEInitFluidPressure     (m_pfem); break;
-                    case FE_INIT_SHELL_FLUID_PRESSURE: pi = new FEInitShellFluidPressure(m_pfem); break;
-                    case FE_INIT_CONCENTRATION       : pi = new FEInitConcentration     (m_pfem); break;
-                    case FE_INIT_SHELL_CONCENTRATION : pi = new FEInitShellConcentration(m_pfem); break;
-					case FE_INIT_TEMPERATURE         : pi = new FEInitTemperature       (m_pfem); break;
-					case FE_NODAL_VELOCITIES         : pi = new FENodalVelocities       (m_pfem); break;
-					case FE_NODAL_SHELL_VELOCITIES   : pi = new FENodalShellVelocities  (m_pfem); break;
-                    case FE_INIT_FLUID_DILATATION    : pi = new FEInitFluidDilatation   (m_pfem); break;
-					case FE_INIT_PRESTRAIN           : pi = new FEInitPrestrain         (m_pfem); break;
+					case FE_INIT_FLUID_PRESSURE      : pi = new FSInitFluidPressure     (m_pfem); break;
+                    case FE_INIT_SHELL_FLUID_PRESSURE: pi = new FSInitShellFluidPressure(m_pfem); break;
+                    case FE_INIT_CONCENTRATION       : pi = new FSInitConcentration     (m_pfem); break;
+                    case FE_INIT_SHELL_CONCENTRATION : pi = new FSInitShellConcentration(m_pfem); break;
+					case FE_INIT_TEMPERATURE         : pi = new FSInitTemperature       (m_pfem); break;
+					case FE_NODAL_VELOCITIES         : pi = new FSNodalVelocities       (m_pfem); break;
+					case FE_NODAL_SHELL_VELOCITIES   : pi = new FSNodalShellVelocities  (m_pfem); break;
+                    case FE_INIT_FLUID_DILATATION    : pi = new FSInitFluidDilatation   (m_pfem); break;
+					case FE_INIT_PRESTRAIN           : pi = new FSInitPrestrain         (m_pfem); break;
 					case FE_FEBIO_INITIAL_CONDITION  : pi = new FEBioInitialCondition   (m_pfem); break;
 					default:
 						throw ReadError("error parsing CID_IC_SECTION FEStep::Load");
@@ -922,8 +922,8 @@ void FEStep::Load(IArchive &ar)
 					FSInterface* pi = 0;
 
 					// check obsolete interfaces first
-					if      (ntype == FE_SLIDING_INTERFACE   ) pi = new FESlidingInterface(m_pfem);
-					else if (ntype == FE_SPRINGTIED_INTERFACE) pi = new FESpringTiedInterface(m_pfem);
+					if      (ntype == FE_SLIDING_INTERFACE   ) pi = new FSSlidingInterface(m_pfem);
+					else if (ntype == FE_SPRINGTIED_INTERFACE) pi = new FSSpringTiedInterface(m_pfem);
 					else pi = fecore_new<FSInterface>(m_pfem, FE_INTERFACE, ntype);
 
 					// make sure we were able to allocate an interface
@@ -985,7 +985,7 @@ void FEStep::Load(IArchive &ar)
 
 					if (ar.Version() < 0x00020000)
 					{
-						FERigidConstraintOld* rc_old = new FERigidConstraintOld(ntype, GetID());
+						FSRigidConstraintOld* rc_old = new FSRigidConstraintOld(ntype, GetID());
 
 						// read RC data
 						rc_old->Load(ar);

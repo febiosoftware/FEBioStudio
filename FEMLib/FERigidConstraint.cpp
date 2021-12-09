@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FERigidConstraint.h"
 #include <FECore/units.h>
 
-FERigidConstraintOld::FERigidConstraintOld(int ntype, int nstep)
+FSRigidConstraintOld::FSRigidConstraintOld(int ntype, int nstep)
 {
 	m_ntype = ntype;
 	m_mid = -1;
@@ -40,11 +40,11 @@ FERigidConstraintOld::FERigidConstraintOld(int ntype, int nstep)
 	}
 }
 
-FERigidConstraintOld::~FERigidConstraintOld(void)
+FSRigidConstraintOld::~FSRigidConstraintOld(void)
 {
 }
 
-void FERigidConstraintOld::Save(OArchive &ar)
+void FSRigidConstraintOld::Save(OArchive &ar)
 {
 	ar.WriteChunk(NAME, GetName());
 	ar.WriteChunk(MATID, m_mid);
@@ -64,9 +64,9 @@ void FERigidConstraintOld::Save(OArchive &ar)
 	}
 }
 
-void FERigidConstraintOld::Load(IArchive &ar)
+void FSRigidConstraintOld::Load(IArchive &ar)
 {
-	TRACE("FERigidConstraintOld::Load");
+	TRACE("FSRigidConstraintOld::Load");
 
 	char sz[256] = {0};
 	int n = 0;
@@ -268,7 +268,7 @@ void FEBioRigidConstraint::Load(IArchive& ar)
 }
 
 //===============================================================================================
-vector<FSRigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FERigidConstraintOld* rc)
+vector<FSRigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FSRigidConstraintOld* rc)
 {
 	vector<FSRigidConstraint*> rc_new;
 	switch (rc->Type())

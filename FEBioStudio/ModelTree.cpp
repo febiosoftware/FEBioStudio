@@ -191,7 +191,7 @@ private:
 class CContactValidator : public CObjectValidator
 {
 public:
-	CContactValidator(FEPairedInterface* pci) : m_pci(pci) {}
+	CContactValidator(FSPairedInterface* pci) : m_pci(pci) {}
 
 	QString GetErrorString() const { return "primary/secondary not specified"; }
 
@@ -206,7 +206,7 @@ public:
 	}
 
 private:
-	FEPairedInterface*	m_pci;
+	FSPairedInterface*	m_pci;
 };
 
 class CRigidConstraintValidator : public CObjectValidator
@@ -225,7 +225,7 @@ private:
 class CRigidInterfaceValidator : public CObjectValidator
 {
 public:
-	CRigidInterfaceValidator(FERigidInterface* ri) : m_ri(ri) {}
+	CRigidInterfaceValidator(FSRigidInterface* ri) : m_ri(ri) {}
 
 	QString GetErrorString() const 
 	{ 
@@ -240,7 +240,7 @@ public:
 	}
 
 private:
-	FERigidInterface*	m_ri;
+	FSRigidInterface*	m_ri;
 };
 
 class CJobValidator : public CObjectValidator
@@ -1217,7 +1217,7 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FSModel& fem)
 		{
 			GDiscreteSpringSet* pg = dynamic_cast<GDiscreteSpringSet*>(po);
 
-			FEDiscreteMaterial* dm = pg->GetMaterial();
+			FSDiscreteMaterial* dm = pg->GetMaterial();
 			if (dm)
 			{
 				QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, new CObjectProps(dm));
@@ -1508,7 +1508,7 @@ void CModelTree::UpdateICs(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 				CPropertyList* pl = new FEObjectProps(pic, &fem);
 
 				CObjectValidator* val = nullptr;
-				if (dynamic_cast<FEInitialNodalDOF*>(pic))
+				if (dynamic_cast<FSInitialNodalDOF*>(pic))
 				{
 					val = new CBCValidator(pic);
 				}
@@ -1546,7 +1546,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 			// add rigid interfaces
 			for (i = 0; i<ps->Interfaces(); ++i)
 			{
-				FERigidInterface* pi = dynamic_cast<FERigidInterface*>(ps->Interface(i));
+				FSRigidInterface* pi = dynamic_cast<FSRigidInterface*>(ps->Interface(i));
 				if (pi)
 				{
 					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
@@ -1558,7 +1558,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 			// add the rigid joint
 			for (i = 0; i<ps->Interfaces(); ++i)
 			{
-				FERigidJoint* pi = dynamic_cast<FERigidJoint*>(ps->Interface(i));
+				FSRigidJoint* pi = dynamic_cast<FSRigidJoint*>(ps->Interface(i));
 				if (pi)
 				{
 					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
@@ -1570,7 +1570,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 			// add the rigid wall
 			for (i = 0; i<ps->Interfaces(); ++i)
 			{
-				FERigidWallInterface* pi = dynamic_cast<FERigidWallInterface*>(ps->Interface(i));
+				FSRigidWallInterface* pi = dynamic_cast<FSRigidWallInterface*>(ps->Interface(i));
 				if (pi)
 				{
 					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
@@ -1582,7 +1582,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 			// add the rigid sphere
 			for (i = 0; i<ps->Interfaces(); ++i)
 			{
-				FERigidSphereInterface* pi = dynamic_cast<FERigidSphereInterface*>(ps->Interface(i));
+				FSRigidSphereInterface* pi = dynamic_cast<FSRigidSphereInterface*>(ps->Interface(i));
 				if (pi)
 				{
 					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
@@ -1594,7 +1594,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 			// add the paired interfaces
 			for (i = 0; i<ps->Interfaces(); ++i)
 			{
-				FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(ps->Interface(i));
+				FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(ps->Interface(i));
 				if (pi)
 				{
 					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
@@ -1625,7 +1625,7 @@ void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FSModel& fem, FEStep* ps
 				if (pc)
 				{
 					CObjectValidator* val = nullptr;
-					if (dynamic_cast<FESurfaceConstraint*>(pc)) val = new CBCValidator(pc);
+					if (dynamic_cast<FSSurfaceConstraint*>(pc)) val = new CBCValidator(pc);
 					QString name = QString("%1 [%2]").arg(QString::fromStdString(pc->GetName())).arg(pc->GetTypeString());
 					t2 = AddTreeItem(t1, name, MT_CONSTRAINT, 0, pc, new CObjectProps(pc), val, flags);
 					if (pc->IsActive() == false) setInactive(t2);

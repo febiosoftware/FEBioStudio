@@ -1608,7 +1608,7 @@ bool AbaqusImport::build_physics()
 			FESurface* surface = build_surface(p.m_surf[i].surf);
 			if (surface)
 			{
-				FEPressureLoad* pl = new FEPressureLoad(&fem, surface);
+				FSPressureLoad* pl = new FSPressureLoad(&fem, surface);
 				char szname[256] = {0};
 				sprintf(szname, "dsload_%d", n);
 				pl->SetName(szname);

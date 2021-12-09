@@ -1404,8 +1404,8 @@ class CCmdRemoveItemListBuilder : public CCommand
 {
 public:
 	CCmdRemoveItemListBuilder(FSDomainComponent* pmc);
-	CCmdRemoveItemListBuilder(FESoloInterface* pmc);
-	CCmdRemoveItemListBuilder(FEPairedInterface* pmc, int n);
+	CCmdRemoveItemListBuilder(FSSoloInterface* pmc);
+	CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n);
 	~CCmdRemoveItemListBuilder();
 
 	void Execute();
@@ -1413,8 +1413,8 @@ public:
 
 private:
 	FEItemListBuilder*	m_pitem;
-	FESoloInterface*	m_psi;
-	FEPairedInterface*	m_ppi;
+	FSSoloInterface*	m_psi;
+	FSPairedInterface*	m_ppi;
 	FSDomainComponent*	m_pmc;
 	int	m_index;
 };

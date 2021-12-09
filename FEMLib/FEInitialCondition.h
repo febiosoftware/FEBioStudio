@@ -11,51 +11,51 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEInitialNodalDOF : public FSInitialCondition
+class FSInitialNodalDOF : public FSInitialCondition
 {
 public:
-	FEInitialNodalDOF(int ntype, FSModel* ps) : FSInitialCondition(ntype, ps) {}
-	FEInitialNodalDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0) : FSInitialCondition(ntype, ps, pi, nstep) {}
+	FSInitialNodalDOF(int ntype, FSModel* ps) : FSInitialCondition(ntype, ps) {}
+	FSInitialNodalDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0) : FSInitialCondition(ntype, ps, pi, nstep) {}
 };
 
 //-----------------------------------------------------------------------------
 
-class FENodalVelocities : public FEInitialNodalDOF
+class FSNodalVelocities : public FSInitialNodalDOF
 {
 public:
 	enum { VEL };
 
 public:
-	FENodalVelocities(FSModel* ps);
-	FENodalVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep = 0);
+	FSNodalVelocities(FSModel* ps);
+	FSNodalVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep = 0);
 
 	vec3d GetVelocity() { return GetVecValue(VEL); }
 	void SetVelocity(vec3d v) { SetVecValue(VEL, v); }
 };
 
 //-----------------------------------------------------------------------------
-class FENodalShellVelocities : public FEInitialNodalDOF
+class FSNodalShellVelocities : public FSInitialNodalDOF
 {
 public:
 	enum { VEL };
 
 public:
-	FENodalShellVelocities(FSModel* ps);
-	FENodalShellVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep = 0);
+	FSNodalShellVelocities(FSModel* ps);
+	FSNodalShellVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep = 0);
 
 	vec3d GetVelocity() { return GetVecValue(VEL); }
 	void SetVelocity(vec3d v) { SetVecValue(VEL, v); }
 };
 
 //-----------------------------------------------------------------------------
-class FEInitConcentration : public FEInitialNodalDOF
+class FSInitConcentration : public FSInitialNodalDOF
 {
 public:
 	enum { VALUE, BC };
 
 public:
-	FEInitConcentration(FSModel* ps);
-	FEInitConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep);
+	FSInitConcentration(FSModel* ps);
+	FSInitConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep);
 
 	double GetValue() { return GetFloatValue(VALUE); }
 	void SetValue(double v) { SetFloatValue(VALUE, v); }
@@ -65,14 +65,14 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEInitShellConcentration : public FEInitialNodalDOF
+class FSInitShellConcentration : public FSInitialNodalDOF
 {
 public:
     enum { VALUE, BC };
     
 public:
-    FEInitShellConcentration(FSModel* ps);
-    FEInitShellConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep);
+    FSInitShellConcentration(FSModel* ps);
+    FSInitShellConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep);
     
     double GetValue() { return GetFloatValue(VALUE); }
     void SetValue(double v) { SetFloatValue(VALUE, v); }
@@ -81,66 +81,66 @@ public:
     void SetBC(int n) { SetIntValue(BC, n); }
 };
 //-----------------------------------------------------------------------------
-class FEInitFluidPressure : public FEInitialNodalDOF
+class FSInitFluidPressure : public FSInitialNodalDOF
 {
 public:
 	enum { VALUE };
 
 public:
-	FEInitFluidPressure(FSModel* ps);
-	FEInitFluidPressure(FSModel* ps, FEItemListBuilder* pi, double val, int nstep = 0);
+	FSInitFluidPressure(FSModel* ps);
+	FSInitFluidPressure(FSModel* ps, FEItemListBuilder* pi, double val, int nstep = 0);
 
 	double GetValue() { return GetFloatValue(VALUE); }
 	void SetValue(double v) { SetFloatValue(VALUE, v); }
 };
 
 //-----------------------------------------------------------------------------
-class FEInitShellFluidPressure : public FEInitialNodalDOF
+class FSInitShellFluidPressure : public FSInitialNodalDOF
 {
 public:
     enum { VALUE };
     
 public:
-    FEInitShellFluidPressure(FSModel* ps);
-    FEInitShellFluidPressure(FSModel* ps, FEItemListBuilder* pi, double val, int nstep = 0);
+    FSInitShellFluidPressure(FSModel* ps);
+    FSInitShellFluidPressure(FSModel* ps, FEItemListBuilder* pi, double val, int nstep = 0);
     
     double GetValue() { return GetFloatValue(VALUE); }
     void SetValue(double v) { SetFloatValue(VALUE, v); }
 };
 
 //-----------------------------------------------------------------------------
-class FEInitTemperature : public FEInitialNodalDOF
+class FSInitTemperature : public FSInitialNodalDOF
 {
 public:
 	enum { VALUE };
 
 public:
-	FEInitTemperature(FSModel* ps);
-	FEInitTemperature(FSModel* ps, FEItemListBuilder* pi, double val, int nstep = 0);
+	FSInitTemperature(FSModel* ps);
+	FSInitTemperature(FSModel* ps, FEItemListBuilder* pi, double val, int nstep = 0);
 
 	double GetValue() { return GetFloatValue(VALUE); }
 	void SetValue(double v) { SetFloatValue(VALUE, v); }
 };
 
 //-----------------------------------------------------------------------------
-class FEInitFluidDilatation : public FEInitialNodalDOF
+class FSInitFluidDilatation : public FSInitialNodalDOF
 {
 public:
     enum { VALUE };
 
 public:
-    FEInitFluidDilatation(FSModel* ps);
-    FEInitFluidDilatation(FSModel* ps, FEItemListBuilder* pi, double val, int nstep = 0);
+    FSInitFluidDilatation(FSModel* ps);
+    FSInitFluidDilatation(FSModel* ps, FEItemListBuilder* pi, double val, int nstep = 0);
 
     double GetValue() { return GetFloatValue(VALUE); }
     void SetValue(double v) { SetFloatValue(VALUE, v); }
 };
 
 //-----------------------------------------------------------------------------
-class FEInitPrestrain : public FSInitialCondition
+class FSInitPrestrain : public FSInitialCondition
 {
 public:
-	FEInitPrestrain(FSModel* ps);
+	FSInitPrestrain(FSModel* ps);
 };
 
 //-----------------------------------------------------------------------------

@@ -430,7 +430,7 @@ void CCurveEditor::BuildLoadCurves()
 /*		GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(po);
 		if (dss)
 		{
-			FEDiscreteMaterial* dm = dss->GetMaterial();
+			FSDiscreteMaterial* dm = dss->GetMaterial();
 			if (dm)
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(dss->GetName()));
@@ -573,8 +573,8 @@ void CCurveEditor::BuildModelTree()
 			{
 				FSLoad* plj = pstep->Load(j);
 
-                FEFluidFlowResistance* pfr = dynamic_cast<FEFluidFlowResistance*>(pstep->Load(j));
-                FEFluidFlowRCR* prcr = dynamic_cast<FEFluidFlowRCR*>(pstep->Load(j));
+                FSFluidFlowResistance* pfr = dynamic_cast<FSFluidFlowResistance*>(pstep->Load(j));
+                FSFluidFlowRCR* prcr = dynamic_cast<FSFluidFlowRCR*>(pstep->Load(j));
                 if (pfr) {
 					t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
                     ui->addTreeItem(t3, QString::fromStdString("R"), pfr->GetLoadCurve());
@@ -637,17 +637,17 @@ void CCurveEditor::BuildModelTree()
 			for (int j = 0; j<pstep->Interfaces(); ++j)
 			{
 				FSInterface* pi = pstep->Interface(j);
-				FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*>(pi);
+				FSRigidWallInterface* pw = dynamic_cast<FSRigidWallInterface*>(pi);
 				if (pw) 
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pw->GetName()));
-					ui->addTreeItem(t3, "tolerance", pw->GetParamLC(FERigidWallInterface::ALTOL  ), pw->GetParamPtr(FERigidWallInterface::ALTOL  ));
-					ui->addTreeItem(t3, "penalty"  , pw->GetParamLC(FERigidWallInterface::PENALTY), pw->GetParamPtr(FERigidWallInterface::PENALTY));
-					ui->addTreeItem(t3, "plane displacement", pw->GetParamLC(FERigidWallInterface::OFFSET ), pw->GetParamPtr(FERigidWallInterface::OFFSET ));
+					ui->addTreeItem(t3, "tolerance", pw->GetParamLC(FSRigidWallInterface::ALTOL  ), pw->GetParamPtr(FSRigidWallInterface::ALTOL  ));
+					ui->addTreeItem(t3, "penalty"  , pw->GetParamLC(FSRigidWallInterface::PENALTY), pw->GetParamPtr(FSRigidWallInterface::PENALTY));
+					ui->addTreeItem(t3, "plane displacement", pw->GetParamLC(FSRigidWallInterface::OFFSET ), pw->GetParamPtr(FSRigidWallInterface::OFFSET ));
 				}
 				else
 				{
-					FERigidSphereInterface* prs = dynamic_cast<FERigidSphereInterface*>(pi);
+					FSRigidSphereInterface* prs = dynamic_cast<FSRigidSphereInterface*>(pi);
 					if (prs)
 					{
 						t3 = ui->addTreeItem(t2, QString::fromStdString(prs->GetName()));
@@ -744,7 +744,7 @@ void CCurveEditor::BuildModelTree()
 			GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(po);
 			if (dss)
 			{
-				FEDiscreteMaterial* dm = dss->GetMaterial();
+				FSDiscreteMaterial* dm = dss->GetMaterial();
 				if (dm)
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(dss->GetName()));

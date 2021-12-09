@@ -682,7 +682,7 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 {
-	FEAxisMaterial* axes = new FEAxisMaterial;
+	FSAxisMaterial* axes = new FSAxisMaterial;
 
 	// allow all materials to define mat_axis, even if not required for that material
 	XMLAtt& atype = tag.Attribute("type");
@@ -722,7 +722,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
     }
 	else if (atype == "cylindrical")
 	{
-		FEAxisMaterial* axes = new FEAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial;
 		axes->m_naopt = FE_AXES_CYLINDRICAL;
 		++tag;
 		do {
@@ -736,7 +736,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	}
 	else if (atype == "spherical")
 	{
-		FEAxisMaterial* axes = new FEAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial;
 		axes->m_naopt = FE_AXES_SPHERICAL;
 		++tag;
 		do {
@@ -760,21 +760,21 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		FEAxisMaterial* axes = new FEAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial;
 		axes->m_naopt = FE_AXES_LOCAL;
 		tag.value(axes->m_n, 3);
 		pm->SetAxisMaterial(axes);
 	}
 	else if (atype == "vector")
 	{
-		FEAxisMaterial* axes = new FEAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial;
 		axes->m_naopt = FE_AXES_VECTOR;
 		tag.value(axes->m_a);
 		pm->SetAxisMaterial(axes);
 	}
 	else if (atype == "angles")
 	{
-		FEAxisMaterial* axes = new FEAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial;
 		axes->m_naopt = FE_AXES_ANGLES;
 
 		++tag;
@@ -791,7 +791,7 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	}
 	else if (atype == "cylindrical")
 	{
-		FEAxisMaterial* axes = new FEAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial;
 		axes->m_naopt = FE_AXES_CYLINDRICAL;
 		++tag;
 		do {
@@ -805,7 +805,7 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	}
 	else if (atype == "spherical")
 	{
-		FEAxisMaterial* axes = new FEAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial;
 		axes->m_naopt = FE_AXES_SPHERICAL;
 		++tag;
 		do {
@@ -1974,7 +1974,7 @@ FSMaterial* FEBioFormat::ParseOsmoManning(FSMaterial* pmat, XMLTag& tag)
 //-----------------------------------------------------------------------------
 FSMaterial* FEBioFormat::Parse1DFunction(FSMaterial* pm, XMLTag& tag)
 {
-	FE1DPointFunction* fnc = dynamic_cast<FE1DPointFunction*>(pm);
+	FS1DPointFunction* fnc = dynamic_cast<FS1DPointFunction*>(pm);
 	if (fnc == nullptr) return 0;
 
 	FELoadCurve* plc = fnc->GetPointCurve();

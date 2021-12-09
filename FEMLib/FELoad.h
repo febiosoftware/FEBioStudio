@@ -14,21 +14,21 @@ public:
 // NODAL LOADS
 //=============================================================================
 
-class FENodalLoad : public FSLoad
+class FSNodalLoad : public FSLoad
 {
 public:
-	FENodalLoad(int ntype, FSModel* fem) : FSLoad(ntype, fem) { m_superClassID = FE_NODAL_LOAD; }
-	FENodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep) { m_superClassID = FE_NODAL_LOAD; }
+	FSNodalLoad(int ntype, FSModel* fem) : FSLoad(ntype, fem) { m_superClassID = FE_NODAL_LOAD; }
+	FSNodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep) { m_superClassID = FE_NODAL_LOAD; }
 };
 
-class FENodalDOFLoad : public FENodalLoad
+class FSNodalDOFLoad : public FSNodalLoad
 {
 public:
 	enum { DOF, LOAD };
 
 public:
-	FENodalDOFLoad(FSModel* ps);
-	FENodalDOFLoad(FSModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep = 0);
+	FSNodalDOFLoad(FSModel* ps);
+	FSNodalDOFLoad(FSModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep = 0);
 
 	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
 
@@ -39,7 +39,7 @@ public:
 	double GetLoad() { return GetFloatValue(LOAD); }
 };
 
-class FEBioNodalLoad : public FENodalLoad
+class FEBioNodalLoad : public FSNodalLoad
 {
 public:
 	FEBioNodalLoad(FSModel* ps);

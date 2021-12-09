@@ -3365,7 +3365,7 @@ CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSDomainComponent* pmc) : C
 	m_index = -1;
 }
 
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FESoloInterface* pmc) : CCommand("Remove selection")
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSSoloInterface* pmc) : CCommand("Remove selection")
 {
 	m_pmc = nullptr;
 	m_psi = pmc;
@@ -3375,7 +3375,7 @@ CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FESoloInterface* pmc) : CCo
 }
 
 
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FEPairedInterface* pmc, int n) : CCommand("Remove selection")
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n) : CCommand("Remove selection")
 {
 	m_pmc = nullptr;
 	m_psi = nullptr;

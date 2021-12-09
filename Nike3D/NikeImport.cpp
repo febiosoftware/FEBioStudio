@@ -708,7 +708,7 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 		// create the interface
 		if (pn)
 		{
-			FERigidInterface* pi = new FERigidInterface(ps, pgm, pn, ps->GetStep(0)->GetID());
+			FSRigidInterface* pi = new FSRigidInterface(ps, pgm, pn, ps->GetStep(0)->GetID());
 			sprintf(szname, "RigidInterface%02d", nrns);
 			pi->SetName(szname);
 			ps->GetStep(0)->AddComponent(pi);
@@ -790,21 +790,21 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 		{
 		case 2: // tied contact
 			{
-				FETiedInterface* pi = new FETiedInterface(ps);
+				FSTiedInterface* pi = new FSTiedInterface(ps);
 				sprintf(szname, "TiedInterface%02d", i+1);
 				pi->SetName(szname);
 				pi->SetSecondarySurface(pms);
 				pi->SetPrimarySurface(pss);
 				ps->GetStep(0)->AddComponent(pi);
 
-				pi->SetFloatValue(FETiedInterface::ALTOL, si.toln);
-				pi->SetFloatValue(FETiedInterface::PENALTY, si.pen);
+				pi->SetFloatValue(FSTiedInterface::ALTOL, si.toln);
+				pi->SetFloatValue(FSTiedInterface::PENALTY, si.pen);
 			}
 			break;
 		case -3:
 		case 3: // sliding contact
 			{
-				FESlidingWithGapsInterface* pi = new FESlidingWithGapsInterface(ps);
+				FSSlidingWithGapsInterface* pi = new FSSlidingWithGapsInterface(ps);
 				sprintf(szname, "SlidingInterface%02d", i+1);
 				pi->SetName(szname);
 				ps->GetStep(0)->AddComponent(pi);
@@ -814,12 +814,12 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 				bool twopass = (si.itype == -3);
 				bool auto_pen = (si.pen >= 0);
 
-				pi->SetFloatValue(FESlidingWithGapsInterface::ALTOL, si.toln);
-				pi->SetFloatValue(FESlidingWithGapsInterface::PENALTY, fabs(si.pen));
-				pi->SetBoolValue (FESlidingWithGapsInterface::AUTOPEN, auto_pen);
-				pi->SetBoolValue (FESlidingWithGapsInterface::TWOPASS, twopass);
-				pi->SetFloatValue(FESlidingWithGapsInterface::MU, si.mus);
-				pi->SetFloatValue(FESlidingWithGapsInterface::EPSF, fabs(si.pen));
+				pi->SetFloatValue(FSSlidingWithGapsInterface::ALTOL, si.toln);
+				pi->SetFloatValue(FSSlidingWithGapsInterface::PENALTY, fabs(si.pen));
+				pi->SetBoolValue (FSSlidingWithGapsInterface::AUTOPEN, auto_pen);
+				pi->SetBoolValue (FSSlidingWithGapsInterface::TWOPASS, twopass);
+				pi->SetFloatValue(FSSlidingWithGapsInterface::MU, si.mus);
+				pi->SetFloatValue(FSSlidingWithGapsInterface::EPSF, fabs(si.pen));
 			}
 			break;
 		}
@@ -1491,7 +1491,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 			FSLoad* pl = s.Load(i);
 
 			// nodal forces
-			FENodalDOFLoad* pfc = dynamic_cast<FENodalDOFLoad*>(pl);
+			FSNodalDOFLoad* pfc = dynamic_cast<FSNodalDOFLoad*>(pl);
 			if (pfc)
 			{
 				plc = pfc->GetLoadCurve();
@@ -1499,7 +1499,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 			}
 
 			// pressure forces
-			FEPressureLoad* ppc = dynamic_cast<FEPressureLoad*>(pl);
+			FSPressureLoad* ppc = dynamic_cast<FSPressureLoad*>(pl);
 			if (ppc)
 			{
 				plc = ppc->GetLoadCurve();
@@ -1535,10 +1535,10 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 		// set rigid wall interfaces
 		for (i=0; i<s.Interfaces(); ++i)
 		{
-			FERigidWallInterface* pi = dynamic_cast<FERigidWallInterface*>(s.Interface(i));
+			FSRigidWallInterface* pi = dynamic_cast<FSRigidWallInterface*>(s.Interface(i));
 			if (pi)
 			{
-				FELoadCurve* plc = pi->GetParamLC(FERigidWallInterface::OFFSET);
+				FELoadCurve* plc = pi->GetParamLC(FSRigidWallInterface::OFFSET);
 				if (plc && plc->GetID() >= 0) *plc = m_LC[plc->GetID()];
 			}
 		}

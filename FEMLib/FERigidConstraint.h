@@ -13,13 +13,13 @@ class FSModel;
 #define FE_FEBIO_RIGID_CONSTRAINT	6
 
 // old rigid constraint class, retained for backward compatibility
-class FERigidConstraintOld : public FSObject
+class FSRigidConstraintOld : public FSObject
 {
 	enum { MATID, NAME, CONSTRAINT, BC, VAL, LC };
 
 public:
-	FERigidConstraintOld(int ntype, int nstep);
-	~FERigidConstraintOld(void);
+	FSRigidConstraintOld(int ntype, int nstep);
+	~FSRigidConstraintOld(void);
 
 	int Type() { return m_ntype; }
 	int GetStep() { return m_nstep; }
@@ -148,4 +148,4 @@ public:
 };
 
 
-vector<FSRigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FERigidConstraintOld* rc);
+vector<FSRigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FSRigidConstraintOld* rc);

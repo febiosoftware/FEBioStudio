@@ -284,23 +284,23 @@ public:
 	void WriteBCPrescribed(FEStep& s, FSBoundaryCondition* pbc);
 	void WriteBCRigid(FEStep& s);
 
-	void WriteInitVelocity(FENodalVelocities&        iv);
-	void WriteInitShellVelocity(FENodalShellVelocities&   iv);
-	void WriteInitConcentration(FEInitConcentration&      ic);
-	void WriteInitShellConcentration(FEInitShellConcentration& ic);
-	void WriteInitFluidPressure(FEInitFluidPressure&      ip);
-	void WriteInitShellFluidPressure(FEInitShellFluidPressure& iq);
-	void WriteInitTemperature(FEInitTemperature&        it);
-    void WriteInitFluidDilatation(FEInitFluidDilatation&  it);
-	void WriteInitPrestrain(FEInitPrestrain&          ip);
+	void WriteInitVelocity(FSNodalVelocities&        iv);
+	void WriteInitShellVelocity(FSNodalShellVelocities&   iv);
+	void WriteInitConcentration(FSInitConcentration&      ic);
+	void WriteInitShellConcentration(FSInitShellConcentration& ic);
+	void WriteInitFluidPressure(FSInitFluidPressure&      ip);
+	void WriteInitShellFluidPressure(FSInitShellFluidPressure& iq);
+	void WriteInitTemperature(FSInitTemperature&        it);
+    void WriteInitFluidDilatation(FSInitFluidDilatation&  it);
+	void WriteInitPrestrain(FSInitPrestrain&          ip);
 
-	void WriteDOFNodalLoad(FEStep& s, FENodalLoad* pbc);
+	void WriteDOFNodalLoad(FEStep& s, FSNodalLoad* pbc);
 
 	void WriteNodalLoads(FEStep& s);
 	void WriteSurfaceLoads(FEStep& s);
 	void WriteSurfaceLoad(FEStep& s, FSSurfaceLoad* psl, const char* sztype);
 
-	void WriteContactInterface(FEStep& s, const char* sztype, FEPairedInterface* pi);
+	void WriteContactInterface(FEStep& s, const char* sztype, FSPairedInterface* pi);
 	void WriteContactWall(FEStep& s);
 	void WriteContactSphere(FEStep& s);
 	void WriteLinearConstraints(FEStep& s);

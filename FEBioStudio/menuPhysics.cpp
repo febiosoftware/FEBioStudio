@@ -110,7 +110,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 	CDlgAddPhysicsItem dlg("Add Nodal Load", FE_NODAL_LOAD, prj, true, this);
 	if (dlg.exec())
 	{
-		FENodalLoad* pnl = fecore_new<FENodalLoad>(&fem, FE_NODAL_LOAD, FE_FEBIO_NODAL_LOAD); assert(pnl);
+		FSNodalLoad* pnl = fecore_new<FSNodalLoad>(&fem, FE_NODAL_LOAD, FE_FEBIO_NODAL_LOAD); assert(pnl);
 		FEBio::CreateModelComponent(dlg.GetClassID(), pnl);
 		if (pnl)
 		{
@@ -260,7 +260,7 @@ void CMainWindow::on_actionAddIC_triggered()
 			if (name.empty()) name = defaultICName(&fem, pic);
 			pic->SetName(name);
 
-			if (dynamic_cast<FEInitialNodalDOF*>(pic))
+			if (dynamic_cast<FSInitialNodalDOF*>(pic))
 			{
 				// figure out the selection
 				FESelection* psel = doc->GetCurrentSelection();
@@ -315,9 +315,9 @@ void CMainWindow::on_actionAddContact_triggered()
 			pi->SetName(name);
 
 			// assign selected surfaces (for solo interfaces)
-			if (dynamic_cast<FESoloInterface*>(pi))
+			if (dynamic_cast<FSSoloInterface*>(pi))
 			{
-				FESoloInterface& si = dynamic_cast<FESoloInterface&>(*pi);
+				FSSoloInterface& si = dynamic_cast<FSSoloInterface&>(*pi);
 
 				// figure out the selection
 				FESelection* psel = doc->GetCurrentSelection();
@@ -366,7 +366,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
 			pi->SetName(name);
 
-			FESurfaceConstraint* psc = dynamic_cast<FESurfaceConstraint*>(pi);
+			FSSurfaceConstraint* psc = dynamic_cast<FSSurfaceConstraint*>(pi);
 			if (psc)
 			{
 				// figure out the selection

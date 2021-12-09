@@ -1910,7 +1910,7 @@ void FEBioFormat3::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 	if (sz == 0)
 	{
 		char szbuf[256] = { 0 };
-		sprintf(szbuf, "RigidInterface%02d", CountInterfaces<FERigidInterface>(fem)+1);
+		sprintf(szbuf, "RigidInterface%02d", CountInterfaces<FSRigidInterface>(fem)+1);
 	}
 	else name = string(sz);
 
@@ -1937,7 +1937,7 @@ void FEBioFormat3::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 	while (!tag.isend());
 
 	// create the interface
-	FERigidInterface* pi = new FERigidInterface(&fem, pmat, pg, pstep->GetID());
+	FSRigidInterface* pi = new FSRigidInterface(&fem, pmat, pg, pstep->GetID());
 	pi->SetName(name.c_str());
 	pstep->AddComponent(pi);
 }
@@ -2088,13 +2088,13 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	if (szname == nullptr)
 	{
 		char szname[256];
-		sprintf(szname, "ForceNodeset%02d", CountLoads<FENodalDOFLoad>(fem) + 1);
+		sprintf(szname, "ForceNodeset%02d", CountLoads<FSNodalDOFLoad>(fem) + 1);
 		name = szname;
 	}
 	else name = szname;
 
 	// create the nodal load
-	FENodalDOFLoad* pbc = new FENodalDOFLoad(&fem, pg, 0, 1, pstep->GetID());
+	FSNodalDOFLoad* pbc = new FSNodalDOFLoad(&fem, pg, 0, 1, pstep->GetID());
 	pbc->SetName(name);
 	pstep->AddComponent(pbc);
 
@@ -2454,7 +2454,7 @@ void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 		if (surfPair == 0) throw XMLReader::InvalidAttributeValue(tag, "surface_pair", szpair);
 
 		// create a new interfaces
-		FEPairedInterface* pci = FEBio::CreatePairedInterface(atype.cvalue(), fem);
+		FSPairedInterface* pci = FEBio::CreatePairedInterface(atype.cvalue(), fem);
 		if (pci == nullptr)
 		{
 			ParseUnknownAttribute(tag, "type");
@@ -2462,7 +2462,7 @@ void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 		}
 
 		// get the (optional) name
-		stringstream ss; ss << "ContactInterface" << CountInterfaces<FEPairedInterface>(*fem) + 1;
+		stringstream ss; ss << "ContactInterface" << CountInterfaces<FSPairedInterface>(*fem) + 1;
 		string name = tag.AttributeValue("name", ss.str());
 		pci->SetName(name);
 
@@ -2505,7 +2505,7 @@ void FEBioFormat3::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 
 	// set name
 	char szname[256];
-	sprintf(szname, "RigidWall%02d", CountInterfaces<FERigidWallInterface>(fem)+1);
+	sprintf(szname, "RigidWall%02d", CountInterfaces<FSRigidWallInterface>(fem)+1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pci->SetName(szname);
@@ -2557,9 +2557,9 @@ void FEBioFormat3::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 		++tag;
 	} while (!tag.isend());
 
-	pi->SetFloatValue(FERigidJoint::TOL, tol);
-	pi->SetFloatValue(FERigidJoint::PENALTY, pen);
-	pi->SetVecValue(FERigidJoint::RJ, rj);
+	pi->SetFloatValue(FSRigidJoint::TOL, tol);
+	pi->SetFloatValue(FSRigidJoint::PENALTY, pen);
+	pi->SetVecValue(FSRigidJoint::RJ, rj);
 
 	FEBioInputModel& febio = GetFEBioModel();
 
@@ -2750,7 +2750,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			const char* szname = tag.AttributeValue("name");
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
-				FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
+				FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
 				if (FEBio::CreateModelComponent(FE_DISCRETE_MATERIAL, sztype, pdm) == false)
 				{
 					delete pdm;
@@ -2777,7 +2777,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			}
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
-				FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
+				FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
 				if (FEBio::CreateModelComponent(FE_DISCRETE_MATERIAL, sztype, pdm) == false)
 				{
 					delete pdm;
@@ -2805,7 +2805,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			}
 			else if (strcmp(sztype, "Hill") == 0)
 			{
-				FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
+				FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
 				if (FEBio::CreateModelComponent(FE_DISCRETE_MATERIAL, sztype, pdm) == false)
 				{
 					delete pdm;
@@ -2822,7 +2822,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 					if (ReadParam(*pdm, tag) == false)
 					{
 						FSMaterialProperty* prop = pdm->FindProperty(tag.m_sztag);
-						FE1DPointFunction* pf1d = dynamic_cast<FE1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
+						FS1DPointFunction* pf1d = dynamic_cast<FS1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
 						if (pf1d)
 						{
 							FELoadCurve lc;

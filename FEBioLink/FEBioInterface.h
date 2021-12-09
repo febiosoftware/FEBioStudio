@@ -33,11 +33,11 @@ class FEBioMaterial;
 class FEBioDiscreteMaterial;
 class FEStep;
 class FSBoundaryCondition;
-class FENodalLoad;
+class FSNodalLoad;
 class FSSurfaceLoad;
 class FSBodyLoad;
 class FSInitialCondition;
-class FEPairedInterface;
+class FSPairedInterface;
 class FSModelConstraint;
 class FSRigidConstraint;
 class FSRigidConnector;
@@ -60,10 +60,10 @@ namespace FEBio {
 	// helper functions for creating FEBio classes.
 	FSMaterial*          CreateMaterial         (const char* sztype, FSModel* fem);
 	FSBoundaryCondition* CreateBoundaryCondition(const char* sztype, FSModel* fem);
-	FENodalLoad*         CreateNodalLoad        (const char* sztype, FSModel* fem);
+	FSNodalLoad*         CreateNodalLoad        (const char* sztype, FSModel* fem);
 	FSSurfaceLoad*       CreateSurfaceLoad      (const char* sztype, FSModel* fem);
 	FSBodyLoad*          CreateBodyLoad         (const char* sztype, FSModel* fem);
-	FEPairedInterface*   CreatePairedInterface  (const char* sztype, FSModel* fem);
+	FSPairedInterface*   CreatePairedInterface  (const char* sztype, FSModel* fem);
 	FSModelConstraint*	 CreateNLConstraint     (const char* sztype, FSModel* fem);
 	FSRigidConstraint*	 CreateRigidConstraint  (const char* sztype, FSModel* fem);
 	FSRigidConnector*	 CreateRigidConnector   (const char* sztype, FSModel* fem);

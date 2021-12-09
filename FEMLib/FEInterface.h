@@ -29,11 +29,11 @@ protected:
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that only require one
 //! surface definition (e.g. rigid interface, rigid wall interface)
-class FESoloInterface : public FSInterface
+class FSSoloInterface : public FSInterface
 {
 public:
-	FESoloInterface(int ntype, FSModel* ps, int nstep);
-	~FESoloInterface();
+	FSSoloInterface(int ntype, FSModel* ps, int nstep);
+	~FSSoloInterface();
 
 	FEItemListBuilder* GetItemList() { return m_pItem; }
 	void SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
@@ -48,11 +48,11 @@ protected:
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that require two surfaces
 //!
-class FEPairedInterface : public FSInterface
+class FSPairedInterface : public FSInterface
 {
 public:
-	FEPairedInterface(int ntype, FSModel* ps, int nstep);
-	~FEPairedInterface();
+	FSPairedInterface(int ntype, FSModel* ps, int nstep);
+	~FSPairedInterface();
 
 	void SetPrimarySurface(FEItemListBuilder* pg) { m_surf1 = pg; }
 	void SetSecondarySurface(FEItemListBuilder* pg) { m_surf2 = pg; }
@@ -76,11 +76,11 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements the rigid node and facets interface
 //
-class FERigidInterface : public FESoloInterface
+class FSRigidInterface : public FSSoloInterface
 {
 public:
-	FERigidInterface(FSModel* ps, int nstep = 0);
-	FERigidInterface(FSModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep = 0);
+	FSRigidInterface(FSModel* ps, int nstep = 0);
+	FSRigidInterface(FSModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep = 0);
 	
 	GMaterial* GetRigidBody() { return m_pmat; }
 	void SetRigidBody(GMaterial* pm) { m_pmat = pm; }
@@ -95,14 +95,14 @@ protected:
 //-----------------------------------------------------------------------------
 //  This class implements the rigid wall interface
 //
-class FERigidWallInterface : public FESoloInterface
+class FSRigidWallInterface : public FSSoloInterface
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, PA, PB, PC, PD, OFFSET };
 
 public:
-	FERigidWallInterface(FSModel* ps, int nstep = 0);
-	~FERigidWallInterface(){}
+	FSRigidWallInterface(FSModel* ps, int nstep = 0);
+	~FSRigidWallInterface(){}
 
 	FELoadCurve* GetLoadCurve() { return GetParamLC(OFFSET); }
 
@@ -112,14 +112,14 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements the rigid sphere contact interface
 //
-class FERigidSphereInterface : public FESoloInterface
+class FSRigidSphereInterface : public FSSoloInterface
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, RADIUS, CENTER, UX, UY, UZ};
 
 public:
-	FERigidSphereInterface(FSModel* ps, int nstep = 0);
-	~FERigidSphereInterface(){}
+	FSRigidSphereInterface(FSModel* ps, int nstep = 0);
+	~FSRigidSphereInterface(){}
 
 	FELoadCurve* GetLoadCurve(int i);
 
@@ -130,120 +130,120 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements the sliding contact interface
 // NOTE: This class is now obsolete. It was deprecated since it does not map nicely to an FEBio contact interface
-//       It was replaced by the FESlidingWithGapsInterface and FEFacetOnFacetInterface.
-class FESlidingInterface : public FEPairedInterface
+//       It was replaced by the FSSlidingWithGapsInterface and FSFacetOnFacetInterface.
+class FSSlidingInterface : public FSPairedInterface
 {
 public:
 	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, NTYPE, MINAUG, MAXAUG, GAPTOL, SEGUP };
 
 public:
-	FESlidingInterface(FSModel* ps, int nstep = 0);
-	~FESlidingInterface() {}
+	FSSlidingInterface(FSModel* ps, int nstep = 0);
+	~FSSlidingInterface() {}
 };
 
 //-----------------------------------------------------------------------------
-class FESlidingWithGapsInterface : public FEPairedInterface
+class FSSlidingWithGapsInterface : public FSPairedInterface
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, MINAUG, MAXAUG, GAPTOL, SEGUP };
 
 public:
-	FESlidingWithGapsInterface(FSModel* ps, int nstep = 0);
-	~FESlidingWithGapsInterface() {}
+	FSSlidingWithGapsInterface(FSModel* ps, int nstep = 0);
+	~FSSlidingWithGapsInterface() {}
 };
 
 //-----------------------------------------------------------------------------
-class FEFacetOnFacetInterface : public FEPairedInterface
+class FSFacetOnFacetInterface : public FSPairedInterface
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, MINAUG, MAXAUG, GAPTOL, SEGUP, SEARCH_RADIUS };
 
 public:
-	FEFacetOnFacetInterface(FSModel* ps, int nstep = 0);
-	~FEFacetOnFacetInterface() {}
+	FSFacetOnFacetInterface(FSModel* ps, int nstep = 0);
+	~FSFacetOnFacetInterface() {}
 };
 
 //-----------------------------------------------------------------------------
 //  This class implements the tied contact interface
 //
-class FETiedInterface : public FEPairedInterface
+class FSTiedInterface : public FSPairedInterface
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 public:
-	FETiedInterface(FSModel* ps, int nstep = 0);
-	~FETiedInterface(){}
+	FSTiedInterface(FSModel* ps, int nstep = 0);
+	~FSTiedInterface(){}
 };
 
 //-----------------------------------------------------------------------------
 //  This class implements the facet-on-facet tied contact interface
 //
-class FEF2FTiedInterface : public FEPairedInterface
+class FSF2FTiedInterface : public FSPairedInterface
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 public:
-	FEF2FTiedInterface(FSModel* ps, int nstep = 0);
-	~FEF2FTiedInterface(){}
+	FSF2FTiedInterface(FSModel* ps, int nstep = 0);
+	~FSF2FTiedInterface(){}
 };
 
 //-----------------------------------------------------------------------------
 //  This class implements the sticky contact interface
 //
-class FEStickyInterface : public FEPairedInterface
+class FSStickyInterface : public FSPairedInterface
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 public:
-	FEStickyInterface(FSModel* ps, int nstep = 0);
-	~FEStickyInterface(){}
+	FSStickyInterface(FSModel* ps, int nstep = 0);
+	~FSStickyInterface(){}
 };
 
 //-----------------------------------------------------------------------------
 // This class implements a periodic boundary constraint
-class FEPeriodicBoundary : public FEPairedInterface
+class FSPeriodicBoundary : public FSPairedInterface
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, TWOPASS };
 
 public:
-	FEPeriodicBoundary(FSModel* ps, int nstep = 0);
-	~FEPeriodicBoundary(){}
+	FSPeriodicBoundary(FSModel* ps, int nstep = 0);
+	~FSPeriodicBoundary(){}
 };
 
 //-----------------------------------------------------------------------------
 // Biphasic-solid contact
-class FEPoroContact : public FEPairedInterface
+class FSPoroContact : public FSPairedInterface
 {
 public:
 	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, PRESSPEN, SYMMETRIC, SEARCHRAD };
 
 public:
-	FEPoroContact(FSModel* ps, int nstep = 0);
+	FSPoroContact(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEPoroSoluteContact : public FEPairedInterface
+class FSPoroSoluteContact : public FSPairedInterface
 {
 public:
 	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, PRESSPEN, SYMMETRIC, CONCPEN, AMBPRESS, AMBCONC, SEARCHRAD };
 
 public:
-	FEPoroSoluteContact(FSModel* ps, int nstep = 0);
+	FSPoroSoluteContact(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEMultiphasicContact : public FEPairedInterface
+class FSMultiphasicContact : public FSPairedInterface
 {
 public:
 	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, PRESSPEN, SYMMETRIC, CONCPEN, AMBPRESS, AMBCONC, SEARCHRAD };
     
 public:
-	FEMultiphasicContact(FSModel* ps, int nstep = 0);
+	FSMultiphasicContact(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FETensionCompressionInterface : public FEPairedInterface
+class FSTensionCompressionInterface : public FSPairedInterface
 {
 public:
 	enum {
@@ -269,66 +269,66 @@ public:
 	};
 
 public:
-	FETensionCompressionInterface(FSModel* ps, int nstep = 0);
+	FSTensionCompressionInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FETiedBiphasicInterface : public FEPairedInterface
+class FSTiedBiphasicInterface : public FSPairedInterface
 {
 public:
 	enum {LAUGON, ALTOL, GAPTOL, PTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD};
 
 public:
-	FETiedBiphasicInterface(FSModel* ps, int nstep = 0);
+	FSTiedBiphasicInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FETiedMultiphasicInterface : public FEPairedInterface
+class FSTiedMultiphasicInterface : public FSPairedInterface
 {
 public:
 	enum { LAUGON, ALTOL, GAPTOL, PTOL, CTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD };
 
 public:
-	FETiedMultiphasicInterface(FSModel* ps, int nstep = 0);
+	FSTiedMultiphasicInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FETiedElasticInterface : public FEPairedInterface
+class FSTiedElasticInterface : public FSPairedInterface
 {
 public:
 	enum { LAUGON, ALTOL, GAPTOL, PTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD };
 
 public:
-	FETiedElasticInterface(FSModel* ps, int nstep = 0);
+	FSTiedElasticInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEContactPotentialInterface : public FEPairedInterface
+class FSContactPotentialInterface : public FSPairedInterface
 {
 public:
 	enum { KC, POWER, RIN, ROUT, WTOL };
 public:
-	FEContactPotentialInterface(FSModel* ps, int nstep = 0);
+	FSContactPotentialInterface(FSModel* ps, int nstep = 0);
 };
 
 
 //-----------------------------------------------------------------------------
-class FEGapHeatFluxInterface : public FEPairedInterface
+class FSGapHeatFluxInterface : public FSPairedInterface
 {
 public:
-	FEGapHeatFluxInterface(FSModel* ps, int nstep = 0);
+	FSGapHeatFluxInterface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 //  This class implements a rigid joint
 //
-class FERigidJoint : public FSInterface
+class FSRigidJoint : public FSInterface
 {
 public:
 	enum {TOL, PENALTY, RJ};
 
 public:
-	FERigidJoint(FSModel* ps, int nstep = 0);
+	FSRigidJoint(FSModel* ps, int nstep = 0);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
@@ -341,13 +341,13 @@ public:
 // This class implements a spring-tied interface, that is, an interface
 // where the nodes of one surface are connected with springs to the other
 // surface.
-class FESpringTiedInterface : public FEPairedInterface
+class FSSpringTiedInterface : public FSPairedInterface
 {
 public:
 	enum { ECONST };
 
 public:
-	FESpringTiedInterface(FSModel* ps, int nstep = 0);
+	FSSpringTiedInterface(FSModel* ps, int nstep = 0);
 
 	double SpringConstant() const;
 
@@ -355,7 +355,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEBioInterface : public FEPairedInterface
+class FEBioInterface : public FSPairedInterface
 {
 public:
 	FEBioInterface(FSModel* ps, int nstep = 0);

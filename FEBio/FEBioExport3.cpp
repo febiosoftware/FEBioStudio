@@ -410,7 +410,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
 			// this is only for nodal loads
-			FENodalDOFLoad* pl = dynamic_cast<FENodalDOFLoad*>(pstep->Load(j));
+			FSNodalDOFLoad* pl = dynamic_cast<FSNodalDOFLoad*>(pstep->Load(j));
 			if (pl && pl->IsActive())
 			{
 				FEItemListBuilder* ps = pl->GetItemList();
@@ -454,7 +454,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 		}
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
-			FERigidInterface* pri = dynamic_cast<FERigidInterface*>(pstep->Interface(j));
+			FSRigidInterface* pri = dynamic_cast<FSRigidInterface*>(pstep->Interface(j));
 			if (pri && pri->IsActive())
 			{
 				FEItemListBuilder* ps = pri->GetItemList();
@@ -479,7 +479,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 			if (pl->IsActive())
 			{
 				// we need to exclude nodal loads and body loads
-				if (dynamic_cast<FENodalDOFLoad*>(pl)) pl = 0;
+				if (dynamic_cast<FSNodalDOFLoad*>(pl)) pl = 0;
 				if (dynamic_cast<FSBodyLoad*>(pl)) pl = 0;
 				if (pl && pl->IsActive())
 				{
@@ -505,10 +505,10 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 			FSInterface* pj = pstep->Interface(j);
 			if (pj->IsActive())
 			{
-				FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
+				FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(pj);
 
 				// Note: Don't export surfaces of tied-spring interfaces
-				if (dynamic_cast<FESpringTiedInterface*>(pi)) pi = 0;
+				if (dynamic_cast<FSSpringTiedInterface*>(pi)) pi = 0;
 
 				if (pi && pi->IsActive())
 				{
@@ -537,7 +537,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 					AddSurface(szname, pms);
 				}
 
-				FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*>(pj);
+				FSRigidWallInterface* pw = dynamic_cast<FSRigidWallInterface*>(pj);
 				if (pw && pw->IsActive())
 				{
 					FEItemListBuilder* pitem = pw->GetItemList();
@@ -548,7 +548,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 					AddSurface(name, pitem);
 				}
 
-				FERigidSphereInterface* prs = dynamic_cast<FERigidSphereInterface*>(pj);
+				FSRigidSphereInterface* prs = dynamic_cast<FSRigidSphereInterface*>(pj);
 				if (prs && prs->IsActive())
 				{
 					FEItemListBuilder* pitem = prs->GetItemList();
@@ -566,7 +566,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 			FSModelConstraint* pj = pstep->Constraint(j);
 			if (pj->IsActive())
 			{
-				FESurfaceConstraint* psf = dynamic_cast<FESurfaceConstraint*>(pj);
+				FSSurfaceConstraint* psf = dynamic_cast<FSSurfaceConstraint*>(pj);
 				if (psf && psf->IsActive())
 				{
 					FEItemListBuilder* pi = psf->GetItemList();
@@ -887,7 +887,7 @@ bool FEBioExport3::Write(const char* szfile)
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + CountInterfaces<FERigidJoint>(fem);
+			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + CountInterfaces<FSRigidJoint>(fem);
 			if ((nrc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Rigid");
@@ -909,7 +909,7 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output contact
-			int nci = pstep->Interfaces() - CountInterfaces<FERigidJoint>(fem);
+			int nci = pstep->Interfaces() - CountInterfaces<FSRigidJoint>(fem);
 			int nLC = pstep->LinearConstraints();
 			if (((nci > 0) || (nLC > 0)) && (m_section[FEBIO_CONTACT]))
 			{
@@ -943,7 +943,7 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output discrete elements (the obsolete spring-tied interface generates springs as well)
-			int nrb = fem.GetModel().DiscreteObjects() + CountInterfaces<FESpringTiedInterface>(fem);
+			int nrb = fem.GetModel().DiscreteObjects() + CountInterfaces<FSSpringTiedInterface>(fem);
 			if ((nrb > 0) && (m_section[FEBIO_DISCRETE]))
 			{
 				m_xml.add_branch("Discrete");
@@ -1885,7 +1885,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
     }
 	else if (pm->Type() == FE_FNC1D_POINT)
 	{
-		FE1DPointFunction* pf1d = dynamic_cast<FE1DPointFunction*>(pm); assert(pf1d);
+		FS1DPointFunction* pf1d = dynamic_cast<FS1DPointFunction*>(pm); assert(pf1d);
 		FELoadCurve* plc = pf1d->GetParam(0).GetLoadCurve();
 		el.add_attribute("type", sztype);
 		m_xml.add_branch(el);
@@ -2835,10 +2835,10 @@ void FEBioExport3::WriteGeometrySurfacePairs()
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
 			FSInterface* pj = pstep->Interface(j);
-			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
+			FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(pj);
 
 			// NOTE: don't export spring-tied interfaces!
-			if (dynamic_cast<FESpringTiedInterface*>(pi)) pi = 0;
+			if (dynamic_cast<FSSpringTiedInterface*>(pi)) pi = 0;
 
 			if (pi && pi->IsActive())
 			{
@@ -3235,7 +3235,7 @@ void FEBioExport3::WriteGeometryDiscreteSets()
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j<step->Interfaces(); ++j)
 		{
-			FESpringTiedInterface* pst = dynamic_cast<FESpringTiedInterface*>(step->Interface(j));
+			FSSpringTiedInterface* pst = dynamic_cast<FSSpringTiedInterface*>(step->Interface(j));
 			if (pst && pst->IsActive())
 			{
 				vector<pair<int, int> > L;
@@ -3736,7 +3736,7 @@ void FEBioExport3::WriteContactSection(FEStep& s)
 	// --- C O N T A C T ---
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*> (s.Interface(i));
+		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*> (s.Interface(i));
 		if (pi && pi->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pi);
@@ -3748,8 +3748,8 @@ void FEBioExport3::WriteContactSection(FEStep& s)
 			{
 				// NOTE: This interface is obsolete, but continues to be supported for now for backward compatibility.
 				//       Note that we still use the old interface types. 
-				FESlidingInterface* ps = dynamic_cast<FESlidingInterface*>(pi); assert(ps);
-				int ntype = ps->GetIntValue(FESlidingInterface::NTYPE);
+				FSSlidingInterface* ps = dynamic_cast<FSSlidingInterface*>(pi); assert(ps);
+				int ntype = ps->GetIntValue(FSSlidingInterface::NTYPE);
 				if (ntype == 0) WriteContactInterface(s, "sliding_with_gaps", pi);
 				else if (ntype == 1) WriteContactInterface(s, "facet-to-facet sliding", pi);
 			}
@@ -3853,7 +3853,7 @@ void FEBioExport3::WriteDiscreteSection(FEStep& s)
 			XMLElement dmat("discrete_material");
 			dmat.add_attribute("id", n++);
 			dmat.add_attribute("name", pds->GetName().c_str());
-			FEDiscreteMaterial* dm = pds->GetMaterial();
+			FSDiscreteMaterial* dm = pds->GetMaterial();
 			WriteMaterial(dm, dmat);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
@@ -3874,7 +3874,7 @@ void FEBioExport3::WriteDiscreteSection(FEStep& s)
 	// Write the spring-tied interfaces
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FESpringTiedInterface* pst = dynamic_cast<FESpringTiedInterface*>(s.Interface(i));
+		FSSpringTiedInterface* pst = dynamic_cast<FSSpringTiedInterface*>(s.Interface(i));
 		if (pst)
 		{
 			dmat.set_attribute(n1, n++);
@@ -3928,7 +3928,7 @@ void FEBioExport3::WriteDiscreteSection(FEStep& s)
 	// write the spring-tied interfaces
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FESpringTiedInterface* pst = dynamic_cast<FESpringTiedInterface*>(s.Interface(i));
+		FSSpringTiedInterface* pst = dynamic_cast<FSSpringTiedInterface*>(s.Interface(i));
 		if (pst)
 		{
 			disc.set_attribute(n1, n++);
@@ -3946,7 +3946,7 @@ void FEBioExport3::WriteRigidJoint(FEStep& s)
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
 		// rigid joints
-		FERigidJoint* pj = dynamic_cast<FERigidJoint*> (s.Interface(i));
+		FSRigidJoint* pj = dynamic_cast<FSRigidJoint*> (s.Interface(i));
 		if (pj && pj->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pj);
@@ -3960,12 +3960,12 @@ void FEBioExport3::WriteRigidJoint(FEStep& s)
 				int na = (pj->m_pbodyA ? pj->m_pbodyA->m_ntag : 0);
 				int nb = (pj->m_pbodyB ? pj->m_pbodyB->m_ntag : 0);
 
-				m_xml.add_leaf("tolerance", pj->GetFloatValue(FERigidJoint::TOL));
-				m_xml.add_leaf("penalty", pj->GetFloatValue(FERigidJoint::PENALTY));
+				m_xml.add_leaf("tolerance", pj->GetFloatValue(FSRigidJoint::TOL));
+				m_xml.add_leaf("penalty", pj->GetFloatValue(FSRigidJoint::PENALTY));
 				m_xml.add_leaf("body_a", na);
 				m_xml.add_leaf("body_b", nb);
 
-				vec3d v = pj->GetVecValue(FERigidJoint::RJ);
+				vec3d v = pj->GetVecValue(FSRigidJoint::RJ);
 				m_xml.add_leaf("joint", v);
 			}
 			m_xml.close_branch();
@@ -3980,7 +3980,7 @@ void FEBioExport3::WriteContactWall(FEStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*> (s.Interface(i));
+		FSRigidWallInterface* pw = dynamic_cast<FSRigidWallInterface*> (s.Interface(i));
 		if (pw && pw->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pw);
@@ -3992,17 +3992,17 @@ void FEBioExport3::WriteContactWall(FEStep& s)
 			ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
 			m_xml.add_branch(ec);
 			{
-				WriteParam(pw->GetParam(FERigidWallInterface::LAUGON));
-				WriteParam(pw->GetParam(FERigidWallInterface::ALTOL));
-				WriteParam(pw->GetParam(FERigidWallInterface::PENALTY));
-				WriteParam(pw->GetParam(FERigidWallInterface::OFFSET));
+				WriteParam(pw->GetParam(FSRigidWallInterface::LAUGON));
+				WriteParam(pw->GetParam(FSRigidWallInterface::ALTOL));
+				WriteParam(pw->GetParam(FSRigidWallInterface::PENALTY));
+				WriteParam(pw->GetParam(FSRigidWallInterface::OFFSET));
 
 				XMLElement plane("plane");
 				double a[4];
-				a[0] = pw->GetFloatValue(FERigidWallInterface::PA);
-				a[1] = pw->GetFloatValue(FERigidWallInterface::PB);
-				a[2] = pw->GetFloatValue(FERigidWallInterface::PC);
-				a[3] = pw->GetFloatValue(FERigidWallInterface::PD);
+				a[0] = pw->GetFloatValue(FSRigidWallInterface::PA);
+				a[1] = pw->GetFloatValue(FSRigidWallInterface::PB);
+				a[2] = pw->GetFloatValue(FSRigidWallInterface::PC);
+				a[3] = pw->GetFloatValue(FSRigidWallInterface::PD);
 				plane.value(a, 4);
 				m_xml.add_leaf(plane);
 			}
@@ -4019,7 +4019,7 @@ void FEBioExport3::WriteContactSphere(FEStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FERigidSphereInterface* pw = dynamic_cast<FERigidSphereInterface*> (s.Interface(i));
+		FSRigidSphereInterface* pw = dynamic_cast<FSRigidSphereInterface*> (s.Interface(i));
 		if (pw && pw->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pw);
@@ -4031,9 +4031,9 @@ void FEBioExport3::WriteContactSphere(FEStep& s)
 			ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
 			m_xml.add_branch(ec);
 			{
-				m_xml.add_leaf("laugon", (pw->GetBoolValue(FERigidSphereInterface::LAUGON) ? 1 : 0));
-				m_xml.add_leaf("tolerance", pw->GetFloatValue(FERigidSphereInterface::ALTOL));
-				m_xml.add_leaf("penalty", pw->GetFloatValue(FERigidSphereInterface::PENALTY));
+				m_xml.add_leaf("laugon", (pw->GetBoolValue(FSRigidSphereInterface::LAUGON) ? 1 : 0));
+				m_xml.add_leaf("tolerance", pw->GetFloatValue(FSRigidSphereInterface::ALTOL));
+				m_xml.add_leaf("penalty", pw->GetFloatValue(FSRigidSphereInterface::PENALTY));
 				m_xml.add_leaf("radius", pw->Radius());
 				m_xml.add_leaf("center", pw->Center());
 
@@ -4070,7 +4070,7 @@ void FEBioExport3::WriteContactSphere(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteContactInterface(FEStep& s, const char* sztype, FEPairedInterface* pi)
+void FEBioExport3::WriteContactInterface(FEStep& s, const char* sztype, FSPairedInterface* pi)
 {
 	XMLElement ec("contact");
 	ec.add_attribute("type", sztype);
@@ -4093,7 +4093,7 @@ void FEBioExport3::WriteBCRigid(FEStep& s)
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
 		// rigid interfaces
-		FERigidInterface* pr = dynamic_cast<FERigidInterface*> (s.Interface(i));
+		FSRigidInterface* pr = dynamic_cast<FSRigidInterface*> (s.Interface(i));
 		if (pr && pr->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pr);
@@ -4177,7 +4177,7 @@ void FEBioExport3::WriteConstraints(FEStep& s)
 			const char* sz = pw->GetName().c_str();
 			ec.add_attribute("name", sz);
 
-			FESurfaceConstraint* psf = dynamic_cast<FESurfaceConstraint*>(pw);
+			FSSurfaceConstraint* psf = dynamic_cast<FSSurfaceConstraint*>(pw);
 			if (psf)
 			{
 				ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
@@ -4307,7 +4307,7 @@ void FEBioExport3::WriteNodalLoads(FEStep& s)
 {
 	for (int j = 0; j < s.Loads(); ++j)
 	{
-		FENodalLoad* pbc = dynamic_cast<FENodalLoad*>(s.Load(j));
+		FSNodalLoad* pbc = dynamic_cast<FSNodalLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			if (pbc->Type() == FE_NODAL_DOF_LOAD) WriteDOFNodalLoad(s, pbc);
@@ -4333,11 +4333,11 @@ void FEBioExport3::WriteNodalLoads(FEStep& s)
 	}
 }
 
-void FEBioExport3::WriteDOFNodalLoad(FEStep& s, FENodalLoad* pnl)
+void FEBioExport3::WriteDOFNodalLoad(FEStep& s, FSNodalLoad* pnl)
 {
 	char bc[][3] = { "x", "y", "z", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
 
-	FENodalDOFLoad* pbc = dynamic_cast<FENodalDOFLoad*>(pnl); assert(pbc);
+	FSNodalDOFLoad* pbc = dynamic_cast<FSNodalDOFLoad*>(pnl); assert(pbc);
 	if (pbc == nullptr) return;
 
 	if (m_writeNotes) WriteNote(pbc);
@@ -4356,7 +4356,7 @@ void FEBioExport3::WriteDOFNodalLoad(FEStep& s, FENodalLoad* pnl)
 	m_xml.add_branch(load);
 	{
 		m_xml.add_leaf("dof", bc[l]);
-		WriteParam(pbc->GetParam(FENodalDOFLoad::LOAD));
+		WriteParam(pbc->GetParam(FSNodalDOFLoad::LOAD));
 	}
 	m_xml.close_branch(); // nodal_load
 }
@@ -4442,7 +4442,7 @@ void FEBioExport3::WriteInitialSection()
 
 			FEItemListBuilder* pitem = nullptr;
 
-			if (dynamic_cast<FEInitialNodalDOF*>(pi))
+			if (dynamic_cast<FSInitialNodalDOF*>(pi))
 			{
 				pitem = pi->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pi);
@@ -4450,22 +4450,22 @@ void FEBioExport3::WriteInitialSection()
 
 			switch (pi->Type())
 			{
-			case FE_NODAL_VELOCITIES:          WriteInitVelocity(dynamic_cast<FENodalVelocities  &>(*pi)); break;
-			case FE_NODAL_SHELL_VELOCITIES:    WriteInitShellVelocity(dynamic_cast<FENodalShellVelocities&>(*pi)); break;
-			case FE_INIT_FLUID_PRESSURE:       WriteInitFluidPressure(dynamic_cast<FEInitFluidPressure&>(*pi)); break;
-			case FE_INIT_SHELL_FLUID_PRESSURE:  WriteInitShellFluidPressure(dynamic_cast<FEInitShellFluidPressure&>(*pi)); break;
-			case FE_INIT_CONCENTRATION:        WriteInitConcentration(dynamic_cast<FEInitConcentration&>(*pi)); break;
-			case FE_INIT_SHELL_CONCENTRATION:  WriteInitShellConcentration(dynamic_cast<FEInitShellConcentration&>(*pi)); break;
-			case FE_INIT_TEMPERATURE:          WriteInitTemperature(dynamic_cast<FEInitTemperature  &>(*pi)); break;
-            case FE_INIT_FLUID_DILATATION:     WriteInitFluidDilatation(dynamic_cast<FEInitFluidDilatation  &>(*pi)); break;
-			case FE_INIT_PRESTRAIN           : WriteInitPrestrain(dynamic_cast<FEInitPrestrain&>(*pi)); break;
+			case FE_NODAL_VELOCITIES:          WriteInitVelocity(dynamic_cast<FSNodalVelocities  &>(*pi)); break;
+			case FE_NODAL_SHELL_VELOCITIES:    WriteInitShellVelocity(dynamic_cast<FSNodalShellVelocities&>(*pi)); break;
+			case FE_INIT_FLUID_PRESSURE:       WriteInitFluidPressure(dynamic_cast<FSInitFluidPressure&>(*pi)); break;
+			case FE_INIT_SHELL_FLUID_PRESSURE:  WriteInitShellFluidPressure(dynamic_cast<FSInitShellFluidPressure&>(*pi)); break;
+			case FE_INIT_CONCENTRATION:        WriteInitConcentration(dynamic_cast<FSInitConcentration&>(*pi)); break;
+			case FE_INIT_SHELL_CONCENTRATION:  WriteInitShellConcentration(dynamic_cast<FSInitShellConcentration&>(*pi)); break;
+			case FE_INIT_TEMPERATURE:          WriteInitTemperature(dynamic_cast<FSInitTemperature  &>(*pi)); break;
+            case FE_INIT_FLUID_DILATATION:     WriteInitFluidDilatation(dynamic_cast<FSInitFluidDilatation  &>(*pi)); break;
+			case FE_INIT_PRESTRAIN           : WriteInitPrestrain(dynamic_cast<FSInitPrestrain&>(*pi)); break;
 			}
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteInitVelocity(FENodalVelocities& iv)
+void FEBioExport3::WriteInitVelocity(FSNodalVelocities& iv)
 {
 	XMLElement el("ic");
 	el.add_attribute("name", iv.GetName());
@@ -4480,7 +4480,7 @@ void FEBioExport3::WriteInitVelocity(FENodalVelocities& iv)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteInitShellVelocity(FENodalShellVelocities& iv)
+void FEBioExport3::WriteInitShellVelocity(FSNodalShellVelocities& iv)
 {
 	XMLElement el("init");
 	int nbc = el.add_attribute("bc", "");
@@ -4516,7 +4516,7 @@ void FEBioExport3::WriteInitShellVelocity(FENodalShellVelocities& iv)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteInitConcentration(FEInitConcentration& ic)
+void FEBioExport3::WriteInitConcentration(FSInitConcentration& ic)
 {
     char szbc[6];
 	int bc = ic.GetBC();
@@ -4533,7 +4533,7 @@ void FEBioExport3::WriteInitConcentration(FEInitConcentration& ic)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteInitShellConcentration(FEInitShellConcentration& ic)
+void FEBioExport3::WriteInitShellConcentration(FSInitShellConcentration& ic)
 {
     char szbc[6];
 	int bc = ic.GetBC();
@@ -4550,7 +4550,7 @@ void FEBioExport3::WriteInitShellConcentration(FEInitShellConcentration& ic)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteInitFluidPressure(FEInitFluidPressure& ip)
+void FEBioExport3::WriteInitFluidPressure(FSInitFluidPressure& ip)
 {
 	XMLElement ec("ic");
 	ec.add_attribute("type", "init_dof");
@@ -4566,7 +4566,7 @@ void FEBioExport3::WriteInitFluidPressure(FEInitFluidPressure& ip)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteInitShellFluidPressure(FEInitShellFluidPressure& ip)
+void FEBioExport3::WriteInitShellFluidPressure(FSInitShellFluidPressure& ip)
 {
 	XMLElement ec("ic");
 	ec.add_attribute("type", "init_dof");
@@ -4579,7 +4579,7 @@ void FEBioExport3::WriteInitShellFluidPressure(FEInitShellFluidPressure& ip)
 	m_xml.close_branch();
 }
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteInitTemperature(FEInitTemperature&   it)
+void FEBioExport3::WriteInitTemperature(FSInitTemperature&   it)
 {
 	XMLElement ec("ic");
 	ec.add_attribute("type", "init_dof");
@@ -4593,7 +4593,7 @@ void FEBioExport3::WriteInitTemperature(FEInitTemperature&   it)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteInitFluidDilatation(FEInitFluidDilatation&   it)
+void FEBioExport3::WriteInitFluidDilatation(FSInitFluidDilatation&   it)
 {
 	XMLElement ec("ic");
 	ec.add_attribute("type", "init_dof");
@@ -4607,7 +4607,7 @@ void FEBioExport3::WriteInitFluidDilatation(FEInitFluidDilatation&   it)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteInitPrestrain(FEInitPrestrain& ip)
+void FEBioExport3::WriteInitPrestrain(FSInitPrestrain& ip)
 {
 	XMLElement el("ic");
 	el.add_attribute("name", ip.GetName().c_str());
@@ -5085,7 +5085,7 @@ void FEBioExport3::WriteStepSection()
 			}
 
 			// output constraint section
-			int nnlc = step.RigidConstraints() + CountConstraints<FSModelConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
+			int nnlc = step.RigidConstraints() + CountConstraints<FSModelConstraint>(*m_pfem) + CountInterfaces<FSRigidJoint>(*m_pfem);
 			if (nnlc > 0)
 			{
 				m_xml.add_branch("Constraints");

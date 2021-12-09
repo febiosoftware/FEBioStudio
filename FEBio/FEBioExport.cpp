@@ -459,7 +459,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		GDiscreteSpringSet* ps = dynamic_cast<GDiscreteSpringSet*>(pg);
 		if (ps)
 		{
-			FEDiscreteMaterial* pm = ps->GetMaterial();
+			FSDiscreteMaterial* pm = ps->GetMaterial();
 			if (pm) AddLoadCurves(*pm);
 		}
 	}

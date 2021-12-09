@@ -3175,7 +3175,7 @@ void CGLView::RenderRigidWalls()
 		FEStep& s = *ps->GetStep(n);
 		for (int i = 0; i<s.Interfaces(); ++i)
 		{
-			FERigidWallInterface* pi = dynamic_cast<FERigidWallInterface*>(s.Interface(i));
+			FSRigidWallInterface* pi = dynamic_cast<FSRigidWallInterface*>(s.Interface(i));
 			if (pi)
 			{
 				// get the plane equation
@@ -3216,7 +3216,7 @@ void CGLView::RenderRigidWalls()
 				}
 				glPopMatrix();
 			}
-			FERigidSphereInterface* prs = dynamic_cast<FERigidSphereInterface*>(s.Interface(i));
+			FSRigidSphereInterface* prs = dynamic_cast<FSRigidSphereInterface*>(s.Interface(i));
 			if (prs)
 			{
 				vec3d c = prs->Center();
@@ -3262,10 +3262,10 @@ void CGLView::RenderRigidJoints()
 		FEStep& s = *ps->GetStep(n);
 		for (int i = 0; i<s.Interfaces(); ++i)
 		{
-			FERigidJoint* pj = dynamic_cast<FERigidJoint*> (s.Interface(i));
+			FSRigidJoint* pj = dynamic_cast<FSRigidJoint*> (s.Interface(i));
 			if (pj)
 			{
-				vec3d r = pj->GetVecValue(FERigidJoint::RJ);
+				vec3d r = pj->GetVecValue(FSRigidJoint::RJ);
 
 				glColor3ub(255, 0, 0);
 				glPushMatrix();

@@ -77,7 +77,7 @@ private:
 	void ParseRigidWall         (FEStep* pstep, XMLTag& tag);
 	void ParseLinearConstraint  (FEStep* pstep, XMLTag& tag);
 	FESurface* ParseContactSurface(XMLTag& tag, int format = 0);
-	void ParseContactParams(XMLTag& tag, FEPairedInterface* pc, int nid);
+	void ParseContactParams(XMLTag& tag, FSPairedInterface* pc, int nid);
 	void ParseConstraint(FEStep* pstep, XMLTag& tag);
 
 	// constraint input functions

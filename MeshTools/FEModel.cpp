@@ -1464,14 +1464,14 @@ void FSModel::ClearSelections()
 		{
 			FSInterface* pi = step->Interface(i);
 
-			if (dynamic_cast<FESoloInterface*>(pi))
+			if (dynamic_cast<FSSoloInterface*>(pi))
 			{
-				FESoloInterface* pc = dynamic_cast<FESoloInterface*>(pi);
+				FSSoloInterface* pc = dynamic_cast<FSSoloInterface*>(pi);
 				delete pc->GetItemList(); pc->SetItemList(0);
 			}
-			else if (dynamic_cast<FEPairedInterface*>(pi))
+			else if (dynamic_cast<FSPairedInterface*>(pi))
 			{
-				FEPairedInterface* pc = dynamic_cast<FEPairedInterface*>(pi);
+				FSPairedInterface* pc = dynamic_cast<FSPairedInterface*>(pi);
 				delete pc->GetSecondarySurface(); pc->SetSecondarySurface(0);
 				delete pc->GetPrimarySurface(); pc->SetPrimarySurface(0);
 			}

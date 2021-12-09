@@ -41,7 +41,7 @@ SOFTWARE.*/
 // 3.4: Added load_type parameter to FERigidForce
 // 3.5: Added density, k to uncoupled-prestrain material
 // 3.6: Added search_radius parameter to f2f contact. 
-// 3.7: Made value parameter of FEInitFluidPressure variable. 
+// 3.7: Made value parameter of FSInitFluidPressure variable. 
 // 3.8: Added filename to log data
 // 3.9: Made fixed charge density a variable parameter for multi- and triphasic materials. 
 // 3.10: Added density to prestrain elastic material.

@@ -405,13 +405,13 @@ void GDiscreteSpringSet::CopyDiscreteElementSet(GDiscreteElementSet* ds)
 }
 
 //-----------------------------------------------------------------------------
-void GDiscreteSpringSet::SetMaterial(FEDiscreteMaterial* mat)
+void GDiscreteSpringSet::SetMaterial(FSDiscreteMaterial* mat)
 {
 	m_mat = mat;
 }
 
 //-----------------------------------------------------------------------------
-FEDiscreteMaterial* GDiscreteSpringSet::GetMaterial()
+FSDiscreteMaterial* GDiscreteSpringSet::GetMaterial()
 {
 	return m_mat;
 }
@@ -477,9 +477,9 @@ void GDiscreteSpringSet::Load(IArchive& ar)
 					int mid = ar.GetChunkID();
 					switch (mid)
 					{
-					case FE_DISCRETE_LINEAR_SPRING   : m_mat = new FELinearSpringMaterial; break;
-					case FE_DISCRETE_NONLINEAR_SPRING: m_mat = new FENonLinearSpringMaterial; break;
-					case FE_DISCRETE_HILL            : m_mat = new FEHillContractileMaterial; break;
+					case FE_DISCRETE_LINEAR_SPRING   : m_mat = new FSLinearSpringMaterial; break;
+					case FE_DISCRETE_NONLINEAR_SPRING: m_mat = new FSNonLinearSpringMaterial; break;
+					case FE_DISCRETE_HILL            : m_mat = new FSHillContractileMaterial; break;
 					default:
 						assert(false);
 						throw ReadError("Unknown discrete material");

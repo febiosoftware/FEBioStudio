@@ -325,7 +325,7 @@ void check_006(FEProject& prj, std::vector<FSObject*>& objList)
 				// see if this material is used by any rigid interface
 				for (int j = 0; j < pstep->Interfaces(); ++j)
 				{
-					FERigidInterface* ri = dynamic_cast<FERigidInterface*>(pstep->Interface(j));
+					FSRigidInterface* ri = dynamic_cast<FSRigidInterface*>(pstep->Interface(j));
 					if (ri && (ri->GetRigidBody() == mat))
 					{
 						matUsed = true;
@@ -372,9 +372,9 @@ void check_007(FEProject& prj, std::vector<FSObject*>& objList)
 		for (int j = 0; j < step->Interfaces(); ++j)
 		{
 			FSInterface* pi = step->Interface(j);
-			if (dynamic_cast<FESoloInterface*>(pi))
+			if (dynamic_cast<FSSoloInterface*>(pi))
 			{
-				FESoloInterface* psi = dynamic_cast<FESoloInterface*>(pi);
+				FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(pi);
 				if (psi->GetItemList() == nullptr)
 				{
 					objList.push_back(pi);
@@ -394,9 +394,9 @@ void check_008(FEProject& prj, std::vector<FSObject*>& objList)
 		for (int j = 0; j < step->Interfaces(); ++j)
 		{
 			FSInterface* pi = step->Interface(j);
-			if (dynamic_cast<FEPairedInterface*>(pi))
+			if (dynamic_cast<FSPairedInterface*>(pi))
 			{
-				FEPairedInterface* psi = dynamic_cast<FEPairedInterface*>(pi);
+				FSPairedInterface* psi = dynamic_cast<FSPairedInterface*>(pi);
 				if ((psi->GetPrimarySurface() == nullptr) || (psi->GetSecondarySurface() == nullptr))
 				{
 					objList.push_back(pi);
@@ -451,7 +451,7 @@ void check_011(FEProject& prj, std::vector<FSObject*>& objList)
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->ICs(); ++j)
 		{
-			FEInitialNodalDOF* pl = dynamic_cast<FEInitialNodalDOF*>(step->IC(j));
+			FSInitialNodalDOF* pl = dynamic_cast<FSInitialNodalDOF*>(step->IC(j));
 			if (pl && pl->GetItemList() == nullptr)
 			{
 				objList.push_back(pl);
@@ -581,7 +581,7 @@ void check_016(FEProject& prj, std::vector<FSObject*>& objList)
 		int ni = pstep->Interfaces();
 		for (int j = 0; j < ni; ++j)
 		{
-			FERigidInterface* ri = dynamic_cast<FERigidInterface*>(pstep->Interface(j));
+			FSRigidInterface* ri = dynamic_cast<FSRigidInterface*>(pstep->Interface(j));
 			if (ri && (ri->GetRigidBody() == nullptr))
 			{
 				objList.push_back(ri);

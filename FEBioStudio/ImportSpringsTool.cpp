@@ -142,9 +142,9 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 	// set the spring material
 	switch (m_type)
 	{
-	case 0: dset->SetMaterial(new FELinearSpringMaterial); break;
-	case 1: dset->SetMaterial(new FENonLinearSpringMaterial); break;
-	case 2: dset->SetMaterial(new FEHillContractileMaterial); break;
+	case 0: dset->SetMaterial(new FSLinearSpringMaterial); break;
+	case 1: dset->SetMaterial(new FSNonLinearSpringMaterial); break;
+	case 2: dset->SetMaterial(new FSHillContractileMaterial); break;
 	default:
 		assert(false);
 		return false;

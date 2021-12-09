@@ -35,7 +35,7 @@ SOFTWARE.*/
 typedef std::pair<std::string, FEItemListBuilder*> NamedList;
 
 //-----------------------------------------------------------------------------
-class FE1DPointFunction;
+class FS1DPointFunction;
 class GPart;
 
 //-----------------------------------------------------------------------------
@@ -201,15 +201,15 @@ protected:
 	void WriteBCPrescribed(FEStep& s);
 	void WriteBCRigid     (FEStep& s);
 
-	void WriteInitVelocity          (FENodalVelocities&        iv);
-	void WriteInitShellVelocity     (FENodalShellVelocities&   iv);
-	void WriteInitConcentration     (FEInitConcentration&      ic);
-    void WriteInitShellConcentration(FEInitShellConcentration& ic);
-	void WriteInitFluidPressure     (FEInitFluidPressure&      ip);
-    void WriteInitShellFluidPressure(FEInitShellFluidPressure& iq);
-	void WriteInitTemperature       (FEInitTemperature&        it);
-    void WriteInitFluidDilatation   (FEInitFluidDilatation&    it);
-	void WriteInitPrestrain         (FEInitPrestrain&          ip);
+	void WriteInitVelocity          (FSNodalVelocities&        iv);
+	void WriteInitShellVelocity     (FSNodalShellVelocities&   iv);
+	void WriteInitConcentration     (FSInitConcentration&      ic);
+    void WriteInitShellConcentration(FSInitShellConcentration& ic);
+	void WriteInitFluidPressure     (FSInitFluidPressure&      ip);
+    void WriteInitShellFluidPressure(FSInitShellFluidPressure& iq);
+	void WriteInitTemperature       (FSInitTemperature&        it);
+    void WriteInitFluidDilatation   (FSInitFluidDilatation&    it);
+	void WriteInitPrestrain         (FSInitPrestrain&          ip);
 
 	void WriteLoadNodal         (FEStep& s);
 	void WriteLoadPressure      (FEStep& s);
@@ -233,7 +233,7 @@ protected:
 	void WriteConcentrationFlux (FEStep& s);
     void WriteMatchingOsmoticCoefficient  (FEStep& s);
 
-	void WriteContactInterface  (FEStep& s, const char* sztype, FEPairedInterface* pi);
+	void WriteContactInterface  (FEStep& s, const char* sztype, FSPairedInterface* pi);
 	void WriteContactWall       (FEStep& s);
 	void WriteContactSphere     (FEStep& s);
 	void WriteLinearConstraints (FEStep& s);
@@ -251,7 +251,7 @@ protected:
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteElementList(FEElemList& el);
 
-	void WritePointCurve(FE1DPointFunction* f1d, XMLElement& el);
+	void WritePointCurve(FS1DPointFunction* f1d, XMLElement& el);
 
 protected:
 	FSModel*		m_pfem;

@@ -331,7 +331,7 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidInterfaceSettings::CRigidInterfaceSettings(FSModel& fem, FERigidInterface* pi) : m_ri(pi)
+CRigidInterfaceSettings::CRigidInterfaceSettings(FSModel& fem, FSRigidInterface* pi) : m_ri(pi)
 {
 	QStringList mats;
 	m_sel = -1;

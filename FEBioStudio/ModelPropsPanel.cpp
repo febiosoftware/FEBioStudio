@@ -685,7 +685,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			return;
 		}
 
-		FESoloInterface* solo = dynamic_cast<FESoloInterface*>(m_currentObject);
+		FSSoloInterface* solo = dynamic_cast<FSSoloInterface*>(m_currentObject);
 		if (solo) { SetSelection(0, solo->GetItemList()); return; }
 
 		GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject);
@@ -694,7 +694,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
 		if (pl) { SetSelection(0, pl); return; }
 
-		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 		if (pi)
 		{
 			ui->setSelection1Title("Primary");
@@ -964,7 +964,7 @@ void CModelPropsPanel::addSelection(int n)
 		return;
 	}
 
-	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pi)
 	{
 		if ((ps->Type() != SELECT_SURFACES) && (ps->Type() != SELECT_FE_FACES) && (ps->Type() != SELECT_PARTS))
@@ -1012,7 +1012,7 @@ void CModelPropsPanel::addSelection(int n)
 		return;
 	}
 
-	FESoloInterface* psolo = dynamic_cast<FESoloInterface*>(m_currentObject);
+	FSSoloInterface* psolo = dynamic_cast<FSSoloInterface*>(m_currentObject);
 	if (psolo)
 	{
 		if (dynamic_cast<GObjectSelection*>(ps) ||
@@ -1189,7 +1189,7 @@ void CModelPropsPanel::subSelection(int n)
 		return;
 	}
 
-	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pi)
 	{
 		if (dynamic_cast<GObjectSelection*>(ps) ||
@@ -1218,7 +1218,7 @@ void CModelPropsPanel::subSelection(int n)
 		}
 	}
 
-	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
+	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
 	if (psi)
 	{
 		if (dynamic_cast<GObjectSelection*>(ps) ||
@@ -1322,10 +1322,10 @@ void CModelPropsPanel::delSelection(int n)
 	}
 	else
 	{
-		FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
+		FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
 		if (psi) pl = psi->GetItemList();
 
-		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 		if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 
 		CSelectionBox* sel = ui->selectionPanel(n);
@@ -1369,10 +1369,10 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 	FSBoundaryCondition* pbc = dynamic_cast<FSBoundaryCondition*>(m_currentObject);
 	if (pbc) pl = pbc->GetItemList();
 
-	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
+	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
 	if (psi) pl = psi->GetItemList();
 
-	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pi) pl = pi->GetPrimarySurface();
 
 	if (pl == 0) return;
@@ -1401,9 +1401,9 @@ void CModelPropsPanel::clearSelection(int n)
 			emit selectionChanged();
 		}
 	}
-	else if (dynamic_cast<FESoloInterface*>(m_currentObject))
+	else if (dynamic_cast<FSSoloInterface*>(m_currentObject))
 	{
-		FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
+		FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
 		pl = psi->GetItemList();
 		if (pl)
 		{
@@ -1412,9 +1412,9 @@ void CModelPropsPanel::clearSelection(int n)
 			emit selectionChanged();
 		}
 	}
-	else if (dynamic_cast<FEPairedInterface*>(m_currentObject))
+	else if (dynamic_cast<FSPairedInterface*>(m_currentObject))
 	{
-		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 		pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 		if (pl)
 		{
@@ -1442,10 +1442,10 @@ void CModelPropsPanel::on_select2_nameChanged(const QString& t)
 	FSBoundaryCondition* pbc = dynamic_cast<FSBoundaryCondition*>(m_currentObject);
 	if (pbc) pl = pbc->GetItemList();
 
-	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
+	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
 	if (psi) pl = psi->GetItemList();
 
-	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pi) pl = pi->GetSecondarySurface();
 
 	if (pl == 0) return;
@@ -1477,13 +1477,13 @@ void CModelPropsPanel::selSelection(int n)
 	// create the selection command
 	FEItemListBuilder* pl = 0;
 
-	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
+	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
 	if (psi) pl = psi->GetItemList();
 
 	FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(m_currentObject);
 	if (pmc) pl = pmc->GetItemList();
 
-	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pi) pl = (n==0? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 
 	GGroup* pg = dynamic_cast<GGroup*>(m_currentObject);

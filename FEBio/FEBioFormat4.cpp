@@ -1393,7 +1393,7 @@ void FEBioFormat4::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	FEItemListBuilder* pg = febio.BuildItemList(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
 	char szbuf[256];
-	sprintf(szbuf, "NodalLoadSet%02d", CountLoads<FENodalLoad>(fem)+1);
+	sprintf(szbuf, "NodalLoadSet%02d", CountLoads<FSNodalLoad>(fem)+1);
 	pg->SetName(szbuf);
 
 	// get the (optional) name
@@ -1402,7 +1402,7 @@ void FEBioFormat4::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	if (szname == nullptr)
 	{
 		char szname[256];
-		sprintf(szname, "NodalLoad%02d", CountLoads<FENodalLoad>(fem) + 1);
+		sprintf(szname, "NodalLoad%02d", CountLoads<FSNodalLoad>(fem) + 1);
 		name = szname;
 	}
 	else name = szname;
@@ -1410,7 +1410,7 @@ void FEBioFormat4::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	const char* sztype = tag.AttributeValue("type");
 
 	// create the nodal load
-	FENodalLoad* pnl = FEBio::CreateNodalLoad(sztype, &fem);
+	FSNodalLoad* pnl = FEBio::CreateNodalLoad(sztype, &fem);
 	if (pnl == nullptr)
 	{
 		ParseUnknownAttribute(tag, "type");
@@ -1582,7 +1582,7 @@ void FEBioFormat4::ParseContact(FEStep *pstep, XMLTag &tag)
 	if (surfPair == 0) throw XMLReader::InvalidAttributeValue(tag, "surface_pair", szpair);
 
 	// create a new interfaces
-	FEPairedInterface* pci = FEBio::CreatePairedInterface(atype.cvalue(), fem);
+	FSPairedInterface* pci = FEBio::CreatePairedInterface(atype.cvalue(), fem);
 	if (pci == nullptr)
 	{
 		ParseUnknownAttribute(tag, "type");
@@ -1590,7 +1590,7 @@ void FEBioFormat4::ParseContact(FEStep *pstep, XMLTag &tag)
 	}
 
 	// get the (optional) name
-	stringstream ss; ss << "ContactInterface" << CountInterfaces<FEPairedInterface>(*fem) + 1;
+	stringstream ss; ss << "ContactInterface" << CountInterfaces<FSPairedInterface>(*fem) + 1;
 	string name = tag.AttributeValue("name", ss.str());
 	pci->SetName(name);
 
@@ -1783,7 +1783,7 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 			const char* sztype = tag.AttributeValue("type");
 			const char* szname = tag.AttributeValue("name");
 
-			FEDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
+			FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
 			if (FEBio::CreateModelComponent(FE_MATERIAL, sztype, pdm) == false)
 			{
 				delete pdm;

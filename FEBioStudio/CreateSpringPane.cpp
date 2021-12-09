@@ -177,12 +177,12 @@ void CCreateSpringPane::on_newSet_clicked()
 		int ntype = dlg.m_type;
 
 		// allocate discrete material
-		FEDiscreteMaterial* dmat = nullptr;
+		FSDiscreteMaterial* dmat = nullptr;
 		switch (ntype)
 		{
-		case 0: dmat = new FELinearSpringMaterial; break;
-		case 1: dmat = new FENonLinearSpringMaterial; break;
-		case 2: dmat = new FEHillContractileMaterial; break;
+		case 0: dmat = new FSLinearSpringMaterial; break;
+		case 1: dmat = new FSNonLinearSpringMaterial; break;
+		case 2: dmat = new FSHillContractileMaterial; break;
 		default:
 			assert(false);
 			return;

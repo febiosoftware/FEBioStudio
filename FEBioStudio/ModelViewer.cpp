@@ -355,16 +355,16 @@ void CModelViewer::on_selectButton_clicked()
 		int n = fem.FindDiscreteObjectIndex(ps);
 		pcmd = new CCmdSelectDiscrete(&fem, &n, 1, false);
 	}
-	else if (dynamic_cast<FESoloInterface*>(po))
+	else if (dynamic_cast<FSSoloInterface*>(po))
 	{
-		FESoloInterface* pci = dynamic_cast<FESoloInterface*>(po);
+		FSSoloInterface* pci = dynamic_cast<FSSoloInterface*>(po);
 		FEItemListBuilder* pl = pci->GetItemList();
 		if (pl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
 		else SelectItemList(pl);
 	}
-	else if (dynamic_cast<FEPairedInterface*>(po))
+	else if (dynamic_cast<FSPairedInterface*>(po))
 	{
-		FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(po);
+		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
 		FEItemListBuilder* pml = pci->GetSecondarySurface();
 		FEItemListBuilder* psl = pci->GetPrimarySurface();
 
@@ -856,10 +856,10 @@ void CModelViewer::OnChangeDiscreteType()
 	QString item = QInputDialog::getItem(this, "Discrete Set Type", "Type:", items, 0, false);
 	if (item.isEmpty() == false)
 	{
-		FEDiscreteMaterial* mat = nullptr;
-		if (item == "Linear"   ) mat = new FELinearSpringMaterial();
-		if (item == "Nonlinear") mat = new FENonLinearSpringMaterial();
-		if (item == "Hill"     ) mat = new FEHillContractileMaterial();
+		FSDiscreteMaterial* mat = nullptr;
+		if (item == "Linear"   ) mat = new FSLinearSpringMaterial();
+		if (item == "Nonlinear") mat = new FSNonLinearSpringMaterial();
+		if (item == "Hill"     ) mat = new FSHillContractileMaterial();
 		if (mat)
 		{
 			delete set->GetMaterial();
@@ -1299,8 +1299,8 @@ void CModelViewer::OnCopyLoad()
 		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FE_SURFACE_LOAD, pl->Type()));
 	else if (dynamic_cast<FSBodyLoad*>(pl))
 		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FE_BODY_LOAD, pl->Type()));
-	else if (dynamic_cast<FENodalDOFLoad*>(pl))
-		plCopy = new FENodalDOFLoad(fem);
+	else if (dynamic_cast<FSNodalDOFLoad*>(pl))
+		plCopy = new FSNodalDOFLoad(fem);
 	assert(plCopy);
 
 	// create a name
@@ -1721,7 +1721,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_CONTACT:
 	{
 		menu.addAction("Copy", this, SLOT(OnCopyInterface()));
-		FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(data->obj);
+		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(data->obj);
 		if (pci)
 		{
 			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapMasterSlave()));
@@ -1837,7 +1837,7 @@ void CModelViewer::OnDeleteAllMaterials()
 
 void CModelViewer::OnSwapMasterSlave()
 {
-	FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(m_currentObject);
+	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pci)
 	{
 		pci->SwapPrimarySecondary();

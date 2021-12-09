@@ -238,7 +238,7 @@ FEOrthoElastic::FEOrthoElastic() : FSMaterial(FE_ORTHO_ELASTIC)
 	AddScienceParam(0, UNIT_NONE   ,       "v23", "Poisson's ratio v23");
 	AddScienceParam(0, UNIT_NONE   ,       "v31", "Poisson's ratio v31");
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1055,7 +1055,7 @@ FEMooneyRivlinVonMisesFibers::FEMooneyRivlinVonMisesFibers() : FSMaterial(FE_MAT
 	AddDoubleParam(0, "tp");
 	AddIntParam(0, "gipt");
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 //=============================================================================
@@ -1164,7 +1164,7 @@ FETCNonlinearOrthotropic::FETCNonlinearOrthotropic() : FSMaterial(FE_TCNL_ORTHO)
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1188,7 +1188,7 @@ FEFungOrthotropic::FEFungOrthotropic() : FSMaterial(FE_FUNG_ORTHO)
 	AddScienceParam(0, UNIT_PRESSURE , "c", "c");
 	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1212,7 +1212,7 @@ FEFungOrthoCompressible::FEFungOrthoCompressible() : FSMaterial(FE_FUNG_ORTHO_CO
 	AddScienceParam(0, UNIT_PRESSURE , "c", "c");
 	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1231,7 +1231,7 @@ FEHolzapfelGasserOgden::FEHolzapfelGasserOgden() : FSMaterial(FE_HOLZAPFEL_GASSE
     AddScienceParam(0, UNIT_DEGREE   , "gamma", "gamma");
     AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
     
-    SetAxisMaterial(new FEAxisMaterial);
+    SetAxisMaterial(new FSAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1250,7 +1250,7 @@ FEHolzapfelUnconstrained::FEHolzapfelUnconstrained() : FSMaterial(FE_HOLZAPFEL_U
     AddScienceParam(0, UNIT_DEGREE   , "gamma", "gamma");
     AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
     
-    SetAxisMaterial(new FEAxisMaterial);
+    SetAxisMaterial(new FSAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1272,7 +1272,7 @@ FELinearOrthotropic::FELinearOrthotropic() : FSMaterial(FE_LINEAR_ORTHO)
 	AddScienceParam(0, UNIT_NONE   , "v23", "v23");
 	AddScienceParam(0, UNIT_NONE   , "v31", "v31");
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1377,7 +1377,7 @@ FEEFDMooneyRivlin::FEEFDMooneyRivlin() : FSMaterial(FE_EFD_MOONEY_RIVLIN)
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1393,7 +1393,7 @@ FEEFDNeoHookean::FEEFDNeoHookean() : FSMaterial(FE_EFD_NEO_HOOKEAN)
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi"  )->SetUnit(UNIT_PRESSURE);
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1411,7 +1411,7 @@ FEEFDDonnan::FEEFDDonnan() : FSMaterial(FE_EFD_DONNAN)
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1428,7 +1428,7 @@ FEEFDVerondaWestmann::FEEFDVerondaWestmann() : FSMaterial(FE_EFD_VERONDA_WESTMAN
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi"  )->SetUnit(UNIT_PRESSURE);
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1445,7 +1445,7 @@ FECubicCLE::FECubicCLE() : FSMaterial(FE_CLE_CUBIC)
     AddScienceParam(0, UNIT_PRESSURE , "l2" , "lambda_2" );
     AddScienceParam(0, UNIT_PRESSURE , "mu" , "mu"       );
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1470,7 +1470,7 @@ FEOrthotropicCLE::FEOrthotropicCLE() : FSMaterial(FE_CLE_ORTHOTROPIC)
     AddScienceParam(0, UNIT_PRESSURE , "mu2" , "mu2"       );
     AddScienceParam(0, UNIT_PRESSURE , "mu3" , "mu3"       );
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1508,7 +1508,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxial, MODULE_MECH, FE_ACTIVE_
 FEPrescribedActiveContractionUniaxial::FEPrescribedActiveContractionUniaxial() : FSMaterial(FE_ACTIVE_CONTRACT_UNI)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0")->MakeVariable(true);
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 void FEPrescribedActiveContractionUniaxial::Convert(FEPrescribedActiveContractionUniaxialOld* pold)
@@ -1517,7 +1517,7 @@ void FEPrescribedActiveContractionUniaxial::Convert(FEPrescribedActiveContractio
 
     SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionUniaxialOld::MP_T0));
     
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 	m_axes->m_naopt = FE_AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialOld::MP_PH);
@@ -1532,7 +1532,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionTransIso, MODULE_MECH, FE_ACTIVE_
 FEPrescribedActiveContractionTransIso::FEPrescribedActiveContractionTransIso() : FSMaterial(FE_ACTIVE_CONTRACT_TISO)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 void FEPrescribedActiveContractionTransIso::Convert(FEPrescribedActiveContractionTransIsoOld* pold)
@@ -1541,7 +1541,7 @@ void FEPrescribedActiveContractionTransIso::Convert(FEPrescribedActiveContractio
 
     SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionTransIsoOld::MP_T0));
     
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 	m_axes->m_naopt = FE_AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoOld::MP_PH);
@@ -1593,7 +1593,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIV
 FEPrescribedActiveContractionUniaxialUC::FEPrescribedActiveContractionUniaxialUC() : FSMaterial(FE_ACTIVE_CONTRACT_UNI_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 void FEPrescribedActiveContractionUniaxialUC::Convert(FEPrescribedActiveContractionUniaxialUCOld* pold)
@@ -1602,7 +1602,7 @@ void FEPrescribedActiveContractionUniaxialUC::Convert(FEPrescribedActiveContract
 
     SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_T0));
     
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 	m_axes->m_naopt = FE_AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_PH);
@@ -1617,7 +1617,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionTransIsoUC, MODULE_MECH, FE_ACTIV
 FEPrescribedActiveContractionTransIsoUC::FEPrescribedActiveContractionTransIsoUC() : FSMaterial(FE_ACTIVE_CONTRACT_TISO_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 void FEPrescribedActiveContractionTransIsoUC::Convert(FEPrescribedActiveContractionTransIsoUCOld* pold)
@@ -1626,7 +1626,7 @@ void FEPrescribedActiveContractionTransIsoUC::Convert(FEPrescribedActiveContract
 
     SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionTransIsoUCOld::MP_T0));
     
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 	m_axes->m_naopt = FE_AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoUCOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoUCOld::MP_PH);
@@ -1741,7 +1741,7 @@ FEPermAteshianWeissTransIso::FEPermAteshianWeissTransIso() : FSMaterial(FE_PERM_
 	AddScienceParam(0, UNIT_NONE        , "alphaA", "alphaA");
 	AddScienceParam(0, UNIT_NONE        , "alphaT", "alphaT");
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 //=============================================================================
@@ -1760,7 +1760,7 @@ FEPermAteshianWeissOrtho::FEPermAteshianWeissOrtho() : FSMaterial(FE_PERM_REF_OR
 	AddVecParam(vec3d(0,0,0), "M"     , "M");
 	AddVecParam(vec3d(0,0,0), "alpha" , "alpha");
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 //=============================================================================
@@ -1890,7 +1890,7 @@ FESFDSBM::FESFDSBM() : FSMaterial(FE_SFD_SBM)
 	AddScienceParam(0, UNIT_NONE        , "gamma" , "gamma");
 	AddIntParam    (-1                   , "sbm"   , "sbm"  );
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 //=============================================================================
@@ -1904,7 +1904,7 @@ FEEFDCoupled::FEEFDCoupled() : FSMaterial(FE_EFD_COUPLED)
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi" , "ksi" )->SetUnit(UNIT_PRESSURE);
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 //=============================================================================
@@ -1919,7 +1919,7 @@ FEEFDUncoupled::FEEFDUncoupled() : FSMaterial(FE_EFD_UNCOUPLED)
 	AddVecParam(vec3d(0,0,0), "ksi" , "ksi")->SetUnit(UNIT_PRESSURE);
 	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 //=============================================================================
@@ -1943,7 +1943,7 @@ FEFiberGenerator* FEFiberMaterial::GetFiberGenerator()
 	return dynamic_cast<FEFiberGenerator*>(GetProperty(0).GetMaterial());
 }
 
-void FEFiberMaterial::SetAxisMaterial(FEAxisMaterial* Q)
+void FEFiberMaterial::SetAxisMaterial(FSAxisMaterial* Q)
 {
 	// If the fiber generator was not set we'll create a fiber generator from the mat axes
 	FEFiberGenerator* v = dynamic_cast<FEFiberGenerator*>(GetProperty(0).GetMaterial());
@@ -2008,7 +2008,7 @@ FEFiberExpPowOld::FEFiberExpPowOld() : FSMaterial(FE_FIBEREXPPOW_COUPLED_OLD)
 	AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
 	AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, FIBER_WITH_EXPONENTIAL_POWER_LAW_HTML);
@@ -2173,7 +2173,7 @@ FEFiberExpPowUncoupledOld::FEFiberExpPowUncoupledOld() : FSMaterial(FE_FIBEREXPP
 	AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
 	AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-exp-pow-uncoupled", 0, FIBER_WITH_EXPONENTIAL_POWER_LAW_UNCOUPLED_FORMULATION_HTML);
@@ -2214,7 +2214,7 @@ FEFiberPowLinOld::FEFiberPowLinOld() : FSMaterial(FE_FIBERPOWLIN_COUPLED_OLD)
     AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
     AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELASTIC, "fiber-pow-linear", 0, FIBER_WITH_TOE_LINEAR_RESPONSE_HTML);
@@ -2254,7 +2254,7 @@ FEFiberPowLinUncoupledOld::FEFiberPowLinUncoupledOld() : FSMaterial(FE_FIBERPOWL
     AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
     AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
 
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 }
 
 REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-pow-linear-uncoupled", 0, FIBER_WITH_TOE_LINEAR_RESPONSE_UNCOUPLED_FORMULATION_HTML);
@@ -3152,7 +3152,7 @@ REGISTER_MATERIAL(FEPlasticFlowCurveUser, MODULE_MECH, FE_MAT_PLASTIC_FLOW_USER,
 FEPlasticFlowCurveUser::FEPlasticFlowCurveUser() : FSMaterial(FE_MAT_PLASTIC_FLOW_USER)
 {
 	AddProperty("plastic_response", FE_MAT_1DFUNC);
-	AddProperty(0, new FE1DPointFunction);
+	AddProperty(0, new FS1DPointFunction);
 }
 
 //=============================================================================

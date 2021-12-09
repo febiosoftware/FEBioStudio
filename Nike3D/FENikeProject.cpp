@@ -754,7 +754,7 @@ bool FENikeProject::BuildRigidNodes(FEProject &prj)
 
 	for (int i=0; i<s.Interfaces(); ++i)
 	{
-		FERigidInterface* pi = dynamic_cast<FERigidInterface*>( s.Interface(i) );
+		FSRigidInterface* pi = dynamic_cast<FSRigidInterface*>( s.Interface(i) );
 
 		if (pi && pi->IsActive())
 		{
@@ -851,7 +851,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 	// first we export all control data
 	for (i=0; i<s.Interfaces(); ++i)
 	{
-		FESlidingWithGapsInterface* pi = dynamic_cast<FESlidingWithGapsInterface*>(s.Interface(i));
+		FSSlidingWithGapsInterface* pi = dynamic_cast<FSSlidingWithGapsInterface*>(s.Interface(i));
 
 		// sliding interfaces
 		if (pi && pi->IsActive())
@@ -859,23 +859,23 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 			SLIDING_INTERFACE si;
 			SI_FACET f;
 
-			bool bautopen = pi->GetBoolValue(FESlidingWithGapsInterface::AUTOPEN);
-			bool twopass = pi->GetBoolValue(FESlidingWithGapsInterface::TWOPASS);
-			double pen = pi->GetFloatValue(FESlidingWithGapsInterface::PENALTY);
+			bool bautopen = pi->GetBoolValue(FSSlidingWithGapsInterface::AUTOPEN);
+			bool twopass = pi->GetBoolValue(FSSlidingWithGapsInterface::TWOPASS);
+			double pen = pi->GetFloatValue(FSSlidingWithGapsInterface::PENALTY);
 
 			// set sliding interface parameters
 			si.nns = 0;
 			si.nms = 0;
 			si.itype  = (twopass ? -3 : 3);	// TODO: check to see if this is correct
 			si.pen    = (bautopen? pen : -pen);
-			si.mus    = pi->GetFloatValue(FESlidingWithGapsInterface::MU);
+			si.mus    = pi->GetFloatValue(FSSlidingWithGapsInterface::MU);
 			si.muk    = 0;
 			si.fde    = 0;
 			si.pend   = 0;
 			si.bwrad  = 0;
 			si.aicc   = 1;
 			si.iaug   = 1;
-			si.toln   = pi->GetFloatValue(FESlidingWithGapsInterface::ALTOL);
+			si.toln   = pi->GetFloatValue(FSSlidingWithGapsInterface::ALTOL);
 			si.tolt   = 0;
 			si.tkmult = 0;
 			si.tdeath = 0;
@@ -935,7 +935,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 		}
 
 		// tied interfaces
-		FETiedInterface* pt = dynamic_cast<FETiedInterface*>(s.Interface(i));
+		FSTiedInterface* pt = dynamic_cast<FSTiedInterface*>(s.Interface(i));
 
 		if (pt && pt->IsActive())
 		{
@@ -946,7 +946,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 			si.nns = 0;
 			si.nms = 0;
 			si.itype  = 2;
-			si.pen    = -pt->GetFloatValue(FETiedInterface::PENALTY);
+			si.pen    = -pt->GetFloatValue(FSTiedInterface::PENALTY);
 			si.mus    = 0;
 			si.muk    = 0;
 			si.fde    = 0;
@@ -954,7 +954,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 			si.bwrad  = 0;
 			si.aicc   = 1;
 			si.iaug   = 1;
-			si.toln   = pt->GetFloatValue(FETiedInterface::ALTOL);
+			si.toln   = pt->GetFloatValue(FSTiedInterface::ALTOL);
 			si.tolt   = 0;
 			si.tkmult = 0;
 			si.tdeath = 0;
@@ -1027,7 +1027,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 	int i, k;
 	for (i=0; i<s.Loads(); ++i)
 	{
-		FENodalDOFLoad* pbc = dynamic_cast<FENodalDOFLoad*>(s.Load(i));
+		FSNodalDOFLoad* pbc = dynamic_cast<FSNodalDOFLoad*>(s.Load(i));
 		if (pbc)
 		{
 			FELoadCurve& lc = *pbc->GetLoadCurve();
@@ -1049,7 +1049,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 			}
 		}
 
-		FESurfaceTraction* ptc = dynamic_cast<FESurfaceTraction*>(s.Load(i));
+		FSSurfaceTraction* ptc = dynamic_cast<FSSurfaceTraction*>(s.Load(i));
 		if (ptc)
 		{
 			FELoadCurve& lc = *ptc->GetLoadCurve();
@@ -1058,7 +1058,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			unique_ptr<FEFaceList> ps(pitem->BuildFaceList());
 
-			vec3d t = ptc->GetVecValue(FESurfaceTraction::LOAD);
+			vec3d t = ptc->GetVecValue(FSSurfaceTraction::LOAD);
 
 			vector<vec3d> fn; fn.resize(m_Ctrl.numnp);
 			FEFaceList::Iterator pf = ps->First();
@@ -1122,7 +1122,7 @@ bool FENikeProject::BuildPressureLoads(FEProject &prj)
 	int i;
 	for (i=0; i<s.Loads(); ++i)
 	{
-		FEPressureLoad* ppl = dynamic_cast<FEPressureLoad*>(s.Load(i));
+		FSPressureLoad* ppl = dynamic_cast<FSPressureLoad*>(s.Load(i));
 		if (ppl)
 		{
 			FELoadCurve& lc = *ppl->GetLoadCurve();
@@ -1251,7 +1251,7 @@ bool FENikeProject::BuildNodalVelocities(FEProject &prj)
 
 	for (int i=0; i<s.BCs(); ++i)
 	{
-		FENodalVelocities* pbc = dynamic_cast<FENodalVelocities*>(s.BC(i));
+		FSNodalVelocities* pbc = dynamic_cast<FSNodalVelocities*>(s.BC(i));
 		if (pbc)
 		{
 			vec3d v = pbc->GetVelocity();

@@ -159,10 +159,10 @@ int FSMaterialProperty::GetMaterialIndex(FSMaterial* mat)
 }
 
 //=============================================================================
-// FEAxisMaterial
+// FSAxisMaterial
 //=============================================================================
 
-FEAxisMaterial::FEAxisMaterial() : FSMaterial(0)
+FSAxisMaterial::FSAxisMaterial() : FSMaterial(0)
 {
 	m_naopt = -1;
 	m_n[0] = 0; m_n[1] = 1; m_n[2] = 2;
@@ -190,7 +190,7 @@ FEAxisMaterial::FEAxisMaterial() : FSMaterial(0)
 	for (int i = 1; i < Parameters(); ++i) GetParam(i).SetState(0);
 }
 
-bool FEAxisMaterial::UpdateData(bool bsave)
+bool FSAxisMaterial::UpdateData(bool bsave)
 {
 	for (int i = 1; i < Parameters(); ++i) GetParam(i).SetState(0);
 
@@ -267,7 +267,7 @@ bool FEAxisMaterial::UpdateData(bool bsave)
 	return false;
 }
 
-mat3d FEAxisMaterial::GetMatAxes(FEElementRef& el)
+mat3d FSAxisMaterial::GetMatAxes(FEElementRef& el)
 {
     switch (m_naopt)
     {
@@ -634,7 +634,7 @@ mat3d FSMaterial::GetMatAxes(FEElementRef& el)
 
 //-----------------------------------------------------------------------------
 // set the axis material
-void FSMaterial::SetAxisMaterial(FEAxisMaterial* Q)
+void FSMaterial::SetAxisMaterial(FSAxisMaterial* Q)
 {
 	if (m_axes) delete m_axes;
 	m_axes = Q;
@@ -733,7 +733,7 @@ void FSMaterial::Load(IArchive &ar)
 		case CID_MAT_PARAMS: ParamContainer::Load(ar); break;
 		case CID_MAT_AXES:
 			{
-				FEAxisMaterial* axes = new FEAxisMaterial;
+				FSAxisMaterial* axes = new FSAxisMaterial;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = (int)ar.GetChunkID();

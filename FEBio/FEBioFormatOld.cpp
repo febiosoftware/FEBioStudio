@@ -762,7 +762,7 @@ void FEBioFormatOld::ParseForceLoad(FEStep *pstep, XMLTag &tag)
 
 	// create the force loads
 	char szname[256];
-	vector<FENodalDOFLoad*> pFC(nns);
+	vector<FSNodalDOFLoad*> pFC(nns);
 	vector<FENodeSet*> pNS(nns);
 	FEMesh* pm = &GetFEMesh();
 	GMeshObject* po = GetGObject();
@@ -775,7 +775,7 @@ void FEBioFormatOld::ParseForceLoad(FEStep *pstep, XMLTag &tag)
 			sprintf(szname, "ForceNodeset%02d", i + 1);
 			pg->SetName(szname);
 
-			FENodalDOFLoad* pbc = new FENodalDOFLoad(&fem, pg, j, 1, pstep->GetID());
+			FSNodalDOFLoad* pbc = new FSNodalDOFLoad(&fem, pg, j, 1, pstep->GetID());
 			sprintf(szname, "ForceLoad%02d", i + 1);
 			pbc->SetName(szname);
 			pFC[cc[j][i]] = pbc;
@@ -878,17 +878,17 @@ void FEBioFormatOld::ParsePressureLoad(FEStep *pstep, XMLTag &tag)
 	GMeshObject* po = GetGObject();
 
 	// let's create the surfaces
-	vector<FEPressureLoad*> pPC(ns);
+	vector<FSPressureLoad*> pPC(ns);
 	vector<FESurface*> pSF(ns);
 	char szname[256];
-	int npr = CountLoads<FEPressureLoad>(fem);
+	int npr = CountLoads<FSPressureLoad>(fem);
 	for (i = 0; i<ns; ++i)
 	{
 		FESurface* ps = new FESurface(po);
 		sprintf(szname, "PressureSurface%02d", npr + i + 1);
 		ps->SetName(szname);
 
-		FEPressureLoad* pbc = new FEPressureLoad(&fem, ps, pstep->GetID());
+		FSPressureLoad* pbc = new FSPressureLoad(&fem, ps, pstep->GetID());
 		sprintf(szname, "PressureLoad%02d", npr + i + 1);
 		pbc->SetLoad(scl);
 		pbc->SetLinearFlag(ntype == 1);
@@ -977,17 +977,17 @@ void FEBioFormatOld::ParseTractionLoad(FEStep* pstep, XMLTag& tag)
 	GMeshObject* po = GetGObject();
 
 	// let's create the surfaces
-	vector<FESurfaceTraction*> pPC(ns);
+	vector<FSSurfaceTraction*> pPC(ns);
 	vector<FESurface*> pSF(ns);
 	char szname[256];
-	int ntl = CountLoads<FESurfaceTraction>(fem);
+	int ntl = CountLoads<FSSurfaceTraction>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
 		FESurface* ps = new FESurface(po);
 		sprintf(szname, "TractionSurface%02d", ntl + i + 1);
 		ps->SetName(szname);
 
-		FESurfaceTraction* pbc = new FESurfaceTraction(&fem, ps, pstep->GetID());
+		FSSurfaceTraction* pbc = new FSSurfaceTraction(&fem, ps, pstep->GetID());
 		sprintf(szname, "TractionLoad%02d", ntl + i + 1);
 		pbc->SetTraction(tv);
 		pbc->SetName(szname);
@@ -1093,17 +1093,17 @@ void FEBioFormatOld::ParseFluidFlux(FEStep *pstep, XMLTag &tag)
 	GMeshObject* po = GetGObject();
 
 	// let's create the surfaces
-	vector<FEFluidFlux*> pPC(ns);
+	vector<FSFluidFlux*> pPC(ns);
 	vector<FESurface*> pSF(ns);
 	char szname[256];
-	int nfl = CountLoads<FEFluidFlux>(fem);
+	int nfl = CountLoads<FSFluidFlux>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
 		FESurface* ps = new FESurface(po);
 		sprintf(szname, "FluidFluxSurface%02d", nfl + i + 1);
 		ps->SetName(szname);
 
-		FEFluidFlux* pbc = new FEFluidFlux(&fem, ps, pstep->GetID());
+		FSFluidFlux* pbc = new FSFluidFlux(&fem, ps, pstep->GetID());
 		sprintf(szname, "FluidFlux%02d", nfl + i + 1);
 		pbc->SetLinearFlag(ntype == 1);
 		pbc->SetMixtureFlag(nflux == 1);
@@ -1211,17 +1211,17 @@ void FEBioFormatOld::ParseBPNormalTraction(FEStep *pstep, XMLTag &tag)
 	GMeshObject* po = GetGObject();
 
 	// let's create the surfaces
-	vector<FEBPNormalTraction*> pPC(ns);
+	vector<FSBPNormalTraction*> pPC(ns);
 	vector<FESurface*> pSF(ns);
 	char szname[256];
-	int ntl = CountLoads<FEBPNormalTraction>(fem);
+	int ntl = CountLoads<FSBPNormalTraction>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
 		FESurface* ps = new FESurface(po);
 		sprintf(szname, "NormalTractionSurface%02d", ntl + i + 1);
 		ps->SetName(szname);
 
-		FEBPNormalTraction* pbc = new FEBPNormalTraction(&fem, ps, pstep->GetID());
+		FSBPNormalTraction* pbc = new FSBPNormalTraction(&fem, ps, pstep->GetID());
 		sprintf(szname, "NormalTraction%02d", ntl + i + 1);
 		pbc->SetLoad(scl);
 		pbc->SetLinearFlag(ntype == 1);
@@ -1314,17 +1314,17 @@ void FEBioFormatOld::ParseHeatFlux(FEStep *pstep, XMLTag &tag)
 	GMeshObject* po = GetGObject();
 
 	// let's create the surfaces
-	vector<FEHeatFlux*> pPC(ns);
+	vector<FSHeatFlux*> pPC(ns);
 	vector<FESurface*> pSF(ns);
 	char szname[256];
-	int nhf = CountLoads<FEHeatFlux>(fem);
+	int nhf = CountLoads<FSHeatFlux>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
 		FESurface* ps = new FESurface(po);
 		sprintf(szname, "HeatFluxSurface%02d", nhf + i + 1);
 		ps->SetName(szname);
 
-		FEHeatFlux* pbc = new FEHeatFlux(&fem, ps, pstep->GetID());
+		FSHeatFlux* pbc = new FSHeatFlux(&fem, ps, pstep->GetID());
 		sprintf(szname, "HeatFlux%02d", nhf + i + 1);
 		pbc->SetName(szname);
 		pbc->SetLoad(scl);
@@ -1419,17 +1419,17 @@ void FEBioFormatOld::ParseSoluteFlux(FEStep *pstep, XMLTag &tag)
 	GMeshObject* po = GetGObject();
 
 	// let's create the surfaces
-	vector<FESoluteFlux*> pPC(ns);
+	vector<FSSoluteFlux*> pPC(ns);
 	vector<FESurface*> pSF(ns);
 	char szname[256];
-	int nsf = CountLoads<FESoluteFlux>(fem);
+	int nsf = CountLoads<FSSoluteFlux>(fem);
 	for (int i = 0; i<ns; ++i)
 	{
 		FESurface* ps = new FESurface(po);
 		sprintf(szname, "SoluteFluxSurface%02d", nsf + i + 1);
 		ps->SetName(szname);
 
-		FESoluteFlux* pbc = new FESoluteFlux(&fem, ps, pstep->GetID());
+		FSSoluteFlux* pbc = new FSSoluteFlux(&fem, ps, pstep->GetID());
 		sprintf(szname, "SoluteFlux%02d", nsf + i + 1);
 		pbc->SetName(szname);
 		pbc->SetBC(bc);
@@ -1495,9 +1495,9 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			} while (!tag.isend());
 
 			// create a new initial velocity BC
-			FENodalVelocities* pbc = new FENodalVelocities(&fem, pg, v, m_pBCStep->GetID());
+			FSNodalVelocities* pbc = new FSNodalVelocities(&fem, pg, v, m_pBCStep->GetID());
 			char szname[64] = { 0 };
-			sprintf(szname, "InitialVelocity%02d", CountBCs<FENodalVelocities>(fem) + 1);
+			sprintf(szname, "InitialVelocity%02d", CountBCs<FSNodalVelocities>(fem) + 1);
 			pbc->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
@@ -1534,9 +1534,9 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			} while (!tag.isend());
 
 			// create a new initial velocity BC
-			FEInitConcentration* pbc = new FEInitConcentration(&fem, pg, bc, c, m_pBCStep->GetID());
+			FSInitConcentration* pbc = new FSInitConcentration(&fem, pg, bc, c, m_pBCStep->GetID());
 			char szname[64] = { 0 };
-			sprintf(szname, "InitialConcentration%02d", CountBCs<FEInitConcentration>(fem) + 1);
+			sprintf(szname, "InitialConcentration%02d", CountBCs<FSInitConcentration>(fem) + 1);
 			pbc->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
@@ -1565,9 +1565,9 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			} while (!tag.isend());
 
 			// create a new initial BC
-			FEInitFluidPressure* pbc = new FEInitFluidPressure(&fem, pg, p, m_pBCStep->GetID());
+			FSInitFluidPressure* pbc = new FSInitFluidPressure(&fem, pg, p, m_pBCStep->GetID());
 			char szname[64] = { 0 };
-			sprintf(szname, "InitialFluidPressure%02d", CountBCs<FEInitFluidPressure>(fem) + 1);
+			sprintf(szname, "InitialFluidPressure%02d", CountBCs<FSInitFluidPressure>(fem) + 1);
 			pbc->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
@@ -1596,9 +1596,9 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			} while (!tag.isend());
 
 			// create a new initial BC
-			FEInitTemperature* pbc = new FEInitTemperature(&fem, pg, p, m_pBCStep->GetID());
+			FSInitTemperature* pbc = new FSInitTemperature(&fem, pg, p, m_pBCStep->GetID());
 			char szname[64] = { 0 };
-			sprintf(szname, "InitialTemperature%02d", CountBCs<FEInitTemperature>(fem) + 1);
+			sprintf(szname, "InitialTemperature%02d", CountBCs<FSInitTemperature>(fem) + 1);
 			pbc->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
@@ -1697,12 +1697,12 @@ void FEBioFormatOld::ParseContactSliding(FEStep* pstep, XMLTag& tag)
 	char szbuf[256];
 
 	// create new sliding interface
-	FESlidingWithGapsInterface* pi = new FESlidingWithGapsInterface(&fem, pstep->GetID());
+	FSSlidingWithGapsInterface* pi = new FSSlidingWithGapsInterface(&fem, pstep->GetID());
 
 	// get the (optional) contact name
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname) sprintf(szbuf, "%s", szname);
-	else sprintf(szbuf, "SlidingInterface%02d", CountInterfaces<FESlidingWithGapsInterface>(fem) +1);
+	else sprintf(szbuf, "SlidingInterface%02d", CountInterfaces<FSSlidingWithGapsInterface>(fem) +1);
 	pi->SetName(szbuf);
 
 	FESurface *pms = 0, *pss = 0;
@@ -1762,12 +1762,12 @@ void FEBioFormatOld::ParseContactF2FSliding(FEStep* pstep, XMLTag& tag)
 	char szbuf[256];
 
 	// create new sliding interface
-	FEFacetOnFacetInterface* pi = new FEFacetOnFacetInterface(&fem, pstep->GetID());
+	FSFacetOnFacetInterface* pi = new FSFacetOnFacetInterface(&fem, pstep->GetID());
 
 	// get the (optional) contact name
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname) sprintf(szbuf, "%s", szname);
-	else sprintf(szbuf, "SlidingContact%02d", CountInterfaces<FEFacetOnFacetInterface>(fem) +1);
+	else sprintf(szbuf, "SlidingContact%02d", CountInterfaces<FSFacetOnFacetInterface>(fem) +1);
 	pi->SetName(szbuf);
 
 	FESurface *pms = 0, *pss = 0;
@@ -1825,11 +1825,11 @@ void FEBioFormatOld::ParseContactBiphasic(FEStep* pstep, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// create new contact interface
-	FEPoroContact* pi = new FEPoroContact(&fem, pstep->GetID());
+	FSPoroContact* pi = new FSPoroContact(&fem, pstep->GetID());
 
 	// read the name
 	char szname[256];
-	sprintf(szname, "BiphasicContact%02d", CountInterfaces<FEPoroContact>(fem) + 1);
+	sprintf(szname, "BiphasicContact%02d", CountInterfaces<FSPoroContact>(fem) + 1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -1884,11 +1884,11 @@ void FEBioFormatOld::ParseContactSolute(FEStep* pstep, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// create new interface
-	FEPoroSoluteContact* pi = new FEPoroSoluteContact(&fem, pstep->GetID());
+	FSPoroSoluteContact* pi = new FSPoroSoluteContact(&fem, pstep->GetID());
 
 	// set name
 	char szname[256];
-	sprintf(szname, "BiphasicSoluteContact%02d", CountInterfaces<FEPoroSoluteContact>(fem) + 1);
+	sprintf(szname, "BiphasicSoluteContact%02d", CountInterfaces<FSPoroSoluteContact>(fem) + 1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -1944,11 +1944,11 @@ void FEBioFormatOld::ParseContactMultiphasic(FEStep* pstep, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// create new interface
-	FEMultiphasicContact* pi = new FEMultiphasicContact(&fem, pstep->GetID());
+	FSMultiphasicContact* pi = new FSMultiphasicContact(&fem, pstep->GetID());
 
 	// set name
 	char szname[256];
-	sprintf(szname, "MultiphasicContact%02d", CountInterfaces<FEMultiphasicContact>(fem) + 1);
+	sprintf(szname, "MultiphasicContact%02d", CountInterfaces<FSMultiphasicContact>(fem) + 1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2004,11 +2004,11 @@ void FEBioFormatOld::ParseContactTied(FEStep *pstep, XMLTag &tag)
 	FSModel& fem = GetFSModel();
 
 	// create new interface
-	FETiedInterface* pi = new FETiedInterface(&fem, pstep->GetID());
+	FSTiedInterface* pi = new FSTiedInterface(&fem, pstep->GetID());
 
 	// set name
 	char szname[256];
-	sprintf(szname, "TiedInterface%02d", CountInterfaces<FETiedInterface>(fem) + 1);
+	sprintf(szname, "TiedInterface%02d", CountInterfaces<FSTiedInterface>(fem) + 1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2064,11 +2064,11 @@ void FEBioFormatOld::ParseContactSticky(FEStep *pstep, XMLTag &tag)
 	FSModel& fem = GetFSModel();
 
 	// create new interface
-	FEStickyInterface* pi = new FEStickyInterface(&fem, pstep->GetID());
+	FSStickyInterface* pi = new FSStickyInterface(&fem, pstep->GetID());
 
 	// set name
 	char szname[256];
-	sprintf(szname, "StickyInterface%02d", CountInterfaces<FEStickyInterface>(fem) + 1);
+	sprintf(szname, "StickyInterface%02d", CountInterfaces<FSStickyInterface>(fem) + 1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2124,11 +2124,11 @@ void FEBioFormatOld::ParseContactPeriodic(FEStep *pstep, XMLTag &tag)
 	FSModel& fem = GetFSModel();
 
 	// create new interface
-	FEPeriodicBoundary* pi = new FEPeriodicBoundary(&fem, pstep->GetID());
+	FSPeriodicBoundary* pi = new FSPeriodicBoundary(&fem, pstep->GetID());
 
 	// set name
 	char szname[256];
-	sprintf(szname, "PeriodicBoundary%02d", CountInterfaces<FEPeriodicBoundary>(fem) + 1);
+	sprintf(szname, "PeriodicBoundary%02d", CountInterfaces<FSPeriodicBoundary>(fem) + 1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2184,11 +2184,11 @@ void FEBioFormatOld::ParseContactTC(FEStep *pstep, XMLTag &tag)
 	FSModel& fem = GetFSModel();
 
 	// create new interface
-	FETensionCompressionInterface* pi = new FETensionCompressionInterface(&fem, pstep->GetID());
+	FSTensionCompressionInterface* pi = new FSTensionCompressionInterface(&fem, pstep->GetID());
 
 	// set name
 	char szname[256];
-	sprintf(szname, "TCInterface%02d", CountInterfaces<FETensionCompressionInterface>(fem) + 1);
+	sprintf(szname, "TCInterface%02d", CountInterfaces<FSTensionCompressionInterface>(fem) + 1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2244,11 +2244,11 @@ void FEBioFormatOld::ParseContactTiedPoro(FEStep *pstep, XMLTag &tag)
 	FSModel& fem = GetFSModel();
 
 	// create new interface
-	FETiedBiphasicInterface* pi = new FETiedBiphasicInterface(&fem, pstep->GetID());
+	FSTiedBiphasicInterface* pi = new FSTiedBiphasicInterface(&fem, pstep->GetID());
 
 	// set name
 	char szname[256];
-	sprintf(szname, "TiedBiphasicInterface%02d", CountInterfaces<FETiedBiphasicInterface>(fem) + 1);
+	sprintf(szname, "TiedBiphasicInterface%02d", CountInterfaces<FSTiedBiphasicInterface>(fem) + 1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2305,11 +2305,11 @@ void FEBioFormatOld::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// create a new interface
-	FERigidWallInterface* pci = new FERigidWallInterface(&fem, pstep->GetID());
+	FSRigidWallInterface* pci = new FSRigidWallInterface(&fem, pstep->GetID());
 
 	// set name
 	char szname[256];
-	sprintf(szname, "RigidWall%02d", CountInterfaces<FERigidWallInterface>(fem) + 1);
+	sprintf(szname, "RigidWall%02d", CountInterfaces<FSRigidWallInterface>(fem) + 1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pci->SetName(szname);
@@ -2322,22 +2322,22 @@ void FEBioFormatOld::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	do
 	{
 		// read parameters
-		if (tag == "laugon") { int n; tag.value(n); pci->SetBoolValue(FERigidWallInterface::LAUGON, (n == 0 ? false : true)); }
-		else if (tag == "tolerance") { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::ALTOL, f); }
-		else if (tag == "penalty") { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::PENALTY, f); }
+		if (tag == "laugon") { int n; tag.value(n); pci->SetBoolValue(FSRigidWallInterface::LAUGON, (n == 0 ? false : true)); }
+		else if (tag == "tolerance") { double f; tag.value(f); pci->SetFloatValue(FSRigidWallInterface::ALTOL, f); }
+		else if (tag == "penalty") { double f; tag.value(f); pci->SetFloatValue(FSRigidWallInterface::PENALTY, f); }
 		if (tag == "plane")
 		{
 			double n[4];
 			tag.value(n, 4);
-			pci->SetFloatValue(FERigidWallInterface::PA, n[0]);
-			pci->SetFloatValue(FERigidWallInterface::PB, n[1]);
-			pci->SetFloatValue(FERigidWallInterface::PC, n[2]);
-			pci->SetFloatValue(FERigidWallInterface::PD, n[3]);
+			pci->SetFloatValue(FSRigidWallInterface::PA, n[0]);
+			pci->SetFloatValue(FSRigidWallInterface::PB, n[1]);
+			pci->SetFloatValue(FSRigidWallInterface::PC, n[2]);
+			pci->SetFloatValue(FSRigidWallInterface::PD, n[3]);
 
 			const char* szlc = tag.AttributeValue("lc", true);
 			if (szlc)
 			{
-				febio.AddParamCurve(&pci->GetParam(FERigidWallInterface::OFFSET), atoi(szlc) - 1);
+				febio.AddParamCurve(&pci->GetParam(FSRigidWallInterface::OFFSET), atoi(szlc) - 1);
 			}
 		}
 		else if (tag == "surface")
@@ -2417,7 +2417,7 @@ void FEBioFormatOld::ParseContactRigid(FEStep *pstep, XMLTag &tag)
 			}
 
 			// create the interface
-			FERigidInterface* pi = new FERigidInterface(&fem, pmat, pn, pstep->GetID());
+			FSRigidInterface* pi = new FSRigidInterface(&fem, pmat, pn, pstep->GetID());
 			if (sz) sprintf(szbuf, "%s", szname);
 			else sprintf(szbuf, "RigidInterface%02d", i + 1);
 			pi->SetName(szbuf);
@@ -2433,9 +2433,9 @@ void FEBioFormatOld::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 
 	FSModel& fem = GetFSModel();
 
-	FERigidJoint* pi = new FERigidJoint(&fem, pstep->GetID());
+	FSRigidJoint* pi = new FSRigidJoint(&fem, pstep->GetID());
 	char szname[256];
-	sprintf(szname, "RigidJoint%02d", CountInterfaces<FERigidJoint>(fem)+1);
+	sprintf(szname, "RigidJoint%02d", CountInterfaces<FSRigidJoint>(fem)+1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2458,9 +2458,9 @@ void FEBioFormatOld::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 		++tag;
 	} while (!tag.isend());
 
-	pi->SetFloatValue(FERigidJoint::TOL, tol);
-	pi->SetFloatValue(FERigidJoint::PENALTY, pen);
-	pi->SetVecValue(FERigidJoint::RJ, rj);
+	pi->SetFloatValue(FSRigidJoint::TOL, tol);
+	pi->SetFloatValue(FSRigidJoint::PENALTY, pen);
+	pi->SetVecValue(FSRigidJoint::RJ, rj);
 
 	if (na >= 0) pi->m_pbodyA = febio.GetMaterial(na - 1);
 	if (nb >= 0) pi->m_pbodyB = febio.GetMaterial(nb - 1);
@@ -2997,14 +2997,14 @@ void FEBioFormatOld::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// create a new volume constraint
-	FEVolumeConstraint* pi = new FEVolumeConstraint(&fem, pstep->GetID());
+	FSVolumeConstraint* pi = new FSVolumeConstraint(&fem, pstep->GetID());
 	pstep->AddComponent(pi);
 
 	// get the (optional) contact name
 	char szbuf[256];
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname) sprintf(szbuf, "%s", szname);
-	else sprintf(szbuf, "VolumeConstraint%02d", CountConstraints<FEVolumeConstraint>(fem));
+	else sprintf(szbuf, "VolumeConstraint%02d", CountConstraints<FSVolumeConstraint>(fem));
 	pi->SetName(szbuf);
 
 	// get the mesh (need it for defining the surface)
@@ -3027,7 +3027,7 @@ void FEBioFormatOld::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 
 				// create a new surface
 				FESurface* ps = new FESurface(po);
-				sprintf(szbuf, "VolumeConstraintSurface%02d", CountConstraints<FEVolumeConstraint>(fem));
+				sprintf(szbuf, "VolumeConstraintSurface%02d", CountConstraints<FSVolumeConstraint>(fem));
 				ps->SetName(szn ? szn : szbuf);
 
 				// assign the surface

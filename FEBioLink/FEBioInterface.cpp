@@ -396,7 +396,7 @@ FSBoundaryCondition* FEBio::CreateBoundaryCondition(const char* sztype, FSModel*
 	return pbc;
 }
 
-FENodalLoad* FEBio::CreateNodalLoad(const char* sztype, FSModel* fem)
+FSNodalLoad* FEBio::CreateNodalLoad(const char* sztype, FSModel* fem)
 {
 	FEBioNodalLoad* pnl = new FEBioNodalLoad(fem);
 	if (FEBio::CreateModelComponent(FE_NODAL_LOAD, sztype, pnl) == false)
@@ -429,9 +429,9 @@ FSBodyLoad* FEBio::CreateBodyLoad(const char* sztype, FSModel* fem)
 	return pbl;
 }
 
-FEPairedInterface* FEBio::CreatePairedInterface(const char* sztype, FSModel* fem)
+FSPairedInterface* FEBio::CreatePairedInterface(const char* sztype, FSModel* fem)
 {
-	FEPairedInterface* pci = new FEBioInterface(fem);
+	FSPairedInterface* pci = new FEBioInterface(fem);
 	if (CreateModelComponent(FE_INTERFACE, sztype, pci) == false)
 	{
 		delete pci;

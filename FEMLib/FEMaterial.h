@@ -1391,7 +1391,7 @@ public:
 
 	FEFiberGenerator* GetFiberGenerator();
 
-	void SetAxisMaterial(FEAxisMaterial* Q) override;
+	void SetAxisMaterial(FSAxisMaterial* Q) override;
 };
 
 //-----------------------------------------------------------------------------

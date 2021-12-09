@@ -83,20 +83,20 @@ private:
 private:
 	// contact input functions
 	void ParseContact(FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactSliding        (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactF2FSliding     (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactBiphasic       (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactSolute         (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactMultiphasic    (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTied           (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTiedElastic    (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactF2FTied        (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactSticky         (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactPeriodic       (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTC             (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTiedPoro       (FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactTiedMultiphasic(FEStep* pstep, XMLTag& tag);
-	FEPairedInterface* ParseContactGapHeatFlux    (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactSliding        (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactF2FSliding     (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactBiphasic       (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactSolute         (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactMultiphasic    (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactTied           (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactTiedElastic    (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactF2FTied        (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactSticky         (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactPeriodic       (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactTC             (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactTiedPoro       (FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactTiedMultiphasic(FEStep* pstep, XMLTag& tag);
+	FSPairedInterface* ParseContactGapHeatFlux    (FEStep* pstep, XMLTag& tag);
 	void ParseContactJoint(FEStep* pstep, XMLTag& tag);
 	void ParseRigidWall         (FEStep* pstep, XMLTag& tag);
 	void ParseLinearConstraint  (FEStep* pstep, XMLTag& tag);

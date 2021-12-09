@@ -35,7 +35,7 @@ class FSFixedDOF;
 class FSPrescribedDOF;
 class FESoluteMaterial;
 class FSAnalysisStep;
-class FERigidInterface;
+class FSRigidInterface;
 class FSRigidConstraint;
 class FSRigidConnector;
 class FEProject;
@@ -101,14 +101,14 @@ private:
 class CRigidInterfaceSettings : public CPropertyList
 {
 public:
-	CRigidInterfaceSettings(FSModel&fem, FERigidInterface* pi);
+	CRigidInterfaceSettings(FSModel&fem, FSRigidInterface* pi);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FERigidInterface*	m_ri;
+	FSRigidInterface*	m_ri;
 	std::vector<GMaterial*>	m_mat;
 	int					m_sel;
 };

@@ -8,75 +8,75 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FESurfaceConstraint : public FSModelConstraint
+class FSSurfaceConstraint : public FSModelConstraint
 {
 public:
-	FESurfaceConstraint(int ntype, FSModel* fem, int nstep = 0);
+	FSSurfaceConstraint(int ntype, FSModel* fem, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // This class implements a volume constraint
-class FEVolumeConstraint : public FESurfaceConstraint
+class FSVolumeConstraint : public FSSurfaceConstraint
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY };
 
 public:
-	FEVolumeConstraint(FSModel* ps, int nstep = 0);
+	FSVolumeConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // This class implements a normal fluid flow constraint
-class FENormalFlowSurface : public FESurfaceConstraint
+class FSNormalFlowSurface : public FSSurfaceConstraint
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG, RHS };
 
 public:
-	FENormalFlowSurface(FSModel* ps, int nstep = 0);
+	FSNormalFlowSurface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // This class implements a symmetry plane constraint
-class FESymmetryPlane : public FESurfaceConstraint
+class FSSymmetryPlane : public FSSurfaceConstraint
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 
 public:
-	FESymmetryPlane(FSModel* ps, int nstep = 0);
+	FSSymmetryPlane(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEWarpingConstraint : public FSModelConstraint
+class FSWarpingConstraint : public FSModelConstraint
 {
 public:
-	FEWarpingConstraint(FSModel* fem);
+	FSWarpingConstraint(FSModel* fem);
 };
 
 //-----------------------------------------------------------------------------
 // This class implements a frictionless fluid wall constraint
-class FEFrictionlessFluidWall : public FESurfaceConstraint
+class FSFrictionlessFluidWall : public FSSurfaceConstraint
 {
 public:
     enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 
 public:
-    FEFrictionlessFluidWall(FSModel* ps, int nstep = 0);
+    FSFrictionlessFluidWall(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEPrestrainConstraint : public FSModelConstraint
+class FSPrestrainConstraint : public FSModelConstraint
 {
 public:
-	FEPrestrainConstraint(FSModel* ps, int nstep = 0);
+	FSPrestrainConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEInSituStretchConstraint : public FSModelConstraint
+class FSInSituStretchConstraint : public FSModelConstraint
 {
 public:
-	FEInSituStretchConstraint(FSModel* ps, int nstep = 0);
+	FSInSituStretchConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------

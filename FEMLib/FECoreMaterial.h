@@ -109,7 +109,7 @@ private:
 //-----------------------------------------------------------------------------
 // TODO: I had to wrap this in a material so that I can show it in the 
 // MaterialPropsView
-class FEAxisMaterial;
+class FSAxisMaterial;
 
 //-----------------------------------------------------------------------------
 //! FSMaterial is the base class for all materials
@@ -145,7 +145,7 @@ public:
 	mat3d GetMatAxes(FEElementRef& el);
 
 	// set the axis material
-	virtual void SetAxisMaterial(FEAxisMaterial* Q);
+	virtual void SetAxisMaterial(FSAxisMaterial* Q);
 
 	virtual bool IsRigid();
 
@@ -199,7 +199,7 @@ protected:
 	
 public:
 	// local material axes
-	FEAxisMaterial*	m_axes;
+	FSAxisMaterial*	m_axes;
 
 protected:
 	vector<FSMaterialProperty*>	m_Mat;	//!< list of material properties
@@ -208,7 +208,7 @@ protected:
 //-----------------------------------------------------------------------------
 // TODO: I had to wrap this in a material so that I can show it in the 
 // MaterialPropsView
-class FEAxisMaterial : public FSMaterial
+class FSAxisMaterial : public FSMaterial
 {
 public:
 	int		m_naopt;		// axes option
@@ -224,7 +224,7 @@ public:
 	vec3d	m_vec;
 
 public:
-	FEAxisMaterial();
+	FSAxisMaterial();
 
 	bool UpdateData(bool bsave) override;
 

@@ -262,7 +262,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 		for (int j = 0; j < pstep->Loads(); ++j)
 		{
 			// this is only for nodal loads
-			FENodalDOFLoad* pl = dynamic_cast<FENodalDOFLoad*>(pstep->Load(j));
+			FSNodalDOFLoad* pl = dynamic_cast<FSNodalDOFLoad*>(pstep->Load(j));
 			if (pl && pl->IsActive())
 			{
 				FEItemListBuilder* ps = pl->GetItemList();
@@ -306,7 +306,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 		}
 		for (int j = 0; j < pstep->Interfaces(); ++j)
 		{
-			FERigidInterface* pri = dynamic_cast<FERigidInterface*>(pstep->Interface(j));
+			FSRigidInterface* pri = dynamic_cast<FSRigidInterface*>(pstep->Interface(j));
 			if (pri && pri->IsActive())
 			{
 				FEItemListBuilder* ps = pri->GetItemList();
@@ -331,7 +331,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 			if (pl->IsActive())
 			{
 				// we need to exclude nodal loads and body loads
-				if (dynamic_cast<FENodalDOFLoad*>(pl)) pl = 0;
+				if (dynamic_cast<FSNodalDOFLoad*>(pl)) pl = 0;
 				if (dynamic_cast<FSBodyLoad*>(pl)) pl = 0;
 				if (pl && pl->IsActive())
 				{
@@ -357,10 +357,10 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 			FSInterface* pj = pstep->Interface(j);
 			if (pj->IsActive())
 			{
-				FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
+				FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(pj);
 
 				// Note: Don't export surfaces of tied-spring interfaces
-				if (dynamic_cast<FESpringTiedInterface*>(pi)) pi = 0;
+				if (dynamic_cast<FSSpringTiedInterface*>(pi)) pi = 0;
 
 				if (pi && pi->IsActive())
 				{
@@ -389,7 +389,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 					AddSurface(szname, pms);
 				}
 
-				FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*>(pj);
+				FSRigidWallInterface* pw = dynamic_cast<FSRigidWallInterface*>(pj);
 				if (pw && pw->IsActive())
 				{
 					FEItemListBuilder* pitem = pw->GetItemList();
@@ -400,7 +400,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 					AddSurface(name, pitem);
 				}
 
-				FERigidSphereInterface* prs = dynamic_cast<FERigidSphereInterface*>(pj);
+				FSRigidSphereInterface* prs = dynamic_cast<FSRigidSphereInterface*>(pj);
 				if (prs && prs->IsActive())
 				{
 					FEItemListBuilder* pitem = prs->GetItemList();
@@ -418,7 +418,7 @@ void FEBioExport4::BuildItemLists(FEProject& prj)
 			FSModelConstraint* pj = pstep->Constraint(j);
 			if (pj->IsActive())
 			{
-				FESurfaceConstraint* psf = dynamic_cast<FESurfaceConstraint*>(pj);
+				FSSurfaceConstraint* psf = dynamic_cast<FSSurfaceConstraint*>(pj);
 				if (psf && psf->IsActive())
 				{
 					FEItemListBuilder* pi = psf->GetItemList();
@@ -718,7 +718,7 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + CountInterfaces<FERigidJoint>(fem);
+			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + CountInterfaces<FSRigidJoint>(fem);
 			if ((nrc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Rigid");
@@ -740,7 +740,7 @@ bool FEBioExport4::Write(const char* szfile)
 			}
 
 			// output contact
-			int nci = pstep->Interfaces() - CountInterfaces<FERigidJoint>(fem);
+			int nci = pstep->Interfaces() - CountInterfaces<FSRigidJoint>(fem);
 			int nLC = pstep->LinearConstraints();
 			if (((nci > 0) || (nLC > 0)) && (m_section[FEBIO_CONTACT]))
 			{
@@ -774,7 +774,7 @@ bool FEBioExport4::Write(const char* szfile)
 			}
 
 			// output discrete elements (the obsolete spring-tied interface generates springs as well)
-			int nrb = fem.GetModel().DiscreteObjects() + CountInterfaces<FESpringTiedInterface>(fem);
+			int nrb = fem.GetModel().DiscreteObjects() + CountInterfaces<FSSpringTiedInterface>(fem);
 			if ((nrb > 0) && (m_section[FEBIO_DISCRETE]))
 			{
 				m_xml.add_branch("Discrete");
@@ -1434,10 +1434,10 @@ void FEBioExport4::WriteGeometrySurfacePairs()
 		for (int j = 0; j < pstep->Interfaces(); ++j)
 		{
 			FSInterface* pj = pstep->Interface(j);
-			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
+			FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(pj);
 
 			// NOTE: don't export spring-tied interfaces!
-			if (dynamic_cast<FESpringTiedInterface*>(pi)) pi = 0;
+			if (dynamic_cast<FSSpringTiedInterface*>(pi)) pi = 0;
 
 			if (pi && pi->IsActive())
 			{
@@ -1833,7 +1833,7 @@ void FEBioExport4::WriteGeometryDiscreteSets()
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Interfaces(); ++j)
 		{
-			FESpringTiedInterface* pst = dynamic_cast<FESpringTiedInterface*>(step->Interface(j));
+			FSSpringTiedInterface* pst = dynamic_cast<FSSpringTiedInterface*>(step->Interface(j));
 			if (pst && pst->IsActive())
 			{
 				vector<pair<int, int> > L;
@@ -2299,7 +2299,7 @@ void FEBioExport4::WriteContactSection(FEStep& s)
 	// --- C O N T A C T ---
 	for (int i = 0; i < s.Interfaces(); ++i)
 	{
-		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*> (s.Interface(i));
+		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*> (s.Interface(i));
 		if (pi && pi->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pi);
@@ -2391,7 +2391,7 @@ void FEBioExport4::WriteDiscreteSection(FEStep& s)
 			XMLElement dmat("discrete_material");
 			dmat.add_attribute("id", n++);
 			dmat.add_attribute("name", pds->GetName().c_str());
-			FEDiscreteMaterial* dm = pds->GetMaterial();
+			FSDiscreteMaterial* dm = pds->GetMaterial();
 			WriteMaterial(dm, dmat);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
@@ -2412,7 +2412,7 @@ void FEBioExport4::WriteDiscreteSection(FEStep& s)
 	// Write the spring-tied interfaces
 	for (int i = 0; i < s.Interfaces(); ++i)
 	{
-		FESpringTiedInterface* pst = dynamic_cast<FESpringTiedInterface*>(s.Interface(i));
+		FSSpringTiedInterface* pst = dynamic_cast<FSSpringTiedInterface*>(s.Interface(i));
 		if (pst)
 		{
 			dmat.set_attribute(n1, n++);
@@ -2466,7 +2466,7 @@ void FEBioExport4::WriteDiscreteSection(FEStep& s)
 	// write the spring-tied interfaces
 	for (int i = 0; i < s.Interfaces(); ++i)
 	{
-		FESpringTiedInterface* pst = dynamic_cast<FESpringTiedInterface*>(s.Interface(i));
+		FSSpringTiedInterface* pst = dynamic_cast<FSSpringTiedInterface*>(s.Interface(i));
 		if (pst)
 		{
 			disc.set_attribute(n1, n++);
@@ -2535,7 +2535,7 @@ void FEBioExport4::WriteConstraints(FEStep& s)
 			const char* sz = pw->GetName().c_str();
 			ec.add_attribute("name", sz);
 
-			FESurfaceConstraint* psf = dynamic_cast<FESurfaceConstraint*>(pw);
+			FSSurfaceConstraint* psf = dynamic_cast<FSSurfaceConstraint*>(pw);
 			if (psf)
 			{
 				ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
@@ -2586,7 +2586,7 @@ void FEBioExport4::WriteNodalLoads(FEStep& s)
 {
 	for (int j = 0; j < s.Loads(); ++j)
 	{
-		FENodalLoad* pbc = dynamic_cast<FENodalLoad*>(s.Load(j));
+		FSNodalLoad* pbc = dynamic_cast<FSNodalLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pbc);
@@ -3138,7 +3138,7 @@ void FEBioExport4::WriteStepSection()
 			}
 
 			// output constraint section
-			int nnlc = step.RigidConstraints() + CountConstraints<FSModelConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
+			int nnlc = step.RigidConstraints() + CountConstraints<FSModelConstraint>(*m_pfem) + CountInterfaces<FSRigidJoint>(*m_pfem);
 			if (nnlc > 0)
 			{
 				m_xml.add_branch("Constraints");
