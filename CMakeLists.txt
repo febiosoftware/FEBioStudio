@@ -245,7 +245,7 @@ endif()
 # Find FEBio Libs
 set(FEBio_LIBS "")
 
-set(FEBio_LIB_NAMES fecore febiolib)
+set(FEBio_LIB_NAMES fecore febiolib febiomech xml)
 
 foreach(name IN LISTS FEBio_LIB_NAMES)
     findLib(FEBio_LIB_DIR FEBio_LIB ${name})
@@ -347,7 +347,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MathLib MeshIO MeshLib MeshTools Nike3D PostGL PostLib XML XPLTLib FEBioLink)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
