@@ -183,7 +183,7 @@ void FENIKEImport::build_control(FENikeProject& nike)
 {
 	FENikeProject::CONTROL& c = nike.m_Ctrl;
 	FSModel& fem = *m_fem;
-	FENonLinearMechanics* pstep = new FENonLinearMechanics(&fem);
+	FSNonLinearMechanics* pstep = new FSNonLinearMechanics(&fem);
 	pstep->SetName("Step01");
 	fem.AddStep(pstep);
 
@@ -397,7 +397,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 				
 				if (bc < 8)
 				{
-					FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, bc);
+					FSFixedDisplacement* pbc = new FSFixedDisplacement(&fem, pg, bc);
 					sprintf(szname, "FixedConstraint%02d", nfc-1);
 					pbc->SetName(szname);
 					pbc->SetBC(bc);
@@ -406,7 +406,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 				else
 				{
 					bc = bc >> 3;
-					FEFixedRotation* prc = new FEFixedRotation(&fem, pg, bc);
+					FSFixedRotation* prc = new FSFixedRotation(&fem, pg, bc);
 					sprintf(szname, "FixedConstraint%02d", nfc-1);
 					prc->SetName(szname);
 					prc->SetBC(bc);
@@ -449,7 +449,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			for (i=0; i<N; ++i, ++pn) if ((BC[i] == nbc) && (pn->lc == nlc)) { pg->add(pn->node - 1); BC[i] = 0; }
 			
 			// create the constraint
-			FEPrescribedDisplacement* pbc = new FEPrescribedDisplacement(&fem, pg, nbc-1, scale);
+			FSPrescribedDisplacement* pbc = new FSPrescribedDisplacement(&fem, pg, nbc-1, scale);
 			sprintf(szname, "PrescribedConstraint%02d", nfc++);
 			pbc->SetName(szname);
 			pbc->SetDOF(nbc-1);
@@ -1477,7 +1477,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 			FSBoundaryCondition* pbc = s.BC(i);
 
 			// nodal displacements
-			FEPrescribedDisplacement* pdc = dynamic_cast<FEPrescribedDisplacement*>(pbc);
+			FSPrescribedDisplacement* pdc = dynamic_cast<FSPrescribedDisplacement*>(pbc);
 			if (pdc)
 			{
 				plc = pdc->GetLoadCurve();

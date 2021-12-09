@@ -229,7 +229,7 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 			if (pstep->ControlProperties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FEStepControlProperty* pc = pstep->FindControlProperty(sztag); assert(pc);
+				FSStepControlProperty* pc = pstep->FindControlProperty(sztag); assert(pc);
 
 				// see if this is a property
 				const char* sztype = tag.AttributeValue("type", true);
@@ -379,7 +379,7 @@ void FEBioFormat4::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 			if (pmat->Properties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FEMaterialProperty* pmc = pmat->FindProperty(sztag); assert(pmc);
+				FSMaterialProperty* pmc = pmat->FindProperty(sztag); assert(pmc);
 
 				// see if this is a material property
 				const char* sztype = tag.AttributeValue("type", true);
@@ -1440,11 +1440,11 @@ void FEBioFormat4::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	XMLAtt& att = tag.Attribute("type");
 
 	// read the (optional) name
-	stringstream defaultName; defaultName << "SurfaceLoad" << CountLoads<FESurfaceLoad>(fem) + 1;
+	stringstream defaultName; defaultName << "SurfaceLoad" << CountLoads<FSSurfaceLoad>(fem) + 1;
 	string name = tag.AttributeValue("name", defaultName.str());
 
 	// create the surface load
-	FESurfaceLoad* psl = FEBio::CreateSurfaceLoad(att.cvalue(), &fem);
+	FSSurfaceLoad* psl = FEBio::CreateSurfaceLoad(att.cvalue(), &fem);
 	if (psl == nullptr)
 	{
 		ParseUnknownAttribute(tag, "type");
@@ -1471,12 +1471,12 @@ void FEBioFormat4::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 	std::string comment = tag.comment();
 
 	// read the (optional) name
-	stringstream defaultName; defaultName << "BodyLoad" << CountLoads<FEBodyLoad>(fem) + 1;
+	stringstream defaultName; defaultName << "BodyLoad" << CountLoads<FSBodyLoad>(fem) + 1;
 	string name = tag.AttributeValue("name", defaultName.str());
 
 	// create new body load
 	XMLAtt& att = tag.Attribute("type");
-	FEBodyLoad* pbl = FEBio::CreateBodyLoad(att.cvalue(), &fem);
+	FSBodyLoad* pbl = FEBio::CreateBodyLoad(att.cvalue(), &fem);
 	if (pbl == nullptr)
 	{
 		ParseUnknownAttribute(tag, "type");
@@ -1512,12 +1512,12 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 			const char* szname = tag.AttributeValue("name", true);
 			if (szname == nullptr)
 			{
-				sprintf(szbuf, "IC%d", CountICs<FEInitialCondition>(fem) + 1);
+				sprintf(szbuf, "IC%d", CountICs<FSInitialCondition>(fem) + 1);
 				szname = szbuf;
 			}
 
 			// allocate initial condition
-			FEInitialCondition* pic = FEBio::CreateInitialCondition(sztype, &fem); assert(pic);
+			FSInitialCondition* pic = FEBio::CreateInitialCondition(sztype, &fem); assert(pic);
 			if (pic == nullptr)
 			{
 				ParseUnknownTag(tag);
@@ -1718,7 +1718,7 @@ void FEBioFormat4::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
-	FELinearConstraintSet* pset = new FELinearConstraintSet;
+	FSLinearConstraintSet* pset = new FSLinearConstraintSet;
 	pstep->AddLinearConstraint(pset);
 
 	// read the linear constraints
@@ -1727,8 +1727,8 @@ void FEBioFormat4::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 	{
 		if (tag == "linear_constraint")
 		{
-			FELinearConstraintSet::LinearConstraint LC;
-			FELinearConstraintSet::LinearConstraint::DOF dof;
+			FSLinearConstraintSet::LinearConstraint LC;
+			FSLinearConstraintSet::LinearConstraint::DOF dof;
 			++tag;
 			do
 			{
@@ -1856,7 +1856,7 @@ void FEBioFormat4::ParseNLConstraint(FEStep* pstep, XMLTag& tag)
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname == 0)
 	{
-		sprintf(szbuf, "NLConstraint%02d", CountConstraints<FEModelConstraint>(fem)+1);
+		sprintf(szbuf, "NLConstraint%02d", CountConstraints<FSModelConstraint>(fem)+1);
 		szname = szbuf;
 	}
 
@@ -1873,7 +1873,7 @@ void FEBioFormat4::ParseNLConstraint(FEStep* pstep, XMLTag& tag)
 	const char* sztype = tag.AttributeValue("type");
 
 	// create a new constraint
-	FEModelConstraint* pi = FEBio::CreateNLConstraint(sztype, &fem);
+	FSModelConstraint* pi = FEBio::CreateNLConstraint(sztype, &fem);
 	if (pi == nullptr)
 	{
 		ParseUnknownTag(tag);

@@ -3205,7 +3205,7 @@ bool FEBioMaterial::HasFibers()
 
 vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 {
-	FEMaterialProperty* pm = FindProperty("fiber");
+	FSMaterialProperty* pm = FindProperty("fiber");
 	FEBioMaterial* fiber = dynamic_cast<FEBioMaterial*>(pm->GetMaterial());
 
 	// evaluate the element's center

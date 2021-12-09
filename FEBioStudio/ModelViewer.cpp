@@ -315,7 +315,7 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<FSDomainComponent*>(po))
 	{
 		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(po);
-		if (dynamic_cast<FEConstBodyForce*>(pbc) == 0)
+		if (dynamic_cast<FSConstBodyForce*>(pbc) == 0)
 		{
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
@@ -1200,7 +1200,7 @@ void CModelViewer::OnCopyBC()
 
 void CModelViewer::OnCopyIC()
 {
-	FEInitialCondition* pic = dynamic_cast<FEInitialCondition*>(m_currentObject); assert(pic);
+	FSInitialCondition* pic = dynamic_cast<FSInitialCondition*>(m_currentObject); assert(pic);
 	if (pic == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1208,7 +1208,7 @@ void CModelViewer::OnCopyIC()
 
 	// copy the ic
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEInitialCondition* picCopy = dynamic_cast<FEInitialCondition*>(fecore->Create(fem, FE_INITIAL_CONDITION, pic->Type()));
+	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(fecore->Create(fem, FE_INITIAL_CONDITION, pic->Type()));
 	assert(picCopy);
 
 	// create a name
@@ -1258,14 +1258,14 @@ void CModelViewer::OnCopyRigidConnector()
 
 void CModelViewer::OnCopyConstraint()
 {
-	FEModelConstraint* pc = dynamic_cast<FEModelConstraint*>(m_currentObject); assert(pc);
+	FSModelConstraint* pc = dynamic_cast<FSModelConstraint*>(m_currentObject); assert(pc);
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEModelConstraint* pcCopy = dynamic_cast<FEModelConstraint*>(fecore->Create(fem, FE_CONSTRAINT, pc->Type()));
+	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(fecore->Create(fem, FE_CONSTRAINT, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
@@ -1295,9 +1295,9 @@ void CModelViewer::OnCopyLoad()
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
 	FSLoad* plCopy = 0;
-	if (dynamic_cast<FESurfaceLoad*>(pl))
+	if (dynamic_cast<FSSurfaceLoad*>(pl))
 		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FE_SURFACE_LOAD, pl->Type()));
-	else if (dynamic_cast<FEBodyLoad*>(pl))
+	else if (dynamic_cast<FSBodyLoad*>(pl))
 		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FE_BODY_LOAD, pl->Type()));
 	else if (dynamic_cast<FENodalDOFLoad*>(pl))
 		plCopy = new FENodalDOFLoad(fem);
@@ -1350,7 +1350,7 @@ void CModelViewer::OnCopyRigidConstraint()
 
 void CModelViewer::OnCopyStep()
 {
-	FEAnalysisStep* ps = dynamic_cast<FEAnalysisStep*>(m_currentObject); assert(ps);
+	FSAnalysisStep* ps = dynamic_cast<FSAnalysisStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1358,7 +1358,7 @@ void CModelViewer::OnCopyStep()
 
 	// copy the step
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEAnalysisStep* psCopy = dynamic_cast<FEAnalysisStep*>(fecore->Create(fem, FE_ANALYSIS, ps->GetType()));
+	FSAnalysisStep* psCopy = dynamic_cast<FSAnalysisStep*>(fecore->Create(fem, FE_ANALYSIS, ps->GetType()));
 	assert(psCopy);
 
 	// create a name
@@ -1379,7 +1379,7 @@ void CModelViewer::OnCopyStep()
 
 void CModelViewer::OnStepMoveUp()
 {
-	FEAnalysisStep* ps = dynamic_cast<FEAnalysisStep*>(m_currentObject); assert(ps);
+	FSAnalysisStep* ps = dynamic_cast<FSAnalysisStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1396,7 +1396,7 @@ void CModelViewer::OnStepMoveUp()
 
 void CModelViewer::OnStepMoveDown()
 {
-	FEAnalysisStep* ps = dynamic_cast<FEAnalysisStep*>(m_currentObject); assert(ps);
+	FSAnalysisStep* ps = dynamic_cast<FSAnalysisStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1756,7 +1756,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_STEP:
 		{
 			menu.addAction("Copy", this, SLOT(OnCopyStep()));
-			FEAnalysisStep* step = dynamic_cast<FEAnalysisStep*>(data->obj);
+			FSAnalysisStep* step = dynamic_cast<FSAnalysisStep*>(data->obj);
 			if (step)
 			{
 				menu.addAction("Move Up", this, SLOT(OnStepMoveUp()));

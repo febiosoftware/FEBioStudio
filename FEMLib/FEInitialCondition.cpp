@@ -136,7 +136,7 @@ FEInitFluidDilatation::FEInitFluidDilatation(FSModel* ps, FEItemListBuilder* pi,
 }
 
 //-----------------------------------------------------------------------------
-FEInitPrestrain::FEInitPrestrain(FSModel* ps) : FEInitialCondition(FE_INIT_PRESTRAIN, ps)
+FEInitPrestrain::FEInitPrestrain(FSModel* ps) : FSInitialCondition(FE_INIT_PRESTRAIN, ps)
 {
 	SetTypeString("Prestrain");
 
@@ -145,7 +145,7 @@ FEInitPrestrain::FEInitPrestrain(FSModel* ps) : FEInitialCondition(FE_INIT_PREST
 }
 
 //-----------------------------------------------------------------------------
-FEBioInitialCondition::FEBioInitialCondition(FSModel* ps) : FEInitialCondition(FE_FEBIO_INITIAL_CONDITION, ps)
+FEBioInitialCondition::FEBioInitialCondition(FSModel* ps) : FSInitialCondition(FE_FEBIO_INITIAL_CONDITION, ps)
 {
 
 }
@@ -160,7 +160,7 @@ void FEBioInitialCondition::Save(OArchive& ar)
 
 	ar.BeginChunk(CID_FEBIO_BASE_DATA);
 	{
-		FEInitialCondition::Save(ar);
+		FSInitialCondition::Save(ar);
 	}
 	ar.EndChunk();
 }
@@ -174,7 +174,7 @@ void FEBioInitialCondition::Load(IArchive& ar)
 		switch (nid)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FEInitialCondition::Load(ar); break;
+		case CID_FEBIO_BASE_DATA: FSInitialCondition::Load(ar); break;
 		default:
 			assert(false);
 		}

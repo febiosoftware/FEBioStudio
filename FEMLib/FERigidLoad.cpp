@@ -27,14 +27,14 @@ SOFTWARE.*/
 #include "FERigidLoad.h"
 
 //=============================================================================
-FERigidLoad::FERigidLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0, nstep)
+FSRigidLoad::FSRigidLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0, nstep)
 { 
 	m_superClassID = FE_RIGID_LOAD; 
 	SetMeshItemType(0);
 }
 
 //=============================================================================
-FEBioRigidLoad::FEBioRigidLoad(FSModel* ps, int nstep) : FERigidLoad(FE_FEBIO_RIGID_LOAD, ps, nstep) 
+FEBioRigidLoad::FEBioRigidLoad(FSModel* ps, int nstep) : FSRigidLoad(FE_FEBIO_RIGID_LOAD, ps, nstep) 
 {
 
 }
@@ -49,21 +49,21 @@ void FEBioRigidLoad::Save(OArchive& ar)
 
 	ar.BeginChunk(CID_FEBIO_BASE_DATA);
 	{
-		FERigidLoad::Save(ar);
+		FSRigidLoad::Save(ar);
 	}
 	ar.EndChunk();
 }
 
 void FEBioRigidLoad::Load(IArchive& ar)
 {
-	TRACE("FERigidLoad::Load");
+	TRACE("FSRigidLoad::Load");
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FERigidLoad::Load(ar); break;
+		case CID_FEBIO_BASE_DATA: FSRigidLoad::Load(ar); break;
 		default:
 			assert(false);
 		}

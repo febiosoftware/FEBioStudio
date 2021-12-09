@@ -68,7 +68,7 @@ QStringList FEObjectProps::GetEnumValues(const char* ch)
 }
 
 //=======================================================================================
-CFixedDOFProps::CFixedDOFProps(FEFixedDOF* pbc) : m_bc(pbc)
+CFixedDOFProps::CFixedDOFProps(FSFixedDOF* pbc) : m_bc(pbc)
 {
 	FSModel& fem = *pbc->GetFSModel();
 	FEDOFVariable& var = fem.Variable(pbc->GetVarID());
@@ -90,7 +90,7 @@ void CFixedDOFProps::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CAnalysisTimeSettings::CAnalysisTimeSettings(FEAnalysisStep* step) : CObjectProps(0)
+CAnalysisTimeSettings::CAnalysisTimeSettings(FSAnalysisStep* step) : CObjectProps(0)
 {
 	m_step = step;
 	addProperty("Analysis", CProperty::Group);
@@ -247,7 +247,7 @@ void CStepSettings::BuildStepProperties()
 	BuildParamList(m_step);
 	for (int i = 0; i < m_step->ControlProperties(); ++i)
 	{
-		FEStepControlProperty& prop = m_step->GetControlProperty(i);
+		FSStepControlProperty& prop = m_step->GetControlProperty(i);
 		QStringList ops = GetFEBioChoices(m_moduleId, prop.m_nSuperClassId);
 		if (prop.IsRequired() == false) ops << "(none)";
 		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group)->setEnumValues(ops);
@@ -266,7 +266,7 @@ QVariant CStepSettings::GetPropertyValue(int n)
 	n -= params;
 	for (int i = 0; i < m_step->ControlProperties(); ++i)
 	{
-		FEStepControlProperty& prop = m_step->GetControlProperty(i);
+		FSStepControlProperty& prop = m_step->GetControlProperty(i);
 		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
 		if (n == 0)
 		{
@@ -303,7 +303,7 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 	n -= params;
 	for (int i = 0; i < m_step->ControlProperties(); ++i)
 	{
-		FEStepControlProperty& prop = m_step->GetControlProperty(i);
+		FSStepControlProperty& prop = m_step->GetControlProperty(i);
 		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
 		if (n == 0)
 		{

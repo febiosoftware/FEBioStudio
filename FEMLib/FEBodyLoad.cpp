@@ -29,14 +29,14 @@ SOFTWARE.*/
 #include <MeshTools/FEItemListBuilder.h>
 #include <FECore/units.h>
 
-FEBodyLoad::FEBodyLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0, nstep)
+FSBodyLoad::FSBodyLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0, nstep)
 {
 	m_superClassID = FE_BODY_LOAD;
 	SetMeshItemType(FE_ELEM_FLAG);
 }
 
 //-----------------------------------------------------------------------------
-FEConstBodyForce::FEConstBodyForce(FSModel* ps, int nstep) : FEBodyLoad(FE_CONST_BODY_FORCE, ps, nstep)
+FSConstBodyForce::FSConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_CONST_BODY_FORCE, ps, nstep)
 {
 	SetTypeString("const");
 	AddDoubleParam(0, "x")->SetLoadCurve();
@@ -44,17 +44,17 @@ FEConstBodyForce::FEConstBodyForce(FSModel* ps, int nstep) : FEBodyLoad(FE_CONST
 	AddDoubleParam(0, "z")->SetLoadCurve();
 }
 
-FELoadCurve* FEConstBodyForce::GetLoadCurve(int n)
+FELoadCurve* FSConstBodyForce::GetLoadCurve(int n)
 {
 	return GetParamLC(FORCE_X + n);
 }
 
-double FEConstBodyForce::GetLoad(int n) { return GetFloatValue(FORCE_X + n); }
+double FSConstBodyForce::GetLoad(int n) { return GetFloatValue(FORCE_X + n); }
 
-void FEConstBodyForce::SetLoad(int n, double v) { SetFloatValue(FORCE_X + n, v); }
+void FSConstBodyForce::SetLoad(int n, double v) { SetFloatValue(FORCE_X + n, v); }
 
 //-----------------------------------------------------------------------------
-FENonConstBodyForce::FENonConstBodyForce(FSModel* ps, int nstep) : FEBodyLoad(FE_NON_CONST_BODY_FORCE, ps, nstep)
+FENonConstBodyForce::FENonConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_NON_CONST_BODY_FORCE, ps, nstep)
 {
 	SetTypeString("non-const");
 	AddMathParam("0", "x")->SetLoadCurve();
@@ -68,14 +68,14 @@ FELoadCurve* FENonConstBodyForce::GetLoadCurve(int n)
 }
 
 //-----------------------------------------------------------------------------
-FEHeatSource::FEHeatSource(FSModel* ps, int nstep) : FEBodyLoad(FE_HEAT_SOURCE, ps, nstep)
+FEHeatSource::FEHeatSource(FSModel* ps, int nstep) : FSBodyLoad(FE_HEAT_SOURCE, ps, nstep)
 {
 	SetTypeString("heat_source");
 	AddDoubleParam(0, "Q", "Q")->SetLoadCurve();
 }
 
 //-----------------------------------------------------------------------------
-FESBMPointSource::FESBMPointSource(FSModel* ps, int nstep) : FEBodyLoad(FE_SBM_POINT_SOURCE, ps, nstep)
+FESBMPointSource::FESBMPointSource(FSModel* ps, int nstep) : FSBodyLoad(FE_SBM_POINT_SOURCE, ps, nstep)
 {
 	SetTypeString("SBM Point Source");
 	AddIntParam(1, "sbm", "sbm");
@@ -87,7 +87,7 @@ FESBMPointSource::FESBMPointSource(FSModel* ps, int nstep) : FEBodyLoad(FE_SBM_P
 }
 
 //-----------------------------------------------------------------------------
-FECentrifugalBodyForce::FECentrifugalBodyForce(FSModel* ps, int nstep) : FEBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
+FECentrifugalBodyForce::FECentrifugalBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
 {
     SetTypeString("centrifugal");
     AddScienceParam(0, UNIT_RADIAN, "angular_speed", "angular speed")->SetLoadCurve();
@@ -96,14 +96,14 @@ FECentrifugalBodyForce::FECentrifugalBodyForce(FSModel* ps, int nstep) : FEBodyL
 }
 
 //-----------------------------------------------------------------------------
-FEMassDamping::FEMassDamping(FSModel* ps, int nstep) : FEBodyLoad(FE_MASSDAMPING_LOAD, ps, nstep)
+FEMassDamping::FEMassDamping(FSModel* ps, int nstep) : FSBodyLoad(FE_MASSDAMPING_LOAD, ps, nstep)
 {
 	SetTypeString("mass damping");
 	AddDoubleParam(1, "C");
 }
 
 //-----------------------------------------------------------------------------
-FEBioBodyLoad::FEBioBodyLoad(FSModel* ps, int nstep) : FEBodyLoad(FE_FEBIO_BODY_LOAD, ps, nstep)
+FEBioBodyLoad::FEBioBodyLoad(FSModel* ps, int nstep) : FSBodyLoad(FE_FEBIO_BODY_LOAD, ps, nstep)
 {
 
 }
@@ -118,7 +118,7 @@ void FEBioBodyLoad::Save(OArchive& ar)
 
 	ar.BeginChunk(CID_FEBIO_BASE_DATA);
 	{
-		FEBodyLoad::Save(ar);
+		FSBodyLoad::Save(ar);
 	}
 	ar.EndChunk();
 }
@@ -132,7 +132,7 @@ void FEBioBodyLoad::Load(IArchive& ar)
 		switch (nid)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FEBodyLoad::Load(ar); break;
+		case CID_FEBIO_BASE_DATA: FSBodyLoad::Load(ar); break;
 		default:
 			assert(false);
 		}

@@ -260,7 +260,7 @@ void FEBio::CreateStep(int classId, FEStep* po, bool initDefaultProps)
 	{
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
 
-		FEStepControlProperty* pc = new FEStepControlProperty;
+		FSStepControlProperty* pc = new FSStepControlProperty;
 
 		string name = prop.m_name;
 		pc->m_brequired = prop.m_brequired;
@@ -333,10 +333,10 @@ void FEBio::CreateMaterial(int classId, FEBioMaterial* po)
 	{
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
 		int maxSize = (prop.m_isArray ? 0 : 1);
-		FEMaterialProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, maxSize); assert(matProp);
+		FSMaterialProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, maxSize); assert(matProp);
 		matProp->SetSuperClassID(prop.m_superClassId);
 		if (prop.m_brequired)
-			matProp->SetFlags(matProp->GetFlags() | FEMaterialProperty::REQUIRED);
+			matProp->SetFlags(matProp->GetFlags() | FSMaterialProperty::REQUIRED);
 		matProp->SetDefaultType(prop.m_defType);
 
 		if (prop.m_comp.empty() == false)
@@ -407,7 +407,7 @@ FENodalLoad* FEBio::CreateNodalLoad(const char* sztype, FSModel* fem)
 	return pnl;
 }
 
-FESurfaceLoad* FEBio::CreateSurfaceLoad(const char* sztype, FSModel* fem)
+FSSurfaceLoad* FEBio::CreateSurfaceLoad(const char* sztype, FSModel* fem)
 {
 	FEBioSurfaceLoad* psl = new FEBioSurfaceLoad(fem);
 	if (FEBio::CreateModelComponent(FE_SURFACE_LOAD, sztype, psl) == false)
@@ -418,7 +418,7 @@ FESurfaceLoad* FEBio::CreateSurfaceLoad(const char* sztype, FSModel* fem)
 	return psl;
 }
 
-FEBodyLoad* FEBio::CreateBodyLoad(const char* sztype, FSModel* fem)
+FSBodyLoad* FEBio::CreateBodyLoad(const char* sztype, FSModel* fem)
 {
 	FEBioBodyLoad* pbl = new FEBioBodyLoad(fem);
 	if (FEBio::CreateModelComponent(FE_BODY_LOAD, sztype, pbl) == false)
@@ -440,9 +440,9 @@ FEPairedInterface* FEBio::CreatePairedInterface(const char* sztype, FSModel* fem
 	return pci;
 }
 
-FEModelConstraint* FEBio::CreateNLConstraint(const char* sztype, FSModel* fem)
+FSModelConstraint* FEBio::CreateNLConstraint(const char* sztype, FSModel* fem)
 {
-	FEModelConstraint* pmc = new FEBioNLConstraint(fem);
+	FSModelConstraint* pmc = new FEBioNLConstraint(fem);
 	if (CreateModelComponent(FE_CONSTRAINT, sztype, pmc) == false)
 	{
 		delete pmc;
@@ -473,9 +473,9 @@ FSRigidConnector* FEBio::CreateRigidConnector(const char* sztype, FSModel* fem)
 	return pi;
 }
 
-FEInitialCondition* FEBio::CreateInitialCondition(const char* sztype, FSModel* fem)
+FSInitialCondition* FEBio::CreateInitialCondition(const char* sztype, FSModel* fem)
 {
-	FEInitialCondition* pic = new FEBioInitialCondition(fem);
+	FSInitialCondition* pic = new FEBioInitialCondition(fem);
 	if (FEBio::CreateModelComponent(FE_INITIAL_CONDITION, sztype, pic) == false)
 	{
 		delete pic;

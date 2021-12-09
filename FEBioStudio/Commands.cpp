@@ -138,7 +138,7 @@ void CCmdAddRigidConnector::UnExecute()
 // CCmdAddConstraint
 //////////////////////////////////////////////////////////////////////
 
-CCmdAddConstraint::CCmdAddConstraint(FEStep* ps, FEModelConstraint* pmc) : CCommand("Add constraint") 
+CCmdAddConstraint::CCmdAddConstraint(FEStep* ps, FSModelConstraint* pmc) : CCommand("Add constraint") 
 { 
 	m_ps = ps; 
 	m_pmc = pmc;

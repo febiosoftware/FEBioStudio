@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FEBioExport.h"
 
 class FEDataMapGenerator;
-class FESurfaceLoad;
+class FSSurfaceLoad;
 class GPartList;
 class GMaterial;
 class GPart;

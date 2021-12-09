@@ -157,7 +157,7 @@ bool FEBioExport12::Write(const char* szfile)
 	bool bsingle_step = (m_nsteps <= 1);
 	if (m_nsteps == 2)
 	{
-		FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+		FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(fem.GetStep(1));
 		ntype = pstep->GetType();
 		if (pstep == 0) return errf("Step 1 is not an analysis step.");
 		if (pstep->BCs() + pstep->Loads() + pstep->Interfaces() + pstep->RigidConstraints() == 0) bsingle_step = true;
@@ -192,7 +192,7 @@ bool FEBioExport12::Write(const char* szfile)
 			// written separately for each step
 			if (bsingle_step && (m_nsteps == 2))
 			{
-				FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+				FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(fem.GetStep(1));
 				if (pstep == 0) return errf("Step 1 is not an analysis step.");
 
 				// write the module section
@@ -340,7 +340,7 @@ bool FEBioExport12::Write(const char* szfile)
 
 //-----------------------------------------------------------------------------
 // Write the MODULE section
-void FEBioExport12::WriteModuleSection(FEAnalysisStep* pstep)
+void FEBioExport12::WriteModuleSection(FSAnalysisStep* pstep)
 {
 	XMLElement t;
 	t.name("Module");
@@ -357,7 +357,7 @@ void FEBioExport12::WriteModuleSection(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteControlSection(FEAnalysisStep* pstep)
+void FEBioExport12::WriteControlSection(FSAnalysisStep* pstep)
 {
 	STEP_SETTINGS& ops = pstep->GetSettings();
 	int ntype = pstep->GetType();
@@ -374,7 +374,7 @@ void FEBioExport12::WriteControlSection(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteSolidControlParams(FEAnalysisStep* pstep)
+void FEBioExport12::WriteSolidControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -421,7 +421,7 @@ void FEBioExport12::WriteSolidControlParams(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
+void FEBioExport12::WriteHeatTransferControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 
@@ -465,7 +465,7 @@ void FEBioExport12::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBiphasicControlParams(FEAnalysisStep* pstep)
+void FEBioExport12::WriteBiphasicControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -522,7 +522,7 @@ void FEBioExport12::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
+void FEBioExport12::WriteBiphasicSoluteControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -1116,7 +1116,7 @@ void FEBioExport12::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
 		int NC = pm->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
-			FEMaterialProperty& mc = pm->GetProperty(i);
+			FSMaterialProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j<mc.Size(); ++j)
 			{
 				FSMaterial* pc = mc.GetMaterial(j);
@@ -2337,18 +2337,18 @@ void FEBioExport12::WriteBCFixed(FEStep &s)
 		{
 			switch (pbc->Type())
 			{
-			case FE_FIXED_DISPLACEMENT: WriteBCFixedDisplacement(dynamic_cast<FEFixedDisplacement& >(*pbc), s); break;
-			case FE_FIXED_ROTATION: WriteBCFixedRotation(dynamic_cast<FEFixedRotation&     >(*pbc), s); break;
-			case FE_FIXED_FLUID_PRESSURE: WriteBCFixedFluidPressure(dynamic_cast<FEFixedFluidPressure&>(*pbc), s); break;
-			case FE_FIXED_TEMPERATURE: WriteBCFixedTemperature(dynamic_cast<FEFixedTemperature&  >(*pbc), s); break;
-			case FE_FIXED_CONCENTRATION: WriteBCFixedConcentration(dynamic_cast<FEFixedConcentration&>(*pbc), s); break;
+			case FE_FIXED_DISPLACEMENT: WriteBCFixedDisplacement(dynamic_cast<FSFixedDisplacement& >(*pbc), s); break;
+			case FE_FIXED_ROTATION: WriteBCFixedRotation(dynamic_cast<FSFixedRotation&     >(*pbc), s); break;
+			case FE_FIXED_FLUID_PRESSURE: WriteBCFixedFluidPressure(dynamic_cast<FSFixedFluidPressure&>(*pbc), s); break;
+			case FE_FIXED_TEMPERATURE: WriteBCFixedTemperature(dynamic_cast<FSFixedTemperature&  >(*pbc), s); break;
+			case FE_FIXED_CONCENTRATION: WriteBCFixedConcentration(dynamic_cast<FSFixedConcentration&>(*pbc), s); break;
 			}
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBCFixedDisplacement(FEFixedDisplacement& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedDisplacement(FSFixedDisplacement& rbc, FEStep& s)
 {
 	const char* xyz[] = { "x", "y", "xy", "z", "xz", "yz", "xyz" };
 
@@ -2398,7 +2398,7 @@ void FEBioExport12::WriteBCFixedDisplacement(FEFixedDisplacement& rbc, FEStep& s
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBCFixedRotation(FEFixedRotation& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedRotation(FSFixedRotation& rbc, FEStep& s)
 {
 	const char* uvw[] = { "u", "v", "uv", "w", "uw", "vw", "uvw" };
 
@@ -2450,7 +2450,7 @@ void FEBioExport12::WriteBCFixedRotation(FEFixedRotation& rbc, FEStep& s)
 //-----------------------------------------------------------------------------
 // Export the fixed degrees of freedom
 //
-void FEBioExport12::WriteBCFixedFluidPressure(FEFixedFluidPressure& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedFluidPressure(FSFixedFluidPressure& rbc, FEStep& s)
 {
 	vector<int> BC; BC.resize(m_nodes);
 
@@ -2501,7 +2501,7 @@ void FEBioExport12::WriteBCFixedFluidPressure(FEFixedFluidPressure& rbc, FEStep&
 //-----------------------------------------------------------------------------
 // Export the fixed degrees of freedom
 //
-void FEBioExport12::WriteBCFixedTemperature(FEFixedTemperature& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedTemperature(FSFixedTemperature& rbc, FEStep& s)
 {
 	vector<int> BC; BC.resize(m_nodes);
 	m_xml.add_branch("fix");
@@ -2550,7 +2550,7 @@ void FEBioExport12::WriteBCFixedTemperature(FEFixedTemperature& rbc, FEStep& s)
 //-----------------------------------------------------------------------------
 // Export the fixed degrees of freedom
 //
-void FEBioExport12::WriteBCFixedConcentration(FEFixedConcentration& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedConcentration(FSFixedConcentration& rbc, FEStep& s)
 {
 	vector<int> BC; BC.resize(m_nodes);
 
@@ -2611,11 +2611,11 @@ void FEBioExport12::WriteBCPrescribed(FEStep &s)
 		{
 			switch (pbc->Type())
 			{
-			case FE_PRESCRIBED_DISPLACEMENT: WriteBCPrescribedDisplacement(dynamic_cast<FEPrescribedDisplacement &>(*pbc), s); break;
-			case FE_PRESCRIBED_ROTATION: WriteBCPrescribedRotation(dynamic_cast<FEPrescribedRotation     &>(*pbc), s); break;
-			case FE_PRESCRIBED_FLUID_PRESSURE: WriteBCPrescribedFluidPressure(dynamic_cast<FEPrescribedFluidPressure&>(*pbc), s); break;
-			case FE_PRESCRIBED_TEMPERATURE: WriteBCPrescribedTemperature(dynamic_cast<FEPrescribedTemperature  &>(*pbc), s); break;
-			case FE_PRESCRIBED_CONCENTRATION: WriteBCPrescribedConcentration(dynamic_cast<FEPrescribedConcentration&>(*pbc), s); break;
+			case FE_PRESCRIBED_DISPLACEMENT: WriteBCPrescribedDisplacement(dynamic_cast<FSPrescribedDisplacement &>(*pbc), s); break;
+			case FE_PRESCRIBED_ROTATION: WriteBCPrescribedRotation(dynamic_cast<FSPrescribedRotation     &>(*pbc), s); break;
+			case FE_PRESCRIBED_FLUID_PRESSURE: WriteBCPrescribedFluidPressure(dynamic_cast<FSPrescribedFluidPressure&>(*pbc), s); break;
+			case FE_PRESCRIBED_TEMPERATURE: WriteBCPrescribedTemperature(dynamic_cast<FSPrescribedTemperature  &>(*pbc), s); break;
+			case FE_PRESCRIBED_CONCENTRATION: WriteBCPrescribedConcentration(dynamic_cast<FSPrescribedConcentration&>(*pbc), s); break;
 			}
 		}
 	}
@@ -2624,7 +2624,7 @@ void FEBioExport12::WriteBCPrescribed(FEStep &s)
 //-----------------------------------------------------------------------------
 // Export prescribed displacements
 //
-void FEBioExport12::WriteBCPrescribedDisplacement(FEPrescribedDisplacement& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedDisplacement(FSPrescribedDisplacement& rbc, FEStep& s)
 {
 	int k, l;
 	int lc;
@@ -2689,7 +2689,7 @@ void FEBioExport12::WriteBCPrescribedDisplacement(FEPrescribedDisplacement& rbc,
 //-----------------------------------------------------------------------------
 // Export prescribed rotations
 //
-void FEBioExport12::WriteBCPrescribedRotation(FEPrescribedRotation& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedRotation(FSPrescribedRotation& rbc, FEStep& s)
 {
 	int k, l;
 	int lc;
@@ -2754,7 +2754,7 @@ void FEBioExport12::WriteBCPrescribedRotation(FEPrescribedRotation& rbc, FEStep&
 //-----------------------------------------------------------------------------
 // Export prescribed fluid pressures
 //
-void FEBioExport12::WriteBCPrescribedFluidPressure(FEPrescribedFluidPressure& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedFluidPressure(FSPrescribedFluidPressure& rbc, FEStep& s)
 {
 	int k;
 	int lc;
@@ -2817,7 +2817,7 @@ void FEBioExport12::WriteBCPrescribedFluidPressure(FEPrescribedFluidPressure& rb
 //-----------------------------------------------------------------------------
 // Export prescribed temperatures
 //
-void FEBioExport12::WriteBCPrescribedTemperature(FEPrescribedTemperature& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedTemperature(FSPrescribedTemperature& rbc, FEStep& s)
 {
 	int k;
 	int lc;
@@ -2880,7 +2880,7 @@ void FEBioExport12::WriteBCPrescribedTemperature(FEPrescribedTemperature& rbc, F
 //-----------------------------------------------------------------------------
 // Export prescribed concentration
 //
-void FEBioExport12::WriteBCPrescribedConcentration(FEPrescribedConcentration& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedConcentration(FSPrescribedConcentration& rbc, FEStep& s)
 {
 	int k;
 	int lc;
@@ -3853,7 +3853,7 @@ void FEBioExport12::WriteBodyForces(FEStep &s)
 {
 	for (int i = 0; i<s.Loads(); ++i)
 	{
-		FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(s.Load(i));
+		FSConstBodyForce* pbl = dynamic_cast<FSConstBodyForce*>(s.Load(i));
 		if (pbl && pbl->IsActive())
 		{
 			m_xml.add_branch("body_force");
@@ -4021,7 +4021,7 @@ void FEBioExport12::WriteSurfaceSection(FEFaceList& s)
 	FEFaceList::Iterator pf = s.First();
 
 	/*
-	FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(m_pfem->GetStep(1));
+	FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(m_pfem->GetStep(1));
 	assert(pstep);
 	STEP_SETTINGS& ops = pstep->GetSettings();
 	if (ops.beface)
@@ -4200,7 +4200,7 @@ void FEBioExport12::WriteStepSection()
 	// so now we simply output all the analysis steps
 	for (int i = 1; i<m_pfem->Steps(); ++i)
 	{
-		FEAnalysisStep& s = dynamic_cast<FEAnalysisStep&>(*m_pfem->GetStep(i));
+		FSAnalysisStep& s = dynamic_cast<FSAnalysisStep&>(*m_pfem->GetStep(i));
 
 		XMLElement e;
 		e.name("Step");

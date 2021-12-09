@@ -366,7 +366,7 @@ public:
 //-----------------------------------------------------------------------------
 // This class implements a linear constraint
 // TODO: Figure out a way to integrate this
-class FELinearConstraintSet : public FSObject
+class FSLinearConstraintSet : public FSObject
 {
 public:
 	// a linear constraint defined via LCDOFs
@@ -395,9 +395,9 @@ public:
 	};
 
 public:
-	FELinearConstraintSet();
-	FELinearConstraintSet(const FELinearConstraintSet& lcs);
-	FELinearConstraintSet& operator = (const FELinearConstraintSet& lcs);
+	FSLinearConstraintSet();
+	FSLinearConstraintSet(const FSLinearConstraintSet& lcs);
+	FSLinearConstraintSet& operator = (const FSLinearConstraintSet& lcs);
 
 public:
 	double	m_atol;

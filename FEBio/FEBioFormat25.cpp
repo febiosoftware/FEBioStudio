@@ -1086,53 +1086,53 @@ void FEBioFormat25::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	char szname[256] = { 0 };
 	if (bc < 8)
 	{
-		FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, bc, pstep->GetID());
-		sprintf(szname, "FixedDisplacement%02d", CountBCs<FEFixedDisplacement>(fem)+1);
+		FSFixedDisplacement* pbc = new FSFixedDisplacement(&fem, pg, bc, pstep->GetID());
+		sprintf(szname, "FixedDisplacement%02d", CountBCs<FSFixedDisplacement>(fem)+1);
 		pbc->SetName(szname);
 		pstep->AddComponent(pbc);
 	}
 	else if (bc < 64)
 	{
 		bc = bc >> 3;
-		FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, bc, pstep->GetID());
-		sprintf(szname, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem)+1);
+		FSFixedRotation* pbc = new FSFixedRotation(&fem, pg, bc, pstep->GetID());
+		sprintf(szname, "FixedRotation%02d", CountBCs<FSFixedRotation>(fem)+1);
 		pbc->SetName(szname);
 		pstep->AddComponent(pbc);
 	}
 	else if (bc == 64)
 	{
-		FEFixedTemperature* pbc = new FEFixedTemperature(&fem, pg, 1, pstep->GetID());
-		sprintf(szname, "FixedTemperature%02d", CountBCs<FEFixedTemperature>(fem)+1);
+		FSFixedTemperature* pbc = new FSFixedTemperature(&fem, pg, 1, pstep->GetID());
+		sprintf(szname, "FixedTemperature%02d", CountBCs<FSFixedTemperature>(fem)+1);
 		pbc->SetName(szname);
 		pstep->AddComponent(pbc);
 	}
 	else if (bc == 128)
 	{
-		FEFixedFluidPressure* pbc = new FEFixedFluidPressure(&fem, pg, 1, pstep->GetID());
-		sprintf(szname, "FixedFluidPressure%02d", CountBCs<FEFixedFluidPressure>(fem)+1);
+		FSFixedFluidPressure* pbc = new FSFixedFluidPressure(&fem, pg, 1, pstep->GetID());
+		sprintf(szname, "FixedFluidPressure%02d", CountBCs<FSFixedFluidPressure>(fem)+1);
 		pbc->SetName(szname);
 		pstep->AddComponent(pbc);
 	}
 	else if ((bc < 2048) && (bc >= 256))
 	{
 		bc = bc >> 8;
-		FEFixedFluidVelocity* pbc = new FEFixedFluidVelocity(&fem, pg, bc, pstep->GetID());
-		sprintf(szname, "FixedFluidVelocity%02d", CountBCs<FEFixedFluidVelocity>(fem)+1);
+		FSFixedFluidVelocity* pbc = new FSFixedFluidVelocity(&fem, pg, bc, pstep->GetID());
+		sprintf(szname, "FixedFluidVelocity%02d", CountBCs<FSFixedFluidVelocity>(fem)+1);
 		pbc->SetName(szname);
 		pstep->AddComponent(pbc);
 	}
 	else if (bc == 2048)
 	{
-		FEFixedFluidDilatation* pbc = new FEFixedFluidDilatation(&fem, pg, 1, pstep->GetID());
-		sprintf(szname, "FixedFluidDilatation%02d", CountBCs<FEFixedFluidDilatation>(fem)+1);
+		FSFixedFluidDilatation* pbc = new FSFixedFluidDilatation(&fem, pg, 1, pstep->GetID());
+		sprintf(szname, "FixedFluidDilatation%02d", CountBCs<FSFixedFluidDilatation>(fem)+1);
 		pbc->SetName(szname);
 		pstep->AddComponent(pbc);
 	}
 	else if (bc < (1 << 15))
 	{
 		bc = bc >> 12;
-		FEFixedShellDisplacement* pbc = new FEFixedShellDisplacement(&fem, pg, bc, pstep->GetID());
-		sprintf(szname, "FixedShellDisplacement%02d", CountBCs<FEFixedShellDisplacement>(fem)+1);
+		FSFixedShellDisplacement* pbc = new FSFixedShellDisplacement(&fem, pg, bc, pstep->GetID());
+		sprintf(szname, "FixedShellDisplacement%02d", CountBCs<FSFixedShellDisplacement>(fem)+1);
 		pbc->SetName(szname);
 		pstep->AddComponent(pbc);
 	}
@@ -1141,8 +1141,8 @@ void FEBioFormat25::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 		bc = bc >> 15;
 		if (bc < 256)
 		{
-			FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, bc, pstep->GetID());
-			sprintf(szname, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem)+1);
+			FSFixedConcentration* pbc = new FSFixedConcentration(&fem, pg, bc, pstep->GetID());
+			sprintf(szname, "FixedConcentration%02d", CountBCs<FSFixedConcentration>(fem)+1);
 			pbc->SetName(szname);
 			pstep->AddComponent(pbc);
 		}
@@ -1187,22 +1187,22 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", set.cvalue());
 
 	// make a new boundary condition
-	FEPrescribedDOF* pbc = 0;
+	FSPrescribedDOF* pbc = 0;
 	switch (bc)
 	{
 	case 0:
 	case 1:
-	case 2: pbc = new FEPrescribedDisplacement (&fem, pg, bc, 1, pstep->GetID()); break;
-	case 3: pbc = new FEPrescribedTemperature  (&fem, pg, bc, pstep->GetID()); break;
-	case 4: pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID()); break;
+	case 2: pbc = new FSPrescribedDisplacement (&fem, pg, bc, 1, pstep->GetID()); break;
+	case 3: pbc = new FSPrescribedTemperature  (&fem, pg, bc, pstep->GetID()); break;
+	case 4: pbc = new FSPrescribedFluidPressure(&fem, pg, 1, pstep->GetID()); break;
 	case 5:
 	case 6:
 	case 7:
 		bc = bc - 5;
-		pbc = new FEPrescribedFluidVelocity(&fem, pg, bc, 1, pstep->GetID());
+		pbc = new FSPrescribedFluidVelocity(&fem, pg, bc, 1, pstep->GetID());
 		break;
 	case 8:
-		pbc = new FEPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
+		pbc = new FSPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
 		break;
 	case 9:
 	case 10:
@@ -1211,19 +1211,19 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	case 13:
 	case 14:
 		bc = bc - 9;
-		pbc = new FEPrescribedConcentration(&fem, pg, bc, 1.0, pstep->GetID());
+		pbc = new FSPrescribedConcentration(&fem, pg, bc, 1.0, pstep->GetID());
 		break;
 	case 15:
 	case 16:
 	case 17:
 		bc = bc - 15;
-		pbc = new FEPrescribedRotation(&fem, pg, bc, 1.0, pstep->GetID());
+		pbc = new FSPrescribedRotation(&fem, pg, bc, 1.0, pstep->GetID());
 		break;
     case 18:
     case 19:
     case 20:
         bc = bc - 18;
-        pbc = new FEPrescribedShellDisplacement(&fem, pg, bc, 1.0, pstep->GetID());
+        pbc = new FSPrescribedShellDisplacement(&fem, pg, bc, 1.0, pstep->GetID());
         break;
 	}
 	if (pbc == 0) throw XMLReader::InvalidAttributeValue(tag, "bc", abc.cvalue());
@@ -1502,7 +1502,7 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	// get the optional name
 	string name = tag.AttributeValue<string>("name", "");
 
-	FESurfaceLoad* psl = 0;
+	FSSurfaceLoad* psl = 0;
 	XMLAtt& att = tag.Attribute("type");
 	if      (att == "pressure"           ) psl = ParseLoadPressure          (tag);
 	else if (att == "traction"           ) psl = ParseLoadTraction          (tag);
@@ -1543,7 +1543,7 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadPressure(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadPressure(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -1563,7 +1563,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadPressure(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadTraction(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadTraction(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -1602,7 +1602,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadTraction(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidTraction(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidTraction(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -1641,7 +1641,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidTraction(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidPressure(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidPressure(XMLTag& tag)
 {
     FSModel& fem = GetFSModel();
     
@@ -1660,7 +1660,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidPressure(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidVelocity(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidVelocity(XMLTag& tag)
 {
     FSModel& fem = GetFSModel();
     FEFluidVelocity* psl = new FEFluidVelocity(&fem);
@@ -1674,7 +1674,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidVelocity(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidNormalVelocity(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidNormalVelocity(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     FSModel& fem = GetFSModel();
@@ -1714,7 +1714,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidNormalVelocity(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidRotationalVelocity(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidRotationalVelocity(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     FSModel& fem = GetFSModel();
@@ -1749,7 +1749,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidRotationalVelocity(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     FSModel& fem = GetFSModel();
@@ -1785,7 +1785,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     FSModel& fem = GetFSModel();
@@ -1850,7 +1850,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidBackFlowStabilization(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidBackFlowStabilization(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     FSModel& fem = GetFSModel();
@@ -1878,7 +1878,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidBackFlowStabilization(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidTangentialStabilization(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidTangentialStabilization(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     FSModel& fem = GetFSModel();
@@ -1906,7 +1906,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidTangentialStabilization(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFSITraction(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFSITraction(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     FSModel& fem = GetFSModel();
@@ -1919,7 +1919,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFSITraction(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadBFSITraction(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadBFSITraction(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     FSModel& fem = GetFSModel();
@@ -1932,7 +1932,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadBFSITraction(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlux(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -1975,7 +1975,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlux(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadSoluteFlux(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadSoluteFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2022,7 +2022,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadSoluteFlux(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseConcentrationFlux(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseConcentrationFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2069,7 +2069,7 @@ FESurfaceLoad* FEBioFormat25::ParseConcentrationFlux(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadNormalTraction(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadNormalTraction(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2119,7 +2119,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadNormalTraction(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadMatchingOsmoticCoefficient(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadMatchingOsmoticCoefficient(XMLTag& tag)
 {
     FEBioInputModel& febio = GetFEBioModel();
     FSModel& fem = GetFSModel();
@@ -2163,7 +2163,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadMatchingOsmoticCoefficient(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadHeatFlux(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadHeatFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2195,7 +2195,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadHeatFlux(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* FEBioFormat25::ParseLoadConvectiveHeatFlux(XMLTag& tag)
+FSSurfaceLoad* FEBioFormat25::ParseLoadConvectiveHeatFlux(XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
@@ -2353,7 +2353,7 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 			while (!tag.isend());
 
 			// create a new initial velocity BC
-			FEInitialCondition* pic = 0;
+			FSInitialCondition* pic = 0;
 			char szname[64] = { 0 };
 			switch (bc)
 			{
@@ -2929,48 +2929,48 @@ void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 
 	switch (rc) {
 	case 0:
-		pi = new FERigidSphericalJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidSphericalJoint%02d", CountConnectors<FERigidSphericalJoint>(fem)+1);
+		pi = new FSRigidSphericalJoint(&fem, pstep->GetID());
+		sprintf(szname, "RigidSphericalJoint%02d", CountConnectors<FSRigidSphericalJoint>(fem)+1);
 		break;
 	case 1:
-		pi = new FERigidRevoluteJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidrevoluteJoint%02d", CountConnectors<FERigidRevoluteJoint>(fem)+1);
+		pi = new FSRigidRevoluteJoint(&fem, pstep->GetID());
+		sprintf(szname, "RigidrevoluteJoint%02d", CountConnectors<FSRigidRevoluteJoint>(fem)+1);
 		break;
 	case 2:
-		pi = new FERigidPrismaticJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidPrismaticJoint%02d", CountConnectors<FERigidPrismaticJoint>(fem)+1);
+		pi = new FSRigidPrismaticJoint(&fem, pstep->GetID());
+		sprintf(szname, "RigidPrismaticJoint%02d", CountConnectors<FSRigidPrismaticJoint>(fem)+1);
 		break;
 	case 3:
-		pi = new FERigidCylindricalJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidCylindricalJoint%02d", CountConnectors<FERigidCylindricalJoint>(fem)+1);
+		pi = new FSRigidCylindricalJoint(&fem, pstep->GetID());
+		sprintf(szname, "RigidCylindricalJoint%02d", CountConnectors<FSRigidCylindricalJoint>(fem)+1);
 		break;
 	case 4:
-		pi = new FERigidPlanarJoint(&fem, pstep->GetID());
-		sprintf(szname, "RigidPlanarJoint%02d", CountConnectors<FERigidPlanarJoint>(fem)+1);
+		pi = new FSRigidPlanarJoint(&fem, pstep->GetID());
+		sprintf(szname, "RigidPlanarJoint%02d", CountConnectors<FSRigidPlanarJoint>(fem)+1);
 		break;
     case 5:
-        pi = new FERigidLock(&fem, pstep->GetID());
-        sprintf(szname, "RigidLock%02d", CountConnectors<FERigidLock>(fem)+1);
+        pi = new FSRigidLock(&fem, pstep->GetID());
+        sprintf(szname, "RigidLock%02d", CountConnectors<FSRigidLock>(fem)+1);
         break;
 	case 6:
-		pi = new FERigidSpring(&fem, pstep->GetID());
-		sprintf(szname, "RigidSpring%02d", CountConnectors<FERigidSpring>(fem)+1);
+		pi = new FSRigidSpring(&fem, pstep->GetID());
+		sprintf(szname, "RigidSpring%02d", CountConnectors<FSRigidSpring>(fem)+1);
 		break;
 	case 7:
-		pi = new FERigidDamper(&fem, pstep->GetID());
-		sprintf(szname, "RigidDamper%02d", CountConnectors<FERigidDamper>(fem)+1);
+		pi = new FSRigidDamper(&fem, pstep->GetID());
+		sprintf(szname, "RigidDamper%02d", CountConnectors<FSRigidDamper>(fem)+1);
 		break;
 	case 8:
-		pi = new FERigidAngularDamper(&fem, pstep->GetID());
-		sprintf(szname, "RigidAngularDamper%02d", CountConnectors<FERigidAngularDamper>(fem)+1);
+		pi = new FSRigidAngularDamper(&fem, pstep->GetID());
+		sprintf(szname, "RigidAngularDamper%02d", CountConnectors<FSRigidAngularDamper>(fem)+1);
 		break;
 	case 9:
-		pi = new FERigidContractileForce(&fem, pstep->GetID());
-		sprintf(szname, "RigidContractileForce%02d", CountConnectors<FERigidContractileForce>(fem)+1);
+		pi = new FSRigidContractileForce(&fem, pstep->GetID());
+		sprintf(szname, "RigidContractileForce%02d", CountConnectors<FSRigidContractileForce>(fem)+1);
 		break;
 	case 10:
-		pi = new FEGenericRigidJoint(&fem, pstep->GetID());
-		sprintf(szname, "GenericRigidJoint%02d", CountConnectors<FEGenericRigidJoint>(fem) + 1);
+		pi = new FSGenericRigidJoint(&fem, pstep->GetID());
+		sprintf(szname, "GenericRigidJoint%02d", CountConnectors<FSGenericRigidJoint>(fem) + 1);
 		break;
 	default:
 		assert(false);
@@ -3016,7 +3016,7 @@ void FEBioFormat25::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
-	FELinearConstraintSet* pset = new FELinearConstraintSet;
+	FSLinearConstraintSet* pset = new FSLinearConstraintSet;
 	pstep->AddLinearConstraint(pset);
 
 	// read the linear constraints
@@ -3025,8 +3025,8 @@ void FEBioFormat25::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 	{
 		if (tag == "linear_constraint")
 		{
-			FELinearConstraintSet::LinearConstraint LC;
-			FELinearConstraintSet::LinearConstraint::DOF dof;
+			FSLinearConstraintSet::LinearConstraint LC;
+			FSLinearConstraintSet::LinearConstraint::DOF dof;
 			++tag;
 			do
 			{
@@ -3173,7 +3173,7 @@ void FEBioFormat25::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 {
 	FSModel& fem = GetFSModel();
 
-	FEConstBodyForce* pbl = new FEConstBodyForce(&fem, pstep->GetID());
+	FSConstBodyForce* pbl = new FSConstBodyForce(&fem, pstep->GetID());
 	pstep->AddComponent(pbl);
 
 	++tag;
@@ -3185,7 +3185,7 @@ void FEBioFormat25::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 	while (!tag.isend());
 
 	char szname[256] = { 0 };
-	sprintf(szname, "BodyForce%02d", CountLoads<FEConstBodyForce>(fem));
+	sprintf(szname, "BodyForce%02d", CountLoads<FSConstBodyForce>(fem));
 	pbl->SetName(szname);
 }
 
@@ -3206,7 +3206,7 @@ void FEBioFormat25::ParseNonConstBodyForce(FEStep *pstep, XMLTag &tag)
 	while (!tag.isend());
 
 	char szname[256] = { 0 };
-	sprintf(szname, "BodyForce%02d", CountLoads<FEConstBodyForce>(fem));
+	sprintf(szname, "BodyForce%02d", CountLoads<FSConstBodyForce>(fem));
 	pbl->SetName(szname);
 }
 

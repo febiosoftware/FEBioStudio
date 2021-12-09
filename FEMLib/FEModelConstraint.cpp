@@ -28,13 +28,13 @@ SOFTWARE.*/
 #include "FEModelConstraint.h"
 #include <MeshTools/FEItemListBuilder.h>
 
-FEModelConstraint::FEModelConstraint(int ntype, FSModel* fem, int nstep) : FSDomainComponent(ntype, fem, nstep)
+FSModelConstraint::FSModelConstraint(int ntype, FSModel* fem, int nstep) : FSDomainComponent(ntype, fem, nstep)
 {
 	m_superClassID = FE_CONSTRAINT;
 	SetMeshItemType(0);
 }
 
-FESurfaceConstraint::FESurfaceConstraint(int ntype, FSModel* fem, int nstep) : FEModelConstraint(ntype, fem, nstep)
+FESurfaceConstraint::FESurfaceConstraint(int ntype, FSModel* fem, int nstep) : FSModelConstraint(ntype, fem, nstep)
 {
 	SetMeshItemType(FE_FACE_FLAG);
 }
@@ -56,7 +56,7 @@ FEVolumeConstraint::FEVolumeConstraint(FSModel* ps, int nstep) : FESurfaceConstr
 // FEWarpingConstraint
 //-----------------------------------------------------------------------------
 
-FEWarpingConstraint::FEWarpingConstraint(FSModel* fem) : FEModelConstraint(FE_WARP_CONSTRAINT, fem)
+FEWarpingConstraint::FEWarpingConstraint(FSModel* fem) : FSModelConstraint(FE_WARP_CONSTRAINT, fem)
 {
 	SetTypeString("warp-image");
 
@@ -115,7 +115,7 @@ FEFrictionlessFluidWall::FEFrictionlessFluidWall(FSModel* ps, int nstep) : FESur
 }
 
 //=============================================================================
-FEPrestrainConstraint::FEPrestrainConstraint(FSModel* ps, int nstep) : FEModelConstraint(FE_PRESTRAIN_CONSTRAINT, ps, nstep)
+FEPrestrainConstraint::FEPrestrainConstraint(FSModel* ps, int nstep) : FSModelConstraint(FE_PRESTRAIN_CONSTRAINT, ps, nstep)
 {
 	SetTypeString("prestrain");
 
@@ -126,7 +126,7 @@ FEPrestrainConstraint::FEPrestrainConstraint(FSModel* ps, int nstep) : FEModelCo
 }
 
 //=============================================================================
-FEInSituStretchConstraint::FEInSituStretchConstraint(FSModel* ps, int nstep) : FEModelConstraint(FE_INSITUSTRETCH_CONSTRAINT, ps, nstep)
+FEInSituStretchConstraint::FEInSituStretchConstraint(FSModel* ps, int nstep) : FSModelConstraint(FE_INSITUSTRETCH_CONSTRAINT, ps, nstep)
 {
 	SetTypeString("in-situ stretch");
 
@@ -139,7 +139,7 @@ FEInSituStretchConstraint::FEInSituStretchConstraint(FSModel* ps, int nstep) : F
 }
 
 //=============================================================================
-FEBioNLConstraint::FEBioNLConstraint(FSModel* fem, int nstep) : FEModelConstraint(FE_FEBIO_NLCONSTRAINT, fem, nstep)
+FEBioNLConstraint::FEBioNLConstraint(FSModel* fem, int nstep) : FSModelConstraint(FE_FEBIO_NLCONSTRAINT, fem, nstep)
 {
 
 }
@@ -154,7 +154,7 @@ void FEBioNLConstraint::Save(OArchive& ar)
 
 	ar.BeginChunk(CID_FEBIO_BASE_DATA);
 	{
-		FEModelConstraint::Save(ar);
+		FSModelConstraint::Save(ar);
 	}
 	ar.EndChunk();
 }
@@ -168,7 +168,7 @@ void FEBioNLConstraint::Load(IArchive& ar)
 		switch (nid)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FEModelConstraint::Load(ar); break;
+		case CID_FEBIO_BASE_DATA: FSModelConstraint::Load(ar); break;
 		default:
 			assert(false);
 		}

@@ -1,13 +1,13 @@
 #pragma once
 #include <FEMLib/FECoreMaterial.h>
 
-class FEUserMaterial : public FSMaterial
+class FSUserMaterial : public FSMaterial
 {
 	enum { SZTYPE, PARAMDATA, PARAMNAME, PARAMVALUE, PARAMTYPE };
 
 public:
-	FEUserMaterial(int ntype) : FSMaterial(ntype) {}
-	~FEUserMaterial();
+	FSUserMaterial(int ntype) : FSMaterial(ntype) {}
+	~FSUserMaterial();
 
 	void SetTypeString(const char* sz) override;
 	const char* GetTypeString() override { return m_sztype; }

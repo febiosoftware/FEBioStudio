@@ -330,7 +330,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 	for (int j = 0; j<fem.Steps(); ++j)
 	{
 		FEStep* step = fem.GetStep(j);
-		FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(step);
+		FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(step);
 		if (pstep)
 		{
 			if (pstep->GetSettings().bmust) AddLoadCurve(pstep->GetMustPointLoadCurve());
@@ -340,7 +340,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 			AddLoadCurves(*step);
 			for (int i = 0; i < step->ControlProperties(); ++i)
 			{
-				FEStepControlProperty& prop = step->GetControlProperty(i);
+				FSStepControlProperty& prop = step->GetControlProperty(i);
 				if (prop.m_prop) AddLoadCurves(*prop.m_prop);
 			}
 		}
@@ -408,7 +408,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Constraints(); ++j)
 		{
-			FEModelConstraint* pw = step->Constraint(j);
+			FSModelConstraint* pw = step->Constraint(j);
 			if (pw && pw->IsActive()) AddLoadCurves(*pw);
 		}
 	}
@@ -419,7 +419,7 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->RigidLoads(); ++j)
 		{
-			FERigidLoad* prl = pstep->RigidLoad(j);
+			FSRigidLoad* prl = pstep->RigidLoad(j);
 			if (prl->IsActive()) AddLoadCurves(*prl);
 		}
 	}
@@ -471,7 +471,7 @@ void FEBioExport::MultiMaterialCurves(FSMaterial* pm)
 	if (pm->Properties() > 0) {
 		for (int k = 0; k<pm->Properties(); ++k)
 		{
-			FEMaterialProperty& mc = pm->GetProperty(k);
+			FSMaterialProperty& mc = pm->GetProperty(k);
 			for (int l = 0; l<mc.Size(); ++l)
 			{
 				FSMaterial* pmat = mc.GetMaterial(l);

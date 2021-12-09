@@ -5,15 +5,15 @@
 // Body loads
 //=============================================================================
 // Base class for all volumetric body loads
-class FEBodyLoad : public FSLoad
+class FSBodyLoad : public FSLoad
 {
 public:
-	FEBodyLoad(int ntype, FSModel* ps, int nstep);
+	FSBodyLoad(int ntype, FSModel* ps, int nstep);
 };
 
 //-----------------------------------------------------------------------------
 // Constant Body Force (Obsolete)
-class FEConstBodyForce : public FEBodyLoad
+class FSConstBodyForce : public FSBodyLoad
 {
 public:
 	enum { FORCE_X, FORCE_Y, FORCE_Z };
@@ -25,12 +25,12 @@ public:
 	void SetLoad(int n, double v);
 
 public:
-	FEConstBodyForce(FSModel* ps, int nstep = 0);
+	FSConstBodyForce(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // Non-constant Body Force (Obsolete)
-class FENonConstBodyForce : public FEBodyLoad
+class FENonConstBodyForce : public FSBodyLoad
 {
 public:
 	enum { FORCE_X, FORCE_Y, FORCE_Z };
@@ -43,7 +43,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Heat Source
-class FEHeatSource : public FEBodyLoad
+class FEHeatSource : public FSBodyLoad
 {
 public:
 	enum { LOAD };
@@ -59,7 +59,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // SBM source (experimental feature)
-class FESBMPointSource : public FEBodyLoad
+class FESBMPointSource : public FSBodyLoad
 {
 public:
 	enum { SBM, VALUE, POS_X, POS_Y, POS_Z };
@@ -70,7 +70,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Centrifugal body force
-class FECentrifugalBodyForce : public FEBodyLoad
+class FECentrifugalBodyForce : public FSBodyLoad
 {
 public:
     enum { ANGSPD, ROT_AXIS, ROT_CNTR };
@@ -86,7 +86,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // mass damping "load"
-class FEMassDamping : public FEBodyLoad
+class FEMassDamping : public FSBodyLoad
 {
 public:
 	enum { C };
@@ -100,7 +100,7 @@ public:
 	void SetLoad(double v) { SetFloatValue(C, v); }
 };
 //-------------------------------------------------------------------------------
-class FEBioBodyLoad : public FEBodyLoad
+class FEBioBodyLoad : public FSBodyLoad
 {
 public:
 	FEBioBodyLoad(FSModel* ps, int nstep = 0);

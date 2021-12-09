@@ -1144,7 +1144,7 @@ void CModelPropsPanel::subSelection(int n)
 		if (dynamic_cast<GObjectSelection*>(ps)) return;
 
 		// don't allow part selections, except for initial conditions
-		if (dynamic_cast<GPartSelection*>(ps) && (dynamic_cast<FEInitialCondition*>(pbc) == 0)) return;
+		if (dynamic_cast<GPartSelection*>(ps) && (dynamic_cast<FSInitialCondition*>(pbc) == 0)) return;
 
 		FEItemListBuilder* pl = pbc->GetItemList();
 		if (pl)
@@ -1166,7 +1166,7 @@ void CModelPropsPanel::subSelection(int n)
 		return;
 	}
 
-	FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(m_currentObject);
+	FSSurfaceLoad* psl = dynamic_cast<FSSurfaceLoad*>(m_currentObject);
 	if (psl)
 	{
 		FEItemListBuilder* pl = psl->GetItemList();

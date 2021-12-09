@@ -47,7 +47,7 @@ using namespace std;
 #define CREATE_SURFACE_LOAD(className) createNewSurfaceLoad(new className(&fem), #className, CountLoads<className>(fem))
 
 //-----------------------------------------------------------------------------
-FESurfaceLoad* createNewSurfaceLoad(FESurfaceLoad* psl, const char* szclass, int N)
+FSSurfaceLoad* createNewSurfaceLoad(FSSurfaceLoad* psl, const char* szclass, int N)
 {
 	// set the name
 	char szname[256] = { 0 };
@@ -249,7 +249,7 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 			if (pstep->ControlProperties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FEStepControlProperty* pc = pstep->FindControlProperty(sztag); assert(pc);
+				FSStepControlProperty* pc = pstep->FindControlProperty(sztag); assert(pc);
 
 				// see if this is a property
 				const char* sztype = tag.AttributeValue("type", true);
@@ -447,7 +447,7 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 			if (pmat->Properties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FEMaterialProperty* pmc = pmat->FindProperty(sztag);
+				FSMaterialProperty* pmc = pmat->FindProperty(sztag);
 				if (pmc == nullptr)
 				{
 					ParseUnknownTag(tag);
@@ -1633,10 +1633,10 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	else if (bc == "c")
 	{
 		assert(false);
-/*		FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, 1, pstep->GetID());
+/*		FSFixedConcentration* pbc = new FSFixedConcentration(&fem, pg, 1, pstep->GetID());
 		if (name.empty())
 		{
-			sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem) + 1);
+			sprintf(szbuf, "FixedConcentration%02d", CountBCs<FSFixedConcentration>(fem) + 1);
 			name = szbuf;
 		}
 */
@@ -1730,95 +1730,95 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	FSBoundaryCondition* pbc = 0;
 	if (bc == "x")
 	{
-//		pbc = new FEPrescribedDisplacement(&fem, pg, 0, 1, pstep->GetID());
+//		pbc = new FSPrescribedDisplacement(&fem, pg, 0, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 0);
 	}
 	else if (bc == "y")
 	{
-//		pbc = new FEPrescribedDisplacement(&fem, pg, 1, 1, pstep->GetID());
+//		pbc = new FSPrescribedDisplacement(&fem, pg, 1, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 1);
 	}
 	else if (bc == "z")
 	{
-//		pbc = new FEPrescribedDisplacement(&fem, pg, 2, 1, pstep->GetID());
+//		pbc = new FSPrescribedDisplacement(&fem, pg, 2, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 2);
 	}
 	else if (bc == "T")
 	{
-//		pbc = new FEPrescribedTemperature(&fem, pg, 1, pstep->GetID());
+//		pbc = new FSPrescribedTemperature(&fem, pg, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed temperature", &fem);
 		pbc->SetItemList(pg);
 	}
 	else if (bc == "p")
 	{
-//		pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
+//		pbc = new FSPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid pressure", &fem);
 		pbc->SetItemList(pg);
 	}
 	else if (bc == "q")
 	{
-//		pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
+//		pbc = new FSPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid pressure", &fem);
 		pbc->SetParamBool("shell_bottom", true);
 		pbc->SetItemList(pg);
 	}
 	else if (bc == "vx")
 	{
-//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
+//		pbc = new FSPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 0);
 	}
 	else if (bc == "vy")
 	{
-//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
+//		pbc = new FSPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 1);
 	}
 	else if (bc == "vz")
 	{
-//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
+//		pbc = new FSPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 2);
 	}
 	else if (bc == "wx")
 	{
-//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
+//		pbc = new FSPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 0);
 	}
 	else if (bc == "wy")
 	{
-//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
+//		pbc = new FSPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 1);
 	}
 	else if (bc == "wz")
 	{
-//		pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
+//		pbc = new FSPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 2);
 	}
 	else if (bc == "ef")
 	{
-//		pbc = new FEPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
+//		pbc = new FSPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed fluid dilatation", &fem);
 		pbc->SetItemList(pg);
 	}
 	else if (bc == "sx")
 	{
-//		pbc = new FEPrescribedShellDisplacement(&fem, pg, 0, 1, pstep->GetID());
+//		pbc = new FSPrescribedShellDisplacement(&fem, pg, 0, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 0);
@@ -1826,7 +1826,7 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	}
 	else if (bc == "sy")
 	{
-//		pbc = new FEPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
+//		pbc = new FSPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 1);
@@ -1834,7 +1834,7 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	}
 	else if (bc == "sz")
 	{
-//		pbc = new FEPrescribedShellDisplacement(&fem, pg, 2, 1, pstep->GetID());
+//		pbc = new FSPrescribedShellDisplacement(&fem, pg, 2, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 2);
@@ -1842,21 +1842,21 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	}
 	else if (bc == "u")
 	{
-//		pbc = new FEPrescribedRotation(&fem, pg, 0, 1, pstep->GetID());
+//		pbc = new FSPrescribedRotation(&fem, pg, 0, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed rotation", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 0);
 	}
 	else if (bc == "v")
 	{
-//		pbc = new FEPrescribedRotation(&fem, pg, 1, 1, pstep->GetID());
+//		pbc = new FSPrescribedRotation(&fem, pg, 1, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed rotation", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 1);
 	}
 	else if (bc == "w")
 	{
-//		pbc = new FEPrescribedRotation(&fem, pg, 2, 1, pstep->GetID());
+//		pbc = new FSPrescribedRotation(&fem, pg, 2, 1, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed rotation", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 2);
@@ -1864,7 +1864,7 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
     else if (bc.compare(0,1,"c") == 0) {
         int isol;
         sscanf(bc.substr(1).c_str(),"%d",&isol);
- //       pbc = new FEPrescribedConcentration(&fem, pg, isol-1, 1.0, pstep->GetID());
+ //       pbc = new FSPrescribedConcentration(&fem, pg, isol-1, 1.0, pstep->GetID());
 		pbc = FEBio::CreateBoundaryCondition("prescribed concentration", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", isol - 1);
@@ -2148,11 +2148,11 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	XMLAtt& att = tag.Attribute("type");
 
 	// read the (optional) name
-	stringstream defaultName; defaultName << "SurfaceLoad" << CountLoads<FESurfaceLoad>(fem) + 1;
+	stringstream defaultName; defaultName << "SurfaceLoad" << CountLoads<FSSurfaceLoad>(fem) + 1;
 	string name = tag.AttributeValue("name", defaultName.str());
 
 	// create the surface load
-	FESurfaceLoad* psl = FEBio::CreateSurfaceLoad(att.cvalue(), &fem);
+	FSSurfaceLoad* psl = FEBio::CreateSurfaceLoad(att.cvalue(), &fem);
 	if (psl == nullptr)
 	{
 		ParseUnknownAttribute(tag, "type");
@@ -2198,7 +2198,7 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FEBodyLoad* createNewBodyLoad(FEBodyLoad* pbl, const char* szclass, int N)
+FSBodyLoad* createNewBodyLoad(FSBodyLoad* pbl, const char* szclass, int N)
 {
 	// set the name
 	char szname[256] = { 0 };
@@ -2217,12 +2217,12 @@ void FEBioFormat3::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 	std::string comment = tag.comment();
 
 	// read the (optional) name
-	stringstream defaultName; defaultName << "BodyLoad" << CountLoads<FEBodyLoad>(fem) + 1;
+	stringstream defaultName; defaultName << "BodyLoad" << CountLoads<FSBodyLoad>(fem) + 1;
 	string name = tag.AttributeValue("name", defaultName.str());
 
 	// create new body load
 	XMLAtt& att = tag.Attribute("type");
-	FEBodyLoad* pbl = FEBio::CreateBodyLoad(att.cvalue(), &fem);
+	FSBodyLoad* pbl = FEBio::CreateBodyLoad(att.cvalue(), &fem);
 	if (pbl == nullptr)
 	{
 		ParseUnknownAttribute(tag, "type");
@@ -2258,7 +2258,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 			const char* szname = tag.AttributeValue("name", true);
 			if (szname == nullptr)
 			{
-				sprintf(szbuf, "IC%d", CountICs<FEInitialCondition>(fem));
+				sprintf(szbuf, "IC%d", CountICs<FSInitialCondition>(fem));
 				szname = szbuf;
 			}
 
@@ -2296,7 +2296,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				}
 
 				// create a new initial velocity BC
-				FEInitialCondition* pic = 0;
+				FSInitialCondition* pic = 0;
                 if (bc == "T")
                 {
 					pic = FEBio::CreateInitialCondition("initial temperature", &fem);
@@ -2325,34 +2325,34 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
                 }
                 else if (bc == "vx")
                 {
-					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 					pic->SetParamVec3d("value", vec3d(val, 0, 0));
                 }
                 else if (bc == "vy")
                 {
-					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 					pic->SetParamVec3d("value", vec3d(0, val, 0));
 				}
                 else if (bc == "vz")
                 {
-					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 					pic->SetParamVec3d("value", vec3d(0, 0, val));
 				}
 				else if (bc == "svx")
                 {
-					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 					pic->SetParamVec3d("value", vec3d(val, 0, 0));
 					pic->SetParamBool("shell_bottom", true);
 				}
                 else if (bc == "svy")
                 {
-					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 					pic->SetParamVec3d("value", vec3d(0, val, 0));
 					pic->SetParamBool("shell_bottom", true);
 				}
                 else if (bc == "svz")
                 {
-					FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 					pic->SetParamVec3d("value", vec3d(0, 0, val));
 					pic->SetParamBool("shell_bottom", true);
 				}
@@ -2389,7 +2389,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				FEItemListBuilder* pg = febio.BuildItemList(szset);
 				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
 
-				FEInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+				FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 				pic->SetName(szname);
 				pic->SetItemList(pg);
 				m_pBCStep->AddComponent(pic);
@@ -2397,7 +2397,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 			}
 			else if (strcmp(sztype, "prestrain") == 0)
 			{
-				FEInitialCondition* pip = FEBio::CreateInitialCondition("prestrain", &fem);
+				FSInitialCondition* pip = FEBio::CreateInitialCondition("prestrain", &fem);
 				pip->SetName(szname);
 				m_pBCStep->AddComponent(pip);
 				ReadParameters(*pip, tag);
@@ -2501,7 +2501,7 @@ void FEBioFormat3::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// create a new interface
-	FEModelConstraint* pci = FEBio::CreateNLConstraint("rigid_wall", &fem);
+	FSModelConstraint* pci = FEBio::CreateNLConstraint("rigid_wall", &fem);
 
 	// set name
 	char szname[256];
@@ -2586,7 +2586,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 
 		// get the name 
 		stringstream ss;
-		ss << "RigidLoad" << CountLoads<FERigidLoad>(fem) + 1;
+		ss << "RigidLoad" << CountLoads<FSRigidLoad>(fem) + 1;
 		std::string name = tag.AttributeValue("name", ss.str());
 
 		// allocate class
@@ -2684,7 +2684,7 @@ void FEBioFormat3::ParseALLinearConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
-	FELinearConstraintSet* pset = new FELinearConstraintSet;
+	FSLinearConstraintSet* pset = new FSLinearConstraintSet;
 	pstep->AddLinearConstraint(pset);
 
 	// read the linear constraints
@@ -2693,8 +2693,8 @@ void FEBioFormat3::ParseALLinearConstraint(FEStep* pstep, XMLTag& tag)
 	{
 		if (tag == "linear_constraint")
 		{
-			FELinearConstraintSet::LinearConstraint LC;
-			FELinearConstraintSet::LinearConstraint::DOF dof;
+			FSLinearConstraintSet::LinearConstraint LC;
+			FSLinearConstraintSet::LinearConstraint::DOF dof;
 			++tag;
 			do
 			{
@@ -2821,7 +2821,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				{
 					if (ReadParam(*pdm, tag) == false)
 					{
-						FEMaterialProperty* prop = pdm->FindProperty(tag.m_sztag);
+						FSMaterialProperty* prop = pdm->FindProperty(tag.m_sztag);
 						FE1DPointFunction* pf1d = dynamic_cast<FE1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
 						if (pf1d)
 						{
@@ -2858,7 +2858,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 
 			// get the name 
 			stringstream ss;
-			ss << "RigidCable" << CountLoads<FERigidLoad>(fem) + 1;
+			ss << "RigidCable" << CountLoads<FSRigidLoad>(fem) + 1;
 			std::string name = tag.AttributeValue("name", ss.str());
 
 			// allocate class
@@ -2916,7 +2916,7 @@ void FEBioFormat3::ParseConstraint(FEStep* pstep, XMLTag& tag)
 
 	// allocate model constraint
 	const char* sztype = tag.AttributeValue("type");
-	FEModelConstraint* pmc = FEBio::CreateNLConstraint(sztype, &fem);
+	FSModelConstraint* pmc = FEBio::CreateNLConstraint(sztype, &fem);
 	if (pmc == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 	pstep->AddComponent(pmc);
 
@@ -2925,7 +2925,7 @@ void FEBioFormat3::ParseConstraint(FEStep* pstep, XMLTag& tag)
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname == 0)
 	{
-		sprintf(szbuf, "Constraint%02d", CountConstraints<FEModelConstraint>(fem)+1);
+		sprintf(szbuf, "Constraint%02d", CountConstraints<FSModelConstraint>(fem)+1);
 		szname = szbuf;
 	}
 	pmc->SetName(szname);

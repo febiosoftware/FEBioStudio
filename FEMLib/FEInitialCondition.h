@@ -3,19 +3,19 @@
 
 //-----------------------------------------------------------------------------
 // Base class for initial conditions
-class FEInitialCondition : public FSDomainComponent
+class FSInitialCondition : public FSDomainComponent
 {
 public:
-	FEInitialCondition(int ntype, FSModel* ps, int nstep = 0) : FSDomainComponent(ntype, ps, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
-	FEInitialCondition(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0) : FSDomainComponent(ntype, ps, pi, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
+	FSInitialCondition(int ntype, FSModel* ps, int nstep = 0) : FSDomainComponent(ntype, ps, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
+	FSInitialCondition(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0) : FSDomainComponent(ntype, ps, pi, nstep) { m_superClassID = FE_INITIAL_CONDITION; }
 };
 
 //-----------------------------------------------------------------------------
-class FEInitialNodalDOF : public FEInitialCondition
+class FEInitialNodalDOF : public FSInitialCondition
 {
 public:
-	FEInitialNodalDOF(int ntype, FSModel* ps) : FEInitialCondition(ntype, ps) {}
-	FEInitialNodalDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEInitialCondition(ntype, ps, pi, nstep) {}
+	FEInitialNodalDOF(int ntype, FSModel* ps) : FSInitialCondition(ntype, ps) {}
+	FEInitialNodalDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0) : FSInitialCondition(ntype, ps, pi, nstep) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -137,14 +137,14 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEInitPrestrain : public FEInitialCondition
+class FEInitPrestrain : public FSInitialCondition
 {
 public:
 	FEInitPrestrain(FSModel* ps);
 };
 
 //-----------------------------------------------------------------------------
-class FEBioInitialCondition : public FEInitialCondition
+class FEBioInitialCondition : public FSInitialCondition
 {
 public:
 	FEBioInitialCondition(FSModel* ps);

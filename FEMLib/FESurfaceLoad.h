@@ -4,11 +4,11 @@
 //=============================================================================
 // Base class for surface loads.
 //
-class FESurfaceLoad : public FSLoad
+class FSSurfaceLoad : public FSLoad
 {
 public:
-    FESurfaceLoad(int ntype, FSModel* ps);
-    FESurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep);
+    FSSurfaceLoad(int ntype, FSModel* ps);
+    FSSurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep);
 
 	// return the "primary" load curve
 	// TODO: remove this
@@ -18,7 +18,7 @@ public:
 //-----------------------------------------------------------------------------
 // Surface pressure boundary conditions
 //
-class FEPressureLoad : public FESurfaceLoad
+class FEPressureLoad : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, NTYPE };
@@ -41,7 +41,7 @@ public:
 //-----------------------------------------------------------------------------
 // Fluid flux surface boundary load
 //
-class FEFluidFlux : public FESurfaceLoad
+class FEFluidFlux : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, NTYPE, NFLUX };
@@ -67,7 +67,7 @@ public:
 //-----------------------------------------------------------------------------
 // Mixture Normal Traction surface boundary load
 //
-class FEBPNormalTraction : public FESurfaceLoad
+class FEBPNormalTraction : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, NTYPE, NTRAC };
@@ -93,7 +93,7 @@ public:
 //-----------------------------------------------------------------------------
 // Solute flux surface boundary load
 //
-class FESoluteFlux : public FESurfaceLoad
+class FESoluteFlux : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, NTYPE, BC };
@@ -119,7 +119,7 @@ public:
 //-----------------------------------------------------------------------------
 // Matching osmotic coefficient surface boundary load
 //
-class FEMatchingOsmoticCoefficient : public FESurfaceLoad
+class FEMatchingOsmoticCoefficient : public FSSurfaceLoad
 {
 public:
     enum { AMBP, AMBC, BSHL };
@@ -144,7 +144,7 @@ public:
 //-----------------------------------------------------------------------------
 // Heat flux surface boundary load
 //
-class FEHeatFlux : public FESurfaceLoad
+class FEHeatFlux : public FSSurfaceLoad
 {
 public:
 	enum { FLUX };
@@ -164,7 +164,7 @@ public:
 //-----------------------------------------------------------------------------
 // Convective Heat flux surface boundary load
 //
-class FEConvectiveHeatFlux : public FESurfaceLoad
+class FEConvectiveHeatFlux : public FSSurfaceLoad
 {
 public:
 	enum { HC, TREF };
@@ -186,7 +186,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FESurfaceTraction : public FESurfaceLoad
+class FESurfaceTraction : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, TRACTION };
@@ -208,7 +208,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidTraction : public FESurfaceLoad
+class FEFluidTraction : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, TRACTION };
@@ -231,7 +231,7 @@ public:
 //-----------------------------------------------------------------------------
 // fluid pressure boundary conditions
 //
-class FEFluidPressureLoad : public FESurfaceLoad
+class FEFluidPressureLoad : public FSSurfaceLoad
 {
 public:
     enum { LOAD };
@@ -250,7 +250,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidVelocity : public FESurfaceLoad
+class FEFluidVelocity : public FSSurfaceLoad
 {
 public:
     enum { LOAD };
@@ -267,7 +267,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidNormalVelocity : public FESurfaceLoad
+class FEFluidNormalVelocity : public FSSurfaceLoad
 {
 public:
     enum {LOAD, BP, BPARAB, BRIMP};
@@ -293,7 +293,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidRotationalVelocity : public FESurfaceLoad
+class FEFluidRotationalVelocity : public FSSurfaceLoad
 {
 public:
     enum {LOAD, AXIS, ORIGIN };
@@ -316,7 +316,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidFlowResistance : public FESurfaceLoad
+class FEFluidFlowResistance : public FSSurfaceLoad
 {
 public:
     enum {LOAD, PO };
@@ -339,7 +339,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidFlowRCR : public FESurfaceLoad
+class FEFluidFlowRCR : public FSSurfaceLoad
 {
 public:
     enum {LOAD, RD, CO, PO, IP, BE };
@@ -382,7 +382,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidBackflowStabilization : public FESurfaceLoad
+class FEFluidBackflowStabilization : public FSSurfaceLoad
 {
 public:
     enum { LOAD };
@@ -400,7 +400,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidTangentialStabilization : public FESurfaceLoad
+class FEFluidTangentialStabilization : public FSSurfaceLoad
 {
 public:
     enum { LOAD };
@@ -418,7 +418,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFSITraction : public FESurfaceLoad
+class FEFSITraction : public FSSurfaceLoad
 {
 public:
     FEFSITraction(FSModel* ps);
@@ -429,7 +429,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEBFSITraction : public FESurfaceLoad
+class FEBFSITraction : public FSSurfaceLoad
 {
 public:
     FEBFSITraction(FSModel* ps);
@@ -440,7 +440,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // concentration flux for reaction-diffusion problems
-class FEConcentrationFlux : public FESurfaceLoad
+class FEConcentrationFlux : public FSSurfaceLoad
 {
 	enum { SOL_ID, FLUX };
 
@@ -457,7 +457,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEBioSurfaceLoad : public FESurfaceLoad
+class FEBioSurfaceLoad : public FSSurfaceLoad
 {
 public:
     FEBioSurfaceLoad(FSModel* ps);

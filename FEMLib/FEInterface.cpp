@@ -912,17 +912,17 @@ void FESpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 }
 
 //=============================================================================
-// FELinearConstraintSet
+// FSLinearConstraintSet
 //-----------------------------------------------------------------------------
 
-FELinearConstraintSet::FELinearConstraintSet()
+FSLinearConstraintSet::FSLinearConstraintSet()
 {
 	m_atol = 0.1;
 	m_penalty = 1.0;
 	m_nmaxaug = 50;
 }
 
-FELinearConstraintSet::FELinearConstraintSet(const FELinearConstraintSet& lcs)
+FSLinearConstraintSet::FSLinearConstraintSet(const FSLinearConstraintSet& lcs)
 {
 	m_atol = lcs.m_atol;
 	m_penalty = lcs.m_penalty;
@@ -931,7 +931,7 @@ FELinearConstraintSet::FELinearConstraintSet(const FELinearConstraintSet& lcs)
 	m_set = lcs.m_set;
 }
 
-FELinearConstraintSet& FELinearConstraintSet::operator = (const FELinearConstraintSet& lcs)
+FSLinearConstraintSet& FSLinearConstraintSet::operator = (const FSLinearConstraintSet& lcs)
 {
 	m_atol = lcs.m_atol;
 	m_penalty = lcs.m_penalty;

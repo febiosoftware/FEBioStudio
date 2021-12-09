@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "FEBioExport.h"
 
 class FEDataMapGenerator;
-class FESurfaceLoad;
+class FSSurfaceLoad;
 class GPartList;
 class GMaterial;
 class GPart;
@@ -271,13 +271,13 @@ public:
 	void WriteElementDataFields();
 	void WriteMeshData(FEDataMapGenerator* map);
 
-	void WriteSolidControlParams(FEAnalysisStep* pstep);
-	void WriteBiphasicControlParams(FEAnalysisStep* pstep);
-	void WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep);
-	void WriteHeatTransferControlParams(FEAnalysisStep* pstep);
-	void WriteFluidControlParams(FEAnalysisStep* pstep);
-	void WriteFluidFSIControlParams(FEAnalysisStep* pstep);
-	void WriteReactionDiffusionControlParams(FEAnalysisStep* pstep);
+	void WriteSolidControlParams(FSAnalysisStep* pstep);
+	void WriteBiphasicControlParams(FSAnalysisStep* pstep);
+	void WriteBiphasicSoluteControlParams(FSAnalysisStep* pstep);
+	void WriteHeatTransferControlParams(FSAnalysisStep* pstep);
+	void WriteFluidControlParams(FSAnalysisStep* pstep);
+	void WriteFluidFSIControlParams(FSAnalysisStep* pstep);
+	void WriteReactionDiffusionControlParams(FSAnalysisStep* pstep);
 
 	void WriteBC(FEStep& s, FSBoundaryCondition* pbc);
 	void WriteBCFixed(FEStep& s, FSBoundaryCondition* pbc);
@@ -298,7 +298,7 @@ public:
 
 	void WriteNodalLoads(FEStep& s);
 	void WriteSurfaceLoads(FEStep& s);
-	void WriteSurfaceLoad(FEStep& s, FESurfaceLoad* psl, const char* sztype);
+	void WriteSurfaceLoad(FEStep& s, FSSurfaceLoad* psl, const char* sztype);
 
 	void WriteContactInterface(FEStep& s, const char* sztype, FEPairedInterface* pi);
 	void WriteContactWall(FEStep& s);

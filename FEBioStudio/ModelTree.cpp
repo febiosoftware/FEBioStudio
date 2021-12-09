@@ -104,7 +104,7 @@ public:
 		if ((item==0) || (item->size() == 0)) { m_err = 1; return false; }
 		if (item->IsValid() == false) { m_err = 2; return false; }
 
-		FEFixedDOF* fix = dynamic_cast<FEFixedDOF*>(m_pbc);
+		FSFixedDOF* fix = dynamic_cast<FSFixedDOF*>(m_pbc);
 		if (fix)
 		{
 			if (fix->GetBC() == 0)
@@ -1457,7 +1457,7 @@ void CModelTree::UpdateBC(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 
 				CPropertyList* pl = 0;
 
-				if      (dynamic_cast<FEFixedDOF*     >(pbc)) pl = new CFixedDOFProps     (dynamic_cast<FEFixedDOF*     >(pbc));
+				if      (dynamic_cast<FSFixedDOF*     >(pbc)) pl = new CFixedDOFProps     (dynamic_cast<FSFixedDOF*     >(pbc));
 				else pl = new FEObjectProps(pbc, &fem);
 
 				int flags = SHOW_PROPERTY_FORM;
@@ -1503,7 +1503,7 @@ void CModelTree::UpdateICs(QTreeWidgetItem* t1, FSModel& fem, FEStep* pstep)
 		{
 			for (int j = 0; j<ps->ICs(); ++j)
 			{
-				FEInitialCondition* pic = ps->IC(j);
+				FSInitialCondition* pic = ps->IC(j);
 				assert(pic->GetStep() == i);
 				CPropertyList* pl = new FEObjectProps(pic, &fem);
 
@@ -1621,7 +1621,7 @@ void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FSModel& fem, FEStep* ps
 			// add constraints
 			for (int i = 0; i<ps->Constraints(); ++i)
 			{
-				FEModelConstraint* pc = ps->Constraint(i);
+				FSModelConstraint* pc = ps->Constraint(i);
 				if (pc)
 				{
 					CObjectValidator* val = nullptr;
@@ -1649,7 +1649,7 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEProject& prj)
 		QString name = (i==0 ? QString::fromStdString(pstep->GetName()) : QString("%1 [%2]").arg(QString::fromStdString(pstep->GetName())).arg(pstep->GetTypeString()));
 
 		// add control settings
-		FEAnalysisStep* analysis = dynamic_cast<FEAnalysisStep*>(pstep);
+		FSAnalysisStep* analysis = dynamic_cast<FSAnalysisStep*>(pstep);
 		if (analysis)
 		{
 			t2 = AddTreeItem(t1, name, MT_STEP, 0, analysis, new CAnalysisTimeSettings(analysis), 0, 1);
@@ -1719,7 +1719,7 @@ void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FSModel& fem, FEStep* pst
 		{
 			for (int j = 0; j < ps->RigidLoads(); ++j)
 			{
-				FERigidLoad* prl = ps->RigidLoad(j);
+				FSRigidLoad* prl = ps->RigidLoad(j);
 
 				CPropertyList* pl = new FEObjectProps(prl, &fem);
 
@@ -1791,7 +1791,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 	{
 		for (int i = 0; i<pmat->Properties(); ++i)
 		{
-			FEMaterialProperty& p = pmat->GetProperty(i);
+			FSMaterialProperty& p = pmat->GetProperty(i);
 			QString propName = QString::fromStdString(p.GetName());
 			if (p.Size() == 1)
 			{

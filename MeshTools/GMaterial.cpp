@@ -110,7 +110,7 @@ const char* GMaterial::GetFullName()
 
 	if (m_pm->Type() == FE_USER_MATERIAL)
 	{
-		FEUserMaterial* pm = dynamic_cast<FEUserMaterial*>(m_pm);
+		FSUserMaterial* pm = dynamic_cast<FSUserMaterial*>(m_pm);
 		sprintf(sz, "%s (%s)", GetName().c_str(), pm->GetTypeString());
 	}
 	else

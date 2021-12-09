@@ -67,8 +67,8 @@ public: // set export attributes
 protected:
 	bool PrepareExport(FEProject& prj);
 
-	void WriteModuleSection(FEAnalysisStep* pstep);
-	void WriteControlSection(FEAnalysisStep* pstep);
+	void WriteModuleSection(FSAnalysisStep* pstep);
+	void WriteControlSection(FSAnalysisStep* pstep);
 	void WriteMaterialSection();
 	void WriteGeometrySection();
 	void WriteGeometryNodes();
@@ -84,24 +84,24 @@ protected:
 	void WriteStepSection();
 	void WriteConstraintSection(FEStep& s);
 
-	void WriteSolidControlParams(FEAnalysisStep* pstep);
-	void WriteBiphasicControlParams(FEAnalysisStep* pstep);
-	void WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep);
-	void WriteHeatTransferControlParams(FEAnalysisStep* pstep);
+	void WriteSolidControlParams(FSAnalysisStep* pstep);
+	void WriteBiphasicControlParams(FSAnalysisStep* pstep);
+	void WriteBiphasicSoluteControlParams(FSAnalysisStep* pstep);
+	void WriteHeatTransferControlParams(FSAnalysisStep* pstep);
 
 	void WriteBCFixed(FEStep& s);
-	void WriteBCFixedDisplacement(FEFixedDisplacement&  rbc, FEStep& s);
-	void WriteBCFixedRotation(FEFixedRotation&      rbc, FEStep& s);
-	void WriteBCFixedFluidPressure(FEFixedFluidPressure& rbc, FEStep& s);
-	void WriteBCFixedTemperature(FEFixedTemperature&   rbc, FEStep& s);
-	void WriteBCFixedConcentration(FEFixedConcentration& rbc, FEStep& s);
+	void WriteBCFixedDisplacement(FSFixedDisplacement&  rbc, FEStep& s);
+	void WriteBCFixedRotation(FSFixedRotation&      rbc, FEStep& s);
+	void WriteBCFixedFluidPressure(FSFixedFluidPressure& rbc, FEStep& s);
+	void WriteBCFixedTemperature(FSFixedTemperature&   rbc, FEStep& s);
+	void WriteBCFixedConcentration(FSFixedConcentration& rbc, FEStep& s);
 
 	void WriteBCPrescribed(FEStep& s);
-	void WriteBCPrescribedDisplacement(FEPrescribedDisplacement  &rbc, FEStep& s);
-	void WriteBCPrescribedRotation(FEPrescribedRotation      &rbc, FEStep& s);
-	void WriteBCPrescribedFluidPressure(FEPrescribedFluidPressure &rbc, FEStep& s);
-	void WriteBCPrescribedTemperature(FEPrescribedTemperature   &rbc, FEStep& s);
-	void WriteBCPrescribedConcentration(FEPrescribedConcentration &rbc, FEStep& s);
+	void WriteBCPrescribedDisplacement(FSPrescribedDisplacement  &rbc, FEStep& s);
+	void WriteBCPrescribedRotation(FSPrescribedRotation      &rbc, FEStep& s);
+	void WriteBCPrescribedFluidPressure(FSPrescribedFluidPressure &rbc, FEStep& s);
+	void WriteBCPrescribedTemperature(FSPrescribedTemperature   &rbc, FEStep& s);
+	void WriteBCPrescribedConcentration(FSPrescribedConcentration &rbc, FEStep& s);
 
 	void WriteLoadNodal(FEStep& s);
 	void WriteLoadPressure(FEStep& s);

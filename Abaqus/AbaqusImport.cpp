@@ -1563,7 +1563,7 @@ bool AbaqusImport::build_physics()
 	for (list<AbaqusModel::STEP>::iterator it = Step.begin(); it != Step.end(); ++it)
 	{
 		AbaqusModel::STEP& stepi = *it;
-		FENonLinearMechanics* festep = new FENonLinearMechanics(&fem);
+		FSNonLinearMechanics* festep = new FSNonLinearMechanics(&fem);
 		STEP_SETTINGS& set = festep->GetSettings();
 		set.dt = stepi.dt0;
 		set.ntime = (int) (stepi.time / stepi.dt0 + 0.5);
@@ -1585,7 +1585,7 @@ bool AbaqusImport::build_physics()
 			FENodeSet* nset = build_nodeset(bc.m_nodeSet[i].nodeSet);
 			if (nset)
 			{
-				FEPrescribedDisplacement* pbc = new FEPrescribedDisplacement(&fem, nset, bc.m_nodeSet[i].ndof - 1, bc.m_nodeSet[i].load);
+				FSPrescribedDisplacement* pbc = new FSPrescribedDisplacement(&fem, nset, bc.m_nodeSet[i].ndof - 1, bc.m_nodeSet[i].load);
 				char szname[256] = { 0 };
 				sprintf(szname, "bc_%d", n);
 				pbc->SetName(szname);

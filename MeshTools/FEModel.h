@@ -350,10 +350,10 @@ std::string Namify(const char* sz);
 
 // functions for creating default names
 std::string defaultBCName(FSModel* fem, FSBoundaryCondition* pbc);
-std::string defaultICName(FSModel* fem, FEInitialCondition* pic);
+std::string defaultICName(FSModel* fem, FSInitialCondition* pic);
 std::string defaultLoadName(FSModel* fem, FSLoad* pbc);
 std::string defaultInterfaceName(FSModel* fem, FSInterface* pi);
-std::string defaultConstraintName(FSModel* fem, FEModelConstraint* pi);
+std::string defaultConstraintName(FSModel* fem, FSModelConstraint* pi);
 std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pc);
 std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc);
 std::string defaultStepName(FSModel* fem, FEStep* ps);

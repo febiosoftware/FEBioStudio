@@ -31,10 +31,10 @@ SOFTWARE.*/
 class GObject;
 class FSModel;
 class GMaterial;
-class FEFixedDOF;
-class FEPrescribedDOF;
+class FSFixedDOF;
+class FSPrescribedDOF;
 class FESoluteMaterial;
-class FEAnalysisStep;
+class FSAnalysisStep;
 class FERigidInterface;
 class FSRigidConstraint;
 class FSRigidConnector;
@@ -60,27 +60,27 @@ private:
 class CFixedDOFProps : public CPropertyList
 {
 public:
-	CFixedDOFProps(FEFixedDOF* pbc);
+	CFixedDOFProps(FSFixedDOF* pbc);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FEFixedDOF*	m_bc;
+	FSFixedDOF*	m_bc;
 };
 
 class CAnalysisTimeSettings : public CObjectProps
 {
 public:
-	CAnalysisTimeSettings(FEAnalysisStep* step);
+	CAnalysisTimeSettings(FSAnalysisStep* step);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FEAnalysisStep*	m_step;
+	FSAnalysisStep*	m_step;
 };
 
 class CStepSettings : public CObjectProps

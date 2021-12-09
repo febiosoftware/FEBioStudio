@@ -373,7 +373,7 @@ void CDlgAddMembraneReaction::onReactionChanged(int n)
         ui->dummy->setEnabled(true);
         
         FSMaterial& props = *m_pmp->GetMaterialProperties();
-        FEMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
+        FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
         if (react)
         {
             FEMembraneReactionMaterial* r = dynamic_cast<FEMembraneReactionMaterial*>(react->GetMaterial(n));
@@ -397,7 +397,7 @@ void CDlgAddMembraneReaction::SetMaterial(GMaterial* mat, FSModel& fem)
     m_pmp = mat;
     
     FSMaterial& props = *mat->GetMaterialProperties();
-    FEMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
+    FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     ui->reactions->Clear();
     if (react)
@@ -425,7 +425,7 @@ void CDlgAddMembraneReaction::onAddReaction()
     if (m_pmp == 0) return;
     
     FSMaterial& props = *m_pmp->GetMaterialProperties();
-    FEMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
+    FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     // create a default material
     FEMembraneReactionMaterial* r = dynamic_cast<FEMembraneReactionMaterial*>(FEMaterialFactory::Create(FE_MMASS_ACTION_FORWARD)); assert(r);
@@ -457,7 +457,7 @@ void CDlgAddMembraneReaction::onRemoveReaction()
     if ((m_pmp == 0) || (m_reaction == 0)) return;
     
     FSMaterial& props = *m_pmp->GetMaterialProperties();
-    FEMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
+    FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     // remove the reaction
     react->RemoveMaterial(m_reaction);
@@ -846,7 +846,7 @@ void CDlgAddMembraneReaction::apply()
     if ((m_pmp == 0) || (m_reaction == 0)) return;
     
     FSMaterial* mat = m_pmp->GetMaterialProperties();
-    FEMaterialProperty* reactProp = mat->FindProperty(FE_MAT_MREACTION);
+    FSMaterialProperty* reactProp = mat->FindProperty(FE_MAT_MREACTION);
     if (reactProp == 0) return;
     
     // create the reaction material and set its type

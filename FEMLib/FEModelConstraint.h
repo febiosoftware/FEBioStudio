@@ -1,14 +1,14 @@
 #pragma once
 #include "FEDomainComponent.h"
 
-class FEModelConstraint : public FSDomainComponent
+class FSModelConstraint : public FSDomainComponent
 {
 public:
-	FEModelConstraint(int ntype, FSModel* fem, int nstep = 0);
+	FSModelConstraint(int ntype, FSModel* fem, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FESurfaceConstraint : public FEModelConstraint
+class FESurfaceConstraint : public FSModelConstraint
 {
 public:
 	FESurfaceConstraint(int ntype, FSModel* fem, int nstep = 0);
@@ -48,7 +48,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEWarpingConstraint : public FEModelConstraint
+class FEWarpingConstraint : public FSModelConstraint
 {
 public:
 	FEWarpingConstraint(FSModel* fem);
@@ -66,21 +66,21 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEPrestrainConstraint : public FEModelConstraint
+class FEPrestrainConstraint : public FSModelConstraint
 {
 public:
 	FEPrestrainConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEInSituStretchConstraint : public FEModelConstraint
+class FEInSituStretchConstraint : public FSModelConstraint
 {
 public:
 	FEInSituStretchConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEBioNLConstraint : public FEModelConstraint
+class FEBioNLConstraint : public FSModelConstraint
 {
 public:
 	FEBioNLConstraint(FSModel* fem, int nstep = 0);

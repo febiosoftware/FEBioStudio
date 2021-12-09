@@ -273,7 +273,7 @@ void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, con
 	NP = mat->Properties();
 	for (int n = 0; n < NP; ++n)
 	{
-		FEMaterialProperty& matProp = mat->GetProperty(n);
+		FSMaterialProperty& matProp = mat->GetProperty(n);
 
 		int np = matProp.Size();
 		if (np == 1)
@@ -394,7 +394,7 @@ void CCurveEditor::BuildLoadCurves()
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j < pstep->Constraints(); ++j)
 		{
-			FEModelConstraint* pmc = pstep->Constraint(j);
+			FSModelConstraint* pmc = pstep->Constraint(j);
 			BuildLoadCurves(t1, pmc);
 		}
 	}
@@ -444,7 +444,7 @@ void CCurveEditor::BuildLoadCurves()
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		FEStep* pstep = fem.GetStep(i);
-		FEAnalysisStep* pas = dynamic_cast<FEAnalysisStep*>(pstep);
+		FSAnalysisStep* pas = dynamic_cast<FSAnalysisStep*>(pstep);
 		if (pas && pas->GetSettings().bmust)
 		{
 			string name = pas->GetName() + ".must point";
@@ -589,7 +589,7 @@ void CCurveEditor::BuildModelTree()
                     ui->addTreeItem(t3, QString::fromStdString("initial_pressure"), prcr->GetIPLoadCurve());
                 }
 				else {
-					FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(pstep->Load(j));
+					FSConstBodyForce* pbl = dynamic_cast<FSConstBodyForce*>(pstep->Load(j));
 					if (pbl)
 					{
 						t3 = ui->addTreeItem(t2, QString::fromStdString(pbl->GetName()));
@@ -679,7 +679,7 @@ void CCurveEditor::BuildModelTree()
 			FEStep* pstep = fem.GetStep(i);
 			for (int j = 0; j < pstep->Constraints(); ++j)
 			{
-				FEModelConstraint* pmc = pstep->Constraint(j);
+				FSModelConstraint* pmc = pstep->Constraint(j);
 				int NP = pmc->Parameters();
 				if (NP > 0)
 				{
@@ -762,7 +762,7 @@ void CCurveEditor::BuildModelTree()
 		{
 			FEStep* pstep = fem.GetStep(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(pstep->GetName()));
-			FEAnalysisStep* pas = dynamic_cast<FEAnalysisStep*>(pstep);
+			FSAnalysisStep* pas = dynamic_cast<FSAnalysisStep*>(pstep);
 			if (pas && pas->GetSettings().bmust) ui->addTreeItem(t3, "must point", pas->GetMustPointLoadCurve());
 		}
 	}
@@ -780,7 +780,7 @@ void CCurveEditor::AddMultiMaterial(FSMaterial* pm, QTreeWidgetItem* tp)
 {
 	for (int k = 0; k<pm->Properties(); ++k)
 	{
-		FEMaterialProperty& pmc = pm->GetProperty(k);
+		FSMaterialProperty& pmc = pm->GetProperty(k);
 		for (int l=0; l<pmc.Size(); ++l)
 		{
 			FSMaterial* pmat = pmc.GetMaterial(l);

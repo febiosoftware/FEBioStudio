@@ -84,7 +84,7 @@ public:
 
 		for (int j = 0; j < mat->Properties(); ++j)
 		{
-			FEMaterialProperty& prop = mat->GetProperty(j);
+			FSMaterialProperty& prop = mat->GetProperty(j);
 			int nsize = prop.Size();
 			QString propName = QString::fromStdString(prop.GetName());
 			for (int k = 0; k < nsize; ++k)

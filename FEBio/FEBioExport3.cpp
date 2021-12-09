@@ -424,7 +424,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 				else AddNodeSet(name, ps);
 			}
 
-			FEBodyLoad* pbl = dynamic_cast<FEBodyLoad*>(pstep->Load(j));
+			FSBodyLoad* pbl = dynamic_cast<FSBodyLoad*>(pstep->Load(j));
 			if (pbl && pbl->IsActive())
 			{
 				FEItemListBuilder* ps = pbl->GetItemList();
@@ -439,7 +439,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 		for (int j = 0; j<pstep->ICs(); ++j)
 		{
 			// this is only for nodal loads
-			FEInitialCondition* pi = pstep->IC(j);
+			FSInitialCondition* pi = pstep->IC(j);
 			if (pi && pi->IsActive())
 			{
 				FEItemListBuilder* ps = pi->GetItemList();
@@ -480,7 +480,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 			{
 				// we need to exclude nodal loads and body loads
 				if (dynamic_cast<FENodalDOFLoad*>(pl)) pl = 0;
-				if (dynamic_cast<FEBodyLoad*>(pl)) pl = 0;
+				if (dynamic_cast<FSBodyLoad*>(pl)) pl = 0;
 				if (pl && pl->IsActive())
 				{
 					FEItemListBuilder* ps = pl->GetItemList();
@@ -563,7 +563,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 
 		for (int j = 0; j < pstep->Constraints(); ++j)
 		{
-			FEModelConstraint* pj = pstep->Constraint(j);
+			FSModelConstraint* pj = pstep->Constraint(j);
 			if (pj->IsActive())
 			{
 				FESurfaceConstraint* psf = dynamic_cast<FESurfaceConstraint*>(pj);
@@ -769,7 +769,7 @@ bool FEBioExport3::Write(const char* szfile)
 		bool bsingle_step = (m_nsteps <= 1);
 		if (m_nsteps == 2)
 		{
-//			FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+//			FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(fem.GetStep(1));
 //			if (pstep == 0) return errf("Step 1 is not an analysis step.");
 			ntype = pstep->GetType();
 			if (pstep->BCs() + pstep->Loads() + pstep->ICs() + pstep->Interfaces() + pstep->LinearConstraints() + pstep->RigidConstraints() + pstep->RigidConnectors() == 0) bsingle_step = true;
@@ -921,7 +921,7 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output constraints section
-			int nnlc = CountConstraints<FEModelConstraint>(fem);
+			int nnlc = CountConstraints<FSModelConstraint>(fem);
 			if ((nnlc > 0) && (m_section[FEBIO_CONSTRAINTS]))
 			{
 				m_xml.add_branch("Constraints");
@@ -1048,7 +1048,7 @@ void FEBioExport3::WriteModuleSection(FEStep* pstep)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteControlSection(FEStep& step)
 {
-	FEAnalysisStep* analysis = dynamic_cast<FEAnalysisStep*>(&step);
+	FSAnalysisStep* analysis = dynamic_cast<FSAnalysisStep*>(&step);
 	if (analysis)
 	{
 		STEP_SETTINGS& ops = analysis->GetSettings();
@@ -1072,7 +1072,7 @@ void FEBioExport3::WriteControlSection(FEStep& step)
 		WriteParamList(step);
 		for (int i = 0; i < step.ControlProperties(); ++i)
 		{
-			FEStepControlProperty& prop = step.GetControlProperty(i);
+			FSStepControlProperty& prop = step.GetControlProperty(i);
 			FSStepComponent* pc = prop.m_prop;
 			if (pc)
 			{
@@ -1085,7 +1085,7 @@ void FEBioExport3::WriteControlSection(FEStep& step)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteSolidControlParams(FEAnalysisStep* pstep)
+void FEBioExport3::WriteSolidControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -1157,7 +1157,7 @@ void FEBioExport3::WriteSolidControlParams(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
+void FEBioExport3::WriteHeatTransferControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 
@@ -1192,7 +1192,7 @@ void FEBioExport3::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
+void FEBioExport3::WriteBiphasicControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -1253,7 +1253,7 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
+void FEBioExport3::WriteBiphasicSoluteControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -1313,7 +1313,7 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
+void FEBioExport3::WriteFluidControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -1373,7 +1373,7 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
+void FEBioExport3::WriteFluidFSIControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -1433,7 +1433,7 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
+void FEBioExport3::WriteReactionDiffusionControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -1933,7 +1933,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 		int NC = pm->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
-			FEMaterialProperty& mc = pm->GetProperty(i);
+			FSMaterialProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j<mc.Size(); ++j)
 			{
 				FSMaterial* pc = mc.GetMaterial(j);
@@ -2043,7 +2043,7 @@ void FEBioExport3::WriteReactionMaterial(FSMaterial* pmat, XMLElement& el)
 		int NC = pmat->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
-			FEMaterialProperty& mc = pmat->GetProperty(i);
+			FSMaterialProperty& mc = pmat->GetProperty(i);
 			for (int j = 0; j<mc.Size(); ++j)
 			{
 				FSMaterial* pc = mc.GetMaterial(j);
@@ -2192,7 +2192,7 @@ void FEBioExport3::WriteMembraneReactionMaterial(FSMaterial* pmat, XMLElement& e
         int NC = pmat->Properties();
         for (int i = 0; i<NC; ++i)
         {
-            FEMaterialProperty& mc = pmat->GetProperty(i);
+            FSMaterialProperty& mc = pmat->GetProperty(i);
             for (int j = 0; j<mc.Size(); ++j)
             {
                 FSMaterial* pc = mc.GetMaterial(j);
@@ -3684,8 +3684,8 @@ void FEBioExport3::WriteBoundarySection(FEStep& s)
 		FSBoundaryCondition* pbc = s.BC(i);
 		if (pbc && pbc->IsActive())
 		{
-			if (dynamic_cast<FEFixedDOF*>(pbc)) WriteBCFixed(s, pbc);
-			else if (dynamic_cast<FEPrescribedDOF*>(pbc)) WriteBCPrescribed(s, pbc);
+			if (dynamic_cast<FSFixedDOF*>(pbc)) WriteBCFixed(s, pbc);
+			else if (dynamic_cast<FSPrescribedDOF*>(pbc)) WriteBCPrescribed(s, pbc);
 			else WriteBC(s, pbc);
 		}
 	}
@@ -3696,7 +3696,7 @@ void FEBioExport3::WriteBoundarySection(FEStep& s)
 	// The fluid-rotational-velocity is a boundary condition in FEBio3
 	for (int j = 0; j < s.Loads(); ++j)
 	{
-		FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(s.Load(j));
+		FSSurfaceLoad* psl = dynamic_cast<FSSurfaceLoad*>(s.Load(j));
 		if (psl && psl->IsActive() && (psl->Type() == FE_FLUID_ROTATIONAL_VELOCITY))
 		{
 			FEItemListBuilder* pitem = psl->GetItemList();
@@ -4127,7 +4127,7 @@ void FEBioExport3::WriteLinearConstraints(FEStep& s)
 
 	for (int i = 0; i<s.LinearConstraints(); ++i)
 	{
-		FELinearConstraintSet* pset = s.LinearConstraint(i);
+		FSLinearConstraintSet* pset = s.LinearConstraint(i);
 		XMLElement ec("contact");
 		ec.add_attribute("type", "linear constraint");
 		m_xml.add_branch(ec);
@@ -4139,7 +4139,7 @@ void FEBioExport3::WriteLinearConstraints(FEStep& s)
 			int NC = (int)pset->m_set.size();
 			for (int j = 0; j<NC; ++j)
 			{
-				FELinearConstraintSet::LinearConstraint& LC = pset->m_set[j];
+				FSLinearConstraintSet::LinearConstraint& LC = pset->m_set[j];
 				m_xml.add_branch("linear_constraint");
 				{
 					int ND = (int)LC.m_dof.size();
@@ -4148,7 +4148,7 @@ void FEBioExport3::WriteLinearConstraints(FEStep& s)
 					int n2 = ed.add_attribute("bc", 0);
 					for (int n = 0; n<ND; ++n)
 					{
-						FELinearConstraintSet::LinearConstraint::DOF& dof = LC.m_dof[n];
+						FSLinearConstraintSet::LinearConstraint::DOF& dof = LC.m_dof[n];
 						ed.set_attribute(n1, dof.node);
 						ed.set_attribute(n2, szbc[dof.bc]);
 						ed.value(dof.s);
@@ -4167,7 +4167,7 @@ void FEBioExport3::WriteConstraints(FEStep& s)
 {
 	for (int i = 0; i<s.Constraints(); ++i)
 	{
-		FEModelConstraint* pw = s.Constraint(i);
+		FSModelConstraint* pw = s.Constraint(i);
 		if (pw && pw->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pw);
@@ -4226,7 +4226,7 @@ void FEBioExport3::WriteBC(FEStep& s, FSBoundaryCondition* pbc)
 void FEBioExport3::WriteBCFixed(FEStep &s, FSBoundaryCondition* febc)
 {
 	FSModel& fem = m_prj.GetFSModel();
-	FEFixedDOF* pbc = dynamic_cast<FEFixedDOF*>(febc); assert(pbc);
+	FSFixedDOF* pbc = dynamic_cast<FSFixedDOF*>(febc); assert(pbc);
 	if (pbc == nullptr) return;
 
 	if (m_writeNotes) WriteNote(pbc);
@@ -4276,7 +4276,7 @@ void FEBioExport3::WriteBCFixed(FEStep &s, FSBoundaryCondition* febc)
 void FEBioExport3::WriteBCPrescribed(FEStep &s, FSBoundaryCondition* febc)
 {
 	FSModel& fem = m_prj.GetFSModel();
-	FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(febc); assert(febc);
+	FSPrescribedDOF* pbc = dynamic_cast<FSPrescribedDOF*>(febc); assert(febc);
 	if (pbc == nullptr) return;
 
 	if (m_writeNotes) WriteNote(pbc);
@@ -4368,7 +4368,7 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 {
 	for (int j = 0; j<s.Loads(); ++j)
 	{
-		FESurfaceLoad* pbc = dynamic_cast<FESurfaceLoad*>(s.Load(j));
+		FSSurfaceLoad* pbc = dynamic_cast<FSSurfaceLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pbc);
@@ -4406,7 +4406,7 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 }
 
 //----------------------------------------------------------------------------
-void FEBioExport3::WriteSurfaceLoad(FEStep& s, FESurfaceLoad* psl, const char* sztype)
+void FEBioExport3::WriteSurfaceLoad(FEStep& s, FSSurfaceLoad* psl, const char* sztype)
 {
 	// create the surface list
 	FEItemListBuilder* pitem = psl->GetItemList();
@@ -4435,7 +4435,7 @@ void FEBioExport3::WriteInitialSection()
 	// initial velocities
 	for (int j = 0; j<s.ICs(); ++j)
 	{
-		FEInitialCondition* pi = s.IC(j);
+		FSInitialCondition* pi = s.IC(j);
 		if (pi && pi->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pi);
@@ -4624,7 +4624,7 @@ void FEBioExport3::WriteBodyLoads(FEStep& s)
 {
 	for (int i = 0; i<s.Loads(); ++i)
 	{
-		FEBodyLoad* pbl = dynamic_cast<FEBodyLoad*>(s.Load(i));
+		FSBodyLoad* pbl = dynamic_cast<FSBodyLoad*>(s.Load(i));
 		if (pbl && pbl->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pbl);
@@ -5085,7 +5085,7 @@ void FEBioExport3::WriteStepSection()
 			}
 
 			// output constraint section
-			int nnlc = step.RigidConstraints() + CountConstraints<FEModelConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
+			int nnlc = step.RigidConstraints() + CountConstraints<FSModelConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
 			if (nnlc > 0)
 			{
 				m_xml.add_branch("Constraints");

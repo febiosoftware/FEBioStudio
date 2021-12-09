@@ -35,7 +35,7 @@ class GMaterial;
 //-----------------------------------------------------------------------------
 //! Class describing a material property
 //! A material property is a component of a parent material and is represented by a (list of ) material(s) itself
-class FEMaterialProperty
+class FSMaterialProperty
 {
 public:
 	enum { NO_FIXED_SIZE = 0 };
@@ -47,9 +47,9 @@ public:
 	};
 
 public:
-	FEMaterialProperty();
-	FEMaterialProperty(const std::string& name, int nClassID, FSMaterial* parent, int nsize = 1, unsigned int flags = EDITABLE);
-	~FEMaterialProperty();
+	FSMaterialProperty();
+	FSMaterialProperty(const std::string& name, int nClassID, FSMaterial* parent, int nsize = 1, unsigned int flags = EDITABLE);
+	~FSMaterialProperty();
 
 	// clears the material list for this property
 	void Clear();
@@ -154,19 +154,19 @@ public:
 	int Properties() { return (int) m_Mat.size(); }
 
 	// get a property
-	FEMaterialProperty& GetProperty(int i) { return *m_Mat[i]; }
+	FSMaterialProperty& GetProperty(int i) { return *m_Mat[i]; }
 
 	// find a property by name
-	FEMaterialProperty* FindProperty(const std::string& name);
+	FSMaterialProperty* FindProperty(const std::string& name);
 
 	// find the property by type
-	FEMaterialProperty* FindProperty(int ntype);
+	FSMaterialProperty* FindProperty(int ntype);
 
 	// find the property by the material
-	FEMaterialProperty* FindProperty(FSMaterial* pm);
+	FSMaterialProperty* FindProperty(FSMaterial* pm);
 
 	// add a property to the material
-	FEMaterialProperty* AddProperty(const std::string& name, int nClassID, int maxSize = 1, unsigned int flags = FEMaterialProperty::EDITABLE);
+	FSMaterialProperty* AddProperty(const std::string& name, int nClassID, int maxSize = 1, unsigned int flags = FSMaterialProperty::EDITABLE);
 
 	// add a material to property with index propID
 	int AddProperty(int propID, FSMaterial* pm);
@@ -202,7 +202,7 @@ public:
 	FEAxisMaterial*	m_axes;
 
 protected:
-	vector<FEMaterialProperty*>	m_Mat;	//!< list of material properties
+	vector<FSMaterialProperty*>	m_Mat;	//!< list of material properties
 };
 
 //-----------------------------------------------------------------------------

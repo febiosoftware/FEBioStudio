@@ -86,7 +86,7 @@ std::string defaultBCName(FSModel* fem, FSBoundaryCondition* pbc)
 	return ss.str();
 }
 
-std::string defaultICName(FSModel* fem, FEInitialCondition* pic)
+std::string defaultICName(FSModel* fem, FSInitialCondition* pic)
 {
 	const char* ch = pic->GetTypeString();
 	string type = Namify(ch);
@@ -122,12 +122,12 @@ std::string defaultInterfaceName(FSModel* fem, FSInterface* pi)
 	return ss.str();
 }
 
-std::string defaultConstraintName(FSModel* fem, FEModelConstraint* pi)
+std::string defaultConstraintName(FSModel* fem, FSModelConstraint* pi)
 {
 	const char* ch = pi->GetTypeString();
 	string type = Namify(ch);
 
-	int n = CountConstraints<FEModelConstraint>(*fem);
+	int n = CountConstraints<FSModelConstraint>(*fem);
 
 	stringstream ss;
 	ss << type << n + 1;
@@ -848,7 +848,7 @@ void FSModel::New()
 	Clear();
 
 	// define the initial step
-	m_pStep.Add(new FEInitialStep(this));
+	m_pStep.Add(new FSInitialStep(this));
 }
 
 //-----------------------------------------------------------------------------
@@ -1105,16 +1105,16 @@ void FSModel::LoadSteps(IArchive& ar)
 		FEStep* ps = 0;
 		switch (ntype)
 		{
-		case FE_STEP_INITIAL            : ps = new FEInitialStep        (this); break;
-		case FE_STEP_MECHANICS          : ps = new FENonLinearMechanics (this); break;
-		case FE_STEP_NL_DYNAMIC         : ps = new FENonLinearMechanics (this); break;	// obsolete (remains for backward compatibility)
-		case FE_STEP_HEAT_TRANSFER      : ps = new FEHeatTransfer       (this); break;
-		case FE_STEP_BIPHASIC           : ps = new FENonLinearBiphasic  (this); break;
-		case FE_STEP_BIPHASIC_SOLUTE   : ps = new FEBiphasicSolutes    (this); break;
-		case FE_STEP_MULTIPHASIC		: ps = new FEMultiphasicAnalysis(this); break;
-        case FE_STEP_FLUID              : ps = new FEFluidAnalysis      (this); break;
-        case FE_STEP_FLUID_FSI          : ps = new FEFluidFSIAnalysis   (this); break;
-		case FE_STEP_REACTION_DIFFUSION : ps = new FEReactionDiffusionAnalysis(this); break;
+		case FE_STEP_INITIAL            : ps = new FSInitialStep        (this); break;
+		case FE_STEP_MECHANICS          : ps = new FSNonLinearMechanics (this); break;
+		case FE_STEP_NL_DYNAMIC         : ps = new FSNonLinearMechanics (this); break;	// obsolete (remains for backward compatibility)
+		case FE_STEP_HEAT_TRANSFER      : ps = new FSHeatTransfer       (this); break;
+		case FE_STEP_BIPHASIC           : ps = new FSNonLinearBiphasic  (this); break;
+		case FE_STEP_BIPHASIC_SOLUTE   : ps = new FSBiphasicSolutes    (this); break;
+		case FE_STEP_MULTIPHASIC		: ps = new FSMultiphasicAnalysis(this); break;
+        case FE_STEP_FLUID              : ps = new FSFluidAnalysis      (this); break;
+        case FE_STEP_FLUID_FSI          : ps = new FSFluidFSIAnalysis   (this); break;
+		case FE_STEP_REACTION_DIFFUSION : ps = new FSReactionDiffusionAnalysis(this); break;
 		case FE_STEP_FEBIO_ANALYSIS     : ps = new FEBioAnalysisStep(this); break;
 		default:
 			throw ReadError("unknown CID in FSModel::LoadSteps");
@@ -1141,7 +1141,7 @@ void FSModel::LoadMaterials(IArchive& ar)
 
 		FSMaterial* pmat = 0;
 		// allocate the material
-		if (ntype == FE_USER_MATERIAL) pmat = new FEUserMaterial(FE_USER_MATERIAL);
+		if (ntype == FE_USER_MATERIAL) pmat = new FSUserMaterial(FE_USER_MATERIAL);
 		else if (ntype == FE_TRANS_MOONEY_RIVLIN_OLD) pmat = new FETransMooneyRivlinOld;
 		else if (ntype == FE_TRANS_VERONDA_WESTMANN_OLD) pmat = new FETransVerondaWestmannOld;
 		else if (ntype == FE_COUPLED_TRANS_ISO_MR_OLD) pmat = new FECoupledTransIsoMooneyRivlinOld;
@@ -1426,7 +1426,7 @@ void FSModel::Purge(int ops)
 		DeleteAllMaterials();
 
 		// add an initial step
-		m_pStep.Add(new FEInitialStep(this));
+		m_pStep.Add(new FSInitialStep(this));
 	}
 	else
 	{
@@ -1456,7 +1456,7 @@ void FSModel::ClearSelections()
 
 		for (int i = 0; i<step->ICs(); ++i)
 		{
-			FEInitialCondition* pic = step->IC(i);
+			FSInitialCondition* pic = step->IC(i);
 			delete pic->GetItemList(); pic->SetItemList(0);
 		}
 
@@ -1479,7 +1479,7 @@ void FSModel::ClearSelections()
 
 		for (int i = 0; i < step->Constraints(); ++i)
 		{
-			FEModelConstraint* mc = step->Constraint(i);
+			FSModelConstraint* mc = step->Constraint(i);
 			delete mc->GetItemList(); mc->SetItemList(0);
 		}
 	}
@@ -1666,7 +1666,7 @@ int FSModel::CountICs(int type)
 		int NL = step->ICs();
 		for (int j = 0; j<NL; ++j)
 		{
-			FEInitialCondition* pbc = step->IC(j);
+			FSInitialCondition* pbc = step->IC(j);
 			if (pbc->Type() == type) n++;
 		}
 	}

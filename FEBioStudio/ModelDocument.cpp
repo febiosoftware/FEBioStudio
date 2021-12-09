@@ -199,7 +199,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 
 	if (dynamic_cast<FEStep*>(po))
 	{
-		if (dynamic_cast<FEInitialStep*>(po))
+		if (dynamic_cast<FSInitialStep*>(po))
 		{
 			QMessageBox::warning(m_wnd, "Delete step", "Cannot delete the initial step.");
 			return;
@@ -213,7 +213,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 	{
 		FSMaterial* pm = dynamic_cast<FSMaterial*>(po);
 		FSMaterial* parent = const_cast<FSMaterial*>(pm->GetParentMaterial());
-		FEMaterialProperty* pp = parent->FindProperty(pm);
+		FSMaterialProperty* pp = parent->FindProperty(pm);
 		if (pp)// && (pp->maxSize() == 0))
 		{
 			pp->RemoveMaterial(pm);
@@ -594,7 +594,7 @@ bool CModelDocument::ImportMaterials(const std::string& fileName)
 					ar.read(ntype);
 					// allocate the material
 					FSMaterial* pm = 0;
-					if (ntype == FE_USER_MATERIAL) pm = new FEUserMaterial(FE_USER_MATERIAL);
+					if (ntype == FE_USER_MATERIAL) pm = new FSUserMaterial(FE_USER_MATERIAL);
 					else pm = FEMaterialFactory::Create(ntype);
 
 					if (pm == 0) return false;

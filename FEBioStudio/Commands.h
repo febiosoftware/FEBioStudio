@@ -119,7 +119,7 @@ protected:
 class CCmdAddConstraint : public CCommand
 {
 public:
-	CCmdAddConstraint(FEStep* ps, FEModelConstraint* pmc);
+	CCmdAddConstraint(FEStep* ps, FSModelConstraint* pmc);
 	~CCmdAddConstraint();
 
 	void Execute();
@@ -127,7 +127,7 @@ public:
 
 protected:
 	FEStep*				m_ps;
-	FEModelConstraint*	m_pmc;
+	FSModelConstraint*	m_pmc;
 	bool				m_bdel;
 };
 
@@ -284,7 +284,7 @@ protected:
 class CCmdAddIC : public CCommand
 {
 public:
-	CCmdAddIC(FEStep* ps, FEInitialCondition* pic) : CCommand("Add Initial Condition") { m_ps = ps; m_pic = pic; m_bdel = true; }
+	CCmdAddIC(FEStep* ps, FSInitialCondition* pic) : CCommand("Add Initial Condition") { m_ps = ps; m_pic = pic; m_bdel = true; }
 	~CCmdAddIC() { if (m_bdel) delete m_pic; }
 
 	void Execute();
@@ -292,7 +292,7 @@ public:
 
 protected:
 	FEStep*					m_ps;
-	FEInitialCondition*		m_pic;
+	FSInitialCondition*		m_pic;
 	bool					m_bdel;
 };
 

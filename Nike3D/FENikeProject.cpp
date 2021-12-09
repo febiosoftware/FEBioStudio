@@ -216,17 +216,17 @@ bool FENikeProject::BuildControl(FEProject& prj)
 	FSModel& fem = prj.GetFSModel();
 
 	STEP_SETTINGS set;
-	FEAnalysisStep* pstep = 0;
+	FSAnalysisStep* pstep = 0;
 	if (fem.Steps() > 1)
 	{
-		pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+		pstep = dynamic_cast<FSAnalysisStep*>(fem.GetStep(1));
 		assert(pstep);
 		set = pstep->GetSettings();
 	}
 	else set.Defaults();
 
 	// make sure this is a mechanics step
-	FENonLinearMechanics* pnlstep = dynamic_cast<FENonLinearMechanics*>(pstep);
+	FSNonLinearMechanics* pnlstep = dynamic_cast<FSNonLinearMechanics*>(pstep);
 	if (pnlstep == 0) return false;
 
 	int nlc = -1;
@@ -540,7 +540,7 @@ bool FENikeProject::BuildNodes(FEProject& prj)
 	// calculate the nodal BC and RC values
 	for (i=0; i<s.BCs(); ++i)
 	{
-		FEFixedDisplacement* pbc = dynamic_cast<FEFixedDisplacement*>(s.BC(i));
+		FSFixedDisplacement* pbc = dynamic_cast<FSFixedDisplacement*>(s.BC(i));
 		if (pbc)
 		{
 			int bc;
@@ -555,7 +555,7 @@ bool FENikeProject::BuildNodes(FEProject& prj)
 				node.bc |= bc;
 			}
 		}
-		FEFixedRotation* prc = dynamic_cast<FEFixedRotation*>(s.BC(i));
+		FSFixedRotation* prc = dynamic_cast<FSFixedRotation*>(s.BC(i));
 		if (pbc)
 		{
 			int rc;
@@ -1172,7 +1172,7 @@ bool FENikeProject::BuildDisplacements(FEProject &prj)
 	NODAL_DISPLACEMENT nd;
 	for (int i=0; i<s.BCs(); ++i)
 	{
-		FEPrescribedDisplacement* pbc = dynamic_cast<FEPrescribedDisplacement*>(s.BC(i));
+		FSPrescribedDisplacement* pbc = dynamic_cast<FSPrescribedDisplacement*>(s.BC(i));
 		if (pbc)
 		{
 			FELoadCurve& lc = *pbc->GetLoadCurve();
@@ -1194,7 +1194,7 @@ bool FENikeProject::BuildDisplacements(FEProject &prj)
 				m_Ctrl.numdis++;
 			}
 		}
-		FEPrescribedRotation* prc = dynamic_cast<FEPrescribedRotation*>(s.BC(i));
+		FSPrescribedRotation* prc = dynamic_cast<FSPrescribedRotation*>(s.BC(i));
 		if (prc)
 		{
 			// TODO: implement this
@@ -1214,7 +1214,7 @@ bool FENikeProject::BuildBodyForce(FEProject& prj)
 
 	for (int i=0; i<s.Loads(); ++i)
 	{
-		FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(s.Load(i));
+		FSConstBodyForce* pbl = dynamic_cast<FSConstBodyForce*>(s.Load(i));
 		if (pbl)
 		{
 			for (int j=0; j<3; ++j)
@@ -1283,7 +1283,7 @@ bool FENikeProject::BuildNodalVelocities(FEProject &prj)
 bool FENikeProject::Convert(FEProject &prj)
 {
 	FSModel& fem = prj.GetFSModel();
-	FENonLinearMechanics* pstep = dynamic_cast<FENonLinearMechanics*>(fem.GetStep(1));
+	FSNonLinearMechanics* pstep = dynamic_cast<FSNonLinearMechanics*>(fem.GetStep(1));
 	if (pstep == 0) return false;
 
 	STEP_SETTINGS& set = pstep->GetSettings();

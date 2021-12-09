@@ -170,7 +170,7 @@ public:
 
 			if (propId >= 0)
 			{
-				FEMaterialProperty& p = pm->GetProperty(propId);
+				FSMaterialProperty& p = pm->GetProperty(propId);
 				FSMaterial* pm = p.GetMaterial(matIndex);
 				if (pm) item->addChildren(pm);
 			}
@@ -230,11 +230,11 @@ public:
 
 			for (int i = 0; i < pm->Properties(); ++i)
 			{
-				FEMaterialProperty& p = pm->GetProperty(i);
+				FSMaterialProperty& p = pm->GetProperty(i);
 				int nc = p.Size();
 				for (int j = 0; j < nc; ++j) addChild(pm, -1, i, j);
 
-				if ((p.maxSize() == FEMaterialProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FEMaterialProperty::NON_EXTENDABLE) == 0))
+				if ((p.maxSize() == FSMaterialProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSMaterialProperty::NON_EXTENDABLE) == 0))
 				{
 					addChild(pm, -1, i, -1);
 				}
@@ -388,7 +388,7 @@ public:
 			}
 			else if (m_propId >= 0)
 			{
-				FEMaterialProperty& p = m_pm->GetProperty(m_propId);
+				FSMaterialProperty& p = m_pm->GetProperty(m_propId);
 				if (column == 0)
 				{
 					QString s = QString::fromStdString(p.GetName());
@@ -414,7 +414,7 @@ public:
 					FSMaterial* pm = (m_matIndex >= 0 ? p.GetMaterial(m_matIndex) : nullptr);
 					if (pm == nullptr)
 					{
-						bool required = (p.GetFlags() & FEMaterialProperty::REQUIRED);
+						bool required = (p.GetFlags() & FSMaterialProperty::REQUIRED);
 						return QString(required ? "(select)" : "(none)");
 					}
 					else   if (dynamic_cast<FEReactionSpecies*>(pm))
@@ -500,7 +500,7 @@ public:
 			{
 				int matId = value.toInt();
 
-				FEMaterialProperty& matProp = m_pm->GetProperty(m_propId);
+				FSMaterialProperty& matProp = m_pm->GetProperty(m_propId);
 
 				if (matId == -2)
 				{
@@ -795,7 +795,7 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 		else if (item->isProperty())
 		{
 			FSMaterial* pm = item->m_pm;
-			FEMaterialProperty& matProp = pm->GetProperty(item->m_propId);
+			FSMaterialProperty& matProp = pm->GetProperty(item->m_propId);
 			FSMaterial* pmat = pm->GetProperty(item->m_propId).GetMaterial(item->m_matIndex);
 
 			QComboBox* pc = new QComboBox(parent);

@@ -156,7 +156,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 	CDlgAddPhysicsItem dlg("Add Surface Load", FE_SURFACE_LOAD, prj, true, this);
 	if (dlg.exec())
 	{
-		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, FE_FEBIO_SURFACE_LOAD); assert(psl);
+		FSSurfaceLoad* psl = fecore_new<FSSurfaceLoad>(&fem, FE_SURFACE_LOAD, FE_FEBIO_SURFACE_LOAD); assert(psl);
 		FEBio::CreateModelComponent(dlg.GetClassID(), psl);
 		if (psl)
 		{
@@ -199,7 +199,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 	CDlgAddPhysicsItem dlg("Add Body Load", FE_BODY_LOAD, prj, true, this);
 	if (dlg.exec())
 	{
-		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, FE_FEBIO_BODY_LOAD); assert(pbl);
+		FSBodyLoad* pbl = fecore_new<FSBodyLoad>(&fem, FE_BODY_LOAD, FE_FEBIO_BODY_LOAD); assert(pbl);
 		FEBio::CreateModelComponent(dlg.GetClassID(), pbl);
 		if (pbl)
 		{
@@ -225,7 +225,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 	CDlgAddPhysicsItem dlg("Add Rigid Load", FE_RIGID_LOAD, prj, true, this);
 	if (dlg.exec())
 	{
-		FERigidLoad* prl = fecore_new<FERigidLoad>(&fem, FE_RIGID_LOAD, FE_FEBIO_RIGID_LOAD); assert(prl);
+		FSRigidLoad* prl = fecore_new<FSRigidLoad>(&fem, FE_RIGID_LOAD, FE_FEBIO_RIGID_LOAD); assert(prl);
 		FEBio::CreateModelComponent(dlg.GetClassID(), prl);
 		if (prl)
 		{
@@ -251,8 +251,8 @@ void CMainWindow::on_actionAddIC_triggered()
 	CDlgAddPhysicsItem dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, true, this);
 	if (dlg.exec())
 	{
-//		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, dlg.GetClassID()); assert(pic);
-		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, FE_FEBIO_INITIAL_CONDITION); assert(pic);
+//		FSInitialCondition* pic = fecore_new<FSInitialCondition>(&fem, FE_INITIAL_CONDITION, dlg.GetClassID()); assert(pic);
+		FSInitialCondition* pic = fecore_new<FSInitialCondition>(&fem, FE_INITIAL_CONDITION, FE_FEBIO_INITIAL_CONDITION); assert(pic);
 		FEBio::CreateModelComponent(dlg.GetClassID(), pic);
 		if (pic)
 		{
@@ -356,8 +356,8 @@ void CMainWindow::on_actionAddConstraint_triggered()
 	CDlgAddPhysicsItem dlg("Add Constraint", FE_CONSTRAINT, prj, true, this);
 	if (dlg.exec())
 	{
-//		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, dlg.GetClassID()); assert(pi);
-		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, FE_FEBIO_NLCONSTRAINT); assert(pi);
+//		FSModelConstraint* pi = fecore_new<FSModelConstraint>(&fem, FE_CONSTRAINT, dlg.GetClassID()); assert(pi);
+		FSModelConstraint* pi = fecore_new<FSModelConstraint>(&fem, FE_CONSTRAINT, FE_FEBIO_NLCONSTRAINT); assert(pi);
 		FEBio::CreateModelComponent(dlg.GetClassID(), pi);
 		if (pi)
 		{
@@ -519,7 +519,7 @@ void CMainWindow::on_actionAddStep_triggered()
 //	CDlgAddStep dlg(prj, this);
 //	if (dlg.exec())
 	{
-//		FEAnalysisStep* ps = fecore_new<FEAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
+//		FSAnalysisStep* ps = fecore_new<FSAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
 
 		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(0, FE_ANALYSIS, -1);
 		assert(l.size() == 1);

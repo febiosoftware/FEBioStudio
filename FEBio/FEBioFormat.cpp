@@ -153,19 +153,19 @@ void FEBioFormat::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 //! Create a new step
 FEStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* szname)
 {
-	FEAnalysisStep* pstep = 0;
+	FSAnalysisStep* pstep = 0;
 	switch (nanalysis)
 	{
-	case FE_STEP_MECHANICS        : pstep = new FENonLinearMechanics (&fem); break;
-	case FE_STEP_HEAT_TRANSFER    : pstep = new FEHeatTransfer       (&fem); break;
-	case FE_STEP_BIPHASIC         : pstep = new FENonLinearBiphasic  (&fem); break;
-	case FE_STEP_BIPHASIC_SOLUTE : pstep = new FEBiphasicSolutes    (&fem); break;
-	case FE_STEP_MULTIPHASIC      : pstep = new FEMultiphasicAnalysis(&fem); break;
-	case FE_STEP_FLUID            : pstep = new FEFluidAnalysis      (&fem); break;
-    case FE_STEP_FLUID_FSI        : pstep = new FEFluidFSIAnalysis   (&fem); break;
-	case FE_STEP_REACTION_DIFFUSION : pstep = new FEReactionDiffusionAnalysis(&fem); break;
+	case FE_STEP_MECHANICS        : pstep = new FSNonLinearMechanics (&fem); break;
+	case FE_STEP_HEAT_TRANSFER    : pstep = new FSHeatTransfer       (&fem); break;
+	case FE_STEP_BIPHASIC         : pstep = new FSNonLinearBiphasic  (&fem); break;
+	case FE_STEP_BIPHASIC_SOLUTE : pstep = new FSBiphasicSolutes    (&fem); break;
+	case FE_STEP_MULTIPHASIC      : pstep = new FSMultiphasicAnalysis(&fem); break;
+	case FE_STEP_FLUID            : pstep = new FSFluidAnalysis      (&fem); break;
+    case FE_STEP_FLUID_FSI        : pstep = new FSFluidFSIAnalysis   (&fem); break;
+	case FE_STEP_REACTION_DIFFUSION : pstep = new FSReactionDiffusionAnalysis(&fem); break;
 	default:
-		pstep = new FENonLinearMechanics(&fem);
+		pstep = new FSNonLinearMechanics(&fem);
 		FileReader()->AddLogEntry("Unknown step type. Creating Structural Mechanics step");
 	}
 	assert(pstep);
@@ -362,7 +362,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 
 	// create a new analysis step from these control settings
 	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
-	FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(m_pstep);
+	FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(m_pstep);
 	assert(pstep);
 
 	// The default in FEBio3 for rhoi is -2, for solid mechanics models
@@ -895,7 +895,7 @@ void FixUncoupledMaterial(FSMaterial* mat)
 	double k = pk->GetFloatValue();
 	for (int i = 0; i < mat->Properties(); ++i)
 	{
-		FEMaterialProperty& prop = mat->GetProperty(i);
+		FSMaterialProperty& prop = mat->GetProperty(i);
 		int n = prop.Size();
 		for (int j = 0; j < n; ++j)
 		{
@@ -1033,7 +1033,7 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int class
 						if (sztype == 0) sztype = tag.Name();
 
 						const char* sztag = tag.Name();
-						FEMaterialProperty* pmc = pm->FindProperty(sztag);
+						FSMaterialProperty* pmc = pm->FindProperty(sztag);
 
 						int classId = -1;
 						if (pmc) classId = pmc->GetClassID();

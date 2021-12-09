@@ -473,30 +473,30 @@ void FEBioFormatOld::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			// create the constraint
 			if (ntype < 8)
 			{
-				FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, ntype, pstep->GetID());
-				sprintf(szname, "FixedDisplacement%02d", CountBCs<FEFixedDisplacement>(fem)+1);
+				FSFixedDisplacement* pbc = new FSFixedDisplacement(&fem, pg, ntype, pstep->GetID());
+				sprintf(szname, "FixedDisplacement%02d", CountBCs<FSFixedDisplacement>(fem)+1);
 				pbc->SetName(szname);
 				pstep->AddComponent(pbc);
 			}
 			else if (ntype < 64)
 			{
 				ntype = ntype >> 3;
-				FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, ntype, pstep->GetID());
-				sprintf(szname, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem)+1);
+				FSFixedRotation* pbc = new FSFixedRotation(&fem, pg, ntype, pstep->GetID());
+				sprintf(szname, "FixedRotation%02d", CountBCs<FSFixedRotation>(fem)+1);
 				pbc->SetName(szname);
 				pstep->AddComponent(pbc);
 			}
 			else if (ntype == 64)
 			{
-				FEFixedTemperature* pbc = new FEFixedTemperature(&fem, pg, 1, pstep->GetID());
-				sprintf(szname, "FixedTemperature%02d", CountBCs<FEFixedTemperature>(fem)+1);
+				FSFixedTemperature* pbc = new FSFixedTemperature(&fem, pg, 1, pstep->GetID());
+				sprintf(szname, "FixedTemperature%02d", CountBCs<FSFixedTemperature>(fem)+1);
 				pbc->SetName(szname);
 				pstep->AddComponent(pbc);
 			}
 			else if (ntype == 128)
 			{
-				FEFixedFluidPressure* pbc = new FEFixedFluidPressure(&fem, pg, 1, pstep->GetID());
-				sprintf(szname, "FixedFluidPressure%02d", CountBCs<FEFixedFluidPressure>(fem)+1);
+				FSFixedFluidPressure* pbc = new FSFixedFluidPressure(&fem, pg, 1, pstep->GetID());
+				sprintf(szname, "FixedFluidPressure%02d", CountBCs<FSFixedFluidPressure>(fem)+1);
 				pbc->SetName(szname);
 				pstep->AddComponent(pbc);
 			}
@@ -505,8 +505,8 @@ void FEBioFormatOld::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 				ntype = ntype >> 8;
 				if (ntype < 256)
 				{
-					FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, ntype, pstep->GetID());
-					sprintf(szname, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem)+1);
+					FSFixedConcentration* pbc = new FSFixedConcentration(&fem, pg, ntype, pstep->GetID());
+					sprintf(szname, "FixedConcentration%02d", CountBCs<FSFixedConcentration>(fem)+1);
 					pbc->SetName(szname);
 					pstep->AddComponent(pbc);
 				}
@@ -596,7 +596,7 @@ void FEBioFormatOld::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	// create the prescribed BC
 	FSModel& fem = GetFSModel();
 	char szname[256];
-	vector<FEPrescribedDOF*> pBC(nns);
+	vector<FSPrescribedDOF*> pBC(nns);
 	vector<FENodeSet*> pNS(nns);
 	nns = 0;
 	FEMesh* pm = &GetFEMesh();
@@ -612,40 +612,40 @@ void FEBioFormatOld::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 			pg->SetName(szname);
 
 			// make a new boundary condition
-			FEPrescribedDOF* pbc = 0;
+			FSPrescribedDOF* pbc = 0;
 			switch (j)
 			{
 			case 0:
 				{
-					FEPrescribedDisplacement * pd = new FEPrescribedDisplacement(&fem, pg, j, 1, pstep->GetID());
+					FSPrescribedDisplacement * pd = new FSPrescribedDisplacement(&fem, pg, j, 1, pstep->GetID());
 					pd->SetRelativeFlag(brel);
 					pbc = pd;
 				}
 				break;
 			case 1:
 				{
-					FEPrescribedDisplacement* pd = new FEPrescribedDisplacement(&fem, pg, j, 1, pstep->GetID());
+					FSPrescribedDisplacement* pd = new FSPrescribedDisplacement(&fem, pg, j, 1, pstep->GetID());
 					pd->SetRelativeFlag(brel);
 					pbc = pd;
 				}
 				break;
 			case 2:
 				{
-					FEPrescribedDisplacement* pd = new FEPrescribedDisplacement(&fem, pg, j, 1, pstep->GetID());
+					FSPrescribedDisplacement* pd = new FSPrescribedDisplacement(&fem, pg, j, 1, pstep->GetID());
 					pd->SetRelativeFlag(brel);
 					pbc = pd;
 				}
 				break;
 			case 3:
 				{
-					FEPrescribedTemperature* pd = new FEPrescribedTemperature(&fem, pg, 1, pstep->GetID());
+					FSPrescribedTemperature* pd = new FSPrescribedTemperature(&fem, pg, 1, pstep->GetID());
 					pd->SetRelativeFlag(brel);
 					pbc = pd;
 				}
 				break;
 			case 4:
 				{
-					FEPrescribedFluidPressure* pd = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
+					FSPrescribedFluidPressure* pd = new FSPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
 					pd->SetRelativeFlag(brel);
 					pbc = pd;
 				}
@@ -658,7 +658,7 @@ void FEBioFormatOld::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 			case 10:
 				{
 					int bc = j - 5;
-					FEPrescribedConcentration* pd = new FEPrescribedConcentration(&fem, pg, bc, 1.0, pstep->GetID());
+					FSPrescribedConcentration* pd = new FSPrescribedConcentration(&fem, pg, bc, 1.0, pstep->GetID());
 					pd->SetRelativeFlag(brel);
 					pbc = pd;
 				}
@@ -685,7 +685,7 @@ void FEBioFormatOld::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 
 		pNS[ng]->add(n);
 
-		FEPrescribedDOF* pbc = pBC[ng];
+		FSPrescribedDOF* pbc = pBC[ng];
 		pbc->GetLoadCurve()->SetID(lc);
 		pbc->SetScaleFactor(DC[i].s);
 	}
@@ -2537,7 +2537,7 @@ void FEBioFormatOld::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
-	FELinearConstraintSet* pset = new FELinearConstraintSet;
+	FSLinearConstraintSet* pset = new FSLinearConstraintSet;
 	pstep->AddLinearConstraint(pset);
 
 	// read the linear constraints
@@ -2546,8 +2546,8 @@ void FEBioFormatOld::ParseLinearConstraint(FEStep* pstep, XMLTag& tag)
 	{
 		if (tag == "linear_constraint")
 		{
-			FELinearConstraintSet::LinearConstraint LC;
-			FELinearConstraintSet::LinearConstraint::DOF dof;
+			FSLinearConstraintSet::LinearConstraint LC;
+			FSLinearConstraintSet::LinearConstraint::DOF dof;
 			++tag;
 			do
 			{
@@ -2584,7 +2584,7 @@ void FEBioFormatOld::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 {
 	FSModel& fem = GetFSModel();
 
-	FEConstBodyForce* pbl = new FEConstBodyForce(&fem, pstep->GetID());
+	FSConstBodyForce* pbl = new FSConstBodyForce(&fem, pstep->GetID());
 	pstep->AddComponent(pbl);
 
 	++tag;
@@ -2596,7 +2596,7 @@ void FEBioFormatOld::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 	while (!tag.isend());
 
 	char szname[256] = { 0 };
-	sprintf(szname, "BodyForce%02d", CountLoads<FEConstBodyForce>(fem));
+	sprintf(szname, "BodyForce%02d", CountLoads<FSConstBodyForce>(fem));
 	pbl->SetName(szname);
 }
 

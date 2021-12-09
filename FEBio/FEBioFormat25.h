@@ -108,26 +108,26 @@ private:
 	void ParseBodyLoad   (FEStep* pstep, XMLTag& tag);
 
 	// surface load functions (version 2.0 and up)
-	FESurfaceLoad* ParseLoadPressure          (XMLTag& tag);
-	FESurfaceLoad* ParseLoadTraction          (XMLTag& tag);
-	FESurfaceLoad* ParseLoadFluidTraction     (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidPressure     (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidVelocity               (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidNormalVelocity         (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidRotationalVelocity     (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidFlowResistance         (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidFlowRCR                (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidBackFlowStabilization  (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidTangentialStabilization(XMLTag& tag);
-    FESurfaceLoad* ParseLoadFSITraction       (XMLTag& tag);
-    FESurfaceLoad* ParseLoadBFSITraction      (XMLTag& tag);
-	FESurfaceLoad* ParseLoadFluidFlux         (XMLTag& tag);
-	FESurfaceLoad* ParseLoadSoluteFlux        (XMLTag& tag);
-	FESurfaceLoad* ParseLoadNormalTraction    (XMLTag& tag);
-    FESurfaceLoad* ParseLoadMatchingOsmoticCoefficient  (XMLTag& tag);
-	FESurfaceLoad* ParseLoadHeatFlux          (XMLTag& tag);
-	FESurfaceLoad* ParseLoadConvectiveHeatFlux(XMLTag& tag);
-	FESurfaceLoad* ParseConcentrationFlux     (XMLTag& tag);
+	FSSurfaceLoad* ParseLoadPressure          (XMLTag& tag);
+	FSSurfaceLoad* ParseLoadTraction          (XMLTag& tag);
+	FSSurfaceLoad* ParseLoadFluidTraction     (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadFluidPressure     (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadFluidVelocity               (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadFluidNormalVelocity         (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadFluidRotationalVelocity     (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadFluidFlowResistance         (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadFluidFlowRCR                (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadFluidBackFlowStabilization  (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadFluidTangentialStabilization(XMLTag& tag);
+    FSSurfaceLoad* ParseLoadFSITraction       (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadBFSITraction      (XMLTag& tag);
+	FSSurfaceLoad* ParseLoadFluidFlux         (XMLTag& tag);
+	FSSurfaceLoad* ParseLoadSoluteFlux        (XMLTag& tag);
+	FSSurfaceLoad* ParseLoadNormalTraction    (XMLTag& tag);
+    FSSurfaceLoad* ParseLoadMatchingOsmoticCoefficient  (XMLTag& tag);
+	FSSurfaceLoad* ParseLoadHeatFlux          (XMLTag& tag);
+	FSSurfaceLoad* ParseLoadConvectiveHeatFlux(XMLTag& tag);
+	FSSurfaceLoad* ParseConcentrationFlux     (XMLTag& tag);
 
 	// body loads
 	void ParseBodyForce           (FEStep* pstep, XMLTag& tag);

@@ -32,7 +32,7 @@ SOFTWARE.*/
 class CDocument;
 class CCommandManager;
 class CGLView;
-class FEAnalysisStep;
+class FSAnalysisStep;
 
 //----------------------------------------------------------------
 class CCommand;

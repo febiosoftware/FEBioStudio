@@ -79,8 +79,8 @@ public:
 
 			for (int i=0; i<pmat->Properties(); ++i)
 			{
-				FEMaterialProperty& mp = pmat->GetProperty(i);
-				if (mp.GetFlags() & FEMaterialProperty::EDITABLE)
+				FSMaterialProperty& mp = pmat->GetProperty(i);
+				if (mp.GetFlags() & FSMaterialProperty::EDITABLE)
 				{
 					if (mp.maxSize() == 1)
 					{
@@ -104,7 +104,7 @@ public:
 						}
 
 						// Add one more so that users can create a new material for variable size properties
-						if (mp.maxSize() == FEMaterialProperty::NO_FIXED_SIZE)
+						if (mp.maxSize() == FSMaterialProperty::NO_FIXED_SIZE)
 						{
 							MaterialEditorItem* item = new MaterialEditorItem(this);
 							item->SetParentMaterial(pmat);
@@ -130,8 +130,8 @@ public:
 
 			int index = mi->indexOfChild(this);
 
-			FEMaterialProperty& mp = m_parent->GetProperty(m_nprop);
-			if (mp.maxSize() == FEMaterialProperty::NO_FIXED_SIZE)
+			FSMaterialProperty& mp = m_parent->GetProperty(m_nprop);
+			if (mp.maxSize() == FSMaterialProperty::NO_FIXED_SIZE)
 			{
 				MaterialEditorItem* item = new MaterialEditorItem((QTreeWidgetItem*)0);
 				item->SetParentMaterial(m_parent);

@@ -447,7 +447,7 @@ void CDlgAddChemicalReaction::onReactionChanged(int n)
 		ui->dummy->setEnabled(true);
 
 		FSMaterial& props = *m_pmp->GetMaterialProperties();
-		FEMaterialProperty* react = props.FindProperty("reaction"); assert(react);
+		FSMaterialProperty* react = props.FindProperty("reaction"); assert(react);
 		if (react)
 		{
 			FEReactionMaterial* r = dynamic_cast<FEReactionMaterial*>(react->GetMaterial(n));
@@ -471,7 +471,7 @@ void CDlgAddChemicalReaction::SetMaterial(GMaterial* mat, FSModel& fem)
 	m_pmp = mat;
 
 	FSMaterial& props = *mat->GetMaterialProperties();
-	FEMaterialProperty* react = props.FindProperty("reaction"); assert(react);
+	FSMaterialProperty* react = props.FindProperty("reaction"); assert(react);
 
 	ui->reactions->Clear();
 	if (react)
@@ -499,7 +499,7 @@ void CDlgAddChemicalReaction::onAddReaction()
 	if (m_pmp == 0) return;
 
 	FSMaterial& props = *m_pmp->GetMaterialProperties();
-	FEMaterialProperty* react = props.FindProperty("reaction"); assert(react);
+	FSMaterialProperty* react = props.FindProperty("reaction"); assert(react);
 
 	// create a default material
 	FEReactionMaterial* r = dynamic_cast<FEReactionMaterial*>(FEMaterialFactory::Create(FE_MASS_ACTION_FORWARD)); assert(r);
@@ -531,7 +531,7 @@ void CDlgAddChemicalReaction::onRemoveReaction()
 	if ((m_pmp == 0) || (m_reaction == 0)) return;
 
 	FSMaterial& props = *m_pmp->GetMaterialProperties();
-	FEMaterialProperty* react = props.FindProperty(FE_MAT_REACTION); assert(react);
+	FSMaterialProperty* react = props.FindProperty(FE_MAT_REACTION); assert(react);
 
 	// remove the reaction
 	react->RemoveMaterial(m_reaction);
@@ -736,7 +736,7 @@ void CDlgAddChemicalReaction::apply()
 	if ((m_pmp == 0) || (m_reaction == 0)) return;
 
 	FSMaterial* mat = m_pmp->GetMaterialProperties();
-	FEMaterialProperty* reactProp = mat->FindProperty(FE_MAT_REACTION); assert(reactProp);
+	FSMaterialProperty* reactProp = mat->FindProperty(FE_MAT_REACTION); assert(reactProp);
 	if (reactProp == 0) return;
 
 	// create the reaction material and set its type

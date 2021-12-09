@@ -141,8 +141,8 @@ protected:
 	void BuildSurfaceList(FEProject& prj);
 	void BuildElemSetList(FEProject& prj);
 
-	void WriteModuleSection    (FEAnalysisStep* pstep);
-	void WriteControlSection   (FEAnalysisStep* pstep);
+	void WriteModuleSection    (FSAnalysisStep* pstep);
+	void WriteControlSection   (FSAnalysisStep* pstep);
 	void WriteMaterialSection  ();
 	void WriteGeometrySection();
 	void WriteGeometrySectionOld();	// old, global node and element list
@@ -169,8 +169,8 @@ protected:
 	void WriteRigidConstraints (FEStep& s);
 
 	void WriteBodyLoads(FEStep& s);
-	void WriteBodyLoad(FEBodyLoad* pbl, GPart* pg);
-	void WriteBodyForce(FEConstBodyForce* pbf, GPart* pg);
+	void WriteBodyLoad(FSBodyLoad* pbl, GPart* pg);
+	void WriteBodyForce(FSConstBodyForce* pbf, GPart* pg);
 	void WriteHeatSource(FEHeatSource* phs, GPart* pg);
     void WriteCentrifugalBodyForce(FECentrifugalBodyForce* pbf, GPart* pg);
 
@@ -189,13 +189,13 @@ protected:
 	void WriteMeshDataMaterialAxes  ();
 	void WriteMeshDataFields        ();
 
-	void WriteSolidControlParams            (FEAnalysisStep* pstep);
-	void WriteBiphasicControlParams         (FEAnalysisStep* pstep);
-	void WriteBiphasicSoluteControlParams   (FEAnalysisStep* pstep);
-	void WriteHeatTransferControlParams     (FEAnalysisStep* pstep);
-    void WriteFluidControlParams            (FEAnalysisStep* pstep);
-    void WriteFluidFSIControlParams         (FEAnalysisStep* pstep);
-	void WriteReactionDiffusionControlParams(FEAnalysisStep* pstep);
+	void WriteSolidControlParams            (FSAnalysisStep* pstep);
+	void WriteBiphasicControlParams         (FSAnalysisStep* pstep);
+	void WriteBiphasicSoluteControlParams   (FSAnalysisStep* pstep);
+	void WriteHeatTransferControlParams     (FSAnalysisStep* pstep);
+    void WriteFluidControlParams            (FSAnalysisStep* pstep);
+    void WriteFluidFSIControlParams         (FSAnalysisStep* pstep);
+	void WriteReactionDiffusionControlParams(FSAnalysisStep* pstep);
 
 	void WriteBCFixed     (FEStep& s);
 	void WriteBCPrescribed(FEStep& s);

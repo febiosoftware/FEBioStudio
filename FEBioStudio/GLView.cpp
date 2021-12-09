@@ -2878,7 +2878,7 @@ void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& 
 
 	for (int i = 0; i < pmat->Properties(); ++i)
 	{
-		FEMaterialProperty& prop = pmat->GetProperty(i);
+		FSMaterialProperty& prop = pmat->GetProperty(i);
 		for (int j = 0; j < prop.Size(); ++j)
 		{
 			FSMaterial* matj = prop.GetMaterial(j);
@@ -3302,10 +3302,10 @@ void CGLView::RenderRigidConnectors()
 		for (int i = 0; i<s.RigidConnectors(); ++i)
 		{
 			FSRigidConnector* rci = s.RigidConnector(i);
-			if (dynamic_cast<FERigidSphericalJoint*> (rci))
+			if (dynamic_cast<FSRigidSphericalJoint*> (rci))
 			{
-				FERigidSphericalJoint* pj = dynamic_cast<FERigidSphericalJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidSphericalJoint::J_ORIG);
+				FSRigidSphericalJoint* pj = dynamic_cast<FSRigidSphericalJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidSphericalJoint::J_ORIG);
 
 				glColor3ub(255, 0, 0);
 				glPushMatrix();
@@ -3313,12 +3313,12 @@ void CGLView::RenderRigidConnectors()
 				glx::renderJoint(R);
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidRevoluteJoint*> (rci))
+			else if (dynamic_cast<FSRigidRevoluteJoint*> (rci))
 			{
-				FERigidRevoluteJoint* pj = dynamic_cast<FERigidRevoluteJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidRevoluteJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FERigidRevoluteJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FERigidRevoluteJoint::T_AXIS); a.Normalize();
+				FSRigidRevoluteJoint* pj = dynamic_cast<FSRigidRevoluteJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidRevoluteJoint::J_ORIG);
+				vec3d c = pj->GetVecValue(FSRigidRevoluteJoint::J_AXIS); c.Normalize();
+				vec3d a = pj->GetVecValue(FSRigidRevoluteJoint::T_AXIS); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
 				GLfloat Q4[16] = {
@@ -3336,12 +3336,12 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidPrismaticJoint*> (rci))
+			else if (dynamic_cast<FSRigidPrismaticJoint*> (rci))
 			{
-				FERigidPrismaticJoint* pj = dynamic_cast<FERigidPrismaticJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidPrismaticJoint::J_ORIG);
-				vec3d a = pj->GetVecValue(FERigidPrismaticJoint::J_AXIS); a.Normalize();
-				vec3d b = pj->GetVecValue(FERigidPrismaticJoint::T_AXIS); b.Normalize();
+				FSRigidPrismaticJoint* pj = dynamic_cast<FSRigidPrismaticJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidPrismaticJoint::J_ORIG);
+				vec3d a = pj->GetVecValue(FSRigidPrismaticJoint::J_AXIS); a.Normalize();
+				vec3d b = pj->GetVecValue(FSRigidPrismaticJoint::T_AXIS); b.Normalize();
 				vec3d c = a ^ b; c.Normalize();
 				b = c ^ a; b.Normalize();
 				GLfloat Q4[16] = {
@@ -3359,12 +3359,12 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidCylindricalJoint*> (rci))
+			else if (dynamic_cast<FSRigidCylindricalJoint*> (rci))
 			{
-				FERigidCylindricalJoint* pj = dynamic_cast<FERigidCylindricalJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidCylindricalJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FERigidCylindricalJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FERigidCylindricalJoint::T_AXIS); a.Normalize();
+				FSRigidCylindricalJoint* pj = dynamic_cast<FSRigidCylindricalJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidCylindricalJoint::J_ORIG);
+				vec3d c = pj->GetVecValue(FSRigidCylindricalJoint::J_AXIS); c.Normalize();
+				vec3d a = pj->GetVecValue(FSRigidCylindricalJoint::T_AXIS); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
 				GLfloat Q4[16] = {
@@ -3382,12 +3382,12 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidPlanarJoint*> (rci))
+			else if (dynamic_cast<FSRigidPlanarJoint*> (rci))
 			{
-				FERigidPlanarJoint* pj = dynamic_cast<FERigidPlanarJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidPlanarJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FERigidPlanarJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FERigidPlanarJoint::T_AXIS); a.Normalize();
+				FSRigidPlanarJoint* pj = dynamic_cast<FSRigidPlanarJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidPlanarJoint::J_ORIG);
+				vec3d c = pj->GetVecValue(FSRigidPlanarJoint::J_AXIS); c.Normalize();
+				vec3d a = pj->GetVecValue(FSRigidPlanarJoint::T_AXIS); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
 				GLfloat Q4[16] = {
@@ -3405,12 +3405,12 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-            else if (dynamic_cast<FERigidLock*> (rci))
+            else if (dynamic_cast<FSRigidLock*> (rci))
             {
-                FERigidLock* pj = dynamic_cast<FERigidLock*> (rci);
-                vec3d r = pj->GetVecValue(FERigidLock::J_ORIG);
-                vec3d c = pj->GetVecValue(FERigidLock::J_AXIS); c.Normalize();
-                vec3d a = pj->GetVecValue(FERigidLock::T_AXIS); a.Normalize();
+                FSRigidLock* pj = dynamic_cast<FSRigidLock*> (rci);
+                vec3d r = pj->GetVecValue(FSRigidLock::J_ORIG);
+                vec3d c = pj->GetVecValue(FSRigidLock::J_AXIS); c.Normalize();
+                vec3d a = pj->GetVecValue(FSRigidLock::T_AXIS); a.Normalize();
                 vec3d b = c ^ a; b.Normalize();
                 a = b ^ c; a.Normalize();
                 GLfloat Q4[16] = {
@@ -3429,22 +3429,22 @@ void CGLView::RenderRigidConnectors()
                 
                 glPopMatrix();
             }
-			else if (dynamic_cast<FERigidSpring*> (rci))
+			else if (dynamic_cast<FSRigidSpring*> (rci))
 			{
-				FERigidSpring* pj = dynamic_cast<FERigidSpring*> (rci);
-				vec3d xa = pj->GetVecValue(FERigidSpring::XA);
-				vec3d xb = pj->GetVecValue(FERigidSpring::XB);
+				FSRigidSpring* pj = dynamic_cast<FSRigidSpring*> (rci);
+				vec3d xa = pj->GetVecValue(FSRigidSpring::XA);
+				vec3d xb = pj->GetVecValue(FSRigidSpring::XB);
 
 				glPushMatrix();
 				glColor3ub(255, 0, 0);
 				glx::renderSpring(xa, xb, R);
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidDamper*> (rci))
+			else if (dynamic_cast<FSRigidDamper*> (rci))
 			{
-				FERigidDamper* pj = dynamic_cast<FERigidDamper*> (rci);
-				vec3d xa = pj->GetVecValue(FERigidDamper::XA);
-				vec3d xb = pj->GetVecValue(FERigidDamper::XB);
+				FSRigidDamper* pj = dynamic_cast<FSRigidDamper*> (rci);
+				vec3d xa = pj->GetVecValue(FSRigidDamper::XA);
+				vec3d xb = pj->GetVecValue(FSRigidDamper::XB);
 
 				glPushMatrix();
 
@@ -3453,11 +3453,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidContractileForce*> (rci))
+			else if (dynamic_cast<FSRigidContractileForce*> (rci))
 			{
-				FERigidContractileForce* pj = dynamic_cast<FERigidContractileForce*> (rci);
-				vec3d xa = pj->GetVecValue(FERigidContractileForce::XA);
-				vec3d xb = pj->GetVecValue(FERigidContractileForce::XB);
+				FSRigidContractileForce* pj = dynamic_cast<FSRigidContractileForce*> (rci);
+				vec3d xa = pj->GetVecValue(FSRigidContractileForce::XA);
+				vec3d xb = pj->GetVecValue(FSRigidContractileForce::XB);
 
 				glPushMatrix();
 

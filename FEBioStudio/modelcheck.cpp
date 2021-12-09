@@ -416,7 +416,7 @@ void check_009(FEProject& prj, std::vector<FSObject*>& objList)
 		for (int j = 0; j < step->Loads(); ++j)
 		{
 			FSLoad* pl = step->Load(j);
-			if ((dynamic_cast<FEBodyLoad*>(pl) == nullptr) && (pl->GetItemList() == nullptr))
+			if ((dynamic_cast<FSBodyLoad*>(pl) == nullptr) && (pl->GetItemList() == nullptr))
 			{
 				objList.push_back(pl);
 			}
