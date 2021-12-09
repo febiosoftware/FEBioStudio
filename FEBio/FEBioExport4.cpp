@@ -60,7 +60,7 @@ const char* ElementTypeString(int ntype);
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEBioExport4::FEBioExport4(FEProject& prj) : FEBioExport(prj)
+FEBioExport4::FEBioExport4(FSProject& prj) : FEBioExport(prj)
 {
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
@@ -181,7 +181,7 @@ void FEBioExport4::AddElemSet(const std::string& name, FEItemListBuilder* pl)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport4::PrepareExport(FEProject& prj)
+bool FEBioExport4::PrepareExport(FSProject& prj)
 {
 	if (FEBioExport::PrepareExport(prj) == false) return false;
 
@@ -235,7 +235,7 @@ bool FEBioExport4::PrepareExport(FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::BuildItemLists(FEProject& prj)
+void FEBioExport4::BuildItemLists(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
 
@@ -850,7 +850,7 @@ bool FEBioExport4::Write(const char* szfile)
 
 //-----------------------------------------------------------------------------
 // Write the MODULE section
-void FEBioExport4::WriteModuleSection(FEProject& prj)
+void FEBioExport4::WriteModuleSection(FSProject& prj)
 {
 	int moduleId = prj.GetModule();
 	const char* szmodName = FEBio::GetModuleName(moduleId);
@@ -1908,7 +1908,7 @@ void FEBioExport4::WriteMeshData(FEDataMapGenerator* map)
 			e.add_attribute("type", "point");
 			m_xml.add_branch(e);
 			{
-				FELoadCurve& lc = *p->GetLoadCurve();
+				LoadCurve& lc = *p->GetLoadCurve();
 				m_xml.add_branch("points");
 				{
 					for (int i = 0; i < lc.Size(); ++i)
@@ -2772,7 +2772,7 @@ void FEBioExport4::WriteLoadDataSection()
 {
 	for (int i = 0; i < (int)m_pLC.size(); ++i)
 	{
-		FELoadCurve* plc = m_pLC[i];
+		LoadCurve* plc = m_pLC[i];
 
 		XMLElement el;
 		el.name("load_controller");
@@ -2784,20 +2784,20 @@ void FEBioExport4::WriteLoadDataSection()
 		{
 			switch (plc->GetType())
 			{
-			case FELoadCurve::LC_STEP: m_xml.add_leaf("interpolate", "STEP"); break;
-			case FELoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "LINEAR"); break;
-			case FELoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "SMOOTH"); break;
-			case FELoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "CUBIC SPLINE"); break;
-			case FELoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "CONTROL POINTS"); break;
-			case FELoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "APPROXIMATION"); break;
+			case LoadCurve::LC_STEP: m_xml.add_leaf("interpolate", "STEP"); break;
+			case LoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "LINEAR"); break;
+			case LoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "SMOOTH"); break;
+			case LoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "CUBIC SPLINE"); break;
+			case LoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "CONTROL POINTS"); break;
+			case LoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "APPROXIMATION"); break;
 			}
 
 			switch (plc->GetExtend())
 			{
-				//		case FELoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
-			case FELoadCurve::EXT_EXTRAPOLATE: m_xml.add_leaf("extend", "EXTRAPOLATE"); break;
-			case FELoadCurve::EXT_REPEAT: m_xml.add_leaf("extend", "REPEAT"); break;
-			case FELoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "REPEAT OFFSET"); break;
+				//		case LoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
+			case LoadCurve::EXT_EXTRAPOLATE: m_xml.add_leaf("extend", "EXTRAPOLATE"); break;
+			case LoadCurve::EXT_REPEAT: m_xml.add_leaf("extend", "REPEAT"); break;
+			case LoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "REPEAT OFFSET"); break;
 			}
 
 			m_xml.add_branch("points");

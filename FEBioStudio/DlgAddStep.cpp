@@ -75,7 +75,7 @@ public:
 	}
 };
 
-CDlgAddStep::CDlgAddStep(FEProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddStep)
+CDlgAddStep::CDlgAddStep(FSProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddStep)
 {
 	setWindowTitle("Add Analysis Step");
 

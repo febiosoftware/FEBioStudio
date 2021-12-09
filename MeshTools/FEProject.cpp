@@ -109,7 +109,7 @@ void CLogDataSettings::Load(IArchive& ar)
 //=================================================================================================
 //-----------------------------------------------------------------------------
 // constructor
-FEProject::FEProject(void) : m_plt(*this)
+FSProject::FSProject(void) : m_plt(*this)
 {
 	// set the title
 	m_title = "untitled";
@@ -127,26 +127,26 @@ FEProject::FEProject(void) : m_plt(*this)
 
 //-----------------------------------------------------------------------------
 // destructor
-FEProject::~FEProject(void)
+FSProject::~FSProject(void)
 {
 	
 }
 
 //-----------------------------------------------------------------------------
-void FEProject::Reset()
+void FSProject::Reset()
 {
 	m_fem.New();
 	m_plt.Init();
 }
 
 //-----------------------------------------------------------------------------
-unsigned int FEProject::GetModule() const
+unsigned int FSProject::GetModule() const
 {
 	return m_module;
 }
 
 //-----------------------------------------------------------------------------
-void FEProject::SetModule(unsigned int mod)
+void FSProject::SetModule(unsigned int mod)
 {
 	FEBio::SetActiveModule(mod);
 	m_module = mod;
@@ -160,14 +160,14 @@ void FEProject::SetModule(unsigned int mod)
 }
 
 //-----------------------------------------------------------------------------
-void FEProject::SetTitle(const std::string& title)
+void FSProject::SetTitle(const std::string& title)
 { 
 	m_title = title; 
 }
 
 //-----------------------------------------------------------------------------
 // save project data to archive
-void FEProject::Save(OArchive& ar)
+void FSProject::Save(OArchive& ar)
 {
 	// save the title
 	ar.WriteChunk(CID_PRJ_TITLE   , m_title);
@@ -221,9 +221,9 @@ int MapOldToNewModules(int oldId)
 
 //-----------------------------------------------------------------------------
 // load project data from archive
-void FEProject::Load(IArchive &ar)
+void FSProject::Load(IArchive &ar)
 {
-	TRACE("FEProject::Load");
+	TRACE("FSProject::Load");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -251,7 +251,7 @@ void FEProject::Load(IArchive &ar)
 //-----------------------------------------------------------------------------
 // Validate the project, that is try to catch problems that FEBio won't like
 // returns 0 on success, non-zero on failure
-int FEProject::Validate(std::string &szerr)
+int FSProject::Validate(std::string &szerr)
 {
 	szerr = "ERRORS:\n";
 	GModel& mdl = m_fem.GetModel();
@@ -288,7 +288,7 @@ int FEProject::Validate(std::string &szerr)
 	return nerrs;
 }
 
-void FEProject::InitModules()
+void FSProject::InitModules()
 {
 	// register material categories
 	FEMaterialFactory::AddCategory("elastic"             , MODULE_MECH     , FE_MAT_ELASTIC);
@@ -439,7 +439,7 @@ void FEProject::InitModules()
 }
 
 //-------------------------------------------------------------------------------------------------
-void FEProject::SetDefaultPlotVariables()
+void FSProject::SetDefaultPlotVariables()
 {
 	const char* szmod = FEBio::GetModuleName(m_module); assert(szmod);
 	if (szmod == nullptr) return;

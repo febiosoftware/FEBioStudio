@@ -44,7 +44,7 @@ SOFTWARE.*/
 using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
-FEBioExport12::FEBioExport12(FEProject& prj) : FEBioExport(prj)
+FEBioExport12::FEBioExport12(FSProject& prj) : FEBioExport(prj)
 {
 	// initialize section flags
 	for (int i = 0; i<MAX_SECTIONS; ++i) m_section[i] = true;
@@ -75,7 +75,7 @@ bool FEBioExport12::HasSurface(FEItemListBuilder* pl)
 
 //-----------------------------------------------------------------------------
 //! Prepare for export. Collect all loadcurves and named surfaces.
-bool FEBioExport12::PrepareExport(FEProject& prj)
+bool FEBioExport12::PrepareExport(FSProject& prj)
 {
 	if (FEBioExport::PrepareExport(prj) == false) return false;
 
@@ -390,7 +390,7 @@ void FEBioExport12::WriteSolidControlParams(FSAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -433,7 +433,7 @@ void FEBioExport12::WriteHeatTransferControlParams(FSAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -481,7 +481,7 @@ void FEBioExport12::WriteBiphasicControlParams(FSAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -538,7 +538,7 @@ void FEBioExport12::WriteBiphasicSoluteControlParams(FSAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -718,7 +718,7 @@ void FEBioExport12::WriteMaterialSection()
 											   m_xml.add_leaf(el);
 										   }
 
-										   //					FELoadCurve& ac = f.GetParam(FEMuscleMaterial::Fiber::MP_AC).GetLoadCurve();
+										   //					LoadCurve& ac = f.GetParam(FEMuscleMaterial::Fiber::MP_AC).GetLoadCurve();
 										   //					el.name("active_contraction");
 										   //					el.add_attribute("lc", ac.m_nID);
 										   //					el.value(1.0);
@@ -1735,7 +1735,7 @@ void FEBioExport12::WriteContactWall(FSStep& s)
 				m_xml.add_leaf("tolerance", pw->GetFloatValue(FSRigidWallInterface::ALTOL));
 				m_xml.add_leaf("penalty", pw->GetFloatValue(FSRigidWallInterface::PENALTY));
 
-				FELoadCurve* plc = pw->GetParamLC(FSRigidWallInterface::OFFSET);
+				LoadCurve* plc = pw->GetParamLC(FSRigidWallInterface::OFFSET);
 
 				XMLElement plane;
 				if (plc) plane.add_attribute("lc", plc->GetID());
@@ -2647,7 +2647,7 @@ void FEBioExport12::WriteBCPrescribedDisplacement(FSPrescribedDisplacement& rbc,
 
 		vector<int> DC; DC.resize(m_nodes);
 
-		FELoadCurve* plc = rbc.GetLoadCurve();
+		LoadCurve* plc = rbc.GetLoadCurve();
 		l = rbc.GetDOF();
 		lc = plc->GetID();
 		bn = true; // plc->IsActive();
@@ -2712,7 +2712,7 @@ void FEBioExport12::WriteBCPrescribedRotation(FSPrescribedRotation& rbc, FSStep&
 
 		vector<int> DC; DC.resize(m_nodes);
 
-		FELoadCurve* plc = rbc.GetLoadCurve();
+		LoadCurve* plc = rbc.GetLoadCurve();
 		l = rbc.GetDOF();
 		lc = plc->GetID();
 		bn = true; // plc->IsActive();
@@ -2776,7 +2776,7 @@ void FEBioExport12::WriteBCPrescribedFluidPressure(FSPrescribedFluidPressure& rb
 
 		vector<int> DC; DC.resize(m_nodes);
 
-		FELoadCurve* plc = rbc.GetLoadCurve();
+		LoadCurve* plc = rbc.GetLoadCurve();
 		lc = plc->GetID();
 		bn = true; // plc->IsActive();
 		val = rbc.GetScaleFactor();
@@ -2839,7 +2839,7 @@ void FEBioExport12::WriteBCPrescribedTemperature(FSPrescribedTemperature& rbc, F
 
 		vector<int> DC; DC.resize(m_nodes);
 
-		FELoadCurve* plc = rbc.GetLoadCurve();
+		LoadCurve* plc = rbc.GetLoadCurve();
 		lc = plc->GetID();
 		bn = true; // plc->IsActive();
 		val = rbc.GetScaleFactor();
@@ -2904,7 +2904,7 @@ void FEBioExport12::WriteBCPrescribedConcentration(FSPrescribedConcentration& rb
 		vector<int> DC; DC.resize(m_nodes);
 
 		int l = rbc.GetDOF();
-		FELoadCurve* plc = rbc.GetLoadCurve();
+		LoadCurve* plc = rbc.GetLoadCurve();
 		lc = plc->GetID();
 		bn = true; // plc->IsActive();
 		val = rbc.GetScaleFactor();
@@ -2963,7 +2963,7 @@ void FEBioExport12::WriteLoadNodal(FSStep& s)
 
 				vector<int> FC; FC.resize(m_nodes);
 
-				FELoadCurve* plc;
+				LoadCurve* plc;
 				FENode* pn;
 				int lc;
 				bool bn;
@@ -3058,7 +3058,7 @@ void FEBioExport12::WriteLoadPressure(FSStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
+				LoadCurve* plc = pbc->GetLoadCurve();
 				int lc = plc->GetID();
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3177,7 +3177,7 @@ void FEBioExport12::WriteFluidFlux(FSStep& s)
 
 				int n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
+				LoadCurve* plc = pbc->GetLoadCurve();
 				int lc = plc->GetID();
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3254,7 +3254,7 @@ void FEBioExport12::WriteBPNormalTraction(FSStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
+				LoadCurve* plc = pbc->GetLoadCurve();
 				int lc = plc->GetID();
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3325,7 +3325,7 @@ void FEBioExport12::WriteHeatFlux(FSStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
+				LoadCurve* plc = pbc->GetLoadCurve();
 				int lc = plc->GetID();
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3398,7 +3398,7 @@ void FEBioExport12::WriteConvectiveHeatFlux(FSStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
+				LoadCurve* plc = pbc->GetLoadCurve();
 				int lc = plc->GetID();
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3475,7 +3475,7 @@ void FEBioExport12::WriteSoluteFlux(FSStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
+				LoadCurve* plc = pbc->GetLoadCurve();
 				int lc = plc->GetID();
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3577,7 +3577,7 @@ void FEBioExport12::WriteLoadTraction(FSStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = ptc->GetLoadCurve();
+				LoadCurve* plc = ptc->GetLoadCurve();
 				int lc = plc->GetID();
 				FEItemListBuilder* pitem = ptc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(ptc);
@@ -3971,7 +3971,7 @@ void FEBioExport12::WriteLoadDataSection()
 {
 	for (int i = 0; i<(int)m_pLC.size(); ++i)
 	{
-		FELoadCurve* plc = m_pLC[i];
+		LoadCurve* plc = m_pLC[i];
 
 		XMLElement el;
 		el.name("loadcurve");
@@ -3979,17 +3979,17 @@ void FEBioExport12::WriteLoadDataSection()
 
 		switch (plc->GetType())
 		{
-		case FELoadCurve::LC_STEP: el.add_attribute("type", "step"); break;
-		case FELoadCurve::LC_LINEAR: el.add_attribute("type", "linear"); break;
-		case FELoadCurve::LC_SMOOTH: el.add_attribute("type", "smooth"); break;
+		case LoadCurve::LC_STEP: el.add_attribute("type", "step"); break;
+		case LoadCurve::LC_LINEAR: el.add_attribute("type", "linear"); break;
+		case LoadCurve::LC_SMOOTH: el.add_attribute("type", "smooth"); break;
 		}
 
 		switch (plc->GetExtend())
 		{
-			//		case FELoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
-		case FELoadCurve::EXT_EXTRAPOLATE: el.add_attribute("extend", "extrapolate"); break;
-		case FELoadCurve::EXT_REPEAT: el.add_attribute("extend", "repeat"); break;
-		case FELoadCurve::EXT_REPEAT_OFFSET: el.add_attribute("extend", "repeat offset"); break;
+			//		case LoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
+		case LoadCurve::EXT_EXTRAPOLATE: el.add_attribute("extend", "extrapolate"); break;
+		case LoadCurve::EXT_REPEAT: el.add_attribute("extend", "repeat"); break;
+		case LoadCurve::EXT_REPEAT_OFFSET: el.add_attribute("extend", "repeat offset"); break;
 		}
 
 		double d[2];

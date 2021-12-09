@@ -41,7 +41,7 @@ SOFTWARE.*/
 
 
 //=============================================================================
-STEPImport::STEPImport(FEProject& prj) : FEFileImport(prj)
+STEPImport::STEPImport(FSProject& prj) : FEFileImport(prj)
 {
 }
 

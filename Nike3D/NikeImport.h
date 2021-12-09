@@ -36,7 +36,7 @@ class FENIKEImport : public FEFileImport
 	enum {MAXLINE = 256};
 
 public:
-	FENIKEImport(FEProject& prj);
+	FENIKEImport(FSProject& prj);
 
 	bool Load(const char* szfile);
 
@@ -85,6 +85,6 @@ private:
 	vector<int*>	m_pFace;
 	vector<int>		m_nFace;
 
-	vector<FELoadCurve>		m_LC;
+	vector<LoadCurve>		m_LC;
 	vector<GMaterial*>		m_pMat;
 };

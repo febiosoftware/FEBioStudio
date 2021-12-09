@@ -94,7 +94,7 @@ public:
 	}
 };
 
-CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FEProject& prj, bool includeModuleDependencies, QWidget* parent)
+CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FSProject& prj, bool includeModuleDependencies, QWidget* parent)
 	: CHelpDialog(prj, parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);

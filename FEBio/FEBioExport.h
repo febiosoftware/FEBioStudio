@@ -55,7 +55,7 @@ enum FEBioExportSections
 class FEBioExport : public FEFileExport
 {
 public:
-	FEBioExport(FEProject& prj);
+	FEBioExport(FSProject& prj);
 
 	void SetPlotfileCompressionFlag(bool b);
 	void SetExportSelectionsFlag(bool b);
@@ -66,14 +66,14 @@ protected:
 
 	virtual void Clear();
 
-	virtual bool PrepareExport(FEProject& prj);
+	virtual bool PrepareExport(FSProject& prj);
 
 	void WriteNote(FSObject* po);
 
 	const char* GetEnumValue(Param& p);
 
 private:
-	void AddLoadCurve(FELoadCurve* plc);
+	void AddLoadCurve(LoadCurve* plc);
 	void AddLoadCurves(ParamContainer& PC);
 	void MultiMaterialCurves(FSMaterial* pm);
 	void BuildLoadCurveList(FSModel& fem);
@@ -84,7 +84,7 @@ public: // helper functions for writing to the xml file directly
 protected:
 	XMLWriter		m_xml;
 
-	std::vector<FELoadCurve*>		m_pLC;		//!< array of loadcurve pointers
+	std::vector<LoadCurve*>		m_pLC;		//!< array of loadcurve pointers
 
 	bool	m_section[FEBIO_MAX_SECTIONS];	//!< write section flags
 

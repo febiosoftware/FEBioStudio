@@ -39,60 +39,60 @@ SOFTWARE.*/
 using std::stringstream;
 
 // are there any objects?
-void check_000(FEProject& prj, std::vector<FSObject*>& objList);
+void check_000(FSProject& prj, std::vector<FSObject*>& objList);
 
 // are all geometries meshed?
-void check_001(FEProject& prj, std::vector<FSObject*>& objList);
+void check_001(FSProject& prj, std::vector<FSObject*>& objList);
 
 // are there any materials
-void check_002(FEProject& prj, std::vector<FSObject*>& objList);
+void check_002(FSProject& prj, std::vector<FSObject*>& objList);
 
 // is a material assigned to all parts ?
-void check_003(FEProject& prj, std::vector<FSObject*>& objList);
+void check_003(FSProject& prj, std::vector<FSObject*>& objList);
 
 // Are there any analysis steps? 
-void check_004(FEProject& prj, std::vector<FSObject*>& objList);
+void check_004(FSProject& prj, std::vector<FSObject*>& objList);
 
 // check for unused materials
-void check_005(FEProject& prj, std::vector<FSObject*>& objList);
+void check_005(FSProject& prj, std::vector<FSObject*>& objList);
 
 // check for unconstrained rigid bodies
-void check_006(FEProject& prj, std::vector<FSObject*>& objList);
+void check_006(FSProject& prj, std::vector<FSObject*>& objList);
 
 // see if surfaces of solo interfaces are assigned.
-void check_007(FEProject& prj, std::vector<FSObject*>& objList);
+void check_007(FSProject& prj, std::vector<FSObject*>& objList);
 
 // see if surfaces of paired interfaces are assigned.
-void check_008(FEProject& prj, std::vector<FSObject*>& objList);
+void check_008(FSProject& prj, std::vector<FSObject*>& objList);
 
 // see if loads have assigned selections.
-void check_009(FEProject& prj, std::vector<FSObject*>& objList);
+void check_009(FSProject& prj, std::vector<FSObject*>& objList);
 
 // see if BCs have assigned selections.
-void check_010(FEProject& prj, std::vector<FSObject*>& objList);
+void check_010(FSProject& prj, std::vector<FSObject*>& objList);
 
 // see if ICs have assigned selections.
-void check_011(FEProject& prj, std::vector<FSObject*>& objList);
+void check_011(FSProject& prj, std::vector<FSObject*>& objList);
 
 // see if there are any output variables defined
-void check_012(FEProject& prj, std::vector<FSObject*>& objList);
+void check_012(FSProject& prj, std::vector<FSObject*>& objList);
 
 // see if shell thickness are zero for non-rigid parts
-void check_013(FEProject& prj, std::vector<FSObject*>& objList);
+void check_013(FSProject& prj, std::vector<FSObject*>& objList);
 
 // do rigid connectors have two different rigid bodies
-void check_014(FEProject& prj, std::vector<FSObject*>& objList);
+void check_014(FSProject& prj, std::vector<FSObject*>& objList);
 
 // do rigid connectors have two rigid bodies defined
-void check_015(FEProject& prj, std::vector<FSObject*>& objList);
+void check_015(FSProject& prj, std::vector<FSObject*>& objList);
 
 // check if a rigid interface was assigned a rigid body
-void check_016(FEProject& prj, std::vector<FSObject*>& objList);
+void check_016(FSProject& prj, std::vector<FSObject*>& objList);
 
 // check if parts have duplicate names
-void check_017(FEProject& prj, std::vector<FSObject*>& objList);
+void check_017(FSProject& prj, std::vector<FSObject*>& objList);
 
-typedef void(*ERROR_FUNC)(FEProject&, std::vector<FSObject*>&);
+typedef void(*ERROR_FUNC)(FSProject&, std::vector<FSObject*>&);
 
 struct ERROR_DATA
 {
@@ -161,7 +161,7 @@ MODEL_ERROR make_error(int error_code, FSObject* po = nullptr)
 	return err;
 }
 
-void checkModel(FEProject& prj, std::vector<MODEL_ERROR>& errorList)
+void checkModel(FSProject& prj, std::vector<MODEL_ERROR>& errorList)
 {
 	for (size_t i = 0; i < error.size(); ++i)
 	{
@@ -176,7 +176,7 @@ void checkModel(FEProject& prj, std::vector<MODEL_ERROR>& errorList)
 }
 
 
-void check_000(FEProject& prj, std::vector<FSObject*>& objList)
+void check_000(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	// are there any objects?
 	GModel& mdl = prj.GetFSModel().GetModel();
@@ -186,7 +186,7 @@ void check_000(FEProject& prj, std::vector<FSObject*>& objList)
 	}
 }
 
-void check_001(FEProject& prj, std::vector<FSObject*>& objList)
+void check_001(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	GModel& mdl = prj.GetFSModel().GetModel();
 	for (int i = 0; i < mdl.Objects(); ++i)
@@ -199,7 +199,7 @@ void check_001(FEProject& prj, std::vector<FSObject*>& objList)
 	}
 }
 
-void check_002(FEProject& prj, std::vector<FSObject*>& objList)
+void check_002(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	if (fem.Materials() == 0)
@@ -208,7 +208,7 @@ void check_002(FEProject& prj, std::vector<FSObject*>& objList)
 	}
 }
 
-void check_003(FEProject& prj, std::vector<FSObject*>& objList)
+void check_003(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 
@@ -257,7 +257,7 @@ void check_003(FEProject& prj, std::vector<FSObject*>& objList)
 	}
 }
 
-void check_004(FEProject& prj, std::vector<FSObject*>& objList)
+void check_004(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	if (fem.Steps() <= 1)
@@ -266,7 +266,7 @@ void check_004(FEProject& prj, std::vector<FSObject*>& objList)
 	}
 }
 
-void check_005(FEProject& prj, std::vector<FSObject*>& objList)
+void check_005(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
@@ -283,7 +283,7 @@ void check_005(FEProject& prj, std::vector<FSObject*>& objList)
 	}
 }
 
-void check_006(FEProject& prj, std::vector<FSObject*>& objList)
+void check_006(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
@@ -363,7 +363,7 @@ void check_006(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // see if surfaces of solo interfaces are assigned.
-void check_007(FEProject& prj, std::vector<FSObject*>& objList)
+void check_007(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
@@ -385,7 +385,7 @@ void check_007(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // see if surfaces of paired interfaces are assigned.
-void check_008(FEProject& prj, std::vector<FSObject*>& objList)
+void check_008(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
@@ -407,7 +407,7 @@ void check_008(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // see if loads have assigned selections.
-void check_009(FEProject& prj, std::vector<FSObject*>& objList)
+void check_009(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
@@ -425,7 +425,7 @@ void check_009(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // see if BCs have assigned selections.
-void check_010(FEProject& prj, std::vector<FSObject*>& objList)
+void check_010(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
@@ -443,7 +443,7 @@ void check_010(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // see if ICs have assigned selections.
-void check_011(FEProject& prj, std::vector<FSObject*>& objList)
+void check_011(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
@@ -461,7 +461,7 @@ void check_011(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // see if there are any output variables defined
-void check_012(FEProject& prj, std::vector<FSObject*>& objList)
+void check_012(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	CPlotDataSettings& plt = prj.GetPlotDataSettings();
@@ -477,7 +477,7 @@ void check_012(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // see if shell thickness are zero for non-rigid parts
-void check_013(FEProject& prj, std::vector<FSObject*>& objList)
+void check_013(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
@@ -534,7 +534,7 @@ void check_013(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // do rigid connectors have two different rigid bodies
-void check_014(FEProject& prj, std::vector<FSObject*>& objList)
+void check_014(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
@@ -553,7 +553,7 @@ void check_014(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // do rigid connectors have two rigid bodies defined
-void check_015(FEProject& prj, std::vector<FSObject*>& objList)
+void check_015(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
@@ -572,7 +572,7 @@ void check_015(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // check if a rigid interface was assigned a rigid body
-void check_016(FEProject& prj, std::vector<FSObject*>& objList)
+void check_016(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
@@ -591,7 +591,7 @@ void check_016(FEProject& prj, std::vector<FSObject*>& objList)
 }
 
 // check if parts have duplicate names
-void check_017(FEProject& prj, std::vector<FSObject*>& objList)
+void check_017(FSProject& prj, std::vector<FSObject*>& objList)
 {
 	FSModel& fem = prj.GetFSModel();
 	GModel& gm = fem.GetModel();

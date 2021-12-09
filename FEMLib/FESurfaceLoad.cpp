@@ -225,7 +225,7 @@ FSFluidTraction::FSFluidTraction(FSModel* ps, FEItemListBuilder* pi, int nstep) 
 	AddVecParam(vec3d(0, 0, 0), "traction")->SetUnit(UNIT_PRESSURE);
 }
 
-FELoadCurve* FSFluidTraction::GetLoadCurve() { return GetParamLC(LOAD); }
+LoadCurve* FSFluidTraction::GetLoadCurve() { return GetParamLC(LOAD); }
 
 void FSFluidTraction::SetScale(double s)
 {
@@ -405,7 +405,7 @@ FSConcentrationFlux::FSConcentrationFlux(FSModel* ps) : FSSurfaceLoad(FE_CONCENT
 	AddDoubleParam(0, "flux");
 }
 
-FELoadCurve* FSConcentrationFlux::GetLoadCurve() 
+LoadCurve* FSConcentrationFlux::GetLoadCurve()
 { 
 	return GetParamLC(FLUX); 
 }
@@ -435,7 +435,7 @@ FEBioSurfaceLoad::FEBioSurfaceLoad(FSModel* ps) : FSSurfaceLoad(FE_FEBIO_SURFACE
 {
 }
 
-FELoadCurve* FEBioSurfaceLoad::GetLoadCurve() { assert(false); return nullptr; }
+LoadCurve* FEBioSurfaceLoad::GetLoadCurve() { assert(false); return nullptr; }
 
 void FEBioSurfaceLoad::Save(OArchive& ar)
 {

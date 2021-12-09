@@ -30,7 +30,7 @@ SOFTWARE.*/
 class FEHypersurfaceExport : public FEFileExport
 {
 public:
-	FEHypersurfaceExport(FEProject& prj);
+	FEHypersurfaceExport(FSProject& prj);
 	~FEHypersurfaceExport(void);
 
 	bool Write(const char* szfile) override;

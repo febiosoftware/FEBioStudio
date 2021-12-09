@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 
-class FEProject;
+class FSProject;
 class FEPlotVariable;
 class QListWidgetItem;
 class QTableWidgetItem;
@@ -58,7 +58,7 @@ class CDlgEditOutput : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgEditOutput(FEProject& prj, QWidget* parent = 0, int tab = 0);
+	CDlgEditOutput(FSProject& prj, QWidget* parent = 0, int tab = 0);
 
 	void showEvent(QShowEvent* ev) override;
 
@@ -80,6 +80,6 @@ protected slots:
 	void accept();
 
 private:
-	FEProject&	m_prj;
+	FSProject&	m_prj;
 	Ui::CDlgEditOutput*	ui;
 };

@@ -41,7 +41,7 @@ protected:
 	};
 
 public:
-	FEBYUimport(FEProject& prj);
+	FEBYUimport(FSProject& prj);
 	~FEBYUimport(void);
 
 	bool Load(const char* szfile);

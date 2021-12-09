@@ -43,7 +43,7 @@ using std::unique_ptr;
 // FENikeProject
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::Create(FEProject &prj)
+bool FENikeProject::Create(FSProject &prj)
 {
 	// build the data structures
 	if (BuildControl        (prj) == false) return false;
@@ -64,7 +64,7 @@ bool FENikeProject::Create(FEProject &prj)
 
 //-----------------------------------------------------------------------------
 
-int FENikeProject::AddLoadCurve(FELoadCurve& lc)
+int FENikeProject::AddLoadCurve(LoadCurve& lc)
 {
 	m_LC.push_back(lc);
 	m_Ctrl.numlc++;
@@ -210,7 +210,7 @@ void FENikeProject::Defaults()
 // Only the default parameters are intialized here. The rest of the control 
 // parameters are filled out when the corresponding data becomes available
 //
-bool FENikeProject::BuildControl(FEProject& prj)
+bool FENikeProject::BuildControl(FSProject& prj)
 {
 	CONTROL& c = m_Ctrl;
 	FSModel& fem = prj.GetFSModel();
@@ -232,7 +232,7 @@ bool FENikeProject::BuildControl(FEProject& prj)
 	int nlc = -1;
 	if (pstep)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		if (set.bmust) nlc = AddLoadCurve(*plc);
 	}
 	else set.bmust = false;
@@ -270,7 +270,7 @@ bool FENikeProject::BuildControl(FEProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildMaterials(FEProject& prj)
+bool FENikeProject::BuildMaterials(FSProject& prj)
 {
 	int i, j, k;
 
@@ -396,7 +396,7 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 					mat.m[5][2] = f.m_d.z;
 				}
 
-//				FELoadCurve& ac = f.GetParam(FETransMooneyRivlin::Fiber::MP_AC).GetLoadCurve();
+//				LoadCurve& ac = f.GetParam(FETransMooneyRivlin::Fiber::MP_AC).GetLoadCurve();
 //				mat.m[5][3] = ac.m_nID;
 //				mat.m[5][4] = f.GetFloatValue(FETransMooneyRivlin::Fiber::MP_CA0);
 //				mat.m[5][5] = f.GetFloatValue(FETransMooneyRivlin::Fiber::MP_BETA);
@@ -502,7 +502,7 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildNodes(FEProject& prj)
+bool FENikeProject::BuildNodes(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	GModel& model = fem.GetModel();
@@ -585,7 +585,7 @@ bool FENikeProject::BuildNodes(FEProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildElements(FEProject &prj)
+bool FENikeProject::BuildElements(FSProject &prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	GModel& model = fem.GetModel();
@@ -747,7 +747,7 @@ bool FENikeProject::BuildElements(FEProject &prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildRigidNodes(FEProject &prj)
+bool FENikeProject::BuildRigidNodes(FSProject &prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
@@ -794,7 +794,7 @@ bool FENikeProject::BuildRigidNodes(FEProject &prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildDiscrete(FEProject& prj)
+bool FENikeProject::BuildDiscrete(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	GModel& m = fem.GetModel();
@@ -841,7 +841,7 @@ bool FENikeProject::BuildDiscrete(FEProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildInterfaces(FEProject &prj)
+bool FENikeProject::BuildInterfaces(FSProject &prj)
 {
 	int i, k, n;
 
@@ -1019,7 +1019,7 @@ bool FENikeProject::BuildInterfaces(FEProject &prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildNodalLoads(FEProject& prj)
+bool FENikeProject::BuildNodalLoads(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
@@ -1030,7 +1030,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 		FSNodalDOFLoad* pbc = dynamic_cast<FSNodalDOFLoad*>(s.Load(i));
 		if (pbc)
 		{
-			FELoadCurve& lc = *pbc->GetLoadCurve();
+			LoadCurve& lc = *pbc->GetLoadCurve();
 			int nlc = AddLoadCurve(lc);
 			int bc = pbc->GetDOF() + 1;
 			FEItemListBuilder* pitem = pbc->GetItemList();
@@ -1052,7 +1052,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 		FSSurfaceTraction* ptc = dynamic_cast<FSSurfaceTraction*>(s.Load(i));
 		if (ptc)
 		{
-			FELoadCurve& lc = *ptc->GetLoadCurve();
+			LoadCurve& lc = *ptc->GetLoadCurve();
 			int nlc = AddLoadCurve(lc);
 
 			FEItemListBuilder* pitem = ptc->GetItemList();
@@ -1114,7 +1114,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildPressureLoads(FEProject &prj)
+bool FENikeProject::BuildPressureLoads(FSProject &prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
@@ -1125,7 +1125,7 @@ bool FENikeProject::BuildPressureLoads(FEProject &prj)
 		FSPressureLoad* ppl = dynamic_cast<FSPressureLoad*>(s.Load(i));
 		if (ppl)
 		{
-			FELoadCurve& lc = *ppl->GetLoadCurve();
+			LoadCurve& lc = *ppl->GetLoadCurve();
 			int nlc = AddLoadCurve(lc);
 			
 			PRESSURE_LOAD pl;
@@ -1164,7 +1164,7 @@ bool FENikeProject::BuildPressureLoads(FEProject &prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildDisplacements(FEProject &prj)
+bool FENikeProject::BuildDisplacements(FSProject &prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
@@ -1175,7 +1175,7 @@ bool FENikeProject::BuildDisplacements(FEProject &prj)
 		FSPrescribedDisplacement* pbc = dynamic_cast<FSPrescribedDisplacement*>(s.BC(i));
 		if (pbc)
 		{
-			FELoadCurve& lc = *pbc->GetLoadCurve();
+			LoadCurve& lc = *pbc->GetLoadCurve();
 			int nlc = AddLoadCurve(lc);
 			int bc = pbc->GetDOF()+1;
 
@@ -1207,7 +1207,7 @@ bool FENikeProject::BuildDisplacements(FEProject &prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildBodyForce(FEProject& prj)
+bool FENikeProject::BuildBodyForce(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
@@ -1219,7 +1219,7 @@ bool FENikeProject::BuildBodyForce(FEProject& prj)
 		{
 			for (int j=0; j<3; ++j)
 			{
-				FELoadCurve* plc = pbl->GetLoadCurve(j);
+				LoadCurve* plc = pbl->GetLoadCurve(j);
 				if (plc)
 				{
 					int nlc = AddLoadCurve(*plc);
@@ -1242,7 +1242,7 @@ bool FENikeProject::BuildBodyForce(FEProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool FENikeProject::BuildNodalVelocities(FEProject &prj)
+bool FENikeProject::BuildNodalVelocities(FSProject &prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	FSStep& s = *fem.GetStep(0);
@@ -1280,7 +1280,7 @@ bool FENikeProject::BuildNodalVelocities(FEProject &prj)
 //-----------------------------------------------------------------------------
 // convert project settings
 //
-bool FENikeProject::Convert(FEProject &prj)
+bool FENikeProject::Convert(FSProject &prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	FSNonLinearMechanics* pstep = dynamic_cast<FSNonLinearMechanics*>(fem.GetStep(1));

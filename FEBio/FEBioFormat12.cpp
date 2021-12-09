@@ -901,7 +901,7 @@ void FEBioFormat12::ParsePressureLoad(FSStep *pstep, XMLTag &tag)
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
-			FELoadCurve* plc = pPC[n]->GetLoadCurve();
+			LoadCurve* plc = pPC[n]->GetLoadCurve();
 			FESurface* ps = pSF[n];
 			ps->add(i);
 			febio.AddParamCurve(plc, face.m_ntag);
@@ -1000,7 +1000,7 @@ void FEBioFormat12::ParseTractionLoad(FSStep* pstep, XMLTag& tag)
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
-			FELoadCurve* plc = pPC[n]->GetLoadCurve();
+			LoadCurve* plc = pPC[n]->GetLoadCurve();
 			FESurface* ps = pSF[n];
 			ps->add(i);
 			febio.AddParamCurve(plc, face.m_ntag);
@@ -1119,7 +1119,7 @@ void FEBioFormat12::ParseFluidFlux(FSStep *pstep, XMLTag &tag)
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
-			FELoadCurve* plc = pPC[n]->GetLoadCurve();
+			LoadCurve* plc = pPC[n]->GetLoadCurve();
 			FESurface* ps = pSF[n];
 			ps->add(i);
 			febio.AddParamCurve(plc, face.m_ntag);
@@ -1238,7 +1238,7 @@ void FEBioFormat12::ParseBPNormalTraction(FSStep *pstep, XMLTag &tag)
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
-			FELoadCurve* plc = pPC[n]->GetLoadCurve();
+			LoadCurve* plc = pPC[n]->GetLoadCurve();
 			FESurface* ps = pSF[n];
 			ps->add(i);
 			febio.AddParamCurve(plc, face.m_ntag);
@@ -1340,7 +1340,7 @@ void FEBioFormat12::ParseHeatFlux(FSStep *pstep, XMLTag &tag)
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
-			FELoadCurve* plc = pPC[n]->GetLoadCurve();
+			LoadCurve* plc = pPC[n]->GetLoadCurve();
 			FESurface* ps = pSF[n];
 			ps->add(i);
 			febio.AddParamCurve(plc, face.m_ntag);
@@ -1447,7 +1447,7 @@ void FEBioFormat12::ParseSoluteFlux(FSStep *pstep, XMLTag &tag)
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
-			FELoadCurve* plc = pPC[n]->GetLoadCurve();
+			LoadCurve* plc = pPC[n]->GetLoadCurve();
 			FESurface* ps = pSF[n];
 			ps->add(i);
 			febio.AddParamCurve(plc, face.m_ntag);

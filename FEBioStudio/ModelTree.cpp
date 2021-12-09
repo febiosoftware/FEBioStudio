@@ -374,7 +374,7 @@ private:
 class CPlotfileProperties : public CObjectProps
 {
 public:
-	CPlotfileProperties(CModelViewer* wnd, FEProject& prj) : CObjectProps(0), m_wnd(wnd), m_prj(prj)
+	CPlotfileProperties(CModelViewer* wnd, FSProject& prj) : CObjectProps(0), m_wnd(wnd), m_prj(prj)
 	{
 		Update();
 	}
@@ -414,7 +414,7 @@ public:
 
 private:
 	CModelViewer*	m_wnd;
-	FEProject&		m_prj;
+	FSProject&		m_prj;
 	int	m_actionIndex;
 };
 
@@ -861,7 +861,7 @@ void CModelTree::Build(CModelDocument* doc)
 	if (doc == nullptr) return;
 
 	// get the model
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 	GModel& mdl = fem.GetModel();
 
@@ -1636,7 +1636,7 @@ void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FSModel& fem, FSStep* ps
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEProject& prj)
+void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FSProject& prj)
 {
 	QTreeWidgetItem* t2, *t3;
 
@@ -1870,7 +1870,7 @@ void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FSReactionMaterial* 
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateOutput(QTreeWidgetItem* t1, FEProject& prj)
+void CModelTree::UpdateOutput(QTreeWidgetItem* t1, FSProject& prj)
 {
 	AddTreeItem(t1, "plotfile", MT_PROJECT_OUTPUT_PLT, 0, 0, new CPlotfileProperties(m_view, prj), 0, 1);
 	AddTreeItem(t1, "logfile", MT_PROJECT_OUTPUT_LOG, 0, 0, new CLogfileProperties(prj), 0, 1);

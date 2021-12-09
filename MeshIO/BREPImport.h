@@ -32,7 +32,7 @@ SOFTWARE.*/
 class BREPImport : public FEFileImport
 {
 public:
-	BREPImport(FEProject& prj);
+	BREPImport(FSProject& prj);
 	~BREPImport();
 
 	bool Load(const char* szfile);
@@ -42,7 +42,7 @@ public:
 class IGESImport : public FEFileImport
 {
 public:
-	IGESImport(FEProject& prj);
+	IGESImport(FSProject& prj);
 	~IGESImport();
 
 	bool Load(const char* szfile);

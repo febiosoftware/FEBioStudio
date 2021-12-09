@@ -38,7 +38,7 @@ using namespace std;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FELoadCurve::FELoadCurve()
+LoadCurve::LoadCurve()
 {
 	// add two points
 	LOADPOINT pt0(0,0), pt1(1,1);
@@ -60,7 +60,7 @@ FELoadCurve::FELoadCurve()
     m_spline = nullptr;
 }
 
-FELoadCurve::FELoadCurve(double r)
+LoadCurve::LoadCurve(double r)
 {
 	m_ntag = 0;
 	m_nID = -1;
@@ -71,7 +71,7 @@ FELoadCurve::FELoadCurve(double r)
     m_spline = nullptr;
 }
 
-FELoadCurve::FELoadCurve(const FELoadCurve& lc)
+LoadCurve::LoadCurve(const LoadCurve& lc)
 {
 	m_Pt.resize(lc.Size());
 	for (int i=0; i< lc.Size(); ++i) m_Pt[i] = lc[i];
@@ -84,12 +84,12 @@ FELoadCurve::FELoadCurve(const FELoadCurve& lc)
     m_spline = lc.m_spline;
 }
 
-FELoadCurve::~FELoadCurve()
+LoadCurve::~LoadCurve()
 {
 
 }
 
-FELoadCurve& FELoadCurve::operator =(const FELoadCurve& lc)
+LoadCurve& LoadCurve::operator =(const LoadCurve& lc)
 {
 	m_Pt.resize(lc.Size());
 	for (int i=0; i< lc.Size(); ++i) m_Pt[i] = lc[i];
@@ -104,13 +104,13 @@ FELoadCurve& FELoadCurve::operator =(const FELoadCurve& lc)
 	return (*this);
 }
 
-void FELoadCurve::Add(double x, double y)
+void LoadCurve::Add(double x, double y)
 {
 	LOADPOINT pt = { x, y };
 	Add(pt);
 }
 
-int FELoadCurve::Add(const LOADPOINT& pt)
+int LoadCurve::Add(const LOADPOINT& pt)
 {
 	int n = 0;
 	vector<LOADPOINT>::iterator it = m_Pt.begin();
@@ -133,12 +133,12 @@ int FELoadCurve::Add(const LOADPOINT& pt)
 	return n;
 }
 
-void FELoadCurve::SetName(const char* sz)
+void LoadCurve::SetName(const char* sz)
 { 
 	strcpy(m_szname, sz); 
 }
 
-void FELoadCurve::Delete(int n)
+void LoadCurve::Delete(int n)
 {
 	if ((n>=0) && (n<Size()) && (Size()> 2)) 
 	{
@@ -148,7 +148,7 @@ void FELoadCurve::Delete(int n)
 	}
 }
 
-void FELoadCurve::Delete(const vector<int>& indexList)
+void LoadCurve::Delete(const vector<int>& indexList)
 {
 	vector<int> tmp;
 	int N = (int)indexList.size();
@@ -182,7 +182,7 @@ inline double qerp(double t, double t0, double f0, double t1, double f1, double 
 	return f0*q0 + f1*q1 + f2*q2;
 }
 
-double FELoadCurve::Value(double time)
+double LoadCurve::Value(double time)
 {
 	int nsize = Size();
 	if (nsize == 0) return m_ref;	
@@ -297,7 +297,7 @@ double FELoadCurve::Value(double time)
 	return 0;
 }
 
-double FELoadCurve::ExtendValue(double t)
+double LoadCurve::ExtendValue(double t)
 {
 	int nsize = (int)m_Pt.size();
 	int N = nsize - 1;
@@ -363,9 +363,9 @@ double FELoadCurve::ExtendValue(double t)
 	return 0;
 }
 
-void FELoadCurve::Load(IArchive& ar)
+void LoadCurve::Load(IArchive& ar)
 {
-	TRACE("FELoadCurve::Load");
+	TRACE("LoadCurve::Load");
 
 	int n, N;
 	bool bact;
@@ -387,7 +387,7 @@ void FELoadCurve::Load(IArchive& ar)
 				ar.read(bact); 
 				m_ntag = (bact?1:0);
 			}
-			else throw ReadError("error parsing CID_LC_ACTIVE (FELoadCurve::Load)");
+			else throw ReadError("error parsing CID_LC_ACTIVE (LoadCurve::Load)");
 			break;
 		case CID_LC_REF   : ar.read(m_ref); break;
 		case CID_LC_FLAGS : ar.read(m_ntag); break;
@@ -419,7 +419,7 @@ void FELoadCurve::Load(IArchive& ar)
     Update();
 }
 
-void FELoadCurve::Save(OArchive& ar)
+void LoadCurve::Save(OArchive& ar)
 {
 	int n, N;
 	N = Size();
@@ -443,18 +443,18 @@ void FELoadCurve::Save(OArchive& ar)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// FUNCTION: FELoadCurve::Scale
+// FUNCTION: LoadCurve::Scale
 //  Scales the loads of the load curve.
 //
 
-void FELoadCurve::Scale(double s)
+void LoadCurve::Scale(double s)
 {
 	for (int i=0; i<Size(); ++i) m_Pt[i].load *= s;
     Update();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void FELoadCurve::Update()
+void LoadCurve::Update()
 {
     // check if using spline
     bool valid = true;

@@ -84,7 +84,7 @@ public:
 	}
 };
 
-CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CDlgAddRigidConnector)
+CDlgAddRigidConnector::CDlgAddRigidConnector(FSProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CDlgAddRigidConnector)
 {
 	setWindowTitle("Add Rigid Connector");
 

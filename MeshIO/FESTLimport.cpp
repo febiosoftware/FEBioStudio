@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FESTLimport::FESTLimport(FEProject& prj) : FEFileImport(prj)
+FESTLimport::FESTLimport(FSProject& prj) : FEFileImport(prj)
 {
 }
 

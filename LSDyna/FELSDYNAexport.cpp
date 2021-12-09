@@ -33,7 +33,7 @@ SOFTWARE.*/
 using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
-FELSDYNAexport::FELSDYNAexport(FEProject& prj) : FEFileExport(prj)
+FELSDYNAexport::FELSDYNAexport(FSProject& prj) : FEFileExport(prj)
 {
 	m_fp = 0;
 

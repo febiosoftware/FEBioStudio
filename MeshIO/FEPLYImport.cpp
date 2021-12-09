@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEPLYImport::FEPLYImport(FEProject& prj) : FEFileImport(prj)
+FEPLYImport::FEPLYImport(FSProject& prj) : FEFileImport(prj)
 {
 	m_mesh = nullptr;
 }

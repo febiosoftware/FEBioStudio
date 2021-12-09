@@ -60,7 +60,7 @@ protected:
 	};
 
 public:
-	FELSDYNAimport(FEProject& prj);
+	FELSDYNAimport(FSProject& prj);
 	virtual ~FELSDYNAimport();
 
 	bool Load(const char* szfile);
@@ -96,5 +96,5 @@ protected:
 	char			m_szline[256];
     size_t      m_lineno;
 	FSModel*	m_pfem;
-	FEProject*	m_pprj;
+	FSProject*	m_pprj;
 };

@@ -31,7 +31,7 @@ SOFTWARE.*/
 class FEBYUExport : public FEFileExport
 {
 public:
-	FEBYUExport(FEProject& prj);
+	FEBYUExport(FSProject& prj);
 	~FEBYUExport(void);
 
 	bool Write(const char* szfile) override;

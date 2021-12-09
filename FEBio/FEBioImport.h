@@ -39,7 +39,7 @@ SOFTWARE.*/
 class FEBioImport : public FEFileImport
 {
 public:
-	FEBioImport(FEProject& prj);
+	FEBioImport(FSProject& prj);
 	~FEBioImport();
 	bool Load(const char* szfile) override;
 

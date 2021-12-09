@@ -102,12 +102,12 @@ FS1DPointFunction::FS1DPointFunction() : FS1DFunction(FE_FNC1D_POINT)
 	GetParamLC(0)->Add(1, 1);
 }
 
-FELoadCurve* FS1DPointFunction::GetPointCurve()
+LoadCurve* FS1DPointFunction::GetPointCurve()
 {
 	return GetParamLC(0);
 }
 
-void FS1DPointFunction::SetPointCurve(FELoadCurve& lc)
+void FS1DPointFunction::SetPointCurve(LoadCurve& lc)
 {
 	GetParam(0).SetLoadCurve(lc);
 }

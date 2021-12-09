@@ -181,7 +181,7 @@ FEFaceList* BuildFaceList(GFace* face)
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEBioExport25::FEBioExport25(FEProject& prj) : FEBioExport(prj)
+FEBioExport25::FEBioExport25(FSProject& prj) : FEBioExport(prj)
 {
 	m_exportParts = false;
 	m_useReactionMaterial2 = false;	// will be set to true for reaction-diffusion problems
@@ -334,7 +334,7 @@ void FEBioExport25::AddElemSet(const std::string& name, FEItemListBuilder* pl)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport25::PrepareExport(FEProject& prj)
+bool FEBioExport25::PrepareExport(FSProject& prj)
 {
 	if (FEBioExport::PrepareExport(prj) == false) return false;
 
@@ -399,7 +399,7 @@ bool FEBioExport25::PrepareExport(FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::BuildSurfaceList(FEProject& prj)
+void FEBioExport25::BuildSurfaceList(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
 
@@ -558,7 +558,7 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::BuildNodeSetList(FEProject& prj)
+void FEBioExport25::BuildNodeSetList(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
 
@@ -663,7 +663,7 @@ void FEBioExport25::BuildNodeSetList(FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::BuildElemSetList(FEProject& prj)
+void FEBioExport25::BuildElemSetList(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
 	GModel& model = fem.GetModel();
@@ -1022,7 +1022,7 @@ void FEBioExport25::WriteSolidControlParams(FSAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -1088,7 +1088,7 @@ void FEBioExport25::WriteHeatTransferControlParams(FSAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -1137,7 +1137,7 @@ void FEBioExport25::WriteBiphasicControlParams(FSAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -1200,7 +1200,7 @@ void FEBioExport25::WriteBiphasicSoluteControlParams(FSAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -1262,7 +1262,7 @@ void FEBioExport25::WriteFluidControlParams(FSAnalysisStep* pstep)
 
     if (ops.bauto)
     {
-        FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+        LoadCurve* plc = pstep->GetMustPointLoadCurve();
         el.name("time_stepper");
         m_xml.add_branch(el);
         {
@@ -1326,7 +1326,7 @@ void FEBioExport25::WriteFluidFSIControlParams(FSAnalysisStep* pstep)
     
     if (ops.bauto)
     {
-        FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+        LoadCurve* plc = pstep->GetMustPointLoadCurve();
         el.name("time_stepper");
         m_xml.add_branch(el);
         {
@@ -1388,7 +1388,7 @@ void FEBioExport25::WriteReactionDiffusionControlParams(FSAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -1841,7 +1841,7 @@ void FEBioExport25::WriteMaterial(FSMaterial* pm, XMLElement& el)
 //-----------------------------------------------------------------------------
 void FEBioExport25::WritePointCurve(FS1DPointFunction* f1d, XMLElement& el)
 {
-	FELoadCurve* plc = f1d->GetPointCurve();
+	LoadCurve* plc = f1d->GetPointCurve();
 
 	el.add_attribute("type", "point");
 	m_xml.add_branch(el);
@@ -1849,21 +1849,21 @@ void FEBioExport25::WritePointCurve(FS1DPointFunction* f1d, XMLElement& el)
 		int ntype = plc->GetType();
 		switch (ntype)
 		{
-		case FELoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "linear"); break;
-		case FELoadCurve::LC_STEP  : m_xml.add_leaf("interpolate", "step"); break;
-		case FELoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "smooth"); break;
-        case FELoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "cubic spline"); break;
-        case FELoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "control points"); break;
-        case FELoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "approximation"); break;
+		case LoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "linear"); break;
+		case LoadCurve::LC_STEP  : m_xml.add_leaf("interpolate", "step"); break;
+		case LoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "smooth"); break;
+        case LoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "cubic spline"); break;
+        case LoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "control points"); break;
+        case LoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "approximation"); break;
 		}
 
 		int nextend = plc->GetExtend();
 		switch (nextend)
 		{
-		case FELoadCurve::EXT_CONSTANT     : m_xml.add_leaf("extend", "constant"); break;
-		case FELoadCurve::EXT_EXTRAPOLATE  : m_xml.add_leaf("extend", "extrapolate"); break;
-		case FELoadCurve::EXT_REPEAT       : m_xml.add_leaf("extend", "repeat"); break;
-		case FELoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "repeat offset"); break;
+		case LoadCurve::EXT_CONSTANT     : m_xml.add_leaf("extend", "constant"); break;
+		case LoadCurve::EXT_EXTRAPOLATE  : m_xml.add_leaf("extend", "extrapolate"); break;
+		case LoadCurve::EXT_REPEAT       : m_xml.add_leaf("extend", "repeat"); break;
+		case LoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "repeat offset"); break;
 		}
 
 		m_xml.add_branch("points");
@@ -3525,7 +3525,7 @@ void FEBioExport25::WriteContactWall(FSStep& s)
 				m_xml.add_leaf("tolerance", pw->GetFloatValue(FSRigidWallInterface::ALTOL));
 				m_xml.add_leaf("penalty", pw->GetFloatValue(FSRigidWallInterface::PENALTY));
 
-				FELoadCurve* plc = pw->GetLoadCurve();
+				LoadCurve* plc = pw->GetLoadCurve();
 				XMLElement offset("offset");
 				if (plc) offset.add_attribute("lc", plc->GetID());
 				offset.value(pw->GetFloatValue(FSRigidWallInterface::OFFSET));
@@ -3570,7 +3570,7 @@ void FEBioExport25::WriteContactSphere(FSStep& s)
 				m_xml.add_leaf("radius", pw->Radius());
 				m_xml.add_leaf("center", pw->Center());
 
-				FELoadCurve* lc[3];
+				LoadCurve* lc[3];
 				lc[0] = pw->GetLoadCurve(0);
 				lc[1] = pw->GetLoadCurve(1);
 				lc[2] = pw->GetLoadCurve(2);
@@ -3816,7 +3816,7 @@ void FEBioExport25::WriteLoadNodal(FSStep& s)
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
 			int l = pbc->GetDOF();
-			FELoadCurve* plc = pbc->GetLoadCurve();
+			LoadCurve* plc = pbc->GetLoadCurve();
 
 			XMLElement load("nodal_load");
 			load.add_attribute("bc", bc[l]);
@@ -4162,7 +4162,7 @@ void FEBioExport25::WriteFluidVelocity(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve();
                 int lc = plc->GetID();
                 
                 XMLElement scl("scale");
@@ -4197,7 +4197,7 @@ void FEBioExport25::WriteFluidNormalVelocity(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve();
                 int lc = plc->GetID();
                 
                 XMLElement load("velocity");
@@ -4243,7 +4243,7 @@ void FEBioExport25::WriteFluidRotationalVelocity(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve();
                 int lc = plc->GetID();
                 
                 XMLElement load("angular_speed");
@@ -4285,7 +4285,7 @@ void FEBioExport25::WriteFluidFlowResistance(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve();
                 int lc = plc->GetID();
                 
                 XMLElement load("R");
@@ -4293,7 +4293,7 @@ void FEBioExport25::WriteFluidFlowResistance(FSStep& s)
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
-                FELoadCurve* polc = ptc->GetPOLoadCurve();
+                LoadCurve* polc = ptc->GetPOLoadCurve();
                 int lcpo = polc->GetID();
                 
                 XMLElement po("pressure_offset");
@@ -4326,7 +4326,7 @@ void FEBioExport25::WriteFluidFlowRCR(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve();
                 int lc = plc->GetID();
                 
                 XMLElement load("R");
@@ -4334,7 +4334,7 @@ void FEBioExport25::WriteFluidFlowRCR(FSStep& s)
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
-                FELoadCurve* rdlc = ptc->GetRDLoadCurve();
+                LoadCurve* rdlc = ptc->GetRDLoadCurve();
                 int lcrd = rdlc->GetID();
                 
                 XMLElement rd("Rd");
@@ -4342,7 +4342,7 @@ void FEBioExport25::WriteFluidFlowRCR(FSStep& s)
                 rd.value(ptc->GetRD());
                 m_xml.add_leaf(rd);
                 
-                FELoadCurve* colc = ptc->GetCOLoadCurve();
+                LoadCurve* colc = ptc->GetCOLoadCurve();
                 int lcco = colc->GetID();
                 
                 XMLElement co("capacitance");
@@ -4350,7 +4350,7 @@ void FEBioExport25::WriteFluidFlowRCR(FSStep& s)
                 co.value(ptc->GetCO());
                 m_xml.add_leaf(co);
                 
-                FELoadCurve* polc = ptc->GetPOLoadCurve();
+                LoadCurve* polc = ptc->GetPOLoadCurve();
                 int lcpo = polc->GetID();
                 
                 XMLElement po("pressure_offset");
@@ -4358,7 +4358,7 @@ void FEBioExport25::WriteFluidFlowRCR(FSStep& s)
                 po.value(ptc->GetPO());
                 m_xml.add_leaf(po);
 
-                FELoadCurve* iplc = ptc->GetIPLoadCurve();
+                LoadCurve* iplc = ptc->GetIPLoadCurve();
                 int lcip = iplc->GetID();
                 
                 XMLElement ip("initial_pressure");
@@ -4395,7 +4395,7 @@ void FEBioExport25::WriteFluidBackflowStabilization(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve();
                 int lc = plc->GetID();
                 
                 XMLElement load("beta");
@@ -4428,7 +4428,7 @@ void FEBioExport25::WriteFluidTangentialStabilization(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve();
                 int lc = plc->GetID();
                 
                 XMLElement load("beta");
@@ -4792,7 +4792,7 @@ void FEBioExport25::WriteBodyForce(FSConstBodyForce* pbf, GPart* pg)
 		for (int i=0; i<3; ++i) 
 		{
 			el.name(sz[i]);
-			FELoadCurve* plc = pbf->GetLoadCurve(i);
+			LoadCurve* plc = pbf->GetLoadCurve(i);
 			if (plc) el.add_attribute("lc", plc->GetID());
 			el.value(pbf->GetLoad(i));
 			m_xml.add_leaf(el);
@@ -4903,7 +4903,7 @@ void FEBioExport25::WriteLoadDataSection()
 {
 	for (int i=0; i<(int) m_pLC.size(); ++i)
 	{
-		FELoadCurve* plc = m_pLC[i];
+		LoadCurve* plc = m_pLC[i];
 
 		XMLElement el;
 		el.name("loadcurve");
@@ -4911,20 +4911,20 @@ void FEBioExport25::WriteLoadDataSection()
 
 		switch (plc->GetType())
 		{
-		case FELoadCurve::LC_STEP  : el.add_attribute("type", "step"  ); break;
-		case FELoadCurve::LC_LINEAR: el.add_attribute("type", "linear"); break;
-		case FELoadCurve::LC_SMOOTH: el.add_attribute("type", "smooth"); break;
-        case FELoadCurve::LC_CSPLINE: el.add_attribute("interpolate", "cubic spline"); break;
-        case FELoadCurve::LC_CPOINTS: el.add_attribute("interpolate", "control points"); break;
-        case FELoadCurve::LC_APPROX: el.add_attribute("interpolate", "approximation"); break;
+		case LoadCurve::LC_STEP  : el.add_attribute("type", "step"  ); break;
+		case LoadCurve::LC_LINEAR: el.add_attribute("type", "linear"); break;
+		case LoadCurve::LC_SMOOTH: el.add_attribute("type", "smooth"); break;
+        case LoadCurve::LC_CSPLINE: el.add_attribute("interpolate", "cubic spline"); break;
+        case LoadCurve::LC_CPOINTS: el.add_attribute("interpolate", "control points"); break;
+        case LoadCurve::LC_APPROX: el.add_attribute("interpolate", "approximation"); break;
 		}
 
 		switch (plc->GetExtend())
 		{
-//		case FELoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
-		case FELoadCurve::EXT_EXTRAPOLATE  : el.add_attribute("extend", "extrapolate"  ); break;
-		case FELoadCurve::EXT_REPEAT       : el.add_attribute("extend", "repeat"       ); break;
-		case FELoadCurve::EXT_REPEAT_OFFSET: el.add_attribute("extend", "repeat offset"); break;
+//		case LoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
+		case LoadCurve::EXT_EXTRAPOLATE  : el.add_attribute("extend", "extrapolate"  ); break;
+		case LoadCurve::EXT_REPEAT       : el.add_attribute("extend", "repeat"       ); break;
+		case LoadCurve::EXT_REPEAT_OFFSET: el.add_attribute("extend", "repeat offset"); break;
 		}
 
 		double d[2];

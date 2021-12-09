@@ -36,7 +36,7 @@ namespace Ui {
 }
 
 class QTreeWidgetItem;
-class FEProject;
+class FSProject;
 class FSMaterial;
 class GMaterial;
 
@@ -45,7 +45,7 @@ class CMaterialEditor : public CHelpDialog
 	Q_OBJECT
 
 public:
-	CMaterialEditor(FEProject& prj, QWidget* parent);
+	CMaterialEditor(FSProject& prj, QWidget* parent);
 
 	void SetInitMaterial(GMaterial* mat);
 

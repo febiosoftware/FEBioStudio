@@ -67,7 +67,7 @@ class FESTLimport : public FEFileImport
 	};
 
 public:
-	FESTLimport(FEProject& prj);
+	FESTLimport(FSProject& prj);
 	virtual ~FESTLimport(void);
 
 	bool Load(const char* szfile);

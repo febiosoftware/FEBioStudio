@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FETetGenImport::FETetGenImport(FEProject& prj) : FEFileImport(prj)
+FETetGenImport::FETetGenImport(FSProject& prj) : FEFileImport(prj)
 {
 	m_offset = 0;
 }

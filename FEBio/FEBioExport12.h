@@ -54,7 +54,7 @@ public:
 	};
 
 public:
-	FEBioExport12(FEProject& prj);
+	FEBioExport12(FSProject& prj);
 	virtual ~FEBioExport12();
 
 	void Clear();
@@ -65,7 +65,7 @@ public: // set export attributes
 	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
 
 protected:
-	bool PrepareExport(FEProject& prj);
+	bool PrepareExport(FSProject& prj);
 
 	void WriteModuleSection(FSAnalysisStep* pstep);
 	void WriteControlSection(FSAnalysisStep* pstep);

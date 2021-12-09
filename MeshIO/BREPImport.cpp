@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <TopoDS.hxx>
 #endif
 
-BREPImport::BREPImport(FEProject& prj) : FEFileImport(prj)
+BREPImport::BREPImport(FSProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -50,7 +50,7 @@ BREPImport::~BREPImport()
 bool BREPImport::Load(const char* szfile)
 {
 #ifdef HAS_OCC
-	FEProject& prj = m_prj;
+	FSProject& prj = m_prj;
 	SetFileName(szfile);
 	TopoDS_Shape aShape;
 	BRep_Builder aBuilder;
@@ -75,7 +75,7 @@ bool BREPImport::Load(const char* szfile)
 }
 
 //=============================================================================
-IGESImport::IGESImport(FEProject& prj) : FEFileImport(prj)
+IGESImport::IGESImport(FSProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -86,7 +86,7 @@ IGESImport::~IGESImport()
 bool IGESImport::Load( const char* szfile)
 {
 #ifdef HAS_OCC
-	FEProject& prj = m_prj;
+	FSProject& prj = m_prj;
 
 	SetFileName(szfile);
 

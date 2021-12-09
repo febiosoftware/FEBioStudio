@@ -127,15 +127,15 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-//! The FEProject class stores all the FE data.
-class FEProject : public CSerializable
+//! The FSProject class stores all the FE data.
+class FSProject : public CSerializable
 {
 public:
 	//! constructor 
-	FEProject(void);
+	FSProject(void);
 
 	//! class destructor
-	virtual ~FEProject(void);
+	virtual ~FSProject(void);
 
 	// get the FE data
 	FSModel& GetFSModel() { return m_fem; }

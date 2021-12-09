@@ -38,7 +38,7 @@ class CObjectProps;
 class FSMaterial;
 class FSReactionMaterial;
 class GMaterial;
-class FEProject;
+class FSProject;
 class FSModelComponent;
 
 class CObjectValidator;
@@ -174,10 +174,10 @@ protected:
 	void UpdateRC         (QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep);
 	void UpdateRigidLoads (QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep);
 	void UpdateConnectors (QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep);
-	void UpdateSteps      (QTreeWidgetItem* t1, FEProject& fem);
+	void UpdateSteps      (QTreeWidgetItem* t1, FSProject& fem);
 	void UpdateMaterials  (QTreeWidgetItem* t1, FSModel& fem);
 	void UpdateDiscrete   (QTreeWidgetItem* t1, FSModel& fem);
-	void UpdateOutput     (QTreeWidgetItem* t1, FEProject& prj);
+	void UpdateOutput     (QTreeWidgetItem* t1, FSProject& prj);
 	void UpdateJobs       (QTreeWidgetItem* t1, CModelDocument* doc);
 	void UpdateImages     (QTreeWidgetItem* t1, CModelDocument* doc);
 	void UpdateMeshData   (QTreeWidgetItem* t1, FSModel& fem);

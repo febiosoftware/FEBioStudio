@@ -31,7 +31,7 @@ SOFTWARE.*/
 class FEPLYImport : public FEFileImport
 {
 public:
-	FEPLYImport(FEProject& prj);
+	FEPLYImport(FSProject& prj);
 	~FEPLYImport();
 
 	bool Load(const char* szfile);

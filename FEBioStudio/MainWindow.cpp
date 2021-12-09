@@ -2473,7 +2473,7 @@ void CMainWindow::UpdatePhysicsUi()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	int module = prj.GetModule();
 
 //	ui->actionAddRigidConstraint->setVisible(module & MODULE_MECH);

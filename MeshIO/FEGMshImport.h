@@ -39,7 +39,7 @@ protected:
 	};
 
 public:
-	FEGMshImport(FEProject& prj);
+	FEGMshImport(FSProject& prj);
 	bool Load(const char* szfile);
 
 protected:

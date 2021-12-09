@@ -101,7 +101,7 @@ public:
 	int GetYColumnIndex() { return m_yColumn->text().toInt(); }
 };
 
-CCmdAddPoint::CCmdAddPoint(FELoadCurve* plc, LOADPOINT& pt) : CCommand("Add point")
+CCmdAddPoint::CCmdAddPoint(LoadCurve* plc, LOADPOINT& pt) : CCommand("Add point")
 {
 	m_lc = plc;
 	m_pt = pt;
@@ -120,7 +120,7 @@ void CCmdAddPoint::UnExecute()
     m_lc->Update();
 }
 
-CCmdRemovePoint::CCmdRemovePoint(FELoadCurve* plc, const vector<int>& index) : CCommand("Remove point")
+CCmdRemovePoint::CCmdRemovePoint(LoadCurve* plc, const vector<int>& index) : CCommand("Remove point")
 {
 	m_lc = plc;
 	m_index = index;
@@ -139,7 +139,7 @@ void CCmdRemovePoint::UnExecute()
     m_lc->Update();
 }
 
-CCmdMovePoint::CCmdMovePoint(FELoadCurve* plc, int index, LOADPOINT to) : CCommand("Move point")
+CCmdMovePoint::CCmdMovePoint(LoadCurve* plc, int index, LOADPOINT to) : CCommand("Move point")
 {
 	m_lc = plc;
 	m_index = index;
@@ -245,7 +245,7 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po)
 	for (int n = 0; n < np; ++n)
 	{
 		Param& p = po->GetParam(n);
-		FELoadCurve* plc = p.GetLoadCurve();
+		LoadCurve* plc = p.GetLoadCurve();
 		if (plc)
 		{
             plc->Update();
@@ -261,7 +261,7 @@ void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, con
 	for (int n = 0; n < NP; ++n)
 	{
 		Param& p = mat->GetParam(n);
-		FELoadCurve* plc = p.GetLoadCurve();
+		LoadCurve* plc = p.GetLoadCurve();
 		if (plc)
 		{
             plc->Update();
@@ -320,7 +320,7 @@ void CCurveEditor::BuildLoadCurves()
 		GLinearSpring* pls = dynamic_cast<GLinearSpring*>(po);
 		if (pls)
 		{
-			FELoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
+			LoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
 			if (plc)
 			{
                 plc->Update();
@@ -332,7 +332,7 @@ void CCurveEditor::BuildLoadCurves()
 		GGeneralSpring* pgs = dynamic_cast<GGeneralSpring*>(po);
 		if (pgs)
 		{
-			FELoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
+			LoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
 			if (plc)
 			{
                 plc->Update();
@@ -460,7 +460,7 @@ void CCurveEditor::AddParameterList(QTreeWidgetItem* t1, FSObject* po)
 		Param& param = po->GetParam(n);
 		if (param.IsEditable())
 		{
-			FELoadCurve* plc = param.GetLoadCurve();
+			LoadCurve* plc = param.GetLoadCurve();
 			ui->addTreeItem(t1, QString::fromStdString(param.GetShortName()), plc, &param);
 		}
 	}
@@ -490,7 +490,7 @@ void CCurveEditor::BuildModelTree()
 			if (pls)
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pls->GetName()));
-				FELoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
+				LoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
 				if (plc) ui->addTreeItem(t3, "E", plc);
 			}
 
@@ -498,7 +498,7 @@ void CCurveEditor::BuildModelTree()
 			if (pgs)
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pgs->GetName()));
-				FELoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
+				LoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
 				if (plc) ui->addTreeItem(t3, "F", plc);
 			}
 		}
@@ -517,7 +517,7 @@ void CCurveEditor::BuildModelTree()
 				Param& pi = map->GetParam(i);
 				if (pi.GetParamType() == Param_FLOAT)
 				{
-					FELoadCurve* plc = pi.GetLoadCurve();
+					LoadCurve* plc = pi.GetLoadCurve();
 					ui->addTreeItem(t3, pi.GetLongName(), plc);
 				}
 			}
@@ -803,13 +803,13 @@ void CCurveEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWid
 	m_cmd.Clear();
 	if (m_currentItem)
 	{
-		FELoadCurve* plc = m_currentItem->GetLoadCurve();
+		LoadCurve* plc = m_currentItem->GetLoadCurve();
 		SetLoadCurve(plc);
 	}
 	else SetLoadCurve(0);
 }
 
-void CCurveEditor::SetLoadCurve(FELoadCurve* plc)
+void CCurveEditor::SetLoadCurve(LoadCurve* plc)
 {
 	ui->plot->clear();
 	ui->plot->SetLoadCurve(plc);
@@ -837,7 +837,7 @@ void CCurveEditor::SetLoadCurve(FELoadCurve* plc)
 void CCurveEditor::UpdateLoadCurve()
 {
 	if (m_currentItem == 0) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 	if (plc == 0) return;
 
 	CPlotData& data = ui->plot->getPlotData(0);
@@ -863,7 +863,7 @@ void CCurveEditor::on_filter_currentIndexChanged(int n)
 void CCurveEditor::on_plot_pointClicked(QPointF p, bool shift)
 {
 	if (m_currentItem == 0) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	if (plc == 0)
 	{
@@ -900,7 +900,7 @@ void CCurveEditor::on_plot_pointSelected(int n)
 void CCurveEditor::UpdateSelection()
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 	if (plc == nullptr) return;
 
 	vector<CPlotWidget::Selection> sel = ui->plot->selection();
@@ -920,7 +920,7 @@ void CCurveEditor::UpdateSelection()
 void CCurveEditor::on_plot_pointDragged(QPoint p)
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	vector<CPlotWidget::Selection> sel = ui->plot->selection();
 	if (sel.size() == 0) return;
@@ -961,7 +961,7 @@ void CCurveEditor::on_plot_pointDragged(QPoint p)
 void CCurveEditor::on_plot_draggingStart(QPoint p)
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	ui->m_dragPt = ui->plot->ScreenToView(p);
 
@@ -990,7 +990,7 @@ void CCurveEditor::on_plot_draggingStart(QPoint p)
 void CCurveEditor::on_plot_draggingEnd(QPoint p)
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	vector<CPlotWidget::Selection> sel = ui->plot->selection();
 
@@ -1026,7 +1026,7 @@ vector<double> processLine(const char* szline, char delim)
 	return v;
 }
 
-bool ReadLoadCurve(FELoadCurve& lc, const char* szfile, char delim = ' ', int nskip = 0, int xColumnIndex = 0, int yColumnIndex = 1)
+bool ReadLoadCurve(LoadCurve& lc, const char* szfile, char delim = ' ', int nskip = 0, int xColumnIndex = 0, int yColumnIndex = 1)
 {
 	// sanity checks
 	if (xColumnIndex < 0) { assert(false); return false; }
@@ -1075,7 +1075,7 @@ bool ReadLoadCurve(FELoadCurve& lc, const char* szfile, char delim = ' ', int ns
 	return true;
 }
 
-bool WriteLoadCurve(FELoadCurve& lc, const char* szfile)
+bool WriteLoadCurve(LoadCurve& lc, const char* szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -1108,12 +1108,12 @@ void CCurveEditor::on_open_triggered()
 			int nskip = dlg.GetSkipLines();
 			int nx = dlg.GetXColumnIndex();
 			int ny = dlg.GetYColumnIndex();
-			FELoadCurve lc;
+			LoadCurve lc;
 			std::string sfile = fileName.toStdString();
 			const char* szfile = sfile.c_str();
 			if (ReadLoadCurve(lc, szfile, delim, nskip, nx, ny))
 			{
-				FELoadCurve* plc = m_currentItem->GetLoadCurve();
+				LoadCurve* plc = m_currentItem->GetLoadCurve();
 				if (plc == nullptr)
 				{
 					Param* pp = m_currentItem->GetParam();
@@ -1175,7 +1175,7 @@ void CCurveEditor::on_save_triggered()
 		return;
 	}
 
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	QString fileName = QFileDialog::getSaveFileName(this, "Open File", "", "All files (*)");
 	if (fileName.isEmpty() == false)
@@ -1197,9 +1197,9 @@ void CCurveEditor::on_clip_triggered()
 void CCurveEditor::on_copy_triggered()
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
-	if (m_plc_copy == 0) m_plc_copy = new FELoadCurve;
+	if (m_plc_copy == 0) m_plc_copy = new LoadCurve;
 	*m_plc_copy = *plc;
 }
 
@@ -1208,7 +1208,7 @@ void CCurveEditor::on_paste_triggered()
 	if (m_currentItem == 0) return;
 	if (m_plc_copy == 0) return;
 
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 	if (m_currentItem->GetLoadCurve() == 0)
 	{
 		Param* p = m_currentItem->GetParam();
@@ -1239,7 +1239,7 @@ void CCurveEditor::on_delete_triggered()
 	}
 	else
 	{
-		FELoadCurve* plc = m_currentItem->GetLoadCurve();
+		LoadCurve* plc = m_currentItem->GetLoadCurve();
 		if (plc)
 		{
 			plc->Clear();
@@ -1251,7 +1251,7 @@ void CCurveEditor::on_delete_triggered()
 void CCurveEditor::on_xval_textEdited()
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	vector<CPlotWidget::Selection> sel = ui->plot->selection();
 
@@ -1268,7 +1268,7 @@ void CCurveEditor::on_xval_textEdited()
 void CCurveEditor::on_yval_textEdited()
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	vector<CPlotWidget::Selection> sel = ui->plot->selection();
 
@@ -1285,7 +1285,7 @@ void CCurveEditor::on_yval_textEdited()
 void CCurveEditor::on_deletePoint_clicked()
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	vector<CPlotWidget::Selection> sel = ui->plot->selection();
 
@@ -1303,21 +1303,21 @@ void CCurveEditor::on_deletePoint_clicked()
 void CCurveEditor::on_zoomToFit_clicked()
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 	ui->plot->OnZoomToFit();
 }
 
 void CCurveEditor::on_zoomX_clicked()
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 	ui->plot->OnZoomToWidth();
 }
 
 void CCurveEditor::on_zoomY_clicked()
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 	ui->plot->OnZoomToHeight();
 }
 
@@ -1329,7 +1329,7 @@ void CCurveEditor::on_map_clicked()
 void CCurveEditor::on_undo_triggered()
 {
 	if (m_currentItem == 0) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	if (m_cmd.CanUndo()) m_cmd.UndoCommand();
 
@@ -1351,7 +1351,7 @@ void CCurveEditor::on_undo_triggered()
 void CCurveEditor::on_redo_triggered()
 {	
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	if (m_cmd.CanRedo()) m_cmd.RedoCommand();
 
@@ -1366,7 +1366,7 @@ void CCurveEditor::on_redo_triggered()
 void CCurveEditor::on_math_triggered()
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	CDlgFormula dlg(this);
 
@@ -1404,7 +1404,7 @@ void CCurveEditor::on_math_triggered()
 void CCurveEditor::on_lineType_currentIndexChanged(int n)
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 	plc->SetType(n);
     plc->Update();
 	ui->plot->repaint();
@@ -1413,7 +1413,7 @@ void CCurveEditor::on_lineType_currentIndexChanged(int n)
 void CCurveEditor::on_extendMode_currentIndexChanged(int n)
 {
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	LoadCurve* plc = m_currentItem->GetLoadCurve();
 	plc->SetExtend(n);
 	ui->plot->repaint();
 }

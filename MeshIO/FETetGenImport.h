@@ -45,7 +45,7 @@ public:
 	};
 
 public:
-	FETetGenImport(FEProject& prj);
+	FETetGenImport(FSProject& prj);
 	~FETetGenImport(void);
 
 	bool Load(const char* szfile);

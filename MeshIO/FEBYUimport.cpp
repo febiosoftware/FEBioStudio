@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEBYUimport::FEBYUimport(FEProject& prj) : FEFileImport(prj)
+FEBYUimport::FEBYUimport(FSProject& prj) : FEFileImport(prj)
 {
 }
 

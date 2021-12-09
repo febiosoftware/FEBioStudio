@@ -311,7 +311,7 @@ int CDlgAddDomain::selectedDomain()
 
 //=================================================================================================
 
-CDlgEditOutput::CDlgEditOutput(FEProject& prj, QWidget* parent, int tab) : QDialog(parent), ui(new Ui::CDlgEditOutput), m_prj(prj)
+CDlgEditOutput::CDlgEditOutput(FSProject& prj, QWidget* parent, int tab) : QDialog(parent), ui(new Ui::CDlgEditOutput), m_prj(prj)
 {
 	ui->setup(this);
 	ui->tab->setCurrentIndex(tab);

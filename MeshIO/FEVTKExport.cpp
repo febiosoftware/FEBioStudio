@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FEVTKExport::FEVTKExport(FEProject& prj) : FEFileExport(prj)
+FEVTKExport::FEVTKExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 

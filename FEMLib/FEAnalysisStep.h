@@ -257,7 +257,7 @@ public:
 	STEP_SETTINGS& GetSettings() { return m_ops; }
 
 	// get the must-point load curve
-	FELoadCurve* GetMustPointLoadCurve() { return &m_MP; }
+	LoadCurve* GetMustPointLoadCurve() { return &m_MP; }
 
 	// get the analysis types
 	virtual vector<string> GetAnalysisStrings() const;
@@ -268,7 +268,7 @@ protected:
 
 protected:
 	STEP_SETTINGS	m_ops;		// step options
-	FELoadCurve		m_MP;		// must-point curve
+	LoadCurve		m_MP;		// must-point curve
 };
 
 //-----------------------------------------------------------------------------

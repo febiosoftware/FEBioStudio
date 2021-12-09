@@ -35,7 +35,7 @@ public:
 	int			m_mid;		// material ID
 	int			m_BC[6];	// BCs
 	double		m_val[6];	// scale values
-	FELoadCurve	m_LC [6];	// load curves
+	LoadCurve	m_LC [6];	// load curves
 
 private:
 	int		m_ntype;	// constraint type
@@ -93,8 +93,8 @@ public:
 	double GetValue() const { return GetFloatValue(VALUE); }
 	void SetValue(double v) { SetFloatValue(VALUE, v); }
 
-	FELoadCurve* GetLoadCurve() { return GetParamLC(VALUE); }
-	void SetLoadCurve(const FELoadCurve& lc) { GetParam(VALUE).SetLoadCurve(lc); }
+	LoadCurve* GetLoadCurve() { return GetParamLC(VALUE); }
+	void SetLoadCurve(const LoadCurve& lc) { GetParam(VALUE).SetLoadCurve(lc); }
 	void RemoveLoadcurve() { GetParam(VALUE).DeleteLoadCurve(); }
 };
 

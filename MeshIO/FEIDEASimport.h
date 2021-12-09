@@ -49,7 +49,7 @@ protected:
 	};
 
 public:
-	FEIDEASimport(FEProject& prj);
+	FEIDEASimport(FSProject& prj);
 	virtual ~FEIDEASimport();
 
 	bool Load(const char* szfile);

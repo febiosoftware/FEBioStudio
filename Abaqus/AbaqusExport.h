@@ -26,13 +26,13 @@ SOFTWARE.*/
 #pragma once
 #include <MeshTools/FEFileExport.h>
 
-class FEProject;
+class FSProject;
 
 //-----------------------------------------------------------------------------
 class FEAbaqusExport : public FEFileExport
 {
 public:
-	FEAbaqusExport(FEProject& prj);
+	FEAbaqusExport(FSProject& prj);
 	~FEAbaqusExport(void);
 
 	bool Write(const char* szfile) override;

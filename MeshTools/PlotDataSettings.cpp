@@ -110,7 +110,7 @@ void FEPlotVariable::removeDomain(int n)
 }
 
 //=================================================================================================
-CPlotDataSettings::CPlotDataSettings(FEProject& prj) : m_prj(prj)
+CPlotDataSettings::CPlotDataSettings(FSProject& prj) : m_prj(prj)
 {
 	Init();
 }

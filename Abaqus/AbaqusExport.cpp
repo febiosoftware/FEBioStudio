@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FECore/FETransform.h>
 
-FEAbaqusExport::FEAbaqusExport(FEProject& prj) : FEFileExport(prj)
+FEAbaqusExport::FEAbaqusExport(FSProject& prj) : FEFileExport(prj)
 {
 
 }

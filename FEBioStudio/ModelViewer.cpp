@@ -1056,7 +1056,7 @@ void CModelViewer::OnChangeMaterial()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
 	CDlgAddPhysicsItem dlg("Add Material", FE_MATERIAL, prj, false, this);
@@ -1438,7 +1438,7 @@ void CModelViewer::OnOpenJob()
 void CModelViewer::OnEditOutput()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEProject& prj = pdoc->GetProject();
+	FSProject& prj = pdoc->GetProject();
 
 	CDlgEditOutput dlg(prj, this);
 	dlg.exec();	
@@ -1448,7 +1448,7 @@ void CModelViewer::OnEditOutput()
 void CModelViewer::OnEditOutputLog()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEProject& prj = pdoc->GetProject();
+	FSProject& prj = pdoc->GetProject();
 
 	CDlgEditOutput dlg(prj, this, 1);
 	dlg.exec();

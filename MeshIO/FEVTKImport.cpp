@@ -82,7 +82,7 @@ public:
     vector<int>     m_cellcnctvty;
 };
 
-FEVTKimport::FEVTKimport(FEProject& prj) : FEFileImport(prj)
+FEVTKimport::FEVTKimport(FSProject& prj) : FEFileImport(prj)
 {
 	m_szline[0] = 0;
 }

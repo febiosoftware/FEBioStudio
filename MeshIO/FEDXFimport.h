@@ -60,7 +60,7 @@ protected:
 	};
 
 public:
-	FEDXFimport(FEProject& prj);
+	FEDXFimport(FSProject& prj);
 	virtual ~FEDXFimport();
 
 	bool Load(const char* szfile) override;

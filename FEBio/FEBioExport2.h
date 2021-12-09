@@ -37,7 +37,7 @@ class GPart;
 class FEBioExport2 : public FEBioExport
 {
 public:
-	FEBioExport2(FEProject& prj);
+	FEBioExport2(FSProject& prj);
 	virtual ~FEBioExport2();
 
 	void Clear() override;
@@ -48,7 +48,7 @@ public: // set export attributes
 	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
 
 protected:
-	bool PrepareExport(FEProject& prj) override;
+	bool PrepareExport(FSProject& prj) override;
 
 	void WriteModuleSection    (FSAnalysisStep* pstep);
 	void WriteControlSection   (FSAnalysisStep* pstep);

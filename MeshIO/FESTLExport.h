@@ -33,7 +33,7 @@ class GObject;
 class FESTLExport : public FEFileExport
 {
 public:
-	FESTLExport(FEProject& prj);
+	FESTLExport(FSProject& prj);
 	~FESTLExport(void);
 
 	bool Write(const char* szfile) override;

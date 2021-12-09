@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 
-class FEProject;
+class FSProject;
 
 namespace Ui {
 	class CDlgEditProject;
@@ -38,11 +38,11 @@ class CDlgEditProject : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgEditProject(FEProject& prj, QWidget* parent);
+	CDlgEditProject(FSProject& prj, QWidget* parent);
 
 	void accept();
 
 private:
 	Ui::CDlgEditProject*	ui;
-	FEProject&				m_prj;
+	FSProject&				m_prj;
 };

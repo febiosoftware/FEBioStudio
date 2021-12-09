@@ -98,7 +98,7 @@ template <> std::string type_to_string<mat3d>(const mat3d& v)
 }
 
 //=============================================================================
-FEBioExport::FEBioExport(FEProject& prj) : FEFileExport(prj)
+FEBioExport::FEBioExport(FSProject& prj) : FEFileExport(prj)
 {
 	m_compress = false;
 	m_exportSelections = false;
@@ -158,7 +158,7 @@ void FEBioExport::WriteParam(Param &p)
 	XMLElement e;
 	e.name(szname);
 	if (szindex) e.add_attribute(szindex, nindex);
-	FELoadCurve* plc = p.GetLoadCurve();
+	LoadCurve* plc = p.GetLoadCurve();
 	if (plc && plc->Size())
 	{
 		assert(plc->GetID() > 0);
@@ -263,7 +263,7 @@ void FEBioExport::WriteParamList(ParamContainer& c)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport::AddLoadCurve(FELoadCurve* plc)
+void FEBioExport::AddLoadCurve(LoadCurve* plc)
 {
 	assert(plc);
 	m_pLC.push_back(plc);
@@ -277,7 +277,7 @@ void FEBioExport::AddLoadCurves(ParamContainer& PC)
 	for (int i = 0; i<N; ++i)
 	{
 		Param& p = PC.GetParam(i);
-		FELoadCurve* plc = p.GetLoadCurve();
+		LoadCurve* plc = p.GetLoadCurve();
 		if (plc) AddLoadCurve(plc);
 	}
 }
@@ -298,7 +298,7 @@ void FEBioExport::WriteNote(FSObject* po)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport::PrepareExport(FEProject& prj)
+bool FEBioExport::PrepareExport(FSProject& prj)
 {
 	Clear();
 

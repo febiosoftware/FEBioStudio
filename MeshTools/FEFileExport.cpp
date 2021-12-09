@@ -36,7 +36,7 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEFileExport::FEFileExport(FEProject& prj) : m_prj(prj)
+FEFileExport::FEFileExport(FSProject& prj) : m_prj(prj)
 {
 
 }

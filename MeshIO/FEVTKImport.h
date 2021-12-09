@@ -37,7 +37,7 @@ class FEVTKimport :	public FEFileImport
 {
 
 public:
-	FEVTKimport(FEProject& prj);
+	FEVTKimport(FSProject& prj);
 	~FEVTKimport(void);
 
 	bool Load(const char* szfile);

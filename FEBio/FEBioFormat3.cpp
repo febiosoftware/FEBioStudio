@@ -1359,7 +1359,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 
 						if (tag.isleaf() == false)
 						{
-							FELoadCurve lc; lc.Clear();
+							LoadCurve lc; lc.Clear();
 							++tag;
 							do {
 								if (tag == "points")
@@ -2825,7 +2825,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 						FS1DPointFunction* pf1d = dynamic_cast<FS1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
 						if (pf1d)
 						{
-							FELoadCurve lc;
+							LoadCurve lc;
 							ParseLoadCurve(tag, lc);
 							pf1d->SetPointCurve(lc);
 						}
@@ -2966,7 +2966,7 @@ bool FEBioFormat3::ParseLoadDataSection(XMLTag& tag)
 		if (tag == "load_controller")
 		{
 			// create the loadcurve
-			FELoadCurve lc;
+			LoadCurve lc;
 
 			// remove default points
 			lc.Clear();
@@ -2988,7 +2988,7 @@ bool FEBioFormat3::ParseLoadDataSection(XMLTag& tag)
 	return true;
 }
 
-bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, FELoadCurve& lc)
+bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, LoadCurve& lc)
 {
 	int nid = lc.GetID();
 
@@ -2998,21 +2998,21 @@ bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, FELoadCurve& lc)
 		if (tag == "interpolate")
 		{
 			string interpolate = tag.szvalue();
-			if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetType(FELoadCurve::LC_STEP);
-			else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetType(FELoadCurve::LC_LINEAR);
-			else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetType(FELoadCurve::LC_SMOOTH);
-            else if ((interpolate == "cubic spline") || (interpolate == "CUBIC SPLINE")) lc.SetType(FELoadCurve::LC_CSPLINE);
-            else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetType(FELoadCurve::LC_CPOINTS);
-            else if ((interpolate == "approximation") || (interpolate == "APPROXIMATION")) lc.SetType(FELoadCurve::LC_APPROX);
+			if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetType(LoadCurve::LC_STEP);
+			else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetType(LoadCurve::LC_LINEAR);
+			else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetType(LoadCurve::LC_SMOOTH);
+            else if ((interpolate == "cubic spline") || (interpolate == "CUBIC SPLINE")) lc.SetType(LoadCurve::LC_CSPLINE);
+            else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetType(LoadCurve::LC_CPOINTS);
+            else if ((interpolate == "approximation") || (interpolate == "APPROXIMATION")) lc.SetType(LoadCurve::LC_APPROX);
 			else FileReader()->AddLogEntry("unknown interpolation type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 		}
 		else if (tag == "extend")
 		{
 			string extend = tag.szvalue();
-			if      ((extend == "constant"     ) || (extend == "CONSTANT"     )) lc.SetExtend(FELoadCurve::EXT_CONSTANT);
-			else if ((extend == "extrapolate"  ) || (extend == "EXTRAPOLATE"  )) lc.SetExtend(FELoadCurve::EXT_EXTRAPOLATE);
-			else if ((extend == "repeat"       ) || (extend == "REPEAT"       )) lc.SetExtend(FELoadCurve::EXT_REPEAT);
-			else if ((extend == "repeat offset") || (extend == "REPEAT OFFSET")) lc.SetExtend(FELoadCurve::EXT_REPEAT_OFFSET);
+			if      ((extend == "constant"     ) || (extend == "CONSTANT"     )) lc.SetExtend(LoadCurve::EXT_CONSTANT);
+			else if ((extend == "extrapolate"  ) || (extend == "EXTRAPOLATE"  )) lc.SetExtend(LoadCurve::EXT_EXTRAPOLATE);
+			else if ((extend == "repeat"       ) || (extend == "REPEAT"       )) lc.SetExtend(LoadCurve::EXT_REPEAT);
+			else if ((extend == "repeat offset") || (extend == "REPEAT OFFSET")) lc.SetExtend(LoadCurve::EXT_REPEAT_OFFSET);
 			else FileReader()->AddLogEntry("unknown extend mode for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 		}
 		else if (tag == "points")

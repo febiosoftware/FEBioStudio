@@ -380,7 +380,7 @@ FSRigidSphereInterface::FSRigidSphereInterface(FSModel* ps, int nstep) : FSSoloI
 
 	// the default load curve defines a linear ramp
 	// we don't want that here. By default, the plane should not move
-	FELoadCurve LC;
+	LoadCurve LC;
 	LC.Clear();
 	LC.Add(LOADPOINT(0, 0));
 	LC.Add(LOADPOINT(0, 0));
@@ -390,7 +390,7 @@ FSRigidSphereInterface::FSRigidSphereInterface(FSModel* ps, int nstep) : FSSoloI
 }
 
 //-----------------------------------------------------------------------------
-FELoadCurve* FSRigidSphereInterface::GetLoadCurve(int i)
+LoadCurve* FSRigidSphereInterface::GetLoadCurve(int i)
 { 
 	return GetParamLC(FSRigidSphereInterface::UX + i);
 }

@@ -56,7 +56,7 @@ protected:
 	};
 
 public:
-	FEHMASCIIimport(FEProject& prj);
+	FEHMASCIIimport(FSProject& prj);
 	~FEHMASCIIimport(void);
 
 	bool Load(const char* szfile);

@@ -37,7 +37,7 @@ class VTUimport : public FEFileImport
 {
 
 public:
-	VTUimport(FEProject& prj);
+	VTUimport(FSProject& prj);
 	~VTUimport(void);
 
 	bool Load(const char* szfile);

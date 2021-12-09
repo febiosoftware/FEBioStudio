@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
-AnsysImport::AnsysImport(FEProject& prj) : FEFileImport(prj)
+AnsysImport::AnsysImport(FSProject& prj) : FEFileImport(prj)
 {
 }
 

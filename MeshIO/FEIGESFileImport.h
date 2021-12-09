@@ -67,7 +67,7 @@ protected:
 	};
 
 public:
-	FEIGESFileImport(FEProject& prj);
+	FEIGESFileImport(FSProject& prj);
 	~FEIGESFileImport(void);
 
 	bool Load(const char* szfile);

@@ -32,7 +32,7 @@ SOFTWARE.*/
 
 //using namespace std;
 
-class FEProject;
+class FSProject;
 
 namespace Ui {
 	class CDlgAddRigidConnector;
@@ -41,7 +41,7 @@ namespace Ui {
 class CDlgAddRigidConnector : public CHelpDialog
 {
 public:
-	CDlgAddRigidConnector(FEProject& prj, QWidget* parent);
+	CDlgAddRigidConnector(FSProject& prj, QWidget* parent);
 
 	int GetType();
 	std::string GetName();

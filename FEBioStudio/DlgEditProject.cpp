@@ -79,7 +79,7 @@ public:
 	}
 };
 
-CDlgEditProject::CDlgEditProject(FEProject& prj, QWidget* parent): QDialog(parent), ui(new Ui::CDlgEditProject), m_prj(prj)
+CDlgEditProject::CDlgEditProject(FSProject& prj, QWidget* parent): QDialog(parent), ui(new Ui::CDlgEditProject), m_prj(prj)
 {
 	ui->setup(this);
 

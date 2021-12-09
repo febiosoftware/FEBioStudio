@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-FEIDEASimport::FEIDEASimport(FEProject& prj) : FEFileImport(prj)
+FEIDEASimport::FEIDEASimport(FSProject& prj) : FEFileImport(prj)
 {
 }
 

@@ -121,7 +121,7 @@ private:
 	};
 
 public:
-	FEBioExport25(FEProject& prj);
+	FEBioExport25(FSProject& prj);
 	virtual ~FEBioExport25();
 
 	void Clear() override;
@@ -136,10 +136,10 @@ public: // set export attributes
 	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
 
 protected:
-	bool PrepareExport(FEProject& prj) override;
-	void BuildNodeSetList(FEProject& prj);
-	void BuildSurfaceList(FEProject& prj);
-	void BuildElemSetList(FEProject& prj);
+	bool PrepareExport(FSProject& prj) override;
+	void BuildNodeSetList(FSProject& prj);
+	void BuildSurfaceList(FSProject& prj);
+	void BuildElemSetList(FSProject& prj);
 
 	void WriteModuleSection    (FSAnalysisStep* pstep);
 	void WriteControlSection   (FSAnalysisStep* pstep);

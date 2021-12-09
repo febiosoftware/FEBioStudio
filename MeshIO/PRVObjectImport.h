@@ -37,7 +37,7 @@ class GDiscreteObject;
 class PRVObjectImport : public FEFileImport
 {
 public:
-	PRVObjectImport(FEProject& prj);
+	PRVObjectImport(FSProject& prj);
 
 	// read the file
 	bool Load(const char* szfile);
@@ -46,9 +46,9 @@ public:
 	void Close();
 
 protected:
-	bool LoadObjects(IArchive& ar, FEProject& prj);
-	GObject* LoadObject(IArchive& ar, FEProject& prj);
-	GDiscreteObject* LoadDiscreteObject(IArchive& ar, FEProject& prj);
+	bool LoadObjects(IArchive& ar, FSProject& prj);
+	GObject* LoadObject(IArchive& ar, FSProject& prj);
+	GDiscreteObject* LoadDiscreteObject(IArchive& ar, FSProject& prj);
 	void ReindexObject(GObject* po);
 	void ReindexDiscreteObject(GDiscreteObject* po);
 

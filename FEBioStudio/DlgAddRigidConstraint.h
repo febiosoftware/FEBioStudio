@@ -34,7 +34,7 @@ using std::string;
 using std::vector;
 //using namespace std;
 
-class FEProject;
+class FSProject;
 class GMaterial;
 
 namespace Ui {
@@ -44,7 +44,7 @@ namespace Ui {
 class CDlgAddRigidConstraint : public CHelpDialog
 {
 public:
-	CDlgAddRigidConstraint(FEProject& prj, QWidget* parent);
+	CDlgAddRigidConstraint(FSProject& prj, QWidget* parent);
 
 	void accept();
 

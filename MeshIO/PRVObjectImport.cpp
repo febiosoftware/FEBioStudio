@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 
 //-----------------------------------------------------------------------------
-PRVObjectImport::PRVObjectImport(FEProject& prj) : FEFileImport(prj)
+PRVObjectImport::PRVObjectImport(FSProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -60,7 +60,7 @@ void PRVObjectImport::Close()
 	FileReader::Close();
 }
 
-bool PRVObjectImport::LoadObjects(IArchive& ar, FEProject& prj)
+bool PRVObjectImport::LoadObjects(IArchive& ar, FSProject& prj)
 {
 	GModel& model = prj.GetFSModel().GetModel();
 	m_objList.clear();
@@ -101,7 +101,7 @@ bool PRVObjectImport::LoadObjects(IArchive& ar, FEProject& prj)
 	return true;
 }
 
-GObject* PRVObjectImport::LoadObject(IArchive& ar, FEProject& prj)
+GObject* PRVObjectImport::LoadObject(IArchive& ar, FSProject& prj)
 {
 	GObject* po = 0;
 	while (ar.OpenChunk() == IArchive::IO_OK)
@@ -135,7 +135,7 @@ GObject* PRVObjectImport::LoadObject(IArchive& ar, FEProject& prj)
 	return po;
 }
 
-GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& prj)
+GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FSProject& prj)
 {
 	GDiscreteObject* po = 0;
 	GModel* gm = &prj.GetFSModel().GetModel();

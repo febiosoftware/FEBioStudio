@@ -46,7 +46,7 @@ typedef off_t off_type;
 //-----------------------------------------------------------------------------
 // forward declaration of model class
 class FSModel;
-class FEProject;
+class FSProject;
 
 //-----------------------------------------------------------------------------
 class FileReader
@@ -112,12 +112,12 @@ private:
 class FEFileImport : public FileReader
 {
 public:
-	FEFileImport(FEProject& prj) : m_prj(prj) {}
+	FEFileImport(FSProject& prj) : m_prj(prj) {}
 
-	FEProject& GetProject() { return m_prj; }
+	FSProject& GetProject() { return m_prj; }
 
 protected:
-	FEProject& m_prj;
+	FSProject& m_prj;
 };
 
 // helper function to compare strings

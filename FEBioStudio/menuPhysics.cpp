@@ -56,7 +56,7 @@ void CMainWindow::on_actionAddBC_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
 	CDlgAddPhysicsItem dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, true, this);
 	if (dlg.exec())
@@ -105,7 +105,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 	CDlgAddPhysicsItem dlg("Add Nodal Load", FE_NODAL_LOAD, prj, true, this);
 	if (dlg.exec())
@@ -151,7 +151,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
 	CDlgAddPhysicsItem dlg("Add Surface Load", FE_SURFACE_LOAD, prj, true, this);
 	if (dlg.exec())
@@ -194,7 +194,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 	CDlgAddPhysicsItem dlg("Add Body Load", FE_BODY_LOAD, prj, true, this);
 	if (dlg.exec())
@@ -220,7 +220,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 	CDlgAddPhysicsItem dlg("Add Rigid Load", FE_RIGID_LOAD, prj, true, this);
 	if (dlg.exec())
@@ -246,7 +246,7 @@ void CMainWindow::on_actionAddIC_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 	CDlgAddPhysicsItem dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, true, this);
 	if (dlg.exec())
@@ -299,7 +299,7 @@ void CMainWindow::on_actionAddContact_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 	CDlgAddPhysicsItem dlg("Add Contact Interface", FE_INTERFACE, prj, true, this);
 	if (dlg.exec())
@@ -351,7 +351,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 	CDlgAddPhysicsItem dlg("Add Constraint", FE_CONSTRAINT, prj, true, this);
 	if (dlg.exec())
@@ -401,7 +401,7 @@ void CMainWindow::on_actionAddRigidConstraint_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	CDlgAddRigidConstraint dlg(prj, this);
 	if (dlg.exec())
 	{
@@ -432,7 +432,7 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	CDlgAddRigidConnector dlg(prj, this);
 	if (dlg.exec())
 	{
@@ -465,7 +465,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
 	CDlgAddPhysicsItem dlg("Add Material", FE_MATERIAL, prj, false, this);
@@ -499,7 +499,7 @@ void CMainWindow::on_actionAddMeshAdaptor_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
 	CDlgAddPhysicsItem dlg("Add Mesh Adaptor", FE_MESH_ADAPTOR, prj, true, this);
@@ -514,7 +514,7 @@ void CMainWindow::on_actionAddStep_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	FSModel* fem = doc->GetFSModel();
 //	CDlgAddStep dlg(prj, this);
 //	if (dlg.exec())

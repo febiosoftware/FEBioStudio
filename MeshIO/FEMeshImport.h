@@ -44,7 +44,7 @@ protected:
 	};
 
 public:
-	FEMeshImport(FEProject& prj);
+	FEMeshImport(FSProject& prj);
 	~FEMeshImport();
 
 	bool Load(const char* szfile);
@@ -58,7 +58,7 @@ protected:
 	void ReadTet  (FILE* fp);
 	void ReadTri  (FILE* fp);
 
-	void BuildMesh(FEProject& prj);
+	void BuildMesh(FSProject& prj);
 
 protected:
 	vector<NODE>	m_Node;

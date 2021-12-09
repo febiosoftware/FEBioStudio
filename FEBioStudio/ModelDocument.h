@@ -51,7 +51,7 @@ public:
 
 public:
 	//! Get the project
-	FEProject& GetProject();
+	FSProject& GetProject();
 
 	// get the FE model
 	FSModel* GetFSModel();
@@ -111,7 +111,7 @@ public:
 
 private:
 	// the FE Project
-	FEProject	m_Project;
+	FSProject	m_Project;
 
 	// the job list
 	CFEBioJobList	m_JobList;

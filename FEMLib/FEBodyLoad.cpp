@@ -44,7 +44,7 @@ FSConstBodyForce::FSConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_CONST
 	AddDoubleParam(0, "z")->SetLoadCurve();
 }
 
-FELoadCurve* FSConstBodyForce::GetLoadCurve(int n)
+LoadCurve* FSConstBodyForce::GetLoadCurve(int n)
 {
 	return GetParamLC(FORCE_X + n);
 }
@@ -62,7 +62,7 @@ FSNonConstBodyForce::FSNonConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE
 	AddMathParam("0", "z")->SetLoadCurve();
 }
 
-FELoadCurve* FSNonConstBodyForce::GetLoadCurve(int n)
+LoadCurve* FSNonConstBodyForce::GetLoadCurve(int n)
 {
 	return GetParamLC(FORCE_X + n);
 }

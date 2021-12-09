@@ -57,7 +57,7 @@ public:	// import options
 	bool	m_breadPhysics;	// read the physics (i.e. materials, bcs, etc).
 
 public:
-	AbaqusImport(FEProject& prj);
+	AbaqusImport(FSProject& prj);
 	virtual ~AbaqusImport();
 
 	bool Load(const char* szfile);
@@ -125,7 +125,7 @@ protected:
 
 private:
 	char		m_szTitle[AbaqusModel::Max_Title + 1];
-	FEProject*	m_pprj;
+	FSProject*	m_pprj;
 
 	FSModel*	m_pfem;
 

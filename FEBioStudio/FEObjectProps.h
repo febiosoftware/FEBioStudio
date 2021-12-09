@@ -38,7 +38,7 @@ class FSAnalysisStep;
 class FSRigidInterface;
 class FSRigidConstraint;
 class FSRigidConnector;
-class FEProject;
+class FSProject;
 class Param;
 class FSReactionMaterial;
 class FSMaterial;
@@ -86,7 +86,7 @@ private:
 class CStepSettings : public CObjectProps
 {
 public:
-	CStepSettings(FEProject& prj, FSStep* step);
+	CStepSettings(FSProject& prj, FSStep* step);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 
@@ -164,7 +164,7 @@ private:
 class CLogfileProperties : public CObjectProps
 {
 public:
-	CLogfileProperties(FEProject& prj);
+	CLogfileProperties(FSProject& prj);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 };

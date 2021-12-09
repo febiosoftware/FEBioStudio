@@ -234,7 +234,7 @@ QStringList GetFEBioChoices(int moduleId, int superClassId)
 	return ops;
 }
 
-CStepSettings::CStepSettings(FEProject& prj, FSStep* step) : CObjectProps(0)
+CStepSettings::CStepSettings(FSProject& prj, FSStep* step) : CObjectProps(0)
 {
 	m_step = step;
 	m_moduleId = prj.GetModule();
@@ -738,7 +738,7 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CLogfileProperties::CLogfileProperties(FEProject& prj) : CObjectProps(0)
+CLogfileProperties::CLogfileProperties(FSProject& prj) : CObjectProps(0)
 {
 	CLogDataSettings& log = prj.GetLogDataSettings();
 

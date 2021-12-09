@@ -35,7 +35,7 @@ SOFTWARE.*/
 class FERAWImport : public FEFileImport
 {
 public:
-	FERAWImport(FEProject& prj);
+	FERAWImport(FSProject& prj);
 	~FERAWImport();
 
 	//! Set the image dimensions

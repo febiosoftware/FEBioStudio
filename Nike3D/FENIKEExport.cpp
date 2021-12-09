@@ -35,7 +35,7 @@ SOFTWARE.*/
 // FENIKEExport
 //-----------------------------------------------------------------------------
 
-FENIKEExport::FENIKEExport(FEProject& prj) : FEFileExport(prj)
+FENIKEExport::FENIKEExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -735,12 +735,12 @@ bool FENIKEExport::ExportLoadCurve(FENikeProject& prj)
 	}
 
 	int i, j;
-	list<FELoadCurve>::iterator pc = prj.m_LC.begin();
+	list<LoadCurve>::iterator pc = prj.m_LC.begin();
 	for (i=0; i<nlc; ++i, ++pc)
 	{
 		if (i != 0) fprintf(m_fp,"*-----------------------\n");
 
-		FELoadCurve& lc = *pc;
+		LoadCurve& lc = *pc;
 
 		fprintf(m_fp, "%5d%5d\n", i+1, lc.Size());
 		for (j=0; j<lc.Size(); ++j)

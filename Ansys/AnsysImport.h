@@ -49,7 +49,7 @@ class AnsysImport : public FEFileImport
 	};
 
 public:
-	AnsysImport(FEProject& prj);
+	AnsysImport(FSProject& prj);
 	~AnsysImport(void);
 
 	bool read_NBLOCK();

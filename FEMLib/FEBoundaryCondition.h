@@ -168,7 +168,7 @@ public:
 	int GetDOF() { return GetIntValue(BC); }
 	void SetDOF(int n) { SetIntValue(BC, n); }
 
-	FELoadCurve* GetLoadCurve() { return GetParamLC(SCALE); }
+	LoadCurve* GetLoadCurve() { return GetParamLC(SCALE); }
 
 	bool GetRelativeFlag() { return GetBoolValue(NTYPE); }
 	void SetRelativeFlag(bool b) { SetBoolValue(NTYPE, b); }

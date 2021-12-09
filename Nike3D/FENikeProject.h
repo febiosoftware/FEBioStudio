@@ -281,29 +281,29 @@ public:
 public:
 	FENikeProject() { Defaults(); }
 
-	bool Create(FEProject& prj);
+	bool Create(FSProject& prj);
 
-	// builds an FEProject from a nike project
-	bool Convert(FEProject& prj);
-
-protected:
-	bool BuildControl        (FEProject& prj);
-	bool BuildMaterials      (FEProject& prj);
-	bool BuildNodes          (FEProject& prj);
-	bool BuildElements       (FEProject& prj);
-	bool BuildRigidNodes     (FEProject& prj);
-	bool BuildDiscrete		 (FEProject& prj);
-	bool BuildInterfaces     (FEProject& prj);
-	bool BuildNodalLoads     (FEProject& prj);
-	bool BuildPressureLoads  (FEProject& prj);
-	bool BuildDisplacements  (FEProject& prj);
-	bool BuildBodyForce      (FEProject& prj);
-	bool BuildNodalVelocities(FEProject& prj);
-
-	int AddLoadCurve(FELoadCurve& lc);
+	// builds an FSProject from a nike project
+	bool Convert(FSProject& prj);
 
 protected:
-	bool ConvertMaterials(FEProject& prj);
+	bool BuildControl        (FSProject& prj);
+	bool BuildMaterials      (FSProject& prj);
+	bool BuildNodes          (FSProject& prj);
+	bool BuildElements       (FSProject& prj);
+	bool BuildRigidNodes     (FSProject& prj);
+	bool BuildDiscrete		 (FSProject& prj);
+	bool BuildInterfaces     (FSProject& prj);
+	bool BuildNodalLoads     (FSProject& prj);
+	bool BuildPressureLoads  (FSProject& prj);
+	bool BuildDisplacements  (FSProject& prj);
+	bool BuildBodyForce      (FSProject& prj);
+	bool BuildNodalVelocities(FSProject& prj);
+
+	int AddLoadCurve(LoadCurve& lc);
+
+protected:
+	bool ConvertMaterials(FSProject& prj);
 	void Defaults();
 
 public:
@@ -315,7 +315,7 @@ public:
 	list<RIGID_FACET>			m_Rigid;
 	vector<SLIDING_INTERFACE>	m_SI;
 	list<SI_FACET>				m_Face;
-	list<FELoadCurve>			m_LC;
+	list<LoadCurve>				m_LC;
 	list<NODAL_LOAD>			m_NF;
 	list<PRESSURE_LOAD>			m_PF;
 	list<NODAL_DISPLACEMENT>	m_DC;

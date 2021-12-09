@@ -76,7 +76,7 @@ void stl_write_solid(FILE* fp, FEMeshBase* pm, const char* solidName)
 	fprintf(fp, "endsolid\n");
 }
 
-FESTLExport::FESTLExport(FEProject& prj) : FEFileExport(prj)
+FESTLExport::FESTLExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 

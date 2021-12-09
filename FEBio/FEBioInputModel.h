@@ -406,7 +406,7 @@ public:
 	struct PARAM_CURVE
 	{
 		Param*			m_p;
-		FELoadCurve*	m_plc;	// TODO: We need this for the must-point curve. Try to remove this.
+		LoadCurve*	m_plc;	// TODO: We need this for the must-point curve. Try to remove this.
 		int				m_lc;
 	};
 
@@ -425,15 +425,15 @@ public:
 	Part* FindPart(const char* szname);
 
 public:
-	void AddParamCurve(FELoadCurve* plc, int lc);
+	void AddParamCurve(LoadCurve* plc, int lc);
 	void AddParamCurve(Param* p, int lc);
 
 	int ParamCurves() const { return (int) m_PC.size(); }
 	PARAM_CURVE GetParamCurve(int i) { return m_PC[i]; }
 
-	void AddLoadCurve(const FELoadCurve& lc) { m_LC.push_back(lc); }
+	void AddLoadCurve(const LoadCurve& lc) { m_LC.push_back(lc); }
 	int LoadCurves() const { return (int) m_LC.size(); }
-	FELoadCurve& GetLoadCurve(int i) { return m_LC[i]; }
+	LoadCurve& GetLoadCurve(int i) { return m_LC[i]; }
 
 public:
 	void AddMaterial(GMaterial* pmat) { m_mat.push_back(pmat); }
@@ -479,7 +479,7 @@ private:
 	vector<Part*>			m_part;
 	vector<PartInstance*>	m_Inst;
 	vector<PARAM_CURVE> 	m_PC;
-	vector<FELoadCurve>		m_LC;
+	vector<LoadCurve>		m_LC;
 	vector<PlotVariable>	m_plot;
 	vector<LogVariable>		m_log;
 };

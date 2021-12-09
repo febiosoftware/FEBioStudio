@@ -48,7 +48,7 @@ SOFTWARE.*/
 extern GLColor col[];
 
 //-----------------------------------------------------------------------------
-FEBioImport::FEBioImport(FEProject& prj) : FEFileImport(prj)
+FEBioImport::FEBioImport(FSProject& prj) : FEFileImport(prj)
 {
 	m_szlog = 0;
 	m_febio = 0;

@@ -199,7 +199,7 @@ private:
 	};
 
 public:
-	FEBioExport3(FEProject& prj);
+	FEBioExport3(FSProject& prj);
 	virtual ~FEBioExport3();
 
 	void Clear();
@@ -214,8 +214,8 @@ public: // set export attributes
 	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
 
 protected:
-	bool PrepareExport(FEProject& prj);
-	void BuildItemLists(FEProject& prj);
+	bool PrepareExport(FSProject& prj);
+	void BuildItemLists(FSProject& prj);
 
 	GPartList* BuildPartList(GMaterial* mat);
 

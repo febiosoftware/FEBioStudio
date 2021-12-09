@@ -85,7 +85,7 @@ public:
 };
 
 
-CHelpDialog::CHelpDialog(FEProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog)
+CHelpDialog::CHelpDialog(FSProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog)
 {
 	ui->setupUi(this);
 

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
 
-FEBYUExport::FEBYUExport(FEProject& prj) : FEFileExport(prj)
+FEBYUExport::FEBYUExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 

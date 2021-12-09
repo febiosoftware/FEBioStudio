@@ -392,7 +392,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return nullptr;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 
 	// get the file extension
 	QString ext = QFileInfo(fileName).suffix();
@@ -475,7 +475,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	//       while the file is reading. 
 	CDocument::SetActiveDocument(doc);
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 
 	// create a file reader
 	FileReader* reader = 0;
@@ -635,7 +635,7 @@ void CMainWindow::ExportPostGeometry()
 	case 2:
 	{
 		// We need a dummy project
-		FEProject prj;
+		FSProject prj;
 		FESTLExport stl(prj);
 		bret = stl.Write(szfilename, doc->GetPostObject());
 	}
@@ -763,7 +763,7 @@ void CMainWindow::ExportGeometry()
 		const char* szfile = sfile.c_str();
 
 		// get the project
-		FEProject& fem = doc->GetProject();
+		FSProject& fem = doc->GetProject();
 
 		AddLogEntry(QString("Writing file %1 ... ").arg(fileName));
 
@@ -1242,7 +1242,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		const char* szfile = sfile.c_str();
 
 		// get the project
-		FEProject& fem = doc->GetProject();
+		FSProject& fem = doc->GetProject();
 
 		AddLogEntry(QString("Writing file %1 ... ").arg(fileName));
 
@@ -1590,7 +1590,7 @@ void CMainWindow::on_actionConvertFeb_triggered()
 		int nsuccess = 0, nfails = 0, nwarnings = 0;
 		for (it = fileNames.begin(); it != fileNames.end(); ++it)
 		{
-			FEProject prj;
+			FSProject prj;
 			FEBioImport reader(prj);
 
 			FEFileExport* exporter = 0;
@@ -1730,7 +1730,7 @@ void CMainWindow::on_actionConvertGeo_triggered()
 					FEFileImport* importer = dynamic_cast<FEFileImport*>(reader);
 					if (importer)
 					{
-						FEProject& prj = importer->GetProject();
+						FSProject& prj = importer->GetProject();
 
 						FEFileExport* exporter = nullptr;
 						switch (format)

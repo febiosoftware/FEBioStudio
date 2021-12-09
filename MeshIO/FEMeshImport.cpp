@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEMeshImport::FEMeshImport(FEProject& prj) : FEFileImport(prj)
+FEMeshImport::FEMeshImport(FSProject& prj) : FEFileImport(prj)
 {
 	m_bread_surface = false;
 }
@@ -125,7 +125,7 @@ void FEMeshImport::ReadTri(FILE* fp)
 	}
 }
 
-void FEMeshImport::BuildMesh(FEProject& prj)
+void FEMeshImport::BuildMesh(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
 

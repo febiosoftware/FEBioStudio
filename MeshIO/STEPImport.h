@@ -31,7 +31,7 @@ SOFTWARE.*/
 class STEPImport : public FEFileImport
 {
 public:
-	STEPImport(FEProject& prj);
+	STEPImport(FSProject& prj);
 	~STEPImport();
 
 	bool Load(const char* szfile);

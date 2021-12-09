@@ -91,7 +91,7 @@ private:
 
 private:
 	bool ParseStep(XMLTag& tag);
-	bool ParseLoadCurve(XMLTag& tag, FELoadCurve& lc);
+	bool ParseLoadCurve(XMLTag& tag, LoadCurve& lc);
 
 private:
 	// contact input functions

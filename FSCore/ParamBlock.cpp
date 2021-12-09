@@ -193,14 +193,14 @@ void Param::SetParamType(Param_Type t)
 //-----------------------------------------------------------------------------
 void Param::SetLoadCurve()
 {
-	if (m_plc == 0) m_plc = new FELoadCurve;
+	if (m_plc == 0) m_plc = new LoadCurve;
 }
 
 //-----------------------------------------------------------------------------
-void Param::SetLoadCurve(const FELoadCurve& lc)
+void Param::SetLoadCurve(const LoadCurve& lc)
 {
 	if (m_plc) delete m_plc;
-	m_plc = new FELoadCurve(lc);
+	m_plc = new LoadCurve(lc);
 }
 
 //-----------------------------------------------------------------------------
@@ -211,9 +211,9 @@ void Param::DeleteLoadCurve()
 }
 
 //-----------------------------------------------------------------------------
-FELoadCurve* Param::RemoveLoadCurve()
+LoadCurve* Param::RemoveLoadCurve()
 {
-	FELoadCurve* plc = m_plc;
+	LoadCurve* plc = m_plc;
 	m_plc = nullptr;
 	return plc;
 }
@@ -293,7 +293,7 @@ Param::Param(const Param& p)
 	default:
 		assert(false);
 	}
-	if (p.m_plc) m_plc = new FELoadCurve(*p.m_plc); else m_plc = 0;
+	if (p.m_plc) m_plc = new LoadCurve(*p.m_plc); else m_plc = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -335,7 +335,7 @@ Param& Param::operator = (const Param& p)
 	}
 	if (m_plc) delete m_plc;
 	m_plc = 0;
-	if (p.m_plc) m_plc = new FELoadCurve(*p.m_plc);
+	if (p.m_plc) m_plc = new LoadCurve(*p.m_plc);
 
 	return (*this);
 }
@@ -791,7 +791,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	}
 
 	// store the load curve if there is one
-	FELoadCurve* plc = p.GetLoadCurve();
+	LoadCurve* plc = p.GetLoadCurve();
 	if (plc)
 	{
 		ar.BeginChunk(CID_LOAD_CURVE);
@@ -874,7 +874,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_CURVE_OBSOLETE:
 				{
 					// This is obsolete but remains for backward compatibility.
-					FELoadCurve lc;
+					LoadCurve lc;
 					lc.Load(ar);
 					if (lc.Size() > 0) p.SetLoadCurve(lc);
 				}
@@ -885,7 +885,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			break;
 		case CID_LOAD_CURVE:
 			{
-				FELoadCurve lc;
+				LoadCurve lc;
 				lc.Load(ar);
 
 				// Old versions (<2.0) defined load curves for all float parameters,

@@ -46,11 +46,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-// CLASS: FELoadCurve
 // This class implements the concept of load curve
 //
-
-class FELoadCurve : public CSerializable
+class LoadCurve : public CSerializable
 {
 public:
 	// curve types
@@ -72,12 +70,12 @@ public:
 	};
 
 public:
-	FELoadCurve(double r);
-	FELoadCurve();
-	FELoadCurve(const FELoadCurve& lc);
-	virtual ~FELoadCurve();
+	LoadCurve(double r);
+	LoadCurve();
+	LoadCurve(const LoadCurve& lc);
+	virtual ~LoadCurve();
 
-	FELoadCurve& operator = (const FELoadCurve& lc);
+	LoadCurve& operator = (const LoadCurve& lc);
 
 	void Add(double x, double y);
 	int Add(const LOADPOINT& pt);

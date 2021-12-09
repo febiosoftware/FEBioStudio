@@ -154,7 +154,7 @@ FSObject* CModelDocument::GetActiveItem()
 
 //-----------------------------------------------------------------------------
 //! Get the project
-FEProject& CModelDocument::GetProject()
+FSProject& CModelDocument::GetProject()
 { 
 	return m_Project; 
 }

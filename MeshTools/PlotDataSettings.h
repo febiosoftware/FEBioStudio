@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/Serializable.h>
 #include "FEItemListBuilder.h"
 
-class FEProject;
+class FSProject;
 
 //-----------------------------------------------------------------------------
 // Output variable for plot file
@@ -70,7 +70,7 @@ private:
 class CPlotDataSettings : public CSerializable
 {
 public:
-	CPlotDataSettings(FEProject& prj);
+	CPlotDataSettings(FSProject& prj);
 
 	//! save to file
 	void Save(OArchive& ar);
@@ -92,6 +92,6 @@ public:
 	FEPlotVariable* FindVariable(const std::string& var);
 
 private:
-	FEProject&	m_prj;
+	FSProject&	m_prj;
 	vector<FEPlotVariable>	m_plot;		// plot file variables
 };

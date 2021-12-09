@@ -18,7 +18,7 @@ class COMSOLimport : public FEFileImport
 {
 
 public:
-	COMSOLimport(FEProject& prj);
+	COMSOLimport(FSProject& prj);
 	virtual ~COMSOLimport();
 	bool	Load(const char* szfile);
 	bool	m_domainstosets;	// create element sets by comsol domain

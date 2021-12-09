@@ -50,10 +50,10 @@ public:
 
 	void DrawPlotData(QPainter& p, CPlotData& data) override;
 
-	void SetLoadCurve(FELoadCurve* lc) { m_lc = lc; }
+	void SetLoadCurve(LoadCurve* lc) { m_lc = lc; }
 
 private:
-	FELoadCurve*	m_lc;
+	LoadCurve*	m_lc;
 };
 
 class CCurveEditorItem : public QTreeWidgetItem
@@ -62,15 +62,15 @@ public:
 	CCurveEditorItem(QTreeWidget* tree) : QTreeWidgetItem(tree) { m_plc = 0; m_pp = 0; }
 	CCurveEditorItem(QTreeWidgetItem* item) : QTreeWidgetItem(item) { m_plc = 0; m_pp = 0; }
 
-	void SetLoadCurve(FELoadCurve* plc) { m_plc = plc; }
-	FELoadCurve* GetLoadCurve() { return m_plc; }
+	void SetLoadCurve(LoadCurve* plc) { m_plc = plc; }
+	LoadCurve* GetLoadCurve() { return m_plc; }
 
 	void SetParam(Param* pp) { m_pp = pp; }
 	Param* GetParam() { return m_pp; }
 
 private:
 	Param*			m_pp;
-	FELoadCurve*	m_plc;
+	LoadCurve*	m_plc;
 };
 
 class Ui::CCurveEdior
@@ -267,7 +267,7 @@ public:
 		}
 	}
 
-	QTreeWidgetItem* addTreeItem(QTreeWidgetItem* item, const QString& txt, FELoadCurve* plc = 0, Param* pp = 0)
+	QTreeWidgetItem* addTreeItem(QTreeWidgetItem* item, const QString& txt, LoadCurve* plc = 0, Param* pp = 0)
 	{
 		CCurveEditorItem* child = new CCurveEditorItem(item);
 		if (plc) {

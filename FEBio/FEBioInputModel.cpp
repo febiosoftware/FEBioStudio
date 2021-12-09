@@ -768,7 +768,7 @@ FEBioInputModel::~FEBioInputModel()
 	m_Inst.clear();
 }
 
-void FEBioInputModel::AddParamCurve(FELoadCurve* plc, int lc)
+void FEBioInputModel::AddParamCurve(LoadCurve* plc, int lc)
 {
 	PARAM_CURVE pc = { 0, plc, lc };
 	m_PC.push_back(pc);

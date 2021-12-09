@@ -1155,7 +1155,7 @@ FSAnalysisStep::FSAnalysisStep(FSModel* ps, int ntype) : FSStep(ps, ntype)
 	// reset must point curve
 	LOADPOINT pt0(0,0), pt1(1,1);
 	m_MP.Clear();
-	m_MP.SetType(FELoadCurve::LC_STEP);
+	m_MP.SetType(LoadCurve::LC_STEP);
 	m_MP.Add(pt0);
 	m_MP.Add(pt1);
 }

@@ -30,7 +30,7 @@ SOFTWARE.*/
 class FEMeshExport : public FEFileExport
 {
 public:
-	FEMeshExport(FEProject& prj);
+	FEMeshExport(FSProject& prj);
 	~FEMeshExport(void);
 
 	bool Write(const char* szfile) override;

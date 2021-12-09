@@ -52,8 +52,8 @@ class FS1DPointFunction : public FS1DFunction
 {
 public:
 	FS1DPointFunction();
-	FELoadCurve* GetPointCurve();
-	void SetPointCurve(FELoadCurve& lc);
+	LoadCurve* GetPointCurve();
+	void SetPointCurve(LoadCurve& lc);
 	DECLARE_REGISTERED(FS1DPointFunction);
 };
 

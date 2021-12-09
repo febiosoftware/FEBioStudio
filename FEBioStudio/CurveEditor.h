@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <FSCore/ParamBlock.h>
 
 class CMainWindow;
-class FELoadCurve;
+class LoadCurve;
 class FSMaterial;
 class QTreeWidgetItem;
 class CCurveEditorItem;
@@ -65,7 +65,7 @@ private:
 	void AddMultiMaterial(FSMaterial* pm, QTreeWidgetItem* tp);
 	void AddParameterList(QTreeWidgetItem* t1, FSObject* po);
 
-	void SetLoadCurve(FELoadCurve* plc);
+	void SetLoadCurve(LoadCurve* plc);
 	void UpdateLoadCurve();
 
 private:
@@ -110,7 +110,7 @@ private:
 	Ui::CCurveEdior*	ui;
 	CCurveEditorItem*	m_currentItem;
 	CMainWindow*		m_wnd;
-	FELoadCurve*		m_plc_copy;
+	LoadCurve*		m_plc_copy;
 	int					m_nflt;
 
 	// undo stack
@@ -122,7 +122,7 @@ private:
 class CCmdAddPoint : public CCommand
 {
 public:
-	CCmdAddPoint(FELoadCurve* plc, LOADPOINT& p);
+	CCmdAddPoint(LoadCurve* plc, LOADPOINT& p);
 
 	void Execute() override;
 	void UnExecute() override;
@@ -130,7 +130,7 @@ public:
 	int Index() { return m_index; }
 
 private:
-	FELoadCurve*	m_lc;
+	LoadCurve*	m_lc;
 	LOADPOINT		m_pt;
 	int				m_index;
 };
@@ -138,27 +138,27 @@ private:
 class CCmdRemovePoint : public CCommand
 {
 public:
-	CCmdRemovePoint(FELoadCurve* plc, const vector<int>& index);
+	CCmdRemovePoint(LoadCurve* plc, const vector<int>& index);
 
 	void Execute() override;
 	void UnExecute() override;
 
 private:
-	FELoadCurve*	m_lc;
-	FELoadCurve		m_copy;
+	LoadCurve*	m_lc;
+	LoadCurve		m_copy;
 	vector<int>		m_index;
 };
 
 class CCmdMovePoint: public CCommand
 {
 public:
-	CCmdMovePoint(FELoadCurve* plc, int index, LOADPOINT to);
+	CCmdMovePoint(LoadCurve* plc, int index, LOADPOINT to);
 
 	void Execute() override;
 	void UnExecute() override;
 
 private:
-	FELoadCurve*	m_lc;
+	LoadCurve*	m_lc;
 	LOADPOINT		m_p;
 	int				m_index;
 };
@@ -171,6 +171,6 @@ public:
 	void Execute() override;
 	void UnExecute() override;
 private:
-	FELoadCurve*	m_plc;
+	LoadCurve*	m_plc;
 	Param*			m_pp;
 };

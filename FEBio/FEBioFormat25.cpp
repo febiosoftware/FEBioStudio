@@ -931,7 +931,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 												
 						if (tag.isleaf() == false)
 						{
-							FELoadCurve lc; lc.Clear();
+							LoadCurve lc; lc.Clear();
 							++tag;
 							do {
 								if (tag == "points")
@@ -2054,7 +2054,7 @@ FSSurfaceLoad* FEBioFormat25::ParseConcentrationFlux(XMLTag& tag)
 			}
 			else
 			{
-				FELoadCurve* plc = pcf->GetLoadCurve();
+				LoadCurve* plc = pcf->GetLoadCurve();
 				if (plc) plc->Clear();
 			}
 			double s; tag.value(s);
