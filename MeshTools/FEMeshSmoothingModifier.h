@@ -39,8 +39,6 @@ public:
 
 	//! Apply the smoothing modifier
 	FEMesh* Apply(FEMesh* pm);
-	double area_triangle(vec3d r[3]);
-	double distance(vec3d x,vec3d y );
 	void Laplacian_Smoothing(FEMesh* pm,vector<int> hashmap);
 	void Laplacian_Smoothing2(FEMesh* pm,vector<int> hashmap);
 	void Taubin_Smoothing(FEMesh* pm,vector<int> hashmap);
