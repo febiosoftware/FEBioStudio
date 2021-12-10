@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// FEBox.cpp: implementation of the FEBox class.
+// FEBoxMesher.cpp: implementation of the FEBoxMesher class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -35,7 +35,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // Class constructor
-FEBox::FEBox(GBox* po)
+FEBoxMesher::FEBoxMesher(GBox* po)
 {
 	m_pobj = po;
 
@@ -70,7 +70,7 @@ FEBox::FEBox(GBox* po)
 
 //-----------------------------------------------------------------------------
 // Build the FEMesh
-FEMesh* FEBox::BuildMesh()
+FEMesh* FEBoxMesher::BuildMesh()
 {
 	assert(m_pobj);
 
@@ -93,7 +93,7 @@ FEMesh* FEBox::BuildMesh()
 
 //-----------------------------------------------------------------------------
 // Build a 3D butterfly mesh
-FEMesh* FEBox::CreateButterfly3D()
+FEMesh* FEBoxMesher::CreateButterfly3D()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
@@ -252,7 +252,7 @@ FEMesh* FEBox::CreateButterfly3D()
 
 //-----------------------------------------------------------------------------
 // Build a 2D butterfly mesh
-FEMesh* FEBox::CreateButterfly2D()
+FEMesh* FEBoxMesher::CreateButterfly2D()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
@@ -406,7 +406,7 @@ FEMesh* FEBox::CreateButterfly2D()
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEBox::CreateRegular()
+FEMesh* FEBoxMesher::CreateRegular()
 {
 	switch (m_nelem)
 	{
@@ -425,7 +425,7 @@ FEMesh* FEBox::CreateRegular()
 
 //-----------------------------------------------------------------------------
 // Create a regular mesh
-FEMesh* FEBox::CreateRegularHEX()
+FEMesh* FEBoxMesher::CreateRegularHEX()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
@@ -505,7 +505,7 @@ FEMesh* FEBox::CreateRegularHEX()
 
 //-----------------------------------------------------------------------------
 // Create a regular mesh
-FEMesh* FEBox::CreateRegularTET4()
+FEMesh* FEBoxMesher::CreateRegularTET4()
 {
 	int i, j, k;
 
@@ -692,7 +692,7 @@ FEMesh* FEBox::CreateRegularTET4()
 
 //-----------------------------------------------------------------------------
 // Build faces of a regular hex mesh
-void FEBox::BuildHexFaces(FEMesh* pm)
+void FEBoxMesher::BuildHexFaces(FEMesh* pm)
 {
 	int i, j, k;
 
@@ -790,7 +790,7 @@ void FEBox::BuildHexFaces(FEMesh* pm)
 
 //-----------------------------------------------------------------------------
 // Build the faces of a regular tet mesh
-void FEBox::BuildTetFaces(FEMesh* pm)
+void FEBoxMesher::BuildTetFaces(FEMesh* pm)
 {
 	int i, j, k;
 
@@ -942,7 +942,7 @@ void FEBox::BuildTetFaces(FEMesh* pm)
 
 //-----------------------------------------------------------------------------
 // Build the edges of a box mesh
-void FEBox::BuildEdges(FEMesh* pm)
+void FEBoxMesher::BuildEdges(FEMesh* pm)
 {
 	int i;
 
@@ -967,7 +967,7 @@ void FEBox::BuildEdges(FEMesh* pm)
 	for (i=0   ; i<m_nz; ++i, ++pe)  { pe->SetType(FE_EDGE2); pe->m_gid = 11; pe->n[0] = NodeIndex(   0, m_ny, i); pe->n[1] = NodeIndex(   0, m_ny,  i+1); }
 }
 
-FEMesh* FEBox::CreateRegularTET10()
+FEMesh* FEBoxMesher::CreateRegularTET10()
 {
 	FEMesh* tet4 = CreateRegularTET4();
 	FETet4ToTet10 mod;
@@ -976,7 +976,7 @@ FEMesh* FEBox::CreateRegularTET10()
 	return tet10;
 }
 
-FEMesh* FEBox::CreateRegularTET15()
+FEMesh* FEBoxMesher::CreateRegularTET15()
 {
 	FEMesh* tet4 = CreateRegularTET4();
 	FETet4ToTet15 mod;
@@ -985,7 +985,7 @@ FEMesh* FEBox::CreateRegularTET15()
 	return tet15;
 }
 
-FEMesh* FEBox::CreateRegularTET20()
+FEMesh* FEBoxMesher::CreateRegularTET20()
 {
 	FEMesh* tet4 = CreateRegularTET4();
 	FETet4ToTet20 mod;

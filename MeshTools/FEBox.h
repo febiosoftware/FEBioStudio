@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 class GBox;
 
-class FEBox : public FEMultiBlockMesh
+class FEBoxMesher : public FEMultiBlockMesh
 {
 public:
 	// parameters
@@ -39,8 +39,8 @@ public:
 	enum { SIMPLE, BUTTERFLY3D, BUTTERFLY2D };
 
 public:
-	FEBox(){}
-	FEBox(GBox* po);
+	FEBoxMesher(){}
+	FEBoxMesher(GBox* po);
 	FEMesh* BuildMesh();
 
 protected:

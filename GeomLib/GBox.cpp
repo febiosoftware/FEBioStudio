@@ -39,7 +39,7 @@ GBox::GBox() : GPrimitive(GBOX)
 	AddDoubleParam(m_h, "h", "Height (Y)");
 	AddDoubleParam(m_d, "d", "Depth (Z)" );
 	
-	SetFEMesher(new FEBox(this));
+	SetFEMesher(new FEBoxMesher(this));
 
 	Create();
 }
@@ -47,7 +47,7 @@ GBox::GBox() : GPrimitive(GBOX)
 //-----------------------------------------------------------------------------
 FEMesher* GBox::CreateDefaultMesher()
 {
-	return new FEBox(this);
+	return new FEBoxMesher(this);
 }
 
 //-----------------------------------------------------------------------------
