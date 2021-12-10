@@ -259,6 +259,10 @@ int FEElement_::GetLocalFaceIndices(int i, int* n) const
 		nodes = 4;
 		n[0] = 0; n[1] = 1; n[2] = 2; n[3] = 3;
 		break;
+	case FE_QUAD9:
+		nodes = 9;
+		n[0] = 0; n[1] = 1; n[2] = 2; n[3] = 3; n[4] = 4; n[5] = 5; n[6] = 6; n[7] = 7; n[8] = 8;
+		break;
 	}
 
 	assert(nodes > 0);
@@ -815,6 +819,18 @@ void FEElement_::iso_coord(int n, double q[3])
 	default:
 		assert(false);
     }
+}
+
+void FEElement_::setAxes(const vec3d& a, const vec3d& d)
+{
+	vec3d e1(a); e1.Normalize();
+	vec3d e3 = e1 ^ d; e3.Normalize();
+	vec3d e2 = e3 ^ e1; e2.Normalize();
+	m_Q = mat3d(
+		e1.x, e2.x, e3.x,
+		e1.y, e2.y, e3.y,
+		e1.z, e2.z, e3.z);
+	m_Qactive = true;
 }
 
 //=============================================================================

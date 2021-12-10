@@ -413,3 +413,86 @@ GLMesh* triangulate(GFace& face)
 
 	return pm;
 }
+
+// TODO: Not sure if this works well, but initial testing appears promising. 
+std::vector<vec3d> convex_hull2d(const std::vector<vec3d>& p)
+{
+	int N = p.size();
+	if (N <= 2) return p;
+
+	std::vector<vec3d> q;
+	int n0 = 0;
+	vec3d a = p[0], b;
+	do
+	{
+		// find another point such that all points are to the left of the line
+		int n1 = -1;
+		for (int j = 0; j < N; ++j)
+		{
+			b = p[j];
+			bool bok = true;
+			for (int i = 0; i < q.size(); ++i)
+			{
+				vec3d c = q[i];
+				if ((b - c).SqrLength() < 1e-12)
+				{
+					bok = false;
+					break;
+				}
+			}
+
+			if (bok && (j != n0))
+			{
+				if ((b - a).SqrLength() > 1e-12)
+				{
+					bool intersects = false;
+					for (int k = 0; k < N; ++k)
+					{
+						if ((k != n0) && (k != j))
+						{
+							vec3d c = p[k];
+
+							double Lca = (a - c).SqrLength();
+							double Lcb = (b - c).SqrLength();
+
+							if ((Lca > 1e-12) && (Lcb > 1e-12))
+							{
+								double A2 = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+								if (A2 < 0)
+								{
+									intersects = true;
+									break;
+								}
+							}
+						}
+					}
+
+					if (intersects == false)
+					{
+						n1 = j;
+						break;
+					}
+				}
+			}
+		}
+
+		if (n1 != -1)
+		{
+			if (q.empty()) q.push_back(a);
+			q.push_back(b);
+
+			n0 = n1;
+			a = p[n0];
+			n1 = -1;
+		}
+		else
+		{
+			if (q.empty() == false) break;
+			n0++;
+			if (n0 >= N) break;
+			a = p[n0];
+		}
+	} while (true);
+
+	return q;
+}

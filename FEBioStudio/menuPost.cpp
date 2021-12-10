@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLMusclePath.h>
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
@@ -75,7 +76,7 @@ void CMainWindow::on_actionPlaneCut_triggered()
 		return;
 	}
 
-	Post::CGLPlaneCutPlot* pp = new Post::CGLPlaneCutPlot(glm);
+	Post::CGLPlaneCutPlot* pp = new Post::CGLPlaneCutPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -91,7 +92,7 @@ void CMainWindow::on_actionMirrorPlane_triggered()
 		return;
 	}
 
-	Post::CGLMirrorPlane* pp = new Post::CGLMirrorPlane(glm);
+	Post::CGLMirrorPlane* pp = new Post::CGLMirrorPlane();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -107,7 +108,7 @@ void CMainWindow::on_actionVectorPlot_triggered()
 		return;
 	}
 
-	Post::CGLVectorPlot* pp = new Post::CGLVectorPlot(glm);
+	Post::CGLVectorPlot* pp = new Post::CGLVectorPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -123,7 +124,7 @@ void CMainWindow::on_actionTensorPlot_triggered()
 		return;
 	}
 
-	Post::GLTensorPlot* pp = new Post::GLTensorPlot(glm);
+	Post::GLTensorPlot* pp = new Post::GLTensorPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -139,7 +140,7 @@ void CMainWindow::on_actionStreamLinePlot_triggered()
 		return;
 	}
 
-	Post::CGLStreamLinePlot* pp = new Post::CGLStreamLinePlot(glm);
+	Post::CGLStreamLinePlot* pp = new Post::CGLStreamLinePlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -155,7 +156,7 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 		return;
 	}
 
-	Post::CGLParticleFlowPlot* pp = new Post::CGLParticleFlowPlot(glm);
+	Post::CGLParticleFlowPlot* pp = new Post::CGLParticleFlowPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -171,7 +172,7 @@ void CMainWindow::on_actionVolumeFlowPlot_triggered()
 		return;
 	}
 
-	Post::GLVolumeFlowPlot* pp = new Post::GLVolumeFlowPlot(glm);
+	Post::GLVolumeFlowPlot* pp = new Post::GLVolumeFlowPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -305,10 +306,26 @@ void CMainWindow::on_actionAddProbe_triggered()
 		return;
 	}
 
-	Post::GLProbe* probe = new Post::GLProbe(glm);
+	Post::GLProbe* probe = new Post::GLProbe();
 	glm->AddPlot(probe);
 
 	UpdatePostPanel(true, probe);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionMusclePath_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLMusclePath* musclePath = new Post::GLMusclePath();
+	glm->AddPlot(musclePath);
+
+	UpdatePostPanel(true, musclePath);
 	RedrawGL();
 }
 
@@ -317,7 +334,7 @@ void CMainWindow::on_actionIsosurfacePlot_triggered()
 	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr) return;
 
-	Post::CGLIsoSurfacePlot* pp = new Post::CGLIsoSurfacePlot(glm);
+	Post::CGLIsoSurfacePlot* pp = new Post::CGLIsoSurfacePlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -329,7 +346,7 @@ void CMainWindow::on_actionSlicePlot_triggered()
 	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr) return;
 
-	Post::CGLSlicePlot* pp = new Post::CGLSlicePlot(glm);
+	Post::CGLSlicePlot* pp = new Post::CGLSlicePlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -791,6 +808,8 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 	ui->modelViewer->RefreshProperties();
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(false);
+
+	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 
 	int graphs = ui->graphList.size();
 	QList<CGraphWindow*>::iterator it = ui->graphList.begin();

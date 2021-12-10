@@ -32,7 +32,7 @@ class GCone;
 class FECone : public FEMultiBlockMesh
 {
 public:
-	enum { RB, NDIV, NSEG, NSTACK, GZ, GR, GZ2, GR2 };
+	enum { RB, NDIV, NSEG, NSTACK, GZ, GR, GZ2, GR2, ELEM_TYPE };
 
 public:
 	FECone(){}

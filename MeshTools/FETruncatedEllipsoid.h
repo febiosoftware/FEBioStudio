@@ -32,7 +32,7 @@ class GTruncatedEllipsoid;
 class FETruncatedEllipsoid : public FEMultiBlockMesh
 {
 public:
-	enum {NSLICE, NSTACK, NDIV, GR, GR2};
+	enum {NSLICE, NSTACK, NDIV, GR, GR2, ELEM_TYPE};
 
 public:
 	FETruncatedEllipsoid(){}

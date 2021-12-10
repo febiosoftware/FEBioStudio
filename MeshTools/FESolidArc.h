@@ -32,7 +32,7 @@ class GSolidArc;
 class FESolidArc : public FEMultiBlockMesh
 {
 public:
-	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2 };
+	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2, ELEM_TYPE };
 
 public:
 	FESolidArc(){}

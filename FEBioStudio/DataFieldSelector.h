@@ -70,6 +70,22 @@ public:
 	void BuildMenu(QMenu* menu) override;
 };
 
+// Derived class for muscle paths
+class CMusclePathDataSelector : public CDataSelector
+{
+public:
+	CMusclePathDataSelector();
+	void BuildMenu(QMenu* menu) override;
+};
+
+// Derived class for probes
+class CProbeDataSelector : public CDataSelector
+{
+public:
+	CProbeDataSelector();
+	void BuildMenu(QMenu* menu) override;
+};
+
 // Derived class that builds the menu of a CDataSelectorButton from the model's data
 class CModelDataSelector : public CDataSelector, public Post::FEModelDependant
 {

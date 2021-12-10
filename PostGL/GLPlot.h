@@ -62,7 +62,7 @@ private:
 class CGLLegendPlot : public CGLPlot
 {
 public:
-	CGLLegendPlot(CGLModel* po = 0);
+	CGLLegendPlot();
 	virtual ~CGLLegendPlot();
 
 	void SetLegendBar(GLLegendBar* bar);

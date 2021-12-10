@@ -60,6 +60,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostLib/evaluate.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLMusclePath.h>
 
 class TimeRangeOptionsUI
 {
@@ -1494,6 +1495,12 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 			{
 				sourceNames << QString::fromStdString(p->GetName());
 			}
+
+			Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(glm->Plot(i));
+			if (mp)
+			{
+				sourceNames << QString::fromStdString(mp->GetName());
+			}
 		}
 		SetDataSource(sourceNames);
 
@@ -1628,6 +1635,18 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 					}
 					m++;
 				}
+
+				Post::GLMusclePath* musclePath = dynamic_cast<Post::GLMusclePath*>(glm->Plot(i));
+				if (musclePath)
+				{
+					if (m == n)
+					{
+						addMusclePathData(musclePath);
+						break;
+					}
+					m++;
+				}
+
 			}
 		}
 	}
@@ -1677,13 +1696,33 @@ void CModelGraphWindow::setDataSource(int n)
 				{
 					if (m == n)
 					{
-						SetYDataSelector(new CModelDataSelector(&fem, Post::DATA_SCALAR));
+						if (probe->TrackModelData())
+						{
+							SetYDataSelector(new CModelDataSelector(&fem, Post::DATA_SCALAR));
+						}
+						else
+						{
+							SetYDataSelector(new CProbeDataSelector());
+						}
 
 						Update(false, true);
 						break;
 					}
 					m++;
 				}
+
+				Post::GLMusclePath* musclePath = dynamic_cast<Post::GLMusclePath*>(glm->Plot(i));
+				if (musclePath)
+				{
+					if (m == n)
+					{
+						SetYDataSelector(new CMusclePathDataSelector());
+						Update(false, true);
+						break;
+					}
+					m++;
+				}
+
 			}
 		}
 	}
@@ -1784,6 +1823,30 @@ void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
 	plot->setLabel(QString::fromStdString((probe->GetName())));
 	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 }
+
+//-----------------------------------------------------------------------------
+void CModelGraphWindow::addMusclePathData(Post::GLMusclePath* musclePath)
+{
+	CPostDocument* doc = GetPostDoc();
+	Post::FEPostModel& fem = *doc->GetFEModel();
+
+	int nsteps = m_lastState - m_firstState + 1;
+	vector<float> xdata(nsteps);
+	vector<float> ydata(nsteps);
+
+	for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+
+	for (int j = 0; j < nsteps; ++j)
+	{
+		double val = musclePath->DataValue(m_dataY, j);
+		ydata[j] = (float)val;
+	}
+
+	CPlotData* plot = nextData();
+	plot->setLabel(QString::fromStdString((musclePath->GetName())));
+	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
+}
+
 
 //-----------------------------------------------------------------------------
 void CModelGraphWindow::addSelectedNodes()

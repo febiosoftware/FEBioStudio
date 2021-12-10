@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <MeshIO/FEViewpointExport.h>
 #include <MeshIO/FETetGenExport.h>
 #include <MeshIO/FEVTKExport.h>
+#include <MeshIO/VTUImport.h>
 #include <MeshIO/FEPLYExport.h>
 #include <GeomLib/GPrimitive.h>
 #include <FEBio/FEBioImport.h>
@@ -118,6 +119,7 @@ SOFTWARE.*/
 #include <PostLib/VolRender.h>
 #include <PostLib/VolumeRender2.h>
 #include <sstream>
+#include "PostObject.h"
 
 using std::stringstream;
 
@@ -209,10 +211,11 @@ void CMainWindow::on_actionNewImageDoc_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk)";
+	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
 	filters << "FEBioStudio Model (*.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
+	filters << "FEBioStudio Post Session (*.fsps)";
 	filters << "PreView files (*.prv)";
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
@@ -426,6 +429,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("ele", Qt::CaseInsensitive) == 0) return new FETetGenImport(prj);
 	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new FEIGESFileImport(prj);
 	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new FEVTKimport(prj);
+	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
 	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
 	{
 		CDlgRAWImport dlg(this);
@@ -541,7 +545,8 @@ void CMainWindow::ExportPostGeometry()
 		//		<< "FEBio files (*.feb)"
 		//		<< "ASCII files (*.*)"
 		//		<< "VRML files (*.wrl)"
-		<< "LSDYNA Keyword (*.k)";
+		<< "LSDYNA Keyword (*.k)"
+		<< "STL file (*.stl)";
 	//		<< "BYU files(*.byu)"
 	//		<< "NIKE3D files (*.n)"
 	//		<< "VTK files (*.vtk)"
@@ -633,6 +638,14 @@ void CMainWindow::ExportPostGeometry()
 			w.m_bnode = dlg.m_bnode;
 			bret = w.Save(fem, doc->GetActiveState(), szfilename);
 		}
+	}
+	break;
+	case 2:
+	{
+		// We need a dummy project
+		FEProject prj;
+		FESTLExport stl(prj);
+		bret = stl.Write(szfilename, doc->GetPostObject());
 	}
 	break;
 	/*	case 5:
@@ -895,7 +908,8 @@ void CMainWindow::on_recentGeomFiles_triggered(QAction* action)
 void CMainWindow::SavePostDoc()
 {
 	QStringList filters;
-	filters << "FEBio xplt files (*.xplt)"
+	filters << "FEBio Studio Post Session (*.fsps)"
+		<< "FEBio xplt files (*.xplt)"
 		<< "FEBio files (*.feb)"
 		<< "ASCII files (*.*)"
 		<< "VRML files (*.wrl)"
@@ -933,6 +947,11 @@ void CMainWindow::SavePostDoc()
 		{
 		case 0:
 		{
+			bret = doc->SavePostSession(fileName.toStdString());
+		}
+		break;
+		case 1:
+		{
 			CDlgExportXPLT dlg(this);
 			if (dlg.exec() == QDialog::Accepted)
 			{
@@ -943,13 +962,13 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 1:
+		case 2:
 		{
 			Post::FEFEBioExport fr;
 			bret = fr.Save(fem, szfilename);
 		}
 		break;
-		case 2:
+		case 3:
 		{
 			CDlgExportAscii dlg(this);
 			if (dlg.exec() == QDialog::Accepted)
@@ -977,13 +996,13 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 3:
+		case 4:
 		{
 			Post::VRMLExporter exporter;
 			bret = exporter.Save(&fem, szfilename);
 		}
 		break;
-		case 4:
+		case 5:
 		{
 			CDlgExportLSDYNA dlg(this);
 			if (dlg.exec())
@@ -996,19 +1015,19 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 5:
+		case 6:
 		{
 			Post::BYUExport exporter;
 			bret = exporter.Save(fem, szfilename);
 		}
 		break;
-		case 6:
+		case 7:
 		{
 			Post::FENikeExport fr;
 			bret = fr.Save(fem, szfilename);
 		}
 		break;
-		case 7:
+		case 8:
 		{
 			CDlgExportVTK dlg(this);
 			if (dlg.exec())
@@ -1020,7 +1039,7 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 8:
+		case 9:
 		{
 			CDlgExportLSDYNAPlot dlg(&fem, this);
 			if (dlg.exec())
@@ -1031,7 +1050,7 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 9:
+		case 10:
 		{
 			Post::FEAbaqusExport w;
 			stringstream ss;

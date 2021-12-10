@@ -125,9 +125,18 @@ void darkStyle()
 	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
 }
 
+CMainWindow* CMainWindow::m_mainWnd = nullptr;
+
+//-----------------------------------------------------------------------------
+CMainWindow* CMainWindow::GetInstance()
+{
+	return m_mainWnd;
+}
+
 //-----------------------------------------------------------------------------
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
+	m_mainWnd = this;
 
 #ifdef LINUX
 	// Set locale to avoid issues with reading and writing feb files in other languages.
@@ -468,7 +477,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		OpenDocument(fileName);
 	}
 	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
-		     (ext.compare("vtk", Qt::CaseInsensitive) == 0))
+		     (ext.compare("vtk" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("fsps", Qt::CaseInsensitive) == 0))
 	{
 		// load the post file
 		OpenPostFile(fileName, nullptr, showLoadOptions);
@@ -873,6 +883,14 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 			Post::FEVTKimport* vtk = new Post::FEVTKimport(doc->GetFEModel());
 			ReadFile(doc, fileName, vtk, QueuedFile::NEW_DOCUMENT);
 		}
+		else if (ext.compare("fsps", Qt::CaseInsensitive) == 0)
+		{
+			bool b = doc->OpenPostSession(fileName.toStdString());
+
+			// we exploit the queue mechanism here to finish up
+			QueuedFile queueFile(doc, fileName, nullptr, QueuedFile::NEW_DOCUMENT);
+			finishedReadingFile(b, queueFile, "");
+		}
 		else if (ext.isEmpty())
 		{
 			// Assume this is an LSDYNA database
@@ -1021,7 +1039,10 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		{
 			CGLDocument* doc = dynamic_cast<CGLDocument*>(file.m_doc); assert(doc);
 			doc->SetFileReader(file.m_fileReader);
-			doc->SetDocFilePath(file.m_fileName.toStdString());
+			if (doc->GetDocFilePath().empty())
+			{
+				doc->SetDocFilePath(file.m_fileName.toStdString());
+			}
 			bool b = doc->Initialize();
 			if (b == false)
 			{
@@ -1910,7 +1931,7 @@ void CMainWindow::SetItemSelectionMode(int nselect, int nitem)
 //! \param po pointer to object that will be selected in the model editor
 void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 {
-	if (ui->modelViewer)
+	if (ui->modelViewer && GetModelDocument())
 	{
 		if (bupdate)
 		{
@@ -1922,6 +1943,11 @@ void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 			}
 		}
 		else ui->modelViewer->UpdateObject(po);
+	}
+	else if (ui->postPanel && GetPostDocument())
+	{
+		ui->postPanel->Update(bupdate);
+		if (po) ui->postPanel->SelectObject(po);
 	}
 }
 

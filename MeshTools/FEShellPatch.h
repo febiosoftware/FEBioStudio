@@ -33,18 +33,12 @@ class GCylindricalPatch;
 class FEShellPatch : public FEMesher
 {
 public:
-	enum { T, NX, NY };
+	enum { T, NX, NY, ELEM_TYPE};
 
 public:
 	FEShellPatch(){}
 	FEShellPatch(GPatch* po);
 	FEMesh* BuildMesh();
-
-protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
-
-	int NodeIndex(int i, int j) { return i*(m_ny+1) + j; }
 
 protected:
 	GPatch* m_pobj;
@@ -56,7 +50,7 @@ protected:
 class FECylndricalPatch : public FEMesher
 {
 public:
-	enum { T, NX, NY };
+	enum { T, NX, NY, ELEM_TYPE };
 
 public:
 	FECylndricalPatch() {}

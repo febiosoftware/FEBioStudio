@@ -467,6 +467,7 @@ public:
 	FEItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);
+	ElementSet* FindElementSet(const char* szname);
 	bool BuildDiscreteSet(GDiscreteElementSet& set, const char* szset);
 
 public:

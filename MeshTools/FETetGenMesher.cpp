@@ -1755,3 +1755,94 @@ FEMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 #endif // TETLIBRARY
 }
 
+//=============================================================================
+FEConvexHullMesher::FEConvexHullMesher()
+{
+
+}
+
+FEMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
+{
+#ifdef TETLIBRARY
+	tetgenio in, out;
+	in.initialize();
+	out.initialize();
+
+	// all indices start from 0
+	in.firstnumber = 0;
+
+	// allocate nodes
+	int NN = (int)pointCloud.size();
+	in.numberofpoints = NN;
+	in.pointlist = new REAL[3 * NN];
+	for (int i = 0; i < NN; ++i)
+	{
+		const vec3d& r = pointCloud[i];
+		in.pointlist[3 * i    ] = r.x;
+		in.pointlist[3 * i + 1] = r.y;
+		in.pointlist[3 * i + 2] = r.z;
+	}
+
+	try
+	{
+		char switches[] = "";
+		tetrahedralize(switches, &in, &out);
+	}
+	catch (int n)
+	{
+		switch (n) {
+		case 1: SetErrorMessage("Out of memory."); break;
+		case 2: SetErrorMessage("Internal error."); break;
+		case 3: SetErrorMessage("A self-intersection was detected. Meshing stopped."); break;
+		case 4: SetErrorMessage("A very small input feature size was detected. Meshing stopped."); break;
+		case 5: SetErrorMessage("Two very close input facets were detected. Meshing stopped."); break;
+		case 10: SetErrorMessage("An input error was detected. Meshing stopped.\n"); break;
+		default:
+			SetErrorMessage("Unknown error."); break;
+		}
+		return nullptr;
+	}
+	catch (...)
+	{
+		SetErrorMessage("Unknown exception.");
+		return nullptr;
+	}
+
+	// create a new mesh
+	FEMesh* pmesh = new FEMesh;
+	int nodes = out.numberofpoints;
+	int elems = out.numberoftetrahedra;
+
+	// allocate the mesh data
+	pmesh->Create(nodes, elems);
+
+	// copy nodes
+	for (int i = 0; i < nodes; ++i)
+	{
+		FENode& node = pmesh->Node(i);
+		vec3d& r = node.r;
+		r.x = out.pointlist[3 * i];
+		r.y = out.pointlist[3 * i + 1];
+		r.z = out.pointlist[3 * i + 2];
+	}
+
+	// copy elements
+	for (int i = 0; i < elems; ++i)
+	{
+		FEElement& el = pmesh->Element(i);
+		el.SetType(FE_TET4);
+		el.m_node[0] = out.tetrahedronlist[4 * i    ];
+		el.m_node[1] = out.tetrahedronlist[4 * i + 1];
+		el.m_node[2] = out.tetrahedronlist[4 * i + 2];
+		el.m_node[3] = out.tetrahedronlist[4 * i + 3];
+		el.m_gid = 0;
+	}
+
+	// update the element neighbours
+	pmesh->RebuildMesh();
+
+	return pmesh;
+#else
+	return nullptr;
+#endif
+}

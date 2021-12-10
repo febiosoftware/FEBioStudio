@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QWizard>
 #include "FEBioOpt.h"
+#include "FEBioDiagnostic.h"
 
 class FEModel;
 
@@ -90,4 +91,22 @@ public:
 
 private:
 	Ui::CDlgSelectParam*	ui;
+};
+
+//=================================================================================================
+class CDlgFEBioTangentUI;
+
+class CDlgFEBioTangent : public QDialog
+{
+
+public:
+	CDlgFEBioTangent(CMainWindow* parent);
+
+	FEBioTangentDiagnostic GetData();
+
+private:
+	void accept() override;
+
+private:
+	CDlgFEBioTangentUI* ui;
 };

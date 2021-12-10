@@ -165,3 +165,14 @@ protected:
 	FEMesh* build_tet15_mesh(FEMesh* pm);
 #endif
 };
+
+//-----------------------------------------------------------------------------
+class FEConvexHullMesher : public FEMesher
+{
+public:
+	FEConvexHullMesher();
+	FEMesh* Create(const std::vector<vec3d>& pointCloud);
+
+protected:
+	FEMesh* BuildMesh() override { return nullptr; }
+};

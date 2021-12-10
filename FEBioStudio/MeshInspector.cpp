@@ -75,6 +75,9 @@ void CMeshInspector::hideEvent(QHideEvent* ev)
 
 void CMeshInspector::on_var_currentIndexChanged(int n)
 {
+	if ((n == Ui::CMeshInspector::PRINC_CURVE_1) || (n == Ui::CMeshInspector::PRINC_CURVE_2)) ui->propsWidget->show();
+	else ui->propsWidget->hide();
+
 	UpdateData(n);
 	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
 	m_wnd->RedrawGL();
@@ -109,6 +112,13 @@ void CMeshInspector::UpdateData(int ndata)
 	}
 
 	FEMeshValuator eval(*pm);
+
+	int curvatureLevels = ui->curvatureLevels->value();
+	int curvatureMaxIters = ui->curvatureMaxIters->value();
+	bool curvatureExtQuad = ui->curvatureExtQuad->isChecked();
+	eval.SetCurvatureLevels(curvatureLevels);
+	eval.SetCurvatureMaxIters(curvatureMaxIters);
+	eval.SetCurvatureExtQuad(curvatureExtQuad);
 
 	int NE = pm->Elements();
 	vector<double> v; v.reserve(NE*FEElement::MAX_NODES);
@@ -220,6 +230,40 @@ void CMeshInspector::on_select_clicked()
 		CCommand* pcmd = new CCmdSelectElements(pm, elem, false);
 		pdoc->DoCommand(pcmd);
 		m_wnd->Update(this);
+		m_wnd->RedrawGL();
+	}
+}
+
+void CMeshInspector::on_curvatureLevels_valueChanged(int n)
+{
+	int nvar = ui->var->currentIndex();
+	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	{
+		UpdateData(nvar);
+		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
+		m_wnd->RedrawGL();
+	}
+}
+
+void CMeshInspector::on_curvatureMaxIters_valueChanged(int n)
+{
+	int nvar = ui->var->currentIndex();
+	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	{
+		UpdateData(nvar);
+		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
+		m_wnd->RedrawGL();
+	}
+
+}
+
+void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
+{
+	int nvar = ui->var->currentIndex();
+	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	{
+		UpdateData(nvar);
+		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
 		m_wnd->RedrawGL();
 	}
 }

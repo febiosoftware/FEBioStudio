@@ -63,7 +63,7 @@ FECylinderInBox::FECylinderInBox(GCylinderInBox* po)
 	AddBoolParam(m_bz, "bz", "Z-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 
-	AddIntParam(m_nelem, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0");
+	AddIntParam(m_nelem, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 //-----------------------------------------------------------------------------
@@ -93,8 +93,6 @@ FEMesh* FECylinderInBox::BuildMesh()
 
 	m_bz = GetBoolValue(BZ);
 	m_br = GetBoolValue(BR);
-
-	int nelem = GetIntValue(NELEM);
 
 	// create the MB nodes
 	m_MBNode.clear();
@@ -180,18 +178,17 @@ FEMesh* FECylinderInBox::BuildMesh()
 	GetFaceEdge(F8, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
 	GetFaceEdge(F8, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
 
+	// set element type
+	int nelem = GetIntValue(NELEM);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
+
 	// create the MB
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
-
-	// convert to hex20
-	if (nelem == 1)
-	{
-		FEHex8ToHex20 mod;
-		mod.SetSmoothing(false);
-		FEMesh* pnew = mod.Apply(pm);
-		delete pm;
-		pm = pnew;
-	}
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 

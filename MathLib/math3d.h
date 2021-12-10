@@ -716,10 +716,10 @@ public:
 	void eigen(vec3f e[3], float l[3]) const;
 
 	// trace
-	float tr() { return x + y + z; }
+	float tr() const { return x + y + z; }
 
 	// determinant
-	float det() { return (x*y*z + xy*yz*xz + xz*xy*yz - y*xz*xz - x*yz*yz - z*xy*xy); }
+	float det() const { return (x*y*z + xy*yz*xz + xz*xy*yz - y*xz*xz - x*yz*yz - z*xy*xy); }
 
 	// L2 norm
 	float norm() const { 

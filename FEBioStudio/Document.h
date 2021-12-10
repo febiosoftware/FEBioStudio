@@ -294,6 +294,8 @@ public:
 
 	CGView* GetView();
 
+	virtual FESelection* GetCurrentSelection() { return nullptr; }
+
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
 	std::string getModelInfo() const { return m_info; }

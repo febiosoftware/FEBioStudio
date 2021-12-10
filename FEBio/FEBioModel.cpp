@@ -473,8 +473,11 @@ FENodeSet* FEBioModel::PartInstance::BuildFENodeSet(const FEBioModel::NodeSet& n
 
 bool check_winding(const vector<int>& nodeList, const FEFace& face)
 {
-	int nf = face.Nodes();
-	if (nodeList.size() != nf) return false;
+	int nf = 0;
+	if (face.Shape() == FE_FACE_TRI ) nf = 3;
+	if (face.Shape() == FE_FACE_QUAD) nf = 4;
+	if (nf == 0) return false;
+	if (nodeList.size() < nf) return false;
 
 	int n0 = nodeList[0];
 	for (int j = 0; j < nf; ++j)
@@ -510,7 +513,8 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
 		if (faceID >= 0)
 		{
 			// check winding
-			bool winding = check_winding(face, m_part->m_mesh->Face(faceID));
+			FEFace& meshFace = m_part->m_mesh->Face(faceID);
+			bool winding = check_winding(face, meshFace);
 			if (winding == false)
 			{
 				stringstream ss;
@@ -1084,6 +1088,17 @@ FEBioModel::Domain* FEBioModel::FindDomain(const char* szname)
 	}
 
 	return dom;
+}
+
+FEBioModel::ElementSet* FEBioModel::FindElementSet(const char* szname)
+{
+	assert(Instances() == 1);
+	if (Instances() != 1) return nullptr;
+
+	PartInstance* part = GetInstance(0);
+	ElementSet* pg = part->GetPart()->FindElementSet(szname);
+
+	return pg;
 }
 
 

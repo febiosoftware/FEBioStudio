@@ -32,8 +32,12 @@ SOFTWARE.*/
 #include <stdlib.h>
 using namespace Post;
 
-GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLLegendPlot(po)
+REGISTER_CLASS(GLTensorPlot, CLASS_PLOT, "tensor", 0);
+
+GLTensorPlot::GLTensorPlot()
 {
+	SetTypeString("tensor");
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "TensorPlot.%02d", n++);

@@ -2125,3 +2125,14 @@ int FEMesh::CountSelectedElements() const
 	}
 	return N;
 }
+
+//-----------------------------------------------------------------------------
+void FEMesh::SetUniformShellThickness(double h)
+{
+	for (int i = 0; i < Elements(); ++i)
+	{
+		FEElement& el = Element(i);
+		int ne = el.Nodes();
+		for (int j = 0; j < ne; ++j) el.m_h[j] = h;
+	}
+}

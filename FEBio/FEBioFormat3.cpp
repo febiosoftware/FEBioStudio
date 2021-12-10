@@ -981,36 +981,47 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	FEBioModel& feb = GetFEBioModel();
 
 	XMLAtt* name = tag.AttributePtr("name");
-	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+	XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 	XMLAtt* nset = tag.AttributePtr("node_set");
 
 	FEMeshData::DATA_TYPE dataType;
 	if (dataTypeAtt)
 	{
 		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-//		else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+		else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
 		else return false;
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
 	FENodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
-	FEMesh* feMesh = nodeSet->GetMesh();
-
-	FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
-
-	double val;
-	int lid;
-	++tag;
-	do
+	if (nodeSet)
 	{
-		tag.AttributePtr("lid")->value(lid);
-		tag.value(val);
+		FEMesh* feMesh = nodeSet->GetMesh();
 
-		nodeData->set(lid - 1, val);
+		FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
 
-		++tag;
+		const char* szgen = tag.AttributeValue("generator", true);
+		if (szgen)
+		{
+			tag.skip();
+		}
+		else
+		{
+			double val;
+			int lid;
+			++tag;
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+
+				nodeData->set(lid - 1, val);
+
+				++tag;
+			} while (!tag.isend());
+		}
 	}
-	while (!tag.isend());
+	else tag.skip();
 
 	return true;
 
@@ -1162,6 +1173,93 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				}
 				++tag;
 			} while (!tag.isend());
+		}
+		else ParseUnknownTag(tag);
+	}
+	else if (var)
+	{
+		const char* szgen = tag.AttributeValue("generator", true);
+		if (szgen)
+		{
+			// Read the data and store it as a mesh data section
+			FEBioModel& feb = GetFEBioModel();
+			FEModel& fem = feb.GetFEModel();
+
+			const char* szset = tag.AttributeValue("elem_set");
+			if (strcmp(szgen, "surface-to-surface map") == 0)
+			{
+				FESurfaceToSurfaceMap* s2s = new FESurfaceToSurfaceMap;
+				s2s->m_generator = szgen;
+				s2s->m_var = var->cvalue();
+				s2s->m_elset = szset;
+
+				// get the name
+				const char* szname = tag.AttributeValue("name", true);
+				string sname;
+				if (szname == nullptr)
+				{
+					stringstream ss;
+					ss << "DataMap" << fem.DataMaps() + 1;
+					sname = ss.str();
+				}
+				else sname = szname;
+				s2s->SetName(sname);
+
+				string tmp;
+				++tag;
+				do
+				{
+					if (tag == "bottom_surface") { tag.value(tmp); s2s->SetBottomSurface(tmp); }
+					else if (tag == "top_surface") { tag.value(tmp); s2s->SetTopSurface(tmp); }
+					else if (tag == "function")
+					{
+						Param* p = s2s->GetParam("function"); assert(p);
+
+						const char* szlc = tag.AttributeValue("lc", true);
+						if (szlc)
+						{
+							int lc = atoi(szlc);
+							GetFEBioModel().AddParamCurve(p, lc - 1);
+
+							double v = 0.0;
+							tag.value(v);
+							p->SetFloatValue(v);
+						}
+
+						if (tag.isleaf() == false)
+						{
+							FELoadCurve lc; lc.Clear();
+							++tag;
+							do {
+								if (tag == "points")
+								{
+									// read the points
+									double d[2];
+									++tag;
+									do
+									{
+										tag.value(d, 2);
+
+										LOADPOINT pt;
+										pt.time = d[0];
+										pt.load = d[1];
+										lc.Add(pt);
+
+										++tag;
+									} while (!tag.isend());
+								}
+								else ParseUnknownTag(tag);
+								++tag;
+							} while (!tag.isend());
+							p->SetLoadCurve(lc);
+						}
+					}
+					else ParseUnknownTag(tag);
+					++tag;
+				} while (!tag.isend());
+
+				feb.GetFEModel().AddDataMap(s2s);
+			}
 		}
 		else ParseUnknownTag(tag);
 	}

@@ -417,6 +417,7 @@ public slots:
 	void on_actionFEBioRun_triggered();
 	void on_actionFEBioStop_triggered();
 	void on_actionFEBioOptimize_triggered();
+	void on_actionFEBioTangent_triggered();
 	void on_actionOptions_triggered();
 #ifdef _DEBUG
 	void on_actionLayerInfo_triggered();
@@ -436,6 +437,7 @@ public slots:
 	void on_actionVolumeRender_triggered();
 	void on_actionMarchingCubes_triggered();
 	void on_actionAddProbe_triggered();
+	void on_actionMusclePath_triggered();
 	void on_actionGraph_triggered();
 	void on_actionSummary_triggered();
 	void on_actionStats_triggered();
@@ -636,6 +638,8 @@ public:
 	int FindView(CDocument* doc);
 	GObject* GetActiveObject();
 
+	static CMainWindow* GetInstance();
+
 private:
 	Ui::CMainWindow*	ui;
 
@@ -643,6 +647,8 @@ private:
 
 	CFileThread*		m_fileThread;
 	vector<QueuedFile>	m_fileQueue;
+
+	static CMainWindow*		m_mainWnd;
 };
 
 class CResource

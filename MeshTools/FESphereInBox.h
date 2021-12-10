@@ -32,7 +32,7 @@ class GSphereInBox;
 class FESphereInBox : public FEMultiBlockMesh
 {
 public:
-	enum {NX, NY, NZ, NR, GR, BR};
+	enum {NX, NY, NZ, NR, GR, BR, ELEM_TYPE};
 
 public:
 	FESphereInBox();

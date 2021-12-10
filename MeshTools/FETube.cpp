@@ -60,6 +60,8 @@ FETube::FETube(GTube* po)
 
 	AddBoolParam(m_bz, "bz", "Z-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 FEMesh* FETube::BuildMesh()
@@ -172,6 +174,15 @@ FEMesh* FETube::BuildMultiBlockMesh()
 	MBEdge& E14 = MB.GetFaceEdge(F15, 3); E14.edge.m_ntype = EDGE_ZARC;
 	MBEdge& E15 = MB.GetFaceEdge(F16, 1); E15.edge.m_ntype = EDGE_ZARC; E15.m_winding = -1;
 	MBEdge& E16 = MB.GetFaceEdge(F16, 3); E16.edge.m_ntype = EDGE_ZARC;
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: MB.SetElementType(FE_HEX8); break;
+	case 1: MB.SetElementType(FE_HEX20); break;
+	case 2: MB.SetElementType(FE_HEX27); break;
+	}
 
 	// build the mesh
 	FEMesh* pm = MB.BuildMesh();

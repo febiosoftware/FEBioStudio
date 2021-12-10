@@ -138,6 +138,8 @@ public: // from FECoreMesh
 	FEElement_& ElementRef(int n) override { return m_Elem[n]; }
 	const FEElement_& ElementRef(int n) const override { return m_Elem[n]; }
 
+	void SetUniformShellThickness(double h);
+
 public:
 	// Build all mesh data structures
 	// This assumes that all mesh items are created and partitioned!

@@ -36,7 +36,7 @@ class CGLSlicePlot : public CGLLegendPlot
 	enum { DATA_FIELD, COLOR_MAP, CLIP, SHOW_LEGEND, SLICES, SLICE_OFFSET, RANGE, RANGE_MAX, RANGE_MIN, NORMAL_X, NORMAL_Y, NORMAL_Z };
 
 public:
-	CGLSlicePlot(CGLModel* po);
+	CGLSlicePlot();
 
 	void SetBoundingBox(BOX box) { m_box = box; }
 

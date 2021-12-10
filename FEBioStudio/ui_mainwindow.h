@@ -516,6 +516,7 @@ public:
 		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 		QAction* actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
+		QAction* actionFEBioTangent  = addAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
 #ifdef _DEBUG
@@ -537,6 +538,7 @@ public:
 		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
 		QAction* actionAddProbe = addAction("Add Probe", "actionAddProbe");
+		QAction* actionMusclePath = addAction("Muscle Path ...", "actionMusclePath");
 		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
@@ -800,6 +802,7 @@ public:
 		menuFEBio->addAction(actionFEBioRun);
 		menuFEBio->addAction(actionFEBioStop);
 		menuFEBio->addAction(actionFEBioOptimize);
+		menuFEBio->addAction(actionFEBioTangent);
 
 		// Post menu
 		menuBar->addAction(menuPost->menuAction());
@@ -818,6 +821,7 @@ public:
 		menuPost->addAction(actionVolumeRender);
 		menuPost->addAction(actionMarchingCubes);
 		menuPost->addAction(actionAddProbe);
+		menuPost->addAction(actionMusclePath);
 		menuPost->addSeparator();
 		menuPost->addAction(actionGraph);
 		menuPost->addSeparator();

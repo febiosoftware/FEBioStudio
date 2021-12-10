@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
+#include <string.h>
 #include "ClassDescriptor.h"
 
 ClassKernel* ClassKernel::m_pInst = 0;
@@ -70,4 +71,19 @@ Class_Iterator ClassKernel::LastCD()
 {
 	ClassKernel* pCK = ClassKernel::GetInstance();
 	return pCK->m_CD.end();
+}
+
+//-----------------------------------------------------------------------------
+FSObject* ClassKernel::CreateClass(Class_Type classType, const char* typeStr)
+{
+	Class_Iterator it;
+	for (it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
+	{
+		ClassDescriptor* pcd = *it;
+		if ((pcd->GetType() == classType) && (strcmp(pcd->GetName(), typeStr) == 0))
+		{
+			return pcd->Create();
+		}
+	}
+	return nullptr;
 }

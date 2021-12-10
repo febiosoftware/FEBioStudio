@@ -2128,6 +2128,14 @@ FEFiberDamageExpLinear::FEFiberDamageExpLinear() : FEFiberMaterial(FE_FIBER_DAMA
 	AddDoubleParam(0.0, "Dmax", "Dmax");
 	AddDoubleParam(0.0, "beta_s", "beta_s");
 	AddDoubleParam(0.0, "gamma_max", "gamma_max");
+
+	AddDoubleParam(0.0, "D2_a");
+	AddDoubleParam(0.0, "D2_b");
+	AddDoubleParam(0.0, "D2_c");
+	AddDoubleParam(0.0, "D2_d");
+	AddDoubleParam(0.0, "D3_inf");
+	AddDoubleParam(0.0, "D3_g0");
+	AddDoubleParam(1.0, "D3_rg");
 }
 
 //=============================================================================

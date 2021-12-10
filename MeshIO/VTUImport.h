@@ -25,49 +25,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <string>
-#include <map>
+#include "FileReader.h"
+#include <MeshTools/FEProject.h>
 
-class CMathParser  
+class XMLTag;
+class VTKDataArray;
+class VTKPiece;
+class VTKModel;
+
+class VTUimport : public FEFileImport
 {
-protected:
-	enum Token_value {
-		NAME,	NUMBER, END,
-		PLUS='+', MINUS='-', MUL='*', DIV='/', POW='^',
-		LP='(',	RP=')', COMMA=',', PRINT
-	};
 
 public:
-	CMathParser();
-	virtual ~CMathParser();
+	VTUimport(FEProject& prj);
+	~VTUimport(void);
 
-	void set_variable(const char* szname, const double val);
+	bool Load(const char* szfile);
 
-	double eval(const char* szexpr, int& ierr);
+private:
+	bool ParseUnstructuredGrid(XMLTag& tag, VTKModel& vtk);
+	bool ParsePiece(XMLTag& tag, VTKModel& vtk);
+	bool ParsePoints(XMLTag& tag, VTKPiece& piece);
+	bool ParseCells(XMLTag& tag, VTKPiece& piece);
+	bool ParseDataArray(XMLTag& tag, VTKDataArray& vtkDataArray);
 
-	const char* error_str() { return m_szerr; }
-
-protected:
-	double expr();	// add and subtract
-	double term();	// multiply and divide
-	double prim();	// handle primaries
-	double power();	// power
-	Token_value get_token();
-	double error(const char* str);
-
-	double get_number();
-	void get_name(char* str);
-
-	Token_value	curr_tok;
-
-	const char* m_szexpr;
-
-	std::map<std::string, double>	m_table;	// table that stores variables and constants
-
-	double	number_value;
-	char	string_value[256];
-
-	char	m_szerr[256];
-
-	int		m_nerrs;
+	bool BuildMesh(VTKModel& vtk);
 };

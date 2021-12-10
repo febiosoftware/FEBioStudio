@@ -23,51 +23,61 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <string>
-#include <map>
+#include "GLPlot.h"
 
-class CMathParser  
+class FEMesh;
+
+namespace Post {
+
+class GLMusclePath : public CGLPlot
 {
-protected:
-	enum Token_value {
-		NAME,	NUMBER, END,
-		PLUS='+', MINUS='-', MUL='*', DIV='/', POW='^',
-		LP='(',	RP=')', COMMA=',', PRINT
-	};
+	enum { START_POINT, END_POINT, ROTATION_CENTER, METHOD, PERSIST_PATH, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SEARCH_RADIUS, PATH_RADIUS, COLOR, RENDER_MODE };
+
+	class PathData;
 
 public:
-	CMathParser();
-	virtual ~CMathParser();
+	GLMusclePath();
+	~GLMusclePath();
 
-	void set_variable(const char* szname, const double val);
+	void Render(CGLContext& rc) override;
 
-	double eval(const char* szexpr, int& ierr);
+	void Update() override;
+	void Update(int ntime, float dt, bool breset) override;
 
-	const char* error_str() { return m_szerr; }
+	bool UpdateData(bool bsave = true) override;
+
+	double DataValue(int field, int step);
 
 protected:
-	double expr();	// add and subtract
-	double term();	// multiply and divide
-	double prim();	// handle primaries
-	double power();	// power
-	Token_value get_token();
-	double error(const char* str);
+	void UpdatePath(int ntime);
+	void UpdatePathData(int ntime);
+	void ClearPaths();
+	vec3d UpdateOrigin(int ntime);
 
-	double get_number();
-	void get_name(char* str);
+	bool UpdateStraighLine   (PathData* path, int ntime);
+	bool UpdateSpringPath    (PathData* path, int ntime);
 
-	Token_value	curr_tok;
+private:
+	std::vector<PathData*>	m_path;	// points defining the path
 
-	const char* m_szexpr;
+	// information to track motion of origin
+	int		m_closestFace;	// surface face closest to origin
+	vec3d	m_qr;
 
-	std::map<std::string, double>	m_table;	// table that stores variables and constants
+	// the material IDs of the start and end points
+	int		m_part[2];
 
-	double	number_value;
-	char	string_value[256];
-
-	char	m_szerr[256];
-
-	int		m_nerrs;
+	// values that require re-evaluation upon change
+	int		m_node0;
+	int		m_node1;
+	vec3d	m_rc;
+	int		m_method;
+	int		m_ndiv;
+	int		m_maxIter;
+	double	m_tol;
+	bool	m_persist;
+	double	m_searchRadius;
 };
+
+}

@@ -28,10 +28,18 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
+#include <MeshTools/FETetGenMesher.h>
+#include <MeshLib/FENodeNodeList.h>
+#include <GLLib/glx.h>
+#include <sstream>
 using namespace Post;
 
-GLProbe::GLProbe(CGLModel* fem) : CGLPlot(fem)
+REGISTER_CLASS(GLProbe, CLASS_PLOT, "probe", 0);
+
+GLProbe::GLProbe()
 {
+	SetTypeString("probe");
+
 	static int n = 1;
 	char sz[256] = { 0 };
 	sprintf(sz, "Probe%d", n++);
@@ -41,11 +49,15 @@ GLProbe::GLProbe(CGLModel* fem) : CGLPlot(fem)
 	m_size = 1.0;
 	m_col = GLColor::White();
 	m_bfollow = true;
+	m_bshowPath = true;
 
-	AddVecParam(m_initPos, "Initial position");
-	AddDoubleParam(m_size, "Size scale factor");
-	AddColorParam(m_col, "Color");
-	AddBoolParam(m_bfollow, "Follow");
+	AddBoolParam(true, "track_data", "Track Model Data");
+	AddVecParam(m_initPos, "position", "Initial position");
+	AddDoubleParam(m_size, "size", "Size scale factor");
+	AddColorParam(m_col, "color", "Color");
+	AddBoolParam(m_bfollow, "follow", "Follow");
+	AddBoolParam(m_bshowPath, "show_path", "Show Path");
+	AddColorParam(GLColor(255, 0, 0), "path_color", "Path Color");
 
 	m_lastTime = 0;
 	m_lastdt = 1.0;
@@ -63,6 +75,7 @@ bool GLProbe::UpdateData(bool bsave)
 		m_size = GetFloatValue(SIZE);
 		m_col = GetColorValue(COLOR);
 		m_bfollow = GetBoolValue(FOLLOW);
+		m_bshowPath = GetBoolValue(SHOW_PATH);
 
 		if (!(r == m_initPos)) Update();
 	}
@@ -72,6 +85,7 @@ bool GLProbe::UpdateData(bool bsave)
 		SetFloatValue(SIZE, m_size);
 		SetColorValue(COLOR, m_col);
 		SetBoolValue(FOLLOW, m_bfollow);
+		SetBoolValue(SHOW_PATH, m_bshowPath);
 	}
 
 	return false;
@@ -90,6 +104,24 @@ void GLProbe::Render(CGLContext& rc)
 	glPopMatrix();
 
 	gluDeleteQuadric(pobj);
+
+	int ntime = GetModel()->CurrentTimeIndex();
+	if (m_bshowPath && (m_path.size() > ntime) && (ntime >= 1))
+	{
+		GLColor c = GetColorValue(PATH_COLOR);
+		glColor3ub(c.r, c.g, c.b);
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+		glBegin(GL_LINE_STRIP);
+		for (int i = 0; i <= ntime; ++i)
+		{
+			vec3d& r = m_path[i];
+			glx::vertex3d(r);
+		}
+		glEnd();
+		glPopAttrib();
+	}
 }
 
 void GLProbe::Update()
@@ -130,6 +162,14 @@ void GLProbe::Update(int ntime, float dt, bool breset)
 	FEPostMesh* mesh = mdl->GetActiveMesh();
 	if (mesh == nullptr) return;
 
+	if (breset)
+	{
+		m_path.clear();
+		FEPostModel* fem = mdl->GetFEModel();
+		int nstates = fem->GetStates();
+		m_path.resize(nstates);
+	}
+
 	// update the size of the probe
 	BOX box = mdl->GetFEModel()->GetBoundingBox();
 	m_R = 0.05*box.GetMaxExtent();
@@ -141,6 +181,8 @@ void GLProbe::Update(int ntime, float dt, bool breset)
 
 	vec3f p0 = to_vec3f(m_initPos);
 	m_elem = ProjectToMesh(ntime, p0, m_pos);
+
+	m_path[ntime] = m_pos;
 }
 
 int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
@@ -150,45 +192,132 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 
 	Post::FEState* state = mdl->GetFEModel()->GetState(nstate);
 	Post::FERefState* ps = state->m_ref;
-	FEMesh& mesh = *state->GetFEMesh();
+	Post::FEPostMesh& mesh = *state->GetFEMesh();
+	Post::FEPostModel& fem = *mdl->GetFEModel();
+
+	rt = r0;
 
 	int nelem = -1;
 	vec3f x0[FEElement::MAX_NODES];
 	vec3f xt[FEElement::MAX_NODES];
+	int nmin = -1;
+	double L2min = 0.0;
+	vec3f rmin;
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
 		FEElement& el = mesh.Element(i);
-		int ne = el.Nodes();
-		for (int j = 0; j < el.Nodes(); ++j)
+		if (el.IsSolid())
 		{
-			x0[j] = ps->m_Node[el.m_node[j]].m_rt;
-			xt[j] = to_vec3f(mesh.Node(el.m_node[j]).r);
-		}
-
-		if (m_bfollow)
-		{
-			vec3f q;
-			if (ProjectToElement(el, r0, x0, xt, q))
+			int ne = el.Nodes();
+			for (int j = 0; j < el.Nodes(); ++j)
 			{
-				rt = q;
-				nelem = i;
-				break;
+				x0[j] = ps->m_Node[el.m_node[j]].m_rt;
+				xt[j] = to_vec3f(mesh.Node(el.m_node[j]).r);
+			}
+
+			if (m_bfollow)
+			{
+				vec3f q;
+				if (ProjectToElement(el, r0, x0, xt, q))
+				{
+					rt = q;
+					nelem = i;
+					break;
+				}
+			}
+			else
+			{
+				vec3f q;
+				if (ProjectToElement(el, r0, x0, x0, q))
+				{
+					rt = q;
+					nelem = i;
+					break;
+				}
 			}
 		}
-		else
+		else if (el.IsShell() && m_bfollow)
 		{
-			vec3f q;
-			if (ProjectToElement(el, r0, x0, x0, q))
+			int ne = el.Nodes();
+			vec3f ri(0, 0, 0);
+			for (int j = 0; j < ne; ++j)
 			{
-				rt = q;
-				nelem = i;
-				break;
+				vec3f rj = fem.NodePosition(el.m_node[j], 0);
+				ri += rj;
+			}
+			ri /= ne;
+
+			// get the distance
+			double L2 = (ri - r0).SqrLength();
+
+			if ((nmin == -1) || (L2 < L2min))
+			{
+				nmin = i;
+				L2min = L2;
+				rmin = ri;
 			}
 		}
 	}
 
+	if ((nelem == -1) && (nmin != -1))
+	{
+		vec3d dr = r0 - rmin;
+
+		FEElement& e = mesh.Element(nmin);
+		vec3d a0 = fem.NodePosition(e.m_node[0], 0);
+		vec3d a1 = fem.NodePosition(e.m_node[1], 0);
+		vec3d a2 = fem.NodePosition(e.m_node[2], 0);
+
+		vec3d e1 = a1 - a0; e1.Normalize();
+		vec3d e2 = a2 - a0; e2.Normalize();
+		vec3d e3 = e1 ^ e2; e3.Normalize();
+		e2 = e3 ^ e1; e2.Normalize();
+
+		mat3d QT(\
+			e1.x, e1.y, e1.z, \
+			e2.x, e2.y, e2.z, \
+			e3.x, e3.y, e3.z	\
+		);
+
+		vec3d qr = QT * dr;
+
+		// calculate current position of origin
+		vec3d ri(0, 0, 0);
+		for (int j = 0; j < e.Nodes(); ++j)
+		{
+			FENode& nj = mesh.Node(e.m_node[j]);
+			vec3d rj = fem.NodePosition(e.m_node[j], nstate);
+			ri += rj;
+		}
+		ri /= e.Nodes();
+
+		a0 = fem.NodePosition(e.m_node[0], nstate);
+		a1 = fem.NodePosition(e.m_node[1], nstate);
+		a2 = fem.NodePosition(e.m_node[2], nstate);
+
+		e1 = a1 - a0; e1.Normalize();
+		e2 = a2 - a0; e2.Normalize();
+		e3 = e1 ^ e2; e3.Normalize();
+		e2 = e3 ^ e1; e2.Normalize();
+
+		mat3d Q(\
+			e1.x, e2.x, e3.x, \
+			e1.y, e2.y, e3.y, \
+			e1.z, e2.z, e3.z	\
+		);
+
+		dr = Q * qr;
+
+		rt = ri + dr;
+	}
+
 	return nelem;
+}
+
+bool GLProbe::TrackModelData() const
+{
+	return GetBoolValue(TRACK_DATA);
 }
 
 GLColor GLProbe::GetColor() const
@@ -203,14 +332,32 @@ void GLProbe::SetColor(const GLColor& c)
 
 double GLProbe::DataValue(int nfield, int nstep)
 {
-	FEPostModel& fem = *GetModel()->GetFEModel();
-	float val = 0.f;
-	vec3f p0 = to_vec3f(m_initPos);
-	int nelem = ProjectToMesh(nstep, p0, m_pos);
-	if (nelem >= 0)
+	if (TrackModelData())
 	{
-		float data[FEElement::MAX_NODES];
-		fem.EvaluateElement(nelem, nstep, nfield, data, val);
+		FEPostModel& fem = *GetModel()->GetFEModel();
+		float val = 0.f;
+		vec3f p0 = to_vec3f(m_initPos);
+		int nelem = ProjectToMesh(nstep, p0, m_pos);
+		if (nelem >= 0)
+		{
+			float data[FEElement::MAX_NODES];
+			fem.EvaluateElement(nelem, nstep, nfield, data, val);
+		}
+		return val;
 	}
-	return val;
+	else
+	{
+		double val = 0.0;
+		if ((nstep >= 0) && (nstep < m_path.size()))
+		{
+			vec3d r = m_path[nstep];
+			switch (nfield)
+			{
+			case 1: val = r.x; break;
+			case 2: val = r.y; break;
+			case 3: val = r.z; break;
+			}
+		}
+		return val;
+	}
 }

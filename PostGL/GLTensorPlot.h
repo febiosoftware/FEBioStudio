@@ -67,7 +67,7 @@ private:
 	};
 
 public:
-	GLTensorPlot(CGLModel* po);
+	GLTensorPlot();
 
 	void Render(CGLContext& rc) override;
 

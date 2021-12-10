@@ -26,14 +26,16 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 
+class FEMesh;
+
 namespace Post {
 
 class GLProbe : public CGLPlot
 {
-	enum { INIT_POS, SIZE, COLOR, FOLLOW };
+	enum { TRACK_DATA, INIT_POS, SIZE, COLOR, FOLLOW, SHOW_PATH, PATH_COLOR };
 
 public:
-	GLProbe(CGLModel* fem);
+	GLProbe();
 
 	void Render(CGLContext& rc) override;
 
@@ -43,6 +45,8 @@ public:
 	bool UpdateData(bool bsave = true) override;
 
 	double DataValue(int nfield, int nstep);
+
+	bool TrackModelData() const;
 
 public:
 	GLColor GetColor() const;
@@ -56,11 +60,14 @@ private:
 	GLColor	m_col;
 	double	m_size;
 	bool	m_bfollow;
+	bool	m_bshowPath;
 
 	vec3d		m_pos;
 	double		m_R;
 	int			m_lastTime;
 	double		m_lastdt;
 	int			m_elem;
+
+	std::vector<vec3d>	m_path;
 };
 }

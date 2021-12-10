@@ -21,8 +21,9 @@ class FESurfaceToSurfaceMap : public FEDataMapGenerator
 public:
 	FESurfaceToSurfaceMap();
 
-public:
-	std::string		m_bottomSurface;
-	std::string		m_topSurface;
-	FELoadCurve		m_points;
+	void SetBottomSurface(const std::string& surfName);
+	void SetTopSurface   (const std::string& surfName);
+
+	std::string GetBottomSurface() const;
+	std::string GetTopSurface() const;
 };

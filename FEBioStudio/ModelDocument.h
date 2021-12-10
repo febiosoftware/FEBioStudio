@@ -81,7 +81,7 @@ public:
 	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FEGroup* sel = 0);
 
 public: // selection
-	FESelection* GetCurrentSelection();
+	FESelection* GetCurrentSelection() override;
 	void UpdateSelection(bool report = true) override;
 
 	void HideCurrentSelection();

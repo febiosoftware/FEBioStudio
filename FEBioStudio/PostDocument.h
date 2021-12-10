@@ -173,6 +173,16 @@ public:
 	// get the selection bounding box
 	BOX GetSelectionBox();
 
+	// Get current selection
+	FESelection* GetCurrentSelection() override;
+
+public:
+	//! save to session file
+	bool SavePostSession(const std::string& fileName);
+
+	//! open session file
+	bool OpenPostSession(const std::string& fileName);
+
 public:
 	int Graphs() const;
 	void AddGraph(const CGraphData& data);
@@ -199,4 +209,8 @@ private:
 	CPostObject*	m_postObj;
 
 	TIMESETTINGS m_timeSettings;
+
+	bool	m_binit;
+
+	FESelection* m_sel;
 };

@@ -38,10 +38,16 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
 #include "ModelDocument.h"
+#include "PostDocument.h"
+#include "DlgStartThread.h"
+#include <PostLib/FEKinemat.h>
+#include <PostLib/FELSDYNAimport.h>
+#include <PostGL/GLModel.h>
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
-	ui->showCurveEditor();
+	CModelDocument* doc = GetModelDocument();
+	if (doc) ui->showCurveEditor();
 }
 
 void CMainWindow::on_actionMeshInspector_triggered()
@@ -75,10 +81,149 @@ void CMainWindow::on_actionUnitConverter_triggered()
 	dlg.exec();
 }
 
+class LoadKineFile : public CustomThread
+{
+public:
+	LoadKineFile(CPostDocument* doc) : m_doc(doc)
+	{
+		m_kine = nullptr;
+		m_task = 0;
+		m_fileReader = nullptr;
+		m_fem = doc->GetFEModel();
+		m_currentState = 0;
+	}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		m_task = 0;
+		// load the file
+		Post::FELSDYNAimport reader(m_fem);
+		reader.read_displacements(true);
+		m_fileReader = &reader;
+		bool bret = reader.Load(m_modelFile.c_str());
+		m_fileReader = nullptr;
+		if (bret == false)
+		{
+			emit resultReady(false);
+			return;
+		}
+
+		// apply the kine mat file
+		m_task = 1;
+		FEKinemat kine;
+		kine.SetRange(m_n0, m_n1, m_ni);
+		m_kine = &kine;
+		if (kine.Apply(m_fem, m_kineFile.c_str()) == false)
+		{
+			emit resultReady(false);
+			return;
+		}
+
+		// update post document
+		m_doc->Initialize();
+
+		// update displacements on all states
+		m_task = 2;
+		Post::CGLModel& mdl = *m_doc->GetGLModel();
+		if (mdl.GetDisplacementMap() == nullptr)
+		{
+			mdl.AddDisplacementMap("Displacement");
+		}
+		int nstates = mdl.GetFEModel()->GetStates();
+		for (m_currentState = 0; m_currentState < nstates; ++m_currentState) mdl.UpdateDisplacements(m_currentState, true);
+
+		// all done
+		m_kine = nullptr;
+		emit resultReady(true);
+	}
+
+public:
+	bool hasProgress() override { return true; }
+
+	double progress() override
+	{
+		double pct = 0.0;
+		if (m_task == 0)
+		{
+			if (m_fileReader) pct = m_fileReader->GetFileProgress();
+		}
+		else if (m_task == 1)
+		{
+			int nstates = (m_kine ? m_kine->States() : 1);
+			int nread = m_fem->GetStates();
+			pct = (100.0 * nread) / nstates;
+		}
+		else if (m_task == 2)
+		{
+			int nstates = m_fem->GetStates();
+			pct = (100.0 * m_currentState) / nstates;
+		}
+		return pct;
+	}
+
+	const char* currentTask() override 
+	{ 
+		const char* sztask = "(unknown)";
+		switch (m_task)
+		{
+		case 0: sztask = "Reading model file ..."; break;
+		case 1: sztask = "Processing kine file ..."; break;
+		case 2: sztask = "Updating states ..."; break;
+		}
+		return sztask;
+	}
+
+	void stop() override {}
+
+public:
+	int		m_n0, m_n1, m_ni;
+	std::string	m_modelFile;
+	std::string m_kineFile;
+
+private:
+	int	m_task;
+	int	m_currentState;
+	CPostDocument* m_doc;
+	Post::FEPostModel* m_fem;
+	FEKinemat* m_kine;
+	FileReader* m_fileReader;
+};
+
 void CMainWindow::on_actionKinemat_triggered()
 {
 	CDlgKinemat dlg(this);
-	dlg.exec();
+	if (dlg.exec())
+	{
+		// create a new document
+		CPostDocument* postDoc = new CPostDocument(this);
+
+		std::string modelFile = dlg.GetModelFile().toStdString();
+		std::string kineFile  = dlg.GetKineFile().toStdString();
+
+		Post::FEPostModel& fem = *postDoc->GetFEModel();
+		LoadKineFile* kinethread = new LoadKineFile(postDoc);
+		kinethread->m_n0 = dlg.StartIndex();
+		kinethread->m_n1 = dlg.EndIndex();
+		kinethread->m_ni = dlg.Increment();
+		kinethread->m_modelFile = modelFile;
+		kinethread->m_kineFile = kineFile;
+
+		postDoc->SetDocFilePath(modelFile);
+
+		CDlgStartThread dlg2(this, kinethread);
+		dlg2.exec();
+
+		if (dlg2.GetReturnCode() == false)
+		{
+			delete postDoc;
+			QMessageBox::critical(this, "FEBio Studio", "Failed to apply kinemat tool.");
+			return;
+		}
+
+		UpdateModel();
+		Update();
+		AddDocument(postDoc);
+	}
 }
 
 void CMainWindow::on_actionPlotMix_triggered()

@@ -34,8 +34,12 @@ using namespace Post;
 extern int LUT[256][15];
 extern int ET_HEX[12][2];
 
-CGLSlicePlot::CGLSlicePlot(CGLModel* po) : CGLLegendPlot(po)
+REGISTER_CLASS(CGLSlicePlot, CLASS_PLOT, "slices", 0);
+
+CGLSlicePlot::CGLSlicePlot()
 {
+	SetTypeString("slices");
+
 	static int n = 1;
 	char szname[128] = {0};
 	sprintf(szname, "Slice.%02d", n++);

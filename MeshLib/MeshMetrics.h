@@ -83,7 +83,7 @@ double MaxEdgeLength(const FEMesh& mesh, const FEElement& e);
 float eval_curvature(const vector<vec3f>& x, const vec3f& r0, vec3f sn, int measure, bool useExtendedFit, int maxIter);
 
 // curvature measures (see for values for measure in FEMeshData_T.h, in FECurvatureField
-double Curvature(FEMesh& mesh, const FEElement& e, int measure);
+double Curvature(FEMesh& mesh, int node, int measure, int levels = 1, int maxIters = 10, bool extQuad = false);
 
 }
 

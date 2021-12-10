@@ -480,15 +480,22 @@ void CMainWindow::on_actionNameSelection_triggered()
 
 	char szname[256] = { 0 };
 
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEModel* pfem = doc->GetFEModel();
-	GModel* mdl = doc->GetGModel();
+	// we need a bit more for model docs
+	FEModel* pfem = nullptr;
+	GModel* mdl = nullptr;
+	if (GetModelDocument())
+	{
+		CModelDocument* modelDoc = GetModelDocument();
+		pfem = modelDoc->GetFEModel();
+		mdl = modelDoc->GetGModel();
+	}
 
 	// make sure there is a selection
 	FESelection* psel = doc->GetCurrentSelection();
-	if (psel->Size() == 0) return;
+	if ((psel == nullptr) || (psel->Size() == 0)) return;
 
 	// set the name
 	int item = doc->GetItemMode();
@@ -573,6 +580,8 @@ void CMainWindow::on_actionNameSelection_triggered()
 		break;
 		case ITEM_MESH:
 		{
+			assert(pfem);
+			assert(mdl);
 			int nsel = doc->GetSelectionMode();
 			switch (nsel)
 			{
@@ -911,9 +920,6 @@ void CMainWindow::on_actionMerge_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	CDlgMergeObjects dlg(this);
-	if (dlg.exec() == QDialog::Rejected) return;
-
 	// make sure we have an object selection
 	FESelection* currentSelection = doc->GetCurrentSelection();
 	if (currentSelection->Type() != SELECT_OBJECTS)
@@ -922,6 +928,14 @@ void CMainWindow::on_actionMerge_triggered()
 		return;
 	}
 	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(currentSelection);
+	if ((sel == nullptr) || (sel->Count() < 2))
+	{
+		QMessageBox::critical(this, "Merge Objects", "You need to select at least two objects.");
+		return;
+	}
+
+	CDlgMergeObjects dlg(this);
+	if (dlg.exec() == QDialog::Rejected) return;
 
 	// merge the objects
 	GModel& m = *doc->GetGModel();

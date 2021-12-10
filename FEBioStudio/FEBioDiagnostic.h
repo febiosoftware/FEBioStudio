@@ -23,51 +23,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
 #include <string>
-#include <map>
+class CModelDocument;
 
-class CMathParser  
+//================================================================
+class FEBioTangentDiagnostic
 {
-protected:
-	enum Token_value {
-		NAME,	NUMBER, END,
-		PLUS='+', MINUS='-', MUL='*', DIV='/', POW='^',
-		LP='(',	RP=')', COMMA=',', PRINT
-	};
+public:
+	int		m_matIndex;
+	int		m_scenario;
+	double	m_strain;
 
 public:
-	CMathParser();
-	virtual ~CMathParser();
-
-	void set_variable(const char* szname, const double val);
-
-	double eval(const char* szexpr, int& ierr);
-
-	const char* error_str() { return m_szerr; }
-
-protected:
-	double expr();	// add and subtract
-	double term();	// multiply and divide
-	double prim();	// handle primaries
-	double power();	// power
-	Token_value get_token();
-	double error(const char* str);
-
-	double get_number();
-	void get_name(char* str);
-
-	Token_value	curr_tok;
-
-	const char* m_szexpr;
-
-	std::map<std::string, double>	m_table;	// table that stores variables and constants
-
-	double	number_value;
-	char	string_value[256];
-
-	char	m_szerr[256];
-
-	int		m_nerrs;
+	FEBioTangentDiagnostic();
+	bool WriteDiagnosticFile(CModelDocument* doc, const std::string& fileName);
 };

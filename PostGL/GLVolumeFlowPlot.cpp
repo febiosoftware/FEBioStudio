@@ -33,8 +33,12 @@ using namespace Post;
 extern int LUT[256][15];
 extern int ET_HEX[12][2];
 
-GLVolumeFlowPlot::GLVolumeFlowPlot(CGLModel* mdl) : CGLLegendPlot(mdl)
+REGISTER_CLASS(GLVolumeFlowPlot, CLASS_PLOT, "volume-flow", 0);
+
+GLVolumeFlowPlot::GLVolumeFlowPlot()
 {
+	SetTypeString("volume-flow");
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "VolumeFlow%d", n++);
@@ -506,6 +510,7 @@ void GLVolumeFlowPlot::RenderSlices(std::vector<GLVolumeFlowPlot::Slice>& slice,
 
 	// start rendering
 	GLColor c;
+	double a, v;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = n0; i != n1; i += step)
@@ -517,21 +522,27 @@ void GLVolumeFlowPlot::RenderSlices(std::vector<GLVolumeFlowPlot::Slice>& slice,
 			{
 				Slice::Face& face = s.m_Face[j];
 
-				c = col.map(face.v[0]);
+				v = face.v[0];
+				a = (v > 0 ? (v < 1 ? v : 1) : 0);
+				c = col.map(v);
 //				glColor4ub(c.r, c.g, c.b, 255 *face.v[0] * m_alpha);
-				glColor4ub(255, 255, 255, 255 *face.v[0] * m_alpha);
+				glColor4d(1.0, 1.0, 1.0, a * m_alpha);
 				glTexCoord1d(face.v[0]);
 				glVertex3f(face.r[0].x, face.r[0].y, face.r[0].z);
 
+				v = face.v[1];
+				a = (v > 0 ? (v < 1 ? v : 1) : 0);
 				c = col.map(face.v[1]);
 //				glColor4ub(c.r, c.g, c.b, 255 *face.v[1] * m_alpha);
-				glColor4ub(255, 255, 255, 255 * face.v[1] * m_alpha);
+				glColor4d(1.0, 1.0, 1.0, a * m_alpha);
 				glTexCoord1d(face.v[1]);
 				glVertex3f(face.r[1].x, face.r[1].y, face.r[1].z);
 
+				v = face.v[2];
+				a = (v > 0 ? (v < 1 ? v : 1) : 0);
 				c = col.map(face.v[2]);
 //				glColor4ub(c.r, c.g, c.b, 255 *face.v[2] * m_alpha);
-				glColor4ub(255, 255, 255, 255 * face.v[2] * m_alpha);
+				glColor4d(1.0, 1.0, 1.0, a * m_alpha);
 				glTexCoord1d(face.v[2]);
 				glVertex3f(face.r[2].x, face.r[2].y, face.r[2].z);
 			}

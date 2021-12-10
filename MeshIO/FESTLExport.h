@@ -28,6 +28,8 @@ SOFTWARE.*/
 
 #include <MeshTools/FEFileExport.h>
 
+class GObject;
+
 class FESTLExport : public FEFileExport
 {
 public:
@@ -35,4 +37,6 @@ public:
 	~FESTLExport(void);
 
 	bool Write(const char* szfile) override;
+
+	bool Write(const char* szfile, GObject* po);
 };

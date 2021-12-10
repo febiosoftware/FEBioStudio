@@ -34,7 +34,7 @@ class CGLMirrorPlane : public CGLPlot
 	enum { PLANE, SHOW_PLANE, TRANSPARENCY, OFFSET };
 
 public:
-	CGLMirrorPlane(CGLModel* fem);
+	CGLMirrorPlane();
 
 	// render the object to the 3D view
 	void Render(CGLContext& rc) override;
