@@ -1130,30 +1130,34 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
 	FENodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
-	FEMesh* feMesh = nodeSet->GetMesh();
-
-	FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
-
-	const char* szgen = tag.AttributeValue("generator", true);
-	if (szgen)
+	if (nodeSet)
 	{
-		tag.skip();
-	}
-	else
-	{
-		double val;
-		int lid;
-		++tag;
-		do
+		FEMesh* feMesh = nodeSet->GetMesh();
+
+		FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
+
+		const char* szgen = tag.AttributeValue("generator", true);
+		if (szgen)
 		{
-			tag.AttributePtr("lid")->value(lid);
-			tag.value(val);
-
-			nodeData->set(lid - 1, val);
-
+			tag.skip();
+		}
+		else
+		{
+			double val;
+			int lid;
 			++tag;
-		} while (!tag.isend());
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+
+				nodeData->set(lid - 1, val);
+
+				++tag;
+			} while (!tag.isend());
+		}
 	}
+	else tag.skip();
 
 	return true;
 }

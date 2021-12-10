@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEMeshSmoothingModifier.h"
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/MeshTools.h>
 #include "FEFillHole.h"
 #include <algorithm>
 
@@ -134,7 +135,7 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing2(FEMesh* pnew,vector<int> hash
 				for (int k = 0; k<NNL.Valence(i);k++)
 				{
 					vec3d x = pnew->Node(NNL.Node(i, k)).r;
-					double dist = distance(x,ni.r);
+					double dist = (x - ni.r).Length();
 					r_new = r_new + (x * dist);
 					sum_dist += dist;
 				}
@@ -243,7 +244,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int
 				r[1] = pnew->Node(fa1->n[1]).r;
 				r[2] = pnew->Node(fa1->n[2]).r;
 				vec3d centroid_S = (r[0]+r[1]+r[2])/3;
-				double dist = distance(centroid_S,centroid_R);
+				double dist = (centroid_S - centroid_R).Length();
 				double angle = acos((fa.m_fn * fa1->m_fn)/(fa.m_fn.Length() * fa1->m_fn.Length()));//angle between the normals
 				double weight1 = area_triangle(r) * exp(-m_threshold1 * angle*angle*dist*dist);
 				weight += weight1;

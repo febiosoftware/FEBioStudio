@@ -248,6 +248,9 @@ else()
     mark_as_advanced(CLEAR MMG_INC MMG_LIB_DIR)
 endif()
 
+set(MMG_DBG_LIB_DIR CACHE PATH "Path to the MMG debug lib directory")
+mark_as_advanced(MMG_DBG_LIB_DIR)
+
 # TETGEN
 if(WIN32)
 	find_path(TETGEN_INC tetgen.h
@@ -287,6 +290,9 @@ else()
     mark_as_advanced(CLEAR TETGEN_INC TETGEN_LIB_DIR)
 endif()
 
+set(TETGEN_DBG_LIB_DIR CACHE PATH "Path to the TET debug lib directory")
+mark_as_advanced(TETGEN_DBG_LIB_DIR)
+
 # OpenCascade
 if(WIN32)
 	find_path(OCCT_INC gp_Pnt.hxx
@@ -323,6 +329,9 @@ if(OCCT_INC AND OCCT_LIB_DIR)
 else()
     mark_as_advanced(CLEAR OCCT_INC OCCT_LIB_DIR)
 endif()
+
+set(OCCT_DBG_LIB_DIR CACHE PATH "Path to the OpenCascade debug lib directory")
+mark_as_advanced(OCCT_DBG_LIB_DIR)
 
 # NETGEN
 if(WIN32)
@@ -367,6 +376,9 @@ else()
 	SET(CAD_FEATURES OFF CACHE BOOL "Required for importing and meshing CAD objects" FORCE)
 endif()
 
+set(NETGEN_DBG_LIB_DIR CACHE PATH "Path to the Netgen debug lib directory")
+mark_as_advanced(NETGEN_DBG_LIB_DIR)
+
 # LibSSH
 if(WIN32)
 	find_path(SSH_INC libssh/libssh.h
@@ -405,6 +417,9 @@ else()
 	option(USE_SSH "Required for running jobs on remote machines." OFF)
     mark_as_advanced(CLEAR SSH_INC SSH_LIB_DIR)
 endif()
+
+set(SSH_DBG_LIB_DIR CACHE PATH "Path to the LibSSH debug lib directory")
+mark_as_advanced(SSH_DBG_LIB_DIR)
 
 # OpenSSL
 if(WIN32)
@@ -454,6 +469,9 @@ else()
 	option(USE_SSH "Required for running jobs on remote machines." OFF)
     mark_as_advanced(CLEAR SSL_INC SSL_LIB_DIR)
 endif()
+
+set(SSL_DBG_LIB_DIR CACHE PATH "Path to the OpenSSL debug lib directory")
+mark_as_advanced(SSL_DBG_LIB_DIR)
 
 # QuaZip
 if(Qt_Ver VERSION_EQUAL 6)
@@ -511,6 +529,9 @@ else()
     mark_as_advanced(CLEAR QUAZIP_INC QUAZIP_LIB_DIR)
 endif()
 
+set(QUAZIP_DBG_LIB_DIR CACHE PATH "Path to the QuaZip debug lib directory")
+mark_as_advanced(QUAZIP_DBG_LIB_DIR)
+
 # SQLite
 if(WIN32)
 	find_path(SQLITE_INC sqlite3.h
@@ -553,6 +574,9 @@ if(SQLITE_INC AND SQLITE_LIB_DIR AND QUAZIP_INC AND QUAZIP_LIB_DIR)
 else()
     SET(MODEL_REPO OFF CACHE BOOL "Build code to connect to the Model Repository." FORCE)
 endif()
+
+set(SQLITE_DBG_LIB_DIR CACHE PATH "Path to the SQLite debug lib directory")
+mark_as_advanced(SQLITE_DBG_LIB_DIR)
 
 # FFMPEG
 if(WIN32)
@@ -603,6 +627,9 @@ else()
 	option(USE_FFMPEG "Required to export mpeg videos." OFF)
     mark_as_advanced(CLEAR FFMPEG_INC FFMPEG_LIB_DIR)
 endif()
+
+set(FFMPEG_DBG_LIB_DIR CACHE PATH "Path to the FFMPEG debug lib directory")
+mark_as_advanced(FFMPEG_DBG_LIB_DIR)
 
 # OpenGL
 find_package(OpenGL REQUIRED)
