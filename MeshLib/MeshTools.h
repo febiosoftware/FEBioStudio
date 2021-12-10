@@ -65,7 +65,7 @@ bool IntersectQuad(vec3d* y, vec3d x, vec3d n, vec3d& q, double& g);
 // the direction in which point r is looking.
 vec3d ClosestNodeOnSurface(FEMesh& mesh, const vec3d& r, const vec3d& t);
 
-vec3d ProjectToFace(const FEMeshBase& mesh, vec3d p, FEFace& f, double& r, double& s, bool bedge = true);
+vec3d ProjectToFace(FEMesh& mesh, vec3d p, FEFace& f, double& r, double& s, bool bedge = true);
 vec3d ProjectToEdge(vec3d e1, vec3d e2, vec3d p, double& r);
 
 // project to a triangle
