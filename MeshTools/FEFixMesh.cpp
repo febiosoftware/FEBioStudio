@@ -38,10 +38,10 @@ FEFixMesh::FEFixMesh() : FEModifier("Fix mesh")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEFixMesh::Apply(FEMesh* pm)
+FSMesh* FEFixMesh::Apply(FSMesh* pm)
 {
 	// create a copy of the mesh
-	FEMesh* pnew = new FEMesh(*pm);
+	FSMesh* pnew = new FSMesh(*pm);
 
 	// apply the task on this mesh
 	int task = GetIntValue(0);
@@ -61,7 +61,7 @@ FEMesh* FEFixMesh::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFixMesh::RemoveDuplicateEdges(FEMesh* pm)
+bool FEFixMesh::RemoveDuplicateEdges(FSMesh* pm)
 {
 	int NE = pm->Edges();
 	int NN = pm->Nodes();

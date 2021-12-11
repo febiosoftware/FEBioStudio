@@ -44,11 +44,11 @@ void FEWeldNodes::SetThreshold(double d)
 //! Apply the weld modifier to the mesh and return a new mesh with the nodes
 //! welded. Note that this modifier only works on surface meshes (quad/tri).
 //! This modifier welds only the selected nodes.
-FEMesh* FEWeldNodes::Apply(FEMesh* pm)
+FSMesh* FEWeldNodes::Apply(FSMesh* pm)
 {
 	// create a copy of the mesh
-	FEMesh* pnm = new FEMesh(*pm);
-	FEMesh& m = *pnm;
+	FSMesh* pnm = new FSMesh(*pm);
+	FSMesh& m = *pnm;
 
 	// weld the nodes and figure out the new node numbering
 	UpdateNodes(pnm);
@@ -64,9 +64,9 @@ FEMesh* FEWeldNodes::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldNodes::UpdateNodes(FEMesh* pm)
+void FEWeldNodes::UpdateNodes(FSMesh* pm)
 {
-	FEMesh& m = *pm;
+	FSMesh& m = *pm;
 
 	// find out how many nodes are selected
 	// and put them in a list
@@ -120,9 +120,9 @@ void FEWeldNodes::UpdateNodes(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldNodes::UpdateElements(FEMesh* pnm)
+void FEWeldNodes::UpdateElements(FSMesh* pnm)
 {
-	FEMesh& m = *pnm;
+	FSMesh& m = *pnm;
 
 	int elems = m.Elements();
 	for (int i=0; i<elems; ++i)
@@ -189,9 +189,9 @@ void FEWeldNodes::UpdateElements(FEMesh* pnm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldNodes::UpdateFaces(FEMesh* pnm)
+void FEWeldNodes::UpdateFaces(FSMesh* pnm)
 {
-	FEMesh& m = *pnm;
+	FSMesh& m = *pnm;
 
 	int faces = m.Faces();
 	for (int i=0; i<faces; ++i)
@@ -251,9 +251,9 @@ void FEWeldNodes::UpdateFaces(FEMesh* pnm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldNodes::UpdateEdges(FEMesh* pm)
+void FEWeldNodes::UpdateEdges(FSMesh* pm)
 {
-	FEMesh& m = *pm;
+	FSMesh& m = *pm;
 	int edges = m.Edges();
 	for (int i=0; i<edges; ++i)
 	{

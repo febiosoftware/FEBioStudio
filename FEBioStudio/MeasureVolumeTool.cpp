@@ -60,7 +60,7 @@ bool CMeasureVolumeTool::OnApply()
 {
 	m_vol = 0.0;
 
-	FEMesh* mesh = GetActiveMesh();
+	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return false;
 
 	int NF = mesh->Faces();

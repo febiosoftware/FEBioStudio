@@ -58,7 +58,7 @@ bool FEMeshExport::Write(const char* szfile)
 	for (i=0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 
 		for (j=0; j<pm->Nodes(); ++j, ++N)
 		{
@@ -76,7 +76,7 @@ bool FEMeshExport::Write(const char* szfile)
 	int ntri = 0;
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		for (j=0; j<pm->Elements(); ++j)
 		{
 			FEElement& e = pm->Element(j);
@@ -93,7 +93,7 @@ bool FEMeshExport::Write(const char* szfile)
 		fprintf(fp, "%d\n", nhex);
 		for (i=0; i<model.Objects(); ++i)
 		{
-			FEMesh* pm = model.Object(i)->GetFEMesh();
+			FSMesh* pm = model.Object(i)->GetFEMesh();
 			for (j=0; j<pm->Elements(); ++j)
 			{
 				FEElement& e = pm->Element(j);
@@ -115,7 +115,7 @@ bool FEMeshExport::Write(const char* szfile)
 		fprintf(fp, "%d\n", ntet);
 		for (i=0; i<model.Objects(); ++i)
 		{
-			FEMesh* pm = model.Object(i)->GetFEMesh();
+			FSMesh* pm = model.Object(i)->GetFEMesh();
 			for (j=0; j<pm->Elements(); ++j)
 			{
 				FEElement& e = pm->Element(j);
@@ -138,7 +138,7 @@ bool FEMeshExport::Write(const char* szfile)
 		int ntag = 1;
 		for (i=0; i<model.Objects(); ++i)
 		{
-			FEMesh* pm = model.Object(i)->GetFEMesh();
+			FSMesh* pm = model.Object(i)->GetFEMesh();
 			for (j=0; j<pm->Elements(); ++j)
 			{
 				FEElement& e = pm->Element(j);

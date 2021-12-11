@@ -32,13 +32,13 @@ SOFTWARE.*/
 class FESurfaceData : public FEMeshData
 {
 public:
-	FESurfaceData(FEMesh* mesh = nullptr);
+	FESurfaceData(FSMesh* mesh = nullptr);
 	FESurfaceData(const FESurfaceData& data);
 	~FESurfaceData();
 	void operator = (const FESurfaceData& data);
 	double& operator [] (int index);
 
-	void Create(FEMesh* mesh, FESurface* surface, FEMeshData::DATA_TYPE dataType);
+	void Create(FSMesh* mesh, FESurface* surface, FEMeshData::DATA_TYPE dataType);
 
 	vector<double>* getData();
 

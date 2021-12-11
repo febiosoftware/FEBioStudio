@@ -61,7 +61,7 @@ bool CAreaCalculatorTool::OnApply()
             return false;
         }
 
-        FEMesh& mesh = *po->GetFEMesh();
+        FSMesh& mesh = *po->GetFEMesh();
 
         // tag faces and their nodes
         int N = mesh.Nodes();

@@ -32,5 +32,5 @@ class FEDiscardMesh : public FEModifier
 public:
 	FEDiscardMesh();
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };

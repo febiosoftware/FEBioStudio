@@ -48,7 +48,7 @@ bool FEGMshImport::Load(const char* szfile)
 	if (!Open(szfile, "rt")) return false;
 
 	// create a new mesh
-	m_pm = new FEMesh();
+	m_pm = new FSMesh();
 
 	bool ret = true;
 	while (fgets(m_szline, 255, m_fp))

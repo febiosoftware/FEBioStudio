@@ -2519,7 +2519,7 @@ mat3f FEPostModel::EvaluateNodeTensor(int n, int ntime, int nten, int ntype)
 mat3f FEPostModel::EvaluateFaceTensor(int n, int ntime, int nten, int ntype)
 {
 	FEState& state = *GetState(ntime);
-	FEMeshBase* mesh = state.GetFEMesh();
+	FSMeshBase* mesh = state.GetFEMesh();
 
 	mat3f m;
 

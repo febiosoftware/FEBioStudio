@@ -36,7 +36,7 @@ FEQuad4ToQuad8::FEQuad4ToQuad8(bool bsmooth) : FEModifier("Quad4-to-Quad8")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
+FSMesh* FEQuad4ToQuad8::Apply(FSMesh* pm)
 {
     const int NEDG = 4;
     const int EL[NEDG][2] = {{0,1},{1,2},{2,3},{3,0}};
@@ -166,7 +166,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
     int NN1 = NN + NL;
     
     // allocate a new mesh
-    FEMesh* pnew = new FEMesh;
+    FSMesh* pnew = new FSMesh;
     pnew->Create(NN1, NT, NF, NC);
     
     // copy the old nodes
@@ -274,7 +274,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEQuad8Smooth::Apply(FEMesh* pmesh)
+void FEQuad8Smooth::Apply(FSMesh* pmesh)
 {
     int NN = pmesh->Nodes();
     int NF = pmesh->Faces();
@@ -494,7 +494,7 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
 
 //-----------------------------------------------------------------------------
 //! Convert a quad8 to a quad4 mesh by eliminating all the center edge nodes
-FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
+FSMesh* FEQuad8ToQuad4::Apply(FSMesh* pm)
 {
     // make sure the mesh is a quad8 mesh
     if (pm->IsType(FE_QUAD8) == false) return 0;
@@ -523,7 +523,7 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
     }
     
     // allocate a new mesh
-    FEMesh* pnew = new FEMesh;
+    FSMesh* pnew = new FSMesh;
     pnew->Create(nn, NE, NF, NC);
     
     // create the nodes

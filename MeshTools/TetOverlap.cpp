@@ -42,7 +42,7 @@ TetOverlap::TetOverlap()
 
 }
 
-bool TetOverlap::Apply(FEMesh* mesh, std::vector<pair<int, int> >& tetList)
+bool TetOverlap::Apply(FSMesh* mesh, std::vector<pair<int, int> >& tetList)
 {
 	if (mesh == nullptr) return false;
 	if (mesh->IsType(FE_TET4) == false) return false;

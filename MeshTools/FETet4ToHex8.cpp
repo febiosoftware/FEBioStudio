@@ -37,7 +37,7 @@ FETet4ToHex8::FETet4ToHex8(bool bsmooth) : FEModifier("Tet4-to-Hex8")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
+FSMesh* FETet4ToHex8::Apply(FSMesh* pm)
 {
 	// before we get started, let's make sure this is a tet4 mesh
 	if (pm->IsType(FE_TET4) == false) return 0;
@@ -45,14 +45,14 @@ FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
 	// convert to a Tet15 mesh
 	FETet4ToTet15 tet4to15;
 	tet4to15.SetSmoothing(m_bsmooth);
-	FEMesh* tet15 = tet4to15.Apply(pm);
+	FSMesh* tet15 = tet4to15.Apply(pm);
 
 	// create a new mesh
 	int nodes = tet15->Nodes();
 	int elems = tet15->Elements();
 	int faces = tet15->Faces();
 	int edges = tet15->Edges();
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(nodes, 4*elems, 3*faces, 2*edges);
 
 	// copy the nodes from the tet15 mesh

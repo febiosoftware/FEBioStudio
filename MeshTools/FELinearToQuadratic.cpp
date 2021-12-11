@@ -36,7 +36,7 @@ FELinearToQuadratic::FELinearToQuadratic() : FEModifier("Linear-to-Quadratic")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
+FSMesh* FELinearToQuadratic::Apply(FSMesh* pm)
 {
     const int ELH8[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
     const int ELP6[9][2] = {{0,1},{1,2},{2,0},{3,4},{4,5},{5,3},{0,3},{1,4},{2,5}};
@@ -387,7 +387,7 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
     int NN1 = NN + NL;
     
     // allocate a new mesh
-    FEMesh* pnew = new FEMesh;
+    FSMesh* pnew = new FSMesh;
     pnew->Create(NN1, NT, NF, NC);
     
     // copy the old nodes
@@ -619,7 +619,7 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FESolidSmooth::Apply(FEMesh* pmesh)
+void FESolidSmooth::Apply(FSMesh* pmesh)
 {
     int NN = pmesh->Nodes();
     int NF = pmesh->Faces();
@@ -863,7 +863,7 @@ void FESolidSmooth::Apply(FEMesh* pmesh)
 
 //-----------------------------------------------------------------------------
 //! Convert a quadratic solid mesh to a linear solid mesh by eliminating all the center edge nodes
-FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
+FSMesh* FEQuadraticToLinear::Apply(FSMesh* pm)
 {
     // get the number of items
     int NN = pm->Nodes();
@@ -899,7 +899,7 @@ FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
     }
     
     // allocate a new mesh
-    FEMesh* pnew = new FEMesh;
+    FSMesh* pnew = new FSMesh;
     pnew->Create(nn, NE, NF, NC);
     
     // create the nodes

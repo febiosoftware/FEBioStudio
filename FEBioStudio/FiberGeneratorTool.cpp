@@ -197,7 +197,7 @@ void CFiberGeneratorTool::OnApply()
 		return;
 	}
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) 
 	{
 		QMessageBox::critical(GetMainWindow(), "Tool", "The selected object does not have a mesh.");

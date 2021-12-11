@@ -33,7 +33,7 @@ namespace Ui {
 }
 
 class CMainWindow;
-class FEMesh;
+class FSMesh;
 class GObject;
 
 class CMeshInspector : public QMainWindow

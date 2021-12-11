@@ -32,8 +32,8 @@ class FEExtrudeFaces : public FEModifier
 public:
 	FEExtrudeFaces();
 
-	FEMesh* Apply(FEMesh* pm);
-	FEMesh* Apply(FEGroup* pg);
+	FSMesh* Apply(FSMesh* pm);
+	FSMesh* Apply(FEGroup* pg);
 
 	void SetExtrusionDistance(double D);
 	void SetSegments(int n);
@@ -42,5 +42,5 @@ public:
 	void SetSymmetricBias(bool b);
 
 protected:
-	void Extrude(FEMesh* pm, vector<int>& faceList);
+	void Extrude(FSMesh* pm, vector<int>& faceList);
 };

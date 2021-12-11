@@ -64,7 +64,7 @@ FEElement_& Post::FEDomain::Element(int n)
 
 void Post::FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 {
-	FECoreMesh& mesh = *GetMesh();
+	FSCoreMesh& mesh = *GetMesh();
 	int NN = mesh.Nodes();
 	int NE = Size();
 
@@ -102,7 +102,7 @@ void Post::FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 
 void Post::FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 {
-	FECoreMesh& mesh = *GetMesh();
+	FSCoreMesh& mesh = *GetMesh();
 	int NN = mesh.Nodes();
 	int NF = Size();
 

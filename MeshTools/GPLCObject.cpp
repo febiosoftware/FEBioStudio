@@ -39,13 +39,13 @@ GPLCObject::GPLCObject() : GObject(GPLC_OBJECT)
 }
 
 //-----------------------------------------------------------------------------
-FEMeshBase* GPLCObject::GetEditableMesh()
+FSMeshBase* GPLCObject::GetEditableMesh()
 {
 	return GetFEMesh();
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GPLCObject::BuildMesh()
+FSMesh* GPLCObject::BuildMesh()
 {
 	SetFEMesh(GetFEMesher()->BuildMesh());
 	return GetFEMesh();

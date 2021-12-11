@@ -36,12 +36,12 @@ public:
 public:
 	FESlice(){}
 	FESlice(GSlice* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	void BuildWedgedFaces(FEMesh* pm);
-	void BuildWedgedEdges(FEMesh* pm);
-	void BuildWedgesNodes(FEMesh* pm);
+	void BuildWedgedFaces(FSMesh* pm);
+	void BuildWedgedEdges(FSMesh* pm);
+	void BuildWedgesNodes(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k);
 

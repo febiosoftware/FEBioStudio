@@ -49,7 +49,7 @@ void FENodeData::Create(double v)
 	delete m_nodeSet;
 	m_nodeSet = new FENodeSet(m_po);
 	m_nodeSet->CreateFromMesh();
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 	SetMesh(pm);
 	m_data.assign(pm->Nodes(), v);
 }

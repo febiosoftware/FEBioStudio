@@ -37,7 +37,7 @@ public:
 public:
 	FETruncatedEllipsoid(){}
 	FETruncatedEllipsoid(GTruncatedEllipsoid* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GTruncatedEllipsoid*	m_pobj;

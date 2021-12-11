@@ -96,7 +96,7 @@ bool FEDXFimport::Load(const char* szfile)
 		int nodes = (*pi)->m_Node.size();
 		int elems = (*pi)->m_Face.size();
 
-		FEMesh* pm = new FEMesh();
+		FSMesh* pm = new FSMesh();
 		pm->Create(nodes, elems);
 
 		// create nodes

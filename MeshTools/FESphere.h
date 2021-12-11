@@ -37,7 +37,7 @@ public:
 public:
 	FESphere(){}
 	FESphere(GSphere* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GSphere* m_pobj;

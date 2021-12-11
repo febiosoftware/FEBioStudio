@@ -68,7 +68,7 @@ private:
 	class ElementSet
 	{
 	public:
-		FECoreMesh*	mesh;
+		FSCoreMesh*	mesh;
 		int			matID;
 		string		name;
 		vector<int>	elem;

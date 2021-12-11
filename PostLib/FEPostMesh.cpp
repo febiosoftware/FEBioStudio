@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// FEMeshBase.cpp: implementation of the FEMeshBase class.
+// FSMeshBase.cpp: implementation of the FSMeshBase class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -205,7 +205,7 @@ void Post::FEPostMesh::UpdateDomains()
 void Post::FEPostMesh::BuildMesh()
 {
 	// build mesh data
-	FEMesh::RebuildMesh(60.0);
+	FSMesh::RebuildMesh(60.0);
 
 	// Build the node-element list
 	m_NEL.Build(this);
@@ -218,7 +218,7 @@ void Post::FEPostMesh::BuildMesh()
 }
 
 //-----------------------------------------------------------------------------
-bool Post::FindElementInReferenceFrame(FECoreMesh& m, const vec3f& p, int& nelem, double r[3])
+bool Post::FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
 {
 	vec3f y[FEElement::MAX_NODES];
 	int NE = m.Elements();

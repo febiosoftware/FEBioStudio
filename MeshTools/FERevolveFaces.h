@@ -32,9 +32,9 @@ class FERevolveFaces : public FEModifier
 {
 public:
 	FERevolveFaces();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 protected:	
-	FEMesh* RevolveSolidMesh(FEMesh* pm);
-	FEMesh* RevolveShellMesh(FEMesh* pm);
+	FSMesh* RevolveSolidMesh(FSMesh* pm);
+	FSMesh* RevolveShellMesh(FSMesh* pm);
 };

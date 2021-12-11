@@ -64,13 +64,13 @@ FETube::FETube(GTube* po)
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FEMesh* FETube::BuildMesh()
+FSMesh* FETube::BuildMesh()
 {
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
 
-FEMesh* FETube::BuildMultiBlockMesh()
+FSMesh* FETube::BuildMultiBlockMesh()
 {
 	// get the geometry parameters
 	double R0 = m_pobj->GetFloatValue(GTube::RIN);
@@ -185,13 +185,13 @@ FEMesh* FETube::BuildMultiBlockMesh()
 	}
 
 	// build the mesh
-	FEMesh* pm = MB.BuildMesh();
+	FSMesh* pm = MB.BuildMesh();
 
 	// all done
 	return pm;
 }
 
-FEMesh* FETube::BuildMeshLegacy()
+FSMesh* FETube::BuildMeshLegacy()
 {
 	assert(m_pobj);
 
@@ -233,7 +233,7 @@ FEMesh* FETube::BuildMeshLegacy()
 	int nodes = nd*(nr+1)*(nz+1);
 	int elems = nd*nr*nz;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	double cosa, sina;
@@ -360,7 +360,7 @@ FEMesh* FETube::BuildMeshLegacy()
 	return pm;
 }
 
-void FETube::BuildFaces(FEMesh* pm)
+void FETube::BuildFaces(FSMesh* pm)
 {
 	int i, j;
 
@@ -443,7 +443,7 @@ void FETube::BuildFaces(FEMesh* pm)
 	}
 }
 
-void FETube::BuildEdges(FEMesh* pm)
+void FETube::BuildEdges(FSMesh* pm)
 {
 	int i;
 
@@ -525,7 +525,7 @@ FETube2::FETube2(GTube2* po)
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 }
 
-FEMesh* FETube2::BuildMesh()
+FSMesh* FETube2::BuildMesh()
 {
 	assert(m_pobj);
 
@@ -569,7 +569,7 @@ FEMesh* FETube2::BuildMesh()
 	int nodes = nd*(nr+1)*(nz+1);
 	int elems = nd*nr*nz;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	double cosa, sina;
@@ -696,7 +696,7 @@ FEMesh* FETube2::BuildMesh()
 	return pm;
 }
 
-void FETube2::BuildFaces(FEMesh* pm)
+void FETube2::BuildFaces(FSMesh* pm)
 {
 	int i, j;
 
@@ -779,7 +779,7 @@ void FETube2::BuildFaces(FEMesh* pm)
 	}
 }
 
-void FETube2::BuildEdges(FEMesh* pm)
+void FETube2::BuildEdges(FSMesh* pm)
 {
 	int i;
 

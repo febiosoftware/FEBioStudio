@@ -31,7 +31,7 @@ FEShellToSolid::FEShellToSolid() : FEModifier("Shell To Solid")
 {
 }
 
-FEMesh* FEShellToSolid::Apply(FEMesh* pm)
+FSMesh* FEShellToSolid::Apply(FSMesh* pm)
 {
 	// Make sure that we have a triangle or quad mesh
 	if ((pm->IsType(FE_TRI3)==false)&&(pm->IsType(FE_QUAD4)==false)) return 0;
@@ -94,7 +94,7 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 		if (tag[i] != 0) h[i] /= (double) tag[i];
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh(*pm);
+	FSMesh* pnew = new FSMesh(*pm);
 	pnew->Create(NN + nn, 0);
 
 	// position the new nodes

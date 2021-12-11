@@ -86,12 +86,12 @@ bool FEPartitionSelection::UpdateData(bool bsave)
 	return false;
 }
 
-FEMesh* FEPartitionSelection::Apply(FEMesh* pm)
+FSMesh* FEPartitionSelection::Apply(FSMesh* pm)
 {
 	bool newPartition = GetBoolValue(0);
 	int gid = GetIntValue(1) - 1;
 	if (newPartition) gid = -1;
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 
 	FEMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.PartitionElementSelection(gid);
@@ -99,16 +99,16 @@ FEMesh* FEPartitionSelection::Apply(FEMesh* pm)
 	return newMesh;
 }
 
-FEMesh* FEPartitionSelection::Apply(FEGroup* pg)
+FSMesh* FEPartitionSelection::Apply(FEGroup* pg)
 {
 	bool newPartition = GetBoolValue(0);
 	int gid = GetIntValue(1) - 1;
 	if (newPartition) gid = -1;
 
-	FEMesh* oldMesh = pg->GetMesh();
+	FSMesh* oldMesh = pg->GetMesh();
 	if (oldMesh == 0) return 0;
 
-	FEMesh* newMesh = new FEMesh(*oldMesh);
+	FSMesh* newMesh = new FSMesh(*oldMesh);
 	FEMeshBuilder meshBuilder(*newMesh);
 
 	FESurface* s = dynamic_cast<FESurface*>(pg);
@@ -142,12 +142,12 @@ FEMesh* FEPartitionSelection::Apply(FEGroup* pg)
 // FERemoveDuplicateElements
 //-----------------------------------------------------------------------------
 
-FEMesh* FERemoveDuplicateElements::Apply(FEMesh* pm)
+FSMesh* FERemoveDuplicateElements::Apply(FSMesh* pm)
 {
 	int i, j, k;
 
-	FEMesh* pnm = new FEMesh(*pm);
-	FEMesh& m = *pnm;
+	FSMesh* pnm = new FSMesh(*pm);
+	FSMesh& m = *pnm;
 
 	FENodeElementList NEL; NEL.Build(&m);
 	int NE = m.Elements();
@@ -187,13 +187,13 @@ FEMesh* FERemoveDuplicateElements::Apply(FEMesh* pm)
 // FEFlattenFaces
 //////////////////////////////////////////////////////////////////////
 
-FEMesh* FEFlattenFaces::Apply(FEMesh *pm)
+FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 {
 	int i, j, ntag;
 
 	// create a new mesh
-	FEMesh* pnm = new FEMesh(*pm);
-	FEMesh& m = *pnm;
+	FSMesh* pnm = new FSMesh(*pm);
+	FSMesh& m = *pnm;
 
 	// tag all nodes
 	for (i=0; i<m.Nodes(); ++i) m.Node(i).m_ntag = 0;
@@ -305,11 +305,11 @@ FEAlignNodes::FEAlignNodes() : FEModifier("Align")
 	AddChoiceParam(0, "align", "align")->SetEnumNames("+X\0-X\0+Y\0-Y\0+Z\0-Z\0");
 }
 
-FEMesh* FEAlignNodes::Apply(FEMesh* pm)
+FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 {
 	int nalign = GetIntValue(0);
 
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	vec3d rc;
 	int iref = -1;
@@ -375,9 +375,9 @@ FESetShellThickness::FESetShellThickness() : FEModifier("Set shell thickness")
 	AddDoubleParam(0, "h", "h");
 }
 
-FEMesh* FESetShellThickness::Apply(FEMesh *pm)
+FSMesh* FESetShellThickness::Apply(FSMesh *pm)
 {
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	double thick = GetFloatValue(0);
 	double percent = 0;	// TODO: Add a parameter for this
@@ -447,9 +447,9 @@ bool FESetFiberOrientation::UpdateData(bool bsave)
 	return false;
 }
 
-FEMesh* FESetFiberOrientation::Apply(FEMesh *pm)
+FSMesh* FESetFiberOrientation::Apply(FSMesh *pm)
 {
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	int ngen = GetIntValue(0);
 	switch (ngen)
@@ -465,7 +465,7 @@ FEMesh* FESetFiberOrientation::Apply(FEMesh *pm)
 	return pnm;
 }
 
-void FESetFiberOrientation::SetFiberVector(FEMesh *pm)
+void FESetFiberOrientation::SetFiberVector(FSMesh *pm)
 {
 	vec3d r = GetVecValue(1);
 	r.Normalize();
@@ -482,7 +482,7 @@ void FESetFiberOrientation::SetFiberVector(FEMesh *pm)
 	}
 }
 
-void FESetFiberOrientation::SetFiberNodes(FEMesh *pm)
+void FESetFiberOrientation::SetFiberNodes(FSMesh *pm)
 {
 	int nsel = 0;
 	for (int i = 0; i<pm->Elements(); ++i)
@@ -564,9 +564,9 @@ bool FESetAxesOrientation::UpdateData(bool bsave)
 	else return false;
 }
 
-FEMesh* FESetAxesOrientation::Apply(FEMesh *pm)
+FSMesh* FESetAxesOrientation::Apply(FSMesh *pm)
 {
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	pnm->TagAllElements(-1);
 	int nsel = 0;
@@ -603,7 +603,7 @@ FEMesh* FESetAxesOrientation::Apply(FEMesh *pm)
 	return pnm;
 }
 
-bool FESetAxesOrientation::SetAxesVectors(FEMesh *pm)
+bool FESetAxesOrientation::SetAxesVectors(FSMesh *pm)
 {
 	vec3d a = GetVecValue(1);
 	vec3d d = GetVecValue(2);
@@ -630,7 +630,7 @@ bool FESetAxesOrientation::SetAxesVectors(FEMesh *pm)
 	return true;
 }
 
-bool FESetAxesOrientation::SetAxesNodes(FEMesh *pm)
+bool FESetAxesOrientation::SetAxesNodes(FSMesh *pm)
 {
 	int node[3] = {0, 1, 2};
 	node[0] = GetIntValue(3)-1;
@@ -670,7 +670,7 @@ bool FESetAxesOrientation::SetAxesNodes(FEMesh *pm)
 	return true;
 }
 
-bool FESetAxesOrientation::SetAxesAngles(FEMesh *pm)
+bool FESetAxesOrientation::SetAxesAngles(FSMesh *pm)
 {
     double theta = GetFloatValue(6)*PI/180;
     double phi = GetFloatValue(7)*PI/180;
@@ -692,7 +692,7 @@ bool FESetAxesOrientation::SetAxesAngles(FEMesh *pm)
     return true;
 }
 
-bool FESetAxesOrientation::SetAxesCylindrical(FEMesh* pm)
+bool FESetAxesOrientation::SetAxesCylindrical(FSMesh* pm)
 {
 	vec3d c(0, 0, 0); // center of axis
 
@@ -743,7 +743,7 @@ bool FESetAxesOrientation::SetAxesCylindrical(FEMesh* pm)
 	return true;
 }
 
-bool FESetAxesOrientation::SetAxesCopy(FEMesh *pm)
+bool FESetAxesOrientation::SetAxesCopy(FSMesh *pm)
 {
 /*	assert(m_pms);
 	
@@ -818,12 +818,12 @@ FEMirrorMesh::FEMirrorMesh() : FEModifier("Mirror")
 	AddVecParam(vec3d(0,0,0), "center", "Center");
 }
 
-FEMesh* FEMirrorMesh::Apply(FEMesh *pm)
+FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 {
 	int nplane = GetIntValue(0);
 	vec3d rc = GetVecValue(1);
 
-	FEMesh* pmn = new FEMesh(*pm);
+	FSMesh* pmn = new FSMesh(*pm);
 
 	// mirror the nodes
 	for (int i=0; i<pmn->Nodes(); ++i)
@@ -850,7 +850,7 @@ FEMesh* FEMirrorMesh::Apply(FEMesh *pm)
 // FEQuad2Tri
 //-----------------------------------------------------------------------------
 
-FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
+FSMesh* FEQuad2Tri::Apply(FSMesh *pm)
 {
 	int i;
 	int NN = pm->Nodes();
@@ -873,7 +873,7 @@ FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
 	}
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN, NE1, NF1, NC);
 
 	// copy nodes
@@ -965,7 +965,7 @@ FERefineMesh::FERefineMesh() : FEModifier("Refine")
 	AddBoolParam(false, "hex 2d-split");
 }
 
-FEMesh* FERefineMesh::Apply(FEMesh* pm)
+FSMesh* FERefineMesh::Apply(FSMesh* pm)
 {
 	// get parameters
 	int niter = GetIntValue(0);
@@ -1006,11 +1006,11 @@ FEMesh* FERefineMesh::Apply(FEMesh* pm)
 	if (mod == 0) return 0;
 
 	// apply the refine modifier
-	FEMesh* pmold = pm;
+	FSMesh* pmold = pm;
 	setProgress(0.0);
 	for (int i=0; i<niter; ++i)
 	{
-		FEMesh* pmnew = mod->Apply(pmold);
+		FSMesh* pmnew = mod->Apply(pmold);
 		if (i != 0) delete pmold;
 		pmold = pmnew;
 		setProgress(100.0*(i + 1.0) / (double)niter);
@@ -1130,7 +1130,7 @@ bool FEConvertMesh::UpdateData(bool bsave)
 	GObject* po = GObject::GetActiveObject();
 	if (po == nullptr) return false;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return false;
 
 	// get the mesh type
@@ -1165,7 +1165,7 @@ bool FEConvertMesh::UpdateData(bool bsave)
 	return true;
 }
 
-FEMesh* FEConvertMesh::Apply(FEMesh* pm)
+FSMesh* FEConvertMesh::Apply(FSMesh* pm)
 {
 	// get the chosen option
 	int nsel = GetIntValue(0);
@@ -1212,7 +1212,7 @@ FEMesh* FEConvertMesh::Apply(FEMesh* pm)
 	// apply it
 	if (m_mod)
 	{
-		FEMesh* newMesh = m_mod->Apply(pm);
+		FSMesh* newMesh = m_mod->Apply(pm);
 		FEModifier* tmp = m_mod; m_mod = nullptr;
 		delete tmp;
 		return newMesh;
@@ -1237,9 +1237,9 @@ FEAddNode::FEAddNode() : FEModifier("Add Node")
 	AddVecParam(vec3d(0,0,0), "position", "position");
 }
 
-FEMesh* FEAddNode::Apply(FEMesh* pm)
+FSMesh* FEAddNode::Apply(FSMesh* pm)
 {
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 
 	vec3d r = GetVecValue(0);
 	GObject* po = pm->GetGObject();
@@ -1262,12 +1262,12 @@ FEInvertMesh::FEInvertMesh() : FEModifier("Invert Mesh")
 	AddBoolParam(true, "Invert faces", "Invert faces");
 }
 
-FEMesh* FEInvertMesh::Apply(FEMesh* pm)
+FSMesh* FEInvertMesh::Apply(FSMesh* pm)
 {
 	bool invertElems = GetBoolValue(0);
 	bool invertFaces = GetBoolValue(1);
 
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 
 	if (invertElems)
@@ -1296,7 +1296,7 @@ FEDetachElements::FEDetachElements() : FEModifier("Detach Elements")
 	AddBoolParam(true, "Repartition selection");
 }
 
-FEMesh* FEDetachElements::Apply(FEMesh* pm)
+FSMesh* FEDetachElements::Apply(FSMesh* pm)
 {
 	// Figure out which nodes need to be duplicated
 	pm->TagAllNodes(-1);
@@ -1355,7 +1355,7 @@ FEMesh* FEDetachElements::Apply(FEMesh* pm)
 	}
 
 	// create a new mesh
-	FEMesh* newMesh = new FEMesh;
+	FSMesh* newMesh = new FSMesh;
 	newMesh->Create(nn1, NE);
 
 	// create nodes

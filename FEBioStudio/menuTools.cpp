@@ -278,7 +278,7 @@ void CMainWindow::on_actionLayerInfo_triggered()
 			for (int j = 0; j < nc; ++j)
 			{
 				const FEMesher* mesher = nullptr;
-				const FEMesh*	mesh = nullptr;
+				const FSMesh*	mesh = nullptr;
 
 				if (i == activeLayer)
 				{

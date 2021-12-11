@@ -204,13 +204,13 @@ void CDlgMeshDiagnostics::runDiagnostics()
 	}
 
 	// see if this object has a mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr)
 	{
 		ui->log("This object does not have a mesh to diagnose.");
 		return;
 	}
-	FEMesh& mesh = *pm;
+	FSMesh& mesh = *pm;
 
 	try {
 		ui->diagnose();
@@ -229,7 +229,7 @@ void CDlgMeshDiagnostics::runDiagnostics()
 
 void CDlgMeshDiagnosticsUI::checkMeshStats()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	// collect some statistics
 	int nodes = mesh.Nodes();    log(QString(" Nodes    = %1").arg(nodes));
@@ -344,7 +344,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 
 void CDlgMeshDiagnosticsUI::checkElementConnectivity()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int errors = 0;
 	int NN = mesh.Nodes();
@@ -365,7 +365,7 @@ void CDlgMeshDiagnosticsUI::checkElementConnectivity()
 
 void CDlgMeshDiagnosticsUI::checkFaceConnectivity()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int errors = 0;
 	int NN = mesh.Nodes();
@@ -386,7 +386,7 @@ void CDlgMeshDiagnosticsUI::checkFaceConnectivity()
 
 void CDlgMeshDiagnosticsUI::checkEdgeConnectivity()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int errors = 0;
 	int NN = mesh.Nodes();
@@ -407,7 +407,7 @@ void CDlgMeshDiagnosticsUI::checkEdgeConnectivity()
 
 void CDlgMeshDiagnosticsUI::checkIsolatedVertices()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	mesh.TagAllNodes(0);
 	int NN = mesh.Nodes();
 	int NE = mesh.Elements();
@@ -446,7 +446,7 @@ void CDlgMeshDiagnosticsUI::checkIsolatedVertices()
 
 void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int NE = mesh.Edges();
 	int NN = mesh.Nodes();
@@ -492,7 +492,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 
 void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int NF = mesh.Faces();
 	int NN = mesh.Nodes();
@@ -548,7 +548,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 
 void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int NE = mesh.Elements();
 	int NN = mesh.Nodes();
@@ -615,7 +615,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 
 void CDlgMeshDiagnosticsUI::checkElementNeighbors()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int nerr = 0;
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
@@ -653,7 +653,7 @@ void CDlgMeshDiagnosticsUI::checkElementNeighbors()
 
 void CDlgMeshDiagnosticsUI::checkFaceNeighbors()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int nerr = 0;
 	int NF = mesh.Faces();
 	for (int i = 0; i < NF; ++i)
@@ -676,7 +676,7 @@ void CDlgMeshDiagnosticsUI::checkFaceNeighbors()
 
 void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	vector<int> err;
 	int NE = mesh.Edges();
 	for (int i = 0; i < NE; ++i)
@@ -732,7 +732,7 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 	int invalidShellFaces = 0;
 	int invalidSolidShellFaces = 0;
 	int elemFaces = 0; 
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int NE = mesh.Elements();
 	int NF = mesh.Faces();
 	for (int i = 0; i < NE; ++i)
@@ -832,7 +832,7 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 
 void CDlgMeshDiagnosticsUI::checkElementPartitioning()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int ng = mesh.CountElementPartitions();
 	vector<int> lut(ng, 0);
 	int invalidGID = 0;
@@ -862,7 +862,7 @@ void CDlgMeshDiagnosticsUI::checkElementPartitioning()
 
 void CDlgMeshDiagnosticsUI::checkFacePartitioning()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int ng = mesh.CountFacePartitions();
 	vector<int> lut(ng, 0);
 	int invalidGID = 0;
@@ -940,7 +940,7 @@ void CDlgMeshDiagnosticsUI::checkFacePartitioning()
 
 void CDlgMeshDiagnosticsUI::checkEdgePartitioning()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int ng = mesh.CountEdgePartitions();
 	vector<int> lut(ng, 0);
 	int invalidGID = 0;
@@ -970,7 +970,7 @@ void CDlgMeshDiagnosticsUI::checkEdgePartitioning()
 
 void CDlgMeshDiagnosticsUI::checkNodePartitioning()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int ng = mesh.CountNodePartitions();
 	vector<int> lut(ng, 0);
 	int invalidGID = 0;

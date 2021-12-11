@@ -41,23 +41,23 @@ public:
 public:
 	FEBoxMesher(){}
 	FEBoxMesher(GBox* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	FEMesh* CreateRegular();
-	FEMesh* CreateButterfly3D();
-	FEMesh* CreateButterfly2D();
+	FSMesh* CreateRegular();
+	FSMesh* CreateButterfly3D();
+	FSMesh* CreateButterfly2D();
 
-	FEMesh* CreateRegularHEX  ();
-	FEMesh* CreateRegularTET4 ();
-	FEMesh* CreateRegularTET10();
-	FEMesh* CreateRegularTET15();
-	FEMesh* CreateRegularTET20();
+	FSMesh* CreateRegularHEX  ();
+	FSMesh* CreateRegularTET4 ();
+	FSMesh* CreateRegularTET10();
+	FSMesh* CreateRegularTET15();
+	FSMesh* CreateRegularTET20();
 
 protected:
-	void BuildHexFaces(FEMesh* pm);
-	void BuildTetFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildHexFaces(FSMesh* pm);
+	void BuildTetFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k) 
 	{

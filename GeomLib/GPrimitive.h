@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GObject.h"
 #include <FSCore/ParamBlock.h>
 
-class FEMesh;
+class FSMesh;
 
 //-----------------------------------------------------------------------------
 // The GPrimitive class manages the parts, surfaces and nodesets automatically
@@ -44,8 +44,8 @@ public:
 	GPrimitive(int ntype) : GObject(ntype) {}
 
 	// get the editable mesh
-	FEMeshBase* GetEditableMesh() override;
-	FELineMesh* GetEditableLineMesh() override;
+	FSMeshBase* GetEditableMesh() override;
+	FSLineMesh* GetEditableLineMesh() override;
 
 	// update the object's data
 	bool Update(bool b = true) override;
@@ -422,7 +422,7 @@ private:
 class GGregoryPatch : public GPrimitive
 {
 public:
-	GGregoryPatch(FEMesh* pm) : GPrimitive(GGREGORY_PATCH) { SetFEMesh(pm); }
+	GGregoryPatch(FSMesh* pm) : GPrimitive(GGREGORY_PATCH) { SetFEMesh(pm); }
 
 public:
 	void UpdateMesh();

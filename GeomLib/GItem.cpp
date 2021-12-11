@@ -97,7 +97,7 @@ void GNode::MakeRequired()
 	GObject* po = dynamic_cast<GObject*>(Object());
 	if (po)
 	{
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			FENode* pn = pm->FindNodeFromID(GetLocalID()); assert(pn);
@@ -342,7 +342,7 @@ FEEdgeSet* GEdge::GetFEEdgeSet() const
 	GObject* po = dynamic_cast<GObject*>(m_po);
 	if (m_po == nullptr) return nullptr;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return nullptr;
 
 	FEEdgeSet* edge = new FEEdgeSet(po);

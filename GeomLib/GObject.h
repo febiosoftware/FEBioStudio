@@ -39,9 +39,9 @@ class FENodeSet;
 class FECurveMesh;
 class FESurfaceMesh;
 class FEMesher;
-class FEMesh;
-class FEMeshBase;
-class FELineMesh;
+class FSMesh;
+class FSMeshBase;
+class FSLineMesh;
 class FENode;
 class FEGroup;
 class GLMesh;
@@ -113,20 +113,20 @@ public:
 	virtual FEMesher* CreateDefaultMesher();
 
 	// retrieve the FE mesh
-	FEMesh* GetFEMesh();
-	const FEMesh* GetFEMesh() const;
+	FSMesh* GetFEMesh();
+	const FSMesh* GetFEMesh() const;
 
 	// get the editable mesh
-	virtual FEMeshBase* GetEditableMesh() { return 0; }
+	virtual FSMeshBase* GetEditableMesh() { return 0; }
 
 	// get the editable line mesh
-	virtual FELineMesh* GetEditableLineMesh() { return 0; }
+	virtual FSLineMesh* GetEditableLineMesh() { return 0; }
 
 	// replace the current mesh
-	void ReplaceFEMesh(FEMesh* pm, bool bup = false, bool bdel = false);
+	void ReplaceFEMesh(FSMesh* pm, bool bup = false, bool bdel = false);
 
 	// set the FE mesh
-	void SetFEMesh(FEMesh* pm);
+	void SetFEMesh(FSMesh* pm);
 
 	// replace the current surface mesh
 	virtual void ReplaceSurfaceMesh(FESurfaceMesh* newMesh);
@@ -134,8 +134,8 @@ public:
 	// retrieve an FE nodes from a GNode
 	FENode* GetFENode(int gid);
 
-	// build the FEMesh
-	virtual FEMesh* BuildMesh();
+	// build the FSMesh
+	virtual FSMesh* BuildMesh();
 
 	// delete the mesh
 	void DeleteFEMesh();

@@ -1348,7 +1348,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			int nsets = po->FENodeSets();
@@ -1364,7 +1364,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			int surfs = po->FESurfaces();
@@ -1380,7 +1380,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			int edges = po->FEEdgeSets();
@@ -1396,7 +1396,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			int parts = po->FEParts();
@@ -1416,7 +1416,7 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FSModel& fem)
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
 		GObject* po = mdl.Object(i);
-		FEMesh* mesh = po->GetFEMesh();
+		FSMesh* mesh = po->GetFEMesh();
 		if (mesh)
 		{
 			for (int j = 0; j < mesh->MeshDataFields(); ++j)

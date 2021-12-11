@@ -59,7 +59,7 @@ FoamGen::FoamGen()
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FoamGen::Create()
+FSMesh* FoamGen::Create()
 {
 	// data check
 	if (m_nx < 1) return 0;
@@ -77,11 +77,11 @@ FEMesh* FoamGen::Create()
 	}
 */
 	// Extract the mesh
-	FEMesh* pm = CreateMesh();
+	FSMesh* pm = CreateMesh();
 	if (pm == 0) return 0;
 
 	// apply a weld modifier
-	FEMesh* pmw = WeldMesh(pm);
+	FSMesh* pmw = WeldMesh(pm);
 
 	// remove duplicate elements
 	int F0 = pmw->Elements();
@@ -99,7 +99,7 @@ FEMesh* FoamGen::Create()
 }
 
 //-----------------------------------------------------------------------------
-void FoamGen::SelectFace(int i, FEMesh* pm)
+void FoamGen::SelectFace(int i, FSMesh* pm)
 {
 	int j;
 
@@ -136,7 +136,7 @@ void FoamGen::SelectFace(int i, FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FoamGen::WeldMesh(FEMesh* pm)
+FSMesh* FoamGen::WeldMesh(FSMesh* pm)
 {
 	// find a good welding tolerance
 	double dx = m_w/m_nx;
@@ -160,7 +160,7 @@ FEMesh* FoamGen::WeldMesh(FEMesh* pm)
 		int F0 = pm->Elements();
 
 		// apply weld modifier
-		FEMesh* pmn = mod.Apply(pm);
+		FSMesh* pmn = mod.Apply(pm);
 
 		// adjust face counts
 		int F1 = pmn->Elements();
@@ -174,7 +174,7 @@ FEMesh* FoamGen::WeldMesh(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FoamGen::SmoothMesh(FEMesh* pm, int niter, double w)
+void FoamGen::SmoothMesh(FSMesh* pm, int niter, double w)
 {
 	// set up the node-element table
 	FENodeNodeList NNL(pm);
@@ -546,7 +546,7 @@ void FoamGen::CalcGradient()
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FoamGen::CreateMesh()
+FSMesh* FoamGen::CreateMesh()
 {
 	int i;
 	int NE = m_Cell.size();
@@ -684,7 +684,7 @@ FEMesh* FoamGen::CreateMesh()
 	int nf = m_Face.size();
 	if ((nn==0) || (nf==0)) return 0;
 
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nn, nf, nf);
 
 	for (i=0; i<nn; ++i)

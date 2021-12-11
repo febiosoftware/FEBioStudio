@@ -36,9 +36,9 @@ GradientMap::GradientMap()
 
 void GradientMap::Apply(const FENodeData& data, vector<vec3d>& out, int niter)
 {
-	FEMesh* pm = data.GetMesh();
+	FSMesh* pm = data.GetMesh();
 	if (pm==0) return;
-	FEMesh& mesh = *pm;
+	FSMesh& mesh = *pm;
 
 	int NE = mesh.Elements();
 	out.assign(NE, vec3d(0,0,0));

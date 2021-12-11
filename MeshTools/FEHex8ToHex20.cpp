@@ -36,7 +36,7 @@ FEHex8ToHex20::FEHex8ToHex20(bool bsmooth) : FEModifier("Hex8-to-Hex20")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEHex8ToHex20::Apply(FEMesh* pm)
+FSMesh* FEHex8ToHex20::Apply(FSMesh* pm)
 {
 	const int EL[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
 
@@ -165,7 +165,7 @@ FEMesh* FEHex8ToHex20::Apply(FEMesh* pm)
 	int NN1 = NN + NL;
 
 	// allocate a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN1, NT, NF, NC);
 
 	// copy the old nodes
@@ -275,7 +275,7 @@ FEMesh* FEHex8ToHex20::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEHex20Smooth::Apply(FEMesh* pmesh)
+void FEHex20Smooth::Apply(FSMesh* pmesh)
 {
 	int NN = pmesh->Nodes();
 	int NF = pmesh->Faces();
@@ -519,7 +519,7 @@ void FEHex20Smooth::Apply(FEMesh* pmesh)
 
 //-----------------------------------------------------------------------------
 //! Convert a hex20 to a hex8 mesh by eliminating all the center edge nodes
-FEMesh* FEHex20ToHex8::Apply(FEMesh* pm)
+FSMesh* FEHex20ToHex8::Apply(FSMesh* pm)
 {
 	// make sure the mesh is a hex20 mesh
 	if (pm->IsType(FE_HEX20) == false) return 0;
@@ -548,7 +548,7 @@ FEMesh* FEHex20ToHex8::Apply(FEMesh* pm)
 	}
 
 	// allocate a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(nn, NE, NF, NC);
 
 	// create the nodes

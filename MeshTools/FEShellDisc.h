@@ -37,7 +37,7 @@ public:
 public:
 	FEShellDisc(){}
 	FEShellDisc(GDisc* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GDisc*	m_pobj;

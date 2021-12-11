@@ -213,7 +213,7 @@ void CScalarFieldTool::OnApply()
 	}
 
 	// make sure there is a mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0)
 	{
 		QMessageBox::critical(GetMainWindow(), "Tool", "The object needs to be meshed before you can apply this tool.");

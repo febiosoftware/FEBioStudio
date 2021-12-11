@@ -229,7 +229,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	if ((nodes == 0) || (nhel + nsel == 0)) return;
 
 	// create storage for the mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, nhel + nsel);
 
 	// copy nodes
@@ -331,7 +331,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 {
 	// get the model
 	FSModel& fem = *m_fem;
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 	FSStep& s = *fem.GetStep(0);
 
 	int i;
@@ -682,7 +682,7 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 	list<FENikeProject::RIGID_FACET>::iterator pf = nike.m_Rigid.begin();
 
 	FSModel* ps = m_fem;
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 
 	int nrns = 1;
 	char szname[256] = {0};
@@ -764,7 +764,7 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 	int i, j;
 
 	FSModel* ps = m_fem;
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 	char szname[256];
 
 	list<FENikeProject::SI_FACET>::iterator pf = nike.m_Face.begin();
@@ -1569,7 +1569,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 // FUNCTION: FEFileImport::UpdateMesh
 //
 
-void FENIKEImport::UpdateMesh(FEMesh& mesh)
+void FENIKEImport::UpdateMesh(FSMesh& mesh)
 {
 //	mesh.Update();
 
@@ -1626,7 +1626,7 @@ int FENIKEImport::FindFace(int n[4], int noff)
 	int N = m_nFace[n[0] - noff];
 	int i;
 
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 
 	for (i=0; i<N; ++i)
 	{

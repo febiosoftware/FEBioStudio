@@ -29,16 +29,16 @@ SOFTWARE.*/
 #include <set>
 #include "FEFace.h"
 
-class FEMeshBase;
-class FEMesh;
+class FSMeshBase;
+class FSMesh;
 class FESurfaceMesh;
-class FELineMesh;
+class FSLineMesh;
 
 class FENodeNodeTable
 {
 public:
 	FENodeNodeTable(const FESurfaceMesh& mesh);
-	FENodeNodeTable(const FEMesh& mesh, bool surfOnly = false);
+	FENodeNodeTable(const FSMesh& mesh, bool surfOnly = false);
 
 	std::set<int>& operator [] (int i) { return NNT[i]; }
 
@@ -51,9 +51,9 @@ class FEEdgeList
 public:
 	FEEdgeList();
 	FEEdgeList(const FESurfaceMesh& mesh);
-	FEEdgeList(const FEMesh& mesh, bool surfOnly = false);
+	FEEdgeList(const FSMesh& mesh, bool surfOnly = false);
 
-	void BuildFromMeshEdges(FELineMesh& mesh);
+	void BuildFromMeshEdges(FSLineMesh& mesh);
 
 	int size() const { return (int) ET.size(); }
 
@@ -67,7 +67,7 @@ private:
 class FEFaceTable
 {
 public:
-	FEFaceTable(const FEMesh& mesh);
+	FEFaceTable(const FSMesh& mesh);
 
 	int size() const { return (int) FT.size(); }
 
@@ -82,7 +82,7 @@ private:
 class FEFaceEdgeList
 {
 public:
-	FEFaceEdgeList(const FEMeshBase& mesh, const FEEdgeList& ET);
+	FEFaceEdgeList(const FSMeshBase& mesh, const FEEdgeList& ET);
 
 	std::vector<int>& operator [] (int i) { return FET[i]; }
 
@@ -93,7 +93,7 @@ private:
 class FEElementEdgeList
 {
 public:
-	FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET);
+	FEElementEdgeList(const FSMesh& mesh, const FEEdgeList& ET);
 
 	std::vector<int>& operator [] (int i) { return EET[i]; }
 
@@ -108,7 +108,7 @@ private:
 class FEElementFaceList
 {
 public:
-	FEElementFaceList(const FEMesh& mesh, const FEFaceTable& FT);
+	FEElementFaceList(const FSMesh& mesh, const FEFaceTable& FT);
 
 	std::vector<int>& operator [] (int i) { return EFT[i]; }
 
@@ -119,7 +119,7 @@ private:
 class FEFaceFaceList
 {
 public:
-	FEFaceFaceList(const FEMesh& mesh, const FEFaceTable& FT);
+	FEFaceFaceList(const FSMesh& mesh, const FEFaceTable& FT);
 
 	int operator [] (int i) { return FFT[i]; }
 
@@ -130,7 +130,7 @@ private:
 class FEEdgeIndexList
 {
 public:
-	FEEdgeIndexList(const FEMesh& mesh, const FEEdgeList& ET);
+	FEEdgeIndexList(const FSMesh& mesh, const FEEdgeList& ET);
 
 	int operator [] (int i) { return EET[i]; }
 
@@ -141,7 +141,7 @@ private:
 class FEEdgeEdgeList
 {
 public:
-	FEEdgeEdgeList(const FEMesh& mesh, int edgeId = -1);
+	FEEdgeEdgeList(const FSMesh& mesh, int edgeId = -1);
 
 	int size() { return (int)EEL.size(); }
 
@@ -154,7 +154,7 @@ private:
 class FEEdgeFaceList
 {
 public:
-	FEEdgeFaceList(const FEMesh& mesh);
+	FEEdgeFaceList(const FSMesh& mesh);
 	FEEdgeFaceList(const FESurfaceMesh& mesh);
 
 	int size() { return (int) EFL.size(); }

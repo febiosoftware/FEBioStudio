@@ -32,7 +32,7 @@ class FENode;
 class FEEdge;
 class FEFace;
 class FEElement;
-class FEMesh;
+class FSMesh;
 class GObject;
 
 //-----------------------------------------------------------------------------
@@ -44,7 +44,7 @@ public:
 	FEGroup(GObject* po, int ntype, unsigned int flags);
 	virtual ~FEGroup();
 
-	FEMesh* GetMesh();
+	FSMesh* GetMesh();
 	void SetGObject(GObject* pm);
 	GObject* GetGObject();
 

@@ -74,9 +74,9 @@ void FEAxesCurvature::clearData()
 }
 
 //--------------------------------------------------------------------------------------
-FEMesh* FEAxesCurvature::Apply(FEMesh* pm)
+FSMesh* FEAxesCurvature::Apply(FSMesh* pm)
 {
-    FEMesh* pnm = new FEMesh(*pm);
+    FSMesh* pnm = new FSMesh(*pm);
     
     bool apply = GetBoolValue(1);
     bool part = GetBoolValue(2);
@@ -98,7 +98,7 @@ FEMesh* FEAxesCurvature::Apply(FEMesh* pm)
 }
 
 //--------------------------------------------------------------------------------------
-void FEAxesCurvature::Curvature(FEMesh* pm)
+void FEAxesCurvature::Curvature(FSMesh* pm)
 {
     // option 0 = spline surface
     // option 1 = quadric surface
@@ -367,7 +367,7 @@ void FEAxesCurvature::Curvature(FEMesh* pm)
 }
 
 //--------------------------------------------------------------------------------------
-void FEAxesCurvature::ApplyCurvature(FEMesh* pm)
+void FEAxesCurvature::ApplyCurvature(FSMesh* pm)
 {
     int numElements = (int)fel.size();
     
@@ -391,7 +391,7 @@ void FEAxesCurvature::ApplyCurvature(FEMesh* pm)
 }
 
 //--------------------------------------------------------------------------------------
-void FEAxesCurvature::ApplyCurvaturePart(FEMesh* pm)
+void FEAxesCurvature::ApplyCurvaturePart(FSMesh* pm)
 {
     //Find the face with smallest distance between the face centroid and element centroid
     //of element not on surface in same part. Apply material axes of this closest face's element

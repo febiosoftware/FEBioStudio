@@ -108,7 +108,7 @@ const int NLT[64][8][6] = {
 // (approximately) the same length, the edge that has the highest node index
 // The em[4] contains the nodes numbers, ordered as a loop around the facet
 // This function returns 0 for split [0,2], or 1 for split [1,3].
-int split_face(FEMesh* pm, int em[4], double tol)
+int split_face(FSMesh* pm, int em[4], double tol)
 {
 	assert(em[0] >= 0);
 	assert(em[1] >= 0);
@@ -147,7 +147,7 @@ int split_face(FEMesh* pm, int em[4], double tol)
 //-----------------------------------------------------------------------------
 // evaluate the volume of a tet.
 // (used for finding inverted elements)
-double tet_volume(FEMesh* pm, int en[4])
+double tet_volume(FSMesh* pm, int en[4])
 {
 	vec3d r0 = pm->Node(en[0]).r;
 	vec3d r1 = pm->Node(en[1]).r;
@@ -168,7 +168,7 @@ FETetSplitModifier::FETetSplitModifier() : FEModifier("Split")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
+FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 {
 	// The number of nodes of the original mesh
 	int NN0 = pm->Nodes();
@@ -258,7 +258,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 	}
 
 	// create a new mesh (just nodes for now)
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN1, 0);
 
 	// copy old nodes

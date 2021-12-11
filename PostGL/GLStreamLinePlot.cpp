@@ -171,7 +171,7 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 	m_lastdt = dt;
 
 	CGLModel* mdl = GetModel();
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); m_prob.clear(); }
@@ -198,7 +198,7 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 
 	if (m_prob.empty())
 	{
-		FEMeshBase& mesh = *pfem->GetFEMesh(0);
+		FSMeshBase& mesh = *pfem->GetFEMesh(0);
 		int NF = mesh.Faces();
 		m_prob.resize(NF);
 		for (int i=0; i<NF; ++i) m_prob[i] = frand();

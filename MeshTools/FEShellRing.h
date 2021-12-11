@@ -37,7 +37,7 @@ public:
 public:
 	FEShellRing(){}
 	FEShellRing(GRing* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GRing* m_pobj;

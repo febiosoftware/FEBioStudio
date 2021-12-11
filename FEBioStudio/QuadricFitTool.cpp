@@ -78,7 +78,7 @@ bool CQuadricFitTool::OnApply()
             return false;
         }
         
-        FEMesh& mesh = *po->GetFEMesh();
+        FSMesh& mesh = *po->GetFEMesh();
         
         int N = mesh.Nodes();
         int F = mesh.Faces();

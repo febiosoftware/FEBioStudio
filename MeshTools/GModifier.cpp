@@ -72,11 +72,11 @@ void GModifierStack::ClearMesh()
 void GModifierStack::Apply()
 {
 	// get the original mesh
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 
 	// if no mesh exists, we create a copy of the current mesh
 	// else we restore the original mesh before we apply the modifiers
-	if (m_pmesh == 0) { m_pmesh = new FEMesh; m_pmesh->ShallowCopy(pm); }
+	if (m_pmesh == 0) { m_pmesh = new FSMesh; m_pmesh->ShallowCopy(pm); }
 	else pm->ShallowCopy(m_pmesh);
 
 	list<GModifier*>::iterator pi = m_Mod.begin();
@@ -149,7 +149,7 @@ void GModifierStack::Load(IArchive &ar)
 		switch (nid)
 		{
 		case CID_MODIFIER_MESH:
-			m_pmesh = new FEMesh;
+			m_pmesh = new FSMesh;
 			m_pmesh->SetGObject(m_po);
 			m_pmesh->Load(ar);
 			break;
@@ -395,9 +395,9 @@ GMesh* GTwistModifier::BuildGMesh(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GTwistModifier::BuildFEMesh(GObject* po)
+FSMesh* GTwistModifier::BuildFEMesh(GObject* po)
 {
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	int m = GetIntValue(ORIENT);
 	double w = GetFloatValue(TWIST);
@@ -568,9 +568,9 @@ GMesh* GPinchModifier::BuildGMesh(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GPinchModifier::BuildFEMesh(GObject* po)
+FSMesh* GPinchModifier::BuildFEMesh(GObject* po)
 {
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	BOX box = pm->GetBoundingBox();
 	vec3d c = box.Center();
@@ -727,9 +727,9 @@ GMesh* GBendModifier::BuildGMesh(GObject *po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GBendModifier::BuildFEMesh(GObject* po)
+FSMesh* GBendModifier::BuildFEMesh(GObject* po)
 {
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// set the bounding box
 	m_box = pm->GetBoundingBox();
@@ -737,7 +737,7 @@ FEMesh* GBendModifier::BuildFEMesh(GObject* po)
 	// update parameters
 	UpdateParams();
 
-	// apply modifier to FEMesh
+	// apply modifier to FSMesh
 	int N = pm->Nodes();
 	vec3d r;
 	for (int i=0; i<N; ++i)
@@ -877,9 +877,9 @@ GMesh* GSkewModifier::BuildGMesh(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GSkewModifier::BuildFEMesh(GObject* po)
+FSMesh* GSkewModifier::BuildFEMesh(GObject* po)
 {
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// get parameters
 	int m = GetIntValue(ORIENT);

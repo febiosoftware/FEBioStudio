@@ -40,7 +40,7 @@ public:
 	~GModifiedObject(void);
 
 	// build FE mesh
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 	// Build the render mesh
 	void BuildGMesh();

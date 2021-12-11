@@ -33,7 +33,7 @@ class FEMeshValuator
 
 public:
 	// constructor
-	FEMeshValuator(FEMesh& mesh);
+	FEMeshValuator(FSMesh& mesh);
 
 	// evaluate the particular data field
 	void Evaluate(int nfield);
@@ -48,7 +48,7 @@ public:
 	void SetCurvatureExtQuad(bool b);
 
 private:
-	FEMesh& m_mesh;
+	FSMesh& m_mesh;
 
 	// properties for curvature
 	int	m_curvature_levels;

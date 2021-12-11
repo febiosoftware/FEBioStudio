@@ -216,7 +216,7 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 	}
 	for (int i = 0; i < model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		for (int j = 0; j < pm->Elements(); ++j)
 		{
 			FEElement_& e = pm->ElementRef(j);
@@ -448,7 +448,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		for (int i = 0; i < nobj; ++i)
 		{
 			GObject* po = model.Object(i);
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
 				int nsurf = po->FESurfaces();
@@ -511,7 +511,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* mesh = po->GetFEMesh();
+		FSMesh* mesh = po->GetFEMesh();
 		if (mesh)
 		{
 			int ND = mesh->MeshDataFields();
@@ -1041,7 +1041,7 @@ void FEBioExport4::WriteGeometryObject(FEBioExport4::Part* part)
 	GObject* po = part->m_obj;
 
 	// get the mesh
-	FECoreMesh* pm = po->GetFEMesh();
+	FSCoreMesh* pm = po->GetFEMesh();
 
 	// Write the nodes
 	m_xml.add_branch("Nodes");
@@ -1280,7 +1280,7 @@ void FEBioExport4::WriteGeometryNodeSets()
 	for (int i = 0; i < nobj; ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			int nset = po->FENodeSets();
@@ -1472,7 +1472,7 @@ void FEBioExport4::WriteGeometryNodes()
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FECoreMesh* pm = po->GetFEMesh();
+		FSCoreMesh* pm = po->GetFEMesh();
 
 		XMLElement tagNodes("Nodes");
 		const string& name = po->GetName();
@@ -1602,7 +1602,7 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
-	FECoreMesh* pm = po->GetFEMesh();
+	FSCoreMesh* pm = po->GetFEMesh();
 	int pid = pg->GetLocalID();
 
 	// Parts must be split up by element type
@@ -1933,7 +1933,7 @@ void FEBioExport4::WriteMeshDataShellThickness()
 	for (int i = 0; i < (int)m_ElSet.size(); ++i)
 	{
 		ElementSet& elset = m_ElSet[i];
-		FECoreMesh* pm = elset.m_mesh;
+		FSCoreMesh* pm = elset.m_mesh;
 
 		// see if this mesh has shells
 		bool bshell = false;
@@ -1981,7 +1981,7 @@ void FEBioExport4::WriteMeshDataMaterialFibers()
 	for (int i = 0; i < NSET; ++i)
 	{
 		ElementSet& elSet = m_ElSet[i];
-		FECoreMesh* pm = elSet.m_mesh;
+		FSCoreMesh* pm = elSet.m_mesh;
 		GObject* po = pm->GetGObject();
 		const Transform& T = po->GetTransform();
 
@@ -2021,7 +2021,7 @@ void FEBioExport4::WriteMeshDataMaterialAxes()
 	for (int i = 0; i < NSET; ++i)
 	{
 		ElementSet& elSet = m_ElSet[i];
-		FECoreMesh* pm = elSet.m_mesh;
+		FSCoreMesh* pm = elSet.m_mesh;
 		GObject* po = pm->GetGObject();
 		const Transform& T = po->GetTransform();
 
@@ -2081,7 +2081,7 @@ void FEBioExport4::WriteElementDataFields()
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		int NE = pm->Elements();
 
 		int ND = pm->MeshDataFields();
@@ -2176,7 +2176,7 @@ void FEBioExport4::WriteSurfaceDataSection()
 
 	for (int i = 0; i < model.Objects(); i++)
 	{
-		FEMesh* mesh = model.Object(i)->GetFEMesh();
+		FSMesh* mesh = model.Object(i)->GetFEMesh();
 
 		for (int j = 0; j < mesh->MeshDataFields(); j++)
 		{
@@ -2228,7 +2228,7 @@ void FEBioExport4::WriteNodeDataSection()
 
 	for (int i = 0; i < model.Objects(); i++)
 	{
-		FEMesh* mesh = model.Object(i)->GetFEMesh();
+		FSMesh* mesh = model.Object(i)->GetFEMesh();
 
 		for (int j = 0; j < mesh->MeshDataFields(); j++)
 		{
@@ -2831,7 +2831,7 @@ void FEBioExport4::WriteSurfaceSection(FEFaceList& s)
 	{
 		if (pf->m_pi == 0) throw InvalidItemListBuilder(0);
 		FEFace& face = *(pf->m_pi);
-		FECoreMesh* pm = pf->m_pm;
+		FSCoreMesh* pm = pf->m_pm;
 		nfn = face.Nodes();
 		for (int k = 0; k < nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
 		switch (nfn)
@@ -2871,7 +2871,7 @@ void FEBioExport4::WriteSurfaceSection(NamedItemList& l)
 	{
 		if (pf->m_pi == 0) throw InvalidItemListBuilder(l.m_name);
 		FEFace& face = *(pf->m_pi);
-		FECoreMesh* pm = pf->m_pm;
+		FSCoreMesh* pm = pf->m_pm;
 		nfn = face.Nodes();
 		for (int k = 0; k < nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
 		switch (nfn)

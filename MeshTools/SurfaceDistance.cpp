@@ -49,8 +49,8 @@ void CSurfaceDistance::SetRange(double gmin, double gmax)
 bool CSurfaceDistance::Apply(GObject* pso, GObject* pmo)
 {
 	// Get the meshes
-	FEMesh* ps = pso->GetFEMesh();
-	FEMesh* pm = pmo->GetFEMesh();
+	FSMesh* ps = pso->GetFEMesh();
+	FSMesh* pm = pmo->GetFEMesh();
 
 	// allocate buffer for storing nodal distances
 	int nodes = ps->Nodes();
@@ -98,8 +98,8 @@ bool CSurfaceDistance::Apply(GObject* pso, GObject* pmo)
 
 bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>& dist)
 {
-	FEMesh* ps = pso->GetFEMesh();
-	FEMesh* pm = pmo->GetFEMesh();
+	FSMesh* ps = pso->GetFEMesh();
+	FSMesh* pm = pmo->GetFEMesh();
 
 	// get the number of nodes
 	int nodes = ps->Nodes();
@@ -256,8 +256,8 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 bool CSurfaceDistance::ClosestPoint(GObject* pso, GObject* pmo, vector<double>& dist)
 {
 	// get the meshes
-	FEMesh* ps = pso->GetFEMesh();
-	FEMesh* pm = pmo->GetFEMesh();
+	FSMesh* ps = pso->GetFEMesh();
+	FSMesh* pm = pmo->GetFEMesh();
 
 	// get the number of nodes
 	int nodes = ps->Nodes();

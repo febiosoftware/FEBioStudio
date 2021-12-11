@@ -50,8 +50,8 @@ public:
 	// return the OCC shape object
 	TopoDS_Shape& GetShape();
 
-	FEMeshBase* GetEditableMesh() override;
-	FELineMesh* GetEditableLineMesh() override;
+	FSMeshBase* GetEditableMesh() override;
+	FSLineMesh* GetEditableLineMesh() override;
 
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;

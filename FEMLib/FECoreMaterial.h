@@ -15,7 +15,7 @@
 class FEElementRef
 {
 public:
-	FECoreMesh*	m_pmesh;	// mesh to which this element belongs
+	FSCoreMesh*	m_pmesh;	// mesh to which this element belongs
 	int		m_nelem;	// index of element
 
 	vec3d center() 

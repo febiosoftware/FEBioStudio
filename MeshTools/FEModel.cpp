@@ -1522,7 +1522,7 @@ void FSModel::UpdateData()
 	for (int i=0; i<m_pModel->Objects(); ++i)
 	{
 		GObject* po = m_pModel->Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			int NP = po->Parts();
@@ -1576,7 +1576,7 @@ void FSModel::AssignComponentToStep(FSStepComponent* pc, FSStep* ps)
 }
 
 //-----------------------------------------------------------------------------
-// This function is used when reading FEGroup's that are not managed by an FEMesh.
+// This function is used when reading FEGroup's that are not managed by an FSMesh.
 // The FEGroup class reads the mesh ID and then the owner of the FEGroup calls
 // this function to find the parent object (and mesh).
 bool FSModel::FindGroupParent(FEGroup* pg)

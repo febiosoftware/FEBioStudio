@@ -34,8 +34,8 @@ SOFTWARE.*/
 //=============================================================================
 
 // get the editable mesh
-FEMeshBase* GPrimitive::GetEditableMesh() { return GetFEMesh(); }
-FELineMesh* GPrimitive::GetEditableLineMesh() { return GetFEMesh(); }
+FSMeshBase* GPrimitive::GetEditableMesh() { return GetFEMesh(); }
+FSLineMesh* GPrimitive::GetEditableLineMesh() { return GetFEMesh(); }
 
 //-----------------------------------------------------------------------------
 bool GPrimitive::Update(bool b)
@@ -383,9 +383,9 @@ void GPrimitive::Load(IArchive& ar)
 		// the mesh object
 		case CID_MESH:
 			{
-				FEMesh* mesh = GetFEMesh();
+				FSMesh* mesh = GetFEMesh();
 				if (mesh) delete mesh;
-				SetFEMesh(new FEMesh);
+				SetFEMesh(new FSMesh);
 				mesh = GetFEMesh();
 				mesh->Load(ar);
 			}

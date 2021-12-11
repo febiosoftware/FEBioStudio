@@ -42,17 +42,17 @@ class FEAxesCurvature : public FEModifier
 public:
     FEAxesCurvature();
     
-    FEMesh* Apply(FEMesh* pm);
+    FSMesh* Apply(FSMesh* pm);
     
 protected:
     //Option to add the fiber axes on surface elements
-    void ApplyCurvature(FEMesh* pm);
+    void ApplyCurvature(FSMesh* pm);
     
     //applies fiber axes to every element of part
-    void ApplyCurvaturePart(FEMesh* pm);
+    void ApplyCurvaturePart(FSMesh* pm);
     
     //method for calculating fiber axes
-    void Curvature(FEMesh* pm);
+    void Curvature(FSMesh* pm);
     
     //Clears all data structures
     void clearData();

@@ -27,12 +27,12 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 
-class FEMesh;
+class FSMesh;
 
 class TetOverlap
 {
 public:
 	TetOverlap();
 
-	bool Apply(FEMesh* mesh, std::vector<std::pair<int, int> >& tetList);
+	bool Apply(FSMesh* mesh, std::vector<std::pair<int, int> >& tetList);
 };

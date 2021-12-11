@@ -42,7 +42,7 @@ public:
 	GSurfaceMeshObject(GObject* po);
 
 	// build the mesh
-	FEMesh* BuildMesh() override;
+	FSMesh* BuildMesh() override;
 
 	// update mesh for rendering
 	void BuildGMesh() override;
@@ -60,8 +60,8 @@ public:
 	FESurfaceMesh* GetSurfaceMesh();
 	const FESurfaceMesh* GetSurfaceMesh() const;
 
-	FEMeshBase* GetEditableMesh() override { return GetSurfaceMesh(); }
-	FELineMesh* GetEditableLineMesh() override { return GetSurfaceMesh(); }
+	FSMeshBase* GetEditableMesh() override { return GetSurfaceMesh(); }
+	FSLineMesh* GetEditableLineMesh() override { return GetSurfaceMesh(); }
 
 	// get the mesh of an edge curve
 	FECurveMesh* GetFECurveMesh(int edgeId) override;
@@ -77,7 +77,7 @@ public:
 
 private:
 	// Move this elsewhere or refactor
-	bool build_tetgen_plc(FEMesh* pm, tetgenio& in);
+	bool build_tetgen_plc(FSMesh* pm, tetgenio& in);
 
 private:
 	void UpdateEdges();

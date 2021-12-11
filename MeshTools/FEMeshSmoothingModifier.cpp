@@ -48,13 +48,13 @@ FEMeshSmoothingModifier::FEMeshSmoothingModifier() : FEModifier("Mesh Smoothing"
 //! Create the decimate mesh. 
 //! \todo This implementation will only work with closed surfaces. 
 
-FEMesh* FEMeshSmoothingModifier::Apply(FEMesh* pm)
+FSMesh* FEMeshSmoothingModifier::Apply(FSMesh* pm)
 {
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_TRI3) == false) return 0;
 
 	// make a copy of this mesh
-	FEMesh* pnew = new FEMesh(*pm);
+	FSMesh* pnew = new FSMesh(*pm);
 
 	//marking the edge nodes.
 	vector<int> hashmap; 
@@ -92,7 +92,7 @@ FEMesh* FEMeshSmoothingModifier::Apply(FEMesh* pm)
 	return pnew;
 }
 
-void FEMeshSmoothingModifier::Laplacian_Smoothing(FEMesh* pnew,vector<int> hashmap)
+void FEMeshSmoothingModifier::Laplacian_Smoothing(FSMesh* pnew,vector<int> hashmap)
 {
 	//Creating a node node list
 	FENodeNodeList NNL(pnew);
@@ -118,7 +118,7 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing(FEMesh* pnew,vector<int> hashm
 	}
 }
 
-void FEMeshSmoothingModifier::Laplacian_Smoothing2(FEMesh* pnew,vector<int> hashmap)
+void FEMeshSmoothingModifier::Laplacian_Smoothing2(FSMesh* pnew,vector<int> hashmap)
 {
 	//Creating a node node list
 	FENodeNodeList NNL(pnew);
@@ -147,7 +147,7 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing2(FEMesh* pnew,vector<int> hash
 	}
 }
 
-void FEMeshSmoothingModifier::Taubin_Smoothing(FEMesh* pnew,vector<int> hashmap)
+void FEMeshSmoothingModifier::Taubin_Smoothing(FSMesh* pnew,vector<int> hashmap)
 {
 	//Creating a node node list
 	FENodeNodeList NNL(pnew);
@@ -192,7 +192,7 @@ void FEMeshSmoothingModifier::Taubin_Smoothing(FEMesh* pnew,vector<int> hashmap)
 	}
 }
 
-void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int> hashmap)
+void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int> hashmap)
 {
 	//creating Node Element list
 	FENodeFaceList NFL;
@@ -294,7 +294,7 @@ double frand(double dmin = 0.0, double dmax = 1.0)
 	return (dmin + f*(dmax - dmin));
 }
 
-void FEMeshSmoothingModifier::Add_Noise(FEMesh* pnew, vector<int> hashmap)
+void FEMeshSmoothingModifier::Add_Noise(FSMesh* pnew, vector<int> hashmap)
 {
 	for (int j = 0; j<m_iteration; j++)
 	{

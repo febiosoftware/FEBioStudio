@@ -34,7 +34,7 @@ public:
 	FEShellMesher(GObject* po);
 
 	// build the mesh
-	FEMesh*	BuildMesh() override;
+	FSMesh*	BuildMesh() override;
 
 private:
 	GObject*	m_po;

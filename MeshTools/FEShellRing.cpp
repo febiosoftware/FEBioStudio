@@ -52,7 +52,7 @@ FEShellRing::FEShellRing(GRing* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FEMesh* FEShellRing::BuildMesh()
+FSMesh* FEShellRing::BuildMesh()
 {
 	// build the mesh data structures
 	FEMultiQuadMesh MQ;
@@ -76,7 +76,7 @@ FEMesh* FEShellRing::BuildMesh()
 	};
 
 	// Build the mesh
-	FEMesh* pm = MQ.BuildMesh();
+	FSMesh* pm = MQ.BuildMesh();
 	if (pm == nullptr) return nullptr;
 
 	// assign shell thickness

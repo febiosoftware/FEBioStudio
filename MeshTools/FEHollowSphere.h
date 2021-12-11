@@ -37,7 +37,7 @@ public:
 public:
 	FEHollowSphere(){}
 	FEHollowSphere(GHollowSphere* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GHollowSphere*	m_pobj;

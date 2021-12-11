@@ -280,7 +280,7 @@ int FSProject::Validate(std::string &szerr)
 	int nnomesh = 0;
 	for (int i=0; i<mdl.Objects(); ++i)
 	{
-		FEMesh* pm = mdl.Object(i)->GetFEMesh();
+		FSMesh* pm = mdl.Object(i)->GetFEMesh();
 		if (pm == 0) nnomesh++;
 	}
 	if (nnomesh > 0) { szerr += "-Not all objects have a mesh.\n"; nerrs++; }

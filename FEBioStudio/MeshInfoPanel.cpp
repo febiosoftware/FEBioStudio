@@ -84,7 +84,7 @@ void CMeshInfoPanel::setInfo(GObject* po)
 		BOX box = po->GetGlobalBox();
 		setDimensions(box.Width(), box.Height(), box.Depth());
 
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm) setMeshInfo(pm->Nodes(), pm->Faces(), pm->Elements());
 		else setMeshInfo(0, 0, 0);
 	}
@@ -148,7 +148,7 @@ void CPartInfoPanel::setInfo(GPart* pg)
 	if (pg == nullptr) { setPartInfo(0, 0); return; }
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	if (po == nullptr) { setPartInfo(0, 0); return; }
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) { setPartInfo(0, 0); return; }
 
 	int nsolid = 0;

@@ -37,7 +37,7 @@ namespace Ui {
 class CMainWindow;
 class CModelDocument;
 class FESurfaceModifier;
-class FEMesh;
+class FSMesh;
 class GSurfaceMeshObject;
 class FEMesher;
 class FEGroup;

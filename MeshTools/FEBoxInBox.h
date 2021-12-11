@@ -37,7 +37,7 @@ public:
 public:
 	FEBoxInBox();
 	FEBoxInBox(GBoxInBox* po);
-	FEMesh* BuildMesh() override;
+	FSMesh* BuildMesh() override;
 
 protected:
 	GBoxInBox* m_pobj;

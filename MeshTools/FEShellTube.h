@@ -37,7 +37,7 @@ public:
 public:
 	FEShellTube(){}
 	FEShellTube(GThinTube* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GThinTube* m_pobj;

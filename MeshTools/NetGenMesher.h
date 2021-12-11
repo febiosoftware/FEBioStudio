@@ -46,7 +46,7 @@ public:
 	NetGenMesher();
 	NetGenMesher(GOCCObject* po);
 
-	FEMesh*	BuildMesh() override;
+	FSMesh*	BuildMesh() override;
 
 	FSTaskProgress GetProgress() override;
 

@@ -43,10 +43,10 @@ FESmoothMesh::FESmoothMesh() : FEModifier("Smooth")
 	AddBoolParam(false, "volume only");
 }
 
-FEMesh* FESmoothMesh::Apply(FEMesh* pm)
+FSMesh* FESmoothMesh::Apply(FSMesh* pm)
 {
 	// create a copy of the mesh
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	// apply smoothing
 	bool shape = GetBoolValue(2);
@@ -57,7 +57,7 @@ FEMesh* FESmoothMesh::Apply(FEMesh* pm)
 	return pnm;
 }
 
-void FESmoothMesh::SmoothMesh(FEMesh& mesh)
+void FESmoothMesh::SmoothMesh(FSMesh& mesh)
 {
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);
@@ -114,7 +114,7 @@ void FESmoothMesh::SmoothMesh(FEMesh& mesh)
 	mesh.UpdateMesh();
 }
 /*
-void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
+void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 {
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);
@@ -244,7 +244,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 
 */
 
-void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
+void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 {
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);

@@ -40,7 +40,7 @@ SOFTWARE.*/
 namespace Post {
 
 //-----------------------------------------------------------------------------
-class FEPostMesh : public FEMesh
+class FEPostMesh : public FSMesh
 {
 public:
 	// --- M E M O R Y   M A N A G M E N T ---
@@ -124,7 +124,7 @@ protected:
 
 // find the element and the iso-parametric coordinates of a point inside the mesh
 // the x coordinates is assumed to be in reference frame
-bool FindElementInReferenceFrame(FECoreMesh& m, const vec3f& x, int& nelem, double r[3]);
+bool FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& x, int& nelem, double r[3]);
 
 class FEState;
 

@@ -56,7 +56,7 @@ bool FENodeFaceList::IsEmpty() const
 //-----------------------------------------------------------------------------
 // Builds a sorted node-facet list. That is, the facets form a star around the node.
 // Note that for non-manifold topologies this may fail, so make sure to check the return value.
-bool FENodeFaceList::BuildSorted(FEMeshBase* pm)
+bool FENodeFaceList::BuildSorted(FSMeshBase* pm)
 {
 	Build(pm);
 
@@ -71,11 +71,11 @@ bool FENodeFaceList::BuildSorted(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FENodeFaceList::Build(FEMeshBase* pm)
+void FENodeFaceList::Build(FSMeshBase* pm)
 {
 	m_pm = pm;
 	assert(m_pm);
-	FEMeshBase& m = *m_pm;
+	FSMeshBase& m = *m_pm;
 
 	int NN = m.Nodes();
 	int NF = m.Faces();

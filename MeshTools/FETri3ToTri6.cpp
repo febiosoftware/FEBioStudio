@@ -37,7 +37,7 @@ FETri3ToTri6::FETri3ToTri6(bool bsmooth) : FEModifier("Tri3-to-Tri6")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETri3ToTri6::Apply(FEMesh* pm)
+FSMesh* FETri3ToTri6::Apply(FSMesh* pm)
 {
     const int NEDG = 3;
     const int EL[NEDG][2] = {{0,1},{1,2},{2,0}};
@@ -167,7 +167,7 @@ FEMesh* FETri3ToTri6::Apply(FEMesh* pm)
     int NN1 = NN + NL;
     
     // allocate a new mesh
-    FEMesh* pnew = new FEMesh;
+    FSMesh* pnew = new FSMesh;
     pnew->Create(NN1, NT, NF, NC);
     
     // copy the old nodes
@@ -268,7 +268,7 @@ FEMesh* FETri3ToTri6::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FETri6Smooth::Apply(FEMesh* pmesh)
+void FETri6Smooth::Apply(FSMesh* pmesh)
 {
     int NN = pmesh->Nodes();
     int NF = pmesh->Faces();
@@ -488,7 +488,7 @@ void FETri6Smooth::Apply(FEMesh* pmesh)
 
 //-----------------------------------------------------------------------------
 //! Convert a tri6 to a tri3 mesh by eliminating all the center edge nodes
-FEMesh* FETri6ToTri3::Apply(FEMesh* pm)
+FSMesh* FETri6ToTri3::Apply(FSMesh* pm)
 {
     // make sure the mesh is a tri6 mesh
     if (pm->IsType(FE_TRI6) == false) return 0;
@@ -517,7 +517,7 @@ FEMesh* FETri6ToTri3::Apply(FEMesh* pm)
     }
     
     // allocate a new mesh
-    FEMesh* pnew = new FEMesh;
+    FSMesh* pnew = new FSMesh;
     pnew->Create(nn, NE, NF, NC);
     
     // create the nodes

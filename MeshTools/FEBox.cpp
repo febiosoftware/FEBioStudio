@@ -69,12 +69,12 @@ FEBoxMesher::FEBoxMesher(GBox* po)
 }
 
 //-----------------------------------------------------------------------------
-// Build the FEMesh
-FEMesh* FEBoxMesher::BuildMesh()
+// Build the FSMesh
+FSMesh* FEBoxMesher::BuildMesh()
 {
 	assert(m_pobj);
 
-	FEMesh* pm = 0;
+	FSMesh* pm = 0;
 
 	m_ctype = GetIntValue(CTYPE);
 	m_nelem = GetIntValue(NELEM);
@@ -93,7 +93,7 @@ FEMesh* FEBoxMesher::BuildMesh()
 
 //-----------------------------------------------------------------------------
 // Build a 3D butterfly mesh
-FEMesh* FEBoxMesher::CreateButterfly3D()
+FSMesh* FEBoxMesher::CreateButterfly3D()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
@@ -252,7 +252,7 @@ FEMesh* FEBoxMesher::CreateButterfly3D()
 
 //-----------------------------------------------------------------------------
 // Build a 2D butterfly mesh
-FEMesh* FEBoxMesher::CreateButterfly2D()
+FSMesh* FEBoxMesher::CreateButterfly2D()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
@@ -406,7 +406,7 @@ FEMesh* FEBoxMesher::CreateButterfly2D()
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEBoxMesher::CreateRegular()
+FSMesh* FEBoxMesher::CreateRegular()
 {
 	switch (m_nelem)
 	{
@@ -425,7 +425,7 @@ FEMesh* FEBoxMesher::CreateRegular()
 
 //-----------------------------------------------------------------------------
 // Create a regular mesh
-FEMesh* FEBoxMesher::CreateRegularHEX()
+FSMesh* FEBoxMesher::CreateRegularHEX()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
@@ -498,14 +498,14 @@ FEMesh* FEBoxMesher::CreateRegularHEX()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	return pm;
 }
 
 //-----------------------------------------------------------------------------
 // Create a regular mesh
-FEMesh* FEBoxMesher::CreateRegularTET4()
+FSMesh* FEBoxMesher::CreateRegularTET4()
 {
 	int i, j, k;
 
@@ -543,7 +543,7 @@ FEMesh* FEBoxMesher::CreateRegularTET4()
 	int elems = 6*m_nx*m_ny*m_nz;
 
 	// allocate storage
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems);
 
 	double gx = 1;
@@ -692,7 +692,7 @@ FEMesh* FEBoxMesher::CreateRegularTET4()
 
 //-----------------------------------------------------------------------------
 // Build faces of a regular hex mesh
-void FEBoxMesher::BuildHexFaces(FEMesh* pm)
+void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 {
 	int i, j, k;
 
@@ -790,7 +790,7 @@ void FEBoxMesher::BuildHexFaces(FEMesh* pm)
 
 //-----------------------------------------------------------------------------
 // Build the faces of a regular tet mesh
-void FEBoxMesher::BuildTetFaces(FEMesh* pm)
+void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 {
 	int i, j, k;
 
@@ -942,7 +942,7 @@ void FEBoxMesher::BuildTetFaces(FEMesh* pm)
 
 //-----------------------------------------------------------------------------
 // Build the edges of a box mesh
-void FEBoxMesher::BuildEdges(FEMesh* pm)
+void FEBoxMesher::BuildEdges(FSMesh* pm)
 {
 	int i;
 
@@ -967,29 +967,29 @@ void FEBoxMesher::BuildEdges(FEMesh* pm)
 	for (i=0   ; i<m_nz; ++i, ++pe)  { pe->SetType(FE_EDGE2); pe->m_gid = 11; pe->n[0] = NodeIndex(   0, m_ny, i); pe->n[1] = NodeIndex(   0, m_ny,  i+1); }
 }
 
-FEMesh* FEBoxMesher::CreateRegularTET10()
+FSMesh* FEBoxMesher::CreateRegularTET10()
 {
-	FEMesh* tet4 = CreateRegularTET4();
+	FSMesh* tet4 = CreateRegularTET4();
 	FETet4ToTet10 mod;
-	FEMesh* tet10 = mod.Apply(tet4);
+	FSMesh* tet10 = mod.Apply(tet4);
 	delete tet4;
 	return tet10;
 }
 
-FEMesh* FEBoxMesher::CreateRegularTET15()
+FSMesh* FEBoxMesher::CreateRegularTET15()
 {
-	FEMesh* tet4 = CreateRegularTET4();
+	FSMesh* tet4 = CreateRegularTET4();
 	FETet4ToTet15 mod;
-	FEMesh* tet15 = mod.Apply(tet4);
+	FSMesh* tet15 = mod.Apply(tet4);
 	delete tet4;
 	return tet15;
 }
 
-FEMesh* FEBoxMesher::CreateRegularTET20()
+FSMesh* FEBoxMesher::CreateRegularTET20()
 {
-	FEMesh* tet4 = CreateRegularTET4();
+	FSMesh* tet4 = CreateRegularTET4();
 	FETet4ToTet20 mod;
-	FEMesh* tet20 = mod.Apply(tet4);
+	FSMesh* tet20 = mod.Apply(tet4);
 	delete tet4;
 	return tet20;
 }

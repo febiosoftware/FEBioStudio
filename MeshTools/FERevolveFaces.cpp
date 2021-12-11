@@ -48,13 +48,13 @@ inline bool pointOnAxis(const vec3d& c, const vec3d& n, const vec3d& p)
     return (Lr < 1e-10);
 }
 
-FEMesh* FERevolveFaces::Apply(FEMesh* pm)
+FSMesh* FERevolveFaces::Apply(FSMesh* pm)
 {
     //if (pm->IsType(FE_QUAD4)) return RevolveShellMesh(pm);
     return RevolveSolidMesh(pm);
 }
 
-FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
+FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
 {
     bool isQuad = false;
     
@@ -129,7 +129,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     
     // allocate new mesh
     int NN1 = NN0 + nn*nseg;
-    FEMesh* pmnew = new FEMesh(*pm);
+    FSMesh* pmnew = new FSMesh(*pm);
     pmnew->Create(NN1, 0);
     
     // loop over all tagged nodes
@@ -561,7 +561,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     return pmnew;
 }
 
-FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
+FSMesh* FERevolveFaces::RevolveShellMesh(FSMesh* pm)
 {
     // for now, only quad4 meshes
     //if (pm->IsType(FE_QUAD4) == false) return 0;
@@ -596,7 +596,7 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
     
     // allocate new mesh
     int NN1 = NN0 + nn*nseg;
-    FEMesh* pmnew = new FEMesh(*pm);
+    FSMesh* pmnew = new FSMesh(*pm);
     pmnew->Create(NN1, 0);
     
     // revolve the tagged nodes

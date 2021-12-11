@@ -71,7 +71,7 @@ FECone::FECone(GCone* po)
 
 extern double gain2(double x, double r, double n);
 
-FEMesh* FECone::BuildMesh()
+FSMesh* FECone::BuildMesh()
 {
 	assert(m_pobj);
 
@@ -288,7 +288,7 @@ FEMesh* FECone::BuildMesh()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// update the mesh
 	pm->UpdateMesh();

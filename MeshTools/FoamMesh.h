@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 class FSModel;
 class GObject;
-class FEMesh;
+class FSMesh;
 
 //-----------------------------------------------------------------------------
 // Class describing the foam generator.
@@ -79,7 +79,7 @@ public:
 	FoamGen();
 
 	// Create the foam object
-	FEMesh* Create();
+	FSMesh* Create();
 
 public:
 	int		m_nx, m_ny, m_nz;
@@ -98,14 +98,14 @@ protected:
 	void EvalGrid();
 	void CalcGradient();	// not used (for now; and not finished)
 	void SmoothGrid();
-	void SmoothMesh(FEMesh* pm, int niter, double w);
+	void SmoothMesh(FSMesh* pm, int niter, double w);
 	void DistortGrid();
-	FEMesh* CreateMesh();
-	FEMesh* WeldMesh(FEMesh* pm);
+	FSMesh* CreateMesh();
+	FSMesh* WeldMesh(FSMesh* pm);
 
 	int FindEdge(int n1, int n2);
 
-	void SelectFace(int i, FEMesh* pm);
+	void SelectFace(int i, FSMesh* pm);
 
 protected:
 	std::vector<NODE>	m_Node;

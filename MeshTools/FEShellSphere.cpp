@@ -53,7 +53,7 @@ FEShellSphere::~FEShellSphere()
 
 }
 
-FEMesh* FEShellSphere::BuildMesh()
+FSMesh* FEShellSphere::BuildMesh()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
@@ -75,7 +75,7 @@ FEMesh* FEShellSphere::BuildMesh()
 	int nodes = 2*(nd+1)*(nd+1) + 4*nd*(nd - 1);
 
 	// allocate storage for the mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 	m_nd = nd;
 
@@ -229,7 +229,7 @@ FEMesh* FEShellSphere::BuildMesh()
 	return pm;
 }
 
-void FEShellSphere::BuildFaces(FEMesh* pm)
+void FEShellSphere::BuildFaces(FSMesh* pm)
 {
 	int i;
 	int nfaces = pm->Elements();
@@ -250,7 +250,7 @@ void FEShellSphere::BuildFaces(FEMesh* pm)
 	}
 }
 
-void FEShellSphere::BuildEdges(FEMesh* pm)
+void FEShellSphere::BuildEdges(FSMesh* pm)
 {
 	int i;
 	int N = m_nd;

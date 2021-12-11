@@ -74,7 +74,7 @@ void CPointDistanceTool::Update()
 	SetDecoration(nullptr);
 	m_d = vec3d(0, 0, 0);
 
-	FEMeshBase* mesh = GetActiveEditMesh();
+	FSMeshBase* mesh = GetActiveEditMesh();
 	if (mesh == nullptr) return;
 
 	int nsel = 0;

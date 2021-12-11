@@ -38,7 +38,7 @@ FETet4ToTet10::FETet4ToTet10(bool bsmooth) : FEModifier("Tet4-to-Tet10")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETet4ToTet10::Apply(FEMesh* pm)
+FSMesh* FETet4ToTet10::Apply(FSMesh* pm)
 {
 	const int EL[6][2] = {{0,1},{1,2},{2,0},{0,3},{1,3},{2,3}};
 
@@ -167,7 +167,7 @@ FEMesh* FETet4ToTet10::Apply(FEMesh* pm)
 	int NN1 = NN + NL;
 
 	// allocate a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN1, NT, NF, NC);
 
 	// copy the old nodes
@@ -264,7 +264,7 @@ FEMesh* FETet4ToTet10::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FETet10Smooth::Apply(FEMesh* pmesh)
+void FETet10Smooth::Apply(FSMesh* pmesh)
 {
 	int NN = pmesh->Nodes();
 	int NF = pmesh->Faces();

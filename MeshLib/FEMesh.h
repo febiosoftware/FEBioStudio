@@ -34,7 +34,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class FESurfaceMesh;
-class FEMesh;
+class FSMesh;
 class FEMeshData;
 class FENodeData;
 class FESurfaceData;
@@ -57,7 +57,7 @@ public:
 
 	void Clear();
 
-	void Init(FEMesh* mesh, double initVal, int initTag);
+	void Init(FSMesh* mesh, double initVal, int initTag);
 
 	bool IsValid() const { return (m_data.empty() == false); }
 
@@ -97,22 +97,22 @@ class FEMeshBuilder;
 class FESurfaceMesh;
 
 //-----------------------------------------------------------------------------
-// This class describes a finite element mesh. Every FEMesh must be owned by a
+// This class describes a finite element mesh. Every FSMesh must be owned by a
 // GObject class. 
-class FEMesh : public FECoreMesh
+class FSMesh : public FSCoreMesh
 {
 public:
 	// --- C O N S T R U C T I O N ---
-	FEMesh();
-	FEMesh(FEMesh& m);
-	FEMesh(FESurfaceMesh& m);
-	virtual ~FEMesh();
+	FSMesh();
+	FSMesh(FSMesh& m);
+	FSMesh(FESurfaceMesh& m);
+	virtual ~FSMesh();
 
 	// allocate space for mesh
 	void Create(int nodes, int elems, int faces = 0, int edges = 0) override;
 
 	// copy part of the mesh
-	void ShallowCopy(FEMesh* pm);
+	void ShallowCopy(FSMesh* pm);
 
 	//! clear this mesh
 	void Clear();
@@ -120,7 +120,7 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-public: // from FECoreMesh
+public: // from FSCoreMesh
 
 	//! return number of elements
 	int Elements() const override { return (int)m_Elem.size(); }
@@ -183,7 +183,7 @@ public:
 	void ResizeElems(int newSize);
 
 	// extract faces and return as new mesh
-	FEMesh* ExtractFaces(bool selectedOnly);
+	FSMesh* ExtractFaces(bool selectedOnly);
 
 public:
 	int MeshDataFields() const;
@@ -227,4 +227,4 @@ protected:
 double bias(double b, double x);
 double gain(double g, double x);
 
-FEMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh);
+FSMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh);

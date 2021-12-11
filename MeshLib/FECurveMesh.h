@@ -35,7 +35,7 @@ SOFTWARE.*/
 
 // A class that represents a mesh for a curve
 // This mesh only consists of nodes and edges
-class FECurveMesh : public FELineMesh
+class FECurveMesh : public FSLineMesh
 {
 public:
 	// curve types

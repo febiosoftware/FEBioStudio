@@ -430,7 +430,7 @@ bool VTUimport::BuildMesh(VTKModel& vtk)
 		int elems = piece.Cells();
 
 		// create a new mesh
-		FEMesh* pm = new FEMesh();
+		FSMesh* pm = new FSMesh();
 		pm->Create(nodes, elems);
 
 		// copy nodal data

@@ -56,7 +56,7 @@ GObject* FEGroup::GetGObject()
 	return m_pObj;
 }
 
-FEMesh* FEGroup::GetMesh()
+FSMesh* FEGroup::GetMesh()
 {
 	return m_pObj->GetFEMesh();
 }
@@ -85,7 +85,7 @@ void FEGroup::Save(OArchive& ar)
 
 //-----------------------------------------------------------------------------
 // Note that this function only reads the meshID. If this group is not managed
-// by an FEMesh, then the owner of this group is responsible for setting the 
+// by an FSMesh, then the owner of this group is responsible for setting the 
 // correct mesh pointer (i.e. m_pMesh).
 void FEGroup::Load(IArchive &ar)
 {
@@ -155,7 +155,7 @@ FEItemListBuilder* FEPart::Copy()
 void FEPart::CreateFromMesh()
 {
 	Clear();
-	FEMesh* m = GetMesh();
+	FSMesh* m = GetMesh();
 	if (m == nullptr) return;
 	int NE = m->Elements();
 	for (int i = 0; i < NE; ++i) add(i);
@@ -164,7 +164,7 @@ void FEPart::CreateFromMesh()
 //-----------------------------------------------------------------------------
 FEElemList* FEPart::BuildElemList()
 {
-	FEMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm==0) return 0;
 
 	FEElemList* pg = new FEElemList();
@@ -183,7 +183,7 @@ FEElemList* FEPart::BuildElemList()
 FENodeList* FEPart::BuildNodeList()
 {
 	int i, j;
-	FEMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_pObj->GetFEMesh();
 	int N = pm->Nodes();
 	for (i=0; i<N; ++i) pm->Node(i).m_ntag = 0;
 
@@ -231,7 +231,7 @@ FEItemListBuilder* FESurface::Copy()
 
 FEFaceList* FESurface::BuildFaceList()
 {
-	FEMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
 
 	FEFaceList* ps = new FEFaceList();
@@ -244,7 +244,7 @@ FEFaceList* FESurface::BuildFaceList()
 
 FENodeList* FESurface::BuildNodeList()
 {	
-	FEMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
 
 	FENodeList* pg = new FENodeList();
@@ -301,7 +301,7 @@ FEItemListBuilder* FEEdgeSet::Copy()
 
 FEEdge* FEEdgeSet::Edge(FEItemListBuilder::Iterator it)
 {
-	FEMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
 	FEEdge& e = pm->Edge(*it);
 	return &e;
@@ -309,7 +309,7 @@ FEEdge* FEEdgeSet::Edge(FEItemListBuilder::Iterator it)
 
 FENodeList* FEEdgeSet::BuildNodeList()
 {	
-	FEMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
 
 	FENodeList* pg = new FENodeList();
@@ -366,7 +366,7 @@ FEItemListBuilder* FENodeSet::Copy()
 void FENodeSet::CreateFromMesh()
 {
 	Clear();
-	FEMesh* m = m_pObj->GetFEMesh();
+	FSMesh* m = m_pObj->GetFEMesh();
 	if (m == nullptr) return;
 	int NN = m->Nodes();
 	for (int i = 0; i < NN; ++i) add(i);
@@ -374,7 +374,7 @@ void FENodeSet::CreateFromMesh()
 
 FENodeList* FENodeSet::BuildNodeList()
 {
-	FEMesh* pm = m_pObj->GetFEMesh();
+	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
 	FENodeList* ps = new FENodeList();
 	FEItemListBuilder::Iterator it = m_Item.begin();

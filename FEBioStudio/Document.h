@@ -312,14 +312,14 @@ public:
 	void DeleteAllImageModels();
 
 public:
-	void GrowNodeSelection(FEMeshBase* pm);
-	void GrowFaceSelection(FEMeshBase* pm, bool respectPartitions = true);
-	void GrowEdgeSelection(FEMeshBase* pm);
-	void GrowElementSelection(FEMesh* pm, bool respectPartitions = true);
-	void ShrinkNodeSelection(FEMeshBase* pm);
-	void ShrinkFaceSelection(FEMeshBase* pm);
-	void ShrinkEdgeSelection(FEMeshBase* pm);
-	void ShrinkElementSelection(FEMesh* pm);
+	void GrowNodeSelection(FSMeshBase* pm);
+	void GrowFaceSelection(FSMeshBase* pm, bool respectPartitions = true);
+	void GrowEdgeSelection(FSMeshBase* pm);
+	void GrowElementSelection(FSMesh* pm, bool respectPartitions = true);
+	void ShrinkNodeSelection(FSMeshBase* pm);
+	void ShrinkFaceSelection(FSMeshBase* pm);
+	void ShrinkEdgeSelection(FSMeshBase* pm);
+	void ShrinkElementSelection(FSMesh* pm);
 
 protected:
 	void SaveResources(OArchive& ar);

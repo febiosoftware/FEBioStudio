@@ -75,7 +75,7 @@ int LSDYNAModel::FindFace(int n[4])
 	int N = m_nFace[n[0]];
 	int i;
 
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 
 	for (i = 0; i<N; ++i)
 	{
@@ -120,7 +120,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	if (nodes == 0) return false;
 	if (elems == 0) return false;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create nodes
@@ -383,7 +383,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	return true;
 }
 
-void LSDYNAModel::UpdateMesh(FEMesh& mesh)
+void LSDYNAModel::UpdateMesh(FSMesh& mesh)
 {
 	int nsize = 0, i, j, n, m, l;
 

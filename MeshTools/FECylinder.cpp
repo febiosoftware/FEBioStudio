@@ -68,7 +68,7 @@ FECylinder::FECylinder(GCylinder* po)
 
 //-----------------------------------------------------------------------------
 // Build the mesh
-FEMesh* FECylinder::BuildMesh()
+FSMesh* FECylinder::BuildMesh()
 {
 	m_ctype = GetIntValue(CTYPE);
 	switch (m_ctype)
@@ -84,7 +84,7 @@ FEMesh* FECylinder::BuildMesh()
 
 //-----------------------------------------------------------------------------
 // Build a butterfly mesh
-FEMesh* FECylinder::BuildButterfly()
+FSMesh* FECylinder::BuildButterfly()
 {
 	assert(m_pobj);
 
@@ -313,7 +313,7 @@ FEMesh* FECylinder::BuildButterfly()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 
@@ -326,7 +326,7 @@ FEMesh* FECylinder::BuildButterfly()
 
 //-----------------------------------------------------------------------------
 // Build a wedged mesh
-FEMesh* FECylinder::BuildWedged()
+FSMesh* FECylinder::BuildWedged()
 {
 	assert(m_pobj);
 
@@ -365,7 +365,7 @@ FEMesh* FECylinder::BuildWedged()
 	int edges = 2*m_nd + 4*m_nz;
 
 	// create mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems, faces, edges);
 
 	// --- A. Create the nodes ---
@@ -644,7 +644,7 @@ FECylinder2::FECylinder2(GCylinder2* po)
 
 //-----------------------------------------------------------------------------
 // Build the mesh
-FEMesh* FECylinder2::BuildMesh()
+FSMesh* FECylinder2::BuildMesh()
 {
 	m_ctype = GetIntValue(CTYPE);
 	switch (m_ctype)
@@ -660,7 +660,7 @@ FEMesh* FECylinder2::BuildMesh()
 
 //-----------------------------------------------------------------------------
 // Build a butterfly mesh
-FEMesh* FECylinder2::BuildButterfly()
+FSMesh* FECylinder2::BuildButterfly()
 {
 	assert(m_pobj);
 
@@ -856,7 +856,7 @@ FEMesh* FECylinder2::BuildButterfly()
 	m_MBNode[27].SetID(7);
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// project the nodes onto a cylinder
 	vec3d r0, r1;
@@ -918,7 +918,7 @@ FEMesh* FECylinder2::BuildButterfly()
 
 //-----------------------------------------------------------------------------
 // Build a wedged mesh
-FEMesh* FECylinder2::BuildWedged()
+FSMesh* FECylinder2::BuildWedged()
 {
 	assert(m_pobj);
 
@@ -958,7 +958,7 @@ FEMesh* FECylinder2::BuildWedged()
 	int edges = 2*m_nd + 4*m_nz;
 
 	// create mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems, faces, edges);
 
 	// --- A. Create the nodes ---

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <vector>
 
-class FECoreMesh;
+class FSCoreMesh;
 
 class FEFindElement
 {
@@ -55,7 +55,7 @@ public:
 	};
 
 public:
-	FEFindElement(FECoreMesh& mesh);
+	FEFindElement(FSCoreMesh& mesh);
 
 	void Init(int nframe = 0);
 	void Init(std::vector<bool>& flags, int nframe = 0);
@@ -76,7 +76,7 @@ private:
 
 private:
 	OCTREE_BOX	m_bound;
-	FECoreMesh&	m_mesh;
+	FSCoreMesh&	m_mesh;
 	int			m_nframe;	// = 0 reference, 1 = current
 };
 

@@ -134,7 +134,7 @@ void FEMeshImport::BuildMesh(FSProject& prj)
 	int elems = m_Elem.size();
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create the nodes

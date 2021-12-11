@@ -34,8 +34,8 @@ class CPropertyListForm;
 class CPostDocument;
 class GObject;
 class GDecoration;
-class FEMesh;
-class FEMeshBase;
+class FSMesh;
+class FSMeshBase;
 
 //-----------------------------------------------------------------------------
 // A tool implements a general purpose extension.
@@ -84,8 +84,8 @@ public:
 	void SetDecoration(GDecoration* deco);
 
 	// get the active mesh
-	FEMesh* GetActiveMesh();
-	FEMeshBase* GetActiveEditMesh();
+	FSMesh* GetActiveMesh();
+	FSMeshBase* GetActiveEditMesh();
 
 private:
 	QString			m_name;

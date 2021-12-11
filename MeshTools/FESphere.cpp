@@ -64,7 +64,7 @@ FESphere::FESphere(GSphere* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("HEX8\0HEX20\0HEX27\0");
 }
 
-FEMesh* FESphere::BuildMesh()
+FSMesh* FESphere::BuildMesh()
 {
 	assert(m_pobj);
 
@@ -349,7 +349,7 @@ FEMesh* FESphere::BuildMesh()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. Instead we assign

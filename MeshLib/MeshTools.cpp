@@ -224,7 +224,7 @@ bool IntersectQuad(vec3d* y, vec3d r, vec3d n, vec3d& q, double& g)
 //-----------------------------------------------------------------------------
 // Project a point to the mesh
 //
-vec3d ClosestNodeOnSurface(FEMesh& mesh, const vec3d& r, const vec3d& t)
+vec3d ClosestNodeOnSurface(FSMesh& mesh, const vec3d& r, const vec3d& t)
 {
 	// tag all surface nodes
 	mesh.TagAllNodes(0);
@@ -265,7 +265,7 @@ vec3d ClosestNodeOnSurface(FEMesh& mesh, const vec3d& r, const vec3d& t)
 //-----------------------------------------------------------------------------
 // Project a point to the surface of a FE mesh
 //
-vec3d ProjectToFace(FEMesh& mesh, vec3d p, FEFace &f, double &r, double &s, bool bedge)
+vec3d ProjectToFace(FSMesh& mesh, vec3d p, FEFace &f, double &r, double &s, bool bedge)
 {
 	double R[2], u[2], D;
 
@@ -387,7 +387,7 @@ vec3d ProjectToEdge(vec3d e1, vec3d e2, vec3d p, double& r)
 }
 
 //-----------------------------------------------------------------------------
-std::vector<vec3d> FindAllIntersections(FEMeshBase& mesh, const vec3d& x, const vec3d& n, bool forwardOnly)
+std::vector<vec3d> FindAllIntersections(FSMeshBase& mesh, const vec3d& x, const vec3d& n, bool forwardOnly)
 {
 	vector<vec3d> q;
 	int NF = mesh.Faces();
@@ -408,7 +408,7 @@ std::vector<vec3d> FindAllIntersections(FEMeshBase& mesh, const vec3d& x, const 
 }
 
 //-----------------------------------------------------------------------------
-bool FindIntersection(FEMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q, bool snap)
+bool FindIntersection(FSMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q, bool snap)
 {
 	int NF = mesh.Faces();
 	vec3d r, rmin;
@@ -460,7 +460,7 @@ bool FindIntersection(FEMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q
 //-----------------------------------------------------------------------------
 // Find the intersection.
 //
-bool FindIntersection(FEMeshBase& mesh, FEFace &f, const vec3d& x, const vec3d& n, vec3d& q, double& g)
+bool FindIntersection(FSMeshBase& mesh, FEFace &f, const vec3d& x, const vec3d& n, vec3d& q, double& g)
 {
 	int N = f.Nodes();
 
@@ -607,7 +607,7 @@ bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q)
 	return ((r > -1.0 - eps) && (r < 1.0 + eps) && (s > -1.0 - eps) && (s < 1.0 + eps));
 }
 
-vec3d projectToEdge(const FEMeshBase& m, const vec3d& p, int gid)
+vec3d projectToEdge(const FSMeshBase& m, const vec3d& p, int gid)
 {
 	double Dmin = 1e99;
 	vec3d rmin = p;
@@ -646,7 +646,7 @@ vec3d projectToEdge(const FEMeshBase& m, const vec3d& p, int gid)
 	return rmin;
 }
 
-vec3d projectToSurface(const FEMeshBase& m, const vec3d& p, int gid, int* faceID)
+vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid, int* faceID)
 {
 	double Dmin = 1e99;
 	vec3d rmin = p;
@@ -693,7 +693,7 @@ vec3d projectToSurface(const FEMeshBase& m, const vec3d& p, int gid, int* faceID
 	return rmin;
 }
 
-vec3d projectToPatch(const FEMeshBase& m, const vec3d& p, int gid, int faceID, int l)
+vec3d projectToPatch(const FSMeshBase& m, const vec3d& p, int gid, int faceID, int l)
 {
 	double Dmin = 1e99;
 	vec3d rmin = p;
@@ -965,7 +965,7 @@ double TriangleQuality(vec3d r[3])
 
 
 //-----------------------------------------------------------------------------
-bool FindElementRef(FECoreMesh& m, const vec3f& p, int& nelem, double r[3])
+bool FindElementRef(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
 {
 	vec3d y[FEElement::MAX_NODES];
 	int NE = m.Elements();
@@ -1018,7 +1018,7 @@ bool FindElementRef(FECoreMesh& m, const vec3f& p, int& nelem, double r[3])
 }
 
 //-----------------------------------------------------------------------------
-bool ProjectInsideElement(FECoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
+bool ProjectInsideElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
@@ -1103,7 +1103,7 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 }
 
 //-----------------------------------------------------------------------------
-bool ProjectInsideReferenceElement(FECoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
+bool ProjectInsideReferenceElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
@@ -1116,7 +1116,7 @@ bool ProjectInsideReferenceElement(FECoreMesh& m, FEElement_& el, const vec3f& p
 }
 
 //-------------------------------------------------------------------------------
-std::vector<vec3d> FindShortestPath(FEMesh& mesh, int m0, int m1)
+std::vector<vec3d> FindShortestPath(FSMesh& mesh, int m0, int m1)
 {
 	// helper class for finding neighbors
 	FENodeNodeList NNL(&mesh);

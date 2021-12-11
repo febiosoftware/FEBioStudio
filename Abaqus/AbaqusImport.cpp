@@ -1646,7 +1646,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 
 	if ((nodes == 0) || (elems == 0)) return 0;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// copy nodes
@@ -1926,7 +1926,7 @@ FESurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 	GMeshObject* po = dynamic_cast<GMeshObject*>(part->m_po);
 	if (po == 0) return 0;
 
-	FEMesh* pm = part->m_po->GetFEMesh();
+	FSMesh* pm = part->m_po->GetFEMesh();
 
 	int nf, n;
 	FESurface* ps = new FESurface(part->m_po);
@@ -2033,7 +2033,7 @@ FENodeSet* AbaqusImport::build_nodeset(AbaqusModel::NODE_SET* ns)
 	GMeshObject* po = dynamic_cast<GMeshObject*>(part->m_po);
 	if (po == 0) return 0;
 
-	FEMesh* pm = part->m_po->GetFEMesh();
+	FSMesh* pm = part->m_po->GetFEMesh();
 
 	FENodeSet* nset = new FENodeSet(po);
 	list<AbaqusModel::Tnode_itr>::iterator it = ns->node.begin();

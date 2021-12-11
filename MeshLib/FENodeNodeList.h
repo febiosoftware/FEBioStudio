@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-class FEMesh;
+class FSMesh;
 class FESurfaceMesh;
 
 //-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ class FESurfaceMesh;
 class FENodeNodeList
 {
 public:
-	FENodeNodeList(FEMesh* pm, bool preservePartitions = false);
+	FENodeNodeList(FSMesh* pm, bool preservePartitions = false);
 	FENodeNodeList(FESurfaceMesh* pm);
 	~FENodeNodeList();
 
@@ -51,7 +51,7 @@ public:
 	double& Value(int n, int j) { return m_data[m_off[n] + j]; }
 
 protected:
-	void Build(FEMesh* pm, bool preservePartitions = false);
+	void Build(FSMesh* pm, bool preservePartitions = false);
 	void Build(FESurfaceMesh* pm);
 
 protected:

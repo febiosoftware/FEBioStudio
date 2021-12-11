@@ -299,7 +299,7 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* mdl = GetModel();
 
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();

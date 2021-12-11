@@ -223,7 +223,7 @@ public:
 	void SetElementType(int elemType);
 
 	// build the mesh
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 	MBNode& AddNode(const vec3d& r, int nodeType = NODE_VERTEX);
 
@@ -252,10 +252,10 @@ protected:
 	void BuildMBEdges();
 
 	// build the mesh items
-	void BuildFENodes   (FEMesh* pm);
-	void BuildFEElements(FEMesh* pm);
-	void BuildFEFaces   (FEMesh* pm);
-	void BuildFEEdges   (FEMesh* pm);
+	void BuildFENodes   (FSMesh* pm);
+	void BuildFEElements(FSMesh* pm);
+	void BuildFEFaces   (FSMesh* pm);
+	void BuildFEEdges   (FSMesh* pm);
 
 	void BuildNodeBlockTable(vector< vector<int> >& NBT);
 	void BuildNodeFaceTable(vector< vector<int> >& NFT);
@@ -308,7 +308,7 @@ protected:
 	int		m_elemType;
 	bool	m_quadMesh;
 
-	FEMesh* m_pm;
+	FSMesh* m_pm;
 	FENode* m_currentNode;
 	int		m_nodes;
 };

@@ -630,9 +630,9 @@ void CModelDocument::UpdateSelection(bool report)
 
 	// figure out if there is a mesh selected
 	GObject* po = GetActiveObject();
-	FEMesh* pm = (po ? po->GetFEMesh() : 0);
-	FEMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
-	FELineMesh* plm = (po ? po->GetEditableLineMesh() : 0);
+	FSMesh* pm = (po ? po->GetFEMesh() : 0);
+	FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
+	FSLineMesh* plm = (po ? po->GetEditableLineMesh() : 0);
 
 	// get the mesh mode
 	int meshMode = m_wnd->GetMeshMode();
@@ -746,7 +746,7 @@ void CModelDocument::HideUnselected()
 
 		if (itemMode == ITEM_ELEM)
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm == 0) return;
 
 			vector<int> elemList;
@@ -791,11 +791,11 @@ bool CModelDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup* sel, bool clearSel)
 {
 	// get the mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return false;
 
 	// apply modifier and create new mesh
-	FEMesh* newMesh = 0;
+	FSMesh* newMesh = 0;
 	try {
 		if (sel)
 			newMesh = modifier.Apply(sel);

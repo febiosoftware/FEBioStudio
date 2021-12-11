@@ -33,7 +33,7 @@ FERezoneMesh::FERezoneMesh() : FEModifier("Rezone")
 	AddDoubleParam(0.5, "extent");
 }
 
-FEMesh* FERezoneMesh::Apply(FEMesh* pm)
+FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 {
 	// see if any faces are selected. 
 	if (pm->CountSelectedFaces() == 0) return nullptr;
@@ -89,7 +89,7 @@ FEMesh* FERezoneMesh::Apply(FEMesh* pm)
 	}
 
 	// get the selected surface
-	FEMesh* surf = pm->ExtractFaces(true);
+	FSMesh* surf = pm->ExtractFaces(true);
 
 	// for each node, find closest point to a selected facet
 	vector<vec3d> trg(N);
@@ -110,7 +110,7 @@ FEMesh* FERezoneMesh::Apply(FEMesh* pm)
 	double t = GetFloatValue(1) / R;
 
 	// create a copy of the mesh
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 
 	// move the nodes
 	for (int i = 0; i < N; ++i)

@@ -48,7 +48,7 @@ using namespace Post;
 class CPlaneToolUI : public QWidget
 {
 public:
-	FEMeshBase*	m_mesh;		// selected mesh
+	FSMeshBase*	m_mesh;		// selected mesh
 	BOX		m_box;			// bounding box of mesh
 	double	m_range[2];		// offset range defined by box and current plane normal
 
@@ -427,7 +427,7 @@ QWidget* CPlaneTool::createUi()
 //-----------------------------------------------------------------------------
 void CPlaneTool::Update()
 {
-	FEMeshBase* mesh = GetActiveEditMesh();
+	FSMeshBase* mesh = GetActiveEditMesh();
 	if (mesh == nullptr)
 	{
 		ui->m_mesh = nullptr;

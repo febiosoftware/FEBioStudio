@@ -28,19 +28,19 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 
 //-----------------------------------------------------------------------------
-FEMeshBase::FEMeshBase()
+FSMeshBase::FSMeshBase()
 {
 }
 
 //-----------------------------------------------------------------------------
-FEMeshBase::~FEMeshBase()
+FSMeshBase::~FSMeshBase()
 {
 	m_NFL.Clear();
 }
 
 //-----------------------------------------------------------------------------
 // get the local node positions of a face
-void FEMeshBase::FaceNodeLocalPositions(const FEFace& f, vec3d* r) const
+void FSMeshBase::FaceNodeLocalPositions(const FEFace& f, vec3d* r) const
 {
 	int nf = f.Nodes();
 	for (int i = 0; i<nf; ++i) r[i] = m_Node[f.n[i]].r;
@@ -48,14 +48,14 @@ void FEMeshBase::FaceNodeLocalPositions(const FEFace& f, vec3d* r) const
 
 //-----------------------------------------------------------------------------
 // Tag all faces
-void FEMeshBase::TagAllFaces(int ntag)
+void FSMeshBase::TagAllFaces(int ntag)
 {
 	const int NF = Faces();
 	for (int i = 0; i<NF; ++i) Face(i).m_ntag = ntag;
 }
 
 //-----------------------------------------------------------------------------
-bool FEMeshBase::IsEdge(int n0, int n1)
+bool FSMeshBase::IsEdge(int n0, int n1)
 {
 	int NE = Edges();
 	for (int i = 0; i<NE; ++i)
@@ -68,7 +68,7 @@ bool FEMeshBase::IsEdge(int n0, int n1)
 }
 
 //-----------------------------------------------------------------------------
-FEEdge* FEMeshBase::FindEdge(int n0, int n1)
+FEEdge* FSMeshBase::FindEdge(int n0, int n1)
 {
 	int NE = Edges();
 	for (int i = 0; i<NE; ++i)
@@ -81,7 +81,7 @@ FEEdge* FEMeshBase::FindEdge(int n0, int n1)
 }
 
 //-----------------------------------------------------------------------------
-bool FEMeshBase::IsCreaseEdge(int n0, int n1)
+bool FSMeshBase::IsCreaseEdge(int n0, int n1)
 {
 	int NE = Edges();
 	for (int i = 0; i<NE; ++i)
@@ -94,14 +94,14 @@ bool FEMeshBase::IsCreaseEdge(int n0, int n1)
 }
 
 //-----------------------------------------------------------------------------
-const vector<NodeFaceRef>& FEMeshBase::NodeFaceList(int n) const 
+const vector<NodeFaceRef>& FSMeshBase::NodeFaceList(int n) const 
 { 
 	return m_NFL.FaceList(n); 
 }
 
 //-----------------------------------------------------------------------------
 // Remove faces with tag ntag
-void FEMeshBase::RemoveFaces(int ntag)
+void FSMeshBase::RemoveFaces(int ntag)
 {
 	int n = 0;
 	for (int i = 0; i<Faces(); ++i)
@@ -120,7 +120,7 @@ void FEMeshBase::RemoveFaces(int ntag)
 
 //-----------------------------------------------------------------------------
 // Remove edges with tag ntag
-void FEMeshBase::RemoveEdges(int ntag)
+void FSMeshBase::RemoveEdges(int ntag)
 {
 	int n = 0;
 	for (int i = 0; i<Edges(); ++i)
@@ -141,7 +141,7 @@ void FEMeshBase::RemoveEdges(int ntag)
 // This function assignes group ID's to the mesh' faces based on a smoothing
 // angle.
 //
-void FEMeshBase::AutoSmooth(double angleDegrees)
+void FSMeshBase::AutoSmooth(double angleDegrees)
 {
 	int NF = Faces();
 
@@ -215,7 +215,7 @@ void FEMeshBase::AutoSmooth(double angleDegrees)
 //-----------------------------------------------------------------------------
 // Calculate normals of the mesh' faces based on smoothing groups
 //
-void FEMeshBase::UpdateNormals()
+void FSMeshBase::UpdateNormals()
 {
 	int NN = Nodes();
 	int NF = Faces();
@@ -319,7 +319,7 @@ void FEMeshBase::UpdateNormals()
 
 //-----------------------------------------------------------------------------
 // assign smoothing IDs based on surface partition
-void FEMeshBase::SmoothByPartition()
+void FSMeshBase::SmoothByPartition()
 {
 	// assign group IDs to smoothing IDs
 	for (int i=0; i<Faces(); ++i)
@@ -333,14 +333,14 @@ void FEMeshBase::SmoothByPartition()
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::UpdateMesh()
+void FSMeshBase::UpdateMesh()
 {
 	UpdateNormals();
 	UpdateBoundingBox();
 }
 
 //-----------------------------------------------------------------------------
-int FEMeshBase::CountSelectedNodes() const
+int FSMeshBase::CountSelectedNodes() const
 {
 	int N = 0, NN = Nodes();
 	for (int i = 0; i < NN; ++i)
@@ -351,7 +351,7 @@ int FEMeshBase::CountSelectedNodes() const
 }
 
 //-----------------------------------------------------------------------------
-int FEMeshBase::CountSelectedEdges() const
+int FSMeshBase::CountSelectedEdges() const
 {
 	int N = 0, NE = Edges();
 	for (int i = 0; i < NE; ++i)
@@ -362,7 +362,7 @@ int FEMeshBase::CountSelectedEdges() const
 }
 
 //-----------------------------------------------------------------------------
-int FEMeshBase::CountSelectedFaces() const
+int FSMeshBase::CountSelectedFaces() const
 {
 	int N = 0, NF = Faces();
 	for (int i = 0; i<NF; ++i)
@@ -373,7 +373,7 @@ int FEMeshBase::CountSelectedFaces() const
 }
 
 //-----------------------------------------------------------------------------
-vec3d FEMeshBase::FaceCenter(FEFace& f) const
+vec3d FSMeshBase::FaceCenter(FEFace& f) const
 {
 	vec3d r;
 	int N = f.Nodes();
@@ -382,7 +382,7 @@ vec3d FEMeshBase::FaceCenter(FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-vec3d FEMeshBase::EdgeCenter(FEEdge& e) const
+vec3d FSMeshBase::EdgeCenter(FEEdge& e) const
 {
 	return (m_Node[e.n[0]].r + m_Node[e.n[1]].r)*0.5f;
 }
@@ -395,7 +395,7 @@ double triangle_area(const vec3d& r0, const vec3d& r1, const vec3d& r2)
 }
 
 //-----------------------------------------------------------------------------
-double FEMeshBase::FaceArea(FEFace &f)
+double FSMeshBase::FaceArea(FEFace &f)
 {
 	const int N = f.Nodes();
 	vector<vec3d> nodes(N);
@@ -407,7 +407,7 @@ double FEMeshBase::FaceArea(FEFace &f)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::ClearFaceSelection()
+void FSMeshBase::ClearFaceSelection()
 {
 	for (int i = 0; i<Faces(); ++i)
 	{
@@ -416,7 +416,7 @@ void FEMeshBase::ClearFaceSelection()
 }
 
 //-----------------------------------------------------------------------------
-double FEMeshBase::FaceArea(const vector<vec3d>& r, int faceType)
+double FSMeshBase::FaceArea(const vector<vec3d>& r, int faceType)
 {
 	switch (faceType)
 	{
@@ -516,7 +516,7 @@ double FEMeshBase::FaceArea(const vector<vec3d>& r, int faceType)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodePosition(const FEFace& f, vec3d* r) const
+void FSMeshBase::FaceNodePosition(const FEFace& f, vec3d* r) const
 {
 	switch (f.m_type)
 	{
@@ -544,7 +544,7 @@ void FEMeshBase::FaceNodePosition(const FEFace& f, vec3d* r) const
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
+void FSMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
 {
 	switch (f.m_type)
 	{
@@ -572,13 +572,13 @@ void FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t)
+void FSMeshBase::FaceNodeTexCoords(FEFace& f, float* t)
 {
 	for (int i = 0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
 }
 
 //==============================================================================
-std::vector<int> MeshTools::GetConnectedFaces(FEMeshBase* pm, int nface, double tolAngleDeg, bool respectPartitions)
+std::vector<int> MeshTools::GetConnectedFaces(FSMeshBase* pm, int nface, double tolAngleDeg, bool respectPartitions)
 {
 	vector<int> faceList; 
 	faceList.reserve(pm->Faces());
@@ -646,7 +646,7 @@ std::vector<int> MeshTools::GetConnectedFaces(FEMeshBase* pm, int nface, double 
 	return faceList;
 }
 
-void FEMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
+void FSMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
 {
 	// add the first node
 	nl1.insert(inode);

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <assert.h>
 using namespace std;
 
-FENodeEdgeList::FENodeEdgeList(FELineMesh* mesh) : m_mesh(mesh)
+FENodeEdgeList::FENodeEdgeList(FSLineMesh* mesh) : m_mesh(mesh)
 {
 	if (mesh) Build(mesh);
 }
@@ -44,11 +44,11 @@ bool FENodeEdgeList::IsEmpty() const
 	return m_edge.empty();
 }
 
-void FENodeEdgeList::Build(FELineMesh* pmesh, bool segsOnly)
+void FENodeEdgeList::Build(FSLineMesh* pmesh, bool segsOnly)
 {
 	m_mesh = pmesh;
 	assert(pmesh);
-	FELineMesh& mesh = *m_mesh;
+	FSLineMesh& mesh = *m_mesh;
 
 	// allocate valence array
 	int N = mesh.Nodes();

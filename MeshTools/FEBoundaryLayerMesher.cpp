@@ -37,9 +37,9 @@ FEBoundaryLayerMesher::FEBoundaryLayerMesher() : FEModifier("PostBL")
 	AddIntParam(1, "Segments", "Segments");
 }
 
-FEMesh* FEBoundaryLayerMesher::Apply(FEMesh* pm)
+FSMesh* FEBoundaryLayerMesher::Apply(FSMesh* pm)
 {
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 	if (BoundaryLayer(pnm) == false)
 	{
 		delete pnm;
@@ -48,7 +48,7 @@ FEMesh* FEBoundaryLayerMesher::Apply(FEMesh* pm)
 	return pnm;
 }
 
-bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
+bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 {
 	// get the modifier's parameters
 	double bias = GetFloatValue(0);

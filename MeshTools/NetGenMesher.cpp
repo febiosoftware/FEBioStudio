@@ -52,7 +52,7 @@ namespace nglib {
 #endif
 
 #ifdef HAS_NETGEN
-FEMesh* NGMeshToFEMesh(netgen::Mesh* ng, bool secondOrder);
+FSMesh* NGMeshToFEMesh(netgen::Mesh* ng, bool secondOrder);
 #endif
 
 NetGenMesher::NetGenMesher() : m_occ(nullptr)
@@ -77,7 +77,7 @@ namespace netgen
 #endif
 }
 
-FEMesh*	NetGenMesher::BuildMesh()
+FSMesh*	NetGenMesher::BuildMesh()
 {
 #ifdef HAS_NETGEN
 	using namespace nglib;
@@ -188,7 +188,7 @@ FEMesh*	NetGenMesher::BuildMesh()
 	}
 
 	// Build the FE mesh
-	FEMesh* mesh = NGMeshToFEMesh(ngmesh.get(), GetBoolValue(SECONDORDER));
+	FSMesh* mesh = NGMeshToFEMesh(ngmesh.get(), GetBoolValue(SECONDORDER));
 
 	Ng_Exit();
 
@@ -221,7 +221,7 @@ void NetGenMesher::Terminate()
 }
 
 #ifdef HAS_NETGEN
-FEMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
+FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 {
 	using namespace netgen;
 
@@ -229,7 +229,7 @@ FEMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 	int elems = ngmesh->GetNE();
 	int faces = ngmesh->GetNSE();
 
-	FEMesh* mesh = new FEMesh();
+	FSMesh* mesh = new FSMesh();
 	mesh->Create(nodes, elems, faces);
 
 	// copy nodes

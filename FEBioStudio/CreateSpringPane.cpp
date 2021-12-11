@@ -54,7 +54,7 @@ public:
 	::CSelectionBox*	m_node[2];
 	QComboBox*			m_list;
 	int					m_type[2];
-	FEMeshBase*			m_mesh[2];
+	FSMeshBase*			m_mesh[2];
 	QComboBox*			m_method;
 
 	GCurveMeshObject*	m_curves;
@@ -238,7 +238,7 @@ bool CCreateSpringPane::updateTempObject()
 		GMeshObject* po = dynamic_cast<GMeshObject*>(ui->m_mesh[0]->GetGObject());
 		if (po == 0) return false;
 
-		FEMesh* m = po->GetFEMesh();
+		FSMesh* m = po->GetFEMesh();
 		if (m == 0) return false;
 
 		for (int i = 0; i<(int)fenodes.size(); ++i)
@@ -269,7 +269,7 @@ bool CCreateSpringPane::updateTempObject()
 		GMeshObject* po = dynamic_cast<GMeshObject*>(ui->m_mesh[1]->GetGObject());
 		if (po == 0) return false;
 
-		FEMesh* m = po->GetFEMesh();
+		FSMesh* m = po->GetFEMesh();
 		if (m == 0) return false;
 
 		for (int i = 0; i<(int)fenodes.size(); ++i)
@@ -364,7 +364,7 @@ bool CCreateSpringPane::getNodeSelection(vector<int>& nodeList, int n)
 		if (ui->m_type[n] == -1) ui->m_type[n] = SELECT_FE_NODES;
 		if (ui->m_type[n] != SELECT_FE_NODES) return false;
 
-		FEMeshBase* pm = dynamic_cast<FEMeshBase*>(sel->GetMesh());
+		FSMeshBase* pm = dynamic_cast<FSMeshBase*>(sel->GetMesh());
 
 		if (ui->m_mesh[n] == 0) ui->m_mesh[n] = pm;
 		if (ui->m_mesh[n] != sel->GetMesh()) return false;

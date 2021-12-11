@@ -580,7 +580,7 @@ FESelection* CPostDocument::GetCurrentSelection()
 {
 	if (m_sel) { delete m_sel; m_sel = nullptr; }
 
-	FEMesh* pm = GetGLModel()->GetActiveMesh();
+	FSMesh* pm = GetGLModel()->GetActiveMesh();
 
 	int selectionMode = m_vs.nitem;
 	switch (selectionMode)

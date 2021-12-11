@@ -41,15 +41,15 @@ public:
 public:
 	FECylinder(){}
 	FECylinder(GCylinder* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	FEMesh* BuildButterfly();
-	FEMesh* BuildWedged();
+	FSMesh* BuildButterfly();
+	FSMesh* BuildWedged();
 
-	void BuildWedgedFaces(FEMesh* pm);
-	void BuildWedgedEdges(FEMesh* pm);
-	void BuildWedgesNodes(FEMesh* pm);
+	void BuildWedgedFaces(FSMesh* pm);
+	void BuildWedgedEdges(FSMesh* pm);
+	void BuildWedgesNodes(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k) 
 	{
@@ -78,15 +78,15 @@ public:
 public:
 	FECylinder2(){}
 	FECylinder2(GCylinder2* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	FEMesh* BuildButterfly();
-	FEMesh* BuildWedged();
+	FSMesh* BuildButterfly();
+	FSMesh* BuildWedged();
 
-	void BuildWedgedFaces(FEMesh* pm);
-	void BuildWedgedEdges(FEMesh* pm);
-	void BuildWedgesNodes(FEMesh* pm);
+	void BuildWedgedFaces(FSMesh* pm);
+	void BuildWedgedEdges(FSMesh* pm);
+	void BuildWedgesNodes(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k) 
 	{

@@ -290,7 +290,7 @@ bool FENASTRANimport::BuildMesh(FSModel& fem)
 	int nparts = (int) m_Part.size();
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems);
 
 	// create nodes

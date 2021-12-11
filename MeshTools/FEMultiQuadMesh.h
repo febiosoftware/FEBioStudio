@@ -43,7 +43,7 @@ public:
 	~FEMultiQuadMesh();
 
 	// build the mesh
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 	// set the quad mesh flag
 	void SetElementType(int elemType);
@@ -72,9 +72,9 @@ protected:
 	void BuildMBEdges();
 
 	// build the mesh items
-	void BuildFENodes(FEMesh* pm);
-	void BuildFEFaces(FEMesh* pm);
-	void BuildFEEdges(FEMesh* pm);
+	void BuildFENodes(FSMesh* pm);
+	void BuildFEFaces(FSMesh* pm);
+	void BuildFEEdges(FSMesh* pm);
 
 	void BuildNodeFaceTable(vector< vector<int> >& NFT);
 	int FindEdgeIndex(MBFace& F, int n1, int n2);
@@ -119,7 +119,7 @@ protected:
 	vector<MBEdge>	m_MBEdge;
 	vector<MBNode>	m_MBNode;
 
-	FEMesh* m_pm;
+	FSMesh* m_pm;
 	FENode* m_currentNode;
 	int		m_nodes;
 };

@@ -250,7 +250,7 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 		m_part[0] = m_part[1] = -1;
 		int n0 = GetIntValue(START_POINT) - 1;
 		int n1 = GetIntValue(END_POINT) - 1;
-		FEMesh& mesh = *fem.GetState(ntime)->GetFEMesh();
+		FSMesh& mesh = *fem.GetState(ntime)->GetFEMesh();
 		int NF = mesh.Faces();
 		for (int i = 0; i < NF; ++i)
 		{

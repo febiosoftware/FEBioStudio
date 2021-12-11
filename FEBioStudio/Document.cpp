@@ -972,7 +972,7 @@ bool CGLDocument::AutoSaveDocument()
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::GrowElementSelection(FEMesh* pm, bool respectPartitions)
+void CGLDocument::GrowElementSelection(FSMesh* pm, bool respectPartitions)
 {
 	int N = pm->Elements(), i;
 	for (i = 0; i < N; ++i) pm->Element(i).m_ntag = 0;
@@ -1013,7 +1013,7 @@ void CGLDocument::GrowElementSelection(FEMesh* pm, bool respectPartitions)
 
 
 //-----------------------------------------------------------------------------
-void CGLDocument::GrowNodeSelection(FEMeshBase* pm)
+void CGLDocument::GrowNodeSelection(FSMeshBase* pm)
 {
 	FENodeFaceList NFT;
 	NFT.Build(pm);
@@ -1055,7 +1055,7 @@ void CGLDocument::GrowNodeSelection(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::GrowFaceSelection(FEMeshBase* pm, bool respectPartitions)
+void CGLDocument::GrowFaceSelection(FSMeshBase* pm, bool respectPartitions)
 {
 	int N = pm->Faces(), i;
 	for (i = 0; i < N; ++i) pm->Face(i).m_ntag = 0;
@@ -1096,13 +1096,13 @@ void CGLDocument::GrowFaceSelection(FEMeshBase* pm, bool respectPartitions)
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::GrowEdgeSelection(FEMeshBase* pm)
+void CGLDocument::GrowEdgeSelection(FSMeshBase* pm)
 {
 	// TODO: implement this
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::ShrinkNodeSelection(FEMeshBase* pm)
+void CGLDocument::ShrinkNodeSelection(FSMeshBase* pm)
 {
 	FENodeFaceList NFT;
 	NFT.Build(pm);
@@ -1144,7 +1144,7 @@ void CGLDocument::ShrinkNodeSelection(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::ShrinkFaceSelection(FEMeshBase* pm)
+void CGLDocument::ShrinkFaceSelection(FSMeshBase* pm)
 {
 	int N = pm->Faces(), i;
 	for (i = 0; i < N; ++i) pm->Face(i).m_ntag = 1;
@@ -1175,13 +1175,13 @@ void CGLDocument::ShrinkFaceSelection(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::ShrinkEdgeSelection(FEMeshBase* pm)
+void CGLDocument::ShrinkEdgeSelection(FSMeshBase* pm)
 {
 	// TODO: implement this
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::ShrinkElementSelection(FEMesh* pm)
+void CGLDocument::ShrinkElementSelection(FSMesh* pm)
 {
 	int N = pm->Elements(), i;
 	for (i = 0; i < N; ++i) pm->Element(i).m_ntag = 1;

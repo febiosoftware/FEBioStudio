@@ -146,7 +146,7 @@ bool FETetGenImport::BuildMesh(FSModel& fem)
 	int elems = (int) m_Elem.size();
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create the nodes

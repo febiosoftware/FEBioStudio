@@ -75,7 +75,7 @@ void FEBioMesh::UpdateMeshData()
 {
 	int nsize = 0, i, j, n, m, l;
 
-	FEMesh& mesh = m_mesh;
+	FSMesh& mesh = m_mesh;
 
 	int nodes = mesh.Nodes();
 	int faces = mesh.Faces();
@@ -362,7 +362,7 @@ void FEBioInputModel::Part::Update()
 {
 	if (GetFEMesh() == 0) return;
 
-	FEMesh& mesh = *GetFEMesh();
+	FSMesh& mesh = *GetFEMesh();
 
 	// build node-index lookup table
 	int noff = -1, maxID = 0;
@@ -402,7 +402,7 @@ FEBioInputModel::PartInstance::~PartInstance()
 	if (m_po) delete m_po; m_po = nullptr;
 }
 
-FEMesh* FEBioInputModel::PartInstance::GetMesh() { return m_po->GetFEMesh(); }
+FSMesh* FEBioInputModel::PartInstance::GetMesh() { return m_po->GetFEMesh(); }
 
 FENodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 {
@@ -805,7 +805,7 @@ void FEBioInputModel::UpdateGeometry()
 	for (int i=0; i<Parts(); ++i)
 	{
 		Part& part = GetPart(i);
-		FEMesh* mesh = part.GetFEMesh();
+		FSMesh* mesh = part.GetFEMesh();
 		mesh->RebuildMesh();
 	}
 
@@ -820,7 +820,7 @@ void FEBioInputModel::UpdateGeometry()
 		assert(po == nullptr);
 
 		// clone the mesh
-		FEMesh* newMesh = new FEMesh(*part->GetFEMesh());
+		FSMesh* newMesh = new FSMesh(*part->GetFEMesh());
 
 		// create a new mesh object
 		po = new GMeshObject(newMesh);
@@ -1020,7 +1020,7 @@ bool FEBioInputModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szn
 	GMeshObject* po = part->GetGObject();
 	if (po && po->GetFEMesh())
 	{
-		FEMesh& mesh = *po->GetFEMesh();
+		FSMesh& mesh = *po->GetFEMesh();
 		int NN = mesh.Nodes();
 		int ns = dset->size();
 		for (int i = 0; i<ns; ++i)

@@ -439,26 +439,26 @@ private:
 class CCmdToggleElementVisibility : public CCommand
 {
 public:
-	CCmdToggleElementVisibility(FEMesh* fem);
+	CCmdToggleElementVisibility(FSMesh* fem);
 
 	void Execute();
 	void UnExecute();
 
 private:
-	FEMesh*	m_mesh;
+	FSMesh*	m_mesh;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdToggleFEFaceVisibility : public CCommand
 {
 public:
-	CCmdToggleFEFaceVisibility(FEMeshBase* mesh);
+	CCmdToggleFEFaceVisibility(FSMeshBase* mesh);
 
 	void Execute();
 	void UnExecute();
 
 private:
-	FEMeshBase*	m_mesh;
+	FSMeshBase*	m_mesh;
 };
 
 //-----------------------------------------------------------------------------
@@ -732,15 +732,15 @@ protected:
 class CCmdSelectElements : public CCommand
 {
 public:
-	CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd);
-	CCmdSelectElements(FEMesh* pm, vector<int>& el, bool badd);
+	CCmdSelectElements(FSMesh* pm, int* pe, int N, bool badd);
+	CCmdSelectElements(FSMesh* pm, vector<int>& el, bool badd);
 	~CCmdSelectElements() { delete[] m_ptag; delete[] m_pel; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMesh*	m_pm;
+	FSMesh*	m_pm;
 	bool*	m_ptag;	// old selecion state of elements
 	int*	m_pel;	// array of element indics we need to select
 	bool	m_badd; // add to selection or not
@@ -752,15 +752,15 @@ protected:
 class CCmdUnselectElements : public CCommand
 {
 public:
-	CCmdUnselectElements(FEMesh* mesh, int* pe, int N);
-	CCmdUnselectElements(FEMesh* mesh, const vector<int>& elem);
+	CCmdUnselectElements(FSMesh* mesh, int* pe, int N);
+	CCmdUnselectElements(FSMesh* mesh, const vector<int>& elem);
 	~CCmdUnselectElements() { delete[] m_ptag; delete[] m_pel; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMesh* m_mesh;
+	FSMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of elements
 	int*	m_pel;	// array of element indics we need to select
 	bool	m_badd; // add to selection or not
@@ -772,15 +772,15 @@ protected:
 class CCmdSelectFaces : public CCommand
 {
 public:
-	CCmdSelectFaces(FEMeshBase* pm, int* pf, int N, bool badd);
-	CCmdSelectFaces(FEMeshBase* pm, vector<int>& fl, bool badd);
+	CCmdSelectFaces(FSMeshBase* pm, int* pf, int N, bool badd);
+	CCmdSelectFaces(FSMeshBase* pm, vector<int>& fl, bool badd);
 	~CCmdSelectFaces() { delete[] m_ptag; delete[] m_pface; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMeshBase*	m_pm;
+	FSMeshBase*	m_pm;
 	bool*	m_ptag;	// old selecion state of faces
 	int*	m_pface;// array of face indics we need to select
 	bool	m_badd; // add to selection or not
@@ -792,15 +792,15 @@ protected:
 class CCmdUnselectFaces : public CCommand
 {
 public:
-	CCmdUnselectFaces(FEMeshBase* pm, int* pf, int N);
-	CCmdUnselectFaces(FEMeshBase* pm, const vector<int>& face);
+	CCmdUnselectFaces(FSMeshBase* pm, int* pf, int N);
+	CCmdUnselectFaces(FSMeshBase* pm, const vector<int>& face);
 	~CCmdUnselectFaces() { delete[] m_ptag; delete[] m_pface; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMeshBase* m_pm;
+	FSMeshBase* m_pm;
 	bool*	m_ptag;	// old selecion state of faces
 	int*	m_pface;	// array of face indics we need to select
 	bool	m_badd; // add to selection or not
@@ -812,15 +812,15 @@ protected:
 class CCmdSelectFEEdges : public CCommand
 {
 public:
-	CCmdSelectFEEdges(FELineMesh* pm, int* pe, int N, bool badd);
-	CCmdSelectFEEdges(FELineMesh* pm, vector<int>& el, bool badd);
+	CCmdSelectFEEdges(FSLineMesh* pm, int* pe, int N, bool badd);
+	CCmdSelectFEEdges(FSLineMesh* pm, vector<int>& el, bool badd);
 	~CCmdSelectFEEdges() { delete[] m_ptag; delete[] m_pedge; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FELineMesh*	m_pm;
+	FSLineMesh*	m_pm;
 	bool*	m_ptag;	// old selecion state of edges
 	int*	m_pedge;// array of edge indices we need to select
 	bool	m_badd; // add to selection or not
@@ -832,15 +832,15 @@ protected:
 class CCmdUnselectFEEdges : public CCommand
 {
 public:
-	CCmdUnselectFEEdges(FELineMesh* pm, int* pe, int N);
-	CCmdUnselectFEEdges(FELineMesh* pm, const vector<int>& edge);
+	CCmdUnselectFEEdges(FSLineMesh* pm, int* pe, int N);
+	CCmdUnselectFEEdges(FSLineMesh* pm, const vector<int>& edge);
 	~CCmdUnselectFEEdges() { delete[] m_ptag; delete[] m_pedge; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FELineMesh*	m_pm;
+	FSLineMesh*	m_pm;
 	bool*	m_ptag;		// old selecion state of edges
 	int*	m_pedge;	// array of edge indices we need to select
 	bool	m_badd;		// add to selection or not
@@ -852,15 +852,15 @@ protected:
 class CCmdSelectFENodes : public CCommand
 {
 public:
-	CCmdSelectFENodes(FELineMesh* pm, int* pn, int N, bool badd);
-	CCmdSelectFENodes(FELineMesh* pm, vector<int>& nl, bool badd);
+	CCmdSelectFENodes(FSLineMesh* pm, int* pn, int N, bool badd);
+	CCmdSelectFENodes(FSLineMesh* pm, vector<int>& nl, bool badd);
 	~CCmdSelectFENodes() { delete[] m_ptag; delete[] m_pn; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FELineMesh*	m_pm;
+	FSLineMesh*	m_pm;
 	bool*	m_ptag;	// old selecion state of nodes
 	int*	m_pn;	// array of node indices we need to select
 	bool	m_badd; // add to selection or not
@@ -872,15 +872,15 @@ protected:
 class CCmdUnselectNodes : public CCommand
 {
 public:
-	CCmdUnselectNodes(FELineMesh* pm, int* pn, int N);
-	CCmdUnselectNodes(FELineMesh* pm, const vector<int>& node);
+	CCmdUnselectNodes(FSLineMesh* pm, int* pn, int N);
+	CCmdUnselectNodes(FSLineMesh* pm, const vector<int>& node);
 	~CCmdUnselectNodes() { delete[] m_ptag; delete[] m_pn; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FELineMesh* m_mesh;
+	FSLineMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of nodes
 	int*	m_pn;	// array of nodes indices we need to select
 	bool	m_badd; // add to selection or not
@@ -942,7 +942,7 @@ void UnExecute();
 
 protected:
 FSMaterial*	m_pmat;
-FEMesh*	m_pm;
+FSMesh*	m_pm;
 GObject* m_po;
 
 int*	m_pel;
@@ -965,8 +965,8 @@ public:
 
 protected:
 	GMeshObject*	m_pobj;
-	FEMesh*			m_pold;
-	FEMesh*			m_pnew;
+	FSMesh*			m_pold;
+	FSMesh*			m_pnew;
 	int		m_nitem;
 };
 
@@ -1037,13 +1037,13 @@ protected:
 class CCmdHideElements : public CCommand
 {
 public:
-	CCmdHideElements(FEMesh* mesh, const vector<int>& elemList);
+	CCmdHideElements(FSMesh* mesh, const vector<int>& elemList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMesh*			m_mesh;
+	FSMesh*			m_mesh;
 	vector<int>		m_elemList;
 };
 
@@ -1126,8 +1126,8 @@ public:
 
 protected:
 	GObject*		m_pobj;
-	FEMesh*			m_pold;	// old, unmodified mesh
-	FEMesh*			m_pnew;	// new, modified mesh
+	FSMesh*			m_pold;	// old, unmodified mesh
+	FSMesh*			m_pnew;	// new, modified mesh
 	FEModifier*		m_pmod;
 	FEGroup*		m_psel;
 };
@@ -1156,7 +1156,7 @@ protected:
 class CCmdChangeFEMesh : public CCommand
 {
 public:
-	CCmdChangeFEMesh(GObject* po, FEMesh* pm, bool up = false);
+	CCmdChangeFEMesh(GObject* po, FSMesh* pm, bool up = false);
 	~CCmdChangeFEMesh() { delete m_pnew; }
 
 	void Execute();
@@ -1165,7 +1165,7 @@ public:
 protected:
 	bool		m_update;
 	GObject*	m_po;
-	FEMesh*		m_pnew;
+	FSMesh*		m_pnew;
 };
 
 //-----------------------------------------------------------------------------

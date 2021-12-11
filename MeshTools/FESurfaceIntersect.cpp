@@ -31,7 +31,7 @@ int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
 {
 	// get the parent mesh 
 	// and make sure it is a triangle mesh
-	FEMesh* pm = psrc->GetMesh();
+	FSMesh* pm = psrc->GetMesh();
 
 	// build the slave surface node list
 	FENodeList* pn = psrc->BuildNodeList();
@@ -143,7 +143,7 @@ double FESurfaceIntersect::Distance(FEFaceList& s, const vec3d& r)
 	for (pf = s.First(); pf != s.End(); ++pf)
 	{
 		FEFace& f = *(pf->m_pi);
-		FECoreMesh& m = *(pf->m_pm);
+		FSCoreMesh& m = *(pf->m_pm);
 		if (f.Type() == FE_FACE_TRI3)
 		{
 			// get the vertex coordinates

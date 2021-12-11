@@ -869,7 +869,7 @@ void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 	for (int i=0; i<ps->Size(); ++i, ++its)
 	{
 		FEFace& f = *(its->m_pi);
-		FEMesh& mesh = dynamic_cast<FEMesh&>(*(its->m_pm));
+		FSMesh& mesh = dynamic_cast<FSMesh&>(*(its->m_pm));
 		int nf = f.Nodes();
 		for (int n=0; n<nf; ++n)
 		{

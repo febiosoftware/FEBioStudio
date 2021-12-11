@@ -354,7 +354,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FEMesh* pm);
+		Iterator(FSMesh* pm);
 
 		operator FEElement_*() { return m_pelem; }
 		FEElement_* operator -> () { return m_pelem; }
@@ -362,13 +362,13 @@ public:
 		void operator ++ ();
 
 	protected:
-		FEMesh*		m_pm;
+		FSMesh*		m_pm;
 		FEElement_*	m_pelem;
 		int			m_n;
 	};
 
 public:
-	FEElementSelection(FSModel* ps, FEMesh* pm) : FESelection(SELECT_FE_ELEMENTS) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEElementSelection(FSModel* ps, FSMesh* pm) : FESelection(SELECT_FE_ELEMENTS) { m_ps = ps; m_pMesh = pm; Update(); }
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -377,14 +377,14 @@ public:
 	virtual void Scale(double s, vec3d dr, vec3d c);
 	virtual quatd GetOrientation();
 
-	FEMesh* GetMesh() { return m_pMesh; }
+	FSMesh* GetMesh() { return m_pMesh; }
 
 	FEItemListBuilder* CreateItemList();
 
 	FEElement_* Element(int i);
 
 protected:
-	FEMesh*		m_pMesh;
+	FSMesh*		m_pMesh;
 	FSModel*	m_ps;
 	vector<int>	m_item;
 };
@@ -397,7 +397,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FEMeshBase* pm);
+		Iterator(FSMeshBase* pm);
 
 		operator FEFace*() { return m_pface; }
 		FEFace* operator -> () { return m_pface; }
@@ -405,13 +405,13 @@ public:
 		void operator ++ (); 
 
 	protected:
-		FEMeshBase*	m_pm;
+		FSMeshBase*	m_pm;
 		FEFace*		m_pface;
 		int			m_n;
 	};
 
 public:
-	FEFaceSelection(FSModel* ps, FEMeshBase* pm) : FESelection(SELECT_FE_FACES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEFaceSelection(FSModel* ps, FSMeshBase* pm) : FESelection(SELECT_FE_FACES) { m_ps = ps; m_pMesh = pm; Update(); }
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -420,14 +420,14 @@ public:
 	virtual void Scale(double s, vec3d dr, vec3d c);
 	virtual quatd GetOrientation();
 
-	FEMeshBase* GetMesh() { return m_pMesh; }
+	FSMeshBase* GetMesh() { return m_pMesh; }
 
 	FEItemListBuilder* CreateItemList();
 
 	Iterator begin();
 
 protected:
-	FEMeshBase*		m_pMesh;
+	FSMeshBase*		m_pMesh;
 	FSModel*		m_ps;
 };
 
@@ -439,7 +439,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FELineMesh* pm);
+		Iterator(FSLineMesh* pm);
 
 		operator FEEdge*() { return m_pedge; }
 		FEEdge* operator -> () { return m_pedge; }
@@ -447,13 +447,13 @@ public:
 		void operator ++ (); 
 
 	protected:
-		FELineMesh*	m_pm;
+		FSLineMesh*	m_pm;
 		FEEdge*		m_pedge;
 		int			m_n;
 	};
 
 public:
-	FEEdgeSelection(FSModel* ps, FELineMesh* pm) : FESelection(SELECT_FE_EDGES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEEdgeSelection(FSModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_EDGES) { m_ps = ps; m_pMesh = pm; Update(); }
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -462,12 +462,12 @@ public:
 	virtual void Scale(double s, vec3d dr, vec3d c);
 	virtual quatd GetOrientation();
 
-	FELineMesh* GetMesh() { return m_pMesh; }
+	FSLineMesh* GetMesh() { return m_pMesh; }
 
 	FEItemListBuilder* CreateItemList();
 
 protected:
-	FELineMesh*		m_pMesh;
+	FSLineMesh*		m_pMesh;
 	FSModel*		m_ps;
 };
 
@@ -479,7 +479,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(FELineMesh* pm);
+		Iterator(FSLineMesh* pm);
 
 		operator FENode*() { return m_pnode; }
 		FENode* operator -> () { return m_pnode; }
@@ -487,13 +487,13 @@ public:
 		void operator ++ (); 
 
 	protected:
-		FELineMesh*	m_pm;
+		FSLineMesh*	m_pm;
 		FENode*		m_pnode;
 		int			m_n;
 	};
 
 public:
-	FENodeSelection(FSModel* ps, FELineMesh* pm) : FESelection(SELECT_FE_NODES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FENodeSelection(FSModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_NODES) { m_ps = ps; m_pMesh = pm; Update(); }
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -502,13 +502,13 @@ public:
 	virtual void Scale(double s, vec3d dr, vec3d c);
 	virtual quatd GetOrientation();
 
-	FELineMesh* GetMesh() { return m_pMesh; }
+	FSLineMesh* GetMesh() { return m_pMesh; }
 
 	FEItemListBuilder* CreateItemList();
 
 	FENodeSelection::Iterator First();
 
 protected:
-	FELineMesh*	m_pMesh;
+	FSLineMesh*	m_pMesh;
 	FSModel*	m_ps;
 };

@@ -77,7 +77,7 @@ bool FEQuadSplitModifier::have_to_split(FEElement* pe, int i)
 // which edges have to be split. For instance, a code of 15 means all elements have
 // to be split. Currently, this algorithm is restriced in that only combinations
 // of edges can be split: 15 (all edges), 3, 6, 9, 12 (two adjacent edges). 
-FEMesh* FEQuadSplitModifier::Apply(FEMesh* pm)
+FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 {
 	if (pm->IsType(FE_QUAD4) == false) return nullptr;
 
@@ -303,7 +303,7 @@ FEMesh* FEQuadSplitModifier::Apply(FEMesh* pm)
 	int NN1 = N0 + nfn + nen;
 	int NE1 = E0 + nel - (int) EL.size();
 	int NF1 = NE1;
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN1, NE1, NF1);
 
 	// copy old nodes
@@ -520,7 +520,7 @@ bool FETriSplitModifier::have_to_split(FEElement* pe, int i)
 	return is_split(pe, i);
 }
 
-FEMesh* FETriSplitModifier::Apply(FEMesh* pm)
+FSMesh* FETriSplitModifier::Apply(FSMesh* pm)
 {
 	if (m_niter <= 0)
 	{
@@ -528,7 +528,7 @@ FEMesh* FETriSplitModifier::Apply(FEMesh* pm)
 		return 0;
 	}
 
-	FEMesh* newMesh = 0;
+	FSMesh* newMesh = 0;
 	for (int i=0; i<m_niter; ++i)
 	{
 		newMesh = Split(pm);
@@ -542,7 +542,7 @@ FEMesh* FETriSplitModifier::Apply(FEMesh* pm)
 	return newMesh;
 }
 
-FEMesh* FETriSplitModifier::Split(FEMesh* pm)
+FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 {
 	if (pm == nullptr) return nullptr;
 	if (pm->IsType(FE_TRI3) == false) return nullptr;
@@ -617,7 +617,7 @@ FEMesh* FETriSplitModifier::Split(FEMesh* pm)
 	// create the new mesh
 	int NN1 = N0 + nen;
 	int NF1 = NE1;
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN1, NE1, NF1);
 
 	// copy old nodes

@@ -33,7 +33,7 @@ SOFTWARE.*/
 class CMainWindow;
 class CModelDocument;
 class FEModifier;
-class FEMesh;
+class FSMesh;
 class GObject;
 class FEMesher;
 class FEGroup;

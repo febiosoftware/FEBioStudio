@@ -56,7 +56,7 @@ public:
 
 	void setMesh(GObject* po)
 	{
-		FEMesh* pm = (po ? po->GetFEMesh() : 0);
+		FSMesh* pm = (po ? po->GetFEMesh() : 0);
 		if (pm)
 		{
 			name->setText(QString::fromStdString(po->GetName()));
@@ -177,7 +177,7 @@ public:
 	QSpinBox* curvatureMaxIters;
 	QCheckBox* curvatureExtQuad;
 
-	FEMesh*		m_pm;
+	FSMesh*		m_pm;
 
 	
 
@@ -275,7 +275,7 @@ public:
 			return;
 		}
 
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm == 0)
 		{
 			m_pm = nullptr;

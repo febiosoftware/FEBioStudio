@@ -59,7 +59,7 @@ public:
 	FEPointCongruency();
 
 	// measure the congruency of a point
-	CONGRUENCY_DATA Congruency(FEMesh* pm, int node);
+	CONGRUENCY_DATA Congruency(FSMesh* pm, int node);
 
 	void SetLevels(int niter) { m_nlevels = niter; }
 
@@ -80,7 +80,7 @@ public:
 	int	m_nmax;
 
 private:
-	FEMesh*		m_mesh;
+	FSMesh*		m_mesh;
 	FENodeFaceList	m_NFL;
 };
 }

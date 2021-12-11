@@ -35,19 +35,19 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 //! constructor
-FECoreMesh::FECoreMesh()
+FSCoreMesh::FSCoreMesh()
 {
 }
 
 //-----------------------------------------------------------------------------
 //! destructor
-FECoreMesh::~FECoreMesh()
+FSCoreMesh::~FSCoreMesh()
 {
 }
 
 //-----------------------------------------------------------------------------
 //! This function checks if all elements are of the type specified in the argument
-bool FECoreMesh::IsType(int ntype) const
+bool FSCoreMesh::IsType(int ntype) const
 {
 	int NE = Elements();
 	for (int i=0; i<NE; ++i)
@@ -60,7 +60,7 @@ bool FECoreMesh::IsType(int ntype) const
 
 //-----------------------------------------------------------------------------
 //! get the mesh type (returns -1 for mixed meshes)
-int FECoreMesh::GetMeshType() const
+int FSCoreMesh::GetMeshType() const
 {
 	int NE = Elements();
 	if (NE <= 0) return -1;
@@ -74,7 +74,7 @@ int FECoreMesh::GetMeshType() const
 }
 
 //-----------------------------------------------------------------------------
-vec3d FECoreMesh::ElementCenter(const FEElement_& el) const
+vec3d FSCoreMesh::ElementCenter(const FEElement_& el) const
 {
 	vec3d r;
 	int N = el.Nodes();
@@ -84,7 +84,7 @@ vec3d FECoreMesh::ElementCenter(const FEElement_& el) const
 
 //-----------------------------------------------------------------------------
 // Count nr of beam elements
-int FECoreMesh::BeamElements()
+int FSCoreMesh::BeamElements()
 {
 	int n = 0;
 	for (int i = 0; i<Elements(); ++i)
@@ -97,7 +97,7 @@ int FECoreMesh::BeamElements()
 
 //-----------------------------------------------------------------------------
 // Count nr of shell elements
-int FECoreMesh::ShellElements()
+int FSCoreMesh::ShellElements()
 {
 	int n = 0;
 	for (int i = 0; i<Elements(); ++i)
@@ -110,7 +110,7 @@ int FECoreMesh::ShellElements()
 
 //-----------------------------------------------------------------------------
 // Count nr of solid elements
-int FECoreMesh::SolidElements()
+int FSCoreMesh::SolidElements()
 {
 	int n = 0;
 	for (int i = 0; i<Elements(); ++i)
@@ -123,7 +123,7 @@ int FECoreMesh::SolidElements()
 
 //-----------------------------------------------------------------------------
 //! Is an element exterior or not
-bool FECoreMesh::IsExterior(FEElement_* pe) const
+bool FSCoreMesh::IsExterior(FEElement_* pe) const
 {
 	// make sure the element is visible
 	if (pe->IsVisible() == false) return false;
@@ -146,13 +146,13 @@ bool FECoreMesh::IsExterior(FEElement_* pe) const
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of an element
-double FECoreMesh::ElementVolume(int iel)
+double FSCoreMesh::ElementVolume(int iel)
 {
 	FEElement_& el = ElementRef(iel);
 	return ElementVolume(el);
 }
 
-double FECoreMesh::ElementVolume(const FEElement_& el)
+double FSCoreMesh::ElementVolume(const FEElement_& el)
 {
 	switch (el.Type())
 	{
@@ -395,7 +395,7 @@ double hex27_volume(vec3d* r, bool bJ)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a hex element
-double FECoreMesh::HexVolume(const FEElement_& el)
+double FSCoreMesh::HexVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
 
@@ -567,7 +567,7 @@ double penta15_volume(vec3d* r, bool bJ)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a pentahedral element
-double FECoreMesh::PentaVolume(const FEElement_& el)
+double FSCoreMesh::PentaVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_PENTA6) || (el.Type() == FE_PENTA15));
 
@@ -733,7 +733,7 @@ double pyra13_volume(vec3d* r, bool bJ)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a pyramid element
-double FECoreMesh::PyramidVolume(const FEElement_& el)
+double FSCoreMesh::PyramidVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_PYRA5) || (el.Type() == FE_PYRA13));
     
@@ -890,7 +890,7 @@ double quad4_volume(vec3d* r, vec3d* D, bool bJ)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a pyramid element
-double FECoreMesh::QuadVolume(const FEElement_& el)
+double FSCoreMesh::QuadVolume(const FEElement_& el)
 {
     assert(el.Type() == FE_QUAD4);
 
@@ -1280,7 +1280,7 @@ double tet20_volume(vec3d* r, bool bJ)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a tetrahedral element
-double FECoreMesh::TetVolume(const FEElement_& el)
+double FSCoreMesh::TetVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_TET4) || (el.Type() == FE_TET10)
 		|| (el.Type() == FE_TET15) || (el.Type() == FE_TET20));
@@ -1311,7 +1311,7 @@ double FECoreMesh::TetVolume(const FEElement_& el)
 
 //-----------------------------------------------------------------------------
 // Tag all elements
-void FECoreMesh::TagAllElements(int ntag)
+void FSCoreMesh::TagAllElements(int ntag)
 {
 	const int NE = Elements();
 	for (int i = 0; i<NE; ++i) ElementRef(i).m_ntag = ntag;
@@ -1319,7 +1319,7 @@ void FECoreMesh::TagAllElements(int ntag)
 
 //-----------------------------------------------------------------------------
 // get the local node positions of a element
-void FECoreMesh::ElementNodeLocalPositions(const FEElement_& e, vec3d* r) const
+void FSCoreMesh::ElementNodeLocalPositions(const FEElement_& e, vec3d* r) const
 {
 	int ne = e.Nodes();
 	for (int i = 0; i<ne; ++i) r[i] = m_Node[e.m_node[i]].r;
@@ -1327,7 +1327,7 @@ void FECoreMesh::ElementNodeLocalPositions(const FEElement_& e, vec3d* r) const
 
 //-----------------------------------------------------------------------------
 // See if this is a shell mesh.
-bool FECoreMesh::IsShell() const
+bool FSCoreMesh::IsShell() const
 {
 	int NE = Elements();
 	for (int i = 0; i<NE; ++i)
@@ -1341,7 +1341,7 @@ bool FECoreMesh::IsShell() const
 
 //-----------------------------------------------------------------------------
 // See if this is a solid mesh.
-bool FECoreMesh::IsSolid() const
+bool FSCoreMesh::IsSolid() const
 {
 	int NE = Elements();
 	for (int i = 0; i<NE; ++i)
@@ -1355,7 +1355,7 @@ bool FECoreMesh::IsSolid() const
 
 //-----------------------------------------------------------------------------
 // Find a face of an element.
-int FECoreMesh::FindFace(FEElement_ *pe, FEFace &f, FEFace& fe)
+int FSCoreMesh::FindFace(FEElement_ *pe, FEFace &f, FEFace& fe)
 {
 	if (pe->IsSolid())
 	{
@@ -1376,14 +1376,14 @@ int FECoreMesh::FindFace(FEElement_ *pe, FEFace &f, FEFace& fe)
 }
 
 //-------------------------------------------------------------------------------------------------
-void FECoreMesh::SelectElements(const vector<int>& elem)
+void FSCoreMesh::SelectElements(const vector<int>& elem)
 {
 	for (int i : elem) ElementRef(i).Select();
 }
 
 //-----------------------------------------------------------------------------
 // This function finds the interior and exterior nodes.
-void FECoreMesh::MarkExteriorNodes()
+void FSCoreMesh::MarkExteriorNodes()
 {
 	// assume all nodes interior
 	int nodes = Nodes();
@@ -1415,7 +1415,7 @@ void FECoreMesh::MarkExteriorNodes()
 }
 
 //-----------------------------------------------------------------------------
-void FECoreMesh::FindNodesFromPart(int gid, vector<int>& node)
+void FSCoreMesh::FindNodesFromPart(int gid, vector<int>& node)
 {
 	for (int i = 0; i<Nodes(); ++i) Node(i).m_ntag = 0;
 	for (int i = 0; i<Elements(); ++i)
@@ -1438,7 +1438,7 @@ void FECoreMesh::FindNodesFromPart(int gid, vector<int>& node)
 }
 
 //-------------------------------------------------------------------------------------------------
-FENode* FECoreMesh::FindNodeFromID(int gid)
+FENode* FSCoreMesh::FindNodeFromID(int gid)
 {
 	for (int i = 0; i < Nodes(); ++i)
 	{
@@ -1449,7 +1449,7 @@ FENode* FECoreMesh::FindNodeFromID(int gid)
 }
 
 //-------------------------------------------------------------------------------------------------
-void FECoreMesh::ShowAllElements()
+void FSCoreMesh::ShowAllElements()
 {
 	for (int i = 0; i<Nodes(); ++i) Node(i).Show();
 	for (int i = 0; i<Edges(); ++i) Edge(i).Show();
@@ -1458,7 +1458,7 @@ void FECoreMesh::ShowAllElements()
 }
 
 //-------------------------------------------------------------------------------------------------
-void FECoreMesh::ShowElements(vector<int>& elem, bool show)
+void FSCoreMesh::ShowElements(vector<int>& elem, bool show)
 {
 	// show or hide all the elements
 	if (show)
@@ -1471,7 +1471,7 @@ void FECoreMesh::ShowElements(vector<int>& elem, bool show)
 }
 
 //-------------------------------------------------------------------------------------------------
-void FECoreMesh::UpdateItemVisibility()
+void FSCoreMesh::UpdateItemVisibility()
 {
 	// tag all visible nodes
 	TagAllNodes(0);
@@ -1513,7 +1513,7 @@ void FECoreMesh::UpdateItemVisibility()
 
 //-----------------------------------------------------------------------------
 // count node partitions
-int FECoreMesh::CountNodePartitions() const
+int FSCoreMesh::CountNodePartitions() const
 {
 	int max_gid = -1;
 	for (int i = 0; i<Nodes(); ++i)
@@ -1525,7 +1525,7 @@ int FECoreMesh::CountNodePartitions() const
 }
 
 //-----------------------------------------------------------------------------
-int FECoreMesh::CountEdgePartitions() const
+int FSCoreMesh::CountEdgePartitions() const
 {
 	int max_gid = -1;
 	for (int i = 0; i<Edges(); ++i)
@@ -1537,7 +1537,7 @@ int FECoreMesh::CountEdgePartitions() const
 }
 
 //-----------------------------------------------------------------------------
-int FECoreMesh::CountFacePartitions() const
+int FSCoreMesh::CountFacePartitions() const
 {
 	int max_gid = -1;
 	for (int i = 0; i<Faces(); ++i)
@@ -1550,7 +1550,7 @@ int FECoreMesh::CountFacePartitions() const
 
 
 //-----------------------------------------------------------------------------
-int FECoreMesh::CountElementPartitions() const
+int FSCoreMesh::CountElementPartitions() const
 {
 	int max_gid = -1;
 	for (int i = 0; i<Elements(); ++i)
@@ -1562,7 +1562,7 @@ int FECoreMesh::CountElementPartitions() const
 }
 
 //-----------------------------------------------------------------------------
-int FECoreMesh::CountSmoothingGroups() const
+int FSCoreMesh::CountSmoothingGroups() const
 {
 	int max_sg = -1;
 	for (int i = 0; i<Faces(); ++i)
@@ -1574,7 +1574,7 @@ int FECoreMesh::CountSmoothingGroups() const
 }
 
 //-----------------------------------------------------------------------------
-void ForAllElements(FECoreMesh& mesh, std::function<void(FEElement_& el)> f)
+void ForAllElements(FSCoreMesh& mesh, std::function<void(FEElement_& el)> f)
 {
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{

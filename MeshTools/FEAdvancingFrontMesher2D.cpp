@@ -303,7 +303,7 @@ void BuildFrontMesh(vector<int> front, vector<FRONT_NODE>& nodeList, vector<FRON
 
 //-----------------------------------------------------------------------------
 // generate the mesh
-FEMesh* FEAdvancingFrontMesher2D::BuildMesh()
+FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 {
 	// make sure we a valid object
 	if (m_obj == 0) return 0;
@@ -379,7 +379,7 @@ FEMesh* FEAdvancingFrontMesher2D::BuildMesh()
 	// Build the mesh
 	NN = (int)nodeList.size();
 	int NE = (int)face.size();
-	FEMesh* mesh = new FEMesh;
+	FSMesh* mesh = new FSMesh;
 	mesh->Create(NN, NE);
 	for (int i = 0; i<NN; ++i)
 	{
@@ -410,7 +410,7 @@ FEMMG2DMesher::FEMMG2DMesher(GObject* po) : m_po(po)
 	AddDoubleParam(0.1, "Element size", "Element size");
 }
 
-FEMesh* FEMMG2DMesher::BuildMesh()
+FSMesh* FEMMG2DMesher::BuildMesh()
 {
 	// MMG needs a base mesh, so let's create one by doing a rough triangulation of the shape.
 	assert(m_po->Faces() == 1);
@@ -429,5 +429,5 @@ FEMesh* FEMMG2DMesher::BuildMesh()
 
 	delete pm;
 
-	return new FEMesh(*newMesh);
+	return new FSMesh(*newMesh);
 }

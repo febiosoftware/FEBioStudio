@@ -34,10 +34,10 @@ class GObject;
 
 // class that manages a list of nodes and edges
 // This serves as a base class for most meshes
-class FELineMesh
+class FSLineMesh
 {
 public:
-	FELineMesh();
+	FSLineMesh();
 
 	// Should be called when mesh needs to be updated (but not reconstructred)
 	// E.g. for surface meshes, this will update face normals, etc.

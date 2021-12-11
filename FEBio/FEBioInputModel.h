@@ -39,9 +39,9 @@ class FEBioMesh
 public:
 	FEBioMesh();
 
-	FEMesh* operator -> () { return &m_mesh; }
+	FSMesh* operator -> () { return &m_mesh; }
 
-	FEMesh* GetFEMesh() { return &m_mesh; }
+	FSMesh* GetFEMesh() { return &m_mesh; }
 
 	void UpdateMeshData();
 
@@ -51,7 +51,7 @@ public:
 	FEElement* FindElementFromID(int nid);
 
 private:
-	FEMesh			m_mesh;
+	FSMesh			m_mesh;
 	vector<int>		m_iFace;
 	vector<int*>	m_pFace;
 	vector<int>		m_nFace;
@@ -284,7 +284,7 @@ public:
 		SurfacePair* FindSurfacePair(const std::string& name);
 
 	public:
-		FEMesh* GetFEMesh() { return m_mesh.GetFEMesh(); }
+		FSMesh* GetFEMesh() { return m_mesh.GetFEMesh(); }
 
 		FEBioMesh& GetFEBioMesh() { return m_mesh; }
 
@@ -334,7 +334,7 @@ public:
 		}
 
 		// return the mesh of the mesh object (not the part)
-		FEMesh* GetMesh();
+		FSMesh* GetMesh();
 
 	public:
 		FENodeSet* BuildFENodeSet(const NodeSet& nset);

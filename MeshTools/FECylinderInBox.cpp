@@ -67,7 +67,7 @@ FECylinderInBox::FECylinderInBox(GCylinderInBox* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FECylinderInBox::BuildMesh()
+FSMesh* FECylinderInBox::BuildMesh()
 {
 	assert(m_po);
 
@@ -188,7 +188,7 @@ FEMesh* FECylinderInBox::BuildMesh()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 

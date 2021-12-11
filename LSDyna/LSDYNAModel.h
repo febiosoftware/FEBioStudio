@@ -36,7 +36,7 @@ using std::list;
 
 class FSModel;
 class GMeshObject;
-class FEMesh;
+class FSMesh;
 
 class LSDYNAModel
 {
@@ -238,7 +238,7 @@ public:
 
     int FindShellDomain(int pid);
     
-	void UpdateMesh(FEMesh& mesh);
+	void UpdateMesh(FSMesh& mesh);
 
 	void allocData(int N) { m_Data.assign(N, vector<double>(2)); }
 	double& NodeData(int i, int j) { return m_Data[i][j]; }

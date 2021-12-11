@@ -90,7 +90,7 @@ int FETetGenMesher::ElementType()
 // and then passes this structure to tetgen which builds the tet mesh. On
 // a successful return the FE mesh is processed and partitioned. 
 //
-FEMesh* FETetGenMesher::BuildMesh()
+FSMesh* FETetGenMesher::BuildMesh()
 {
 	GSurfaceMeshObject* surfObj = dynamic_cast<GSurfaceMeshObject*>(m_po);
 	if (surfObj)
@@ -172,7 +172,7 @@ FEMesh* FETetGenMesher::BuildMesh()
 #ifdef TETLIBRARY
 
 //-----------------------------------------------------------------------------
-FEMesh* FETetGenMesher::BuildPLCMesh()
+FSMesh* FETetGenMesher::BuildPLCMesh()
 {
 	// get the requested element size
 	double h = GetFloatValue(ELSIZE);
@@ -184,7 +184,7 @@ FEMesh* FETetGenMesher::BuildPLCMesh()
 
 	int NN = plc.Nodes();
 	int NF = plc.Faces();
-	FEMesh* mesh = new FEMesh();
+	FSMesh* mesh = new FSMesh();
 	mesh->Create(NN, NF);
 
 	for (int i = 0; i < NN; ++i)
@@ -323,7 +323,7 @@ bool FETetGenMesher::build_tetgen_in(tetgenio& in)
 bool FETetGenMesher::build_tetgen_in_remesh(tetgenio& in)
 {
 	// get the FE mesh
-	FEMesh& mesh = *m_po->GetFEMesh();
+	FSMesh& mesh = *m_po->GetFEMesh();
 
 	// make sure this is a tet mesh
 	for (int i=0; i<mesh.Elements(); ++i)
@@ -455,12 +455,12 @@ void FETetGenMesher::build_tetgen_in(tetgenio& in)
 */
 
 //-----------------------------------------------------------------------------
-FEMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
+FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 {
 	int i, j;
 
 	// create a new mesh
-	FEMesh* pmesh = new FEMesh;
+	FSMesh* pmesh = new FSMesh;
 	int nodes = out.numberofpoints;
 	int elems = out.numberoftetrahedra;
 	int faces = out.numberoftrifaces;
@@ -527,7 +527,7 @@ FEMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 
 	if (GetIntValue(ELTYPE) == 1)
 	{
-		FEMesh* pold = pmesh;
+		FSMesh* pold = pmesh;
 		pmesh = build_tet10_mesh(pold);
 		delete pold;
 	}
@@ -535,7 +535,7 @@ FEMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	{
 		FETet4ToTet15 mod;
 		pmesh->BuildMesh();
-		FEMesh* pold = pmesh;
+		FSMesh* pold = pmesh;
 		pmesh = mod.Apply(pold);
 		delete pold;
 	}
@@ -634,7 +634,7 @@ FEMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETetGenMesher::build_tet10_mesh(FEMesh* pm)
+FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 {
 	const int EL[6][2] = {{0,1},{1,2},{2,0},{0,3},{1,3},{2,3}};
 
@@ -760,7 +760,7 @@ FEMesh* FETetGenMesher::build_tet10_mesh(FEMesh* pm)
 	int NN1 = NN + NL;
 
 	// allocate a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN1, NE, NF, NC);
 
 	// copy the old nodes
@@ -1570,7 +1570,7 @@ bool FETetGenMesher::build_plc(FESurfaceMesh* pm, tetgenio& in)
 
 
 // Generate a volume mesh from a surface mesh
-FEMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
+FSMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 {
 #ifdef TETLIBRARY
 	// allocate tetgen structures
@@ -1623,7 +1623,7 @@ FEMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 	}
 
 	// create a new mesh
-	FEMesh* pmesh = new FEMesh;
+	FSMesh* pmesh = new FSMesh;
 	int nodes = out.numberofpoints;
 	int elems = out.numberoftetrahedra;
 	int faces = out.numberoftrifaces;
@@ -1723,7 +1723,7 @@ FEMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 		case FE_TET10:
 		{
 			FETet4ToTet10 mod;
-			FEMesh* pnew = mod.Apply(pmesh);
+			FSMesh* pnew = mod.Apply(pmesh);
 			delete pmesh;
 			pmesh = pnew;
 		}
@@ -1731,7 +1731,7 @@ FEMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 		case FE_TET15:
 		{
 			FETet4ToTet15 mod;
-			FEMesh* pnew = mod.Apply(pmesh);
+			FSMesh* pnew = mod.Apply(pmesh);
 			delete pmesh;
 			pmesh = pnew;
 		}
@@ -1739,7 +1739,7 @@ FEMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 		case FE_TET20:
 		{
 			FETet4ToTet20 mod;
-			FEMesh* pnew = mod.Apply(pmesh);
+			FSMesh* pnew = mod.Apply(pmesh);
 			delete pmesh;
 			pmesh = pnew;
 		}
@@ -1761,7 +1761,7 @@ FEConvexHullMesher::FEConvexHullMesher()
 
 }
 
-FEMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
+FSMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
 {
 #ifdef TETLIBRARY
 	tetgenio in, out;
@@ -1809,7 +1809,7 @@ FEMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
 	}
 
 	// create a new mesh
-	FEMesh* pmesh = new FEMesh;
+	FSMesh* pmesh = new FSMesh;
 	int nodes = out.numberofpoints;
 	int elems = out.numberoftetrahedra;
 

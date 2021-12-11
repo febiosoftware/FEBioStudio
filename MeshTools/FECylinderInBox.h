@@ -37,7 +37,7 @@ public:
 public:
 	FECylinderInBox();
 	FECylinderInBox(GCylinderInBox* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	int		m_nelem;

@@ -52,13 +52,13 @@ FETorus::FETorus(GTorus* po)
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FEMesh* FETorus::BuildMesh()
+FSMesh* FETorus::BuildMesh()
 {
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
 
-FEMesh* FETorus::BuildMultiBlockMesh()
+FSMesh* FETorus::BuildMultiBlockMesh()
 {
 	// get the object parameters
 	double Ro = m_pobj->GetFloatValue(GTorus::RIN);
@@ -297,7 +297,7 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 	return FEMultiBlockMesh::BuildMesh();
 }
 
-FEMesh* FETorus::BuildMeshLegacy()
+FSMesh* FETorus::BuildMeshLegacy()
 {
 	assert(m_pobj);
 
@@ -324,7 +324,7 @@ FEMesh* FETorus::BuildMeshLegacy()
 	int elems = ns*(nd*nd+4*nd*nd);
 
 	// allocate storage for mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems);
 
 	// --- create the first layer of nodes ---
@@ -476,7 +476,7 @@ FEMesh* FETorus::BuildMeshLegacy()
 	return pm;
 }
 
-void FETorus::BuildFaces(FEMesh* pm)
+void FETorus::BuildFaces(FSMesh* pm)
 {
 	int nd = 2*m_nd;
 	int ns = 4*m_ns;
@@ -497,7 +497,7 @@ void FETorus::BuildFaces(FEMesh* pm)
 		}
 }
 
-void FETorus::BuildEdges(FEMesh* pm)
+void FETorus::BuildEdges(FSMesh* pm)
 {
 	int nd = 2*m_nd;
 	int ns = 4*m_ns;

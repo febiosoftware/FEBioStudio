@@ -657,7 +657,7 @@ double Area2(DynamicMesh2D::FACEP fp)
 	return Area2(fp->node[0]->r, fp->node[1]->r, fp->node[2]->r);
 }
 
-FEMesh* FECurveIntersect2D::Apply(FEMesh* pm)
+FSMesh* FECurveIntersect2D::Apply(FSMesh* pm)
 {
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_TRI3) == false) return 0;
@@ -751,7 +751,7 @@ FEMesh* FECurveIntersect2D::Apply(FEMesh* pm)
 	return BuildFEMesh(dyna);
 }
 
-void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FEMesh* pm)
+void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FSMesh* pm)
 {
 	// build the nodes
 	int NN = pm->Nodes();
@@ -793,7 +793,7 @@ void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FEMesh* pm)
 	}
 }
 
-FEMesh* FECurveIntersect2D::BuildFEMesh(DynamicMesh2D& dyna)
+FSMesh* FECurveIntersect2D::BuildFEMesh(DynamicMesh2D& dyna)
 {
 	DynamicMesh2D::NodeIterator nodePtr(dyna);
 	for (;nodePtr.isValid(); ++nodePtr) nodePtr->ntag = -1;
@@ -814,7 +814,7 @@ FEMesh* FECurveIntersect2D::BuildFEMesh(DynamicMesh2D& dyna)
 	int NN = nodes;
 	int NF = dyna.Faces();
 
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(NN, NF);
 
 	nodePtr.reset();

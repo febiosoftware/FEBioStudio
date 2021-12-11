@@ -35,24 +35,24 @@ FEAutoPartition::FEAutoPartition() : FEModifier("Auto Partition")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEAutoPartition::Apply(FEMesh* pm)
+FSMesh* FEAutoPartition::Apply(FSMesh* pm)
 {
 	double w = GetFloatValue(0);
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.AutoPartition(w);
 	return newMesh;
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEAutoPartition::Apply(FEGroup* pg)
+FSMesh* FEAutoPartition::Apply(FEGroup* pg)
 {
 	if (pg == nullptr) return nullptr;
-	FEMesh* pm = pg->GetMesh();
+	FSMesh* pm = pg->GetMesh();
 	if (pm == nullptr) return nullptr;
 
 	double w = GetFloatValue(0);
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 
 	if (dynamic_cast<FEEdgeSet*>(pg))
@@ -86,12 +86,12 @@ FERebuildMesh::FERebuildMesh() : FEModifier("Rebuild mesh")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FERebuildMesh::Apply(FEMesh* pm)
+FSMesh* FERebuildMesh::Apply(FSMesh* pm)
 {
 	bool repartition = GetBoolValue(0);
 	double w = GetFloatValue(1);
 
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.RebuildMesh(w, repartition);
 	return newMesh;

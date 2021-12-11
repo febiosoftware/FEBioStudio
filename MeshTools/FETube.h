@@ -39,14 +39,14 @@ public:
 public:
 	FETube(){}
 	FETube(GTube* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiBlockMesh();
+	FSMesh* BuildMeshLegacy();
+	FSMesh* BuildMultiBlockMesh();
 
 protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k)
 	{
@@ -71,11 +71,11 @@ public:
 public:
 	FETube2(){}
 	FETube2(GTube2* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k)
 	{

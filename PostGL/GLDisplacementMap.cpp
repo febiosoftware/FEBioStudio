@@ -87,7 +87,7 @@ void CGLDisplacementMap::Activate(bool b)
 		CGLModel* po = GetModel();
 		FEState* state = po->GetActiveState();
 		Post::FERefState& ref = *state->m_ref;
-		FEMeshBase* pm = state->GetFEMesh();
+		FSMeshBase* pm = state->GetFEMesh();
 		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).r = to_vec3d(ref.m_Node[i].m_rt);
 		pm->UpdateNormals();
 	}
@@ -100,7 +100,7 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 	UpdateData();
 
 	CGLModel* po = GetModel();
-	FEMeshBase* pm = po->GetActiveMesh();
+	FSMeshBase* pm = po->GetActiveMesh();
 	FEPostModel* pfem = po->GetFSModel();
 
 	// get the number of states and make sure we have something
@@ -178,7 +178,7 @@ void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 		return;
 	}
 
-	FEMeshBase* pm = pfem->GetState(ntime)->GetFEMesh();
+	FSMeshBase* pm = pfem->GetState(ntime)->GetFEMesh();
 	if (pfem == nullptr) {
 		m_ntag.clear(); return;
 	}
@@ -217,7 +217,7 @@ void CGLDisplacementMap::UpdateNodes()
 {
 	CGLModel* po = GetModel();
 	FEState* state = po->GetActiveState();
-	FEMeshBase* pm = po->GetActiveMesh();
+	FSMeshBase* pm = po->GetActiveMesh();
 
 	if (m_du.empty()) return;
 	assert(m_du.size() == pm->Nodes());

@@ -273,7 +273,7 @@ mat3d FSAxisMaterial::GetMatAxes(FEElementRef& el)
     {
         case FE_AXES_LOCAL:
         {
-            FECoreMesh* pm = el.m_pmesh;
+            FSCoreMesh* pm = el.m_pmesh;
             vec3d r1 = pm->Node(el->m_node[m_n[0] - 1]).r;
             vec3d r2 = pm->Node(el->m_node[m_n[1] - 1]).r;
             vec3d r3 = pm->Node(el->m_node[m_n[2] - 1]).r;
@@ -327,7 +327,7 @@ mat3d FSAxisMaterial::GetMatAxes(FEElementRef& el)
 		case FE_AXES_CYLINDRICAL:
 		{
 			// we'll use the element center as the reference point
-			FECoreMesh* pm = el.m_pmesh;
+			FSCoreMesh* pm = el.m_pmesh;
 			int n = el->Nodes();
 			vec3d p(0, 0, 0);
 			for (int i = 0; i < n; ++i) p += pm->NodePosition(el->m_node[i]);
@@ -370,7 +370,7 @@ mat3d FSAxisMaterial::GetMatAxes(FEElementRef& el)
 		case FE_AXES_SPHERICAL:
 		{
 			// we'll use the element center as the reference point
-			FECoreMesh* pm = el.m_pmesh;
+			FSCoreMesh* pm = el.m_pmesh;
 			int n = el->Nodes();
 			vec3d a(0, 0, 0);
 			for (int i = 0; i < n; ++i) a += pm->NodePosition(el->m_node[i]);

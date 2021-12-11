@@ -43,7 +43,7 @@ class FEDomain
 public:
     //! constructor
     FEDomain() { m_pmesh = 0; };
-    FEDomain(FEMesh* pm) { m_pmesh = pm; }
+    FEDomain(FSMesh* pm) { m_pmesh = pm; }
     
     //! destructor
     ~FEDomain();
@@ -165,7 +165,7 @@ public:
     bool MeshDomain();
     
 public:
-    FEMesh* m_pmesh;
+    FSMesh* m_pmesh;
 };
 
 //-------------------------------------------------------------------------------

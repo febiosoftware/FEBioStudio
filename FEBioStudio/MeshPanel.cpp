@@ -123,7 +123,7 @@ void MeshingThread::run()
 {
 	m_mesher = m_po->GetFEMesher();
 	if (m_mesher) m_mesher->SetErrorMessage("");
-	FEMesh* mesh = m_po->BuildMesh();
+	FSMesh* mesh = m_po->BuildMesh();
 	emit resultReady(mesh != nullptr);
 }
 
@@ -285,7 +285,7 @@ void CMeshPanel::Update(bool breset)
 			}
 		}
 
-		FEMesh* mesh = activeObject->GetFEMesh();
+		FSMesh* mesh = activeObject->GetFEMesh();
 		if (mesh)
 		{
 			// show modifiers for non-editable meshes
@@ -368,7 +368,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	if (dlg.exec())
 	{
 		// see if the meshing was successful
-		FEMesh* mesh = activeObject->GetFEMesh();
+		FSMesh* mesh = activeObject->GetFEMesh();
 		if (mesh == nullptr)
 		{
 			QString errMsg = QString::fromStdString(mesher->GetErrorMessage());

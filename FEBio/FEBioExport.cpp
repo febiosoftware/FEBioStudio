@@ -309,7 +309,7 @@ bool FEBioExport::PrepareExport(FSProject& prj)
 	int noff = 1;
 	for (int i = 0; i<model.Objects(); ++i)
 	{
-		FECoreMesh* pm = model.Object(i)->GetFEMesh();
+		FSCoreMesh* pm = model.Object(i)->GetFEMesh();
 		if (pm == 0) return errf("Not all objects are meshed.");
 		for (int j = 0; j<pm->Nodes(); ++j) pm->Node(j).m_nid = noff++;
 	}

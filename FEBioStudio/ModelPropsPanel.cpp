@@ -811,7 +811,7 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 		FEGroup* pg = dynamic_cast<FEGroup*>(item);
 		if (pg)
 		{
-			FEMesh* mesh = pg->GetMesh();
+			FSMesh* mesh = pg->GetMesh();
 			if (mesh)
 			{
 				GObject* po = mesh->GetGObject();
@@ -1506,7 +1506,7 @@ void CModelPropsPanel::selSelection(int n)
 			{
 				pdoc->SetSelectionMode(SELECT_OBJECT);
 				FEGroup* pg = dynamic_cast<FEGroup*>(pl);
-				FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
+				FSMesh* pm = dynamic_cast<FSMesh*>(pg->GetMesh());
 				assert(pm);
 				switch (pg->Type())
 				{

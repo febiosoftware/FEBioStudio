@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "FENodeElementList.h"
 #include "FENodeFaceList.h"
 
-FENodeNodeList::FENodeNodeList(FEMesh* pm, bool preservePartitions)
+FENodeNodeList::FENodeNodeList(FSMesh* pm, bool preservePartitions)
 {
 	Build(pm, preservePartitions);
 }
@@ -44,7 +44,7 @@ FENodeNodeList::~FENodeNodeList()
 {
 }
 
-void FENodeNodeList::Build(FEMesh* pm, bool preservePartitions)
+void FENodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 {
 	assert(pm);
 	if (pm == 0) return;

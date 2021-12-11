@@ -708,7 +708,7 @@ int GModel::FENodes()
 	int nodes = 0;
 	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
+		FSMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		if (pm) nodes += pm->Nodes();
 	}
 	return nodes;
@@ -721,7 +721,7 @@ int GModel::FEFaces()
 	int faces = 0;
 	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
+		FSMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		if (pm) faces += pm->Faces();
 	}
 	return faces;
@@ -734,7 +734,7 @@ int GModel::Elements()
 	int elems = 0;
 	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
+		FSMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		if (pm) elems += pm->Elements();
 	}
 	return elems;
@@ -747,7 +747,7 @@ int GModel::SolidElements()
 	int elems = 0;
 	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
+		FSMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		for (int j=0; j<pm->Elements(); ++j)
 		{
 			FEElement& el = pm->Element(j);
@@ -764,7 +764,7 @@ int GModel::ShellElements()
 	int elems = 0;
 	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
+		FSMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		for (int j=0; j<pm->Elements(); ++j)
 		{
 			FEElement& el = pm->Element(j);
@@ -900,7 +900,7 @@ FEItemListBuilder* GModel::FindNamedSelection(int nid)
 	for (int n = 0; n<Objects(); ++n)
 	{
 		GObject* po = Object(n);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 
 		N = po->FEParts();
 		for (i = 0; i<N; ++i)
@@ -966,7 +966,7 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name)
 	for (int n = 0; n<Objects(); ++n)
 	{
 		GObject* po = Object(n);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 
 		N = po->FEParts();
 		for (i = 0; i<N; ++i)
@@ -1038,7 +1038,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 	for (int n = 0; n<Objects(); ++n)
 	{
 		GObject* po = Object(n);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 
 		if (ntype == DOMAIN_PART)
 		{
@@ -1183,7 +1183,7 @@ GObject* BuildObject(int ntype)
 	case GSHELL_TUBE        : po = new GThinTube      (); break;
 //	case GCURVE             : po = new GCurve         (); break;
 //	case GCURVE_CIRCLE      : po = new GCircle        (); break;
-	case GMESH_OBJECT       : po = new GMeshObject    ((FEMesh*)0); break;
+	case GMESH_OBJECT       : po = new GMeshObject    ((FSMesh*)0); break;
 	case GMODIFIED_OBJECT   : po = new GModifiedObject(0); break;
 	case GSLICE		        : po = new GSlice         (); break;
 	case GTRUNC_ELLIPSOID   : po = new GTruncatedEllipsoid(); break;
@@ -1809,7 +1809,7 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 		for (int i = 0; i<sel->Count(); ++i)
 		{
 			GObject* po = sel->Object(i);
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm == 0)
 			{
 				return nullptr;
@@ -1895,7 +1895,7 @@ GObject* GModel::MergeDiscreteObject(vector<GObject*> discreteObjects, vector<GO
 	}
 
 	// we'll need the mesh of the new object
-	FEMesh* pm = newObj->GetFEMesh();
+	FSMesh* pm = newObj->GetFEMesh();
 
 	// now, insert the nodes of the "discrete" objects
 	for (int n=0; n<discreteObjects.size(); ++n)

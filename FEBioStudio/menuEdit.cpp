@@ -101,9 +101,9 @@ void CMainWindow::on_actionClearSelection_triggered()
 		int nsel = doc->GetSelectionMode();
 		GModel* mdl = doc->GetGModel();
 		GObject* po = doc->GetActiveObject();
-		FEMesh* pm = (po ? po->GetFEMesh() : 0);
-		FEMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
-		FELineMesh* pml = (po ? po->GetEditableLineMesh() : 0);
+		FSMesh* pm = (po ? po->GetFEMesh() : 0);
+		FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
+		FSLineMesh* pml = (po ? po->GetEditableLineMesh() : 0);
 		switch (item)
 		{
 		case ITEM_MESH:
@@ -340,7 +340,7 @@ void CMainWindow::on_actionFind_triggered()
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	int nitem = doc->GetItemMode();
@@ -452,8 +452,8 @@ void CMainWindow::on_actionToggleVisible_triggered()
 			GObject* po = doc->GetActiveObject();
 			if (po == 0) return;
 
-			FEMesh* pm = po->GetFEMesh();
-			FEMeshBase* pmb = po->GetEditableMesh();
+			FSMesh* pm = po->GetFEMesh();
+			FSMeshBase* pmb = po->GetEditableMesh();
 
 			switch (nitem)
 			{
@@ -1068,7 +1068,7 @@ void CMainWindow::on_actionFaceToElem_triggered()
 	GObject* po = doc->GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* mesh = po->GetFEMesh();
+	FSMesh* mesh = po->GetFEMesh();
 	if (mesh == nullptr) return;
 
 	vector<int> selectedElems = mesh->GetElementsFromSelectedFaces();
@@ -1113,7 +1113,7 @@ void CMainWindow::on_actionSelectOverlap_triggered()
 	if (select.isEmpty() == false)
 	{
 		GObject* trg = mdl.FindObject(select.toStdString());
-		FEMesh* mesh = po->GetFEMesh();
+		FSMesh* mesh = po->GetFEMesh();
 		std::vector<int> faceList = MeshTools::FindSurfaceOverlap(mesh, trg->GetEditableMesh());
 		
 		SetItemSelectionMode(SELECT_OBJECT, ITEM_FACE);
@@ -1135,7 +1135,7 @@ void CMainWindow::on_actionSelectIsolatedVertices_triggered()
 	GObject* po = doc->GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* mesh = po->GetFEMesh();
+	FSMesh* mesh = po->GetFEMesh();
 	if (mesh == nullptr) return;
 	
 	mesh->TagAllNodes(0);
@@ -1174,8 +1174,8 @@ void CMainWindow::on_actionGrowSelection_triggered()
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
-	FEMeshBase* pmb = pm;
+	FSMesh* pm = po->GetFEMesh();
+	FSMeshBase* pmb = pm;
 	if (pm == nullptr)
 	{
 		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
@@ -1206,8 +1206,8 @@ void CMainWindow::on_actionShrinkSelection_triggered()
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
-	FEMeshBase* pmb = pm;
+	FSMesh* pm = po->GetFEMesh();
+	FSMeshBase* pmb = pm;
 	if (pm == nullptr)
 	{
 		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);

@@ -36,10 +36,10 @@ FEInflateMesh::FEInflateMesh() : FEModifier("Inflate")
 	AddBoolParam(false, "symmetric mesh bias");
 }
 
-FEMesh* FEInflateMesh::Apply(FEMesh* pm)
+FSMesh* FEInflateMesh::Apply(FSMesh* pm)
 {
 	// First, create a temp mesh that will be squised
-	FEMesh tmp(*pm);
+	FSMesh tmp(*pm);
 
 	// shrink the mesh
 	ShrinkMesh(tmp);
@@ -55,14 +55,14 @@ FEMesh* FEInflateMesh::Apply(FEMesh* pm)
 	extrude.SetSegments(nseg);
 	extrude.SetMeshBiasFactor(rbias);
 	extrude.SetSymmetricBias(symmBias);
-	FEMesh* newMesh = extrude.Apply(&tmp);
+	FSMesh* newMesh = extrude.Apply(&tmp);
 
 	// all done, good to go
 	return newMesh;
 }
 
 // TODO: The algorithm above could invert elements. We should try to prevent this
-void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
+void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 {
 	// figure out which nodes to move
 	mesh.TagAllNodes(-1);

@@ -55,7 +55,7 @@ bool FETetGenExport::Write(const char *szfile)
 	int n = 1;
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		if (pm == 0) return false;
 		int NN = pm->Nodes();
 		for (int j=0; j<NN; ++j, ++n)
@@ -73,7 +73,7 @@ bool FETetGenExport::Write(const char *szfile)
 	n = 1;
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		if (pm == 0) return false;
 		int NE = pm->Elements();
 		for (int j=0; j<NE; ++j, ++n)

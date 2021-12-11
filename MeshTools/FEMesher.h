@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/FSThreadedTask.h>
 
 class GObject;
-class FEMesh;
+class FSMesh;
 
 //-----------------------------------------------------------------------------
 // The FEMesher class takes a geometry object and converts it to a finite
@@ -47,7 +47,7 @@ public:
 	virtual ~FEMesher();
 
 	// build the mesh
-	virtual FEMesh*	BuildMesh() = 0;
+	virtual FSMesh*	BuildMesh() = 0;
 
 	// save/load
 	void Save(OArchive& ar);

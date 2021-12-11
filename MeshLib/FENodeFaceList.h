@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <vector>
 
 class FEFace;
-class FEMeshBase;
+class FSMeshBase;
 
 struct NodeFaceRef {
 	int		fid;	// face index (into mesh' Face array)
@@ -41,8 +41,8 @@ public:
 	FENodeFaceList();
 	~FENodeFaceList(void);
 
-	void Build(FEMeshBase* pm);
-	bool BuildSorted(FEMeshBase* pm);
+	void Build(FSMeshBase* pm);
+	bool BuildSorted(FSMeshBase* pm);
 
 	void Clear();
 
@@ -64,6 +64,6 @@ protected:
 	bool Sort(int node);
 
 protected:
-	FEMeshBase*	m_pm;
+	FSMeshBase*	m_pm;
 	std::vector< std::vector<NodeFaceRef> >	m_face;
 };

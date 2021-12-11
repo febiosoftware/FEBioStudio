@@ -80,7 +80,7 @@ void FEMultiBlockMesh::SetElementType(int elemType)
 //-----------------------------------------------------------------------------
 // build the FE mesh
 //
-FEMesh* FEMultiBlockMesh::BuildMesh()
+FSMesh* FEMultiBlockMesh::BuildMesh()
 {
 	if ((m_elemType != FE_HEX8) && (m_elemType != FE_HEX20) && (m_elemType != FE_HEX27))
 	{
@@ -90,7 +90,7 @@ FEMesh* FEMultiBlockMesh::BuildMesh()
 	m_quadMesh = (m_elemType != FE_HEX8);
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	m_pm = pm;
 
 	// clear the node lists
@@ -328,7 +328,7 @@ int FEMultiBlockMesh::AddFENode(const vec3d& r, int gid)
 //-----------------------------------------------------------------------------
 // build the FE nodes
 //
-void FEMultiBlockMesh::BuildFENodes(FEMesh *pm)
+void FEMultiBlockMesh::BuildFENodes(FSMesh *pm)
 {
 	int NB = m_MBlock.size();
 	int NF = m_MBFace.size();
@@ -413,7 +413,7 @@ int FEMultiBlockMesh::AddFEEdgeNode(MBEdge& E, const MQPoint& q)
 //-----------------------------------------------------------------------------
 // Build the FE edges
 //
-void FEMultiBlockMesh::BuildFEEdges(FEMesh* pm)
+void FEMultiBlockMesh::BuildFEEdges(FSMesh* pm)
 {
 	// count edges
 	int edges = 0;
@@ -507,7 +507,7 @@ int FEMultiBlockMesh::AddFEFaceNode(MBFace& F, const MQPoint& q)
 //-----------------------------------------------------------------------------
 // Build the FE faces
 //
-void FEMultiBlockMesh::BuildFEFaces(FEMesh* pm)
+void FEMultiBlockMesh::BuildFEFaces(FSMesh* pm)
 {
 	// count faces
 	int faces = 0;
@@ -644,7 +644,7 @@ int FEMultiBlockMesh::AddFEElemNode(MBBlock& B, const MQPoint& q)
 //-----------------------------------------------------------------------------
 // build the FE elements
 //
-void FEMultiBlockMesh::BuildFEElements(FEMesh* pm)
+void FEMultiBlockMesh::BuildFEElements(FSMesh* pm)
 {
 	int NB = m_MBlock.size();
 

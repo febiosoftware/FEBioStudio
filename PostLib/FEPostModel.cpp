@@ -1147,8 +1147,8 @@ bool FEPostModel::Merge(FEPostModel* fem)
 	for (int i = 0; i < NMAT1; ++i) m_Mat.push_back(*fem->GetMaterial(i));
 
 	// get the meshes
-	FEMesh& mesh0 = *GetFEMesh(0);
-	FEMesh& mesh1 = *fem->GetFEMesh(0);
+	FSMesh& mesh0 = *GetFEMesh(0);
+	FSMesh& mesh1 = *fem->GetFEMesh(0);
 
 	int NN0 = mesh0.Nodes();
 	int NN1 = mesh1.Nodes();

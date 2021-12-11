@@ -48,7 +48,7 @@ FEMMGRemesh::FEMMGRemesh() : FEModifier("MMG Remesh")
 	AddBoolParam(true, "Only remesh selection");
 }
 
-FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
+FSMesh* FEMMGRemesh::Apply(FSMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
 	if (pm->IsType(FE_TET4))
@@ -60,10 +60,10 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 	else { SetError("This is not a TET4 mesh"); return 0; }
 }
 
-FEMesh* FEMMGRemesh::Apply(FEGroup* pg)
+FSMesh* FEMMGRemesh::Apply(FEGroup* pg)
 {
 	if (pg == nullptr) return nullptr;
-	FEMesh* pm = pg->GetMesh();
+	FSMesh* pm = pg->GetMesh();
 	if (pm == nullptr) return nullptr;
 	if (pm->IsType(FE_TET4) == false) return Apply(pm);
 
@@ -107,7 +107,7 @@ FEMesh* FEMMGRemesh::Apply(FEGroup* pg)
 	else return Apply(pg->GetMesh());
 }
 
-FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
+FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 {
 #ifdef HAS_MMG
 	int NE = pm->Elements();
@@ -284,7 +284,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 	}
 
 	// convert back to prv mesh
-	FEMesh* newMesh = new FEMesh();
+	FSMesh* newMesh = new FSMesh();
 
 	// get the new mesh sizes
 	MMG3D_Get_meshSize(mmgMesh, &NN, &NE, NULL, &NF, NULL, &NC);
@@ -359,7 +359,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 #endif
 }
 
-FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
+FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 {
 	assert(pm->IsType(FE_TRI3));
 
@@ -531,7 +531,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 	}
 
 	// convert back to prv mesh
-	FEMesh* newMesh = new FEMesh();
+	FSMesh* newMesh = new FSMesh();
 
 	// get the new mesh sizes
 	MMGS_Get_meshSize(mmgMesh, &NN, &NF, &NE);

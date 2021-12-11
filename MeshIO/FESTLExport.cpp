@@ -42,7 +42,7 @@ void stl_write_face(FILE* fp, const vec3d& fn, const vec3d& r0, const vec3d& r1,
 	fprintf(fp, "endfacet\n");
 }
 
-void stl_write_solid(FILE* fp, FEMeshBase* pm, const char* solidName)
+void stl_write_solid(FILE* fp, FSMeshBase* pm, const char* solidName)
 {
 	fprintf(fp, "solid %s\n", solidName);
 
@@ -109,7 +109,7 @@ bool FESTLExport::Write(const char* szfile)
 		GObject* po = model.Object(n);
 		if ((nsel==0) || po->IsSelected())
 		{
-			FEMeshBase* pm = po->GetEditableMesh();
+			FSMeshBase* pm = po->GetEditableMesh();
 			if (pm == 0) return errf("Not all objects are meshed.");
 			const char* szname = po->GetName().c_str();
 			if (strlen(szname) == 0) szname = "object";
@@ -127,7 +127,7 @@ bool FESTLExport::Write(const char* szfile, GObject* po)
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 	if (pm == 0) return errf("Not all objects are meshed.");
 	const char* szname = po->GetName().c_str();
 	if (strlen(szname) == 0) szname = "object";

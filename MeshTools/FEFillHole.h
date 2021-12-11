@@ -92,7 +92,7 @@ public:
 
 
 private:
-	// Find the ring based on a node (TODO: should I move this to the FEMesh class?)
+	// Find the ring based on a node (TODO: should I move this to the FSMesh class?)
 	bool FindEdgeRing(FESurfaceMesh& mesh, int node, EdgeRing& ring);
 	
 	// Find the approximate normal of a ring

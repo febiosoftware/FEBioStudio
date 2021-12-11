@@ -32,7 +32,7 @@ SOFTWARE.*/
 using namespace MeshTools;
 //using namespace std;
 
-std::vector<int> MeshTools::FindSurfaceOverlap(FEMesh* mesh, FEMeshBase* trg)
+std::vector<int> MeshTools::FindSurfaceOverlap(FSMesh* mesh, FSMeshBase* trg)
 {
 	// loop over all of the surface nodes
 	mesh->TagAllNodes(0);

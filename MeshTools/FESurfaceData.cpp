@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FESurfaceData.h"
 #include <MeshLib/FEMesh.h>
 
-FESurfaceData::FESurfaceData(FEMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA), m_surface(nullptr)
+FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA), m_surface(nullptr)
 {
 	SetMesh(mesh);
 }
@@ -54,7 +54,7 @@ void FESurfaceData::operator = (const FESurfaceData& d)
 	m_surface = d.m_surface;
 }
 
-void FESurfaceData::Create(FEMesh* mesh, FESurface* surface, FEMeshData::DATA_TYPE dataType)
+void FESurfaceData::Create(FSMesh* mesh, FESurface* surface, FEMeshData::DATA_TYPE dataType)
 {
 	SetMesh(mesh);
 	m_surface = surface;

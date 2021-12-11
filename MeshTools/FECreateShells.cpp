@@ -34,7 +34,7 @@ FECreateShells::FECreateShells() : FEModifier("Create Shells")
 }
 
 
-FEMesh* FECreateShells::Apply(FEGroup* pg)
+FSMesh* FECreateShells::Apply(FEGroup* pg)
 {
     if (pg->Type() != FE_SURFACE)
     {
@@ -54,8 +54,8 @@ FEMesh* FECreateShells::Apply(FEGroup* pg)
         faceList.push_back(*it);
     }
     
-    FEMesh* pm = pg->GetMesh();
-    FEMesh* pnm = new FEMesh(*pm);
+    FSMesh* pm = pg->GetMesh();
+    FSMesh* pnm = new FSMesh(*pm);
     CreateShells(pnm, faceList);
     
     return pnm;
@@ -63,7 +63,7 @@ FEMesh* FECreateShells::Apply(FEGroup* pg)
 
 
 
-FEMesh* FECreateShells::Apply(FEMesh* pm)
+FSMesh* FECreateShells::Apply(FSMesh* pm)
 {
     vector<int> faceList;
     for (int i=0; i<pm->Faces(); ++i)
@@ -71,7 +71,7 @@ FEMesh* FECreateShells::Apply(FEMesh* pm)
         if (pm->Face(i).IsSelected()) faceList.push_back(i);
     }
     
-    FEMesh* pnm = new FEMesh(*pm);
+    FSMesh* pnm = new FSMesh(*pm);
     CreateShells(pnm, faceList);
     
     return pnm;
@@ -79,7 +79,7 @@ FEMesh* FECreateShells::Apply(FEMesh* pm)
 
 
 
-void FECreateShells::CreateShells(FEMesh* pm, vector<int>& faceList){
+void FECreateShells::CreateShells(FSMesh* pm, vector<int>& faceList){
     
     //get the user value
     double thick = GetFloatValue(0);

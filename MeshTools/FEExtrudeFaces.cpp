@@ -62,7 +62,7 @@ void FEExtrudeFaces::SetSymmetricBias(bool b)
 	SetBoolValue(4, b);
 }
 
-FEMesh* FEExtrudeFaces::Apply(FEGroup* pg)
+FSMesh* FEExtrudeFaces::Apply(FEGroup* pg)
 {
 	if (pg->Type() != FE_SURFACE)
 	{
@@ -82,14 +82,14 @@ FEMesh* FEExtrudeFaces::Apply(FEGroup* pg)
 		faceList.push_back(*it);
 	}
 
-	FEMesh* pm = pg->GetMesh();
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pm = pg->GetMesh();
+	FSMesh* pnm = new FSMesh(*pm);
 	Extrude(pnm, faceList);
 
 	return pnm;
 }
 
-FEMesh* FEExtrudeFaces::Apply(FEMesh* pm) 
+FSMesh* FEExtrudeFaces::Apply(FSMesh* pm) 
 {
 	vector<int> faceList;
 	for (int i=0; i<pm->Faces(); ++i)
@@ -97,13 +97,13 @@ FEMesh* FEExtrudeFaces::Apply(FEMesh* pm)
 		if (pm->Face(i).IsSelected()) faceList.push_back(i);
 	}	
 
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 	Extrude(pnm, faceList);
 
 	return pnm;
 }
 
-void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
+void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 {
 	// let's mark the nodes that need to be copied
 	pm->TagAllNodes(-1);

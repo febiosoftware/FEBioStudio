@@ -188,7 +188,7 @@ bool FEHMASCIIimport::BuildMesh(FSModel& fem)
 	int parts = (int)m_Part.size();
 
 	// create the mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// find the node ID ranges

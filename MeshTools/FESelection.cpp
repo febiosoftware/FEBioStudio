@@ -958,7 +958,7 @@ void GDiscreteSelection::Update()
 //////////////////////////////////////////////////////////////////////
 
 
-FEElementSelection::Iterator::Iterator(FEMesh* pm)
+FEElementSelection::Iterator::Iterator(FSMesh* pm)
 {
 	m_pm = pm;
 	m_n = 0;
@@ -1189,7 +1189,7 @@ quatd FEElementSelection::GetOrientation()
 
 FEItemListBuilder* FEElementSelection::CreateItemList()
 {
-	FEMesh* pm = GetMesh();
+	FSMesh* pm = GetMesh();
 	GObject* po = pm->GetGObject();
 	vector<int> elset;
 	for (int i=0; i<pm->Elements(); ++i) 
@@ -1412,7 +1412,7 @@ quatd FEFaceSelection::GetOrientation()
 	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
-FEFaceSelection::Iterator::Iterator(FEMeshBase* pm)
+FEFaceSelection::Iterator::Iterator(FSMeshBase* pm)
 { 
 	m_pm = pm;
 	m_n = 0;
@@ -1429,7 +1429,7 @@ void FEFaceSelection::Iterator::operator ++()
 
 FEItemListBuilder* FEFaceSelection::CreateItemList()
 {
-	FEMesh* pm = dynamic_cast<FEMesh*>(GetMesh());
+	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
 
 	GObject* po = pm->GetGObject();
@@ -1651,7 +1651,7 @@ quatd FEEdgeSelection::GetOrientation()
 	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
-FEEdgeSelection::Iterator::Iterator(FELineMesh* pm)
+FEEdgeSelection::Iterator::Iterator(FSLineMesh* pm)
 { 
 	m_pm = pm;
 	m_n = 0;
@@ -1668,7 +1668,7 @@ void FEEdgeSelection::Iterator::operator ++()
 
 FEItemListBuilder* FEEdgeSelection::CreateItemList()
 {
-	FEMesh* pm = dynamic_cast<FEMesh*>(GetMesh());
+	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
 	GObject* po = pm->GetGObject();
 	vector<int> es;
@@ -1839,7 +1839,7 @@ quatd FENodeSelection::GetOrientation()
 	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
-FENodeSelection::Iterator::Iterator(FELineMesh* pm)
+FENodeSelection::Iterator::Iterator(FSLineMesh* pm)
 { 
 	m_pm = pm;
 	m_n = 0;
@@ -1855,7 +1855,7 @@ void FENodeSelection::Iterator::operator ++()
 
 FEItemListBuilder* FENodeSelection::CreateItemList()
 {
-	FEMesh* pm = dynamic_cast<FEMesh*>(GetMesh());
+	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
 
 	GObject* po = pm->GetGObject();

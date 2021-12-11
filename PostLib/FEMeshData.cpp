@@ -1252,7 +1252,7 @@ void FECurvature::eval_curvature(int n, float* f, int m)
 {
 	// get the model's surface
 	FEPostModel* pfem = GetFSModel();
-	FEMeshBase* pmesh = GetFEState()->GetFEMesh();
+	FSMeshBase* pmesh = GetFEState()->GetFEMesh();
 
 	// get the face
 	FEFace& face = pmesh->Face(n);

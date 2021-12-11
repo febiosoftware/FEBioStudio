@@ -50,7 +50,7 @@ FEShellTorus::FEShellTorus(GTorus* po)
 	AddIntParam(m_ns, "ns", "Segments");
 }
 
-FEMesh* FEShellTorus::BuildMesh()
+FSMesh* FEShellTorus::BuildMesh()
 {
 	int i, j;
 
@@ -79,7 +79,7 @@ FEMesh* FEShellTorus::BuildMesh()
 	int elems = nd*ns;
 
 	// allocate storage for mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create nodes
@@ -144,7 +144,7 @@ FEMesh* FEShellTorus::BuildMesh()
 	return pm;
 }
 
-void FEShellTorus::BuildNodes(FEMesh* pm)
+void FEShellTorus::BuildNodes(FSMesh* pm)
 {
 	pm->Node(NodeIndex(0,     0)).m_gid = 0;
 	pm->Node(NodeIndex(0,  m_ns)).m_gid = 1;
@@ -167,7 +167,7 @@ void FEShellTorus::BuildNodes(FEMesh* pm)
 	pm->Node(NodeIndex(3*m_nd,3*m_ns)).m_gid = 15;
 }
 
-void FEShellTorus::BuildFaces(FEMesh* pm)
+void FEShellTorus::BuildFaces(FSMesh* pm)
 {
 	int i;
 	int nfaces = pm->Elements();
@@ -189,7 +189,7 @@ void FEShellTorus::BuildFaces(FEMesh* pm)
 	}	
 }
 
-void FEShellTorus::BuildEdges(FEMesh* pm)
+void FEShellTorus::BuildEdges(FSMesh* pm)
 {
 	int i;
 	int nd = 4*m_nd;

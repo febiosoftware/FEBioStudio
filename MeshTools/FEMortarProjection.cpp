@@ -36,17 +36,17 @@ FEMortarProjection::FEMortarProjection()
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
+FSMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 {
 	// get the slave mesh
-	FEMesh* pms = pslave->GetMesh();
+	FSMesh* pms = pslave->GetMesh();
 
 	// get the master mesh
-	FEMesh* pmm = pmaster->GetMesh();
+	FSMesh* pmm = pmaster->GetMesh();
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh();
-	FEMesh* ptri = new FEMesh();
+	FSMesh* pnew = new FSMesh();
+	FSMesh* ptri = new FSMesh();
 
 	// these polygons represent the projected slave, master, and intersection polygons
 	const int MAX_POINTS = 10;

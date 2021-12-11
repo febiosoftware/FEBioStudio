@@ -37,15 +37,15 @@ class FETetGenModifier : public FEModifier
 public:
 	FETetGenModifier();
 
-	FEMesh* Apply(FEMesh* pm);
-	FEMesh* Apply(FEGroup* pg);
+	FSMesh* Apply(FSMesh* pm);
+	FSMesh* Apply(FEGroup* pg);
 
 private:
-	bool build_tetgen_plc   (FEMesh* pm, tetgenio& in);
-	bool build_tetgen_remesh(FEMesh* pm, tetgenio& in);
+	bool build_tetgen_plc   (FSMesh* pm, tetgenio& in);
+	bool build_tetgen_remesh(FSMesh* pm, tetgenio& in);
 
-	FEMesh* CreateMesh(FEMesh* pm);
-	FEMesh* RefineMesh(FEMesh* pm);
+	FSMesh* CreateMesh(FSMesh* pm);
+	FSMesh* RefineMesh(FSMesh* pm);
 
 public:
 	double	m_tol;

@@ -484,7 +484,7 @@ void check_013(FSProject& prj, std::vector<FSObject*>& objList)
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
 		GObject* obj_i = mdl.Object(i);
-		FEMesh* pm = obj_i->GetFEMesh();
+		FSMesh* pm = obj_i->GetFEMesh();
 		if (pm)
 		{
 			int parts = obj_i->Parts();

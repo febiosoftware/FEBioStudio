@@ -1376,7 +1376,7 @@ void FEBioExport2::WriteGeometrySection()
 	}
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		
 		for (int j=0; j<pm->Elements(); ++j)
 		{
@@ -1439,7 +1439,7 @@ void FEBioExport2::WriteGeometryNodeSets()
 	for (int i=0; i<nobj; ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			int nset = po->FENodeSets();
@@ -1504,7 +1504,7 @@ void FEBioExport2::WriteGeometryNodes()
 		for (int i=0; i<model.Objects(); ++i)
 		{
 			GObject* po = model.Object(i);
-			FECoreMesh* pm = po->GetFEMesh();
+			FSCoreMesh* pm = po->GetFEMesh();
 
 			for (int j=0; j<pm->Nodes(); ++j, ++n)
 			{
@@ -1555,7 +1555,7 @@ void FEBioExport2::WriteGeometryPart(GPart* pg)
 	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
-	FECoreMesh* pm = po->GetFEMesh();
+	FSCoreMesh* pm = po->GetFEMesh();
 	int pid = pg->GetLocalID();
 
 	// Parts must be split up by element type
@@ -1660,7 +1660,7 @@ void FEBioExport2::WriteGeometryElementData()
 	for (int i=0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		int ND = pm->MeshDataFields();
 		const Transform& T = po->GetTransform();
 
@@ -2072,7 +2072,7 @@ void FEBioExport2::WriteContactWall(FSStep& s)
 					for (j=0; j<pg->Size(); ++j, ++pf)
 					{
 						FEFace& face = *(pf->m_pi);
-						FECoreMesh* pm = pf->m_pm;
+						FSCoreMesh* pm = pf->m_pm;
 						for (k=0; k<face.Nodes(); ++k) nn[k] = pm->Node(face.n[k]).m_nid;
 						switch(face.Nodes())
 						{
@@ -4789,7 +4789,7 @@ void FEBioExport2::WriteSurfaceSection(FEFaceList& s)
 		for (int i=0; i<NF; ++i, ++n, ++pf)
 		{
 			FEFace& face = *(pf->m_pi);
-			FECoreMesh* pm = pf->m_pm;
+			FSCoreMesh* pm = pf->m_pm;
 			FEElement& el = pm->Element(face.m_elem[0]);
 			nn[0] = el.m_ntag;
 			nn[1] = face.m_face+1;
@@ -4807,7 +4807,7 @@ void FEBioExport2::WriteSurfaceSection(FEFaceList& s)
 		for (int j=0; j<NF; ++j, ++n, ++pf)
 		{
 			FEFace& face = *(pf->m_pi);
-			FECoreMesh* pm = pf->m_pm;
+			FSCoreMesh* pm = pf->m_pm;
 			nfn = face.Nodes();
 			for (int k=0; k<nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
 			switch(nfn)

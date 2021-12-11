@@ -46,7 +46,7 @@ void GWrapModifier::Apply(GObject* po)
 	// make sure there is a target
 	if (m_po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	int i, j, k;
 
@@ -154,14 +154,14 @@ void GWrapModifier::Apply(GObject* po)
 void GWrapModifier::ClosestPoint(GObject *ps, vector<vec3d>& DS, vector<int>& tag)
 {
 	// get the target mesh
-	FEMesh* ptrg = m_po->GetFEMesh();
+	FSMesh* ptrg = m_po->GetFEMesh();
 
 	// create the node-face list for the target mesh
 	FENodeFaceList NFL;
 	NFL.Build(ptrg);
 
 	// get the source mesh
-	FEMesh* pm = ps->GetFEMesh();
+	FSMesh* pm = ps->GetFEMesh();
 
 /*	for (int i=0; i<pm->Nodes(); ++i)
 	{
@@ -215,10 +215,10 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 	int i, j;
 
 	// get the target mesh
-	FEMesh* ptrg = m_po->GetFEMesh();
+	FSMesh* ptrg = m_po->GetFEMesh();
 
 	// get the source mesh
-	FEMesh* pm = ps->GetFEMesh();
+	FSMesh* pm = ps->GetFEMesh();
 
 	// store the original positions of the mesh
 	vector<vec3d> r0; r0.resize(pm->Nodes());

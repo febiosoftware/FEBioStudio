@@ -101,7 +101,7 @@ private:
 
 private:
 	FEBioInputModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
-	FEMesh& GetFEMesh() { return *GetInstance().GetMesh(); }
+	FSMesh& GetFEMesh() { return *GetInstance().GetMesh(); }
 	FEBioMesh& GetFEBioMesh() { return GetFEBioModel().GetPart(0).GetFEBioMesh(); }
 	GMeshObject* GetGObject() { return GetInstance().GetGObject(); }
 };

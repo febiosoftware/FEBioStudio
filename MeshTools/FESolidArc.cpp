@@ -59,13 +59,13 @@ FESolidArc::FESolidArc(GSolidArc* po)
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FEMesh* FESolidArc::BuildMesh()
+FSMesh* FESolidArc::BuildMesh()
 {
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
 
-FEMesh* FESolidArc::BuildMultiBlockMesh()
+FSMesh* FESolidArc::BuildMultiBlockMesh()
 {
 	double R0 = m_pobj->GetFloatValue(GSolidArc::RIN);
 	double R1 = m_pobj->GetFloatValue(GSolidArc::ROUT);
@@ -142,7 +142,7 @@ FEMesh* FESolidArc::BuildMultiBlockMesh()
 	return FEMultiBlockMesh::BuildMesh();
 }
 
-FEMesh* FESolidArc::BuildMeshLegacy()
+FSMesh* FESolidArc::BuildMeshLegacy()
 {
 	assert(m_pobj);
 
@@ -185,7 +185,7 @@ FEMesh* FESolidArc::BuildMeshLegacy()
 	int nodes = (nd+1)*(nr+1)*(nz+1);
 	int elems = nd*nr*nz;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	double cosa, sina;
@@ -300,7 +300,7 @@ FEMesh* FESolidArc::BuildMeshLegacy()
 	return pm;
 }
 
-void FESolidArc::BuildFaces(FEMesh* pm)
+void FESolidArc::BuildFaces(FSMesh* pm)
 {
 	int i, j;
 
@@ -413,7 +413,7 @@ void FESolidArc::BuildFaces(FEMesh* pm)
 
 }
 
-void FESolidArc::BuildEdges(FEMesh* pm)
+void FESolidArc::BuildEdges(FSMesh* pm)
 {
 	int i;
 

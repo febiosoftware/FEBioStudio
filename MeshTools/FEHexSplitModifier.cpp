@@ -38,7 +38,7 @@ void FEHexSplitModifier::DoSurfaceSmoothing(bool b)
 	m_smoothSurface = b;
 }
 
-FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
+FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 {
 	// make sure we are dealing with a hex mesh
 	if (pm->IsType(FE_HEX8) == false) return 0;
@@ -64,7 +64,7 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 	int NE1 = 8*NE0;
 
 	// create new mesh
-	FEMesh* pmnew = new FEMesh;
+	FSMesh* pmnew = new FSMesh;
 	pmnew->Create(NN1, NE1);
 
 	// build face-edge table
@@ -244,7 +244,7 @@ void FEHex2DSplitModifier::DoSurfaceSmoothing(bool b)
 	m_smoothSurface = b;
 }
 
-FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
+FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 {
 	// make sure we are dealing with a hex mesh
 	if (pm->IsType(FE_HEX8) == false) return 0;
@@ -340,7 +340,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 	int NE1 = 4 * NE0;
 
 	// create new mesh
-	FEMesh* pmnew = new FEMesh;
+	FSMesh* pmnew = new FSMesh;
 	pmnew->Create(NN1, NE1);
 
 	// assign nodes

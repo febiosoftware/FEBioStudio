@@ -613,7 +613,7 @@ void FEBioFormat3::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 
 	// create nodes
 	int nn = (int)nodes.size();
-	FEMesh& mesh = *part->GetFEMesh();
+	FSMesh& mesh = *part->GetFEMesh();
 	int N0 = mesh.Nodes();
 	mesh.Create(N0 + nn, 0);
 
@@ -732,7 +732,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// create elements
-	FEMesh& mesh = *part->GetFEMesh();
+	FSMesh& mesh = *part->GetFEMesh();
 	int NTE = mesh.Elements();
 	mesh.Create(0, elems + NTE);
 
@@ -1089,8 +1089,8 @@ bool FEBioFormat3::ParseMeshDataSection(XMLTag& tag)
 	for (int i=0; i<febio.Instances(); ++i)
 	{
 		FEBioInputModel::PartInstance* instance = febio.GetInstance(i);
-		FEMesh* pdst = instance->GetMesh();
-		FEMesh* psrc = instance->GetPart()->GetFEMesh();
+		FSMesh* pdst = instance->GetMesh();
+		FSMesh* psrc = instance->GetPart()->GetFEMesh();
 
 		assert(pdst->Elements()==psrc->Elements());
 		for (int j=0; j<pdst->Elements(); ++j)
@@ -1132,7 +1132,7 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	FENodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
 	if (nodeSet)
 	{
-		FEMesh* feMesh = nodeSet->GetMesh();
+		FSMesh* feMesh = nodeSet->GetMesh();
 
 		FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
 
@@ -1180,7 +1180,7 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
 	FESurface* feSurf = feb.BuildFESurface(surf->cvalue());
-	FEMesh* feMesh = feSurf->GetMesh();
+	FSMesh* feMesh = feSurf->GetMesh();
 
 	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
 
@@ -1211,7 +1211,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		FEBioInputModel::Domain* dom = feb.FindDomain(szset);
 		if (dom)
 		{
-			FEMesh* mesh = dom->GetPart()->GetFEMesh();
+			FSMesh* mesh = dom->GetPart()->GetFEMesh();
 
 			double h[FEElement::MAX_NODES] = { 0 };
 			++tag;
@@ -1240,7 +1240,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		FEBioInputModel::Domain* dom = feb.FindDomain(szset);
 		if (dom)
 		{
-			FEMesh* mesh = dom->GetPart()->GetFEMesh();
+			FSMesh* mesh = dom->GetPart()->GetFEMesh();
 
 			vec3d a;
 			++tag;
@@ -1279,7 +1279,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		FEBioInputModel::Domain* dom = feb.FindDomain(szset);
 		if (dom)
 		{
-			FEMesh* mesh = dom->GetPart()->GetFEMesh();
+			FSMesh* mesh = dom->GetPart()->GetFEMesh();
 
 			vec3d a, b, c, d;
 			++tag;
@@ -1417,7 +1417,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		FEPart* pg = feb.BuildFEPart(set->cvalue());
 		if (pg == nullptr) throw XMLReader::InvalidAttributeValue(tag, "elem_set", set->cvalue());
 
-		FEMesh* mesh = pg->GetMesh();
+		FSMesh* mesh = pg->GetMesh();
 		FEElementData* elemData = mesh->AddElementDataField(name->cvalue(), pg, dataType);
 
 		double val;

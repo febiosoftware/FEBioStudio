@@ -166,7 +166,7 @@ bool AnsysImport::BuildMesh(FSModel &fem)
 	if (elems == 0) return errf("FATAL ERROR: No element data defined in file.");
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create nodes

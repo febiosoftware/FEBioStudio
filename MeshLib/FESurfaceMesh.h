@@ -36,7 +36,7 @@ class GLMesh;
 
 //-----------------------------------------------------------------------------
 // Class for representing surface meshes
-class FESurfaceMesh : public FEMeshBase
+class FESurfaceMesh : public FSMeshBase
 {
 public:
 	FESurfaceMesh();

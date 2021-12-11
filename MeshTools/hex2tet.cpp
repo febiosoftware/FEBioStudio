@@ -70,7 +70,7 @@ const int HT[11][6][4] = {
 //-----------------------------------------------------------------------------
 // This algorithm converts a hex mesh into a tet mesh by dividing all hex
 // elements into six tet elements. 
-FEMesh* FEHex2Tet::Apply(FEMesh* pm)
+FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 {
 	// get the mesh metrics
 	int NN0 = pm->Nodes();
@@ -98,7 +98,7 @@ FEMesh* FEHex2Tet::Apply(FEMesh* pm)
 	}
 
 	// create the new mesh
-	FEMesh* mesh = new FEMesh;
+	FSMesh* mesh = new FSMesh;
 
 	// allocate nodes and edges, since they are the same
 	mesh->Create(NN0, 0);

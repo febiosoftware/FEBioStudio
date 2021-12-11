@@ -164,7 +164,7 @@ bool IntersectQuad(const Ray& ray, const Quad& quad, Intersection& intersect)
 }
 
 //-----------------------------------------------------------------------------
-bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, Intersection& q)
+bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, Intersection& q)
 {
 	vec3d rn[10];
 
@@ -271,7 +271,7 @@ bool FindFaceIntersection(const Ray& ray, const GLMesh& mesh, Intersection& q)
 }
 
 //-----------------------------------------------------------------------------
-bool FindElementIntersection(const Ray& ray, const FEMesh& mesh, Intersection& q, bool selectionState)
+bool FindElementIntersection(const Ray& ray, const FSMesh& mesh, Intersection& q, bool selectionState)
 {
 	vec3d rn[10];
 
@@ -394,7 +394,7 @@ bool FindElementIntersection(const Ray& ray, const FEMesh& mesh, Intersection& q
 }
 
 //-----------------------------------------------------------------------------
-bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FEFace& face, Intersection& q)
+bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, const FEFace& face, Intersection& q)
 {
 	q.m_index = -1;
 

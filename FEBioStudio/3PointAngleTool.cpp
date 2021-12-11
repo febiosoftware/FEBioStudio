@@ -144,7 +144,7 @@ void C3PointAngleTool::Update()
 	SetDecoration(nullptr);
 	m_angle = 0.0;
 
-	FEMesh* mesh = GetActiveMesh();
+	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return;
 
 	int nsel = 0;

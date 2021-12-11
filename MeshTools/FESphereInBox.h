@@ -37,7 +37,7 @@ public:
 public:
 	FESphereInBox();
 	FESphereInBox(GSphereInBox* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GSphereInBox*	m_po;

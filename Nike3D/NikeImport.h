@@ -42,7 +42,7 @@ public:
 
 protected:
 	void UpdateFEModel(FSModel& fem);
-	void UpdateMesh(FEMesh& mesh);
+	void UpdateMesh(FSMesh& mesh);
 	int FindFace(int n[4], int noff = 0);
 
 private:

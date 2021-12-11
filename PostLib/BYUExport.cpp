@@ -47,7 +47,7 @@ bool BYUExport::Save(FEPostModel &fem, const char *szfile)
 	if (fp == 0) return false;
 
 	// get the selected mesh
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FSMeshBase& mesh = *fem.GetFEMesh(0);
 
 	// for now we put everything in one part
 	int parts = 1;

@@ -2055,7 +2055,7 @@ void CGLView::PositionCamera()
 	// see if we need to track anything
 	if (pdoc->IsValid() && m_btrack)
 	{
-		FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 		int NN = pm->Nodes();
 		int* nt = m_ntrack;
 		if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { m_btrack = false; return; }
@@ -2119,7 +2119,7 @@ void CGLView::SetTrackingData(int n[3])
 
 	// get the current nodal positions
 	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 	int NN = pm->Nodes();
 	int* nt = m_ntrack;
 	if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { assert(false); return; }
@@ -2163,7 +2163,7 @@ void CGLView::TrackSelection(bool b)
 		Post::CGLModel* model = pdoc->GetGLModel(); assert(model);
 
 		int nmode = model->GetSelectionMode();
-		FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 		if (nmode == Post::SELECT_ELEMS)
 		{
 			const vector<FEElement_*> selElems = pdoc->GetGLModel()->GetElementSelection();
@@ -2368,7 +2368,7 @@ void CGLView::RenderNormals(GObject* po, double scale)
 {
 	if (po->IsVisible() == false) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 	if (pm == 0) return;
 
 	double R = 0.05*pm->GetBoundingBox().GetMaxExtent()*scale;
@@ -2785,7 +2785,7 @@ void CGLView::RenderTrack()
 	CPostDocument* pdoc = m_pWnd->GetPostDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 	int* nt = m_ntrack;
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -2913,7 +2913,7 @@ void CGLView::RenderMaterialFibers()
 		GObject* po = model.Object(i);
 		if (po->IsVisible() && po->IsValid())
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
 				rel.m_pmesh = pm;
@@ -2979,7 +2979,7 @@ void CGLView::RenderLocalMaterialAxes()
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
 				Transform& T = po->GetTransform();
@@ -4499,7 +4499,7 @@ void CGLView::SelectFEElements(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// convert the point to a ray
 	makeCurrent();
@@ -4733,7 +4733,7 @@ void CGLView::SelectFEFaces(int x, int y)
 	if (po == 0) return;
 
 	// get the FE mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	// convert the point to a ray
@@ -4808,7 +4808,7 @@ void CGLView::SelectFEEdges(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	int X = x;
@@ -4962,7 +4962,7 @@ void CGLView::SelectSurfaceFaces(int x, int y)
 	if (po == 0) return;
 
 	// get the surface mesh
-	FEMeshBase* pm = po->GetSurfaceMesh();
+	FSMeshBase* pm = po->GetSurfaceMesh();
 	if (pm == 0) return;
 
 	// convert the point to a ray
@@ -5011,7 +5011,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FELineMesh* pm = po->GetEditableLineMesh();
+	FSLineMesh* pm = po->GetEditableLineMesh();
 
 	int X = x;
 	int Y = y;
@@ -5140,8 +5140,8 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
-	FELineMesh* lineMesh = po->GetEditableLineMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
+	FSLineMesh* lineMesh = po->GetEditableLineMesh();
 	if (lineMesh == 0) return;
 
 	int X = x;
@@ -5270,7 +5270,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 		vec3d rl = po->GetTransform().GlobalToLocal(ray.origin);
 		vec3d nl = po->GetTransform().GlobalToLocalNormal(ray.direction);
 
-		FEMeshBase* mesh = po->GetEditableMesh();
+		FSMeshBase* mesh = po->GetEditableMesh();
 		vec3d q;
 		if (FindIntersection(*mesh, rl, nl, q, view.m_snapToNode))
 		{
@@ -5656,7 +5656,7 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagBackfacingNodes(FEMeshBase& mesh)
+void CGLView::TagBackfacingNodes(FSMeshBase& mesh)
 {
 	int NN = mesh.Nodes();
 	for (int i = 0; i<NN; ++i) mesh.Node(i).m_ntag = 1;
@@ -5689,8 +5689,8 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
-	FELineMesh* lineMesh = po->GetEditableLineMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
+	FSLineMesh* lineMesh = po->GetEditableLineMesh();
 	if (lineMesh == 0) return;
 
 	makeCurrent();
@@ -5752,7 +5752,7 @@ bool IsBackfacing(const vec3d r[3])
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagBackfacingElements(FEMesh& mesh)
+void CGLView::TagBackfacingElements(FSMesh& mesh)
 {
 	GLViewTransform transform(this);
 	vec3d r[4], p1[3], p2[3];
@@ -5897,7 +5897,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// activate the gl rendercontext
 	makeCurrent();
@@ -5953,7 +5953,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 
 
 //-----------------------------------------------------------------------------
-bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region, FEFace& face, FEMeshBase* pm)
+bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region, FEFace& face, FSMeshBase* pm)
 {
 	if (pm == 0) return false;
 
@@ -6002,7 +6002,7 @@ bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region,
 	return binside;
 }
 
-void CGLView::TagBackfacingFaces(FEMeshBase& mesh)
+void CGLView::TagBackfacingFaces(FSMeshBase& mesh)
 {
 	GLViewTransform transform(this);
 
@@ -6073,7 +6073,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 
 	// activate the gl rendercontext
 	makeCurrent();
@@ -6126,7 +6126,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagBackfacingEdges(FEMeshBase& mesh)
+void CGLView::TagBackfacingEdges(FSMeshBase& mesh)
 {
 	int NE = mesh.Edges();
 	for (int i = 0; i<NE; ++i) mesh.Edge(i).m_ntag = 1;
@@ -6154,7 +6154,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 
 	// activate the gl rendercontext
 	makeCurrent();
@@ -6211,7 +6211,7 @@ void CGLView::SelectFENodes(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	int X = x;
@@ -6325,7 +6325,7 @@ void CGLView::SelectFENodes(int x, int y)
 
 //-----------------------------------------------------------------------------
 
-void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
+void CGLView::TagConnectedNodes(FSMeshBase* pm, int num)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
@@ -6442,7 +6442,7 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
+void CGLView::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 {
 	if (n1 == n0) return;
 
@@ -6695,7 +6695,7 @@ void CGLView::RenderSelectedNodes(GObject* po)
 
 #ifdef _DEBUG
 	// Draw FE nodes on top of GMesh nodes to make sure they match
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
 		glColor3ub(255, 0, 0);
@@ -6781,7 +6781,7 @@ void CGLView::RenderSelectedEdges(GObject* po)
 
 #ifdef _DEBUG
 	// Render FE edges onto of GMesh edges to make sure they are consistent
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
 		glColor3ub(255, 0, 0);
@@ -6943,7 +6943,7 @@ void CGLView::RenderSelectedSurfaces(GObject* po)
 		}
 */
 		// render FE surfaces
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			glColor3ub(255, 0, 0);
@@ -7273,7 +7273,7 @@ void CGLView::RenderFENodes(GObject* po)
 	float fsize = GetViewSettings().m_node_size;
 	m_renderer.SetPointSize(fsize);
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
 		int N = pm->Nodes();
@@ -7333,7 +7333,7 @@ void CGLView::RenderFENodes(GObject* po)
 	}
 	else
 	{
-		FEMeshBase* mesh = po->GetEditableMesh();
+		FSMeshBase* mesh = po->GetEditableMesh();
 		if (mesh)
 		{
 			// reset all tags
@@ -7380,7 +7380,7 @@ void CGLView::RenderFENodes(GObject* po)
 		}
 		else
 		{
-			FELineMesh* pm = po->GetEditableLineMesh();
+			FSLineMesh* pm = po->GetEditableLineMesh();
 			if (pm)
 			{
 				pm->TagAllNodes(1);
@@ -7398,7 +7398,7 @@ void CGLView::RenderFEFaces(GObject* po)
 
 	VIEW_SETTINGS& view = GetViewSettings();
 	FSModel& fem = *doc->GetFSModel();
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0)
 	{
 		RenderObject(po);
@@ -7571,7 +7571,7 @@ void CGLView::RenderSurfaceMeshEdges(GObject* po)
 
 	VIEW_SETTINGS& view = GetViewSettings();
 	FSModel& fem = *doc->GetFSModel();
-	FELineMesh* pm = po->GetEditableLineMesh();
+	FSLineMesh* pm = po->GetEditableLineMesh();
 	assert(pm);
 	if (pm == 0) return;
 
@@ -7604,7 +7604,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 	float fsize = GetViewSettings().m_node_size;
 	m_renderer.SetPointSize(fsize);
 
-	FEMeshBase* mesh = po->GetEditableMesh();
+	FSMeshBase* mesh = po->GetEditableMesh();
 	if (mesh)
 	{
 		// reset all tags
@@ -7651,7 +7651,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 	}
 	else
 	{
-		FELineMesh* pm = po->GetEditableLineMesh();
+		FSLineMesh* pm = po->GetEditableLineMesh();
 		if (pm)
 		{
 			pm->TagAllNodes(1);
@@ -7669,7 +7669,7 @@ void CGLView::RenderFEEdges(GObject* po)
 
 	VIEW_SETTINGS& view = GetViewSettings();
 	FSModel& fem = *doc->GetFSModel();
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -7696,7 +7696,7 @@ void CGLView::RenderFEElements(GObject* po)
 	if (pdoc == nullptr) return;
 
 	FSModel& fem = *pdoc->GetFSModel();
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	assert(pm);
 	if (pm == 0) return;
 
@@ -7958,7 +7958,7 @@ void CGLView::RenderFEElements(GObject* po)
 
 //-----------------------------------------------------------------------------
 // This function is used for selecting elements
-void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
+void CGLView::RenderFEAllElements(FSMesh* pm, bool bexterior)
 {
 	// get the document
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -8349,7 +8349,7 @@ void CGLView::RenderMeshLines()
 		GObject* po = model.Object(i);
 		if (po->IsVisible() && po->IsValid())
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
 				glPushMatrix();
@@ -8382,7 +8382,7 @@ void CGLView::RenderMeshLines(GObject* po)
 {
 	if ((po == 0) || !po->IsVisible()) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
@@ -8834,8 +8834,8 @@ void CGLView::RenderTags()
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
-	FEMeshBase* pmb = pm;
+	FSMesh* pm = po->GetFEMesh();
+	FSMeshBase* pmb = pm;
 	if (pm == nullptr)
 	{
 		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
@@ -9178,7 +9178,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 			GObject* po = mdl.Object(n);
 			if (po->GetFEMesh())
 			{
-				FEMesh* mesh = po->GetFEMesh();
+				FSMesh* mesh = po->GetFEMesh();
 				int NE = mesh->Elements();
 				for (int i = 0; i < NE; ++i)
 				{
@@ -9199,7 +9199,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 			GObject* po = mdl.Object(i);
 			if (po->GetFEMesh())
 			{
-				FEMesh* mesh = po->GetFEMesh();
+				FSMesh* mesh = po->GetFEMesh();
 
 				vec3d ex[8];
 				int en[8];
@@ -9403,7 +9403,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 			GObject* po = mdl.Object(n);
 			if (po->GetFEMesh())
 			{
-				FEMesh* mesh = po->GetFEMesh();
+				FSMesh* mesh = po->GetFEMesh();
 
 				if (m_showPlaneCut)
 				{

@@ -156,7 +156,7 @@ FEFindElement::OCTREE_BOX* FEFindElement::FindBox(const vec3f& r)
 	return 0;
 }
 
-FEFindElement::FEFindElement(FECoreMesh& mesh) : m_mesh(mesh)
+FEFindElement::FEFindElement(FSCoreMesh& mesh) : m_mesh(mesh)
 {
 	m_nframe = -1;
 }

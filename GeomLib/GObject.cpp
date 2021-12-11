@@ -69,7 +69,7 @@ public:
 	GLColor	m_col;	//!< color of object
 	bool	m_bValid;
 
-	FEMesh*		m_pmesh;	//!< the mesh that this object manages
+	FSMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
 	GLMesh*		m_pGMesh;	//!< the mesh for rendering
 
@@ -141,10 +141,10 @@ FEMesher* GObject::CreateDefaultMesher()
 
 //-----------------------------------------------------------------------------
 // retrieve the FE mesh
-FEMesh* GObject::GetFEMesh() { return imp->m_pmesh; }
+FSMesh* GObject::GetFEMesh() { return imp->m_pmesh; }
 
 //-----------------------------------------------------------------------------
-const FEMesh* GObject::GetFEMesh() const { return imp->m_pmesh; }
+const FSMesh* GObject::GetFEMesh() const { return imp->m_pmesh; }
 
 //-----------------------------------------------------------------------------
 // delete the mesh
@@ -157,7 +157,7 @@ void GObject::SetFEMesher(FEMesher *pmesher)
 }
 
 //-----------------------------------------------------------------------------
-void GObject::SetFEMesh(FEMesh* pm)
+void GObject::SetFEMesh(FSMesh* pm)
 {
 	imp->m_pmesh = pm; if (pm) pm->SetGObject(this);
 }
@@ -369,7 +369,7 @@ void GObject::CollapseTransform()
 	// collapse the mesh' nodes
 	if (imp->m_pmesh)
 	{
-		FEMesh& m = *imp->m_pmesh;
+		FSMesh& m = *imp->m_pmesh;
 		for (int i = 0; i<m.Nodes(); ++i)
 		{
 			FENode& node = m.Node(i);
@@ -420,7 +420,7 @@ void GObject::AssignMaterial(int partid, int matid)
 //!		  maybe I should move that function there.
 void GObject::UpdateGNodes()
 {
-	FELineMesh* pm = GetEditableLineMesh();
+	FSLineMesh* pm = GetEditableLineMesh();
 	if (pm == 0) return;
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
@@ -434,7 +434,7 @@ void GObject::UpdateGNodes()
 //-----------------------------------------------------------------------------
 // Replace the current mesh. Note that we don't delete the current mesh since
 // it is assumed that another class will take care of that.
-void GObject::ReplaceFEMesh(FEMesh* pm, bool bup, bool bdel)
+void GObject::ReplaceFEMesh(FSMesh* pm, bool bup, bool bdel)
 {
 	if (bdel) delete imp->m_pmesh;
 	SetFEMesh(pm);
@@ -461,13 +461,13 @@ bool GObject::Update(bool b)
 //		uses the old mesh to create the new mesh and when the user undoes the last
 //		mesh we need to be able to restore that mesh. Therefore, we should not delete
 //		the old mesh.
-FEMesh* GObject::BuildMesh()
+FSMesh* GObject::BuildMesh()
 {
 	if (imp->m_pMesher)
 	{
 		// keep a pointer to the old mesh since some mesher use the old
 		// mesh to create a new mesh
-		FEMesh* pold = imp->m_pmesh;
+		FSMesh* pold = imp->m_pmesh;
 		SetFEMesh(imp->m_pMesher->BuildMesh());
 
 		// now it is safe to delete the old mesh
@@ -482,7 +482,7 @@ FEMesh* GObject::BuildMesh()
 //-----------------------------------------------------------------------------
 FENode* GObject::GetFENode(int gid)
 {
-	FEMesh* pm = GetFEMesh();
+	FSMesh* pm = GetFEMesh();
 	if (pm == 0) return 0;
 
 	for (int i=0; i<pm->Nodes(); ++i)
@@ -1482,7 +1482,7 @@ void GObject::BuildFaceQuad(GLMesh* glmesh, GFace &f)
 // get the mesh of an edge curve
 FECurveMesh* GObject::GetFECurveMesh(int edgeId)
 {
-	FEMesh* mesh = GetFEMesh();
+	FSMesh* mesh = GetFEMesh();
 	if (mesh == 0) return 0;
 
 	mesh->TagAllNodes(-1);
@@ -1644,7 +1644,7 @@ void GObject::UpdateItemVisibility()
 	}
 
 	// update visibility of mesh items
-	FEMesh* mesh = GetFEMesh();
+	FSMesh* mesh = GetFEMesh();
 	if (mesh)
 	{
 		int NE = mesh->Elements();
@@ -2052,7 +2052,7 @@ void GObject::Load(IArchive& ar)
 		// the mesh object
 		case CID_MESH:
 			if (imp->m_pmesh) delete imp->m_pmesh;
-			SetFEMesh(new FEMesh);
+			SetFEMesh(new FSMesh);
 			imp->m_pmesh->Load(ar);
 			break;
 		}

@@ -51,5 +51,5 @@ protected:
 protected:
 	char	m_szline[256];
 	FSModel*	m_pfem;
-	FEMesh*		m_pm;
+	FSMesh*		m_pm;
 };

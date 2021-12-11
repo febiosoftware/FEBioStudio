@@ -62,7 +62,7 @@ bool FEAbaqusExport::Write(const char* szfile)
 	{
 		GObject* po = model.Object(obs);
 		Transform T = po->GetTransform();
-		FEMesh* mesh = po->GetFEMesh();
+		FSMesh* mesh = po->GetFEMesh();
 		if (mesh == nullptr) { fclose(fp); return errf("Not all objects are meshed."); }
 		int NN = mesh->Nodes();
 		for (int i = 0; i < NN; ++i)
@@ -80,7 +80,7 @@ bool FEAbaqusExport::Write(const char* szfile)
 	for (int obs = 0; obs < model.Objects(); ++obs)
 	{
 		GObject* po = model.Object(obs);
-		FEMesh* mesh = po->GetFEMesh();
+		FSMesh* mesh = po->GetFEMesh();
 		int NE = mesh->Elements();
 		mesh->TagAllElements(-1);
 		for (int i = 0; i < NE; ++i)

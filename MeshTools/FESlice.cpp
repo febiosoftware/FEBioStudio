@@ -63,7 +63,7 @@ int FESlice::NodeIndex(int i, int j, int k)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FESlice::BuildMesh()
+FSMesh* FESlice::BuildMesh()
 {
 	assert(m_pobj);
 
@@ -99,7 +99,7 @@ FEMesh* FESlice::BuildMesh()
 	int edges = 2*m_nd + 3*m_nz + 4*m_ns;
 
 	// create mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems, faces, edges);
 
 	// --- A. Create the nodes ---

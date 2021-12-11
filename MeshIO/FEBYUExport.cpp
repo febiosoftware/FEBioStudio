@@ -57,9 +57,9 @@ bool FEBYUExport::Write(const char* szfile)
 	int edges = 0;
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		if (pm == 0) return false;
-		FEMesh& m = *pm;
+		FSMesh& m = *pm;
 		for (j=0; j<m.Nodes(); ++j) m.Node(j).m_ntag = 0;
 		for (j=0; j<m.Faces(); ++j)
 		{
@@ -74,7 +74,7 @@ bool FEBYUExport::Write(const char* szfile)
 	int nodes = 0;
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (j=0; j<m.Nodes(); ++j) if (m.Node(j).m_ntag == 1) m.Node(j).m_ntag = ++nodes;
 	}
 
@@ -89,7 +89,7 @@ bool FEBYUExport::Write(const char* szfile)
 	// --- N O D E S ---
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (j=0; j<m.Nodes(); ++j)
 		{
 			FENode& n = m.Node(j);
@@ -101,7 +101,7 @@ bool FEBYUExport::Write(const char* szfile)
 	// --- E D G E S ---
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (j=0; j<m.Faces(); ++j)
 		{
 			FEFace& f = m.Face(j);

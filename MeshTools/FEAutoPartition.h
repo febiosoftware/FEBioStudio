@@ -34,13 +34,13 @@ class FEAutoPartition : public FEModifier
 {
 public:
 	FEAutoPartition();
-	FEMesh* Apply(FEGroup* pg);
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FEGroup* pg);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 class FERebuildMesh : public FEModifier
 {
 public:
 	FERebuildMesh();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };

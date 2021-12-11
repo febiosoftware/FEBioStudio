@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "GGroup.h"
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
+FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
 {
 	m_scale = 1.0;
 	m_part = nullptr;
@@ -40,7 +40,7 @@ FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA
 }
 
 //-----------------------------------------------------------------------------
-void FEElementData::Create(FEMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataType)
+void FEElementData::Create(FSMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataType)
 {
 	SetMesh(pm);
 	m_part = part;
@@ -151,7 +151,7 @@ void FEElementData::Load(IArchive& ar)
 }
 
 //=============================================================================
-FEPartData::FEPartData(FEMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(FSMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
 {
 	SetMesh(mesh);
 	m_maxElemItems = 1;
@@ -170,7 +170,7 @@ FEPartData& FEPartData::operator = (const FEPartData& d)
 // create a data field
 bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt)
 {
-	FEMesh* mesh = GetMesh();
+	FSMesh* mesh = GetMesh();
 	assert(mesh);
 	m_data.clear();
 	m_part = partList;
@@ -211,7 +211,7 @@ bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataT
 
 FEElemList* FEPartData::BuildElemList()
 {
-	FEMesh* mesh = GetMesh();
+	FSMesh* mesh = GetMesh();
 	assert(mesh);
 
 	FEElemList* elemList = new FEElemList;

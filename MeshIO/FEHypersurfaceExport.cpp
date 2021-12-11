@@ -65,7 +65,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 		GObject* po = model.Object(i);
 		if (po->IsSelected() && po->GetFEMesh())
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			int NF = m.Faces();
 			for (int i=0; i<NF; ++i)
 			{
@@ -82,7 +82,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 		GObject* po = model.Object(i);
 		if (po->IsSelected())
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (j=0; j<m.Nodes(); ++j) m.Node(j).m_ntag = 0;
 
 			for (j=0; j<m.Faces(); ++j)
@@ -102,7 +102,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 		GObject* po = model.Object(i);
 		if (po->IsSelected())
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (j=0; j<m.Nodes(); ++j)
 			{
 				FENode& n = m.Node(j);
@@ -123,7 +123,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 		GObject* po = model.Object(i);
 		if (po->IsSelected())
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (j=0; j<m.Faces(); ++j)
 			{
 				FEFace& f = m.Face(j);

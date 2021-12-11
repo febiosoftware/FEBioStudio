@@ -52,7 +52,7 @@ vec3d FSFiberGeneratorLocal::GetFiber(FEElementRef& el)
 {
 	vec2i v = GetVec2iValue(0);
 
-	FECoreMesh* pm = el.m_pmesh;
+	FSCoreMesh* pm = el.m_pmesh;
 	int n[2] = { v.x, v.y };
 	if ((n[0] == 0) && (n[1] == 0)) { n[0] = 1; n[1] = 2; }
 	vec3d a = pm->Node(el->m_node[n[0] - 1]).r;
@@ -107,7 +107,7 @@ vec3d FSCylindricalVectorGenerator::GetFiber(FEElementRef& el)
 	vec3d v = GetVecValue(2);
 
 	// we'll use the element center as the reference point
-	FECoreMesh* pm = el.m_pmesh;
+	FSCoreMesh* pm = el.m_pmesh;
 	int n = el->Nodes();
 	vec3d c(0, 0, 0);
 	for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
@@ -150,7 +150,7 @@ vec3d FSSphericalVectorGenerator::GetFiber(FEElementRef& el)
 	vec3d o = GetVecValue(0);
 	vec3d v = GetVecValue(1);
 
-	FECoreMesh* pm = el.m_pmesh;
+	FSCoreMesh* pm = el.m_pmesh;
 	int n = el->Nodes();
 	vec3d c(0, 0, 0);
 	for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
@@ -526,7 +526,7 @@ vec3d FSOldFiberMaterial::GetFiberVector(FEElementRef& el)
 	{
 	case FE_FIBER_LOCAL:
 	{
-		FECoreMesh* pm = el.m_pmesh;
+		FSCoreMesh* pm = el.m_pmesh;
 		int n[2] = { m_n[0], m_n[1] };
 		if ((n[0] == 0) && (n[1] == 0)) { n[0] = 1; n[1] = 2; }
 		vec3d a = pm->Node(el->m_node[n[0] - 1]).r;
@@ -541,7 +541,7 @@ vec3d FSOldFiberMaterial::GetFiberVector(FEElementRef& el)
 	case FE_FIBER_CYLINDRICAL:
 	{
 		// we'll use the element center as the reference point
-		FECoreMesh* pm = el.m_pmesh;
+		FSCoreMesh* pm = el.m_pmesh;
 		int n = el->Nodes();
 		vec3d c(0, 0, 0);
 		for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
@@ -566,7 +566,7 @@ vec3d FSOldFiberMaterial::GetFiberVector(FEElementRef& el)
 	break;
 	case FE_FIBER_SPHERICAL:
 	{
-		FECoreMesh* pm = el.m_pmesh;
+		FSCoreMesh* pm = el.m_pmesh;
 		int n = el->Nodes();
 		vec3d c(0, 0, 0);
 		for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
@@ -613,7 +613,7 @@ vec3d FSOldFiberMaterial::GetFiberVector(FEElementRef& el)
 	case FE_FIBER_POLAR:
 	{
 		// we'll use the element center as the reference point
-		FECoreMesh* pm = el.m_pmesh;
+		FSCoreMesh* pm = el.m_pmesh;
 		int n = el->Nodes();
 		vec3d c(0, 0, 0);
 		for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);

@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-class FECoreMesh;
+class FSCoreMesh;
 
 namespace Post {
 //-----------------------------------------------------------------------------
@@ -42,13 +42,13 @@ class FEPostMesh;
 class FEGroup : public ::FEGroup
 {
 public:
-	FEGroup(FECoreMesh* pm, int ntype) :  ::FEGroup(nullptr, ntype, 0) { m_pm = pm; }
+	FEGroup(FSCoreMesh* pm, int ntype) :  ::FEGroup(nullptr, ntype, 0) { m_pm = pm; }
 	virtual ~FEGroup(void) {}
 
-	FECoreMesh* GetMesh() const { return m_pm; }
+	FSCoreMesh* GetMesh() const { return m_pm; }
 
 protected:
-	FECoreMesh*	m_pm;	// pointer to the parent mesh
+	FSCoreMesh*	m_pm;	// pointer to the parent mesh
 };
 
 //-----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ protected:
 class FEPart : public Post::FEGroup
 {
 public:
-	FEPart(FECoreMesh* pm) : Post::FEGroup(pm, FE_PART) {}
+	FEPart(FSCoreMesh* pm) : Post::FEGroup(pm, FE_PART) {}
 
 	int Size() const { return (int) m_Elem.size(); }
 
@@ -106,7 +106,7 @@ public:
 class FESurface : public Post::FEGroup
 {
 public:
-	FESurface(FECoreMesh* pm) : Post::FEGroup(pm, FE_SURFACE) {}
+	FESurface(FSCoreMesh* pm) : Post::FEGroup(pm, FE_SURFACE) {}
 
 	int Size() const { return (int) m_Face.size(); }
 
@@ -123,7 +123,7 @@ public:
 class FENodeSet : public Post::FEGroup
 {
 public:
-	FENodeSet(FECoreMesh* pm) : Post::FEGroup(pm, FE_NODESET){}
+	FENodeSet(FSCoreMesh* pm) : Post::FEGroup(pm, FE_NODESET){}
 
 	FEItemListBuilder* Copy() override { return nullptr; }
 

@@ -48,7 +48,7 @@ class GMeshObject : public GObject
 {
 public:
 	// Constructor for creating a GMeshObject from a "naked" mesh
-	GMeshObject(FEMesh* pm);
+	GMeshObject(FSMesh* pm);
 
 	// Constructor for creating a GMeshObject from a "naked" surface mesh 
 	// (this creates a shell mesh)
@@ -64,7 +64,7 @@ public:
 
 	int AddNode(vec3d r);
 
-	virtual FEMesh* BuildMesh() override;
+	virtual FSMesh* BuildMesh() override;
 
 	// serialization
 	void Save(OArchive& ar) override;
@@ -73,8 +73,8 @@ public:
 	// cloning
 	GObject* Clone() override;
 
-	FEMeshBase* GetEditableMesh() override;
-	FELineMesh* GetEditableLineMesh() override;
+	FSMeshBase* GetEditableMesh() override;
+	FSLineMesh* GetEditableLineMesh() override;
 
 	// detach an element selection
 	GMeshObject* DetachSelection();

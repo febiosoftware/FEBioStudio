@@ -37,7 +37,7 @@ FETet4ToTet15::FETet4ToTet15(bool bsmooth) : FEModifier("Tet4-to-Tet15")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETet4ToTet15::Apply(FEMesh* pm)
+FSMesh* FETet4ToTet15::Apply(FSMesh* pm)
 {
 	// before we get started, let's make sure this is a tet4 mesh
 	if (pm->IsType(FE_TET4) == false) return 0;
@@ -74,7 +74,7 @@ FEMesh* FETet4ToTet15::Apply(FEMesh* pm)
 	int elems = NT;
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(nodes, elems, pm->Faces(), pm->Edges());
 
 	// copy the old nodes

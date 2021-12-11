@@ -37,15 +37,15 @@ SOFTWARE.*/
 //-------------------------------------------------------------------
 // Base class for mesh classes.
 // Essentially manages the nodes, edges, and faces
-class FEMeshBase : public FELineMesh
+class FSMeshBase : public FSLineMesh
 {
 public:
-	FEMeshBase();
-	virtual ~FEMeshBase();
+	FSMeshBase();
+	virtual ~FSMeshBase();
 
 	BOX GetBoundingBox() const { return m_box; }
 
-	// from FELineMesh
+	// from FSLineMesh
 	void UpdateMesh() override;
 
 public:
@@ -128,5 +128,5 @@ namespace MeshTools {
 	// nface            : the index of the start face
 	// tolAngleDeg      : angle of selection tolerance (degrees). Set to zero to turn off.
 	// respectPartitions: do not cross surface partitions if true
-	std::vector<int> GetConnectedFaces(FEMeshBase* pm, int nface, double tolAngleDeg, bool respectPartitions);
+	std::vector<int> GetConnectedFaces(FSMeshBase* pm, int nface, double tolAngleDeg, bool respectPartitions);
 }

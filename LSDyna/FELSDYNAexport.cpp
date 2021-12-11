@@ -106,7 +106,7 @@ bool FELSDYNAexport::write_NODE()
 		GObject* po = model.Object(i);
 		if (!m_ops.bselonly || (po->IsSelected()))
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm == 0) return false;
 			for (int j=0; j<pm->Nodes(); ++j)
 			{
@@ -136,7 +136,7 @@ bool FELSDYNAexport::write_ELEMENT_SOLID()
 		GObject* po = model.Object(i);
 		if (!m_ops.bselonly || (po->IsSelected()))
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (int j=0; j<m.Elements(); ++j)
 			{
 				FEElement& el = m.Element(j);
@@ -181,7 +181,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL()
 		GObject* po = model.Object(i);
 		if (!m_ops.bselonly || (po->IsSelected()))
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (int j=0; j<m.Elements(); ++j)
 			{
 				FEElement& el = m.Element(j);
@@ -225,7 +225,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 		GObject* po = model.Object(i);
 		if (!m_ops.bselonly || (po->IsSelected()))
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (int j=0; j<m.Elements(); ++j)
 			{
 				FEElement& el = m.Element(j);
@@ -268,7 +268,7 @@ bool FELSDYNAexport::write_SET_SHELL_LIST()
 
 		if (!m_ops.bselonly || po->IsSelected())
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			assert(pm);
 
 			for (int j=0; j<po->FEParts(); ++j)

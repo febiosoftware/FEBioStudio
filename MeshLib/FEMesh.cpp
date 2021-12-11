@@ -86,7 +86,7 @@ void Mesh_Data::Clear()
 }
 
 //-----------------------------------------------------------------------------
-void Mesh_Data::Init(FEMesh* mesh, double initVal, int initTag)
+void Mesh_Data::Init(FSMesh* mesh, double initVal, int initTag)
 {
 	int NE = mesh->Elements();
 	m_data.resize(NE);
@@ -166,14 +166,14 @@ void Mesh_Data::GetValueRange(double& vmin, double& vmax) const
 
 //-----------------------------------------------------------------------------
 // default constructor
-FEMesh::FEMesh()
+FSMesh::FSMesh()
 {
 	m_pobj = 0;
 }
 
 //-----------------------------------------------------------------------------
 // copy constructor
-FEMesh::FEMesh(FEMesh& m)
+FSMesh::FSMesh(FSMesh& m)
 {
 	// create the nodes
 	m_Node.resize(m.Nodes());
@@ -202,7 +202,7 @@ FEMesh::FEMesh(FEMesh& m)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh::FEMesh(FESurfaceMesh& m)
+FSMesh::FSMesh(FESurfaceMesh& m)
 {
 	int NN = m.Nodes();
 	int NF = m.Faces();
@@ -246,14 +246,14 @@ FEMesh::FEMesh(FESurfaceMesh& m)
 
 //-----------------------------------------------------------------------------
 // destructor
-FEMesh::~FEMesh()
+FSMesh::~FSMesh()
 {
 	Clear();
 }
 
 //-----------------------------------------------------------------------------
 // Clear the mesh data
-void FEMesh::Clear()
+void FSMesh::Clear()
 {
 	m_Edge.clear();
 	m_Face.clear();
@@ -264,7 +264,7 @@ void FEMesh::Clear()
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::ClearMeshData()
+void FSMesh::ClearMeshData()
 {
 	m_data.Clear();
 	for (int i = 0; i < m_meshData.size(); ++i) delete m_meshData[i];
@@ -274,7 +274,7 @@ void FEMesh::ClearMeshData()
 //-----------------------------------------------------------------------------
 // Allocate storage for the mesh data. If bclear is true (default = true) all 
 // existing groups are deleted.
-void FEMesh::Create(int nodes, int elems, int faces, int edges)
+void FSMesh::Create(int nodes, int elems, int faces, int edges)
 {
 	// allocate storage
 	if (nodes > 0) { if (nodes) m_Node.resize(nodes); else m_Node.clear(); }
@@ -287,25 +287,25 @@ void FEMesh::Create(int nodes, int elems, int faces, int edges)
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::ResizeNodes(int newSize)
+void FSMesh::ResizeNodes(int newSize)
 {
 	m_Node.resize(newSize);
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::ResizeEdges(int newSize)
+void FSMesh::ResizeEdges(int newSize)
 {
 	m_Edge.resize(newSize);
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::ResizeFaces(int newSize)
+void FSMesh::ResizeFaces(int newSize)
 {
 	m_Face.resize(newSize);
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::ResizeElems(int newSize)
+void FSMesh::ResizeElems(int newSize)
 {
 	m_Elem.resize(newSize);
 }
@@ -313,7 +313,7 @@ void FEMesh::ResizeElems(int newSize)
 //-----------------------------------------------------------------------------
 // This functions update the node GIds to make sure that no indices are skipped.
 // This needs to be called after the number of nodes changes.
-void FEMesh::UpdateNodePartitions()
+void FSMesh::UpdateNodePartitions()
 {
 	// find the largest GID
 	int max_gid = -1;
@@ -355,7 +355,7 @@ void FEMesh::UpdateNodePartitions()
 //-----------------------------------------------------------------------------
 // This functions update the edge GIds to make sure that no indices are skipped.
 // This needs to be called after the number of edges changes.
-void FEMesh::UpdateEdgePartitions()
+void FSMesh::UpdateEdgePartitions()
 {
 	// find the largest GID
 	int max_gid = -1;
@@ -397,7 +397,7 @@ void FEMesh::UpdateEdgePartitions()
 //-----------------------------------------------------------------------------
 // This functions update the face GIds to make sure that no indices are skipped.
 // This needs to be called after the number of faces changes.
-void FEMesh::UpdateFacePartitions()
+void FSMesh::UpdateFacePartitions()
 {
 	// find the largest GID
 	int max_gid = -1;
@@ -439,7 +439,7 @@ void FEMesh::UpdateFacePartitions()
 //-----------------------------------------------------------------------------
 // This functions update the face smoothing Ids to make sure that no indices are skipped.
 // This needs to be called after the number of faces changes.
-void FEMesh::UpdateSmoothingGroups()
+void FSMesh::UpdateSmoothingGroups()
 {
 	// find the largest SG
 	int max_sg = -1;
@@ -481,7 +481,7 @@ void FEMesh::UpdateSmoothingGroups()
 //-----------------------------------------------------------------------------
 // This functions update the node GIds to make sure that no indices are skipped.
 // This needs to be called after the number of elements changes.
-void FEMesh::UpdateElementPartitions()
+void FSMesh::UpdateElementPartitions()
 {
 	// find the largest GID
 	int max_gid = -1;
@@ -522,7 +522,7 @@ void FEMesh::UpdateElementPartitions()
 
 //-----------------------------------------------------------------------------
 // Remove elements with tag ntag
-void FEMesh::RemoveElements(int ntag)
+void FSMesh::RemoveElements(int ntag)
 {
 	int n = 0;
     bool bdata = (m_data.m_data.size() > 0);
@@ -548,7 +548,7 @@ void FEMesh::RemoveElements(int ntag)
 
 //-----------------------------------------------------------------------------
 //! This function identifies duplicate faces and returns a list with the duplicates
-void FEMesh::FindDuplicateFaces(vector<int>& l)
+void FSMesh::FindDuplicateFaces(vector<int>& l)
 {
 	l.clear();
 	int NF = Faces();
@@ -565,7 +565,7 @@ void FEMesh::FindDuplicateFaces(vector<int>& l)
 
 //-----------------------------------------------------------------------------
 //! This function identifies duplicate edges and returns a list with the duplicates
-void FEMesh::FindDuplicateEdges(vector<int>& l)
+void FSMesh::FindDuplicateEdges(vector<int>& l)
 {
 	l.clear();
 	int NL = Edges();
@@ -583,7 +583,7 @@ void FEMesh::FindDuplicateEdges(vector<int>& l)
 //-----------------------------------------------------------------------------
 // Build the node-node table for surface nodes only. That is table of node indices that each node
 // connects to.
-void FEMesh::BuildSurfaceNodeNodeTable(vector<set<int> >& NNT)
+void FSMesh::BuildSurfaceNodeNodeTable(vector<set<int> >& NNT)
 {
 	// reset node-node table
 	int NN = Nodes();
@@ -611,7 +611,7 @@ void FEMesh::BuildSurfaceNodeNodeTable(vector<set<int> >& NNT)
 //-----------------------------------------------------------------------------
 // Build mesh data structures
 // This assumes that at all nodes, edges, faces, and elements are created and partitioned.
-void FEMesh::BuildMesh()
+void FSMesh::BuildMesh()
 {
 	// rebuild element data
 	RebuildElementData();
@@ -631,14 +631,14 @@ void FEMesh::BuildMesh()
 
 //-----------------------------------------------------------------------------
 // Convenience function that calls the mesh builder to do all the work
-void FEMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
+void FSMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
 {
 	FEMeshBuilder meshBuilder(*this);
 	meshBuilder.RebuildMesh(smoothingAngle, partitionMesh);
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::RebuildElementData()
+void FSMesh::RebuildElementData()
 {
 #ifdef _DEBUG
 	// make sure element data is valid
@@ -658,7 +658,7 @@ void FEMesh::RebuildElementData()
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::RebuildFaceData()
+void FSMesh::RebuildFaceData()
 {
 #ifdef _DEBUG
 	assert(ValidateFaces());
@@ -677,7 +677,7 @@ void FEMesh::RebuildFaceData()
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::RebuildEdgeData()
+void FSMesh::RebuildEdgeData()
 {
 #ifdef _DEBUG
 	assert(ValidateEdges());
@@ -690,7 +690,7 @@ void FEMesh::RebuildEdgeData()
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::RebuildNodeData()
+void FSMesh::RebuildNodeData()
 {
 	// Figure out which nodes are interior and which are exterior
 	MarkExteriorNodes();
@@ -698,7 +698,7 @@ void FEMesh::RebuildNodeData()
 
 //-----------------------------------------------------------------------------
 // mesh validation
-bool FEMesh::ValidateElements() const
+bool FSMesh::ValidateElements() const
 {
 	// loop over all elements
 	int NN = Nodes();
@@ -723,7 +723,7 @@ bool FEMesh::ValidateElements() const
 }
 
 //-----------------------------------------------------------------------------
-bool FEMesh::ValidateFaces() const
+bool FSMesh::ValidateFaces() const
 {
 	// loop over all faces
 	int NN = Nodes();
@@ -748,7 +748,7 @@ bool FEMesh::ValidateFaces() const
 }
 
 //-----------------------------------------------------------------------------
-bool FEMesh::ValidateEdges() const
+bool FSMesh::ValidateEdges() const
 {
 	// loop over all edges
 	int NN = Nodes();
@@ -772,7 +772,7 @@ bool FEMesh::ValidateEdges() const
 //-----------------------------------------------------------------------------
 // This function finds the element neighbours.
 //
-void FEMesh::UpdateElementNeighbors()
+void FSMesh::UpdateElementNeighbors()
 {
 	// get number of elements
 	int elems = Elements();
@@ -916,7 +916,7 @@ void FEMesh::UpdateElementNeighbors()
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::MarkExteriorElements()
+void FSMesh::MarkExteriorElements()
 {
 	// set exterior flags
 	for (int i = 0; i < Elements(); ++i)
@@ -940,7 +940,7 @@ void FEMesh::MarkExteriorElements()
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::MarkExteriorFaces()
+void FSMesh::MarkExteriorFaces()
 {
 	for (int i = 0; i < Faces(); ++i)
 	{
@@ -950,7 +950,7 @@ void FEMesh::MarkExteriorFaces()
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::MarkExteriorEdges()
+void FSMesh::MarkExteriorEdges()
 {
 	for (int i = 0; i < Edges(); ++i)
 	{
@@ -987,7 +987,7 @@ bool isValidFaceNeighbor(FEFace& f0, FEFace& f1)
 
 //-----------------------------------------------------------------------------
 // This function sets the face-element connectivity
-void FEMesh::UpdateFaceElementTable()
+void FSMesh::UpdateFaceElementTable()
 {
 	int NF = Faces(); 
 	int NE = Elements();
@@ -1135,7 +1135,7 @@ void FEMesh::UpdateFaceElementTable()
 //-----------------------------------------------------------------------------
 //! This function finds the face neighbours. Note that internal faces cannot
 //! be neighbours of external faces. 
-void FEMesh::UpdateFaceNeighbors()
+void FSMesh::UpdateFaceNeighbors()
 {
 	int NF = Faces();
 
@@ -1230,7 +1230,7 @@ void FEMesh::UpdateFaceNeighbors()
 
 //-----------------------------------------------------------------------------
 // This function finds the edge neighbours.
-void FEMesh::UpdateEdgeNeighbors()
+void FSMesh::UpdateEdgeNeighbors()
 {
 	FENodeEdgeList NET;
 	NET.Build(this, true);
@@ -1269,7 +1269,7 @@ void FEMesh::UpdateEdgeNeighbors()
 
 //-----------------------------------------------------------------------------
 // select elements based on face selection
-vector<int> FEMesh::GetElementsFromSelectedFaces()
+vector<int> FSMesh::GetElementsFromSelectedFaces()
 {
 	// tag elements for selection
 	vector<bool> tag(Elements(), false);
@@ -1297,7 +1297,7 @@ vector<int> FEMesh::GetElementsFromSelectedFaces()
 
 //-----------------------------------------------------------------------------
 // Extract faces as a shell mesh
-FEMesh* FEMesh::ExtractFaces(bool selectedOnly)
+FSMesh* FSMesh::ExtractFaces(bool selectedOnly)
 {
 	// clear face tags
 	TagAllFaces(0);
@@ -1341,7 +1341,7 @@ FEMesh* FEMesh::ExtractFaces(bool selectedOnly)
 	assert( (nodes>0) && (faces>0));
 
 	// allocate new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, faces);
 
 	// create the nodes
@@ -1393,7 +1393,7 @@ FEMesh* FEMesh::ExtractFaces(bool selectedOnly)
 //-----------------------------------------------------------------------------
 // Save mesh data to archive
 //
-void FEMesh::Save(OArchive &ar)
+void FSMesh::Save(OArchive &ar)
 {
 	int nodes = Nodes();
 	int elems = Elements();
@@ -1621,9 +1621,9 @@ void FEMesh::Save(OArchive &ar)
 //-----------------------------------------------------------------------------
 // Load mesh data from archive
 //
-void FEMesh::Load(IArchive& ar)
+void FSMesh::Load(IArchive& ar)
 {
-	TRACE("FEMesh::Load");
+	TRACE("FSMesh::Load");
 
 	int nodes;
 	int elems;
@@ -1748,7 +1748,7 @@ void FEMesh::Load(IArchive& ar)
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
-					if (nid != CID_MESH_FACE) throw ReadError("error parsing CID_MESH_FACE_SECTION (FEMesh::Load)");
+					if (nid != CID_MESH_FACE) throw ReadError("error parsing CID_MESH_FACE_SECTION (FSMesh::Load)");
 
 					while (IArchive::IO_OK == ar.OpenChunk())
 					{
@@ -1813,7 +1813,7 @@ void FEMesh::Load(IArchive& ar)
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
-					if (nid != CID_MESH_EDGE) throw ReadError("error parsing CID_MESH_EDGE_SECTION (FEMesh::Load)");
+					if (nid != CID_MESH_EDGE) throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
 
 					int ntype;
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -1832,7 +1832,7 @@ void FEMesh::Load(IArchive& ar)
 								case FE_BEAM3: pe->SetType(FE_EDGE3);  break;
 								default:
 									assert(false);
-									throw ReadError("error parsing CID_MESH_EDGE_SECTION (FEMesh::Load)");
+									throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
 								}
 							}
 							else
@@ -1844,7 +1844,7 @@ void FEMesh::Load(IArchive& ar)
 								case FE_EDGE4: pe->SetType(FE_EDGE4);  break;
 								default:
 									assert(false);
-									throw ReadError("error parsing CID_MESH_EDGE_SECTION (FEMesh::Load)");
+									throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
 								}
 							}
 						} 
@@ -1854,7 +1854,7 @@ void FEMesh::Load(IArchive& ar)
 							{
 								int nn = pe->Nodes();
 								assert(nn > 0);
-								if (nn <= 0) throw ReadError("error parsing CID_MESH_EDGE_SECTION (FEMesh::Load)");
+								if (nn <= 0) throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
 								ar.read(pe->n, nn); break;
 							}
 						}
@@ -1972,7 +1972,7 @@ void FEMesh::Load(IArchive& ar)
 
 //-----------------------------------------------------------------------------
 // Create a shallow-copy of the mesh
-void FEMesh::ShallowCopy(FEMesh* pm)
+void FSMesh::ShallowCopy(FSMesh* pm)
 {
 	m_Node = pm->m_Node;
 	m_Edge = pm->m_Edge;
@@ -1985,16 +1985,16 @@ void FEMesh::ShallowCopy(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-int FEMesh::MeshDataFields() const { return (int)m_meshData.size(); }
+int FSMesh::MeshDataFields() const { return (int)m_meshData.size(); }
 
 //-----------------------------------------------------------------------------
-FEMeshData* FEMesh::GetMeshDataField(int i) { return m_meshData[i]; }
+FEMeshData* FSMesh::GetMeshDataField(int i) { return m_meshData[i]; }
 
 //-----------------------------------------------------------------------------
-Mesh_Data& FEMesh::GetMeshData() { return m_data; }
+Mesh_Data& FSMesh::GetMeshData() { return m_data; }
 
 //-----------------------------------------------------------------------------
-FEMeshData* FEMesh::FindMeshDataField(const string& sz)
+FEMeshData* FSMesh::FindMeshDataField(const string& sz)
 {
 	if (m_meshData.empty()) return 0;
 	for (int i = 0; i<m_meshData.size(); ++i)
@@ -2006,13 +2006,13 @@ FEMeshData* FEMesh::FindMeshDataField(const string& sz)
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::RemoveMeshDataField(int i)
+void FSMesh::RemoveMeshDataField(int i)
 {
 	m_meshData.erase(m_meshData.begin() + i);
 }
 
 //-----------------------------------------------------------------------------
-int FEMesh::GetMeshDataIndex(FEMeshData* data)
+int FSMesh::GetMeshDataIndex(FEMeshData* data)
 {
 	for (int i = 0; i < m_meshData.size(); ++i)
 		if (m_meshData[i] == data) return i;
@@ -2020,20 +2020,20 @@ int FEMesh::GetMeshDataIndex(FEMeshData* data)
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::InsertMeshData(int i, FEMeshData* data)
+void FSMesh::InsertMeshData(int i, FEMeshData* data)
 {
 	m_meshData.insert(m_meshData.begin() + i, data);
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::AddMeshDataField(FEMeshData* data)
+void FSMesh::AddMeshDataField(FEMeshData* data)
 {
 	assert(data);
 	if (data) m_meshData.push_back(data);
 }
 
 //-----------------------------------------------------------------------------
-FENodeData* FEMesh::AddNodeDataField(const string& sz, double v)
+FENodeData* FSMesh::AddNodeDataField(const string& sz, double v)
 {
 	FENodeData* data = new FENodeData(GetGObject());
 	data->Create(v);
@@ -2043,7 +2043,7 @@ FENodeData* FEMesh::AddNodeDataField(const string& sz, double v)
 }
 
 //-----------------------------------------------------------------------------
-FENodeData* FEMesh::AddNodeDataField(const string& name, FENodeSet* nodeset, FEMeshData::DATA_TYPE dataType)
+FENodeData* FSMesh::AddNodeDataField(const string& name, FENodeSet* nodeset, FEMeshData::DATA_TYPE dataType)
 {
 	FENodeData* data = new FENodeData(GetGObject());
 	data->Create(nodeset, 0.0);
@@ -2053,7 +2053,7 @@ FENodeData* FEMesh::AddNodeDataField(const string& name, FENodeSet* nodeset, FEM
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceData* FEMesh::AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType)
+FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType)
 {
 	FESurfaceData* data = new FESurfaceData;
 	data->Create(this, surface, dataType);
@@ -2063,7 +2063,7 @@ FESurfaceData* FEMesh::AddSurfaceDataField(const string& name, FESurface* surfac
 }
 
 //-----------------------------------------------------------------------------
-FEElementData* FEMesh::AddElementDataField(const string& sz, FEPart* part, FEMeshData::DATA_TYPE dataType)
+FEElementData* FSMesh::AddElementDataField(const string& sz, FEPart* part, FEMeshData::DATA_TYPE dataType)
 {
 	FEElementData* map = new FEElementData;
 	map->Create(this, part, dataType);
@@ -2073,12 +2073,12 @@ FEElementData* FEMesh::AddElementDataField(const string& sz, FEPart* part, FEMes
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh)
+FSMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh)
 {
 	int nodes = surfaceMesh->Nodes();
 	int faces = surfaceMesh->Faces();
 
-	FEMesh* mesh = new FEMesh;
+	FSMesh* mesh = new FSMesh;
 	mesh->Create(nodes, faces);
 
 	for (int i = 0; i<nodes; ++i)
@@ -2116,7 +2116,7 @@ FEMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh)
 }
 
 //-----------------------------------------------------------------------------
-int FEMesh::CountSelectedElements() const
+int FSMesh::CountSelectedElements() const
 {
 	int N = 0, NE = Elements();
 	for (int i = 0; i < NE; ++i)
@@ -2127,7 +2127,7 @@ int FEMesh::CountSelectedElements() const
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::SetUniformShellThickness(double h)
+void FSMesh::SetUniformShellThickness(double h)
 {
 	for (int i = 0; i < Elements(); ++i)
 	{

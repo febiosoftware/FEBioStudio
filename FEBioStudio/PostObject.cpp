@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "PostObject.h"
 #include <PostGL/GLModel.h>
 
-CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FEMesh*)nullptr)
+CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FSMesh*)nullptr)
 {
 	// store the model
 	m_glm = glm;
@@ -48,7 +48,7 @@ CPostObject::~CPostObject()
 
 BOX CPostObject::GetBoundingBox()
 {
-	FEMesh* mesh = GetFEMesh();
+	FSMesh* mesh = GetFEMesh();
 	if (mesh) return mesh->GetBoundingBox();
 	else return BOX();
 }

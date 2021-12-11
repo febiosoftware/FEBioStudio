@@ -117,26 +117,26 @@ void GModifiedObject::DeleteModifier(GModifier* pmod)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GModifiedObject::BuildMesh()
+FSMesh* GModifiedObject::BuildMesh()
 {
 	delete GetFEMesh();
 	SetFEMesh(nullptr);
 
 	// ask the ref object to build a mesh
-	FEMesh* newMesh = nullptr;
-	FEMesh* pm = m_po->BuildMesh();
+	FSMesh* newMesh = nullptr;
+	FSMesh* pm = m_po->BuildMesh();
 	if (pm)
 	{
-		newMesh = new FEMesh(*pm);
+		newMesh = new FSMesh(*pm);
 		newMesh->SetGObject(this);
 	}
 	
-	// apply modifiers to FEMesh
+	// apply modifiers to FSMesh
 	int N = m_pStack->Size();
 	for (int i=0; i<N; ++i)
 	{
 		GModifier* pmod = m_pStack->Modifier(i);
-		FEMesh* pm = pmod->BuildFEMesh(this);
+		FSMesh* pm = pmod->BuildFEMesh(this);
 		if (pm) SetFEMesh(pm);
 	}
 

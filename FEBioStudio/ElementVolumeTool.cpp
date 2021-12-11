@@ -59,7 +59,7 @@ void CElementVolumeTool::Update()
 {
 	m_nsel = 0;
 	m_vol = 0.0;
-	FEMesh* mesh = GetActiveMesh();
+	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return;
 
 	int NE = mesh->Elements();

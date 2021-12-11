@@ -589,7 +589,7 @@ void CCmdToggleDiscreteVisibility::UnExecute()
 }
 
 //=============================================================================
-CCmdToggleElementVisibility::CCmdToggleElementVisibility(FEMesh* mesh) : CCommand("Toggle visibility")
+CCmdToggleElementVisibility::CCmdToggleElementVisibility(FSMesh* mesh) : CCommand("Toggle visibility")
 {
 	m_mesh = mesh;
 }
@@ -610,7 +610,7 @@ void CCmdToggleElementVisibility::UnExecute()
 }
 
 //=============================================================================
-CCmdToggleFEFaceVisibility::CCmdToggleFEFaceVisibility(FEMeshBase* mesh) : CCommand("Toggle visibility")
+CCmdToggleFEFaceVisibility::CCmdToggleFEFaceVisibility(FSMeshBase* mesh) : CCommand("Toggle visibility")
 {
 	m_mesh = mesh;
 }
@@ -1464,7 +1464,7 @@ void CCmdInvertSelection::UnExecute()
 // CCmdSelectElements
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectElements::CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd) : CCommand("Select Elements")
+CCmdSelectElements::CCmdSelectElements(FSMesh* pm, int* pe, int N, bool badd) : CCommand("Select Elements")
 {
 	int i;
 
@@ -1489,7 +1489,7 @@ CCmdSelectElements::CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd) : 
 	}
 }
 
-CCmdSelectElements::CCmdSelectElements(FEMesh* pm, vector<int>& el, bool badd) : CCommand("Select Elements")
+CCmdSelectElements::CCmdSelectElements(FSMesh* pm, vector<int>& el, bool badd) : CCommand("Select Elements")
 {
 	int i;
 	int N = (int)el.size();
@@ -1553,11 +1553,11 @@ void CCmdSelectElements::UnExecute()
 // CCmdUnselectElements
 //////////////////////////////////////////////////////////////////////
 
-CCmdUnselectElements::CCmdUnselectElements(FEMesh* mesh, int* pe, int N) : CCommand("Unselect")
+CCmdUnselectElements::CCmdUnselectElements(FSMesh* mesh, int* pe, int N) : CCommand("Unselect")
 {
 	// get the current mesh
 	m_mesh = mesh;
-	FEMesh* pm = mesh;
+	FSMesh* pm = mesh;
 	int M = pm->Elements();
 
 	// store the elements selection state
@@ -1570,13 +1570,13 @@ CCmdUnselectElements::CCmdUnselectElements(FEMesh* mesh, int* pe, int N) : CComm
 	for (int i = 0; i<N; ++i) m_pel[i] = pe[i];
 }
 
-CCmdUnselectElements::CCmdUnselectElements(FEMesh* mesh, const vector<int>& elem) : CCommand("Unselect")
+CCmdUnselectElements::CCmdUnselectElements(FSMesh* mesh, const vector<int>& elem) : CCommand("Unselect")
 {
 	int N = (int)elem.size();
 
 	// get the current mesh
 	m_mesh = mesh;
-	FEMesh* pm = m_mesh;
+	FSMesh* pm = m_mesh;
 	int M = pm->Elements();
 
 	// store the elements selection state
@@ -1592,7 +1592,7 @@ CCmdUnselectElements::CCmdUnselectElements(FEMesh* mesh, const vector<int>& elem
 
 void CCmdUnselectElements::Execute()
 {
-	FEMesh* pm = m_mesh;
+	FSMesh* pm = m_mesh;
 	for (int i = 0; i<m_N; ++i) pm->Element(m_pel[i]).Unselect();
 
 	pm->UpdateSelection();
@@ -1600,7 +1600,7 @@ void CCmdUnselectElements::Execute()
 
 void CCmdUnselectElements::UnExecute()
 {
-	FEMesh* pm = m_mesh;
+	FSMesh* pm = m_mesh;
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
 		FEElement& el = pm->Element(i);
@@ -1616,7 +1616,7 @@ void CCmdUnselectElements::UnExecute()
 // CCmdSelectFaces
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectFaces::CCmdSelectFaces(FEMeshBase* pm, int* pf, int N, bool badd) : CCommand("Select Faces")
+CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, int* pf, int N, bool badd) : CCommand("Select Faces")
 {
 	int i;
 
@@ -1641,7 +1641,7 @@ CCmdSelectFaces::CCmdSelectFaces(FEMeshBase* pm, int* pf, int N, bool badd) : CC
 	}
 }
 
-CCmdSelectFaces::CCmdSelectFaces(FEMeshBase* pm, vector<int>& fl, bool badd) : CCommand("Select Faces")
+CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, vector<int>& fl, bool badd) : CCommand("Select Faces")
 {
 	int i;
 	int N = (int)fl.size();
@@ -1702,7 +1702,7 @@ void CCmdSelectFaces::UnExecute()
 // CCmdUnselectFaces
 //////////////////////////////////////////////////////////////////////
 
-CCmdUnselectFaces::CCmdUnselectFaces(FEMeshBase* pm, int* pf, int N) : CCommand("Unselect")
+CCmdUnselectFaces::CCmdUnselectFaces(FSMeshBase* pm, int* pf, int N) : CCommand("Unselect")
 {
 	// store the mesh
 	m_pm = pm;
@@ -1718,7 +1718,7 @@ CCmdUnselectFaces::CCmdUnselectFaces(FEMeshBase* pm, int* pf, int N) : CCommand(
 	for (int i = 0; i<N; ++i) m_pface[i] = pf[i];
 }
 
-CCmdUnselectFaces::CCmdUnselectFaces(FEMeshBase* pm, const vector<int>& face) : CCommand("Unselect")
+CCmdUnselectFaces::CCmdUnselectFaces(FSMeshBase* pm, const vector<int>& face) : CCommand("Unselect")
 {
 	// store the mesh
 	m_pm = pm;
@@ -1759,7 +1759,7 @@ void CCmdUnselectFaces::UnExecute()
 // CCmdSelectFEEdges
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectFEEdges::CCmdSelectFEEdges(FELineMesh* pm, int* pe, int N, bool badd) : CCommand("Select Edges")
+CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, int* pe, int N, bool badd) : CCommand("Select Edges")
 {
 	m_pm = pm;
 	m_badd = badd;
@@ -1782,7 +1782,7 @@ CCmdSelectFEEdges::CCmdSelectFEEdges(FELineMesh* pm, int* pe, int N, bool badd) 
 	}
 }
 
-CCmdSelectFEEdges::CCmdSelectFEEdges(FELineMesh* pm, vector<int>& el, bool badd) : CCommand("Select Edges")
+CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, vector<int>& el, bool badd) : CCommand("Select Edges")
 {
 	int N = (int)el.size();
 
@@ -1840,7 +1840,7 @@ void CCmdSelectFEEdges::UnExecute()
 // CCmdUnselectFEEdges
 //////////////////////////////////////////////////////////////////////
 
-CCmdUnselectFEEdges::CCmdUnselectFEEdges(FELineMesh* pm, int* pe, int N) : CCommand("Unselect")
+CCmdUnselectFEEdges::CCmdUnselectFEEdges(FSLineMesh* pm, int* pe, int N) : CCommand("Unselect")
 {
 	m_pm = pm;
 
@@ -1857,7 +1857,7 @@ CCmdUnselectFEEdges::CCmdUnselectFEEdges(FELineMesh* pm, int* pe, int N) : CComm
 	for (int i = 0; i<N; ++i) m_pedge[i] = pe[i];
 }
 
-CCmdUnselectFEEdges::CCmdUnselectFEEdges(FELineMesh* pm, const vector<int>& edge) : CCommand("Unselect")
+CCmdUnselectFEEdges::CCmdUnselectFEEdges(FSLineMesh* pm, const vector<int>& edge) : CCommand("Unselect")
 {
 	m_pm = pm;
 
@@ -1900,7 +1900,7 @@ void CCmdUnselectFEEdges::UnExecute()
 // CCmdSelectFENodes
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectFENodes::CCmdSelectFENodes(FELineMesh* pm, int* pn, int N, bool badd) : CCommand("Select Nodes")
+CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, int* pn, int N, bool badd) : CCommand("Select Nodes")
 {
 	int i;
 
@@ -1925,7 +1925,7 @@ CCmdSelectFENodes::CCmdSelectFENodes(FELineMesh* pm, int* pn, int N, bool badd) 
 	}
 }
 
-CCmdSelectFENodes::CCmdSelectFENodes(FELineMesh* pm, vector<int>& nl, bool badd) : CCommand("Select Nodes")
+CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, vector<int>& nl, bool badd) : CCommand("Select Nodes")
 {
 	int i;
 	int N = (int)nl.size();
@@ -1985,7 +1985,7 @@ void CCmdSelectFENodes::UnExecute()
 // CCmdUnselectNodes
 //////////////////////////////////////////////////////////////////////
 
-CCmdUnselectNodes::CCmdUnselectNodes(FELineMesh* pm, int* pn, int N) : CCommand("Unselect")
+CCmdUnselectNodes::CCmdUnselectNodes(FSLineMesh* pm, int* pn, int N) : CCommand("Unselect")
 {
 	// get the current mesh
 	m_mesh = pm;
@@ -2001,7 +2001,7 @@ CCmdUnselectNodes::CCmdUnselectNodes(FELineMesh* pm, int* pn, int N) : CCommand(
 	for (int i = 0; i<N; ++i) m_pn[i] = pn[i];
 }
 
-CCmdUnselectNodes::CCmdUnselectNodes(FELineMesh* pm, const vector<int>& node) : CCommand("Unselect")
+CCmdUnselectNodes::CCmdUnselectNodes(FSLineMesh* pm, const vector<int>& node) : CCommand("Unselect")
 {
 	int N = (int)node.size();
 
@@ -2022,14 +2022,14 @@ CCmdUnselectNodes::CCmdUnselectNodes(FELineMesh* pm, const vector<int>& node) : 
 
 void CCmdUnselectNodes::Execute()
 {
-	FELineMesh* pm = m_mesh;
+	FSLineMesh* pm = m_mesh;
 	for (int i = 0; i<m_N; ++i) pm->Node(m_pn[i]).Unselect();
 	pm->UpdateSelection();
 }
 
 void CCmdUnselectNodes::UnExecute()
 {
-	FELineMesh* pm = m_mesh;
+	FSLineMesh* pm = m_mesh;
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
 		FENode& node = pm->Node(i);
@@ -2135,7 +2135,7 @@ void CCmdDeleteFESelection::Execute()
 	// create a copy of the old mesh
 	if (m_pnew == 0)
 	{
-		m_pnew = new FEMesh(*m_pold);
+		m_pnew = new FSMesh(*m_pold);
 		FEMeshBuilder meshBuilder(*m_pnew);
 
 		if      (m_nitem == ITEM_ELEM) meshBuilder.DeleteSelectedElements();
@@ -2150,7 +2150,7 @@ void CCmdDeleteFESelection::Execute()
 	m_pobj->ReplaceFEMesh(m_pnew, false);
 
 	// swap meshes
-	FEMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+	FSMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 }
 
 //-----------------------------------------------------------------------------
@@ -2162,7 +2162,7 @@ void CCmdDeleteFESelection::UnExecute()
 	m_pobj->ReplaceFEMesh(m_pnew);
 
 	// swap meshes
-	FEMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+	FSMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 }
 
 //=============================================================================
@@ -2283,7 +2283,7 @@ void CCmdShowParts::UnExecute()
 // CCmdHideElements
 //////////////////////////////////////////////////////////////////////
 
-CCmdHideElements::CCmdHideElements(FEMesh* mesh, const vector<int>& elemList) : CCommand("Hide")
+CCmdHideElements::CCmdHideElements(FSMesh* mesh, const vector<int>& elemList) : CCommand("Hide")
 {
 	m_mesh = mesh;
 	m_elemList = elemList;
@@ -2359,7 +2359,7 @@ CCmdHideSelection::CCmdHideSelection(CModelDocument* doc) : CCommand("Hide")
 		break;
 	case ITEM_ELEM:
 	{
-		FEMesh* mesh = (po ? po->GetFEMesh() : 0);
+		FSMesh* mesh = (po ? po->GetFEMesh() : 0);
 		if (mesh)
 		{
 			for (int i = 0; i<mesh->Elements(); ++i)
@@ -2402,7 +2402,7 @@ void CCmdHideSelection::Execute()
 		break;
 	case ITEM_ELEM:
 	{
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm) pm->ShowElements(m_item, false);
 	}
 	break;
@@ -2436,7 +2436,7 @@ void CCmdHideSelection::UnExecute()
 		break;
 	case ITEM_ELEM:
 	{
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			pm->ShowElements(m_item);
@@ -2498,7 +2498,7 @@ CCmdHideUnselected::CCmdHideUnselected(CModelDocument* doc) : CCommand("Hide")
 		break;
 	case ITEM_ELEM:
 	{
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			for (int i = 0; i<pm->Elements(); ++i) if (!pm->Element(i).IsSelected()) m_item[m++] = i;
@@ -2533,7 +2533,7 @@ void CCmdHideUnselected::Execute()
 		break;
 	case ITEM_ELEM:
 	{
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm) pm->ShowElements(m_item, false);
 	}
 	break;
@@ -2562,7 +2562,7 @@ void CCmdHideUnselected::UnExecute()
 		break;
 	case ITEM_ELEM:
 	{
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm) pm->ShowElements(m_item);
 	}
 	break;
@@ -2631,7 +2631,7 @@ CCmdUnhideAll::CCmdUnhideAll(CModelDocument* doc) : CCommand("Unhide all")
 		{
 		case ITEM_ELEM:
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
 				for (int i = 0; i<pm->Elements(); ++i) if (!pm->Element(i).IsVisible()) m_item.push_back(i);
@@ -2692,7 +2692,7 @@ void CCmdUnhideAll::Execute()
 		{
 		case ITEM_ELEM:
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			assert(pm);
 			pm->ShowElements(m_item, m_bunhide);
 		}
@@ -2763,14 +2763,14 @@ void CCmdApplyFEModifier::Execute()
 		{
 			// swap old and new
 			// we do this so that we can always delete m_pnew
-			FEMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+			FSMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 
 			throw;
 		}
 
 		// swap old and new
 		// we do this so that we can always delete m_pnew
-		FEMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+		FSMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 	}
 }
 
@@ -2784,7 +2784,7 @@ void CCmdApplyFEModifier::UnExecute()
 
 		// swap old and new
 		// we do this so that we can always delete m_pnew
-		FEMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+		FSMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 	}
 }
 
@@ -2872,7 +2872,7 @@ void CCmdApplySurfaceModifier::UnExecute()
 // CCmdChangeFEMesh
 //-----------------------------------------------------------------------------
 
-CCmdChangeFEMesh::CCmdChangeFEMesh(GObject* po, FEMesh* pm, bool bup) : CCommand("Change mesh")
+CCmdChangeFEMesh::CCmdChangeFEMesh(GObject* po, FSMesh* pm, bool bup) : CCommand("Change mesh")
 {
 	assert(po);
 	m_update = bup;
@@ -2882,7 +2882,7 @@ CCmdChangeFEMesh::CCmdChangeFEMesh(GObject* po, FEMesh* pm, bool bup) : CCommand
 
 void CCmdChangeFEMesh::Execute()
 {
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 	m_po->ReplaceFEMesh(m_pnew, m_update);
 
 	m_pnew = pm;
@@ -2964,7 +2964,7 @@ CCmdInvertElements::CCmdInvertElements(GMeshObject* po) : CCommand("Invert")
 
 void CCmdInvertElements::Execute()
 {
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 	FEMeshBuilder meshBuilder(*pm);
 	meshBuilder.InvertSelectedElements();
 	m_po->Update(false);
@@ -3572,14 +3572,14 @@ CCmdRemoveMeshData::~CCmdRemoveMeshData()
 
 void CCmdRemoveMeshData::Execute()
 {
-	FEMesh* mesh = m_data->GetMesh();
+	FSMesh* mesh = m_data->GetMesh();
 	m_index = mesh->GetMeshDataIndex(m_data); assert(m_index >= 0);
 	mesh->RemoveMeshDataField(m_index);
 }
 
 void CCmdRemoveMeshData::UnExecute()
 {
-	FEMesh* mesh = m_data->GetMesh();
+	FSMesh* mesh = m_data->GetMesh();
 	mesh->InsertMeshData(m_index, m_data);
 	m_index = -1;
 }

@@ -59,7 +59,7 @@ void CMeasureAreaTool::Update()
 {
 	m_nsel = 0;
 	m_area = 0.0;
-	FEMesh* mesh = GetActiveMesh();
+	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return;
 
 	int NF = mesh->Faces();

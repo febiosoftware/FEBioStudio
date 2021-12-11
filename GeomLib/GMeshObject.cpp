@@ -41,7 +41,7 @@ using std::stringstream;
 
 //-----------------------------------------------------------------------------
 // Constructor for creating a GMeshObject from a naked mesh. 
-GMeshObject::GMeshObject(FEMesh* pm) : GObject(GMESH_OBJECT)
+GMeshObject::GMeshObject(FSMesh* pm) : GObject(GMESH_OBJECT)
 {
 	// update the object
 	if (pm)
@@ -135,7 +135,7 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 	}
 
 	// copy the mesh from the original object
-	FEMesh* pm = new FEMesh(*po->GetFEMesh());
+	FSMesh* pm = new FSMesh(*po->GetFEMesh());
 	SetFEMesh(pm);
 
 	// rebuild the GMesh
@@ -148,7 +148,7 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 // function will also rebuild the GMesh for rendering.
 bool GMeshObject::Update(bool b)
 {
-	FEMesh* pm = GetFEMesh();
+	FSMesh* pm = GetFEMesh();
 	if (pm == nullptr) return true;
 
 	UpdateParts();
@@ -168,7 +168,7 @@ bool GMeshObject::Update(bool b)
 void GMeshObject::UpdateParts()
 {
 	// get the mesh
-	FEMesh& m = *GetFEMesh();
+	FSMesh& m = *GetFEMesh();
 
 	// count how many parts there are
 	int nparts = m.CountElementPartitions();
@@ -231,7 +231,7 @@ void GMeshObject::UpdateParts()
 void GMeshObject::UpdateSurfaces()
 {
 	// get the mesh
-	FEMesh& m = *GetFEMesh();
+	FSMesh& m = *GetFEMesh();
 
 	// count how many surfaces there are
 	int nsurf = m.CountFacePartitions();
@@ -331,7 +331,7 @@ void GMeshObject::UpdateSurfaces()
 void GMeshObject::UpdateEdges()
 {
 	// get the mesh
-	FEMesh& m = *GetFEMesh();
+	FSMesh& m = *GetFEMesh();
 
 	// count how many edges there are
 	int nedges = m.CountEdgePartitions();
@@ -442,7 +442,7 @@ void GMeshObject::UpdateEdges()
 void GMeshObject::UpdateNodes()
 {
 	// get the mesh
-	FEMesh& m = *GetFEMesh();
+	FSMesh& m = *GetFEMesh();
 
 	// count how many nodes there are
 	int nodes = m.CountNodePartitions();
@@ -512,7 +512,7 @@ void GMeshObject::UpdateNodes()
 int GMeshObject::MakeGNode(int n)
 {
 	// get the mesh
-	FEMesh& m = *GetFEMesh();
+	FSMesh& m = *GetFEMesh();
 	FENode& fen = m.Node(n);
 
 	if (fen.m_gid == -1)
@@ -539,7 +539,7 @@ int GMeshObject::MakeGNode(int n)
 }
 
 //-----------------------------------------------------------------------------
-// This function adds a node to the GMeshObject and to the FEMesh
+// This function adds a node to the GMeshObject and to the FSMesh
 
 int GMeshObject::AddNode(vec3d r)
 {
@@ -547,7 +547,7 @@ int GMeshObject::AddNode(vec3d r)
 	r = GetTransform().GlobalToLocal(r);
 
 	// get the mesh
-	FEMesh& m = *GetFEMesh();
+	FSMesh& m = *GetFEMesh();
 
 	// add the node
 	FEMeshBuilder meshBuilder(m);
@@ -572,7 +572,7 @@ int GMeshObject::AddNode(vec3d r)
 
 //-----------------------------------------------------------------------------
 
-FEMesh* GMeshObject::BuildMesh()
+FSMesh* GMeshObject::BuildMesh()
 {
 	// the mesh is already built so we don't have to rebuilt it
 	return GetFEMesh();
@@ -585,7 +585,7 @@ void GMeshObject::BuildGMesh()
 	GLMesh* gmesh = new GLMesh();
 
 	// we'll extract the data from the FE mesh
-	FEMesh* pm = GetFEMesh();
+	FSMesh* pm = GetFEMesh();
 
 	// clear tags on all nodes
 	int NN = pm->Nodes();
@@ -652,7 +652,7 @@ void GMeshObject::BuildGMesh()
 GObject* GMeshObject::Clone()
 {
 	// create a copy of our mesh
-	FEMesh* pm = new FEMesh(*GetFEMesh());
+	FSMesh* pm = new FSMesh(*GetFEMesh());
 
 	// create a new GMeshObject from this mesh
 	GMeshObject* po = new GMeshObject(pm);
@@ -668,10 +668,10 @@ GObject* GMeshObject::Clone()
 }
 
 //-----------------------------------------------------------------------------
-FEMeshBase* GMeshObject::GetEditableMesh() { return GetFEMesh(); }
+FSMeshBase* GMeshObject::GetEditableMesh() { return GetFEMesh(); }
 
 //-----------------------------------------------------------------------------
-FELineMesh* GMeshObject::GetEditableLineMesh() { return GetFEMesh(); }
+FSLineMesh* GMeshObject::GetEditableLineMesh() { return GetFEMesh(); }
 
 //-----------------------------------------------------------------------------
 // Save data to file
@@ -1031,7 +1031,7 @@ void GMeshObject::Load(IArchive& ar)
 		// the mesh object
 		case CID_MESH:
 			if (GetFEMesh()) delete GetFEMesh();
-			SetFEMesh(new FEMesh);
+			SetFEMesh(new FSMesh);
 			GetFEMesh()->Load(ar);
 			break;
 		}
@@ -1116,7 +1116,7 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 	}
 
 	// attach to the new mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	FEMeshBuilder meshBuilder(*GetFEMesh());
 	if (bweld)
 	{
@@ -1139,7 +1139,7 @@ bool GMeshObject::DeletePart(GPart* pg)
 	if (pg->Object() != this) { assert(false); return false; }
 
 	// get the mesh
-	FEMesh* pm = GetFEMesh(); assert(pm);
+	FSMesh* pm = GetFEMesh(); assert(pm);
 	if (pm == 0) return false;
 
 	// get the part's local ID
@@ -1155,7 +1155,7 @@ bool GMeshObject::DeletePart(GPart* pg)
 
 		// delete the elements of this part
 		FEMeshBuilder meshBuilder(*pm);
-		FEMesh* newMesh = meshBuilder.DeletePart(*pm, partId);
+		FSMesh* newMesh = meshBuilder.DeletePart(*pm, partId);
 
 		if (newMesh)
 		{
@@ -1182,7 +1182,7 @@ bool GMeshObject::DeletePart(GPart* pg)
 // detach an element selection
 GMeshObject* GMeshObject::DetachSelection()
 {
-	FEMesh* oldMesh = GetFEMesh();
+	FSMesh* oldMesh = GetFEMesh();
 
 	// make sure material IDs are updated
 	for (int i = 0; i < oldMesh->Elements(); ++i)
@@ -1194,7 +1194,7 @@ GMeshObject* GMeshObject::DetachSelection()
 	}
 
 	FEMeshBuilder meshBuilder(*oldMesh);
-	FEMesh* newMesh = meshBuilder.DetachSelectedMesh();
+	FSMesh* newMesh = meshBuilder.DetachSelectedMesh();
 	Update(true);
 
 	// create a new object for this mesh
@@ -1202,7 +1202,7 @@ GMeshObject* GMeshObject::DetachSelection()
 	newObject->CopyTransform(this);
 
 	// see if we can map the materials back to the parts
-	FEMesh* pm = newObject->GetFEMesh();
+	FSMesh* pm = newObject->GetFEMesh();
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
 		FEElement& el = pm->Element(i);
@@ -1219,9 +1219,9 @@ GMeshObject* GMeshObject::DetachSelection()
 
 GMeshObject* ExtractSelection(GObject* po)
 {
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
-	FEMesh* newMesh = pm->ExtractFaces(true);
+	FSMesh* newMesh = pm->ExtractFaces(true);
 
 	// create a new object for this mesh
 	GMeshObject* newObject = new GMeshObject(newMesh);
@@ -1236,7 +1236,7 @@ GMeshObject* ConvertToEditableMesh(GObject* po)
 
 	GMeshObject* pnew = nullptr;
 
-	FEMesh* mesh = po->GetFEMesh();
+	FSMesh* mesh = po->GetFEMesh();
 	if (mesh == 0)
 	{
 		// for editable surfaces, we'll use the surface mesh for converting

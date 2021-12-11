@@ -44,7 +44,7 @@ FECurveMesh* GCurveMeshObject::GetCurveMesh()
 	return m_curve;
 }
 
-FELineMesh* GCurveMeshObject::GetEditableLineMesh()
+FSLineMesh* GCurveMeshObject::GetEditableLineMesh()
 { 
 	return GetCurveMesh(); 
 }
@@ -506,7 +506,7 @@ void GCurveMeshObject::Load(IArchive& ar)
 		// the mesh object
 		case CID_MESH:
 			if (GetFEMesh()) delete GetFEMesh();
-			SetFEMesh(new FEMesh);
+			SetFEMesh(new FSMesh);
 			GetFEMesh()->Load(ar);
 			break;
 		case CID_CURVE_MESH:

@@ -226,7 +226,7 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 		m_find->Init(bdisp ? 1 : 0);
 	}
 
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (m_map.States() == 0)
@@ -394,7 +394,7 @@ void CGLParticleFlowPlot::AdvanceParticles(int n0, int n1)
 	FEPostModel& fem = *mdl->GetFSModel();
 
 	// get the mesh
-	FEMeshBase& mesh = *mdl->GetActiveMesh();
+	FSMeshBase& mesh = *mdl->GetActiveMesh();
 
 	BOX box = m_find->BoundingBox();
 	float R = box.GetMaxExtent();
@@ -475,7 +475,7 @@ void CGLParticleFlowPlot::SeedParticles()
 	if ((m_seedTime < 0) || (m_seedTime >= NS)) return;
 
 	// get the mesh
-	FEMeshBase& mesh = *mdl->GetActiveMesh();
+	FSMeshBase& mesh = *mdl->GetActiveMesh();
 
 	vector<vec3f>& val = m_map.State(m_seedTime);
 

@@ -57,7 +57,7 @@ bool FEPLYExport::Write(const char* szfile)
 	int objs = mdl.Objects();
 	for (int i = 0; i < objs; ++i)
 	{
-		FEMesh* mesh = mdl.Object(i)->GetFEMesh();
+		FSMesh* mesh = mdl.Object(i)->GetFEMesh();
 		if (mesh)
 		{
 			int n0 = vertices.size();

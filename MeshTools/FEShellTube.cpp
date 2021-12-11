@@ -52,7 +52,7 @@ FEShellTube::FEShellTube(GThinTube* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FEMesh* FEShellTube::BuildMesh()
+FSMesh* FEShellTube::BuildMesh()
 {
 	// get discretization parameters
 	int nd = GetIntValue(NDIV);
@@ -81,7 +81,7 @@ FEMesh* FEShellTube::BuildMesh()
 	MQ.SetFaceSizes(3, nd, nz);
 
 	// Build the mesh
-	FEMesh* pm = MQ.BuildMesh();
+	FSMesh* pm = MQ.BuildMesh();
 	if (pm == nullptr) return nullptr;
 
 	// assign shell thickness

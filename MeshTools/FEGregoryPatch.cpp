@@ -46,7 +46,7 @@ FEGregoryPatch::~FEGregoryPatch(void)
 {
 }
 
-FEMesh* FEGregoryPatch::BuildMesh()
+FSMesh* FEGregoryPatch::BuildMesh()
 {
 	// first, build the patches
 	BuildPatches();
@@ -58,7 +58,7 @@ FEMesh* FEGregoryPatch::BuildMesh()
 	return BuildFEMesh();
 }
 
-FEMesh* FEGregoryPatch::BuildFEMesh()
+FSMesh* FEGregoryPatch::BuildFEMesh()
 {
 	// get the parameters
 	m_w = GetFloatValue(W);
@@ -76,7 +76,7 @@ FEMesh* FEGregoryPatch::BuildFEMesh()
 	int nodes = (m_nx*m_mx+1)*(m_ny*m_my+1);
 	int elems = m_nx*m_mx*m_ny*m_my;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// build the nodes
@@ -308,7 +308,7 @@ vec3d FEGregoryPatch::EvalPatch(FEGregoryPatch::GPatch &p, double r, double s)
 	return y;
 }
 
-void FEGregoryPatch::BuildFaces(FEMesh* pm)
+void FEGregoryPatch::BuildFaces(FSMesh* pm)
 {
 	int faces = pm->Elements();
 	pm->Create(0,0,faces);

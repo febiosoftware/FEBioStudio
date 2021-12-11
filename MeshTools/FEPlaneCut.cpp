@@ -65,7 +65,7 @@ void FEPlaneCut::SetPlaneCoefficients(double a[4])
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEPlaneCut::Apply(FEMesh* pm)
+FSMesh* FEPlaneCut::Apply(FSMesh* pm)
 {
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_TRI3) == false) return 0;
@@ -197,7 +197,7 @@ FEMesh* FEPlaneCut::Apply(FEMesh* pm)
 	}
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	int N1 = (int) EL.size();		// number of new nodes (i.e. number of cut edges)
 	pnew->Create(NN + N1, NE2);
 

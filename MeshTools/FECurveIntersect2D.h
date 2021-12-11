@@ -38,11 +38,11 @@ public:
 
 	void SetCurveMesh(GCurveMeshObject* pc);
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 private:
-	void BuildMesh(DynamicMesh2D& dyna, FEMesh* pm);
-	FEMesh* BuildFEMesh(DynamicMesh2D& dyna);
+	void BuildMesh(DynamicMesh2D& dyna, FSMesh* pm);
+	FSMesh* BuildFEMesh(DynamicMesh2D& dyna);
 
 private:
 	GCurveMeshObject*	m_pc;

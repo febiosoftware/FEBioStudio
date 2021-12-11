@@ -198,7 +198,7 @@ void CEditPanel::on_apply_clicked(bool b)
 	if (activeObject == 0) return;
 
 	// check for a FE mesh
-	FEMesh* pm = activeObject->GetFEMesh();
+	FSMesh* pm = activeObject->GetFEMesh();
 	if (pm)
 	{
 		if (QMessageBox::question(this, "Apply Changes", "This object has a mesh. This mesh has to be discarded before the changes can be applied.\nDo you wish to discard the mesh?", QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)

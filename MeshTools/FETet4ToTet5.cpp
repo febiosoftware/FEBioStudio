@@ -37,7 +37,7 @@ FETet4ToTet5::FETet4ToTet5() : FEModifier("Tet4-to-Tet5")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETet4ToTet5::Apply(FEMesh* pm)
+FSMesh* FETet4ToTet5::Apply(FSMesh* pm)
 {
 	// before we get started, let's make sure this is a tet4 mesh
 	if (pm->IsType(FE_TET4) == false) return 0;
@@ -51,7 +51,7 @@ FEMesh* FETet4ToTet5::Apply(FEMesh* pm)
 	int NN1 = NN + NT;
 
 	// allocate a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN1, NT, NF, NC);
 
 	// copy the old nodes
@@ -120,7 +120,7 @@ FETet5ToTet4::FETet5ToTet4() : FEModifier("Tet5-to-Tet4")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETet5ToTet4::Apply(FEMesh* pm)
+FSMesh* FETet5ToTet4::Apply(FSMesh* pm)
 {
 	// before we get started, let's make sure this is a tet4 mesh
 	if (pm->IsType(FE_TET5) == false) return 0;
@@ -144,7 +144,7 @@ FEMesh* FETet5ToTet4::Apply(FEMesh* pm)
 	}
 
 	// allocate a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN1, NT, NF, NC);
 
 	// create the new nodes

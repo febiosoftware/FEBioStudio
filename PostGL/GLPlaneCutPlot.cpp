@@ -295,7 +295,7 @@ void CGLPlaneCutPlot::RenderSlice()
 	CGLModel* mdl = GetModel();
 
 	FEPostModel* ps = mdl->GetFSModel();
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 
 	CGLColorMap* pcol = mdl->GetColorMap();
 
@@ -554,7 +554,7 @@ void CGLPlaneCutPlot::RenderOutline()
 	CGLModel* mdl = GetModel();
 
 	FEPostModel* ps = mdl->GetFSModel();
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);

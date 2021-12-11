@@ -42,7 +42,7 @@ bool CTetOverlapTool::OnApply()
 {
 	m_ncount = 0;
 
-	FEMesh* mesh = GetActiveMesh();
+	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return SetErrorString("You need to select a meshed object");
 
 	if (mesh->IsType(FE_TET4) == false)

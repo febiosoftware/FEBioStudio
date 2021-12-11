@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEFaceEdgeList.h>
 
-FEMeshBuilder::FEMeshBuilder(FEMesh& mesh) : m_mesh(mesh)
+FEMeshBuilder::FEMeshBuilder(FSMesh& mesh) : m_mesh(mesh)
 {
 
 }
@@ -246,10 +246,10 @@ void FEMeshBuilder::DeleteTaggedElements(int tag)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
+FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 {
-	FEMesh* newMesh = new FEMesh(oldMesh);
-	FEMesh& mesh = *newMesh;
+	FSMesh* newMesh = new FSMesh(oldMesh);
+	FSMesh& mesh = *newMesh;
 
 	const int TAG = 1;
 
@@ -453,7 +453,7 @@ FEMesh* FEMeshBuilder::DeletePart(FEMesh& oldMesh, int partId)
 //-----------------------------------------------------------------------------
 // Attach another to this mesh.
 //
-void FEMeshBuilder::Attach(FEMesh& fem)
+void FEMeshBuilder::Attach(FSMesh& fem)
 {
 	int i, j, n;
 
@@ -617,7 +617,7 @@ void FEMeshBuilder::Attach(FEMesh& fem)
 
 //-----------------------------------------------------------------------------
 // Attach another mesh to this mesh and weld the nodes
-void FEMeshBuilder::AttachAndWeld(FEMesh& mesh, double tol)
+void FEMeshBuilder::AttachAndWeld(FSMesh& mesh, double tol)
 {
 	// get the number of nodes
 	int nn0 = m_mesh.Nodes();
@@ -764,7 +764,7 @@ void FEMeshBuilder::AttachAndWeld(FEMesh& mesh, double tol)
 
 //-----------------------------------------------------------------------------
 // Detach the selection and return it as a new object
-FEMesh* FEMeshBuilder::DetachSelectedMesh()
+FSMesh* FEMeshBuilder::DetachSelectedMesh()
 {
 	int i, j, n;
 
@@ -799,7 +799,7 @@ FEMesh* FEMeshBuilder::DetachSelectedMesh()
 	for (i = 0; i<m_mesh.Nodes(); ++i, ++pn) if (pn->m_ntag > 0) ++nodes;
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create the new nodes

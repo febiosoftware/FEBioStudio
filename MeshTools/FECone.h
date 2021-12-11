@@ -37,7 +37,7 @@ public:
 public:
 	FECone(){}
 	FECone(GCone* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GCone*	m_pobj;

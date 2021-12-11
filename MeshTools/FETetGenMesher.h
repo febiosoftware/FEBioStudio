@@ -134,7 +134,7 @@ public:
 	FETetGenMesher(GObject* po);
 
 	// build the mesh
-	FEMesh*	BuildMesh() override;
+	FSMesh*	BuildMesh() override;
 
 	double ElementSize();
 
@@ -146,7 +146,7 @@ public:
 
 public:
 	// Generate a volume mesh from a surface mesh
-	FEMesh* CreateMesh(FESurfaceMesh* surfaceMesh);
+	FSMesh* CreateMesh(FESurfaceMesh* surfaceMesh);
 
 protected:
 
@@ -157,12 +157,12 @@ protected:
 public:
 	bool build_plc(FESurfaceMesh* pm, tetgenio& in);
 protected:
-	FEMesh* BuildPLCMesh();
+	FSMesh* BuildPLCMesh();
 	bool build_tetgen_in(tetgenio& in);
 	bool build_tetgen_in_remesh(tetgenio& io);
-	FEMesh* build_tet_mesh(tetgenio& out);
-	FEMesh* build_tet10_mesh(FEMesh* pm);
-	FEMesh* build_tet15_mesh(FEMesh* pm);
+	FSMesh* build_tet_mesh(tetgenio& out);
+	FSMesh* build_tet10_mesh(FSMesh* pm);
+	FSMesh* build_tet15_mesh(FSMesh* pm);
 #endif
 };
 
@@ -171,8 +171,8 @@ class FEConvexHullMesher : public FEMesher
 {
 public:
 	FEConvexHullMesher();
-	FEMesh* Create(const std::vector<vec3d>& pointCloud);
+	FSMesh* Create(const std::vector<vec3d>& pointCloud);
 
 protected:
-	FEMesh* BuildMesh() override { return nullptr; }
+	FSMesh* BuildMesh() override { return nullptr; }
 };

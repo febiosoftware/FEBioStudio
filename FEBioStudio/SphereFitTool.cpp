@@ -54,14 +54,14 @@ bool CSphereFitTool::OnApply()
 
 	// get the nodal coordinates (surface only)
 	GObject* po = GetActiveObject();
-	FEMesh* activeMesh = (po ? po->GetFEMesh() : nullptr);
+	FSMesh* activeMesh = (po ? po->GetFEMesh() : nullptr);
 	if (activeMesh == nullptr)
 	{
 		SetErrorString("You must select an object that has a mesh.");
 		return false;
 	}
 
-	FEMesh& mesh = *activeMesh;
+	FSMesh& mesh = *activeMesh;
 
 	int N = mesh.Nodes();
 	int F = mesh.Faces();

@@ -37,15 +37,15 @@ public:
 	FEWeldNodes();
 
 	//! Apply the weld modifier
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void SetThreshold(double d);
 
 protected:
-	void UpdateNodes   (FEMesh* pm);
-	void UpdateElements(FEMesh* pm);
-	void UpdateFaces   (FEMesh* pm);
-	void UpdateEdges   (FEMesh* pm);
+	void UpdateNodes   (FSMesh* pm);
+	void UpdateElements(FSMesh* pm);
+	void UpdateFaces   (FSMesh* pm);
+	void UpdateEdges   (FSMesh* pm);
 
 private:
 	vector<int>	m_order;

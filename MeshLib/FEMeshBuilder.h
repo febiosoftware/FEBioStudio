@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FECore/vec3d.h>
 
 class FENode;
-class FEMesh;
+class FSMesh;
 class FEEdgeSet;
 class FENodeSet;
 class FESurface;
@@ -36,7 +36,7 @@ class FESurface;
 class FEMeshBuilder
 {
 public:
-	FEMeshBuilder(FEMesh& mesh);
+	FEMeshBuilder(FSMesh& mesh);
 
 	// Rebuild all mesh data
 	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false);
@@ -87,13 +87,13 @@ public:
 	void DeleteTaggedElements(int tag);
 
 	// delete all elements of a part
-	FEMesh* DeletePart(FEMesh& mesh, int partId);
+	FSMesh* DeletePart(FSMesh& mesh, int partId);
 
 	// Attach another mesh to this mesh
-	void Attach(FEMesh& fem);
+	void Attach(FSMesh& fem);
 
 	// Attach and weld another mesh to this mesh
-	void AttachAndWeld(FEMesh& mesh, double tol);
+	void AttachAndWeld(FSMesh& mesh, double tol);
 
 	void InvertTaggedElements(int ntag);
 	void InvertSelectedElements();
@@ -102,7 +102,7 @@ public:
 	void InvertSelectedFaces();
 
 	// detach the selected elements and create a new mesh
-	FEMesh* DetachSelectedMesh();
+	FSMesh* DetachSelectedMesh();
 
 	// remove duplicate edges
 	void RemoveDuplicateEdges();
@@ -122,5 +122,5 @@ private:
 	void AutoPartitionNodes();
 
 private:
-	FEMesh&	m_mesh;
+	FSMesh&	m_mesh;
 };

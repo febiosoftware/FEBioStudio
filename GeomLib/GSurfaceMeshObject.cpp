@@ -114,7 +114,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 	}
 
 	// copy the surface mesh from the original object's mesh
-	FEMeshBase* pm = po->GetEditableMesh(); assert(pm);
+	FSMeshBase* pm = po->GetEditableMesh(); assert(pm);
 
 	FESurfaceMesh* psm = dynamic_cast<FESurfaceMesh*>(pm);
 	if (psm)
@@ -215,7 +215,7 @@ FEMesher* GSurfaceMeshObject::CreateDefaultMesher()
 	return new FETetGenMesher(this);
 }
 
-FEMesh* GSurfaceMeshObject::BuildMesh()
+FSMesh* GSurfaceMeshObject::BuildMesh()
 {
 	// make sure that the surface is triangular
 	int NF = m_surfmesh->Faces();
@@ -232,10 +232,10 @@ FEMesh* GSurfaceMeshObject::BuildMesh()
 	FEMesher* mesher = GetFEMesher();
 
 	// keep a pointer to the old mesh
-	FEMesh* pold = GetFEMesh();
+	FSMesh* pold = GetFEMesh();
 
 	// create a new mesh
-	FEMesh* pmesh = mesher->BuildMesh();
+	FSMesh* pmesh = mesher->BuildMesh();
 	SetFEMesh(pmesh);
 
 	// now it is safe to delete the old mesh
@@ -896,7 +896,7 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 		// the mesh object
 		case CID_MESH:
 			if (GetFEMesh()) delete GetFEMesh();
-			SetFEMesh(new FEMesh);
+			SetFEMesh(new FSMesh);
 			GetFEMesh()->Load(ar);
 			break;
 		case CID_SURFACE_MESH:

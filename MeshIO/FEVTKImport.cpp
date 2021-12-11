@@ -526,7 +526,7 @@ bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 	int elems = vtk.cells();
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// copy nodal data

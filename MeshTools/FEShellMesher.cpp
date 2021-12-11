@@ -41,7 +41,7 @@ FEShellMesher::FEShellMesher(GObject* po)
 }
 
 // build the mesh
-FEMesh*	FEShellMesher::BuildMesh()
+FSMesh*	FEShellMesher::BuildMesh()
 {
 	GSurfaceMeshObject* po = dynamic_cast<GSurfaceMeshObject*>(m_po);
 	if (po == nullptr) return nullptr;
@@ -56,7 +56,7 @@ FEMesh*	FEShellMesher::BuildMesh()
 	double h0 = GetFloatValue(0);
 
 	// allocate mesh
-	FEMesh* mesh = new FEMesh;
+	FSMesh* mesh = new FSMesh;
 	mesh->Create(NN, NF, NF, NC);
 
 	// create nodes

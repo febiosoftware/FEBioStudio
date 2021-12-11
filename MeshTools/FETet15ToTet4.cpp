@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 //! Convert a tet10 to a tet4 mesh by eliminating all the edge nodes
-FEMesh* FETet15ToTet4::Apply(FEMesh* pm)
+FSMesh* FETet15ToTet4::Apply(FSMesh* pm)
 {
 	// make sure the mesh is a tet10 mesh
 	if (pm->IsType(FE_TET15) == false) return 0;
@@ -58,7 +58,7 @@ FEMesh* FETet15ToTet4::Apply(FEMesh* pm)
 	}
 
 	// allocate a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(nn, NE, NF, NC);
 
 	// create the nodes

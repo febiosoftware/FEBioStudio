@@ -56,7 +56,7 @@ FENodeNodeTable::FENodeNodeTable(const FESurfaceMesh& mesh)
 	}
 }
 
-FENodeNodeTable::FENodeNodeTable(const FEMesh& mesh, bool surfOnly)
+FENodeNodeTable::FENodeNodeTable(const FSMesh& mesh, bool surfOnly)
 {
 	// reset node-node table
 	int NN = mesh.Nodes();
@@ -119,7 +119,7 @@ FENodeNodeTable::FENodeNodeTable(const FEMesh& mesh, bool surfOnly)
 	}
 }
 
-FEEdgeList::FEEdgeList(const FEMesh& mesh, bool surfOnly)
+FEEdgeList::FEEdgeList(const FSMesh& mesh, bool surfOnly)
 {
 	ET.clear();
 
@@ -169,7 +169,7 @@ FEEdgeList::FEEdgeList(const FESurfaceMesh& mesh)
 	}
 }
 
-void FEEdgeList::BuildFromMeshEdges(FELineMesh& mesh)
+void FEEdgeList::BuildFromMeshEdges(FSLineMesh& mesh)
 {
 	ET.clear();
 	// add all the edges
@@ -183,7 +183,7 @@ void FEEdgeList::BuildFromMeshEdges(FELineMesh& mesh)
 	}
 }
 
-FEFaceTable::FEFaceTable(const FEMesh& mesh)
+FEFaceTable::FEFaceTable(const FSMesh& mesh)
 {
 	int NE = mesh.Elements();
 	vector<int> tag(NE, 0);
@@ -205,7 +205,7 @@ FEFaceTable::FEFaceTable(const FEMesh& mesh)
 }
 
 
-FEFaceEdgeList::FEFaceEdgeList(const FEMeshBase& mesh, const FEEdgeList& ET)
+FEFaceEdgeList::FEFaceEdgeList(const FSMeshBase& mesh, const FEEdgeList& ET)
 {
 	// build a node-edge table
 	int NN = mesh.Nodes();
@@ -252,7 +252,7 @@ FEFaceEdgeList::FEFaceEdgeList(const FEMeshBase& mesh, const FEEdgeList& ET)
 
 //-----------------------------------------------------------------------------
 // TODO: This assumes TET4 or HEX8 elements
-FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
+FEElementEdgeList::FEElementEdgeList(const FSMesh& mesh, const FEEdgeList& ET)
 {
 	const int ETET[6][2] = { { 0, 1 }, { 1, 2 }, { 2, 0 }, { 0, 3 }, { 1, 3 }, { 2, 3 } };
 	const int EHEX[12][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7} };
@@ -316,7 +316,7 @@ FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 
 //-----------------------------------------------------------------------------
 // only works with tet4 or hex8 meshes
-FEElementFaceList::FEElementFaceList(const FEMesh& mesh, const FEFaceTable& FT)
+FEElementFaceList::FEElementFaceList(const FSMesh& mesh, const FEFaceTable& FT)
 {
 	// build a node face table for FT to facilitate searching
 	vector<vector<int> > NFT; NFT.resize(mesh.Nodes());
@@ -357,7 +357,7 @@ FEElementFaceList::FEElementFaceList(const FEMesh& mesh, const FEFaceTable& FT)
 	}
 }
 
-FEFaceFaceList::FEFaceFaceList(const FEMesh& mesh, const FEFaceTable& FT)
+FEFaceFaceList::FEFaceFaceList(const FSMesh& mesh, const FEFaceTable& FT)
 {
 	// build a node face table for FT to facilitate searching
 	vector<vector<int> > NFT; NFT.resize(mesh.Nodes());
@@ -389,7 +389,7 @@ FEFaceFaceList::FEFaceFaceList(const FEMesh& mesh, const FEFaceTable& FT)
 	}
 }
 
-FEEdgeIndexList::FEEdgeIndexList(const FEMesh& mesh, const FEEdgeList& ET)
+FEEdgeIndexList::FEEdgeIndexList(const FSMesh& mesh, const FEEdgeList& ET)
 {
 	// build a node-edge table for ET to facilitate searching
 	vector<vector<int> > NET; NET.resize(mesh.Nodes());
@@ -420,7 +420,7 @@ FEEdgeIndexList::FEEdgeIndexList(const FEMesh& mesh, const FEEdgeList& ET)
 	}
 }
 
-FEEdgeEdgeList::FEEdgeEdgeList(const FEMesh& mesh, int edgeId)
+FEEdgeEdgeList::FEEdgeEdgeList(const FSMesh& mesh, int edgeId)
 {
 	// build a node-edge table to facilitate searching
 	vector<vector<int> > NET; NET.resize(mesh.Nodes());
@@ -462,7 +462,7 @@ FEEdgeEdgeList::FEEdgeEdgeList(const FEMesh& mesh, int edgeId)
 }
 
 
-FEEdgeFaceList::FEEdgeFaceList(const FEMesh& mesh)
+FEEdgeFaceList::FEEdgeFaceList(const FSMesh& mesh)
 {
 	// build the edge list (surface only)
 	FEEdgeList EL(mesh, true);

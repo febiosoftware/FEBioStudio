@@ -2214,7 +2214,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					// create a new node set for this
 					FEBioInputModel::PartInstance* inst = fem.GetInstance(0);
 					GMeshObject* po = inst->GetGObject();
-					FEMesh* pm = po->GetFEMesh();
+					FSMesh* pm = po->GetFEMesh();
 
 					char sz[32] = { 0 };
 					sprintf(sz, "nodeset%02d", po->FENodeSets() + 1);

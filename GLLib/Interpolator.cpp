@@ -30,7 +30,7 @@ SOFTWARE.*/
 int Interpolator::m_nsteps = 20;
 double Interpolator::m_smooth = 0.8;
 
-// NOTE: These functions are defined in FEMesh.cpp
+// NOTE: These functions are defined in FSMesh.cpp
 double bias(double g, double x);
 //{
 //    return pow(x,log(g)/log(0.5));

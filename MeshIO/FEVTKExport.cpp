@@ -58,9 +58,9 @@ bool FEVTKExport::Write(const char* szfile)
 
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		if (pm == 0) return false;
-		FEMesh& m = *pm;
+		FSMesh& m = *pm;
 
 		//tags all nodes as -1
 		m.TagAllNodes(-1);
@@ -116,7 +116,7 @@ bool FEVTKExport::Write(const char* szfile)
 	int nodes = 0;
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (int j=0; j<m.Nodes(); ++j)
 		{
 			if (m.Node(j).m_ntag == 1) 
@@ -144,7 +144,7 @@ bool FEVTKExport::Write(const char* szfile)
 	nodes = 0;
 	for (int i = 0; i < model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (int j = 0; j < m.Nodes(); ++j)
 		{
 			FENode& node = m.Node(j);
@@ -179,7 +179,7 @@ bool FEVTKExport::Write(const char* szfile)
 	int nn[FEElement::MAX_NODES];
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (int j=0; j<m.Elements(); ++j)
 		{
 			FEElement& el = m.Element(j);
@@ -216,7 +216,7 @@ bool FEVTKExport::Write(const char* szfile)
 		fprintf(fp, "%s %d\n", "CELL_TYPES", totElems);
 		for (int i = 0; i < model.Objects(); ++i)
 		{
-			FEMesh& m = *model.Object(i)->GetFEMesh();
+			FSMesh& m = *model.Object(i)->GetFEMesh();
 			for (int j = 0; j < m.Elements(); ++j)
 			{
 				if (isHex8) fprintf(fp, "%s\n", "12");
@@ -237,7 +237,7 @@ bool FEVTKExport::Write(const char* szfile)
 		for (int i = 0; i < model.Objects(); ++i)
 		{
 			int maxId = 0;
-			FEMesh& m = *model.Object(i)->GetFEMesh();
+			FSMesh& m = *model.Object(i)->GetFEMesh();
 			for (int j = 0; j < m.Elements(); ++j)
 			{
 				int gid = m.Element(j).m_gid;
@@ -257,7 +257,7 @@ bool FEVTKExport::Write(const char* szfile)
 		fprintf(fp,"%s\n","LOOKUP_TABLE default");
 		for (int i=0; i<model.Objects(); ++i)
 		{
-			FEMesh& m = *model.Object(i)->GetFEMesh();
+			FSMesh& m = *model.Object(i)->GetFEMesh();
 
 			vector<double> nodeShellThickness; 
 			nodeShellThickness.reserve(nodes);
@@ -300,7 +300,7 @@ bool FEVTKExport::Write(const char* szfile)
 		fprintf(fp,"%s\n","LOOKUP_TABLE default");
 		for (i=0; i<model.Objects(); ++i)
 		{
-			FEMesh& m = *model.Object(i)->GetFEMesh();
+			FSMesh& m = *model.Object(i)->GetFEMesh();
 			for (j=0; j<m.Nodes();)
 			{
 				for (int k =0; k<9 && j+k<m.Nodes();k++)

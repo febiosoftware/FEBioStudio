@@ -42,7 +42,7 @@ public:
 	FENodeElementList();
 	~FENodeElementList();
 
-	void Build(FECoreMesh* pm);
+	void Build(FSCoreMesh* pm);
 
 	void Clear();
 
@@ -58,6 +58,6 @@ public:
 	const std::vector<NodeElemRef>& ElementList(int n) const { return m_elem[n]; }
 
 protected:
-	FECoreMesh*	m_pm;
+	FSCoreMesh*	m_pm;
 	std::vector< std::vector<NodeElemRef> >	m_elem;
 };

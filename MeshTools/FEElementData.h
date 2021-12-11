@@ -40,12 +40,12 @@ class FSModel;
 class FEElementData : public FEMeshData
 {
 public:
-	FEElementData(FEMesh* mesh = nullptr);
+	FEElementData(FSMesh* mesh = nullptr);
 	FEElementData(const FEElementData& d);
 	FEElementData& operator = (const FEElementData& d);
 
 	// create a data field
-	void Create(FEMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
+	void Create(FSMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
 
 	// size of data field
 	int Size() { return (int)m_data.size(); }
@@ -80,7 +80,7 @@ private:
 class FEPartData : public FEMeshData
 {
 public:
-	FEPartData(FEMesh* mesh = nullptr);
+	FEPartData(FSMesh* mesh = nullptr);
 	FEPartData(const FEPartData& d);
 	FEPartData& operator = (const FEPartData& d);
 

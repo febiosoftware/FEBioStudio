@@ -98,7 +98,7 @@ void CMeshInspector::UpdateData(int ndata)
 	// so we need to subtract one if ndata is larger than the number of eval fields
 	if (ndata > ui->MAX_EVAL_FIELDS) ndata--;
 
-	FEMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
+	FSMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
 	if (pm == 0) return;
 
 	
@@ -192,7 +192,7 @@ void CMeshInspector::on_select_clicked()
 	GObject* po = pdoc->GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	double smin, smax;

@@ -294,7 +294,7 @@ void CGLModel::SetSmoothingAngle(double w)
 	FEPostModel* ps = GetFSModel();
 	if (ps == 0) return;
 
-	FEMeshBase* pm = ps->GetFEMesh(0);
+	FSMeshBase* pm = ps->GetFEMesh(0);
 	pm->AutoSmooth(m_stol);
 }
 
@@ -1529,7 +1529,7 @@ void CGLModel::RenderGhost(CGLContext &rc)
 	vec3d r1, r2;
 
 	FEPostModel* ps = m_ps;
-	FEMeshBase* pm = GetActiveMesh();
+	FSMeshBase* pm = GetActiveMesh();
 	Post::FERefState* ref = GetActiveState()->m_ref;
 
 	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT);

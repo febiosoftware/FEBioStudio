@@ -90,9 +90,9 @@ FETetGenModifier::FETetGenModifier() : FEModifier("TetGen Mesher")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETetGenModifier::Apply(FEMesh* pm)
+FSMesh* FETetGenModifier::Apply(FSMesh* pm)
 {
-	FEMesh* pmnew = 0;
+	FSMesh* pmnew = 0;
 
 	try {
 		if (m_bremesh)
@@ -110,7 +110,7 @@ FEMesh* FETetGenModifier::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETetGenModifier::Apply(FEGroup* pg)
+FSMesh* FETetGenModifier::Apply(FEGroup* pg)
 {
 	FEPart* part = dynamic_cast<FEPart*>(pg);
 	if (part)
@@ -122,7 +122,7 @@ FEMesh* FETetGenModifier::Apply(FEGroup* pg)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETetGenModifier::CreateMesh(FEMesh* pm)
+FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 {
 #ifdef TETLIBRARY
 
@@ -209,7 +209,7 @@ FEMesh* FETetGenModifier::CreateMesh(FEMesh* pm)
 	}
 
 	// create a new mesh
-	FEMesh* pmesh = new FEMesh;
+	FSMesh* pmesh = new FSMesh;
 	int nodes = out.numberofpoints;
 	int elems = out.numberoftetrahedra;
 	int faces = out.numberoftrifaces;
@@ -308,7 +308,7 @@ FEMesh* FETetGenModifier::CreateMesh(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETetGenModifier::RefineMesh(FEMesh* pm)
+FSMesh* FETetGenModifier::RefineMesh(FSMesh* pm)
 {
 #ifdef TETLIBRARY
 	if (pm->IsType(FE_TET4)==false)
@@ -353,7 +353,7 @@ FEMesh* FETetGenModifier::RefineMesh(FEMesh* pm)
 	tetrahedralize(sz, &in, &out);
 
 	// create a new mesh
-	FEMesh* pmesh = new FEMesh;
+	FSMesh* pmesh = new FSMesh;
 	int nodes = out.numberofpoints;
 	int elems = out.numberoftetrahedra;
 	int faces = out.numberoftrifaces;
@@ -472,7 +472,7 @@ FEMesh* FETetGenModifier::RefineMesh(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FETetGenModifier::build_tetgen_plc(FEMesh* pm, tetgenio& in)
+bool FETetGenModifier::build_tetgen_plc(FSMesh* pm, tetgenio& in)
 {
 #ifdef TETLIBRARY
 	int i, j, n;
@@ -655,7 +655,7 @@ bool FETetGenModifier::build_tetgen_plc(FEMesh* pm, tetgenio& in)
 }
 
 //-----------------------------------------------------------------------------
-bool FETetGenModifier::build_tetgen_remesh(FEMesh* pm, tetgenio& in)
+bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 {
 #ifdef TETLIBRARY
 	// make sure this is a tetmesh

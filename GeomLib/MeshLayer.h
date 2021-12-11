@@ -33,7 +33,7 @@ SOFTWARE.*/
 class GModel;
 class GObject;
 class FEMesher;
-class FEMesh;
+class FSMesh;
 
 //-----------------------------------------------------------------------------
 class MeshLayer;
@@ -74,7 +74,7 @@ public:
 
 public:
 	const FEMesher* GetFEMesher(int layer, int obj);
-	const FEMesh* GetFEMesh(int layer, int obj);
+	const FSMesh* GetFEMesh(int layer, int obj);
 	int FEMeshes(int layer);
 
 public:

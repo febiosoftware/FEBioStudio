@@ -88,7 +88,7 @@ bool FERAWImport::Load(const char* szfile)
 	// create a new mesh
 	int nodes = (m_nx+1)*(m_ny+1)*(m_nz+1);
 	int elems = m_nx*m_ny*m_nz;
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// define the nodal coordinates

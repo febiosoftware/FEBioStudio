@@ -52,7 +52,7 @@ FEShellPatch::FEShellPatch(GPatch* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FEMesh* FEShellPatch::BuildMesh()
+FSMesh* FEShellPatch::BuildMesh()
 {
 	// get mesh parameters
 	m_nx = GetIntValue(NX);
@@ -76,7 +76,7 @@ FEMesh* FEShellPatch::BuildMesh()
 	MQ.UpdateMQ();
 
 	// create the MB
-	FEMesh* pm = MQ.BuildMesh();
+	FSMesh* pm = MQ.BuildMesh();
 
 	// assign shell thickness
 	double t = GetFloatValue(T);
@@ -102,12 +102,12 @@ FECylndricalPatch::FECylndricalPatch(GCylindricalPatch* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FEMesh* FECylndricalPatch::BuildMesh()
+FSMesh* FECylndricalPatch::BuildMesh()
 {
 	return BuildMultiQuadMesh();
 }
 
-FEMesh* FECylndricalPatch::BuildMultiQuadMesh()
+FSMesh* FECylndricalPatch::BuildMultiQuadMesh()
 {
 	// build the quad mesh data
 	FEMultiQuadMesh MQ;
@@ -127,7 +127,7 @@ FEMesh* FECylndricalPatch::BuildMultiQuadMesh()
 	};
 
 	// Build the mesh
-	FEMesh* pm = MQ.BuildMesh();
+	FSMesh* pm = MQ.BuildMesh();
 	if (pm == nullptr) return nullptr;
 
 	// assign shell thickness

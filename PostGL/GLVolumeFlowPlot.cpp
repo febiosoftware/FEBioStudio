@@ -129,7 +129,7 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 	FEState* state = fem->CurrentState();
 
 	// get the current mesh
-	FEMeshBase& mesh = *mdl.GetActiveMesh();
+	FSMeshBase& mesh = *mdl.GetActiveMesh();
 
 	// get the largest dimension
 	BOX box = m_box;
@@ -182,7 +182,7 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 {
 	CGLModel* mdl = GetModel();
 
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();

@@ -35,7 +35,7 @@ FENodeElementList::~FENodeElementList()
 {
 }
 
-void FENodeElementList::Build(FECoreMesh* pm)
+void FENodeElementList::Build(FSCoreMesh* pm)
 {
 	m_pm = pm;
 	assert(m_pm);

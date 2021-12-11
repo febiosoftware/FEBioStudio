@@ -34,7 +34,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // constructor
-FEMeshValuator::FEMeshValuator(FEMesh& mesh) : m_mesh(mesh)
+FEMeshValuator::FEMeshValuator(FSMesh& mesh) : m_mesh(mesh)
 {
 	m_curvature_levels = 1;
 	m_curvature_maxiters = 10;
@@ -136,7 +136,7 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::NODE_DATA:
 			{
 				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
-				FEMesh* mesh = nodeData.GetMesh();
+				FSMesh* mesh = nodeData.GetMesh();
 				for (int i=0; i < mesh->Elements(); ++i)
 				{ 
 					FEElement& el = mesh->Element(i);
