@@ -544,7 +544,7 @@ void FEBioExport25::BuildSurfaceList(FSProject& prj)
 	CPlotDataSettings& plt = prj.GetPlotDataSettings();
 	for (int i=0; i<plt.PlotVariables(); ++i)
 	{
-		FEPlotVariable& var = plt.PlotVariable(i);
+		CPlotVariable& var = plt.PlotVariable(i);
 		if (var.domainType() == DOMAIN_SURFACE)
 		{
 			int ND = var.Domains();
@@ -5037,7 +5037,7 @@ void FEBioExport25::WriteOutputSection()
 			{
 				for (int i=0; i<N; ++i) 
 				{
-					FEPlotVariable& v = plt.PlotVariable(i);
+					CPlotVariable& v = plt.PlotVariable(i);
 					if (v.isShown() && v.isActive())
 					{
 						if (v.Domains() == 0)

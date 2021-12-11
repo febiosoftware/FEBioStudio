@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FEProject.h"
 #include "GModel.h"
 
-FEPlotVariable::FEPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type)
+CPlotVariable::CPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type)
 {
 	m_name = name;
 	m_bactive = bactive;
@@ -37,7 +37,7 @@ FEPlotVariable::FEPlotVariable(const string& name, bool bactive, bool bshow, DOM
 	m_domainType = type;
 }
 
-FEPlotVariable::FEPlotVariable(const FEPlotVariable& v)
+CPlotVariable::CPlotVariable(const CPlotVariable& v)
 {
 	m_name = v.m_name;
 	m_bactive = v.m_bactive;
@@ -46,7 +46,7 @@ FEPlotVariable::FEPlotVariable(const FEPlotVariable& v)
 	m_domains = v.m_domains;
 }
 
-void FEPlotVariable::operator = (const FEPlotVariable& v)
+void CPlotVariable::operator = (const CPlotVariable& v)
 {
 	m_name = v.m_name;
 	m_bactive = v.m_bactive;
@@ -55,22 +55,22 @@ void FEPlotVariable::operator = (const FEPlotVariable& v)
 	m_domains = v.m_domains;
 }
 
-int FEPlotVariable::Domains() const
+int CPlotVariable::Domains() const
 {
 	return (int)m_domains.size();
 }
 
-FEItemListBuilder* FEPlotVariable::GetDomain(int i)
+FEItemListBuilder* CPlotVariable::GetDomain(int i)
 {
 	return m_domains[i];
 }
 
-const FEItemListBuilder* FEPlotVariable::GetDomain(int i) const
+const FEItemListBuilder* CPlotVariable::GetDomain(int i) const
 {
 	return m_domains[i];
 }
 
-void FEPlotVariable::addDomain(FEItemListBuilder* pi)
+void CPlotVariable::addDomain(FEItemListBuilder* pi)
 {
 	// make sure the domain is not already added
 	for (size_t i=0; i<m_domains.size(); ++i)
@@ -82,7 +82,7 @@ void FEPlotVariable::addDomain(FEItemListBuilder* pi)
 	m_domains.push_back(pi);
 }
 
-void FEPlotVariable::removeDomain(FEItemListBuilder* pi)
+void CPlotVariable::removeDomain(FEItemListBuilder* pi)
 {
 	for (size_t i = 0; i<m_domains.size(); ++i)
 	{
@@ -96,7 +96,7 @@ void FEPlotVariable::removeDomain(FEItemListBuilder* pi)
 	assert(false);
 }
 
-void FEPlotVariable::removeDomain(int n)
+void CPlotVariable::removeDomain(int n)
 {
 	if ((n >= 0) && (n < m_domains.size()))
 	{
@@ -272,20 +272,20 @@ void CPlotDataSettings::Clear()
 }
 
 //-----------------------------------------------------------------------------
-FEPlotVariable* CPlotDataSettings::AddPlotVariable(const std::string& var, bool b, bool s, DOMAIN_TYPE type)
+CPlotVariable* CPlotDataSettings::AddPlotVariable(const std::string& var, bool b, bool s, DOMAIN_TYPE type)
 {
-	FEPlotVariable* pv = FindVariable(var);
+	CPlotVariable* pv = FindVariable(var);
 	if (pv) return pv;
 
-	FEPlotVariable v(var, b, s, type);
+	CPlotVariable v(var, b, s, type);
 	m_plot.push_back(v);
 	return &m_plot[ m_plot.size() - 1];
 }
 
 //-----------------------------------------------------------------------------
-void CPlotDataSettings::AddPlotVariable(FEPlotVariable& var)
+void CPlotDataSettings::AddPlotVariable(CPlotVariable& var)
 {
-	FEPlotVariable* pv = FindVariable(var.name());
+	CPlotVariable* pv = FindVariable(var.name());
 	if (pv)
 	{
 		pv->setActive(var.isActive());
@@ -295,12 +295,12 @@ void CPlotDataSettings::AddPlotVariable(FEPlotVariable& var)
 
 //-----------------------------------------------------------------------------
 // Find a plot file variable
-FEPlotVariable* CPlotDataSettings::FindVariable(const std::string& var)
+CPlotVariable* CPlotDataSettings::FindVariable(const std::string& var)
 {
 	int N = (int)m_plot.size();
 	for (int i = 0; i<N; ++i) 
 	{
-		FEPlotVariable& pv = m_plot[i];
+		CPlotVariable& pv = m_plot[i];
 		if (var == m_plot[i].name()) return &m_plot[i];
 	}
 	return 0;
@@ -313,7 +313,7 @@ void CPlotDataSettings::Save(OArchive& ar)
 	{
 		ar.BeginChunk(CID_PRJ_OUTPUT_VAR);
 		{
-			FEPlotVariable& v = m_plot[i];
+			CPlotVariable& v = m_plot[i];
 			ar.WriteChunk(CID_PRJ_OUTPUT_VAR_NAME, v.name());
 			int n = (v.isActive()? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_ACTIVE, n);
 			int m = (v.isShown() ? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_VISIBLE, m);
@@ -355,7 +355,7 @@ void CPlotDataSettings::Load(IArchive& ar)
 				ar.CloseChunk();
 			}
 
-			FEPlotVariable* pv = FindVariable(tmp);
+			CPlotVariable* pv = FindVariable(tmp);
 			if (pv == 0) pv = AddPlotVariable(tmp);
 
 			pv->setActive(n != 0);

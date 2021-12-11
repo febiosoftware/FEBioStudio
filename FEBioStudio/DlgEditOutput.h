@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <QDialog>
 
 class FSProject;
-class FEPlotVariable;
+class CPlotVariable;
 class QListWidgetItem;
 class QTableWidgetItem;
 
@@ -44,7 +44,7 @@ class CDlgAddDomain : public QDialog
 public:
 	CDlgAddDomain(QWidget* parent);
 
-	void setVariable(const FEPlotVariable& var);
+	void setVariable(const CPlotVariable& var);
 	void setDomains(const QStringList& l);
 
 	int selectedDomain();

@@ -32,12 +32,12 @@ class FSProject;
 
 //-----------------------------------------------------------------------------
 // Output variable for plot file
-class FEPlotVariable
+class CPlotVariable
 {
 public:
-	FEPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
-	FEPlotVariable(const FEPlotVariable& v);
-	void operator = (const FEPlotVariable& v);
+	CPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
+	CPlotVariable(const CPlotVariable& v);
+	void operator = (const CPlotVariable& v);
 
 	const string& name() const { return m_name; }
 
@@ -86,12 +86,12 @@ public:
 
 public:
 	int PlotVariables() { return (int)m_plot.size(); }
-	FEPlotVariable& PlotVariable(int i) { return m_plot[i]; }
-	FEPlotVariable* AddPlotVariable(const std::string& var, bool bactive = false, bool bshown = true, DOMAIN_TYPE type = DOMAIN_MESH);
-	void AddPlotVariable(FEPlotVariable& var);
-	FEPlotVariable* FindVariable(const std::string& var);
+	CPlotVariable& PlotVariable(int i) { return m_plot[i]; }
+	CPlotVariable* AddPlotVariable(const std::string& var, bool bactive = false, bool bshown = true, DOMAIN_TYPE type = DOMAIN_MESH);
+	void AddPlotVariable(CPlotVariable& var);
+	CPlotVariable* FindVariable(const std::string& var);
 
 private:
 	FSProject&	m_prj;
-	vector<FEPlotVariable>	m_plot;		// plot file variables
+	vector<CPlotVariable>	m_plot;		// plot file variables
 };

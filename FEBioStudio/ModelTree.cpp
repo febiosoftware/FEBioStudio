@@ -388,7 +388,7 @@ public:
 		int ncount = 0;
 		for (int i = 0; i < plt.PlotVariables(); ++i)
 		{
-			FEPlotVariable& var = plt.PlotVariable(i);
+			CPlotVariable& var = plt.PlotVariable(i);
 			if (var.isShown() && var.isActive())
 			{
 				addProperty(QString::fromStdString(var.name()), CProperty::Bool)->setFlags(CProperty::Visible);

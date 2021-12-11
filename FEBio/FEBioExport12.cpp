@@ -4104,7 +4104,7 @@ void FEBioExport12::WriteOutputSection()
 			{
 				for (int i = 0; i<N; ++i)
 				{
-					FEPlotVariable& v = plt.PlotVariable(i);
+					CPlotVariable& v = plt.PlotVariable(i);
 					if (v.isShown() && v.isActive())
 					{
 						XMLElement e;

@@ -380,7 +380,7 @@ bool FEBioImport::UpdateFEModel(FSModel& fem)
 		std::string name = v.name();
 
 		// try to find it
-		FEPlotVariable* pv = plt.FindVariable(name);
+		CPlotVariable* pv = plt.FindVariable(name);
 		if (pv == 0)
 		{
 			pv = plt.AddPlotVariable(name, true, true, v.domainType());
