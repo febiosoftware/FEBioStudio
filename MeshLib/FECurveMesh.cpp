@@ -83,7 +83,7 @@ int FECurveMesh::AddNode(const vec3d& r, bool bsnap, double snapTolerance)
 	}
 
 	// node does not exist or needs to be added regardless
-	FENode nd;
+	FSNode nd;
 	nd.r = r;
 	m_Node.push_back(nd);
 
@@ -445,13 +445,13 @@ void FECurveMesh::ReorderNodes(vector<int>& NLT)
 		if (i != tmp[i])
 		{
 			assert(tmp[i] > i);
-			FENode& oldNode = Node(i);
-			FENode& newNode = Node(tmp[i]);
+			FSNode& oldNode = Node(i);
+			FSNode& newNode = Node(tmp[i]);
 
 			int m0 = newNode.m_ntag; assert(m0 == i);
 			int m1 = oldNode.m_ntag;
 
-			FENode copy(oldNode);
+			FSNode copy(oldNode);
 			oldNode = newNode;
 			newNode = copy;
 
@@ -463,7 +463,7 @@ void FECurveMesh::ReorderNodes(vector<int>& NLT)
 #ifdef _DEBUG
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& n = Node(i);
+		FSNode& n = Node(i);
 		assert(n.m_ntag == i);
 	}
 #endif
@@ -534,7 +534,7 @@ void FECurveMesh::Invert()
 	{
 		if (i != NN-i-1)
 		{
-			FENode tmp = m_Node[i];
+			FSNode tmp = m_Node[i];
 			m_Node[i] = m_Node[NN-i-1];
 			m_Node[NN-i-1] = tmp;
 		}
@@ -736,7 +736,7 @@ void FECurveMesh::Save(OArchive& ar)
 	// write the nodes
 	ar.BeginChunk(CID_MESH_NODE_SECTION);
 	{
-		FENode* pn = NodePtr();
+		FSNode* pn = NodePtr();
 		for (int i = 0; i<nodes; ++i, ++pn)
 		{
 			ar.BeginChunk(CID_MESH_NODE);
@@ -804,7 +804,7 @@ void FECurveMesh::Load(IArchive& ar)
 		case CID_MESH_NODE_SECTION:
 		{
 			int n = 0;
-			FENode* pn = NodePtr();
+			FSNode* pn = NodePtr();
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();

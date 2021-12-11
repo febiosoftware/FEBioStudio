@@ -286,7 +286,7 @@ FSMesh* FETube::BuildMeshLegacy()
 				x = R*cosa;
 				y = R*sina;
 
-				FENode& node = pm->Node(n);
+				FSNode& node = pm->Node(n);
 
 				node.r = vec3d(x, y, z);
 
@@ -622,7 +622,7 @@ FSMesh* FETube2::BuildMesh()
 				x = (R0x + R*(R1x-R0x))*cosa;
 				y = (R0y + R*(R1y-R0y))*sina;
 
-				FENode& node = pm->Node(n);
+				FSNode& node = pm->Node(n);
 
 				node.r = vec3d(x, y, z);
 

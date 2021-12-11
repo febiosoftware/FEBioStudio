@@ -121,7 +121,7 @@ bool FEPLYImport::read_file(const char* szfile)
 		{
 			ch = fgets(szline, 255, m_fp);
 			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-			FENode& n = mesh.Node(i);
+			FSNode& n = mesh.Node(i);
 			vec3d& r = n.r;
 			sscanf(szline, "%lg%lg%lg", &r.x, &r.y, &r.z);
 		}
@@ -166,7 +166,7 @@ bool FEPLYImport::read_file(const char* szfile)
 			size_t nread = fread(r, sizeof(float), 3, m_fp);
 			if (nread != 3) return errf("An unexpected error occured while reading vertex data.");
 
-			FENode& n = mesh.Node(i);
+			FSNode& n = mesh.Node(i);
 			n.r = vec3d(r[0], r[1], r[2]);
 		}
 

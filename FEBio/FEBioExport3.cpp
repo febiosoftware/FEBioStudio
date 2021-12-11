@@ -2449,7 +2449,7 @@ void FEBioExport3::WriteGeometryObject(FEBioExport3::Part* part)
 		int nid = el.add_attribute("id", 0);
 		for (int j = 0; j<pm->Nodes(); ++j)
 		{
-			FENode& node = pm->Node(j);
+			FSNode& node = pm->Node(j);
 			el.set_attribute(nid, ++m_ntotnodes);
 			vec3d r = node.r;
 			el.value(r);
@@ -2521,7 +2521,7 @@ bool FEBioExport3::WriteNodeSet(const string& name, FENodeList* pl)
 	vector<int> m(nn);
 	for (int n = 0; n<nn; ++n, pn++)
 	{
-		FENode* pnode = pn->m_pi;
+		FSNode* pnode = pn->m_pi;
 		if (pnode == 0) return false;
 		m[n] = pnode->m_nid;
 	}
@@ -2885,7 +2885,7 @@ void FEBioExport3::WriteGeometryNodes()
 			int nid = el.add_attribute("id", 0);
 			for (int j = 0; j<pm->Nodes(); ++j, ++n)
 			{
-				FENode& node = pm->Node(j);
+				FSNode& node = pm->Node(j);
 				node.m_nid = n;
 				el.set_attribute(nid, n);
 				vec3d r = po->GetTransform().LocalToGlobal(node.r);

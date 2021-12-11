@@ -235,7 +235,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	// copy nodes
 	for (i=0; i<nodes; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		FENikeProject::NODE& N = nike.m_Node[i];
 
 		n.r.x = N.x;

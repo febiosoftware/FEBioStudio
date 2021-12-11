@@ -83,7 +83,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 	vector<int> taggedNodes;
 	for (int i = 0; i < NN0; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag == 1)
 		{
 			node.m_ntag = taggedNodes.size();
@@ -116,7 +116,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 	double d = GetFloatValue(0);
 	for (int i = 0; i < taggedNodes.size(); ++i)
 	{
-		FENode& node = mesh.Node(taggedNodes[i]);
+		FSNode& node = mesh.Node(taggedNodes[i]);
 		displacement[taggedNodes[i]] = -normal[i] * d;
 	}
 
@@ -132,7 +132,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 		double dmax = 0;
 		for (int i = 0; i < mesh.Nodes(); ++i)
 		{
-			FENode& nodei = mesh.Node(i);
+			FSNode& nodei = mesh.Node(i);
 			if (nodei.m_ntag == 0)
 			{
 				int nn = NNL.Valence(i);
@@ -178,7 +178,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 	// apply nodal displacements
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		node.r += displacement[i];
 	}
 

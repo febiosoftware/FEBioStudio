@@ -1095,7 +1095,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 	NN = m_xmesh.nodes();
 	for (int i=0; i<NN; i++)
 	{
-		FENode& n = pmesh->Node(i);
+		FSNode& n = pmesh->Node(i);
 		NODE& N = m_xmesh.node(i);
 
 		// assign coordinates

@@ -77,7 +77,7 @@ bool FEBYUimport::Load(const char* szfile)
 	// read the nodes
 	for (i=0; i<nodes; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		vec3d& r = n.r;
 		ch = fgets(szline, 255, m_fp);
 		if (ch == 0) return errf("An unexpected error occured while reading the file data.");

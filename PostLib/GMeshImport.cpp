@@ -174,7 +174,7 @@ bool GMeshImport::BuildMesh(FEPostModel& fem)
 	// create nodes
 	for (i=0; i<nodes; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		NODE& node = m_Node[i];
 		n.r.x = node.r.x;
 		n.r.y = node.r.y;

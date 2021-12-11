@@ -81,7 +81,7 @@ bool BYUExport::Save(FEPostModel &fem, const char *szfile)
 	// --- N O D E S ---
 	for (i=0; i<mesh.Nodes(); ++i)
 	{
-		FENode& n = mesh.Node(i);
+		FSNode& n = mesh.Node(i);
 		if (n.m_ntag)
 		{
 			vec3d r = n.pos();

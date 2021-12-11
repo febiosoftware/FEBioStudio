@@ -185,7 +185,7 @@ void FoamGen::SmoothMesh(FSMesh* pm, int niter, double w)
 		int N = pm->Nodes();
 		for (int i=0; i<N; ++i)
 		{
-			FENode& ni = pm->Node(i);
+			FSNode& ni = pm->Node(i);
 			if (ni.IsSelected())
 			{
 				int nn = NNL.Valence(i);
@@ -194,7 +194,7 @@ void FoamGen::SmoothMesh(FSMesh* pm, int niter, double w)
 					vec3d v;
 					for (int j=0; j<nn; ++j)
 					{
-						FENode& nj = pm->Node(NNL.Node(i, j));
+						FSNode& nj = pm->Node(NNL.Node(i, j));
 						v += nj.r;
 					}
 					v /= (double) nn;
@@ -690,7 +690,7 @@ FSMesh* FoamGen::CreateMesh()
 	for (i=0; i<nn; ++i)
 	{
 		EDGE& e = m_Edge[i];
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		node.r = e.r;
 	}
 

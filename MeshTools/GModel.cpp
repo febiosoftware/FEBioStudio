@@ -1928,7 +1928,7 @@ GObject* GModel::MergeDiscreteObject(vector<GObject*> discreteObjects, vector<GO
 			// make sure it falls within the tolerance
 			if ((tol == 0.0) || (Lmin < tol))
 			{
-				FENode& node = pm->Node(closestNode);
+				FSNode& node = pm->Node(closestNode);
 				int nodeID = node.m_gid;
 
 				// partition this node

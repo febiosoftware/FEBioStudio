@@ -189,7 +189,7 @@ FSMesh* FETetGenMesher::BuildPLCMesh()
 
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		node.r = plc.Node(i).r;
 		node.m_gid = plc.Node(i).nid;
 	}
@@ -478,7 +478,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	// copy nodes
 	for (i=0; i<nodes; ++i)
 	{
-		FENode& node = pmesh->Node(i);
+		FSNode& node = pmesh->Node(i);
 		vec3d& r = node.r;
 		r.x = out.pointlist[3*i  ];
 		r.y = out.pointlist[3*i+1];
@@ -614,7 +614,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	if (R2 == 0) R2 = 1.0; else R2 *= R2;	
 	for (i=0; i<pmesh->Nodes(); ++i)
 	{
-		FENode& node = pmesh->Node(i);
+		FSNode& node = pmesh->Node(i);
 		vec3d& ri = node.r;
 		node.m_gid = -1;
 		for (j=0; j<m_po->Nodes(); ++j)
@@ -766,8 +766,8 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 	// copy the old nodes
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& n0 = pm->Node(i);
-		FENode& n1 = pnew->Node(i);
+		FSNode& n0 = pm->Node(i);
+		FSNode& n1 = pnew->Node(i);
 		n1.r = n0.r;
 		n1.m_gid = n0.m_gid;
 	}
@@ -775,10 +775,10 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 	// create the new edge nodes
 	for (int i=0; i<(int) ET.size(); ++i)
 	{
-		FENode& na = pm->Node(ET[i].first);
-		FENode& nb = pm->Node(ET[i].second);
+		FSNode& na = pm->Node(ET[i].first);
+		FSNode& nb = pm->Node(ET[i].second);
 
-		FENode& n1 = pnew->Node(i + NN);
+		FSNode& n1 = pnew->Node(i + NN);
 		n1.r = (na.r +nb.r)*0.5;
 	}
 
@@ -1699,7 +1699,7 @@ FSMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 	if (R2 == 0) R2 = 1.0; else R2 *= R2;
 	for (int i = 0; i<pmesh->Nodes(); ++i)
 	{
-	FENode& node = pmesh->Node(i);
+	FSNode& node = pmesh->Node(i);
 	vec3d& ri = node.r;
 	node.m_gid = -1;
 	for (int j = 0; j<po->Nodes(); ++j)
@@ -1819,7 +1819,7 @@ FSMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
 	// copy nodes
 	for (int i = 0; i < nodes; ++i)
 	{
-		FENode& node = pmesh->Node(i);
+		FSNode& node = pmesh->Node(i);
 		vec3d& r = node.r;
 		r.x = out.pointlist[3 * i];
 		r.y = out.pointlist[3 * i + 1];

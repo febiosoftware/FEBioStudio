@@ -60,7 +60,7 @@ bool FEViewpointExport::Write(const char* szfile)
 		FSMesh* pm = model.Object(m)->GetFEMesh();
 		for (n=0; n<pm->Nodes(); ++n, ++nn)
 		{
-			FENode& node = pm->Node(n);
+			FSNode& node = pm->Node(n);
 			node.m_ntag = nn;
 			vec3d& r = node.r;
 

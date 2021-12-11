@@ -50,7 +50,7 @@ FSMesh* FETet10ToTet4::Apply(FSMesh* pm)
 	int nn = 0;
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& ni = pm->Node(i);
+		FSNode& ni = pm->Node(i);
 		if (ni.m_ntag == 1) 
 		{
 			ni.m_ntag = nn++;
@@ -65,10 +65,10 @@ FSMesh* FETet10ToTet4::Apply(FSMesh* pm)
 	nn = 0;
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& n0 = pm->Node(i);
+		FSNode& n0 = pm->Node(i);
 		if (n0.m_ntag >= 0)
 		{
-			FENode& n1 = pnew->Node(nn++);
+			FSNode& n1 = pnew->Node(nn++);
 			n1.r = n0.r;
 			n1.m_gid = n0.m_gid;
 		}

@@ -481,14 +481,14 @@ public:
 	public:
 		Iterator(FSLineMesh* pm);
 
-		operator FENode*() { return m_pnode; }
-		FENode* operator -> () { return m_pnode; }
+		operator FSNode*() { return m_pnode; }
+		FSNode* operator -> () { return m_pnode; }
 
 		void operator ++ (); 
 
 	protected:
 		FSLineMesh*	m_pm;
-		FENode*		m_pnode;
+		FSNode*		m_pnode;
 		int			m_n;
 	};
 

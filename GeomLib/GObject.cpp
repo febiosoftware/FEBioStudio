@@ -372,7 +372,7 @@ void GObject::CollapseTransform()
 		FSMesh& m = *imp->m_pmesh;
 		for (int i = 0; i<m.Nodes(); ++i)
 		{
-			FENode& node = m.Node(i);
+			FSNode& node = m.Node(i);
 			node.r = transform.LocalToGlobal(node.r);
 		}
 	}
@@ -424,7 +424,7 @@ void GObject::UpdateGNodes()
 	if (pm == 0) return;
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		if (n.m_gid >= 0) m_Node[n.m_gid]->LocalPosition() = n.r;
 	}
 
@@ -480,7 +480,7 @@ FSMesh* GObject::BuildMesh()
 }
 
 //-----------------------------------------------------------------------------
-FENode* GObject::GetFENode(int gid)
+FSNode* GObject::GetFENode(int gid)
 {
 	FSMesh* pm = GetFEMesh();
 	if (pm == 0) return 0;
@@ -655,7 +655,7 @@ void GObject::BuildEdgeMesh(GLMesh* glmsh, GEdge& e)
 	glMesh.Create(NN, 0);
 	for (int i = 0; i<mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.m_ntag != -1)
 		{
 			GLMesh::NODE& gnode = glMesh.Node(node.m_ntag);
@@ -1505,7 +1505,7 @@ FECurveMesh* GObject::GetFECurveMesh(int edgeId)
 	int nn = 0;
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.m_ntag != -1) 
 		{
 			node.m_ntag = nn++;

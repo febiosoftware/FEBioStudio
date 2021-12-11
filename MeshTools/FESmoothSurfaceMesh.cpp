@@ -203,7 +203,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMe
 		// assign new node positions
 		for (int i = 0; i<N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			if (tag[i].first == -1)
 			{
 				vec3d& vi = newPos[i];

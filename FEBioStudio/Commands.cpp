@@ -1972,7 +1972,7 @@ void CCmdSelectFENodes::UnExecute()
 {
 	for (int i = 0; i<m_pm->Nodes(); ++i)
 	{
-		FENode& node = m_pm->Node(i);
+		FSNode& node = m_pm->Node(i);
 		if (m_ptag[i])
 			node.Select();
 		else
@@ -2032,7 +2032,7 @@ void CCmdUnselectNodes::UnExecute()
 	FSLineMesh* pm = m_mesh;
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (m_ptag[i])
 			node.Select();
 		else

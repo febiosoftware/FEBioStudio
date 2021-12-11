@@ -151,7 +151,7 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 		// set the current nodal positions
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 
 			// get nodal displacements
 			vec3f r0 = ref.m_Node[i].m_rt;
@@ -202,7 +202,7 @@ void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 		// set the current nodal positions
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			vec3f dr = pfem->EvaluateNodeVector(i, ntime, nfield);
 
 			// the actual nodal position is stored in the state
@@ -229,7 +229,7 @@ void CGLDisplacementMap::UpdateNodes()
 
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		vec3d r0 = to_vec3d(ref.m_Node[i].m_rt);
 		node.r.x = r0.x + m_du[i].x * m_scl.x;
 		node.r.y = r0.y + m_du[i].y * m_scl.y;

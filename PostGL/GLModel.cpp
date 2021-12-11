@@ -350,7 +350,7 @@ void CGLModel::ResetMesh()
 	int NN = mesh.Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		node.r = to_vec3d(ref.m_Node[i].m_rt);
 	}
 
@@ -389,7 +389,7 @@ void CGLModel::ToggleVisibleElements()
 
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag == 0) mesh.Node(i).Hide();
 		else
 		{
@@ -425,8 +425,8 @@ void CGLModel::ToggleVisibleElements()
 	for (int i = 0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.n[0]);
-		FENode& node1 = mesh.Node(edge.n[1]);
+		FSNode& node0 = mesh.Node(edge.n[0]);
+		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 		else
 		{
@@ -1892,7 +1892,7 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 	// reset tags and check visibility
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		n.m_ntag = (n.IsVisible() ? 1 : 0);
 	}
 
@@ -1922,7 +1922,7 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 	glBegin(GL_POINTS);
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.IsExterior() && node.m_ntag && (node.IsSelected() == false))
 		{
 			// get the nodal coordinate
@@ -1936,7 +1936,7 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 	{
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if ((node.IsExterior() == false) && node.m_ntag && (node.IsSelected() == false))
 			{
 				// get the nodal coordinate
@@ -1959,7 +1959,7 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 		glBegin(GL_POINTS);
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.IsExterior() && node.m_ntag && node.IsSelected())
 			{
 				// get the nodal coordinate
@@ -1978,7 +1978,7 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 			glBegin(GL_POINTS);
 			for (int i = 0; i<pm->Nodes(); ++i)
 			{
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 				if ((node.IsExterior() == false) && node.m_ntag && node.IsSelected())
 				{
 					// get the nodal coordinate
@@ -2841,7 +2841,7 @@ void CGLModel::SelectNodesInRange(float fmin, float fmax, bool bsel)
 	FEState* ps = GetActiveState();
 	for (int i = 0; i<N; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.IsEnabled() && node.IsVisible() && ((bsel == false) || (node.IsSelected())))
 		{
 			float v = ps->m_NODE[i].m_val;
@@ -2931,8 +2931,8 @@ void CGLModel::HideSelectedElements()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.n[0]);
-		FENode& node1 = mesh.Node(edge.n[1]);
+		FSNode& node0 = mesh.Node(edge.n[0]);
+		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -2980,8 +2980,8 @@ void CGLModel::HideUnselectedElements()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.n[0]);
-		FENode& node1 = mesh.Node(edge.n[1]);
+		FSNode& node0 = mesh.Node(edge.n[0]);
+		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -3031,8 +3031,8 @@ void CGLModel::HideSelectedFaces()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.n[0]);
-		FENode& node1 = mesh.Node(edge.n[1]);
+		FSNode& node0 = mesh.Node(edge.n[0]);
+		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -3110,8 +3110,8 @@ void CGLModel::HideSelectedEdges()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.n[0]);
-		FENode& node1 = mesh.Node(edge.n[1]);
+		FSNode& node0 = mesh.Node(edge.n[0]);
+		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -3128,7 +3128,7 @@ void CGLModel::HideSelectedNodes()
 	int NN = mesh.Nodes();
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& n = mesh.Node(i);
+		FSNode& n = mesh.Node(i);
 		n.m_ntag = 0;
 		if (n.IsSelected()) { n.Hide(); n.m_ntag = 1; }
 	}
@@ -3140,7 +3140,7 @@ void CGLModel::HideSelectedNodes()
 		int ne = el.Nodes();
 		for (int j=0; j<ne; ++j) 
 		{
-			FENode& node = mesh.Node(el.m_node[j]);
+			FSNode& node = mesh.Node(el.m_node[j]);
 			if (node.IsHidden() && (node.m_ntag == 1)) el.Hide();
 		}
 	}
@@ -3169,8 +3169,8 @@ void CGLModel::HideSelectedNodes()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.n[0]);
-		FENode& node1 = mesh.Node(edge.n[1]);
+		FSNode& node0 = mesh.Node(edge.n[0]);
+		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -3185,7 +3185,7 @@ void CGLModel::SelectAllNodes()
 
 	for (int i = 0; i<mesh->Nodes(); i++)
 	{
-		FENode& n = mesh->Node(i);
+		FSNode& n = mesh->Node(i);
 		if (n.IsVisible()) n.Select();
 	}
 
@@ -3245,7 +3245,7 @@ void CGLModel::InvertSelectedNodes()
 	{
 		for (int i = 0; i<mesh->Nodes(); i++)
 		{
-			FENode& n = mesh->Node(i);
+			FSNode& n = mesh->Node(i);
 			if (n.IsVisible())
 				if (n.IsSelected()) n.Unselect(); else n.Select();
 		}

@@ -57,8 +57,8 @@ FSMesh* FETet4ToTet5::Apply(FSMesh* pm)
 	// copy the old nodes
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& n0 = pm->Node(i);
-		FENode& n1 = pnew->Node(i);
+		FSNode& n0 = pm->Node(i);
+		FSNode& n1 = pnew->Node(i);
 		n1.r = n0.r;
 		n1.m_gid = n0.m_gid;
 	}
@@ -72,7 +72,7 @@ FSMesh* FETet4ToTet5::Apply(FSMesh* pm)
 		vec3d& r2 = pm->Node(el.m_node[2]).r;
 		vec3d& r3 = pm->Node(el.m_node[3]).r;
 
-		FENode& n1 = pnew->Node(i + NN);
+		FSNode& n1 = pnew->Node(i + NN);
 		n1.r = (r0 + r1 + r2 + r3)*0.25;
 		n1.SetExterior(false);
 	}
@@ -152,8 +152,8 @@ FSMesh* FETet5ToTet4::Apply(FSMesh* pm)
 	{
 		if (nodeTag[i] >= 0)
 		{
-			FENode& nd = pnew->Node(nodeTag[i]);
-			FENode& ns = pm->Node(i);
+			FSNode& nd = pnew->Node(nodeTag[i]);
+			FSNode& ns = pm->Node(i);
 			nd = ns;
 		}
 	}

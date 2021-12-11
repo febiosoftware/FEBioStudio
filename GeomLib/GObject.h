@@ -42,7 +42,7 @@ class FEMesher;
 class FSMesh;
 class FSMeshBase;
 class FSLineMesh;
-class FENode;
+class FSNode;
 class FEGroup;
 class GLMesh;
 class GObject;
@@ -132,7 +132,7 @@ public:
 	virtual void ReplaceSurfaceMesh(FESurfaceMesh* newMesh);
 
 	// retrieve an FE nodes from a GNode
-	FENode* GetFENode(int gid);
+	FSNode* GetFENode(int gid);
 
 	// build the FSMesh
 	virtual FSMesh* BuildMesh();

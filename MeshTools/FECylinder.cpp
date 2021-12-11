@@ -369,7 +369,7 @@ FSMesh* FECylinder::BuildWedged()
 	pm->Create(nodes, elems, faces, edges);
 
 	// --- A. Create the nodes ---
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	double x, y, z, R;
 
 	double gz = 1;
@@ -962,7 +962,7 @@ FSMesh* FECylinder2::BuildWedged()
 	pm->Create(nodes, elems, faces, edges);
 
 	// --- A. Create the nodes ---
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	double x, y, z, R;
 
 	double gz = 1;

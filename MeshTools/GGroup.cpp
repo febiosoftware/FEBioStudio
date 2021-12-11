@@ -59,7 +59,7 @@ FENodeList* GNodeList::BuildNodeList()
 			FSMesh* pm = po->GetFEMesh();
 			for (int j=0; j<pm->Nodes(); ++j)
 			{
-				FENode& node = pm->Node(j);
+				FSNode& node = pm->Node(j);
 				if (node.m_gid == pn->GetLocalID())
 				{
 					ps->Add(pm, &node);
@@ -179,7 +179,7 @@ FENodeList* GEdgeList::BuildNodeList()
 		FSMesh& m = *po->GetFEMesh();
 		for (i = 0; i < m.Nodes(); ++i)
 		{
-			FENode& node = m.Node(i);
+			FSNode& node = m.Node(i);
 			if (node.m_ntag == 1)
 			{
 				ps->Add(&m, m.NodePtr(i));
@@ -313,7 +313,7 @@ FENodeList* GFaceList::BuildNodeList()
 		FSMesh& m = *po->GetFEMesh();
 		for (i = 0; i < m.Nodes(); ++i)
 		{
-			FENode& node = m.Node(i);
+			FSNode& node = m.Node(i);
 			if (node.m_ntag == 1)
 			{
 				ps->Add(&m, m.NodePtr(i));
@@ -500,7 +500,7 @@ FENodeList* GPartList::BuildNodeList()
             FSMesh& m = *po->GetFEMesh();
 			for (i = 0; i < m.Nodes(); ++i)
 			{
-				FENode& node = m.Node(i);
+				FSNode& node = m.Node(i);
 				if (node.m_ntag == 1)
 				{
 					ps->Add(&m, m.NodePtr(i));

@@ -376,7 +376,7 @@ bool CCreateSpringPane::getNodeSelection(vector<int>& nodeList, int n)
 		int N = sel->Size();
 		for (int i=0; i<N; ++i, ++it)
 		{
-			FENode* node = it;
+			FSNode* node = it;
 			nodeList.push_back(node->m_ntag);
 		}
 

@@ -128,7 +128,7 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 	// repeat for all nodes
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& nodei = ps->Node(i);
+		FSNode& nodei = ps->Node(i);
 
 		// get the nodal coordinate
 		vec3d ri = pso->GetTransform().LocalToGlobal(nodei.r);
@@ -265,7 +265,7 @@ bool CSurfaceDistance::ClosestPoint(GObject* pso, GObject* pmo, vector<double>& 
 	// repeat for all nodes
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& nodei = ps->Node(i);
+		FSNode& nodei = ps->Node(i);
 
 		// get the global nodal coordinates
 		vec3d ri = pso->GetTransform().LocalToGlobal(nodei.r);

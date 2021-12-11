@@ -45,7 +45,7 @@ void FEStrainMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
-			FENode& node = mesh.Node(f.n[j]);
+			FSNode& node = mesh.Node(f.n[j]);
 			if (node.m_ntag == -1) node.m_ntag = nn++;
 		}
 	}
@@ -54,7 +54,7 @@ void FEStrainMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	m_node.resize(nn);
 	for (int i = 0; i<N; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag >= 0) m_node[node.m_ntag] = i;
 	}
 
@@ -174,7 +174,7 @@ void FEStrainMap::Apply(FEPostModel& fem)
 		for (int i = 0; i<m_front1.Nodes(); ++i)
 		{
 			int inode = m_front1.m_node[i];
-			FENode& node = mesh.Node(inode);
+			FSNode& node = mesh.Node(inode);
 			vec3f r = m_front1.m_pos[i];
 			if (project(m_front2, r, m_front1.m_norm[i], q))
 			{
@@ -190,7 +190,7 @@ void FEStrainMap::Apply(FEPostModel& fem)
 			int inode = m_front1.m_node[i];
 			if (D1[i] < 0)
 			{
-				FENode& node = mesh.Node(inode);
+				FSNode& node = mesh.Node(inode);
 				vec3f r = m_front1.m_pos[i];
 				if (project(m_back1, r, m_front1.m_norm[i], q))
 				{
@@ -225,7 +225,7 @@ void FEStrainMap::Apply(FEPostModel& fem)
 		for (int i = 0; i<m_front2.Nodes(); ++i)
 		{
 			int inode = m_front2.m_node[i];
-			FENode& node = mesh.Node(inode);
+			FSNode& node = mesh.Node(inode);
 			vec3f r = m_front2.m_pos[i];
 			if (project(m_front1, r, m_front2.m_norm[i], q))
 			{
@@ -242,7 +242,7 @@ void FEStrainMap::Apply(FEPostModel& fem)
 			int inode = m_front2.m_node[i];
 			if (D2[i] < 0)
 			{
-				FENode& node = mesh.Node(inode);
+				FSNode& node = mesh.Node(inode);
 				vec3f r = m_front2.m_pos[i];
 				if (project(m_back2, r, m_front2.m_norm[i], q))
 				{

@@ -307,7 +307,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	list<NODE>::iterator in = m_node.begin();
 	for (i=0; i<nodes; ++i, ++in)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		in->n = i;
 		n.r.x = (float) in->x;
 		n.r.y = (float) in->y;

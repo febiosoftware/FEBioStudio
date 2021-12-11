@@ -92,7 +92,7 @@ bool VTKimport::Load(const char* szfile)
 	{	
 		for (j=0,k=0;j<nodes_each_row && i*nodes_each_row+j <nodes;j++)
 		{
-			FENode& n= pm->Node(i*nodes_each_row+j);
+			FSNode& n= pm->Node(i*nodes_each_row+j);
 			vec3f r;
 			r.x = (float)temp[k];
 			r.y = (float)temp[k + 1];

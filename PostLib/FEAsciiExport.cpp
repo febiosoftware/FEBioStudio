@@ -112,7 +112,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 	// tag all selected items
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& n = m.Node(i);
+		FSNode& n = m.Node(i);
 		n.m_ntag = 1;
 		if (m_bselonly && !n.IsSelected()) n.m_ntag = 0;
 	}

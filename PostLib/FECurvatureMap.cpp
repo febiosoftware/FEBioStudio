@@ -41,7 +41,7 @@ void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) 
 		{
-			FENode& node = mesh.Node(f.n[j]);
+			FSNode& node = mesh.Node(f.n[j]);
 			if (node.m_ntag == -1) node.m_ntag = nn++;
 		}
 	}
@@ -50,7 +50,7 @@ void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	m_node.resize(nn);
 	for (int i=0; i<N; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag >= 0) m_node[node.m_ntag].node = i;
 	}
 
@@ -127,7 +127,7 @@ void FECongruencyMap::Apply(FEPostModel& fem)
 		for (int i=0; i<m_surf1.Nodes(); ++i)
 		{
 			int inode = m_surf1.m_node[i].node;
-			FENode& node = mesh.Node(inode);
+			FSNode& node = mesh.Node(inode);
 			vec3f r = fem.NodePosition(inode, n);
 			float v0 = m_surf1.m_node[i].val;
 			float v1 = project(m_surf2, r, n);

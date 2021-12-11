@@ -1655,7 +1655,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	AbaqusModel::Tnode_itr pn = part.m_Node.begin();
 	for (i=0; i<nodes; ++i, ++pn)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		pn->n = i;
 		node.r.x = pn->x;
 		node.r.y = pn->y;

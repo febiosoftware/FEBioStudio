@@ -556,10 +556,10 @@ BOX CPostDocument::GetSelectionBox()
 			for (int j = 0; j < nel; ++j) box += mesh.Node(edge.n[j]).r;
 		}
 
-		const vector<FENode*> selNodes = GetGLModel()->GetNodeSelection();
+		const vector<FSNode*> selNodes = GetGLModel()->GetNodeSelection();
 		for (int i = 0; i < (int)selNodes.size(); ++i)
 		{
-			FENode& node = *selNodes[i];
+			FSNode& node = *selNodes[i];
 			box += node.r;
 		}
 	}

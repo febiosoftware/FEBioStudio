@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FECore/vec3d.h>
 
-class FENode;
+class FSNode;
 class FSMesh;
 class FEEdgeSet;
 class FENodeSet;
@@ -60,7 +60,7 @@ public:
 	bool AutoPartitionFaces(double w, FESurface* pg);
 
 	// Add an (isolated) node. The node will be partitioned.
-	FENode* AddNode(const vec3d& r);
+	FSNode* AddNode(const vec3d& r);
 
 	// Remove nodes that are not attached to anything
 	void RemoveIsolatedNodes();

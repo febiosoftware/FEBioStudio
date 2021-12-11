@@ -82,7 +82,7 @@ FSMesh* FEGregoryPatch::BuildFEMesh()
 	// build the nodes
 	int i, j, k, l, m, n;
 	double r, s;
-	FENode *pn = pm->NodePtr();
+	FSNode *pn = pm->NodePtr();
 	for (j=0; j<=m_ny*m_my; ++j)
 		for (i=0; i<=m_nx*m_mx; ++i, ++pn)
 		{
@@ -104,7 +104,7 @@ FSMesh* FEGregoryPatch::BuildFEMesh()
 	for (j=0; j<=m_ny; ++j)
 		for (i=0; i<=m_nx; ++i)
 		{
-			FENode& n = pm->Node(j*(m_nx*m_mx+1)*(m_my) + i*m_mx);
+			FSNode& n = pm->Node(j*(m_nx*m_mx+1)*(m_my) + i*m_mx);
 			n.m_gid = j*(m_nx+1)+i;
 		}
 

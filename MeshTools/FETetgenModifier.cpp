@@ -285,7 +285,7 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 	if (R2 == 0) R2 = 1.0; else R2 *= R2;	
 	for (int i=0; i<pmesh->Nodes(); ++i)
 	{
-		FENode& node = pmesh->Node(i);
+		FSNode& node = pmesh->Node(i);
 		vec3d& ri = node.r;
 		node.m_gid = -1;
 		for (int j=0; j<po->Nodes(); ++j)
@@ -447,7 +447,7 @@ FSMesh* FETetGenModifier::RefineMesh(FSMesh* pm)
 	if (R2 == 0) R2 = 1.0; else R2 *= R2;	
 	for (int i=0; i<pmesh->Nodes(); ++i)
 	{
-		FENode& node = pmesh->Node(i);
+		FSNode& node = pmesh->Node(i);
 		vec3d& ri = node.r;
 		node.m_gid = -1;
 		for (int j=0; j<po->Nodes(); ++j)

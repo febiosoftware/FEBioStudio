@@ -564,7 +564,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 			// make sure no vector is drawn for hidden nodes
 			for (int i = 0; i < pm->Nodes(); ++i)
 			{
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 				if (node.IsVisible() == false) node.m_ntag = 0;
 			}
 		}
@@ -602,7 +602,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if ((frand() <= m_dens) && node.m_ntag)
 			{
 				vec3d r = node.r;

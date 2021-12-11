@@ -105,8 +105,8 @@ FSMesh* FEShellToSolid::Apply(FSMesh* pm)
 	{
 		if (tag[i] >= 0)
 		{
-			FENode& nd = pnew->Node(tag[i]);
-			FENode& ns = pm->Node(i);
+			FSNode& nd = pnew->Node(tag[i]);
+			FSNode& ns = pm->Node(i);
 			nd.r = ns.r + normals[i]*h[i];
 		}
 	}

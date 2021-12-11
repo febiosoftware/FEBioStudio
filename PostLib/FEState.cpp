@@ -698,7 +698,7 @@ void LineData::processLines()
 	mesh.Create(points.size(), lines);
 	for (int i = 0; i < points.size(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		node.r = points[i];
 	}
 	for (int i = 0; i < lines; ++i)

@@ -204,10 +204,10 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 
 		for (int i = 0; i<n0; ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.m_ntag >= 0)
 			{
-				FENode& node2 = pm->Node(n0 + (l - 1)*nn + node.m_ntag);
+				FSNode& node2 = pm->Node(n0 + (l - 1)*nn + node.m_ntag);
 				node2.r = node.r + ed[node.m_ntag] * d;
 				node2.m_ntag = node.m_ntag;
 			}
@@ -222,10 +222,10 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 		{
 			for (int i = 0; i<n0; ++i)
 			{
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 				if (node.m_ntag >= 0)
 				{
-					FENode& node2 = pm->Node(n0 + nseg*nn + (l - 1)*nn + node.m_ntag);
+					FSNode& node2 = pm->Node(n0 + nseg*nn + (l - 1)*nn + node.m_ntag);
 					node2.r = node.r + ed[node.m_ntag] * (d  + dd* 0.5);
 					node2.m_ntag = node.m_ntag;
 				}
@@ -452,10 +452,10 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	pm->ClearFaceSelection();
 	for (int i=0; i<n0; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.m_ntag >= 0)
 		{
-			FENode& nj = pm->Node(n0 + (nseg - 1)*nn + node.m_ntag);
+			FSNode& nj = pm->Node(n0 + (nseg - 1)*nn + node.m_ntag);
 			nj.m_ntag = -2;
 		}
 	}

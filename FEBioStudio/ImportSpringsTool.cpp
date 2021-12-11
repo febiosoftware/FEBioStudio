@@ -113,7 +113,7 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 	imin = -1;
 	for (int i = 0; i < N; ++i)
 	{
-		FENode& ni = m->Node(i);
+		FSNode& ni = m->Node(i);
 		if (ni.IsExterior())
 		{
 			vec3d ri = m->LocalToGlobal(ni.r);

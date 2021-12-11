@@ -62,8 +62,8 @@ FSMesh*	FEShellMesher::BuildMesh()
 	// create nodes
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& sn = surfaceMesh->Node(i);
-		FENode& dn = mesh->Node(i);
+		FSNode& sn = surfaceMesh->Node(i);
+		FSNode& dn = mesh->Node(i);
 		dn = sn;
 	}
 

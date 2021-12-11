@@ -131,7 +131,7 @@ void VRMLExporter::write_mesh()
 	// we first need to count how many nodes we have that will be exported
 	for (i=0; i<mesh.Nodes(); ++i) 
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		node.m_ntag = 0;
 	}
 	for (i=0; i<mesh.Faces(); ++i)
@@ -146,7 +146,7 @@ void VRMLExporter::write_mesh()
 	n = 0;
 	for (i=0; i<mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		node.m_ntag = (node.m_ntag? n++ : -1);
 	}
 	int nodes = n-1;
@@ -188,7 +188,7 @@ void VRMLExporter::write_mesh()
 
 	for (i=0, n=0; i<mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag >= 0)
 		{
 			sprintf(szline, "%lg %lg %lg", node.r.x, node.r.y, node.r.z);

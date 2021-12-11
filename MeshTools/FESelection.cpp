@@ -997,7 +997,7 @@ void FEElementSelection::Update()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Elements();
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	GObject* po = m_pMesh->GetGObject();
 
@@ -1051,7 +1051,7 @@ void FEElementSelection::Translate(vec3d dr)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1099,7 +1099,7 @@ void FEElementSelection::Rotate(quatd q, vec3d rc)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1145,7 +1145,7 @@ void FEElementSelection::Scale(double s, vec3d dr, vec3d c)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1235,7 +1235,7 @@ void FEFaceSelection::Update()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Faces();
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 	FEFace* pf = m_pMesh->FacePtr();
 	GObject* po = m_pMesh->GetGObject();
 
@@ -1281,7 +1281,7 @@ void FEFaceSelection::Translate(vec3d dr)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1330,7 +1330,7 @@ void FEFaceSelection::Rotate(quatd q, vec3d rc)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1374,7 +1374,7 @@ void FEFaceSelection::Scale(double s, vec3d dr, vec3d c)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1476,7 +1476,7 @@ void FEEdgeSelection::Update()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Edges();
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 	FEEdge* pe = m_pMesh->EdgePtr();
 
 	int m = 0;
@@ -1521,7 +1521,7 @@ void FEEdgeSelection::Translate(vec3d dr)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1569,7 +1569,7 @@ void FEEdgeSelection::Rotate(quatd q, vec3d rc)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1614,7 +1614,7 @@ void FEEdgeSelection::Scale(double s, vec3d dr, vec3d c)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1685,7 +1685,7 @@ int FENodeSelection::Count()
 {
 	if (m_pMesh == 0) return 0;
 	int N = 0;
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 	for (int i=0; i<m_pMesh->Nodes(); ++i, ++pn)
 		if (pn->IsSelected()) ++N;
 
@@ -1701,7 +1701,7 @@ void FENodeSelection::Invert()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Nodes(); 
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 	for (int i=0; i<N; ++i, ++pn)
 		if (pn->IsVisible())
 		{
@@ -1714,7 +1714,7 @@ void FENodeSelection::Update()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Nodes();
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 	GObject* po = m_pMesh->GetGObject();
 
 	int m = 0;

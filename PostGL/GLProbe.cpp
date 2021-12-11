@@ -286,7 +286,7 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 		vec3d ri(0, 0, 0);
 		for (int j = 0; j < e.Nodes(); ++j)
 		{
-			FENode& nj = mesh.Node(e.m_node[j]);
+			FSNode& nj = mesh.Node(e.m_node[j]);
 			vec3d rj = to_vec3d(fem.NodePosition(e.m_node[j], nstate));
 			ri += rj;
 		}

@@ -309,7 +309,7 @@ protected:
 	bool	m_quadMesh;
 
 	FSMesh* m_pm;
-	FENode* m_currentNode;
+	FSNode* m_currentNode;
 	int		m_nodes;
 };
 

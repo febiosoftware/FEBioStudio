@@ -216,7 +216,7 @@ bool FEHMASCIIimport::BuildMesh(FSModel& fem)
 	in = m_Node.begin();
 	for (i=0; i<nodes; ++i, in++)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		n.r = in->r;
 	}
 

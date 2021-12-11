@@ -102,7 +102,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		// calculate the node positions
 		for (int i=0; i<new_nodes; ++i)
 		{
-			FENode& nd = pnew->Node(i+NN);
+			FSNode& nd = pnew->Node(i+NN);
 			nd.r = node_list[i];
 		}
 

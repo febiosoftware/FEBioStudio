@@ -171,7 +171,7 @@ bool AnsysImport::BuildMesh(FSModel &fem)
 
 	// create nodes
 	list<NODE>::iterator in = m_Node.begin();
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	int imin = 0, imax = 0;
 	for (i=0; i<nodes; ++i, ++pn, ++in)
 	{

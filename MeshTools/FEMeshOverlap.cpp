@@ -52,7 +52,7 @@ std::vector<int> MeshTools::FindSurfaceOverlap(FSMesh* mesh, FSMeshBase* trg)
 
 	for (int i = 0; i < mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.m_ntag == 1)
 		{
 			// convert between coordinate systems

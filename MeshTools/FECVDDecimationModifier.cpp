@@ -601,7 +601,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 	// calculate the node positions
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& nd = pnew->Node(i);
+		FSNode& nd = pnew->Node(i);
 		Cluster& Ci = m_Cluster[i+1];
 		assert(Ci.faces() > 0);
 		nd.r = Ci.m_sgamma / Ci.m_srho;
@@ -828,7 +828,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 	// calculate the node positions
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& nd = pnew->Node(i);
+		FSNode& nd = pnew->Node(i);
 		Cluster& Ci = m_Cluster[i+1];
 
 		//nd.r = Ci.m_sgamma / Ci.m_srho;//change here //original point

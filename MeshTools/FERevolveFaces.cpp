@@ -104,7 +104,7 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
     
     for (int i=0; i<NN0; ++i)
     {
-        FENode& node = pm->Node(i);
+        FSNode& node = pm->Node(i);
         if (node.m_ntag == 1)
         {
             // if a node lies on the axis of rotation we do not need to duplicate it
@@ -145,8 +145,8 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
             double wl = w * l / nseg;
             quatd Q(wl, axis);
             
-            FENode& node = pmnew->Node(nodeList[i]);
-            FENode& node2 = pmnew->Node(NN0 + (l - 1)*nn + node.m_ntag);
+            FSNode& node = pmnew->Node(nodeList[i]);
+            FSNode& node2 = pmnew->Node(NN0 + (l - 1)*nn + node.m_ntag);
             
             vec3d r = pm->LocalToGlobal(node.r) - center;
             Q.RotateVector(r);
@@ -161,7 +161,7 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
                 quatd Q(wl, axis);
                 
                 // create middle node for quadratic meshes
-                FENode& node3 = pmnew->Node(1 + NN0 + (l - 1)*nn + node.m_ntag);
+                FSNode& node3 = pmnew->Node(1 + NN0 + (l - 1)*nn + node.m_ntag);
                 
                 vec3d r = pm->LocalToGlobal(node.r) - center;
                 Q.RotateVector(r);
@@ -579,7 +579,7 @@ FSMesh* FERevolveFaces::RevolveShellMesh(FSMesh* pm)
     int nn = 0;
     for (int i = 0; i<NN0; ++i)
     {
-        FENode& node = pm->Node(i);
+        FSNode& node = pm->Node(i);
         
         // if a node lies on the axis of rotation we do not need to duplicate it
         vec3d r = pm->NodePosition(i);
@@ -609,9 +609,9 @@ FSMesh* FERevolveFaces::RevolveShellMesh(FSMesh* pm)
         // loop over all tagged nodes
         for (int i = 0; i<nn; ++i)
         {
-            FENode& node = pmnew->Node(nodeList[i]);
+            FSNode& node = pmnew->Node(nodeList[i]);
             
-            FENode& node2 = pmnew->Node(NN0 + (l - 1)*nn + node.m_ntag);
+            FSNode& node2 = pmnew->Node(NN0 + (l - 1)*nn + node.m_ntag);
             
             vec3d r = pm->LocalToGlobal(node.r) - center;
             Q.RotateVector(r);

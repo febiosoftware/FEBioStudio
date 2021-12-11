@@ -414,7 +414,7 @@ void GMeshObject::UpdateEdges()
 						GEdge& ge = *m_Edge[e.m_gid];
 						if (ge.m_node[0] == -1)
 						{
-							FENode& nj = m.Node(e.n[j]);
+							FSNode& nj = m.Node(e.n[j]);
 							if ((nj.m_gid >= 0) && (nj.m_gid < NN))
 							{
 								ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
@@ -423,7 +423,7 @@ void GMeshObject::UpdateEdges()
 						}
 						else if (ge.m_node[1] == -1)
 						{
-							FENode& nj = m.Node(e.n[j]);
+							FSNode& nj = m.Node(e.n[j]);
 							if ((nj.m_gid >= 0) && (nj.m_gid < NN))
 							{
 								ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
@@ -451,7 +451,7 @@ void GMeshObject::UpdateNodes()
 	vector<int> tag(nodes, 0);
 	for (int i = 0; i < m.Nodes(); ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_gid >= 0)
 		{
 			tag[node.m_gid]++;
@@ -491,7 +491,7 @@ void GMeshObject::UpdateNodes()
 	// update node IDs
 	for (int i = 0; i < m.Nodes(); ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_gid >= 0)
 		{
 			node.m_gid = tag[node.m_gid];
@@ -513,7 +513,7 @@ int GMeshObject::MakeGNode(int n)
 {
 	// get the mesh
 	FSMesh& m = *GetFEMesh();
-	FENode& fen = m.Node(n);
+	FSNode& fen = m.Node(n);
 
 	if (fen.m_gid == -1)
 	{
@@ -551,7 +551,7 @@ int GMeshObject::AddNode(vec3d r)
 
 	// add the node
 	FEMeshBuilder meshBuilder(m);
-	FENode* newNode = meshBuilder.AddNode(r);
+	FSNode* newNode = meshBuilder.AddNode(r);
 
 	// create a geometry node for this
 	GNode* gn = new GNode(this);
@@ -614,7 +614,7 @@ void GMeshObject::BuildGMesh()
 	// create nodes
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.m_ntag == 1) node.m_ntag = gmesh->AddNode(node.r, i, node.m_gid);
 	}
 

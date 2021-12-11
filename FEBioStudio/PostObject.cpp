@@ -80,7 +80,7 @@ void CPostObject::UpdateMesh()
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
 			GMesh::NODE& nd = mesh->Node(i);
-			FENode& ns = postMesh->Node(nd.nid);
+			FSNode& ns = postMesh->Node(nd.nid);
 
 			nd.r = ns.r;
 		}

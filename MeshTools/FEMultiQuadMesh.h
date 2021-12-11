@@ -120,6 +120,6 @@ protected:
 	vector<MBNode>	m_MBNode;
 
 	FSMesh* m_pm;
-	FENode* m_currentNode;
+	FSNode* m_currentNode;
 	int		m_nodes;
 };

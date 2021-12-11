@@ -533,7 +533,7 @@ void FEBioFormat4::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 	for (int i = 0; i < nn; ++i)
 	{
 		FEBioInputModel::NODE& nd = nodes[i];
-		FENode& node = mesh.Node(N0 + i);
+		FSNode& node = mesh.Node(N0 + i);
 		node.m_ntag = nd.id;
 		node.r = nd.r;
 	}

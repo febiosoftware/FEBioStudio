@@ -101,7 +101,7 @@ bool FEDXFimport::Load(const char* szfile)
 
 		// create nodes
 		list<NODE>::iterator in = (*pi)->m_Node.begin();
-		FENode* pn = pm->NodePtr();
+		FSNode* pn = pm->NodePtr();
 		for (i=0; i<nodes; ++i, ++pn, ++in)
 		{
 			pn->r.x = in->x;

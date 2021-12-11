@@ -230,7 +230,7 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 	double d0 = na*p, d;
 	for (i=0, ntag = 0; i<m.Nodes(); ++i)
 	{
-		FENode& n = m.Node(i);
+		FSNode& n = m.Node(i);
 		if (n.m_ntag)
 		{
 			d = na*n.r;
@@ -253,14 +253,14 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 	// find the distance to project for the tagged nodes
 	for (i=0; i<m.Nodes(); ++i)
 	{
-		FENode& n = m.Node(i);
+		FSNode& n = m.Node(i);
 		if (n.m_ntag) wgt[i] = na*(n.r - p);
 	}
 
 	// find the distance to project for the non-tagged nodes
 	for (i=0; i<m.Nodes(); ++i)
 	{
-		FENode& n = m.Node(i);
+		FSNode& n = m.Node(i);
 		if (n.m_ntag == 0)
 		{
 			// find the closest tagged node
@@ -286,7 +286,7 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 	// project all nodes
 	for (i=0; i<m.Nodes(); ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (wgt[i] > 0.0) node.r -= na*wgt[i];
 	}
 
@@ -315,7 +315,7 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 	int iref = -1;
 	for (int i=0; i<pnm->Nodes(); ++i)
 	{
-		FENode& node = pnm->Node(i);
+		FSNode& node = pnm->Node(i);
 		vec3d ri = node.pos();
 		if (node.IsSelected())
 		{
@@ -343,7 +343,7 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 
 	for (int i = 0; i<pnm->Nodes(); ++i)
 	{
-		FENode& node = pnm->Node(i);
+		FSNode& node = pnm->Node(i);
 		if (node.IsSelected())
 		{
 			vec3d ri = node.pos();
@@ -828,7 +828,7 @@ FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 	// mirror the nodes
 	for (int i=0; i<pmn->Nodes(); ++i)
 	{
-		FENode& n = pmn->Node(i);
+		FSNode& n = pmn->Node(i);
 		vec3d r = n.r - rc;
 		switch (nplane)
 		{
@@ -1347,7 +1347,7 @@ FSMesh* FEDetachElements::Apply(FSMesh* pm)
 	int nn1 = NN;
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.m_ntag == 1) 
 		{
 			node.m_ntag = nn1++;
@@ -1361,12 +1361,12 @@ FSMesh* FEDetachElements::Apply(FSMesh* pm)
 	// create nodes
 	for (int i=0; i<NN; ++i) 
 	{
-		FENode& si = pm->Node(i);
-		FENode& di = newMesh->Node(i);
+		FSNode& si = pm->Node(i);
+		FSNode& di = newMesh->Node(i);
 		di = si;
 		if (si.m_ntag != -1)
 		{
-			FENode& di2 = newMesh->Node(si.m_ntag);
+			FSNode& di2 = newMesh->Node(si.m_ntag);
 			di2 = si;
 		}
 	}
@@ -1382,7 +1382,7 @@ FSMesh* FEDetachElements::Apply(FSMesh* pm)
 		{
 			for (int j=0; j<si.Nodes(); ++j)
 			{
-				FENode& nj = pm->Node(si.m_node[j]);
+				FSNode& nj = pm->Node(si.m_node[j]);
 				if (nj.m_ntag != -1)
 				{
 					di.m_node[j] = nj.m_ntag;

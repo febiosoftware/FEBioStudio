@@ -460,7 +460,7 @@ void CGLPlaneCutPlot::RenderMesh()
 			for (k=0; k<8; ++k)
 			{
 				int nk = el.m_node[nt[k]];
-				FENode& node = pm->Node(nk);
+				FSNode& node = pm->Node(nk);
 				en[k] = nk;
 				ev[k] = state.m_NODE[nk].m_val;
 				ex[k] = node.r;
@@ -690,7 +690,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 			// get the nodal values
 			for (int k = 0; k < 8; ++k)
 			{
-				FENode& node = pm->Node(el.m_node[nt[k]]);
+				FSNode& node = pm->Node(el.m_node[nt[k]]);
 				nf[k] = (node.IsExterior() ? 1 : 0);
 				ex[k] = node.r;
 				en[k] = el.m_node[nt[k]];
@@ -898,7 +898,7 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 					// get the nodal values
 					for (int k = 0; k<4; ++k)
 					{
-						FENode& node = pm->Node(face.n[nt[k]]);
+						FSNode& node = pm->Node(face.n[nt[k]]);
 						ex[k] = node.r;
 						en[k] = el.m_node[nt[k]];
 						ev[k] = state.m_NODE[el.m_node[nt[k]]].m_val;
@@ -1009,7 +1009,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 			// get the nodal values
 			for (k=0; k<8; ++k)
 			{
-				FENode& node = pm->Node(el.m_node[nt[k]]);
+				FSNode& node = pm->Node(el.m_node[nt[k]]);
 				en[k] = el.m_node[k];
 				ev[k] = ps->m_NODE[en[k]].m_val;
 				ex[k] = to_vec3d(ps->m_NODE[en[k]].m_rt);

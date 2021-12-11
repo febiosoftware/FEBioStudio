@@ -360,7 +360,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 			// get the nodal values
 			for (int k = 0; k<8; ++k)
 			{
-				FENode& node = pm->Node(el.m_node[nt[k]]);
+				FSNode& node = pm->Node(el.m_node[nt[k]]);
 
 				float f = m_val[el.m_node[nt[k]]];
 				f = (f - rng.x) / (rng.y - rng.x);

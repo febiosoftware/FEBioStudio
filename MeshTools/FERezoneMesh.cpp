@@ -68,7 +68,7 @@ FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 	}
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.m_gid >= 0)
 		{
 			tag[i].first = 3;
@@ -95,7 +95,7 @@ FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 	vector<vec3d> trg(N);
 	for (int i = 0; i < N; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (tag[i].first != 3)
 		{
 			vec3d q = projectToSurface(*surf, node.r);
@@ -115,7 +115,7 @@ FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 	// move the nodes
 	for (int i = 0; i < N; ++i)
 	{
-		FENode& node = newMesh->Node(i);
+		FSNode& node = newMesh->Node(i);
 
 		int ntype = tag[i].first;
 		if (ntype != 3)

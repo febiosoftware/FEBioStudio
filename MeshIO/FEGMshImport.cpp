@@ -145,7 +145,7 @@ bool FEGMshImport::ReadNodes()
 	// read the nodes
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& node = m_pm->Node(i);
+		FSNode& node = m_pm->Node(i);
 		vec3d& r = node.r;
 
 		fgets(m_szline, 255, m_fp);

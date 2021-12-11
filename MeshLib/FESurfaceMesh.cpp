@@ -79,7 +79,7 @@ FESurfaceMesh::FESurfaceMesh(TriMesh& dyna)
 	{
 		if (nodePtr->ntag >= 0)
 		{
-			FENode& node = Node(nodePtr->ntag);
+			FSNode& node = Node(nodePtr->ntag);
 			node.r = nodePtr->r;
 			node.m_gid = nodePtr->gid;
 		}
@@ -130,7 +130,7 @@ FESurfaceMesh::FESurfaceMesh(GLMesh& m)
 	Create(NN, NE, NF);
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		GMesh::NODE& gnode = m.Node(i);
 		node.r = gnode.r;
 		node.m_gid = gnode.pid;
@@ -569,7 +569,7 @@ void FESurfaceMesh::PartitionNodeSelection()
 	vector<int> nodes;
 	for (int i=0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.IsSelected() && (node.m_gid == -1))
 		{
 			node.m_gid = nsg++;
@@ -630,7 +630,7 @@ int FESurfaceMesh::CountNodePartitions() const
 	int max_gid = -1;
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		const FENode& node = Node(i);
+		const FSNode& node = Node(i);
 		if (node.m_gid > max_gid) max_gid = node.m_gid;
 	}
 	return max_gid + 1;
@@ -681,7 +681,7 @@ void FESurfaceMesh::UpdateNodePartitions()
 	int max_gid = -1;
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_gid > max_gid) max_gid = node.m_gid;
 	}
 
@@ -692,7 +692,7 @@ void FESurfaceMesh::UpdateNodePartitions()
 	vector<int> gid(max_gid + 1, -1);
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_gid >= 0) gid[node.m_gid] = 1;
 	}
 
@@ -708,7 +708,7 @@ void FESurfaceMesh::UpdateNodePartitions()
 	{
 		for (int i = 0; i<Nodes(); ++i)
 		{
-			FENode& node = Node(i);
+			FSNode& node = Node(i);
 			if (node.m_gid >= 0) node.m_gid = gid[node.m_gid];
 		}
 	}
@@ -848,7 +848,7 @@ void FESurfaceMesh::DeleteSelectedNodes()
 	// tag all selected nodes
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		node.m_ntag = (node.IsSelected() ? 1 : 0);
 	}
 
@@ -1038,7 +1038,7 @@ void FESurfaceMesh::RemoveIsolatedNodes()
 	int n = 0;
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_ntag == 1) node.m_ntag = n++;
 	}
 
@@ -1062,8 +1062,8 @@ void FESurfaceMesh::RemoveIsolatedNodes()
 	n = 0;
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& n1 = Node(i);
-		FENode& n2 = Node(n);
+		FSNode& n1 = Node(i);
+		FSNode& n2 = Node(n);
 
 		if (n1.m_ntag >= 0)
 		{
@@ -1149,7 +1149,7 @@ void FESurfaceMesh::AutoPartitionNodes()
 	int ng = 0;
 	for (int i=0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (tag[i] != -1)
 		{
 			node.m_gid = ng++;
@@ -1252,8 +1252,8 @@ void FESurfaceMesh::Attach(const FESurfaceMesh& mesh)
 		m_Node.resize(nodes);
 		for (int i = 0; i<nn1; ++i)
 		{
-			FENode& n0 = m_Node[nn0 + i];
-			const FENode& n1 = mesh.m_Node[i];
+			FSNode& n0 = m_Node[nn0 + i];
+			const FSNode& n1 = mesh.m_Node[i];
 			n0 = n1;
 			if (n0.m_gid >= 0) n0.m_gid = n1.m_gid + ng;
 			if (po2) n0.r = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(n1.r));
@@ -1348,7 +1348,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	{
 		if (tag[i] == 1)
 		{
-			FENode& node = Node(i);
+			FSNode& node = Node(i);
 			nodeList0.push_back(pair<int, vec3d>(i, node.r));
 		}
 	}
@@ -1382,7 +1382,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 		{
 			double Dmin = 1e99;
 			int jmin = -1;
-			const FENode& nodei = mesh.Node(i);
+			const FSNode& nodei = mesh.Node(i);
 			vec3d ri;
 			if (po2) ri = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(nodei.r));
 			else ri = nodei.r;
@@ -1418,10 +1418,10 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	// create the new nodes
 	for (int i=0; i<NN1; i++)
 	{
-		const FENode& node1 = mesh.Node(i);
+		const FSNode& node1 = mesh.Node(i);
 		if (tag[i] >= NN0)
 		{
-			FENode& node0 = Node(tag[i]);
+			FSNode& node0 = Node(tag[i]);
 			node0 = node1;
 
 			if (node1.m_gid >= 0) node0.m_gid = node1.m_gid + ng0;
@@ -1430,7 +1430,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 		}
 		else
 		{
-			FENode& node0 = Node(tag[i]);
+			FSNode& node0 = Node(tag[i]);
 			if ((node1.m_gid >= 0) && (node0.m_gid == -1)) node0.m_gid = node1.m_gid + ng0;
 		}
 	}
@@ -1548,7 +1548,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	{
 		if ((val[i] > 0) && (val[i] != 2))
 		{
-			FENode& node = Node(i);
+			FSNode& node = Node(i);
 			if (node.m_gid == -1) node.m_gid = ng++;
 		}
 	}
@@ -1613,7 +1613,7 @@ void FESurfaceMesh::Save(OArchive& ar)
 	// write the nodes
 	ar.BeginChunk(CID_MESH_NODE_SECTION);
 	{
-		FENode* pn = NodePtr();
+		FSNode* pn = NodePtr();
 		for (int i = 0; i<nodes; ++i, ++pn)
 		{
 			ar.BeginChunk(CID_MESH_NODE);
@@ -1704,7 +1704,7 @@ void FESurfaceMesh::Load(IArchive& ar)
 		case CID_MESH_NODE_SECTION:
 		{
 			int n = 0;
-			FENode* pn = NodePtr();
+			FSNode* pn = NodePtr();
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -1845,7 +1845,7 @@ void BuildTriMesh(TriMesh& dyna, FESurfaceMesh* pm)
 	vector<TriMesh::NODEP> nodePtr;
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		TriMesh::NODEP n = dyna.addNode(node.r);
 		n->ntag = i;
 		n->gid = node.m_gid;
@@ -1925,7 +1925,7 @@ void FESurfaceMesh::UpdateItemVisibility()
 	// update visibility of all other items
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_ntag == 1) node.Show(); else node.Hide();
 	}
 

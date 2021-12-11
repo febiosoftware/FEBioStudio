@@ -272,7 +272,7 @@ GObject* FESTLimport::build_mesh()
 	for (i=0; i<NN; ++i)
 	{
 		vec3d& ri = m_Node[i].r;
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		node.pos(ri);
 	}
 

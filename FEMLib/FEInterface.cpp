@@ -873,7 +873,7 @@ void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 		int nf = f.Nodes();
 		for (int n=0; n<nf; ++n)
 		{
-			FENode& ns = mesh.Node(f.n[n]);
+			FSNode& ns = mesh.Node(f.n[n]);
 			vec3d nn = to_vec3d(f.m_nn[n]);
 			vec3d nr = ns.r;
 
@@ -883,7 +883,7 @@ void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 			FENodeList::Iterator itm = pm->First();
 			for (int j=0; j<pm->Size(); ++j, ++itm)
 			{
-				FENode& nj = *(itm->m_pi);
+				FSNode& nj = *(itm->m_pi);
 				vec3d q = (itm->m_pi)->r;
 
 				vec3d s = nr + nn*((q - nr)*nn);

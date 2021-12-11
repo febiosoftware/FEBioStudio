@@ -295,7 +295,7 @@ bool FENASTRANimport::BuildMesh(FSModel& fem)
 
 	// create nodes
 	list<GRID>::iterator in = m_Node.begin();
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	for (i=0; i<nodes; ++i, ++pn, ++in)
 	{
 		pn->r.x = in->x;

@@ -105,7 +105,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 			FSMesh& m = *po->GetFEMesh();
 			for (j=0; j<m.Nodes(); ++j)
 			{
-				FENode& n = m.Node(j);
+				FSNode& n = m.Node(j);
 				vec3d r = po->GetTransform().LocalToGlobal(n.r);
 				if (n.m_ntag) fprintf(fp, "%g %g %g\n", r.x, r.y, r.z);
 			}

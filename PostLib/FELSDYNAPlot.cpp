@@ -228,7 +228,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	float xyz[3];
 	for (i=0; i<m_hdr.nump; i++)
 	{
-		FENode& n = mesh.Node(i);
+		FSNode& n = mesh.Node(i);
 
 		ReadData(xyz, sizeof(float), 3);
 		
@@ -615,7 +615,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 	float xf[3];
 	for (i=0; i<mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 
 		xf[0] = (float) node.r.x;
 		xf[1] = (float) node.r.y;
@@ -729,7 +729,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 			float xf[3];
 			for (i=0; i<mesh.Nodes(); ++i)
 			{
-				FENode& node = mesh.Node(i);
+				FSNode& node = mesh.Node(i);
 				vec3f r = fem.EvaluateNodeVector(i, l, ncode[2]);
 
 				// since the PLOT file requires floats we need to convert

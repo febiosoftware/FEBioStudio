@@ -593,7 +593,7 @@ FSMesh* FEBoxMesher::CreateRegularTET4()
 	// position the nodes
 	double x, y, z;
 	double dx, dy, dz;
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	dx = gx;
 	x = -w/2;
 	for (i=0; i<=m_nx; i++)

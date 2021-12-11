@@ -152,7 +152,7 @@ void FEBioFormat2::ParseGeometryNodes(FEBioInputModel::Part& part, XMLTag& tag)
 	++tag;
 	for (int i = 0; i<nn; ++i)
 	{
-		FENode& node = pm->Node(N0 + i);
+		FSNode& node = pm->Node(N0 + i);
 		tag.value(node.r);
 		++tag;
 	}
@@ -2417,7 +2417,7 @@ void FEBioFormat2::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 		{
 			GMaterial* pmat = febio.GetMaterial(rb);
 
-			FENode& node = pm->Node(id);
+			FSNode& node = pm->Node(id);
 			node.m_ntag = pmat->GetID();
 			pmat->m_ntag++;
 		}
@@ -2443,7 +2443,7 @@ void FEBioFormat2::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 			int NN = pm->Nodes();
 			for (int j = 0; j<NN; ++j)
 			{
-				FENode& node = pm->Node(j);
+				FSNode& node = pm->Node(j);
 				if (node.m_ntag == id) pn->add(j);
 			}
 

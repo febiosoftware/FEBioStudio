@@ -733,7 +733,7 @@ bool FEDomain::AddElement(int iel)
         int n = el.m_node[i];
         int vn = FindVertexByTagNumber(n);
         if (vn == -1) {
-            FENode node = m_pmesh->Node(el.m_node[i]);
+            FSNode node = m_pmesh->Node(el.m_node[i]);
             FEDVertex v(el.m_node[i], node.r);
             vlist[i] = AddVertex(v);
         }
@@ -882,7 +882,7 @@ bool FEDomain::MeshDomain()
     for (int i=0; i<Vertices(); ++i) {
         FEDVertex* vtx = VertexPtr(i);
         if (vtx->m_ntag == -1) {
-            FENode& node = m_pmesh->Node(n0 + n1);
+            FSNode& node = m_pmesh->Node(n0 + n1);
             node.r = vtx->r;
             // store node number in vertex tag
             node.m_ntag = vtx->m_ntag = n0 + n1;

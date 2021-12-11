@@ -151,7 +151,7 @@ bool FENikeImport::ReadGeometrySection()
 	float x, y, z;
 	for (i=0; i<m_nn; ++i)
 	{
-		FENode& n = m_pm->Node(i);
+		FSNode& n = m_pm->Node(i);
 		if (get_line(szline) == 0) return errf("failed data for node", i+1);
 		sscanf(szline, "%*8d%*5d%g%g%g", &x, &y, &z);
 		n.r = vec3d(x,y,z);

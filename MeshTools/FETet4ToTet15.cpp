@@ -80,8 +80,8 @@ FSMesh* FETet4ToTet15::Apply(FSMesh* pm)
 	// copy the old nodes
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& n0 = pnew->Node(i);
-		FENode& n1 = pm->Node(i);
+		FSNode& n0 = pnew->Node(i);
+		FSNode& n1 = pm->Node(i);
 		n0.r = n1.r;
 		n0.m_gid = n1.m_gid;
 	}
@@ -90,7 +90,7 @@ FSMesh* FETet4ToTet15::Apply(FSMesh* pm)
 	for (int i=0; i<NC; ++i)
 	{
 		pair<int,int>& edge = ET[i];
-		FENode& n0 = pnew->Node(i + NN);
+		FSNode& n0 = pnew->Node(i + NN);
 		vec3d& ra = pm->Node(edge.first ).r;
 		vec3d& rb = pm->Node(edge.second).r;
 		n0.r = (ra + rb)*0.5;
@@ -100,7 +100,7 @@ FSMesh* FETet4ToTet15::Apply(FSMesh* pm)
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& face = FT[i];
-		FENode& n0 = pnew->Node(i + NN + NC);
+		FSNode& n0 = pnew->Node(i + NN + NC);
 		vec3d& ra = pm->Node(face.n[0]).r;
 		vec3d& rb = pm->Node(face.n[1]).r;
 		vec3d& rc = pm->Node(face.n[2]).r;
@@ -111,7 +111,7 @@ FSMesh* FETet4ToTet15::Apply(FSMesh* pm)
 	for (int i=0; i<NT; ++i)
 	{
 		FEElement& el = pm->Element(i);
-		FENode& n0 = pnew->Node(i + NN + NC + NF);
+		FSNode& n0 = pnew->Node(i + NN + NC + NF);
 		vec3d& ra = pm->Node(el.m_node[0]).r;
 		vec3d& rb = pm->Node(el.m_node[1]).r;
 		vec3d& rc = pm->Node(el.m_node[2]).r;

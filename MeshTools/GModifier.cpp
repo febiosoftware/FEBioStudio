@@ -425,7 +425,7 @@ FSMesh* GTwistModifier::BuildFEMesh(GObject* po)
 		{
 			for (int i=0; i<N; ++i)
 			{
-				FENode& n = pm->Node(i);
+				FSNode& n = pm->Node(i);
 				t = (n.r.x - box.x0) / dx;
 				t = (t < smin ? 0 : (t > smax ? smax - smin : t - smin));
 				a = w*t*dx/h;
@@ -444,7 +444,7 @@ FSMesh* GTwistModifier::BuildFEMesh(GObject* po)
 		{
 			for (int i=0; i<N; ++i)
 			{
-				FENode& n = pm->Node(i);
+				FSNode& n = pm->Node(i);
 				t = (n.r.y - box.y0) / dy;
 				t = (t < smin ? 0 : (t > smax ? smax - smin : t - smin));
 				a = w*t*dy/h;
@@ -463,7 +463,7 @@ FSMesh* GTwistModifier::BuildFEMesh(GObject* po)
 		{
 			for (int i=0; i<N; ++i)
 			{
-				FENode& n = pm->Node(i);
+				FSNode& n = pm->Node(i);
 				t = (n.r.z - box.z0) / dz;
 				t = (t < smin ? 0 : (t > smax ? smax - smin : t - smin));
 				a = w*t*dz/h;
@@ -591,7 +591,7 @@ FSMesh* GPinchModifier::BuildFEMesh(GObject* po)
 
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		vec3d r = node.r - c;
 		double w = fabs(r.*pa)/W;
 		if (w>1) w = 1;
@@ -742,7 +742,7 @@ FSMesh* GBendModifier::BuildFEMesh(GObject* po)
 	vec3d r;
 	for (int i=0; i<N; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		r = node.r - m_box.Center();
 		Apply(r);
 		node.r = r + m_box.Center();
@@ -908,7 +908,7 @@ FSMesh* GSkewModifier::BuildFEMesh(GObject* po)
 
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		r = node.r - rc;
 		r.*pl += a*(r.*pr)*d;
 		node.r = r + rc;

@@ -436,7 +436,7 @@ bool VTUimport::BuildMesh(VTKModel& vtk)
 		// copy nodal data
 		for (int i = 0; i < nodes; ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			node.r = piece.Point(i);
 		}
 

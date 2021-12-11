@@ -242,7 +242,7 @@ FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 		double y = (*ngmesh)[pi](1);
 		double z = (*ngmesh)[pi](2);
 
-		FENode& ni = mesh->Node(i);
+		FSNode& ni = mesh->Node(i);
 		ni.r = vec3d(x, y, z);
 	}
 
@@ -322,7 +322,7 @@ FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 	if (R2 == 0) R2 = 1.0; else R2 *= R2;
 	for (i = 0; i<mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		vec3d& ri = node.r;
 		node.m_gid = -1;
 		for (j = 0; j<m_occ->Nodes(); ++j)

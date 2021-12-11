@@ -141,7 +141,7 @@ void FEMeshImport::BuildMesh(FSProject& prj)
 	for (i=0; i<nodes; ++i)
 	{
 		NODE& N = m_Node[i];
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		n.r = vec3d(N.x, N.y, N.z);
 	}
 

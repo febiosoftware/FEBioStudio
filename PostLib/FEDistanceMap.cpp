@@ -82,7 +82,7 @@ void Post::FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) 
 		{
-			FENode& node = mesh.Node(f.n[j]);
+			FSNode& node = mesh.Node(f.n[j]);
 			if (node.m_ntag == -1) node.m_ntag = nn++;
 		}
 	}
@@ -91,7 +91,7 @@ void Post::FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	m_node.resize(nn);
 	for (int i=0; i<N; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag >= 0) m_node[node.m_ntag] = i;
 	}
 
@@ -183,7 +183,7 @@ void Post::FEDistanceMap::Apply()
 		for (int i = 0; i < m_surf1.Nodes(); ++i)
 		{
 			int inode = m_surf1.m_node[i];
-			FENode& node = mesh.Node(inode);
+			FSNode& node = mesh.Node(inode);
 			vec3f r = fem.NodePosition(inode, n);
 			vec3f q = project(m_surf2, r, n);
 			a[i] = (q - r).Length();
@@ -202,7 +202,7 @@ void Post::FEDistanceMap::Apply()
 		for (int i = 0; i < m_surf2.Nodes(); ++i)
 		{
 			int inode = m_surf2.m_node[i];
-			FENode& node = mesh.Node(inode);
+			FSNode& node = mesh.Node(inode);
 			vec3f r = fem.NodePosition(inode, n);
 			vec3f q = project(m_surf1, r, n);
 			b[i] = (q - r).Length();

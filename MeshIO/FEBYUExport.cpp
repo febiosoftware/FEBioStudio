@@ -92,7 +92,7 @@ bool FEBYUExport::Write(const char* szfile)
 		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (j=0; j<m.Nodes(); ++j)
 		{
-			FENode& n = m.Node(j);
+			FSNode& n = m.Node(j);
 			if (n.m_ntag)
 				fprintf(fp, "%g %g %g\n", n.r.x, n.r.y, n.r.z);
 		}

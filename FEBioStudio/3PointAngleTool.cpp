@@ -151,7 +151,7 @@ void C3PointAngleTool::Update()
 	int N = mesh->Nodes();
 	for (int i = 0; i<N; ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.IsSelected())
 		{
 			nsel++;

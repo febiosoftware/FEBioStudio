@@ -58,7 +58,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	}
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.m_gid != -1) node.m_ntag = 2;
 	}
 
@@ -72,8 +72,8 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 		{
 			int j0 = face.n[j];
 			int j1 = face.n[(j + 1) % 3];
-			FENode& n0 = mesh->Node(j0);
-			FENode& n1 = mesh->Node(j1);
+			FSNode& n0 = mesh->Node(j0);
+			FSNode& n1 = mesh->Node(j1);
 			vec3d r0 = n0.pos();
 			vec3d r1 = n1.pos();
 
@@ -99,8 +99,8 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 		{
 			int j0 = face.n[j];
 			int j1 = face.n[(j+1)%3];
-			FENode& n0 = mesh->Node(j0);
-			FENode& n1 = mesh->Node(j1);
+			FSNode& n0 = mesh->Node(j0);
+			FSNode& n1 = mesh->Node(j1);
 
 			// make sure neither node was processed
 			if ((n0.m_ntag >= 0) && (n1.m_ntag >= 0))

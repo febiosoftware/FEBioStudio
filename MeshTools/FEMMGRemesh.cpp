@@ -155,7 +155,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 	// build the MMG mesh
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		vec3d r = vi.pos();
 		MMG3D_Set_vertex(mmgMesh, r.x, r.y, r.z, vi.m_gid, i + 1);
 	}
@@ -293,7 +293,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = newMesh->Node(i);
+		FSNode& vi = newMesh->Node(i);
 		vec3d& ri = vi.r;
 		int isCorner = 0;
 		MMG3D_Get_vertex(mmgMesh, &ri.x, &ri.y, &ri.z, &vi.m_gid, &isCorner, NULL);
@@ -409,7 +409,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 	// build the MMG mesh
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		vec3d r = vi.pos();
 		MMGS_Set_vertex(mmgMesh, r.x, r.y, r.z, vi.m_gid, i + 1);
 	}
@@ -540,7 +540,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = newMesh->Node(i);
+		FSNode& vi = newMesh->Node(i);
 		vec3d& ri = vi.r;
 		int isCorner = 0;
 		MMGS_Get_vertex(mmgMesh, &ri.x, &ri.y, &ri.z, &vi.m_gid, &isCorner, NULL);
@@ -661,7 +661,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	// build the MMG mesh
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		vec3d r = vi.pos();
 		MMGS_Set_vertex(mmgMesh, r.x, r.y, r.z, vi.m_gid, i + 1);
 	}
@@ -792,7 +792,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = newMesh->Node(i);
+		FSNode& vi = newMesh->Node(i);
 		vec3d& ri = vi.r;
 		int isCorner = 0;
 		MMGS_Get_vertex(mmgMesh, &ri.x, &ri.y, &ri.z, &vi.m_gid, &isCorner, NULL);
@@ -908,7 +908,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	// build the MMG mesh
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		vec3d r = vi.pos();
 		MMG2D_Set_vertex(mmgMesh, r.x, r.y, vi.m_gid, i + 1);
 	}
@@ -916,7 +916,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	// set the required vertices
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		if ((vi.m_gid >= 0) || (vi.m_ntag > 0))
 		{
 			MMG2D_Set_requiredVertex(mmgMesh, i + 1);
@@ -1057,7 +1057,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = newMesh->Node(i);
+		FSNode& vi = newMesh->Node(i);
 		vec3d& ri = vi.r;
 		int isCorner = 0;
 		MMG2D_Get_vertex(mmgMesh, &ri.x, &ri.y, &vi.m_gid, &isCorner, NULL);

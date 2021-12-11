@@ -207,7 +207,7 @@ FSMesh* FEPlaneCut::Apply(FSMesh* pm)
 	// add new nodes
 	for (int i=0; i<N1; ++i)
 	{
-		FENode& ni = pnew->Node(i + NN);
+		FSNode& ni = pnew->Node(i + NN);
 		vec3d& r0 = pm->Node(EL[i].n0).r;
 		vec3d& r1 = pm->Node(EL[i].n1).r;
 		ni.r = r0 + (r1 - r0)*EL[i].w;

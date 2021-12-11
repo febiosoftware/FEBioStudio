@@ -243,7 +243,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		// evaluate all nodes to find range
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			NODEDATA& d0 = s0.m_NODE[i];
 			NODEDATA& d1 = s1.m_NODE[i];
 			if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
@@ -267,7 +267,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
 					int nj = face.n[j];
-					FENode& node = pm->Node(nj);
+					FSNode& node = pm->Node(nj);
 					NODEDATA& d0 = s0.m_NODE[nj];
 					NODEDATA& d1 = s1.m_NODE[nj];
 					if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
@@ -287,7 +287,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			for (int j = 0; j < 2; ++j)
 			{
 				int nj = (j == 0 ? de.n0 : de.n1);
-				FENode& node = pm->Node(nj);
+				FSNode& node = pm->Node(nj);
 				NODEDATA& d0 = s0.m_NODE[nj];
 				NODEDATA& d1 = s1.m_NODE[nj];
 				if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))

@@ -275,14 +275,14 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			// make sure no vector is drawn for hidden nodes
 			for (int i = 0; i < pm->Nodes(); ++i)
 			{
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 				if (node.IsVisible() == false) node.m_ntag = 0;
 			}
 		}
 
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if ((frand() <= m_dens) && node.m_ntag)
 			{
 				vec3f r = to_vec3f(node.r);

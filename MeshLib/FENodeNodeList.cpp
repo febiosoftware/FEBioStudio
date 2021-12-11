@@ -60,7 +60,7 @@ void FENodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 	{
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.m_gid >= 0)
 			{
 				P[i] = 3;

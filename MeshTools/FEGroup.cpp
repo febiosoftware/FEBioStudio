@@ -197,7 +197,7 @@ FENodeList* FEPart::BuildNodeList()
 	FENodeList* pg = new FENodeList();
 	for (i=0; i<N; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		if (n.m_ntag == 1) pg->Add(pm, &n);
 	}
 	return pg;
@@ -265,7 +265,7 @@ FENodeList* FESurface::BuildNodeList()
 	// add nodes to list
 	for (i=0; i<pm->Nodes(); ++i)
 	{
-		FENode* pn = pm->NodePtr(i);
+		FSNode* pn = pm->NodePtr(i);
 		if (pn->m_ntag == 1) pg->Add(pm, pn);
 	}
 
@@ -330,7 +330,7 @@ FENodeList* FEEdgeSet::BuildNodeList()
 	// add nodes to list
 	for (i=0; i<pm->Nodes(); ++i)
 	{
-		FENode* pn = pm->NodePtr(i);
+		FSNode* pn = pm->NodePtr(i);
 		if (pn->m_ntag == 1) pg->Add(pm, pn);
 	}
 

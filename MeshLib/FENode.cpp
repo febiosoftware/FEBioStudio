@@ -26,17 +26,17 @@ SOFTWARE.*/
 
 #include "FENode.h"
 
-FENode::FENode()
+FSNode::FSNode()
 {
 	m_gid = -1;
 }
 
-FENode::FENode(const FENode& n) : MeshItem(n)
+FSNode::FSNode(const FSNode& n) : MeshItem(n)
 {
 	r = n.r;
 }
 
-void FENode::operator = (const FENode& n)
+void FSNode::operator = (const FSNode& n)
 {
 	r = n.r;
 	MeshItem::operator=(n);

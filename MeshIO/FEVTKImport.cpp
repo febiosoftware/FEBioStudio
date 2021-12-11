@@ -532,7 +532,7 @@ bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 	// copy nodal data
 	for (int i = 0; i < nodes; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		VTKMesh::NODE& vtkNode = vtk.m_nodeList[i];
 		node.r = vec3d(vtkNode.r[0], vtkNode.r[1], vtkNode.r[2]);
 	}

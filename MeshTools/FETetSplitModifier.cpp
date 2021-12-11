@@ -271,8 +271,8 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 		pair<int, int>& edge = ET[i];
 		if (EM[i] != -1)
 		{
-			FENode& n0 = pm->Node(edge.first);
-			FENode& n1 = pm->Node(edge.second);
+			FSNode& n0 = pm->Node(edge.first);
+			FSNode& n1 = pm->Node(edge.second);
 
 			// put the node halfway between the edge nodes
 			vec3d r = (n0.r+n1.r)*0.5;

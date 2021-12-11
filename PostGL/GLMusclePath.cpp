@@ -492,7 +492,7 @@ vec3d GLMusclePath::UpdateOrigin(int ntime)
 			vec3d ri(0,0,0);
 			for (int j = 0; j < f.Nodes(); ++j)
 			{
-				FENode& nj = mesh.Node(f.n[j]);
+				FSNode& nj = mesh.Node(f.n[j]);
 				vec3d rj = to_vec3d(fem.NodePosition(f.n[j], 0));
 				ri += rj;
 			}
@@ -538,7 +538,7 @@ vec3d GLMusclePath::UpdateOrigin(int ntime)
 	vec3d ri(0, 0, 0);
 	for (int j = 0; j < f.Nodes(); ++j)
 	{
-		FENode& nj = mesh.Node(f.n[j]);
+		FSNode& nj = mesh.Node(f.n[j]);
 		vec3d rj = to_vec3d(fem.NodePosition(f.n[j], ntime));
 		ri += rj;
 	}
@@ -819,7 +819,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 	{
 		for (int i = 0; i < mesh.Nodes(); ++i)
 		{
-			FENode& node = mesh.Node(i);
+			FSNode& node = mesh.Node(i);
 			node.m_ntag = 0;
 			vec3d ri = to_vec3d(fem.NodePosition(i, ntime));
 			double L0 = (ri - r0).SqrLength();

@@ -125,7 +125,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 
 	// create nodes
 	vector<NODE>::iterator in = m_node.begin();
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	int imin = 0, imax = 0;
 	for (int i = 0; i<nodes; ++i, ++pn, ++in)
 	{

@@ -86,14 +86,14 @@ void FESmoothMesh::SmoothMesh(FSMesh& mesh)
 		vector<vec3d> r(N, vec3d(0, 0, 0));
 		for (int i = 0; i < N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			int nn = NNL.Valence(i);
 			if ((ni.m_ntag == 1) && (nn > 0))
 			{
 				vec3d v(0,0,0);
 				for (int j = 0; j < nn; ++j)
 				{
-					FENode& nj = mesh.Node(NNL.Node(i, j));
+					FSNode& nj = mesh.Node(NNL.Node(i, j));
 					v += nj.r;
 				}
 				v /= (double)nn;
@@ -103,7 +103,7 @@ void FESmoothMesh::SmoothMesh(FSMesh& mesh)
 		}
 		for (int i = 0; i < N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			int nn = NNL.Valence(i);
 			if ((ni.m_ntag == 1) && (nn > 0))
 			{
@@ -216,7 +216,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 
 		for (int i=0; i<N; ++i)
 		{
-			FENode& node = mesh.Node(i);
+			FSNode& node = mesh.Node(i);
 			if (node.m_ntag > 0)
 			{
 				newPos[i] /= (double) node.m_ntag;
@@ -235,7 +235,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 		// assign new node positions
 		for (int i = 0; i<N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			vec3d& vi = newPos[i];
 			ni.r = ni.r*w + vi*(1.0 - w);
 		}
@@ -384,7 +384,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 		// assign new node positions
 		for (int i = 0; i<N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			if (tag[i].first == -1) 
 			{
 				vec3d& vi = newPos[i];

@@ -62,7 +62,7 @@ bool FEMeshExport::Write(const char* szfile)
 
 		for (j=0; j<pm->Nodes(); ++j, ++N)
 		{
-			FENode& node = pm->Node(j);
+			FSNode& node = pm->Node(j);
 			node.m_nid = N;
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
 			fprintf(fp, "%lg %lg %lg 0\n", r.x, r.y, r.z);

@@ -238,7 +238,7 @@ FSMesh* FESolidArc::BuildMeshLegacy()
 				x = R*cosa;
 				y = R*sina;
 
-				FENode& node = pm->Node(n);
+				FSNode& node = pm->Node(n);
 
 				node.r = vec3d(x, y, z);
 

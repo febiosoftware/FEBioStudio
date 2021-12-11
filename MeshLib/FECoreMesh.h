@@ -120,7 +120,7 @@ public:
 	void FindNodesFromPart(int gid, std::vector<int>& node);
 
 	// find a node from its ID
-	FENode* FindNodeFromID(int gid);
+	FSNode* FindNodeFromID(int gid);
 
 	int CountNodePartitions() const;
 	int CountEdgePartitions() const;

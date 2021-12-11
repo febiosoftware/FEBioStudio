@@ -526,7 +526,7 @@ bool FENikeProject::BuildNodes(FSProject& prj)
 		if (pm == 0) return false;
 		for (int j=0; j<pm->Nodes(); ++j)
 		{
-			FENode& node = pm->Node(j);
+			FSNode& node = pm->Node(j);
 			NODE& m = m_Node[nodes];
 			node.m_nid = ++nodes;
 			r = po->GetTransform().LocalToGlobal(node.r);
@@ -1260,7 +1260,7 @@ bool FENikeProject::BuildNodalVelocities(FSProject &prj)
 			FENodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
 			{
-				FENode& node = *(pn->m_pi);
+				FSNode& node = *(pn->m_pi);
 				NODAL_VELOCITY& nv = m_Vel[node.m_nid-1];
 
 				nv.ninc = node.m_nid;

@@ -439,7 +439,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 	// assign nodes
 	for (int i=0; i<zone.m_nn; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		float* v = zone.m_Node[i].v;
 		n.r = vec3d(v[0], v[1], v[2]);
 	}

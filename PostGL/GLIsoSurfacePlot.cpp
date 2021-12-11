@@ -227,7 +227,7 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 			// get the nodal values
 			for (k=0; k<8; ++k)
 			{
-				FENode& node = pm->Node(el.m_node[nt[k]]);
+				FSNode& node = pm->Node(el.m_node[nt[k]]);
 
 				ev[k] = m_val[el.m_node[nt[k]]];
 				ex[k] = to_vec3f(node.r);

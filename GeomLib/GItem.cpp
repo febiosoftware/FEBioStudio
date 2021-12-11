@@ -100,7 +100,7 @@ void GNode::MakeRequired()
 		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
-			FENode* pn = pm->FindNodeFromID(GetLocalID()); assert(pn);
+			FSNode* pn = pm->FindNodeFromID(GetLocalID()); assert(pn);
 			if (pn) pn->SetRequired(true);
 		}
 	}

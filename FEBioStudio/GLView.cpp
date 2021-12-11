@@ -5157,7 +5157,7 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 	int NN = lineMesh->Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = lineMesh->Node(i);
+		FSNode& node = lineMesh->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(lineMesh->Node(i).r);
@@ -5711,7 +5711,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 				// tag all exterior nodes
 				for (int i = 0; i < pm->Nodes(); ++i)
 				{
-					FENode& node = pm->Node(i);
+					FSNode& node = pm->Node(i);
 					if (node.IsExterior()) node.m_ntag = 0;
 					else node.m_ntag = -1;
 				}
@@ -5725,7 +5725,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	vector<int> selectedNodes;
 	for (int i = 0; i<lineMesh->Nodes(); ++i)
 	{
-		FENode& node = lineMesh->Node(i);
+		FSNode& node = lineMesh->Node(i);
 		if (node.IsVisible() && (node.m_ntag == 0))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
@@ -6227,7 +6227,7 @@ void CGLView::SelectFENodes(int x, int y)
 	int NN = pm->Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(pm->Node(i).r);
@@ -6293,7 +6293,7 @@ void CGLView::SelectFENodes(int x, int y)
 				{
 					Post::FEPostModel* fem = postDoc->GetFSModel();
 					Post::FEState* state = fem->CurrentState();
-					FENode& node = pm->Node(index);
+					FSNode& node = pm->Node(index);
 					vec3f r = state->m_NODE[index].m_rt;
 					QString txt = QString("Node %1 : position = (%2, %3, %4)").arg(node.m_nid).arg(r.x).arg(r.y).arg(r.z);
 
@@ -6701,7 +6701,7 @@ void CGLView::RenderSelectedNodes(GObject* po)
 		glColor3ub(255, 0, 0);
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			FENode& n = pm->Node(i);
+			FSNode& n = pm->Node(i);
 			if (n.m_gid > -1)
 			{
 				GNode& gn = *po->Node(n.m_gid);
@@ -7324,7 +7324,7 @@ void CGLView::RenderFENodes(GObject* po)
 		{
 			for (int i = 0; i<N; ++i)
 			{
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 				if (!node.IsExterior()) node.m_ntag = 0;
 			}
 		}
@@ -8928,7 +8928,7 @@ void CGLView::RenderTags()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			FENode& node = pmb->Node(i);
+			FSNode& node = pmb->Node(i);
 			if (node.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(node.r);
@@ -8947,7 +8947,7 @@ void CGLView::RenderTags()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			FENode& node = pmb->Node(i);
+			FSNode& node = pmb->Node(i);
 			if (node.m_ntag == 1)
 			{
 				tag.r = pmb->LocalToGlobal(node.r);
@@ -9264,7 +9264,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 						// get the nodal values
 						for (int k = 0; k < 8; ++k)
 						{
-							FENode& node = mesh->Node(el.m_node[nt[k]]);
+							FSNode& node = mesh->Node(el.m_node[nt[k]]);
 							ex[k] = mesh->LocalToGlobal(node.r);
 							en[k] = el.m_node[nt[k]];
 						}
@@ -9410,7 +9410,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					int NN = mesh->Nodes();
 					for (int i = 0; i < NN; ++i)
 					{
-						FENode& node = mesh->Node(i);
+						FSNode& node = mesh->Node(i);
 						node.m_ntag = 0;
 
 						vec3d ri = mesh->LocalToGlobal(node.pos());

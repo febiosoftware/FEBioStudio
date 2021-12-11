@@ -140,7 +140,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		int nodes = 0;
 		for (int i = 0; i < NN; ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.m_ntag == 1) node.m_ntag = nodes++;
 		}
 
@@ -150,10 +150,10 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		// copy nodes
 		for (int i = 0; i < NN; ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.m_ntag >= 0)
 			{
-				FENode& snode = m_surfmesh->Node(node.m_ntag);
+				FSNode& snode = m_surfmesh->Node(node.m_ntag);
 				snode = node;
 			}
 		}
@@ -294,7 +294,7 @@ void GSurfaceMeshObject::UpdateNodes()
 	int NN = m.Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_gid >= 0)
 		{
 			GNode& n = *m_Node[node.m_gid];
@@ -348,7 +348,7 @@ void GSurfaceMeshObject::UpdateEdges()
 					GEdge& ge = *m_Edge[e.m_gid];
 					if (ge.m_node[0] == -1)
 					{
-						FENode& nj = m.Node(e.n[j]);
+						FSNode& nj = m.Node(e.n[j]);
 						if ((nj.m_gid >= 0) && (nj.m_gid < NN))
 						{
 							ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
@@ -358,7 +358,7 @@ void GSurfaceMeshObject::UpdateEdges()
 					}
 					else if (ge.m_node[1] == -1)
 					{
-						FENode& nj = m.Node(e.n[j]);
+						FSNode& nj = m.Node(e.n[j]);
 						if ((nj.m_gid >= 0) && (nj.m_gid < NN))
 						{
 							ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
@@ -401,7 +401,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	// create nodes
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		gmesh->AddNode(node.r, node.m_gid);
 	}
 
@@ -467,7 +467,7 @@ FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 	int nn = 0;
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.m_ntag != -1)
 		{
 			node.m_ntag = nn++;
@@ -1012,7 +1012,7 @@ FESurfaceMesh* createSurfaceMesh(GLMesh* glmesh)
 
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& nodei = pm->Node(i);
+		FSNode& nodei = pm->Node(i);
 		const GMesh::NODE& glnode = glmesh->Node(i);
 		nodei.r = glnode.r;
 	}

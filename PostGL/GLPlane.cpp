@@ -57,9 +57,9 @@ void CGLPlane::Create(int n[3])
 	FSMeshBase* pm = m_pfem->GetFEMesh(0);
 	if (pm && (n[0] > 0) && (n[1] > 0) && (n[2] > 0))
 	{
-		FENode& n1 = pm->Node(n[0]-1);
-		FENode& n2 = pm->Node(n[1]-1);
-		FENode& n3 = pm->Node(n[2]-1);
+		FSNode& n1 = pm->Node(n[0]-1);
+		FSNode& n2 = pm->Node(n[1]-1);
+		FSNode& n3 = pm->Node(n[2]-1);
 
 		vec3d r1 = n1.r;
 		vec3d r2 = n2.r;

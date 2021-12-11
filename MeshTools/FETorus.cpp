@@ -329,7 +329,7 @@ FSMesh* FETorus::BuildMeshLegacy()
 
 	// --- create the first layer of nodes ---
 	// create the inner nodes
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	vec3d r;
 	double h = R1/sqrt(2.0)*0.5;
 	double R, f, dr;

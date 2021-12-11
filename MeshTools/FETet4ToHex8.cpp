@@ -58,8 +58,8 @@ FSMesh* FETet4ToHex8::Apply(FSMesh* pm)
 	// copy the nodes from the tet15 mesh
 	for (int i = 0; i<nodes; ++i)
 	{
-		FENode& n0 = pnew->Node(i);
-		FENode& n1 = tet15->Node(i);
+		FSNode& n0 = pnew->Node(i);
+		FSNode& n1 = tet15->Node(i);
 		n0.r = n1.r;
 		n0.m_gid = n1.m_gid;
 	}

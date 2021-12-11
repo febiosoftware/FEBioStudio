@@ -94,7 +94,7 @@ vec3d FSLineMesh::NodeLocalPosition(int i) const
 // Updates the bounding box (in local coordinates)
 void FSLineMesh::UpdateBoundingBox()
 {
-	FENode* pn = NodePtr();
+	FSNode* pn = NodePtr();
 	if (pn == 0)
 	{
 		m_box.x0 = m_box.y0 = m_box.z0 = 0;

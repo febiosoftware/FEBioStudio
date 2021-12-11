@@ -74,25 +74,25 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 	int n = 0;
 	for (int i=0; i<NN0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
-		FENode& n0 = pm->Node(i);
+		FSNode& n1 = pmnew->Node(n);
+		FSNode& n0 = pm->Node(i);
 		n1 = n0;
 	}
 
 	for (int i=0; i<NC0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
+		FSNode& n1 = pmnew->Node(n);
 
 		pair<int,int>& edge = ET[i];
-		FENode& na = pm->Node(edge.first);
-		FENode& nb = pm->Node(edge.second);
+		FSNode& na = pm->Node(edge.first);
+		FSNode& nb = pm->Node(edge.second);
 
 		n1.r = (na.r + nb.r)*0.5;
 	}
 
 	for (int i=0; i<NF0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
+		FSNode& n1 = pmnew->Node(n);
 
 		FEFace& face = FT[i];
 
@@ -106,7 +106,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 
 	for (int i=0; i<NE0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
+		FSNode& n1 = pmnew->Node(n);
 
 		FEElement& el = pm->Element(i);
 		vec3d r(0,0,0);
@@ -198,7 +198,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 
 		for (int i=0; i<NN0; ++i)
 		{
-			FENode& ni = pmnew->Node(i);
+			FSNode& ni = pmnew->Node(i);
 			double m = (double) ni.m_ntag;
 			if (m != 0.0)
 			{
@@ -219,7 +219,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 
 		for (int i=0; i<NC0; ++i) 
 		{
-			FENode& node = pmnew->Node(NN0 + i);
+			FSNode& node = pmnew->Node(NN0 + i);
 			if (node.m_ntag != 0)
 			{
 				pmnew->Node(NN0 + i).r *= 0.5;
@@ -347,18 +347,18 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 	int n = 0;
 	for (int i = 0; i < NN0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
-		FENode& n0 = pm->Node(i);
+		FSNode& n1 = pmnew->Node(n);
+		FSNode& n0 = pm->Node(i);
 		n1 = n0;
 	}
 
 	for (int i = 0; i < edgeCount; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
+		FSNode& n1 = pmnew->Node(n);
 
 		pair<int, int>& edge = edges[i];
-		FENode& na = pm->Node(edge.first);
-		FENode& nb = pm->Node(edge.second);
+		FSNode& na = pm->Node(edge.first);
+		FSNode& nb = pm->Node(edge.second);
 
 		n1.r = (na.r + nb.r)*0.5;
 	}
@@ -368,7 +368,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 		FEFace& face = pm->Face(i);
 		if (face.m_ntag != -1)
 		{
-			FENode& n1 = pmnew->Node(n++);
+			FSNode& n1 = pmnew->Node(n++);
 
 			vec3d r0 = pm->Node(face.n[0]).r;
 			vec3d r1 = pm->Node(face.n[1]).r;
@@ -455,7 +455,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 
 		for (int i = 0; i < NN0; ++i)
 		{
-			FENode& ni = pmnew->Node(i);
+			FSNode& ni = pmnew->Node(i);
 			double m = (double)ni.m_ntag;
 			if (m != 0.0)
 			{
@@ -476,7 +476,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 
 		for (int i = 0; i < NC0; ++i)
 		{
-			FENode& node = pmnew->Node(NN0 + i);
+			FSNode& node = pmnew->Node(NN0 + i);
 			if (node.m_ntag != 0)
 			{
 				pmnew->Node(NN0 + i).r *= 0.5;

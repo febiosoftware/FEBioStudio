@@ -64,7 +64,7 @@ bool FEPLYExport::Write(const char* szfile)
 			int NN = mesh->Nodes();
 			for (int j = 0; j < NN; ++j)
 			{
-				FENode& node = mesh->Node(j);
+				FSNode& node = mesh->Node(j);
 				vec3d r = mesh->LocalToGlobal(node.r);
 				vertices.push_back(r);
 			}

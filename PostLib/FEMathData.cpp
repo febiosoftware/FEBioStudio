@@ -50,7 +50,7 @@ void FEMathData::eval(int n, float* pv)
 	math.AddVariable("t", time);
 
 	int ierr;
-	FENode& node = mesh.Node(n);
+	FSNode& node = mesh.Node(n);
 
 	vec3f r = fem.NodePosition(n, m_state->GetID());
 	math.AddVariable("x", (double)r.x);
@@ -86,7 +86,7 @@ void FEMathVec3Data::eval(int n, vec3f* pv)
 	math.AddVariable("t", time);
 
 	int ierr;
-	FENode& node = mesh.Node(n);
+	FSNode& node = mesh.Node(n);
 
 	vec3f r = fem.NodePosition(n, ntime);
 	math.AddVariable("x", (double)r.x);
@@ -127,7 +127,7 @@ void FEMathMat3Data::eval(int n, mat3f* pv)
 	math.AddVariable("t", time);
 
 	int ierr;
-	FENode& node = mesh.Node(n);
+	FSNode& node = mesh.Node(n);
 
 	vec3f r = fem.NodePosition(n, ntime);
 	math.AddVariable("x", (double)r.x);

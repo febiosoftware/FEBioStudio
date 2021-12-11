@@ -172,7 +172,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 	int nn = 0;
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = m_curve->Node(i);
+		FSNode& node = m_curve->Node(i);
 		if (node.m_ntag != -1)
 		{
 			node.m_ntag = nn++;

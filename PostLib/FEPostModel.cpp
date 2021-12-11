@@ -952,7 +952,7 @@ void FEPostModel::UpdateBoundingBox()
 		return;
 	}
 
-	FENode& n = mesh->Node(0);
+	FSNode& n = mesh->Node(0);
 	m_bbox.x0 = m_bbox.x1 = n.r.x;
 	m_bbox.y0 = m_bbox.y1 = n.r.y;
 	m_bbox.z0 = m_bbox.z1 = n.r.z;
@@ -960,7 +960,7 @@ void FEPostModel::UpdateBoundingBox()
 	int N = mesh->Nodes();
 	for (int i=0; i<N; i++)
 	{
-		FENode& n = mesh->Node(i);
+		FSNode& n = mesh->Node(i);
 		if (n.r.x < m_bbox.x0) m_bbox.x0 = n.r.x;
 		if (n.r.y < m_bbox.y0) m_bbox.y0 = n.r.y;
 		if (n.r.z < m_bbox.z0) m_bbox.z0 = n.r.z;

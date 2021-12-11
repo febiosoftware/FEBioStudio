@@ -317,7 +317,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 		vec3d r(0,0,0);
 		for (int j=0; j<4; ++j) r += pm->Node(pe->m_node[j]).r*0.25;
 
-		FENode& n0 = pnew->Node(N0 + i);
+		FSNode& n0 = pnew->Node(N0 + i);
 		n0.r = r;
 	}
 
@@ -335,8 +335,8 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 				FEElement* pj = neighbor(pe, j);
 				if ((pj == 0) || (m_Data[pj->m_ntag].ntag == 0)) 
 				{
-					FENode& n0 = pm->Node(pe->m_node[j      ]);
-					FENode& n1 = pm->Node(pe->m_node[(j+1)%4]);
+					FSNode& n0 = pm->Node(pe->m_node[j      ]);
+					FSNode& n1 = pm->Node(pe->m_node[(j+1)%4]);
 					vec3d r = (n0.r + n1.r)*0.5;
 
 					pnew->Node(N0 + nfn + nen).r = r;
@@ -631,8 +631,8 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 		{
 			std::pair<int, int> edge = EL[i];
 
-			FENode& n0 = pm->Node(edge.first);
-			FENode& n1 = pm->Node(edge.second);
+			FSNode& n0 = pm->Node(edge.first);
+			FSNode& n1 = pm->Node(edge.second);
 			vec3d r = (n0.r + n1.r)*0.5;
 
 			pnew->Node(N0 + nen).r = r;

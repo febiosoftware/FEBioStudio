@@ -169,7 +169,7 @@ FSMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 				ptri->Node(0).r = e1*d.x + e2*d.y + c;
 				for (int k=0; k<nr; ++k)
 				{
-					FENode& n = ptri->Node(k+1);
+					FSNode& n = ptri->Node(k+1);
 					n.r = e1*R[k].x + e2*R[k].y + c;
 				}
 

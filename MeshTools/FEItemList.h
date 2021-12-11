@@ -65,8 +65,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // Specialization for nodes
-class FENode;
-typedef FEItemList_T<FENode> FENodeList;
+class FSNode;
+typedef FEItemList_T<FSNode> FENodeList;
 
 //-----------------------------------------------------------------------------
 // Specialization for faces

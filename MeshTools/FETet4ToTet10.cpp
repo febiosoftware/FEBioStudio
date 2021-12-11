@@ -173,8 +173,8 @@ FSMesh* FETet4ToTet10::Apply(FSMesh* pm)
 	// copy the old nodes
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& n0 = pm->Node(i);
-		FENode& n1 = pnew->Node(i);
+		FSNode& n0 = pm->Node(i);
+		FSNode& n1 = pnew->Node(i);
 		n1.r = n0.r;
 		n1.m_gid = n0.m_gid;
 	}
@@ -182,10 +182,10 @@ FSMesh* FETet4ToTet10::Apply(FSMesh* pm)
 	// create the new edge nodes
 	for (int i=0; i<(int) ET.size(); ++i)
 	{
-		FENode& na = pm->Node(ET[i].first);
-		FENode& nb = pm->Node(ET[i].second);
+		FSNode& na = pm->Node(ET[i].first);
+		FSNode& nb = pm->Node(ET[i].second);
 
-		FENode& n1 = pnew->Node(i + NN);
+		FSNode& n1 = pnew->Node(i + NN);
 		n1.r = (na.r +nb.r)*0.5;
 	}
 
@@ -316,7 +316,7 @@ void FETet10Smooth::Apply(FSMesh* pmesh)
 	// loop over all corner nodes
 	for (int n=0; n<NN; ++n)
 	{
-		FENode& ni = pmesh->Node(n);
+		FSNode& ni = pmesh->Node(n);
 		if (ni.m_ntag == 1)
 		{
 			vec3d r0 = ni.r;
@@ -326,7 +326,7 @@ void FETet10Smooth::Apply(FSMesh* pmesh)
 			set<int>::iterator it;
 			for (it=l1.begin(); it != l1.end(); ++it)
 			{
-				FENode& nj = pmesh->Node(*it);
+				FSNode& nj = pmesh->Node(*it);
 				if (nj.m_ntag >= 1) n1.push_back(*it);
 			}
 
@@ -335,7 +335,7 @@ void FETet10Smooth::Apply(FSMesh* pmesh)
 			vector<vec3d> x;
 			for (int i=0; i<nn; ++i)
 			{
-				FENode& nj = pmesh->Node(n1[i]);
+				FSNode& nj = pmesh->Node(n1[i]);
 				x.push_back(nj.r);
 			}
 
@@ -412,7 +412,7 @@ void FETet10Smooth::Apply(FSMesh* pmesh)
 			// interpolate the quadratic for the center nodes
 			for (it=l1.begin(); it != l1.end(); ++it)
 			{
-				FENode& nj = pmesh->Node(*it);
+				FSNode& nj = pmesh->Node(*it);
 				if (nj.m_ntag == 0)
 				{
 					vec3d x = nj.r - r0;
@@ -498,7 +498,7 @@ void FETet10Smooth::Apply(FSMesh* pmesh)
 	// apply the new coordinates of the center nodes
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& ni = pmesh->Node(i);
+		FSNode& ni = pmesh->Node(i);
 		if (tag[i] > 0)
 		{
 			ni.r = rs[i] / (double) tag[i];

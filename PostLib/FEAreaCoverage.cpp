@@ -49,7 +49,7 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
-			FENode& node = mesh.Node(f.n[j]);
+			FSNode& node = mesh.Node(f.n[j]);
 			if (node.m_ntag == -1) node.m_ntag = nn++;
 		}
 	}
@@ -58,7 +58,7 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 	m_node.resize(nn);
 	for (int i = 0; i<N; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag >= 0) m_node[node.m_ntag] = i;
 	}
 	m_pos.resize(nn);

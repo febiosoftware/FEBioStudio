@@ -184,7 +184,7 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 
 			for (int i=0; i<NN; ++i)
 			{
-				FENode& nd = mesh.Node(i);
+				FSNode& nd = mesh.Node(i);
 				if (nd.m_ntag == 1)
 				{
 					const vec3d& r0_i = r0[i];

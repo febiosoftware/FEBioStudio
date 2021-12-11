@@ -231,7 +231,7 @@ public:
 	void SetTimeValue(float ftime);
 
 public: // Selection
-	const vector<FENode*>&		GetNodeSelection   () const { return m_nodeSelection; }
+	const vector<FSNode*>&		GetNodeSelection   () const { return m_nodeSelection; }
 	const vector<FEEdge*>&		GetEdgeSelection   () const { return m_edgeSelection; }
 	const vector<FEFace*>&		GetFaceSelection   () const { return m_faceSelection; }
 	const vector<FEElement_*>&	GetElementSelection() const { return m_elemSelection; }
@@ -383,7 +383,7 @@ protected:
 	Post::FEPostMesh*	m_lastMesh;	// mesh of last evaluated state
 
 	// selected items
-	vector<FENode*>		m_nodeSelection;
+	vector<FSNode*>		m_nodeSelection;
 	vector<FEEdge*>		m_edgeSelection;
 	vector<FEFace*>		m_faceSelection;
 	vector<FEElement_*>	m_elemSelection;

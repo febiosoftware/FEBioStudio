@@ -88,7 +88,7 @@ bool FERAWImageReader::Load(const char* szfile)
 		for (int j=0; j<m_ops.ny; ++j)
 			for (int i=0; i<m_ops.nx; ++i)
 			{
-				FENode& nd = pm->Node(n++);
+				FSNode& nd = pm->Node(n++);
 				nd.r.x = (double) i * dx;
 				nd.r.y = (double) j * dy;
 				nd.r.z = (double) k * dz;

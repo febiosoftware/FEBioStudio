@@ -147,7 +147,7 @@ bool FEVTKExport::Write(const char* szfile)
 		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (int j = 0; j < m.Nodes(); ++j)
 		{
-			FENode& node = m.Node(j);
+			FSNode& node = m.Node(j);
 			if (node.m_ntag >= 0)
 			{
 				vec3d r = m.LocalToGlobal(node.r);
@@ -305,7 +305,7 @@ bool FEVTKExport::Write(const char* szfile)
 			{
 				for (int k =0; k<9 && j+k<m.Nodes();k++)
 				{
-					FENode& n = m.Node(j+k);
+					FSNode& n = m.Node(j+k);
 						fprintf(fp, "%15.10lg ", n.m_ndata);
 				}
 				fprintf(fp, "\n");

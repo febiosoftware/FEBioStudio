@@ -470,7 +470,7 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 	int NN = mesh.Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 
 		// write the node ID
 		fprintf(fp, "%d,", i + 1);

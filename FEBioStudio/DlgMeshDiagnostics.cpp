@@ -419,7 +419,7 @@ void CDlgMeshDiagnosticsUI::checkIsolatedVertices()
 			int nj = el.m_node[j];
 			if ((nj >= 0) && (nj < NN))
 			{
-				FENode& node = mesh.Node(nj);
+				FSNode& node = mesh.Node(nj);
 				node.m_ntag = 1;
 			}
 		}
@@ -703,7 +703,7 @@ void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 				int nj = edge.n[j];
 				if ((nj >= 0) && (nj < mesh.Nodes()))
 				{
-					FENode& node = mesh.Node(nj);
+					FSNode& node = mesh.Node(nj);
 					if (node.m_gid < 0) err.push_back(i);
 				}
 				else err.push_back(i);
@@ -976,7 +976,7 @@ void CDlgMeshDiagnosticsUI::checkNodePartitioning()
 	int invalidGID = 0;
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		int gid = node.m_gid;
 		if ((gid >= 0) && (gid < ng)) lut[gid]++;
 		else if (gid >= ng) invalidGID++;

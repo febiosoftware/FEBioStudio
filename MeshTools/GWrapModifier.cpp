@@ -142,7 +142,7 @@ void GWrapModifier::Apply(GObject* po)
 	// apply the displacement
 	for (i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		n.r += DS[i];
 	}
 
@@ -167,7 +167,7 @@ void GWrapModifier::ClosestPoint(GObject *ps, vector<vec3d>& DS, vector<int>& ta
 	{
 		if (tag[i] == 1)
 		{
-			FENode& n = pm->Node(i);
+			FSNode& n = pm->Node(i);
 
 			vec3d nr = ps->GetTransform().LocalToGlobal(n.r);
 			nr = m_po->GetTransform().GlobalToLocal(nr);
@@ -256,7 +256,7 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 		{
 			if (tag[i] == 1)
 			{	
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 
 				// get the normal
 				vec3d n = N[i];
@@ -300,7 +300,7 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 	// restore original nodal position
 	for (i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		DS[i] = n.r - r0[i];
 		n.r = r0[i];
 	}

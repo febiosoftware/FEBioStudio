@@ -60,7 +60,7 @@ bool FETetGenExport::Write(const char *szfile)
 		int NN = pm->Nodes();
 		for (int j=0; j<NN; ++j, ++n)
 		{
-			FENode& nd = pm->Node(j);
+			FSNode& nd = pm->Node(j);
 			nd.m_ntag = n;
 			fprintf(fp, "%d %lg %lg %lg\n", n, nd.r.x, nd.r.y, nd.r.z);
 		}

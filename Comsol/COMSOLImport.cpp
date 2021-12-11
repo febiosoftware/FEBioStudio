@@ -381,7 +381,7 @@ bool COMSOLimport::BuildMesh(FSModel& fem)
     
 	// create the nodes
 	in = m_Node.begin();
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	for (i=0; i<nodes; ++i, ++in, ++pn)
 	{
 		pn->r.x = in->x;

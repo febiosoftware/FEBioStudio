@@ -68,7 +68,7 @@ bool FEHyperSurfImport::Load(const char* szfile)
 		ch = fgets(szline, 255, m_fp);
 		if (ch == 0) { delete pm; Close(); return false; }
 
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		sscanf(szline, "%lg%lg%lg", &node.r.x, &node.r.y, &node.r.z);
 	}
 

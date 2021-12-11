@@ -79,8 +79,8 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	// copy the old nodes
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& n0 = pnew->Node(i);
-		FENode& n1 = pm->Node(i);
+		FSNode& n0 = pnew->Node(i);
+		FSNode& n1 = pm->Node(i);
 		n0.r = n1.r;
 		n0.m_gid = n1.m_gid;
 	}
@@ -89,8 +89,8 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	for (int i = 0; i<NC; i++)
 	{
 		pair<int, int>& edge = ET[i];
-		FENode& n0 = pnew->Node(NN + 2*i);
-		FENode& n1 = pnew->Node(NN + 2*i+1);
+		FSNode& n0 = pnew->Node(NN + 2*i);
+		FSNode& n1 = pnew->Node(NN + 2*i+1);
 		vec3d& ra = pm->Node(edge.first).r;
 		vec3d& rb = pm->Node(edge.second).r;
 		n0.r = ra + (rb - ra) / 3.0;
@@ -101,7 +101,7 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& face = FT[i];
-		FENode& n0 = pnew->Node(i + NN + 2*NC);
+		FSNode& n0 = pnew->Node(i + NN + 2*NC);
 		vec3d& ra = pm->Node(face.n[0]).r;
 		vec3d& rb = pm->Node(face.n[1]).r;
 		vec3d& rc = pm->Node(face.n[2]).r;

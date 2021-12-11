@@ -222,7 +222,7 @@ void FEPostModel::EvalNodeField(int ntime, int nfield)
 	int i, j;
 	for (i=0; i<mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		NODEDATA& d = state.m_NODE[i];
 		d.m_val = 0;
 		d.m_ntag = 0;
@@ -417,7 +417,7 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 	ValArray& elemData = state.m_ElemData;
 	for (int i=0; i<mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		state.m_NODE[i].m_val = 0.f;
 		state.m_NODE[i].m_ntag = 0;
 		if (node.IsEnabled())

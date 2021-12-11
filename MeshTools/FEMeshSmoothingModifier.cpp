@@ -103,7 +103,7 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing(FSMesh* pnew,vector<int> hashm
 		{
 			if(hashmap[i] == 0)
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				vec3d r_new; 
 				for (int k = 0; k<NNL.Valence(i);k++)
 				{
@@ -129,7 +129,7 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing2(FSMesh* pnew,vector<int> hash
 		{
 			if(hashmap[i] == 0)
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				vec3d r_new; 
 				double sum_dist=0;
 				for (int k = 0; k<NNL.Valence(i);k++)
@@ -158,7 +158,7 @@ void FEMeshSmoothingModifier::Taubin_Smoothing(FSMesh* pnew,vector<int> hashmap)
 	{		
 		for(int i = 0; i < pnew->Nodes() ; i++)
 		{
-			FENode& ni = pnew->Node(i);
+			FSNode& ni = pnew->Node(i);
 			vec3d r_sum;
 			for (int k = 0; k<NNL.Valence(i);k++)
 			{
@@ -173,7 +173,7 @@ void FEMeshSmoothingModifier::Taubin_Smoothing(FSMesh* pnew,vector<int> hashmap)
 		{
 			if(hashmap[i] == 0)
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				vec3d phi_old = phi_node[i];
 
 				vec3d r_sq_sum,phi_sq_old; 
@@ -265,7 +265,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int
 		{
 			if(hashmap[i] == 0) //not the edge node
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				vec3d vR; 
 				double weight=0;
 				for (int k = 0; k<NFL.Valence(i);k++)
@@ -302,7 +302,7 @@ void FEMeshSmoothingModifier::Add_Noise(FSMesh* pnew, vector<int> hashmap)
 		{
 			if (hashmap[i] == 0)
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				int temp = 1;
 				ni.r.x += frand(-m_noise, m_noise);
 				ni.r.y += frand(-m_noise, m_noise);

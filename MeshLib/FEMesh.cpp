@@ -211,8 +211,8 @@ FSMesh::FSMesh(FESurfaceMesh& m)
 	Create(NN, NF, NF, NE);
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& node = Node(i);
-		FENode& snode = m.Node(i);
+		FSNode& node = Node(i);
+		FSNode& snode = m.Node(i);
 		node = snode;
 	}
 
@@ -319,7 +319,7 @@ void FSMesh::UpdateNodePartitions()
 	int max_gid = -1;
 	for (int i=0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_gid > max_gid) max_gid = node.m_gid;
 	}
 
@@ -330,7 +330,7 @@ void FSMesh::UpdateNodePartitions()
 	vector<int> gid(max_gid + 1, -1);
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_gid >= 0) gid[node.m_gid] = 1;
 	}
 
@@ -346,7 +346,7 @@ void FSMesh::UpdateNodePartitions()
 	{
 		for (int i = 0; i<Nodes(); ++i)
 		{
-			FENode& node = Node(i);
+			FSNode& node = Node(i);
 			if (node.m_gid >= 0) node.m_gid = gid[node.m_gid];
 		}
 	}
@@ -1330,7 +1330,7 @@ FSMesh* FSMesh::ExtractFaces(bool selectedOnly)
 	int nodes = 0;
 	for (int i=0; i<Nodes(); ++i) 
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_ntag == 1) 
 		{
 			node.m_ntag = nodes;
@@ -1345,10 +1345,10 @@ FSMesh* FSMesh::ExtractFaces(bool selectedOnly)
 	pm->Create(nodes, faces);
 
 	// create the nodes
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	for (int i=0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_ntag >= 0)
 		{
 			*pn = node;
@@ -1413,7 +1413,7 @@ void FSMesh::Save(OArchive &ar)
 	// write the nodes
 	ar.BeginChunk(CID_MESH_NODE_SECTION);
 	{
-		FENode* pn = NodePtr();
+		FSNode* pn = NodePtr();
 		for (int i=0; i<nodes; ++i, ++pn)
 		{
 			ar.BeginChunk(CID_MESH_NODE);
@@ -1670,7 +1670,7 @@ void FSMesh::Load(IArchive& ar)
 		case CID_MESH_NODE_SECTION:
 			{
 				int n = 0;
-				FENode* pn = NodePtr();
+				FSNode* pn = NodePtr();
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
@@ -2083,8 +2083,8 @@ FSMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh)
 
 	for (int i = 0; i<nodes; ++i)
 	{
-		FENode& surfNode = surfaceMesh->Node(i);
-		FENode& meshNode = mesh->Node(i);
+		FSNode& surfNode = surfaceMesh->Node(i);
+		FSNode& meshNode = mesh->Node(i);
 
 		meshNode = surfNode;
 	}

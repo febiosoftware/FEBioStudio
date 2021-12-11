@@ -144,7 +144,7 @@ bool FEBioFormatOld::ParseGeometrySection(XMLTag& tag)
 				++tag;
 				for (int i = 0; i<nn; ++i)
 				{
-					FENode& node = pm->Node(i);
+					FSNode& node = pm->Node(i);
 					tag.value(node.r);
 					++tag;
 				}
@@ -2388,7 +2388,7 @@ void FEBioFormatOld::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 		{
 			GMaterial* pmat = febio.GetMaterial(rb);
 
-			FENode& node = pm->Node(id);
+			FSNode& node = pm->Node(id);
 			node.m_ntag = pmat->GetID();
 			pmat->m_ntag++;
 		}
@@ -2412,7 +2412,7 @@ void FEBioFormatOld::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 
 			for (int j = 0; j<NN; ++j)
 			{
-				FENode& node = pm->Node(j);
+				FSNode& node = pm->Node(j);
 				if (node.m_ntag == id) pn->add(j);
 			}
 

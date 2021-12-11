@@ -84,7 +84,7 @@ FSMesh* FEShellTorus::BuildMesh()
 
 	// create nodes
 	vec3d r;
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	for (i=0; i<nd; ++i)
 	{
 		double w0 = 2.0*i*PI/nd - PI*0.5;

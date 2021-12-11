@@ -117,8 +117,8 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 			FEFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
 			if ((pj == 0) || (face.m_ntag < pj->m_ntag))
 			{
-				FENode& n0 = pm->Node(face.n[j      ]);
-				FENode& n1 = pm->Node(face.n[(j+1)%3]);
+				FSNode& n0 = pm->Node(face.n[j      ]);
+				FSNode& n1 = pm->Node(face.n[(j+1)%3]);
 				vec3d r = (n0.r + n1.r)*0.5;
 
 				pnew->Node(NN0 + nen).r = r;

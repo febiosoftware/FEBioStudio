@@ -74,7 +74,7 @@ void FEWeldNodes::UpdateNodes(FSMesh* pm)
 	vector<int> sel; sel.reserve(nodes);
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& ni = m.Node(i);
+		FSNode& ni = m.Node(i);
 		if (ni.IsSelected()) sel.push_back(i);
 	}
 
@@ -323,7 +323,7 @@ void FEWeldSurfaceNodes::UpdateNodes(FESurfaceMesh* pm)
 	vector<int> sel; sel.reserve(nodes);
 	for (int i = 0; i < nodes; ++i)
 	{
-		FENode& ni = m.Node(i);
+		FSNode& ni = m.Node(i);
 		if (ni.IsSelected()) sel.push_back(i);
 	}
 	if (sel.empty())

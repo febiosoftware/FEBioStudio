@@ -1408,7 +1408,7 @@ bool FEBioExport2::WriteNodeSet(const string& name, FENodeList* pl)
 	vector<int> m(nn);
 	for (int n=0; n<nn; ++n, pn++)
 	{
-		FENode* pnode = pn->m_pi;
+		FSNode* pnode = pn->m_pi;
 		if (pnode == 0) return false;
 		m[n] = pnode->m_nid;
 	}
@@ -1508,7 +1508,7 @@ void FEBioExport2::WriteGeometryNodes()
 
 			for (int j=0; j<pm->Nodes(); ++j, ++n)
 			{
-				FENode& node = pm->Node(j);
+				FSNode& node = pm->Node(j);
 				node.m_nid = n;
 				el.set_attribute(nid, n);
 				vec3d r = po->GetTransform().LocalToGlobal(node.r);
@@ -1861,7 +1861,7 @@ void FEBioExport2::WriteDiscreteSection(FSStep& s)
 				m_xml.add_branch("spring");
 				{
 					int n[2];
-					GObject* po; FENode* pn;
+					GObject* po; FSNode* pn;
 
 					po = dynamic_cast<GObject*>(pn0->Object()); assert(po);
 					pn = po->GetFENode(pn0->GetLocalID()); assert(pn);
@@ -1931,7 +1931,7 @@ void FEBioExport2::WriteDiscreteSection(FSStep& s)
 					if (pn0 && pn1)
 					{
 						int n[2];
-						GObject* po; FENode* pn;
+						GObject* po; FSNode* pn;
 
 						po = dynamic_cast<GObject*>(pn0->Object()); assert(po);
 						pn = po->GetFENode(pn0->GetLocalID()); assert(pn);
@@ -1962,7 +1962,7 @@ void FEBioExport2::WriteDiscreteSection(FSStep& s)
 					if (pn0 && pn1)
 					{
 						int n[2];
-						GObject* po; FENode* pn;
+						GObject* po; FSNode* pn;
 
 						po = dynamic_cast<GObject*>(pn0->Object()); assert(po);
 						pn = po->GetFENode(pn0->GetLocalID()); assert(pn);
@@ -2972,7 +2972,7 @@ void FEBioExport2::WriteBCFixedDisplacement(FSFixedDisplacement& rbc, FSStep& s)
 				FENodeList::Iterator pi = pg->First();
 				for (int k=0; k<N; ++k, ++pi)
 				{
-					FENode* pn = pi->m_pi;
+					FSNode* pn = pi->m_pi;
 					int nid = pn->m_nid;
 
 					el.set_attribute(n1, nid);
@@ -3046,7 +3046,7 @@ void FEBioExport2::WriteBCFixedShellDisplacement(FSFixedShellDisplacement& rbc, 
 				FENodeList::Iterator pi = pg->First();
 				for (int k = 0; k<N; ++k, ++pi)
 				{
-					FENode* pn = pi->m_pi;
+					FSNode* pn = pi->m_pi;
 					int nid = pn->m_nid;
 
 					el.set_attribute(n1, nid);
@@ -3122,7 +3122,7 @@ void FEBioExport2::WriteBCFixedRotation(FSFixedRotation& rbc, FSStep& s)
 				FENodeList::Iterator pi = pg->First();
 				for (int k=0; k<N; ++k, ++pi)
 				{
-					FENode* pn = pi->m_pi;
+					FSNode* pn = pi->m_pi;
 					int nid = pn->m_nid;
 
 					el.set_attribute(n1, nid);
@@ -3179,7 +3179,7 @@ void FEBioExport2::WriteBCFixedFluidPressure(FSFixedFluidPressure& rbc, FSStep& 
 			FENodeList::Iterator it = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++it) 
 			{
-				FENode& node = *(it->m_pi);
+				FSNode& node = *(it->m_pi);
 
 				XMLElement el("node");
 				el.add_attribute("id",node.m_nid);
@@ -3212,7 +3212,7 @@ void FEBioExport2::WriteBCFixedTemperature(FSFixedTemperature& rbc, FSStep& s)
 		FENodeList::Iterator it = pg->First();
 		for (int k=0; k<pg->Size(); ++k, ++it) 
 		{
-			FENode& node = *(it->m_pi);
+			FSNode& node = *(it->m_pi);
 			el.set_attribute(n1, node.m_nid);
 			m_xml.add_empty(el, false);
 		}
@@ -3258,7 +3258,7 @@ void FEBioExport2::WriteBCFixedConcentration(FSFixedConcentration& rbc, FSStep& 
 		FENodeList::Iterator it = pg->First();
 		for (int k=0; k<pg->Size(); ++k, ++it) 
 		{
-			FENode& node = *(it->m_pi);
+			FSNode& node = *(it->m_pi);
 			el.set_attribute(n1, node.m_nid);
 			m_xml.add_empty(el, false); 
 		}
@@ -3330,7 +3330,7 @@ void FEBioExport2::WriteBCFixedFluidVelocity(FSFixedFluidVelocity& rbc, FSStep& 
                 FENodeList::Iterator pi = pg->First();
                 for (int k=0; k<N; ++k, ++pi)
                 {
-                    FENode* pn = pi->m_pi;
+                    FSNode* pn = pi->m_pi;
                     int nid = pn->m_nid;
                     
                     el.set_attribute(n1, nid);
@@ -3366,7 +3366,7 @@ void FEBioExport2::WriteBCFixedFluidDilatation(FSFixedFluidDilatation& rbc, FSSt
         FENodeList::Iterator it = pg->First();
         for (int k=0; k<pg->Size(); ++k, ++it)
         {
-            FENode& node = *(it->m_pi);
+            FSNode& node = *(it->m_pi);
             
             XMLElement el("node");
             el.add_attribute("id",node.m_nid);
@@ -3443,7 +3443,7 @@ void FEBioExport2::WriteBCPrescribedDisplacement(FSPrescribedDisplacement& rbc, 
 			int N = pg->Size();
 			for (int k=0; k<N; ++k, ++it) 
 			{
-				FENode* pn = it->m_pi;
+				FSNode* pn = it->m_pi;
 				el.value(val);
 				el.set_attribute(n1, pn->m_nid);
 				m_xml.add_leaf(el, false);
@@ -3498,7 +3498,7 @@ void FEBioExport2::WriteBCPrescribedRotation(FSPrescribedRotation& rbc, FSStep& 
 			int N = pg->Size();
 			for (int k=0; k<N; ++k, ++it) 
 			{
-				FENode* pn = it->m_pi;
+				FSNode* pn = it->m_pi;
 				el.value(val);
 				el.set_attribute(n1, pn->m_nid);
 				m_xml.add_leaf(el, false);
@@ -3550,7 +3550,7 @@ void FEBioExport2::WriteBCPrescribedFluidPressure(FSPrescribedFluidPressure& rbc
 			
 			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator it = pg->First();
-			FENode* pn;
+			FSNode* pn;
 			int N = pg->Size();
 			for (k=0; k<N; ++k, ++it) 
 			{
@@ -3604,7 +3604,7 @@ void FEBioExport2::WriteBCPrescribedTemperature(FSPrescribedTemperature& rbc, FS
 
 			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator it = pg->First();
-			FENode* pn;
+			FSNode* pn;
 			int N = pg->Size();
 			for (k=0; k<N; ++k, ++it) 
 			{
@@ -3662,7 +3662,7 @@ void FEBioExport2::WriteBCPrescribedConcentration(FSPrescribedConcentration& rbc
 			
 			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator it = pg->First();
-			FENode* pn;
+			FSNode* pn;
 			int N = pg->Size();
 			for (k=0; k<N; ++k, ++it) 
 			{
@@ -3720,7 +3720,7 @@ void FEBioExport2::WriteBCPrescribedFluidVelocity(FSPrescribedFluidVelocity& rbc
             int N = pg->Size();
             for (int k=0; k<N; ++k, ++it)
             {
-                FENode* pn = it->m_pi;
+                FSNode* pn = it->m_pi;
                 el.value(val);
                 el.set_attribute(n1, pn->m_nid);
                 m_xml.add_leaf(el, false);
@@ -3772,7 +3772,7 @@ void FEBioExport2::WriteBCPrescribedFluidDilatation(FSPrescribedFluidDilatation&
             
             unique_ptr<FENodeList> pg(pitem->BuildNodeList());
             FENodeList::Iterator it = pg->First();
-            FENode* pn;
+            FSNode* pn;
             int N = pg->Size();
             for (k=0; k<N; ++k, ++it)
             {
@@ -3822,7 +3822,7 @@ void FEBioExport2::WriteLoadNodal(FSStep& s)
 				FENodeList::Iterator it = pg->First();
 				for (int k=0; k<pg->Size(); ++k, ++it)
 				{
-					FENode* pn = it->m_pi;
+					FSNode* pn = it->m_pi;
 					el.set_attribute(n1, pn->m_nid);
 					m_xml.add_leaf(el, false);
 				}
@@ -4465,7 +4465,7 @@ void FEBioExport2::WriteInitialSection()
 				FENodeList::Iterator it = pg->First();
 				for (int k=0; k<pg->Size(); ++k, ++it)
 				{
-					FENode* pn = it->m_pi;
+					FSNode* pn = it->m_pi;
 					VC[pn->m_nid-1] = 1;
 				}
 
@@ -4509,7 +4509,7 @@ void FEBioExport2::WriteInitialSection()
 				FENodeList::Iterator it = pg->First();
 				for (int k=0; k<pg->Size(); ++k, ++it)
 				{
-					FENode* pn = it->m_pi;
+					FSNode* pn = it->m_pi;
 					VC[pn->m_nid-1] = 1;
 				}
 
@@ -4548,7 +4548,7 @@ void FEBioExport2::WriteInitialSection()
 				FENodeList::Iterator it = pg->First();
 				for (int k=0; k<pg->Size(); ++k, ++it)
 				{
-					FENode* pn = it->m_pi;
+					FSNode* pn = it->m_pi;
 					VC[pn->m_nid-1] = 1;
 				}
 
@@ -4587,7 +4587,7 @@ void FEBioExport2::WriteInitialSection()
 				FENodeList::Iterator it = pg->First();
 				for (int k=0; k<pg->Size(); ++k, ++it)
 				{
-					FENode* pn = it->m_pi;
+					FSNode* pn = it->m_pi;
 					VC[pn->m_nid-1] = 1;
 				}
 

@@ -80,7 +80,7 @@ void CPointDistanceTool::Update()
 	int nsel = 0;
 	for (int i = 0; i < mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		int nid = i + 1;
 		if (node.IsSelected())
 		{

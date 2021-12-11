@@ -153,7 +153,7 @@ void FESTLimport::build_mesh()
 	// create nodes
 	for (i=0; i<NN; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		vec3f& ri = m_Node[i];
 		n.r = to_vec3d(ri);
 	}

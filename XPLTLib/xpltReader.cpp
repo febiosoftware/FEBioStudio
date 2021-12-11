@@ -1072,7 +1072,7 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 	// read the nodal coordinates
 	for (int i=0; i<hdr.nn; i++)
 	{
-		FENode& n = pmesh->Node(i);
+		FSNode& n = pmesh->Node(i);
 		NODE& N = m_Node[i];
 
 		// assign coordinates

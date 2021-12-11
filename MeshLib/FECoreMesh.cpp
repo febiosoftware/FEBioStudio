@@ -1438,11 +1438,11 @@ void FSCoreMesh::FindNodesFromPart(int gid, vector<int>& node)
 }
 
 //-------------------------------------------------------------------------------------------------
-FENode* FSCoreMesh::FindNodeFromID(int gid)
+FSNode* FSCoreMesh::FindNodeFromID(int gid)
 {
 	for (int i = 0; i < Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_gid == gid) return &node;
 	}
 	return nullptr;
@@ -1499,7 +1499,7 @@ void FSCoreMesh::UpdateItemVisibility()
 	// update visibility of all other items
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_ntag == 1) { node.Show(); node.Unhide(); } else node.Hide();
 	}
 
@@ -1518,7 +1518,7 @@ int FSCoreMesh::CountNodePartitions() const
 	int max_gid = -1;
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		const FENode& node = Node(i);
+		const FSNode& node = Node(i);
 		if (node.m_gid > max_gid) max_gid = node.m_gid;
 	}
 	return max_gid + 1;

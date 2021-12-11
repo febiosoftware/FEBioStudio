@@ -53,10 +53,10 @@ public: // node interface
 
 	// access node data
 	int Nodes() const { return (int) m_Node.size(); }
-	FENode& Node(int i) { return m_Node[i]; }
-	const FENode& Node(int i) const { return m_Node[i]; }
-	FENode* NodePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Node.size()) ? &m_Node[n] : 0);; };
-	const FENode* NodePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Node.size()) ? &m_Node[n] : 0); }
+	FSNode& Node(int i) { return m_Node[i]; }
+	const FSNode& Node(int i) const { return m_Node[i]; }
+	FSNode* NodePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Node.size()) ? &m_Node[n] : 0);; };
+	const FSNode* NodePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Node.size()) ? &m_Node[n] : 0); }
 
 	void TagAllNodes(int ntag);
 
@@ -95,6 +95,6 @@ protected:
 	GObject*	m_pobj;		//!< owning object
 	BOX			m_box;		//!< bounding box
 
-	std::vector<FENode>	m_Node;		//!< Node list
+	std::vector<FSNode>	m_Node;		//!< Node list
 	std::vector<FEEdge>	m_Edge;		//!< Edge list
 };

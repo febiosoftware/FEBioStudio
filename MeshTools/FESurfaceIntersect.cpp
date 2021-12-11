@@ -49,7 +49,7 @@ int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
 	for (int i=0; i<N; ++i, ++it)
 	{
 		// get the next node
-		FENode& node = *(it->m_pi);
+		FSNode& node = *(it->m_pi);
 
 		// find the distance to the target surface
 		double D = Distance(*pft, node.r);
@@ -64,7 +64,7 @@ int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
 	// select all nodes that are tagged
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.m_ntag == 1) node.Select(); else node.Unselect();
 	}
 

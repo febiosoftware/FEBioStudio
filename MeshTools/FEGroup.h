@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include "FEItemListBuilder.h"
 
-class FENode;
+class FSNode;
 class FEEdge;
 class FEFace;
 class FEElement;

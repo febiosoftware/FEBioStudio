@@ -47,7 +47,7 @@ public:
 		vec3d	n;		// normal (but not really)
 		int		tag;	// multipurpose tag
 		int		pid;	// GNode parent local ID
-		int		nid;	// Node index of FENode (in case a mesh object created this GMesh)
+		int		nid;	// Node index of FSNode (in case a mesh object created this GMesh)
 	};
 
 	struct EDGE

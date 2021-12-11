@@ -1332,7 +1332,7 @@ void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 		glColor3ub(0, 0, 255);
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
-			FENode& node = mesh->Node(i);
+			FSNode& node = mesh->Node(i);
 			if (node.m_ntag)
 			{
 				if (node.IsSelected() == false)
@@ -1349,7 +1349,7 @@ void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 		glColor3ub(255, 0, 0);
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
-			FENode& node = mesh->Node(i);
+			FSNode& node = mesh->Node(i);
 			if (node.m_ntag)
 			{
 				if (node.IsSelected())

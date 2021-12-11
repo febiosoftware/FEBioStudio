@@ -246,7 +246,7 @@ vec3d ClosestNodeOnSurface(FSMesh& mesh, const vec3d& r, const vec3d& t)
 	vec3d p = r, q;
 	for (int i = 0; i<mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag)
 		{
 			q = r + t*((node.r - r)*t);
@@ -1134,7 +1134,7 @@ std::vector<vec3d> FindShortestPath(FSMesh& mesh, int m0, int m1)
 	while (ncurrent != m1)
 	{
 		// get the position of the current node
-		FENode& node0 = mesh.Node(ncurrent);
+		FSNode& node0 = mesh.Node(ncurrent);
 		vec3d rc = node0.pos();
 
 		// update neighbor distances
@@ -1144,7 +1144,7 @@ std::vector<vec3d> FindShortestPath(FSMesh& mesh, int m0, int m1)
 			int mi = NNL.Node(ncurrent, i);
 			assert(mi != ncurrent);
 
-			FENode& nodei = mesh.Node(mi);
+			FSNode& nodei = mesh.Node(mi);
 			if (dist[mi] > 0)
 			{
 				vec3d ri = mesh.Node(mi).pos();
