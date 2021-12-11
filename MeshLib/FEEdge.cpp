@@ -39,7 +39,7 @@ FEEdge::FEEdge()
 }
 
 //-----------------------------------------------------------------------------
-FEEdge::FEEdge(const FEEdge& e) : FEItem(e)
+FEEdge::FEEdge(const FEEdge& e) : MeshItem(e)
 {
 	m_type = e.m_type;
 	m_elem = e.m_elem;
@@ -66,7 +66,7 @@ void FEEdge::operator = (const FEEdge& e)
 	m_nbr[1] = e.m_nbr[1];
 	m_face[0] = e.m_face[0];
 	m_face[1] = e.m_face[1];
-	FEItem::operator=(e);
+	MeshItem::operator=(e);
 }
 
 //-----------------------------------------------------------------------------

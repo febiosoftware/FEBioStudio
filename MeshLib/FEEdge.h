@@ -57,7 +57,7 @@ enum FEEdgeType
 // if only one other edge connects to that end. If no other edge, or multiple
 // edges connect, the neighbor is set to -1.
 //
-class FEEdge : public FEItem
+class FEEdge : public MeshItem
 {
 public:
 	enum { MAX_NODES = 4 };

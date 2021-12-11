@@ -101,7 +101,7 @@ struct FEElemTraits
 //  - shells can lie on top of solids or sandwhiched between solids
 //    For such shells, the _nbr[4] and _nbr[5] are used to identify the elements
 //    on top of which they sit.
-class FEElement_ : public FEItem
+class FEElement_ : public MeshItem
 {
 public:
 	//! constructor

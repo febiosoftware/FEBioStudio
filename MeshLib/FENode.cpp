@@ -31,7 +31,7 @@ FENode::FENode()
 	m_gid = -1;
 }
 
-FENode::FENode(const FENode& n) : FEItem(n)
+FENode::FENode(const FENode& n) : MeshItem(n)
 {
 	r = n.r;
 }
@@ -39,5 +39,5 @@ FENode::FENode(const FENode& n) : FEItem(n)
 void FENode::operator = (const FENode& n)
 {
 	r = n.r;
-	FEItem::operator=(n);
+	MeshItem::operator=(n);
 }

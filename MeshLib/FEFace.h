@@ -75,7 +75,7 @@ enum FEFaceType
 // Note that for the first three nodes for a triangle and the first four nodes
 // of a quad are always the corner nodes.
 //
-class FEFace : public FEItem
+class FEFace : public MeshItem
 {
 public:
 	enum { MAX_NODES = 10 };

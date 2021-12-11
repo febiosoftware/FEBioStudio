@@ -31,7 +31,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // The FENode class stores the nodal data.
 //
-class FENode : public FEItem
+class FENode : public MeshItem
 {
 public:
 	// constructor
