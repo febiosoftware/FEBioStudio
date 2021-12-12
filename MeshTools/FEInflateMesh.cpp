@@ -188,7 +188,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 		if (mesh.Node(i).m_gid >= 0) mesh.Node(i).m_ntag = 1;
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			int nn = edge.Nodes();

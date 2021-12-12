@@ -340,7 +340,7 @@ void GMeshObject::UpdateEdges()
 	vector<int> tag(nedges, 0);
 	for (int i = 0; i < m.Edges(); ++i)
 	{
-		FEEdge& edge = m.Edge(i);
+		FSEdge& edge = m.Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			tag[edge.m_gid]++;
@@ -380,7 +380,7 @@ void GMeshObject::UpdateEdges()
 	// update edge IDs
 	for (int i = 0; i < m.Edges(); ++i)
 	{
-		FEEdge& edge = m.Edge(i);
+		FSEdge& edge = m.Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			edge.m_gid = tag[edge.m_gid];
@@ -404,7 +404,7 @@ void GMeshObject::UpdateEdges()
 		int NE = m.Edges();
 		for (int i=0; i<NE; ++i)
 		{
-			FEEdge& e = m.Edge(i);
+			FSEdge& e = m.Edge(i);
 			for (int j=0; j<2; ++j)
 			{
 				if (e.m_nbr[j] == -1)
@@ -622,7 +622,7 @@ void GMeshObject::BuildGMesh()
 	int n[FEFace::MAX_NODES];
 	for (int i=0; i<pm->Edges(); ++i)
 	{
-		FEEdge& es = pm->Edge(i);
+		FSEdge& es = pm->Edge(i);
 		if (es.IsExterior())
 		{
 			n[0] = pm->Node(es.n[0]).m_ntag; assert(n[0] >= 0);

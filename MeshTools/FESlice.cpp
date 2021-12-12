@@ -335,7 +335,7 @@ FSMesh* FESlice::BuildMesh()
 	}
 
 	// --- D. Create edges ---
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	for (k=0; k<m_ns; ++k, ++pe)
 	{
 		pe->SetType(FE_EDGE2);

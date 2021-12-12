@@ -57,7 +57,7 @@ struct EDGEDATA
 {
 	float	m_val;		// current value
 	int		m_ntag;		// active flag
-	float	m_nv[FEEdge::MAX_NODES]; // nodal values
+	float	m_nv[FSEdge::MAX_NODES]; // nodal values
 };
 
 struct ELEMDATA

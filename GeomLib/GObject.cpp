@@ -641,7 +641,7 @@ void GObject::BuildEdgeMesh(GLMesh* glmsh, GEdge& e)
 	int edgeID = e.GetLocalID();
 	for (int i=0; i<mesh->Edges(); ++i)
 	{
-		FEEdge& edge = mesh->Edge(i);
+		FSEdge& edge = mesh->Edge(i);
 		mesh->Node(edge.n[0]).m_ntag = 0;
 		mesh->Node(edge.n[1]).m_ntag = 0;
 	}
@@ -667,7 +667,7 @@ void GObject::BuildEdgeMesh(GLMesh* glmsh, GEdge& e)
 	int n[2];
 	for (int i = 0; i<mesh->Edges(); ++i)
 	{
-		FEEdge& e = mesh->Edge(i);
+		FSEdge& e = mesh->Edge(i);
 		n[0] = mesh->Node(e.n[0]).m_ntag;
 		n[1] = mesh->Node(e.n[1]).m_ntag;
 		glMesh.AddEdge(n, 2, edgeID);
@@ -1490,7 +1490,7 @@ FECurveMesh* GObject::GetFECurveMesh(int edgeId)
 	int ne = 0;
 	for (int i=0; i<NC; ++i)
 	{
-		FEEdge& e = mesh->Edge(i);
+		FSEdge& e = mesh->Edge(i);
 		if (e.m_gid == edgeId)
 		{
 			mesh->Node(e.n[0]).m_ntag = 0;
@@ -1516,7 +1516,7 @@ FECurveMesh* GObject::GetFECurveMesh(int edgeId)
 
 	for (int i=0; i<NC; ++i)
 	{
-		FEEdge& sedge = mesh->Edge(i);
+		FSEdge& sedge = mesh->Edge(i);
 		if (sedge.m_gid == edgeId)
 		{
 			int n0 = mesh->Node(sedge.n[0]).m_ntag;

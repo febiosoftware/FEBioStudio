@@ -63,7 +63,7 @@ FSMesh* FEMeshSmoothingModifier::Apply(FSMesh* pm)
 		hashmap.push_back(0);	
 	for (int i =0;i<pm->Edges();++i)
 	{
-		FEEdge& ed = pm->Edge(i);
+		FSEdge& ed = pm->Edge(i);
 		hashmap[ed.n[0]] = -1;
 		hashmap[ed.n[1]] = -1;
 	}

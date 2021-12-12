@@ -64,10 +64,10 @@ public: // edge interface
 
 	// access edge data
 	int Edges() const { return (int) m_Edge.size(); }
-	FEEdge& Edge(int i) { return m_Edge[i]; }
-	const FEEdge& Edge(int i) const { return m_Edge[i]; }
-	FEEdge* EdgePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Edge.size()) ? &m_Edge[n] : 0); }
-	const FEEdge* EdgePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Edge.size()) ? &m_Edge[n] : 0); }
+	FSEdge& Edge(int i) { return m_Edge[i]; }
+	const FSEdge& Edge(int i) const { return m_Edge[i]; }
+	FSEdge* EdgePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Edge.size()) ? &m_Edge[n] : 0); }
+	const FSEdge* EdgePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Edge.size()) ? &m_Edge[n] : 0); }
 
 	void TagAllEdges(int ntag);
 
@@ -96,5 +96,5 @@ protected:
 	BOX			m_box;		//!< bounding box
 
 	std::vector<FSNode>	m_Node;		//!< Node list
-	std::vector<FEEdge>	m_Edge;		//!< Edge list
+	std::vector<FSEdge>	m_Edge;		//!< Edge list
 };

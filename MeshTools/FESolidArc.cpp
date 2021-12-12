@@ -424,7 +424,7 @@ void FESolidArc::BuildEdges(FSMesh* pm)
 	// count edges
 	int nedges = 4*nd + 4*nz + 4*nr;
 	pm->Create(0,0,0,nedges);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 
 	for (i= 0; i<  nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 0; pe->n[0] = NodeIndex(nr, i,  0); pe->n[1] = NodeIndex(nr, i+1,  0); }
 	for (i= 0; i<  nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 2; pe->n[0] = NodeIndex(0 , i,  0); pe->n[1] = NodeIndex(0 , i+1,  0); }

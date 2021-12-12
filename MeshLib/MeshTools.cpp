@@ -613,7 +613,7 @@ vec3d projectToEdge(const FSMeshBase& m, const vec3d& p, int gid)
 	vec3d rmin = p;
 	for (int i = 0; i<m.Edges(); ++i)
 	{
-		const FEEdge& edge = m.Edge(i);
+		const FSEdge& edge = m.Edge(i);
 		if (edge.m_gid == gid)
 		{
 			// calculate distance to edge nodes

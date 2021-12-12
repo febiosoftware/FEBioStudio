@@ -542,7 +542,7 @@ public:
 		m_pt.clear();
 		for (int i = 0; i < m_seg.size(); ++i)
 		{
-			FEEdge& edge = m_mesh->Edge(m_seg[i].m_index);
+			FSEdge& edge = m_mesh->Edge(m_seg[i].m_index);
 			m_seg[i].m_ln[0] = addPoint(edge.n[0]); assert(m_seg[i].m_ln[0] >= 0);
 			m_seg[i].m_ln[1] = addPoint(edge.n[1]); assert(m_seg[i].m_ln[1] >= 0);
 		}
@@ -703,7 +703,7 @@ void LineData::processLines()
 	}
 	for (int i = 0; i < lines; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		edge.n[0] = ptIndex[i].first;
 		edge.n[1] = ptIndex[i].second;
 	}
@@ -714,7 +714,7 @@ void LineData::processLines()
 	vector<Segment> segment(nsegs, Segment(&mesh));
 	for (int i=0; i<lines; ++i)
 	{ 
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		segment[edge.m_gid].Add(i);
 		m_Line[i].m_segId = edge.m_gid;
 	}

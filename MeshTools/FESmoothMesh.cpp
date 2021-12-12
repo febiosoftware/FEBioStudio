@@ -143,7 +143,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 		// process edge nodes
 		for (int i=0; i<mesh.Edges(); ++i)
 		{
-			FEEdge& edge = mesh.Edge(i);
+			FSEdge& edge = mesh.Edge(i);
 			if (edge.m_gid >= 0)
 			{
 				int ne = edge.Nodes();
@@ -273,7 +273,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 		// process edge nodes
 		for (int i=0; i<mesh.Edges(); ++i)
 		{
-			FEEdge& edge = mesh.Edge(i);
+			FSEdge& edge = mesh.Edge(i);
 			if (edge.m_gid >= 0)
 			{
 				int ne = edge.Nodes();

@@ -441,14 +441,14 @@ public:
 	public:
 		Iterator(FSLineMesh* pm);
 
-		operator FEEdge*() { return m_pedge; }
-		FEEdge* operator -> () { return m_pedge; }
+		operator FSEdge*() { return m_pedge; }
+		FSEdge* operator -> () { return m_pedge; }
 
 		void operator ++ (); 
 
 	protected:
 		FSLineMesh*	m_pm;
-		FEEdge*		m_pedge;
+		FSEdge*		m_pedge;
 		int			m_n;
 	};
 

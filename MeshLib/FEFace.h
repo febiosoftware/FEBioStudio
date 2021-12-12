@@ -112,7 +112,7 @@ public:
 	int GetEdgeNodes(int i, int* n) const;
 
 	//! return an edge
-	FEEdge GetEdge(int i) const;
+	FSEdge GetEdge(int i) const;
 
 	//! See if this face has an edge
 	bool HasEdge(int n1, int n2);
@@ -127,7 +127,7 @@ public:
 	bool IsExternal() { return (m_elem[1].eid == -1); }
 
 	//! See if a node list is an edge
-	int FindEdge(const FEEdge& edge);
+	int FindEdge(const FSEdge& edge);
 
 public:
 	// evaluate shape function at iso-parameteric point (r,s)

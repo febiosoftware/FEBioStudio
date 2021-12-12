@@ -124,7 +124,7 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	void FlipEdge(FEEdge& e);
+	void FlipEdge(FSEdge& e);
 
 	void UpdateEdgeNeighbors();
 	void UpdateEdgeIDs();

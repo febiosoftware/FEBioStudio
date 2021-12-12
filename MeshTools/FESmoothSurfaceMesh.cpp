@@ -89,7 +89,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMe
 			// lock all edges nodes
 			for (int i = 0; i<mesh.Edges(); ++i)
 			{
-				FEEdge& edge = mesh.Edge(i);
+				FSEdge& edge = mesh.Edge(i);
 				if (edge.m_gid >= 0)
 				{
 					int ne = edge.Nodes();
@@ -114,7 +114,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMe
 		{
 			for (int i = 0; i<mesh.Edges(); ++i)
 			{
-				FEEdge& edge = mesh.Edge(i);
+				FSEdge& edge = mesh.Edge(i);
 				if (edge.m_gid >= 0)
 				{
 					int ne = edge.Nodes();

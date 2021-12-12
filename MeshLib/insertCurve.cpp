@@ -73,7 +73,7 @@ FESurfaceMesh* InsertCurves::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList,
 			int NE = ps->Edges();
 			for (int i=0; i<NE; ++i)
 			{
-				FEEdge& e = ps->Edge(i);
+				FSEdge& e = ps->Edge(i);
 				insertEdge(dyna, nodeList[e.n[0]], nodeList[e.n[1]], nodeList, n + 1, tol);
 			}
 		}

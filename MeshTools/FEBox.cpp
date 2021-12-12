@@ -949,7 +949,7 @@ void FEBoxMesher::BuildEdges(FSMesh* pm)
 	// calculate the nr of edges
 	int edges = 4*(m_nx + m_ny + m_nz);
 	pm->Create(0,0,0,edges);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 
 	for (i=   0; i<m_nx; ++i, ++pe)  { pe->SetType(FE_EDGE2); pe->m_gid =  0; pe->n[0] = NodeIndex(   i,    0, 0); pe->n[1] = NodeIndex(i+1 ,    0, 0); }
 	for (i=   0; i<m_ny; ++i, ++pe)  { pe->SetType(FE_EDGE2); pe->m_gid =  1; pe->n[0] = NodeIndex(m_nx,    i, 0); pe->n[1] = NodeIndex(m_nx,  i+1, 0); }

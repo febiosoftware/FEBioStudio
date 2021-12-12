@@ -428,7 +428,7 @@ void FEMultiBlockMesh::BuildFEEdges(FSMesh* pm)
 	pm->Create(0, 0, 0, edges);
 
 	// build the edges
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	for (int k = 0; k < (int)m_MBEdge.size(); ++k)
 	{
 		MBEdge& e = m_MBEdge[k];

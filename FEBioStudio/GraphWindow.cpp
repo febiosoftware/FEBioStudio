@@ -2008,7 +2008,7 @@ void CModelGraphWindow::addSelectedEdges()
 	int NL = mesh.Edges();
 	for (int i = 0; i<NL; i++)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if (edge.IsSelected())
 		{
 			// evaluate x-field

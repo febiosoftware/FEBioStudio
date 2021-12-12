@@ -117,10 +117,10 @@ FSMesh* FETet4ToHex8::Apply(FSMesh* pm)
 	int nc = 0;
 	for (int i = 0; i < edges; ++i)
 	{
-		FEEdge& c0 = tet15->Edge(i);
+		FSEdge& c0 = tet15->Edge(i);
 		for (int j = 0; j < 2; ++j)
 		{
-			FEEdge& c1 = pnew->Edge(nc++);
+			FSEdge& c1 = pnew->Edge(nc++);
 			c1.SetType(FE_EDGE2);
 			c1.m_gid = c0.m_gid;
 

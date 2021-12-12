@@ -59,7 +59,7 @@ void FENodeEdgeList::Build(FSLineMesh* pmesh, bool segsOnly)
 	int NE = mesh.Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		const FEEdge& edge = mesh.Edge(i);
+		const FSEdge& edge = mesh.Edge(i);
 		if ((segsOnly == false) || (edge.IsExterior()))
 		{
 			int n0 = edge.n[0];
@@ -75,7 +75,7 @@ void FENodeEdgeList::Build(FSLineMesh* pmesh, bool segsOnly)
 }
 
 // Return the edge for a given node
-const FEEdge* FENodeEdgeList::Edge(int node, int edge) const
+const FSEdge* FENodeEdgeList::Edge(int node, int edge) const
 {
 	return m_mesh->EdgePtr(m_edge[node][edge]);
 }

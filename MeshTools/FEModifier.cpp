@@ -1333,7 +1333,7 @@ FSMesh* FEDetachElements::Apply(FSMesh* pm)
 					FEElement& elj = pm->Element(nbr);
 					if (elj.IsSelected() == false)
 					{
-						FEEdge e = el.GetEdge(j);
+						FSEdge e = el.GetEdge(j);
 						int ne = e.Nodes();
 						for (int k = 0; k<ne; ++k) pm->Node(e.n[k]).m_ntag = 1;
 					}

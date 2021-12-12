@@ -52,7 +52,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	int NE = mesh->Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& e = mesh->Edge(i);
+		FSEdge& e = mesh->Edge(i);
 		mesh->Node(e.n[0]).m_ntag = 1;
 		mesh->Node(e.n[1]).m_ntag = 1;
 	}
@@ -171,7 +171,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// (this also markes edges for deletion)
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& edge = mesh->Edge(i);
+		FSEdge& edge = mesh->Edge(i);
 		edge.m_ntag = 0;
 		edge.n[0] = index[edge.n[0]];
 		edge.n[1] = index[edge.n[1]];

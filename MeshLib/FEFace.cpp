@@ -201,9 +201,9 @@ bool FEFace::HasEdge(int n1, int n2)
 }
 
 //-----------------------------------------------------------------------------
-int FEFace::FindEdge(const FEEdge& edge)
+int FEFace::FindEdge(const FSEdge& edge)
 {
-	FEEdge edgei;
+	FSEdge edgei;
 	for (int i=0; i<Edges(); ++i)
 	{
 		edgei = GetEdge(i);
@@ -304,9 +304,9 @@ int FEFace::GetEdgeNodes(int i, int* en) const
 }
 
 //-----------------------------------------------------------------------------
-FEEdge FEFace::GetEdge(int i) const
+FSEdge FEFace::GetEdge(int i) const
 {
-	FEEdge edge;
+	FSEdge edge;
 	int n = GetEdgeNodes(i, edge.n);
 	switch (n)
 	{

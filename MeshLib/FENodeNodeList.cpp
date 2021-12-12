@@ -70,7 +70,7 @@ void FENodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 
 		for (int i = 0; i < pm->Edges(); ++i)
 		{
-			FEEdge& e = pm->Edge(i);
+			FSEdge& e = pm->Edge(i);
 			if (e.m_gid >= 0)
 			{
 				int nn = e.Nodes();

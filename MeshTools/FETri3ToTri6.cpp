@@ -145,7 +145,7 @@ FSMesh* FETri3ToTri6::Apply(FSMesh* pm)
     vector<int> CE; CE.assign(NC, -1);
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& e = pm->Edge(i);
+        FSEdge& e = pm->Edge(i);
         int n0 = e.n[0];
         int n1 = e.n[1];
         if (n0 > n1) { n0 ^= n1; n1 ^= n0; n0 ^= n1; }
@@ -242,8 +242,8 @@ FSMesh* FETri3ToTri6::Apply(FSMesh* pm)
     // create the new edges
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& e0 = pm->Edge(i);
-        FEEdge& e1 = pnew->Edge(i);
+        FSEdge& e0 = pm->Edge(i);
+        FSEdge& e1 = pnew->Edge(i);
         
 		e1.SetType(FE_EDGE3);
 		e1.n[0] = e0.n[0];
@@ -298,7 +298,7 @@ void FETri6Smooth::Apply(FSMesh* pmesh)
     int NC = pmesh->Edges();
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& e = pmesh->Edge(i);
+        FSEdge& e = pmesh->Edge(i);
         pmesh->Node(e.n[0]).m_ntag = 2;
         pmesh->Node(e.n[1]).m_ntag = 2;
         pmesh->Node(e.n[2]).m_ntag = -1;
@@ -409,14 +409,14 @@ void FETri6Smooth::Apply(FSMesh* pmesh)
     // do all the edges nodes
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& edge1 = pmesh->Edge(i);
+        FSEdge& edge1 = pmesh->Edge(i);
         for (int j=0; j<2; ++j)
         {
             int n0 = edge1.n[j];
             int n1 = edge1.n[(j+1)%2];
             if (edge1.m_nbr[j] >= 0)
             {
-                FEEdge& edge2 = pmesh->Edge(edge1.m_nbr[j]);
+                FSEdge& edge2 = pmesh->Edge(edge1.m_nbr[j]);
                 int n2 = edge2.n[0];
                 if (n2 == n0) n2 = edge2.n[1];
                 assert(n2 != n0);
@@ -575,8 +575,8 @@ FSMesh* FETri6ToTri3::Apply(FSMesh* pm)
     // create the new edges
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& e0 = pm->Edge(i);
-        FEEdge& e1 = pnew->Edge(i);
+        FSEdge& e0 = pm->Edge(i);
+        FSEdge& e1 = pnew->Edge(i);
         
 		e1.SetType(FE_EDGE3);
 		e1.n[0] = e0.n[0];

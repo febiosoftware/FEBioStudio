@@ -688,7 +688,7 @@ FSMesh* FECurveIntersect2D::Apply(FSMesh* pm)
 	int NE = ps->Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& e = ps->Edge(i);
+		FSEdge& e = ps->Edge(i);
 		dyna.insertEdge(nodeList[e.n[0]], nodeList[e.n[1]], nodeList);
 	}
 

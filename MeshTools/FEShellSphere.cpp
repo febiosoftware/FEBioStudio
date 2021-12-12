@@ -257,7 +257,7 @@ void FEShellSphere::BuildEdges(FSMesh* pm)
 	int N2 = N/2;
 	int nedges = 12*m_nd;
 	pm->Create(0,0,0,nedges);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	for (i=0; i<m_nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = (i<N/2?10:6); pe->n[0] = NodeIndex(0, N2,  i); pe->n[1] = NodeIndex(0,  N2, i+1); }
 	for (i=0; i<m_nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = (i<N/2?2:1); pe->n[0] = NodeIndex(0,  i, N2); pe->n[1] = NodeIndex(0, i+1,  N2); }
 	for (i=0; i<m_nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = (i<N/2?2:3); pe->n[0] = NodeIndex(i,  0, N2); pe->n[1] = NodeIndex(i+1, 0,  N2); }

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <vector>
 
 class FSLineMesh;
-class FEEdge;
+class FSEdge;
 
 class FENodeEdgeList
 {
@@ -45,7 +45,7 @@ public:
 	int Edges(int node) const { return (int) m_edge[node].size(); }
 
 	// Return the edge for a given node
-	const FEEdge* Edge(int node, int edge) const;
+	const FSEdge* Edge(int node, int edge) const;
 
 	// return the edge index
 	int EdgeIndex(int node, int edge) const;

@@ -1370,7 +1370,7 @@ void GLMeshRender::RenderSelectedFEEdges(FSLineMesh* pm)
 	glBegin(GL_LINES);
 	for (int i = 0; i<pm->Edges(); i++)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if (edge.IsSelected() && edge.IsVisible())
 		{
 			RenderFEEdge(edge, pm);
@@ -1385,7 +1385,7 @@ void GLMeshRender::RenderUnselectedFEEdges(FSLineMesh* pm)
 	glBegin(GL_LINES);
 	for (int i = 0; i<pm->Edges(); i++)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 
 		if (!edge.IsSelected() && edge.IsVisible())
 		{
@@ -1990,7 +1990,7 @@ void GLMeshRender::RenderThickShellOutline(FEFace &face, FSCoreMesh* pm)
 
 //-----------------------------------------------------------------------------
 // Assumes that we are inside glBegin(GL_LINES)\glEnd()
-void RenderFEEdge(FEEdge& edge, FSLineMesh* pm)
+void RenderFEEdge(FSEdge& edge, FSLineMesh* pm)
 {
 	const vec3d& r1 = pm->Node(edge.n[0]).r;
 	const vec3d& r2 = pm->Node(edge.n[1]).r;
@@ -2352,7 +2352,7 @@ void RenderFace2Outline(FSCoreMesh* pm, FEFace& face, int ndivs)
 	int NE = face.Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge e = face.GetEdge(i);
+		FSEdge e = face.GetEdge(i);
 		a[0] = to_vec3f(pm->Node(e.n[0]).r);
 		a[1] = to_vec3f(pm->Node(e.n[1]).r);
 		a[2] = to_vec3f(pm->Node(e.n[2]).r);
@@ -2372,7 +2372,7 @@ void RenderFace3Outline(FSCoreMesh* pm, FEFace& face, int ndivs)
 	int NE = face.Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge e = face.GetEdge(i);
+		FSEdge e = face.GetEdge(i);
 		a[0] = to_vec3f(pm->Node(e.n[0]).r);
 		a[1] = to_vec3f(pm->Node(e.n[1]).r);
 		a[2] = to_vec3f(pm->Node(e.n[2]).r);
@@ -2498,7 +2498,7 @@ void GLMeshRender::RenderElementOutline(FEElement_& el, FSCoreMesh* pm, int ndiv
 	case FE_TET10:
 	case FE_TET15:
 	{
-		FEEdge edge;
+		FSEdge edge;
 		edge.SetType(FE_EDGE3);
 		vec3f a[3];
 		int(*et)[3] = ET_TET10;
@@ -2606,7 +2606,7 @@ void GLMeshRender::RenderFaceEdge(FEFace& f, int j, FSMeshBase* pm, int ndivs)
 	break;
 	case FE_FACE_TRI10:
 	{
-		FEEdge e = f.GetEdge(j);
+		FSEdge e = f.GetEdge(j);
 
 		vec3f r[4];
 		r[0] = to_vec3f(pm->Node(e.n[0]).r);

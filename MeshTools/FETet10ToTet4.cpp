@@ -113,8 +113,8 @@ FSMesh* FETet10ToTet4::Apply(FSMesh* pm)
 	// create the new edges
 	for (int i=0; i<NC; ++i)
 	{
-		FEEdge& e0 = pm->Edge(i);
-		FEEdge& e1 = pnew->Edge(i);
+		FSEdge& e0 = pm->Edge(i);
+		FSEdge& e1 = pnew->Edge(i);
 
 		e1.SetType(FE_EDGE2);
 		e1.n[0] = pm->Node(e0.n[0]).m_ntag;

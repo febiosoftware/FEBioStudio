@@ -56,7 +56,7 @@ FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 	}
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			for (int j = 0; j < edge.Nodes(); ++j)

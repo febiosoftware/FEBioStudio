@@ -160,7 +160,7 @@ FENodeList* GEdgeList::BuildNodeList()
 		FSMesh& m = *po->GetFEMesh();
 		for (i=0; i<m.Edges(); ++i)
 		{
-			FEEdge& e = m.Edge(i);
+			FSEdge& e = m.Edge(i);
 			if (e.m_gid == gid)
 			{
 				m.Node(e.n[0]).m_ntag = 1;

@@ -517,7 +517,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	{
 		if (out.edgemarkerlist[i] > 1)
 		{
-			FEEdge& e = pmesh->Edge(n++);
+			FSEdge& e = pmesh->Edge(n++);
 			e.SetType(FE_EDGE2);
 			e.n[0] = out.edgelist[2*i  ];
 			e.n[1] = out.edgelist[2*i+1];
@@ -738,7 +738,7 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 	vector<int> CE; CE.assign(NC, -1);
 	for (int i=0; i<NC; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		int n0 = e.n[0];
 		int n1 = e.n[1];
 		if (n0 > n1) { n0 ^= n1; n1 ^= n0; n0 ^= n1; }
@@ -827,8 +827,8 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 	// create the new edges
 	for (int i=0; i<NC; ++i)
 	{
-		FEEdge& e0 = pm->Edge(i);
-		FEEdge& e1 = pnew->Edge(i);
+		FSEdge& e0 = pm->Edge(i);
+		FSEdge& e1 = pnew->Edge(i);
 
 		e1.SetType(FE_EDGE3);
 		e1.n[0] = e0.n[0];
@@ -1543,7 +1543,7 @@ bool FETetGenMesher::build_plc(FESurfaceMesh* pm, tetgenio& in)
 	in.edgemarkerlist = new int[in.numberofedges];
 	for (int i = 0; i<in.numberofedges; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		in.edgelist[2 * i] = e.n[0];
 		in.edgelist[2 * i + 1] = e.n[1];
 		in.edgemarkerlist[i] = e.m_gid + 2;
@@ -1678,7 +1678,7 @@ FSMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 	{
 		if (out.edgemarkerlist[i] > 1)
 		{
-			FEEdge& e = pmesh->Edge(n++);
+			FSEdge& e = pmesh->Edge(n++);
 			e.SetType(FE_EDGE2);
 			e.n[0] = out.edgelist[2 * i]; assert(e.n[0] >= 0);
 			e.n[1] = out.edgelist[2 * i + 1]; assert(e.n[1] >= 0);

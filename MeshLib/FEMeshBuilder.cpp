@@ -95,7 +95,7 @@ void FEMeshBuilder::RemoveIsolatedNodes()
 	// fix edge node numbering
 	for (int i = 0; i<m_mesh.Edges(); ++i)
 	{
-		FEEdge& edge = m_mesh.Edge(i);
+		FSEdge& edge = m_mesh.Edge(i);
 		int n = edge.Nodes();
 		for (int j = 0; j<n; ++j) edge.n[j] = m_mesh.Node(edge.n[j]).m_ntag;
 	}
@@ -318,7 +318,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 				int nedge = EEL.EdgeIndex(i, j);
 				if (nedge >= 0)
 				{
-					FEEdge& edge = mesh.Edge(nedge);
+					FSEdge& edge = mesh.Edge(nedge);
 					edge.m_ntag = TAG;
 				}
 			}
@@ -335,7 +335,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 				int nedge = EEL.EdgeIndex(i, j);
 				if (nedge >= 0)
 				{
-					FEEdge& edge = mesh.Edge(nedge);
+					FSEdge& edge = mesh.Edge(nedge);
 					edge.m_ntag = 0;
 				}
 			}
@@ -386,7 +386,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 	// fix edge node numbering
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		int n = edge.Nodes();
 		for (int j = 0; j < n; ++j)
 		{
@@ -427,7 +427,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 	int ng = mesh.CountNodePartitions();
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			for (int j = 0; j < 2; ++j)
@@ -589,7 +589,7 @@ void FEMeshBuilder::Attach(FSMesh& fem)
 		int ng = -1;
 		for (i = 0; i<nl0; ++i)
 		{
-			FEEdge& e = m_mesh.m_Edge[i];
+			FSEdge& e = m_mesh.m_Edge[i];
 			if (e.m_gid > ng) ng = e.m_gid;
 		}
 		++ng;
@@ -597,8 +597,8 @@ void FEMeshBuilder::Attach(FSMesh& fem)
 		m_mesh.m_Edge.resize(edges);
 		for (i = 0; i<nl1; ++i)
 		{
-			FEEdge& l0 = m_mesh.m_Edge[nl0 + i];
-			FEEdge& l1 = fem.m_Edge[i];
+			FSEdge& l0 = m_mesh.m_Edge[nl0 + i];
+			FSEdge& l1 = fem.m_Edge[i];
 
 			l0 = l1;
 			l0.m_gid = l1.m_gid + ng;
@@ -733,7 +733,7 @@ void FEMeshBuilder::AttachAndWeld(FSMesh& mesh, double tol)
 	// update edge numbers
 	for (int i = 0; i<edges; ++i)
 	{
-		FEEdge& edge = m_mesh.Edge(i);
+		FSEdge& edge = m_mesh.Edge(i);
 		int ne = edge.Nodes();
 		for (int j = 0; j<ne; ++j) edge.n[j] = order[edge.n[j]];
 	}
@@ -925,10 +925,10 @@ void FEMeshBuilder::RemoveDuplicateEdges()
 	int NE = m_mesh.Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& ei = m_mesh.Edge(i);
+		FSEdge& ei = m_mesh.Edge(i);
 		for (int j = i + 1; j<NE; ++j)
 		{
-			FEEdge& ej = m_mesh.Edge(j);
+			FSEdge& ej = m_mesh.Edge(j);
 			if (ei == ej)
 			{
 				if (ei.m_gid == -1)
@@ -1224,7 +1224,7 @@ void FEMeshBuilder::PartitionEdgeSelection(int gid)
 	int NE = m_mesh.Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = m_mesh.Edge(i);
+		FSEdge& e = m_mesh.Edge(i);
 		if (e.IsSelected())
 		{
 			e.m_gid = nsg;
@@ -1403,12 +1403,12 @@ void FEMeshBuilder::PartitionNode(int nodeIndex)
 	ng = m_mesh.CountEdgePartitions();
 	for (int i = 0; i<m_mesh.Edges(); ++i)
 	{
-		FEEdge& edge = m_mesh.Edge(i);
+		FSEdge& edge = m_mesh.Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			if (edge.n[0] == nodeIndex)
 			{
-				FEEdge* pe = m_mesh.EdgePtr(edge.m_nbr[0]);
+				FSEdge* pe = m_mesh.EdgePtr(edge.m_nbr[0]);
 				edge.m_nbr[0] = -1;
 				if (pe)
 				{
@@ -1419,7 +1419,7 @@ void FEMeshBuilder::PartitionNode(int nodeIndex)
 
 				int m = edge.n[1];
 				edge.m_gid = ng;
-				FEEdge* e = m_mesh.EdgePtr(edge.m_nbr[1]);
+				FSEdge* e = m_mesh.EdgePtr(edge.m_nbr[1]);
 				while (e)
 				{
 					e->m_gid = ng;
@@ -1431,7 +1431,7 @@ void FEMeshBuilder::PartitionNode(int nodeIndex)
 			}
 			else if (edge.n[1] == nodeIndex)
 			{
-				FEEdge* pe = m_mesh.EdgePtr(edge.m_nbr[1]);
+				FSEdge* pe = m_mesh.EdgePtr(edge.m_nbr[1]);
 				edge.m_nbr[1] = -1;
 				if (pe)
 				{
@@ -1442,7 +1442,7 @@ void FEMeshBuilder::PartitionNode(int nodeIndex)
 
 				int m = edge.n[0];
 				edge.m_gid = ng;
-				FEEdge* e = m_mesh.EdgePtr(edge.m_nbr[0]);
+				FSEdge* e = m_mesh.EdgePtr(edge.m_nbr[0]);
 				while (e)
 				{
 					e->m_gid = ng;
@@ -1491,15 +1491,15 @@ bool FEMeshBuilder::AutoPartitionEdges(double w, FEEdgeSet* pg)
 	for (int i = 0; i < edgeList.size(); ++i)
 	{
 		// find an unprocessed edge
-		FEEdge& edge = m_mesh.Edge(edgeList[i]);
+		FSEdge& edge = m_mesh.Edge(edgeList[i]);
 		if (edge.m_ntag == -1)
 		{
-			stack<FEEdge*> s;
+			stack<FSEdge*> s;
 			edge.m_ntag = 1;
 			s.push(&edge);
 			while (s.empty() == false)
 			{
-				FEEdge* pe = s.top(); s.pop();
+				FSEdge* pe = s.top(); s.pop();
 				pe->m_gid = ng;
 
 				vec3d t = m_mesh.Node(pe->n[1]).r - m_mesh.Node(pe->n[0]).r;
@@ -1507,7 +1507,7 @@ bool FEMeshBuilder::AutoPartitionEdges(double w, FEEdgeSet* pg)
 
 				for (int j = 0; j < 2; ++j)
 				{
-					FEEdge* pej = m_mesh.EdgePtr(pe->m_nbr[j]);
+					FSEdge* pej = m_mesh.EdgePtr(pe->m_nbr[j]);
 					if (pej && (pej->m_ntag == -1))
 					{
 						assert((pej->n[0] == pe->n[j]) || (pej->n[1] == pe->n[j]));
@@ -1808,7 +1808,7 @@ void FEMeshBuilder::AutoPartitionEdges()
 	// Tag candidate edges
 	for (int i = 0; i < m_mesh.Edges(); ++i)
 	{
-		FEEdge& edge = m_mesh.Edge(i);
+		FSEdge& edge = m_mesh.Edge(i);
 		if (edge.m_gid >= 0) edge.m_ntag = 0;
 		else edge.m_ntag = -1;
 	}
@@ -1833,19 +1833,19 @@ void FEMeshBuilder::AutoPartitionEdges()
 		{
 			int edgeId = s.top(); s.pop();
 
-			FEEdge& edge = m_mesh.Edge(edgeId);
+			FSEdge& edge = m_mesh.Edge(edgeId);
 			edge.m_ntag = 1;
 			edge.m_gid = ng;
 
 			if (edge.m_nbr[0] != -1)
 			{
-				FEEdge& e0 = m_mesh.Edge(edge.m_nbr[0]);
+				FSEdge& e0 = m_mesh.Edge(edge.m_nbr[0]);
 				if (e0.m_ntag == 0) s.push(edge.m_nbr[0]);
 			}
 
 			if (edge.m_nbr[1] != -1)
 			{
-				FEEdge& e1 = m_mesh.Edge(edge.m_nbr[1]);
+				FSEdge& e1 = m_mesh.Edge(edge.m_nbr[1]);
 				if (e1.m_ntag == 0) s.push(edge.m_nbr[1]);
 			}
 		}
@@ -1866,7 +1866,7 @@ void FEMeshBuilder::AutoPartitionNodes()
 	for (int i = 0; i<m_mesh.Nodes(); ++i) m_mesh.Node(i).m_gid = -1;
 
 	// get the edge pointer
-	FEEdge* pe = m_mesh.EdgePtr();
+	FSEdge* pe = m_mesh.EdgePtr();
 
 	// loop over all edges
 	for (int i = 0; i<NE; ++i, ++pe)
@@ -2009,14 +2009,14 @@ void FEMeshBuilder::BuildEdges()
 			FEFace* pfn = m_mesh.FacePtr(f.m_nbr[j]);
 			if (((pfn == 0) && f.IsExternal()) || (pfn && (f.m_ntag < pfn->m_ntag)))
 			{
-				FEEdge e = f.GetEdge(j);
+				FSEdge e = f.GetEdge(j);
 
 				// see if this node already exists
 				bool bfound = false;
 				vector<int>& net = NET[e.n[0]];
 				for (int l = 0; l < net.size(); ++l)
 				{
-					FEEdge& el = m_mesh.Edge(net[l]);
+					FSEdge& el = m_mesh.Edge(net[l]);
 					if (el == e)
 					{
 						// the edge already exists, so don't add it

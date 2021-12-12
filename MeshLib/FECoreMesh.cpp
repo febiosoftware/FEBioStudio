@@ -1505,7 +1505,7 @@ void FSCoreMesh::UpdateItemVisibility()
 
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if ((Node(edge.n[0]).m_ntag == 0) || (Node(edge.n[1]).m_ntag == 0)) edge.Hide();
 		else { edge.Show(); edge.Unhide(); }
 	}
@@ -1530,7 +1530,7 @@ int FSCoreMesh::CountEdgePartitions() const
 	int max_gid = -1;
 	for (int i = 0; i<Edges(); ++i)
 	{
-		const FEEdge& edge = Edge(i);
+		const FSEdge& edge = Edge(i);
 		if (edge.m_gid > max_gid) max_gid = edge.m_gid;
 	}
 	return max_gid + 1;

@@ -60,7 +60,7 @@ bool FSMeshBase::IsEdge(int n0, int n1)
 	int NE = Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = Edge(i);
+		FSEdge& e = Edge(i);
 		if ((e.n[0] == n0) && (e.n[1] == n1)) return true;
 		if ((e.n[0] == n1) && (e.n[1] == n0)) return true;
 	}
@@ -68,12 +68,12 @@ bool FSMeshBase::IsEdge(int n0, int n1)
 }
 
 //-----------------------------------------------------------------------------
-FEEdge* FSMeshBase::FindEdge(int n0, int n1)
+FSEdge* FSMeshBase::FindEdge(int n0, int n1)
 {
 	int NE = Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = Edge(i);
+		FSEdge& e = Edge(i);
 		if ((e.n[0] == n0) && (e.n[1] == n1)) return &e;
 		if ((e.n[0] == n1) && (e.n[1] == n0)) return &e;
 	}
@@ -86,7 +86,7 @@ bool FSMeshBase::IsCreaseEdge(int n0, int n1)
 	int NE = Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = Edge(i);
+		FSEdge& e = Edge(i);
 		if ((e.n[0] == n0) && (e.n[1] == n1)) return (e.m_gid != -1);
 		if ((e.n[0] == n1) && (e.n[1] == n0)) return (e.m_gid != -1);
 	}
@@ -125,8 +125,8 @@ void FSMeshBase::RemoveEdges(int ntag)
 	int n = 0;
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& e1 = Edge(i);
-		FEEdge& e2 = Edge(n);
+		FSEdge& e1 = Edge(i);
+		FSEdge& e2 = Edge(n);
 
 		if (e1.m_ntag != ntag)
 		{
@@ -382,7 +382,7 @@ vec3d FSMeshBase::FaceCenter(FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-vec3d FSMeshBase::EdgeCenter(FEEdge& e) const
+vec3d FSMeshBase::EdgeCenter(FSEdge& e) const
 {
 	return (m_Node[e.n[0]].r + m_Node[e.n[1]].r)*0.5f;
 }
@@ -604,7 +604,7 @@ std::vector<int> MeshTools::GetConnectedFaces(FSMeshBase* pm, int nface, double 
 		int NE = pm->Edges();
 		for (int i = 0; i<NE; ++i)
 		{
-			FEEdge& e = pm->Edge(i);
+			FSEdge& e = pm->Edge(i);
 			if (e.m_gid != -1)
 			{
 				pm->Node(e.n[0]).m_ntag = 1;

@@ -161,7 +161,7 @@ FEEdgeList::FEEdgeList(const FESurfaceMesh& mesh)
 	// add all the edges
 	for (int i = 0; i<mesh.Edges(); ++i)
 	{
-		const FEEdge& e = mesh.Edge(i);
+		const FSEdge& e = mesh.Edge(i);
 		pair<int, int> edge;
 		edge.first = e.n[0];
 		edge.second = e.n[1];
@@ -175,7 +175,7 @@ void FEEdgeList::BuildFromMeshEdges(FSLineMesh& mesh)
 	// add all the edges
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		const FEEdge& e = mesh.Edge(i);
+		const FSEdge& e = mesh.Edge(i);
 		pair<int, int> edge;
 		edge.first = e.n[0];
 		edge.second = e.n[1];
@@ -403,7 +403,7 @@ FEEdgeIndexList::FEEdgeIndexList(const FSMesh& mesh, const FEEdgeList& ET)
 	EET.resize(mesh.Edges());
 	for (int i = 0; i<mesh.Edges(); ++i)
 	{
-		const FEEdge& ei = mesh.Edge(i);
+		const FSEdge& ei = mesh.Edge(i);
 		vector<int>& nei = NET[ei.n[0]];
 		EET[i] = -1;
 		for (int k = 0; k<(int)nei.size(); ++k)
@@ -426,7 +426,7 @@ FEEdgeEdgeList::FEEdgeEdgeList(const FSMesh& mesh, int edgeId)
 	vector<vector<int> > NET; NET.resize(mesh.Nodes());
 	for (int i = 0; i<mesh.Edges(); ++i)
 	{
-		const FEEdge& edge = mesh.Edge(i);
+		const FSEdge& edge = mesh.Edge(i);
 		NET[edge.n[0]].push_back(i);
 		NET[edge.n[1]].push_back(i);
 	}
@@ -434,7 +434,7 @@ FEEdgeEdgeList::FEEdgeEdgeList(const FSMesh& mesh, int edgeId)
 	EEL.resize(mesh.Edges());
 	for (int i = 0; i<mesh.Edges(); ++i)
 	{
-		const FEEdge& ei = mesh.Edge(i);
+		const FSEdge& ei = mesh.Edge(i);
 		if ((edgeId == -1) || (ei.m_gid == edgeId))
 		{
 			for (int j = 0; j < 2; ++j)
@@ -444,7 +444,7 @@ FEEdgeEdgeList::FEEdgeEdgeList(const FSMesh& mesh, int edgeId)
 				{
 					if (nei[k] != i)
 					{
-						const FEEdge& ek = mesh.Edge(nei[k]);
+						const FSEdge& ek = mesh.Edge(nei[k]);
 						if ((edgeId == -1) || (ek.m_gid == edgeId))
 						{
 							if ((ek.n[0] == ei.n[0]) || (ek.n[0] == ei.n[1]) ||

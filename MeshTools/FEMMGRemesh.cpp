@@ -175,7 +175,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 	}
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		if (e.m_gid >= 0)
 		{
 			int* n = e.n;
@@ -328,7 +328,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 	// get the edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = newMesh->Edge(i);
+		FSEdge& e = newMesh->Edge(i);
 		e.SetType(FE_EDGE2);
 		int* n = e.n;
 		int isRidge;
@@ -422,7 +422,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 	}
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		if (e.m_gid >= 0)
 		{
 			int* n = e.n;
@@ -569,7 +569,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 	// get the edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = newMesh->Edge(i);
+		FSEdge& e = newMesh->Edge(i);
 		e.SetType(FE_EDGE2);
 		int* n = e.n;
 		int isRidge;
@@ -674,7 +674,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	}
 /*	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		if (e.m_gid >= 0)
 		{
 			int* n = e.n;
@@ -814,7 +814,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	// get the edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = newMesh->Edge(i);
+		FSEdge& e = newMesh->Edge(i);
 		e.SetType(FE_EDGE2);
 		int* n = e.n;
 		int isRidge;
@@ -864,7 +864,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	pm->TagAllNodes(0);
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			NC++;
@@ -933,7 +933,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	int nc = 0;
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		if (e.m_gid >= 0)
 		{
 			int* n = e.n;
@@ -1080,7 +1080,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	// get the edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = newMesh->Edge(i);
+		FSEdge& e = newMesh->Edge(i);
 		e.SetType(FE_EDGE2);
 		int* n = e.n;
 		int isRidge;

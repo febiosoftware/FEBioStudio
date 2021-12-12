@@ -397,9 +397,9 @@ void FEElement_::GetFace(int i, FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-FEEdge FEElement_::GetEdge(int i) const
+FSEdge FEElement_::GetEdge(int i) const
 {
-	FEEdge e;
+	FSEdge e;
 
 	switch (Type())
 	{
@@ -451,7 +451,7 @@ FEEdge FEElement_::GetEdge(int i) const
 
 //-----------------------------------------------------------------------------
 //! Find the edge index of a shell
-int FEElement_::FindEdge(const FEEdge& edge) const
+int FEElement_::FindEdge(const FSEdge& edge) const
 {
 	assert(IsShell());
 	int nbre = Edges();

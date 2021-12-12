@@ -578,7 +578,7 @@ FSMesh* FECylinder::BuildWedged()
 	}
 
 	// --- D. Create edges ---
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	for (k=0; k<m_nd; ++k, ++pe)
 	{
 		pe->m_gid = k/(m_nd/4);
@@ -1171,7 +1171,7 @@ FSMesh* FECylinder2::BuildWedged()
 	}
 
 	// --- D. Create edges ---
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	for (k=0; k<m_nd; ++k, ++pe)
 	{
 		pe->SetType(FE_EDGE2);

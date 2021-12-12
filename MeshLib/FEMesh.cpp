@@ -218,8 +218,8 @@ FSMesh::FSMesh(FESurfaceMesh& m)
 
 	for (int i = 0; i < NE; ++i)
 	{
-		FEEdge& edge = Edge(i);
-		FEEdge& sedge = m.Edge(i);
+		FSEdge& edge = Edge(i);
+		FSEdge& sedge = m.Edge(i);
 		edge = sedge;
 	}
 
@@ -361,7 +361,7 @@ void FSMesh::UpdateEdgePartitions()
 	int max_gid = -1;
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid > max_gid) max_gid = edge.m_gid;
 	}
 
@@ -372,7 +372,7 @@ void FSMesh::UpdateEdgePartitions()
 	vector<int> gid(max_gid + 1, -1);
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid >= 0) gid[edge.m_gid] = 1;
 	}
 
@@ -388,7 +388,7 @@ void FSMesh::UpdateEdgePartitions()
 	{
 		for (int i = 0; i<Edges(); ++i)
 		{
-			FEEdge& edge = Edge(i);
+			FSEdge& edge = Edge(i);
 			if (edge.m_gid >= 0) edge.m_gid = gid[edge.m_gid];
 		}
 	}
@@ -571,10 +571,10 @@ void FSMesh::FindDuplicateEdges(vector<int>& l)
 	int NL = Edges();
 	for (int i=0; i<NL; ++i)
 	{
-		FEEdge& ei = Edge(i);
+		FSEdge& ei = Edge(i);
 		for (int j=i+1; j<NL; ++j)
 		{
-			FEEdge& ej = Edge(j);
+			FSEdge& ej = Edge(j);
 			if (ei == ej) l.push_back(j);
 		}
 	}
@@ -755,7 +755,7 @@ bool FSMesh::ValidateEdges() const
 	int NE = Edges();
 	for (int i = 0; i < NE; ++i)
 	{
-		const FEEdge& edge = m_Edge[i];
+		const FSEdge& edge = m_Edge[i];
 
 		// make sure all node Ids are valid
 		int nn = edge.Nodes();
@@ -794,7 +794,7 @@ void FSMesh::UpdateElementNeighbors()
 	NET.Build(this);
 
 	// set up the element's neighbour pointers
-	FEEdge edge;
+	FSEdge edge;
 	FEFace f1, f2, f3;
 
 	// loop over all elements
@@ -954,7 +954,7 @@ void FSMesh::MarkExteriorEdges()
 {
 	for (int i = 0; i < Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		edge.SetExterior(edge.m_gid >= 0);
 	}
 }
@@ -1237,14 +1237,14 @@ void FSMesh::UpdateEdgeNeighbors()
 
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		edge.m_nbr[0] = -1;
 		edge.m_nbr[1] = -1;
 	}
 
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			for (int j = 0; j<2; ++j)
@@ -1475,7 +1475,7 @@ void FSMesh::Save(OArchive &ar)
 	// write the edges
 	ar.BeginChunk(CID_MESH_EDGE_SECTION);
 	{
-		FEEdge* pe = EdgePtr();
+		FSEdge* pe = EdgePtr();
 		for (int i=0; i<edges; ++i, ++pe)
 		{
 			int nn = pe->Nodes();
@@ -1809,7 +1809,7 @@ void FSMesh::Load(IArchive& ar)
 		case CID_MESH_EDGE_SECTION:
 			{
 				int n = 0;
-				FEEdge* pe = EdgePtr();
+				FSEdge* pe = EdgePtr();
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();

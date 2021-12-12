@@ -454,7 +454,7 @@ void FETube::BuildEdges(FSMesh* pm)
 	// count edges
 	int nedges = 4*nd+8*nz + 8*nr;
 	pm->Create(0,0,0,nedges);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 
 	for (i = 0; i< nd / 4; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 0; pe->n[0] = NodeIndex(nr, i, 0); pe->n[1] = NodeIndex(nr, i + 1, 0); }
 	for (i=  nd/4; i<  nd/2; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 1; pe->n[0] = NodeIndex(nr, i, 0); pe->n[1] = NodeIndex(nr, i+1, 0); }
@@ -790,7 +790,7 @@ void FETube2::BuildEdges(FSMesh* pm)
 	// count edges
 	int nedges = 4*nd+8*nz + 8*nr;
 	pm->Create(0,0,0,nedges);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 
 	for (i=     0; i<  nd/4; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 0; pe->n[0] = NodeIndex(nr, i, 0); pe->n[1] = NodeIndex(nr, i+1, 0); }
 	for (i=  nd/4; i<  nd/2; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 1; pe->n[0] = NodeIndex(nr, i, 0); pe->n[1] = NodeIndex(nr, i+1, 0); }

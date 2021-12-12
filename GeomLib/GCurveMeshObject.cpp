@@ -118,7 +118,7 @@ void GCurveMeshObject::Update()
 
 	for (int i = 0; i<m_curve->Edges(); ++i)
 	{
-		FEEdge& ei = m_curve->Edge(i);
+		FSEdge& ei = m_curve->Edge(i);
 		int eid = ei.m_gid;
 		assert((eid >= 0) && (eid < m_Edge.size()));
 
@@ -157,7 +157,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 	int ne = 0;
 	for (int i = 0; i<NC; ++i)
 	{
-		FEEdge& e = m_curve->Edge(i);
+		FSEdge& e = m_curve->Edge(i);
 		if (e.m_gid == edgeId)
 		{
 			m_curve->Node(e.n[0]).m_ntag = 0;
@@ -183,7 +183,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 
 	for (int i = 0; i<NC; ++i)
 	{
-		FEEdge& sedge = m_curve->Edge(i);
+		FSEdge& sedge = m_curve->Edge(i);
 		if (sedge.m_gid == edgeId)
 		{
 			int n0 = m_curve->Node(sedge.n[0]).m_ntag;

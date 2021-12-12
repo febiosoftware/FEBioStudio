@@ -4827,7 +4827,7 @@ void CGLView::SelectFEEdges(int x, int y)
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
@@ -4860,12 +4860,12 @@ void CGLView::SelectFEEdges(int x, int y)
 			int m = 0;
 
 			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
-			std::stack<FEEdge*> stack;
+			std::stack<FSEdge*> stack;
 
 			FENodeEdgeList NEL(pm);
 
 			// push the first face to the stack
-			FEEdge* pe = pm->EdgePtr(index);
+			FSEdge* pe = pm->EdgePtr(index);
 			pint[m++] = index;
 			pe->m_ntag = -1;
 			stack.push(pe);
@@ -4893,7 +4893,7 @@ void CGLView::SelectFEEdges(int x, int y)
 						int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
 						if (edgeID >= 0)
 						{
-							FEEdge* pe2 = pm->EdgePtr(edgeID);
+							FSEdge* pe2 = pm->EdgePtr(edgeID);
 							vec3d& r0 = pm->Node(pe2->n[0]).r;
 							vec3d& r1 = pm->Node(pe2->n[1]).r;
 							vec3d t2 = r1 - r0; t2.Normalize();
@@ -4929,7 +4929,7 @@ void CGLView::SelectFEEdges(int x, int y)
 						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_EDGE[num].m_val;
-						FEEdge& ed = pm->Edge(num);
+						FSEdge& ed = pm->Edge(num);
 						QString txt = QString("Edge %1 : %2\n").arg(ed.m_nid).arg(val);
 						m_pWnd->AddLogEntry(txt);
 					}
@@ -5029,7 +5029,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
@@ -5062,12 +5062,12 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 			int m = 0;
 
 			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
-			std::stack<FEEdge*> stack;
+			std::stack<FSEdge*> stack;
 
 			FENodeEdgeList NEL(pm);
 
 			// push the first face to the stack
-			FEEdge* pe = pm->EdgePtr(index);
+			FSEdge* pe = pm->EdgePtr(index);
 			pint[m++] = index;
 			pe->m_ntag = -1;
 			stack.push(pe);
@@ -5095,7 +5095,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 						int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
 						if (edgeID >= 0)
 						{
-							FEEdge* pe2 = pm->EdgePtr(edgeID);
+							FSEdge* pe2 = pm->EdgePtr(edgeID);
 							vec3d& r0 = pm->Node(pe2->n[0]).r;
 							vec3d& r1 = pm->Node(pe2->n[1]).r;
 							vec3d t2 = r1 - r0; t2.Normalize();
@@ -6135,7 +6135,7 @@ void CGLView::TagBackfacingEdges(FSMeshBase& mesh)
 
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = mesh.Edge(i);
+		FSEdge& e = mesh.Edge(i);
 		if ((mesh.Node(e.n[0]).m_ntag == 0) && (mesh.Node(e.n[1]).m_ntag == 0))
 			e.m_ntag = 0;
 	}
@@ -6169,7 +6169,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if (edge.IsVisible() && (edge.m_ntag == 0))
 		{
 			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
@@ -6344,12 +6344,12 @@ void CGLView::TagConnectedNodes(FSMeshBase* pm, int num)
 		pm->Node(num).m_ntag = 1;
 
 		// see if this node belongs to an edge
-		std::stack<FEEdge*> stack;
+		std::stack<FSEdge*> stack;
 
 		// find all edges that have this node as a node
 		for (int i = 0; i<pm->Edges(); ++i)
 		{
-			FEEdge* pe = pm->EdgePtr(i);
+			FSEdge* pe = pm->EdgePtr(i);
 			if (pe->m_gid >= 0)
 			{
 				pe->m_ntag = 0;
@@ -6366,7 +6366,7 @@ void CGLView::TagConnectedNodes(FSMeshBase* pm, int num)
 			// now push the rest
 			while (!stack.empty())
 			{
-				FEEdge* pe = stack.top(); stack.pop();
+				FSEdge* pe = stack.top(); stack.pop();
 
 				// mark all nodes
 				int nn = pe->Nodes();
@@ -6379,7 +6379,7 @@ void CGLView::TagConnectedNodes(FSMeshBase* pm, int num)
 				for (int i = 0; i<2; ++i)
 				if (pe->m_nbr[i] >= 0)
 				{
-					FEEdge* pe2 = pm->EdgePtr(pe->m_nbr[i]);
+					FSEdge* pe2 = pm->EdgePtr(pe->m_nbr[i]);
 					if (pe2->m_ntag >= 0 && pe2->IsVisible() && (pe2->m_gid == pe->m_gid))
 					{
 						pe2->m_ntag = -1;
@@ -6457,7 +6457,7 @@ void CGLView::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 	int NE = pm->Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if ((edge.n[0] == n0) || (edge.n[1] == n0)) b0 = true;
 		if ((edge.n[0] == n1) || (edge.n[1] == n1)) b1 = true;
 
@@ -6477,7 +6477,7 @@ void CGLView::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 			int nval = NEL.Edges(n);
 			for (int i = 0; i<nval; ++i)
 			{
-				const FEEdge* pe = NEL.Edge(n, i);
+				const FSEdge* pe = NEL.Edge(n, i);
 				int ne = pe->Nodes();
 				for (int j = 0; j<ne; ++j)
 				{
@@ -6787,7 +6787,7 @@ void CGLView::RenderSelectedEdges(GObject* po)
 		glColor3ub(255, 0, 0);
 		for (int i = 0; i<pm->Edges(); ++i)
 		{
-			FEEdge& e = pm->Edge(i);
+			FSEdge& e = pm->Edge(i);
 			if (e.m_gid > -1)
 			{
 				GEdge& ge = *po->Edge(e.m_gid);
@@ -8906,7 +8906,7 @@ void CGLView::RenderTags()
 		int NC = pmb->Edges();
 		for (int i = 0; i<NC; i++)
 		{
-			FEEdge& edge = pmb->Edge(i);
+			FSEdge& edge = pmb->Edge(i);
 			if (edge.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));

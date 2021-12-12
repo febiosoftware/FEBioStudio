@@ -349,7 +349,7 @@ FEEdgeSet* GEdge::GetFEEdgeSet() const
 	int eid = GetLocalID();
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		const FEEdge& ei = pm->Edge(i);
+		const FSEdge& ei = pm->Edge(i);
 		if (ei.m_gid == eid) edge->add(i);
 	}
 

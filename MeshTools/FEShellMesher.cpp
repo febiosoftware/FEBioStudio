@@ -70,8 +70,8 @@ FSMesh*	FEShellMesher::BuildMesh()
 	// create edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& se = surfaceMesh->Edge(i);
-		FEEdge& de = mesh->Edge(i);
+		FSEdge& se = surfaceMesh->Edge(i);
+		FSEdge& de = mesh->Edge(i);
 		de = se;
 	}
 

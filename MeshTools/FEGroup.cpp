@@ -299,11 +299,11 @@ FEItemListBuilder* FEEdgeSet::Copy()
 	return pg;
 }
 
-FEEdge* FEEdgeSet::Edge(FEItemListBuilder::Iterator it)
+FSEdge* FEEdgeSet::Edge(FEItemListBuilder::Iterator it)
 {
 	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
-	FEEdge& e = pm->Edge(*it);
+	FSEdge& e = pm->Edge(*it);
 	return &e;
 }
 
@@ -322,7 +322,7 @@ FENodeList* FEEdgeSet::BuildNodeList()
 	int N = (int)m_Item.size();
 	for (i=0; i<N; ++i, ++it)
 	{
-		FEEdge& e = pm->Edge(*it);
+		FSEdge& e = pm->Edge(*it);
 		n = e.Nodes();
 		for (j=0; j<n; ++j) pm->Node(e.n[j]).m_ntag = 1;
 	}

@@ -1452,7 +1452,7 @@ int FEEdgeSelection::Count()
 {
 	if (m_pMesh == 0) return 0;
 	int N = 0;
-	FEEdge* pe = m_pMesh->EdgePtr();
+	FSEdge* pe = m_pMesh->EdgePtr();
 	for (int i=0; i<m_pMesh->Edges(); ++i, ++pe)
 		if (pe->IsSelected()) ++N;
 
@@ -1463,7 +1463,7 @@ void FEEdgeSelection::Invert()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Edges(); 
-	FEEdge* pe = m_pMesh->EdgePtr();
+	FSEdge* pe = m_pMesh->EdgePtr();
 	for (int i=0; i<N; ++i, ++pe)
 		if (pe->IsVisible())
 		{
@@ -1477,7 +1477,7 @@ void FEEdgeSelection::Update()
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Edges();
 	FSNode* pn = m_pMesh->NodePtr();
-	FEEdge* pe = m_pMesh->EdgePtr();
+	FSEdge* pe = m_pMesh->EdgePtr();
 
 	int m = 0;
 
@@ -1491,7 +1491,7 @@ void FEEdgeSelection::Update()
 	{
 		if (pe->IsSelected())
 		{
-			FEEdge& e = *pe;
+			FSEdge& e = *pe;
 			n = e.n;
 			for (j=0; j<e.Nodes(); ++j)
 			{

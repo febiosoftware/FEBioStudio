@@ -187,7 +187,7 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 		{
 			if (face.m_nbr[j] == -1)
 			{
-				FEEdge ej = face.GetEdge(j);
+				FSEdge ej = face.GetEdge(j);
 				pm->Node(ej.n[0]).m_ntag += 1;
 				pm->Node(ej.n[1]).m_ntag += 1;
 			}
@@ -293,7 +293,7 @@ inline bool IsInsideSphere(const vec3d& r, const vec3d& sphereCenter, double sph
 }
 
 //-----------------------------------------------------------------------------
-vec3d edgeVector(FEEdge& e, FESurfaceMesh& mesh)
+vec3d edgeVector(FSEdge& e, FESurfaceMesh& mesh)
 {
 	vec3d a = mesh.Node(e.n[0]).pos();
 	vec3d b = mesh.Node(e.n[1]).pos();
@@ -328,7 +328,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 	int iedge = -1;
 	for (int i=0; i<mesh.Edges(); ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if (edge.m_ntag == 1)
 		{
 			if ((edge.n[0] == inode) || (edge.n[1] == inode))
@@ -345,7 +345,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 	// we do this is by first identifying a face that has this edge and then
 	// see what the winding is of this face
 	int iface = -1;
-	FEEdge& edge = mesh.Edge(iedge);
+	FSEdge& edge = mesh.Edge(iedge);
 	ring.m_winding = 0;
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
@@ -381,7 +381,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 	// now, loop over all the edges of the ring and add the nodes
 	do
 	{
-		FEEdge& edge = mesh.Edge(iedge);
+		FSEdge& edge = mesh.Edge(iedge);
 		vec3d re = edgeVector(edge, mesh);
 		if (edge.n[0] == jnode)
 		{
@@ -399,7 +399,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 		for (int k = 0; k < nedges; ++k)
 		{
 			int edgek = m_NEL.EdgeIndex(jnode, k);
-			FEEdge& ek = mesh.Edge(edgek);
+			FSEdge& ek = mesh.Edge(edgek);
 			if ((edgek != iedge) && (ek.m_ntag == 1))
 			{
 				if ((mesh.Node(ek.n[0]).m_ntag > 0) &&

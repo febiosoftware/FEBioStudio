@@ -264,7 +264,7 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 	{
 		if (out.edgemarkerlist[i] > 1)
 		{
-			FEEdge& e = pmesh->Edge(n++);
+			FSEdge& e = pmesh->Edge(n++);
 			e.SetType(FE_EDGE2);
 			e.n[0] = out.edgelist[2*i  ]; assert(e.n[0] >= 0);
 			e.n[1] = out.edgelist[2*i+1]; assert(e.n[1] >= 0);
@@ -420,7 +420,7 @@ FSMesh* FETetGenModifier::RefineMesh(FSMesh* pm)
 	{
 		if (out.edgemarkerlist[i] > 1)
 		{
-			FEEdge& e = pmesh->Edge(n++);
+			FSEdge& e = pmesh->Edge(n++);
 			e.SetType(FE_EDGE2);
 			e.n[0] = out.edgelist[2*i  ];
 			e.n[1] = out.edgelist[2*i+1];
@@ -627,7 +627,7 @@ bool FETetGenModifier::build_tetgen_plc(FSMesh* pm, tetgenio& in)
 	in.edgemarkerlist = new int[in.numberofedges];
 	for (int i=0; i<in.numberofedges; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		in.edgelist[2*i  ] = e.n[0];
 		in.edgelist[2*i+1] = e.n[1];
 		in.edgemarkerlist[i] = e.m_gid+2;
@@ -839,7 +839,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 	in.edgemarkerlist = new int[in.numberofedges];
 	for (int i=0; i<in.numberofedges; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		in.edgelist[2*i  ] = e.n[0];
 		in.edgelist[2*i+1] = e.n[1];
 		in.edgemarkerlist[i] = e.m_gid+2;

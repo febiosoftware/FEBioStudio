@@ -424,7 +424,7 @@ void CGLModel::ToggleVisibleElements()
 	int NL = mesh.Edges();
 	for (int i = 0; i<NL; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		FSNode& node0 = mesh.Node(edge.n[0]);
 		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
@@ -2015,7 +2015,7 @@ void CGLModel::RenderEdges(FEPostModel* ps, CGLContext& rc)
 	{
 		for (int i = 0; i<NE; ++i)
 		{
-			FEEdge& edge = mesh.Edge(i);
+			FSEdge& edge = mesh.Edge(i);
 			if (edge.IsVisible() && (edge.IsSelected() == false))
 			{
 				switch (edge.Type())
@@ -2050,7 +2050,7 @@ void CGLModel::RenderEdges(FEPostModel* ps, CGLContext& rc)
 		{
 			for (int i = 0; i<NE; ++i)
 			{
-				FEEdge& edge = mesh.Edge(i);
+				FSEdge& edge = mesh.Edge(i);
 				if (edge.IsVisible() && edge.IsSelected())
 				{
 					switch (edge.Type())
@@ -2432,7 +2432,7 @@ void CGLModel::HideMaterial(int nmat)
 	int NL = mesh.Edges();
 	for (int i=0; i<NL; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if ((mesh.Node(edge.n[0]).IsInvisible()) &&
 			(mesh.Node(edge.n[1]).IsInvisible())) edge.Show(false);
 	}
@@ -2493,7 +2493,7 @@ void CGLModel::ShowMaterial(int nmat)
 	int NL = mesh.Edges();
 	for (int i=0; i<NL; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if ((mesh.Node(edge.n[0]).IsInvisible() == false) &&
 			(mesh.Node(edge.n[1]).IsInvisible()) == false) edge.Show(true);
 	}
@@ -2607,7 +2607,7 @@ void CGLModel::SelectConnectedVolumeElements(FEElement_ &el)
 
 //-----------------------------------------------------------------------------
 // Select faces that are connected
-void CGLModel::SelectConnectedEdges(FEEdge& e)
+void CGLModel::SelectConnectedEdges(FSEdge& e)
 {
 	Post::FEPostMesh& mesh = *GetActiveMesh();
 
@@ -2622,11 +2622,11 @@ void CGLModel::SelectConnectedEdges(FEEdge& e)
 	if (NEL.IsEmpty()) return;
 
 	// find a face that has both nodes connects to
-	stack<FEEdge*> Stack;
+	stack<FSEdge*> Stack;
 	Stack.push(&e);
 	while (Stack.empty() == false)
 	{
-		FEEdge* pe = Stack.top(); Stack.pop();
+		FSEdge* pe = Stack.top(); Stack.pop();
 		pe->m_ntag = 1;
 
 		// get the edge vector
@@ -2640,7 +2640,7 @@ void CGLModel::SelectConnectedEdges(FEEdge& e)
 			const std::vector<int>& EL = NEL.EdgeIndexList(m);
 			for (int j=0; j<ne; ++j)
 			{
-				FEEdge& ej = mesh.Edge(EL[j]);
+				FSEdge& ej = mesh.Edge(EL[j]);
 
 				if (ej.IsVisible() && (&ej != pe) && (ej.m_ntag == 0))
 				{
@@ -2654,7 +2654,7 @@ void CGLModel::SelectConnectedEdges(FEEdge& e)
 	// select all the tagged edges
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if (edge.IsVisible() && (edge.m_ntag == 1)) edge.Select();
 	}
 
@@ -2860,7 +2860,7 @@ void CGLModel::SelectEdgesInRange(float fmin, float fmax, bool bsel)
 	FEState* ps = GetActiveState();
 	for (int i = 0; i<N; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if (edge.IsEnabled() && edge.IsVisible() && ((bsel == false) || (edge.IsSelected())))
 		{
 			float v = ps->m_EDGE[i].m_val;
@@ -2930,7 +2930,7 @@ void CGLModel::HideSelectedElements()
 	int NL = mesh.Edges();
 	for (int i=0; i<NL; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		FSNode& node0 = mesh.Node(edge.n[0]);
 		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
@@ -2979,7 +2979,7 @@ void CGLModel::HideUnselectedElements()
 	int NL = mesh.Edges();
 	for (int i=0; i<NL; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		FSNode& node0 = mesh.Node(edge.n[0]);
 		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
@@ -3030,7 +3030,7 @@ void CGLModel::HideSelectedFaces()
 	int NL = mesh.Edges();
 	for (int i=0; i<NL; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		FSNode& node0 = mesh.Node(edge.n[0]);
 		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
@@ -3052,7 +3052,7 @@ void CGLModel::HideSelectedEdges()
 	int NL = mesh.Edges();
 	for (int i=0; i<NL; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if (edge.IsSelected()) 
 		{
 			edge.Hide();
@@ -3062,7 +3062,7 @@ void CGLModel::HideSelectedEdges()
 	}
 
 	// hide surfaces
-	FEEdge edge;
+	FSEdge edge;
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; ++i)
 	{
@@ -3109,7 +3109,7 @@ void CGLModel::HideSelectedEdges()
 	// hide edges
 	for (int i=0; i<NL; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		FSNode& node0 = mesh.Node(edge.n[0]);
 		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
@@ -3168,7 +3168,7 @@ void CGLModel::HideSelectedNodes()
 	int NL = mesh.Edges();
 	for (int i=0; i<NL; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		FSNode& node0 = mesh.Node(edge.n[0]);
 		FSNode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
@@ -3200,7 +3200,7 @@ void CGLModel::SelectAllEdges()
 
 	for (int i = 0; i<mesh->Edges(); i++)
 	{
-		FEEdge& e = mesh->Edge(i);
+		FSEdge& e = mesh->Edge(i);
 		if (e.IsVisible()) e.Select();
 	}
 
@@ -3261,7 +3261,7 @@ void CGLModel::InvertSelectedEdges()
 	{
 		for (int i = 0; i<mesh->Edges(); i++)
 		{
-			FEEdge& e = mesh->Edge(i);
+			FSEdge& e = mesh->Edge(i);
 			if (e.IsVisible())
 				if (e.IsSelected()) e.Unselect(); else e.Select();
 		}
@@ -3447,7 +3447,7 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 			int NE = mesh.Edges();
 			for (int i = 0; i<NE; ++i)
 			{
-				FEEdge& e = mesh.Edge(i);
+				FSEdge& e = mesh.Edge(i);
 				if (e.IsSelected())
 				{
 					e.Unselect();

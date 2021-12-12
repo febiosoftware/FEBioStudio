@@ -407,7 +407,7 @@ void FEMultiQuadMesh::BuildFEEdges(FSMesh* pm)
 	pm->Create(0, 0, 0, edges);
 
 	// build the edges
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	edges = 0;
 	for (int k = 0; k < (int)m_MBEdge.size(); ++k)
 	{

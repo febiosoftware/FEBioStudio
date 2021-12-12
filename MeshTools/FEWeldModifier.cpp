@@ -257,7 +257,7 @@ void FEWeldNodes::UpdateEdges(FSMesh* pm)
 	int edges = m.Edges();
 	for (int i=0; i<edges; ++i)
 	{
-		FEEdge& edge = m.Edge(i);
+		FSEdge& edge = m.Edge(i);
 		edge.m_ntag = 0;
 		int* en = edge.n;
 

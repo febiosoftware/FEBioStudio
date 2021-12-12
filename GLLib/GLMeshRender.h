@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 
 class FEElement_;
-class FEEdge;
+class FSEdge;
 class FEFace;
 class FSLineMesh;
 class FSCoreMesh;
@@ -115,7 +115,7 @@ public:
 
 // drawing routines for edges
 // Note: Call this from within glBegin(GL_LINES)\glEnd() section
-void RenderFEEdge(FEEdge& edge, FSLineMesh* pm);
+void RenderFEEdge(FSEdge& edge, FSLineMesh* pm);
 
 // drawing routines for faces
 // Note: Call these functions from within glBegin(GL_TRIANGLES)\glEnd() section

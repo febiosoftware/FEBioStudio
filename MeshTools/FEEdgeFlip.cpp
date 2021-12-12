@@ -121,7 +121,7 @@ void FEEdgeFlip::MarkEdges(FESurfaceMesh* mesh)
 	mesh->TagAllNodes(0);
 	for (int i = 0; i<mesh->Edges(); ++i)
 	{
-		FEEdge& edge = mesh->Edge(i);
+		FSEdge& edge = mesh->Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			mesh->Node(edge.n[0]).m_ntag = 1;
@@ -141,7 +141,7 @@ void FEEdgeFlip::MarkEdges(FESurfaceMesh* mesh)
 		{
 			for (int j = 0; j<(int)edgeList.size(); ++j)
 			{
-				FEEdge& ej = mesh->Edge(edgeList[j]);
+				FSEdge& ej = mesh->Edge(edgeList[j]);
 				if (((ej.n[0] == n0) && (ej.n[1] == n1)) || ((ej.n[0] == n1) && (ej.n[1] == n0)))
 				{
 					m_tag[i] = 0;
@@ -249,7 +249,7 @@ void FEEdgeFlip::DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FESur
 	edge.first = a[2];
 	edge.second = b[2];
 
-	FEEdge& e = mesh->Edge(iedge);
+	FSEdge& e = mesh->Edge(iedge);
 	e.n[0] = a[2];
 	e.n[1] = b[2];
 

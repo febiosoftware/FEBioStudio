@@ -304,7 +304,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	int edgeCount[MAX_EDGE_TYPES] = { 0 };
 	for (int i = 0; i < edges; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		int edgeType = edge.Type();
 		if ((edgeType >= 0) && (edgeType < MAX_EDGE_TYPES)) edgeCount[edgeType]++; else edgeCount[FE_EDGE_INVALID]++;
 	}
@@ -393,7 +393,7 @@ void CDlgMeshDiagnosticsUI::checkEdgeConnectivity()
 	int NE = mesh.Edges();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		for (int j = 0; j < edge.Nodes(); ++j)
 		{
 			int nj = edge.n[j];
@@ -454,7 +454,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 	vector<vector<int> > NET(NN);
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& ei = mesh.Edge(i);
+		FSEdge& ei = mesh.Edge(i);
 		if ((ei.n[0] >= 0) && (ei.n[0] < NN)) NET[ei.n[0]].push_back(i);
 		if ((ei.n[1] >= 0) && (ei.n[1] < NN)) NET[ei.n[1]].push_back(i);
 	}
@@ -463,7 +463,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 	mesh.TagAllEdges(-1);
 	for (int i = 0; i < NE; ++i)
 	{
-		FEEdge& ei = mesh.Edge(i);
+		FSEdge& ei = mesh.Edge(i);
 		if (ei.m_ntag == -1)
 		{
 			if ((ei.n[0] >= 0) && (ei.n[0] < NN))
@@ -474,7 +474,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 					int nej = net[j];
 					if (nej > i)
 					{
-						FEEdge& ej = mesh.Edge(nej);
+						FSEdge& ej = mesh.Edge(nej);
 						if ((ej.m_ntag == -1) && (ej == ei))
 						{
 							ej.m_ntag = i;
@@ -681,7 +681,7 @@ void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 	int NE = mesh.Edges();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		for (int j = 0; j < 2; ++j)
 		{
 			int nebr = edge.m_nbr[j];
@@ -692,7 +692,7 @@ void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 			else if (nebr >= 0)
 			{
 				// an edge neighbor must have the same GID
-				FEEdge* pen = mesh.EdgePtr(nebr);
+				FSEdge* pen = mesh.EdgePtr(nebr);
 				if (pen == nullptr) err.push_back(i);
 				else if (pen->m_gid != edge.m_gid) err.push_back(i);
 			}
@@ -719,7 +719,7 @@ void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 		{
 			for (int i = 0; i < err.size(); ++i)
 			{
-				FEEdge& edge = mesh.Edge(err[i]);
+				FSEdge& edge = mesh.Edge(err[i]);
 				logError(QString("Edge %1, nodes =%2, %3, gid = %4, nbr = %5, %6").arg(err[i]+1).arg(edge.n[0]+1).arg(edge.n[1]+1).arg(edge.m_gid).arg(edge.m_nbr[0]+1).arg(edge.m_nbr[1]+1));
 			}
 		}
@@ -946,7 +946,7 @@ void CDlgMeshDiagnosticsUI::checkEdgePartitioning()
 	int invalidGID = 0;
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		int gid = edge.m_gid;
 		if ((gid >= 0) && (gid < ng)) lut[gid]++;
 		else if (gid >= ng) invalidGID++;

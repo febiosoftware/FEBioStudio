@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <assert.h>
 
 //-----------------------------------------------------------------------------
-FEEdge::FEEdge()
+FSEdge::FSEdge()
 {
 	m_elem = -1;
 	n[0] = n[1] = n[2] = n[3] = -1;
@@ -39,7 +39,7 @@ FEEdge::FEEdge()
 }
 
 //-----------------------------------------------------------------------------
-FEEdge::FEEdge(const FEEdge& e) : MeshItem(e)
+FSEdge::FSEdge(const FSEdge& e) : MeshItem(e)
 {
 	m_type = e.m_type;
 	m_elem = e.m_elem;
@@ -54,7 +54,7 @@ FEEdge::FEEdge(const FEEdge& e) : MeshItem(e)
 }
 
 //-----------------------------------------------------------------------------
-void FEEdge::operator = (const FEEdge& e)
+void FSEdge::operator = (const FSEdge& e)
 {
 	m_type = e.m_type;
 	m_elem = e.m_elem;
@@ -71,7 +71,7 @@ void FEEdge::operator = (const FEEdge& e)
 
 //-----------------------------------------------------------------------------
 // Tests equality between edges
-bool FEEdge::operator == (const FEEdge& e) const
+bool FSEdge::operator == (const FSEdge& e) const
 {
 	if (e.m_type != m_type) return false;
 	assert(m_type != FE_EDGE_INVALID);
@@ -92,7 +92,7 @@ bool FEEdge::operator == (const FEEdge& e) const
 
 //-----------------------------------------------------------------------------
 // Returns the local index for a given node number.
-int FEEdge::FindNodeIndex(int node) const
+int FSEdge::FindNodeIndex(int node) const
 {
 	assert(m_type != FE_EDGE_INVALID);
 	if (node == n[0]) return 0;
@@ -103,7 +103,7 @@ int FEEdge::FindNodeIndex(int node) const
 }
 
 //-----------------------------------------------------------------------------
-void FEEdge::SetType(FEEdgeType type)
+void FSEdge::SetType(FEEdgeType type)
 { 
 	assert(m_type == FE_EDGE_INVALID);
 	assert(type != FE_EDGE_INVALID);
@@ -111,7 +111,7 @@ void FEEdge::SetType(FEEdgeType type)
 }
 
 //-----------------------------------------------------------------------------
-int FEEdge::Nodes() const
+int FSEdge::Nodes() const
 { 
 	static int nodeCount[] = {2, 3, 4, 0};
 	assert(m_type != FE_EDGE_INVALID);
@@ -120,7 +120,7 @@ int FEEdge::Nodes() const
 
 //-----------------------------------------------------------------------------
 //! Evaluate the shape function values at the iso-parametric point r = [0,1]
-void FEEdge::shape(double* H, double r)
+void FSEdge::shape(double* H, double r)
 {
 	switch (m_type)
 	{
@@ -145,9 +145,9 @@ void FEEdge::shape(double* H, double r)
 }
 
 //-----------------------------------------------------------------------------
-double FEEdge::eval(double* d, double r)
+double FSEdge::eval(double* d, double r)
 {
-	double H[FEEdge::MAX_NODES];
+	double H[FSEdge::MAX_NODES];
 	shape(H, r);
 	double a = 0.0;
 	for (int i = 0; i<Nodes(); ++i) a += H[i] * d[i];
@@ -155,9 +155,9 @@ double FEEdge::eval(double* d, double r)
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEEdge::eval(vec3f* d, double r)
+vec3f FSEdge::eval(vec3f* d, double r)
 {
-	double H[FEEdge::MAX_NODES];
+	double H[FSEdge::MAX_NODES];
 	shape(H, r);
 	vec3f a(0, 0, 0);
 	for (int i = 0; i<Nodes(); ++i) a += d[i] * ((float)H[i]);

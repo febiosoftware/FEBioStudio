@@ -178,19 +178,19 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		m_surfmesh->BuildEdges();
 		for (int i = 0; i < pm->Edges(); ++i)
 		{
-			FEEdge& src = pm->Edge(i);
+			FSEdge& src = pm->Edge(i);
 			int n0 = pm->Node(src.n[0]).m_ntag;
 			int n1 = pm->Node(src.n[1]).m_ntag;
 
-			FEEdge* pe = nullptr;
+			FSEdge* pe = nullptr;
 			const std::vector<int>& el = NEL.EdgeIndexList(n0);
 			for (int k = 0; k < el.size(); ++k)
 			{
-				FEEdge& e = m_surfmesh->Edge(el[k]);
+				FSEdge& e = m_surfmesh->Edge(el[k]);
 				if (((e.n[0] == n0) && (e.n[1] == n1)) ||
 					((e.n[0] == n1) && (e.n[1] == n0)))
 				{
-					FEEdge* pe = &e;
+					FSEdge* pe = &e;
 					break;
 				}
 			}
@@ -338,7 +338,7 @@ void GSurfaceMeshObject::UpdateEdges()
 	const int NN = Nodes();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = m.Edge(i);
+		FSEdge& e = m.Edge(i);
 		if (e.m_gid >= 0)
 		{
 			for (int j = 0; j<2; ++j)
@@ -408,7 +408,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	// create edges
 	for (int i = 0; i<pm->Edges(); ++i)
 	{
-		FEEdge& es = pm->Edge(i);
+		FSEdge& es = pm->Edge(i);
 		if (es.m_gid >= 0)
 			gmesh->AddEdge(es.n, es.Nodes(), es.m_gid);
 	}
@@ -452,7 +452,7 @@ FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 	int ne = 0;
 	for (int i = 0; i<NC; ++i)
 	{
-		FEEdge& e = mesh->Edge(i);
+		FSEdge& e = mesh->Edge(i);
 		if (e.m_gid == edgeId)
 		{
 			mesh->Node(e.n[0]).m_ntag = 0;
@@ -478,7 +478,7 @@ FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 
 	for (int i = 0; i<NC; ++i)
 	{
-		FEEdge& sedge = mesh->Edge(i);
+		FSEdge& sedge = mesh->Edge(i);
 		if (sedge.m_gid == edgeId)
 		{
 			int n0 = mesh->Node(sedge.n[0]).m_ntag;

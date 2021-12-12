@@ -170,7 +170,7 @@ FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 			// do horizontal edges
 			for (int j=0; j<NCN-1; ++j)
 			{
-				FEEdge& edge = mesh->Edge(NE++);
+				FSEdge& edge = mesh->Edge(NE++);
 				edge.SetType(FE_EDGE2);
 				edge.m_gid = (l==0 ? i : -1);
 				edge.n[0] = (i*ND + l)*NCN + j;
@@ -182,7 +182,7 @@ FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 			{
 				for (int j = 0; j<NCN; ++j)
 				{
-					FEEdge& edge = mesh->Edge(NE++);
+					FSEdge& edge = mesh->Edge(NE++);
 					edge.SetType(FE_EDGE2);
 
 					if      (j==0    ) edge.m_gid = NC + 2*i;
@@ -715,7 +715,7 @@ FESurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 	for (int i=0; i<NE; ++i)
 	{
 		LOFT_EDGE& e = edge[i];
-		FEEdge& edge = mesh->Edge(i);
+		FSEdge& edge = mesh->Edge(i);
 		edge.SetType(FE_EDGE2);
 		edge.m_gid = e.id;
 		edge.n[0] = e.n0;

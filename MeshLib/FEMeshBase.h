@@ -67,7 +67,7 @@ public:
 
 	vec3d FaceCenter(FEFace& f) const;
 
-	vec3d EdgeCenter(FEEdge& e) const;
+	vec3d EdgeCenter(FSEdge& e) const;
 
 	// face area
 	double FaceArea(FEFace& f);
@@ -104,7 +104,7 @@ public:
 	bool IsEdge(int n0, int n1);
 
 	// find an edge if it exists (or null otherwise)
-	FEEdge* FindEdge(int n0, int n1);
+	FSEdge* FindEdge(int n0, int n1);
 
 	bool IsCreaseEdge(int n0, int n1);
 

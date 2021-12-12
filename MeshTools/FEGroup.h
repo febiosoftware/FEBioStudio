@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FEItemListBuilder.h"
 
 class FSNode;
-class FEEdge;
+class FSEdge;
 class FEFace;
 class FEElement;
 class FSMesh;
@@ -125,7 +125,7 @@ public:
 
 	FENodeList* BuildNodeList();
 
-	FEEdge* Edge(FEItemListBuilder::Iterator it);
+	FSEdge* Edge(FEItemListBuilder::Iterator it);
 
 	FEItemListBuilder* Copy();
 	void Copy(FEEdgeSet* pg);

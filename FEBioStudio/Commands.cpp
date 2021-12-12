@@ -1827,7 +1827,7 @@ void CCmdSelectFEEdges::UnExecute()
 {
 	for (int i = 0; i<m_pm->Edges(); ++i)
 	{
-		FEEdge& edge = m_pm->Edge(i);
+		FSEdge& edge = m_pm->Edge(i);
 		if (m_ptag[i])
 			edge.Select();
 		else
@@ -1887,7 +1887,7 @@ void CCmdUnselectFEEdges::UnExecute()
 {
 	for (int i = 0; i<m_pm->Edges(); ++i)
 	{
-		FEEdge& edge = m_pm->Edge(i);
+		FSEdge& edge = m_pm->Edge(i);
 		if (m_ptag[i])
 			edge.Select();
 		else

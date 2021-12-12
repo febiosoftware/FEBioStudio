@@ -507,7 +507,7 @@ void FETorus::BuildEdges(FSMesh* pm)
 	for (j=0; j<4; ++j)
 		for (i=0; i<ns; ++i, ++n)
 		{
-			FEEdge& e = pm->Edge(n);
+			FSEdge& e = pm->Edge(n);
 			e.SetType(FE_EDGE2);
 			e.m_gid = 4*j + 4*i/ns;
 			e.n[0] = NodeIndex(j*nd, i);
@@ -517,7 +517,7 @@ void FETorus::BuildEdges(FSMesh* pm)
 	for (j=0; j<4; ++j)
 		for (i=0; i<4*nd; ++i, ++n)
 		{
-			FEEdge& e = pm->Edge(n);
+			FSEdge& e = pm->Edge(n);
 			e.SetType(FE_EDGE2);
 			e.m_gid = 16 + j * 4 + i / nd;
 			e.n[0] = NodeIndex(i  , j*ns/4);

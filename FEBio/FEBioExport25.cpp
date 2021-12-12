@@ -147,7 +147,7 @@ FENodeList* BuildNodeList(GEdge* pe)
 	// tag the nodes to be added to the list
 	for (int i = 0; i < m.Edges(); ++i)
 	{
-		FEEdge& e = m.Edge(i);
+		FSEdge& e = m.Edge(i);
 		if (e.m_gid == gid)
 		{
 			int l = e.Nodes();

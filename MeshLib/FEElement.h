@@ -153,10 +153,10 @@ public: // for shell elements only
 	void GetShellFace(FEFace& f) const;
 
 	//! Get the edge
-	FEEdge GetEdge(int i) const;
+	FSEdge GetEdge(int i) const;
 
 	//! Find the edge index of a shell
-	int FindEdge(const FEEdge& edge) const;
+	int FindEdge(const FSEdge& edge) const;
 
 public:
 	// evaluate shape function at iso-parameteric point (r,s,t)

@@ -232,7 +232,7 @@ public:
 
 public: // Selection
 	const vector<FSNode*>&		GetNodeSelection   () const { return m_nodeSelection; }
-	const vector<FEEdge*>&		GetEdgeSelection   () const { return m_edgeSelection; }
+	const vector<FSEdge*>&		GetEdgeSelection   () const { return m_edgeSelection; }
 	const vector<FEFace*>&		GetFaceSelection   () const { return m_faceSelection; }
 	const vector<FEElement_*>&	GetElementSelection() const { return m_elemSelection; }
 	void UpdateSelectionLists(int mode = -1);
@@ -259,7 +259,7 @@ public: // Selection
 	void SelectConnectedFaces(FEFace& f, double angleTol);
 
 	//! select connected edges
-	void SelectConnectedEdges(FEEdge& e);
+	void SelectConnectedEdges(FSEdge& e);
 
 	//! select connected nodes on surface
 	void SelectConnectedSurfaceNodes(int n);
@@ -384,7 +384,7 @@ protected:
 
 	// selected items
 	vector<FSNode*>		m_nodeSelection;
-	vector<FEEdge*>		m_edgeSelection;
+	vector<FSEdge*>		m_edgeSelection;
 	vector<FEFace*>		m_faceSelection;
 	vector<FEElement_*>	m_elemSelection;
 

@@ -195,7 +195,7 @@ void FEShellTorus::BuildEdges(FSMesh* pm)
 	int nd = 4*m_nd;
 	int ns = 4*m_ns;
 	pm->Create(0,0,0,4*nd+4*ns);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	for (i=0; i<nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid =    4*i/nd; pe->n[0] = NodeIndex(i,     0); pe->n[1] = NodeIndex(i+1,     0); }
 	for (i=0; i<nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid =  4+4*i/nd; pe->n[0] = NodeIndex(i,  ns/4); pe->n[1] = NodeIndex(i+1,  ns/4); }
 	for (i=0; i<nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid =  8+4*i/nd; pe->n[0] = NodeIndex(i,  ns/2); pe->n[1] = NodeIndex(i+1,  ns/2); }
