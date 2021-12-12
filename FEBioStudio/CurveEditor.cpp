@@ -510,7 +510,7 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "Mesh data");
 		for (int i = 0; i < fem.DataMaps(); ++i)
 		{
-			FEDataMapGenerator* map = fem.GetDataMap(i);
+			FSDataMapGenerator* map = fem.GetDataMap(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(map->GetName()));
 			for (int i = 0; i < map->Parameters(); ++i)
 			{

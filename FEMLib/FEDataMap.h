@@ -5,10 +5,10 @@ class FSModelComponent;
 
 //-------------------------------------------------------------------
 // Class that represents a data map, which is mapped to a model parameter
-class FEDataMapGenerator : public FSBase
+class FSDataMapGenerator : public FSBase
 {
 public:
-	FEDataMapGenerator();
+	FSDataMapGenerator();
 
 public:
 	std::string		m_var;			// var value
@@ -16,10 +16,10 @@ public:
 	std::string		m_elset;		// element set
 };
 
-class FESurfaceToSurfaceMap : public FEDataMapGenerator
+class FSSurfaceToSurfaceMap : public FSDataMapGenerator
 {
 public:
-	FESurfaceToSurfaceMap();
+	FSSurfaceToSurfaceMap();
 
 	void SetBottomSurface(const std::string& surfName);
 	void SetTopSurface   (const std::string& surfName);

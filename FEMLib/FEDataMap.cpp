@@ -26,21 +26,21 @@ SOFTWARE.*/
 
 #include "FEDataMap.h"
 
-FEDataMapGenerator::FEDataMapGenerator()
+FSDataMapGenerator::FSDataMapGenerator()
 {
 
 }
 
 //======================================================================
-FESurfaceToSurfaceMap::FESurfaceToSurfaceMap()
+FSSurfaceToSurfaceMap::FSSurfaceToSurfaceMap()
 {
 	AddStringParam("", "bottom_surface", "Bottom surface");
 	AddStringParam("", "top_surface"   , "Top surface");
 	AddDoubleParam(1.0, "function");
 }
 
-void FESurfaceToSurfaceMap::SetBottomSurface(const std::string& surfName) { SetStringValue(0, surfName); }
-void FESurfaceToSurfaceMap::SetTopSurface(const std::string& surfName) { SetStringValue(1, surfName); }
+void FSSurfaceToSurfaceMap::SetBottomSurface(const std::string& surfName) { SetStringValue(0, surfName); }
+void FSSurfaceToSurfaceMap::SetTopSurface(const std::string& surfName) { SetStringValue(1, surfName); }
 
-std::string FESurfaceToSurfaceMap::GetBottomSurface() const { return GetStringValue(0); }
-std::string FESurfaceToSurfaceMap::GetTopSurface() const { return GetStringValue(1); }
+std::string FSSurfaceToSurfaceMap::GetBottomSurface() const { return GetStringValue(0); }
+std::string FSSurfaceToSurfaceMap::GetTopSurface() const { return GetStringValue(1); }

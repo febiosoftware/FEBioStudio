@@ -1869,7 +1869,7 @@ void FEBioExport4::WriteMeshDataSection()
 	int N = fem.DataMaps();
 	for (int i = 0; i < N; ++i)
 	{
-		FEDataMapGenerator* map = fem.GetDataMap(i);
+		FSDataMapGenerator* map = fem.GetDataMap(i);
 		WriteMeshData(map);
 	}
 }
@@ -1887,7 +1887,7 @@ void FEBioExport4::WriteElementDataSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteMeshData(FEDataMapGenerator* map)
+void FEBioExport4::WriteMeshData(FSDataMapGenerator* map)
 {
 	XMLElement meshData("ElementData");
 	meshData.add_attribute("var", map->m_var);
@@ -1897,7 +1897,7 @@ void FEBioExport4::WriteMeshData(FEDataMapGenerator* map)
 
 	m_xml.add_branch(meshData);
 	{
-		FESurfaceToSurfaceMap* s2s = dynamic_cast<FESurfaceToSurfaceMap*>(map);
+		FSSurfaceToSurfaceMap* s2s = dynamic_cast<FSSurfaceToSurfaceMap*>(map);
 		if (s2s)
 		{
 			m_xml.add_leaf("bottom_surface", s2s->GetBottomSurface());

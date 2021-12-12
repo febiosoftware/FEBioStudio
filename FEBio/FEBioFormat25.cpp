@@ -891,7 +891,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 			const char* szset = tag.AttributeValue("elem_set");
 			if (strcmp(szgen, "surface-to-surface map") == 0)
 			{
-				FESurfaceToSurfaceMap* s2s = new FESurfaceToSurfaceMap;
+				FSSurfaceToSurfaceMap* s2s = new FSSurfaceToSurfaceMap;
 				s2s->m_generator = szgen;
 				s2s->m_var = var->cvalue();
 				s2s->m_elset = szset;

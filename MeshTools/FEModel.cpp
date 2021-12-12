@@ -1599,19 +1599,19 @@ int FSModel::DataMaps() const
 }
 
 //-----------------------------------------------------------------------------
-void FSModel::AddDataMap(FEDataMapGenerator* map)
+void FSModel::AddDataMap(FSDataMapGenerator* map)
 {
 	m_Map.Add(map);
 }
 
 //-----------------------------------------------------------------------------
-int FSModel::RemoveMap(FEDataMapGenerator* map)
+int FSModel::RemoveMap(FSDataMapGenerator* map)
 {
 	return m_Map.Remove(map);
 }
 
 //-----------------------------------------------------------------------------
-FEDataMapGenerator* FSModel::GetDataMap(int i)
+FSDataMapGenerator* FSModel::GetDataMap(int i)
 {
 	return m_Map[i];
 }
