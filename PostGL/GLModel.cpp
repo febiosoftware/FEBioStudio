@@ -986,7 +986,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	if (pmat->bclip == false) CGLPlaneCutPlot::DisableClipPlanes();
 
 	// render the unselected faces
-	FEDomain& dom = pm->Domain(m);
+	MeshDomain& dom = pm->Domain(m);
 	int NF = dom.Faces();
 
 	// for better transparency we first draw all the backfacing polygons.
@@ -1207,7 +1207,7 @@ void CGLModel::RenderInnerSurfaceOutline(int m, int ndivs)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool benable, bool zsort)
+void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, bool benable, bool zsort)
 {
 	FEPostMesh* pm = GetActiveMesh();
 	int ndivs = GetSubDivisions();
@@ -1416,7 +1416,7 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	// tag == 1 : draw active
 	// tag == 2 : draw inactive
 	// TODO: It seems that this can be precomputed and stored somewhere in the domains
-	FEDomain& dom = pm->Domain(m);
+	MeshDomain& dom = pm->Domain(m);
 	int NF = dom.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
@@ -1740,7 +1740,7 @@ void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
 	// now loop over all faces and see which face belongs to this material
 	if (nmat < pm->Domains())
 	{
-		FEDomain& dom = pm->Domain(nmat);
+		MeshDomain& dom = pm->Domain(nmat);
 		for (int i=0; i<dom.Faces(); ++i)
 		{
 			FEFace& face = dom.Face(i);
@@ -3347,7 +3347,7 @@ void CGLModel::BuildInternalSurfaces()
 	int ndom = mesh.Domains();
 	for (int m = 0; m<ndom; ++m)
 	{
-		FEDomain& dom = mesh.Domain(m);
+		MeshDomain& dom = mesh.Domain(m);
 		int NE = dom.Elements();
 
 		float f1 = m_ps->GetMaterial(m)->transparency;

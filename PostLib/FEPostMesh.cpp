@@ -177,7 +177,7 @@ void Post::FEPostMesh::UpdateDomains()
 	m_Dom.resize(ndom);
 	for (int i=0; i<ndom; ++i) 
 	{
-		m_Dom[i] = new FEDomain(this);
+		m_Dom[i] = new MeshDomain(this);
 		m_Dom[i]->SetMatID(i);
 		m_Dom[i]->Reserve(elemSize[i], faceSize[i]);
 	}

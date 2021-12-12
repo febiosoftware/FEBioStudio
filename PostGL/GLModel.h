@@ -216,7 +216,7 @@ protected:
 	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
 	void RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m);
 	void RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m);
-	void RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool benable, bool zsort = false);
+	void RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, bool benable, bool zsort = false);
 
 	void RenderInnerSurface(int m, bool btex = true);
 	void RenderInnerSurfaceOutline(int m, int ndivs);

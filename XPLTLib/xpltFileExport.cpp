@@ -396,7 +396,7 @@ bool xpltFileExport::WritePartSection(Post::FEPostMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WritePart(FEPostMesh& mesh, Post::FEDomain& part)
+bool xpltFileExport::WritePart(FEPostMesh& mesh, Post::MeshDomain& part)
 {
 	// number of elements
 	int NE = part.Elements();

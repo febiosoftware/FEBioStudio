@@ -31,33 +31,33 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // FEDomain constructor
-Post::FEDomain::FEDomain(Post::FEPostMesh *pm)
+Post::MeshDomain::MeshDomain(Post::FEPostMesh *pm)
 {
 	m_pm = pm;
 	m_nmat = -1;
 }
 
 //-----------------------------------------------------------------------------
-void Post::FEDomain::Reserve(int nelems, int nfaces)
+void Post::MeshDomain::Reserve(int nelems, int nfaces)
 {
 	m_Elem.reserve(nelems);
 	m_Face.reserve(nfaces);
 }
 
 //-----------------------------------------------------------------------------
-void Post::FEDomain::SetMatID(int matid)
+void Post::MeshDomain::SetMatID(int matid)
 {
 	m_nmat = matid;
 }
 
 //-----------------------------------------------------------------------------
-FEFace& Post::FEDomain::Face(int n)
+FEFace& Post::MeshDomain::Face(int n)
 { 
 	return m_pm->Face(m_Face[n]); 
 }
 
 //-----------------------------------------------------------------------------
-FEElement_& Post::FEDomain::Element(int n)
+FEElement_& Post::MeshDomain::Element(int n)
 {
 	return m_pm->ElementRef(m_Elem[n]);
 }

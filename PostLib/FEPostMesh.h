@@ -68,7 +68,7 @@ public:
 	int Domains() const { return (int) m_Dom.size(); }
 
 	//! return a domain
-	FEDomain& Domain(int i) { return *m_Dom[i]; }
+	MeshDomain& Domain(int i) { return *m_Dom[i]; }
 
 	//! nr of parts
 	int Parts() const { return (int) m_Part.size(); }
@@ -112,7 +112,7 @@ protected:
 
 protected:
 	// --- G E O M E T R Y ---
-	vector<FEDomain*>	m_Dom;	// domains
+	vector<MeshDomain*>	m_Dom;	// domains
 
 	// user-defined partitions
 	vector<FEPart*>		m_Part;	// parts

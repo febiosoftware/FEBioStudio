@@ -38,25 +38,30 @@ namespace Post {
 class FEPostMesh;
 
 //-----------------------------------------------------------------------------
-// Base class that describes a group of mesh items. 
-class FEGroup : public ::FEGroup
+// Base class that describes a list of mesh items. 
+class MeshItemList : public FSObject
 {
 public:
-	FEGroup(FSCoreMesh* pm, int ntype) :  ::FEGroup(nullptr, ntype, 0) { m_pm = pm; }
-	virtual ~FEGroup(void) {}
+	MeshItemList(FSCoreMesh* pm, int ntype) { m_pm = pm; m_type = ntype; }
+	virtual ~MeshItemList(void) {}
 
 	FSCoreMesh* GetMesh() const { return m_pm; }
 
+private:
+	MeshItemList(const MeshItemList&) {}
+	void operator = (const MeshItemList&){}
+
 protected:
+	int			m_type;
 	FSCoreMesh*	m_pm;	// pointer to the parent mesh
 };
 
 //-----------------------------------------------------------------------------
 // A doman is an internal organization of elements. A domain is created for each material.
-class FEDomain
+class MeshDomain
 {
 public:
-	FEDomain(FEPostMesh* pm);
+	MeshDomain(FEPostMesh* pm);
 
 	void SetMatID(int matid);
 	int GetMatID() const { return m_nmat; }
@@ -84,10 +89,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 // Class that describes a group of elements
-class FEPart : public Post::FEGroup
+class FEPart : public Post::MeshItemList
 {
 public:
-	FEPart(FSCoreMesh* pm) : Post::FEGroup(pm, FE_PART) {}
+	FEPart(FSCoreMesh* pm) : MeshItemList(pm, FE_PART) {}
 
 	int Size() const { return (int) m_Elem.size(); }
 
@@ -95,24 +100,20 @@ public:
 
 	vector<int> GetElementList() const { return m_Elem; }
 
-	FEItemListBuilder* Copy() override { return nullptr; }
-
 public:
 	vector<int>	m_Elem;	// element indices
 };
 
 //-------------------------------------------------------------------------
 // Class that describes a group of faces
-class FESurface : public Post::FEGroup
+class FESurface : public MeshItemList
 {
 public:
-	FESurface(FSCoreMesh* pm) : Post::FEGroup(pm, FE_SURFACE) {}
+	FESurface(FSCoreMesh* pm) : MeshItemList(pm, FE_SURFACE) {}
 
 	int Size() const { return (int) m_Face.size(); }
 
 	void GetNodeList(vector<int>& node, vector<int>& lnode);
-
-	FEItemListBuilder* Copy() override { return nullptr; }
 
 public:
 	vector<int>	m_Face;	// face indices
@@ -120,12 +121,10 @@ public:
 
 //-------------------------------------------------------------------------
 //! Class that defines a node set
-class FENodeSet : public Post::FEGroup
+class FENodeSet : public MeshItemList
 {
 public:
-	FENodeSet(FSCoreMesh* pm) : Post::FEGroup(pm, FE_NODESET){}
-
-	FEItemListBuilder* Copy() override { return nullptr; }
+	FENodeSet(FSCoreMesh* pm) : MeshItemList(pm, FE_NODESET){}
 
 public:
 	vector<int>	m_Node;
