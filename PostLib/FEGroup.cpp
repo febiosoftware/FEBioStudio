@@ -51,7 +51,7 @@ void Post::MeshDomain::SetMatID(int matid)
 }
 
 //-----------------------------------------------------------------------------
-FEFace& Post::MeshDomain::Face(int n)
+FSFace& Post::MeshDomain::Face(int n)
 { 
 	return m_pm->Face(m_Face[n]); 
 }
@@ -111,7 +111,7 @@ void Post::FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 	int n = 0, nnf = 0;
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(m_Face[i]);
+		FSFace& face = mesh.Face(m_Face[i]);
 		int nf = face.Nodes();
 		nnf += nf;
 		for (int j=0; j<nf; ++j)
@@ -127,7 +127,7 @@ void Post::FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 	lnode.resize(nnf); nnf = 0;
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(m_Face[i]);
+		FSFace& face = mesh.Face(m_Face[i]);
 		int nf = face.Nodes();
 		for (int j=0; j<nf; ++j)
 		{

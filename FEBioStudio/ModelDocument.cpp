@@ -765,7 +765,7 @@ void CModelDocument::HideUnselected()
 			vector<int> faceList;
 			for (int i = 0; i<pm->Faces(); ++i)
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				if (face.IsSelected() == false) faceList.push_back(i);
 			}
 			DoCommand(new CCmdHideFaces(pm, faceList));

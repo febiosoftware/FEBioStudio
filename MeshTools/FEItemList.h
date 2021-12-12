@@ -70,8 +70,8 @@ typedef FEItemList_T<FSNode> FENodeList;
 
 //-----------------------------------------------------------------------------
 // Specialization for faces
-class FEFace;
-typedef FEItemList_T<FEFace> FEFaceList;
+class FSFace;
+typedef FEItemList_T<FSFace> FEFaceList;
 
 //-----------------------------------------------------------------------------
 // Specialization for elements

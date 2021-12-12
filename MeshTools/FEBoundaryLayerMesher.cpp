@@ -59,10 +59,10 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	vector<bool> delem(ne0, false);
 
 	// store list of selected faces in fdata
-	vector<FEFace> fdata;
+	vector<FSFace> fdata;
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsSelected())
 			fdata.push_back(face);
 	}
@@ -81,7 +81,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	std::map<int, vector<int>> efm;
 	for (int i = 0; i<ne1; ++i)
 	{
-		FEFace face = fdata[i];
+		FSFace face = fdata[i];
 		// get element to which this face belongs
 		int iel = face.m_elem[0].eid;
 		// store faces that share this element
@@ -123,7 +123,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			// add element to domain
 			dom.AddElement(iel);
 			// set meshing parameters
-			FEFace face = fdata[it->second[0]];
+			FSFace face = fdata[it->second[0]];
 			FEElement_& el = pm->Element(iel);
 			if (el.Type() == FE_HEX8) {
 				// get the box from this domain
@@ -164,8 +164,8 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 		}
 		else if (it->second.size() == 2) {
 			// two faces connected to this element
-			FEFace face0 = fdata[it->second[0]];
-			FEFace face1 = fdata[it->second[1]];
+			FSFace face0 = fdata[it->second[0]];
+			FSFace face1 = fdata[it->second[1]];
 			// check if they share common nodes
 			vector<int> cn;
 			for (int i = 0; i<face0.Nodes(); ++i)
@@ -210,7 +210,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 			else if (el.Type() == FE_TET4) {
 				// we have a tet with two faces on the selected surface
 				// let's find the other two faces of that tet
-				FEFace opface[2];
+				FSFace opface[2];
 				int ifc0 = el.FindFace(face0);
 				int ifc1 = el.FindFace(face1);
 				int k = 0;

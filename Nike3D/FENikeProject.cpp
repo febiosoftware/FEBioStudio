@@ -894,7 +894,7 @@ bool FENikeProject::BuildInterfaces(FSProject &prj)
 				FEFaceList::Iterator pf = pgs->First();
 				for (k=0; k<pgs->Size(); ++k, ++pf)
 				{
-					FEFace& rf = *(pf->m_pi);
+					FSFace& rf = *(pf->m_pi);
 					pm = dynamic_cast<FSMesh*>(pf->m_pm);
 					f.nid = ++n;
 					f.n[0] = pm->Node(rf.n[0]).m_nid;
@@ -917,7 +917,7 @@ bool FENikeProject::BuildInterfaces(FSProject &prj)
 				FEFaceList::Iterator pf = pgm->First();
 				for (k=0; k<pgm->Size(); ++k, ++pf)
 				{
-					FEFace& rf = *(pf->m_pi);
+					FSFace& rf = *(pf->m_pi);
 					pm = dynamic_cast<FSMesh*>(pf->m_pm);
 					f.nid = ++n;
 					f.n[0] = pm->Node(rf.n[0]).m_nid;
@@ -973,7 +973,7 @@ bool FENikeProject::BuildInterfaces(FSProject &prj)
 				FEFaceList::Iterator pf = pgs->First();
 				for (k=0; k<pgs->Size(); ++k, ++pf)
 				{
-					FEFace& rf = *(pf->m_pi);
+					FSFace& rf = *(pf->m_pi);
 					pm = dynamic_cast<FSMesh*>(pf->m_pm);
 					f.nid = ++n;
 					f.n[0] = pm->Node(rf.n[0]).m_nid;
@@ -996,7 +996,7 @@ bool FENikeProject::BuildInterfaces(FSProject &prj)
 				FEFaceList::Iterator pf = pgm->First();
 				for (k=0; k<pgm->Size(); ++k, ++pf)
 				{
-					FEFace& rf = *(pf->m_pi);
+					FSFace& rf = *(pf->m_pi);
 					pm = dynamic_cast<FSMesh*>(pf->m_pm);
 					f.nid = ++n;
 					f.n[0] = pm->Node(rf.n[0]).m_nid;
@@ -1065,7 +1065,7 @@ bool FENikeProject::BuildNodalLoads(FSProject& prj)
 			FSMesh* pm;
 			for (k=0; k<ps->Size(); ++k, ++pf)
 			{
-				FEFace& face = *(pf->m_pi);
+				FSFace& face = *(pf->m_pi);
 				pm = dynamic_cast<FSMesh*>(pf->m_pm);
 				double a = FEMeshMetrics::SurfaceArea(*pm, face);
 
@@ -1135,7 +1135,7 @@ bool FENikeProject::BuildPressureLoads(FSProject &prj)
 			FEFaceList::Iterator pf = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pf)
 			{
-				FEFace& f = *(pf->m_pi);
+				FSFace& f = *(pf->m_pi);
 				pm = dynamic_cast<FSMesh*>(pf->m_pm);
 				pl.lc = nlc;
 				pl.n[0] = pm->Node(f.n[0]).m_nid;

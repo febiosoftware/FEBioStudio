@@ -240,7 +240,7 @@ void GMeshObject::UpdateSurfaces()
 	vector<int> tag(nsurf, 0);
 	for (int i = 0; i < m.Faces(); ++i)
 	{
-		FEFace& face = m.Face(i);
+		FSFace& face = m.Face(i);
 		assert(face.m_gid >= 0);
 		tag[face.m_gid]++;
 	}
@@ -287,7 +287,7 @@ void GMeshObject::UpdateSurfaces()
 	// update face IDs
 	for (int i = 0; i < m.Faces(); ++i)
 	{
-		FEFace& face = m.Face(i);
+		FSFace& face = m.Face(i);
 		assert(tag[face.m_gid] >= 0);
 		face.m_gid = tag[face.m_gid];
 	}
@@ -300,7 +300,7 @@ void GMeshObject::UpdateSurfaces()
 	for (int i=0; i<m.Faces(); ++i)
 	{
 		// get the face
-		FEFace& f = m.Face(i); assert(f.m_gid >= 0);
+		FSFace& f = m.Face(i); assert(f.m_gid >= 0);
 
 		// get the two part IDs
 		int pid0 = -1, pid1 = -1, pid2 = -1;
@@ -606,7 +606,7 @@ void GMeshObject::BuildGMesh()
 	// count all faces and tag nodes
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
 	}
@@ -619,7 +619,7 @@ void GMeshObject::BuildGMesh()
 	}
 
 	// create edges
-	int n[FEFace::MAX_NODES];
+	int n[FSFace::MAX_NODES];
 	for (int i=0; i<pm->Edges(); ++i)
 	{
 		FSEdge& es = pm->Edge(i);
@@ -637,7 +637,7 @@ void GMeshObject::BuildGMesh()
 	// create face data
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& fs = pm->Face(i);
+		FSFace& fs = pm->Face(i);
 		int nf = fs.Nodes();
 		for (int j=0; j<nf; ++j) n[j] = pm->Node(fs.n[j]).m_ntag;
 		gmesh->AddFace(n, nf, fs.m_gid, fs.m_sid, fs.IsExternal());

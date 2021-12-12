@@ -83,7 +83,7 @@ void FENodeFaceList::Build(FSMeshBase* pm)
 	m_face.resize(NN);
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
@@ -101,7 +101,7 @@ void FENodeFaceList::Build(FSMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FENodeFaceList::HasFace(int n, FEFace* pf)
+bool FENodeFaceList::HasFace(int n, FSFace* pf)
 {
 	int nval = Valence(n);
 	for (int i=0; i<nval; ++i) if (Face(n, i) == pf) return true;
@@ -109,13 +109,13 @@ bool FENodeFaceList::HasFace(int n, FEFace* pf)
 }
 
 //-----------------------------------------------------------------------------
-int FENodeFaceList::FindFace(const FEFace& f)
+int FENodeFaceList::FindFace(const FSFace& f)
 {
 	int n = f.n[0];
 	int nval = Valence(n);
 	for (int i=0; i<nval; ++i)
 	{
-		FEFace* pf = Face(n, i);
+		FSFace* pf = Face(n, i);
 		if (*pf == f) return FaceIndex(n, i);
 	}
 	return -1;
@@ -145,7 +145,7 @@ bool FENodeFaceList::Sort(int node)
 		int nj = ref.pf->m_nbr[(m+2)%3];
 		if (nj >= 0)
 		{
-			FEFace* pf2 = &m_pm->Face(nj);
+			FSFace* pf2 = &m_pm->Face(nj);
 			assert(HasFace(node, pf2));
 			if (pf2->m_ntag == 0)
 			{
@@ -189,7 +189,7 @@ const vector<NodeFaceRef>& FENodeFaceList::FaceList(int n) const
 // \todo perhaps I should modify PostView so that it stores internal facets as well.
 int FENodeFaceList::FindFace(int inode, int n[10], int m)
 {
-	FEFace ft;
+	FSFace ft;
 	for (int i = 0; i<m; ++i) ft.n[i] = n[i];
 	switch (m)
 	{
@@ -208,7 +208,7 @@ int FENodeFaceList::FindFace(int inode, int n[10], int m)
 	int nf = (int)ni.size();
 	for (int i = 0; i<nf; ++i)
 	{
-		FEFace& f = m_pm->Face(ni[i].fid);
+		FSFace& f = m_pm->Face(ni[i].fid);
 		if (f == ft) return ni[i].fid;
 	}
 	return -1;

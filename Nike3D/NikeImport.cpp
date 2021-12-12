@@ -1583,7 +1583,7 @@ void FENIKEImport::UpdateMesh(FSMesh& mesh)
 
 	for (i=0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		for (j=0; j<n; ++j) m_nFace[ face.n[j] ]++;
 		nsize += n;
@@ -1603,7 +1603,7 @@ void FENIKEImport::UpdateMesh(FSMesh& mesh)
 
 	for (i=0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		for (j=0; j<n; ++j) 
 		{
@@ -1630,7 +1630,7 @@ int FENIKEImport::FindFace(int n[4], int noff)
 
 	for (i=0; i<N; ++i)
 	{
-		FEFace& face = pm->Face( pf[i] );
+		FSFace& face = pm->Face( pf[i] );
 		if (face.HasNode(n[1] - noff) &&
 			face.HasNode(n[2] - noff) &&
 			face.HasNode(n[3] - noff)) return pf[i];

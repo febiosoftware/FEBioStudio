@@ -196,7 +196,7 @@ void FEWeldNodes::UpdateFaces(FSMesh* pnm)
 	int faces = m.Faces();
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& face = m.Face(i);
+		FSFace& face = m.Face(i);
 		int nf = face.Nodes();
 		int* fn = face.n;
 		face.m_ntag = 0;
@@ -397,7 +397,7 @@ void FEWeldSurfaceNodes::UpdateFaces(FESurfaceMesh* pnm)
 	int faces = m.Faces();
 	for (int i = 0; i < faces; ++i)
 	{
-		FEFace& face = m.Face(i);
+		FSFace& face = m.Face(i);
 		int nf = face.Nodes();
 		int* fn = face.n;
 		face.m_ntag = 0;

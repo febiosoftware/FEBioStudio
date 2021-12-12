@@ -359,7 +359,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	// set the enabled-ness of the elements and the nodes
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
         assert(f.m_elem[0].eid >= 0);
 		FEElement_& el = mesh.ElementRef(f.m_elem[0].eid);
 	}

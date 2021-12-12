@@ -2071,7 +2071,7 @@ void FEBioExport2::WriteContactWall(FSStep& s)
 					FEFaceList::Iterator pf = pg->First();
 					for (j=0; j<pg->Size(); ++j, ++pf)
 					{
-						FEFace& face = *(pf->m_pi);
+						FSFace& face = *(pf->m_pi);
 						FSCoreMesh* pm = pf->m_pm;
 						for (k=0; k<face.Nodes(); ++k) nn[k] = pm->Node(face.n[k]).m_nid;
 						switch(face.Nodes())
@@ -4788,7 +4788,7 @@ void FEBioExport2::WriteSurfaceSection(FEFaceList& s)
 	{
 		for (int i=0; i<NF; ++i, ++n, ++pf)
 		{
-			FEFace& face = *(pf->m_pi);
+			FSFace& face = *(pf->m_pi);
 			FSCoreMesh* pm = pf->m_pm;
 			FEElement& el = pm->Element(face.m_elem[0]);
 			nn[0] = el.m_ntag;
@@ -4806,7 +4806,7 @@ void FEBioExport2::WriteSurfaceSection(FEFaceList& s)
 		int nfn;
 		for (int j=0; j<NF; ++j, ++n, ++pf)
 		{
-			FEFace& face = *(pf->m_pi);
+			FSFace& face = *(pf->m_pi);
 			FSCoreMesh* pm = pf->m_pm;
 			nfn = face.Nodes();
 			for (int k=0; k<nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;

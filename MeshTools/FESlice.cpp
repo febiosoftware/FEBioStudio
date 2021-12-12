@@ -243,7 +243,7 @@ FSMesh* FESlice::BuildMesh()
 
 	// --- C. Create faces ---
 	// side faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 	for (i=0; i<m_nz; ++i)
 	{
 		for (k=0; k<m_ns; ++k, ++pf)

@@ -84,7 +84,7 @@ FSMesh* FEMMGRemesh::Apply(FEGroup* pg)
 		{
 			if (pm->Face(i).IsSelected())
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				int nn = face.Nodes();
 				for (int j = 0; j < nn; ++j) pm->Node(face.n[j]).m_ntag = 1;
 			}
@@ -142,13 +142,13 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 	int NS = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_gid > NS) NS = f.m_gid;
 	}
 	vector<int> ST(NS+1, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		ST[f.m_gid] = f.m_sid;
 	}
 
@@ -169,7 +169,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int* n = f.n;
 		MMG3D_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
 	}
@@ -316,7 +316,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 	// get the triangles
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = newMesh->Face(i);
+		FSFace& f = newMesh->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		int* n = f.n;
 		MMG3D_Get_triangle(mmgMesh, n, n + 1, n + 2, &f.m_gid, NULL);
@@ -396,13 +396,13 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 	int NS = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_gid > NS) NS = f.m_gid;
 	}
 	vector<int> ST(NS + 1, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		ST[f.m_gid] = f.m_sid;
 	}
 
@@ -416,7 +416,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int* n = f.n;
 		MMGS_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
 	}
@@ -558,7 +558,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 		el.m_node[1]--;
 		el.m_node[2]--;
 
-		FEFace& f = newMesh->Face(i);
+		FSFace& f = newMesh->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		f.m_gid = el.m_gid;
 		f.n[0] = el.m_node[0];
@@ -648,13 +648,13 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	int NS = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_gid > NS) NS = f.m_gid;
 	}
 	vector<int> ST(NS + 1, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		ST[f.m_gid] = f.m_sid;
 	}
 
@@ -668,7 +668,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int* n = f.n;
 		MMGS_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
 	}
@@ -698,7 +698,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	int nsel = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsSelected()) nsel++;
 	}
 
@@ -715,7 +715,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 		{
 			for (int i = 0; i < NF; ++i)
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				if (face.IsSelected() == false) MMGS_Set_requiredTriangle(mmgMesh, i + 1);
 			}
 		}
@@ -723,7 +723,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 		// build the edge length table
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			for (int j = 0; j < 3; ++j)
 			{
 				int a = face.n[ET_TRI[j][0]];
@@ -749,7 +749,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (face.IsSelected())
 			{
 				for (int j = 0; j < face.Nodes(); ++j)
@@ -802,7 +802,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	// get the triangles
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = newMesh->Face(i);
+		FSFace& face = newMesh->Face(i);
 		face.SetType(FE_FACE_TRI3);
 		int* n = face.n;
 		MMGS_Get_triangle(mmgMesh, n, n + 1, n + 2, &face.m_gid, NULL);
@@ -895,13 +895,13 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	int NS = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_gid > NS) NS = f.m_gid;
 	}
 	vector<int> ST(NS + 1, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		ST[f.m_gid] = f.m_sid;
 	}
 
@@ -925,7 +925,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int* n = f.n;
 		MMG2D_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
 	}
@@ -959,7 +959,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	int nsel = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsSelected()) nsel++;
 	}
 
@@ -976,7 +976,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 		{
 			for (int i = 0; i < NF; ++i)
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				if (face.IsSelected() == false) MMGS_Set_requiredTriangle(mmgMesh, i + 1);
 			}
 		}
@@ -984,7 +984,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 		// build the edge length table
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			for (int j = 0; j < 3; ++j)
 			{
 				int a = face.n[ET_TRI[j][0]];
@@ -1010,7 +1010,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (face.IsSelected())
 			{
 				for (int j = 0; j < face.Nodes(); ++j)
@@ -1067,7 +1067,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	// get the triangles
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = newMesh->Face(i);
+		FSFace& face = newMesh->Face(i);
 		face.SetType(FE_FACE_TRI3);
 		int* n = face.n;
 		MMG2D_Get_triangle(mmgMesh, n, n + 1, n + 2, &face.m_gid, NULL);

@@ -46,10 +46,10 @@ void stl_write_solid(FILE* fp, FSMeshBase* pm, const char* solidName)
 {
 	fprintf(fp, "solid %s\n", solidName);
 
-	vec3d r[FEFace::MAX_NODES];
+	vec3d r[FSFace::MAX_NODES];
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 
 		vec3d fn = to_vec3d(face.m_fn);
 

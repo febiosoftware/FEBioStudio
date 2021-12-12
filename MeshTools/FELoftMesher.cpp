@@ -204,7 +204,7 @@ FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 		{
 			for (int j=0; j<NCN-1; ++j)
 			{
-				FEFace& face = mesh->Face(NF++);
+				FSFace& face = mesh->Face(NF++);
 				face.SetType(FE_FACE_QUAD4);
 				face.m_gid = 0;
 				face.n[0] = (i*ND + l)*NCN + j;
@@ -729,7 +729,7 @@ FESurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 	for (int i = 0; i<NF; ++i)
 	{
 		LOFT_FACET& f = face[i];
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		face.m_gid = 0;
 		face.SetType(FE_FACE_TRI3);
 		face.n[0] = f.n0;

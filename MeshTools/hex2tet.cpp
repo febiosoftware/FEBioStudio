@@ -129,7 +129,7 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 	int NF1 = 0;
 	for (int i = 0; i < NF0; ++i)
 	{
-		FEFace& fs = pm->Face(i);
+		FSFace& fs = pm->Face(i);
 		if (fs.m_ntag == 1)
 		{
 			assert(fs.Type() == FE_FACE_QUAD4);
@@ -142,11 +142,11 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 	mesh->Create(0, 0, NF1);
 	for (int i = 0; i < NF0; ++i)
 	{
-		FEFace& fs = pm->Face(i);
+		FSFace& fs = pm->Face(i);
 
 		if (fs.m_ntag == 0)
 		{
-			FEFace& f0 = mesh->Face(fc++);
+			FSFace& f0 = mesh->Face(fc++);
 			f0 = fs;
 		}
 		else
@@ -159,7 +159,7 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 			}
 
 			// split at this lowest vertex
-			FEFace& f0 = mesh->Face(fc++);
+			FSFace& f0 = mesh->Face(fc++);
 			f0.m_gid = fs.m_gid;
 			f0.m_sid = fs.m_sid;
 			f0.SetType(FE_FACE_TRI3);
@@ -167,7 +167,7 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 			f0.n[1] = fs.n[(l + 1) % 4];
 			f0.n[2] = fs.n[(l + 2) % 4];
 
-			FEFace& f1 = mesh->Face(fc++);
+			FSFace& f1 = mesh->Face(fc++);
 			f1.SetType(FE_FACE_TRI3);
 			f1.m_gid = fs.m_gid;
 			f1.m_sid = fs.m_sid;

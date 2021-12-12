@@ -93,12 +93,12 @@ public:
     // find quad
     int FindQuad(FEDQuad quad);
     int FindQuad(FEDQuad quad, bool& pos, int& ist);
-    int FindQuadFromFace(FEFace face);
+    int FindQuadFromFace(FSFace face);
     
     // find tri
     int FindTri(FEDTri tri);
     int FindTri(FEDTri tri, bool& pos, int& ist);
-    int FindTriFromFace(FEFace face);
+    int FindTriFromFace(FSFace face);
     
     // find box by tag number
     int FindBox(int n);
@@ -306,7 +306,7 @@ public:
     ~FEDBox() { n.clear(); elem.clear(); }
 
     // find a box face by node numbers
-    int FindBoxFace(FEFace face);
+    int FindBoxFace(FSFace face);
     
     // find a box edge by node numbers
     int FindBoxEdge(int n0, int n1);
@@ -364,8 +364,8 @@ public:
     //! destructor
     ~FEDWedge() { n.clear(); elem.clear(); }
     
-    // find a wedge face by FEFace node numbers
-    int FindWedgeFace(FEFace face);
+    // find a wedge face by FSFace node numbers
+    int FindWedgeFace(FSFace face);
     
     // find a wedge edge by node numbers
     int FindWedgeEdge(int n0, int n1);
@@ -430,8 +430,8 @@ public:
     //! destructor
     ~FEDTet() { n.clear(); elem.clear(); }
     
-    // find a tet face by FEFace node numbers
-    int FindTetFace(FEFace face);
+    // find a tet face by FSFace node numbers
+    int FindTetFace(FSFace face);
     
     // find a tet edge by node numbers
     int FindTetEdge(int n0, int n1);

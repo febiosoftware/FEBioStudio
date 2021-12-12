@@ -26,13 +26,13 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 
-class FEFace;
+class FSFace;
 class FSMeshBase;
 
 struct NodeFaceRef {
 	int		fid;	// face index (into mesh' Face array)
 	int		nid;	// local node index
-	FEFace*	pf;		// face pointer
+	FSFace*	pf;		// face pointer
 };
 
 class FENodeFaceList
@@ -49,12 +49,12 @@ public:
 	bool IsEmpty() const;
 
 	int Valence(int i) const { return (int) m_face[i].size(); }
-	FEFace* Face(int n, int i) { return m_face[n][i].pf; }
+	FSFace* Face(int n, int i) { return m_face[n][i].pf; }
 	int FaceIndex(int n, int i) { return m_face[n][i].fid; }
 
-	bool HasFace(int n, FEFace* pf);
+	bool HasFace(int n, FSFace* pf);
 
-	int FindFace(const FEFace& f);
+	int FindFace(const FSFace& f);
 
 	int FindFace(int inode, int n[10], int m);
 

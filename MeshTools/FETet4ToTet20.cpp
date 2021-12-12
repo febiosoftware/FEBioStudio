@@ -100,7 +100,7 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	// create the face nodes
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = FT[i];
+		FSFace& face = FT[i];
 		FSNode& n0 = pnew->Node(i + NN + 2*NC);
 		vec3d& ra = pm->Node(face.n[0]).r;
 		vec3d& rb = pm->Node(face.n[1]).r;
@@ -149,8 +149,8 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	// create the new faces
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& f0 = pm->Face(i);
-		FEFace& f1 = pnew->Face(i);
+		FSFace& f0 = pm->Face(i);
+		FSFace& f1 = pnew->Face(i);
 
 		f1.SetType(FE_FACE_TRI10);
 		f1.m_gid = f0.m_gid;

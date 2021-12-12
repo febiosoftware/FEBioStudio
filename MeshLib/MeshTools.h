@@ -65,7 +65,7 @@ bool IntersectQuad(vec3d* y, vec3d x, vec3d n, vec3d& q, double& g);
 // the direction in which point r is looking.
 vec3d ClosestNodeOnSurface(FSMesh& mesh, const vec3d& r, const vec3d& t);
 
-vec3d ProjectToFace(FSMesh& mesh, vec3d p, FEFace& f, double& r, double& s, bool bedge = true);
+vec3d ProjectToFace(FSMesh& mesh, vec3d p, FSFace& f, double& r, double& s, bool bedge = true);
 vec3d ProjectToEdge(vec3d e1, vec3d e2, vec3d p, double& r);
 
 // project to a triangle
@@ -75,7 +75,7 @@ bool projectToTriangle(const vec3d& p, const vec3d& r0, const vec3d& r1, const v
 bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q);
 
 bool FindIntersection(FSMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q, bool snap = false);
-bool FindIntersection(FSMeshBase& mesh, FEFace& f, const vec3d& x, const vec3d& n, vec3d& q, double& g);
+bool FindIntersection(FSMeshBase& mesh, FSFace& f, const vec3d& x, const vec3d& n, vec3d& q, double& g);
 
 std::vector<vec3d> FindAllIntersections(FSMeshBase& mesh, const vec3d& x, const vec3d& n, bool forwardOnly = true);
 

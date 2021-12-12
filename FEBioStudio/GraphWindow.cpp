@@ -2052,7 +2052,7 @@ void CModelGraphWindow::addSelectedFaces()
 	case 0:
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = mesh.Face(i);
+			FSFace& f = mesh.Face(i);
 			if (f.IsSelected())
 			{
 				// evaluate x-field
@@ -2070,7 +2070,7 @@ void CModelGraphWindow::addSelectedFaces()
 	case 1:
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = mesh.Face(i);
+			FSFace& f = mesh.Face(i);
 			if (f.IsSelected())
 			{
 				for (int j = 0; j < nsteps; j++) xdata[j] = (float)j + 1.f + m_firstState;
@@ -2087,7 +2087,7 @@ void CModelGraphWindow::addSelectedFaces()
 	case 2:
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = mesh.Face(i);
+			FSFace& f = mesh.Face(i);
 			if (f.IsSelected())
 			{
 				// evaluate x-field
@@ -2107,7 +2107,7 @@ void CModelGraphWindow::addSelectedFaces()
 		vector<int> sel;
 		for (int i = 0; i < NF; i++)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			if (face.IsSelected()) sel.push_back(i);
 		}
 
@@ -2123,7 +2123,7 @@ void CModelGraphWindow::addSelectedFaces()
 
 			for (int i = 0; i < (int)sel.size(); i++)
 			{
-				FEFace& face = mesh.Face(sel[i]);
+				FSFace& face = mesh.Face(sel[i]);
 
 				// evaluate x-field
 				TrackFaceHistory(sel[i], &xdata[0], m_dataX, m_firstState, m_lastState);
@@ -2337,7 +2337,7 @@ void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int
 	if (nmax <    nmin) nmax = nmin;
 	int nn = nmax - nmin + 1;
 
-	float data[FEFace::MAX_NODES], val;
+	float data[FSFace::MAX_NODES], val;
 	for (int n = 0; n<nn; n++)
 	{
 		fem.EvaluateFace(nface, n + nmin, nfield, data, val);

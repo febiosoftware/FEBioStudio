@@ -457,7 +457,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	for (int i=0; i<NF1; ++i)
 	{
 		FEElement& el = pnew->Element(i);
-		FEFace& f = pnew->Face(i);
+		FSFace& f = pnew->Face(i);
 		f.SetType(FE_FACE_QUAD4);
 		f.n[0] = el.m_node[0];
 		f.n[1] = el.m_node[1];
@@ -736,7 +736,7 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 /*	for (int i=0; i<NF1; ++i)
 	{
 		FEElement& el = pnew->Element(i);
-		FEFace& f = pnew->Face(i);
+		FSFace& f = pnew->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		f.n[0] = el.m_node[0];
 		f.n[1] = el.m_node[1];

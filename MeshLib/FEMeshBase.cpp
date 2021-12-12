@@ -40,7 +40,7 @@ FSMeshBase::~FSMeshBase()
 
 //-----------------------------------------------------------------------------
 // get the local node positions of a face
-void FSMeshBase::FaceNodeLocalPositions(const FEFace& f, vec3d* r) const
+void FSMeshBase::FaceNodeLocalPositions(const FSFace& f, vec3d* r) const
 {
 	int nf = f.Nodes();
 	for (int i = 0; i<nf; ++i) r[i] = m_Node[f.n[i]].r;
@@ -106,8 +106,8 @@ void FSMeshBase::RemoveFaces(int ntag)
 	int n = 0;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f1 = Face(i);
-		FEFace& f2 = Face(n);
+		FSFace& f1 = Face(i);
+		FSFace& f2 = Face(n);
 
 		if (f1.m_ntag != ntag)
 		{
@@ -151,14 +151,14 @@ void FSMeshBase::AutoSmooth(double angleDegrees)
 	// clear face group ID's
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace* pf = FacePtr(i);
+		FSFace* pf = FacePtr(i);
 		pf->m_sid = -1;
 	}
 
 	// calculate face normals
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace* pf = FacePtr(i);
+		FSFace* pf = FacePtr(i);
 
 		// calculate the face normals
 		vec3d& r0 = Node(pf->n[0]).r;
@@ -171,14 +171,14 @@ void FSMeshBase::AutoSmooth(double angleDegrees)
 
 
 	// stack for tracking unprocessed faces
-	vector<FEFace*> stack(NF);
+	vector<FSFace*> stack(NF);
 	int ns = 0;
 
 	// process all faces
 	int nsg = 0;
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace* pf = FacePtr(i);
+		FSFace* pf = FacePtr(i);
 		if (pf->m_sid == -1)
 		{
 			stack[ns++] = pf;
@@ -194,7 +194,7 @@ void FSMeshBase::AutoSmooth(double angleDegrees)
 				int n = pf->Edges();
 				for (int j = 0; j<n; ++j)
 				{
-					FEFace* pf2 = FacePtr(pf->m_nbr[j]);
+					FSFace* pf2 = FacePtr(pf->m_nbr[j]);
 
 					// push unprocessed neighbour
 					if (pf2 && (pf2->m_sid == -1) && (pf->m_fn*pf2->m_fn >= eps))
@@ -223,7 +223,7 @@ void FSMeshBase::UpdateNormals()
 	// calculate face normals
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace* pf = FacePtr(i);
+		FSFace* pf = FacePtr(i);
 
 		// reset smoothing id
 		pf->m_ntag = -1;
@@ -243,18 +243,18 @@ void FSMeshBase::UpdateNormals()
 	vector<vec3f> norm(NN, vec3f(0.f, 0.f, 0.f));
 
 	// this array keeps track of all faces in a smoothing group
-	vector<FEFace*> F(NF);
+	vector<FSFace*> F(NF);
 	int FC = 0;
 
 	// this array is used as a stack when processing neighbors
-	vector<FEFace*> stack(NF);
+	vector<FSFace*> stack(NF);
 	int ns = 0;
 
 	// loop over all faces
 	int nsg = 0;
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace* pf = FacePtr(i);
+		FSFace* pf = FacePtr(i);
 		if (pf->m_ntag == -1)
 		{
 			// find all connected faces
@@ -276,7 +276,7 @@ void FSMeshBase::UpdateNormals()
 				n = pf->Edges();
 				for (int j = 0; j<n; ++j)
 				{
-					FEFace* pf2 = FacePtr(pf->m_nbr[j]);
+					FSFace* pf2 = FacePtr(pf->m_nbr[j]);
 					// push unprocessed neighbor
 					if (pf2 && (pf2->m_ntag == -1) && (pf->m_sid == pf2->m_sid))
 					{
@@ -308,7 +308,7 @@ void FSMeshBase::UpdateNormals()
 	}
 
 	// normalize face normals
-	FEFace* pf = FacePtr();
+	FSFace* pf = FacePtr();
 	for (int i = 0; i<NF; ++i, ++pf)
 	{
 		pf->m_fn.Normalize();
@@ -324,7 +324,7 @@ void FSMeshBase::SmoothByPartition()
 	// assign group IDs to smoothing IDs
 	for (int i=0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		face.m_sid = face.m_gid;
 	}	
 
@@ -373,7 +373,7 @@ int FSMeshBase::CountSelectedFaces() const
 }
 
 //-----------------------------------------------------------------------------
-vec3d FSMeshBase::FaceCenter(FEFace& f) const
+vec3d FSMeshBase::FaceCenter(FSFace& f) const
 {
 	vec3d r;
 	int N = f.Nodes();
@@ -395,7 +395,7 @@ double triangle_area(const vec3d& r0, const vec3d& r1, const vec3d& r2)
 }
 
 //-----------------------------------------------------------------------------
-double FSMeshBase::FaceArea(FEFace &f)
+double FSMeshBase::FaceArea(FSFace &f)
 {
 	const int N = f.Nodes();
 	vector<vec3d> nodes(N);
@@ -516,7 +516,7 @@ double FSMeshBase::FaceArea(const vector<vec3d>& r, int faceType)
 }
 
 //-----------------------------------------------------------------------------
-void FSMeshBase::FaceNodePosition(const FEFace& f, vec3d* r) const
+void FSMeshBase::FaceNodePosition(const FSFace& f, vec3d* r) const
 {
 	switch (f.m_type)
 	{
@@ -544,7 +544,7 @@ void FSMeshBase::FaceNodePosition(const FEFace& f, vec3d* r) const
 }
 
 //-----------------------------------------------------------------------------
-void FSMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
+void FSMeshBase::FaceNodeNormals(FSFace& f, vec3f* n)
 {
 	switch (f.m_type)
 	{
@@ -572,7 +572,7 @@ void FSMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
 }
 
 //-----------------------------------------------------------------------------
-void FSMeshBase::FaceNodeTexCoords(FEFace& f, float* t)
+void FSMeshBase::FaceNodeTexCoords(FSFace& f, float* t)
 {
 	for (int i = 0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
 }
@@ -584,10 +584,10 @@ std::vector<int> MeshTools::GetConnectedFaces(FSMeshBase* pm, int nface, double 
 	faceList.reserve(pm->Faces());
 
 	for (int i = 0; i<pm->Faces(); ++i) pm->Face(i).m_ntag = i;
-	std::stack<FEFace*> stack;
+	std::stack<FSFace*> stack;
 
 	// push the first face to the stack
-	FEFace* pf = pm->FacePtr(nface);
+	FSFace* pf = pm->FacePtr(nface);
 	faceList.push_back(nface);
 	pf->m_ntag = -1;
 	stack.push(pf);
@@ -626,7 +626,7 @@ std::vector<int> MeshTools::GetConnectedFaces(FSMeshBase* pm, int nface, double 
 				int m0 = pm->Node(n0).m_ntag;
 				int m1 = pm->Node(n1).m_ntag;
 
-				FEFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
+				FSFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
 
 				bool bpush = true;
 				if (pf2->m_ntag < 0) bpush = false;
@@ -666,7 +666,7 @@ void FSMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
 			// add the other nodes
 			for (int i = 0; i < NF; ++i)
 			{
-				FEFace& f = Face(nfl[i].fid);
+				FSFace& f = Face(nfl[i].fid);
 				f.m_ntag = 0;
 			}
 		}
@@ -682,7 +682,7 @@ void FSMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
 			// add the other nodes
 			for (int i = 0; i < NF; ++i)
 			{
-				FEFace& f = Face(nfl[i].fid);
+				FSFace& f = Face(nfl[i].fid);
 				if (f.m_ntag == 0)
 				{
 					int ne = f.Nodes();

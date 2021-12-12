@@ -85,7 +85,7 @@ bool CQuadricFitTool::OnApply()
         for (int i = 0; i<N; ++i) mesh.Node(i).m_ntag = 0;
         for (int i = 0; i<F; ++i)
         {
-            FEFace& f = mesh.Face(i);
+            FSFace& f = mesh.Face(i);
             if ((m_bsel == false) || (f.IsSelected()))
             {
                 int nf = f.Nodes();

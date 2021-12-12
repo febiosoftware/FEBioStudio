@@ -93,8 +93,8 @@ FSMesh* FETet10ToTet4::Apply(FSMesh* pm)
 	// create the new faces
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f0 = pm->Face(i);
-		FEFace& f1 = pnew->Face(i);
+		FSFace& f0 = pm->Face(i);
+		FSFace& f1 = pnew->Face(i);
 
 		f1.SetType(FE_FACE_TRI3);
 		f1.m_gid = f0.m_gid;

@@ -123,7 +123,7 @@ bool FEFixMesh::RemoveDuplicateEdges(FSMesh* pm)
 	// the faces could reference edges, so we will need to reindex them 
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		for (int j = 0; j < 4; ++j)
 		{
 			int nej = f.m_edge[j];

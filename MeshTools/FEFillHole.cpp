@@ -50,7 +50,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 	m_node_normals.assign(pm->Nodes(), vec3d(0, 0, 0));
 	for (int i = 0; i < pm->Faces(); i++)
 	{
-		FEFace &Face = pm->Face(i);
+		FSFace &Face = pm->Face(i);
 		for (int j = 0; j < Face.Nodes(); j++)
 		{
 			m_node_normals[Face.n[j]] += to_vec3d(Face.m_nn[j]);
@@ -90,7 +90,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		// insert the new triangles into the mesh
 		for (int i=0; i<new_faces; ++i)
 		{
-			FEFace& face = pnew->Face(i + NF);
+			FSFace& face = pnew->Face(i + NF);
 			FACE& fi = tri_list[i];
 			face.SetType(FE_FACE_TRI3);
 			face.n[0] = fi.n[0];
@@ -138,7 +138,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		// insert the new triangles into the mesh
 		for (int i=0; i<new_faces; ++i)
 		{
-			FEFace& face = pnew->Face(i + NF);
+			FSFace& face = pnew->Face(i + NF);
 			FACE& fi = tri_list[i];
 			face.SetType(FE_FACE_TRI3);
 			face.n[0] = fi.n[0];
@@ -169,7 +169,7 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 	m_node_normals.assign(pm->Nodes(), vec3d(0, 0, 0));
 	for (int i = 0; i < pm->Faces(); i++)
 	{
-		FEFace &Face = pm->Face(i);
+		FSFace &Face = pm->Face(i);
 		for (int j = 0; j < Face.Nodes(); j++)
 		{
 			m_node_normals[Face.n[j]] += to_vec3d(Face.m_nn[j]);
@@ -181,7 +181,7 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 	pm->TagAllNodes(0);
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int fe = face.Edges();
 		for (int j=0; j<fe; ++j)
 		{
@@ -237,7 +237,7 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 	// insert the new triangles into the mesh
 	for (int i=0; i<new_faces; ++i)
 	{
-		FEFace& face = pm->Face(i + NF);
+		FSFace& face = pm->Face(i + NF);
 		FACE& fi = tri_list[i];
 		face.SetType(FE_FACE_TRI3);
 		face.n[0] = fi.n[0];
@@ -312,7 +312,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int ne = face.Edges();
 		for (int j=0; j<ne; ++j)
 		{
@@ -349,7 +349,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 	ring.m_winding = 0;
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		for (int j=0; j<3; ++j)
 		{
 			int jn = (j+1)%3;
@@ -947,7 +947,7 @@ bool FEFillHole::AFM(FESurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list
 	}
 	for(int i = 0 ;i < mesh.Faces();i++)
 	{
-		FEFace &Face = mesh.Face(i);
+		FSFace &Face = mesh.Face(i);
 		for(int j = 0; j < Face.Nodes(); j++)
 		{
 			node_normals[Face.n[j]] = to_vec3d(Face.m_nn[j]);

@@ -68,7 +68,7 @@ void GWrapModifier::Apply(GObject* po)
 	vector<int> tag; tag.assign(pm->Nodes(), 0);
 	for (i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int nf = f.Nodes();
 		for (j=0; j<nf; ++j) tag[f.n[j]] = 1;
 	}
@@ -192,7 +192,7 @@ void GWrapModifier::ClosestPoint(GObject *ps, vector<vec3d>& DS, vector<int>& ta
 			dmin = 1e99;
 			for (int j=0; j<nval; ++j)
 			{
-				FEFace& f = *NFL.Face(imin, j);
+				FSFace& f = *NFL.Face(imin, j);
 				double r = 0, s = 0;
 				vec3d q = ProjectToFace(*ptrg, nr, f, r, s);
 
@@ -232,7 +232,7 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 		for (i=0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = 0;
 		for (i=0; i<pm->Faces(); ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			for (j=0; j<f.Nodes(); ++j) 
 			{
 				N[f.n[j]] += to_vec3d(f.m_nn[j]);
@@ -269,7 +269,7 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 				double dmin = 1e99, d;
 				for (j=0; j<ptrg->Faces(); ++j)
 				{
-					FEFace& f = ptrg->Face(j);
+					FSFace& f = ptrg->Face(j);
 
 					// find the intersection of the ray with this face
 					if (FindIntersection(*ptrg, f, r, n, q, g))

@@ -87,7 +87,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 
 			for (j=0; j<m.Faces(); ++j)
 			{
-				FEFace& f = m.Face(j);
+				FSFace& f = m.Face(j);
 				for (k=0; k<f.Nodes(); ++k) m.Node(f.n[k]).m_ntag = 1;
 			}
 
@@ -126,7 +126,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 			FSMesh& m = *po->GetFEMesh();
 			for (j=0; j<m.Faces(); ++j)
 			{
-				FEFace& f = m.Face(j);
+				FSFace& f = m.Face(j);
 				if (f.Nodes() == 3)
 				{
 					nf[0] = m.Node(f.n[0]).m_ntag;

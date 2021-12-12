@@ -2389,7 +2389,7 @@ void CGLView::RenderNormals(GObject* po, double scale)
 		int N = pm->Faces();
 		for (int i = 0; i<N; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
 			if (face.IsVisible() && bvis)
 			{
@@ -4593,7 +4593,7 @@ void CGLView::SelectFEElements(int x, int y)
 							int fid2 = -1;
 							if (pe->m_face[i] >= 0)
 							{
-								FEFace& f2 = pm->Face(pe->m_face[i]);
+								FSFace& f2 = pm->Face(pe->m_face[i]);
 								fid2 = f2.m_gid;
 							}
 
@@ -4776,7 +4776,7 @@ void CGLView::SelectFEFaces(int x, int y)
 						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_FACE[index].m_val;
-						FEFace& face = pm->Face(index);
+						FSFace& face = pm->Face(index);
 						QString txt = QString("Face %1 : %2\n").arg(face.m_nid).arg(val);
 						m_pWnd->AddLogEntry(txt);
 					}
@@ -5667,7 +5667,7 @@ void CGLView::TagBackfacingNodes(FSMeshBase& mesh)
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.m_ntag == 0)
 		{
 			int nn = f.Nodes();
@@ -5778,7 +5778,7 @@ void CGLView::TagBackfacingElements(FSMesh& mesh)
 				FEElement* pj = (el.m_nbr[j] != -1 ? &mesh.Element(el.m_nbr[j]) : 0);
 				if ((pj == 0) || (pj->IsVisible() == false))
 				{
-					FEFace f = el.GetFace(j);
+					FSFace f = el.GetFace(j);
 					switch (f.Type())
 					{
 					case FE_FACE_TRI3:
@@ -5830,10 +5830,10 @@ void CGLView::TagBackfacingElements(FSMesh& mesh)
 			// shells 
 			if (el.IsShell())
 			{
-				FEFace* pf = mesh.FacePtr(el.m_face[0]);
+				FSFace* pf = mesh.FacePtr(el.m_face[0]);
 				if (pf)
 				{
-					FEFace& f = *pf;
+					FSFace& f = *pf;
 					switch (f.Type())
 					{
 					case FE_FACE_TRI3:
@@ -5953,7 +5953,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 
 
 //-----------------------------------------------------------------------------
-bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region, FEFace& face, FSMeshBase* pm)
+bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region, FSFace& face, FSMeshBase* pm)
 {
 	if (pm == 0) return false;
 
@@ -6010,7 +6010,7 @@ void CGLView::TagBackfacingFaces(FSMeshBase& mesh)
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		if (f.IsExterior())
 		{
@@ -6090,7 +6090,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 		// tag exterior faces only 
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			if (f.IsExterior()) f.m_ntag = 0;
 			else f.m_ntag = -1;
 		}
@@ -6109,7 +6109,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 	int NF = pm->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsVisible() && vis[face.m_gid] && (face.m_ntag == 0))
 		{
 			if (regionFaceIntersect(transform, region, face, pm))
@@ -6391,13 +6391,13 @@ void CGLView::TagConnectedNodes(FSMeshBase* pm, int num)
 		else
 		{
 			// create a stack of face pointers
-			std::stack<FEFace*> stack;
+			std::stack<FSFace*> stack;
 
 			// find all faces that have this node as a node
 			vec3d t(0, 0, 0);
 			for (int i = 0; i<pm->Faces(); ++i)
 			{
-				FEFace* pf = pm->FacePtr(i);
+				FSFace* pf = pm->FacePtr(i);
 				pf->m_ntag = 0;
 				int m = pf->FindNode(num);
 				if (m >= 0)
@@ -6415,7 +6415,7 @@ void CGLView::TagConnectedNodes(FSMeshBase* pm, int num)
 			int m = 0;
 			while (!stack.empty())
 			{
-				FEFace* pf = stack.top(); stack.pop();
+				FSFace* pf = stack.top(); stack.pop();
 				int nn = pf->Nodes();
 				int ne = pf->Edges();
 
@@ -6429,7 +6429,7 @@ void CGLView::TagConnectedNodes(FSMeshBase* pm, int num)
 				for (int i = 0; i<ne; ++i)
 				if (pf->m_nbr[i] >= 0)
 				{
-					FEFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
+					FSFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
 					if (pf2->m_ntag >= 0 && pf2->IsVisible() && (pf2->m_gid == pf->m_gid) && ((pf2->m_fn*to_vec3f(t) >= tr) || (bangle == false)))
 					{
 						pf2->m_ntag = -1;
@@ -6521,7 +6521,7 @@ void CGLView::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 			int nval = NFL.Valence(n);
 			for (int i=0; i<nval; ++i)
 			{
-				FEFace* pf = NFL.Face(n, i);
+				FSFace* pf = NFL.Face(n, i);
 				int nf = pf->Nodes();
 				for (int j=0; j<nf; ++j)
 				{
@@ -6950,7 +6950,7 @@ void CGLView::RenderSelectedSurfaces(GObject* po)
 			vec3d rf[FEElement::MAX_NODES];
 			for (int i = 0; i<pm->Faces(); ++i)
 			{
-				FEFace& f = pm->Face(i);
+				FSFace& f = pm->Face(i);
 				if (f.m_gid > -1)
 				{
 					GFace& gf = *po->Face(f.m_gid);
@@ -7308,7 +7308,7 @@ void CGLView::RenderFENodes(GObject* po)
 			vec3d f;
 			for (int i = 0; i<NF; ++i)
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				int n = face.Nodes();
 				for (int j = 0; j<n; ++j)
 				{
@@ -7343,7 +7343,7 @@ void CGLView::RenderFENodes(GObject* po)
 			int NF = mesh->Faces();
 			for (int i = 0; i<NF; ++i)
 			{
-				FEFace& face = mesh->Face(i);
+				FSFace& face = mesh->Face(i);
 				int n = face.Nodes();
 				for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 0;
 			}
@@ -7351,7 +7351,7 @@ void CGLView::RenderFENodes(GObject* po)
 			// check visibility
 			for (int i = 0; i<NF; ++i)
 			{
-				FEFace& face = mesh->Face(i);
+				FSFace& face = mesh->Face(i);
 				if (face.IsVisible())
 				{
 					int n = face.Nodes();
@@ -7365,7 +7365,7 @@ void CGLView::RenderFENodes(GObject* po)
 				vec3d f;
 				for (int i = 0; i<NF; ++i)
 				{
-					FEFace& face = mesh->Face(i);
+					FSFace& face = mesh->Face(i);
 					int n = face.Nodes();
 					for (int j = 0; j<n; ++j)
 					{
@@ -7420,7 +7420,7 @@ void CGLView::RenderFEFaces(GObject* po)
 	// render the unselected faces
 	for (int i = 0; i<pm->Faces(); i++)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 
 		FEElement& el = pm->Element(face.m_elem[0].eid);
 		GPart* pg = po->Part(el.m_gid);
@@ -7442,7 +7442,7 @@ void CGLView::RenderFEFaces(GObject* po)
 						int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
 						assert(nn == face.Nodes());
 
-						GLColor c[FEFace::MAX_NODES];
+						GLColor c[FSFace::MAX_NODES];
 						int nf = face.Nodes();
 						for (int j = 0; j<nf; ++j)
 							c[j] = map.map(data.GetElementValue(face.m_elem[0].eid, fnl[j]));
@@ -7614,7 +7614,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 		int NF = mesh->Faces();
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = mesh->Face(i);
+			FSFace& face = mesh->Face(i);
 			int n = face.Nodes();
 			for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 0;
 		}
@@ -7622,7 +7622,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 		// check visibility
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = mesh->Face(i);
+			FSFace& face = mesh->Face(i);
 			if (face.IsVisible())
 			{
 				int n = face.Nodes();
@@ -7636,7 +7636,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 			vec3d f;
 			for (int i = 0; i<NF; ++i)
 			{
-				FEFace& face = mesh->Face(i);
+				FSFace& face = mesh->Face(i);
 				int n = face.Nodes();
 				for (int j = 0; j<n; ++j)
 				{
@@ -8883,7 +8883,7 @@ void CGLView::RenderTags()
 		int NF = pmb->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = pmb->Face(i);
+			FSFace& f = pmb->Face(i);
 			if (f.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));

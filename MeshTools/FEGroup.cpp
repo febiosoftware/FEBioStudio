@@ -257,7 +257,7 @@ FENodeList* FESurface::BuildNodeList()
 	int N = (int)m_Item.size();
 	for (i=0; i<N; ++i, ++it)
 	{
-		FEFace& f = pm->Face(*it);
+		FSFace& f = pm->Face(*it);
 		n = f.Nodes();
 		for (j=0; j<n; ++j) pm->Node(f.n[j]).m_ntag = 1;
 	}

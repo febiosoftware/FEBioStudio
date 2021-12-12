@@ -62,7 +62,7 @@ FENodeList* BuildNodeList(GFace* pf)
 	// tag the nodes to be added to the list
 	for (int i = 0; i<m.Faces(); ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		if (f.m_gid == gid)
 		{
 			int l = f.Nodes();
@@ -4960,7 +4960,7 @@ void FEBioExport25::WriteSurfaceSection(FEFaceList& s)
 	{
 		for (int i=0; i<NF; ++i, ++n, ++pf)
 		{
-			FEFace& face = *(pf->m_pi);
+			FSFace& face = *(pf->m_pi);
 			FSCoreMesh* pm = pf->m_pm;
 			FEElement& el = pm->Element(face.m_elem[0]);
 			nn[0] = el.m_ntag;
@@ -4979,7 +4979,7 @@ void FEBioExport25::WriteSurfaceSection(FEFaceList& s)
 		for (int j=0; j<NF; ++j, ++n, ++pf)
 		{
 			if (pf->m_pi == 0) throw InvalidItemListBuilder(0);
-			FEFace& face = *(pf->m_pi);
+			FSFace& face = *(pf->m_pi);
 			FSCoreMesh* pm = pf->m_pm;
 			nfn = face.Nodes();
 			for (int k=0; k<nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;

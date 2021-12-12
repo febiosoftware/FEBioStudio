@@ -847,7 +847,7 @@ void FEBioFormatOld::ParsePressureLoad(FSStep *pstep, XMLTag &tag)
 		m = mesh.FindFace(nf, N);
 		if (m >= 0)
 		{
-			FEFace& face = pm->Face(m);
+			FSFace& face = pm->Face(m);
 			face.m_ntag = lc - 1;
 			if (lc > nmax) nmax = lc;
 		}
@@ -866,7 +866,7 @@ void FEBioFormatOld::ParsePressureLoad(FSStep *pstep, XMLTag &tag)
 
 	for (i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int lc = face.m_ntag;
 		if (lc >= 0) nlc[lc] = 1;
 	}
@@ -901,7 +901,7 @@ void FEBioFormatOld::ParsePressureLoad(FSStep *pstep, XMLTag &tag)
 	// set the correct face group ID's
 	for (i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
@@ -947,7 +947,7 @@ void FEBioFormatOld::ParseTractionLoad(FSStep* pstep, XMLTag& tag)
 		m = mesh.FindFace(nf, N);
 		if (m >= 0)
 		{
-			FEFace& face = pm->Face(m);
+			FSFace& face = pm->Face(m);
 			face.m_ntag = lc - 1;
 			if (lc > nmax) nmax = lc;
 		}
@@ -966,7 +966,7 @@ void FEBioFormatOld::ParseTractionLoad(FSStep* pstep, XMLTag& tag)
 
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int lc = face.m_ntag;
 		if (lc >= 0) nlc[lc] = 1;
 	}
@@ -999,7 +999,7 @@ void FEBioFormatOld::ParseTractionLoad(FSStep* pstep, XMLTag& tag)
 	// set the correct face group ID's
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
@@ -1063,7 +1063,7 @@ void FEBioFormatOld::ParseFluidFlux(FSStep *pstep, XMLTag &tag)
 		m = mesh.FindFace(nf, N);
 		if (m >= 0)
 		{
-			FEFace& face = pm->Face(m);
+			FSFace& face = pm->Face(m);
 			face.m_ntag = lc - 1;
 			if (lc > nmax) nmax = lc;
 		}
@@ -1082,7 +1082,7 @@ void FEBioFormatOld::ParseFluidFlux(FSStep *pstep, XMLTag &tag)
 
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int lc = face.m_ntag;
 		if (lc >= 0) nlc[lc] = 1;
 	}
@@ -1117,7 +1117,7 @@ void FEBioFormatOld::ParseFluidFlux(FSStep *pstep, XMLTag &tag)
 	// set the correct face group ID's
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
@@ -1182,7 +1182,7 @@ void FEBioFormatOld::ParseBPNormalTraction(FSStep *pstep, XMLTag &tag)
 		m = mesh.FindFace(nf, N);
 		if (m >= 0)
 		{
-			FEFace& face = pm->Face(m);
+			FSFace& face = pm->Face(m);
 			face.m_ntag = lc - 1;
 			if (lc > nmax) nmax = lc;
 		}
@@ -1200,7 +1200,7 @@ void FEBioFormatOld::ParseBPNormalTraction(FSStep *pstep, XMLTag &tag)
 
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int lc = face.m_ntag;
 		if (lc >= 0) nlc[lc] = 1;
 	}
@@ -1235,7 +1235,7 @@ void FEBioFormatOld::ParseBPNormalTraction(FSStep *pstep, XMLTag &tag)
 	// set the correct face group ID's
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
@@ -1285,7 +1285,7 @@ void FEBioFormatOld::ParseHeatFlux(FSStep *pstep, XMLTag &tag)
 		m = mesh.FindFace(nf, N);
 		if (m >= 0)
 		{
-			FEFace& face = pm->Face(m);
+			FSFace& face = pm->Face(m);
 			face.m_ntag = lc - 1;
 			if (lc > nmax) nmax = lc;
 		}
@@ -1303,7 +1303,7 @@ void FEBioFormatOld::ParseHeatFlux(FSStep *pstep, XMLTag &tag)
 
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int lc = face.m_ntag;
 		if (lc >= 0) nlc[lc] = 1;
 	}
@@ -1336,7 +1336,7 @@ void FEBioFormatOld::ParseHeatFlux(FSStep *pstep, XMLTag &tag)
 	// set the correct face group ID's
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];
@@ -1389,7 +1389,7 @@ void FEBioFormatOld::ParseSoluteFlux(FSStep *pstep, XMLTag &tag)
 		m = mesh.FindFace(nf, N);
 		if (m >= 0)
 		{
-			FEFace& face = pm->Face(m);
+			FSFace& face = pm->Face(m);
 			face.m_ntag = lc - 1;
 			if (lc > nmax) nmax = lc;
 		}
@@ -1407,7 +1407,7 @@ void FEBioFormatOld::ParseSoluteFlux(FSStep *pstep, XMLTag &tag)
 
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int lc = face.m_ntag;
 		if (lc >= 0) nlc[lc] = 1;
 	}
@@ -1442,7 +1442,7 @@ void FEBioFormatOld::ParseSoluteFlux(FSStep *pstep, XMLTag &tag)
 	// set the correct face group ID's
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.m_ntag >= 0)
 		{
 			int n = nlc[face.m_ntag];

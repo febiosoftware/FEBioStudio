@@ -113,7 +113,7 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	int ne1 = 0;
 	for (int i=0; i < (int)faceList.size(); ++i)
 	{
-		FEFace& face = pm->Face(faceList[i]);
+		FSFace& face = pm->Face(faceList[i]);
 		int n = face.Nodes();
 
 		// extrusion is only allowed on tris and quads!
@@ -155,7 +155,7 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	// find the extrusion directions
 	for (int i=0; i <(int)faceList.size(); ++i)
 	{
-		FEFace& face = pm->Face(faceList[i]);
+		FSFace& face = pm->Face(faceList[i]);
 		int n = face.Nodes();
 		for (int j = 0; j<n; ++j)
 		{
@@ -259,7 +259,7 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	{
 		for (int i = 0; i <(int)faceList.size(); ++i)
 		{
-			FEFace& face = pm->Face(faceList[i]);
+			FSFace& face = pm->Face(faceList[i]);
 
 			FEElement& el = pm->Element(n);
 
@@ -461,7 +461,7 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	}
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int nf = face.Nodes();
 		bool bsel = true;
 		for (int j=0; j<nf; ++j)

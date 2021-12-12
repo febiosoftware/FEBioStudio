@@ -261,7 +261,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		// evaluate face values for texture generation
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (face.IsEnabled())
 			{
 				for (int j = 0; j < face.Nodes(); ++j)
@@ -306,7 +306,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		int NF = pm->Faces();
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			FACEDATA& fd0 = s0.m_FACE[i];
 			FACEDATA& fd1 = s1.m_FACE[i];
 			//			if (face.IsEnabled() && (face.m_ntag > 0))
@@ -414,7 +414,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	float dti = 1.f / (max - min);
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		FACEDATA& fd = s0.m_FACE[i];
 		if (face.IsEnabled())
 		{
@@ -467,7 +467,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		int NF = surf.Faces();
 		for (int j=0; j<NF; ++j)
 		{
-			FEFace& face = surf.Face(j);
+			FSFace& face = surf.Face(j);
 			if (face.m_elem[0].eid == -1) face.Deactivate();
 			else
 			{

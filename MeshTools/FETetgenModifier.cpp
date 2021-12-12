@@ -130,7 +130,7 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 	int NF = pm->Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.Type() != FE_FACE_TRI3)
 		{
 			FEModifier::SetError("Invalid mesh type.");
@@ -248,7 +248,7 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 	// copy faces
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& f = pmesh->Face(i);
+		FSFace& f = pmesh->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		f.n[0] = out.trifacelist[3*i+2];
 		f.n[1] = out.trifacelist[3*i+1];
@@ -394,7 +394,7 @@ FSMesh* FETetGenModifier::RefineMesh(FSMesh* pm)
 	// copy faces
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& f = pmesh->Face(i);
+		FSFace& f = pmesh->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		f.n[0] = out.trifacelist[3 * i + 2];
 		f.n[1] = out.trifacelist[3*i+1];
@@ -481,7 +481,7 @@ bool FETetGenModifier::build_tetgen_plc(FSMesh* pm, tetgenio& in)
 	for (i=0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = -1;
 	for (i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		for (j=0; j<f.Nodes(); ++j)
 		{
 			pm->Node(f.n[j]).m_ntag = 1;
@@ -516,7 +516,7 @@ bool FETetGenModifier::build_tetgen_plc(FSMesh* pm, tetgenio& in)
 	int faces = 0;
 	for (i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.Type() == FE_FACE_TRI3) { ++faces; f.m_ntag = 1; }
 		else 
 		{
@@ -548,7 +548,7 @@ bool FETetGenModifier::build_tetgen_plc(FSMesh* pm, tetgenio& in)
 	{
 		tetgenio::facet* pf; 
 		tetgenio::polygon* pp;
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.Type() == FE_FACE_TRI3)
 		{
 			pf = &in.facetlist[n];
@@ -699,7 +699,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 	in.trifacelist = new int[faces*3];
 	for (int i=0, n = 0; i<faces; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		assert(f.Type() == FE_FACE_TRI3);
 		in.trifacelist[3*i  ] = f.n[0];
 		in.trifacelist[3*i+1] = f.n[1];
@@ -717,7 +717,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 	double a = h*h;
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		double A = FEMeshMetrics::SurfaceArea(*pm, f);
 		FEElement& el = pm->Element(f.m_elem[0].eid);
 		in.facetconstraintlist[2*i  ] = i;
@@ -737,13 +737,13 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 		vector<double> area; area.assign(faces, 0.0);
 		for (int i=0; i<faces; ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			area[i] = FEMeshMetrics::SurfaceArea(*pm, f);
 		}
 
 		for (int i=0; i<faces; ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			FEElement& el = pm->Element(f.m_elem[0].eid);
 			if (el.IsSelected() || f.IsSelected()) f.m_ntag = 1; else f.m_ntag = 0;
 		}
@@ -754,13 +754,13 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 			w *= w;
 			for (int i=0; i<faces; ++i)
 			{
-				FEFace& f = pm->Face(i);
+				FSFace& f = pm->Face(i);
 				if (f.m_ntag == 1)
 				{
 					int nf = 3; assert(f.Nodes() == 3);
 					for (int j=0; j<nf; ++j)
 					{
-						FEFace* f2 = pm->FacePtr(f.m_nbr[j]);
+						FSFace* f2 = pm->FacePtr(f.m_nbr[j]);
 						if (f2 && (f2->m_ntag == 0)) 
 						{
 							in.facetconstraintlist[2*f.m_nbr[j]+1] = a*(1.0-w) + w*area[f.m_nbr[j]];
@@ -771,7 +771,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 			}
 			for (int i=0; i<faces; ++i)
 			{
-				FEFace& f = pm->Face(i);
+				FSFace& f = pm->Face(i);
 				if (f.m_ntag == 2) f.m_ntag = 1;
 			}
 		}

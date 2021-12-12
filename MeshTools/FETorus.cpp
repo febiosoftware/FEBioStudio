@@ -486,7 +486,7 @@ void FETorus::BuildFaces(FSMesh* pm)
 	for (j=0; j<ns; ++j)
 		for (i=0; i<4*nd; ++i, ++n)
 		{
-			FEFace& f = pm->Face(n);
+			FSFace& f = pm->Face(n);
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 4*(4*j/ns) + i/nd;
 			f.m_sid = 0;

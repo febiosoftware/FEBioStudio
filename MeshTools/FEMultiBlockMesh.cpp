@@ -578,7 +578,7 @@ void FEMultiBlockMesh::BuildFEFaces(FSMesh* pm)
 
 				if (F.m_gid >= 0)
 				{
-					FEFace* pf = pm->FacePtr(faces++);
+					FSFace* pf = pm->FacePtr(faces++);
 					pf->m_gid = F.m_gid;
 					pf->m_sid = (F.m_sid < 0 ? F.m_gid : F.m_sid);
 					switch (m_elemType)

@@ -487,7 +487,7 @@ void CGLParticleFlowPlot::SeedParticles()
 #pragma omp parallel for shared (NF)
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		// evaluate the average velocity at this face
 		int nf = f.Nodes();

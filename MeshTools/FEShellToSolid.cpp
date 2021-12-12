@@ -64,7 +64,7 @@ FSMesh* FEShellToSolid::Apply(FSMesh* pm)
 	int NF = pm->Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (pm->Element(f.m_elem[0].eid).IsSelected())
 		{
 			int nf = f.Nodes();

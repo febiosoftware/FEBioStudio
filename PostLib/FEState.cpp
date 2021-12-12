@@ -116,7 +116,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 	// allocate face data
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int nf = face.Nodes();
 		m_FaceData.append(nf);
 	}
@@ -343,7 +343,7 @@ void FEState::RebuildData()
 	m_FaceData.clear();
 	for (int i = 0; i < faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int nf = face.Nodes();
 		m_FaceData.append(nf);
 	}

@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 class FEElement_;
 class FSEdge;
-class FEFace;
+class FSFace;
 class FSLineMesh;
 class FSCoreMesh;
 class FSMeshBase;
@@ -57,7 +57,7 @@ public:
 
 	void RenderSelectedFEEdges(FSLineMesh* pm);
 	void RenderUnselectedFEEdges(FSLineMesh* pm);
-	void RenderFaceEdge(FEFace& face, int j, FSMeshBase* pm, int ndivs);
+	void RenderFaceEdge(FSFace& face, int j, FSMeshBase* pm, int ndivs);
 
 	void RenderMeshLines(FSMeshBase* pm);
 	void RenderSelectedFEFaces(FSMeshBase* pm);
@@ -93,18 +93,18 @@ public:
 
 public:
 	// drawing routines for faces
-	void RenderFEFace(FEFace& face, FSMeshBase* pm);
-	void RenderFace(FEFace& face, FSCoreMesh* pm);
-	void RenderFace(FEFace& face, FSCoreMesh* pm, GLColor c[4], int ndivs);
+	void RenderFEFace(FSFace& face, FSMeshBase* pm);
+	void RenderFace(FSFace& face, FSCoreMesh* pm);
+	void RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4], int ndivs);
 
-	void RenderFaceOutline(FEFace& face, FSCoreMesh* pm, int ndivs);
+	void RenderFaceOutline(FSFace& face, FSCoreMesh* pm, int ndivs);
 
 private:
 	// special render routines for thick shells
-	void RenderThickShell(FEFace& face, FSCoreMesh* pm);
-	void RenderThickQuad (FEFace& face, FSCoreMesh* pm);
-	void RenderThickTri  (FEFace& face, FSCoreMesh* pm);
-	void RenderThickShellOutline(FEFace& face, FSCoreMesh* pm);
+	void RenderThickShell(FSFace& face, FSCoreMesh* pm);
+	void RenderThickQuad (FSFace& face, FSCoreMesh* pm);
+	void RenderThickTri  (FSFace& face, FSCoreMesh* pm);
+	void RenderThickShellOutline(FSFace& face, FSCoreMesh* pm);
 
 public:
 	int			m_ndivs;			//!< divisions for smooth render
@@ -119,22 +119,22 @@ void RenderFEEdge(FSEdge& edge, FSLineMesh* pm);
 
 // drawing routines for faces
 // Note: Call these functions from within glBegin(GL_TRIANGLES)\glEnd() section
-void RenderQUAD4(FSMeshBase* pm, FEFace& f);
-void RenderQUAD8(FSMeshBase* pm, FEFace& f);
-void RenderQUAD9(FSMeshBase* pm, FEFace& f);
-void RenderTRI3 (FSMeshBase* pm, FEFace& f);
-void RenderTRI6 (FSMeshBase* pm, FEFace& f);
-void RenderTRI7 (FSMeshBase* pm, FEFace& f);
-void RenderTRI10(FSMeshBase* pm, FEFace& f);
+void RenderQUAD4(FSMeshBase* pm, FSFace& f);
+void RenderQUAD8(FSMeshBase* pm, FSFace& f);
+void RenderQUAD9(FSMeshBase* pm, FSFace& f);
+void RenderTRI3 (FSMeshBase* pm, FSFace& f);
+void RenderTRI6 (FSMeshBase* pm, FSFace& f);
+void RenderTRI7 (FSMeshBase* pm, FSFace& f);
+void RenderTRI10(FSMeshBase* pm, FSFace& f);
 
-void RenderSmoothQUAD4(FSCoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothQUAD8(FSCoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothQUAD9(FSCoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothTRI3 (FSCoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothTRI6 (FSCoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothTRI7 (FSCoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothTRI10(FSCoreMesh* pm, FEFace& face, int ndivs);
+void RenderSmoothQUAD4(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothQUAD8(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothQUAD9(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI3 (FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI6 (FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI7 (FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI10(FSCoreMesh* pm, FSFace& face, int ndivs);
 
-void RenderFace1Outline(FSCoreMesh* pm, FEFace& face);
-void RenderFace2Outline(FSCoreMesh* pm, FEFace& face, int ndivs);
-void RenderFace3Outline(FSCoreMesh* pm, FEFace& face, int ndivs);
+void RenderFace1Outline(FSCoreMesh* pm, FSFace& face);
+void RenderFace2Outline(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderFace3Outline(FSCoreMesh* pm, FSFace& face, int ndivs);

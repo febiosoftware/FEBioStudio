@@ -140,17 +140,17 @@ public:
 public: // for solid elements only
 
 	//! Get the face i
-	FEFace GetFace(int i) const;
-	void GetFace(int i, FEFace& face) const;
+	FSFace GetFace(int i) const;
+	void GetFace(int i, FSFace& face) const;
 	int GetLocalFaceIndices(int i, int* n) const;
 
 	// Find the face. Returns local index in face array
-	int FindFace(const FEFace& f);
+	int FindFace(const FSFace& f);
 
 public: // for shell elements only
 
 	//! Get the face of a shell
-	void GetShellFace(FEFace& f) const;
+	void GetShellFace(FSFace& f) const;
 
 	//! Get the edge
 	FSEdge GetEdge(int i) const;

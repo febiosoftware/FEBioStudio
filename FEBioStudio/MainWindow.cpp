@@ -1445,7 +1445,7 @@ void CMainWindow::ReportSelection()
 		if (fs->Size() == 1)
 		{
 			FEFaceSelection::Iterator it = fs->begin();
-			FEFace* pf = it;
+			FSFace* pf = it;
 			switch (pf->Type())
 			{
 			case FE_FACE_TRI3 : AddLogEntry("  Type = TRI3"); break;

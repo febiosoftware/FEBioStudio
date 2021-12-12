@@ -98,11 +98,11 @@ FSMesh* FETet4ToHex8::Apply(FSMesh* pm)
 	int nf = 0;
 	for (int i = 0; i < faces; ++i)
 	{
-		FEFace& f0 = tet15->Face(i);
+		FSFace& f0 = tet15->Face(i);
 
 		for (int j = 0; j < 3; ++j)
 		{
-			FEFace& f1 = pnew->Face(nf++);
+			FSFace& f1 = pnew->Face(nf++);
 
 			f1.SetType(FE_FACE_QUAD4);
 			f1.m_gid = f0.m_gid;

@@ -75,7 +75,7 @@ int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
 	FEFaceList::Iterator pi;
 	for (pi = pfs->First(); pi != pfs->End(); ++pi)
 	{
-		FEFace& f = *(pi->m_pi);
+		FSFace& f = *(pi->m_pi);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
@@ -142,7 +142,7 @@ double FESurfaceIntersect::Distance(FEFaceList& s, const vec3d& r)
 	vec3d p[3];
 	for (pf = s.First(); pf != s.End(); ++pf)
 	{
-		FEFace& f = *(pf->m_pi);
+		FSFace& f = *(pf->m_pi);
 		FSCoreMesh& m = *(pf->m_pm);
 		if (f.Type() == FE_FACE_TRI3)
 		{

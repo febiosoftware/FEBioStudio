@@ -314,7 +314,7 @@ void FEGregoryPatch::BuildFaces(FSMesh* pm)
 	pm->Create(0,0,faces);
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		FEElement& e = pm->Element(i);
 		f.SetType(FE_FACE_QUAD4);
 		f.n[0] = e.m_node[0];

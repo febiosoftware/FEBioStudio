@@ -402,7 +402,7 @@ void CGLModel::ToggleVisibleElements()
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.IsExternal())
 		{
 			if (mesh.ElementRef(f.m_elem[0].eid).IsHidden()) f.Hide();
@@ -804,7 +804,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 		glBegin(GL_TRIANGLES);
 		for (int i=0; i<pm->Faces(); ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (face.IsSelected())
 			{
 				// okay, we got one, so let's render it
@@ -820,7 +820,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 		glBegin(GL_TRIANGLES);
 		for (int i = 0; i<pm->Faces(); ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 			if (el.IsSelected())
 			{
@@ -849,11 +849,11 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// now do the selected faces
 	if (mode == SELECT_FACES)
 	{
-		vec3f r[FEFace::MAX_NODES];
-		const vector<FEFace*> faceSelection = GetFaceSelection();
+		vec3f r[FSFace::MAX_NODES];
+		const vector<FSFace*> faceSelection = GetFaceSelection();
 		for (int i = 0; i<(int)faceSelection.size(); ++i)
 		{
-			FEFace& f = *faceSelection[i]; 
+			FSFace& f = *faceSelection[i]; 
 			if (f.IsSelected() == false) continue;
 
 			int n = f.Nodes();
@@ -1009,7 +1009,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 		// first, build a list of faces
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = dom.Face(i);
+			FSFace& face = dom.Face(i);
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 
 			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
@@ -1033,7 +1033,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 		// render the list
 		for (int i = 0; i < zlist.size(); ++i)
 		{
-			FEFace& face = dom.Face(zlist[i].first);
+			FSFace& face = dom.Face(zlist[i].first);
 
 			GLubyte a[4];
 			for (int j = 0; j < face.Nodes(); ++j)
@@ -1068,7 +1068,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 		glCullFace(GL_FRONT);
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = dom.Face(i);
+			FSFace& face = dom.Face(i);
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 
 			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
@@ -1106,7 +1106,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 		glCullFace(GL_BACK);
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = dom.Face(i);
+			FSFace& face = dom.Face(i);
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 
 			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
@@ -1169,7 +1169,7 @@ void CGLModel::RenderInnerSurface(int m, bool btex)
 	glBegin(GL_TRIANGLES);
 	for (int i = 0; i<surf.Faces(); ++i)
 	{
-		FEFace& face = surf.Face(i);
+		FSFace& face = surf.Face(i);
 		if (face.IsActive())
 		{
 			m_render.RenderFace(face, pm);
@@ -1182,7 +1182,7 @@ void CGLModel::RenderInnerSurface(int m, bool btex)
 	glBegin(GL_TRIANGLES);
 	for (int i = 0; i<surf.Faces(); ++i)
 	{
-		FEFace& face = surf.Face(i);
+		FSFace& face = surf.Face(i);
 		if (face.IsActive() == false)
 		{
 			m_render.RenderFace(face, pm);
@@ -1201,7 +1201,7 @@ void CGLModel::RenderInnerSurfaceOutline(int m, int ndivs)
 	GLSurface& inSurf = *m_innerSurface[m];
 	for (int i = 0; i<inSurf.Faces(); ++i)
 	{
-		FEFace& facet = inSurf.Face(i);
+		FSFace& facet = inSurf.Face(i);
 		m_render.RenderFaceOutline(facet, pm, ndivs);
 	}
 }
@@ -1222,7 +1222,7 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 		vector< pair<int, double> > zlist; zlist.reserve(NF);
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = dom.Face(i);
+			FSFace& face = dom.Face(i);
 			if (face.m_ntag == 1)
 			{
 				// get the face center
@@ -1245,7 +1245,7 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 		glBegin(GL_TRIANGLES);
 		for (int i = 0; i < zlist.size(); ++i)
 		{
-			FEFace& face = dom.Face(zlist[i].first);
+			FSFace& face = dom.Face(zlist[i].first);
 			m_render.RenderFace(face, pm);
 		}
 		glEnd();
@@ -1256,7 +1256,7 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 		int NF = dom.Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = dom.Face(i);
+			FSFace& face = dom.Face(i);
 			if (face.m_ntag == 1)
 			{
 				// okay, we got one, so let's render it
@@ -1276,7 +1276,7 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 		vector< pair<int, double> > zlist; zlist.reserve(NF);
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = dom.Face(i);
+			FSFace& face = dom.Face(i);
 			if (face.m_ntag == 2)
 			{
 				// get the face center
@@ -1299,7 +1299,7 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 		glBegin(GL_TRIANGLES);
 		for (int i = 0; i < zlist.size(); ++i)
 		{
-			FEFace& face = dom.Face(zlist[i].first);
+			FSFace& face = dom.Face(zlist[i].first);
 			m_render.RenderFace(face, pm);
 		}
 		glEnd();
@@ -1310,7 +1310,7 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 		int NF = dom.Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = dom.Face(i);
+			FSFace& face = dom.Face(i);
 			if (face.m_ntag == 2)
 			{
 				// okay, we got one, so let's render it
@@ -1420,7 +1420,7 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	int NF = dom.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = dom.Face(i);
+		FSFace& face = dom.Face(i);
 
 		// assume no-draw
 		face.m_ntag = 0;
@@ -1546,7 +1546,7 @@ void CGLModel::RenderGhost(CGLContext &rc)
 
 	for (i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.IsVisible())
 		{
 			n = f.Edges();
@@ -1560,7 +1560,7 @@ void CGLModel::RenderGhost(CGLContext &rc)
 				}
 				else
 				{
-					FEFace& f2 = pm->Face(f.m_nbr[j]);
+					FSFace& f2 = pm->Face(f.m_nbr[j]);
 					if (f.m_gid != f2.m_gid)
 					{
 						bdraw = true;
@@ -1630,7 +1630,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		FEElement_& el = pm->ElementRef(f.m_elem[0].eid);
 		if (f.IsVisible() && el.IsVisible() && ((nmat == -1) || (el.m_MatID == nmat)))
 		{
@@ -1645,7 +1645,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 				}
 				else
 				{
-					FEFace& f2 = pm->Face(f.m_nbr[j]);
+					FSFace& f2 = pm->Face(f.m_nbr[j]);
 					if (f.m_gid != f2.m_gid)
 					{
 						bdraw = true;
@@ -1699,7 +1699,7 @@ void CGLModel::RenderNormals(CGLContext& rc)
 		// render the normals
 		for (int i=0; i<pm->Faces(); ++i)
 		{	
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 
 			// see if it is visible
 			if (face.IsVisible())
@@ -1743,7 +1743,7 @@ void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
 		MeshDomain& dom = pm->Domain(nmat);
 		for (int i=0; i<dom.Faces(); ++i)
 		{
-			FEFace& face = dom.Face(i);
+			FSFace& face = dom.Face(i);
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 			if (face.IsVisible() && el.IsVisible())
 			{
@@ -1777,7 +1777,7 @@ void CGLModel::RenderShadows(FEPostModel* ps, const vec3d& lp, float inf)
 	bool bvalid;
 	for (int i=0; i<pm->Faces(); i++)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 
 		m = f.Edges();
 		bvalid = true;
@@ -1802,7 +1802,7 @@ void CGLModel::RenderShadows(FEPostModel* ps, const vec3d& lp, float inf)
 			{
 				for (int j=0; j<m; j++)
 				{
-					FEFace* pf2 = 0;
+					FSFace* pf2 = 0;
 					if (f.m_nbr[j] >= 0) pf2 = &pm->Face(f.m_nbr[j]);
 
 					if (pf2)
@@ -1906,7 +1906,7 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 		int NF = pm->Faces();
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			int n = face.Nodes();
 			for (int j = 0; j<n; ++j)
 			{
@@ -2399,7 +2399,7 @@ void CGLModel::HideMaterial(int nmat)
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.IsExternal())
 		{
 			if (mesh.ElementRef(f.m_elem[0].eid).IsInvisible()) f.Show(false);
@@ -2461,7 +2461,7 @@ void CGLModel::ShowMaterial(int nmat)
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		if (f.IsExternal())
 		{
@@ -2532,7 +2532,7 @@ void CGLModel::UpdateMeshState()
 	// enable the faces
 	for (int i=0; i<mesh.Faces(); ++i) 
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		f.Disable();
 		if (mesh.ElementRef(f.m_elem[0].eid).IsEnabled()) f.Enable();
 	}
@@ -2551,15 +2551,15 @@ void CGLModel::SelectConnectedSurfaceElements(FEElement_ &el)
 	// find the face that this element belongs to
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.m_elem[0].eid == el.m_lid)
 		{
 			// propagate through all neighbors
-			stack<FEFace*> S;
+			stack<FSFace*> S;
 			S.push(&f);
 			while (!S.empty())
 			{
-				FEFace* pf = S.top(); S.pop();
+				FSFace* pf = S.top(); S.pop();
 				pf->m_ntag = 1;
 				FEElement_& e2 = mesh.ElementRef(pf->m_elem[0].eid);
 				if (e2.IsVisible())
@@ -2567,7 +2567,7 @@ void CGLModel::SelectConnectedSurfaceElements(FEElement_ &el)
 					e2.Select();
 					for (int j=0; j<pf->Edges(); ++j)
 					{
-						FEFace* pf2 = (pf->m_nbr[j] >= 0? &mesh.Face(pf->m_nbr[j]) : 0);
+						FSFace* pf2 = (pf->m_nbr[j] >= 0? &mesh.Face(pf->m_nbr[j]) : 0);
 						if (pf2 && (pf2->m_ntag == 0)) S.push(pf2);
 					}
 				}
@@ -2663,7 +2663,7 @@ void CGLModel::SelectConnectedEdges(FSEdge& e)
 
 //-----------------------------------------------------------------------------
 // Select faces that are connected
-void CGLModel::SelectConnectedFaces(FEFace &f, double angleTol)
+void CGLModel::SelectConnectedFaces(FSFace &f, double angleTol)
 {
 	Post::FEPostMesh& mesh = *GetActiveMesh();
 
@@ -2673,18 +2673,18 @@ void CGLModel::SelectConnectedFaces(FEFace &f, double angleTol)
 	double tol = cos(DEG2RAD*angleTol);
 
 	// propagate through all neighbors
-	stack<FEFace*> S;
+	stack<FSFace*> S;
 	f.m_ntag = 1;
 	S.push(&f);
 	while (!S.empty())
 	{
-		FEFace* pf = S.top(); S.pop();
+		FSFace* pf = S.top(); S.pop();
 		if (pf->IsVisible())
 		{
 			pf->Select();
 			for (int j=0; j<pf->Edges(); ++j)
 			{
-				FEFace* pf2 = (pf->m_nbr[j] >= 0? &mesh.Face(pf->m_nbr[j]) : 0);
+				FSFace* pf2 = (pf->m_nbr[j] >= 0? &mesh.Face(pf->m_nbr[j]) : 0);
 				if (pf2 && (pf2->m_ntag == 0) && (pf2->m_sid == pf->m_sid) && (pf2->m_gid == pf->m_gid) && (f.m_fn*pf2->m_fn > tol))
 				{
 					pf2->m_ntag = 1;
@@ -2708,10 +2708,10 @@ void CGLModel::SelectConnectedSurfaceNodes(int n)
 	for (int i=0; i<NF; ++i) mesh.Face(i).m_ntag = 0;
 
 	// find a face that has this node connects to
-	FEFace* pf = 0;
+	FSFace* pf = 0;
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.IsVisible() && f.HasNode(n))
 		{
 			pf = &f;
@@ -2721,17 +2721,17 @@ void CGLModel::SelectConnectedSurfaceNodes(int n)
 	if (pf == 0) return;
 
 	// propagate through all neighbors
-	stack<FEFace*> S;
+	stack<FSFace*> S;
 	pf->m_ntag = 1;
 	S.push(pf);
 	while (!S.empty())
 	{
-		FEFace* pf = S.top(); S.pop();
+		FSFace* pf = S.top(); S.pop();
 		if (pf->IsVisible())
 		{
 			for (int j=0; j<pf->Edges(); ++j)
 			{
-				FEFace* pf2 = (pf->m_nbr[j] >= 0? &mesh.Face(pf->m_nbr[j]) : 0);
+				FSFace* pf2 = (pf->m_nbr[j] >= 0? &mesh.Face(pf->m_nbr[j]) : 0);
 				if (pf2 && (pf2->m_ntag == 0) && (pf2->m_sid == pf->m_sid)) 
 				{
 					pf2->m_ntag = 1;
@@ -2744,7 +2744,7 @@ void CGLModel::SelectConnectedSurfaceNodes(int n)
 	// select all the nodes of tagged faces
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.m_ntag == 1)
 		{
 			int nf = f.Nodes();
@@ -2879,7 +2879,7 @@ void CGLModel::SelectFacesInRange(float fmin, float fmax, bool bsel)
 	int N = pm->Faces();
 	for (int i = 0; i<N; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.IsEnabled() && f.IsVisible() && ((bsel == false) || (f.IsSelected())))
 		{
 			float v = ps->m_FACE[i].m_val;
@@ -2922,7 +2922,7 @@ void CGLModel::HideSelectedElements()
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (mesh.ElementRef(f.m_elem[0].eid).IsHidden()) f.Hide();
 	}
 
@@ -2971,7 +2971,7 @@ void CGLModel::HideUnselectedElements()
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (mesh.ElementRef(f.m_elem[0].eid).IsHidden()) f.Hide();
 	}
 
@@ -2997,7 +2997,7 @@ void CGLModel::HideSelectedFaces()
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; ++i) 
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.IsSelected())
 		{
 			f.Hide();
@@ -3008,7 +3008,7 @@ void CGLModel::HideSelectedFaces()
 	// hide faces that were hidden by hiding the elements
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (mesh.ElementRef(f.m_elem[0].eid).IsVisible() == false) f.Hide();
 	}
 
@@ -3066,7 +3066,7 @@ void CGLModel::HideSelectedEdges()
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int ne = face.Edges();
 		for (int j=0; j<ne; ++j)
 		{
@@ -3087,7 +3087,7 @@ void CGLModel::HideSelectedEdges()
 	// hide faces that were hidden by hiding the elements
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (mesh.ElementRef(f.m_elem[0].eid).IsVisible() == false) f.Hide();
 	}
 
@@ -3160,7 +3160,7 @@ void CGLModel::HideSelectedNodes()
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (mesh.ElementRef(f.m_elem[0].eid).IsVisible() == false) f.Hide();
 	}
 
@@ -3215,7 +3215,7 @@ void CGLModel::SelectAllFaces()
 
 	for (int i = 0; i<mesh->Faces(); i++)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 		if (f.IsVisible()) f.Select();
 	}
 
@@ -3277,7 +3277,7 @@ void CGLModel::InvertSelectedFaces()
 	{
 		for (int i = 0; i<mesh->Faces(); i++)
 		{
-			FEFace& f = mesh->Face(i);
+			FSFace& f = mesh->Face(i);
 			if (f.IsVisible())
 				if (f.IsSelected()) f.Unselect(); else f.Select();
 		}
@@ -3343,7 +3343,7 @@ void CGLModel::BuildInternalSurfaces()
 	if (pmesh == nullptr) return;
 	Post::FEPostMesh& mesh = *pmesh;
 
-	FEFace face;
+	FSFace face;
 	int ndom = mesh.Domains();
 	for (int m = 0; m<ndom; ++m)
 	{
@@ -3462,7 +3462,7 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 			int NF = mesh.Faces();
 			for (int i = 0; i<NF; ++i)
 			{
-				FEFace& f = mesh.Face(i);
+				FSFace& f = mesh.Face(i);
 				if (f.IsSelected())
 				{
 					f.Unselect();

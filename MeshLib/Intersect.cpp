@@ -177,7 +177,7 @@ bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, Intersection& 
 	Intersection tmp;
 	for (int i=0; i<faces; ++i)
 	{
-		const FEFace& face = mesh.Face(i);
+		const FSFace& face = mesh.Face(i);
 		if (face.IsVisible())
 		{
 			mesh.FaceNodeLocalPositions(face, rn);
@@ -280,7 +280,7 @@ bool FindElementIntersection(const Ray& ray, const FSMesh& mesh, Intersection& q
 	float gmin = 1e30f;
 	bool b = false;
 
-	FEFace face;
+	FSFace face;
 	q.m_index = -1;
 	Intersection tmp;
 	for (int i = 0; i<elems; ++i)
@@ -394,7 +394,7 @@ bool FindElementIntersection(const Ray& ray, const FSMesh& mesh, Intersection& q
 }
 
 //-----------------------------------------------------------------------------
-bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, const FEFace& face, Intersection& q)
+bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, const FSFace& face, Intersection& q)
 {
 	q.m_index = -1;
 

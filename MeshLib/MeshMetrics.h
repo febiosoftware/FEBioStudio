@@ -48,7 +48,7 @@ double ShellJacobian(const FSMesh& mesh, const FEElement& el, int flag);
 double ShellArea(const FSMesh& mesh, const FEElement& el);
 
 // surface area of facet
-double SurfaceArea(const FSMesh& mesh, const FEFace& f);
+double SurfaceArea(const FSMesh& mesh, const FSFace& f);
 
 // volume of element
 double ElementVolume(const FSMesh& mesh, const FEElement& e);

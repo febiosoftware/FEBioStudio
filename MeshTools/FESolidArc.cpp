@@ -313,14 +313,14 @@ void FESolidArc::BuildFaces(FSMesh* pm)
 	pm->Create(0,0,NF);
 
 	// build the faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 
 	// face 0
 	for (j=0; j<nz; ++j)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 0;
 			f.m_sid = 0;
@@ -336,7 +336,7 @@ void FESolidArc::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 1;
 			f.m_sid = 1;
@@ -352,7 +352,7 @@ void FESolidArc::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 2;
 			f.m_sid = 2;
@@ -368,7 +368,7 @@ void FESolidArc::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 3;
 			f.m_sid = 3;
@@ -384,7 +384,7 @@ void FESolidArc::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 4;
 			f.m_sid = 4;
@@ -400,7 +400,7 @@ void FESolidArc::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 5;
 			f.m_sid = 5;

@@ -1211,7 +1211,7 @@ int FEFaceSelection::Count()
 {
 	if (m_pMesh == 0) return 0;
 	int N = 0;
-	FEFace* pf = m_pMesh->FacePtr();
+	FSFace* pf = m_pMesh->FacePtr();
 	for (int i=0; i<m_pMesh->Faces(); ++i, ++pf)
 		if (pf->IsSelected()) ++N;
 
@@ -1222,7 +1222,7 @@ void FEFaceSelection::Invert()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Faces(); 
-	FEFace* pf = m_pMesh->FacePtr();
+	FSFace* pf = m_pMesh->FacePtr();
 	for (int i=0; i<N; ++i, ++pf)
 		if (pf->IsVisible())
 		{
@@ -1236,7 +1236,7 @@ void FEFaceSelection::Update()
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Faces();
 	FSNode* pn = m_pMesh->NodePtr();
-	FEFace* pf = m_pMesh->FacePtr();
+	FSFace* pf = m_pMesh->FacePtr();
 	GObject* po = m_pMesh->GetGObject();
 
 	int m = 0;
@@ -1251,7 +1251,7 @@ void FEFaceSelection::Update()
 	{
 		if (pf->IsSelected())
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			n = f.n;
 			for (j=0; j<pf->Nodes(); ++j)
 			{

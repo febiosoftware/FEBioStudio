@@ -60,7 +60,7 @@ protected:
 protected:
     
     // store list of selected faces in fdata
-    vector<FEFace> fdata;
+    vector<FSFace> fdata;
     
     // element corresponding to face
     vector<int> fel;

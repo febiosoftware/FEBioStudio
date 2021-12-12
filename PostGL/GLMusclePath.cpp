@@ -254,7 +254,7 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 		int NF = mesh.Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			if (face.HasNode(n0))
 			{
 				if (face.m_elem[0].eid >= 0)
@@ -488,7 +488,7 @@ vec3d GLMusclePath::UpdateOrigin(int ntime)
 		// find the closest node on the surface
 		for (int i = 0; i < mesh.Faces(); ++i)
 		{
-			FEFace& f = mesh.Face(i);
+			FSFace& f = mesh.Face(i);
 			vec3d ri(0,0,0);
 			for (int j = 0; j < f.Nodes(); ++j)
 			{
@@ -514,7 +514,7 @@ vec3d GLMusclePath::UpdateOrigin(int ntime)
 
 		vec3d dr = r0 - rmin;
 
-		FEFace& f = mesh.Face(nmin);
+		FSFace& f = mesh.Face(nmin);
 		vec3d a0 = to_vec3d(fem.NodePosition(f.n[0], 0));
 		vec3d a1 = to_vec3d(fem.NodePosition(f.n[1], 0));
 		vec3d a2 = to_vec3d(fem.NodePosition(f.n[2], 0));
@@ -534,7 +534,7 @@ vec3d GLMusclePath::UpdateOrigin(int ntime)
 	}
 
 	// calculate current position of origin
-	FEFace& f = mesh.Face(m_closestFace);
+	FSFace& f = mesh.Face(m_closestFace);
 	vec3d ri(0, 0, 0);
 	for (int j = 0; j < f.Nodes(); ++j)
 	{
@@ -604,7 +604,7 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 		// figure out the case for this face
 		FaceMesh::FACE& face = mesh.Face(i);
 		int ne = 3; // edges!
-		double s[FEFace::MAX_NODES] = { 0 };
+		double s[FSFace::MAX_NODES] = { 0 };
 		int ncase = 0;
 		vec3d* re = face.r;
 		for (int j = 0; j < ne; ++j)
@@ -836,7 +836,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 		faces = 0;
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nn = face.Edges();
 			face.m_ntag = 0;
 			for (int j = 0; j < nn; ++j)
@@ -861,7 +861,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 	int n = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& fs = mesh.Face(i);
+		FSFace& fs = mesh.Face(i);
 		if (fs.m_ntag == 1)
 		{
 			FaceMesh::FACE& fd = faceMesh.Face(n++);

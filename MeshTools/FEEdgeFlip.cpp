@@ -181,8 +181,8 @@ bool FEEdgeFlip::FlipEdge(int iedge, FESurfaceMesh* mesh)
 	if (faceList.size() != 2) return false;
 
 	// get the two adjacent faces
-	FEFace& f0 = mesh->Face(faceList[0]);
-	FEFace& f1 = mesh->Face(faceList[1]);
+	FSFace& f0 = mesh->Face(faceList[0]);
+	FSFace& f1 = mesh->Face(faceList[1]);
 
 	// we need to find start node for each face
 	int k0 = -1;
@@ -255,8 +255,8 @@ void FEEdgeFlip::DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FESur
 
 	// get the face list of the node
 	std::vector<int>& faceList = EFL[iedge];
-	FEFace& f0 = mesh->Face(faceList[0]);
-	FEFace& f1 = mesh->Face(faceList[1]);
+	FSFace& f0 = mesh->Face(faceList[0]);
+	FSFace& f1 = mesh->Face(faceList[1]);
 
 	// flip the faces
 	f0.n[0] = b[2];

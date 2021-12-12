@@ -63,7 +63,7 @@ FSMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 	for (int i=0; i<NFS; ++i, ++pi)
 	{
 		// get the next slave facet
-		FEFace* pf = pms->FacePtr(*pi);
+		FSFace* pf = pms->FacePtr(*pi);
 
 		// get the average facet normal
 		vec3d n = to_vec3d(pf->m_fn);
@@ -102,7 +102,7 @@ FSMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 		for (int j=0; j<NFM; ++j, ++pj)
 		{
 			// get the next master surface facet
-			FEFace* pfm = pmm->FacePtr(*pj);
+			FSFace* pfm = pmm->FacePtr(*pj);
 
 			// get the master nodes
 			nq = pfm->Nodes();

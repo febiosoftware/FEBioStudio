@@ -71,12 +71,12 @@ public:
 
 	int size() const { return (int) FT.size(); }
 
-	FEFace& operator [] (int i) { return FT[i]; }
+	FSFace& operator [] (int i) { return FT[i]; }
 
-	const FEFace& operator [] (int i) const { return FT[i]; }
+	const FSFace& operator [] (int i) const { return FT[i]; }
 
 private:
-	std::vector<FEFace>	FT;
+	std::vector<FSFace>	FT;
 };
 
 class FEFaceEdgeList

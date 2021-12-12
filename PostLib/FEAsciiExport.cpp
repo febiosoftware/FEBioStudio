@@ -139,7 +139,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 		fprintf(fp, "*FACES\n");
 		for (int i=0; i<m.Faces(); ++i)
 		{
-			FEFace& f = m.Face(i);
+			FSFace& f = m.Face(i);
 			if (f.Nodes() == 3) fprintf(fp, "%8d,%d,%d,%d\n"   , i + 1, f.n[0], f.n[1], f.n[2]);
 			if (f.Nodes() == 4) fprintf(fp, "%8d,%d,%d,%d,%d\n", i + 1, f.n[0], f.n[1], f.n[2], f.n[3]);
 		}

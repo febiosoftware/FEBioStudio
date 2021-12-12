@@ -85,7 +85,7 @@ void FEBioMesh::UpdateMeshData()
 
 	for (i = 0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		for (j = 0; j<n; ++j) m_nFace[face.n[j]]++;
 		nsize += n;
@@ -108,7 +108,7 @@ void FEBioMesh::UpdateMeshData()
 
 	for (i = 0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		for (j = 0; j<n; ++j)
 		{
@@ -160,7 +160,7 @@ int FEBioMesh::FindFace(const int* n, int nn, int noff)
 
 	for (int i = 0; i<N; ++i)
 	{
-		FEFace& face = m_mesh.Face(pf[i]);
+		FSFace& face = m_mesh.Face(pf[i]);
 		if (face.Nodes() == nn)
 		{
 			bool bfound = true;
@@ -471,7 +471,7 @@ FENodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const FEBioInputModel::
 	return pns;
 }
 
-bool check_winding(const vector<int>& nodeList, const FEFace& face)
+bool check_winding(const vector<int>& nodeList, const FSFace& face)
 {
 	int nf = 0;
 	if (face.Shape() == FE_FACE_TRI ) nf = 3;
@@ -513,7 +513,7 @@ FESurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 		if (faceID >= 0)
 		{
 			// check winding
-			FEFace& meshFace = m_part->m_mesh->Face(faceID);
+			FSFace& meshFace = m_part->m_mesh->Face(faceID);
 			bool winding = check_winding(face, meshFace);
 			if (winding == false)
 			{

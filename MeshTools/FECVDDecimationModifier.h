@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FESurfaceModifier.h"
 
-class FEFace;
+class FSFace;
 
 //-----------------------------------------------------------------------------
 //! This class implements a modifier that coarses a plygonal mesh using an
@@ -103,7 +103,7 @@ private:
 	FESurfaceMesh* CalculateCVD(FESurfaceMesh* pm);
 
 	//! swap triangles
-	bool Swap(FEFace& face, int nface, int ncluster);
+	bool Swap(FSFace& face, int nface, int ncluster);
 
 public:
 	bool	m_bcvd;

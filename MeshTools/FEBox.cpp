@@ -701,13 +701,13 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 	pm->Create(0,0,faces);
 
 	// build the faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 
 	// -Y face
 	for (i=0; i<m_nx; ++i)
 		for (k=0; k<m_nz; ++k, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 0;
 			f.m_sid = 0;
@@ -721,7 +721,7 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 	for (j=0; j<m_ny; ++j)
 		for (k=0; k<m_nz; ++k, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 1;
 			f.m_sid = 1;
@@ -735,7 +735,7 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 	for (i=m_nx-1; i>=0; --i)
 		for (k=0; k<m_nz; ++k, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 2;
 			f.m_sid = 2;
@@ -749,7 +749,7 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 	for (j=m_ny-1; j>=0; --j)
 		for (k=0; k<m_nz; ++k, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 3;
 			f.m_sid = 3;
@@ -763,7 +763,7 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 	for (i=0; i<m_nx; ++i)
 		for (j=m_ny-1; j>=0; --j, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 4;
 			f.m_sid = 4;
@@ -777,7 +777,7 @@ void FEBoxMesher::BuildHexFaces(FSMesh* pm)
 	for (i=0; i<m_nx; ++i)
 		for (j=0; j<m_ny; ++j, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 5;
 			f.m_sid = 5;
@@ -799,7 +799,7 @@ void FEBoxMesher::BuildTetFaces(FSMesh* pm)
 	pm->Create(0,0,faces);
 
 	// build the faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 
 	// -Y face
 	for (i=0; i<m_nx; ++i)

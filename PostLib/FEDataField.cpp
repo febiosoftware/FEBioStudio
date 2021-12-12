@@ -531,7 +531,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 
 		// write the element ID
 		char* sz = buf;

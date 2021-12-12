@@ -88,7 +88,7 @@ void FENodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			if (f.m_gid >= 0)
 			{
 				int nn = f.Nodes();
@@ -197,7 +197,7 @@ void FENodeNodeList::Build(FESurfaceMesh* pm)
 		int nv = NFL.Valence(i);
 		for (j = n = 0; j<nv; ++j)
 		{
-			FEFace* pf = NFL.Face(i, j);
+			FSFace* pf = NFL.Face(i, j);
 			int nf = pf->Nodes();
 			for (k = 0; k<nf; ++k)
 			{
@@ -228,7 +228,7 @@ void FENodeNodeList::Build(FESurfaceMesh* pm)
 		int noff = m_off[i];
 		for (j = n = 0; j<nv; ++j)
 		{
-			FEFace* pf = NFL.Face(i, j);
+			FSFace* pf = NFL.Face(i, j);
 			int nf = pf->Nodes();
 			for (k = 0; k<nf; ++k)
 			{

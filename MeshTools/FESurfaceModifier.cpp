@@ -110,7 +110,7 @@ void FESurfacePartitionSelection::PartitionSelectedFaces(FESurfaceMesh* mesh)
 	int ng = mesh->CountFacePartitions();
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 		if (f.IsSelected())
 		{
 			f.m_gid = ng;

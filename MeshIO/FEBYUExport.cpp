@@ -63,7 +63,7 @@ bool FEBYUExport::Write(const char* szfile)
 		for (j=0; j<m.Nodes(); ++j) m.Node(j).m_ntag = 0;
 		for (j=0; j<m.Faces(); ++j)
 		{
-			FEFace& f = m.Face(j);
+			FSFace& f = m.Face(j);
 			n = f.Nodes();
 			edges += n;
 			for (k=0; k<n; ++k) m.Node(f.n[k]).m_ntag = 1;
@@ -104,7 +104,7 @@ bool FEBYUExport::Write(const char* szfile)
 		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (j=0; j<m.Faces(); ++j)
 		{
-			FEFace& f = m.Face(j);
+			FSFace& f = m.Face(j);
 			n = f.Nodes();
 			if (n == 3)
 				fprintf(fp, "%d %d %d\n", m.Node(f.n[0]).m_ntag, m.Node(f.n[1]).m_ntag, -m.Node(f.n[2]).m_ntag);

@@ -81,7 +81,7 @@ protected:
 	vec3f project(Surface& surf, vec3f& r, int ntime);
 
 	// project r onto a facet
-	bool ProjectToFacet(FEFace& face, vec3f& r, int ntime, vec3f& q);
+	bool ProjectToFacet(FSFace& face, vec3f& r, int ntime, vec3f& q);
 
 protected:
 	Surface			m_surf1;

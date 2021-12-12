@@ -373,14 +373,14 @@ void FETube::BuildFaces(FSMesh* pm)
 	pm->Create(0,0,NF);
 
 	// build the faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 
 	// the outer surfaces
 	for (j=0; j<nz; ++j)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4*i/nd;
 			f.m_gid = 4+4*i/nd;
@@ -397,7 +397,7 @@ void FETube::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4 + 4*i/nd;
 			f.m_gid = 8 + 4*i/nd;
@@ -414,7 +414,7 @@ void FETube::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 12+4*j/nd;
 			f.m_sid = 2;
@@ -430,7 +430,7 @@ void FETube::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 8+4*j/nd;
 			f.m_gid = 4*j/nd;
@@ -709,14 +709,14 @@ void FETube2::BuildFaces(FSMesh* pm)
 	pm->Create(0,0,NF);
 
 	// build the faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 
 	// the outer surfaces
 	for (j=0; j<nz; ++j)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4*i/nd;
 			f.m_gid = 4+4*i/nd;
@@ -733,7 +733,7 @@ void FETube2::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4 + 4*i/nd;
 			f.m_gid = 8 + 4*i/nd;
@@ -750,7 +750,7 @@ void FETube2::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 12+4*j/nd;
 			f.m_sid = 2;
@@ -766,7 +766,7 @@ void FETube2::BuildFaces(FSMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 8+4*j/nd;
 			f.m_gid = 4*j/nd;

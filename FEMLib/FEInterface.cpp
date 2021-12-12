@@ -868,7 +868,7 @@ void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 	FEFaceList::Iterator its = ps->First();
 	for (int i=0; i<ps->Size(); ++i, ++its)
 	{
-		FEFace& f = *(its->m_pi);
+		FSFace& f = *(its->m_pi);
 		FSMesh& mesh = dynamic_cast<FSMesh&>(*(its->m_pm));
 		int nf = f.Nodes();
 		for (int n=0; n<nf; ++n)

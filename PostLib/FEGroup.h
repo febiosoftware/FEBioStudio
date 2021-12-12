@@ -69,7 +69,7 @@ public:
 	int Type() const { return m_ntype; }
 
 	int Faces() { return (int) m_Face.size(); }
-	FEFace& Face(int n);
+	FSFace& Face(int n);
 
 	int Elements() { return (int) m_Elem.size(); }
 	FEElement_& Element(int n);

@@ -200,7 +200,7 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 
 	for (i=0; i<m.Faces(); ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		if (f.IsSelected())
 		{
 			for (j=0; j<f.Nodes(); ++j) m.Node(f.n[j]).m_ntag = 1;
@@ -213,7 +213,7 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 	{
 		for (i=0; i<m.Faces(); ++i)
 		{
-			FEFace& f = m.Face(i);
+			FSFace& f = m.Face(i);
 			if (f.IsSelected()) na += to_vec3d(f.m_fn);
 		}
 	}
@@ -922,11 +922,11 @@ FSMesh* FEQuad2Tri::Apply(FSMesh *pm)
 	NF1 = 0;
 	for (i=0; i<NF0; ++i)
 	{
-		FEFace& f0 = pm->Face(i);
+		FSFace& f0 = pm->Face(i);
 		if (f0.Nodes() == 4)
 		{
-			FEFace& f1 = pnew->Face(NF1++);
-			FEFace& f2 = pnew->Face(NF1++);
+			FSFace& f1 = pnew->Face(NF1++);
+			FSFace& f2 = pnew->Face(NF1++);
 
 			f1 = f0;
 			f2 = f0;
@@ -944,7 +944,7 @@ FSMesh* FEQuad2Tri::Apply(FSMesh *pm)
 		}
 		else
 		{
-			FEFace& f1 = pnew->Face(NF1++);
+			FSFace& f1 = pnew->Face(NF1++);
 			f1 = f0;
 		}
 	}
@@ -1316,7 +1316,7 @@ FSMesh* FEDetachElements::Apply(FSMesh* pm)
 					FEElement& elj = pm->Element(nbr);
 					if (elj.IsSelected() == false)
 					{
-						FEFace f = el.GetFace(j);
+						FSFace f = el.GetFace(j);
 						int nf = f.Nodes();
 						for (int k=0; k<nf; ++k) pm->Node(f.n[k]).m_ntag = 1;
 					}

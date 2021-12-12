@@ -1034,7 +1034,7 @@ void CGLDocument::GrowNodeSelection(FSMeshBase* pm)
 
 	for (i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_ntag == 1)
 		{
 			for (int j = 0; j < f.Nodes(); ++j) pm->Node(f.n[j]).m_ntag = 1;
@@ -1061,7 +1061,7 @@ void CGLDocument::GrowFaceSelection(FSMeshBase* pm, bool respectPartitions)
 	for (i = 0; i < N; ++i) pm->Face(i).m_ntag = 0;
 	for (i = 0; i < N; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.IsSelected())
 		{
 			f.m_ntag = 1;
@@ -1072,7 +1072,7 @@ void CGLDocument::GrowFaceSelection(FSMeshBase* pm, bool respectPartitions)
 			{
 				if (f.m_nbr[j] >= 0)
 				{
-					FEFace& fj = pm->Face(f.m_nbr[j]);
+					FSFace& fj = pm->Face(f.m_nbr[j]);
 					if ((respectPartitions == false) || (f.m_gid == fj.m_gid))
 					{
 						fj.m_ntag = 1;
@@ -1123,7 +1123,7 @@ void CGLDocument::ShrinkNodeSelection(FSMeshBase* pm)
 
 	for (i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_ntag == 1)
 		{
 			for (int j = 0; j < f.Nodes(); ++j) pm->Node(f.n[j]).m_ntag = 0;
@@ -1150,7 +1150,7 @@ void CGLDocument::ShrinkFaceSelection(FSMeshBase* pm)
 	for (i = 0; i < N; ++i) pm->Face(i).m_ntag = 1;
 	for (i = 0; i < N; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.IsSelected() == false)
 		{
 			f.m_ntag = 0;

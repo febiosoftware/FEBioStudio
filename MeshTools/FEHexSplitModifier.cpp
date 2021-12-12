@@ -94,7 +94,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 	{
 		FSNode& n1 = pmnew->Node(n);
 
-		FEFace& face = FT[i];
+		FSFace& face = FT[i];
 
 		vec3d r0 = pm->Node(face.n[0]).r;
 		vec3d r1 = pm->Node(face.n[1]).r;
@@ -159,12 +159,12 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 		int NF = pm->Faces();
 		for (int i=0; i<NF; ++i) 
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			face.m_ntag = -1;
 
 			for (int j=0; j<NF0; ++j)
 			{
-				FEFace& fj = FT[j];
+				FSFace& fj = FT[j];
 				if (fj == face)
 				{
 					face.m_ntag = j;
@@ -179,7 +179,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 		vector<vec3d> p(NN0, vec3d(0,0,0));
 		for (int i=0; i<NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			int ne = face.Edges();
 			for (int j=0; j<ne; ++j)
 			{
@@ -208,7 +208,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			int ne = face.Edges();
 			for (int j = 0; j<ne; ++j)
 			{
@@ -365,7 +365,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.m_ntag != -1)
 		{
 			FSNode& n1 = pmnew->Node(n++);
@@ -416,12 +416,12 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 		int NF = pm->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			face.m_ntag = -1;
 
 			for (int j = 0; j < NF0; ++j)
 			{
-				FEFace& fj = FT[j];
+				FSFace& fj = FT[j];
 				if (fj == face)
 				{
 					face.m_ntag = j;
@@ -436,7 +436,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 		vector<vec3d> p(NN0, vec3d(0, 0, 0));
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
 			{
@@ -465,7 +465,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
 			{

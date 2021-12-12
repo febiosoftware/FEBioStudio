@@ -111,7 +111,7 @@ public:
 	bool IsExterior(FEElement_* pe) const;
 
 	// find a face of an element
-	int FindFace(FEElement_* pe, FEFace& f, FEFace& fe);
+	int FindFace(FEElement_* pe, FSFace& f, FSFace& fe);
 
 	// Find and label all exterior nodes
 	void MarkExteriorNodes();

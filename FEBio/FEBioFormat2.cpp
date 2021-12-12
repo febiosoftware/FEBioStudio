@@ -1869,7 +1869,7 @@ FESurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 
 		if (format == 0)
 		{
-			int nf[FEFace::MAX_NODES], N;
+			int nf[FSFace::MAX_NODES], N;
 
 			// read faces
 			++tag;
@@ -1912,7 +1912,7 @@ FESurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 					int nf = el->Faces();
 					if ((n[1] >= 1) && (n[1] <= nf))
 					{
-						FEFace f = el->GetFace(n[1] - 1);
+						FSFace f = el->GetFace(n[1] - 1);
 						vector<int> node(f.Nodes());
 						for (int i=0; i<f.Nodes(); ++i) node[i] = f.n[i];
 						surf.m_face.push_back(node);

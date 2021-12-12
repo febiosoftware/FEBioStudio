@@ -136,7 +136,7 @@ void VRMLExporter::write_mesh()
 	}
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		for (j=0; j<n; ++j) 
 		{
@@ -159,7 +159,7 @@ void VRMLExporter::write_mesh()
 	int* fn;
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		fn = face.n;
 		int nf[4];
@@ -214,7 +214,7 @@ void VRMLExporter::write_mesh()
 
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int matid = mesh.ElementRef(face.m_elem[0].eid).m_MatID;
 		GLColor& col = m_pscene->GetMaterial(matid)->diffuse;
 		r = (float) col.r *f;

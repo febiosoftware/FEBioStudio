@@ -78,8 +78,8 @@ FSMesh*	FEShellMesher::BuildMesh()
 	// create faces
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& sf = surfaceMesh->Face(i);
-		FEFace& df = mesh->Face(i);
+		FSFace& sf = surfaceMesh->Face(i);
+		FSFace& df = mesh->Face(i);
 		df = sf;
 		df.m_elem[0].eid = i;
 		df.m_elem[0].lid = 0;
@@ -90,7 +90,7 @@ FSMesh*	FEShellMesher::BuildMesh()
 	// create elements
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& sf = surfaceMesh->Face(i);
+		FSFace& sf = surfaceMesh->Face(i);
 		FEElement& el = mesh->Element(i);
 
 		assert(sf.m_gid >= 0);

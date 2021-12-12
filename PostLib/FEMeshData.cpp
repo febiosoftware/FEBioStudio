@@ -1205,7 +1205,7 @@ void Curvature::level(int n, int l, set<int>& nl1)
 			{
 				if (m_face[nfl[i].fid] == 1)
 				{
-					FEFace& f = pmesh->Face(nfl[i].fid); 
+					FSFace& f = pmesh->Face(nfl[i].fid); 
 					f.m_ntag = 0;
 				}
 			}
@@ -1222,7 +1222,7 @@ void Curvature::level(int n, int l, set<int>& nl1)
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].fid);
+				FSFace& f = pmesh->Face(nfl[i].fid);
 				if (m_face[nfl[i].fid] == 1)
 				{
 					if (f.m_ntag == 0)
@@ -1255,7 +1255,7 @@ void Curvature::eval_curvature(int n, float* f, int m)
 	FSMeshBase* pmesh = GetFEState()->GetFEMesh();
 
 	// get the face
-	FEFace& face = pmesh->Face(n);
+	FSFace& face = pmesh->Face(n);
 	for (int i=0; i<face.Nodes(); ++i)
 	{
 		int in = face.n[i];
@@ -1284,7 +1284,7 @@ float Curvature::nodal_curvature(int n, int measure)
 	{
 		if (m_face[nfl[i].fid] == 1)
 		{
-			FEFace& f = pmesh->Face(nfl[i].fid);
+			FSFace& f = pmesh->Face(nfl[i].fid);
 			sn += pfem->FaceNormal(f, ntime);
 		}
 	}
@@ -1348,7 +1348,7 @@ void PrincCurvatureVector::level(int n, int l, set<int>& nl1)
 			{
 				if (m_face[nfl[i].fid] == 1)
 				{
-					FEFace& f = pmesh->Face(nfl[i].fid); 
+					FSFace& f = pmesh->Face(nfl[i].fid); 
 					f.m_ntag = 0;
 				}
 			}
@@ -1365,7 +1365,7 @@ void PrincCurvatureVector::level(int n, int l, set<int>& nl1)
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].fid);
+				FSFace& f = pmesh->Face(nfl[i].fid);
 				if (m_face[nfl[i].fid] == 1)
 				{
 					if (f.m_ntag == 0)
@@ -1398,7 +1398,7 @@ void PrincCurvatureVector::eval(int n, vec3f* fv, int m)
 	FEPostMesh* pmesh = GetFEMesh();
 
 	// get the face
-	FEFace& face = pmesh->Face(n);
+	FSFace& face = pmesh->Face(n);
 	for (int i=0; i<face.Nodes(); ++i)
 	{
 		int in = face.n[i];
@@ -1427,7 +1427,7 @@ vec3f PrincCurvatureVector::nodal_curvature(int n, int m)
 	{
 		if (m_face[nfl[i].fid] == 1)
 		{
-			FEFace& f = pmesh->Face(nfl[i].fid);
+			FSFace& f = pmesh->Face(nfl[i].fid);
 			sn += pfem->FaceNormal(f, ntime);
 		}
 	}
@@ -1625,7 +1625,7 @@ void SurfaceCongruency::eval(int n, float* f)
 	FEPostMesh* pmesh = GetFEMesh();
 
 	// get the face
-	FEFace& face = pmesh->Face(n);
+	FSFace& face = pmesh->Face(n);
 	int ntime = m_state->GetID();
 	for (int i = 0; i<face.Nodes(); ++i)
 	{

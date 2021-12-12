@@ -132,7 +132,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		NF = pm->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			int nf = f.Nodes();
 			for (int j = 0; j < nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
 		}
@@ -162,7 +162,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		// copy faces
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = m_surfmesh->Face(i);
+			FSFace& f = m_surfmesh->Face(i);
 			f = pm->Face(i);
 			int nf = f.Nodes();
 			for (int j = 0; j < nf; ++j) f.n[j] = pm->Node(f.n[j]).m_ntag;
@@ -221,7 +221,7 @@ FSMesh* GSurfaceMeshObject::BuildMesh()
 	int NF = m_surfmesh->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = m_surfmesh->Face(i);
+		FSFace& face = m_surfmesh->Face(i);
 
 		// Only triangles, quads are accepted
 		int nf = face.Nodes();
@@ -416,7 +416,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	// create face data
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& fs = pm->Face(i);
+		FSFace& fs = pm->Face(i);
 		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_sid);
 	}
 
@@ -1019,7 +1019,7 @@ FESurfaceMesh* createSurfaceMesh(GLMesh* glmesh)
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& facei = pm->Face(i);
+		FSFace& facei = pm->Face(i);
 		const GMesh::FACE& glface = glmesh->Face(i);
 		facei.SetType(FE_FACE_TRI3);
 		facei.m_gid = glface.pid;

@@ -234,12 +234,12 @@ void FEShellSphere::BuildFaces(FSMesh* pm)
 	int i;
 	int nfaces = pm->Elements();
 	pm->Create(0,0,nfaces);
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 	for (i=0; i<nfaces; ++i, ++pf)
 	{
 		FEElement_* pe = pm->ElementPtr(i);
 
-		FEFace& f = *pf;
+		FSFace& f = *pf;
 		f.SetType(FE_FACE_QUAD4);
 		f.m_gid = pe->m_gid;
 		pe->m_gid = 0;

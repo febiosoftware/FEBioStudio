@@ -502,7 +502,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	// copy faces
 	for (i=0; i<faces; ++i)
 	{
-		FEFace& f = pmesh->Face(i);
+		FSFace& f = pmesh->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		f.n[0] = out.trifacelist[3*i+2];
 		f.n[1] = out.trifacelist[3*i+1];
@@ -558,7 +558,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 				if (el.m_face[j] != -1)
 				{
 					// get the GID of the face
-					FEFace& face = pmesh->Face(el.m_face[j]);
+					FSFace& face = pmesh->Face(el.m_face[j]);
 					int faceId = face.m_gid;
 					if ((faceId >= 0) && (faceId < m_po->Faces()))
 					{
@@ -712,7 +712,7 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 	vector< vector<int> > FE; FE.assign(NF, vector<int>(3));
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		vector<int>& fe = FE[i];
 		for (int j=0; j<3; ++j)
 		{
@@ -807,8 +807,8 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 	// create the new faces
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f0 = pm->Face(i);
-		FEFace& f1 = pnew->Face(i);
+		FSFace& f0 = pm->Face(i);
+		FSFace& f1 = pnew->Face(i);
 
 		f1.SetType(FE_FACE_TRI6);
 		f1.m_gid = f0.m_gid;
@@ -1401,7 +1401,7 @@ bool FETetGenMesher::build_plc(FESurfaceMesh* pm, tetgenio& in)
 	for (i = 0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = -1;
 	for (i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int fn = f.Nodes();
 		for (j = 0; j<fn; ++j)
 		{
@@ -1440,7 +1440,7 @@ bool FETetGenMesher::build_plc(FESurfaceMesh* pm, tetgenio& in)
 	int faces = 0;
 	for (i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.Type() == FE_FACE_TRI3) { ++faces; f.m_ntag = 1; }
 		else
 		{
@@ -1464,7 +1464,7 @@ bool FETetGenMesher::build_plc(FESurfaceMesh* pm, tetgenio& in)
 	{
 		tetgenio::facet* pf;
 		tetgenio::polygon* pp;
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.Type() == FE_FACE_TRI3)
 		{
 			pf = &in.facetlist[n];
@@ -1662,7 +1662,7 @@ FSMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 	// copy faces
 	for (int i = 0; i<faces; ++i)
 	{
-		FEFace& f = pmesh->Face(i);
+		FSFace& f = pmesh->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		f.n[0] = out.trifacelist[3 * i + 2];
 		f.n[1] = out.trifacelist[3 * i + 1];

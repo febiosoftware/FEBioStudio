@@ -92,7 +92,7 @@ bool FEHyperSurfImport::Load(const char* szfile)
 		ch = fgets(szline, 255, m_fp);
 		if (ch == 0) { delete pm; Close(); return false; }
 
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		face.SetType(FE_FACE_TRI3);
 		sscanf(szline, "%d%d%d", &ne[0], &ne[1], &ne[2]);
 

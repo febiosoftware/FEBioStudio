@@ -50,7 +50,7 @@ public:
 
 public:
 	// get the local positions of a face
-	void FaceNodeLocalPositions(const FEFace& f, vec3d* r) const;
+	void FaceNodeLocalPositions(const FSFace& f, vec3d* r) const;
 
 public:
 	// calculate smoothing IDs based on face normals.
@@ -65,18 +65,18 @@ public:
 	// update item visibility
 	virtual void UpdateItemVisibility() {}
 
-	vec3d FaceCenter(FEFace& f) const;
+	vec3d FaceCenter(FSFace& f) const;
 
 	vec3d EdgeCenter(FSEdge& e) const;
 
 	// face area
-	double FaceArea(FEFace& f);
+	double FaceArea(FSFace& f);
 	double FaceArea(const std::vector<vec3d>& f, int faceType);
 
 	// --- F A C E   D A T A ---
-	void FaceNodePosition(const FEFace& f, vec3d* r) const;
-	void FaceNodeNormals(FEFace& f, vec3f* n);
-	void FaceNodeTexCoords(FEFace& f, float* t);
+	void FaceNodePosition(const FSFace& f, vec3d* r) const;
+	void FaceNodeNormals(FSFace& f, vec3f* n);
+	void FaceNodeTexCoords(FSFace& f, float* t);
 
 	void ClearFaceSelection();
 
@@ -84,10 +84,10 @@ public:
 
 public: // interface for accessing mesh items
 	int Faces() const { return (int)m_Face.size(); }
-	FEFace& Face(int n) { return m_Face[n]; }
-	const FEFace& Face(int n) const { return m_Face[n]; }
-	FEFace* FacePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Face.size()) ? &m_Face[n] : 0); }
-	const FEFace* FacePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Face.size()) ? &m_Face[n] : 0); }
+	FSFace& Face(int n) { return m_Face[n]; }
+	const FSFace& Face(int n) const { return m_Face[n]; }
+	FSFace* FacePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Face.size()) ? &m_Face[n] : 0); }
+	const FSFace* FacePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Face.size()) ? &m_Face[n] : 0); }
 
 	void DeleteFaces() { if (!m_Face.empty()) m_Face.clear(); }
 	void DeleteEdges() { if (!m_Edge.empty()) m_Edge.clear(); }
@@ -115,7 +115,7 @@ protected:
 	void RemoveFaces(int ntag);
 
 protected:
-	std::vector<FEFace>		m_Face;	//!< FE faces
+	std::vector<FSFace>		m_Face;	//!< FE faces
 
 	FENodeFaceList		m_NFL;
 };

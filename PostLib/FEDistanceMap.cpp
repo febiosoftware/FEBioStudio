@@ -78,7 +78,7 @@ void Post::FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	int nn = 0;
 	for (int i=0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) 
 		{
@@ -96,11 +96,11 @@ void Post::FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	}
 
 	// create the local node list
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 	m_lnode.resize(Faces()*MN);
 	for (int i=0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) m_lnode[MN * i + j] = mesh.Node(f.n[j]).m_ntag;
 	}
@@ -109,7 +109,7 @@ void Post::FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	m_NLT.resize(Nodes());
 	for (int i=0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
@@ -129,10 +129,10 @@ void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s)
 	int NN = s.Nodes();
 	s.m_norm.resize(NN);
 
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(s.m_face[i]);
+		FSFace& f = mesh.Face(s.m_face[i]);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) 
 		{
@@ -157,7 +157,7 @@ void Post::FEDistanceMap::Apply()
 	// get the mesh
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 
 	// build the node lists
 	m_surf1.BuildNodeList(mesh);
@@ -245,7 +245,7 @@ vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r,
 	for (int i=0; i<(int) FT.size(); ++i)
 	{
 		// get the i-th facet
-		FEFace& face = mesh.Face(FT[i]);
+		FSFace& face = mesh.Face(FT[i]);
 
 		// project r onto the the facet
 		vec3f p;
@@ -265,7 +265,7 @@ vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r,
 }
 
 //-----------------------------------------------------------------------------
-bool Post::FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& q)
+bool Post::FEDistanceMap::ProjectToFacet(FSFace& f, vec3f& x, int ntime, vec3f& q)
 {
 	Post::FEPostModel& fem = *GetModel();
 
@@ -276,7 +276,7 @@ bool Post::FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& 
 	int nf = f.Nodes();
 	
 	// get the elements nodal positions
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 	vec3f y[MN];
 	
 	// calculate normal projection of x onto element

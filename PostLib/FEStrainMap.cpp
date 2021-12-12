@@ -41,7 +41,7 @@ void FEStrainMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	int nn = 0;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
@@ -62,7 +62,7 @@ void FEStrainMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	m_lnode.resize(Faces() * 4);
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		if (f.Nodes() == 4)
 		{
 			m_lnode[4 * i] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4 * i] >= 0);
@@ -84,7 +84,7 @@ void FEStrainMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	m_NLT.resize(Nodes());
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
@@ -297,7 +297,7 @@ void FEStrainMap::BuildNormalList(FEStrainMap::Surface& s)
 	vec3f r[3];
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(s.m_face[i]);
+		FSFace& f = mesh.Face(s.m_face[i]);
 		int nf = f.Nodes();
 		r[0] = s.m_pos[s.m_lnode[4*i   ]];
 		r[1] = s.m_pos[s.m_lnode[4*i + 1]];
@@ -326,7 +326,7 @@ bool FEStrainMap::project(FEStrainMap::Surface& surf, vec3f& r, vec3f& t, vec3f&
 	for (int i = 0; i<surf.Faces(); ++i)
 	{
 		// get the i-th facet
-		FEFace& face = mesh.Face(surf.m_face[i]);
+		FSFace& face = mesh.Face(surf.m_face[i]);
 		rf[0] = surf.m_pos[surf.m_lnode[4*i    ]];
 		rf[1] = surf.m_pos[surf.m_lnode[4*i + 1]];
 		rf[2] = surf.m_pos[surf.m_lnode[4*i + 2]];

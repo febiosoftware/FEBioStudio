@@ -233,7 +233,7 @@ vec3d ClosestNodeOnSurface(FSMesh& mesh, const vec3d& r, const vec3d& t)
 	for (int i = 0; i<mesh.Faces(); ++i)
 	{
 		// only pick faces that are facing r
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (t* to_vec3d(f.m_fn) < 0)
 		{
 			int n = f.Nodes();
@@ -265,7 +265,7 @@ vec3d ClosestNodeOnSurface(FSMesh& mesh, const vec3d& r, const vec3d& t)
 //-----------------------------------------------------------------------------
 // Project a point to the surface of a FE mesh
 //
-vec3d ProjectToFace(FSMesh& mesh, vec3d p, FEFace &f, double &r, double &s, bool bedge)
+vec3d ProjectToFace(FSMesh& mesh, vec3d p, FSFace &f, double &r, double &s, bool bedge)
 {
 	double R[2], u[2], D;
 
@@ -395,7 +395,7 @@ std::vector<vec3d> FindAllIntersections(FSMeshBase& mesh, const vec3d& x, const 
 	double g;
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (FindIntersection(mesh, f, x, n, r, g))
 		{
 			if ((forwardOnly == false) || (g > 0.0))
@@ -417,7 +417,7 @@ bool FindIntersection(FSMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q
 	int imin = -1;
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (FindIntersection(mesh, f, x, n, r, g))
 		{
 			if ((g > 0.0) && (g < gmin))
@@ -436,7 +436,7 @@ bool FindIntersection(FSMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q
 
 		if (snap && (imin != -1))
 		{
-			FEFace& face = mesh.Face(imin);
+			FSFace& face = mesh.Face(imin);
 			int nf = face.Nodes();
 			double Dmin = 0.0;
 			rmin = q;
@@ -460,11 +460,11 @@ bool FindIntersection(FSMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q
 //-----------------------------------------------------------------------------
 // Find the intersection.
 //
-bool FindIntersection(FSMeshBase& mesh, FEFace &f, const vec3d& x, const vec3d& n, vec3d& q, double& g)
+bool FindIntersection(FSMeshBase& mesh, FSFace &f, const vec3d& x, const vec3d& n, vec3d& q, double& g)
 {
 	int N = f.Nodes();
 
-	vec3d y[FEFace::MAX_NODES];
+	vec3d y[FSFace::MAX_NODES];
 	for (int i = 0; i<N; ++i) y[i] = mesh.Node(f.n[i]).r;
 
 	// call the correct intersection function
@@ -654,7 +654,7 @@ vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid, int* faceID
 	if (faceID) *faceID = -1;
 	for (int i = 0; i<m.Faces(); ++i)
 	{
-		const FEFace& face = m.Face(i);
+		const FSFace& face = m.Face(i);
 		if ((face.m_gid == gid) || (gid == -1))
 		{
 			int nf = face.Nodes();
@@ -706,7 +706,7 @@ vec3d projectToPatch(const FSMeshBase& m, const vec3d& p, int gid, int faceID, i
 		set<int> tmp;
 		for (set<int>::iterator it = patch.begin(); it != patch.end(); ++it)
 		{
-			const FEFace& face = m.Face(*it);
+			const FSFace& face = m.Face(*it);
 			int ne = face.Edges();
 			for (int j = 0; j<ne; ++j)
 			{
@@ -723,7 +723,7 @@ vec3d projectToPatch(const FSMeshBase& m, const vec3d& p, int gid, int faceID, i
 
 	for (set<int>::iterator it = patch.begin(); it != patch.end(); ++it)
 	{
-		const FEFace& face = m.Face(*it);
+		const FSFace& face = m.Face(*it);
 		if (face.m_gid == gid)
 		{
 			assert(face.Type() == FE_FACE_TRI3);

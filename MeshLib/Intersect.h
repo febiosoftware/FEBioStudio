@@ -77,7 +77,7 @@ bool FastIntersectQuad(const Ray& ray, const Quad& quad, Intersection& q);
 //-----------------------------------------------------------------------------
 bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, Intersection& q);
 bool FindFaceIntersection(const Ray& ray, const GLMesh& mesh, Intersection& q);
-bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, const FEFace& face, Intersection& q);
+bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, const FSFace& face, Intersection& q);
 
 //-----------------------------------------------------------------------------
 bool FindElementIntersection(const Ray& ray, const FSMesh& mesh, Intersection& q, bool selectionState = false);

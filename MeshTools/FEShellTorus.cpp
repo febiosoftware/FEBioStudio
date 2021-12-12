@@ -172,14 +172,14 @@ void FEShellTorus::BuildFaces(FSMesh* pm)
 	int i;
 	int nfaces = pm->Elements();
 	pm->Create(0,0,nfaces);
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 	for (i=0; i<nfaces; ++i, ++pf)
 	{
 		FEElement_* pe = pm->ElementPtr(i);
 
 		int i1 = i/(4*m_ns);
 		int i2 = i%(4*m_ns);
-		FEFace& f = *pf;
+		FSFace& f = *pf;
 		f.SetType(FE_FACE_QUAD4);
 		f.m_gid = 4*(i1/m_nd) + i2/m_ns;
 		f.n[0] = pe->m_node[0];

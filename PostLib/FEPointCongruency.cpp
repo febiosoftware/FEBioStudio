@@ -73,7 +73,7 @@ FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FSMesh* mesh, i
 
 		// find the local curvature measure at the projection
 		d.nface = nface;
-		FEFace& face = m_mesh->Face(nface);
+		FSFace& face = m_mesh->Face(nface);
 		vec3f tsn = -sn;
 		d.H2 = face_curvature(face, rs, tsn, MEAN);
 		d.G2 = face_curvature(face, rs, tsn, DIFF);
@@ -94,7 +94,7 @@ FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FSMesh* mesh, i
 }
 
 //-----------------------------------------------------------------------------
-float FEPointCongruency::face_curvature(FEFace& face, double rs[2], vec3f& sn, int m)
+float FEPointCongruency::face_curvature(FSFace& face, double rs[2], vec3f& sn, int m)
 {
 	int nf = face.Nodes();
 	double K[4] = {0};
@@ -137,7 +137,7 @@ bool FEPointCongruency::Project(int nid, int& nface, vec3f& q, double rs[2], vec
 	sn = vec3f(0.f, 0.f, 0.f);
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int nf = face.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
@@ -162,7 +162,7 @@ bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q,
 	vec3f o = to_vec3f(ray.origin);
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		// make sure this face does not contain nid
 		if (face.HasNode(nid) == false)
 		{
@@ -190,7 +190,7 @@ bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q,
 }
 
 //-----------------------------------------------------------------------------
-bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, double rs[2])
+bool FEPointCongruency::IntersectTri3(const Ray& ray, FSFace& face, vec3f& q, double rs[2])
 {
 	const double tol = 0.01;
 
@@ -213,10 +213,10 @@ bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, do
 }
 
 //-----------------------------------------------------------------------------
-bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, double rs[2])
+bool FEPointCongruency::IntersectQuad4(const Ray& ray, FSFace& face, vec3f& q, double rs[2])
 {
 	const double tol = 0.01;
-	FEFace tri1,tri2;
+	FSFace tri1,tri2;
 	tri1.n[0] = face.n[0]; tri1.n[1] = face.n[1]; tri1.n[2] = face.n[2];
 	tri1.m_nn[0] = face.m_nn[0]; tri1.m_nn[1] = face.m_nn[1]; tri1.m_nn[2] = face.m_nn[2];
 
@@ -503,7 +503,7 @@ void FEPointCongruency::level(int n, int l, set<int>& nl1)
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].fid); 
+				FSFace& f = pmesh->Face(nfl[i].fid); 
 				f.m_ntag = 0;
 			}
 		}
@@ -519,7 +519,7 @@ void FEPointCongruency::level(int n, int l, set<int>& nl1)
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].fid);
+				FSFace& f = pmesh->Face(nfl[i].fid);
 				if (f.m_ntag == 0)
 				{
 					int ne = f.Nodes();

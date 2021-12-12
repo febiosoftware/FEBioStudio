@@ -292,7 +292,7 @@ FENodeList* GFaceList::BuildNodeList()
 		// tag the nodes to be added to the list
 		for (i=0; i<m.Faces(); ++i)
 		{
-			FEFace& f = m.Face(i);
+			FSFace& f = m.Face(i);
 			if (f.m_gid == gid)
 			{
 				int l = f.Nodes();
@@ -533,7 +533,7 @@ FEFaceList*	GPartList::BuildFaceList()
 			FSMesh& m = *po->GetFEMesh();
 			for (int i = 0; i < m.Faces(); ++i)
 			{
-				FEFace& f = m.Face(i);
+				FSFace& f = m.Face(i);
 				if (f.IsExterior())
 				{
 					int faceId = f.m_gid;

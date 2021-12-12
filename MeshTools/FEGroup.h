@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 class FSNode;
 class FSEdge;
-class FEFace;
+class FSFace;
 class FEElement;
 class FSMesh;
 class GObject;

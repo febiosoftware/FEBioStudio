@@ -70,7 +70,7 @@ bool CAreaCalculatorTool::OnApply()
         for (int i=0; i<F; ++i) mesh.Face(i).m_ntag = 0;
         for (int i=0; i<F; ++i)
         {
-            FEFace& f = mesh.Face(i);
+            FSFace& f = mesh.Face(i);
             if (f.IsSelected())
                 mesh.Face(i).m_ntag = 1;
         }
@@ -83,10 +83,10 @@ bool CAreaCalculatorTool::OnApply()
         // evaluate and sum up face areas
         vec3d A(0,0,0);
         double Amag = 0;
-        vec3d x[FEFace::MAX_NODES];
-        double gr[FEFace::MAX_NODES], gs[FEFace::MAX_NODES], gw[FEFace::MAX_NODES];
+        vec3d x[FSFace::MAX_NODES];
+        double gr[FSFace::MAX_NODES], gs[FSFace::MAX_NODES], gw[FSFace::MAX_NODES];
         for (int i=0; i<F; ++i) {
-            FEFace& f = mesh.Face(i);
+            FSFace& f = mesh.Face(i);
             if (f.IsSelected()) {
                 // extract nodal coordinates
                 for (int j=0; j<f.Nodes(); ++j)

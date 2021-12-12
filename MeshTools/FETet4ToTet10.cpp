@@ -119,7 +119,7 @@ FSMesh* FETet4ToTet10::Apply(FSMesh* pm)
 	vector< vector<int> > FE; FE.assign(NF, vector<int>(3));
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		vector<int>& fe = FE[i];
 		for (int j=0; j<3; ++j)
 		{
@@ -215,8 +215,8 @@ FSMesh* FETet4ToTet10::Apply(FSMesh* pm)
 	// create the new faces
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f0 = pm->Face(i);
-		FEFace& f1 = pnew->Face(i);
+		FSFace& f0 = pm->Face(i);
+		FSFace& f1 = pnew->Face(i);
 
 		f1.SetType(FE_FACE_TRI6);
 		f1.m_gid = f0.m_gid;
@@ -281,12 +281,12 @@ void FETet10Smooth::Apply(FSMesh* pmesh)
 	for (int i=0; i<NN; ++i) pmesh->Node(i).m_ntag = -1;
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = pmesh->Face(i);
+		FSFace& f = pmesh->Face(i);
 		for (int j=0; j<f.Nodes(); ++j) pmesh->Node(f.n[j]).m_ntag = 0;
 	}
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = pmesh->Face(i);
+		FSFace& f = pmesh->Face(i);
 		for (int j=0; j<3; ++j) pmesh->Node(f.n[j]).m_ntag = 1;
 	}
 
@@ -304,7 +304,7 @@ void FETet10Smooth::Apply(FSMesh* pmesh)
 	vector<vec3d> sn; sn.assign(NN, vec3d(0,0,0));
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = pmesh->Face(i);
+		FSFace& f = pmesh->Face(i);
 		for (int j=0; j<3; ++j) sn[f.n[j]] += to_vec3d(f.m_nn[j]);
 	}
 	for (int i=0; i<NN; ++i) sn[i].Normalize();

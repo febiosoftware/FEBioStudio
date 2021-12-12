@@ -165,7 +165,7 @@ void Post::FEPostMesh::UpdateDomains()
 	int NF = Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 
 		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
 		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
@@ -190,7 +190,7 @@ void Post::FEPostMesh::UpdateDomains()
 
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 
 		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
 		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
@@ -298,11 +298,11 @@ double Post::IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps)
 double Post::IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	double res = 0.0;
-	float v[FEFace::MAX_NODES];
-	vec3f r[FEFace::MAX_NODES];
+	float v[FSFace::MAX_NODES];
+	vec3f r[FSFace::MAX_NODES];
 	for (int i = 0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.IsSelected() && f.IsActive())
 		{
 			int nn = f.Nodes();
@@ -344,11 +344,11 @@ double Post::IntegrateReferenceFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	Post::FERefState& ref = *ps->m_ref;
 	double res = 0.0;
-	float v[FEFace::MAX_NODES];
-	vec3f r[FEFace::MAX_NODES];
+	float v[FSFace::MAX_NODES];
+	vec3f r[FSFace::MAX_NODES];
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.IsSelected() && f.IsActive())
 		{
 			int nn = f.Nodes();
@@ -388,11 +388,11 @@ double Post::IntegrateReferenceFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
 vec3d Post::IntegrateSurfaceNormal(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	vec3d res(0,0,0);
-	float vx[FEFace::MAX_NODES], vy[FEFace::MAX_NODES], vz[FEFace::MAX_NODES];
-	vec3f r[FEFace::MAX_NODES];
+	float vx[FSFace::MAX_NODES], vy[FSFace::MAX_NODES], vz[FSFace::MAX_NODES];
+	vec3f r[FSFace::MAX_NODES];
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		vec3d N = to_vec3d(f.m_fn);
 
 		if (f.IsSelected() && f.IsActive())

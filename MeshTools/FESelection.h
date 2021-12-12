@@ -399,14 +399,14 @@ public:
 	public:
 		Iterator(FSMeshBase* pm);
 
-		operator FEFace*() { return m_pface; }
-		FEFace* operator -> () { return m_pface; }
+		operator FSFace*() { return m_pface; }
+		FSFace* operator -> () { return m_pface; }
 
 		void operator ++ (); 
 
 	protected:
 		FSMeshBase*	m_pm;
-		FEFace*		m_pface;
+		FSFace*		m_pface;
 		int			m_n;
 	};
 

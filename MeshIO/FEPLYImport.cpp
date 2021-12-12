@@ -130,7 +130,7 @@ bool FEPLYImport::read_file(const char* szfile)
 		{
 			ch = fgets(szline, 255, m_fp);
 			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-			FEFace& el = mesh.Face(i);
+			FSFace& el = mesh.Face(i);
 			int n[5];
 			int nread = sscanf(szline, "%d%d%d%d%d", &n[0], &n[1], &n[2], &n[3], &n[4]);
 
@@ -180,7 +180,7 @@ bool FEPLYImport::read_file(const char* szfile)
 			int nread = fread(n, sizeof(int), vertices, m_fp);
 			if (nread != vertices) return errf("An unexpected error occured while reading element data.");
 
-			FEFace& el = mesh.Face(i);
+			FSFace& el = mesh.Face(i);
 
 			if (vertices == 3)
 			{

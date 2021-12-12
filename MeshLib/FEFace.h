@@ -54,7 +54,7 @@ enum FEFaceType
 };
 
 //-----------------------------------------------------------------------------
-// FEFace class stores face data. 
+// FSFace class stores face data. 
 // A face can either have 3, 4, 6, 7, 8, 9 or 10 nodes. 
 //  - 3  : linear triangle
 //  - 6,7: quadratic triangle
@@ -75,7 +75,7 @@ enum FEFaceType
 // Note that for the first three nodes for a triangle and the first four nodes
 // of a quad are always the corner nodes.
 //
-class FEFace : public MeshItem
+class FSFace : public MeshItem
 {
 public:
 	enum { MAX_NODES = 10 };
@@ -88,10 +88,10 @@ public:
 
 public:
 	//! constructor
-	FEFace();
+	FSFace();
 
 	//! comparison operator
-	bool operator == (const FEFace& f) const;
+	bool operator == (const FSFace& f) const;
 
 	//! get the type
 	int Type() const { return m_type; }

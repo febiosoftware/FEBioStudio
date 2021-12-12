@@ -58,7 +58,7 @@ bool BYUExport::Save(FEPostModel &fem, const char *szfile)
 	for (i=0; i<mesh.Nodes(); ++i) mesh.Node(i).m_ntag = 0;
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		n = f.Nodes();
 		assert(n==3||n==4);
 		edges += (n==3? 3 : 6) ;
@@ -92,7 +92,7 @@ bool BYUExport::Save(FEPostModel &fem, const char *szfile)
 	// --- E D G E S ---
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		n = f.Nodes();
 		if (n == 3)
 			fprintf(fp, "%d %d %d\n", mesh.Node(f.n[0]).m_ntag, mesh.Node(f.n[1]).m_ntag, -mesh.Node(f.n[2]).m_ntag);

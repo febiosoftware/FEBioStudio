@@ -869,7 +869,7 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 	// loop over faces to determine edges
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 
 		int elemId = face.m_elem[0].eid;
 		FEElement& el = pm->Element(elemId);

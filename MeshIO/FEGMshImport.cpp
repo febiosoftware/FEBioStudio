@@ -480,7 +480,7 @@ bool FEGMshImport::ReadElements()
 
 		for (int i=0; i<nfaces; ++i)
 		{
-			FEFace& face = m_pm->Face(i);
+			FSFace& face = m_pm->Face(i);
 			ELEMENT& e = Face[i];
 
 			face.m_gid = e.gid;

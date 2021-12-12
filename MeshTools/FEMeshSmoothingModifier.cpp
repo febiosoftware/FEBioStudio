@@ -199,7 +199,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int
 	NFL.Build(pnew);
 
 	//calculating m(R) for each face i.e for each triangle	
-	vector<FEFace*> mR ;
+	vector<FSFace*> mR ;
 	vector<vec3d>m_R;
 	vector<vec3d>m_R_new;	
 	mR.reserve(pnew->Faces());
@@ -209,7 +209,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int
 	//for first iteration m_R are normals
 	for(int i =0; i< pnew->Faces();i++)
 	{
-		FEFace& fa = pnew->Face(i);
+		FSFace& fa = pnew->Face(i);
 		m_R.push_back(to_vec3d(fa.m_fn));
 	}
 	for (int iter = 0 ; iter< m_iteration;iter++)
@@ -217,7 +217,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int
 		//for each face calculate m_R
 		for(int i =0;i<pnew->Faces();i++)
 		{
-			FEFace& fa = pnew->Face(i);				
+			FSFace& fa = pnew->Face(i);				
 			vec3d centroid_R = (pnew->Node(fa.n[0]).r + pnew->Node(fa.n[1]).r + pnew->Node(fa.n[2]).r )/3;
 			//finding the neighbouring faces
 			for(int j =0 ;j<3 ;j++)
@@ -225,7 +225,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int
 				int nodeID = fa.n[j];
 				for (int k = 0; k<NFL.Valence(nodeID);k++)
 				{
-					FEFace *fa1 = NFL.Face(nodeID,k);
+					FSFace *fa1 = NFL.Face(nodeID,k);
 					if(fa1->m_ntag != 1 && fa1->m_elem[0].eid != i)
 					{
 						fa1->m_ntag = 1;
@@ -238,7 +238,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int
 			m_R_new.push_back(vec3d(0,0,0));
 			for(int k =0;k<mR.size();k++)
 			{
-				FEFace *fa1 = mR[k];
+				FSFace *fa1 = mR[k];
 				vec3d r[3]; //three nodes of the face
 				r[0] = pnew->Node(fa1->n[0]).r;
 				r[1] = pnew->Node(fa1->n[1]).r;
@@ -270,7 +270,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int
 				double weight=0;
 				for (int k = 0; k<NFL.Valence(i);k++)
 				{
-					FEFace *fa1 = NFL.Face(i,k);
+					FSFace *fa1 = NFL.Face(i,k);
 					vec3d r[3]; //three nodes of the face
 					r[0] = pnew->Node(fa1->n[0]).r;
 					r[1] = pnew->Node(fa1->n[1]).r;

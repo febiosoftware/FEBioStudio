@@ -71,14 +71,14 @@ class GLSurface
 public:
 	GLSurface(){}
 
-	void add(const FEFace& f) { m_Face.push_back(f); }
+	void add(const FSFace& f) { m_Face.push_back(f); }
 
 	int Faces() const { return (int) m_Face.size(); }
 
-	FEFace& Face(int i) { return m_Face[i]; }
+	FSFace& Face(int i) { return m_Face[i]; }
 
 private:
-	vector<FEFace>	m_Face;
+	vector<FSFace>	m_Face;
 };
 
 class GLEdge
@@ -233,7 +233,7 @@ public:
 public: // Selection
 	const vector<FSNode*>&		GetNodeSelection   () const { return m_nodeSelection; }
 	const vector<FSEdge*>&		GetEdgeSelection   () const { return m_edgeSelection; }
-	const vector<FEFace*>&		GetFaceSelection   () const { return m_faceSelection; }
+	const vector<FSFace*>&		GetFaceSelection   () const { return m_faceSelection; }
 	const vector<FEElement_*>&	GetElementSelection() const { return m_elemSelection; }
 	void UpdateSelectionLists(int mode = -1);
 	void ClearSelectionLists();
@@ -256,7 +256,7 @@ public: // Selection
 	void SelectConnectedVolumeElements(FEElement_& el);
 
 	//! select connected faces
-	void SelectConnectedFaces(FEFace& f, double angleTol);
+	void SelectConnectedFaces(FSFace& f, double angleTol);
 
 	//! select connected edges
 	void SelectConnectedEdges(FSEdge& e);
@@ -385,7 +385,7 @@ protected:
 	// selected items
 	vector<FSNode*>		m_nodeSelection;
 	vector<FSEdge*>		m_edgeSelection;
-	vector<FEFace*>		m_faceSelection;
+	vector<FSFace*>		m_faceSelection;
 	vector<FEElement_*>	m_elemSelection;
 
 	GPlotList			m_pPlot;	// list of plots

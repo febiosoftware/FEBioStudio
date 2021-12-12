@@ -153,7 +153,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMe
 		// process face nodes
 		for (int i = 0; i<mesh.Faces(); ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nf = face.Nodes();
 			for (int j = 0; j<nf; ++j)
 			{

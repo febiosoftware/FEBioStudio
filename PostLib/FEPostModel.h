@@ -229,7 +229,7 @@ public:
 	void SetDisplacementField(int ndisp) { m_ndisp = ndisp; }
 	int GetDisplacementField() { return m_ndisp; }
 	vec3f NodePosition(int n, int ntime);
-	vec3f FaceNormal(FEFace& f, int ntime);
+	vec3f FaceNormal(FSFace& f, int ntime);
 
 	vec3f NodePosition(const vec3f& r, int ntime);
 

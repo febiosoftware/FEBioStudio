@@ -89,7 +89,7 @@ bool FEBYUimport::Load(const char* szfile)
 	int n[5];
 	for (i=0; i<elems; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		f.m_gid = 0;
 		ch = fgets(szline, 255, m_fp);
 //		if (ch == 0) return errf("An unexpected error occured while reading the file data.");

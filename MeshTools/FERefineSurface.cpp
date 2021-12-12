@@ -79,7 +79,7 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	// tag all faces
 	for (int i=0; i<NF0; ++i) 
 	{
-		FEFace* face = &pm->Face(i);
+		FSFace* face = &pm->Face(i);
 		face->m_ntag = i;
 	}
 
@@ -87,11 +87,11 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	int nen = 0;
 	for (int i=0; i<NF0; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		for (int j=0; j<3; ++j)
 		{
 			int nj = face.m_nbr[j];
-			FEFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
+			FSFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
 			if ((pj == 0) || (face.m_ntag < pj->m_ntag)) nen++;
 		}
 	}
@@ -110,11 +110,11 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	nen = 0;
 	for (int i=0; i<NF0; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		for (int j=0; j<3; ++j)
 		{
 			int nj = face.m_nbr[j];
-			FEFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
+			FSFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
 			if ((pj == 0) || (face.m_ntag < pj->m_ntag))
 			{
 				FSNode& n0 = pm->Node(face.n[j      ]);
@@ -132,11 +132,11 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 
 	for (int i = 0; i<NF0; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		for (int j = 0; j<3; ++j)
 		{
 			int nj = face.m_nbr[j];
-			FEFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
+			FSFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
 			if (pj && (face.m_ntag > pj->m_ntag))
 			{
 				int nk = pj->FindEdge(face.GetEdge(j)); assert(nk != -1);
@@ -157,12 +157,12 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	int nf = 0;
 	for (int i=0; i<NF0; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 
-		FEFace& f0 = pnew->Face(nf++); f0 = face;
-		FEFace& f1 = pnew->Face(nf++); f1 = face;
-		FEFace& f2 = pnew->Face(nf++); f2 = face;
-		FEFace& f3 = pnew->Face(nf++); f3 = face;
+		FSFace& f0 = pnew->Face(nf++); f0 = face;
+		FSFace& f1 = pnew->Face(nf++); f1 = face;
+		FSFace& f2 = pnew->Face(nf++); f2 = face;
+		FSFace& f3 = pnew->Face(nf++); f3 = face;
 
 		int* en = &ELT[3*i];
 

@@ -109,7 +109,7 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 	nu.assign(nodes, vec3d(0,0,0));
 	for (int i=0; i<ps->Faces(); ++i)
 	{
-		FEFace& fi = ps->Face(i);
+		FSFace& fi = ps->Face(i);
 		int nf = fi.Nodes();
 		for (int j=0; j<nf; ++j)
 		{

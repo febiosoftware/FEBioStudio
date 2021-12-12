@@ -538,10 +538,10 @@ template <typename T> void cached_copy_face_data_COMP(FEMeshData& dst, FEMeshDat
 	FEFaceData_T<T, DATA_COMP>& s = dynamic_cast<FEFaceData_T<T, DATA_COMP>&>(src);
 
 	int NF = mesh.Faces();
-	T f[FEFace::MAX_NODES];
+	T f[FSFace::MAX_NODES];
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (s.active(i))
 		{
 			int nf = face.Nodes();
@@ -557,14 +557,14 @@ template <typename T> void cached_copy_face_data_NODE(FEMeshData& dst, FEMeshDat
 	FEFaceData_T<T, DATA_NODE>& s = dynamic_cast<FEFaceData_T<T, DATA_NODE>&>(src);
 
 	int NF = mesh.Faces();
-	T f[FEFace::MAX_NODES];
+	T f[FSFace::MAX_NODES];
 	vector<T> vf;
 	vector<int> faceList(1);
 	vector<int> index;
 	vector<int> faceSize(1);
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (s.active(i))
 		{
 			int nf = face.Nodes();
@@ -918,7 +918,7 @@ vec3f FEPostModel::NodePosition(const vec3f& r, int ntime)
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEPostModel::FaceNormal(FEFace& f, int ntime)
+vec3f FEPostModel::FaceNormal(FSFace& f, int ntime)
 {
 	vec3f r0 = NodePosition(f.n[0], ntime);
 	vec3f r1 = NodePosition(f.n[1], ntime);

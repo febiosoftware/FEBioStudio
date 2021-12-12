@@ -487,7 +487,7 @@ bool xpltFileExport::WriteSurfaceSection(Post::FEPostMesh& mesh)
 				int n[PLT_MAX_FACET_NODES + 2];
 				for (int i=0; i<NF; ++i)
 				{
-					FEFace& f = mesh.Face(s.m_Face[i]);
+					FSFace& f = mesh.Face(s.m_Face[i]);
 					int nf = f.Nodes();
 					n[0] = i+1;
 					n[1] = nf;

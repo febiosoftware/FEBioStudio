@@ -45,7 +45,7 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 	int nn = 0;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
@@ -64,11 +64,11 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 	m_pos.resize(nn);
 
 	// create the local node list
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 	m_lnode.resize(Faces() * MN);
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j = 0; j < nf; ++j) m_lnode[MN*i + j] = mesh.Node(f.n[j]).m_ntag;
 	}
@@ -77,7 +77,7 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 	m_NLT.resize(Nodes());
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
@@ -181,7 +181,7 @@ void FEAreaCoverage::Apply()
 	m_surf1.Create(mesh);
 	m_surf2.Create(mesh);
 
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 
 	// get the field index
 	int nfield = FIELD_CODE(GetFieldID());
@@ -232,11 +232,11 @@ void FEAreaCoverage::UpdateSurface(FEAreaCoverage::Surface& s, int nstate)
 	// update face normals
 	s.m_fnorm.assign(NF, vec3f(0.f, 0.f, 0.f));
 	s.m_norm.assign(NN, vec3f(0.f,0.f,0.f));
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 	vec3f r[3];
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(s.m_face[i]);
+		FSFace& f = mesh.Face(s.m_face[i]);
 
 		r[0] = s.m_pos[s.m_lnode[i*MN    ]];
 		r[1] = s.m_pos[s.m_lnode[i*MN + 1]];
@@ -328,9 +328,9 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
 
 	vec3f rn[4];
-	FEFace& face = mesh.Face(surf.m_face[nface]);
+	FSFace& face = mesh.Face(surf.m_face[nface]);
 
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 
 	bool bfound = false;
 	switch (face.m_type)

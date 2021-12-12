@@ -2830,7 +2830,7 @@ void FEBioExport4::WriteSurfaceSection(FEFaceList& s)
 	for (int j = 0; j < NF; ++j, ++n, ++pf)
 	{
 		if (pf->m_pi == 0) throw InvalidItemListBuilder(0);
-		FEFace& face = *(pf->m_pi);
+		FSFace& face = *(pf->m_pi);
 		FSCoreMesh* pm = pf->m_pm;
 		nfn = face.Nodes();
 		for (int k = 0; k < nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
@@ -2870,7 +2870,7 @@ void FEBioExport4::WriteSurfaceSection(NamedItemList& l)
 	for (int j = 0; j < NF; ++j, ++n, ++pf)
 	{
 		if (pf->m_pi == 0) throw InvalidItemListBuilder(l.m_name);
-		FEFace& face = *(pf->m_pi);
+		FSFace& face = *(pf->m_pi);
 		FSCoreMesh* pm = pf->m_pm;
 		nfn = face.Nodes();
 		for (int k = 0; k < nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;

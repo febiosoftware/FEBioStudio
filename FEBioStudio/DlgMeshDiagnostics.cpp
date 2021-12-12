@@ -277,7 +277,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	int faceCount[MAX_FACE_TYPES] = { 0 };
 	for (int i = 0; i < faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int faceType = face.Type();
 		if ((faceType >= 0) && (faceType < MAX_FACE_TYPES)) faceCount[faceType]++;
 		else faceCount[FE_FACE_INVALID_TYPE]++;
@@ -330,7 +330,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	int nsss = 0;
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		FEElement_* pe = mesh.ElementPtr(face.m_elem[0].eid);
 		if (pe && pe->IsShell())
 		{
@@ -372,7 +372,7 @@ void CDlgMeshDiagnosticsUI::checkFaceConnectivity()
 	int NF = mesh.Faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		for (int j = 0; j < face.Nodes(); ++j)
 		{
 			int nj = face.n[j];
@@ -500,7 +500,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 	vector<vector<int> > NFT(NN);
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int nf = 0;
 		if (face.Shape() == FE_FACE_QUAD) nf = 4;
 		if (face.Shape() == FE_FACE_TRI ) nf = 3;
@@ -518,7 +518,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 	mesh.TagAllFaces(-1);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& facei = mesh.Face(i);
+		FSFace& facei = mesh.Face(i);
 		if (facei.m_ntag == -1)
 		{
 			int n0 = facei.n[0];
@@ -530,7 +530,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 					int nfj = nft[j];
 					if (nfj > i)
 					{
-						FEFace& facej = mesh.Face(nfj);
+						FSFace& facej = mesh.Face(nfj);
 						if ((facej.m_ntag == -1) && (facej == facei))
 						{
 							facej.m_ntag = i;
@@ -658,7 +658,7 @@ void CDlgMeshDiagnosticsUI::checkFaceNeighbors()
 	int NF = mesh.Faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int nf = face.Edges();
 		for (int j = 0; j < nf; ++j)
 		{
@@ -757,7 +757,7 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 					else
 					{
 						// make sure that this face's element is this element
-						FEFace& f = mesh.Face(nfj);
+						FSFace& f = mesh.Face(nfj);
 						if (pej == nullptr)
 						{
 							// If there is no neighbor, then the face only should have elem[0] set
@@ -810,7 +810,7 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 			else
 			{
 				// make sure that the face's element is this element
-				FEFace& f = mesh.Face(nf0);
+				FSFace& f = mesh.Face(nf0);
 				if (f.m_elem[0].eid != i) invalidShellFaces++;
 			}
 
@@ -868,7 +868,7 @@ void CDlgMeshDiagnosticsUI::checkFacePartitioning()
 	int invalidGID = 0;
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int gid = face.m_gid;
 		if ((gid >= 0) && (gid < ng)) lut[gid]++;
 		else invalidGID++;
@@ -904,7 +904,7 @@ void CDlgMeshDiagnosticsUI::checkFacePartitioning()
 	int invalidSurfaces = 0;
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int fid = face.m_gid;
 		if ((fid >= 0) && (fid < obj->Faces()))
 		{

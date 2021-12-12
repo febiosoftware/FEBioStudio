@@ -779,7 +779,7 @@ void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FSMesh* pm)
 	int NF = pm->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		DynamicMesh2D::FACE f;
 		f.node[0] = nodePtr[face.n[0]];
 		f.node[1] = nodePtr[face.n[1]];

@@ -704,7 +704,7 @@ FSMesh* FoamGen::CreateMesh()
 		e.m_node[2] = f.n[2];
 		e.m_gid = 0;
 
-		FEFace& s = pm->Face(i);
+		FSFace& s = pm->Face(i);
 		s.SetType(FE_FACE_TRI3);
 		s.n[0] = f.n[0];
 		s.n[1] = f.n[1];

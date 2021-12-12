@@ -72,7 +72,7 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
 				assert(&pm->ElementRef(pf->m_elem[0].eid) == pe);
 				if (pf)
@@ -137,7 +137,7 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
 				assert(&pm->ElementRef(pf->m_elem[0].eid) == pe);
 				if (pf)
@@ -205,7 +205,7 @@ void GLMeshRender::RenderHEX20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
 				if (pf)
 				{
@@ -298,7 +298,7 @@ void GLMeshRender::RenderHEX27(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
 				if (pf)
 				{
@@ -379,7 +379,7 @@ void GLMeshRender::RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[j]);
+				FSFace* pf = pm->FacePtr(e.m_face[j]);
 				assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
 				n[0] = to_vec3d(pf->m_nn[0]);
 				n[1] = to_vec3d(pf->m_nn[1]);
@@ -414,7 +414,7 @@ void GLMeshRender::RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[j]);
+				FSFace* pf = pm->FacePtr(e.m_face[j]);
 				n[0] = pf->m_nn[0];
 				n[1] = pf->m_nn[1];
 				n[2] = pf->m_nn[2];
@@ -462,7 +462,7 @@ void GLMeshRender::RenderPENTA15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[j]);
+				FSFace* pf = pm->FacePtr(e.m_face[j]);
 				assert(pf);
 				if (pf)
 				{
@@ -533,7 +533,7 @@ void GLMeshRender::RenderPENTA15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[j]);
+				FSFace* pf = pm->FacePtr(e.m_face[j]);
 				assert(pf);
 				if (pf)
 				{
@@ -596,7 +596,7 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
 				if (pf)
 				{
 					r1 = pm->Node(pf->n[0]).r;
@@ -651,7 +651,7 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 			{
 				if (e.m_face[i] >= 0)
 				{
-					FEFace* pf = pm->FacePtr(e.m_face[i]);
+					FSFace* pf = pm->FacePtr(e.m_face[i]);
 					r1 = pm->Node(pf->n[0]).r;
 					r2 = pm->Node(pf->n[1]).r;
 					r3 = pm->Node(pf->n[2]).r;
@@ -689,7 +689,7 @@ void GLMeshRender::RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 {
 	assert(pe->IsType(FE_TRI3));
 	FEElement_& e = *pe;
-	FEFace* pf = pm->FacePtr(e.m_face[0]);
+	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[3];
 	vec3f n[3];
@@ -716,7 +716,7 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 {
 	assert(pe->IsType(FE_QUAD4));
 	FEElement_& e = *pe;
-	FEFace* pf = pm->FacePtr(e.m_face[0]);
+	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
 	vec3f n[4];
@@ -758,7 +758,7 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
 
 				r1 = pm->Node(pf->n[0]).r;
@@ -811,7 +811,7 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FSCoreMesh *pm, GLColor* c)
 
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
 				n1 = pf->m_nn[0];
 				n2 = pf->m_nn[1];
@@ -853,7 +853,7 @@ void GLMeshRender::RenderTET15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
 
 				r1 = pm->Node(pf->n[0]).r;
@@ -900,7 +900,7 @@ void GLMeshRender::RenderTET20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
 
 				r1 = pm->Node(pf->n[0]).r;
@@ -939,7 +939,7 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD4));
 	FEElement_& e = *pe;
-	FEFace* pf = pm->FacePtr(e.m_face[0]);
+	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
 	vec3d n[4];
@@ -966,7 +966,7 @@ void GLMeshRender::RenderQUAD8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD8));
 	FEElement_& e = *pe;
-	FEFace* pf = pm->FacePtr(e.m_face[0]);
+	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
 	vec3d n[4];
@@ -993,7 +993,7 @@ void GLMeshRender::RenderQUAD9(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD9));
 	FEElement_& e = *pe;
-	FEFace* pf = pm->FacePtr(e.m_face[0]);
+	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
 	vec3d n[4];
@@ -1020,7 +1020,7 @@ void GLMeshRender::RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TRI3));
 	FEElement_& e = *pe;
-	FEFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
+	FSFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
 	if (pf == 0) return;
 	vec3d r[3];
 	vec3f n[3];
@@ -1045,7 +1045,7 @@ void GLMeshRender::RenderTRI6(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TRI6));
 	FEElement_& e = *pe;
-	FEFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
+	FSFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
 	if (pf == 0) return;
 	vec3d r[3];
 	vec3f n[3];
@@ -1084,7 +1084,7 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
-				FEFace* pf = pm->FacePtr(e.m_face[j]);
+				FSFace* pf = pm->FacePtr(e.m_face[j]);
 				n[0] = to_vec3d(pf->m_nn[0]);
 				n[1] = to_vec3d(pf->m_nn[1]);
 				n[2] = to_vec3d(pf->m_nn[2]);
@@ -1116,7 +1116,7 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 		FEElement_* pen = (e.m_nbr[4] != -1 ? pm->ElementPtr(e.m_nbr[4]) : 0);
 		if (pen == 0)
 		{
-			FEFace* pf = pm->FacePtr(e.m_face[4]);
+			FSFace* pf = pm->FacePtr(e.m_face[4]);
 			assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
 			n[0] = to_vec3d(pf->m_nn[0]);
 			n[1] = to_vec3d(pf->m_nn[1]);
@@ -1157,7 +1157,7 @@ void GLMeshRender::RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
             FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
             if (pen == 0)
             {
-                FEFace* pf = pm->FacePtr(e.m_face[j]);
+                FSFace* pf = pm->FacePtr(e.m_face[j]);
                 n[0] = to_vec3d(pf->m_nn[0]);
                 n[1] = to_vec3d(pf->m_nn[1]);
                 n[2] = to_vec3d(pf->m_nn[2]);
@@ -1189,7 +1189,7 @@ void GLMeshRender::RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
         FEElement_* pen = (e.m_nbr[4] != -1 ? pm->ElementPtr(e.m_nbr[4]) : 0);
         if (pen == 0)
         {
-            FEFace* pf = pm->FacePtr(e.m_face[4]);
+            FSFace* pf = pm->FacePtr(e.m_face[4]);
             assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
             n[0] = to_vec3d(pf->m_nn[0]);
             n[1] = to_vec3d(pf->m_nn[1]);
@@ -1408,7 +1408,7 @@ void GLMeshRender::RenderMeshLines(FSMeshBase* pm)
 	glBegin(GL_LINES);
 	for (int i = 0; i<pm->Faces(); i++)
 	{
-		const FEFace& face = pm->Face(i);
+		const FSFace& face = pm->Face(i);
 		if (face.IsVisible())
 		{
 			switch (face.Type())
@@ -1486,7 +1486,7 @@ void GLMeshRender::RenderSelectedFEFaces(FSMeshBase* pm)
 	{
 		for (int i = 0; i < pm->Faces(); i++)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (face.IsSelected())
 			{
 				RenderFEFace(face, pm);
@@ -1503,7 +1503,7 @@ void GLMeshRender::RenderUnselectedFEFaces(FSMeshBase* pm)
 	{
 		for (int i = 0; i < pm->Faces(); i++)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (!face.IsSelected() && face.IsVisible())
 			{
 				RenderFEFace(face, pm);
@@ -1519,14 +1519,14 @@ void GLMeshRender::RenderSelectedFEFacesOutline(FSMeshBase* pm)
 	glBegin(GL_LINES);
 	for (int i = 0; i < pm->Faces(); i++)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsSelected())
 		{
 			int fn = face.Nodes();
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
 			{
-				FEFace* pf = (face.m_nbr[j] >= 0 ? pm->FacePtr(face.m_nbr[j]) : 0);
+				FSFace* pf = (face.m_nbr[j] >= 0 ? pm->FacePtr(face.m_nbr[j]) : 0);
 				if ((pf == 0) || !pf->IsSelected() || !pf->IsVisible())
 				{
 					int jp1 = (j + 1) % ne;
@@ -1543,7 +1543,7 @@ void GLMeshRender::RenderSelectedFEFacesOutline(FSMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderFace(FEFace& face, FSCoreMesh* pm)
+void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm)
 {
 	if (m_bShell2Solid)
 	{
@@ -1588,7 +1588,7 @@ void GLMeshRender::RenderFace(FEFace& face, FSCoreMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderFace(FEFace& face, FSCoreMesh* pm, GLColor c[4], int ndivs)
+void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4], int ndivs)
 {
 	if (m_bShell2Solid)
 	{
@@ -1613,7 +1613,7 @@ void GLMeshRender::RenderFace(FEFace& face, FSCoreMesh* pm, GLColor c[4], int nd
 
 	vec3f& fn = face.m_fn;
 
-	float t[FEFace::MAX_NODES];
+	float t[FSFace::MAX_NODES];
 	pm->FaceNodeTexCoords(face, t);
 
 	switch (face.m_type)
@@ -1657,7 +1657,7 @@ void GLMeshRender::RenderFace(FEFace& face, FSCoreMesh* pm, GLColor c[4], int nd
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderFaceOutline(FEFace& face, FSCoreMesh* pm, int ndivs)
+void GLMeshRender::RenderFaceOutline(FSFace& face, FSCoreMesh* pm, int ndivs)
 {
 	if (m_bShell2Solid)
 	{
@@ -1694,7 +1694,7 @@ void GLMeshRender::RenderFaceOutline(FEFace& face, FSCoreMesh* pm, int ndivs)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEFace(FEFace& face, FSMeshBase* pm)
+void GLMeshRender::RenderFEFace(FSFace& face, FSMeshBase* pm)
 {
 	switch (face.Type())
 	{
@@ -1711,7 +1711,7 @@ void GLMeshRender::RenderFEFace(FEFace& face, FSMeshBase* pm)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void GLMeshRender::RenderThickShell(FEFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickShell(FSFace &face, FSCoreMesh* pm)
 {
 	switch (face.m_type)
 	{
@@ -1729,7 +1729,7 @@ void GLMeshRender::RenderThickShell(FEFace &face, FSCoreMesh* pm)
 	}
 }
 
-void GLMeshRender::RenderThickQuad(FEFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickQuad(FSFace &face, FSCoreMesh* pm)
 {
 	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
@@ -1815,7 +1815,7 @@ void GLMeshRender::RenderThickQuad(FEFace &face, FSCoreMesh* pm)
 	}
 }
 
-void GLMeshRender::RenderThickTri(FEFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickTri(FSFace &face, FSCoreMesh* pm)
 {
 	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
@@ -1893,7 +1893,7 @@ void GLMeshRender::RenderThickTri(FEFace &face, FSCoreMesh* pm)
 	}
 }
 
-void GLMeshRender::RenderThickShellOutline(FEFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickShellOutline(FSFace &face, FSCoreMesh* pm)
 {
 	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
@@ -2025,7 +2025,7 @@ void RenderFEEdge(FSEdge& edge, FSLineMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void RenderQUAD4(FSMeshBase* pm, FEFace& f)
+void RenderQUAD4(FSMeshBase* pm, FSFace& f)
 {
 	assert(f.m_type == FE_FACE_QUAD4);
 
@@ -2044,7 +2044,7 @@ void RenderQUAD4(FSMeshBase* pm, FEFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 8-noded quad
-void RenderQUAD8(FSMeshBase* pm, FEFace& f)
+void RenderQUAD8(FSMeshBase* pm, FSFace& f)
 {
 	assert(f.m_type == FE_FACE_QUAD8);
 
@@ -2062,7 +2062,7 @@ void RenderQUAD8(FSMeshBase* pm, FEFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 9-noded quad
-void RenderQUAD9(FSMeshBase* pm, FEFace& f)
+void RenderQUAD9(FSMeshBase* pm, FSFace& f)
 {
 	assert(f.m_type == FE_FACE_QUAD9);
 
@@ -2080,7 +2080,7 @@ void RenderQUAD9(FSMeshBase* pm, FEFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 3-noded tri
-void RenderTRI3(FSMeshBase* pm, FEFace& f)
+void RenderTRI3(FSMeshBase* pm, FSFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI3);
 
@@ -2098,7 +2098,7 @@ void RenderTRI3(FSMeshBase* pm, FEFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 6-noded tri
-void RenderTRI6(FSMeshBase* pm, FEFace& f)
+void RenderTRI6(FSMeshBase* pm, FSFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI6);
 
@@ -2116,7 +2116,7 @@ void RenderTRI6(FSMeshBase* pm, FEFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 7-noded tri
-void RenderTRI7(FSMeshBase* pm, FEFace& f)
+void RenderTRI7(FSMeshBase* pm, FSFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI7);
 
@@ -2134,7 +2134,7 @@ void RenderTRI7(FSMeshBase* pm, FEFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 10-noded tri
-void RenderTRI10(FSMeshBase* pm, FEFace& f)
+void RenderTRI10(FSMeshBase* pm, FSFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI10);
 
@@ -2152,7 +2152,7 @@ void RenderTRI10(FSMeshBase* pm, FEFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 4-noded quadrilateral
-void RenderSmoothQUAD4(FSCoreMesh* pm, FEFace& face, int ndivs)
+void RenderSmoothQUAD4(FSCoreMesh* pm, FSFace& face, int ndivs)
 {
 	vec3d r[4] = {
 		pm->Node(face.n[0]).r,
@@ -2171,7 +2171,7 @@ void RenderSmoothQUAD4(FSCoreMesh* pm, FEFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 8-noded quadrilateral
-void RenderSmoothQUAD8(FSCoreMesh* pm, FEFace& face, int ndivs)
+void RenderSmoothQUAD8(FSCoreMesh* pm, FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_QUAD8);
 
@@ -2204,7 +2204,7 @@ void RenderSmoothQUAD8(FSCoreMesh* pm, FEFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 9-noded quadrilateral
-void RenderSmoothQUAD9(FSCoreMesh* pm, FEFace& face, int ndivs)
+void RenderSmoothQUAD9(FSCoreMesh* pm, FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_QUAD9);
 
@@ -2238,14 +2238,14 @@ void RenderSmoothQUAD9(FSCoreMesh* pm, FEFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 6-noded triangle
-void RenderSmoothTRI3(FSCoreMesh* pm, FEFace& face, int ndivs)
+void RenderSmoothTRI3(FSCoreMesh* pm, FSFace& face, int ndivs)
 {
 	RenderTRI3(pm, face);
 }
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 6-noded triangle
-void RenderSmoothTRI6(FSCoreMesh* pm, FEFace& face, int ndivs)
+void RenderSmoothTRI6(FSCoreMesh* pm, FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_TRI6);
 
@@ -2273,7 +2273,7 @@ void RenderSmoothTRI6(FSCoreMesh* pm, FEFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 7-noded triangle
-void RenderSmoothTRI7(FSCoreMesh* pm, FEFace& face, int ndivs)
+void RenderSmoothTRI7(FSCoreMesh* pm, FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_TRI7);
 
@@ -2303,7 +2303,7 @@ void RenderSmoothTRI7(FSCoreMesh* pm, FEFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 10-noded triangle
-void RenderSmoothTRI10(FSCoreMesh* pm, FEFace& face, int ndivs)
+void RenderSmoothTRI10(FSCoreMesh* pm, FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_TRI10);
 
@@ -2337,7 +2337,7 @@ void RenderSmoothTRI10(FSCoreMesh* pm, FEFace& face, int ndivs)
 	glx::smoothTRI10(r, n, t, ndivs);
 }
 
-void RenderFace1Outline(FSCoreMesh* pm, FEFace& face)
+void RenderFace1Outline(FSCoreMesh* pm, FSFace& face)
 {
 	int N = face.Nodes();
 	for (int i = 0; i < N; ++i)
@@ -2346,7 +2346,7 @@ void RenderFace1Outline(FSCoreMesh* pm, FEFace& face)
 	}
 }
 
-void RenderFace2Outline(FSCoreMesh* pm, FEFace& face, int ndivs)
+void RenderFace2Outline(FSCoreMesh* pm, FSFace& face, int ndivs)
 {
 	vec3f a[3];
 	int NE = face.Edges();
@@ -2366,7 +2366,7 @@ void RenderFace2Outline(FSCoreMesh* pm, FEFace& face, int ndivs)
 	}
 }
 
-void RenderFace3Outline(FSCoreMesh* pm, FEFace& face, int ndivs)
+void RenderFace3Outline(FSCoreMesh* pm, FSFace& face, int ndivs)
 {
 	vec3f a[4];
 	int NE = face.Edges();
@@ -2529,7 +2529,7 @@ void GLMeshRender::RenderElementOutline(FEElement_& el, FSCoreMesh* pm, int ndiv
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderFaceEdge(FEFace& f, int j, FSMeshBase* pm, int ndivs)
+void GLMeshRender::RenderFaceEdge(FSFace& f, int j, FSMeshBase* pm, int ndivs)
 {
 	int n = f.Edges();
 	int a = f.n[j];

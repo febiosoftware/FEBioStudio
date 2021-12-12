@@ -69,7 +69,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 	int nsel = 0;
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (face.IsSelected())
 		{
 			nsel++;
@@ -95,7 +95,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 	vector<vec3d> normal(taggedNodes.size());
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (face.IsSelected())
 		{
 			int nn = face.Nodes();
@@ -197,7 +197,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 	}
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (face.m_gid >= 0)
 		{
 			int nn = face.Nodes();

@@ -88,7 +88,7 @@ void FECreateShells::CreateShells(FSMesh* pm, vector<int>& faceList){
     int faces = 0;
     for (int i=0; i < (int)faceList.size(); ++i)
     {
-        FEFace& face = pm->Face(faceList[i]);
+        FSFace& face = pm->Face(faceList[i]);
         int n = face.Nodes();
         // verification
         if ((n != 4) && (n != 3) && (n != 9) && (n != 8) && (n != 6)) return;
@@ -120,7 +120,7 @@ void FECreateShells::CreateShells(FSMesh* pm, vector<int>& faceList){
     int n=nbrelem;
     for (int i=0; i <(int)faceList.size(); ++i){
         FEElement& pe=pm->Element(n);
-        FEFace& face = pm->Face(faceList[i]);
+        FSFace& face = pm->Face(faceList[i]);
         int nf = face.Nodes();
         switch (nf)
         {

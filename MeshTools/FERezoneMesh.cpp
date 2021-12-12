@@ -47,7 +47,7 @@ FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 	vector<pair<int, int> > tag(N, pair<int, int>(0, -1));
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		for (int j = 0; j < face.Nodes(); ++j)
 		{
 			tag[face.n[j]].first = 1;
@@ -77,7 +77,7 @@ FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 	}
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsSelected())
 		{
 			for (int j = 0; j < face.Nodes(); ++j)

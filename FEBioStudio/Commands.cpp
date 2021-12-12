@@ -619,7 +619,7 @@ void CCmdToggleFEFaceVisibility::Execute()
 {
 	for (int i = 0; i<m_mesh->Faces(); ++i)
 	{
-		FEFace& face = m_mesh->Face(i);
+		FSFace& face = m_mesh->Face(i);
 		if (face.IsVisible()) face.Hide(); else face.Show();
 	}
 	m_mesh->UpdateItemVisibility();
@@ -1689,7 +1689,7 @@ void CCmdSelectFaces::UnExecute()
 {
 	for (int i = 0; i<m_pm->Faces(); ++i)
 	{
-		FEFace& face = m_pm->Face(i);
+		FSFace& face = m_pm->Face(i);
 		if (m_ptag[i])
 			face.Select();
 		else
@@ -1745,7 +1745,7 @@ void CCmdUnselectFaces::UnExecute()
 {
 	for (int i = 0; i<m_pm->Faces(); ++i)
 	{
-		FEFace& face = m_pm->Face(i);
+		FSFace& face = m_pm->Face(i);
 		if (m_ptag[i])
 			face.Select();
 		else
@@ -2377,7 +2377,7 @@ CCmdHideSelection::CCmdHideSelection(CModelDocument* doc) : CCommand("Hide")
 		{
 			for (int i = 0; i<pm->Faces(); ++i)
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				if (face.IsSelected()) m_item[m++] = i;
 			}
 		}

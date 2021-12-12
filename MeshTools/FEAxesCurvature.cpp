@@ -109,7 +109,7 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
     
     for (int i = 0; i<numFaces; ++i)
     {
-        FEFace& face = pm->Face(i);
+        FSFace& face = pm->Face(i);
         if (face.IsSelected())
             fdata.push_back(face);
     }
@@ -119,7 +119,7 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
     // store element attached to face; store neighboring faces; store face nodes
     for (int i = 0; i<ne1; ++i)
     {
-        FEFace face = fdata[i];
+        FSFace face = fdata[i];
         // get element to which this face belongs
         int iel = face.m_elem[0].eid;
         int faceEdges = face.Edges();
@@ -133,7 +133,7 @@ void FEAxesCurvature::Curvature(FSMesh* pm)
         //store neighboring faces to a face
         for (int j = 0; j<faceEdges; ++j)
         {
-			FEFace* pfj = pm->FacePtr(face.m_nbr[j]);
+			FSFace* pfj = pm->FacePtr(face.m_nbr[j]);
             if (pfj && pfj->IsSelected())
             {
                 temp.push_back(face.m_nbr[j]);

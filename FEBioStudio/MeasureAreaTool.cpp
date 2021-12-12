@@ -65,7 +65,7 @@ void CMeasureAreaTool::Update()
 	int NF = mesh->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 		if (f.IsSelected())
 		{
 			++m_nsel;

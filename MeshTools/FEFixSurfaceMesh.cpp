@@ -99,12 +99,12 @@ bool FEFixSurfaceMesh::RemoveDuplicateFaces(FESurfaceMesh* pm)
 		int n = NFT.Valence(i);
 		for (int j = 0; j < n - 1; ++j)
 		{
-			FEFace& fj = *NFT.Face(i, j);
+			FSFace& fj = *NFT.Face(i, j);
 			if (fj.m_ntag == 0)
 			{
 				for (int k = j + 1; k < n; ++k)
 				{
-					FEFace& fk = *NFT.Face(i, k);
+					FSFace& fk = *NFT.Face(i, k);
 					if (fj == fk)
 					{
 						fk.m_ntag = 1;
@@ -140,7 +140,7 @@ bool FEFixSurfaceMesh::RemoveNonManifoldFaces(FESurfaceMesh* pm)
 	// loop over all face
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int n = face.Edges();
 		for (int j = 0; j < n; ++j) if (face.m_nbr[j] == -1) { face.m_ntag = 1; break; }
 	}
@@ -156,7 +156,7 @@ bool FEFixSurfaceMesh::RemoveNonManifoldFaces(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void flipTri3(FEFace& f)
+void flipTri3(FSFace& f)
 {
 	// flip nodes 1 and 2
 	int ntmp = f.n[1];
@@ -181,7 +181,7 @@ void flipTri3(FEFace& f)
 }
 
 //-----------------------------------------------------------------------------
-void flipQuad4(FEFace& f)
+void flipQuad4(FSFace& f)
 {
 	// flip nodes 1 and 3
 	int ntmp = f.n[1];
@@ -225,7 +225,7 @@ bool FEFixSurfaceMesh::FixElementWinding(FESurfaceMesh* pm)
 	for (int i = 0; i < NF; ++i)
 	{
 		// get an face
-		FEFace& f0 = pm->Face(i);
+		FSFace& f0 = pm->Face(i);
 
 		// proceed if it has not been processed
 		if (f0.m_ntag == 0)
@@ -234,12 +234,12 @@ bool FEFixSurfaceMesh::FixElementWinding(FESurfaceMesh* pm)
 			// all elements connected to this element will now be wound
 			// in the same direction.
 			f0.m_ntag = 1;
-			stack<FEFace*> S;
+			stack<FSFace*> S;
 			S.push(&f0);
 			while (S.empty() == false)
 			{
 				// pop an face
-				FEFace* pf = S.top(); S.pop();
+				FSFace* pf = S.top(); S.pop();
 
 				// loop over the neighbors
 				int nn = pf->Nodes();
@@ -250,7 +250,7 @@ bool FEFixSurfaceMesh::FixElementWinding(FESurfaceMesh* pm)
 					int fj = pf->m_nbr[j];
 					if (fj >= 0)
 					{
-						FEFace* pfj = &pm->Face(fj);
+						FSFace* pfj = &pm->Face(fj);
 						if (pfj->m_ntag == 0)
 						{
 							int nnj = pfj->Nodes();
@@ -304,7 +304,7 @@ bool FEFixSurfaceMesh::InvertMesh(FESurfaceMesh* pm)
 	for (int i = 0; i < NF; ++i)
 	{
 		// get a face
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 
 		int nn = face.Nodes();
 		if (nn == 3) flipTri3(face);

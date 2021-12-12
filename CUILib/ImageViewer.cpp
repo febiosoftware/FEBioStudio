@@ -210,7 +210,7 @@ void CImageViewer::UpdatePath()
 		vec3d r[4];
 		for (int i = 0; i < mesh->Faces(); ++i)
 		{
-			FEFace& face = mesh->Face(i);
+			FSFace& face = mesh->Face(i);
 			int nf = face.Nodes();
 			int nup = 0;
 			for (int j = 0; j < nf; ++j)

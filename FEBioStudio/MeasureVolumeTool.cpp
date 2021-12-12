@@ -66,7 +66,7 @@ bool CMeasureVolumeTool::OnApply()
 	int NF = mesh->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 
 		// get the average position, area and normal
 		vec3d r = mesh->FaceCenter(f);

@@ -540,10 +540,10 @@ BOX CPostDocument::GetSelectionBox()
 			for (int j = 0; j < nel; ++j) box += mesh.Node(el.m_node[j]).r;
 		}
 
-		const vector<FEFace*> selFaces = GetGLModel()->GetFaceSelection();
+		const vector<FSFace*> selFaces = GetGLModel()->GetFaceSelection();
 		for (int i = 0; i < (int)selFaces.size(); ++i)
 		{
-			FEFace& face = *selFaces[i];
+			FSFace& face = *selFaces[i];
 			int nel = face.Nodes();
 			for (int j = 0; j < nel; ++j) box += mesh.Node(face.n[j]).r;
 		}

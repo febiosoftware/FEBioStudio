@@ -121,9 +121,9 @@ bool FEElement_::HasNode(int node) const
 }
 
 //-----------------------------------------------------------------------------
-FEFace FEElement_::GetFace(int i) const
+FSFace FEElement_::GetFace(int i) const
 {
-	FEFace face;
+	FSFace face;
 	GetFace(i, face);
 	return face;
 }
@@ -270,7 +270,7 @@ int FEElement_::GetLocalFaceIndices(int i, int* n) const
 }
 
 //-----------------------------------------------------------------------------
-void FEElement_::GetFace(int i, FEFace& f) const
+void FEElement_::GetFace(int i, FSFace& f) const
 {
 	int* m = m_node;
 	int* n = f.n;
@@ -466,7 +466,7 @@ int FEElement_::FindEdge(const FSEdge& edge) const
 }
 
 //-----------------------------------------------------------------------------
-void FEElement_::GetShellFace(FEFace& f) const
+void FEElement_::GetShellFace(FSFace& f) const
 {
 	switch (Type())
 	{
@@ -503,11 +503,11 @@ int FEElement_::FindNodeIndex(int nid)
 }
 
 //-----------------------------------------------------------------------------
-int FEElement_::FindFace(const FEFace& f)
+int FEElement_::FindFace(const FSFace& f)
 {
 	int nf = Faces();
 	for (int i = 0; i<nf; ++i) {
-		FEFace lf = GetFace(i);
+		FSFace lf = GetFace(i);
 		if (lf == f)
 		{
 			return i;

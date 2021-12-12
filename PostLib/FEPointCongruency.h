@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <set>
 //using namespace std;
 
-class FEFace;
+class FSFace;
 
 namespace Post {
 
@@ -67,12 +67,12 @@ private:
 	bool Project(int nid, int& nface, vec3f& q, double rs[2], vec3f& sn);
 	bool Intersect(const Ray& ray, int& nface, int nid, vec3f& q, double rs[2]);
 
-	bool IntersectTri3 (const Ray& ray, FEFace& face, vec3f& q, double rs[2]);
-	bool IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, double rs[2]);
+	bool IntersectTri3 (const Ray& ray, FSFace& face, vec3f& q, double rs[2]);
+	bool IntersectQuad4(const Ray& ray, FSFace& face, vec3f& q, double rs[2]);
 	float nodal_curvature(int nid, vec3f& nn, int m);
 	void level(int n, int l, std::set<int>& nl1);
 
-	float face_curvature(FEFace& face, double rs[2], vec3f& sn, int m);
+	float face_curvature(FSFace& face, double rs[2], vec3f& sn, int m);
 
 public:
 	int	m_nlevels;

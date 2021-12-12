@@ -67,7 +67,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	int NF = mesh->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		for (int j = 0; j<3; ++j)
 		{
 			int j0 = face.n[j];
@@ -93,7 +93,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// loop over all elements
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 
 		for (int j=0; j<3; ++j)
 		{
@@ -183,7 +183,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// reindex elements
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		if (face.m_ntag >= 0)
 		{
 			face.n[0] = index[face.n[0]];
@@ -196,7 +196,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// I'm not sure why, but I'll need to fix this. For now, we'll mark any invalid triangle for deletion
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		int* n = face.n;
 		if ((n[0] == n[1]) || (n[1] == n[2]) || (n[0] == n[2])) face.m_ntag = -1;
 	}
@@ -204,7 +204,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// reindex faces
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 		if (f.m_ntag >= 0)
 		{
 			f.n[0] = index[f.n[0]];

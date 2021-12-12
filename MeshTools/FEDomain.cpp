@@ -215,8 +215,8 @@ int FEDomain::FindQuad(FEDQuad quad, bool& pos, int& ist)
 }
 
 //-------------------------------------------------------------------------------
-// Find a quad in the master QuadList from a FEFace
-int FEDomain::FindQuadFromFace(FEFace face)
+// Find a quad in the master QuadList from a FSFace
+int FEDomain::FindQuadFromFace(FSFace face)
 {
     if (face.Nodes() != 4) return -1;
     int v[4];
@@ -289,8 +289,8 @@ int FEDomain::FindTri(FEDTri tri, bool& pos, int& ist)
 }
 
 //-------------------------------------------------------------------------------
-// Find a tri in the master TriList from a FEFace
-int FEDomain::FindTriFromFace(FEFace face)
+// Find a tri in the master TriList from a FSFace
+int FEDomain::FindTriFromFace(FSFace face)
 {
     if (face.Nodes() != 3) return -1;
     int v[3];
@@ -1430,7 +1430,7 @@ FEDBox& FEDBox::operator=(const FEDBox box)
 
 //-------------------------------------------------------------------------------
 // Find a box box face by node numbers
-int FEDBox::FindBoxFace(FEFace face)
+int FEDBox::FindBoxFace(FSFace face)
 {
     int v[4];
     // find the vertices from the node list
@@ -1852,7 +1852,7 @@ FEDWedge& FEDWedge::operator=(const FEDWedge wdg)
 
 //-------------------------------------------------------------------------------
 // Find a wedge face by node numbers
-int FEDWedge::FindWedgeFace(FEFace face)
+int FEDWedge::FindWedgeFace(FSFace face)
 {
     int v[4];
     // find the vertices from the node list
@@ -2515,7 +2515,7 @@ FEDTet& FEDTet::operator=(const FEDTet tet)
 
 //-------------------------------------------------------------------------------
 // Find a tet face by node numbers
-int FEDTet::FindTetFace(FEFace face)
+int FEDTet::FindTetFace(FSFace face)
 {
     if (face.Nodes() != 3) return-1;
     int v[3];

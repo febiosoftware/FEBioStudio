@@ -42,7 +42,7 @@ FENodeNodeTable::FENodeNodeTable(const FESurfaceMesh& mesh)
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		const FEFace& face = mesh.Face(i);
+		const FSFace& face = mesh.Face(i);
 		int nf = face.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
@@ -69,7 +69,7 @@ FENodeNodeTable::FENodeNodeTable(const FSMesh& mesh, bool surfOnly)
 		int NF = mesh.Faces();
 		for (int i = 0; i<NF; ++i)
 		{
-			const FEFace& f = mesh.Face(i);
+			const FSFace& f = mesh.Face(i);
 			int nf = f.Nodes();
 			for (int j = 0; j<nf; ++j)
 			{
@@ -197,7 +197,7 @@ FEFaceTable::FEFaceTable(const FSMesh& mesh)
 		{
 			if ((ei.m_nbr[j] < 0) || (tag[ ei.m_nbr[j] ] < tag[i]))
 			{
-				FEFace f = ei.GetFace(j);
+				FSFace f = ei.GetFace(j);
 				FT.push_back(f);
 			}
 		}
@@ -223,7 +223,7 @@ FEFaceEdgeList::FEFaceEdgeList(const FSMeshBase& mesh, const FEEdgeList& ET)
 	FET.resize(NF);
 	for (int i = 0; i<NF; ++i)
 	{
-		const FEFace& face = mesh.Face(i);
+		const FSFace& face = mesh.Face(i);
 		int ne = face.Edges();
 		vector<int>& FETi = FET[i];
 		FETi.resize(ne, -1);
@@ -322,7 +322,7 @@ FEElementFaceList::FEElementFaceList(const FSMesh& mesh, const FEFaceTable& FT)
 	vector<vector<int> > NFT; NFT.resize(mesh.Nodes());
 	for (int i = 0; i<(int)FT.size(); ++i)
 	{
-		const FEFace& f = FT[i];
+		const FSFace& f = FT[i];
 		assert((f.Type() == FE_FACE_TRI3) || (f.Type() == FE_FACE_QUAD4));
 		NFT[f.n[0]].push_back(i);
 		NFT[f.n[1]].push_back(i);
@@ -340,12 +340,12 @@ FEElementFaceList::FEElementFaceList(const FSMesh& mesh, const FEFaceTable& FT)
 		EFTi.resize(nf);
 		for (int j = 0; j<nf; ++j)
 		{
-			FEFace fj = ei.GetFace(j);
+			FSFace fj = ei.GetFace(j);
 			EFTi[j] = -1;
 			vector<int>& nfi = NFT[fj.n[0]];
 			for (int k = 0; k<(int)nfi.size(); ++k)
 			{
-				const FEFace& fk = FT[nfi[k]];
+				const FSFace& fk = FT[nfi[k]];
 				if (fj == fk)
 				{
 					EFTi[j] = nfi[k];
@@ -363,7 +363,7 @@ FEFaceFaceList::FEFaceFaceList(const FSMesh& mesh, const FEFaceTable& FT)
 	vector<vector<int> > NFT; NFT.resize(mesh.Nodes());
 	for (int i = 0; i<(int)FT.size(); ++i)
 	{
-		const FEFace& f = FT[i];
+		const FSFace& f = FT[i];
 		assert(f.Type() == FE_FACE_TRI3);
 		NFT[f.n[0]].push_back(i);
 		NFT[f.n[1]].push_back(i);
@@ -373,12 +373,12 @@ FEFaceFaceList::FEFaceFaceList(const FSMesh& mesh, const FEFaceTable& FT)
 	FFT.resize(mesh.Faces());
 	for (int i = 0; i<mesh.Faces(); ++i)
 	{
-		const FEFace& fi = mesh.Face(i);
+		const FSFace& fi = mesh.Face(i);
 		vector<int>& nfi = NFT[fi.n[0]];
 		FFT[i] = -1;
 		for (int k = 0; k<(int)nfi.size(); ++k)
 		{
-			const FEFace& fk = FT[nfi[k]];
+			const FSFace& fk = FT[nfi[k]];
 			if (fi == fk)
 			{
 				FFT[i] = nfi[k];
@@ -477,7 +477,7 @@ FEEdgeFaceList::FEEdgeFaceList(const FSMesh& mesh)
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		const FEFace& face = mesh.Face(i);
+		const FSFace& face = mesh.Face(i);
 
 		int ne = (int) FEL[i].size();
 		for (int j=0; j<ne; ++j)
@@ -504,7 +504,7 @@ FEEdgeFaceList::FEEdgeFaceList(const FESurfaceMesh& mesh)
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		const FEFace& face = mesh.Face(i);
+		const FSFace& face = mesh.Face(i);
 
 		int ne = (int) FEL[i].size();
 		for (int j = 0; j<ne; ++j)

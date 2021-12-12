@@ -894,7 +894,7 @@ double FSCoreMesh::QuadVolume(const FEElement_& el)
 {
     assert(el.Type() == FE_QUAD4);
 
-    FEFace& face = Face(el.m_face[0]);
+    FSFace& face = Face(el.m_face[0]);
 
     vec3d rt[FEElement::MAX_NODES];
     vec3d Dt[FEElement::MAX_NODES];
@@ -1355,7 +1355,7 @@ bool FSCoreMesh::IsSolid() const
 
 //-----------------------------------------------------------------------------
 // Find a face of an element.
-int FSCoreMesh::FindFace(FEElement_ *pe, FEFace &f, FEFace& fe)
+int FSCoreMesh::FindFace(FEElement_ *pe, FSFace &f, FSFace& fe)
 {
 	if (pe->IsSolid())
 	{
@@ -1393,7 +1393,7 @@ void FSCoreMesh::MarkExteriorNodes()
 	int faces = Faces();
 	for (int i = 0; i<faces; ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		if (face.IsExterior())
 		{
 			for (int j = 0; j < face.Nodes(); ++j)
@@ -1488,7 +1488,7 @@ void FSCoreMesh::UpdateItemVisibility()
 	// update face visibility
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 
 		FEElement_* e0 = ElementPtr(face.m_elem[0].eid); assert(e0);
 		FEElement_* e1 = ElementPtr(face.m_elem[1].eid);
@@ -1542,7 +1542,7 @@ int FSCoreMesh::CountFacePartitions() const
 	int max_gid = -1;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		const FEFace& face = Face(i);
+		const FSFace& face = Face(i);
 		if (face.m_gid > max_gid) max_gid = face.m_gid;
 	}
 	return max_gid + 1;
@@ -1567,7 +1567,7 @@ int FSCoreMesh::CountSmoothingGroups() const
 	int max_sg = -1;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		const FEFace& face = Face(i);
+		const FSFace& face = Face(i);
 		if (face.m_sid > max_sg) max_sg = face.m_sid;
 	}
 	return max_sg + 1;

@@ -73,7 +73,7 @@ void FESmoothMesh::SmoothMesh(FSMesh& mesh)
 		int NF = mesh.Faces();
 		for (int i=0; i<NF; ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nf = face.Nodes();
 			for (int j=0; j<nf; ++j) mesh.Node(face.n[j]).m_ntag = 0;
 		}
@@ -163,7 +163,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 		// process face nodes
 		for (int i = 0; i<mesh.Faces(); ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nf = face.Nodes();
 			for (int j = 0; j<nf; ++j)
 			{
@@ -314,7 +314,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 		// process face nodes
 		for (int i = 0; i<mesh.Faces(); ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nf = face.Nodes();
 			for (int j = 0; j<nf; ++j)
 			{

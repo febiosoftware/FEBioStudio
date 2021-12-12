@@ -243,7 +243,7 @@ double ShellJacobian(const FSMesh& mesh, const FEElement& el, int flag)
 	{
 		for (i = 0; i<n; ++i) r[i] = mesh.Node(el.m_node[i]).r;
 	}
-	const FEFace& face = mesh.Face(el.m_face[0]);
+	const FSFace& face = mesh.Face(el.m_face[0]);
 	for (i = 0; i<n; ++i) D[i] = to_vec3d(face.m_nn[i]);//normal node
 	for (i = 0; i<n; ++i) h[i] = el.m_h[i];//shell thickness
 
@@ -383,7 +383,7 @@ double SolidJacobian(const FSMesh& mesh, const FEElement& el)
 //-----------------------------------------------------------------------------
 // Calculate (approximate) surface of a face
 //
-double SurfaceArea(const FSMesh& mesh, const FEFace& f)
+double SurfaceArea(const FSMesh& mesh, const FSFace& f)
 {
 	vec3d ra[3], rb[3];
 	if (f.Nodes() == 3)
@@ -1087,7 +1087,7 @@ double Curvature(FSMesh& mesh, int node, int measure, int levels, int maxIters, 
 	vec3f sn(0, 0, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		const FEFace& f = mesh.Face(nfl[i].fid);
+		const FSFace& f = mesh.Face(nfl[i].fid);
 		sn += f.m_fn;
 	}
 	sn.Normalize();

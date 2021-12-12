@@ -1801,7 +1801,7 @@ bool XpltReader::ReadFaceData(FEPostModel& fem, FEState* pstate)
 //-----------------------------------------------------------------------------
 bool XpltReader::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader::Surface &s, Post::FEMeshData &data, int ntype)
 {
-	// It is possible that the node ordering of the FACE's are different than the FEFace's
+	// It is possible that the node ordering of the FACE's are different than the FSFace's
 	// so we setup up an array to unscramble the nodal values
 	int NF = s.nf;
 	vector<int> tag;
@@ -1814,7 +1814,7 @@ bool XpltReader::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader::Surface &s, 
 		FACE& f = s.face[i];
 		if (f.nid >= 0)
 		{
-			FEFace& fm = m.Face(f.nid);
+			FSFace& fm = m.Face(f.nid);
 			for (int j=0; j<f.nn; ++j) tag[f.node[j]] = j;
 			for (int j=0; j<f.nn; ++j) l[i][j] = tag[fm.n[j]];
 		}
@@ -2012,10 +2012,10 @@ bool XpltReader::ReadFaceData_NODE(Post::FEPostMesh& m, XpltReader::Surface &s, 
 	for (int i=0; i<s.nf; ++i) fn[i] = s.face[i].nn;
 
 	// create the local node index list
-	vector<int> l; l.reserve(s.nf*FEFace::MAX_NODES);
+	vector<int> l; l.reserve(s.nf*FSFace::MAX_NODES);
 	for (int i=0; i<s.nf; ++i)
 	{
-		FEFace& f = m.Face(s.face[i].nid);
+		FSFace& f = m.Face(s.face[i].nid);
 		int nn = f.Nodes();
 		for (int j=0; j<nn; ++j) 
 		{ 

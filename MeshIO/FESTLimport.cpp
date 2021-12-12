@@ -284,7 +284,7 @@ GObject* FESTLimport::build_mesh()
 		int n = f.nid;
 		if (n >= 0)
 		{
-			FEFace& face = pm->Face(n);
+			FSFace& face = pm->Face(n);
 			face.SetType(FE_FACE_TRI3);
 			face.m_gid = 0;
 			face.n[0] = f.n[0];
