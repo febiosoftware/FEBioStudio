@@ -62,10 +62,10 @@ SOFTWARE.*/
 class CCurvatureProps : public CPropertyList
 {
 public:
-	Post::FECurvatureField*	m_pf;
+	Post::CurvatureField*	m_pf;
 
 public:
-	CCurvatureProps(Post::FECurvatureField* pf) : m_pf(pf)
+	CCurvatureProps(Post::CurvatureField* pf) : m_pf(pf)
 	{
 		addProperty("Smoothness", CProperty::Int);
 		addProperty("Max iterations", CProperty::Int);
@@ -154,10 +154,10 @@ public:
 class CStrainProps : public CPropertyList
 {
 private:
-	Post::FEStrainDataField*	m_ps;
+	Post::StrainDataField*	m_ps;
 
 public:
-	CStrainProps(Post::FEStrainDataField* ps, int maxStates) : m_ps(ps)
+	CStrainProps(Post::StrainDataField* ps, int maxStates) : m_ps(ps)
 	{
 		addProperty("reference state", CProperty::Int)->setIntRange(0, maxStates);
 	}
@@ -1193,9 +1193,9 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 
 	Post::FEDataField* p = *dm.DataField(n);
 
-	if ((dynamic_cast<Post::FECurvatureField*>(p)))
+	if ((dynamic_cast<Post::CurvatureField*>(p)))
 	{
-		Post::FECurvatureField* pf = dynamic_cast<Post::FECurvatureField*>(p);
+		Post::CurvatureField* pf = dynamic_cast<Post::CurvatureField*>(p);
 		ui->m_prop->setPropertyList(new CCurvatureProps(pf));
 	}
 	else if (dynamic_cast<Post::FEMathDataField*>(p))
@@ -1208,9 +1208,9 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 		Post::FEMathVec3DataField* pm = dynamic_cast<Post::FEMathVec3DataField*>(p);
 		ui->m_prop->setPropertyList(new CMathDataVec3Props(pm));
 	}
-	else if (dynamic_cast<Post::FEStrainDataField*>(p))
+	else if (dynamic_cast<Post::StrainDataField*>(p))
 	{
-		Post::FEStrainDataField* ps = dynamic_cast<Post::FEStrainDataField*>(p);
+		Post::StrainDataField* ps = dynamic_cast<Post::StrainDataField*>(p);
 		ui->m_prop->setPropertyList(new CStrainProps(ps, nstates));
 	}
 	else if (dynamic_cast<Post::FEDistanceMap*>(p))

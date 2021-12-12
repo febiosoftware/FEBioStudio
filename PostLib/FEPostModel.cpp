@@ -852,14 +852,14 @@ void FEPostModel::AddDataField(FEDataField* pd, vector<int>& L)
 	{
 		FEFaceItemData* pmd = dynamic_cast<FEFaceItemData*>(pd->CreateData(*it));
 		(*it)->m_Data.push_back(pmd);
-		if (dynamic_cast<FECurvature*>(pmd))
+		if (dynamic_cast<Curvature*>(pmd))
 		{
-			FECurvature* pcrv = dynamic_cast<FECurvature*>(pmd);
+			Curvature* pcrv = dynamic_cast<Curvature*>(pmd);
 			pcrv->set_facelist(L);
 		}
-		if (dynamic_cast<FECongruency*>(pmd))
+		if (dynamic_cast<SurfaceCongruency*>(pmd))
 		{
-			FECongruency* pcon = dynamic_cast<FECongruency*>(pmd);
+			SurfaceCongruency* pcon = dynamic_cast<SurfaceCongruency*>(pmd);
 			pcon->set_facelist(L);
 		}
 	}

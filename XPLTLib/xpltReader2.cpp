@@ -526,25 +526,25 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 	// add additional displacement fields
 	if (m_bHasDispl) 
 	{
-		pdm->AddDataField(new FEStrainDataField(&fem, FEStrainDataField::LAGRANGE), "Lagrange strain");
-		pdm->AddDataField(new FEDataField_T<FENodePosition  >(&fem), "position"         );
-		pdm->AddDataField(new FEDataField_T<FENodeInitPos   >(&fem), "initial position" );
+		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
+		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem), "position"         );
+		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem), "initial position" );
 	}
 
 	// add additional stress fields
 	if (m_bHasStress)
 	{
-		pdm->AddDataField(new FEDataField_T<FEElemPressure>(&fem), "pressure");
+		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure");
 		
 		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<FESolidStress>(&fem), "solid stress");
+			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress");
 		}
 	}
 
 	// add additional stress fields
 	if (m_bHasNodalStress)
 	{
-		pdm->AddDataField(new FEDataField_T<FEElemNodalPressure>(&fem), "nodal pressure");
+		pdm->AddDataField(new FEDataField_T<ElemNodalPressure>(&fem), "nodal pressure");
 	}
 
 	return true;

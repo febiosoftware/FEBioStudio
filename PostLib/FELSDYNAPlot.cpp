@@ -176,8 +176,8 @@ bool FELSDYNAPlotImport::ReadHeader(FEPostModel& fem)
 	if (m_hdr.flagV) { pdm->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), "velocity"); m_nfield[LSDYNA_VEL ] = nd++; }
 	if (m_hdr.flagA) { pdm->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), "acceleration"); m_nfield[LSDYNA_ACC ] = nd++; }
 	if (m_hdr.flagT) { pdm->AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), "temperature"); m_nfield[LSDYNA_TEMP] = nd++; }
-	pdm->AddDataField(new FEDataField_T<FENodeInitPos >(&fem), "Initial position"); nd++;
-	pdm->AddDataField(new FEDataField_T<FENodePosition>(&fem), "Position"); nd++;
+	pdm->AddDataField(new FEDataField_T<NodeInitPos >(&fem), "Initial position"); nd++;
+	pdm->AddDataField(new FEDataField_T<NodePosition>(&fem), "Position"); nd++;
 
 	// add some additional data
 	if (m_hdr.flagU)
@@ -189,7 +189,7 @@ bool FELSDYNAPlotImport::ReadHeader(FEPostModel& fem)
 		if (m_hdr.nv2d == 44) { pdm->AddDataField(new FEDataField_T<FEElementData<mat3fs,DATA_ITEM> >(&fem, EXPORT_DATA), "shell strain"); m_nfield[LSDYNA_SHELL_STRAIN] = nd++; }
 
 		// additional element data
-		pdm->AddDataField(new FEStrainDataField(&fem, FEStrainDataField::LAGRANGE), "Lagrange strain");
+		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
 	}
 	else fem.SetDisplacementField(-1);
  

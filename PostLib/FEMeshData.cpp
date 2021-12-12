@@ -188,11 +188,11 @@ mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nst
 
 //-----------------------------------------------------------------------------
 // Deformation gradient
-FEDeformationGradient::FEDeformationGradient(FEState* pm, FEDataField* pdf) : FEElemData_T<mat3d, DATA_COMP>(pm, pdf)
+DeformationGradient::DeformationGradient(FEState* pm, FEDataField* pdf) : FEElemData_T<mat3d, DATA_COMP>(pm, pdf)
 {
 }
 
-void FEDeformationGradient::eval(int n, mat3d* pv)
+void DeformationGradient::eval(int n, mat3d* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -223,20 +223,20 @@ void FEDeformationGradient::eval(int n, mat3d* pv)
 }
 
 //-----------------------------------------------------------------------------
-Post::FEMeshData* FEStrainDataField::CreateData(FEState* pstate)
+Post::FEMeshData* StrainDataField::CreateData(FEState* pstate)
 {
 	switch (m_measure)
 	{
-	case INF_STRAIN        : return new FEInfStrain       (pstate, this);
-	case RIGHT_CAUCHY_GREEN: return new FERightCauchyGreen(pstate, this);
-	case RIGHT_STRETCH     : return new FERightStretch    (pstate, this);
-	case LAGRANGE          : return new FELagrangeStrain  (pstate, this);
-	case BIOT              : return new FEBiotStrain      (pstate, this);
-	case RIGHT_HENCKY      : return new FERightHencky     (pstate, this);
-	case LEFT_CAUCHY_GREEN : return new FELeftCauchyGreen (pstate, this);
-	case LEFT_STRETCH      : return new FELeftStretch     (pstate, this);
-	case LEFT_HENCKY       : return new FELeftHencky      (pstate, this);
-	case ALMANSI           : return new FEAlmansi         (pstate, this);
+	case INF_STRAIN        : return new InfStrain       (pstate, this);
+	case RIGHT_CAUCHY_GREEN: return new RightCauchyGreen(pstate, this);
+	case RIGHT_STRETCH     : return new RightStretch    (pstate, this);
+	case LAGRANGE          : return new LagrangeStrain  (pstate, this);
+	case BIOT              : return new BiotStrain      (pstate, this);
+	case RIGHT_HENCKY      : return new RightHencky     (pstate, this);
+	case LEFT_CAUCHY_GREEN : return new LeftCauchyGreen (pstate, this);
+	case LEFT_STRETCH      : return new LeftStretch     (pstate, this);
+	case LEFT_HENCKY       : return new LeftHencky      (pstate, this);
+	case ALMANSI           : return new AlmansiStrain         (pstate, this);
 	default:
 		assert(false);
 	}
@@ -247,7 +247,7 @@ Post::FEMeshData* FEStrainDataField::CreateData(FEState* pstate)
 //-----------------------------------------------------------------------------
 // infinitesimal strain
 //
-void FEInfStrain::eval(int n, mat3fs* pv)
+void InfStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -284,7 +284,7 @@ void FEInfStrain::eval(int n, mat3fs* pv)
 //-----------------------------------------------------------------------------
 // Right Cauchy-Green tensor C
 //
-void FERightCauchyGreen::eval(int n, mat3fs* pv)
+void RightCauchyGreen::eval(int n, mat3fs* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -323,7 +323,7 @@ void FERightCauchyGreen::eval(int n, mat3fs* pv)
 //-----------------------------------------------------------------------------
 // Right stretch tensor U
 //
-void FERightStretch::eval(int n, mat3fs* pv)
+void RightStretch::eval(int n, mat3fs* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -381,7 +381,7 @@ void FERightStretch::eval(int n, mat3fs* pv)
 //-----------------------------------------------------------------------------
 // Green-Lagrange strain evaluated at element center
 //
-void FELagrangeStrain::eval(int n, mat3fs* pv)
+void LagrangeStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -428,7 +428,7 @@ void FELagrangeStrain::eval(int n, mat3fs* pv)
 //-----------------------------------------------------------------------------
 // Biot strain
 //
-void FEBiotStrain::eval(int n, mat3fs* pv)
+void BiotStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -494,7 +494,7 @@ void FEBiotStrain::eval(int n, mat3fs* pv)
 //-----------------------------------------------------------------------------
 // Hencky strain (material frame)
 //
-void FERightHencky::eval(int n, mat3fs* pv)
+void RightHencky::eval(int n, mat3fs* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -560,7 +560,7 @@ void FERightHencky::eval(int n, mat3fs* pv)
 //-----------------------------------------------------------------------------
 // Left Cauchy-Green tensor B
 //
-void FELeftCauchyGreen::eval(int n, mat3fs* pv)
+void LeftCauchyGreen::eval(int n, mat3fs* pv)
 {
     // get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -607,7 +607,7 @@ void FELeftCauchyGreen::eval(int n, mat3fs* pv)
 //-----------------------------------------------------------------------------
 // Left stretch tensor V
 //
-void FELeftStretch::eval(int n, mat3fs* pv)
+void LeftStretch::eval(int n, mat3fs* pv)
 {
     // get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -673,7 +673,7 @@ void FELeftStretch::eval(int n, mat3fs* pv)
 //-----------------------------------------------------------------------------
 // Hencky strain (spatial frame)
 //
-void FELeftHencky::eval(int n, mat3fs* pv)
+void LeftHencky::eval(int n, mat3fs* pv)
 {
     // get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -739,7 +739,7 @@ void FELeftHencky::eval(int n, mat3fs* pv)
 //-----------------------------------------------------------------------------
 // Almansi (Eulerian) strain tensor e
 //
-void FEAlmansi::eval(int n, mat3fs* pv)
+void AlmansiStrain::eval(int n, mat3fs* pv)
 {
     // get the element
 	FEElement_& el = GetFEState()->GetFEMesh()->ElementRef(n);
@@ -816,7 +816,7 @@ double element_volume(int ntype, vec3d* r)
 //-----------------------------------------------------------------------------
 // Volume ratio
 //
-void FEVolRatio::eval(int n, float* pv)
+void VolumeRatio::eval(int n, float* pv)
 {
 	FEPostModel& fem = *GetFSModel();
 	FEPostMesh& m = *GetFEMesh();
@@ -842,7 +842,7 @@ void FEVolRatio::eval(int n, float* pv)
 }
 
 /*
-void FEVolRatio::eval(int n, float* pv)
+void VolumeRatio::eval(int n, float* pv)
 {
 	static double dN_hex[3][8] = {
 		{ -.125,  .125,  .125, -.125, -.125,  .125, .125, -.125 },
@@ -969,7 +969,7 @@ void FEVolRatio::eval(int n, float* pv)
 
 //-----------------------------------------------------------------------------
 
-void FEElementVolume::eval(int n, float* pv)
+void ElementVolume::eval(int n, float* pv)
 {
 	*pv = GetFEState()->GetFEMesh()->ElementVolume(n);
 }
@@ -980,7 +980,7 @@ void FEElementVolume::eval(int n, float* pv)
 // largets diagonal to the smallest diagonal. For tet and tri elements it is
 // defined as the largest so smallest edge.
 //
-void FEAspectRatio::eval(int iel, float* pv)
+void AspectRatio::eval(int iel, float* pv)
 {
 	FEPostMesh& m = *GetFEState()->GetFEMesh();
 	FEElement_& el = m.ElementRef(iel);
@@ -1025,7 +1025,7 @@ void FEAspectRatio::eval(int iel, float* pv)
 
 //-----------------------------------------------------------------------------
 // Calculate the max edge angle of an element
-void FEMaxEdgeAngle::eval(int iel, float* pv)
+void MaxEdgeAngle::eval(int iel, float* pv)
 {
 	FEPostModel& fem = *GetFSModel();
 	FEPostMesh& m = *GetFEState()->GetFEMesh();
@@ -1090,7 +1090,7 @@ void FEMaxEdgeAngle::eval(int iel, float* pv)
 }
 
 //-----------------------------------------------------------------------------
-void FEMinEdgeAngle::eval(int iel, float* pv)
+void MinEdgeAngle::eval(int iel, float* pv)
 {
 	FEPostModel& fem = *GetFSModel();
 	FEPostMesh& m = *GetFEState()->GetFEMesh();
@@ -1154,32 +1154,32 @@ void FEMinEdgeAngle::eval(int iel, float* pv)
 }
 
 //-----------------------------------------------------------------------------
-void FENodePosition::eval(int n, vec3f* pv)
+void NodePosition::eval(int n, vec3f* pv)
 {
 	int ntime = m_state->GetID();
 	*pv = GetFSModel()->NodePosition(n, ntime);
 }
 
 //-----------------------------------------------------------------------------
-void FENodeInitPos::eval(int n, vec3f* pv)
+void NodeInitPos::eval(int n, vec3f* pv)
 {
 	*pv = GetFSModel()->NodePosition(n, 0);
 }
 
 //=============================================================================
 
-FECurvature::FECurvature(FEState* state, FECurvatureField* pdf) : FEFaceData_T<float, DATA_NODE>(state, pdf), m_pdf(pdf)
+Curvature::Curvature(FEState* state, CurvatureField* pdf) : FEFaceData_T<float, DATA_NODE>(state, pdf), m_pdf(pdf)
 { 
 	m_face.assign(state->GetFEMesh()->Faces(), 1); 
 }
 
-void FECurvature::eval(int n, float* f)
+void Curvature::eval(int n, float* f)
 { 
 	eval_curvature(n, f, m_pdf->m_measure); 
 }
 
 //-----------------------------------------------------------------------------
-void FECurvature::level(int n, int l, set<int>& nl1)
+void Curvature::level(int n, int l, set<int>& nl1)
 {
 	// get the model's surface
 	FEPostModel* pfem = GetFSModel();
@@ -1241,14 +1241,14 @@ void FECurvature::level(int n, int l, set<int>& nl1)
 }
 
 //-----------------------------------------------------------------------------
-void FECurvature::set_facelist(vector<int>& L)
+void Curvature::set_facelist(vector<int>& L)
 {
 	for (int i=0; i<(int)m_face.size(); ++i) m_face[i] = 0;
 	for (int i=0; i<(int)L.size(); ++i) m_face[L[i]] = 1;
 }
 
 //-----------------------------------------------------------------------------
-void FECurvature::eval_curvature(int n, float* f, int m)
+void Curvature::eval_curvature(int n, float* f, int m)
 {
 	// get the model's surface
 	FEPostModel* pfem = GetFSModel();
@@ -1264,7 +1264,7 @@ void FECurvature::eval_curvature(int n, float* f, int m)
 }
 
 //-----------------------------------------------------------------------------
-float FECurvature::nodal_curvature(int n, int measure)
+float Curvature::nodal_curvature(int n, int measure)
 {
 	// get the model's surface
 	FEPostModel* pfem = GetFSModel();
@@ -1317,12 +1317,12 @@ float FECurvature::nodal_curvature(int n, int measure)
 }
 
 //=============================================================================
-int FEPrincCurvatureVector::m_nlevels = 1;
-int FEPrincCurvatureVector::m_nmax    = 1;
-int FEPrincCurvatureVector::m_bext    = 0;
+int PrincCurvatureVector::m_nlevels = 1;
+int PrincCurvatureVector::m_nmax    = 1;
+int PrincCurvatureVector::m_bext    = 0;
 
 //-----------------------------------------------------------------------------
-void FEPrincCurvatureVector::level(int n, int l, set<int>& nl1)
+void PrincCurvatureVector::level(int n, int l, set<int>& nl1)
 {
 	// get the model's surface
 	FEPostModel* pfem = GetFSModel();
@@ -1384,14 +1384,14 @@ void FEPrincCurvatureVector::level(int n, int l, set<int>& nl1)
 }
 
 //-----------------------------------------------------------------------------
-void FEPrincCurvatureVector::set_facelist(vector<int>& L)
+void PrincCurvatureVector::set_facelist(vector<int>& L)
 {
 	for (int i=0; i<(int)m_face.size(); ++i) m_face[i] = 0;
 	for (int i=0; i<(int)L.size(); ++i) m_face[L[i]] = 1;
 }
 
 //-----------------------------------------------------------------------------
-void FEPrincCurvatureVector::eval(int n, vec3f* fv, int m)
+void PrincCurvatureVector::eval(int n, vec3f* fv, int m)
 {
 	// get the model's surface
 	FEPostModel* pfem = GetFSModel();
@@ -1407,7 +1407,7 @@ void FEPrincCurvatureVector::eval(int n, vec3f* fv, int m)
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEPrincCurvatureVector::nodal_curvature(int n, int m)
+vec3f PrincCurvatureVector::nodal_curvature(int n, int m)
 {
 	// get the model's surface
 	FEPostModel* pfem = GetFSModel();
@@ -1601,19 +1601,19 @@ vec3f FEPrincCurvatureVector::nodal_curvature(int n, int m)
 }
 
 
-int FECongruency::m_nlevels = 1;
-int FECongruency::m_nmax = 1;
-int FECongruency::m_bext = 0;
+int SurfaceCongruency::m_nlevels = 1;
+int SurfaceCongruency::m_nmax = 1;
+int SurfaceCongruency::m_bext = 0;
 
 //-----------------------------------------------------------------------------
-void FECongruency::set_facelist(vector<int>& L)
+void SurfaceCongruency::set_facelist(vector<int>& L)
 {
 	for (int i=0; i<(int)m_face.size(); ++i) m_face[i] = 0;
 	for (int i=0; i<(int)L.size(); ++i) m_face[L[i]] = 1;
 }
 
 //-----------------------------------------------------------------------------
-void FECongruency::eval(int n, float* f)
+void SurfaceCongruency::eval(int n, float* f)
 {
 	FEPointCongruency map;
 	map.SetLevels(m_nlevels);
@@ -1636,7 +1636,7 @@ void FECongruency::eval(int n, float* f)
 
 
 //=============================================================================
-void FEVolStrain::eval(int n, float* pv)
+void VolumeStrain::eval(int n, float* pv)
 {
 	static double dN_hex[3][8] = {
 		{ -.125,  .125,  .125, -.125, -.125,  .125, .125, -.125 },
@@ -1764,7 +1764,7 @@ void FEVolStrain::eval(int n, float* pv)
 //=============================================================================
 // Element pressure
 //-----------------------------------------------------------------------------
-FEElemPressure::FEElemPressure(FEState* pm, FEDataField* pdf) : FEElemData_T<float, DATA_ITEM>(pm, pdf)
+ElemPressure::ElemPressure(FEState* pm, FEDataField* pdf) : FEElemData_T<float, DATA_ITEM>(pm, pdf)
 {
 	// find the stress field
 	FEPostModel& fem = *pm->GetFSModel();
@@ -1773,7 +1773,7 @@ FEElemPressure::FEElemPressure(FEState* pm, FEDataField* pdf) : FEElemData_T<flo
 }
 
 //-----------------------------------------------------------------------------
-void FEElemPressure::eval(int n, float* pv)
+void ElemPressure::eval(int n, float* pv)
 {
 	// get the state
 	FEState& state = *GetFEState();
@@ -1797,7 +1797,7 @@ void FEElemPressure::eval(int n, float* pv)
 //=============================================================================
 // Element nodal pressure
 //-----------------------------------------------------------------------------
-FEElemNodalPressure::FEElemNodalPressure(FEState* state, FEDataField* pdf) : FEElemData_T<float, DATA_COMP>(state, pdf)
+ElemNodalPressure::ElemNodalPressure(FEState* state, FEDataField* pdf) : FEElemData_T<float, DATA_COMP>(state, pdf)
 {
 	// find the stress field
 	FEPostModel& fem = *state->GetFSModel();
@@ -1806,7 +1806,7 @@ FEElemNodalPressure::FEElemNodalPressure(FEState* state, FEDataField* pdf) : FEE
 }
 
 //-----------------------------------------------------------------------------
-void FEElemNodalPressure::eval(int n, float* pv)
+void ElemNodalPressure::eval(int n, float* pv)
 {
 	// get the state
 	FEState& state = *GetFEState();
@@ -1835,7 +1835,7 @@ void FEElemNodalPressure::eval(int n, float* pv)
 //=============================================================================
 // Solid stress in a biphasic/multiphasic material
 //-----------------------------------------------------------------------------
-FESolidStress::FESolidStress(FEState* state, FEDataField* pdf) : FEElemData_T<mat3fs, DATA_ITEM>(state, pdf)
+SolidStress::SolidStress(FEState* state, FEDataField* pdf) : FEElemData_T<mat3fs, DATA_ITEM>(state, pdf)
 {
 	// find the stress field
 	FEPostModel& fem = *state->GetFSModel();
@@ -1845,7 +1845,7 @@ FESolidStress::FESolidStress(FEState* state, FEDataField* pdf) : FEElemData_T<ma
 }
 
 //-----------------------------------------------------------------------------
-void FESolidStress::eval(int n, mat3fs* pv)
+void SolidStress::eval(int n, mat3fs* pv)
 {
 	// get the state
 	FEState& state = *GetFEState();
