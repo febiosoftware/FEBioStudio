@@ -196,7 +196,7 @@ struct FRAG
 vec3f GetCoordinatesFromFrag(Post::FEPostModel& fem, int nstate, FRAG& a)
 {
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
-	vec3f x[FEElement::MAX_NODES];
+	vec3f x[FSElement::MAX_NODES];
 
 	vec3f r0 = a.r0;
 	if (a.iel >= 0)

@@ -192,7 +192,7 @@ public:
 	{
 		int		eid;
 		int		index;
-		int		node[FEElement::MAX_NODES];
+		int		node[FSElement::MAX_NODES];
 	};
 
 	struct FACE

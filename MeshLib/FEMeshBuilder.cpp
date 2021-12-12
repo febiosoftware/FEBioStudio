@@ -63,7 +63,7 @@ void FEMeshBuilder::RemoveIsolatedNodes()
 	m_mesh.TagAllNodes(-1);
 	for (int i = 0; i<m_mesh.Elements(); ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 		int n = el.Nodes();
 		for (int j = 0; j<n; ++j) m_mesh.Node(el.m_node[j]).m_ntag = 1;
 	}
@@ -79,7 +79,7 @@ void FEMeshBuilder::RemoveIsolatedNodes()
 	// fix element node numbering
 	for (int i = 0; i<m_mesh.Elements(); ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 		int n = el.Nodes();
 		for (int j = 0; j<n; ++j) el.m_node[j] = m_mesh.Node(el.m_node[j]).m_ntag;
 	}
@@ -146,7 +146,7 @@ void FEMeshBuilder::DeleteTaggedNodes(int tag)
 	// tag all the elements that has this node
 	for (int i = 0; i<m_mesh.Elements(); ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 		el.m_ntag = 0;
 		int ne = el.Nodes();
 		for (int j = 0; j<ne; ++j)
@@ -260,7 +260,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.m_gid == partId)
 		{
 			el.m_ntag = TAG;
@@ -274,7 +274,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 	}
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.m_gid != partId)
 		{
 			int ne = el.Nodes();
@@ -309,7 +309,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 	mesh.TagAllEdges(0);
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.m_ntag == TAG)
 		{
 			int nval = EEL.Valence(i);
@@ -326,7 +326,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 	}
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.m_ntag != TAG)
 		{
 			int nval = EEL.Valence(i);
@@ -360,7 +360,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 	// fix element node numbering
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		int n = el.Nodes();
 		for (int j = 0; j < n; ++j)
 		{
@@ -550,7 +550,7 @@ void FEMeshBuilder::Attach(FSMesh& fem)
 		int ng = -1;
 		for (i = 0; i<ne0; ++i)
 		{
-			FEElement& e = m_mesh.m_Elem[i];
+			FSElement& e = m_mesh.m_Elem[i];
 			if (e.m_gid > ng) ng = e.m_gid;
 		}
 		++ng;
@@ -559,8 +559,8 @@ void FEMeshBuilder::Attach(FSMesh& fem)
 		m_mesh.m_data.Clear();
 		for (i = 0; i<ne1; ++i)
 		{
-			FEElement& e0 = m_mesh.m_Elem[ne0 + i];
-			FEElement& e1 = fem.m_Elem[i];
+			FSElement& e0 = m_mesh.m_Elem[ne0 + i];
+			FSElement& e1 = fem.m_Elem[i];
 			e0 = e1;
 			e0.m_gid = e1.m_gid + ng;
 
@@ -714,7 +714,7 @@ void FEMeshBuilder::AttachAndWeld(FSMesh& mesh, double tol)
 	// update element numbers
 	for (int i = 0; i<elems; ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 		int ne = el.Nodes();
 		int* en = el.m_node;
 
@@ -824,7 +824,7 @@ FSMesh* FEMeshBuilder::DetachSelectedMesh()
 
 		if (pe->IsSelected())
 		{
-			FEElement& el = pm->Element(n);
+			FSElement& el = pm->Element(n);
 			el.SetType(pe->Type());
 			el.m_gid = pe->m_gid;
 			el.m_MatID = pe->m_MatID;
@@ -852,8 +852,8 @@ FSMesh* FEMeshBuilder::DetachSelectedMesh()
 	n = 0;
 	for (i = 0; i<m_mesh.Elements(); ++i)
 	{
-		FEElement& e0 = m_mesh.Element(i);
-		FEElement& e1 = m_mesh.Element(n);
+		FSElement& e0 = m_mesh.Element(i);
+		FSElement& e1 = m_mesh.Element(n);
 
 		if (!e0.IsSelected())
 		{
@@ -994,7 +994,7 @@ void FEMeshBuilder::InvertSelectedElements()
 	int nsel = 0;
 	for (int i = 0; i<m_mesh.Elements(); ++i)
 	{
-		FEElement& e = m_mesh.Element(i);
+		FSElement& e = m_mesh.Element(i);
 		if (e.IsSelected()) { e.m_ntag = 1; nsel++; }
 		else e.m_ntag = 0;
 	}
@@ -1073,7 +1073,7 @@ void FEMeshBuilder::InvertTaggedElements(int ntag)
 	// invert tagged elements
 	for (int i = 0; i<m_mesh.Elements(); ++i)
 	{
-		FEElement& e = m_mesh.Element(i);
+		FSElement& e = m_mesh.Element(i);
 		if (e.m_ntag == ntag)
 		{
 			int n = e.Nodes(), m;
@@ -1168,7 +1168,7 @@ void FEMeshBuilder::InvertTaggedElements(int ntag)
 			FSFace g;
 			m_mesh.FindFace(pe, f, g);
 
-			for (int j = 0; j<FEElement::MAX_NODES; ++j)
+			for (int j = 0; j<FSElement::MAX_NODES; ++j)
 				f.n[j] = g.n[j];
 		}
 	}
@@ -1254,21 +1254,21 @@ void FEMeshBuilder::PartitionElementSelection(int gid)
 	int NE = m_mesh.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 		if (el.IsSelected()) el.m_ntag = 1; else el.m_ntag = 0;
 	}
 
 	vector<int> s(NE, -1); int ne = 0;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 		if (el.m_ntag == 1)
 		{
 			el.m_ntag = 0;
 			s[ne++] = i;
 			while (ne > 0)
 			{
-				FEElement& el = m_mesh.Element(s[--ne]);
+				FSElement& el = m_mesh.Element(s[--ne]);
 				int nbr = (el.IsSolid() ? el.Faces() : el.Edges());
 				for (int j = 0; j < nbr; ++j)
 				{
@@ -1292,7 +1292,7 @@ void FEMeshBuilder::PartitionElementSelection(int gid)
 	int newFaces = 0;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 		if (el.IsSelected())
 		{
 			// solid elements
@@ -1304,7 +1304,7 @@ void FEMeshBuilder::PartitionElementSelection(int gid)
 					assert(el.m_nbr[j] >= 0);
 					if (el.m_nbr[j] >= 0)
 					{
-						FEElement& ej = m_mesh.Element(el.m_nbr[j]);
+						FSElement& ej = m_mesh.Element(el.m_nbr[j]);
 						if (ej.m_gid != el.m_gid)
 						{
 							FSFace fj = el.GetFace(j);
@@ -1745,7 +1745,7 @@ void FEMeshBuilder::AutoPartitionElements()
 		int n = -1;
 		for (int i = i0; i<NE; ++i)
 		{
-			FEElement& el = m_mesh.Element(i);
+			FSElement& el = m_mesh.Element(i);
 			if (el.m_gid == -1)
 			{
 				i0 = i + 1;
@@ -1762,7 +1762,7 @@ void FEMeshBuilder::AutoPartitionElements()
 		{
 			n = s.top(); s.pop();
 
-			FEElement& el = m_mesh.Element(n);
+			FSElement& el = m_mesh.Element(n);
 			el.m_ntag = 1;
 			el.m_gid = np;
 
@@ -1770,7 +1770,7 @@ void FEMeshBuilder::AutoPartitionElements()
 			int nf = el.Faces();
 			for (int i = 0; i<nf; ++i)
 			{
-				FEElement* pj = (el.m_nbr[i] == -1 ? 0 : &m_mesh.Element(el.m_nbr[i]));
+				FSElement* pj = (el.m_nbr[i] == -1 ? 0 : &m_mesh.Element(el.m_nbr[i]));
 				if (pj && (pj->m_ntag == 0))
 				{
 					pj->m_ntag = 1;
@@ -1782,7 +1782,7 @@ void FEMeshBuilder::AutoPartitionElements()
 			int ne = el.Edges();
 			for (int i = 0; i<ne; ++i)
 			{
-				FEElement* pj = (el.m_nbr[i] == -1 ? 0 : &m_mesh.Element(el.m_nbr[i]));
+				FSElement* pj = (el.m_nbr[i] == -1 ? 0 : &m_mesh.Element(el.m_nbr[i]));
 				if (pj && (pj->m_ntag == 0))
 				{
 					pj->m_ntag = 1;
@@ -1796,7 +1796,7 @@ void FEMeshBuilder::AutoPartitionElements()
 #ifdef _DEBUG
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 		assert(el.m_gid >= 0);
 	}
 #endif
@@ -1896,7 +1896,7 @@ void FEMeshBuilder::BuildFaces()
 	int elems = m_mesh.Elements();
 	for (int i = 0; i<elems; i++)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 
 		// solid elements
 		// we create a face if an element does not have a neighbor
@@ -1940,7 +1940,7 @@ void FEMeshBuilder::BuildFaces()
 	// solid elements
 	for (int i = 0; i<elems; i++)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 
 		int n = el.Faces();
 		for (int j = 0; j<n; j++)
@@ -1968,7 +1968,7 @@ void FEMeshBuilder::BuildFaces()
 	// shell elements
 	for (int i = 0; i<elems; i++)
 	{
-		FEElement& el = m_mesh.Element(i);
+		FSElement& el = m_mesh.Element(i);
 
 		// shell elements
 		int n = el.Edges();

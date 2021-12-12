@@ -1577,7 +1577,7 @@ void FEBioExport2::WriteGeometryPart(GPart* pg)
 
 	// loop over unprocessed elements
 	int ncount = 0;
-	int nn[FEElement::MAX_NODES];
+	int nn[FSElement::MAX_NODES];
 	for (int i=0;ncount<NEP;++i)
 	{
 		FEElement_& el = pm->ElementRef(i);
@@ -4790,7 +4790,7 @@ void FEBioExport2::WriteSurfaceSection(FEFaceList& s)
 		{
 			FSFace& face = *(pf->m_pi);
 			FSCoreMesh* pm = pf->m_pm;
-			FEElement& el = pm->Element(face.m_elem[0]);
+			FSElement& el = pm->Element(face.m_elem[0]);
 			nn[0] = el.m_ntag;
 			nn[1] = face.m_face+1;
 	

@@ -158,11 +158,11 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 
 				// read element data
 				++tag;
-				int n[FEElement::MAX_NODES];
+				int n[FSElement::MAX_NODES];
 				for (int i = 0; i<elems; ++i)
 				{
 					// read element type
-					FEElement& el = pm->Element(i);
+					FSElement& el = pm->Element(i);
 					if (tag == "hex8") el.SetType(FE_HEX8);
 					else if (tag == "hex20") el.SetType(FE_HEX20);
 					else if (tag == "hex27") el.SetType(FE_HEX27);
@@ -213,7 +213,7 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 					{
 						if (tag == "fiber")
 						{
-							FEElement& el = pm->Element(id);
+							FSElement& el = pm->Element(id);
 
 							vec3d a;
 
@@ -244,7 +244,7 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 						}
 						else if (tag == "mat_axis")
 						{
-							FEElement& el = pm->Element(id);
+							FSElement& el = pm->Element(id);
 
 							vec3d a, d;
 
@@ -277,13 +277,13 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 						}
 						else if (tag == "thickness")
 						{
-							FEElement& el = pm->Element(id);
+							FSElement& el = pm->Element(id);
 							if (!el.IsShell()) return false;
 							tag.value(el.m_h, el.Nodes());
 						}
 						else if (tag == "area")
 						{
-							FEElement& el = pm->Element(id);
+							FSElement& el = pm->Element(id);
 							if (!el.IsBeam()) return false;
 							tag.value(el.m_a0);
 						}
@@ -325,7 +325,7 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 	// each material, considering only materials that are actually used
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		e.m_gid = MAT[e.m_gid]; assert(e.m_gid >= 0);
 	}
 

@@ -44,7 +44,7 @@ FSMesh* FETet15ToTet4::Apply(FSMesh* pm)
 	for (int i=0; i<NN; ++i) pm->Node(i).m_ntag = -1;
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		for (int j=0; j<4; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
 	}
 	int nn = 0;
@@ -77,8 +77,8 @@ FSMesh* FETet15ToTet4::Apply(FSMesh* pm)
 	// create the elements
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& e0 = pm->Element(i);
-		FEElement& e1 = pnew->Element(i);
+		FSElement& e0 = pm->Element(i);
+		FSElement& e1 = pnew->Element(i);
 		e1 = e0;
 
 		e1.m_gid = e0.m_gid;

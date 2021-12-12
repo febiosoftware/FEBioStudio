@@ -752,7 +752,7 @@ void CModelDocument::HideUnselected()
 			vector<int> elemList;
 			for (int i = 0; i<pm->Elements(); ++i)
 			{
-				FEElement& el = pm->Element(i);
+				FSElement& el = pm->Element(i);
 				if (el.IsSelected() == false) elemList.push_back(i);
 			}
 			DoCommand(new CCmdHideElements(pm, elemList));

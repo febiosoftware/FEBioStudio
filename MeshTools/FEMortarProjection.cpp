@@ -176,7 +176,7 @@ FSMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 				// create the elements
 				for (int k=0; k<nr; ++k)
 				{
-					FEElement& el = ptri->Element(k);
+					FSElement& el = ptri->Element(k);
 					el.SetType(FE_TRI3);
 					el.m_gid = 0;
 					el.m_node[0] = 0;

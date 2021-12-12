@@ -125,7 +125,7 @@ void FEBioMesh::UpdateMeshData()
 	int NE = mesh.Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.m_nid != -1)
 		{
 			if ((m_minID == -1) || (el.m_nid < m_minID)) m_minID = el.m_nid;
@@ -134,18 +134,18 @@ void FEBioMesh::UpdateMeshData()
 	}
 
 	nsize = m_maxID - m_minID + 1;
-	m_elem.resize(nsize, (FEElement*) 0);
+	m_elem.resize(nsize, (FSElement*) 0);
 
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		int nid = el.m_nid;
 		if (nid != -1) m_elem[nid - m_minID] = &el;
 	}
 }
 
 //-----------------------------------------------------------------------------
-FEElement* FEBioMesh::FindElementFromID(int nid)
+FSElement* FEBioMesh::FindElementFromID(int nid)
 {
 	if (nid == -1) return 0;
 	if ((nid < m_minID) || (nid > m_maxID)) return 0;
@@ -384,7 +384,7 @@ void FEBioInputModel::Part::Update()
 	int NE = mesh.Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		int ne = el.Nodes();
 		for (int j=0; j<ne; ++j) el.m_node[j] = NLT[ el.m_node[j] - noff ];
 	}

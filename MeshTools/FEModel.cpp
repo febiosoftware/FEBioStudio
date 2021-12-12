@@ -1540,7 +1540,7 @@ void FSModel::UpdateData()
 						vec3d r;
 						for (int n=0; n<NE; ++n)
 						{
-							FEElement& e = pm->Element(n);
+							FSElement& e = pm->Element(n);
 							int ne = e.Nodes();
 							r = vec3d(0,0,0);
 							for (int m = 0; m<ne; ++m) r += po->GetTransform().LocalToGlobal(pm->Node(e.m_node[m]).r);

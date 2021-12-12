@@ -496,7 +496,7 @@ void check_013(FSProject& prj, std::vector<FSObject*>& objList)
 				int NE = pm->Elements();
 				for (int j = 0; j < NE; ++j)
 				{
-					FEElement& el = pm->Element(j);
+					FSElement& el = pm->Element(j);
 					if (el.IsShell() && (el.m_gid == n))
 					{
 						int ne = el.Nodes();

@@ -108,7 +108,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 	{
 		FSNode& n1 = pmnew->Node(n);
 
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		vec3d r(0,0,0);
 		for (int j=0; j<8; ++j) r += pm->Node(el.m_node[j]).r;
 		r *= 0.125;
@@ -130,7 +130,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 	int m[27];
 	for (int i=0; i<NE0; ++i)
 	{
-		FEElement& el0 = pm->Element(i);
+		FSElement& el0 = pm->Element(i);
 		vector<int>& eel = EET[i];
 		vector<int>& fel = EFL[i];
 
@@ -141,7 +141,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 
 		for (int j=0; j<8; ++j)
 		{
-			FEElement& el = pmnew->Element(i*8 + j);
+			FSElement& el = pmnew->Element(i*8 + j);
 			el.m_gid = el0.m_gid;
 			el.SetType(FE_HEX8);
 
@@ -254,7 +254,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 	// and bottom face (which is assumed to be face 4 and 5).
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if ((el.m_nbr[4] != -1) || (el.m_nbr[5] != -1)) return nullptr;
 	}
 
@@ -263,7 +263,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 	int taggedFaces = 0;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		el.m_ntag = i;
 		assert((el.m_face[4] != -1) && (el.m_face[5] != -1));
 		if (el.m_face[4] == -1) return nullptr; else { pm->Face(el.m_face[4]).m_ntag = taggedFaces++;}
@@ -277,7 +277,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 	vector< vector<int> > EEL(pm->Elements(), vector<int>(8, -1));
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		for (int k=0; k<=1; ++k)
 		{
 			for (int j = 0; j < 4; ++j)
@@ -295,7 +295,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 				else
 				{
 					int nej = el.m_nbr[j];
-					FEElement& ej = pm->Element(nej);
+					FSElement& ej = pm->Element(nej);
 					if (el.m_ntag < ej.m_ntag)
 					{
 						pair<int, int> edge;
@@ -389,7 +389,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 	int m[18];
 	for (int i = 0; i < NE0; ++i)
 	{
-		FEElement& el0 = pm->Element(i);
+		FSElement& el0 = pm->Element(i);
 		vector<int>& eel = EEL[i];
 
 		for (int j = 0; j < 8; ++j) m[j] = el0.m_node[j];
@@ -398,7 +398,7 @@ FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 
 		for (int j = 0; j < 4; ++j)
 		{
-			FEElement& el = pmnew->Element(i * 4 + j);
+			FSElement& el = pmnew->Element(i * 4 + j);
 			el.m_gid = el0.m_gid;
 			el.SetType(FE_HEX8);
 

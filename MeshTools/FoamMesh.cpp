@@ -112,7 +112,7 @@ void FoamGen::SelectFace(int i, FSMesh* pm)
 		// unselect all faces, except the first one
 		for (int n=m_nface[1]; n<m_nface[7]; ++n)
 		{
-			FEElement& f = pm->Element(n);
+			FSElement& f = pm->Element(n);
 			pm->Node(f.m_node[0]).Unselect();
 			pm->Node(f.m_node[1]).Unselect();
 			pm->Node(f.m_node[2]).Unselect();
@@ -127,7 +127,7 @@ void FoamGen::SelectFace(int i, FSMesh* pm)
 		// select the face
 		for (int n=m_nface[i]; n<m_nface[i+1]; ++n)
 		{
-			FEElement& f = pm->Element(n);
+			FSElement& f = pm->Element(n);
 			pm->Node(f.m_node[0]).Select();
 			pm->Node(f.m_node[1]).Select();
 			pm->Node(f.m_node[2]).Select();
@@ -696,7 +696,7 @@ FSMesh* FoamGen::CreateMesh()
 
 	for (i=0; i<nf; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		FACE& f = m_Face[i];
 		e.SetType(FE_TRI3);
 		e.m_node[0] = f.n[0];

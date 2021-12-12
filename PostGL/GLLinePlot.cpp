@@ -300,8 +300,8 @@ bool CGLLinePlot::ShowLine(LINEDATA& l, FEState& s)
 	if ((l.m_elem[0] == -1) || (l.m_elem[1] == -1)) return true;
 
 	Post::FEPostMesh* m = s.GetFEMesh();
-	FEElement& e0 = m->Element(l.m_elem[0]);
-	FEElement& e1 = m->Element(l.m_elem[1]);
+	FSElement& e0 = m->Element(l.m_elem[0]);
+	FSElement& e1 = m->Element(l.m_elem[1]);
 
 	return (e0.IsVisible() || e1.IsVisible());
 }

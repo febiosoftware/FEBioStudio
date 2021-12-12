@@ -129,7 +129,7 @@ void GLProbe::Update()
 	Update(m_lastTime, m_lastdt, true);
 }
 
-bool ProjectToElement(FEElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q)
+bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q)
 {
 	int ne = el.Nodes();
 	BOX box;
@@ -198,15 +198,15 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 	rt = to_vec3d(r0);
 
 	int nelem = -1;
-	vec3f x0[FEElement::MAX_NODES];
-	vec3f xt[FEElement::MAX_NODES];
+	vec3f x0[FSElement::MAX_NODES];
+	vec3f xt[FSElement::MAX_NODES];
 	int nmin = -1;
 	double L2min = 0.0;
 	vec3f rmin;
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.IsSolid())
 		{
 			int ne = el.Nodes();
@@ -264,7 +264,7 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 	{
 		vec3d dr = to_vec3d(r0 - rmin);
 
-		FEElement& e = mesh.Element(nmin);
+		FSElement& e = mesh.Element(nmin);
 		vec3d a0 = to_vec3d(fem.NodePosition(e.m_node[0], 0));
 		vec3d a1 = to_vec3d(fem.NodePosition(e.m_node[1], 0));
 		vec3d a2 = to_vec3d(fem.NodePosition(e.m_node[2], 0));
@@ -340,7 +340,7 @@ double GLProbe::DataValue(int nfield, int nstep)
 		int nelem = ProjectToMesh(nstep, p0, m_pos);
 		if (nelem >= 0)
 		{
-			float data[FEElement::MAX_NODES];
+			float data[FSElement::MAX_NODES];
 			fem.EvaluateElement(nelem, nstep, nfield, data, val);
 		}
 		return val;

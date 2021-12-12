@@ -253,7 +253,7 @@ void CFiberGeneratorTool::OnApply()
 					int NE = pm->Elements();
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = pm->Element(i);
+						FSElement& el = pm->Element(i);
 
 						int pid = el.m_gid;
 						GPart* pg = po->Part(pid); assert(pg);
@@ -304,7 +304,7 @@ void CFiberGeneratorTool::OnApply()
 		int NE = pm->Elements();
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.m_ntag == 1)
 			{
 				el.m_fiber = grad[i];
@@ -317,7 +317,7 @@ void CFiberGeneratorTool::OnApply()
 		int NE = pm->Elements();
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.m_ntag == 1)
 			{
 				vec3d N(0, 0, 1);

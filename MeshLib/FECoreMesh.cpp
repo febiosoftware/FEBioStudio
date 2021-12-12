@@ -400,7 +400,7 @@ double FSCoreMesh::HexVolume(const FEElement_& el)
 	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
 
     
-    vec3d rt[FEElement::MAX_NODES];
+    vec3d rt[FSElement::MAX_NODES];
     for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
     
     switch (el.Type())
@@ -571,7 +571,7 @@ double FSCoreMesh::PentaVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_PENTA6) || (el.Type() == FE_PENTA15));
 
-    vec3d rt[FEElement::MAX_NODES];
+    vec3d rt[FSElement::MAX_NODES];
     for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
     
     switch (el.Type())
@@ -737,7 +737,7 @@ double FSCoreMesh::PyramidVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_PYRA5) || (el.Type() == FE_PYRA13));
     
-    vec3d rt[FEElement::MAX_NODES];
+    vec3d rt[FSElement::MAX_NODES];
     for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
     
     switch (el.Type())
@@ -896,8 +896,8 @@ double FSCoreMesh::QuadVolume(const FEElement_& el)
 
     FSFace& face = Face(el.m_face[0]);
 
-    vec3d rt[FEElement::MAX_NODES];
-    vec3d Dt[FEElement::MAX_NODES];
+    vec3d rt[FSElement::MAX_NODES];
+    vec3d Dt[FSElement::MAX_NODES];
     for (int i = 0; i < el.Nodes(); ++i)
     {
         rt[i] = m_Node[el.m_node[i]].r;
@@ -1285,7 +1285,7 @@ double FSCoreMesh::TetVolume(const FEElement_& el)
 	assert((el.Type() == FE_TET4) || (el.Type() == FE_TET10)
 		|| (el.Type() == FE_TET15) || (el.Type() == FE_TET20));
 
-	vec3d rt[FEElement::MAX_NODES];
+	vec3d rt[FSElement::MAX_NODES];
 	for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
 
 	switch (el.Type())

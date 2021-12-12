@@ -206,22 +206,22 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-// The FEElement class can be used to represent a general purpose element. 
+// The FSElement class can be used to represent a general purpose element. 
 // This class can represent an element of all different types. 
-class FEElement : public FEElement_
+class FSElement : public FEElement_
 {
 public:
 	enum { MAX_NODES = 27 };
 
 public:
 	//! constructor
-	FEElement();
+	FSElement();
 
 	//! copy constructor
-	FEElement(const FEElement& el);
+	FSElement(const FSElement& el);
 
 	//! assignment operator
-	FEElement& operator = (const FEElement& el);
+	FSElement& operator = (const FSElement& el);
 
 private:
 	int		_node[MAX_NODES];	//!< nodal id's

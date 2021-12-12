@@ -316,7 +316,7 @@ void FEBioFormat25::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& t
 		{
 			int id = tag.AttributeValue<int>("id", -1);
 			el.id = id;
-			tag.value(el.n, FEElement::MAX_NODES);
+			tag.value(el.n, FSElement::MAX_NODES);
 			elem.push_back(el);
 		}
 		else throw XMLReader::InvalidTag(tag);
@@ -338,7 +338,7 @@ void FEBioFormat25::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& t
 	// read element data
 	for (int i = NTE; i<elems + NTE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		FEBioInputModel::ELEM& els = elem[i - NTE];
 		el.SetType(ntype);
 		el.m_gid = pid;
@@ -471,7 +471,7 @@ void FEBioFormat25::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& ta
 	if (tag.isleaf() == false)
 	{
 		// read the surface data
-		int nf[FEElement::MAX_NODES], N;
+		int nf[FSElement::MAX_NODES], N;
 		++tag;
 		do
 		{
@@ -680,8 +680,8 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
 		assert(pdst->Elements()==psrc->Elements());
 		for (int j=0; j<pdst->Elements(); ++j)
 		{
-			FEElement& e0 = pdst->Element(j);
-			FEElement& e1 = psrc->Element(j);
+			FSElement& e0 = pdst->Element(j);
+			FSElement& e1 = psrc->Element(j);
 
 			int ne = e0.Nodes(); assert(ne == e1.Nodes());
 			for (int k=0; k<ne; ++k)
@@ -755,16 +755,16 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 		{
 			FSMesh* mesh = dom->GetPart()->GetFEMesh();
 
-			double h[FEElement::MAX_NODES] = { 0 };
+			double h[FSElement::MAX_NODES] = { 0 };
 			++tag;
 			do
 			{
-				int m = tag.value(h, FEElement::MAX_NODES);
+				int m = tag.value(h, FSElement::MAX_NODES);
 				int lid = tag.AttributeValue<int>("lid", 0) - 1;
 				if (lid >= 0)
 				{
 					int id = dom->ElementID(lid);
-					FEElement& el = mesh->Element(id);
+					FSElement& el = mesh->Element(id);
 
 					assert(m == el.Nodes());
 					for (int i = 0; i < m; ++i) el.m_h[i] = h[i];
@@ -792,7 +792,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 				if (lid >= 0)
 				{
 					int id = dom->ElementID(lid);
-					FEElement& el = mesh->Element(id);
+					FSElement& el = mesh->Element(id);
 					tag.value(a);
 					a.Normalize();
 					// set up a orthonormal coordinate system
@@ -830,7 +830,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 				if (lid >= 0)
 				{
 					int id = dom->ElementID(lid);
-					FEElement& el = mesh->Element(id);
+					FSElement& el = mesh->Element(id);
 
 					vec3d a, d;
 					++tag;
@@ -861,7 +861,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 					if ((lid >= 0) && (it != items.end()))
 					{
 						int id = *it; // looks like this is already zero-based
-						FEElement& el = mesh->Element(id);
+						FSElement& el = mesh->Element(id);
 						vec3d a, d;
 						++tag;
 						do

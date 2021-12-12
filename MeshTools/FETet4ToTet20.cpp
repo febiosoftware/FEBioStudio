@@ -112,8 +112,8 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	const int TET[6][2] = {{0,1},{1,2},{0,2},{0,3},{1,3},{2,3}};
 	for (int i = 0; i<elems; ++i)
 	{
-		FEElement& e0 = pm->Element(i);
-		FEElement& e1 = pnew->Element(i);
+		FSElement& e0 = pm->Element(i);
+		FSElement& e1 = pnew->Element(i);
 		e1 = e0;
 
 		e1.SetType(FE_TET20);

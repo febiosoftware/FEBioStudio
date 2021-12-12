@@ -872,7 +872,7 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 		FSFace& face = pm->Face(i);
 
 		int elemId = face.m_elem[0].eid;
-		FEElement& el = pm->Element(elemId);
+		FSElement& el = pm->Element(elemId);
 		int pid = el.m_MatID;
 		if (pid >= 0)
 		{

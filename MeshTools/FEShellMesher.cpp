@@ -91,7 +91,7 @@ FSMesh*	FEShellMesher::BuildMesh()
 	for (int i = 0; i < NF; ++i)
 	{
 		FSFace& sf = surfaceMesh->Face(i);
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 
 		assert(sf.m_gid >= 0);
 		GFace* pf = po->Face(sf.m_gid);

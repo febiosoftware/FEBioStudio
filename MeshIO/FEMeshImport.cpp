@@ -149,7 +149,7 @@ void FEMeshImport::BuildMesh(FSProject& prj)
 	for (i=0; i<elems; ++i)
 	{
 		ELEM& E = m_Elem[i];
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		for (int j=0; j<8; ++j) e.m_node[j] = E.n[j] - 1;
 		switch(E.ntype)
 		{
@@ -172,7 +172,7 @@ void FEMeshImport::BuildMesh(FSProject& prj)
 	for (int i=0; i<elems; ++i)
 	{
 		ELEM& E = m_Elem[i];
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		el.m_gid = E.npid - nmin;
 	}
 

@@ -236,7 +236,7 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 	// copy elements
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement& el = pmesh->Element(i);
+		FSElement& el = pmesh->Element(i);
 		el.SetType(FE_TET4);
 		el.m_node[0] = out.tetrahedronlist[4*i  ];
 		el.m_node[1] = out.tetrahedronlist[4*i+1];
@@ -382,7 +382,7 @@ FSMesh* FETetGenModifier::RefineMesh(FSMesh* pm)
 	// copy elements
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement& el = pmesh->Element(i);
+		FSElement& el = pmesh->Element(i);
 		el.SetType(FE_TET4);
 		el.m_node[0] = out.tetrahedronlist[4*i  ];
 		el.m_node[1] = out.tetrahedronlist[4*i+1];
@@ -661,7 +661,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 	// make sure this is a tetmesh
 	for (int i=0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.Type() != FE_TET4) return false;
 	}
 
@@ -686,7 +686,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 	in.tetrahedronlist = new int[elems*4];
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		in.tetrahedronlist[4*i  ] = el.m_node[0];
 		in.tetrahedronlist[4*i+1] = el.m_node[1];
 		in.tetrahedronlist[4*i+2] = el.m_node[2];
@@ -719,7 +719,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 	{
 		FSFace& f = pm->Face(i);
 		double A = FEMeshMetrics::SurfaceArea(*pm, f);
-		FEElement& el = pm->Element(f.m_elem[0].eid);
+		FSElement& el = pm->Element(f.m_elem[0].eid);
 		in.facetconstraintlist[2*i  ] = i;
 		if (el.IsSelected() || f.IsSelected())
 		{
@@ -744,7 +744,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 		for (int i=0; i<faces; ++i)
 		{
 			FSFace& f = pm->Face(i);
-			FEElement& el = pm->Element(f.m_elem[0].eid);
+			FSElement& el = pm->Element(f.m_elem[0].eid);
 			if (el.IsSelected() || f.IsSelected()) f.m_ntag = 1; else f.m_ntag = 0;
 		}
 
@@ -784,7 +784,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 		in.tetrahedronvolumelist = new REAL[elems];
 		for (int i=0; i<elems; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.IsSelected()) in.tetrahedronvolumelist[i] = a; else in.tetrahedronvolumelist[i] = 0.0;
 		}
 
@@ -793,13 +793,13 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 			vector<double> evol; evol.assign(elems, 0.0);
 			for (int i=0; i<elems; ++i)
 			{
-				FEElement& el = pm->Element(i);
+				FSElement& el = pm->Element(i);
 				evol[i] = FEMeshMetrics::ElementVolume(*pm, el);
 			}
 
 			for (int i=0; i<elems; ++i)
 			{
-				FEElement& el = pm->Element(i);
+				FSElement& el = pm->Element(i);
 				if (el.IsSelected()) el.m_ntag = 1; else el.m_ntag = 0;
 			}
 
@@ -809,7 +809,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 				w *= w;
 				for (int i=0; i<elems; ++i)
 				{
-					FEElement& el = pm->Element(i);
+					FSElement& el = pm->Element(i);
 					if (el.m_ntag == 1)
 					{
 						int nf = el.Faces();
@@ -826,7 +826,7 @@ bool FETetGenModifier::build_tetgen_remesh(FSMesh* pm, tetgenio& in)
 				}
 				for (int i=0; i<elems; ++i)
 				{
-					FEElement& el = pm->Element(i);
+					FSElement& el = pm->Element(i);
 					if (el.m_ntag == 2) el.m_ntag = 1;
 				}
 			}

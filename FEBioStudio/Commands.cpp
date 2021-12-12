@@ -598,7 +598,7 @@ void CCmdToggleElementVisibility::Execute()
 {
 	for (int i = 0; i<m_mesh->Elements(); ++i)
 	{
-		FEElement& el = m_mesh->Element(i);
+		FSElement& el = m_mesh->Element(i);
 		if (el.IsVisible()) el.Hide(); else el.Show();
 	}
 	m_mesh->UpdateItemVisibility();
@@ -1539,7 +1539,7 @@ void CCmdSelectElements::UnExecute()
 {
 	for (int i = 0; i<m_pm->Elements(); ++i)
 	{
-		FEElement& el = m_pm->Element(i);
+		FSElement& el = m_pm->Element(i);
 		if (m_ptag[i])
 			el.Select();
 		else
@@ -1603,7 +1603,7 @@ void CCmdUnselectElements::UnExecute()
 	FSMesh* pm = m_mesh;
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (m_ptag[i])
 			el.Select();
 		else
@@ -2364,7 +2364,7 @@ CCmdHideSelection::CCmdHideSelection(CModelDocument* doc) : CCommand("Hide")
 		{
 			for (int i = 0; i<mesh->Elements(); ++i)
 			{
-				FEElement& el = mesh->Element(i);
+				FSElement& el = mesh->Element(i);
 				if (el.IsSelected()) m_item[m++] = i;
 			}
 		}

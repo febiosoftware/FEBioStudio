@@ -90,7 +90,7 @@ void FEMeshValuator::Evaluate(int nfield)
 
 				for (int i = 0; i < NE; ++i)
 				{
-					FEElement& el = m_mesh.Element(i);
+					FSElement& el = m_mesh.Element(i);
 					if (el.IsVisible())
 					{
 						data.SetElementDataTag(i, 1);
@@ -108,7 +108,7 @@ void FEMeshValuator::Evaluate(int nfield)
 		{
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement& el = m_mesh.Element(i);
+				FSElement& el = m_mesh.Element(i);
 				if (el.IsVisible())
 				{
 					try {
@@ -139,7 +139,7 @@ void FEMeshValuator::Evaluate(int nfield)
 				FSMesh* mesh = nodeData.GetMesh();
 				for (int i=0; i < mesh->Elements(); ++i)
 				{ 
-					FEElement& el = mesh->Element(i);
+					FSElement& el = mesh->Element(i);
 					int ne = el.Nodes();
 					for (int j = 0; j < ne; ++j)
 					{
@@ -212,7 +212,7 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 {
 	if (err) *err = 0;
 	double val = 0, sum = 0;
-	const FEElement& el = m_mesh.Element(n);
+	const FSElement& el = m_mesh.Element(n);
 	switch (nfield)
 	{
 	case 0: // element volume

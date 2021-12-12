@@ -79,7 +79,7 @@ bool FEMeshExport::Write(const char* szfile)
 		FSMesh* pm = model.Object(i)->GetFEMesh();
 		for (j=0; j<pm->Elements(); ++j)
 		{
-			FEElement& e = pm->Element(j);
+			FSElement& e = pm->Element(j);
 			if (e.IsType(FE_HEX8)) nhex++;
 			if (e.IsType(FE_TET4)) ntet++;
 			if (e.IsType(FE_TRI3)) ntri++;
@@ -96,7 +96,7 @@ bool FEMeshExport::Write(const char* szfile)
 			FSMesh* pm = model.Object(i)->GetFEMesh();
 			for (j=0; j<pm->Elements(); ++j)
 			{
-				FEElement& e = pm->Element(j);
+				FSElement& e = pm->Element(j);
 				if (e.IsType(FE_HEX8))
 				{
 					int nn[8];
@@ -118,7 +118,7 @@ bool FEMeshExport::Write(const char* szfile)
 			FSMesh* pm = model.Object(i)->GetFEMesh();
 			for (j=0; j<pm->Elements(); ++j)
 			{
-				FEElement& e = pm->Element(j);
+				FSElement& e = pm->Element(j);
 				if (e.IsType(FE_TET4))
 				{
 					int nn[4];
@@ -141,7 +141,7 @@ bool FEMeshExport::Write(const char* szfile)
 			FSMesh* pm = model.Object(i)->GetFEMesh();
 			for (j=0; j<pm->Elements(); ++j)
 			{
-				FEElement& e = pm->Element(j);
+				FSElement& e = pm->Element(j);
 				if (e.IsType(FE_TRI3))
 				{
 					int nn[3];

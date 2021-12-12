@@ -188,7 +188,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 	int nsel = 0;
 	for (int i = 0; i < NT0; i++)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected()) { el.m_ntag = 1; nsel++; }
 	}
 	if (nsel == 0) pm->TagAllElements(1);
@@ -198,7 +198,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 	vector<int> EM; EM.assign(NE, -1);
 	for (int i=0; i<NT0; i++)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_ntag == 1)
 		{
 			vector<int>& EETi = EET[i];
@@ -218,7 +218,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 		for (int i=0; i<NN0; ++i) pm->Node(i).m_ntag = 0;
 		for (int i=0; i<NT0; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.m_ntag == 1)
 			{
 				pm->Node(el.m_node[0]).m_ntag = 1;
@@ -229,7 +229,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 		}
 		for (int i=0; i<NT0; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.m_ntag != 1)
 			{
 				vector<int>& EETi = EET[i];
@@ -286,7 +286,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 	vector<vector<int> > EC(NT0); // case numbers ([0] = major case, [1..8] = subcase for each primitive)
 	for (int i=0; i<NT0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		vector<int>& EETi = EET[i];
 
 		// determine the major case number
@@ -309,7 +309,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 	int NT1 = 0;
 	for (int i=0; i<NT0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		vector<int>& EETi = EET[i];
 
 		// get the (global) node numbers
@@ -400,7 +400,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 	int cn = NN1 - (int) CN.size(); // index for center nodes of wedges (case 0, 7)
 	for (int i=0; i<NT0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		vector<int>& EETi = EET[i];
 		int ncase    = EC[i][0];
 		bool bsel = (el.m_ntag == 1);
@@ -434,7 +434,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 			if ((nj[5]==-1)&&(nj[4]==-1))
 			{
 				// this is a tet
-				FEElement& ej = pnew->Element(elem++);
+				FSElement& ej = pnew->Element(elem++);
 				ej.SetType(FE_TET4);
 				ej.m_gid = el.m_gid;
 
@@ -467,7 +467,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 				for (int k=0; k<2; ++k)
 				{
 					const int* nk = il[k];
-					FEElement& ej = pnew->Element(elem++);
+					FSElement& ej = pnew->Element(elem++);
 					ej.SetType(FE_TET4);
 					ej.m_gid = el.m_gid;
 					ej.m_node[0] = ML[ nk[0] ]; assert(ej.m_node[0] != -1);
@@ -513,7 +513,7 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 					const int* nk = il[k];
 					if (nk[0] == -1) break;
 
-					FEElement& ej = pnew->Element(elem++);
+					FSElement& ej = pnew->Element(elem++);
 					ej.SetType(FE_TET4);
 					ej.m_gid = el.m_gid;
 

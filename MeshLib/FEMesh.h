@@ -45,7 +45,7 @@ class Mesh_Data
 {
 	struct DATA
 	{
-		double	val[FEElement::MAX_NODES];	// nodal values for element
+		double	val[FSElement::MAX_NODES];	// nodal values for element
 		int		nval;						// number of nodal values (should equal nr of nodes for corresponding element)
 		int		tag;
 	};
@@ -126,8 +126,8 @@ public: // from FSCoreMesh
 	int Elements() const override { return (int)m_Elem.size(); }
 
 	//! return element
-	FEElement& Element(int n) { return m_Elem[n]; }
-	const FEElement& Element(int n) const { return m_Elem[n]; }
+	FSElement& Element(int n) { return m_Elem[n]; }
+	const FSElement& Element(int n) const { return m_Elem[n]; }
 
 	//! return reference to element
 	FEElement_& ElementRef(int n) override { return m_Elem[n]; }
@@ -213,7 +213,7 @@ public: // --- M E S H   Q U E R I E S ---
 
 protected:
 	// elements
-	std::vector<FEElement>	m_Elem;	//!< FE elements
+	std::vector<FSElement>	m_Elem;	//!< FE elements
 
 	// mesh data (used for data evaluation)
 	Mesh_Data	m_data;

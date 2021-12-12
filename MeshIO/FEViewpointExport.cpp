@@ -84,7 +84,7 @@ bool FEViewpointExport::Write(const char* szfile)
 		if (strlen(sz) == 0) sz = szdefault;
 		for (n=0; n<pm->Elements(); ++n, ++ne)
 		{
-			FEElement& el = pm->Element(n);
+			FSElement& el = pm->Element(n);
 			int* l = el.m_node;
 			fprintf(fp, "%s", sz);
 			for (k=0; k<el.Nodes(); ++k) fprintf(fp, " %d", pm->Node(l[k]).m_ntag);

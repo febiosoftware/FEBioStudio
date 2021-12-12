@@ -1672,7 +1672,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	{
 		if (pe->id != -1)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			pe->lid = i++;
 			int etype = pe->type;
 			el.SetType(etype);
@@ -1712,7 +1712,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 				{
 					assert(*pe != -1);
 					int eid = part.FindElement(*pe)->lid;
-					FEElement& el = pm->Element(eid);
+					FSElement& el = pm->Element(eid);
 					el.m_gid = i;
 				}
 			}
@@ -1731,7 +1731,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 
 						vec3d a = vec3d(e.val[0], e.val[1], e.val[2]);
 						vec3d b = vec3d(e.val[3], e.val[4], e.val[5]);
-						FEElement& el = pm->Element(eid);
+						FSElement& el = pm->Element(eid);
 
 						vec3d e1 = a; e1.Normalize();
 						vec3d e3 = a ^ b; e3.Normalize();
@@ -1762,7 +1762,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 				{
 					assert(*pe != -1);
 					int eid = part.FindElement(*pe)->lid;
-					FEElement& el = pm->Element(eid);
+					FSElement& el = pm->Element(eid);
 					el.m_gid = i;
 				}
 			}
@@ -1773,7 +1773,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			// Therefore we reindex the element GID's
 			for (int i=0; i<elems; ++i)
 			{
-				FEElement& el = pm->Element(i);
+				FSElement& el = pm->Element(i);
 				if (el.m_gid >= 0) index[el.m_gid]++;
 			}
 
@@ -1786,7 +1786,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 
 			for (int i = 0; i<elems; ++i)
 			{
-				FEElement& el = pm->Element(i);
+				FSElement& el = pm->Element(i);
 				if (el.m_gid >= 0)
 				{
 					el.m_gid = index[el.m_gid];
@@ -1936,7 +1936,7 @@ FESurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 	for (int j = 0; j<nf; ++j, ++pf)
 	{
 		pe = part->FindElement(pf->eid);
-		FEElement& el = pm->Element(pe->lid);
+		FSElement& el = pm->Element(pe->lid);
 
 		if (el.IsType(FE_HEX8))
 		{

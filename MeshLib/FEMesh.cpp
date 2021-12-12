@@ -92,7 +92,7 @@ void Mesh_Data::Init(FSMesh* mesh, double initVal, int initTag)
 	m_data.resize(NE);
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 		DATA& di = m_data[i];
 		int ne = el.Nodes();
 		di.nval = ne;
@@ -225,7 +225,7 @@ FSMesh::FSMesh(FESurfaceMesh& m)
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEElement& el = Element(i);
+		FSElement& el = Element(i);
 		FSFace& face = Face(i);
 		FSFace& sface = m.Face(i);
 		el.SetType(FE_TRI3);
@@ -487,7 +487,7 @@ void FSMesh::UpdateElementPartitions()
 	int max_gid = -1;
 	for (int i = 0; i<Elements(); ++i)
 	{
-		FEElement& elem = Element(i);
+		FSElement& elem = Element(i);
 		if (elem.m_gid > max_gid) max_gid = elem.m_gid;
 	}
 
@@ -498,7 +498,7 @@ void FSMesh::UpdateElementPartitions()
 	vector<int> gid(max_gid + 1, -1);
 	for (int i = 0; i<Elements(); ++i)
 	{
-		FEElement& elem = Element(i);
+		FSElement& elem = Element(i);
 		if (elem.m_gid >= 0) gid[elem.m_gid] = 1;
 	}
 
@@ -514,7 +514,7 @@ void FSMesh::UpdateElementPartitions()
 	{
 		for (int i = 0; i<Elements(); ++i)
 		{
-			FEElement& elem = Element(i);
+			FSElement& elem = Element(i);
 			if (elem.m_gid >= 0) elem.m_gid = gid[elem.m_gid];
 		}
 	}
@@ -528,8 +528,8 @@ void FSMesh::RemoveElements(int ntag)
     bool bdata = (m_data.m_data.size() > 0);
 	for (int i = 0; i<Elements(); ++i)
 	{
-		FEElement& e1 = Element(i);
-		FEElement& e2 = Element(n);
+		FSElement& e1 = Element(i);
+		FSElement& e2 = Element(n);
 
 		if (e1.m_ntag != ntag)
 		{
@@ -705,7 +705,7 @@ bool FSMesh::ValidateElements() const
 	int NE = Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		const FEElement& el = m_Elem[i];
+		const FSElement& el = m_Elem[i];
 
 		// see if all elements have IDs assigned
 		if (el.m_gid < 0) return false;
@@ -921,7 +921,7 @@ void FSMesh::MarkExteriorElements()
 	// set exterior flags
 	for (int i = 0; i < Elements(); ++i)
 	{
-		FEElement& el = Element(i);
+		FSElement& el = Element(i);
 		if (el.IsSolid())
 		{
 			el.SetExterior(false);
@@ -1004,7 +1004,7 @@ void FSMesh::UpdateFaceElementTable()
 
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = Element(i);
+		FSElement& el = Element(i);
 
 		// solid elements
 		int nf = el.Faces();
@@ -1154,7 +1154,7 @@ void FSMesh::UpdateFaceNeighbors()
 		while (S.empty() == false)
 		{
 			int elem = S.top(); S.pop();
-			FEElement& el = Element(elem);
+			FSElement& el = Element(elem);
 			el.m_ntag = 1;
 
 			int nf = el.Faces();
@@ -1167,7 +1167,7 @@ void FSMesh::UpdateFaceNeighbors()
 
 				if (el.m_nbr[i] != -1)
 				{
-					FEElement& ej = Element(el.m_nbr[i]);
+					FSElement& ej = Element(el.m_nbr[i]);
 					if (ej.m_ntag == 0)
 					{
 						ej.m_ntag = 1;
@@ -1180,7 +1180,7 @@ void FSMesh::UpdateFaceNeighbors()
 
 		for (int i=i0; i<Elements(); ++i)
 		{
-			FEElement& el = Element(i);
+			FSElement& el = Element(i);
 			if (el.m_ntag == 0)
 			{
 				S.push(i);
@@ -1659,7 +1659,7 @@ void FSMesh::Load(IArchive& ar)
 	// were stored. But the max buffer size for shell thickness is 9
 	// so this could crash PreView when reading shell thickness values for elements
 	// that have more than 9 nodes.
-	vector<double> h(FEElement::MAX_NODES);
+	vector<double> h(FSElement::MAX_NODES);
 
 	// read the rest of the mesh data
 	while (IArchive::IO_OK == ar.OpenChunk())
@@ -1697,7 +1697,7 @@ void FSMesh::Load(IArchive& ar)
 		case CID_MESH_ELEMENT_SECTION:
 			{
 				int n = 0;
-				FEElement* pe = &m_Elem[0];
+				FSElement* pe = &m_Elem[0];
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
@@ -2092,7 +2092,7 @@ FSMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh)
 	for (int i = 0; i<faces; ++i)
 	{
 		FSFace& face = surfaceMesh->Face(i);
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 
 		el.m_gid = face.m_gid;
 
@@ -2131,7 +2131,7 @@ void FSMesh::SetUniformShellThickness(double h)
 {
 	for (int i = 0; i < Elements(); ++i)
 	{
-		FEElement& el = Element(i);
+		FSElement& el = Element(i);
 		int ne = el.Nodes();
 		for (int j = 0; j < ne; ++j) el.m_h[j] = h;
 	}

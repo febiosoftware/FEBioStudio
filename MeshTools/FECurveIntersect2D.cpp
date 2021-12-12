@@ -825,7 +825,7 @@ FSMesh* FECurveIntersect2D::BuildFEMesh(DynamicMesh2D& dyna)
 	facePtr.reset();
 	for (int i = 0; i<NF; ++i, ++facePtr)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		el.SetType(FE_TRI3);
 		el.m_node[0] = facePtr->node[0]->ntag; assert((el.m_node[0] >= 0) && (el.m_node[0] < NN));
 		el.m_node[1] = facePtr->node[1]->ntag; assert((el.m_node[1] >= 0) && (el.m_node[1] < NN));

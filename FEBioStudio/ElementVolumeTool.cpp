@@ -65,7 +65,7 @@ void CElementVolumeTool::Update()
 	int NE = mesh->Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 		if (el.IsSelected())
 		{
 			++m_nsel;

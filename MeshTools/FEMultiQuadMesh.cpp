@@ -545,7 +545,7 @@ void FEMultiQuadMesh::BuildFEFaces(FSMesh* pm)
 	for (int i = 0; i < faces; ++i)
 	{
 		FSFace& f = pm->Face(i);
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		el.m_gid = 0;
 		el.SetType(m_elemType);
 

@@ -622,7 +622,7 @@ template <typename T> void cached_copy_elem_data_COMP(FEMeshData& dst, FEMeshDat
 	FEElemData_T<T, DATA_COMP>& s = dynamic_cast<FEElemData_T<T, DATA_COMP>&>(src);
 
 	int NE = mesh.Elements();
-	T f[FEElement::MAX_NODES];
+	T f[FSElement::MAX_NODES];
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement_& el = mesh.ElementRef(i);
@@ -641,7 +641,7 @@ template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshDat
 	FEElemData_T<T, DATA_NODE>& s = dynamic_cast<FEElemData_T<T, DATA_NODE>&>(src);
 
 	int NE = mesh.Elements();
-	T f[FEElement::MAX_NODES];
+	T f[FSElement::MAX_NODES];
 	vector<T> vf;
 	vector<int> elem(1);
 	vector<int> index;
@@ -900,7 +900,7 @@ vec3f FEPostModel::NodePosition(const vec3f& r, int ntime)
 	int iel = -1; double iso[3] = {0};
 	if (FindElementInReferenceFrame(*mesh, r, iel, iso))
 	{
-		vec3f x[FEElement::MAX_NODES];
+		vec3f x[FSElement::MAX_NODES];
 		GetElementCoords(iel, ntime, x);
 
 		// evaluate 
@@ -1172,7 +1172,7 @@ bool FEPostModel::Merge(FEPostModel* fem)
 	// copy new elements
 	for (int i = 0; i < NE1; ++i)
 	{
-		FEElement& el = mesh0.Element(NE0 + i);
+		FSElement& el = mesh0.Element(NE0 + i);
 		el = mesh1.Element(i);
 		for (int j = 0; j < el.Nodes(); ++j) el.m_node[j] += NN0;
 		el.m_gid += NMAT0;

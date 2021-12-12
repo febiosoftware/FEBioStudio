@@ -1626,7 +1626,7 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 	// loop over unprocessed elements
 	int nset = 0;
 	int ncount = 0;
-	int nn[FEElement::MAX_NODES];
+	int nn[FSElement::MAX_NODES];
 	char szname[128] = { 0 };
 	for (int i = 0; ncount < NEP; ++i)
 	{
@@ -2118,7 +2118,7 @@ void FEBioExport4::WriteElementDataFields()
 			FEPartData* partData = dynamic_cast<FEPartData*>(pm->GetMeshDataField(n));
 			if (partData)
 			{
-				double v[FEElement::MAX_NODES] = { 0 };
+				double v[FSElement::MAX_NODES] = { 0 };
 				FEPartData& data = *partData;
 				GPartList* partList = data.GetPartList(&fem);
 				std::vector<GPart*> partArray = partList->GetPartList();

@@ -113,7 +113,7 @@ bool FERAWImport::Load(const char* szfile)
 		for (int j=0; j<m_ny; ++j)
 			for (int i=0; i<m_nx; ++i, ++n)
 			{
-				FEElement& elem = pm->Element(n);
+				FSElement& elem = pm->Element(n);
 				elem.SetType(FE_HEX8);
 				elem.m_gid = pb[n];
 				elem.m_node[0] = k*(m_nx+1)*(m_ny+1) + j*(m_nx+1) + i;

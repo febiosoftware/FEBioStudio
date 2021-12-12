@@ -78,7 +78,7 @@ bool FETetGenExport::Write(const char *szfile)
 		int NE = pm->Elements();
 		for (int j=0; j<NE; ++j, ++n)
 		{
-			FEElement& el = pm->Element(j);
+			FSElement& el = pm->Element(j);
 			assert(el.Type() == FE_TET4);
 			int m[4];
 			m[0] = pm->Node(el.m_node[0]).m_ntag;

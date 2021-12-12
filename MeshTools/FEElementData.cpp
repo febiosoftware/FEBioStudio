@@ -183,7 +183,7 @@ bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataT
 		int pid = partList[i];
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = mesh->Element(i);
+			FSElement& el = mesh->Element(i);
 			if (el.m_gid == pid)
 			{
 				int nn = el.Nodes();
@@ -221,7 +221,7 @@ FEElemList* FEPartData::BuildElemList()
 		int pid = m_part[i];
 		for (int j = 0; j < NE; ++j)
 		{
-			FEElement& el = mesh->Element(j);
+			FSElement& el = mesh->Element(j);
 			if (el.m_gid == pid)
 			{
 				elemList->Add(mesh, &el, j);

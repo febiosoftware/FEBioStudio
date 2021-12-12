@@ -220,7 +220,7 @@ void Post::FEPostMesh::BuildMesh()
 //-----------------------------------------------------------------------------
 bool Post::FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
 {
-	vec3f y[FEElement::MAX_NODES];
+	vec3f y[FSElement::MAX_NODES];
 	int NE = m.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
@@ -448,8 +448,8 @@ double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	Post::FERefState& ref = *ps->m_ref;
 	double res = 0.0;
-	float v[FEElement::MAX_NODES];
-	vec3f r[FEElement::MAX_NODES];
+	float v[FSElement::MAX_NODES];
+	vec3f r[FSElement::MAX_NODES];
 	for (int i = 0; i<mesh.Elements(); ++i)
 	{
 		FEElement_& e = mesh.ElementRef(i);
@@ -500,8 +500,8 @@ double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	double res = 0.0;
-	float v[FEElement::MAX_NODES];
-	vec3f r[FEElement::MAX_NODES];
+	float v[FSElement::MAX_NODES];
+	vec3f r[FSElement::MAX_NODES];
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
 		FEElement_& e = mesh.ElementRef(i);

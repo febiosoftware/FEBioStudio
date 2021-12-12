@@ -286,7 +286,7 @@ FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 		Element ngel = (*ngmesh)[ei];
 
 		// Note that I need to invert the element
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 		el.m_gid = 0;
 
 		if (secondOrder == false)

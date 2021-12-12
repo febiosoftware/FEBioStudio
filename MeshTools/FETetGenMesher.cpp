@@ -196,7 +196,7 @@ FSMesh* FETetGenMesher::BuildPLCMesh()
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 		PLC::FACE& f = plc.Face(i);
 		el.m_gid = 0;
 		if (f.Nodes() == 3)
@@ -328,7 +328,7 @@ bool FETetGenMesher::build_tetgen_in_remesh(tetgenio& in)
 	// make sure this is a tet mesh
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.Type() != FE_TET4) return false;
 	}
 
@@ -350,7 +350,7 @@ bool FETetGenMesher::build_tetgen_in_remesh(tetgenio& in)
 	in.tetrahedronlist = new int[NE*4];
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		in.tetrahedronlist[4*i  ] = el.m_node[0];
 		in.tetrahedronlist[4*i+1] = el.m_node[1];
 		in.tetrahedronlist[4*i+2] = el.m_node[2];
@@ -490,7 +490,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	// copy elements
 	for (i=0; i<elems; ++i)
 	{
-		FEElement& el = pmesh->Element(i);
+		FSElement& el = pmesh->Element(i);
 		el.SetType(FE_TET4);
 		el.m_node[0] = out.tetrahedronlist[4*i  ];
 		el.m_node[1] = out.tetrahedronlist[4*i+1];
@@ -548,7 +548,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	for (int i = 0; i < pmesh->Elements(); ++i) pmesh->Element(i).m_gid = -1;
 	for (int i = 0; i < pmesh->Elements(); ++i)
 	{
-		FEElement& el = pmesh->Element(i);
+		FSElement& el = pmesh->Element(i);
 		if (el.m_gid == -1)
 		{
 			// loop over the faces
@@ -575,7 +575,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 							while (S.empty() == false)
 							{
 								int eid = S.top(); S.pop();
-								FEElement& eli = pmesh->Element(eid);
+								FSElement& eli = pmesh->Element(eid);
 
 								// loop over all neighbors
 								for (int k = 0; k < 4; ++k)
@@ -601,7 +601,7 @@ FSMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	// make sure all elements are assigned a PID
 	for (int i = 0; i < pmesh->Elements(); ++i)
 	{
-		FEElement& el = pmesh->Element(i);
+		FSElement& el = pmesh->Element(i);
 		assert(el.m_gid >= 0);
 		if (el.m_gid < 0) el.m_gid = 0;
 	}
@@ -647,7 +647,7 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 	vector< vector<int> > NEL; NEL.resize(NN);
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i); assert(el.IsType(FE_TET4));
+		FSElement& el = pm->Element(i); assert(el.IsType(FE_TET4));
 		for (int j=0; j<6; ++j)
 		{
 			int n0 = el.m_node[EL[j][0]];
@@ -686,7 +686,7 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 	vector< vector<int> > EE; EE.assign(NE, vector<int>(6));
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		vector<int>& ee = EE[i];
 		for (int j=0; j<6; ++j)
 		{
@@ -785,8 +785,8 @@ FSMesh* FETetGenMesher::build_tet10_mesh(FSMesh* pm)
 	// create the elements
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& e0 = pm->Element(i);
-		FEElement& e1 = pnew->Element(i);
+		FSElement& e0 = pm->Element(i);
+		FSElement& e1 = pnew->Element(i);
 
 		e1.m_gid = e0.m_gid;
 
@@ -1650,7 +1650,7 @@ FSMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 	// copy elements
 	for (int i = 0; i<elems; ++i)
 	{
-		FEElement& el = pmesh->Element(i);
+		FSElement& el = pmesh->Element(i);
 		el.SetType(FE_TET4);
 		el.m_node[0] = out.tetrahedronlist[4 * i];
 		el.m_node[1] = out.tetrahedronlist[4 * i + 1];
@@ -1829,7 +1829,7 @@ FSMesh* FEConvexHullMesher::Create(const std::vector<vec3d>& pointCloud)
 	// copy elements
 	for (int i = 0; i < elems; ++i)
 	{
-		FEElement& el = pmesh->Element(i);
+		FSElement& el = pmesh->Element(i);
 		el.SetType(FE_TET4);
 		el.m_node[0] = out.tetrahedronlist[4 * i    ];
 		el.m_node[1] = out.tetrahedronlist[4 * i + 1];

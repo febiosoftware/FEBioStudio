@@ -285,7 +285,7 @@ void CScalarFieldTool::OnApply()
 						int NE = pm->Elements();
 						for (int i = 0; i < NE; ++i)
 						{
-							FEElement& el = pm->Element(i);
+							FSElement& el = pm->Element(i);
 
 							int pid = el.m_gid;
 							GPart* pg = po->Part(pid); assert(pg);

@@ -259,7 +259,7 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 			{
 				if (face.m_elem[0].eid >= 0)
 				{
-					FEElement& el = mesh.Element(face.m_elem[0].eid);
+					FSElement& el = mesh.Element(face.m_elem[0].eid);
 					m_part[0] = el.m_MatID;
 				}
 			}
@@ -267,7 +267,7 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 			{
 				if (face.m_elem[0].eid >= 0)
 				{
-					FEElement& el = mesh.Element(face.m_elem[0].eid);
+					FSElement& el = mesh.Element(face.m_elem[0].eid);
 					m_part[1] = el.m_MatID;
 				}
 			}
@@ -873,7 +873,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 
 			if (fs.m_elem[0].eid >= 0)
 			{
-				FEElement& el = mesh.Element(fs.m_elem[0].eid);
+				FSElement& el = mesh.Element(fs.m_elem[0].eid);
 				fd.mat = el.m_MatID;
 			}
 

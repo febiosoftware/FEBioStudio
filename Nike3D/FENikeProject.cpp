@@ -600,7 +600,7 @@ bool FENikeProject::BuildElements(FSProject &prj)
 		FSMesh* pm = po->GetFEMesh();
 		for (j=0; j<pm->Elements(); ++j)
 		{
-			FEElement& el = pm->Element(j);
+			FSElement& el = pm->Element(j);
 
 			GMaterial* pmat = fem.GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
 			nmat = (pmat? pmat->m_ntag : -1);
@@ -642,7 +642,7 @@ bool FENikeProject::BuildElements(FSProject &prj)
 		FSMesh* pm = po->GetFEMesh();
 		for (j=0; j<pm->Elements(); ++j)
 		{
-			FEElement& el = pm->Element(j);
+			FSElement& el = pm->Element(j);
 			GMaterial* pmat = fem.GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
 			nmat = (pmat? pmat->m_ntag : -1);
 			switch (el.Type())

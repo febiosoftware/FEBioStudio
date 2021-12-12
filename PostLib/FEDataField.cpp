@@ -595,7 +595,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<float, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<float, DATA_COMP>*>(&d);
 					if (pf->active(i))
 					{
-						float v[FEElement::MAX_NODES]; pf->eval(i, v);
+						float v[FSElement::MAX_NODES]; pf->eval(i, v);
 						float f = 0.0f;
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g", f); sz += strlen(sz);
@@ -608,7 +608,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_COMP>*>(&d);
 					if (pf->active(i))
 					{
-						vec3f v[FEElement::MAX_NODES]; pf->eval(i, v);
+						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
 						vec3f f(0.f, 0.f, 0.f);
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g,%g,%g", f.x, f.y, f.z); sz += strlen(sz);
@@ -621,7 +621,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_COMP>*>(&d);
 					if (pf->active(i))
 					{
-						mat3fs v[FEElement::MAX_NODES]; pf->eval(i, v);
+						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
 						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz); sz += strlen(sz);
@@ -644,7 +644,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<float, DATA_NODE>* pf = dynamic_cast<FEFaceData_T<float, DATA_NODE>*>(&d);
 					if (pf->active(i))
 					{
-						float v[FEElement::MAX_NODES]; pf->eval(i, v);
+						float v[FSElement::MAX_NODES]; pf->eval(i, v);
 						float f = 0.0f;
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g", f); sz += strlen(sz);
@@ -657,7 +657,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<vec3f, DATA_NODE>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_NODE>*>(&d);
 					if (pf->active(i))
 					{
-						vec3f v[FEElement::MAX_NODES]; pf->eval(i, v);
+						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
 						vec3f f(0.f, 0.f, 0.f);
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g,%g,%g", f.x, f.y, f.z); sz += strlen(sz);
@@ -670,7 +670,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<mat3fs, DATA_NODE>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_NODE>*>(&d);
 					if (pf->active(i))
 					{
-						mat3fs v[FEElement::MAX_NODES]; pf->eval(i, v);
+						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
 						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz); sz += strlen(sz);
@@ -774,7 +774,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE*
 				case DATA_FLOAT:
 				{
 					FEElemData_T<float, DATA_COMP>* pf = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&d);
-					float v[FEElement::MAX_NODES]; pf->eval(i, v);
+					float v[FSElement::MAX_NODES]; pf->eval(i, v);
 					float f = 0.0f;
 					for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 					fprintf(fp, "%g", f);
@@ -783,7 +783,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE*
 				case DATA_VEC3F:
 				{
 					FEElemData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_COMP>*>(&d);
-					vec3f v[FEElement::MAX_NODES]; pf->eval(i, v);
+					vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
 					vec3f f(0.f, 0.f, 0.f);
 					for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 					fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
@@ -792,7 +792,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE*
 				case DATA_MAT3FS:
 				{
 					FEElemData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_COMP>*>(&d);
-					mat3fs v[FEElement::MAX_NODES]; pf->eval(i, v);
+					mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
 					mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
 					for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
@@ -801,7 +801,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE*
 				case DATA_MAT3D:
 				{
 					FEElemData_T<mat3d, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3d, DATA_COMP>*>(&d);
-					mat3d v[FEElement::MAX_NODES]; pf->eval(i, v);
+					mat3d v[FSElement::MAX_NODES]; pf->eval(i, v);
 					mat3d f; f.zero();
 					for (int i = 0; i < nn; ++i) f += v[i]; f /= (double)nn;
 					fprintf(fp, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", f(0, 0), f(0, 1), f(0, 2), f(1, 0), f(1, 1), f(1, 2), f(2, 0), f(2, 1), f(2, 2));

@@ -922,7 +922,7 @@ void CModelViewer::OnSelectPartElements()
 	vector<int> elemList;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_gid == lid) elemList.push_back(i);
 	}
 

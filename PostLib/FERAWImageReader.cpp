@@ -101,7 +101,7 @@ bool FERAWImageReader::Load(const char* szfile)
 		for (int j=0; j<m_ops.ny-1; ++j)
 			for (int i=0; i<m_ops.nx-1; ++i)
 			{
-				FEElement& e = pm->Element(n++);
+				FSElement& e = pm->Element(n++);
 				e.SetType(FE_QUAD4);
 				e.m_node[0] = j*(m_ops.nx) + i;
 				e.m_node[1] = j*(m_ops.nx) + i+1;
@@ -117,7 +117,7 @@ bool FERAWImageReader::Load(const char* szfile)
 			for (int j=0; j<m_ops.ny-1; ++j)
 				for (int i=0; i<m_ops.nx-1; ++i)
 				{
-					FEElement& e = pm->Element(n++);
+					FSElement& e = pm->Element(n++);
 					e.SetType(FE_HEX8);
 					e.m_node[0] = k*(m_ops.nx*m_ops.ny) + j*(m_ops.nx) + i;
 					e.m_node[1] = k*(m_ops.nx*m_ops.ny) + j*(m_ops.nx) + i+1;

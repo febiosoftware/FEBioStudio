@@ -389,7 +389,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 	for (int i = 0; i<NE; ++i)
 	{
 		FRONT_FACE& f = face[i];
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 		el.SetType(FE_TRI3);
 		el.m_node[0] = f.node[0];
 		el.m_node[1] = f.node[1];

@@ -428,7 +428,7 @@ bool COMSOLimport::BuildMesh(FSModel& fem)
 			list<Telem_itr>::iterator pe = pes->elem.begin();
 			for (j=0; j<n; ++j, ++pe)
 			{
-				FEElement& el = pm->Element((*pe)->id);
+				FSElement& el = pm->Element((*pe)->id);
 				el.m_gid = i;
 			}
 		}

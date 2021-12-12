@@ -122,7 +122,7 @@ extern int ET_TET[6][2];
 extern int ET_PENTA[9][2];
 extern int ET_PYRA5[8][2];
 
-// in FEElement.cpp
+// in FSElement.cpp
 extern int ET_TRI[3][2];
 extern int ET_QUAD[4][2];
 
@@ -169,7 +169,7 @@ double ShortestEdge(const FSMesh& mesh)
 	const int NE = mesh.Elements();
 	for (int k = 0; k<NE; ++k)
 	{
-		const FEElement& ek = mesh.Element(k);
+		const FSElement& ek = mesh.Element(k);
 		int* en = ek.m_node;
 		int n = ek.Nodes();
 		for (int i = 0; i<n; ++i)
@@ -187,7 +187,7 @@ double ShortestEdge(const FSMesh& mesh)
 //-----------------------------------------------------------------------------
 // Calculate the longest edge or diagonal.
 //
-double LongestEdge(const FSMesh& mesh, const FEElement &el)
+double LongestEdge(const FSMesh& mesh, const FSElement &el)
 {
 	int* en = el.m_node;
 	double Lmax = 0, L;
@@ -206,7 +206,7 @@ double LongestEdge(const FSMesh& mesh, const FEElement &el)
 //-----------------------------------------------------------------------------
 // Calculate the shortest edge or diagonal for this element.
 //
-double ShortestEdge(const FSMesh& mesh, const FEElement &el)
+double ShortestEdge(const FSMesh& mesh, const FSElement &el)
 {
 	int* en = el.m_node;
 	double Lmin = 1e99, L;
@@ -226,7 +226,7 @@ double ShortestEdge(const FSMesh& mesh, const FEElement &el)
 //-----------------------------------------------------------------------------
 // Calculate the min jacobian of a shell element
 //
-double ShellJacobian(const FSMesh& mesh, const FEElement& el, int flag)
+double ShellJacobian(const FSMesh& mesh, const FSElement& el, int flag)
 {
 	assert(el.IsShell());
 
@@ -299,7 +299,7 @@ double ShellJacobian(const FSMesh& mesh, const FEElement& el, int flag)
 }
 
 //-----------------------------------------------------------------------------
-double ShellArea(const FSMesh& mesh, const FEElement& el)
+double ShellArea(const FSMesh& mesh, const FSElement& el)
 {
 	if (el.IsShell() == false) return 0.0;
 
@@ -352,12 +352,12 @@ double ShellArea(const FSMesh& mesh, const FEElement& el)
 //-----------------------------------------------------------------------------
 // Calculate min jacobian of a solid element
 // Evaluates the jacobian at the element's nodes and find the smallest (or most negative) value
-double SolidJacobian(const FSMesh& mesh, const FEElement& el)
+double SolidJacobian(const FSMesh& mesh, const FSElement& el)
 {
 	assert(el.IsSolid());
 
     // nodal coordinates
-    vec3d r[FEElement::MAX_NODES];
+    vec3d r[FSElement::MAX_NODES];
     mesh.ElementNodeLocalPositions(el, r);
 
 	// calculate jacobian based on element type
@@ -411,10 +411,10 @@ double SurfaceArea(const FSMesh& mesh, const FSFace& f)
 //-----------------------------------------------------------------------------
 // Evaluate volume of an element
 //
-double ElementVolume(const FSMesh& mesh, const FEElement &e)
+double ElementVolume(const FSMesh& mesh, const FSElement &e)
 {
 	// nodal coordinates
-    vec3d r[FEElement::MAX_NODES];
+    vec3d r[FSElement::MAX_NODES];
 	mesh.ElementNodeLocalPositions(e, r);
 
     switch (e.Type())
@@ -438,7 +438,7 @@ double ElementVolume(const FSMesh& mesh, const FEElement &e)
 //-----------------------------------------------------------------------------
 // calculates the maximum distance of the midside nodes to the plane of 
 // the triangle facets.
-double Tet10MidsideNodeOffset(const FSMesh& mesh, const FEElement& el, bool brel)
+double Tet10MidsideNodeOffset(const FSMesh& mesh, const FSElement& el, bool brel)
 {
 	if (el.IsType(FE_TET10) == false) throw 0;
 
@@ -489,7 +489,7 @@ double Tet10MidsideNodeOffset(const FSMesh& mesh, const FEElement& el, bool brel
 }
 
 //-----------------------------------------------------------------------------
-double TriQuality(const FSMesh& mesh, const FEElement& el)
+double TriQuality(const FSMesh& mesh, const FSElement& el)
 {
 	if (el.IsType(FE_TRI3) == false) return 0.;
 
@@ -503,7 +503,7 @@ double TriQuality(const FSMesh& mesh, const FEElement& el)
 //-----------------------------------------------------------------------------
 //! Calculate tet-element quality
 //! This calculates the radius-edge ratio
-double TetQuality(const FSMesh& mesh, const FEElement& el)
+double TetQuality(const FSMesh& mesh, const FSElement& el)
 {
 	if ((el.IsType(FE_TET4) == false) && (el.IsType(FE_TET10) == false)) throw 0;
 
@@ -549,7 +549,7 @@ double TetQuality(const FSMesh& mesh, const FEElement& el)
 
 //-----------------------------------------------------------------------------
 //! Calculates the smallest dihedral angle for a tet element
-double TetMinDihedralAngle(const FSMesh& mesh, const FEElement& el)
+double TetMinDihedralAngle(const FSMesh& mesh, const FSElement& el)
 {
 	if (el.Type() != FE_TET4) return 0.0;
 
@@ -580,7 +580,7 @@ double TetMinDihedralAngle(const FSMesh& mesh, const FEElement& el)
 
 //-----------------------------------------------------------------------------
 //! Calculates the largest dihedral angle for a tet element
-double TetMaxDihedralAngle(const FSMesh& mesh, const FEElement& el)
+double TetMaxDihedralAngle(const FSMesh& mesh, const FSElement& el)
 {
 	if (el.Type() != FE_TET4) return 0.0;
 
@@ -610,10 +610,10 @@ double TetMaxDihedralAngle(const FSMesh& mesh, const FEElement& el)
 }
 
 //-----------------------------------------------------------------------------
-vec3d GradientSolid(const FSMesh& mesh, const FEElement& el, int node, double* v);
-vec3d GradientShell(const FSMesh& mesh, const FEElement& el, int node, double* v);
+vec3d GradientSolid(const FSMesh& mesh, const FSElement& el, int node, double* v);
+vec3d GradientShell(const FSMesh& mesh, const FSElement& el, int node, double* v);
 
-vec3d Gradient(const FSMesh& mesh, const FEElement& el, int node, double* v)
+vec3d Gradient(const FSMesh& mesh, const FSElement& el, int node, double* v)
 {
 	if (el.IsSolid()) return GradientSolid(mesh, el, node, v);
 	else if (el.IsShell()) return GradientShell(mesh, el, node, v);
@@ -621,9 +621,9 @@ vec3d Gradient(const FSMesh& mesh, const FEElement& el, int node, double* v)
 	return vec3d(0, 0, 0);
 }
 
-vec3d GradientSolid(const FSMesh& mesh, const FEElement& el, int node, double* v)
+vec3d GradientSolid(const FSMesh& mesh, const FSElement& el, int node, double* v)
 {
-	const int MN = FEElement::MAX_NODES;
+	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
 	const int ne = el.Nodes();
 	mesh.ElementNodeLocalPositions(el, r);
@@ -741,9 +741,9 @@ vec3d GradientSolid(const FSMesh& mesh, const FEElement& el, int node, double* v
 	return g;
 }
 
-vec3d GradientShell(const FSMesh& mesh, const FEElement& el, int node, double* v)
+vec3d GradientShell(const FSMesh& mesh, const FSElement& el, int node, double* v)
 {
-	const int MN = FEElement::MAX_NODES;
+	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
 	const int ne = el.Nodes();
 	mesh.ElementNodeLocalPositions(el, r);
@@ -833,13 +833,13 @@ vec3d ShapeGradient(const FSMesh& mesh, const FEElement_& el, int na, int nb)
 
 vec3d ShapeGradientSolid(const FSMesh& mesh, const FEElement_& el, int na, int nb)
 {
-	const int MN = FEElement::MAX_NODES;
+	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
 	const int ne = el.Nodes();
 	mesh.ElementNodeLocalPositions(el, r);
 
 	// shape function derivatives at node
-	double G[3][FEElement::MAX_NODES] = { 0 };
+	double G[3][FSElement::MAX_NODES] = { 0 };
     double q[3];
     switch (el.Type())
     {
@@ -942,13 +942,13 @@ vec3d ShapeGradientSolid(const FSMesh& mesh, const FEElement_& el, int na, int n
 // NOTE: This is a work in progress and was implemented to apply the scalar field tool to shells.
 vec3d ShapeGradientShell(const FSMesh& mesh, const FEElement_& el, int na, int nb)
 {
-	const int MN = FEElement::MAX_NODES;
+	const int MN = FSElement::MAX_NODES;
 	vec3d r[MN];
 	const int ne = el.Nodes();
 	mesh.ElementNodeLocalPositions(el, r);
 
 	// shape function derivatives at node
-	double G[2][FEElement::MAX_NODES] = { 0 };
+	double G[2][FSElement::MAX_NODES] = { 0 };
 	double q[2];
 	switch (el.Type())
 	{
@@ -1005,7 +1005,7 @@ vec3d ShapeGradientShell(const FSMesh& mesh, const FEElement_& el, int na, int n
 }
 
 // get the min edge length of an element
-double MinEdgeLength(const FSMesh& mesh, const FEElement& e)
+double MinEdgeLength(const FSMesh& mesh, const FSElement& e)
 {
 	// get the number of edges and edge table
 	// TODO: do ELEM_PYRA
@@ -1040,7 +1040,7 @@ double MinEdgeLength(const FSMesh& mesh, const FEElement& e)
 }
 
 // get the max edge length of an element
-double MaxEdgeLength(const FSMesh& mesh, const FEElement& e)
+double MaxEdgeLength(const FSMesh& mesh, const FSElement& e)
 {
 	// get the number of edges and edge table
 	// TODO: do ELEM_PYRA

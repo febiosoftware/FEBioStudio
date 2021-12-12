@@ -132,7 +132,7 @@ FSMesh* FEShellSphere::BuildMesh()
 
 					if (i==  0) 
 					{
-						FEElement& el = pm->Element(n);
+						FSElement& el = pm->Element(n);
 						el.SetType(FE_QUAD4);
 						el.m_gid = GetElementID(j, k, 2, 1, 6, 5);
 						pf = FTHEX8[3];
@@ -144,7 +144,7 @@ FSMesh* FEShellSphere::BuildMesh()
 					}
 					if (i==N-1)
 					{
-						FEElement& el = pm->Element(n);
+						FSElement& el = pm->Element(n);
 						el.SetType(FE_QUAD4);
 						el.m_gid = GetElementID(j, k, 3, 0, 7, 4);
 						pf = FTHEX8[1];
@@ -156,7 +156,7 @@ FSMesh* FEShellSphere::BuildMesh()
 					}
 					if (j==  0) 
 					{
-						FEElement& el = pm->Element(n);
+						FSElement& el = pm->Element(n);
 						el.SetType(FE_QUAD4);
 						el.m_gid = GetElementID(i, k, 2, 3, 6, 7);
 						pf = FTHEX8[0];
@@ -168,7 +168,7 @@ FSMesh* FEShellSphere::BuildMesh()
 					}
 					if (j==N-1)
 					{
-						FEElement& el = pm->Element(n);
+						FSElement& el = pm->Element(n);
 						el.SetType(FE_QUAD4);
 						el.m_gid = GetElementID(i, k, 1, 0, 5, 4);
 						pf = FTHEX8[2];
@@ -180,7 +180,7 @@ FSMesh* FEShellSphere::BuildMesh()
 					}
 					if (k==  0) 
 					{
-						FEElement& el = pm->Element(n);
+						FSElement& el = pm->Element(n);
 						el.SetType(FE_QUAD4);
 						el.m_gid = GetElementID(i, j, 2, 3, 1, 0);
 						pf = FTHEX8[4];
@@ -192,7 +192,7 @@ FSMesh* FEShellSphere::BuildMesh()
 					}
 					if (k==N-1)
 					{
-						FEElement& el = pm->Element(n);
+						FSElement& el = pm->Element(n);
 						el.SetType(FE_QUAD4);
 						el.m_gid = GetElementID(i, j, 6, 7, 5, 4);
 						pf = FTHEX8[5];

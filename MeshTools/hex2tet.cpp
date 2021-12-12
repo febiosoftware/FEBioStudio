@@ -80,7 +80,7 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 	// Make sure this mesh only has hexes and elements that are not connected to hexes
 	for (int i = 0; i < NE0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 
 		// make sure this is a solid
 		if (el.IsSolid() == false) return nullptr;
@@ -114,7 +114,7 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 
 	for (int i = 0; i < NE0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsType(FE_HEX8))
 		{
 			for (int j = 0; j < 6; ++j)
@@ -206,7 +206,7 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 	vector<int> tag(NE0, -1);
 	for (int i = 0; i < NE0; ++i)
 	{
-		FEElement& els = pm->Element(i);
+		FSElement& els = pm->Element(i);
 
 		if (els.Type() == FE_HEX8)
 		{
@@ -251,13 +251,13 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 	int ec = 0;
 	for (int i = 0; i < NE0; ++i)
 	{
-		FEElement& els = pm->Element(i);
+		FSElement& els = pm->Element(i);
 		int* n = els.m_node;
 
 		if (els.Type() != FE_HEX8)
 		{
 			assert(tag[i] == -1);
-			FEElement& eld = mesh->Element(ec++);
+			FSElement& eld = mesh->Element(ec++);
 			eld = els;
 		}
 		else
@@ -286,7 +286,7 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 				int nt = (ncase == 0 ? 5 : 6);
 				for (int j = 0; j < nt; ++j)
 				{
-					FEElement& tet = mesh->Element(ec++);
+					FSElement& tet = mesh->Element(ec++);
 					tet.SetType(FE_TET4);
 					tet.m_gid = els.m_gid;
 

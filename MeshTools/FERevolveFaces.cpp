@@ -187,7 +187,7 @@ FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
             if (pm->Face(i).IsSelected())
             {
                 int nf = face.Nodes();
-                FEElement& el = pmnew->Element(n);
+                FSElement& el = pmnew->Element(n);
                 
                 if (nf == 6)
                 {
@@ -632,7 +632,7 @@ FSMesh* FERevolveFaces::RevolveShellMesh(FSMesh* pm)
             FSFace& face = pmnew->Face(i);
             
             int nf = face.Nodes();
-            FEElement& el = pmnew->Element(n);
+            FSElement& el = pmnew->Element(n);
             
             if (nf == 3)
             {

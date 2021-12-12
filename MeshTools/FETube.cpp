@@ -337,7 +337,7 @@ FSMesh* FETube::BuildMeshLegacy()
 			jp1 = (j+1)%nd;
 			for (i=0; i<nr; ++i, ++n)
 			{
-				FEElement& e = pm->Element(n);
+				FSElement& e = pm->Element(n);
 				e.SetType(FE_HEX8);
 				e.m_gid = 0;
 
@@ -673,7 +673,7 @@ FSMesh* FETube2::BuildMesh()
 			jp1 = (j+1)%nd;
 			for (i=0; i<nr; ++i, ++n)
 			{
-				FEElement& e = pm->Element(n);
+				FSElement& e = pm->Element(n);
 				e.SetType(FE_HEX8);
 				e.m_gid = 0;
 

@@ -164,7 +164,7 @@ void FESTLimport::build_mesh()
 	for (i=0; i<NF; ++i, ++is)
 	{
 		FACET& f = *is;
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		e.SetType(FE_TRI3);
 		e.m_node[0] = f.n[0];
 		e.m_node[1] = f.n[1];

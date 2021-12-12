@@ -967,7 +967,7 @@ double TriangleQuality(vec3d r[3])
 //-----------------------------------------------------------------------------
 bool FindElementRef(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
 {
-	vec3d y[FEElement::MAX_NODES];
+	vec3d y[FSElement::MAX_NODES];
 	int NE = m.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
@@ -1022,7 +1022,7 @@ bool ProjectInsideElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double 
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
-	vec3f x[FEElement::MAX_NODES];
+	vec3f x[FSElement::MAX_NODES];
 	for (int i = 0; i<ne; ++i) x[i] = to_vec3f(m.Node(el.m_node[i]).r);
 
 	project_inside_element(el, p, r, x);
@@ -1062,7 +1062,7 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 	int ne = el.Nodes();
 	double dr[3], R[3];
 	mat3d K;
-	double u2, N[FEElement::MAX_NODES], G[3][FEElement::MAX_NODES];
+	double u2, N[FSElement::MAX_NODES], G[3][FSElement::MAX_NODES];
 	int n = 0;
 	do
 	{
@@ -1107,7 +1107,7 @@ bool ProjectInsideReferenceElement(FSCoreMesh& m, FEElement_& el, const vec3f& p
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
-	vec3f x[FEElement::MAX_NODES];
+	vec3f x[FSElement::MAX_NODES];
 	for (int i = 0; i<ne; ++i) x[i] = to_vec3f(m.Node(el.m_node[i]).r);
 
 	project_inside_element(el, p, r, x);

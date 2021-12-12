@@ -160,7 +160,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 	if (m_belem)
 	{
 		fprintf(fp, "*ELEMENTS\n");
-		int i, n[FEElement::MAX_NODES];
+		int i, n[FSElement::MAX_NODES];
 		for (i = 0; i<NE; ++i)
 		{
 			FEElement_& e = m.ElementRef(i);

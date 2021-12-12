@@ -85,7 +85,7 @@ bool FEAbaqusExport::Write(const char* szfile)
 		mesh->TagAllElements(-1);
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = mesh->Element(i);
+			FSElement& el = mesh->Element(i);
 
 			// find an unprocessed element
 			if (el.m_ntag == -1)

@@ -34,7 +34,7 @@ SOFTWARE.*/
 class FEQuadSplitModifier : public FEModifier
 {
 	struct DATA {
-		FEElement*	pe;
+		FSElement*	pe;
 		int			ncase;
 		int			nid;
 		int			ntag;
@@ -45,13 +45,13 @@ public:
 	FSMesh* Apply(FSMesh* pm);
 
 protected:
-	FEElement* neighbor(FEElement* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
+	FSElement* neighbor(FSElement* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
 
-	bool is_split(FEElement* pe, int i);
+	bool is_split(FSElement* pe, int i);
 
-	bool can_split(FEElement* pe, int i);
+	bool can_split(FSElement* pe, int i);
 
-	bool have_to_split(FEElement* pe, int i);
+	bool have_to_split(FSElement* pe, int i);
 
 protected:
 	FSMesh*				m_pm;
@@ -63,7 +63,7 @@ protected:
 class FETriSplitModifier : public FEModifier
 {
 	struct DATA {
-		FEElement*	pe;
+		FSElement*	pe;
 		int			ncase;
 		int			nid;
 		int			ntag;
@@ -78,13 +78,13 @@ public:
 protected:
 	FSMesh* Split(FSMesh* pm);
 
-	FEElement* neighbor(FEElement* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
+	FSElement* neighbor(FSElement* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
 
-	bool is_split(FEElement* pe, int i);
+	bool is_split(FSElement* pe, int i);
 
-	bool can_split(FEElement* pe, int i);
+	bool can_split(FSElement* pe, int i);
 
-	bool have_to_split(FEElement* pe, int i);
+	bool have_to_split(FSElement* pe, int i);
 
 protected:
 	FSMesh*				m_pm;

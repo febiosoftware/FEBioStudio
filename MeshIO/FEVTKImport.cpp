@@ -66,7 +66,7 @@ public:
 		int	label;
 		int	numNodes;
 		int cellType;
-		int	node[FEElement::MAX_NODES];
+		int	node[FSElement::MAX_NODES];
 	};
 
 public:
@@ -540,7 +540,7 @@ bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 	// copy element data
 	for (int i = 0; i < elems; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		VTKMesh::CELL& cell = vtk.m_cellList[i];
 
 		el.m_gid = cell.label; assert(el.m_gid >= 0);

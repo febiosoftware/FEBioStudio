@@ -443,7 +443,7 @@ bool xpltFileExport::WritePart(FEPostMesh& mesh, Post::MeshDomain& part)
 	m_ar.EndChunk();
 
 	// write the element list
-	int n[FEElement::MAX_NODES + 1];
+	int n[FSElement::MAX_NODES + 1];
 	m_ar.BeginChunk(PLT_DOM_ELEM_LIST);
 	{
 		for (int i=0; i<NE; ++i)
@@ -833,7 +833,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
-				float v[FEElement::MAX_NODES] = {0.f};
+				float v[FSElement::MAX_NODES] = {0.f};
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -849,7 +849,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
-				vec3f v[FEElement::MAX_NODES] = {vec3f(0.f,0.f,0.f)};
+				vec3f v[FSElement::MAX_NODES] = {vec3f(0.f,0.f,0.f)};
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -862,7 +862,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 		{
 			FEElementData<mat3fs, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fs, DATA_COMP>&>(meshData);
 			val.assign(NE*ne*6, 0.f);
-			mat3fs v[FEElement::MAX_NODES];
+			mat3fs v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -878,7 +878,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 		{
 			FEElementData<mat3fd, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fd, DATA_COMP>&>(meshData);
 			val.assign(NE*ne*3, 0.f);
-			mat3fd v[FEElement::MAX_NODES];
+			mat3fd v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -903,7 +903,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			FEElementData<float, DATA_NODE>& data = dynamic_cast<FEElementData<float, DATA_NODE>&>(meshData);
 			val.assign(NN, 0.f);
 
-			float v[FEElement::MAX_NODES];
+			float v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -920,7 +920,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			FEElementData<vec3f, DATA_NODE>& data = dynamic_cast<FEElementData<vec3f, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);
 
-			vec3f v[FEElement::MAX_NODES];
+			vec3f v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -937,7 +937,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			FEElementData<mat3fs, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fs, DATA_NODE>&>(meshData);
 			val.assign(NN*6, 0.f);
 
-			mat3fs v[FEElement::MAX_NODES];
+			mat3fs v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -954,7 +954,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 			FEElementData<mat3fd, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fd, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);
 
-			mat3fd v[FEElement::MAX_NODES];
+			mat3fd v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -1141,7 +1141,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			FEFaceData<float, DATA_NODE>& data = dynamic_cast<FEFaceData<float, DATA_NODE>&>(meshData);
 			val.assign(NN, 0.f);
 
-			float v[FEElement::MAX_NODES];
+			float v[FSElement::MAX_NODES];
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
@@ -1161,7 +1161,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			FEFaceData<vec3f, DATA_NODE>& data = dynamic_cast<FEFaceData<vec3f, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);
 
-			vec3f v[FEElement::MAX_NODES];
+			vec3f v[FSElement::MAX_NODES];
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
@@ -1181,7 +1181,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			FEElementData<mat3fs, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fs, DATA_NODE>&>(meshData);
 			val.assign(NN*6, 0.f);
 
-			mat3fs v[FEElement::MAX_NODES];
+			mat3fs v[FSElement::MAX_NODES];
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
@@ -1201,7 +1201,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 			FEElementData<mat3fd, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fd, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);
 
-			mat3fd v[FEElement::MAX_NODES];
+			mat3fd v[FSElement::MAX_NODES];
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{

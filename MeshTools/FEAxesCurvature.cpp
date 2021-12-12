@@ -379,7 +379,7 @@ void FEAxesCurvature::ApplyCurvature(FSMesh* pm)
         vec3d b = vec3d(eigenVectors(0,1),eigenVectors(1,1), eigenVectors(2,1));
         vec3d c = vec3d(eigenVectors(0,2),eigenVectors(1,2), eigenVectors(2,2));
         
-        FEElement& el = pm->Element(fel[i]);
+        FSElement& el = pm->Element(fel[i]);
         mat3d& m = el.m_Q;
         m.zero();
         m[0][0] = a.x; m[0][1] = b.x; m[0][2] = c.x;

@@ -48,7 +48,7 @@ public:
 	int FindFace(const int* n, int nn, int noff = 0);
 	int FindFace(const vector<int>& n, int noff = 0);
 
-	FEElement* FindElementFromID(int nid);
+	FSElement* FindElementFromID(int nid);
 
 private:
 	FSMesh			m_mesh;
@@ -56,7 +56,7 @@ private:
 	vector<int*>	m_pFace;
 	vector<int>		m_nFace;
 
-	vector<FEElement*>		m_elem;
+	vector<FSElement*>		m_elem;
 	int						m_maxID, m_minID;
 };
 
@@ -74,7 +74,7 @@ public:
 	struct ELEM
 	{
 		int		id;
-		int		n[FEElement::MAX_NODES];
+		int		n[FSElement::MAX_NODES];
 	};
 
 	// Class for storing node sets

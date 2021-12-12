@@ -76,11 +76,11 @@ FSMesh* FETet4ToHex8::Apply(FSMesh* pm)
 	int ne = 0;
 	for (int i = 0; i<elems; ++i)
 	{
-		FEElement& e0 = tet15->Element(i);
+		FSElement& e0 = tet15->Element(i);
 
 		for (int j = 0; j < 4; ++j)
 		{
-			FEElement& e1 = pnew->Element(ne++);
+			FSElement& e1 = pnew->Element(ne++);
 
 			e1.SetType(FE_HEX8);
 			e1.m_gid = e0.m_gid;

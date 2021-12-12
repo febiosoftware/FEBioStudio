@@ -403,7 +403,7 @@ bool FEGMshImport::ReadElements()
 		m_pm->Create(0, nelems, nfaces);
 		for (int i=0; i<nelems; ++i)
 		{
-			FEElement& el = m_pm->Element(i);
+			FSElement& el = m_pm->Element(i);
 			ELEMENT& e = Elem[i];
 
 			el.m_gid = e.gid;
@@ -517,7 +517,7 @@ bool FEGMshImport::ReadElements()
 		m_pm->Create(0, nfaces);
 		for (int i=0; i<nfaces; ++i)
 		{
-			FEElement& el = m_pm->Element(i);
+			FSElement& el = m_pm->Element(i);
 			ELEMENT& e = Face[i];
 
 			el.m_gid = e.gid;

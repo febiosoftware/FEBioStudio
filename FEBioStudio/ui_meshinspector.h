@@ -291,7 +291,7 @@ public:
 		int NE = pm->Elements();
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& e = pm->Element(i);
+			FSElement& e = pm->Element(i);
 			switch (e.Type())
 			{
 			case FE_HEX8   : n[0]++; break;

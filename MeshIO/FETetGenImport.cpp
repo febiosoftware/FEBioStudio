@@ -160,7 +160,7 @@ bool FETetGenImport::BuildMesh(FSModel& fem)
 	for (int i=0; i<elems; ++i)
 	{
 		ELEM& tet = m_Elem[i];
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 
 		el.SetType(FE_TET4);
 		el.m_node[0] = tet.node[0]-m_offset;

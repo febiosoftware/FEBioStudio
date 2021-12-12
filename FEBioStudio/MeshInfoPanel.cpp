@@ -156,7 +156,7 @@ void CPartInfoPanel::setInfo(GPart* pg)
 	int pid = pg->GetLocalID();
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_gid == pid)
 		{
 			if (el.IsSolid()) nsolid++;

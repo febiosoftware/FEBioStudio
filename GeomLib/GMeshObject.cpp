@@ -177,7 +177,7 @@ void GMeshObject::UpdateParts()
 	vector<int> tag(nparts, 0);
 	for (int i=0; i<m.Elements(); ++i)
 	{
-		FEElement& el = m.Element(i);
+		FSElement& el = m.Element(i);
 		assert(el.m_gid >= 0);
 		tag[el.m_gid]++;
 	}
@@ -217,7 +217,7 @@ void GMeshObject::UpdateParts()
 	// update element mesh IDs
 	for (int i = 0; i < m.Elements(); ++i)
 	{
-		FEElement& el = m.Element(i);
+		FSElement& el = m.Element(i);
 		assert(tag[el.m_gid] >= 0);
 		el.m_gid = tag[el.m_gid];
 	}
@@ -595,7 +595,7 @@ void GMeshObject::BuildGMesh()
 	int NE = pm->Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		int ne = el.Nodes();
 		for (int j=0; j<ne; ++j)
 		{
@@ -1187,7 +1187,7 @@ GMeshObject* GMeshObject::DetachSelection()
 	// make sure material IDs are updated
 	for (int i = 0; i < oldMesh->Elements(); ++i)
 	{
-		FEElement& el = oldMesh->Element(i);
+		FSElement& el = oldMesh->Element(i);
 		int pid = el.m_gid;
 		GPart* pg = Part(pid);
 		el.m_MatID = pg->GetMaterialID();
@@ -1205,7 +1205,7 @@ GMeshObject* GMeshObject::DetachSelection()
 	FSMesh* pm = newObject->GetFEMesh();
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_MatID >= 0)
 		{
 			int pid = el.m_gid;

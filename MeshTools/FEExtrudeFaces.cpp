@@ -245,7 +245,7 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 	int nid = 0;
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_gid > nid) nid = el.m_gid;
 	}
 	nid++;
@@ -261,7 +261,7 @@ void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 		{
 			FSFace& face = pm->Face(faceList[i]);
 
-			FEElement& el = pm->Element(n);
+			FSElement& el = pm->Element(n);
 
 			if (face.Nodes() == 3)
 			{

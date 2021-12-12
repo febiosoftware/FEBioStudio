@@ -33,52 +33,52 @@ namespace FEMeshMetrics {
 double ShortestEdge(const FSMesh& mesh);
 
 // longest edge of the element
-double LongestEdge(const FSMesh& mesh, const FEElement& el);
+double LongestEdge(const FSMesh& mesh, const FSElement& el);
 
 // shortest edge of the element
-double ShortestEdge(const FSMesh& mesh, const FEElement& el);
+double ShortestEdge(const FSMesh& mesh, const FSElement& el);
 
 // jacobian for a solid element
-double SolidJacobian(const FSMesh& mesh, const FEElement& el);
+double SolidJacobian(const FSMesh& mesh, const FSElement& el);
 
 // calculate jacobian of a shell
-double ShellJacobian(const FSMesh& mesh, const FEElement& el, int flag);
+double ShellJacobian(const FSMesh& mesh, const FSElement& el, int flag);
 
 // area of shell
-double ShellArea(const FSMesh& mesh, const FEElement& el);
+double ShellArea(const FSMesh& mesh, const FSElement& el);
 
 // surface area of facet
 double SurfaceArea(const FSMesh& mesh, const FSFace& f);
 
 // volume of element
-double ElementVolume(const FSMesh& mesh, const FEElement& e);
+double ElementVolume(const FSMesh& mesh, const FSElement& e);
 
 // quality if tet element
-double TetQuality(const FSMesh& mesh, const FEElement& e);
+double TetQuality(const FSMesh& mesh, const FSElement& e);
 
 // min dihedral angle of tet
-double TetMinDihedralAngle(const FSMesh& mesh, const FEElement& e);
+double TetMinDihedralAngle(const FSMesh& mesh, const FSElement& e);
 
 // max dihedral angle of tet
-double TetMaxDihedralAngle(const FSMesh& mesh, const FEElement& e);
+double TetMaxDihedralAngle(const FSMesh& mesh, const FSElement& e);
 
 // quality if triangle element
-double TriQuality(const FSMesh& mesh, const FEElement& e);
+double TriQuality(const FSMesh& mesh, const FSElement& e);
 
 // max distance from tet10 mid edges nodes to edge line
-double Tet10MidsideNodeOffset(const FSMesh& mesh, const FEElement& e, bool brel = false);
+double Tet10MidsideNodeOffset(const FSMesh& mesh, const FSElement& e, bool brel = false);
 
 // evaluate gradient at element nodes
-vec3d Gradient(const FSMesh& mesh, const FEElement& el, int node, double* v);
+vec3d Gradient(const FSMesh& mesh, const FSElement& el, int node, double* v);
 
 // evaluate gradient at element nodes (i.e. Grad{Na(x_b)})
 vec3d ShapeGradient(const FSMesh& mesh, const FEElement_& el, int na, int nb);
 
 // get the min edge length of an element
-double MinEdgeLength(const FSMesh& mesh, const FEElement& e);
+double MinEdgeLength(const FSMesh& mesh, const FSElement& e);
 
 // get the max edge length of an element
-double MaxEdgeLength(const FSMesh& mesh, const FEElement& e);
+double MaxEdgeLength(const FSMesh& mesh, const FSElement& e);
 
 float eval_curvature(const vector<vec3f>& x, const vec3f& r0, vec3f sn, int measure, bool useExtendedFit, int maxIter);
 

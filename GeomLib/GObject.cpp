@@ -1650,7 +1650,7 @@ void GObject::UpdateItemVisibility()
 		int NE = mesh->Elements();
 		for (int i=0; i<NE; ++i)
 		{
-			FEElement& el = mesh->Element(i);
+			FSElement& el = mesh->Element(i);
 			GPart* pg = Part(el.m_gid);
 			assert(pg);
 			if (pg->IsVisible()) { el.Show(); el.Unhide(); }

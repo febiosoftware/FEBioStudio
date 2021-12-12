@@ -448,7 +448,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 	// assign elements
 	for (int i=0; i<zone.m_ne; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		switch (zone.m_ntype)
 		{
 		case ZONE_TRIANGLE: e.SetType(FE_TRI3); break;

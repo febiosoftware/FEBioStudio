@@ -285,7 +285,7 @@ bool FindElementIntersection(const Ray& ray, const FSMesh& mesh, Intersection& q
 	Intersection tmp;
 	for (int i = 0; i<elems; ++i)
 	{
-		const FEElement& elem = mesh.Element(i);
+		const FSElement& elem = mesh.Element(i);
 		if (elem.IsVisible() && (elem.IsSelected() == selectionState))
 		{
 			// solid elements

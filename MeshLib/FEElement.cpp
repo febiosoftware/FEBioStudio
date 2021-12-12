@@ -747,7 +747,7 @@ void FEElement_::shape(double *H, double r, double s, double t)
 //-----------------------------------------------------------------------------
 double FEElement_::eval(double* d, double r, double s, double t)
 {
-	double H[FEElement::MAX_NODES];
+	double H[FSElement::MAX_NODES];
 	shape(H, r, s, t);
 	double a = 0.0;
 	for (int i=0; i<Nodes(); ++i) a += H[i]*d[i];
@@ -757,7 +757,7 @@ double FEElement_::eval(double* d, double r, double s, double t)
 //-----------------------------------------------------------------------------
 float FEElement_::eval(float* d, double r, double s, double t)
 {
-	double H[FEElement::MAX_NODES];
+	double H[FSElement::MAX_NODES];
 	shape(H, r, s, t);
 	double a = 0.0;
 	for (int i = 0; i<Nodes(); ++i) a += H[i] * d[i];
@@ -767,7 +767,7 @@ float FEElement_::eval(float* d, double r, double s, double t)
 //-----------------------------------------------------------------------------
 vec3f FEElement_::eval(vec3f* d, double r, double s, double t)
 {
-	double H[FEElement::MAX_NODES];
+	double H[FSElement::MAX_NODES];
 	shape(H, r, s, t);
 	vec3f a(0,0,0);
 	for (int i=0; i<Nodes(); ++i) a += d[i]*((float)H[i]);
@@ -834,9 +834,9 @@ void FEElement_::setAxes(const vec3d& a, const vec3d& d)
 }
 
 //=============================================================================
-// FEElement
+// FSElement
 //-----------------------------------------------------------------------------
-FEElement::FEElement()
+FSElement::FSElement()
 { 
 	m_node = _node;
 	m_nbr = _nbr;
@@ -850,7 +850,7 @@ FEElement::FEElement()
 }
 
 //-----------------------------------------------------------------------------
-FEElement::FEElement(const FEElement& el)
+FSElement::FSElement(const FSElement& el)
 {
 	m_node = _node;
 	m_nbr = _nbr;
@@ -864,7 +864,7 @@ FEElement::FEElement(const FEElement& el)
 }
 
 //-----------------------------------------------------------------------------
-FEElement& FEElement::operator = (const FEElement& el)
+FSElement& FSElement::operator = (const FSElement& el)
 {
 	copy(el);
 

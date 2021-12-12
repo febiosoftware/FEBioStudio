@@ -129,7 +129,7 @@ bool FEFEBioExport::Save(FEPostModel& fem, const char* szfile)
 					// now export all the elements of this material and type
 					xml.add_branch(part);
 					{
-						int n[FEElement::MAX_NODES];
+						int n[FSElement::MAX_NODES];
 						XMLElement el("elem");
 						int n1 = el.add_attribute("id", "");
 						for (int i=i0; i<pm->Elements(); ++i)

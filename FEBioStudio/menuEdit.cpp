@@ -1142,7 +1142,7 @@ void CMainWindow::on_actionSelectIsolatedVertices_triggered()
 	int NE = mesh->Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 		int ne = el.Nodes();
 		for (int j = 0; j < ne; ++j)
 		{

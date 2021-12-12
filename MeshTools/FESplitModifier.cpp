@@ -37,14 +37,14 @@ FEQuadSplitModifier::FEQuadSplitModifier() : FEModifier("Split")
 
 //-----------------------------------------------------------------------------
 // This function determines wether edge i is already split in the neighbor element
-bool FEQuadSplitModifier::is_split(FEElement* pe, int i)
+bool FEQuadSplitModifier::is_split(FSElement* pe, int i)
 {
-	FEElement* pi = neighbor(pe, i);
+	FSElement* pi = neighbor(pe, i);
 	if (pi == 0) return false;
 	if (pi->m_ntag <= 0) return false;
 	for (int j=0; j<4; ++j)
 	{
-		FEElement* pj = neighbor(pi, j);
+		FSElement* pj = neighbor(pi, j);
 		if (pj == pe) { return (pi->m_ntag & (1 << j)) != 0; }
 	}
 	return false;
@@ -54,9 +54,9 @@ bool FEQuadSplitModifier::is_split(FEElement* pe, int i)
 // This function determines if an edge could be split without breaking connectivity
 // An edge can be split if it does not have a neighbor, the neighbor is undetermined
 // or the neighbor has the corresponding edge split
-bool FEQuadSplitModifier::can_split(FEElement* pe, int i)
+bool FEQuadSplitModifier::can_split(FSElement* pe, int i)
 {
-	FEElement* pi = neighbor(pe, i);
+	FSElement* pi = neighbor(pe, i);
 	if ((pi == 0) || (pi->m_ntag == -1)) return true;
 	return is_split(pe, i);
 }
@@ -64,9 +64,9 @@ bool FEQuadSplitModifier::can_split(FEElement* pe, int i)
 //-----------------------------------------------------------------------------
 // This function determines if this edge has to be split because it is split
 // in the neighbor element
-bool FEQuadSplitModifier::have_to_split(FEElement* pe, int i)
+bool FEQuadSplitModifier::have_to_split(FSElement* pe, int i)
 {
-	FEElement* pi = neighbor(pe, i);
+	FSElement* pi = neighbor(pe, i);
 	if ((pi == 0) || (pi->m_ntag <= 0)) return false;
 	return is_split(pe, i);
 }
@@ -89,18 +89,18 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	int nsel = pm->CountSelectedElements();
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement* pe = &pm->Element(i);
+		FSElement* pe = &pm->Element(i);
 		pe->m_ntag = (pe->IsSelected() || (nsel == 0) ? 15 : -2);
 	}
 
 	FENodeElementList NEL; NEL.Build(pm);
-	list<FEElement*> EL;
+	list<FSElement*> EL;
 
 	// tag the 1-neighborhood. These elements may have to 
 	// be split as well in order to maintain connectivity.
 	for (int i=0; i<pm->Elements(); ++i)
 	{
-		FEElement* pe = &pm->Element(i);
+		FSElement* pe = &pm->Element(i);
 		if (pe->IsSelected())
 		{
 			for (int j=0; j<4; ++j)
@@ -109,7 +109,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 				int nval = NEL.Valence(n0);
 				for (int k=0; k<nval; ++k)
 				{
-					FEElement* pk = dynamic_cast<FEElement*>(NEL.Element(n0, k));
+					FSElement* pk = dynamic_cast<FSElement*>(NEL.Element(n0, k));
 					assert(pk);
 					if (pk->m_ntag == -2) 
 					{
@@ -127,10 +127,10 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	{
 		bdone = true;
 		// see if we can find an element that we know how to split
-		list<FEElement*>::iterator it;
+		list<FSElement*>::iterator it;
 		for (it = EL.begin(); it != EL.end(); ++it)
 		{
-			FEElement* pe = *it;
+			FSElement* pe = *it;
 			assert(pe->m_ntag == -1);
 
 			// first check if we have to split this element a particular way
@@ -178,7 +178,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 						int nval = NEL.Valence(ni);
 						for (int k=0; k<nval; ++k)
 						{
-							FEElement* pk = dynamic_cast<FEElement*>(NEL.Element(ni, k));
+							FSElement* pk = dynamic_cast<FSElement*>(NEL.Element(ni, k));
 							assert(pk);
 							if ((pk != pe) && (pk->m_ntag == -2))
 							{
@@ -219,7 +219,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 		{
 			// if we get here, we did not find any element that we know how to split
 			// In this case, we just pick one, split it and hope for the best
-			FEElement* pe = *EL.begin();
+			FSElement* pe = *EL.begin();
 			int ncase = 0;
 			for (int i=0; i<4; ++i)
 			{
@@ -243,7 +243,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	EL.clear();
 	for (int i=0; i<pm->Elements(); ++i)
 	{
-		FEElement* pe = &pm->Element(i);
+		FSElement* pe = &pm->Element(i);
 		if (pe->m_ntag == 0) 
 			pe->m_ntag = -1;
 		else if (pe->m_ntag > 0) 
@@ -252,10 +252,10 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 
 	// build the data
 	m_Data.clear();
-	list<FEElement*>::iterator it;
+	list<FSElement*>::iterator it;
 	for (it = EL.begin(); it != EL.end(); ++it)
 	{
-		FEElement* pe = *it;
+		FSElement* pe = *it;
 		DATA d;
 		d.pe = pe;
 		d.ncase = pe->m_ntag;
@@ -274,12 +274,12 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	for (int i=0; i<NE; ++i)
 	{
 		DATA& di = m_Data[i];
-		FEElement* pe = di.pe;
+		FSElement* pe = di.pe;
 		for (int j=0; j<4; ++j)
 		{
 			if (di.ncase & (1 << j))
 			{
-				FEElement* pj = neighbor(pe, j);
+				FSElement* pj = neighbor(pe, j);
 				if ((pj == 0) || (m_Data[pj->m_ntag].ntag == 0)) nen++;
 			}
 		}
@@ -313,7 +313,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	it = EL.begin();
 	for (int i=0; i<nfn; ++i, ++it)
 	{
-		FEElement* pe = (*it);
+		FSElement* pe = (*it);
 		vec3d r(0,0,0);
 		for (int j=0; j<4; ++j) r += pm->Node(pe->m_node[j]).r*0.25;
 
@@ -327,12 +327,12 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	for (int i=0; i<NE; ++i)
 	{
 		DATA& di = m_Data[i];
-		FEElement* pe = di.pe;
+		FSElement* pe = di.pe;
 		for (int j=0; j<4; ++j)
 		{
 			if (di.ncase & (1 << j))
 			{
-				FEElement* pj = neighbor(pe, j);
+				FSElement* pj = neighbor(pe, j);
 				if ((pj == 0) || (m_Data[pj->m_ntag].ntag == 0)) 
 				{
 					FSNode& n0 = pm->Node(pe->m_node[j      ]);
@@ -349,7 +349,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 					for (int k=0; k<4; ++k)
 					{
 						int nk = pj->m_nbr[k];
-						FEElement* pk = (nk >= 0 ? &pm->Element(nk) : 0);
+						FSElement* pk = (nk >= 0 ? &pm->Element(nk) : 0);
 						if (pk == pe)
 						{
 							edn[i*4 + j] = edn[pj->m_ntag*4 + k];
@@ -369,8 +369,8 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	int ne = 0;
 	for (int i=0; i<E0; ++i)
 	{
-		FEElement& en = pnew->Element(ne);
-		FEElement& eo = pm->Element(i);
+		FSElement& en = pnew->Element(ne);
+		FSElement& eo = pm->Element(i);
 		if (eo.m_ntag < 0) { 
 			en = eo; ne++; }
 	}
@@ -379,14 +379,14 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	for (int i=0; i<NE; ++i)
 	{
 		DATA& di = m_Data[i];
-		FEElement& el = *di.pe;
+		FSElement& el = *di.pe;
 		switch (di.ncase)
 		{
 		case 3:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
-				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e2 = pnew->Element(ne++); e2 = el;
 				int* en = &edn[4*i];
 
 				e0.m_node[0] = el.m_node[0]; e1.m_node[0] = en[0]       ; e2.m_node[0] = N0 + i      ;
@@ -397,9 +397,9 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 			break;
 		case 6:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
-				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e2 = pnew->Element(ne++); e2 = el;
 				int* en = &edn[4*i];
 
 				e0.m_node[0] = el.m_node[0]; e1.m_node[0] = N0 + i      ; e2.m_node[0] = el.m_node[0];
@@ -410,9 +410,9 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 			break;
 		case 9:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
-				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e2 = pnew->Element(ne++); e2 = el;
 				int* en = &edn[4*i];
 
 				e0.m_node[0] = el.m_node[0]; e1.m_node[0] = en[0]       ; e2.m_node[0] = en[3]       ;
@@ -423,9 +423,9 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 			break;
 		case 12:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
-				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e2 = pnew->Element(ne++); e2 = el;
 				int* en = &edn[4*i];
 
 				e0.m_node[0] = el.m_node[0]; e1.m_node[0] = N0 + i      ; e2.m_node[0] = en[3]       ;
@@ -436,10 +436,10 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 			break;
 		case 15:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
-				FEElement& e2 = pnew->Element(ne++); e2 = el;
-				FEElement& e3 = pnew->Element(ne++); e3 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e2 = pnew->Element(ne++); e2 = el;
+				FSElement& e3 = pnew->Element(ne++); e3 = el;
 				int* en = &edn[4*i];
 
 				e0.m_node[0] = el.m_node[0]; e1.m_node[0] = en[0]       ; e2.m_node[0] = N0 + i      ; e3.m_node[0] = en[3]       ;
@@ -456,7 +456,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 	// create the faces
 	for (int i=0; i<NF1; ++i)
 	{
-		FEElement& el = pnew->Element(i);
+		FSElement& el = pnew->Element(i);
 		FSFace& f = pnew->Face(i);
 		f.SetType(FE_FACE_QUAD4);
 		f.n[0] = el.m_node[0];
@@ -486,14 +486,14 @@ FETriSplitModifier::FETriSplitModifier() : FEModifier("Split")
 
 //-----------------------------------------------------------------------------
 // This function determines wether edge i is already split in the neighbor element
-bool FETriSplitModifier::is_split(FEElement* pe, int i)
+bool FETriSplitModifier::is_split(FSElement* pe, int i)
 {
-	FEElement* pi = neighbor(pe, i);
+	FSElement* pi = neighbor(pe, i);
 	if (pi == 0) return false;
 	if (pi->m_ntag <= 0) return false;
 	for (int j=0; j<4; ++j)
 	{
-		FEElement* pj = neighbor(pi, j);
+		FSElement* pj = neighbor(pi, j);
 		if (pj == pe) { return (pi->m_ntag & (1 << j)) != 0; }
 	}
 	return false;
@@ -503,9 +503,9 @@ bool FETriSplitModifier::is_split(FEElement* pe, int i)
 // This function determines if an edge could be split without breaking connectivity
 // An edge can be split if it does not have a neighbor, the neighbor is undetermined
 // or the neighbor has the corresponding edge split
-bool FETriSplitModifier::can_split(FEElement* pe, int i)
+bool FETriSplitModifier::can_split(FSElement* pe, int i)
 {
-	FEElement* pi = neighbor(pe, i);
+	FSElement* pi = neighbor(pe, i);
 	if ((pi == 0) || (pi->m_ntag == -1)) return true;
 	return is_split(pe, i);
 }
@@ -513,9 +513,9 @@ bool FETriSplitModifier::can_split(FEElement* pe, int i)
 //-----------------------------------------------------------------------------
 // This function determines if this edge has to be split because it is split
 // in the neighbor element
-bool FETriSplitModifier::have_to_split(FEElement* pe, int i)
+bool FETriSplitModifier::have_to_split(FSElement* pe, int i)
 {
-	FEElement* pi = neighbor(pe, i);
+	FSElement* pi = neighbor(pe, i);
 	if ((pi == 0) || (pi->m_ntag <= 0)) return false;
 	return is_split(pe, i);
 }
@@ -555,7 +555,7 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 	int nsel = pm->CountSelectedElements();
 	for (int i=0; i<pm->Elements(); ++i) 
 	{
-		FEElement* pe = &pm->Element(i);
+		FSElement* pe = &pm->Element(i);
 		pe->m_ntag = (pe->IsSelected() || (nsel == 0) ? 7 : 0);
 	}
 
@@ -567,7 +567,7 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 	// tag the cases
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_ntag == 7)
 		{
 			vector<int>& edl = EEL[i]; assert(edl.size() == 3);
@@ -579,7 +579,7 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_ntag == 0)
 		{
 			vector<int>& edl = EEL[i]; assert(edl.size() == 3);
@@ -603,7 +603,7 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 	int NE1 = 0;
 	for (int i=0; i<E0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		int n = el.m_ntag;
 		if (n > 0)
 		{
@@ -644,7 +644,7 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 	int ne = 0;
 	for (int i=0; i<E0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 
 		vector<int>& edl = EEL[i];
 		int en[3];
@@ -657,30 +657,30 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 		{	
 		case 0:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
 			}
 			break;
 		case 1:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
 				e0.m_node[0] = m[0]; e0.m_node[1] = m[3]; e0.m_node[2] = m[2];
 				e1.m_node[0] = m[3]; e1.m_node[1] = m[1]; e1.m_node[2] = m[2];
 			}
 			break;
 		case 2:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
 				e0.m_node[0] = m[0]; e0.m_node[1] = m[1]; e0.m_node[2] = m[4];
 				e1.m_node[0] = m[4]; e1.m_node[1] = m[2]; e1.m_node[2] = m[0];
 			}
 			break;
 		case 3:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
-				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e2 = pnew->Element(ne++); e2 = el;
 				e0.m_node[0] = m[0]; e0.m_node[1] = m[3]; e0.m_node[2] = m[4];
 				e1.m_node[0] = m[1]; e1.m_node[1] = m[4]; e1.m_node[2] = m[3];
 				e2.m_node[0] = m[0]; e2.m_node[1] = m[4]; e2.m_node[2] = m[2];
@@ -688,17 +688,17 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 			break;
 		case 4:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
 				e0.m_node[0] = m[0]; e0.m_node[1] = m[1]; e0.m_node[2] = m[5];
 				e1.m_node[0] = m[1]; e1.m_node[1] = m[2]; e1.m_node[2] = m[5];
 			}
 			break;
 		case 5:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
-				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e2 = pnew->Element(ne++); e2 = el;
 				e0.m_node[0] = m[0]; e0.m_node[1] = m[3]; e0.m_node[2] = m[5];
 				e1.m_node[0] = m[1]; e1.m_node[1] = m[5]; e1.m_node[2] = m[3];
 				e2.m_node[0] = m[1]; e2.m_node[1] = m[2]; e2.m_node[2] = m[5];
@@ -706,9 +706,9 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 			break;
 		case 6:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
-				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e2 = pnew->Element(ne++); e2 = el;
 				e0.m_node[0] = m[0]; e0.m_node[1] = m[1]; e0.m_node[2] = m[5];
 				e1.m_node[0] = m[1]; e1.m_node[1] = m[4]; e1.m_node[2] = m[5];
 				e2.m_node[0] = m[5]; e2.m_node[1] = m[4]; e2.m_node[2] = m[2];
@@ -716,10 +716,10 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 			break;
 		case 7:
 			{
-				FEElement& e0 = pnew->Element(ne++); e0 = el;
-				FEElement& e1 = pnew->Element(ne++); e1 = el;
-				FEElement& e2 = pnew->Element(ne++); e2 = el;
-				FEElement& e3 = pnew->Element(ne++); e3 = el;
+				FSElement& e0 = pnew->Element(ne++); e0 = el;
+				FSElement& e1 = pnew->Element(ne++); e1 = el;
+				FSElement& e2 = pnew->Element(ne++); e2 = el;
+				FSElement& e3 = pnew->Element(ne++); e3 = el;
 				e0.m_node[0] = m[0]; e0.m_node[1] = m[3]; e0.m_node[2] = m[5];
 				e1.m_node[0] = m[1]; e1.m_node[1] = m[4]; e1.m_node[2] = m[3];
 				e2.m_node[0] = m[2]; e2.m_node[1] = m[5]; e2.m_node[2] = m[4];
@@ -735,7 +735,7 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 	// create the faces
 /*	for (int i=0; i<NF1; ++i)
 	{
-		FEElement& el = pnew->Element(i);
+		FSElement& el = pnew->Element(i);
 		FSFace& f = pnew->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		f.n[0] = el.m_node[0];

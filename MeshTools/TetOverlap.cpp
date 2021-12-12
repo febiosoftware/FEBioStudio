@@ -52,7 +52,7 @@ bool TetOverlap::Apply(FSMesh* mesh, std::vector<pair<int, int> >& tetList)
 	TET t;
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& e = mesh->Element(i);
+		FSElement& e = mesh->Element(i);
 
 		double V = mesh->TetVolume(e);
 

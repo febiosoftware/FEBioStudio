@@ -440,7 +440,7 @@ FEElemList* GPartList::BuildElemList()
 		int gid = pg->GetLocalID();
 		for (int i=0; i<m.Elements(); ++i)
 		{
-			FEElement& e = m.Element(i);
+			FSElement& e = m.Element(i);
 			if (e.m_gid == gid) ps->Add(&m, &e, i);
 		}
 	}
@@ -480,7 +480,7 @@ FENodeList* GPartList::BuildNodeList()
             // tag the nodes to be added to the list
             for (i=0; i<m.Elements(); ++i)
             {
-                FEElement& e = m.Element(i);
+                FSElement& e = m.Element(i);
                 if (e.m_gid == gid)
                 {
                     for (j=0; j<e.Nodes(); ++j) m.Node(e.m_node[j]).m_ntag = 1;

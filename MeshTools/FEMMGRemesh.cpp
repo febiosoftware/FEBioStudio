@@ -91,7 +91,7 @@ FSMesh* FEMMGRemesh::Apply(FEGroup* pg)
 		}
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			int ne = el.Nodes();
 			for (int j = 0; j < ne; ++j)
 			{
@@ -162,7 +162,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		int* n = e.m_node;
 		MMG3D_Set_tetrahedron(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, n[3] + 1, e.m_gid, i + 1);
 	}
@@ -199,7 +199,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 	int nsel = 0;
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_ntag == 1) nsel++;
 	}
 
@@ -216,7 +216,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 		{
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement& e = pm->Element(i);
+				FSElement& e = pm->Element(i);
 				if (e.m_ntag != 1) MMG3D_Set_requiredTetrahedron(mmgMesh, i + 1);
 			}
 		}
@@ -224,7 +224,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 		// build the edge length table
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			for (int j = 0; j < 6; ++j)
 			{
 				int a = el.m_node[ET_TET[j][0]];
@@ -250,7 +250,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.m_ntag == 1)
 			{
 				for (int j = 0; j < el.Nodes(); ++j)
@@ -303,7 +303,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 	// get the tetra
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = newMesh->Element(i);
+		FSElement& el = newMesh->Element(i);
 		el.SetType(FE_TET4);
 		int* n = el.m_node;
 		MMG3D_Get_tetrahedron(mmgMesh, n, n + 1, n + 2, n + 3, &el.m_gid, NULL);
@@ -446,7 +446,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 	int nsel = 0;
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected()) nsel++;
 	}
 
@@ -463,7 +463,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 		{
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement& e = pm->Element(i);
+				FSElement& e = pm->Element(i);
 				if (e.IsSelected() == false) MMGS_Set_requiredTriangle(mmgMesh, i + 1);
 			}
 		}
@@ -471,7 +471,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 		// build the edge length table
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			for (int j = 0; j < 3; ++j)
 			{
 				int a = el.m_node[ET_TRI[j][0]];
@@ -497,7 +497,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.IsSelected())
 			{
 				for (int j = 0; j < el.Nodes(); ++j)
@@ -550,7 +550,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 	// get the triangles
 	for (int i = 0; i < NF; ++i)
 	{
-		FEElement& el = newMesh->Element(i);
+		FSElement& el = newMesh->Element(i);
 		el.SetType(FE_TRI3);
 		int* n = el.m_node;
 		MMGS_Get_triangle(mmgMesh, n, n + 1, n + 2, &el.m_gid, NULL);

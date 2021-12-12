@@ -31,7 +31,7 @@ SOFTWARE.*/
 class FSNode;
 class FSEdge;
 class FSFace;
-class FEElement;
+class FSElement;
 class FSMesh;
 class GObject;
 

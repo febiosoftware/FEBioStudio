@@ -245,7 +245,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	int elemCount[MAX_ELEM_TYPES] = { 0 };
 	for (int i = 0; i < elems; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		int elemType = el.Type();
 		if ((elemType >= 0) && (elemType < MAX_ELEM_TYPES)) elemCount[elemType]++; else elemCount[FE_INVALID_ELEMENT_TYPE]++;
 		if      (el.IsSolid()) solidElems++;
@@ -351,7 +351,7 @@ void CDlgMeshDiagnosticsUI::checkElementConnectivity()
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		for (int j = 0; j < el.Nodes(); ++j)
 		{
 			int nj = el.m_node[j];
@@ -413,7 +413,7 @@ void CDlgMeshDiagnosticsUI::checkIsolatedVertices()
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		for (int j = 0; j < el.Nodes(); ++j)
 		{
 			int nj = el.m_node[j];
@@ -556,7 +556,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 	vector<vector<int> > NET(NN);
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		int ne = 0;
 		switch (el.Shape())
 		{
@@ -585,7 +585,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 	mesh.TagAllElements(-1);
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& eli = mesh.Element(i);
+		FSElement& eli = mesh.Element(i);
 		if (eli.m_ntag == -1)
 		{
 			int n0 = eli.m_node[0];
@@ -597,7 +597,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 					int nej = net[j];
 					if (nej > i)
 					{
-						FEElement& elj = mesh.Element(nej);
+						FSElement& elj = mesh.Element(nej);
 						if ((elj.m_ntag == -1) && elj.is_equal(eli))
 						{
 							elj.m_ntag = i;
@@ -620,7 +620,7 @@ void CDlgMeshDiagnosticsUI::checkElementNeighbors()
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.IsSolid())
 		{
 			int nf = el.Faces();
@@ -737,7 +737,7 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 	int NF = mesh.Faces();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.IsSolid())
 		{
 			int nf = el.Faces();
@@ -838,7 +838,7 @@ void CDlgMeshDiagnosticsUI::checkElementPartitioning()
 	int invalidGID = 0;
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		int gid = el.m_gid;
 		if ((gid >= 0) && (gid < ng)) lut[gid]++;
 		else invalidGID++;

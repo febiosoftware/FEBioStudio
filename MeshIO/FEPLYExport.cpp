@@ -72,7 +72,7 @@ bool FEPLYExport::Write(const char* szfile)
 			int NE = mesh->Elements();
 			for (int j = 0; j < NE; ++j)
 			{
-				FEElement& el = mesh->Element(j);
+				FSElement& el = mesh->Element(j);
 				if ((el.Type() == FE_TRI3) || (el.Type() == FE_QUAD4))
 				{
 					PLY_FACE f;

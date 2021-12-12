@@ -95,7 +95,7 @@ FENodeList* BuildNodeList(GPart* pg)
 	// tag the nodes to be added to the list
 	for (int i = 0; i<m.Elements(); ++i)
 	{
-		FEElement& el = m.Element(i);
+		FSElement& el = m.Element(i);
 		if (el.m_gid == gid)
 		{
 			int l = el.Nodes();
@@ -2672,7 +2672,7 @@ void FEBioExport25::WriteGeometryPart(GPart* pg, bool useMatNames)
 	// loop over unprocessed elements
 	int nset = 0;
 	int ncount = 0;
-	int nn[FEElement::MAX_NODES];
+	int nn[FSElement::MAX_NODES];
 	char szname[128] = {0};
 	for (int i=0;ncount<NEP;++i)
 	{
@@ -4962,7 +4962,7 @@ void FEBioExport25::WriteSurfaceSection(FEFaceList& s)
 		{
 			FSFace& face = *(pf->m_pi);
 			FSCoreMesh* pm = pf->m_pm;
-			FEElement& el = pm->Element(face.m_elem[0]);
+			FSElement& el = pm->Element(face.m_elem[0]);
 			nn[0] = el.m_ntag;
 			nn[1] = face.m_face+1;
 	

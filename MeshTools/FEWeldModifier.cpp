@@ -127,7 +127,7 @@ void FEWeldNodes::UpdateElements(FSMesh* pnm)
 	int elems = m.Elements();
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement& el = m.Element(i);
+		FSElement& el = m.Element(i);
 		int ne = el.Nodes();
 		int* en = el.m_node;
 		el.m_ntag = 0;

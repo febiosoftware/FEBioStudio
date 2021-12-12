@@ -180,7 +180,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 		// process element nodes
 		for (int i = 0; i<mesh.Elements(); ++i)
 		{
-			FEElement& elem = mesh.Element(i);
+			FSElement& elem = mesh.Element(i);
 			int ne = elem.Nodes();
 			for (int j = 0; j<ne; ++j)
 			{
@@ -197,7 +197,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 		// calculate new node positions
 		for (int i=0; i<mesh.Elements(); ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FSElement& el = mesh.Element(i);
 			int ne = el.Nodes();
 			for (int j=0; j<ne; ++j)
 			{
@@ -353,7 +353,7 @@ void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 		// process element nodes
 		for (int i = 0; i<mesh.Elements(); ++i)
 		{
-			FEElement& elem = mesh.Element(i);
+			FSElement& elem = mesh.Element(i);
 			int ne = elem.Nodes();
 			for (int j = 0; j<ne; ++j)
 			{

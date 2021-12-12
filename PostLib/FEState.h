@@ -64,7 +64,7 @@ struct ELEMDATA
 {
 	float			m_val;		// current element value
 	unsigned int	m_state;	// state flags
-	float			m_h[FEElement::MAX_NODES];		// shell thickness (TODO: Can we move this to the face data?)
+	float			m_h[FSElement::MAX_NODES];		// shell thickness (TODO: Can we move this to the face data?)
 };
 
 struct FACEDATA

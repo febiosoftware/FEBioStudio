@@ -43,7 +43,7 @@ FSMesh* FEShellToSolid::Apply(FSMesh* pm)
 	int NE = pm->Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected())
 		{
 			int ne = el.Nodes();
@@ -82,7 +82,7 @@ FSMesh* FEShellToSolid::Apply(FSMesh* pm)
 	vector<double> h(NN, 0.0);
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected())
 		{
 			int ne = el.Nodes();
@@ -114,7 +114,7 @@ FSMesh* FEShellToSolid::Apply(FSMesh* pm)
 	// upgrade elements
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pnew->Element(i);
+		FSElement& el = pnew->Element(i);
 		if (el.IsSelected())
 		{
 			if (el.Type() == FE_QUAD4)

@@ -443,7 +443,7 @@ bool VTUimport::BuildMesh(VTKModel& vtk)
 		// copy element data
 		for (int i = 0; i < elems; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 
 			VTKCell cell = piece.Cell(i);
 

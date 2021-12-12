@@ -792,8 +792,8 @@ bool XpltReader::ReadDomainSection(FEPostModel &fem)
 						assert(false);
 						return errf("Error while reading Domain section");
 					}
-					assert((ne > 0)&&(ne <= FEElement::MAX_NODES));
-					int n[FEElement::MAX_NODES + 1];
+					assert((ne > 0)&&(ne <= FSElement::MAX_NODES));
+					int n[FSElement::MAX_NODES + 1];
 					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						if (m_ar.GetChunkID() == PLT_ELEMENT)
@@ -1036,7 +1036,7 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 		for (int j=0; j<D.ne; ++j)
 		{
 			ELEM& E = D.elem[j];
-			FEElement& el = static_cast<FEElement&>(pmesh->ElementRef(E.index));
+			FSElement& el = static_cast<FSElement&>(pmesh->ElementRef(E.index));
 			el.m_MatID = D.mid - 1;
 			el.m_gid = i;
 			el.SetID(E.eid);
@@ -1222,7 +1222,7 @@ bool XpltReader::ReadStateSection(FEPostModel& fem)
 		int n = dm.FindDataField("shell thickness");
 		Post::FEElementData<float,DATA_COMP>& df = dynamic_cast<Post::FEElementData<float,DATA_COMP>&>(ps->m_Data[n]);
 		int NE = mesh.Elements();
-		float h[FEElement::MAX_NODES] = {0.f};
+		float h[FSElement::MAX_NODES] = {0.f};
 		for (int i=0; i<NE; ++i)
 		{
 			ELEMDATA& d = ps->m_ELEM[i];

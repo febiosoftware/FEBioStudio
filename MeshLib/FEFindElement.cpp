@@ -304,7 +304,7 @@ bool FEFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, double r[3]
 {
 	assert(m_nframe == 0);
 
-	vec3f y[FEElement::MAX_NODES];
+	vec3f y[FSElement::MAX_NODES];
 	OCTREE_BOX* b = FindBox(x);
 	if (b == 0) return false;
 	assert(b->m_level == 0);
@@ -336,7 +336,7 @@ bool FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double r[3])
 {
 	assert(m_nframe == 1);
 
-	vec3f y[FEElement::MAX_NODES];
+	vec3f y[FSElement::MAX_NODES];
 	OCTREE_BOX* b = FindBox(x);
 	if (b == 0) return false;
 	assert(b->m_level == 0);

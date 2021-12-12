@@ -367,7 +367,7 @@ void CGLModel::ToggleVisibleElements()
 
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.IsVisible()) el.Hide(); else {
 			el.Show();
 			el.Unhide();

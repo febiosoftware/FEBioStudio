@@ -210,7 +210,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 	double alpha = 0.5;
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		double Vi = mesh.ElementVolume(el);
 		double J0 = Vi / elemVol[i];
 		if (el.IsType(FE_TET4) && ((Vi < 0) || (J0 < 0.001)))

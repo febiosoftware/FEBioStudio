@@ -191,13 +191,13 @@ void FEBioImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
 
 			// read element data
 			m_xml.NextTag(tag);
-			int n[FEElement::MAX_NODES];
+			int n[FSElement::MAX_NODES];
 			int nbel = 0;
 			int nsel = 0;
 			for (i=0; i<elems; ++i)
 			{
 				FEElementType etype;
-				FEElement& el = static_cast<FEElement&>(m_pm->ElementRef(i));
+				FSElement& el = static_cast<FSElement&>(m_pm->ElementRef(i));
 				if      (tag == "hex8"   ) { etype = FE_HEX8;    ++nbel; }
 				else if (tag == "hex20"  ) { etype = FE_HEX20;   ++nbel; }
 				else if (tag == "hex27"  ) { etype = FE_HEX27;   ++nbel; }
@@ -300,12 +300,12 @@ void FEBioImport::ParseGeometrySection2(FEPostModel &fem, XMLTag &tag)
 
 			// read element data
 			m_xml.NextTag(tag);
-			int n[FEElement::MAX_NODES];
+			int n[FSElement::MAX_NODES];
 			int nbel = 0;
 			int nsel = 0;
 			for (int i=0; i<ne; ++i)
 			{
-				FEElement& el = static_cast<FEElement&>(m_pm->ElementRef(NE + i));
+				FSElement& el = static_cast<FSElement&>(m_pm->ElementRef(NE + i));
 				int nid = tag.AttributeValue<int>("id", 0);
 				el.SetID(nid);
 				el.SetType(etype);

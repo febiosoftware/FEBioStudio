@@ -100,7 +100,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	// fne mapped values = vector of entries into fdata faces
 	std::map<int, vector<int>> fne;
 	for (int i = 0; i<pm->Elements(); ++i) {
-		FEElement el = pm->Element(i);
+		FSElement el = pm->Element(i);
         if (pm->Element(i).m_ntag == -1) {
             vector<int> shared_nodes;
             shared_nodes.reserve(el.Nodes());

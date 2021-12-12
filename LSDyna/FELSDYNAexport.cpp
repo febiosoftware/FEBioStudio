@@ -139,7 +139,7 @@ bool FELSDYNAexport::write_ELEMENT_SOLID()
 			FSMesh& m = *po->GetFEMesh();
 			for (int j=0; j<m.Elements(); ++j)
 			{
-				FEElement& el = m.Element(j);
+				FSElement& el = m.Element(j);
 				for (int k=0; k<el.Nodes(); ++k) nn[k] = m.Node(el.m_node[k]).m_ntag;
 				el.m_ntag = n;
 
@@ -184,7 +184,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL()
 			FSMesh& m = *po->GetFEMesh();
 			for (int j=0; j<m.Elements(); ++j)
 			{
-				FEElement& el = m.Element(j);
+				FSElement& el = m.Element(j);
 				el.m_ntag = n;
 
 				int npart = m_npart + el.m_gid;
@@ -228,7 +228,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 			FSMesh& m = *po->GetFEMesh();
 			for (int j=0; j<m.Elements(); ++j)
 			{
-				FEElement& el = m.Element(j);
+				FSElement& el = m.Element(j);
 				el.m_ntag = n;
 
 				for (int k=0; k<el.Nodes(); ++k) nn[k] = m.Node(el.m_node[k]).m_ntag;

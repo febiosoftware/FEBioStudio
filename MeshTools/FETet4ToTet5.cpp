@@ -66,7 +66,7 @@ FSMesh* FETet4ToTet5::Apply(FSMesh* pm)
 	// create the new nodes
 	for (int i = 0; i<NT; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		vec3d& r0 = pm->Node(el.m_node[0]).r;
 		vec3d& r1 = pm->Node(el.m_node[1]).r;
 		vec3d& r2 = pm->Node(el.m_node[2]).r;
@@ -80,8 +80,8 @@ FSMesh* FETet4ToTet5::Apply(FSMesh* pm)
 	// create the elements
 	for (int i = 0; i<NT; ++i)
 	{
-		FEElement& e0 = pm->Element(i);
-		FEElement& e1 = pnew->Element(i);
+		FSElement& e0 = pm->Element(i);
+		FSElement& e1 = pnew->Element(i);
 		e1 = e0;
 
 		e1.m_gid = e0.m_gid;
@@ -134,7 +134,7 @@ FSMesh* FETet5ToTet4::Apply(FSMesh* pm)
 	vector<int> nodeTag(NN, -1);
 	for (int i = 0; i < NT; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		for (int j = 0; j < 4; ++j) nodeTag[el.m_node[j]] = 1;
 	}
 	int NN1 = 0;
@@ -161,8 +161,8 @@ FSMesh* FETet5ToTet4::Apply(FSMesh* pm)
 	// create the elements
 	for (int i = 0; i<NT; ++i)
 	{
-		FEElement& e0 = pm->Element(i);
-		FEElement& e1 = pnew->Element(i);
+		FSElement& e0 = pm->Element(i);
+		FSElement& e1 = pnew->Element(i);
 		e1 = e0;
 
 		e1.m_gid = e0.m_gid;

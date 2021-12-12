@@ -2919,7 +2919,7 @@ void CGLView::RenderMaterialFibers()
 				rel.m_pmesh = pm;
 				for (int j = 0; j<pm->Elements(); ++j)
 				{
-					FEElement& el = pm->Element(j);
+					FSElement& el = pm->Element(j);
 					GPart* pg = po->Part(el.m_gid);
 
 					bool showFiber = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
@@ -2986,7 +2986,7 @@ void CGLView::RenderLocalMaterialAxes()
 				rel.m_pmesh = pm;
 				for (int j = 0; j<pm->Elements(); ++j)
 				{
-					FEElement& el = pm->Element(j);
+					FSElement& el = pm->Element(j);
 
 					GPart* pg = po->Part(el.m_gid);
 
@@ -4654,7 +4654,7 @@ void CGLView::SelectFEElements(int x, int y)
 						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_ELEM[num].m_val;
-						FEElement& el = pm->Element(num);
+						FSElement& el = pm->Element(num);
 						QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
 						m_pWnd->AddLogEntry(txt);
 					}
@@ -4678,7 +4678,7 @@ void CGLView::SelectFEElements(int x, int y)
 		int NE = pm->Elements();
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& del = pm->Element(i);
+			FSElement& del = pm->Element(i);
 			if (del.IsBeam() && del.IsVisible())
 			{
 				vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[0]).r);
@@ -5759,7 +5759,7 @@ void CGLView::TagBackfacingElements(FSMesh& mesh)
 	int NE = mesh.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		el.m_ntag = 0;
 
 		// make sure the element is visible
@@ -5775,7 +5775,7 @@ void CGLView::TagBackfacingElements(FSMesh& mesh)
 			el.m_ntag = 1;
 			for (int j = 0; j<NF; ++j)
 			{
-				FEElement* pj = (el.m_nbr[j] != -1 ? &mesh.Element(el.m_nbr[j]) : 0);
+				FSElement* pj = (el.m_nbr[j] != -1 ? &mesh.Element(el.m_nbr[j]) : 0);
 				if ((pj == 0) || (pj->IsVisible() == false))
 				{
 					FSFace f = el.GetFace(j);
@@ -5913,7 +5913,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	int NE = pm->Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 
 		// if the exterior-only flag is off, make sure all solids are selectable
 		if ((view.m_bext == false) && el.IsSolid()) el.m_ntag = 0;
@@ -6947,7 +6947,7 @@ void CGLView::RenderSelectedSurfaces(GObject* po)
 		if (pm)
 		{
 			glColor3ub(255, 0, 0);
-			vec3d rf[FEElement::MAX_NODES];
+			vec3d rf[FSElement::MAX_NODES];
 			for (int i = 0; i<pm->Faces(); ++i)
 			{
 				FSFace& f = pm->Face(i);
@@ -7286,7 +7286,7 @@ void CGLView::RenderFENodes(GObject* po)
 		// make sure we render all isolated nodes
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			int n = el.Nodes();
 			for (int j = 0; j<n; ++j) pm->Node(el.m_node[j]).m_ntag = 0;
 		}
@@ -7294,7 +7294,7 @@ void CGLView::RenderFENodes(GObject* po)
 		// check visibility
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.IsVisible() && (po->Part(el.m_gid)->IsVisible()))
 			{
 				int n = el.Nodes();
@@ -7422,11 +7422,11 @@ void CGLView::RenderFEFaces(GObject* po)
 	{
 		FSFace& face = pm->Face(i);
 
-		FEElement& el = pm->Element(face.m_elem[0].eid);
+		FSElement& el = pm->Element(face.m_elem[0].eid);
 		GPart* pg = po->Part(el.m_gid);
 		if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
 		{
-			FEElement& el1 = pm->Element(face.m_elem[1].eid);
+			FSElement& el1 = pm->Element(face.m_elem[1].eid);
 			pg = po->Part(el1.m_gid);
 		}
 
@@ -7438,7 +7438,7 @@ void CGLView::RenderFEFaces(GObject* po)
 				{
 					if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
 					{
-						int fnl[FEElement::MAX_NODES];
+						int fnl[FSElement::MAX_NODES];
 						int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
 						assert(nn == face.Nodes());
 
@@ -7723,7 +7723,7 @@ void CGLView::RenderFEElements(GObject* po)
 	int NE = pm->Elements();
 	for (i = 0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 
 		if (!el.IsSelected() && el.IsVisible())
@@ -7733,7 +7733,7 @@ void CGLView::RenderFEElements(GObject* po)
 			{
 				if (showContour)
 				{
-					GLColor c[FEElement::MAX_NODES];
+					GLColor c[FSElement::MAX_NODES];
 					int ne = el.Nodes();
 					for (int j = 0; j < ne; ++j)
 					{
@@ -7976,7 +7976,7 @@ void CGLView::RenderFEAllElements(FSMesh* pm, bool bexterior)
 
 	for (i = 0; i<pm->Elements(); i++)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 
 		bok = e.IsVisible();
 		if (bexterior && (e.IsExterior() == false)) bok = false;
@@ -9182,7 +9182,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 				int NE = mesh->Elements();
 				for (int i = 0; i < NE; ++i)
 				{
-					FEElement& el = mesh->Element(i);
+					FSElement& el = mesh->Element(i);
 					el.Show(); el.Unhide();
 				}
 				po->UpdateItemVisibility();
@@ -9221,7 +9221,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 				for (int i = 0; i < NE; ++i)
 				{
 					// render only when visible
-					FEElement& el = mesh->Element(i);
+					FSElement& el = mesh->Element(i);
 					GPart* pg = po->Part(el.m_gid);
 					if (el.IsVisible() && el.IsSolid() && (pg && pg->IsVisible()))
 					{
@@ -9423,7 +9423,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					int NE = mesh->Elements();
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = mesh->Element(i);
+						FSElement& el = mesh->Element(i);
 						el.Show(); el.Unhide();
 						int ne = el.Nodes();
 						for (int j = 0; j < ne; ++j)
@@ -9441,7 +9441,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					int NE = mesh->Elements();
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = mesh->Element(i);
+						FSElement& el = mesh->Element(i);
 						el.Show(); el.Unhide();
 					}
 				}

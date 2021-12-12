@@ -70,7 +70,7 @@ bool FEVTKExport::Write(const char* szfile)
 		// tags all the nodes in elements as 1
 		for (int j=0; j<m.Elements(); ++j)
 		{
-			FEElement &el = m.Element(j);
+			FSElement &el = m.Element(j);
 			for (int k=0; k<el.Nodes(); ++k)
 				m.Node(el.m_node[k]).m_ntag = 1;
 
@@ -176,13 +176,13 @@ bool FEVTKExport::Write(const char* szfile)
 	if (isUnstructuredGrid)
 		fprintf(fp, "%s %d %d\n", "CELLS", totElems, totElems * (nodesPerElem + 1));
 
-	int nn[FEElement::MAX_NODES];
+	int nn[FSElement::MAX_NODES];
 	for (int i=0; i<model.Objects(); ++i)
 	{
 		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (int j=0; j<m.Elements(); ++j)
 		{
-			FEElement& el = m.Element(j);
+			FSElement& el = m.Element(j);
 			for (int k=0; k<el.Nodes(); ++k) 
 				nn[k] = m.Node(el.m_node[k]).m_ntag;
 
@@ -267,7 +267,7 @@ bool FEVTKExport::Write(const char* szfile)
 
 			for (int j=0; j<m.Elements(); ++j)
 			{
-				FEElement& el = m.Element(j);
+				FSElement& el = m.Element(j);
 				if (!el.IsType(FE_TRI3) && !el.IsType(FE_QUAD4))
 					break;
 

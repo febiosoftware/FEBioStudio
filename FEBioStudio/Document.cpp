@@ -978,7 +978,7 @@ void CGLDocument::GrowElementSelection(FSMesh* pm, bool respectPartitions)
 	for (i = 0; i < N; ++i) pm->Element(i).m_ntag = 0;
 	for (i = 0; i < N; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		if (e.IsSelected())
 		{
 			e.m_ntag = 1;
@@ -989,7 +989,7 @@ void CGLDocument::GrowElementSelection(FSMesh* pm, bool respectPartitions)
 			for (int j = 0; j < ne; ++j)
 				if (e.m_nbr[j] >= 0)
 				{
-					FEElement& ej = pm->Element(e.m_nbr[j]);
+					FSElement& ej = pm->Element(e.m_nbr[j]);
 					if ((respectPartitions == false) || (e.m_gid == ej.m_gid))
 					{
 						ej.m_ntag = 1;
@@ -1187,7 +1187,7 @@ void CGLDocument::ShrinkElementSelection(FSMesh* pm)
 	for (i = 0; i < N; ++i) pm->Element(i).m_ntag = 1;
 	for (i = 0; i < N; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		if (e.IsSelected() == false)
 		{
 			e.m_ntag = 0;

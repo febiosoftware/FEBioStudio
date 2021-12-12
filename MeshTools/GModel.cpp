@@ -750,7 +750,7 @@ int GModel::SolidElements()
 		FSMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		for (int j=0; j<pm->Elements(); ++j)
 		{
-			FEElement& el = pm->Element(j);
+			FSElement& el = pm->Element(j);
 			if (el.IsSolid()) ++elems;
 		}
 	}
@@ -767,7 +767,7 @@ int GModel::ShellElements()
 		FSMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		for (int j=0; j<pm->Elements(); ++j)
 		{
-			FEElement& el = pm->Element(j);
+			FSElement& el = pm->Element(j);
 			if (el.IsShell()) 
 			{
 				++elems;

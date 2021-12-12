@@ -723,7 +723,7 @@ void FEDomain::SplitWedgeIntoTets(int iwdg, int ivtx, int itet[3])
 // Add an element as a domain in FEDomain
 bool FEDomain::AddElement(int iel)
 {
-    const FEElement& el = m_pmesh->Element(iel);
+    const FSElement& el = m_pmesh->Element(iel);
     int gid = el.m_gid;
     
     vector<int> vlist(el.Nodes());
@@ -908,7 +908,7 @@ bool FEDomain::MeshDomain()
     for (int i=0; i<Boxes(); ++i) {
         FEDBox* box = BoxPtr(i);
         for (int j=0; j<box->elem.size(); ++j) {
-            FEElement& el = m_pmesh->Element(ne0 + ne1);
+            FSElement& el = m_pmesh->Element(ne0 + ne1);
             el.SetType(FE_HEX8);
             el.m_gid = box->m_gid; assert(el.m_gid >= 0);
             for (int k=0; k<8; ++k)
@@ -920,7 +920,7 @@ bool FEDomain::MeshDomain()
     for (int i=0; i<Wedges(); ++i) {
         FEDWedge* wdg = WedgePtr(i);
         for (int j=0; j<wdg->elem.size(); ++j) {
-            FEElement& el = m_pmesh->Element(ne0 + ne1);
+            FSElement& el = m_pmesh->Element(ne0 + ne1);
             el.m_gid = wdg->m_gid; assert(el.m_gid >= 0);
             if (wdg->elem[j].size() == 8) {
                 el.SetType(FE_HEX8);
@@ -940,7 +940,7 @@ bool FEDomain::MeshDomain()
     for (int i=0; i<Tets(); ++i) {
         FEDTet* tet = TetPtr(i);
         for (int j=0; j<tet->elem.size(); ++j) {
-            FEElement& el = m_pmesh->Element(ne0 + ne1);
+            FSElement& el = m_pmesh->Element(ne0 + ne1);
             el.m_gid = tet->m_gid; assert(el.m_gid >= 0);
             if (tet->elem[j].size() == 4) {
                 el.SetType(FE_TET4);

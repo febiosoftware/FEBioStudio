@@ -43,10 +43,10 @@ void GradientMap::Apply(const FENodeData& data, vector<vec3d>& out, int niter)
 	int NE = mesh.Elements();
 	out.assign(NE, vec3d(0,0,0));
 
-	double v[FEElement::MAX_NODES];
+	double v[FSElement::MAX_NODES];
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 
 		int ne = el.Nodes();
 		for (int j = 0; j<ne; ++j) v[j] = data.get(el.m_node[j]);
@@ -63,7 +63,7 @@ void GradientMap::Apply(const FENodeData& data, vector<vec3d>& out, int niter)
 	{
 		for (int i=0; i<NE; ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FSElement& el = mesh.Element(i);
 
 			vec3d avg(0,0,0);
 			int nf = el.Faces(), nnb = 0;

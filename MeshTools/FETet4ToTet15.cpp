@@ -110,7 +110,7 @@ FSMesh* FETet4ToTet15::Apply(FSMesh* pm)
 	// create the element nodes
 	for (int i=0; i<NT; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		FSNode& n0 = pnew->Node(i + NN + NC + NF);
 		vec3d& ra = pm->Node(el.m_node[0]).r;
 		vec3d& rb = pm->Node(el.m_node[1]).r;
@@ -122,8 +122,8 @@ FSMesh* FETet4ToTet15::Apply(FSMesh* pm)
 	// create the new elements
 	for (int i=0; i<NT; ++i)
 	{
-		FEElement& e0 = pm->Element(i);
-		FEElement& e1 = pnew->Element(i);
+		FSElement& e0 = pm->Element(i);
+		FSElement& e1 = pnew->Element(i);
 		e1 = e0;
 
 		e1.SetType(FE_TET15);

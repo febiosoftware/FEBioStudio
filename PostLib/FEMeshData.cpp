@@ -73,7 +73,7 @@ void Post::shape_grad(FEPostModel& fem, int elem, double q[3], int nstate, vec3f
 	if (el.IsSolid() == false) return;
 
 	// get the nodal positions
-	const int MN = FEElement::MAX_NODES;
+	const int MN = FSElement::MAX_NODES;
 	vec3f x[MN];
 	for (int i = 0; i<N; i++)
 	{
@@ -128,7 +128,7 @@ mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nst
 	}
 
 	// get the nodal positions
-	const int MN = FEElement::MAX_NODES;
+	const int MN = FSElement::MAX_NODES;
 	vec3f X[MN], x[MN];
 	if (nref < 0)
 	{
@@ -825,7 +825,7 @@ void VolumeRatio::eval(int n, float* pv)
 
 	// get the initial and current nodal positions
 	int N = pe->Nodes();
-	vec3d X[FEElement::MAX_NODES], x[FEElement::MAX_NODES];
+	vec3d X[FSElement::MAX_NODES], x[FSElement::MAX_NODES];
 	int ntime = m_state->GetID();
 	for (int i=0; i<N; i++) 
 	{ 
@@ -1821,7 +1821,7 @@ void ElemNodalPressure::eval(int n, float* pv)
 	// evaluate pressure
 	if (dm.active(n))
 	{
-		mat3fs m[FEElement::MAX_NODES];
+		mat3fs m[FSElement::MAX_NODES];
 		dm.eval(n, m);
 
 		for (int i=0; i<neln; ++i) pv[i] = -m[i].tr() / 3.f;

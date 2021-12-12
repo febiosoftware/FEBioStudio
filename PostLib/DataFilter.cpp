@@ -821,10 +821,10 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 					if (pd && ps)
 					{
 						int N = mesh.Elements();
-						float vs[FEElement::MAX_NODES], vd[FEElement::MAX_NODES];
+						float vs[FSElement::MAX_NODES], vd[FSElement::MAX_NODES];
 						for (int i = 0; i<N; ++i)
 						{
-							FEElement& el = mesh.Element(i);
+							FSElement& el = mesh.Element(i);
 							if (pd->active(i) && ps->active(i))
 							{
 								pd->eval(i, vd);
@@ -957,7 +957,7 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField)
 					vector<int> tag(NN, 0);
 					FEElemData_T<float, DATA_NODE>* ps = dynamic_cast<FEElemData_T<float, DATA_NODE>*>(&s);
 
-					float ed[FEElement::MAX_NODES] = {0.f};
+					float ed[FSElement::MAX_NODES] = {0.f};
 					for (int i=0; i<mesh->Elements(); ++i)
 					{
 						FEElement_& el = mesh->ElementRef(i);
@@ -1001,7 +1001,7 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField)
 					vector<int> tag(NN, 0);
 					FEElemData_T<float, DATA_COMP>* ps = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&s);
 
-					float ed[FEElement::MAX_NODES] = { 0.f };
+					float ed[FSElement::MAX_NODES] = { 0.f };
 					for (int i = 0; i<mesh->Elements(); ++i)
 					{
 						FEElement_& el = mesh->ElementRef(i);
@@ -1023,8 +1023,8 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField)
 
 		// now, calculate the gradient for each element
 		vector<vec3f> G(NN, vec3f(0.f, 0.f, 0.f));
-		vec3f eg[FEElement::MAX_NODES];
-		float ed[FEElement::MAX_NODES];
+		vec3f eg[FSElement::MAX_NODES];
+		float ed[FSElement::MAX_NODES];
 		vector<int> tag(NN, 0);
 		for (int i=0; i<mesh->Elements(); ++i)
 		{
@@ -1170,7 +1170,7 @@ template <typename T> void extractElemDataComponentNODE_T(Post::FEMeshData& dst,
 	Post::FEElementData<float, DATA_NODE>& scl = dynamic_cast<Post::FEElementData<float, DATA_NODE>&>(dst);
 
 	int NE = mesh.Elements();
-	T val[FEElement::MAX_NODES];
+	T val[FSElement::MAX_NODES];
 	vector<float> data;
 	vector<int> elem(1);
 	vector<int> l;
@@ -1201,7 +1201,7 @@ void extractElemDataComponentNODE_ARRAY(Post::FEMeshData& dst, Post::FEMeshData&
 	Post::FEElementData<float, DATA_NODE>& scl = dynamic_cast<Post::FEElementData<float, DATA_NODE>&>(dst);
 
 	int NE = mesh.Elements();
-	float val[FEElement::MAX_NODES];
+	float val[FSElement::MAX_NODES];
 	vector<float> data;
 	vector<int> elem(1);
 	vector<int> l;
@@ -1404,7 +1404,7 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 							float v = 0.0;
 							pold->eval(i, &v);
 
-							FEElement& el = mesh.Element(i);
+							FSElement& el = mesh.Element(i);
 							int ne = el.Nodes();
 							for (int j = 0; j < ne; ++j)
 							{
@@ -1421,7 +1421,7 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 					vector<int> l;
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = mesh.Element(i);
+						FSElement& el = mesh.Element(i);
 						e[0] = i;
 						l.resize(el.Nodes());
 						d.resize(el.Nodes());
@@ -1459,10 +1459,10 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 					{
 						if (pold->active(i))
 						{
-							FEElement& el = mesh.Element(i);
+							FSElement& el = mesh.Element(i);
 							int ne = el.Nodes();
 
-							float v[FEElement::MAX_NODES] = { 0.f };
+							float v[FSElement::MAX_NODES] = { 0.f };
 							pold->eval(i, v);
 
 							float avg = 0.f;

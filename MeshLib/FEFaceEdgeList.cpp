@@ -88,7 +88,7 @@ FENodeNodeTable::FENodeNodeTable(const FSMesh& mesh, bool surfOnly)
 		int NE = mesh.Elements();
 		for (int i = 0; i<NE; ++i)
 		{
-			const FEElement& e = mesh.Element(i);
+			const FSElement& e = mesh.Element(i);
 			for (int j = 0; j<12; ++j)
 			{
 				int n0 = e.m_node[EHEX[j][0]];
@@ -104,7 +104,7 @@ FENodeNodeTable::FENodeNodeTable(const FSMesh& mesh, bool surfOnly)
 		int NE = mesh.Elements();
 		for (int i = 0; i<NE; ++i)
 		{
-			const FEElement& e = mesh.Element(i);
+			const FSElement& e = mesh.Element(i);
 			int ne = e.Nodes();
 			for (int j = 0; j<ne; ++j)
 			{
@@ -191,7 +191,7 @@ FEFaceTable::FEFaceTable(const FSMesh& mesh)
 
 	for (int i = 0; i<mesh.Elements(); ++i)
 	{
-		const FEElement& ei = mesh.Element(i);
+		const FSElement& ei = mesh.Element(i);
 		int nf = ei.Faces();
 		for (int j = 0; j<nf; ++j)
 		{
@@ -274,7 +274,7 @@ FEElementEdgeList::FEElementEdgeList(const FSMesh& mesh, const FEEdgeList& ET)
 	EET.resize(NE);
 	for (int i = 0; i<NE; ++i)
 	{
-		const FEElement& el = mesh.Element(i);
+		const FSElement& el = mesh.Element(i);
 		vector<int>& EETi = EET[i];
 
 		int nedges = 0;
@@ -333,7 +333,7 @@ FEElementFaceList::FEElementFaceList(const FSMesh& mesh, const FEFaceTable& FT)
 	EFT.resize(mesh.Elements());
 	for (int i = 0; i<mesh.Elements(); ++i)
 	{
-		const FEElement& ei = mesh.Element(i);
+		const FSElement& ei = mesh.Element(i);
 		vector<int>& EFTi = EFT[i];
 
 		int nf = ei.Faces();

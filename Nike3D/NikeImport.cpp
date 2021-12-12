@@ -247,7 +247,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	int nmat;
 	for (i=0; i<nhel; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		FENikeProject::BRICK& E = nike.m_Brick[i];
 		nmat = E.nmat - 1;
 
@@ -283,7 +283,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	// copy elements
 	for (i=0; i<nsel; ++i)
 	{
-		FEElement& el = pm->Element(i + nhel);
+		FSElement& el = pm->Element(i + nhel);
 		FENikeProject::SHELL& S = nike.m_Shell[i];
 
 		nmat = S.nmat - 1;
@@ -316,7 +316,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	// assign the materials to the parts
 	for (int i=0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		assert((el.m_gid >= 0)&&(el.m_gid < m_po->Parts()));
 		GPart* pg = m_po->Part(el.m_gid);
 		pg->SetMaterialID(fem.GetMaterial(el.m_gid)->GetID());

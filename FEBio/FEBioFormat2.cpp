@@ -246,10 +246,10 @@ void FEBioFormat2::ParseGeometryElements(FEBioInputModel::Part& part, XMLTag& ta
 
 	// read element data
 	++tag;
-	int n[FEElement::MAX_NODES];
+	int n[FSElement::MAX_NODES];
 	for (int i = NTE; i<elems + NTE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		el.SetType(ntype);
 		el.m_gid = pid;
 		el.m_nid = -1;
@@ -285,7 +285,7 @@ void FEBioFormat2::ParseGeometryElementData(FEBioInputModel::Part& part, XMLTag&
 			int id = tag.Attribute("id").value<int>() - 1;
 
 			// get the element 
-			FEElement& el = pm->Element(id);
+			FSElement& el = pm->Element(id);
 
 			// read the data
 			++tag;
@@ -453,7 +453,7 @@ void FEBioFormat2::ParseGeometrySurface(FEBioInputModel::Part& part, XMLTag& tag
 	s.m_name = szname;
 
 	// read the surface data
-	int nf[FEElement::MAX_NODES], N;
+	int nf[FSElement::MAX_NODES], N;
 	++tag;
 	do
 	{
@@ -957,7 +957,7 @@ FESurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
 	{
 		FEBioInputModel::Surface surf;
 		// read the pressure data
-		int nf[FEElement::MAX_NODES], N;
+		int nf[FSElement::MAX_NODES], N;
 		++tag;
 		do
 		{
@@ -1906,7 +1906,7 @@ FESurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 			{
 				tag.value(n, 2);
 
-				FEElement* el = mesh.FindElementFromID(n[0]); assert(el);
+				FSElement* el = mesh.FindElementFromID(n[0]); assert(el);
 				if (el)
 				{
 					int nf = el->Faces();

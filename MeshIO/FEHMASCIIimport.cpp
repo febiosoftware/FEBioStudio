@@ -224,7 +224,7 @@ bool FEHMASCIIimport::BuildMesh(FSModel& fem)
 	list<ELEM>::iterator ie = m_Elem.begin();
 	for (i=0; i<elems; ++i, ++ie)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		e.m_gid = 0;
 		int nn = -1;
 		switch (ie->ntype)

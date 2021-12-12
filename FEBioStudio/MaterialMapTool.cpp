@@ -97,7 +97,7 @@ bool CMaterialMapTool::OnApply()
 			// set the element material ID's
 			for (int i = 0; i<NE; ++i)
 			{
-				FEElement& e = mesh.Element(i);
+				FSElement& e = mesh.Element(i);
 				int ne = e.Nodes();
 				double E = 0;
 				for (int j = 0; j<ne; ++j) E += reader.NodeData(e.m_node[j], 0);
@@ -148,7 +148,7 @@ bool CMaterialMapTool::OnApply()
 			vector<int> MP; MP.assign(NP, 0);
 			for (int i = 0; i<NE; ++i)
 			{
-				FEElement& e = mesh.Element(i);
+				FSElement& e = mesh.Element(i);
 				MP[e.m_gid] = e.m_ntag;
 			}
 

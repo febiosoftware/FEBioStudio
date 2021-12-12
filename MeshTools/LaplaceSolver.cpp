@@ -124,7 +124,7 @@ bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int 
 	for (int i = 0; i < elist.size(); ++i)
 	{
 		int eid = elist[i];
-		FEElement& el = pm->Element(eid);
+		FSElement& el = pm->Element(eid);
 		if (el.IsSolid())
 			Ve[eid] = FEMeshMetrics::ElementVolume(*pm, el);
 		else
@@ -137,7 +137,7 @@ bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int 
 	for (int i = 0; i < elist.size(); ++i)
 	{
 		int eid = elist[i];
-		FEElement& el = pm->Element(eid);
+		FSElement& el = pm->Element(eid);
 		int nn = el.Nodes();
 		for (int j = 0; j < nn; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
 	}

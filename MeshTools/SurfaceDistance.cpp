@@ -72,7 +72,7 @@ bool CSurfaceDistance::Apply(GObject* pso, GObject* pmo)
 	int NE = ps->Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = ps->Element(i);
+		FSElement& el = ps->Element(i);
 		int ne = el.Nodes();
 		for (int j=0; j<ne; ++j)
 		{
@@ -151,7 +151,7 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 		int NE = pm->Elements();
 		for (int j=0; j<NE; ++j)
 		{
-			FEElement& el = pm->Element(j);
+			FSElement& el = pm->Element(j);
 			assert(el.IsType(FE_TRI3));
 			vec3d r0 = pm->Node(el.m_node[0]).r;
 			vec3d r1 = pm->Node(el.m_node[1]).r;
