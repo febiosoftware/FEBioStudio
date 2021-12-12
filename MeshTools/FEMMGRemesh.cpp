@@ -611,7 +611,7 @@ FEMMGSurfaceRemesh::FEMMGSurfaceRemesh() : FESurfaceModifier("MMG Remesh")
 	AddBoolParam(true, "Only remesh selection");
 }
 
-FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEMMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
 	assert(pm->IsType(FE_FACE_TRI3));
@@ -783,7 +783,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	}
 
 	// convert back to prv mesh
-	FESurfaceMesh* newMesh = new FESurfaceMesh();
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh();
 
 	// get the new mesh sizes
 	MMGS_Get_meshSize(mmgMesh, &NN, &NF, &NC);
@@ -852,7 +852,7 @@ FEMMG2DRemesh::FEMMG2DRemesh() : FESurfaceModifier("MMG2D Remesh")
 	AddBoolParam(true, "Only remesh selection");
 }
 
-FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEMMG2DRemesh::Apply(FSSurfaceMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
 	assert(pm->IsType(FE_FACE_TRI3));
@@ -1046,7 +1046,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	}
 
 	// convert back to prv mesh
-	FESurfaceMesh* newMesh = new FESurfaceMesh();
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh();
 
 	// get the new mesh sizes
 	int NQ = 0;

@@ -759,7 +759,7 @@ void CModelDocument::HideUnselected()
 		}
 		else if (itemMode == ITEM_FACE)
 		{
-			FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+			FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 			if (pm == 0) return;
 
 			vector<int> faceList;
@@ -822,11 +822,11 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup*
 bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FEGroup* sel)
 {
 	// get the surface mesh
-	FESurfaceMesh* mesh = po->GetSurfaceMesh();
+	FSSurfaceMesh* mesh = po->GetSurfaceMesh();
 	if (mesh == 0) return false;
 
 	// create a new mesh
-	FESurfaceMesh* newMesh = 0;
+	FSSurfaceMesh* newMesh = 0;
 	try {
 		newMesh = modifier.Apply(mesh, sel);
 	}

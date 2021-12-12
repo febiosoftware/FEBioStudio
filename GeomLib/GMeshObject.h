@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GObject.h"
 
 //-----------------------------------------------------------------------------
-class FESurfaceMesh;
+class FSSurfaceMesh;
 
 //-----------------------------------------------------------------------------
 // The GMeshObject defines the geometry of a "naked" FE mesh. That is, a mesh
@@ -52,7 +52,7 @@ public:
 
 	// Constructor for creating a GMeshObject from a "naked" surface mesh 
 	// (this creates a shell mesh)
-	GMeshObject(FESurfaceMesh* pm);
+	GMeshObject(FSSurfaceMesh* pm);
 
 	// Constructor for converting a GObject to a GMeshObject
 	GMeshObject(GObject* po);

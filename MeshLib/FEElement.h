@@ -83,7 +83,7 @@ enum FEElemClass
 
 //-----------------------------------------------------------------------------
 // Element traits
-struct FEElemTraits
+struct FSElemTraits
 {
 	int	ntype;	// type of element
 	int	nshape;	// shape of element
@@ -202,7 +202,7 @@ public:
 	double	m_a0;		//!< cross-sectional area (only used by truss elements)
 	
 protected:
-	const FEElemTraits* m_traits;	// element traits
+	const FSElemTraits* m_traits;	// element traits
 };
 
 //-----------------------------------------------------------------------------

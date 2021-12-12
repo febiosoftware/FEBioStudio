@@ -76,17 +76,17 @@ void FESurfacePartitionSelection::assignToPartition(int n)
 }
 
 
-FESurfaceMesh* FESurfacePartitionSelection::Apply(FESurfaceMesh* pm, FEGroup* pg)
+FSSurfaceMesh* FESurfacePartitionSelection::Apply(FSSurfaceMesh* pm, FEGroup* pg)
 {
 	if (dynamic_cast<FEEdgeSet*>(pg))
 	{
-		FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+		FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 		newMesh->PartitionEdgeSelection(m_partition);
 		return newMesh;
 	}
 	else if (dynamic_cast<FENodeSet*>(pg))
 	{
-		FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+		FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 		newMesh->PartitionNodeSelection();
 		return newMesh;
 	}
@@ -95,7 +95,7 @@ FESurfaceMesh* FESurfacePartitionSelection::Apply(FESurfaceMesh* pm, FEGroup* pg
 		int n = pm->CountSelectedFaces();
 		if (n > 0)
 		{
-			FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+			FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 			PartitionSelectedFaces(newMesh);
 			return newMesh;
 		}
@@ -104,7 +104,7 @@ FESurfaceMesh* FESurfacePartitionSelection::Apply(FESurfaceMesh* pm, FEGroup* pg
 	return 0;
 }
 
-void FESurfacePartitionSelection::PartitionSelectedFaces(FESurfaceMesh* mesh)
+void FESurfacePartitionSelection::PartitionSelectedFaces(FSSurfaceMesh* mesh)
 {
 	int NF = mesh->Faces();
 	int ng = mesh->CountFacePartitions();
@@ -126,10 +126,10 @@ FESurfaceAutoPartition::FESurfaceAutoPartition() : FESurfaceModifier("Auto Parti
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceMesh* FESurfaceAutoPartition::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FESurfaceAutoPartition::Apply(FSSurfaceMesh* pm)
 {
 	double w = GetFloatValue(0);
-	FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 	newMesh->AutoPartition(w);
 	return newMesh;
 }

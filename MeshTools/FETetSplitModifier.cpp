@@ -177,11 +177,11 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 	int NT0 = pm->Elements();
 
 	// build the edge table of the mesh
-	FEEdgeList ET(*pm);
+	FSEdgeList ET(*pm);
 	int NE = (int) ET.size();
 
 	// build the element-edge table
-	FEElementEdgeList EET(*pm, ET);
+	FSElementEdgeList EET(*pm, ET);
 
 	// tag all selected elements
 	pm->TagAllElements(0);

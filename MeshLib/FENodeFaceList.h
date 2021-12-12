@@ -35,11 +35,11 @@ struct NodeFaceRef {
 	FSFace*	pf;		// face pointer
 };
 
-class FENodeFaceList
+class FSNodeFaceList
 {
 public:
-	FENodeFaceList();
-	~FENodeFaceList(void);
+	FSNodeFaceList();
+	~FSNodeFaceList(void);
 
 	void Build(FSMeshBase* pm);
 	bool BuildSorted(FSMeshBase* pm);

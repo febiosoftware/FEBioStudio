@@ -81,6 +81,6 @@ public:
 
 private:
 	FSMesh*		m_mesh;
-	FENodeFaceList	m_NFL;
+	FSNodeFaceList	m_NFL;
 };
 }

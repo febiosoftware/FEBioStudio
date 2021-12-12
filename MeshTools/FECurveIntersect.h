@@ -42,7 +42,7 @@ public:
 	FECurveIntersect();
 
 	// apply the modifier
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 public:
 	// clear curve list

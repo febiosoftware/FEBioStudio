@@ -30,7 +30,7 @@ SOFTWARE.*/
 class QLabel;
 class GObject;
 class GPart;
-class FESurfaceMesh;
+class FSSurfaceMesh;
 
 class CMeshInfoPanel : public QWidget
 {
@@ -61,7 +61,7 @@ private:
 public:
 	CSurfaceMeshInfoPanel(QWidget* parent = 0);
 
-	void setInfo(const FESurfaceMesh* pm);
+	void setInfo(const FSSurfaceMesh* pm);
 	void setInfo(int nodes, int edges, int faces);
 };
 

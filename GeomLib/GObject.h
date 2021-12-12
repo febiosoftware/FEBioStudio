@@ -37,7 +37,7 @@ class FESurface;
 class FEEdgeSet;
 class FENodeSet;
 class FECurveMesh;
-class FESurfaceMesh;
+class FSSurfaceMesh;
 class FEMesher;
 class FSMesh;
 class FSMeshBase;
@@ -129,7 +129,7 @@ public:
 	void SetFEMesh(FSMesh* pm);
 
 	// replace the current surface mesh
-	virtual void ReplaceSurfaceMesh(FESurfaceMesh* newMesh);
+	virtual void ReplaceSurfaceMesh(FSSurfaceMesh* newMesh);
 
 	// retrieve an FE nodes from a GNode
 	FSNode* GetFENode(int gid);

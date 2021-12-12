@@ -417,15 +417,15 @@ FSMesh* FEMMG2DMesher::BuildMesh()
 	GFace& face = *m_po->Face(0);
 	GLMesh* gm = triangulate(face);
 
-	// MMG needs a FESurfaceMesh, so convert
-	FESurfaceMesh* pm = new FESurfaceMesh(*gm);
+	// MMG needs a FSSurfaceMesh, so convert
+	FSSurfaceMesh* pm = new FSSurfaceMesh(*gm);
 
 	// Now, let's use MMG to remesh
 	double h = GetFloatValue(0);
 	FEMMG2DRemesh mmg;
 	mmg.SetFloatValue(0, h);
 
-	FESurfaceMesh* newMesh = mmg.Apply(pm);
+	FSSurfaceMesh* newMesh = mmg.Apply(pm);
 
 	delete pm;
 

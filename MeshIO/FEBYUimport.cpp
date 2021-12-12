@@ -71,7 +71,7 @@ bool FEBYUimport::Load(const char* szfile)
 	}
 
 	// create a new mesh
-	FESurfaceMesh* pm = new FESurfaceMesh();
+	FSSurfaceMesh* pm = new FSSurfaceMesh();
 	pm->Create(nodes, 0, elems);
 
 	// read the nodes

@@ -44,12 +44,12 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 	if (pm->IsType(FE_HEX8) == false) return 0;
 
 	// build the edge table of the mesh (each edge will add a node)
-	FEEdgeList ET(*pm);
-	FEElementEdgeList EET(*pm, ET);
+	FSEdgeList ET(*pm);
+	FSElementEdgeList EET(*pm, ET);
 
 	// build the face table (each face will add a node)
-	FEFaceTable FT(*pm);
-	FEElementFaceList EFL(*pm, FT);
+	FSFaceTable FT(*pm);
+	FSElementFaceList EFL(*pm, FT);
 
 	// get the mesh item counts
 	int NN0 = pm->Nodes();
@@ -68,7 +68,7 @@ FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 	pmnew->Create(NN1, NE1);
 
 	// build face-edge table
-	FEFaceEdgeList FET(*pm, ET);
+	FSFaceEdgeList FET(*pm, ET);
 
 	// assign nodes
 	int n = 0;

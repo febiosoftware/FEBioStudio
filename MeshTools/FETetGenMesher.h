@@ -146,7 +146,7 @@ public:
 
 public:
 	// Generate a volume mesh from a surface mesh
-	FSMesh* CreateMesh(FESurfaceMesh* surfaceMesh);
+	FSMesh* CreateMesh(FSSurfaceMesh* surfaceMesh);
 
 protected:
 
@@ -155,7 +155,7 @@ protected:
 
 #ifdef TETLIBRARY
 public:
-	bool build_plc(FESurfaceMesh* pm, tetgenio& in);
+	bool build_plc(FSSurfaceMesh* pm, tetgenio& in);
 protected:
 	FSMesh* BuildPLCMesh();
 	bool build_tetgen_in(tetgenio& in);

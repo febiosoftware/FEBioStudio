@@ -80,7 +80,7 @@ struct LOFT_NODE
 	double	s;		// parametric position on curve (from 0 to 1)
 };
 
-FESurfaceMesh* FELoftMesher::Apply(vector<FECurveMesh*> curve)
+FSSurfaceMesh* FELoftMesher::Apply(vector<FECurveMesh*> curve)
 {
 	switch(m_elem)
 	{
@@ -94,7 +94,7 @@ FESurfaceMesh* FELoftMesher::Apply(vector<FECurveMesh*> curve)
 }
 
 
-FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
+FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 {
 	// number of curves to loft
 	int NC = (int)curve.size();
@@ -129,7 +129,7 @@ FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 	int NF = ND*(NC - 1)*(NCN - 1);
 
 	// Build the mesh
-	FESurfaceMesh* mesh = new FESurfaceMesh;
+	FSSurfaceMesh* mesh = new FSSurfaceMesh;
 	mesh->Create(NN, NE, NF);
 
 	// create nodes
@@ -490,7 +490,7 @@ void flipCurve(vector<LOFT_NODE>& curve)
 	}
 }
 
-FESurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
+FSSurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 {
 	// number of curves to loft
 	int NC = (int)curve.size();
@@ -621,7 +621,7 @@ FESurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 	}
 
 	// create a new mesh
-	FESurfaceMesh* mesh = new FESurfaceMesh;
+	FSSurfaceMesh* mesh = new FSSurfaceMesh;
 	mesh->Create(NN, 0, 0);
 
 	// reserve space for storing facets

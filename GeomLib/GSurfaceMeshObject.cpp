@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeEdgeList.h>
 #include "GOCCObject.h"
 
-GSurfaceMeshObject::GSurfaceMeshObject(FESurfaceMesh* pm) : GObject(GSURFACEMESH_OBJECT), m_surfmesh(pm)
+GSurfaceMeshObject::GSurfaceMeshObject(FSSurfaceMesh* pm) : GObject(GSURFACEMESH_OBJECT), m_surfmesh(pm)
 {
 	SetFEMesher(new FETetGenMesher(this));
 	if (m_surfmesh)
@@ -116,15 +116,15 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 	// copy the surface mesh from the original object's mesh
 	FSMeshBase* pm = po->GetEditableMesh(); assert(pm);
 
-	FESurfaceMesh* psm = dynamic_cast<FESurfaceMesh*>(pm);
+	FSSurfaceMesh* psm = dynamic_cast<FSSurfaceMesh*>(pm);
 	if (psm)
 	{
-		m_surfmesh = new FESurfaceMesh(*psm);
+		m_surfmesh = new FSSurfaceMesh(*psm);
 		m_surfmesh->SetGObject(this);
 	}
 	else
 	{
-		m_surfmesh = new FESurfaceMesh;
+		m_surfmesh = new FSSurfaceMesh;
 		m_surfmesh->SetGObject(this);
 
 		NN = pm->Nodes();
@@ -174,7 +174,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 
 		// copy edges
 		// Build a node-edge tabel
-		FENodeEdgeList NEL(m_surfmesh);
+		FSNodeEdgeList NEL(m_surfmesh);
 		m_surfmesh->BuildEdges();
 		for (int i = 0; i < pm->Edges(); ++i)
 		{
@@ -273,7 +273,7 @@ GObject* GSurfaceMeshObject::Clone()
 void GSurfaceMeshObject::UpdateNodes()
 {
 	// get the mesh
-	FESurfaceMesh& m = *GetSurfaceMesh();
+	FSSurfaceMesh& m = *GetSurfaceMesh();
 
 	// count the node partitions
 	int ng = m.CountNodePartitions();
@@ -307,7 +307,7 @@ void GSurfaceMeshObject::UpdateNodes()
 void GSurfaceMeshObject::UpdateEdges()
 {
 	// get the mesh
-	FESurfaceMesh& m = *GetSurfaceMesh();
+	FSSurfaceMesh& m = *GetSurfaceMesh();
 	int NE = m.Edges();
 
 	int ng = m.CountEdgePartitions();
@@ -373,7 +373,7 @@ void GSurfaceMeshObject::UpdateEdges()
 
 void GSurfaceMeshObject::UpdateSurfaces()
 {
-	FESurfaceMesh& m = *GetSurfaceMesh();
+	FSSurfaceMesh& m = *GetSurfaceMesh();
 	int NF = m.Faces();
 
 	int ng = m.CountFacePartitions();
@@ -396,7 +396,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	GLMesh* gmesh = new GLMesh();
 
 	// we'll extract the data from the FE mesh
-	FESurfaceMesh* pm = m_surfmesh;
+	FSSurfaceMesh* pm = m_surfmesh;
 
 	// create nodes
 	for (int i = 0; i<pm->Nodes(); ++i)
@@ -424,17 +424,17 @@ void GSurfaceMeshObject::BuildGMesh()
 	SetRenderMesh(gmesh);
 }
 
-FESurfaceMesh* GSurfaceMeshObject::GetSurfaceMesh()
+FSSurfaceMesh* GSurfaceMeshObject::GetSurfaceMesh()
 {
 	return m_surfmesh;
 }
 
-const FESurfaceMesh* GSurfaceMeshObject::GetSurfaceMesh() const
+const FSSurfaceMesh* GSurfaceMeshObject::GetSurfaceMesh() const
 {
 	return m_surfmesh;
 }
 
-void GSurfaceMeshObject::ReplaceSurfaceMesh(FESurfaceMesh* newMesh)
+void GSurfaceMeshObject::ReplaceSurfaceMesh(FSSurfaceMesh* newMesh)
 {
 	m_surfmesh = newMesh;
 	m_surfmesh->SetGObject(this);
@@ -444,7 +444,7 @@ void GSurfaceMeshObject::ReplaceSurfaceMesh(FESurfaceMesh* newMesh)
 // get the mesh of an edge curve
 FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 {
-	FESurfaceMesh* mesh = GetSurfaceMesh();
+	FSSurfaceMesh* mesh = GetSurfaceMesh();
 	if (mesh == 0) return 0;
 
 	mesh->TagAllNodes(-1);
@@ -901,7 +901,7 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 			break;
 		case CID_SURFACE_MESH:
 			if (m_surfmesh) delete m_surfmesh;
-			m_surfmesh = new FESurfaceMesh;
+			m_surfmesh = new FSSurfaceMesh;
 			m_surfmesh->SetGObject(this);
 			m_surfmesh->Load(ar);
 			break;
@@ -983,8 +983,8 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 	}
 
 	// attach to the new mesh
-	const FESurfaceMesh* oldMesh = po->GetSurfaceMesh();
-	FESurfaceMesh* newMesh = GetSurfaceMesh();
+	const FSSurfaceMesh* oldMesh = po->GetSurfaceMesh();
+	FSSurfaceMesh* newMesh = GetSurfaceMesh();
 	if (weld)
 	{
 		newMesh->AttachAndWeld(*oldMesh, weldTolerance);
@@ -1000,14 +1000,14 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 	BuildGMesh();
 }
 
-FESurfaceMesh* createSurfaceMesh(GLMesh* glmesh)
+FSSurfaceMesh* createSurfaceMesh(GLMesh* glmesh)
 {
 	if (glmesh == nullptr) return nullptr;
 
 	int NN = glmesh->Nodes();
 	int NF = glmesh->Faces();
 
-	FESurfaceMesh* pm = new FESurfaceMesh;
+	FSSurfaceMesh* pm = new FSSurfaceMesh;
 	pm->Create(NN, 0, NF);
 
 	for (int i = 0; i < NN; ++i)
@@ -1051,8 +1051,8 @@ GSurfaceMeshObject* ConvertToEditableSurface(GObject* po)
 		GLMesh* glmesh = po->GetRenderMesh();
 		if (glmesh == nullptr) return nullptr;
 
-		// create FESurfaceMesh from GLMesh
-		FESurfaceMesh* surfMesh = createSurfaceMesh(glmesh);
+		// create FSSurfaceMesh from GLMesh
+		FSSurfaceMesh* surfMesh = createSurfaceMesh(glmesh);
 
 		// create the surface mesh object
 		pnew = new GSurfaceMeshObject(surfMesh);

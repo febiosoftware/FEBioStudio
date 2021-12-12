@@ -60,13 +60,13 @@ public:
 	FEWeldSurfaceNodes();
 
 	//! Apply the weld modifier
-	FESurfaceMesh* Apply(FESurfaceMesh* pm) override;
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm) override;
 
 	void SetThreshold(double d);
 
 protected:
-	void UpdateNodes(FESurfaceMesh* pm);
-	void UpdateFaces(FESurfaceMesh* pm);
+	void UpdateNodes(FSSurfaceMesh* pm);
+	void UpdateFaces(FSSurfaceMesh* pm);
 
 private:
 	vector<int>	m_order;

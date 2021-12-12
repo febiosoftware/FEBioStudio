@@ -33,16 +33,16 @@ class FEFixSurfaceMesh : public FESurfaceModifier
 {
 public:
 	FEFixSurfaceMesh();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 	FSTaskProgress GetProgress() override;
 
-	bool RemoveDuplicateFaces(FESurfaceMesh* pm);
-	bool RemoveNonManifoldFaces(FESurfaceMesh* pm);
-	bool FixElementWinding(FESurfaceMesh* pm);
-	bool InvertMesh(FESurfaceMesh* pm);
-	bool FillAllHoles(FESurfaceMesh* pm);
-	bool RemoveDuplicateEdges(FESurfaceMesh* pm);
+	bool RemoveDuplicateFaces(FSSurfaceMesh* pm);
+	bool RemoveNonManifoldFaces(FSSurfaceMesh* pm);
+	bool FixElementWinding(FSSurfaceMesh* pm);
+	bool InvertMesh(FSSurfaceMesh* pm);
+	bool FillAllHoles(FSSurfaceMesh* pm);
+	bool RemoveDuplicateEdges(FSSurfaceMesh* pm);
 
 protected:
 	FESurfaceModifier* m_mod;

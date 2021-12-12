@@ -55,7 +55,7 @@ GMeshObject::GMeshObject(FSMesh* pm) : GObject(GMESH_OBJECT)
 
 //-----------------------------------------------------------------------------
 // Constructor for creating a GMeshObject from a naked mesh. 
-GMeshObject::GMeshObject(FESurfaceMesh* pm) : GObject(GMESH_OBJECT)
+GMeshObject::GMeshObject(FSSurfaceMesh* pm) : GObject(GMESH_OBJECT)
 {
 	// update the object
 	if (pm)
@@ -1243,7 +1243,7 @@ GMeshObject* ConvertToEditableMesh(GObject* po)
 		if (dynamic_cast<GSurfaceMeshObject*>(po))
 		{
 			// get the surface
-			FESurfaceMesh* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(po)->GetSurfaceMesh();
+			FSSurfaceMesh* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(po)->GetSurfaceMesh();
 
 			// create a new gmeshobject
 			pnew = new GMeshObject(surfaceMesh);

@@ -764,7 +764,7 @@ void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FSMesh* pm)
 	}
 
 	// build the edges
-	FEEdgeList ET(*pm);
+	FSEdgeList ET(*pm);
 	int NE = ET.size();
 	vector<DynamicMesh2D::EDGEP> edgePtr;
 	for (int i = 0; i<NE; ++i)
@@ -775,7 +775,7 @@ void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FSMesh* pm)
 	}
 
 	// build the faces
-	FEFaceEdgeList FET(*pm, ET);
+	FSFaceEdgeList FET(*pm, ET);
 	int NF = pm->Faces();
 	for (int i = 0; i<NF; ++i)
 	{

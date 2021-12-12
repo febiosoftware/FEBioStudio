@@ -34,7 +34,7 @@ InsertCurves::InsertCurves()
 {
 }
 
-FESurfaceMesh* InsertCurves::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList, bool insertEdges, double tol)
+FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList, bool insertEdges, double tol)
 {
 	// make sure we have at least one curve
 	if (curveList.empty()) return 0;
@@ -104,5 +104,5 @@ FESurfaceMesh* InsertCurves::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList,
 	}	
 
 	// create and return new surface mesh object from the triMesh
-	return new FESurfaceMesh(dyna);
+	return new FSSurfaceMesh(dyna);
 }

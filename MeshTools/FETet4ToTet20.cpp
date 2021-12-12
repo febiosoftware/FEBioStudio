@@ -43,25 +43,25 @@ FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 	if (pm->IsType(FE_TET4) == false) return 0;
 
 	// build the edge table
-	FEEdgeList ET(*pm);
+	FSEdgeList ET(*pm);
 
 	// build the element-edge table
-	FEElementEdgeList EET(*pm, ET);
+	FSElementEdgeList EET(*pm, ET);
 
 	// build the face table
-	FEFaceTable FT(*pm);
+	FSFaceTable FT(*pm);
 
 	// build the element face table
-	FEElementFaceList EFT(*pm, FT);
+	FSElementFaceList EFT(*pm, FT);
 
 	// build the face-edge table
-	FEFaceEdgeList FET(*pm, ET);
+	FSFaceEdgeList FET(*pm, ET);
 
 	// build the face-face table
-	FEFaceFaceList FFT(*pm, FT);
+	FSFaceFaceList FFT(*pm, FT);
 
 	// build the edge-edge table
-	FEEdgeIndexList CET(*pm, ET);
+	FSEdgeIndexList CET(*pm, ET);
 
 	// the new number of nodes is given by the number of nodes, 2*edges, faces
 	int NN = pm->Nodes();

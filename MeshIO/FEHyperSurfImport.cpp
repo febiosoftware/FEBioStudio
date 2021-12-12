@@ -59,7 +59,7 @@ bool FEHyperSurfImport::Load(const char* szfile)
 	int nodes = 0;
 	sscanf(szline+8, "%d", &nodes);
 
-	FESurfaceMesh* pm = new FESurfaceMesh();
+	FSSurfaceMesh* pm = new FSSurfaceMesh();
 	pm->Create(nodes, 0, 0);
 
 	// read the nodes

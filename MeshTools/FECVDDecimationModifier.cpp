@@ -62,7 +62,7 @@ int randi(int nmax)
 //-----------------------------------------------------------------------------
 //! Create the decimate mesh. 
 //! \todo This implementation will only work with closed surfaces. 
-FESurfaceMesh* FECVDDecimationModifier::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FECVDDecimationModifier::Apply(FSSurfaceMesh* pm)
 {
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_FACE_TRI3) == false) 
@@ -86,7 +86,7 @@ FESurfaceMesh* FECVDDecimationModifier::Apply(FESurfaceMesh* pm)
 
 	// create the new mesh
 	// we can create either the clustered mesh or the final decimated mesh
-	FESurfaceMesh* pnew = 0;
+	FSSurfaceMesh* pnew = 0;
 	if (m_bcvd) 
 	{
 		// partition mesh based on cluster assingments
@@ -137,7 +137,7 @@ FESurfaceMesh* FECVDDecimationModifier::Apply(FESurfaceMesh* pm)
 //! edges between clusters.
 //! \todo I need to create a better random seeding algorithm. If the scale is close
 //! to one, this algorithm may take a while to finish.
-bool FECVDDecimationModifier::Initialize(FESurfaceMesh* pm)
+bool FECVDDecimationModifier::Initialize(FSSurfaceMesh* pm)
 {
 	// nodes on original mesh
 	int N0 = pm->Nodes();
@@ -355,7 +355,7 @@ bool FECVDDecimationModifier::Swap(FSFace& face, int nface, int ncluster)
 
 //-----------------------------------------------------------------------------
 //! Update clustering to minimize energy
-bool FECVDDecimationModifier::Minimize(FESurfaceMesh* pm)
+bool FECVDDecimationModifier::Minimize(FSSurfaceMesh* pm)
 {
 	bool bconv = false;
 	const int MAX_ITER = 50000;
@@ -559,7 +559,7 @@ bool FECVDDecimationModifier::NODE::AttachToCluster(int n)
 
 //-----------------------------------------------------------------------------
 // TODO: The case n==6 has other ways to get tesselated. I only implemented a few
-FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
+FSSurfaceMesh* FECVDDecimationModifier::Triangulate(FSSurfaceMesh* pm)
 {
 	int N = pm->Nodes();
 	vector<NODE> Node; Node.resize(N);
@@ -568,7 +568,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 		Node[i].nc = 0;
 	}
 
-	FENodeFaceList NFL;
+	FSNodeFaceList NFL;
 	NFL.BuildSorted(pm);
 	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).m_ntag = i;
 	for (int i=0; i<N; ++i)
@@ -595,7 +595,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 	}
 
 	// create a new mesh
-	FESurfaceMesh* pnew = new FESurfaceMesh;
+	FSSurfaceMesh* pnew = new FSSurfaceMesh;
 	pnew->Create(nodes, 0, faces);
 
 	// calculate the node positions
@@ -787,7 +787,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
+FSSurfaceMesh* FECVDDecimationModifier::Triangulate2(FSSurfaceMesh* pm)
 {
 	// let's build the node data
 	int N = pm->Nodes();
@@ -798,7 +798,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 	}
 
 	// find all clusters a node belongs to
-	FENodeFaceList NFL;
+	FSNodeFaceList NFL;
 	if (NFL.BuildSorted(pm) == false) return 0;
 	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).m_ntag = i;
 	for (int i=0; i<N; ++i)
@@ -823,7 +823,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 	int nodes = (int) m_Cluster.size() - 1;
 
 	// create a new mesh
-	FESurfaceMesh* pnew = new FESurfaceMesh;
+	FSSurfaceMesh* pnew = new FSSurfaceMesh;
 	pnew->Create(nodes, 0, 0);
 	// calculate the node positions
 	for (int i=0; i<nodes; ++i)
@@ -919,9 +919,9 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceMesh* FECVDDecimationModifier::CalculateCVD(FESurfaceMesh* pm)
+FSSurfaceMesh* FECVDDecimationModifier::CalculateCVD(FSSurfaceMesh* pm)
 {
-	FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* pnew = new FSSurfaceMesh(*pm);
 
 	int N = pnew->Faces();
 	for (int i=0; i<N; ++i)

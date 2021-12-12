@@ -34,13 +34,13 @@ FEEdgeCollapse::FEEdgeCollapse() : FESurfaceModifier("Edge Collapse")
 	AddDoubleParam(m_tol, "tolerance", "tolerance");
 }
 
-FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEEdgeCollapse::Apply(FSSurfaceMesh* pm)
 {
 	// make sure this is a tri mesh
 	if (pm->IsType(FE_FACE_TRI3) == false) return 0;
 
 	// create a copy of this mesh
-	FESurfaceMesh* mesh = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* mesh = new FSSurfaceMesh(*pm);
 
 	// first, let's tag all nodes based on whether they are:
 	// 0: free

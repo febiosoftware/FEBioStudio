@@ -57,7 +57,7 @@ FEElement_::FEElement_()
 // Set the element type. This also sets some other type related data
 void FEElement_::SetType(int ntype)
 {
-	m_traits = FEElementLibrary::GetTraits(ntype);
+	m_traits = FSElementLibrary::GetTraits(ntype);
 	assert(m_traits);
 }
 

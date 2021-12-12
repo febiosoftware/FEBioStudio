@@ -1393,7 +1393,7 @@ bool PLC::BuildFaceRevolveWedge(GFace& fs)
 }
 
 //-----------------------------------------------------------------------------
-bool FETetGenMesher::build_plc(FESurfaceMesh* pm, tetgenio& in)
+bool FETetGenMesher::build_plc(FSSurfaceMesh* pm, tetgenio& in)
 {
 	int i, j, n;
 
@@ -1570,7 +1570,7 @@ bool FETetGenMesher::build_plc(FESurfaceMesh* pm, tetgenio& in)
 
 
 // Generate a volume mesh from a surface mesh
-FSMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
+FSMesh* FETetGenMesher::CreateMesh(FSSurfaceMesh* surfMesh)
 {
 #ifdef TETLIBRARY
 	// allocate tetgen structures

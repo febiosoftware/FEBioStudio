@@ -302,8 +302,8 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 	}
 
 	// create element-edge list
-	FEEdgeList EL; EL.BuildFromMeshEdges(mesh);
-	FEElementEdgeList EEL(mesh, EL);
+	FSEdgeList EL; EL.BuildFromMeshEdges(mesh);
+	FSElementEdgeList EEL(mesh, EL);
 
 	// figure out which edges to remove
 	mesh.TagAllEdges(0);

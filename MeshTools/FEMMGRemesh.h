@@ -62,7 +62,7 @@ class FEMMGSurfaceRemesh : public FESurfaceModifier
 
 public:
 	FEMMGSurfaceRemesh();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm) override;
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -78,5 +78,5 @@ class FEMMG2DRemesh : public FESurfaceModifier
 
 public:
 	FEMMG2DRemesh();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm) override;
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm) override;
 };

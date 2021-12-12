@@ -29,22 +29,22 @@ SOFTWARE.*/
 #include <assert.h>
 using namespace std;
 
-FENodeEdgeList::FENodeEdgeList(FSLineMesh* mesh) : m_mesh(mesh)
+FSNodeEdgeList::FSNodeEdgeList(FSLineMesh* mesh) : m_mesh(mesh)
 {
 	if (mesh) Build(mesh);
 }
 
-void FENodeEdgeList::Clear()
+void FSNodeEdgeList::Clear()
 {
 	m_edge.clear();
 }
 
-bool FENodeEdgeList::IsEmpty() const
+bool FSNodeEdgeList::IsEmpty() const
 {
 	return m_edge.empty();
 }
 
-void FENodeEdgeList::Build(FSLineMesh* pmesh, bool segsOnly)
+void FSNodeEdgeList::Build(FSLineMesh* pmesh, bool segsOnly)
 {
 	m_mesh = pmesh;
 	assert(pmesh);
@@ -75,17 +75,17 @@ void FENodeEdgeList::Build(FSLineMesh* pmesh, bool segsOnly)
 }
 
 // Return the edge for a given node
-const FSEdge* FENodeEdgeList::Edge(int node, int edge) const
+const FSEdge* FSNodeEdgeList::Edge(int node, int edge) const
 {
 	return m_mesh->EdgePtr(m_edge[node][edge]);
 }
 
-int FENodeEdgeList::EdgeIndex(int node, int edge) const 
+int FSNodeEdgeList::EdgeIndex(int node, int edge) const 
 { 
 	return m_edge[node][edge]; 
 }
 
-const std::vector<int>& FENodeEdgeList::EdgeIndexList(int node) const
+const std::vector<int>& FSNodeEdgeList::EdgeIndexList(int node) const
 {
 	return m_edge[node];
 }

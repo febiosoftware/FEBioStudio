@@ -32,7 +32,7 @@ class FEEdgeCollapse : public FESurfaceModifier
 public:
 	FEEdgeCollapse();
 
-	FESurfaceMesh* Apply(FESurfaceMesh* mesh);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* mesh);
 
 	void SetTolerance(double tol) { m_tol = tol; }
 

@@ -40,5 +40,5 @@ private:
 	bool read_file(const char* szfile);
 
 private:
-	FESurfaceMesh* m_mesh;
+	FSSurfaceMesh* m_mesh;
 };

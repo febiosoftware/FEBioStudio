@@ -202,7 +202,7 @@ FSMesh::FSMesh(FSMesh& m)
 }
 
 //-----------------------------------------------------------------------------
-FSMesh::FSMesh(FESurfaceMesh& m)
+FSMesh::FSMesh(FSSurfaceMesh& m)
 {
 	int NN = m.Nodes();
 	int NF = m.Faces();
@@ -790,7 +790,7 @@ void FSMesh::UpdateElementNeighbors()
 	}
 
 	// calculate the node-element table
-	FENodeElementList NET;
+	FSNodeElementList NET;
 	NET.Build(this);
 
 	// set up the element's neighbour pointers
@@ -1022,7 +1022,7 @@ void FSMesh::UpdateFaceElementTable()
 	}
 
 	// first build the node element table
-	FENodeElementList NET;
+	FSNodeElementList NET;
 	NET.Build(this);
 
 	// loop over all faces
@@ -1192,7 +1192,7 @@ void FSMesh::UpdateFaceNeighbors()
 	while (S.empty() == false);
 
 	// build the node-face table
-	FENodeFaceList NFT;
+	FSNodeFaceList NFT;
 	NFT.Build(this);
 
 	// find all face neighbours
@@ -1232,7 +1232,7 @@ void FSMesh::UpdateFaceNeighbors()
 // This function finds the edge neighbours.
 void FSMesh::UpdateEdgeNeighbors()
 {
-	FENodeEdgeList NET;
+	FSNodeEdgeList NET;
 	NET.Build(this, true);
 
 	for (int i = 0; i<Edges(); ++i)
@@ -2073,7 +2073,7 @@ FEElementData* FSMesh::AddElementDataField(const string& sz, FEPart* part, FEMes
 }
 
 //-----------------------------------------------------------------------------
-FSMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh)
+FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh)
 {
 	int nodes = surfaceMesh->Nodes();
 	int faces = surfaceMesh->Faces();

@@ -34,8 +34,8 @@ public:
 
 	void SetIterations(int n);
 
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 protected:
-	FESurfaceMesh* Split(FESurfaceMesh* pm);
+	FSSurfaceMesh* Split(FSSurfaceMesh* pm);
 };

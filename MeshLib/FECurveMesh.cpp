@@ -772,7 +772,7 @@ void FECurveMesh::Save(OArchive& ar)
 //-----------------------------------------------------------------------------
 void FECurveMesh::Load(IArchive& ar)
 {
-	TRACE("FESurfaceMesh::Load");
+	TRACE("FSSurfaceMesh::Load");
 
 	// the first chunk must be the header
 	ar.OpenChunk();

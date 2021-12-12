@@ -30,7 +30,7 @@ SOFTWARE.*/
 //using namespace std;
 
 class FSMesh;
-class FESurfaceMesh;
+class FSSurfaceMesh;
 
 //-----------------------------------------------------------------------------
 // This class stores for each node a list of nodes that are connected to it.
@@ -38,7 +38,7 @@ class FENodeNodeList
 {
 public:
 	FENodeNodeList(FSMesh* pm, bool preservePartitions = false);
-	FENodeNodeList(FESurfaceMesh* pm);
+	FENodeNodeList(FSSurfaceMesh* pm);
 	~FENodeNodeList();
 
 	int Valence(int n) { return m_val[n]; }
@@ -52,7 +52,7 @@ public:
 
 protected:
 	void Build(FSMesh* pm, bool preservePartitions = false);
-	void Build(FESurfaceMesh* pm);
+	void Build(FSSurfaceMesh* pm);
 
 protected:
 	vector<int>	m_val;		// Valence list

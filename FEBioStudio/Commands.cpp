@@ -2182,7 +2182,7 @@ void CCmdDeleteFESurfaceSelection::Execute()
 	// create a copy of the old mesh
 	if (m_pnew == 0)
 	{
-		m_pnew = new FESurfaceMesh(*m_pold);
+		m_pnew = new FSSurfaceMesh(*m_pold);
 
 		if (m_item == ITEM_FACE) m_pnew->DeleteSelectedFaces();
 		else if (m_item == ITEM_EDGE) m_pnew->DeleteSelectedEdges();
@@ -2196,7 +2196,7 @@ void CCmdDeleteFESurfaceSelection::Execute()
 	m_pobj->ReplaceSurfaceMesh(m_pnew);
 
 	// swap meshes
-	FESurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+	FSSurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 }
 
 //-----------------------------------------------------------------------------
@@ -2208,7 +2208,7 @@ void CCmdDeleteFESurfaceSelection::UnExecute()
 	m_pobj->ReplaceSurfaceMesh(m_pnew);
 
 	// swap meshes
-	FESurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+	FSSurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2303,7 +2303,7 @@ void CCmdHideElements::UnExecute()
 // CCmdHideFaces
 //////////////////////////////////////////////////////////////////////
 
-CCmdHideFaces::CCmdHideFaces(FESurfaceMesh* mesh, const vector<int>& faceList) : CCommand("Hide")
+CCmdHideFaces::CCmdHideFaces(FSSurfaceMesh* mesh, const vector<int>& faceList) : CCommand("Hide")
 {
 	m_mesh = mesh;
 	m_faceList = faceList;
@@ -2372,7 +2372,7 @@ CCmdHideSelection::CCmdHideSelection(CModelDocument* doc) : CCommand("Hide")
 	break;
 	case ITEM_FACE:
 	{
-		FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+		FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 		if (pm)
 		{
 			for (int i = 0; i<pm->Faces(); ++i)
@@ -2408,7 +2408,7 @@ void CCmdHideSelection::Execute()
 	break;
 	case ITEM_FACE:
 	{
-		FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+		FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 		if (pm) pm->ShowFaces(m_item, false);
 	}
 	break;
@@ -2446,7 +2446,7 @@ void CCmdHideSelection::UnExecute()
 	break;
 	case ITEM_FACE:
 	{
-		FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+		FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 		if (pm)
 		{
 			pm->ShowFaces(m_item);
@@ -2507,7 +2507,7 @@ CCmdHideUnselected::CCmdHideUnselected(CModelDocument* doc) : CCommand("Hide")
 	break;
 	case ITEM_FACE:
 	{
-		FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+		FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 		if (pm)
 		{
 			for (int i = 0; i<pm->Faces(); ++i) if (!pm->Face(i).IsSelected()) m_item[m++] = i;
@@ -2539,7 +2539,7 @@ void CCmdHideUnselected::Execute()
 	break;
 	case ITEM_FACE:
 	{
-		FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+		FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 		if (pm) pm->ShowFaces(m_item, false);
 	}
 	break;
@@ -2568,7 +2568,7 @@ void CCmdHideUnselected::UnExecute()
 	break;
 	case ITEM_FACE:
 	{
-		FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+		FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 		if (pm) pm->ShowFaces(m_item);
 	}
 	break;
@@ -2640,7 +2640,7 @@ CCmdUnhideAll::CCmdUnhideAll(CModelDocument* doc) : CCommand("Unhide all")
 		break;
 		case ITEM_FACE:
 		{
-			FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+			FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 			if (pm)
 			{
 				for (int i = 0; i<pm->Faces(); ++i) if (!pm->Face(i).IsVisible()) m_item.push_back(i);
@@ -2699,7 +2699,7 @@ void CCmdUnhideAll::Execute()
 		break;
 		case ITEM_FACE:
 		{
-			FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+			FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 			assert(pm);
 			if (pm) pm->ShowFaces(m_item, m_bunhide);
 		}
@@ -2843,14 +2843,14 @@ void CCmdApplySurfaceModifier::Execute()
 		{
 			// swap old and new
 			// we do this so that we can always delete m_pnew
-			FESurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+			FSSurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 
 			throw;
 		}
 
 		// swap old and new
 		// we do this so that we can always delete m_pnew
-		FESurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+		FSSurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 	}
 }
 
@@ -2860,11 +2860,11 @@ void CCmdApplySurfaceModifier::UnExecute()
 	if (m_pnew)
 	{
 		// replace the old mesh with the new
-		m_pobj->ReplaceSurfaceMesh(dynamic_cast<FESurfaceMesh*>(m_pnew));
+		m_pobj->ReplaceSurfaceMesh(dynamic_cast<FSSurfaceMesh*>(m_pnew));
 
 		// swap old and new
 		// we do this so that we can always delete m_pnew
-		FESurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
+		FSSurfaceMesh* pm = m_pnew; m_pnew = m_pold; m_pold = pm;
 	}
 }
 
@@ -2897,7 +2897,7 @@ void CCmdChangeFEMesh::UnExecute()
 // CCmdChangeFESurfaceMesh
 //-----------------------------------------------------------------------------
 
-CCmdChangeFESurfaceMesh::CCmdChangeFESurfaceMesh(GSurfaceMeshObject* po, FESurfaceMesh* pm, bool up) : CCommand("Change surface mesh")
+CCmdChangeFESurfaceMesh::CCmdChangeFESurfaceMesh(GSurfaceMeshObject* po, FSSurfaceMesh* pm, bool up) : CCommand("Change surface mesh")
 {
 	assert(po);
 	assert(pm);
@@ -2914,7 +2914,7 @@ CCmdChangeFESurfaceMesh::~CCmdChangeFESurfaceMesh()
 
 void CCmdChangeFESurfaceMesh::Execute()
 {
-	FESurfaceMesh* pm = m_po->GetSurfaceMesh();
+	FSSurfaceMesh* pm = m_po->GetSurfaceMesh();
 	m_po->ReplaceSurfaceMesh(m_pnew);
 	m_pnew = pm;
 }

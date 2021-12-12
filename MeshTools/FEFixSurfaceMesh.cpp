@@ -46,12 +46,12 @@ FSTaskProgress FEFixSurfaceMesh::GetProgress()
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceMesh* FEFixSurfaceMesh::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEFixSurfaceMesh::Apply(FSSurfaceMesh* pm)
 {
 	ClearError();
 
 	// create a copy of the mesh
-	FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* pnew = new FSSurfaceMesh(*pm);
 
 	// apply the task on this mesh
 	int task = GetIntValue(0);
@@ -83,13 +83,13 @@ FESurfaceMesh* FEFixSurfaceMesh::Apply(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFixSurfaceMesh::RemoveDuplicateFaces(FESurfaceMesh* pm)
+bool FEFixSurfaceMesh::RemoveDuplicateFaces(FSSurfaceMesh* pm)
 {
 	// clear all tags
 	pm->TagAllFaces(0);
 
 	// build the node-face table
-	FENodeFaceList NFT;
+	FSNodeFaceList NFT;
 	NFT.Build(pm);
 
 	// loop over all elements
@@ -132,7 +132,7 @@ bool FEFixSurfaceMesh::RemoveDuplicateFaces(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFixSurfaceMesh::RemoveNonManifoldFaces(FESurfaceMesh* pm)
+bool FEFixSurfaceMesh::RemoveNonManifoldFaces(FSSurfaceMesh* pm)
 {
 	// clear all tags
 	pm->TagAllFaces(0);
@@ -215,7 +215,7 @@ void flipQuad4(FSFace& f)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFixSurfaceMesh::FixElementWinding(FESurfaceMesh* pm)
+bool FEFixSurfaceMesh::FixElementWinding(FSSurfaceMesh* pm)
 {
 	// clear tags
 	pm->TagAllFaces(0);
@@ -297,7 +297,7 @@ bool FEFixSurfaceMesh::FixElementWinding(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFixSurfaceMesh::InvertMesh(FESurfaceMesh* pm)
+bool FEFixSurfaceMesh::InvertMesh(FSSurfaceMesh* pm)
 {
 	// loop over all faces
 	int NF = pm->Faces();
@@ -319,7 +319,7 @@ bool FEFixSurfaceMesh::InvertMesh(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFixSurfaceMesh::FillAllHoles(FESurfaceMesh* pm)
+bool FEFixSurfaceMesh::FillAllHoles(FSSurfaceMesh* pm)
 {
 	// fill all the holes
 	FEFillHole fill;
@@ -339,7 +339,7 @@ bool FEFixSurfaceMesh::FillAllHoles(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFixSurfaceMesh::RemoveDuplicateEdges(FESurfaceMesh* pm)
+bool FEFixSurfaceMesh::RemoveDuplicateEdges(FSSurfaceMesh* pm)
 {
 	pm->RemoveDuplicateEdges();
 

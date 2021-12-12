@@ -36,11 +36,11 @@ struct NodeElemRef {
 	FEElement_*	pe;	// pointer to element
 };
 
-class FENodeElementList
+class FSNodeElementList
 {
 public:
-	FENodeElementList();
-	~FENodeElementList();
+	FSNodeElementList();
+	~FSNodeElementList();
 
 	void Build(FSCoreMesh* pm);
 

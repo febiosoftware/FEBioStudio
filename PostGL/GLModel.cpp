@@ -2616,7 +2616,7 @@ void CGLModel::SelectConnectedEdges(FSEdge& e)
 	for (int i=0; i<NE; ++i) mesh.Edge(i).m_ntag = 0;
 
 	// build the node-edge table
-	FENodeEdgeList NEL;
+	FSNodeEdgeList NEL;
 	NEL.Build(&mesh);
 
 	if (NEL.IsEmpty()) return;

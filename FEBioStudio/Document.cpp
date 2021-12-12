@@ -1015,7 +1015,7 @@ void CGLDocument::GrowElementSelection(FSMesh* pm, bool respectPartitions)
 //-----------------------------------------------------------------------------
 void CGLDocument::GrowNodeSelection(FSMeshBase* pm)
 {
-	FENodeFaceList NFT;
+	FSNodeFaceList NFT;
 	NFT.Build(pm);
 
 	int i;
@@ -1104,7 +1104,7 @@ void CGLDocument::GrowEdgeSelection(FSMeshBase* pm)
 //-----------------------------------------------------------------------------
 void CGLDocument::ShrinkNodeSelection(FSMeshBase* pm)
 {
-	FENodeFaceList NFT;
+	FSNodeFaceList NFT;
 	NFT.Build(pm);
 
 	int i;

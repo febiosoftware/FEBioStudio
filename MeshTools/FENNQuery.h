@@ -31,7 +31,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 //! This class is a helper class to locate the neirest neighbour on a surface
 
-class FENNQuery  
+class FSNNQuery  
 {
 public:
 	struct NODE
@@ -43,8 +43,8 @@ public:
 	};
 
 public:
-	FENNQuery(std::vector<vec3d>* ps = 0);
-	virtual ~FENNQuery();
+	FSNNQuery(std::vector<vec3d>* ps = 0);
+	virtual ~FSNNQuery();
 
 	//! initialize search structures
 	void Init();

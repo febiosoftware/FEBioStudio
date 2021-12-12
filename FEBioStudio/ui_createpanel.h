@@ -322,7 +322,7 @@ FSObject* CCreateLoftSurface::Create()
 	FELoftMesher loft;
 	loft.setElementType(nelem);
 	loft.setDivisions(m_divs->value());
-	FESurfaceMesh* mesh = loft.Apply(curves);
+	FSSurfaceMesh* mesh = loft.Apply(curves);
 
 	GSurfaceMeshObject* po = new GSurfaceMeshObject(mesh);
 

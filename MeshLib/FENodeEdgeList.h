@@ -30,10 +30,10 @@ SOFTWARE.*/
 class FSLineMesh;
 class FSEdge;
 
-class FENodeEdgeList
+class FSNodeEdgeList
 {
 public:
-	FENodeEdgeList(FSLineMesh* mesh = nullptr);
+	FSNodeEdgeList(FSLineMesh* mesh = nullptr);
 
 	void Build(FSLineMesh* mesh, bool segsOnly = false);
 

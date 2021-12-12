@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <FSCore/FSThreadedTask.h>
 
-class FESurfaceMesh;
+class FSSurfaceMesh;
 class FEGroup;
 
 //-------------------------------------------------------------------
@@ -39,8 +39,8 @@ public:
 	FESurfaceModifier(const std::string& name = "");
 	virtual ~FESurfaceModifier();
 
-	virtual FESurfaceMesh* Apply(FESurfaceMesh* pm) { return 0; }
-	virtual FESurfaceMesh* Apply(FESurfaceMesh* pm, FEGroup* pg) { return Apply(pm); }
+	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm) { return 0; }
+	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FEGroup* pg) { return Apply(pm); }
 
 	bool SetError(const char* szerr, ...);
 
@@ -57,12 +57,12 @@ class FESurfacePartitionSelection : public FESurfaceModifier
 {
 public:
 	FESurfacePartitionSelection();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm, FEGroup* pg);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FEGroup* pg);
 
 	void assignToPartition(int n);
 
 protected:
-	void PartitionSelectedFaces(FESurfaceMesh* mesh);
+	void PartitionSelectedFaces(FSSurfaceMesh* mesh);
 
 private:
 	int	m_partition;
@@ -73,5 +73,5 @@ class FESurfaceAutoPartition : public FESurfaceModifier
 {
 public:
 	FESurfaceAutoPartition();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 };

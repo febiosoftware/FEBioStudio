@@ -149,7 +149,7 @@ FSMesh* FERemoveDuplicateElements::Apply(FSMesh* pm)
 	FSMesh* pnm = new FSMesh(*pm);
 	FSMesh& m = *pnm;
 
-	FENodeElementList NEL; NEL.Build(&m);
+	FSNodeElementList NEL; NEL.Build(&m);
 	int NE = m.Elements();
 	int NN = m.Nodes();
 	for (i=0; i<NE; ++i) m.Element(i).m_ntag = i;
@@ -763,7 +763,7 @@ bool FESetAxesOrientation::SetAxesCopy(FSMesh *pm)
 	}
 	
 	// set up the nearest node search
-	FENNQuery q(&Y);
+	FSNNQuery q(&Y);
 	q.Init();
 	
 	// do the mapping

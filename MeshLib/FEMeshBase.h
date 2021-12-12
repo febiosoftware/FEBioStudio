@@ -117,7 +117,7 @@ protected:
 protected:
 	std::vector<FSFace>		m_Face;	//!< FE faces
 
-	FENodeFaceList		m_NFL;
+	FSNodeFaceList		m_NFL;
 };
 
 //-------------------------------------------------------------------

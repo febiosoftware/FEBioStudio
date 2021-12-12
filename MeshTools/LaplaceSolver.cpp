@@ -161,7 +161,7 @@ bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int 
 	FENodeNodeList NNL(pm);
 
 	// create node-element list
-	FENodeElementList NEL;
+	FSNodeElementList NEL;
 	NEL.Build(pm);
 
 	// we'll assign values to the edges and the nodes

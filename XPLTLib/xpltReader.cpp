@@ -1105,7 +1105,7 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 	pmesh->BuildMesh();
 
 	// Next, we'll build a Node-Face lookup table
-	FENodeFaceList NFT; NFT.Build(pmesh);
+	FSNodeFaceList NFT; NFT.Build(pmesh);
 
 	// next, we reindex the surfaces
 	for (int n=0; n<(int) m_Surf.size(); ++n)

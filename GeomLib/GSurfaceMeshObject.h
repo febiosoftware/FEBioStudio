@@ -35,7 +35,7 @@ class GSurfaceMeshObject : public GObject
 {
 public:
 	// create a new surface mesh object
-	GSurfaceMeshObject(FESurfaceMesh* pm = 0);
+	GSurfaceMeshObject(FSSurfaceMesh* pm = 0);
 
 	// create a new surface mesh object from a (meshed) object
 	// this extracts the surface from the object
@@ -57,8 +57,8 @@ public:
 	FEMesher* CreateDefaultMesher() override;
 
 	// return the surface mesh
-	FESurfaceMesh* GetSurfaceMesh();
-	const FESurfaceMesh* GetSurfaceMesh() const;
+	FSSurfaceMesh* GetSurfaceMesh();
+	const FSSurfaceMesh* GetSurfaceMesh() const;
 
 	FSMeshBase* GetEditableMesh() override { return GetSurfaceMesh(); }
 	FSLineMesh* GetEditableLineMesh() override { return GetSurfaceMesh(); }
@@ -66,7 +66,7 @@ public:
 	// get the mesh of an edge curve
 	FECurveMesh* GetFECurveMesh(int edgeId) override;
 
-	void ReplaceSurfaceMesh(FESurfaceMesh* newMesh) override;
+	void ReplaceSurfaceMesh(FSSurfaceMesh* newMesh) override;
 
 	// serialization
 	void Save(OArchive& ar) override;
@@ -85,7 +85,7 @@ private:
 	void UpdateSurfaces();
 
 private:
-	FESurfaceMesh*	m_surfmesh;
+	FSSurfaceMesh*	m_surfmesh;
 };
 
 // Helper function for converting an object to an editable surface.

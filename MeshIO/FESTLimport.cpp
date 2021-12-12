@@ -265,7 +265,7 @@ GObject* FESTLimport::build_mesh()
 	int NN = (int)m_Node.size();
 
 	// create the mesh
-	FESurfaceMesh* pm = new FESurfaceMesh;
+	FSSurfaceMesh* pm = new FSSurfaceMesh;
 	pm->Create(NN, 0, NF);
 
 	// create nodes

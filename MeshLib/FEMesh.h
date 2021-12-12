@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <string>
 
 //-----------------------------------------------------------------------------
-class FESurfaceMesh;
+class FSSurfaceMesh;
 class FSMesh;
 class FEMeshData;
 class FENodeData;
@@ -94,7 +94,7 @@ public:
 
 //-----------------------------------------------------------------------------
 class FEMeshBuilder;
-class FESurfaceMesh;
+class FSSurfaceMesh;
 
 //-----------------------------------------------------------------------------
 // This class describes a finite element mesh. Every FSMesh must be owned by a
@@ -105,7 +105,7 @@ public:
 	// --- C O N S T R U C T I O N ---
 	FSMesh();
 	FSMesh(FSMesh& m);
-	FSMesh(FESurfaceMesh& m);
+	FSMesh(FSSurfaceMesh& m);
 	virtual ~FSMesh();
 
 	// allocate space for mesh
@@ -227,4 +227,4 @@ protected:
 double bias(double b, double x);
 double gain(double g, double x);
 
-FSMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh);
+FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh);

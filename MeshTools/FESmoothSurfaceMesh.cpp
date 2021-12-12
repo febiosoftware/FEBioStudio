@@ -39,10 +39,10 @@ FESmoothSurfaceMesh::FESmoothSurfaceMesh() : FESurfaceModifier("Smooth")
 	AddBoolParam(false, "preserve edges");
 }
 
-FESurfaceMesh* FESmoothSurfaceMesh::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FESmoothSurfaceMesh::Apply(FSSurfaceMesh* pm)
 {
 	// create a copy of the mesh
-	FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 
 	// apply smoothing
 	bool bshape = GetBoolValue(2);
@@ -53,7 +53,7 @@ FESurfaceMesh* FESmoothSurfaceMesh::Apply(FESurfaceMesh* pm)
 	return newMesh;
 }
 
-void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMesh& backMesh, bool preserveShape, bool preserveEdges)
+void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMesh& backMesh, bool preserveShape, bool preserveEdges)
 {
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);

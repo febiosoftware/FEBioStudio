@@ -119,7 +119,7 @@ protected:
 	vector<FESurface*>	m_Surf;	// surfaces
 	vector<FENodeSet*>	m_NSet;	// node sets
 
-	FENodeElementList	m_NEL;
+	FSNodeElementList	m_NEL;
 };
 
 // find the element and the iso-parametric coordinates of a point inside the mesh

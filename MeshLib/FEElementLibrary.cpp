@@ -27,15 +27,15 @@ SOFTWARE.*/
 #include "FEElementLibrary.h"
 using namespace std;
 
-vector<FEElemTraits> FEElementLibrary::m_lib;
+vector<FSElemTraits> FSElementLibrary::m_lib;
 
-void FEElementLibrary::addElement(int ntype, int nshape, int nclass, int nodes, int faces, int edges)
+void FSElementLibrary::addElement(int ntype, int nshape, int nclass, int nodes, int faces, int edges)
 {
-	FEElemTraits t = {ntype, nshape, nclass, nodes, faces, edges};
+	FSElemTraits t = {ntype, nshape, nclass, nodes, faces, edges};
 	m_lib.push_back(t);
 }
 
-void FEElementLibrary::InitLibrary()
+void FSElementLibrary::InitLibrary()
 {
 	m_lib.clear();
 
@@ -64,7 +64,7 @@ void FEElementLibrary::InitLibrary()
     addElement(FE_PYRA13 , ELEM_PYRA , ELEM_SOLID, 13, 5, 0);
 }
 
-const FEElemTraits* FEElementLibrary::GetTraits(int type)
+const FSElemTraits* FSElementLibrary::GetTraits(int type)
 {
 	int ntype = (int) type;
 	if ((ntype >= 0) && (ntype < m_lib.size()))

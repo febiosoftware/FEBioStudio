@@ -295,11 +295,11 @@ void FEWeldSurfaceNodes::SetThreshold(double d)
 //! Apply the weld modifier to the mesh and return a new mesh with the nodes
 //! welded. Note that this modifier only works on surface meshes (quad/tri).
 //! This modifier welds only the selected nodes.
-FESurfaceMesh* FEWeldSurfaceNodes::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEWeldSurfaceNodes::Apply(FSSurfaceMesh* pm)
 {
 	// create a copy of the mesh
-	FESurfaceMesh* pnm = new FESurfaceMesh(*pm);
-	FESurfaceMesh& m = *pnm;
+	FSSurfaceMesh* pnm = new FSSurfaceMesh(*pm);
+	FSSurfaceMesh& m = *pnm;
 
 	// weld the nodes and figure out the new node numbering
 	UpdateNodes(pnm);
@@ -313,9 +313,9 @@ FESurfaceMesh* FEWeldSurfaceNodes::Apply(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldSurfaceNodes::UpdateNodes(FESurfaceMesh* pm)
+void FEWeldSurfaceNodes::UpdateNodes(FSSurfaceMesh* pm)
 {
-	FESurfaceMesh& m = *pm;
+	FSSurfaceMesh& m = *pm;
 
 	// find out how many nodes are selected
 	// and put them in a list
@@ -390,9 +390,9 @@ void FEWeldSurfaceNodes::UpdateNodes(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldSurfaceNodes::UpdateFaces(FESurfaceMesh* pnm)
+void FEWeldSurfaceNodes::UpdateFaces(FSSurfaceMesh* pnm)
 {
-	FESurfaceMesh& m = *pnm;
+	FSSurfaceMesh& m = *pnm;
 
 	int faces = m.Faces();
 	for (int i = 0; i < faces; ++i)

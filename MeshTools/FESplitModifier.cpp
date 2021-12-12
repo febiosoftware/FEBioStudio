@@ -93,7 +93,7 @@ FSMesh* FEQuadSplitModifier::Apply(FSMesh* pm)
 		pe->m_ntag = (pe->IsSelected() || (nsel == 0) ? 15 : -2);
 	}
 
-	FENodeElementList NEL; NEL.Build(pm);
+	FSNodeElementList NEL; NEL.Build(pm);
 	list<FSElement*> EL;
 
 	// tag the 1-neighborhood. These elements may have to 
@@ -560,8 +560,8 @@ FSMesh* FETriSplitModifier::Split(FSMesh* pm)
 	}
 
 	// build the element edge list
-	FEEdgeList EL(*pm);
-	FEElementEdgeList EEL(*pm, EL);
+	FSEdgeList EL(*pm);
+	FSElementEdgeList EEL(*pm, EL);
 	vector<int> edgeTags(EL.size(), 0);
 
 	// tag the cases

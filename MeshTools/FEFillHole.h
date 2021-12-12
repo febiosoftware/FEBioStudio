@@ -72,12 +72,12 @@ public:
 
 public:
 	FEFillHole() : FESurfaceModifier("Fill hole"){}
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 	bool optimize;
 	bool insertNodes;
 	//AFM
-	bool AFM(FESurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list, vector<vec3d> &node_list);
+	bool AFM(FSSurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list, vector<vec3d> &node_list);
 	//Addd node
 	vec3d newNode(vec3d current_node, vec3d next_node, vec3d prev_node,vec3d node_normal, double scale, bool concave);
 	// divide a ring
@@ -88,12 +88,12 @@ public:
 	bool DivideRing2(EdgeRing& ring, vector<FACE>& tri_list);
 
 	// fill all holes
-	void FillAllHoles(FESurfaceMesh* pm);
+	void FillAllHoles(FSSurfaceMesh* pm);
 
 
 private:
 	// Find the ring based on a node (TODO: should I move this to the FSMesh class?)
-	bool FindEdgeRing(FESurfaceMesh& mesh, int node, EdgeRing& ring);
+	bool FindEdgeRing(FSSurfaceMesh& mesh, int node, EdgeRing& ring);
 	
 	// Find the approximate normal of a ring
 	vec3d RingNormal(EdgeRing& ring);
@@ -112,5 +112,5 @@ private:
 
 private:
 	std::vector<vec3d>	m_node_normals;
-	FENodeEdgeList		m_NEL;
+	FSNodeEdgeList		m_NEL;
 };

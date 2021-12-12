@@ -117,7 +117,7 @@ void CSurfaceMeshInfoPanel::setInfo(int nodes, int edges, int faces)
 	m_faces->setText(QString::number(faces));
 }
 
-void CSurfaceMeshInfoPanel::setInfo(const FESurfaceMesh* pm)
+void CSurfaceMeshInfoPanel::setInfo(const FSSurfaceMesh* pm)
 {
 	if (pm)
 	{

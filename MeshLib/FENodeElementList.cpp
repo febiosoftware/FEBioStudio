@@ -26,16 +26,16 @@ SOFTWARE.*/
 
 #include "FENodeElementList.h"
 
-FENodeElementList::FENodeElementList()
+FSNodeElementList::FSNodeElementList()
 {
 	m_pm = nullptr;
 }
 
-FENodeElementList::~FENodeElementList()
+FSNodeElementList::~FSNodeElementList()
 {
 }
 
-void FENodeElementList::Build(FSCoreMesh* pm)
+void FSNodeElementList::Build(FSCoreMesh* pm)
 {
 	m_pm = pm;
 	assert(m_pm);
@@ -66,17 +66,17 @@ void FENodeElementList::Build(FSCoreMesh* pm)
 	}
 }
 
-void FENodeElementList::Clear()
+void FSNodeElementList::Clear()
 {
 	m_elem.clear();
 }
 
-bool FENodeElementList::IsEmpty() const
+bool FSNodeElementList::IsEmpty() const
 {
 	return m_elem.empty();
 }
 
-bool FENodeElementList::HasElement(int node, int iel) const
+bool FSNodeElementList::HasElement(int node, int iel) const
 {
 	int nval = Valence(node);
 	for (int i=0; i<nval; ++i) 
@@ -85,7 +85,7 @@ bool FENodeElementList::HasElement(int node, int iel) const
 	return false;
 }
 
-std::vector<int> FENodeElementList::ElementIndexList(int n) const
+std::vector<int> FSNodeElementList::ElementIndexList(int n) const
 {
 	std::vector<int> l;
 	int nval = Valence(n);

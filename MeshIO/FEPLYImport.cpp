@@ -111,8 +111,8 @@ bool FEPLYImport::read_file(const char* szfile)
 	if (faces == 0) return errf("No face data found.");
 
 	// allocate a mesh
-	m_mesh = new FESurfaceMesh;
-	FESurfaceMesh& mesh = *m_mesh;
+	m_mesh = new FSSurfaceMesh;
+	FSSurfaceMesh& mesh = *m_mesh;
 	mesh.Create(verts, 0, faces);
 
 	if (binary == false)

@@ -35,7 +35,7 @@ FENodeNodeList::FENodeNodeList(FSMesh* pm, bool preservePartitions)
 	Build(pm, preservePartitions);
 }
 
-FENodeNodeList::FENodeNodeList(FESurfaceMesh* pm)
+FENodeNodeList::FENodeNodeList(FSSurfaceMesh* pm)
 {
 	Build(pm);
 }
@@ -49,7 +49,7 @@ void FENodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 	assert(pm);
 	if (pm == 0) return;
 
-	FENodeElementList NEL;
+	FSNodeElementList NEL;
 	NEL.Build(pm);
 
 	int NN = pm->Nodes();
@@ -177,12 +177,12 @@ void FENodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 	}
 }
 
-void FENodeNodeList::Build(FESurfaceMesh* pm)
+void FENodeNodeList::Build(FSSurfaceMesh* pm)
 {
 	assert(pm);
 	if (pm == 0) return;
 
-	FENodeFaceList NFL;
+	FSNodeFaceList NFL;
 	NFL.Build(pm);
 
 	int i, j, k, n;

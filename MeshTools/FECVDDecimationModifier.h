@@ -87,20 +87,20 @@ public:
 	FECVDDecimationModifier();
 
 	//! Apply the decimation modifier
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 private:
 	//! Initialize data structures
-	bool Initialize(FESurfaceMesh* pm);
+	bool Initialize(FSSurfaceMesh* pm);
 
 	//! Minimize the energy
-	bool Minimize(FESurfaceMesh* pm);
+	bool Minimize(FSSurfaceMesh* pm);
 
 	//! Triangulate
-	FESurfaceMesh* Triangulate(FESurfaceMesh* pm);
-	FESurfaceMesh* Triangulate2(FESurfaceMesh* pm);	// uses hole-filling algorithm
+	FSSurfaceMesh* Triangulate(FSSurfaceMesh* pm);
+	FSSurfaceMesh* Triangulate2(FSSurfaceMesh* pm);	// uses hole-filling algorithm
 
-	FESurfaceMesh* CalculateCVD(FESurfaceMesh* pm);
+	FSSurfaceMesh* CalculateCVD(FSSurfaceMesh* pm);
 
 	//! swap triangles
 	bool Swap(FSFace& face, int nface, int ncluster);

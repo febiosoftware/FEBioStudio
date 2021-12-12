@@ -46,7 +46,7 @@ FSMesh*	FEShellMesher::BuildMesh()
 	GSurfaceMeshObject* po = dynamic_cast<GSurfaceMeshObject*>(m_po);
 	if (po == nullptr) return nullptr;
 
-	FESurfaceMesh* surfaceMesh = po->GetSurfaceMesh();
+	FSSurfaceMesh* surfaceMesh = po->GetSurfaceMesh();
 	if (surfaceMesh == nullptr) return nullptr;
 
 	int NF = surfaceMesh->Faces();

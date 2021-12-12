@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <assert.h>
 using namespace std;
 
-FENodeNodeTable::FENodeNodeTable(const FESurfaceMesh& mesh)
+FSNodeNodeTable::FSNodeNodeTable(const FSSurfaceMesh& mesh)
 {
 	// reset node-node table
 	int NN = mesh.Nodes();
@@ -56,7 +56,7 @@ FENodeNodeTable::FENodeNodeTable(const FESurfaceMesh& mesh)
 	}
 }
 
-FENodeNodeTable::FENodeNodeTable(const FSMesh& mesh, bool surfOnly)
+FSNodeNodeTable::FSNodeNodeTable(const FSMesh& mesh, bool surfOnly)
 {
 	// reset node-node table
 	int NN = mesh.Nodes();
@@ -119,12 +119,12 @@ FENodeNodeTable::FENodeNodeTable(const FSMesh& mesh, bool surfOnly)
 	}
 }
 
-FEEdgeList::FEEdgeList(const FSMesh& mesh, bool surfOnly)
+FSEdgeList::FSEdgeList(const FSMesh& mesh, bool surfOnly)
 {
 	ET.clear();
 
 	// build the node-node table
-	FENodeNodeTable NNT(mesh, surfOnly);
+	FSNodeNodeTable NNT(mesh, surfOnly);
 
 	// add all the edges
 	int NN = mesh.Nodes();
@@ -149,12 +149,12 @@ FEEdgeList::FEEdgeList(const FSMesh& mesh, bool surfOnly)
 	}
 }
 
-FEEdgeList::FEEdgeList()
+FSEdgeList::FSEdgeList()
 {
 
 }
 
-FEEdgeList::FEEdgeList(const FESurfaceMesh& mesh)
+FSEdgeList::FSEdgeList(const FSSurfaceMesh& mesh)
 {
 	ET.clear();
 
@@ -169,7 +169,7 @@ FEEdgeList::FEEdgeList(const FESurfaceMesh& mesh)
 	}
 }
 
-void FEEdgeList::BuildFromMeshEdges(FSLineMesh& mesh)
+void FSEdgeList::BuildFromMeshEdges(FSLineMesh& mesh)
 {
 	ET.clear();
 	// add all the edges
@@ -183,7 +183,7 @@ void FEEdgeList::BuildFromMeshEdges(FSLineMesh& mesh)
 	}
 }
 
-FEFaceTable::FEFaceTable(const FSMesh& mesh)
+FSFaceTable::FSFaceTable(const FSMesh& mesh)
 {
 	int NE = mesh.Elements();
 	vector<int> tag(NE, 0);
@@ -205,7 +205,7 @@ FEFaceTable::FEFaceTable(const FSMesh& mesh)
 }
 
 
-FEFaceEdgeList::FEFaceEdgeList(const FSMeshBase& mesh, const FEEdgeList& ET)
+FSFaceEdgeList::FSFaceEdgeList(const FSMeshBase& mesh, const FSEdgeList& ET)
 {
 	// build a node-edge table
 	int NN = mesh.Nodes();
@@ -252,7 +252,7 @@ FEFaceEdgeList::FEFaceEdgeList(const FSMeshBase& mesh, const FEEdgeList& ET)
 
 //-----------------------------------------------------------------------------
 // TODO: This assumes TET4 or HEX8 elements
-FEElementEdgeList::FEElementEdgeList(const FSMesh& mesh, const FEEdgeList& ET)
+FSElementEdgeList::FSElementEdgeList(const FSMesh& mesh, const FSEdgeList& ET)
 {
 	const int ETET[6][2] = { { 0, 1 }, { 1, 2 }, { 2, 0 }, { 0, 3 }, { 1, 3 }, { 2, 3 } };
 	const int EHEX[12][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7} };
@@ -316,7 +316,7 @@ FEElementEdgeList::FEElementEdgeList(const FSMesh& mesh, const FEEdgeList& ET)
 
 //-----------------------------------------------------------------------------
 // only works with tet4 or hex8 meshes
-FEElementFaceList::FEElementFaceList(const FSMesh& mesh, const FEFaceTable& FT)
+FSElementFaceList::FSElementFaceList(const FSMesh& mesh, const FSFaceTable& FT)
 {
 	// build a node face table for FT to facilitate searching
 	vector<vector<int> > NFT; NFT.resize(mesh.Nodes());
@@ -357,7 +357,7 @@ FEElementFaceList::FEElementFaceList(const FSMesh& mesh, const FEFaceTable& FT)
 	}
 }
 
-FEFaceFaceList::FEFaceFaceList(const FSMesh& mesh, const FEFaceTable& FT)
+FSFaceFaceList::FSFaceFaceList(const FSMesh& mesh, const FSFaceTable& FT)
 {
 	// build a node face table for FT to facilitate searching
 	vector<vector<int> > NFT; NFT.resize(mesh.Nodes());
@@ -389,7 +389,7 @@ FEFaceFaceList::FEFaceFaceList(const FSMesh& mesh, const FEFaceTable& FT)
 	}
 }
 
-FEEdgeIndexList::FEEdgeIndexList(const FSMesh& mesh, const FEEdgeList& ET)
+FSEdgeIndexList::FSEdgeIndexList(const FSMesh& mesh, const FSEdgeList& ET)
 {
 	// build a node-edge table for ET to facilitate searching
 	vector<vector<int> > NET; NET.resize(mesh.Nodes());
@@ -420,7 +420,7 @@ FEEdgeIndexList::FEEdgeIndexList(const FSMesh& mesh, const FEEdgeList& ET)
 	}
 }
 
-FEEdgeEdgeList::FEEdgeEdgeList(const FSMesh& mesh, int edgeId)
+FSEdgeEdgeList::FSEdgeEdgeList(const FSMesh& mesh, int edgeId)
 {
 	// build a node-edge table to facilitate searching
 	vector<vector<int> > NET; NET.resize(mesh.Nodes());
@@ -462,13 +462,13 @@ FEEdgeEdgeList::FEEdgeEdgeList(const FSMesh& mesh, int edgeId)
 }
 
 
-FEEdgeFaceList::FEEdgeFaceList(const FSMesh& mesh)
+FSEdgeFaceList::FSEdgeFaceList(const FSMesh& mesh)
 {
 	// build the edge list (surface only)
-	FEEdgeList EL(mesh, true);
+	FSEdgeList EL(mesh, true);
 
 	// build the face-edge list
-	FEFaceEdgeList FEL(mesh, EL);
+	FSFaceEdgeList FEL(mesh, EL);
 
 	// build the edge face list
 	int NE = EL.size();
@@ -489,13 +489,13 @@ FEEdgeFaceList::FEEdgeFaceList(const FSMesh& mesh)
 	}
 }
 
-FEEdgeFaceList::FEEdgeFaceList(const FESurfaceMesh& mesh)
+FSEdgeFaceList::FSEdgeFaceList(const FSSurfaceMesh& mesh)
 {
 	// build the edge list
-	FEEdgeList EL(mesh);
+	FSEdgeList EL(mesh);
 
 	// build the face-edge list
-	FEFaceEdgeList FEL(mesh, EL);
+	FSFaceEdgeList FEL(mesh, EL);
 
 	// build the edge face list
 	int NE = EL.size();

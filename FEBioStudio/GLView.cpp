@@ -4862,7 +4862,7 @@ void CGLView::SelectFEEdges(int x, int y)
 			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
 			std::stack<FSEdge*> stack;
 
-			FENodeEdgeList NEL(pm);
+			FSNodeEdgeList NEL(pm);
 
 			// push the first face to the stack
 			FSEdge* pe = pm->EdgePtr(index);
@@ -5064,7 +5064,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
 			std::stack<FSEdge*> stack;
 
-			FENodeEdgeList NEL(pm);
+			FSNodeEdgeList NEL(pm);
 
 			// push the first face to the stack
 			FSEdge* pe = pm->EdgePtr(index);
@@ -5699,7 +5699,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	if (pm)
 	{
 		// ignore exterior option for surface meshes
-		if (view.m_bext || (dynamic_cast<FESurfaceMesh*>(pm)))
+		if (view.m_bext || (dynamic_cast<FSSurfaceMesh*>(pm)))
 		{
 			if (view.m_bcullSel)
 			{
@@ -6467,7 +6467,7 @@ void CGLView::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 	if (b0 && b1)
 	{
 		// see if we can connect the nodes by staying on edges
-		FENodeEdgeList NEL(pm);
+		FSNodeEdgeList NEL(pm);
 
 		int n = n0;
 		double Lmin = (r1 - r0).SqrLength();
@@ -6507,7 +6507,7 @@ void CGLView::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 	}
 	else
 	{
-		FENodeFaceList NFL;
+		FSNodeFaceList NFL;
 		NFL.Build(pm);
 
 		int n = n0;
@@ -7526,7 +7526,7 @@ void CGLView::RenderSurfaceMeshFaces(GObject* po)
 		return;
 	}
 
-	FESurfaceMesh* surfaceMesh = surfaceObject->GetSurfaceMesh();
+	FSSurfaceMesh* surfaceMesh = surfaceObject->GetSurfaceMesh();
 	assert(surfaceMesh);
 	if (surfaceMesh == 0) return;
 
@@ -8364,7 +8364,7 @@ void CGLView::RenderMeshLines()
 			}
 			else if (dynamic_cast<GSurfaceMeshObject*>(po))
 			{
-				FESurfaceMesh* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(po)->GetSurfaceMesh();
+				FSSurfaceMesh* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(po)->GetSurfaceMesh();
 				if (surfaceMesh && (nitem != ITEM_EDGE))
 				{
 					glPushMatrix();

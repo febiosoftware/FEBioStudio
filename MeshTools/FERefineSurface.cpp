@@ -38,7 +38,7 @@ void FERefineSurface::SetIterations(int n)
 	SetIntValue(0, n);
 }
 
-FESurfaceMesh* FERefineSurface::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FERefineSurface::Apply(FSSurfaceMesh* pm)
 {
 	int niter = GetIntValue(0);
 
@@ -54,7 +54,7 @@ FESurfaceMesh* FERefineSurface::Apply(FESurfaceMesh* pm)
 		return 0;
 	}
 
-	FESurfaceMesh* newMesh = 0;
+	FSSurfaceMesh* newMesh = 0;
 	setProgress(0.0);
 	for (int i = 0; i<niter; ++i)
 	{
@@ -71,7 +71,7 @@ FESurfaceMesh* FERefineSurface::Apply(FESurfaceMesh* pm)
 	return newMesh;
 }
 
-FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
+FSSurfaceMesh* FERefineSurface::Split(FSSurfaceMesh* pm)
 {
 	int NN0 = pm->Nodes();
 	int NF0 = pm->Faces();
@@ -99,7 +99,7 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	// create the new mesh
 	int NN1 = NN0 + nen;
 	int NF1 = 4*NF0;
-	FESurfaceMesh* pnew = new FESurfaceMesh;
+	FSSurfaceMesh* pnew = new FSSurfaceMesh;
 	pnew->Create(NN1, 0, NF1);
 
 	// copy old nodes

@@ -983,8 +983,8 @@ public:
 
 protected:
 	GSurfaceMeshObject*	m_pobj;
-	FESurfaceMesh*		m_pold;
-	FESurfaceMesh*		m_pnew;
+	FSSurfaceMesh*		m_pold;
+	FSSurfaceMesh*		m_pnew;
 	int				m_item;
 };
 
@@ -1051,13 +1051,13 @@ protected:
 class CCmdHideFaces : public CCommand
 {
 public:
-	CCmdHideFaces(FESurfaceMesh* mesh, const vector<int>& faceList);
+	CCmdHideFaces(FSSurfaceMesh* mesh, const vector<int>& faceList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FESurfaceMesh*	m_mesh;
+	FSSurfaceMesh*	m_mesh;
 	vector<int>		m_faceList;
 };
 
@@ -1145,8 +1145,8 @@ public:
 
 protected:
 	GObject*			m_pobj;
-	FESurfaceMesh*		m_pold;	// old, unmodified mesh
-	FESurfaceMesh*		m_pnew;	// new, modified mesh
+	FSSurfaceMesh*		m_pold;	// old, unmodified mesh
+	FSSurfaceMesh*		m_pnew;	// new, modified mesh
 	FESurfaceModifier*	m_pmod;
 	FEGroup*			m_psel;
 };
@@ -1172,7 +1172,7 @@ protected:
 class CCmdChangeFESurfaceMesh : public CCommand
 {
 public:
-	CCmdChangeFESurfaceMesh(GSurfaceMeshObject* po, FESurfaceMesh* pm, bool up = false);
+	CCmdChangeFESurfaceMesh(GSurfaceMeshObject* po, FSSurfaceMesh* pm, bool up = false);
 	~CCmdChangeFESurfaceMesh();
 
 	void Execute();
@@ -1181,7 +1181,7 @@ public:
 protected:
 	bool				m_update;
 	GSurfaceMeshObject*	m_po;
-	FESurfaceMesh*		m_pnew;
+	FSSurfaceMesh*		m_pnew;
 };
 
 //-----------------------------------------------------------------------------

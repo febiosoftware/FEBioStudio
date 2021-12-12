@@ -44,7 +44,7 @@ bool FEFillHole::EdgeRing::contains(int inode)
 //-----------------------------------------------------------------------------
 // Create a new mesh where the hole is filled. The hole is defined by a node
 // that lies on the edge of the hole.
-FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEFillHole::Apply(FSSurfaceMesh* pm)
 {
 	// build the node normals
 	m_node_normals.assign(pm->Nodes(), vec3d(0, 0, 0));
@@ -80,7 +80,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		int new_faces = (int) tri_list.size();
 		int new_nodes = (int) node_list.size();
 		// create a copy of the original mesh
-		FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
+		FSSurfaceMesh* pnew = new FSSurfaceMesh(*pm);
 
 		// allocate room for the new faces
 		int NF = pnew->Faces();
@@ -129,7 +129,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		int new_faces = (int) tri_list.size();
 
 		// create a copy of the original mesh
-		FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
+		FSSurfaceMesh* pnew = new FSSurfaceMesh(*pm);
 
 		// allocate room for the new faces
 		int NF = pnew->Faces();
@@ -157,7 +157,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 
 //-----------------------------------------------------------------------------
 // fill all holes
-void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
+void FEFillHole::FillAllHoles(FSSurfaceMesh* pm)
 {
 	// clear tags
 	pm->TagAllNodes(0);
@@ -293,7 +293,7 @@ inline bool IsInsideSphere(const vec3d& r, const vec3d& sphereCenter, double sph
 }
 
 //-----------------------------------------------------------------------------
-vec3d edgeVector(FSEdge& e, FESurfaceMesh& mesh)
+vec3d edgeVector(FSEdge& e, FSSurfaceMesh& mesh)
 {
 	vec3d a = mesh.Node(e.n[0]).pos();
 	vec3d b = mesh.Node(e.n[1]).pos();
@@ -303,7 +303,7 @@ vec3d edgeVector(FSEdge& e, FESurfaceMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRing& ring)
+bool FEFillHole::FindEdgeRing(FSSurfaceMesh& mesh, int inode, FEFillHole::EdgeRing& ring)
 {
 	// let's make sure the ring is empty
 	ring.clear();
@@ -911,7 +911,7 @@ void FEFillHole::EdgeRing::GetLeftEar(int n0, int n1, EdgeRing& ear)
 //-----------------------------------------------------------------------------
 // Advancing Front Method
 
-bool FEFillHole::AFM(FESurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list, vector<vec3d>&node_list)
+bool FEFillHole::AFM(FSSurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list, vector<vec3d>&node_list)
 {
 	// make sure this ring has at least three nodes
 	assert(ring.size() >= 3);

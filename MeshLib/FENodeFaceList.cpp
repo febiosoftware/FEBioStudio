@@ -31,24 +31,24 @@ SOFTWARE.*/
 using namespace std;
 
 //-----------------------------------------------------------------------------
-FENodeFaceList::FENodeFaceList()
+FSNodeFaceList::FSNodeFaceList()
 {
 	m_pm = nullptr;
 }
 
 //-----------------------------------------------------------------------------
-FENodeFaceList::~FENodeFaceList(void)
+FSNodeFaceList::~FSNodeFaceList(void)
 {
 }
 
 //-----------------------------------------------------------------------------
-void FENodeFaceList::Clear()
+void FSNodeFaceList::Clear()
 {
 	m_face.clear();
 }
 
 //-----------------------------------------------------------------------------
-bool FENodeFaceList::IsEmpty() const
+bool FSNodeFaceList::IsEmpty() const
 {
 	return m_face.empty();
 }
@@ -56,7 +56,7 @@ bool FENodeFaceList::IsEmpty() const
 //-----------------------------------------------------------------------------
 // Builds a sorted node-facet list. That is, the facets form a star around the node.
 // Note that for non-manifold topologies this may fail, so make sure to check the return value.
-bool FENodeFaceList::BuildSorted(FSMeshBase* pm)
+bool FSNodeFaceList::BuildSorted(FSMeshBase* pm)
 {
 	Build(pm);
 
@@ -71,7 +71,7 @@ bool FENodeFaceList::BuildSorted(FSMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FENodeFaceList::Build(FSMeshBase* pm)
+void FSNodeFaceList::Build(FSMeshBase* pm)
 {
 	m_pm = pm;
 	assert(m_pm);
@@ -101,7 +101,7 @@ void FENodeFaceList::Build(FSMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FENodeFaceList::HasFace(int n, FSFace* pf)
+bool FSNodeFaceList::HasFace(int n, FSFace* pf)
 {
 	int nval = Valence(n);
 	for (int i=0; i<nval; ++i) if (Face(n, i) == pf) return true;
@@ -109,7 +109,7 @@ bool FENodeFaceList::HasFace(int n, FSFace* pf)
 }
 
 //-----------------------------------------------------------------------------
-int FENodeFaceList::FindFace(const FSFace& f)
+int FSNodeFaceList::FindFace(const FSFace& f)
 {
 	int n = f.n[0];
 	int nval = Valence(n);
@@ -122,7 +122,7 @@ int FENodeFaceList::FindFace(const FSFace& f)
 }
 
 //-----------------------------------------------------------------------------
-bool FENodeFaceList::Sort(int node)
+bool FSNodeFaceList::Sort(int node)
 {
 	int nval = Valence(node);
 	vector<NodeFaceRef> fl; fl.reserve(nval);
@@ -177,7 +177,7 @@ bool FENodeFaceList::Sort(int node)
 	return true;
 }
 
-const vector<NodeFaceRef>& FENodeFaceList::FaceList(int n) const
+const vector<NodeFaceRef>& FSNodeFaceList::FaceList(int n) const
 { 
 	return m_face[n]; 
 }
@@ -187,7 +187,7 @@ const vector<NodeFaceRef>& FENodeFaceList::FaceList(int n) const
 // The most likely cause would be if the facet is an interal fact, since PostView does not
 // process internal facets (e.g. facets between two materials).
 // \todo perhaps I should modify PostView so that it stores internal facets as well.
-int FENodeFaceList::FindFace(int inode, int n[10], int m)
+int FSNodeFaceList::FindFace(int inode, int n[10], int m)
 {
 	FSFace ft;
 	for (int i = 0; i<m; ++i) ft.n[i] = n[i];

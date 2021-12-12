@@ -35,7 +35,7 @@ InsertCurves2::InsertCurves2()
 {
 }
 
-FESurfaceMesh* InsertCurves2::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList, bool binsertEdges)
+FSSurfaceMesh* InsertCurves2::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList, bool binsertEdges)
 {
 	// make sure we have at least one curve
 	if (curveList.empty()) return 0;
@@ -141,7 +141,7 @@ FESurfaceMesh* InsertCurves2::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList
 	mesh.PartitionSurface();
 
 	// create the new surface mesh from the tri mesh
-	FESurfaceMesh* newMesh = new FESurfaceMesh(mesh);
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh(mesh);
 
 	return newMesh;
 }

@@ -444,7 +444,7 @@ void GObject::ReplaceFEMesh(FSMesh* pm, bool bup, bool bdel)
 //-----------------------------------------------------------------------------
 // Replace the current mesh. Note that we don't delete the current mesh since
 // it is assumed that another class will take care of that.
-void GObject::ReplaceSurfaceMesh(FESurfaceMesh* pm)
+void GObject::ReplaceSurfaceMesh(FSSurfaceMesh* pm)
 {
 	assert(false);
 }

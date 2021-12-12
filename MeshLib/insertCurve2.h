@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <vector>
 #include "TriMesh.h"
 
-class FESurfaceMesh;
+class FSSurfaceMesh;
 class GEdge;
 class vec3d;
 
@@ -37,9 +37,9 @@ class InsertCurves2
 public:
 	InsertCurves2();
 
-	FESurfaceMesh* Apply(FESurfaceMesh* pm, std::vector<GEdge*>& curveList, bool binsertEdges);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm, std::vector<GEdge*>& curveList, bool binsertEdges);
 
 private:
-	void ProjectCurve(FESurfaceMesh* mesh, std::vector<vec3d>& curve);
+	void ProjectCurve(FSSurfaceMesh* mesh, std::vector<vec3d>& curve);
 	void insertEdge(TriMesh& mesh, TriMesh::NODEP pa, TriMesh::NODEP pb, int ntag);
 };
