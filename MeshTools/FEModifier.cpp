@@ -99,7 +99,7 @@ FSMesh* FEPartitionSelection::Apply(FSMesh* pm)
 	return newMesh;
 }
 
-FSMesh* FEPartitionSelection::Apply(FEGroup* pg)
+FSMesh* FEPartitionSelection::Apply(FSGroup* pg)
 {
 	bool newPartition = GetBoolValue(0);
 	int gid = GetIntValue(1) - 1;
@@ -111,25 +111,25 @@ FSMesh* FEPartitionSelection::Apply(FEGroup* pg)
 	FSMesh* newMesh = new FSMesh(*oldMesh);
 	FEMeshBuilder meshBuilder(*newMesh);
 
-	FESurface* s = dynamic_cast<FESurface*>(pg);
+	FSSurface* s = dynamic_cast<FSSurface*>(pg);
 	if (s)
 	{
 		meshBuilder.PartitionFaceSelection(gid);
 	}
 
-	FEPart* p = dynamic_cast<FEPart*>(pg);
+	FSPart* p = dynamic_cast<FSPart*>(pg);
 	if (p)
 	{
 		meshBuilder.PartitionElementSelection(gid);
 	}
 
-	FENodeSet* n = dynamic_cast<FENodeSet*>(pg);
+	FSNodeSet* n = dynamic_cast<FSNodeSet*>(pg);
 	if (n)
 	{
 		meshBuilder.PartitionNodeSet(n);
 	}
 
-	FEEdgeSet* e = dynamic_cast<FEEdgeSet*>(pg);
+	FSEdgeSet* e = dynamic_cast<FSEdgeSet*>(pg);
 	if (e)
 	{
 		meshBuilder.PartitionEdgeSelection(gid);

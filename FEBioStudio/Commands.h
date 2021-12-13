@@ -136,7 +136,7 @@ protected:
 class CCmdAddPart : public CCommand
 {
 public:
-	CCmdAddPart(GObject* po, FEPart* pg) : CCommand("Add Part") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddPart(GObject* po, FSPart* pg) : CCommand("Add Part") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddPart() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -144,7 +144,7 @@ public:
 
 protected:
 	GObject*		m_po;
-	FEPart*		m_pg;
+	FSPart*		m_pg;
 	bool		m_bdel;
 };
 
@@ -153,7 +153,7 @@ protected:
 class CCmdAddSurface : public CCommand
 {
 public:
-	CCmdAddSurface(GObject* po, FESurface* pg) : CCommand("Add Surface") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddSurface(GObject* po, FSSurface* pg) : CCommand("Add Surface") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddSurface() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -161,7 +161,7 @@ public:
 
 protected:
 	GObject*	m_po;
-	FESurface*	m_pg;
+	FSSurface*	m_pg;
 	bool		m_bdel;
 };
 
@@ -170,7 +170,7 @@ protected:
 class CCmdAddFEEdgeSet : public CCommand
 {
 public:
-	CCmdAddFEEdgeSet(GObject* po, FEEdgeSet* pg) : CCommand("Add EdgeSet") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddFEEdgeSet(GObject* po, FSEdgeSet* pg) : CCommand("Add EdgeSet") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddFEEdgeSet() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -178,7 +178,7 @@ public:
 
 protected:
 	GObject*	m_po;
-	FEEdgeSet*	m_pg;
+	FSEdgeSet*	m_pg;
 	bool		m_bdel;
 };
 
@@ -187,7 +187,7 @@ protected:
 class CCmdAddNodeSet : public CCommand
 {
 public:
-	CCmdAddNodeSet(GObject* po, FENodeSet* pg) : CCommand("Add Nodeset") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddNodeSet(GObject* po, FSNodeSet* pg) : CCommand("Add Nodeset") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddNodeSet() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -195,7 +195,7 @@ public:
 
 protected:
 	GObject*	m_po;
-	FENodeSet*	m_pg;
+	FSNodeSet*	m_pg;
 	bool		m_bdel;
 };
 
@@ -1118,7 +1118,7 @@ protected:
 class CCmdApplyFEModifier : public CCommand
 {
 public:
-	CCmdApplyFEModifier(FEModifier* pmod, GObject* po, FEGroup* selection = 0);
+	CCmdApplyFEModifier(FEModifier* pmod, GObject* po, FSGroup* selection = 0);
 	~CCmdApplyFEModifier() { delete m_pnew; delete m_pmod; }
 
 	void Execute();
@@ -1129,7 +1129,7 @@ protected:
 	FSMesh*			m_pold;	// old, unmodified mesh
 	FSMesh*			m_pnew;	// new, modified mesh
 	FEModifier*		m_pmod;
-	FEGroup*		m_psel;
+	FSGroup*		m_psel;
 };
 
 //-----------------------------------------------------------------------------
@@ -1137,7 +1137,7 @@ protected:
 class CCmdApplySurfaceModifier : public CCommand
 {
 public:
-	CCmdApplySurfaceModifier(FESurfaceModifier* pmod, GObject* po, FEGroup* selection);
+	CCmdApplySurfaceModifier(FESurfaceModifier* pmod, GObject* po, FSGroup* selection);
 	~CCmdApplySurfaceModifier();
 
 	void Execute();
@@ -1148,7 +1148,7 @@ protected:
 	FSSurfaceMesh*		m_pold;	// old, unmodified mesh
 	FSSurfaceMesh*		m_pnew;	// new, modified mesh
 	FESurfaceModifier*	m_pmod;
-	FEGroup*			m_psel;
+	FSGroup*			m_psel;
 };
 
 //-----------------------------------------------------------------------------

@@ -65,7 +65,7 @@ enum MESH_ITEM_FLAGS
 
 //-----------------------------------------------------------------------------
 // This class is an abstract base class for any class that can build MeshItem lists.
-// Currently this is the GItem class for geometry objects and FEGroup class for
+// Currently this is the GItem class for geometry objects and FSGroup class for
 // FE meshes. Each derived class must be able to define how to build MeshItem lists.
 //
 class FEItemListBuilder : public FSObject

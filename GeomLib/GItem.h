@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 
-class FEEdgeSet;
+class FSEdgeSet;
 
 //-----------------------------------------------------------------------------
 // State values for GItem state
@@ -232,7 +232,7 @@ public:
 
 	int Type() const { return m_ntype; }
 
-	FEEdgeSet* GetFEEdgeSet() const;
+	FSEdgeSet* GetFEEdgeSet() const;
 
 public:
 	int		m_node[2];	// indices of GNodes

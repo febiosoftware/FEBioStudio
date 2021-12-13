@@ -788,7 +788,7 @@ bool CModelDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 }
 
 // helper function for applying a modifier
-bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup* sel, bool clearSel)
+bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FSGroup* sel, bool clearSel)
 {
 	// get the mesh
 	FSMesh* pm = po->GetFEMesh();
@@ -819,7 +819,7 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup*
 	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str(), false);
 }
 
-bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FEGroup* sel)
+bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel)
 {
 	// get the surface mesh
 	FSSurfaceMesh* mesh = po->GetSurfaceMesh();

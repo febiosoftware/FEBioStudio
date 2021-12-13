@@ -76,15 +76,15 @@ void FESurfacePartitionSelection::assignToPartition(int n)
 }
 
 
-FSSurfaceMesh* FESurfacePartitionSelection::Apply(FSSurfaceMesh* pm, FEGroup* pg)
+FSSurfaceMesh* FESurfacePartitionSelection::Apply(FSSurfaceMesh* pm, FSGroup* pg)
 {
-	if (dynamic_cast<FEEdgeSet*>(pg))
+	if (dynamic_cast<FSEdgeSet*>(pg))
 	{
 		FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 		newMesh->PartitionEdgeSelection(m_partition);
 		return newMesh;
 	}
-	else if (dynamic_cast<FENodeSet*>(pg))
+	else if (dynamic_cast<FSNodeSet*>(pg))
 	{
 		FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 		newMesh->PartitionNodeSelection();

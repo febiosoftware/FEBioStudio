@@ -89,10 +89,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 // Class that describes a group of elements
-class FEPart : public Post::MeshItemList
+class FSPart : public Post::MeshItemList
 {
 public:
-	FEPart(FSCoreMesh* pm) : MeshItemList(pm, FE_PART) {}
+	FSPart(FSCoreMesh* pm) : MeshItemList(pm, FE_PART) {}
 
 	int Size() const { return (int) m_Elem.size(); }
 
@@ -106,10 +106,10 @@ public:
 
 //-------------------------------------------------------------------------
 // Class that describes a group of faces
-class FESurface : public MeshItemList
+class FSSurface : public MeshItemList
 {
 public:
-	FESurface(FSCoreMesh* pm) : MeshItemList(pm, FE_SURFACE) {}
+	FSSurface(FSCoreMesh* pm) : MeshItemList(pm, FE_SURFACE) {}
 
 	int Size() const { return (int) m_Face.size(); }
 
@@ -121,10 +121,10 @@ public:
 
 //-------------------------------------------------------------------------
 //! Class that defines a node set
-class FENodeSet : public MeshItemList
+class FSNodeSet : public MeshItemList
 {
 public:
-	FENodeSet(FSCoreMesh* pm) : MeshItemList(pm, FE_NODESET){}
+	FSNodeSet(FSCoreMesh* pm) : MeshItemList(pm, FE_NODESET){}
 
 public:
 	vector<int>	m_Node;

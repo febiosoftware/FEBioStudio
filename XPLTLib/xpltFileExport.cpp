@@ -465,7 +465,7 @@ bool xpltFileExport::WriteSurfaceSection(Post::FEPostMesh& mesh)
 	int NS = mesh.Surfaces();
 	for (int n=0; n<NS; ++n)
 	{
-		FESurface& s = mesh.Surface(n);
+		FSSurface& s = mesh.Surface(n);
 		int NF = s.Size();
 
 		// we need to cast away the const on the name
@@ -618,7 +618,7 @@ bool xpltFileExport::WriteElemData(FEPostModel& fem, FEState& state)
 					int ND = mesh.Parts();
 					for (int i=0; i<ND; ++i)
 					{
-						FEPart& part = mesh.Part(i);
+						FSPart& part = mesh.Part(i);
 
 						if (FillElemDataArray(val, data, part) == false) return false;
 
@@ -659,7 +659,7 @@ bool xpltFileExport::WriteFaceData(FEPostModel& fem, FEState& state)
 					int NS = mesh.Surfaces();
 					for (int i=0; i<NS; ++i)
 					{
-						FESurface& surf = mesh.Surface(i);
+						FSSurface& surf = mesh.Surface(i);
 
 						if (FillFaceDataArray(val, data, surf) == false) return false;
 
@@ -740,7 +740,7 @@ bool xpltFileExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& mes
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FEPart& part)
+bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FSPart& part)
 {
 	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
@@ -978,7 +978,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FESurface& surf)
+bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FSSurface& surf)
 {
 	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);

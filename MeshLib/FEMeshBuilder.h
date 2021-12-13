@@ -29,9 +29,9 @@ SOFTWARE.*/
 
 class FSNode;
 class FSMesh;
-class FEEdgeSet;
-class FENodeSet;
-class FESurface;
+class FSEdgeSet;
+class FSNodeSet;
+class FSSurface;
 
 class FEMeshBuilder
 {
@@ -45,7 +45,7 @@ public:
 	void PartitionNode(int node);
 
 	// Partition all nodes in a node set
-	void PartitionNodeSet(FENodeSet* pg);
+	void PartitionNodeSet(FSNodeSet* pg);
 
 	// auto-partition the surface
 	void AutoPartition(double smoothingAngle);
@@ -56,8 +56,8 @@ public:
 	void PartitionElementSelection(int gid = -1);
 
 	// auto-partition selections
-	bool AutoPartitionEdges(double w, FEEdgeSet* pg);
-	bool AutoPartitionFaces(double w, FESurface* pg);
+	bool AutoPartitionEdges(double w, FSEdgeSet* pg);
+	bool AutoPartitionFaces(double w, FSSurface* pg);
 
 	// Add an (isolated) node. The node will be partitioned.
 	FSNode* AddNode(const vec3d& r);

@@ -252,7 +252,7 @@ bool FEHMASCIIimport::BuildMesh(FSModel& fem)
 		list<COMPONENT>::iterator ip = m_Part.begin();
 		for (int i=0; i<parts; ++i, ++ip)
 		{
-			FEPart* pg = new FEPart(po);
+			FSPart* pg = new FSPart(po);
 
 			pg->SetName(ip->szname);
 

@@ -1145,7 +1145,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 	for (int n=0; n< m_xmesh.nodeSets(); ++n)
 	{
 		NodeSet& s = m_xmesh.nodeSet(n);
-		Post::FENodeSet* ps = new Post::FENodeSet(pmesh);
+		Post::FSNodeSet* ps = new Post::FSNodeSet(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "nodeset%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
 		ps->m_Node = s.node;
@@ -1156,7 +1156,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 	for (int n=0; n< m_xmesh.surfaces(); ++n)
 	{
 		Surface& s = m_xmesh.surface(n);
-		Post::FESurface* ps = new Post::FESurface(pmesh);
+		Post::FSSurface* ps = new Post::FSSurface(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "surface%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
 		ps->m_Face.reserve(s.nfaces);
@@ -1168,7 +1168,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 	for (int n=0; n< m_xmesh.domains(); ++n)
 	{
 		Domain& s = m_xmesh.domain(n);
-		Post::FEPart* pg = new Post::FEPart(pmesh);
+		Post::FSPart* pg = new Post::FSPart(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "part%02d",n+1); pg->SetName(szname); }
 		else pg->SetName(s.szname);
 		pg->m_Elem.resize(s.ne);

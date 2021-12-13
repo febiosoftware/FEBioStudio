@@ -34,7 +34,7 @@ FECreateShells::FECreateShells() : FEModifier("Create Shells")
 }
 
 
-FSMesh* FECreateShells::Apply(FEGroup* pg)
+FSMesh* FECreateShells::Apply(FSGroup* pg)
 {
     if (pg->Type() != FE_SURFACE)
     {

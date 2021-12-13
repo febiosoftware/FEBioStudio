@@ -538,7 +538,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 		{
 			assert(po);
 			FEElementSelection* pes = dynamic_cast<FEElementSelection*>(psel); assert(pes);
-			FEPart* pg = dynamic_cast<FEPart*>(pes->CreateItemList());
+			FSPart* pg = dynamic_cast<FSPart*>(pes->CreateItemList());
 			pg->SetName(szname);
 			doc->DoCommand(new CCmdAddPart(po, pg));
 			++nparts;
@@ -549,7 +549,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 		{
 			assert(po);
 			FEFaceSelection* pfs = dynamic_cast<FEFaceSelection*>(psel);
-			FESurface* pg = dynamic_cast<FESurface*>(pfs->CreateItemList());
+			FSSurface* pg = dynamic_cast<FSSurface*>(pfs->CreateItemList());
 			pg->SetName(szname);
 			doc->DoCommand(new CCmdAddSurface(po, pg));
 			++nsurfs;
@@ -560,7 +560,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 		{
 			assert(po);
 			FEEdgeSelection* pes = dynamic_cast<FEEdgeSelection*>(psel);
-			FEEdgeSet* pg = dynamic_cast<FEEdgeSet*>(pes->CreateItemList());
+			FSEdgeSet* pg = dynamic_cast<FSEdgeSet*>(pes->CreateItemList());
 			pg->SetName(szname);
 			doc->DoCommand(new CCmdAddFEEdgeSet(po, pg));
 			++nsurfs;
@@ -571,7 +571,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 		{
 			assert(po);
 			FENodeSelection* pns = dynamic_cast<FENodeSelection*>(psel);
-			FENodeSet* pg = dynamic_cast<FENodeSet*>(pns->CreateItemList());
+			FSNodeSet* pg = dynamic_cast<FSNodeSet*>(pns->CreateItemList());
 			pg->SetName(szname);
 			doc->DoCommand(new CCmdAddNodeSet(po, pg));
 			++nnodes;

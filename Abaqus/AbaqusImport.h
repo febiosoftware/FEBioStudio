@@ -79,10 +79,10 @@ protected:
 	GObject* build_part(AbaqusModel::PART* pg);
 
 	// build a surface
-	FESurface* build_surface(AbaqusModel::SURFACE* ps);
+	FSSurface* build_surface(AbaqusModel::SURFACE* ps);
 
 	// build a nodeset
-	FENodeSet* build_nodeset(AbaqusModel::NODE_SET* ns);
+	FSNodeSet* build_nodeset(AbaqusModel::NODE_SET* ns);
 
 	// Keyword parsers
 	bool read_heading            (char* szline, FILE* fp);

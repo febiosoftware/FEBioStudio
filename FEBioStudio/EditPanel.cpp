@@ -47,7 +47,7 @@ SOFTWARE.*/
 #include "Commands.h"
 
 //=======================================================================================
-SurfaceModifierThread::SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FEGroup* pg)
+SurfaceModifierThread::SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg)
 {
 	m_doc = doc;
 	m_mod = mod;
@@ -215,10 +215,10 @@ void CEditPanel::on_apply_clicked(bool b)
 			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 			FESelection* sel = doc->GetCurrentSelection();
 			FEItemListBuilder* list = sel->CreateItemList();
-			FEGroup* g = 0;
+			FSGroup* g = 0;
 			if (sel->Size() > 0)
 			{
-				g = dynamic_cast<FEGroup*>(list);
+				g = dynamic_cast<FSGroup*>(list);
 				if (g == 0) { delete list; list = 0; }
 			}
 

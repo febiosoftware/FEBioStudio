@@ -337,7 +337,7 @@ vec2d GEdge::Tangent(double l)
 }
 
 //-----------------------------------------------------------------------------
-FEEdgeSet* GEdge::GetFEEdgeSet() const
+FSEdgeSet* GEdge::GetFEEdgeSet() const
 {
 	GObject* po = dynamic_cast<GObject*>(m_po);
 	if (m_po == nullptr) return nullptr;
@@ -345,7 +345,7 @@ FEEdgeSet* GEdge::GetFEEdgeSet() const
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return nullptr;
 
-	FEEdgeSet* edge = new FEEdgeSet(po);
+	FSEdgeSet* edge = new FSEdgeSet(po);
 	int eid = GetLocalID();
 	for (int i = 0; i < pm->Edges(); ++i)
 	{

@@ -567,7 +567,7 @@ void FEBioFormat2::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	FEBioInputModel& febio = GetFEBioModel();
 	FEBioInputModel::PartInstance& part = GetInstance();
 	GMeshObject* po = GetGObject();
-	FENodeSet* pg = 0;
+	FSNodeSet* pg = 0;
 
 	// see if the set attribute is defined
 	const char* szset = tag.AttributeValue("set", true);
@@ -581,7 +581,7 @@ void FEBioFormat2::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	}
 	else
 	{
-		pg = new FENodeSet(po);
+		pg = new FSNodeSet(po);
 	}
 
 	// create the constraint
@@ -708,7 +708,7 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	FEBioInputModel::PartInstance& part = GetInstance();
 	GMeshObject* po = GetGObject();
 	FSMesh* pm = &GetFEMesh();
-	FENodeSet* pg = 0;
+	FSNodeSet* pg = 0;
 	char szname[256] = { 0 };
 
 	// see if the set attribute is defined
@@ -726,7 +726,7 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	}
 	else
 	{
-		pg = new FENodeSet(po);
+		pg = new FSNodeSet(po);
 	}
 
 	// make a new boundary condition
@@ -882,7 +882,7 @@ void FEBioFormat2::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	// create the node set
 	FSMesh* pm = &GetFEMesh();
 	char szname[256];
-	FENodeSet* pg = new FENodeSet(po);
+	FSNodeSet* pg = new FSNodeSet(po);
 
 	static int n = 1;
 	sprintf(szname, "ForceNodeset%02d", n++);
@@ -936,7 +936,7 @@ void FEBioFormat2::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
+FSSurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
 {
 	// create a new surface
 	FEBioInputModel::PartInstance& part = GetInstance();
@@ -948,7 +948,7 @@ FESurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
 		const char* szset = tag.AttributeValue("set");
 
 		// find the surface
-		FESurface* ps = part.BuildFESurface(szset);
+		FSSurface* ps = part.BuildFESurface(szset);
 		if (ps == 0) throw XMLReader::InvalidAttributeValue(tag, "set", szset);
 
 		return ps;
@@ -976,7 +976,7 @@ FESurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
 		}
 		while (!tag.isend());
 
-		FESurface* ps = part.BuildFESurface(surf);
+		FSSurface* ps = part.BuildFESurface(surf);
 
 		return ps;
 	}
@@ -1014,7 +1014,7 @@ void FEBioFormat2::ParseLoadPressure(FSStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "surface")
 		{
-			FESurface* psurf = ParseLoadSurface(tag);
+			FSSurface* psurf = ParseLoadSurface(tag);
 			pbc->SetItemList(psurf);
 		}
 		++tag;
@@ -1055,7 +1055,7 @@ void FEBioFormat2::ParseLoadTraction(FSStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "surface")
 		{
-			FESurface* psurf = ParseLoadSurface(tag);
+			FSSurface* psurf = ParseLoadSurface(tag);
 			pbc->SetItemList(psurf);
 		}
 		++tag;
@@ -1098,7 +1098,7 @@ void FEBioFormat2::ParseLoadFluidTraction(FSStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "surface")
 		{
-			FESurface* psurf = ParseLoadSurface(tag);
+			FSSurface* psurf = ParseLoadSurface(tag);
 			pbc->SetItemList(psurf);
 		}
 		++tag;
@@ -1136,7 +1136,7 @@ void FEBioFormat2::ParseLoadFluidVelocity(FSStep* pstep, XMLTag& tag)
         }
         else if (tag == "surface")
         {
-            FESurface* psurf = ParseLoadSurface(tag);
+            FSSurface* psurf = ParseLoadSurface(tag);
             pbc->SetItemList(psurf);
         }
         ++tag;
@@ -1185,7 +1185,7 @@ void FEBioFormat2::ParseLoadFluidNormalVelocity(FSStep* pstep, XMLTag& tag)
         }
         else if (tag == "surface")
         {
-            FESurface* psurf = ParseLoadSurface(tag);
+            FSSurface* psurf = ParseLoadSurface(tag);
             pbc->SetItemList(psurf);
         }
         ++tag;
@@ -1229,7 +1229,7 @@ void FEBioFormat2::ParseLoadFluidRotationalVelocity(FSStep* pstep, XMLTag& tag)
         }
         else if (tag == "surface")
         {
-            FESurface* psurf = ParseLoadSurface(tag);
+            FSSurface* psurf = ParseLoadSurface(tag);
             pbc->SetItemList(psurf);
         }
         ++tag;
@@ -1273,7 +1273,7 @@ void FEBioFormat2::ParseLoadFluidFlowResistance(FSStep* pstep, XMLTag& tag)
         }
         else if (tag == "surface")
         {
-            FESurface* psurf = ParseLoadSurface(tag);
+            FSSurface* psurf = ParseLoadSurface(tag);
             pbc->SetItemList(psurf);
         }
         ++tag;
@@ -1307,7 +1307,7 @@ void FEBioFormat2::ParseLoadFluidBackflowStabilization(FSStep* pstep, XMLTag& ta
         }
         else if (tag == "surface")
         {
-            FESurface* psurf = ParseLoadSurface(tag);
+            FSSurface* psurf = ParseLoadSurface(tag);
             pbc->SetItemList(psurf);
         }
         ++tag;
@@ -1341,7 +1341,7 @@ void FEBioFormat2::ParseLoadFluidTangentialStabilization(FSStep* pstep, XMLTag& 
         }
         else if (tag == "surface")
         {
-            FESurface* psurf = ParseLoadSurface(tag);
+            FSSurface* psurf = ParseLoadSurface(tag);
             pbc->SetItemList(psurf);
         }
         ++tag;
@@ -1368,7 +1368,7 @@ void FEBioFormat2::ParseLoadFSITraction(FSStep* pstep, XMLTag& tag)
     {
         if (tag == "surface")
         {
-            FESurface* psurf = ParseLoadSurface(tag);
+            FSSurface* psurf = ParseLoadSurface(tag);
             pbc->SetItemList(psurf);
         }
         ++tag;
@@ -1413,7 +1413,7 @@ void FEBioFormat2::ParseLoadFluidFlux(FSStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "surface")
 		{
-			FESurface* psurf = ParseLoadSurface(tag);
+			FSSurface* psurf = ParseLoadSurface(tag);
 			pbc->SetItemList(psurf);
 		}
 		++tag;
@@ -1459,7 +1459,7 @@ void FEBioFormat2::ParseLoadSoluteFlux(FSStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "surface")
 		{
-			FESurface* psurf = ParseLoadSurface(tag);
+			FSSurface* psurf = ParseLoadSurface(tag);
 			pbc->SetItemList(psurf);
 		}
 		++tag;
@@ -1501,7 +1501,7 @@ void FEBioFormat2::ParseLoadConcentrationFlux(FSStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "surface")
 		{
-			FESurface* psurf = ParseLoadSurface(tag);
+			FSSurface* psurf = ParseLoadSurface(tag);
 			pcf->SetItemList(psurf);
 		}
 		++tag;
@@ -1549,7 +1549,7 @@ void FEBioFormat2::ParseLoadNormalTraction(FSStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "surface")
 		{
-			FESurface* psurf = ParseLoadSurface(tag);
+			FSSurface* psurf = ParseLoadSurface(tag);
 			pbc->SetItemList(psurf);
 		}
 		++tag;
@@ -1585,7 +1585,7 @@ void FEBioFormat2::ParseLoadHeatFlux(FSStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "surface")
 		{
-			FESurface* psurf = ParseLoadSurface(tag);
+			FSSurface* psurf = ParseLoadSurface(tag);
 			pbc->SetItemList(psurf);
 		}
 		++tag;
@@ -1626,7 +1626,7 @@ void FEBioFormat2::ParseLoadConvectiveHeatFlux(FSStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "surface")
 		{
-			FESurface* psurf = ParseLoadSurface(tag);
+			FSSurface* psurf = ParseLoadSurface(tag);
 			pbc->SetItemList(psurf);
 		}
 		++tag;
@@ -1655,7 +1655,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 	{
 		if (tag == "velocity")	// initial velocity BC
 		{
-			FENodeSet* pg = 0;
+			FSNodeSet* pg = 0;
 			vec3d v;
 
 			// read the nodes
@@ -1669,7 +1669,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 					tag.value(v);
 
 					// see if we need to make a new group, otherwise add the node to the group
-					if (pg == 0) pg = new FENodeSet(po);
+					if (pg == 0) pg = new FSNodeSet(po);
 					pg->add(id);
 				}
 				else ParseUnknownTag(tag);
@@ -1685,7 +1685,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 		}
 		else if (tag == "concentration")	// initial concentration BC
 		{
-			FENodeSet* pg = 0;
+			FSNodeSet* pg = 0;
 			double c;
 
 			const char* szc = tag.AttributeValue("sol", true);
@@ -1707,7 +1707,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 					tag.value(c);
 
 					// see if we need to make a new group, otherwise add the node to the group
-					if (pg == 0) pg = new FENodeSet(po);
+					if (pg == 0) pg = new FSNodeSet(po);
 					pg->add(id);
 				}
 				else ParseUnknownTag(tag);
@@ -1723,7 +1723,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 		}
 		else if (tag == "fluid_pressure")	// initial fluid pressure
 		{
-			FENodeSet* pg = 0;
+			FSNodeSet* pg = 0;
 			double p;
 
 			// read the nodes
@@ -1737,7 +1737,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 					tag.value(p);
 
 					// see if we need to make a new group, otherwise add the node to the group
-					if (pg == 0) pg = new FENodeSet(po);
+					if (pg == 0) pg = new FSNodeSet(po);
 					pg->add(id);
 				}
 				else ParseUnknownTag(tag);
@@ -1753,7 +1753,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 		}
 		else if (tag == "temperature")	// initial temperature
 		{
-			FENodeSet* pg = 0;
+			FSNodeSet* pg = 0;
 			double p;
 
 			// read the nodes
@@ -1767,7 +1767,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 					tag.value(p);
 
 					// see if we need to make a new group, otherwise add the node to the group
-					if (pg == 0) pg = new FENodeSet(po);
+					if (pg == 0) pg = new FSNodeSet(po);
 					pg->add(id);
 				}
 				else ParseUnknownTag(tag);
@@ -1845,7 +1845,7 @@ void FEBioFormat2::ParseContact(FSStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-FESurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
+FSSurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FEBioInputModel::PartInstance& part = GetInstance();
@@ -1858,7 +1858,7 @@ FESurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 		const char* szset = tag.AttributeValue("set");
 
 		// find the surface
-		FESurface* psurf = part.BuildFESurface(szset);
+		FSSurface* psurf = part.BuildFESurface(szset);
 		if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "set", szset);
 
 		return psurf;
@@ -1925,7 +1925,7 @@ FESurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 		}
 
 		FEBioInputModel& febio = GetFEBioModel();
-		FESurface *psurf = part.BuildFESurface(surf);
+		FSSurface *psurf = part.BuildFESurface(surf);
 		return psurf;
 	}
 }
@@ -1988,7 +1988,7 @@ void FEBioFormat2::ParseContactParams(XMLTag& tag, FSPairedInterface* pi, int ni
 				if (szfmt && (strcmp(szfmt, "element face") == 0)) nfmt = 1;
 
 				// create a new surface
-				FESurface* ps = ParseContactSurface(tag, nfmt);
+				FSSurface* ps = ParseContactSurface(tag, nfmt);
 				if (ntype == 1)
 				{
 					sprintf(szbuf, "MasterSurface%02d", nid);
@@ -2027,7 +2027,7 @@ void FEBioFormat2::ParseContactSliding(FSStep* pstep, XMLTag& tag)
 	else sprintf(szbuf, "SlidingInterface%02d", nid);
 	pi->SetName(szbuf);
 
-	FESurface *pms = 0, *pss = 0;
+	FSSurface *pms = 0, *pss = 0;
 	FSMesh* pm = &GetFEMesh();
 	GMeshObject* po = GetGObject();
 
@@ -2332,7 +2332,7 @@ void FEBioFormat2::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 	if (szn) strcpy(szname, szn);
 	pci->SetName(szname);
 
-	FESurface *pms = 0, *pss = 0;
+	FSSurface *pms = 0, *pss = 0;
 
 	++tag;
 	do
@@ -2374,7 +2374,7 @@ void FEBioFormat2::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 		{
 			const char* szn = tag.AttributeValue("name", true);
 
-			FESurface* ps = ParseContactSurface(tag);
+			FSSurface* ps = ParseContactSurface(tag);
 			pci->SetItemList(ps);
 
 			if (szn) ps->SetName(szn);
@@ -2435,7 +2435,7 @@ void FEBioFormat2::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 		{
 			int id = pmat->GetID();
 			// create the node set
-			FENodeSet* pn = new FENodeSet(po);
+			FSNodeSet* pn = new FSNodeSet(po);
 			//			pm->AddNodeSet(pn);
 			sprintf(szbuf, "RigidNodeset%2d", CountInterfaces<FSRigidInterface>(fem) + 1);
 			pn->SetName(szbuf);
@@ -2967,7 +2967,7 @@ void FEBioFormat2::ParseVolumeConstraint(FSStep* pstep, XMLTag& tag)
 				const char* szn = tag.AttributeValue("name", true);
 
 				// create a new surface
-				FESurface* ps = ParseContactSurface(tag);
+				FSSurface* ps = ParseContactSurface(tag);
 				sprintf(szbuf, "VolumeConstraintSurface%02d", CountConstraints<FSVolumeConstraint>(fem));
 				ps->SetName(szn ? szn : szbuf);
 
@@ -3016,7 +3016,7 @@ void FEBioFormat2::ParseSymmetryPlane(FSStep* pstep, XMLTag& tag)
 				const char* szn = tag.AttributeValue("name", true);
 
 				// create a new surface
-				FESurface* ps = ParseContactSurface(tag);
+				FSSurface* ps = ParseContactSurface(tag);
 				sprintf(szbuf, "SymmetryPlaneSurface%02d", CountConstraints<FSSymmetryPlane>(fem));
 				ps->SetName(szn ? szn : szbuf);
 
@@ -3065,7 +3065,7 @@ void FEBioFormat2::ParseNrmlFldVlctSrf(FSStep* pstep, XMLTag& tag)
                 const char* szn = tag.AttributeValue("name", true);
                 
                 // create a new surface
-                FESurface* ps = ParseContactSurface(tag);
+                FSSurface* ps = ParseContactSurface(tag);
                 sprintf(szbuf, "NormalFlowSurface%02d", CountConstraints<FSNormalFlowSurface>(fem));
                 ps->SetName(szn ? szn : szbuf);
                 
@@ -3114,7 +3114,7 @@ void FEBioFormat2::ParseFrictionlessFluidWall(FSStep* pstep, XMLTag& tag)
                 const char* szn = tag.AttributeValue("name", true);
 
                 // create a new surface
-                FESurface* ps = ParseContactSurface(tag);
+                FSSurface* ps = ParseContactSurface(tag);
                 sprintf(szbuf, "FrictionlessFluidWall%02d", CountConstraints<FSFrictionlessFluidWall>(fem));
                 ps->SetName(szn ? szn : szbuf);
 
@@ -3178,12 +3178,12 @@ bool FEBioFormat2::ParseStepSection(XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-FENodeSet* FEBioFormat2::ParseNodeSet(XMLTag& tag)
+FSNodeSet* FEBioFormat2::ParseNodeSet(XMLTag& tag)
 {
 	GMeshObject* po = GetGObject();
 
 	// create a new node set
-	FENodeSet* pg = new FENodeSet(po);
+	FSNodeSet* pg = new FSNodeSet(po);
 
 	const char* szset = tag.AttributeValue("nset", true);
 	if (szset)
@@ -3192,7 +3192,7 @@ FENodeSet* FEBioFormat2::ParseNodeSet(XMLTag& tag)
 		if (tag.isempty() == false) throw XMLReader::InvalidValue(tag);
 
 		// see if we can find the nodeset
-		FENodeSet* ps = po->FindFENodeSet(szset);
+		FSNodeSet* ps = po->FindFENodeSet(szset);
 
 		// make sure the set is found
 		if (ps == 0) throw XMLReader::InvalidAttributeValue(tag, "nset", szset);

@@ -404,13 +404,13 @@ FEBioInputModel::PartInstance::~PartInstance()
 
 FSMesh* FEBioInputModel::PartInstance::GetMesh() { return m_po->GetFEMesh(); }
 
-FENodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
+FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 {
 	NodeSet* nodeSet = m_part->FindNodeSet(szname);
 	if (nodeSet == 0) return 0;
 
 	// create the node set
-	FENodeSet* pns = new FENodeSet(m_po, nodeSet->nodeList());
+	FSNodeSet* pns = new FSNodeSet(m_po, nodeSet->nodeList());
 
 	// copy the name
 	std::string name = nodeSet->name();
@@ -420,7 +420,7 @@ FENodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 	return pns;
 }
 
-FESurface* FEBioInputModel::PartInstance::BuildFESurface(FEBioInputModel::Surface& surf)
+FSSurface* FEBioInputModel::PartInstance::BuildFESurface(FEBioInputModel::Surface& surf)
 {
 	// create face list
 	vector<int> faceList;
@@ -445,7 +445,7 @@ FESurface* FEBioInputModel::PartInstance::BuildFESurface(FEBioInputModel::Surfac
 	}
 
 	// create the surface
-	FESurface* ps = new FESurface(m_po, faceList);
+	FSSurface* ps = new FSSurface(m_po, faceList);
 
 	// copy the name
 	std::string name = surf.name();
@@ -458,10 +458,10 @@ FESurface* FEBioInputModel::PartInstance::BuildFESurface(FEBioInputModel::Surfac
 	return ps;
 }
 
-FENodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const FEBioInputModel::NodeSet& nset)
+FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const FEBioInputModel::NodeSet& nset)
 {
 	// create the surface
-	FENodeSet* pns = new FENodeSet(m_po, nset.nodeList());
+	FSNodeSet* pns = new FSNodeSet(m_po, nset.nodeList());
 
 	// copy the name
 	std::string name = nset.name();
@@ -496,7 +496,7 @@ bool check_winding(const vector<int>& nodeList, const FSFace& face)
 	return false;
 }
 
-FESurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
+FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 {
 	Surface* surface = m_part->FindSurface(szname);
 	if (surface == 0) return 0;
@@ -550,7 +550,7 @@ FESurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 	}
 
 	// create the surface
-	FESurface* ps = new FESurface(m_po, faceList);
+	FSSurface* ps = new FSSurface(m_po, faceList);
 
 	// copy the name
 	std::string name = surface->name();
@@ -563,7 +563,7 @@ FESurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 	return ps;
 }
 
-FEPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
+FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 {
 	ElementSet* set = m_part->FindElementSet(szname);
 	if (set == 0) return 0;
@@ -576,7 +576,7 @@ FEPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 	for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
 
 	// create the part
-	FEPart* pg = new FEPart(m_po, elemList);
+	FSPart* pg = new FSPart(m_po, elemList);
 
 	// copy the name
 	std::string name = set->name();
@@ -893,7 +893,7 @@ FEItemListBuilder* FEBioInputModel::BuildItemList(const char* szname)
 	else return BuildFENodeSet(szname);
 }
 
-FENodeSet* FEBioInputModel::BuildFENodeSet(const char* szname)
+FSNodeSet* FEBioInputModel::BuildFENodeSet(const char* szname)
 {
 	// see if there is a dot
 	const char* ch = 0;
@@ -913,7 +913,7 @@ FENodeSet* FEBioInputModel::BuildFENodeSet(const char* szname)
 		// find the instance with this name
 		PartInstance* part = FindInstance(szpart);
 
-		FENodeSet* set = 0;
+		FSNodeSet* set = 0;
 		if (part) set = part->BuildFENodeSet(szset);
 
 		delete [] szset;
@@ -1102,7 +1102,7 @@ FEBioInputModel::ElementSet* FEBioInputModel::FindElementSet(const char* szname)
 }
 
 
-FESurface* FEBioInputModel::BuildFESurface(const char* szname)
+FSSurface* FEBioInputModel::BuildFESurface(const char* szname)
 {
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -1121,7 +1121,7 @@ FESurface* FEBioInputModel::BuildFESurface(const char* szname)
 		// find the instance with this name
 		PartInstance* part = FindInstance(szpart);
 
-		FESurface* surf = 0;
+		FSSurface* surf = 0;
 		if (part) surf = part->BuildFESurface(szset);
 
 		delete[] szset;
@@ -1140,7 +1140,7 @@ FESurface* FEBioInputModel::BuildFESurface(const char* szname)
 	}
 }
 
-FEPart* FEBioInputModel::BuildFEPart(const char* szname)
+FSPart* FEBioInputModel::BuildFEPart(const char* szname)
 {
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -1159,7 +1159,7 @@ FEPart* FEBioInputModel::BuildFEPart(const char* szname)
 		// find the instance with this name
 		PartInstance* part = FindInstance(szpart);
 
-		FEPart* pg = 0;
+		FSPart* pg = 0;
 		if (part) pg = part->BuildFEPart(szset);
 
 		delete[] szset;
@@ -1178,12 +1178,12 @@ FEPart* FEBioInputModel::BuildFEPart(const char* szname)
 	}
 }
 
-FEPart* FEBioInputModel::BuildFEPart(FEBioInputModel::Domain* dom)
+FSPart* FEBioInputModel::BuildFEPart(FEBioInputModel::Domain* dom)
 {
 	assert(Instances() == 1);
 	PartInstance* part = GetInstance(0);
 
-	FEPart* pg = new FEPart(part->GetGObject(), dom->GetElementIDList());
+	FSPart* pg = new FSPart(part->GetGObject(), dom->GetElementIDList());
 
 	pg->SetName(dom->name());
 

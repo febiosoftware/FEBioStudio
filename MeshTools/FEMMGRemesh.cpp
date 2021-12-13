@@ -60,14 +60,14 @@ FSMesh* FEMMGRemesh::Apply(FSMesh* pm)
 	else { SetError("This is not a TET4 mesh"); return 0; }
 }
 
-FSMesh* FEMMGRemesh::Apply(FEGroup* pg)
+FSMesh* FEMMGRemesh::Apply(FSGroup* pg)
 {
 	if (pg == nullptr) return nullptr;
 	FSMesh* pm = pg->GetMesh();
 	if (pm == nullptr) return nullptr;
 	if (pm->IsType(FE_TET4) == false) return Apply(pm);
 
-	if (dynamic_cast<FEPart*>(pg))
+	if (dynamic_cast<FSPart*>(pg))
 	{
 		pm->TagAllElements(0);
 		for (int i = 0; i < pm->Elements(); ++i)
@@ -76,7 +76,7 @@ FSMesh* FEMMGRemesh::Apply(FEGroup* pg)
 		}
 		return RemeshTET4(pm);
 	}
-	else if (dynamic_cast<FESurface*>(pg))
+	else if (dynamic_cast<FSSurface*>(pg))
 	{
 		pm->TagAllNodes(0);
 		pm->TagAllElements(0);

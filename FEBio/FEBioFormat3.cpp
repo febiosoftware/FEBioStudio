@@ -1129,7 +1129,7 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-	FENodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
+	FSNodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
 	if (nodeSet)
 	{
 		FSMesh* feMesh = nodeSet->GetMesh();
@@ -1179,7 +1179,7 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-	FESurface* feSurf = feb.BuildFESurface(surf->cvalue());
+	FSSurface* feSurf = feb.BuildFESurface(surf->cvalue());
 	FSMesh* feMesh = feSurf->GetMesh();
 
 	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
@@ -1414,7 +1414,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		}
 		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-		FEPart* pg = feb.BuildFEPart(set->cvalue());
+		FSPart* pg = feb.BuildFEPart(set->cvalue());
 		if (pg == nullptr) throw XMLReader::InvalidAttributeValue(tag, "elem_set", set->cvalue());
 
 		FSMesh* mesh = pg->GetMesh();
@@ -2145,7 +2145,7 @@ void FEBioFormat3::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 
 	// find the surface
 	XMLAtt& surf = tag.Attribute("surface");
-	FESurface* psurf = febio.BuildFESurface(surf.cvalue());
+	FSSurface* psurf = febio.BuildFESurface(surf.cvalue());
 	if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, surf);
 
 	// get the type attribute
@@ -2481,14 +2481,14 @@ void FEBioFormat3::ParseContact(FSStep *pstep, XMLTag &tag)
 			if (surfPair->masterID() >= 0)
 			{
 				string name1 = part->GetSurface(surfPair->masterID()).name();
-				FESurface* master = febio.BuildFESurface(name1.c_str());
+				FSSurface* master = febio.BuildFESurface(name1.c_str());
 				pci->SetSecondarySurface(master);
 			}
 
 			if (surfPair->slaveID() >= 0)
 			{
 				string name2 = part->GetSurface(surfPair->slaveID()).name();
-				FESurface* slave = febio.BuildFESurface(name2.c_str());
+				FSSurface* slave = febio.BuildFESurface(name2.c_str());
 				pci->SetPrimarySurface(slave);
 			}
 		}
@@ -2518,7 +2518,7 @@ void FEBioFormat3::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 	const char* szsurf = tag.AttributeValue("surface", true);
 	if (szsurf)
 	{
-		FESurface* psurf = febio.BuildFESurface(szsurf);
+		FSSurface* psurf = febio.BuildFESurface(szsurf);
 		if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
 		pci->SetItemList(psurf);
 	}
@@ -2938,7 +2938,7 @@ void FEBioFormat3::ParseConstraint(FSStep* pstep, XMLTag& tag)
 	const char* szsurf = tag.AttributeValue("surface", true);
 	if (szsurf)
 	{
-		FESurface* psurf = febio.BuildFESurface(szsurf);
+		FSSurface* psurf = febio.BuildFESurface(szsurf);
 		if (psurf == 0) AddLogEntry("Failed creating surface \"%s\"", szsurf);
 		else pmc->SetItemList(psurf);
 	}

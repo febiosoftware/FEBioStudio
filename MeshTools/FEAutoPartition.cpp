@@ -45,7 +45,7 @@ FSMesh* FEAutoPartition::Apply(FSMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FSMesh* FEAutoPartition::Apply(FEGroup* pg)
+FSMesh* FEAutoPartition::Apply(FSGroup* pg)
 {
 	if (pg == nullptr) return nullptr;
 	FSMesh* pm = pg->GetMesh();
@@ -55,18 +55,18 @@ FSMesh* FEAutoPartition::Apply(FEGroup* pg)
 	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 
-	if (dynamic_cast<FEEdgeSet*>(pg))
+	if (dynamic_cast<FSEdgeSet*>(pg))
 	{
-		if (meshBuilder.AutoPartitionEdges(w, dynamic_cast<FEEdgeSet*>(pg)) == false)
+		if (meshBuilder.AutoPartitionEdges(w, dynamic_cast<FSEdgeSet*>(pg)) == false)
 		{
 			delete newMesh;
 			newMesh = nullptr;
 			SetError("Cannot auto-partition this edge selection.");
 		}
 	}
-	else if (dynamic_cast<FESurface*>(pg))
+	else if (dynamic_cast<FSSurface*>(pg))
 	{
-		if (meshBuilder.AutoPartitionFaces(w, dynamic_cast<FESurface*>(pg)) == false)
+		if (meshBuilder.AutoPartitionFaces(w, dynamic_cast<FSSurface*>(pg)) == false)
 		{
 			delete newMesh;
 			newMesh = nullptr;

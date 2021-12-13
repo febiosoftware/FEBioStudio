@@ -36,7 +36,7 @@ FEMortarProjection::FEMortarProjection()
 }
 
 //-----------------------------------------------------------------------------
-FSMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
+FSMesh* FEMortarProjection::Apply(FSSurface* pslave, FSSurface* pmaster)
 {
 	// get the slave mesh
 	FSMesh* pms = pslave->GetMesh();

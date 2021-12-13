@@ -38,7 +38,7 @@ public:
 
 	virtual FSMesh* Apply(FSMesh* pm) = 0;
 
-	virtual FSMesh* Apply(FEGroup* pg) { return (pg ? Apply(pg->GetMesh()) : 0); }
+	virtual FSMesh* Apply(FSGroup* pg) { return (pg ? Apply(pg->GetMesh()) : 0); }
 
 	virtual FSMeshBase* ApplyModifier(FSMeshBase* pm) { return 0; }
 
@@ -56,7 +56,7 @@ class FEPartitionSelection : public FEModifier
 public:
 	FEPartitionSelection();
 	FSMesh* Apply(FSMesh* pm) override;
-	FSMesh* Apply(FEGroup* pg) override;
+	FSMesh* Apply(FSGroup* pg) override;
 
 	bool UpdateData(bool bsave) override;
 };

@@ -33,7 +33,7 @@ public:
     FECreateShells();
 
     FSMesh* Apply(FSMesh* pm);
-    FSMesh* Apply(FEGroup* pg);
+    FSMesh* Apply(FSGroup* pg);
     
 protected:
     void CreateShells(FSMesh* pm, vector<int>& faceList);

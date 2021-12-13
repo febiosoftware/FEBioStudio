@@ -99,18 +99,18 @@ void FSDomainComponent::Load(IArchive& ar)
 				case GO_EDGE: m_pItem = new GEdgeList(m_ps); break;
 				case GO_FACE: m_pItem = new GFaceList(m_ps); break;
 				case GO_PART: m_pItem = new GPartList(m_ps); break;
-				case FE_NODESET: m_pItem = new FENodeSet((GObject*)0); break;
-				case FE_EDGESET: m_pItem = new FEEdgeSet((GObject*)0); break;
-				case FE_SURFACE: m_pItem = new FESurface((GObject*)0); break;
-				case FE_PART: m_pItem = new FEPart((GObject*)0); break;
+				case FE_NODESET: m_pItem = new FSNodeSet((GObject*)0); break;
+				case FE_EDGESET: m_pItem = new FSEdgeSet((GObject*)0); break;
+				case FE_SURFACE: m_pItem = new FSSurface((GObject*)0); break;
+				case FE_PART: m_pItem = new FSPart((GObject*)0); break;
 				default:
 					assert(false);
 					throw ReadError("Unknown FEItemListBuilder type in FSBoundaryCondition::Load");
 				}
 				m_pItem->Load(ar);
 
-				// set the parent mesh for FEGroup's
-				FEGroup* pg = dynamic_cast<FEGroup*>(m_pItem);
+				// set the parent mesh for FSGroup's
+				FSGroup* pg = dynamic_cast<FSGroup*>(m_pItem);
 				if (pg)
 				{
 					if (m_ps->FindGroupParent(pg) == false)

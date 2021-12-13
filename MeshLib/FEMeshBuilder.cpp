@@ -1374,7 +1374,7 @@ void FEMeshBuilder::PartitionElementSelection(int gid)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBuilder::PartitionNodeSet(FENodeSet* pg)
+void FEMeshBuilder::PartitionNodeSet(FSNodeSet* pg)
 {
 	if ((pg == 0) || (pg->size() == 0)) return;
 
@@ -1457,7 +1457,7 @@ void FEMeshBuilder::PartitionNode(int nodeIndex)
 }
 
 // auto-partition selections
-bool FEMeshBuilder::AutoPartitionEdges(double w, FEEdgeSet* pg)
+bool FEMeshBuilder::AutoPartitionEdges(double w, FSEdgeSet* pg)
 {
 	if (pg == nullptr) return false;
 
@@ -1535,7 +1535,7 @@ bool FEMeshBuilder::AutoPartitionEdges(double w, FEEdgeSet* pg)
 }
 
 //-----------------------------------------------------------------------------
-bool FEMeshBuilder::AutoPartitionFaces(double w, FESurface* pg)
+bool FEMeshBuilder::AutoPartitionFaces(double w, FSSurface* pg)
 {
 	// sanity checks
 	if (pg == nullptr) return false;

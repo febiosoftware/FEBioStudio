@@ -1576,10 +1576,10 @@ void FSModel::AssignComponentToStep(FSStepComponent* pc, FSStep* ps)
 }
 
 //-----------------------------------------------------------------------------
-// This function is used when reading FEGroup's that are not managed by an FSMesh.
-// The FEGroup class reads the mesh ID and then the owner of the FEGroup calls
+// This function is used when reading FSGroup's that are not managed by an FSMesh.
+// The FSGroup class reads the mesh ID and then the owner of the FSGroup calls
 // this function to find the parent object (and mesh).
-bool FSModel::FindGroupParent(FEGroup* pg)
+bool FSModel::FindGroupParent(FSGroup* pg)
 {
 	int obj_id = pg->GetObjectID();
 	if (obj_id == -1) return false;

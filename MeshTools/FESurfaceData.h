@@ -38,11 +38,11 @@ public:
 	void operator = (const FESurfaceData& data);
 	double& operator [] (int index);
 
-	void Create(FSMesh* mesh, FESurface* surface, FEMeshData::DATA_TYPE dataType);
+	void Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType);
 
 	vector<double>* getData();
 
-	FESurface* getSurface() {return m_surface;}
+	FSSurface* getSurface() {return m_surface;}
 
 public:
 	void Save(OArchive& ar);
@@ -50,5 +50,5 @@ public:
 
 private:
 	vector<double>	m_data;
-	FESurface* m_surface;
+	FSSurface* m_surface;
 };

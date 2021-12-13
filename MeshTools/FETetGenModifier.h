@@ -38,7 +38,7 @@ public:
 	FETetGenModifier();
 
 	FSMesh* Apply(FSMesh* pm);
-	FSMesh* Apply(FEGroup* pg);
+	FSMesh* Apply(FSGroup* pg);
 
 private:
 	bool build_tetgen_plc   (FSMesh* pm, tetgenio& in);

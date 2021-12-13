@@ -454,14 +454,14 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				int nsurf = po->FESurfaces();
 				for (int j = 0; j < nsurf; ++j)
 				{
-					FESurface* ps = po->GetFESurface(j);
+					FSSurface* ps = po->GetFESurface(j);
 					AddSurface(ps->GetName(), ps);
 				}
 
 				int neset = po->FEParts();
 				for (int j = 0; j < neset; ++j)
 				{
-					FEPart* pg = po->GetFEPart(j);
+					FSPart* pg = po->GetFEPart(j);
 					AddElemSet(pg->GetName(), pg);
 				}
 			}
@@ -536,14 +536,14 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				case FEMeshData::ELEMENT_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
-					FEPart* pg = const_cast<FEPart*>(map->GetPart());
+					FSPart* pg = const_cast<FSPart*>(map->GetPart());
 
 					if (pg)
 					{
 						string name = pg->GetName();
 						if (name.empty()) name = data->GetName();
 
-						// It is possible that a FEPart has the same name as the domain
+						// It is possible that a FSPart has the same name as the domain
 						// from which it was created. In that case we don't want to 
 						// write this element set.
 						for (int j = 0; j < po->Parts(); ++j)
@@ -1203,7 +1203,7 @@ void FEBioExport4::WriteGeometryNodeSetsNew()
 		break;
 		case FE_NODESET:
 		{
-			FENodeSet* nodeSet = dynamic_cast<FENodeSet*>(pil); assert(nodeSet);
+			FSNodeSet* nodeSet = dynamic_cast<FSNodeSet*>(pil); assert(nodeSet);
 			for (int i = 0; i < m_Part.size(); ++i)
 			{
 				Part* part = m_Part[i];
@@ -1220,7 +1220,7 @@ void FEBioExport4::WriteGeometryNodeSetsNew()
 		break;
 		case FE_SURFACE:
 		{
-			FESurface* face = dynamic_cast<FESurface*>(pil); assert(face);
+			FSSurface* face = dynamic_cast<FSSurface*>(pil); assert(face);
 			for (int i = 0; i < m_Part.size(); ++i)
 			{
 				Part* part = m_Part[i];
@@ -1286,7 +1286,7 @@ void FEBioExport4::WriteGeometryNodeSets()
 			int nset = po->FENodeSets();
 			for (int j = 0; j < nset; ++j)
 			{
-				FENodeSet* pns = po->GetFENodeSet(j);
+				FSNodeSet* pns = po->GetFENodeSet(j);
 				unique_ptr<FENodeList> pl(pns->BuildNodeList());
 				if (WriteNodeSet(pns->GetName(), pl.get()) == false)
 				{
@@ -1366,7 +1366,7 @@ void FEBioExport4::WriteGeometrySurfacesNew()
 			break;
 			case FE_SURFACE:
 			{
-				FESurface* surf = dynamic_cast<FESurface*>(pl); assert(surf);
+				FSSurface* surf = dynamic_cast<FSSurface*>(pl); assert(surf);
 				GObject* po = surf->GetGObject();
 				string name = string(po->GetName()) + "." + sname;
 				m_xml.add_leaf("surface", name);
@@ -1409,7 +1409,7 @@ void FEBioExport4::WriteGeometryElementSetsNew()
 			break;
 			case FE_PART:
 			{
-				FEPart* part = dynamic_cast<FEPart*>(pl); assert(part);
+				FSPart* part = dynamic_cast<FSPart*>(pl); assert(part);
 				GObject* po = part->GetGObject();
 				string name = string(po->GetName()) + "." + sname;
 				m_xml.add_leaf("elem_set", name);
@@ -2091,7 +2091,7 @@ void FEBioExport4::WriteElementDataFields()
 			if (meshData)
 			{
 				FEElementData& data = *meshData;
-				const FEPart* pg = data.GetPart();
+				const FSPart* pg = data.GetPart();
 
 				string name = pg->GetName();
 				if (name.empty()) name = data.GetName();

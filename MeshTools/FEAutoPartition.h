@@ -34,7 +34,7 @@ class FEAutoPartition : public FEModifier
 {
 public:
 	FEAutoPartition();
-	FSMesh* Apply(FEGroup* pg);
+	FSMesh* Apply(FSGroup* pg);
 	FSMesh* Apply(FSMesh* pm);
 };
 

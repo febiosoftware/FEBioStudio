@@ -2193,7 +2193,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szset = tag.AttributeValue("node_set", true);
 			if (szset)
 			{
-				FENodeSet* nset = fem.BuildFENodeSet(szset);
+				FSNodeSet* nset = fem.BuildFENodeSet(szset);
 				if (nset)
 				{
 					GObject* po = nset->GetGObject();
@@ -2218,7 +2218,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 
 					char sz[32] = { 0 };
 					sprintf(sz, "nodeset%02d", po->FENodeSets() + 1);
-					FENodeSet* ps = new FENodeSet(po, l);
+					FSNodeSet* ps = new FSNodeSet(po, l);
 					ps->SetName(sz);
 					po->AddFENodeSet(ps);
 
@@ -2240,7 +2240,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)
 			{
-				FEPart* pg = fem.BuildFEPart(szset);
+				FSPart* pg = fem.BuildFEPart(szset);
 				if (pg)
 				{
 					GObject* po = pg->GetGObject();
@@ -2264,7 +2264,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 
 					char sz[32] = { 0 };
 					sprintf(sz, "elementset%02d", po->FEParts() + 1);
-					FEPart* ps = new FEPart(po, l);
+					FSPart* ps = new FSPart(po, l);
 					ps->SetName(sz);
 					po->AddFEPart(ps);
 

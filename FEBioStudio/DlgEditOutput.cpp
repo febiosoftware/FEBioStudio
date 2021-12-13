@@ -571,7 +571,7 @@ void CDlgEditOutput::UpdateLogItemList()
 				int NNS = po->FENodeSets();
 				for (int i=0; i<NNS; ++i)
 				{
-					FENodeSet* pns = po->GetFENodeSet(i);
+					FSNodeSet* pns = po->GetFENodeSet(i);
 					ui->logList->addItem(QString::fromStdString(pns->GetName()), pns->GetID());
 				}
 			}
@@ -585,7 +585,7 @@ void CDlgEditOutput::UpdateLogItemList()
 				int NES = po->FEParts();
 				for (int i = 0; i<NES; ++i)
 				{
-					FEPart* pg = po->GetFEPart(i);
+					FSPart* pg = po->GetFEPart(i);
 					ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
 				}
 			}

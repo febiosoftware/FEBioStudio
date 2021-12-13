@@ -182,7 +182,7 @@ public:
     FSReactionMaterial* GetReaction(int id);
 
 	// find (and assign) the group's parent
-	bool FindGroupParent(FEGroup* pg);
+	bool FindGroupParent(FSGroup* pg);
 
 public:
 	int DataMaps() const;

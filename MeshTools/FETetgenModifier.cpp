@@ -110,9 +110,9 @@ FSMesh* FETetGenModifier::Apply(FSMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FSMesh* FETetGenModifier::Apply(FEGroup* pg)
+FSMesh* FETetGenModifier::Apply(FSGroup* pg)
 {
-	FEPart* part = dynamic_cast<FEPart*>(pg);
+	FSPart* part = dynamic_cast<FSPart*>(pg);
 	if (part)
 		m_bremesh = true;
 	else

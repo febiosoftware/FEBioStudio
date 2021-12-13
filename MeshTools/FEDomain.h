@@ -38,15 +38,15 @@ class FEDWedge;
 class FEDTet;
 
 //-------------------------------------------------------------------------------
-class FEDomain
+class FSDomain
 {
 public:
     //! constructor
-    FEDomain() { m_pmesh = 0; };
-    FEDomain(FSMesh* pm) { m_pmesh = pm; }
+    FSDomain() { m_pmesh = 0; };
+    FSDomain(FSMesh* pm) { m_pmesh = pm; }
     
     //! destructor
-    ~FEDomain();
+    ~FSDomain();
 
 public:
     int Vertices() const { return (int)VertexList.size();}
@@ -169,7 +169,7 @@ public:
 };
 
 //-------------------------------------------------------------------------------
-class FEDVertex : public FEDomain
+class FEDVertex : public FSDomain
 {
 public:
     //! constructor
@@ -190,7 +190,7 @@ public:
 };
 
 //-------------------------------------------------------------------------------
-class FEDEdge : public FEDomain
+class FEDEdge : public FSDomain
 {
 public:
     //! constructor
@@ -210,7 +210,7 @@ public:
     void GenerateBias();
     
     // create meshed vertices
-    bool CreateMesh(FEDomain* pdom);
+    bool CreateMesh(FSDomain* pdom);
     
     // mesh data
     vector<int>     n;      // domain vertex list along edge
@@ -221,7 +221,7 @@ public:
 };
 
 //-------------------------------------------------------------------------------
-class FEDQuad : public FEDomain
+class FEDQuad : public FSDomain
 {
 public:
     //! constructor
@@ -234,7 +234,7 @@ public:
     ~FEDQuad() { n.clear(); eta1.clear(); eta2.clear(); }
     
     // create meshed vertices
-    bool CreateMesh(FEDomain* pdom);
+    bool CreateMesh(FSDomain* pdom);
     
 public:
     // local node numbering for edges
@@ -254,7 +254,7 @@ public:
 };
 
 //-------------------------------------------------------------------------------
-class FEDTri : public FEDomain
+class FEDTri : public FSDomain
 {
 public:
     //! constructor
@@ -270,7 +270,7 @@ public:
     int FindVertex(int vtx);
     
     // create meshed vertices
-    bool CreateMesh(FEDomain* pdom);
+    bool CreateMesh(FSDomain* pdom);
     
 public:
     // local node numbering for edges
@@ -294,7 +294,7 @@ public:
 };
 
 //-------------------------------------------------------------------------------
-class FEDBox : public FEDomain
+class FEDBox : public FSDomain
 {
 public:
     //! constructor
@@ -312,11 +312,11 @@ public:
     int FindBoxEdge(int n0, int n1);
     
     // create meshed vertices
-    bool CreateMesh(FEDomain* pdom);
+    bool CreateMesh(FSDomain* pdom);
     
 public:
-    void SetDomain(FEDomain* pdom) { m_pDom = pdom; }
-    FEDomain* GetDomain() { return m_pDom; }
+    void SetDomain(FSDomain* pdom) { m_pDom = pdom; }
+    FSDomain* GetDomain() { return m_pDom; }
     
 public:
     // local node numbering for edges
@@ -349,11 +349,11 @@ public:
     bool SetMeshSingleFace(int face, int nseg, double bias, bool dble);
 
 protected:
-    FEDomain*   m_pDom; // pointer to the domain this vertex belongs to
+    FSDomain*   m_pDom; // pointer to the domain this vertex belongs to
 };
 
 //-------------------------------------------------------------------------------
-class FEDWedge : public FEDomain
+class FEDWedge : public FSDomain
 {
 public:
     //! constructor
@@ -374,11 +374,11 @@ public:
     int FindWedgeVertex(int n0);
     
     // create meshed vertices
-    bool CreateMesh(FEDomain* pdom);
+    bool CreateMesh(FSDomain* pdom);
     
 public:
-    void SetDomain(FEDomain* pdom) { m_pDom = pdom; }
-    FEDomain* GetDomain() { return m_pDom; }
+    void SetDomain(FSDomain* pdom) { m_pDom = pdom; }
+    FSDomain* GetDomain() { return m_pDom; }
     
 public:
     // local node numbering for edges
@@ -415,11 +415,11 @@ public:
     bool SetMeshSingleEdge(int edge, int nseg, double bias, bool dble);
     
 protected:
-    FEDomain*   m_pDom; // pointer to the domain this vertex belongs to
+    FSDomain*   m_pDom; // pointer to the domain this vertex belongs to
 };
 
 //-------------------------------------------------------------------------------
-class FEDTet : public FEDomain
+class FEDTet : public FSDomain
 {
 public:
     //! constructor
@@ -443,11 +443,11 @@ public:
     int FindTetVertex(int n0);
     
     // create meshed vertices
-    bool CreateMesh(FEDomain* pdom);
+    bool CreateMesh(FSDomain* pdom);
     
 public:
-    void SetDomain(FEDomain* pdom) { m_pDom = pdom; }
-    FEDomain* GetDomain() { return m_pDom; }
+    void SetDomain(FSDomain* pdom) { m_pDom = pdom; }
+    FSDomain* GetDomain() { return m_pDom; }
     
 public:
     // local node numbering for edges
@@ -485,5 +485,5 @@ public:
     bool SetMeshFromEdge(int iedge, int nseg, double bias, bool dble);
     
 protected:
-    FEDomain*   m_pDom; // pointer to the domain this vertex belongs to
+    FSDomain*   m_pDom; // pointer to the domain this vertex belongs to
 };

@@ -337,12 +337,12 @@ public:
 		FSMesh* GetMesh();
 
 	public:
-		FENodeSet* BuildFENodeSet(const NodeSet& nset);
-		FESurface* BuildFESurface(Surface& surf);
+		FSNodeSet* BuildFENodeSet(const NodeSet& nset);
+		FSSurface* BuildFESurface(Surface& surf);
 
-		FENodeSet* BuildFENodeSet(const char* szname);
-		FESurface* BuildFESurface(const char* szname);
-		FEPart*    BuildFEPart   (const char* szname);
+		FSNodeSet* BuildFENodeSet(const char* szname);
+		FSSurface* BuildFESurface(const char* szname);
+		FSPart*    BuildFEPart   (const char* szname);
 
 	public:
 		vec3d	m_pos;
@@ -458,12 +458,12 @@ public:
 
 public:
 	int GetMaterialIndex(const char* szname);
-	FENodeSet* FindNodeSet(const char* szname);
+	FSNodeSet* FindNodeSet(const char* szname);
 	Surface* FindSurface(const char* szname);
-	FENodeSet* BuildFENodeSet(const char* szname);
-	FESurface* BuildFESurface(const char* szname);
-	FEPart* BuildFEPart(const char* szname);
-	FEPart* BuildFEPart(Domain* dom);
+	FSNodeSet* BuildFENodeSet(const char* szname);
+	FSSurface* BuildFESurface(const char* szname);
+	FSPart* BuildFEPart(const char* szname);
+	FSPart* BuildFEPart(Domain* dom);
 	FEItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);

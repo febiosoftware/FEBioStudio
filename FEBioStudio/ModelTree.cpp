@@ -1354,7 +1354,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			int nsets = po->FENodeSets();
 			for (int j = 0; j<nsets; ++j)
 			{
-				FENodeSet* pg = po->GetFENodeSet(j);
+				FSNodeSet* pg = po->GetFENodeSet(j);
 				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg);
 			}
 		}
@@ -1370,7 +1370,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			int surfs = po->FESurfaces();
 			for (int j = 0; j<surfs; ++j)
 			{
-				FESurface* pg = po->GetFESurface(j);
+				FSSurface* pg = po->GetFESurface(j);
 				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, 0, pg);
 			}
 		}
@@ -1386,7 +1386,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			int edges = po->FEEdgeSets();
 			for (int j = 0; j<edges; ++j)
 			{
-				FEEdgeSet* pg = po->GetFEEdgeSet(j);
+				FSEdgeSet* pg = po->GetFEEdgeSet(j);
 				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, 0, pg);
 			}
 		}
@@ -1402,7 +1402,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			int parts = po->FEParts();
 			for (int j = 0; j<parts; ++j)
 			{
-				FEPart* pg = po->GetFEPart(j);
+				FSPart* pg = po->GetFEPart(j);
 				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg);
 			}
 		}

@@ -40,12 +40,12 @@ class FESurfaceModifier;
 class FSMesh;
 class GSurfaceMeshObject;
 class FEMesher;
-class FEGroup;
+class FSGroup;
 
 class SurfaceModifierThread : public CustomThread
 {
 public:
-	SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FEGroup* pg);
+	SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg);
 
 	void run() Q_DECL_OVERRIDE;
 
@@ -62,7 +62,7 @@ private:
 	CModelDocument*		m_doc;
 	GSurfaceMeshObject*	m_po;
 	FESurfaceModifier*	m_mod;
-	FEGroup*			m_pg;
+	FSGroup*			m_pg;
 };
 
 

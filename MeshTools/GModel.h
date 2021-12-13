@@ -32,8 +32,8 @@ SOFTWARE.*/
 
 class GObject;
 class FSModel;
-class FENodeSet;
-class FESurface;
+class FSNodeSet;
+class FSSurface;
 class GPart;
 class GFace;
 class GEdge;
@@ -161,8 +161,8 @@ public:
 	int ShellElements();
 
 	// --- group functions ---
-	FENodeSet* GetNodesetFromID(int id);
-	FESurface* GetSurfaceFromID(int id);
+	FSNodeSet* GetNodesetFromID(int id);
+	FSSurface* GetSurfaceFromID(int id);
 
 	BOX GetBoundingBox();
 	void UpdateBoundingBox();

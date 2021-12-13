@@ -33,7 +33,7 @@ public:
 	FEExtrudeFaces();
 
 	FSMesh* Apply(FSMesh* pm);
-	FSMesh* Apply(FEGroup* pg);
+	FSMesh* Apply(FSGroup* pg);
 
 	void SetExtrusionDistance(double D);
 	void SetSegments(int n);

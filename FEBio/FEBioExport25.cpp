@@ -269,7 +269,7 @@ void FEBioExport25::AddNodeSet(const std::string& name, FEItemListBuilder* pl)
 			break;
 		case FE_SURFACE:
 			{
-				FESurface* face = dynamic_cast<FESurface*>(pl); assert(face);
+				FSSurface* face = dynamic_cast<FSSurface*>(pl); assert(face);
 				GObject* po = face->GetGObject();
 				Part* part = FindPart(po);
 				NodeSet* ns = part->FindNodeSet(name);
@@ -305,7 +305,7 @@ void FEBioExport25::AddSurface(const std::string& name, FEItemListBuilder* pl)
 			break;
 		case FE_SURFACE:
 			{
-				FESurface* surf = dynamic_cast<FESurface*>(pl); assert(surf);
+				FSSurface* surf = dynamic_cast<FSSurface*>(pl); assert(surf);
 				GObject* po = surf->GetGObject();
 				Part* part = FindPart(po);
 				Surface* s = part->FindSurface(name);
@@ -533,7 +533,7 @@ void FEBioExport25::BuildSurfaceList(FSProject& prj)
 				int nsurf = po->FESurfaces();
 				for (int j = 0; j<nsurf; ++j)
 				{
-					FESurface* ps = po->GetFESurface(j);
+					FSSurface* ps = po->GetFESurface(j);
 					AddSurface(ps->GetName(), ps);
 				}
 			}
@@ -700,7 +700,7 @@ void FEBioExport25::BuildElemSetList(FSProject& prj)
 			int sets = po->FEParts();
 			for (int j = 0; j < sets; ++j)
 			{
-				FEPart* pg = po->GetFEPart(j);
+				FSPart* pg = po->GetFEPart(j);
 				AddElemSet(pg->GetName(), pg);
 			}
 		}
@@ -2295,7 +2295,7 @@ void FEBioExport25::WriteGeometryNodeSetsNew()
 			break;
 		case FE_SURFACE:
 			{
-				FESurface* face = dynamic_cast<FESurface*>(pil); assert(face);
+				FSSurface* face = dynamic_cast<FSSurface*>(pil); assert(face);
 				for (int i=0; i<m_Part.size(); ++i)
 				{
 					Part* part = m_Part[i];
@@ -2360,7 +2360,7 @@ void FEBioExport25::WriteGeometryNodeSets()
 				int nset = po->FENodeSets();
 				for (int j = 0; j < nset; ++j)
 				{
-					FENodeSet* pns = po->GetFENodeSet(j);
+					FSNodeSet* pns = po->GetFENodeSet(j);
 					unique_ptr<FENodeList> pl(pns->BuildNodeList());
 					if (WriteNodeSet(pns->GetName(), pl.get()) == false)
 					{
@@ -2444,7 +2444,7 @@ void FEBioExport25::WriteGeometrySurfacesNew()
 				break;
 			case FE_SURFACE:
 				{
-					FESurface* surf = dynamic_cast<FESurface*>(pl); assert(surf);
+					FSSurface* surf = dynamic_cast<FSSurface*>(pl); assert(surf);
 					GObject* po = surf->GetGObject();
 
 					string name = string(po->GetName()) + "." + sname;
@@ -3142,7 +3142,7 @@ void FEBioExport25::WriteMeshDataFields()
 			{
 				FEElementData& data = *elemData;
 
-				const FEPart* pg = data.GetPart();
+				const FSPart* pg = data.GetPart();
 
 				double scale = data.GetScaleFactor();
 

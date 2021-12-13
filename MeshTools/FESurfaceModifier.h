@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <FSCore/FSThreadedTask.h>
 
 class FSSurfaceMesh;
-class FEGroup;
+class FSGroup;
 
 //-------------------------------------------------------------------
 // Class for modifying surface meshes
@@ -40,7 +40,7 @@ public:
 	virtual ~FESurfaceModifier();
 
 	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm) { return 0; }
-	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FEGroup* pg) { return Apply(pm); }
+	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FSGroup* pg) { return Apply(pm); }
 
 	bool SetError(const char* szerr, ...);
 
@@ -57,7 +57,7 @@ class FESurfacePartitionSelection : public FESurfaceModifier
 {
 public:
 	FESurfacePartitionSelection();
-	FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FEGroup* pg);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FSGroup* pg);
 
 	void assignToPartition(int n);
 

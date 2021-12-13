@@ -33,5 +33,5 @@ public:
 	FEMortarProjection();
 
 	// calculate a surface mesh that is the mortar surface
-	FSMesh* Apply(FESurface* pslave, FESurface* pmaster);
+	FSMesh* Apply(FSSurface* pslave, FSSurface* pmaster);
 };

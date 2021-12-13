@@ -364,7 +364,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			if (nbc)
 			{
 				// create a nodeset of this BC
-				FENodeSet* pg = new FENodeSet(m_po);
+				FSNodeSet* pg = new FSNodeSet(m_po);
 				sprintf(szname, "FixedNodeset%02d", nfc++);
 				pg->SetName(szname);
 
@@ -439,7 +439,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			for (i=0; i<N; ++i, ++pn) if ((BC[i] == nbc) && (pn->lc == nlc)) ++nfix;
 
 			// create a nodeset of this BC
-			FENodeSet* pg = new FENodeSet(m_po);
+			FSNodeSet* pg = new FSNodeSet(m_po);
 			sprintf(szname, "DisplacementNodeset%02d", nfc);
 			pg->SetName(szname);
 
@@ -689,7 +689,7 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 
 	while (pf != nike.m_Rigid.end())
 	{
-		FENodeSet* pn = new FENodeSet(m_po);
+		FSNodeSet* pn = new FSNodeSet(m_po);
 		sprintf(szname, "RigidNodeset%2d", nrns);
 		pn->SetName(szname);
 
@@ -774,13 +774,13 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 		FENikeProject::SLIDING_INTERFACE& si = nike.m_SI[i];
 
 		// create the slave surface
-		FESurface* pss = new FESurface(m_po);
+		FSSurface* pss = new FSSurface(m_po);
 		for (j=0; j<si.nns; ++j, ++pf) pss->add(FindFace(pf->n, 1));
 		sprintf(szname, "SlaveSurface%02d", i+1);
 		pss->SetName(szname);
 
 		// create the master surface
-		FESurface* pms = new FESurface(m_po);
+		FSSurface* pms = new FSSurface(m_po);
 		for (j=0; j<si.nms; ++j, ++pf) pms->add(FindFace(pf->n, 1));
 		sprintf(szname, "MasterSurface%02d", i+1);
 		pms->SetName(szname);

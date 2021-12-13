@@ -32,8 +32,8 @@ namespace Post {
 class FEPostMesh;
 class FEPostModel;
 class FEDataField;
-class FEPart;
-class FESurface;
+class FSPart;
+class FSSurface;
 class FEState;
 class FEMeshData;
 class MeshDomain;
@@ -176,8 +176,8 @@ protected:
 	bool WriteFaceData(FEPostModel& fem, FEState& state);
 
 	bool FillNodeDataArray(std::vector<float>& val, FEMeshData& data);
-	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data, FEPart& part);
-	bool FillFaceDataArray(std::vector<float>& val, FEMeshData& data, FESurface& part);
+	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data, FSPart& part);
+	bool FillFaceDataArray(std::vector<float>& val, FEMeshData& data, FSSurface& part);
 
 	bool error(const char* sz);
 

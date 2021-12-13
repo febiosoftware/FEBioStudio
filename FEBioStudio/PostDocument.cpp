@@ -732,7 +732,7 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 		{
 			for (int i = 0; i < po->FENodeSets(); ++i)
 			{
-				FENodeSet* pg = po->GetFENodeSet(i);
+				FSNodeSet* pg = po->GetFENodeSet(i);
 
 				XMLElement el("mesh:nodeset");
 				el.add_attribute("name", pg->GetName());
@@ -754,7 +754,7 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 
 			for (int i = 0; i < po->FEEdgeSets(); ++i)
 			{
-				FEEdgeSet* pg = po->GetFEEdgeSet(i);
+				FSEdgeSet* pg = po->GetFEEdgeSet(i);
 
 				XMLElement el("mesh:edgeset");
 				el.add_attribute("name", pg->GetName());
@@ -776,7 +776,7 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 
 			for (int i = 0; i < po->FESurfaces(); ++i)
 			{
-				FESurface* pg = po->GetFESurface(i);
+				FSSurface* pg = po->GetFESurface(i);
 
 				XMLElement el("mesh:surface");
 				el.add_attribute("name", pg->GetName());
@@ -798,7 +798,7 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 
 			for (int i = 0; i < po->FEParts(); ++i)
 			{
-				FEPart* pg = po->GetFEPart(i);
+				FSPart* pg = po->GetFEPart(i);
 
 				XMLElement el("mesh:part");
 				el.add_attribute("name", pg->GetName());
@@ -988,7 +988,7 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 				GObject* po = GetActiveObject();
 				if (po)
 				{
-					FENodeSet* pg = new FENodeSet(po, nodeList);
+					FSNodeSet* pg = new FSNodeSet(po, nodeList);
 					pg->SetName(szname);
 					po->AddFENodeSet(pg);
 				}
@@ -1011,7 +1011,7 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 				GObject* po = GetActiveObject();
 				if (po)
 				{
-					FEEdgeSet* pg = new FEEdgeSet(po, edgeList);
+					FSEdgeSet* pg = new FSEdgeSet(po, edgeList);
 					pg->SetName(szname);
 					po->AddFEEdgeSet(pg);
 				}
@@ -1034,7 +1034,7 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 				GObject* po = GetActiveObject();
 				if (po)
 				{
-					FESurface* pg = new FESurface(po, faceList);
+					FSSurface* pg = new FSSurface(po, faceList);
 					pg->SetName(szname);
 					po->AddFESurface(pg);
 				}
@@ -1057,7 +1057,7 @@ bool CPostDocument::OpenPostSession(const std::string& fileName)
 				GObject* po = GetActiveObject();
 				if (po)
 				{
-					FEPart* pg = new FEPart(po, elemList);
+					FSPart* pg = new FSPart(po, elemList);
 					pg->SetName(szname);
 					po->AddFEPart(pg);
 				}

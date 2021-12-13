@@ -47,14 +47,14 @@ FENodeData& FENodeData::operator=(const FENodeData& d)
 void FENodeData::Create(double v)
 {
 	delete m_nodeSet;
-	m_nodeSet = new FENodeSet(m_po);
+	m_nodeSet = new FSNodeSet(m_po);
 	m_nodeSet->CreateFromMesh();
 	FSMesh* pm = m_po->GetFEMesh();
 	SetMesh(pm);
 	m_data.assign(pm->Nodes(), v);
 }
 
-void FENodeData::Create(FENodeSet* nset, double v)
+void FENodeData::Create(FSNodeSet* nset, double v)
 {
 	delete m_nodeSet;
 	m_nodeSet = nset;
@@ -91,7 +91,7 @@ void FENodeData::Load(IArchive& ar)
 		}
 		else if (nid == CID_MESH_DATA_NODESET)
 		{
-			m_nodeSet = new FENodeSet(po);
+			m_nodeSet = new FSNodeSet(po);
 			m_nodeSet->Load(ar);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)

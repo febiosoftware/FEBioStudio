@@ -808,7 +808,7 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 			assert(false);
 		}
 
-		FEGroup* pg = dynamic_cast<FEGroup*>(item);
+		FSGroup* pg = dynamic_cast<FSGroup*>(item);
 		if (pg)
 		{
 			FSMesh* mesh = pg->GetMesh();
@@ -945,8 +945,8 @@ void CModelPropsPanel::addSelection(int n)
 			else
 			{
 				// for groups, make sure that they are on the same mesh
-				FEGroup* pg_prv = dynamic_cast<FEGroup*>(pl);
-				FEGroup* pg_new = dynamic_cast<FEGroup*>(pg);
+				FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
+				FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
 				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
 				{
 					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
@@ -992,8 +992,8 @@ void CModelPropsPanel::addSelection(int n)
 			else
 			{
 				// for groups, make sure that they are on the same mesh
-				FEGroup* pg_prv = dynamic_cast<FEGroup*>(pl);
-				FEGroup* pg_new = dynamic_cast<FEGroup*>(pg);
+				FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
+				FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
 				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
 				{
 					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
@@ -1038,8 +1038,8 @@ void CModelPropsPanel::addSelection(int n)
 			else
 			{
 				// for groups, make sure that they are on the same mesh
-				FEGroup* pg_prv = dynamic_cast<FEGroup*>(pl);
-				FEGroup* pg_new = dynamic_cast<FEGroup*>(pg);
+				FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
+				FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
 				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
 				{
 					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
@@ -1103,8 +1103,8 @@ void CModelPropsPanel::addSelection(int n)
 		else
 		{
 			// for groups, make sure that they are on the same mesh
-			FEGroup* pg_prv = dynamic_cast<FEGroup*>(pl);
-			FEGroup* pg_new = dynamic_cast<FEGroup*>(pg);
+			FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
+			FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
 			if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
 			{
 				QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
@@ -1489,7 +1489,7 @@ void CModelPropsPanel::selSelection(int n)
 	GGroup* pg = dynamic_cast<GGroup*>(m_currentObject);
 	if (pg) pl = pg;
 
-	FEGroup* pf = dynamic_cast<FEGroup*>(m_currentObject);
+	FSGroup* pf = dynamic_cast<FSGroup*>(m_currentObject);
 	if (pf) pl = pf;
 
 	CCommand* pcmd = 0;
@@ -1502,10 +1502,10 @@ void CModelPropsPanel::selSelection(int n)
 		case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, &l[0], (int)l.size(), false); break;
 		case GO_PART: pdoc->SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, &l[0], (int)l.size(), false); break;
 		default:
-			if (dynamic_cast<FEGroup*>(pl))
+			if (dynamic_cast<FSGroup*>(pl))
 			{
 				pdoc->SetSelectionMode(SELECT_OBJECT);
-				FEGroup* pg = dynamic_cast<FEGroup*>(pl);
+				FSGroup* pg = dynamic_cast<FSGroup*>(pl);
 				FSMesh* pm = dynamic_cast<FSMesh*>(pg->GetMesh());
 				assert(pm);
 				switch (pg->Type())

@@ -304,7 +304,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		int ns0 = 0, ns1 = shells;
 		for (i = 0; i<nparts; ++i, ++ip)
 		{
-			FEPart* pg = new FEPart(m_po);
+			FSPart* pg = new FSPart(m_po);
 
 			pg->SetName(ip->szname);
 
@@ -353,7 +353,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	for (pi = m_set.begin(); pi != m_set.end(); ++pi)
 	{
 	SET_SEGMENT_TITLE& s = *pi;
-	FESurface* ps = new FESurface(m_po);
+	FSSurface* ps = new FSSurface(m_po);
 	m_po->AddFESurface(ps);
 	ps->SetName(s.m_szname);
 

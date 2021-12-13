@@ -114,7 +114,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 	}
 
 	// create a domain from all selected elements
-	FEDomain dom(pm);
+	FSDomain dom(pm);
 	std::map<int, vector<int>>::iterator it;
 	for (it = efm.begin(); it != efm.end(); ++it) {
 		if (it->second.size() == 1) {

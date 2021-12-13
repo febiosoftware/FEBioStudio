@@ -74,28 +74,28 @@ public:
 	int Parts() const { return (int) m_Part.size(); }
 
 	//! add a part
-	void AddPart(FEPart* pg) { m_Part.push_back(pg); }
+	void AddPart(FSPart* pg) { m_Part.push_back(pg); }
 
 	//! return a part
-	FEPart& Part(int n) { return *m_Part[n]; }
+	FSPart& Part(int n) { return *m_Part[n]; }
 
 	// number of surfaces
 	int Surfaces() const { return (int) m_Surf.size(); }
 
 	// return a surface
-	FESurface& Surface(int n) { return *m_Surf[n]; }
+	FSSurface& Surface(int n) { return *m_Surf[n]; }
 
 	// Add a surface
-	void AddSurface(FESurface* ps) { m_Surf.push_back(ps); }
+	void AddSurface(FSSurface* ps) { m_Surf.push_back(ps); }
 
 	//! number of node sets
 	int NodeSets() const { return (int) m_NSet.size(); }
 
 	//! return a node set
-	FENodeSet& NodeSet(int i) { return *m_NSet[i]; }
+	FSNodeSet& NodeSet(int i) { return *m_NSet[i]; }
 
 	//! Add a node set
-	void AddNodeSet(FENodeSet* ps) { m_NSet.push_back(ps); }
+	void AddNodeSet(FSNodeSet* ps) { m_NSet.push_back(ps); }
 
 	// --- D A T A   U P D A T E ---
 
@@ -115,9 +115,9 @@ protected:
 	vector<MeshDomain*>	m_Dom;	// domains
 
 	// user-defined partitions
-	vector<FEPart*>		m_Part;	// parts
-	vector<FESurface*>	m_Surf;	// surfaces
-	vector<FENodeSet*>	m_NSet;	// node sets
+	vector<FSPart*>		m_Part;	// parts
+	vector<FSSurface*>	m_Surf;	// surfaces
+	vector<FSNodeSet*>	m_NSet;	// node sets
 
 	FSNodeElementList	m_NEL;
 };

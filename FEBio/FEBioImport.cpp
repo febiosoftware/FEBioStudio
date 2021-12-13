@@ -402,7 +402,7 @@ bool FEBioImport::UpdateFEModel(FSModel& fem)
 				FEBioInputModel::Surface* surf = m_febio->FindSurface(domain.c_str());
 				if (surf)
 				{
-					FESurface* ps = m_febio->BuildFESurface(domain.c_str());
+					FSSurface* ps = m_febio->BuildFESurface(domain.c_str());
 					GObject* po = ps->GetGObject(); assert(po);
 					if (po)
 					{
@@ -430,7 +430,7 @@ bool FEBioImport::UpdateFEModel(FSModel& fem)
 			FEBioInputModel::Surface& surf = part->GetSurface(j);
 			if (surf.m_refs == 0)
 			{
-				FESurface* psurf = partInstance.BuildFESurface(surf.name().c_str());
+				FSSurface* psurf = partInstance.BuildFESurface(surf.name().c_str());
 				if (psurf)
 				{
 					psurf->SetName(surf.name());

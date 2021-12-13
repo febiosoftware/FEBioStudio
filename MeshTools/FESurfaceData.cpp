@@ -54,7 +54,7 @@ void FESurfaceData::operator = (const FESurfaceData& d)
 	m_surface = d.m_surface;
 }
 
-void FESurfaceData::Create(FSMesh* mesh, FESurface* surface, FEMeshData::DATA_TYPE dataType)
+void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType)
 {
 	SetMesh(mesh);
 	m_surface = surface;
@@ -111,7 +111,7 @@ void FESurfaceData::Load(IArchive& ar)
 		}
 		else if(nid == CID_MESH_DATA_SURFACE)
 		{
-			m_surface = new FESurface(po);
+			m_surface = new FSSurface(po);
 			m_surface->Load(ar);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)

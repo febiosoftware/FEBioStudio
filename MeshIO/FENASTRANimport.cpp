@@ -325,7 +325,7 @@ bool FENASTRANimport::BuildMesh(FSModel& fem)
 		list<PSOLID>::iterator ip = m_Part.begin();
 		for (i=0; i<nparts; ++i, ++ip)
 		{
-			FEPart* pg = new FEPart(po);
+			FSPart* pg = new FSPart(po);
 
 			sprintf(szname, "Part%02d", i+1);
 			pg->SetName(szname);

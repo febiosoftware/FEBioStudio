@@ -88,10 +88,10 @@ FEItemListBuilder* FSRigidConnector::LoadList(IArchive& ar)
         case GO_EDGE: pitem = new GEdgeList(m_ps); break;
         case GO_FACE: pitem = new GFaceList(m_ps); break;
         case GO_PART: pitem = new GPartList(m_ps); break;
-        case FE_NODESET: pitem = new FENodeSet((GObject*)0); break;
-        case FE_EDGESET: pitem = new FEEdgeSet((GObject*)0); break;
-        case FE_SURFACE: pitem = new FESurface((GObject*)0); break;
-        case FE_PART   : pitem = new FEPart   ((GObject*)0); break;
+        case FE_NODESET: pitem = new FSNodeSet((GObject*)0); break;
+        case FE_EDGESET: pitem = new FSEdgeSet((GObject*)0); break;
+        case FE_SURFACE: pitem = new FSSurface((GObject*)0); break;
+        case FE_PART   : pitem = new FSPart   ((GObject*)0); break;
         default:
             assert(false);
     }
@@ -103,8 +103,8 @@ FEItemListBuilder* FSRigidConnector::LoadList(IArchive& ar)
     int nret = ar.OpenChunk();
     if (nret != IArchive::IO_END) throw ReadError("error in FSInterface::LoadList");
     
-    // set the parent mesh for FEGroup's
-    FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
+    // set the parent mesh for FSGroup's
+    FSGroup* pg = dynamic_cast<FSGroup*>(pitem);
     if (pg)
     {
         if (m_ps->FindGroupParent(pg) == false) throw ReadError("Invalid object ID in FSInterface::Load");

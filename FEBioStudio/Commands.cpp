@@ -2720,7 +2720,7 @@ void CCmdUnhideAll::UnExecute()
 // CCmdApplyFEModifier
 //-----------------------------------------------------------------------------
 
-CCmdApplyFEModifier::CCmdApplyFEModifier(FEModifier* pmod, GObject* po, FEGroup* selection) : CCommand(pmod->GetName())
+CCmdApplyFEModifier::CCmdApplyFEModifier(FEModifier* pmod, GObject* po, FSGroup* selection) : CCommand(pmod->GetName())
 {
 	m_pnew = 0;
 
@@ -2793,7 +2793,7 @@ void CCmdApplyFEModifier::UnExecute()
 // CCmdApplySurfaceModifier
 //-----------------------------------------------------------------------------
 
-CCmdApplySurfaceModifier::CCmdApplySurfaceModifier(FESurfaceModifier* pmod, GObject* po, FEGroup* selection) : CCommand(pmod->GetName())
+CCmdApplySurfaceModifier::CCmdApplySurfaceModifier(FESurfaceModifier* pmod, GObject* po, FSGroup* selection) : CCommand(pmod->GetName())
 {
 	m_pnew = 0;
 

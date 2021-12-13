@@ -780,7 +780,7 @@ int GModel::ShellElements()
 
 //-----------------------------------------------------------------------------
 
-FENodeSet* GModel::GetNodesetFromID(int id)
+FSNodeSet* GModel::GetNodesetFromID(int id)
 {
 	int i, j;
 	for (i=0; i<(int)imp->m_Obj.Size(); ++i)
@@ -788,7 +788,7 @@ FENodeSet* GModel::GetNodesetFromID(int id)
 		GObject* po = imp->m_Obj[i];
 		for (j=0; j<po->FENodeSets(); ++j)
 		{
-			FENodeSet* pn = po->GetFENodeSet(j);
+			FSNodeSet* pn = po->GetFENodeSet(j);
 			if (pn->GetID() == id) return pn;
 		}
 	}
@@ -798,7 +798,7 @@ FENodeSet* GModel::GetNodesetFromID(int id)
 
 //-----------------------------------------------------------------------------
 
-FESurface* GModel::GetSurfaceFromID(int id)
+FSSurface* GModel::GetSurfaceFromID(int id)
 {
 	int i, j;
 	for (i=0; i<(int)imp->m_Obj.Size(); ++i)
@@ -806,7 +806,7 @@ FESurface* GModel::GetSurfaceFromID(int id)
 		GObject* po = imp->m_Obj[i];
 		for (j=0; j<po->FESurfaces(); ++j)
 		{
-			FESurface* ps = po->GetFESurface(j);
+			FSSurface* ps = po->GetFESurface(j);
 			if (ps->GetID() == id) return ps;
 		}
 	}

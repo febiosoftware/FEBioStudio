@@ -1445,7 +1445,7 @@ void FEBioExport2::WriteGeometryNodeSets()
 			int nset = po->FENodeSets();
 			for (int j=0; j<nset; ++j)
 			{
-				FENodeSet* pns = po->GetFENodeSet(j);
+				FSNodeSet* pns = po->GetFENodeSet(j);
 				unique_ptr<FENodeList> pl(pns->BuildNodeList());
 				if (WriteNodeSet(pns->GetName(), pl.get()) == false)
 				{

@@ -148,7 +148,7 @@ void MeshingThread::stop()
 }
 
 //=======================================================================================
-ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FEGroup* pg)
+ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FSGroup* pg)
 {
 	m_doc = doc;
 	m_mod = mod;
@@ -400,7 +400,7 @@ void CMeshPanel::on_apply2_clicked(bool b)
 
 	FESelection* sel = doc->GetCurrentSelection();
 	FEItemListBuilder* list = (sel ? sel->CreateItemList() : 0);
-	FEGroup* g = dynamic_cast<FEGroup*>(list);
+	FSGroup* g = dynamic_cast<FSGroup*>(list);
 	if (g == 0) 
 	{ 
 		if (dynamic_cast<GEdgeList*>(list) && (list->size() == 1))

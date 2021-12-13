@@ -62,7 +62,7 @@ void FEExtrudeFaces::SetSymmetricBias(bool b)
 	SetBoolValue(4, b);
 }
 
-FSMesh* FEExtrudeFaces::Apply(FEGroup* pg)
+FSMesh* FEExtrudeFaces::Apply(FSGroup* pg)
 {
 	if (pg->Type() != FE_SURFACE)
 	{

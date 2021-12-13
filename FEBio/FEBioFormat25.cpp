@@ -717,7 +717,7 @@ bool FEBioFormat25::ParseNodeData(XMLTag& tag)
 
 	// read the nodal data
 	const char* szset = tag.AttributeValue("node_set");
-	FENodeSet* pg = feb.BuildFENodeSet(szset);
+	FSNodeSet* pg = feb.BuildFENodeSet(szset);
 	if (pg == nullptr) { ParseUnknownTag(tag); return false; }
 
 	// get the name
@@ -847,7 +847,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 		}
 		else
 		{
-			FEPart* pg = feb.BuildFEPart(szset);
+			FSPart* pg = feb.BuildFEPart(szset);
 			if (pg == nullptr) ParseUnknownAttribute(tag, "elem_set");
 			else
 			{
@@ -970,7 +970,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 			FEBioInputModel::Domain* dom = feb.FindDomain(szset);
 			if (dom)
 			{
-				FEPart* pg = feb.BuildFEPart(dom);
+				FSPart* pg = feb.BuildFEPart(dom);
 				if (pg)
 				{
 					FSMesh* mesh = pg->GetMesh();
@@ -1014,7 +1014,7 @@ bool FEBioFormat25::ParseSurfaceData(XMLTag& tag)
 	else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
 	else return false;
 
-	FESurface* feSurf = feb.BuildFESurface(surf->cvalue());
+	FSSurface* feSurf = feb.BuildFESurface(surf->cvalue());
 	FSMesh* feMesh = feSurf->GetMesh();
 
 	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
@@ -1079,7 +1079,7 @@ void FEBioFormat25::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 
 	// get the node set
 	const char* szset = tag.AttributeValue("node_set");
-	FENodeSet* pg = febio.BuildFENodeSet(szset);
+	FSNodeSet* pg = febio.BuildFENodeSet(szset);
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", szset);
 
 	// create the constraint
@@ -1183,7 +1183,7 @@ void FEBioFormat25::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	else throw XMLReader::InvalidAttributeValue(tag, "bc", abc.cvalue());
 
 	XMLAtt& set = tag.Attribute("node_set");
-	FENodeSet* pg = febio.BuildFENodeSet(set.cvalue());
+	FSNodeSet* pg = febio.BuildFENodeSet(set.cvalue());
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", set.cvalue());
 
 	// make a new boundary condition
@@ -1292,7 +1292,7 @@ void FEBioFormat25::ParseBCRigid(FSStep* pstep, XMLTag& tag)
 	// read node set
 	const char* szset = tag.AttributeValue("node_set");
 	FEBioInputModel& febio = GetFEBioModel();
-	FENodeSet* pg = febio.BuildFENodeSet(szset);
+	FSNodeSet* pg = febio.BuildFENodeSet(szset);
 
 	GMaterial* pmat = 0;
 	if ((nrb > 0) && (nrb <= febio.Materials())) pmat = febio.GetMaterial(nrb - 1);
@@ -1456,7 +1456,7 @@ void FEBioFormat25::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	else name = szname;
 
 	// create the node set
-	FENodeSet* pg = febio.BuildFENodeSet(aset.cvalue());
+	FSNodeSet* pg = febio.BuildFENodeSet(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
 	char szbuf[256];
 	sprintf(szbuf, "ForceNodeset%02d", CountLoads<FSNodalDOFLoad>(fem)+1);
@@ -1496,7 +1496,7 @@ void FEBioFormat25::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 
 	// find the surface
 	XMLAtt& surf = tag.Attribute("surface");
-	FESurface* psurf = febio.BuildFESurface(surf.cvalue());
+	FSSurface* psurf = febio.BuildFESurface(surf.cvalue());
 	if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, surf);
 
 	// get the optional name
@@ -2340,7 +2340,7 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 			double val = 0.0;
 
 			const char* szset = tag.AttributeValue("node_set");
-			FENodeSet* pg = febio.BuildFENodeSet(szset);
+			FSNodeSet* pg = febio.BuildFENodeSet(szset);
 			if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
 
 			++tag;
@@ -2564,8 +2564,8 @@ void FEBioFormat25::ParseContact(FSStep *pstep, XMLTag &tag)
 			{
 				string name1 = part->GetSurface(surfPair->masterID()).name();
 				string name2 = part->GetSurface(surfPair->slaveID()).name();
-				FESurface* master = febio.BuildFESurface(name1.c_str());
-				FESurface* slave  = febio.BuildFESurface(name2.c_str());
+				FSSurface* master = febio.BuildFESurface(name1.c_str());
+				FSSurface* slave  = febio.BuildFESurface(name2.c_str());
 
 				pci->SetSecondarySurface(master);
 				pci->SetPrimarySurface(slave);
@@ -2849,7 +2849,7 @@ void FEBioFormat25::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 	const char* szsurf = tag.AttributeValue("surface", true);
 	if (szsurf)
 	{
-		FESurface* surface = febio.BuildFESurface(szsurf);
+		FSSurface* surface = febio.BuildFESurface(szsurf);
 		if (surface) pci->SetItemList(surface);
 	}
 
@@ -3335,7 +3335,7 @@ void FEBioFormat25::ParseVolumeConstraint(FSStep* pstep, XMLTag& tag)
 
 	// find the surface
 	const char* szsurf = tag.AttributeValue("surface");
-	FESurface* psurf = febio.BuildFESurface(szsurf);
+	FSSurface* psurf = febio.BuildFESurface(szsurf);
 	if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
 
 	// create a new volume constraint
@@ -3368,7 +3368,7 @@ void FEBioFormat25::ParseSymmetryPlane(FSStep* pstep, XMLTag& tag)
 
 	// find the surface
 	const char* szsurf = tag.AttributeValue("surface");
-	FESurface* psurf = febio.BuildFESurface(szsurf);
+	FSSurface* psurf = febio.BuildFESurface(szsurf);
 	if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
 
 	// create a new symmetry plane
@@ -3401,7 +3401,7 @@ void FEBioFormat25::ParseNrmlFldVlctSrf(FSStep* pstep, XMLTag& tag)
     
     // find the surface
     const char* szsurf = tag.AttributeValue("surface");
-    FESurface* psurf = febio.BuildFESurface(szsurf);
+    FSSurface* psurf = febio.BuildFESurface(szsurf);
     if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
     
     // create a new constrained normal fluid flow surface
@@ -3434,7 +3434,7 @@ void FEBioFormat25::ParseFrictionlessFluidWall(FSStep* pstep, XMLTag& tag)
 
     // find the surface
     const char* szsurf = tag.AttributeValue("surface");
-    FESurface* psurf = febio.BuildFESurface(szsurf);
+    FSSurface* psurf = febio.BuildFESurface(szsurf);
     if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
 
     // create a new frictionless fluid wall

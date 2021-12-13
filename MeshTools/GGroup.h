@@ -37,7 +37,7 @@ class GEdgeSelection;
 class GNodeSelection;
 
 //-----------------------------------------------------------------------------
-// The GGroup performs the same function for GObjects as the FEGroup is for
+// The GGroup performs the same function for GObjects as the FSGroup is for
 // meshes. Its main purpose is to convert groups into FEItemList.
 //
 class GGroup : public FEItemListBuilder

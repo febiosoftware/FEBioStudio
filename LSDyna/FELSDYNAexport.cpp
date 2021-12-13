@@ -277,7 +277,7 @@ bool FELSDYNAexport::write_SET_SHELL_LIST()
 				fprintf(m_fp, "*SET_SHELL_LIST\n");
 				fprintf(m_fp, "%10d%15.10lg%15.10lg%15.10lg%15.10lg\n", n++, 0., 0., 0., 0.);
 
-				FEPart* pg = po->GetFEPart(j);
+				FSPart* pg = po->GetFEPart(j);
 				unique_ptr<FEElemList> pl(pg->BuildElemList());
 				int N = pl->Size();
 				FEElemList::Iterator pi = pl->First();

@@ -76,7 +76,7 @@ private:
 	void ParseContactTiedPoro   (FSStep* pstep, XMLTag& tag);
 	void ParseRigidWall         (FSStep* pstep, XMLTag& tag);
 	void ParseLinearConstraint  (FSStep* pstep, XMLTag& tag);
-	FESurface* ParseContactSurface(XMLTag& tag, int format = 0);
+	FSSurface* ParseContactSurface(XMLTag& tag, int format = 0);
 	void ParseContactParams(XMLTag& tag, FSPairedInterface* pc, int nid);
 	void ParseConstraint(FSStep* pstep, XMLTag& tag);
 
@@ -112,7 +112,7 @@ private:
 	void ParseLoadHeatFlux          (FSStep* pstep, XMLTag& tag);
 	void ParseLoadConvectiveHeatFlux(FSStep* pstep, XMLTag& tag);
 	void ParseLoadConcentrationFlux (FSStep* pstep, XMLTag& tag);
-	FESurface* ParseLoadSurface     (XMLTag& tag);
+	FSSurface* ParseLoadSurface     (XMLTag& tag);
 
 	// geometry parsing functions (version 2.0 and up)
 	void ParseGeometryNodes      (FEBioInputModel::Part& part, XMLTag& tag);
@@ -122,7 +122,7 @@ private:
 	void ParseGeometrySurface    (FEBioInputModel::Part& part, XMLTag& tag);
 
 	// helper functions (version 2.5 and up)
-	FENodeSet* ParseNodeSet(XMLTag& tag);
+	FSNodeSet* ParseNodeSet(XMLTag& tag);
 
 private:
 	FEBioInputModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }

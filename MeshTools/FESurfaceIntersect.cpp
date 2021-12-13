@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESurfaceIntersect.h"
 
-int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
+int FESurfaceIntersect::Apply(FSSurface* psrc, FSSurface* ptrg, double mindist)
 {
 	// get the parent mesh 
 	// and make sure it is a triangle mesh

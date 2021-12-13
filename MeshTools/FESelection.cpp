@@ -1194,7 +1194,7 @@ FEItemListBuilder* FEElementSelection::CreateItemList()
 	vector<int> elset;
 	for (int i=0; i<pm->Elements(); ++i) 
 		if (pm->Element(i).IsSelected()) elset.push_back(i);
-	return new FEPart(po, elset);
+	return new FSPart(po, elset);
 }
 
 FEElement_* FEElementSelection::Element(int i)
@@ -1436,7 +1436,7 @@ FEItemListBuilder* FEFaceSelection::CreateItemList()
 	vector<int> fs;
 	for (int i=0; i<pm->Faces(); ++i)
 		if (pm->Face(i).IsSelected()) fs.push_back(i);
-	return new FESurface(po, fs);
+	return new FSSurface(po, fs);
 }
 
 FEFaceSelection::Iterator FEFaceSelection::begin()
@@ -1674,7 +1674,7 @@ FEItemListBuilder* FEEdgeSelection::CreateItemList()
 	vector<int> es;
 	for (int i=0; i<pm->Edges(); ++i)
 		if (pm->Edge(i).IsSelected()) es.push_back(i);
-	return new FEEdgeSet(po, es);
+	return new FSEdgeSet(po, es);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1862,5 +1862,5 @@ FEItemListBuilder* FENodeSelection::CreateItemList()
 	vector<int> ns;
 	for (int i=0; i<pm->Nodes(); ++i)
 		if (pm->Node(i).IsSelected()) ns.push_back(i);
-	return new FENodeSet(po, ns);
+	return new FSNodeSet(po, ns);
 }

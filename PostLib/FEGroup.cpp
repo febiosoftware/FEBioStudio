@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <string.h>
 
 //-----------------------------------------------------------------------------
-// FEDomain constructor
+// FSDomain constructor
 Post::MeshDomain::MeshDomain(Post::FEPostMesh *pm)
 {
 	m_pm = pm;
@@ -62,7 +62,7 @@ FEElement_& Post::MeshDomain::Element(int n)
 	return m_pm->ElementRef(m_Elem[n]);
 }
 
-void Post::FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
+void Post::FSPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 {
 	FSCoreMesh& mesh = *GetMesh();
 	int NN = mesh.Nodes();
@@ -100,7 +100,7 @@ void Post::FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 	}
 }
 
-void Post::FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
+void Post::FSSurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 {
 	FSCoreMesh& mesh = *GetMesh();
 	int NN = mesh.Nodes();
