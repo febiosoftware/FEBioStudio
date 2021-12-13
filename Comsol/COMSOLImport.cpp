@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-COMSOLimport::COMSOLimport(FSProject& prj) : FEFileImport(prj)
+COMSOLimport::COMSOLimport(FSProject& prj) : FSFileImport(prj)
 {
 	m_domainstosets = false;
 	m_bautopart = true;

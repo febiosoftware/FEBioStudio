@@ -453,7 +453,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 		(ext.compare("igs", Qt::CaseInsensitive) == 0)) return new IGESImport(prj);
 	if (ext.compare("feb", Qt::CaseInsensitive) == 0)
 	{
-		FEBioImport* febio = new FEBioImport(prj);
+		FEBioFileImport* febio = new FEBioFileImport(prj);
 		febio->SetGeometryOnlyFlag(true);
 		return febio;
 	}
@@ -480,7 +480,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	// create a file reader
 	FileReader* reader = 0;
 	QString ext = QFileInfo(fileName).suffix();
-	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioImport(prj);
+	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
 	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new FENIKEImport(prj);
 	else if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
@@ -1591,7 +1591,7 @@ void CMainWindow::on_actionConvertFeb_triggered()
 		for (it = fileNames.begin(); it != fileNames.end(); ++it)
 		{
 			FSProject prj;
-			FEBioImport reader(prj);
+			FEBioFileImport reader(prj);
 
 			FEFileExport* exporter = 0;
 			if (nformat == 0)
@@ -1727,7 +1727,7 @@ void CMainWindow::on_actionConvertGeo_triggered()
 
 					// create a file reader based on the file extension
 					FileReader* reader = CreateFileReader(*it);
-					FEFileImport* importer = dynamic_cast<FEFileImport*>(reader);
+					FSFileImport* importer = dynamic_cast<FSFileImport*>(reader);
 					if (importer)
 					{
 						FSProject& prj = importer->GetProject();

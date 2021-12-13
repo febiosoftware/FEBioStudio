@@ -34,7 +34,7 @@ namespace Post {
 //-----------------------------------------------------------------------------
 // This class maps the distance between two surfaces and adds a field variable
 // to the mesh
-class FEDistanceMap : public FEDataField
+class FEDistanceMap : public ModelDataField
 {
 private:
 	class Surface
@@ -57,7 +57,7 @@ private:
 public:
 	FEDistanceMap(FEPostModel* fem, int flags);
 
-	FEDataField* Clone() const override;
+	ModelDataField* Clone() const override;
 
 	FEMeshData* CreateData(FEState* pstate) override;
 

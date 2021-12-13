@@ -33,11 +33,11 @@ namespace Post {
 class FEPostModel;
 class FEPostMesh;
 
-class FEBioImport :	public FEFileReader
+class FEBioFileImport :	public FEFileReader
 {
 public:
-	FEBioImport(FEPostModel* fem);
-	~FEBioImport();
+	FEBioFileImport(FEPostModel* fem);
+	~FEBioFileImport();
 
 	bool Load(const char* szfile) override;
 

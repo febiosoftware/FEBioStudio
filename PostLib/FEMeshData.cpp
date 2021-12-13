@@ -188,7 +188,7 @@ mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nst
 
 //-----------------------------------------------------------------------------
 // Deformation gradient
-DeformationGradient::DeformationGradient(FEState* pm, FEDataField* pdf) : FEElemData_T<mat3d, DATA_COMP>(pm, pdf)
+DeformationGradient::DeformationGradient(FEState* pm, ModelDataField* pdf) : FEElemData_T<mat3d, DATA_COMP>(pm, pdf)
 {
 }
 
@@ -1764,7 +1764,7 @@ void VolumeStrain::eval(int n, float* pv)
 //=============================================================================
 // Element pressure
 //-----------------------------------------------------------------------------
-ElemPressure::ElemPressure(FEState* pm, FEDataField* pdf) : FEElemData_T<float, DATA_ITEM>(pm, pdf)
+ElemPressure::ElemPressure(FEState* pm, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(pm, pdf)
 {
 	// find the stress field
 	FEPostModel& fem = *pm->GetFSModel();
@@ -1797,7 +1797,7 @@ void ElemPressure::eval(int n, float* pv)
 //=============================================================================
 // Element nodal pressure
 //-----------------------------------------------------------------------------
-ElemNodalPressure::ElemNodalPressure(FEState* state, FEDataField* pdf) : FEElemData_T<float, DATA_COMP>(state, pdf)
+ElemNodalPressure::ElemNodalPressure(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_COMP>(state, pdf)
 {
 	// find the stress field
 	FEPostModel& fem = *state->GetFSModel();
@@ -1835,7 +1835,7 @@ void ElemNodalPressure::eval(int n, float* pv)
 //=============================================================================
 // Solid stress in a biphasic/multiphasic material
 //-----------------------------------------------------------------------------
-SolidStress::SolidStress(FEState* state, FEDataField* pdf) : FEElemData_T<mat3fs, DATA_ITEM>(state, pdf)
+SolidStress::SolidStress(FEState* state, ModelDataField* pdf) : FEElemData_T<mat3fs, DATA_ITEM>(state, pdf)
 {
 	// find the stress field
 	FEPostModel& fem = *state->GetFSModel();

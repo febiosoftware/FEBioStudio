@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEHyperSurfImport : public FEFileImport
+class FEHyperSurfImport : public FSFileImport
 {
 public:
 	FEHyperSurfImport(FSProject& prj);

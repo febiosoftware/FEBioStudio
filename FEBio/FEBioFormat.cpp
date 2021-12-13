@@ -118,7 +118,7 @@ int GetDOFCode(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-FEBioFormat::FEBioFormat(FEBioImport* fileReader, FEBioInputModel& febio) : m_febio(febio)
+FEBioFormat::FEBioFormat(FEBioFileImport* fileReader, FEBioInputModel& febio) : m_febio(febio)
 {
 	m_fileReader = fileReader;
 

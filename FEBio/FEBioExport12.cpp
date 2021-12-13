@@ -3922,7 +3922,7 @@ void FEBioExport12::WriteGlobalsSection()
 				int NS = fem.Solutes();
 				for (int i = 0; i<NS; ++i)
 				{
-					FESoluteData& s = fem.GetSoluteData(i);
+					SoluteData& s = fem.GetSoluteData(i);
 					XMLElement el;
 					el.name("solute");
 					el.add_attribute("id", i + 1);
@@ -3946,7 +3946,7 @@ void FEBioExport12::WriteGlobalsSection()
 				int NS = fem.SBMs();
 				for (int i = 0; i<NS; ++i)
 				{
-					FESoluteData& s = fem.GetSBMData(i);
+					SoluteData& s = fem.GetSBMData(i);
 					XMLElement el;
 					el.name("solid_bound");
 					el.add_attribute("id", i + 1);

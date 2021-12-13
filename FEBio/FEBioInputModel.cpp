@@ -36,9 +36,9 @@ SOFTWARE.*/
 
 using std::stringstream;
 
-static FEBioImport* febImport = nullptr;
+static FEBioFileImport* febImport = nullptr;
 
-void InitLog(FEBioImport* im)
+void InitLog(FEBioFileImport* im)
 {
 	febImport = im;
 }

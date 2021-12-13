@@ -39,7 +39,7 @@ SOFTWARE.*/
 ////using namespace std;
 
 //-----------------------------------------------------------------------------
-AbaqusImport::AbaqusImport(FSProject& prj) : FEFileImport(prj)
+AbaqusImport::AbaqusImport(FSProject& prj) : FSFileImport(prj)
 {
 	// default options
 	m_bnodesets = true;

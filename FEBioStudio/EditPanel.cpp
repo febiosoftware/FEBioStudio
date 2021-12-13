@@ -92,7 +92,7 @@ REGISTER_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"
 REGISTER_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"       , 0xFF);
 REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
 REGISTER_CLASS(FEWeldSurfaceNodes         , CLASS_SURFACE_MODIFIER, "Weld Nodes"   , 0xFF);
-REGISTER_CLASS(FEMMGSurfaceRemesh         , CLASS_SURFACE_MODIFIER, "MMG Remesh"   , 0xFF);
+REGISTER_CLASS(MMGSurfaceRemesh         , CLASS_SURFACE_MODIFIER, "MMG Remesh"   , 0xFF);
 
 class CPartitionProps : public CDataPropertyList
 {

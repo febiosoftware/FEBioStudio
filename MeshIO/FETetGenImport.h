@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class FETetGenImport : public FEFileImport
+class FETetGenImport : public FSFileImport
 {
 public:
 	struct NODE

@@ -54,7 +54,7 @@ public:
 template <typename T> class FENodeData_T : public FENodeItemData
 {
 public:
-	FENodeData_T(FEState* state, FEDataField* pdf) : FENodeItemData(state, FEMeshDataTraits<T>::Type(), DATA_ITEM) {}
+	FENodeData_T(FEState* state, ModelDataField* pdf) : FENodeItemData(state, FEMeshDataTraits<T>::Type(), DATA_ITEM) {}
 	virtual void eval(int n, T* pv) = 0;
 	virtual bool active(int n) { return true; }
 
@@ -69,7 +69,7 @@ public:
 template <typename T> class FENodeData : public FENodeData_T<T>
 {
 public:
-	FENodeData(FEState* state, FEDataField* pdf) : FENodeData_T<T>(state, pdf) { m_data.resize(state->GetFEMesh()->Nodes()); }
+	FENodeData(FEState* state, ModelDataField* pdf) : FENodeData_T<T>(state, pdf) { m_data.resize(state->GetFEMesh()->Nodes()); }
 	void eval(int n, T* pv) { (*pv) = m_data[n]; }
 	void copy(FENodeData<T>& d) { m_data = d.m_data; }
 
@@ -122,7 +122,7 @@ public:
 template <typename T, Data_Format fmt> class FEFaceData_T : public FEFaceItemData
 {
 public:
-	FEFaceData_T(FEState* state, FEDataField* pdf) : FEFaceItemData(state, FEMeshDataTraits<T>::Type(), fmt) {}
+	FEFaceData_T(FEState* state, ModelDataField* pdf) : FEFaceItemData(state, FEMeshDataTraits<T>::Type(), fmt) {}
 	virtual void eval(int n, T* pv) = 0;
 	virtual bool active(int n) { return true; }
 
@@ -139,7 +139,7 @@ template <typename T, Data_Format fmt> class FEFaceData : public FEFaceData_T<T,
 template <typename T> class FEFaceData<T, DATA_ITEM> : public FEFaceData_T<T, DATA_ITEM>
 {
 public:
-	FEFaceData(FEState* state, FEDataField* pdf) : FEFaceData_T<T, DATA_ITEM>(state, pdf)
+	FEFaceData(FEState* state, ModelDataField* pdf) : FEFaceData_T<T, DATA_ITEM>(state, pdf)
 	{ 
 		if (m_face.empty())
 			m_face.assign(state->GetFEMesh()->Faces(), -1); 
@@ -172,7 +172,7 @@ protected:
 template <typename T> class FEFaceData<T, DATA_REGION> : public FEFaceData_T<T, DATA_REGION>
 {
 public:
-	FEFaceData(FEState* state, FEDataField* pdf) : FEFaceData_T<T, DATA_REGION>(state, pdf)
+	FEFaceData(FEState* state, ModelDataField* pdf) : FEFaceData_T<T, DATA_REGION>(state, pdf)
 	{ 
 		if (m_face.empty())
 			m_face.assign(state->GetFEMesh()->Faces(), -1); 
@@ -210,7 +210,7 @@ protected:
 template <typename T> class FEFaceData<T, DATA_COMP> : public FEFaceData_T<T, DATA_COMP>
 {
 public:
-	FEFaceData(FEState* state, FEDataField* pdf) : FEFaceData_T<T, DATA_COMP>(state, pdf)
+	FEFaceData(FEState* state, ModelDataField* pdf) : FEFaceData_T<T, DATA_COMP>(state, pdf)
 	{ 
 		if (m_face.empty())
 			m_face.assign(state->GetFEMesh()->Faces(), -1); 
@@ -247,7 +247,7 @@ protected:
 template <typename T> class FEFaceData<T, DATA_NODE> : public FEFaceData_T<T, DATA_NODE>
 {
 public:
-	FEFaceData(FEState* state, FEDataField* pdf) : FEFaceData_T<T, DATA_NODE>(state, pdf)
+	FEFaceData(FEState* state, ModelDataField* pdf) : FEFaceData_T<T, DATA_NODE>(state, pdf)
 	{
 		if (m_face.empty())
 		{
@@ -304,7 +304,7 @@ public:
 class FEElemArrayDataItem : public FEElemItemData
 {
 public:
-	FEElemArrayDataItem(FEState* state, int nsize, FEDataField* pdf) : FEElemItemData(state, DATA_ARRAY, DATA_ITEM)
+	FEElemArrayDataItem(FEState* state, int nsize, ModelDataField* pdf) : FEElemItemData(state, DATA_ARRAY, DATA_ITEM)
 	{
 		int NE = state->GetFEMesh()->Elements();
 		m_stride = nsize;
@@ -345,7 +345,7 @@ protected:
 class FEElemArrayDataNode : public FEElemItemData
 {
 public:
-	FEElemArrayDataNode(FEState* state, int nsize, FEDataField* pdf) : FEElemItemData(state, DATA_ARRAY, DATA_NODE)
+	FEElemArrayDataNode(FEState* state, int nsize, ModelDataField* pdf) : FEElemItemData(state, DATA_ARRAY, DATA_NODE)
 	{
 		FEPostMesh& m = *state->GetFEMesh();
 		m_stride = nsize;
@@ -387,7 +387,7 @@ protected:
 class FEElemArrayVec3Data : public FEElemItemData
 {
 public:
-	FEElemArrayVec3Data(FEState* state, int nsize, FEDataField* pdf) : FEElemItemData(state, DATA_ARRAY_VEC3F, DATA_ITEM)
+	FEElemArrayVec3Data(FEState* state, int nsize, ModelDataField* pdf) : FEElemItemData(state, DATA_ARRAY_VEC3F, DATA_ITEM)
 	{
 		int NE = state->GetFEMesh()->Elements();
 		m_stride = nsize;
@@ -434,7 +434,7 @@ protected:
 template <typename T, Data_Format fmt> class FEElemData_T : public FEElemItemData
 {
 public:
-	FEElemData_T(FEState* state, FEDataField* pdf) : FEElemItemData(state, FEMeshDataTraits<T>::Type(), fmt) {}
+	FEElemData_T(FEState* state, ModelDataField* pdf) : FEElemItemData(state, FEMeshDataTraits<T>::Type(), fmt) {}
 	virtual void eval(int n, T* pv) = 0;
 	virtual bool active(int n) { return true; }
 
@@ -451,7 +451,7 @@ template <typename T, Data_Format fmt> class FEElementData : public FEElemData_T
 template <typename T> class FEElementData<T, DATA_ITEM> : public FEElemData_T<T, DATA_ITEM>
 {
 public:
-	FEElementData(FEState* state, FEDataField* pdf) : FEElemData_T<T, DATA_ITEM>(state, pdf)
+	FEElementData(FEState* state, ModelDataField* pdf) : FEElemData_T<T, DATA_ITEM>(state, pdf)
 	{ 
 		m_elem.assign(state->GetFEMesh()->Elements(), -1); 
 	}
@@ -481,7 +481,7 @@ protected:
 template <typename T> class FEElementData<T, DATA_REGION> : public FEElemData_T<T, DATA_REGION>
 {
 public:
-	FEElementData(FEState* state, FEDataField* pdf) : FEElemData_T<T, DATA_REGION>(state, pdf)
+	FEElementData(FEState* state, ModelDataField* pdf) : FEElemData_T<T, DATA_REGION>(state, pdf)
 	{
 		if (m_elem.empty())
 			m_elem.assign(state->GetFEMesh()->Elements(), -1); 
@@ -526,7 +526,7 @@ protected:
 template <typename T> class FEElementData<T, DATA_COMP> : public FEElemData_T<T, DATA_COMP>
 {
 public:
-	FEElementData(FEState* state, FEDataField* pdf) : FEElemData_T<T, DATA_COMP>(state, pdf)
+	FEElementData(FEState* state, ModelDataField* pdf) : FEElemData_T<T, DATA_COMP>(state, pdf)
 	{
 		if (m_elem.empty())
 		{
@@ -564,7 +564,7 @@ protected:
 template <typename T> class FEElementData<T, DATA_NODE> : public FEElemData_T<T, DATA_NODE>
 {
 public:
-	FEElementData(FEState* state, FEDataField* pdf) : FEElemData_T<T, DATA_NODE>(state, pdf)
+	FEElementData(FEState* state, ModelDataField* pdf) : FEElemData_T<T, DATA_NODE>(state, pdf)
 	{
 		FEPostMesh& m = *state->GetFEMesh();
 		if (m_elem.empty())
@@ -615,7 +615,7 @@ protected:
 class NodePosition : public FENodeData_T<vec3f>
 {
 public:
-	NodePosition(FEState* state, FEDataField* pdf) : FENodeData_T<vec3f>(state, pdf){}
+	NodePosition(FEState* state, ModelDataField* pdf) : FENodeData_T<vec3f>(state, pdf){}
 	void eval(int n, vec3f* pv);
 };
 
@@ -623,7 +623,7 @@ public:
 class NodeInitPos : public FENodeData_T<vec3f>
 {
 public:
-	NodeInitPos(FEState* state, FEDataField* pdf) : FENodeData_T<vec3f>(state, pdf){}
+	NodeInitPos(FEState* state, ModelDataField* pdf) : FENodeData_T<vec3f>(state, pdf){}
 	void eval(int n, vec3f* pv);
 };
 
@@ -656,7 +656,7 @@ public: // parameters
 	vector<int> m_face;
 };
 
-class CurvatureField : public FEDataField
+class CurvatureField : public ModelDataField
 {
 public:
 	enum CURVATURE_TYPE
@@ -670,7 +670,7 @@ public:
 	};
 
 public:
-	CurvatureField(FEPostModel* fem, int measure) : FEDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+	CurvatureField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
 	{
 		m_measure = measure;
 		m_nlevels = 1;
@@ -678,7 +678,7 @@ public:
 		m_bext = false;
 	}
 
-	FEDataField* Clone() const override
+	ModelDataField* Clone() const override
 	{
 		CurvatureField* pd = new CurvatureField(m_fem, m_measure);
 		pd->m_name = m_name;
@@ -704,7 +704,7 @@ public:
 class PrincCurvatureVector : public FEFaceData_T<vec3f, DATA_NODE>
 {
 public:
-	PrincCurvatureVector(FEState* state, FEDataField* pdf) : FEFaceData_T<vec3f, DATA_NODE>(state, pdf) { m_face.assign(state->GetFEMesh()->Faces(), 1); }
+	PrincCurvatureVector(FEState* state, ModelDataField* pdf) : FEFaceData_T<vec3f, DATA_NODE>(state, pdf) { m_face.assign(state->GetFEMesh()->Faces(), 1); }
 
 	bool active(int n) { return (m_face[n] == 1); }
 
@@ -730,7 +730,7 @@ public: // parameters
 class PrincCurvatureVector1 : public PrincCurvatureVector
 {
 public:
-	PrincCurvatureVector1(FEState* state, FEDataField* pdf) : PrincCurvatureVector(state, pdf){}
+	PrincCurvatureVector1(FEState* state, ModelDataField* pdf) : PrincCurvatureVector(state, pdf){}
 	void eval(int n, vec3f* f) { PrincCurvatureVector::eval(n, f, 0); }
 };
 
@@ -738,7 +738,7 @@ public:
 class PrincCurvatureVector2 : public PrincCurvatureVector
 {
 public:
-	PrincCurvatureVector2(FEState* state, FEDataField* pdf) : PrincCurvatureVector(state, pdf){}
+	PrincCurvatureVector2(FEState* state, ModelDataField* pdf) : PrincCurvatureVector(state, pdf){}
 	void eval(int n, vec3f* f) { PrincCurvatureVector::eval(n, f, 1); }
 };
 
@@ -746,7 +746,7 @@ public:
 class SurfaceCongruency : public FEFaceData_T<float, DATA_NODE>
 {
 public:
-	SurfaceCongruency(FEState* state, FEDataField* pdf) : FEFaceData_T<float, DATA_NODE>(state, pdf) { m_face.assign(state->GetFEMesh()->Faces(), 1); }
+	SurfaceCongruency(FEState* state, ModelDataField* pdf) : FEFaceData_T<float, DATA_NODE>(state, pdf) { m_face.assign(state->GetFEMesh()->Faces(), 1); }
 
 	bool active(int n) { return (m_face[n] == 1); }
 
@@ -771,13 +771,13 @@ public:
 class DeformationGradient : public FEElemData_T<mat3d, DATA_COMP>
 {
 public:
-	DeformationGradient(FEState* pstate, FEDataField* pdf);
+	DeformationGradient(FEState* pstate, ModelDataField* pdf);
 	void eval(int n, mat3d* pv);
 };
 
 //-----------------------------------------------------------------------------
 // strain data
-class StrainDataField : public FEDataField
+class StrainDataField : public ModelDataField
 {
 public:
 	enum {
@@ -794,13 +794,13 @@ public:
 	};
 
 public:
-	StrainDataField(FEPostModel* fem, int measure) : FEDataField(fem, DATA_MAT3FS, DATA_ITEM, CLASS_ELEM, 0)
+	StrainDataField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_MAT3FS, DATA_ITEM, CLASS_ELEM, 0)
 	{ 
 		m_nref = -1; 
 		m_measure = measure; 
 	}
 
-	FEDataField* Clone() const override
+	ModelDataField* Clone() const override
 	{
 		StrainDataField* pd = new StrainDataField(m_fem, m_measure);
 		pd->m_name = m_name;
@@ -912,7 +912,7 @@ public:
 class VolumeRatio : public FEElemData_T<float, DATA_ITEM>
 {
 public:
-	VolumeRatio(FEState* state, FEDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
+	VolumeRatio(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
 	void eval(int n, float* pv);
 };
 
@@ -920,7 +920,7 @@ public:
 class ElementVolume : public FEElemData_T<float, DATA_ITEM>
 {
 public:
-	ElementVolume(FEState* state, FEDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
+	ElementVolume(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
 	void eval(int n, float* pv);
 };
 
@@ -928,7 +928,7 @@ public:
 class AspectRatio : public FEElemData_T<float, DATA_ITEM>
 {
 public:
-	AspectRatio(FEState* state, FEDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
+	AspectRatio(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
 	void eval(int n, float* pv);
 };
 
@@ -936,7 +936,7 @@ public:
 class MaxEdgeAngle : public FEElemData_T<float, DATA_ITEM>
 {
 public:
-	MaxEdgeAngle(FEState* state, FEDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
+	MaxEdgeAngle(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
 	void eval(int n, float* pv);
 };
 
@@ -944,7 +944,7 @@ public:
 class MinEdgeAngle : public FEElemData_T<float, DATA_ITEM>
 {
 public:
-	MinEdgeAngle(FEState* state, FEDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
+	MinEdgeAngle(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
 	void eval(int n, float* pv);
 };
 
@@ -952,7 +952,7 @@ public:
 class VolumeStrain : public FEElemData_T<float, DATA_ITEM>
 {
 public:
-	VolumeStrain(FEState* state, FEDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
+	VolumeStrain(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf){}
 	void eval(int n, float* pv);
 };
 
@@ -960,7 +960,7 @@ public:
 class ElemPressure : public FEElemData_T<float, DATA_ITEM>
 {
 public:
-	ElemPressure(FEState* state, FEDataField* pdf);
+	ElemPressure(FEState* state, ModelDataField* pdf);
 	void eval(int n, float* pv);
 private:
 	int	m_nstress;	// stress field
@@ -972,7 +972,7 @@ private:
 class ElemNodalPressure : public FEElemData_T<float, DATA_COMP>
 {
 public:
-	ElemNodalPressure(FEState* state, FEDataField* pdf);
+	ElemNodalPressure(FEState* state, ModelDataField* pdf);
 	void eval(int n, float* pv);
 private:
 	int	m_nstress;	// nodal stress field
@@ -982,7 +982,7 @@ private:
 class SolidStress : public FEElemData_T<mat3fs, DATA_ITEM>
 {
 public:
-	SolidStress(FEState* state, FEDataField* pdf);
+	SolidStress(FEState* state, ModelDataField* pdf);
 	void eval(int n, mat3fs* pv);
 private:
 	int	m_nstress;	// total stress field

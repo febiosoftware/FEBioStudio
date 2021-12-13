@@ -104,7 +104,7 @@ public: // reading
 	void Flush();
 
 	// Open for reading
-	bool Open(IOFileStream* fp);
+	bool Open(FileStream* fp);
 
 	// open for appending
 	bool Append(const char* szfile);

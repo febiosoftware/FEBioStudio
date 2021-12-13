@@ -32,7 +32,7 @@ SOFTWARE.*/
 
 //! \todo PreView has trouble with reading surface elements and volume elements since
 //! the surface elements are not shell elements.
-FEGMshImport::FEGMshImport(FSProject& prj) : FEFileImport(prj)
+FEGMshImport::FEGMshImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_szline[0] = 0;
 	m_pm = 0;

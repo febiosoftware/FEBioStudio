@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class AnsysImport : public FEFileImport
+class AnsysImport : public FSFileImport
 {
 	struct NODE
 	{

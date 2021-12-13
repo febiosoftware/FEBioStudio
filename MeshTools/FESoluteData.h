@@ -30,12 +30,13 @@ SOFTWARE.*/
 // This class is used for both solutes and sbms. 
 // This was done to simplify the dialog box for editing solutes/sbms.
 // Perhaps a flag cam be added to identify this molecule as a solute or sbm but I have not found a need for this.
-class FESoluteData : public FSObject
+// TODO: Move to FEMLib?
+class SoluteData : public FSObject
 {
 	enum { Z, MM, DENS};
 
 public:
-	FESoluteData();
+	SoluteData();
 
 	int GetChargeNumber() const { return GetIntValue(Z); }
 	void SetChargeNumber(int n) { SetIntValue(Z, n); }

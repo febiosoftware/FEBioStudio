@@ -34,12 +34,12 @@ class FSSurfaceMesh;
 
 //-----------------------------------------------------------------------------
 // This class stores for each node a list of nodes that are connected to it.
-class FENodeNodeList
+class FSNodeNodeList
 {
 public:
-	FENodeNodeList(FSMesh* pm, bool preservePartitions = false);
-	FENodeNodeList(FSSurfaceMesh* pm);
-	~FENodeNodeList();
+	FSNodeNodeList(FSMesh* pm, bool preservePartitions = false);
+	FSNodeNodeList(FSSurfaceMesh* pm);
+	~FSNodeNodeList();
 
 	int Valence(int n) { return m_val[n]; }
 	int Node(int n, int j) { return m_node[ m_off[n] + j]; }

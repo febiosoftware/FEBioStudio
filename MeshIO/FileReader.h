@@ -109,10 +109,10 @@ private:
 
 //-----------------------------------------------------------------------------
 // class for reading FE file formats
-class FEFileImport : public FileReader
+class FSFileImport : public FileReader
 {
 public:
-	FEFileImport(FSProject& prj) : m_prj(prj) {}
+	FSFileImport(FSProject& prj) : m_prj(prj) {}
 
 	FSProject& GetProject() { return m_prj; }
 

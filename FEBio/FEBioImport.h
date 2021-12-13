@@ -36,11 +36,11 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // Implements a class to import FEBio files
 // 
-class FEBioImport : public FEFileImport
+class FEBioFileImport : public FSFileImport
 {
 public:
-	FEBioImport(FSProject& prj);
-	~FEBioImport();
+	FEBioFileImport(FSProject& prj);
+	~FEBioFileImport();
 	bool Load(const char* szfile) override;
 
 	const char* GetLog() { return m_szlog; }

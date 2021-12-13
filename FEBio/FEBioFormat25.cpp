@@ -43,7 +43,7 @@ SOFTWARE.*/
 
 using std::stringstream;
 
-FEBioFormat25::FEBioFormat25(FEBioImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
+FEBioFormat25::FEBioFormat25(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
 	m_geomFormat = 0;
 }

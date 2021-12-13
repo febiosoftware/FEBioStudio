@@ -103,7 +103,7 @@ void CDlgSoluteTable::Update()
 
 			for (int i=0; i<NS; ++i)
 			{
-				FESoluteData& s = fem->GetSoluteData(i);
+				SoluteData& s = fem->GetSoluteData(i);
 
 				ui->table->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(s.GetName())));
 				ui->table->setItem(i, 1, new QTableWidgetItem(QString::number(s.GetChargeNumber())));
@@ -120,7 +120,7 @@ void CDlgSoluteTable::Update()
 
 			for (int i=0; i<NS; ++i)
 			{
-				FESoluteData& s = fem->GetSBMData(i);
+				SoluteData& s = fem->GetSBMData(i);
 
 				ui->table->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(s.GetName())));
 				ui->table->setItem(i, 1, new QTableWidgetItem(QString::number(s.GetChargeNumber())));
@@ -171,7 +171,7 @@ void CDlgSoluteTable::on_table_itemChanged(QTableWidgetItem* item)
 
 	QString txt = item->text();
 
-	FESoluteData& solute = (m_mode == ShowSolutes ? fem->GetSoluteData(nrow) : fem->GetSBMData(nrow));
+	SoluteData& solute = (m_mode == ShowSolutes ? fem->GetSoluteData(nrow) : fem->GetSBMData(nrow));
 	switch (ncol)
 	{
 	case 0:  // name

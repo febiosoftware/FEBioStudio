@@ -769,13 +769,13 @@ CReactionReactantProperties::CReactionReactantProperties(FSReactionMaterial* mat
 
 		if (pr->GetReactantType() == 1)
 		{
-			FESoluteData& sd = fem.GetSoluteData(index);
+			SoluteData& sd = fem.GetSoluteData(index);
 			QString t = "vR (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
 		else
 		{
-			FESoluteData& sd = fem.GetSBMData(index);
+			SoluteData& sd = fem.GetSBMData(index);
 			QString t = "vR (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
@@ -805,13 +805,13 @@ CReactionProductProperties::CReactionProductProperties(FSReactionMaterial* mat, 
 
 		if (pr->GetProductType() == 1)
 		{
-			FESoluteData& sd = fem.GetSoluteData(index);
+			SoluteData& sd = fem.GetSoluteData(index);
 			QString t = "vP (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
 		else
 		{
-			FESoluteData& sd = fem.GetSBMData(index);
+			SoluteData& sd = fem.GetSBMData(index);
 			QString t = "vP (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}

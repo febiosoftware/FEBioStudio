@@ -774,7 +774,7 @@ void CModelDocument::HideUnselected()
 }
 
 //-----------------------------------------------------------------------------
-bool CModelDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
+bool CModelDocument::ImportGeometry(FSFileImport* preader, const char *szfile)
 {
 	ClearCommandStack();
 

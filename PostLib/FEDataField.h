@@ -45,12 +45,12 @@ enum DataFieldFlags {
 
 //-----------------------------------------------------------------------------
 // Base class describing a data field
-class FEDataField
+class ModelDataField
 {
 public:
-	FEDataField(FEPostModel* glm, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
+	ModelDataField(FEPostModel* glm, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
 
-	virtual ~FEDataField();
+	virtual ~ModelDataField();
 
 	//! get the name of the field
 	const std::string& GetName() const;
@@ -59,7 +59,7 @@ public:
 	void SetName(const std::string& newName);
 
 	//! Create a copy
-	virtual FEDataField* Clone() const = 0;
+	virtual ModelDataField* Clone() const = 0;
 
 	//! FEMeshData constructor
 	virtual FEMeshData* CreateData(FEState* pstate) = 0;
@@ -91,7 +91,7 @@ public:
 	//! return the name of a component
 	std::string componentName(int ncomp, Data_Tensor_Type ntype);
 
-	virtual const std::type_info& TypeInfo() { return typeid(FEDataField); }
+	virtual const std::type_info& TypeInfo() { return typeid(ModelDataField); }
 
 	unsigned int Flags() const { return m_flag; }
 
@@ -123,13 +123,13 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-template<typename T> class FEDataField_T : public FEDataField
+template<typename T> class FEDataField_T : public ModelDataField
 {
 public:
-	FEDataField_T(FEPostModel* fem, unsigned int flag = 0) : FEDataField(fem, T::Type(), T::Format(), T::Class(), flag) {}
+	FEDataField_T(FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, T::Type(), T::Format(), T::Class(), flag) {}
 	FEMeshData* CreateData(FEState* pstate) { return new T(pstate, this); }
 
-	virtual FEDataField* Clone() const
+	virtual ModelDataField* Clone() const
 	{
 		FEDataField_T<T>* newData = new FEDataField_T<T>(m_fem);
 		newData->SetName(GetName());
@@ -140,36 +140,36 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-typedef std::vector<FEDataField*>::iterator FEDataFieldPtr;
+typedef std::vector<ModelDataField*>::iterator FEDataFieldPtr;
 
 
 //-----------------------------------------------------------------------------
-class FEArrayDataField : public FEDataField
+class FEArrayDataField : public ModelDataField
 {
 public:
 	FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag = 0);
 
-	FEDataField* Clone() const override;
+	ModelDataField* Clone() const override;
 
 	FEMeshData* CreateData(FEState* pstate) override;
 };
 
 //-----------------------------------------------------------------------------
-class FEArrayVec3DataField : public FEDataField
+class FEArrayVec3DataField : public ModelDataField
 {
 public:
 	FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag = 0);
 
-	FEDataField* Clone() const override;
+	ModelDataField* Clone() const override;
 
 	FEMeshData* CreateData(FEState* pstate) override;
 };
 
 //-------------------------------------------------------------------------------
-bool ExportDataField(FEPostModel& fem, const FEDataField& df, const char* szfile);
-bool ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
-bool ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
-bool ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
+bool ExportDataField(FEPostModel& fem, const ModelDataField& df, const char* szfile);
+bool ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp);
+bool ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp);
+bool ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp);
 
 //-----------------------------------------------------------------------------
 void InitStandardDataFields();
@@ -183,12 +183,12 @@ bool AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char* sznam
 bool AddFaceDataFromFile(FEPostModel& fem, const char* szfile, const char* szname, int ntype);
 bool AddElemDataFromFile(FEPostModel& fem, const char* szfile, const char* szname, int ntype);
 
-class FEPlotObjectData : public FEDataField
+class PlotObjectData : public ModelDataField
 {
 public:
-	FEPlotObjectData(FEPostModel* fem, Data_Type ntype) : FEDataField(fem, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
+	PlotObjectData(FEPostModel* fem, Data_Type ntype) : ModelDataField(fem, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
 
-	FEDataField* Clone() const override { assert(false); return nullptr; };
+	ModelDataField* Clone() const override { assert(false); return nullptr; };
 	FEMeshData* CreateData(FEState* pstate) override { assert(false); return nullptr; }
 };
 }

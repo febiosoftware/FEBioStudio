@@ -1240,7 +1240,7 @@ void extractElemDataComponentNODE(Data_Type ntype, Post::FEMeshData& dst, Post::
 	}
 }
 
-FEDataField* Post::DataComponent(FEPostModel& fem, FEDataField* pdf, int ncomp, const std::string& sname)
+ModelDataField* Post::DataComponent(FEPostModel& fem, ModelDataField* pdf, int ncomp, const std::string& sname)
 {
 	if (pdf == 0) return 0;
 
@@ -1250,7 +1250,7 @@ FEDataField* Post::DataComponent(FEPostModel& fem, FEDataField* pdf, int ncomp, 
 
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	FEDataField* newField = 0;
+	ModelDataField* newField = 0;
 	if (nclass == CLASS_NODE)
 	{
 		newField = new FEDataField_T<FENodeData<float> >(&fem);
@@ -1358,7 +1358,7 @@ bool Post::DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tens
 
 //-----------------------------------------------------------------------------
 // convert between formats
-FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int newFormat, const std::string& name)
+ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, int newFormat, const std::string& name)
 {
 	if (dataField == nullptr) return nullptr;
 
@@ -1371,7 +1371,7 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	FEDataField* newField = nullptr;
+	ModelDataField* newField = nullptr;
 	if (nclass == CLASS_ELEM)
 	{
 		if (nfmt == DATA_ITEM)
@@ -1480,7 +1480,7 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 	return newField;
 }
 
-FEDataField* Post::DataEigenTensor(FEPostModel& fem, FEDataField* dataField, const std::string& name)
+ModelDataField* Post::DataEigenTensor(FEPostModel& fem, ModelDataField* dataField, const std::string& name)
 {
 	int dataType = dataField->Type();
 	int nfmt = dataField->Format();
@@ -1490,7 +1490,7 @@ FEDataField* Post::DataEigenTensor(FEPostModel& fem, FEDataField* dataField, con
 	if (nclass != CLASS_ELEM) return nullptr;
 	if (nfmt != DATA_ITEM) return nullptr;
 
-	FEDataField* newField = new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem);
+	ModelDataField* newField = new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem);
 	fem.AddDataField(newField, name);
 
 	int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);

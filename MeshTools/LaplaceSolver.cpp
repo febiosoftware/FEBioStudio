@@ -158,7 +158,7 @@ bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int 
 	assert(nc == nodeList.size());
 
 	// create Node-Node list
-	FENodeNodeList NNL(pm);
+	FSNodeNodeList NNL(pm);
 
 	// create node-element list
 	FSNodeElementList NEL;

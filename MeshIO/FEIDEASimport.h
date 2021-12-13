@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class FEIDEASimport : public FEFileImport
+class FEIDEASimport : public FSFileImport
 {
 protected:
 	struct NODE

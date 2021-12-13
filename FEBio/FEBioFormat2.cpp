@@ -39,7 +39,7 @@ SOFTWARE.*/
 
 using std::stringstream;
 
-FEBioFormat2::FEBioFormat2(FEBioImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
+FEBioFormat2::FEBioFormat2(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
 }
 

@@ -45,7 +45,7 @@ class FEBioFormatOld : public FEBioFormat
 	};
 
 public:
-	FEBioFormatOld(FEBioImport* fileReader, FEBioInputModel& febio);
+	FEBioFormatOld(FEBioFileImport* fileReader, FEBioInputModel& febio);
 	~FEBioFormatOld();
 
 	bool ParseSection(XMLTag& tag);

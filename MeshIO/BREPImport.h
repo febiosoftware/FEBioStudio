@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 
 
-class BREPImport : public FEFileImport
+class BREPImport : public FSFileImport
 {
 public:
 	BREPImport(FSProject& prj);
@@ -39,7 +39,7 @@ public:
 };
 
 // NOTE: There is already an IGES file reader in FEIGESFileImport.h
-class IGESImport : public FEFileImport
+class IGESImport : public FSFileImport
 {
 public:
 	IGESImport(FSProject& prj);

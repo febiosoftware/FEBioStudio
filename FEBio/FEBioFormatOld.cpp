@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
 
-FEBioFormatOld::FEBioFormatOld(FEBioImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
+FEBioFormatOld::FEBioFormatOld(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
 }
 

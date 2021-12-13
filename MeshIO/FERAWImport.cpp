@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FERAWImport::FERAWImport(FSProject& prj) : FEFileImport(prj)
+FERAWImport::FERAWImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_nx = 0;
 	m_ny = 0;

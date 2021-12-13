@@ -954,7 +954,7 @@ bool FEFillHole::AFM(FSSurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list
 		}
 	}
 
-	FENodeNodeList NNL(&mesh);
+	FSNodeNodeList NNL(&mesh);
 
 	int N = mesh.Nodes(); //total no of nodes.
 	int new_nodes_count = 0;

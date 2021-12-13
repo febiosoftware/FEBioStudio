@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class FENASTRANimport : public FEFileImport
+class FENASTRANimport : public FSFileImport
 {
 protected:
 	enum {MAX_ITEMS = 32};
@@ -67,7 +67,7 @@ protected:
 	};
 
 public:
-	FENASTRANimport(FSProject& prj) : FEFileImport(prj) {}
+	FENASTRANimport(FSProject& prj) : FSFileImport(prj) {}
 	bool Load(const char* szfile);
 
 protected:

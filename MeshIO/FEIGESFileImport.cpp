@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 
-FEIGESFileImport::FEIGESFileImport(FSProject& prj) : FEFileImport(prj)
+FEIGESFileImport::FEIGESFileImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 

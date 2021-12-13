@@ -95,7 +95,7 @@ FSMesh* FEMeshSmoothingModifier::Apply(FSMesh* pm)
 void FEMeshSmoothingModifier::Laplacian_Smoothing(FSMesh* pnew,vector<int> hashmap)
 {
 	//Creating a node node list
-	FENodeNodeList NNL(pnew);
+	FSNodeNodeList NNL(pnew);
 
 	for(int j =0 ;j<m_iteration;j++)
 	{
@@ -121,7 +121,7 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing(FSMesh* pnew,vector<int> hashm
 void FEMeshSmoothingModifier::Laplacian_Smoothing2(FSMesh* pnew,vector<int> hashmap)
 {
 	//Creating a node node list
-	FENodeNodeList NNL(pnew);
+	FSNodeNodeList NNL(pnew);
 
 	for(int j =0 ;j<m_iteration;j++)
 	{
@@ -150,7 +150,7 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing2(FSMesh* pnew,vector<int> hash
 void FEMeshSmoothingModifier::Taubin_Smoothing(FSMesh* pnew,vector<int> hashmap)
 {
 	//Creating a node node list
-	FENodeNodeList NNL(pnew);
+	FSNodeNodeList NNL(pnew);
 	
 	vector<vec3d>phi_node;
 	phi_node.reserve(pnew->Nodes());

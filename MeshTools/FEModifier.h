@@ -403,10 +403,10 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class FERefineMesh : public FEModifier
+class RefineMesh : public FEModifier
 {
 public:
-	FERefineMesh();
+	RefineMesh();
 
 	FSMesh* Apply(FSMesh* pm);
 };

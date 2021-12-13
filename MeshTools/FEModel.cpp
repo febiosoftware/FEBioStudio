@@ -267,7 +267,7 @@ void FSModel::ClearSolutes()
 //-----------------------------------------------------------------------------
 void FSModel::AddSolute(const std::string& name, int z, double M, double d)
 {
-	FESoluteData* s = new FESoluteData;
+	SoluteData* s = new SoluteData;
 	s->SetName(name);
 	s->SetChargeNumber(z);
 	s->SetMolarMass(M);
@@ -577,7 +577,7 @@ int FSModel::FindSolute(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-FESoluteData& FSModel::GetSoluteData(int i)
+SoluteData& FSModel::GetSoluteData(int i)
 { 
 	return *m_Sol[i]; 
 }
@@ -618,7 +618,7 @@ int FSModel::FindSBM(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-FESoluteData& FSModel::GetSBMData(int i)
+SoluteData& FSModel::GetSBMData(int i)
 { 
 	return *m_SBM[i]; 
 }
@@ -632,7 +632,7 @@ int FSModel::SBMs()
 //-----------------------------------------------------------------------------
 void FSModel::AddSBM(const std::string& name, int z, double M, double d)
 {
-	FESoluteData* s = new FESoluteData;
+	SoluteData* s = new SoluteData;
 	s->SetName(name);
 	s->SetChargeNumber(z);
 	s->SetMolarMass(M);
@@ -883,7 +883,7 @@ void FSModel::Save(OArchive& ar)
 			int NS = Solutes();
 			for (int i=0; i<NS; ++i)
 			{
-				FESoluteData& sd = *m_Sol[i];
+				SoluteData& sd = *m_Sol[i];
 				ar.BeginChunk(CID_FEM_SOLUTE);
 				{
 					ar.WriteChunk(CID_FEM_SOLUTE_NAME      , sd.GetName());
@@ -905,7 +905,7 @@ void FSModel::Save(OArchive& ar)
 			int NS = SBMs();
 			for (int i=0; i<NS; ++i)
 			{
-				FESoluteData& sd = *m_SBM[i];
+				SoluteData& sd = *m_SBM[i];
 				ar.BeginChunk(CID_FEM_SBM);
 				{
 					ar.WriteChunk(CID_FEM_SBM_NAME      , sd.GetName());

@@ -33,7 +33,7 @@ SOFTWARE.*/
 
 class VTKMesh;
 
-class FEVTKimport :	public FEFileImport
+class FEVTKimport :	public FSFileImport
 {
 
 public:

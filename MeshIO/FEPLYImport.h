@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEPLYImport : public FEFileImport
+class FEPLYImport : public FSFileImport
 {
 public:
 	FEPLYImport(FSProject& prj);

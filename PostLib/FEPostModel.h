@@ -80,7 +80,7 @@ public:
 		vec3d			m_pos;
 		quatd			m_rot;
 
-		vector<FEPlotObjectData*>	m_data;
+		vector<PlotObjectData*>	m_data;
 	};
 
 	class PointObject : public PlotObject
@@ -173,19 +173,19 @@ public:
 	FEState* GetState(int nstate) { return m_State[nstate]; }
 
 	//! Add a new data field
-	void AddDataField(FEDataField* pd, const std::string& name = "");
+	void AddDataField(ModelDataField* pd, const std::string& name = "");
 
 	//! add a new data field constrained to a set
-	void AddDataField(FEDataField* pd, vector<int>& L);
+	void AddDataField(ModelDataField* pd, vector<int>& L);
 
 	//! delete a data field
-	void DeleteDataField(FEDataField* pd);
+	void DeleteDataField(ModelDataField* pd);
 
 	//! Copy a data field
-	FEDataField* CopyDataField(FEDataField* pd, const char* sznewname = 0);
+	ModelDataField* CopyDataField(ModelDataField* pd, const char* sznewname = 0);
 
 	//! Create a cached copy of a data field
-	FEDataField* CreateCachedCopy(FEDataField* pd, const char* sznewname);
+	ModelDataField* CreateCachedCopy(ModelDataField* pd, const char* sznewname);
 
 	// Get the field variable name
 	std::string getDataString(int nfield, Data_Tensor_Type ntype);

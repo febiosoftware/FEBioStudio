@@ -955,17 +955,17 @@ FSMesh* FEQuad2Tri::Apply(FSMesh *pm)
 }
 
 //=============================================================================
-// FERefineMesh
+// RefineMesh
 //-----------------------------------------------------------------------------
 
-FERefineMesh::FERefineMesh() : FEModifier("Refine")
+RefineMesh::RefineMesh() : FEModifier("Refine")
 {
 	AddIntParam(1, "iterations:", "iterations");
 	AddBoolParam(false, "Smooth surface");
 	AddBoolParam(false, "hex 2d-split");
 }
 
-FSMesh* FERefineMesh::Apply(FSMesh* pm)
+FSMesh* RefineMesh::Apply(FSMesh* pm)
 {
 	// get parameters
 	int niter = GetIntValue(0);

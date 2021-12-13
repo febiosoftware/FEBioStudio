@@ -177,7 +177,7 @@ FSMesh* FoamGen::WeldMesh(FSMesh* pm)
 void FoamGen::SmoothMesh(FSMesh* pm, int niter, double w)
 {
 	// set up the node-element table
-	FENodeNodeList NNL(pm);
+	FSNodeNodeList NNL(pm);
 
 	// smooth node positions
 	for (int n=0; n<niter; ++n)

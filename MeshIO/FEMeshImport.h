@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEMeshImport : public FEFileImport
+class FEMeshImport : public FSFileImport
 {
 protected:
 	struct NODE

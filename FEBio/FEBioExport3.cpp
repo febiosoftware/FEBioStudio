@@ -1769,7 +1769,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 		if (nsol >= 0)
 		{
 			FSModel& fem = *m_pfem;
-			FESoluteData& solute = fem.GetSoluteData(nsol);
+			SoluteData& solute = fem.GetSoluteData(nsol);
 			el.add_attribute("name", solute.GetName());
 		}
 	}
@@ -1780,7 +1780,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 		if (nsbm >= 0)
 		{
 			FSModel& fem = *m_pfem;
-			FESoluteData& sbm = fem.GetSBMData(nsbm);
+			SoluteData& sbm = fem.GetSBMData(nsbm);
 			el.add_attribute("name", sbm.GetName());
 		}
 	}
@@ -4670,7 +4670,7 @@ void FEBioExport3::WriteGlobalsSection()
 				int NS = fem.Solutes();
 				for (int i = 0; i<NS; ++i)
 				{
-					FESoluteData& s = fem.GetSoluteData(i);
+					SoluteData& s = fem.GetSoluteData(i);
 					XMLElement el;
 					el.name("solute");
 					el.add_attribute("id", i + 1);
@@ -4694,7 +4694,7 @@ void FEBioExport3::WriteGlobalsSection()
 				int NS = fem.SBMs();
 				for (int i = 0; i<NS; ++i)
 				{
-					FESoluteData& s = fem.GetSBMData(i);
+					SoluteData& s = fem.GetSBMData(i);
 					XMLElement el;
 					el.name("solid_bound");
 					el.add_attribute("id", i + 1);

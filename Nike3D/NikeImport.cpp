@@ -87,7 +87,7 @@ const char szerr[][256] = {
 //-----------------------------------------------------------------------------
 // Constructor
 //
-FENIKEImport::FENIKEImport(FSProject& prj) : FEFileImport(prj)
+FENIKEImport::FENIKEImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -1566,7 +1566,7 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// FUNCTION: FEFileImport::UpdateMesh
+// FUNCTION: FSFileImport::UpdateMesh
 //
 
 void FENIKEImport::UpdateMesh(FSMesh& mesh)
@@ -1617,7 +1617,7 @@ void FENIKEImport::UpdateMesh(FSMesh& mesh)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// FUNCTION: FEFileImport::FindFace
+// FUNCTION: FSFileImport::FindFace
 //
 
 int FENIKEImport::FindFace(int n[4], int noff)

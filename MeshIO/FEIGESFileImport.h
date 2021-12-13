@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEIGESFileImport : public FEFileImport
+class FEIGESFileImport : public FSFileImport
 {
 protected:
 	enum SECTION_CODE

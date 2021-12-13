@@ -33,7 +33,7 @@ class VTKDataArray;
 class VTKPiece;
 class VTKModel;
 
-class VTUimport : public FEFileImport
+class VTUimport : public FSFileImport
 {
 
 public:

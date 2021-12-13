@@ -100,7 +100,7 @@ public:
 	bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt);
 
 	// import geometry (geometry is added to current project)
-	bool ImportGeometry(FEFileImport* preader, const char* szfile);
+	bool ImportGeometry(FSFileImport* preader, const char* szfile);
 
 public:
 	// checks the model for issues and returns the warnings as a string array

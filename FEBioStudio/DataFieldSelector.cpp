@@ -143,7 +143,7 @@ void CModelDataSelector::BuildMenu(QMenu* menu)
 	FEDataFieldPtr pd = dm.FirstDataField();
 	for (int i = 0; i<N; ++i, ++pd)
 	{
-		FEDataField& d = *(*pd);
+		ModelDataField& d = *(*pd);
 		int dataClass = d.DataClass();
 		int dataComponents = d.components(m_class);
 		if (dataComponents > 0)
@@ -188,10 +188,10 @@ CPlotObjectDataSelector::CPlotObjectDataSelector(Post::FEPostModel::PlotObject* 
 
 void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 {
-	std::vector<FEPlotObjectData*>& data = m_po->m_data;
+	std::vector<PlotObjectData*>& data = m_po->m_data;
 	for (int i = 0; i < (int)data.size(); ++i)
 	{
-		FEDataField& d = *data[i];
+		ModelDataField& d = *data[i];
 		int dataClass = d.DataClass();
 		int dataComponents = d.components(DATA_SCALAR);
 		if (dataComponents > 0)

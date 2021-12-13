@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-class FEBYUimport :	public FEFileImport
+class FEBYUimport :	public FSFileImport
 {
 protected:
 	struct PART

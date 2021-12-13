@@ -63,7 +63,7 @@ typedef off_t off_type;
 class xpltArchive::Imp 
 {
 public:
-	IOFileStream* m_fp;		// the file pointer
+	FileStream* m_fp;		// the file pointer
 	bool	m_bswap;		// swap data when reading
 	bool	m_bend;			// chunk end flag
 	int		m_ncompress;	// compression flag
@@ -169,7 +169,7 @@ bool xpltArchive::Create(const char* szfile)
 {
 	// attempt to create the file
 	assert(im.m_fp == 0);
-	im.m_fp = new IOFileStream();
+	im.m_fp = new FileStream();
 	if (im.m_fp->Create(szfile) == false) return false;
 
 	// write the master tag 
@@ -211,7 +211,7 @@ void xpltArchive::EndChunk()
 	}
 }
 
-bool xpltArchive::Open(IOFileStream* fp)
+bool xpltArchive::Open(FileStream* fp)
 {
 	// store a copy of the file pointer
 	im.m_fp = fp;
@@ -327,7 +327,7 @@ bool xpltArchive::Append(const char* szfile)
 {
 	// reopen the plot file for appending
 	assert(im.m_fp == 0);
-	im.m_fp = new IOFileStream();
+	im.m_fp = new FileStream();
 	if (im.m_fp->Append(szfile) == false) return false;
 	im.m_bSaving = true;
 	return true;

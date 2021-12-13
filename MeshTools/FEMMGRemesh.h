@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 //! This modifier refines a tet mesh using MMG.
-class FEMMGRemesh : public FEModifier
+class MMGRemesh : public FEModifier
 {
 	enum {
 		ELEM_SIZE,
@@ -40,7 +40,7 @@ class FEMMGRemesh : public FEModifier
 	};
 
 public:
-	FEMMGRemesh();
+	MMGRemesh();
 	FSMesh* Apply(FSMesh* pm) override;
 	FSMesh* Apply(FSGroup* pg) override;
 
@@ -51,7 +51,7 @@ private:
 
 //-----------------------------------------------------------------------------
 //! This modifier refines a tet mesh using MMG.
-class FEMMGSurfaceRemesh : public FESurfaceModifier
+class MMGSurfaceRemesh : public FESurfaceModifier
 {
 	enum {
 		ELEM_SIZE,
@@ -61,13 +61,13 @@ class FEMMGSurfaceRemesh : public FESurfaceModifier
 	};
 
 public:
-	FEMMGSurfaceRemesh();
+	MMGSurfaceRemesh();
 	FSSurfaceMesh* Apply(FSSurfaceMesh* pm) override;
 };
 
 //-----------------------------------------------------------------------------
 //! This modifier refines a tet mesh using MMG.
-class FEMMG2DRemesh : public FESurfaceModifier
+class MMG2DRemesh : public FESurfaceModifier
 {
 	enum {
 		ELEM_SIZE,
@@ -77,6 +77,6 @@ class FEMMG2DRemesh : public FESurfaceModifier
 	};
 
 public:
-	FEMMG2DRemesh();
+	MMG2DRemesh();
 	FSSurfaceMesh* Apply(FSSurfaceMesh* pm) override;
 };

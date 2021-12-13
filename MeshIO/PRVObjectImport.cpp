@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 
 //-----------------------------------------------------------------------------
-PRVObjectImport::PRVObjectImport(FSProject& prj) : FEFileImport(prj)
+PRVObjectImport::PRVObjectImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 

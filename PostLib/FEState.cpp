@@ -148,7 +148,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		di.data = new ObjectData;
 		for (int j = 0; j < ndata; ++j)
 		{
-			Post::FEPlotObjectData& dj = *po.m_data[j];
+			Post::PlotObjectData& dj = *po.m_data[j];
 
 			switch (dj.Type())
 			{
@@ -177,7 +177,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		di.data = new ObjectData;
 		for (int j = 0; j < ndata; ++j)
 		{
-			Post::FEPlotObjectData& dj = *po.m_data[j];
+			Post::PlotObjectData& dj = *po.m_data[j];
 
 			switch (dj.Type())
 			{
@@ -201,7 +201,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 	FEDataFieldPtr it = pdm->FirstDataField();
 	for (int i=0; i<N; ++i, ++it)
 	{
-		FEDataField& d = *(*it);
+		ModelDataField& d = *(*it);
 		m_Data.push_back(d.CreateData(this));
 	}
 }
@@ -261,7 +261,7 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 	pn = pdm->FirstDataField();
 	for (int i = 0; i < N; ++i, ++pn)
 	{
-		FEDataField& d = *(*pn);
+		ModelDataField& d = *(*pn);
 		FEMeshData& md = m_Data[i];
 		if (d.DataClass() == CLASS_NODE)
 		{

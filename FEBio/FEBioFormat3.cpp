@@ -128,7 +128,7 @@ static bool validate_dof(const string& bc)
 }
 
 //-----------------------------------------------------------------------------
-FEBioFormat3::FEBioFormat3(FEBioImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
+FEBioFormat3::FEBioFormat3(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
 	m_geomFormat = 0;
 }

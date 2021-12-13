@@ -484,6 +484,6 @@ private:
 	vector<LogVariable>		m_log;
 };
 
-class FEBioImport;
+class FEBioFileImport;
 void AddLogEntry(const char* sz, ...);
-void InitLog(FEBioImport* im);
+void InitLog(FEBioFileImport* im);

@@ -103,7 +103,7 @@ bool FELSDYNAimport::CARD::nexti(int& n, int nwidth)
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FELSDYNAimport::FELSDYNAimport(FSProject& prj) : FEFileImport(prj)
+FELSDYNAimport::FELSDYNAimport(FSProject& prj) : FSFileImport(prj)
 {
 	m_pprj = 0;
     m_lineno = 0;

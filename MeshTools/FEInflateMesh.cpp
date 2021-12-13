@@ -121,7 +121,7 @@ void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 	}
 
 	// smooth the nodal displacements
-	FENodeNodeList NNL(&mesh, true);
+	FSNodeNodeList NNL(&mesh, true);
 	mesh.TagAllNodes(0);
 	for (int i = 0; i < taggedNodes.size(); ++i) mesh.Node(taggedNodes[i]).m_ntag = 1;
 

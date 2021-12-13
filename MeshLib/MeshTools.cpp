@@ -1119,7 +1119,7 @@ bool ProjectInsideReferenceElement(FSCoreMesh& m, FEElement_& el, const vec3f& p
 std::vector<vec3d> FindShortestPath(FSMesh& mesh, int m0, int m1)
 {
 	// helper class for finding neighbors
-	FENodeNodeList NNL(&mesh);
+	FSNodeNodeList NNL(&mesh);
 
 	const double INF = 1e34;
 	int N = mesh.Nodes();

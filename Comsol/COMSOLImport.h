@@ -14,7 +14,7 @@ using std::map;
 // Developed by Michael Fernandez (mjf2152@columbia.edu) at Columbia (10/22/13)
 // based on FEIDEAS and AbaqusImport.
 
-class COMSOLimport : public FEFileImport
+class COMSOLimport : public FSFileImport
 {
 
 public:

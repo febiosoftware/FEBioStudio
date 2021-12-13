@@ -33,7 +33,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // Reads in an Amira Hypermesh
 
-class FEHMASCIIimport : public FEFileImport
+class FEHMASCIIimport : public FSFileImport
 {
 protected:
 	struct NODE

@@ -422,7 +422,7 @@ FSMesh* FEMMG2DMesher::BuildMesh()
 
 	// Now, let's use MMG to remesh
 	double h = GetFloatValue(0);
-	FEMMG2DRemesh mmg;
+	MMG2DRemesh mmg;
 	mmg.SetFloatValue(0, h);
 
 	FSSurfaceMesh* newMesh = mmg.Apply(pm);

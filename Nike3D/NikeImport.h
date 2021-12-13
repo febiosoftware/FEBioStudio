@@ -31,7 +31,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // Implements a class to import NIKE files
 //
-class FENIKEImport : public FEFileImport
+class FENIKEImport : public FSFileImport
 {
 	enum {MAXLINE = 256};
 

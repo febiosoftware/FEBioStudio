@@ -31,7 +31,7 @@ namespace Post {
 //-----------------------------------------------------------------------------
 class FEPostMesh;
 class FEPostModel;
-class FEDataField;
+class ModelDataField;
 class FSPart;
 class FSSurface;
 class FEState;
@@ -162,7 +162,7 @@ protected:
 	bool WriteDictionary(FEPostModel& fem);
 	bool WriteMaterials (FEPostModel& fem);
 	bool WriteGeometry  (FEPostModel& fem);
-	bool WriteDataField (FEDataField& data);
+	bool WriteDataField (ModelDataField& data);
 
 	bool WriteNodeSection   (FEPostModel& fem);
 	bool WritePartSection   (FEPostMesh& m);

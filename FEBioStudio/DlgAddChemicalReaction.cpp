@@ -397,12 +397,12 @@ void CDlgAddChemicalReaction::InitDialog()
 	m_species.clear();
 	for (int i = 0; i<fem.Solutes(); ++i)
 	{
-		FESoluteData& sd = fem.GetSoluteData(i);
+		SoluteData& sd = fem.GetSoluteData(i);
 		m_species.push_back(pair<string,int>(sd.GetName(), i));
 	}
 	for (int i = 0; i<fem.SBMs(); ++i)
 	{
-		FESoluteData& sd = fem.GetSBMData(i);
+		SoluteData& sd = fem.GetSBMData(i);
 		m_species.push_back(pair<string, int>(sd.GetName(), i + 0x100));
 	}
 

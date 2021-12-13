@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class FESTLimport : public FEFileImport
+class FESTLimport : public FSFileImport
 {
 	struct FACET
 	{

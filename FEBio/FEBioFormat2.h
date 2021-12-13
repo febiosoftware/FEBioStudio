@@ -33,7 +33,7 @@ SOFTWARE.*/
 class FEBioFormat2 : public FEBioFormat
 {
 public:
-	FEBioFormat2(FEBioImport* fileReader, FEBioInputModel& febio);
+	FEBioFormat2(FEBioFileImport* fileReader, FEBioInputModel& febio);
 	~FEBioFormat2();
 
 	bool ParseSection(XMLTag& tag);

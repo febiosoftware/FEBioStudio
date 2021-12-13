@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "FEBioInputModel.h"
 
 //-----------------------------------------------------------------------------
-class FEBioImport;
+class FEBioFileImport;
 
 //-----------------------------------------------------------------------------
 // Class that represents a specific FEBio specification format.
@@ -40,7 +40,7 @@ class FEBioImport;
 class FEBioFormat
 {
 public:
-	FEBioFormat(FEBioImport* fileReader, FEBioInputModel& febio);
+	FEBioFormat(FEBioFileImport* fileReader, FEBioInputModel& febio);
 	virtual ~FEBioFormat();
 
 	// override this function for processing the top-level sections
@@ -49,7 +49,7 @@ public:
 	void SetGeometryOnlyFlag(bool b);
 
 protected:
-	FEBioImport* FileReader() { return m_fileReader; }
+	FEBioFileImport* FileReader() { return m_fileReader; }
 
 	void ParseUnknownTag(XMLTag& tag);
 	void ParseUnknownAttribute(XMLTag& tag, const char* szatt);
@@ -99,7 +99,7 @@ protected:
 
 private:
 	FEBioInputModel&		m_febio;
-	FEBioImport*	m_fileReader;
+	FEBioFileImport*	m_fileReader;
 
 protected: // TODO: Move to FEBioInputModel?
 	bool		m_geomOnly;	// read only geometry section

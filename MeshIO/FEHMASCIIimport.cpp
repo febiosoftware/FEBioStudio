@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEHMASCIIimport::FEHMASCIIimport(FSProject& prj) : FEFileImport(prj)
+FEHMASCIIimport::FEHMASCIIimport(FSProject& prj) : FSFileImport(prj)
 {
 }
 

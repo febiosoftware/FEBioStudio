@@ -149,7 +149,7 @@ public:
 	void UpdateData();
 
 	// --- miscellaneous ---
-	FESoluteData& GetSoluteData(int i);
+	SoluteData& GetSoluteData(int i);
 	int Solutes();
 	int FindSolute(const char* sz);
 	void AddSolute(const std::string& name, int z, double M, double d);
@@ -171,7 +171,7 @@ public:
 	int GetEnumIntValue(Param& param);
 	bool GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum);
 
-	FESoluteData& GetSBMData(int i);
+	SoluteData& GetSBMData(int i);
 	int SBMs();
 	int FindSBM(const char* sz);
 	void AddSBM(const std::string& name, int z, double M, double d);
@@ -221,8 +221,8 @@ protected:
 	FSObjectList<GMaterial>			m_pMat;		//!< Material list
 	FSObjectList<FSStep>			m_pStep;	//!< Analysis data
 	FSObjectList<FEDataVariable>	m_Var;		//!< data variables
-	FSObjectList<FESoluteData>		m_Sol;		//!< solute data variables
-	FSObjectList<FESoluteData>		m_SBM;		//!< solid-bound molecule data variables
+	FSObjectList<SoluteData>		m_Sol;		//!< solute data variables
+	FSObjectList<SoluteData>		m_SBM;		//!< solid-bound molecule data variables
 	FSObjectList<FSDataMapGenerator>	m_Map;		//!< data maps
 };
 

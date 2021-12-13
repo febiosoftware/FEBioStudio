@@ -115,7 +115,7 @@ void GWrapModifier::Apply(GObject* po)
 		}
 
 		// create Node-Node list
-		FENodeNodeList NNL(pm);
+		FSNodeNodeList NNL(pm);
 
 		// apply smoothing
 		int niter = 1;

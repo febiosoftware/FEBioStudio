@@ -38,7 +38,7 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEDXFimport::FEDXFimport(FSProject& prj) : FEFileImport(prj)
+FEDXFimport::FEDXFimport(FSProject& prj) : FSFileImport(prj)
 {	
 }
 

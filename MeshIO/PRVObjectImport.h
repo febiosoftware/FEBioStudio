@@ -34,7 +34,7 @@ class GDiscreteObject;
 
 //-------------------------------------------------------------------
 // Class for reading the Preview Object File format.
-class PRVObjectImport : public FEFileImport
+class PRVObjectImport : public FSFileImport
 {
 public:
 	PRVObjectImport(FSProject& prj);

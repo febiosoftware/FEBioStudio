@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class STEPImport : public FEFileImport
+class STEPImport : public FSFileImport
 {
 public:
 	STEPImport(FSProject& prj);

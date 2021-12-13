@@ -1776,7 +1776,7 @@ void CModelGraphWindow::addObjectData(int n)
 		// get the component
 		int ncomp = FIELD_COMP(m_dataY);
 
-		Post::FEDataField* dataField = po->m_data[ndata];
+		Post::ModelDataField* dataField = po->m_data[ndata];
 
 		float val = 0.f;
 

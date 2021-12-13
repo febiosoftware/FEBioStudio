@@ -33,14 +33,14 @@ SOFTWARE.*/
 #include "constants.h"
 
 //-----------------------------------------------------------------------------
-Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem, int flags) : Post::FEDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
 { 
 	m_tol = 0.01; 
 	m_bsigned = false; 
 }
 
 //-----------------------------------------------------------------------------
-Post::FEDataField* Post::FEDistanceMap::Clone() const
+Post::ModelDataField* Post::FEDistanceMap::Clone() const
 {
 	FEDistanceMap* pd = new FEDistanceMap(m_fem, 0);
 	pd->SetName(GetName());

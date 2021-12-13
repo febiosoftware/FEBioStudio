@@ -30,21 +30,21 @@ SOFTWARE.*/
 #include "FENodeElementList.h"
 #include "FENodeFaceList.h"
 
-FENodeNodeList::FENodeNodeList(FSMesh* pm, bool preservePartitions)
+FSNodeNodeList::FSNodeNodeList(FSMesh* pm, bool preservePartitions)
 {
 	Build(pm, preservePartitions);
 }
 
-FENodeNodeList::FENodeNodeList(FSSurfaceMesh* pm)
+FSNodeNodeList::FSNodeNodeList(FSSurfaceMesh* pm)
 {
 	Build(pm);
 }
 
-FENodeNodeList::~FENodeNodeList()
+FSNodeNodeList::~FSNodeNodeList()
 {
 }
 
-void FENodeNodeList::Build(FSMesh* pm, bool preservePartitions)
+void FSNodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 {
 	assert(pm);
 	if (pm == 0) return;
@@ -177,7 +177,7 @@ void FENodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 	}
 }
 
-void FENodeNodeList::Build(FSSurfaceMesh* pm)
+void FSNodeNodeList::Build(FSSurfaceMesh* pm)
 {
 	assert(pm);
 	if (pm == 0) return;
@@ -244,7 +244,7 @@ void FENodeNodeList::Build(FSSurfaceMesh* pm)
 	}
 }
 
-void FENodeNodeList::InitValues(double v)
+void FSNodeNodeList::InitValues(double v)
 {
 	m_data.assign(m_node.size(), v);
 }

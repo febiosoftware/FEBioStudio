@@ -178,7 +178,7 @@ bool FECVDDecimationModifier::Initialize(FSSurfaceMesh* pm)
 	vec3d r[3];
 	
 	//Creating a node node list
-	FENodeNodeList NNL(pm);
+	FSNodeNodeList NNL(pm);
 
 	for (int i=0; i<T0; ++i)
 	{

@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class FELSDYNAimport : public FEFileImport
+class FELSDYNAimport : public FSFileImport
 {
 protected:
 	class CARD

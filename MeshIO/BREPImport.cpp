@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <TopoDS.hxx>
 #endif
 
-BREPImport::BREPImport(FSProject& prj) : FEFileImport(prj)
+BREPImport::BREPImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -75,7 +75,7 @@ bool BREPImport::Load(const char* szfile)
 }
 
 //=============================================================================
-IGESImport::IGESImport(FSProject& prj) : FEFileImport(prj)
+IGESImport::IGESImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 

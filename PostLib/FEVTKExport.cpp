@@ -239,7 +239,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 	FEDataFieldPtr pd = DM.FirstDataField();
 	for (int n = 0; n<NDATA; ++n, ++pd)
 	{
-		FEDataField& data = *(*pd);
+		ModelDataField& data = *(*pd);
 		if ((data.DataClass() == CLASS_NODE) && (data.Flags() & EXPORT_DATA))
 		{
 			FEMeshData& meshData = ps->m_Data[n];
@@ -287,7 +287,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 			FEMeshData& meshData = ps->m_Data[n];
 			Data_Format dfmt = meshData.GetFormat();
 			if ((dfmt == DATA_NODE) || (dfmt == DATA_COMP)) {
-				FEDataField& data = *(*pd);
+				ModelDataField& data = *(*pd);
 				char szname[256];
 				strcpy(szname, data.GetName().c_str());
 				Space2_(szname);
@@ -343,13 +343,13 @@ void FEVTKExport::WriteCellData(FEState* ps)
             
     for (int n=0; n<NDATA; ++n, ++pd)
     {
-        FEDataField& data = *(*pd);
+        ModelDataField& data = *(*pd);
         if ((data.DataClass() == CLASS_ELEM) && (data.Flags() & EXPORT_DATA))
         {
             FEMeshData& meshData = ps->m_Data[n];
             Data_Format dfmt = meshData.GetFormat();
             if (dfmt == DATA_ITEM) {
-                FEDataField& data = *(*pd);
+                ModelDataField& data = *(*pd);
                 char szname[256];
 				strcpy(szname, data.GetName().c_str());
                 Space2_(szname);

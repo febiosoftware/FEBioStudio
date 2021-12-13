@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// XmlImport.cpp: implementation of the FEBioImport class.
+// XmlImport.cpp: implementation of the FEBioFileImport class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -48,7 +48,7 @@ SOFTWARE.*/
 extern GLColor col[];
 
 //-----------------------------------------------------------------------------
-FEBioImport::FEBioImport(FSProject& prj) : FEFileImport(prj)
+FEBioFileImport::FEBioFileImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_szlog = 0;
 	m_febio = 0;
@@ -56,27 +56,27 @@ FEBioImport::FEBioImport(FSProject& prj) : FEFileImport(prj)
 }
 
 //-----------------------------------------------------------------------------
-FEBioImport::~FEBioImport()
+FEBioFileImport::~FEBioFileImport()
 {
 	ClearLog();
 	delete m_febio;
 }
 
 //-----------------------------------------------------------------------------
-void FEBioImport::SetGeometryOnlyFlag(bool b)
+void FEBioFileImport::SetGeometryOnlyFlag(bool b)
 {
 	m_geomOnly = b;
 }
 
 //-----------------------------------------------------------------------------
-void FEBioImport::ClearLog()
+void FEBioFileImport::ClearLog()
 {
 	delete [] m_szlog;
 	m_szlog = 0;
 }
 
 //-----------------------------------------------------------------------------
-void FEBioImport::AddLogEntry(const char* sz, ...)
+void FEBioFileImport::AddLogEntry(const char* sz, ...)
 {
 	if (sz == 0) return;
 
@@ -111,7 +111,7 @@ void FEBioImport::AddLogEntry(const char* sz, ...)
 //  Imports an FEBio input file
 //  The actual file is parsed using the XMLReader class.
 //
-bool FEBioImport::Load(const char* szfile)
+bool FEBioFileImport::Load(const char* szfile)
 {
 	ClearLog();
 
@@ -184,7 +184,7 @@ bool FEBioImport::Load(const char* szfile)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioImport::ReadFile(XMLTag& tag)
+bool FEBioFileImport::ReadFile(XMLTag& tag)
 {
 	// loop over all file sections
 	++tag;
@@ -269,7 +269,7 @@ bool FEBioImport::ReadFile(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioImport::ParseVersion(XMLTag& tag)
+bool FEBioFileImport::ParseVersion(XMLTag& tag)
 {
 	const char* szv = tag.AttributeValue("version");
 	int n1, n2;
@@ -298,14 +298,14 @@ bool FEBioImport::ParseVersion(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioImport::ParseUnknownTag(XMLTag& tag)
+void FEBioFileImport::ParseUnknownTag(XMLTag& tag)
 {
 	AddLogEntry("Skipping unknown tag \"%s\" (line %d)", tag.Name(), tag.m_nstart_line);
 	tag.m_preader->SkipTag(tag);
 }
 
 //-----------------------------------------------------------------------------
-void FEBioImport::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
+void FEBioFileImport::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 {
 	AddLogEntry("Skipping tag \"%s\". Unknown value for attribute \"%s\". (line %d)", tag.Name(), szatt, tag.m_nstart_line);
 	tag.m_preader->SkipTag(tag);
@@ -315,7 +315,7 @@ void FEBioImport::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 // TODO: Register parameters that require load curves in a list.
 // Or store the load curves directly. 
 // I think this would eliminate all these dynamic_casts
-bool FEBioImport::UpdateFEModel(FSModel& fem)
+bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 {
 	// set the parent ID's for rigid bodies
 	int nmat = m_febio->Materials();

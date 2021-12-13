@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "FEAreaCoverage.h"
 using namespace Post;
 
-FEDataField::FEDataField(FEPostModel* fem, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
+ModelDataField::ModelDataField(FEPostModel* fem, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
 {
 	m_fem = fem;
 	m_ntype = ntype;
@@ -44,27 +44,27 @@ FEDataField::FEDataField(FEPostModel* fem, Data_Type ntype, Data_Format nfmt, Da
 	m_arraySize = 0;
 }
 
-FEDataField::~FEDataField() {}
+ModelDataField::~ModelDataField() {}
 
 //! get the name of the field
-const std::string& FEDataField::GetName() const { return m_name; }
+const std::string& ModelDataField::GetName() const { return m_name; }
 
-void FEDataField::SetName(const std::string& newName)
+void ModelDataField::SetName(const std::string& newName)
 {
 	m_name = newName;
 }
 
-void FEDataField::SetArrayNames(vector<string>& n)
+void ModelDataField::SetArrayNames(vector<string>& n)
 {
 	m_arrayNames = n;
 }
 
-vector<string> FEDataField::GetArrayNames() const
+vector<string> ModelDataField::GetArrayNames() const
 {
 	return m_arrayNames;
 }
 
-const char* FEDataField::TypeStr() const
+const char* ModelDataField::TypeStr() const
 {
 	switch (m_ntype)
 	{
@@ -81,7 +81,7 @@ const char* FEDataField::TypeStr() const
 	return "unknown";
 }
 
-int FEDataField::components(Data_Tensor_Type ntype)
+int ModelDataField::components(Data_Tensor_Type ntype)
 {
 	if (ntype == DATA_SCALAR)
 	{
@@ -131,7 +131,7 @@ int FEDataField::components(Data_Tensor_Type ntype)
 	return 0;
 }
 
-int FEDataField::dataComponents(Data_Tensor_Type ntype)
+int ModelDataField::dataComponents(Data_Tensor_Type ntype)
 {
 	if (ntype == DATA_SCALAR)
 	{
@@ -181,7 +181,7 @@ int FEDataField::dataComponents(Data_Tensor_Type ntype)
 	return 0;
 }
 
-std::string FEDataField::componentName(int ncomp, Data_Tensor_Type ntype)
+std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 {
 	const std::string& name = GetName();
 	const char* sz = name.c_str();
@@ -374,11 +374,11 @@ std::string FEDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 }
 
 //=================================================================================================
-FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag) : FEDataField(fem, DATA_ARRAY, f, c, flag)
+FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
 {
 }
 
-FEDataField* FEArrayDataField::Clone() const
+ModelDataField* FEArrayDataField::Clone() const
 {
 	FEArrayDataField* newData = new FEArrayDataField(m_fem, DataClass(), Format(), m_flag);
 	newData->SetName(GetName());
@@ -406,11 +406,11 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 }
 
 //=================================================================================================
-FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag) : FEDataField(fem, DATA_ARRAY_VEC3F, DATA_ITEM, c, flag)
+FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag) : ModelDataField(fem, DATA_ARRAY_VEC3F, DATA_ITEM, c, flag)
 {
 }
 
-FEDataField* FEArrayVec3DataField::Clone() const
+ModelDataField* FEArrayVec3DataField::Clone() const
 {
 	FEArrayVec3DataField* newData = new FEArrayVec3DataField(m_fem, DataClass(), m_flag);
 	newData->SetName(GetName());
@@ -432,7 +432,7 @@ Post::FEMeshData* FEArrayVec3DataField::CreateData(FEState* pstate)
 
 //=================================================================================================
 
-bool Post::ExportDataField(Post::FEPostModel& fem, const FEDataField& df, const char* szfile)
+bool Post::ExportDataField(Post::FEPostModel& fem, const ModelDataField& df, const char* szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -456,7 +456,7 @@ bool Post::ExportDataField(Post::FEPostModel& fem, const FEDataField& df, const 
 	return bret;
 }
 
-bool Post::ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp)
+bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -515,7 +515,7 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 }
 
 
-bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp)
+bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -694,7 +694,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 	return true;
 }
 
-bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE* fp)
+bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -825,7 +825,7 @@ public:
 	StandardDataField(const char* sz, int flag) : m_szname(sz), m_flag(flag) {}
 	virtual ~StandardDataField() {}
 public:
-	virtual Post::FEDataField* Create(Post::FEPostModel* fem) = 0;
+	virtual Post::ModelDataField* Create(Post::FEPostModel* fem) = 0;
 	
 public:
 	const char*	m_szname;
@@ -836,9 +836,9 @@ template <typename T> class StandardDataField_T : public StandardDataField
 {
 public:
 	StandardDataField_T(const char* szname, int flag = 0) : StandardDataField(szname, flag) {}
-	Post::FEDataField* Create(Post::FEPostModel* fem) override 
+	Post::ModelDataField* Create(Post::FEPostModel* fem) override 
 	{ 
-		Post::FEDataField* dataField = new T(fem, m_flag);
+		Post::ModelDataField* dataField = new T(fem, m_flag);
 		dataField->SetName(m_szname);
 		return dataField;
 	}
@@ -862,7 +862,7 @@ public:
 		return name;
 	}
 
-	static Post::FEDataField* CreateDataField(Post::FEPostModel* fem, const std::string& name)
+	static Post::ModelDataField* CreateDataField(Post::FEPostModel* fem, const std::string& name)
 	{
 		for (int i = 0; i < m_stdDataFields.size(); ++i)
 		{
@@ -940,7 +940,7 @@ std::string Post::GetStandarDataFieldName(int i)
 
 bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataField)
 {
-	FEDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
+	ModelDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
 	if (pdf == nullptr) return false;
 	fem.AddDataField(pdf);
 	return true;
@@ -949,7 +949,7 @@ bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataF
 
 bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataField, vector<int> selectionList)
 {
-	FEDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
+	ModelDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
 	if (pdf == nullptr) return false;
 
 	// NOTE: This only works with curvatures
@@ -973,7 +973,7 @@ bool Post::AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char*
 
 	// create a new data field
 	int ND = 0;
-	Post::FEDataField* pdf = nullptr;
+	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
 	case DATA_FLOAT  : pdf = new FEDataField_T<FENodeData<float  > >(&fem, EXPORT_DATA); ND =  1; break;
@@ -1099,7 +1099,7 @@ bool Post::AddFaceDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 
 	// create a new data field
 	int ND = 0;
-	Post::FEDataField* pdf = nullptr;
+	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
 	case DATA_FLOAT  : pdf = new FEDataField_T<FEFaceData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
@@ -1225,7 +1225,7 @@ bool Post::AddElemDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 
 	// create a new data field
 	int ND = 0;
-	Post::FEDataField* pdf = nullptr;
+	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
 	case DATA_FLOAT  : pdf = new FEDataField_T<FEElementData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;

@@ -64,7 +64,7 @@ void FESmoothMesh::SmoothMesh(FSMesh& mesh)
 	bool volOnly = GetBoolValue(4);
 
 	// set up the node-element table
-	FENodeNodeList NNL(&mesh);
+	FSNodeNodeList NNL(&mesh);
 
 	mesh.TagAllNodes(1);
 

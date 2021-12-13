@@ -36,7 +36,7 @@ class GMeshObject;
 class FEBioFormat3 : public FEBioFormat
 {
 public:
-	FEBioFormat3(FEBioImport* fileReader, FEBioInputModel& febio);
+	FEBioFormat3(FEBioFileImport* fileReader, FEBioInputModel& febio);
 	~FEBioFormat3();
 
 	bool ParseSection(XMLTag& tag) override;

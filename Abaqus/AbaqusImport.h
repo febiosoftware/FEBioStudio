@@ -35,7 +35,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // Implements a class to import ABAQUS files
 // 
-class AbaqusImport : public FEFileImport
+class AbaqusImport : public FSFileImport
 {
 	// attributes
 	struct ATTRIBUTE

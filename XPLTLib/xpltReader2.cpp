@@ -314,7 +314,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 		it.index = nfields++;
 
 		// add nodal field
-		Post::FEDataField* pdf = nullptr;
+		Post::ModelDataField* pdf = nullptr;
 		switch (it.ntype)
 		{
 		case FLOAT  : pdf = new FEDataField_T<Post::FENodeData<float  > >(&fem, EXPORT_DATA); break;
@@ -346,7 +346,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 		DICT_ITEM& it = m_dic.m_Elem[i];
 		it.index = nfields++;
 
-		Post::FEDataField* pdf = nullptr;
+		Post::ModelDataField* pdf = nullptr;
 		switch (it.nfmt)
 		{
 		case FMT_NODE:
@@ -452,7 +452,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 		DICT_ITEM& it = m_dic.m_Face[i];
 		it.index = nfields++;
 
-		Post::FEDataField* pdf = nullptr;
+		Post::ModelDataField* pdf = nullptr;
 		switch (it.nfmt)
 		{
 		case FMT_NODE:

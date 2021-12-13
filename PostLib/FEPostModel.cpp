@@ -328,10 +328,10 @@ template <typename Type, Data_Format Fmt> void copy_face_data(FEMeshData& d, FEM
 
 //-----------------------------------------------------------------------------
 // Copy a data field
-FEDataField* FEPostModel::CopyDataField(FEDataField* pd, const char* sznewname)
+ModelDataField* FEPostModel::CopyDataField(ModelDataField* pd, const char* sznewname)
 {
 	// Clone the data field
-	FEDataField* pdcopy = pd->Clone();
+	ModelDataField* pdcopy = pd->Clone();
 
 	// create a new name
 	if (sznewname == 0)
@@ -427,7 +427,7 @@ FEDataField* FEPostModel::CopyDataField(FEDataField* pd, const char* sznewname)
 }
 
 //-----------------------------------------------------------------------------
-FEDataField* createCachedDataField(FEDataField* pd)
+ModelDataField* createCachedDataField(ModelDataField* pd)
 {
 	Post::FEPostModel* fem = pd->GetModel();
 
@@ -435,7 +435,7 @@ FEDataField* createCachedDataField(FEDataField* pd)
 	Data_Type ntype = pd->Type();
 	Data_Format nfmt = pd->Format();
 
-	FEDataField* newField = 0;
+	ModelDataField* newField = 0;
 	if (nclass == CLASS_NODE)
 	{
 		if      (ntype == DATA_FLOAT ) newField = new FEDataField_T<FENodeData<float > >(fem);
@@ -669,10 +669,10 @@ template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshDat
 
 //-----------------------------------------------------------------------------
 //! Create a cached copy of a data field
-FEDataField* FEPostModel::CreateCachedCopy(FEDataField* pd, const char* sznewname)
+ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sznewname)
 {
 	// create a new data field that will store a cached copy
-	FEDataField* pdcopy = createCachedDataField(pd);
+	ModelDataField* pdcopy = createCachedDataField(pd);
 	if (pdcopy == 0) return 0;
 
 	// Add it to the model
@@ -791,7 +791,7 @@ std::string FEPostModel::getDataString(int ndata, Data_Tensor_Type ntype)
 
 //-----------------------------------------------------------------------------
 // Delete a data field
-void FEPostModel::DeleteDataField(FEDataField* pd)
+void FEPostModel::DeleteDataField(ModelDataField* pd)
 {
 	// find out which data field this is
 	FEDataFieldPtr it = m_pDM->FirstDataField();
@@ -821,7 +821,7 @@ void FEPostModel::DeleteDataField(FEDataField* pd)
 
 //-----------------------------------------------------------------------------
 // Add a data field to all states of the model
-void FEPostModel::AddDataField(FEDataField* pd, const std::string& name)
+void FEPostModel::AddDataField(ModelDataField* pd, const std::string& name)
 {
 	// add the data field to the data manager
 	m_pDM->AddDataField(pd, name);
@@ -839,7 +839,7 @@ void FEPostModel::AddDataField(FEDataField* pd, const std::string& name)
 
 //-----------------------------------------------------------------------------
 // Add an data field to all states of the model
-void FEPostModel::AddDataField(FEDataField* pd, vector<int>& L)
+void FEPostModel::AddDataField(ModelDataField* pd, vector<int>& L)
 {
 	assert(pd->DataClass() == CLASS_FACE);
 

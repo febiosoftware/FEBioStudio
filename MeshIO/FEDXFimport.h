@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class FEDXFimport : public FEFileImport
+class FEDXFimport : public FSFileImport
 {
 	enum {MAX_LINE=256};
 

@@ -226,7 +226,7 @@ public:
 	std::vector<VTKPiece>	m_pieces;
 };
 
-VTUimport::VTUimport(FSProject& prj) : FEFileImport(prj)
+VTUimport::VTUimport(FSProject& prj) : FSFileImport(prj)
 {
 
 }

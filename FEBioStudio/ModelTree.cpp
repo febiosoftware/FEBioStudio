@@ -1189,7 +1189,7 @@ void CModelTree::UpdateModelData(QTreeWidgetItem* t1, FSModel& fem)
 		QTreeWidgetItem* t2 = AddTreeItem(t1, "Solutes", MT_SOLUTES_LIST, NSOL);
 		for (int i=0; i<NSOL; ++i)
 		{
-			FESoluteData& s = fem.GetSoluteData(i);
+			SoluteData& s = fem.GetSoluteData(i);
 			AddTreeItem(t2, QString::fromStdString(s.GetName()), MT_SOLUTE, 0, 0, new CObjectProps(&s));
 		}	
 	}
@@ -1200,7 +1200,7 @@ void CModelTree::UpdateModelData(QTreeWidgetItem* t1, FSModel& fem)
 		QTreeWidgetItem* t2 = AddTreeItem(t1, "Solid-bound Molecules", MT_SBM_LIST, NSBM);
 		for (int i = 0; i<NSBM; ++i)
 		{
-			FESoluteData& s = fem.GetSBMData(i);
+			SoluteData& s = fem.GetSBMData(i);
 			AddTreeItem(t2, QString::fromStdString(s.GetName()), MT_SBM, 0, 0, new CObjectProps(&s));
 		}
 	}

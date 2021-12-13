@@ -628,7 +628,7 @@ FSMultiphasicContact::FSMultiphasicContact(FSModel* ps, int nstep) : FSPairedInt
         char szvar1[256],szvar2[256];
 		sprintf(szvar1, "ambient_concentration");
 		sprintf(szvar2, "ambient concentration %d", i+1);
-		FESoluteData& sol = m_ps->GetSoluteData(i);
+		SoluteData& sol = m_ps->GetSoluteData(i);
         const char* sz1 = strdup(szvar1);
         const char* sz2 = strdup(szvar2);
         AddIndxDoubleParam(0.0  , "sol", i+1, sz1, sz2);

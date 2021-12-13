@@ -88,7 +88,7 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-FEAreaCoverage::FEAreaCoverage(Post::FEPostModel* fem, int flags) : Post::FEDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+FEAreaCoverage::FEAreaCoverage(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
 {
 	m_ballowBackIntersections = false;
 	m_angleThreshold = 0.0;
@@ -130,7 +130,7 @@ double Post::FEAreaCoverage::GetBackSearchRadius() const
 }
 
 //-----------------------------------------------------------------------------
-Post::FEDataField* Post::FEAreaCoverage::Clone() const
+Post::ModelDataField* Post::FEAreaCoverage::Clone() const
 {
 	FEAreaCoverage* pd = new FEAreaCoverage(m_fem, 0);
 	pd->m_surf1 = m_surf1;

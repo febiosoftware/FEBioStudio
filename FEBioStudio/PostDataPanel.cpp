@@ -357,7 +357,7 @@ public:
 			int nrow = index.row();
 			int ncol = index.column();
 			Post::FEDataManager& dm = *m_fem->GetDataManager();
-			Post::FEDataField* pd = *dm.DataField(nrow);
+			Post::ModelDataField* pd = *dm.DataField(nrow);
 
 			if (ncol == 0) return QString::fromStdString(pd->GetName());
 			else if (ncol == 1) return QString(pd->TypeStr());
@@ -402,7 +402,7 @@ public:
 	::CPropertyListForm*	m_prop;
 	QLineEdit*	name;
 
-	Post::FEDataField*	m_activeField;
+	Post::ModelDataField*	m_activeField;
 
 public:
 	void setupUi(::CPostDataPanel* parent)
@@ -702,7 +702,7 @@ void CDlgFilter::setDataOperands(const std::vector<QString>& opNames)
 	}
 }
 
-void CDlgFilter::setDataField(Post::FEDataField* pdf)
+void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 {
 	ui->src->setText(QString::fromStdString(pdf->GetName()));
 
@@ -985,7 +985,7 @@ void CPostDataPanel::on_CopyButton_clicked()
 		CPostDocument& doc = *GetActiveDocument();
 		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
-		Post::FEDataField* pdf = *dm.DataField(nsel);
+		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
 		{
 			bool bret = false;
@@ -1011,7 +1011,7 @@ void CPostDataPanel::on_DeleteButton_clicked()
 		CPostDocument& doc = *GetActiveDocument();
 		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
-		Post::FEDataField* pdf = *dm.DataField(nsel);
+		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
 		{
 			QString name = QString::fromStdString(pdf->GetName());
@@ -1036,7 +1036,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 		CPostDocument& doc = *GetActiveDocument();
 		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
-		Post::FEDataField* pdf = *dm.DataField(nsel);
+		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
 		{
 			// build a list of compatible data fields
@@ -1044,7 +1044,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 			vector<int> dataIds;
 			for (int i = 0; i<dm.DataFields(); ++i)
 			{
-				Post::FEDataField* pdi = *dm.DataField(i);
+				Post::ModelDataField* pdi = *dm.DataField(i);
 				QString name = QString::fromStdString(pdi->GetName());
 				if ((pdi != pdf) &&
 					(pdi->DataClass() == pdf->DataClass()) &&
@@ -1069,7 +1069,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				// get the name for the new field
 				string sname = dlg.getNewName().toStdString();
 
-				Post::FEDataField* newData = 0;
+				Post::ModelDataField* newData = 0;
 				bool bret = true;
 				int nfield = pdf->GetFieldID();
 				switch (dlg.m_nflt)
@@ -1166,7 +1166,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 		CPostDocument& doc = *GetActiveDocument();
 		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
-		Post::FEDataField* pdf = *dm.DataField(nsel);
+		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
 		{
 			QString file = QFileDialog::getSaveFileName(this, "Export Data");
@@ -1191,7 +1191,7 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 
 	int nstates = fem->GetStates();
 
-	Post::FEDataField* p = *dm.DataField(n);
+	Post::ModelDataField* p = *dm.DataField(n);
 
 	if ((dynamic_cast<Post::CurvatureField*>(p)))
 	{

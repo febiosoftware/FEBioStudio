@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEMeshImport::FEMeshImport(FSProject& prj) : FEFileImport(prj)
+FEMeshImport::FEMeshImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_bread_surface = false;
 }

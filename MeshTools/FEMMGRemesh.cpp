@@ -38,7 +38,7 @@ extern int ET_TET[6][2]; // in lut.cpp
 extern int ET_TRI[3][2]; // in lut.cpp
 
 //=========================================================================================
-FEMMGRemesh::FEMMGRemesh() : FEModifier("MMG Remesh")
+MMGRemesh::MMGRemesh() : FEModifier("MMG Remesh")
 {
 	AddDoubleParam(0.0, "H", "Element size");
 
@@ -48,7 +48,7 @@ FEMMGRemesh::FEMMGRemesh() : FEModifier("MMG Remesh")
 	AddBoolParam(true, "Only remesh selection");
 }
 
-FSMesh* FEMMGRemesh::Apply(FSMesh* pm)
+FSMesh* MMGRemesh::Apply(FSMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
 	if (pm->IsType(FE_TET4))
@@ -60,7 +60,7 @@ FSMesh* FEMMGRemesh::Apply(FSMesh* pm)
 	else { SetError("This is not a TET4 mesh"); return 0; }
 }
 
-FSMesh* FEMMGRemesh::Apply(FSGroup* pg)
+FSMesh* MMGRemesh::Apply(FSGroup* pg)
 {
 	if (pg == nullptr) return nullptr;
 	FSMesh* pm = pg->GetMesh();
@@ -107,7 +107,7 @@ FSMesh* FEMMGRemesh::Apply(FSGroup* pg)
 	else return Apply(pg->GetMesh());
 }
 
-FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
+FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 {
 #ifdef HAS_MMG
 	int NE = pm->Elements();
@@ -359,7 +359,7 @@ FSMesh* FEMMGRemesh::RemeshTET4(FSMesh* pm)
 #endif
 }
 
-FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
+FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 {
 	assert(pm->IsType(FE_TRI3));
 
@@ -601,7 +601,7 @@ FSMesh* FEMMGRemesh::RemeshTRI3(FSMesh* pm)
 }
 
 //================================================================================================
-FEMMGSurfaceRemesh::FEMMGSurfaceRemesh() : FESurfaceModifier("MMG Remesh")
+MMGSurfaceRemesh::MMGSurfaceRemesh() : FESurfaceModifier("MMG Remesh")
 {
 	AddDoubleParam(0.0, "H", "Element size");
 
@@ -611,7 +611,7 @@ FEMMGSurfaceRemesh::FEMMGSurfaceRemesh() : FESurfaceModifier("MMG Remesh")
 	AddBoolParam(true, "Only remesh selection");
 }
 
-FSSurfaceMesh* FEMMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
+FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
 	assert(pm->IsType(FE_FACE_TRI3));
@@ -842,7 +842,7 @@ FSSurfaceMesh* FEMMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 }
 
 //================================================================================================
-FEMMG2DRemesh::FEMMG2DRemesh() : FESurfaceModifier("MMG2D Remesh")
+MMG2DRemesh::MMG2DRemesh() : FESurfaceModifier("MMG2D Remesh")
 {
 	AddDoubleParam(0.0, "H", "Element size");
 
@@ -852,7 +852,7 @@ FEMMG2DRemesh::FEMMG2DRemesh() : FESurfaceModifier("MMG2D Remesh")
 	AddBoolParam(true, "Only remesh selection");
 }
 
-FSSurfaceMesh* FEMMG2DRemesh::Apply(FSSurfaceMesh* pm)
+FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
 	assert(pm->IsType(FE_FACE_TRI3));
