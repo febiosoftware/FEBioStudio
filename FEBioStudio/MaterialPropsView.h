@@ -82,6 +82,7 @@ public:
 
 public slots:
 	void onCurrentIndexChanged(int index);
+	void onEditTextChanged(const QString& txt);
 
 signals:
 	void typeChanged();

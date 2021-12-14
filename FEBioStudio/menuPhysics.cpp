@@ -153,10 +153,10 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Surface Load", FESURFACEINTERFACE_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Surface Load", FESURFACELOAD_ID, prj, true, this);
 	if (dlg.exec())
 	{
-		FSSurfaceLoad* psl = fecore_new<FSSurfaceLoad>(&fem, FESURFACEINTERFACE_ID, FE_FEBIO_SURFACE_LOAD); assert(psl);
+		FSSurfaceLoad* psl = fecore_new<FSSurfaceLoad>(&fem, FESURFACELOAD_ID, FE_FEBIO_SURFACE_LOAD); assert(psl);
 		FEBio::CreateModelComponent(dlg.GetClassID(), psl);
 		if (psl)
 		{
