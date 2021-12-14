@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/Serializable.h>
-#include <FEMLib/enums.h>
+#include <FECore/fecore_enum.h>
 #include <stdlib.h>
 #include "FEModel.h"
 #include "PlotDataSettings.h"
@@ -34,17 +34,6 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 #define FE_STATIC	0
 #define FE_DYNAMIC	1
-
-//-----------------------------------------------------------------------------
-enum FEPlotLevel {
-	FE_PLOT_NEVER,
-	FE_PLOT_MAJOR_ITRS,
-	FE_PLOT_MINOR_ITRS,
-	FE_PLOT_MUST_POINTS,
-	FE_PLOT_FINAL,
-	FE_PLOT_AUGMENTS,
-	FE_PLOT_STEP_FINAL
-};
 
 //-----------------------------------------------------------------------------
 // Module flags

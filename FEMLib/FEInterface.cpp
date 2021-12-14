@@ -43,7 +43,7 @@ FSInterface::FSInterface(int ntype, FSModel* ps, int nstep)
 {
 	m_ntype = ntype;
 	m_nstepID = nstep;
-	m_superClassID = FE_INTERFACE;
+	m_superClassID = FESURFACEINTERFACE_ID;
 	m_bActive = true;
 	m_ps = ps;
 	m_sztype = "(not defined)";

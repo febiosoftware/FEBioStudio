@@ -371,7 +371,7 @@ void CDlgAddChemicalReaction::InitDialog()
 	// fill in the reactions
 //	list<FEMatDescriptor*> mats = FEMaterialFactory::Enumerate(FE_MAT_REACTION);
 	int reactionClassIndex = FEBio::GetBaseClassIndex("class FEChemicalReaction");
-	vector<FEBio::FEBioClassInfo> mats = FEBio::FindAllClasses(-1, FE_MATERIALPROP, reactionClassIndex, 1);
+	vector<FEBio::FEBioClassInfo> mats = FEBio::FindAllClasses(-1, FEMATERIALPROP_ID, reactionClassIndex, 1);
 	if (mats.empty() == false)
 	{
         for (FEBio::FEBioClassInfo& it : mats)
@@ -383,7 +383,7 @@ void CDlgAddChemicalReaction::InitDialog()
 	// fill in reaction rate options
 //	mats = FEMaterialFactory::Enumerate(FE_MAT_REACTION_RATE);
 	int baseClassIndex = FEBio::GetBaseClassIndex("class FEReactionRate");
-	vector<FEBio::FEBioClassInfo> rates = FEBio::FindAllClasses(-1, FE_MATERIALPROP, baseClassIndex, 1);
+	vector<FEBio::FEBioClassInfo> rates = FEBio::FindAllClasses(-1, FEMATERIALPROP_ID, baseClassIndex, 1);
 	if (rates.empty() == false)
 	{
         for (FEBio::FEBioClassInfo& it : rates)

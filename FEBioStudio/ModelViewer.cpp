@@ -1059,7 +1059,7 @@ void CModelViewer::OnChangeMaterial()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Material", FE_MATERIAL, prj, false, this);
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, prj, false, this);
 	if (dlg.exec())
 	{
 		FSMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
@@ -1150,7 +1150,7 @@ void CModelViewer::OnCopyInterface()
 
 	// copy the interface
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSInterface* piCopy = dynamic_cast<FSInterface*>(fecore->Create(fem, FE_INTERFACE, pic->Type()));
+	FSInterface* piCopy = dynamic_cast<FSInterface*>(fecore->Create(fem, FESURFACEINTERFACE_ID, pic->Type()));
 	assert(piCopy);
 
 	// create a name
@@ -1179,7 +1179,7 @@ void CModelViewer::OnCopyBC()
 
 	// copy the bc
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSBoundaryCondition* pbcCopy = dynamic_cast<FSBoundaryCondition*>(fecore->Create(fem, FE_ESSENTIAL_BC, pbc->Type()));
+	FSBoundaryCondition* pbcCopy = dynamic_cast<FSBoundaryCondition*>(fecore->Create(fem, FEBC_ID, pbc->Type()));
 	assert(pbcCopy);
 
 	// create a name
@@ -1208,7 +1208,7 @@ void CModelViewer::OnCopyIC()
 
 	// copy the ic
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(fecore->Create(fem, FE_INITIAL_CONDITION, pic->Type()));
+	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(fecore->Create(fem, FEIC_ID, pic->Type()));
 	assert(picCopy);
 
 	// create a name
@@ -1237,7 +1237,7 @@ void CModelViewer::OnCopyRigidConnector()
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(fecore->Create(fem, FE_RIGID_CONNECTOR, pc->Type()));
+	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(fecore->Create(fem, FERIGIDCONNECTOR_ID, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
@@ -1265,7 +1265,7 @@ void CModelViewer::OnCopyConstraint()
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(fecore->Create(fem, FE_CONSTRAINT, pc->Type()));
+	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
@@ -1296,9 +1296,9 @@ void CModelViewer::OnCopyLoad()
 	FEMKernel* fecore = FEMKernel::Instance();
 	FSLoad* plCopy = 0;
 	if (dynamic_cast<FSSurfaceLoad*>(pl))
-		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FE_SURFACE_LOAD, pl->Type()));
+		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FESURFACELOAD_ID, pl->Type()));
 	else if (dynamic_cast<FSBodyLoad*>(pl))
-		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FE_BODY_LOAD, pl->Type()));
+		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FEBODYLOAD_ID, pl->Type()));
 	else if (dynamic_cast<FSNodalDOFLoad*>(pl))
 		plCopy = new FSNodalDOFLoad(fem);
 	assert(plCopy);
@@ -1329,7 +1329,7 @@ void CModelViewer::OnCopyRigidConstraint()
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidConstraint* pcCopy = dynamic_cast<FSRigidConstraint*>(fecore->Create(fem, FE_RIGID_CONSTRAINT, pc->Type()));
+	FSRigidConstraint* pcCopy = dynamic_cast<FSRigidConstraint*>(fecore->Create(fem, FERIGIDBC_ID, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
@@ -1358,7 +1358,7 @@ void CModelViewer::OnCopyStep()
 
 	// copy the step
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSAnalysisStep* psCopy = dynamic_cast<FSAnalysisStep*>(fecore->Create(fem, FE_ANALYSIS, ps->GetType()));
+	FSAnalysisStep* psCopy = dynamic_cast<FSAnalysisStep*>(fecore->Create(fem, FEANALYSIS_ID, ps->GetType()));
 	assert(psCopy);
 
 	// create a name

@@ -2595,7 +2595,7 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 
 		// allocate class
 		FEBioRigidLoad* pi = new FEBioRigidLoad(&fem, pstep->GetID());
-		if (FEBio::CreateModelComponent(FE_RIGID_LOAD, sztype, pi) == false)
+		if (FEBio::CreateModelComponent(FERIGIDLOAD_ID, sztype, pi) == false)
 		{
 			throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 		}
@@ -2613,7 +2613,7 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 
 	// allocate class
 	FEBioRigidConstraint* pi = new FEBioRigidConstraint(&fem, pstep->GetID());
-	if (FEBio::CreateModelComponent(FE_RIGID_CONSTRAINT, sztype, pi) == false)
+	if (FEBio::CreateModelComponent(FERIGIDBC_ID, sztype, pi) == false)
 	{
 		throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 	}
@@ -2755,7 +2755,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
 				FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-				if (FEBio::CreateModelComponent(FE_DISCRETE_MATERIAL, sztype, pdm) == false)
+				if (FEBio::CreateModelComponent(FEDISCRETEMATERIAL_ID, sztype, pdm) == false)
 				{
 					delete pdm;
 					throw XMLReader::InvalidTag(tag);
@@ -2782,7 +2782,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
 				FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-				if (FEBio::CreateModelComponent(FE_DISCRETE_MATERIAL, sztype, pdm) == false)
+				if (FEBio::CreateModelComponent(FEDISCRETEMATERIAL_ID, sztype, pdm) == false)
 				{
 					delete pdm;
 					throw XMLReader::InvalidTag(tag);
@@ -2810,7 +2810,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			else if (strcmp(sztype, "Hill") == 0)
 			{
 				FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-				if (FEBio::CreateModelComponent(FE_DISCRETE_MATERIAL, sztype, pdm) == false)
+				if (FEBio::CreateModelComponent(FEDISCRETEMATERIAL_ID, sztype, pdm) == false)
 				{
 					delete pdm;
 					throw XMLReader::InvalidTag(tag);
@@ -2867,7 +2867,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 
 			// allocate class
 			FEBioRigidLoad* pi = new FEBioRigidLoad(&fem, m_pBCStep->GetID());
-			if (FEBio::CreateModelComponent(FE_RIGID_LOAD, sztype, pi) == false)
+			if (FEBio::CreateModelComponent(FERIGIDLOAD_ID, sztype, pi) == false)
 			{
 				throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 			}

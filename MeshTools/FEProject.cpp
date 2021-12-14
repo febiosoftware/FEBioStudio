@@ -291,151 +291,151 @@ int FSProject::Validate(std::string &szerr)
 void FSProject::InitModules()
 {
 	// register material categories
-	FEMaterialFactory::AddCategory("elastic"             , MODULE_MECH     , FE_MAT_ELASTIC);
-	FEMaterialFactory::AddCategory("uncoupled elastic"   , MODULE_MECH     , FE_MAT_ELASTIC_UNCOUPLED);
-	FEMaterialFactory::AddCategory("bi-/tri-/multiphasic", MODULE_BIPHASIC , FE_MAT_MULTIPHASIC);
-	FEMaterialFactory::AddCategory("heat transfer"       , MODULE_HEAT     , FE_MAT_HEAT_TRANSFER);
-	FEMaterialFactory::AddCategory("fluid"               , MODULE_FLUID    , FE_MAT_FLUID);
-    FEMaterialFactory::AddCategory("fluid-FSI"           , MODULE_FLUID_FSI, FE_MAT_FLUID_FSI);
-	FEMaterialFactory::AddCategory("reaction-diffusion"  , MODULE_REACTION_DIFFUSION	, FE_MAT_REACTION_DIFFUSION);
-	FEMaterialFactory::AddCategory("other"               , MODULE_MECH				, FE_MAT_RIGID);
+	FEMaterialFactory::AddCategory("elastic"             , MODULE_MECH               , FE_MAT_ELASTIC);
+	FEMaterialFactory::AddCategory("uncoupled elastic"   , MODULE_MECH               , FE_MAT_ELASTIC_UNCOUPLED);
+	FEMaterialFactory::AddCategory("bi-/tri-/multiphasic", MODULE_BIPHASIC           , FE_MAT_MULTIPHASIC);
+	FEMaterialFactory::AddCategory("heat transfer"       , MODULE_HEAT               , FE_MAT_HEAT_TRANSFER);
+	FEMaterialFactory::AddCategory("fluid"               , MODULE_FLUID              , FE_MAT_FLUID);
+    FEMaterialFactory::AddCategory("fluid-FSI"           , MODULE_FLUID_FSI          , FE_MAT_FLUID_FSI);
+	FEMaterialFactory::AddCategory("reaction-diffusion"  , MODULE_REACTION_DIFFUSION , FE_MAT_REACTION_DIFFUSION);
+	FEMaterialFactory::AddCategory("other"               , MODULE_MECH				 , FE_MAT_RIGID);
 
 	// --- MECH MODULE ---
-	REGISTER_FE_CLASS(FSNonLinearMechanics         , MODULE_MECH, FE_ANALYSIS         , FE_STEP_MECHANICS               , "Structural Mechanics");
-	REGISTER_FE_CLASS(FSFixedDisplacement          , MODULE_MECH, FE_ESSENTIAL_BC     , FE_FIXED_DISPLACEMENT           , "Fixed displacement", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSFixedShellDisplacement     , MODULE_MECH, FE_ESSENTIAL_BC     , FE_FIXED_SHELL_DISPLACEMENT     , "Fixed shell displacement", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSFixedRotation              , MODULE_MECH, FE_ESSENTIAL_BC     , FE_FIXED_ROTATION               , "Fixed shell rotation", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSPrescribedDisplacement     , MODULE_MECH, FE_ESSENTIAL_BC     , FE_PRESCRIBED_DISPLACEMENT      , "Prescribed displacement", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSPrescribedShellDisplacement, MODULE_MECH, FE_ESSENTIAL_BC     , FE_PRESCRIBED_SHELL_DISPLACEMENT, "Prescribed shell displacement", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSPrescribedRotation         , MODULE_MECH, FE_ESSENTIAL_BC     , FE_PRESCRIBED_ROTATION          , "Prescribed shell rotation", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSPressureLoad               , MODULE_MECH, FE_SURFACE_LOAD     , FE_PRESSURE_LOAD                , "Pressure", PRESSURE_LOAD_HTML);
-	REGISTER_FE_CLASS(FSSurfaceTraction            , MODULE_MECH, FE_SURFACE_LOAD     , FE_SURFACE_TRACTION             , "Surface traction", TRACTION_LOAD_HTML);
-	REGISTER_FE_CLASS(FSNodalVelocities            , MODULE_MECH, FE_INITIAL_CONDITION, FE_NODAL_VELOCITIES             , "Velocity");
-	REGISTER_FE_CLASS(FSNodalShellVelocities       , MODULE_MECH, FE_INITIAL_CONDITION, FE_NODAL_SHELL_VELOCITIES       , "Shell velocity");
-	REGISTER_FE_CLASS(FSInitPrestrain              , MODULE_MECH, FE_INITIAL_CONDITION, FE_INIT_PRESTRAIN               , "Initialize Prestrain");
-	REGISTER_FE_CLASS(FSRigidInterface             , MODULE_MECH, FE_INTERFACE        , FE_RIGID_INTERFACE              , "Rigid", RIGID_NODES_HTML);
-	REGISTER_FE_CLASS(FSSlidingWithGapsInterface   , MODULE_MECH, FE_INTERFACE        , FE_SLIDING_WITH_GAPS            , "Sliding node-on-facet", SLIDING_INTERFACES_HTML);
-	REGISTER_FE_CLASS(FSFacetOnFacetInterface      , MODULE_MECH, FE_INTERFACE        , FE_FACET_ON_FACET_SLIDING       , "Sliding facet-on-facet", SLIDING_INTERFACES_HTML);
-    REGISTER_FE_CLASS(FSTensionCompressionInterface, MODULE_MECH, FE_INTERFACE        , FE_TENSCOMP_INTERFACE           , "Sliding elastic", SLIDING_INTERFACES_HTML);
-	REGISTER_FE_CLASS(FSTiedInterface              , MODULE_MECH, FE_INTERFACE        , FE_TIED_INTERFACE               , "Tied node-on-facet", TIED_INTERFACES_HTML);
-	REGISTER_FE_CLASS(FSF2FTiedInterface           , MODULE_MECH, FE_INTERFACE        , FE_FACET_ON_FACET_TIED          , "Tied facet-on-facet", TIED_INTERFACES_HTML);
-    REGISTER_FE_CLASS(FSTiedElasticInterface       , MODULE_MECH, FE_INTERFACE        , FE_TIED_ELASTIC_INTERFACE       , "Tied elastic", TIED_INTERFACES_HTML);
-    REGISTER_FE_CLASS(FSContactPotentialInterface  , MODULE_MECH, FE_INTERFACE        , FE_CONTACTPOTENTIAL_CONTACT     , "contact potential");
-	REGISTER_FE_CLASS(FSStickyInterface            , MODULE_MECH, FE_INTERFACE        , FE_STICKY_INTERFACE             , "Sticky", STICKY_INTERFACES_HTML);
-	REGISTER_FE_CLASS(FSPeriodicBoundary           , MODULE_MECH, FE_INTERFACE        , FE_PERIODIC_BOUNDARY            , "Periodic boundary");
-	REGISTER_FE_CLASS(FSRigidWallInterface         , MODULE_MECH, FE_INTERFACE        , FE_RIGID_WALL                   , "Rigid wall", RIGID_WALL_INTERFACES_HTML);
-	REGISTER_FE_CLASS(FSRigidSphereInterface       , MODULE_MECH, FE_INTERFACE        , FE_RIGID_SPHERE_CONTACT         , "Rigid sphere");
-	REGISTER_FE_CLASS(FSRigidJoint                 , MODULE_MECH, FE_INTERFACE        , FE_RIGID_JOINT                  , "Rigid joint");
-	REGISTER_FE_CLASS(FSConstBodyForce             , MODULE_MECH, FE_BODY_LOAD        , FE_CONST_BODY_FORCE             , "Const body force", CONSTANT_BODY_FORCE_HTML);
-	REGISTER_FE_CLASS(FSNonConstBodyForce          , MODULE_MECH, FE_BODY_LOAD        , FE_NON_CONST_BODY_FORCE         , "Non-const body force", NON_CONSTANT_BODY_FORCE_HTML);
-    REGISTER_FE_CLASS(FSCentrifugalBodyForce       , MODULE_MECH, FE_BODY_LOAD        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force", CENTRIFUGAL_BODY_FORCE_HTML);
-    REGISTER_FE_CLASS(FSMassDamping                , MODULE_MECH, FE_BODY_LOAD        , FE_MASSDAMPING_LOAD             , "Mass damping");
+	REGISTER_FE_CLASS(FSNonLinearMechanics         , MODULE_MECH, FEANALYSIS_ID         , FE_STEP_MECHANICS               , "Structural Mechanics");
+	REGISTER_FE_CLASS(FSFixedDisplacement          , MODULE_MECH, FEBC_ID			    , FE_FIXED_DISPLACEMENT           , "Fixed displacement", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSFixedShellDisplacement     , MODULE_MECH, FEBC_ID			    , FE_FIXED_SHELL_DISPLACEMENT     , "Fixed shell displacement", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSFixedRotation              , MODULE_MECH, FEBC_ID			    , FE_FIXED_ROTATION               , "Fixed shell rotation", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSPrescribedDisplacement     , MODULE_MECH, FEBC_ID			    , FE_PRESCRIBED_DISPLACEMENT      , "Prescribed displacement", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSPrescribedShellDisplacement, MODULE_MECH, FEBC_ID			    , FE_PRESCRIBED_SHELL_DISPLACEMENT, "Prescribed shell displacement", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSPrescribedRotation         , MODULE_MECH, FEBC_ID			    , FE_PRESCRIBED_ROTATION          , "Prescribed shell rotation", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSPressureLoad               , MODULE_MECH, FESURFACELOAD_ID      , FE_PRESSURE_LOAD                , "Pressure", PRESSURE_LOAD_HTML);
+	REGISTER_FE_CLASS(FSSurfaceTraction            , MODULE_MECH, FESURFACELOAD_ID      , FE_SURFACE_TRACTION             , "Surface traction", TRACTION_LOAD_HTML);
+	REGISTER_FE_CLASS(FSNodalVelocities            , MODULE_MECH, FEIC_ID               , FE_NODAL_VELOCITIES             , "Velocity");
+	REGISTER_FE_CLASS(FSNodalShellVelocities       , MODULE_MECH, FEIC_ID               , FE_NODAL_SHELL_VELOCITIES       , "Shell velocity");
+	REGISTER_FE_CLASS(FSInitPrestrain              , MODULE_MECH, FEIC_ID               , FE_INIT_PRESTRAIN               , "Initialize Prestrain");
+	REGISTER_FE_CLASS(FSRigidInterface             , MODULE_MECH, FESURFACEINTERFACE_ID , FE_RIGID_INTERFACE              , "Rigid", RIGID_NODES_HTML);
+	REGISTER_FE_CLASS(FSSlidingWithGapsInterface   , MODULE_MECH, FESURFACEINTERFACE_ID , FE_SLIDING_WITH_GAPS            , "Sliding node-on-facet", SLIDING_INTERFACES_HTML);
+	REGISTER_FE_CLASS(FSFacetOnFacetInterface      , MODULE_MECH, FESURFACEINTERFACE_ID , FE_FACET_ON_FACET_SLIDING       , "Sliding facet-on-facet", SLIDING_INTERFACES_HTML);
+    REGISTER_FE_CLASS(FSTensionCompressionInterface, MODULE_MECH, FESURFACEINTERFACE_ID , FE_TENSCOMP_INTERFACE           , "Sliding elastic", SLIDING_INTERFACES_HTML);
+	REGISTER_FE_CLASS(FSTiedInterface              , MODULE_MECH, FESURFACEINTERFACE_ID , FE_TIED_INTERFACE               , "Tied node-on-facet", TIED_INTERFACES_HTML);
+	REGISTER_FE_CLASS(FSF2FTiedInterface           , MODULE_MECH, FESURFACEINTERFACE_ID , FE_FACET_ON_FACET_TIED          , "Tied facet-on-facet", TIED_INTERFACES_HTML);
+    REGISTER_FE_CLASS(FSTiedElasticInterface       , MODULE_MECH, FESURFACEINTERFACE_ID , FE_TIED_ELASTIC_INTERFACE       , "Tied elastic", TIED_INTERFACES_HTML);
+    REGISTER_FE_CLASS(FSContactPotentialInterface  , MODULE_MECH, FESURFACEINTERFACE_ID , FE_CONTACTPOTENTIAL_CONTACT     , "contact potential");
+	REGISTER_FE_CLASS(FSStickyInterface            , MODULE_MECH, FESURFACEINTERFACE_ID , FE_STICKY_INTERFACE             , "Sticky", STICKY_INTERFACES_HTML);
+	REGISTER_FE_CLASS(FSPeriodicBoundary           , MODULE_MECH, FESURFACEINTERFACE_ID , FE_PERIODIC_BOUNDARY            , "Periodic boundary");
+	REGISTER_FE_CLASS(FSRigidWallInterface         , MODULE_MECH, FESURFACEINTERFACE_ID , FE_RIGID_WALL                   , "Rigid wall", RIGID_WALL_INTERFACES_HTML);
+	REGISTER_FE_CLASS(FSRigidSphereInterface       , MODULE_MECH, FESURFACEINTERFACE_ID , FE_RIGID_SPHERE_CONTACT         , "Rigid sphere");
+	REGISTER_FE_CLASS(FSRigidJoint                 , MODULE_MECH, FESURFACEINTERFACE_ID , FE_RIGID_JOINT                  , "Rigid joint");
+	REGISTER_FE_CLASS(FSConstBodyForce             , MODULE_MECH, FEBODYLOAD_ID	        , FE_CONST_BODY_FORCE             , "Const body force", CONSTANT_BODY_FORCE_HTML);
+	REGISTER_FE_CLASS(FSNonConstBodyForce          , MODULE_MECH, FEBODYLOAD_ID	        , FE_NON_CONST_BODY_FORCE         , "Non-const body force", NON_CONSTANT_BODY_FORCE_HTML);
+    REGISTER_FE_CLASS(FSCentrifugalBodyForce       , MODULE_MECH, FEBODYLOAD_ID	        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force", CENTRIFUGAL_BODY_FORCE_HTML);
+    REGISTER_FE_CLASS(FSMassDamping                , MODULE_MECH, FEBODYLOAD_ID	        , FE_MASSDAMPING_LOAD             , "Mass damping");
 
-	REGISTER_FE_CLASS(FSRigidFixed			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
-	REGISTER_FE_CLASS(FSRigidDisplacement	, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
-	REGISTER_FE_CLASS(FSRigidForce			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FORCE				, "Prescribed rigid force", PRESCRIBE_RIGID_CONSTRAINT_HTML);
-	REGISTER_FE_CLASS(FSRigidVelocity		, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_INIT_VELOCITY		, "Initial rigid velocity");
-	REGISTER_FE_CLASS(FSRigidAngularVelocity, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_INIT_ANG_VELOCITY	, "Initial rigid angular velocity");
+	REGISTER_FE_CLASS(FSRigidFixed			, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
+	REGISTER_FE_CLASS(FSRigidDisplacement	, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation", PRESCRIBE_RIGID_CONSTRAINT_HTML);
+	REGISTER_FE_CLASS(FSRigidForce			, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_FORCE				, "Prescribed rigid force", PRESCRIBE_RIGID_CONSTRAINT_HTML);
+	REGISTER_FE_CLASS(FSRigidVelocity		, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_INIT_VELOCITY		, "Initial rigid velocity");
+	REGISTER_FE_CLASS(FSRigidAngularVelocity, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_INIT_ANG_VELOCITY	, "Initial rigid angular velocity");
 
-	REGISTER_FE_CLASS(FSRigidSphericalJoint		, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_SPHERICAL_JOINT	, "Spherical joint", RIGID_SPHERICAL_JOINT_HTML);
-	REGISTER_FE_CLASS(FSRigidRevoluteJoint		, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_REVOLUTE_JOINT		, "Revolute joint", RIGID_REVOLUTE_JOINT_HTML);
-	REGISTER_FE_CLASS(FSRigidPrismaticJoint		, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_PRISMATIC_JOINT	, "Prismatic joint", RIGID_PRISMATIC_JOINT_HTML);
-	REGISTER_FE_CLASS(FSRigidCylindricalJoint	, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_CYLINDRICAL_JOINT	, "Cylindrical joint", RIGID_CYLINDRICAL_JOINT_HTML);
-	REGISTER_FE_CLASS(FSRigidPlanarJoint		, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_PLANAR_JOINT		, "Planar joint", RIGID_PLANAR_JOINT_HTML);
-    REGISTER_FE_CLASS(FSRigidLock               , MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_RIGID_LOCK         , "Rigid lock");
-	REGISTER_FE_CLASS(FSRigidSpring				, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_SPRING				, "Spring", RIGID_SPRING_HTML);
-	REGISTER_FE_CLASS(FSRigidDamper				, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_DAMPER				, "Damper", RIGID_DAMPER_HTML);
-	REGISTER_FE_CLASS(FSRigidAngularDamper		, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_ANGULAR_DAMPER		, "Angular damper");
-	REGISTER_FE_CLASS(FSRigidContractileForce	, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_CONTRACTILE_FORCE	, "Contractile force");
-	REGISTER_FE_CLASS(FSGenericRigidJoint       , MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_GENERIC_JOINT      , "Generic joint");
+	REGISTER_FE_CLASS(FSRigidSphericalJoint		, MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_SPHERICAL_JOINT	, "Spherical joint", RIGID_SPHERICAL_JOINT_HTML);
+	REGISTER_FE_CLASS(FSRigidRevoluteJoint		, MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_REVOLUTE_JOINT		, "Revolute joint", RIGID_REVOLUTE_JOINT_HTML);
+	REGISTER_FE_CLASS(FSRigidPrismaticJoint		, MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_PRISMATIC_JOINT	, "Prismatic joint", RIGID_PRISMATIC_JOINT_HTML);
+	REGISTER_FE_CLASS(FSRigidCylindricalJoint	, MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_CYLINDRICAL_JOINT	, "Cylindrical joint", RIGID_CYLINDRICAL_JOINT_HTML);
+	REGISTER_FE_CLASS(FSRigidPlanarJoint		, MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_PLANAR_JOINT		, "Planar joint", RIGID_PLANAR_JOINT_HTML);
+    REGISTER_FE_CLASS(FSRigidLock               , MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_RIGID_LOCK         , "Rigid lock");
+	REGISTER_FE_CLASS(FSRigidSpring				, MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_SPRING				, "Spring", RIGID_SPRING_HTML);
+	REGISTER_FE_CLASS(FSRigidDamper				, MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_DAMPER				, "Damper", RIGID_DAMPER_HTML);
+	REGISTER_FE_CLASS(FSRigidAngularDamper		, MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_ANGULAR_DAMPER		, "Angular damper");
+	REGISTER_FE_CLASS(FSRigidContractileForce	, MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_CONTRACTILE_FORCE	, "Contractile force");
+	REGISTER_FE_CLASS(FSGenericRigidJoint       , MODULE_MECH, FERIGIDCONNECTOR_ID, FE_RC_GENERIC_JOINT      , "Generic joint");
 
-	REGISTER_FE_CLASS(FSSymmetryPlane    , MODULE_MECH, FE_CONSTRAINT, FE_SYMMETRY_PLANE   , "symmetry plane", SYMMETRY_PLANE_HTML);
-	REGISTER_FE_CLASS(FSVolumeConstraint , MODULE_MECH, FE_CONSTRAINT, FE_VOLUME_CONSTRAINT, "volume constraint");
-	REGISTER_FE_CLASS(FSWarpingConstraint, MODULE_MECH, FE_CONSTRAINT, FE_WARP_CONSTRAINT  , "warp-image");
-	REGISTER_FE_CLASS(FSPrestrainConstraint, MODULE_MECH, FE_CONSTRAINT, FE_PRESTRAIN_CONSTRAINT, "prestrain");
+	REGISTER_FE_CLASS(FSSymmetryPlane      , MODULE_MECH, FENLCONSTRAINT_ID, FE_SYMMETRY_PLANE      , "symmetry plane", SYMMETRY_PLANE_HTML);
+	REGISTER_FE_CLASS(FSVolumeConstraint   , MODULE_MECH, FENLCONSTRAINT_ID, FE_VOLUME_CONSTRAINT   , "volume constraint");
+	REGISTER_FE_CLASS(FSWarpingConstraint  , MODULE_MECH, FENLCONSTRAINT_ID, FE_WARP_CONSTRAINT     , "warp-image");
+	REGISTER_FE_CLASS(FSPrestrainConstraint, MODULE_MECH, FENLCONSTRAINT_ID, FE_PRESTRAIN_CONSTRAINT, "prestrain");
 
 	// --- HEAT MODULE ---
-	REGISTER_FE_CLASS(FSHeatTransfer         , MODULE_HEAT, FE_ANALYSIS         , FE_STEP_HEAT_TRANSFER    , "Heat Transfer");
-	REGISTER_FE_CLASS(FSFixedTemperature     , MODULE_HEAT, FE_ESSENTIAL_BC     , FE_FIXED_TEMPERATURE     , "Zero temperature", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSPrescribedTemperature, MODULE_HEAT, FE_ESSENTIAL_BC     , FE_PRESCRIBED_TEMPERATURE, "Prescribed temperature", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSHeatFlux             , MODULE_HEAT, FE_SURFACE_LOAD     , FE_HEAT_FLUX             , "Heat flux", HEAT_FLUX_HTML);
-	REGISTER_FE_CLASS(FSConvectiveHeatFlux   , MODULE_HEAT, FE_SURFACE_LOAD     , FE_CONV_HEAT_FLUX        , "Convective heat flux", CONVECTIVE_HEAT_FLUX_HTML);
-	REGISTER_FE_CLASS(FSInitTemperature      , MODULE_HEAT, FE_INITIAL_CONDITION, FE_INIT_TEMPERATURE      , "Temperature");
-	REGISTER_FE_CLASS(FSHeatSource           , MODULE_HEAT, FE_BODY_LOAD        , FE_HEAT_SOURCE           , "Heat source", HEAT_SOURCE_HTML);
-	REGISTER_FE_CLASS(FSGapHeatFluxInterface , MODULE_HEAT, FE_INTERFACE        , FE_GAPHEATFLUX_INTERFACE , "Gap heat flux");
+	REGISTER_FE_CLASS(FSHeatTransfer         , MODULE_HEAT, FEANALYSIS_ID        , FE_STEP_HEAT_TRANSFER    , "Heat Transfer");
+	REGISTER_FE_CLASS(FSFixedTemperature     , MODULE_HEAT, FEBC_ID              , FE_FIXED_TEMPERATURE     , "Zero temperature", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSPrescribedTemperature, MODULE_HEAT, FEBC_ID              , FE_PRESCRIBED_TEMPERATURE, "Prescribed temperature", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSHeatFlux             , MODULE_HEAT, FESURFACELOAD_ID     , FE_HEAT_FLUX             , "Heat flux", HEAT_FLUX_HTML);
+	REGISTER_FE_CLASS(FSConvectiveHeatFlux   , MODULE_HEAT, FESURFACELOAD_ID     , FE_CONV_HEAT_FLUX        , "Convective heat flux", CONVECTIVE_HEAT_FLUX_HTML);
+	REGISTER_FE_CLASS(FSInitTemperature      , MODULE_HEAT, FEIC_ID              , FE_INIT_TEMPERATURE      , "Temperature");
+	REGISTER_FE_CLASS(FSHeatSource           , MODULE_HEAT, FEBODYLOAD_ID        , FE_HEAT_SOURCE           , "Heat source", HEAT_SOURCE_HTML);
+	REGISTER_FE_CLASS(FSGapHeatFluxInterface , MODULE_HEAT, FESURFACEINTERFACE_ID, FE_GAPHEATFLUX_INTERFACE , "Gap heat flux");
 
 	// --- BIPHASIC MODULE ---
-	REGISTER_FE_CLASS(FSNonLinearBiphasic      , MODULE_BIPHASIC, FE_ANALYSIS         , FE_STEP_BIPHASIC            , "Biphasic");
-	REGISTER_FE_CLASS(FSFixedFluidPressure     , MODULE_BIPHASIC, FE_ESSENTIAL_BC     , FE_FIXED_FLUID_PRESSURE     , "Zero fluid pressure", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSPrescribedFluidPressure, MODULE_BIPHASIC, FE_ESSENTIAL_BC     , FE_PRESCRIBED_FLUID_PRESSURE, "Prescribed fluid pressure", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSFluidFlux              , MODULE_BIPHASIC, FE_SURFACE_LOAD     , FE_FLUID_FLUX               , "Fluid flux", FLUID_FLUX_HTML);
-	REGISTER_FE_CLASS(FSBPNormalTraction       , MODULE_BIPHASIC, FE_SURFACE_LOAD     , FE_BP_NORMAL_TRACTION       , "Mixture normal traction", FLUID_NORMAL_TRACTION_HTML);
-	REGISTER_FE_CLASS(FSInitFluidPressure      , MODULE_BIPHASIC, FE_INITIAL_CONDITION, FE_INIT_FLUID_PRESSURE      , "Fluid pressure");
-    REGISTER_FE_CLASS(FSInitShellFluidPressure , MODULE_BIPHASIC, FE_INITIAL_CONDITION, FE_INIT_SHELL_FLUID_PRESSURE, "Shell fluid pressure");
-    REGISTER_FE_CLASS(FSPoroContact            , MODULE_BIPHASIC, FE_INTERFACE        , FE_PORO_INTERFACE           , "Biphasic contact", BIPHASIC_CONTACT_HTML);
-    REGISTER_FE_CLASS(FSTiedBiphasicInterface  , MODULE_BIPHASIC, FE_INTERFACE        , FE_TIEDBIPHASIC_INTERFACE   , "Tied biphasic contact", TIED_BIPHASIC_INTERFACES_HTML);
+	REGISTER_FE_CLASS(FSNonLinearBiphasic      , MODULE_BIPHASIC, FEANALYSIS_ID        , FE_STEP_BIPHASIC            , "Biphasic");
+	REGISTER_FE_CLASS(FSFixedFluidPressure     , MODULE_BIPHASIC, FEBC_ID              , FE_FIXED_FLUID_PRESSURE     , "Zero fluid pressure", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSPrescribedFluidPressure, MODULE_BIPHASIC, FEBC_ID              , FE_PRESCRIBED_FLUID_PRESSURE, "Prescribed fluid pressure", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSFluidFlux              , MODULE_BIPHASIC, FESURFACELOAD_ID     , FE_FLUID_FLUX               , "Fluid flux", FLUID_FLUX_HTML);
+	REGISTER_FE_CLASS(FSBPNormalTraction       , MODULE_BIPHASIC, FESURFACELOAD_ID     , FE_BP_NORMAL_TRACTION       , "Mixture normal traction", FLUID_NORMAL_TRACTION_HTML);
+	REGISTER_FE_CLASS(FSInitFluidPressure      , MODULE_BIPHASIC, FEIC_ID              , FE_INIT_FLUID_PRESSURE      , "Fluid pressure");
+    REGISTER_FE_CLASS(FSInitShellFluidPressure , MODULE_BIPHASIC, FEIC_ID              , FE_INIT_SHELL_FLUID_PRESSURE, "Shell fluid pressure");
+    REGISTER_FE_CLASS(FSPoroContact            , MODULE_BIPHASIC, FESURFACEINTERFACE_ID, FE_PORO_INTERFACE           , "Biphasic contact", BIPHASIC_CONTACT_HTML);
+    REGISTER_FE_CLASS(FSTiedBiphasicInterface  , MODULE_BIPHASIC, FESURFACEINTERFACE_ID, FE_TIEDBIPHASIC_INTERFACE   , "Tied biphasic contact", TIED_BIPHASIC_INTERFACES_HTML);
 
 	// --- SOLUTES MODULE ---
-	REGISTER_FE_CLASS(FSFixedConcentration      , MODULE_SOLUTES, FE_ESSENTIAL_BC     , FE_FIXED_CONCENTRATION      , "Zero concentration", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSPrescribedConcentration , MODULE_SOLUTES, FE_ESSENTIAL_BC     , FE_PRESCRIBED_CONCENTRATION , "Prescribed concentration", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSInitConcentration       , MODULE_SOLUTES, FE_INITIAL_CONDITION, FE_INIT_CONCENTRATION       , "Concentration");
-    REGISTER_FE_CLASS(FSInitShellConcentration  , MODULE_SOLUTES, FE_INITIAL_CONDITION, FE_INIT_SHELL_CONCENTRATION , "Shell concentration");
+	REGISTER_FE_CLASS(FSFixedConcentration      , MODULE_SOLUTES, FEBC_ID, FE_FIXED_CONCENTRATION      , "Zero concentration", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSPrescribedConcentration , MODULE_SOLUTES, FEBC_ID, FE_PRESCRIBED_CONCENTRATION , "Prescribed concentration", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSInitConcentration       , MODULE_SOLUTES, FEIC_ID, FE_INIT_CONCENTRATION       , "Concentration");
+    REGISTER_FE_CLASS(FSInitShellConcentration  , MODULE_SOLUTES, FEIC_ID, FE_INIT_SHELL_CONCENTRATION , "Shell concentration");
 
 	// --- MULTIPHASIC MODULE ---
-	REGISTER_FE_CLASS(FSBiphasicSolutes         , MODULE_MULTIPHASIC, FE_ANALYSIS         , FE_STEP_BIPHASIC_SOLUTE     , "Biphasic-solute");
-	REGISTER_FE_CLASS(FSMultiphasicAnalysis     , MODULE_MULTIPHASIC, FE_ANALYSIS         , FE_STEP_MULTIPHASIC         , "Multiphasic");
-	REGISTER_FE_CLASS(FSPoroSoluteContact       , MODULE_MULTIPHASIC, FE_INTERFACE        , FE_PORO_SOLUTE_INTERFACE    , "Biphasic-solute contact", BIPHASIC_SOLUTE_AND_MULTIPHASIC_CONTACT_HTML);
-	REGISTER_FE_CLASS(FSMultiphasicContact      , MODULE_MULTIPHASIC, FE_INTERFACE        , FE_MULTIPHASIC_INTERFACE    , "Multiphasic contact", BIPHASIC_SOLUTE_AND_MULTIPHASIC_CONTACT_HTML);
-	REGISTER_FE_CLASS(FSTiedMultiphasicInterface, MODULE_MULTIPHASIC, FE_INTERFACE        , FE_TIEDMULTIPHASIC_INTERFACE, "Tied multiphasic contact", TIED_MULTIPHASIC_INTERFACES_HTML);
-	REGISTER_FE_CLASS(FSSoluteFlux              , MODULE_MULTIPHASIC, FE_SURFACE_LOAD     , FE_SOLUTE_FLUX              , "Solute flux", SOLUTE_FLUX_HTML);
-    REGISTER_FE_CLASS(FSMatchingOsmoticCoefficient, MODULE_MULTIPHASIC, FE_SURFACE_LOAD   , FE_MATCHING_OSM_COEF        , "Matching osmotic coefficient", FLUID_NORMAL_TRACTION_HTML);
+	REGISTER_FE_CLASS(FSBiphasicSolutes           , MODULE_MULTIPHASIC, FEANALYSIS_ID        , FE_STEP_BIPHASIC_SOLUTE     , "Biphasic-solute");
+	REGISTER_FE_CLASS(FSMultiphasicAnalysis       , MODULE_MULTIPHASIC, FEANALYSIS_ID        , FE_STEP_MULTIPHASIC         , "Multiphasic");
+	REGISTER_FE_CLASS(FSPoroSoluteContact         , MODULE_MULTIPHASIC, FESURFACEINTERFACE_ID, FE_PORO_SOLUTE_INTERFACE    , "Biphasic-solute contact", BIPHASIC_SOLUTE_AND_MULTIPHASIC_CONTACT_HTML);
+	REGISTER_FE_CLASS(FSMultiphasicContact        , MODULE_MULTIPHASIC, FESURFACEINTERFACE_ID, FE_MULTIPHASIC_INTERFACE    , "Multiphasic contact", BIPHASIC_SOLUTE_AND_MULTIPHASIC_CONTACT_HTML);
+	REGISTER_FE_CLASS(FSTiedMultiphasicInterface  , MODULE_MULTIPHASIC, FESURFACEINTERFACE_ID, FE_TIEDMULTIPHASIC_INTERFACE, "Tied multiphasic contact", TIED_MULTIPHASIC_INTERFACES_HTML);
+	REGISTER_FE_CLASS(FSSoluteFlux                , MODULE_MULTIPHASIC, FESURFACELOAD_ID     , FE_SOLUTE_FLUX              , "Solute flux", SOLUTE_FLUX_HTML);
+    REGISTER_FE_CLASS(FSMatchingOsmoticCoefficient, MODULE_MULTIPHASIC, FESURFACELOAD_ID     , FE_MATCHING_OSM_COEF        , "Matching osmotic coefficient", FLUID_NORMAL_TRACTION_HTML);
 
 #ifdef _DEBUG
-	REGISTER_FE_CLASS(FSSBMPointSource, MODULE_MULTIPHASIC, FE_BODY_LOAD, FE_SBM_POINT_SOURCE, "SBM point source");
+	REGISTER_FE_CLASS(FSSBMPointSource, MODULE_MULTIPHASIC, FEBODYLOAD_ID, FE_SBM_POINT_SOURCE, "SBM point source");
 #endif
 
 	// --- FLUID MODULE ---
-	REGISTER_FE_CLASS(FSFluidAnalysis           , MODULE_FLUID, FE_ANALYSIS    , FE_STEP_FLUID                  , "Fluid Mechanics");
-    REGISTER_FE_CLASS(FSFixedFluidVelocity      , MODULE_FLUID, FE_ESSENTIAL_BC, FE_FIXED_FLUID_VELOCITY        , "Zero fluid velocity", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
-    REGISTER_FE_CLASS(FSPrescribedFluidVelocity , MODULE_FLUID, FE_ESSENTIAL_BC, FE_PRESCRIBED_FLUID_VELOCITY   , "Prescribed fluid velocity", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSFixedFluidDilatation    , MODULE_FLUID, FE_ESSENTIAL_BC, FE_FIXED_DILATATION            , "Zero fluid dilatation", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSPrescribedFluidDilatation,MODULE_FLUID, FE_ESSENTIAL_BC, FE_PRESCRIBED_DILATATION       , "Prescribed fluid dilatation", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
-	REGISTER_FE_CLASS(FSFluidTraction           , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_TRACTION              , "Fluid viscous traction", FLUID_TRACTION_HTML);
-    REGISTER_FE_CLASS(FSFluidPressureLoad       , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_PRESSURE_LOAD         , "Fluid pressure", FLUID_PRESSURE_HTML);
-    REGISTER_FE_CLASS(FSFluidVelocity           , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_VELOCITY              , "Fluid velocity", FLUID_VELOCITY_HTML);
-    REGISTER_FE_CLASS(FSFluidNormalVelocity     , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_NORMAL_VELOCITY       , "Fluid normal velocity", FLUID_NORMAL_VELOCITY_HTML);
-    REGISTER_FE_CLASS(FSFluidRotationalVelocity , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_ROTATIONAL_VELOCITY   , "Fluid rotational velocity", FLUID_ROTATIONAL_VELOCITY_HTML);
-    REGISTER_FE_CLASS(FSFluidFlowResistance     , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_FLOW_RESISTANCE       , "Fluid flow resistance", FLUID_RESISTANCE_HTML);
-    REGISTER_FE_CLASS(FSFluidFlowRCR            , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_FLOW_RCR              , "Fluid RCR");
-    REGISTER_FE_CLASS(FSFluidBackflowStabilization, MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_BACKFLOW_STABIL     , "Fluid back flow stabilization", FLUID_BACKFLOW_STABILIZATION_HTML);
-    REGISTER_FE_CLASS(FSFluidTangentialStabilization, MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_TANGENTIAL_STABIL , "Fluid tangential stabilization", FLUID_TANGENTIAL_STABILIZATION_HTML);
-    REGISTER_FE_CLASS(FSInitFluidDilatation     , MODULE_FLUID, FE_INITIAL_CONDITION, FE_INIT_FLUID_DILATATION  , "Fluid dilatation");
+	REGISTER_FE_CLASS(FSFluidAnalysis               , MODULE_FLUID, FEANALYSIS_ID   , FE_STEP_FLUID                  , "Fluid Mechanics");
+    REGISTER_FE_CLASS(FSFixedFluidVelocity          , MODULE_FLUID, FEBC_ID         , FE_FIXED_FLUID_VELOCITY        , "Zero fluid velocity", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
+    REGISTER_FE_CLASS(FSPrescribedFluidVelocity     , MODULE_FLUID, FEBC_ID         , FE_PRESCRIBED_FLUID_VELOCITY   , "Prescribed fluid velocity", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSFixedFluidDilatation        , MODULE_FLUID, FEBC_ID         , FE_FIXED_DILATATION            , "Zero fluid dilatation", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSPrescribedFluidDilatation   , MODULE_FLUID, FEBC_ID         , FE_PRESCRIBED_DILATATION       , "Prescribed fluid dilatation", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
+	REGISTER_FE_CLASS(FSFluidTraction               , MODULE_FLUID, FESURFACELOAD_ID, FE_FLUID_TRACTION              , "Fluid viscous traction", FLUID_TRACTION_HTML);
+    REGISTER_FE_CLASS(FSFluidPressureLoad           , MODULE_FLUID, FESURFACELOAD_ID, FE_FLUID_PRESSURE_LOAD         , "Fluid pressure", FLUID_PRESSURE_HTML);
+    REGISTER_FE_CLASS(FSFluidVelocity               , MODULE_FLUID, FESURFACELOAD_ID, FE_FLUID_VELOCITY              , "Fluid velocity", FLUID_VELOCITY_HTML);
+    REGISTER_FE_CLASS(FSFluidNormalVelocity         , MODULE_FLUID, FESURFACELOAD_ID, FE_FLUID_NORMAL_VELOCITY       , "Fluid normal velocity", FLUID_NORMAL_VELOCITY_HTML);
+    REGISTER_FE_CLASS(FSFluidRotationalVelocity     , MODULE_FLUID, FESURFACELOAD_ID, FE_FLUID_ROTATIONAL_VELOCITY   , "Fluid rotational velocity", FLUID_ROTATIONAL_VELOCITY_HTML);
+    REGISTER_FE_CLASS(FSFluidFlowResistance         , MODULE_FLUID, FESURFACELOAD_ID, FE_FLUID_FLOW_RESISTANCE       , "Fluid flow resistance", FLUID_RESISTANCE_HTML);
+    REGISTER_FE_CLASS(FSFluidFlowRCR                , MODULE_FLUID, FESURFACELOAD_ID, FE_FLUID_FLOW_RCR              , "Fluid RCR");
+    REGISTER_FE_CLASS(FSFluidBackflowStabilization  , MODULE_FLUID, FESURFACELOAD_ID, FE_FLUID_BACKFLOW_STABIL       , "Fluid back flow stabilization", FLUID_BACKFLOW_STABILIZATION_HTML);
+    REGISTER_FE_CLASS(FSFluidTangentialStabilization, MODULE_FLUID, FESURFACELOAD_ID, FE_FLUID_TANGENTIAL_STABIL     , "Fluid tangential stabilization", FLUID_TANGENTIAL_STABILIZATION_HTML);
+    REGISTER_FE_CLASS(FSInitFluidDilatation         , MODULE_FLUID, FEIC_ID         , FE_INIT_FLUID_DILATATION       , "Fluid dilatation");
 
-	REGISTER_FE_CLASS(FSNormalFlowSurface       , MODULE_FLUID, FE_CONSTRAINT  , FE_NORMAL_FLUID_FLOW           , "Normal flow constraint", NORMAL_FLUID_VELOCITY_CONSTRAINT_HTML);
-    REGISTER_FE_CLASS(FSFrictionlessFluidWall   , MODULE_FLUID, FE_CONSTRAINT  , FE_FRICTIONLESS_FLUID_WALL     , "Frictionless fluid wall");
+	REGISTER_FE_CLASS(FSNormalFlowSurface       , MODULE_FLUID, FENLCONSTRAINT_ID, FE_NORMAL_FLUID_FLOW           , "Normal flow constraint", NORMAL_FLUID_VELOCITY_CONSTRAINT_HTML);
+    REGISTER_FE_CLASS(FSFrictionlessFluidWall   , MODULE_FLUID, FENLCONSTRAINT_ID, FE_FRICTIONLESS_FLUID_WALL     , "Frictionless fluid wall");
 
     // --- FLUID-FSI MODULE ---
-    REGISTER_FE_CLASS(FSFluidFSIAnalysis        , MODULE_FLUID_FSI, FE_ANALYSIS    , FE_STEP_FLUID_FSI   , "Fluid-FSI Mechanics");
-    REGISTER_FE_CLASS(FSFSITraction             , MODULE_FLUID_FSI, FE_SURFACE_LOAD, FE_FSI_TRACTION     , "FSI Interface Traction", FLUID_FSI_TRACTION_HTML);
-    REGISTER_FE_CLASS(FSBFSITraction            , MODULE_FLUID_FSI, FE_SURFACE_LOAD, FE_BFSI_TRACTION     , "Biphasic-FSI Interface Traction", BIPHASIC_FSI_TRACTION_HTML);
+    REGISTER_FE_CLASS(FSFluidFSIAnalysis        , MODULE_FLUID_FSI, FEANALYSIS_ID   , FE_STEP_FLUID_FSI   , "Fluid-FSI Mechanics");
+    REGISTER_FE_CLASS(FSFSITraction             , MODULE_FLUID_FSI, FESURFACELOAD_ID, FE_FSI_TRACTION     , "FSI Interface Traction", FLUID_FSI_TRACTION_HTML);
+    REGISTER_FE_CLASS(FSBFSITraction            , MODULE_FLUID_FSI, FESURFACELOAD_ID, FE_BFSI_TRACTION     , "Biphasic-FSI Interface Traction", BIPHASIC_FSI_TRACTION_HTML);
     
 
 	// --- REACTION-DIFFUSION MODULE ---
-	REGISTER_FE_CLASS(FSReactionDiffusionAnalysis, MODULE_REACTION_DIFFUSION, FE_ANALYSIS, FE_STEP_REACTION_DIFFUSION, "Reaction-Diffusion");
-	REGISTER_FE_CLASS(FSConcentrationFlux        , MODULE_REACTION_DIFFUSION, FE_SURFACE_LOAD, FE_CONCENTRATION_FLUX, "Concentration Flux");
+	REGISTER_FE_CLASS(FSReactionDiffusionAnalysis, MODULE_REACTION_DIFFUSION, FEANALYSIS_ID   , FE_STEP_REACTION_DIFFUSION, "Reaction-Diffusion");
+	REGISTER_FE_CLASS(FSConcentrationFlux        , MODULE_REACTION_DIFFUSION, FESURFACELOAD_ID, FE_CONCENTRATION_FLUX, "Concentration Flux");
 
 	// FEBio interface classes
-	REGISTER_FE_CLASS(FEBioBoundaryCondition, 0, FE_ESSENTIAL_BC     , FE_FEBIO_BC               , "[febio]");
-	REGISTER_FE_CLASS(FEBioNodalLoad        , 0, FE_NODAL_LOAD       , FE_FEBIO_NODAL_LOAD       , "[febio]");
-	REGISTER_FE_CLASS(FEBioSurfaceLoad      , 0, FE_SURFACE_LOAD     , FE_FEBIO_SURFACE_LOAD     , "[febio]");
-	REGISTER_FE_CLASS(FEBioBodyLoad         , 0, FE_BODY_LOAD        , FE_FEBIO_BODY_LOAD        , "[febio]");
-	REGISTER_FE_CLASS(FEBioRigidLoad        , 0, FE_RIGID_LOAD       , FE_FEBIO_RIGID_LOAD       , "[febio]");
-	REGISTER_FE_CLASS(FEBioInterface        , 0, FE_INTERFACE        , FE_FEBIO_INTERFACE        , "[febio]");
-	REGISTER_FE_CLASS(FEBioInitialCondition , 0, FE_INITIAL_CONDITION, FE_FEBIO_INITIAL_CONDITION, "[febio]");
-	REGISTER_FE_CLASS(FEBioNLConstraint     , 0, FE_CONSTRAINT       , FE_FEBIO_NLCONSTRAINT     , "[febio]");
-	REGISTER_FE_CLASS(FEBioAnalysisStep     , 0, FE_ANALYSIS         , FE_STEP_FEBIO_ANALYSIS    , "[febio]");
-	REGISTER_FE_CLASS(FEBioRigidConstraint  , 0, FE_RIGID_CONSTRAINT , FE_FEBIO_RIGID_CONSTRAINT , "[febio]");
-	REGISTER_FE_CLASS(FEBioRigidConnector   , 0, FE_RIGID_CONNECTOR  , FE_FEBIO_RIGID_CONNECTOR  , "[febio]");
+	REGISTER_FE_CLASS(FEBioBoundaryCondition, 0, FEBC_ID              , FE_FEBIO_BC               , "[febio]");
+	REGISTER_FE_CLASS(FEBioNodalLoad        , 0, FENODALLOAD_ID       , FE_FEBIO_NODAL_LOAD       , "[febio]");
+	REGISTER_FE_CLASS(FEBioSurfaceLoad      , 0, FESURFACELOAD_ID     , FE_FEBIO_SURFACE_LOAD     , "[febio]");
+	REGISTER_FE_CLASS(FEBioBodyLoad         , 0, FEBODYLOAD_ID        , FE_FEBIO_BODY_LOAD        , "[febio]");
+	REGISTER_FE_CLASS(FEBioInterface        , 0, FESURFACEINTERFACE_ID, FE_FEBIO_INTERFACE        , "[febio]");
+	REGISTER_FE_CLASS(FEBioInitialCondition , 0, FEIC_ID              , FE_FEBIO_INITIAL_CONDITION, "[febio]");
+	REGISTER_FE_CLASS(FEBioNLConstraint     , 0, FENLCONSTRAINT_ID    , FE_FEBIO_NLCONSTRAINT     , "[febio]");
+	REGISTER_FE_CLASS(FEBioAnalysisStep     , 0, FEANALYSIS_ID        , FE_STEP_FEBIO_ANALYSIS    , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidConstraint  , 0, FERIGIDBC_ID         , FE_FEBIO_RIGID_CONSTRAINT , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidConnector   , 0, FERIGIDCONNECTOR_ID  , FE_FEBIO_RIGID_CONNECTOR  , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidLoad        , 0, FERIGIDLOAD_ID       , FE_FEBIO_RIGID_LOAD       , "[febio]");
 }
 
 //-------------------------------------------------------------------------------------------------

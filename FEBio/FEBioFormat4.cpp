@@ -1784,7 +1784,7 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 			const char* szname = tag.AttributeValue("name");
 
 			FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-			if (FEBio::CreateModelComponent(FE_MATERIAL, sztype, pdm) == false)
+			if (FEBio::CreateModelComponent(FEMATERIAL_ID, sztype, pdm) == false)
 			{
 				delete pdm;
 				throw XMLReader::InvalidTag(tag);

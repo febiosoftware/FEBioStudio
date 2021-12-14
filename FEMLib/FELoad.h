@@ -17,8 +17,8 @@ public:
 class FSNodalLoad : public FSLoad
 {
 public:
-	FSNodalLoad(int ntype, FSModel* fem) : FSLoad(ntype, fem) { m_superClassID = FE_NODAL_LOAD; }
-	FSNodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep) { m_superClassID = FE_NODAL_LOAD; }
+	FSNodalLoad(int ntype, FSModel* fem) : FSLoad(ntype, fem) { m_superClassID = FENODALLOAD_ID; }
+	FSNodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep) { m_superClassID = FENODALLOAD_ID; }
 };
 
 class FSNodalDOFLoad : public FSNodalLoad

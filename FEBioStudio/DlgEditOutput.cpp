@@ -327,7 +327,7 @@ void CDlgEditOutput::showEvent(QShowEvent* ev)
 	// get all the FEBio plot classes
 	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 	ui->m_plt.clear();
-	vector<FEBio::FEBioClassInfo> pltClasses = FEBio::FindAllClasses(module, FE_PLOTDATA);
+	vector<FEBio::FEBioClassInfo> pltClasses = FEBio::FindAllClasses(module, FEPLOTDATA_ID);
 	for (int i = 0; i < pltClasses.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& feb = pltClasses[i];

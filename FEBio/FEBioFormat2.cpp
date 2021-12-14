@@ -1937,7 +1937,7 @@ void FEBioFormat2::ParseConstraint(FSStep* pstep, XMLTag& tag)
 
 	const char* sztype = tag.AttributeValue("type");
 
-	FSModelConstraint* plc = fecore_new<FSModelConstraint>(fem, FE_CONSTRAINT, sztype);
+	FSModelConstraint* plc = fecore_new<FSModelConstraint>(fem, FENLCONSTRAINT_ID, sztype);
 	if (plc == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 
 	string name;

@@ -70,7 +70,7 @@ void initMap()
 	idmap[FENLCONSTRAINT_ID] = "FENLCONSTRAINT_ID";
 	idmap[FEPLOTDATA_ID] = "FEPLOTDATA_ID";
 	idmap[FEANALYSIS_ID] = "FEANALYSIS_ID";
-	idmap[FESURFACEPAIRINTERACTION_ID] = "FESURFACEPAIRINTERACTION_ID";
+	idmap[FESURFACEINTERFACE_ID] = "FESURFACEINTERFACE_ID";
 	idmap[FENODELOGDATA_ID] = "FENODELOGDATA_ID";
 	idmap[FEFACELOGDATA_ID] = "FEFACELOGDATA_ID";
 	idmap[FEELEMLOGDATA_ID] = "FEELEMLOGDATA_ID";
@@ -87,7 +87,7 @@ void initMap()
 	idmap[FEMODEL_ID] = "FEMODEL_ID";
 	idmap[FEMODELDATA_ID] = "FEMODELDATA_ID";
 	idmap[FESCALARGENERATOR_ID] = "FESCALARGENERATOR_ID";
-	idmap[FEVECTORGENERATOR_ID] = "FEVECTORGENERATOR_ID";
+	idmap[FEVEC3DGENERATOR_ID] = "FEVEC3DGENERATOR_ID";
 	idmap[FEMAT3DGENERATOR_ID] = "FEMAT3DGENERATOR_ID";
 	idmap[FEMAT3DSGENERATOR_ID] = "FEMAT3DSGENERATOR_ID";
 	idmap[FEFUNCTION1D_ID] = "FEFUNCTION1D_ID";
@@ -100,7 +100,6 @@ void initMap()
 	idmap[FEITEMLIST_ID] = "FEITEMLIST_ID";
 	idmap[FETIMECONTROLLER_ID] = "FETIMECONTROLLER_ID";
 	idmap[FEEIGENSOLVER_ID] = "FEEIGENSOLVER_ID";
-	idmap[FESURFACEPAIRINTERACTIONNL_ID] = "FESURFACEPAIRINTERACTIONNL_ID";
 	idmap[FEDATARECORD_ID] = "FEDATARECORD_ID";
 }
 
@@ -322,11 +321,11 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 			{
 				FEParamVec3& v = p.value<FEParamVec3>();
 				FEVec3dValuator* val = v.valuator(); assert(val);
-				FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEVECTORGENERATOR_ID, baseClassIndex("class FEVec3dValuator"), true);
+				FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEVEC3DGENERATOR_ID, baseClassIndex("class FEVec3dValuator"), true);
 				prop.m_defType = "vector";
 
 				FEBioClass fbc;
-				fbc.SetSuperClassID(FEVECTORGENERATOR_ID);
+				fbc.SetSuperClassID(FEVEC3DGENERATOR_ID);
 				fbc.SetTypeString(val->GetTypeStr());
 				fbc.SetFEBioClass(val);
 

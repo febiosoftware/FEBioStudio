@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FECoreMaterial.h"
 #include "FEMaterialFactory.h"
 #include "FEMaterial.h"
-#include "enums.h"
+#include <FECore/fecore_enum.h>
 #include <FECore/units.h>
 
 //=============================================================================
@@ -40,7 +40,7 @@ FSMaterialProperty::FSMaterialProperty()
 	m_parent = 0;
 	m_nClassID = -1;
 	m_maxSize = NO_FIXED_SIZE;
-	m_nsuperClassID = FE_MATERIAL;
+	m_nsuperClassID = FEMATERIAL_ID;
 	m_flag = EDITABLE;
 }
 
@@ -51,7 +51,7 @@ FSMaterialProperty::FSMaterialProperty(const std::string& name, int nClassID, FS
 	m_name = name;
 	m_flag = flags;
 	m_maxSize = nsize;
-	m_nsuperClassID = FE_MATERIAL;
+	m_nsuperClassID = FEMATERIAL_ID;
 	if (nsize > 0)
 	{
 		m_mat.assign(nsize, 0);
@@ -428,7 +428,7 @@ FSMaterial::FSMaterial(int ntype) : m_ntype(ntype)
 	m_parent = 0;
 	m_owner = 0;
 	m_axes = nullptr;
-	m_superClassID = FE_MATERIAL;
+	m_superClassID = FEMATERIAL_ID;
 }
 
 //-----------------------------------------------------------------------------

@@ -11,10 +11,10 @@ class FSBoundaryCondition : public FSDomainComponent
 {
 public:
 	FSBoundaryCondition(int ntype, FSModel* fem, int nstep = 0) : FSDomainComponent(ntype, fem, nstep){
-		m_superClassID = FE_ESSENTIAL_BC;
+		m_superClassID = FEBC_ID;
 	}
 	FSBoundaryCondition(int ntype, FSModel* fem, FEItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, fem, pi, nstep){
-		m_superClassID = FE_ESSENTIAL_BC;
+		m_superClassID = FEBC_ID;
 	}
 };
 

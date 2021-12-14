@@ -1,6 +1,6 @@
 #pragma once
 #include "FEModelComponent.h"
-#include "enums.h"
+#include <FECore/fecore_enum.h>
 
 //-----------------------------------------------------------------------------
 // Base class for all objects that are assigned to a step

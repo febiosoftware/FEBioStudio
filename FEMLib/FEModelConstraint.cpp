@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 FSModelConstraint::FSModelConstraint(int ntype, FSModel* fem, int nstep) : FSDomainComponent(ntype, fem, nstep)
 {
-	m_superClassID = FE_CONSTRAINT;
+	m_superClassID = FENLCONSTRAINT_ID;
 	SetMeshItemType(0);
 }
 

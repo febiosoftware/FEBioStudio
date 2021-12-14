@@ -19,7 +19,7 @@ public:
 	virtual const char* GetTypeString();
 
 protected:
-	int			m_superClassID;		// super class ID (defined in enums.h)
+	int			m_superClassID;		// super class ID (defined in FECore\fecore_enum.h)
 	const char* m_sztype;			// type string
 };
 

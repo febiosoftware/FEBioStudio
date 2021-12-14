@@ -27,17 +27,17 @@ SOFTWARE.*/
 #include "FESurfaceLoad.h"
 #include <FECore/units.h>
 #include <MeshTools/FEItemListBuilder.h>
-#include "enums.h"
+#include <FECore/fecore_enum.h>
 
 FSSurfaceLoad::FSSurfaceLoad(int ntype, FSModel* ps) : FSLoad(ntype, ps)
 {
-	m_superClassID = FE_SURFACE_LOAD;
+	m_superClassID = FESURFACELOAD_ID;
 	SetMeshItemType(FE_FACE_FLAG);
 }
 
 FSSurfaceLoad::FSSurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep)
 {
-	m_superClassID = FE_SURFACE_LOAD;
+	m_superClassID = FESURFACELOAD_ID;
 	SetMeshItemType(FE_FACE_FLAG);
 }
 

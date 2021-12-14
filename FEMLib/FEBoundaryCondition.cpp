@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEModel.h>
 #include <MeshTools/GGroup.h>
 #include <FECore/units.h>
-#include "enums.h"
+#include <FECore/fecore_enum.h>
 
 //=============================================================================
 FSFixedDOF::FSFixedDOF(int ntype, FSModel* fem) : FSBoundaryCondition(ntype, fem)

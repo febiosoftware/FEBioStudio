@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 FSBodyLoad::FSBodyLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0, nstep)
 {
-	m_superClassID = FE_BODY_LOAD;
+	m_superClassID = FEBODYLOAD_ID;
 	SetMeshItemType(FE_ELEM_FLAG);
 }
 
