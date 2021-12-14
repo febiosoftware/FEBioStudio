@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QLabel>
+#include <QEvent>
 #include "CurvePicker.h"
 #include "DataFieldSelector.h"
 #include "PropertyListView.h"
@@ -112,6 +113,8 @@ CWrapperBox::CWrapperBox(const QString& name, QWidget* parent) : QFrame(parent)
 	setSizePolicy(sizePolicy().horizontalPolicy(), QSizePolicy::Maximum);
 
 	m_pc = new QComboBox;
+	m_pc->installEventFilter(new CMouseWheelFilter);
+
 	m_pc->setSizePolicy(QSizePolicy::Expanding, m_pc->sizePolicy().verticalPolicy());
 	QHBoxLayout* h = new QHBoxLayout;
 	h->setContentsMargins(1, 1, 1, 1);
@@ -286,6 +289,20 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 }
 
 //-----------------------------------------------------------------------------
+bool CMouseWheelFilter::eventFilter(QObject* po, QEvent* ev)
+{
+	if (ev->type() == QEvent::Wheel) {
+		qDebug("Ate wheel event");
+		return true;
+	}
+	else 
+	{
+		// standard event processing
+		return QObject::eventFilter(po, ev);
+	}
+}
+
+//-----------------------------------------------------------------------------
 // create an editor for a property and set the initial value
 QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 {
@@ -351,6 +368,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			if (pi.isEditable())
 			{
 				QComboBox* pc = new QComboBox;
+				pc->installEventFilter(new CMouseWheelFilter);
 				pc->setMinimumWidth(100);
 				pc->addItems(pi.values);
 				pc->setCurrentIndex(v.toInt());
