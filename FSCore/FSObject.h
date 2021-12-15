@@ -54,7 +54,8 @@ public:
 	// return true if parameter list was modified
 	virtual bool UpdateData(bool bsave = true);
 
-	const char* GetTypeString() const { return m_sztypeStr; }
+	virtual void SetTypeString(const std::string& s) { m_typeStr = s; }
+	virtual const char* GetTypeString() const { return m_typeStr.c_str(); }
 
 public:
 	void SetParent(FSObject* parent);
@@ -63,8 +64,7 @@ public:
 	virtual size_t RemoveChild(FSObject* po);
 	virtual void InsertChild(size_t pos, FSObject* po);
 
-protected:
-	void SetTypeString(const char* sz) { m_sztypeStr = sz; }
+	void SetTypeString(const char* sz) { m_typeStr = sz; }
 
 private:
 	std::string		m_name;
@@ -72,6 +72,6 @@ private:
 	FSObject*		m_parent;
 
 private:
-	const char* m_sztypeStr;
+	std::string		m_typeStr;
 };
 

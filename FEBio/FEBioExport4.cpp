@@ -864,10 +864,10 @@ void FEBioExport4::WriteModuleSection(FSProject& prj)
 void FEBioExport4::WriteControlSection(FSStep& step)
 {
 	WriteParamList(step);
-	for (int i = 0; i < step.ControlProperties(); ++i)
+	for (int i = 0; i < step.Properties(); ++i)
 	{
-		FSStepControlProperty& prop = step.GetControlProperty(i);
-		FSStepComponent* pc = prop.m_prop;
+		FSProperty& prop = step.GetProperty(i);
+		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(prop.GetComponent());
 		if (pc)
 		{
 			XMLElement el(prop.GetName().c_str());
@@ -955,10 +955,10 @@ void FEBioExport4::WriteMaterial(FSMaterial* pm, XMLElement& el)
 		int NC = pm->Properties();
 		for (int i = 0; i < NC; ++i)
 		{
-			FSMaterialProperty& mc = pm->GetProperty(i);
+			FSProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j < mc.Size(); ++j)
 			{
-				FSMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = pm->GetMaterialProperty(i, j);
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());

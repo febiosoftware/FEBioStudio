@@ -8,7 +8,6 @@ FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep)
 	m_pItem = 0;
 	m_nstepID = nstep;
 	m_ntype = ntype;
-	m_sztype = "(not defined)";
 
 	m_itemType = FE_NODE_FLAG;
 }
@@ -19,7 +18,6 @@ FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* 
 	m_ntype = ntype;
 	m_nstepID = nstep;
 	m_pItem = pi;
-	m_sztype = "(not defined)";
 
 	m_itemType = FE_NODE_FLAG;
 }

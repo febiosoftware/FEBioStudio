@@ -338,10 +338,10 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		else
 		{
 			AddLoadCurves(*step);
-			for (int i = 0; i < step->ControlProperties(); ++i)
+			for (int i = 0; i < step->Properties(); ++i)
 			{
-				FSStepControlProperty& prop = step->GetControlProperty(i);
-				if (prop.m_prop) AddLoadCurves(*prop.m_prop);
+				FSProperty& prop = step->GetProperty(i);
+				if (prop.GetComponent()) AddLoadCurves(*prop.GetComponent());
 			}
 		}
 	}
@@ -471,10 +471,10 @@ void FEBioExport::MultiMaterialCurves(FSMaterial* pm)
 	if (pm->Properties() > 0) {
 		for (int k = 0; k<pm->Properties(); ++k)
 		{
-			FSMaterialProperty& mc = pm->GetProperty(k);
+			FSProperty& mc = pm->GetProperty(k);
 			for (int l = 0; l<mc.Size(); ++l)
 			{
-				FSMaterial* pmat = mc.GetMaterial(l);
+				FSMaterial* pmat = pm->GetMaterialProperty(k, l);
 				if (pmat)
 				{
 					AddLoadCurves(*pmat);

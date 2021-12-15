@@ -41,8 +41,6 @@ FSRigidConnector::FSRigidConnector(int ntype, FSModel* ps, int nstep)
 	SetStep(nstep);
     m_bActive = true;
     m_ps = ps;
-    m_sztype = "(not defined)";
-
 	m_rbA = m_rbB = -1;
 }
 

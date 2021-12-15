@@ -246,10 +246,10 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 	{
 		if (ReadParam(*pstep, tag) == false)
 		{
-			if (pstep->ControlProperties() > 0)
+			if (pstep->Properties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FSStepControlProperty* pc = pstep->FindControlProperty(sztag); assert(pc);
+				FSProperty* pc = pstep->FindProperty(sztag); assert(pc);
 
 				// see if this is a property
 				const char* sztype = tag.AttributeValue("type", true);
@@ -267,15 +267,15 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					}
 				}
 
-				if (pc->m_prop == nullptr)
+				if (pc->GetComponent() == nullptr)
 				{
 					FSStepComponent* psc = new FSStepComponent;
-					FEBio::CreateModelComponent(pc->m_nSuperClassId, sztype, psc);
-					pc->m_prop = psc;
+					FEBio::CreateModelComponent(pc->GetSuperClassID(), sztype, psc);
+					pc->SetComponent(psc);
 				}
 
 				// read the parameters
-				ReadParameters(*pc->m_prop, tag);
+				ReadParameters(*pc->GetComponent(), tag);
 			}
 			else ParseUnknownTag(tag);
 		}
@@ -447,7 +447,7 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 			if (pmat->Properties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FSMaterialProperty* pmc = pmat->FindProperty(sztag);
+				FSProperty* pmc = pmat->FindProperty(sztag);
 				if (pmc == nullptr)
 				{
 					ParseUnknownTag(tag);
@@ -475,7 +475,7 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 
 						if (pmc)
 						{
-							pmc->AddMaterial(propMat);
+							pmc->AddComponent(propMat);
 							ParseMaterial(tag, propMat);
 						}
 					}
@@ -2825,8 +2825,8 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				{
 					if (ReadParam(*pdm, tag) == false)
 					{
-						FSMaterialProperty* prop = pdm->FindProperty(tag.m_sztag);
-						FS1DPointFunction* pf1d = dynamic_cast<FS1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
+						FSProperty* prop = pdm->FindProperty(tag.m_sztag);
+						FS1DPointFunction* pf1d = dynamic_cast<FS1DPointFunction*>(prop ? prop->GetComponent(0) : nullptr);
 						if (pf1d)
 						{
 							LoadCurve lc;

@@ -213,10 +213,10 @@ void CModelDocument::DeleteObject(FSObject* po)
 	{
 		FSMaterial* pm = dynamic_cast<FSMaterial*>(po);
 		FSMaterial* parent = const_cast<FSMaterial*>(pm->GetParentMaterial());
-		FSMaterialProperty* pp = parent->FindProperty(pm);
+		FSProperty* pp = parent->FindProperty(pm);
 		if (pp)// && (pp->maxSize() == 0))
 		{
-			pp->RemoveMaterial(pm);
+			pp->RemoveComponent(pm);
 		}
 		else
 		{

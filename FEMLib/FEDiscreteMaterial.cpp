@@ -123,12 +123,12 @@ FEBioDiscreteMaterial::~FEBioDiscreteMaterial()
 
 }
 
-void FEBioDiscreteMaterial::SetTypeString(const char* sz)
+void FEBioDiscreteMaterial::SetTypeString(const std::string& s)
 {
-	m_stype = sz;
+	m_stype = s;
 }
 
-const char* FEBioDiscreteMaterial::GetTypeString()
+const char* FEBioDiscreteMaterial::GetTypeString() const
 {
 	return m_stype.c_str();
 }

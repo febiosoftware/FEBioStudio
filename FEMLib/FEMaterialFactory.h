@@ -107,7 +107,7 @@ public:
 	static FSMaterial* Create(const char* szname, int classId = -1);
 
 	// return the type string of the material
-	static const char* TypeStr(FSMaterial* pm);
+	static const char* TypeStr(const FSMaterial* pm);
 
 	// return the class ID of the material
 	static int ClassID(FSMaterial* pm);

@@ -273,12 +273,12 @@ void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, con
 	NP = mat->Properties();
 	for (int n = 0; n < NP; ++n)
 	{
-		FSMaterialProperty& matProp = mat->GetProperty(n);
+		FSProperty& matProp = mat->GetProperty(n);
 
 		int np = matProp.Size();
 		if (np == 1)
 		{
-			FSMaterial* pm = matProp.GetMaterial(0);
+			FSMaterial* pm = mat->GetMaterialProperty(n);
 			if (pm)
 			{
 				string paramName = name + "." + matProp.GetName();
@@ -289,7 +289,7 @@ void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, con
 		{
 			for (int j = 0; j < np; ++j)
 			{
-				FSMaterial* pm = matProp.GetMaterial(j);
+				FSMaterial* pm = mat->GetMaterialProperty(n, j);
 				if (pm)
 				{
 					std::stringstream ss; 
@@ -780,10 +780,10 @@ void CCurveEditor::AddMultiMaterial(FSMaterial* pm, QTreeWidgetItem* tp)
 {
 	for (int k = 0; k<pm->Properties(); ++k)
 	{
-		FSMaterialProperty& pmc = pm->GetProperty(k);
+		FSProperty& pmc = pm->GetProperty(k);
 		for (int l=0; l<pmc.Size(); ++l)
 		{
-			FSMaterial* pmat = pmc.GetMaterial(l);
+			FSMaterial* pmat = pm->GetMaterialProperty(k, l);
 			if (pmat)
 			{
 				QString name = QString::fromStdString(pmc.GetName());

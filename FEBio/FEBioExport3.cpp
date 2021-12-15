@@ -1070,10 +1070,10 @@ void FEBioExport3::WriteControlSection(FSStep& step)
 	else
 	{
 		WriteParamList(step);
-		for (int i = 0; i < step.ControlProperties(); ++i)
+		for (int i = 0; i < step.Properties(); ++i)
 		{
-			FSStepControlProperty& prop = step.GetControlProperty(i);
-			FSStepComponent* pc = prop.m_prop;
+			FSProperty& prop = step.GetProperty(i);
+			FSStepComponent* pc = dynamic_cast<FSStepComponent*>(prop.GetComponent(0));
 			if (pc)
 			{
 				m_xml.add_branch(prop.GetName().c_str());
@@ -1933,10 +1933,10 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 		int NC = pm->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
-			FSMaterialProperty& mc = pm->GetProperty(i);
+			FSProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j<mc.Size(); ++j)
 			{
-				FSMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = pm->GetMaterialProperty(i, j);
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
@@ -2043,10 +2043,10 @@ void FEBioExport3::WriteReactionMaterial(FSMaterial* pmat, XMLElement& el)
 		int NC = pmat->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
-			FSMaterialProperty& mc = pmat->GetProperty(i);
+			FSProperty& mc = pmat->GetProperty(i);
 			for (int j = 0; j<mc.Size(); ++j)
 			{
-				FSMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = pmat->GetMaterialProperty(i, j);
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
@@ -2192,10 +2192,10 @@ void FEBioExport3::WriteMembraneReactionMaterial(FSMaterial* pmat, XMLElement& e
         int NC = pmat->Properties();
         for (int i = 0; i<NC; ++i)
         {
-            FSMaterialProperty& mc = pmat->GetProperty(i);
+            FSProperty& mc = pmat->GetProperty(i);
             for (int j = 0; j<mc.Size(); ++j)
             {
-                FSMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = pmat->GetMaterialProperty(i, j);
                 if (pc)
                 {
                     el.name(mc.GetName().c_str());

@@ -40,19 +40,12 @@ SOFTWARE.*/
 int FSStep::m_ncount = 0;
 
 //-----------------------------------------------------------------------------
-FSStepControlProperty::FSStepControlProperty() { m_prop = nullptr; m_nClassID = -1; m_nSuperClassId = -1; m_brequired = false; }
-FSStepControlProperty::~FSStepControlProperty() { delete m_prop; }
-
-//-----------------------------------------------------------------------------
 // FSStep
 //-----------------------------------------------------------------------------
 
 class FSStep::Imp
 {
 public:
-	// control properties (i.e. time stepper, solver, etc.)
-	FSObjectList<FSStepControlProperty>	m_Prop;
-
 	// boundary conditions
 	FSObjectList<FSBoundaryCondition>	m_BC;
 
@@ -480,32 +473,6 @@ void FSStep::RemoveComponent(FSStepComponent* pc)
 }
 
 //-----------------------------------------------------------------------------
-int FSStep::ControlProperties() const
-{
-	return imp->m_Prop.Size();
-}
-
-FSStepControlProperty& FSStep::GetControlProperty(int i)
-{
-	return *imp->m_Prop[i];
-}
-
-FSStepControlProperty* FSStep::FindControlProperty(const std::string& propertyName)
-{
-	for (int i = 0; i < ControlProperties(); ++i)
-	{
-		FSStepControlProperty& prop = GetControlProperty(i);
-		if (prop.GetName() == propertyName) return &prop;
-	}
-	return nullptr;
-}
-
-void FSStep::AddControlProperty(FSStepControlProperty* pc)
-{
-	imp->m_Prop.Add(pc);
-}
-
-//-----------------------------------------------------------------------------
 void FSStep::Save(OArchive &ar)
 {
 	// write the name
@@ -523,21 +490,20 @@ void FSStep::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the control properties
-	if (ControlProperties() > 0)
+	if (Properties() > 0)
 	{
-		for (int i = 0; i < ControlProperties(); ++i)
+		for (int i = 0; i < Properties(); ++i)
 		{
-			FSStepControlProperty& prop = GetControlProperty(i);
+			FSProperty& prop = GetProperty(i);
 			ar.BeginChunk(CID_STEP_PROPERTY);
 			{
 				// store the property name
 				ar.WriteChunk(CID_STEP_PROPERTY_NAME, prop.GetName());
 
 				// store the property data
-				if (prop.m_prop)
+				FSCoreBase* pc = prop.GetComponent();
+				if (pc)
 				{
-					FSStepComponent* pc = prop.m_prop;
-
 					string typeStr = pc->GetTypeString();
 					ar.WriteChunk(CID_STEP_PROPERTY_TYPESTR, typeStr);
 					ar.BeginChunk(CID_STEP_PROPERTY_DATA);
@@ -712,7 +678,7 @@ void FSStep::Load(IArchive &ar)
 		break;
 		case CID_STEP_PROPERTY:
 		{
-			FSStepControlProperty* pc = nullptr;
+			FSProperty* pc = nullptr;
 			string typeString;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
@@ -723,17 +689,18 @@ void FSStep::Load(IArchive &ar)
 				{
 					std::string propName;
 					ar.read(propName);
-					pc = FindControlProperty(propName); assert(pc);
+					pc = FindProperty(propName); assert(pc);
 				}
 				break;
 				case CID_STEP_PROPERTY_TYPESTR: ar.read(typeString); break;
 				case CID_STEP_PROPERTY_DATA: 
 				{
 					FSStepComponent* psc = new FSStepComponent;
-					FEBio::CreateModelComponent(pc->m_nSuperClassId, typeString, psc);
+					assert(pc);
+					FEBio::CreateModelComponent(pc->GetSuperClassID(), typeString, psc);
 					psc->Load(ar);
-					assert(pc->m_prop == nullptr);
-					pc->m_prop = psc;
+					assert(pc->GetComponent() == nullptr);
+					pc->AddComponent(psc);
 				}
 				break;
 				default:

@@ -31,22 +31,6 @@ class FSRigidLoad;
 #define FE_STEP_FEBIO_ANALYSIS		10
 
 //-----------------------------------------------------------------------------
-class FSStepControlProperty : public FSObject
-{
-public:
-	FSStepControlProperty();
-	~FSStepControlProperty();
-
-	bool IsRequired() const { return m_brequired; }
-
-public:
-	int					m_nClassID;			// the class ID for this property
-	int					m_nSuperClassId;	// the super class ID for this property
-	bool				m_brequired;		// is this an optional property or required.
-	FSStepComponent*	m_prop;				// pointer to component class.
-};
-
-//-----------------------------------------------------------------------------
 // This is the base class for step classes
 //-----------------------------------------------------------------------------
 class FSStep : public FSModelComponent
@@ -151,12 +135,6 @@ public:
 	// convenience functions for working with components
 	void AddComponent(FSStepComponent* pc);
 	void RemoveComponent(FSStepComponent* pc);
-
-	// control properties
-	int ControlProperties() const;
-	FSStepControlProperty& GetControlProperty(int i);
-	FSStepControlProperty* FindControlProperty(const std::string& propertyName);
-	void AddControlProperty(FSStepControlProperty* pc);
 
 public: // ref counting
 	static void ResetCounter();

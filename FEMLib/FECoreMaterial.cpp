@@ -31,134 +31,6 @@ SOFTWARE.*/
 #include <FECore/units.h>
 
 //=============================================================================
-// FSMaterialProperty
-//=============================================================================
-
-//-----------------------------------------------------------------------------
-FSMaterialProperty::FSMaterialProperty()
-{
-	m_parent = 0;
-	m_nClassID = -1;
-	m_maxSize = NO_FIXED_SIZE;
-	m_nsuperClassID = FEMATERIAL_ID;
-	m_flag = EDITABLE;
-}
-
-//-----------------------------------------------------------------------------
-FSMaterialProperty::FSMaterialProperty(const std::string& name, int nClassID, FSMaterial* parent, int nsize, unsigned int flags) : m_parent(parent)
-{
-	m_nClassID = nClassID;
-	m_name = name;
-	m_flag = flags;
-	m_maxSize = nsize;
-	m_nsuperClassID = FEMATERIAL_ID;
-	if (nsize > 0)
-	{
-		m_mat.assign(nsize, 0);
-	}
-}
-
-//-----------------------------------------------------------------------------
-FSMaterialProperty::~FSMaterialProperty()
-{
-	Clear();
-}
-
-//-----------------------------------------------------------------------------
-void FSMaterialProperty::SetName(const std::string& name)
-{
-	m_name = name;
-}
-
-//-----------------------------------------------------------------------------
-const std::string& FSMaterialProperty::GetName()
-{ 
-	return m_name; 
-}
-
-//-----------------------------------------------------------------------------
-void FSMaterialProperty::Clear()
-{
-	for (int i = 0; i<(int)m_mat.size(); ++i) { delete m_mat[i]; m_mat[i] = 0; }
-	if (m_maxSize == NO_FIXED_SIZE) m_mat.clear();
-}
-
-//-----------------------------------------------------------------------------
-void FSMaterialProperty::AddMaterial(FSMaterial* pm)
-{
-	if (pm) pm->SetParentMaterial(m_parent);
-	if (m_maxSize == NO_FIXED_SIZE)
-		m_mat.push_back(pm);
-	else
-	{
-		// find a zero component
-		for (int i=0; i<(int)m_mat.size(); ++i)
-		{
-			if (m_mat[i] == 0) { m_mat[i] = pm; return; }
-		}
-
-		// TODO: I only get here for 1D point-functions, but not sure 
-		//       for any other reason. 
-		if (m_mat.size() == 1)
-		{
-			delete m_mat[0];
-			m_mat[0] = pm;
-			return;
-		}
-		assert(false);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FSMaterialProperty::SetMaterial(FSMaterial* pm, int i) 
-{ 
-//	if (pm) assert(pm->ClassID() & m_nClassID);
-	if (pm) pm->SetParentMaterial(m_parent);
-	if (m_mat.empty() == false)
-	{
-		if (m_mat[i] != pm)
-		{
-			delete m_mat[i];
-			m_mat[i] = pm;
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// remove a material from the list (returns false if pm is not part of the list)
-bool FSMaterialProperty::RemoveMaterial(FSMaterial* pm)
-{
-	// find the material
-	for (int i=0; i<(int)m_mat.size(); ++i)
-	{
-		if (m_mat[i] == pm)
-		{
-			m_mat.erase(m_mat.begin() + i);
-			delete pm;
-			return true;
-		}
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-FSMaterial* FSMaterialProperty::GetMaterial(int i)
-{	
-	if ((i<0) || (i>=(int)m_mat.size())) return 0;
-	return m_mat[i]; 
-}
-
-//-----------------------------------------------------------------------------
-int FSMaterialProperty::GetMaterialIndex(FSMaterial* mat)
-{
-	for (int i=0; i<(int)m_mat.size(); ++i)
-	{
-		if (m_mat[i] == mat) return i;
-	}
-	return -1;
-}
-
-//=============================================================================
 // FSAxisMaterial
 //=============================================================================
 
@@ -446,14 +318,14 @@ int FSMaterial::ClassID()
 }
 
 //-----------------------------------------------------------------------------
-const char* FSMaterial::GetTypeString()
+const char* FSMaterial::GetTypeString() const
 {
 	FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 	return MF.TypeStr(this);
 }
 
 //-----------------------------------------------------------------------------
-void FSMaterial::SetTypeString(const char* sz)
+void FSMaterial::SetTypeString(const std::string& s)
 {
 	assert(false);
 }
@@ -491,85 +363,9 @@ void FSMaterial::SetOwner(GMaterial* owner)
 }
 
 //-----------------------------------------------------------------------------
-// delete all material properties
-void FSMaterial::ClearProperties()
+FSMaterial* FSMaterial::GetMaterialProperty(int propId, int index)
 {
-	vector<FSMaterialProperty*>::iterator it;
-	for (it = m_Mat.begin(); it != m_Mat.end(); ++it) (*it)->Clear();
-}
-
-//-----------------------------------------------------------------------------
-// Add a component to the material
-FSMaterialProperty* FSMaterial::AddProperty(const std::string& name, int nClassID, int maxSize, unsigned int flags)
-{
-	FSMaterialProperty* m = new FSMaterialProperty(name, nClassID, this, maxSize, flags);
-	m_Mat.push_back(m);
-	return m;
-}
-
-//-----------------------------------------------------------------------------
-void FSMaterial::AddProperty(const std::string& name, FSMaterial* pm)
-{
-	FSMaterialProperty* p = FindProperty(name);
-	assert(p);
-	if (p) p->AddMaterial(pm);
-}
-
-//-----------------------------------------------------------------------------
-int FSMaterial::AddProperty(int propID, FSMaterial* pm)
-{
-	FSMaterialProperty& p = GetProperty(propID);
-	p.AddMaterial(pm);
-	return (p.Size() - 1);
-}
-
-//-----------------------------------------------------------------------------
-// Replace the material of a component
-void FSMaterial::ReplaceProperty(int propID, FSMaterial* pm, int matID)
-{
-	m_Mat[propID]->SetMaterial(pm, matID);
-}
-
-//-----------------------------------------------------------------------------
-FSMaterialProperty* FSMaterial::FindProperty(const std::string& name)
-{
-	int n = (int) m_Mat.size();
-	for (int i=0; i<n; ++i)
-	{
-		FSMaterialProperty* pm = m_Mat[i];
-		if (pm->GetName() == name) return pm;
-	}
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-// find the property by type
-FSMaterialProperty* FSMaterial::FindProperty(int ntype)
-{
-	int n = (int)m_Mat.size();
-	for (int i = 0; i<n; ++i)
-	{
-		FSMaterialProperty* pm = m_Mat[i];
-		if (pm->GetClassID() == ntype) return pm;
-	}
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-// find the property by the material
-FSMaterialProperty* FSMaterial::FindProperty(FSMaterial* pm)
-{
-	int NP = Properties();
-	for (int i=0; i<NP; ++i)
-	{
-		FSMaterialProperty& p = GetProperty(i);
-		int nmat = p.Size();
-		for (int j=0; j<nmat; ++j)
-		{
-			if (p.GetMaterial(j) == pm) return &p;
-		}
-	}
-	return 0;
+	return dynamic_cast<FSMaterial*>(GetProperty(propId).GetComponent(index));
 }
 
 //-----------------------------------------------------------------------------
@@ -582,31 +378,33 @@ void FSMaterial::copy(FSMaterial* pm)
 	GetParamBlock() = pm->GetParamBlock();
 
 	// copy the individual components
-	int NC = (int) pm->m_Mat.size();
-	m_Mat.resize(NC);
+	// TODO: Probably should move this logic to base class
+	ClearProperties();
+	int NC = (int) pm->Properties();
 	for (int i=0; i<NC; ++i)
 	{
-		FSMaterialProperty& mcd = GetProperty(i);
-		FSMaterialProperty& mcs = pm->GetProperty(i);
+		FSProperty& mcs = pm->GetProperty(i);
+		FSProperty& mcd = *AddProperty(mcs.GetName(), mcs.GetClassID(), mcs.maxSize(), mcs.GetFlags());
 
 		if ((mcs.Size() == 1)&&(mcd.Size() == 1))
 		{
-			if (mcs.GetMaterial())
+			if (mcs.GetComponent())
 			{
-				FSMaterial* pm = FEMaterialFactory::Create(mcs.GetMaterial()->Type());
-				pm->copy(mcs.GetMaterial());
-				mcd.SetMaterial(pm);
+				FSMaterial* pmj = dynamic_cast<FSMaterial*>(mcs.GetComponent(0));
+				FSMaterial* pm = FEMaterialFactory::Create(pmj->Type());
+				pm->copy(pmj);
+				mcd.SetComponent(pm);
 			}
-			else mcs.SetMaterial(0);
+			else mcs.SetComponent(nullptr);
 		}
 		else
 		{
 			for (int j=0; j<mcs.Size(); ++j)
 			{
-				FSMaterial* pmj = mcs.GetMaterial(j);
+				FSMaterial* pmj = dynamic_cast<FSMaterial*>(mcs.GetComponent(j));
 				FSMaterial* pm = FEMaterialFactory::Create(pmj->Type());
 				pm->copy(pmj);
-				mcd.AddMaterial(pm);
+				mcd.AddComponent(pm);
 			}
 		}
 	}
@@ -668,14 +466,14 @@ void FSMaterial::Save(OArchive& ar)
 	}
 
 	// write the material properties (if any)
-	if (!m_Mat.empty())
+	if (Properties() != 0)
 	{
 		ar.BeginChunk(CID_MAT_PROPERTY);
 		{
-			int n = (int) m_Mat.size();
+			int n = (int) Properties();
 			for (int i=0; i<n; ++i)
 			{
-				FSMaterialProperty& mpi = GetProperty(i);
+				FSProperty& mpi = GetProperty(i);
 
 				// store the property name
 				ar.WriteChunk(CID_MAT_PROPERTY_NAME, mpi.GetName());
@@ -685,7 +483,7 @@ void FSMaterial::Save(OArchive& ar)
 				{
 					for (int j = 0; j<mpi.Size(); ++j)
 					{
-						FSMaterial* pm = mpi.GetMaterial(j);
+						FSMaterial* pm = dynamic_cast<FSMaterial*>(mpi.GetComponent(j));
 						if (pm)
 						{
 							ar.BeginChunk(pm->Type());
@@ -756,7 +554,7 @@ void FSMaterial::Load(IArchive &ar)
 			break;
         case CID_MAT_PROPERTY:
 			{
-				FSMaterialProperty* prop = 0;
+				FSProperty* prop = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = (int) ar.GetChunkID();
@@ -861,9 +659,9 @@ void FSMaterial::Load(IArchive &ar)
 
 							if (prop)
 							{
-								if (prop->maxSize() == FSMaterialProperty::NO_FIXED_SIZE)
-									prop->AddMaterial(pm);
-								else prop->SetMaterial(pm, n);
+								if (prop->maxSize() == FSProperty::NO_FIXED_SIZE)
+									prop->AddComponent(pm);
+								else prop->SetComponent(pm, n);
 								n++;
 							}
 
@@ -887,7 +685,7 @@ void FSMaterial::Load(IArchive &ar)
 						if (pm) 
 						{
 							pm->Load(ar);
-							prop->AddMaterial(pm);
+							prop->AddComponent(pm);
 						}
 					}
 					ar.CloseChunk();

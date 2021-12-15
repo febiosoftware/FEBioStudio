@@ -5,7 +5,7 @@ class FSModelComponent;
 
 //-------------------------------------------------------------------
 // Class that represents a data map, which is mapped to a model parameter
-class FSDataMapGenerator : public FSBase
+class FSDataMapGenerator : public FSCoreBase
 {
 public:
 	FSDataMapGenerator();

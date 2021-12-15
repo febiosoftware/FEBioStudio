@@ -260,26 +260,20 @@ void FEBio::CreateStep(int classId, FSStep* po, bool initDefaultProps)
 	{
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
 
-		FSStepControlProperty* pc = new FSStepControlProperty;
+		FSProperty* pc = po->AddProperty(prop.m_name, prop.m_baseClassId, 1, (prop.m_brequired ? FSProperty::REQUIRED : 1));
+		pc->SetSuperClassID(prop.m_superClassId);
 
-		string name = prop.m_name;
-		pc->m_brequired = prop.m_brequired;
-
-		if (initDefaultProps && pc->m_brequired)
+		if (initDefaultProps && prop.m_brequired)
 		{
 			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(modId, prop.m_superClassId, -1, ClassSearchFlags::IncludeFECoreClasses);
 			if (fci.size() > 0)
 			{
 				FSStepComponent* psc = new FSStepComponent;
 				CreateModelComponent(fci[0].classId, psc);
-				pc->m_prop = psc;
+				psc->SetTypeString(fci[0].sztype);
+				pc->SetComponent(psc);
 			}
 		}
-		
-		pc->SetName(name);
-		pc->m_nClassID = prop.m_baseClassId;
-		pc->m_nSuperClassId = prop.m_superClassId;
-		po->AddControlProperty(pc);
 	}
 
 	// don't forget to cleanup
@@ -333,21 +327,21 @@ void FEBio::CreateMaterial(int classId, FEBioMaterial* po)
 	{
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
 		int maxSize = (prop.m_isArray ? 0 : 1);
-		FSMaterialProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, maxSize); assert(matProp);
+		FSProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, maxSize); assert(matProp);
 		matProp->SetSuperClassID(prop.m_superClassId);
 		if (prop.m_brequired)
-			matProp->SetFlags(matProp->GetFlags() | FSMaterialProperty::REQUIRED);
+			matProp->SetFlags(matProp->GetFlags() | FSProperty::REQUIRED);
 		matProp->SetDefaultType(prop.m_defType);
 
 		if (prop.m_comp.empty() == false)
 		{
 			FEBioClass& fbc = prop.m_comp[0];
 			FEBioMaterial* pmi = new FEBioMaterial;
-			pmi->SetTypeString(strdup(fbc.TypeString().c_str()));
+			pmi->SetTypeString(fbc.TypeString().c_str());
 			pmi->SetSuperClassID(fbc.GetSuperClassID());
 			pmi->SetFEBioMaterial(&fbc);
 			map_parameters(pmi, &fbc);
-			matProp->AddMaterial(pmi);
+			matProp->AddComponent(pmi);
 		}
 	}
 }

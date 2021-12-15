@@ -32,7 +32,6 @@ SOFTWARE.*/
 FSModelComponent::FSModelComponent()
 {
 	m_superClassID = -1;
-	m_sztype = "(unknown)";
 }
 
 int FSModelComponent::GetSuperClassID() const
@@ -43,16 +42,6 @@ int FSModelComponent::GetSuperClassID() const
 void FSModelComponent::SetSuperClassID(int superClassID)
 {
 	m_superClassID = superClassID;
-}
-
-void FSModelComponent::SetTypeString(const char* sztype)
-{ 
-	m_sztype = sztype; 
-}
-
-const char* FSModelComponent::GetTypeString() 
-{ 
-	return m_sztype; 
 }
 
 //==============================================================================

@@ -895,11 +895,11 @@ void FixUncoupledMaterial(FSMaterial* mat)
 	double k = pk->GetFloatValue();
 	for (int i = 0; i < mat->Properties(); ++i)
 	{
-		FSMaterialProperty& prop = mat->GetProperty(i);
+		FSProperty& prop = mat->GetProperty(i);
 		int n = prop.Size();
 		for (int j = 0; j < n; ++j)
 		{
-			FSMaterial* mat_j =  prop.GetMaterial(j);
+			FSMaterial* mat_j = mat->GetMaterialProperty(i, j);
 			if (mat_j && (mat_j->ClassID() == FE_MAT_ELASTIC_UNCOUPLED))
 			{
 				Param* pk_j = mat_j->GetParam("k");
@@ -1033,7 +1033,7 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int class
 						if (sztype == 0) sztype = tag.Name();
 
 						const char* sztag = tag.Name();
-						FSMaterialProperty* pmc = pm->FindProperty(sztag);
+						FSProperty* pmc = pm->FindProperty(sztag);
 
 						int classId = -1;
 						if (pmc) classId = pmc->GetClassID();
@@ -1044,7 +1044,7 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int class
 							if (szname) pms->SetName(szbuf);
 
 							szname = tag.Name();
-							if (pmc) pmc->AddMaterial(pms);
+							if (pmc) pmc->AddComponent(pms);
 						}
 					}
 					else ParseUnknownTag(tag);

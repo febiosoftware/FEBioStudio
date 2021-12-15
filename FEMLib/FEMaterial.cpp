@@ -1935,18 +1935,18 @@ bool FSFiberMaterial::HasFibers() { return true; }
 
 void FSFiberMaterial::SetFiberGenerator(FSFiberGenerator* v)
 {
-	GetProperty(0).SetMaterial(v);
+	GetProperty(0).SetComponent(v);
 }
 
 FSFiberGenerator* FSFiberMaterial::GetFiberGenerator()
 {
-	return dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetMaterial());
+	return dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetComponent());
 }
 
 void FSFiberMaterial::SetAxisMaterial(FSAxisMaterial* Q)
 {
 	// If the fiber generator was not set we'll create a fiber generator from the mat axes
-	FSFiberGenerator* v = dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetMaterial());
+	FSFiberGenerator* v = dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetComponent());
 	if (v == nullptr)
 	{
 		switch (Q->m_naopt)
@@ -1976,7 +1976,7 @@ void FSFiberMaterial::SetAxisMaterial(FSAxisMaterial* Q)
 
 vec3d FSFiberMaterial::GetFiber(FEElementRef& el)
 {
-	FSFiberGenerator* fiber = dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetMaterial());
+	FSFiberGenerator* fiber = dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetComponent());
 	vec3d v(1, 0, 0);
 	if (fiber) v = fiber->GetFiber(el);
 	if (m_axes)
@@ -3179,12 +3179,12 @@ FEBioMaterial::~FEBioMaterial()
 //	delete m_febClass;
 }
 
-void FEBioMaterial::SetTypeString(const char* sz)
+void FEBioMaterial::SetTypeString(const std::string& sz)
 {
 	m_stype = sz;
 }
 
-const char* FEBioMaterial::GetTypeString()
+const char* FEBioMaterial::GetTypeString() const
 {
 	return m_stype.c_str();
 }
@@ -3205,8 +3205,8 @@ bool FEBioMaterial::HasFibers()
 
 vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 {
-	FSMaterialProperty* pm = FindProperty("fiber");
-	FEBioMaterial* fiber = dynamic_cast<FEBioMaterial*>(pm->GetMaterial());
+	FSProperty* pm = FindProperty("fiber");
+	FEBioMaterial* fiber = dynamic_cast<FEBioMaterial*>(pm->GetComponent());
 
 	// evaluate the element's center
 	vec3d p = el.center();

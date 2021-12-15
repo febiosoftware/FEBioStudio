@@ -1791,11 +1791,11 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 	{
 		for (int i = 0; i<pmat->Properties(); ++i)
 		{
-			FSMaterialProperty& p = pmat->GetProperty(i);
+			FEProperty& p = pmat->GetProperty(i);
 			QString propName = QString::fromStdString(p.GetName());
 			if (p.Size() == 1)
 			{
-				FSMaterial* pj = p.GetMaterial();
+				FSMaterial* pj = pmat->GetMaterialProperty(i);
 				if (pj)
 				{
 					QString typeName = (pj->TypeStr() ? QString(pj->GetTypeString()) : "error");
@@ -1815,7 +1815,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 			{
 				for (int j = 0; j<p.Size(); ++j)
 				{
-					FSMaterial* pj = p.GetMaterial(j);
+					FSMaterial* pj = pmat->GetMaterialProperty(i, j);
 					if (pj)
 					{
 						QString typeName = (pj->TypeStr() ? QString(pj->GetTypeString()) : "error");

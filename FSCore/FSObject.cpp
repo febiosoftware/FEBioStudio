@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FSObject.h"
 
-FSObject::FSObject(FSObject* parent) : m_parent(parent), m_sztypeStr(nullptr)
+FSObject::FSObject(FSObject* parent) : m_parent(parent), m_typeStr("")
 {
 
 }
@@ -74,7 +74,6 @@ void FSObject::SetParent(FSObject* parent)
 
 size_t FSObject::RemoveChild(FSObject* po)
 {
-	assert(false);
 	return -1;
 }
 

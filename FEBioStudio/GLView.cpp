@@ -2878,10 +2878,10 @@ void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& 
 
 	for (int i = 0; i < pmat->Properties(); ++i)
 	{
-		FSMaterialProperty& prop = pmat->GetProperty(i);
+		FSProperty& prop = pmat->GetProperty(i);
 		for (int j = 0; j < prop.Size(); ++j)
 		{
-			FSMaterial* matj = prop.GetMaterial(j);
+			FSMaterial* matj = pmat->GetMaterialProperty(i, j);
 			if (matj) RenderFiber(po, matj, rel, c, h);
 		}
 	}
