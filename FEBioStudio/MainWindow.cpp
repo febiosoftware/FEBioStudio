@@ -1141,7 +1141,11 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
+}
 
+//-----------------------------------------------------------------------------
+void CMainWindow::UpdateGraphs(bool breset)
+{
 	// update graph windows
 	QList<::CGraphWindow*>::iterator it = ui->graphList.begin();
 	for (int i = 0; i < ui->graphList.size(); ++i, ++it)

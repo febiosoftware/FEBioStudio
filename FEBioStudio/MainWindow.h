@@ -580,6 +580,8 @@ public slots:
 
 	CGLView* GetGLView();
 
+	void UpdateGraphs(bool breset);
+
 	Post::CGLModel* GetCurrentModel();
 
 	// update the font toolbar
