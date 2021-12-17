@@ -510,7 +510,9 @@ double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 			int nn = e.Nodes();
 
 			// get the nodal values and coordinates
-			for (int j = 0; j < nn; ++j) v[j] = ps->m_NODE[e.m_node[j]].m_val;
+			for (int j = 0; j < nn; ++j) v[j] = ps->m_ElemData.value(i, j);
+//			for (int j = 0; j < nn; ++j) v[j] = ps->m_NODE[e.m_node[j]].m_val;
+
 			for (int j = 0; j < nn; ++j) r[j] = ps->m_NODE[e.m_node[j]].m_rt;
 			switch (e.Type())
 			{
