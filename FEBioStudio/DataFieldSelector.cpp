@@ -75,30 +75,29 @@ CMusclePathDataSelector::CMusclePathDataSelector() {}
 void CMusclePathDataSelector::BuildMenu(QMenu* menu)
 {
 	QAction* lengthAction = menu->addAction("Length"       ); lengthAction->setData(1);
-	QAction* momarmAction = menu->addAction("Moment arm"   ); momarmAction->setData(2);
 
 	QMenu* startPt = new QMenu("Start Point");
-	QAction* startXAction = startPt->addAction("Start Point X"); startXAction->setData(3);
-	QAction* startYAction = startPt->addAction("Start Point Y"); startYAction->setData(4);
-	QAction* startZAction = startPt->addAction("Start Point Z"); startZAction->setData(5);
+	QAction* startXAction = startPt->addAction("Start Point X"); startXAction->setData(2);
+	QAction* startYAction = startPt->addAction("Start Point Y"); startYAction->setData(3);
+	QAction* startZAction = startPt->addAction("Start Point Z"); startZAction->setData(4);
 	menu->addMenu(startPt);
 
 	QMenu* endPt = new QMenu("End Point");
-	QAction* endXAction   = endPt->addAction("End Point X"  ); endXAction  ->setData(6);
-	QAction* endYAction   = endPt->addAction("End Point Y"  ); endYAction  ->setData(7);
-	QAction* endZAction   = endPt->addAction("End Point Z"  ); endZAction  ->setData(8);
+	QAction* endXAction   = endPt->addAction("End Point X"  ); endXAction  ->setData(5);
+	QAction* endYAction   = endPt->addAction("End Point Y"  ); endYAction  ->setData(6);
+	QAction* endZAction   = endPt->addAction("End Point Z"  ); endZAction  ->setData(7);
 	menu->addMenu(endPt);
 
 	QMenu* depPt = new QMenu("Departure Point");
-	QAction* depXAction = depPt->addAction("Departure Point X"); depXAction->setData(9);
-	QAction* depYAction = depPt->addAction("Departure Point Y"); depYAction->setData(10);
-	QAction* depZAction = depPt->addAction("Departure Point Z"); depZAction->setData(11);
+	QAction* depXAction = depPt->addAction("Departure Point X"); depXAction->setData(8);
+	QAction* depYAction = depPt->addAction("Departure Point Y"); depYAction->setData(9);
+	QAction* depZAction = depPt->addAction("Departure Point Z"); depZAction->setData(10);
 	menu->addMenu(depPt);
 
 	QMenu* tng = new QMenu("Departure Tangent");
-	QAction* tngXAction = tng->addAction("Departure Tangent X"); tngXAction->setData(12);
-	QAction* tngYAction = tng->addAction("Departure Tangent Y"); tngYAction->setData(13);
-	QAction* tngZAction = tng->addAction("Departure Tangent Z"); tngZAction->setData(14);
+	QAction* tngXAction = tng->addAction("Departure Tangent X"); tngXAction->setData(11);
+	QAction* tngYAction = tng->addAction("Departure Tangent Y"); tngYAction->setData(12);
+	QAction* tngZAction = tng->addAction("Departure Tangent Z"); tngZAction->setData(13);
 	menu->addMenu(tng);
 }
 
