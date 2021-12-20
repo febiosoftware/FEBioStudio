@@ -386,7 +386,7 @@ mark_as_advanced(SSL_DBG_LIB_DIR)
 
 # QuaZip
 if(Qt_Ver VERSION_EQUAL 6)
-    set(QUAZIP_NAMES quazip1-qt6 quazip6 quazip)
+    set(QUAZIP_NAMES quazip1-qt6 quazip6 quazip quazip1-qt6d)
 else()
     set(QUAZIP_NAMES quazip5 quazip)
 endif()
