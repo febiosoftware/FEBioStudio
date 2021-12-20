@@ -128,6 +128,8 @@ public:
 
 	bool IsValid();
 
+	void SetModifiedFlag(bool bset = true) override;
+
 public:
 	int GetStates();
 

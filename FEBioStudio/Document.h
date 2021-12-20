@@ -149,7 +149,7 @@ public:
 public:
 	// --- Document validation ---
 	bool IsModified();
-	void SetModifiedFlag(bool bset = true);
+	virtual void SetModifiedFlag(bool bset = true);
 	bool IsValid();
 
 public:
