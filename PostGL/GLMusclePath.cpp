@@ -471,7 +471,7 @@ public:
 	vector<FACE>	m_Face;
 };
 
-bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const vec3d& a, const vec3d& b, RINGPOINT& pt)
+bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const vec3d& a, const vec3d& b, const vec3d& na, RINGPOINT& pt)
 {
 	int NF = mesh.Faces();
 	int imin = -1;
@@ -536,25 +536,29 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 				double D2 = (p - a).SqrLength() + (p - b).SqrLength();
 				if ((imin == -1) || (D2 < Dmin))
 				{
-					imin = i;
-					Dmin = D2;
-					pt.p = p;
-
-					// make sure the point lies on the plane
-					double e = t * (pt.p - rc);
-					assert(fabs(e) < 1e-12);
-
 					// calculate face normal
 					vec3d fn = face.fn;
 
-					// project normal onto plane
-					fn -= t * (fn * t); fn.Normalize();
+					// make sure the normal is not on the wrong side
+					if (fn * na > -0.1)
+					{
+						imin = i;
+						Dmin = D2;
+						pt.p = p;
 
-					assert(fabs(fn * t) < 1e-12);
+						// make sure the point lies on the plane
+						double e = t * (pt.p - rc);
+						assert(fabs(e) < 1e-12);
 
-					pt.n = fn;
+						// project normal onto plane
+						fn -= t * (fn * t); fn.Normalize();
 
-					pt.nface = i;
+						assert(fabs(fn * t) < 1e-12);
+
+						pt.n = fn;
+
+						pt.nface = i;
+					}
 				}
 			}
 		}
@@ -643,7 +647,7 @@ bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters = 10, doub
 
 			vec3d ri = (a + b) * 0.5;
 
-			if (ClosestPointOnRing(mesh, ri, t, a, b, pi))
+			if (ClosestPointOnRing(mesh, ri, t, a, b, pt[i-1].n, pi))
 			{
 				if ((ri - pi.p) * pi.n > 0.0)
 				{
@@ -808,7 +812,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 
 		vec3d ri = (a + b) * 0.5;
 
-		if (ClosestPointOnRing(faceMesh, ri, t, a, b, pi))
+		if (ClosestPointOnRing(faceMesh, ri, t, a, b, pt[i-1].n, pi))
 		{
 			if ((ri - pi.p) * pi.n > 0.0)
 			{
