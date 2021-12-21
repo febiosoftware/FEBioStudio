@@ -682,7 +682,7 @@ void CMainWindow::on_selectData_currentValueChanged(int index)
 		RedrawGL();
 	}
 
-	//	UpdateGraphs(false);
+	UpdateGraphs(false);
 
 	//	if (ui->modelViewer->isVisible()) ui->modelViewer->Update(false);
 }
