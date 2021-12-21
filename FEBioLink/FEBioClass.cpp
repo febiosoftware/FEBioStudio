@@ -138,6 +138,12 @@ bool in_vector(const vector<int>& v, int n)
 	return false;
 }
 
+std::vector<FEBio::FEBioClassInfo> FEBio::FindAllActiveClasses(int superId, int baseClassId, unsigned int flags)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	return FindAllClasses(fecore.GetActiveModuleID(), superId, baseClassId, flags);
+}
+
 std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, int baseClassId, unsigned int flags)
 {
 	vector<FEBio::FEBioClassInfo> facs;

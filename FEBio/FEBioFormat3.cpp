@@ -1968,11 +1968,45 @@ void FEBioFormat3::ParseBCLinearConstraint(FSStep* pstep, XMLTag& tag)
 	std::string comment = tag.comment();
 	pbc->SetInfo(comment);
 
-	// read the parameters
-	ReadParameters(*pbc, tag);
-
 	// add to the step
 	pstep->AddComponent(pbc);
+
+	// read the tags
+	++tag;
+	do
+	{
+		if (ReadParam(*pbc, tag) == false)
+		{
+			if (pbc->Properties() > 0)
+			{
+				const char* sztag = tag.Name();
+				FSProperty* pmc = pbc->FindProperty(sztag);
+				if (pmc == nullptr)
+				{
+					ParseUnknownTag(tag);
+				}
+				else
+				{
+					// see if this is a class property
+					const char* sztype = tag.AttributeValue("type", true);
+					if (sztype == 0)
+					{
+						const std::string& defType = pmc->GetDefaultType();
+						if (defType.empty() == false) sztype = defType.c_str();
+						else sztype = tag.Name();
+					}
+
+					FSCoreBase* pc = FEBio::CreateClass(pmc->GetSuperClassID(), sztype, &fem); assert(pc);
+					pmc->AddComponent(pc);
+
+					ReadParameters(*pc, tag);
+				}
+			}
+			else ParseUnknownTag(tag);
+		}
+		++tag;
+	}
+	while (!tag.isend());
 }
 
 void FEBioFormat3::ParseBCFluidRotationalVelocity(FSStep* pstep, XMLTag& tag)

@@ -146,6 +146,11 @@ FSProperty& FSCoreBase::GetProperty(int i)
 	return *m_prop[i];
 }
 
+FSCoreBase* FSCoreBase::GetProperty(int i, int j)
+{
+	return m_prop[i]->GetComponent(j);
+}
+
 //-----------------------------------------------------------------------------
 // delete all properties
 void FSCoreBase::ClearProperties()

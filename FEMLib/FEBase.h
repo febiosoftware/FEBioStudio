@@ -65,6 +65,9 @@ public:
 	void SetSuperClassID(int superClassID) { m_nsuperClassID = superClassID; }
 	int GetSuperClassID() const { return m_nsuperClassID; }
 
+	void SetBaseClassID(int baseID) { m_nbaseClassID = baseID; }
+	int GetBaseClassID() const { return m_nbaseClassID; }
+
 	const std::string& GetDefaultType() { return m_defaultType; }
 	void SetDefaultType(const std::string& s) { m_defaultType = s; }
 
@@ -75,6 +78,7 @@ private:
 	std::string			m_defaultType;	// default type string, when type attributed is ommitted.
 	int					m_nClassID;		// the class ID for this property
 	int					m_nsuperClassID;// super class ID
+	int					m_nbaseClassID; // base class ID
 	int					m_maxSize;		// max number of properties (0 for no limit)
 	unsigned int		m_flag;			// property flags
 	FSCoreBase*			m_parent;		// parent object this class is a property off
@@ -99,6 +103,9 @@ public:
 	// get a property
 	FSProperty& GetProperty(int i);
 
+	// get the class of a property
+	FSCoreBase* GetProperty(int i, int j);
+
 	// find a property by name
 	FSProperty* FindProperty(const std::string& name);
 
@@ -122,4 +129,10 @@ public:
 
 private:
 	vector<FSProperty*>	m_prop;		//!< list of properties
+};
+
+class FSGenericClass : public FSCoreBase
+{
+public:
+	FSGenericClass() {}
 };
