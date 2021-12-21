@@ -383,12 +383,15 @@ const char* FSModel::GetVariableName(const char* szvar, int n)
 	else if (strcmp(var, "rigid_materials") == 0)
 	{
 		GMaterial* mat = GetMaterial(n - 1);
-		FSMaterial* femat = mat->GetMaterialProperties();
-		if (femat && femat->IsRigid())
+		if (mat)
 		{
-			return mat->GetName().c_str();
+			FSMaterial* femat = mat->GetMaterialProperties();
+			if (femat && femat->IsRigid())
+			{
+				return mat->GetName().c_str();
+			}
+			else assert(femat);
 		}
-		else assert(femat);
 	}
 	assert(false);
 	return nullptr;

@@ -384,7 +384,7 @@ void FSMaterial::copy(FSMaterial* pm)
 	for (int i=0; i<NC; ++i)
 	{
 		FSProperty& mcs = pm->GetProperty(i);
-		FSProperty& mcd = *AddProperty(mcs.GetName(), mcs.GetClassID(), mcs.maxSize(), mcs.GetFlags());
+		FSProperty& mcd = *AddProperty(mcs.GetName(), mcs.GetPropertyType(), mcs.maxSize(), mcs.GetFlags());
 
 		if ((mcs.Size() == 1)&&(mcd.Size() == 1))
 		{

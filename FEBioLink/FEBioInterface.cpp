@@ -502,6 +502,61 @@ FSCoreBase* FEBio::CreateClass(int superClassID, const char* sztype, FSModel* fe
 	return nullptr;
 }
 
+void map_feclass(FEBio::FEBioClass* feb, FSCoreBase* pc, FSModel* fem)
+{
+	// copy type information (Is this necessary?)
+	string typeStr = feb->TypeString();
+	pc->SetTypeString(typeStr);
+
+	// then, map parameters
+	map_parameters(pc, feb);
+
+	// map the properties
+	for (int i = 0; i < feb->Properties(); ++i)
+	{
+		FEBio::FEBioProperty& prop = feb->GetProperty(i);
+		int maxSize = (prop.m_isArray ? 0 : 1);
+		FSProperty* pci = pc->AddProperty(prop.m_name, prop.m_baseClassId, maxSize); assert(pci);
+		pci->SetSuperClassID(prop.m_superClassId);
+		if (prop.m_brequired)
+			pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
+		pci->SetDefaultType(prop.m_defType);
+
+		if (prop.m_comp.empty() == false)
+		{
+			FEBio::FEBioClass& fbc = prop.m_comp[0];
+			FSCoreBase* pmi = FEBio::CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), fem);
+			if (pmi)
+			{
+				pci->AddComponent(pmi);
+				map_feclass(&fbc, pmi, fem);
+			}
+		}
+	}
+}
+
+FSCoreBase* FEBio::CreateClass(int classId, FSModel* fem)
+{
+	// create the FEBioClass object
+	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
+	if (feb == nullptr) return nullptr;
+
+	// allocate correct FBS class. 
+	FSCoreBase* pc = nullptr;
+	switch (feb->GetSuperClassID())
+	{
+	case FEANALYSIS_ID: pc = new FEBioAnalysisStep(fem); break;
+	case FESOLVER_ID  : pc = new FSGenericClass; break;
+	default:
+		assert(false);
+	}
+
+	// map class
+	map_feclass(feb, pc, fem);
+
+	return pc;
+}
+
 FSGenericClass* FEBio::CreateGenericClass(const char* sztype, FSModel* fem)
 {
 	// get the class ID

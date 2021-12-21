@@ -4,16 +4,16 @@
 FSProperty::FSProperty()
 {
 	m_parent = nullptr;
-	m_nClassID = -1;
+	m_npropType = -1;
 	m_maxSize = NO_FIXED_SIZE;
 	m_nsuperClassID = -1;
 	m_flag = EDITABLE;
 }
 
 //-----------------------------------------------------------------------------
-FSProperty::FSProperty(const std::string& name, int nClassID, FSCoreBase* parent, int nsize, unsigned int flags) : m_parent(parent)
+FSProperty::FSProperty(const std::string& name, int propType, FSCoreBase* parent, int nsize, unsigned int flags) : m_parent(parent)
 {
-	m_nClassID = nClassID;
+	m_npropType = propType;
 	m_name = name;
 	m_flag = flags;
 	m_maxSize = nsize;
@@ -133,7 +133,7 @@ int FSProperty::GetComponentIndex(FSCoreBase* pc)
 //=============================================================================
 FSCoreBase::FSCoreBase()
 {
-
+	m_classId = -1;
 }
 
 size_t FSCoreBase::Properties() const
@@ -149,6 +149,19 @@ FSProperty& FSCoreBase::GetProperty(int i)
 FSCoreBase* FSCoreBase::GetProperty(int i, int j)
 {
 	return m_prop[i]->GetComponent(j);
+}
+
+//-----------------------------------------------------------------------------
+// set the class ID
+void FSCoreBase::SetClassID(int nid)
+{
+	m_classId = nid;
+}
+
+// get the class ID
+int FSCoreBase::GetClassID() const
+{
+	return m_classId;
 }
 
 //-----------------------------------------------------------------------------
@@ -211,7 +224,7 @@ FSProperty* FSCoreBase::FindProperty(int ntype)
 	for (int i = 0; i < n; ++i)
 	{
 		FSProperty* pm = m_prop[i];
-		if (pm->GetClassID() == ntype) return pm;
+		if (pm->GetPropertyType() == ntype) return pm;
 	}
 	return 0;
 }

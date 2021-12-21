@@ -23,45 +23,54 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
-#include "MaterialPropsView.h"
-#include <MeshTools/GMaterial.h>
-#include <FEMLib/FEMaterial.h>
-#include <FEMLib/FEMultiMaterial.h>
+#include "FEClassPropsView.h"
 #include <QPainter>
 #include <QLineEdit>
 #include <QComboBox>
+#include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
 #include <MeshTools/FEModel.h>
 #include <FEBioLink/FEBioInterface.h>
-#include "EditVariableParam.h"
+#include <FEMLib/FEBase.h>
+#include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioInterface.h>
 
-QStringList GetEnumValues(FSModel* fem, const char* ch)
+// in MaterialPropsView.cpp
+QStringList GetEnumValues(FSModel* fem, const char* ch);
+
+QPixmap BuildPixMap(QColor c, int shape = 0, int size = 12)
 {
-	QStringList ops;
-	char sz[256] = { 0 };
-	if (ch[0] == '$')
-	{
-		if (fem)
-		{
-			fem->GetVariableNames(ch, sz);
-			ch = sz;
-		}
-		else ch = 0;
-	}
+	if (size < 8) size = 8;
 
-	while (ch && (*ch))
-	{
-		ops << QString(ch);
-		ch = ch + strlen(ch) + 1;
-	}
+	QColor c2 = c;
+	QColor c1 = c2.lighter();
+	QColor c3 = c2.darker();
 
-	return ops;
+	QRadialGradient g(QPointF(size/3, size/3), size/2);
+	g.setColorAt(0.0, c1);
+	g.setColorAt(0.2, c2);
+	g.setColorAt(1.0, c3);
+
+	QPixmap pix(size, size);
+//	pix.setDevicePixelRatio(m_list->devicePixelRatio());
+	pix.fill(Qt::transparent);
+	QPainter p(&pix);
+	p.setRenderHint(QPainter::Antialiasing);
+	p.setPen(Qt::PenStyle::NoPen);
+	p.setBrush(QBrush(g));
+	if (shape == 0)
+		p.drawEllipse(2, 2, size - 4, size - 4);
+	else
+		p.drawRect(2, 2, size - 4, size - 4);
+
+	p.end();
+
+	return pix;
 }
 
-class CMaterialPropsModel : public QAbstractItemModel
+class FEClassPropsModel : public QAbstractItemModel
 {
 public:
 	class Item
@@ -73,12 +82,12 @@ public:
 		};
 
 	public:
-		CMaterialPropsModel*	m_model;
+		FEClassPropsModel*	m_model;
 
-		FSMaterial*		m_pm;			// material pointer
-		int				m_paramId;	// index of parameter (or -1 if this is property)
+		FSCoreBase*		m_pc;			// pointer to class
+		int				m_paramId;		// index of parameter (or -1 if this is property)
 		int				m_propId;		// index of property (or -1 if this is parameter)
-		int				m_matIndex;	// index into property's material array
+		int				m_propIndex;	// index into property's class array
 
 		int		m_nrow;	// row index into parent's children array
 
@@ -86,13 +95,13 @@ public:
 
 	public:
 		Item*			m_parent;		// pointer to parent
-		vector<Item*>	m_children;	// list of children
+		vector<Item*>	m_children;		// list of children
 
 	public:
-		Item() { m_model = nullptr; m_pm = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_matIndex = 0; m_nrow = -1; m_flag = 0;  }
-		Item(FSMaterial* pm, int paramId = -1, int propId = -1, int matIndex = 0, int nrow = -1) {
+		Item() { m_model = nullptr; m_pc = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_propIndex = 0; m_nrow = -1; m_flag = 0;  }
+		Item(FSCoreBase* pc, int paramId = -1, int propId = -1, int propIndex = 0, int nrow = -1) {
 			m_model = nullptr;
-			m_pm = pm; m_paramId = paramId; m_propId = propId; m_matIndex = matIndex; m_nrow = nrow;
+			m_pc = pc; m_paramId = paramId; m_propId = propId; m_propIndex = propIndex; m_nrow = nrow;
 			m_flag = (propId != -1 ? 1 : 0);
 		}
 		~Item() { for (int i = 0; i < m_children.size(); ++i) delete m_children[i]; m_children.clear(); }
@@ -102,83 +111,54 @@ public:
 
 		int flag() const { return m_flag; }
 
-		Param* parameter() { return (m_paramId >= 0 ? m_pm->GetParamPtr(m_paramId) : nullptr); }
+		Param* parameter() { return (m_paramId >= 0 ? m_pc->GetParamPtr(m_paramId) : nullptr); }
 
-		Item* addChild(FSMaterial* pm, int paramId, int propId, int matIndex)
+		Item* addChild(FSCoreBase* pc, int paramId, int propId, int propIndex)
 		{
-			Item* item = new Item(pm, paramId, propId, matIndex, (int)m_children.size());
+			Item* item = new Item(pc, paramId, propId, propIndex, (int)m_children.size());
 			item->m_model = m_model; assert(m_model);
 			item->m_parent = this;
 			m_children.push_back(item);
 
 			if (propId >= 0)
 			{
-				FSMaterial* pmi = pm->GetMaterialProperty(propId, matIndex);
-				if (pmi) item->addChildren(pmi);
+				FSCoreBase* pci = pc->GetProperty(propId, propIndex);
+				if (pci) item->addChildren(pci);
 			}
 			return item;
 		}
 
-		void addFiberParameters(FSOldFiberMaterial* pm)
+		void addParameters(FSCoreBase* pc)
 		{
-			pm->UpdateData(false);
-			for (int i = 0; i < pm->Parameters(); ++i)
+			pc->UpdateData(false);
+			for (int i = 0; i < pc->Parameters(); ++i)
 			{
-				Param& p = pm->GetParam(i);
-				if ((p.IsVisible() || p.IsEditable()) && (p.IsPersistent() || (m_pm == nullptr)))
-				{
-					Item* it = addChild(pm, i, -1, 0);
-					if (i == 0) it->m_flag = Item_Bold;
-					else it->m_flag = Item_Indented;
-				}
-			}
-		}
-
-		void addParameters(FSMaterial* pm)
-		{
-			pm->UpdateData(false);
-			for (int i = 0; i < pm->Parameters(); ++i)
-			{
-				Param& p = pm->GetParam(i);
+				Param& p = pc->GetParam(i);
 				if (p.IsVisible())
 				{
-					if (p.IsEditable() && (p.IsPersistent() || (m_pm == nullptr)))
-						addChild(pm, i, -1, 0);
+					if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
+						addChild(pc, i, -1, 0);
 					else if (p.IsPersistent() == false)
 					{
-						const FSMultiMaterial* mmat = dynamic_cast<const FSMultiMaterial*>(pm->GetParentMaterial());
-						if (mmat)
-						{
-							addChild(pm, i, -1, 0);
-						}
+						addChild(pc, i, -1, 0);
 					}
 				}
 			}
 		}
 
-		void addChildren(FSMaterial* pm)
+		void addChildren(FSCoreBase* pc)
 		{
-			addParameters(pm);
+			addParameters(pc);
 
-			if (dynamic_cast<FSTransverselyIsotropic*>(pm))
+			for (int i = 0; i < pc->Properties(); ++i)
 			{
-				FSTransverselyIsotropic* tiso = dynamic_cast<FSTransverselyIsotropic*>(pm);
-				addFiberParameters(tiso->GetFiberMaterial());
-			}
-			else if (pm->HasMaterialAxes())
-			{
-				addParameters(pm->m_axes);
-			}
-
-			for (int i = 0; i < pm->Properties(); ++i)
-			{
-				FSProperty& p = pm->GetProperty(i);
+				FSProperty& p = pc->GetProperty(i);
 				int nc = p.Size();
-				for (int j = 0; j < nc; ++j) addChild(pm, -1, i, j);
+				for (int j = 0; j < nc; ++j) addChild(pc, -1, i, j);
 
 				if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
 				{
-					addChild(pm, -1, i, -1);
+					addChild(pc, -1, i, -1);
 				}
 			}
 		}
@@ -189,7 +169,7 @@ public:
 		{
 			if (m_paramId >= 0)
 			{
-				Param& p = m_pm->GetParam(m_paramId);
+				Param& p = m_pc->GetParam(m_paramId);
 				if (column == 0)
 				{
 					QString name(p.GetLongName());
@@ -221,7 +201,7 @@ public:
 					case Param_INT:
 					{
 						int n = p.val<int>();
-						if (p.GetEnumNames())
+						if (p.GetEnumNames() && GetFSModel())
 						{
 							return GetFSModel()->GetEnumValue(p.GetEnumNames(), n);
 						}
@@ -303,7 +283,7 @@ public:
 					}
 					break;
 					default:
-						assert(false);
+//						assert(false);
 						return "in progress";
 					}
 				}
@@ -330,19 +310,19 @@ public:
 			}
 			else if (m_propId >= 0)
 			{
-				FSProperty& p = m_pm->GetProperty(m_propId);
+				FSProperty& p = m_pc->GetProperty(m_propId);
 				if (column == 0)
 				{
 					QString s = QString::fromStdString(p.GetName());
 					if (p.maxSize() != 1)
 					{
-						if (m_matIndex >= 0)
+						if (m_propIndex >= 0)
 						{
-							s += QString(" - %1").arg(m_matIndex + 1);
-							FSMaterial* pm = m_pm->GetMaterialProperty(m_propId, m_matIndex);
-							if (pm && (pm->GetName().empty() == false))
+							s += QString(" - %1").arg(m_propIndex + 1);
+							FSCoreBase* pc = m_pc->GetProperty(m_propId, m_propIndex);
+							if (pc && (pc->GetName().empty() == false))
 							{
-								QString name = QString::fromStdString(pm->GetName());
+								QString name = QString::fromStdString(pc->GetName());
 								s += QString(" [%1]").arg(name);
 							}
 						}
@@ -353,36 +333,13 @@ public:
 				}
 				else
 				{
-					FSMaterial* pm = (m_matIndex >= 0 ? m_pm->GetMaterialProperty(m_propId, m_matIndex) : nullptr);
-					if (pm == nullptr)
+					FSCoreBase* pc = (m_propIndex >= 0 ? m_pc->GetProperty(m_propId, m_propIndex) : nullptr);
+					if (pc == nullptr)
 					{
 						bool required = (p.GetFlags() & FSProperty::REQUIRED);
 						return QString(required ? "(select)" : "(none)");
 					}
-					else   if (dynamic_cast<FSReactionSpecies*>(pm))
-					{
-						FSModel* fem = GetFSModel();
-						FSReactionSpecies* prm = dynamic_cast<FSReactionSpecies*>(pm);
-
-						int ntype = prm->GetSpeciesType();
-						int index = prm->GetIndex();
-						const char* sz = nullptr;
-						if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
-						{
-							sz = fem->GetVariableName("$(Solutes)", index);
-						}
-						else if (ntype == FSReactionSpecies::SBM_SPECIES)
-						{
-							sz = fem->GetVariableName("$(SBMs)", index);
-						}
-						else
-						{
-							assert(false);
-						}
-
-						return (sz ? sz : "(invalid species)");
-					}
-					else return pm->GetTypeString();
+					else return pc->GetTypeString();
 				}
 			}
 			else return "No data";
@@ -394,7 +351,7 @@ public:
 
 			if (m_paramId >= 0)
 			{
-				Param& p = m_pm->GetParam(m_paramId);
+				Param& p = m_pc->GetParam(m_paramId);
 				switch (p.GetParamType())
 				{
 				case Param_FLOAT: 
@@ -443,59 +400,46 @@ public:
 					assert(false);
 				}
 
-				return m_pm->UpdateData(true);
+				return m_pc->UpdateData(true);
 			}
 			else if (isProperty())
 			{
-				int matId = value.toInt();
+				int classId = value.toInt();
 
-				FSProperty& matProp = m_pm->GetProperty(m_propId);
+				FSProperty& prop = m_pc->GetProperty(m_propId);
 
-				if (matId == -2)
+				if (classId == -2)
 				{
-					FSMaterial* pm = m_pm->GetMaterialProperty(m_propId, m_matIndex);
-					if (pm) matProp.RemoveComponent(pm);
+					FSCoreBase* pc = m_pc->GetProperty(m_propId, m_propIndex);
+					if (pc) prop.RemoveComponent(pc);
 				}
 				else
 				{
 					// check if this is a different type
-					if (m_matIndex >= 0)
+					if (m_propIndex >= 0)
 					{
-						FSMaterial* oldMat = m_pm->GetMaterialProperty(m_propId, m_matIndex);
+						FSCoreBase* oldprop = m_pc->GetProperty(m_propId, m_propIndex);
 
-						if (dynamic_cast<FSReactionSpecies*>(oldMat))
-						{
-							FSReactionSpecies* rs = dynamic_cast<FSReactionSpecies*>(oldMat);
-							rs->SetIndex(matId);
-							return true;
-						}
-
-						if (oldMat && (oldMat->Type() == matId))
+						if (oldprop && (oldprop->GetClassID() == classId))
 						{
 							// the type has not changed, so don't replace the material
 							return false;
 						}
 					}
 
-					FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-					FSMaterial* pmat = nullptr;
-					if (matProp.GetPropertyType() < FE_FEBIO_MATERIAL_CLASS)
+					FSCoreBase* pc = nullptr;
+					if (classId > 0)
 					{
-						pmat = MF.Create(value.toInt());
-					}
-					else if (matId > 0)
-					{
-						pmat = MF.Create(FE_FEBIO_MATERIAL);
-						FEBio::CreateMaterial(matId, dynamic_cast<FEBioMaterial*>(pmat));
+						pc = FEBio::CreateClass(classId, GetFSModel());
 					}
 
-					if (pmat)
+					if (pc)
 					{
-						if (m_matIndex >= 0)
-							m_pm->GetProperty(m_propId).SetComponent(pmat, m_matIndex);
+						if (m_propIndex >= 0)
+							m_pc->GetProperty(m_propId).SetComponent(pc, m_propIndex);
 						else
 						{
-							m_pm->GetProperty(m_propId).AddComponent(pmat);
+							m_pc->GetProperty(m_propId).AddComponent(pc);
 						}
 					}
 				}
@@ -514,26 +458,27 @@ public:
 	};
 
 public:
-	explicit CMaterialPropsModel(QObject* parent = nullptr) : QAbstractItemModel(parent)
+	explicit FEClassPropsModel(QObject* parent = nullptr) : QAbstractItemModel(parent)
 	{
 		m_root = nullptr;
 		m_valid = true;
 	}
 
-	~CMaterialPropsModel() { delete m_root; }
+	~FEClassPropsModel() { delete m_root; }
 
-	void SetMaterial(GMaterial* mat)
+	void SetClass(FSCoreBase* pc, FSModel* fem)
 	{
 		m_valid = true;
 		beginResetModel();
 		delete m_root;
 		m_root = nullptr;
-		m_mat = mat;
-		if (mat)
+		m_pc = pc;
+		m_fem = fem;
+		if (pc)
 		{
 			m_root = new Item();
 			m_root->m_model = this;
-			m_root->addChildren(m_mat->GetMaterialProperties());
+			m_root->addChildren(pc);
 		}
 		endResetModel();
 	}
@@ -569,6 +514,26 @@ public:
 			QFont font;
 			font.setBold(true);
 			return font;
+		}
+
+		if ((index.column() == 0) && (role == Qt::DecorationRole))
+		{
+			QColor c;
+			int s = 0;
+			if (item->isParameter()) 
+			{ 
+				Param* p = item->parameter();
+				if (p)
+				{
+					if (p->GetLoadCurve()) c = QColor::fromRgb(0, 255, 0);
+					else c = QColor::fromRgb(0, 128, 0);
+				}
+				else c = QColor::fromRgb(0, 0, 0); 
+				s = 0; 
+			}
+			if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = 1; }
+
+			return BuildPixMap(c, s, 12);
 		}
 
 		if ((role != Qt::DisplayRole)&& (role != Qt::EditRole)) return QVariant();
@@ -652,32 +617,29 @@ public:
 
 	void ResetModel()
 	{
-		SetMaterial(m_mat);
+		SetClass(m_pc, m_fem);
 	}
 
 private:
-	GMaterial*		m_mat;
+	FSModel*		m_fem;
+	FSCoreBase*		m_pc;
 	Item*			m_root;
 	bool		m_valid;
 };
 
-FSModel* CMaterialPropsModel::Item::GetFSModel()
+FSModel* FEClassPropsModel::Item::GetFSModel()
 {
-	return m_model->m_mat->GetModel();
+	return m_model->m_fem;
 }
 
 //=================================================================================================
-CMaterialPropsDelegate::CMaterialPropsDelegate(QObject* parent) : QStyledItemDelegate(parent) {}
+FEClassPropsDelegate::FEClassPropsDelegate(QObject* parent) : QStyledItemDelegate(parent) {}
 
-// in MaterialEditor.cpp
-void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly);
-void FillComboBox2(QComboBox* pc, int nclass, int module, bool btoplevelonly);
-
-QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
 	if (index.isValid())
 	{
-		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
+		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
 
 		if (item->isParameter())
 		{
@@ -743,63 +705,31 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 		}
 		else if (item->isProperty())
 		{
-			FSMaterial* pm = item->m_pm;
-			FSProperty& matProp = pm->GetProperty(item->m_propId);
-			FSMaterial* pmat = pm->GetMaterialProperty(item->m_propId, item->m_matIndex);
+			FSCoreBase* pcb = item->m_pc;
+			FSProperty& prop = pcb->GetProperty(item->m_propId);
+			FSCoreBase* pcbi = pcb->GetProperty(item->m_propId, item->m_propIndex);
 
 			QComboBox* pc = new QComboBox(parent);
 
-			if (dynamic_cast<FSReactionSpecies*>(pmat))
+			// fill the combo box
+			int nclass = prop.GetSuperClassID();
+			vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, -1, true);
+			pc->clear();
+			int classes = classInfo.size();
+			for (int i = 0; i < classes; ++i)
 			{
-				FSReactionSpecies* rs = dynamic_cast<FSReactionSpecies*>(pmat);
-				FSModel& fem = *item->GetFSModel();
-				int ntype = rs->GetSpeciesType();
-				int index = rs->GetIndex();
-				char buf[1024] = { 0 };
-				if (ntype == FSReactionSpecies::SBM_SPECIES)
-				{
-					fem.GetVariableNames("$(SBMs)", buf);
-				}
-				else if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
-				{
-					fem.GetVariableNames("$(Solutes)", buf);
-				}
-				else
-				{
-					assert(false);
-				}
-
-				int n = 0;
-				char* sz = buf;
-				while (*sz)
-				{
-					pc->addItem(sz, n++);
-					sz += strlen(sz) + 1;
-				}
-				pc->setCurrentIndex(index);
+				FEBio::FEBioClassInfo& ci = classInfo[i];
+				pc->addItem(ci.sztype, ci.classId);
 			}
-			else
-			{
-				FillComboBox2(pc, matProp.GetPropertyType(), 0xFFFF, false);
+			pc->model()->sort(0);
 
-				pc->insertSeparator(pc->count());
-				pc->addItem("(remove)", -2);
+			// add a remove option
+			pc->insertSeparator(pc->count());
+			pc->addItem("(remove)", -2);
 
-				if (pmat)
-				{
-					QString typeStr = pmat->GetTypeString();
-					for (int i = 0; i < pc->count(); ++i)
-					{
-						QString txti = pc->itemText(i);
-						if (typeStr == txti)
-						{
-							pc->setCurrentIndex(i);
-							break;
-						}
-					}
-				}
-				else pc->setCurrentIndex(-1);
-			}
+			// see if the current option is in the list and selected it if so
+			int n = (pcbi ? pc->findText(pcbi->GetTypeString()) : -1);
+			pc->setCurrentIndex(n);
 
 			QObject::connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 
@@ -811,13 +741,13 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 	return pw;
 }
 
-void CMaterialPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+void FEClassPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
 	if (!index.isValid()) return;
 	if (dynamic_cast<QComboBox*>(editor))
 	{
 		QComboBox* pw = dynamic_cast<QComboBox*>(editor);
-		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
+		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
 		if (item->isParameter())
 		{
 			// We only want to do this for enum parameters
@@ -832,13 +762,13 @@ void CMaterialPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& i
 	else QStyledItemDelegate::setEditorData(editor, index);
 }
 
-void CMaterialPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
 	if (!index.isValid()) return;
 	if (dynamic_cast<QComboBox*>(editor))
 	{
 		QComboBox* pw = dynamic_cast<QComboBox*>(editor);
-		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
+		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
 		if (item->isParameter())
 		{
 			Param* p = item->parameter();
@@ -858,35 +788,35 @@ void CMaterialPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 	QStyledItemDelegate::setModelData(editor, model, index);
 }
 
-void CMaterialPropsDelegate::OnEditorSignal()
+void FEClassPropsDelegate::OnEditorSignal()
 {
 	QWidget* sender = dynamic_cast<QWidget*>(QObject::sender());
 	emit commitData(sender);
 }
 
 //=================================================================================================
-CMaterialPropsView::CMaterialPropsView(QWidget* parent) : QTreeView(parent)
+FEClassPropsView::FEClassPropsView(QWidget* parent) : QTreeView(parent)
 {
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 	setSelectionMode(QAbstractItemView::SingleSelection);
 	setUniformRowHeights(true);
 	setEditTriggers(QAbstractItemView::AllEditTriggers);
 
-	setItemDelegate(new CMaterialPropsDelegate);
-	m_model = new CMaterialPropsModel;
+	setItemDelegate(new FEClassPropsDelegate);
+	m_model = new FEClassPropsModel;
 	setModel(m_model);
 
 	QObject::connect(m_model, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)), this, SLOT(onModelDataChanged()));
 }
 
-void CMaterialPropsView::SetMaterial(GMaterial* mat)
+void FEClassPropsView::SetFEClass(FSCoreBase* pc, FSModel* fem)
 {
-	m_model->SetMaterial(mat);
+	m_model->SetClass(pc, fem);
 	expandAll();
 	setColumnWidth(0, width() / 2);
 }
 
-void CMaterialPropsView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
+void FEClassPropsView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
 {
 /*	if (index.isValid())
 	{
@@ -898,7 +828,7 @@ void CMaterialPropsView::drawBranches(QPainter* painter, const QRect& rect, cons
 */	QTreeView::drawBranches(painter, rect, index);
 }
 
-void CMaterialPropsView::onModelDataChanged()
+void FEClassPropsView::onModelDataChanged()
 {
 	if (m_model->IsValid() == false)
 	{

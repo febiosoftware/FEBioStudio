@@ -22,7 +22,6 @@ protected:
 	FEItemListBuilder* LoadList(IArchive& ar);
 
 protected:
-	FSModel* m_ps;
 	int		m_ntype;
 };
 

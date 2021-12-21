@@ -49,7 +49,7 @@ class FSRigidConstraint : public FSStepComponent
 	enum { MATID, NAME, PARAMS };
 
 protected:
-	FSRigidConstraint(int ntype, int nstep);
+	FSRigidConstraint(int ntype, int nstep, FSModel* fem = nullptr);
 
 public:
 	~FSRigidConstraint(void);
@@ -85,7 +85,7 @@ class FSRigidPrescribed : public FSRigidConstraint
 	enum { DOF, VALUE };
 
 public:
-	FSRigidPrescribed(int ntype, int nstep);
+	FSRigidPrescribed(int ntype, int nstep, FSModel* fem = nullptr);
 
 	int GetDOF() const { return GetIntValue(DOF); }
 	void SetDOF(int n) { SetIntValue(DOF, n); }

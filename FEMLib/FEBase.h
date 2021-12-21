@@ -21,10 +21,10 @@ public:
 
 public:
 	FSProperty();
-	FSProperty(const std::string& name, int nClassID, FSCoreBase* parent, int nsize = 1, unsigned int flags = EDITABLE);
+	FSProperty(const std::string& name, int propType, FSCoreBase* parent, int nsize = 1, unsigned int flags = EDITABLE);
 	~FSProperty();
 
-	// clears the material list for this property
+	// clears the component list for this property
 	void Clear();
 
 	// set the name of the property
@@ -36,20 +36,20 @@ public:
 	// append a component to the component list of this property
 	void AddComponent(FSCoreBase* pm);
 
-	// set the component in the property's material list
+	// set the component in the property's component list
 	void SetComponent(FSCoreBase* pm, int i = 0);
 
 	// remove a component from the list (returns false if pm is not part of the list)
 	bool RemoveComponent(FSCoreBase* pm);
 
-	// return a component from the property's material list
+	// return a component from the property's component list
 	FSCoreBase* GetComponent(int i = 0);
 
 	// return the index of a component (or -1)
 	int GetComponentIndex(FSCoreBase* mat);
 
-	// return the class ID of this property
-	int GetClassID() const { return m_nClassID; }
+	// return the property type
+	int GetPropertyType() const { return m_npropType; }
 
 	// return the size of the component list
 	int Size() const { return (int)m_cmp.size(); }
@@ -76,7 +76,8 @@ public:
 private:
 	std::string			m_name;			// name of this property
 	std::string			m_defaultType;	// default type string, when type attributed is ommitted.
-	int					m_nClassID;		// the class ID for this property
+	int					m_npropType;	// the property type (NOTE: I think this is only used by FEBioStudio materials)
+
 	int					m_nsuperClassID;// super class ID
 	int					m_nbaseClassID; // base class ID
 	int					m_maxSize;		// max number of properties (0 for no limit)
@@ -99,6 +100,12 @@ public:
 
 	// delete all properties
 	void ClearProperties();
+
+	// set the class ID
+	void SetClassID(int nid);
+
+	// get the class ID
+	int GetClassID() const;
 
 	// get a property
 	FSProperty& GetProperty(int i);
@@ -128,6 +135,7 @@ public:
 	void ReplaceProperty(int propID, FSCoreBase* pmat, int matID = 0);
 
 private:
+	int		m_classId;				//!< The (FEBio) class ID
 	vector<FSProperty*>	m_prop;		//!< list of properties
 };
 

@@ -99,7 +99,7 @@ void FSRigidConstraintOld::Load(IArchive &ar)
 }
 
 //=============================================================================
-FSRigidConstraint::FSRigidConstraint(int ntype, int nstep)
+FSRigidConstraint::FSRigidConstraint(int ntype, int nstep, FSModel* fem) : FSStepComponent(fem)
 {
 	m_matid = -1;
 	m_ntype = ntype;
@@ -144,7 +144,7 @@ void FSRigidConstraint::Load(IArchive &ar)
 	}
 }
 
-FSRigidFixed::FSRigidFixed(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_FIXED, nstep)
+FSRigidFixed::FSRigidFixed(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_FIXED, nstep, fem)
 {
 	SetTypeString("Rigid fixed");
 
@@ -156,7 +156,7 @@ FSRigidFixed::FSRigidFixed(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID
 	AddBoolParam(false, "bc6", "Z-rotation");
 }
 
-FSRigidPrescribed::FSRigidPrescribed(int ntype, int nstep) : FSRigidConstraint(ntype, nstep)
+FSRigidPrescribed::FSRigidPrescribed(int ntype, int nstep, FSModel* fem) : FSRigidConstraint(ntype, nstep, fem)
 {
 }
 
@@ -185,7 +185,7 @@ bool FSRigidDisplacement::GetRelativeFlag() const
 	return GetBoolValue(2);
 }
 
-FSRigidForce::FSRigidForce(FSModel* fem, int nstep) : FSRigidPrescribed(FE_RIGID_FORCE, nstep)
+FSRigidForce::FSRigidForce(FSModel* fem, int nstep) : FSRigidPrescribed(FE_RIGID_FORCE, nstep, fem)
 {
 	SetTypeString("Rigid force");
 
@@ -215,14 +215,14 @@ void FSRigidForce::SetForceType(int n)
 	SetIntValue(2, n);
 }
 
-FSRigidVelocity::FSRigidVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_VELOCITY, nstep)
+FSRigidVelocity::FSRigidVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_VELOCITY, nstep, fem)
 {
 	SetTypeString("Rigid velocity");
 
 	AddVecParam(vec3d(0, 0, 0), "value", "velocity")->SetUnit(UNIT_VELOCITY);
 }
 
-FSRigidAngularVelocity::FSRigidAngularVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep)
+FSRigidAngularVelocity::FSRigidAngularVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep, fem)
 {
 	SetTypeString("Rigid angular velocity");
 
@@ -230,7 +230,7 @@ FSRigidAngularVelocity::FSRigidAngularVelocity(FSModel* fem, int nstep) : FSRigi
 }
 
 //===============================================================================================
-FEBioRigidConstraint::FEBioRigidConstraint(FSModel* fem, int nstep) : FSRigidConstraint(FE_FEBIO_RIGID_CONSTRAINT, nstep)
+FEBioRigidConstraint::FEBioRigidConstraint(FSModel* fem, int nstep) : FSRigidConstraint(FE_FEBIO_RIGID_CONSTRAINT, nstep, fem)
 {
 
 }

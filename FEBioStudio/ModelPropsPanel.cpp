@@ -61,6 +61,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "Commands.h"
 #include "MaterialPropsView.h"
+#include "FEClassPropsView.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -281,6 +282,7 @@ public:
 	::CPropertyListView* props;
 	::CPropertyListForm* form;
 	CMaterialPropsView*	mat;
+	FEClassPropsView* fec;
 
 	CToolBox* tool;
 	CObjectPropsPanel*	obj;
@@ -303,6 +305,7 @@ public:
 		props = new ::CPropertyListView; props->setObjectName("props");
 		form  = new ::CPropertyListForm; form->setObjectName("form");
 		mat   = new CMaterialPropsView; mat->setObjectName("mat");
+		fec   = new FEClassPropsView; fec->setObjectName("fec");
 
 		obj = new CObjectPropsPanel;
 		obj->setObjectName("object");
@@ -317,6 +320,7 @@ public:
 		propStack->addWidget(props);
 		propStack->addWidget(form);
 		propStack->addWidget(mat);
+		propStack->addWidget(fec);
 
 		sel1 = new ::CSelectionBox;
 		sel1->setObjectName("select1");
@@ -415,6 +419,7 @@ public:
 		props->Update(pl);
 		form->setPropertyList(0);
 		mat->SetMaterial(nullptr);
+		fec->SetFEClass(nullptr, nullptr);
 	}
 
 	void setPropertyForm(CPropertyList* pl)
@@ -423,6 +428,7 @@ public:
 		props->Update(0);
 		form->setPropertyList(pl);
 		mat->SetMaterial(nullptr);
+		fec->SetFEClass(nullptr, nullptr);
 	}
 
 	void setMaterialData(GMaterial* pm)
@@ -431,6 +437,15 @@ public:
 		props->Update(0);
 		form->setPropertyList(0);
 		mat->SetMaterial(pm);
+	}
+
+	void setFEClassData(FSCoreBase* pc, FSModel* fem)
+	{
+		propStack->setCurrentIndex(3);
+		props->Update(0);
+		form->setPropertyList(0);
+		mat->SetMaterial(nullptr);
+		fec->SetFEClass(pc, fem);
 	}
 
 	void showImagePanel(bool b, Post::CImageModel* img = nullptr)
@@ -661,6 +676,12 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		{
 			GMaterial* mo = dynamic_cast<GMaterial*>(po);
 			ui->setMaterialData(mo);
+			ui->showPropsPanel(true);
+		}
+		else if (dynamic_cast<FSModelComponent*>(po))
+		{
+			FSModelComponent* pc = dynamic_cast<FSModelComponent*>(po);
+			ui->setFEClassData(pc, pc->GetFSModel());
 			ui->showPropsPanel(true);
 		}
 		else if (props)

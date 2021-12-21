@@ -3,12 +3,14 @@
 #include "FEDataMap.h"
 #include <string>
 
+class FSModel;
+
 //-----------------------------------------------------------------------------
 // Base class for components of an FSModel
 class FSModelComponent : public FSCoreBase
 {
 public:
-	FSModelComponent();
+	FSModelComponent(FSModel* fem = nullptr);
 
 	int GetSuperClassID() const;
 
@@ -16,7 +18,10 @@ public:
 	// but now some material classes need to set their super class to FEMATERIALPROP_ID
 	void SetSuperClassID(int superClassID);
 
+	FSModel* GetFSModel();
+
 protected:
+	FSModel*	m_fem;
 	int			m_superClassID;		// super class ID (defined in FECore\fecore_enum.h)
 };
 

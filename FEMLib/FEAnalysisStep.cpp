@@ -75,7 +75,7 @@ public:
 };
 
 
-FSStep::FSStep(FSModel* ps, int ntype) : m_ntype(ntype), m_pfem(ps), imp(new FSStep::Imp)
+FSStep::FSStep(FSModel* ps, int ntype) : FSModelComponent(ps), m_ntype(ntype), imp(new FSStep::Imp)
 {
 	m_nID = ++m_ncount;
 	m_superClassID = FEANALYSIS_ID;
@@ -663,6 +663,8 @@ void FSStep::Load(IArchive &ar)
 {
 	TRACE("FSStep::Load");
 
+	FSModel* fem = GetFSModel();
+
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -719,23 +721,23 @@ void FSStep::Load(IArchive &ar)
 					FSDomainComponent* pb = 0;
 					switch (ntype)
 					{
-					case FE_FIXED_DISPLACEMENT		 : pb = new FSFixedDisplacement         (m_pfem); break;
-					case FE_FIXED_ROTATION           : pb = new FSFixedRotation             (m_pfem); break;
-					case FE_FIXED_FLUID_PRESSURE	 : pb = new FSFixedFluidPressure        (m_pfem); break;
-					case FE_FIXED_TEMPERATURE        : pb = new FSFixedTemperature          (m_pfem); break;
-					case FE_FIXED_CONCENTRATION      : pb = new FSFixedConcentration        (m_pfem); break;
-                    case FE_FIXED_FLUID_VELOCITY     : pb = new FSFixedFluidVelocity        (m_pfem); break;
-                    case FE_FIXED_DILATATION         : pb = new FSFixedFluidDilatation      (m_pfem); break;
-					case FE_PRESCRIBED_DISPLACEMENT	 : pb = new FSPrescribedDisplacement    (m_pfem); break;
-					case FE_PRESCRIBED_ROTATION      : pb = new FSPrescribedRotation        (m_pfem); break;
-					case FE_PRESCRIBED_FLUID_PRESSURE: pb = new FSPrescribedFluidPressure   (m_pfem); break;
-					case FE_PRESCRIBED_TEMPERATURE   : pb = new FSPrescribedTemperature     (m_pfem); break;
-					case FE_PRESCRIBED_CONCENTRATION : pb = new FSPrescribedConcentration   (m_pfem); break;
-                    case FE_PRESCRIBED_FLUID_VELOCITY: pb = new FSPrescribedFluidVelocity   (m_pfem); break;
-                    case FE_PRESCRIBED_DILATATION    : pb = new FSPrescribedFluidDilatation (m_pfem); break;
-					case FE_FIXED_SHELL_DISPLACEMENT : pb = new FSFixedShellDisplacement    (m_pfem); break;
-					case FE_PRESCRIBED_SHELL_DISPLACEMENT: pb = new FSPrescribedShellDisplacement(m_pfem); break;
-					case FE_FEBIO_BC                 : pb = new FEBioBoundaryCondition(m_pfem); break;
+					case FE_FIXED_DISPLACEMENT		 : pb = new FSFixedDisplacement         (fem); break;
+					case FE_FIXED_ROTATION           : pb = new FSFixedRotation             (fem); break;
+					case FE_FIXED_FLUID_PRESSURE	 : pb = new FSFixedFluidPressure        (fem); break;
+					case FE_FIXED_TEMPERATURE        : pb = new FSFixedTemperature          (fem); break;
+					case FE_FIXED_CONCENTRATION      : pb = new FSFixedConcentration        (fem); break;
+                    case FE_FIXED_FLUID_VELOCITY     : pb = new FSFixedFluidVelocity        (fem); break;
+                    case FE_FIXED_DILATATION         : pb = new FSFixedFluidDilatation      (fem); break;
+					case FE_PRESCRIBED_DISPLACEMENT	 : pb = new FSPrescribedDisplacement    (fem); break;
+					case FE_PRESCRIBED_ROTATION      : pb = new FSPrescribedRotation        (fem); break;
+					case FE_PRESCRIBED_FLUID_PRESSURE: pb = new FSPrescribedFluidPressure   (fem); break;
+					case FE_PRESCRIBED_TEMPERATURE   : pb = new FSPrescribedTemperature     (fem); break;
+					case FE_PRESCRIBED_CONCENTRATION : pb = new FSPrescribedConcentration   (fem); break;
+                    case FE_PRESCRIBED_FLUID_VELOCITY: pb = new FSPrescribedFluidVelocity   (fem); break;
+                    case FE_PRESCRIBED_DILATATION    : pb = new FSPrescribedFluidDilatation (fem); break;
+					case FE_FIXED_SHELL_DISPLACEMENT : pb = new FSFixedShellDisplacement    (fem); break;
+					case FE_PRESCRIBED_SHELL_DISPLACEMENT: pb = new FSPrescribedShellDisplacement(fem); break;
+					case FE_FEBIO_BC                 : pb = new FEBioBoundaryCondition(fem); break;
 					default:
 						if (ar.Version() < 0x00020000)
 						{
@@ -743,13 +745,13 @@ void FSStep::Load(IArchive &ar)
 							// now have their own section
 							switch(ntype)
 							{
-							case FE_NODAL_VELOCITIES		 : pb = new FSNodalVelocities       (m_pfem); break;
-							case FE_NODAL_SHELL_VELOCITIES	 : pb = new FSNodalShellVelocities  (m_pfem); break;
-                            case FE_INIT_FLUID_PRESSURE      : pb = new FSInitFluidPressure     (m_pfem); break;
-                            case FE_INIT_SHELL_FLUID_PRESSURE: pb = new FSInitShellFluidPressure(m_pfem); break;
-							case FE_INIT_CONCENTRATION       : pb = new FSInitConcentration     (m_pfem); break;
-                            case FE_INIT_SHELL_CONCENTRATION : pb = new FSInitShellConcentration(m_pfem); break;
-							case FE_INIT_TEMPERATURE         : pb = new FSInitTemperature       (m_pfem); break;
+							case FE_NODAL_VELOCITIES		 : pb = new FSNodalVelocities       (fem); break;
+							case FE_NODAL_SHELL_VELOCITIES	 : pb = new FSNodalShellVelocities  (fem); break;
+                            case FE_INIT_FLUID_PRESSURE      : pb = new FSInitFluidPressure     (fem); break;
+                            case FE_INIT_SHELL_FLUID_PRESSURE: pb = new FSInitShellFluidPressure(fem); break;
+							case FE_INIT_CONCENTRATION       : pb = new FSInitConcentration     (fem); break;
+                            case FE_INIT_SHELL_CONCENTRATION : pb = new FSInitShellConcentration(fem); break;
+							case FE_INIT_TEMPERATURE         : pb = new FSInitTemperature       (fem); break;
 							default:
 								throw ReadError("error parsing CID_BC_SECTION in FSStep::Load");
 							}
@@ -773,7 +775,7 @@ void FSStep::Load(IArchive &ar)
 							if (bc >= 8)
 							{
 								bc = (bc>>3)&7;
-								FSFixedRotation* prc = new FSFixedRotation(m_pfem);
+								FSFixedRotation* prc = new FSFixedRotation(fem);
 								prc->SetName(pbc->GetName());
 								prc->SetBC(bc);
 								prc->SetItemList(pb->GetItemList()->Copy());
@@ -788,7 +790,7 @@ void FSStep::Load(IArchive &ar)
 							if (bc > 2)
 							{
 								bc -= 3;
-								FSPrescribedRotation* prc = new FSPrescribedRotation(m_pfem);
+								FSPrescribedRotation* prc = new FSPrescribedRotation(fem);
 								prc->SetName(pdc->GetName());
 								prc->SetDOF(bc);
 								prc->SetItemList(pdc->GetItemList()->Copy());
@@ -818,16 +820,16 @@ void FSStep::Load(IArchive &ar)
 
 					FSLoad* pl = 0;
 
-					if (ntype == FE_NODAL_DOF_LOAD) pl = new FSNodalDOFLoad(m_pfem);
-					else if (ntype == FE_FEBIO_NODAL_LOAD) pl = new FEBioNodalLoad(m_pfem);
+					if (ntype == FE_NODAL_DOF_LOAD) pl = new FSNodalDOFLoad(fem);
+					else if (ntype == FE_FEBIO_NODAL_LOAD) pl = new FEBioNodalLoad(fem);
 					else
 					{
 						// see if it's a surface load
-						pl = fecore_new<FSLoad>(m_pfem, FESURFACELOAD_ID, ntype);
+						pl = fecore_new<FSLoad>(fem, FESURFACELOAD_ID, ntype);
 						if (pl == 0)
 						{
 							// could be a body load
-							pl = fecore_new<FSLoad>(m_pfem, FEBODYLOAD_ID, ntype);
+							pl = fecore_new<FSLoad>(fem, FEBODYLOAD_ID, ntype);
 						}
 					}
 
@@ -856,16 +858,16 @@ void FSStep::Load(IArchive &ar)
 					FSInitialCondition* pi = 0;
 					switch (ntype)
 					{
-					case FE_INIT_FLUID_PRESSURE      : pi = new FSInitFluidPressure     (m_pfem); break;
-                    case FE_INIT_SHELL_FLUID_PRESSURE: pi = new FSInitShellFluidPressure(m_pfem); break;
-                    case FE_INIT_CONCENTRATION       : pi = new FSInitConcentration     (m_pfem); break;
-                    case FE_INIT_SHELL_CONCENTRATION : pi = new FSInitShellConcentration(m_pfem); break;
-					case FE_INIT_TEMPERATURE         : pi = new FSInitTemperature       (m_pfem); break;
-					case FE_NODAL_VELOCITIES         : pi = new FSNodalVelocities       (m_pfem); break;
-					case FE_NODAL_SHELL_VELOCITIES   : pi = new FSNodalShellVelocities  (m_pfem); break;
-                    case FE_INIT_FLUID_DILATATION    : pi = new FSInitFluidDilatation   (m_pfem); break;
-					case FE_INIT_PRESTRAIN           : pi = new FSInitPrestrain         (m_pfem); break;
-					case FE_FEBIO_INITIAL_CONDITION  : pi = new FEBioInitialCondition   (m_pfem); break;
+					case FE_INIT_FLUID_PRESSURE      : pi = new FSInitFluidPressure     (fem); break;
+                    case FE_INIT_SHELL_FLUID_PRESSURE: pi = new FSInitShellFluidPressure(fem); break;
+                    case FE_INIT_CONCENTRATION       : pi = new FSInitConcentration     (fem); break;
+                    case FE_INIT_SHELL_CONCENTRATION : pi = new FSInitShellConcentration(fem); break;
+					case FE_INIT_TEMPERATURE         : pi = new FSInitTemperature       (fem); break;
+					case FE_NODAL_VELOCITIES         : pi = new FSNodalVelocities       (fem); break;
+					case FE_NODAL_SHELL_VELOCITIES   : pi = new FSNodalShellVelocities  (fem); break;
+                    case FE_INIT_FLUID_DILATATION    : pi = new FSInitFluidDilatation   (fem); break;
+					case FE_INIT_PRESTRAIN           : pi = new FSInitPrestrain         (fem); break;
+					case FE_FEBIO_INITIAL_CONDITION  : pi = new FEBioInitialCondition   (fem); break;
 					default:
 						throw ReadError("error parsing CID_IC_SECTION FSStep::Load");
 					}
@@ -889,15 +891,15 @@ void FSStep::Load(IArchive &ar)
 					FSInterface* pi = 0;
 
 					// check obsolete interfaces first
-					if      (ntype == FE_SLIDING_INTERFACE   ) pi = new FSSlidingInterface(m_pfem);
-					else if (ntype == FE_SPRINGTIED_INTERFACE) pi = new FSSpringTiedInterface(m_pfem);
-					else pi = fecore_new<FSInterface>(m_pfem, FESURFACEINTERFACE_ID, ntype);
+					if      (ntype == FE_SLIDING_INTERFACE   ) pi = new FSSlidingInterface(fem);
+					else if (ntype == FE_SPRINGTIED_INTERFACE) pi = new FSSpringTiedInterface(fem);
+					else pi = fecore_new<FSInterface>(fem, FESURFACEINTERFACE_ID, ntype);
 
 					// make sure we were able to allocate an interface
 					if (pi == 0)
 					{
 						// some "contact" interfaces were moved to constraints
-						FSModelConstraint* pc = fecore_new<FSModelConstraint>(m_pfem, FENLCONSTRAINT_ID, ntype);
+						FSModelConstraint* pc = fecore_new<FSModelConstraint>(fem, FENLCONSTRAINT_ID, ntype);
 						if (pc)
 						{
 							pc->Load(ar);
@@ -924,7 +926,7 @@ void FSStep::Load(IArchive &ar)
 			{
 				int ntype = ar.GetChunkID();
 
-				FSModelConstraint* pmc = fecore_new<FSModelConstraint>(m_pfem, FENLCONSTRAINT_ID, ntype);
+				FSModelConstraint* pmc = fecore_new<FSModelConstraint>(fem, FENLCONSTRAINT_ID, ntype);
 
 				// make sure we were able to allocate a constraint
 				if (pmc == 0)
@@ -957,7 +959,7 @@ void FSStep::Load(IArchive &ar)
 						// read RC data
 						rc_old->Load(ar);
 
-						vector<FSRigidConstraint*> rc = convertOldToNewRigidConstraint(m_pfem, rc_old);
+						vector<FSRigidConstraint*> rc = convertOldToNewRigidConstraint(fem, rc_old);
 
 						// add rigid constraints
 						for (int i=0; i<(int) rc.size(); ++i) AddRC(rc[i]);
@@ -967,12 +969,12 @@ void FSStep::Load(IArchive &ar)
 						FSRigidConstraint* rc = 0;
 						switch (ntype)
 						{
-						case FE_RIGID_FIXED            : rc = new FSRigidFixed          (m_pfem, GetID()); break;
-						case FE_RIGID_DISPLACEMENT     : rc = new FSRigidDisplacement   (m_pfem, GetID()); break;
-						case FE_RIGID_FORCE            : rc = new FSRigidForce          (m_pfem, GetID()); break;
-						case FE_RIGID_INIT_VELOCITY    : rc = new FSRigidVelocity       (m_pfem, GetID()); break;
-						case FE_RIGID_INIT_ANG_VELOCITY: rc = new FSRigidAngularVelocity(m_pfem, GetID()); break;
-						case FE_FEBIO_RIGID_CONSTRAINT : rc = new FEBioRigidConstraint  (m_pfem, GetID()); break;
+						case FE_RIGID_FIXED            : rc = new FSRigidFixed          (fem, GetID()); break;
+						case FE_RIGID_DISPLACEMENT     : rc = new FSRigidDisplacement   (fem, GetID()); break;
+						case FE_RIGID_FORCE            : rc = new FSRigidForce          (fem, GetID()); break;
+						case FE_RIGID_INIT_VELOCITY    : rc = new FSRigidVelocity       (fem, GetID()); break;
+						case FE_RIGID_INIT_ANG_VELOCITY: rc = new FSRigidAngularVelocity(fem, GetID()); break;
+						case FE_FEBIO_RIGID_CONSTRAINT : rc = new FEBioRigidConstraint  (fem, GetID()); break;
 						default:
 							assert(false);
 						}
@@ -997,18 +999,18 @@ void FSStep::Load(IArchive &ar)
 					FSRigidConnector* pi = 0;
                     switch (ntype)
                     {
-                        case FE_RC_SPHERICAL_JOINT		: pi = new FSRigidSphericalJoint    (m_pfem); break;
-                        case FE_RC_REVOLUTE_JOINT		: pi = new FSRigidRevoluteJoint     (m_pfem); break;
-                        case FE_RC_PRISMATIC_JOINT		: pi = new FSRigidPrismaticJoint    (m_pfem); break;
-                        case FE_RC_CYLINDRICAL_JOINT	: pi = new FSRigidCylindricalJoint  (m_pfem); break;
-                        case FE_RC_PLANAR_JOINT         : pi = new FSRigidPlanarJoint       (m_pfem); break;
-                        case FE_RC_RIGID_LOCK           : pi = new FSRigidLock              (m_pfem); break;
-                        case FE_RC_SPRING               : pi = new FSRigidSpring            (m_pfem); break;
-                        case FE_RC_DAMPER               : pi = new FSRigidDamper            (m_pfem); break;
-                        case FE_RC_ANGULAR_DAMPER       : pi = new FSRigidAngularDamper     (m_pfem); break;
-                        case FE_RC_CONTRACTILE_FORCE    : pi = new FSRigidContractileForce  (m_pfem); break;
-						case FE_RC_GENERIC_JOINT        : pi = new FSGenericRigidJoint      (m_pfem); break;
-						case FE_FEBIO_RIGID_CONNECTOR   : pi = new FEBioRigidConnector      (m_pfem); break;
+                        case FE_RC_SPHERICAL_JOINT		: pi = new FSRigidSphericalJoint    (fem); break;
+                        case FE_RC_REVOLUTE_JOINT		: pi = new FSRigidRevoluteJoint     (fem); break;
+                        case FE_RC_PRISMATIC_JOINT		: pi = new FSRigidPrismaticJoint    (fem); break;
+                        case FE_RC_CYLINDRICAL_JOINT	: pi = new FSRigidCylindricalJoint  (fem); break;
+                        case FE_RC_PLANAR_JOINT         : pi = new FSRigidPlanarJoint       (fem); break;
+                        case FE_RC_RIGID_LOCK           : pi = new FSRigidLock              (fem); break;
+                        case FE_RC_SPRING               : pi = new FSRigidSpring            (fem); break;
+                        case FE_RC_DAMPER               : pi = new FSRigidDamper            (fem); break;
+                        case FE_RC_ANGULAR_DAMPER       : pi = new FSRigidAngularDamper     (fem); break;
+                        case FE_RC_CONTRACTILE_FORCE    : pi = new FSRigidContractileForce  (fem); break;
+						case FE_RC_GENERIC_JOINT        : pi = new FSGenericRigidJoint      (fem); break;
+						case FE_FEBIO_RIGID_CONNECTOR   : pi = new FEBioRigidConnector      (fem); break;
                         default:
                             throw ReadError("error parsing unknown CID_CONNECTOR_SECTION FSStep::Load");
                     }

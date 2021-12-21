@@ -29,9 +29,14 @@ SOFTWARE.*/
 #include <exception>
 #include <sstream>
 
-FSModelComponent::FSModelComponent()
+FSModelComponent::FSModelComponent(FSModel* fem) : m_fem(fem)
 {
 	m_superClassID = -1;
+}
+
+FSModel* FSModelComponent::GetFSModel()
+{
+	return m_fem;
 }
 
 int FSModelComponent::GetSuperClassID() const

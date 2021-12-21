@@ -72,5 +72,6 @@ namespace FEBio {
 	FSInitialCondition*  CreateInitialCondition (const char* sztype, FSModel* fem);
 
 	FSCoreBase* CreateClass(int superClassID, const char* sztype, FSModel* fem);
+	FSCoreBase* CreateClass(int classId, FSModel* fem);
 	FSGenericClass* CreateGenericClass(const char* sztype, FSModel* fem);
 }

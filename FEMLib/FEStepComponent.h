@@ -7,7 +7,7 @@
 class FSStepComponent : public FSModelComponent
 {
 public:
-	FSStepComponent();
+	FSStepComponent(FSModel* fem = nullptr);
 
 	int GetStep();
 	void SetStep(int n);

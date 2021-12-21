@@ -35,12 +35,11 @@ SOFTWARE.*/
 // FSRigidConnector
 //-----------------------------------------------------------------------------
 
-FSRigidConnector::FSRigidConnector(int ntype, FSModel* ps, int nstep)
+FSRigidConnector::FSRigidConnector(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)
 {
     m_ntype = ntype;
 	SetStep(nstep);
     m_bActive = true;
-    m_ps = ps;
 	m_rbA = m_rbB = -1;
 }
 
@@ -77,15 +76,17 @@ void FSRigidConnector::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 FEItemListBuilder* FSRigidConnector::LoadList(IArchive& ar)
 {
     FEItemListBuilder* pitem = 0;
+
+    FSModel* fem = GetFSModel();
     
     if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FSRigidConnector::LoadList");
     unsigned int ntype = ar.GetChunkID();
     switch (ntype)
     {
-        case GO_NODE: pitem = new GNodeList(m_ps); break;
-        case GO_EDGE: pitem = new GEdgeList(m_ps); break;
-        case GO_FACE: pitem = new GFaceList(m_ps); break;
-        case GO_PART: pitem = new GPartList(m_ps); break;
+        case GO_NODE: pitem = new GNodeList(fem); break;
+        case GO_EDGE: pitem = new GEdgeList(fem); break;
+        case GO_FACE: pitem = new GFaceList(fem); break;
+        case GO_PART: pitem = new GPartList(fem); break;
         case FE_NODESET: pitem = new FSNodeSet((GObject*)0); break;
         case FE_EDGESET: pitem = new FSEdgeSet((GObject*)0); break;
         case FE_SURFACE: pitem = new FSSurface((GObject*)0); break;
@@ -105,7 +106,7 @@ FEItemListBuilder* FSRigidConnector::LoadList(IArchive& ar)
     FSGroup* pg = dynamic_cast<FSGroup*>(pitem);
     if (pg)
     {
-        if (m_ps->FindGroupParent(pg) == false) throw ReadError("Invalid object ID in FSInterface::Load");
+        if (fem->FindGroupParent(pg) == false) throw ReadError("Invalid object ID in FSInterface::Load");
     }
     
     return pitem;

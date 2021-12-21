@@ -86,7 +86,7 @@ public:
 					{
 						MaterialEditorItem* item = new MaterialEditorItem(this);
 						item->SetParentMaterial(pmat);
-						item->SetClassID(mp.GetClassID());
+						item->SetClassID(mp.GetPropertyType());
 						item->SetPropertyIndex(i);
 						item->setText(0, QString::fromStdString(mp.GetName()));
 						item->SetMaterial(pmat->GetMaterialProperty(i));
@@ -97,7 +97,7 @@ public:
 						{
 							MaterialEditorItem* item = new MaterialEditorItem(this);
 							item->SetParentMaterial(pmat);
-							item->SetClassID(mp.GetClassID());
+							item->SetClassID(mp.GetPropertyType());
 							item->SetPropertyIndex(i, j);
 							item->setText(0, QString::fromStdString(mp.GetName()));
 							item->SetMaterial(pmat->GetMaterialProperty(i, j));
@@ -108,7 +108,7 @@ public:
 						{
 							MaterialEditorItem* item = new MaterialEditorItem(this);
 							item->SetParentMaterial(pmat);
-							item->SetClassID(mp.GetClassID());
+							item->SetClassID(mp.GetPropertyType());
 							item->SetPropertyIndex(i, -1);
 							item->setText(0, QString::fromStdString(mp.GetName()));
 						}
@@ -135,7 +135,7 @@ public:
 			{
 				MaterialEditorItem* item = new MaterialEditorItem((QTreeWidgetItem*)0);
 				item->SetParentMaterial(m_parent);
-				item->SetClassID(mp.GetClassID());
+				item->SetClassID(mp.GetPropertyType());
 				item->SetPropertyIndex(m_nprop, -1);
 				item->setText(0, QString::fromStdString(mp.GetName()));
 				mi->insertChild(index+1, item);

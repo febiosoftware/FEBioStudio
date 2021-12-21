@@ -50,10 +50,6 @@ public:
 	// get the step type
 	int GetType() { return m_ntype; }
 
-	//! get the model
-	//! \todo I don't think this is being used)
-	FSModel* GetFSModel() { return m_pfem; }
-
 	// I/O
 	void Load(IArchive& ar);
 	void Save(OArchive& ar);
@@ -141,9 +137,6 @@ public: // ref counting
 	static void SetCounter(int n);
 	static int GetCounter();
 	static void DecreaseCounter();
-
-protected:
-	FSModel*	m_pfem;	// pointer to FSModel class
 
 private:
 	Imp*		imp;			// implementation class

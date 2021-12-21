@@ -29,16 +29,16 @@ SOFTWARE.*/
 #include <QStyledItemDelegate>
 #include <QComboBox>
 
-class GMaterial;
-class Param;
-class CMaterialPropsModel;
+class FSCoreBase;
+class FSModel;
+class FEClassPropsModel;
 
-class CMaterialPropsDelegate : public QStyledItemDelegate
+class FEClassPropsDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
 
 public:
-	explicit CMaterialPropsDelegate(QObject* parent = nullptr);
+	explicit FEClassPropsDelegate(QObject* parent = nullptr);
 
 	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -50,14 +50,14 @@ private slots:
 	void OnEditorSignal();
 };
 
-class CMaterialPropsView : public QTreeView
+class FEClassPropsView : public QTreeView
 {
 	Q_OBJECT
 
 public:
-	CMaterialPropsView(QWidget* parent = nullptr);
+	FEClassPropsView(QWidget* parent = nullptr);
 
-	void SetMaterial(GMaterial* mat);
+	void SetFEClass(FSCoreBase* pc, FSModel* fem);
 
 protected:
 	void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
@@ -66,5 +66,5 @@ private slots:
 	void onModelDataChanged();
 
 private:
-	CMaterialPropsModel*	m_model;
+	FEClassPropsModel*	m_model;
 };
