@@ -130,7 +130,7 @@ const char* FEBioExport::GetEnumValue(Param& p)
 {
 	assert(p.GetParamType() == Param_CHOICE);
 	FSModel& fem = m_prj.GetFSModel();
-	return fem.GetEnumValue(p.GetEnumNames(), p.GetIntValue());
+	return fem.GetEnumValue(p.GetEnumNames(), p.GetIntValue(), false);
 }
 
 //-----------------------------------------------------------------------------

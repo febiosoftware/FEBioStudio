@@ -2,9 +2,8 @@
 #include "FEDomainComponent.h"
 #include <MeshTools/GGroup.h>
 
-FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep)
+FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)
 {
-	m_ps = ps;
 	m_pItem = 0;
 	m_nstepID = nstep;
 	m_ntype = ntype;
@@ -12,9 +11,8 @@ FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep)
 	m_itemType = FE_NODE_FLAG;
 }
 
-FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep)
+FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSStepComponent(ps)
 {
-	m_ps = ps;
 	m_ntype = ntype;
 	m_nstepID = nstep;
 	m_pItem = pi;
@@ -74,6 +72,8 @@ void FSDomainComponent::Load(IArchive& ar)
 {
 	TRACE("FSDomainComponent::Load");
 
+	FSModel* fem = GetFSModel();
+
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -93,10 +93,10 @@ void FSDomainComponent::Load(IArchive& ar)
 				m_pItem = 0;
 				switch (ntype)
 				{
-				case GO_NODE: m_pItem = new GNodeList(m_ps); break;
-				case GO_EDGE: m_pItem = new GEdgeList(m_ps); break;
-				case GO_FACE: m_pItem = new GFaceList(m_ps); break;
-				case GO_PART: m_pItem = new GPartList(m_ps); break;
+				case GO_NODE: m_pItem = new GNodeList(fem); break;
+				case GO_EDGE: m_pItem = new GEdgeList(fem); break;
+				case GO_FACE: m_pItem = new GFaceList(fem); break;
+				case GO_PART: m_pItem = new GPartList(fem); break;
 				case FE_NODESET: m_pItem = new FSNodeSet((GObject*)0); break;
 				case FE_EDGESET: m_pItem = new FSEdgeSet((GObject*)0); break;
 				case FE_SURFACE: m_pItem = new FSSurface((GObject*)0); break;
@@ -111,7 +111,7 @@ void FSDomainComponent::Load(IArchive& ar)
 				FSGroup* pg = dynamic_cast<FSGroup*>(m_pItem);
 				if (pg)
 				{
-					if (m_ps->FindGroupParent(pg) == false)
+					if (fem->FindGroupParent(pg) == false)
 					{
 						ar.log("Invalid mesh ID in FSDomainComponent::Load");
 						delete m_pItem;

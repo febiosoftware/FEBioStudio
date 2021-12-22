@@ -338,7 +338,7 @@ void FSModel::GetVariableNames(const char* szvar, char* szbuf)
 
 
 //-----------------------------------------------------------------------------
-const char* FSModel::GetVariableName(const char* szvar, int n)
+const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 {
 	if (szvar[0] != '$') return nullptr;
 
@@ -384,7 +384,14 @@ const char* FSModel::GetVariableName(const char* szvar, int n)
 			FEDOFVariable& v = Variable(i);
 			if (strcmp(v.name(), szvar) == 0) 
 			{ 
-				return v.GetDOF(n).symbol();
+				if ((n >= 0) && (n < v.DOFs()))
+				{
+					if (longName)
+						return v.GetDOF(n).name();
+					else
+						return v.GetDOF(n).symbol();
+				}
+				else return nullptr;
 			}
 		}
 	}
@@ -436,11 +443,11 @@ int FSModel::GetVariableIntValue(const char* szvar, int n)
 }
 
 //-----------------------------------------------------------------------------
-const char* FSModel::GetEnumValue(const char* szenum, int n)
+const char* FSModel::GetEnumValue(const char* szenum, int n, bool longName)
 {
 	if (szenum == nullptr) return nullptr;
 
-	if (szenum[0] == '$') return GetVariableName(szenum, n);
+	if (szenum[0] == '$') return GetVariableName(szenum, n, longName);
 	
 	const char* ch = szenum;
 	int i = 0;

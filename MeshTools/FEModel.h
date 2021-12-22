@@ -166,9 +166,9 @@ public:
 	void GetDOFSymbols(FEDOFVariable& var, vector<string>& dofList);
 	void GetVariableNames(const char* szvar, char* szbuf);
 	
-	const char* GetVariableName(const char* szvar, int n);
+	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 	int GetVariableIntValue(const char* szvar, int n);
-	const char* GetEnumValue(const char* szenum, int n);
+	const char* GetEnumValue(const char* szenum, int n, bool longName = true);
 	int GetEnumIntValue(Param& param);
 	bool GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum);
 

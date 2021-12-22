@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <QPainter>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QListView>
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
@@ -36,6 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBase.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInterface.h>
+#include <QStandardItemModel>
 
 // in MaterialPropsView.cpp
 QStringList GetEnumValues(FSModel* fem, const char* ch);
@@ -203,7 +205,9 @@ public:
 						int n = p.val<int>();
 						if (p.GetEnumNames() && GetFSModel())
 						{
-							return GetFSModel()->GetEnumValue(p.GetEnumNames(), n);
+							const char* sz = GetFSModel()->GetEnumValue(p.GetEnumNames(), n);
+							if (sz == nullptr) sz = "please select";
+							return sz;
 						}
 						return n;
 					}
@@ -282,8 +286,20 @@ public:
 						return v;
 					}
 					break;
+					case Param_STD_VECTOR_INT:
+					{
+						std::vector<int> v = p.val<std::vector<int> >();
+						QString s;
+						for (int i = 0; i < v.size(); ++i)
+						{
+							s += QString::number(v[i]);
+							if (i < v.size() - 1) s += QString(",");
+						}
+						return s;
+					}
+					break;
 					default:
-//						assert(false);
+						assert(false);
 						return "in progress";
 					}
 				}
@@ -294,7 +310,11 @@ public:
 					case Param_FLOAT: return p.val<double>(); break;
 					case Param_INT: 
 					case Param_CHOICE:
-						return p.val<int>(); break;
+					{ 
+						int n = p.val<int>();
+						return n;
+					}
+					break;
 					case Param_VEC3D: return Vec3dToString(p.val<vec3d>()); break;
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
 					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
@@ -302,8 +322,9 @@ public:
 					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
+					case Param_STD_VECTOR_INT: return -1; break;
 					default:
-						assert(false);
+//						assert(false);
 						return "in progress";
 					}
 				}
@@ -396,8 +417,8 @@ public:
 					p.SetStringValue(s);
 				}
 				break;
-				default:
-					assert(false);
+//				default:
+//					assert(false);
 				}
 
 				return m_pc->UpdateData(true);
@@ -653,54 +674,97 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				return pw;
 			}
 
-			if (p->GetParamType() == Param_FLOAT)
+			switch (p->GetParamType())
 			{
-				QLineEdit* pw = new QLineEdit(parent);
-				pw->setValidator(new QDoubleValidator);
-				return pw;
-			}
-			if (p->GetParamType() == Param_VEC2I)
-			{
-				QLineEdit* pw = new QLineEdit(parent);
-				return pw;
-			}
-			if (p->GetParamType() == Param_VEC3D)
-			{
-				QLineEdit* pw = new QLineEdit(parent);
-				return pw;
-			}
-			if (p->GetParamType() == Param_MAT3D)
-			{
-				QLineEdit* pw = new QLineEdit(parent);
-				return pw;
-			}
-			if (p->GetParamType() == Param_MAT3DS)
-			{
-				QLineEdit* pw = new QLineEdit(parent);
-				return pw;
-			}
-			if ((p->GetParamType() == Param_INT) || (p->GetParamType() == Param_CHOICE))
-			{
-				if (p->GetEnumNames())
+			case Param_FLOAT:
 				{
-					QComboBox* box = new QComboBox(parent);
-					QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
-					box->addItems(enumValues);
-					QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
-					return box;
+					QLineEdit* pw = new QLineEdit(parent);
+					pw->setValidator(new QDoubleValidator);
+					return pw;
 				}
-			}
-			if (p->GetParamType() == Param_BOOL)
-			{ 
-				QComboBox* pw = new QComboBox(parent);
-				pw->addItems(QStringList() << "No" << "Yes");
-				QObject::connect(pw, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
-				return pw;
-			}
-			if (p->GetParamType() == Param_STRING)
-			{
-				QLineEdit* pw = new QLineEdit(parent);
-				return pw;
+				break;
+			case Param_VEC2I:
+				{
+					QLineEdit* pw = new QLineEdit(parent);
+					return pw;
+				}
+				break;
+			case Param_VEC3D:
+				{
+					QLineEdit* pw = new QLineEdit(parent);
+					return pw;
+				}
+				break;
+			case Param_MAT3D:
+				{
+					QLineEdit* pw = new QLineEdit(parent);
+					return pw;
+				}
+				break;
+			case Param_MAT3DS:
+				{
+					QLineEdit* pw = new QLineEdit(parent);
+					return pw;
+				}
+				break;
+			case Param_INT:
+			case Param_CHOICE:
+				{
+					if (p->GetEnumNames())
+					{
+						QComboBox* box = new QComboBox(parent);
+						QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
+						box->addItems(enumValues);
+						int n = p->val<int>();
+						box->setCurrentIndex(n);
+						QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+						return box;
+					}
+				}
+				break;
+			case Param_BOOL:
+				{
+					QComboBox* pw = new QComboBox(parent);
+					pw->addItems(QStringList() << "No" << "Yes");
+					QObject::connect(pw, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+					return pw;
+				}
+				break;
+			case Param_STRING:
+				{
+					QLineEdit* pw = new QLineEdit(parent);
+					return pw;
+				}
+				break;
+			case Param_STD_VECTOR_INT:
+				{
+					if (p->GetEnumNames())
+					{
+						QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
+
+						int n = enumValues.size();
+						QStandardItemModel* mdl = new QStandardItemModel(n, 1);
+						for (int i = 0; i < n; ++i)
+						{
+							QStandardItem* item = new QStandardItem(enumValues.at(i));
+							item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+							item->setData(Qt::Unchecked, Qt::CheckStateRole);
+							mdl->setItem(i, item);
+						}
+
+						std::vector<int> v = p->val<std::vector<int> >();
+						for (int i = 0; i < v.size(); ++i)
+						{
+							QStandardItem* it = mdl->item(v[i]);
+							it->setData(Qt::Checked, Qt::CheckStateRole);
+						}
+
+						QComboBox* box = new QComboBox(parent);
+						box->setModel(mdl);
+						return box;
+					}
+				}
+				break;
 			}
 		}
 		else if (item->isProperty())
@@ -744,7 +808,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 void FEClassPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
 	if (!index.isValid()) return;
-	if (dynamic_cast<QComboBox*>(editor))
+/*	if (dynamic_cast<QComboBox*>(editor))
 	{
 		QComboBox* pw = dynamic_cast<QComboBox*>(editor);
 		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
@@ -759,7 +823,7 @@ void FEClassPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& ind
 			}
 		}
 	}
-	else QStyledItemDelegate::setEditorData(editor, index);
+	else */ QStyledItemDelegate::setEditorData(editor, index);
 }
 
 void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
@@ -772,7 +836,22 @@ void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* mod
 		if (item->isParameter())
 		{
 			Param* p = item->parameter();
-			if (p && (p->GetEnumNames() || (p->GetParamType() == Param_BOOL)))
+			if (p && (p->GetParamType() == Param_STD_VECTOR_INT))
+			{
+				QStandardItemModel* m = dynamic_cast<QStandardItemModel*>(pw->model());
+				std::vector<int> v;
+				for (int i = 0; i < m->rowCount(); ++i)
+				{
+					QStandardItem* it = m->item(i);
+					if (it->checkState() == Qt::Checked)
+					{
+						v.push_back(i);
+					}
+				}
+				p->val<std::vector<int> >() = v;
+				return;
+			}
+			else if (p && (p->GetEnumNames() || (p->GetParamType() == Param_BOOL)))
 			{
 				model->setData(index, pw->currentIndex());
 				return;
