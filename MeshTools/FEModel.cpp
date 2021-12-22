@@ -150,6 +150,14 @@ std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc)
 	return  ss.str();
 }
 
+std::string defaultMeshAdaptorName(FSModel* fem, FSMeshAdaptor* pc)
+{
+	int nrc = CountMeshAdaptors<FSMeshAdaptor>(*fem);
+	stringstream ss;
+	ss << "MeshAdaptor" << nrc + 1;
+	return ss.str();
+}
+
 std::string defaultStepName(FSModel* fem, FSStep* ps)
 {
 	int nsteps = fem->Steps();

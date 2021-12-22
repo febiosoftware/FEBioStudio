@@ -436,6 +436,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioRigidConstraint  , 0, FERIGIDBC_ID         , FE_FEBIO_RIGID_CONSTRAINT , "[febio]");
 	REGISTER_FE_CLASS(FEBioRigidConnector   , 0, FERIGIDCONNECTOR_ID  , FE_FEBIO_RIGID_CONNECTOR  , "[febio]");
 	REGISTER_FE_CLASS(FEBioRigidLoad        , 0, FERIGIDLOAD_ID       , FE_FEBIO_RIGID_LOAD       , "[febio]");
+	REGISTER_FE_CLASS(FEBioMeshAdaptor      , 0, FEMESHADAPTOR_ID     , FE_FEBIO_MESH_ADAPTOR     , "[febio]");
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -917,7 +917,7 @@ void CModelTree::Build(CModelDocument* doc)
 	{
 		// Mesh adaptors
 		t2 = AddTreeItem(t1, "Mesh Adaptors", MT_MESH_ADAPTOR_LIST);
-		UpdateMeshAdaptors(t2, fem);
+		UpdateMeshAdaptors(t2, fem, 0);
 	}
 
 	// add the materials
@@ -1435,9 +1435,27 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FSModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateMeshAdaptors(QTreeWidgetItem* t1, FSModel& fem)
+void CModelTree::UpdateMeshAdaptors(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
+	QTreeWidgetItem* t2;
 
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		if ((pstep == 0) || (ps == pstep))
+		{
+			for (int j = 0; j < ps->MeshAdaptors(); ++j)
+			{
+				FSMeshAdaptor* pma = ps->MeshAdaptor(j);
+				assert(pma->GetStep() == ps->GetID());
+
+				int flags = SHOW_PROPERTY_FORM;
+				if (pstep == 0) flags |= DUPLICATE_ITEM;
+				QString name = QString("%1 [%2]").arg(QString::fromStdString(pma->GetName())).arg(pma->GetTypeString());
+				t2 = AddTreeItem(t1, name, MT_MESH_ADAPTOR, 0, pma, 0, 0, flags);
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1683,6 +1701,10 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FSProject& prj)
 		// add the connectors
 		t3 = AddTreeItem(t2, "Rigid Connectors", MT_RIGID_CONNECTOR_LIST, pstep->RigidConnectors());
 		UpdateConnectors(t3, fem, pstep);
+
+		// add the mesh adaptors
+		t3 = AddTreeItem(t2, "Mesh Adaptors", MT_MESH_ADAPTOR_LIST, pstep->MeshAdaptors());
+		UpdateMeshAdaptors(t3, fem, pstep);
 	}
 }
 

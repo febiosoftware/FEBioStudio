@@ -72,6 +72,9 @@ public:
 
 	// rigid connectors (nonlinear constraints)
 	FSObjectList<FSRigidConnector>	m_CN;
+
+	// mesh adaptors
+	FSObjectList<FSMeshAdaptor>	m_MA;
 };
 
 
@@ -437,6 +440,38 @@ int FSStep::RemoveRigidConnector(FSRigidConnector* pi)
 void FSStep::RemoveAllRigidConnectors()
 {
 	imp->m_CN.Clear();
+}
+
+//-----------------------------------------------------------------------------
+int FSStep::MeshAdaptors() { return (int)imp->m_MA.Size(); }
+
+//-----------------------------------------------------------------------------
+FSMeshAdaptor* FSStep::MeshAdaptor(int i) { return imp->m_MA[i]; }
+
+//-----------------------------------------------------------------------------
+void FSStep::AddMeshAdaptor(FSMeshAdaptor* pi)
+{
+	imp->m_MA.Add(pi);
+	pi->SetStep(GetID());
+}
+
+//-----------------------------------------------------------------------------
+void FSStep::InsertMeshAdaptor(int n, FSMeshAdaptor* pi)
+{
+	imp->m_MA.Insert(n, pi);
+	pi->SetStep(GetID());
+}
+
+//-----------------------------------------------------------------------------
+int FSStep::RemoveMeshAdaptor(FSMeshAdaptor* pi)
+{
+	return (int)imp->m_MA.Remove(pi);
+}
+
+//-----------------------------------------------------------------------------
+void FSStep::RemoveAllMeshAdaptors()
+{
+	imp->m_MA.Clear();
 }
 
 //-----------------------------------------------------------------------------

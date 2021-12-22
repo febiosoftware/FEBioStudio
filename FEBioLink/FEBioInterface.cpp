@@ -547,6 +547,7 @@ FSCoreBase* FEBio::CreateClass(int classId, FSModel* fem)
 	{
 	case FEANALYSIS_ID: pc = new FEBioAnalysisStep(fem); break;
 	case FESOLVER_ID  : pc = new FSGenericClass; break;
+	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
 	default:
 		assert(false);
 	}

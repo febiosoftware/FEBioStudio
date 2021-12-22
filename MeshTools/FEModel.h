@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "FEMLib/FECoreModel.h"
 #include "FEMLib/FEBoundaryCondition.h"
 #include "FEMLib/FEAnalysisStep.h"
+#include "FEMLib/FEMeshAdaptor.h"
 #include "GMaterial.h"
 #include "FEDataVariable.h"
 #include "FESoluteData.h"
@@ -345,6 +346,23 @@ template <class T> int CountRigidConstraints(FSModel& fem)
 	return nc;
 }
 
+//-----------------------------------------------------------------------------
+// helper function for identifying the number of mesh adaptors.
+template <class T> int CountMeshAdaptors(FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->MeshAdaptors(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->MeshAdaptor(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
 // helper function for creating a valid name from a string.
 std::string Namify(const char* sz);
 
@@ -356,4 +374,5 @@ std::string defaultInterfaceName(FSModel* fem, FSInterface* pi);
 std::string defaultConstraintName(FSModel* fem, FSModelConstraint* pi);
 std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pc);
 std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc);
+std::string defaultMeshAdaptorName(FSModel* fem, FSMeshAdaptor* pc);
 std::string defaultStepName(FSModel* fem, FSStep* ps);

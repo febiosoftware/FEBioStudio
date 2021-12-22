@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
+#include <FEMLib/FEMeshAdaptor.h>
 #include "Commands.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
@@ -505,7 +506,22 @@ void CMainWindow::on_actionAddMeshAdaptor_triggered()
 	CDlgAddPhysicsItem dlg("Add Mesh Adaptor", FEMESHADAPTOR_ID, prj, true, this);
 	if (dlg.exec())
 	{
+		FSModel* fem = &prj.GetFSModel();
+		FSMeshAdaptor* pma = fecore_new<FSMeshAdaptor>(fem, FEMESHADAPTOR_ID, FE_FEBIO_MESH_ADAPTOR);
+		FEBio::CreateModelComponent(dlg.GetClassID(), pma);
+		assert(pma);
+		if (pma)
+		{
+			FSStep* step = fem->GetStep(dlg.GetStep());
+			pma->SetStep(step->GetID());
 
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultMeshAdaptorName(fem, pma);
+
+			pma->SetName(name);
+			step->AddMeshAdaptor(pma);
+			UpdateModel(pma);
+		}
 	}
 }
 

@@ -149,7 +149,7 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 	vector<FEBio::FEBioClassInfo> facs;
 
 	bool includeModuleDependencies = (flags & ClassSearchFlags::IncludeModuleDependencies);
-	bool includeFECoreClasses      = (flags & ClassSearchFlags::IncludeFECoreClasses);
+	bool includeFECoreClasses = includeModuleDependencies;// (flags & ClassSearchFlags::IncludeFECoreClasses);
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	vector<int> mods;

@@ -14,6 +14,7 @@ class FSInitialCondition;
 class FSStepComponent;
 class FSModelConstraint;
 class FSRigidLoad;
+class FSMeshAdaptor;
 
 //-----------------------------------------------------------------------------
 // Analysis types
@@ -127,6 +128,14 @@ public:
     void InsertRigidConnector(int n, FSRigidConnector* pi);
     int RemoveRigidConnector(FSRigidConnector* pi);
 	void RemoveAllRigidConnectors();
+
+	// mesh adaptors
+	int MeshAdaptors();
+	FSMeshAdaptor* MeshAdaptor(int i);
+	void AddMeshAdaptor(FSMeshAdaptor* pi);
+	void InsertMeshAdaptor(int n, FSMeshAdaptor* pi);
+	int RemoveMeshAdaptor(FSMeshAdaptor* pi);
+	void RemoveAllMeshAdaptors();
 
 	// convenience functions for working with components
 	void AddComponent(FSStepComponent* pc);
