@@ -298,6 +298,22 @@ public:
 						return s;
 					}
 					break;
+					case Param_STD_VECTOR_DOUBLE:
+					{
+						std::vector<double> v = p.val<std::vector<double> >();
+						QString s;
+						if (v.empty()) s = "(none)";
+						else
+						{
+							for (int i = 0; i < v.size(); ++i)
+							{
+								s += QString::number(v[i]);
+								if (i < v.size() - 1) s += QString(",");
+							}
+						}
+						return s;
+					}
+					break;
 					default:
 						assert(false);
 						return "in progress";
@@ -726,6 +742,8 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				{
 					QComboBox* pw = new QComboBox(parent);
 					pw->addItems(QStringList() << "No" << "Yes");
+					bool b = p->GetBoolValue();
+					pw->setCurrentIndex(b ? 1 : 0);
 					QObject::connect(pw, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 					return pw;
 				}
@@ -777,7 +795,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 
 			// fill the combo box
 			int nclass = prop.GetSuperClassID();
-			vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, -1, true);
+			vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetBaseClassID(), true);
 			pc->clear();
 			int classes = classInfo.size();
 			for (int i = 0; i < classes; ++i)

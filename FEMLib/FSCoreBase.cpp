@@ -7,6 +7,7 @@ FSProperty::FSProperty()
 	m_npropType = -1;
 	m_maxSize = NO_FIXED_SIZE;
 	m_nsuperClassID = -1;
+	m_nbaseClassID = -1;
 	m_flag = EDITABLE;
 }
 
@@ -18,6 +19,7 @@ FSProperty::FSProperty(const std::string& name, int propType, FSCoreBase* parent
 	m_flag = flags;
 	m_maxSize = nsize;
 	m_nsuperClassID = -1;
+	m_nbaseClassID = -1;
 	if (nsize > 0)
 	{
 		m_cmp.assign(nsize, nullptr);
