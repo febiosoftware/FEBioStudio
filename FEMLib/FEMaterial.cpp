@@ -1250,7 +1250,7 @@ FEHolzapfelUnconstrained::FEHolzapfelUnconstrained() : FEMaterial(FE_HOLZAPFEL_U
 // FELinearOrthotropic - Linear Orthotropic
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FELinearOrthotropic, MODULE_MECH, FE_LINEAR_ORTHO, FE_MAT_ELASTIC, "linear orthotropic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FELinearOrthotropic, MODULE_MECH, FE_LINEAR_ORTHO, FE_MAT_ELASTIC, "orthotropic elastic", MaterialFlags::TOPLEVEL);
 
 FELinearOrthotropic::FELinearOrthotropic() : FEMaterial(FE_LINEAR_ORTHO)
 {

@@ -3799,7 +3799,7 @@ void FEBioExport2::WriteLoadNodal(FEStep& s)
 		if (pbc && pbc->IsActive())
 		{
 
-			char bc[][3] = {"x", "y", "z", "p", "c1", "c2", "c3", "c4", "c5", "c6"};
+			char bc[][3] = {"x", "y", "z", "sx", "sy", "sz", "p", "c1", "c2", "c3", "c4", "c5", "c6"};
 
 			int l = pbc->GetDOF();
 			FELoadCurve* plc = pbc->GetLoadCurve();

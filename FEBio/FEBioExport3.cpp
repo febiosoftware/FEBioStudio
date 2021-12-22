@@ -4205,7 +4205,7 @@ void FEBioExport3::WriteBCPrescribed(FEStep &s)
 //
 void FEBioExport3::WriteLoadNodal(FEStep& s)
 {
-	char bc[][3] = { "x", "y", "z", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
+	char bc[][3] = { "x", "y", "z", "sx", "sy", "sz", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
 
 	for (int j = 0; j<s.Loads(); ++j)
 	{
