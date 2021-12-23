@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
+#include <FEMLib/FELoadController.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <FEBioStudio/WebDefines.h>
@@ -437,6 +438,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioRigidConnector   , 0, FERIGIDCONNECTOR_ID  , FE_FEBIO_RIGID_CONNECTOR  , "[febio]");
 	REGISTER_FE_CLASS(FEBioRigidLoad        , 0, FERIGIDLOAD_ID       , FE_FEBIO_RIGID_LOAD       , "[febio]");
 	REGISTER_FE_CLASS(FEBioMeshAdaptor      , 0, FEMESHADAPTOR_ID     , FE_FEBIO_MESH_ADAPTOR     , "[febio]");
+	REGISTER_FE_CLASS(FEBioLoadController   , 0, FELOADCONTROLLER_ID  , FE_FEBIO_LOAD_CONTROLLER  , "[febio]");
 }
 
 //-------------------------------------------------------------------------------------------------

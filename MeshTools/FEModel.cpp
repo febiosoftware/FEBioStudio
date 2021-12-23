@@ -1747,3 +1747,23 @@ int FSModel::CountRigidConnectors(int type)
 	}
 	return n;
 }
+
+int FSModel::LoadControllers() const
+{
+	return (int)m_LC.Size();
+}
+
+FSLoadController* FSModel::GetLoadController(int i)
+{
+	return m_LC[i];
+}
+
+void FSModel::AddLoadController(FSLoadController* plc)
+{
+	m_LC.Add(plc);
+}
+
+int FSModel::RemoveLoadController(FSLoadController* plc)
+{
+	return (int) m_LC.Remove(plc);
+}

@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "FEMLib/FEBoundaryCondition.h"
 #include "FEMLib/FEAnalysisStep.h"
 #include "FEMLib/FEMeshAdaptor.h"
+#include "FEMLib/FELoadController.h"
 #include "GMaterial.h"
 #include "FEDataVariable.h"
 #include "FESoluteData.h"
@@ -200,6 +201,12 @@ public:
     int GetDOFIndex(const char* sz);
 
 public:
+	int LoadControllers() const;
+	FSLoadController* GetLoadController(int i);
+	void AddLoadController(FSLoadController* plc);
+	int RemoveLoadController(FSLoadController* plc);
+
+public:
 	int CountBCs(int type);
 	int CountLoads(int type);
 	int CountICs(int type);
@@ -225,6 +232,7 @@ protected:
 	FSObjectList<SoluteData>		m_Sol;		//!< solute data variables
 	FSObjectList<SoluteData>		m_SBM;		//!< solid-bound molecule data variables
 	FSObjectList<FSDataMapGenerator>	m_Map;		//!< data maps
+	FSObjectList<FSLoadController>		m_LC;		//!< load controllers
 };
 
 //-----------------------------------------------------------------------------
