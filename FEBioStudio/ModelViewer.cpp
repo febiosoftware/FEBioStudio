@@ -1611,20 +1611,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllConstraints()));
 		break;
-	case MT_RIGID_CONSTRAINT_LIST:
+	case MT_RIGID_COMPONENT_LIST:
 		menu.addAction("Add Rigid Constraint ...", this, SLOT(OnAddRigidConstraint()));
-		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConstraints()));
-		break;
-	case MT_RIGID_CONNECTOR_LIST:
 		menu.addAction("Add Rigid Connector ...", this, SLOT(OnAddRigidConnector()));
-		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConnectors()));
-		break;
-	case MT_RIGID_LOAD_LIST:
 		menu.addAction("Add Rigid Load ...", this, SLOT(OnAddRigidLoad()));
 		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidLoads()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidComponents()));
 		break;
 	case MT_STEP_LIST:
 		menu.addAction("Add Analysis Step ...", this, SLOT(OnAddStep()));
@@ -1870,18 +1862,10 @@ void CModelViewer::OnDeleteAllConstraints()
 	GetMainWindow()->DeleteAllConstraints();
 }
 
-void CModelViewer::OnDeleteAllRigidConstraints()
+void CModelViewer::OnDeleteAllRigidComponents()
 {
 	GetMainWindow()->DeleteAllRigidConstraints();
-}
-
-void CModelViewer::OnDeleteAllRigidLoads()
-{
 	GetMainWindow()->DeleteAllRigidLoads();
-}
-
-void CModelViewer::OnDeleteAllRigidConnectors()
-{
 	GetMainWindow()->DeleteAllRigidConnectors();
 }
 
