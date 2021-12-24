@@ -1059,7 +1059,7 @@ void CModelViewer::OnChangeMaterial()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, prj, false, this);
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, prj, false, false, this);
 	if (dlg.exec())
 	{
 		FSMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
@@ -1756,6 +1756,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 			}
 			del = true;
 		}
+		break;
+	case MT_LOAD_CONTROLLERS:
+		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
+		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
 		break;
 	case MT_JOBLIST:
 		{

@@ -1396,6 +1396,12 @@ void FSModel::DeleteAllRigidLoads()
 }
 
 //-----------------------------------------------------------------------------
+void FSModel::DeleteAllLoadControllers()
+{
+	m_LC.Clear();
+}
+
+//-----------------------------------------------------------------------------
 void FSModel::DeleteAllRigidConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)

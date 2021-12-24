@@ -1877,69 +1877,13 @@ void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FSReactionMaterial* 
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* pc)
-{
-	int np = pc->Parameters();
-	for (int n = 0; n < np; ++n)
-	{
-		Param& p = pc->GetParam(n);
-		LoadCurve* plc = p.GetLoadCurve();
-		if (plc)
-		{
-			string name = pc->GetName() + "." + p.GetLongName();
-			AddTreeItem(t1, QString::fromStdString(name), 0);
-		}
-	}
-}
-
-
 void CModelTree::UpdateLoadControllers(QTreeWidgetItem* t1, FSModel& fem)
 {
-	for (int i = 0; i < fem.Steps(); ++i)
+	for (int i = 0; i < fem.LoadControllers(); ++i)
 	{
-		FSStep* pstep = fem.GetStep(i);
-
-		// add bc curves
-		for (int j = 0; j < pstep->BCs(); ++j)
-		{
-			FSBoundaryCondition* pbc = pstep->BC(j);
-			if (pbc) BuildLoadCurves(t1, pbc);
-		}
-
-		// add load curves
-		for (int j = 0; j < pstep->Loads(); ++j)
-		{
-			FSLoad* plj = pstep->Load(j);
-			BuildLoadCurves(t1, plj);
-		}
-
-		// add contact interfaces
-		for (int j = 0; j < pstep->Interfaces(); ++j)
-		{
-			FSInterface* pi = pstep->Interface(j);
-			BuildLoadCurves(t1, pi);
-		}
-
-		// add nonlinear constraints
-		for (int j = 0; j < pstep->Constraints(); ++j)
-		{
-			FSModelConstraint* pmc = pstep->Constraint(j);
-			BuildLoadCurves(t1, pmc);
-		}
-
-		// add rigid constraints
-		for (int j = 0; j < pstep->RigidConstraints(); ++j)
-		{
-			FSRigidPrescribed* pc = dynamic_cast<FSRigidPrescribed*>(pstep->RigidConstraint(j));
-			if (pc) BuildLoadCurves(t1, pc);
-		}
-
-		// add rigid connectors
-		for (int j = 0; j < pstep->RigidConnectors(); ++j)
-		{
-			FSRigidConnector* pc = pstep->RigidConnector(j);
-			if (pc) BuildLoadCurves(t1, pc);
-		}
+		FSLoadController* plc = fem.GetLoadController(i);
+		string name = plc->GetName();
+		AddTreeItem(t1, QString::fromStdString(name), MT_LOAD_CONTROLLER, 0, plc);
 	}
 
 	int n = t1->childCount();

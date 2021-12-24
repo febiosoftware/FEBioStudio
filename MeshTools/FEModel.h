@@ -83,6 +83,7 @@ public:
 	void DeleteAllRigidLoads();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
+	void DeleteAllLoadControllers();
 
 	// clear the selections of all the bc, loads, etc.
 	void ClearSelections();

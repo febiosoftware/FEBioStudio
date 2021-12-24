@@ -688,6 +688,15 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 			return ss.str();
 		}
 	}
+	else if (dynamic_cast<FSLoadController*>(po))
+	{
+		FSLoadController* plc = dynamic_cast<FSLoadController*>(po);
+		std::stringstream ss;
+		const char* sztype = plc->GetTypeString();
+		if (sztype == 0) sztype = "";
+		ss << "Load controller" << " [" << sztype << "]";
+		return ss.str();
+	}
 	else if (dynamic_cast<FEMeshData*>(po))
 	{
 		FENodeData* nodeData = dynamic_cast<FENodeData*>(po);

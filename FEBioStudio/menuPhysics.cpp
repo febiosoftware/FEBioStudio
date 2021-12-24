@@ -59,7 +59,7 @@ void CMainWindow::on_actionAddBC_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSBoundaryCondition* pbc = fecore_new<FSBoundaryCondition>(&fem, FEBC_ID, FE_FEBIO_BC); assert(pbc);
@@ -108,7 +108,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Nodal Load", FENODALLOAD_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Nodal Load", FENODALLOAD_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSNodalLoad* pnl = fecore_new<FSNodalLoad>(&fem, FENODALLOAD_ID, FE_FEBIO_NODAL_LOAD); assert(pnl);
@@ -154,7 +154,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Surface Load", FESURFACELOAD_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Surface Load", FESURFACELOAD_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSSurfaceLoad* psl = fecore_new<FSSurfaceLoad>(&fem, FESURFACELOAD_ID, FE_FEBIO_SURFACE_LOAD); assert(psl);
@@ -197,7 +197,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Body Load", FEBODYLOAD_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Body Load", FEBODYLOAD_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSBodyLoad* pbl = fecore_new<FSBodyLoad>(&fem, FEBODYLOAD_ID, FE_FEBIO_BODY_LOAD); assert(pbl);
@@ -223,7 +223,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Rigid Load", FERIGIDLOAD_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Rigid Load", FERIGIDLOAD_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSRigidLoad* prl = fecore_new<FSRigidLoad>(&fem, FERIGIDLOAD_ID, FE_FEBIO_RIGID_LOAD); assert(prl);
@@ -249,7 +249,7 @@ void CMainWindow::on_actionAddIC_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Initial Condition", FEIC_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Initial Condition", FEIC_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 //		FSInitialCondition* pic = fecore_new<FSInitialCondition>(&fem, FEIC_ID, dlg.GetClassID()); assert(pic);
@@ -302,7 +302,7 @@ void CMainWindow::on_actionAddContact_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Contact Interface", FESURFACEINTERFACE_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Contact Interface", FESURFACEINTERFACE_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 //		FSInterface* pi = fecore_new<FSInterface>(&fem, FESURFACEINTERFACE_ID, dlg.GetClassID()); assert(pi);
@@ -354,7 +354,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Constraint", FENLCONSTRAINT_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Constraint", FENLCONSTRAINT_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 //		FSModelConstraint* pi = fecore_new<FSModelConstraint>(&fem, FENLCONSTRAINT_ID, dlg.GetClassID()); assert(pi);
@@ -469,7 +469,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, prj, false, this);
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, prj, false, false, this);
 	if (dlg.exec())
 	{
 		FSMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
@@ -503,7 +503,7 @@ void CMainWindow::on_actionAddMeshAdaptor_triggered()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Mesh Adaptor", FEMESHADAPTOR_ID, prj, true, this);
+	CDlgAddPhysicsItem dlg("Add Mesh Adaptor", FEMESHADAPTOR_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
@@ -524,6 +524,39 @@ void CMainWindow::on_actionAddMeshAdaptor_triggered()
 		}
 	}
 }
+
+void CMainWindow::on_actionAddLoadController_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+
+	CDlgAddPhysicsItem dlg("Add Load Controller", FELOADCONTROLLER_ID, prj, true, false, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSLoadController* plc = fecore_new<FSLoadController>(fem, FELOADCONTROLLER_ID, FE_FEBIO_LOAD_CONTROLLER);
+		FEBio::CreateModelComponent(dlg.GetClassID(), plc);
+		assert(plc);
+		if (plc)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				int n = fem->LoadControllers();
+				std::stringstream ss; ss << "LC" << n + 1;
+				name = ss.str();
+			}
+
+			plc->SetName(name);
+			fem->AddLoadController(plc);
+			UpdateModel(plc);
+		}
+	}
+}
+
 
 void CMainWindow::on_actionAddStep_triggered()
 {

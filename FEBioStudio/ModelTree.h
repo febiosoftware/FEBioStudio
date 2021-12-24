@@ -76,6 +76,7 @@ enum ModelTreeType
 	MT_DISCRETE,
 	MT_STEP_LIST,
 	MT_LOAD_CONTROLLERS,
+	MT_LOAD_CONTROLLER,
 	MT_PROJECT_OUTPUT,
 	MT_PROJECT_OUTPUT_PLT,
 	MT_PROJECT_OUTPUT_LOG,
@@ -187,8 +188,6 @@ protected:
 	void AddReactionMaterial(QTreeWidgetItem* item, FSReactionMaterial* mat, FSModel& fem);
 
 	CModelTreeItem* GetCurrentData();
-
-	void BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* pc);
 
 private:
 	std::vector<CModelTreeItem>	m_data;
