@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEModifier.h"
 #include <MeshLib/MeshMetrics.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 const int lut[14][3][4] = {

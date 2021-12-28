@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
+using namespace std;
 
 class Ui::CDlgEditProject
 {

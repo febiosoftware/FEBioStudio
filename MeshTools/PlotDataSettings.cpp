@@ -337,7 +337,7 @@ void CPlotDataSettings::Load(IArchive& ar)
 		{
 			string tmp;
 			int n = 0, m = 0, id, module = -1;
-			vector<int> dom;
+			std::vector<int> dom;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				switch (ar.GetChunkID())

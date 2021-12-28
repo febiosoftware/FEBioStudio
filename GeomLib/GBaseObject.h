@@ -75,8 +75,8 @@ public:
 	int AddZArc(int n1, int n2);
 	int AddCircularArc(int n1, int n2, int n3);
 	int AddArcSection(int n1, int n2, int n3);
-	void AddFacet(const vector<int>& node, const vector<pair<int, int> >& edge, int ntype);
-	void AddFacet(const vector<int>& edge, int ntype);
+	void AddFacet(const std::vector<int>& node, const std::vector<pair<int, int> >& edge, int ntype);
+	void AddFacet(const std::vector<int>& edge, int ntype);
 	void AddSurface(GFace* f);
 	void AddPart ();
 	void AddFace(GFace* f);
@@ -110,8 +110,8 @@ protected:
 
 protected:
 	// --- definition of geometry ---
-	vector<GPart*>		m_Part;	//!< parts
-	vector<GFace*>		m_Face;	//!< surfaces
-	vector<GEdge*>		m_Edge;	//!< edges
-	vector<GNode*>		m_Node;	//!< nodes
+	std::vector<GPart*>		m_Part;	//!< parts
+	std::vector<GFace*>		m_Face;	//!< surfaces
+	std::vector<GEdge*>		m_Edge;	//!< edges
+	std::vector<GNode*>		m_Node;	//!< nodes
 };

@@ -20,6 +20,6 @@ public:
 	void copy(FSMaterial* pm);
 
 protected:
-	char			m_sztype[256];	// type name
-	vector<char*>	m_pname;		// list of parameter names
+	char				m_sztype[256];	// type name
+	std::vector<char*>	m_pname;		// list of parameter names
 };

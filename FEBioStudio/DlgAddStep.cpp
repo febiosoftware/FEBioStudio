@@ -89,7 +89,7 @@ CDlgAddStep::CDlgAddStep(FSProject& prj, QWidget* parent) : QDialog(parent), ui(
 	ui->steps->setCurrentIndex(fem.Steps() - 1);
 
 	// set the types
-	vector<FEClassFactory*> l = FEMKernel::FindAllClasses(prj.GetModule(), FEANALYSIS_ID);
+	std::vector<FEClassFactory*> l = FEMKernel::FindAllClasses(prj.GetModule(), FEANALYSIS_ID);
 	for (int i=0; i<l.size(); ++i)
 	{
 		QListWidgetItem* w = new QListWidgetItem;

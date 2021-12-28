@@ -350,7 +350,7 @@ public:
 
 	double SpringConstant() const;
 
-	void BuildSpringList(vector<pair<int, int> >& L);
+	void BuildSpringList(std::vector<pair<int, int> >& L);
 };
 
 //-----------------------------------------------------------------------------
@@ -390,7 +390,7 @@ public:
 		LinearConstraint& operator = (const LinearConstraint& LC) { m_dof = LC.m_dof; return (*this); }
 
 	public:
-		vector<DOF>	m_dof;
+		std::vector<DOF>	m_dof;
 	};
 
 public:
@@ -404,5 +404,5 @@ public:
 	int		m_nmaxaug;
 
 public:
-	vector<LinearConstraint>	m_set;
+	std::vector<LinearConstraint>	m_set;
 };

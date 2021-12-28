@@ -184,7 +184,7 @@ bool AnsysImport::BuildMesh(FSModel &fem)
 
 	// create node lookup table
 	int nsize = imax - imin + 1;
-	vector<int> NLT;
+	std::vector<int> NLT;
 	NLT.resize(nsize);
 	for (i=0; i<nsize; ++i) NLT[i] = -1;
 	in = m_Node.begin();

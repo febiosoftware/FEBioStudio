@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include"FEMeshBase.h"
 #include <GeomLib/GObject.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FSMeshBase::FSMeshBase()

@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FESplitModifier.h"
 #include <MeshLib/FEFaceEdgeList.h>
 #include <MeshLib/FENodeElementList.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // Lookup-table for splitting tets into smaller tets

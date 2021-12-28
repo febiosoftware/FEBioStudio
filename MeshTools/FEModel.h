@@ -164,8 +164,8 @@ public:
 	void GetSpeciesNames(char* szbuf);
 	void GetRigidMaterialNames(char* szbuf);
 	void GetDOFNames(FEDOFVariable& var, char* szbuf);
-	void GetDOFNames(FEDOFVariable& var, vector<string>& dofList);
-	void GetDOFSymbols(FEDOFVariable& var, vector<string>& dofList);
+	void GetDOFNames(FEDOFVariable& var, std::vector<string>& dofList);
+	void GetDOFSymbols(FEDOFVariable& var, std::vector<string>& dofList);
 	void GetVariableNames(const char* szvar, char* szbuf);
 	
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
@@ -225,7 +225,7 @@ protected:
 
 protected:
 	GModel*					m_pModel;	//!< Model geometry
-	vector<FEDOFVariable>	m_DOF;		//!< degree of freedom list
+	std::vector<FEDOFVariable>	m_DOF;		//!< degree of freedom list
 
 	FSObjectList<GMaterial>			m_pMat;		//!< Material list
 	FSObjectList<FSStep>			m_pStep;	//!< Analysis data

@@ -113,7 +113,7 @@ void GBox::Create()
 		{ 3, 8, 7,11},{ 3, 0, 1, 2},{ 4, 5, 6, 7}
 	};
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<6; ++i)
 	{
 		edge.resize(4);

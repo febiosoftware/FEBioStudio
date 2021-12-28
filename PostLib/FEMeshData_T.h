@@ -77,7 +77,7 @@ public:
 	T& operator [] (int n) { return m_data[n]; }
 
 protected:
-	vector<T>	m_data;
+	std::vector<T>	m_data;
 };
 
 //-----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ public:
 	}
 
 	float eval(int n, int comp) { return m_data[n*m_stride + comp]; }
-	void setData(vector<float>& data)
+	void setData(std::vector<float>& data)
 	{
 		assert(data.size() == m_data.size());
 		m_data = data;
@@ -100,7 +100,7 @@ public:
 
 protected:
 	int				m_stride;
-	vector<float>	m_data;	
+	std::vector<float>	m_data;
 };
 
 //=============================================================================
@@ -164,8 +164,8 @@ public:
 	T& operator [] (int n) { return m_data[n]; }
 
 protected:
-	vector<T>		m_data;
-	vector<int>		m_face;
+	std::vector<T>		m_data;
+	std::vector<int>		m_face;
 };
 
 // *** specialization for DATA_REGION format ***
@@ -180,7 +180,7 @@ public:
 	void eval(int n, T* pv) { (*pv) = m_data[m_face[n]]; }
 	bool active(int n) { return (m_face[n] >= 0); }
 	void copy(FEFaceData<T,DATA_ITEM>& d) { m_data = d.m_data; }
-	bool add(vector<int>& item, const T& v) 
+	bool add(std::vector<int>& item, const T& v)
 	{ 
 		int m = (int) m_data.size(); 
 		m_data.push_back(v);
@@ -201,8 +201,8 @@ public:
 	T& operator [] (int n) { return m_data[n]; }
 
 protected:
-	vector<T>		m_data;
-	vector<int>		m_face;
+	std::vector<T>		m_data;
+	std::vector<int>		m_face;
 };
 
 
@@ -238,8 +238,8 @@ public:
 	T& operator [] (int n) { return m_data[n]; }
 
 protected:
-	vector<T>		m_data;
-	vector<int>		m_face;
+	std::vector<T>		m_data;
+	std::vector<int>		m_face;
 };
 
 // *** specialization for DATA_NODE format ***
@@ -264,7 +264,7 @@ public:
 	}
 	bool active(int n) { return (m_face[2*n] >= 0); }
 	void copy(FEFaceData<T,DATA_NODE>& d) { m_data = d.m_data; m_indx = d.m_indx; }
-	void add(vector<T>& data, vector<int>& face, vector<int>& index, vector<int>& nf)
+	void add(std::vector<T>& data, std::vector<int>& face, std::vector<int>& index, std::vector<int>& nf)
 	{
 		int n0 = (int)m_data.size();
 		m_data.insert(m_data.end(), data.begin(), data.end());
@@ -281,9 +281,9 @@ public:
 	T& operator [] (int n) { return m_data[n]; }
 
 protected:
-	vector<T>		m_data;
-	vector<int>		m_face;
-	vector<int>		m_indx; 
+	std::vector<T>		m_data;
+	std::vector<int>		m_face;
+	std::vector<int>		m_indx;
 };
 
 //=============================================================================
@@ -321,7 +321,7 @@ public:
 
 	int arraySize() const { return m_stride; }
 
-	void setData(vector<float>& data, vector<int>& elem)
+	void setData(std::vector<float>& data, std::vector<int>& elem)
 	{
 		assert(data.size() == m_stride*elem.size());
 		for (int i=0; i<(int)elem.size(); ++i)
@@ -336,9 +336,9 @@ public:
 	}
 
 protected:
-	int				m_stride;
-	vector<float>	m_data;
-	vector<int>		m_elem;
+	int					m_stride;
+	std::vector<float>	m_data;
+	std::vector<int>	m_elem;
 };
 
 //-----------------------------------------------------------------------------
@@ -363,7 +363,7 @@ public:
 		for (int j = 0; j<m; ++j) pv[j] = m_data[m_indx[n + j] + comp];
 	}
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[2 * n] >= 0); }
-	void add(vector<float>& d, vector<int>& e, vector<int>& l, int ne)
+	void add(std::vector<float>& d, std::vector<int>& e, std::vector<int>& l, int ne)
 	{
 		int n0 = (int)m_data.size();
 		m_data.insert(m_data.end(), d.begin(), d.end());
@@ -377,9 +377,9 @@ public:
 
 protected:
 	int m_stride;
-	vector<float>	m_data;
-	vector<int>		m_elem;
-	vector<int>		m_indx;
+	std::vector<float>	m_data;
+	std::vector<int>		m_elem;
+	std::vector<int>		m_indx;
 };
 
 
@@ -406,7 +406,7 @@ public:
 		return vec3f(d[0], d[1], d[2]);
 	}
 
-	void setData(vector<float>& data, vector<int>& elem)
+	void setData(std::vector<float>& data, std::vector<int>& elem)
 	{
 		assert(data.size() == 3*m_stride*elem.size());
 		for (int i = 0; i<(int)elem.size(); ++i)
@@ -423,9 +423,9 @@ public:
 	}
 
 protected:
-	int				m_stride;
-	vector<float>	m_data;
-	vector<int>		m_elem;
+	int					m_stride;
+	std::vector<float>	m_data;
+	std::vector<int>	m_elem;
 };
 
 
@@ -473,8 +473,8 @@ public:
 	T& operator [] (int i) { return m_data[i]; }
 
 protected:
-	vector<T>		m_data;
-	vector<int>		m_elem;
+	std::vector<T>		m_data;
+	std::vector<int>	m_elem;
 };
 
 // *** specialization for DATA_REGION format ***
@@ -489,7 +489,7 @@ public:
 	void eval(int n, T* pv) { assert(m_elem[n] >= 0); (*pv) = m_data[m_elem[n]]; }
 	void copy(FEElementData<T, DATA_REGION>& d) { m_data = d.m_data; }
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[n] >= 0); }
-	void add(vector<int>& item, const T& v) 
+	void add(std::vector<int>& item, const T& v)
 	{ 
 		int m = (int) m_data.size(); 
 		m_data.push_back(v);
@@ -518,8 +518,8 @@ public:
 	T& operator [] (int n) { return m_data[n]; }
 
 protected:
-	vector<T>		m_data;
-	vector<int>		m_elem;
+	std::vector<T>		m_data;
+	std::vector<int>	m_elem;
 };
 
 // *** specialization for DATA_COMP format ***
@@ -556,8 +556,8 @@ public:
 	T& operator [] (int i) { return m_data[i]; }
 
 protected:
-	vector<T>		m_data;
-	vector<int>		m_elem;
+	std::vector<T>		m_data;
+	std::vector<int>	m_elem;
 };
 
 // *** specialization for DATA_NODE format ***
@@ -587,7 +587,7 @@ public:
 	}
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[2 * n] >= 0); }
 	void copy(FEElementData<T,DATA_NODE>& d) { m_data = d.m_data; m_indx = d.m_indx; }
-	void add(vector<T>& d, vector<int>& e, vector<int>& l, int ne) 
+	void add(std::vector<T>& d, std::vector<int>& e, std::vector<int>& l, int ne)
 	{ 
 		int n0 = (int) m_data.size();
 		m_data.insert(m_data.end(), d.begin(), d.end());
@@ -602,9 +602,9 @@ public:
 	T& operator [] (int i) { return m_data[i]; }
 
 protected:
-	vector<T>		m_data;
-	vector<int>		m_elem;
-	vector<int>		m_indx;
+	std::vector<T>			m_data;
+	std::vector<int>		m_elem;
+	std::vector<int>		m_indx;
 };
 
 //=============================================================================
@@ -644,7 +644,7 @@ public:
 
 	bool active(int n) { return (m_face[n] == 1); }
 
-	void set_facelist(vector<int>& l);
+	void set_facelist(std::vector<int>& l);
 
 private:
 	void level(int n, int l, std::set<int>& nl1);
@@ -653,7 +653,7 @@ private:
 
 public: // parameters
 	CurvatureField*	m_pdf;
-	vector<int> m_face;
+	std::vector<int> m_face;
 };
 
 class CurvatureField : public ModelDataField
@@ -708,7 +708,7 @@ public:
 
 	bool active(int n) { return (m_face[n] == 1); }
 
-	void set_facelist(vector<int>& l);
+	void set_facelist(std::vector<int>& l);
 
 protected:
 
@@ -723,7 +723,7 @@ public: // parameters
 	static int	m_nmax;		// max iterations
 	static int  m_bext;		// use extended quadric method
 
-	vector<int> m_face;
+	std::vector<int> m_face;
 };
 
 //-----------------------------------------------------------------------------
@@ -750,12 +750,12 @@ public:
 
 	bool active(int n) { return (m_face[n] == 1); }
 
-	void set_facelist(vector<int>& l);
+	void set_facelist(std::vector<int>& l);
 
 protected:
 	void eval(int n, float* f);
 
-	vector<int> m_face;
+	std::vector<int> m_face;
 
 public:
 	static int m_nlevels;

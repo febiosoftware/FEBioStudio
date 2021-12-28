@@ -1,7 +1,6 @@
 #pragma once
 #include <FEMLib/FEModelComponent.h>
 #include <vector>
-//using namespace std;
 
 class FSModel;
 class FSBoundaryCondition;
@@ -240,7 +239,7 @@ public:
 	LoadCurve* GetMustPointLoadCurve() { return &m_MP; }
 
 	// get the analysis types
-	virtual vector<string> GetAnalysisStrings() const;
+	virtual std::vector<string> GetAnalysisStrings() const;
 
 protected:
 	// constructor is private since we don't want to create instances of the base class
@@ -277,7 +276,7 @@ public:
 	FSHeatTransfer(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -287,7 +286,7 @@ public:
 	FSNonLinearBiphasic(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -297,7 +296,7 @@ public:
 	FSBiphasicSolutes(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -307,7 +306,7 @@ public:
 	FSMultiphasicAnalysis(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -331,7 +330,7 @@ public:
 	FSReactionDiffusionAnalysis(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //==============================================================================

@@ -137,7 +137,7 @@ void GTube::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<16; ++i)
 	{
 		edge.resize(4);
@@ -269,7 +269,7 @@ void GTube2::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<16; ++i)
 	{
 		edge.resize(4);

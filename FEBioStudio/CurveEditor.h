@@ -138,7 +138,7 @@ private:
 class CCmdRemovePoint : public CCommand
 {
 public:
-	CCmdRemovePoint(LoadCurve* plc, const vector<int>& index);
+	CCmdRemovePoint(LoadCurve* plc, const std::vector<int>& index);
 
 	void Execute() override;
 	void UnExecute() override;
@@ -146,7 +146,7 @@ public:
 private:
 	LoadCurve*	m_lc;
 	LoadCurve		m_copy;
-	vector<int>		m_index;
+	std::vector<int>		m_index;
 };
 
 class CCmdMovePoint: public CCommand

@@ -67,7 +67,7 @@ double& FESurfaceData::operator [] (int index)
 	return m_data[index];
 }
 
-vector<double>* FESurfaceData::getData()
+std::vector<double>* FESurfaceData::getData()
 {
 	return &m_data;
 }

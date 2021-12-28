@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 #include "FEFillHole.h"
 #include <algorithm>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 //! Constructor

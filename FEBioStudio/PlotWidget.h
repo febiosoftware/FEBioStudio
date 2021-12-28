@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <vector>
 #include <QDialog>
 #include "GraphData.h"
-//using namespace std;
 
 //-----------------------------------------------------------------------------
 class QPainter;
@@ -180,7 +179,7 @@ public:
 
 	void mapToUserRect(QRect rt, QRectF rng);
 
-	vector<Selection> selection() const { return m_selection; }
+	std::vector<Selection> selection() const { return m_selection; }
 
 	std::vector<QPointF> SelectedPoints() const;
 
@@ -275,7 +274,7 @@ public:
 	bool		m_bdragging;
 	bool		m_bregionSelect;
 
-	vector<Selection>	m_selection;
+	std::vector<Selection>	m_selection;
 
 private:
 	QAction*	m_pZoomToFit;

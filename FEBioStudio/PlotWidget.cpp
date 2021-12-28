@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <QRgb>
 #include <QDropEvent>
 #include <QtCore/QMimeData>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 class CDlgPlotWidgetProps_Ui

@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include "FEShellPatch.h"
 #include "FEAdvancingFrontMesher2D.h"
+using namespace std;
 
 //=============================================================================
 // GPatch

@@ -31,9 +31,6 @@ SOFTWARE.*/
 #include "LoadCurve.h"
 #include <vector>
 #include <string.h>
-//using namespace std;
-
-using std::vector;
 
 // parameter types
 // NOTE: Do not change the order of these parameters!!
@@ -465,7 +462,7 @@ public:
 
 
 protected:
-	vector<Param>	m_Param;
+	std::vector<Param>	m_Param;
 };
 
 //-----------------------------------------------------------------------------

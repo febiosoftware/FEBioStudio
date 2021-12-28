@@ -134,7 +134,7 @@ void GSolidArc::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<6; ++i)
 	{
 		edge.resize(4);

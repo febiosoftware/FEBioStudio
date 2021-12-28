@@ -51,8 +51,8 @@ bool FEPLYExport::Write(const char* szfile)
 	GModel& mdl = m_prj.GetFSModel().GetModel();
 
 	// the vertex and face list
-	vector<vec3d> vertices; vertices.reserve(100000);
-	vector<PLY_FACE> faces; faces.reserve(100000);
+	std::vector<vec3d> vertices; vertices.reserve(100000);
+	std::vector<PLY_FACE> faces; faces.reserve(100000);
 	
 	int objs = mdl.Objects();
 	for (int i = 0; i < objs; ++i)

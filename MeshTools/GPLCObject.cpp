@@ -174,8 +174,8 @@ void GPLCObject::Create(GSketch &s)
 		if (pe==0) break;
 
 		// construct a face by finding a closed loop
-		vector<int> node;
-		vector<pair<int,int> > edge;
+		std::vector<int> node;
+		std::vector< std::pair<int,int> > edge;
 		node.clear();
 		edge.clear();
 		while (pe)

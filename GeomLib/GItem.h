@@ -204,8 +204,8 @@ public:
 public:
 	int				m_ntype;	// face type
 	int				m_nPID[3];	// part ID's
-	vector<int>		m_node;		// node ID's
-	vector<EDGE>	m_edge;		// edges defining face
+	std::vector<int>	m_node;		// node ID's
+	std::vector<EDGE>	m_edge;		// edges defining face
 };
 
 //-----------------------------------------------------------------------------

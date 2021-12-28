@@ -210,7 +210,7 @@ bool COMSOLimport::ReadElementType(char* szline)
 		import_this_type = false;
 	}
 
-	vector< list<ELEMENT>::iterator > newElems;
+	std::vector< std::list<ELEMENT>::iterator > newElems;
 
 	for (int i=0;i<newelems;++i){
 		if (!NextGoodLine(szline)) 
@@ -373,7 +373,7 @@ bool COMSOLimport::BuildMesh(FSModel& fem)
 	}
     
 	int nsize = imax - imin + 1;
-	vector<int> NLT; NLT.resize(nsize);
+	std::vector<int> NLT; NLT.resize(nsize);
 	for (i=0; i<nsize; ++i) NLT[i] = -1;
     
 	in = m_Node.begin();

@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FSCore/FSCore.h>
+using namespace std;
 
 class UIDlgAddPhysicsItem
 {

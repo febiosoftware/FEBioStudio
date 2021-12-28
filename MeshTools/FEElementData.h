@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include "FEItemList.h"
 #include <string>
 #include <vector>
-//using namespace std;
 
 class FSPart;
 class GPartList;
@@ -70,9 +69,9 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	vector<double>	m_data;		//!< data values
-	FSPart*			m_part;		//!< the part to which the data applies
-	double			m_scale;	//!< scale factor
+	std::vector<double>	m_data;		//!< data values
+	FSPart*				m_part;		//!< the part to which the data applies
+	double				m_scale;	//!< scale factor
 };
 
 //-----------------------------------------------------------------------------
@@ -85,7 +84,7 @@ public:
 	FEPartData& operator = (const FEPartData& d);
 
 	// create a data field
-	bool Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR, FEMeshData::DATA_FORMAT dataFmt = FEMeshData::DATA_ITEM);
+	bool Create(const std::vector<int>& partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR, FEMeshData::DATA_FORMAT dataFmt = FEMeshData::DATA_ITEM);
 
 	// size of data field
 	int Size() const;
@@ -111,9 +110,9 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	vector<double>		m_data;		//!< data values
-	int					m_maxElemItems;	
-	vector<int>			m_part;		//!< the part to which the data applies
+	std::vector<double>		m_data;		//!< data values
+	int						m_maxElemItems;	
+	std::vector<int>		m_part;		//!< the part to which the data applies
 };
 
 inline void FEPartData::SetValue(int i, int j, double v)

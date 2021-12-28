@@ -80,7 +80,7 @@ public:
 		vec3d			m_pos;
 		quatd			m_rot;
 
-		vector<PlotObjectData*>	m_data;
+		std::vector<PlotObjectData*>	m_data;
 	};
 
 	class PointObject : public PlotObject
@@ -176,7 +176,7 @@ public:
 	void AddDataField(ModelDataField* pd, const std::string& name = "");
 
 	//! add a new data field constrained to a set
-	void AddDataField(ModelDataField* pd, vector<int>& L);
+	void AddDataField(ModelDataField* pd, std::vector<int>& L);
 
 	//! delete a data field
 	void DeleteDataField(ModelDataField* pd);
@@ -289,24 +289,24 @@ protected:
 	MetaData	m_meta;
 
 	// --- M E S H ---
-	vector<FERefState*>		m_RefState;	// reference state for meshes
-	vector<FEPostMesh*>		m_mesh;		// the list of meshes
+	std::vector<FERefState*>		m_RefState;	// reference state for meshes
+	std::vector<FEPostMesh*>		m_mesh;		// the list of meshes
 	BOX						m_bbox;		// bounding box of mesh
 
 	// --- M A T E R I A L S ---
-	vector<Material>	m_Mat;		// array of materials
+	std::vector<Material>	m_Mat;		// array of materials
 
 	// --- O B J E C T S ---
-	vector<PointObject*>	m_Points;
-	vector<LineObject *>	m_Lines;
+	std::vector<PointObject*>	m_Points;
+	std::vector<LineObject *>	m_Lines;
 
 	// --- S T A T E ---
-	vector<FEState*>	m_State;	// array of pointers to FE-state structures
+	std::vector<FEState*>	m_State;	// array of pointers to FE-state structures
 	FEDataManager*		m_pDM;		// the Data Manager
 	int					m_ndisp;	// vector field defining the displacement
 
 	// dependants
-	vector<FEModelDependant*>	m_Dependants;
+	std::vector<FEModelDependant*>	m_Dependants;
 
 	static FEPostModel*	m_pThis;
 };

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/MeshTools.h>
 using namespace Post;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // extract a component from a vector

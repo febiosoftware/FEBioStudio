@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEShellToSolid.h"
+using namespace std;
+
 
 FEShellToSolid::FEShellToSolid() : FEModifier("Shell To Solid")
 {

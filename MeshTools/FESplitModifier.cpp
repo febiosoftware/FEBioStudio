@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FESplitModifier.h"
 #include <MeshLib/FENodeElementList.h>
 #include <MeshLib/FEFaceEdgeList.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FEQuadSplitModifier::FEQuadSplitModifier() : FEModifier("Split")

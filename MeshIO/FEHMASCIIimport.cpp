@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEHMASCIIimport.h"
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
+using namespace std;
 
 FEHMASCIIimport::FEHMASCIIimport(FSProject& prj) : FSFileImport(prj)
 {

@@ -83,7 +83,7 @@ private:
 	int					m_maxSize;		// max number of properties (0 for no limit)
 	unsigned int		m_flag;			// property flags
 	FSCoreBase*			m_parent;		// parent object this class is a property off
-	vector<FSCoreBase*>	m_cmp;			// list of materials
+	std::vector<FSCoreBase*>	m_cmp;			// list of materials
 };
 
 //-----------------------------------------------------------------------------
@@ -136,5 +136,5 @@ public:
 
 private:
 	int		m_classId;				//!< The (FEBio) class ID
-	vector<FSProperty*>	m_prop;		//!< list of properties
+	std::vector<FSProperty*>	m_prop;		//!< list of properties
 };

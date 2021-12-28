@@ -27,9 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
-
 #include <vector>
-//using namespace std;
 
 class FEBYUimport :	public FSFileImport
 {
@@ -47,5 +45,5 @@ public:
 	bool Load(const char* szfile);
 
 protected:
-	vector<PART>	m_Part;
+	std::vector<PART>	m_Part;
 };

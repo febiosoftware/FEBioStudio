@@ -46,18 +46,18 @@ public:
 	void UpdateMeshData();
 
 	int FindFace(const int* n, int nn, int noff = 0);
-	int FindFace(const vector<int>& n, int noff = 0);
+	int FindFace(const std::vector<int>& n, int noff = 0);
 
 	FSElement* FindElementFromID(int nid);
 
 private:
-	FSMesh			m_mesh;
-	vector<int>		m_iFace;
-	vector<int*>	m_pFace;
-	vector<int>		m_nFace;
+	FSMesh				m_mesh;
+	std::vector<int>	m_iFace;
+	std::vector<int*>	m_pFace;
+	std::vector<int>	m_nFace;
 
-	vector<FSElement*>		m_elem;
-	int						m_maxID, m_minID;
+	std::vector<FSElement*>		m_elem;
+	int							m_maxID, m_minID;
 };
 
 //-----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ public:
 	public:
 		NodeSet();
 		NodeSet(const NodeSet& nodeSet);
-		NodeSet(const std::string& name, const vector<int>& node);
+		NodeSet(const std::string& name, const std::vector<int>& node);
 		void operator = (const NodeSet& nodeSet);
 
 		const std::string& name() const { return m_name; }
@@ -91,8 +91,8 @@ public:
 		int Nodes() const { return (int) m_node.size(); }
 		int Node(int n) const { return m_node[n]; }
 
-		const vector<int>& nodeList() const { return m_node; }
-		vector<int>& nodeList() { return m_node; }
+		const std::vector<int>& nodeList() const { return m_node; }
+		std::vector<int>& nodeList() { return m_node; }
 
 	private:
 		std::string			m_name;
@@ -111,9 +111,9 @@ public:
 
 		int faces() const { return (int) m_face.size(); }
 
-		const vector<int>& face(int i) const { return m_face[i]; }
+		const std::vector<int>& face(int i) const { return m_face[i]; }
 
-		void addFace(const vector<int>& node) { m_face.push_back(node); }
+		void addFace(const std::vector<int>& node) { m_face.push_back(node); }
 
 		void clear() { m_face.clear(); }
 
@@ -128,7 +128,7 @@ public:
 	{
 	public:
 		ElementSet();
-		ElementSet(const string& name, const vector<int>& elem);
+		ElementSet(const std::string& name, const std::vector<int>& elem);
 		ElementSet(const ElementSet& s);
 		void operator = (const ElementSet& s);
 
@@ -136,7 +136,7 @@ public:
 
 		int elements() const { return (int)m_elem.size(); }
 		int element(int i) const { return m_elem[i]; }
-		const vector<int>& elemList() const { return m_elem; }
+		const std::vector<int>& elemList() const { return m_elem; }
 
 		void clear() { m_elem.clear(); }
 
@@ -169,7 +169,7 @@ public:
 
 		int ElementID(int n) const { return m_elem[n]; }
 
-		vector<int> GetElementIDList() const { return m_elem; }
+		std::vector<int> GetElementIDList() const { return m_elem; }
 
 	public:
 		bool		m_bshellNodalNormals;
@@ -179,9 +179,9 @@ public:
 	private:
 		int			m_matID;	// zero-based material index
 
-		std::string m_name;	
-		Part*		m_part;
-		vector<int>	m_elem;		// list of (local) element IDs that belong to this domain
+		std::string			m_name;	
+		Part*				m_part;
+		std::vector<int>	m_elem;		// list of (local) element IDs that belong to this domain
 	};
 
 	// class for storing discrete element sets
@@ -295,12 +295,12 @@ public:
 		string					m_name;
 
 	private:
-		vector<NodeSet>			m_nset;
-		vector<Surface>			m_surf;
-		vector<ElementSet>		m_eset;
-		vector<Domain>			m_dom;
-		vector<DiscreteSet>		m_des;
-		vector<SurfacePair>		m_spr;
+		std::vector<NodeSet>		m_nset;
+		std::vector<Surface>		m_surf;
+		std::vector<ElementSet>		m_eset;
+		std::vector<Domain>			m_dom;
+		std::vector<DiscreteSet>	m_des;
+		std::vector<SurfacePair>	m_spr;
 
 	private: // don't allow copying
 		Part(const Part& p){}
@@ -474,14 +474,14 @@ public:
 	bool	m_shellNodalNormals;
 
 private:
-	FSModel&				m_fem;
-	vector<GMaterial*>		m_mat;
-	vector<Part*>			m_part;
-	vector<PartInstance*>	m_Inst;
-	vector<PARAM_CURVE> 	m_PC;
-	vector<LoadCurve>		m_LC;
-	vector<PlotVariable>	m_plot;
-	vector<LogVariable>		m_log;
+	FSModel&					m_fem;
+	std::vector<GMaterial*>		m_mat;
+	std::vector<Part*>			m_part;
+	std::vector<PartInstance*>	m_Inst;
+	std::vector<PARAM_CURVE> 	m_PC;
+	std::vector<LoadCurve>		m_LC;
+	std::vector<PlotVariable>	m_plot;
+	std::vector<LogVariable>	m_log;
 };
 
 class FEBioFileImport;

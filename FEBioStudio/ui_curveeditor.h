@@ -76,7 +76,7 @@ public:
 
 	QPointF	m_dragPt;
 	int		m_dragIndex;
-	vector<QPointF>	m_p0;	// used by point dragging
+	std::vector<QPointF>	m_p0;	// used by point dragging
 
 public:
 	void setupUi(QMainWindow* wnd)

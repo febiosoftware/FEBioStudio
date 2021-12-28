@@ -387,7 +387,7 @@ int GBaseObject::AddArcSection(int n1, int n2, int n3)
 // Build a facet from a wire, that is an edge list. It is assumed that the edges
 // are in the proper order, that is that each edge connects to its left and right
 // neigbor and that the wire is closed.
-void GBaseObject::AddFacet(const vector<int>& edge, int ntype)
+void GBaseObject::AddFacet(const std::vector<int>& edge, int ntype)
 {
 	// allocate a new face
 	GFace* f = new GFace(this);
@@ -406,7 +406,7 @@ void GBaseObject::AddFacet(const vector<int>& edge, int ntype)
 	assert(NE >= 3);
 
 	// node list and winding list
-	vector<int> node; vector<int> ew;
+	std::vector<int> node; std::vector<int> ew;
 
 	// figure out the orientation of the first edge
 	// we can decided that by looking which node connects to the second edge
@@ -468,7 +468,7 @@ void GBaseObject::AddFacet(const vector<int>& edge, int ntype)
 }
 
 //-----------------------------------------------------------------------------
-void GBaseObject::AddFacet(const vector<int>& node, const vector<pair<int, int> >& edge, int ntype)
+void GBaseObject::AddFacet(const std::vector<int>& node, const std::vector<pair<int, int> >& edge, int ntype)
 {
 	GFace* f = new GFace(this);
 	f->SetID(GFace::CreateUniqueID());

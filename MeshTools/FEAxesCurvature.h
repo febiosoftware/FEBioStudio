@@ -60,30 +60,30 @@ protected:
 protected:
     
     // store list of selected faces in fdata
-    vector<FSFace> fdata;
+    std::vector<FSFace> fdata;
     
     // element corresponding to face
-    vector<int> fel;
+    std::vector<int> fel;
     
     // element corresponding to part (not including those of face
-    vector<int> pel;
+    std::vector<int> pel;
     
     // map neighboring faces to face
-    vector<vector<int>> nface;
+    std::vector<std::vector<int>> nface;
     
     // map nodes to face
-    vector<vector<int>> eln;
+    std::vector<std::vector<int>> eln;
     
     // map nodes of surrounding faces to each face. At least 10
-    vector<vector<int>> ncurve;
+    std::vector<std::vector<int>> ncurve;
     
     // centroid of faces
-    vector<vec3d> ctr;
+    std::vector<vec3d> ctr;
     
     //All parts of selected face
-    vector<int> fpart;
+    std::vector<int> fpart;
     
     //For now used only for applying axes
-    vector<mat3d> eigenvecFace;
-    vector<vec3d> eigenvalFace;
+    std::vector<mat3d> eigenvecFace;
+    std::vector<vec3d> eigenvalFace;
 };

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/MeshTools.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 GWrapModifier::GWrapModifier()

@@ -521,7 +521,7 @@ FSMesh* FEQuartDogBone::BuildMeshLegacy()
 	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// get all the nodes from block 1
-	vector<int> node;
+	std::vector<int> node;
 	pm->FindNodesFromPart(1, node);
 	
 	// project these nodes onto the cylinder

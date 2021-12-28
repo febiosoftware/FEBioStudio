@@ -91,7 +91,7 @@ void GCylinder::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 
 	for (i=0; i<6; ++i)
 	{
@@ -205,7 +205,7 @@ void GCylinder2::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 
 	for (i=0; i<6; ++i)
 	{

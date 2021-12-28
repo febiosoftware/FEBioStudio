@@ -347,8 +347,8 @@ FSMesh* FETorus::BuildMeshLegacy()
 		}
 
 	// create node index loop
-	vector<int>	Nd; Nd.resize(4*nd);
-	vector<vec3d> Nr; Nr.resize(4*nd);
+	std::vector<int>	Nd; Nd.resize(4*nd);
+	std::vector<vec3d> Nr; Nr.resize(4*nd);
 	for (i=0; i<nd; ++i) Nd[i     ] = nd - i - 1;
 	for (i=0; i<nd; ++i) Nd[i+nd  ] = (i+1)*(nd+1);
 	for (i=0; i<nd; ++i) Nd[i+nd*2] = i + nd*(nd+1)+1;

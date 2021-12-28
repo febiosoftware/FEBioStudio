@@ -62,7 +62,7 @@ private:
 	bool			m_bactive;					// active flag
 	bool			m_bshow;					// show flag
 	unsigned int	m_domainType;				// domain type for variable
-	vector<FEItemListBuilder*>		m_domains;	// domains 
+	std::vector<FEItemListBuilder*>		m_domains;	// domains 
 };
 
 //-----------------------------------------------------------------------------
@@ -93,5 +93,5 @@ public:
 
 private:
 	FSProject&	m_prj;
-	vector<CPlotVariable>	m_plot;		// plot file variables
+	std::vector<CPlotVariable>	m_plot;		// plot file variables
 };

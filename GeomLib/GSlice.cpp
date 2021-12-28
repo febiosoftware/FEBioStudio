@@ -113,7 +113,7 @@ void GSlice::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (int i=0; i<5; ++i)
 	{
 		if ((i==3)||(i==4))

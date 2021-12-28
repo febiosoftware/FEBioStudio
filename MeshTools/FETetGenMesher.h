@@ -64,7 +64,7 @@ public:
 		int Nodes() { return (int) node.size(); }
 
 	public:
-		vector<int>	node;	// node list
+		std::vector<int>	node;	// node list
 		int			nid;	// edge ID
 		int			ndiv;	// number of divisions
 		bool		fixedDiv;	// ndiv is fixed and cannot be changed.
@@ -80,8 +80,8 @@ public:
 		int Nodes() { return (int) node.size(); }
 
 	public:
-		vector<int>	node;
-		int			nid;
+		std::vector<int>	node;
+		int					nid;
 	};
 
 public:
@@ -114,9 +114,9 @@ protected:
 	bool BuildFaceRevolveWedge(GFace& fs);
 
 protected:
-	vector<NODE>	m_Node;
-	vector<EDGE>	m_Edge;
-	vector<FACE>	m_Face;
+	std::vector<NODE>	m_Node;
+	std::vector<EDGE>	m_Edge;
+	std::vector<FACE>	m_Face;
 
 	GObject*	m_po;	//!< object we are building a PLC for
 	double		m_h;	//!< element size

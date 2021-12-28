@@ -55,7 +55,7 @@ protected:
 
 protected:
 	FSMesh*				m_pm;
-	vector<DATA>		m_Data;
+	std::vector<DATA>	m_Data;
 };
 
 //-----------------------------------------------------------------------------

@@ -36,5 +36,5 @@ public:
     FSMesh* Apply(FSGroup* pg);
     
 protected:
-    void CreateShells(FSMesh* pm, vector<int>& faceList);
+    void CreateShells(FSMesh* pm, std::vector<int>& faceList);
 };

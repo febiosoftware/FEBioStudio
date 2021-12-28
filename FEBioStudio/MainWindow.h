@@ -562,7 +562,7 @@ public slots:
 	void on_glview_pointPicked(const vec3d& r);
 	void on_glview_selectionChanged();
 
-	void onExportMaterials(const vector<GMaterial*>& matList);
+	void onExportMaterials(const std::vector<GMaterial*>& matList);
 	void onExportAllMaterials();
 	void onImportMaterials();
 	void onImportMaterialsFromModel(CModelDocument* src);
@@ -635,7 +635,7 @@ private:
 	CDocManager*		m_DocManager;
 
 	CFileThread*		m_fileThread;
-	vector<QueuedFile>	m_fileQueue;
+	std::vector<QueuedFile>	m_fileQueue;
 
 	static CMainWindow*		m_mainWnd;
 };

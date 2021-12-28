@@ -55,9 +55,9 @@ protected:
 	void Build(FSSurfaceMesh* pm);
 
 protected:
-	vector<int>	m_val;		// Valence list
-	vector<int>	m_off;		// Offset into node array
-	vector<int>	m_node;		// node list
+	std::vector<int>	m_val;		// Valence list
+	std::vector<int>	m_off;		// Offset into node array
+	std::vector<int>	m_node;		// node list
 
-	vector<double>	m_data;
+	std::vector<double>	m_data;
 };
