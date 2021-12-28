@@ -138,9 +138,3 @@ private:
 	int		m_classId;				//!< The (FEBio) class ID
 	vector<FSProperty*>	m_prop;		//!< list of properties
 };
-
-class FSGenericClass : public FSCoreBase
-{
-public:
-	FSGenericClass() {}
-};

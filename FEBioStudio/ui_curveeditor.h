@@ -39,23 +39,6 @@ SOFTWARE.*/
 #include <QSplitter>
 #include "MainWindow.h"
 
-class CCurvePlotWidget : public CPlotWidget
-{
-public:
-	CCurvePlotWidget(QWidget* parent = nullptr) : CPlotWidget(parent) 
-	{ 
-		m_lc = nullptr; 
-		setLineSmoothing(true);
-	}
-
-	void DrawPlotData(QPainter& p, CPlotData& data) override;
-
-	void SetLoadCurve(LoadCurve* lc) { m_lc = lc; }
-
-private:
-	LoadCurve*	m_lc;
-};
-
 class CCurveEditorItem : public QTreeWidgetItem
 {
 public:

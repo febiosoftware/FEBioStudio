@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
+#include <FEMLib/FELoadController.h>
 #include <QGridLayout>
 #include <QComboBox>
 #include <QCheckBox>
@@ -62,6 +63,7 @@ SOFTWARE.*/
 #include "Commands.h"
 #include "MaterialPropsView.h"
 #include "FEClassPropsView.h"
+#include "PlotWidget.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -283,6 +285,7 @@ public:
 	::CPropertyListForm* form;
 	CMaterialPropsView*	mat;
 	FEClassPropsView* fec;
+	CCurvePlotWidget* plt;
 
 	CToolBox* tool;
 	CObjectPropsPanel*	obj;
@@ -306,6 +309,7 @@ public:
 		form  = new ::CPropertyListForm; form->setObjectName("form");
 		mat   = new CMaterialPropsView; mat->setObjectName("mat");
 		fec   = new FEClassPropsView; fec->setObjectName("fec");
+		plt   = new CCurvePlotWidget; plt->setObjectName("plt");
 
 		obj = new CObjectPropsPanel;
 		obj->setObjectName("object");
@@ -321,6 +325,7 @@ public:
 		propStack->addWidget(form);
 		propStack->addWidget(mat);
 		propStack->addWidget(fec);
+		propStack->addWidget(plt);
 
 		sel1 = new ::CSelectionBox;
 		sel1->setObjectName("select1");
@@ -446,6 +451,35 @@ public:
 		form->setPropertyList(0);
 		mat->SetMaterial(nullptr);
 		fec->SetFEClass(pc, fem);
+	}
+
+	void showPlotWidget(LoadCurve* plc)
+	{
+		props->Update(0);
+		form->setPropertyList(0);
+		fec->SetFEClass(nullptr, nullptr);
+		propStack->setCurrentIndex(4);
+		
+		plt->clear();
+
+		plt->showLegend(false);
+
+		if (plc)
+		{
+			plt->SetLoadCurve(plc);
+			CPlotData* data = new CPlotData;
+			for (int i = 0; i < plc->Size(); ++i)
+			{
+				LOADPOINT pt = plc->Item(i);
+				data->addPoint(pt.time, pt.load);
+			}
+			plt->addPlotData(data);
+
+			data->setLineColor(QColor(0, 0, 255));
+			data->setFillColor(QColor(0, 0, 255));
+			data->setLineWidth(2);
+			data->setMarkerSize(5);
+		}
 	}
 
 	void showImagePanel(bool b, Post::CImageModel* img = nullptr)
@@ -677,6 +711,17 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			GMaterial* mo = dynamic_cast<GMaterial*>(po);
 			ui->setMaterialData(mo);
 			ui->showPropsPanel(true);
+		}
+		else if (dynamic_cast<FSLoadController*>(po))
+		{
+			FSLoadController* plc = dynamic_cast<FSLoadController*>(po);
+			if (plc)
+				ui->showPlotWidget(plc->GetLoadCurve());
+			else
+			{
+				ui->setFEClassData(plc, plc->GetFSModel());
+				ui->showPropsPanel(true);
+			}
 		}
 		else if (dynamic_cast<FSModelComponent*>(po))
 		{

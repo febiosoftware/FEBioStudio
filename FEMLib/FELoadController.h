@@ -13,8 +13,14 @@ public:
 
 	int Type() const;
 
+	void SetLoadCurve(LoadCurve* plc);
+
+	LoadCurve* GetLoadCurve();
+
 private:
 	int	m_ntype;
+
+	LoadCurve* m_plc;
 };
 
 class FEBioLoadController : public FSLoadController

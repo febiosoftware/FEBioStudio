@@ -28,3 +28,9 @@ protected:
 
 void SaveClassMetaData(FSModelComponent* pc, OArchive& ar);
 void LoadClassMetaData(FSModelComponent* pc, IArchive& ar);
+
+class FSGenericClass : public FSModelComponent
+{
+public:
+	FSGenericClass() {}
+};
