@@ -18,8 +18,6 @@ class FSConstBodyForce : public FSBodyLoad
 public:
 	enum { FORCE_X, FORCE_Y, FORCE_Z };
 
-	LoadCurve* GetLoadCurve(int n);
-
 	double GetLoad(int n);
 
 	void SetLoad(int n, double v);
@@ -35,8 +33,6 @@ class FSNonConstBodyForce : public FSBodyLoad
 public:
 	enum { FORCE_X, FORCE_Y, FORCE_Z };
 
-	LoadCurve* GetLoadCurve(int n);
-
 public:
 	FSNonConstBodyForce(FSModel* ps, int nstep = 0);
 };
@@ -50,8 +46,6 @@ public:
 
 public:
 	FSHeatSource(FSModel* ps, int nstep = 0);
-
-	LoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
 
 	double GetLoad() { return GetFloatValue(LOAD); }
 	void SetLoad(double v) { SetFloatValue(LOAD, v); }
@@ -78,8 +72,6 @@ public:
 public:
     FSCentrifugalBodyForce(FSModel* ps, int nstep = 0);
     
-	LoadCurve* GetLoadCurve() { return GetParamLC(ANGSPD); }
-    
     double GetLoad() { return GetFloatValue(ANGSPD); }
     void SetLoad(double v) { SetFloatValue(ANGSPD, v); }
 };
@@ -93,8 +85,6 @@ public:
 
 public:
 	FSMassDamping(FSModel* ps, int nstep = 0);
-
-	LoadCurve* GetLoadCurve() { return GetParamLC(C); }
 
 	double GetLoad() { return GetFloatValue(C); }
 	void SetLoad(double v) { SetFloatValue(C, v); }

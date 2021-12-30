@@ -103,8 +103,6 @@ public:
 	FSRigidWallInterface(FSModel* ps, int nstep = 0);
 	~FSRigidWallInterface(){}
 
-	LoadCurve* GetLoadCurve() { return GetParamLC(OFFSET); }
-
 	void GetPlaneEquation(double a[4]);
 };
 
@@ -119,8 +117,6 @@ public:
 public:
 	FSRigidSphereInterface(FSModel* ps, int nstep = 0);
 	~FSRigidSphereInterface(){}
-
-	LoadCurve* GetLoadCurve(int i);
 
 	double Radius();
 	vec3d Center();

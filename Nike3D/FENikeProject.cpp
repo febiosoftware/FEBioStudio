@@ -433,7 +433,7 @@ bool FENikeProject::BuildMaterials(FSProject& prj)
 						case FE_RIGID_DISPLACEMENT:
 							{
 								FSRigidDisplacement& rf = dynamic_cast<FSRigidDisplacement&>(rc);
-								if (rf.GetDOF() >= 0) mat.m[2][rf.GetDOF()] = AddLoadCurve(*rf.GetLoadCurve());
+								if (rf.GetDOF() >= 0) mat.m[2][rf.GetDOF()] = AddLoadCurve(*rf.GetLoadCurve(FSRigidDisplacement::VALUE));
 							}
 							break;
 						}
@@ -1030,7 +1030,7 @@ bool FENikeProject::BuildNodalLoads(FSProject& prj)
 		FSNodalDOFLoad* pbc = dynamic_cast<FSNodalDOFLoad*>(s.Load(i));
 		if (pbc)
 		{
-			LoadCurve& lc = *pbc->GetLoadCurve();
+			LoadCurve& lc = *fem.GetParamCurve(pbc->GetParam(FSNodalDOFLoad::LOAD));
 			int nlc = AddLoadCurve(lc);
 			int bc = pbc->GetDOF() + 1;
 			FEItemListBuilder* pitem = pbc->GetItemList();
@@ -1052,7 +1052,7 @@ bool FENikeProject::BuildNodalLoads(FSProject& prj)
 		FSSurfaceTraction* ptc = dynamic_cast<FSSurfaceTraction*>(s.Load(i));
 		if (ptc)
 		{
-			LoadCurve& lc = *ptc->GetLoadCurve();
+			LoadCurve& lc = *ptc->GetLoadCurve(FSSurfaceTraction::LOAD);
 			int nlc = AddLoadCurve(lc);
 
 			FEItemListBuilder* pitem = ptc->GetItemList();
@@ -1125,7 +1125,7 @@ bool FENikeProject::BuildPressureLoads(FSProject &prj)
 		FSPressureLoad* ppl = dynamic_cast<FSPressureLoad*>(s.Load(i));
 		if (ppl)
 		{
-			LoadCurve& lc = *ppl->GetLoadCurve();
+			LoadCurve& lc = *ppl->GetLoadCurve(FSPressureLoad::LOAD);
 			int nlc = AddLoadCurve(lc);
 			
 			PRESSURE_LOAD pl;
@@ -1175,7 +1175,7 @@ bool FENikeProject::BuildDisplacements(FSProject &prj)
 		FSPrescribedDisplacement* pbc = dynamic_cast<FSPrescribedDisplacement*>(s.BC(i));
 		if (pbc)
 		{
-			LoadCurve& lc = *pbc->GetLoadCurve();
+			LoadCurve& lc = *fem.GetParamCurve(pbc->GetParam(FSPrescribedDOF::SCALE));
 			int nlc = AddLoadCurve(lc);
 			int bc = pbc->GetDOF()+1;
 

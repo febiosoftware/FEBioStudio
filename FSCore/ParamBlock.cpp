@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "ParamBlock.h"
+#include "LoadCurve.h"
 #include <assert.h>
 
 //-----------------------------------------------------------------------------
@@ -35,7 +36,7 @@ Param::Param()
 	m_nID = -1; 
 	m_ntype = Param_UNDEF; 
 	m_pd = 0;
-	m_plc = 0; 
+	m_lc = -1; 
 	m_szbrev = m_szname = m_szenum = 0; 
 	m_szunit = 0; 
 	m_nstate = Param_ALLFLAGS; 
@@ -56,8 +57,6 @@ Param::Param()
 Param::~Param()
 { 
 	clear(); 
-	if (m_plc) delete m_plc;
-	m_plc = 0;
 	if (m_bcopy) delete [] m_szenum;
 }
 
@@ -191,31 +190,15 @@ void Param::SetParamType(Param_Type t)
 }
 
 //-----------------------------------------------------------------------------
-void Param::SetLoadCurve()
+void Param::SetLoadCurveID(int lcid)
 {
-	if (m_plc == 0) m_plc = new LoadCurve;
+	m_lc = lcid;
 }
 
 //-----------------------------------------------------------------------------
-void Param::SetLoadCurve(const LoadCurve& lc)
+int Param::GetLoadCurveID() const
 {
-	if (m_plc) delete m_plc;
-	m_plc = new LoadCurve(lc);
-}
-
-//-----------------------------------------------------------------------------
-void Param::DeleteLoadCurve()
-{
-	if (m_plc) delete m_plc;
-	m_plc = nullptr;
-}
-
-//-----------------------------------------------------------------------------
-LoadCurve* Param::RemoveLoadCurve()
-{
-	LoadCurve* plc = m_plc;
-	m_plc = nullptr;
-	return plc;
+	return m_lc;
 }
 
 //-----------------------------------------------------------------------------
@@ -263,6 +246,8 @@ Param::Param(const Param& p)
     m_nindx = p.m_nindx;
 	m_flags = p.m_flags;
 
+	m_lc = p.m_lc;
+
 	m_bcopy = false;
 	if (p.m_bcopy) CopyEnumNames(p.m_szenum);
 	else m_szenum = p.m_szenum;
@@ -293,7 +278,6 @@ Param::Param(const Param& p)
 	default:
 		assert(false);
 	}
-	if (p.m_plc) m_plc = new LoadCurve(*p.m_plc); else m_plc = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -314,6 +298,7 @@ Param& Param::operator = (const Param& p)
 //	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
 //	m_flags = p.m_flags;
+	m_lc = p.m_lc;
 
 	switch (m_ntype)
 	{
@@ -333,9 +318,6 @@ Param& Param::operator = (const Param& p)
 	default:
 		assert(false);
 	}
-	if (m_plc) delete m_plc;
-	m_plc = 0;
-	if (p.m_plc) m_plc = new LoadCurve(*p.m_plc);
 
 	return (*this);
 }
@@ -355,7 +337,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -379,7 +361,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -403,7 +385,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -427,7 +409,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -451,7 +433,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -475,7 +457,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -500,7 +482,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -524,7 +506,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -548,7 +530,7 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -571,7 +553,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -594,7 +576,7 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -616,7 +598,7 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -639,7 +621,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -663,7 +645,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
     m_nindx = idx;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -687,7 +669,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
     m_nindx = idx;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -711,7 +693,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
     m_nindx = idx;
 	m_szunit = szunit;
 	m_nstate = Param_ALLFLAGS;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -788,6 +770,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	ar.WriteChunk(CID_PARAM_TYPE, ntype);
 	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
 	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());
+	ar.WriteChunk(CID_PARAM_LC, p.GetLoadCurveID());
 
 	switch (ntype)
 	{
@@ -807,19 +790,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	default:
 		assert(false);
 	}
-
-	// store the load curve if there is one
-	LoadCurve* plc = p.GetLoadCurve();
-	if (plc)
-	{
-		ar.BeginChunk(CID_LOAD_CURVE);
-		{
-			plc->Save(ar);
-		}
-		ar.EndChunk();
-	}
 }
-
 
 //-----------------------------------------------------------------------------
 void ParamContainer::Load(IArchive &ar)
@@ -844,6 +815,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 	bool b;
 	Param p;
 	int ntype = -1;
+	int lcid = -1;
 	string paramName;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -853,6 +825,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 		case CID_PARAM_ID: ar.read(npid); break;
 		case CID_PARAM_CHECKED: ar.read(b); p.SetChecked(b); break;
 		case CID_PARAM_NAME: ar.read(paramName); break;
+		case CID_PARAM_LC: ar.read(lcid); p.SetLoadCurveID(lcid); break;
 		case CID_PARAM_TYPE: 
 			ar.read(ntype); 
 			switch (ntype)
@@ -894,7 +867,9 @@ void ParamContainer::LoadParam(IArchive& ar)
 					// This is obsolete but remains for backward compatibility.
 					LoadCurve lc;
 					lc.Load(ar);
-					if (lc.Size() > 0) p.SetLoadCurve(lc);
+
+					// TODO: Assign load curve to model
+//					if (lc.Size() > 0) p.SetLoadCurve(lc);
 				}
 				break;
 			default:
@@ -906,11 +881,13 @@ void ParamContainer::LoadParam(IArchive& ar)
 				LoadCurve lc;
 				lc.Load(ar);
 
-				// Old versions (<2.0) defined load curves for all float parameters,
+				// Old versions (< PRV 2.0) defined load curves for all float parameters,
 				// although initially these load curves did not have points assigned yet.
 				// Since 2.0 load curves are only assigned to parameters that are time dependant
 				// so we have to add this check to prevent all these load curves from being read in.
-				if (lc.Size() > 0) p.SetLoadCurve(lc);
+
+				// TODO: In FBS2, load controllers are stored on the FSModel. Assign load curve to model
+//				if (lc.Size() > 0) p.SetLoadCurve(lc);
 			}
 			break;
 		}

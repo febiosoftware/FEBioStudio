@@ -166,7 +166,7 @@ FSRigidDisplacement::FSRigidDisplacement(FSModel* fem, int nstep) : FSRigidPresc
 	SetTypeString("Rigid displacement/rotation");
 
 	AddIntParam(0, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
-	AddScienceParam(0.0, UNIT_LENGTH, "value", "value")->SetLoadCurve();
+	AddScienceParam(0.0, UNIT_LENGTH, "value", "value");
 	AddBoolParam(false, "relative");
 }
 
@@ -175,7 +175,7 @@ FSRigidDisplacement::FSRigidDisplacement(int bc, int matid, double v, int nstep)
 	SetTypeString("Rigid displacement/rotation");
 
 	AddIntParam(bc, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
-	AddScienceParam(v, UNIT_LENGTH, "value", "value")->SetLoadCurve();
+	AddScienceParam(v, UNIT_LENGTH, "value", "value");
 	AddBoolParam(false, "relative");
 
 	SetMaterialID(matid);
@@ -191,7 +191,7 @@ FSRigidForce::FSRigidForce(FSModel* fem, int nstep) : FSRigidPrescribed(FE_RIGID
 	SetTypeString("Rigid force");
 
 	AddIntParam(0, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
-	AddScienceParam(0.0, UNIT_FORCE, "value", "value")->SetLoadCurve();
+	AddScienceParam(0.0, UNIT_FORCE, "value", "value");
 	AddIntParam(0, "load_type", "load type")->SetEnumNames("load\0follow\0target\0");
 }
 
@@ -200,7 +200,7 @@ FSRigidForce::FSRigidForce(int bc, int matid, double v, int nstep) : FSRigidPres
 	SetTypeString("Rigid force");
 
 	AddIntParam(bc, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
-	AddScienceParam(v, UNIT_FORCE, "value", "value")->SetLoadCurve();
+	AddScienceParam(v, UNIT_FORCE, "value", "value");
 	AddIntParam(0, "load_type", "load type")->SetEnumNames("load\0follow\0target\0");
 
 	SetMaterialID(matid);
@@ -303,7 +303,7 @@ vector<FSRigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FSRigidC
 					rp->SetMaterialID(rc->m_mid);
 					rp->SetDOF(i);
 					rp->SetValue(rc->m_val[i]);
-					rp->SetLoadCurve(rc->m_LC[i]);
+//					rp->SetLoadCurve(rc->m_LC[i]);
 
 					rc_new.push_back(rp);
 				}

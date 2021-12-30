@@ -384,15 +384,9 @@ FSRigidSphereInterface::FSRigidSphereInterface(FSModel* ps, int nstep) : FSSoloI
 	LC.Clear();
 	LC.Add(LOADPOINT(0, 0));
 	LC.Add(LOADPOINT(0, 0));
-	AddDoubleParam(0.0, "ux", "x displacment")->SetLoadCurve(LC);
-	AddDoubleParam(0.0, "uy", "y displacment")->SetLoadCurve(LC);
-	AddDoubleParam(0.0, "uz", "z displacment")->SetLoadCurve(LC);
-}
-
-//-----------------------------------------------------------------------------
-LoadCurve* FSRigidSphereInterface::GetLoadCurve(int i)
-{ 
-	return GetParamLC(FSRigidSphereInterface::UX + i);
+	AddDoubleParam(0.0, "ux", "x displacment");
+	AddDoubleParam(0.0, "uy", "y displacment");
+	AddDoubleParam(0.0, "uz", "z displacment");
 }
 
 //-----------------------------------------------------------------------------

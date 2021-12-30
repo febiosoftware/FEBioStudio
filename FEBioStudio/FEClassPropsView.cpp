@@ -563,7 +563,7 @@ public:
 				Param* p = item->parameter();
 				if (p)
 				{
-					if (p->GetLoadCurve()) c = QColor::fromRgb(0, 255, 0);
+					if (p->GetLoadCurveID() > 0) c = QColor::fromRgb(0, 255, 0);
 					else c = QColor::fromRgb(0, 128, 0);
 				}
 				else c = QColor::fromRgb(0, 0, 0); 

@@ -813,7 +813,7 @@ FSTransMooneyRivlinOld::Fiber::Fiber()
 	AddDoubleParam(0, "beta", "beta")->SetState(Param_State::Param_READWRITE);
 	AddDoubleParam(0, "L0"  , "L0"  )->SetState(Param_State::Param_READWRITE);
 	AddDoubleParam(0, "Lr"  , "Lr"  )->SetState(Param_State::Param_READWRITE);
-	AddDoubleParam(0, "active_contraction", "active_contraction")->SetState(Param_State::Param_READWRITE)->SetLoadCurve();
+	AddDoubleParam(0, "active_contraction", "active_contraction")->SetState(Param_State::Param_READWRITE);
 }
 
 FSTransMooneyRivlinOld::FSTransMooneyRivlinOld() : FSTransverselyIsotropic(FE_TRANS_MOONEY_RIVLIN_OLD)
@@ -844,7 +844,7 @@ FSTransVerondaWestmannOld::Fiber::Fiber()
 	AddDoubleParam(0, "beta", "beta")->SetState(Param_State::Param_READWRITE);
 	AddDoubleParam(0, "L0"  , "L0"  )->SetState(Param_State::Param_READWRITE);
 	AddDoubleParam(0, "Lr"  , "Lr"  )->SetState(Param_State::Param_READWRITE);
-	AddDoubleParam(0, "active_contraction", "active_contraction")->SetState(Param_State::Param_READWRITE)->SetLoadCurve();
+	AddDoubleParam(0, "active_contraction", "active_contraction")->SetState(Param_State::Param_READWRITE);
 }
 
 FSTransVerondaWestmannOld::FSTransVerondaWestmannOld() : FSTransverselyIsotropic(FE_TRANS_VERONDA_WESTMANN_OLD)
@@ -868,7 +868,7 @@ REGISTER_MATERIAL(FSActiveContraction, MODULE_MECH, FE_MAT_ACTIVE_CONTRACTION, F
 
 FSActiveContraction::FSActiveContraction() : FSMaterial(FE_MAT_ACTIVE_CONTRACTION)
 {
-	AddDoubleParam(0, "ascl", "scale")->SetLoadCurve();
+	AddDoubleParam(0, "ascl", "scale");
 	AddDoubleParam(0, "ca0");
 	AddDoubleParam(0, "beta");
 	AddDoubleParam(0, "l0");

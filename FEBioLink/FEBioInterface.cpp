@@ -116,13 +116,13 @@ void map_parameters(FSModelComponent* po, FEBio::FEBioClass* feb)
 			{
 				if (param.m_flags & 0x08)
 				{
-					p->SetLoadCurve();
-					FSLoadController* plc = FEBio::CreateLoadController("loadcurve", fsm);
-					assert(plc);
-					plc->SetName(param.name());
-					fsm->AddLoadController(plc);
+					// create default load curve
+					LoadCurve lc;
 
-					plc->SetLoadCurve(p->GetLoadCurve());
+					// add to model
+					FSLoadController* plc = fsm->AddLoadCurve(lc); assert(plc);
+					plc->SetName(param.name());
+					p->SetLoadCurveID(plc->GetID());
 				}
 			}
 			if (param.m_szunit) p->SetUnit(param.m_szunit);

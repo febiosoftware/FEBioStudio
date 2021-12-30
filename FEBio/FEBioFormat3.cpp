@@ -1386,7 +1386,8 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 								else ParseUnknownTag(tag);
 								++tag;
 							} while (!tag.isend());
-							p->SetLoadCurve(lc);
+							//GetFEBioModel().AddLoadCurve(lc);
+							//p->SetLoadCurve(lc);
 						}
 					}
 					else ParseUnknownTag(tag);

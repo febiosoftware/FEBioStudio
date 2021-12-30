@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "Serializable.h"
 #include "color.h"
 #include <FECore/mat3d.h>
-#include "LoadCurve.h"
 #include <vector>
 #include <string.h>
 
@@ -114,11 +113,8 @@ public:
 
 	void SetParamID(int nid) { m_nID = nid; }
 
-	void SetLoadCurve();
-	void SetLoadCurve(const LoadCurve& lc);
-	LoadCurve* GetLoadCurve() const { return m_plc; }
-	void DeleteLoadCurve();
-	LoadCurve* RemoveLoadCurve();
+	void SetLoadCurveID(int lcid);
+	int GetLoadCurveID() const;
 
 	const char* GetShortName() const { return m_szbrev; }
 	const char* GetLongName () const { return m_szname; }
@@ -214,7 +210,7 @@ protected:
 	bool			m_checked;
 
 	void*			m_pd;		// pointer to actual value
-	LoadCurve*	m_plc;		// load curve for parameter
+	int				m_lc;		// load curve ID for parameter (-1 for none)
 	int				m_offset;	// offset for output (choice parameters only)
 
 	bool		m_floatRange;
@@ -537,7 +533,6 @@ public:
 	bool GetBoolValue(int n)const  { return m_Param[n].GetBoolValue(); }
 	vec3d GetVecValue(int n) const { return m_Param[n].GetVec3dValue(); }
 	vec2i GetVec2iValue(int n) const { return m_Param[n].GetVec2iValue(); }
-	LoadCurve* GetParamLC(int n) { return m_Param[n].GetLoadCurve(); }
 	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
 	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }
 	GLColor GetColorValue(int n) const { return m_Param[n].GetColorValue(); }

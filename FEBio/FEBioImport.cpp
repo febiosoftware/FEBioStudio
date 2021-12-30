@@ -338,6 +338,12 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 
 	// resolve all load curve references
 	int NLC = m_febio->LoadCurves();
+	vector<int> LCT(NLC, -1);
+	for (int i = 0; i < NLC; ++i)
+	{
+		LCT[i] = fem.AddLoadCurve(m_febio->GetLoadCurve(i))->GetID();
+	}
+
 	int NPC = m_febio->ParamCurves();
 	for (int i=0; i<NPC; ++i)
 	{
@@ -348,7 +354,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		{
 			if (pc.m_p)
 			{
-				pc.m_p->SetLoadCurve(m_febio->GetLoadCurve(pc.m_lc));
+				pc.m_p->SetLoadCurveID(LCT[pc.m_lc]);
 			}
 			if (pc.m_plc) 
 			{

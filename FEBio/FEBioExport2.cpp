@@ -1902,7 +1902,9 @@ void FEBioExport2::WriteDiscreteSection(FSStep& s)
 					Param& p = pg->GetParam(GGeneralSpring::MP_F);
 
 					double F = p.GetFloatValue();
-					int lc = p.GetLoadCurve()->GetID();
+
+					LoadCurve* plc = fem.GetParamCurve(p);
+					int lc = (plc ? plc->GetID() : -1);
 
 					m_xml.add_leaf("node", n, 2);
 
@@ -2044,7 +2046,7 @@ void FEBioExport2::WriteContactWall(FSStep& s)
 				m_xml.add_leaf("tolerance", pw->GetFloatValue(FSRigidWallInterface::ALTOL));
 				m_xml.add_leaf("penalty", pw->GetFloatValue(FSRigidWallInterface::PENALTY));
 
-				LoadCurve* plc = pw->GetParamLC(FSRigidWallInterface::OFFSET);
+				LoadCurve* plc = pw->GetLoadCurve(FSRigidWallInterface::OFFSET);
 
 				XMLElement plane;
 				if (plc) plane.add_attribute("lc", plc->GetID());
@@ -3848,11 +3850,12 @@ void FEBioExport2::WriteLoadPressure(FSStep& s)
 			m_xml.add_branch(load);
 			{
 				// get the load curve ID
-				int lc = pbc->GetLoadCurve()->GetID();
+				LoadCurve* plc = pbc->GetLoadCurve(FSPressureLoad::LOAD);
+				int lc = (plc ? plc->GetID() : -1);
 
 				// write the pressure parameter
 				XMLElement press("pressure");
-				press.add_attribute("lc", lc);
+				if (lc > 0) press.add_attribute("lc", lc);
 				press.value(pbc->GetLoad());
 				m_xml.add_leaf(press);
 
@@ -3891,12 +3894,12 @@ void FEBioExport2::WriteFluidFlux(FSStep& s)
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				// get the loadcurve ID
-				LoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
-
 				XMLElement load("flux");
-				load.add_attribute("lc", lc);
+
+				// get the loadcurve ID
+				LoadCurve* plc = pbc->GetLoadCurve(FSFluidFlux::LOAD);
+				if (plc) load.add_attribute("lc", plc->GetID());
+
 				load.value(pbc->GetLoad());
 				m_xml.add_leaf(load);
 
@@ -3934,12 +3937,12 @@ void FEBioExport2::WriteBPNormalTraction(FSStep& s)
 			flux.add_attribute("type", "normal_traction");
 			m_xml.add_branch(flux);
 			{
-				// get load curve ID
-				LoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
-
 				XMLElement load("traction");
-				load.add_attribute("lc", lc);
+
+				// get load curve ID
+				LoadCurve* plc = pbc->GetLoadCurve(FSBPNormalTraction::LOAD);
+				if (plc) load.add_attribute("lc", plc->GetID());
+
 				load.value(pbc->GetLoad());
 				m_xml.add_leaf(load);
 
@@ -3972,11 +3975,11 @@ void FEBioExport2::WriteHeatFlux(FSStep& s)
 			flux.add_attribute("type", "heatflux");
 			m_xml.add_branch(flux);
 			{
-				LoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
-
 				XMLElement load("flux");
-				load.add_attribute("lc", lc);
+
+				LoadCurve* plc = pbc->GetLoadCurve(FSHeatFlux::FLUX);
+				load.add_attribute("lc", plc->GetID());
+
 				load.value(pbc->GetLoad());
 				m_xml.add_leaf(load);
 
@@ -4006,11 +4009,11 @@ void FEBioExport2::WriteConvectiveHeatFlux(FSStep& s)
 			flux.add_attribute("type", "convective_heatflux");
 			m_xml.add_branch(flux);
 			{
-				LoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
-
 				XMLElement temp("Ta");
-				temp.add_attribute("lc", lc);
+
+				LoadCurve* plc = pbc->GetLoadCurve(FSConvectiveHeatFlux::TREF);
+				if (plc) temp.add_attribute("lc", plc->GetID());
+
 				temp.value(pbc->GetTemperature());
 				m_xml.add_leaf(temp);
 
@@ -4036,8 +4039,7 @@ void FEBioExport2::WriteSoluteFlux(FSStep& s)
 		if (pbc && pbc->IsActive())
 		{
 			// get the load curve id
-			LoadCurve* plc = pbc->GetLoadCurve();
-			int lc = plc->GetID();
+			LoadCurve* plc = pbc->GetLoadCurve(FSSoluteFlux::LOAD);
 
 			// get the item list builder
 			FEItemListBuilder* pitem = pbc->GetItemList();
@@ -4049,7 +4051,8 @@ void FEBioExport2::WriteSoluteFlux(FSStep& s)
 			m_xml.add_branch(flux);
 			{
 				XMLElement load("flux");
-				load.add_attribute("lc", lc);
+				if (plc) load.add_attribute("lc", plc->GetID());
+
 				load.value(pbc->GetLoad());
 				m_xml.add_leaf(load);
 
@@ -4074,8 +4077,7 @@ void FEBioExport2::WriteConcentrationFlux(FSStep& s)
 		if (pcf && pcf->IsActive())
 		{
 			// get the load curve id
-			LoadCurve* plc = pcf->GetLoadCurve();
-			int lc = plc->GetID();
+			LoadCurve* plc = pcf->GetLoadCurve(FSConcentrationFlux::FLUX);
 
 			// get the item list builder
 			FEItemListBuilder* pitem = pcf->GetItemList();
@@ -4089,7 +4091,8 @@ void FEBioExport2::WriteConcentrationFlux(FSStep& s)
 				m_xml.add_leaf("solute_id", pcf->GetSoluteID() + 1);
 
 				XMLElement load("flux");
-				load.add_attribute("lc", lc);
+				if (plc) load.add_attribute("lc", plc->GetID());
+
 				load.value(pcf->GetFlux());
 				m_xml.add_leaf(load);
 
@@ -4119,11 +4122,11 @@ void FEBioExport2::WriteLoadTraction(FSStep& s)
 			flux.add_attribute("type", "traction");
 			m_xml.add_branch(flux);
 			{
-				LoadCurve* plc = ptc->GetLoadCurve();
-				int lc = plc->GetID();
+				LoadCurve* plc = ptc->GetLoadCurve(FSSurfaceTraction::LOAD);
 
 				XMLElement scl("scale");
-				scl.add_attribute("lc", lc);
+				if (plc) scl.add_attribute("lc", plc->GetID());
+
 				scl.value(1.0);
 				m_xml.add_leaf(scl);
 
@@ -4155,11 +4158,11 @@ void FEBioExport2::WriteFluidTraction(FSStep& s)
             flux.add_attribute("type", "fluid viscous traction");
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidTraction::LOAD);
                 
                 XMLElement scl("scale");
-                scl.add_attribute("lc", lc);
+                scl.add_attribute("lc", plc->GetID());
+
                 scl.value(ptc->GetScale());
                 m_xml.add_leaf(scl);
                 
@@ -4191,11 +4194,11 @@ void FEBioExport2::WriteFluidVelocity(FSStep& s)
             flux.add_attribute("type", "fluid velocity");
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidVelocity::LOAD);
                 
                 XMLElement scl("scale");
-                scl.add_attribute("lc", lc);
+                if (plc) scl.add_attribute("lc", plc->GetID());
+
                 scl.value(1.0);
                 m_xml.add_leaf(scl);
                 
@@ -4227,11 +4230,11 @@ void FEBioExport2::WriteFluidNormalVelocity(FSStep& s)
             flux.add_attribute("type", "fluid normal velocity");
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidNormalVelocity::LOAD);
                 
                 XMLElement load("velocity");
-                load.add_attribute("lc", lc);
+                if (plc) load.add_attribute("lc", plc->GetID());
+
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
@@ -4273,11 +4276,11 @@ void FEBioExport2::WriteFluidRotationalVelocity(FSStep& s)
             flux.add_attribute("type", "fluid rotational velocity");
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidRotationalVelocity::LOAD);
                 
                 XMLElement load("angular_speed");
-                load.add_attribute("lc", lc);
+                if (plc) load.add_attribute("lc", plc->GetID());
+
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
@@ -4315,20 +4318,19 @@ void FEBioExport2::WriteFluidFlowResistance(FSStep& s)
             flux.add_attribute("type", "fluid resistance");
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidFlowResistance::LOAD);
                 
                 XMLElement load("R");
-                load.add_attribute("lc", lc);
+                if (plc) load.add_attribute("lc", plc->GetID());
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
                 // Write pressure offset element
-                LoadCurve* polc = ptc->GetPOLoadCurve();
-                int lcpo = polc->GetID();
+                LoadCurve* polc = ptc->GetLoadCurve(FSFluidFlowResistance::PO);
                 
                 XMLElement po("pressure_offset");
-                po.add_attribute("lc", lcpo);
+                if (polc) po.add_attribute("lc", polc->GetID());
+
                 po.value(ptc->GetPO());
                 m_xml.add_leaf(po);
                 
@@ -4358,11 +4360,11 @@ void FEBioExport2::WriteFluidBackflowStabilization(FSStep& s)
             flux.add_attribute("type", "fluid backflow stabilization");
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidBackflowStabilization::LOAD);
                 
                 XMLElement load("beta");
-                load.add_attribute("lc", lc);
+                if (plc) load.add_attribute("lc", plc->GetID());
+
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
@@ -4392,11 +4394,11 @@ void FEBioExport2::WriteFluidTangentialStabilization(FSStep& s)
             flux.add_attribute("type", "fluid tangential stabilization");
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidTangentialStabilization::LOAD);
                 
                 XMLElement load("beta");
-                load.add_attribute("lc", lc);
+                if (plc) load.add_attribute("lc", plc->GetID());
+
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
@@ -4649,7 +4651,10 @@ void FEBioExport2::WriteHeatSources(FSStep& s)
 			{
 				XMLElement el;
 				el.name("Q");
-				el.add_attribute("lc", phs->GetLoadCurve()->GetID());
+
+				LoadCurve* plc = phs->GetLoadCurve(FSHeatSource::LOAD);
+				if (plc) el.add_attribute("lc", plc->GetID());
+
 				el.value(phs->GetLoad());
 				m_xml.add_leaf(el);
 			}
@@ -5103,7 +5108,10 @@ void FEBioExport2::WriteConstraintSection(FSStep &s)
 			{
 				XMLElement el("prescribed");
 				el.add_attribute("bc", szbc[rc->GetDOF()]);
-				el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+
+				LoadCurve* plc = rc->GetLoadCurve(FSRigidPrescribed::VALUE);
+				if (plc) el.add_attribute("lc", plc->GetID());
+
 				el.value(rc->GetValue());
 				m_xml.add_leaf(el);
 			}
@@ -5119,7 +5127,10 @@ void FEBioExport2::WriteConstraintSection(FSStep &s)
 			{
 				XMLElement el("force");
 				el.add_attribute("bc", szbc[rc->GetDOF()]);
-				el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+
+				LoadCurve* plc = rc->GetLoadCurve(FSRigidPrescribed::VALUE);
+				if (plc) el.add_attribute("lc", plc->GetID());
+
 				el.value(rc->GetValue());
 				m_xml.add_leaf(el);
 			}

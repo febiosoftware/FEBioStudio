@@ -30,13 +30,13 @@ public:
 	FSNodalDOFLoad(FSModel* ps);
 	FSNodalDOFLoad(FSModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep = 0);
 
-	LoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
-
 	int GetDOF() { return GetIntValue(DOF); }
 	void SetDOF(int n) { SetIntValue(DOF, n); }
 
 	void SetLoad(double f) { SetFloatValue(LOAD, f); }
 	double GetLoad() { return GetFloatValue(LOAD); }
+
+	LoadCurve* GetLoadCurve();
 };
 
 class FEBioNodalLoad : public FSNodalLoad

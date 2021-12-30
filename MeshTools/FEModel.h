@@ -207,6 +207,13 @@ public:
 	void AddLoadController(FSLoadController* plc);
 	int RemoveLoadController(FSLoadController* plc);
 
+	// helper function for creating load curves
+	FSLoadController* AddLoadCurve(LoadCurve& lc);
+
+	FSLoadController* GetLoadControllerFromID(int lc);
+
+	LoadCurve* GetParamCurve(const Param& p);
+
 public:
 	int CountBCs(int type);
 	int CountLoads(int type);

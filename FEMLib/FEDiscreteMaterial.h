@@ -55,6 +55,9 @@ public:
 	LoadCurve* GetPointCurve();
 	void SetPointCurve(LoadCurve& lc);
 	DECLARE_REGISTERED(FS1DPointFunction);
+
+private:
+	LoadCurve	m_lc;
 };
 
 //===================================================================

@@ -82,6 +82,7 @@ public:
 
 class FSRigidPrescribed : public FSRigidConstraint
 {
+public:
 	enum { DOF, VALUE };
 
 public:
@@ -92,14 +93,13 @@ public:
 
 	double GetValue() const { return GetFloatValue(VALUE); }
 	void SetValue(double v) { SetFloatValue(VALUE, v); }
-
-	LoadCurve* GetLoadCurve() { return GetParamLC(VALUE); }
-	void SetLoadCurve(const LoadCurve& lc) { GetParam(VALUE).SetLoadCurve(lc); }
-	void RemoveLoadcurve() { GetParam(VALUE).DeleteLoadCurve(); }
 };
 
 class FSRigidDisplacement : public FSRigidPrescribed
 {
+public:
+	enum { VAR, VALUE, BC_RELATIVE };
+
 public:
 	FSRigidDisplacement(FSModel* fem, int nstep = 0);
 	FSRigidDisplacement(int bc, int matid, double v, int nstep);

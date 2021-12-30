@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FECore/units.h>
 #include <FSCore/ParamBlock.h>
+#include <FEBioLink/FEBioInterface.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <vector>
@@ -1764,6 +1765,24 @@ FSLoadController* FSModel::GetLoadController(int i)
 	return m_LC[i];
 }
 
+FSLoadController* FSModel::GetLoadControllerFromID(int lc)
+{
+	if (lc < 0) return nullptr;
+	for (int i = 0; i < m_LC.Size(); ++i)
+	{
+		FSLoadController* plc = m_LC[i];
+		if (plc->GetID() == lc) return plc;
+	}
+	return nullptr;
+}
+
+LoadCurve* FSModel::GetParamCurve(const Param& p)
+{
+	int lcid = p.GetLoadCurveID();
+	FSLoadController* plc = GetLoadControllerFromID(lcid);
+	return (plc ? plc->GetLoadCurve() : nullptr);
+}
+
 void FSModel::AddLoadController(FSLoadController* plc)
 {
 	m_LC.Add(plc);
@@ -1772,4 +1791,30 @@ void FSModel::AddLoadController(FSLoadController* plc)
 int FSModel::RemoveLoadController(FSLoadController* plc)
 {
 	return (int) m_LC.Remove(plc);
+}
+
+// helper function for creating load curves (returns UID of load controller)
+FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
+{
+	FSLoadController* plc = FEBio::CreateLoadController("loadcurve", this);
+
+	plc->SetParamInt("interpolate", lc.GetType());
+	plc->SetParamInt("extend", lc.GetExtend());
+
+/*	std::vector<vec2d> pt;
+	for (int i = 0; i < lc.Size(); ++i)
+	{
+		LOADPOINT& lp = lc[i];
+		vec2d pi(lp.time, lp.load);
+		pt.push_back(pi);
+	}
+
+	Param& points = *plc->GetParam("points");
+	points.val<std::vector<vec2d> >() = pt;
+*/
+	plc->SetLoadCurve(new LoadCurve(lc));
+
+	AddLoadController(plc);
+
+	return plc;
 }

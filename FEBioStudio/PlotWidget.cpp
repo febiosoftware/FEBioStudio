@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <QRgb>
 #include <QDropEvent>
 #include <QtCore/QMimeData>
+#include <FSCore/LoadCurve.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------

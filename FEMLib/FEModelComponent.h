@@ -4,6 +4,7 @@
 #include <string>
 
 class FSModel;
+class LoadCurve;
 
 //-----------------------------------------------------------------------------
 // Base class for components of an FSModel
@@ -19,6 +20,10 @@ public:
 	void SetSuperClassID(int superClassID);
 
 	FSModel* GetFSModel();
+
+public:
+	// helper function for retrieving the load curve assigned to a parameter
+	LoadCurve* GetLoadCurve(int n);
 
 protected:
 	FSModel*	m_fem;

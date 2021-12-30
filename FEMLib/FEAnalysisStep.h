@@ -1,5 +1,6 @@
 #pragma once
 #include <FEMLib/FEModelComponent.h>
+#include <FSCore/LoadCurve.h>
 #include <vector>
 
 class FSModel;

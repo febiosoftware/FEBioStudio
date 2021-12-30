@@ -1886,7 +1886,7 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 	else if (pm->Type() == FE_FNC1D_POINT)
 	{
 		FS1DPointFunction* pf1d = dynamic_cast<FS1DPointFunction*>(pm); assert(pf1d);
-		LoadCurve* plc = pf1d->GetParam(0).GetLoadCurve();
+		LoadCurve* plc = pf1d->GetPointCurve();
 		el.add_attribute("type", sztype);
 		m_xml.add_branch(el);
 		{
@@ -3296,6 +3296,7 @@ void FEBioExport3::WriteMeshData(FSDataMapGenerator* map)
 	meshData.add_attribute("generator", map->m_generator);
 	meshData.add_attribute("elem_set", map->m_elset);
 
+	FSModel& fem = m_prj.GetFSModel();
 
 	m_xml.add_branch(meshData);
 	{
@@ -3312,9 +3313,11 @@ void FEBioExport3::WriteMeshData(FSDataMapGenerator* map)
 			m_xml.add_branch(e);
 			{
 				Param* p = s2s->GetParam("function");
-				if (p->GetLoadCurve())
+
+				LoadCurve* plc = fem.GetParamCurve(*p);
+				if (plc)
 				{
-					LoadCurve& lc = *p->GetLoadCurve();
+					LoadCurve& lc = *plc;
 					m_xml.add_branch("points");
 					{
 						for (int i = 0; i < lc.Size(); ++i)
@@ -3837,7 +3840,7 @@ void FEBioExport3::WriteDiscreteSection(FSStep& s)
 			{
 				Param& p = pg->GetParam(GGeneralSpring::MP_F);
 				double F = p.GetFloatValue();
-				int lc = (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
+				int lc = -1;// (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
 
 				XMLElement f;
 				f.name("force");
@@ -5150,7 +5153,10 @@ void FEBioExport3::WriteRigidConstraints(FSStep &s)
 					m_xml.add_leaf("rb", pgm->m_ntag);
 					m_xml.add_leaf("dof", szbc[rc->GetDOF()]);
 					el.name("value");
-					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+
+					LoadCurve* plc = rc->GetLoadCurve(FSRigidDisplacement::VALUE);
+					if (plc) el.add_attribute("lc", plc->GetID());
+
 					el.value(rc->GetValue());
 					m_xml.add_leaf(el);
 					m_xml.add_leaf("relative", rc->GetRelativeFlag());
@@ -5168,7 +5174,10 @@ void FEBioExport3::WriteRigidConstraints(FSStep &s)
 					m_xml.add_leaf("rb", pgm->m_ntag);
 					m_xml.add_leaf("dof", szbc[rf->GetDOF()]);
 					XMLElement val("value");
-					if (rf->GetLoadCurve()) val.add_attribute("lc", rf->GetLoadCurve()->GetID());
+
+					LoadCurve* plc = rf->GetLoadCurve(FSRigidPrescribed::VALUE);
+					if (plc) el.add_attribute("lc", plc->GetID());
+
 					val.value(rf->GetValue());
 					m_xml.add_leaf(val);
 					m_xml.add_leaf("load_type", rf->GetForceType());

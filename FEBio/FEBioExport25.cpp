@@ -3359,7 +3359,7 @@ void FEBioExport25::WriteDiscreteSection(FSStep& s)
 			{
 				Param& p = pg->GetParam(GGeneralSpring::MP_F);
 				double F = p.GetFloatValue();
-				int lc = (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
+				int lc = -1;// (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
 
 				XMLElement f;
 				f.name("force");
@@ -3525,7 +3525,7 @@ void FEBioExport25::WriteContactWall(FSStep& s)
 				m_xml.add_leaf("tolerance", pw->GetFloatValue(FSRigidWallInterface::ALTOL));
 				m_xml.add_leaf("penalty", pw->GetFloatValue(FSRigidWallInterface::PENALTY));
 
-				LoadCurve* plc = pw->GetLoadCurve();
+				LoadCurve* plc = pw->GetLoadCurve(FSRigidWallInterface::OFFSET);
 				XMLElement offset("offset");
 				if (plc) offset.add_attribute("lc", plc->GetID());
 				offset.value(pw->GetFloatValue(FSRigidWallInterface::OFFSET));
@@ -4162,7 +4162,7 @@ void FEBioExport25::WriteFluidVelocity(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidVelocity::LOAD);
                 int lc = plc->GetID();
                 
                 XMLElement scl("scale");
@@ -4197,7 +4197,7 @@ void FEBioExport25::WriteFluidNormalVelocity(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidNormalVelocity::LOAD);
                 int lc = plc->GetID();
                 
                 XMLElement load("velocity");
@@ -4243,7 +4243,7 @@ void FEBioExport25::WriteFluidRotationalVelocity(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidRotationalVelocity::LOAD);
                 int lc = plc->GetID();
                 
                 XMLElement load("angular_speed");
@@ -4285,7 +4285,7 @@ void FEBioExport25::WriteFluidFlowResistance(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidFlowResistance::LOAD);
                 int lc = plc->GetID();
                 
                 XMLElement load("R");
@@ -4293,7 +4293,7 @@ void FEBioExport25::WriteFluidFlowResistance(FSStep& s)
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
-                LoadCurve* polc = ptc->GetPOLoadCurve();
+                LoadCurve* polc = ptc->GetLoadCurve(FSFluidFlowResistance::PO);
                 int lcpo = polc->GetID();
                 
                 XMLElement po("pressure_offset");
@@ -4326,43 +4326,38 @@ void FEBioExport25::WriteFluidFlowRCR(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidFlowRCR::LOAD);
                 
                 XMLElement load("R");
-                load.add_attribute("lc", lc);
+                if (plc) load.add_attribute("lc", plc->GetID());
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
-                LoadCurve* rdlc = ptc->GetRDLoadCurve();
-                int lcrd = rdlc->GetID();
+                LoadCurve* rdlc = ptc->GetLoadCurve(FSFluidFlowRCR::RD);
                 
                 XMLElement rd("Rd");
-                rd.add_attribute("lc", lcrd);
+                if (rdlc) rd.add_attribute("lc", rdlc->GetID());
                 rd.value(ptc->GetRD());
                 m_xml.add_leaf(rd);
                 
-                LoadCurve* colc = ptc->GetCOLoadCurve();
-                int lcco = colc->GetID();
+                LoadCurve* colc = ptc->GetLoadCurve(FSFluidFlowRCR::CO);
                 
                 XMLElement co("capacitance");
-                co.add_attribute("lc", lcco);
+                if (colc) co.add_attribute("lc", colc->GetID());
                 co.value(ptc->GetCO());
                 m_xml.add_leaf(co);
                 
-                LoadCurve* polc = ptc->GetPOLoadCurve();
-                int lcpo = polc->GetID();
+                LoadCurve* polc = ptc->GetLoadCurve(FSFluidFlowRCR::PO);
                 
                 XMLElement po("pressure_offset");
-                po.add_attribute("lc", lcpo);
+                if (polc) po.add_attribute("lc", polc->GetID());
                 po.value(ptc->GetPO());
                 m_xml.add_leaf(po);
 
-                LoadCurve* iplc = ptc->GetIPLoadCurve();
-                int lcip = iplc->GetID();
+                LoadCurve* iplc = ptc->GetLoadCurve(FSFluidFlowRCR::IP);
                 
                 XMLElement ip("initial_pressure");
-                ip.add_attribute("lc", lcip);
+                if (iplc) ip.add_attribute("lc", iplc->GetID());
                 ip.value(ptc->GetIP());
                 m_xml.add_leaf(ip);
                 
@@ -4395,11 +4390,11 @@ void FEBioExport25::WriteFluidBackflowStabilization(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
-                
-                XMLElement load("beta");
-                load.add_attribute("lc", lc);
+				XMLElement load("beta");
+
+                LoadCurve* plc = ptc->GetLoadCurve(FSFluidBackflowStabilization::LOAD);
+                if (plc) load.add_attribute("lc", plc->GetID());
+
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
             }
@@ -4428,11 +4423,11 @@ void FEBioExport25::WriteFluidTangentialStabilization(FSStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                LoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
-                
                 XMLElement load("beta");
-                load.add_attribute("lc", lc);
+
+				LoadCurve* plc = ptc->GetLoadCurve(FSFluidTangentialStabilization::LOAD);
+                if (plc) load.add_attribute("lc", plc->GetID());
+
                 load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
             }
@@ -5303,7 +5298,10 @@ void FEBioExport25::WriteRigidConstraints(FSStep &s)
 				{
 					XMLElement el("prescribed");
 					el.add_attribute("bc", szbc[rc->GetDOF()]);
-					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+
+					LoadCurve* plc = rc->GetLoadCurve(FSRigidPrescribed::VALUE);
+					if (plc) el.add_attribute("lc", plc->GetID());
+
 					el.value(rc->GetValue());
 					m_xml.add_leaf(el);
 				}
@@ -5320,7 +5318,10 @@ void FEBioExport25::WriteRigidConstraints(FSStep &s)
 				{
 					XMLElement el("force");
 					el.add_attribute("bc", szbc[rc->GetDOF()]);
-					if (rc->GetLoadCurve()) el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+
+					LoadCurve* plc = rc->GetLoadCurve(FSRigidPrescribed::VALUE);
+					if (plc) el.add_attribute("lc", plc->GetID());
+
 					el.value(rc->GetValue());
 					if (forceType == 1) el.add_attribute("type", "follow");
 					if (forceType == 2) el.add_attribute("type", "ramp");

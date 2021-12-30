@@ -39,14 +39,9 @@ FSBodyLoad::FSBodyLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0,
 FSConstBodyForce::FSConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_CONST_BODY_FORCE, ps, nstep)
 {
 	SetTypeString("const");
-	AddDoubleParam(0, "x")->SetLoadCurve();
-	AddDoubleParam(0, "y")->SetLoadCurve();
-	AddDoubleParam(0, "z")->SetLoadCurve();
-}
-
-LoadCurve* FSConstBodyForce::GetLoadCurve(int n)
-{
-	return GetParamLC(FORCE_X + n);
+	AddDoubleParam(0, "x");
+	AddDoubleParam(0, "y");
+	AddDoubleParam(0, "z");
 }
 
 double FSConstBodyForce::GetLoad(int n) { return GetFloatValue(FORCE_X + n); }
@@ -57,21 +52,16 @@ void FSConstBodyForce::SetLoad(int n, double v) { SetFloatValue(FORCE_X + n, v);
 FSNonConstBodyForce::FSNonConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_NON_CONST_BODY_FORCE, ps, nstep)
 {
 	SetTypeString("non-const");
-	AddMathParam("0", "x")->SetLoadCurve();
-	AddMathParam("0", "y")->SetLoadCurve();
-	AddMathParam("0", "z")->SetLoadCurve();
-}
-
-LoadCurve* FSNonConstBodyForce::GetLoadCurve(int n)
-{
-	return GetParamLC(FORCE_X + n);
+	AddMathParam("0", "x");
+	AddMathParam("0", "y");
+	AddMathParam("0", "z");
 }
 
 //-----------------------------------------------------------------------------
 FSHeatSource::FSHeatSource(FSModel* ps, int nstep) : FSBodyLoad(FE_HEAT_SOURCE, ps, nstep)
 {
 	SetTypeString("heat_source");
-	AddDoubleParam(0, "Q", "Q")->SetLoadCurve();
+	AddDoubleParam(0, "Q", "Q");
 }
 
 //-----------------------------------------------------------------------------
@@ -90,7 +80,7 @@ FSSBMPointSource::FSSBMPointSource(FSModel* ps, int nstep) : FSBodyLoad(FE_SBM_P
 FSCentrifugalBodyForce::FSCentrifugalBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
 {
     SetTypeString("centrifugal");
-    AddScienceParam(0, UNIT_RADIAN, "angular_speed", "angular speed")->SetLoadCurve();
+    AddScienceParam(0, UNIT_RADIAN, "angular_speed", "angular speed");
     AddVecParam(vec3d(0,0,1),"rotation_axis", "rotation axis");
     AddVecParam(vec3d(0,0,0),"rotation_center", "rotation center");
 }

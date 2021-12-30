@@ -35,6 +35,7 @@ class QPainter;
 class QAction;
 class CPlotWidget;
 class QImage;
+class LoadCurve;
 
 //-----------------------------------------------------------------------------
 enum ChartStyle

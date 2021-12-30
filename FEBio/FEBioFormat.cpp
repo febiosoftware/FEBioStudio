@@ -1199,8 +1199,9 @@ FSMaterial* FEBioFormat::ParseTransIsoMR(FSMaterial* pmat, XMLTag& tag)
 
 	f.m_naopt = -1;
 
-	LoadCurve& ac = *f.GetParam(FSTransMooneyRivlinOld::Fiber::MP_AC).GetLoadCurve();
-	ac.SetID(-1);
+	Param& ac = f.GetParam(FSTransMooneyRivlinOld::Fiber::MP_AC);
+
+	FEBioInputModel& feb = GetFEBioModel();
 
 	if (!tag.isleaf())
 	{
@@ -1219,7 +1220,8 @@ FSMaterial* FEBioFormat::ParseTransIsoMR(FSMaterial* pmat, XMLTag& tag)
 					}
 					else if (tag == "active_contraction")
 					{
-						ac.SetID(tag.AttributeValue<int>("lc", 0) - 1);
+						int lc = tag.AttributeValue<int>("lc", -1);
+						if (lc > 0) feb.AddParamCurve(&ac, lc - 1);
 
 						double ca0 = 0, beta = 0, l0 = 0, refl = 0, ascl = 0;
 						++tag;
@@ -1258,9 +1260,8 @@ FSMaterial* FEBioFormat::ParseTransIsoVW(FSMaterial* pmat, XMLTag& tag)
 
 	f.m_naopt = -1;
 
-	LoadCurve& ac = *f.GetParam(FSTransVerondaWestmannOld::Fiber::MP_AC).GetLoadCurve();
-
-	ac.SetID(-1);
+	FEBioInputModel& feb = GetFEBioModel();
+	Param& ac = f.GetParam(FSTransVerondaWestmannOld::Fiber::MP_AC);
 
 	if (!tag.isleaf())
 	{
@@ -1274,7 +1275,8 @@ FSMaterial* FEBioFormat::ParseTransIsoVW(FSMaterial* pmat, XMLTag& tag)
 					if (tag == "fiber") ParseFiberMaterial(f, tag);
 					else if (tag == "active_contraction")
 					{
-						ac.SetID(tag.AttributeValue<int>("lc", 0) - 1);
+						int lc = tag.AttributeValue<int>("lc", 0);
+						if (lc > 0) feb.AddParamCurve(&ac, lc - 1);
 
 						double ca0 = 0, beta = 0, l0 = 0, refl = 0;
 						++tag;

@@ -162,25 +162,23 @@ void CCmdMovePoint::UnExecute()
 
 CCmdDeleteCurve::CCmdDeleteCurve(Param* pp) : CCommand("Delete Curve")
 {
-	m_plc = nullptr;
+	m_lc = -1;
 	m_pp = pp; assert(m_pp);
 }
 
 CCmdDeleteCurve::~CCmdDeleteCurve()
 {
-	if (m_plc) delete m_plc;
-	m_plc = nullptr;
 }
 
 void CCmdDeleteCurve::Execute()
 {
-	m_plc = m_pp->RemoveLoadCurve();
+	m_lc = m_pp->GetLoadCurveID();
+	m_pp->SetLoadCurveID(-1);
 }
 
 void CCmdDeleteCurve::UnExecute()
 {
-	if (m_plc) m_pp->SetLoadCurve(*m_plc);
-	m_plc = nullptr;
+	m_pp->SetLoadCurveID(m_lc);
 }
 
 //=============================================================================
@@ -239,13 +237,14 @@ void CCurveEditor::Update()
 	}
 }
 
-void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po)
+void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po)
 {
+	FSModel* fem = po->GetFSModel();
 	int np = po->Parameters();
 	for (int n = 0; n < np; ++n)
 	{
 		Param& p = po->GetParam(n);
-		LoadCurve* plc = p.GetLoadCurve();
+		LoadCurve* plc = fem->GetParamCurve(p);
 		if (plc)
 		{
             plc->Update();
@@ -257,11 +256,12 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po)
 
 void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, const std::string& name)
 {
+	FSModel* fem = mat->GetFSModel();
 	int NP = mat->Parameters();
 	for (int n = 0; n < NP; ++n)
 	{
 		Param& p = mat->GetParam(n);
-		LoadCurve* plc = p.GetLoadCurve();
+		LoadCurve* plc = fem->GetParamCurve(p);
 		if (plc)
 		{
             plc->Update();
@@ -320,7 +320,7 @@ void CCurveEditor::BuildLoadCurves()
 		GLinearSpring* pls = dynamic_cast<GLinearSpring*>(po);
 		if (pls)
 		{
-			LoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
+			LoadCurve* plc = fem.GetParamCurve(pls->GetParam(GLinearSpring::MP_E));
 			if (plc)
 			{
                 plc->Update();
@@ -332,7 +332,7 @@ void CCurveEditor::BuildLoadCurves()
 		GGeneralSpring* pgs = dynamic_cast<GGeneralSpring*>(po);
 		if (pgs)
 		{
-			LoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
+			LoadCurve* plc = fem.GetParamCurve(pgs->GetParam(GGeneralSpring::MP_F));
 			if (plc)
 			{
                 plc->Update();
@@ -425,7 +425,7 @@ void CCurveEditor::BuildLoadCurves()
 	for (int i = 0; i < model.DiscreteObjects(); ++i)
 	{
 		GDiscreteObject* po = model.DiscreteObject(i);
-		if (po) BuildLoadCurves(t1, po);
+//		if (po) BuildLoadCurves(t1, po);
 
 /*		GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(po);
 		if (dss)
@@ -453,14 +453,15 @@ void CCurveEditor::BuildLoadCurves()
 	}
 }
 
-void CCurveEditor::AddParameterList(QTreeWidgetItem* t1, FSObject* po)
+void CCurveEditor::AddParameterList(QTreeWidgetItem* t1, FSModelComponent* po)
 {
+	FSModel* fem = po->GetFSModel();
 	for (int n = 0; n < po->Parameters(); ++n)
 	{
 		Param& param = po->GetParam(n);
 		if (param.IsEditable())
 		{
-			LoadCurve* plc = param.GetLoadCurve();
+			LoadCurve* plc = fem->GetParamCurve(param);
 			ui->addTreeItem(t1, QString::fromStdString(param.GetShortName()), plc, &param);
 		}
 	}
@@ -490,7 +491,7 @@ void CCurveEditor::BuildModelTree()
 			if (pls)
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pls->GetName()));
-				LoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
+				LoadCurve* plc = fem.GetParamCurve(pls->GetParam(GLinearSpring::MP_E));
 				if (plc) ui->addTreeItem(t3, "E", plc);
 			}
 
@@ -498,7 +499,7 @@ void CCurveEditor::BuildModelTree()
 			if (pgs)
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pgs->GetName()));
-				LoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
+				LoadCurve* plc = fem.GetParamCurve(pgs->GetParam(GGeneralSpring::MP_F));
 				if (plc) ui->addTreeItem(t3, "F", plc);
 			}
 		}
@@ -517,7 +518,7 @@ void CCurveEditor::BuildModelTree()
 				Param& pi = map->GetParam(i);
 				if (pi.GetParamType() == Param_FLOAT)
 				{
-					LoadCurve* plc = pi.GetLoadCurve();
+					LoadCurve* plc = fem.GetParamCurve(pi);
 					ui->addTreeItem(t3, pi.GetLongName(), plc);
 				}
 			}
@@ -577,16 +578,16 @@ void CCurveEditor::BuildModelTree()
                 FSFluidFlowRCR* prcr = dynamic_cast<FSFluidFlowRCR*>(pstep->Load(j));
                 if (pfr) {
 					t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-                    ui->addTreeItem(t3, QString::fromStdString("R"), pfr->GetLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), pfr->GetPOLoadCurve());
+                    ui->addTreeItem(t3, QString::fromStdString("R"), pfr->GetLoadCurve(FSFluidFlowResistance::LOAD));
+                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), pfr->GetLoadCurve(FSFluidFlowResistance::PO));
                 }
                 else if (prcr) {
 					t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-					ui->addTreeItem(t3, QString::fromStdString("R"), prcr->GetLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("Rd"), prcr->GetRDLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("capacitance"), prcr->GetCOLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), prcr->GetPOLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("initial_pressure"), prcr->GetIPLoadCurve());
+					ui->addTreeItem(t3, QString::fromStdString("R"), prcr->GetLoadCurve(FSFluidFlowRCR::LOAD));
+                    ui->addTreeItem(t3, QString::fromStdString("Rd"), prcr->GetLoadCurve(FSFluidFlowRCR::RD));
+                    ui->addTreeItem(t3, QString::fromStdString("capacitance"), prcr->GetLoadCurve(FSFluidFlowRCR::CO));
+                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), prcr->GetLoadCurve(FSFluidFlowRCR::PO));
+                    ui->addTreeItem(t3, QString::fromStdString("initial_pressure"), prcr->GetLoadCurve(FSFluidFlowRCR::IP));
                 }
 				else {
 					FSConstBodyForce* pbl = dynamic_cast<FSConstBodyForce*>(pstep->Load(j));
@@ -602,18 +603,18 @@ void CCurveEditor::BuildModelTree()
                         FSCentrifugalBodyForce* pcs = dynamic_cast<FSCentrifugalBodyForce*>(pstep->Load(j));
 						if (phs)
 						{
-							if (phs->GetLoadCurve())
+							if (phs->GetLoadCurve(FSHeatSource::LOAD))
 							{
 								t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-								ui->addTreeItem(t3, QString::fromStdString(phs->GetName()), phs->GetLoadCurve());
+								ui->addTreeItem(t3, QString::fromStdString(phs->GetName()), phs->GetLoadCurve(FSHeatSource::LOAD));
 							}
 						}
                         else if (pcs)
                         {
-							if (pcs->GetLoadCurve())
+							if (pcs->GetLoadCurve(FSCentrifugalBodyForce::ANGSPD))
 							{
 								t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-								ui->addTreeItem(t3, QString::fromStdString(pcs->GetName()), pcs->GetLoadCurve());
+								ui->addTreeItem(t3, QString::fromStdString(pcs->GetName()), pcs->GetLoadCurve(FSCentrifugalBodyForce::ANGSPD));
 							}
                         }
 						else
@@ -641,9 +642,9 @@ void CCurveEditor::BuildModelTree()
 				if (pw) 
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pw->GetName()));
-					ui->addTreeItem(t3, "tolerance", pw->GetParamLC(FSRigidWallInterface::ALTOL  ), pw->GetParamPtr(FSRigidWallInterface::ALTOL  ));
-					ui->addTreeItem(t3, "penalty"  , pw->GetParamLC(FSRigidWallInterface::PENALTY), pw->GetParamPtr(FSRigidWallInterface::PENALTY));
-					ui->addTreeItem(t3, "plane displacement", pw->GetParamLC(FSRigidWallInterface::OFFSET ), pw->GetParamPtr(FSRigidWallInterface::OFFSET ));
+					ui->addTreeItem(t3, "tolerance", pw->GetLoadCurve(FSRigidWallInterface::ALTOL  ), pw->GetParamPtr(FSRigidWallInterface::ALTOL  ));
+					ui->addTreeItem(t3, "penalty"  , pw->GetLoadCurve(FSRigidWallInterface::PENALTY), pw->GetParamPtr(FSRigidWallInterface::PENALTY));
+					ui->addTreeItem(t3, "plane displacement", pw->GetLoadCurve(FSRigidWallInterface::OFFSET ), pw->GetParamPtr(FSRigidWallInterface::OFFSET ));
 				}
 				else
 				{
@@ -738,7 +739,7 @@ void CCurveEditor::BuildModelTree()
 			if (po && (po->Parameters() > 0))
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(po->GetName()));
-				AddParameterList(t3, po);
+//				AddParameterList(t3, po);
 			}
 
 			GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(po);
@@ -867,7 +868,7 @@ void CCurveEditor::on_plot_pointClicked(QPointF p, bool shift)
 
 	if (plc == 0)
 	{
-		Param* pp = m_currentItem->GetParam();
+/*		Param* pp = m_currentItem->GetParam();
 		if (pp)
 		{
 			assert(pp->GetLoadCurve() == 0);
@@ -876,7 +877,7 @@ void CCurveEditor::on_plot_pointClicked(QPointF p, bool shift)
 			plc->Clear();
 			m_currentItem->SetLoadCurve(plc);
 		}
-	}
+*/	}
 
 	if (plc && (ui->isAddPointChecked() || shift))
 	{
@@ -1119,12 +1120,12 @@ void CCurveEditor::on_open_triggered()
 					Param* pp = m_currentItem->GetParam();
 					if (pp)
 					{
-						assert(pp->GetLoadCurve() == 0);
+/*						assert(pp->GetLoadCurve() == 0);
 						pp->SetLoadCurve();
 						plc = pp->GetLoadCurve();
 						plc->Clear();
 						m_currentItem->SetLoadCurve(plc);
-					}
+*/					}
 				}
 				if (plc) *plc = lc;
 				SetLoadCurve(plc);
@@ -1214,8 +1215,8 @@ void CCurveEditor::on_paste_triggered()
 		Param* p = m_currentItem->GetParam();
 		if (p)
 		{
-			p->SetLoadCurve();
-			plc = p->GetLoadCurve();
+//			p->SetLoadCurve();
+//			plc = p->GetLoadCurve();
 			m_currentItem->SetLoadCurve(plc);
 		}
 	}
@@ -1231,7 +1232,7 @@ void CCurveEditor::on_delete_triggered()
 {
 	if (m_currentItem == nullptr) return;
 	Param* p = m_currentItem->GetParam();
-	if (p && p->GetLoadCurve())
+	if (p && (p->GetLoadCurveID() > 0))
 	{
 		m_cmd.DoCommand(new CCmdDeleteCurve(p));
 		m_currentItem->SetLoadCurve(0);
@@ -1340,9 +1341,9 @@ void CCurveEditor::on_undo_triggered()
 	Param* pp = m_currentItem->GetParam();
 	if (plc) SetLoadCurve(plc);
 	else if (pp) {
-		plc = pp->GetLoadCurve(); 
-		m_currentItem->SetLoadCurve(plc);
-		SetLoadCurve(plc);
+//		plc = pp->GetLoadCurve(); 
+//		m_currentItem->SetLoadCurve(plc);
+//		SetLoadCurve(plc);
 	}
 
 	ui->enablePointEdit(false);

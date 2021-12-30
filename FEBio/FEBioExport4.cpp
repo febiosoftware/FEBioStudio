@@ -1894,6 +1894,7 @@ void FEBioExport4::WriteMeshData(FSDataMapGenerator* map)
 	meshData.add_attribute("generator", map->m_generator);
 	meshData.add_attribute("elem_set", map->m_elset);
 
+	FSModel& fem = m_prj.GetFSModel();
 
 	m_xml.add_branch(meshData);
 	{
@@ -1908,16 +1909,20 @@ void FEBioExport4::WriteMeshData(FSDataMapGenerator* map)
 			e.add_attribute("type", "point");
 			m_xml.add_branch(e);
 			{
-				LoadCurve& lc = *p->GetLoadCurve();
-				m_xml.add_branch("points");
+				LoadCurve* plc = fem.GetParamCurve(*p);
+				if (plc)
 				{
-					for (int i = 0; i < lc.Size(); ++i)
+					LoadCurve& lc = *plc;
+					m_xml.add_branch("points");
 					{
-						double v[2] = { lc[i].time, lc[i].load };
-						m_xml.add_leaf("point", v, 2);
+						for (int i = 0; i < lc.Size(); ++i)
+						{
+							double v[2] = { lc[i].time, lc[i].load };
+							m_xml.add_leaf("point", v, 2);
+						}
 					}
+					m_xml.close_branch();
 				}
-				m_xml.close_branch();
 			}
 			m_xml.close_branch();
 		}
@@ -2375,7 +2380,7 @@ void FEBioExport4::WriteDiscreteSection(FSStep& s)
 			{
 				Param& p = pg->GetParam(GGeneralSpring::MP_F);
 				double F = p.GetFloatValue();
-				int lc = (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
+				int lc = -1;// (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
 
 				XMLElement f;
 				f.name("force");

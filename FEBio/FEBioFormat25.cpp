@@ -954,7 +954,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 								else ParseUnknownTag(tag);
 								++tag;
 							} while (!tag.isend());
-							p->SetLoadCurve(lc);
+//							p->SetLoadCurve(lc);
 						}
 					}
 					else ParseUnknownTag(tag);
@@ -1356,7 +1356,7 @@ void FEBioFormat25::ParseBCRigidBody(FSStep* pstep, XMLTag& tag)
 			if (hasName == false) sprintf(szname, "RigidDisplacement%02d", n++);
 			pd->SetName(szname);
 			pstep->AddRC(pd);
-			febio.AddParamCurve(pd->GetLoadCurve(), lc - 1);
+			febio.AddParamCurve(&pd->GetParam(FSRigidDisplacement::VALUE), lc - 1);
 		}
 		else if (tag == "force")
 		{
@@ -1376,8 +1376,7 @@ void FEBioFormat25::ParseBCRigidBody(FSStep* pstep, XMLTag& tag)
 			if (hasName == false) sprintf(szname, "RigidForce%02d", n++);
 			pf->SetName(szname);
 			pstep->AddRC(pf);
-			if (lc > 0) febio.AddParamCurve(pf->GetLoadCurve(), lc - 1);
-			else pf->RemoveLoadcurve();
+			if (lc > 0) febio.AddParamCurve(&pf->GetParam(FSRigidDisplacement::VALUE), lc - 1);
 		}
 		else ParseUnknownTag(tag);
 
@@ -1583,7 +1582,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadTraction(XMLTag& tag)
 		if (tag == "scale")
 		{
 			int lc = tag.Attribute("lc").value<int>() - 1;
-			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+			febio.AddParamCurve(&pbc->GetParam(FSSurfaceTraction::LOAD), lc);
 
 			double s = 0.0;
 			tag.value(s);
@@ -1622,7 +1621,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidTraction(XMLTag& tag)
 		if (tag == "scale")
 		{
 			int lc = tag.Attribute("lc").value<int>() - 1;
-			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+			febio.AddParamCurve(&pbc->GetParam(FSFluidTraction::LOAD), lc);
 
 			double s;
 			tag.value(s);
@@ -1692,7 +1691,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidNormalVelocity(XMLTag& tag)
             psl->SetLoad(v);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidNormalVelocity::LOAD), lc);
         }
         else if (tag == "prescribe_nodal_velocities") {
             bool b; tag.value(b);
@@ -1732,7 +1731,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidRotationalVelocity(XMLTag& tag)
             psl->SetLoad(as);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidRotationalVelocity::LOAD), lc);
         }
         else if (tag == "axis") {
             vec3d a; tag.value(a);
@@ -1767,7 +1766,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
             psl->SetLoad(R);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidFlowResistance::LOAD), lc);
         }
         else if (tag == "pressure_offset")
         {
@@ -1775,7 +1774,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
             psl->SetPO(po);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetPOLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidFlowResistance::PO), lc);
         }
         else ParseUnknownTag(tag);
         ++tag;
@@ -1803,7 +1802,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
             psl->SetLoad(R);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidFlowRCR::LOAD), lc);
         }
         else if (tag == "Rd")
         {
@@ -1811,7 +1810,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
             psl->SetRD(rd);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetRDLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidFlowRCR::RD), lc);
         }
         else if (tag == "capacitance")
         {
@@ -1819,7 +1818,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
             psl->SetCO(co);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetCOLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidFlowRCR::CO), lc);
         }
         else if (tag == "pressure_offset")
         {
@@ -1827,7 +1826,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
             psl->SetPO(po);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetPOLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidFlowRCR::PO), lc);
         }
         else if (tag == "initial_pressure")
         {
@@ -1835,7 +1834,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
             psl->SetIP(ip);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetIPLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidFlowRCR::IP), lc);
         }
         else if (tag == "Bernoulli")
         {
@@ -1868,7 +1867,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidBackFlowStabilization(XMLTag& tag)
             psl->SetLoad(b);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidBackflowStabilization::LOAD), lc);
         }
         else ParseUnknownTag(tag);
         ++tag;
@@ -1896,7 +1895,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidTangentialStabilization(XMLTag& tag)
             psl->SetLoad(b);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetLoadCurve(), lc);
+            febio.AddParamCurve(&psl->GetParam(FSFluidTangentialStabilization::LOAD), lc);
         }
         else ParseUnknownTag(tag);
         ++tag;
@@ -1962,7 +1961,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlux(XMLTag& tag)
 		else if (tag == "flux")
 		{
 			int lc = tag.Attribute("lc").value<int>() - 1;
-			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+			febio.AddParamCurve(&pbc->GetParam(FSFluidFlux::LOAD), lc);
 
 			double s; tag.value(s);
 			pbc->SetLoad(s);
@@ -2008,9 +2007,8 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadSoluteFlux(XMLTag& tag)
 			if (alc)
 			{
 				int lc = alc->value<int>() - 1;
-				febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+				febio.AddParamCurve(&pbc->GetParam(FSSoluteFlux::LOAD), lc);
 			}
-			else pbc->GetLoadCurve()->Clear();
 			double s; tag.value(s);
 			pbc->SetLoad(s);
 		}
@@ -2050,12 +2048,7 @@ FSSurfaceLoad* FEBioFormat25::ParseConcentrationFlux(XMLTag& tag)
 			if (alc)
 			{
 				int lc = alc->value<int>() - 1;
-				febio.AddParamCurve(pcf->GetLoadCurve(), lc);
-			}
-			else
-			{
-				LoadCurve* plc = pcf->GetLoadCurve();
-				if (plc) plc->Clear();
+				febio.AddParamCurve(&pcf->GetParam(FSConcentrationFlux::FLUX), lc);
 			}
 			double s; tag.value(s);
 			pcf->SetFlux(s);
@@ -2107,7 +2100,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadNormalTraction(XMLTag& tag)
 		else if (tag == "traction")
 		{
 			int lc = tag.Attribute("lc").value<int>() - 1;
-			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+			febio.AddParamCurve(&pbc->GetParam(FSBPNormalTraction::LOAD), lc);
 			double s; tag.value(s);
 			pbc->SetLoad(s);
 		}
@@ -2144,14 +2137,14 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadMatchingOsmoticCoefficient(XMLTag& tag)
         else if (tag == "ambient_pressure")
         {
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+            febio.AddParamCurve(&pbc->GetParam(FSMatchingOsmoticCoefficient::AMBP), lc);
             double s; tag.value(s);
             pbc->SetLoadP(s);
         }
         else if (tag == "ambient_osmolarity")
         {
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(pbc->GetLoadCurveC(), lc);
+            febio.AddParamCurve(&pbc->GetParam(FSMatchingOsmoticCoefficient::AMBC), lc);
             double s; tag.value(s);
             pbc->SetLoadC(s);
         }
@@ -2183,7 +2176,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadHeatFlux(XMLTag& tag)
 		if (tag == "flux")
 		{
 			int lc = tag.Attribute("lc").value<int>() - 1;
-			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+			febio.AddParamCurve(&pbc->GetParam(FSHeatFlux::FLUX), lc);
 			double s; tag.value(s);
 			pbc->SetLoad(s);
 		}
@@ -2215,7 +2208,7 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadConvectiveHeatFlux(XMLTag& tag)
 		if (tag == "Ta")
 		{
 			int lc = tag.Attribute("lc").value<int>() - 1;
-			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+			febio.AddParamCurve(&pbc->GetParam(FSConvectiveHeatFlux::TREF), lc);
 			double s; tag.value(s);
 			pbc->SetTemperature(s);
 		}
@@ -3214,6 +3207,7 @@ void FEBioFormat25::ParseNonConstBodyForce(FSStep *pstep, XMLTag &tag)
 void FEBioFormat25::ParseHeatSource(FSStep *pstep, XMLTag &tag)
 {
 	FSModel& fem = GetFSModel();
+	FEBioInputModel& febio = GetFEBioModel();
 
 	FSHeatSource* phs = new FSHeatSource(&fem, pstep->GetID());
 	pstep->AddComponent(phs);
@@ -3227,7 +3221,8 @@ void FEBioFormat25::ParseHeatSource(FSStep *pstep, XMLTag &tag)
 			szlc = tag.AttributeValue("lc");
 			double v; tag.value(v);
 			phs->SetLoad(v);
-			phs->GetLoadCurve()->SetID(atoi(szlc) - 1);
+
+			febio.AddParamCurve(&phs->GetParam(FSHeatSource::LOAD), atoi(szlc) - 1);
 		}
 		else throw XMLReader::InvalidTag(tag);
 
@@ -3243,7 +3238,8 @@ void FEBioFormat25::ParseHeatSource(FSStep *pstep, XMLTag &tag)
 void FEBioFormat25::ParseCentrifugalBodyForce(FSStep *pstep, XMLTag &tag)
 {
     FSModel& fem = GetFSModel();
-    
+	FEBioInputModel& febio = GetFEBioModel();
+
     FSCentrifugalBodyForce* phs = new FSCentrifugalBodyForce(&fem, pstep->GetID());
     pstep->AddComponent(phs);
     
@@ -3256,8 +3252,8 @@ void FEBioFormat25::ParseCentrifugalBodyForce(FSStep *pstep, XMLTag &tag)
             szlc = tag.AttributeValue("lc");
             double v; tag.value(v);
             phs->SetLoad(v);
-            phs->GetLoadCurve()->SetID(atoi(szlc) - 1);
-        }
+			febio.AddParamCurve(&phs->GetParam(FSCentrifugalBodyForce::ANGSPD), atoi(szlc) - 1);
+		}
         else if (ReadParam(*phs, tag) == false) ParseUnknownTag(tag);
         
         ++tag;

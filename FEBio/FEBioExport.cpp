@@ -158,7 +158,7 @@ void FEBioExport::WriteParam(Param &p)
 	XMLElement e;
 	e.name(szname);
 	if (szindex) e.add_attribute(szindex, nindex);
-	LoadCurve* plc = p.GetLoadCurve();
+	LoadCurve* plc = fem.GetParamCurve(p);
 	if (plc && plc->Size())
 	{
 		assert(plc->GetID() > 0);
@@ -273,11 +273,12 @@ void FEBioExport::AddLoadCurve(LoadCurve* plc)
 //-----------------------------------------------------------------------------
 void FEBioExport::AddLoadCurves(ParamContainer& PC)
 {
+	FSModel& fem = m_prj.GetFSModel();
 	int N = PC.Parameters();
 	for (int i = 0; i<N; ++i)
 	{
 		Param& p = PC.GetParam(i);
-		LoadCurve* plc = p.GetLoadCurve();
+		LoadCurve* plc = fem.GetParamCurve(p);
 		if (plc) AddLoadCurve(plc);
 	}
 }
@@ -442,9 +443,9 @@ void FEBioExport::BuildLoadCurveList(FSModel& fem)
 		for (int j = 0; j<ps->RigidConstraints(); ++j)
 		{
 			FSRigidPrescribed* prc = dynamic_cast<FSRigidPrescribed*>(ps->RigidConstraint(j));
-			if (prc && prc->IsActive() && (prc->GetDOF() >= 0) && (prc->GetLoadCurve()))
+			if (prc && prc->IsActive() && (prc->GetDOF() >= 0) && (prc->GetLoadCurve(FSRigidPrescribed::VALUE)))
 			{
-				AddLoadCurve(prc->GetLoadCurve());
+				AddLoadCurve(prc->GetLoadCurve(FSRigidPrescribed::VALUE));
 			}
 		}
 	}

@@ -35,7 +35,7 @@ FSNodalDOFLoad::FSNodalDOFLoad(FSModel* ps) : FSNodalLoad(FE_NODAL_DOF_LOAD, ps)
 {
 	SetTypeString("Nodal Load");
 	AddIntParam(0, "bc", "bc")->SetEnumNames("x-force\0y-force\0z-force\0");
-	AddScienceParam(1.0, UNIT_FORCE, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
+	AddScienceParam(1.0, UNIT_FORCE, "scale", "scale")->MakeVariable(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -43,7 +43,13 @@ FSNodalDOFLoad::FSNodalDOFLoad(FSModel* ps, FEItemListBuilder* pi, int bc, doubl
 {
 	SetTypeString("Nodal Load");
 	AddIntParam(bc, "bc", "bc")->SetEnumNames("x-force\0y-force\0z-force\0");
-	AddScienceParam(f, UNIT_FORCE, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
+	AddScienceParam(f, UNIT_FORCE, "scale", "scale")->MakeVariable(true);
+}
+
+//-----------------------------------------------------------------------------
+LoadCurve* FSNodalDOFLoad::GetLoadCurve()
+{
+	return FSModelComponent::GetLoadCurve(FSNodalDOFLoad::LOAD);
 }
 
 //=============================================================================
