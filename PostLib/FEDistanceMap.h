@@ -46,12 +46,12 @@ private:
 		int Nodes() { return (int) m_node.size(); }
 
 	public:
-		vector<int>	m_face;		// face list
-		vector<int>	m_node;		// node list
-		vector<int>	m_lnode;	// local node list
-		vector<vec3f> m_norm;	// node normals
+		std::vector<int>	m_face;		// face list
+		std::vector<int>	m_node;		// node list
+		std::vector<int>	m_lnode;	// local node list
+		std::vector<vec3f> m_norm;	// node normals
 
-		vector<vector<int> >	m_NLT;	// node-facet look-up table
+		std::vector< std::vector<int> >	m_NLT;	// node-facet look-up table
 	};
 
 public:
@@ -69,9 +69,9 @@ public:
 
 public:
 	// assign selections
-	void SetSelection1(vector<int>& s) { m_surf1.m_face = s; }
+	void SetSelection1(std::vector<int>& s) { m_surf1.m_face = s; }
 
-	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
+	void SetSelection2(std::vector<int>& s) { m_surf2.m_face = s; }
 
 protected:
 	// build node normal list

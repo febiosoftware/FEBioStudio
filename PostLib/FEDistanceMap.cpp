@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <stdio.h>
 #include "tools.h"
 #include "constants.h"
+using namespace std;
 
 //-----------------------------------------------------------------------------
 Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)

@@ -140,7 +140,7 @@ bool FEVTKExport::Write(const char* szfile)
 	//fprintf(fp, "%d %d %d %d\n", parts, nodes, faces, edges);
 
 	// --- N O D E S ---
-	vector<vec3d> nodeCoords(nodes);
+	std::vector<vec3d> nodeCoords(nodes);
 	nodes = 0;
 	for (int i = 0; i < model.Objects(); ++i)
 	{
@@ -259,7 +259,7 @@ bool FEVTKExport::Write(const char* szfile)
 		{
 			FSMesh& m = *model.Object(i)->GetFEMesh();
 
-			vector<double> nodeShellThickness; 
+			std::vector<double> nodeShellThickness; 
 			nodeShellThickness.reserve(nodes);
 			int nn[8];
 			for (int k = 0 ; k< nodes;k++)

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GCurveMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
 #include <MeshLib/FEFaceEdgeList.h>
+using namespace std;
 
 class DynamicMesh2D
 {

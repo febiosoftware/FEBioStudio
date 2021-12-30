@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FEFaceEdgeList.h>
 #include <stack>
+using namespace std;
 
 //=============================================================================
 

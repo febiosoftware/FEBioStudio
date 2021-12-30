@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <QStandardItemModel>
+using namespace std;
 
 // in MaterialPropsView.cpp
 QStringList GetEnumValues(FSModel* fem, const char* ch);
@@ -97,7 +98,7 @@ public:
 
 	public:
 		Item*			m_parent;		// pointer to parent
-		vector<Item*>	m_children;		// list of children
+		std::vector<Item*>	m_children;		// list of children
 
 	public:
 		Item() { m_model = nullptr; m_pc = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_propIndex = 0; m_nrow = -1; m_flag = 0;  }

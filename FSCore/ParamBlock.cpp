@@ -729,18 +729,36 @@ ParamBlock::ParamBlock(void)
 //-----------------------------------------------------------------------------
 ParamBlock::~ParamBlock(void)
 {
+	Clear();
+}
+
+//-----------------------------------------------------------------------------
+void ParamBlock::Clear()
+{
+	for (int i = 0; i < m_Param.size(); ++i) delete m_Param[i];
+	m_Param.clear();
 }
 
 //-----------------------------------------------------------------------------
 ParamBlock::ParamBlock(const ParamBlock &b)
 {
-	m_Param = b.m_Param;
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param* p = new Param(s);
+		m_Param.push_back(p);
+	}
 }
 
 ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 {
-	m_Param = b.m_Param;
-
+	Clear();
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param* p = new Param(s);
+		m_Param.push_back(p);
+	}
 	return *this;
 }
 
@@ -970,14 +988,12 @@ void ParamContainer::LoadParam(const Param& p)
 
 void ParamContainer::CopyParams(const ParamContainer& pc)
 {
-#ifdef _DEBUG
 	assert(pc.Parameters() == Parameters());
 	for (int i = 0; i < Parameters(); ++i)
 	{
 		Param& pi = GetParam(i);
 		const Param& pj = pc.GetParam(i);
 		assert(pi.GetParamType() == pj.GetParamType());
+		pi = pj;
 	}
-#endif
-	m_Param = pc.m_Param;
 }

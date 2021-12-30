@@ -1,4 +1,5 @@
 #include "FEBase.h"
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FSProperty::FSProperty()

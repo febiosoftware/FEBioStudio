@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FECreateShells.h"
 #include <GeomLib/GMeshObject.h>
+using namespace std;
 
 FECreateShells::FECreateShells() : FEModifier("Create Shells")
 {

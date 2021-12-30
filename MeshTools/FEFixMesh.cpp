@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FENodeFaceList.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FEFixMesh::FEFixMesh() : FEModifier("Fix mesh")

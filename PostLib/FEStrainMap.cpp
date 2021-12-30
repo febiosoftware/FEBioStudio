@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "tools.h"
 
 using namespace Post;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 void FEStrainMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)

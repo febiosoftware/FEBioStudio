@@ -53,7 +53,7 @@ vec3d FEDataVariable::Value(vec3d &r)
 	m_mth[1].Clear(); m_mth[1].Create(m_v[1]);
 	m_mth[2].Clear(); m_mth[2].Create(m_v[2]);
 
-	vector<double> xyz = { r.x, r.y, r.z };
+	std::vector<double> xyz = { r.x, r.y, r.z };
 
 	vec3d v;
 	v.x = m_mth[0].value_s(xyz);

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData_T.h>
 
 using namespace Post;
+using namespace std;
 
 template <class Type> void ReadFaceData_REGION(xpltArchive& ar, Post::FEPostMesh& m, XpltReader2::Surface &s, Post::FEMeshData &data)
 {

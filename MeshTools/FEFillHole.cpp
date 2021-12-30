@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeEdgeList.h>
 #include <FECore/matrix.h>
 #include <limits.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 bool FEFillHole::EdgeRing::contains(int inode)

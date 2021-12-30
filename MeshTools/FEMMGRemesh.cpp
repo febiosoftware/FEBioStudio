@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <mmg/mmg2d/libmmg2d.h>
 #endif
 #include <MeshLib/FEMeshBuilder.h>
+using namespace std;
 
 extern int ET_TET[6][2]; // in lut.cpp
 extern int ET_TRI[3][2]; // in lut.cpp

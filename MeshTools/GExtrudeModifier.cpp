@@ -99,8 +99,8 @@ void GExtrudeModifier::Apply(GObject* po)
 
 	// create new top-surfaces
 	int F = po->Faces();
-	vector<int> node;
-	vector<pair<int, int> > edge;
+	std::vector<int> node;
+	std::vector< std::pair<int, int> > edge;
 	for (int n = 1; n <= NDIV; ++n)
 	{
 		for (int i = 0; i < F; ++i)

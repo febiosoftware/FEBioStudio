@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <PostLib/FEMeshData_T.h>
 using namespace Post;
+using namespace std;
 
 //=============================================================================
 // MeshPartition

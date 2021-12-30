@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include "FEModelConstraint.h"
 #include <FSCore/FSObjectList.h>
+using namespace std;
 
 int FSStep::m_ncount = 0;
 

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEPostModel.h>
 using namespace Post;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 vec3d FEKinemat::KINE::apply(const vec3d& r)

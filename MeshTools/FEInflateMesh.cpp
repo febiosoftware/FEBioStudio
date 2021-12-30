@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEExtrudeFaces.h"
 #include <MeshLib/FEMeshBuilder.h>
 #include <MeshLib/FENodeNodeList.h>
+using namespace std;
 
 FEInflateMesh::FEInflateMesh() : FEModifier("Inflate")
 {

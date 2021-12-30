@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "FEMeshData_T.h"
 
 using namespace Post;
+using namespace std;
 
 enum VTK_CELLTYPE {
 	VTK_VERTEX =                 1,

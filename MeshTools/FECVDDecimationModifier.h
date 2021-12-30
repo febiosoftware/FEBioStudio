@@ -58,7 +58,7 @@ private:
 		vec3d	m_sgamma;	// sum of "gamma's"
 		double	m_srho;		// sum of "rho's"
 		int		m_val;		// valence (i.e. number of cells assigned to this cluster)
-		vector<int> m_fid; //face ids of the faces in this cluster
+		std::vector<int> m_fid; //face ids of the faces in this cluster
 		
 	};
 
@@ -110,9 +110,9 @@ public:
 	double	m_gradient; //gradiant for curvature
 
 private:
-	vector<Cluster>	m_Cluster;
-	vector<int>		m_tag;
-	vector<double>	m_rho;		// rho for all triangles
-	vector<vec3d>	m_gamma;	// centroids of all triangles
-	list<EDGE>		m_Edge;		// edge list
+	std::vector<Cluster>	m_Cluster;
+	std::vector<int>		m_tag;
+	std::vector<double>	m_rho;		// rho for all triangles
+	std::vector<vec3d>	m_gamma;	// centroids of all triangles
+	std::list<EDGE>		m_Edge;		// edge list
 };

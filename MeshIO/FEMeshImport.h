@@ -61,8 +61,8 @@ protected:
 	void BuildMesh(FSProject& prj);
 
 protected:
-	vector<NODE>	m_Node;
-	vector<ELEM>	m_Elem;
+	std::vector<NODE>	m_Node;
+	std::vector<ELEM>	m_Elem;
 
 private:
 	bool	m_bread_surface;

@@ -47,5 +47,5 @@ private:
 	FSEdgeList*			m_EL;
 	FSFaceEdgeList*		m_FEL;
 	FSEdgeFaceList*		m_EFL;
-	vector<int>			m_tag;
+	std::vector<int>	m_tag;
 };

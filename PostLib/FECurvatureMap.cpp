@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FECurvatureMap.h"
 using namespace Post;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)

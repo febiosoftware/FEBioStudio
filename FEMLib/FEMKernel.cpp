@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEMKernel.h"
+using namespace std;
 
 FEClassFactory::FEClassFactory(int module, int superID, int classID, const char* sztype, const char* helpURL)
 {

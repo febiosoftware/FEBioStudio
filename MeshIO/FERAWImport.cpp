@@ -76,7 +76,7 @@ bool FERAWImport::Load(const char* szfile)
 	Close();
 
 	// reindex image so that we know how many gray values are effectively used 
-	vector<int> bin; bin.assign(256, 0);
+	std::vector<int> bin; bin.assign(256, 0);
 	for (int i=0; i<N; ++i) bin[pb[i]]++;
 	int n = 0;
 	for (int i=0; i<256; ++i) if (bin[i] > 0) bin[i] = n++; else bin[i] = -1;

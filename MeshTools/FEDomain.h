@@ -74,13 +74,13 @@ public:
     FEDTet*       TetPtr    (int n=0) { return ((n>=0) && (n<(int)TetList.size())? &TetList[n] : 0);       }
 
 public:
-    vector<FEDVertex>   VertexList;
-    vector<FEDEdge>     EdgeList;
-    vector<FEDQuad>     QuadList;
-    vector<FEDTri>      TriList;
-    vector<FEDBox>      BoxList;
-    vector<FEDWedge>    WedgeList;
-    vector<FEDTet>      TetList;
+    std::vector<FEDVertex>   VertexList;
+    std::vector<FEDEdge>     EdgeList;
+    std::vector<FEDQuad>     QuadList;
+    std::vector<FEDTri>      TriList;
+    std::vector<FEDBox>      BoxList;
+    std::vector<FEDWedge>    WedgeList;
+    std::vector<FEDTet>      TetList;
     
 public:
     // find vertex by tag number
@@ -122,13 +122,13 @@ public:
     int AddTri(FEDTri tri);
     
     // add a box from a list of vertices
-    int AddBox(vector<int> vlist, int ntag = -1, int gid = -1);
+    int AddBox(std::vector<int> vlist, int ntag = -1, int gid = -1);
     
     // add a wedge from a list of vertices
-    int AddWedge(vector<int> vlist, int ntag = -1, int gid = -1);
+    int AddWedge(std::vector<int> vlist, int ntag = -1, int gid = -1);
     
     // add a tet from a list of vertices
-    int AddTet(vector<int> vlist, int ntag = -1, int gid = -1);
+    int AddTet(std::vector<int> vlist, int ntag = -1, int gid = -1);
     
     // split a box into two wedges
     void SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2]);
@@ -184,9 +184,9 @@ public:
 public:
     vec3d   r;          // vertex position
     int     m_ntag;     // tag number
-    vector<int> m_edge; // list of edges connected to this vertex
-    vector<int> m_quad; // list of quads connected to this vertex
-    vector<int> m_tri;  // list of tris connected to this vertex
+    std::vector<int> m_edge; // list of edges connected to this vertex
+    std::vector<int> m_quad; // list of quads connected to this vertex
+    std::vector<int> m_tri;  // list of tris connected to this vertex
 };
 
 //-------------------------------------------------------------------------------
@@ -213,11 +213,11 @@ public:
     bool CreateMesh(FSDomain* pdom);
     
     // mesh data
-    vector<int>     n;      // domain vertex list along edge
+    std::vector<int>     n;      // domain vertex list along edge
     int             nseg;   // number of segments along edge
     double          bias;   // mesh bias
     bool            dble;   // flag for bias (true = double, false = single)
-    vector<double>  rbias;  // parametric coordinates of biased mesh
+    std::vector<double>  rbias;  // parametric coordinates of biased mesh
 };
 
 //-------------------------------------------------------------------------------
@@ -247,9 +247,9 @@ public:
     bool            ep[4];  // edge sense (positive = true, negative = false)
     
     // mesh data
-    vector< vector<int> >     n;      // domain vertex list in face
-    vector< vector<double> >  eta1;   // parametric coordinates of vertices
-    vector< vector<double> >  eta2;   // parametric coordinates of vertices
+    std::vector< std::vector<int> >     n;      // domain vertex list in face
+    std::vector< std::vector<double> >  eta1;   // parametric coordinates of vertices
+    std::vector< std::vector<double> >  eta2;   // parametric coordinates of vertices
     
 };
 
@@ -287,9 +287,9 @@ public:
     bool            ep[3];  // edge sense (positive = true, negative = false)
     
     // mesh data
-    vector< vector<int> >     n;      // domain vertex list in face
-    vector< vector<double> >  eta1;   // parametric coordinates of vertices
-    vector< vector<double> >  eta2;   // parametric coordinates of vertices
+    std::vector< std::vector<int> >     n;      // domain vertex list in face
+    std::vector< std::vector<double> >  eta1;   // parametric coordinates of vertices
+    std::vector< std::vector<double> >  eta2;   // parametric coordinates of vertices
     
 };
 
@@ -338,8 +338,8 @@ public:
     int             qst[6];     // quad starting node
     
     // mesh data
-    vector< vector< vector<int> > >     n;      // domain node list along edge
-    vector< vector<int> >               elem;   // elements
+    std::vector< std::vector< std::vector<int> > >     n;      // domain node list along edge
+    std::vector< std::vector<int> >               elem;   // elements
     
 public:
     // set mesh parameters assuming faces 0,3,4 map identically to faces 2, 1, 5
@@ -401,8 +401,8 @@ public:
     int             fst[5];     // face starting node
     
     // mesh data
-    vector< vector< vector<int> > >     n;      // domain node list
-    vector< vector<int> >               elem;   // elements
+    std::vector< std::vector< std::vector<int> > >     n;      // domain node list
+    std::vector< std::vector<int> >               elem;   // elements
     
 public:
     // set mesh parameters
@@ -471,8 +471,8 @@ public:
     int             fst[4];     // face starting node
     
     // mesh data
-    vector<int>             n;      // domain node list
-    vector< vector<int> >   elem;   // elements
+    std::vector<int>             n;      // domain node list
+    std::vector< std::vector<int> >   elem;   // elements
     
 public:
     // set mesh parameters along edges emanating out of a face

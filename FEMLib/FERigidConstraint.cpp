@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FERigidConstraint.h"
 #include <FECore/units.h>
+using namespace std;
 
 FSRigidConstraintOld::FSRigidConstraintOld(int ntype, int nstep)
 {
