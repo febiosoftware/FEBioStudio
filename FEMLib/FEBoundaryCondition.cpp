@@ -211,11 +211,6 @@ void FSPrescribedDOF::SetVarID(int nid)
 	GetParam(0).CopyEnumNames(sz);
 }
 
-LoadCurve* FSPrescribedDOF::GetLoadCurve()
-{
-	return FSModelComponent::GetLoadCurve(SCALE);
-}
-
 // used only for reading parameters for old file formats ( < 2.0)
 void FSPrescribedDOF::LoadParam(const Param& p)
 {

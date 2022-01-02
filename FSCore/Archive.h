@@ -168,6 +168,7 @@ public:
 
 	IOResult read(std::vector<int>& v);
 	IOResult read(std::vector<double>& v);
+	IOResult read(std::vector<vec2d>& v);
 
 	// conversion to FILE* 
 	operator FILE* () { return m_fp; }

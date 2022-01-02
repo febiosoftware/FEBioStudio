@@ -1776,13 +1776,6 @@ FSLoadController* FSModel::GetLoadControllerFromID(int lc)
 	return nullptr;
 }
 
-LoadCurve* FSModel::GetParamCurve(const Param& p)
-{
-	int lcid = p.GetLoadCurveID();
-	FSLoadController* plc = GetLoadControllerFromID(lcid);
-	return (plc ? plc->GetLoadCurve() : nullptr);
-}
-
 void FSModel::AddLoadController(FSLoadController* plc)
 {
 	m_LC.Add(plc);
@@ -1801,18 +1794,15 @@ FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 	plc->SetParamInt("interpolate", lc.GetType());
 	plc->SetParamInt("extend", lc.GetExtend());
 
-/*	std::vector<vec2d> pt;
+	std::vector<vec2d> pt;
 	for (int i = 0; i < lc.Size(); ++i)
 	{
 		LOADPOINT& lp = lc[i];
 		vec2d pi(lp.time, lp.load);
 		pt.push_back(pi);
 	}
-
 	Param& points = *plc->GetParam("points");
 	points.val<std::vector<vec2d> >() = pt;
-*/
-	plc->SetLoadCurve(new LoadCurve(lc));
 
 	AddLoadController(plc);
 

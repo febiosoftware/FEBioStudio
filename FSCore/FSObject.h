@@ -57,6 +57,8 @@ public:
 	virtual void SetTypeString(const std::string& s) { m_typeStr = s; }
 	virtual const char* GetTypeString() const { return m_typeStr.c_str(); }
 
+	bool IsType(const char* sztype) const;
+
 public:
 	void SetParent(FSObject* parent);
 	FSObject* GetParent();

@@ -35,8 +35,6 @@ public:
 
 	void SetLoad(double f) { SetFloatValue(LOAD, f); }
 	double GetLoad() { return GetFloatValue(LOAD); }
-
-	LoadCurve* GetLoadCurve();
 };
 
 class FEBioNodalLoad : public FSNodalLoad

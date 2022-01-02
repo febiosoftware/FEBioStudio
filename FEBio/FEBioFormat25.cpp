@@ -1249,7 +1249,7 @@ void FEBioFormat25::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 			Param* pp = pbc->GetParam("scale"); assert(pp);
 			if (pp && pp->IsVariable()) ParseMappedParameter(tag, pp);
 			int lc = tag.AttributeValue<int>("lc", -1);
-			if (lc != -1) febio.AddParamCurve(pbc->GetLoadCurve(), lc-1);
+			if (lc != -1) febio.AddParamCurve(&pbc->GetParam(FSPrescribedDOF::SCALE), lc-1);
 		}
 		else if (tag == "value")
 		{
@@ -1474,7 +1474,7 @@ void FEBioFormat25::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 		{
 			int lc = tag.Attribute("lc").value<int>() - 1;
 			if (lc == -1) throw XMLReader::InvalidAttributeValue(tag, "lc", 0);
-			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+			febio.AddParamCurve(&pbc->GetParam(FSNodalDOFLoad::LOAD), lc);
 
 			double val;
 			tag.value(val);

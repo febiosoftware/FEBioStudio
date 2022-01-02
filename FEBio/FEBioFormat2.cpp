@@ -740,7 +740,7 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		{
 			FSPrescribedDisplacement* pd = new FSPrescribedDisplacement(&fem, pg, bc, 1, pstep->GetID());
 			pd->SetRelativeFlag(brel);
-			febio.AddParamCurve(pd->GetLoadCurve(), lc);
+			febio.AddParamCurve(&pd->GetParam(FSPrescribedDisplacement::SCALE), lc);
 			pbc = pd;
 		}
 		break;
@@ -748,7 +748,7 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		{
 			  FSPrescribedTemperature* pd = new FSPrescribedTemperature(&fem, pg, bc, pstep->GetID());
 			  pd->SetRelativeFlag(brel);
-			  febio.AddParamCurve(pd->GetLoadCurve(), lc);
+			  febio.AddParamCurve(&pd->GetParam(FSPrescribedDisplacement::SCALE), lc);
 			  pbc = pd;
 		}
 		break;
@@ -756,7 +756,7 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		{
 			  FSPrescribedFluidPressure* pd = new FSPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
 			  pd->SetRelativeFlag(brel);
-			  febio.AddParamCurve(pd->GetLoadCurve(), lc);
+			  febio.AddParamCurve(&pd->GetParam(FSPrescribedDisplacement::SCALE), lc);
 			  pbc = pd;
 		}
 		break;
@@ -767,7 +767,7 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 			  bc = bc - 5;
 			  FSPrescribedFluidVelocity* pd = new FSPrescribedFluidVelocity(&fem, pg, bc, 1, pstep->GetID());
 			  pd->SetRelativeFlag(brel);
-			  febio.AddParamCurve(pd->GetLoadCurve(), lc);
+			  febio.AddParamCurve(&pd->GetParam(FSPrescribedDisplacement::SCALE), lc);
 			  pbc = pd;
 		}
 		break;
@@ -775,7 +775,7 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		{
 			  FSPrescribedFluidDilatation* pd = new FSPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
 			  pd->SetRelativeFlag(brel);
-			  febio.AddParamCurve(pd->GetLoadCurve(), lc);
+			  febio.AddParamCurve(&pd->GetParam(FSPrescribedDisplacement::SCALE), lc);
 			  pbc = pd;
 		}
 		break;
@@ -789,7 +789,7 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 			   bc = bc - 9;
 			   FSPrescribedConcentration* pd = new FSPrescribedConcentration(&fem, pg, bc, 1.0, pstep->GetID());
 			   pd->SetRelativeFlag(brel);
-			   febio.AddParamCurve(pd->GetLoadCurve(), lc);
+			   febio.AddParamCurve(&pd->GetParam(FSPrescribedDisplacement::SCALE), lc);
 			   pbc = pd;
 		}
 		break;
@@ -893,7 +893,7 @@ void FEBioFormat2::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	FSNodalDOFLoad* pbc = new FSNodalDOFLoad(&fem, pg, bc, 1, pstep->GetID());
 	sprintf(szname, "ForceLoad%02d", CountLoads<FSNodalDOFLoad>(fem)+1);
 	pbc->SetName(szname);
-	febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+	febio.AddParamCurve(&pbc->GetParam(FSNodalDOFLoad::LOAD), lc);
 	pstep->AddComponent(pbc);
 
 	// assign nodes to node sets

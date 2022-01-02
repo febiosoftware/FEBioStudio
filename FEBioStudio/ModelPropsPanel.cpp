@@ -453,7 +453,7 @@ public:
 		fec->SetFEClass(pc, fem);
 	}
 
-	void showPlotWidget(LoadCurve* plc)
+	void showPlotWidget(FSLoadController* plc)
 	{
 		props->Update(0);
 		form->setPropertyList(0);
@@ -464,14 +464,24 @@ public:
 
 		plt->showLegend(false);
 
-		if (plc)
+		if (plc == nullptr) return;
+
+		Param* p = plc->GetParam("points");
+		if (p)
 		{
-			plt->SetLoadCurve(plc);
+			std::vector<vec2d> v = p->GetVectorVec2dValue();
+
+			// TODO: Memory leak!!
+			LoadCurve* lc = new LoadCurve;
+			lc->SetExtend(plc->GetParam("extend")->GetIntValue());
+			lc->SetType(plc->GetParam("interpolate")->GetIntValue());
+
+			plt->SetLoadCurve(lc);
 			CPlotData* data = new CPlotData;
-			for (int i = 0; i < plc->Size(); ++i)
+			for (int i = 0; i < v.size(); ++i)
 			{
-				LOADPOINT pt = plc->Item(i);
-				data->addPoint(pt.time, pt.load);
+				data->addPoint(v[i].x(), v[i].y());
+				lc->Add(v[i].x(), v[i].y());
 			}
 			plt->addPlotData(data);
 
@@ -715,8 +725,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		else if (dynamic_cast<FSLoadController*>(po))
 		{
 			FSLoadController* plc = dynamic_cast<FSLoadController*>(po);
-			if (plc)
-				ui->showPlotWidget(plc->GetLoadCurve());
+			if (plc && plc->IsType("loadcurve"))
+				ui->showPlotWidget(plc);
 			else
 			{
 				ui->setFEClassData(plc, plc->GetFSModel());

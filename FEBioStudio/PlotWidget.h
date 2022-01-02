@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <vector>
 #include <QDialog>
 #include "GraphData.h"
+#include "CommandManager.h"
 
 //-----------------------------------------------------------------------------
 class QPainter;
@@ -311,6 +312,8 @@ private:
 
 class CCurvePlotWidget : public CPlotWidget
 {
+	Q_OBJECT
+
 public:
 	CCurvePlotWidget(QWidget* parent = nullptr) : CPlotWidget(parent)
 	{
@@ -320,8 +323,65 @@ public:
 
 	void DrawPlotData(QPainter& p, CPlotData& data) override;
 
-	void SetLoadCurve(LoadCurve* lc) { m_lc = lc; }
+	void SetLoadCurve(LoadCurve* lc);
+	LoadCurve* GetLoadCurve();
 
 private:
 	LoadCurve* m_lc;
+};
+
+//=============================================================================
+class UICurveEditWidget;
+
+class CCurveEditWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CCurveEditWidget(QWidget* parent = nullptr);
+
+	void Clear();
+
+	void SetLoadCurve(LoadCurve* lc);
+
+public slots:
+	void on_plot_pointClicked(QPointF p, bool shift);
+	void on_plot_draggingStart(QPoint p);
+	void on_plot_pointDragged(QPoint p);
+	void on_plot_draggingEnd(QPoint p);
+	void on_plot_pointSelected(int n);
+	void on_plot_backgroundImageChanged();
+	void on_plot_doneZoomToRect();
+	void on_plot_regionSelected(QRect);
+	void on_plot_doneSelectingRect(QRect);
+	void on_xval_textEdited();
+	void on_yval_textEdited();
+	void on_deletePoint_clicked();
+	void on_zoomToFit_clicked();
+	void on_zoomX_clicked();
+	void on_zoomY_clicked();
+	void on_map_clicked();
+	void on_lineType_currentIndexChanged(int n);
+	void on_extendMode_currentIndexChanged(int n);
+	void on_undo_clicked(bool b);
+	void on_redo_clicked(bool b);
+	void on_math_clicked(bool b);
+	void on_clip_clicked(bool b);
+	void on_copy_clicked(bool b);
+	void on_paste_clicked(bool b);
+	void on_open_clicked(bool b);
+	void on_save_clicked(bool b);
+
+signals:
+	void dataChanged();
+
+private:
+	void UpdateSelection();
+	void UpdatePlotData();
+
+private:
+	UICurveEditWidget* ui;
+
+	// undo stack
+	CBasicCmdManager	m_cmd;
 };

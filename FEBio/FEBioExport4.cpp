@@ -798,7 +798,7 @@ bool FEBioExport4::Write(const char* szfile)
 			}
 
 			// loadcurve data
-			if ((m_pLC.size() > 0) && (m_section[FEBIO_LOADDATA]))
+			if ((fem.LoadControllers() > 0) && (m_section[FEBIO_LOADDATA]))
 			{
 				m_xml.add_branch("LoadData");
 				{
@@ -1907,7 +1907,7 @@ void FEBioExport4::WriteMeshData(FSDataMapGenerator* map)
 			Param* p = s2s->GetParam("function");
 			XMLElement e("function");
 			e.add_attribute("type", "point");
-			m_xml.add_branch(e);
+/*			m_xml.add_branch(e);
 			{
 				LoadCurve* plc = fem.GetParamCurve(*p);
 				if (plc)
@@ -1925,6 +1925,7 @@ void FEBioExport4::WriteMeshData(FSDataMapGenerator* map)
 				}
 			}
 			m_xml.close_branch();
+*/
 		}
 	}
 	m_xml.close_branch();
@@ -2775,49 +2776,23 @@ void FEBioExport4::WriteGlobalsSection()
 
 void FEBioExport4::WriteLoadDataSection()
 {
-	for (int i = 0; i < (int)m_pLC.size(); ++i)
+	FSModel& fem = m_prj.GetFSModel();
+
+	for (int i = 0; i < fem.LoadControllers(); ++i)
 	{
-		LoadCurve* plc = m_pLC[i];
+		FSLoadController* plc = fem.GetLoadController(i);
 
 		XMLElement el;
 		el.name("load_controller");
 		el.add_attribute("id", i + 1);
-		el.add_attribute("type", "loadcurve");
+		el.add_attribute("type", plc->GetTypeString());
+		if (plc->GetName().empty() == false) el.add_attribute("name", plc->GetName());
 
-		double d[2];
 		m_xml.add_branch(el);
 		{
-			switch (plc->GetType())
-			{
-			case LoadCurve::LC_STEP: m_xml.add_leaf("interpolate", "STEP"); break;
-			case LoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "LINEAR"); break;
-			case LoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "SMOOTH"); break;
-			case LoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "CUBIC SPLINE"); break;
-			case LoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "CONTROL POINTS"); break;
-			case LoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "APPROXIMATION"); break;
-			}
-
-			switch (plc->GetExtend())
-			{
-				//		case LoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
-			case LoadCurve::EXT_EXTRAPOLATE: m_xml.add_leaf("extend", "EXTRAPOLATE"); break;
-			case LoadCurve::EXT_REPEAT: m_xml.add_leaf("extend", "REPEAT"); break;
-			case LoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "REPEAT OFFSET"); break;
-			}
-
-			m_xml.add_branch("points");
-			{
-				for (int j = 0; j < plc->Size(); ++j)
-				{
-					LOADPOINT& pt = plc->Item(j);
-					d[0] = pt.time;
-					d[1] = pt.load;
-					m_xml.add_leaf("point", d, 2);
-				}
-			}
-			m_xml.close_branch();
+			WriteParamList(*plc);
 		}
-		m_xml.close_branch(); // loadcurve
+		m_xml.close_branch(); // load_controller
 	}
 }
 

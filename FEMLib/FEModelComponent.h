@@ -4,7 +4,7 @@
 #include <string>
 
 class FSModel;
-class LoadCurve;
+class FSLoadController;
 
 //-----------------------------------------------------------------------------
 // Base class for components of an FSModel
@@ -22,8 +22,8 @@ public:
 	FSModel* GetFSModel();
 
 public:
-	// helper function for retrieving the load curve assigned to a parameter
-	LoadCurve* GetLoadCurve(int n);
+	// helper function for retrieving the load controller assigned to a parameter
+	FSLoadController* GetLoadController(int n);
 
 protected:
 	FSModel*	m_fem;

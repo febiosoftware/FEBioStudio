@@ -686,7 +686,7 @@ void FEBioFormatOld::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		pNS[ng]->add(n);
 
 		FSPrescribedDOF* pbc = pBC[ng];
-		pbc->GetLoadCurve()->SetID(lc);
+//		pbc->GetLoadCurve()->SetID(lc);
 		pbc->SetScaleFactor(DC[i].s);
 	}
 }
@@ -795,7 +795,7 @@ void FEBioFormatOld::ParseForceLoad(FSStep *pstep, XMLTag &tag)
 		ng = cc[bc][lc];
 		assert(ng >= 0);
 
-		pFC[ng]->GetLoadCurve()->SetID(lc);
+//		pFC[ng]->GetLoadCurve()->SetID(lc);
 		pFC[ng]->SetLoad(FC[i].s);
 		pNS[ng]->add(n);
 	}

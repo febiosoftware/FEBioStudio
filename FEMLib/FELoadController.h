@@ -14,10 +14,6 @@ public:
 
 	int Type() const;
 
-	void SetLoadCurve(LoadCurve* plc);
-
-	LoadCurve* GetLoadCurve();
-
 public:
 	int GetID() const;
 	void SetID(int nid);
@@ -26,9 +22,11 @@ public:
 	static void SetCounter(int n);
 	static int GetCounter();
 
+	// helper function for converting FEBio "loadcurve" to a LoadCurve
+	virtual LoadCurve* CreateLoadCurve();
+
 private:
 	int	m_ntype;
-	LoadCurve* m_plc;
 
 private:
 	int			m_nUID;	//!< unique ID
@@ -39,4 +37,12 @@ class FEBioLoadController : public FSLoadController
 {
 public:
 	FEBioLoadController(FSModel* fem = nullptr);
+	~FEBioLoadController();
+
+	LoadCurve* CreateLoadCurve() override;
+
+	bool UpdateData(bool bsave) override;
+
+private:
+	LoadCurve* m_plc;
 };

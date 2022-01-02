@@ -399,7 +399,9 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 			break;
 			case FE_PARAM_STD_VECTOR_VEC2D:
 			{
-				// don't know how to handle this.
+				std::vector<vec2d>& v = p.value<std::vector<vec2d> >();
+				QVariant val = QVariant::fromValue(v);
+				FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), val);
 			}
 			break;
 			default:

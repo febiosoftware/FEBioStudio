@@ -680,7 +680,7 @@ void FEBioFormat12::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		pNS[ng]->add(n);
 
 		FSPrescribedDOF* pbc = pBC[ng];
-		febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+//		febio.AddParamCurve(pbc->GetLoadCurve(), lc);
 		pbc->SetScaleFactor(DC[i].s);
 	}
 }
@@ -790,7 +790,7 @@ void FEBioFormat12::ParseForceLoad(FSStep *pstep, XMLTag &tag)
 		ng = cc[bc][lc];
 		assert(ng >= 0);
 
-		febio.AddParamCurve(pFC[ng]->GetLoadCurve(), lc);
+		febio.AddParamCurve(&pFC[ng]->GetParam(FSNodalDOFLoad::LOAD), lc);
 		pFC[ng]->SetLoad(FC[i].s);
 		pNS[ng]->add(n);
 	}

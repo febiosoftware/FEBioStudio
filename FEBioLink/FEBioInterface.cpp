@@ -104,6 +104,12 @@ void map_parameters(FSModelComponent* po, FEBio::FEBioClass* feb)
 			p = po->AddVectorDoubleParam(val, szname, szlongname);
 		}
 		break;
+		case FEBio::FEBIO_PARAM_STD_VECTOR_VEC2D:
+		{
+			std::vector<vec2d> val = v.value<std::vector<vec2d> >();
+			p = po->AddVectorVec2dParam(val, szname, szlongname);
+		}
+		break;
 		default:
 			assert(false);
 		}

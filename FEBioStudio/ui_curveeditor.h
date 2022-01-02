@@ -37,23 +37,20 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QLabel>
 #include <QSplitter>
+#include <QPushButton>
 #include "MainWindow.h"
 
 class CCurveEditorItem : public QTreeWidgetItem
 {
 public:
-	CCurveEditorItem(QTreeWidget* tree) : QTreeWidgetItem(tree) { m_plc = 0; m_pp = 0; }
-	CCurveEditorItem(QTreeWidgetItem* item) : QTreeWidgetItem(item) { m_plc = 0; m_pp = 0; }
-
-	void SetLoadCurve(LoadCurve* plc) { m_plc = plc; }
-	LoadCurve* GetLoadCurve() { return m_plc; }
+	CCurveEditorItem(QTreeWidget* tree) : QTreeWidgetItem(tree) { m_pp = 0; }
+	CCurveEditorItem(QTreeWidgetItem* item) : QTreeWidgetItem(item) { m_pp = 0; }
 
 	void SetParam(Param* pp) { m_pp = pp; }
 	Param* GetParam() { return m_pp; }
 
 private:
 	Param*			m_pp;
-	LoadCurve*	m_plc;
 };
 
 class Ui::CCurveEdior
@@ -61,22 +58,9 @@ class Ui::CCurveEdior
 public:
 	QComboBox*		filter;
 	QTreeWidget*	tree;
-	CCurvePlotWidget*	plot;
-	QLineEdit*		xval;
-	QLineEdit*		yval;
-	QToolButton*	addPoint;
-	QToolButton*	snap2grid;
-	QHBoxLayout*	pltbutton;
-	
-	QComboBox* lineType;
-	QComboBox* extendMode;
+	CCurveEditWidget*	plot;
 
-	QAction* undo;
-	QAction* redo;
-
-	QPointF	m_dragPt;
-	int		m_dragIndex;
-	std::vector<QPointF>	m_p0;	// used by point dragging
+	QComboBox* selectLC;
 
 public:
 	void setupUi(QMainWindow* wnd)
@@ -101,83 +85,8 @@ public:
 		tree->header()->close();
 		tree->setObjectName("tree");
 
-		lineType = new QComboBox; lineType->setObjectName("lineType");
-		lineType->addItem("Linear");
-		lineType->addItem("Step");
-		lineType->addItem("Smooth");
-        lineType->addItem("Cubic spline");
-        lineType->addItem("Control points");
-        lineType->addItem("Approximation");
-
-		extendMode = new QComboBox; extendMode->setObjectName("extendMode");
-		extendMode->addItem("Constant");
-		extendMode->addItem("Extrapolate");
-		extendMode->addItem("Repeat");
-		extendMode->addItem("Repeat Offset");
-
-		QHBoxLayout* curveLayout = new QHBoxLayout;
-		curveLayout->addWidget(new QLabel("Type:"));
-		curveLayout->addWidget(lineType);
-		curveLayout->addWidget(new QLabel("Extend:"));
-		curveLayout->addWidget(extendMode);
-		curveLayout->addStretch();
-//		curveLayout->setSpacing(2);
-
-		plot = new CCurvePlotWidget();
+		plot = new CCurveEditWidget();
 		plot->setObjectName("plot");
-		plot->showLegend(false);
-		plot->showToolTip(false);
-		plot->scaleAxisLabels(false);
-		plot->setFullScreenMode(true);
-		plot->setXAxisLabelAlignment(ALIGN_LABEL_TOP);
-		plot->setYAxisLabelAlignment(ALIGN_LABEL_RIGHT);
-		plot->setBackgroundColor(QColor(48, 48, 48));
-		plot->setGridColor(QColor(128, 128, 128));
-		plot->setXAxisColor(QColor(255, 255, 255));
-		plot->setYAxisColor(QColor(255, 255, 255));
-		plot->setSelectionColor(QColor(255, 255, 192));
-
-		xval = new QLineEdit; xval->setObjectName("xval");
-		yval = new QLineEdit; yval->setObjectName("yval");
-
-		addPoint = new QToolButton;
-		addPoint->setAutoRaise(true);
-		addPoint->setIcon(QIcon(":/icons/newpoint.png"));
-		addPoint->setCheckable(true);
-		addPoint->setChecked(false);
-		addPoint->setToolTip("<font color=\"black\">Add a new point");
-
-		QToolButton* delPoint = new QToolButton; delPoint->setObjectName("deletePoint");
-		delPoint->setAutoRaise(true);
-		delPoint->setIcon(QIcon(":/icons/deletepoint.png"));
-		delPoint->setToolTip("<font color=\"black\">Delete a point");
-
-		snap2grid = new QToolButton;
-		snap2grid->setAutoRaise(true);
-		snap2grid->setIcon(QIcon(":/icons/snaptogrid.png"));
-		snap2grid->setCheckable(true);
-		snap2grid->setChecked(false);
-		snap2grid->setToolTip("<font color=\"black\">Snap to grid");
-
-		QToolButton* zoom = new QToolButton; zoom->setObjectName("zoomToFit");
-		zoom->setAutoRaise(true);
-		zoom->setIcon(QIcon(":/icons/zoom_fit.png"));
-		zoom->setToolTip("<font color=\"black\">Zoom to fit");
-
-		QToolButton* zoomx = new QToolButton; zoomx->setObjectName("zoomX");
-		zoomx->setAutoRaise(true);
-		zoomx->setIcon(QIcon(":/icons/zoom_x.png"));
-		zoomx->setToolTip("<font color=\"black\">Zoom X extents");
-
-		QToolButton* zoomy = new QToolButton; zoomy->setObjectName("zoomY");
-		zoomy->setAutoRaise(true);
-		zoomy->setIcon(QIcon(":/icons/zoom_y.png"));
-		zoomy->setToolTip("<font color=\"black\">Zoom Y extents");
-
-		QToolButton* map = new QToolButton; map->setObjectName("map");
-		map->setAutoRaise(true);
-		map->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
-		map->setToolTip("<font color=\"black\">Map to rectangle");
 
 		QVBoxLayout* treeLayout = new QVBoxLayout;
 		treeLayout->addWidget(filter);
@@ -187,23 +96,20 @@ public:
 		QWidget* treeWidget = new QWidget;
 		treeWidget->setLayout(treeLayout);
 
-		pltbutton = new QHBoxLayout;
-		pltbutton->addWidget(xval);
-		pltbutton->addWidget(yval);
-		pltbutton->addWidget(addPoint);
-		pltbutton->addWidget(delPoint);
-		pltbutton->addWidget(snap2grid);
-		pltbutton->addWidget(zoomx);
-		pltbutton->addWidget(zoomy);
-		pltbutton->addWidget(zoom);
-		pltbutton->addWidget(map);
-		pltbutton->addStretch();
-		pltbutton->setSpacing(2);
+		QHBoxLayout* lcLayout = new QHBoxLayout;
+		lcLayout->addWidget(new QLabel("Select load controller"));
+		selectLC = new QComboBox; selectLC->setObjectName("selectLC");
+		selectLC->setMinimumWidth(200);
+		lcLayout->addWidget(selectLC);
+
+		QPushButton* newLC = new QPushButton("New...");
+		newLC->setObjectName("newLC");
+		lcLayout->addWidget(newLC);
+		lcLayout->addStretch();
 
 		QVBoxLayout* plotLayout = new QVBoxLayout;
-		plotLayout->addLayout(curveLayout);
+		plotLayout->addLayout(lcLayout);
 		plotLayout->addWidget(plot);
-		plotLayout->addLayout(pltbutton);
 		plotLayout->setContentsMargins(0,0,0,0);
 
 		QWidget* plotWidget = new QWidget;
@@ -215,83 +121,27 @@ public:
 
 		wnd->setCentralWidget(splitter);
 
-		QToolBar* toolBar = new QToolBar(wnd);
-		toolBar->setObjectName(QStringLiteral("toolBar"));
-		wnd->addToolBar(Qt::TopToolBarArea, toolBar);
-
-		QAction* open  = toolBar->addAction(QIcon(":/icons/open.png"), "Open"); open->setObjectName("open");
-		QAction* save  = toolBar->addAction(QIcon(":/icons/save.png"), "Save"); save->setObjectName("save");
-		QAction* clip  = toolBar->addAction(QIcon(":/icons/clipboard.png"), "Copy to clipboard"); clip->setObjectName("clip");
-		toolBar->addSeparator();
-		QAction* copy  = toolBar->addAction(QIcon(":/icons/copy.png" ), "Copy Curve" ); copy->setObjectName("copy");
-		QAction* paste = toolBar->addAction(QIcon(":/icons/paste.png"), "Paste Curve"); paste->setObjectName("paste");
-		QAction* del   = toolBar->addAction(QIcon(":/icons/clear.png"), "Delete Curve"); del->setObjectName("delete");
-		toolBar->addSeparator();
-		undo = toolBar->addAction(QIcon(":/icons/undo.png"), "Undo"); undo->setObjectName("undo");
-		redo = toolBar->addAction(QIcon(":/icons/redo.png"), "Redo"); redo->setObjectName("redo");
-		toolBar->addSeparator();
-		QAction* math = toolBar->addAction(CResource::Icon("formula"), "Formula"); math->setObjectName("math");
-
 		QMetaObject::connectSlotsByName(wnd);
 	}
 
-	void enablePointEdit(bool b)
-	{
-		if (xval->isEnabled() != b)
-		{
-			if (b == false) xval->setText("");
-			xval->setEnabled(b);
-		}
-
-		if (yval->isEnabled() != b)
-		{
-			if (b == false) yval->setText("");
-			yval->setEnabled(b);
-		}
-	}
-
-	QTreeWidgetItem* addTreeItem(QTreeWidgetItem* item, const QString& txt, LoadCurve* plc = 0, Param* pp = 0)
+	QTreeWidgetItem* addTreeItem(QTreeWidgetItem* item, const QString& txt, Param* pp = 0)
 	{
 		CCurveEditorItem* child = new CCurveEditorItem(item);
-		if (plc) {
+		if (pp && (pp->GetLoadCurveID() > 0)) {
 			QFont f = child->font(0); f.setBold(true); child->setFont(0, f);
 		}
-		child->SetLoadCurve(plc);
 		child->SetParam(pp);
 		child->setText(0, txt);
 		return child;
 	}
 
-	void setPointValues(double x, double y)
+	void setCurrentLC(int lcid)
 	{
-		xval->setText(QString("%1").arg(x));
-		yval->setText(QString("%1").arg(y));
-	}
-
-	bool isAddPointChecked()
-	{
-		return addPoint->isChecked();
-	}
-
-	bool isSnapToGrid()
-	{
-		return snap2grid->isChecked();
-	}
-
-	QPointF getPointValue()
-	{
-		return QPointF(xval->text().toDouble(), yval->text().toDouble());
-	}
-
-	void setCmdNames(const QString& undotxt, const QString& redotxt)
-	{
-		undo->setToolTip(QString("<font color=\"black\">") + undotxt);
-		redo->setToolTip(QString("<font color=\"black\">") + redotxt);
-	}
-
-	void setCurveType(int line, int extend)
-	{
-		lineType->setCurrentIndex(line);
-		extendMode->setCurrentIndex(extend);
+		if (lcid < 0) selectLC->setCurrentIndex(0);
+		else
+		{
+			int n = selectLC->findData(lcid); assert(n > 0);
+			selectLC->setCurrentIndex(n);
+		}
 	}
 };

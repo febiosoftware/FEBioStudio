@@ -252,6 +252,17 @@ IArchive::IOResult IArchive::read(std::vector<double>& v)
 	return IO_OK;
 }
 
+IArchive::IOResult IArchive::read(std::vector<vec2d>& v)
+{
+	CHUNK* pc = m_Chunk.top();
+
+	int nsize = pc->nsize / sizeof(vec2d);
+	v.resize(nsize);
+	int nread = (int)fread(&v[0], sizeof(vec2d), nsize, m_fp);
+	if (nread != nsize) return IO_ERROR;
+	return IO_OK;
+}
+
 void IArchive::log(const char* sz, ...)
 {
 	if (sz == 0) return;

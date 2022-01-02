@@ -128,3 +128,9 @@ bool FSObject::UpdateData(bool bsave)
 {
 	return false;
 }
+
+bool FSObject::IsType(const char* sztype) const
+{
+	const char* sz = GetTypeString();
+	return (strcmp(sz, sztype) == 0);
+}

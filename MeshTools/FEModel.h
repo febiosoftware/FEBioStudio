@@ -212,8 +212,6 @@ public:
 
 	FSLoadController* GetLoadControllerFromID(int lc);
 
-	LoadCurve* GetParamCurve(const Param& p);
-
 public:
 	int CountBCs(int type);
 	int CountLoads(int type);

@@ -46,12 +46,6 @@ FSNodalDOFLoad::FSNodalDOFLoad(FSModel* ps, FEItemListBuilder* pi, int bc, doubl
 	AddScienceParam(f, UNIT_FORCE, "scale", "scale")->MakeVariable(true);
 }
 
-//-----------------------------------------------------------------------------
-LoadCurve* FSNodalDOFLoad::GetLoadCurve()
-{
-	return FSModelComponent::GetLoadCurve(FSNodalDOFLoad::LOAD);
-}
-
 //=============================================================================
 FEBioNodalLoad::FEBioNodalLoad(FSModel* ps) : FSNodalLoad(FE_FEBIO_NODAL_LOAD, ps)
 {

@@ -179,8 +179,6 @@ public:
 	// used only for reading parameters for old file formats
 	void LoadParam(const Param& p);
 
-	LoadCurve* GetLoadCurve();
-
 private:
 	int	m_nvar;
 };

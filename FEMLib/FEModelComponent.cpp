@@ -51,7 +51,7 @@ void FSModelComponent::SetSuperClassID(int superClassID)
 }
 
 // helper function for retrieving the load curve assigned to a parameter
-LoadCurve* FSModelComponent::GetLoadCurve(int n)
+FSLoadController* FSModelComponent::GetLoadController(int n)
 {
 	FSModel* fem = GetFSModel(); assert(fem);
 	if (fem == nullptr) return nullptr;
@@ -68,7 +68,7 @@ LoadCurve* FSModelComponent::GetLoadCurve(int n)
 	FSLoadController* plc = fem->GetLoadControllerFromID(lc);
 	if (plc == nullptr) { assert(false); return nullptr; }
 
-	return plc->GetLoadCurve();
+	return plc;
 }
 
 //==============================================================================
