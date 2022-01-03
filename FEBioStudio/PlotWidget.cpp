@@ -1571,6 +1571,11 @@ void CPlotWidget::selectPoint(int ndata, int npoint)
 	emit pointSelected(npoint);
 }
 
+void CPlotWidget::clearSelection()
+{
+	m_selection.clear();
+}
+
 bool CPlotWidget::addToSelection(int ndata, int npoint)
 {
 	Selection s{ ndata, npoint };
@@ -2191,6 +2196,8 @@ void CCurveEditWidget::UpdatePlotData()
 	LoadCurve* plc = ui->plt->GetLoadCurve();
 	if (plc == nullptr) return;
 
+	ui->plt->clearSelection();
+
 	CPlotData& data = ui->plt->getPlotData(0);
 	data.clear();
 	for (int i = 0; i < plc->Size(); ++i)
@@ -2345,8 +2352,9 @@ void CCurveEditWidget::on_undo_clicked(bool b)
 	QString redo = m_cmd.CanRedo() ? m_cmd.GetRedoCmdName() : "(Nothing to redo)";
 	ui->setCmdNames(undo, redo);
 
-	SetLoadCurve(plc);
+	UpdatePlotData();
 	ui->enablePointEdit(false);
+	ui->plt->repaint();
 	emit dataChanged();
 }
 
@@ -2361,8 +2369,9 @@ void CCurveEditWidget::on_redo_clicked(bool b)
 	QString redo = m_cmd.CanRedo() ? m_cmd.GetRedoCmdName() : "(Nothing to redo)";
 	ui->setCmdNames(undo, redo);
 
-	SetLoadCurve(plc);
+	UpdatePlotData();
 	ui->enablePointEdit(false);
+	ui->plt->repaint();
 	emit dataChanged();
 }
 

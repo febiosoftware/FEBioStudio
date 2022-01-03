@@ -186,6 +186,8 @@ public:
 
 	std::vector<QPointF> SelectedPoints() const;
 
+	void clearSelection();
+
 	bool LoadBackgroundImage(const QString& fileName);
 
 signals:
