@@ -40,6 +40,7 @@ class QTreeWidgetItem;
 class CCurveEditorItem;
 class FSObject;
 class FSModel;
+class FSLoadController;
 
 namespace Ui {
 	class CCurveEdior;
@@ -67,7 +68,7 @@ private:
 	void AddMultiMaterial(FSMaterial* pm, QTreeWidgetItem* tp);
 	void AddParameterList(QTreeWidgetItem* t1, FSModelComponent* po);
 
-	void SetLoadCurve(LoadCurve* plc);
+	void SetActiveLoadController(FSLoadController* plc);
 
 private:
 	void BuildLoadCurves();
@@ -81,6 +82,7 @@ private slots:
 	void on_newLC_clicked(bool b);
 	void on_selectLC_currentIndexChanged(int index);
 	void on_plot_dataChanged();
+	void on_math_mathChanged(QString s);
 
 private:
 	Ui::CCurveEdior*	ui;
@@ -88,6 +90,7 @@ private:
 	CMainWindow*		m_wnd;
 	int					m_nflt;
 	FSModel*			m_fem;
+	FSLoadController*	m_plc;
 
 	static QRect	m_preferredSize;
 };

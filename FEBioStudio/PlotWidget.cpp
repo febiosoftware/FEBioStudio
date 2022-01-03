@@ -2593,3 +2593,103 @@ void CCurveEditWidget::on_save_clicked(bool b)
 		}
 	}
 }
+
+//=============================================================================
+CMathPlotWidget::CMathPlotWidget(QWidget* parent) : CPlotWidget(parent)
+{
+	showLegend(false);
+	m_math.AddVariable("t");
+	m_math.Create("0");
+
+	QObject::connect(this, SIGNAL(regionSelected(QRect)), this, SLOT(onRegionSelected(QRect)));
+}
+
+void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
+{
+	MVariable* t = m_math.FindVariable("t");
+	if (t == nullptr) return;
+
+	// draw the line
+	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
+	QRect rt = ScreenRect();
+	QPoint p0, p1;
+	for (int i = rt.left(); i < rt.right(); i += 2)
+	{
+		p1.setX(i);
+		QPointF p = ScreenToView(p1);
+
+		t->value(p.x());
+		double y = m_math.value();
+
+		p.setY(y);
+		p1 = ViewToScreen(p);
+
+		if (i != rt.left())
+		{
+			painter.drawLine(p0, p1);
+		}
+
+		p0 = p1;
+	}
+}
+
+void CMathPlotWidget::SetMath(const QString& txt)
+{
+	std::string m = txt.toStdString();
+	m_math.Clear();
+	m_math.AddVariable("t");
+
+	if (m.empty()) m = "0";
+	m_math.Create(m);
+
+	repaint();
+}
+
+void CMathPlotWidget::onRegionSelected(QRect rt)
+{
+	fitToRect(rt);
+}
+
+//=============================================================================
+class UIMathEditWidget
+{
+public:
+	QLineEdit* edit;
+	CMathPlotWidget* plot;
+
+public:
+	void setup(QWidget* w)
+	{
+		edit = new QLineEdit;
+		QHBoxLayout* editLayout = new QHBoxLayout;
+		editLayout->addWidget(new QLabel("f(t) = "));
+		editLayout->addWidget(edit);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addLayout(editLayout);
+		l->addWidget(plot = new CMathPlotWidget);
+		w->setLayout(l);
+
+		QObject::connect(edit, SIGNAL(editingFinished()), w, SLOT(onEditingFinished()));
+	}
+};
+
+CMathEditWidget::CMathEditWidget(QWidget* parent) : QWidget(parent), ui(new UIMathEditWidget)
+{
+	ui->setup(this);
+	ui->plot->addPlotData(new CPlotData);
+}
+
+void CMathEditWidget::onEditingFinished()
+{
+	QString s = ui->edit->text();
+	ui->plot->SetMath(s);
+
+	emit mathChanged(s);
+}
+
+void CMathEditWidget::SetMath(const QString& txt)
+{
+	ui->edit->setText(txt);
+	ui->plot->SetMath(txt);
+}

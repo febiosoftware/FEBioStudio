@@ -38,7 +38,9 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QSplitter>
 #include <QPushButton>
+#include <QStackedWidget>
 #include "MainWindow.h"
+#include "FEClassPropsView.h"
 
 class CCurveEditorItem : public QTreeWidgetItem
 {
@@ -56,16 +58,20 @@ private:
 class Ui::CCurveEdior
 {
 public:
-	QComboBox*		filter;
-	QTreeWidget*	tree;
+	QComboBox*			filter;
+	QTreeWidget*		tree;
 	CCurveEditWidget*	plot;
-
-	QComboBox* selectLC;
+	QStackedWidget*		stack;
+	QWidget*			lcWidget;
+	QComboBox*			selectLC;
+	CMathEditWidget*	math;
+	FEClassPropsView*	props;
 
 public:
 	void setupUi(QMainWindow* wnd)
 	{
 		filter = new QComboBox;
+		filter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 		filter->setObjectName("filter");
 		filter->addItem("All");
 		filter->addItem("Geometry");
@@ -85,13 +91,23 @@ public:
 		tree->header()->close();
 		tree->setObjectName("tree");
 
+		QHBoxLayout* fl = new QHBoxLayout;
+		fl->addWidget(new QLabel("Filter:"));
+		fl->addWidget(filter);
+
 		plot = new CCurveEditWidget();
 		plot->setObjectName("plot");
 
+		math = new CMathEditWidget;
+		math->setObjectName("math");
+
+		props = new FEClassPropsView;
+		props->setObjectName("props");
+
 		QVBoxLayout* treeLayout = new QVBoxLayout;
-		treeLayout->addWidget(filter);
+		treeLayout->addLayout(fl);
 		treeLayout->addWidget(tree);
-		treeLayout->setContentsMargins(0,0,0,0);
+		treeLayout->setContentsMargins(2,2,0,2);
 
 		QWidget* treeWidget = new QWidget;
 		treeWidget->setLayout(treeLayout);
@@ -107,10 +123,19 @@ public:
 		lcLayout->addWidget(newLC);
 		lcLayout->addStretch();
 
+		lcWidget = new QWidget;
+		lcWidget->setLayout(lcLayout);
+
+		stack = new QStackedWidget;
+		stack->addWidget(new QLabel("(no contoller)"));
+		stack->addWidget(plot);
+		stack->addWidget(math);
+		stack->addWidget(props);
+
 		QVBoxLayout* plotLayout = new QVBoxLayout;
-		plotLayout->addLayout(lcLayout);
-		plotLayout->addWidget(plot);
-		plotLayout->setContentsMargins(0,0,0,0);
+		plotLayout->setContentsMargins(0, 0, 0, 0);
+		plotLayout->addWidget(lcWidget);
+		plotLayout->addWidget(stack);
 
 		QWidget* plotWidget = new QWidget;
 		plotWidget->setLayout(plotLayout);
@@ -137,11 +162,21 @@ public:
 
 	void setCurrentLC(int lcid)
 	{
-		if (lcid < 0) selectLC->setCurrentIndex(0);
+		lcWidget->setEnabled(true);
+		if (lcid < 0)
+		{
+			selectLC->setCurrentIndex(0);
+		}
 		else
 		{
 			int n = selectLC->findData(lcid); assert(n > 0);
 			selectLC->setCurrentIndex(n);
 		}
+	}
+
+	void deactivate()
+	{
+		lcWidget->setEnabled(false);
+		stack->setCurrentIndex(0);
 	}
 };

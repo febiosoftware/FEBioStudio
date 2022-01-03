@@ -54,6 +54,7 @@ QRect CCurveEditor::m_preferredSize;
 CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CCurveEdior)
 {
 	m_fem = nullptr;
+	m_plc = nullptr;
 	m_currentItem = 0;
 	m_nflt = FLT_ALL;
 	ui->setupUi(this);
@@ -601,14 +602,39 @@ void CCurveEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWid
 			int lcId = p->GetLoadCurveID();
 			ui->setCurrentLC(lcId);
 		}
+		else ui->deactivate();
 	}
-	else SetLoadCurve(0);
+	else ui->deactivate();
 }
 
-void CCurveEditor::SetLoadCurve(LoadCurve* plc)
+void CCurveEditor::SetActiveLoadController(FSLoadController* plc)
 {
-	ui->plot->SetLoadCurve(plc);
-	ui->plot->repaint();
+	m_plc = plc;
+
+	if (plc == nullptr)
+	{
+		ui->stack->setCurrentIndex(0);
+		return;
+	}
+
+	int panel = 0;
+	if (plc->IsType("loadcurve"))
+	{
+		panel = 1;
+		ui->plot->SetLoadCurve(plc->CreateLoadCurve());
+		ui->plot->repaint();
+	}
+	else if (plc->IsType("math"))
+	{
+		panel = 2;
+		Param* p = plc->GetParam("math"); assert(p);
+		ui->math->SetMath(QString::fromStdString(p->GetStringValue()));
+	}
+	else panel = 3;
+	{
+		ui->props->SetFEClass(plc, m_fem);
+	}
+	ui->stack->setCurrentIndex(panel);
 }
 
 void CCurveEditor::on_filter_currentIndexChanged(int n)
@@ -675,14 +701,16 @@ void CCurveEditor::on_selectLC_currentIndexChanged(int index)
 	Param* p = m_currentItem->GetParam();
 	if (p == nullptr) return;
 
-	if (index == 0) p->SetLoadCurveID(-1);
+	if (index == 0)
+	{
+		p->SetLoadCurveID(-1);
+		SetActiveLoadController(nullptr);
+	}
 	else
 	{
 		FSLoadController* plc = m_fem->GetLoadController(index - 1); assert(plc);
 		p->SetLoadCurveID(plc->GetID());
-
-		LoadCurve* lc = plc->CreateLoadCurve();
-		SetLoadCurve(lc);
+		SetActiveLoadController(plc);
 	}
 }
 
@@ -697,4 +725,15 @@ void CCurveEditor::on_plot_dataChanged()
 
 	FSLoadController* plc = m_fem->GetLoadControllerFromID(lcid); assert(plc);
 	if (plc) plc->UpdateData(true);
+}
+
+void CCurveEditor::on_math_mathChanged(QString s)
+{
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math") == false) return;
+
+	Param* p = m_plc->GetParam("math"); assert(p);
+
+	std::string t = s.toStdString();
+	p->SetStringValue(t);
 }

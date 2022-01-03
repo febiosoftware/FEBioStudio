@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <QDialog>
 #include "GraphData.h"
 #include "CommandManager.h"
+#include <FECore/MathObject.h>
 
 //-----------------------------------------------------------------------------
 class QPainter;
@@ -384,4 +385,44 @@ private:
 
 	// undo stack
 	CBasicCmdManager	m_cmd;
+};
+
+//=============================================================================
+class CMathPlotWidget : public CPlotWidget
+{
+	Q_OBJECT
+
+public:
+	CMathPlotWidget(QWidget* parent = nullptr);
+	void DrawPlotData(QPainter& p, CPlotData& data) override;
+
+	void SetMath(const QString& txt);
+
+public slots:
+	void onRegionSelected(QRect rt);
+
+private:
+	MSimpleExpression	m_math;
+};
+
+//=============================================================================
+class UIMathEditWidget;
+
+class CMathEditWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CMathEditWidget(QWidget* parent = nullptr);
+
+	void SetMath(const QString& txt);
+
+public slots:
+	void onEditingFinished();
+
+signals:
+	void mathChanged(QString s);
+
+private:
+	UIMathEditWidget* ui;
 };
