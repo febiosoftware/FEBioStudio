@@ -4340,7 +4340,7 @@ void FEBioExport3::WriteNodalLoads(FSStep& s)
 
 void FEBioExport3::WriteDOFNodalLoad(FSStep& s, FSNodalLoad* pnl)
 {
-	char bc[][3] = { "x", "y", "z", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
+	char bc[][3] = { "x", "y", "z", "sx", "sy", "sz", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
 
 	FSNodalDOFLoad* pbc = dynamic_cast<FSNodalDOFLoad*>(pnl); assert(pbc);
 	if (pbc == nullptr) return;
