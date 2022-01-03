@@ -32,7 +32,7 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, METHOD, PERSIST_PATH, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SEARCH_RADIUS, PATH_RADIUS, COLOR, RENDER_MODE };
+	enum { START_POINT, END_POINT, METHOD, PERSIST_PATH, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SEARCH_RADIUS, NORMAL_TOL, PATH_RADIUS, COLOR, RENDER_MODE };
 
 	class PathData;
 
@@ -76,6 +76,7 @@ private:
 	double	m_tol;
 	bool	m_persist;
 	double	m_searchRadius;
+	double	m_normalTol;
 };
 
 }

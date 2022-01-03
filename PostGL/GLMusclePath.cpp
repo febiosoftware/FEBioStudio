@@ -114,6 +114,7 @@ GLMusclePath::GLMusclePath()
 	m_tol = 1e-6;
 	m_persist = false;
 	m_searchRadius = 0.0;
+	m_normalTol = -0.1;
 
 	m_part[0] = m_part[1] = -1;
 
@@ -125,6 +126,7 @@ GLMusclePath::GLMusclePath()
 	AddIntParam(m_maxIter, "max_iters", "Max smoothness iters.")->SetIntRange(1, 100);
 	AddDoubleParam(m_tol, "tol", "Smoothness tol.");
 	AddDoubleParam(m_searchRadius, "search_radius", "Search radius");
+	AddDoubleParam(m_normalTol, "normal_tol", "Normal tolerance");
 	AddDoubleParam(5.0, "size", "Path radius");
 	AddColorParam(GLColor(255, 0, 0), "color");
 	AddChoiceParam(0, "render_mode", "Render mode")->SetEnumNames("detailed\0path-only\0");
@@ -398,6 +400,7 @@ bool GLMusclePath::UpdateData(bool bsave)
 		int maxIter   = GetIntValue(MAX_SMOOTH_ITERS); if (maxIter != m_maxIter     ) { m_maxIter      = maxIter; reset = true; }
 		double tol    = GetFloatValue(SMOOTH_TOL    ); if (tol     != m_tol         ) { m_tol          =     tol; reset = true; }
 		double radius = GetFloatValue(SEARCH_RADIUS ); if (radius  != m_searchRadius) { m_searchRadius =  radius; reset = true; }
+		double nrmtol = GetFloatValue(NORMAL_TOL    ); if (nrmtol  != m_normalTol   ) { m_normalTol    =  nrmtol; reset = true; }
 		
 		Update(GetModel()->CurrentTimeIndex(), 0.f, reset);
 	}
@@ -471,7 +474,7 @@ public:
 	vector<FACE>	m_Face;
 };
 
-bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const vec3d& a, const vec3d& b, const vec3d& na, RINGPOINT& pt)
+bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const vec3d& a, const vec3d& b, const vec3d& na, RINGPOINT& pt, double normalTolerance)
 {
 	int NF = mesh.Faces();
 	int imin = -1;
@@ -540,7 +543,7 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 					vec3d fn = face.fn;
 
 					// make sure the normal is not on the wrong side
-					if (fn * na > -0.1)
+					if (fn * na > normalTolerance)
 					{
 						imin = i;
 						Dmin = D2;
@@ -617,7 +620,7 @@ void StraightenPath(vector<RINGPOINT>& pt)
 	}
 }
 
-bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters = 10, double tol = 1e-6)
+bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters, double tol, double normalTolerance)
 {
 	// evaluate the initial length
 	int NP = pt.size();
@@ -647,7 +650,7 @@ bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters = 10, doub
 
 			vec3d ri = (a + b) * 0.5;
 
-			if (ClosestPointOnRing(mesh, ri, t, a, b, pt[i-1].n, pi))
+			if (ClosestPointOnRing(mesh, ri, t, a, b, pt[i-1].n, pi, normalTolerance))
 			{
 				if ((ri - pi.p) * pi.n > 0.0)
 				{
@@ -686,6 +689,8 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 
 	int n0 = GetIntValue(START_POINT) - 1;
 	int n1 = GetIntValue(END_POINT) - 1;
+
+	double normalTol = GetFloatValue(NORMAL_TOL);
 
 	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
 	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
@@ -812,7 +817,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 
 		vec3d ri = (a + b) * 0.5;
 
-		if (ClosestPointOnRing(faceMesh, ri, t, a, b, pt[i-1].n, pi))
+		if (ClosestPointOnRing(faceMesh, ri, t, a, b, pt[i-1].n, pi, normalTol))
 		{
 			if ((ri - pi.p) * pi.n > 0.0)
 			{
@@ -827,7 +832,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 	if (maxIters > 0)
 	{
 		double tol = GetFloatValue(SMOOTH_TOL);
-		SmoothenPath(faceMesh, pt, maxIters, tol);
+		SmoothenPath(faceMesh, pt, maxIters, tol, normalTol);
 	}
 
 	// copy the points to the PathData
