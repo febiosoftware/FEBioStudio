@@ -229,7 +229,7 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 	}
 
 	// See if we have data maps
-	if (fem.DataMaps() > 0) m_bdata = true;
+	if (fem.MeshDataGenerators() > 0) m_bdata = true;
 
 	return true;
 }
@@ -1866,10 +1866,10 @@ void FEBioExport4::WriteMeshDataSection()
 	WriteNodeDataSection();
 
 	FSModel& fem = *m_pfem;
-	int N = fem.DataMaps();
+	int N = fem.MeshDataGenerators();
 	for (int i = 0; i < N; ++i)
 	{
-		FSDataMapGenerator* map = fem.GetDataMap(i);
+		FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
 		WriteMeshData(map);
 	}
 }
@@ -1887,46 +1887,18 @@ void FEBioExport4::WriteElementDataSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteMeshData(FSDataMapGenerator* map)
+void FEBioExport4::WriteMeshData(FSMeshDataGenerator* map)
 {
 	XMLElement meshData("ElementData");
-	meshData.add_attribute("var", map->m_var);
-	meshData.add_attribute("generator", map->m_generator);
-	meshData.add_attribute("elem_set", map->m_elset);
+//	meshData.add_attribute("var", map->m_var);
+	meshData.add_attribute("type", map->GetTypeString());
+//	meshData.add_attribute("elem_set", map->m_elset);
 
 	FSModel& fem = m_prj.GetFSModel();
 
 	m_xml.add_branch(meshData);
 	{
-		FSSurfaceToSurfaceMap* s2s = dynamic_cast<FSSurfaceToSurfaceMap*>(map);
-		if (s2s)
-		{
-			m_xml.add_leaf("bottom_surface", s2s->GetBottomSurface());
-			m_xml.add_leaf("top_surface", s2s->GetTopSurface());
-
-			Param* p = s2s->GetParam("function");
-			XMLElement e("function");
-			e.add_attribute("type", "point");
-/*			m_xml.add_branch(e);
-			{
-				LoadCurve* plc = fem.GetParamCurve(*p);
-				if (plc)
-				{
-					LoadCurve& lc = *plc;
-					m_xml.add_branch("points");
-					{
-						for (int i = 0; i < lc.Size(); ++i)
-						{
-							double v[2] = { lc[i].time, lc[i].load };
-							m_xml.add_leaf("point", v, 2);
-						}
-					}
-					m_xml.close_branch();
-				}
-			}
-			m_xml.close_branch();
-*/
-		}
+		WriteParamList(*map);
 	}
 	m_xml.close_branch();
 }

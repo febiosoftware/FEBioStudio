@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FEMeshAdaptor.h>
+#include <FEMLib/FEMeshDataGenerator.h>
 #include "Commands.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
@@ -557,6 +558,37 @@ void CMainWindow::on_actionAddLoadController_triggered()
 	}
 }
 
+void CMainWindow::on_actionAddMeshData_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+
+	CDlgAddPhysicsItem dlg("Add Mesh Data", FEDATAGENERATOR_ID, prj, true, false, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSMeshDataGenerator* pmd = fecore_new<FSMeshDataGenerator>(fem, FEDATAGENERATOR_ID, FE_FEBIO_MESHDATA_GENERATOR);
+		assert(pmd);
+		FEBio::CreateModelComponent(dlg.GetClassID(), pmd);
+		if (pmd)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				int n = fem->MeshDataGenerators();
+				std::stringstream ss; ss << "MeshData" << n + 1;
+				name = ss.str();
+			}
+
+			pmd->SetName(name);
+			fem->AddMeshDataGenerator(pmd);
+			UpdateModel(pmd);
+		}
+	}
+}
 
 void CMainWindow::on_actionAddStep_triggered()
 {

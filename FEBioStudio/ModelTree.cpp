@@ -1425,9 +1425,9 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FSModel& fem)
 		}
 	}
 
-	for (int i = 0; i < fem.DataMaps(); ++i)
+	for (int i = 0; i < fem.MeshDataGenerators(); ++i)
 	{
-		FSDataMapGenerator* map = fem.GetDataMap(i);
+		FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
 		AddTreeItem(t1, QString::fromStdString(map->GetName()), MT_MESH_DATA, 0, map, new CObjectProps(map));
 	}
 }

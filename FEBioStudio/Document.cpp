@@ -697,6 +697,15 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		ss << "Load controller" << " [" << sztype << "]";
 		return ss.str();
 	}
+	else if (dynamic_cast<FSMeshDataGenerator*>(po))
+	{
+		FSMeshDataGenerator* plc = dynamic_cast<FSMeshDataGenerator*>(po);
+		std::stringstream ss;
+		const char* sztype = plc->GetTypeString();
+		if (sztype == 0) sztype = "";
+		ss << "Mesh data" << " [" << sztype << "]";
+		return ss.str();
+	}
 	else if (dynamic_cast<FEMeshData*>(po))
 	{
 		FENodeData* nodeData = dynamic_cast<FENodeData*>(po);

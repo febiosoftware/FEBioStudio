@@ -1403,6 +1403,12 @@ void FSModel::DeleteAllLoadControllers()
 }
 
 //-----------------------------------------------------------------------------
+void FSModel::DeleteAllMeshDataGenerators()
+{
+	m_MD.Clear();
+}
+
+//-----------------------------------------------------------------------------
 void FSModel::DeleteAllRigidConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)
@@ -1618,30 +1624,6 @@ bool FSModel::FindGroupParent(FSGroup* pg)
 }
 
 //-----------------------------------------------------------------------------
-int FSModel::DataMaps() const
-{
-	return (int)m_Map.Size();
-}
-
-//-----------------------------------------------------------------------------
-void FSModel::AddDataMap(FSDataMapGenerator* map)
-{
-	m_Map.Add(map);
-}
-
-//-----------------------------------------------------------------------------
-int FSModel::RemoveMap(FSDataMapGenerator* map)
-{
-	return m_Map.Remove(map);
-}
-
-//-----------------------------------------------------------------------------
-FSDataMapGenerator* FSModel::GetDataMap(int i)
-{
-	return m_Map[i];
-}
-
-//-----------------------------------------------------------------------------
 int FSModel::CountBCs(int type)
 {
 	int n = 0;
@@ -1807,4 +1789,25 @@ FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 	AddLoadController(plc);
 
 	return plc;
+}
+
+//----------------------------------------------------------------------------------------
+int FSModel::MeshDataGenerators() const
+{
+	return m_MD.Size();
+}
+
+FSMeshDataGenerator* FSModel::GetMeshDataGenerator(int i)
+{
+	return m_MD[i];
+}
+
+void FSModel::AddMeshDataGenerator(FSMeshDataGenerator* pmd)
+{
+	m_MD.Add(pmd);
+}
+
+int FSModel::RemoveMeshDataGenerator(FSMeshDataGenerator* pmd)
+{
+	return (int)m_MD.Remove(pmd);
 }

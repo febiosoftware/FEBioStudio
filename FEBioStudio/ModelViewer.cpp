@@ -1761,6 +1761,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
 		break;
+	case MT_MESH_DATA:
+		menu.addAction("Add Mesh Data ...", wnd, SLOT(on_actionAddMeshData_triggered()));
+		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
+		break;
 	case MT_JOBLIST:
 		{
 			menu.addAction("Delete All", this, SLOT(OnDeleteAllJobs()));

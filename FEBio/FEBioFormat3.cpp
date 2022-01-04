@@ -1323,7 +1323,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 			const char* szset = tag.AttributeValue("elem_set");
 			if (strcmp(szgen, "surface-to-surface map") == 0)
 			{
-				FSSurfaceToSurfaceMap* s2s = new FSSurfaceToSurfaceMap;
+/*				FSSurfaceToSurfaceMap* s2s = new FSSurfaceToSurfaceMap;
 				s2s->m_generator = szgen;
 				s2s->m_var = var->cvalue();
 				s2s->m_elset = szset;
@@ -1394,7 +1394,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 					++tag;
 				} while (!tag.isend());
 				feb.GetFSModel().AddDataMap(s2s);
-			}
+*/			}
 		}
 		else ParseUnknownTag(tag);
 	}

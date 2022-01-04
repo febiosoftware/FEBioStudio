@@ -261,7 +261,7 @@ protected:
 	void WriteMeshDataMaterialFibers();
 	void WriteMeshDataMaterialAxes();
 	void WriteElementDataFields();
-	void WriteMeshData(FSDataMapGenerator* map);
+	void WriteMeshData(FSMeshDataGenerator* map);
 
 	void WriteBC(FSStep& s, FSBoundaryCondition* pbc);
 

@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include "FEMLib/FEAnalysisStep.h"
 #include "FEMLib/FEMeshAdaptor.h"
 #include "FEMLib/FELoadController.h"
+#include "FEMLib/FEMeshDataGenerator.h"
 #include "GMaterial.h"
 #include "FEDataVariable.h"
 #include "FESoluteData.h"
@@ -84,6 +85,7 @@ public:
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
 	void DeleteAllLoadControllers();
+	void DeleteAllMeshDataGenerators();
 
 	// clear the selections of all the bc, loads, etc.
 	void ClearSelections();
@@ -188,12 +190,6 @@ public:
 	bool FindGroupParent(FSGroup* pg);
 
 public:
-	int DataMaps() const;
-	void AddDataMap(FSDataMapGenerator* map);
-	int RemoveMap(FSDataMapGenerator* map);
-	FSDataMapGenerator* GetDataMap(int i);
-
-public:
 	int Variables() const { return (int)m_DOF.size(); }
 	FEDOFVariable& Variable(int i) { return m_DOF[i]; }
 	FEDOFVariable* AddVariable(const char* szvar);
@@ -211,6 +207,12 @@ public:
 	FSLoadController* AddLoadCurve(LoadCurve& lc);
 
 	FSLoadController* GetLoadControllerFromID(int lc);
+
+public:
+	int MeshDataGenerators() const;
+	FSMeshDataGenerator* GetMeshDataGenerator(int i);
+	void AddMeshDataGenerator(FSMeshDataGenerator* plc);
+	int RemoveMeshDataGenerator(FSMeshDataGenerator* plc);
 
 public:
 	int CountBCs(int type);
@@ -239,6 +241,7 @@ protected:
 	FSObjectList<SoluteData>		m_SBM;		//!< solid-bound molecule data variables
 	FSObjectList<FSDataMapGenerator>	m_Map;		//!< data maps
 	FSObjectList<FSLoadController>		m_LC;		//!< load controllers
+	FSObjectList<FSMeshDataGenerator>	m_MD;		//!< mesh data generators
 };
 
 //-----------------------------------------------------------------------------

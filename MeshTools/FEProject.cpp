@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FELoadController.h>
+#include <FEMLib/FEMeshDataGenerator.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <FEBioStudio/WebDefines.h>
@@ -426,19 +427,20 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSConcentrationFlux        , MODULE_REACTION_DIFFUSION, FESURFACELOAD_ID, FE_CONCENTRATION_FLUX, "Concentration Flux");
 
 	// FEBio interface classes
-	REGISTER_FE_CLASS(FEBioBoundaryCondition, 0, FEBC_ID              , FE_FEBIO_BC               , "[febio]");
-	REGISTER_FE_CLASS(FEBioNodalLoad        , 0, FENODALLOAD_ID       , FE_FEBIO_NODAL_LOAD       , "[febio]");
-	REGISTER_FE_CLASS(FEBioSurfaceLoad      , 0, FESURFACELOAD_ID     , FE_FEBIO_SURFACE_LOAD     , "[febio]");
-	REGISTER_FE_CLASS(FEBioBodyLoad         , 0, FEBODYLOAD_ID        , FE_FEBIO_BODY_LOAD        , "[febio]");
-	REGISTER_FE_CLASS(FEBioInterface        , 0, FESURFACEINTERFACE_ID, FE_FEBIO_INTERFACE        , "[febio]");
-	REGISTER_FE_CLASS(FEBioInitialCondition , 0, FEIC_ID              , FE_FEBIO_INITIAL_CONDITION, "[febio]");
-	REGISTER_FE_CLASS(FEBioNLConstraint     , 0, FENLCONSTRAINT_ID    , FE_FEBIO_NLCONSTRAINT     , "[febio]");
-	REGISTER_FE_CLASS(FEBioAnalysisStep     , 0, FEANALYSIS_ID        , FE_STEP_FEBIO_ANALYSIS    , "[febio]");
-	REGISTER_FE_CLASS(FEBioRigidConstraint  , 0, FERIGIDBC_ID         , FE_FEBIO_RIGID_CONSTRAINT , "[febio]");
-	REGISTER_FE_CLASS(FEBioRigidConnector   , 0, FERIGIDCONNECTOR_ID  , FE_FEBIO_RIGID_CONNECTOR  , "[febio]");
-	REGISTER_FE_CLASS(FEBioRigidLoad        , 0, FERIGIDLOAD_ID       , FE_FEBIO_RIGID_LOAD       , "[febio]");
-	REGISTER_FE_CLASS(FEBioMeshAdaptor      , 0, FEMESHADAPTOR_ID     , FE_FEBIO_MESH_ADAPTOR     , "[febio]");
-	REGISTER_FE_CLASS(FEBioLoadController   , 0, FELOADCONTROLLER_ID  , FE_FEBIO_LOAD_CONTROLLER  , "[febio]");
+	REGISTER_FE_CLASS(FEBioBoundaryCondition, 0, FEBC_ID              , FE_FEBIO_BC                , "[febio]");
+	REGISTER_FE_CLASS(FEBioNodalLoad        , 0, FENODALLOAD_ID       , FE_FEBIO_NODAL_LOAD        , "[febio]");
+	REGISTER_FE_CLASS(FEBioSurfaceLoad      , 0, FESURFACELOAD_ID     , FE_FEBIO_SURFACE_LOAD      , "[febio]");
+	REGISTER_FE_CLASS(FEBioBodyLoad         , 0, FEBODYLOAD_ID        , FE_FEBIO_BODY_LOAD         , "[febio]");
+	REGISTER_FE_CLASS(FEBioInterface        , 0, FESURFACEINTERFACE_ID, FE_FEBIO_INTERFACE         , "[febio]");
+	REGISTER_FE_CLASS(FEBioInitialCondition , 0, FEIC_ID              , FE_FEBIO_INITIAL_CONDITION , "[febio]");
+	REGISTER_FE_CLASS(FEBioNLConstraint     , 0, FENLCONSTRAINT_ID    , FE_FEBIO_NLCONSTRAINT      , "[febio]");
+	REGISTER_FE_CLASS(FEBioAnalysisStep     , 0, FEANALYSIS_ID        , FE_STEP_FEBIO_ANALYSIS     , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidConstraint  , 0, FERIGIDBC_ID         , FE_FEBIO_RIGID_CONSTRAINT  , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidConnector   , 0, FERIGIDCONNECTOR_ID  , FE_FEBIO_RIGID_CONNECTOR   , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidLoad        , 0, FERIGIDLOAD_ID       , FE_FEBIO_RIGID_LOAD        , "[febio]");
+	REGISTER_FE_CLASS(FEBioMeshAdaptor      , 0, FEMESHADAPTOR_ID     , FE_FEBIO_MESH_ADAPTOR      , "[febio]");
+	REGISTER_FE_CLASS(FEBioLoadController   , 0, FELOADCONTROLLER_ID  , FE_FEBIO_LOAD_CONTROLLER   , "[febio]");
+	REGISTER_FE_CLASS(FEBioMeshDataGenerator, 0, FEDATAGENERATOR_ID   , FE_FEBIO_MESHDATA_GENERATOR, "[febio]");
 }
 
 //-------------------------------------------------------------------------------------------------

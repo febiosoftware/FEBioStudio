@@ -269,7 +269,7 @@ public:
 	void WriteMeshDataMaterialFibers();
 	void WriteMeshDataMaterialAxes();
 	void WriteElementDataFields();
-	void WriteMeshData(FSDataMapGenerator* map);
+	void WriteMeshData(FSMeshDataGenerator* map);
 
 	void WriteSolidControlParams(FSAnalysisStep* pstep);
 	void WriteBiphasicControlParams(FSAnalysisStep* pstep);

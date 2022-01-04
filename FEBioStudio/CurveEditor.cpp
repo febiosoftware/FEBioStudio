@@ -388,9 +388,9 @@ void CCurveEditor::BuildModelTree()
 	if (Filter(FLT_MESH_DATA))
 	{
 		t2 = ui->addTreeItem(t1, "Mesh data");
-		for (int i = 0; i < fem.DataMaps(); ++i)
+		for (int i = 0; i < fem.MeshDataGenerators(); ++i)
 		{
-			FSDataMapGenerator* map = fem.GetDataMap(i);
+			FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(map->GetName()));
 			for (int i = 0; i < map->Parameters(); ++i)
 			{

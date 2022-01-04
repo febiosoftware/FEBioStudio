@@ -3154,3 +3154,21 @@ void CMainWindow::OnDeleteAllLoadControllers()
 		RedrawGL();
 	}
 }
+
+void CMainWindow::OnDeleteAllMeshData()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all mesh data?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel* fem = doc->GetFSModel();
+		fem->DeleteAllMeshDataGenerators();
+		doc->SetModifiedFlag(true);
+		UpdateTab(doc);
+		UpdateModel();
+		RedrawGL();
+	}
+}
