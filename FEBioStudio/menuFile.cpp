@@ -122,6 +122,8 @@ SOFTWARE.*/
 #include <sstream>
 #include "PostObject.h"
 
+#include "ModelTypeInfoReader.h"
+
 using std::stringstream;
 
 #ifdef HAS_QUAZIP
@@ -230,6 +232,28 @@ void CMainWindow::on_actionOpen_triggered()
 		QString fileName = files.first();
 
 		OpenFile(fileName);
+	}
+}
+
+void CMainWindow::on_actionReadInfo_triggered()
+{
+    QStringList filters;
+	filters << "All supported files (*.fsm)";
+	filters << "FEBioStudio Model (*.fsm *.fsprj)";
+
+	QFileDialog dlg(this, "Open");
+	dlg.setFileMode(QFileDialog::ExistingFile);
+	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+	dlg.setDirectory(ui->currentPath);
+	dlg.setNameFilters(filters);
+	if (dlg.exec())
+	{
+		// get the file name
+		QStringList files = dlg.selectedFiles();
+		QString fileName = files.first();
+
+		ModelTypeInfoReader reader;
+        reader.Load(fileName.toStdString().c_str());
 	}
 }
 

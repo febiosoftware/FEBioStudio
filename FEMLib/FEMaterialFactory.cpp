@@ -128,6 +128,12 @@ FSMaterial* FEMaterialFactory::Create(const char *szname, int classId)
 	return (pd?pd->Create():0);
 }
 
+const char* FEMaterialFactory::TypeStr(int nid)
+{
+    FEMatDescriptor* pd = m_pFac->Find(nid);
+    return pd->GetTypeString();
+}
+
 const char* FEMaterialFactory::TypeStr(FSMaterial *pm)
 {
 	if (pm == 0) return 0;

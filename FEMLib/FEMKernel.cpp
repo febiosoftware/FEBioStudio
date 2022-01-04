@@ -106,3 +106,16 @@ FEClassFactory* FEMKernel::FindClass(int module, int superID, int classID)
 
 	return nullptr;
 }
+
+const char* FEMKernel::TypeStr(int superID, int classID)
+{
+    for (size_t i=0; i<m_Class.size(); ++i)
+	{
+		FEClassFactory* fac = m_Class[i];
+		if ((fac->GetSuperID() == superID) && (fac->GetClassID() == classID))
+		{
+			return fac->GetTypeStr();
+		}
+	}
+	return 0;
+}
