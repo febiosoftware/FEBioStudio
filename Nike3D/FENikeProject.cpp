@@ -68,7 +68,7 @@ int FENikeProject::AddLoadCurve(LoadCurve& lc)
 {
 	m_LC.push_back(lc);
 	m_Ctrl.numlc++;
-	int np = lc.Size();
+	int np = lc.Points();
 	if (np > m_Ctrl.nptm) m_Ctrl.nptm = np;
 	return (int)m_LC.size();
 }

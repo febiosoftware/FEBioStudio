@@ -1893,11 +1893,11 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 			if (plc)
 			{
 				m_xml.add_branch("points");
-				int n = plc->Size();
+				int n = plc->Points();
 				for (int i = 0; i < n; ++i)
 				{
-					LOADPOINT& p = plc->Item(i);
-					double d[2] = { p.time, p.load };
+					vec2d p = plc->Point(i);
+					double d[2] = { p.x(), p.y() };
 					m_xml.add_leaf("pt", d, 2);
 				}
 				m_xml.close_branch();

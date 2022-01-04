@@ -46,7 +46,7 @@ public:
 	int GetSamples();
 	bool Insert();
 
-	std::vector<LOADPOINT> GetPoints();
+	std::vector<vec2d> GetPoints();
 
 public slots:
 	void accept();

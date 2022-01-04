@@ -1158,11 +1158,10 @@ FSAnalysisStep::FSAnalysisStep(FSModel* ps, int ntype) : FSStep(ps, ntype)
 	m_ops.Defaults();
 
 	// reset must point curve
-	LOADPOINT pt0(0,0), pt1(1,1);
 	m_MP.Clear();
-	m_MP.SetType(LoadCurve::LC_STEP);
-	m_MP.Add(pt0);
-	m_MP.Add(pt1);
+	m_MP.SetInterpolator(PointCurve::STEP);
+	m_MP.Add(0, 0);
+	m_MP.Add(1, 1);
 }
 
 vector<string> FSAnalysisStep::GetAnalysisStrings() const

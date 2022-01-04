@@ -50,8 +50,8 @@ LoadCurve* FEBioLoadController::CreateLoadCurve()
 		if (m_plc == nullptr) m_plc = new LoadCurve;
 		LoadCurve& lc = *m_plc;
 
-		lc.SetType(GetParam("interpolate")->GetIntValue());
-		lc.SetExtend(GetParam("extend")->GetIntValue());
+		lc.SetInterpolator(GetParam("interpolate")->GetIntValue());
+		lc.SetExtendMode(GetParam("extend")->GetIntValue());
 
 		Param* p = GetParam("points");
 		std::vector<vec2d> v = p->GetVectorVec2dValue();
@@ -71,14 +71,14 @@ bool FEBioLoadController::UpdateData(bool bsave)
 {
 	if (bsave && m_plc)
 	{
-		GetParam("interpolate")->SetIntValue(m_plc->GetType());
-		GetParam("extend")->SetIntValue(m_plc->GetExtend());
+		GetParam("interpolate")->SetIntValue(m_plc->GetInterpolator());
+		GetParam("extend")->SetIntValue(m_plc->GetExtendMode());
 
 		std::vector<vec2d> v;
-		for (int i = 0; i < m_plc->Size(); ++i)
+		for (int i = 0; i < m_plc->Points(); ++i)
 		{
-			LOADPOINT& pi = m_plc->Item(i);
-			v.push_back(vec2d(pi.time, pi.load));
+			vec2d pi = m_plc->Point(i);
+			v.push_back(pi);
 		}
 
 		GetParam("points")->SetVectorVec2dValue(v);

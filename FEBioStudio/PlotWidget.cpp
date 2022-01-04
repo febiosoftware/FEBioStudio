@@ -1613,6 +1613,24 @@ std::vector<QPointF> CPlotWidget::SelectedPoints() const
 	return pt;
 }
 
+CCurvePlotWidget::CCurvePlotWidget(QWidget* parent) : CPlotWidget(parent)
+{
+	m_lc = nullptr;
+	setLineSmoothing(true);
+
+	showLegend(false);
+	showToolTip(false);
+	scaleAxisLabels(false);
+	setFullScreenMode(true);
+	setXAxisLabelAlignment(ALIGN_LABEL_TOP);
+	setYAxisLabelAlignment(ALIGN_LABEL_RIGHT);
+	setBackgroundColor(QColor(48, 48, 48));
+	setGridColor(QColor(128, 128, 128));
+	setXAxisColor(QColor(255, 255, 255));
+	setYAxisColor(QColor(255, 255, 255));
+	setSelectionColor(QColor(255, 255, 192));
+}
+
 void CCurvePlotWidget::SetLoadCurve(LoadCurve* lc) 
 { 
 	m_lc = lc; 
@@ -1622,10 +1640,10 @@ void CCurvePlotWidget::SetLoadCurve(LoadCurve* lc)
 	if (lc)
 	{
 		CPlotData* data = new CPlotData;
-		for (int i = 0; i < lc->Size(); ++i)
+		for (int i = 0; i < lc->Points(); ++i)
 		{
-			LOADPOINT pt = lc->Item(i);
-			data->addPoint(pt.time, pt.load);
+			vec2d pt = lc->Point(i);
+			data->addPoint(pt.x(), pt.y());
 		}
 		addPlotData(data);
 
@@ -1683,7 +1701,7 @@ void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 class CCmdAddPoint : public CCommand
 {
 public:
-	CCmdAddPoint(LoadCurve* plc, LOADPOINT& p);
+	CCmdAddPoint(LoadCurve* plc, const vec2d& p);
 
 	void Execute() override;
 	void UnExecute() override;
@@ -1691,9 +1709,9 @@ public:
 	int Index() { return m_index; }
 
 private:
-	LoadCurve* m_lc;
-	LOADPOINT		m_pt;
-	int				m_index;
+	LoadCurve*	m_lc;
+	vec2d		m_pt;
+	int			m_index;
 };
 
 class CCmdRemovePoint : public CCommand
@@ -1713,15 +1731,15 @@ private:
 class CCmdMovePoint : public CCommand
 {
 public:
-	CCmdMovePoint(LoadCurve* plc, int index, LOADPOINT to);
+	CCmdMovePoint(LoadCurve* plc, int index, vec2d to);
 
 	void Execute() override;
 	void UnExecute() override;
 
 private:
-	LoadCurve* m_lc;
-	LOADPOINT		m_p;
-	int				m_index;
+	LoadCurve*	m_lc;
+	vec2d		m_p;
+	int			m_index;
 };
 
 class CCmdDeleteCurve : public CCommand
@@ -1737,7 +1755,7 @@ private:
 };
 
 
-CCmdAddPoint::CCmdAddPoint(LoadCurve* plc, LOADPOINT& pt) : CCommand("Add point")
+CCmdAddPoint::CCmdAddPoint(LoadCurve* plc, const vec2d& pt) : CCommand("Add point")
 {
 	m_lc = plc;
 	m_pt = pt;
@@ -1775,7 +1793,7 @@ void CCmdRemovePoint::UnExecute()
 	m_lc->Update();
 }
 
-CCmdMovePoint::CCmdMovePoint(LoadCurve* plc, int index, LOADPOINT to) : CCommand("Move point")
+CCmdMovePoint::CCmdMovePoint(LoadCurve* plc, int index, vec2d to) : CCommand("Move point")
 {
 	m_lc = plc;
 	m_index = index;
@@ -1785,8 +1803,8 @@ CCmdMovePoint::CCmdMovePoint(LoadCurve* plc, int index, LOADPOINT to) : CCommand
 
 void CCmdMovePoint::Execute()
 {
-	LOADPOINT tmp = m_lc->Item(m_index);
-	m_lc->Item(m_index) = m_p;
+	vec2d tmp = m_lc->Point(m_index);
+	m_lc->SetPoint(m_index, m_p);
 	m_p = tmp;
 	m_lc->Update();
 }
@@ -1905,17 +1923,6 @@ public:
 
 		// plot widget
 		plt = new CCurvePlotWidget; plt->setObjectName("plot");
-		plt->showLegend(false);
-		plt->showToolTip(false);
-		plt->scaleAxisLabels(false);
-		plt->setFullScreenMode(true);
-		plt->setXAxisLabelAlignment(ALIGN_LABEL_TOP);
-		plt->setYAxisLabelAlignment(ALIGN_LABEL_RIGHT);
-		plt->setBackgroundColor(QColor(48, 48, 48));
-		plt->setGridColor(QColor(128, 128, 128));
-		plt->setXAxisColor(QColor(255, 255, 255));
-		plt->setYAxisColor(QColor(255, 255, 255));
-		plt->setSelectionColor(QColor(255, 255, 192));
 
 		// bottom toolbar
 		xval = new QLineEdit; xval->setObjectName("xval");
@@ -2051,7 +2058,7 @@ void CCurveEditWidget::SetLoadCurve(LoadCurve* lc)
 
 	if (lc)
 	{
-		ui->setCurveType(lc->GetType(), lc->GetExtend());
+		ui->setCurveType(lc->GetInterpolator(), lc->GetExtendMode());
 	}
 }
 
@@ -2064,9 +2071,9 @@ void CCurveEditWidget::on_plot_pointClicked(QPointF p, bool shift)
 	{
 		if (ui->isSnapToGrid()) p = ui->plt->SnapToGrid(p);
 
-		LOADPOINT lp(p.x(), p.y());
+		vec2d pt(p.x(), p.y());
 
-		CCmdAddPoint* cmd = new CCmdAddPoint(lc, lp);
+		CCmdAddPoint* cmd = new CCmdAddPoint(lc, pt);
 		m_cmd.DoCommand(cmd);
 
 		UpdatePlotData();
@@ -2086,8 +2093,8 @@ void CCurveEditWidget::UpdateSelection()
 	if (sel.size() == 1)
 	{
 		ui->enablePointEdit(true);
-		LOADPOINT pt = plc->Item(sel[0].npointIndex);
-		ui->setPointValues(pt.time, pt.load);
+		vec2d pt = plc->Point(sel[0].npointIndex);
+		ui->setPointValues(pt.x(), pt.y());
 	}
 	else
 	{
@@ -2109,7 +2116,6 @@ void CCurveEditWidget::on_plot_pointDragged(QPoint p)
 
 	if ((ui->m_dragIndex >= 0) && (ui->isSnapToGrid()))
 	{
-		LOADPOINT& lp = plc->Item(ui->m_dragIndex);
 		QPointF p0 = ui->m_p0[ui->m_dragIndex];
 		QPointF pi(p0.x() + dx, p0.y() + dy);
 		pi = ui->plt->SnapToGrid(pi);
@@ -2120,13 +2126,11 @@ void CCurveEditWidget::on_plot_pointDragged(QPoint p)
 	for (int i = 0; i < sel.size(); ++i)
 	{
 		int n = sel[i].npointIndex;
-		LOADPOINT& lp = plc->Item(n);
 
 		QPointF p0 = ui->m_p0[i];
 		QPointF pi(p0.x() + dx, p0.y() + dy);
 
-		lp.time = pi.x();
-		lp.load = pi.y();
+		plc->SetPoint(n, pi.x(), pi.y());
 
 		ui->plt->getPlotData(0).Point(n) = pi;
 
@@ -2151,11 +2155,11 @@ void CCurveEditWidget::on_plot_draggingStart(QPoint p)
 		ui->m_p0.resize(sel.size());
 		for (int i = 0; i < sel.size(); ++i)
 		{
-			LOADPOINT& lp = plc->Item(sel[i].npointIndex);
-			ui->m_p0[i].setX(lp.time);
-			ui->m_p0[i].setY(lp.load);
+			vec2d pt = plc->Point(sel[i].npointIndex);
+			ui->m_p0[i].setX(pt.x());
+			ui->m_p0[i].setY(pt.y());
 
-			QPointF pf(lp.time, lp.load);
+			QPointF pf(pt.x(), pt.y());
 			QPoint pi = ui->plt->ViewToScreen(pf);
 
 			double dx = fabs(pi.x() - p.x());
@@ -2176,12 +2180,9 @@ void CCurveEditWidget::on_plot_draggingEnd(QPoint p)
 	{
 		int n = sel[0].npointIndex;
 
-		LOADPOINT lp0;
-		lp0.time = ui->m_p0[0].x();
-		lp0.load = ui->m_p0[0].y();
-
-		LOADPOINT lp = plc->Item(n);
-		plc->Item(n) = lp0;
+		QPointF p0 = ui->m_p0[0];
+		vec2d lp = plc->Point(n);
+		plc->SetPoint(n, p0.x(), p0.y());
 
 		m_cmd.DoCommand(new CCmdMovePoint(plc, n, lp));
 
@@ -2200,10 +2201,10 @@ void CCurveEditWidget::UpdatePlotData()
 
 	CPlotData& data = ui->plt->getPlotData(0);
 	data.clear();
-	for (int i = 0; i < plc->Size(); ++i)
+	for (int i = 0; i < plc->Points(); ++i)
 	{
-		LOADPOINT& pi = plc->Item(i);
-		data.addPoint(pi.time, pi.load);
+		vec2d pi = plc->Point(i);
+		data.addPoint(pi.x(), pi.y());
 	}
 	ui->plt->repaint();
 }
@@ -2256,9 +2257,7 @@ void CCurveEditWidget::on_xval_textEdited()
 	if (sel.size() == 1)
 	{
 		QPointF p = ui->getPointValue();
-		LOADPOINT& it = plc->Item(sel[0].npointIndex);
-		it.time = p.x();
-		it.load = p.y();
+		plc->SetPoint(sel[0].npointIndex, p.x(), p.y());
 		UpdatePlotData();
 		emit dataChanged();
 	}
@@ -2274,9 +2273,7 @@ void CCurveEditWidget::on_yval_textEdited()
 	if (sel.size() == 1)
 	{
 		QPointF p = ui->getPointValue();
-		LOADPOINT& it = plc->Item(sel[0].npointIndex);
-		it.time = p.x();
-		it.load = p.y();
+		plc->SetPoint(sel[0].npointIndex, p.x(), p.y());
 		UpdatePlotData();
 		emit dataChanged();
 	}
@@ -2326,7 +2323,7 @@ void CCurveEditWidget::on_lineType_currentIndexChanged(int n)
 {
 	LoadCurve* plc = ui->plt->GetLoadCurve();
 	if (plc == nullptr) return;
-	plc->SetType(n);
+	plc->SetInterpolator(n);
 	plc->Update();
 	ui->plt->repaint();
 	emit dataChanged();
@@ -2336,7 +2333,7 @@ void CCurveEditWidget::on_extendMode_currentIndexChanged(int n)
 {
 	LoadCurve* plc = ui->plt->GetLoadCurve();
 	if (plc == nullptr) return;
-	plc->SetExtend(n);
+	plc->SetExtendMode(n);
 	ui->plt->repaint();
 	emit dataChanged();
 }
@@ -2386,7 +2383,7 @@ void CCurveEditWidget::on_math_clicked(bool b)
 
 	if (dlg.exec())
 	{
-		std::vector<LOADPOINT> pts = dlg.GetPoints();
+		std::vector<vec2d> pts = dlg.GetPoints();
 		QString math = dlg.GetMath();
 		std::string smath = math.toStdString();
 
@@ -2395,16 +2392,14 @@ void CCurveEditWidget::on_math_clicked(bool b)
 		plc->SetName(smath.c_str());
 		if (pts.empty() && (insertMode == false))
 		{
-			LOADPOINT p0(0, 0), p1(0, 0);
-			plc->Add(p0);
-			plc->Add(p1);
+			plc->Add(0, 0);
+			plc->Add(1, 1);
 		}
 		else
 		{
 			for (int i = 0; i < (int)pts.size(); ++i)
 			{
-				LOADPOINT& pt = pts[i];
-				plc->Add(pt);
+				plc->Add(pts[i]);
 			}
 		}
 
@@ -2577,10 +2572,10 @@ bool WriteLoadCurve(LoadCurve& lc, const char* szfile)
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
 
-	for (int i = 0; i < lc.Size(); ++i)
+	for (int i = 0; i < lc.Points(); ++i)
 	{
-		LOADPOINT& pt = lc.Item(i);
-		fprintf(fp, "%lg %lg\n", pt.time, pt.load);
+		vec2d pt = lc.Point(i);
+		fprintf(fp, "%lg %lg\n", pt.x(), pt.y());
 	}
 	fclose(fp);
 	return true;

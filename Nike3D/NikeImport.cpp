@@ -1261,14 +1261,16 @@ bool FENIKEImport::ReadLoadCurves(FENikeProject& prj)
 		if (nread != 1) return errf(szerr[ERR_LC], i+1);
 
 		// -------- load card 2 - n --------
-		lc.SetSize(np);
+		lc.Clear();
 		for (int j=0; j<np; ++j)
 		{
-			LOADPOINT& pt = lc[j];
 			if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
-			nread = sscanf(szline, "%10lg%10lg", &pt.time, &pt.load);
+			double d[2];
+			nread = sscanf(szline, "%10lg%10lg", &d[0], &d[1]);
 			if (nread != 2) return errf(szerr[ERR_LC], i+1);
+
+			lc.Add(d[0], d[1]);
 		}
 
 		// add the loadcurve to the project

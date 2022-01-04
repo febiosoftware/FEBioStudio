@@ -128,7 +128,7 @@ void CDlgFormula::accept()
 	QDialog::accept();
 }
 
-std::vector<LOADPOINT> CDlgFormula::GetPoints()
+std::vector<vec2d> CDlgFormula::GetPoints()
 {
 	QString math = GetMath();
 	std::string smath = math.toStdString();
@@ -137,18 +137,17 @@ std::vector<LOADPOINT> CDlgFormula::GetPoints()
 	double fmax = GetMax();
 	int samples = GetSamples();
 
-	std::vector<LOADPOINT> pts;
+	std::vector<vec2d> pts;
 	MSimpleExpression m;
 	MVariable* tvar = m.AddVariable("t");
 	m.Create(smath);
 	int ierr;
-	LOADPOINT pt;
 	for (int i = 0; i<samples; ++i)
 	{
-		pt.time = fmin + i*(fmax - fmin) / (samples - 1);
-		tvar->value(pt.time);
-		pt.load = m.value();
-		pts.push_back(pt);
+		double x = fmin + i*(fmax - fmin) / (samples - 1);
+		tvar->value(x);
+		double y = m.value();
+		pts.push_back(vec2d(x, y));
 	}
 
 	return pts;

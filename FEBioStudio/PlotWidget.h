@@ -318,11 +318,7 @@ class CCurvePlotWidget : public CPlotWidget
 	Q_OBJECT
 
 public:
-	CCurvePlotWidget(QWidget* parent = nullptr) : CPlotWidget(parent)
-	{
-		m_lc = nullptr;
-		setLineSmoothing(true);
-	}
+	CCurvePlotWidget(QWidget* parent = nullptr);
 
 	void DrawPlotData(QPainter& p, CPlotData& data) override;
 

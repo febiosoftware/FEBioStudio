@@ -382,8 +382,8 @@ FSRigidSphereInterface::FSRigidSphereInterface(FSModel* ps, int nstep) : FSSoloI
 	// we don't want that here. By default, the plane should not move
 	LoadCurve LC;
 	LC.Clear();
-	LC.Add(LOADPOINT(0, 0));
-	LC.Add(LOADPOINT(0, 0));
+	LC.Add(0, 0);
+	LC.Add(0, 0);
 	AddDoubleParam(0.0, "ux", "x displacment");
 	AddDoubleParam(0.0, "uy", "y displacment");
 	AddDoubleParam(0.0, "uz", "z displacment");

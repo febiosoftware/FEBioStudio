@@ -466,29 +466,12 @@ public:
 
 		if (plc == nullptr) return;
 
-		Param* p = plc->GetParam("points");
-		if (p)
+		LoadCurve* lc = plc->CreateLoadCurve();
+		if (lc)
 		{
-			std::vector<vec2d> v = p->GetVectorVec2dValue();
-
-			// TODO: Memory leak!!
-			LoadCurve* lc = new LoadCurve;
-			lc->SetExtend(plc->GetParam("extend")->GetIntValue());
-			lc->SetType(plc->GetParam("interpolate")->GetIntValue());
-
+			lc->SetExtendMode(plc->GetParam("extend")->GetIntValue());
+			lc->SetInterpolator(plc->GetParam("interpolate")->GetIntValue());
 			plt->SetLoadCurve(lc);
-			CPlotData* data = new CPlotData;
-			for (int i = 0; i < v.size(); ++i)
-			{
-				data->addPoint(v[i].x(), v[i].y());
-				lc->Add(v[i].x(), v[i].y());
-			}
-			plt->addPlotData(data);
-
-			data->setLineColor(QColor(0, 0, 255));
-			data->setFillColor(QColor(0, 0, 255));
-			data->setLineWidth(2);
-			data->setMarkerSize(5);
 		}
 	}
 

@@ -475,11 +475,11 @@ void CDlgFEBioOptimize::on_addData_clicked()
 	if (dlg.exec())
 	{
 		ui->dataTable->setRowCount(0);
-		std::vector<LOADPOINT> pts = dlg.GetPoints();
+		std::vector<vec2d> pts = dlg.GetPoints();
 		for (int i = 0; i < pts.size(); ++i)
 		{
-			LOADPOINT& p = pts[i];
-			ui->addDataPoint(p.time, p.load);
+			vec2d& p = pts[i];
+			ui->addDataPoint(p.x(), p.y());
 		}
 	}
 }

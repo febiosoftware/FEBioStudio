@@ -103,7 +103,7 @@ GGeneralSpring::GGeneralSpring(GModel* gm) : GDiscreteObject(gm, FE_GENERAL_SPRI
 	AddDoubleParam(1, "force", "spring force");
 
 	// create an initial linear ramp
-	LOADPOINT p0(0,0), p1(1,1);
+//	LOADPOINT p0(0,0), p1(1,1);
 //	GetParamLC(MP_F)->Add(p0);
 //	GetParamLC(MP_F)->Add(p1);
 }

@@ -1773,14 +1773,13 @@ FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 {
 	FSLoadController* plc = FEBio::CreateLoadController("loadcurve", this);
 
-	plc->SetParamInt("interpolate", lc.GetType());
-	plc->SetParamInt("extend", lc.GetExtend());
+	plc->SetParamInt("interpolate", lc.GetInterpolator());
+	plc->SetParamInt("extend", lc.GetExtendMode());
 
 	std::vector<vec2d> pt;
-	for (int i = 0; i < lc.Size(); ++i)
+	for (int i = 0; i < lc.Points(); ++i)
 	{
-		LOADPOINT& lp = lc[i];
-		vec2d pi(lp.time, lp.load);
+		vec2d pi = lc.Point(i);
 		pt.push_back(pi);
 	}
 	Param& points = *plc->GetParam("points");

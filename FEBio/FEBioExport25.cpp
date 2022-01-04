@@ -1846,32 +1846,32 @@ void FEBioExport25::WritePointCurve(FS1DPointFunction* f1d, XMLElement& el)
 	el.add_attribute("type", "point");
 	m_xml.add_branch(el);
 	{
-		int ntype = plc->GetType();
+		int ntype = plc->GetInterpolator();
 		switch (ntype)
 		{
-		case LoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "linear"); break;
-		case LoadCurve::LC_STEP  : m_xml.add_leaf("interpolate", "step"); break;
-		case LoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "smooth"); break;
-        case LoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "cubic spline"); break;
-        case LoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "control points"); break;
-        case LoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "approximation"); break;
+		case PointCurve::LINEAR : m_xml.add_leaf("interpolate", "linear"); break;
+		case PointCurve::STEP   : m_xml.add_leaf("interpolate", "step"); break;
+		case PointCurve::SMOOTH : m_xml.add_leaf("interpolate", "smooth"); break;
+        case PointCurve::CSPLINE: m_xml.add_leaf("interpolate", "cubic spline"); break;
+        case PointCurve::CPOINTS: m_xml.add_leaf("interpolate", "control points"); break;
+        case PointCurve::APPROX : m_xml.add_leaf("interpolate", "approximation"); break;
 		}
 
-		int nextend = plc->GetExtend();
+		int nextend = plc->GetExtendMode();
 		switch (nextend)
 		{
-		case LoadCurve::EXT_CONSTANT     : m_xml.add_leaf("extend", "constant"); break;
-		case LoadCurve::EXT_EXTRAPOLATE  : m_xml.add_leaf("extend", "extrapolate"); break;
-		case LoadCurve::EXT_REPEAT       : m_xml.add_leaf("extend", "repeat"); break;
-		case LoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "repeat offset"); break;
+		case PointCurve::CONSTANT     : m_xml.add_leaf("extend", "constant"); break;
+		case PointCurve::EXTRAPOLATE  : m_xml.add_leaf("extend", "extrapolate"); break;
+		case PointCurve::REPEAT       : m_xml.add_leaf("extend", "repeat"); break;
+		case PointCurve::REPEAT_OFFSET: m_xml.add_leaf("extend", "repeat offset"); break;
 		}
 
 		m_xml.add_branch("points");
-		int n = plc->Size();
+		int n = plc->Points();
 		for (int i = 0; i < n; ++i)
 		{
-			LOADPOINT& pi = plc->Item(i);
-			double d[2] = { pi.time, pi.load };
+			vec2d pi = plc->Point(i);
+			double d[2] = { pi.x(), pi.y()};
 			m_xml.add_leaf("pt", d, 2);
 		}
 

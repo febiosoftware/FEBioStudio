@@ -742,11 +742,11 @@ bool FENIKEExport::ExportLoadCurve(FENikeProject& prj)
 
 		LoadCurve& lc = *pc;
 
-		fprintf(m_fp, "%5d%5d\n", i+1, lc.Size());
-		for (j=0; j<lc.Size(); ++j)
+		fprintf(m_fp, "%5d%5d\n", i+1, lc.Points());
+		for (j=0; j<lc.Points(); ++j)
 		{
-			LOADPOINT& pt = lc.Item(j);
-			fprintf(m_fp, "%10lg%10lg\n", pt.time, pt.load);
+			vec2d pt = lc.Point(j);
+			fprintf(m_fp, "%10lg%10lg\n", pt.x(), pt.y());
 		}
 	}
 
