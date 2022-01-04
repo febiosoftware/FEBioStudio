@@ -134,7 +134,7 @@ void GQuartDogBone::Create()
 
 	// 4. build the faces
 	//-------------------
-	vector<int> edge;
+	std::vector<int> edge;
 
 	edge.resize(7);
 	for (int i=0; i<7; ++i) edge[i] = i;

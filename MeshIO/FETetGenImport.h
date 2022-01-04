@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 #include <list>
-//using namespace std;
 
 class FETetGenImport : public FSFileImport
 {
@@ -54,7 +53,7 @@ protected:
 	bool BuildMesh(FSModel& fem);
 
 private:
-	vector<NODE>	m_Node;
-	vector<ELEM>	m_Elem;
+	std::vector<NODE>	m_Node;
+	std::vector<ELEM>	m_Elem;
 	int				m_offset;
 };

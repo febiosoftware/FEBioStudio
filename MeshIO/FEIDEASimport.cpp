@@ -127,7 +127,7 @@ bool FEIDEASimport::BuildMesh(FSModel& fem)
 	}
 
 	int nsize = imax - imin + 1;
-	vector<int> NLT; NLT.resize(nsize);
+	std::vector<int> NLT; NLT.resize(nsize);
 	for (i=0; i<nsize; ++i) NLT[i] = -1;
 
 	in = m_Node.begin();

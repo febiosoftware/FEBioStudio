@@ -1,13 +1,17 @@
 #pragma once
 #include "FEBase.h"
 #include "FEDataMap.h"
+#include <string>
+
+class FSModel;
+class FSLoadController;
 
 //-----------------------------------------------------------------------------
 // Base class for components of an FSModel
-class FSModelComponent : public FSBase
+class FSModelComponent : public FSCoreBase
 {
 public:
-	FSModelComponent();
+	FSModelComponent(FSModel* fem = nullptr);
 
 	int GetSuperClassID() const;
 
@@ -15,14 +19,23 @@ public:
 	// but now some material classes need to set their super class to FEMATERIALPROP_ID
 	void SetSuperClassID(int superClassID);
 
-	virtual void SetTypeString(const char* sztype);
-	virtual const char* GetTypeString();
+	FSModel* GetFSModel();
+
+public:
+	// helper function for retrieving the load controller assigned to a parameter
+	FSLoadController* GetLoadController(int n);
 
 protected:
+	FSModel*	m_fem;
 	int			m_superClassID;		// super class ID (defined in FECore\fecore_enum.h)
-	const char* m_sztype;			// type string
 };
 
 
 void SaveClassMetaData(FSModelComponent* pc, OArchive& ar);
 void LoadClassMetaData(FSModelComponent* pc, IArchive& ar);
+
+class FSGenericClass : public FSModelComponent
+{
+public:
+	FSGenericClass() {}
+};

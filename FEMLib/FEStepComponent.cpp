@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FEStepComponent.h"
 
-FSStepComponent::FSStepComponent() 
+FSStepComponent::FSStepComponent(FSModel* fem) : FSModelComponent(fem)
 { 
 	m_bActive = true; 
 	m_nstepID = -1;

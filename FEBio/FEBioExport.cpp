@@ -130,7 +130,7 @@ const char* FEBioExport::GetEnumValue(Param& p)
 {
 	assert(p.GetParamType() == Param_CHOICE);
 	FSModel& fem = m_prj.GetFSModel();
-	return fem.GetEnumValue(p.GetEnumNames(), p.GetIntValue());
+	return fem.GetEnumValue(p.GetEnumNames(), p.GetIntValue(), false);
 }
 
 //-----------------------------------------------------------------------------
@@ -158,12 +158,8 @@ void FEBioExport::WriteParam(Param &p)
 	XMLElement e;
 	e.name(szname);
 	if (szindex) e.add_attribute(szindex, nindex);
-	LoadCurve* plc = p.GetLoadCurve();
-	if (plc && plc->Size())
-	{
-		assert(plc->GetID() > 0);
-		e.add_attribute("lc", plc->GetID());
-	}
+	int lc = GetLC(&p);
+	if (lc > 0) e.add_attribute("lc", lc);
 	switch (p.GetParamType())
 	{
 	case Param_CHOICE: 
@@ -242,6 +238,20 @@ void FEBioExport::WriteParam(Param &p)
 		e.value(s.c_str());
 	}
 	break;
+	case Param_STD_VECTOR_VEC2D:
+	{
+		std::vector<vec2d> v = p.GetVectorVec2dValue();
+		m_xml.add_branch(p.GetShortName());
+		for (int i = 0; i < v.size(); ++i)
+		{
+			vec2d& p = v[i];
+			double d[2] = { p.x(), p.y() };
+			m_xml.add_leaf("pt", d, 2);
+		}
+		m_xml.close_branch();
+		return;
+	}
+	break;
     default:
 		assert(false);
 	}
@@ -263,38 +273,18 @@ void FEBioExport::WriteParamList(ParamContainer& c)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport::AddLoadCurve(LoadCurve* plc)
-{
-	assert(plc);
-	m_pLC.push_back(plc);
-	plc->SetID((int)m_pLC.size());
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport::AddLoadCurves(ParamContainer& PC)
-{
-	int N = PC.Parameters();
-	for (int i = 0; i<N; ++i)
-	{
-		Param& p = PC.GetParam(i);
-		LoadCurve* plc = p.GetLoadCurve();
-		if (plc) AddLoadCurve(plc);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport::Clear()
-{
-	m_pLC.clear();
-}
-
-//-----------------------------------------------------------------------------
 void FEBioExport::WriteNote(FSObject* po)
 {
 	if (po)
 	{
 		m_xml.add_comment(po->GetInfo());
 	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport::Clear()
+{
+	m_LCT.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -317,171 +307,24 @@ bool FEBioExport::PrepareExport(FSProject& prj)
 	// set material tags
 	for (int i = 0; i<fem.Materials(); ++i) fem.GetMaterial(i)->m_ntag = i + 1;
 
-	// build the load curve list
-	BuildLoadCurveList(fem);
+	// build load controller table
+	m_LCT.clear();
+	for (int i = 0; i < fem.LoadControllers(); ++i)
+	{
+		FSLoadController* plc = fem.GetLoadController(i);
+		m_LCT[plc->GetID()] = i + 1;
+	}
 
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport::BuildLoadCurveList(FSModel& fem)
+int	FEBioExport::GetLC(const Param* p)
 {
-	// must point load curves
-	for (int j = 0; j<fem.Steps(); ++j)
-	{
-		FSStep* step = fem.GetStep(j);
-		FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(step);
-		if (pstep)
-		{
-			if (pstep->GetSettings().bmust) AddLoadCurve(pstep->GetMustPointLoadCurve());
-		}
-		else
-		{
-			AddLoadCurves(*step);
-			for (int i = 0; i < step->ControlProperties(); ++i)
-			{
-				FSStepControlProperty& prop = step->GetControlProperty(i);
-				if (prop.m_prop) AddLoadCurves(*prop.m_prop);
-			}
-		}
-	}
-
-	// material curves
-	for (int i = 0; i<fem.Materials(); ++i)
-	{
-		GMaterial* pgm = fem.GetMaterial(i);
-		FSMaterial* pm = pgm->GetMaterialProperties();
-		if (pm)
-		{
-			AddLoadCurves(*pm);
-			MultiMaterialCurves(pm);
-		}
-	}
-
-	// see if any of the body force load curves are active
-	for (int i = 0; i<fem.Steps(); ++i)
-	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j<pstep->BCs(); ++j)
-		{
-			FSBoundaryCondition* pbc = pstep->BC(j);
-			if (pbc && pbc->IsActive()) AddLoadCurves(*pbc);
-		}
-	}
-
-	// see if any of the body force load curves are active
-	for (int i = 0; i<fem.Steps(); ++i)
-	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j<pstep->Loads(); ++j)
-		{
-			FSLoad* pl = pstep->Load(j);
-			if (pl && pl->IsActive()) AddLoadCurves(*pl);
-		}
-	}
-
-	// add interface loadcurves
-	for (int i = 0; i<fem.Steps(); ++i)
-	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j<pstep->Interfaces(); ++j)
-		{
-			FSInterface* pci = pstep->Interface(j);
-			if (pci && pci->IsActive()) AddLoadCurves(*pci);
-		}
-	}
-
-	// add rigid constraints loadcurves
-	for (int i = 0; i < fem.Steps(); ++i)
-	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j < pstep->RigidConstraints(); ++j)
-		{
-			FSRigidConstraint* prc = pstep->RigidConstraint(j);
-			if (prc->IsActive()) AddLoadCurves(*prc);
-		}
-	}
-
-	// add NL constraints
-	for (int i = 0; i < fem.Steps(); ++i)
-	{
-		FSStep* step = fem.GetStep(i);
-		for (int j = 0; j < step->Constraints(); ++j)
-		{
-			FSModelConstraint* pw = step->Constraint(j);
-			if (pw && pw->IsActive()) AddLoadCurves(*pw);
-		}
-	}
-
-	// add rigid load loadcurves
-	for (int i = 0; i < fem.Steps(); ++i)
-	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j < pstep->RigidLoads(); ++j)
-		{
-			FSRigidLoad* prl = pstep->RigidLoad(j);
-			if (prl->IsActive()) AddLoadCurves(*prl);
-		}
-	}
-
-	// add connector loadcurves
-	for (int i = 0; i<fem.Steps(); ++i)
-	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j<pstep->RigidConnectors(); ++j)
-		{
-			FSRigidConnector* pci = pstep->RigidConnector(j);
-			if (pci->IsActive()) AddLoadCurves(*pci);
-		}
-	}
-
-	// see if there are any rigid body constraints
-	for (int i = 0; i<fem.Steps(); ++i)
-	{
-		FSStep* ps = fem.GetStep(i);
-		for (int j = 0; j<ps->RigidConstraints(); ++j)
-		{
-			FSRigidPrescribed* prc = dynamic_cast<FSRigidPrescribed*>(ps->RigidConstraint(j));
-			if (prc && prc->IsActive() && (prc->GetDOF() >= 0) && (prc->GetLoadCurve()))
-			{
-				AddLoadCurve(prc->GetLoadCurve());
-			}
-		}
-	}
-
-	// spring loadcurves
-	GModel& mdl = fem.GetModel();
-	for (int i = 0; i<(int)mdl.DiscreteObjects(); ++i)
-	{
-		GDiscreteObject* pg = mdl.DiscreteObject(i);
-		AddLoadCurves(*pg);
-
-		GDiscreteSpringSet* ps = dynamic_cast<GDiscreteSpringSet*>(pg);
-		if (ps)
-		{
-			FSDiscreteMaterial* pm = ps->GetMaterial();
-			if (pm) AddLoadCurves(*pm);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport::MultiMaterialCurves(FSMaterial* pm)
-{
-	if (pm->Properties() > 0) {
-		for (int k = 0; k<pm->Properties(); ++k)
-		{
-			FSMaterialProperty& mc = pm->GetProperty(k);
-			for (int l = 0; l<mc.Size(); ++l)
-			{
-				FSMaterial* pmat = mc.GetMaterial(l);
-				if (pmat)
-				{
-					AddLoadCurves(*pmat);
-					MultiMaterialCurves(pmat);
-				}
-			}
-		}
-	}
-	return;
+	assert(p);
+	if (p == nullptr) return -1;
+	int lcid = p->GetLoadCurveID();
+	if (lcid < 0) return -1;
+	assert(m_LCT.find(lcid) != m_LCT.end());
+	return m_LCT[lcid];
 }

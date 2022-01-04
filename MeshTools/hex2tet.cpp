@@ -203,7 +203,7 @@ FSMesh* FEHex2Tet::Apply(FSMesh* pm)
 
 	// Figure out how to split each element
 	int NE1 = 0;
-	vector<int> tag(NE0, -1);
+	std::vector<int> tag(NE0, -1);
 	for (int i = 0; i < NE0; ++i)
 	{
 		FSElement& els = pm->Element(i);

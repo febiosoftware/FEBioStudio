@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESplitModifier.h"
 #include <MeshLib/FEFaceEdgeList.h>
+using namespace std;
 
 FEHexSplitModifier::FEHexSplitModifier() : FEModifier("Split")
 {

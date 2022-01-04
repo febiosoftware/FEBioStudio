@@ -42,9 +42,9 @@ FSUserMaterial::~FSUserMaterial()
 	m_pname.clear();
 }
 
-void FSUserMaterial::SetTypeString(const char* sz)
+void FSUserMaterial::SetTypeString(const std::string& sz)
 {
-	strcpy(m_sztype, sz);
+	strcpy(m_sztype, sz.c_str());
 }
 
 //-----------------------------------------------------------------------------

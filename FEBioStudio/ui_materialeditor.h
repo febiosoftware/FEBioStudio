@@ -79,17 +79,17 @@ public:
 
 			for (int i=0; i<pmat->Properties(); ++i)
 			{
-				FSMaterialProperty& mp = pmat->GetProperty(i);
-				if (mp.GetFlags() & FSMaterialProperty::EDITABLE)
+				FSProperty& mp = pmat->GetProperty(i);
+				if (mp.GetFlags() & FSProperty::EDITABLE)
 				{
 					if (mp.maxSize() == 1)
 					{
 						MaterialEditorItem* item = new MaterialEditorItem(this);
 						item->SetParentMaterial(pmat);
-						item->SetClassID(mp.GetClassID());
+						item->SetClassID(mp.GetPropertyType());
 						item->SetPropertyIndex(i);
 						item->setText(0, QString::fromStdString(mp.GetName()));
-						item->SetMaterial(mp.GetMaterial());
+						item->SetMaterial(pmat->GetMaterialProperty(i));
 					}
 					else
 					{
@@ -97,18 +97,18 @@ public:
 						{
 							MaterialEditorItem* item = new MaterialEditorItem(this);
 							item->SetParentMaterial(pmat);
-							item->SetClassID(mp.GetClassID());
+							item->SetClassID(mp.GetPropertyType());
 							item->SetPropertyIndex(i, j);
 							item->setText(0, QString::fromStdString(mp.GetName()));
-							item->SetMaterial(mp.GetMaterial(j));
+							item->SetMaterial(pmat->GetMaterialProperty(i, j));
 						}
 
 						// Add one more so that users can create a new material for variable size properties
-						if (mp.maxSize() == FSMaterialProperty::NO_FIXED_SIZE)
+						if (mp.maxSize() == FSProperty::NO_FIXED_SIZE)
 						{
 							MaterialEditorItem* item = new MaterialEditorItem(this);
 							item->SetParentMaterial(pmat);
-							item->SetClassID(mp.GetClassID());
+							item->SetClassID(mp.GetPropertyType());
 							item->SetPropertyIndex(i, -1);
 							item->setText(0, QString::fromStdString(mp.GetName()));
 						}
@@ -130,12 +130,12 @@ public:
 
 			int index = mi->indexOfChild(this);
 
-			FSMaterialProperty& mp = m_parent->GetProperty(m_nprop);
-			if (mp.maxSize() == FSMaterialProperty::NO_FIXED_SIZE)
+			FSProperty& mp = m_parent->GetProperty(m_nprop);
+			if (mp.maxSize() == FSProperty::NO_FIXED_SIZE)
 			{
 				MaterialEditorItem* item = new MaterialEditorItem((QTreeWidgetItem*)0);
 				item->SetParentMaterial(m_parent);
-				item->SetClassID(mp.GetClassID());
+				item->SetClassID(mp.GetPropertyType());
 				item->SetPropertyIndex(m_nprop, -1);
 				item->setText(0, QString::fromStdString(mp.GetName()));
 				mi->insertChild(index+1, item);

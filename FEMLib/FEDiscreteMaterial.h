@@ -55,6 +55,9 @@ public:
 	LoadCurve* GetPointCurve();
 	void SetPointCurve(LoadCurve& lc);
 	DECLARE_REGISTERED(FS1DPointFunction);
+
+private:
+	LoadCurve	m_lc;
 };
 
 //===================================================================
@@ -64,8 +67,8 @@ public:
 	FEBioDiscreteMaterial();
 	~FEBioDiscreteMaterial();
 
-	void SetTypeString(const char* sz) override;
-	const char* GetTypeString() override;
+	void SetTypeString(const std::string& s) override;
+	const char* GetTypeString() const override;
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);

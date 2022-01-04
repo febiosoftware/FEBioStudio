@@ -31,7 +31,6 @@ SOFTWARE.*/
 
 #include <vector>
 #include <list>
-//using namespace std;
 
 class FESTLimport : public FSFileImport
 {
@@ -55,7 +54,7 @@ class FESTLimport : public FSFileImport
 	{
 	public:
 		vec3d		r0, r1;		// points defining box
-		vector<int>	NL;			// list of nodes inside this box
+		std::vector<int>	NL;			// list of nodes inside this box
 
 	public:
 		OBOX(){}
@@ -89,13 +88,13 @@ private:
 	bool read_facet(FACET& f);
 
 protected:
-	FSModel*		m_pfem;
-	list<FACET>		m_Face;
-	vector<NODE>	m_Node;
-	int				m_nline;	// line counter
+	FSModel*			m_pfem;
+	std::list<FACET>	m_Face;
+	std::vector<NODE>	m_Node;
+	int					m_nline;	// line counter
 
-	int				m_NB;
-	vector<OBOX>	m_BL;		// box lists
+	int					m_NB;
+	std::vector<OBOX>	m_BL;		// box lists
 
 	BOX				m_box;		// bounding box
 };

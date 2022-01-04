@@ -26,13 +26,18 @@ SOFTWARE.*/
 #include "FEModelComponent.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
+#include <MeshTools/FEModel.h>
 #include <exception>
 #include <sstream>
 
-FSModelComponent::FSModelComponent()
+FSModelComponent::FSModelComponent(FSModel* fem) : m_fem(fem)
 {
 	m_superClassID = -1;
-	m_sztype = "(unknown)";
+}
+
+FSModel* FSModelComponent::GetFSModel()
+{
+	return m_fem;
 }
 
 int FSModelComponent::GetSuperClassID() const
@@ -45,14 +50,25 @@ void FSModelComponent::SetSuperClassID(int superClassID)
 	m_superClassID = superClassID;
 }
 
-void FSModelComponent::SetTypeString(const char* sztype)
-{ 
-	m_sztype = sztype; 
-}
+// helper function for retrieving the load curve assigned to a parameter
+FSLoadController* FSModelComponent::GetLoadController(int n)
+{
+	FSModel* fem = GetFSModel(); assert(fem);
+	if (fem == nullptr) return nullptr;
 
-const char* FSModelComponent::GetTypeString() 
-{ 
-	return m_sztype; 
+	if ((n < 0) || (n >= Parameters()))
+	{
+		assert(false);
+		return nullptr;
+	}
+
+	int lc = GetParam(n).GetLoadCurveID();
+	if (lc < 0) return nullptr;
+	
+	FSLoadController* plc = fem->GetLoadControllerFromID(lc);
+	if (plc == nullptr) { assert(false); return nullptr; }
+
+	return plc;
 }
 
 //==============================================================================

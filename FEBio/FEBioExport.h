@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "FEBioException.h"
 #include <MeshTools/FEProject.h>
 #include <sstream>
+#include <map>
 
 // export sections
 enum FEBioExportSections
@@ -72,19 +73,14 @@ protected:
 
 	const char* GetEnumValue(Param& p);
 
-private:
-	void AddLoadCurve(LoadCurve* plc);
-	void AddLoadCurves(ParamContainer& PC);
-	void MultiMaterialCurves(FSMaterial* pm);
-	void BuildLoadCurveList(FSModel& fem);
+protected:
+	int	GetLC(const Param* p);
 
 public: // helper functions for writing to the xml file directly
 	XMLWriter& GetXMLWriter();
 
 protected:
 	XMLWriter		m_xml;
-
-	std::vector<LoadCurve*>		m_pLC;		//!< array of loadcurve pointers
 
 	bool	m_section[FEBIO_MAX_SECTIONS];	//!< write section flags
 
@@ -93,6 +89,8 @@ protected:
 	bool	m_exportEnumStrings;	//!< export enums as strings (otherwise output numbers)
 
 	bool	m_exportNonPersistentParams;
+
+	std::map<int, int>	m_LCT;	// load-controller map: key = load curve ID, value = lc
 };
 
 template <> std::string type_to_string<vec2i>(const vec2i& v);

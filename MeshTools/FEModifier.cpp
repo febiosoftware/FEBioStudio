@@ -243,8 +243,8 @@ FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 		}
 	}
 
-	vector<int> tag(ntag);
-	vector<double>	wgt(m.Nodes());
+	std::vector<int> tag(ntag);
+	std::vector<double>	wgt(m.Nodes());
 	for (i=0, ntag = 0; i<m.Nodes(); ++i)
 	{
 		if (m.Node(i).m_ntag) tag[ntag++] = i;

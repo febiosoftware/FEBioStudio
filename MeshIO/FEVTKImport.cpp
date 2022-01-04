@@ -31,6 +31,7 @@ SOFTWARE.*/
 #ifdef LINUX
 #include <wctype.h>
 #endif
+using namespace std;
 
 enum VTK_DATASET_TYPE {
 	VTK_INVALID,

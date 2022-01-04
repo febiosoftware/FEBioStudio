@@ -2435,8 +2435,8 @@ public:
 	FEBioMaterial();
 	~FEBioMaterial();
 
-	void SetTypeString(const char* sz) override;
-	const char* GetTypeString() override;
+	void SetTypeString(const std::string& s) override;
+	const char* GetTypeString() const override;
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);

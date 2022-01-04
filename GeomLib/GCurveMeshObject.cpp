@@ -66,7 +66,7 @@ void GCurveMeshObject::Update()
 	}
 
 	// get the end points
-	vector<int> endPoints = m_curve->EndPointList();
+	std::vector<int> endPoints = m_curve->EndPointList();
 	if (endPoints.size() < m_Node.size())
 	{
 		// shrink the node list

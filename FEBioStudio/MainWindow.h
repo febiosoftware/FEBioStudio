@@ -387,6 +387,8 @@ public slots:
 	void on_actionAddRigidConnector_triggered();
 	void on_actionAddMaterial_triggered();
 	void on_actionAddMeshAdaptor_triggered();
+	void on_actionAddLoadController_triggered();
+	void on_actionAddMeshData_triggered();
 	void on_actionAddStep_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();
@@ -562,7 +564,7 @@ public slots:
 	void on_glview_pointPicked(const vec3d& r);
 	void on_glview_selectionChanged();
 
-	void onExportMaterials(const vector<GMaterial*>& matList);
+	void onExportMaterials(const std::vector<GMaterial*>& matList);
 	void onExportAllMaterials();
 	void onImportMaterials();
 	void onImportMaterialsFromModel(CModelDocument* src);
@@ -578,8 +580,12 @@ public slots:
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
 	void DeleteAllJobs();
+	void OnDeleteAllLoadControllers();
+	void OnDeleteAllMeshData();
 
 	CGLView* GetGLView();
+
+	void UpdateGraphs(bool breset);
 
 	Post::CGLModel* GetCurrentModel();
 
@@ -632,7 +638,7 @@ private:
 	CDocManager*		m_DocManager;
 
 	CFileThread*		m_fileThread;
-	vector<QueuedFile>	m_fileQueue;
+	std::vector<QueuedFile>	m_fileQueue;
 
 	static CMainWindow*		m_mainWnd;
 };

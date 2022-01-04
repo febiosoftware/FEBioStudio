@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FSCore/FSCore.h>
+using namespace std;
 
 class UIDlgAddPhysicsItem
 {
@@ -52,14 +53,13 @@ public:
 	bool	m_modDepends;
 
 public:
-	void setup(CDlgAddPhysicsItem* dlg)
+	void setup(CDlgAddPhysicsItem* dlg, bool showStepList)
 	{
 		// Setup UI
 		QString placeHolder = "(leave blank for default)";
 		name = new QLineEdit; name->setPlaceholderText(placeHolder);
 		name->setMinimumWidth(name->fontMetrics().size(Qt::TextSingleLine, placeHolder).width() * 1.3);
 
-		step = new QComboBox;
 		type = new QTreeWidget;
 		type->setColumnCount(2);
 		type->setHeaderLabels(QStringList() << "Type" << "Module");
@@ -69,7 +69,13 @@ public:
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
 		form->addRow("Name:", name);
-		form->addRow("Step:", step);
+
+		step = nullptr;
+		if (showStepList)
+		{
+			step = new QComboBox;
+			form->addRow("Step:", step);
+		}
 
 		QVBoxLayout* layout = new QVBoxLayout;
 
@@ -94,7 +100,7 @@ public:
 	}
 };
 
-CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FSProject& prj, bool includeModuleDependencies, QWidget* parent)
+CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent)
 	: CHelpDialog(prj, parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
@@ -102,13 +108,16 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FSProjec
 
 	ui->m_superID = superID;
 	ui->m_modDepends = includeModuleDependencies;
-	ui->setup(this);
+	ui->setup(this, showStepList);
 
 	// add the steps
-	FSModel& fem = prj.GetFSModel();
-	for (int i = 0; i < fem.Steps(); ++i)
+	if (ui->step)
 	{
-		ui->step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
+		FSModel& fem = prj.GetFSModel();
+		for (int i = 0; i < fem.Steps(); ++i)
+		{
+			ui->step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
+		}
 	}
 
 	m_module = prj.GetModule();
@@ -150,7 +159,7 @@ std::string CDlgAddPhysicsItem::GetName()
 
 int CDlgAddPhysicsItem::GetStep()
 {
-	return ui->step->currentIndex();
+	return (ui->step ? ui->step->currentIndex() : -1);
 }
 
 int CDlgAddPhysicsItem::GetClassID()

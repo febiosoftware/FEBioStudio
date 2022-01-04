@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include "FEModifier.h"
 #include <vector>
-//using namespace std;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FETet4ToTet5::FETet4ToTet5() : FEModifier("Tet4-to-Tet5")

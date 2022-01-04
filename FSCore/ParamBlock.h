@@ -28,12 +28,8 @@ SOFTWARE.*/
 #include "Serializable.h"
 #include "color.h"
 #include <FECore/mat3d.h>
-#include "LoadCurve.h"
 #include <vector>
 #include <string.h>
-//using namespace std;
-
-using std::vector;
 
 // parameter types
 // NOTE: Do not change the order of these parameters!!
@@ -51,6 +47,7 @@ enum Param_Type {
 	Param_VEC2I,
 	Param_STD_VECTOR_INT,
 	Param_STD_VECTOR_DOUBLE,
+	Param_STD_VECTOR_VEC2D,
 	Param_CHOICE = 0x0020		// like INT but imported/exported as one-based numbers
 };
 
@@ -109,6 +106,7 @@ public:
 	explicit Param(GLColor c, const char* szb, const char* szn = 0);
 	explicit Param(const std::vector<int>& v, const char* szb, const char* szn = 0);
 	explicit Param(const std::vector<double>& v, const char* szb, const char* szn = 0);
+	explicit Param(const std::vector<vec2d>& v, const char* szb, const char* szn = 0);
 	Param(const std::string& val, const char* szb, const char* szn = 0);
 
 	void SetParamType(Param_Type t);
@@ -117,11 +115,8 @@ public:
 
 	void SetParamID(int nid) { m_nID = nid; }
 
-	void SetLoadCurve();
-	void SetLoadCurve(const LoadCurve& lc);
-	LoadCurve* GetLoadCurve() const { return m_plc; }
-	void DeleteLoadCurve();
-	LoadCurve* RemoveLoadCurve();
+	void SetLoadCurveID(int lcid);
+	int GetLoadCurveID() const;
 
 	const char* GetShortName() const { return m_szbrev; }
 	const char* GetLongName () const { return m_szname; }
@@ -151,6 +146,7 @@ public:
 	void SetColorValue(const GLColor& c) { assert(m_ntype == Param_COLOR); val<GLColor>() = c; }
 	void SetVectorIntValue(const std::vector<int>& v) { assert(m_ntype == Param_STD_VECTOR_INT); val<std::vector<int> >() = v; }
 	void SetVectorDoubleValue(const std::vector<double>& v) { assert(m_ntype == Param_STD_VECTOR_DOUBLE); val<std::vector<double> >() = v; }
+	void SetVectorVec2dValue(const std::vector<vec2d>& v) { assert(m_ntype == Param_STD_VECTOR_VEC2D); val<std::vector<vec2d> >() = v; }
 
 	double GetFloatValue () const {assert(m_ntype == Param_FLOAT ); return val<double>(); }
 	int    GetIntValue   () const {assert((m_ntype == Param_INT)||(m_ntype == Param_CHOICE)); return val<int>  (); }
@@ -164,6 +160,7 @@ public:
 	GLColor GetColorValue() const { assert(m_ntype == Param_COLOR); return val<GLColor>(); }
 	std::vector<int> GetVectorIntValue() const { assert(m_ntype == Param_STD_VECTOR_INT); return val<std::vector<int> >(); }
 	std::vector<double> GetVectorDoubleValue() const { assert(m_ntype == Param_STD_VECTOR_DOUBLE); return val<std::vector<double> >(); }
+	std::vector<vec2d> GetVectorVec2dValue() const { assert(m_ntype == Param_STD_VECTOR_VEC2D); return val<std::vector<vec2d> >(); }
 
 	const char* GetUnit() const { return m_szunit; }
 	void SetUnit(const char* szunit) { m_szunit = szunit; }
@@ -217,7 +214,7 @@ protected:
 	bool			m_checked;
 
 	void*			m_pd;		// pointer to actual value
-	LoadCurve*	m_plc;		// load curve for parameter
+	int				m_lc;		// load curve ID for parameter (-1 for none)
 	int				m_offset;	// offset for output (choice parameters only)
 
 	bool		m_floatRange;
@@ -248,158 +245,169 @@ public:
 	ParamBlock(const ParamBlock& b);
 	ParamBlock& operator = (const ParamBlock& b);
 
+	void Clear();
+
 	Param* AddIntParam(int n, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(n, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(n, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddChoiceParam(int n, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(n, Param_CHOICE, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(n, Param_CHOICE, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddDoubleParam(double d, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(d, 0, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(d, 0, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddScienceParam(double d, const char* szunit, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(d, szunit, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(d, szunit, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddBoolParam(bool b, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(b, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(b, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddVecParam(vec3d v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(v, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(v, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddVec2iParam(vec2i v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(v, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(v, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddMat3dParam(mat3d v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(v, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(v, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddMat3dsParam(mat3ds v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(v, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(v, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddIndxIntParam(int n, const char* szi, int idx, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(n, szi, idx, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(n, szi, idx, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
     
 	Param* AddIndxDoubleParam(double d, const char* szi, int idx, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(d, szi, idx, 0, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(d, szi, idx, 0, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddStringParam(const std::string& s, const char* szb, const char* szn = 0)
 	{
 		int np = (int)m_Param.size();
-		Param p(s, szb, szn);
-		p.m_nID = np;
+		Param* p = new Param(s, szb, szn);
+		p->m_nID = np;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddMathParam(const std::string& s, const char* szb, const char* szn = 0)
 	{
 		int np = (int)m_Param.size();
-		Param p(s, szb, szn);
-		p.m_ntype = Param_MATH;
-		p.m_nID = np;
+		Param* p = new Param(s, szb, szn);
+		p->m_ntype = Param_MATH;
+		p->m_nID = np;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddColorParam(GLColor c, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(c, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(c, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddVectorIntParam(const std::vector<int>& v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(v, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(v, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
 	Param* AddVectorDoubleParam(const std::vector<double>& v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(v, szb, szn);
-		p.m_nID = ns;
+		Param* p = new Param(v, szb, szn);
+		p->m_nID = ns;
 		m_Param.push_back(p);
-		return LastParam();
+		return p;
 	}
 
-	const Param& operator [] (int n) const { return m_Param[n]; }
-	Param& operator [] (int n)	{ return m_Param[n]; }
+	Param* AddVectorVec2dParam(const std::vector<vec2d>& v, const char* szb, const char* szn = 0)
+	{
+		int ns = (int)m_Param.size();
+		Param* p = new Param(v, szb, szn);
+		p->m_nID = ns;
+		m_Param.push_back(p);
+		return p;
+	}
+
+	const Param& operator [] (int n) const { return *m_Param[n]; }
+	Param& operator [] (int n)	{ return *m_Param[n]; }
 	int Size() const { return (int)m_Param.size(); }
 
 	// returns last parameter in list
 	// This pointer is valid until the parameter list changes (e.g. when a new parameter is added)
-	Param* LastParam() { return (m_Param.empty() ? 0 : &m_Param[m_Param.size()-1]); } 
+	Param* LastParam() { return (m_Param.empty() ? 0 : m_Param[m_Param.size()-1]); } 
 
 	void clear() { m_Param.clear(); }
 
@@ -408,7 +416,7 @@ public:
 		int N = (int)m_Param.size();
 		for (int i=0; i<N; ++i)
 		{
-			if (m_Param[i].m_nID == nid) return &m_Param[i];
+			if (m_Param[i]->m_nID == nid) return m_Param[i];
 		}
 		return 0;
 	}
@@ -418,7 +426,7 @@ public:
 		int N = (int)m_Param.size();
 		for (int i=0; i<N; ++i)
 		{
-			Param& p = m_Param[i];
+			Param& p = *m_Param[i];
 			const char* szname = p.GetShortName();
 			if ((szname) && (strcmp(szname, sz) == 0)) return &p;
 		}
@@ -430,7 +438,7 @@ public:
 		int N = (int)m_Param.size();
 		for (int i = 0; i < N; ++i)
 		{
-			const Param& p = m_Param[i];
+			const Param& p = *m_Param[i];
 			const char* szname = p.GetShortName();
 			if ((szname) && (strcmp(szname, sz) == 0)) return &p;
 		}
@@ -442,7 +450,7 @@ public:
 		int N = (int)m_Param.size();
 		for (int i=0; i<N; ++i)
 		{
-			Param& p = m_Param[i];
+			Param& p = *m_Param[i];
 			const char* szname = p.GetShortName();
             const char* szidx = p.GetIndexName();
 			if (szidx)
@@ -454,18 +462,18 @@ public:
 		return 0;
 	}
     
-	int         GetIntValue   (int n) const { return m_Param[n].GetIntValue(); }
-	double      GetFloatValue (int n) const { return m_Param[n].GetFloatValue(); }
-	bool        GetBoolValue  (int n) const { return m_Param[n].GetBoolValue(); }
-	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }
-	GLColor     GetColorValue (int n) const { return m_Param[n].GetColorValue(); }
+	int         GetIntValue   (int n) const { return m_Param[n]->GetIntValue(); }
+	double      GetFloatValue (int n) const { return m_Param[n]->GetFloatValue(); }
+	bool        GetBoolValue  (int n) const { return m_Param[n]->GetBoolValue(); }
+	std::string GetStringValue(int n) const { return m_Param[n]->GetStringValue(); }
+	GLColor     GetColorValue (int n) const { return m_Param[n]->GetColorValue(); }
 	
-	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
-    const char* GetIndexName(int n) { return m_Param[n].GetIndexName(); }
+	int GetIndexValue(int n) const { return m_Param[n]->GetIndexValue(); }
+    const char* GetIndexName(int n) { return m_Param[n]->GetIndexName(); }
 
 
 protected:
-	vector<Param>	m_Param;
+	std::vector<Param*>	m_Param;
 };
 
 //-----------------------------------------------------------------------------
@@ -515,6 +523,7 @@ public:
 	Param* AddMathParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddMathParam(s, szb, szn); }
 	Param* AddVectorIntParam(const std::vector<int>& v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVectorIntParam(v, szb, szn); }
 	Param* AddVectorDoubleParam(const std::vector<double>& v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVectorDoubleParam(v, szb, szn); }
+	Param* AddVectorVec2dParam(const std::vector<vec2d>& v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVectorVec2dParam(v, szb, szn); }
 
 	// get a parameter from its name
 	Param* GetParam(const char* sz) { return m_Param.Find(sz); }
@@ -538,7 +547,6 @@ public:
 	bool GetBoolValue(int n)const  { return m_Param[n].GetBoolValue(); }
 	vec3d GetVecValue(int n) const { return m_Param[n].GetVec3dValue(); }
 	vec2i GetVec2iValue(int n) const { return m_Param[n].GetVec2iValue(); }
-	LoadCurve* GetParamLC(int n) { return m_Param[n].GetLoadCurve(); }
 	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
 	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }
 	GLColor GetColorValue(int n) const { return m_Param[n].GetColorValue(); }

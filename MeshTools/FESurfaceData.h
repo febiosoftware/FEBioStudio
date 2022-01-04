@@ -40,7 +40,7 @@ public:
 
 	void Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType);
 
-	vector<double>* getData();
+	std::vector<double>* getData();
 
 	FSSurface* getSurface() {return m_surface;}
 
@@ -49,6 +49,6 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	vector<double>	m_data;
+	std::vector<double>	m_data;
 	FSSurface* m_surface;
 };

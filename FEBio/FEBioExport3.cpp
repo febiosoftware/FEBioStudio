@@ -377,7 +377,7 @@ bool FEBioExport3::PrepareExport(FSProject& prj)
 	}
 
 	// See if we have data maps
-	if (fem.DataMaps() > 0) m_bdata = true;
+	if (fem.MeshDataGenerators() > 0) m_bdata = true;
 
 	return true;
 }
@@ -967,7 +967,7 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// loadcurve data
-			if ((m_pLC.size() > 0) && (m_section[FEBIO_LOADDATA]))
+			if ((fem.LoadControllers() > 0) && (m_section[FEBIO_LOADDATA]))
 			{
 				m_xml.add_branch("LoadData");
 				{
@@ -1070,10 +1070,10 @@ void FEBioExport3::WriteControlSection(FSStep& step)
 	else
 	{
 		WriteParamList(step);
-		for (int i = 0; i < step.ControlProperties(); ++i)
+		for (int i = 0; i < step.Properties(); ++i)
 		{
-			FSStepControlProperty& prop = step.GetControlProperty(i);
-			FSStepComponent* pc = prop.m_prop;
+			FSProperty& prop = step.GetProperty(i);
+			FSStepComponent* pc = dynamic_cast<FSStepComponent*>(prop.GetComponent(0));
 			if (pc)
 			{
 				m_xml.add_branch(prop.GetName().c_str());
@@ -1886,18 +1886,18 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 	else if (pm->Type() == FE_FNC1D_POINT)
 	{
 		FS1DPointFunction* pf1d = dynamic_cast<FS1DPointFunction*>(pm); assert(pf1d);
-		LoadCurve* plc = pf1d->GetParam(0).GetLoadCurve();
+		LoadCurve* plc = pf1d->GetPointCurve();
 		el.add_attribute("type", sztype);
 		m_xml.add_branch(el);
 		{
 			if (plc)
 			{
 				m_xml.add_branch("points");
-				int n = plc->Size();
+				int n = plc->Points();
 				for (int i = 0; i < n; ++i)
 				{
-					LOADPOINT& p = plc->Item(i);
-					double d[2] = { p.time, p.load };
+					vec2d p = plc->Point(i);
+					double d[2] = { p.x(), p.y() };
 					m_xml.add_leaf("pt", d, 2);
 				}
 				m_xml.close_branch();
@@ -1933,10 +1933,10 @@ void FEBioExport3::WriteMaterial(FSMaterial* pm, XMLElement& el)
 		int NC = pm->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
-			FSMaterialProperty& mc = pm->GetProperty(i);
+			FSProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j<mc.Size(); ++j)
 			{
-				FSMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = pm->GetMaterialProperty(i, j);
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
@@ -2043,10 +2043,10 @@ void FEBioExport3::WriteReactionMaterial(FSMaterial* pmat, XMLElement& el)
 		int NC = pmat->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
-			FSMaterialProperty& mc = pmat->GetProperty(i);
+			FSProperty& mc = pmat->GetProperty(i);
 			for (int j = 0; j<mc.Size(); ++j)
 			{
-				FSMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = pmat->GetMaterialProperty(i, j);
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
@@ -2192,10 +2192,10 @@ void FEBioExport3::WriteMembraneReactionMaterial(FSMaterial* pmat, XMLElement& e
         int NC = pmat->Properties();
         for (int i = 0; i<NC; ++i)
         {
-            FSMaterialProperty& mc = pmat->GetProperty(i);
+            FSProperty& mc = pmat->GetProperty(i);
             for (int j = 0; j<mc.Size(); ++j)
             {
-                FSMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = pmat->GetMaterialProperty(i, j);
                 if (pc)
                 {
                     el.name(mc.GetName().c_str());
@@ -3268,10 +3268,10 @@ void FEBioExport3::WriteMeshDataSection()
 	WriteNodeDataSection();
 
 	FSModel& fem = *m_pfem;
-	int N = fem.DataMaps();
+	int N = fem.MeshDataGenerators();
 	for (int i=0; i<N; ++i)
 	{
-		FSDataMapGenerator* map = fem.GetDataMap(i);
+		FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
 		WriteMeshData(map);
 	}
 }
@@ -3289,45 +3289,18 @@ void FEBioExport3::WriteElementDataSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteMeshData(FSDataMapGenerator* map)
+void FEBioExport3::WriteMeshData(FSMeshDataGenerator* map)
 {
 	XMLElement meshData("ElementData");
-	meshData.add_attribute("var", map->m_var);
-	meshData.add_attribute("generator", map->m_generator);
-	meshData.add_attribute("elem_set", map->m_elset);
+//	meshData.add_attribute("var", map->m_var);
+	meshData.add_attribute("generator", map->GetTypeString());
+//	meshData.add_attribute("elem_set", map->m_elset);
 
+	FSModel& fem = m_prj.GetFSModel();
 
 	m_xml.add_branch(meshData);
 	{
-		FSSurfaceToSurfaceMap* s2s = dynamic_cast<FSSurfaceToSurfaceMap*>(map);
-		if (s2s)
-		{
-			string bottomSurf = s2s->GetBottomSurface();
-			string topSurf    = s2s->GetTopSurface();
-			m_xml.add_leaf("bottom_surface", bottomSurf);
-			m_xml.add_leaf("top_surface"   , topSurf);
-			
-			XMLElement e("function");
-			e.add_attribute("type", "point");
-			m_xml.add_branch(e);
-			{
-				Param* p = s2s->GetParam("function");
-				if (p->GetLoadCurve())
-				{
-					LoadCurve& lc = *p->GetLoadCurve();
-					m_xml.add_branch("points");
-					{
-						for (int i = 0; i < lc.Size(); ++i)
-						{
-							double v[2] = { lc[i].time, lc[i].load };
-							m_xml.add_leaf("point", v, 2);
-						}
-					}
-					m_xml.close_branch();
-				}
-			}
-			m_xml.close_branch();
-		}
+		WriteParamList(*map);
 	}
 	m_xml.close_branch();
 }
@@ -3837,7 +3810,7 @@ void FEBioExport3::WriteDiscreteSection(FSStep& s)
 			{
 				Param& p = pg->GetParam(GGeneralSpring::MP_F);
 				double F = p.GetFloatValue();
-				int lc = (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
+				int lc = -1;// (p.GetLoadCurve() ? p.GetLoadCurve()->GetID() : -1);
 
 				XMLElement f;
 				f.name("force");
@@ -4037,7 +4010,7 @@ void FEBioExport3::WriteContactSphere(FSStep& s)
 				m_xml.add_leaf("radius", pw->Radius());
 				m_xml.add_leaf("center", pw->Center());
 
-				LoadCurve* lc[3];
+/*				LoadCurve* lc[3];
 				lc[0] = pw->GetLoadCurve(0);
 				lc[1] = pw->GetLoadCurve(1);
 				lc[2] = pw->GetLoadCurve(2);
@@ -4063,6 +4036,7 @@ void FEBioExport3::WriteContactSphere(FSStep& s)
 					el.value(1.0);
 					m_xml.add_leaf(el);
 				}
+*/
 			}
 			m_xml.close_branch();
 		}
@@ -4335,7 +4309,7 @@ void FEBioExport3::WriteNodalLoads(FSStep& s)
 
 void FEBioExport3::WriteDOFNodalLoad(FSStep& s, FSNodalLoad* pnl)
 {
-	char bc[][3] = { "x", "y", "z", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
+	char bc[][3] = { "x", "y", "z", "sx", "sy", "sz", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
 
 	FSNodalDOFLoad* pbc = dynamic_cast<FSNodalDOFLoad*>(pnl); assert(pbc);
 	if (pbc == nullptr) return;
@@ -4346,7 +4320,6 @@ void FEBioExport3::WriteDOFNodalLoad(FSStep& s, FSNodalLoad* pnl)
 	if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
 	int l = pbc->GetDOF();
-	LoadCurve* plc = pbc->GetLoadCurve();
 
 	XMLElement load("nodal_load");
 	load.add_attribute("name", pbc->GetName());
@@ -4717,49 +4690,23 @@ void FEBioExport3::WriteGlobalsSection()
 
 void FEBioExport3::WriteLoadDataSection()
 {
-	for (int i = 0; i<(int)m_pLC.size(); ++i)
+	FSModel& fem = m_prj.GetFSModel();
+
+	for (int i = 0; i<fem.LoadControllers(); ++i)
 	{
-		LoadCurve* plc = m_pLC[i];
+		FSLoadController* plc = fem.GetLoadController(i);
 
 		XMLElement el;
 		el.name("load_controller");
 		el.add_attribute("id", i + 1);
-		el.add_attribute("type", "loadcurve");
+		el.add_attribute("type", plc->GetTypeString());
+		if (plc->GetName().empty() == false) el.add_attribute("name", plc->GetName());
 
-		double d[2];
 		m_xml.add_branch(el);
 		{
-			switch (plc->GetType())
-			{
-			case LoadCurve::LC_STEP  : m_xml.add_leaf("interpolate", "STEP"); break;
-			case LoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "LINEAR"); break;
-			case LoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "SMOOTH"); break;
-            case LoadCurve::LC_CSPLINE: m_xml.add_leaf("interpolate", "CUBIC SPLINE"); break;
-            case LoadCurve::LC_CPOINTS: m_xml.add_leaf("interpolate", "CONTROL POINTS"); break;
-            case LoadCurve::LC_APPROX: m_xml.add_leaf("interpolate", "APPROXIMATION"); break;
-			}
-
-			switch (plc->GetExtend())
-			{
-				//		case LoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
-			case LoadCurve::EXT_EXTRAPOLATE  : m_xml.add_leaf("extend", "EXTRAPOLATE"); break;
-			case LoadCurve::EXT_REPEAT       : m_xml.add_leaf("extend", "REPEAT"); break;
-			case LoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "REPEAT OFFSET"); break;
-			}
-
-			m_xml.add_branch("points");
-			{
-				for (int j = 0; j < plc->Size(); ++j)
-				{
-					LOADPOINT& pt = plc->Item(j);
-					d[0] = pt.time;
-					d[1] = pt.load;
-					m_xml.add_leaf("point", d, 2);
-				}
-			}
-			m_xml.close_branch();
+			WriteParamList(*plc);
 		}
-		m_xml.close_branch(); // loadcurve
+		m_xml.close_branch();
 	}
 }
 
@@ -5150,7 +5097,10 @@ void FEBioExport3::WriteRigidConstraints(FSStep &s)
 					m_xml.add_leaf("rb", pgm->m_ntag);
 					m_xml.add_leaf("dof", szbc[rc->GetDOF()]);
 					el.name("value");
-					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+
+					int lc = GetLC(&rc->GetParam(FSRigidDisplacement::VALUE));
+					if (lc > 0) el.add_attribute("lc", lc);
+
 					el.value(rc->GetValue());
 					m_xml.add_leaf(el);
 					m_xml.add_leaf("relative", rc->GetRelativeFlag());
@@ -5168,7 +5118,10 @@ void FEBioExport3::WriteRigidConstraints(FSStep &s)
 					m_xml.add_leaf("rb", pgm->m_ntag);
 					m_xml.add_leaf("dof", szbc[rf->GetDOF()]);
 					XMLElement val("value");
-					if (rf->GetLoadCurve()) val.add_attribute("lc", rf->GetLoadCurve()->GetID());
+
+					int lc = GetLC(&rf->GetParam(FSRigidDisplacement::VALUE));
+					if (lc > 0) el.add_attribute("lc", lc);
+
 					val.value(rf->GetValue());
 					m_xml.add_leaf(val);
 					m_xml.add_leaf("load_type", rf->GetForceType());

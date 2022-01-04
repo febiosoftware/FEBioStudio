@@ -187,8 +187,8 @@ bool FEGMshImport::ReadElements()
 	int nread = sscanf(m_szline, "%d", &elems);
 	if (nread != 1) return errf("Error while reading Element section");
 
-	vector<ELEMENT> Face;
-	vector<ELEMENT> Elem;
+	std::vector<ELEMENT> Face;
+	std::vector<ELEMENT> Elem;
 	Face.reserve(elems);
 	Elem.reserve(elems);
 

@@ -453,8 +453,8 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			sprintf(szname, "PrescribedConstraint%02d", nfc++);
 			pbc->SetName(szname);
 			pbc->SetDOF(nbc-1);
-			LoadCurve* plc = pbc->GetLoadCurve();
-			*plc = m_LC[nlc-1];
+//			LoadCurve* plc = pbc->GetLoadCurve();
+//			*plc = m_LC[nlc-1];
 			s.AddComponent(pbc);
 		}
 	}
@@ -508,7 +508,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 
 						prc->SetDOF(j);
 						prc->SetValue(1.0);
-						prc->SetLoadCurve(m_LC[BC[j]-1]);
+	//					prc->SetLoadCurve(m_LC[BC[j]-1]);
 						s.AddRC(prc);
 					}
 				}
@@ -1261,14 +1261,16 @@ bool FENIKEImport::ReadLoadCurves(FENikeProject& prj)
 		if (nread != 1) return errf(szerr[ERR_LC], i+1);
 
 		// -------- load card 2 - n --------
-		lc.SetSize(np);
+		lc.Clear();
 		for (int j=0; j<np; ++j)
 		{
-			LOADPOINT& pt = lc[j];
 			if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
-			nread = sscanf(szline, "%10lg%10lg", &pt.time, &pt.load);
+			double d[2];
+			nread = sscanf(szline, "%10lg%10lg", &d[0], &d[1]);
 			if (nread != 2) return errf(szerr[ERR_LC], i+1);
+
+			lc.Add(d[0], d[1]);
 		}
 
 		// add the loadcurve to the project
@@ -1480,8 +1482,8 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 			FSPrescribedDisplacement* pdc = dynamic_cast<FSPrescribedDisplacement*>(pbc);
 			if (pdc)
 			{
-				plc = pdc->GetLoadCurve();
-				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
+//				plc = pdc->GetLoadCurve();
+//				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
 			}
 		}
 
@@ -1494,16 +1496,16 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 			FSNodalDOFLoad* pfc = dynamic_cast<FSNodalDOFLoad*>(pl);
 			if (pfc)
 			{
-				plc = pfc->GetLoadCurve();
-				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
+//				plc = pfc->GetLoadCurve();
+//				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
 			}
 
 			// pressure forces
 			FSPressureLoad* ppc = dynamic_cast<FSPressureLoad*>(pl);
 			if (ppc)
 			{
-				plc = ppc->GetLoadCurve();
-				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
+//				plc = ppc->GetLoadCurve();
+//				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
 			}
 		}
 	}
@@ -1519,12 +1521,12 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 			for (int j=0; j<pb.Size(); ++j)
 			{
 				Param& p = pb[j];
-				LoadCurve* plc = p.GetLoadCurve();
-				if (plc && (plc->Size() > 0))
-				{
-					LoadCurve& lc = *plc;
-					n = lc.GetID(); if (n >= 0) lc = m_LC[n];
-				}
+	//			LoadCurve* plc = p.GetLoadCurve();
+//				if (plc && (plc->Size() > 0))
+//				{
+//					LoadCurve& lc = *plc;
+//					n = lc.GetID(); if (n >= 0) lc = m_LC[n];
+//				}
 			}
 		}
 	}
@@ -1538,8 +1540,8 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 			FSRigidWallInterface* pi = dynamic_cast<FSRigidWallInterface*>(s.Interface(i));
 			if (pi)
 			{
-				LoadCurve* plc = pi->GetParamLC(FSRigidWallInterface::OFFSET);
-				if (plc && plc->GetID() >= 0) *plc = m_LC[plc->GetID()];
+//				LoadCurve* plc = pi->GetParamLC(FSRigidWallInterface::OFFSET);
+//				if (plc && plc->GetID() >= 0) *plc = m_LC[plc->GetID()];
 			}
 		}
 	}
@@ -1550,8 +1552,8 @@ void FENIKEImport::UpdateFEModel(FSModel& fem)
 		FSRigidPrescribed* rc = dynamic_cast<FSRigidPrescribed*>(s.RigidConstraint(i));
 		if (rc)
 		{
-			LoadCurve& lc = *rc->GetLoadCurve();
-			if (lc.GetID() >= 0) lc = m_LC[lc.GetID()];
+//			LoadCurve& lc = *rc->GetLoadCurve();
+//			if (lc.GetID() >= 0) lc = m_LC[lc.GetID()];
 		}
 	}
 

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "FEPostModel.h"
 #include "constants.h"
 using namespace Post;
+using namespace std;
 
 FEDataManager::FEDataManager(FEPostModel* pm)
 {

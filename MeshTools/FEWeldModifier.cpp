@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEWeldModifier.h"
 #include <MeshLib/FEMeshBuilder.h>
 #include <MeshLib/FESurfaceMesh.h>
+using namespace std;
 
 //! constructor
 FEWeldNodes::FEWeldNodes() : FEModifier("Weld nodes")

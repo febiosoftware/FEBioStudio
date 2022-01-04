@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEExtrudeFaces.h"
 #include <MeshLib/FEMeshBuilder.h>
+using namespace std;
 
 FEExtrudeFaces::FEExtrudeFaces() : FEModifier("Extrude faces")
 {

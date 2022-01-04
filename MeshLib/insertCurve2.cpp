@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include "MeshTools.h"
 #include "TriMesh.h"
+using namespace std;
 
 InsertCurves2::InsertCurves2()
 {

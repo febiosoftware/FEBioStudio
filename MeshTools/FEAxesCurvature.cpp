@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "PointCloud3d.h"
 #include "BivariatePolynomialSpline.h"
 #include "Quadric.h"
+using namespace std;
 
 //--------------------------------------------------------------------------------------
 FEAxesCurvature::FEAxesCurvature() : FEModifier("Axes from Curvature")

@@ -83,8 +83,8 @@ protected:
 	FEPostMesh*	m_pm;
 	int			m_nmat;	// material index
 	int			m_ntype;
-	vector<int>	m_Face;	// face indices 
-	vector<int>	m_Elem;	// element indices
+	std::vector<int>	m_Face;	// face indices 
+	std::vector<int>	m_Elem;	// element indices
 };
 
 //-----------------------------------------------------------------------------
@@ -96,12 +96,12 @@ public:
 
 	int Size() const { return (int) m_Elem.size(); }
 
-	void GetNodeList(vector<int>& node, vector<int>& lnode);
+	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
 
-	vector<int> GetElementList() const { return m_Elem; }
+	std::vector<int> GetElementList() const { return m_Elem; }
 
 public:
-	vector<int>	m_Elem;	// element indices
+	std::vector<int>	m_Elem;	// element indices
 };
 
 //-------------------------------------------------------------------------
@@ -113,10 +113,10 @@ public:
 
 	int Size() const { return (int) m_Face.size(); }
 
-	void GetNodeList(vector<int>& node, vector<int>& lnode);
+	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
 
 public:
-	vector<int>	m_Face;	// face indices
+	std::vector<int>	m_Face;	// face indices
 };
 
 //-------------------------------------------------------------------------
@@ -127,6 +127,6 @@ public:
 	FSNodeSet(FSCoreMesh* pm) : MeshItemList(pm, FE_NODESET){}
 
 public:
-	vector<int>	m_Node;
+	std::vector<int>	m_Node;
 };
 }

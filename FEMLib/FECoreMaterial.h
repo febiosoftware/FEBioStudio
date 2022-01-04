@@ -33,80 +33,6 @@ class FSMaterial;
 class GMaterial;
 
 //-----------------------------------------------------------------------------
-//! Class describing a material property
-//! A material property is a component of a parent material and is represented by a (list of ) material(s) itself
-class FSMaterialProperty
-{
-public:
-	enum { NO_FIXED_SIZE = 0 };
-
-	enum Flags {
-		EDITABLE = 0x01,			// the property can be edited in the material editor
-		NON_EXTENDABLE = 0x02,		// cannot be modified after created in material editor
-		REQUIRED = 0x04				// property is required
-	};
-
-public:
-	FSMaterialProperty();
-	FSMaterialProperty(const std::string& name, int nClassID, FSMaterial* parent, int nsize = 1, unsigned int flags = EDITABLE);
-	~FSMaterialProperty();
-
-	// clears the material list for this property
-	void Clear();
-
-	// set the name of the property
-	void SetName(const std::string& name);
-
-	// return the name of the property
-	const std::string& GetName();
-
-	// append a material to the material list of this property
-	void AddMaterial(FSMaterial* pm);
-
-	// set the material in the property's material list
-	void SetMaterial(FSMaterial* pm, int i = 0);
-
-	// remove a material from the list (returns false if pm is not part of the list)
-	bool RemoveMaterial(FSMaterial* pm);
-
-	// return a material from the property's material list
-	FSMaterial* GetMaterial(int i = 0);
-
-	// return the index of a material (or -1)
-	int GetMaterialIndex(FSMaterial* mat);
-
-	// return the material class ID of this property
-	int GetClassID() const { return m_nClassID; }
-
-	// return the size of the material list
-	int Size() const { return (int) m_mat.size(); }
-
-	// return the max size for this property
-	int maxSize() const { return m_maxSize; }
-
-	// return property flags
-	unsigned int GetFlags() const { return m_flag; }
-
-	void SetFlags(unsigned int flags) { m_flag = flags; }
-
-	void SetSuperClassID(int superClassID) { m_nsuperClassID = superClassID; }
-	int GetSuperClassID() const { return m_nsuperClassID; }
-
-	const std::string& GetDefaultType() { return m_defaultType; }
-	void SetDefaultType(const std::string& s) { m_defaultType = s; }
-
-private:
-	std::string			m_name;			// name of this property
-	std::string			m_defaultType;	// default type string, when type attributed is ommitted.
-	int					m_nClassID;		// the material class ID for this property
-	int					m_nsuperClassID;// super class ID (used to distinguish between materials and material properties)
-	int					m_maxSize;		// max number of properties (0 for no limit)
-	unsigned int		m_flag;			// property flags
-	FSMaterial*			m_parent;		// parent material this material is a property off
-	vector<FSMaterial*>	m_mat;			// list of materials
-};
-
-//-----------------------------------------------------------------------------
 // TODO: I had to wrap this in a material so that I can show it in the 
 // MaterialPropsView
 class FSAxisMaterial;
@@ -122,11 +48,11 @@ public:
 	virtual ~FSMaterial();
 
 	// return the material type
-	int Type() { return m_ntype; }
+	int Type() const { return m_ntype; }
 
 	// return a string for the material type
-	const char* GetTypeString() override;
-	void SetTypeString(const char* sz) override;
+	const char* GetTypeString() const override;
+	void SetTypeString(const std::string& s) override;
 
 	// return the class ID this material belongs to
 	int ClassID();
@@ -150,35 +76,7 @@ public:
 	virtual bool IsRigid();
 
 public:
-	// get the number of properties of this material
-	int Properties() { return (int) m_Mat.size(); }
-
-	// get a property
-	FSMaterialProperty& GetProperty(int i) { return *m_Mat[i]; }
-
-	// find a property by name
-	FSMaterialProperty* FindProperty(const std::string& name);
-
-	// find the property by type
-	FSMaterialProperty* FindProperty(int ntype);
-
-	// find the property by the material
-	FSMaterialProperty* FindProperty(FSMaterial* pm);
-
-	// add a property to the material
-	FSMaterialProperty* AddProperty(const std::string& name, int nClassID, int maxSize = 1, unsigned int flags = FSMaterialProperty::EDITABLE);
-
-	// add a material to property with index propID
-	int AddProperty(int propID, FSMaterial* pm);
-
-	// add a material to the property with name
-	void AddProperty(const std::string& name, FSMaterial* pm);
-
-	// replace a property of the material
-	void ReplaceProperty(int propID, FSMaterial* pmat, int matID = 0);
-    
-	// delete all properties
-	void ClearProperties();
+	FSMaterial* GetMaterialProperty(int propId, int index = 0);
 
 public:
 	void SetParentMaterial(FSMaterial* pmat);
@@ -202,7 +100,7 @@ public:
 	FSAxisMaterial*	m_axes;
 
 protected:
-	vector<FSMaterialProperty*>	m_Mat;	//!< list of material properties
+//	vector<FSMaterialProperty*>	m_Mat;	//!< list of material properties
 };
 
 //-----------------------------------------------------------------------------

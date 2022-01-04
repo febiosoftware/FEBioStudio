@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FETetGenModifier.h"
 #include <MeshLib/MeshMetrics.h>
 #include <GeomLib/GObject.h>
+using namespace std;
 
 #undef PI
 

@@ -1150,6 +1150,12 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
+	UpdateGraphs(breset);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::UpdateGraphs(bool breset)
+{
 	// update graph windows
 	QList<::CGraphWindow*>::iterator it = ui->graphList.begin();
 	for (int i = 0; i < ui->graphList.size(); ++i, ++it)
@@ -3128,5 +3134,41 @@ void CMainWindow::CloseWelcomePage()
 	{
 		ui->htmlViewer->setDocument(nullptr);
 		ui->tab->tabCloseRequested(n);
+	}
+}
+
+void CMainWindow::OnDeleteAllLoadControllers()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all load controllers?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel* fem = doc->GetFSModel();
+		fem->DeleteAllLoadControllers();
+		doc->SetModifiedFlag(true);
+		UpdateTab(doc);
+		UpdateModel();
+		RedrawGL();
+	}
+}
+
+void CMainWindow::OnDeleteAllMeshData()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all mesh data?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel* fem = doc->GetFSModel();
+		fem->DeleteAllMeshDataGenerators();
+		doc->SetModifiedFlag(true);
+		UpdateTab(doc);
+		UpdateModel();
+		RedrawGL();
 	}
 }

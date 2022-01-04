@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <GeomLib/geom.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include "FEModifier.h"
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // We need to undefine it since tetgen defines this parameter

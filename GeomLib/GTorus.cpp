@@ -148,7 +148,7 @@ void GTorus::Create()
 
 	assert(m_Face.empty());
 	m_Face.reserve(16);
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<16; ++i)
 	{
 		edge.resize(4);

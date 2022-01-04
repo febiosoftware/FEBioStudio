@@ -141,7 +141,7 @@ FSSurfaceMesh* FEEdgeCollapse::Apply(FSSurfaceMesh* pm)
 	}
 
 	// reindex the nodes
-	vector<int> index(NN, -1);
+	std::vector<int> index(NN, -1);
 	int n = 0;
 	for (int i = 0; i<NN; ++i)
 	{

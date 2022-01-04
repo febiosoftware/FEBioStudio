@@ -52,19 +52,19 @@ private:
 		int Nodes() { return (int) m_node.size(); }
 
 	public:
-		vector<int>		m_face;		// face list
-		vector<NODE>	m_node;		// node list
-		vector<int>		m_lnode;	// local node list
+		std::vector<int>	m_face;		// face list
+		std::vector<NODE>	m_node;		// node list
+		std::vector<int>	m_lnode;	// local node list
 
-		vector<vector<int> >	m_NLT;	// node-facet look-up table
+		std::vector< std::vector<int> >	m_NLT;	// node-facet look-up table
 	};
 
 public:
 	FECongruencyMap() { m_tol = 0.01; }
 
 	// assign selections
-	void SetSelection1(vector<int>& s) { m_surf1.m_face = s; }
-	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
+	void SetSelection1(std::vector<int>& s) { m_surf1.m_face = s; }
+	void SetSelection2(std::vector<int>& s) { m_surf2.m_face = s; }
 
 	// apply the map
 	void Apply(FEPostModel& fem);

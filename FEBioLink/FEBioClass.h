@@ -74,6 +74,7 @@ namespace FEBio {
 	};
 
 	std::vector<FEBioClassInfo> FindAllClasses(int mod, int superId, int baseClassId = -1, unsigned int flags = ClassSearchFlags::AllFlags);
+	std::vector<FEBioClassInfo> FindAllActiveClasses(int superId, int baseClassId = -1, unsigned int flags = ClassSearchFlags::AllFlags);
 	int GetClassId(int superClassId, const std::string& typeStr);
 
 	int GetBaseClassIndex(const std::string& baseClassName);

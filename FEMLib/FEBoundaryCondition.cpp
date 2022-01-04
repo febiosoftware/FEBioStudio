@@ -188,7 +188,7 @@ FSPrescribedDOF::FSPrescribedDOF(int ntype, FSModel* ps, int nstep) : FSBoundary
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom
-	AddDoubleParam(1, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
+	AddDoubleParam(1, "scale", "scale")->MakeVariable(true);
 	AddBoolParam(0, "relative", "relative");
 }
 
@@ -196,7 +196,7 @@ FSPrescribedDOF::FSPrescribedDOF(int ntype, FSModel* ps, FEItemListBuilder* pi, 
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom
-	AddDoubleParam(s, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
+	AddDoubleParam(s, "scale", "scale")->MakeVariable(true);
 	AddBoolParam(0, "relative", "relative");
 	SetDOF(bc);
 }
@@ -232,7 +232,7 @@ void FSPrescribedDOF::LoadParam(const Param& p)
 		}
 		break;
 	case 1: SetScaleFactor(p.GetFloatValue()); break;
-	case 2: *GetLoadCurve() = *p.GetLoadCurve(); break;
+//	case 2: *GetLoadCurve() = *p.GetLoadCurve(); break;
 	case 3: SetRelativeFlag(p.GetIntValue() == 1); break;
 	}
 }

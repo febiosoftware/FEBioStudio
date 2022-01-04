@@ -42,5 +42,5 @@ public:
 	void SetSymmetricBias(bool b);
 
 protected:
-	void Extrude(FSMesh* pm, vector<int>& faceList);
+	void Extrude(FSMesh* pm, std::vector<int>& faceList);
 };

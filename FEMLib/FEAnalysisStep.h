@@ -1,7 +1,7 @@
 #pragma once
 #include <FEMLib/FEModelComponent.h>
+#include <FSCore/LoadCurve.h>
 #include <vector>
-//using namespace std;
 
 class FSModel;
 class FSBoundaryCondition;
@@ -14,6 +14,7 @@ class FSInitialCondition;
 class FSStepComponent;
 class FSModelConstraint;
 class FSRigidLoad;
+class FSMeshAdaptor;
 
 //-----------------------------------------------------------------------------
 // Analysis types
@@ -29,22 +30,6 @@ class FSRigidLoad;
 #define FE_STEP_REACTION_DIFFUSION	8
 #define FE_STEP_FLUID_FSI           9
 #define FE_STEP_FEBIO_ANALYSIS		10
-
-//-----------------------------------------------------------------------------
-class FSStepControlProperty : public FSObject
-{
-public:
-	FSStepControlProperty();
-	~FSStepControlProperty();
-
-	bool IsRequired() const { return m_brequired; }
-
-public:
-	int					m_nClassID;			// the class ID for this property
-	int					m_nSuperClassId;	// the super class ID for this property
-	bool				m_brequired;		// is this an optional property or required.
-	FSStepComponent*	m_prop;				// pointer to component class.
-};
 
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
@@ -65,10 +50,6 @@ public:
 
 	// get the step type
 	int GetType() { return m_ntype; }
-
-	//! get the model
-	//! \todo I don't think this is being used)
-	FSModel* GetFSModel() { return m_pfem; }
 
 	// I/O
 	void Load(IArchive& ar);
@@ -148,24 +129,23 @@ public:
     int RemoveRigidConnector(FSRigidConnector* pi);
 	void RemoveAllRigidConnectors();
 
+	// mesh adaptors
+	int MeshAdaptors();
+	FSMeshAdaptor* MeshAdaptor(int i);
+	void AddMeshAdaptor(FSMeshAdaptor* pi);
+	void InsertMeshAdaptor(int n, FSMeshAdaptor* pi);
+	int RemoveMeshAdaptor(FSMeshAdaptor* pi);
+	void RemoveAllMeshAdaptors();
+
 	// convenience functions for working with components
 	void AddComponent(FSStepComponent* pc);
 	void RemoveComponent(FSStepComponent* pc);
-
-	// control properties
-	int ControlProperties() const;
-	FSStepControlProperty& GetControlProperty(int i);
-	FSStepControlProperty* FindControlProperty(const std::string& propertyName);
-	void AddControlProperty(FSStepControlProperty* pc);
 
 public: // ref counting
 	static void ResetCounter();
 	static void SetCounter(int n);
 	static int GetCounter();
 	static void DecreaseCounter();
-
-protected:
-	FSModel*	m_pfem;	// pointer to FSModel class
 
 private:
 	Imp*		imp;			// implementation class
@@ -260,7 +240,7 @@ public:
 	LoadCurve* GetMustPointLoadCurve() { return &m_MP; }
 
 	// get the analysis types
-	virtual vector<string> GetAnalysisStrings() const;
+	virtual std::vector<string> GetAnalysisStrings() const;
 
 protected:
 	// constructor is private since we don't want to create instances of the base class
@@ -297,7 +277,7 @@ public:
 	FSHeatTransfer(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -307,7 +287,7 @@ public:
 	FSNonLinearBiphasic(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -317,7 +297,7 @@ public:
 	FSBiphasicSolutes(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -327,7 +307,7 @@ public:
 	FSMultiphasicAnalysis(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -351,7 +331,7 @@ public:
 	FSReactionDiffusionAnalysis(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //==============================================================================

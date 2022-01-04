@@ -80,7 +80,7 @@ double MinEdgeLength(const FSMesh& mesh, const FSElement& e);
 // get the max edge length of an element
 double MaxEdgeLength(const FSMesh& mesh, const FSElement& e);
 
-float eval_curvature(const vector<vec3f>& x, const vec3f& r0, vec3f sn, int measure, bool useExtendedFit, int maxIter);
+float eval_curvature(const std::vector<vec3f>& x, const vec3f& r0, vec3f sn, int measure, bool useExtendedFit, int maxIter);
 
 // curvature measures (see for values for measure in FEMeshData_T.h, in CurvatureField
 double Curvature(FSMesh& mesh, int node, int measure, int levels = 1, int maxIters = 10, bool extQuad = false);

@@ -70,14 +70,14 @@ public:
 
 	void RegisterClass(FEClassFactory* fac);
 
-	static vector<FEClassFactory*> FindAllClasses(int module, int superID);
+	static std::vector<FEClassFactory*> FindAllClasses(int module, int superID);
 	static FEClassFactory* FindClass(int module, int superID, int classID);
 
     const char* TypeStr(int superID, int classID);
 
 private:
 	static FEMKernel*	m_This;
-	vector<FEClassFactory*>	m_Class;	
+	std::vector<FEClassFactory*>	m_Class;
 
 private:
 	FEMKernel(){}

@@ -78,7 +78,7 @@ void GHexagon::Create()
 	AddPart();
 
 	//4. build the faces
-	vector<int> edge;
+	std::vector<int> edge;
 	edge.resize(6);
 	for (int i = 0; i<6; ++i) edge[i] = i;
 	AddFacet(edge, FACE_POLYGON);

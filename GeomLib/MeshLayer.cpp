@@ -290,8 +290,8 @@ class ObjectMeshList
 public:
 	int					m_index;	// index into mesh list array
 	GObject*			m_po;		// the object whose list this is
-	vector<FEMesher*>	m_mesher;	// list of FE meshers
-	vector<FSMesh*  >	m_mesh;		// list of FE meshes
+	std::vector<FEMesher*>	m_mesher;	// list of FE meshers
+	std::vector<FSMesh*  >	m_mesh;		// list of FE meshes
 
 public:
 	ObjectMeshList() { m_po = nullptr; m_index = -1; }

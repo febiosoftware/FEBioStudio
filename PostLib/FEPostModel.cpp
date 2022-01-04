@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "constants.h"
 #include "FEMeshData_T.h"
 #include <stdio.h>
+using namespace std;
 
 extern int ET_HEX[12][2];
 

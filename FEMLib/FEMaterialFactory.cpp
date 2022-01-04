@@ -128,6 +128,7 @@ FSMaterial* FEMaterialFactory::Create(const char *szname, int classId)
 	return (pd?pd->Create():0);
 }
 
+<<<<<<< HEAD
 const char* FEMaterialFactory::TypeStr(int nid)
 {
     FEMatDescriptor* pd = m_pFac->Find(nid);
@@ -135,12 +136,15 @@ const char* FEMaterialFactory::TypeStr(int nid)
 }
 
 const char* FEMaterialFactory::TypeStr(FSMaterial *pm)
+=======
+const char* FEMaterialFactory::TypeStr(const FSMaterial *pm)
+>>>>>>> b204ad349d807ecfc885ee63ff873aefd4a58443
 {
 	if (pm == 0) return 0;
 
 	// A user material will not be registered, but instead contains its own type str
 	// TODO: Should I make TypeStr a member of each material?
-	if (dynamic_cast<FSUserMaterial*>(pm)) return (dynamic_cast<FSUserMaterial*>(pm))->GetTypeString();
+	if (dynamic_cast<const FSUserMaterial*>(pm)) return (dynamic_cast<const FSUserMaterial*>(pm))->GetTypeString();
 
 	FEMaterialFactory* pmf = GetInstance();
 

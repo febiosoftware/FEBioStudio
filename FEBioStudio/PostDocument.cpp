@@ -605,6 +605,11 @@ bool CPostDocument::IsValid()
 	return ((m_glm != nullptr) && (m_glm->GetFSModel() != nullptr) && (m_postObj != nullptr));
 }
 
+void CPostDocument::SetModifiedFlag(bool bset)
+{
+	// ignore this, since post docs can't be saved anyways
+}
+
 void CPostDocument::ApplyPalette(const Post::CPalette& pal)
 {
 	int NCOL = pal.Colors();

@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <FSCore/box.h>
 #include <vector>
-//using namespace std;
 
 class GObject;
 class FSModel;
@@ -171,7 +170,7 @@ public:
 	int CountNamedSelections() const;
 	FEItemListBuilder* FindNamedSelection(int nid);
 	FEItemListBuilder* FindNamedSelection(const std::string& name);
-	vector<FEItemListBuilder*> AllNamedSelections(int ntype = 0);
+	std::vector<FEItemListBuilder*> AllNamedSelections(int ntype = 0);
 
 	// --- GPartList ---
 	void AddPartList(GPartList* pg);
@@ -222,10 +221,10 @@ public:
 	GObject* CloneObject(GObject *po);
 
 	// clone the object on a grid
-	vector<GObject*> CloneGrid(GObject* po, int x0, int x1, int y0, int y1, int z0, int z1, double dx, double dy, double dz);
+	std::vector<GObject*> CloneGrid(GObject* po, int x0, int x1, int y0, int y1, int z0, int z1, double dx, double dy, double dz);
 
 	// reolve clone the object
-	vector<GObject*> CloneRevolve(GObject* po, int count, double range, double spiral, const vec3d& center, const vec3d& axis, bool rotateClones);
+	std::vector<GObject*> CloneRevolve(GObject* po, int count, double range, double spiral, const vec3d& center, const vec3d& axis, bool rotateClones);
 
 	// merge the selected objects
 	GObject* MergeSelectedObjects(GObjectSelection* sel, const string& newObjectName, bool weld, double tol);
@@ -234,20 +233,20 @@ public:
 	GObject* DetachDiscreteSet(GDiscreteElementSet* set);
 
 	// merge a "discrete" object with the rest
-	GObject* MergeDiscreteObject(vector<GObject*> discreteObjects, vector<GObject*>& objList, double tol);
+	GObject* MergeDiscreteObject(std::vector<GObject*> discreteObjects, std::vector<GObject*>& objList, double tol);
 
 public:
 	// show (or hide if bshow==false) a list of objects
-	void ShowObjects(const vector<int>& objList, bool bshow = true);
+	void ShowObjects(const std::vector<int>& objList, bool bshow = true);
 	void ShowObject(GObject* po, bool bshow = true);
 
 	// select a list of objects
-	void SelectObjects(const vector<int>& objList);
+	void SelectObjects(const std::vector<int>& objList);
 
 	// show or hide a list of parts
-	void ShowParts(const vector<int>& partList, bool bshow, bool bselect = false);
-	void ShowParts(vector<GPart*>& partList, bool bshow);
-	void ShowParts(list<GPart*>& partList, bool bshow);
+	void ShowParts(const std::vector<int>& partList, bool bshow, bool bselect = false);
+	void ShowParts(std::vector<GPart*>& partList, bool bshow);
+	void ShowParts(std::list<GPart*>& partList, bool bshow);
 	void ShowPart(GPart* pg, bool bshow = true);
 
 	void ShowAllObjects();

@@ -57,7 +57,7 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	vector<double>	m_data;
+	std::vector<double>	m_data;
 	GObject*		m_po;
 	FSNodeSet*		m_nodeSet;
 

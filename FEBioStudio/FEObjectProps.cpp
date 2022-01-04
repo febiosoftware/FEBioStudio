@@ -245,13 +245,13 @@ void CStepSettings::BuildStepProperties()
 {
 	Clear();
 	BuildParamList(m_step);
-	for (int i = 0; i < m_step->ControlProperties(); ++i)
+	for (int i = 0; i < m_step->Properties(); ++i)
 	{
-		FSStepControlProperty& prop = m_step->GetControlProperty(i);
-		QStringList ops = GetFEBioChoices(m_moduleId, prop.m_nSuperClassId);
+		FSProperty& prop = m_step->GetProperty(i);
+		QStringList ops = GetFEBioChoices(m_moduleId, prop.GetSuperClassID());
 		if (prop.IsRequired() == false) ops << "(none)";
 		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group)->setEnumValues(ops);
-		FSStepComponent* pc = prop.m_prop;
+		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(prop.GetComponent());
 		if (pc) BuildParamList(pc);
 	}
 }
@@ -264,27 +264,27 @@ QVariant CStepSettings::GetPropertyValue(int n)
 		return CObjectProps::GetPropertyValue(m_step->GetParam(n));
 	}
 	n -= params;
-	for (int i = 0; i < m_step->ControlProperties(); ++i)
+	for (int i = 0; i < m_step->Properties(); ++i)
 	{
-		FSStepControlProperty& prop = m_step->GetControlProperty(i);
-		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
+		FSProperty& prop = m_step->GetProperty(i);
+		params = (prop.GetComponent() ? prop.GetComponent()->Parameters() : 0);
 		if (n == 0)
 		{
-			QStringList ops = GetFEBioChoices(m_moduleId, prop.m_nSuperClassId);
+			QStringList ops = GetFEBioChoices(m_moduleId, prop.GetSuperClassID());
 
 			// this is the control property selection.
-			if (prop.m_prop == nullptr)
+			if (prop.GetComponent() == nullptr)
 			{
 				if (prop.IsRequired() == false) return ops.size();
 				else return -1;
 			}
-			QString typeStr(prop.m_prop->GetTypeString());
+			QString typeStr(prop.GetComponent()->GetTypeString());
 			int n = ops.indexOf(typeStr);
 			return n;
 		}
 		else if (n <= params)
 		{
-			return CObjectProps::GetPropertyValue(prop.m_prop->GetParam(n - 1));
+			return CObjectProps::GetPropertyValue(prop.GetComponent()->GetParam(n - 1));
 		}
 		n -= params + 1;
 	}
@@ -301,21 +301,19 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 		return;
 	}
 	n -= params;
-	for (int i = 0; i < m_step->ControlProperties(); ++i)
+	for (int i = 0; i < m_step->Properties(); ++i)
 	{
-		FSStepControlProperty& prop = m_step->GetControlProperty(i);
-		params = (prop.m_prop ? prop.m_prop->Parameters() : 0);
+		FSProperty& prop = m_step->GetProperty(i);
+		params = (prop.GetComponent() ? prop.GetComponent()->Parameters() : 0);
 		if (n == 0)
 		{
-			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(m_moduleId, prop.m_nSuperClassId, -1);
-			delete prop.m_prop;
-			prop.m_prop = nullptr;
+			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(m_moduleId, prop.GetSuperClassID(), -1);
 			int m = v.toInt();
 			if ((m >= 0) && (m < fci.size()))
 			{
 				FSStepComponent* pc = new FSStepComponent;
 				FEBio::CreateModelComponent(fci[m].classId, pc);
-				prop.m_prop = pc;
+				prop.SetComponent(pc);
 			}
 			BuildStepProperties();
 			SetModified(true);
@@ -323,7 +321,7 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 		}
 		else if (n <= params)
 		{
-			CObjectProps::SetPropertyValue(prop.m_prop->GetParam(n - 1), v);
+			CObjectProps::SetPropertyValue(prop.GetComponent()->GetParam(n - 1), v);
 			return;
 		}
 		n -= params + 1;

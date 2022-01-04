@@ -35,7 +35,6 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <utility>
 #include <vector>
-//using namespace std;
 
 namespace Post {
 
@@ -59,7 +58,7 @@ public:
 	//! clean mesh and all data
 	void ClearAll();
 
-	const vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
+	const std::vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
 
 public:
 	// --- G E O M E T R Y ---
@@ -112,12 +111,12 @@ protected:
 
 protected:
 	// --- G E O M E T R Y ---
-	vector<MeshDomain*>	m_Dom;	// domains
+	std::vector<MeshDomain*>	m_Dom;	// domains
 
 	// user-defined partitions
-	vector<FSPart*>		m_Part;	// parts
-	vector<FSSurface*>	m_Surf;	// surfaces
-	vector<FSNodeSet*>	m_NSet;	// node sets
+	std::vector<FSPart*>		m_Part;	// parts
+	std::vector<FSSurface*>	m_Surf;	// surfaces
+	std::vector<FSNodeSet*>	m_NSet;	// node sets
 
 	FSNodeElementList	m_NEL;
 };

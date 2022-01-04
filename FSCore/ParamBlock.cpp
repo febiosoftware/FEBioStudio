@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "ParamBlock.h"
+#include "LoadCurve.h"
 #include <assert.h>
 
 //-----------------------------------------------------------------------------
@@ -35,7 +36,7 @@ Param::Param()
 	m_nID = -1; 
 	m_ntype = Param_UNDEF; 
 	m_pd = 0;
-	m_plc = 0; 
+	m_lc = -1; 
 	m_szbrev = m_szname = m_szenum = 0; 
 	m_szunit = 0; 
 	m_nstate = Param_ALLFLAGS; 
@@ -56,8 +57,6 @@ Param::Param()
 Param::~Param()
 { 
 	clear(); 
-	if (m_plc) delete m_plc;
-	m_plc = 0;
 	if (m_bcopy) delete [] m_szenum;
 }
 
@@ -160,6 +159,7 @@ void Param::clear()
 		case Param_COLOR : delete ((GLColor*)m_pd); break;
 		case Param_STD_VECTOR_INT: delete ((std::vector<int>*)m_pd); break;
 		case Param_STD_VECTOR_DOUBLE: delete ((std::vector<double>*)m_pd); break;
+		case Param_STD_VECTOR_VEC2D : delete ((std::vector<vec2d>*)m_pd); break;
 		default:
 			assert(false);
 		}
@@ -185,37 +185,22 @@ void Param::SetParamType(Param_Type t)
 	case Param_COLOR : m_pd = new GLColor; break;
 	case Param_STD_VECTOR_INT: m_pd = new std::vector<int>(); break;
 	case Param_STD_VECTOR_DOUBLE: m_pd = new std::vector<double>(); break;
+	case Param_STD_VECTOR_VEC2D : m_pd = new std::vector<vec2d>(); break;
 	default:
 		assert(false);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void Param::SetLoadCurve()
+void Param::SetLoadCurveID(int lcid)
 {
-	if (m_plc == 0) m_plc = new LoadCurve;
+	m_lc = lcid;
 }
 
 //-----------------------------------------------------------------------------
-void Param::SetLoadCurve(const LoadCurve& lc)
+int Param::GetLoadCurveID() const
 {
-	if (m_plc) delete m_plc;
-	m_plc = new LoadCurve(lc);
-}
-
-//-----------------------------------------------------------------------------
-void Param::DeleteLoadCurve()
-{
-	if (m_plc) delete m_plc;
-	m_plc = nullptr;
-}
-
-//-----------------------------------------------------------------------------
-LoadCurve* Param::RemoveLoadCurve()
-{
-	LoadCurve* plc = m_plc;
-	m_plc = nullptr;
-	return plc;
+	return m_lc;
 }
 
 //-----------------------------------------------------------------------------
@@ -263,6 +248,8 @@ Param::Param(const Param& p)
     m_nindx = p.m_nindx;
 	m_flags = p.m_flags;
 
+	m_lc = p.m_lc;
+
 	m_bcopy = false;
 	if (p.m_bcopy) CopyEnumNames(p.m_szenum);
 	else m_szenum = p.m_szenum;
@@ -290,10 +277,10 @@ Param::Param(const Param& p)
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
 	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
+	case Param_STD_VECTOR_VEC2D : { std::vector<vec2d>* pv = new std::vector<vec2d>(); m_pd = pv; *pv = *((std::vector<vec2d>*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
-	if (p.m_plc) m_plc = new LoadCurve(*p.m_plc); else m_plc = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -314,6 +301,7 @@ Param& Param::operator = (const Param& p)
 //	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
 //	m_flags = p.m_flags;
+	m_lc = p.m_lc;
 
 	switch (m_ntype)
 	{
@@ -330,12 +318,10 @@ Param& Param::operator = (const Param& p)
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
 	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
+	case Param_STD_VECTOR_VEC2D : { std::vector<vec2d>* pv = new std::vector<vec2d>(); m_pd = pv; *pv = *((std::vector<vec2d>*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
-	if (m_plc) delete m_plc;
-	m_plc = 0;
-	if (p.m_plc) m_plc = new LoadCurve(*p.m_plc);
 
 	return (*this);
 }
@@ -355,7 +341,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -379,7 +365,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -403,7 +389,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -427,7 +413,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -451,7 +437,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -475,7 +461,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -500,7 +486,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -524,7 +510,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -548,7 +534,7 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -571,7 +557,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -594,7 +580,7 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -616,7 +602,29 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
+}
+
+Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
+{
+	std::vector<vec2d>* pc = new std::vector<vec2d>(v);
+	m_pd = pc;
+	m_ntype = Param_STD_VECTOR_VEC2D;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -639,7 +647,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -663,7 +671,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
     m_nindx = idx;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -687,7 +695,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
     m_nindx = idx;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -711,7 +719,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
     m_nindx = idx;
 	m_szunit = szunit;
 	m_nstate = Param_ALLFLAGS;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -729,18 +737,36 @@ ParamBlock::ParamBlock(void)
 //-----------------------------------------------------------------------------
 ParamBlock::~ParamBlock(void)
 {
+	Clear();
+}
+
+//-----------------------------------------------------------------------------
+void ParamBlock::Clear()
+{
+	for (int i = 0; i < m_Param.size(); ++i) delete m_Param[i];
+	m_Param.clear();
 }
 
 //-----------------------------------------------------------------------------
 ParamBlock::ParamBlock(const ParamBlock &b)
 {
-	m_Param = b.m_Param;
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param* p = new Param(s);
+		m_Param.push_back(p);
+	}
 }
 
 ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 {
-	m_Param = b.m_Param;
-
+	Clear();
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param* p = new Param(s);
+		m_Param.push_back(p);
+	}
 	return *this;
 }
 
@@ -770,6 +796,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	ar.WriteChunk(CID_PARAM_TYPE, ntype);
 	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
 	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());
+	ar.WriteChunk(CID_PARAM_LC, p.GetLoadCurveID());
 
 	switch (ntype)
 	{
@@ -786,22 +813,11 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_COLOR : { GLColor c = p.GetColorValue(); ar.WriteChunk(CID_PARAM_VALUE, c); } break;
 	case Param_STD_VECTOR_INT: { std::vector<int> v = p.GetVectorIntValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STD_VECTOR_DOUBLE: { std::vector<double> v = p.GetVectorDoubleValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_STD_VECTOR_VEC2D : { std::vector<vec2d> v = p.GetVectorVec2dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	default:
 		assert(false);
 	}
-
-	// store the load curve if there is one
-	LoadCurve* plc = p.GetLoadCurve();
-	if (plc)
-	{
-		ar.BeginChunk(CID_LOAD_CURVE);
-		{
-			plc->Save(ar);
-		}
-		ar.EndChunk();
-	}
 }
-
 
 //-----------------------------------------------------------------------------
 void ParamContainer::Load(IArchive &ar)
@@ -826,6 +842,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 	bool b;
 	Param p;
 	int ntype = -1;
+	int lcid = -1;
 	string paramName;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -835,6 +852,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 		case CID_PARAM_ID: ar.read(npid); break;
 		case CID_PARAM_CHECKED: ar.read(b); p.SetChecked(b); break;
 		case CID_PARAM_NAME: ar.read(paramName); break;
+		case CID_PARAM_LC: ar.read(lcid); p.SetLoadCurveID(lcid); break;
 		case CID_PARAM_TYPE: 
 			ar.read(ntype); 
 			switch (ntype)
@@ -853,6 +871,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_CURVE_OBSOLETE: p.SetParamType(Param_FLOAT); break;
 			case Param_STD_VECTOR_INT: p.SetParamType(Param_STD_VECTOR_INT); break;
 			case Param_STD_VECTOR_DOUBLE: p.SetParamType(Param_STD_VECTOR_DOUBLE); break;
+			case Param_STD_VECTOR_VEC2D : p.SetParamType(Param_STD_VECTOR_VEC2D); break;
 			}
 			break;
 		case CID_PARAM_VALUE:
@@ -871,12 +890,15 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_COLOR : { GLColor c; ar.read(c); p.SetColorValue(c); break; }
 			case Param_STD_VECTOR_INT: { std::vector<int> v; ar.read(v); p.SetVectorIntValue(v); break; }
 			case Param_STD_VECTOR_DOUBLE: { std::vector<double> v; ar.read(v); p.SetVectorDoubleValue(v); break; }
+			case Param_STD_VECTOR_VEC2D : { std::vector<vec2d> v; ar.read(v); p.SetVectorVec2dValue(v); break; }
 			case Param_CURVE_OBSOLETE:
 				{
 					// This is obsolete but remains for backward compatibility.
 					LoadCurve lc;
 					lc.Load(ar);
-					if (lc.Size() > 0) p.SetLoadCurve(lc);
+
+					// TODO: Assign load curve to model
+//					if (lc.Size() > 0) p.SetLoadCurve(lc);
 				}
 				break;
 			default:
@@ -888,11 +910,13 @@ void ParamContainer::LoadParam(IArchive& ar)
 				LoadCurve lc;
 				lc.Load(ar);
 
-				// Old versions (<2.0) defined load curves for all float parameters,
+				// Old versions (< PRV 2.0) defined load curves for all float parameters,
 				// although initially these load curves did not have points assigned yet.
 				// Since 2.0 load curves are only assigned to parameters that are time dependant
 				// so we have to add this check to prevent all these load curves from being read in.
-				if (lc.Size() > 0) p.SetLoadCurve(lc);
+
+				// TODO: In FBS2, load controllers are stored on the FSModel. Assign load curve to model
+//				if (lc.Size() > 0) p.SetLoadCurve(lc);
 			}
 			break;
 		}
@@ -970,14 +994,12 @@ void ParamContainer::LoadParam(const Param& p)
 
 void ParamContainer::CopyParams(const ParamContainer& pc)
 {
-#ifdef _DEBUG
 	assert(pc.Parameters() == Parameters());
 	for (int i = 0; i < Parameters(); ++i)
 	{
 		Param& pi = GetParam(i);
 		const Param& pj = pc.GetParam(i);
 		assert(pi.GetParamType() == pj.GetParamType());
+		pi = pj;
 	}
-#endif
-	m_Param = pc.m_Param;
 }

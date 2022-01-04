@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FERevolveFaces.h"
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FEMeshBuilder.h>
+using namespace std;
 
 FERevolveFaces::FERevolveFaces() : FEModifier("Revolve faces")
 {

@@ -40,7 +40,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 {
 	assert(m_pmesh);
 	if (m_pmesh == 0) return;
-	vector<vec3f>& G = m_Data[ntime];
+	std::vector<vec3f>& G = m_Data[ntime];
 	FEPostMesh& mesh = *m_pmesh;
 
 	int i, k;
@@ -161,7 +161,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	// "normalize" the gradients
 	for (i=0; i<mesh.Nodes(); i++)
 	{
-		const vector<NodeElemRef>& nel = mesh.NodeElemList(i);
+		const std::vector<NodeElemRef>& nel = mesh.NodeElemList(i);
 		if (!nel.empty()) G[i] /= (float) nel.size();
 		G[i] *= -1;
 	}

@@ -53,9 +53,9 @@ void FSNodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 	NEL.Build(pm);
 
 	int NN = pm->Nodes();
-	vector<int> tag; tag.assign(NN, -1);
+	std::vector<int> tag; tag.assign(NN, -1);
 
-	vector<int> P(NN, 0), D(NN, -1);
+	std::vector<int> P(NN, 0), D(NN, -1);
 	if (preservePartitions)
 	{
 		for (int i = 0; i < pm->Nodes(); ++i)
@@ -187,7 +187,7 @@ void FSNodeNodeList::Build(FSSurfaceMesh* pm)
 
 	int i, j, k, n;
 	int NN = pm->Nodes();
-	vector<int> tag; tag.assign(NN, -1);
+	std::vector<int> tag; tag.assign(NN, -1);
 
 	m_val.resize(NN);
 	int nsize = 0;

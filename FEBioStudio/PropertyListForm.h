@@ -61,6 +61,17 @@ public slots:
 };
 
 //-----------------------------------------------------------------------------
+// event filter for eating mouse scrolls on combo boxes
+class QEvent;
+
+class CMouseWheelFilter : public QObject
+{
+	Q_OBJECT
+protected:
+	bool eventFilter(QObject* po, QEvent* ev) override;
+};
+
+//-----------------------------------------------------------------------------
 // builds a Ui for editing properties using a form view
 class CPropertyListForm : public QWidget
 {

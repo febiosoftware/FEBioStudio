@@ -39,14 +39,12 @@ using std::unique_ptr;
 // FSInterface
 //-----------------------------------------------------------------------------
 
-FSInterface::FSInterface(int ntype, FSModel* ps, int nstep)
+FSInterface::FSInterface(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)
 {
 	m_ntype = ntype;
 	m_nstepID = nstep;
 	m_superClassID = FESURFACEINTERFACE_ID;
 	m_bActive = true;
-	m_ps = ps;
-	m_sztype = "(not defined)";
 }
 
 //-----------------------------------------------------------------------------
@@ -71,14 +69,16 @@ FEItemListBuilder* FSInterface::LoadList(IArchive& ar)
 {
 	FEItemListBuilder* pitem = 0;
 
+	FSModel* fem = GetFSModel();
+
 	if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FSInterface::LoadList");
 	unsigned int ntype = ar.GetChunkID();
 	switch (ntype)
 	{
-	case GO_NODE: pitem = new GNodeList(m_ps); break;
-	case GO_EDGE: pitem = new GEdgeList(m_ps); break;
-	case GO_FACE: pitem = new GFaceList(m_ps); break;
-	case GO_PART: pitem = new GPartList(m_ps); break;
+	case GO_NODE: pitem = new GNodeList(fem); break;
+	case GO_EDGE: pitem = new GEdgeList(fem); break;
+	case GO_FACE: pitem = new GFaceList(fem); break;
+	case GO_PART: pitem = new GPartList(fem); break;
 	case FE_NODESET: pitem = new FSNodeSet((GObject*)0); break;
 	case FE_EDGESET: pitem = new FSEdgeSet((GObject*)0); break;
 	case FE_SURFACE: pitem = new FSSurface((GObject*)0); break;
@@ -98,7 +98,7 @@ FEItemListBuilder* FSInterface::LoadList(IArchive& ar)
 	FSGroup* pg = dynamic_cast<FSGroup*>(pitem);
 	if (pg)
 	{
-		if (m_ps->FindGroupParent(pg) == false)
+		if (fem->FindGroupParent(pg) == false)
 		{
 			ar.log("Invalid object ID in FSInterface::LoadList");
 			delete pitem;
@@ -165,7 +165,7 @@ void FSPairedInterface::Load(IArchive &ar)
 {
 	TRACE("FSPairedInterface::Load");
 
-	GModel& mdl = m_ps->GetModel();
+	GModel& mdl = GetFSModel()->GetModel();
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -317,14 +317,14 @@ void FSRigidInterface::Load(IArchive &ar)
 			{
 				int mid;
 				ar.read(mid);
-				m_pmat = m_ps->GetMaterialFromID(mid);
+				m_pmat = GetFSModel()->GetMaterialFromID(mid);
 			}
 			break;
 		case CID_INTERFACE_SURFACE2: m_pItem = FSInterface::LoadList(ar); break;
 		case CID_RI_LIST:	// obsolete in 1.8
 			{
 				int nid; ar.read(nid); 
-				GModel& mdl = m_ps->GetModel();
+				GModel& mdl = GetFSModel()->GetModel();
 				m_pItem = mdl.FindNamedSelection(nid);
 				assert(m_pItem);
 			}
@@ -382,17 +382,11 @@ FSRigidSphereInterface::FSRigidSphereInterface(FSModel* ps, int nstep) : FSSoloI
 	// we don't want that here. By default, the plane should not move
 	LoadCurve LC;
 	LC.Clear();
-	LC.Add(LOADPOINT(0, 0));
-	LC.Add(LOADPOINT(0, 0));
-	AddDoubleParam(0.0, "ux", "x displacment")->SetLoadCurve(LC);
-	AddDoubleParam(0.0, "uy", "y displacment")->SetLoadCurve(LC);
-	AddDoubleParam(0.0, "uz", "z displacment")->SetLoadCurve(LC);
-}
-
-//-----------------------------------------------------------------------------
-LoadCurve* FSRigidSphereInterface::GetLoadCurve(int i)
-{ 
-	return GetParamLC(FSRigidSphereInterface::UX + i);
+	LC.Add(0, 0);
+	LC.Add(0, 0);
+	AddDoubleParam(0.0, "ux", "x displacment");
+	AddDoubleParam(0.0, "uy", "y displacment");
+	AddDoubleParam(0.0, "uz", "z displacment");
 }
 
 //-----------------------------------------------------------------------------
@@ -623,12 +617,12 @@ FSMultiphasicContact::FSMultiphasicContact(FSModel* ps, int nstep) : FSPairedInt
 	AddBoolParam  (false, "symmetric_stiffness"  , "symmetric stiffness"    );
 	AddDoubleParam(1.0  , "concentration_penalty", "concentration penalty"  );
 	AddDoubleParam(0.0  , "ambient_pressure"     , "ambient pressure"       );
-	int NS = m_ps->Solutes();
+	int NS = GetFSModel()->Solutes();
     for (int i=0; i<NS; ++i) {
         char szvar1[256],szvar2[256];
 		sprintf(szvar1, "ambient_concentration");
 		sprintf(szvar2, "ambient concentration %d", i+1);
-		SoluteData& sol = m_ps->GetSoluteData(i);
+		SoluteData& sol = GetFSModel()->GetSoluteData(i);
         const char* sz1 = strdup(szvar1);
         const char* sz2 = strdup(szvar2);
         AddIndxDoubleParam(0.0  , "sol", i+1, sz1, sz2);
@@ -822,13 +816,13 @@ void FSRigidJoint::Load(IArchive& ar)
 		case CID_RJ_RIGIDBODY_A: 
 			{
 				int mid; ar.read(mid);
-				m_pbodyA = m_ps->GetMaterialFromID(mid);
+				m_pbodyA = GetFSModel()->GetMaterialFromID(mid);
 			}
 			break;
 		case CID_RJ_RIGIDBODY_B: 
 			{
 				int mid; ar.read(mid);
-				m_pbodyB = m_ps->GetMaterialFromID(mid);
+				m_pbodyB = GetFSModel()->GetMaterialFromID(mid);
 			}
 			break;
 		default:

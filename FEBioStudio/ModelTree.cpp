@@ -872,27 +872,26 @@ void CModelTree::Build(CModelDocument* doc)
 	else if (m_nfilter == ModelTreeFilter::FILTER_MATERIALS) modelName += " > Materials";
 	else if (m_nfilter == ModelTreeFilter::FILTER_PHYSICS  ) modelName += " > Physics";
 	else if (m_nfilter == ModelTreeFilter::FILTER_STEPS    ) modelName += " > Steps";
+	else if (m_nfilter == ModelTreeFilter::FILTER_JOBS     ) modelName += " > Jobs";
 
-	QTreeWidgetItem* t1 = AddTreeItem(nullptr, QString::fromStdString(modelName), 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
-	t1->setExpanded(true);
-	QFont f = t1->font(0);
-	f.setBold(true);
-	t1->setFont(0, f);
+	QTreeWidgetItem* t1 = nullptr;
 
-	// add data variables
-	QTreeWidgetItem* t2;
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
-		t2 = AddTreeItem(t1, "Model Data", 0, 0, 0, new CObjectProps(&fem));
-		UpdateModelData(t2, fem);
+		t1 = AddTreeItem(nullptr, "Geometry", 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
+		t1->setExpanded(true);
+		QFont f = t1->font(0);
+		f.setBold(true);
+		t1->setFont(0, f);
 	}
 
 	// add the objects
+	QTreeWidgetItem* t2;
 	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_GEOMETRY))
 	{
 		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 		{
-			t2 = AddTreeItem(t1, "Geometry", MT_OBJECT_LIST, mdl.Objects());
+			t2 = AddTreeItem(t1, "Objects", MT_OBJECT_LIST, mdl.Objects());
 			UpdateObjects(t2, fem);
 		}
 		else UpdateObjects(t1, fem);
@@ -908,16 +907,18 @@ void CModelTree::Build(CModelDocument* doc)
 
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
-		// Mesh data
-		t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA);
-		UpdateMeshData(t2, fem);
+		t1 = AddTreeItem(nullptr, "Model", 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
+		t1->setExpanded(true);
+		QFont f = t1->font(0);
+		f.setBold(true);
+		t1->setFont(0, f);
 	}
 
+	// add data variables
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
-		// Mesh adaptors
-		t2 = AddTreeItem(t1, "Mesh Adaptors", MT_MESH_ADAPTOR_LIST);
-		UpdateMeshAdaptors(t2, fem);
+		t2 = AddTreeItem(t1, "Globals", 0, 0, 0, new CObjectProps(&fem));
+		UpdateModelData(t2, fem);
 	}
 
 	// add the materials
@@ -929,6 +930,13 @@ void CModelTree::Build(CModelDocument* doc)
 			UpdateMaterials(t2, fem);
 		}
 		else UpdateMaterials(t1, fem);
+	}
+
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		// Mesh data
+		t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA);
+		UpdateMeshData(t2, fem);
 	}
 
 	// add the boundary conditions
@@ -1006,44 +1014,16 @@ void CModelTree::Build(CModelDocument* doc)
 
 	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
 	{
-		// add the constraints
+		// add the rigid components
 		int nnlc = 0;
 		for (int i = 0; i < fem.Steps(); ++i) nnlc += fem.GetStep(i)->RigidConstraints();
 
 		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 		{
-			t2 = AddTreeItem(t1, "Rigid Constraints", MT_RIGID_CONSTRAINT_LIST, nnlc);
-			UpdateRC(t2, fem, 0);
+			t2 = AddTreeItem(t1, "Rigid", MT_RIGID_COMPONENT_LIST, nnlc);
+			UpdateRigid(t2, fem, 0);
 		}
-		else if (nnlc) UpdateRC(t1, fem, 0);
-	}
-
-	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
-	{
-		// add the rigid loads
-		int nrc = 0;
-		for (int i = 0; i < fem.Steps(); ++i) nrc += fem.GetStep(i)->RigidLoads();
-
-		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
-		{
-			t2 = AddTreeItem(t1, "Rigid Loads", MT_RIGID_LOAD_LIST, nrc);
-			UpdateRigidLoads(t2, fem, 0);
-		}
-		else if (nrc) UpdateRigidLoads(t1, fem, 0);
-	}
-
-	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
-	{
-		// add the connectors
-		int nrc = 0;
-		for (int i = 0; i < fem.Steps(); ++i) nrc += fem.GetStep(i)->RigidConnectors();
-
-		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
-		{
-			t2 = AddTreeItem(t1, "Rigid Connectors", MT_RIGID_CONNECTOR_LIST, nrc);
-			UpdateConnectors(t2, fem, 0);
-		}
-		else if (nrc) UpdateConnectors(t1, fem, 0);
+		else if (nnlc) UpdateRigid(t1, fem, 0);
 	}
 
 	// add the discrete objects
@@ -1057,6 +1037,13 @@ void CModelTree::Build(CModelDocument* doc)
 		else if (mdl.DiscreteObjects()) UpdateDiscrete(t1, fem);
 	}
 
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		// Mesh adaptors
+		t2 = AddTreeItem(t1, "Mesh Adaptors", MT_MESH_ADAPTOR_LIST);
+		UpdateMeshAdaptors(t2, fem, 0);
+	}
+
 	// add the steps
 	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_STEPS))
 	{
@@ -1068,6 +1055,13 @@ void CModelTree::Build(CModelDocument* doc)
 		else if (fem.Steps()) UpdateSteps(t1, prj);
 	}
 
+	// add load controllers
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		t2 = AddTreeItem(t1, "Load Controllers", MT_LOAD_CONTROLLERS);
+		UpdateLoadControllers(t2, fem);
+	}
+
 	// add the output
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
@@ -1076,20 +1070,20 @@ void CModelTree::Build(CModelDocument* doc)
 	}
 
 	// add the jobs
-	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_JOBS))
 	{
-		if (doc->FEBioJobs())
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 		{
-			QTreeWidgetItem* t1 = new QTreeWidgetItem(this);
-			t1->setText(0, "Jobs");
+			t1 = AddTreeItem(nullptr, "Jobs", MT_JOBLIST, doc->FEBioJobs(), 0, 0, 0, OBJECT_NOT_EDITABLE);
 			t1->setExpanded(true);
-			t1->setData(0, Qt::UserRole, (int)m_data.size());
-
-			CModelTreeItem it = { 0, 0, 0, 0, MT_JOBLIST };
-			m_data.push_back(it);
+			QFont f = t1->font(0);
+			f.setBold(true);
+			t1->setFont(0, f);
 
 			UpdateJobs(t1, doc);
 		}
+		else
+			UpdateJobs(t1, doc);
 	}
 
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
@@ -1101,6 +1095,10 @@ void CModelTree::Build(CModelDocument* doc)
 			t1->setText(0, "3D Images");
 			t1->setExpanded(true);
 			t1->setData(0, Qt::UserRole, (int)m_data.size());
+
+			QFont f = t1->font(0);
+			f.setBold(true);
+			t1->setFont(0, f);
 
 			CModelTreeItem it = { 0, 0 };
 			m_data.push_back(it);
@@ -1427,17 +1425,35 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FSModel& fem)
 		}
 	}
 
-	for (int i = 0; i < fem.DataMaps(); ++i)
+	for (int i = 0; i < fem.MeshDataGenerators(); ++i)
 	{
-		FSDataMapGenerator* map = fem.GetDataMap(i);
+		FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
 		AddTreeItem(t1, QString::fromStdString(map->GetName()), MT_MESH_DATA, 0, map, new CObjectProps(map));
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateMeshAdaptors(QTreeWidgetItem* t1, FSModel& fem)
+void CModelTree::UpdateMeshAdaptors(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
+	QTreeWidgetItem* t2;
 
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		if ((pstep == 0) || (ps == pstep))
+		{
+			for (int j = 0; j < ps->MeshAdaptors(); ++j)
+			{
+				FSMeshAdaptor* pma = ps->MeshAdaptor(j);
+				assert(pma->GetStep() == ps->GetID());
+
+				int flags = SHOW_PROPERTY_FORM;
+				if (pstep == 0) flags |= DUPLICATE_ITEM;
+				QString name = QString("%1 [%2]").arg(QString::fromStdString(pma->GetName())).arg(pma->GetTypeString());
+				t2 = AddTreeItem(t1, name, MT_MESH_ADAPTOR, 0, pma, 0, 0, flags);
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1677,23 +1693,24 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FSProject& prj)
 		UpdateConstraints(t3, fem, pstep);
 
 		// add the constraints
-		t3 = AddTreeItem(t2, "Rigid Constraints", MT_RIGID_CONSTRAINT_LIST, pstep->RigidConstraints());
-		UpdateRC(t3, fem, pstep);
+		t3 = AddTreeItem(t2, "Rigid", MT_RIGID_COMPONENT_LIST);
+		UpdateRigid(t3, fem, pstep);
 
-		// add the connectors
-		t3 = AddTreeItem(t2, "Rigid Connectors", MT_RIGID_CONNECTOR_LIST, pstep->RigidConnectors());
-		UpdateConnectors(t3, fem, pstep);
+		// add the mesh adaptors
+		t3 = AddTreeItem(t2, "Mesh Adaptors", MT_MESH_ADAPTOR_LIST, pstep->MeshAdaptors());
+		UpdateMeshAdaptors(t3, fem, pstep);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateRC(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
+void CModelTree::UpdateRigid(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 {
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		FSStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
+			// rigid constraints
 			for (int j = 0; j<ps->RigidConstraints(); ++j)
 			{
 				FSRigidConstraint* prc = ps->RigidConstraint(j);
@@ -1705,18 +1722,8 @@ void CModelTree::UpdateRC(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 				QString name = QString("%1 [%2]").arg(QString::fromStdString(prc->GetName())).arg(prc->GetTypeString());
 				AddTreeItem(t1, name, MT_RIGID_CONSTRAINT, 0, prc, pl, new CRigidConstraintValidator(prc), flags);
 			}
-		}
-	}
-}
 
-//-----------------------------------------------------------------------------
-void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
-{
-	for (int i = 0; i < fem.Steps(); ++i)
-	{
-		FSStep* ps = fem.GetStep(i);
-		if ((pstep == 0) || (ps == pstep))
-		{
+			// rigid loads
 			for (int j = 0; j < ps->RigidLoads(); ++j)
 			{
 				FSRigidLoad* prl = ps->RigidLoad(j);
@@ -1728,19 +1735,9 @@ void CModelTree::UpdateRigidLoads(QTreeWidgetItem* t1, FSModel& fem, FSStep* pst
 				QString name = QString("%1 [%2]").arg(QString::fromStdString(prl->GetName())).arg(prl->GetTypeString());
 				AddTreeItem(t1, name, MT_RIGID_LOAD, 0, prl, pl, nullptr, flags);
 			}
-		}
-	}
-}
 
-//-----------------------------------------------------------------------------
-void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
-{
-	for (int i = 0; i<fem.Steps(); ++i)
-	{
-		FSStep* ps = fem.GetStep(i);
-		if ((pstep == 0) || (ps == pstep))
-		{
-			for (int j = 0; j<ps->RigidConnectors(); ++j)
+			// rigid connectors
+			for (int j = 0; j < ps->RigidConnectors(); ++j)
 			{
 				FSRigidConnector* prc = ps->RigidConnector(j);
 				CPropertyList* pl = new CRigidConnectorSettings(fem, prc);
@@ -1750,6 +1747,16 @@ void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FSModel& fem, FSStep* pst
 				QString name = QString("%1 [%2]").arg(QString::fromStdString(prc->GetName())).arg(prc->GetTypeString());
 				AddTreeItem(t1, name, MT_RIGID_CONNECTOR, 0, prc, pl, 0, flags);
 			}
+		}
+	}
+
+	if (t1)
+	{
+		int n = t1->childCount();
+		if (n > 0)
+		{
+			QString s = t1->text(0);
+			t1->setText(0, QString("%1 (%2)").arg(s).arg(n));
 		}
 	}
 }
@@ -1791,11 +1798,11 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 	{
 		for (int i = 0; i<pmat->Properties(); ++i)
 		{
-			FSMaterialProperty& p = pmat->GetProperty(i);
+			FEProperty& p = pmat->GetProperty(i);
 			QString propName = QString::fromStdString(p.GetName());
 			if (p.Size() == 1)
 			{
-				FSMaterial* pj = p.GetMaterial();
+				FSMaterial* pj = pmat->GetMaterialProperty(i);
 				if (pj)
 				{
 					QString typeName = (pj->TypeStr() ? QString(pj->GetTypeString()) : "error");
@@ -1815,7 +1822,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 			{
 				for (int j = 0; j<p.Size(); ++j)
 				{
-					FSMaterial* pj = p.GetMaterial(j);
+					FSMaterial* pj = pmat->GetMaterialProperty(i, j);
 					if (pj)
 					{
 						QString typeName = (pj->TypeStr() ? QString(pj->GetTypeString()) : "error");
@@ -1867,6 +1874,20 @@ void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FSReactionMaterial* 
 	// add reactants and products
 	AddTreeItem(t2, "reactants", 0, 0, 0, new CReactionReactantProperties(mat, fem));
 	AddTreeItem(t2, "products", 0, 0, 0, new CReactionProductProperties(mat, fem));
+}
+
+//-----------------------------------------------------------------------------
+void CModelTree::UpdateLoadControllers(QTreeWidgetItem* t1, FSModel& fem)
+{
+	for (int i = 0; i < fem.LoadControllers(); ++i)
+	{
+		FSLoadController* plc = fem.GetLoadController(i);
+		string name = plc->GetName();
+		AddTreeItem(t1, QString::fromStdString(name), MT_LOAD_CONTROLLER, 0, plc);
+	}
+
+	int n = t1->childCount();
+	if (n != 0) t1->setText(0, QString("Load Controllers (%1)").arg(n));
 }
 
 //-----------------------------------------------------------------------------

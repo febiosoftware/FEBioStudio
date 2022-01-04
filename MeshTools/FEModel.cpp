@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FECore/units.h>
 #include <FSCore/ParamBlock.h>
+#include <FEBioLink/FEBioInterface.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <vector>
@@ -148,6 +149,14 @@ std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc)
 	stringstream ss;
 	ss << "RigidConstraint" << nrc + 1;
 	return  ss.str();
+}
+
+std::string defaultMeshAdaptorName(FSModel* fem, FSMeshAdaptor* pc)
+{
+	int nrc = CountMeshAdaptors<FSMeshAdaptor>(*fem);
+	stringstream ss;
+	ss << "MeshAdaptor" << nrc + 1;
+	return ss.str();
 }
 
 std::string defaultStepName(FSModel* fem, FSStep* ps)
@@ -330,7 +339,7 @@ void FSModel::GetVariableNames(const char* szvar, char* szbuf)
 
 
 //-----------------------------------------------------------------------------
-const char* FSModel::GetVariableName(const char* szvar, int n)
+const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 {
 	if (szvar[0] != '$') return nullptr;
 
@@ -376,19 +385,29 @@ const char* FSModel::GetVariableName(const char* szvar, int n)
 			FEDOFVariable& v = Variable(i);
 			if (strcmp(v.name(), szvar) == 0) 
 			{ 
-				return v.GetDOF(n).symbol();
+				if ((n >= 0) && (n < v.DOFs()))
+				{
+					if (longName)
+						return v.GetDOF(n).name();
+					else
+						return v.GetDOF(n).symbol();
+				}
+				else return nullptr;
 			}
 		}
 	}
 	else if (strcmp(var, "rigid_materials") == 0)
 	{
 		GMaterial* mat = GetMaterial(n - 1);
-		FSMaterial* femat = mat->GetMaterialProperties();
-		if (femat && femat->IsRigid())
+		if (mat)
 		{
-			return mat->GetName().c_str();
+			FSMaterial* femat = mat->GetMaterialProperties();
+			if (femat && femat->IsRigid())
+			{
+				return mat->GetName().c_str();
+			}
+			else assert(femat);
 		}
-		else assert(femat);
 	}
 	assert(false);
 	return nullptr;
@@ -425,11 +444,11 @@ int FSModel::GetVariableIntValue(const char* szvar, int n)
 }
 
 //-----------------------------------------------------------------------------
-const char* FSModel::GetEnumValue(const char* szenum, int n)
+const char* FSModel::GetEnumValue(const char* szenum, int n, bool longName)
 {
 	if (szenum == nullptr) return nullptr;
 
-	if (szenum[0] == '$') return GetVariableName(szenum, n);
+	if (szenum[0] == '$') return GetVariableName(szenum, n, longName);
 	
 	const char* ch = szenum;
 	int i = 0;
@@ -1378,6 +1397,18 @@ void FSModel::DeleteAllRigidLoads()
 }
 
 //-----------------------------------------------------------------------------
+void FSModel::DeleteAllLoadControllers()
+{
+	m_LC.Clear();
+}
+
+//-----------------------------------------------------------------------------
+void FSModel::DeleteAllMeshDataGenerators()
+{
+	m_MD.Clear();
+}
+
+//-----------------------------------------------------------------------------
 void FSModel::DeleteAllRigidConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)
@@ -1593,30 +1624,6 @@ bool FSModel::FindGroupParent(FSGroup* pg)
 }
 
 //-----------------------------------------------------------------------------
-int FSModel::DataMaps() const
-{
-	return (int)m_Map.Size();
-}
-
-//-----------------------------------------------------------------------------
-void FSModel::AddDataMap(FSDataMapGenerator* map)
-{
-	m_Map.Add(map);
-}
-
-//-----------------------------------------------------------------------------
-int FSModel::RemoveMap(FSDataMapGenerator* map)
-{
-	return m_Map.Remove(map);
-}
-
-//-----------------------------------------------------------------------------
-FSDataMapGenerator* FSModel::GetDataMap(int i)
-{
-	return m_Map[i];
-}
-
-//-----------------------------------------------------------------------------
 int FSModel::CountBCs(int type)
 {
 	int n = 0;
@@ -1728,4 +1735,78 @@ int FSModel::CountRigidConnectors(int type)
 		}
 	}
 	return n;
+}
+
+int FSModel::LoadControllers() const
+{
+	return (int)m_LC.Size();
+}
+
+FSLoadController* FSModel::GetLoadController(int i)
+{
+	return m_LC[i];
+}
+
+FSLoadController* FSModel::GetLoadControllerFromID(int lc)
+{
+	if (lc < 0) return nullptr;
+	for (int i = 0; i < m_LC.Size(); ++i)
+	{
+		FSLoadController* plc = m_LC[i];
+		if (plc->GetID() == lc) return plc;
+	}
+	return nullptr;
+}
+
+void FSModel::AddLoadController(FSLoadController* plc)
+{
+	m_LC.Add(plc);
+}
+
+int FSModel::RemoveLoadController(FSLoadController* plc)
+{
+	return (int) m_LC.Remove(plc);
+}
+
+// helper function for creating load curves (returns UID of load controller)
+FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
+{
+	FSLoadController* plc = FEBio::CreateLoadController("loadcurve", this);
+
+	plc->SetParamInt("interpolate", lc.GetInterpolator());
+	plc->SetParamInt("extend", lc.GetExtendMode());
+
+	std::vector<vec2d> pt;
+	for (int i = 0; i < lc.Points(); ++i)
+	{
+		vec2d pi = lc.Point(i);
+		pt.push_back(pi);
+	}
+	Param& points = *plc->GetParam("points");
+	points.val<std::vector<vec2d> >() = pt;
+
+	AddLoadController(plc);
+
+	return plc;
+}
+
+//----------------------------------------------------------------------------------------
+int FSModel::MeshDataGenerators() const
+{
+	return m_MD.Size();
+}
+
+FSMeshDataGenerator* FSModel::GetMeshDataGenerator(int i)
+{
+	return m_MD[i];
+}
+
+void FSModel::AddMeshDataGenerator(FSMeshDataGenerator* pmd)
+{
+	m_MD.Add(pmd);
+}
+
+int FSModel::RemoveMeshDataGenerator(FSMeshDataGenerator* pmd)
+{
+	return (int)m_MD.Remove(pmd);
 }

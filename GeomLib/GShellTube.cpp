@@ -103,7 +103,7 @@ void GThinTube::Create()
 	// 4. build the faces
 	int FE[4][4] = {{0, 9, 4, 8}, {1, 10, 5, 9}, {2, 11, 6, 10}, {3, 8, 7, 11}};
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<4; ++i)
 	{
 		edge.resize(4);
@@ -185,7 +185,7 @@ void GCylindricalPatch::Create()
 	// 4. build the faces
 	int FE[1][4] = { { 0, 3, 1, 2 }};
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (int i = 0; i<1; ++i)
 	{
 		edge.resize(4);

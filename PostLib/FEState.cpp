@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <MeshLib/FECurveMesh.h>
 
 using namespace Post;
+using namespace std;
 
 ObjectData::ObjectData()
 {

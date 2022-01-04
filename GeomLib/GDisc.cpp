@@ -77,7 +77,7 @@ void GDisc::Create()
 	//------------------
 	int FE[4][3] = {{0,5,4}, {1,6,5}, {2,7,6}, {3,4,7}};
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<4; ++i)
 	{
 		edge.resize(3);

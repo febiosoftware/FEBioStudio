@@ -57,10 +57,10 @@ public:
 		bool contains(int inode);
 
 	public:
-		vector<vec3d>	m_r;		// nodal positions
-		vector<int>		m_node;		// sorted list of nodes defining the closed loop
-		int				m_winding;	// +1 or -1 depending on the winding
-		vector<vec3d>	m_normal;	//node normals
+		std::vector<vec3d>	m_r;		// nodal positions
+		std::vector<int>	m_node;		// sorted list of nodes defining the closed loop
+		int					m_winding;	// +1 or -1 depending on the winding
+		std::vector<vec3d>	m_normal;	//node normals
 	};
 
 	// helper class for representing a new face
@@ -77,15 +77,15 @@ public:
 	bool optimize;
 	bool insertNodes;
 	//AFM
-	bool AFM(FSSurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list, vector<vec3d> &node_list);
+	bool AFM(FSSurfaceMesh& mesh, EdgeRing& ring, std::vector<FACE>& tri_list, std::vector<vec3d> &node_list);
 	//Addd node
 	vec3d newNode(vec3d current_node, vec3d next_node, vec3d prev_node,vec3d node_normal, double scale, bool concave);
 	// divide a ring
-	bool DivideRing(EdgeRing& ring, vector<FACE>& tri_list);
+	bool DivideRing(EdgeRing& ring, std::vector<FACE>& tri_list);
 
 	// divide a ring
-	bool DivideRing1(EdgeRing& ring, vector<FACE>& tri_list);
-	bool DivideRing2(EdgeRing& ring, vector<FACE>& tri_list);
+	bool DivideRing1(EdgeRing& ring, std::vector<FACE>& tri_list);
+	bool DivideRing2(EdgeRing& ring, std::vector<FACE>& tri_list);
 
 	// fill all holes
 	void FillAllHoles(FSSurfaceMesh* pm);
@@ -105,10 +105,10 @@ private:
 	int GetPlaneOrientation(EdgeRing& ring, const vec3d& p, const vec3d& t);
 
 	// get the area of the smallest triangle
-	double min_tri_area(vector<FACE>& tri);
+	double min_tri_area(std::vector<FACE>& tri);
 
 	// get the quality of the worst triangle
-	double min_tri_quality(vector<FACE>& tri);
+	double min_tri_quality(std::vector<FACE>& tri);
 
 private:
 	std::vector<vec3d>	m_node_normals;

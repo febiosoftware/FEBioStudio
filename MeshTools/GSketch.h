@@ -80,8 +80,8 @@ protected:
 	void InsertEdge(EDGE& e);
 
 protected:
-	vector<POINT>	m_pt;
-	vector<EDGE>	m_edge;
+	std::vector<POINT>	m_pt;
+	std::vector<EDGE>	m_edge;
 };
 
 //-----------------------------------------------------------------------------

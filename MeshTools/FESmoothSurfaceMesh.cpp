@@ -59,7 +59,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMe
 	double w = GetFloatValue(1);
 	int N = mesh.Nodes();
 
-	vector<int> faceIDs(N, -1);
+	std::vector<int> faceIDs(N, -1);
 
 	// smooth node positions
 	for (int n = 0; n<niter; ++n)
@@ -67,10 +67,10 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMe
 		// clear tags
 		// first = count of how often a node was visited
 		// second = ID (edge or face) that the nodes should be back-projected to
-		vector<pair<int, int> > tag(N, pair<int, int>(0, -1));
+		std::vector< std::pair<int, int> > tag(N, pair<int, int>(0, -1));
 
 		// storage for new node positions
-		vector<vec3d> newPos(N, vec3d(0, 0, 0));
+		std::vector<vec3d> newPos(N, vec3d(0, 0, 0));
 
 		// tag all immovable nodes
 		if (preserveShape || preserveEdges)

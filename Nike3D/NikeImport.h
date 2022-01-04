@@ -81,10 +81,10 @@ private:
 	int		m_nmat;	// nr of materials
 	int		m_nmplc;	// nr of must point load curve
 
-	vector<int>		m_iFace;
-	vector<int*>	m_pFace;
-	vector<int>		m_nFace;
+	std::vector<int>	m_iFace;
+	std::vector<int*>	m_pFace;
+	std::vector<int>	m_nFace;
 
-	vector<LoadCurve>		m_LC;
-	vector<GMaterial*>		m_pMat;
+	std::vector<LoadCurve>		m_LC;
+	std::vector<GMaterial*>		m_pMat;
 };

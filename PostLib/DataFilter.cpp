@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "FEMeshData_T.h"
 #include "evaluate.h"
 using namespace Post;
+using namespace std;
 
 bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 {

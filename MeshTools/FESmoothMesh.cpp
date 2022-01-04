@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/MeshTools.h>
+using namespace std;
 
 //=============================================================================
 // FESmoothMesh

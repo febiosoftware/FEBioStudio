@@ -161,7 +161,7 @@ FEFindElement::FEFindElement(FSCoreMesh& mesh) : m_mesh(mesh)
 	m_nframe = -1;
 }
 
-void FEFindElement::InitReferenceFrame(vector<bool>& flags)
+void FEFindElement::InitReferenceFrame(std::vector<bool>& flags)
 {
 	assert(m_nframe == 0);
 
@@ -223,7 +223,7 @@ void FEFindElement::InitReferenceFrame(vector<bool>& flags)
 	}
 }
 
-void FEFindElement::InitCurrentFrame(vector<bool>& flags)
+void FEFindElement::InitCurrentFrame(std::vector<bool>& flags)
 {
 	assert(m_nframe == 1);
 
@@ -287,13 +287,13 @@ void FEFindElement::InitCurrentFrame(vector<bool>& flags)
 
 void FEFindElement::Init(int nframe)
 {
-	vector<bool> dummy;
+	std::vector<bool> dummy;
 	m_nframe = nframe;
 	if (m_nframe == 0) InitReferenceFrame(dummy);
 	else InitCurrentFrame(dummy);
 }
 
-void FEFindElement::Init(vector<bool>& flags, int nframe)
+void FEFindElement::Init(std::vector<bool>& flags, int nframe)
 {
 	m_nframe = nframe;
 	if (m_nframe == 0) InitReferenceFrame(flags);

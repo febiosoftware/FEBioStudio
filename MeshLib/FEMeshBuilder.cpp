@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEMesh.h"
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEFaceEdgeList.h>
+using namespace std;
 
 FEMeshBuilder::FEMeshBuilder(FSMesh& mesh) : m_mesh(mesh)
 {

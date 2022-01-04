@@ -1059,7 +1059,7 @@ void CModelViewer::OnChangeMaterial()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, prj, false, this);
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, prj, false, false, this);
 	if (dlg.exec())
 	{
 		FSMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
@@ -1611,20 +1611,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllConstraints()));
 		break;
-	case MT_RIGID_CONSTRAINT_LIST:
+	case MT_RIGID_COMPONENT_LIST:
 		menu.addAction("Add Rigid Constraint ...", this, SLOT(OnAddRigidConstraint()));
-		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConstraints()));
-		break;
-	case MT_RIGID_CONNECTOR_LIST:
 		menu.addAction("Add Rigid Connector ...", this, SLOT(OnAddRigidConnector()));
-		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConnectors()));
-		break;
-	case MT_RIGID_LOAD_LIST:
 		menu.addAction("Add Rigid Load ...", this, SLOT(OnAddRigidLoad()));
 		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidLoads()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidComponents()));
 		break;
 	case MT_STEP_LIST:
 		menu.addAction("Add Analysis Step ...", this, SLOT(OnAddStep()));
@@ -1765,6 +1757,14 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 			del = true;
 		}
 		break;
+	case MT_LOAD_CONTROLLERS:
+		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
+		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
+		break;
+	case MT_MESH_DATA:
+		menu.addAction("Add Mesh Data ...", wnd, SLOT(on_actionAddMeshData_triggered()));
+		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
+		break;
 	case MT_JOBLIST:
 		{
 			menu.addAction("Delete All", this, SLOT(OnDeleteAllJobs()));
@@ -1870,18 +1870,10 @@ void CModelViewer::OnDeleteAllConstraints()
 	GetMainWindow()->DeleteAllConstraints();
 }
 
-void CModelViewer::OnDeleteAllRigidConstraints()
+void CModelViewer::OnDeleteAllRigidComponents()
 {
 	GetMainWindow()->DeleteAllRigidConstraints();
-}
-
-void CModelViewer::OnDeleteAllRigidLoads()
-{
 	GetMainWindow()->DeleteAllRigidLoads();
-}
-
-void CModelViewer::OnDeleteAllRigidConnectors()
-{
 	GetMainWindow()->DeleteAllRigidConnectors();
 }
 

@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEDiscreteMaterial.h>
+#include <MeshTools/FEModel.h>
 #include <sstream>
 using namespace std;
 
@@ -54,7 +55,7 @@ mat3ds qvariant_to_mat3ds(const QVariant& v)
 	return m;
 }
 
-void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
+void map_parameters(FSModelComponent* po, FEBio::FEBioClass* feb)
 {
 	// copy the parameters from the FEBioClass to the FSObject
 	for (int i = 0; i < feb->Parameters(); ++i)
@@ -103,6 +104,12 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 			p = po->AddVectorDoubleParam(val, szname, szlongname);
 		}
 		break;
+		case FEBio::FEBIO_PARAM_STD_VECTOR_VEC2D:
+		{
+			std::vector<vec2d> val = v.value<std::vector<vec2d> >();
+			p = po->AddVectorVec2dParam(val, szname, szlongname);
+		}
+		break;
 		default:
 			assert(false);
 		}
@@ -110,7 +117,20 @@ void map_parameters(FSObject* po, FEBio::FEBioClass* feb)
 		if (p)
 		{
 			p->SetFlags(param.m_flags);
-			if (param.m_flags & 0x08) p->SetLoadCurve();
+			FSModel* fsm = po->GetFSModel();
+			if (fsm)
+			{
+				if (param.m_flags & 0x08)
+				{
+					// create default load curve
+					LoadCurve lc;
+
+					// add to model
+					FSLoadController* plc = fsm->AddLoadCurve(lc); assert(plc);
+					plc->SetName(param.name());
+					p->SetLoadCurveID(plc->GetID());
+				}
+			}
 			if (param.m_szunit) p->SetUnit(param.m_szunit);
 		}
 	}
@@ -166,18 +186,29 @@ bool FEBio::CreateModelComponent(int classId, FSModelComponent* po)
 	map_parameters(po, feb);
 
 	// map the properties
-	if (dynamic_cast<FSStepComponent*>(po))
+	for (int i = 0; i < feb->Properties(); ++i)
 	{
-		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
-		for (int i = 0; i < feb->Properties(); ++i)
+		// TODO: mapped vectors are added as properties, but they should be parameters instead. 
+		//       This is a bit of a hack that I need to clean up.
+		FEBio::FEBioProperty& prop = feb->GetProperty(i);
+		int maxSize = (prop.m_isArray ? 0 : 1);
+		if (prop.m_superClassId == FEVEC3DGENERATOR_ID)
 		{
-			// TODO: mapped vectors are added as properties, but they should be parameters instead. 
-			//       This is a bit of a hack that I need to clean up.
-			FEBio::FEBioProperty& prop = feb->GetProperty(i);
-			int maxSize = (prop.m_isArray ? 0 : 1);
-			if (prop.m_superClassId == FEVEC3DGENERATOR_ID)
+			po->AddVecParam(vec3d(0, 0, 0), prop.m_name.c_str());
+		}
+		else
+		{
+			FSProperty* pci = po->AddProperty(prop.m_name, prop.m_baseClassId, maxSize); assert(pci);
+			pci->SetSuperClassID(prop.m_superClassId);
+			if (prop.m_brequired)
+				pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
+			pci->SetDefaultType(prop.m_defType);
+
+			if (prop.m_comp.empty() == false)
 			{
-				po->AddVecParam(vec3d(0, 0, 0), prop.m_name.c_str());
+				FEBioClass& fbc = prop.m_comp[0];
+				FSCoreBase* pmi = CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), nullptr);
+				pci->AddComponent(pmi);
 			}
 		}
 	}
@@ -260,26 +291,21 @@ void FEBio::CreateStep(int classId, FSStep* po, bool initDefaultProps)
 	{
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
 
-		FSStepControlProperty* pc = new FSStepControlProperty;
+		FSProperty* pc = po->AddProperty(prop.m_name, prop.m_baseClassId, 1, (prop.m_brequired ? FSProperty::REQUIRED : 1));
+		pc->SetSuperClassID(prop.m_superClassId);
+		pc->SetBaseClassID(prop.m_baseClassId);
 
-		string name = prop.m_name;
-		pc->m_brequired = prop.m_brequired;
-
-		if (initDefaultProps && pc->m_brequired)
+		if (initDefaultProps && prop.m_brequired)
 		{
 			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(modId, prop.m_superClassId, -1, ClassSearchFlags::IncludeFECoreClasses);
 			if (fci.size() > 0)
 			{
 				FSStepComponent* psc = new FSStepComponent;
 				CreateModelComponent(fci[0].classId, psc);
-				pc->m_prop = psc;
+				psc->SetTypeString(fci[0].sztype);
+				pc->SetComponent(psc);
 			}
 		}
-		
-		pc->SetName(name);
-		pc->m_nClassID = prop.m_baseClassId;
-		pc->m_nSuperClassId = prop.m_superClassId;
-		po->AddControlProperty(pc);
 	}
 
 	// don't forget to cleanup
@@ -333,21 +359,21 @@ void FEBio::CreateMaterial(int classId, FEBioMaterial* po)
 	{
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
 		int maxSize = (prop.m_isArray ? 0 : 1);
-		FSMaterialProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, maxSize); assert(matProp);
+		FSProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, maxSize); assert(matProp);
 		matProp->SetSuperClassID(prop.m_superClassId);
 		if (prop.m_brequired)
-			matProp->SetFlags(matProp->GetFlags() | FSMaterialProperty::REQUIRED);
+			matProp->SetFlags(matProp->GetFlags() | FSProperty::REQUIRED);
 		matProp->SetDefaultType(prop.m_defType);
 
 		if (prop.m_comp.empty() == false)
 		{
 			FEBioClass& fbc = prop.m_comp[0];
 			FEBioMaterial* pmi = new FEBioMaterial;
-			pmi->SetTypeString(strdup(fbc.TypeString().c_str()));
+			pmi->SetTypeString(fbc.TypeString().c_str());
 			pmi->SetSuperClassID(fbc.GetSuperClassID());
 			pmi->SetFEBioMaterial(&fbc);
 			map_parameters(pmi, &fbc);
-			matProp->AddMaterial(pmi);
+			matProp->AddComponent(pmi);
 		}
 	}
 }
@@ -482,4 +508,128 @@ FSInitialCondition* FEBio::CreateInitialCondition(const char* sztype, FSModel* f
 		return nullptr;
 	}
 	return pic;
+}
+
+FSLoadController* FEBio::CreateLoadController(const char* sztype, FSModel* fem)
+{
+	FSLoadController* plc = new FEBioLoadController(fem);
+	if (FEBio::CreateModelComponent(FELOADCONTROLLER_ID, sztype, plc) == false)
+	{
+		delete plc;
+		return nullptr;
+	}
+	return plc;
+}
+
+FSModelComponent* FEBio::CreateClass(int superClassID, const char* sztype, FSModel* fem)
+{
+	switch (superClassID)
+	{
+	case FEMATERIAL_ID: return CreateMaterial(sztype, fem); break;
+	case FECLASS_ID   : return CreateGenericClass(sztype, fem); break;
+	case FELOADCONTROLLER_ID : return CreateLoadController(sztype, fem); break;
+	default:
+		assert(false);
+	}
+	return nullptr;
+}
+
+void map_feclass(FEBio::FEBioClass* feb, FSModelComponent* pc, FSModel* fem)
+{
+	// copy type information (Is this necessary?)
+	string typeStr = feb->TypeString();
+	pc->SetTypeString(typeStr);
+
+	// then, map parameters
+	map_parameters(pc, feb);
+
+	// map the properties
+	for (int i = 0; i < feb->Properties(); ++i)
+	{
+		FEBio::FEBioProperty& prop = feb->GetProperty(i);
+		int maxSize = (prop.m_isArray ? 0 : 1);
+		FSProperty* pci = pc->AddProperty(prop.m_name, prop.m_baseClassId, maxSize); assert(pci);
+		pci->SetSuperClassID(prop.m_superClassId);
+		if (prop.m_brequired)
+			pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
+		pci->SetDefaultType(prop.m_defType);
+
+		if (prop.m_comp.empty() == false)
+		{
+			FEBio::FEBioClass& fbc = prop.m_comp[0];
+			FSModelComponent* pmi = FEBio::CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), fem);
+			if (pmi)
+			{
+				pci->AddComponent(pmi);
+				map_feclass(&fbc, pmi, fem);
+			}
+		}
+	}
+}
+
+FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
+{
+	// create the FEBioClass object
+	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
+	if (feb == nullptr) return nullptr;
+
+	// allocate correct FBS class. 
+	FSModelComponent* pc = nullptr;
+	switch (feb->GetSuperClassID())
+	{
+	case FEANALYSIS_ID: pc = new FEBioAnalysisStep(fem); break;
+	case FESOLVER_ID  : pc = new FSGenericClass; break;
+	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
+	case FENEWTONSTRATEGY_ID: pc = new FSGenericClass; break;
+	case FECLASS_ID: pc = new FSGenericClass; break;
+	default:
+		assert(false);
+	}
+
+	// map class
+	map_feclass(feb, pc, fem);
+
+	return pc;
+}
+
+FSGenericClass* FEBio::CreateGenericClass(const char* sztype, FSModel* fem)
+{
+	// get the class ID
+	int classId = FEBio::GetClassId(FECLASS_ID, sztype); assert(classId >= 0);
+	if (classId < 0) return nullptr;
+
+	// create the FEBioClass object
+	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
+	if (feb == nullptr) return nullptr;
+
+	// allocate the generic class container
+	FSGenericClass* pc = new FSGenericClass;
+
+	// set the type string
+	string typeStr = feb->TypeString();
+	pc->SetTypeString(typeStr);
+
+	// map the FEBioClass parameters to the FSObject
+	map_parameters(pc, feb);
+
+	// map the properties
+	for (int i = 0; i < feb->Properties(); ++i)
+	{
+		FEBio::FEBioProperty& prop = feb->GetProperty(i);
+		int maxSize = (prop.m_isArray ? 0 : 1);
+		FSProperty* pci = pc->AddProperty(prop.m_name, prop.m_baseClassId, maxSize); assert(pci);
+		pci->SetSuperClassID(prop.m_superClassId);
+		if (prop.m_brequired)
+			pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
+		pci->SetDefaultType(prop.m_defType);
+
+		if (prop.m_comp.empty() == false)
+		{
+			FEBioClass& fbc = prop.m_comp[0];
+			FSCoreBase* pmi = CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), fem);
+			pci->AddComponent(pmi);
+		}
+	}
+
+	return pc;
 }

@@ -172,9 +172,7 @@ public slots:
 	void OnDeleteAllIC();
 	void OnDeleteAllContact();
 	void OnDeleteAllConstraints();
-	void OnDeleteAllRigidConstraints();
-	void OnDeleteAllRigidLoads();
-	void OnDeleteAllRigidConnectors();
+	void OnDeleteAllRigidComponents();
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
 

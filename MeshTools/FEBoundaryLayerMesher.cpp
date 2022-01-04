@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FEMeshBuilder.h>
 #include <map>
+using namespace std;
 
 FEBoundaryLayerMesher::FEBoundaryLayerMesher() : FEModifier("PostBL")
 {

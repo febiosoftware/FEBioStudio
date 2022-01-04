@@ -246,10 +246,10 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 	{
 		if (ReadParam(*pstep, tag) == false)
 		{
-			if (pstep->ControlProperties() > 0)
+			if (pstep->Properties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FSStepControlProperty* pc = pstep->FindControlProperty(sztag); assert(pc);
+				FSProperty* pc = pstep->FindProperty(sztag); assert(pc);
 
 				// see if this is a property
 				const char* sztype = tag.AttributeValue("type", true);
@@ -267,15 +267,15 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					}
 				}
 
-				if (pc->m_prop == nullptr)
+				if (pc->GetComponent() == nullptr)
 				{
 					FSStepComponent* psc = new FSStepComponent;
-					FEBio::CreateModelComponent(pc->m_nSuperClassId, sztype, psc);
-					pc->m_prop = psc;
+					FEBio::CreateModelComponent(pc->GetSuperClassID(), sztype, psc);
+					pc->SetComponent(psc);
 				}
 
 				// read the parameters
-				ReadParameters(*pc->m_prop, tag);
+				ReadParameters(*pc->GetComponent(), tag);
 			}
 			else ParseUnknownTag(tag);
 		}
@@ -447,7 +447,7 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 			if (pmat->Properties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FSMaterialProperty* pmc = pmat->FindProperty(sztag);
+				FSProperty* pmc = pmat->FindProperty(sztag);
 				if (pmc == nullptr)
 				{
 					ParseUnknownTag(tag);
@@ -475,7 +475,7 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 
 						if (pmc)
 						{
-							pmc->AddMaterial(propMat);
+							pmc->AddComponent(propMat);
 							ParseMaterial(tag, propMat);
 						}
 					}
@@ -1323,7 +1323,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 			const char* szset = tag.AttributeValue("elem_set");
 			if (strcmp(szgen, "surface-to-surface map") == 0)
 			{
-				FSSurfaceToSurfaceMap* s2s = new FSSurfaceToSurfaceMap;
+/*				FSSurfaceToSurfaceMap* s2s = new FSSurfaceToSurfaceMap;
 				s2s->m_generator = szgen;
 				s2s->m_var = var->cvalue();
 				s2s->m_elset = szset;
@@ -1386,14 +1386,15 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 								else ParseUnknownTag(tag);
 								++tag;
 							} while (!tag.isend());
-							p->SetLoadCurve(lc);
+							//GetFEBioModel().AddLoadCurve(lc);
+							//p->SetLoadCurve(lc);
 						}
 					}
 					else ParseUnknownTag(tag);
 					++tag;
 				} while (!tag.isend());
 				feb.GetFSModel().AddDataMap(s2s);
-			}
+*/			}
 		}
 		else ParseUnknownTag(tag);
 	}
@@ -1968,11 +1969,45 @@ void FEBioFormat3::ParseBCLinearConstraint(FSStep* pstep, XMLTag& tag)
 	std::string comment = tag.comment();
 	pbc->SetInfo(comment);
 
-	// read the parameters
-	ReadParameters(*pbc, tag);
-
 	// add to the step
 	pstep->AddComponent(pbc);
+
+	// read the tags
+	++tag;
+	do
+	{
+		if (ReadParam(*pbc, tag) == false)
+		{
+			if (pbc->Properties() > 0)
+			{
+				const char* sztag = tag.Name();
+				FSProperty* pmc = pbc->FindProperty(sztag);
+				if (pmc == nullptr)
+				{
+					ParseUnknownTag(tag);
+				}
+				else
+				{
+					// see if this is a class property
+					const char* sztype = tag.AttributeValue("type", true);
+					if (sztype == 0)
+					{
+						const std::string& defType = pmc->GetDefaultType();
+						if (defType.empty() == false) sztype = defType.c_str();
+						else sztype = tag.Name();
+					}
+
+					FSCoreBase* pc = FEBio::CreateClass(pmc->GetSuperClassID(), sztype, &fem); assert(pc);
+					pmc->AddComponent(pc);
+
+					ReadParameters(*pc, tag);
+				}
+			}
+			else ParseUnknownTag(tag);
+		}
+		++tag;
+	}
+	while (!tag.isend());
 }
 
 void FEBioFormat3::ParseBCFluidRotationalVelocity(FSStep* pstep, XMLTag& tag)
@@ -2825,8 +2860,8 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				{
 					if (ReadParam(*pdm, tag) == false)
 					{
-						FSMaterialProperty* prop = pdm->FindProperty(tag.m_sztag);
-						FS1DPointFunction* pf1d = dynamic_cast<FS1DPointFunction*>(prop ? prop->GetMaterial(0) : nullptr);
+						FSProperty* prop = pdm->FindProperty(tag.m_sztag);
+						FS1DPointFunction* pf1d = dynamic_cast<FS1DPointFunction*>(prop ? prop->GetComponent(0) : nullptr);
 						if (pf1d)
 						{
 							LoadCurve lc;
@@ -3002,21 +3037,21 @@ bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, LoadCurve& lc)
 		if (tag == "interpolate")
 		{
 			string interpolate = tag.szvalue();
-			if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetType(LoadCurve::LC_STEP);
-			else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetType(LoadCurve::LC_LINEAR);
-			else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetType(LoadCurve::LC_SMOOTH);
-            else if ((interpolate == "cubic spline") || (interpolate == "CUBIC SPLINE")) lc.SetType(LoadCurve::LC_CSPLINE);
-            else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetType(LoadCurve::LC_CPOINTS);
-            else if ((interpolate == "approximation") || (interpolate == "APPROXIMATION")) lc.SetType(LoadCurve::LC_APPROX);
+			if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetInterpolator(PointCurve::STEP);
+			else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetInterpolator(PointCurve::LINEAR);
+			else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetInterpolator(PointCurve::SMOOTH);
+            else if ((interpolate == "cubic spline") || (interpolate == "CUBIC SPLINE")) lc.SetInterpolator(PointCurve::CSPLINE);
+            else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetInterpolator(PointCurve::CPOINTS);
+            else if ((interpolate == "approximation") || (interpolate == "APPROXIMATION")) lc.SetInterpolator(PointCurve::APPROX);
 			else FileReader()->AddLogEntry("unknown interpolation type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 		}
 		else if (tag == "extend")
 		{
 			string extend = tag.szvalue();
-			if      ((extend == "constant"     ) || (extend == "CONSTANT"     )) lc.SetExtend(LoadCurve::EXT_CONSTANT);
-			else if ((extend == "extrapolate"  ) || (extend == "EXTRAPOLATE"  )) lc.SetExtend(LoadCurve::EXT_EXTRAPOLATE);
-			else if ((extend == "repeat"       ) || (extend == "REPEAT"       )) lc.SetExtend(LoadCurve::EXT_REPEAT);
-			else if ((extend == "repeat offset") || (extend == "REPEAT OFFSET")) lc.SetExtend(LoadCurve::EXT_REPEAT_OFFSET);
+			if      ((extend == "constant"     ) || (extend == "CONSTANT"     )) lc.SetExtendMode(PointCurve::CONSTANT);
+			else if ((extend == "extrapolate"  ) || (extend == "EXTRAPOLATE"  )) lc.SetExtendMode(PointCurve::EXTRAPOLATE);
+			else if ((extend == "repeat"       ) || (extend == "REPEAT"       )) lc.SetExtendMode(PointCurve::REPEAT);
+			else if ((extend == "repeat offset") || (extend == "REPEAT OFFSET")) lc.SetExtendMode(PointCurve::REPEAT_OFFSET);
 			else FileReader()->AddLogEntry("unknown extend mode for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 		}
 		else if (tag == "points")
@@ -3027,12 +3062,7 @@ bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, LoadCurve& lc)
 			do
 			{
 				tag.value(d, 2);
-
-				LOADPOINT pt;
-				pt.time = d[0];
-				pt.load = d[1];
-				lc.Add(pt);
-
+				lc.Add(d[0], d[1]);
 				++tag;
 			} while (!tag.isend());
 		}

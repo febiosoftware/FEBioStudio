@@ -39,11 +39,11 @@ public:
 
 	//! Apply the smoothing modifier
 	FSMesh* Apply(FSMesh* pm);
-	void Laplacian_Smoothing(FSMesh* pm,vector<int> hashmap);
-	void Laplacian_Smoothing2(FSMesh* pm,vector<int> hashmap);
-	void Taubin_Smoothing(FSMesh* pm,vector<int> hashmap);
-	void Crease_Enhancing_Diffusion(FSMesh* pm,vector<int> hashmap);
-	void Add_Noise(FSMesh* pm,vector<int> hashmap);
+	void Laplacian_Smoothing(FSMesh* pm, std::vector<int> hashmap);
+	void Laplacian_Smoothing2(FSMesh* pm, std::vector<int> hashmap);
+	void Taubin_Smoothing(FSMesh* pm, std::vector<int> hashmap);
+	void Crease_Enhancing_Diffusion(FSMesh* pm, std::vector<int> hashmap);
+	void Add_Noise(FSMesh* pm, std::vector<int> hashmap);
 public:
 	double	m_threshold1;
 	double	m_threshold2;

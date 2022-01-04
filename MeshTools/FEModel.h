@@ -31,6 +31,9 @@ SOFTWARE.*/
 #include "FEMLib/FECoreModel.h"
 #include "FEMLib/FEBoundaryCondition.h"
 #include "FEMLib/FEAnalysisStep.h"
+#include "FEMLib/FEMeshAdaptor.h"
+#include "FEMLib/FELoadController.h"
+#include "FEMLib/FEMeshDataGenerator.h"
 #include "GMaterial.h"
 #include "FEDataVariable.h"
 #include "FESoluteData.h"
@@ -81,6 +84,8 @@ public:
 	void DeleteAllRigidLoads();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
+	void DeleteAllLoadControllers();
+	void DeleteAllMeshDataGenerators();
 
 	// clear the selections of all the bc, loads, etc.
 	void ClearSelections();
@@ -161,13 +166,13 @@ public:
 	void GetSpeciesNames(char* szbuf);
 	void GetRigidMaterialNames(char* szbuf);
 	void GetDOFNames(FEDOFVariable& var, char* szbuf);
-	void GetDOFNames(FEDOFVariable& var, vector<string>& dofList);
-	void GetDOFSymbols(FEDOFVariable& var, vector<string>& dofList);
+	void GetDOFNames(FEDOFVariable& var, std::vector<string>& dofList);
+	void GetDOFSymbols(FEDOFVariable& var, std::vector<string>& dofList);
 	void GetVariableNames(const char* szvar, char* szbuf);
 	
-	const char* GetVariableName(const char* szvar, int n);
+	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 	int GetVariableIntValue(const char* szvar, int n);
-	const char* GetEnumValue(const char* szenum, int n);
+	const char* GetEnumValue(const char* szenum, int n, bool longName = true);
 	int GetEnumIntValue(Param& param);
 	bool GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum);
 
@@ -185,18 +190,29 @@ public:
 	bool FindGroupParent(FSGroup* pg);
 
 public:
-	int DataMaps() const;
-	void AddDataMap(FSDataMapGenerator* map);
-	int RemoveMap(FSDataMapGenerator* map);
-	FSDataMapGenerator* GetDataMap(int i);
-
-public:
 	int Variables() const { return (int)m_DOF.size(); }
 	FEDOFVariable& Variable(int i) { return m_DOF[i]; }
 	FEDOFVariable* AddVariable(const char* szvar);
 	int GetVariableIndex(const char* sz);
 	FEDOFVariable& GetVariable(const char* sz);
     int GetDOFIndex(const char* sz);
+
+public:
+	int LoadControllers() const;
+	FSLoadController* GetLoadController(int i);
+	void AddLoadController(FSLoadController* plc);
+	int RemoveLoadController(FSLoadController* plc);
+
+	// helper function for creating load curves
+	FSLoadController* AddLoadCurve(LoadCurve& lc);
+
+	FSLoadController* GetLoadControllerFromID(int lc);
+
+public:
+	int MeshDataGenerators() const;
+	FSMeshDataGenerator* GetMeshDataGenerator(int i);
+	void AddMeshDataGenerator(FSMeshDataGenerator* plc);
+	int RemoveMeshDataGenerator(FSMeshDataGenerator* plc);
 
 public:
 	int CountBCs(int type);
@@ -216,7 +232,7 @@ protected:
 
 protected:
 	GModel*					m_pModel;	//!< Model geometry
-	vector<FEDOFVariable>	m_DOF;		//!< degree of freedom list
+	std::vector<FEDOFVariable>	m_DOF;		//!< degree of freedom list
 
 	FSObjectList<GMaterial>			m_pMat;		//!< Material list
 	FSObjectList<FSStep>			m_pStep;	//!< Analysis data
@@ -224,6 +240,8 @@ protected:
 	FSObjectList<SoluteData>		m_Sol;		//!< solute data variables
 	FSObjectList<SoluteData>		m_SBM;		//!< solid-bound molecule data variables
 	FSObjectList<FSDataMapGenerator>	m_Map;		//!< data maps
+	FSObjectList<FSLoadController>		m_LC;		//!< load controllers
+	FSObjectList<FSMeshDataGenerator>	m_MD;		//!< mesh data generators
 };
 
 //-----------------------------------------------------------------------------
@@ -345,6 +363,23 @@ template <class T> int CountRigidConstraints(FSModel& fem)
 	return nc;
 }
 
+//-----------------------------------------------------------------------------
+// helper function for identifying the number of mesh adaptors.
+template <class T> int CountMeshAdaptors(FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->MeshAdaptors(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->MeshAdaptor(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
 // helper function for creating a valid name from a string.
 std::string Namify(const char* sz);
 
@@ -356,4 +391,5 @@ std::string defaultInterfaceName(FSModel* fem, FSInterface* pi);
 std::string defaultConstraintName(FSModel* fem, FSModelConstraint* pi);
 std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pc);
 std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc);
+std::string defaultMeshAdaptorName(FSModel* fem, FSMeshAdaptor* pc);
 std::string defaultStepName(FSModel* fem, FSStep* ps);

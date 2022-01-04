@@ -80,7 +80,7 @@ void GRing::Create()
 	int FE[4][4] = {{ 0, 9, 4, 8}, { 1,10, 5, 9}, { 2,11, 6,10}, { 3, 8, 7,11}};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<4; ++i)
 	{
 		edge.resize(4);

@@ -813,7 +813,7 @@ FSTransMooneyRivlinOld::Fiber::Fiber()
 	AddDoubleParam(0, "beta", "beta")->SetState(Param_State::Param_READWRITE);
 	AddDoubleParam(0, "L0"  , "L0"  )->SetState(Param_State::Param_READWRITE);
 	AddDoubleParam(0, "Lr"  , "Lr"  )->SetState(Param_State::Param_READWRITE);
-	AddDoubleParam(0, "active_contraction", "active_contraction")->SetState(Param_State::Param_READWRITE)->SetLoadCurve();
+	AddDoubleParam(0, "active_contraction", "active_contraction")->SetState(Param_State::Param_READWRITE);
 }
 
 FSTransMooneyRivlinOld::FSTransMooneyRivlinOld() : FSTransverselyIsotropic(FE_TRANS_MOONEY_RIVLIN_OLD)
@@ -844,7 +844,7 @@ FSTransVerondaWestmannOld::Fiber::Fiber()
 	AddDoubleParam(0, "beta", "beta")->SetState(Param_State::Param_READWRITE);
 	AddDoubleParam(0, "L0"  , "L0"  )->SetState(Param_State::Param_READWRITE);
 	AddDoubleParam(0, "Lr"  , "Lr"  )->SetState(Param_State::Param_READWRITE);
-	AddDoubleParam(0, "active_contraction", "active_contraction")->SetState(Param_State::Param_READWRITE)->SetLoadCurve();
+	AddDoubleParam(0, "active_contraction", "active_contraction")->SetState(Param_State::Param_READWRITE);
 }
 
 FSTransVerondaWestmannOld::FSTransVerondaWestmannOld() : FSTransverselyIsotropic(FE_TRANS_VERONDA_WESTMANN_OLD)
@@ -868,7 +868,7 @@ REGISTER_MATERIAL(FSActiveContraction, MODULE_MECH, FE_MAT_ACTIVE_CONTRACTION, F
 
 FSActiveContraction::FSActiveContraction() : FSMaterial(FE_MAT_ACTIVE_CONTRACTION)
 {
-	AddDoubleParam(0, "ascl", "scale")->SetLoadCurve();
+	AddDoubleParam(0, "ascl", "scale");
 	AddDoubleParam(0, "ca0");
 	AddDoubleParam(0, "beta");
 	AddDoubleParam(0, "l0");
@@ -1257,7 +1257,7 @@ FSHolzapfelUnconstrained::FSHolzapfelUnconstrained() : FSMaterial(FE_HOLZAPFEL_U
 // FSLinearOrthotropic - Linear Orthotropic
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FSLinearOrthotropic, MODULE_MECH, FE_LINEAR_ORTHO, FE_MAT_ELASTIC, "linear orthotropic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSLinearOrthotropic, MODULE_MECH, FE_LINEAR_ORTHO, FE_MAT_ELASTIC, "orthotropic elastic", MaterialFlags::TOPLEVEL);
 
 FSLinearOrthotropic::FSLinearOrthotropic() : FSMaterial(FE_LINEAR_ORTHO)
 {
@@ -1935,18 +1935,18 @@ bool FSFiberMaterial::HasFibers() { return true; }
 
 void FSFiberMaterial::SetFiberGenerator(FSFiberGenerator* v)
 {
-	GetProperty(0).SetMaterial(v);
+	GetProperty(0).SetComponent(v);
 }
 
 FSFiberGenerator* FSFiberMaterial::GetFiberGenerator()
 {
-	return dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetMaterial());
+	return dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetComponent());
 }
 
 void FSFiberMaterial::SetAxisMaterial(FSAxisMaterial* Q)
 {
 	// If the fiber generator was not set we'll create a fiber generator from the mat axes
-	FSFiberGenerator* v = dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetMaterial());
+	FSFiberGenerator* v = dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetComponent());
 	if (v == nullptr)
 	{
 		switch (Q->m_naopt)
@@ -1976,7 +1976,7 @@ void FSFiberMaterial::SetAxisMaterial(FSAxisMaterial* Q)
 
 vec3d FSFiberMaterial::GetFiber(FEElementRef& el)
 {
-	FSFiberGenerator* fiber = dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetMaterial());
+	FSFiberGenerator* fiber = dynamic_cast<FSFiberGenerator*>(GetProperty(0).GetComponent());
 	vec3d v(1, 0, 0);
 	if (fiber) v = fiber->GetFiber(el);
 	if (m_axes)
@@ -3179,12 +3179,12 @@ FEBioMaterial::~FEBioMaterial()
 //	delete m_febClass;
 }
 
-void FEBioMaterial::SetTypeString(const char* sz)
+void FEBioMaterial::SetTypeString(const std::string& sz)
 {
 	m_stype = sz;
 }
 
-const char* FEBioMaterial::GetTypeString()
+const char* FEBioMaterial::GetTypeString() const
 {
 	return m_stype.c_str();
 }
@@ -3205,8 +3205,8 @@ bool FEBioMaterial::HasFibers()
 
 vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 {
-	FSMaterialProperty* pm = FindProperty("fiber");
-	FEBioMaterial* fiber = dynamic_cast<FEBioMaterial*>(pm->GetMaterial());
+	FSProperty* pm = FindProperty("fiber");
+	FEBioMaterial* fiber = dynamic_cast<FEBioMaterial*>(pm->GetComponent());
 
 	// evaluate the element's center
 	vec3d p = el.center();

@@ -56,13 +56,7 @@ REGISTER_MATERIAL(FSNonLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_NONLINEAR_
 
 FSNonLinearSpringMaterial::FSNonLinearSpringMaterial() : FSDiscreteMaterial(FE_DISCRETE_NONLINEAR_SPRING)
 {
-	AddScienceParam(1, UNIT_FORCE, "force", "spring force")->SetLoadCurve();
-
-	// create an initial linear ramp
-	LOADPOINT p0(0, 0), p1(1, 1);
-	GetParamLC(0)->Clear();
-	GetParamLC(0)->Add(p0);
-	GetParamLC(0)->Add(p1);
+	AddScienceParam(1, UNIT_FORCE, "force", "spring force");
 }
 
 //===================================================================
@@ -93,23 +87,20 @@ REGISTER_MATERIAL(FS1DPointFunction, MODULE_MECH, FE_FNC1D_POINT, FE_MAT_1DFUNC,
 
 FS1DPointFunction::FS1DPointFunction() : FS1DFunction(FE_FNC1D_POINT) 
 {
-	// dummy parameter so we can use FSMaterial's serialization for the load curve
-	AddDoubleParam(0, "points", "points")->SetLoadCurve();
-
 	// constant value
-	GetParamLC(0)->Clear();
-	GetParamLC(0)->Add(0, 1);
-	GetParamLC(0)->Add(1, 1);
+	m_lc.Clear();
+	m_lc.Add(0, 1);
+	m_lc.Add(1, 1);
 }
 
 LoadCurve* FS1DPointFunction::GetPointCurve()
 {
-	return GetParamLC(0);
+	return &m_lc;
 }
 
 void FS1DPointFunction::SetPointCurve(LoadCurve& lc)
 {
-	GetParam(0).SetLoadCurve(lc);
+	m_lc = lc;
 }
 
 //===================================================================
@@ -123,12 +114,12 @@ FEBioDiscreteMaterial::~FEBioDiscreteMaterial()
 
 }
 
-void FEBioDiscreteMaterial::SetTypeString(const char* sz)
+void FEBioDiscreteMaterial::SetTypeString(const std::string& s)
 {
-	m_stype = sz;
+	m_stype = s;
 }
 
-const char* FEBioDiscreteMaterial::GetTypeString()
+const char* FEBioDiscreteMaterial::GetTypeString() const
 {
 	return m_stype.c_str();
 }

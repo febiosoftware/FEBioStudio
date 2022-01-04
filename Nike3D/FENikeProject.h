@@ -307,20 +307,20 @@ protected:
 	void Defaults();
 
 public:
-	CONTROL						m_Ctrl;
-	vector<MATERIAL>			m_Mat;
-	vector<NODE>				m_Node;
-	vector<BRICK>				m_Brick;
-	vector<SHELL>				m_Shell;
-	list<RIGID_FACET>			m_Rigid;
-	vector<SLIDING_INTERFACE>	m_SI;
-	list<SI_FACET>				m_Face;
-	list<LoadCurve>				m_LC;
-	list<NODAL_LOAD>			m_NF;
-	list<PRESSURE_LOAD>			m_PF;
-	list<NODAL_DISPLACEMENT>	m_DC;
-	list<BODY_FORCE>			m_BF;
-	vector<NODAL_VELOCITY>		m_Vel;
-	vector<DISCRETE_SPRING>		m_DSP;
-	vector<DISCRETE_MATERIAL>	m_DMA;
+	CONTROL							m_Ctrl;
+	std::vector<MATERIAL>			m_Mat;
+	std::vector<NODE>				m_Node;
+	std::vector<BRICK>				m_Brick;
+	std::vector<SHELL>				m_Shell;
+	std::list<RIGID_FACET>			m_Rigid;
+	std::vector<SLIDING_INTERFACE>	m_SI;
+	std::list<SI_FACET>				m_Face;
+	std::list<LoadCurve>			m_LC;
+	std::list<NODAL_LOAD>			m_NF;
+	std::list<PRESSURE_LOAD>		m_PF;
+	std::list<NODAL_DISPLACEMENT>	m_DC;
+	std::list<BODY_FORCE>			m_BF;
+	std::vector<NODAL_VELOCITY>		m_Vel;
+	std::vector<DISCRETE_SPRING>	m_DSP;
+	std::vector<DISCRETE_MATERIAL>	m_DMA;
 };

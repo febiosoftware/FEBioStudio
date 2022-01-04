@@ -119,7 +119,7 @@ void GCylinderInBox::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	edge.resize(4);
 	for (i=0; i<4; ++i)
 	{

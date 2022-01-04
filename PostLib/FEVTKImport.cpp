@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "FEPostModel.h"
 
 using namespace Post;
+using namespace std;
 
 VTKimport::VTKimport(FEPostModel* fem) : FEFileReader(fem)
 {

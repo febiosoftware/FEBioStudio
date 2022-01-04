@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEGroup.h"
 #include "FEPostMesh.h"
 #include <string.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // FSDomain constructor

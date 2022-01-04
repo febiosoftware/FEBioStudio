@@ -447,10 +447,10 @@ void CDlgAddChemicalReaction::onReactionChanged(int n)
 		ui->dummy->setEnabled(true);
 
 		FSMaterial& props = *m_pmp->GetMaterialProperties();
-		FSMaterialProperty* react = props.FindProperty("reaction"); assert(react);
+		FSProperty* react = props.FindProperty("reaction"); assert(react);
 		if (react)
 		{
-			FSReactionMaterial* r = dynamic_cast<FSReactionMaterial*>(react->GetMaterial(n));
+			FSReactionMaterial* r = dynamic_cast<FSReactionMaterial*>(react->GetComponent(n));
 			SetReaction(r);
 		}
 	}
@@ -471,7 +471,7 @@ void CDlgAddChemicalReaction::SetMaterial(GMaterial* mat, FSModel& fem)
 	m_pmp = mat;
 
 	FSMaterial& props = *mat->GetMaterialProperties();
-	FSMaterialProperty* react = props.FindProperty("reaction"); assert(react);
+	FSProperty* react = props.FindProperty("reaction"); assert(react);
 
 	ui->reactions->Clear();
 	if (react)
@@ -479,7 +479,7 @@ void CDlgAddChemicalReaction::SetMaterial(GMaterial* mat, FSModel& fem)
 		int N = react->Size();
 		for (int i=0; i<N; ++i)
 		{
-			FSReactionMaterial* r = dynamic_cast<FSReactionMaterial*>(react->GetMaterial(i)); assert(r);
+			FSReactionMaterial* r = dynamic_cast<FSReactionMaterial*>(react->GetComponent(i)); assert(r);
 			if (r)
 			{
 				string name = r->GetName();
@@ -499,11 +499,11 @@ void CDlgAddChemicalReaction::onAddReaction()
 	if (m_pmp == 0) return;
 
 	FSMaterial& props = *m_pmp->GetMaterialProperties();
-	FSMaterialProperty* react = props.FindProperty("reaction"); assert(react);
+	FSProperty* react = props.FindProperty("reaction"); assert(react);
 
 	// create a default material
 	FSReactionMaterial* r = dynamic_cast<FSReactionMaterial*>(FEMaterialFactory::Create(FE_MASS_ACTION_FORWARD)); assert(r);
-	react->AddMaterial(r);
+	react->AddComponent(r);
 
 	stringstream ss;
 	ss << "Reaction" << react->Size();
@@ -531,10 +531,10 @@ void CDlgAddChemicalReaction::onRemoveReaction()
 	if ((m_pmp == 0) || (m_reaction == 0)) return;
 
 	FSMaterial& props = *m_pmp->GetMaterialProperties();
-	FSMaterialProperty* react = props.FindProperty(FE_MAT_REACTION); assert(react);
+	FSProperty* react = props.FindProperty(FE_MAT_REACTION); assert(react);
 
 	// remove the reaction
-	react->RemoveMaterial(m_reaction);
+	react->RemoveComponent(m_reaction);
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FSModel& fem = *doc->GetFSModel();
@@ -736,7 +736,7 @@ void CDlgAddChemicalReaction::apply()
 	if ((m_pmp == 0) || (m_reaction == 0)) return;
 
 	FSMaterial* mat = m_pmp->GetMaterialProperties();
-	FSMaterialProperty* reactProp = mat->FindProperty(FE_MAT_REACTION); assert(reactProp);
+	FSProperty* reactProp = mat->FindProperty(FE_MAT_REACTION); assert(reactProp);
 	if (reactProp == 0) return;
 
 	// create the reaction material and set its type
@@ -747,11 +747,11 @@ void CDlgAddChemicalReaction::apply()
 		if (pmat == 0) return;
 
 		// find the property
-		int index = reactProp->GetMaterialIndex(m_reaction); assert(index >= 0);
+		int index = reactProp->GetComponentIndex(m_reaction); assert(index >= 0);
 		if (index < 0) return;
 
 		// replace the property
-		reactProp->SetMaterial(pmat, index);
+		reactProp->SetComponent(pmat, index);
 
 		// continue with this material
 		m_reaction = pmat;

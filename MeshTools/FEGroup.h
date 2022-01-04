@@ -84,7 +84,7 @@ class FSPart : public FSGroup
 {
 public:
 	FSPart(GObject* po) : FSGroup(po, FE_PART, FE_NODE_FLAG | FE_ELEM_FLAG) {}
-	FSPart(GObject* po, const vector<int>&  elset);
+	FSPart(GObject* po, const std::vector<int>&  elset);
 	~FSPart(){}
 
 	void CreateFromMesh();
@@ -104,7 +104,7 @@ class FSSurface : public FSGroup
 {
 public:
 	FSSurface(GObject* po) : FSGroup(po, FE_SURFACE, FE_NODE_FLAG | FE_FACE_FLAG) {}
-	FSSurface(GObject* po, vector<int>& face);
+	FSSurface(GObject* po, std::vector<int>& face);
 	~FSSurface(){}
 
 	FENodeList* BuildNodeList();
@@ -120,7 +120,7 @@ class FSEdgeSet : public FSGroup
 {
 public:
 	FSEdgeSet(GObject* po) : FSGroup(po, FE_EDGESET, FE_NODE_FLAG) {}
-	FSEdgeSet(GObject* po, vector<int>& edge);
+	FSEdgeSet(GObject* po, std::vector<int>& edge);
 	~FSEdgeSet(){}
 
 	FENodeList* BuildNodeList();
@@ -139,7 +139,7 @@ class FSNodeSet : public FSGroup
 {
 public:
 	FSNodeSet(GObject* po) : FSGroup(po, FE_NODESET, FE_NODE_FLAG) {}
-	FSNodeSet(GObject* po, const vector<int>& node);
+	FSNodeSet(GObject* po, const std::vector<int>& node);
 	~FSNodeSet(){}
 
 	void CreateFromMesh();

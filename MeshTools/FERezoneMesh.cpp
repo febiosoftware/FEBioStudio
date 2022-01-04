@@ -44,7 +44,7 @@ FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 	// - 2 = edge node, has to remain on edge
 	// - 3 = vertex or node on selected facet, cannot move
 	int N = pm->Nodes();
-	vector<pair<int, int> > tag(N, pair<int, int>(0, -1));
+	std::vector< std::pair<int, int> > tag(N, std::pair<int, int>(0, -1));
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
 		FSFace& face = pm->Face(i);
@@ -92,7 +92,7 @@ FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 	FSMesh* surf = pm->ExtractFaces(true);
 
 	// for each node, find closest point to a selected facet
-	vector<vec3d> trg(N);
+	std::vector<vec3d> trg(N);
 	for (int i = 0; i < N; ++i)
 	{
 		FSNode& node = pm->Node(i);

@@ -27,8 +27,6 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	FSModel* GetFSModel() { return m_ps; }
-
 	unsigned int GetMeshItemType() const;
 
 	void SetMeshItemType(unsigned int meshItem);
@@ -37,7 +35,6 @@ protected:
 	unsigned int	m_itemType;	// the type of mesh item that can be assigned to this list
 
 	int			m_ntype;	// type of boundary condition
-	FSModel*	m_ps;		// pointer to model
 
 	FEItemListBuilder*	m_pItem;	// list of item indices to apply the BC too
 };

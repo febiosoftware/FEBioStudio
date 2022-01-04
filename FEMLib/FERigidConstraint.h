@@ -49,7 +49,7 @@ class FSRigidConstraint : public FSStepComponent
 	enum { MATID, NAME, PARAMS };
 
 protected:
-	FSRigidConstraint(int ntype, int nstep);
+	FSRigidConstraint(int ntype, int nstep, FSModel* fem = nullptr);
 
 public:
 	~FSRigidConstraint(void);
@@ -82,24 +82,24 @@ public:
 
 class FSRigidPrescribed : public FSRigidConstraint
 {
+public:
 	enum { DOF, VALUE };
 
 public:
-	FSRigidPrescribed(int ntype, int nstep);
+	FSRigidPrescribed(int ntype, int nstep, FSModel* fem = nullptr);
 
 	int GetDOF() const { return GetIntValue(DOF); }
 	void SetDOF(int n) { SetIntValue(DOF, n); }
 
 	double GetValue() const { return GetFloatValue(VALUE); }
 	void SetValue(double v) { SetFloatValue(VALUE, v); }
-
-	LoadCurve* GetLoadCurve() { return GetParamLC(VALUE); }
-	void SetLoadCurve(const LoadCurve& lc) { GetParam(VALUE).SetLoadCurve(lc); }
-	void RemoveLoadcurve() { GetParam(VALUE).DeleteLoadCurve(); }
 };
 
 class FSRigidDisplacement : public FSRigidPrescribed
 {
+public:
+	enum { VAR, VALUE, BC_RELATIVE };
+
 public:
 	FSRigidDisplacement(FSModel* fem, int nstep = 0);
 	FSRigidDisplacement(int bc, int matid, double v, int nstep);
@@ -148,4 +148,4 @@ public:
 };
 
 
-vector<FSRigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FSRigidConstraintOld* rc);
+std::vector<FSRigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FSRigidConstraintOld* rc);

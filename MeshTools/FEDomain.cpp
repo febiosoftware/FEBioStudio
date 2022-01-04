@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEDomain.h"
+using namespace std;
 
 const int FEDQuad::m_edge[4][2] = {
     { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }

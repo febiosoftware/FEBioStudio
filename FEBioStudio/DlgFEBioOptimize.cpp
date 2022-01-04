@@ -84,12 +84,12 @@ public:
 
 		for (int j = 0; j < mat->Properties(); ++j)
 		{
-			FSMaterialProperty& prop = mat->GetProperty(j);
+			FSProperty& prop = mat->GetProperty(j);
 			int nsize = prop.Size();
 			QString propName = QString::fromStdString(prop.GetName());
 			for (int k = 0; k < nsize; ++k)
 			{
-				FSMaterial* mj = mat->GetProperty(j).GetMaterial(k);
+				FSMaterial* mj = mat->GetMaterialProperty(j, k);
 				if (mj)
 				{
 					QString matName = propName;
@@ -475,11 +475,11 @@ void CDlgFEBioOptimize::on_addData_clicked()
 	if (dlg.exec())
 	{
 		ui->dataTable->setRowCount(0);
-		std::vector<LOADPOINT> pts = dlg.GetPoints();
+		std::vector<vec2d> pts = dlg.GetPoints();
 		for (int i = 0; i < pts.size(); ++i)
 		{
-			LOADPOINT& p = pts[i];
-			ui->addDataPoint(p.time, p.load);
+			vec2d& p = pts[i];
+			ui->addDataPoint(p.x(), p.y());
 		}
 	}
 }

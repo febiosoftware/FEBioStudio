@@ -100,24 +100,24 @@ void GLinearSpring::Load(IArchive& ar)
 GGeneralSpring::GGeneralSpring(GModel* gm) : GDiscreteObject(gm, FE_GENERAL_SPRING)
 {
 	m_node[0] = m_node[1] = -1;
-	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
+	AddDoubleParam(1, "force", "spring force");
 
 	// create an initial linear ramp
-	LOADPOINT p0(0,0), p1(1,1);
-	GetParamLC(MP_F)->Add(p0);
-	GetParamLC(MP_F)->Add(p1);
+//	LOADPOINT p0(0,0), p1(1,1);
+//	GetParamLC(MP_F)->Add(p0);
+//	GetParamLC(MP_F)->Add(p1);
 }
 
 GGeneralSpring::GGeneralSpring(GModel* gm, int n1, int n2) : GDiscreteObject(gm, FE_GENERAL_SPRING)
 {
 	m_node[0] = n1;
 	m_node[1] = n2;
-	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
+	AddDoubleParam(1, "force", "spring force");
 
 	// create an initial linear ramp
-	LOADPOINT p0(0,0), p1(1,1);
-	GetParamLC(MP_F)->Add(p0);
-	GetParamLC(MP_F)->Add(p1);
+//	LOADPOINT p0(0,0), p1(1,1);
+//	GetParamLC(MP_F)->Add(p0);
+//	GetParamLC(MP_F)->Add(p1);
 }
 
 void GGeneralSpring::Save(OArchive& ar)
@@ -550,13 +550,13 @@ void GLinearSpringSet::Load(IArchive& ar)
 //-----------------------------------------------------------------------------
 GNonlinearSpringSet::GNonlinearSpringSet(GModel* gm) : GDiscreteElementSet(gm, FE_NONLINEAR_SPRING_SET)
 {
-	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
+	AddDoubleParam(1, "force", "spring force");
 
 	// create an initial linear ramp
-	LOADPOINT p0(0,0), p1(1,1);
-	GetParamLC(MP_F)->Clear();
-	GetParamLC(MP_F)->Add(p0);
-	GetParamLC(MP_F)->Add(p1);
+//	LOADPOINT p0(0,0), p1(1,1);
+//	GetParamLC(MP_F)->Clear();
+//	GetParamLC(MP_F)->Add(p0);
+//	GetParamLC(MP_F)->Add(p1);
 }
 
 

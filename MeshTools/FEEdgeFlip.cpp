@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEEdgeFlip.h"
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FESurfaceMesh.h>
+using namespace std;
 
 FEEdgeFlip::FEEdgeFlip() : FESurfaceModifier("Flip Edges")
 {

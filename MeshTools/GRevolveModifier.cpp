@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
 #include "FETetGenMesher.h"
+using namespace std;
 
 //-----------------------------------------------------------------------------
 GRevolveModifier::GRevolveModifier()

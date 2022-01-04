@@ -53,5 +53,5 @@ public:
 	bool	m_bremesh;
 
 	// hole list
-	vector<vec3d>	m_hole;
+	std::vector<vec3d>	m_hole;
 };

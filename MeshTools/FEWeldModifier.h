@@ -48,7 +48,7 @@ protected:
 	void UpdateEdges   (FSMesh* pm);
 
 private:
-	vector<int>	m_order;
+	std::vector<int>	m_order;
 };
 
 //-----------------------------------------------------------------------------
@@ -69,5 +69,5 @@ protected:
 	void UpdateFaces(FSSurfaceMesh* pm);
 
 private:
-	vector<int>	m_order;
+	std::vector<int>	m_order;
 };

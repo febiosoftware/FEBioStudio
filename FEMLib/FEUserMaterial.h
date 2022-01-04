@@ -9,8 +9,8 @@ public:
 	FSUserMaterial(int ntype) : FSMaterial(ntype) {}
 	~FSUserMaterial();
 
-	void SetTypeString(const char* sz) override;
-	const char* GetTypeString() override { return m_sztype; }
+	void SetTypeString(const std::string& sz) override;
+	const char* GetTypeString() const override { return m_sztype; }
 
 	void AddParameter(const char* szname, double v);
 
@@ -20,6 +20,6 @@ public:
 	void copy(FSMaterial* pm);
 
 protected:
-	char			m_sztype[256];	// type name
-	vector<char*>	m_pname;		// list of parameter names
+	char				m_sztype[256];	// type name
+	std::vector<char*>	m_pname;		// list of parameter names
 };

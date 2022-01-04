@@ -112,7 +112,7 @@ public:
 	void RemoveLogData(int item);
 
 private:
-	vector<FELogData>		m_log;		// log data
+	std::vector<FELogData>		m_log;		// log data
 };
 
 //-----------------------------------------------------------------------------

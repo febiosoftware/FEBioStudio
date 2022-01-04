@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QPlainTextEdit>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
+using namespace std;
 
 class CDlgMeshDiagnosticsUI
 {

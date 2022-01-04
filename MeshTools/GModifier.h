@@ -126,8 +126,8 @@ public:
 	void SetTarget(GObject* ptrg) { m_po = ptrg; }
 
 protected:
-	void ClosestPoint(GObject* po, vector<vec3d>& DS, vector<int>& tag);
-	void NormalProjection(GObject* po, vector<vec3d>& DS, vector<int>& tag, int nsteps);
+	void ClosestPoint(GObject* po, std::vector<vec3d>& DS, std::vector<int>& tag);
+	void NormalProjection(GObject* po, std::vector<vec3d>& DS, std::vector<int>& tag, int nsteps);
 
 protected:
 	GObject*	m_po;	//!< target object

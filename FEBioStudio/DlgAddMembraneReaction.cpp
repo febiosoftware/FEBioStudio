@@ -373,10 +373,10 @@ void CDlgAddMembraneReaction::onReactionChanged(int n)
         ui->dummy->setEnabled(true);
         
         FSMaterial& props = *m_pmp->GetMaterialProperties();
-        FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
+        FSProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
         if (react)
         {
-            FSMembraneReactionMaterial* r = dynamic_cast<FSMembraneReactionMaterial*>(react->GetMaterial(n));
+            FSMembraneReactionMaterial* r = dynamic_cast<FSMembraneReactionMaterial*>(react->GetComponent(n));
             SetReaction(r);
         }
     }
@@ -397,7 +397,7 @@ void CDlgAddMembraneReaction::SetMaterial(GMaterial* mat, FSModel& fem)
     m_pmp = mat;
     
     FSMaterial& props = *mat->GetMaterialProperties();
-    FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
+    FSProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     ui->reactions->Clear();
     if (react)
@@ -405,7 +405,7 @@ void CDlgAddMembraneReaction::SetMaterial(GMaterial* mat, FSModel& fem)
         int N = react->Size();
         for (int i=0; i<N; ++i)
         {
-            FSMembraneReactionMaterial* r = dynamic_cast<FSMembraneReactionMaterial*>(react->GetMaterial(i)); assert(r);
+            FSMembraneReactionMaterial* r = dynamic_cast<FSMembraneReactionMaterial*>(react->GetComponent(i)); assert(r);
             if (r)
             {
                 string name = r->GetName();
@@ -425,11 +425,11 @@ void CDlgAddMembraneReaction::onAddReaction()
     if (m_pmp == 0) return;
     
     FSMaterial& props = *m_pmp->GetMaterialProperties();
-    FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
+    FSProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     // create a default material
     FSMembraneReactionMaterial* r = dynamic_cast<FSMembraneReactionMaterial*>(FEMaterialFactory::Create(FE_MMASS_ACTION_FORWARD)); assert(r);
-    react->AddMaterial(r);
+    react->AddComponent(r);
     
     stringstream ss;
     ss << "Reaction" << react->Size();
@@ -457,10 +457,10 @@ void CDlgAddMembraneReaction::onRemoveReaction()
     if ((m_pmp == 0) || (m_reaction == 0)) return;
     
     FSMaterial& props = *m_pmp->GetMaterialProperties();
-    FSMaterialProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
+    FSProperty* react = props.FindProperty(FE_MAT_MREACTION); assert(react);
     
     // remove the reaction
-    react->RemoveMaterial(m_reaction);
+    react->RemoveComponent(m_reaction);
     
     CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
     FSModel& fem = *doc->GetFSModel();
@@ -846,7 +846,7 @@ void CDlgAddMembraneReaction::apply()
     if ((m_pmp == 0) || (m_reaction == 0)) return;
     
     FSMaterial* mat = m_pmp->GetMaterialProperties();
-    FSMaterialProperty* reactProp = mat->FindProperty(FE_MAT_MREACTION);
+    FSProperty* reactProp = mat->FindProperty(FE_MAT_MREACTION);
     if (reactProp == 0) return;
     
     // create the reaction material and set its type
@@ -857,11 +857,11 @@ void CDlgAddMembraneReaction::apply()
         if (pmat == 0) return;
         
         // find the property
-        int index = reactProp->GetMaterialIndex(m_reaction); assert(index >= 0);
+        int index = reactProp->GetComponentIndex(m_reaction); assert(index >= 0);
         if (index < 0) return;
         
         // replace the property
-        reactProp->SetMaterial(pmat, index);
+        reactProp->SetComponent(pmat, index);
         
         // continue with this material
         m_reaction = pmat;

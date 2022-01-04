@@ -22,7 +22,6 @@ protected:
 	FEItemListBuilder* LoadList(IArchive& ar);
 
 protected:
-	FSModel* m_ps;
 	int		m_ntype;
 };
 
@@ -104,8 +103,6 @@ public:
 	FSRigidWallInterface(FSModel* ps, int nstep = 0);
 	~FSRigidWallInterface(){}
 
-	LoadCurve* GetLoadCurve() { return GetParamLC(OFFSET); }
-
 	void GetPlaneEquation(double a[4]);
 };
 
@@ -120,8 +117,6 @@ public:
 public:
 	FSRigidSphereInterface(FSModel* ps, int nstep = 0);
 	~FSRigidSphereInterface(){}
-
-	LoadCurve* GetLoadCurve(int i);
 
 	double Radius();
 	vec3d Center();
@@ -351,7 +346,7 @@ public:
 
 	double SpringConstant() const;
 
-	void BuildSpringList(vector<pair<int, int> >& L);
+	void BuildSpringList(std::vector<pair<int, int> >& L);
 };
 
 //-----------------------------------------------------------------------------
@@ -391,7 +386,7 @@ public:
 		LinearConstraint& operator = (const LinearConstraint& LC) { m_dof = LC.m_dof; return (*this); }
 
 	public:
-		vector<DOF>	m_dof;
+		std::vector<DOF>	m_dof;
 	};
 
 public:
@@ -405,5 +400,5 @@ public:
 	int		m_nmaxaug;
 
 public:
-	vector<LinearConstraint>	m_set;
+	std::vector<LinearConstraint>	m_set;
 };
