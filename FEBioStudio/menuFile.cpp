@@ -1649,6 +1649,66 @@ void CMainWindow::on_actionConvertFeb_triggered()
 	}
 }
 
+void CMainWindow::on_actionConvertFeb2Fsm_triggered()
+{
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", "", "FEBio files (*.feb)");
+	if (fileNames.isEmpty() == false)
+	{
+		QString dir = QFileDialog::getExistingDirectory();
+		if (dir.isEmpty() == false)
+		{
+            QStringList::iterator it;
+
+            ShowLogPanel();
+
+            AddLogEntry("Starting batch conversion ...\n");
+            int nsuccess = 0, nfails = 0, nwarnings = 0;
+            for (it = fileNames.begin(); it != fileNames.end(); ++it)
+            {
+                CModelDocument doc(this);
+
+                // we need to set this document as the active document
+                // NOTE: This might cause problems if the user modifies the currently open document
+                //       while the file is reading. 
+                // CDocument::SetActiveDocument(doc);
+
+                FEProject& prj = doc.GetProject();
+                FEBioImport reader(prj);
+
+                std::string inFile = it->toStdString();
+                AddLogEntry(QString("Converting %1 ... ").arg(*it));
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+
+                // create an output file name
+                QString outName = createFileName(*it, dir, "fsm");
+                string outFile = outName.toStdString();
+                doc.SetDocFilePath(outFile);
+
+                // try to read the project
+                bool bret = reader.Load(inFile.c_str());
+
+                // try to save the project
+                bret = (bret ? doc.SaveDocument() : false);
+
+                AddLogEntry(bret ? "success\n" : "FAILED\n");
+                string err = reader.GetErrorMessage();
+                if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+                if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+
+                if (bret) nsuccess++; else nfails++;
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+
+            }
+
+            AddLogEntry("Batch conversion completed:\n");
+            if (nwarnings == 0)
+                AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
+            else
+                AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
+        }
+	}
+}
+
 void CMainWindow::on_actionConvertGeo_triggered()
 {
 	// file filters

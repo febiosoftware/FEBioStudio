@@ -419,6 +419,7 @@ public:
 		QAction* actionExportProject = addAction("Export Project Archive ...", "actionExportProject");
 		QAction* actionImportImg  = addAction("Import Image ...", "actionImportImage");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
+        QAction* actionConvertFeb2Fsm    = addAction("FEB to FSM ...", "actionConvertFeb2Fsm");
 		QAction* actionConvertGeo = addAction("Geometry Files ...", "actionConvertGeo");
 		QAction* actionExit       = addAction("Exit"       , "actionExit"  );
 
@@ -690,6 +691,7 @@ public:
 
 		QMenu* ConvertMenu = new QMenu("Batch convert");
 		ConvertMenu->addAction(actionConvertFeb);
+        ConvertMenu->addAction(actionConvertFeb2Fsm);
 		ConvertMenu->addAction(actionConvertGeo);
 
 		menuFile->addAction(ConvertMenu->menuAction());
