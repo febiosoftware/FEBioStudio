@@ -1541,9 +1541,9 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
     else if (bc=="z") pbc = new FEPrescribedDisplacement (&fem, pg, 2, 1, pstep->GetID());
     else if (bc=="T") pbc = new FEPrescribedTemperature  (&fem, pg, 1, pstep->GetID());
     else if (bc=="p") pbc = new FEPrescribedFluidPressure(&fem, pg, 1, pstep->GetID());
-    else if (bc=="vx") pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
-    else if (bc=="vy") pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
-    else if (bc=="vz") pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="wx") pbc = new FEPrescribedFluidVelocity(&fem, pg, 0, 1, pstep->GetID());
+    else if (bc=="wy") pbc = new FEPrescribedFluidVelocity(&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="wz") pbc = new FEPrescribedFluidVelocity(&fem, pg, 2, 1, pstep->GetID());
     else if (bc=="ef") pbc = new FEPrescribedFluidDilatation(&fem, pg, 1, pstep->GetID());
     else if (bc=="sx") pbc = new FEPrescribedShellDisplacement(&fem, pg, 0, 1, pstep->GetID());
     else if (bc=="sy") pbc = new FEPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
