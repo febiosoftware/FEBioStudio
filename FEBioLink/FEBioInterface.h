@@ -44,6 +44,7 @@ class FSRigidConnector;
 class FSModel;
 class FSCoreBase;
 class FSLoadController;
+class FSFunction1D;
 class FSGenericClass;
 
 namespace FEBio {
@@ -72,6 +73,7 @@ namespace FEBio {
 	FSRigidConnector*	 CreateRigidConnector   (const char* sztype, FSModel* fem);
 	FSInitialCondition*  CreateInitialCondition (const char* sztype, FSModel* fem);
 	FSLoadController*    CreateLoadController   (const char* sztype, FSModel* fem);
+	FSFunction1D*        CreateFunction1D       (const char* sztype, FSModel* fem);
 
 	FSModelComponent* CreateClass(int superClassID, const char* sztype, FSModel* fem);
 	FSModelComponent* CreateClass(int classId, FSModel* fem);

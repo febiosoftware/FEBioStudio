@@ -440,6 +440,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioRigidLoad        , 0, FERIGIDLOAD_ID       , FE_FEBIO_RIGID_LOAD        , "[febio]");
 	REGISTER_FE_CLASS(FEBioMeshAdaptor      , 0, FEMESHADAPTOR_ID     , FE_FEBIO_MESH_ADAPTOR      , "[febio]");
 	REGISTER_FE_CLASS(FEBioLoadController   , 0, FELOADCONTROLLER_ID  , FE_FEBIO_LOAD_CONTROLLER   , "[febio]");
+	REGISTER_FE_CLASS(FEBioFunction1D       , 0, FEFUNCTION1D_ID      , FE_FEBIO_FUNCTION1D        , "[febio]");
 	REGISTER_FE_CLASS(FEBioMeshDataGenerator, 0, FEDATAGENERATOR_ID   , FE_FEBIO_MESHDATA_GENERATOR, "[febio]");
 }
 

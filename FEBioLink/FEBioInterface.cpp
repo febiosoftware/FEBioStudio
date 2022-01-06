@@ -521,6 +521,17 @@ FSLoadController* FEBio::CreateLoadController(const char* sztype, FSModel* fem)
 	return plc;
 }
 
+FSFunction1D* FEBio::CreateFunction1D(const char* sztype, FSModel* fem)
+{
+	FSFunction1D* pf = new FEBioFunction1D(fem);
+	if (FEBio::CreateModelComponent(FEFUNCTION1D_ID, sztype, pf) == false)
+	{
+		delete pf;
+		return nullptr;
+	}
+	return pf;
+}
+
 FSModelComponent* FEBio::CreateClass(int superClassID, const char* sztype, FSModel* fem)
 {
 	switch (superClassID)
