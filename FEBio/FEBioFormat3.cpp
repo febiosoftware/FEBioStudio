@@ -897,6 +897,7 @@ void FEBioFormat3::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag
 			else if (tag == "tri3") N = 3;
 			else if (tag == "tri6") N = 6;
 			else if (tag == "tri7") N = 7;
+			else if (tag == "tri10") N = 10;
 			else throw XMLReader::InvalidTag(tag);
 
 			// read the node numbers

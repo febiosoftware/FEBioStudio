@@ -4754,7 +4754,7 @@ void FEBioExport3::WriteSurfaceSection(NamedItemList& l)
 	std::unique_ptr<FEFaceList> ps(pfl);
 
 	XMLElement ef;
-	int n = 1, nn[9];
+	int n = 1, nn[FSFace::MAX_NODES];
 
 	FEFaceList& s = *pfl;
 	int NF = s.Size();
