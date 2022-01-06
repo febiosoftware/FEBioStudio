@@ -1270,7 +1270,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 	// draw the y-labels
 	if (m_data.m_yAxis.labelPosition != NONE)
 	{
-		p.setPen(QPen(m_data.m_yCol));
+		p.setPen(QPen(m_data.m_yAxisTickCol));
 
 		int xPos = 0;
 		switch (m_data.m_yAxis.labelPosition)
@@ -1308,7 +1308,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 	// draw the x-labels
 	if (m_data.m_xAxis.labelPosition != NONE)
 	{
-		p.setPen(QPen(m_data.m_xCol));
+		p.setPen(QPen(m_data.m_xAxisTickCol));
 
 		int yPos = 0;
 		switch (m_data.m_yAxis.labelPosition)
@@ -1410,7 +1410,7 @@ void CPlotWidget::drawAxes(QPainter& p)
 	{
 		if ((c.y() > m_plotRect.top   ()) && (c.y() < m_plotRect.bottom()))
 		{
-			p.setPen(QPen(m_data.m_xCol, 2));
+			p.setPen(QPen(m_data.m_xAxisCol, 2));
 			QPainterPath xaxis;
 			xaxis.moveTo(m_plotRect.left (), c.y());
 			xaxis.lineTo(m_plotRect.right(), c.y());
@@ -1423,7 +1423,7 @@ void CPlotWidget::drawAxes(QPainter& p)
 	{
 		if ((c.x() > m_plotRect.left ()) && (c.x() < m_plotRect.right()))
 		{
-			p.setPen(QPen(m_data.m_yCol, 2));
+			p.setPen(QPen(m_data.m_yAxisCol, 2));
 			QPainterPath yaxis;
 			yaxis.moveTo(c.x(), m_plotRect.top   ());
 			yaxis.lineTo(c.x(), m_plotRect.bottom());
@@ -1628,6 +1628,8 @@ CCurvePlotWidget::CCurvePlotWidget(QWidget* parent) : CPlotWidget(parent)
 	setGridColor(QColor(128, 128, 128));
 	setXAxisColor(QColor(255, 255, 255));
 	setYAxisColor(QColor(255, 255, 255));
+	setXAxisTickColor(QColor(255, 255, 255));
+	setYAxisTickColor(QColor(255, 255, 255));
 	setSelectionColor(QColor(255, 255, 192));
 }
 
@@ -1871,8 +1873,8 @@ public:
 
 		// toolbar
 		lineType = new QComboBox; lineType->setObjectName("lineType");
-		lineType->addItem("Linear");
 		lineType->addItem("Step");
+		lineType->addItem("Linear");
 		lineType->addItem("Smooth");
 		lineType->addItem("Cubic spline");
 		lineType->addItem("Control points");
@@ -2216,16 +2218,13 @@ void CCurveEditWidget::on_plot_pointSelected(int n)
 
 void CCurveEditWidget::on_plot_backgroundImageChanged()
 {
-	if (ui->plt->HasBackgroundImage())
-	{
-		ui->plt->setXAxisColor(QColor(0, 0, 0));
-		ui->plt->setYAxisColor(QColor(0, 0, 0));
-	}
-	else
-	{
-		ui->plt->setXAxisColor(QColor(255, 255, 255));
-		ui->plt->setYAxisColor(QColor(255, 255, 255));
-	}
+	QColor c = QColor(255, 255, 255);
+	if (ui->plt->HasBackgroundImage()) c = QColor(255, 255, 255);
+
+	ui->plt->setXAxisColor(c);
+	ui->plt->setYAxisColor(c);
+	ui->plt->setXAxisTickColor(c);
+	ui->plt->setYAxisTickColor(c);
 }
 
 void CCurveEditWidget::on_plot_doneZoomToRect()
@@ -2602,16 +2601,32 @@ void CCurveEditWidget::on_save_clicked(bool b)
 CMathPlotWidget::CMathPlotWidget(QWidget* parent) : CPlotWidget(parent)
 {
 	showLegend(false);
-	m_math.AddVariable("t");
+	m_ord = "x";
+	m_math.AddVariable(m_ord);
 	m_math.Create("0");
+
+	setFullScreenMode(true);
+	setXAxisLabelAlignment(ALIGN_LABEL_TOP);
+	setYAxisLabelAlignment(ALIGN_LABEL_RIGHT);
+	setBackgroundColor(QColor(48, 48, 48));
+	setGridColor(QColor(128, 128, 128));
+	setXAxisColor(QColor(200, 200, 200));
+	setYAxisColor(QColor(200, 200, 200));
+	setXAxisTickColor(QColor(255, 255, 255));
+	setYAxisTickColor(QColor(255, 255, 255));
+	setSelectionColor(QColor(255, 255, 192));
+
+	CPlotData* data = new CPlotData;
+	addPlotData(data);
+	data->setLineColor(QColor(255, 92, 164));
 
 	QObject::connect(this, SIGNAL(regionSelected(QRect)), this, SLOT(onRegionSelected(QRect)));
 }
 
 void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 {
-	MVariable* t = m_math.FindVariable("t");
-	if (t == nullptr) return;
+	MVariable* x = m_math.FindVariable(m_ord);
+	if (x == nullptr) return;
 
 	// draw the line
 	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
@@ -2622,7 +2637,7 @@ void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 		p1.setX(i);
 		QPointF p = ScreenToView(p1);
 
-		t->value(p.x());
+		x->value(p.x());
 		double y = m_math.value();
 
 		p.setY(y);
@@ -2637,11 +2652,17 @@ void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 	}
 }
 
+void CMathPlotWidget::SetOrdinate(const std::string& x)
+{
+	if (x.empty()) m_ord = "x";
+	else m_ord = x;
+}
+
 void CMathPlotWidget::SetMath(const QString& txt)
 {
 	std::string m = txt.toStdString();
 	m_math.Clear();
-	m_math.AddVariable("t");
+	m_math.AddVariable(m_ord);
 
 	if (m.empty()) m = "0";
 	m_math.Create(m);
@@ -2660,13 +2681,14 @@ class UIMathEditWidget
 public:
 	QLineEdit* edit;
 	CMathPlotWidget* plot;
+	QLabel* fnc;
 
 public:
 	void setup(QWidget* w)
 	{
 		edit = new QLineEdit;
 		QHBoxLayout* editLayout = new QHBoxLayout;
-		editLayout->addWidget(new QLabel("f(t) = "));
+		editLayout->addWidget(fnc = new QLabel("f(x) = "));
 		editLayout->addWidget(edit);
 
 		QVBoxLayout* l = new QVBoxLayout;
@@ -2681,7 +2703,13 @@ public:
 CMathEditWidget::CMathEditWidget(QWidget* parent) : QWidget(parent), ui(new UIMathEditWidget)
 {
 	ui->setup(this);
-	ui->plot->addPlotData(new CPlotData);
+}
+
+void CMathEditWidget::SetOrdinate(const QString& x)
+{
+	QString t = QString("f(%1)").arg(x);
+	ui->fnc->setText(t);
+	ui->plot->SetOrdinate(x.toStdString());
 }
 
 void CMathEditWidget::onEditingFinished()

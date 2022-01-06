@@ -593,6 +593,7 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
 	case FENEWTONSTRATEGY_ID: pc = new FSGenericClass; break;
 	case FECLASS_ID: pc = new FSGenericClass; break;
+	case FEFUNCTION1D_ID: pc = new FEBioFunction1D(fem); break;
 	default:
 		assert(false);
 	}

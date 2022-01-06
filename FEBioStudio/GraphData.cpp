@@ -39,8 +39,10 @@ CGraphData::CGraphData()
 
 	m_bgCol = QColor(255, 255, 255);
 	m_gridCol = QColor(192, 192, 192);
-	m_xCol = QColor(0, 0, 0);
-	m_yCol = QColor(0, 0, 0);
+	m_xAxisCol = QColor(0, 0, 0);
+	m_yAxisCol = QColor(0, 0, 0);
+	m_xAxisTickCol = QColor(0, 0, 0);
+	m_yAxisTickCol = QColor(0, 0, 0);
 
 	// X-axis format
 	m_xAxis.visible = true;
@@ -73,8 +75,10 @@ CGraphData::CGraphData(const CGraphData& data)
 	m_bdrawAxesLabels = data.m_bdrawAxesLabels;
 	m_bgCol = data.m_bgCol;
 	m_gridCol = data.m_gridCol;
-	m_xCol = data.m_xCol;
-	m_yCol = data.m_yCol;
+	m_xAxisCol = data.m_xAxisCol;
+	m_yAxisCol = data.m_yAxisCol;
+	m_xAxisTickCol = data.m_xAxisTickCol;
+	m_yAxisTickCol = data.m_yAxisTickCol;
 	m_xAxis = data.m_xAxis;
 	m_yAxis = data.m_yAxis;
 
@@ -102,8 +106,10 @@ void CGraphData::operator = (const CGraphData& data)
 	m_bdrawAxesLabels = data.m_bdrawAxesLabels;
 	m_bgCol = data.m_bgCol;
 	m_gridCol = data.m_gridCol;
-	m_xCol = data.m_xCol;
-	m_yCol = data.m_yCol;
+	m_xAxisCol = data.m_xAxisCol;
+	m_yAxisCol = data.m_yAxisCol;
+	m_xAxisTickCol = data.m_xAxisTickCol;
+	m_yAxisTickCol = data.m_yAxisTickCol;
 	m_xAxis = data.m_xAxis;
 	m_yAxis = data.m_yAxis;
 

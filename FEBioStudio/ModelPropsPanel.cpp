@@ -276,6 +276,15 @@ class Ui::CModelPropsPanel
 		IMAGE_PANEL
 	};
 
+	enum {
+		PROPS_VIEW,
+		PROPS_FORM,
+//		PROPS_MAT,
+		PROPS_FECLASS,
+		PROPS_PLOT,
+		PROPS_MATH
+	};
+
 public:
 	QStackedWidget*	stack;
 	QStackedWidget*	propStack;
@@ -283,9 +292,10 @@ public:
 	::CSelectionBox* sel2;
 	::CPropertyListView* props;
 	::CPropertyListForm* form;
-	CMaterialPropsView*	mat;
-	FEClassPropsView* fec;
-	CCurvePlotWidget* plt;
+//	CMaterialPropsView*	mat;
+	FEClassEdit*		fec;
+	CCurveEditWidget* plt;
+	CMathEditWidget* math;
 
 	CToolBox* tool;
 	CObjectPropsPanel*	obj;
@@ -307,9 +317,11 @@ public:
 
 		props = new ::CPropertyListView; props->setObjectName("props");
 		form  = new ::CPropertyListForm; form->setObjectName("form");
-		mat   = new CMaterialPropsView; mat->setObjectName("mat");
-		fec   = new FEClassPropsView; fec->setObjectName("fec");
-		plt   = new CCurvePlotWidget; plt->setObjectName("plt");
+//		mat   = new CMaterialPropsView; mat->setObjectName("mat");
+		fec   = new FEClassEdit; fec->setObjectName("fec");
+		plt   = new CCurveEditWidget; plt->setObjectName("plt");
+		math  = new CMathEditWidget; math->setObjectName("math");
+		math->SetOrdinate("t");
 
 		obj = new CObjectPropsPanel;
 		obj->setObjectName("object");
@@ -323,9 +335,10 @@ public:
 		propStack = new QStackedWidget;
 		propStack->addWidget(props);
 		propStack->addWidget(form);
-		propStack->addWidget(mat);
+//		propStack->addWidget(mat);
 		propStack->addWidget(fec);
 		propStack->addWidget(plt);
+		propStack->addWidget(math);
 
 		sel1 = new ::CSelectionBox;
 		sel1->setObjectName("select1");
@@ -420,36 +433,36 @@ public:
 
 	void setPropertyList(CPropertyList* pl)
 	{
-		propStack->setCurrentIndex(0);
+		propStack->setCurrentIndex(PROPS_VIEW);
 		props->Update(pl);
 		form->setPropertyList(0);
-		mat->SetMaterial(nullptr);
+//		mat->SetMaterial(nullptr);
 		fec->SetFEClass(nullptr, nullptr);
 	}
 
 	void setPropertyForm(CPropertyList* pl)
 	{
-		propStack->setCurrentIndex(1);
+		propStack->setCurrentIndex(PROPS_FORM);
 		props->Update(0);
 		form->setPropertyList(pl);
-		mat->SetMaterial(nullptr);
+//		mat->SetMaterial(nullptr);
 		fec->SetFEClass(nullptr, nullptr);
 	}
 
-	void setMaterialData(GMaterial* pm)
+/*	void setMaterialData(GMaterial* pm)
 	{
-		propStack->setCurrentIndex(2);
+		propStack->setCurrentIndex(PROPS_MAT);
 		props->Update(0);
 		form->setPropertyList(0);
 		mat->SetMaterial(pm);
 	}
-
+*/
 	void setFEClassData(FSCoreBase* pc, FSModel* fem)
 	{
-		propStack->setCurrentIndex(3);
+		propStack->setCurrentIndex(PROPS_FECLASS);
 		props->Update(0);
 		form->setPropertyList(0);
-		mat->SetMaterial(nullptr);
+//		mat->SetMaterial(nullptr);
 		fec->SetFEClass(pc, fem);
 	}
 
@@ -458,11 +471,9 @@ public:
 		props->Update(0);
 		form->setPropertyList(0);
 		fec->SetFEClass(nullptr, nullptr);
-		propStack->setCurrentIndex(4);
+		propStack->setCurrentIndex(PROPS_PLOT);
 		
-		plt->clear();
-
-		plt->showLegend(false);
+		plt->Clear();
 
 		if (plc == nullptr) return;
 
@@ -473,6 +484,22 @@ public:
 			lc->SetInterpolator(plc->GetParam("interpolate")->GetIntValue());
 			plt->SetLoadCurve(lc);
 		}
+	}
+
+	void showMathWidget(FSLoadController* plc)
+	{
+		props->Update(0);
+		form->setPropertyList(0);
+		fec->SetFEClass(nullptr, nullptr);
+		propStack->setCurrentIndex(PROPS_MATH);
+		plt->Clear();
+		plt->SetLoadCurve(nullptr);
+
+		if (plc == nullptr) return;
+
+		Param* p = plc->GetParam("math"); assert(p);
+		std::string s = p->GetStringValue();
+		math->SetMath(QString::fromStdString(s));
 	}
 
 	void showImagePanel(bool b, Post::CImageModel* img = nullptr)
@@ -702,7 +729,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		if (dynamic_cast<GMaterial*>(po))
 		{
 			GMaterial* mo = dynamic_cast<GMaterial*>(po);
-			ui->setMaterialData(mo);
+//			ui->setMaterialData(mo);
+			ui->setFEClassData(mo->GetMaterialProperties(), mo->GetModel());
 			ui->showPropsPanel(true);
 		}
 		else if (dynamic_cast<FSLoadController*>(po))
@@ -710,6 +738,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			FSLoadController* plc = dynamic_cast<FSLoadController*>(po);
 			if (plc && plc->IsType("loadcurve"))
 				ui->showPlotWidget(plc);
+			else if (plc && plc->IsType("math"))
+				ui->showMathWidget(plc);
 			else
 			{
 				ui->setFEClassData(plc, plc->GetFSModel());
@@ -1723,4 +1753,23 @@ void CModelPropsPanel::on_object_statusChanged(bool b)
 	po->Activate(b);
 
 	emit dataChanged(false);
+}
+
+void CModelPropsPanel::on_math_mathChanged(QString m)
+{
+	FSLoadController* plc = dynamic_cast<FSLoadController*>(m_currentObject);
+	if (plc && plc->IsType("math"))
+	{
+		Param* p = plc->GetParam("math"); assert(p);
+		p->SetStringValue(m.toStdString());
+	}
+}
+
+void CModelPropsPanel::on_plt_dataChanged()
+{
+	FSLoadController* plc = dynamic_cast<FSLoadController*>(m_currentObject);
+	if (plc && plc->IsType("loadcurve"))
+	{
+		plc->UpdateData(true);
+	}
 }

@@ -161,8 +161,10 @@ public:
 
 	void setBackgroundColor(const QColor& c) { m_data.m_bgCol = c; }
 	void setGridColor(const QColor& c) { m_data.m_gridCol = c; }
-	void setXAxisColor(const QColor& c) { m_data.m_xCol = c; }
-	void setYAxisColor(const QColor& c) { m_data.m_yCol = c; }
+	void setXAxisColor(const QColor& c) { m_data.m_xAxisCol = c; }
+	void setYAxisColor(const QColor& c) { m_data.m_yAxisCol = c; }
+	void setXAxisTickColor(const QColor& c) { m_data.m_xAxisTickCol = c; }
+	void setYAxisTickColor(const QColor& c) { m_data.m_yAxisTickCol = c; }
 
 	QColor selectionColor() { return m_selCol; }
 	void setSelectionColor(const QColor& c) { m_selCol = c; }
@@ -394,6 +396,8 @@ public:
 	CMathPlotWidget(QWidget* parent = nullptr);
 	void DrawPlotData(QPainter& p, CPlotData& data) override;
 
+	void SetOrdinate(const std::string& x);
+
 	void SetMath(const QString& txt);
 
 public slots:
@@ -401,6 +405,7 @@ public slots:
 
 private:
 	MSimpleExpression	m_math;
+	std::string			m_ord;
 };
 
 //=============================================================================
@@ -413,6 +418,7 @@ class CMathEditWidget : public QWidget
 public:
 	CMathEditWidget(QWidget* parent = nullptr);
 
+	void SetOrdinate(const QString& ord);
 	void SetMath(const QString& txt);
 
 public slots:

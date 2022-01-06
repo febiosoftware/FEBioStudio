@@ -32,6 +32,8 @@ SOFTWARE.*/
 class FSCoreBase;
 class FSModel;
 class FEClassPropsModel;
+class Param;
+class FSProperty;
 
 class FEClassPropsDelegate : public QStyledItemDelegate
 {
@@ -59,6 +61,9 @@ public:
 
 	void SetFEClass(FSCoreBase* pc, FSModel* fem);
 
+	Param* getParam(const QModelIndex& index);
+	FSProperty* getProperty(const QModelIndex& index);
+
 protected:
 	void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
 
@@ -67,4 +72,25 @@ private slots:
 
 private:
 	FEClassPropsModel*	m_model;
+};
+
+//-----------------------------------------------------------------------------
+class FEClassEditUI;
+
+class FEClassEdit : public QWidget
+{
+	Q_OBJECT
+
+public:
+	FEClassEdit(QWidget* parent = nullptr);
+
+	void SetFEClass(FSCoreBase* pc, FSModel* fem);
+
+public slots:
+	void onItemClicked(const QModelIndex& i);
+	void onMathChanged(QString s);
+	void onPlotChanged();
+
+private:
+	FEClassEditUI* ui;
 };
