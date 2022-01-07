@@ -99,6 +99,7 @@ public:
 		plot->setObjectName("plot");
 
 		math = new CMathEditWidget;
+		math->SetOrdinate("t");
 		math->setObjectName("math");
 
 		props = new FEClassPropsView;

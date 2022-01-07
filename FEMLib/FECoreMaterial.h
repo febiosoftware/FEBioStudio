@@ -98,9 +98,6 @@ protected:
 public:
 	// local material axes
 	FSAxisMaterial*	m_axes;
-
-protected:
-//	vector<FSMaterialProperty*>	m_Mat;	//!< list of material properties
 };
 
 //-----------------------------------------------------------------------------
@@ -127,4 +124,27 @@ public:
 	bool UpdateData(bool bsave) override;
 
 	mat3d GetMatAxes(FEElementRef& el);
+};
+
+//======================================================================================
+enum FSMaterialPropertyType {
+	FE_FEBIO_MATERIAL_PROPERTY = 1
+};
+
+class FSMaterialProperty : public FSModelComponent
+{
+public:
+	FSMaterialProperty(FSModel* fem, int ntype);
+
+	int Type() const;
+
+private:
+	int	m_ntype;
+};
+
+class FEBioMaterialProperty : public FSMaterialProperty
+{
+public:
+	FEBioMaterialProperty(FSModel* fem);
+
 };

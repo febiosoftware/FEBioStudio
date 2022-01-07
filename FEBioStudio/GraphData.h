@@ -174,8 +174,10 @@ public:
 
 	QColor	m_bgCol;
 	QColor	m_gridCol;
-	QColor	m_xCol;
-	QColor	m_yCol;
+	QColor	m_xAxisCol;
+	QColor	m_yAxisCol;
+	QColor	m_xAxisTickCol;
+	QColor	m_yAxisTickCol;
 
 	CPlotAxis			m_xAxis;
 	CPlotAxis			m_yAxis;

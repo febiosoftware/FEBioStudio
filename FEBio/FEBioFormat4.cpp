@@ -370,6 +370,8 @@ void FEBioFormat4::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 
 	if (tag.isleaf()) return;
 
+	FSModel& fem = GetFSModel();
+
 	// read the tags
 	++tag;
 	do
@@ -390,13 +392,17 @@ void FEBioFormat4::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 					else sztype = tag.Name();
 				}
 				
-				FEBioMaterial* propMat = new FEBioMaterial;
-				FEBio::CreateMaterialProperty(pmc->GetSuperClassID(), sztype, propMat);
+				FSModelComponent* pc = FEBio::CreateClass(pmc->GetSuperClassID(), sztype, &fem);
+				assert(pc->GetSuperClassID() == pmc->GetSuperClassID());
 
 				if (pmc)
 				{
-					pmc->AddComponent(propMat);
-					ParseMaterial(tag, propMat);
+					pmc->AddComponent(pc);
+					if (dynamic_cast<FSMaterial*>(pc))
+					{
+						ParseMaterial(tag, dynamic_cast<FSMaterial*>(pc));
+					}
+					else ReadParameters(*pc, tag);
 
 					++tag;
 				}

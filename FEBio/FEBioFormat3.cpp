@@ -380,6 +380,8 @@ bool FEBioFormat3::ParseMaterialSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 {
+	FSModel& fem = GetFSModel();
+
 	// first, process potential attribute parameters
 	// (e.g. for solutes)
 	for (int i = 0; i < tag.m_natt; ++i)
@@ -488,13 +490,17 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 					}
 					else
 					{
-						FEBioMaterial* propMat = new FEBioMaterial;
-						FEBio::CreateMaterialProperty(pmc->GetSuperClassID(), sztype, propMat);
-
+						FSModelComponent* pc = FEBio::CreateClass(pmc->GetSuperClassID(), sztype, &fem);
+						assert(pc->GetSuperClassID() == pmc->GetSuperClassID());
 						if (pmc)
 						{
-							pmc->AddComponent(propMat);
-							ParseMaterial(tag, propMat);
+							pmc->AddComponent(pc);
+
+							if (dynamic_cast<FSMaterial*>(pc))
+							{
+								ParseMaterial(tag, dynamic_cast<FSMaterial*>(pc));
+							}
+							else ReadParameters(*pc, tag);
 						}
 					}
 				}
@@ -915,6 +921,7 @@ void FEBioFormat3::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag
 			else if (tag == "tri3") N = 3;
 			else if (tag == "tri6") N = 6;
 			else if (tag == "tri7") N = 7;
+			else if (tag == "tri10") N = 10;
 			else throw XMLReader::InvalidTag(tag);
 
 			// read the node numbers

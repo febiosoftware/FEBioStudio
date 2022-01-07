@@ -30,6 +30,8 @@ SOFTWARE.*/
 class FSModelComponent;
 class FSMaterial;
 class FEBioMaterial;
+class FSMaterialProperty;
+class FEBioMaterialProperty;
 class FEBioDiscreteMaterial;
 class FSStep;
 class FSBoundaryCondition;
@@ -44,6 +46,7 @@ class FSRigidConnector;
 class FSModel;
 class FSCoreBase;
 class FSLoadController;
+class FSFunction1D;
 class FSGenericClass;
 
 namespace FEBio {
@@ -52,7 +55,6 @@ namespace FEBio {
 	bool CreateModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po);
 	void CreateMaterial(int classId, FEBioMaterial* po);
 	bool CreateMaterial(const char* sztype, FEBioMaterial* po);
-	void CreateMaterialProperty(int superClassID, const char* sztype, FEBioMaterial* po);
 	bool CreateDiscreteMaterial(int superClassID, const char* sztype, FEBioDiscreteMaterial* po);
 	void CreateStep(int classId, FSStep* po, bool initDefaultProps = true);
 	void CreateStep(const char* sztype, FSStep* po);
@@ -62,6 +64,7 @@ namespace FEBio {
 
 	// helper functions for creating FEBio classes.
 	FSMaterial*          CreateMaterial         (const char* sztype, FSModel* fem);
+	FSMaterialProperty*  CreateMaterialProperty (const char* sztype, FSModel* fem);
 	FSBoundaryCondition* CreateBoundaryCondition(const char* sztype, FSModel* fem);
 	FSNodalLoad*         CreateNodalLoad        (const char* sztype, FSModel* fem);
 	FSSurfaceLoad*       CreateSurfaceLoad      (const char* sztype, FSModel* fem);
@@ -72,6 +75,7 @@ namespace FEBio {
 	FSRigidConnector*	 CreateRigidConnector   (const char* sztype, FSModel* fem);
 	FSInitialCondition*  CreateInitialCondition (const char* sztype, FSModel* fem);
 	FSLoadController*    CreateLoadController   (const char* sztype, FSModel* fem);
+	FSFunction1D*        CreateFunction1D       (const char* sztype, FSModel* fem);
 
 	FSModelComponent* CreateClass(int superClassID, const char* sztype, FSModel* fem);
 	FSModelComponent* CreateClass(int classId, FSModel* fem);

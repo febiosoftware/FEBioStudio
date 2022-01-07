@@ -696,3 +696,19 @@ void FSMaterial::Load(IArchive &ar)
 		ar.CloseChunk();
 	}
 }
+
+//===============================================================================================
+FSMaterialProperty::FSMaterialProperty(FSModel* fem, int ntype) : FSModelComponent(fem)
+{
+	m_ntype = ntype;
+}
+
+int FSMaterialProperty::Type() const
+{
+	return m_ntype;
+}
+
+FEBioMaterialProperty::FEBioMaterialProperty(FSModel* fem) : FSMaterialProperty(fem, FE_FEBIO_MATERIAL_PROPERTY)
+{
+
+}

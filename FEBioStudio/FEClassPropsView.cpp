@@ -29,9 +29,12 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QComboBox>
 #include <QListView>
+#include <QBoxLayout>
+#include <QStackedWidget>
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
+#include "PlotWidget.h"
 #include <MeshTools/FEModel.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEMLib/FEBase.h>
@@ -126,7 +129,14 @@ public:
 			if (propId >= 0)
 			{
 				FSCoreBase* pci = pc->GetProperty(propId, propIndex);
-				if (pci) item->addChildren(pci);
+				if (pci)
+				{
+					// don't add children of classes that have custom widgets
+					FSFunction1D* pf = dynamic_cast<FSFunction1D*>(pci);
+					if (pf && (pf->IsType("point") || pf->IsType("math")))
+						return item;
+					else item->addChildren(pci);
+				}
 			}
 			return item;
 		}
@@ -315,6 +325,8 @@ public:
 						return s;
 					}
 					break;
+					case Param_STD_VECTOR_VEC2D:
+						return "in progress";
 					default:
 						assert(false);
 						return "in progress";
@@ -914,6 +926,28 @@ void FEClassPropsView::SetFEClass(FSCoreBase* pc, FSModel* fem)
 	setColumnWidth(0, width() / 2);
 }
 
+Param* FEClassPropsView::getParam(const QModelIndex& index)
+{
+	FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+	if (item->isParameter())
+	{
+		Param* p = item->parameter(); assert(p);
+		return p;
+	}
+	return nullptr;
+}
+
+FSProperty* FEClassPropsView::getProperty(const QModelIndex& index)
+{
+	FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+	if (item->isProperty())
+	{
+		FSProperty* p = &item->m_pc->GetProperty(item->m_propId); assert(p);
+		return p;
+	}
+	return nullptr;
+}
+
 void FEClassPropsView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
 {
 /*	if (index.isValid())
@@ -932,5 +966,110 @@ void FEClassPropsView::onModelDataChanged()
 	{
 		m_model->ResetModel();
 		expandAll();
+	}
+}
+
+//=============================================================================
+class FEClassEditUI
+{
+public:
+	FEClassPropsView* feprops;
+	QStackedWidget* stack;
+
+	CCurveEditWidget* plt;
+	CMathEditWidget* math;
+
+	FSFunction1D* m_pf;
+
+public:
+	void setup(QWidget* w)
+	{
+		m_pf = nullptr;
+
+		feprops = new FEClassPropsView;
+
+		stack = new QStackedWidget;
+		stack->addWidget(plt = new CCurveEditWidget);
+		stack->addWidget(math = new CMathEditWidget);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->setContentsMargins(0, 0, 0, 0);
+		l->addWidget(feprops, 1);
+		l->addWidget(stack, 2);
+
+		stack->hide();
+
+		w->setLayout(l);
+
+		QObject::connect(feprops, SIGNAL(clicked(const QModelIndex&)), w, SLOT(onItemClicked(const QModelIndex&)));
+		QObject::connect(plt, SIGNAL(dataChanged()), w, SLOT(onPlotChanged()));
+		QObject::connect(math, SIGNAL(mathChanged(QString)), w, SLOT(onMathChanged(QString)));
+	}
+
+	void SetFunction1D(FSFunction1D* pf)
+	{
+		m_pf = pf;
+		if (pf == nullptr) stack->hide();
+		else
+		{
+			if (pf && pf->IsType("point"))
+			{
+				stack->setCurrentIndex(0);
+				LoadCurve* pc = pf->CreateLoadCurve();
+				plt->SetLoadCurve(pc);
+				stack->show();
+			}
+			else if (pf && pf->IsType("math"))
+			{
+				Param* p = pf->GetParam("math");
+				math->SetMath(QString::fromStdString(p->GetStringValue()));
+				stack->setCurrentIndex(1);
+				stack->show();
+			}
+			else stack->hide();
+		}
+	}
+};
+
+FEClassEdit::FEClassEdit(QWidget* parent) : QWidget(parent), ui(new FEClassEditUI)
+{
+	ui->setup(this);
+}
+
+void FEClassEdit::SetFEClass(FSCoreBase* pc, FSModel* fem)
+{
+	ui->m_pf = nullptr;
+	ui->stack->hide();
+	ui->feprops->SetFEClass(pc, fem);
+}
+
+void FEClassEdit::onItemClicked(const QModelIndex& i)
+{
+	if (i.column() != 0) return;
+	FSProperty* p = ui->feprops->getProperty(i);
+	if (p == nullptr) { ui->SetFunction1D(nullptr); return; }
+
+	if (p->GetSuperClassID() == FEFUNCTION1D_ID)
+	{
+		FSFunction1D* pf = dynamic_cast<FSFunction1D*>(p->GetComponent());
+		ui->SetFunction1D(pf);
+	}
+	else ui->SetFunction1D(nullptr);
+}
+
+void FEClassEdit::onMathChanged(QString s)
+{
+	if (ui->m_pf && ui->m_pf->IsType("math"))
+	{
+		Param* p = ui->m_pf->GetParam("math");
+		p->SetStringValue(s.toStdString());
+	}
+}
+
+void FEClassEdit::onPlotChanged()
+{
+	if (ui->m_pf && ui->m_pf->IsType("point"))
+	{
+		ui->m_pf->UpdateData(true);
 	}
 }

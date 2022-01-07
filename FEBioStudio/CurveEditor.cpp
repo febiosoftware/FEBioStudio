@@ -604,7 +604,11 @@ void CCurveEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWid
 		}
 		else ui->deactivate();
 	}
-	else ui->deactivate();
+	else
+	{
+		ui->setCurrentLC(-1);
+		ui->deactivate();
+	}
 }
 
 void CCurveEditor::SetActiveLoadController(FSLoadController* plc)
