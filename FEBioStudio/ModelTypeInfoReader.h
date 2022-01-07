@@ -40,22 +40,18 @@ class ModelTypeInfoReader
 public:
 	ModelTypeInfoReader() {}
 
-	// bool Load(const char* szfile) override;
-    void ReadTypeInfo(std::string filename);
+    bool ReadTypeInfo(std::string filename);
+    unordered_map<string, unordered_set<string>> GetTypeInfo();
+    string GetModule();
 
 private:
     void ReadFSM();
     void ReadFEB();
     void ParseFSModel(FSProject& prj);
     void PrintInfo();
-//     void ReadProject(IArchive& ar);
-//     void ReadModel(IArchive& ar);
-//     void ReadMaterials(IArchive& ar);
-//     void ReadSteps(IArchive& ar);
-//     void ReadStep(IArchive& ar);
 
 private:
-    std::string filename;
-    std::string module;
+    string filename;
+    string module;
 	unordered_map<string, unordered_set<string>> typeInfo;
 };

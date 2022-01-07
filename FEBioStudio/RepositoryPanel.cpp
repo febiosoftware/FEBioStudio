@@ -57,6 +57,7 @@ SOFTWARE.*/
 #include "WrapLabel.h"
 #include "TagLabel.h"
 #include "ZipFiles.h"
+#include "ModelTypeInfoReader.h"
 
 #include <iostream>
 #include <QDebug>
@@ -64,6 +65,7 @@ SOFTWARE.*/
 using std::vector;
 using std::pair;
 using std::map;
+using std::set;
 
 CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent)
 	: QWidget(parent), m_wnd(pwnd), dock(parent), ui(new Ui::CRepositoryPanel)
@@ -613,9 +615,15 @@ void CRepositoryPanel::on_actionUpload_triggered()
 			QStringList filePaths = dlg.GetFilePaths();
 			QStringList zipFilePaths = dlg.GetZipFilePaths();
 
-			projectInfo.insert("files", dlg.getFileInfo());
+            QVariantList fileInfo = dlg.getFileInfo();
+
+            GetFileMetaDataForUpload(fileInfo, filePaths, zipFilePaths);
+
+			projectInfo.insert("files", fileInfo);
 
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
+
+            qDebug() << payload;
 
 			repoHandler->setUploadReady(false);
 
@@ -801,6 +809,60 @@ void CRepositoryPanel::on_actionFindInTree_triggered()
 	ui->treeStack->setCurrentIndex(0);
 
 	ui->searchLineEdit->clear();
+}
+
+void CRepositoryPanel::GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths)
+{
+    for(QVariant& fileInfo : fileInfoList)
+    {  
+        QString filename = fileInfo.toMap()["filename"].toString();
+
+        // find full file path
+        int index; bool found = false;
+        for(index = 0; index < zipPaths.size(); index++)
+        {
+            if(zipPaths[index] == filename)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) continue;
+
+        QString fullFilePath = localPaths[index];
+
+        if(QFileInfo::exists(fullFilePath))
+        {
+            ModelTypeInfoReader reader;
+            if(!reader.ReadTypeInfo(fullFilePath.toStdString())) continue;
+
+            string module = reader.GetModule();
+            unordered_map<string, unordered_set<string>> typeInfo = reader.GetTypeInfo();
+
+            QVariantMap metadata;
+            metadata["Module"] = QStringList(module.c_str());
+
+            for(auto item : typeInfo)
+            {
+                if(item.second.size() > 0)
+                {
+                    QString section = item.first.c_str();
+                    
+                    QStringList typeNames;
+
+                    for(auto typeName : item.second)
+                    {
+                        typeNames.append(typeName.c_str());
+                    }
+
+                    metadata[section] = typeNames;
+                }
+            }
+
+            ((QVariantMap&)fileInfo)["metadata"] = metadata;
+        }
+    }
 }
 
 void CRepositoryPanel::SearchDatabase(QString searchTerm)
@@ -1679,4 +1741,5 @@ void CRepositoryPanel::on_actionAdvnacedSearch_triggered() {}
 void CRepositoryPanel::on_actionAdvnacedClear_triggered() {}
 void CRepositoryPanel::on_actionAdvnacedHide_triggered() {}
 void CRepositoryPanel::SearchDatabase(QString searchTerm) {}
+void CRepositoryPanel::GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths) {}
 #endif

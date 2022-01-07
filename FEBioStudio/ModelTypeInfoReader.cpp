@@ -39,14 +39,11 @@ SOFTWARE.*/
 #include <FEMLib/FEDiscreteMaterial.h>
 #include <FEBioLink/FEBioModule.h>
 #include <QFileInfo>
-#include <sstream>
 
 #include <iostream>
 #include <ios>
 
-using std::stringstream;
-
-void ModelTypeInfoReader::ReadTypeInfo(std::string filename)
+bool ModelTypeInfoReader::ReadTypeInfo(std::string filename)
 {
     this->filename = filename;
 
@@ -61,7 +58,22 @@ void ModelTypeInfoReader::ReadTypeInfo(std::string filename)
 	{
         ReadFEB();
     }
-    
+    else
+    {
+        return false;
+    }
+
+    return true;    
+}
+
+unordered_map<string, unordered_set<string>> ModelTypeInfoReader::GetTypeInfo()
+{
+    return typeInfo;
+}
+
+string ModelTypeInfoReader::GetModule()
+{
+    return module;
 }
 
 void ModelTypeInfoReader::ReadFSM()
@@ -100,7 +112,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
         for(int mat = 0; mat < fsModel.Materials(); mat++)
         {
-            std::string type = fsModel.GetMaterial(mat)->GetMaterialProperties()->GetTypeString();
+            string type = fsModel.GetMaterial(mat)->GetMaterialProperties()->GetTypeString();
 
             if(!type.empty())
             {
@@ -117,7 +129,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
         for(int mat = 0; mat < gModel.DiscreteObjects(); mat++)
         {
-            std::string type;
+            string type;
 
             switch(gModel.DiscreteObject(mat)->GetType())
             {
@@ -182,7 +194,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
         if(analysisType != -1)
         {
-            std::string analysis;
+            string analysis;
             
             if(module.compare("solid") == 0)
             {
@@ -251,7 +263,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
             for(int item = 0; item < current->BCs(); item++)
             {
-                std::string type = current->BC(item)->GetTypeString();
+                string type = current->BC(item)->GetTypeString();
 
                 if(!type.empty())
                 {
@@ -269,7 +281,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
             for(int item = 0; item < current->ICs(); item++)
             {
-                std::string type = current->IC(item)->GetTypeString();
+                string type = current->IC(item)->GetTypeString();
 
                 if(!type.empty())
                 {
@@ -287,7 +299,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
             for(int item = 0; item < current->Constraints(); item++)
             {
-                std::string type = current->Constraint(item)->GetTypeString();
+                string type = current->Constraint(item)->GetTypeString();
 
                 if(!type.empty())
                 {
@@ -305,7 +317,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
             for(int item = 0; item < current->Interfaces(); item++)
             {
-                std::string type = current->Interface(item)->GetTypeString();
+                string type = current->Interface(item)->GetTypeString();
 
                 if(!type.empty())
                 {
@@ -323,7 +335,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
             for(int item = 0; item < current->Loads(); item++)
             {
-                std::string type = current->Load(item)->GetTypeString();
+                string type = current->Load(item)->GetTypeString();
 
                 if(!type.empty())
                 {
@@ -341,7 +353,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
             for(int item = 0; item < current->RigidConnectors(); item++)
             {
-                std::string type = current->RigidConnector(item)->GetTypeString();
+                string type = current->RigidConnector(item)->GetTypeString();
 
                 if(!type.empty())
                 {
@@ -359,7 +371,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
             for(int item = 0; item < current->RigidConstraints(); item++)
             {
-                std::string type = current->RigidConstraint(item)->GetTypeString();
+                string type = current->RigidConstraint(item)->GetTypeString();
 
                 if(!type.empty())
                 {
@@ -377,7 +389,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
             for(int item = 0; item < current->RigidLoads(); item++)
             {
-                std::string type = current->RigidLoad(item)->GetTypeString();
+                string type = current->RigidLoad(item)->GetTypeString();
 
                 if(!type.empty())
                 {

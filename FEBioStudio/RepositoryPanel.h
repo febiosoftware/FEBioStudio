@@ -127,6 +127,8 @@ private slots:
     void on_actionAdvnacedHide_triggered();
 
 private:
+    void GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths);
+
     void SearchDatabase(QString searchTerm);
 
 	void UpdateInfo(CustomTreeWidgetItem *item);
