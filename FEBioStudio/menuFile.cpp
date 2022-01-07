@@ -238,22 +238,24 @@ void CMainWindow::on_actionOpen_triggered()
 void CMainWindow::on_actionReadInfo_triggered()
 {
     QStringList filters;
-	filters << "All supported files (*.fsm)";
+	filters << "All supported files (*.fsm *.fsprj *.prv *.feb)";
 	filters << "FEBioStudio Model (*.fsm *.fsprj)";
 
 	QFileDialog dlg(this, "Open");
-	dlg.setFileMode(QFileDialog::ExistingFile);
+	dlg.setFileMode(QFileDialog::ExistingFiles);
 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
 	dlg.setDirectory(ui->currentPath);
 	dlg.setNameFilters(filters);
 	if (dlg.exec())
 	{
-		// get the file name
-		QStringList files = dlg.selectedFiles();
-		QString fileName = files.first();
+        QStringList files = dlg.selectedFiles();
+        files.sort();
 
-		ModelTypeInfoReader reader;
-        reader.Load(fileName.toStdString().c_str());
+        for(auto filename : files)
+        {
+            ModelTypeInfoReader reader;
+            reader.ReadTypeInfo(filename.toStdString());
+        }
 	}
 }
 

@@ -168,6 +168,8 @@ public:
 	{
 		m_mlm = nullptr;
 		m_ps = nullptr;
+
+        m_loadOnlyDiscrete = false;
 	}
 
 	~Imp()
@@ -192,6 +194,8 @@ public:
 	FSObjectList<GNodeList>	m_GNode;	//!< list of GNodeGroup
 
 	FSObjectList<GDiscreteObject>	m_Discrete;	//!< list of discrete objects
+
+    bool m_loadOnlyDiscrete;
 };
 
 void GModel::Imp::ValidateNames(GObject* po)
@@ -1213,133 +1217,161 @@ void GModel::Load(IArchive &ar)
 	imp->m_mlm = new MeshLayerManager(this);
 	imp->m_mlm->AddLayer("Default");
 
-	while (IArchive::IO_OK == ar.OpenChunk())
-	{
-		int nid = ar.GetChunkID();
+    if(imp->m_loadOnlyDiscrete)
+    {
+        while (IArchive::IO_OK == ar.OpenChunk())
+        {
+            int nid = ar.GetChunkID();
 
-		switch (nid)
-		{
-		case CID_FEOBJ_INFO:
-			{
-				string info;
-				ar.read(info);
-				SetInfo(info);
-			}
-		break;
-		case CID_MESH_LAYERS:
-			{
-				imp->m_mlm->Load(ar);
-			}
-			break;
-		case CID_OBJ_GOBJECTS:
-			{
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int ntype = ar.GetChunkID();
+            switch (nid)
+            {
+                case CID_DISCRETE_OBJECT:
+                {
+                    LoadDiscrete(ar);
+                }
+                break;
+            }
 
-					// create a new geometry object
-					GObject* po = BuildObject(ntype);
-					if (po == 0) throw ReadError("error parsing CID_OBJ_GOBJECTS in GModel::Load");
+            ar.CloseChunk();
+        }
+    }
+    else
+    {
+        while (IArchive::IO_OK == ar.OpenChunk())
+        {
+            int nid = ar.GetChunkID();
 
-					// add object to the model
-					AddObject(po);
+            switch (nid)
+            {
+            case CID_FEOBJ_INFO:
+                {
+                    string info;
+                    ar.read(info);
+                    SetInfo(info);
+                }
+            break;
+            case CID_MESH_LAYERS:
+                {
+                    imp->m_mlm->Load(ar);
+                }
+                break;
+            case CID_OBJ_GOBJECTS:
+                {
+                    while (IArchive::IO_OK == ar.OpenChunk())
+                    {
+                        int ntype = ar.GetChunkID();
 
-					// load the object data
-					po->Load(ar);
+                        // create a new geometry object
+                        GObject* po = BuildObject(ntype);
+                        if (po == 0) throw ReadError("error parsing CID_OBJ_GOBJECTS in GModel::Load");
 
-					ar.CloseChunk();
-				}
-			}
-			break;
-		case CID_OBJ_GPARTGROUP:
-			{
-				GPartList* pg = new GPartList(imp->m_ps);
-				pg->Load(ar);
-				AddPartList(pg);
-			}
-			break;
-		case CID_OBJ_GFACEGROUP:
-			{
-				GFaceList* pg = new GFaceList(imp->m_ps);
-				pg->Load(ar);
-				AddFaceList(pg);
-			}
-			break;
-		case CID_OBJ_GEDGEGROUP:
-			{
-				GEdgeList* pg = new GEdgeList(imp->m_ps);
-				pg->Load(ar);
-				AddEdgeList(pg);
-			}
-			break;
-		case CID_OBJ_GNODEGROUP:
-			{
-				GNodeList* pg = new GNodeList(imp->m_ps);
-				pg->Load(ar);
-				AddNodeList(pg);
-			}
-			break;
-		case CID_DISCRETE_OBJECT:
-			{
-				while (IArchive::IO_OK == ar.OpenChunk())
-				{
-					int ntype = ar.GetChunkID();
+                        // add object to the model
+                        AddObject(po);
 
-					// create a new geometry object
-					GDiscreteObject* po = 0;
-					switch (ntype)
-					{
-					case FE_DISCRETE_SPRING     : po = new GLinearSpring(this); break;
-					case FE_GENERAL_SPRING      : po = new GGeneralSpring(this); break;
-					case FE_DISCRETE_SPRING_SET : po = new GDiscreteSpringSet(this); break;
-					case FE_LINEAR_SPRING_SET   : po = new GLinearSpringSet(this); break;
-					case FE_NONLINEAR_SPRING_SET: po = new GNonlinearSpringSet(this); break;
-					default:
-						throw ReadError("error parsing CID_DISCRETE_OBJECT (GModel::Load)");
-					}
+                        // load the object data
+                        po->Load(ar);
 
-					// load the object data
-					po->Load(ar);
+                        ar.CloseChunk();
+                    }
+                }
+                break;
+            case CID_OBJ_GPARTGROUP:
+                {
+                    GPartList* pg = new GPartList(imp->m_ps);
+                    pg->Load(ar);
+                    AddPartList(pg);
+                }
+                break;
+            case CID_OBJ_GFACEGROUP:
+                {
+                    GFaceList* pg = new GFaceList(imp->m_ps);
+                    pg->Load(ar);
+                    AddFaceList(pg);
+                }
+                break;
+            case CID_OBJ_GEDGEGROUP:
+                {
+                    GEdgeList* pg = new GEdgeList(imp->m_ps);
+                    pg->Load(ar);
+                    AddEdgeList(pg);
+                }
+                break;
+            case CID_OBJ_GNODEGROUP:
+                {
+                    GNodeList* pg = new GNodeList(imp->m_ps);
+                    pg->Load(ar);
+                    AddNodeList(pg);
+                }
+                break;
+            case CID_DISCRETE_OBJECT:
+                {
+                    LoadDiscrete(ar);
+                }
+                break;
+            }
 
-					// convert old objects to new format
-					if (ntype == FE_LINEAR_SPRING_SET)
-					{
-						GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po); assert(ds);
-						GDiscreteSpringSet* pnew = new GDiscreteSpringSet(this);
-						pnew->SetName(po->GetName());
-						pnew->CopyDiscreteElementSet(ds);
-						FSLinearSpringMaterial* mat = new FSLinearSpringMaterial();
-						mat->SetSpringConstant(po->GetFloatValue(GLinearSpringSet::MP_E));
-						pnew->SetMaterial(mat);
-						delete po;
-						po = pnew;
-					}
-					else if (ntype == FE_NONLINEAR_SPRING_SET)
-					{
-						GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po); assert(ds);
-						GDiscreteSpringSet* pnew = new GDiscreteSpringSet(this);
-						pnew->SetName(po->GetName());
-						pnew->CopyDiscreteElementSet(ds);
-						FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial();
-						// TODO: map F parameter
-						pnew->SetMaterial(mat);
-						delete po;
-						po = pnew;
-					}
-
-					// add object to the model
-					AddDiscreteObject(po);
-
-					ar.CloseChunk();
-				}
-			}
-			break;
-		}
-
-		ar.CloseChunk();
-	}
+            ar.CloseChunk();
+        }
+    }
 
 	UpdateBoundingBox();
+}
+
+//-----------------------------------------------------------------------------
+
+void GModel::LoadDiscrete(IArchive& ar)
+{
+    while (IArchive::IO_OK == ar.OpenChunk())
+    {
+        int ntype = ar.GetChunkID();
+
+        // create a new geometry object
+        GDiscreteObject* po = 0;
+        switch (ntype)
+        {
+        case FE_DISCRETE_SPRING     : po = new GLinearSpring(this); break;
+        case FE_GENERAL_SPRING      : po = new GGeneralSpring(this); break;
+        case FE_DISCRETE_SPRING_SET : po = new GDiscreteSpringSet(this); break;
+        case FE_LINEAR_SPRING_SET   : po = new GLinearSpringSet(this); break;
+        case FE_NONLINEAR_SPRING_SET: po = new GNonlinearSpringSet(this); break;
+        default:
+            throw ReadError("error parsing CID_DISCRETE_OBJECT (GModel::Load)");
+        }
+
+        // load the object data
+        po->Load(ar);
+
+        // convert old objects to new format
+        if (ntype == FE_LINEAR_SPRING_SET)
+        {
+            GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po); assert(ds);
+            GDiscreteSpringSet* pnew = new GDiscreteSpringSet(this);
+            pnew->SetName(po->GetName());
+            pnew->CopyDiscreteElementSet(ds);
+            FSLinearSpringMaterial* mat = new FSLinearSpringMaterial();
+            mat->SetSpringConstant(po->GetFloatValue(GLinearSpringSet::MP_E));
+            pnew->SetMaterial(mat);
+            delete po;
+            po = pnew;
+        }
+        else if (ntype == FE_NONLINEAR_SPRING_SET)
+        {
+            GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po); assert(ds);
+            GDiscreteSpringSet* pnew = new GDiscreteSpringSet(this);
+            pnew->SetName(po->GetName());
+            pnew->CopyDiscreteElementSet(ds);
+            FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial();
+            // TODO: map F parameter
+            pnew->SetMaterial(mat);
+            delete po;
+            po = pnew;
+        }
+
+        // add object to the model
+        AddDiscreteObject(po);
+
+        ar.CloseChunk();
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -2126,4 +2158,9 @@ void GModel::InsertMeshLayer(int index, MeshLayer* layer)
 MeshLayerManager* GModel::GetMeshLayerManager()
 {
 	return imp->m_mlm;
+}
+
+void GModel::SetLoadOnlyDiscreteFlag(bool flag)
+{
+    imp->m_loadOnlyDiscrete = flag;
 }

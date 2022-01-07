@@ -222,6 +222,8 @@ public:
 	int CountRigidConstraints(int type);
 	int CountRigidConnectors(int type);
 
+    void SetSkipGeometry(bool skip);
+
 protected:
 	// I/O helper functions
 	void LoadData      (IArchive& ar);
@@ -242,6 +244,8 @@ protected:
 	FSObjectList<FSDataMapGenerator>	m_Map;		//!< data maps
 	FSObjectList<FSLoadController>		m_LC;		//!< load controllers
 	FSObjectList<FSMeshDataGenerator>	m_MD;		//!< mesh data generators
+
+    bool m_skipGeometry; //!< Skip geometry section when loading file
 };
 
 //-----------------------------------------------------------------------------

@@ -72,6 +72,23 @@ bool FEBioFormat25::ParseSection(XMLTag& tag)
 		if (tag == "Geometry") ParseGeometrySection(tag);
 		else tag.m_preader->SkipTag(tag);
 	}
+    else if (m_skipGeom)
+    {
+        if      (tag == "Module"     ) ParseModuleSection    (tag);
+		else if (tag == "Control"    ) ParseControlSection   (tag);
+		else if (tag == "Material"   ) ParseMaterialSection  (tag);
+		else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
+		else if (tag == "Constraints") ParseConstraintSection(tag);
+		else if (tag == "Loads"      ) ParseLoadsSection     (tag);
+		else if (tag == "Contact"    ) ParseContactSection   (tag);
+		else if (tag == "Discrete"   ) ParseDiscreteSection  (tag);
+		else if (tag == "Initial"    ) ParseInitialSection   (tag);
+		else if (tag == "Globals"    ) ParseGlobalsSection   (tag);
+		else if (tag == "LoadData"   ) ParseLoadDataSection  (tag);
+		else if (tag == "Output"     ) ParseOutputSection    (tag);
+		else if (tag == "Step"       ) ParseStepSection      (tag);
+        else tag.m_preader->SkipTag(tag);
+    }
 	else
 	{
 		if      (tag == "Module"     ) ParseModuleSection    (tag);
@@ -1232,7 +1249,10 @@ void FEBioFormat25::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	// get the optional name
 	string name;
 	const char* szname = tag.AttributeValue("name", true);
-	if (szname == 0) name = pg->GetName(); else name = szname;
+	if(pg)
+    {
+        if (szname == 0) name = pg->GetName(); else name = szname;
+    }    
 	pbc->SetName(name);
 	pstep->AddComponent(pbc);
 
@@ -2335,7 +2355,7 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 
 			const char* szset = tag.AttributeValue("node_set");
 			FSNodeSet* pg = febio.BuildFENodeSet(szset);
-			if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
+			if (pg == 0) AddLogEntry("Missing node_set \"%s\"", szset);
 
 			++tag;
 			do
@@ -2480,7 +2500,7 @@ void FEBioFormat25::ParseContact(FSStep *pstep, XMLTag &tag)
 	{
 		const char* szpair = tag.AttributeValue("surface_pair");
 		FEBioInputModel::SurfacePair* surfPair = febio.FindSurfacePair(szpair);
-		if (surfPair == 0) throw XMLReader::InvalidAttributeValue(tag, "surface_pair", szpair);
+		if (surfPair == 0) AddLogEntry("Missing surface_pair \"%s\"", szpair);
 
 		// standard contact interfaces
 		FSPairedInterface* pci = 0;
@@ -2552,20 +2572,23 @@ void FEBioFormat25::ParseContact(FSStep *pstep, XMLTag &tag)
 
 
 			// assign surfaces
-			FEBioInputModel::Part* part = surfPair->GetPart();
-			assert(part);
-			if (part)
-			{
-				string name1 = part->GetSurface(surfPair->masterID()).name();
-				string name2 = part->GetSurface(surfPair->slaveID()).name();
-				FSSurface* master = febio.BuildFESurface(name1.c_str());
-				FSSurface* slave  = febio.BuildFESurface(name2.c_str());
+            if (surfPair)
+            {
+                FEBioInputModel::Part* part = surfPair->GetPart();
+                assert(part);
+                if (part)
+                {
+                    string name1 = part->GetSurface(surfPair->masterID()).name();
+                    string name2 = part->GetSurface(surfPair->slaveID()).name();
+                    FSSurface* master = febio.BuildFESurface(name1.c_str());
+                    FSSurface* slave  = febio.BuildFESurface(name2.c_str());
 
-				pci->SetSecondarySurface(master);
-				pci->SetPrimarySurface(slave);
-			}
-
-			// add to the analysis step
+                    pci->SetSecondarySurface(master);
+                    pci->SetPrimarySurface(slave);
+                }
+            }
+			
+            // add to the analysis step
 			pstep->AddComponent(pci);
 		}
 	}
@@ -3151,7 +3174,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 			FEBioInputModel& feb = GetFEBioModel();
 			if (feb.BuildDiscreteSet(*ps, szset) == false)
 			{
-				assert(false);
+				AddLogEntry("Failed building discrete set \"%s\"", szset);
 			}
 		}
 		else ParseUnknownTag(tag);

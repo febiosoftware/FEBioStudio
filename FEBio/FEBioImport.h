@@ -49,6 +49,7 @@ public:
 	void AddLogEntry(const char* sz, ...);
 
 	void SetGeometryOnlyFlag(bool b);
+    void SetSkipGeometryFlag(bool b);
 
 protected:
 	bool UpdateFEModel(FSModel& fem);
@@ -70,6 +71,7 @@ protected:
 protected:
 	char*	m_szlog;	//!< log used for reporting warnings
 	bool	m_geomOnly;
+    bool    m_skipGeom;
 
 	friend class FEBioFormat;
 };

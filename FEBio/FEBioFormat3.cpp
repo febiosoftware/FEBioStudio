@@ -160,6 +160,24 @@ bool FEBioFormat3::ParseSection(XMLTag& tag)
 		else if (tag == "MeshData"   ) ret = ParseMeshDataSection(tag);
 		else tag.m_preader->SkipTag(tag);
 	}
+    else if(m_skipGeom)
+    {
+        if      (tag == "Module"     ) ret = ParseModuleSection     (tag);
+		else if (tag == "Control"    ) ret = ParseControlSection    (tag);
+		else if (tag == "Material"   ) ret = ParseMaterialSection   (tag);
+		else if (tag == "Boundary"   ) ret = ParseBoundarySection   (tag);
+		else if (tag == "Constraints") ret = ParseConstraintSection (tag);
+		else if (tag == "Loads"      ) ret = ParseLoadsSection      (tag);
+		else if (tag == "Contact"    ) ret = ParseContactSection    (tag);
+		else if (tag == "Discrete"   ) ret = ParseDiscreteSection   (tag);
+		else if (tag == "Initial"    ) ret = ParseInitialSection    (tag);
+		else if (tag == "Rigid"      ) ret = ParseRigidSection      (tag);
+		else if (tag == "Globals"    ) ret = ParseGlobalsSection    (tag);
+		else if (tag == "LoadData"   ) ret = ParseLoadDataSection   (tag);
+		else if (tag == "Output"     ) ret = ParseOutputSection     (tag);
+		else if (tag == "Step"       ) ret = ParseStepSection       (tag);
+		else tag.m_preader->SkipTag(tag);
+    }
 	else
 	{
 		if      (tag == "Module"     ) ret = ParseModuleSection     (tag);
@@ -2305,7 +2323,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 			{
 				const char* szset = tag.AttributeValue("node_set");
 				FEItemListBuilder* pg = febio.BuildItemList(szset);
-				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
+                if (pg == 0) AddLogEntry("Missing node_set \"%s\"", szset);
 
 				string scaleType("");
 				string scaleValue("");
@@ -2426,7 +2444,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 			{
 				const char* szset = tag.AttributeValue("node_set");
 				FEItemListBuilder* pg = febio.BuildItemList(szset);
-				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
+                if (pg == 0) AddLogEntry("Missing node_set \"%s\"", szset);
 
 				FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
 				pic->SetName(szname);
@@ -2490,7 +2508,7 @@ void FEBioFormat3::ParseContact(FSStep *pstep, XMLTag &tag)
 	{
 		const char* szpair = tag.AttributeValue("surface_pair");
 		FEBioInputModel::SurfacePair* surfPair = febio.FindSurfacePair(szpair);
-		if (surfPair == 0) throw XMLReader::InvalidAttributeValue(tag, "surface_pair", szpair);
+        if (surfPair == 0) AddLogEntry("Missing surface_pair \"%s\"", szpair);
 
 		// create a new interfaces
 		FSPairedInterface* pci = FEBio::CreatePairedInterface(atype.cvalue(), fem);
@@ -2509,24 +2527,27 @@ void FEBioFormat3::ParseContact(FSStep *pstep, XMLTag &tag)
 		ReadParameters(*pci, tag);
 
 		// assign surfaces
-		FEBioInputModel::Part* part = surfPair->GetPart();
-		assert(part);
-		if (part)
-		{
-			if (surfPair->masterID() >= 0)
-			{
-				string name1 = part->GetSurface(surfPair->masterID()).name();
-				FSSurface* master = febio.BuildFESurface(name1.c_str());
-				pci->SetSecondarySurface(master);
-			}
+        if (surfPair)
+        {
+            FEBioInputModel::Part* part = surfPair->GetPart();
+            assert(part);
+            if (part)
+            {
+                if (surfPair->masterID() >= 0)
+                {
+                    string name1 = part->GetSurface(surfPair->masterID()).name();
+                    FSSurface* master = febio.BuildFESurface(name1.c_str());
+                    pci->SetSecondarySurface(master);
+                }
 
-			if (surfPair->slaveID() >= 0)
-			{
-				string name2 = part->GetSurface(surfPair->slaveID()).name();
-				FSSurface* slave = febio.BuildFESurface(name2.c_str());
-				pci->SetPrimarySurface(slave);
-			}
-		}
+                if (surfPair->slaveID() >= 0)
+                {
+                    string name2 = part->GetSurface(surfPair->slaveID()).name();
+                    FSSurface* slave = febio.BuildFESurface(name2.c_str());
+                    pci->SetPrimarySurface(slave);
+                }
+            }
+        }
 
 		// add to the analysis step
 		pstep->AddComponent(pci);
@@ -2888,7 +2909,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			FEBioInputModel& feb = GetFEBioModel();
 			if (feb.BuildDiscreteSet(*ps, szset) == false)
 			{
-				assert(false);
+				AddLogEntry("Failed building discrete set \"%s\"", szset);
 			}
 		}
 		else if (tag == "rigid_cable")

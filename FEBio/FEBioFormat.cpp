@@ -139,6 +139,11 @@ void FEBioFormat::SetGeometryOnlyFlag(bool b)
 	m_geomOnly = b;
 }
 
+void FEBioFormat::SetSkipGeometryFlag(bool b)
+{
+    m_skipGeom = b;
+}
+
 void FEBioFormat::ParseUnknownTag(XMLTag& tag)
 {
 	m_fileReader->ParseUnknownTag(tag);
@@ -2210,17 +2215,21 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					for (int i = 0; i < l.size(); ++i) l[i] -= 1;
 
 					// create a new node set for this
-					FEBioInputModel::PartInstance* inst = fem.GetInstance(0);
-					GMeshObject* po = inst->GetGObject();
-					FSMesh* pm = po->GetFEMesh();
+                    if(fem.Instances() > 0)
+                    {
+                        FEBioInputModel::PartInstance* inst = fem.GetInstance(0);
+                        GMeshObject* po = inst->GetGObject();
+                        FSMesh* pm = po->GetFEMesh();
 
-					char sz[32] = { 0 };
-					sprintf(sz, "nodeset%02d", po->FENodeSets() + 1);
-					FSNodeSet* ps = new FSNodeSet(po, l);
-					ps->SetName(sz);
-					po->AddFENodeSet(ps);
+                        char sz[32] = { 0 };
+                        sprintf(sz, "nodeset%02d", po->FENodeSets() + 1);
+                        FSNodeSet* ps = new FSNodeSet(po, l);
+                        ps->SetName(sz);
+                        po->AddFENodeSet(ps);
 
-					logVar.SetGroupID(ps->GetID());
+                        logVar.SetGroupID(ps->GetID());
+                    }
+					
 				}
 			}
 			fem.AddLogVariable(logVar);

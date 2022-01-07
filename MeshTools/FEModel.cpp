@@ -168,7 +168,7 @@ std::string defaultStepName(FSModel* fem, FSStep* ps)
 }
 
 //-----------------------------------------------------------------------------
-FSModel::FSModel()
+FSModel::FSModel() : m_skipGeometry(false)
 {
 	m_pModel = new GModel(this);
 	New();
@@ -1004,6 +1004,8 @@ void FSModel::Load(IArchive& ar)
 
 	GPartList::SetModel(this);
 
+    m_pModel->SetLoadOnlyDiscreteFlag(m_skipGeometry);
+
 	// read the model data
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -1735,6 +1737,11 @@ int FSModel::CountRigidConnectors(int type)
 		}
 	}
 	return n;
+}
+
+void FSModel::SetSkipGeometry(bool skip)
+{
+    m_skipGeometry = skip;
 }
 
 int FSModel::LoadControllers() const

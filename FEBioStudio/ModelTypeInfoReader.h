@@ -28,25 +28,34 @@ SOFTWARE.*/
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <MeshTools/PRVArchive.h>
 
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
 
-class ModelTypeInfoReader : public PRVArchive
+class FSProject;
+
+class ModelTypeInfoReader
 {
 public:
 	ModelTypeInfoReader() {}
 
-	bool Load(const char* szfile) override;
+	// bool Load(const char* szfile) override;
+    void ReadTypeInfo(std::string filename);
 
 private:
-    void ReadProject(IArchive& ar);
-    void ReadModel(IArchive& ar);
-    void ReadMaterials(IArchive& ar);
-    void ReadSteps(IArchive& ar);
+    void ReadFSM();
+    void ReadFEB();
+    void ParseFSModel(FSProject& prj);
+    void PrintInfo();
+//     void ReadProject(IArchive& ar);
+//     void ReadModel(IArchive& ar);
+//     void ReadMaterials(IArchive& ar);
+//     void ReadSteps(IArchive& ar);
+//     void ReadStep(IArchive& ar);
 
 private:
+    std::string filename;
+    std::string module;
 	unordered_map<string, unordered_set<string>> typeInfo;
 };

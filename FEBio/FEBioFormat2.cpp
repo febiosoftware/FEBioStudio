@@ -52,7 +52,7 @@ bool FEBioFormat2::ParseSection(XMLTag& tag)
 	if      (tag == "Module"     ) ParseModuleSection    (tag);
 	else if (tag == "Control"    ) ParseControlSection   (tag);
 	else if (tag == "Material"   ) ParseMaterialSection  (tag);
-	else if (tag == "Geometry"   ) ParseGeometrySection  (tag);
+	else if (tag == "Geometry"   ) if(m_skipGeom) ParseGeometrySection(tag); else tag.m_preader->SkipTag(tag);
 	else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
 	else if (tag == "Constraints") ParseConstraintSection(tag);
 	else if (tag == "Loads"      ) ParseLoadsSection     (tag);

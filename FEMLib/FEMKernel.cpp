@@ -118,5 +118,5 @@ const char* FEMKernel::TypeStr(int superID, int classID)
 			return fac->GetTypeStr();
 		}
 	}
-	return 0;
+	return "";
 }

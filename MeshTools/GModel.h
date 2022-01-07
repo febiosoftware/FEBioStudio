@@ -78,6 +78,7 @@ public:
 
 	//! Load the model from the archive
 	void Load(IArchive& ar);
+    void LoadDiscrete(IArchive& ar);
 
 	// return number of objects
 	int Objects() const;
@@ -270,6 +271,8 @@ public:
 	void InsertMeshLayer(int index, MeshLayer* layer);
 
 	MeshLayerManager* GetMeshLayerManager();
+
+    void SetLoadOnlyDiscreteFlag(bool flag);
 
 private:
 	Imp*	imp;

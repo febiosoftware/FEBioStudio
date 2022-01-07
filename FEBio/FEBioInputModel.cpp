@@ -924,7 +924,6 @@ FSNodeSet* FEBioInputModel::BuildFENodeSet(const char* szname)
 	else
 	{
 		// if not, we assume that there is only one instance
-		assert(Instances() == 1);
 		if (Instances() != 1) return 0;
 
 		PartInstance* part = GetInstance(0);
@@ -964,7 +963,6 @@ FEBioInputModel::Surface* FEBioInputModel::FindSurface(const char* szname)
 	else
 	{
 		// if not, we assume that there is only one instance
-		assert(Instances() == 1);
 		if (Instances() != 1) return 0;
 
 		PartInstance* part = GetInstance(0);
@@ -1007,7 +1005,6 @@ bool FEBioInputModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szn
 	else
 	{
 		// if not, we assume that there is only one instance
-		assert(Instances() == 1);
 		if (Instances() != 1) return false;
 
 		part = GetInstance(0);
@@ -1080,7 +1077,6 @@ FEBioInputModel::Domain* FEBioInputModel::FindDomain(const char* szname)
 	else
 	{
 		// if not, we assume that there is only one instance
-		assert(Instances() == 1);
 		if (Instances() != 1) return 0;
 
 		PartInstance* part = GetInstance(0);
@@ -1092,7 +1088,6 @@ FEBioInputModel::Domain* FEBioInputModel::FindDomain(const char* szname)
 
 FEBioInputModel::ElementSet* FEBioInputModel::FindElementSet(const char* szname)
 {
-	assert(Instances() == 1);
 	if (Instances() != 1) return nullptr;
 
 	PartInstance* part = GetInstance(0);
@@ -1132,7 +1127,6 @@ FSSurface* FEBioInputModel::BuildFESurface(const char* szname)
 	else
 	{
 		// if not, we assume that there is only one instance
-		assert(Instances() == 1);
 		if (Instances() != 1) return 0;
 
 		PartInstance* part = GetInstance(0);
@@ -1170,7 +1164,6 @@ FSPart* FEBioInputModel::BuildFEPart(const char* szname)
 	else
 	{
 		// if not, we assume that there is only one instance
-		assert(Instances() == 1);
 		if (Instances() != 1) return 0;
 
 		PartInstance* part = GetInstance(0);
@@ -1180,7 +1173,6 @@ FSPart* FEBioInputModel::BuildFEPart(const char* szname)
 
 FSPart* FEBioInputModel::BuildFEPart(FEBioInputModel::Domain* dom)
 {
-	assert(Instances() == 1);
 	PartInstance* part = GetInstance(0);
 
 	FSPart* pg = new FSPart(part->GetGObject(), dom->GetElementIDList());
@@ -1220,7 +1212,6 @@ FEBioInputModel::SurfacePair* FEBioInputModel::FindSurfacePair(const char* sznam
 	else
 	{
 		// if not, we assume that there is only one instance
-		assert(Instances() == 1);
 		if (Instances() != 1) return 0;
 
 		Part* part = &GetPart(0);

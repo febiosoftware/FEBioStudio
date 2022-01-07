@@ -53,6 +53,7 @@ FEBioFileImport::FEBioFileImport(FSProject& prj) : FSFileImport(prj)
 	m_szlog = 0;
 	m_febio = 0;
 	m_geomOnly = false;
+    m_skipGeom = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -66,6 +67,11 @@ FEBioFileImport::~FEBioFileImport()
 void FEBioFileImport::SetGeometryOnlyFlag(bool b)
 {
 	m_geomOnly = b;
+}
+
+void FEBioFileImport::SetSkipGeometryFlag(bool b)
+{
+    m_skipGeom = b;
 }
 
 //-----------------------------------------------------------------------------
@@ -293,6 +299,7 @@ bool FEBioFileImport::ParseVersion(XMLTag& tag)
 	}
 
 	m_fmt->SetGeometryOnlyFlag(m_geomOnly);
+    m_fmt->SetSkipGeometryFlag(m_skipGeom);
 
 	return true;
 }
