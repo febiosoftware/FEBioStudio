@@ -63,8 +63,7 @@ void CMainWindow::on_actionAddBC_triggered()
 	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
-		FSBoundaryCondition* pbc = fecore_new<FSBoundaryCondition>(&fem, FEBC_ID, FE_FEBIO_BC); assert(pbc);
-		FEBio::CreateModelComponent(dlg.GetClassID(), pbc);
+		FSBoundaryCondition* pbc = FEBio::CreateFEBioClass<FSBoundaryCondition>(dlg.GetClassID(), &fem); assert(pbc);
 		if (pbc)
 		{
 			FSStep* step = fem.GetStep(dlg.GetStep());
@@ -112,8 +111,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 	CDlgAddPhysicsItem dlg("Add Nodal Load", FENODALLOAD_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
-		FSNodalLoad* pnl = fecore_new<FSNodalLoad>(&fem, FENODALLOAD_ID, FE_FEBIO_NODAL_LOAD); assert(pnl);
-		FEBio::CreateModelComponent(dlg.GetClassID(), pnl);
+		FSNodalLoad* pnl = FEBio::CreateFEBioClass<FSNodalLoad>(dlg.GetClassID(), &fem); assert(pnl);
 		if (pnl)
 		{
 			string name = dlg.GetName();
@@ -158,8 +156,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 	CDlgAddPhysicsItem dlg("Add Surface Load", FESURFACELOAD_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
-		FSSurfaceLoad* psl = fecore_new<FSSurfaceLoad>(&fem, FESURFACELOAD_ID, FE_FEBIO_SURFACE_LOAD); assert(psl);
-		FEBio::CreateModelComponent(dlg.GetClassID(), psl);
+		FSSurfaceLoad* psl = FEBio::CreateFEBioClass<FSSurfaceLoad>(dlg.GetClassID(), &fem); assert(psl);
 		if (psl)
 		{
 			string name = dlg.GetName();
@@ -201,8 +198,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 	CDlgAddPhysicsItem dlg("Add Body Load", FEBODYLOAD_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
-		FSBodyLoad* pbl = fecore_new<FSBodyLoad>(&fem, FEBODYLOAD_ID, FE_FEBIO_BODY_LOAD); assert(pbl);
-		FEBio::CreateModelComponent(dlg.GetClassID(), pbl);
+		FSBodyLoad* pbl = FEBio::CreateFEBioClass<FSBodyLoad>(dlg.GetClassID(), &fem); assert(pbl);
 		if (pbl)
 		{
 			std::string name = dlg.GetName();
@@ -227,8 +223,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 	CDlgAddPhysicsItem dlg("Add Rigid Load", FERIGIDLOAD_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
-		FSRigidLoad* prl = fecore_new<FSRigidLoad>(&fem, FERIGIDLOAD_ID, FE_FEBIO_RIGID_LOAD); assert(prl);
-		FEBio::CreateModelComponent(dlg.GetClassID(), prl);
+		FSRigidLoad* prl = FEBio::CreateFEBioClass<FSRigidLoad>(dlg.GetClassID(), &fem); assert(prl);
 		if (prl)
 		{
 			std::string name = dlg.GetName();
@@ -253,9 +248,7 @@ void CMainWindow::on_actionAddIC_triggered()
 	CDlgAddPhysicsItem dlg("Add Initial Condition", FEIC_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
-//		FSInitialCondition* pic = fecore_new<FSInitialCondition>(&fem, FEIC_ID, dlg.GetClassID()); assert(pic);
-		FSInitialCondition* pic = fecore_new<FSInitialCondition>(&fem, FEIC_ID, FE_FEBIO_INITIAL_CONDITION); assert(pic);
-		FEBio::CreateModelComponent(dlg.GetClassID(), pic);
+		FSInitialCondition* pic = FEBio::CreateFEBioClass<FSInitialCondition>(dlg.GetClassID(), &fem); assert(pic);
 		if (pic)
 		{
 			std::string name = dlg.GetName();
@@ -306,9 +299,7 @@ void CMainWindow::on_actionAddContact_triggered()
 	CDlgAddPhysicsItem dlg("Add Contact Interface", FESURFACEINTERFACE_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
-//		FSInterface* pi = fecore_new<FSInterface>(&fem, FESURFACEINTERFACE_ID, dlg.GetClassID()); assert(pi);
-		FSInterface* pi = fecore_new<FSInterface>(&fem, FESURFACEINTERFACE_ID, FE_FEBIO_INTERFACE); assert(pi);
-		FEBio::CreateModelComponent(dlg.GetClassID(), pi);
+		FSInterface* pi = FEBio::CreateFEBioClass<FSInterface>(dlg.GetClassID(), &fem); assert(pi);
 		if (pi)
 		{
 			// create a name
@@ -358,9 +349,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 	CDlgAddPhysicsItem dlg("Add Constraint", FENLCONSTRAINT_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
-//		FSModelConstraint* pi = fecore_new<FSModelConstraint>(&fem, FENLCONSTRAINT_ID, dlg.GetClassID()); assert(pi);
-		FSModelConstraint* pi = fecore_new<FSModelConstraint>(&fem, FENLCONSTRAINT_ID, FE_FEBIO_NLCONSTRAINT); assert(pi);
-		FEBio::CreateModelComponent(dlg.GetClassID(), pi);
+		FSModelConstraint* pi = FEBio::CreateFEBioClass<FSModelConstraint>(dlg.GetClassID(), &fem); assert(pi);
 		if (pi)
 		{
 			// create a name
@@ -408,8 +397,7 @@ void CMainWindow::on_actionAddRigidConstraint_triggered()
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
-		FSRigidConstraint* prc = fecore_new<FSRigidConstraint>(fem, FERIGIDBC_ID, FE_FEBIO_RIGID_CONSTRAINT);
-		FEBio::CreateModelComponent(dlg.m_type, prc);
+		FSRigidConstraint* prc = FEBio::CreateFEBioClass<FSRigidConstraint>(dlg.m_type, fem);
 		assert(prc);
 		if (prc)
 		{
@@ -439,8 +427,7 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 	if (dlg.exec())
 	{
 		FSModel* fem = doc->GetFSModel();
-		FSRigidConnector* pc = fecore_new<FSRigidConnector>(fem, FERIGIDCONNECTOR_ID, FE_FEBIO_RIGID_CONNECTOR);
-		FEBio::CreateModelComponent(dlg.GetType(), pc);
+		FSRigidConnector* pc = FEBio::CreateFEBioClass<FSRigidConnector>(dlg.GetType(), fem);
 		assert(pc);
 		if (pc)
 		{
@@ -473,8 +460,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, prj, false, false, this);
 	if (dlg.exec())
 	{
-		FSMaterial* pmat = FEMaterialFactory::Create(FE_FEBIO_MATERIAL); assert(pmat);
-		FEBio::CreateMaterial(dlg.GetClassID(), dynamic_cast<FEBioMaterial*>(pmat));
+		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
 		if (pmat)
 		{
 			FSModel& fem = *doc->GetFSModel();
@@ -502,15 +488,11 @@ void CMainWindow::on_actionAddMeshAdaptor_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-	FSModel& fem = *doc->GetFSModel();
-
 	CDlgAddPhysicsItem dlg("Add Mesh Adaptor", FEMESHADAPTOR_ID, prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
-		FSMeshAdaptor* pma = fecore_new<FSMeshAdaptor>(fem, FEMESHADAPTOR_ID, FE_FEBIO_MESH_ADAPTOR);
-		FEBio::CreateModelComponent(dlg.GetClassID(), pma);
-		assert(pma);
+		FSMeshAdaptor* pma = FEBio::CreateFEBioClass<FSMeshAdaptor>(dlg.GetClassID(), fem); assert(pma);
 		if (pma)
 		{
 			FSStep* step = fem->GetStep(dlg.GetStep());
@@ -532,15 +514,11 @@ void CMainWindow::on_actionAddLoadController_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-	FSModel& fem = *doc->GetFSModel();
-
 	CDlgAddPhysicsItem dlg("Add Load Controller", FELOADCONTROLLER_ID, prj, true, false, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
-		FSLoadController* plc = fecore_new<FSLoadController>(fem, FELOADCONTROLLER_ID, FE_FEBIO_LOAD_CONTROLLER);
-		FEBio::CreateModelComponent(dlg.GetClassID(), plc);
-		assert(plc);
+		FSLoadController* plc = FEBio::CreateFEBioClass<FSLoadController>(dlg.GetClassID(), fem); assert(plc);
 		if (plc)
 		{
 			std::string name = dlg.GetName();
@@ -564,15 +542,12 @@ void CMainWindow::on_actionAddMeshData_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-	FSModel& fem = *doc->GetFSModel();
 
 	CDlgAddPhysicsItem dlg("Add Mesh Data", FEDATAGENERATOR_ID, prj, true, false, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
-		FSMeshDataGenerator* pmd = fecore_new<FSMeshDataGenerator>(fem, FEDATAGENERATOR_ID, FE_FEBIO_MESHDATA_GENERATOR);
-		assert(pmd);
-		FEBio::CreateModelComponent(dlg.GetClassID(), pmd);
+		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);
 		if (pmd)
 		{
 			std::string name = dlg.GetName();
@@ -602,17 +577,15 @@ void CMainWindow::on_actionAddStep_triggered()
 	{
 //		FSAnalysisStep* ps = fecore_new<FSAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
 
-		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(0, FEANALYSIS_ID, -1);
-		assert(l.size() == 1);
-
-		FSStep* ps = fecore_new<FSStep>(fem, FEANALYSIS_ID, FE_STEP_FEBIO_ANALYSIS);
-		FEBio::CreateStep(l[0].classId, ps);
+		FSStep* ps = FEBio::CreateStep("analysis", fem);
 		assert(ps);
 		if (ps)
 		{
 //			std::string name = dlg.m_name;
 //			if (name.empty()) name = defaultStepName(fem, ps);
 			std::string name = defaultStepName(fem, ps);
+
+			FEBio::InitDefaultProps(ps);
 
 			ps->SetName(name);
 			doc->DoCommand(new CCmdAddStep(fem, ps, -1));

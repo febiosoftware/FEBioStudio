@@ -733,12 +733,10 @@ void FSStep::Load(IArchive &ar)
 				case CID_STEP_PROPERTY_TYPESTR: ar.read(typeString); break;
 				case CID_STEP_PROPERTY_DATA: 
 				{
-					FSStepComponent* psc = new FSStepComponent;
-					assert(pc);
-					FEBio::CreateModelComponent(pc->GetSuperClassID(), typeString, psc);
-					psc->Load(ar);
+					FSModelComponent* pmc = FEBio::CreateClass(pc->GetSuperClassID(), typeString.c_str(), fem); assert(pmc);
+					pmc->Load(ar);
 					assert(pc->GetComponent() == nullptr);
-					pc->AddComponent(psc);
+					pc->AddComponent(pmc);
 				}
 				break;
 				default:

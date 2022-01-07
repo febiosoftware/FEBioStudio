@@ -673,8 +673,7 @@ void CCurveEditor::on_newLC_clicked(bool b)
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
-		FSLoadController* plc = fecore_new<FSLoadController>(fem, FELOADCONTROLLER_ID, FE_FEBIO_LOAD_CONTROLLER);
-		FEBio::CreateModelComponent(dlg.GetClassID(), plc);
+		FSLoadController* plc = FEBio::CreateFEBioClass<FSLoadController>(dlg.GetClassID(), fem);
 		assert(plc);
 		if (plc)
 		{

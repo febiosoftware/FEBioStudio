@@ -92,7 +92,7 @@ void LoadClassMetaData(FSModelComponent* pc, IArchive& ar)
 			string typeStr;
 			ar.read(typeStr);
 			assert(superClassId != -1);
-			if (FEBio::CreateModelComponent(superClassId, typeStr, pc) == false)
+			if (FEBio::BuildModelComponent(pc, typeStr) == false)
 			{
 				const char* szsuperclass = FEBio::GetSuperClassString(superClassId);
 				if (szsuperclass == nullptr) szsuperclass = "(unknown)";

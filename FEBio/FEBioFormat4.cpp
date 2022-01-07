@@ -190,8 +190,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 
 FSStep* FEBioFormat4::NewStep(FSModel& fem, int nanalysis, const char* szname)
 {
-	FSStep* pstep = new FEBioAnalysisStep(&fem);
-	FEBio::CreateStep("analysis", pstep);
+	FSStep* pstep = FEBio::CreateStep("analysis", &fem); assert(pstep);
 
 	if ((szname == 0) || (strlen(szname) == 0))
 	{
@@ -243,8 +242,7 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 
 				if (pc->GetComponent() == nullptr)
 				{
-					FSStepComponent* psc = new FSStepComponent;
-					FEBio::CreateModelComponent(pc->GetSuperClassID(), sztype, psc);
+					FSModelComponent* psc = FEBio::CreateClass(pc->GetSuperClassID(), sztype, &fem);
 					pc->SetComponent(psc);
 				}
 
@@ -1789,12 +1787,8 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 			const char* sztype = tag.AttributeValue("type");
 			const char* szname = tag.AttributeValue("name");
 
-			FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-			if (FEBio::CreateModelComponent(FEMATERIAL_ID, sztype, pdm) == false)
-			{
-				delete pdm;
-				throw XMLReader::InvalidTag(tag);
-			}
+			FSDiscreteMaterial* pdm = FEBio::CreateDiscreteMaterial(sztype, &fem);
+			if (pdm == nullptr) throw XMLReader::InvalidTag(tag);
 
 			GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 			pg->SetMaterial(pdm);
@@ -1995,8 +1989,7 @@ bool FEBioFormat4::ParseStep(XMLTag& tag)
 	if (m_pstep == 0)
 	{
 		FSModel& fem = GetFSModel();
-		m_pstep = new FEBioAnalysisStep(&fem);
-		FEBio::CreateStep("analysis", m_pstep);
+		m_pstep = FEBio::CreateStep("analysis", &fem); assert(m_pstep);
 		const char* szname = tag.AttributeValue("name", true);
 		if ((szname == 0) || (strlen(szname) == 0))
 		{

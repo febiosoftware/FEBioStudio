@@ -311,8 +311,7 @@ void CStepSettings::SetPropertyValue(int n, const QVariant& v)
 			int m = v.toInt();
 			if ((m >= 0) && (m < fci.size()))
 			{
-				FSStepComponent* pc = new FSStepComponent;
-				FEBio::CreateModelComponent(fci[m].classId, pc);
+				FSModelComponent* pc = FEBio::CreateClass(fci[m].classId, m_step->GetFSModel()); assert(pc);
 				prop.SetComponent(pc);
 			}
 			BuildStepProperties();
