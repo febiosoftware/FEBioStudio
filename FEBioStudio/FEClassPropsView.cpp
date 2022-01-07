@@ -994,8 +994,8 @@ public:
 
 		QVBoxLayout* l = new QVBoxLayout;
 		l->setContentsMargins(0, 0, 0, 0);
-		l->addWidget(feprops);
-		l->addWidget(stack);
+		l->addWidget(feprops, 1);
+		l->addWidget(stack, 2);
 
 		stack->hide();
 

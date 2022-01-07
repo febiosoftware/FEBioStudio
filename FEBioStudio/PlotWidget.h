@@ -402,6 +402,7 @@ public:
 
 public slots:
 	void onRegionSelected(QRect rt);
+	void onPointClicked(QPointF pt, bool shift);
 
 private:
 	MSimpleExpression	m_math;

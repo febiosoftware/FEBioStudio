@@ -2633,6 +2633,7 @@ CMathPlotWidget::CMathPlotWidget(QWidget* parent) : CPlotWidget(parent)
 	data->setLineColor(QColor(255, 92, 164));
 
 	QObject::connect(this, SIGNAL(regionSelected(QRect)), this, SLOT(onRegionSelected(QRect)));
+	QObject::connect(this, SIGNAL(pointClicked(QPointF, bool)), this, SLOT(onPointClicked(QPointF, bool)));
 }
 
 void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
@@ -2676,6 +2677,8 @@ void CMathPlotWidget::SetMath(const QString& txt)
 	m_math.Clear();
 	m_math.AddVariable(m_ord);
 
+	getPlotData(0).clear();
+
 	if (m.empty()) m = "0";
 	m_math.Create(m);
 
@@ -2684,7 +2687,33 @@ void CMathPlotWidget::SetMath(const QString& txt)
 
 void CMathPlotWidget::onRegionSelected(QRect rt)
 {
+	clearSelection();
+	getPlotData(0).clear();
 	fitToRect(rt);
+}
+
+void CMathPlotWidget::onPointClicked(QPointF pt, bool shift)
+{
+	MVariable* x = m_math.FindVariable(m_ord);
+	if (x == nullptr) return;
+
+	x->value(pt.x());
+	double y = m_math.value();
+
+	QPointF px(pt.x(), y);
+	QPoint p0 = ViewToScreen(pt);
+	QPoint p1 = ViewToScreen(px);
+
+	CPlotData& data = getPlotData(0);
+	data.clear();
+
+	double D = abs(p0.x() - p1.x()) + abs(p0.y() - p1.y());
+	if (D < 5)
+	{
+		data.addPoint(pt.x(), y);
+		selectPoint(0, 0);
+	}
+	repaint();
 }
 
 //=============================================================================
@@ -2719,7 +2748,7 @@ CMathEditWidget::CMathEditWidget(QWidget* parent) : QWidget(parent), ui(new UIMa
 
 void CMathEditWidget::SetOrdinate(const QString& x)
 {
-	QString t = QString("f(%1)").arg(x);
+	QString t = QString("f(%1) = ").arg(x);
 	ui->fnc->setText(t);
 	ui->plot->SetOrdinate(x.toStdString());
 }
