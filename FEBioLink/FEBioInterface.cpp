@@ -182,6 +182,8 @@ bool FEBio::CreateModelComponent(int classId, FSModelComponent* po)
 	string typeStr = feb->TypeString();
 	po->SetTypeString(strdup(typeStr.c_str()));
 
+	po->SetSuperClassID(feb->GetSuperClassID());
+
 	// map the FEBioClass parameters to the FSObject
 	map_parameters(po, feb);
 
@@ -239,11 +241,6 @@ bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, F
 	{
 		FEBioMaterial* pmat = dynamic_cast<FEBioMaterial*>(po); assert(pmat);
 		ret = CreateMaterial(typeStr.c_str(), pmat);
-	}
-	else if (superClassId == FEMATERIALPROP_ID)
-	{
-		FEBioMaterial* pmat = dynamic_cast<FEBioMaterial*>(po); assert(pmat);
-		CreateMaterialProperty(FEMATERIALPROP_ID, typeStr.c_str(), pmat);
 	}
 	else if (superClassId == FEDISCRETEMATERIAL_ID)
 	{
@@ -320,14 +317,6 @@ bool FEBio::CreateMaterial(const char* sztype, FEBioMaterial* po)
 	return true;
 }
 
-void FEBio::CreateMaterialProperty(int superClassID, const char* sztype, FEBioMaterial* po)
-{
-	int classId = FEBio::GetClassId(superClassID, sztype); assert(classId != -1);
-
-	// If we found it, allocate the material
-	if (classId >= 0) CreateMaterial(classId, po);
-}
-
 bool FEBio::CreateDiscreteMaterial(int superClassID, const char* sztype, FEBioDiscreteMaterial* po)
 {
 	int classId = FEBio::GetClassId(superClassID, sztype); assert(classId);
@@ -368,7 +357,7 @@ void FEBio::CreateMaterial(int classId, FEBioMaterial* po)
 		if (prop.m_comp.empty() == false)
 		{
 			FEBioClass& fbc = prop.m_comp[0];
-			FEBioMaterial* pmi = new FEBioMaterial;
+			FEBioMaterial* pmi = new FEBioMaterial();
 			pmi->SetTypeString(fbc.TypeString().c_str());
 			pmi->SetSuperClassID(fbc.GetSuperClassID());
 			pmi->SetFEBioMaterial(&fbc);
@@ -402,8 +391,19 @@ void FEBio::UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm)
 
 FSMaterial* FEBio::CreateMaterial(const char* sztype, FSModel* fem)
 {
-	FEBioMaterial* pmat = new FEBioMaterial;
+	FEBioMaterial* pmat = new FEBioMaterial();
 	if (CreateMaterial(sztype, pmat) == false)
+	{
+		delete pmat;
+		return nullptr;
+	}
+	return pmat;
+}
+
+FSMaterialProperty* FEBio::CreateMaterialProperty(const char* sztype, FSModel* fem)
+{
+	FEBioMaterialProperty* pmat = new FEBioMaterialProperty(fem);
+	if (CreateModelComponent(FEMATERIALPROP_ID, sztype, pmat) == false)
 	{
 		delete pmat;
 		return nullptr;
@@ -536,9 +536,11 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const char* sztype, FSMod
 {
 	switch (superClassID)
 	{
-	case FEMATERIAL_ID: return CreateMaterial(sztype, fem); break;
-	case FECLASS_ID   : return CreateGenericClass(sztype, fem); break;
+	case FEMATERIAL_ID       : return CreateMaterial(sztype, fem); break;
+	case FEMATERIALPROP_ID   : return CreateMaterialProperty(sztype, fem); break;
+	case FECLASS_ID          : return CreateGenericClass(sztype, fem); break;
 	case FELOADCONTROLLER_ID : return CreateLoadController(sztype, fem); break;
+	case FEFUNCTION1D_ID     : return CreateFunction1D(sztype, fem); break;
 	default:
 		assert(false);
 	}
@@ -594,6 +596,8 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
 	case FENEWTONSTRATEGY_ID: pc = new FSGenericClass; break;
 	case FECLASS_ID: pc = new FSGenericClass; break;
 	case FEFUNCTION1D_ID: pc = new FEBioFunction1D(fem); break;
+	case FEMATERIAL_ID: pc = new FEBioMaterial(); break;
+	case FEMATERIALPROP_ID: pc = new FEBioMaterialProperty(fem); break;
 	default:
 		assert(false);
 	}

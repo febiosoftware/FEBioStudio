@@ -325,6 +325,8 @@ public:
 						return s;
 					}
 					break;
+					case Param_STD_VECTOR_VEC2D:
+						return "in progress";
 					default:
 						assert(false);
 						return "in progress";
@@ -1036,6 +1038,7 @@ FEClassEdit::FEClassEdit(QWidget* parent) : QWidget(parent), ui(new FEClassEditU
 
 void FEClassEdit::SetFEClass(FSCoreBase* pc, FSModel* fem)
 {
+	ui->m_pf = nullptr;
 	ui->stack->hide();
 	ui->feprops->SetFEClass(pc, fem);
 }

@@ -193,7 +193,7 @@ bool FEBioFormat::ReadChoiceParam(Param& p, XMLTag& tag)
 	const char* sz = nullptr;
 	while (sz = p.GetEnumName(n))
 	{
-		if (strcmp(szval, sz) == 0)
+		if (stricmp(szval, sz) == 0)
 		{
 			p.SetIntValue(n - p.GetOffset());
 			return true;
@@ -261,8 +261,20 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		// read parameter value
 		switch (pp->GetParamType())
 		{
-		case Param_INT: { int n; tag.value(n); pp->SetIntValue(n); } break;
-		case Param_CHOICE: ReadChoiceParam(*pp, tag); break;
+		case Param_INT: 
+		case Param_CHOICE: 
+		{ 
+			if (pp->GetEnumNames())
+			{
+				ReadChoiceParam(*pp, tag);
+			}
+			else
+			{
+				int n;
+				tag.value(n);
+				pp->SetIntValue(n);
+			}
+		} break; 
 		case Param_BOOL: { int n; tag.value(n); pp->SetBoolValue(n == 1); } break;
 		case Param_VEC3D: { vec3d v; tag.value(v); pp->SetVec3dValue(v); } break;
 		case Param_VEC2I: { vec2i v; tag.value(v); pp->SetVec2iValue(v); } break;
@@ -293,6 +305,20 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		} 
 		break;
 		case Param_STD_VECTOR_DOUBLE: { std::vector<double> v; tag.value(v); pp->SetVectorDoubleValue(v); } break;
+		case Param_STD_VECTOR_VEC2D : 
+		{ 
+			std::vector<vec2d> v;
+			++tag;
+			do
+			{
+				double d[2];
+				tag.value(d, 2);
+				v.push_back(vec2d(d[0], d[1]));
+				++tag;
+			} while (tag.isend() == false);
+			pp->SetVectorVec2dValue(v);
+		} 
+		break;
 		default:
 			assert(false);
 			return false;

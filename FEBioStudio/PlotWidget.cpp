@@ -2088,7 +2088,11 @@ void CCurveEditWidget::on_plot_pointClicked(QPointF p, bool shift)
 void CCurveEditWidget::UpdateSelection()
 {
 	LoadCurve* plc = ui->plt->GetLoadCurve();
-	if (plc == nullptr) return;
+	if (plc == nullptr)
+	{
+		ui->enablePointEdit(false);
+		return;
+	}
 
 	vector<CPlotWidget::Selection> sel = ui->plt->selection();
 
@@ -2256,8 +2260,12 @@ void CCurveEditWidget::on_xval_textEdited()
 	if (sel.size() == 1)
 	{
 		QPointF p = ui->getPointValue();
+
+		CPlotData& data = ui->plt->getPlotData(0);
+		data.Point(sel[0].npointIndex) = p;
 		plc->SetPoint(sel[0].npointIndex, p.x(), p.y());
-		UpdatePlotData();
+		ui->plt->repaint();
+
 		emit dataChanged();
 	}
 }
@@ -2272,8 +2280,12 @@ void CCurveEditWidget::on_yval_textEdited()
 	if (sel.size() == 1)
 	{
 		QPointF p = ui->getPointValue();
+
+		CPlotData& data = ui->plt->getPlotData(0);
+		data.Point(sel[0].npointIndex) = p;
 		plc->SetPoint(sel[0].npointIndex, p.x(), p.y());
-		UpdatePlotData();
+		ui->plt->repaint();
+
 		emit dataChanged();
 	}
 }

@@ -362,6 +362,8 @@ bool FEBioFormat3::ParseMaterialSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 {
+	FSModel& fem = GetFSModel();
+
 	// first, process potential attribute parameters
 	// (e.g. for solutes)
 	for (int i = 0; i < tag.m_natt; ++i)
@@ -470,13 +472,17 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 					}
 					else
 					{
-						FEBioMaterial* propMat = new FEBioMaterial;
-						FEBio::CreateMaterialProperty(pmc->GetSuperClassID(), sztype, propMat);
-
+						FSModelComponent* pc = FEBio::CreateClass(pmc->GetSuperClassID(), sztype, &fem);
+						assert(pc->GetSuperClassID() == pmc->GetSuperClassID());
 						if (pmc)
 						{
-							pmc->AddComponent(propMat);
-							ParseMaterial(tag, propMat);
+							pmc->AddComponent(pc);
+
+							if (dynamic_cast<FSMaterial*>(pc))
+							{
+								ParseMaterial(tag, dynamic_cast<FSMaterial*>(pc));
+							}
+							else ReadParameters(*pc, tag);
 						}
 					}
 				}
