@@ -166,11 +166,22 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 	        };
         }
 
+        int analysisType = -1;
+
         FSAnalysisStep* aStep = dynamic_cast<FSAnalysisStep*>(current);
         if(aStep)
         {
-            int analysisType = aStep->GetSettings().nanalysis;
+            analysisType = aStep->GetSettings().nanalysis;
+        }
 
+        FEBioAnalysisStep* febStep = dynamic_cast<FEBioAnalysisStep*>(current);
+        if(febStep)
+        {
+            analysisType = current->GetParam("analysis")->GetIntValue();
+        }
+
+        if(analysisType != -1)
+        {
             std::string analysis;
             
             if(module.compare("solid") == 0)
