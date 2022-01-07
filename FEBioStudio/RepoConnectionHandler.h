@@ -36,8 +36,14 @@ class CRepositoryPanel;
 class CLocalDatabaseHandler;
 class CMainWindow;
 
-#define REPO_URL "repo.febio.org"
-#define REPO_PORT 4433
+// #define SCHEME "https"
+// #define REPO_URL "repo.febio.org"
+// #define REPO_PORT 4433
+// #define API_URL "/modelRepo/api/v1.03/"
+
+#define SCHEME "http"
+#define REPO_URL "localhost"
+#define REPO_PORT 5000
 #define API_URL "/modelRepo/api/v1.03/"
 
 class CRepoConnectionHandler : public QObject
