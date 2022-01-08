@@ -954,6 +954,8 @@ public:
 		QAction* actionZoomHeight = zoomBar->addAction(QIcon(QString(":/icons/zoom_y.png")), "Zoom Height"); actionZoomHeight->setObjectName("actionZoomHeight");
 		QAction* actionZoomFit    = zoomBar->addAction(QIcon(QString(":/icons/zoom_fit.png"   )), "Zoom Fit"   ); actionZoomFit->setObjectName("actionZoomFit"   );
 		actionZoomSelect = zoomBar->addAction(QIcon(QString(":/icons/zoom_select.png")), "Zoom Select"); actionZoomSelect->setObjectName("actionZoomSelect"); actionZoomSelect->setCheckable(true);
+		QAction* zoomMap = zoomBar->addAction(QIcon(QString(":/icons/zoom-fit-best-2.png")), "Map to Rectangle"); zoomMap->setObjectName("actionZoomMap"); 
+		zoomMap->setCheckable(true);
 		zoomBar->addSeparator();
 		actionProps = zoomBar->addAction(QIcon(QString(":/icons/properties.png")), "Properties"); actionProps->setObjectName("actionProps");
 
@@ -1342,6 +1344,22 @@ void CGraphWindow::on_actionZoomHeight_triggered()
 void CGraphWindow::on_actionZoomFit_triggered()
 {
 	ui->plot->OnZoomToFit();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphWindow::on_actionZoomMap_triggered()
+{
+	ui->plot->ZoomToRect();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphWindow::on_plot_doneSelectingRect(QRect rt)
+{
+	CDlgPlotWidgetProps dlg;
+	if (dlg.exec())
+	{
+		ui->plot->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+	}
 }
 
 //-----------------------------------------------------------------------------

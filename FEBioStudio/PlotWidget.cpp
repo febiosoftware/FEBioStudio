@@ -527,7 +527,7 @@ void CPlotWidget::mapToUserRect()
 //-----------------------------------------------------------------------------
 void CPlotWidget::mapToUserRect(QRect rt, QRectF rng)
 {
-	QRect src = rect();
+	QRect src = m_plotRect;// rect();
 	double rx = rng.width() / rt.width();
 	double xmin = rng.left() - rx*(rt.left() - src.left());
 	double xmax = rng.right() + rx*(src.right() - rt.right());
