@@ -934,6 +934,45 @@ void CModelViewer::OnSelectPartElements()
 	doc->DoCommand(new CCmdSelectElements(pm, elemList, false));
 
 	CMainWindow* wnd = GetMainWindow();
+	wnd->UpdateGLControlBar();
+	wnd->RedrawGL();
+}
+
+void CModelViewer::OnSelectSurfaceFaces()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	GModel& m = doc->GetFEModel()->GetModel();
+
+	if (m_selection.size() != 1) return;
+	GFace* pf = dynamic_cast<GFace*>(m_selection[0]); assert(pf);
+
+	GObject* po = dynamic_cast<GObject*>(pf->Object());
+	if (po == nullptr) return;
+
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	// set the correct selection mode
+	doc->SetSelectionMode(SELECT_OBJECT);
+	doc->SetItemMode(ITEM_FACE);
+
+	// make sure this object is selected first
+	doc->DoCommand(new CCmdSelectObject(&m, po, false));
+
+	// now, select the faces
+	int lid = pf->GetLocalID();
+	vector<int> faceList;
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FEFace& face = pm->Face(i);
+		if (face.m_gid == lid) faceList.push_back(i);
+	}
+
+	// select elements
+	doc->DoCommand(new CCmdSelectFaces(pm, faceList, false));
+
+	CMainWindow* wnd = GetMainWindow();
+	wnd->UpdateGLControlBar();
 	wnd->RedrawGL();
 }
 
@@ -1664,6 +1703,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	break;
 	case MT_SURFACE:
 		menu.addAction("Select", this, SLOT(OnSelectSurface()));
+		menu.addAction("Select Faces", this, SLOT(OnSelectSurfaceFaces()));
 		break;
 	case MT_EDGE:
 		menu.addAction("Select", this, SLOT(OnSelectCurve()));

@@ -135,6 +135,7 @@ public slots:
 	void OnChangeDiscreteType();
 	void OnHidePart();
 	void OnSelectPartElements();
+	void OnSelectSurfaceFaces();
 	void OnShowPart();
 	void OnSelectPart();
 	void OnSelectSurface();
