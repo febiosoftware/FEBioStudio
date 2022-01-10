@@ -1287,6 +1287,7 @@ FEMuscleMaterial::FEMuscleMaterial() : FETransverselyIsotropic(FE_MUSCLE_MATERIA
 	AddDoubleParam(0, "Lofl");
 	AddDoubleParam(0, "lam_max");
 	AddDoubleParam(0, "smax");
+	AddDoubleParam(0, "activation");
 }
 
 ////////////////////////////////////////////////////////////////////////
