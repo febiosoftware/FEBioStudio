@@ -1929,6 +1929,7 @@ void FEBioFormat3::ParseBCRigid(FSStep* pstep, XMLTag& tag)
 	FEBioInputModel& febio = GetFEBioModel();
 	FEItemListBuilder* pg = febio.BuildItemList(szset);
 
+	int nrb = -1;
 	GMaterial* pmat = 0;
 	++tag;
 	do
@@ -1936,7 +1937,6 @@ void FEBioFormat3::ParseBCRigid(FSStep* pstep, XMLTag& tag)
 		if (tag == "rb")
 		{
 			// read rigid material ID
-			int nrb = -1;
 			tag.value(nrb);
 			if ((nrb > 0) && (nrb <= febio.Materials())) pmat = febio.GetMaterial(nrb - 1);
 			else FileReader()->AddLogEntry("Invalid material in rigid contact.");
@@ -1947,9 +1947,11 @@ void FEBioFormat3::ParseBCRigid(FSStep* pstep, XMLTag& tag)
 	while (!tag.isend());
 
 	// create the interface
-	FSRigidInterface* pi = new FSRigidInterface(&fem, pmat, pg, pstep->GetID());
-	pi->SetName(name.c_str());
-	pstep->AddComponent(pi);
+	FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("rigid", &fem);
+	pbc->GetParam("rb")->SetIntValue(nrb);
+	pbc->SetName(name.c_str());
+	pbc->SetItemList(pg);
+	pstep->AddComponent(pbc);
 }
 
 void FEBioFormat3::ParseBCLinearConstraint(FSStep* pstep, XMLTag& tag)
