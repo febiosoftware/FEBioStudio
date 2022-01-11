@@ -43,19 +43,19 @@ FSViscoElastic::FSViscoElastic() : FSMaterial(FE_VISCO_ELASTIC)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
 
-    AddScienceParam(0, UNIT_NONE, "g1", "coeffient G1");
-	AddScienceParam(0, UNIT_NONE, "g2", "coeffient G2");
-	AddScienceParam(0, UNIT_NONE, "g3", "coeffient G3");
-	AddScienceParam(0, UNIT_NONE, "g4", "coeffient G4");
-	AddScienceParam(0, UNIT_NONE, "g5", "coeffient G5");
-	AddScienceParam(0, UNIT_NONE, "g6", "coeffient G6");
+    AddScienceParam(0, UNIT_NONE, "g1", "coeffient γ1");
+	AddScienceParam(0, UNIT_NONE, "g2", "coeffient γ2");
+	AddScienceParam(0, UNIT_NONE, "g3", "coeffient γ3");
+	AddScienceParam(0, UNIT_NONE, "g4", "coeffient γ4");
+	AddScienceParam(0, UNIT_NONE, "g5", "coeffient γ5");
+	AddScienceParam(0, UNIT_NONE, "g6", "coeffient γ6");
 
-	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time t1");
-	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time t2");
-	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time t3");
-	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time t4");
-	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time t5");
-	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time t6");
+	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time τ1");
+	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time τ2");
+	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time τ3");
+	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time τ4");
+	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time τ5");
+	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time τ6");
 
 	// Add one component for the elastic material
 	AddProperty("elastic", FE_MAT_ELASTIC);
@@ -71,19 +71,19 @@ FSUncoupledViscoElastic::FSUncoupledViscoElastic() : FSMaterial(FE_UNCOUPLED_VIS
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
     
-	AddScienceParam(0, UNIT_NONE, "g1", "coeffient G1");
-	AddScienceParam(0, UNIT_NONE, "g2", "coeffient G2");
-	AddScienceParam(0, UNIT_NONE, "g3", "coeffient G3");
-	AddScienceParam(0, UNIT_NONE, "g4", "coeffient G4");
-	AddScienceParam(0, UNIT_NONE, "g5", "coeffient G5");
-	AddScienceParam(0, UNIT_NONE, "g6", "coeffient G6");
+	AddScienceParam(0, UNIT_NONE, "g1", "coeffient γ1");
+	AddScienceParam(0, UNIT_NONE, "g2", "coeffient γ2");
+	AddScienceParam(0, UNIT_NONE, "g3", "coeffient γ3");
+	AddScienceParam(0, UNIT_NONE, "g4", "coeffient γ4");
+	AddScienceParam(0, UNIT_NONE, "g5", "coeffient γ5");
+	AddScienceParam(0, UNIT_NONE, "g6", "coeffient γ6");
 
-	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time t1");
-	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time t2");
-	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time t3");
-	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time t4");
-	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time t5");
-	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time t6");
+	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time τ1");
+	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time τ2");
+	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time τ3");
+	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time τ4");
+	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time τ5");
+	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time τ6");
 
     AddScienceParam(0, UNIT_PRESSURE , "k"      , "bulk modulus")->SetPersistent(false);
     

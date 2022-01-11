@@ -1082,6 +1082,37 @@ void CMainWindow::on_actionFaceToElem_triggered()
 	RedrawGL();
 }
 
+void CMainWindow::on_actionSurfaceToFaces_triggered()
+{
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (doc->GetSelectionMode() != SELECT_FACE) return;
+
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr) return;
+
+	FEMesh* mesh = po->GetFEMesh();
+	if (mesh == nullptr) return;
+
+	// now, select the faces
+	vector<int> faceList;
+	for (int i = 0; i < mesh->Faces(); ++i)
+	{
+		FEFace& face = mesh->Face(i);
+		GFace* pf = po->Face(face.m_gid);
+		if (pf->IsSelected()) faceList.push_back(i);
+	}
+
+	// select elements
+	doc->SetSelectionMode(SELECT_OBJECT);
+	doc->SetItemMode(ITEM_FACE);
+	doc->DoCommand(new CCmdSelectFaces(mesh, faceList, false));
+
+	UpdateGLControlBar();
+	RedrawGL();
+}
+
 void CMainWindow::on_actionSelectOverlap_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

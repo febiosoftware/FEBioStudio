@@ -438,6 +438,7 @@ public:
 		QAction* actionPurge             = addAction("Purge ..."         , "actionPurge"            );
 
 		QAction* actionFace2Elems             = addAction("Face to Element Selection", "actionFaceToElem");
+		QAction* actionSurfaceToFaces         = addAction("Surface to Face Selection", "actionSurfaceToFaces");
 		QAction* actionSelectOverlap          = addAction("Select surface overlap ...", "actionSelectOverlap");
 		QAction* actionSelectIsolatedVertices = addAction("Select isolated vertices", "actionSelectIsolatedVertices");
 		QAction* actionGrowSelection          = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier + Qt::Key_Plus);
@@ -690,6 +691,7 @@ public:
 
 		QMenu* moreSelection = new QMenu("More selection options");
 		moreSelection->addAction(actionFace2Elems);
+		moreSelection->addAction(actionSurfaceToFaces);
 		moreSelection->addAction(actionSelectOverlap);
 		moreSelection->addAction(actionSelectIsolatedVertices);
 		moreSelection->addAction(actionGrowSelection);
