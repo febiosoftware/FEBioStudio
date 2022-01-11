@@ -937,7 +937,7 @@ void CModelViewer::OnSelectPartElements()
 void CModelViewer::OnSelectSurfaceFaces()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	if (m_selection.size() != 1) return;
 	GFace* pf = dynamic_cast<GFace*>(m_selection[0]); assert(pf);
@@ -945,7 +945,7 @@ void CModelViewer::OnSelectSurfaceFaces()
 	GObject* po = dynamic_cast<GObject*>(pf->Object());
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	// set the correct selection mode
@@ -960,7 +960,7 @@ void CModelViewer::OnSelectSurfaceFaces()
 	vector<int> faceList;
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.m_gid == lid) faceList.push_back(i);
 	}
 

@@ -2898,9 +2898,9 @@ FSDCMaxNormalLagrangeStrainUC::FSDCMaxNormalLagrangeStrainUC() : FSMaterial(FE_D
 // Relaxation Exponential with Continuous Spectrum
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxCSExp, MODULE_MECH, FE_RELAX_CSEXP, FE_MAT_RV_RELAX, "relaxation-CSexp", 0, CSEXP_HTML);
+REGISTER_MATERIAL(FSRelaxCSExp, MODULE_MECH, FE_RELAX_CSEXP, FE_MAT_RV_RELAX, "relaxation-CSexp", 0, CSEXP_HTML);
 
-FERelaxCSExp::FERelaxCSExp() : FEMaterial(FE_RELAX_CSEXP)
+FSRelaxCSExp::FSRelaxCSExp() : FSMaterial(FE_RELAX_CSEXP)
 {
     AddScienceParam(0, UNIT_TIME, "tau"   , "exponential spectrum constant τ"); // characteristic relaxation time
 }
@@ -2947,7 +2947,7 @@ FSRelaxFung::FSRelaxFung() : FSMaterial(FE_RELAX_FUNG)
 
 REGISTER_MATERIAL(FERelaxMalkin, MODULE_MECH, FE_RELAX_MALKIN, FE_MAT_RV_RELAX, "relaxation-Malkin", 0, MALKIN_HTML);
 
-FERelaxMalkin::FERelaxMalkin() : FEMaterial(FE_RELAX_MALKIN)
+FERelaxMalkin::FERelaxMalkin() : FSMaterial(FE_RELAX_MALKIN)
 {
     AddScienceParam(0, UNIT_TIME, "tau1"   , "min. relaxation time τ1"); //  minimum characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau2"   , "max. relaxation time τ2"); // maximum characteristic relaxation time
@@ -3012,9 +3012,9 @@ FSRelaxPowDistortion::FSRelaxPowDistortion() : FSMaterial(FE_RELAX_POW_DIST)
 // Relaxation Prony
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxProny, MODULE_MECH, FE_RELAX_PRONY, FE_MAT_RV_RELAX, "relaxation-Prony", 0, PRONY_HTML);
+REGISTER_MATERIAL(FSRelaxProny, MODULE_MECH, FE_RELAX_PRONY, FE_MAT_RV_RELAX, "relaxation-Prony", 0, PRONY_HTML);
 
-FERelaxProny::FERelaxProny() : FEMaterial(FE_RELAX_PRONY)
+FSRelaxProny::FSRelaxProny() : FSMaterial(FE_RELAX_PRONY)
 {
     AddScienceParam(0, UNIT_NONE, "g1", "coeffient γ1");
     AddScienceParam(0, UNIT_NONE, "g2", "coeffient γ2");

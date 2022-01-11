@@ -2201,17 +2201,17 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxCSExp : public FSMaterial
+class FSRelaxCSExp : public FSMaterial
 {
 public:
     enum { MP_TAU };
 public:
-    FERelaxCSExp();
-    DECLARE_REGISTERED(FERelaxCSExp);
+    FSRelaxCSExp();
+    DECLARE_REGISTERED(FSRelaxCSExp);
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxExp : public FSMaterial
+class FSRelaxExp : public FSMaterial
 {
 public:
     enum { MP_TAU };
@@ -2251,7 +2251,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxPark : public FSMaterial
+class FSRelaxPark : public FSMaterial
 {
 public:
     enum { MP_TAU, M_BETA };
@@ -2291,7 +2291,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxProny : public FEMaterial
+class FSRelaxProny : public FSMaterial
 {
 public:
     // max nr of Prony terms
@@ -2303,8 +2303,8 @@ public:
         MP_T1, MP_T2, MP_T3, MP_T4, MP_T5, MP_T6
     };
 public:
-    FERelaxProny();
-    DECLARE_REGISTERED(FERelaxProny);
+    FSRelaxProny();
+    DECLARE_REGISTERED(FSRelaxProny);
 };
 
 //-----------------------------------------------------------------------------

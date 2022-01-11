@@ -1092,14 +1092,14 @@ void CMainWindow::on_actionSurfaceToFaces_triggered()
 	GObject* po = doc->GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* mesh = po->GetFEMesh();
+	FSMesh* mesh = po->GetFEMesh();
 	if (mesh == nullptr) return;
 
 	// now, select the faces
 	vector<int> faceList;
 	for (int i = 0; i < mesh->Faces(); ++i)
 	{
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		GFace* pf = po->Face(face.m_gid);
 		if (pf->IsSelected()) faceList.push_back(i);
 	}
