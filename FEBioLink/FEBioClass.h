@@ -207,6 +207,7 @@ namespace FEBio {
 	};
 
 	FEBioClass* CreateFEBioClass(int classId);
+	FEBioClass* CreateFEBioClass(int superClassID, const char* sztype);
 
 	class FEBioOutputHandler
 	{

@@ -430,7 +430,14 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 		int n = baseClassIndex(sz);
 
 		// add it
-		feb->AddProperty(prop->GetName(), prop->GetSuperClassID(), n, prop->IsRequired(), prop->IsArray());
+		FEBioProperty& febProp = feb->AddProperty(prop->GetName(), prop->GetSuperClassID(), n, prop->IsRequired(), prop->IsArray());
+
+		// set the default solver based on the active module name
+		if (prop->GetSuperClassID() == FESOLVER_ID)
+		{
+			const char* szmod = GetModuleName(GetActiveModule());
+			febProp.m_defType = szmod;
+		}
 	}
 }
 
@@ -460,6 +467,13 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 
 	// all done!
 	return feb;
+}
+
+FEBioClass* FEBio::CreateFEBioClass(int superClassID, const char* sztype)
+{
+	int classId = GetClassId(superClassID, sztype);
+	if (classId < 0) return nullptr;
+	return FEBio::CreateFEBioClass(classId);
 }
 
 vector<FEBio::FEBioModule>	FEBio::GetAllModules()

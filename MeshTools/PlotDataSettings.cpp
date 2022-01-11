@@ -133,6 +133,9 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "density"                           );
     AddPlotVariable(MODULE_MECH, "deviatoric fiber stretch"          );
 	AddPlotVariable(MODULE_MECH, "deviatoric strain energy density"  );
+    AddPlotVariable(MODULE_MECH, "deviatoric strong bond SED"        );
+    AddPlotVariable(MODULE_MECH, "deviatoric weak bond SED"          );
+    AddPlotVariable(MODULE_MECH, "weak bond SED"                     );
 	AddPlotVariable(MODULE_MECH, "discrete element stretch"          );
 	AddPlotVariable(MODULE_MECH, "discrete element force"            );
 	AddPlotVariable(MODULE_MECH, "displacement"                      );
@@ -188,6 +191,8 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "SPR stress"                        );
     AddPlotVariable(MODULE_MECH, "specific strain energy"            );
     AddPlotVariable(MODULE_MECH, "strain energy density"             );
+    AddPlotVariable(MODULE_MECH, "strong bond SED"                   );
+    AddPlotVariable(MODULE_MECH, "weak bond SED"                     );
     AddPlotVariable(MODULE_MECH, "stress"                            );
     AddPlotVariable(MODULE_MECH, "surface area"                      , false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_MECH, "surface traction"                  );

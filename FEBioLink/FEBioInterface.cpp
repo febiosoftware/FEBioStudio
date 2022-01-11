@@ -31,10 +31,12 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEMaterial.h>
+#include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FEInterface.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FEConnector.h>
+#include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEDiscreteMaterial.h>
@@ -117,20 +119,6 @@ void map_parameters(FSModelComponent* po, FEBio::FEBioClass* feb)
 		if (p)
 		{
 			p->SetFlags(param.m_flags);
-			FSModel* fsm = po->GetFSModel();
-			if (fsm)
-			{
-				if (param.m_flags & 0x08)
-				{
-					// create default load curve
-					LoadCurve lc;
-
-					// add to model
-					FSLoadController* plc = fsm->AddLoadCurve(lc); assert(plc);
-					plc->SetName(param.name());
-					p->SetLoadCurveID(plc->GetID());
-				}
-			}
 			if (param.m_szunit) p->SetUnit(param.m_szunit);
 		}
 	}
@@ -172,17 +160,13 @@ void map_parameters(FEBio::FEBioClass* feb, FSObject* po)
 	}
 }
 
-bool FEBio::CreateModelComponent(int classId, FSModelComponent* po)
+bool BuildModelComponent(FEBio::FEBioClass* feb, FSModelComponent* po)
 {
-	// create the FEBioClass object
-	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
-	if (feb == nullptr) return false;
+	assert(po->GetSuperClassID() == feb->GetSuperClassID());
 
 	// set the type string
 	string typeStr = feb->TypeString();
 	po->SetTypeString(strdup(typeStr.c_str()));
-
-	po->SetSuperClassID(feb->GetSuperClassID());
 
 	// map the FEBioClass parameters to the FSObject
 	map_parameters(po, feb);
@@ -206,10 +190,11 @@ bool FEBio::CreateModelComponent(int classId, FSModelComponent* po)
 				pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
 			pci->SetDefaultType(prop.m_defType);
 
+			// NOTE: is this ever true?
 			if (prop.m_comp.empty() == false)
 			{
-				FEBioClass& fbc = prop.m_comp[0];
-				FSCoreBase* pmi = CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), nullptr);
+				FEBio::FEBioClass& fbc = prop.m_comp[0];
+				FSCoreBase* pmi = FEBio::CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), nullptr);
 				pci->AddComponent(pmi);
 			}
 		}
@@ -233,138 +218,55 @@ bool FEBio::CreateModelComponent(int classId, FSModelComponent* po)
 	return true;
 }
 
-bool FEBio::CreateModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po)
-{
-	bool ret = true;
-
-	if (superClassId == FEMATERIAL_ID)
-	{
-		FEBioMaterial* pmat = dynamic_cast<FEBioMaterial*>(po); assert(pmat);
-		ret = CreateMaterial(typeStr.c_str(), pmat);
-	}
-	else if (superClassId == FEDISCRETEMATERIAL_ID)
-	{
-		FEBioDiscreteMaterial* pmat = dynamic_cast<FEBioDiscreteMaterial*>(po); assert(pmat);
-		CreateDiscreteMaterial(FEDISCRETEMATERIAL_ID, typeStr.c_str(), pmat);
-	}
-	else if (superClassId == FEANALYSIS_ID)
-	{
-		FSStep* pstep = dynamic_cast<FSStep*>(po);
-		CreateStep(typeStr.c_str(), pstep);
-	}
-	else
-	{
-		int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId);
-		ret = CreateModelComponent(classId, po);
-	}
-
-	return ret;
-}
-
-void FEBio::CreateStep(const char* sztype, FSStep* po)
-{
-	int classId = FEBio::GetClassId(FEANALYSIS_ID, sztype); assert(classId);
-	CreateStep(classId, po, false);
-}
-
-void FEBio::CreateStep(int classId, FSStep* po, bool initDefaultProps)
+bool BuildModelComponent(FSModelComponent* po)
 {
 	// create the FEBioClass object
-	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
-	if (feb == nullptr) return;
+	int classId = po->GetClassID();
+	FEBio::FEBioClass* feb = FEBio::CreateFEBioClass(classId);
+	if (feb == nullptr) return false;
+	return BuildModelComponent(feb, po);
+}
 
-	// set the type string
-	string typeStr = feb->TypeString();
-	po->SetTypeString(strdup(typeStr.c_str()));
-
-	// map the FEBioClass parameters to the FSObject
-	map_parameters(po, feb);
-
-	// get the active module
-	int modId = FEBio::GetActiveModule();
-
-	// map the properties
-	for (int i = 0; i < feb->Properties(); ++i)
+// Call this to initialize default properties
+bool FEBio::InitDefaultProps(FSModelComponent* pc)
+{
+	for (int i = 0; i < pc->Properties(); ++i)
 	{
-		FEBio::FEBioProperty& prop = feb->GetProperty(i);
-
-		FSProperty* pc = po->AddProperty(prop.m_name, prop.m_baseClassId, 1, (prop.m_brequired ? FSProperty::REQUIRED : 1));
-		pc->SetSuperClassID(prop.m_superClassId);
-		pc->SetBaseClassID(prop.m_baseClassId);
-
-		if (initDefaultProps && prop.m_brequired)
+		FSProperty& prop = pc->GetProperty(i);
+		if (prop.IsRequired() && (prop.GetComponent() == nullptr))
 		{
-			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(modId, prop.m_superClassId, -1, ClassSearchFlags::IncludeFECoreClasses);
+			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllActiveClasses(prop.GetSuperClassID(), -1, FEBio::ClassSearchFlags::IncludeFECoreClasses);
 			if (fci.size() > 0)
 			{
-				FSStepComponent* psc = new FSStepComponent;
-				CreateModelComponent(fci[0].classId, psc);
-				psc->SetTypeString(fci[0].sztype);
-				pc->SetComponent(psc);
+				FSModel* fem = pc->GetFSModel();
+				FSModelComponent* psc = FEBio::CreateClass(prop.GetSuperClassID(), prop.GetDefaultType().c_str(), fem);
+				assert(psc);
+				if (psc)
+				{
+					prop.AddComponent(psc);
+					bool b = InitDefaultProps(psc);
+					if (b == false) { assert(false); return false; }
+				}
+				else return false;
 			}
 		}
 	}
-
-	// don't forget to cleanup
-	delete feb;
-}
-
-bool FEBio::CreateMaterial(const char* sztype, FEBioMaterial* po)
-{
-	int classId = FEBio::GetClassId(FEMATERIAL_ID, sztype); assert(classId >= 0);
-	if (classId < 0) return false;
-	CreateMaterial(classId, po);
 	return true;
 }
 
-bool FEBio::CreateDiscreteMaterial(int superClassID, const char* sztype, FEBioDiscreteMaterial* po)
+bool BuildModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po)
 {
-	int classId = FEBio::GetClassId(superClassID, sztype); assert(classId);
-	return CreateModelComponent(classId, po);
+	int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId > 0);
+	po->SetSuperClassID(superClassId);
+	po->SetClassID(classId);
+	po->SetTypeString(typeStr);
+	bool ret = BuildModelComponent(po);
+	return ret;
 }
 
-void FEBio::CreateMaterial(int classId, FEBioMaterial* po)
+bool FEBio::BuildModelComponent(FSModelComponent* pc, const std::string& typeStr)
 {
-	// create the FEBioClass object
-	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
-	if (feb == nullptr) return;
-
-	// check the super class ID
-	int superClassID = feb->GetSuperClassID();
-
-	// set the type string
-	string typeStr = feb->TypeString();
-	po->SetTypeString(strdup(typeStr.c_str()));
-	po->SetSuperClassID(superClassID);
-
-	// pass the FEBio object to the FEBio Studio object
-	po->SetFEBioMaterial(feb);
-
-	// map the parameters
-	map_parameters(po, feb);
-
-	// map the properties
-	for (int i = 0; i < feb->Properties(); ++i)
-	{
-		FEBio::FEBioProperty& prop = feb->GetProperty(i);
-		int maxSize = (prop.m_isArray ? 0 : 1);
-		FSProperty* matProp = po->AddProperty(prop.m_name, prop.m_baseClassId + FE_FEBIO_MATERIAL_CLASS, maxSize); assert(matProp);
-		matProp->SetSuperClassID(prop.m_superClassId);
-		if (prop.m_brequired)
-			matProp->SetFlags(matProp->GetFlags() | FSProperty::REQUIRED);
-		matProp->SetDefaultType(prop.m_defType);
-
-		if (prop.m_comp.empty() == false)
-		{
-			FEBioClass& fbc = prop.m_comp[0];
-			FEBioMaterial* pmi = new FEBioMaterial();
-			pmi->SetTypeString(fbc.TypeString().c_str());
-			pmi->SetSuperClassID(fbc.GetSuperClassID());
-			pmi->SetFEBioMaterial(&fbc);
-			map_parameters(pmi, &fbc);
-			matProp->AddComponent(pmi);
-		}
-	}
+	return BuildModelComponent(pc->GetSuperClassID(), typeStr, pc);
 }
 
 void FEBio::UpdateFEBioMaterial(FEBioMaterial* pm)
@@ -389,195 +291,140 @@ void FEBio::UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm)
 	febClass->UpdateData();
 }
 
-FSMaterial* FEBio::CreateMaterial(const char* sztype, FSModel* fem)
+template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr, FSModel* fem)
 {
-	FEBioMaterial* pmat = new FEBioMaterial();
-	if (CreateMaterial(sztype, pmat) == false)
+	T* mc = new T(fem);
+	if (BuildModelComponent(superClassID, typeStr, mc) == false)
 	{
-		delete pmat;
+		assert(false);
+		delete mc;
 		return nullptr;
 	}
-	return pmat;
+	return mc;
 }
 
-FSMaterialProperty* FEBio::CreateMaterialProperty(const char* sztype, FSModel* fem)
+template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr)
 {
-	FEBioMaterialProperty* pmat = new FEBioMaterialProperty(fem);
-	if (CreateModelComponent(FEMATERIALPROP_ID, sztype, pmat) == false)
+	T* mc = new T;
+	if (BuildModelComponent(superClassID, typeStr, mc) == false)
 	{
-		delete pmat;
+		assert(false);
+		delete mc;
 		return nullptr;
 	}
-	return pmat;
+	return mc;
 }
 
-FSBoundaryCondition* FEBio::CreateBoundaryCondition(const char* sztype, FSModel* fem)
+
+FSStep* FEBio::CreateStep(const std::string& typeStr, FSModel* fem)
 {
-	FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
-	if (FEBio::CreateModelComponent(FEBC_ID, sztype, pbc) == false)
-	{
-		delete pbc;
-		return nullptr;
-	}
-	return pbc;
+	return CreateModelComponent<FEBioAnalysisStep>(FEANALYSIS_ID, typeStr, fem);
 }
 
-FSNodalLoad* FEBio::CreateNodalLoad(const char* sztype, FSModel* fem)
+FSMaterial* FEBio::CreateMaterial(const std::string& typeStr, FSModel* fem)
 {
-	FEBioNodalLoad* pnl = new FEBioNodalLoad(fem);
-	if (FEBio::CreateModelComponent(FENODALLOAD_ID, sztype, pnl) == false)
-	{
-		delete pnl;
-		return nullptr;
-	}
-	return pnl;
+	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr);
 }
 
-FSSurfaceLoad* FEBio::CreateSurfaceLoad(const char* sztype, FSModel* fem)
+FSMaterialProperty* FEBio::CreateMaterialProperty(const std::string& typeStr, FSModel* fem)
 {
-	FEBioSurfaceLoad* psl = new FEBioSurfaceLoad(fem);
-	if (FEBio::CreateModelComponent(FESURFACELOAD_ID, sztype, psl) == false)
-	{
-		delete psl;
-		return nullptr;
-	}
-	return psl;
+	return CreateModelComponent<FEBioMaterialProperty>(FEMATERIALPROP_ID, typeStr, fem);
 }
 
-FSBodyLoad* FEBio::CreateBodyLoad(const char* sztype, FSModel* fem)
+FSDiscreteMaterial* FEBio::CreateDiscreteMaterial(const std::string& typeStr, FSModel* fem)
 {
-	FEBioBodyLoad* pbl = new FEBioBodyLoad(fem);
-	if (FEBio::CreateModelComponent(FEBODYLOAD_ID, sztype, pbl) == false)
-	{
-		delete pbl;
-		return nullptr;
-	}
-	return pbl;
+	return CreateModelComponent<FEBioDiscreteMaterial>(FEDISCRETEMATERIAL_ID, typeStr);
 }
 
-FSPairedInterface* FEBio::CreatePairedInterface(const char* sztype, FSModel* fem)
+FSBoundaryCondition* FEBio::CreateBoundaryCondition(const std::string& typeStr, FSModel* fem)
 {
-	FSPairedInterface* pci = new FEBioInterface(fem);
-	if (CreateModelComponent(FESURFACEINTERFACE_ID, sztype, pci) == false)
-	{
-		delete pci;
-		return nullptr;
-	}
-	return pci;
+	return CreateModelComponent<FEBioBoundaryCondition>(FEBC_ID, typeStr, fem);
 }
 
-FSModelConstraint* FEBio::CreateNLConstraint(const char* sztype, FSModel* fem)
+FSNodalLoad* FEBio::CreateNodalLoad(const std::string& typeStr, FSModel* fem)
 {
-	FSModelConstraint* pmc = new FEBioNLConstraint(fem);
-	if (CreateModelComponent(FENLCONSTRAINT_ID, sztype, pmc) == false)
-	{
-		delete pmc;
-		return nullptr;
-	}
-	return pmc;
+	return CreateModelComponent<FEBioNodalLoad>(FENODALLOAD_ID, typeStr, fem);
 }
 
-FSRigidConstraint* FEBio::CreateRigidConstraint(const char* sztype, FSModel* fem)
+FSSurfaceLoad* FEBio::CreateSurfaceLoad(const std::string& typeStr, FSModel* fem)
 {
-	FSRigidConstraint* pi = new FEBioRigidConstraint(fem);
-	if (FEBio::CreateModelComponent(FERIGIDBC_ID, sztype, pi) == false)
-	{
-		delete pi;
-		return nullptr;
-	}
-	return pi;
+	return CreateModelComponent<FEBioSurfaceLoad>(FESURFACELOAD_ID, typeStr, fem);
 }
 
-FSRigidConnector* FEBio::CreateRigidConnector(const char* sztype, FSModel* fem)
+FSBodyLoad* FEBio::CreateBodyLoad(const std::string& typeStr, FSModel* fem)
 {
-	FSRigidConnector* pi = new FEBioRigidConnector(fem);
-	if (FEBio::CreateModelComponent(FERIGIDCONNECTOR_ID, sztype, pi) == false)
-	{
-		delete pi;
-		return nullptr;
-	}
-	return pi;
+	return CreateModelComponent<FEBioBodyLoad>(FEBODYLOAD_ID, typeStr, fem);
 }
 
-FSInitialCondition* FEBio::CreateInitialCondition(const char* sztype, FSModel* fem)
+FSPairedInterface* FEBio::CreatePairedInterface(const std::string& typeStr, FSModel* fem)
 {
-	FSInitialCondition* pic = new FEBioInitialCondition(fem);
-	if (FEBio::CreateModelComponent(FEIC_ID, sztype, pic) == false)
-	{
-		delete pic;
-		return nullptr;
-	}
-	return pic;
+	return CreateModelComponent<FEBioInterface>(FESURFACEINTERFACE_ID, typeStr, fem);
 }
 
-FSLoadController* FEBio::CreateLoadController(const char* sztype, FSModel* fem)
+FSModelConstraint* FEBio::CreateNLConstraint(const std::string& typeStr, FSModel* fem)
 {
-	FSLoadController* plc = new FEBioLoadController(fem);
-	if (FEBio::CreateModelComponent(FELOADCONTROLLER_ID, sztype, plc) == false)
-	{
-		delete plc;
-		return nullptr;
-	}
-	return plc;
+	return CreateModelComponent<FEBioNLConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
 }
 
-FSFunction1D* FEBio::CreateFunction1D(const char* sztype, FSModel* fem)
+FSRigidConstraint* FEBio::CreateRigidConstraint(const std::string& typeStr, FSModel* fem)
 {
-	FSFunction1D* pf = new FEBioFunction1D(fem);
-	if (FEBio::CreateModelComponent(FEFUNCTION1D_ID, sztype, pf) == false)
-	{
-		delete pf;
-		return nullptr;
-	}
-	return pf;
+	return CreateModelComponent<FEBioRigidConstraint>(FERIGIDBC_ID, typeStr, fem);
 }
 
-FSModelComponent* FEBio::CreateClass(int superClassID, const char* sztype, FSModel* fem)
+FSRigidConnector* FEBio::CreateRigidConnector(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioRigidConnector>(FERIGIDCONNECTOR_ID, typeStr, fem);
+}
+
+FSRigidLoad* FEBio::CreateRigidLoad(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioRigidLoad>(FERIGIDLOAD_ID, typeStr, fem);
+}
+
+FSInitialCondition* FEBio::CreateInitialCondition(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioInitialCondition>(FEIC_ID, typeStr, fem);
+}
+
+FSLoadController* FEBio::CreateLoadController(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioLoadController>(FELOADCONTROLLER_ID, typeStr, fem);
+}
+
+FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioFunction1D>(FEFUNCTION1D_ID, typeStr, fem);
+}
+
+FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr);
+}
+
+FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem)
 {
 	switch (superClassID)
 	{
-	case FEMATERIAL_ID       : return CreateMaterial(sztype, fem); break;
-	case FEMATERIALPROP_ID   : return CreateMaterialProperty(sztype, fem); break;
-	case FECLASS_ID          : return CreateGenericClass(sztype, fem); break;
-	case FELOADCONTROLLER_ID : return CreateLoadController(sztype, fem); break;
-	case FEFUNCTION1D_ID     : return CreateFunction1D(sztype, fem); break;
+	case FEMATERIAL_ID        : return CreateMaterial        (typeStr, fem); break;
+	case FEMATERIALPROP_ID    : return CreateMaterialProperty(typeStr, fem); break;
+	case FEDISCRETEMATERIAL_ID: return CreateDiscreteMaterial(typeStr, fem); break;
+	case FECLASS_ID           : return CreateGenericClass    (typeStr, fem); break;
+	case FELOADCONTROLLER_ID  : return CreateLoadController  (typeStr, fem); break;
+	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
+	case FESOLVER_ID          :
+	case FETIMECONTROLLER_ID  :
+	case FEMAT3DGENERATOR_ID  :
+	case FEMAT3DSGENERATOR_ID :
+	{
+		FSGenericClass* pc = new FSGenericClass;
+		BuildModelComponent(superClassID, typeStr, pc);
+		return pc;
+	}
+	break;
 	default:
 		assert(false);
 	}
 	return nullptr;
-}
-
-void map_feclass(FEBio::FEBioClass* feb, FSModelComponent* pc, FSModel* fem)
-{
-	// copy type information (Is this necessary?)
-	string typeStr = feb->TypeString();
-	pc->SetTypeString(typeStr);
-
-	// then, map parameters
-	map_parameters(pc, feb);
-
-	// map the properties
-	for (int i = 0; i < feb->Properties(); ++i)
-	{
-		FEBio::FEBioProperty& prop = feb->GetProperty(i);
-		int maxSize = (prop.m_isArray ? 0 : 1);
-		FSProperty* pci = pc->AddProperty(prop.m_name, prop.m_baseClassId, maxSize); assert(pci);
-		pci->SetSuperClassID(prop.m_superClassId);
-		if (prop.m_brequired)
-			pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
-		pci->SetDefaultType(prop.m_defType);
-
-		if (prop.m_comp.empty() == false)
-		{
-			FEBio::FEBioClass& fbc = prop.m_comp[0];
-			FSModelComponent* pmi = FEBio::CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), fem);
-			if (pmi)
-			{
-				pci->AddComponent(pmi);
-				map_feclass(&fbc, pmi, fem);
-			}
-		}
-	}
 }
 
 FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
@@ -590,62 +437,33 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
 	FSModelComponent* pc = nullptr;
 	switch (feb->GetSuperClassID())
 	{
-	case FEANALYSIS_ID: pc = new FEBioAnalysisStep(fem); break;
-	case FESOLVER_ID  : pc = new FSGenericClass; break;
+	case FEANALYSIS_ID            : pc = new FEBioAnalysisStep(fem); break;
+	case FEFUNCTION1D_ID          : pc = new FEBioFunction1D(fem); break;
+	case FEMATERIAL_ID            : pc = new FEBioMaterial(); break;
+	case FEBC_ID                  : pc = new FEBioBoundaryCondition(fem); break;
+	case FEIC_ID                  : pc = new FEBioInitialCondition(fem); break;
+	case FESURFACEINTERFACE_ID    : pc = new FEBioInterface(fem); break;
+	case FENODALLOAD_ID           : pc = new FEBioNodalLoad(fem); break;
+	case FESURFACELOAD_ID         : pc = new FEBioSurfaceLoad(fem); break;
+	case FEBODYLOAD_ID            : pc = new FEBioBodyLoad(fem); break;
+	case FEMATERIALPROP_ID        : pc = new FEBioMaterialProperty(fem); break;
+	case FELOADCONTROLLER_ID      : pc = new FEBioLoadController(fem); break;
+	case FEMESHADAPTOR_ID         : pc = new FEBioMeshAdaptor(fem); break;
+	case FESOLVER_ID              : pc = new FSGenericClass; break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
-	case FENEWTONSTRATEGY_ID: pc = new FSGenericClass; break;
-	case FECLASS_ID: pc = new FSGenericClass; break;
-	case FEFUNCTION1D_ID: pc = new FEBioFunction1D(fem); break;
-	case FEMATERIAL_ID: pc = new FEBioMaterial(); break;
-	case FEMATERIALPROP_ID: pc = new FEBioMaterialProperty(fem); break;
+	case FENEWTONSTRATEGY_ID      : pc = new FSGenericClass; break;
+	case FECLASS_ID               : pc = new FSGenericClass; break;
+	case FETIMECONTROLLER_ID      : pc = new FSGenericClass; break;
+	break;
 	default:
 		assert(false);
 	}
 
-	// map class
-	map_feclass(feb, pc, fem);
+	pc->SetClassID(classId);
+	pc->SetSuperClassID(feb->GetSuperClassID());
+	pc->SetTypeString(feb->TypeString());
+	BuildModelComponent(feb, pc);
 
 	return pc;
 }
 
-FSGenericClass* FEBio::CreateGenericClass(const char* sztype, FSModel* fem)
-{
-	// get the class ID
-	int classId = FEBio::GetClassId(FECLASS_ID, sztype); assert(classId >= 0);
-	if (classId < 0) return nullptr;
-
-	// create the FEBioClass object
-	FEBioClass* feb = FEBio::CreateFEBioClass(classId);
-	if (feb == nullptr) return nullptr;
-
-	// allocate the generic class container
-	FSGenericClass* pc = new FSGenericClass;
-
-	// set the type string
-	string typeStr = feb->TypeString();
-	pc->SetTypeString(typeStr);
-
-	// map the FEBioClass parameters to the FSObject
-	map_parameters(pc, feb);
-
-	// map the properties
-	for (int i = 0; i < feb->Properties(); ++i)
-	{
-		FEBio::FEBioProperty& prop = feb->GetProperty(i);
-		int maxSize = (prop.m_isArray ? 0 : 1);
-		FSProperty* pci = pc->AddProperty(prop.m_name, prop.m_baseClassId, maxSize); assert(pci);
-		pci->SetSuperClassID(prop.m_superClassId);
-		if (prop.m_brequired)
-			pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
-		pci->SetDefaultType(prop.m_defType);
-
-		if (prop.m_comp.empty() == false)
-		{
-			FEBioClass& fbc = prop.m_comp[0];
-			FSCoreBase* pmi = CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), fem);
-			pci->AddComponent(pmi);
-		}
-	}
-
-	return pc;
-}

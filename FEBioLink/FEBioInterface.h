@@ -31,7 +31,7 @@ class FSModelComponent;
 class FSMaterial;
 class FEBioMaterial;
 class FSMaterialProperty;
-class FEBioMaterialProperty;
+class FSDiscreteMaterial;
 class FEBioDiscreteMaterial;
 class FSStep;
 class FSBoundaryCondition;
@@ -43,6 +43,7 @@ class FSPairedInterface;
 class FSModelConstraint;
 class FSRigidConstraint;
 class FSRigidConnector;
+class FSRigidLoad;
 class FSModel;
 class FSCoreBase;
 class FSLoadController;
@@ -51,33 +52,42 @@ class FSGenericClass;
 
 namespace FEBio {
 
-	bool CreateModelComponent(int classId, FSModelComponent* po);
-	bool CreateModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po);
-	void CreateMaterial(int classId, FEBioMaterial* po);
-	bool CreateMaterial(const char* sztype, FEBioMaterial* po);
-	bool CreateDiscreteMaterial(int superClassID, const char* sztype, FEBioDiscreteMaterial* po);
-	void CreateStep(int classId, FSStep* po, bool initDefaultProps = true);
-	void CreateStep(const char* sztype, FSStep* po);
+	// helper functions for creating FEBio classes.
+	FSStep*              CreateStep             (const std::string& typeStr, FSModel* fem);
+	FSMaterial*          CreateMaterial         (const std::string& typeStr, FSModel* fem);
+	FSMaterialProperty*  CreateMaterialProperty (const std::string& typeStr, FSModel* fem);
+	FSDiscreteMaterial*  CreateDiscreteMaterial (const std::string& typeStr, FSModel* fem);
+	FSBoundaryCondition* CreateBoundaryCondition(const std::string& typeStr, FSModel* fem);
+	FSNodalLoad*         CreateNodalLoad        (const std::string& typeStr, FSModel* fem);
+	FSSurfaceLoad*       CreateSurfaceLoad      (const std::string& typeStr, FSModel* fem);
+	FSBodyLoad*          CreateBodyLoad         (const std::string& typeStr, FSModel* fem);
+	FSPairedInterface*   CreatePairedInterface  (const std::string& typeStr, FSModel* fem);
+	FSModelConstraint*	 CreateNLConstraint     (const std::string& typeStr, FSModel* fem);
+	FSRigidConstraint*	 CreateRigidConstraint  (const std::string& typeStr, FSModel* fem);
+	FSRigidConnector*	 CreateRigidConnector   (const std::string& typeStr, FSModel* fem);
+	FSRigidLoad*	     CreateRigidLoad        (const std::string& typeStr, FSModel* fem);
+	FSInitialCondition*  CreateInitialCondition (const std::string& typeStr, FSModel* fem);
+	FSLoadController*    CreateLoadController   (const std::string& typeStr, FSModel* fem);
+	FSFunction1D*        CreateFunction1D       (const std::string& typeStr, FSModel* fem);
+	FSGenericClass*		 CreateGenericClass     (const std::string& typeStr, FSModel* fem);
+
+	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem);
+	FSModelComponent* CreateClass(int classId, FSModel* fem);
+
+	template<class T> T* CreateFEBioClass(int classId, FSModel* fem)
+	{
+		FSModelComponent* pc = CreateClass(classId, fem);
+		T* pt = dynamic_cast<T*>(pc);
+		if (pt == nullptr) { delete pc; return nullptr; }
+		return pt;
+	}
+
+	// this is only used by LoadClassMetaData
+	bool BuildModelComponent(FSModelComponent* pc, const std::string& typeStr);
+
+	// Call this to initialize default properties
+	bool InitDefaultProps(FSModelComponent* pc);
 
 	void UpdateFEBioMaterial(FEBioMaterial* pm);
 	void UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm);
-
-	// helper functions for creating FEBio classes.
-	FSMaterial*          CreateMaterial         (const char* sztype, FSModel* fem);
-	FSMaterialProperty*  CreateMaterialProperty (const char* sztype, FSModel* fem);
-	FSBoundaryCondition* CreateBoundaryCondition(const char* sztype, FSModel* fem);
-	FSNodalLoad*         CreateNodalLoad        (const char* sztype, FSModel* fem);
-	FSSurfaceLoad*       CreateSurfaceLoad      (const char* sztype, FSModel* fem);
-	FSBodyLoad*          CreateBodyLoad         (const char* sztype, FSModel* fem);
-	FSPairedInterface*   CreatePairedInterface  (const char* sztype, FSModel* fem);
-	FSModelConstraint*	 CreateNLConstraint     (const char* sztype, FSModel* fem);
-	FSRigidConstraint*	 CreateRigidConstraint  (const char* sztype, FSModel* fem);
-	FSRigidConnector*	 CreateRigidConnector   (const char* sztype, FSModel* fem);
-	FSInitialCondition*  CreateInitialCondition (const char* sztype, FSModel* fem);
-	FSLoadController*    CreateLoadController   (const char* sztype, FSModel* fem);
-	FSFunction1D*        CreateFunction1D       (const char* sztype, FSModel* fem);
-
-	FSModelComponent* CreateClass(int superClassID, const char* sztype, FSModel* fem);
-	FSModelComponent* CreateClass(int classId, FSModel* fem);
-	FSGenericClass* CreateGenericClass(const char* sztype, FSModel* fem);
 }

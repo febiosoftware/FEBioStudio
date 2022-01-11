@@ -262,6 +262,9 @@
 #define FE_RELAX_PARK_DIST          804
 #define FE_RELAX_POW                805
 #define FE_RELAX_POW_DIST           806
+#define FE_RELAX_PRONY              807
+#define FE_RELAX_MALKIN             808
+#define FE_RELAX_CSEXP              809
 
 // elastic damage materials
 #define FE_DMG_MATERIAL             900
@@ -2198,6 +2201,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FSRelaxCSExp : public FSMaterial
+{
+public:
+    enum { MP_TAU };
+public:
+    FSRelaxCSExp();
+    DECLARE_REGISTERED(FSRelaxCSExp);
+};
+
+//-----------------------------------------------------------------------------
 class FSRelaxExp : public FSMaterial
 {
 public:
@@ -2225,6 +2238,16 @@ public:
 public:
     FSRelaxFung();
     DECLARE_REGISTERED(FSRelaxFung);
+};
+
+//-----------------------------------------------------------------------------
+class FERelaxMalkin : public FSMaterial
+{
+public:
+    enum { MP_TAU1, M_TAU2, M_BETA };
+public:
+    FERelaxMalkin();
+    DECLARE_REGISTERED(FERelaxMalkin);
 };
 
 //-----------------------------------------------------------------------------
@@ -2265,6 +2288,23 @@ public:
 public:
     FSRelaxPowDistortion();
     DECLARE_REGISTERED(FSRelaxPowDistortion);
+};
+
+//-----------------------------------------------------------------------------
+class FSRelaxProny : public FSMaterial
+{
+public:
+    // max nr of Prony terms
+    enum { MAX_TERMS = 6 };
+    
+    // material parameters
+    enum {
+        MP_G1, MP_G2, MP_G3, MP_G4, MP_G5, MP_G6,
+        MP_T1, MP_T2, MP_T3, MP_T4, MP_T5, MP_T6
+    };
+public:
+    FSRelaxProny();
+    DECLARE_REGISTERED(FSRelaxProny);
 };
 
 //-----------------------------------------------------------------------------

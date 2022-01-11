@@ -228,8 +228,7 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 
 FSStep* FEBioFormat3::NewStep(FSModel& fem, int nanalysis, const char* szname)
 {
-	FSStep* pstep = new FEBioAnalysisStep(&fem);
-	FEBio::CreateStep("analysis", pstep);
+	FSStep* pstep = FEBio::CreateStep("analysis", &fem); assert(pstep);
 
 	if ((szname == 0) || (strlen(szname) == 0))
 	{
@@ -287,13 +286,12 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 
 				if (pc->GetComponent() == nullptr)
 				{
-					FSStepComponent* psc = new FSStepComponent;
-					FEBio::CreateModelComponent(pc->GetSuperClassID(), sztype, psc);
+					FSModelComponent* psc = FEBio::CreateClass(pc->GetSuperClassID(), sztype, &fem);
 					pc->SetComponent(psc);
 				}
 
 				// read the parameters
-				ReadParameters(*pc->GetComponent(), tag);
+ 				ReadParameters(*pc->GetComponent(), tag);
 			}
 			else ParseUnknownTag(tag);
 		}
@@ -2657,11 +2655,9 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 		std::string name = tag.AttributeValue("name", ss.str());
 
 		// allocate class
-		FEBioRigidLoad* pi = new FEBioRigidLoad(&fem, pstep->GetID());
-		if (FEBio::CreateModelComponent(FERIGIDLOAD_ID, sztype, pi) == false)
-		{
-			throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
-		}
+		FSRigidLoad* pi = FEBio::CreateRigidLoad(sztype, &fem);
+		if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
 		pi->SetName(name);
 		pstep->AddRigidLoad(pi);
 
@@ -2675,11 +2671,9 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 	std::string name = tag.AttributeValue("name", ss.str());
 
 	// allocate class
-	FEBioRigidConstraint* pi = new FEBioRigidConstraint(&fem, pstep->GetID());
-	if (FEBio::CreateModelComponent(FERIGIDBC_ID, sztype, pi) == false)
-	{
-		throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
-	}
+	FSRigidConstraint* pi = FEBio::CreateRigidConstraint(sztype, &fem);
+	if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
 	pi->SetName(name);
 	pstep->AddRC(pi);
 
@@ -2817,12 +2811,8 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			const char* szname = tag.AttributeValue("name");
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
-				FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-				if (FEBio::CreateModelComponent(FEDISCRETEMATERIAL_ID, sztype, pdm) == false)
-				{
-					delete pdm;
-					throw XMLReader::InvalidTag(tag);
-				}
+				FSDiscreteMaterial* pdm = FEBio::CreateDiscreteMaterial(sztype, &fem);
+				if (pdm == nullptr) throw XMLReader::InvalidTag(tag);
 
 				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 				pg->SetMaterial(pdm);
@@ -2844,12 +2834,8 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			}
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
-				FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-				if (FEBio::CreateModelComponent(FEDISCRETEMATERIAL_ID, sztype, pdm) == false)
-				{
-					delete pdm;
-					throw XMLReader::InvalidTag(tag);
-				}
+				FSDiscreteMaterial* pdm = FEBio::CreateDiscreteMaterial(sztype, &fem);
+				if (pdm == nullptr) throw XMLReader::InvalidTag(tag);
 
 				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 				pg->SetMaterial(pdm);
@@ -2872,12 +2858,8 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			}
 			else if (strcmp(sztype, "Hill") == 0)
 			{
-				FSDiscreteMaterial* pdm = new FEBioDiscreteMaterial;
-				if (FEBio::CreateModelComponent(FEDISCRETEMATERIAL_ID, sztype, pdm) == false)
-				{
-					delete pdm;
-					throw XMLReader::InvalidTag(tag);
-				}
+				FSDiscreteMaterial* pdm = FEBio::CreateDiscreteMaterial(sztype, &fem);
+				if (pdm == nullptr) throw XMLReader::InvalidTag(tag);
 
 				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 				pg->SetMaterial(pdm);
@@ -2929,11 +2911,8 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			std::string name = tag.AttributeValue("name", ss.str());
 
 			// allocate class
-			FEBioRigidLoad* pi = new FEBioRigidLoad(&fem, m_pBCStep->GetID());
-			if (FEBio::CreateModelComponent(FERIGIDLOAD_ID, sztype, pi) == false)
-			{
-				throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
-			}
+			FSRigidLoad* pi = FEBio::CreateRigidLoad(sztype, &fem);
+			if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 			pi->SetName(name);
 			m_pBCStep->AddRigidLoad(pi);
 

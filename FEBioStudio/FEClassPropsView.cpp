@@ -472,7 +472,7 @@ public:
 
 						if (oldprop && (oldprop->GetClassID() == classId))
 						{
-							// the type has not changed, so don't replace the material
+							// the type has not changed, so don't replace the property
 							return false;
 						}
 					}
