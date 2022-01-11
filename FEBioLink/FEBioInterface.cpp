@@ -178,25 +178,18 @@ bool BuildModelComponent(FEBio::FEBioClass* feb, FSModelComponent* po)
 		//       This is a bit of a hack that I need to clean up.
 		FEBio::FEBioProperty& prop = feb->GetProperty(i);
 		int maxSize = (prop.m_isArray ? 0 : 1);
-		if (prop.m_superClassId == FEVEC3DGENERATOR_ID)
-		{
-			po->AddVecParam(vec3d(0, 0, 0), prop.m_name.c_str());
-		}
-		else
-		{
-			FSProperty* pci = po->AddProperty(prop.m_name, prop.m_baseClassId, maxSize); assert(pci);
-			pci->SetSuperClassID(prop.m_superClassId);
-			if (prop.m_brequired)
-				pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
-			pci->SetDefaultType(prop.m_defType);
+		FSProperty* pci = po->AddProperty(prop.m_name, prop.m_baseClassId, maxSize); assert(pci);
+		pci->SetSuperClassID(prop.m_superClassId);
+		if (prop.m_brequired)
+			pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
+		pci->SetDefaultType(prop.m_defType);
 
-			// NOTE: is this ever true?
-			if (prop.m_comp.empty() == false)
-			{
-				FEBio::FEBioClass& fbc = prop.m_comp[0];
-				FSCoreBase* pmi = FEBio::CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), nullptr);
-				pci->AddComponent(pmi);
-			}
+		// NOTE: is this ever true?
+		if (prop.m_comp.empty() == false)
+		{
+			FEBio::FEBioClass& fbc = prop.m_comp[0];
+			FSCoreBase* pmi = FEBio::CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), nullptr);
+			pci->AddComponent(pmi);
 		}
 	}
 
@@ -413,6 +406,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
 	case FESOLVER_ID          :
 	case FETIMECONTROLLER_ID  :
+	case FEVEC3DGENERATOR_ID  :
 	case FEMAT3DGENERATOR_ID  :
 	case FEMAT3DSGENERATOR_ID :
 	{

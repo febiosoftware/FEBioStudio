@@ -1755,8 +1755,7 @@ void CModelTree::UpdateRigid(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 		int n = t1->childCount();
 		if (n > 0)
 		{
-			QString s = t1->text(0);
-			t1->setText(0, QString("%1 (%2)").arg(s).arg(n));
+			t1->setText(0, QString("Rigid (%2)").arg(n));
 		}
 	}
 }
