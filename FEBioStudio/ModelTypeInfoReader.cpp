@@ -400,7 +400,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
     }
 
-    PrintInfo();
+    // PrintInfo();
 }
 
 void ModelTypeInfoReader::PrintInfo()

@@ -623,8 +623,6 @@ void CRepositoryPanel::on_actionUpload_triggered()
 
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
 
-            qDebug() << payload;
-
 			repoHandler->setUploadReady(false);
 
 			repoHandler->uploadFileRequest(payload);
@@ -756,10 +754,14 @@ void CRepositoryPanel::on_actionModify_triggered()
 
 			projectInfo.insert("publications", dlg.getPublicationInfo());
 
-			projectInfo.insert("files", dlg.getFileInfo());
-
-			QStringList filePaths = dlg.GetFilePaths();
+            QStringList filePaths = dlg.GetFilePaths();
 			QStringList zipFilePaths = dlg.GetZipFilePaths();
+
+            QVariantList fileInfo = dlg.getFileInfo();
+
+            GetFileMetaDataForUpload(fileInfo, filePaths, zipFilePaths);
+
+			projectInfo.insert("files", fileInfo);
 
 			if(filePaths.size() > 0)
 			{
@@ -860,7 +862,7 @@ void CRepositoryPanel::GetFileMetaDataForUpload(QVariantList& fileInfoList, QStr
                 }
             }
 
-            ((QVariantMap&)fileInfo)["metadata"] = metadata;
+            ((QVariantMap&)fileInfo)["metaData"] = metadata;
         }
     }
 }
