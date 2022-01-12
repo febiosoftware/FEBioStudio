@@ -49,6 +49,7 @@ private:
     void ReadFEB();
     void ParseFSModel(FSProject& prj);
     void PrintInfo();
+    void PrintInfoForPython();
 
 private:
     string filename;

@@ -400,7 +400,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
 
     }
 
-    // PrintInfo();
+    PrintInfoForPython();
 }
 
 void ModelTypeInfoReader::PrintInfo()
@@ -418,6 +418,44 @@ void ModelTypeInfoReader::PrintInfo()
             std::cout << "\t" << str << std::endl;
         }
     }
+
+    std::cout << std::endl;
+}
+
+void ModelTypeInfoReader::PrintInfoForPython()
+{
+    QString name = QFileInfo(filename.c_str()).baseName();
+
+    std::cout << "'" << name.toStdString() << "': {";
+
+
+    std::cout << "'Module': '" << module << "'";
+
+    for(auto& item : typeInfo)
+    {
+        std::cout << ", '" << item.first << "': {";
+
+        std::vector<string> vecItems;
+
+        for(auto& str : item.second)
+        {
+            vecItems.push_back(str);
+        }
+
+        for(int index = 0; index < vecItems.size(); index++)
+        {
+            std::cout << "'" << vecItems[index] << "'";
+
+            if(index != vecItems.size() - 1)
+            {
+                std::cout<< ", ";
+            }
+        }
+
+        std::cout << "}";
+    }
+
+    std::cout << "}, ";
 
     std::cout << std::endl;
 }
