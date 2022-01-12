@@ -405,6 +405,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FELOADCONTROLLER_ID  : return CreateLoadController  (typeStr, fem); break;
 	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
 	case FESOLVER_ID          :
+	case FENEWTONSTRATEGY_ID  :
 	case FETIMECONTROLLER_ID  :
 	case FEVEC3DGENERATOR_ID  :
 	case FEMAT3DGENERATOR_ID  :

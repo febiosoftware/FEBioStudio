@@ -225,6 +225,92 @@ FSStep* FEBioFormat3::NewStep(FSModel& fem, int nanalysis, const char* szname)
 }
 
 //-----------------------------------------------------------------------------
+// helper class for mapping old parameters to new structures
+struct OldParam {
+	const char* propName;
+	const char* szparamName;
+	int vi;
+};
+
+//-----------------------------------------------------------------------------
+void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
+{
+	FSModel& fem = GetFSModel();
+
+	// list of old parameters that need to be assigned elsewhere
+	vector<OldParam> oldParams;
+
+	++tag;
+	do
+	{
+		if (ReadParam(*pmc, tag) == false)
+		{
+			// check for obsolete parameters
+			if (tag == "max_ups")
+			{
+				int v;
+				tag.value(v);
+				oldParams.push_back(OldParam{ "qn_method", "max_ups", v });
+			}
+			else if (tag == "qnmethod")
+			{
+				int v = -1;
+				tag.value(v);
+				FSProperty* solverProp = pmc->FindProperty("qn_method"); assert(solverProp);
+
+				FSModelComponent* qnmethod = nullptr;
+				switch (v)
+				{
+				case 0: qnmethod = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS"   , &fem); break;
+				case 1: qnmethod = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", &fem); break;
+				case 2: qnmethod = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "JFNK"   , &fem); break;
+				}
+				assert(qnmethod);
+
+				solverProp->SetComponent(qnmethod);
+			}
+			else if (pmc->Properties() > 0)
+			{
+				const char* sztag = tag.Name();
+				FSProperty* pc = pmc->FindProperty(sztag); assert(pc);
+
+				// see if this is a property
+				const char* sztype = tag.AttributeValue("type", true);
+				if (sztype == 0) sztype = tag.Name();
+
+				if (pc->GetComponent() == nullptr)
+				{
+					FSModelComponent* psc = FEBio::CreateClass(pc->GetSuperClassID(), sztype, &fem);
+					pc->SetComponent(psc);
+				}
+
+				// read the parameters
+				ReadParameters(*pc->GetComponent(), tag);
+			}
+			else ParseUnknownTag(tag);
+		}
+		++tag;
+	} while (!tag.isend());
+
+	// Map the old parameters
+	for (int i = 0; i < oldParams.size(); ++i)
+	{
+		OldParam& pi = oldParams[i];
+
+		Param* pp = nullptr;
+		if (pi.propName)
+		{
+			FSProperty* prop = pmc->FindProperty(pi.propName); assert(prop);
+			FSCoreBase* pc = prop->GetComponent(0);
+			pp = pc->GetParam(pi.szparamName); assert(pp);
+		}
+		else pp = pmc->GetParam(pi.szparamName);
+		assert(pp);
+		if (pp) pp->SetIntValue(pi.vi);
+	}
+}
+
+//-----------------------------------------------------------------------------
 //  This function parses the control section from the xml file
 //
 bool FEBioFormat3::ParseControlSection(XMLTag& tag)
@@ -272,8 +358,14 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					pc->SetComponent(psc);
 				}
 
-				// read the parameters
- 				ReadParameters(*pc->GetComponent(), tag);
+				if (tag == "solver")
+				{
+					FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(pc->GetComponent()); assert(pmc);
+					ReadSolverParameters(pmc, tag);
+				}
+				else 
+					// read the parameters
+ 					ReadParameters(*pc->GetComponent(), tag);
 			}
 			else ParseUnknownTag(tag);
 		}

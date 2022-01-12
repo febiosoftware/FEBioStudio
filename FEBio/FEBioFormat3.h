@@ -59,6 +59,8 @@ private:
 	bool ParseLoadDataSection  (XMLTag& tag) override;
 	bool ParseControlSection   (XMLTag& tag) override;
 
+	void ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag);
+
 private:
 	// parse materials
 	void ParseMaterial(XMLTag& tag, FSMaterial* pmat);
