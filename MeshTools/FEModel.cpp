@@ -1771,11 +1771,26 @@ int FSModel::RemoveLoadController(FSLoadController* plc)
 // helper function for creating load curves (returns UID of load controller)
 FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 {
+	// allocate load curve
 	FSLoadController* plc = FEBio::CreateLoadController("loadcurve", this);
 
+	// set default name
+	std::string name;
+	const char* szname = lc.GetName();
+	if ((szname == nullptr) || (szname[0] == 0)) 
+	{
+		std::stringstream ss;
+		ss << "LC" << LoadControllers() + 1;
+		name = ss.str();
+	}
+	else name = szname;
+	plc->SetName(name);
+
+	// set parameters
 	plc->SetParamInt("interpolate", lc.GetInterpolator());
 	plc->SetParamInt("extend", lc.GetExtendMode());
 
+	// copy point data
 	std::vector<vec2d> pt;
 	for (int i = 0; i < lc.Points(); ++i)
 	{
@@ -1785,6 +1800,7 @@ FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 	Param& points = *plc->GetParam("points");
 	points.val<std::vector<vec2d> >() = pt;
 
+	// add it to the pile
 	AddLoadController(plc);
 
 	return plc;

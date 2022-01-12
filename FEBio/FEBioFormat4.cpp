@@ -316,7 +316,7 @@ bool FEBioFormat4::ParseMaterialSection(XMLTag& tag)
 		}
 
 		// parse material
-		ParseMaterial(tag, pmat);
+		ParseModelComponent(pmat, tag);
 
 		// if pmat is set we need to add the material to the list
 		gmat = new GMaterial(pmat);
@@ -332,14 +332,16 @@ bool FEBioFormat4::ParseMaterialSection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat4::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 {
+	FSModel& fem = GetFSModel();
+
 	// first, process potential attribute parameters
-	// (e.g. for solutes)
 	for (int i = 0; i < tag.m_natt; ++i)
 	{
 		XMLAtt& att = tag.m_att[i];
-		Param* param = pmat->GetParam(att.name());
+		Param* param = pmc->GetParam(att.name());
 		if (param)
 		{
 			switch (param->GetParamType())
@@ -364,52 +366,99 @@ void FEBioFormat4::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 				assert(false);
 			}
 		}
+		else if (strcmp(att.name(), "sol") == 0)
+		{
+			// we might be in a chemical reaction. Try to find the "species" parameter.
+			param = pmc->GetParam("species");
+			if (param)
+			{
+				int n = atoi(att.cvalue());
+				param->SetIntValue(n - 1);
+			}
+		}
+		else if (strcmp(att.name(), "sbm") == 0)
+		{
+			// we might be in a chemical reaction. Try to find the "species" parameter.
+			param = pmc->GetParam("species");
+			if (param)
+			{
+				int n = atoi(att.cvalue());
+				FSModel& fem = GetFSModel();
+				int nsol = fem.Solutes();
+				param->SetIntValue(nsol + n - 1);
+			}
+		}
 	}
 
-	if (tag.isleaf()) return;
-
-	FSModel& fem = GetFSModel();
+	if (tag.isleaf())
+	{
+		// see if there is a parameter with the same name 
+		Param* param = pmc->GetParam(tag.Name());
+		if (param)
+		{
+			switch (param->GetParamType())
+			{
+			case Param_INT:
+			{
+				int n = -1;
+				tag.value(n);
+				param->SetIntValue(n);
+			}
+			break;
+			default:
+				assert(false);
+			}
+		}
+		return;
+	}
 
 	// read the tags
 	++tag;
 	do
 	{
-		if (ReadParam(*pmat, tag) == false)
+		if (ReadParam(*pmc, tag) == false)
 		{
-			if (pmat->Properties() > 0)
+			if (pmc->Properties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FSProperty* pmc = pmat->FindProperty(sztag); assert(pmc);
-
-				// see if this is a material property
-				const char* sztype = tag.AttributeValue("type", true);
-				if (sztype == 0)
+				FSProperty* prop = pmc->FindProperty(sztag);
+				if (prop == nullptr)
 				{
-					const std::string& defType = pmc->GetDefaultType();
-					if (defType.empty() == false) sztype = defType.c_str();
-					else sztype = tag.Name();
+					ParseUnknownTag(tag);
 				}
-				
-				FSModelComponent* pc = FEBio::CreateClass(pmc->GetSuperClassID(), sztype, &fem);
-				assert(pc->GetSuperClassID() == pmc->GetSuperClassID());
-
-				if (pmc)
+				else
 				{
-					pmc->AddComponent(pc);
-					if (dynamic_cast<FSMaterial*>(pc))
+					// see if the type attribute is defined
+					const char* sztype = tag.AttributeValue("type", true);
+					if (sztype == 0)
 					{
-						ParseMaterial(tag, dynamic_cast<FSMaterial*>(pc));
+						// if not, get the default type. If none specified, we'll use the tag itself.
+						const std::string& defType = prop->GetDefaultType();
+						if (defType.empty() == false) sztype = defType.c_str();
+						else sztype = tag.Name();
 					}
-					else ReadParameters(*pc, tag);
 
-					++tag;
+					// skip obsolete "user" type
+					if (strcmp(sztype, "user") == 0)
+					{
+						ParseUnknownAttribute(tag, "type");
+					}
+					else
+					{
+						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
+						assert(pc->GetSuperClassID() == prop->GetSuperClassID());
+						if (pc)
+						{
+							prop->AddComponent(pc);
+							ParseModelComponent(pc, tag);
+						}
+					}
 				}
 			}
 			else ParseUnknownTag(tag);
 		}
-		else ++tag;
-	} 
-	while (!tag.isend());
+		++tag;
+	} while (!tag.isend());
 }
 
 //=============================================================================

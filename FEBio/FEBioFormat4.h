@@ -73,10 +73,9 @@ private:
 	void ParseGeometryPart       (XMLTag& tag);
 	void ParseGeometryInstance   (XMLTag& tag);
 
-private:
-	// parse materials
-	void ParseMaterial(XMLTag& tag, FSMaterial* pmat);
+	void ParseModelComponent(FSModelComponent* pmc, XMLTag& tag);
 
+private:
 	// boundary condition input functions
 	void ParseBC		  (FSStep* pstep, XMLTag& tag);
 
