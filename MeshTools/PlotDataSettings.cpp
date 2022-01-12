@@ -200,6 +200,8 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "strong bond SED"                   );
     AddPlotVariable(MODULE_MECH, "weak bond SED"                     );
     AddPlotVariable(MODULE_MECH, "stress"                            );
+    AddPlotVariable(MODULE_MECH, "PK1 stress"                        );
+    AddPlotVariable(MODULE_MECH, "PK2 stress"                        );
     AddPlotVariable(MODULE_MECH, "surface area"                      , false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_MECH, "surface traction"                  );
     AddPlotVariable(MODULE_MECH, "uncoupled pressure"                );
