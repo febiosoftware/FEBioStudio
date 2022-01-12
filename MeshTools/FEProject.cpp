@@ -153,6 +153,10 @@ void FSProject::SetModule(unsigned int mod)
 	FEBio::SetActiveModule(mod);
 	m_module = mod;
 
+	// get the list of variables
+	FSModel& fem = GetFSModel();
+	FEBio::InitFSModel(fem);
+
 	if (m_plt.PlotVariables() == 0)
 	{
 		// add some default variables

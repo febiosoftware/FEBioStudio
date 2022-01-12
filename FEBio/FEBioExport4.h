@@ -89,10 +89,10 @@ private:
 	{
 	public:
 		string			m_name;
-		FENodeList* m_nodeList;
+		FSNodeList* m_nodeList;
 
 	public:
-		NodeSet(const string& name, FENodeList* nodeList) : m_name(name), m_nodeList(nodeList) {}
+		NodeSet(const string& name, FSNodeList* nodeList) : m_name(name), m_nodeList(nodeList) {}
 		~NodeSet() { delete m_nodeList; }
 	};
 
@@ -292,7 +292,7 @@ protected:
 	void AddSurface(const std::string& name, FEItemListBuilder* pl);
 	void AddElemSet(const std::string& name, FEItemListBuilder* pl);
 
-	bool WriteNodeSet(const string& name, FENodeList* pl);
+	bool WriteNodeSet(const string& name, FSNodeList* pl);
 
 protected:
 	Part* FindPart(GObject* po);

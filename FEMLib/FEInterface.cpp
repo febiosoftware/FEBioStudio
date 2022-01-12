@@ -851,11 +851,11 @@ double FSSpringTiedInterface::SpringConstant() const
 void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 {
 	FEFaceList* pfl = m_surf1->BuildFaceList();
-	FENodeList* pnl = m_surf2->BuildNodeList();
+	FSNodeList* pnl = m_surf2->BuildNodeList();
 	if ((pfl == 0) || (pnl == 0)) return;
 
 	unique_ptr<FEFaceList> ps(pfl);
-	unique_ptr<FENodeList> pm(pnl);
+	unique_ptr<FSNodeList> pm(pnl);
 
 	set<pair<int, int> > S;
 
@@ -874,7 +874,7 @@ void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 			int i0 = ns.m_nid;
 			int i1 = -1;
 			double Dmin = 0;
-			FENodeList::Iterator itm = pm->First();
+			FSNodeList::Iterator itm = pm->First();
 			for (int j=0; j<pm->Size(); ++j, ++itm)
 			{
 				FSNode& nj = *(itm->m_pi);

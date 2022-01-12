@@ -198,7 +198,6 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 
 	m_nAnalysis = FEBio::GetModuleId(sztype);
 	if (m_nAnalysis < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
-	FEBio::SetActiveModule(m_nAnalysis);
 	FileReader()->GetProject().SetModule(m_nAnalysis);
 	return (m_nAnalysis != -1);
 }

@@ -181,7 +181,7 @@ FEElemList* FSPart::BuildElemList()
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* FSPart::BuildNodeList()
+FSNodeList* FSPart::BuildNodeList()
 {
 	int i, j;
 	FSMesh* pm = m_pObj->GetFEMesh();
@@ -195,7 +195,7 @@ FENodeList* FSPart::BuildNodeList()
 		for (j=0; j<pe->Nodes(); ++j) pm->Node(pe->m_node[j]).m_ntag = 1;
 	}
 
-	FENodeList* pg = new FENodeList();
+	FSNodeList* pg = new FSNodeList();
 	for (i=0; i<N; ++i)
 	{
 		FSNode& n = pm->Node(i);
@@ -243,12 +243,12 @@ FEFaceList* FSSurface::BuildFaceList()
 	return ps;
 }
 
-FENodeList* FSSurface::BuildNodeList()
+FSNodeList* FSSurface::BuildNodeList()
 {	
 	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
 
-	FENodeList* pg = new FENodeList();
+	FSNodeList* pg = new FSNodeList();
 	
 	// tag all nodes to be added
 	int i, j, n;
@@ -308,12 +308,12 @@ FSEdge* FSEdgeSet::Edge(FEItemListBuilder::Iterator it)
 	return &e;
 }
 
-FENodeList* FSEdgeSet::BuildNodeList()
+FSNodeList* FSEdgeSet::BuildNodeList()
 {	
 	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
 
-	FENodeList* pg = new FENodeList();
+	FSNodeList* pg = new FSNodeList();
 	
 	// tag all nodes to be added
 	int i, j, n;
@@ -373,11 +373,11 @@ void FSNodeSet::CreateFromMesh()
 	for (int i = 0; i < NN; ++i) add(i);
 }
 
-FENodeList* FSNodeSet::BuildNodeList()
+FSNodeList* FSNodeSet::BuildNodeList()
 {
 	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int i=0; i<size(); ++i, ++it) ps->Add(pm, pm->NodePtr(*it));
 	return ps;

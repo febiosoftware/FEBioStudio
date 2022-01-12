@@ -49,10 +49,10 @@ using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
 // defined in FEFEBioExport25.cpp
-FENodeList* BuildNodeList(GFace* pf);
-FENodeList* BuildNodeList(GPart* pg);
-FENodeList* BuildNodeList(GNode* pn);
-FENodeList* BuildNodeList(GEdge* pe);
+FSNodeList* BuildNodeList(GFace* pf);
+FSNodeList* BuildNodeList(GPart* pg);
+FSNodeList* BuildNodeList(GNode* pn);
+FSNodeList* BuildNodeList(GEdge* pe);
 FEFaceList* BuildFaceList(GFace* face);
 const char* ElementTypeString(int ntype);
 
@@ -2505,7 +2505,7 @@ void FEBioExport3::WriteGeometryObject(FEBioExport3::Part* part)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport3::WriteNodeSet(const string& name, FENodeList* pl)
+bool FEBioExport3::WriteNodeSet(const string& name, FSNodeList* pl)
 {
 	if (pl == 0)
 	{
@@ -2517,7 +2517,7 @@ bool FEBioExport3::WriteNodeSet(const string& name, FENodeList* pl)
 	}
 
 	int nn = pl->Size();
-	FENodeList::Iterator pn = pl->First();
+	FSNodeList::Iterator pn = pl->First();
 	vector<int> m(nn);
 	for (int n = 0; n<nn; ++n, pn++)
 	{
@@ -2659,7 +2659,7 @@ void FEBioExport3::WriteGeometryNodeSets()
 		if (m_pNSet[i].m_duplicate == false)
 		{
 			FEItemListBuilder* pil = m_pNSet[i].m_list;
-			unique_ptr<FENodeList> pl(pil->BuildNodeList());
+			unique_ptr<FSNodeList> pl(pil->BuildNodeList());
 			if (WriteNodeSet(m_pNSet[i].m_name.c_str(), pl.get()) == false)
 			{
 				throw InvalidItemListBuilder(pil);
@@ -2675,7 +2675,7 @@ void FEBioExport3::WriteGeometryNodeSets()
 	for (int i = 0; i<model.NodeLists(); ++i)
 	{
 		GNodeList* pg = model.NodeList(i);
-		unique_ptr<FENodeList> pn(pg->BuildNodeList());
+		unique_ptr<FSNodeList> pn(pg->BuildNodeList());
 		if (WriteNodeSet(pg->GetName(), pn.get()) == false)
 		{
 			throw InvalidItemListBuilder(pg);
@@ -2694,7 +2694,7 @@ void FEBioExport3::WriteGeometryNodeSets()
 			for (int j = 0; j<nset; ++j)
 			{
 				FSNodeSet* pns = po->GetFENodeSet(j);
-				unique_ptr<FENodeList> pl(pns->BuildNodeList());
+				unique_ptr<FSNodeList> pl(pns->BuildNodeList());
 				if (WriteNodeSet(pns->GetName(), pl.get()) == false)
 				{
 					throw InvalidItemListBuilder(po);

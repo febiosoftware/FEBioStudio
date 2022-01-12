@@ -45,9 +45,9 @@ void FEDOF::operator=(const FEDOF& dof)
 	m_symbol = dof.m_symbol;
 }
 
-FEDOFVariable::FEDOFVariable(const char* szname)
+FEDOFVariable::FEDOFVariable(const std::string& name)
 {
-	m_name = szname;
+	m_name = name;
 }
 
 FEDOFVariable::FEDOFVariable(const FEDOFVariable& var)

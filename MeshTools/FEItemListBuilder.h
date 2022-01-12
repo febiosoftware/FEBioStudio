@@ -79,7 +79,7 @@ public:
 public:
 	FEItemListBuilder(int ntype, unsigned int flags);
 
-	virtual FENodeList*	BuildNodeList() = 0;
+	virtual FSNodeList*	BuildNodeList() = 0;
 	virtual FEFaceList*	BuildFaceList() = 0;
 	virtual FEElemList*	BuildElemList() = 0;
 	
