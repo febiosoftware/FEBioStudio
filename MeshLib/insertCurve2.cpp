@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "FECurveMesh.h"
 #include <GeomLib/GObject.h>
 #include "MeshTools.h"
+#include <MeshTools/FECurveMesher.h>
 #include "TriMesh.h"
 
 InsertCurves2::InsertCurves2()
@@ -60,7 +61,16 @@ FESurfaceMesh* InsertCurves2::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList
 		// get a mesh for this curve
 		GObject* pco = dynamic_cast<GObject*>(pc->Object());
 		FECurveMesh* ps = pco->GetFECurveMesh(pc->GetLocalID());
-		if (ps == 0) return 0;
+		if (ps == 0)
+		{
+			if (pco->GetType() == GCURVE)
+			{
+				FECurveMesher curveMesher;
+				ps = curveMesher.BuildMesh(pc);
+				if (ps == 0) return 0;
+			}
+			else return 0;
+		}
 		ps->Sort();
 
 		// get the node count for this curve
