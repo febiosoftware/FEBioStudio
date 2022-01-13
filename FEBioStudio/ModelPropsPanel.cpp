@@ -288,8 +288,8 @@ class Ui::CModelPropsPanel
 public:
 	QStackedWidget*	stack;
 	QStackedWidget*	propStack;
-	::CSelectionBox* sel1;
-	::CSelectionBox* sel2;
+	CItemListSelectionBox* sel1;
+	CItemListSelectionBox* sel2;
 	::CPropertyListView* props;
 	::CPropertyListForm* form;
 //	CMaterialPropsView*	mat;
@@ -340,10 +340,10 @@ public:
 		propStack->addWidget(plt);
 		propStack->addWidget(math);
 
-		sel1 = new ::CSelectionBox;
+		sel1 = new CItemListSelectionBox;
 		sel1->setObjectName("select1");
 
-		sel2 = new ::CSelectionBox;
+		sel2 = new CItemListSelectionBox;
 		sel2->setObjectName("select2");
 
 		mesh = new CMeshInfoPanel;
@@ -534,7 +534,7 @@ public:
 		}
 	}
 
-	::CSelectionBox* selectionPanel(int n)
+	CItemListSelectionBox* selectionPanel(int n)
 	{
 		return (n==0?sel1 : sel2);
 	}
@@ -766,14 +766,14 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
 		ui->showSelectionPanel2(false);
 
-		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(m_currentObject);
+/*		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(m_currentObject);
 		if (pbc && (pbc->GetMeshItemType() != 0))
 		{
 			ui->showSelectionPanel1(true);
 			SetSelection(0, pbc->GetItemList()); 
 			return;
 		}
-
+*/
 		FSSoloInterface* solo = dynamic_cast<FSSoloInterface*>(m_currentObject);
 		if (solo) { SetSelection(0, solo->GetItemList()); return; }
 
@@ -808,121 +808,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 
 void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 {
-	CSelectionBox* sel = ui->selectionPanel(n);
-
-	if (item == 0)
-	{
-		sel->setName("");
-		sel->setType("");
-		sel->clearData();
-		return;
-	}
-
-	// set the name
-	QString name = QString::fromStdString(item->GetName());
-	sel->showNameType(true);
-	sel->setName(name);
-	sel->enableAllButtons(true);
-	sel->clearData();
-	sel->setCollapsed(false);
-
-	// set the type
-	QString type("(unknown)");
-	switch (item->Type())
-	{
-	case GO_PART: 
-		{	
-			sel->setType("Domains");
-			GPartList& g = dynamic_cast<GPartList&>(*item);
-			vector<GPart*> parts = g.GetPartList();
-			FEItemListBuilder::Iterator it = item->begin();
-			for (int i=0; i<parts.size(); ++i, ++it)
-			{
-				GPart* pg = parts[i];
-				if (pg) sel->addData(QString::fromStdString(pg->GetName()), pg->GetID());
-				else sel->addData(QString("[invalid reference]"), *it, 1);
-			}
-		}
-		break;
-	case GO_FACE:
-		{	
-			sel->setType("Surfaces");
-			GFaceList& g = dynamic_cast<GFaceList&>(*item);
-			vector<GFace*> surfs = g.GetFaceList();
-			FEItemListBuilder::Iterator it = item->begin();
-			for (int i=0; i<surfs.size(); ++i, ++it)
-			{
-				GFace* pg = surfs[i];
-				if (pg) sel->addData(QString::fromStdString(pg->GetName()), pg->GetID());
-				else sel->addData(QString("[invalid reference]"), *it, 1);
-			}
-		}
-		break;
-	case GO_EDGE: 
-		{	
-			sel->setType("Curves");
-			GEdgeList& g = dynamic_cast<GEdgeList&>(*item);
-			vector<GEdge*> edges = g.GetEdgeList();
-			FEItemListBuilder::Iterator it = item->begin();
-			for (int i=0; i<edges.size(); ++i, ++it)
-			{
-				GEdge* pg = edges[i];
-				if (pg) sel->addData(QString::fromStdString(pg->GetName()), pg->GetID());
-				else sel->addData(QString("[invalid reference]"), *it, 1);
-			}
-		}
-		break;
-	case GO_NODE:
-		{	
-			sel->setType("Nodes");
-			GNodeList& g = dynamic_cast<GNodeList&>(*item);
-			vector<GNode*> nodes = g.GetNodeList();
-			FEItemListBuilder::Iterator it = item->begin();
-			for (int i=0; i<nodes.size(); ++i, ++it)
-			{
-				GNode* pg = nodes[i];
-				if (pg) sel->addData(QString::fromStdString(pg->GetName()), pg->GetID());
-				else sel->addData(QString("[invalid reference]"), *it, 1);
-			}
-		}
-		break;
-	default:
-		switch (item->Type())
-		{
-		case FE_PART   : type = "Elements"; break;
-		case FE_SURFACE: type = "Facets"; break;
-		case FE_EDGESET: type = "Edges"; break;
-		case FE_NODESET: type = "Nodes"; break;
-		default:
-			assert(false);
-		}
-
-		FSGroup* pg = dynamic_cast<FSGroup*>(item);
-		if (pg)
-		{
-			FSMesh* mesh = pg->GetMesh();
-			if (mesh)
-			{
-				GObject* po = mesh->GetGObject();
-				if (po)
-				{
-					type += QString(" [%1]").arg(QString::fromStdString(po->GetName()));
-				}
-			}
-		}
-
-		sel->setType(type);
-
-		// set the data
-		vector<int> items;
-		items.insert(items.end(), item->begin(), item->end());
-
-//		sort(items.begin(), items.end());
-//		unique(items.begin(), items.end());
-
-		sel->setCollapsed(true);
-		for (int i=0; i<(int)items.size();++i) sel->addData(QString::number(items[i]), items[i], 0, false);
-	}
+	CItemListSelectionBox* sel = ui->selectionPanel(n);
+	sel->SetItemList(item);
 }
 
 void CModelPropsPanel::SetSelection(GMaterial* pmat)

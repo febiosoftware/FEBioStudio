@@ -345,3 +345,18 @@ protected:
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;
 };
+
+// helper class for getting selections without the need to access the document
+class CActiveSelection
+{
+public:
+	static FESelection* GetCurrentSelection();
+
+private:
+	static void SetMainWindow(CMainWindow* wnd);
+
+private:
+	static CMainWindow* m_wnd;
+
+	friend class CMainWindow;
+};

@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <QStandardItemModel>
+#include "SelectionBox.h"
 using namespace std;
 
 // in MaterialPropsView.cpp
@@ -135,7 +136,12 @@ public:
 					FSFunction1D* pf = dynamic_cast<FSFunction1D*>(pci);
 					if (pf && (pf->IsType("point") || pf->IsType("math")))
 						return item;
-					else item->addChildren(pci);
+
+					// don't add mesh selection 
+					FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(pci);
+					if (pms) return item;
+
+					item->addChildren(pci);
 				}
 			}
 			return item;
@@ -383,13 +389,29 @@ public:
 				}
 				else
 				{
-					FSCoreBase* pc = (m_propIndex >= 0 ? m_pc->GetProperty(m_propId, m_propIndex) : nullptr);
-					if (pc == nullptr)
+					FSProperty& prop = m_pc->GetProperty(m_propId);
+					if (prop.GetSuperClassID() == FEDOMAIN_ID)
 					{
-						bool required = (p.GetFlags() & FSProperty::REQUIRED);
-						return QString(required ? "(select)" : "(none)");
+						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop.GetComponent()); assert(pms);
+						if (pms)
+						{
+							FEItemListBuilder* pi = pms->GetItemList();
+							if (pi == nullptr) return QString("(empty)");
+							string s = pi->GetName();
+							if (s.empty()) return QString("(unnamed)");
+							else return QString::fromStdString(s);
+						}
 					}
-					else return pc->GetTypeString();
+					else
+					{
+						FSCoreBase* pc = (m_propIndex >= 0 ? m_pc->GetProperty(m_propId, m_propIndex) : nullptr);
+						if (pc == nullptr)
+						{
+							bool required = (p.GetFlags() & FSProperty::REQUIRED);
+							return QString(required ? "(select)" : "(none)");
+						}
+						else return pc->GetTypeString();
+					}
 				}
 			}
 			else return "No data";
@@ -978,19 +1000,23 @@ public:
 
 	CCurveEditWidget* plt;
 	CMathEditWidget* math;
+	CMeshSelectionBox* sel;
 
 	FSFunction1D* m_pf;
+	FSMeshSelection* m_pms;
 
 public:
 	void setup(QWidget* w)
 	{
 		m_pf = nullptr;
+		m_pms = nullptr;
 
 		feprops = new FEClassPropsView;
 
 		stack = new QStackedWidget;
-		stack->addWidget(plt = new CCurveEditWidget);
+		stack->addWidget(plt  = new CCurveEditWidget);
 		stack->addWidget(math = new CMathEditWidget);
+		stack->addWidget(sel = new CMeshSelectionBox);
 
 		QVBoxLayout* l = new QVBoxLayout;
 		l->setContentsMargins(0, 0, 0, 0);
@@ -1029,6 +1055,18 @@ public:
 			else stack->hide();
 		}
 	}
+
+	void SetMeshSelection(FSMeshSelection* pms)
+	{
+		m_pms = pms;
+		if (pms == nullptr) stack->hide();
+		else
+		{
+			sel->SetSelection(pms);
+			stack->setCurrentIndex(2);
+			stack->show();
+		}
+	}
 };
 
 FEClassEdit::FEClassEdit(QWidget* parent) : QWidget(parent), ui(new FEClassEditUI)
@@ -1053,6 +1091,11 @@ void FEClassEdit::onItemClicked(const QModelIndex& i)
 	{
 		FSFunction1D* pf = dynamic_cast<FSFunction1D*>(p->GetComponent());
 		ui->SetFunction1D(pf);
+	}
+	else if (p->GetSuperClassID() == FEDOMAIN_ID)
+	{
+		FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(p->GetComponent());
+		ui->SetMeshSelection(pms); return;
 	}
 	else ui->SetFunction1D(nullptr);
 }

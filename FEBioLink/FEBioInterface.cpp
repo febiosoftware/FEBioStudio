@@ -184,8 +184,17 @@ bool BuildModelComponent(FEBio::FEBioClass* feb, FSModelComponent* po)
 			pci->SetFlags(pci->GetFlags() | FSProperty::REQUIRED);
 		pci->SetDefaultType(prop.m_defType);
 
-		// NOTE: is this ever true?
-		if (prop.m_comp.empty() == false)
+		// handle mesh selection properties differently
+		if (prop.m_superClassId == FEDOMAIN_ID)
+		{
+			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
+
+			if (prop.m_name == "surface") pms->SetMeshItemType(FE_FACE_FLAG);
+
+			pms->SetSuperClassID(FEDOMAIN_ID);
+			pci->AddComponent(pms);
+		}
+		else if (prop.m_comp.empty() == false)
 		{
 			FEBio::FEBioClass& fbc = prop.m_comp[0];
 			FSCoreBase* pmi = FEBio::CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), nullptr);
@@ -445,6 +454,7 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
 	case FELOADCONTROLLER_ID      : pc = new FEBioLoadController(fem); break;
 	case FEMESHADAPTOR_ID         : pc = new FEBioMeshAdaptor(fem); break;
 	case FENLCONSTRAINT_ID        : pc = new FEBioNLConstraint(fem); break;
+	case FEDATAGENERATOR_ID       : pc = new FEBioMeshDataGenerator(fem); break;
 	case FESOLVER_ID              : pc = new FSGenericClass; break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
 	case FENEWTONSTRATEGY_ID      : pc = new FSGenericClass; break;

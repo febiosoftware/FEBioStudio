@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "SelectionBox.h"
+#include "Document.h"	// for CActiveSelection
 #include <QBoxLayout>
 #include <QFormLayout>
 #include <QLineEdit>
@@ -34,6 +35,11 @@ SOFTWARE.*/
 #include <QListWidgetItem>
 #include <QToolButton>
 #include <QGridLayout>
+#include <QMessageBox>
+#include <MeshTools/FEItemListBuilder.h>
+#include <MeshTools/GGroup.h>
+#include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 class Ui::CSelectionBox
 {
@@ -400,5 +406,220 @@ void CSelectionBox::removeSelectedItems()
 				i--;
 			}
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+CItemListSelectionBox::CItemListSelectionBox(QWidget* parent) : CSelectionBox(parent)
+{
+
+}
+
+void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
+{
+	// make sure we have an item list
+	if (item == 0)
+	{
+		setName("");
+		setType("");
+		clearData();
+		return;
+	}
+
+	// set the name
+	QString name = QString::fromStdString(item->GetName());
+	showNameType(true);
+	setName(name);
+	enableAllButtons(true);
+	clearData();
+	setCollapsed(false);
+
+	// set the type
+	QString type("(unknown)");
+	switch (item->Type())
+	{
+	case GO_PART:
+	{
+		setType("Domains");
+		GPartList& g = dynamic_cast<GPartList&>(*item);
+		vector<GPart*> parts = g.GetPartList();
+		FEItemListBuilder::Iterator it = item->begin();
+		for (int i = 0; i < parts.size(); ++i, ++it)
+		{
+			GPart* pg = parts[i];
+			if (pg) addData(QString::fromStdString(pg->GetName()), pg->GetID());
+			else addData(QString("[invalid reference]"), *it, 1);
+		}
+	}
+	break;
+	case GO_FACE:
+	{
+		setType("Surfaces");
+		GFaceList& g = dynamic_cast<GFaceList&>(*item);
+		vector<GFace*> surfs = g.GetFaceList();
+		FEItemListBuilder::Iterator it = item->begin();
+		for (int i = 0; i < surfs.size(); ++i, ++it)
+		{
+			GFace* pg = surfs[i];
+			if (pg) addData(QString::fromStdString(pg->GetName()), pg->GetID());
+			else addData(QString("[invalid reference]"), *it, 1);
+		}
+	}
+	break;
+	case GO_EDGE:
+	{
+		setType("Curves");
+		GEdgeList& g = dynamic_cast<GEdgeList&>(*item);
+		vector<GEdge*> edges = g.GetEdgeList();
+		FEItemListBuilder::Iterator it = item->begin();
+		for (int i = 0; i < edges.size(); ++i, ++it)
+		{
+			GEdge* pg = edges[i];
+			if (pg) addData(QString::fromStdString(pg->GetName()), pg->GetID());
+			else addData(QString("[invalid reference]"), *it, 1);
+		}
+	}
+	break;
+	case GO_NODE:
+	{
+		setType("Nodes");
+		GNodeList& g = dynamic_cast<GNodeList&>(*item);
+		vector<GNode*> nodes = g.GetNodeList();
+		FEItemListBuilder::Iterator it = item->begin();
+		for (int i = 0; i < nodes.size(); ++i, ++it)
+		{
+			GNode* pg = nodes[i];
+			if (pg) addData(QString::fromStdString(pg->GetName()), pg->GetID());
+			else addData(QString("[invalid reference]"), *it, 1);
+		}
+	}
+	break;
+	default:
+		switch (item->Type())
+		{
+		case FE_PART   : type = "Elements"; break;
+		case FE_SURFACE: type = "Facets"; break;
+		case FE_EDGESET: type = "Edges"; break;
+		case FE_NODESET: type = "Nodes"; break;
+		default:
+			assert(false);
+		}
+
+		FSGroup* pg = dynamic_cast<FSGroup*>(item);
+		if (pg)
+		{
+			FSMesh* mesh = pg->GetMesh();
+			if (mesh)
+			{
+				GObject* po = mesh->GetGObject();
+				if (po)
+				{
+					type += QString(" [%1]").arg(QString::fromStdString(po->GetName()));
+				}
+			}
+		}
+		setType(type);
+
+		// set the data
+		vector<int> items;
+		items.insert(items.end(), item->begin(), item->end());
+
+		//		sort(items.begin(), items.end());
+		//		unique(items.begin(), items.end());
+
+		setCollapsed(true);
+		for (int i = 0; i < (int)items.size(); ++i) addData(QString::number(items[i]), items[i], 0, false);
+	}
+}
+
+CMeshSelectionBox::CMeshSelectionBox(QWidget* parent)
+{
+	m_pms = nullptr;
+
+	QObject::connect(this, SIGNAL(addButtonClicked()), this, SLOT(onAddButtonClicked()));
+	QObject::connect(this, SIGNAL(nameChanged(const QString&)), this, SLOT(onNameChanged(const QString&)));
+}
+
+void CMeshSelectionBox::SetSelection(FSMeshSelection* pms)
+{
+	m_pms = pms;
+	if (pms)
+		SetItemList(pms->GetItemList());
+	else
+		SetItemList(nullptr);
+}
+
+void CMeshSelectionBox::onNameChanged(const QString& t)
+{
+	FEItemListBuilder* pi = (m_pms ? m_pms->GetItemList() : nullptr);
+	if (pi) pi->SetName(t.toStdString());
+}
+
+void CMeshSelectionBox::onAddButtonClicked()
+{
+	if (m_pms == nullptr) return;
+
+	FSModel* fem = m_pms->GetFSModel(); assert(fem);
+	if (fem == nullptr) return;
+
+	GModel& gm = fem->GetModel();
+
+	// get the current selection
+	FESelection* ps = CActiveSelection::GetCurrentSelection();
+	if ((ps == 0) || (ps->Size() == 0)) return;
+
+	// create the item list from the selection
+	FEItemListBuilder* pg = ps->CreateItemList();
+	if (pg == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "You cannot assign an empty selection.");
+		return;
+	}
+
+	// get the current item list
+	FEItemListBuilder* pl = m_pms->GetItemList();
+
+	// see whether the current list exists or not
+	if (pl == nullptr)
+	{
+		// see if we can assign it
+		int itemType = m_pms->GetMeshItemType();
+		if (pg->Supports(itemType) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
+			delete pg;
+			return;
+		}
+
+		m_pms->SetItemList(pg);
+		SetItemList(pg);
+	}
+	else
+	{
+		// merge with the current list
+		if (pg->Type() != pl->Type())
+		{
+			QMessageBox::critical(this, "FEBio Studio", "The selection is not of the correct type.");
+		}
+		else
+		{
+			// for groups, make sure that they are on the same mesh
+			FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
+			FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
+			if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
+			{
+				QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
+			}
+			else
+			{
+				list<int> l = pg->CopyItems();
+				pl->Merge(l);
+			}
+			
+			SetItemList(pl);
+			delete pg;
+		}
+		emit selectionChanged();
+		return;
 	}
 }

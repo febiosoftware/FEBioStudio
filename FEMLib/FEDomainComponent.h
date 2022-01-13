@@ -38,3 +38,21 @@ protected:
 
 	FEItemListBuilder*	m_pItem;	// list of item indices to apply the BC too
 };
+
+//---------------------------------------------------------------------------------------------
+// This class is used to select mesh selections properties
+class FSMeshSelection : public FSModelComponent
+{
+public:
+	FSMeshSelection(FSModel* fem);
+
+	FEItemListBuilder* GetItemList();
+	void SetItemList(FEItemListBuilder* pi);
+
+	unsigned int GetMeshItemType() const;
+	void SetMeshItemType(unsigned int meshItem);
+
+private:
+	unsigned int		m_itemType;
+	FEItemListBuilder*	m_pItem;
+};

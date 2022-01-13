@@ -126,3 +126,22 @@ void FSDomainComponent::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 }
+
+//-----------------------------------------------------------------------------
+FSMeshSelection::FSMeshSelection(FSModel* fem) : FSModelComponent(fem), m_pItem(nullptr)
+{
+	m_itemType = 0;
+}
+
+FEItemListBuilder* FSMeshSelection::GetItemList() { return m_pItem; }
+void FSMeshSelection::SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
+
+unsigned int FSMeshSelection::GetMeshItemType() const
+{
+	return m_itemType;
+}
+
+void FSMeshSelection::SetMeshItemType(unsigned int meshItem)
+{
+	m_itemType = meshItem;
+}

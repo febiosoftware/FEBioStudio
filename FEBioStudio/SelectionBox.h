@@ -109,3 +109,36 @@ private:
 	Ui::CSelectionBox*	ui;
 	vector<Item>		m_items;
 };
+
+//-----------------------------------------------------------------------------
+class FEItemListBuilder;
+
+class CItemListSelectionBox : public CSelectionBox
+{
+public:
+	CItemListSelectionBox(QWidget* parent = nullptr);
+
+	void SetItemList(FEItemListBuilder* pItem);
+};
+
+class FSMeshSelection;
+
+class CMeshSelectionBox : public CItemListSelectionBox
+{
+	Q_OBJECT
+
+public:
+	CMeshSelectionBox(QWidget* parent = nullptr);
+
+	void SetSelection(FSMeshSelection* pms);
+
+private slots:
+	void onAddButtonClicked();
+	void onNameChanged(const QString& t);
+
+signals:
+	void selectionChanged();
+
+private:
+	FSMeshSelection* m_pms;
+};

@@ -148,6 +148,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	CResource::Init(this);
 
+	CActiveSelection::SetMainWindow(this);
+
 	setDockOptions(dockOptions() | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);
 
 	// update the Post palette to match PreView's
