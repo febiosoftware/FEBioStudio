@@ -30,7 +30,6 @@ SOFTWARE.*/
 #include <QXmlStreamReader>
 #include "ServerSettings.h"
 
-ServerSettings* ServerSettings::instance = nullptr;
 bool ServerSettings::instantiated = false;
 QString ServerSettings::scheme = "https";
 QString ServerSettings::url = "repo.febio.org";
