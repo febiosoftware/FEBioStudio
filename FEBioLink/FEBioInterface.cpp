@@ -444,6 +444,7 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
 	case FEMATERIALPROP_ID        : pc = new FEBioMaterialProperty(fem); break;
 	case FELOADCONTROLLER_ID      : pc = new FEBioLoadController(fem); break;
 	case FEMESHADAPTOR_ID         : pc = new FEBioMeshAdaptor(fem); break;
+	case FENLCONSTRAINT_ID        : pc = new FEBioNLConstraint(fem); break;
 	case FESOLVER_ID              : pc = new FSGenericClass; break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
 	case FENEWTONSTRATEGY_ID      : pc = new FSGenericClass; break;

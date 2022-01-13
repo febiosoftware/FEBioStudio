@@ -900,7 +900,7 @@ void FEBioExport4::WriteMaterialSection()
 
 		if (pmat)
 		{
-			WriteMaterial(pmat, el);
+			WriteModelComponent(pmat, el);
 		}
 		else
 		{
@@ -911,7 +911,7 @@ void FEBioExport4::WriteMaterialSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteMaterial(FSMaterial* pm, XMLElement& el)
+void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 {
 	// get the type string    
 	const char* sztype = pm->GetTypeString(); assert(sztype);
@@ -945,24 +945,24 @@ void FEBioExport4::WriteMaterial(FSMaterial* pm, XMLElement& el)
 
 	m_xml.add_branch(el);
 	{
-		// write the material parameters (if any)
+		// write the parameters (if any)
 		if (pm->Parameters())
 		{
 			WriteParamList(*pm);
 		}
 
-		// write the material properties
+		// write the properties
 		int NC = pm->Properties();
 		for (int i = 0; i < NC; ++i)
 		{
 			FSProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j < mc.Size(); ++j)
 			{
-				FSMaterial* pc = pm->GetMaterialProperty(i, j);
+				FSModelComponent* pc = dynamic_cast<FSModelComponent*>(pm->GetProperty(i, j));
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
-					WriteMaterial(pc, el);
+					WriteModelComponent(pc, el);
 				}
 			}
 		}
@@ -2370,7 +2370,7 @@ void FEBioExport4::WriteDiscreteSection(FSStep& s)
 			dmat.add_attribute("id", n++);
 			dmat.add_attribute("name", pds->GetName().c_str());
 			FSDiscreteMaterial* dm = pds->GetMaterial();
-			WriteMaterial(dm, dmat);
+			WriteModelComponent(dm, dmat);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
 		if (ds)

@@ -272,7 +272,7 @@ protected:
 	void WriteConnectors(FSStep& s);
 	void WriteConstraints(FSStep& s);
 
-	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteModelComponent(FSModelComponent* pmat, XMLElement& el);
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteSurfaceSection(NamedItemList& l);
