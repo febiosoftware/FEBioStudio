@@ -236,29 +236,29 @@ void CMainWindow::on_actionOpen_triggered()
 	}
 }
 
-void CMainWindow::on_actionReadInfo_triggered()
-{
-    QStringList filters;
-	filters << "All supported files (*.fsm *.fsprj *.prv *.feb)";
-	filters << "FEBioStudio Model (*.fsm *.fsprj)";
+// void CMainWindow::on_actionReadInfo_triggered()
+// {
+//     QStringList filters;
+// 	filters << "All supported files (*.fsm *.fsprj *.prv *.feb)";
+// 	filters << "FEBioStudio Model (*.fsm *.fsprj)";
 
-	QFileDialog dlg(this, "Open");
-	dlg.setFileMode(QFileDialog::ExistingFiles);
-	dlg.setAcceptMode(QFileDialog::AcceptOpen);
-	dlg.setDirectory(ui->currentPath);
-	dlg.setNameFilters(filters);
-	if (dlg.exec())
-	{
-        QStringList files = dlg.selectedFiles();
-        files.sort();
+// 	QFileDialog dlg(this, "Open");
+// 	dlg.setFileMode(QFileDialog::ExistingFiles);
+// 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+// 	dlg.setDirectory(ui->currentPath);
+// 	dlg.setNameFilters(filters);
+// 	if (dlg.exec())
+// 	{
+//         QStringList files = dlg.selectedFiles();
+//         files.sort();
 
-        for(auto filename : files)
-        {
-            ModelTypeInfoReader reader;
-            reader.ReadTypeInfo(filename.toStdString());
-        }
-	}
-}
+//         for(auto filename : files)
+//         {
+//             ModelTypeInfoReader reader;
+//             reader.ReadTypeInfo(filename.toStdString());
+//         }
+// 	}
+// }
 
 void CMainWindow::on_actionSave_triggered()
 {

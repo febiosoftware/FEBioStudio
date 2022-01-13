@@ -317,7 +317,7 @@ public slots:
 	void on_actionNewProject_triggered();
 	void on_actionOpenProject_triggered();
 	void on_actionOpen_triggered();
-    void on_actionReadInfo_triggered();
+    // void on_actionReadInfo_triggered();
 	void on_actionSave_triggered();
 	void on_actionSaveAs_triggered();
 	void on_actionSaveAll_triggered();
