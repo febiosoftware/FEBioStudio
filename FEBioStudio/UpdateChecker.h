@@ -37,9 +37,9 @@ class QLabel;
 class QNetworkAccessManager;
 class QDialogButtonBox;
 
-#define UPDATE_URL "repo.febio.org"
-#define PORT 4433
-#define SCHEME "https"
+// #define UPDATE_URL "repo.febio.org"
+// #define PORT 4433
+// #define SCHEME "https"
 
 // #define UPDATE_URL "localhost"
 // #define PORT 5236

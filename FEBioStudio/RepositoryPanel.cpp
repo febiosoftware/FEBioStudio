@@ -57,7 +57,11 @@ SOFTWARE.*/
 #include "WrapLabel.h"
 #include "TagLabel.h"
 #include "ZipFiles.h"
+<<<<<<< HEAD
 #include "ModelTypeInfoReader.h"
+=======
+#include "ServerSettings.h"
+>>>>>>> 0005a4ac7cef0451608e824921c05bf21e89ac3e
 
 #include <iostream>
 #include <QDebug>
@@ -562,7 +566,7 @@ void CRepositoryPanel::on_actionCopyPermalink_triggered()
 {
 	ProjectItem* item = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0]);
 
-	QString permalink = QString("https://%1:%2/permalink/project/%3").arg(REPO_URL).arg(REPO_PORT).arg(item->getProjectID());
+	QString permalink = QString("https://%1:%2/permalink/project/%3").arg(ServerSettings::URL()).arg(ServerSettings::Port()).arg(item->getProjectID());
 
 	QGuiApplication::clipboard()->setText(permalink);
 }
