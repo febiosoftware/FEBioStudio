@@ -57,11 +57,8 @@ SOFTWARE.*/
 #include "WrapLabel.h"
 #include "TagLabel.h"
 #include "ZipFiles.h"
-<<<<<<< HEAD
 #include "ModelTypeInfoReader.h"
-=======
 #include "ServerSettings.h"
->>>>>>> 0005a4ac7cef0451608e824921c05bf21e89ac3e
 
 #include <iostream>
 #include <QDebug>
