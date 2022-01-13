@@ -38,7 +38,6 @@ private:
     static void Instantiate();
 
 private:
-    static ServerSettings* instance;
     static bool instantiated;
     static QString scheme;
     static QString url;
