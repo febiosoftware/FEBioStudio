@@ -43,13 +43,13 @@ GGroup::~GGroup(void)
 // GNodeList
 //-----------------------------------------------------------------------------
 
-FENodeList* GNodeList::BuildNodeList()
+FSNodeList* GNodeList::BuildNodeList()
 {
 	FSModel* pfem = dynamic_cast<FSModel*>(m_ps);
 	GModel& m = pfem->GetModel();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 	for (int i=0; i<N; ++i, ++it)
 	{
 		GNode* pn = m.FindNode(*it);
@@ -136,10 +136,10 @@ GEdgeList::GEdgeList(FSModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE, FE_N
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* GEdgeList::BuildNodeList()
+FSNodeList* GEdgeList::BuildNodeList()
 {
 	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 	int N = m_Item.size(), i, n;
 	FEItemListBuilder::Iterator it = m_Item.begin();
 
@@ -262,7 +262,7 @@ GFaceList::GFaceList(FSModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_N
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* GFaceList::BuildNodeList()
+FSNodeList* GFaceList::BuildNodeList()
 {
 	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	int N = m_Item.size(), n, i;
@@ -302,7 +302,7 @@ FENodeList* GFaceList::BuildNodeList()
 	}
 
 	// create a new node list
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 
 	// next we add all the nodes
 	it = m_Item.begin();
@@ -448,7 +448,7 @@ FEElemList* GPartList::BuildElemList()
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* GPartList::BuildNodeList()
+FSNodeList* GPartList::BuildNodeList()
 {
 	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	int N = m_Item.size(), n, i, j;
@@ -490,7 +490,7 @@ FENodeList* GPartList::BuildNodeList()
 	}
 
 	// next we add all the nodes
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 	it = m_Item.begin();
 	for (n=0; n<N; ++n, ++it)
 	{

@@ -47,7 +47,7 @@ using std::unique_ptr;
 using std::stringstream;
 
 //-----------------------------------------------------------------------------
-FENodeList* BuildNodeList(GFace* pf)
+FSNodeList* BuildNodeList(GFace* pf)
 {
 	if (pf == 0) return 0;
 	GObject* po = dynamic_cast<GObject*>(pf->Object());
@@ -71,7 +71,7 @@ FENodeList* BuildNodeList(GFace* pf)
 	}
 
 	// create a new node list
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 
 	// next we add all the nodes
 	for (int i = 0; i<m.Nodes(); ++i) if (m.Node(i).m_ntag == 1) ps->Add(&m, m.NodePtr(i));
@@ -80,7 +80,7 @@ FENodeList* BuildNodeList(GFace* pf)
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* BuildNodeList(GPart* pg)
+FSNodeList* BuildNodeList(GPart* pg)
 {
 	if (pg == 0) return 0;
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
@@ -104,7 +104,7 @@ FENodeList* BuildNodeList(GPart* pg)
 	}
 
 	// create a new node list
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 
 	// next we add all the nodes
 	for (int i = 0; i<m.Nodes(); ++i) if (m.Node(i).m_ntag == 1) ps->Add(&m, m.NodePtr(i));
@@ -113,10 +113,10 @@ FENodeList* BuildNodeList(GPart* pg)
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* BuildNodeList(GNode* pn)
+FSNodeList* BuildNodeList(GNode* pn)
 {
 	if (pn == 0) return 0;
-	FENodeList* ps = new FENodeList;
+	FSNodeList* ps = new FSNodeList;
 	GObject* po = dynamic_cast<GObject*>(pn->Object());
 	FSMesh* pm = po->GetFEMesh();
 	for (int j = 0; j<pm->Nodes(); ++j)
@@ -132,7 +132,7 @@ FENodeList* BuildNodeList(GNode* pn)
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* BuildNodeList(GEdge* pe)
+FSNodeList* BuildNodeList(GEdge* pe)
 {
 	if (pe == 0) return 0;
 	GObject* po = dynamic_cast<GObject*>(pe->Object());
@@ -156,7 +156,7 @@ FENodeList* BuildNodeList(GEdge* pe)
 	}
 
 	// create a new node list
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 
 	// next we add all the nodes
 	for (int i = 0; i < m.Nodes(); ++i) if (m.Node(i).m_ntag == 1) ps->Add(&m, m.NodePtr(i));
@@ -2178,7 +2178,7 @@ void FEBioExport25::WriteGeometryObject(FEBioExport25::Part* part)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport25::WriteNodeSet(const string& name, FENodeList* pl)
+bool FEBioExport25::WriteNodeSet(const string& name, FSNodeList* pl)
 {
 	if (pl == 0) 
 	{
@@ -2190,7 +2190,7 @@ bool FEBioExport25::WriteNodeSet(const string& name, FENodeList* pl)
 	}
 
 	int nn = pl->Size();
-	FENodeList::Iterator pn = pl->First();
+	FSNodeList::Iterator pn = pl->First();
 	vector<int> m(nn);
 	for (int n=0; n<nn; ++n, pn++)
 	{
@@ -2325,7 +2325,7 @@ void FEBioExport25::WriteGeometryNodeSets()
 	for (int i=0; i<NS; ++i)
 	{
 		FEItemListBuilder* pil = m_pNSet[i].second;
-		unique_ptr<FENodeList> pl(pil->BuildNodeList());
+		unique_ptr<FSNodeList> pl(pil->BuildNodeList());
 		if (WriteNodeSet(m_pNSet[i].first.c_str(), pl.get()) == false)
 		{
 			throw InvalidItemListBuilder(pil);
@@ -2342,7 +2342,7 @@ void FEBioExport25::WriteGeometryNodeSets()
 		for (int i = 0; i < model.NodeLists(); ++i)
 		{
 			GNodeList* pg = model.NodeList(i);
-			unique_ptr<FENodeList> pn(pg->BuildNodeList());
+			unique_ptr<FSNodeList> pn(pg->BuildNodeList());
 			if (WriteNodeSet(pg->GetName(), pn.get()) == false)
 			{
 				throw InvalidItemListBuilder(pg);
@@ -2361,7 +2361,7 @@ void FEBioExport25::WriteGeometryNodeSets()
 				for (int j = 0; j < nset; ++j)
 				{
 					FSNodeSet* pns = po->GetFENodeSet(j);
-					unique_ptr<FENodeList> pl(pns->BuildNodeList());
+					unique_ptr<FSNodeList> pl(pns->BuildNodeList());
 					if (WriteNodeSet(pns->GetName(), pl.get()) == false)
 					{
 						throw InvalidItemListBuilder(po);

@@ -47,7 +47,7 @@ FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
 QStringList FEObjectProps::GetEnumValues(const char* ch)
 {
 	QStringList ops;
-	char sz[256] = { 0 };
+	char sz[512] = { 0 };
 	if (ch[0] == '$')
 	{
 		if (m_fem)

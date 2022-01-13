@@ -216,7 +216,6 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 
 	m_nAnalysis = FEBio::GetModuleId(sztype);
 	if (m_nAnalysis < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
-	FEBio::SetActiveModule(m_nAnalysis);
 	FileReader()->GetProject().SetModule(m_nAnalysis);
 	return (m_nAnalysis != -1);
 }
@@ -240,6 +239,92 @@ FSStep* FEBioFormat3::NewStep(FSModel& fem, int nanalysis, const char* szname)
 	fem.AddStep(pstep);
 
 	return pstep;
+}
+
+//-----------------------------------------------------------------------------
+// helper class for mapping old parameters to new structures
+struct OldParam {
+	const char* propName;
+	const char* szparamName;
+	int vi;
+};
+
+//-----------------------------------------------------------------------------
+void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
+{
+	FSModel& fem = GetFSModel();
+
+	// list of old parameters that need to be assigned elsewhere
+	vector<OldParam> oldParams;
+
+	++tag;
+	do
+	{
+		if (ReadParam(*pmc, tag) == false)
+		{
+			// check for obsolete parameters
+			if (tag == "max_ups")
+			{
+				int v;
+				tag.value(v);
+				oldParams.push_back(OldParam{ "qn_method", "max_ups", v });
+			}
+			else if (tag == "qnmethod")
+			{
+				int v = -1;
+				tag.value(v);
+				FSProperty* solverProp = pmc->FindProperty("qn_method"); assert(solverProp);
+
+				FSModelComponent* qnmethod = nullptr;
+				switch (v)
+				{
+				case 0: qnmethod = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS"   , &fem); break;
+				case 1: qnmethod = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", &fem); break;
+				case 2: qnmethod = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "JFNK"   , &fem); break;
+				}
+				assert(qnmethod);
+
+				solverProp->SetComponent(qnmethod);
+			}
+			else if (pmc->Properties() > 0)
+			{
+				const char* sztag = tag.Name();
+				FSProperty* pc = pmc->FindProperty(sztag); assert(pc);
+
+				// see if this is a property
+				const char* sztype = tag.AttributeValue("type", true);
+				if (sztype == 0) sztype = tag.Name();
+
+				if (pc->GetComponent() == nullptr)
+				{
+					FSModelComponent* psc = FEBio::CreateClass(pc->GetSuperClassID(), sztype, &fem);
+					pc->SetComponent(psc);
+				}
+
+				// read the parameters
+				ReadParameters(*pc->GetComponent(), tag);
+			}
+			else ParseUnknownTag(tag);
+		}
+		++tag;
+	} while (!tag.isend());
+
+	// Map the old parameters
+	for (int i = 0; i < oldParams.size(); ++i)
+	{
+		OldParam& pi = oldParams[i];
+
+		Param* pp = nullptr;
+		if (pi.propName)
+		{
+			FSProperty* prop = pmc->FindProperty(pi.propName); assert(prop);
+			FSCoreBase* pc = prop->GetComponent(0);
+			pp = pc->GetParam(pi.szparamName); assert(pp);
+		}
+		else pp = pmc->GetParam(pi.szparamName);
+		assert(pp);
+		if (pp) pp->SetIntValue(pi.vi);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -290,8 +375,14 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					pc->SetComponent(psc);
 				}
 
-				// read the parameters
- 				ReadParameters(*pc->GetComponent(), tag);
+				if (tag == "solver")
+				{
+					FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(pc->GetComponent()); assert(pmc);
+					ReadSolverParameters(pmc, tag);
+				}
+				else 
+					// read the parameters
+ 					ReadParameters(*pc->GetComponent(), tag);
 			}
 			else ParseUnknownTag(tag);
 		}
@@ -360,7 +451,7 @@ bool FEBioFormat3::ParseMaterialSection(XMLTag& tag)
 		}
 
 		// parse material
-		ParseMaterial(tag, pmat);
+		ParseModelComponent(pmat, tag);
 
 		// if pmat is set we need to add the material to the list
 		gmat = new GMaterial(pmat);
@@ -376,16 +467,15 @@ bool FEBioFormat3::ParseMaterialSection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
+void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
 	// first, process potential attribute parameters
-	// (e.g. for solutes)
 	for (int i = 0; i < tag.m_natt; ++i)
 	{
 		XMLAtt& att = tag.m_att[i];
-		Param* param = pmat->GetParam(att.name());
+		Param* param = pmc->GetParam(att.name());
 		if (param)
 		{
 			switch (param->GetParamType())
@@ -413,7 +503,7 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 		else if (strcmp(att.name(), "sol") == 0)
 		{
 			// we might be in a chemical reaction. Try to find the "species" parameter.
-			param = pmat->GetParam("species");
+			param = pmc->GetParam("species");
 			if (param)
 			{
 				int n = atoi(att.cvalue());
@@ -423,7 +513,7 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 		else if (strcmp(att.name(), "sbm") == 0)
 		{
 			// we might be in a chemical reaction. Try to find the "species" parameter.
-			param = pmat->GetParam("species");
+			param = pmc->GetParam("species");
 			if (param)
 			{
 				int n = atoi(att.cvalue());
@@ -437,7 +527,7 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 	if (tag.isleaf())
 	{
 		// see if there is a parameter with the same name 
-		Param* param = pmat->GetParam(tag.Name());
+		Param* param = pmc->GetParam(tag.Name());
 		if (param)
 		{
 			switch (param->GetParamType())
@@ -460,23 +550,24 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 	++tag;
 	do
 	{
-		if (ReadParam(*pmat, tag) == false)
+		if (ReadParam(*pmc, tag) == false)
 		{
-			if (pmat->Properties() > 0)
+			if (pmc->Properties() > 0)
 			{
 				const char* sztag = tag.Name();
-				FSProperty* pmc = pmat->FindProperty(sztag);
-				if (pmc == nullptr)
+				FSProperty* prop = pmc->FindProperty(sztag);
+				if (prop == nullptr)
 				{
 					ParseUnknownTag(tag);
 				}
 				else
 				{
-					// see if this is a material property
+					// see if the type attribute is defined
 					const char* sztype = tag.AttributeValue("type", true);
 					if (sztype == 0)
 					{
-						const std::string& defType = pmc->GetDefaultType();
+						// if not, get the default type. If none specified, we'll use the tag itself.
+						const std::string& defType = prop->GetDefaultType();
 						if (defType.empty() == false) sztype = defType.c_str();
 						else sztype = tag.Name();
 					}
@@ -488,17 +579,12 @@ void FEBioFormat3::ParseMaterial(XMLTag& tag, FSMaterial* pmat)
 					}
 					else
 					{
-						FSModelComponent* pc = FEBio::CreateClass(pmc->GetSuperClassID(), sztype, &fem);
-						assert(pc->GetSuperClassID() == pmc->GetSuperClassID());
-						if (pmc)
+						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
+						assert(pc->GetSuperClassID() == prop->GetSuperClassID());
+						if (pc)
 						{
-							pmc->AddComponent(pc);
-
-							if (dynamic_cast<FSMaterial*>(pc))
-							{
-								ParseMaterial(tag, dynamic_cast<FSMaterial*>(pc));
-							}
-							else ReadParameters(*pc, tag);
+							prop->AddComponent(pc);
+							ParseModelComponent(pc, tag);
 						}
 					}
 				}

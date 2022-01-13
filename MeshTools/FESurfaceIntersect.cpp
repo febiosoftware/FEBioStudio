@@ -34,7 +34,7 @@ int FESurfaceIntersect::Apply(FSSurface* psrc, FSSurface* ptrg, double mindist)
 	FSMesh* pm = psrc->GetMesh();
 
 	// build the slave surface node list
-	FENodeList* pn = psrc->BuildNodeList();
+	FSNodeList* pn = psrc->BuildNodeList();
 
 	// build the target facet list
 	FEFaceList* pfs = psrc->BuildFaceList();
@@ -45,7 +45,7 @@ int FESurfaceIntersect::Apply(FSSurface* psrc, FSSurface* ptrg, double mindist)
 
 	// loop over all the surface nodes
 	int N = pn->Size();
-	FENodeList::Iterator it = pn->First();
+	FSNodeList::Iterator it = pn->First();
 	for (int i=0; i<N; ++i, ++it)
 	{
 		// get the next node

@@ -155,7 +155,7 @@ protected:
 	bool HasSurface(FEItemListBuilder* pl);
 	bool HasNodeSet(FEItemListBuilder* pl);
 
-	bool WriteNodeSet(const string& name, FENodeList* pl);
+	bool WriteNodeSet(const string& name, FSNodeList* pl);
 
 protected:
 	std::vector<FEItemListBuilder*>	m_pSurf;	//!< list of named surfaces

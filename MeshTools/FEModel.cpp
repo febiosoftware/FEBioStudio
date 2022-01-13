@@ -215,9 +215,15 @@ FSModel::FSModel() : m_skipGeometry(false)
 }
 
 //-----------------------------------------------------------------------------
-FEDOFVariable* FSModel::AddVariable(const char* szname)
+void FSModel::ClearVariables()
 {
-	FEDOFVariable var(szname);
+	m_DOF.clear();
+}
+
+//-----------------------------------------------------------------------------
+FEDOFVariable* FSModel::AddVariable(const std::string& varName)
+{
+	FEDOFVariable var(varName);
 	m_DOF.push_back(var);
 	return &m_DOF[m_DOF.size() - 1];
 }
@@ -253,6 +259,46 @@ FEDOFVariable& FSModel::GetVariable(const char* sz)
 {
 	int nvar = GetVariableIndex(sz);
 	return m_DOF[nvar];
+}
+
+//-----------------------------------------------------------------------------
+const char* FSModel::GetDOFSymbol(int n) const
+{
+	if (n < 0) { assert(false); return nullptr; }
+	for (int i = 0, m = 0; i < m_DOF.size(); ++i)
+	{
+		const FEDOFVariable& var = m_DOF[i];
+		for (int j = 0; j < var.DOFs(); ++j, ++m)
+		{
+			if (m == n)
+			{
+				const FEDOF& dof = var.GetDOF(j);
+				return dof.symbol();
+			}
+		}
+	}
+	assert(false);
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+const char* FSModel::GetDOFName(int n) const
+{
+	if (n < 0) { assert(false); return nullptr; }
+	for (int i = 0, m = 0; i < m_DOF.size(); ++i)
+	{
+		const FEDOFVariable& var = m_DOF[i];
+		for (int j = 0; j < var.DOFs(); ++j, ++m)
+		{
+			if (m == n)
+			{
+				const FEDOF& dof = var.GetDOF(j);
+				return dof.name();
+			}
+		}
+	}
+	assert(false);
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -311,7 +357,7 @@ void FSModel::GetRigidMaterialNames(char* szbuf)
 //-----------------------------------------------------------------------------
 void FSModel::GetVariableNames(const char* szvar, char* szbuf)
 {
-	char var[256] = {0};
+	char var[512] = {0};
 	const char* chl = strchr(szvar, '('); assert(chl);
 	const char* chr = strchr(szvar, ')'); assert(chr);
 	strncpy(var, chl+1, chr-chl-1);
@@ -326,12 +372,36 @@ void FSModel::GetVariableNames(const char* szvar, char* szbuf)
 	else
 	{
 		const char* szvar = var;
-		if (strncmp(var, "dof_list", 8) == 0) szvar = var + 9;
-		int NVAR = Variables();
-		for (int i=0; i<NVAR; ++i)
+		if (strncmp(var, "dof_list", 8) == 0)
 		{
-			FEDOFVariable& v = Variable(i);
-			if (strcmp(v.name(), szvar) == 0) { GetDOFNames(v, szbuf); return; }
+			if (szvar[8] == 0)
+			{
+				char* ch = szbuf;
+				int NVAR = Variables();
+				for (int i = 0; i < NVAR; ++i)
+				{
+					FEDOFVariable& var = Variable(i);
+					for (int j = 0; j < var.DOFs(); ++j)
+					{
+						const char* szi = var.GetDOF(j).name();
+						strcat(ch, szi);
+						ch += strlen(szi);
+						*ch++ = '\0';
+					}
+				}
+				return;
+			}
+			else if (szvar[8] == ':')
+			{
+				szvar = var + 9;
+				int NVAR = Variables();
+				for (int i = 0; i < NVAR; ++i)
+				{
+					FEDOFVariable& v = Variable(i);
+					if (strcmp(v.name(), szvar) == 0) { GetDOFNames(v, szbuf); return; }
+				}
+			}
+			else assert(false);
 		}
 	}
 	assert(false);
@@ -378,21 +448,29 @@ const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 	}
 	else if (strncmp(var, "dof_list", 8) == 0)
 	{
-		szvar = var + 9;
-		int NVAR = Variables();
-		for (int i = 0; i < NVAR; ++i)
+		if (var[8] == 0)
 		{
-			FEDOFVariable& v = Variable(i);
-			if (strcmp(v.name(), szvar) == 0) 
-			{ 
-				if ((n >= 0) && (n < v.DOFs()))
+			const char* szdof = (longName ? GetDOFName(n) : GetDOFSymbol(n)); assert(szdof);
+			return (szdof == "nullptr" ? "(error)" : szdof);
+		}
+		else if (var[8] == ':')
+		{
+			szvar = var + 9;
+			int NVAR = Variables();
+			for (int i = 0; i < NVAR; ++i)
+			{
+				FEDOFVariable& v = Variable(i);
+				if (strcmp(v.name(), szvar) == 0)
 				{
-					if (longName)
-						return v.GetDOF(n).name();
-					else
-						return v.GetDOF(n).symbol();
+					if ((n >= 0) && (n < v.DOFs()))
+					{
+						if (longName)
+							return v.GetDOF(n).name();
+						else
+							return v.GetDOF(n).symbol();
+					}
+					else return nullptr;
 				}
-				else return nullptr;
 			}
 		}
 	}
@@ -1778,11 +1856,26 @@ int FSModel::RemoveLoadController(FSLoadController* plc)
 // helper function for creating load curves (returns UID of load controller)
 FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 {
+	// allocate load curve
 	FSLoadController* plc = FEBio::CreateLoadController("loadcurve", this);
 
+	// set default name
+	std::string name;
+	const char* szname = lc.GetName();
+	if ((szname == nullptr) || (szname[0] == 0)) 
+	{
+		std::stringstream ss;
+		ss << "LC" << LoadControllers() + 1;
+		name = ss.str();
+	}
+	else name = szname;
+	plc->SetName(name);
+
+	// set parameters
 	plc->SetParamInt("interpolate", lc.GetInterpolator());
 	plc->SetParamInt("extend", lc.GetExtendMode());
 
+	// copy point data
 	std::vector<vec2d> pt;
 	for (int i = 0; i < lc.Points(); ++i)
 	{
@@ -1792,6 +1885,7 @@ FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 	Param& points = *plc->GetParam("points");
 	points.val<std::vector<vec2d> >() = pt;
 
+	// add it to the pile
 	AddLoadController(plc);
 
 	return plc;

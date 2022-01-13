@@ -59,10 +59,10 @@ private:
 	bool ParseLoadDataSection  (XMLTag& tag) override;
 	bool ParseControlSection   (XMLTag& tag) override;
 
-private:
-	// parse materials
-	void ParseMaterial(XMLTag& tag, FSMaterial* pmat);
+	void ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag);
+	void ParseModelComponent(FSModelComponent* pmc, XMLTag& tag);
 
+private:
 	// geometry parsing functions (version 2.0 and up)
 	void ParseGeometryNodes      (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryElements   (FEBioInputModel::Part* part, XMLTag& tag);

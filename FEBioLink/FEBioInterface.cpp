@@ -405,6 +405,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FELOADCONTROLLER_ID  : return CreateLoadController  (typeStr, fem); break;
 	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
 	case FESOLVER_ID          :
+	case FENEWTONSTRATEGY_ID  :
 	case FETIMECONTROLLER_ID  :
 	case FEVEC3DGENERATOR_ID  :
 	case FEMAT3DGENERATOR_ID  :
@@ -443,6 +444,7 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
 	case FEMATERIALPROP_ID        : pc = new FEBioMaterialProperty(fem); break;
 	case FELOADCONTROLLER_ID      : pc = new FEBioLoadController(fem); break;
 	case FEMESHADAPTOR_ID         : pc = new FEBioMeshAdaptor(fem); break;
+	case FENLCONSTRAINT_ID        : pc = new FEBioNLConstraint(fem); break;
 	case FESOLVER_ID              : pc = new FSGenericClass; break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
 	case FENEWTONSTRATEGY_ID      : pc = new FSGenericClass; break;

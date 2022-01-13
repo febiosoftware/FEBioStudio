@@ -50,7 +50,7 @@ public:
 
 	int Type() { return m_ntype; }
 
-	FENodeList* BuildNodeList() { return 0; }
+	FSNodeList* BuildNodeList() { return 0; }
 	FEFaceList* BuildFaceList() { return 0; }
 	FEElemList* BuildElemList() { return 0; }
 
@@ -90,7 +90,7 @@ public:
 	void CreateFromMesh();
 
 	FEElemList* BuildElemList();
-	FENodeList* BuildNodeList();
+	FSNodeList* BuildNodeList();
 
 	FEItemListBuilder* Copy();
 	void Copy(FSPart* pg);
@@ -107,7 +107,7 @@ public:
 	FSSurface(GObject* po, std::vector<int>& face);
 	~FSSurface(){}
 
-	FENodeList* BuildNodeList();
+	FSNodeList* BuildNodeList();
 	FEFaceList* BuildFaceList();
 
 	FEItemListBuilder* Copy();
@@ -123,7 +123,7 @@ public:
 	FSEdgeSet(GObject* po, std::vector<int>& edge);
 	~FSEdgeSet(){}
 
-	FENodeList* BuildNodeList();
+	FSNodeList* BuildNodeList();
 
 	FSEdge* Edge(FEItemListBuilder::Iterator it);
 
@@ -147,5 +147,5 @@ public:
 	FEItemListBuilder* Copy();
 	void Copy(FSNodeSet* pg);
 
-	FENodeList* BuildNodeList();
+	FSNodeList* BuildNodeList();
 };

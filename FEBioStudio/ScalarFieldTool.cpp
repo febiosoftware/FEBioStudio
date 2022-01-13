@@ -240,12 +240,12 @@ void CScalarFieldTool::OnApply()
 		FEItemListBuilder* item = m_data[i];
 		double v = ui->m_table->item(i, 1)->text().toDouble();
 
-		FENodeList* node = item->BuildNodeList(); assert(node);
+		FSNodeList* node = item->BuildNodeList(); assert(node);
 		if (node)
 		{
 			for (int i = 0; i < NN; ++i) pm->Node(i).m_ntag = i;
 
-			FENodeList::Iterator it = node->First();
+			FSNodeList::Iterator it = node->First();
 			int nn = node->Size();
 			for (int j=0; j<nn; ++j, it++)
 			{ 

@@ -192,10 +192,13 @@ public:
 public:
 	int Variables() const { return (int)m_DOF.size(); }
 	FEDOFVariable& Variable(int i) { return m_DOF[i]; }
-	FEDOFVariable* AddVariable(const char* szvar);
+	FEDOFVariable* AddVariable(const std::string& varName);
 	int GetVariableIndex(const char* sz);
 	FEDOFVariable& GetVariable(const char* sz);
     int GetDOFIndex(const char* sz);
+	void ClearVariables();
+	const char* GetDOFSymbol(int n) const;
+	const char* GetDOFName(int n) const;
 
 public:
 	int LoadControllers() const;

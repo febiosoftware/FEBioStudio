@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 
+class FSModel;
+
 namespace FEBio {
 
 	struct FEBioModule
@@ -18,4 +20,6 @@ namespace FEBio {
 
 	void SetActiveModule(int moduleID);
 	int GetActiveModule();
+
+	void InitFSModel(FSModel& fem);
 }

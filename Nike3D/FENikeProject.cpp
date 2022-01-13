@@ -546,8 +546,8 @@ bool FENikeProject::BuildNodes(FSProject& prj)
 			int bc;
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			int nbc = pbc->GetBC();
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator pn = pg->First();
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
 			{
 				bc = (nbc & 7);
@@ -561,8 +561,8 @@ bool FENikeProject::BuildNodes(FSProject& prj)
 			int rc;
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			int nbc = pbc->GetBC();
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator pn = pg->First();
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
 			{
 				rc = (nbc & 7);
@@ -769,8 +769,8 @@ bool FENikeProject::BuildRigidNodes(FSProject &prj)
 			FEItemListBuilder* pitem = pi->GetItemList();
 			if (pitem)
 			{
-				unique_ptr<FENodeList> pg(pitem->BuildNodeList() );
-				FENodeList::Iterator pn = pg->First();
+				unique_ptr<FSNodeList> pg(pitem->BuildNodeList() );
+				FSNodeList::Iterator pn = pg->First();
 				for (int k=0; k<pg->Size(); ++k, ++pn)
 				{
 					rf.node[n] = (pn->m_pi)->m_nid;
@@ -1034,8 +1034,8 @@ bool FENikeProject::BuildNodalLoads(FSProject& prj)
 			int nlc = -1;// AddLoadCurve(lc);
 			int bc = pbc->GetDOF() + 1;
 			FEItemListBuilder* pitem = pbc->GetItemList();
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList() );
-			FENodeList::Iterator pn = pg->First();
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList() );
+			FSNodeList::Iterator pn = pg->First();
 			for (k=0; k<pg->Size(); ++k, ++pn)
 			{
 				NODAL_LOAD nl;
@@ -1079,8 +1079,8 @@ bool FENikeProject::BuildNodalLoads(FSProject& prj)
 				}
 			}
 
-			unique_ptr<FENodeList> pns(pitem->BuildNodeList());
-			FENodeList::Iterator pn = pns->First();
+			unique_ptr<FSNodeList> pns(pitem->BuildNodeList());
+			FSNodeList::Iterator pn = pns->First();
 			for (k=0; k<pns->Size(); ++k, ++pn)
 			{
 				NODAL_LOAD lx, ly, lz;
@@ -1180,8 +1180,8 @@ bool FENikeProject::BuildDisplacements(FSProject &prj)
 			int bc = pbc->GetDOF()+1;
 
 			FEItemListBuilder* pitem = pbc->GetItemList();
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator pn = pg->First();
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
 			{
 				nd.bc = bc;
@@ -1256,8 +1256,8 @@ bool FENikeProject::BuildNodalVelocities(FSProject &prj)
 		{
 			vec3d v = pbc->GetVelocity();
 			FEItemListBuilder* pitem = pbc->GetItemList();
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator pn = pg->First();
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator pn = pg->First();
 			for (int k=0; k<pg->Size(); ++k, ++pn)
 			{
 				FSNode& node = *(pn->m_pi);

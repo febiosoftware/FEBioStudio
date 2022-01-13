@@ -49,10 +49,10 @@ using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
 // defined in FEFEBioExport25.cpp
-FENodeList* BuildNodeList(GFace* pf);
-FENodeList* BuildNodeList(GPart* pg);
-FENodeList* BuildNodeList(GNode* pn);
-FENodeList* BuildNodeList(GEdge* pe);
+FSNodeList* BuildNodeList(GFace* pf);
+FSNodeList* BuildNodeList(GPart* pg);
+FSNodeList* BuildNodeList(GNode* pn);
+FSNodeList* BuildNodeList(GEdge* pe);
 FEFaceList* BuildFaceList(GFace* face);
 const char* ElementTypeString(int ntype);
 
@@ -900,7 +900,7 @@ void FEBioExport4::WriteMaterialSection()
 
 		if (pmat)
 		{
-			WriteMaterial(pmat, el);
+			WriteModelComponent(pmat, el);
 		}
 		else
 		{
@@ -911,7 +911,7 @@ void FEBioExport4::WriteMaterialSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteMaterial(FSMaterial* pm, XMLElement& el)
+void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 {
 	// get the type string    
 	const char* sztype = pm->GetTypeString(); assert(sztype);
@@ -945,24 +945,24 @@ void FEBioExport4::WriteMaterial(FSMaterial* pm, XMLElement& el)
 
 	m_xml.add_branch(el);
 	{
-		// write the material parameters (if any)
+		// write the parameters (if any)
 		if (pm->Parameters())
 		{
 			WriteParamList(*pm);
 		}
 
-		// write the material properties
+		// write the properties
 		int NC = pm->Properties();
 		for (int i = 0; i < NC; ++i)
 		{
 			FSProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j < mc.Size(); ++j)
 			{
-				FSMaterial* pc = pm->GetMaterialProperty(i, j);
+				FSModelComponent* pc = dynamic_cast<FSModelComponent*>(pm->GetProperty(i, j));
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
-					WriteMaterial(pc, el);
+					WriteModelComponent(pc, el);
 				}
 			}
 		}
@@ -1108,7 +1108,7 @@ void FEBioExport4::WriteGeometryObject(FEBioExport4::Part* part)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport4::WriteNodeSet(const string& name, FENodeList* pl)
+bool FEBioExport4::WriteNodeSet(const string& name, FSNodeList* pl)
 {
 	if (pl == 0)
 	{
@@ -1120,7 +1120,7 @@ bool FEBioExport4::WriteNodeSet(const string& name, FENodeList* pl)
 	}
 
 	int nn = pl->Size();
-	FENodeList::Iterator pn = pl->First();
+	FSNodeList::Iterator pn = pl->First();
 	vector<int> m(nn);
 	for (int n = 0; n < nn; ++n, pn++)
 	{
@@ -1252,7 +1252,7 @@ void FEBioExport4::WriteGeometryNodeSets()
 		if (m_pNSet[i].m_duplicate == false)
 		{
 			FEItemListBuilder* pil = m_pNSet[i].m_list;
-			unique_ptr<FENodeList> pl(pil->BuildNodeList());
+			unique_ptr<FSNodeList> pl(pil->BuildNodeList());
 			if (WriteNodeSet(m_pNSet[i].m_name.c_str(), pl.get()) == false)
 			{
 				throw InvalidItemListBuilder(pil);
@@ -1268,7 +1268,7 @@ void FEBioExport4::WriteGeometryNodeSets()
 	for (int i = 0; i < model.NodeLists(); ++i)
 	{
 		GNodeList* pg = model.NodeList(i);
-		unique_ptr<FENodeList> pn(pg->BuildNodeList());
+		unique_ptr<FSNodeList> pn(pg->BuildNodeList());
 		if (WriteNodeSet(pg->GetName(), pn.get()) == false)
 		{
 			throw InvalidItemListBuilder(pg);
@@ -1287,7 +1287,7 @@ void FEBioExport4::WriteGeometryNodeSets()
 			for (int j = 0; j < nset; ++j)
 			{
 				FSNodeSet* pns = po->GetFENodeSet(j);
-				unique_ptr<FENodeList> pl(pns->BuildNodeList());
+				unique_ptr<FSNodeList> pl(pns->BuildNodeList());
 				if (WriteNodeSet(pns->GetName(), pl.get()) == false)
 				{
 					throw InvalidItemListBuilder(po);
@@ -2370,7 +2370,7 @@ void FEBioExport4::WriteDiscreteSection(FSStep& s)
 			dmat.add_attribute("id", n++);
 			dmat.add_attribute("name", pds->GetName().c_str());
 			FSDiscreteMaterial* dm = pds->GetMaterial();
-			WriteMaterial(dm, dmat);
+			WriteModelComponent(dm, dmat);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
 		if (ds)

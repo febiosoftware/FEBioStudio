@@ -46,7 +46,7 @@ public:
 	GGroup(FSModel* ps, int ntype, unsigned int flags);
 	~GGroup(void);
 
-	FENodeList*	BuildNodeList() { return 0; }
+	FSNodeList*	BuildNodeList() { return 0; }
 	FEFaceList*	BuildFaceList() { return 0; }
 	FEElemList*	BuildElemList() { return 0; }
 
@@ -66,7 +66,7 @@ public:
 
 	FEItemListBuilder* Copy() override;
 
-	FENodeList* BuildNodeList() override;
+	FSNodeList* BuildNodeList() override;
 
 	bool IsValid() const override;
 };
@@ -83,7 +83,7 @@ public:
 
 	FEItemListBuilder* Copy() override;
 
-	FENodeList* BuildNodeList() override;
+	FSNodeList* BuildNodeList() override;
 	FEFaceList*	BuildFaceList() override;
 
 	bool IsValid() const override;
@@ -103,7 +103,7 @@ public:
 
 	FEItemListBuilder* Copy() override;
 
-	FENodeList* BuildNodeList() override;
+	FSNodeList* BuildNodeList() override;
 
 	bool IsValid() const override;
 };
@@ -122,7 +122,7 @@ public:
 
 	FEItemListBuilder* Copy() override;
 
-	FENodeList* BuildNodeList() override;
+	FSNodeList* BuildNodeList() override;
 	FEElemList* BuildElemList() override;
 	FEFaceList*	BuildFaceList() override;
 

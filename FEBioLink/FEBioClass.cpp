@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <FECore/FEModelParam.h>
 #include <FECore/FEModule.h>
 #include <FEBioLib/FEBioModel.h>
+#include <MeshTools/FEModel.h>
+#include <sstream>
 using namespace FEBio;
 
 vec3d qvariant_to_vec3d(const QVariant& v)
@@ -528,6 +530,38 @@ int FEBio::GetActiveModule()
 {
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	return fecore.GetActiveModuleID();
+}
+
+void FEBio::InitFSModel(FSModel& fem)
+{
+	// make sure we have a FEBioModel
+	if (febioModel == nullptr) { assert(false); return; }
+
+	// clear the current list of variables
+	fem.ClearVariables();
+
+	// copy all variables
+	DOFS& dofs = febioModel->GetDOFS();
+	for (int i = 0; i < dofs.Variables(); ++i)
+	{
+		std::string varName = dofs.GetVariableName(i);
+		FEDOFVariable* dofi = fem.AddVariable(varName);
+		int ndof = dofs.GetVariableSize(i);
+		for (int j = 0; j < ndof; ++j)
+		{
+			const char* szdof = dofs.GetDOFName(i, j);
+			if (ndof == 1)
+			{
+				dofi->AddDOF(varName, szdof);
+			}
+			else
+			{
+				std::stringstream ss;
+				ss << szdof << "-" << varName;
+				dofi->AddDOF(ss.str(), szdof);
+			}
+		}
+	}
 }
 
 class FBSLogStream : public LogStream
