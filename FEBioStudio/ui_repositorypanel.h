@@ -66,6 +66,7 @@ SOFTWARE.*/
 #include "MultiLineLabel.h"
 #include "WrapLabel.h"
 #include "TagLabel.h"
+#include "CustomLineEdit.h"
 
 #include <iostream>
 #include <QDebug>
@@ -438,98 +439,6 @@ public:
 
 private:
 	CustomTreeWidgetItem* realItem;
-};
-
-class CustomLineEdit : public QLineEdit
-{
-    Q_OBJECT
-public:
-    explicit CustomLineEdit(QWidget *parent = 0) 
-        : QLineEdit(parent), c(nullptr)
-    {
-
-    }
-
-    void setMultipleCompleter(QCompleter* completer)
-    {
-        c = completer;
-        c->setWidget(this);
-        connect(c, SIGNAL(activated(QString)),
-                this, SLOT(insertCompletion(QString)));
-    }
-
-protected:
-    void keyPressEvent(QKeyEvent *e)
-    {
-        switch (e->key()) 
-        {
-            case Qt::Key_Enter:
-            case Qt::Key_Return:
-                if (c && c->popup()->isVisible()) 
-                {
-                    e->ignore();
-                    return; // let the completer do default behavior
-                }
-                else
-                {
-                    QLineEdit::keyPressEvent(e);
-                    return;
-                }
-            default:
-                break;
-        }
-
-        QLineEdit::keyPressEvent(e);
-        
-        if (!c) return;
-
-        c->setCompletionPrefix(cursorWord(this->text()));
-
-        QRect cr = cursorRect();
-            cr.setWidth(c->popup()->sizeHintForColumn(0)
-                        + c->popup()->verticalScrollBar()->sizeHint().width());
-        c->complete(cr);
-    }
-
-    void focusInEvent(QFocusEvent* e)
-    {
-        QLineEdit::focusInEvent(e);
-
-        if(!c) return;
-
-        c->setCompletionPrefix(cursorWord(this->text()));
-
-        QRect cr = cursorRect();
-            cr.setWidth(c->popup()->sizeHintForColumn(0)
-                        + c->popup()->verticalScrollBar()->sizeHint().width());
-        c->complete(cr);
-    }
-
-private:
-    QString cursorWord(const QString& sentence) const
-    {
-        return sentence.mid(sentence.left(cursorPosition()).lastIndexOf(" ") + 1,
-                            cursorPosition() -
-                            sentence.left(cursorPosition()).lastIndexOf(" ") - 1);
-    }
-
-private slots:
-    void insertCompletion(QString arg)
-    {
-        // Surround the term in quotes if there's a space in it
-        if(arg.contains(' '))
-        {
-            arg = "\"" + arg + "\"";
-        }
-
-        setText(text().replace(text().left(cursorPosition()).lastIndexOf(" ") + 1,
-                            cursorPosition() -
-                            text().left(cursorPosition()).lastIndexOf(" ") - 1,
-                            arg));
-    }
-
-private:
-    QCompleter* c;
 };
 
 class SearchBox : public QWidget
