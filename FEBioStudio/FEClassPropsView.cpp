@@ -130,7 +130,15 @@ public:
 			if (pc && (paramId >= 0) && (index == -1))
 			{
 				Param& p = pc->GetParam(paramId);
-				if (p.GetParamType() == Param_STD_VECTOR_VEC2D)
+				if (p.GetParamType() == Param_STD_VECTOR_DOUBLE)
+				{
+					std::vector<double> v = p.GetVectorDoubleValue();
+					for (int i = 0; i < v.size(); ++i)
+					{
+						item->addChild(pc, paramId, -1, i);
+					}
+				}
+				else if (p.GetParamType() == Param_STD_VECTOR_VEC2D)
 				{
 					std::vector<vec2d> v = p.GetVectorVec2dValue();
 					for (int i = 0; i < v.size(); ++i)
@@ -333,14 +341,11 @@ public:
 					{
 						std::vector<double> v = p.val<std::vector<double> >();
 						QString s;
-						if (v.empty()) s = "(none)";
+						if (m_index == -1) s = QString::number(v.size());
 						else
 						{
-							for (int i = 0; i < v.size(); ++i)
-							{
-								s += QString::number(v[i]);
-								if (i < v.size() - 1) s += QString(",");
-							}
+							assert((m_index >= 0) && (m_index < v.size()));
+							s = QString::number(v[m_index]);
 						}
 						return s;
 					}
@@ -384,6 +389,13 @@ public:
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 					case Param_STD_VECTOR_INT: return -1; break;
+					case Param_STD_VECTOR_DOUBLE:
+					{
+						std::vector<double> v = p.GetVectorDoubleValue();
+						if (m_index == -1) return v.size();
+						else return v[m_index];
+					}
+					break;
 					case Param_STD_VECTOR_VEC2D:
 					{
 						std::vector<vec2d> v = p.GetVectorVec2dValue();
@@ -499,6 +511,23 @@ public:
 						if (n != string::npos) s.erase(s.begin() + n);
 					}
 					p.SetStringValue(s);
+				}
+				break;
+				case Param_STD_VECTOR_DOUBLE:
+				{
+					std::vector<double> v = p.GetVectorDoubleValue();
+					if (m_index == -1)
+					{
+						int newSize = value.toInt();
+						v.resize(newSize);
+						p.SetVectorDoubleValue(v);
+						return true;
+					}
+					else
+					{
+						v[m_index] = value.toDouble();
+						p.SetVectorDoubleValue(v);
+					}
 				}
 				break;
 				case Param_STD_VECTOR_VEC2D:
@@ -869,6 +898,23 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					}
 				}
 				break;
+			case Param_STD_VECTOR_DOUBLE:
+			{
+				std::vector<double> v = p->GetVectorDoubleValue();
+				if (item->m_index == -1)
+				{
+					QSpinBox* pw = new QSpinBox(parent);
+					pw->setMinimum(0);
+					pw->setValue(v.size());
+					return pw;
+				}
+				else
+				{
+					QLineEdit* pw = new QLineEdit(parent);
+					return pw;
+				}
+			}
+			break;
 			case Param_STD_VECTOR_VEC2D:
 			{
 				std::vector<vec2d> v = p->GetVectorVec2dValue();
