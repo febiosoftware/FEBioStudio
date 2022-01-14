@@ -194,6 +194,16 @@ bool BuildModelComponent(FEBio::FEBioClass* feb, FSModelComponent* po)
 			pms->SetSuperClassID(FEDOMAIN_ID);
 			pci->AddComponent(pms);
 		}
+		else if (prop.m_superClassId == FEITEMLIST_ID)
+		{
+			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
+			if (prop.m_name == "node_set") pms->SetMeshItemType(FE_NODE_FLAG);
+
+			// TODO: We need to integrate these IDs.
+			pci->SetSuperClassID(FEDOMAIN_ID);
+			pms->SetSuperClassID(FEDOMAIN_ID);
+			pci->AddComponent(pms);
+		}
 		else if (prop.m_comp.empty() == false)
 		{
 			FEBio::FEBioClass& fbc = prop.m_comp[0];
