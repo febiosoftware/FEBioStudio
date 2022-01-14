@@ -33,6 +33,20 @@ SOFTWARE.*/
 
 using namespace std;
 
+vec2d StringToVec2d(const QString& s)
+{
+	string st = s.toStdString();
+	const char* sz = st.c_str();
+	double x = 0.0, y = 0.0;
+	if (strcmp(sz, "x") == 0) return vec2d(1, 0);
+	if (strcmp(sz, "y") == 0) return vec2d(0, 1);
+	if (sz[0] == '{')
+		sscanf(sz, "{%lg,%lg}", &x, &y);
+	else
+		sscanf(sz, "%lg,%lg", &x, &y);
+	return vec2d(x, y);
+}
+
 vec3d StringToVec3d(const QString& s)
 {
 	string st = s.toStdString();
@@ -139,6 +153,11 @@ std::vector<double> StringToVectorDouble(const QString& s)
 		if (ch) sz = ch + 1; else sz = nullptr;
 	};
 	return v;
+}
+
+QString Vec2dToString(const vec2d& r)
+{
+	return QString("{%1,%2}").arg(r.x()).arg(r.y());
 }
 
 QString Vec3dToString(const vec3d& r)

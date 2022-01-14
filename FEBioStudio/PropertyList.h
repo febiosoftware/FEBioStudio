@@ -180,7 +180,9 @@ public:
 	void SetPropertyValue(int i, const QVariant& v);
 };
 
+QString Vec2dToString(const vec2d& r);
 QString Vec3dToString(const vec3d& r);
+vec2d StringToVec2d(const QString& s);
 vec3d StringToVec3d(const QString& s);
 mat3d StringToMat3d(const QString& s);
 mat3ds StringToMat3ds(const QString& s);

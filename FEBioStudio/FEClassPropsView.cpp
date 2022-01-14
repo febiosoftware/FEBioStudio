@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <QStandardItemModel>
+#include <QSpinBox>
 #include "SelectionBox.h"
 using namespace std;
 
@@ -85,7 +86,6 @@ public:
 	public:
 		enum Flags {
 			Item_Bold = 1,
-			Item_Indented = 2
 		};
 
 	public:
@@ -94,7 +94,7 @@ public:
 		FSCoreBase*		m_pc;			// pointer to class
 		int				m_paramId;		// index of parameter (or -1 if this is property)
 		int				m_propId;		// index of property (or -1 if this is parameter)
-		int				m_propIndex;	// index into property's class array
+		int				m_index;		// index of parameter (for array parameters) or property in property's class array
 
 		int		m_nrow;	// row index into parent's children array
 
@@ -105,10 +105,10 @@ public:
 		std::vector<Item*>	m_children;		// list of children
 
 	public:
-		Item() { m_model = nullptr; m_pc = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_propIndex = 0; m_nrow = -1; m_flag = 0;  }
-		Item(FSCoreBase* pc, int paramId = -1, int propId = -1, int propIndex = 0, int nrow = -1) {
+		Item() { m_model = nullptr; m_pc = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_index = -1; m_nrow = -1; m_flag = 0;  }
+		Item(FSCoreBase* pc, int paramId = -1, int propId = -1, int index = -1, int nrow = -1) {
 			m_model = nullptr;
-			m_pc = pc; m_paramId = paramId; m_propId = propId; m_propIndex = propIndex; m_nrow = nrow;
+			m_pc = pc; m_paramId = paramId; m_propId = propId; m_index = index; m_nrow = nrow;
 			m_flag = (propId != -1 ? 1 : 0);
 		}
 		~Item() { for (int i = 0; i < m_children.size(); ++i) delete m_children[i]; m_children.clear(); }
@@ -120,16 +120,28 @@ public:
 
 		Param* parameter() { return (m_paramId >= 0 ? m_pc->GetParamPtr(m_paramId) : nullptr); }
 
-		Item* addChild(FSCoreBase* pc, int paramId, int propId, int propIndex)
+		Item* addChild(FSCoreBase* pc, int paramId, int propId, int index)
 		{
-			Item* item = new Item(pc, paramId, propId, propIndex, (int)m_children.size());
+			Item* item = new Item(pc, paramId, propId, index, (int)m_children.size());
 			item->m_model = m_model; assert(m_model);
 			item->m_parent = this;
 			m_children.push_back(item);
 
-			if (propId >= 0)
+			if (pc && (paramId >= 0) && (index == -1))
 			{
-				FSCoreBase* pci = pc->GetProperty(propId, propIndex);
+				Param& p = pc->GetParam(paramId);
+				if (p.GetParamType() == Param_STD_VECTOR_VEC2D)
+				{
+					std::vector<vec2d> v = p.GetVectorVec2dValue();
+					for (int i = 0; i < v.size(); ++i)
+					{
+						item->addChild(pc, paramId, -1, i);
+					}
+				}
+			}
+			else if (propId >= 0)
+			{
+				FSCoreBase* pci = pc->GetProperty(propId, index);
 				if (pci)
 				{
 					// don't add children of classes that have custom widgets
@@ -156,10 +168,10 @@ public:
 				if (p.IsVisible())
 				{
 					if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
-						addChild(pc, i, -1, 0);
+						addChild(pc, i, -1, -1);
 					else if (p.IsPersistent() == false)
 					{
-						addChild(pc, i, -1, 0);
+						addChild(pc, i, -1, -1);
 					}
 				}
 			}
@@ -191,11 +203,13 @@ public:
 				Param& p = m_pc->GetParam(m_paramId);
 				if (column == 0)
 				{
-					QString name(p.GetLongName());
-					if (m_flag & Item_Indented)
+					QString name;
+					if (m_index == -1)
 					{
-						name = "  " + name;
+						name = p.GetLongName();
 					}
+					else
+						name = QString("[%1]").arg(m_index);
 					return name;
 				}
 
@@ -332,7 +346,19 @@ public:
 					}
 					break;
 					case Param_STD_VECTOR_VEC2D:
-						return "in progress";
+					{
+						std::vector<vec2d> v = p.GetVectorVec2dValue();
+						QString s;
+						if (m_index == -1) s = QString::number(v.size());
+						else
+						{
+							assert((m_index >= 0) && (m_index < v.size()));
+							vec2d& r = v[m_index];
+							s = Vec2dToString(r);
+						}
+						return s;
+					}
+					break;
 					default:
 						assert(false);
 						return "in progress";
@@ -358,6 +384,13 @@ public:
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 					case Param_STD_VECTOR_INT: return -1; break;
+					case Param_STD_VECTOR_VEC2D:
+					{
+						std::vector<vec2d> v = p.GetVectorVec2dValue();
+						if (m_index == -1) return v.size();
+						else return Vec2dToString(v[m_index]);
+					}
+					break;
 					default:
 //						assert(false);
 						return "in progress";
@@ -372,10 +405,10 @@ public:
 					QString s = QString::fromStdString(p.GetName());
 					if (p.maxSize() != 1)
 					{
-						if (m_propIndex >= 0)
+						if (m_index >= 0)
 						{
-							s += QString(" - %1").arg(m_propIndex + 1);
-							FSCoreBase* pc = m_pc->GetProperty(m_propId, m_propIndex);
+							s += QString(" - %1").arg(m_index + 1);
+							FSCoreBase* pc = m_pc->GetProperty(m_propId, m_index);
 							if (pc && (pc->GetName().empty() == false))
 							{
 								QString name = QString::fromStdString(pc->GetName());
@@ -404,7 +437,7 @@ public:
 					}
 					else
 					{
-						FSCoreBase* pc = (m_propIndex >= 0 ? m_pc->GetProperty(m_propId, m_propIndex) : nullptr);
+						FSCoreBase* pc = (m_index >= 0 ? m_pc->GetProperty(m_propId, m_index) : nullptr);
 						if (pc == nullptr)
 						{
 							bool required = (p.GetFlags() & FSProperty::REQUIRED);
@@ -468,8 +501,26 @@ public:
 					p.SetStringValue(s);
 				}
 				break;
-//				default:
-//					assert(false);
+				case Param_STD_VECTOR_VEC2D:
+				{
+					std::vector<vec2d> v = p.GetVectorVec2dValue();
+					if (m_index == -1)
+					{
+						int newSize = value.toInt();
+						v.resize(newSize);
+						p.SetVectorVec2dValue(v);
+						return true;
+					}
+					else
+					{
+						vec2d r = StringToVec2d(value.toString());
+						v[m_index] = r;
+						p.SetVectorVec2dValue(v);
+					}
+				}
+				break;
+				default:
+					assert(false);
 				}
 
 				return m_pc->UpdateData(true);
@@ -482,15 +533,15 @@ public:
 
 				if (classId == -2)
 				{
-					FSCoreBase* pc = m_pc->GetProperty(m_propId, m_propIndex);
+					FSCoreBase* pc = m_pc->GetProperty(m_propId, m_index);
 					if (pc) prop.RemoveComponent(pc);
 				}
 				else
 				{
 					// check if this is a different type
-					if (m_propIndex >= 0)
+					if (m_index >= 0)
 					{
-						FSCoreBase* oldprop = m_pc->GetProperty(m_propId, m_propIndex);
+						FSCoreBase* oldprop = m_pc->GetProperty(m_propId, m_index);
 
 						if (oldprop && (oldprop->GetClassID() == classId))
 						{
@@ -507,8 +558,8 @@ public:
 
 					if (pc)
 					{
-						if (m_propIndex >= 0)
-							m_pc->GetProperty(m_propId).SetComponent(pc, m_propIndex);
+						if (m_index >= 0)
+							m_pc->GetProperty(m_propId).SetComponent(pc, m_index);
 						else
 						{
 							m_pc->GetProperty(m_propId).AddComponent(pc);
@@ -592,7 +643,7 @@ public:
 		{
 			QColor c;
 			int s = 0;
-			if (item->isParameter()) 
+			if (item->isParameter() && (item->m_index == -1)) 
 			{ 
 				Param* p = item->parameter();
 				if (p)
@@ -818,13 +869,30 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 					}
 				}
 				break;
+			case Param_STD_VECTOR_VEC2D:
+			{
+				std::vector<vec2d> v = p->GetVectorVec2dValue();
+				if (item->m_index == -1)
+				{
+					QSpinBox* pw = new QSpinBox(parent);
+					pw->setMinimum(0);
+					pw->setValue(v.size());
+					return pw;
+				}
+				else
+				{
+					QLineEdit* pw = new QLineEdit(parent);
+					return pw;
+				}
+			}
+			break;
 			}
 		}
 		else if (item->isProperty())
 		{
 			FSCoreBase* pcb = item->m_pc;
 			FSProperty& prop = pcb->GetProperty(item->m_propId);
-			FSCoreBase* pcbi = pcb->GetProperty(item->m_propId, item->m_propIndex);
+			FSCoreBase* pcbi = pcb->GetProperty(item->m_propId, item->m_index);
 
 			QComboBox* pc = new QComboBox(parent);
 
