@@ -392,14 +392,14 @@ public:
 					case Param_STD_VECTOR_DOUBLE:
 					{
 						std::vector<double> v = p.GetVectorDoubleValue();
-						if (m_index == -1) return v.size();
+						if (m_index == -1) return (int) v.size();
 						else return v[m_index];
 					}
 					break;
 					case Param_STD_VECTOR_VEC2D:
 					{
 						std::vector<vec2d> v = p.GetVectorVec2dValue();
-						if (m_index == -1) return v.size();
+						if (m_index == -1) return (int) v.size();
 						else return Vec2dToString(v[m_index]);
 					}
 					break;
