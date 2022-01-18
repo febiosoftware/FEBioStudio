@@ -101,6 +101,7 @@ void CMusclePathDataSelector::BuildMenu(QMenu* menu)
 	menu->addMenu(tng);
 }
 
+//=============================================================================
 CProbeDataSelector::CProbeDataSelector(){}
 void CProbeDataSelector::BuildMenu(QMenu* menu)
 {
@@ -111,6 +112,20 @@ void CProbeDataSelector::BuildMenu(QMenu* menu)
 	menu->addMenu(pos);
 }
 
+//=============================================================================
+CRulerDataSelector::CRulerDataSelector() {}
+void CRulerDataSelector::BuildMenu(QMenu* menu)
+{
+	QMenu* pos = new QMenu("Relative position");
+	QAction* posXAction = pos->addAction("X-Relative position"); posXAction->setData(1);
+	QAction* posYAction = pos->addAction("Y-Relative position"); posYAction->setData(2);
+	QAction* posZAction = pos->addAction("Z-Relative position"); posZAction->setData(3);
+	menu->addMenu(pos);
+
+	menu->addAction("Distance")->setData(4);
+}
+
+//=============================================================================
 CModelDataSelector::CModelDataSelector(FEPostModel* fem, Data_Tensor_Type ntype, bool btvec)
 {
 	m_fem = fem;

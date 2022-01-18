@@ -59,6 +59,8 @@ SOFTWARE.*/
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/MarchingCubes.h>
 #include <PostGL/GLMirrorPlane.h>
+#include <PostGL/GLRuler.h>
+#include <PostGL/GLProbe.h>
 #include "ObjectProps.h"
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
@@ -791,6 +793,8 @@ void CPostModelPanel::BuildModelTree()
 				else if (dynamic_cast<Post::CGLParticleFlowPlot*>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/particle.png")));
 				else if (dynamic_cast<Post::GLTensorPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/tensor.png")));
 				else if (dynamic_cast<Post::CGLMirrorPlane     *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/mirror.png")));
+				else if (dynamic_cast<Post::GLProbe            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/probe.png")));
+				else if (dynamic_cast<Post::GLRuler            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/ruler.png")));
 			}
 		}
 
