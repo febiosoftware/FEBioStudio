@@ -74,7 +74,7 @@ CGLStreamLinePlot::CGLStreamLinePlot()
 
 	m_Col.SetDivisions(10);
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
 	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
 	bar->SetType(GLLegendBar::GRADIENT);
 	bar->copy_label(szname);

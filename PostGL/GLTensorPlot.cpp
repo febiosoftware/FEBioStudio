@@ -94,7 +94,7 @@ GLTensorPlot::GLTensorPlot()
 	m_range.mintype = RANGE_DYNAMIC;
 	m_range.valid = false;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
 	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
 	bar->copy_label(szname);
 	bar->ShowTitle(true);
