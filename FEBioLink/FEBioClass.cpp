@@ -406,6 +406,9 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 				FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), val);
 			}
 			break;
+			case FE_PARAM_IMAGE_3D:
+				// TODO: don't know what to do here. (This is used by Warp plugin).
+				break;
 			case FE_PARAM_STD_VECTOR_STRING:
 				// TODO: don't know what to do here. (This is used by MathController).
 			break;

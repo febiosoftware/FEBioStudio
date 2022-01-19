@@ -704,3 +704,5 @@ SOFTWARE.*/
 #define FE_INSITUSTRETCH_CONSTRAINT		0x0030	// added in FS 1.0
 #define FE_PRESTRAIN_CONSTRAINT		    0x0031	// added in FS 1.0
 #define FE_FEBIO_NLCONSTRAINT			0x0032	// added in FS 2.0
+#define FE_FEBIO_SURFACECONSTRAINT		0x0033	// added in FS 2.0
+#define FE_FEBIO_BODYCONSTRAINT			0x0034	// added in FS 2.0

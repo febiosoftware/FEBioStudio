@@ -41,6 +41,7 @@ class FSBodyLoad;
 class FSInitialCondition;
 class FSPairedInterface;
 class FSModelConstraint;
+class FSSurfaceConstraint;
 class FSRigidConstraint;
 class FSRigidConnector;
 class FSRigidLoad;
@@ -63,6 +64,7 @@ namespace FEBio {
 	FSBodyLoad*          CreateBodyLoad         (const std::string& typeStr, FSModel* fem);
 	FSPairedInterface*   CreatePairedInterface  (const std::string& typeStr, FSModel* fem);
 	FSModelConstraint*	 CreateNLConstraint     (const std::string& typeStr, FSModel* fem);
+	FSSurfaceConstraint* CreateSurfaceConstraint(const std::string& typeStr, FSModel* fem);
 	FSRigidConstraint*	 CreateRigidConstraint  (const std::string& typeStr, FSModel* fem);
 	FSRigidConnector*	 CreateRigidConnector   (const std::string& typeStr, FSModel* fem);
 	FSRigidLoad*	     CreateRigidLoad        (const std::string& typeStr, FSModel* fem);

@@ -377,6 +377,7 @@ public slots:
 	void on_actionDuplicateLine_triggered();
 	void on_actionDeleteLine_triggered();
 
+	// Physics menu
 	void on_actionAddBC_triggered();
 	void on_actionAddNodalLoad_triggered();
 	void on_actionAddSurfLoad_triggered();
@@ -396,6 +397,8 @@ public slots:
     void on_actionAddMembraneReaction_triggered();
 	void on_actionSoluteTable_triggered();
 	void on_actionSBMTable_triggered();
+	void OnAddSurfaceConstraint();
+	void OnAddBodyConstraint();
 
 	void on_actionCurveEditor_triggered();
 	void on_actionMeshInspector_triggered();

@@ -378,6 +378,11 @@ FSModelConstraint* FEBio::CreateNLConstraint(const std::string& typeStr, FSModel
 	return CreateModelComponent<FEBioNLConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
 }
 
+FSSurfaceConstraint* FEBio::CreateSurfaceConstraint(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioSurfaceConstraint>(FESURFACECONSTRAINT_ID, typeStr, fem);
+}
+
 FSRigidConstraint* FEBio::CreateRigidConstraint(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEBioRigidConstraint>(FERIGIDBC_ID, typeStr, fem);
@@ -464,6 +469,8 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
 	case FELOADCONTROLLER_ID      : pc = new FEBioLoadController(fem); break;
 	case FEMESHADAPTOR_ID         : pc = new FEBioMeshAdaptor(fem); break;
 	case FENLCONSTRAINT_ID        : pc = new FEBioNLConstraint(fem); break;
+	case FESURFACECONSTRAINT_ID   : pc = new FEBioSurfaceConstraint(fem); break;
+	case FEBODYCONSTRAINT_ID      : pc = new FEBioBodyConstraint(fem); break;
 	case FEDATAGENERATOR_ID       : pc = new FEBioMeshDataGenerator(fem); break;
 	case FESOLVER_ID              : pc = new FSGenericClass; break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;

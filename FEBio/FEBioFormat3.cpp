@@ -3050,7 +3050,36 @@ void FEBioFormat3::ParseConstraint(FSStep* pstep, XMLTag& tag)
 
 	// allocate model constraint
 	const char* sztype = tag.AttributeValue("type");
-	FSModelConstraint* pmc = FEBio::CreateNLConstraint(sztype, &fem);
+
+	// try to allocate surface constraints first
+	FSModelConstraint* pmc = FEBio::CreateSurfaceConstraint(sztype, &fem);
+	if (pmc)
+	{
+		// find the surface
+		const char* szsurf = tag.AttributeValue("surface", true);
+		if (szsurf)
+		{
+			FSSurface* psurf = febio.BuildFESurface(szsurf);
+			if (psurf == 0) AddLogEntry("Failed creating surface \"%s\"", szsurf);
+			else pmc->SetItemList(psurf);
+		}
+	}
+	else
+	{
+		// try body constraint? 
+		pmc = FEBio::CreateSurfaceConstraint(sztype, &fem);
+		if (pmc)
+		{
+			// TODO: read (optional) elem_set attribute
+		}
+		else
+		{
+			// try generic surface constraint
+			pmc = FEBio::CreateNLConstraint(sztype, &fem);
+		}
+	}
+	
+	// make sure we got something
 	if (pmc == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 	pstep->AddComponent(pmc);
 
@@ -3063,15 +3092,6 @@ void FEBioFormat3::ParseConstraint(FSStep* pstep, XMLTag& tag)
 		szname = szbuf;
 	}
 	pmc->SetName(szname);
-
-	// find the surface
-	const char* szsurf = tag.AttributeValue("surface", true);
-	if (szsurf)
-	{
-		FSSurface* psurf = febio.BuildFESurface(szsurf);
-		if (psurf == 0) AddLogEntry("Failed creating surface \"%s\"", szsurf);
-		else pmc->SetItemList(psurf);
-	}
 
 	// read parameters
 	ReadParameters(*pmc, tag);

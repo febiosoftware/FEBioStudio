@@ -357,24 +357,47 @@ void CMainWindow::on_actionAddConstraint_triggered()
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
 			pi->SetName(name);
 
-			FSSurfaceConstraint* psc = dynamic_cast<FSSurfaceConstraint*>(pi);
-			if (psc)
+			// assign it to the correct step
+			FSStep* step = fem.GetStep(dlg.GetStep());
+			pi->SetStep(step->GetID());
+			step->AddConstraint(pi);
+			UpdateModel(pi);
+		}
+	}
+}
+
+void CMainWindow::OnAddSurfaceConstraint()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Surface Constraint", FESURFACECONSTRAINT_ID, prj, true, true, this);
+	if (dlg.exec())
+	{
+		FSSurfaceConstraint* pi = FEBio::CreateFEBioClass<FSSurfaceConstraint>(dlg.GetClassID(), &fem); assert(pi);
+		if (pi)
+		{
+			// create a name
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultConstraintName(&fem, pi);
+			pi->SetName(name);
+
+			// figure out the selection
+			FESelection* psel = doc->GetCurrentSelection();
+			if (psel && psel->Size())
 			{
-				// figure out the selection
-				FESelection* psel = doc->GetCurrentSelection();
-				if (psel && psel->Size())
+				int ntype = psel->Type();
+				switch (ntype)
 				{
-					int ntype = psel->Type();
-					switch (ntype)
-					{
-					case SELECT_SURFACES:
-					case SELECT_FE_FACES:
-					{
-						FEItemListBuilder* items = psel->CreateItemList();
-						psc->SetItemList(items);
-					}
-					break;
-					}
+				case SELECT_SURFACES:
+				case SELECT_FE_FACES:
+				{
+					FEItemListBuilder* items = psel->CreateItemList();
+					pi->SetItemList(items);
+				}
+				break;
 				}
 			}
 
@@ -386,6 +409,34 @@ void CMainWindow::on_actionAddConstraint_triggered()
 		}
 	}
 }
+
+void CMainWindow::OnAddBodyConstraint()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Body Constraint", FEBODYCONSTRAINT_ID, prj, true, true, this);
+	if (dlg.exec())
+	{
+		FSBodyConstraint* pi = FEBio::CreateFEBioClass<FSBodyConstraint>(dlg.GetClassID(), &fem); assert(pi);
+		if (pi)
+		{
+			// create a name
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultConstraintName(&fem, pi);
+			pi->SetName(name);
+
+			// assign it to the correct step
+			FSStep* step = fem.GetStep(dlg.GetStep());
+			pi->SetStep(step->GetID());
+			step->AddConstraint(pi);
+			UpdateModel(pi);
+		}
+	}
+}
+
 
 void CMainWindow::on_actionAddRigidConstraint_triggered()
 {

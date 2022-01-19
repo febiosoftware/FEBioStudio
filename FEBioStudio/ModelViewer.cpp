@@ -1645,7 +1645,9 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllContact()));
 		break;
 	case MT_CONSTRAINT_LIST:
-		menu.addAction("Add Constraint ...", this, SLOT(OnAddConstraint()));
+		menu.addAction("Add Surface Constraint ...", wnd, SLOT(OnAddSurfaceConstraint()));
+		menu.addAction("Add Body Constraint ..."   , wnd, SLOT(OnAddBodyConstraint()));
+		menu.addAction("Add General Constraint ...", this, SLOT(OnAddConstraint()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllConstraints()));
 		break;

@@ -15,6 +15,13 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FSBodyConstraint : public FSModelConstraint
+{
+public:
+	FSBodyConstraint(int ntype, FSModel* fem, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
 // This class implements a volume constraint
 class FSVolumeConstraint : public FSSurfaceConstraint
 {
@@ -84,6 +91,24 @@ class FEBioNLConstraint : public FSModelConstraint
 {
 public:
 	FEBioNLConstraint(FSModel* fem, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+};
+
+//-----------------------------------------------------------------------------
+class FEBioSurfaceConstraint : public FSSurfaceConstraint
+{
+public:
+	FEBioSurfaceConstraint(FSModel* fem, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+};
+
+//-----------------------------------------------------------------------------
+class FEBioBodyConstraint : public FSBodyConstraint
+{
+public:
+	FEBioBodyConstraint(FSModel* fem, int nstep = 0);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 };

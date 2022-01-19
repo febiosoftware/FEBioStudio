@@ -766,14 +766,14 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
 		ui->showSelectionPanel2(false);
 
-/*		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(m_currentObject);
+		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(m_currentObject);
 		if (pbc && (pbc->GetMeshItemType() != 0))
 		{
 			ui->showSelectionPanel1(true);
 			SetSelection(0, pbc->GetItemList()); 
 			return;
 		}
-*/
+
 		FSSoloInterface* solo = dynamic_cast<FSSoloInterface*>(m_currentObject);
 		if (solo) { SetSelection(0, solo->GetItemList()); return; }
 

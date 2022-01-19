@@ -39,6 +39,11 @@ FSSurfaceConstraint::FSSurfaceConstraint(int ntype, FSModel* fem, int nstep) : F
 	SetMeshItemType(FE_FACE_FLAG);
 }
 
+FSBodyConstraint::FSBodyConstraint(int ntype, FSModel* fem, int nstep) : FSModelConstraint(ntype, fem, nstep)
+{
+	SetMeshItemType(FE_ELEM_FLAG);
+}
+
 //=============================================================================
 // FSVolumeConstraint
 //-----------------------------------------------------------------------------
@@ -169,6 +174,82 @@ void FEBioNLConstraint::Load(IArchive& ar)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
 		case CID_FEBIO_BASE_DATA: FSModelConstraint::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+
+//=============================================================================
+FEBioSurfaceConstraint::FEBioSurfaceConstraint(FSModel* fem, int nstep) : FSSurfaceConstraint(FE_FEBIO_SURFACECONSTRAINT, fem, nstep)
+{
+
+}
+
+void FEBioSurfaceConstraint::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSModelConstraint::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioSurfaceConstraint::Load(IArchive& ar)
+{
+	TRACE("FEBioSurfaceConstraint::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSSurfaceConstraint::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+
+//=============================================================================
+FEBioBodyConstraint::FEBioBodyConstraint(FSModel* fem, int nstep) : FSBodyConstraint(FE_FEBIO_BODYCONSTRAINT, fem, nstep)
+{
+
+}
+
+void FEBioBodyConstraint::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSModelConstraint::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioBodyConstraint::Load(IArchive& ar)
+{
+	TRACE("FEBioBodyConstraint::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSBodyConstraint::Load(ar); break;
 		default:
 			assert(false);
 		}
