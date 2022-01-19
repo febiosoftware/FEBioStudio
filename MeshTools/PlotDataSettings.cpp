@@ -214,6 +214,8 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_BIPHASIC, "fluid flux");
     AddPlotVariable(MODULE_BIPHASIC, "fluid flow rate", false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_BIPHASIC, "fluid force"                       );
+    AddPlotVariable(MODULE_BIPHASIC, "fluid load support"                );
+    AddPlotVariable(MODULE_BIPHASIC, "local fluid load support"          );
     AddPlotVariable(MODULE_BIPHASIC, "permeability"                      );
     AddPlotVariable(MODULE_BIPHASIC, "porosity"                          );
     AddPlotVariable(MODULE_BIPHASIC, "pressure gap"                      );
