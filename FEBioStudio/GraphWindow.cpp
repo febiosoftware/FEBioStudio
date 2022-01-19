@@ -60,6 +60,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostLib/evaluate.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
 #include <FECore/MathObject.h>
 
@@ -1518,6 +1519,12 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 				sourceNames << QString::fromStdString(p->GetName());
 			}
 
+			Post::GLRuler* r = dynamic_cast<Post::GLRuler*>(glm->Plot(i));
+			if (r)
+			{
+				sourceNames << QString::fromStdString(r->GetName());
+			}
+
 			Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(glm->Plot(i));
 			if (mp)
 			{
@@ -1658,6 +1665,17 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 					m++;
 				}
 
+				Post::GLRuler* ruler = dynamic_cast<Post::GLRuler*>(glm->Plot(i));
+				if (ruler)
+				{
+					if (m == n)
+					{
+						addRulerData(ruler);
+						break;
+					}
+					m++;
+				}
+
 				Post::GLMusclePath* musclePath = dynamic_cast<Post::GLMusclePath*>(glm->Plot(i));
 				if (musclePath)
 				{
@@ -1732,6 +1750,19 @@ void CModelGraphWindow::setDataSource(int n)
 					}
 					m++;
 				}
+
+				Post::GLRuler* ruler = dynamic_cast<Post::GLRuler*>(glm->Plot(i));
+				if (ruler)
+				{
+					if (m == n)
+					{
+						SetYDataSelector(new CRulerDataSelector());
+						Update(false, true);
+						break;
+					}
+					m++;
+				}
+
 
 				Post::GLMusclePath* musclePath = dynamic_cast<Post::GLMusclePath*>(glm->Plot(i));
 				if (musclePath)
@@ -1843,6 +1874,29 @@ void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
 
 	CPlotData* plot = nextData();
 	plot->setLabel(QString::fromStdString((probe->GetName())));
+	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
+}
+
+//-----------------------------------------------------------------------------
+void CModelGraphWindow::addRulerData(Post::GLRuler* ruler)
+{
+	CPostDocument* doc = GetPostDoc();
+	Post::FEPostModel& fem = *doc->GetFEModel();
+
+	int nsteps = m_lastState - m_firstState + 1;
+	vector<float> xdata(nsteps);
+	vector<float> ydata(nsteps);
+
+	for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+
+	for (int j = 0; j < nsteps; ++j)
+	{
+		double val = ruler->DataValue(m_dataY, j);
+		ydata[j] = (float)val;
+	}
+
+	CPlotData* plot = nextData();
+	plot->setLabel(QString::fromStdString((ruler->GetName())));
 	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 }
 

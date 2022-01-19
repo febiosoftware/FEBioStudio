@@ -171,5 +171,7 @@
         <file>icons/document.png</file>
         <file>icons/swap.png</file>
         <file>icons/boxinbox.png</file>
+        <file>icons/probe.png</file>
+        <file>icons/ruler.png</file>
 	</qresource>
 </RCC>

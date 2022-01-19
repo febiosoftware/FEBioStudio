@@ -86,6 +86,14 @@ public:
 	void BuildMenu(QMenu* menu) override;
 };
 
+// Derived class for rulers
+class CRulerDataSelector : public CDataSelector
+{
+public:
+	CRulerDataSelector();
+	void BuildMenu(QMenu* menu) override;
+};
+
 // Derived class that builds the menu of a CDataSelectorButton from the model's data
 class CModelDataSelector : public CDataSelector, public Post::FEModelDependant
 {

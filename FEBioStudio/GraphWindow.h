@@ -395,6 +395,7 @@ private:
 
 namespace Post {
 	class GLProbe;
+	class GLRuler;
 	class GLMusclePath;
 }
 
@@ -419,6 +420,7 @@ private:
 	void addSelectedElems();
 	void addObjectData(int n);
 	void addProbeData(Post::GLProbe* probe);
+	void addRulerData(Post::GLRuler* ruler);
 	void addMusclePathData(Post::GLMusclePath* musclePath);
 
 	CPlotData* nextData();

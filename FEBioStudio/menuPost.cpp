@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
@@ -310,6 +311,22 @@ void CMainWindow::on_actionAddProbe_triggered()
 	glm->AddPlot(probe);
 
 	UpdatePostPanel(true, probe);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionAddRuler_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLRuler* ruler = new Post::GLRuler();
+	glm->AddPlot(ruler);
+
+	UpdatePostPanel(true, ruler);
 	RedrawGL();
 }
 

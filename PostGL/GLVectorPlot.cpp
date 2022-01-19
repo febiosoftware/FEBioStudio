@@ -94,7 +94,7 @@ CGLVectorPlot::CGLVectorPlot()
 
 	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
 	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetOrientation(GLLegendBar::HORIZONTAL);
+	bar->SetOrientation(GLLegendBar::ORIENT_HORIZONTAL);
 	bar->copy_label(szname);
 	SetLegendBar(bar);
 
