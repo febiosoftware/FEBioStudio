@@ -159,14 +159,14 @@ void GLRuler::Update(int ntime, float dt, bool breset)
 	CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return;
 
-	Post::FEPostModel& fem = *mdl->GetFEModel();
+	Post::FEPostModel& fem = *mdl->GetFSModel();
 
 	// update the size of the probe
 	BOX box = fem.GetBoundingBox();
 	m_R = 0.05 * box.GetMaxExtent();
 
-	m_rt[0] = fem.NodePosition(m_node[0]-1, ntime);
-	m_rt[1] = fem.NodePosition(m_node[1]-1, ntime);
+	m_rt[0] = to_vec3d(fem.NodePosition(m_node[0]-1, ntime));
+	m_rt[1] = to_vec3d(fem.NodePosition(m_node[1]-1, ntime));
 }
 
 GLColor GLRuler::GetColor() const
@@ -186,9 +186,9 @@ double GLRuler::DataValue(int nfield, int nstep)
 	CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return 0.0;
 
-	Post::FEPostModel& fem = *mdl->GetFEModel();
-	vec3d ra = fem.NodePosition(m_node[0] - 1, nstep);
-	vec3d rb = fem.NodePosition(m_node[1] - 1, nstep);
+	Post::FEPostModel& fem = *mdl->GetFSModel();
+	vec3d ra = to_vec3d(fem.NodePosition(m_node[0] - 1, nstep));
+	vec3d rb = to_vec3d(fem.NodePosition(m_node[1] - 1, nstep));
 
 	double val = 0.0;
 	vec3d t = rb - ra;

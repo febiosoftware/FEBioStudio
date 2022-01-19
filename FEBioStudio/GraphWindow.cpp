@@ -1881,7 +1881,7 @@ void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
 void CModelGraphWindow::addRulerData(Post::GLRuler* ruler)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = m_lastState - m_firstState + 1;
 	vector<float> xdata(nsteps);
