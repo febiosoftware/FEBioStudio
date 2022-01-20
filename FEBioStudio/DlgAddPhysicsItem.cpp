@@ -84,7 +84,6 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FEProjec
 	type->setCurrentRow(0);
 
 	QObject::connect(type, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(accept()));
-	QObject::connect(type, &QListWidget::currentRowChanged, this, &CHelpDialog::LoadPage);
 }
 
 std::string CDlgAddPhysicsItem::GetName()

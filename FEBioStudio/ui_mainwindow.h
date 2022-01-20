@@ -273,8 +273,6 @@ public:
 	bool m_updateOnClose;
 	bool m_updateDevChannel;
 
-	bool m_helpAvailable;
-
 	QString m_lastFindText;
 
 public:
@@ -321,9 +319,6 @@ public:
 		m_updateAvailable = false;
 		m_updateOnClose = false;
 		m_updateDevChannel = false;
-
-		// Check if htmlManual files are available
-		m_helpAvailable = QDir(QCoreApplication::applicationDirPath() + MANUAL_PATH).exists();
 
 		// initialize current path
 		currentPath = QDir::currentPath();

@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QTextBrowser>
+#include <QDesktopServices>
+#include <QMessageBox>
 #include <MeshTools/FEProject.h>
 #include "HelpDialog.h"
 #include "WebDefines.h"
@@ -39,11 +41,7 @@ class Ui::CHelpDialog
 {
 public:
 	QPushButton* helpButton;
-	QTextBrowser* helpView;
-
 	QHBoxLayout* helpLayout;
-
-	bool m_helpAvailable;
 
 public:
 	void setupUi(QWidget* parent)
@@ -51,28 +49,14 @@ public:
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		helpLayout = new QHBoxLayout;
 
-		m_helpAvailable = PRV::getMainWindow()->helpAvailable();
-
-		if(m_helpAvailable)
-		{
-			helpLayout->addWidget(helpView = new QTextBrowser, 2);
-			helpView->setMinimumSize(600,400);
-			helpView->setVisible(false);
-			helpView->setSearchPaths(QStringList() << QCoreApplication::applicationDirPath() + MANUAL_PATH);
-		}
-		
-
 		mainLayout->addLayout(helpLayout);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
-		if(m_helpAvailable)
-		{
-			helpButton = new QPushButton("Help");
-			helpButton->setCheckable(true);
+        helpButton = new QPushButton("Help");
+        helpButton->setCheckable(true);
 
-			bb->addButton(helpButton, QDialogButtonBox::HelpRole);
-		}	
+        bb->addButton(helpButton, QDialogButtonBox::HelpRole);
 
 		mainLayout->addWidget(bb);
 
@@ -96,62 +80,20 @@ CHelpDialog::~CHelpDialog() { delete ui; }
 
 void CHelpDialog::on_help_clicked()
 {
-	if(ui->m_helpAvailable)
-	{
-		if(ui->helpButton->isChecked())
-		{
-			m_withoutHelp = size();
-			// reset min size
-			setMinimumSize(0,0);
-			ui->helpView->setVisible(true);
-			LoadPage();
-			resize(m_withHelp);
-		}
-		else
-		{
-			m_withHelp = size();
-			ui->helpView->setVisible(false);
-			// reset min size
-			setMinimumSize(0,0);
-			resize(m_withoutHelp);
-		}
-	}
+    SetURL();
+
+    if(m_url.isEmpty() || m_url == UNSELECTED_HELP )
+    {
+        QMessageBox::information(this, "No Help Available", "There is currently no help article available for this item.");
+    }
+    else
+    {
+        QDesktopServices::openUrl(QUrl(MANUAL_PATH + m_url));
+        
+    }
 }
 
 void CHelpDialog::SetLeftSideLayout(QLayout* layout)
 {
 	ui->helpLayout->insertLayout(0, layout);
-}
-
-void CHelpDialog::LoadPage()
-{
-	if(ui->m_helpAvailable)
-	{
-		// Make sure the help view is actually visible
-		if (ui->helpView->isVisible() == false) return;
-
-		QString oldURL = m_url;
-
-		SetURL();
-
-		if(!m_url.isEmpty())
-		{
-			if(m_url == UNSELECTED_HELP)
-			{
-				ui->helpView->setHtml(QString("<html><body><p><b>%1</b></p></body></html>").arg(m_unselectedHelp));
-				return;
-			}
-
-			m_url.insert(0, QCoreApplication::applicationDirPath() + MANUAL_PATH);
-
-			if(m_url != oldURL)
-			{
-				ui->helpView->setSource(QUrl::fromLocalFile(m_url));
-			}
-		}
-		else
-		{
-			ui->helpView->setHtml("<html><body><p><b>There is currently no help article available for this item.</b></p></body></html>");
-		}
-	}
 }

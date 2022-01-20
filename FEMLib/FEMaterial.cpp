@@ -2470,7 +2470,7 @@ FECFDFiberExpPowUC::FECFDFiberExpPowUC() : FEMaterial(FE_FIBER_EXP_POW_UC)
 // CFD Fiber-neo-Hookean uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FECFDFiberNHUC, MODULE_MECH, FE_FIBER_NH_UC, FE_MAT_CFD_FIBER_UC, "fiber-NH-uncoupled", 0, FIBER_WITH_NEO_HOOKEAN_LAW_UNCOUPLED_HTML);
+REGISTER_MATERIAL(FECFDFiberNHUC, MODULE_MECH, FE_FIBER_NH_UC, FE_MAT_CFD_FIBER_UC, "fiber-NH-uncoupled", 0);
 
 FECFDFiberNHUC::FECFDFiberNHUC() : FEMaterial(FE_FIBER_NH_UC)
 {
@@ -2692,7 +2692,7 @@ FECDFQuintic::FECDFQuintic() : FEMaterial(FE_CDF_QUINTIC)
 // DC Simo
 //=============================================================================
 
-REGISTER_MATERIAL(FEDCSimo, MODULE_MECH, FE_DC_SIMO, FE_MAT_DAMAGE_CRITERION, "DC Simo", 0, DAMAGE_CRITERION_SIMO_HTML);
+REGISTER_MATERIAL(FEDCSimo, MODULE_MECH, FE_DC_SIMO, FE_MAT_DAMAGE_CRITERION, "DC Simo", 0, DAMAGE_OR_YIELD_CRITERION_SIMO_HTML);
 
 FEDCSimo::FEDCSimo() : FEMaterial(FE_DC_SIMO)
 {
@@ -2853,7 +2853,7 @@ FEDCMaxNormalLagrangeStrainUC::FEDCMaxNormalLagrangeStrainUC() : FEMaterial(FE_D
 // Relaxation Exponential with Continuous Spectrum
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxCSExp, MODULE_MECH, FE_RELAX_CSEXP, FE_MAT_RV_RELAX, "relaxation-CSexp", 0, CSEXP_HTML);
+REGISTER_MATERIAL(FERelaxCSExp, MODULE_MECH, FE_RELAX_CSEXP, FE_MAT_RV_RELAX, "relaxation-CSexp", 0);
 
 FERelaxCSExp::FERelaxCSExp() : FEMaterial(FE_RELAX_CSEXP)
 {
@@ -2900,7 +2900,7 @@ FERelaxFung::FERelaxFung() : FEMaterial(FE_RELAX_FUNG)
 // Relaxation Malkin
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxMalkin, MODULE_MECH, FE_RELAX_MALKIN, FE_MAT_RV_RELAX, "relaxation-Malkin", 0, MALKIN_HTML);
+REGISTER_MATERIAL(FERelaxMalkin, MODULE_MECH, FE_RELAX_MALKIN, FE_MAT_RV_RELAX, "relaxation-Malkin", 0);
 
 FERelaxMalkin::FERelaxMalkin() : FEMaterial(FE_RELAX_MALKIN)
 {

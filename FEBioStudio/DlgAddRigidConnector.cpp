@@ -121,8 +121,6 @@ CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : 
 	}
 
 	ui->list->setCurrentRow(0);
-
-	QObject::connect(ui->list, &QListWidget::currentRowChanged, this, &CHelpDialog::LoadPage);
 }
 
 void CDlgAddRigidConnector::SetURL()
