@@ -26,14 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 
-// #ifdef WIN32
-//     #define MANUAL_PATH "/../doc/htmlManual/"
-// #elif __APPLE__
-//     #define MANUAL_PATH "/../../../doc/htmlManual/"
-// #else
-//     #define MANUAL_PATH "/../doc/htmlManual/"
-// #endif
-
 #define MANUAL_PATH "https://help.febio.org/FebioUser/"
 
 #define INTRODUCTION_HTML "FEBio_um_3-4-Chapter-1.html"
