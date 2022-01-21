@@ -858,13 +858,8 @@ void FSStep::Load(IArchive &ar)
 					else if (ntype == FE_FEBIO_NODAL_LOAD) pl = new FEBioNodalLoad(fem);
 					else
 					{
-						// see if it's a surface load
-						pl = fecore_new<FSLoad>(fem, FESURFACELOAD_ID, ntype);
-						if (pl == 0)
-						{
-							// could be a body load
-							pl = fecore_new<FSLoad>(fem, FEBODYLOAD_ID, ntype);
-						}
+						// see if it's a model load
+						pl = fecore_new<FSLoad>(fem, FELOAD_ID, ntype);
 					}
 
 					// make sure we have something

@@ -31,13 +31,11 @@ SOFTWARE.*/
 
 FSSurfaceLoad::FSSurfaceLoad(int ntype, FSModel* ps) : FSLoad(ntype, ps)
 {
-	m_superClassID = FESURFACELOAD_ID;
 	SetMeshItemType(FE_FACE_FLAG);
 }
 
 FSSurfaceLoad::FSSurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep)
 {
-	m_superClassID = FESURFACELOAD_ID;
 	SetMeshItemType(FE_FACE_FLAG);
 }
 

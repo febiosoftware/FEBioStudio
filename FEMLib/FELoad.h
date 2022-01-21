@@ -6,8 +6,8 @@
 class FSLoad : public FSDomainComponent
 {
 public:
-	FSLoad(int ntype, FSModel* fem) : FSDomainComponent(ntype, fem) {}
-	FSLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, ps, pi, nstep) {}
+	FSLoad(int ntype, FSModel* fem) : FSDomainComponent(ntype, fem) { m_superClassID = FELOAD_ID; }
+	FSLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, ps, pi, nstep) { m_superClassID = FELOAD_ID; }
 };
 
 //=============================================================================
@@ -17,8 +17,8 @@ public:
 class FSNodalLoad : public FSLoad
 {
 public:
-	FSNodalLoad(int ntype, FSModel* fem) : FSLoad(ntype, fem) { m_superClassID = FENODALLOAD_ID; }
-	FSNodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep) { m_superClassID = FENODALLOAD_ID; }
+	FSNodalLoad(int ntype, FSModel* fem) : FSLoad(ntype, fem) {}
+	FSNodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep) {}
 };
 
 class FSNodalDOFLoad : public FSNodalLoad

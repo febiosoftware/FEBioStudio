@@ -8,7 +8,7 @@ FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep) : FSStep
 	m_nstepID = nstep;
 	m_ntype = ntype;
 
-	m_itemType = FE_NODE_FLAG;
+	m_itemType = 0;
 }
 
 FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSStepComponent(ps)
@@ -17,7 +17,7 @@ FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* 
 	m_nstepID = nstep;
 	m_pItem = pi;
 
-	m_itemType = FE_NODE_FLAG;
+	m_itemType = 0;
 }
 
 FSDomainComponent::~FSDomainComponent(void)

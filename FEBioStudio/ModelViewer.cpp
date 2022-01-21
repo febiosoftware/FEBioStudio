@@ -1098,7 +1098,7 @@ void CModelViewer::OnChangeMaterial()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, prj, false, false, this);
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, prj, false, false, this);
 	if (dlg.exec())
 	{
 		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
@@ -1275,7 +1275,7 @@ void CModelViewer::OnCopyRigidConnector()
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(fecore->Create(fem, FERIGIDCONNECTOR_ID, pc->Type()));
+	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
@@ -1332,13 +1332,7 @@ void CModelViewer::OnCopyLoad()
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSLoad* plCopy = 0;
-	if (dynamic_cast<FSSurfaceLoad*>(pl))
-		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FESURFACELOAD_ID, pl->Type()));
-	else if (dynamic_cast<FSBodyLoad*>(pl))
-		plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FEBODYLOAD_ID, pl->Type()));
-	else if (dynamic_cast<FSNodalDOFLoad*>(pl))
-		plCopy = new FSNodalDOFLoad(fem);
+	FSLoad* plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FELOAD_ID, pl->Type()));
 	assert(plCopy);
 
 	// create a name

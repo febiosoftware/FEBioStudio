@@ -162,6 +162,7 @@ namespace FEBio {
 		FEBioClass(const FEBioClass& c)
 		{
 			m_superClassID = c.m_superClassID;
+			m_baseClassId = c.m_baseClassId;
 			m_typeString = c.m_typeString;
 			m_Param = c.m_Param;
 			m_Props = c.m_Props;
@@ -170,6 +171,7 @@ namespace FEBio {
 		void operator = (const FEBioClass& c)
 		{
 			m_superClassID = c.m_superClassID;
+			m_baseClassId = c.m_baseClassId;
 			m_typeString = c.m_typeString;
 			m_Param = c.m_Param;
 			m_Props = c.m_Props;
@@ -196,9 +198,13 @@ namespace FEBio {
 		void SetFEBioClass(void* febClass) { m_febClass = febClass; }
 		void* GetFEBioClass() { return m_febClass; }
 
+		void SetBaseClassID(int n) { m_baseClassId = n; }
+		int GetBaseClassID() const { return m_baseClassId; }
+
 		void UpdateData();
 
 	private:
+		int				m_baseClassId;	// Id that identifies the base class of the property (this is an index!)
 		int				m_superClassID;
 		std::string		m_typeString;
 		std::vector<FEBioParam>		m_Param;

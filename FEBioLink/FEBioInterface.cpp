@@ -355,17 +355,17 @@ FSBoundaryCondition* FEBio::CreateBoundaryCondition(const std::string& typeStr, 
 
 FSNodalLoad* FEBio::CreateNodalLoad(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioNodalLoad>(FENODALLOAD_ID, typeStr, fem);
+	return CreateModelComponent<FEBioNodalLoad>(FELOAD_ID, typeStr, fem);
 }
 
 FSSurfaceLoad* FEBio::CreateSurfaceLoad(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioSurfaceLoad>(FESURFACELOAD_ID, typeStr, fem);
+	return CreateModelComponent<FEBioSurfaceLoad>(FELOAD_ID, typeStr, fem);
 }
 
 FSBodyLoad* FEBio::CreateBodyLoad(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioBodyLoad>(FEBODYLOAD_ID, typeStr, fem);
+	return CreateModelComponent<FEBioBodyLoad>(FELOAD_ID, typeStr, fem);
 }
 
 FSPairedInterface* FEBio::CreatePairedInterface(const std::string& typeStr, FSModel* fem)
@@ -390,12 +390,12 @@ FSRigidConstraint* FEBio::CreateRigidConstraint(const std::string& typeStr, FSMo
 
 FSRigidConnector* FEBio::CreateRigidConnector(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioRigidConnector>(FERIGIDCONNECTOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioRigidConnector>(FENLCONSTRAINT_ID, typeStr, fem);
 }
 
 FSRigidLoad* FEBio::CreateRigidLoad(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioRigidLoad>(FERIGIDLOAD_ID, typeStr, fem);
+	return CreateModelComponent<FEBioRigidLoad>(FELOAD_ID, typeStr, fem);
 }
 
 FSInitialCondition* FEBio::CreateInitialCondition(const std::string& typeStr, FSModel* fem)
@@ -459,12 +459,28 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
 	case FEANALYSIS_ID            : pc = new FEBioAnalysisStep(fem); break;
 	case FEFUNCTION1D_ID          : pc = new FEBioFunction1D(fem); break;
 	case FEMATERIAL_ID            : pc = new FEBioMaterial(); break;
-	case FEBC_ID                  : pc = new FEBioBoundaryCondition(fem); break;
+	case FEBC_ID                  : 
+	{
+		FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
+		if (feb->GetBaseClassID() == FEBio::GetBaseClassIndex("class FEPrescribedSurface"))
+		{
+			pbc->SetMeshItemType(FE_FACE_FLAG);
+		}
+		pc = pbc;
+	}
+	break;
 	case FEIC_ID                  : pc = new FEBioInitialCondition(fem); break;
 	case FESURFACEINTERFACE_ID    : pc = new FEBioInterface(fem); break;
-	case FENODALLOAD_ID           : pc = new FEBioNodalLoad(fem); break;
-	case FESURFACELOAD_ID         : pc = new FEBioSurfaceLoad(fem); break;
-	case FEBODYLOAD_ID            : pc = new FEBioBodyLoad(fem); break;
+	case FELOAD_ID:
+	{
+		int baseClass = feb->GetBaseClassID();
+		if      (baseClass == FEBio::GetBaseClassIndex("class FENodalLoad"  )) pc = new FEBioNodalLoad(fem);
+		else if (baseClass == FEBio::GetBaseClassIndex("class FESurfaceLoad")) pc = new FEBioSurfaceLoad(fem);
+		else if (baseClass == FEBio::GetBaseClassIndex("class FEBodyLoad"   )) pc = new FEBioBodyLoad(fem);
+		else if (baseClass == FEBio::GetBaseClassIndex("class FERigidLoad"  )) pc = new FEBioRigidLoad(fem);
+		else assert(false);
+	}
+	break;
 	case FEMATERIALPROP_ID        : pc = new FEBioMaterialProperty(fem); break;
 	case FELOADCONTROLLER_ID      : pc = new FEBioLoadController(fem); break;
 	case FEMESHADAPTOR_ID         : pc = new FEBioMeshAdaptor(fem); break;

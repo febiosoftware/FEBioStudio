@@ -34,7 +34,7 @@ class CDlgAddPhysicsItem : public CHelpDialog
 	Q_OBJECT
 
 public:
-	CDlgAddPhysicsItem(QString windowName, int superID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent);
+	CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent);
 
 	std::string GetName();
 	int GetStep();

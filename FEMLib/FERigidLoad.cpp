@@ -29,7 +29,6 @@ SOFTWARE.*/
 //=============================================================================
 FSRigidLoad::FSRigidLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0, nstep)
 { 
-	m_superClassID = FERIGIDLOAD_ID;
 	SetMeshItemType(0);
 }
 

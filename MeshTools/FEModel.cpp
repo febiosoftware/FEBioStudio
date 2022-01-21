@@ -486,6 +486,7 @@ const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 			}
 			else assert(femat);
 		}
+		else return "(invalid)";
 	}
 	assert(false);
 	return nullptr;

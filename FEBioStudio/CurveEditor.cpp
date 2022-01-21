@@ -669,7 +669,7 @@ void CCurveEditor::on_newLC_clicked(bool b)
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Load Controller", FELOADCONTROLLER_ID, prj, true, false, this);
+	CDlgAddPhysicsItem dlg("Add Load Controller", FELOADCONTROLLER_ID, -1, prj, true, false, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();

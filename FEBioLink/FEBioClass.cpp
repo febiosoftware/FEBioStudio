@@ -65,10 +65,7 @@ void initMap()
 	idmap[FESOLVER_ID] = "FESOLVER_ID";
 	idmap[FEMATERIAL_ID] = "FEMATERIAL_ID";
 	idmap[FEMATERIALPROP_ID] = "FEMATERIALPROP_ID";
-	idmap[FEBODYLOAD_ID] = "FEBODYLOAD_ID";
-	idmap[FESURFACELOAD_ID] = "FESURFACELOAD_ID";
-	idmap[FEEDGELOAD_ID] = "FEEDGELOAD_ID";
-	idmap[FENODALLOAD_ID] = "FENODALLOAD_ID";
+	idmap[FELOAD_ID] = "FELOAD_ID";
 	idmap[FENLCONSTRAINT_ID] = "FENLCONSTRAINT_ID";
 	idmap[FEPLOTDATA_ID] = "FEPLOTDATA_ID";
 	idmap[FEANALYSIS_ID] = "FEANALYSIS_ID";
@@ -97,7 +94,6 @@ void initMap()
 	idmap[FEMESHADAPTOR_ID] = "FEMESHADAPTOR_ID";
 	idmap[FEMESHADAPTORCRITERION_ID] = "FEMESHADAPTORCRITERION_ID";
 	idmap[FERIGIDBC_ID] = "FERIGIDBC_ID";
-	idmap[FERIGIDLOAD_ID] = "FERIGIDLOAD_ID";
 	idmap[FENEWTONSTRATEGY_ID] = "FENEWTONSTRATEGY_ID";
 	idmap[FEITEMLIST_ID] = "FEITEMLIST_ID";
 	idmap[FETIMECONTROLLER_ID] = "FETIMECONTROLLER_ID";
@@ -464,6 +460,7 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 	// create the interface class
 	FEBioClass* feb = new FEBioClass;
 	feb->SetSuperClassID(fac->GetSuperClassID());
+	feb->SetBaseClassID(GetBaseClassIndex(fac->GetBaseClassName()));
 	feb->SetTypeString(sztype);
 	feb->SetFEBioClass((void*)pc);
 

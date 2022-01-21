@@ -49,7 +49,8 @@ public:
 	QLineEdit* flt;
 	QToolButton* tb;
 
-	int m_superID;
+	int		m_superID;
+	int		m_baseClassID;
 	bool	m_modDepends;
 
 public:
@@ -100,13 +101,14 @@ public:
 	}
 };
 
-CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent)
+CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent)
 	: CHelpDialog(prj, parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
 	setMinimumSize(600, 400);
 
 	ui->m_superID = superID;
+	ui->m_baseClassID = baseClassID;
 	ui->m_modDepends = includeModuleDependencies;
 	ui->setup(this, showStepList);
 
@@ -134,7 +136,7 @@ void CDlgAddPhysicsItem::Update()
 	unsigned int searchFlags = (ui->m_modDepends ? FEBio::ClassSearchFlags::IncludeModuleDependencies : 0);
 
 	// set the types
-	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, -1, searchFlags);
+	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, ui->m_baseClassID, searchFlags);
 	for (int i = 0; i < (int)l.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& fac = l[i];
