@@ -284,7 +284,7 @@ const char* FSModel::GetDOFSymbol(int n) const
 //-----------------------------------------------------------------------------
 const char* FSModel::GetDOFName(int n) const
 {
-	if (n < 0) { assert(false); return nullptr; }
+	if (n < 0) { return "(invalid)"; }
 	for (int i = 0, m = 0; i < m_DOF.size(); ++i)
 	{
 		const FEDOFVariable& var = m_DOF[i];

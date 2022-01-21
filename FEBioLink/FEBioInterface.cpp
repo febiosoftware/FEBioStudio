@@ -462,10 +462,9 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fem)
 	case FEBC_ID                  : 
 	{
 		FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
-		if (feb->GetBaseClassID() == FEBio::GetBaseClassIndex("class FEPrescribedSurface"))
-		{
-			pbc->SetMeshItemType(FE_FACE_FLAG);
-		}
+		int baseClass = feb->GetBaseClassID();
+		if      (baseClass == FEBio::GetBaseClassIndex("class FENodalBC"  )) pbc->SetMeshItemType(FE_NODE_FLAG);
+		else if (baseClass == FEBio::GetBaseClassIndex("class FESurfaceBC")) pbc->SetMeshItemType(FE_FACE_FLAG);
 		pc = pbc;
 	}
 	break;

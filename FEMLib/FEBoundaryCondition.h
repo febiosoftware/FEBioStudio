@@ -12,11 +12,9 @@ class FSBoundaryCondition : public FSDomainComponent
 public:
 	FSBoundaryCondition(int ntype, FSModel* fem, int nstep = 0) : FSDomainComponent(ntype, fem, nstep){
 		m_superClassID = FEBC_ID;
-		SetMeshItemType(FE_NODE_FLAG);
 	}
 	FSBoundaryCondition(int ntype, FSModel* fem, FEItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, fem, pi, nstep){
 		m_superClassID = FEBC_ID;
-		SetMeshItemType(FE_NODE_FLAG);
 	}
 };
 
