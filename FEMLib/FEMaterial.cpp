@@ -2945,7 +2945,7 @@ FSRelaxFung::FSRelaxFung() : FSMaterial(FE_RELAX_FUNG)
 // Relaxation Malkin
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxMalkin, MODULE_MECH, FE_RELAX_MALKIN, FE_MAT_RV_RELAX, "relaxation-Malkin", 0, MALKIN_HTML);
+REGISTER_MATERIAL(FERelaxMalkin, MODULE_MECH, FE_RELAX_MALKIN, FE_MAT_RV_RELAX, "relaxation-Malkin", 0);
 
 FERelaxMalkin::FERelaxMalkin() : FSMaterial(FE_RELAX_MALKIN)
 {

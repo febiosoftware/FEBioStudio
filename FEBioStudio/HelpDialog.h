@@ -44,9 +44,6 @@ public:
 	CHelpDialog(FSProject& prj, QWidget* parent);
 	virtual ~CHelpDialog();
 
-public slots:
-	void LoadPage();
-
 protected slots:
 	void on_help_clicked();
 
@@ -59,8 +56,6 @@ protected:
 	int		m_module;
 	QString m_url;
 	QString m_unselectedHelp;
-	QSize m_withoutHelp;
-	QSize m_withHelp;
 private:
 	Ui::CHelpDialog* ui;
 };

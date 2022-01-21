@@ -233,8 +233,6 @@ void CMaterialEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTree
 		QObject::connect(ui->matList, SIGNAL(currentIndexChanged(int)), this, SLOT(materialChanged(int)));
 		ui->tree->setItemWidget(current, 1, ui->matList);
 	}
-
-	LoadPage();
 }
 
 void CMaterialEditor::materialChanged(int n)
@@ -246,8 +244,6 @@ void CMaterialEditor::materialChanged(int n)
 	FSMaterial* pmat = MF.Create(ntype); assert(pmat);
 
 	it->SetMaterial(pmat);
-
-	LoadPage();
 }
 
 void CMaterialEditor::accept()
