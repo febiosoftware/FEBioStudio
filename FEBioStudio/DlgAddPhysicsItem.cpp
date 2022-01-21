@@ -93,7 +93,6 @@ public:
 		dlg->SetLeftSideLayout(layout);
 
 		QObject::connect(type, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), dlg, SLOT(accept()));
-		QObject::connect(type, &QTreeWidget::currentItemChanged, dlg, &CHelpDialog::LoadPage);
 		QObject::connect(flt, SIGNAL(textChanged(const QString&)), dlg, SLOT(Update()));
 		QObject::connect(tb, SIGNAL(clicked()), dlg, SLOT(Update()));
 
