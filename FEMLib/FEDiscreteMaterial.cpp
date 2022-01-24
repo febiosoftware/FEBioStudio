@@ -114,16 +114,6 @@ FEBioDiscreteMaterial::~FEBioDiscreteMaterial()
 
 }
 
-void FEBioDiscreteMaterial::SetTypeString(const std::string& s)
-{
-	m_stype = s;
-}
-
-const char* FEBioDiscreteMaterial::GetTypeString() const
-{
-	return m_stype.c_str();
-}
-
 void FEBioDiscreteMaterial::Save(OArchive& ar)
 {
 	ar.BeginChunk(CID_FEBIO_META_DATA);
@@ -158,19 +148,9 @@ void FEBioDiscreteMaterial::Load(IArchive& ar)
 	UpdateData(true);
 }
 
-void FEBioDiscreteMaterial::SetFEBioMaterial(FEBio::FEBioClass* febClass)
-{
-	m_febClass = febClass;
-}
-
-FEBio::FEBioClass* FEBioDiscreteMaterial::GetFEBioMaterial()
-{
-	return m_febClass;
-}
-
 bool FEBioDiscreteMaterial::UpdateData(bool bsave)
 {
-	if (m_febClass)
+//	if (m_febClass)
 	{
 		if (bsave) FEBio::UpdateFEBioDiscreteMaterial(this);
 	}

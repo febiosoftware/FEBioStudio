@@ -31,74 +31,69 @@ SOFTWARE.*/
 #include <FECore/FEModule.h>
 #include <FEBioLib/FEBioModel.h>
 #include <MeshTools/FEModel.h>
+#include <FEMLib/FEStepComponent.h>
+#include <FEMLib/FEBoundaryCondition.h>
+#include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEBodyLoad.h>
+#include <FEMLib/FEMaterial.h>
+#include <FEMLib/FEDiscreteMaterial.h>
+#include <FEMLib/FEAnalysisStep.h>
+#include <FEMLib/FEInterface.h>
+#include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FEConnector.h>
+#include <FEMLib/FERigidLoad.h>
+#include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FEInitialCondition.h>
+#include <FEMLib/FEDiscreteMaterial.h>
+#include <MeshTools/FEModel.h>
 #include <sstream>
 using namespace FEBio;
-
-vec3d qvariant_to_vec3d(const QVariant& v)
-{
-	QList<QVariant> val = v.value<QList<QVariant> >();
-	vec3d w;
-	w.x = val.at(0).toDouble();
-	w.y = val.at(1).toDouble();
-	w.z = val.at(2).toDouble();
-	return w;
-}
-
-mat3d qvariant_to_mat3d(const QVariant& v)
-{
-	QList<QVariant> val = v.value<QList<QVariant> >();
-	mat3d w;
-	int n = 0;
-	for (int i = 0; i < 3; ++i)
-		for (int j = 0; j < 3; ++j) w[i][j] = val.at(n++).toDouble();
-	return w;
-}
 
 std::map<int, const char*> idmap;
 void initMap()
 {
 	idmap.clear();
 
-	idmap[FEINVALID_ID] = "FEINVALID_ID";
-	idmap[FEOBJECT_ID] = "FEOBJECT_ID";
-	idmap[FETASK_ID] = "FETASK_ID";
-	idmap[FESOLVER_ID] = "FESOLVER_ID";
-	idmap[FEMATERIAL_ID] = "FEMATERIAL_ID";
-	idmap[FEMATERIALPROP_ID] = "FEMATERIALPROP_ID";
-	idmap[FELOAD_ID] = "FELOAD_ID";
-	idmap[FENLCONSTRAINT_ID] = "FENLCONSTRAINT_ID";
-	idmap[FEPLOTDATA_ID] = "FEPLOTDATA_ID";
-	idmap[FEANALYSIS_ID] = "FEANALYSIS_ID";
-	idmap[FESURFACEINTERFACE_ID] = "FESURFACEINTERFACE_ID";
-	idmap[FENODELOGDATA_ID] = "FENODELOGDATA_ID";
-	idmap[FEFACELOGDATA_ID] = "FEFACELOGDATA_ID";
-	idmap[FEELEMLOGDATA_ID] = "FEELEMLOGDATA_ID";
-	idmap[FEOBJLOGDATA_ID] = "FEOBJLOGDATA_ID";
-	idmap[FEBC_ID] = "FEBC_ID";
-	idmap[FEGLOBALDATA_ID] = "FEGLOBALDATA_ID";
-	idmap[FERIGIDOBJECT_ID] = "FERIGIDOBJECT_ID";
-	idmap[FENLCLOGDATA_ID] = "FENLCLOGDATA_ID";
-	idmap[FECALLBACK_ID] = "FECALLBACK_ID";
-	idmap[FEDOMAIN_ID] = "FEDOMAIN_ID";
-	idmap[FEIC_ID] = "FEIC_ID";
-	idmap[FEDATAGENERATOR_ID] = "FEDATAGENERATOR_ID";
-	idmap[FELOADCONTROLLER_ID] = "FELOADCONTROLLER_ID";
-	idmap[FEMODEL_ID] = "FEMODEL_ID";
-	idmap[FEMODELDATA_ID] = "FEMODELDATA_ID";
-	idmap[FESCALARGENERATOR_ID] = "FESCALARGENERATOR_ID";
-	idmap[FEVEC3DGENERATOR_ID] = "FEVEC3DGENERATOR_ID";
-	idmap[FEMAT3DGENERATOR_ID] = "FEMAT3DGENERATOR_ID";
-	idmap[FEMAT3DSGENERATOR_ID] = "FEMAT3DSGENERATOR_ID";
-	idmap[FEFUNCTION1D_ID] = "FEFUNCTION1D_ID";
-	idmap[FELINEARSOLVER_ID] = "FELINEARSOLVER_ID";
-	idmap[FEMESHADAPTOR_ID] = "FEMESHADAPTOR_ID";
+	idmap[FEINVALID_ID             ] = "FEINVALID_ID";
+	idmap[FEOBJECT_ID              ] = "FEOBJECT_ID";
+	idmap[FETASK_ID                ] = "FETASK_ID";
+	idmap[FESOLVER_ID              ] = "FESOLVER_ID";
+	idmap[FEMATERIAL_ID            ] = "FEMATERIAL_ID";
+	idmap[FEMATERIALPROP_ID        ] = "FEMATERIALPROP_ID";
+	idmap[FELOAD_ID                ] = "FELOAD_ID";
+	idmap[FENLCONSTRAINT_ID        ] = "FENLCONSTRAINT_ID";
+	idmap[FEPLOTDATA_ID            ] = "FEPLOTDATA_ID";
+	idmap[FEANALYSIS_ID            ] = "FEANALYSIS_ID";
+	idmap[FESURFACEINTERFACE_ID    ] = "FESURFACEINTERFACE_ID";
+	idmap[FENODELOGDATA_ID         ] = "FENODELOGDATA_ID";
+	idmap[FEFACELOGDATA_ID         ] = "FEFACELOGDATA_ID";
+	idmap[FEELEMLOGDATA_ID         ] = "FEELEMLOGDATA_ID";
+	idmap[FEOBJLOGDATA_ID          ] = "FEOBJLOGDATA_ID";
+	idmap[FEBC_ID                  ] = "FEBC_ID";
+	idmap[FEGLOBALDATA_ID          ] = "FEGLOBALDATA_ID";
+	idmap[FERIGIDOBJECT_ID         ] = "FERIGIDOBJECT_ID";
+	idmap[FENLCLOGDATA_ID          ] = "FENLCLOGDATA_ID";
+	idmap[FECALLBACK_ID            ] = "FECALLBACK_ID";
+	idmap[FEDOMAIN_ID              ] = "FEDOMAIN_ID";
+	idmap[FEIC_ID                  ] = "FEIC_ID";
+	idmap[FEDATAGENERATOR_ID       ] = "FEDATAGENERATOR_ID";
+	idmap[FELOADCONTROLLER_ID      ] = "FELOADCONTROLLER_ID";
+	idmap[FEMODEL_ID               ] = "FEMODEL_ID";
+	idmap[FEMODELDATA_ID           ] = "FEMODELDATA_ID";
+	idmap[FESCALARGENERATOR_ID     ] = "FESCALARGENERATOR_ID";
+	idmap[FEVEC3DGENERATOR_ID      ] = "FEVEC3DGENERATOR_ID";
+	idmap[FEMAT3DGENERATOR_ID      ] = "FEMAT3DGENERATOR_ID";
+	idmap[FEMAT3DSGENERATOR_ID     ] = "FEMAT3DSGENERATOR_ID";
+	idmap[FEFUNCTION1D_ID          ] = "FEFUNCTION1D_ID";
+	idmap[FELINEARSOLVER_ID        ] = "FELINEARSOLVER_ID";
+	idmap[FEMESHADAPTOR_ID         ] = "FEMESHADAPTOR_ID";
 	idmap[FEMESHADAPTORCRITERION_ID] = "FEMESHADAPTORCRITERION_ID";
-	idmap[FERIGIDBC_ID] = "FERIGIDBC_ID";
-	idmap[FENEWTONSTRATEGY_ID] = "FENEWTONSTRATEGY_ID";
-	idmap[FEITEMLIST_ID] = "FEITEMLIST_ID";
-	idmap[FETIMECONTROLLER_ID] = "FETIMECONTROLLER_ID";
-	idmap[FEEIGENSOLVER_ID] = "FEEIGENSOLVER_ID";
-	idmap[FEDATARECORD_ID] = "FEDATARECORD_ID";
+	idmap[FERIGIDBC_ID             ] = "FERIGIDBC_ID";
+	idmap[FENEWTONSTRATEGY_ID      ] = "FENEWTONSTRATEGY_ID";
+	idmap[FEITEMLIST_ID            ] = "FEITEMLIST_ID";
+	idmap[FETIMECONTROLLER_ID      ] = "FETIMECONTROLLER_ID";
+	idmap[FEEIGENSOLVER_ID         ] = "FEEIGENSOLVER_ID";
+	idmap[FEDATARECORD_ID          ] = "FEDATARECORD_ID";
 }
 
 // dummy model used for allocating temporary FEBio classes.
@@ -134,6 +129,21 @@ bool in_vector(const vector<int>& v, int n)
 		if (v[j] == n) return true;
 	}
 	return false;
+}
+
+FEBioClassInfo FEBio::GetClassInfo(int classId)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	const FECoreFactory* fac = fecore.GetFactoryClass(classId); assert(fac);
+
+	int modId = fac->GetModuleID();
+
+	FEBioClassInfo ci;
+	ci.classId = classId;
+	ci.sztype = fac->GetTypeStr();
+	ci.szmod = fecore.GetModuleName(modId);
+
+	return ci;
 }
 
 std::vector<FEBio::FEBioClassInfo> FEBio::FindAllActiveClasses(int superId, int baseClassId, unsigned int flags)
@@ -173,7 +183,7 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 			if ((mod == -1) || (mod == facmod) || in_vector(mods, facmod))
 			{
 				const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
-				FEBio::FEBioClassInfo febc = { fac->GetTypeStr(), szmod, (unsigned int) i };
+				FEBio::FEBioClassInfo febc = { (unsigned int)i, fac->GetTypeStr(), szmod };
 				facs.push_back(febc);
 			}
 		}
@@ -188,276 +198,8 @@ int FEBio::GetClassId(int superClassId, const std::string& typeStr)
 	return fecore.GetFactoryIndex(superClassId, typeStr.c_str());
 }
 
-FEBioParam& FEBioClass::AddParameter(const std::string& paramName, const std::string& paramLongName, int paramType, const QVariant& val)
-{
-	FEBioParam p;
-	p.m_type = paramType;
-	p.m_name = paramName;
-	p.m_longName = paramLongName;
-	p.m_val  = val;
-	m_Param.push_back(p);
-	return m_Param[m_Param.size() - 1];
-}
-
-FEBioProperty& FEBioClass::AddProperty(const std::string& propName, int superClassId, int baseClassId, bool required, bool isArray)
-{
-	FEBioProperty prop;
-	prop.m_name = propName;
-	prop.m_brequired = required;
-	prop.m_isArray = isArray;
-	prop.m_baseClassId = baseClassId;
-	prop.m_superClassId = superClassId;
-	m_Props.push_back(prop);
-	return m_Props.back();
-}
-
-FEBioProperty* FEBioClass::FindProperty(const std::string& propName)
-{
-	for (FEBioProperty& prop : m_Props)
-	{
-		if (prop.m_name == propName) return &prop;
-	}
-	return nullptr;
-}
-
-QVariant vec3d_to_qvariant(const vec3d& v)
-{
-	QList<QVariant> val;
-	val.push_back(v.x);
-	val.push_back(v.y);
-	val.push_back(v.z);
-	return val;
-}
-
-QVariant mat3d_to_qvariant(const mat3d& m)
-{
-	QList<QVariant> val;
-	for (int i = 0; i < 3; ++i)
-		for (int j = 0; j < 3; ++j) val.push_back(m[i][j]);
-	return val;
-}
-
-QVariant mat3ds_to_qvariant(const mat3ds& m)
-{
-	QList<QVariant> val;
-	val.push_back(m.xx());
-	val.push_back(m.yy());
-	val.push_back(m.zz());
-	val.push_back(m.xy());
-	val.push_back(m.yz());
-	val.push_back(m.xz());
-	return val;
-}
-
-void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
-{
-	// copy parameter info
-	FEParameterList& pl = pc->GetParameterList();
-	int params = pl.Parameters();
-	FEParamIterator it = pl.first();
-	for (int i = 0; i < params; ++i, ++it)
-	{
-		FEParam& p = *it;
-		if ((p.GetFlags() & FE_PARAM_HIDDEN) == 0)
-		{
-			int ndim = p.dim();
-			const char* szname = p.name();
-			const char* szlongname = p.longName();
-			switch (p.type())
-			{
-			case FE_PARAM_INT:
-			{
-				FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), p.value<int>());
-				param.m_flags = p.GetFlags();
-				if (p.enums())
-				{
-					param.m_enums = p.enums();
-				}
-			}
-			break;
-			case FE_PARAM_BOOL: feb->AddParameter(szname, szlongname, p.type(), p.value<bool>()); break;
-			case FE_PARAM_DOUBLE:
-			{
-				if (ndim == 1)
-				{
-					FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), p.value<double>());
-					param.m_flags = p.GetFlags();
-				}
-				else if (ndim == 3)
-				{
-					vec3d v(0, 0, 0);
-					v.x = p.value<double>(0);
-					v.y = p.value<double>(1);
-					v.z = p.value<double>(2);
-					feb->AddParameter(szname, szlongname, FE_PARAM_VEC3D, vec3d_to_qvariant(v));
-				}
-				else if (ndim > 3)
-				{
-					vector<double> v(ndim);
-					for (int i = 0; i < ndim; ++i) v[i] = p.value<double>(i);
-					feb->AddParameter(szname, szlongname, FE_PARAM_STD_VECTOR_DOUBLE, QVariant::fromValue(v));
-				}
-			}
-			break;
-			case FE_PARAM_VEC3D: feb->AddParameter(szname, szlongname, p.type(), vec3d_to_qvariant(p.value<vec3d>())); break;
-			case FE_PARAM_MAT3D: feb->AddParameter(szname, szlongname, p.type(), mat3d_to_qvariant(p.value<mat3d>())); break;
-			case FE_PARAM_STD_STRING: feb->AddParameter(szname, szlongname, p.type(), QString::fromStdString(p.value<std::string>())); break;
-			case FE_PARAM_DOUBLE_MAPPED:
-			{
-				if (ndim == 1)
-				{
-					FEParamDouble& v = p.value<FEParamDouble>();
-					FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), v.constValue());
-					param.m_flags = p.GetFlags();
-				}
-				else if (ndim == 3)
-				{
-					vec3d v(0, 0, 0);
-					v.x = p.value<FEParamDouble>(0).constValue();
-					v.y = p.value<FEParamDouble>(1).constValue();
-					v.z = p.value<FEParamDouble>(2).constValue();
-					feb->AddParameter(szname, szlongname, FE_PARAM_VEC3D, vec3d_to_qvariant(v));
-				}
-				else assert(false);
-			}
-			break;
-			case FE_PARAM_VEC3D_MAPPED:
-			{
-				FEParamVec3& v = p.value<FEParamVec3>();
-				FEVec3dValuator* val = v.valuator(); assert(val);
-				FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEVEC3DGENERATOR_ID, baseClassIndex("class FEVec3dValuator"), true);
-				prop.m_defType = "vector";
-
-				FEBioClass fbc;
-				fbc.SetSuperClassID(FEVEC3DGENERATOR_ID);
-				fbc.SetTypeString(val->GetTypeStr());
-				fbc.SetFEBioClass(val);
-
-				// copy the class data
-				CopyFECoreClass(&fbc, val);
-
-				prop.m_comp.push_back(fbc);
-			}
-			break;
-			case FE_PARAM_MAT3D_MAPPED:
-			{
-//				if (strcmp(p.name(), "mat_axis") != 0)
-//				{
-					FEParamMat3d& v = p.value<FEParamMat3d>();
-					FEMat3dValuator* val = v.valuator(); assert(val);
-					FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEMAT3DGENERATOR_ID, baseClassIndex("class FEMat3dValuator"), true);
-
-					FEBioClass fbc;
-					fbc.SetSuperClassID(FEMAT3DGENERATOR_ID);
-					fbc.SetTypeString(val->GetTypeStr());
-					fbc.SetFEBioClass(val);
-
-					// copy the class data
-					CopyFECoreClass(&fbc, val);
-
-					prop.m_comp.push_back(fbc);
-//				}
-			}
-			break;
-			case FE_PARAM_MAT3DS_MAPPED:
-			{
-				FEParamMat3ds& v = p.value<FEParamMat3ds>();
-				FEMat3dsValuator* val = v.valuator(); assert(val);
-				FEBio::FEBioProperty& prop = feb->AddProperty(p.name(), FEMAT3DSGENERATOR_ID, baseClassIndex("class FEMat3dsValuator"), true);
-
-				FEBioClass fbc;
-				fbc.SetSuperClassID(FEMAT3DSGENERATOR_ID);
-				fbc.SetTypeString(val->GetTypeStr());
-
-				// copy the class data
-				CopyFECoreClass(&fbc, val);
-
-				prop.m_comp.push_back(fbc);
-			}
-			break;
-			case FEBIO_PARAM_STD_VECTOR_INT:
-			{
-				std::vector<int>& v = p.value<std::vector<int> >();
-				QVariant val = QVariant::fromValue(v);
-				FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), val);
-				if (p.enums()) param.m_enums = p.enums();
-			}
-			break;
-			case FEBIO_PARAM_STD_VECTOR_DOUBLE:
-			{
-				std::vector<double>& v = p.value<std::vector<double> >();
-				QVariant val = QVariant::fromValue(v);
-				FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), val);
-			}
-			break;
-			case FE_PARAM_DATA_ARRAY:
-			{
-				// Don't know how to handle this.
-			}
-			break;
-			case FE_PARAM_STD_VECTOR_VEC2D:
-			{
-				std::vector<vec2d>& v = p.value<std::vector<vec2d> >();
-				QVariant val = QVariant::fromValue(v);
-				FEBioParam& param = feb->AddParameter(szname, szlongname, p.type(), val);
-			}
-			break;
-			case FE_PARAM_IMAGE_3D:
-				// TODO: don't know what to do here. (This is used by Warp plugin).
-				break;
-			case FE_PARAM_STD_VECTOR_STRING:
-				// TODO: don't know what to do here. (This is used by MathController).
-			break;
-			default:
-				assert(false);
-			}
-		}
-
-		if (feb->Parameters() > 0)
-		{
-			FEBioParam& febParam = feb->GetParameter(feb->Parameters() - 1);
-			if (p.units()) febParam.m_szunit = p.units();
-		}
-	}
-
-	// copy properties
-	int props = pc->PropertyClasses();
-	for (int i = 0; i < props; ++i)
-	{
-		FEProperty* prop = pc->PropertyClass(i);
-		const char* sz = prop->GetClassName();
-
-		// lookup the base class ID.
-		int n = baseClassIndex(sz);
-
-		// add it
-		FEBioProperty& febProp = feb->AddProperty(prop->GetName(), prop->GetSuperClassID(), n, prop->IsRequired(), prop->IsArray());
-
-		// set the default solver based on the active module name
-		if (prop->GetSuperClassID() == FESOLVER_ID)
-		{
-			const char* szmod = GetModuleName(GetActiveModule());
-			febProp.m_defType = szmod;
-		}
-
-		// allocate class 
-		if (prop->size() > 0)
-		{
-			FECoreBase* pci = prop->get(0);
-
-			FEBioClass febi;
-			febi.SetSuperClassID(prop->GetSuperClassID());
-			febi.SetBaseClassID(n);
-			febi.SetFEBioClass(pci);
-			febi.SetTypeString("");
-			CopyFECoreClass(&febi, pci);
-
-			febProp.m_comp.push_back(febi);
-		}
-	}
-}
-
-FEBioClass* FEBio::CreateFEBioClass(int classId)
+// TODO: I don't think the allocated class is ever deallocated! MEMORY LEAK!!
+FECoreBase* CreateFECoreClass(int classId)
 {
 	// Get the kernel
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
@@ -467,30 +209,294 @@ FEBioClass* FEBio::CreateFEBioClass(int classId)
 	if (fac == nullptr) return nullptr;
 
 	// try to create the FEBio object
-	FECoreBase* pc = fac->Create(febioModel); assert(pc);
-	if (pc == nullptr) return nullptr;
-
-	const char* sztype = fac->GetTypeStr();
-
-	// create the interface class
-	FEBioClass* feb = new FEBioClass;
-	feb->SetSuperClassID(fac->GetSuperClassID());
-	feb->SetBaseClassID(GetBaseClassIndex(fac->GetBaseClassName()));
-	feb->SetTypeString(sztype);
-	feb->SetFEBioClass((void*)pc);
-
-	// copy the class data
-	CopyFECoreClass(feb, pc);
+	assert(febioModel);
+	FECoreBase* pc = fac->CreateInstance(febioModel); assert(pc);
 
 	// all done!
-	return feb;
+	return pc;
 }
 
-FEBioClass* FEBio::CreateFEBioClass(int superClassID, const char* sztype)
+FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 {
-	int classId = GetClassId(superClassID, sztype);
-	if (classId < 0) return nullptr;
-	return FEBio::CreateFEBioClass(classId);
+	FSModelComponent* pc = nullptr;
+	switch (superClassID)
+	{
+	case FEANALYSIS_ID  : pc = new FEBioAnalysisStep(fem); break;
+	case FEFUNCTION1D_ID: pc = new FEBioFunction1D(fem); break;
+	case FEMATERIAL_ID  : pc = new FEBioMaterial(); break;
+	case FEBC_ID:
+	{
+		FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
+		if      (baseClassId == FEBio::GetBaseClassIndex("class FENodalBC"  )) pbc->SetMeshItemType(FE_NODE_FLAG);
+		else if (baseClassId == FEBio::GetBaseClassIndex("class FESurfaceBC")) pbc->SetMeshItemType(FE_FACE_FLAG);
+		pc = pbc;
+	}
+	break;
+	case FEIC_ID: pc = new FEBioInitialCondition(fem); break;
+	case FESURFACEINTERFACE_ID: pc = new FEBioInterface(fem); break;
+	case FELOAD_ID:
+	{
+		if      (baseClassId == FEBio::GetBaseClassIndex("class FENodalLoad"  )) pc = new FEBioNodalLoad(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("class FESurfaceLoad")) pc = new FEBioSurfaceLoad(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("class FEBodyLoad"   )) pc = new FEBioBodyLoad(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("class FERigidLoad"  )) pc = new FEBioRigidLoad(fem);
+		else assert(false);
+	}
+	break;
+	case FEMATERIALPROP_ID     : pc = new FEBioMaterialProperty(fem); break;
+	case FELOADCONTROLLER_ID   : pc = new FEBioLoadController(fem); break;
+	case FEMESHADAPTOR_ID      : pc = new FEBioMeshAdaptor(fem); break;
+	case FENLCONSTRAINT_ID     : pc = new FEBioNLConstraint(fem); break;
+	case FESURFACECONSTRAINT_ID: pc = new FEBioSurfaceConstraint(fem); break;
+	case FEBODYCONSTRAINT_ID   : pc = new FEBioBodyConstraint(fem); break;
+	case FEDATAGENERATOR_ID    : pc = new FEBioMeshDataGenerator(fem); break;
+	case FESOLVER_ID           : pc = new FSGenericClass; break;
+	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
+	case FENEWTONSTRATEGY_ID  : pc = new FSGenericClass; break;
+	case FECLASS_ID           : pc = new FSGenericClass; break;
+	case FETIMECONTROLLER_ID  : pc = new FSGenericClass; break;
+	case FEVEC3DGENERATOR_ID  : pc = new FSGenericClass; break;
+	case FEMAT3DGENERATOR_ID  : pc = new FSGenericClass; break;
+	case FEMAT3DSGENERATOR_ID : pc = new FSGenericClass; break;
+	default:
+		assert(false);
+	}
+	assert(pc);
+
+	pc->SetSuperClassID(superClassID);
+
+	return pc;
+}
+
+
+bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
+{
+	if (po->GetSuperClassID() != FECLASS_ID)
+	{
+		assert(po->GetSuperClassID() == feb->GetSuperClassID());
+		po->SetTypeString(feb->GetTypeStr());
+
+		// make sure the class ID is set on the model component
+		if (po->GetClassID() <= 0)
+		{
+			int classId = FEBio::GetClassId(feb->GetSuperClassID(), feb->GetTypeStr());
+			po->SetClassID(classId);
+		}
+	}
+
+	// map the FECoreBase parameters to the FSModelComponent
+	// copy the parameters from the FEBioClass to the FSObject
+	FEParameterList& PL = feb->GetParameterList();
+	const int params = PL.Parameters();
+	FEParamIterator pi = PL.first();
+	for (int i = 0; i < params; ++i, ++pi)
+	{
+		FEParam& param = *pi;
+		if ((param.GetFlags() & FEParamFlag::FE_PARAM_HIDDEN) == 0)
+		{
+			int ndim = param.dim();
+			int type = param.type();
+
+			// TODO: The name needs to be copied in the FSObject class!! 
+			//       This is a memory leak!!!!
+			const char* szname = strdup(param.name());
+			const char* szlongname = strdup(param.longName());
+			Param* p = nullptr;
+			switch (type)
+			{
+			case FEBio::FEBIO_PARAM_INT:
+			{
+				int n = param.value<int>();
+				if (param.enums())
+				{
+					p = po->AddChoiceParam(n, szname, szlongname);
+					p->CopyEnumNames(param.enums());
+				}
+				else p = po->AddIntParam(n, szname, szlongname);
+			}
+			break;
+			case FEBio::FEBIO_PARAM_BOOL: p = po->AddBoolParam(param.value<bool>(), szname, szlongname); break;
+			case FEBio::FEBIO_PARAM_DOUBLE: p = po->AddDoubleParam(param.value<double>(), szname, szlongname); break;
+			case FEBio::FEBIO_PARAM_VEC3D: p = po->AddVecParam(param.value<vec3d>(), szname, szlongname); break;
+			case FEBio::FEBIO_PARAM_MAT3D: p = po->AddMat3dParam(param.value<mat3d>(), szname, szlongname); break;
+			case FEBio::FEBIO_PARAM_STD_STRING: p = po->AddStringParam(param.value<string>(), szname, szlongname); break;
+			case FEBio::FEBIO_PARAM_STD_VECTOR_INT:
+			{
+				std::vector<int> val = param.value<std::vector<int> >();
+				p = po->AddVectorIntParam(val, szname, szlongname);
+				if (param.enums()) p->CopyEnumNames(param.enums());
+			}
+			break;
+			case FEBio::FEBIO_PARAM_STD_VECTOR_DOUBLE:
+			{
+				std::vector<double> val = param.value<std::vector<double> >();
+				p = po->AddVectorDoubleParam(val, szname, szlongname);
+			}
+			break;
+			case FEBio::FEBIO_PARAM_STD_VECTOR_VEC2D:
+			{
+				std::vector<vec2d> val = param.value<std::vector<vec2d> >();
+				p = po->AddVectorVec2dParam(val, szname, szlongname);
+			}
+			break;
+			case FEBio::FEBIO_PARAM_DOUBLE_MAPPED:
+			{
+				if (ndim == 1)
+				{
+					FEParamDouble& v = param.value<FEParamDouble>();
+					double d = 0.0;
+					if (v.isConst()) d = v.constValue();
+					p = po->AddDoubleParam(d, szname, szlongname)->MakeVariable(true);
+				}
+				else if (ndim == 3)
+				{
+					vec3d v(0, 0, 0);
+					v.x = param.value<FEParamDouble>(0).constValue();
+					v.y = param.value<FEParamDouble>(1).constValue();
+					v.z = param.value<FEParamDouble>(2).constValue();
+					p = po->AddVecParam(v, szname, szlongname);
+				}
+				else assert(false);
+			}
+			break;
+			case FEBio::FEBIO_PARAM_VEC3D_MAPPED:
+			{
+				FEParamVec3& v = param.value<FEParamVec3>();
+				FEVec3dValuator* val = v.valuator(); assert(val);
+
+				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("class FEVec3dValuator"));
+				prop->SetSuperClassID(FEVEC3DGENERATOR_ID);
+				//			prop.m_defType = "vector";
+
+				FSModelComponent* vecProp = CreateFSClass(FEVEC3DGENERATOR_ID, -1, po->GetFSModel());
+
+				// copy the class data
+				BuildModelComponent(vecProp, val);
+
+				prop->AddComponent(vecProp);
+			}
+			break;
+			case FEBio::FEBIO_PARAM_MAT3D_MAPPED:
+			{
+				FEParamMat3d& v = param.value<FEParamMat3d>();
+				FEMat3dValuator* val = v.valuator(); assert(val);
+
+				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("class FEMat3dValuator"));
+				prop->SetSuperClassID(FEMAT3DGENERATOR_ID);
+				//			prop.m_defType = "vector";
+
+				FSModelComponent* matProp = CreateFSClass(FEMAT3DGENERATOR_ID, -1, po->GetFSModel());
+
+				// copy the class data
+				BuildModelComponent(matProp, val);
+
+				prop->AddComponent(matProp);
+			}
+			break;
+			case FEBio::FEBIO_PARAM_MAT3DS_MAPPED:
+			{
+				FEParamMat3ds& v = param.value<FEParamMat3ds>();
+				FEMat3dsValuator* val = v.valuator(); assert(val);
+
+				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("class FEMat3dsValuator"));
+				prop->SetSuperClassID(FEMAT3DSGENERATOR_ID);
+
+				FSModelComponent* matProp = CreateFSClass(FEMAT3DSGENERATOR_ID, -1, po->GetFSModel());
+
+				// copy the class data
+				BuildModelComponent(matProp, val);
+
+				prop->AddComponent(matProp);
+			}
+			break;
+			default:
+				assert(false);
+			}
+
+			// p can be null if parameters are mapped to properties (e.g. the mapped parameters)
+			if (p)
+			{
+				p->SetFlags(param.GetFlags());
+				if (param.units()) p->SetUnit(param.units());
+			}
+		}
+	}
+
+	// map the properties
+	for (int i = 0; i < feb->PropertyClasses(); ++i)
+	{
+		FEProperty& prop = *feb->PropertyClass(i);
+
+		int maxSize = (prop.IsArray() ? 0 : 1);
+		int baseClassId = -1; // TODO: find base class ID
+		FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
+		fsp->SetSuperClassID(prop.GetSuperClassID());
+		if (prop.IsRequired())
+			fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);
+		
+		// set the (optional) default type
+		if (prop.GetDefaultType())
+			fsp->SetDefaultType(prop.GetDefaultType());
+
+		// handle mesh selection properties differently
+		if (prop.GetSuperClassID() == FEDOMAIN_ID)
+		{
+			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
+
+			if (strcmp(prop.GetName(), "surface") == 0) pms->SetMeshItemType(FE_FACE_FLAG);
+
+			pms->SetSuperClassID(FEDOMAIN_ID);
+			fsp->AddComponent(pms);
+		}
+		else if (prop.GetSuperClassID() == FEITEMLIST_ID)
+		{
+			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
+			if (strcmp(prop.GetName(), "node_set") == 0) pms->SetMeshItemType(FE_NODE_FLAG);
+
+			// TODO: We need to integrate these IDs.
+			fsp->SetSuperClassID(FEDOMAIN_ID);
+			pms->SetSuperClassID(FEDOMAIN_ID);
+			fsp->AddComponent(pms);
+		}
+		else if (prop.size() != 0)
+		{
+			FECoreBase* pci = prop.get(0);
+
+			// make sure the property is either a FECLASS_ID, which is not allocated through the kernel
+			// or the super IDs match.
+			assert((prop.GetSuperClassID() == FECLASS_ID) || (pci->GetSuperClassID() == prop.GetSuperClassID()));
+
+			// allocate the model component
+			FSModelComponent* pmi = CreateFSClass(prop.GetSuperClassID(), -1, nullptr); assert(pmi);
+			BuildModelComponent(pmi, pci);
+			fsp->AddComponent(pmi);
+		}
+	}
+
+	if (dynamic_cast<FEBioMaterial*>(po))
+	{
+		FEBioMaterial* febMat = dynamic_cast<FEBioMaterial*>(po);
+		//		febMat->SetFEBioMaterial(feb);
+	}
+	else if (dynamic_cast<FSDomainComponent*>(po))
+	{
+		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(po);
+		if (feb->FindProperty("surface"))
+		{
+			pbc->SetMeshItemType(FE_FACE_FLAG);
+		}
+	}
+
+	return true;
+}
+
+bool FEBio::BuildModelComponent(FSModelComponent* po)
+{
+	// create the FEBio class
+	int classId = po->GetClassID();
+	FECoreBase* feb = CreateFECoreClass(classId);
+	if (feb == nullptr) return false;
+	return BuildModelComponent(po, feb);
 }
 
 vector<FEBio::FEBioModule>	FEBio::GetAllModules()
@@ -683,42 +689,237 @@ void FEBio::DeleteClass(void* p)
 	delete pc;
 }
 
-// Copy parameters from FEBioClass back to the FECoreBase parameter list
-void FEBioClass::UpdateData()
+// Call this to initialize default properties
+bool FEBio::InitDefaultProps(FSModelComponent* pc)
 {
-	FECoreBase* pc = (FECoreBase*)GetFEBioClass();
-	for (int i = 0; i < Parameters(); ++i)
+	for (int i = 0; i < pc->Properties(); ++i)
 	{
-		FEBioParam& param = GetParameter(i);
-		FEParam* pp = pc->FindParameter(param.m_name.c_str()); assert(pp);
-		switch (param.m_type)
+		FSProperty& prop = pc->GetProperty(i);
+		if (prop.IsRequired() && (prop.GetComponent() == nullptr))
 		{
-		case FEBIO_PARAM_VEC3D:
-		{
-			vec3d v = qvariant_to_vec3d(param.m_val);
-			pp->value<vec3d>() = v;
-		}
-		break;
-		case FEBIO_PARAM_STD_STRING:
-		{
-			std::string s = param.m_val.toString().toStdString();
-			pp->value<std::string>() = s;
-		}
-		break;
-		case FEBIO_PARAM_DOUBLE_MAPPED:
-		{
-			FEParamDouble& val = pp->value<FEParamDouble>();
-			if (val.isConst())
+			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllActiveClasses(prop.GetSuperClassID(), -1, FEBio::ClassSearchFlags::IncludeFECoreClasses | FEBio::ClassSearchFlags::IncludeModuleDependencies);
+			if ((fci.size() > 0) && (prop.GetDefaultType().empty() == false))
 			{
-				double v = param.m_val.toDouble();
-				FEConstValue* a = dynamic_cast<FEConstValue*>(val.valuator()); assert(a);
-				if (a) *(a->constValue()) = v;
+				FSModel* fem = pc->GetFSModel();
+				FSModelComponent* psc = FEBio::CreateClass(prop.GetSuperClassID(), prop.GetDefaultType().c_str(), fem);
+				assert(psc);
+				if (psc)
+				{
+					prop.AddComponent(psc);
+					bool b = InitDefaultProps(psc);
+					if (b == false) { assert(false); return false; }
+				}
+				else return false;
 			}
 		}
-		break;
-		default:
-			break;
-		}
 	}
-	pc->UpdateParams();
+	return true;
+}
+
+bool BuildModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po)
+{
+	int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId > 0);
+	po->SetSuperClassID(superClassId);
+	po->SetClassID(classId);
+	po->SetTypeString(typeStr);
+	bool ret = FEBio::BuildModelComponent(po);
+	return ret;
+}
+
+bool FEBio::BuildModelComponent(FSModelComponent* pc, const std::string& typeStr)
+{
+	return BuildModelComponent(pc->GetSuperClassID(), typeStr, pc);
+}
+
+void FEBio::UpdateFEBioMaterial(FEBioMaterial* pm)
+{
+/*	FEBioClass* febClass = pm->GetFEBioMaterial();
+
+	// first map the parameters to the FEBioClass
+	map_parameters(febClass, pm);
+
+	// then write the parameters to the FEBio class
+	febClass->UpdateData();
+*/
+}
+
+void FEBio::UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm)
+{
+/*	FEBioClass* febClass = pm->GetFEBioMaterial();
+
+	// first map the parameters to the FEBioClass
+	map_parameters(febClass, pm);
+
+	// then write the parameters to the FEBio class
+	febClass->UpdateData();
+*/
+}
+
+template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr, FSModel* fem)
+{
+	T* mc = new T(fem);
+	if (BuildModelComponent(superClassID, typeStr, mc) == false)
+	{
+		assert(false);
+		delete mc;
+		return nullptr;
+	}
+	return mc;
+}
+
+template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr)
+{
+	T* mc = new T;
+	if (BuildModelComponent(superClassID, typeStr, mc) == false)
+	{
+		assert(false);
+		delete mc;
+		return nullptr;
+	}
+	return mc;
+}
+
+
+FSStep* FEBio::CreateStep(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioAnalysisStep>(FEANALYSIS_ID, typeStr, fem);
+}
+
+FSMaterial* FEBio::CreateMaterial(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr);
+}
+
+FSMaterialProperty* FEBio::CreateMaterialProperty(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioMaterialProperty>(FEMATERIALPROP_ID, typeStr, fem);
+}
+
+FSDiscreteMaterial* FEBio::CreateDiscreteMaterial(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioDiscreteMaterial>(FEDISCRETEMATERIAL_ID, typeStr);
+}
+
+FSBoundaryCondition* FEBio::CreateBoundaryCondition(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioBoundaryCondition>(FEBC_ID, typeStr, fem);
+}
+
+FSNodalLoad* FEBio::CreateNodalLoad(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioNodalLoad>(FELOAD_ID, typeStr, fem);
+}
+
+FSSurfaceLoad* FEBio::CreateSurfaceLoad(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioSurfaceLoad>(FELOAD_ID, typeStr, fem);
+}
+
+FSBodyLoad* FEBio::CreateBodyLoad(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioBodyLoad>(FELOAD_ID, typeStr, fem);
+}
+
+FSPairedInterface* FEBio::CreatePairedInterface(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioInterface>(FESURFACEINTERFACE_ID, typeStr, fem);
+}
+
+FSModelConstraint* FEBio::CreateNLConstraint(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioNLConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
+}
+
+FSSurfaceConstraint* FEBio::CreateSurfaceConstraint(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioSurfaceConstraint>(FESURFACECONSTRAINT_ID, typeStr, fem);
+}
+
+FSRigidConstraint* FEBio::CreateRigidConstraint(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioRigidConstraint>(FERIGIDBC_ID, typeStr, fem);
+}
+
+FSRigidConnector* FEBio::CreateRigidConnector(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioRigidConnector>(FENLCONSTRAINT_ID, typeStr, fem);
+}
+
+FSRigidLoad* FEBio::CreateRigidLoad(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioRigidLoad>(FELOAD_ID, typeStr, fem);
+}
+
+FSInitialCondition* FEBio::CreateInitialCondition(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioInitialCondition>(FEIC_ID, typeStr, fem);
+}
+
+FSLoadController* FEBio::CreateLoadController(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioLoadController>(FELOADCONTROLLER_ID, typeStr, fem);
+}
+
+FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioFunction1D>(FEFUNCTION1D_ID, typeStr, fem);
+}
+
+FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* fem)
+{
+	if (typeStr.empty())
+	{
+		FSGenericClass* pc = new FSGenericClass;
+		pc->SetSuperClassID(FECLASS_ID);
+	}
+	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr);
+}
+
+FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem)
+{
+	switch (superClassID)
+	{
+	case FEMATERIAL_ID        : return CreateMaterial        (typeStr, fem); break;
+	case FEMATERIALPROP_ID    : return CreateMaterialProperty(typeStr, fem); break;
+	case FEDISCRETEMATERIAL_ID: return CreateDiscreteMaterial(typeStr, fem); break;
+	case FECLASS_ID           : return CreateGenericClass    (typeStr, fem); break;
+	case FELOADCONTROLLER_ID  : return CreateLoadController  (typeStr, fem); break;
+	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
+	case FESOLVER_ID          :
+	case FENEWTONSTRATEGY_ID  :
+	case FETIMECONTROLLER_ID  :
+	case FEVEC3DGENERATOR_ID  :
+	case FEMAT3DGENERATOR_ID  :
+	case FEMAT3DSGENERATOR_ID :
+	{
+		FSGenericClass* pc = new FSGenericClass;
+		BuildModelComponent(superClassID, typeStr, pc);
+		return pc;
+	}
+	break;
+	default:
+		assert(false);
+	}
+	return nullptr;
+}
+
+FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+
+	const FECoreFactory* fac = fecore.GetFactoryClass(classId); assert(fac);
+	int superClassID = fac->GetSuperClassID();
+
+	int baseClassId = FEBio::GetBaseClassIndex(fac->GetBaseClassName());
+
+	// create the FS model class
+	FSModelComponent* pc = CreateFSClass(superClassID, baseClassId, fsm);
+	pc->SetClassID(classId);
+	pc->SetSuperClassID(superClassID);
+	pc->SetTypeString(fac->GetTypeStr());
+
+	// build the model component
+	BuildModelComponent(pc);
+
+	return pc;
 }

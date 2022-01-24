@@ -164,7 +164,6 @@ void FSCoreBase::SetClassID(int nid)
 // get the class ID
 int FSCoreBase::GetClassID() const
 {
-	assert(m_classId != -1);
 	return m_classId;
 }
 

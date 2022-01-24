@@ -67,21 +67,10 @@ public:
 	FEBioDiscreteMaterial();
 	~FEBioDiscreteMaterial();
 
-	void SetTypeString(const std::string& s) override;
-	const char* GetTypeString() const override;
-
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
-
-	void SetFEBioMaterial(FEBio::FEBioClass* febClass);
-	FEBio::FEBioClass* GetFEBioMaterial();
 
 	bool UpdateData(bool bsave) override;
 
 	DECLARE_REGISTERED(FEBioDiscreteMaterial);
-
-private:
-	std::string	m_stype;
-
-	FEBio::FEBioClass* m_febClass;	// pointer to FEBio interface class.
 };
