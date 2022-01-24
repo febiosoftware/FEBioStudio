@@ -439,6 +439,21 @@ void CopyFECoreClass(FEBio::FEBioClass * feb, FECoreBase * pc)
 			const char* szmod = GetModuleName(GetActiveModule());
 			febProp.m_defType = szmod;
 		}
+
+		// allocate class 
+		if (prop->size() > 0)
+		{
+			FECoreBase* pci = prop->get(0);
+
+			FEBioClass febi;
+			febi.SetSuperClassID(prop->GetSuperClassID());
+			febi.SetBaseClassID(n);
+			febi.SetFEBioClass(pci);
+			febi.SetTypeString("");
+			CopyFECoreClass(&febi, pci);
+
+			febProp.m_comp.push_back(febi);
+		}
 	}
 }
 

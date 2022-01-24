@@ -207,7 +207,8 @@ bool BuildModelComponent(FEBio::FEBioClass* feb, FSModelComponent* po)
 		else if (prop.m_comp.empty() == false)
 		{
 			FEBio::FEBioClass& fbc = prop.m_comp[0];
-			FSCoreBase* pmi = FEBio::CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), nullptr);
+			FSModelComponent* pmi = FEBio::CreateClass(fbc.GetSuperClassID(), fbc.TypeString().c_str(), nullptr);
+			BuildModelComponent(&fbc, pmi);
 			pci->AddComponent(pmi);
 		}
 	}
@@ -225,7 +226,7 @@ bool BuildModelComponent(FEBio::FEBioClass* feb, FSModelComponent* po)
 			pbc->SetMeshItemType(FE_FACE_FLAG);
 		}
 	}
-	else delete feb;
+//	else delete feb;
 
 	return true;
 }
@@ -415,7 +416,12 @@ FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)
 
 FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr);
+	if (typeStr.empty())
+	{
+		FSGenericClass* pc = new FSGenericClass;
+		pc->SetSuperClassID(FECLASS_ID);
+	}
+	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr);
 }
 
 FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem)

@@ -867,15 +867,11 @@ void FEBioExport4::WriteControlSection(FSStep& step)
 	for (int i = 0; i < step.Properties(); ++i)
 	{
 		FSProperty& prop = step.GetProperty(i);
-		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(prop.GetComponent());
+		FSModelComponent* pc = dynamic_cast<FSModelComponent*>(prop.GetComponent());
 		if (pc)
 		{
 			XMLElement el(prop.GetName().c_str());
-			const char* sztype = pc->GetTypeString();
-			if (sztype) el.add_attribute("type", sztype);
-			m_xml.add_branch(el);
-			WriteParamList(*pc);
-			m_xml.close_branch();
+			WriteModelComponent(pc, el);
 		}
 	}
 }
@@ -915,7 +911,7 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 {
 	// get the type string    
 	const char* sztype = pm->GetTypeString(); assert(sztype);
-	el.add_attribute("type", pm->GetTypeString());
+	if (sztype && sztype[0]) el.add_attribute("type", pm->GetTypeString());
 
 	// see if there are any attribute parameters
 	FSModel& fem = m_prj.GetFSModel();
@@ -961,8 +957,8 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 				FSModelComponent* pc = dynamic_cast<FSModelComponent*>(pm->GetProperty(i, j));
 				if (pc)
 				{
-					el.name(mc.GetName().c_str());
-					WriteModelComponent(pc, el);
+					XMLElement eli(mc.GetName().c_str());
+					WriteModelComponent(pc, eli);
 				}
 			}
 		}
@@ -3039,14 +3035,10 @@ void FEBioExport4::WriteStepSection()
 		m_xml.add_branch(e);
 		{
 			// output control section
-			m_xml.add_branch("Control");
-			{
-				WriteControlSection(step);
-			}
-			m_xml.close_branch(); // Control
+			WriteControlSection(step);
 
 			// output boundary section
-			int nbc = step.BCs() + step.Interfaces();
+			int nbc = step.BCs();
 			if (nbc > 0)
 			{
 				m_xml.add_branch("Boundary");
