@@ -26,14 +26,13 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <FSCore/FSObject.h>
-//using namespace std;
 
 class FSModel;
 
 class FEClassFactory
 {
 public:
-	FEClassFactory(int module, int superID, int classID, const char* sztype, const char* helpURL);
+	FEClassFactory(int module, int superID, int classID, const char* sztype);
 	~FEClassFactory();
 
 	virtual FSObject* Create(FSModel* fem) = 0;
@@ -43,20 +42,18 @@ public:
 	int GetClassID() const { return m_ClassID; }
 
 	const char* GetTypeStr() const { return m_szType; }
-	const char* GetHelpURL() const { return m_helpURL; }
 
 private:
 	int	m_Module;		// The module this class belongs to
 	int	m_SuperID;		// The super-class (i.e. category) this class belongs to
 	int	m_ClassID;		// class ID (must be unique within each super class)
 	const char*	m_szType;	// type string
-	const char* m_helpURL;	// optional help URL
 };
 
 template <class T> class FEClassFactory_T : public FEClassFactory
 {
 public:
-	FEClassFactory_T(int module, int superID, int classID, const char* sztype, const char* helpURL = "") : FEClassFactory(module, superID, classID, sztype, helpURL){}
+	FEClassFactory_T(int module, int superID, int classID, const char* sztype) : FEClassFactory(module, superID, classID, sztype){}
 	FSObject* Create(FSModel* fem) { return new T(fem); }
 };
 
@@ -84,8 +81,8 @@ private:
 	FEMKernel(const FEMKernel&){}
 };
 
-#define REGISTER_FE_CLASS(theClass, theModule, theSuperID, theClassID, ...) \
-	FEMKernel::Instance()->RegisterClass(new FEClassFactory_T<theClass>(theModule, theSuperID, theClassID, __VA_ARGS__));
+#define REGISTER_FE_CLASS(theClass, theModule, theSuperID, theClassID, theTypeString) \
+	FEMKernel::Instance()->RegisterClass(new FEClassFactory_T<theClass>(theModule, theSuperID, theClassID, theTypeString));
 
 template <class T> T* fecore_new(FSModel* fem, int superID, int classID)
 {

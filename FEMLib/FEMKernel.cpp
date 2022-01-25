@@ -27,13 +27,12 @@ SOFTWARE.*/
 #include "FEMKernel.h"
 using namespace std;
 
-FEClassFactory::FEClassFactory(int module, int superID, int classID, const char* sztype, const char* helpURL)
+FEClassFactory::FEClassFactory(int module, int superID, int classID, const char* sztype)
 {
 	m_Module = module;
 	m_SuperID = superID;
 	m_ClassID = classID;
 	m_szType = sztype;
-	m_helpURL = helpURL;
 }
 
 FEClassFactory::~FEClassFactory()

@@ -183,7 +183,7 @@ void CMaterialEditor::SetURL()
 		if(ui->matList->currentIndex() != -1)
 		{
 			int ntype = ui->matList->currentData().toInt();
-			m_url = FEMaterialFactory::GetInstance()->Find(ntype)->GetHelpURL();
+			// m_url = FEMaterialFactory::GetInstance()->Find(ntype)->GetHelpURL();
 			return;
 		}
 	}

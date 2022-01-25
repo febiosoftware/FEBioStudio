@@ -135,7 +135,7 @@ void CDlgAddRigidConnector::SetURL()
 {
 	int classID = ui->list->currentItem()->data(Qt::UserRole).toInt();
 
-	m_url = FEMKernel::FindClass(m_module, FENLCONSTRAINT_ID, classID)->GetHelpURL();
+	// m_url = FEMKernel::FindClass(m_module, FENLCONSTRAINT_ID, classID)->GetHelpURL();
 }
 
 void CDlgAddRigidConnector::accept()
