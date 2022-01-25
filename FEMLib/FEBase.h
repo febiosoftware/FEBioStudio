@@ -16,7 +16,8 @@ public:
 	enum Flags {
 		EDITABLE = 0x01,			// the property can be edited in the material editor
 		NON_EXTENDABLE = 0x02,		// cannot be modified after created in material editor
-		REQUIRED = 0x04				// property is required
+		REQUIRED = 0x04,			// property is required
+		PREFERRED = 0x08			// not required, but default should be allocated when applicable
 	};
 
 public:
@@ -72,6 +73,7 @@ public:
 	void SetDefaultType(const std::string& s) { m_defaultType = s; }
 
 	bool IsRequired() const;
+	bool IsPreferred() const;
 
 private:
 	std::string			m_name;			// name of this property

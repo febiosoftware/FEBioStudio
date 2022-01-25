@@ -3227,16 +3227,6 @@ FEBioMaterial::~FEBioMaterial()
 //	delete m_febClass;
 }
 
-void FEBioMaterial::SetTypeString(const std::string& sz)
-{
-	m_stype = sz;
-}
-
-const char* FEBioMaterial::GetTypeString() const
-{
-	return m_stype.c_str();
-}
-
 bool FEBioMaterial::IsRigid()
 {
 	return (strcmp(GetTypeString(), "rigid body") == 0);
@@ -3251,6 +3241,17 @@ bool FEBioMaterial::HasFibers()
 	else return false;
 }
 
+// return a string for the material type
+const char* FEBioMaterial::GetTypeString() const
+{
+	return FSObject::GetTypeString();
+}
+
+void FEBioMaterial::SetTypeString(const std::string& s)
+{
+	FSObject::SetTypeString(s);
+}
+
 vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 {
 	FSProperty* pm = FindProperty("fiber");
@@ -3260,7 +3261,7 @@ vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 	vec3d p = el.center();
 
 	// evaluate the fiber direction
-	vec3d v = FEBio::GetMaterialFiber(fiber->m_febClass->GetFEBioClass(), p);
+	vec3d v;// = FEBio::GetMaterialFiber(fiber->m_febClass->GetFEBioClass(), p);
 	return v;
 }
 
@@ -3298,19 +3299,9 @@ void FEBioMaterial::Load(IArchive& ar)
 	UpdateData(true);
 }
 
-void FEBioMaterial::SetFEBioMaterial(FEBio::FEBioClass* febClass)
-{
-	m_febClass = febClass;
-}
-
-FEBio::FEBioClass* FEBioMaterial::GetFEBioMaterial()
-{
-	return m_febClass;
-}
-
 bool FEBioMaterial::UpdateData(bool bsave)
 {
-	if (m_febClass)
+//	if (m_febClass)
 	{
 		if (bsave) FEBio::UpdateFEBioMaterial(this);
 	}

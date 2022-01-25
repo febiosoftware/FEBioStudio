@@ -59,6 +59,12 @@ bool FSProperty::IsRequired() const
 }
 
 //-----------------------------------------------------------------------------
+bool FSProperty::IsPreferred() const
+{
+	return ((GetFlags() & FSProperty::PREFERRED) != 0);
+}
+
+//-----------------------------------------------------------------------------
 void FSProperty::AddComponent(FSCoreBase* pm)
 {
 	if (pm) pm->SetParent(m_parent);
@@ -164,7 +170,6 @@ void FSCoreBase::SetClassID(int nid)
 // get the class ID
 int FSCoreBase::GetClassID() const
 {
-	assert(m_classId != -1);
 	return m_classId;
 }
 

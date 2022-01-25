@@ -2465,18 +2465,11 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-namespace FEBio {
-	class FEBioClass;
-}
-
 class FEBioMaterial : public FSMaterial
 {
 public:
 	FEBioMaterial();
 	~FEBioMaterial();
-
-	void SetTypeString(const std::string& s) override;
-	const char* GetTypeString() const override;
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -2487,15 +2480,11 @@ public:
 
 	vec3d GetFiber(FEElementRef& el) override;
 
-	void SetFEBioMaterial(FEBio::FEBioClass* febClass);
-	FEBio::FEBioClass* GetFEBioMaterial();
-
 	bool UpdateData(bool bsave) override;
 
+	// return a string for the material type
+	const char* GetTypeString() const override;
+	void SetTypeString(const std::string& s) override;
+
 	DECLARE_REGISTERED(FEBioMaterial);
-
-private:
-	std::string	m_stype;
-
-	FEBio::FEBioClass* m_febClass;	// pointer to FEBio interface class.
 };

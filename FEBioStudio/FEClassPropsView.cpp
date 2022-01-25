@@ -940,10 +940,12 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 			FSProperty& prop = pcb->GetProperty(item->m_propId);
 			FSCoreBase* pcbi = pcb->GetProperty(item->m_propId, item->m_index);
 
+			int nclass = prop.GetSuperClassID();
+			if (nclass == FECLASS_ID) return nullptr;
+
 			QComboBox* pc = new QComboBox(parent);
 
 			// fill the combo box
-			int nclass = prop.GetSuperClassID();
 			vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetBaseClassID(), true);
 			pc->clear();
 			int classes = classInfo.size();

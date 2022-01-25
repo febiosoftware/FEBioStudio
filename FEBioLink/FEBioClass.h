@@ -27,9 +27,33 @@ SOFTWARE.*/
 #include <vector>
 #include <string>
 #include <map>
-#include <QVariant>
 #include <FECore/vec3d.h>
 #include <FECore/mat3d.h>
+
+// Forward declaration of FEBio Studio classes
+class FSModelComponent;
+class FSMaterial;
+class FEBioMaterial;
+class FSMaterialProperty;
+class FSDiscreteMaterial;
+class FEBioDiscreteMaterial;
+class FSStep;
+class FSBoundaryCondition;
+class FSNodalLoad;
+class FSSurfaceLoad;
+class FSBodyLoad;
+class FSInitialCondition;
+class FSPairedInterface;
+class FSModelConstraint;
+class FSSurfaceConstraint;
+class FSRigidConstraint;
+class FSRigidConnector;
+class FSRigidLoad;
+class FSModel;
+class FSCoreBase;
+class FSLoadController;
+class FSFunction1D;
+class FSGenericClass;
 
 namespace FEBio {
 
@@ -60,11 +84,12 @@ namespace FEBio {
 		FEBIO_PARAM_MATERIALPOINT
 	};
 
+	// helper structure for retrieving febio class info 
 	struct FEBioClassInfo
 	{
-		const char* sztype;
-		const char* szmod;
-		unsigned int	classId;
+		unsigned int	classId;	// the class ID
+		const char*		sztype;		// the type string
+		const char*		szmod;		// the module name
 	};
 
 	enum ClassSearchFlags {
@@ -77,143 +102,52 @@ namespace FEBio {
 	std::vector<FEBioClassInfo> FindAllActiveClasses(int superId, int baseClassId = -1, unsigned int flags = ClassSearchFlags::AllFlags);
 	int GetClassId(int superClassId, const std::string& typeStr);
 
+	FEBioClassInfo GetClassInfo(int classId);
+
+	// get the base class Index from the base class name
 	int GetBaseClassIndex(const std::string& baseClassName);
 
-	class FEBioParam
+	// helper functions for creating FEBio classes.
+	FSStep*              CreateStep             (const std::string& typeStr, FSModel* fem);
+	FSMaterial*          CreateMaterial         (const std::string& typeStr, FSModel* fem);
+	FSMaterialProperty*  CreateMaterialProperty (const std::string& typeStr, FSModel* fem);
+	FSDiscreteMaterial*  CreateDiscreteMaterial (const std::string& typeStr, FSModel* fem);
+	FSBoundaryCondition* CreateBoundaryCondition(const std::string& typeStr, FSModel* fem);
+	FSNodalLoad*         CreateNodalLoad        (const std::string& typeStr, FSModel* fem);
+	FSSurfaceLoad*       CreateSurfaceLoad      (const std::string& typeStr, FSModel* fem);
+	FSBodyLoad*          CreateBodyLoad         (const std::string& typeStr, FSModel* fem);
+	FSPairedInterface*   CreatePairedInterface  (const std::string& typeStr, FSModel* fem);
+	FSModelConstraint*	 CreateNLConstraint     (const std::string& typeStr, FSModel* fem);
+	FSSurfaceConstraint* CreateSurfaceConstraint(const std::string& typeStr, FSModel* fem);
+	FSRigidConstraint*	 CreateRigidConstraint  (const std::string& typeStr, FSModel* fem);
+	FSRigidConnector*	 CreateRigidConnector   (const std::string& typeStr, FSModel* fem);
+	FSRigidLoad*	     CreateRigidLoad        (const std::string& typeStr, FSModel* fem);
+	FSInitialCondition*  CreateInitialCondition (const std::string& typeStr, FSModel* fem);
+	FSLoadController*    CreateLoadController   (const std::string& typeStr, FSModel* fem);
+	FSFunction1D*        CreateFunction1D       (const std::string& typeStr, FSModel* fem);
+	FSGenericClass*		 CreateGenericClass     (const std::string& typeStr, FSModel* fem);
+
+	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem);
+	FSModelComponent* CreateClass(int classId, FSModel* fem);
+
+	template<class T> T* CreateFEBioClass(int classId, FSModel* fem)
 	{
-	public:
-		FEBioParam() { m_enums = nullptr; m_type = -1; m_flags = 0; m_szunit = nullptr; }
-		FEBioParam(const FEBioParam& p)
-		{
-			m_name = p.m_name;
-			m_longName = p.m_longName;
-			m_type = p.m_type;
-			m_val  = p.m_val;
-			m_flags = p.m_flags;
-			m_enums = p.m_enums;
-			m_szunit = p.m_szunit;
-		}
-		void operator = (const FEBioParam& p)
-		{
-			m_name = p.m_name;
-			m_longName = p.m_longName;
-			m_type = p.m_type;
-			m_val = p.m_val;
-			m_flags = p.m_flags;
-			m_enums = p.m_enums;
-			m_szunit = p.m_szunit;
-		}
+		FSModelComponent* pc = CreateClass(classId, fem);
+		T* pt = dynamic_cast<T*>(pc);
+		if (pt == nullptr) { delete pc; return nullptr; }
+		return pt;
+	}
 
-		int type() const { return m_type; }
-		const std::string& name() const { return m_name; }
-		const std::string& longName() const { return m_longName; }
+	// this is only used by LoadClassMetaData
+	bool BuildModelComponent(FSModelComponent* pc, const std::string& typeStr);
 
-	public:
-		std::string		m_name;
-		std::string		m_longName;
-		int				m_type;
-		const char*		m_enums;	// enum values, only for int parameters
-		const char*		m_szunit;
-		unsigned int	m_flags;
-		QVariant		m_val;
-	};
+	// Call this to initialize default properties
+	bool InitDefaultProps(FSModelComponent* pc);
 
-	class FEBioClass;
+	void UpdateFEBioMaterial(FEBioMaterial* pm);
+	void UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm);
 
-	class FEBioProperty
-	{
-	public:
-		FEBioProperty() { m_baseClassId = -1; m_superClassId = -1; m_brequired = false; m_isArray = false; }
-		FEBioProperty(const FEBioProperty& p)
-		{
-			m_baseClassId = p.m_baseClassId;
-			m_superClassId = p.m_superClassId;
-			m_brequired = p.m_brequired;
-			m_isArray = p.m_isArray;
-			m_name = p.m_name;
-			m_comp = p.m_comp;
-			m_defType = p.m_defType;
-		}
-		void operator = (const FEBioProperty& p)
-		{
-			m_baseClassId = p.m_baseClassId;
-			m_superClassId = p.m_superClassId;
-			m_brequired = p.m_brequired;
-			m_isArray = p.m_isArray;
-			m_name = p.m_name;
-			m_comp = p.m_comp;
-			m_defType = p.m_defType;
-		}
-
-	public:
-		int	m_baseClassId;	// Id that identifies the base class of the property (this is an index!)
-		int	m_superClassId;	// Id that identifies the super class (this is an enum!)
-		bool	m_brequired;
-		bool	m_isArray;
-		std::string	m_name;
-		std::string m_defType;
-		std::vector<FEBioClass>	m_comp;
-	};
-
-	class FEBioClass
-	{
-	public:
-		FEBioClass() { m_febClass = nullptr; }
-		FEBioClass(const FEBioClass& c)
-		{
-			m_superClassID = c.m_superClassID;
-			m_baseClassId = c.m_baseClassId;
-			m_typeString = c.m_typeString;
-			m_Param = c.m_Param;
-			m_Props = c.m_Props;
-			m_febClass = c.m_febClass;
-		}
-		void operator = (const FEBioClass& c)
-		{
-			m_superClassID = c.m_superClassID;
-			m_baseClassId = c.m_baseClassId;
-			m_typeString = c.m_typeString;
-			m_Param = c.m_Param;
-			m_Props = c.m_Props;
-			m_febClass = c.m_febClass;
-		}
-
-	public:
-		std::string TypeString() const { return m_typeString; }
-		void SetTypeString(const std::string& s) { m_typeString = s; }
-
-		int Parameters() const { return (int)m_Param.size(); }
-		FEBioParam& AddParameter(const std::string& paramName, const std::string& paramLongName, int paramType, const QVariant& val);
-		FEBioParam& GetParameter(int i) { return m_Param[i]; }
-
-		int Properties() const { return (int)m_Props.size(); }
-		FEBioProperty& AddProperty(const std::string& propName, int superClassId, int baseClassId = -1, bool required = false, bool isArray = false);
-		FEBioProperty& GetProperty(int i) { return m_Props[i]; }
-
-		FEBioProperty* FindProperty(const std::string& propName);
-
-		void SetSuperClassID(int scid) { m_superClassID = scid; }
-		int GetSuperClassID() const { return m_superClassID; }
-
-		void SetFEBioClass(void* febClass) { m_febClass = febClass; }
-		void* GetFEBioClass() { return m_febClass; }
-
-		void SetBaseClassID(int n) { m_baseClassId = n; }
-		int GetBaseClassID() const { return m_baseClassId; }
-
-		void UpdateData();
-
-	private:
-		int				m_baseClassId;	// Id that identifies the base class of the property (this is an index!)
-		int				m_superClassID;
-		std::string		m_typeString;
-		std::vector<FEBioParam>		m_Param;
-		std::vector<FEBioProperty>	m_Props;
-		void* m_febClass;	// pointer to FEBio class
-	};
-
-	FEBioClass* CreateFEBioClass(int classId);
-	FEBioClass* CreateFEBioClass(int superClassID, const char* sztype);
+	bool BuildModelComponent(FSModelComponent* po);
 
 	class FEBioOutputHandler
 	{
@@ -234,8 +168,3 @@ namespace FEBio {
 
 	void DeleteClass(void* p);
 }
-
-QVariant vec3d_to_qvariant(const vec3d& v);
-QVariant mat3d_to_qvariant(const mat3d& m);
-vec3d qvariant_to_vec3d(const QVariant& v);
-mat3d qvariant_to_mat3d(const QVariant& v);
