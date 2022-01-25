@@ -129,7 +129,7 @@ void CDlgAddRigidConstraint::SetURL()
 {
 	int classID = ui->list->currentItem()->data(Qt::UserRole).toInt();
 
-	m_url = FEMKernel::FindClass(m_module, FERIGIDBC_ID, classID)->GetHelpURL();
+	// m_url = FEMKernel::FindClass(m_module, FERIGIDBC_ID, classID)->GetHelpURL();
 }
 
 void CDlgAddRigidConstraint::accept()
