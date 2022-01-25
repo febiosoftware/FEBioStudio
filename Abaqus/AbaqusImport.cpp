@@ -1193,19 +1193,14 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 
 			read_line(szline, fp);
 			char* sz = szline;
-			char* ch = strchr(sz, ',');
 			int nmax = 2;
 			int np = 0;
+			char* ch = 0;
 			do
 			{
-				if (ch) *ch = 0; 
-				sscanf(sz, "%lg", &mat.d[np]);
-				if (ch)
-				{
-					++np;
-					sz = ch+1;
-					ch = strchr(sz, ',');
-				}
+				ch = strchr(sz, ',');
+				sscanf(sz, "%lg", &mat.d[np++]);
+				if (ch) sz = ch + 1;
 			}
 			while (ch && (np < nmax));
 		}
