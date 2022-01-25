@@ -69,7 +69,7 @@ public:
 };
 
 
-CHelpDialog::CHelpDialog(FSProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog)
+CHelpDialog::CHelpDialog(FSProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog), m_url(UNSELECTED_HELP)
 {
 	ui->setupUi(this);
 
@@ -82,9 +82,13 @@ void CHelpDialog::on_help_clicked()
 {
     SetURL();
 
-    if(m_url.isEmpty() || m_url == UNSELECTED_HELP )
+    if(m_url.isEmpty())
     {
-        QMessageBox::information(this, "No Help Available", "There is currently no help article available for this item.");
+        QMessageBox::information(this, "Help", "There is currently no help article available for this item.");
+    }
+    else if(m_url == UNSELECTED_HELP)
+    {
+        QMessageBox::information(this, "Help", "Please select an item before clicking Help.");
     }
     else
     {

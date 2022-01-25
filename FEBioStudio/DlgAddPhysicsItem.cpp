@@ -38,6 +38,11 @@ SOFTWARE.*/
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FSCore/FSCore.h>
+#include <FECore/FECoreKernel.h>
+#include "HelpUrl.h"
+
+#include <iostream>
+
 using namespace std;
 
 class UIDlgAddPhysicsItem
@@ -170,6 +175,21 @@ int CDlgAddPhysicsItem::GetClassID()
 
 void CDlgAddPhysicsItem::SetURL()
 {
-	int classID = ui->type->currentItem()->data(0, Qt::UserRole).toInt();
-//	m_url = FEMKernel::FindClass(m_module, m_superID, classID)->GetHelpURL();
+    if(ui->type->selectedItems().size() > 0)
+    {
+
+        int classID = ui->type->currentItem()->data(0, Qt::UserRole).toInt();
+
+        const char* typeString = FECoreKernel::GetInstance().GetFactoryClass(classID)->GetTypeStr();
+
+        m_url = GetHelpURL(ui->m_superID, typeString);
+    }
+    else
+    {
+        m_url = UNSELECTED_HELP;
+    }
+
+    // cout << "SUPERID " << ui->m_superID << endl;
+
+    // FECoreKernel::GetInstance().List((SUPER_CLASS_ID) ui->m_superID);
 }
