@@ -1,4 +1,6 @@
 #include "FEBase.h"
+#include <FEBioLink/FEBioClass.h>
+#include "FEModelComponent.h"
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -137,6 +139,35 @@ int FSProperty::GetComponentIndex(FSCoreBase* pc)
 		if (m_cmp[i] == pc) return i;
 	}
 	return -1;
+}
+
+// Set a size (new components will be set to nullptr)
+void FSProperty::SetSize(int newSize)
+{
+	assert(newSize >= 0);
+	int oldSize = m_cmp.size();
+	if (newSize == m_cmp.size()) return;
+	if (newSize == 0) Clear();
+	if (newSize < m_cmp.size())
+	{
+		for (int i = newSize; i < oldSize; i++) delete m_cmp[i];
+		m_cmp.resize(newSize);
+	}
+	else
+	{
+		FSModelComponent* parent = dynamic_cast<FSModelComponent*>(m_parent); assert(parent);
+		m_cmp.resize(newSize);
+		for (int i = oldSize; i < newSize; ++i)
+		{
+			m_cmp[i] = nullptr;
+			if ((IsRequired() || IsPreferred()) && (m_defaultType.empty() == false))
+			{
+				FSModel* fem = parent->GetFSModel();
+				FSModelComponent* pmci = FEBio::CreateClass(GetSuperClassID(), m_defaultType, fem);
+				SetComponent(pmci, i);
+			}
+		}
+	}
 }
 
 //=============================================================================

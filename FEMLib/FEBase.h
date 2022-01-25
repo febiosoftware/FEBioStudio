@@ -55,6 +55,9 @@ public:
 	// return the size of the component list
 	int Size() const { return (int)m_cmp.size(); }
 
+	// Set a size (new components will be set to nullptr)
+	void SetSize(int newSize);
+
 	// return the max size for this property
 	int maxSize() const { return m_maxSize; }
 

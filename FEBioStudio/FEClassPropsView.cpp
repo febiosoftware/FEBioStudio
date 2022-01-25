@@ -192,12 +192,25 @@ public:
 			for (int i = 0; i < pc->Properties(); ++i)
 			{
 				FSProperty& p = pc->GetProperty(i);
-				int nc = p.Size();
-				for (int j = 0; j < nc; ++j) addChild(pc, -1, i, j);
 
-				if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
+				if (p.maxSize() == FSProperty::NO_FIXED_SIZE)
 				{
-					addChild(pc, -1, i, -1);
+					Item* item = new Item(pc, -1, i, -1, (int)m_children.size());
+					item->m_model = m_model; assert(m_model);
+					item->m_parent = this;
+					m_children.push_back(item);
+
+					int nc = p.Size();
+					for (int j = 0; j < nc; ++j) item->addChild(pc, -1, i, j);
+				}
+				else {
+					int nc = p.Size();
+					for (int j = 0; j < nc; ++j) addChild(pc, -1, i, j);
+
+//					if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
+//					{
+//						addChild(pc, -1, i, -1);
+//					}
 				}
 			}
 		}
@@ -427,8 +440,6 @@ public:
 								s += QString(" [%1]").arg(name);
 							}
 						}
-						else 
-							s = QString("<add %1>").arg(s);
 					}
 					return s;
 				}
@@ -449,13 +460,23 @@ public:
 					}
 					else
 					{
-						FSCoreBase* pc = (m_index >= 0 ? m_pc->GetProperty(m_propId, m_index) : nullptr);
-						if (pc == nullptr)
+						if (m_index < 0)
 						{
-							bool required = (p.GetFlags() & FSProperty::REQUIRED);
-							return QString(required ? "(select)" : "(none)");
+							int n = prop.Size();
+							return n;
 						}
-						else return pc->GetTypeString();
+						else if (prop.GetSuperClassID() != FECLASS_ID)
+						{
+
+							FSCoreBase* pc = (m_index >= 0 ? m_pc->GetProperty(m_propId, m_index) : nullptr);
+							if (pc == nullptr)
+							{
+								bool required = (p.GetFlags() & FSProperty::REQUIRED);
+								return QString(required ? "(select)" : "(none)");
+							}
+							else return pc->GetTypeString();
+						}
+						else return "";
 					}
 				}
 			}
@@ -567,31 +588,43 @@ public:
 				}
 				else
 				{
-					// check if this is a different type
-					if (m_index >= 0)
+					if (m_index < 0)
 					{
-						FSCoreBase* oldprop = m_pc->GetProperty(m_propId, m_index);
-
-						if (oldprop && (oldprop->GetClassID() == classId))
+						int newSize = value.toInt();
+						if (newSize != prop.Size())
 						{
-							// the type has not changed, so don't replace the property
-							return false;
+							prop.SetSize(newSize);
+							return true;
 						}
 					}
-
-					FSCoreBase* pc = nullptr;
-					if (classId > 0)
+					else
 					{
-						pc = FEBio::CreateClass(classId, GetFSModel());
-					}
-
-					if (pc)
-					{
+						// check if this is a different type
 						if (m_index >= 0)
-							m_pc->GetProperty(m_propId).SetComponent(pc, m_index);
-						else
 						{
-							m_pc->GetProperty(m_propId).AddComponent(pc);
+							FSCoreBase* oldprop = m_pc->GetProperty(m_propId, m_index);
+
+							if (oldprop && (oldprop->GetClassID() == classId))
+							{
+								// the type has not changed, so don't replace the property
+								return false;
+							}
+						}
+
+						FSCoreBase* pc = nullptr;
+						if (classId > 0)
+						{
+							pc = FEBio::CreateClass(classId, GetFSModel());
+						}
+
+						if (pc)
+						{
+							if (m_index >= 0)
+								m_pc->GetProperty(m_propId).SetComponent(pc, m_index);
+							else
+							{
+								m_pc->GetProperty(m_propId).AddComponent(pc);
+							}
 						}
 					}
 				}
@@ -938,35 +971,47 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 		{
 			FSCoreBase* pcb = item->m_pc;
 			FSProperty& prop = pcb->GetProperty(item->m_propId);
-			FSCoreBase* pcbi = pcb->GetProperty(item->m_propId, item->m_index);
 
-			int nclass = prop.GetSuperClassID();
-			if (nclass == FECLASS_ID) return nullptr;
-
-			QComboBox* pc = new QComboBox(parent);
-
-			// fill the combo box
-			vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetBaseClassID(), true);
-			pc->clear();
-			int classes = classInfo.size();
-			for (int i = 0; i < classes; ++i)
+			if (item->m_index < 0)
 			{
-				FEBio::FEBioClassInfo& ci = classInfo[i];
-				pc->addItem(ci.sztype, ci.classId);
+				QSpinBox* ps = new QSpinBox(parent);
+				ps->setRange(0, 100);
+				ps->setValue(prop.Size());
+
+				return ps;
 			}
-			pc->model()->sort(0);
+			else
+			{
+				FSCoreBase* pcbi = pcb->GetProperty(item->m_propId, item->m_index);
 
-			// add a remove option
-			pc->insertSeparator(pc->count());
-			pc->addItem("(remove)", -2);
+				int nclass = prop.GetSuperClassID();
+				if (nclass == FECLASS_ID) return nullptr;
 
-			// see if the current option is in the list and selected it if so
-			int n = (pcbi ? pc->findText(pcbi->GetTypeString()) : -1);
-			pc->setCurrentIndex(n);
+				QComboBox* pc = new QComboBox(parent);
 
-			QObject::connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+				// fill the combo box
+				vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetBaseClassID(), true);
+				pc->clear();
+				int classes = classInfo.size();
+				for (int i = 0; i < classes; ++i)
+				{
+					FEBio::FEBioClassInfo& ci = classInfo[i];
+					pc->addItem(ci.sztype, ci.classId);
+				}
+				pc->model()->sort(0);
 
-			return pc;
+				// add a remove option
+				pc->insertSeparator(pc->count());
+				pc->addItem("(remove)", -2);
+
+				// see if the current option is in the list and selected it if so
+				int n = (pcbi ? pc->findText(pcbi->GetTypeString()) : -1);
+				pc->setCurrentIndex(n);
+
+				QObject::connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+
+				return pc;
+			}
 		}
 	}
 	QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
