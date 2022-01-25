@@ -433,6 +433,8 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		fsp->SetSuperClassID(prop.GetSuperClassID());
 		if (prop.IsRequired())
 			fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);
+		if (prop.IsPreferred())
+			fsp->SetFlags(fsp->GetFlags() | FSProperty::PREFERRED);
 		
 		// set the (optional) default type
 		if (prop.GetDefaultType())
@@ -695,7 +697,7 @@ bool FEBio::InitDefaultProps(FSModelComponent* pc)
 	for (int i = 0; i < pc->Properties(); ++i)
 	{
 		FSProperty& prop = pc->GetProperty(i);
-		if (prop.IsRequired() && (prop.GetComponent() == nullptr))
+		if ((prop.IsRequired() || prop.IsPreferred()) && (prop.GetComponent() == nullptr))
 		{
 			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllActiveClasses(prop.GetSuperClassID(), -1, FEBio::ClassSearchFlags::IncludeFECoreClasses | FEBio::ClassSearchFlags::IncludeModuleDependencies);
 			if ((fci.size() > 0) && (prop.GetDefaultType().empty() == false))

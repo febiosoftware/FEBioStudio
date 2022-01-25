@@ -59,6 +59,12 @@ bool FSProperty::IsRequired() const
 }
 
 //-----------------------------------------------------------------------------
+bool FSProperty::IsPreferred() const
+{
+	return ((GetFlags() & FSProperty::PREFERRED) != 0);
+}
+
+//-----------------------------------------------------------------------------
 void FSProperty::AddComponent(FSCoreBase* pm)
 {
 	if (pm) pm->SetParent(m_parent);
