@@ -38,7 +38,6 @@ SOFTWARE.*/
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FSCore/FSCore.h>
-#include <FECore/FECoreKernel.h>
 #include "HelpUrl.h"
 
 #include <iostream>
@@ -180,7 +179,7 @@ void CDlgAddPhysicsItem::SetURL()
 
         int classID = ui->type->currentItem()->data(0, Qt::UserRole).toInt();
 
-        const char* typeString = FECoreKernel::GetInstance().GetFactoryClass(classID)->GetTypeStr();
+        const char* typeString = FEBio::GetClassInfo(classID).sztype;
 
         m_url = GetHelpURL(ui->m_superID, typeString);
     }
