@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <FECore/fecore_enum.h>
 #include "WebDefines.h"
 #include "HelpUrl.h"
+#include <stdexcept>
 
 using std::string;
 using std::unordered_map;
