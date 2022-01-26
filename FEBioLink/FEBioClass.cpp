@@ -251,6 +251,7 @@ FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 	case FEBODYCONSTRAINT_ID   : pc = new FEBioBodyConstraint(fem); break;
 	case FEDATAGENERATOR_ID    : pc = new FEBioMeshDataGenerator(fem); break;
 	case FESOLVER_ID           : pc = new FSGenericClass; break;
+	case FERIGIDBC_ID		   : pc = new FEBioRigidConstraint(fem); break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
 	case FENEWTONSTRATEGY_ID  : pc = new FSGenericClass; break;
 	case FECLASS_ID           : pc = new FSGenericClass; break;

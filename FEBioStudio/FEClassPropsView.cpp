@@ -463,7 +463,7 @@ public:
 						if (m_index < 0)
 						{
 							int n = prop.Size();
-							return n;
+							return QString("[%1]").arg(n);
 						}
 						else if (prop.GetSuperClassID() != FECLASS_ID)
 						{
@@ -480,7 +480,7 @@ public:
 					}
 				}
 			}
-			else return "No data";
+			return "No data";
 		}
 
 		bool setData(int column, const QVariant& value)
