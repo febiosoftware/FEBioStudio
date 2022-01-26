@@ -288,11 +288,24 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 	// map the FECoreBase parameters to the FSModelComponent
 	// copy the parameters from the FEBioClass to the FSObject
 	FEParameterList& PL = feb->GetParameterList();
+
+	// copy parameter groups
+	ParamBlock& PB = po->GetParamBlock();
+	PB.ClearParamGroups();
+	for (int i = 0; i < PL.ParameterGroups(); ++i)
+	{
+		PB.SetActiveGroup(PL.GetParameterGroupName(i));
+	}
+	PB.SetActiveGroup(nullptr);
+
 	const int params = PL.Parameters();
 	FEParamIterator pi = PL.first();
 	for (int i = 0; i < params; ++i, ++pi)
 	{
 		FEParam& param = *pi;
+
+		PB.SetActiveGroup(param.GetParamGroup());
+
 		if ((param.GetFlags() & FEParamFlag::FE_PARAM_HIDDEN) == 0)
 		{
 			int ndim = param.dim();

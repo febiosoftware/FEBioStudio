@@ -202,6 +202,10 @@ public:
 	unsigned int GetFlags() const { return m_flags; }
 	void SetFlags(unsigned int flags) { m_flags = flags; }
 
+public:
+	void SetParameterGroup(int n);
+	int GetParameterGroup() const;
+
 protected:
 	int				m_nID;		// parameter ID
 	Param_Type		m_ntype;	// parameter type
@@ -209,6 +213,8 @@ protected:
 	int				m_nstate;	// parameter state
 
 	unsigned int	m_flags;	// FEBio parameter flags
+
+	int		m_paramGroup;	// parameter group
 	
 	bool			m_checkable;
 	bool			m_checked;
@@ -252,6 +258,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(n, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -261,6 +268,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(n, Param_CHOICE, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -270,6 +278,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(d, 0, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -279,6 +288,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(d, szunit, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -288,6 +298,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(b, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -297,6 +308,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(v, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -306,6 +318,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(v, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -315,6 +328,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(v, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -324,6 +338,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(v, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -333,6 +348,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(n, szi, idx, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -342,6 +358,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(d, szi, idx, 0, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -351,6 +368,7 @@ public:
 		int np = (int)m_Param.size();
 		Param* p = new Param(s, szb, szn);
 		p->m_nID = np;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -361,6 +379,7 @@ public:
 		Param* p = new Param(s, szb, szn);
 		p->m_ntype = Param_MATH;
 		p->m_nID = np;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -370,6 +389,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(c, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -379,6 +399,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(v, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -388,6 +409,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(v, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -397,6 +419,7 @@ public:
 		int ns = (int)m_Param.size();
 		Param* p = new Param(v, szb, szn);
 		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
 		m_Param.push_back(p);
 		return p;
 	}
@@ -471,9 +494,18 @@ public:
 	int GetIndexValue(int n) const { return m_Param[n]->GetIndexValue(); }
     const char* GetIndexName(int n) { return m_Param[n]->GetIndexName(); }
 
+public:
+	int SetActiveGroup(const char* szgroup);
+	bool SetActiveGroup(int n);
+	int GetActiveGroup();
+	int ParameterGroups() const;
+	const char* GetParameterGroupName(int i);
+	void ClearParamGroups();
 
 protected:
 	std::vector<Param*>	m_Param;
+	std::vector<const char*>	m_pg;	//!< parameter groups
+	int	m_currentGroup;					//!< active parameter group (new parameters are assigned to the current group; can be -1)
 };
 
 //-----------------------------------------------------------------------------

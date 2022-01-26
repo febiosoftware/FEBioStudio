@@ -50,6 +50,7 @@ Param::Param()
 	m_checkable = false;
 	m_checked = false;
 	m_flags = 0;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -137,6 +138,17 @@ void Param::SetChecked(bool b)
 bool Param::IsChecked() const
 {
 	return (m_checkable ? m_checked : false);
+}
+
+//-----------------------------------------------------------------------------
+void Param::SetParameterGroup(int n)
+{
+	m_paramGroup = n;
+}
+
+int Param::GetParameterGroup() const
+{
+	return m_paramGroup;
 }
 
 //-----------------------------------------------------------------------------
@@ -247,6 +259,7 @@ Param::Param(const Param& p)
     m_szindx = p.m_szindx;
     m_nindx = p.m_nindx;
 	m_flags = p.m_flags;
+	m_paramGroup = p.m_paramGroup;
 
 	m_lc = p.m_lc;
 
@@ -302,6 +315,7 @@ Param& Param::operator = (const Param& p)
 	m_checked = p.m_checked;
 //	m_flags = p.m_flags;
 	m_lc = p.m_lc;
+//	m_paramGroup = p.m_paramGroup;
 
 	switch (m_ntype)
 	{
@@ -349,6 +363,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -373,6 +388,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -397,6 +413,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -421,6 +438,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -445,6 +463,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -469,6 +488,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 
@@ -494,6 +514,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -518,6 +539,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -542,6 +564,7 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -565,6 +588,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -588,6 +612,7 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
@@ -610,6 +635,7 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
@@ -632,6 +658,7 @@ Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 Param::Param(const std::string& val, const char* szb, const char* szn)
@@ -655,6 +682,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -679,6 +707,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
     
 //-----------------------------------------------------------------------------
@@ -703,6 +732,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
     
 //-----------------------------------------------------------------------------
@@ -727,11 +757,13 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //=============================================================================
 ParamBlock::ParamBlock(void)
 {
+	m_currentGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -745,11 +777,15 @@ void ParamBlock::Clear()
 {
 	for (int i = 0; i < m_Param.size(); ++i) delete m_Param[i];
 	m_Param.clear();
+	m_currentGroup = -1;
+	m_pg.clear();
 }
 
 //-----------------------------------------------------------------------------
 ParamBlock::ParamBlock(const ParamBlock &b)
 {
+	m_pg = b.m_pg;
+	m_currentGroup = b.m_currentGroup;
 	for (int i = 0; i < b.m_Param.size(); ++i)
 	{
 		const Param& s = b[i];
@@ -761,6 +797,8 @@ ParamBlock::ParamBlock(const ParamBlock &b)
 ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 {
 	Clear();
+	m_pg = b.m_pg;
+	m_currentGroup = b.m_currentGroup;
 	for (int i = 0; i < b.m_Param.size(); ++i)
 	{
 		const Param& s = b[i];
@@ -768,6 +806,60 @@ ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 		m_Param.push_back(p);
 	}
 	return *this;
+}
+
+//-----------------------------------------------------------------------------
+void ParamBlock::ClearParamGroups()
+{
+	m_pg.clear();
+	m_currentGroup = -1;
+}
+
+//-----------------------------------------------------------------------------
+int ParamBlock::SetActiveGroup(const char* szgroup)
+{
+	if (szgroup == nullptr) m_currentGroup = -1;
+	else
+	{
+		m_currentGroup = -1;
+		for (size_t i = 0; i < m_pg.size(); ++i)
+		{
+			if (strcmp(m_pg[i], szgroup) == 0)
+			{
+				m_currentGroup = i;
+			}
+		}
+		if (m_currentGroup == -1)
+		{
+			m_currentGroup = (int)m_pg.size();
+			m_pg.push_back(szgroup);
+		}
+	}
+	return m_currentGroup;
+
+}
+
+bool ParamBlock::SetActiveGroup(int n)
+{
+	if (n < 0) { m_currentGroup = -1; return true; }
+	if (n >= m_pg.size()) return false;
+	m_currentGroup = n;
+}
+
+int ParamBlock::GetActiveGroup()
+{
+	return m_currentGroup;
+}
+
+int ParamBlock::ParameterGroups() const
+{
+	return (int)m_pg.size();
+}
+
+const char* ParamBlock::GetParameterGroupName(int i)
+{
+	if ((i < 0) || (i >= m_pg.size())) return nullptr;
+	return m_pg[i];
 }
 
 //-----------------------------------------------------------------------------

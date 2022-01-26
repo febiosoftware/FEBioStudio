@@ -109,12 +109,13 @@ public:
 		Item(FSCoreBase* pc, int paramId = -1, int propId = -1, int index = -1, int nrow = -1) {
 			m_model = nullptr;
 			m_pc = pc; m_paramId = paramId; m_propId = propId; m_index = index; m_nrow = nrow;
-			m_flag = (propId != -1 ? 1 : 0);
+			m_flag = (paramId == -1 ? 1 : 0);
 		}
 		~Item() { for (int i = 0; i < m_children.size(); ++i) delete m_children[i]; m_children.clear(); }
 
 		bool isParameter() const { return (m_paramId >= 0); }
 		bool isProperty() const { return (m_propId >= 0); }
+		bool isParamGroup() const { return (m_paramId < 0) && (m_propId < 0) && (m_index >= 0); }
 
 		int flag() const { return m_flag; }
 
@@ -170,16 +171,30 @@ public:
 		void addParameters(FSCoreBase* pc)
 		{
 			pc->UpdateData(false);
-			for (int i = 0; i < pc->Parameters(); ++i)
+			int currentGroup = -1;
+			ParamBlock& PB = pc->GetParamBlock();
+			int NPG = PB.ParameterGroups();
+			Item* item = this;
+			for (int n = -1; n < NPG; ++n)
 			{
-				Param& p = pc->GetParam(i);
-				if (p.IsVisible())
+				if (n != -1)
 				{
-					if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
-						addChild(pc, i, -1, -1);
-					else if (p.IsPersistent() == false)
+					item = addChild(pc, -1, -1, n);
+				}
+				for (int i = 0; i < pc->Parameters(); ++i)
+				{
+					Param& p = pc->GetParam(i);
+					if (p.GetParameterGroup() == n)
 					{
-						addChild(pc, i, -1, -1);
+						if (p.IsVisible())
+						{
+							if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
+								item->addChild(pc, i, -1, -1);
+							else if (p.IsPersistent() == false)
+							{
+								item->addChild(pc, i, -1, -1);
+							}
+						}
 					}
 				}
 			}
@@ -224,14 +239,27 @@ public:
 				Param& p = m_pc->GetParam(m_paramId);
 				if (column == 0)
 				{
-					QString name;
-					if (m_index == -1)
+					if (role == Qt::DisplayRole)
 					{
-						name = p.GetLongName();
+						QString name;
+						if (m_index == -1)
+						{
+							name = p.GetLongName();
+						}
+						else
+							name = QString("[%1]").arg(m_index);
+
+						return name;
 					}
-					else
-						name = QString("[%1]").arg(m_index);
-					return name;
+					else if (role == Qt::ToolTipRole)
+					{
+						if (m_index == -1)
+						{
+							QString s = p.GetLongName();
+							return s;
+						}
+						return QVariant();
+					}
 				}
 
 				if (role == Qt::DisplayRole)
@@ -382,7 +410,7 @@ public:
 						return "in progress";
 					}
 				}
-				else
+				else if (role == Qt::EditRole)
 				{
 					switch (p.GetParamType())
 					{
@@ -480,7 +508,15 @@ public:
 					}
 				}
 			}
-			return "No data";
+			else if (m_index >= 0)
+			{
+				if (column == 0)
+				{
+					ParamBlock& PB = m_pc->GetParamBlock();
+					return PB.GetParameterGroupName(m_index);
+				}
+			}
+			return QVariant();
 		}
 
 		bool setData(int column, const QVariant& value)
@@ -717,11 +753,12 @@ public:
 				s = 0; 
 			}
 			if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = 1; }
+			if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = 1; }
 
 			return BuildPixMap(c, s, 12);
 		}
 
-		if ((role != Qt::DisplayRole)&& (role != Qt::EditRole)) return QVariant();
+		if ((role != Qt::DisplayRole)&& (role != Qt::EditRole) && (role != Qt::ToolTipRole)) return QVariant();
 
 		return item->data(index.column(), role);
 	}
