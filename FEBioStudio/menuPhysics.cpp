@@ -108,7 +108,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Nodal Load", FELOAD_ID, FEBio::GetBaseClassIndex("class FENodalLoad"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Nodal Load", FELOAD_ID, FEBio::GetBaseClassIndex("FENodalLoad"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSNodalLoad* pnl = FEBio::CreateFEBioClass<FSNodalLoad>(dlg.GetClassID(), &fem); assert(pnl);
@@ -153,7 +153,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Surface Load", FELOAD_ID, FEBio::GetBaseClassIndex("class FESurfaceLoad"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Surface Load", FELOAD_ID, FEBio::GetBaseClassIndex("FESurfaceLoad"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSSurfaceLoad* psl = FEBio::CreateFEBioClass<FSSurfaceLoad>(dlg.GetClassID(), &fem); assert(psl);
@@ -195,7 +195,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Body Load", FELOAD_ID, FEBio::GetBaseClassIndex("class FEBodyLoad"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Body Load", FELOAD_ID, FEBio::GetBaseClassIndex("FEBodyLoad"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSBodyLoad* pbl = FEBio::CreateFEBioClass<FSBodyLoad>(dlg.GetClassID(), &fem); assert(pbl);
@@ -220,7 +220,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Rigid Load", FELOAD_ID, FEBio::GetBaseClassIndex("class FERigidLoad"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Rigid Load", FELOAD_ID, FEBio::GetBaseClassIndex("FERigidLoad"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSRigidLoad* prl = FEBio::CreateFEBioClass<FSRigidLoad>(dlg.GetClassID(), &fem); assert(prl);

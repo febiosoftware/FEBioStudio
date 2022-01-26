@@ -108,7 +108,7 @@ CDlgAddRigidConstraint::CDlgAddRigidConstraint(FSProject& prj, QWidget* parent) 
 	// add the DOFs
 	int mod = prj.GetModule();
 //	vector<FEClassFactory*> v = FEMKernel::FindAllClasses(mod, FE_RIGID_CONSTRAINT);
-	int rigidBCId = FEBio::GetBaseClassIndex("class FERigidBC"); assert(rigidBCId != -1);
+	int rigidBCId = FEBio::GetBaseClassIndex("FERigidBC"); assert(rigidBCId != -1);
 	vector<FEBio::FEBioClassInfo> v = FEBio::FindAllClasses(m_module, FERIGIDBC_ID, rigidBCId);
 	for (int i=0; i<(int)v.size(); ++i)
 	{

@@ -227,8 +227,8 @@ FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 	case FEBC_ID:
 	{
 		FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
-		if      (baseClassId == FEBio::GetBaseClassIndex("class FENodalBC"  )) pbc->SetMeshItemType(FE_NODE_FLAG);
-		else if (baseClassId == FEBio::GetBaseClassIndex("class FESurfaceBC")) pbc->SetMeshItemType(FE_FACE_FLAG);
+		if      (baseClassId == FEBio::GetBaseClassIndex("FENodalBC"  )) pbc->SetMeshItemType(FE_NODE_FLAG);
+		else if (baseClassId == FEBio::GetBaseClassIndex("FESurfaceBC")) pbc->SetMeshItemType(FE_FACE_FLAG);
 		pc = pbc;
 	}
 	break;
@@ -236,10 +236,10 @@ FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 	case FESURFACEINTERFACE_ID: pc = new FEBioInterface(fem); break;
 	case FELOAD_ID:
 	{
-		if      (baseClassId == FEBio::GetBaseClassIndex("class FENodalLoad"  )) pc = new FEBioNodalLoad(fem);
-		else if (baseClassId == FEBio::GetBaseClassIndex("class FESurfaceLoad")) pc = new FEBioSurfaceLoad(fem);
-		else if (baseClassId == FEBio::GetBaseClassIndex("class FEBodyLoad"   )) pc = new FEBioBodyLoad(fem);
-		else if (baseClassId == FEBio::GetBaseClassIndex("class FERigidLoad"  )) pc = new FEBioRigidLoad(fem);
+		if      (baseClassId == FEBio::GetBaseClassIndex("FENodalLoad"  )) pc = new FEBioNodalLoad(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("FESurfaceLoad")) pc = new FEBioSurfaceLoad(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("FEBodyLoad"   )) pc = new FEBioBodyLoad(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("FERigidLoad"  )) pc = new FEBioRigidLoad(fem);
 		else assert(false);
 	}
 	break;
@@ -378,7 +378,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 				FEParamVec3& v = param.value<FEParamVec3>();
 				FEVec3dValuator* val = v.valuator(); assert(val);
 
-				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("class FEVec3dValuator"));
+				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEVec3dValuator"));
 				prop->SetSuperClassID(FEVEC3DGENERATOR_ID);
 				//			prop.m_defType = "vector";
 
@@ -395,7 +395,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 				FEParamMat3d& v = param.value<FEParamMat3d>();
 				FEMat3dValuator* val = v.valuator(); assert(val);
 
-				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("class FEMat3dValuator"));
+				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dValuator"));
 				prop->SetSuperClassID(FEMAT3DGENERATOR_ID);
 				//			prop.m_defType = "vector";
 
@@ -412,7 +412,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 				FEParamMat3ds& v = param.value<FEParamMat3ds>();
 				FEMat3dsValuator* val = v.valuator(); assert(val);
 
-				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("class FEMat3dsValuator"));
+				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dsValuator"));
 				prop->SetSuperClassID(FEMAT3DSGENERATOR_ID);
 
 				FSModelComponent* matProp = CreateFSClass(FEMAT3DSGENERATOR_ID, -1, po->GetFSModel());
