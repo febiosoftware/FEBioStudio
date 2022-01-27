@@ -56,9 +56,9 @@ FESphere::FESphere(GSphere* po)
 	AddIntParam(m_nseg, "ns", "Segments");
 	AddIntParam(m_ndiv, "nd", "Divisions");
 
-	AddDoubleParam(m_gd, "gd", "D-bias");
+//	AddDoubleParam(m_gd, "gd", "D-bias");
 	AddDoubleParam(m_gr, "gr", "R-bias");
-	AddBoolParam(m_bd, "bd", "D-mirrored bias");
+//	AddBoolParam(m_bd, "bd", "D-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("HEX8\0HEX20\0HEX27\0");
@@ -80,9 +80,9 @@ FEMesh* FESphere::BuildMesh()
 	int nd = m_ndiv;
 	int ns = m_nseg;
 
-	m_gd = GetFloatValue(GD);
+	m_gd = 1.0;// GetFloatValue(GD);
 	m_gr = GetFloatValue(GR);
-	m_bd = GetBoolValue(GD2);
+	m_bd = false;// GetBoolValue(GD2);
 	m_br = GetBoolValue(GR2);
 
 
@@ -206,6 +206,7 @@ FEMesh* FESphere::BuildMesh()
 		n = MB[i];
 		m_MBlock[i].SetNodes(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]);
 		m_MBlock[i].SetSizes(ns,nd,nd);
+		m_MBlock[i].SetZoning(m_gr, 1, 1, m_br, false, false);
 		m_MBlock[i].SetID(0);
 	}
 
