@@ -437,8 +437,8 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioInterface        , 0, FESURFACEINTERFACE_ID , FE_FEBIO_INTERFACE         , "[febio]");
 	REGISTER_FE_CLASS(FEBioInitialCondition , 0, FEIC_ID               , FE_FEBIO_INITIAL_CONDITION , "[febio]");
 	REGISTER_FE_CLASS(FEBioNLConstraint     , 0, FENLCONSTRAINT_ID     , FE_FEBIO_NLCONSTRAINT      , "[febio]");
-	REGISTER_FE_CLASS(FEBioSurfaceConstraint, 0, FESURFACECONSTRAINT_ID, FE_FEBIO_SURFACECONSTRAINT , "[febio]");
-	REGISTER_FE_CLASS(FEBioBodyConstraint   , 0, FEBODYCONSTRAINT_ID   , FE_FEBIO_BODYCONSTRAINT    , "[febio]");
+	REGISTER_FE_CLASS(FEBioSurfaceConstraint, 0, FENLCONSTRAINT_ID     , FE_FEBIO_SURFACECONSTRAINT , "[febio]");
+	REGISTER_FE_CLASS(FEBioBodyConstraint   , 0, FENLCONSTRAINT_ID     , FE_FEBIO_BODYCONSTRAINT    , "[febio]");
 	REGISTER_FE_CLASS(FEBioAnalysisStep     , 0, FEANALYSIS_ID         , FE_STEP_FEBIO_ANALYSIS     , "[febio]");
 	REGISTER_FE_CLASS(FEBioRigidConstraint  , 0, FERIGIDBC_ID          , FE_FEBIO_RIGID_CONSTRAINT  , "[febio]");
 	REGISTER_FE_CLASS(FEBioRigidConnector   , 0, FENLCONSTRAINT_ID     , FE_FEBIO_RIGID_CONNECTOR   , "[febio]");
