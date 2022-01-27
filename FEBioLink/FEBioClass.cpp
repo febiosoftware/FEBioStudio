@@ -444,6 +444,9 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		int maxSize = (prop.IsArray() ? 0 : 1);
 		int baseClassId = -1; // TODO: find base class ID
 		FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
+
+		fsp->SetLongName(prop.GetLongName());
+
 		fsp->SetSuperClassID(prop.GetSuperClassID());
 		if (prop.IsRequired())
 			fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);

@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <QStandardItemModel>
 #include <QSpinBox>
+#include <FSCore/FSCore.h>
 #include "SelectionBox.h"
 using namespace std;
 
@@ -244,7 +245,8 @@ public:
 						QString name;
 						if (m_index == -1)
 						{
-							name = p.GetLongName();
+							string sname = FSCore::beautify_string(p.GetLongName());
+							name = QString::fromStdString(sname);
 						}
 						else
 							name = QString("[%1]").arg(m_index);
@@ -255,8 +257,7 @@ public:
 					{
 						if (m_index == -1)
 						{
-							QString s = p.GetLongName();
-							return s;
+							return QString("<b>parameter:</b> <code>%1</code>").arg(p.GetShortName());
 						}
 						return QVariant();
 					}
@@ -455,21 +456,33 @@ public:
 				FSProperty& p = m_pc->GetProperty(m_propId);
 				if (column == 0)
 				{
-					QString s = QString::fromStdString(p.GetName());
-					if (p.maxSize() != 1)
+					if (role == Qt::ToolTipRole)
 					{
-						if (m_index >= 0)
+						if ((p.maxSize()==1) || (m_index < 0))
 						{
-							s += QString(" - %1").arg(m_index + 1);
-							FSCoreBase* pc = m_pc->GetProperty(m_propId, m_index);
-							if (pc && (pc->GetName().empty() == false))
-							{
-								QString name = QString::fromStdString(pc->GetName());
-								s += QString(" [%1]").arg(name);
-							}
+							QString s = QString("<b>property:</b> <code>%1</code>").arg(QString::fromStdString(p.GetName()));
+							return s;
 						}
 					}
-					return s;
+					else
+					{
+						string sname = FSCore::beautify_string(p.GetLongName().c_str());
+						QString s = QString::fromStdString(sname);
+						if (p.maxSize() != 1)
+						{
+							if (m_index >= 0)
+							{
+								s += QString(" - %1").arg(m_index + 1);
+								FSCoreBase* pc = m_pc->GetProperty(m_propId, m_index);
+								if (pc && (pc->GetName().empty() == false))
+								{
+									QString name = QString::fromStdString(pc->GetName());
+									s += QString(" [%1]").arg(name);
+								}
+							}
+						}
+						return s;
+					}
 				}
 				else
 				{
