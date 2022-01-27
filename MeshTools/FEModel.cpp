@@ -577,6 +577,21 @@ void FSModel::GetDOFNames(FEDOFVariable& var, vector<string>& dofList)
 void FSModel::GetDOFSymbols(FEDOFVariable& var, vector<string>& dofList)
 {
 	dofList.clear();
+
+	// TODO: little hack for concentration variables.
+	//       The problem is that the concentration variable is empty and does not get updated.
+	//       when solutes are added. So, we do it this way.
+	if (strcmp(var.name(), "concentration") == 0)
+	{
+		int nsol = Solutes();
+		for (int i = 0; i < nsol; ++i)
+		{
+			char sz[16] = { 0 };
+			sprintf(sz, "c%d", i + 1);
+			dofList.push_back(sz);
+		}
+	}
+
 	for (int i = 0; i < var.DOFs(); ++i)
 	{
 		const char* szi = var.GetDOF(i).symbol();

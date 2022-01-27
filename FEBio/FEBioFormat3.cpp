@@ -357,10 +357,13 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 				const char* sztype = tag.AttributeValue("type", true);
 				if (sztype == 0)
 				{
-					sztype = tag.Name();
+					if (pc->GetDefaultType().empty() == false)
+						sztype = pc->GetDefaultType().c_str();
+					else
+						sztype = tag.Name();
 
 					// The default solver should be the solver with the same name as the module
-					if (strcmp(sztype, "solver") == 0)
+					if (strcmp(sztag, "solver") == 0)
 					{
 						if (m_defaultSolver.empty())
 							sztype = FEBio::GetModuleName(m_nAnalysis);

@@ -384,7 +384,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 
 				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEVec3dValuator"));
 				prop->SetSuperClassID(FEVEC3DGENERATOR_ID);
-				//			prop.m_defType = "vector";
+				prop->SetDefaultType("vector");
 
 				FSModelComponent* vecProp = CreateFSClass(FEVEC3DGENERATOR_ID, -1, po->GetFSModel());
 
@@ -401,7 +401,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 
 				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dValuator"));
 				prop->SetSuperClassID(FEMAT3DGENERATOR_ID);
-				//			prop.m_defType = "vector";
+				prop->SetDefaultType("const");
 
 				FSModelComponent* matProp = CreateFSClass(FEMAT3DGENERATOR_ID, -1, po->GetFSModel());
 
@@ -418,6 +418,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 
 				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dsValuator"));
 				prop->SetSuperClassID(FEMAT3DSGENERATOR_ID);
+				prop->SetDefaultType("const");
 
 				FSModelComponent* matProp = CreateFSClass(FEMAT3DSGENERATOR_ID, -1, po->GetFSModel());
 
@@ -460,6 +461,14 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		// set the (optional) default type
 		if (prop.GetDefaultType())
 			fsp->SetDefaultType(prop.GetDefaultType());
+
+		// for solvers we need to set the default type to the module name
+		if (prop.GetSuperClassID() == FESOLVER_ID)
+		{
+			int activeMod = GetActiveModule(); assert(activeMod >= 0);
+			const char* szmod = GetModuleName(activeMod); assert(szmod);
+			fsp->SetDefaultType(szmod);
+		}
 
 		// handle mesh selection properties differently
 		if (prop.GetSuperClassID() == FEDOMAIN_ID)
