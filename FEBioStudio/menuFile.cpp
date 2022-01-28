@@ -107,6 +107,7 @@ SOFTWARE.*/
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>
 #include "ModelDocument.h"
+#include "XMLDocument.h"
 #include "FileThread.h"
 #include "DlgExportAscii.h"
 #include "DlgExportVTK.h"
@@ -542,16 +543,27 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 
 void CMainWindow::OpenFEBioFile(const QString& fileName)
 {
-	CTextDocument* txt = new CTextDocument(this);
-	if (txt->ReadFromFile(fileName) == false)
+	// CTextDocument* txt = new CTextDocument(this);
+	// if (txt->ReadFromFile(fileName) == false)
+	// {
+	// 	QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
+	// 	return;
+	// }
+
+	// txt->SetDocFilePath(fileName.toStdString());
+
+	// AddDocument(txt);
+
+    CXMLDocument* xml = new CXMLDocument(this);
+	if (xml->ReadFromFile(fileName) == false)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
 		return;
 	}
 
-	txt->SetDocFilePath(fileName.toStdString());
+	xml->SetDocFilePath(fileName.toStdString());
 
-	AddDocument(txt);
+	AddDocument(xml);
 }
 
 void CMainWindow::ExportPostGeometry()

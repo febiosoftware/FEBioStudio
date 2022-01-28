@@ -193,7 +193,7 @@ const unordered_map<int, unordered_map<string, string>> URLs =
             { "prescribed deformation", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML },
             { "normal displacement", "" },
             { "rigid deformation", "" },
-            { "prescribed deformation 2O", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML },
+            { "prescribed deformation 2O", "" },
             { "rigid", RIGID_NODES_HTML },
             { "zero fluid pressure", FIXED_NODAL_DEGREES_OF_FREEDOM_HTML },
             { "prescribed fluid pressure", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML },

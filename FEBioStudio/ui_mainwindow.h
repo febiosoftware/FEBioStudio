@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 #include <QFontComboBox>
+#include <QTreeView>
 #include "FileViewer.h"
 #include "ModelViewer.h"
 #include "CurveEditor.h"
@@ -119,6 +120,7 @@ public:
 	enum Viewer {
 		HTML_VIEWER,
 		TEXT_VIEWER,
+        XML_VIEWER,
 		GL_VIEWER
 	};
 
@@ -130,6 +132,7 @@ public:
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
+    QTreeView*      xmlTree;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -335,6 +338,10 @@ public:
 		xmlEdit = new XMLEditor(wnd);
 		xmlEdit->setObjectName("xmledit");
 		stack->addWidget(xmlEdit);
+
+        xmlTree = new QTreeView(wnd);
+        xmlTree->setObjectName("xmlTree");
+		stack->addWidget(xmlTree);
 
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);
@@ -1295,6 +1302,29 @@ public:
 		else if (config == ::CMainWindow::TEXT_CONFIG)
 		{
 			stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
+
+			menuEdit->menuAction()->setVisible(false);
+			menuEditTxt->menuAction()->setVisible(true);
+			menuPhysics->menuAction()->setVisible(false);
+			menuPost->menuAction()->setVisible(false);
+			menuRecord->menuAction()->setVisible(false);
+
+			buildToolBar->hide();
+			postToolBar->hide();
+			pFontToolBar->hide();
+
+			glw->glc->hide();
+
+			modelViewer->parentWidget()->hide();
+			buildPanel->parentWidget()->hide();
+			postPanel->parentWidget()->hide();
+			logPanel->parentWidget()->hide();
+			infoPanel->parentWidget()->hide();
+			timePanel->parentWidget()->hide();
+		}
+        else if (config == ::CMainWindow::XML_CONFIG)
+		{
+			stack->setCurrentIndex(Ui::CMainWindow::XML_VIEWER);
 
 			menuEdit->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(true);

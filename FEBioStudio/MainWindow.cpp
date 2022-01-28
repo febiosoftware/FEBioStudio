@@ -75,6 +75,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "TextDocument.h"
+#include "XMLDocument.h"
 #include "units.h"
 #include "version.h"
 #include "LocalJobProcess.h"
@@ -1974,7 +1975,16 @@ void CMainWindow::UpdateUIConfig()
 			}
 			else
 			{
-				ui->setUIConfig(0);
+                CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+                if(xmlDoc)
+                {
+                    ui->xmlTree->setModel(xmlDoc->GetModel());
+                    ui->setUIConfig(CMainWindow::XML_CONFIG);
+                }
+                else
+                {
+                    ui->setUIConfig(0);
+                }
 			}
 			ui->fileViewer->parentWidget()->raise();
 		}

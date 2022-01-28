@@ -75,6 +75,7 @@ public:
 		MODEL_CONFIG,		// model document	(i.e. fsm file)
 		POST_CONFIG,		// post document	(i.e. xplt file)
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
+        XML_CONFIG,		    // text document	(i.e. feb file)
 	};
 
 public:
