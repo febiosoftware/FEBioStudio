@@ -820,9 +820,11 @@ bool CPostDocument::SavePostSession(const std::string& fileName)
 				Post::CGLPlot* plot = glm->Plot(i);
 
 				std::string typeStr = plot->GetTypeString();
+				std::string name = plot->GetName();
 					
 				XMLElement el("plot");
 				el.add_attribute("type", typeStr);
+				if (name.empty() == false) el.add_attribute("name", name);
 				xml.add_branch(el);
 				{
 					for (int i = 0; i < plot->Parameters(); ++i)
