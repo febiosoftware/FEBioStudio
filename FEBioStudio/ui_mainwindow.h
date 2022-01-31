@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <QtCore/QStandardPaths>
 #include <QFontComboBox>
 #include <QTreeView>
+#include "XMLTreeView.h"
 #include "FileViewer.h"
 #include "ModelViewer.h"
 #include "CurveEditor.h"
@@ -132,7 +133,7 @@ public:
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
-    QTreeView*      xmlTree;
+    XMLTreeView*      xmlTree;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -339,7 +340,7 @@ public:
 		xmlEdit->setObjectName("xmledit");
 		stack->addWidget(xmlEdit);
 
-        xmlTree = new QTreeView(wnd);
+        xmlTree = new XMLTreeView(wnd);
         xmlTree->setObjectName("xmlTree");
 		stack->addWidget(xmlTree);
 

@@ -84,6 +84,36 @@ QIcon CIconProvider::GetIcon(const QString& baseIconName, const QString& emblemI
 	return QIcon(basePixmap);
 }
 
+QPixmap CIconProvider::BuildPixMap(QColor& c, Shape shape, int size)
+{
+	if (size < 8) size = 8;
+
+	QColor c2 = c;
+	QColor c1 = c2.lighter();
+	QColor c3 = c2.darker();
+
+	QRadialGradient g(QPointF(size/3, size/3), size/2);
+	g.setColorAt(0.0, c1);
+	g.setColorAt(0.2, c2);
+	g.setColorAt(1.0, c3);
+
+	QPixmap pix(size, size);
+//	pix.setDevicePixelRatio(m_list->devicePixelRatio());
+	pix.fill(Qt::transparent);
+	QPainter p(&pix);
+	p.setRenderHint(QPainter::Antialiasing);
+	p.setPen(Qt::PenStyle::NoPen);
+	p.setBrush(QBrush(g));
+	if (shape == Shape::Circle)
+		p.drawEllipse(2, 2, size - 4, size - 4);
+	else
+		p.drawRect(2, 2, size - 4, size - 4);
+
+	p.end();
+
+	return pix;
+}
+
 QString CIconProvider::themedIconURL(const QString& iconName)
 {
 	QString rs(iconName);

@@ -32,12 +32,30 @@ SOFTWARE.*/
 using std::vector;
 using std::string;
 
+enum columnOrder
+{
+    TAG = 0, ID, TYPE, NAME, VALUE
+
+};
+
 class XMLTreeItem
 {
 public:
-    XMLTreeItem(const QStringList &data);
+    XMLTreeItem();
     ~XMLTreeItem();
 
+    bool setData(int index, const char* val);
+
+    void SetTag(const char* val);
+    void SetID(const char* val);
+    void SetName(const char* val);
+    void SetType(const char* val);
+    void SetValue(const char* val);
+
+    void setIsAttribute(bool val) { m_isAttribute = val; }
+    bool IsAttribute() { return m_isAttribute; }
+
+    
     void appendChild(XMLTreeItem *child);
 
     XMLTreeItem *child(int row);
@@ -52,8 +70,14 @@ private:
 
 private:
     vector<XMLTreeItem*> m_children;
-    QStringList m_itemData;
+    QString m_tag;
+    QString m_id;
+    QString m_name;
+    QString m_type;
+    QString m_value;
     XMLTreeItem *m_parent;
+
+    bool m_isAttribute;
 };
 
 class XMLTreeModel : public QAbstractItemModel
@@ -65,6 +89,8 @@ public:
     ~XMLTreeModel();
 
     QVariant data(const QModelIndex &index, int role) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role=Qt::EditRole) override;
+
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;

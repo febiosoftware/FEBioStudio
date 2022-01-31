@@ -25,37 +25,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+#include <QTreeView>
+#include <QStyledItemDelegate>
 
-class QIcon;
-class QColor;
-class QPixmap;
-class QString;
+class XMLItemDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
 
-enum class Emblem {Plus, Minus, Check, Warning, Caution, Missing};
-enum class Shape {Circle, Square};
+public:
+	explicit XMLItemDelegate(QObject* parent = nullptr);
 
-class CIconProvider
+	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+	void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+
+	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+
+private slots:
+	void OnEditorSignal();
+};
+
+class XMLTreeView : public QTreeView
 {
 public:
-	static void Instantiate(bool dark, int dpr);
+    XMLTreeView(QWidget* parent = nullptr);
 
-	static QIcon GetIcon(const QString& iconName);
-	static QIcon GetIcon(const QString& baseIconName, Emblem emblem);
-	static QIcon GetIcon(const QString& baseIconName, const QString& emblemIconName);
-
-    static QPixmap BuildPixMap(QColor& c, Shape shape = Shape::Circle, int size = 12);
-
-private:
-	CIconProvider() {}
-	CIconProvider(bool dark, int dpr) {m_dark = dark; m_dpr = dpr;}
-	CIconProvider(CIconProvider const&) {}
-	CIconProvider& operator=(CIconProvider const&) { return *this; }
-	virtual ~CIconProvider(){}
-
-	static QString themedIconURL(const QString& iconName);
-	static QString emblemIconURL(Emblem emblem);
-
-	static CIconProvider* m_instance;
-	static bool m_dark;
-	static int m_dpr;
 };

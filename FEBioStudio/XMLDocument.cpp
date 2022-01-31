@@ -44,7 +44,13 @@ XMLTreeModel* CXMLDocument::GetModel()
 
 bool CXMLDocument::ReadFromFile(const QString& fileName)
 {
-    XMLTreeItem* root = new XMLTreeItem({"Item", "Value"});
+    // Dummy root item holds the header names
+    XMLTreeItem* root = new XMLTreeItem();
+    root->SetTag("Item");
+    root->SetID("ID");
+    root->SetName("Name");
+    root->SetType("Type");
+    root->SetValue("Value");
     
     XMLReader reader;
 
@@ -72,18 +78,38 @@ bool CXMLDocument::ReadFromFile(const QString& fileName)
 
 XMLTreeItem* CXMLDocument::getChild(XMLTag& tag)
 {
-    XMLTreeItem* child;
+    XMLTreeItem* child = new XMLTreeItem;
     char szval[256];
 
     tag.value(szval);
-    child = new XMLTreeItem({tag.Name(), szval});
+    child->SetTag(tag.Name());
+    child->SetValue(szval);
 
     for(int index = 0; index < tag.m_natt; index++)
     {
         XMLAtt attr =tag.m_att[index];
-        XMLTreeItem* attrItem = new XMLTreeItem({attr.name(), attr.cvalue()});
 
-        child->appendChild(attrItem);
+        if(strcmp(attr.name(), "id") == 0)
+        {
+            child->SetID(attr.cvalue());
+        }
+        else if (strcmp(attr.name(), "name") == 0)
+        {
+            child->SetName(attr.cvalue());
+        }
+        else if (strcmp(attr.name(), "type") == 0)
+        {
+            child->SetType(attr.cvalue());
+        }
+        else
+        {
+            XMLTreeItem* attrItem = new XMLTreeItem();
+            attrItem->SetTag(attr.name());
+            attrItem->SetValue(attr.cvalue());
+            attrItem->setIsAttribute(true);
+
+            child->appendChild(attrItem);
+        }
     }
     
     if(tag.isleaf())

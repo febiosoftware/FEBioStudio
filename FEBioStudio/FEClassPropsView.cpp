@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include "units.h"
 #include "PropertyList.h"
 #include "PlotWidget.h"
+#include "IconProvider.h"
 #include <MeshTools/FEModel.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEMLib/FEBase.h>
@@ -48,36 +49,6 @@ using namespace std;
 
 // in MaterialPropsView.cpp
 QStringList GetEnumValues(FSModel* fem, const char* ch);
-
-QPixmap BuildPixMap(QColor c, int shape = 0, int size = 12)
-{
-	if (size < 8) size = 8;
-
-	QColor c2 = c;
-	QColor c1 = c2.lighter();
-	QColor c3 = c2.darker();
-
-	QRadialGradient g(QPointF(size/3, size/3), size/2);
-	g.setColorAt(0.0, c1);
-	g.setColorAt(0.2, c2);
-	g.setColorAt(1.0, c3);
-
-	QPixmap pix(size, size);
-//	pix.setDevicePixelRatio(m_list->devicePixelRatio());
-	pix.fill(Qt::transparent);
-	QPainter p(&pix);
-	p.setRenderHint(QPainter::Antialiasing);
-	p.setPen(Qt::PenStyle::NoPen);
-	p.setBrush(QBrush(g));
-	if (shape == 0)
-		p.drawEllipse(2, 2, size - 4, size - 4);
-	else
-		p.drawRect(2, 2, size - 4, size - 4);
-
-	p.end();
-
-	return pix;
-}
 
 class FEClassPropsModel : public QAbstractItemModel
 {
@@ -753,7 +724,7 @@ public:
 		if ((index.column() == 0) && (role == Qt::DecorationRole))
 		{
 			QColor c;
-			int s = 0;
+			Shape s = Shape::Circle;
 			if (item->isParameter() && (item->m_index == -1)) 
 			{ 
 				Param* p = item->parameter();
@@ -763,12 +734,12 @@ public:
 					else c = QColor::fromRgb(0, 128, 0);
 				}
 				else c = QColor::fromRgb(0, 0, 0); 
-				s = 0; 
+				s = Shape::Circle; 
 			}
-			if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = 1; }
-			if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = 1; }
+			if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = Shape::Square; }
+			if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = Shape::Square; }
 
-			return BuildPixMap(c, s, 12);
+			return CIconProvider::BuildPixMap(c, s, 12);
 		}
 
 		if ((role != Qt::DisplayRole)&& (role != Qt::EditRole) && (role != Qt::ToolTipRole)) return QVariant();

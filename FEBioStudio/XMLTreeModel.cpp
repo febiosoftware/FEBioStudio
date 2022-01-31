@@ -24,10 +24,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <QColor>
+#include <QPixmap>
 #include "XMLTreeModel.h"
+#include "IconProvider.h"
 
-XMLTreeItem::XMLTreeItem(const QStringList &data)
-    : m_itemData(data), m_parent(nullptr)
+XMLTreeItem::XMLTreeItem()
+    : m_parent(nullptr), m_isAttribute(false)
 {
 
 }
@@ -38,6 +41,57 @@ XMLTreeItem::~XMLTreeItem()
     {
         delete child;
     }
+}
+
+bool XMLTreeItem::setData(int index, const char* val)
+{
+    switch (index)
+    {
+    case TAG:
+        SetTag(val);
+        break;
+    case ID:
+        SetID(val);
+        break;
+    case TYPE:
+        SetType(val);
+        break;
+    case NAME:
+        SetName(val);
+        break;
+    case VALUE:
+        SetValue(val);
+        break;
+    default:
+        return false;
+    }
+
+    return true;
+}
+
+void XMLTreeItem::SetTag(const char* val)
+{
+    m_tag = val;
+}
+
+void XMLTreeItem::SetID(const char* val)
+{
+    m_id = val;
+}
+
+void XMLTreeItem::SetName(const char* val)
+{
+    m_name = val;
+}
+
+void XMLTreeItem::SetType(const char* val)
+{
+    m_type = val;
+}
+
+void XMLTreeItem::SetValue(const char* val)
+{
+    m_value = val;
 }
 
 void XMLTreeItem::appendChild(XMLTreeItem *child)
@@ -63,18 +117,27 @@ int XMLTreeItem::childCount() const
 
 int XMLTreeItem::columnCount() const
 {
-    return m_itemData.size();
+    // return m_itemData.size();
+    return 5;
 }
 
 QString XMLTreeItem::data(int column) const
 {
-    if(column < 0 || column >= m_itemData.size())
+    switch (column)
     {
+    case TAG:
+        return m_tag;
+    case ID:
+        return m_id;
+    case TYPE:
+        return m_type;
+    case NAME:
+        return m_name;
+    case VALUE:
+        return m_value;
+    default:
         return "";
-    }
-
-    return m_itemData[column];
-    
+    }    
 }
 
 int XMLTreeItem::row() const
@@ -177,12 +240,46 @@ QVariant XMLTreeModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role != Qt::DisplayRole)
+    XMLTreeItem *item = static_cast<XMLTreeItem*>(index.internalPointer());
+
+    if(index.column() == 0 && role == Qt::DecorationRole)
+    {
+        Shape shape = Shape::Circle;
+        QColor color = Qt::blue;
+
+        if(item->childCount() > 0)
+        {
+            shape = Shape::Square;
+            color = Qt::green;
+        }
+
+        if(item->IsAttribute())
+        {
+            color = Qt::red;
+        }
+
+        return CIconProvider::BuildPixMap(color, shape);
+    }
+
+    if (role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
+
+    return item->data(index.column());
+}
+
+bool XMLTreeModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if(!index.isValid()) return false;
+
+    const char* strValue = value.toString().toStdString().c_str();
 
     XMLTreeItem *item = static_cast<XMLTreeItem*>(index.internalPointer());
 
-    return item->data(index.column());
+    bool changed = item->setData(index.column(), strValue);
+
+    emit dataChanged(index, index);
+
+    return changed;
 }
 
 Qt::ItemFlags XMLTreeModel::flags(const QModelIndex &index) const
@@ -190,7 +287,7 @@ Qt::ItemFlags XMLTreeModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return Qt::NoItemFlags;
 
-    return QAbstractItemModel::flags(index);
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
 }
 
 QVariant XMLTreeModel::headerData(int section, Qt::Orientation orientation,
