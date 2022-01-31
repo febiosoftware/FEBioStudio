@@ -130,6 +130,8 @@ public:
 
 	void SetModifiedFlag(bool bset = true) override;
 
+	void SetInitFlag(bool b);
+
 public:
 	int GetStates();
 
@@ -178,12 +180,11 @@ public:
 	// Get current selection
 	FESelection* GetCurrentSelection() override;
 
+	void SetGLModel(Post::CGLModel* glm);
+
 public:
 	//! save to session file
 	bool SavePostSession(const std::string& fileName);
-
-	//! open session file
-	bool OpenPostSession(const std::string& fileName);
 
 public:
 	int Graphs() const;
