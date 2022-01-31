@@ -45,7 +45,12 @@ vec3d FEKinemat::KINE::apply(const vec3d& r)
 //-----------------------------------------------------------------------------
 FEKinemat::FEKinemat()
 {
+	m_isKineValid = false;
+}
 
+bool FEKinemat::IsKineValid() const
+{
+	return m_isKineValid;
 }
 
 //-----------------------------------------------------------------------------
@@ -67,7 +72,9 @@ int FEKinemat::States() const
 bool FEKinemat::Apply(Post::FEPostModel* fem, const char* szkine)
 {
 	// read the kinematics file data
+	m_isKineValid = false;
 	if (ReadKine(szkine) == false) return false;
+	m_isKineValid = true;
 
 	// build the states
 	if (BuildStates(fem) == false) return false;

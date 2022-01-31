@@ -44,7 +44,8 @@ int FEKinematFileReader::GetStep() const { return m_step; }
 float FEKinematFileReader::GetFileProgress() const
 {
 	if (m_step <= 0) return 0.f;
-	int nstates = (m_max - m_min + 1) / m_step;
+	if (m_kine->IsKineValid() == false) return 0.f;
+	int nstates = m_kine->States();
 	if (nstates == 0) return 1.f;
 	Post::FEPostModel* fem = m_doc->GetFEModel();
 	if (fem == nullptr) return 0.f;
