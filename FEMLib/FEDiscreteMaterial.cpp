@@ -156,3 +156,14 @@ bool FEBioDiscreteMaterial::UpdateData(bool bsave)
 	}
 	return false;
 }
+
+// return a string for the material type
+const char* FEBioDiscreteMaterial::GetTypeString() const
+{
+	return FSObject::GetTypeString();
+}
+
+void FEBioDiscreteMaterial::SetTypeString(const std::string& s)
+{
+	FSObject::SetTypeString(s);
+}

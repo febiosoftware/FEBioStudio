@@ -48,6 +48,18 @@ const std::string& FSProperty::GetName()
 }
 
 //-----------------------------------------------------------------------------
+void FSProperty::SetLongName(const std::string& longName)
+{
+	m_longName = longName;
+}
+
+//-----------------------------------------------------------------------------
+const std::string& FSProperty::GetLongName()
+{
+	return m_longName;
+}
+
+//-----------------------------------------------------------------------------
 void FSProperty::Clear()
 {
 	for (int i = 0; i < (int)m_cmp.size(); ++i) { delete m_cmp[i]; m_cmp[i] = 0; }
@@ -217,6 +229,7 @@ void FSCoreBase::ClearProperties()
 FSProperty* FSCoreBase::AddProperty(const std::string& name, int nClassID, int maxSize, unsigned int flags)
 {
 	FSProperty* m = new FSProperty(name, nClassID, this, maxSize, flags);
+	m->SetLongName(name);
 	m_prop.push_back(m);
 	return m;
 }

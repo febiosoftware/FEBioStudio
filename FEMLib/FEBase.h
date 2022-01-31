@@ -34,6 +34,12 @@ public:
 	// return the name of the property
 	const std::string& GetName();
 
+	// set the name of the property
+	void SetLongName(const std::string& name);
+
+	// return the name of the property
+	const std::string& GetLongName();
+
 	// append a component to the component list of this property
 	void AddComponent(FSCoreBase* pm);
 
@@ -80,6 +86,7 @@ public:
 
 private:
 	std::string			m_name;			// name of this property
+	std::string			m_longName;		// decorative name of this property
 	std::string			m_defaultType;	// default type string, when type attributed is ommitted.
 	int					m_npropType;	// the property type (NOTE: I think this is only used by FEBioStudio materials)
 

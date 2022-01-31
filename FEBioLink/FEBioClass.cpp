@@ -246,9 +246,13 @@ FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 	case FEMATERIALPROP_ID     : pc = new FEBioMaterialProperty(fem); break;
 	case FELOADCONTROLLER_ID   : pc = new FEBioLoadController(fem); break;
 	case FEMESHADAPTOR_ID      : pc = new FEBioMeshAdaptor(fem); break;
-	case FENLCONSTRAINT_ID     : pc = new FEBioNLConstraint(fem); break;
-	case FESURFACECONSTRAINT_ID: pc = new FEBioSurfaceConstraint(fem); break;
-	case FEBODYCONSTRAINT_ID   : pc = new FEBioBodyConstraint(fem); break;
+	case FENLCONSTRAINT_ID     : 
+	{
+		if      (baseClassId == FEBio::GetBaseClassIndex("FESurfaceConstraint")) pc = new FEBioSurfaceConstraint(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("FEBodyConstraint"   )) pc = new FEBioBodyConstraint(fem);
+		else pc = new FEBioNLConstraint(fem); break;
+	}
+	break;
 	case FEDATAGENERATOR_ID    : pc = new FEBioMeshDataGenerator(fem); break;
 	case FESOLVER_ID           : pc = new FSGenericClass; break;
 	case FERIGIDBC_ID		   : pc = new FEBioRigidConstraint(fem); break;
@@ -380,7 +384,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 
 				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEVec3dValuator"));
 				prop->SetSuperClassID(FEVEC3DGENERATOR_ID);
-				//			prop.m_defType = "vector";
+				prop->SetDefaultType("vector");
 
 				FSModelComponent* vecProp = CreateFSClass(FEVEC3DGENERATOR_ID, -1, po->GetFSModel());
 
@@ -397,7 +401,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 
 				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dValuator"));
 				prop->SetSuperClassID(FEMAT3DGENERATOR_ID);
-				//			prop.m_defType = "vector";
+				prop->SetDefaultType("const");
 
 				FSModelComponent* matProp = CreateFSClass(FEMAT3DGENERATOR_ID, -1, po->GetFSModel());
 
@@ -414,6 +418,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 
 				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dsValuator"));
 				prop->SetSuperClassID(FEMAT3DSGENERATOR_ID);
+				prop->SetDefaultType("const");
 
 				FSModelComponent* matProp = CreateFSClass(FEMAT3DSGENERATOR_ID, -1, po->GetFSModel());
 
@@ -444,6 +449,9 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		int maxSize = (prop.IsArray() ? 0 : 1);
 		int baseClassId = -1; // TODO: find base class ID
 		FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
+
+		fsp->SetLongName(prop.GetLongName());
+
 		fsp->SetSuperClassID(prop.GetSuperClassID());
 		if (prop.IsRequired())
 			fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);
@@ -453,6 +461,14 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		// set the (optional) default type
 		if (prop.GetDefaultType())
 			fsp->SetDefaultType(prop.GetDefaultType());
+
+		// for solvers we need to set the default type to the module name
+		if (prop.GetSuperClassID() == FESOLVER_ID)
+		{
+			int activeMod = GetActiveModule(); assert(activeMod >= 0);
+			const char* szmod = GetModuleName(activeMod); assert(szmod);
+			fsp->SetDefaultType(szmod);
+		}
 
 		// handle mesh selection properties differently
 		if (prop.GetSuperClassID() == FEDOMAIN_ID)
@@ -848,7 +864,7 @@ FSModelConstraint* FEBio::CreateNLConstraint(const std::string& typeStr, FSModel
 
 FSSurfaceConstraint* FEBio::CreateSurfaceConstraint(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioSurfaceConstraint>(FESURFACECONSTRAINT_ID, typeStr, fem);
+	return CreateModelComponent<FEBioSurfaceConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
 }
 
 FSRigidConstraint* FEBio::CreateRigidConstraint(const std::string& typeStr, FSModel* fem)

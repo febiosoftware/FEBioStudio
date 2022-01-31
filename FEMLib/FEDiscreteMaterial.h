@@ -72,5 +72,9 @@ public:
 
 	bool UpdateData(bool bsave) override;
 
+	// return a string for the material type
+	const char* GetTypeString() const override;
+	void SetTypeString(const std::string& s) override;
+
 	DECLARE_REGISTERED(FEBioDiscreteMaterial);
 };

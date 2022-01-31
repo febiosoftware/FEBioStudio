@@ -373,7 +373,7 @@ void CMainWindow::OnAddSurfaceConstraint()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Surface Constraint", FESURFACECONSTRAINT_ID, -1, prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Surface Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FESurfaceConstraint"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSSurfaceConstraint* pi = FEBio::CreateFEBioClass<FSSurfaceConstraint>(dlg.GetClassID(), &fem); assert(pi);
@@ -417,7 +417,7 @@ void CMainWindow::OnAddBodyConstraint()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Body Constraint", FEBODYCONSTRAINT_ID, -1, prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Body Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FEBodyConstraint"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSBodyConstraint* pi = FEBio::CreateFEBioClass<FSBodyConstraint>(dlg.GetClassID(), &fem); assert(pi);
