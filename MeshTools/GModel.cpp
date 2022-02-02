@@ -2025,8 +2025,8 @@ GObject* GModel::DetachDiscreteSet(GDiscreteElementSet* set)
 	for (int i=0; i<(int)nodes.size(); ++i)
 	{
 		GNode* ni = nodes[i];
-		int lid = po->AddNode(ni->Position(), NODE_VERTEX, true);
-		ni->m_ntag = po->Node(lid)->GetID();
+		GNode* n = po->AddNode(ni->Position(), NODE_VERTEX, true);
+		ni->m_ntag = n->GetID();
 	}
 	po->Update();
 

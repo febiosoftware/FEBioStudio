@@ -212,7 +212,7 @@ bool FEBox::CreateButterfly3DMesh()
 	if (m_nz == 1) m_bz = false;
 	if (m_ns == 1) m_br = false;
 
-	FEMultiBlockMesh::Clear();
+	ClearMB();
 
 	// create the MB nodes
 	double r1 = 0.5;
@@ -352,7 +352,7 @@ bool FEBox::CreateButterfly2DMesh()
 	if (m_nz == 1) m_bz = false;
 	if (m_ns == 1) m_br = false;
 
-	FEMultiBlockMesh::Clear();
+	ClearMB();
 
 	// create the MB nodes
 	double r1 = 0.5;

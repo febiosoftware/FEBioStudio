@@ -216,6 +216,14 @@ void GBaseObject::AddFace(GFace* f)
 }
 
 //-----------------------------------------------------------------------------
+GFace* GBaseObject::AddFace()
+{
+	GFace* f = new GFace;
+	AddFace(f);
+	return f;
+}
+
+//-----------------------------------------------------------------------------
 int GBaseObject::AddNode(GNode* n)
 {
 	/*
@@ -241,7 +249,7 @@ int GBaseObject::AddNode(GNode* n)
 // has already been defined or not. If not, the new vertex is added. If so,
 // the index to the existing node is returned.
 // TODO: What if a shape_node is added onto a vertex node? Should I change the type?
-int GBaseObject::AddNode(vec3d r, int nt, bool bdup)
+GNode* GBaseObject::AddNode(vec3d r, int nt, bool bdup)
 {
 	// if node duplication is not allowed
 	// check if this node is already defined
@@ -254,7 +262,7 @@ int GBaseObject::AddNode(vec3d r, int nt, bool bdup)
 		{
 			vec3d p = Node(i)->LocalPosition();
 			double L = (r - p).Length();
-			if (L <= tol) return i;
+			if (L <= tol) return Node(i);
 		}
 	}
 
@@ -274,7 +282,15 @@ int GBaseObject::AddNode(vec3d r, int nt, bool bdup)
 	n->SetName(sz);
 
 	m_Node.push_back(n);
-	return m_Node.size() - 1;
+	return n;
+}
+
+//-----------------------------------------------------------------------------
+GEdge* GBaseObject::AddEdge()
+{
+	GEdge* edge = new GEdge(this);
+	AddEdge(edge);
+	return edge;
 }
 
 //-----------------------------------------------------------------------------
@@ -508,7 +524,7 @@ void GBaseObject::AddSurface(GFace* f)
 }
 
 //-----------------------------------------------------------------------------
-void GBaseObject::AddPart()
+GPart* GBaseObject::AddPart()
 {
 	GPart* p = new GPart(this);
 	p->SetID(GPart::CreateUniqueID());
@@ -518,6 +534,7 @@ void GBaseObject::AddPart()
 	sprintf(szname, "Part%d", p->GetID());
 	p->SetName(szname);
 	m_Part.push_back(p);
+	return p;
 }
 
 //-----------------------------------------------------------------------------

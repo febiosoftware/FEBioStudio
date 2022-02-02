@@ -109,7 +109,7 @@ void GRevolveModifier::Apply(GObject* po)
 				rp.z = sw * r.x + cw * r.z;
 
 				// add the new node
-				nn[N*(i + 1) + j] = po->AddNode(rp, n.Type());
+				nn[N*(i + 1) + j] = po->AddNode(rp, n.Type())->GetLocalID();
 			}
 			else
 				nn[N*(i + 1) + j] = j;

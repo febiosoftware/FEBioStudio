@@ -44,6 +44,9 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 	// copy to old object's ID
 	SetID(po->GetID());
 
+	// copy the name
+	SetName(po->GetName());
+
 	// creating a new object has increased the object counter
 	// so we need to decrease it again
 	GItem_T<GBaseObject>::DecreaseCounter();
@@ -67,12 +70,8 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 	m_Node.reserve(NN);
 	for (int i=0; i<NN; ++i)
 	{
-		GNode* n = new GNode(this);
 		MBNode& no = mb->GetMBNode(i);
-		n->LocalPosition() = no.m_r; // TODO: check if this is local coordinates?
-		n->SetID(no.m_gid);
-		n->SetLocalID(i);
-		m_Node.push_back(n);
+		GNode* n = AddNode(no.m_r);
 	}
 
 	// --- Edges ---
@@ -80,13 +79,11 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 	m_Edge.reserve(NE);
 	for (int i=0; i<NE; ++i)
 	{
-		GEdge* e = new GEdge(this);
+		GEdge* e = AddEdge();
 		MBEdge& eo = mb->GetEdge(i);
 		e->m_node[0] = eo.edge.m_node[0];
 		e->m_node[1] = eo.edge.m_node[1];
-		e->SetID(eo.m_gid);
-		e->SetLocalID(i);
-		m_Edge.push_back(e);
+		e->m_ntype = eo.edge.m_ntype;
 	}
 
 	// --- Faces ---
@@ -94,7 +91,7 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 	m_Face.reserve(NF);
 	for (int i=0; i<NF; ++i)
 	{
-		GFace* f = new GFace(this);
+		GFace* f = AddFace();
 		MBFace& fo = mb->GetFace(i);
 		f->m_node.resize(4);
 		f->m_edge.resize(4);
@@ -105,10 +102,11 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 		}
 		f->m_nPID[0] = fo.m_block[0];
 		f->m_nPID[1] = fo.m_block[1];
-		f->SetID(fo.m_gid);
-		f->SetLocalID(i);
 		f->m_ntype = FACE_QUAD;	// TODO: Get this data from MBFace
-		m_Face.push_back(f);
+		if (fo.m_isRevolve)
+		{
+			f->m_ntype = FACE_EXTRUDE;
+		}
 	}
 
 	// --- Parts ---
@@ -116,13 +114,12 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 	m_Part.reserve(NP);
 	for (int i=0; i<NP; ++i)
 	{
-		GPart* g = new GPart(this);
+		GPart* g = AddPart();
 		MBBlock& go = mb->GetBlock(i);
 
+		assert(go.m_gid >= 0);
 		g->SetMaterialID(po->Part(go.m_gid)->GetMaterialID());
-		g->SetID(go.m_gid);
 		g->SetLocalID(i);
-		m_Part.push_back(g);
 	}
 
 	// rebuild the GMesh
