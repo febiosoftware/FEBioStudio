@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMesher.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <GeomLib/GMultiBox.h>
 #include "ui_meshpanel.h"
 #include "ObjectProps.h"
 #include "MainWindow.h"
@@ -495,6 +496,14 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 				return;
 			}
 		}
+	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_MULTIBLOCK)
+	{
+		GPrimitive* primitive = dynamic_cast<GPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multiblock object.");
+
+		GMultiBox* newObject = new GMultiBox(primitive);
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
 	}
 	else
 	{

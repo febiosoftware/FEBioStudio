@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <GeomLib/geom.h>
+#include <GeomLib/GMultiBox.h>
 
 void MBBlock::SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8)
 {
@@ -63,6 +64,31 @@ FEMultiBlockMesh::FEMultiBlockMesh()
 }
 
 //-----------------------------------------------------------------------------
+FEMultiBlockMesh::FEMultiBlockMesh(const FEMultiBlockMesh& mb)
+{
+	CopyFrom(mb);
+}
+
+//-----------------------------------------------------------------------------
+void FEMultiBlockMesh::operator = (const FEMultiBlockMesh& mb)
+{
+	CopyFrom(mb);
+}
+
+//-----------------------------------------------------------------------------
+void FEMultiBlockMesh::CopyFrom(const FEMultiBlockMesh& mb)
+{
+	Clear();
+	m_MBNode = mb.m_MBNode;
+	m_MBEdge = mb.m_MBEdge;
+	m_MBFace = mb.m_MBFace;
+	m_MBlock = mb.m_MBlock;
+
+	m_elemType = mb.m_elemType;
+	m_quadMesh = mb.m_quadMesh;
+}
+
+//-----------------------------------------------------------------------------
 
 FEMultiBlockMesh::~FEMultiBlockMesh(void)
 {
@@ -76,6 +102,10 @@ void FEMultiBlockMesh::SetElementType(int elemType)
 	m_quadMesh = (elemType != FE_HEX8);
 }
 
+bool FEMultiBlockMesh::BuildMultiBlock()
+{
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 // build the FE mesh
@@ -1515,4 +1545,23 @@ vector<int> FEMultiBlockMesh::GetFENodeList(MBBlock& block)
 	nodeList.insert(nodeList.end(), f6.begin(), f6.end());
 
 	return nodeList;
+}
+
+//==============================================================
+FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
+{
+	AddDoubleParam(0.1, "elem_size", "element size");
+}
+
+void FEMultiBlockMesher::SetMultiBlockMesh(const FEMultiBlockMesh& mb)
+{
+	m_mb = mb;
+}
+
+FEMesh* FEMultiBlockMesher::BuildMesh()
+{
+	if (m_po == nullptr) return nullptr;
+	GMultiBox& o = *m_po;
+
+	return m_mb.BuildMesh();
 }

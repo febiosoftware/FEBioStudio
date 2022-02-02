@@ -216,11 +216,17 @@ class FEMultiBlockMesh : public FEMesher
 public:
 	// constructor
 	FEMultiBlockMesh();
+	FEMultiBlockMesh(const FEMultiBlockMesh& mb);
+	void operator = (const FEMultiBlockMesh& mb);
+
+	void CopyFrom(const FEMultiBlockMesh& mb);
 
 	// destructor
 	~FEMultiBlockMesh();
 
 	void SetElementType(int elemType);
+
+	virtual bool BuildMultiBlock();
 
 	// build the mesh
 	FEMesh* BuildMesh();
@@ -232,18 +238,26 @@ public:
 	// update the Multi-Block data
 	void UpdateMB();
 
+	int Nodes() const { return (int)m_MBNode.size(); }
+
 	MBNode& GetMBNode(int i) { return m_MBNode[i]; }
+	const MBNode& GetMBNode(int i) const { return m_MBNode[i]; }
 	MBFace& GetBlockFace(int nb, int nf);
 	MBEdge& GetFaceEdge(MBFace& f, int n);
 
+	int Edges() const { return (int)m_MBEdge.size(); }
 	MBEdge& GetEdge(int nedge);
 
+	int Blocks() const { return (int)m_MBlock.size(); }
 	MBBlock& GetBlock(int i) { return m_MBlock[i]; }
 
 	MBEdge& GetBlockEdge(int nblock, int nedge);
 
 	void SetBlockFaceID(MBBlock& b, int n0, int n1, int n2, int n3, int n4, int n5);
 	void SetFaceEdgeID(MBFace& f, int n0, int n1, int n2, int n3);
+
+	int Faces() const { return (int)m_MBFace.size(); }
+	MBFace& GetFace(int i) { return m_MBFace[i]; }
 
 protected:
 	void FindBlockNeighbours();
@@ -371,4 +385,23 @@ private:
 	double	m_dr;
 	double	m_gr;
 	double	m_fr;
+};
+
+class GMultiBox;
+
+class FEMultiBlockMesher : public FEMesher
+{
+	enum { ELEM_SIZE };
+
+public:
+	FEMultiBlockMesher(GMultiBox* po);
+
+	void SetMultiBlockMesh(const FEMultiBlockMesh& mb);
+
+	// build the mesh
+	FEMesh* BuildMesh();
+
+private:
+	GMultiBox* m_po;
+	FEMultiBlockMesh	m_mb;
 };

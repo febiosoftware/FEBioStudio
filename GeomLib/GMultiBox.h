@@ -38,22 +38,4 @@ public:
 	//! constructor
 	GMultiBox();
 	GMultiBox(GObject* po);
-
-	//! update geometry
-	bool Update(bool b = true);
-
-	// build an FE mesh
-	FEMesh* BuildMesh();
-
-	// update the FE mesh
-	void UpdateFEMesh();
-
-public:
-	// serialization
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
-
-protected:
-	//! create geometry
-	void Create();
 };
