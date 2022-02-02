@@ -188,7 +188,7 @@ FEMesh* FEHollowSphere::BuildMesh()
 	}
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// Face ID's
 	MBFace& F1 = GetBlockFace( 5, 1); F1.SetID(0);

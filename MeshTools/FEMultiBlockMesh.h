@@ -228,6 +228,8 @@ public:
 
 	virtual bool BuildMultiBlock();
 
+	void ClearMB();
+
 	// build the mesh
 	FEMesh* BuildMesh();
 
@@ -237,6 +239,8 @@ public:
 
 	// update the Multi-Block data
 	void UpdateMB();
+
+	void BuildMB();
 
 	int Nodes() const { return (int)m_MBNode.size(); }
 
@@ -391,7 +395,7 @@ class GMultiBox;
 
 class FEMultiBlockMesher : public FEMesher
 {
-	enum { ELEM_SIZE };
+	enum { DIVS };
 
 public:
 	FEMultiBlockMesher(GMultiBox* po);

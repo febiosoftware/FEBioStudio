@@ -285,7 +285,7 @@ FEMesh* FESphereInBox::BuildMesh()
 //	b24.SetZoning(1, gr, 1, false, br, false);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1 , -1, -1, -1, -1,  4, 10);
@@ -544,7 +544,7 @@ FEMesh* FESphereInBox::BuildMesh()
 	b6.SetZoning(1, 1, gr, false, false, br);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1, 0, -1,  6, -1, -1, -1);

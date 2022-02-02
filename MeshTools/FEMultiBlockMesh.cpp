@@ -102,6 +102,16 @@ void FEMultiBlockMesh::SetElementType(int elemType)
 	m_quadMesh = (elemType != FE_HEX8);
 }
 
+void FEMultiBlockMesh::ClearMB()
+{
+	m_MBlock.clear();
+	m_MBFace.clear();
+	m_MBEdge.clear();
+	m_MBNode.clear();
+	m_pm = nullptr;
+	m_currentNode = nullptr;
+}
+
 bool FEMultiBlockMesh::BuildMultiBlock()
 {
 	return false;
@@ -119,6 +129,9 @@ FEMesh* FEMultiBlockMesh::BuildMesh()
 	}
 	m_quadMesh = (m_elemType != FE_HEX8);
 
+	// update MB data structures
+	UpdateMB();
+
 	// create a new mesh
 	FEMesh* pm = new FEMesh();
 	m_pm = pm;
@@ -128,51 +141,6 @@ FEMesh* FEMultiBlockMesh::BuildMesh()
 	for (int i = 0; i < m_MBEdge.size(); ++i) m_MBEdge[i].m_fenodes.clear();
 	for (int i = 0; i < m_MBFace.size(); ++i) m_MBFace[i].m_fenodes.clear();
 	for (int i = 0; i < m_MBlock.size(); ++i) m_MBlock[i].m_fenodes.clear();
-
-	// update face geometry data
-	for (int i = 0; i < m_MBFace.size(); ++i)
-	{
-		MBFace& f = m_MBFace[i];
-
-		// see if this face is a sphere
-		// it is assumed a sphere if all edges are 3P arcs with the same center node
-		f.m_isSphere = true;
-		f.m_sphereRadius = 0;
-		f.m_sphereCenter = vec3d(0, 0, 0);
-		int c0 = m_MBEdge[f.m_edge[0]].edge.m_cnode;
-		for (int j = 0; j < 4; ++j)
-		{
-			MBEdge& edgej = m_MBEdge[f.m_edge[j]];
-			if ((edgej.edge.m_ntype != EDGE_3P_CIRC_ARC) || (edgej.edge.m_cnode != c0))
-			{
-				f.m_isSphere = false;
-				break;
-			}
-		}
-		if (f.m_isSphere)
-		{
-			// we assume that the corner nodes are already on the sphere
-			vec3d r0 = m_MBNode[f.m_node[0]].m_r;
-			f.m_sphereCenter = m_MBNode[c0].m_r;
-			f.m_sphereRadius = (r0 - f.m_sphereCenter).Length();
-		}
-
-		// see if it is a revolved surface
-		f.m_isRevolve = false;
-		f.m_nrevolveEdge = -1;
-		if ((m_MBEdge[f.m_edge[0]].edge.m_ntype == EDGE_ZARC) &&
-			(m_MBEdge[f.m_edge[2]].edge.m_ntype == EDGE_ZARC))
-		{
-			f.m_isRevolve = true;
-			f.m_nrevolveEdge = 1;
-		}
-		if ((m_MBEdge[f.m_edge[1]].edge.m_ntype == EDGE_ZARC) &&
-			(m_MBEdge[f.m_edge[3]].edge.m_ntype == EDGE_ZARC))
-		{
-			f.m_isRevolve = true;
-			f.m_nrevolveEdge = 0;
-		}
-	}
 
 	// build the mesh
 	BuildFENodes(pm);
@@ -1023,7 +991,7 @@ void FEMultiBlockMesh::FindFaceNeighbours()
 
 //-----------------------------------------------------------------------------
 // This function finds the neighbors for all blocks.
-// It is called from UpdateMB().
+// It is called from BuildMB().
 // At this point it is assumed that the nodes and the blocks are defined.
 void FEMultiBlockMesh::FindBlockNeighbours()
 {
@@ -1488,12 +1456,61 @@ MBEdge& FEMultiBlockMesh::GetFaceEdge(MBFace& f, int n)
 }
 
 //-----------------------------------------------------------------------------
-void FEMultiBlockMesh::UpdateMB()
+void FEMultiBlockMesh::BuildMB()
 {
 	FindBlockNeighbours();
 	BuildMBFaces();
 	FindFaceNeighbours();
 	BuildMBEdges();
+}
+
+//-----------------------------------------------------------------------------
+void FEMultiBlockMesh::UpdateMB()
+{
+	// update face geometry data
+	for (int i = 0; i < m_MBFace.size(); ++i)
+	{
+		MBFace& f = m_MBFace[i];
+
+		// see if this face is a sphere
+		// it is assumed a sphere if all edges are 3P arcs with the same center node
+		f.m_isSphere = true;
+		f.m_sphereRadius = 0;
+		f.m_sphereCenter = vec3d(0, 0, 0);
+		int c0 = m_MBEdge[f.m_edge[0]].edge.m_cnode;
+		for (int j = 0; j < 4; ++j)
+		{
+			MBEdge& edgej = m_MBEdge[f.m_edge[j]];
+			if ((edgej.edge.m_ntype != EDGE_3P_CIRC_ARC) || (edgej.edge.m_cnode != c0))
+			{
+				f.m_isSphere = false;
+				break;
+			}
+		}
+		if (f.m_isSphere)
+		{
+			// we assume that the corner nodes are already on the sphere
+			vec3d r0 = m_MBNode[f.m_node[0]].m_r;
+			f.m_sphereCenter = m_MBNode[c0].m_r;
+			f.m_sphereRadius = (r0 - f.m_sphereCenter).Length();
+		}
+
+		// see if it is a revolved surface
+		f.m_isRevolve = false;
+		f.m_nrevolveEdge = -1;
+		if ((m_MBEdge[f.m_edge[0]].edge.m_ntype == EDGE_ZARC) &&
+			(m_MBEdge[f.m_edge[2]].edge.m_ntype == EDGE_ZARC))
+		{
+			f.m_isRevolve = true;
+			f.m_nrevolveEdge = 1;
+		}
+		if ((m_MBEdge[f.m_edge[1]].edge.m_ntype == EDGE_ZARC) &&
+			(m_MBEdge[f.m_edge[3]].edge.m_ntype == EDGE_ZARC))
+		{
+			f.m_isRevolve = true;
+			f.m_nrevolveEdge = 0;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1550,7 +1567,7 @@ vector<int> FEMultiBlockMesh::GetFENodeList(MBBlock& block)
 //==============================================================
 FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
 {
-	AddDoubleParam(0.1, "elem_size", "element size");
+	AddIntParam(10, "divs", "divisions");
 }
 
 void FEMultiBlockMesher::SetMultiBlockMesh(const FEMultiBlockMesh& mb)
@@ -1562,6 +1579,21 @@ FEMesh* FEMultiBlockMesher::BuildMesh()
 {
 	if (m_po == nullptr) return nullptr;
 	GMultiBox& o = *m_po;
+
+	FEMultiBlockMesh& mb = m_mb;
+	int nd = GetIntValue(DIVS);
+	for (int i = 0; i < mb.Blocks(); ++i)
+	{
+		mb.GetBlock(i).SetSizes(nd, nd, nd);
+	}
+	for (int i = 0; i < mb.Faces(); ++i)
+	{
+		mb.GetFace(i).SetSizes(nd, nd);
+	}
+	for (int i = 0; i < mb.Edges(); ++i)
+	{
+		mb.GetEdge(i).m_nx = nd;
+	}
 
 	return m_mb.BuildMesh();
 }

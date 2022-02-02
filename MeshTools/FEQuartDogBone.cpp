@@ -152,7 +152,7 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
 	b4.SetSizes(nx, ny2, nz);
 	b4.SetZoning(gr, 1, gz, false, false, bz);
 
-	UpdateMB();
+	BuildMB();
 
 	SetBlockFaceID(b1,  1, -1,  4, -1, 0, 8);
 	SetBlockFaceID(b2, -1,  4, -1,  7, 0, 8);
@@ -325,7 +325,7 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	b6.SetSizes(NX, ny3, nz);
 	b6.SetZoning(gr, 1, gz, false, false, bz);
 
-	UpdateMB();
+	BuildMB();
 
 	SetBlockFaceID(b1,  1, -1, -1,  7, 0, 8);
 	SetBlockFaceID(b2,  1,  2, -1, -1, 0, 8);
@@ -480,7 +480,7 @@ FEMesh* FEQuartDogBone::BuildMeshLegacy()
 	b5.SetSizes(nx,my,nz);
 
 
-	UpdateMB();
+	BuildMB();
 
 	SetBlockFaceID(b1, 1, -1, -1,  7, 0, 8);
 	SetBlockFaceID(b2, 1, -1,  4, -1, 0, 8);

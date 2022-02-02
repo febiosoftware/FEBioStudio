@@ -141,7 +141,7 @@ FEMesh* FECylinderInBox::BuildMesh()
 	b4.SetZoning(1, m_gr, m_gz, false, m_br, m_bz);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1, 0, -1, 4, -1,  8, 12);

@@ -177,7 +177,7 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 		}
 	}
 
-	UpdateMB();
+	BuildMB();
 
 	// set uniform smoothing ID
 	for (int i = 0; i < m_MBFace.size(); ++i) m_MBFace[i].m_sid = 0;

@@ -165,7 +165,7 @@ FEMesh* FEBoxInBox::BuildMesh()
 	b6.SetZoning(gx, gy, gr, bx, by, br);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// next, we assign the face ID's
 	MBFace& F1  = GetBlockFace(0, 0); F1.SetID(0);

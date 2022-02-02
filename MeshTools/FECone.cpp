@@ -227,7 +227,7 @@ FEMesh* FECone::BuildMesh()
 	b12.SetZoning(fr, 1, fz, false, false, m_bz);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1, -1, -1, -1, -1, 4, 5);

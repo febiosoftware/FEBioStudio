@@ -125,7 +125,7 @@ FEMesh* FETube::BuildMultiBlockMesh()
 	MB.AddBlock(6, 7, 1, 0, 14, 15,  9,  8).SetSizes(ns, nd, nz).SetZoning(gr, 1, gz, br, false, bz);
 
 	// update MB data structures
-	MB.UpdateMB();
+	MB.BuildMB();
 
 	// set block IDs
 	MBBlock& B1 = MB.GetBlock(0); B1.SetID(0);

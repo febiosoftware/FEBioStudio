@@ -127,7 +127,7 @@ bool FEBox::CreateRegularBoxMesh()
 	m_by = GetBoolValue(GY2);
 	m_bz = GetBoolValue(GZ2);
 
-	FEMultiBlockMesh::Clear();
+	ClearMB();
 
 	// create the MB nodes
 	AddNode(vec3d(-w, -h, 0));
@@ -145,8 +145,8 @@ bool FEBox::CreateRegularBoxMesh()
 	b1.SetSizes(m_nx, m_ny, m_nz);
 	b1.SetZoning(m_gx, m_gy, m_gz, m_bx, m_by, m_bz);
 
-	// update the MB data
-	UpdateMB();
+	// build the MB data
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1, 0, 1, 2, 3, 4, 5);
@@ -166,6 +166,8 @@ bool FEBox::CreateRegularBoxMesh()
 	GetMBNode(5).SetID(5);
 	GetMBNode(6).SetID(6);
 	GetMBNode(7).SetID(7);
+
+	UpdateMB();
 
 	return true;
 }
@@ -246,7 +248,7 @@ bool FEBox::CreateButterfly3DMesh()
 	b2.SetZoning(m_gr, m_gx, m_gz, m_br, m_bx, m_bz);
 
 	MBBlock& b3 = AddBlock(9, 1, 2, 10, 13, 5, 6, 14);
-	b3.SetNodes(9, 1, 2, 10, 13, 5, 6, 14);
+	b3.SetID(0);
 	b3.SetSizes(m_ns, m_ny, m_nz);
 	b3.SetZoning(m_gr, m_gy, m_gz, m_br, m_by, m_bz);
 
@@ -271,7 +273,7 @@ bool FEBox::CreateButterfly3DMesh()
 	b7.SetZoning(m_gx, m_gy, m_gr, m_bx, m_by, m_br);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// next, we assign the face ID's
 	MBFace& F1 = GetBlockFace(1, 1); F1.SetID(0);
@@ -304,6 +306,8 @@ bool FEBox::CreateButterfly3DMesh()
 	GetMBNode(5).SetID(5);
 	GetMBNode(6).SetID(6);
 	GetMBNode(7).SetID(7);
+
+	UpdateMB();
 
 	return true;
 }
@@ -397,7 +401,7 @@ bool FEBox::CreateButterfly2DMesh()
 	b5.SetZoning(m_gr, (m_by ? m_gy : 1 / m_gy), m_gz, m_br, m_by, m_bz);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// next, we assign the face ID's
 	MBFace& F1 = GetBlockFace(1, 1); F1.SetID(0);
@@ -441,6 +445,8 @@ bool FEBox::CreateButterfly2DMesh()
 	GetMBNode(6).SetID(6);
 	GetMBNode(7).SetID(7);
 
+	UpdateMB();
+
 	return true;
 }
 
@@ -461,7 +467,7 @@ FEMesh* FEBox::CreateButterfly3D()
 	}
 
 	// create the MB
-	return BuildMesh();
+	return FEMultiBlockMesh::BuildMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -481,7 +487,7 @@ FEMesh* FEBox::CreateButterfly2D()
 	}
 
 	// create the MB
-	return BuildMesh();
+	return FEMultiBlockMesh::BuildMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -518,7 +524,7 @@ FEMesh* FEBox::CreateRegularHEX()
 		break;
 	}
 
-	return BuildMesh();
+	return FEMultiBlockMesh::BuildMesh();
 }
 
 //-----------------------------------------------------------------------------

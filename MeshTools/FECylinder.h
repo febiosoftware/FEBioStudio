@@ -43,6 +43,8 @@ public:
 	FECylinder(GCylinder* po);
 	FEMesh* BuildMesh();
 
+	bool BuildMultiBlock() override;
+
 protected:
 	FEMesh* BuildButterfly();
 	FEMesh* BuildWedged();

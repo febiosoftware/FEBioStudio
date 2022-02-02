@@ -28,6 +28,7 @@ SOFTWARE.*/
 class GObject;
 class GFace;
 class GEdge;
+class GLMesh;
 
 // class to build GLMesh for a GObject
 class GLMesher

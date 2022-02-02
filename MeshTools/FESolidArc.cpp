@@ -111,7 +111,7 @@ FEMesh* FESolidArc::BuildMultiBlockMesh()
 	b1.SetZoning(1, m_gr, m_gz, false, m_br, m_bz);
 
 	// build MB data structures
-	UpdateMB();
+	BuildMB();
 
 	// set IDs of faces and edges
 	SetBlockFaceID(b1, 0, 1, 2, 3, 4, 5);

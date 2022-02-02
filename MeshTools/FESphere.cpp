@@ -211,7 +211,7 @@ FEMesh* FESphere::BuildMesh()
 	}
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// Face ID's
 	MBFace& F1 = GetBlockFace(13, 1); F1.SetID(0);
