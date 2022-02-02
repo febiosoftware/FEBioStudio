@@ -29,8 +29,8 @@ SOFTWARE.*/
 #include "XMLTreeModel.h"
 #include "IconProvider.h"
 
-XMLTreeItem::XMLTreeItem()
-    : m_parent(nullptr), m_isAttribute(false)
+XMLTreeItem::XMLTreeItem(int depth)
+    : m_parent(nullptr), m_depth(depth), m_expanded(false), m_isAttribute(false)
 {
 
 }
@@ -168,6 +168,19 @@ void XMLTreeItem::setParent(XMLTreeItem* parent)
     m_parent = parent;
 }
 
+XMLTreeItem* XMLTreeItem::ancestorItem(int depth)
+{
+    if(m_depth < depth)
+        return this;
+    
+    XMLTreeItem* item = this;
+
+    while(item->Depth() != depth) 
+        item = item->parentItem();
+
+    return item;
+}
+
 
 ////////////////////////////////////////////////
 
@@ -297,4 +310,29 @@ QVariant XMLTreeModel::headerData(int section, Qt::Orientation orientation,
         return rootItem->data(section);
 
     return QVariant();
+}
+
+QModelIndex XMLTreeModel::root() const
+{  
+    XMLTreeItem* root = rootItem->child(0);
+
+    return createIndex(0, 0, root);
+}
+
+void XMLTreeModel::ItemExpanded(const QModelIndex &index)
+{
+    if(!index.isValid()) return;
+
+    XMLTreeItem *item = static_cast<XMLTreeItem*>(index.internalPointer());
+
+    item->SetExpanded(true);
+}
+
+void XMLTreeModel::ItemCollapsed(const QModelIndex &index)
+{
+    if(!index.isValid()) return;
+
+    XMLTreeItem *item = static_cast<XMLTreeItem*>(index.internalPointer());
+
+    item->SetExpanded(false);
 }

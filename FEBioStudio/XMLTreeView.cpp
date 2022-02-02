@@ -32,67 +32,99 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 
 XMLItemDelegate::XMLItemDelegate(QObject* parent)
-    : QStyledItemDelegate(parent)
+    : QStyledItemDelegate(parent), m_superID(new int(FEINVALID_ID))
 {
 
 }
 
+XMLItemDelegate::~XMLItemDelegate()
+{
+    delete m_superID;
+}
+
 QWidget* XMLItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    if(index.isValid())
-	{
-        XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+    *m_superID = FEINVALID_ID;
 
-        if(index.column() == TYPE)
+    if(!index.isValid())
+    {
+        QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
+        return pw;
+    }
+
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+
+    if(index.column() == TYPE)
+    {
+        XMLTreeItem* ancestor = item->ancestorItem(1);
+
+        if(ancestor->data(TAG) == "Material")
         {
-            int superID = -1;
+            *m_superID = FEMATERIAL_ID;
+        }
+        else if(ancestor->data(TAG) == "Boundary")
+        {
+            *m_superID = FEBC_ID;
+        }
+        else if(ancestor->data(TAG) == "Contact")
+        {
+            *m_superID = FESURFACEINTERFACE_ID;
+        }
+        else if(ancestor->data(TAG) == "Load")
+        {
+            *m_superID = FELOAD_ID;
+        }
+        else if(ancestor->data(TAG) == "Initial")
+        {
+            *m_superID = FEIC_ID;
+        }
+        else if(ancestor->data(TAG) == "Discrete")
+        {
+            *m_superID = FEDISCRETEMATERIAL_ID;
+        }
 
-            if(item->data(TAG) == "material")
-            {
-                superID = FEMATERIAL_ID;
-            }
+        // if(item->data(TAG) == "material")
+        // {
+        //     m_superID = FEMATERIAL_ID;
+        // }
+        // else if(item->data(TAG) == "contact")
+        // {
+        //     m_superID = FESURFACEINTERFACE_ID;
+        // }
 
-            if(superID == -1)
-            {
-                QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
-                pw->setSizePolicy(QSizePolicy::Expanding, pw->sizePolicy().verticalPolicy());
-                return pw;
-            }
-
-            QStringList classNames;
-
-            for(auto item : FEBio::FindAllActiveClasses(superID))
-            {
-                classNames.append(item.sztype);
-            }
-
-            classNames.sort(Qt::CaseInsensitive);
-
-            QComboBox* pw = new QComboBox(parent);
-            pw->setEditable(true);
-
-            QCompleter* completer = new QCompleter(classNames);
-            completer->setCaseSensitivity(Qt::CaseInsensitive);
-            completer->setFilterMode(Qt::MatchContains);
-
-            pw->setCompleter(completer);
-            
-            pw->addItems(classNames);
-            connect(pw, &QComboBox::currentIndexChanged, this, &XMLItemDelegate::OnEditorSignal);
-
-
-            pw->setSizePolicy(QSizePolicy::Expanding, pw->sizePolicy().verticalPolicy());
+        if(*m_superID == FEINVALID_ID)
+        {
+            QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
             return pw;
         }
 
-        QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
+        QStringList classNames;
+
+        for(auto item : FEBio::FindAllClasses(-1, *m_superID))
+        {
+            classNames.append(item.sztype);
+        }
+
+        classNames.sort(Qt::CaseInsensitive);
+
+        QComboBox* pw = new QComboBox(parent);
+        pw->setEditable(true);
+
+        QCompleter* completer = new QCompleter(classNames);
+        completer->setCaseSensitivity(Qt::CaseInsensitive);
+        completer->setFilterMode(Qt::MatchContains);
+
+        pw->setCompleter(completer);
+        
+        pw->addItems(classNames);
+        connect(pw, &QComboBox::currentIndexChanged, this, &XMLItemDelegate::OnEditorSignal);
+
         pw->setSizePolicy(QSizePolicy::Expanding, pw->sizePolicy().verticalPolicy());
         return pw;
-
     }
+
     QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
-	pw->setSizePolicy(QSizePolicy::Expanding, pw->sizePolicy().verticalPolicy());
-	return pw;
+    return pw;
 }
 
 void XMLItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const 
@@ -140,4 +172,52 @@ void XMLItemDelegate::OnEditorSignal()
 XMLTreeView::XMLTreeView(QWidget* parent) : QTreeView(parent)
 {
     setItemDelegate(new XMLItemDelegate);
+}
+
+void XMLTreeView::setModel(QAbstractItemModel* newModel)
+{
+    XMLTreeModel* current = dynamic_cast<XMLTreeModel*>(model());
+
+    if(current)
+    {
+        disconnect(this, &XMLTreeView::expanded, current, &XMLTreeModel::ItemExpanded);
+        disconnect(this, &XMLTreeView::collapsed, current, &XMLTreeModel::ItemCollapsed);
+    }
+
+    QTreeView::setModel(newModel);
+
+    current = static_cast<XMLTreeModel*>(newModel);
+
+    expandToMatch(current->root());
+
+    connect(this, &XMLTreeView::expanded, current, &XMLTreeModel::ItemExpanded);
+    connect(this, &XMLTreeView::collapsed, current, &XMLTreeModel::ItemCollapsed);
+}
+
+void XMLTreeView::expandToMatch(const QModelIndex& index)
+{
+    if(!index.isValid()) return;
+
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+
+    if(item->Expanded())
+    {
+        expand(index);
+    }
+    else
+    {
+        return;
+    }
+
+    if(item->childCount() == 0)
+    {
+        return;
+    }
+
+    XMLTreeModel* xmlModel = static_cast<XMLTreeModel*>(model());
+
+    for(int child = 0; child < item->childCount(); child++)
+    {
+        expandToMatch(xmlModel->index(child, 0, index));
+    }
 }

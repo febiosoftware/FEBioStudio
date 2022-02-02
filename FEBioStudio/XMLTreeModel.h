@@ -41,7 +41,7 @@ enum columnOrder
 class XMLTreeItem
 {
 public:
-    XMLTreeItem();
+    XMLTreeItem(int depth);
     ~XMLTreeItem();
 
     bool setData(int index, const char* val);
@@ -52,9 +52,13 @@ public:
     void SetType(const char* val);
     void SetValue(const char* val);
 
-    void setIsAttribute(bool val) { m_isAttribute = val; }
-    bool IsAttribute() { return m_isAttribute; }
+    int Depth() { return m_depth; }
 
+    bool Expanded() { return m_expanded; }
+    bool SetExpanded(bool expanded) { m_expanded = expanded; }
+
+    void SetIsAttribute(bool val) { m_isAttribute = val; }
+    bool IsAttribute() { return m_isAttribute; }
     
     void appendChild(XMLTreeItem *child);
 
@@ -64,6 +68,7 @@ public:
     QString data(int column) const;
     int row() const;
     XMLTreeItem *parentItem();
+    XMLTreeItem *ancestorItem(int depth);
 
 private:
     void setParent(XMLTreeItem* parent);
@@ -76,6 +81,8 @@ private:
     QString m_type;
     QString m_value;
     XMLTreeItem *m_parent;
+    int m_depth;
+    bool m_expanded;
 
     bool m_isAttribute;
 };
@@ -99,6 +106,12 @@ public:
     QModelIndex parent(const QModelIndex &index) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+
+    QModelIndex root() const;
+
+public slots:
+    void ItemExpanded(const QModelIndex &index);
+    void ItemCollapsed(const QModelIndex &index);
 
 private:
     XMLTreeItem *rootItem;

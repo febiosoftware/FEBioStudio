@@ -44,7 +44,7 @@ public:
 	// bool SaveDocument() override;
 
 private:
-    XMLTreeItem* getChild(XMLTag& tag);
+    XMLTreeItem* getChild(XMLTag& tag, int depth);
 
 private:
     XMLTreeModel* m_treeModel;

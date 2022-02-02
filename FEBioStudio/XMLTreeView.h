@@ -34,6 +34,7 @@ class XMLItemDelegate : public QStyledItemDelegate
 
 public:
 	explicit XMLItemDelegate(QObject* parent = nullptr);
+    ~XMLItemDelegate();
 
 	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -43,6 +44,9 @@ public:
 
 private slots:
 	void OnEditorSignal();
+
+private:
+    int* m_superID;
 };
 
 class XMLTreeView : public QTreeView
@@ -50,4 +54,8 @@ class XMLTreeView : public QTreeView
 public:
     XMLTreeView(QWidget* parent = nullptr);
 
+    void setModel(QAbstractItemModel* newModel) override;
+
+private:
+    void expandToMatch(const QModelIndex& index);
 };

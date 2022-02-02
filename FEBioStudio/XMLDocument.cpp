@@ -45,7 +45,7 @@ XMLTreeModel* CXMLDocument::GetModel()
 bool CXMLDocument::ReadFromFile(const QString& fileName)
 {
     // Dummy root item holds the header names
-    XMLTreeItem* root = new XMLTreeItem();
+    XMLTreeItem* root = new XMLTreeItem(-1);
     root->SetTag("Item");
     root->SetID("ID");
     root->SetName("Name");
@@ -67,7 +67,8 @@ bool CXMLDocument::ReadFromFile(const QString& fileName)
 		return false;
 	}
     
-    root->appendChild(getChild(tag));
+    root->appendChild(getChild(tag, -1));
+    root->child(0)->SetExpanded(true);
     
     reader.Close();
 
@@ -76,9 +77,11 @@ bool CXMLDocument::ReadFromFile(const QString& fileName)
     return true;
 }
 
-XMLTreeItem* CXMLDocument::getChild(XMLTag& tag)
+XMLTreeItem* CXMLDocument::getChild(XMLTag& tag, int depth)
 {
-    XMLTreeItem* child = new XMLTreeItem;
+    depth++; 
+
+    XMLTreeItem* child = new XMLTreeItem(depth);
     char szval[256];
 
     tag.value(szval);
@@ -103,10 +106,10 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag)
         }
         else
         {
-            XMLTreeItem* attrItem = new XMLTreeItem();
+            XMLTreeItem* attrItem = new XMLTreeItem(depth + 1);
             attrItem->SetTag(attr.name());
             attrItem->SetValue(attr.cvalue());
-            attrItem->setIsAttribute(true);
+            attrItem->SetIsAttribute(true);
 
             child->appendChild(attrItem);
         }
@@ -126,7 +129,7 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag)
             ++tag;
         }
 
-        child->appendChild(getChild(tag));
+        child->appendChild(getChild(tag, depth));
     }
 
     return child;
