@@ -107,7 +107,7 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 		f->m_ntype = FACE_QUAD;	// TODO: Get this data from MBFace
 		if (fo.m_isRevolve)
 		{
-			f->m_ntype = FACE_EXTRUDE;
+			f->m_ntype = FACE_REVOLVE;
 		}
 	}
 
