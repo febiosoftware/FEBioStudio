@@ -88,6 +88,16 @@ bool FileReader::Open(const char* szfile, const char* szmode)
 	return (m_fp != 0);
 }
 
+bool FileReader::SetFileStream(ifstream* stream)
+{
+    m_stream = stream;
+
+    std::streampos pos = m_stream->tellg();
+    m_stream->seekg(0, std::ios_base::end);
+    m_nfilesize = m_stream->tellg();
+    m_stream->seekg(pos, std::ios_base::beg);
+}
+
 void FileReader::Close()
 {
 	if (m_fp) 
@@ -159,6 +169,11 @@ float FileReader::GetFileProgress() const
 		float pct = (float)npos / (float)m_nfilesize;
 		return pct;
 	}
+    else if(m_stream)
+    {
+        std::streampos npos = m_stream->tellg();
+        return (float)npos / (float)m_nfilesize;
+    }
 	else return 1.0f;
 }
 
