@@ -24,8 +24,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <XML/XMLReader.h>
 #include "XMLDocument.h"
+#include <XML/XMLReader.h>
+#include <XML/XMLWriter.h>
 
 CXMLDocument::CXMLDocument(CMainWindow* wnd) : CDocument(wnd), m_treeModel(nullptr)
 {
@@ -44,16 +45,7 @@ XMLTreeModel* CXMLDocument::GetModel()
 
 bool CXMLDocument::ReadFromFile(const QString& fileName)
 {
-    // Dummy root item holds the header names
-    XMLTreeItem* root = new XMLTreeItem(-1);
-    root->SetTag("Item");
-    root->SetID("ID");
-    root->SetName("Name");
-    root->SetType("Type");
-    root->SetValue("Value");
-    
     XMLReader reader;
-
     if(!reader.Open(fileName.toStdString().c_str())) return false;
 
     // Find the root element
@@ -67,11 +59,17 @@ bool CXMLDocument::ReadFromFile(const QString& fileName)
 		return false;
 	}
     
+    // Dummy root item holds the header names
+    XMLTreeItem* root = new XMLTreeItem(-1);
+    root->SetTag("Item");
+    root->SetID("ID");
+    root->SetName("Name");
+    root->SetType("Type");
+    root->SetValue("Value");
+
     root->appendChild(getChild(tag, -1));
     root->child(0)->SetExpanded(true);
     
-    reader.Close();
-
     m_treeModel = new XMLTreeModel(root);
 
     return true;
@@ -133,4 +131,74 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag, int depth)
     }
 
     return child;
+}
+
+bool CXMLDocument::SaveDocument()
+{
+    XMLWriter writer;
+    if(writer.open(GetDocFilePath().c_str()) == false) return false;
+
+    writeChild(static_cast<XMLTreeItem*>(m_treeModel->root().internalPointer()), writer);
+}
+
+void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)
+{
+    XMLElement current(item->data(TAG).toStdString().c_str());
+
+    QString data = item->data(ID);
+    if(!data.isEmpty())
+    {
+        current.add_attribute("id", data.toStdString());
+    }
+
+    data = item->data(NAME);
+    if(!data.isEmpty())
+    {
+        current.add_attribute("name", data.toStdString());
+    }
+
+    data = item->data(TYPE);
+    if(!data.isEmpty())
+    {
+        current.add_attribute("type", data.toStdString());
+    }
+
+    int nattr = 0;
+    for(int child = 0; child < item->childCount(); child++)
+    {
+        XMLTreeItem* childItem = item->child(child);
+        if(childItem->IsAttribute())
+        {
+            current.add_attribute(childItem->data(NAME).toStdString().c_str(), childItem->data(VALUE).toStdString());
+            nattr++;
+        }
+    }
+
+    if((item->childCount() - nattr) > 0)
+    {
+        writer.add_branch(current);
+
+        for(int child = 0; child < item->childCount(); child++)
+        {
+            XMLTreeItem* childItem = item->child(child);
+            if(!childItem->IsAttribute())
+            {
+                writeChild(childItem, writer);
+            }
+        }
+
+        writer.close_branch();
+    }
+    else
+    {
+        if(item->data(VALUE).isEmpty())
+        {
+            writer.add_empty(current);
+        }
+        else
+        {
+            current.value(item->data(VALUE).toStdString().c_str());
+            writer.add_leaf(current);
+        }
+    }
 }

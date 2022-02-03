@@ -416,6 +416,17 @@ void CMainWindow::on_xmledit_textChanged()
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::on_xmlTree_modelEdited()
+{
+    CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+	if (xmlDoc && xmlDoc->IsValid() && (xmlDoc->IsModified() == false))
+	{
+        xmlDoc->SetModifiedFlag();
+        UpdateTab(xmlDoc);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 {
 	QString ref = link.toString();

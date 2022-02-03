@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QTreeView>
 
 class XMLTag;
+class XMLWriter;
 
 class CXMLDocument : public CDocument
 {
@@ -41,10 +42,11 @@ public:
     
     bool ReadFromFile(const QString& fileName);
 
-	// bool SaveDocument() override;
+	bool SaveDocument() override;
 
 private:
     XMLTreeItem* getChild(XMLTag& tag, int depth);
+    void writeChild(XMLTreeItem* item, XMLWriter& writer);
 
 private:
     XMLTreeModel* m_treeModel;

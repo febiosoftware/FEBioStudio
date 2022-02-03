@@ -51,10 +51,15 @@ private:
 
 class XMLTreeView : public QTreeView
 {
+    Q_OBJECT
+
 public:
     XMLTreeView(QWidget* parent = nullptr);
 
     void setModel(QAbstractItemModel* newModel) override;
+
+signals:
+    void modelEdited();
 
 private:
     void expandToMatch(const QModelIndex& index);

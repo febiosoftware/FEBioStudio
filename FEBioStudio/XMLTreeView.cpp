@@ -145,6 +145,8 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
 {
     if (!index.isValid()) return;
 
+
+
     if(dynamic_cast<QComboBox*>(editor))
     {
         QComboBox* comboBox = dynamic_cast<QComboBox*>(editor);
@@ -172,6 +174,8 @@ void XMLItemDelegate::OnEditorSignal()
 XMLTreeView::XMLTreeView(QWidget* parent) : QTreeView(parent)
 {
     setItemDelegate(new XMLItemDelegate);
+
+    connect(itemDelegate(), &QStyledItemDelegate::commitData, this, &XMLTreeView::modelEdited);
 }
 
 void XMLTreeView::setModel(QAbstractItemModel* newModel)
