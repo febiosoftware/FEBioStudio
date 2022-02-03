@@ -46,10 +46,8 @@ FEQuartDogBone::FEQuartDogBone(GQuartDogBone* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMesh()
+bool FEQuartDogBone::BuildMultiBlock()
 {
-//	return BuildMeshLegacy();
-
 	// see if we should do 4-block or 6-block
 	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
 	double ch = m_pobj->GetFloatValue(GQuartDogBone::CHEIGHT);
@@ -60,8 +58,27 @@ FEMesh* FEQuartDogBone::BuildMesh()
 	else return BuildMultiBlockMesh6();
 }
 
+FEMesh* FEQuartDogBone::BuildMesh()
+{
+	BuildMultiBlock();
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
+
+	// create the MB
+	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+
+	return pm;
+}
+
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
+bool FEQuartDogBone::BuildMultiBlockMesh4()
 {
 	// get parameters
 	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
@@ -192,23 +209,13 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
 	m_MBNode[18].SetID(13);
 	m_MBNode[19].SetID(14);
 
-	// set element type
-	int nelem = GetIntValue(ELEM_TYPE);
-	switch (nelem)
-	{
-	case 0: SetElementType(FE_HEX8); break;
-	case 1: SetElementType(FE_HEX20); break;
-	case 2: SetElementType(FE_HEX27); break;
-	}
+	UpdateMB();
 
-	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
-
-	return pm;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
+bool FEQuartDogBone::BuildMultiBlockMesh6()
 {
 	// get parameters
 	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
@@ -368,19 +375,9 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	m_MBNode[26].SetID(13);
 	m_MBNode[25].SetID(14);
 
-	// set element type
-	int nelem = GetIntValue(ELEM_TYPE);
-	switch (nelem)
-	{
-	case 0: SetElementType(FE_HEX8); break;
-	case 1: SetElementType(FE_HEX20); break;
-	case 2: SetElementType(FE_HEX27); break;
-	}
+	UpdateMB();
 
-	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
-
-	return pm;
+	return true;
 }
 
 

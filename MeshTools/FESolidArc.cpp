@@ -65,12 +65,12 @@ FEMesh* FESolidArc::BuildMesh()
 	return BuildMultiBlockMesh();
 }
 
-FEMesh* FESolidArc::BuildMultiBlockMesh()
+bool FESolidArc::BuildMultiBlock()
 {
 	double R0 = m_pobj->GetFloatValue(GSolidArc::RIN);
 	double R1 = m_pobj->GetFloatValue(GSolidArc::ROUT);
-	double H  = m_pobj->GetFloatValue(GSolidArc::HEIGHT);
-	double w  = m_pobj->GetFloatValue(GSolidArc::ARC);
+	double H = m_pobj->GetFloatValue(GSolidArc::HEIGHT);
+	double w = m_pobj->GetFloatValue(GSolidArc::ARC);
 
 	// get mesh parameters
 	m_nd = GetIntValue(NDIV);
@@ -124,10 +124,19 @@ FEMesh* FESolidArc::BuildMultiBlockMesh()
 	MBFace& F6 = GetBlockFace(0, 5); SetFaceEdgeID(F6, 4, 5, 6, 7);
 
 	// set edge types
-	GetFaceEdge(F1, 0).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F1, 0).SetWinding(1).edge.m_ntype = EDGE_ZARC;
 	GetFaceEdge(F1, 2).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
 	GetFaceEdge(F3, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F3, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F3, 2).SetWinding(1).edge.m_ntype = EDGE_ZARC;
+
+	UpdateMB();
+
+	return true;
+}
+
+FEMesh* FESolidArc::BuildMultiBlockMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);

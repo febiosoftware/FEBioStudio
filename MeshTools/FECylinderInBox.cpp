@@ -67,7 +67,7 @@ FECylinderInBox::FECylinderInBox(GCylinderInBox* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FECylinderInBox::BuildMesh()
+bool FECylinderInBox::BuildMultiBlock()
 {
 	assert(m_po);
 
@@ -177,6 +177,15 @@ FEMesh* FECylinderInBox::BuildMesh()
 	GetFaceEdge(F7, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
 	GetFaceEdge(F8, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
 	GetFaceEdge(F8, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+
+	UpdateMB();
+
+	return true;
+}
+
+FEMesh* FECylinderInBox::BuildMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(NELEM);

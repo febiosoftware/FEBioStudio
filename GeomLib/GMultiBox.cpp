@@ -83,6 +83,7 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 		MBEdge& eo = mb->GetEdge(i);
 		e->m_node[0] = eo.edge.m_node[0];
 		e->m_node[1] = eo.edge.m_node[1];
+		e->m_cnode = eo.edge.m_cnode;
 		e->m_ntype = eo.edge.m_ntype;
 		e->m_orient = eo.m_winding;
 	}

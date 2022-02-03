@@ -40,6 +40,9 @@ public:
 	FEMesh* BuildMesh();
 
 protected:
+	bool BuildMultiBlock() override;
+
+protected:
 	GCone*	m_pobj;
 
 	double	m_Rb;

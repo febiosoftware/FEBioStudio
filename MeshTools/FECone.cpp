@@ -71,7 +71,7 @@ FECone::FECone(GCone* po)
 
 extern double gain2(double x, double r, double n);
 
-FEMesh* FECone::BuildMesh()
+bool FECone::BuildMultiBlock()
 {
 	assert(m_pobj);
 
@@ -107,51 +107,51 @@ FEMesh* FECone::BuildMesh()
 	if (m_Rb < 0) m_Rb = 0;
 	if (m_Rb > 1) m_Rb = 1;
 
-	double d00 = m_Rb*R0 / sqrt(2.0);	// bottom inside
+	double d00 = m_Rb * R0 / sqrt(2.0);	// bottom inside
 	double d01 = R0 / sqrt(2.0);		// bottom outside
-	double d10 = m_Rb*R1 / sqrt(2.0);	// top inside
+	double d10 = m_Rb * R1 / sqrt(2.0);	// top inside
 	double d11 = R1 / sqrt(2.0);		// top outside
 
 	// create the MB nodes
 	m_MBNode.resize(34);
 	m_MBNode[0].m_r = vec3d(-d00, -d00, 0);
-	m_MBNode[1].m_r = vec3d(   0, -d00, 0);
-	m_MBNode[2].m_r = vec3d( d00, -d00, 0);
-	m_MBNode[3].m_r = vec3d(-d00,    0, 0);
-	m_MBNode[4].m_r = vec3d(   0,    0, 0);
-	m_MBNode[5].m_r = vec3d( d00,    0, 0);
-	m_MBNode[6].m_r = vec3d(-d00,  d00, 0);
-	m_MBNode[7].m_r = vec3d(   0,  d00, 0);
-	m_MBNode[8].m_r = vec3d( d00,  d00, 0);
+	m_MBNode[1].m_r = vec3d(0, -d00, 0);
+	m_MBNode[2].m_r = vec3d(d00, -d00, 0);
+	m_MBNode[3].m_r = vec3d(-d00, 0, 0);
+	m_MBNode[4].m_r = vec3d(0, 0, 0);
+	m_MBNode[5].m_r = vec3d(d00, 0, 0);
+	m_MBNode[6].m_r = vec3d(-d00, d00, 0);
+	m_MBNode[7].m_r = vec3d(0, d00, 0);
+	m_MBNode[8].m_r = vec3d(d00, d00, 0);
 
-	m_MBNode[ 9].m_r = vec3d(-d10, -d10, h);
-	m_MBNode[10].m_r = vec3d(   0, -d10, h);
-	m_MBNode[11].m_r = vec3d( d10, -d10, h);
-	m_MBNode[12].m_r = vec3d(-d10,    0, h);
-	m_MBNode[13].m_r = vec3d(   0,    0, h);
-	m_MBNode[14].m_r = vec3d( d10,    0, h);
-	m_MBNode[15].m_r = vec3d(-d10,  d10, h);
-	m_MBNode[16].m_r = vec3d(   0,  d10, h);
-	m_MBNode[17].m_r = vec3d( d10,  d10, h);
+	m_MBNode[9].m_r = vec3d(-d10, -d10, h);
+	m_MBNode[10].m_r = vec3d(0, -d10, h);
+	m_MBNode[11].m_r = vec3d(d10, -d10, h);
+	m_MBNode[12].m_r = vec3d(-d10, 0, h);
+	m_MBNode[13].m_r = vec3d(0, 0, h);
+	m_MBNode[14].m_r = vec3d(d10, 0, h);
+	m_MBNode[15].m_r = vec3d(-d10, d10, h);
+	m_MBNode[16].m_r = vec3d(0, d10, h);
+	m_MBNode[17].m_r = vec3d(d10, d10, h);
 
 	m_MBNode[18].m_r = vec3d(-d01, -d01, 0);
-	m_MBNode[19].m_r = vec3d(   0,  -R0, 0);
-	m_MBNode[20].m_r = vec3d( d01, -d01, 0);
-	m_MBNode[21].m_r = vec3d(  R0,    0, 0);
-	m_MBNode[22].m_r = vec3d( d01,  d01, 0);
-	m_MBNode[23].m_r = vec3d(   0,   R0, 0);
-	m_MBNode[24].m_r = vec3d(-d01,  d01, 0);
-	m_MBNode[25].m_r = vec3d( -R0,    0, 0);
+	m_MBNode[19].m_r = vec3d(0, -R0, 0);
+	m_MBNode[20].m_r = vec3d(d01, -d01, 0);
+	m_MBNode[21].m_r = vec3d(R0, 0, 0);
+	m_MBNode[22].m_r = vec3d(d01, d01, 0);
+	m_MBNode[23].m_r = vec3d(0, R0, 0);
+	m_MBNode[24].m_r = vec3d(-d01, d01, 0);
+	m_MBNode[25].m_r = vec3d(-R0, 0, 0);
 
 	m_MBNode[26].m_r = vec3d(-d11, -d11, h);
-	m_MBNode[27].m_r = vec3d(   0,  -R1, h);
-	m_MBNode[28].m_r = vec3d( d11, -d11, h);
-	m_MBNode[29].m_r = vec3d(  R1,    0, h);
-	m_MBNode[30].m_r = vec3d( d11,  d11, h);
-	m_MBNode[31].m_r = vec3d(   0,   R1, h);
-	m_MBNode[32].m_r = vec3d(-d11,  d11, h);
-	m_MBNode[33].m_r = vec3d( -R1,    0, h);
-	
+	m_MBNode[27].m_r = vec3d(0, -R1, h);
+	m_MBNode[28].m_r = vec3d(d11, -d11, h);
+	m_MBNode[29].m_r = vec3d(R1, 0, h);
+	m_MBNode[30].m_r = vec3d(d11, d11, h);
+	m_MBNode[31].m_r = vec3d(0, R1, h);
+	m_MBNode[32].m_r = vec3d(-d11, d11, h);
+	m_MBNode[33].m_r = vec3d(-R1, 0, h);
+
 	// create the MB blocks
 	m_MBlock.resize(12);
 	MBBlock& b1 = m_MBlock[0];
@@ -277,6 +277,15 @@ FEMesh* FECone::BuildMesh()
 	m_MBNode[31].SetID(5);
 	m_MBNode[33].SetID(6);
 	m_MBNode[27].SetID(7);
+
+	UpdateMB();
+
+	return true;
+}
+
+FEMesh* FECone::BuildMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);

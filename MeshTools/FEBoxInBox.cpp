@@ -59,10 +59,10 @@ FEBoxInBox::FEBoxInBox(GBoxInBox* po)
 
 //-----------------------------------------------------------------------------
 // Build the FEMesh
-FEMesh* FEBoxInBox::BuildMesh()
+bool FEBoxInBox::BuildMultiBlock()
 {
 	assert(m_pobj);
-	if (m_pobj == nullptr) return nullptr;
+	if (m_pobj == nullptr) return false;
 
 	// get object parameters
 	double W0 = m_pobj->OuterWidth();
@@ -224,6 +224,15 @@ FEMesh* FEBoxInBox::BuildMesh()
 	GetMBNode(13).SetID(13);
 	GetMBNode(14).SetID(14);
 	GetMBNode(15).SetID(15);
+
+	UpdateMB();
+
+	return true;
+}
+
+FEMesh* FEBoxInBox::BuildMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
