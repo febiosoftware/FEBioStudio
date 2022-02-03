@@ -395,7 +395,7 @@ class GMultiBox;
 
 class FEMultiBlockMesher : public FEMesher
 {
-	enum { DIVS };
+	enum { DIVS, ELEM_TYPE };
 
 public:
 	FEMultiBlockMesher(GMultiBox* po);

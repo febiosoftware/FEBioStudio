@@ -1579,6 +1579,7 @@ vector<int> FEMultiBlockMesh::GetFENodeList(MBBlock& block)
 FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
 {
 	AddIntParam(10, "divs", "divisions");
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 void FEMultiBlockMesher::SetMultiBlockMesh(const FEMultiBlockMesh& mb)
@@ -1604,6 +1605,16 @@ FEMesh* FEMultiBlockMesher::BuildMesh()
 	for (int i = 0; i < mb.Edges(); ++i)
 	{
 		mb.GetEdge(i).m_nx = nd;
+	}
+
+	int elemType = GetIntValue(ELEM_TYPE);
+	switch (elemType)
+	{
+	case 0: mb.SetElementType(FE_HEX8); break;
+	case 1: mb.SetElementType(FE_HEX20); break;
+	case 2: mb.SetElementType(FE_HEX27); break;
+	default:
+		assert(false);
 	}
 
 	return m_mb.BuildMesh();
