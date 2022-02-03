@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
+#include <MathLib/math3d.h>
 
 class GObject;
 class GFace;
@@ -47,6 +48,8 @@ private:
 	void BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f);
 	void BuildEdgeMesh(GLMesh* glmesh, GEdge& e);
 	void BuildEdgeLine(GLMesh* glmesh, GEdge& e);
+
+	vec3d EdgePoint(GEdge& edge, double r);
 
 private:
 	GObject* m_po;

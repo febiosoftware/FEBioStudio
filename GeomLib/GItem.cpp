@@ -114,6 +114,7 @@ GEdge::GEdge(const GEdge& e)
 	m_node[0] = e.m_node[0];
 	m_node[1] = e.m_node[1];
 	m_cnode = e.m_cnode;
+	m_orient = e.m_orient;
 	m_ntype = e.m_ntype;
 
 	m_state = e.m_state;
@@ -129,6 +130,7 @@ void GEdge::operator =(const GEdge &e)
 	m_node[0] = e.m_node[0];
 	m_node[1] = e.m_node[1];
 	m_cnode = e.m_cnode;
+	m_orient = e.m_orient;
 	m_ntype = e.m_ntype;
 
 	m_state = e.m_state;
@@ -151,10 +153,12 @@ bool GEdge::operator==(const GEdge& e)
 	case EDGE_YARC:
 	case EDGE_ZARC:
 		if ((m_node[0] != e.m_node[0]) || (m_node[1] != e.m_node[1])) return false;
+		if (m_orient != e.m_orient) return false;
 		break;
 	case EDGE_3P_CIRC_ARC:
 		if ((m_node[0] != e.m_node[0])  || (m_node[1] != e.m_node[1])) return false;
 		if (m_cnode != e.m_cnode) return false;
+		if (m_orient != e.m_orient) return false;
 		break;
 	case EDGE_3P_ARC:
 		if ((m_node[0] != e.m_node[0]) || (m_node[1] != e.m_node[1])) return false;

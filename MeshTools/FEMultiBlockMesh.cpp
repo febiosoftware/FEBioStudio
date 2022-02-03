@@ -1472,6 +1472,17 @@ void FEMultiBlockMesh::UpdateMB()
 	{
 		MBFace& f = m_MBFace[i];
 
+		// figure out edge winding
+		for (int j = 0; j < 4; ++j)
+		{
+			int n0 = f.m_node[j];
+			int n1 = f.m_node[(j+1)%4];
+			MBEdge& ej = m_MBEdge[f.m_edge[j]];
+			if      ((n0 == ej.Node(0)) && (n1 == ej.Node(1))) f.m_edgeWinding[j] =  1;
+			else if ((n0 == ej.Node(1)) && (n1 == ej.Node(0))) f.m_edgeWinding[j] = -1;
+			else { assert(false); }
+		}
+
 		// see if this face is a sphere
 		// it is assumed a sphere if all edges are 3P arcs with the same center node
 		f.m_isSphere = true;

@@ -84,6 +84,7 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 		e->m_node[0] = eo.edge.m_node[0];
 		e->m_node[1] = eo.edge.m_node[1];
 		e->m_ntype = eo.edge.m_ntype;
+		e->m_orient = eo.m_winding;
 	}
 
 	// --- Faces ---
@@ -99,6 +100,7 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 		{
 			f->m_node[j] = fo.m_node[j];
 			f->m_edge[j].nid = fo.m_edge[j];
+			f->m_edge[j].nwn = fo.m_edgeWinding[j];
 		}
 		f->m_nPID[0] = fo.m_block[0];
 		f->m_nPID[1] = fo.m_block[1];

@@ -884,6 +884,43 @@ void GLMesher::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 }
 
 //-----------------------------------------------------------------------------
+vec3d GLMesher::EdgePoint(GEdge& edge, double r)
+{
+	GObject& o = *m_po;
+	vec3d r0 = o.Node(edge.m_node[0])->LocalPosition();
+	vec3d r1 = o.Node(edge.m_node[1])->LocalPosition();
+	vec3d p;
+	switch (edge.m_ntype)
+	{
+	case EDGE_LINE:
+		p = r0 * (1.0 - r) + r1 * r;
+		break;
+	case EDGE_ZARC:
+	{
+		vec2d c(0, 0);
+		vec2d a(r0.x, r0.y);
+		vec2d b(r1.x, r1.y);
+
+		// create an arc object
+		GM_CIRCLE_ARC ca(c, a, b, edge.m_orient);
+		vec2d q = ca.Point(r);
+		p = vec3d(q.x, q.y, r1.z);
+	}
+	break;
+	case EDGE_3P_CIRC_ARC:
+	{
+		vec3d rc = o.Node(edge.m_cnode)->LocalPosition();
+		GM_CIRCLE_3P_ARC c(rc, r0, r1, edge.m_orient);
+		p = c.Point(r);
+	}
+	break;	
+	default:
+		assert(false);
+	}
+	return p;
+}
+
+//-----------------------------------------------------------------------------
 void GLMesher::BuildFaceQuad(GLMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
@@ -895,12 +932,23 @@ void GLMesher::BuildFaceQuad(GLMesh* glmesh, GFace& f)
 	assert(NN == 4);
 	assert(NE == 4);
 
+	// get 4 corner nodes
 	vec3d y[4];
 	y[0] = o.Node(f.m_node[0])->LocalPosition();
 	y[1] = o.Node(f.m_node[1])->LocalPosition();
 	y[2] = o.Node(f.m_node[2])->LocalPosition();
 	y[3] = o.Node(f.m_node[3])->LocalPosition();
 
+	// get the edges and their windings
+	int ew[4];
+	GEdge* e[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		e[i] = o.Edge(f.m_edge[i].nid);
+		ew[i] = f.m_edge[i].nwn;
+	}
+
+	// allocate mesh
 	GLMesh m;
 	m.Create((M + 1) * (M + 1), 2 * M * M, 4 * M);
 
@@ -908,16 +956,26 @@ void GLMesher::BuildFaceQuad(GLMesh* glmesh, GFace& f)
 	for (int j = 0; j <= M; ++j)
 		for (int i = 0; i <= M; ++i)
 		{
-			double r = -1.0 + (double)i * 2.0 / (double)M;
-			double s = -1.0 + (double)j * 2.0 / (double)M;
+			double r = (double)i / (double)M;
+			double s = (double)j / (double)M;
 
-			double H0 = 0.25 * (1 - r) * (1 - s);
-			double H1 = 0.25 * (1 + r) * (1 - s);
-			double H2 = 0.25 * (1 + r) * (1 + s);
-			double H3 = 0.25 * (1 - r) * (1 + s);
+			double N1 = (1 - r) * (1 - s);
+			double N2 = r * (1 - s);
+			double N3 = r * s;
+			double N4 = (1 - r) * s;
+
+			// get edge points
+			vec3d q[4];
+			q[0] = EdgePoint(*(e[0]), (ew[0] == 1 ? r : 1.0 - r));
+			q[1] = EdgePoint(*(e[1]), (ew[1] == 1 ? s : 1.0 - s));
+			q[2] = EdgePoint(*(e[2]), (ew[2] != 1 ? r : 1.0 - r));
+			q[3] = EdgePoint(*(e[3]), (ew[3] != 1 ? s : 1.0 - s));
+
+			vec3d p = q[0] * (1 - s) + q[1] * r + q[2] * s + q[3] * (1 - r) \
+				- (y[0] * N1 + y[1] * N2 + y[2] * N3 + y[3] * N4);
 
 			GLMesh::NODE& n = m.Node(j * (M + 1) + i);
-			n.r = y[0] * H0 + y[1] * H1 + y[2] * H2 + y[3] * H3;
+			n.r = p;
 			n.pid = -1;
 		}
 

@@ -68,6 +68,14 @@ enum {
 #define PART_COMPLEX	1		// general domain definition; surfaces can be of any type
 
 //-----------------------------------------------------------------------------
+namespace GO {
+	enum Orientation:int {
+		CW = -1,
+		CCW = 1
+	};
+}
+
+//-----------------------------------------------------------------------------
 // forward declarations
 class GBaseObject;
 
@@ -213,8 +221,8 @@ public:
 class GEdge : public GItem_T<GEdge>
 {
 public:
-	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; }
-	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; }
+	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW;  }
+	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW;}
 
 	GEdge(const GEdge& e);
 	void operator = (const GEdge& e);
@@ -237,6 +245,7 @@ public:
 public:
 	int		m_node[2];	// indices of GNodes
 	int		m_cnode;	// center node for arcs
+	int		m_orient;	// orientation for arcs
 	int		m_ntype;	// type identifier
 };
 
