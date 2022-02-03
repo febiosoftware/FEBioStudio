@@ -130,12 +130,14 @@ bool FEBioFileImport::Load(const char* szfile)
 	}
 	if (ch != 0) *(++ch) = 0; else m_szpath[0] = 0;
 
-	// open the file
-	if (Open(szfile, "rb") == false) return errf("Failed opening file: %s", szfile);
+    SetFileName(szfile);
 
-	// Attach the XML reader to the stream
+	// Open thefile with the XML reader
 	XMLReader xml;
-	if (xml.Attach(m_fp) == false) return errf("This is not a valid FEBio input file");
+	if (xml.Open(szfile) == false) return errf("This is not a valid FEBio input file");
+
+    // Set the file stream
+    SetFileStream(xml.GetFileStream());
 
 	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
@@ -171,9 +173,6 @@ bool FEBioFileImport::Load(const char* szfile)
 	{
 		return errf("FATAL ERROR: unrecoverable error (line %d)\n", xml.GetCurrentLine());
 	}
-
-	// close the XML file
-	Close();
 
 	// if we get here we are good to go!
 	UpdateFEModel(fem);

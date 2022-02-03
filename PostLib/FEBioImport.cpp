@@ -62,14 +62,18 @@ bool FEBioFileImport::ParseVersion(XMLTag& tag)
 //-----------------------------------------------------------------------------
 bool FEBioFileImport::Load(const char* szfile)
 {
-	if (Open(szfile, "rt") == false) return errf("Failed opening FEBio input file.");
-
 	m_fem->Clear();
 	m_pm = new FEPostMesh;
 	m_fem->AddMesh(m_pm);
 
-	// Attach the XML reader to the stream
-	if (m_xml.Attach(m_fp) == false) return false;
+    SetFileName(szfile);
+
+	// Open thefile with the XML reader
+	XMLReader xml;
+	if (xml.Open(szfile) == false) return errf("This is not a valid FEBio input file");
+
+    // Set the file stream
+    SetFileStream(xml.GetFileStream());
 
 	// loop over all child tags
 	try
@@ -107,9 +111,6 @@ bool FEBioFileImport::Load(const char* szfile)
 		errf("FATAL ERROR: unrecoverable error (line %d)\n", m_xml.GetCurrentLine());
 		return false;
 	}
-
-	// close the XML file
-	Close();
 
 	// update the mesh
 	m_pm->BuildMesh();

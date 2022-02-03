@@ -28,8 +28,10 @@ SOFTWARE.*/
 #include <stdio.h>
 #include <string.h>
 #include <string>
+#include <fstream>
 
 using std::string;
+using std::ifstream;
 
 #ifdef WIN32
 typedef __int64 off_type;
@@ -87,6 +89,9 @@ protected:
 	// open the file
 	bool Open(const char* szfile, const char* szmode);
 
+    // Set file stream
+    bool SetFileStream(ifstream* stream);
+
 	// close the file
 	virtual void Close();
 
@@ -98,6 +103,7 @@ protected:
 
 protected:
 	FILE*			m_fp;
+    ifstream*       m_stream;
 
 private:
 	std::string		m_fileName;	//!< file name
