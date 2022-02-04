@@ -40,5 +40,8 @@ public:
 	FEMesh* BuildMesh();
 
 protected:
+	bool BuildMultiBlock() override;
+
+protected:
 	GSphereInBox*	m_po;
 };

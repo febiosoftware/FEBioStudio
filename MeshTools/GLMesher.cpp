@@ -864,6 +864,28 @@ void GLMesher::BuildFaceQuad(GLMesh* glmesh, GFace& f)
 	GLMesh m;
 	m.Create((M + 1) * (M + 1), 2 * M * M, 4 * M);
 
+	// see if this face is a sphere
+	// it is assumed a sphere if all edges are 3P arcs with the same center node
+	bool isSphere = true;
+	double sphereRadius = 0;
+	vec3d sphereCenter(0, 0, 0);
+	int c0 = e[0]->m_cnode;
+	for (int j = 0; j < 4; ++j)
+	{
+		if ((e[j]->m_ntype != EDGE_3P_CIRC_ARC) || (e[j]->m_cnode != c0))
+		{
+			isSphere = false;
+			break;
+		}
+	}
+	if (isSphere)
+	{
+		// we assume that the corner nodes are already on the sphere
+		vec3d r0 = o.Node(f.m_node[0])->LocalPosition();
+		sphereCenter = o.Node(c0)->LocalPosition();
+		sphereRadius = (r0 - sphereCenter).Length();
+	}
+
 	// build nodes
 	for (int j = 0; j <= M; ++j)
 		for (int i = 0; i <= M; ++i)
@@ -885,6 +907,14 @@ void GLMesher::BuildFaceQuad(GLMesh* glmesh, GFace& f)
 
 			vec3d p = q[0] * (1 - s) + q[1] * r + q[2] * s + q[3] * (1 - r) \
 				- (y[0] * N1 + y[1] * N2 + y[2] * N3 + y[3] * N4);
+
+			// if this point should be on a sphere, project it to the sphere
+			// since the transfinite interpolation does not respect speres exactly
+			if (isSphere)
+			{
+				vec3d t = p - sphereCenter; t.Normalize();
+				p = sphereCenter + t * sphereRadius;
+			}
 
 			GLMesh::NODE& n = m.Node(j * (M + 1) + i);
 			n.r = p;

@@ -61,7 +61,7 @@ double gain2(double x, double r, double n)
 	return (pow(r, n*x) - 1.0)/(pow(r, n) - 1.0);
 }
 
-FEMesh* FEHollowSphere::BuildMesh()
+bool FEHollowSphere::BuildMultiBlock()
 {
 	assert(m_pobj);
 
@@ -388,6 +388,15 @@ FEMesh* FEHollowSphere::BuildMesh()
 	m_MBNode[10].SetID(9);
 	m_MBNode[ 4].SetID(10);
 	m_MBNode[21].SetID(11);
+
+	UpdateMB();
+
+	return true;
+}
+
+FEMesh* FEHollowSphere::BuildMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);

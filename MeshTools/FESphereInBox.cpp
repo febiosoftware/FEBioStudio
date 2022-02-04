@@ -53,7 +53,7 @@ FESphereInBox::FESphereInBox(GSphereInBox* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FESphereInBox::BuildMesh()
+bool FESphereInBox::BuildMultiBlock()
 {
 	assert(m_po);
 
@@ -431,6 +431,15 @@ FEMesh* FESphereInBox::BuildMesh()
 	m_MBNode[46].SetID(13);
 	m_MBNode[48].SetID(14);
 	m_MBNode[50].SetID(15);
+
+	UpdateMB();
+
+	return true;
+}
+
+FEMesh* FESphereInBox::BuildMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
