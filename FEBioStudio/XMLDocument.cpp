@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "XMLDocument.h"
 #include <XML/XMLReader.h>
 #include <XML/XMLWriter.h>
+#include <iostream>
 
 CXMLDocument::CXMLDocument(CMainWindow* wnd) : CDocument(wnd), m_treeModel(nullptr)
 {
@@ -80,8 +81,14 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag, int depth)
     depth++; 
 
     XMLTreeItem* child = new XMLTreeItem(depth);
-    char szval[256];
 
+    if(!tag.comment().empty())
+    {
+        child->AddComment(tag.comment().c_str());
+        tag.clearComment();
+    }
+
+    char szval[256];
     tag.value(szval);
     child->SetTag(tag.Name());
     child->SetValue(szval);
@@ -104,12 +111,7 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag, int depth)
         }
         else
         {
-            XMLTreeItem* attrItem = new XMLTreeItem(depth + 1);
-            attrItem->SetTag(attr.name());
-            attrItem->SetValue(attr.cvalue());
-            attrItem->SetIsAttribute(true);
-
-            child->appendChild(attrItem);
+            child->AddAttribtue(attr.name(), attr.cvalue());
         }
     }
     
@@ -143,6 +145,11 @@ bool CXMLDocument::SaveDocument()
 
 void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)
 {
+    for(int child = 0; child < item->CommentCount(); child++)
+    {
+        writer.add_comment(item->child(child)->data(VALUE).toStdString());
+    }
+
     XMLElement current(item->data(TAG).toStdString().c_str());
 
     QString data = item->data(ID);
@@ -163,28 +170,19 @@ void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)
         current.add_attribute("type", data.toStdString());
     }
 
-    int nattr = 0;
-    for(int child = 0; child < item->childCount(); child++)
+    for(int child = item->CommentCount(); child < item->CommentCount() + item->AttrChildrenCount(); child++)
     {
         XMLTreeItem* childItem = item->child(child);
-        if(childItem->IsAttribute())
-        {
-            current.add_attribute(childItem->data(NAME).toStdString().c_str(), childItem->data(VALUE).toStdString());
-            nattr++;
-        }
+        current.add_attribute(childItem->data(NAME).toStdString().c_str(), childItem->data(VALUE).toStdString());
     }
 
-    if((item->childCount() - nattr) > 0)
+    if((item->childCount() - item->CommentCount() + item->AttrChildrenCount()) > 0)
     {
         writer.add_branch(current);
 
-        for(int child = 0; child < item->childCount(); child++)
+        for(int child = item->CommentCount() + item->AttrChildrenCount(); child < item->childCount(); child++)
         {
-            XMLTreeItem* childItem = item->child(child);
-            if(!childItem->IsAttribute())
-            {
-                writeChild(childItem, writer);
-            }
+            writeChild(item->child(child), writer);
         }
 
         writer.close_branch();

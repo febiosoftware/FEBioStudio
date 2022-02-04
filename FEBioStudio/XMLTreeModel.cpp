@@ -30,7 +30,8 @@ SOFTWARE.*/
 #include "IconProvider.h"
 
 XMLTreeItem::XMLTreeItem(int depth)
-    : m_parent(nullptr), m_depth(depth), m_expanded(false), m_isAttribute(false)
+    : m_parent(nullptr), m_depth(depth), m_expanded(false), m_itemType(ELEMENT),
+        m_attrChildren(0), m_comments(0)
 {
 
 }
@@ -94,6 +95,28 @@ void XMLTreeItem::SetValue(const char* val)
     m_value = val;
 }
 
+void XMLTreeItem::AddAttribtue(const char* tag, const char* val)
+{
+    XMLTreeItem* attr = new XMLTreeItem(m_depth + 1);
+    attr->m_tag = tag;
+    attr->m_value = val;
+    attr->SetItemType(ATTRIBUTE);
+
+    appendChild(attr);
+    m_attrChildren++;
+}
+
+void XMLTreeItem::AddComment(const char* comment)
+{
+    XMLTreeItem* child = new XMLTreeItem(m_depth + 1);
+    child->m_tag = "comment";
+    child->m_value = comment;
+    child->SetItemType(COMMENT);
+
+    appendChild(child);
+    m_comments++;
+}
+
 void XMLTreeItem::appendChild(XMLTreeItem *child)
 {
     m_children.push_back(child);
@@ -117,7 +140,6 @@ int XMLTreeItem::childCount() const
 
 int XMLTreeItem::columnCount() const
 {
-    // return m_itemData.size();
     return 5;
 }
 
@@ -266,7 +288,7 @@ QVariant XMLTreeModel::data(const QModelIndex &index, int role) const
             color = Qt::green;
         }
 
-        if(item->IsAttribute())
+        if(item->GetItemType() == XMLTreeItem::ATTRIBUTE)
         {
             color = Qt::red;
         }

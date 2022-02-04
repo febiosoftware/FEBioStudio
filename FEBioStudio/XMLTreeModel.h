@@ -35,11 +35,16 @@ using std::string;
 enum columnOrder
 {
     TAG = 0, ID, TYPE, NAME, VALUE
-
 };
 
 class XMLTreeItem
 {
+public:
+    enum ItemType
+    {
+        ELEMENT, ATTRIBUTE, COMMENT
+    };
+
 public:
     XMLTreeItem(int depth);
     ~XMLTreeItem();
@@ -52,13 +57,19 @@ public:
     void SetType(const char* val);
     void SetValue(const char* val);
 
+    void AddAttribtue(const char* tag, const char* val);
+    void AddComment(const char* comment);
+
+    int AttrChildrenCount() { return m_attrChildren; }
+    int CommentCount() { return m_comments; }
+
     int Depth() { return m_depth; }
 
     bool Expanded() { return m_expanded; }
     bool SetExpanded(bool expanded) { m_expanded = expanded; }
 
-    void SetIsAttribute(bool val) { m_isAttribute = val; }
-    bool IsAttribute() { return m_isAttribute; }
+    void SetItemType(ItemType itemType) { m_itemType = itemType; }
+    ItemType GetItemType() { return m_itemType; }
     
     void appendChild(XMLTreeItem *child);
 
@@ -74,6 +85,7 @@ private:
     void setParent(XMLTreeItem* parent);
 
 private:
+    ItemType m_itemType;
     vector<XMLTreeItem*> m_children;
     QString m_tag;
     QString m_id;
@@ -82,9 +94,11 @@ private:
     QString m_value;
     XMLTreeItem *m_parent;
     int m_depth;
-    bool m_expanded;
 
-    bool m_isAttribute;
+    int m_attrChildren;
+    int m_comments;
+
+    bool m_expanded;
 };
 
 class XMLTreeModel : public QAbstractItemModel
