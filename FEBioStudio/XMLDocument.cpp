@@ -145,7 +145,7 @@ bool CXMLDocument::SaveDocument()
 
 void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)
 {
-    for(int child = 0; child < item->CommentCount(); child++)
+    for(int child = 0; child < item->FirstAttribute(); child++)
     {
         writer.add_comment(item->child(child)->data(VALUE).toStdString());
     }
@@ -170,17 +170,17 @@ void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)
         current.add_attribute("type", data.toStdString());
     }
 
-    for(int child = item->CommentCount(); child < item->CommentCount() + item->AttrChildrenCount(); child++)
+    for(int child = item->FirstAttribute(); child < item->FirstElement(); child++)
     {
         XMLTreeItem* childItem = item->child(child);
-        current.add_attribute(childItem->data(NAME).toStdString().c_str(), childItem->data(VALUE).toStdString());
+        current.add_attribute(childItem->data(TAG).toStdString().c_str(), childItem->data(VALUE).toStdString());
     }
 
-    if((item->childCount() - item->CommentCount() + item->AttrChildrenCount()) > 0)
+    if((item->childCount() - item->FirstElement()) > 0)
     {
         writer.add_branch(current);
 
-        for(int child = item->CommentCount() + item->AttrChildrenCount(); child < item->childCount(); child++)
+        for(int child = item->FirstElement(); child < item->childCount(); child++)
         {
             writeChild(item->child(child), writer);
         }

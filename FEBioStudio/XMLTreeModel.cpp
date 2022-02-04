@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 XMLTreeItem::XMLTreeItem(int depth)
     : m_parent(nullptr), m_depth(depth), m_expanded(false), m_itemType(ELEMENT),
-        m_attrChildren(0), m_comments(0)
+        m_firstAttribute(0), m_firstElement(0)
 {
 
 }
@@ -95,17 +95,6 @@ void XMLTreeItem::SetValue(const char* val)
     m_value = val;
 }
 
-void XMLTreeItem::AddAttribtue(const char* tag, const char* val)
-{
-    XMLTreeItem* attr = new XMLTreeItem(m_depth + 1);
-    attr->m_tag = tag;
-    attr->m_value = val;
-    attr->SetItemType(ATTRIBUTE);
-
-    appendChild(attr);
-    m_attrChildren++;
-}
-
 void XMLTreeItem::AddComment(const char* comment)
 {
     XMLTreeItem* child = new XMLTreeItem(m_depth + 1);
@@ -114,7 +103,19 @@ void XMLTreeItem::AddComment(const char* comment)
     child->SetItemType(COMMENT);
 
     appendChild(child);
-    m_comments++;
+    m_firstAttribute++;
+    m_firstElement++;
+}
+
+void XMLTreeItem::AddAttribtue(const char* tag, const char* val)
+{
+    XMLTreeItem* attr = new XMLTreeItem(m_depth + 1);
+    attr->m_tag = tag;
+    attr->m_value = val;
+    attr->SetItemType(ATTRIBUTE);
+
+    appendChild(attr);
+    m_firstElement++;
 }
 
 void XMLTreeItem::appendChild(XMLTreeItem *child)

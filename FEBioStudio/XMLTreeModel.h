@@ -57,11 +57,11 @@ public:
     void SetType(const char* val);
     void SetValue(const char* val);
 
-    void AddAttribtue(const char* tag, const char* val);
     void AddComment(const char* comment);
+    void AddAttribtue(const char* tag, const char* val);
 
-    int AttrChildrenCount() { return m_attrChildren; }
-    int CommentCount() { return m_comments; }
+    int FirstAttribute() { return m_firstAttribute; }
+    int FirstElement() { return m_firstElement; }
 
     int Depth() { return m_depth; }
 
@@ -95,8 +95,8 @@ private:
     XMLTreeItem *m_parent;
     int m_depth;
 
-    int m_attrChildren;
-    int m_comments;
+    int m_firstAttribute;
+    int m_firstElement;
 
     bool m_expanded;
 };
