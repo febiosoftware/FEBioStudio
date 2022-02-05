@@ -44,7 +44,7 @@ SOFTWARE.*/
 class MBItem
 {
 public:
-	MBItem() { m_ntag = 0; m_gid = -1; false; }
+	MBItem() { m_ntag = 0; m_gid = -1; }
 
 	MBItem(const MBItem& it)
 	{
@@ -86,8 +86,7 @@ class MBEdge : public MBItem
 public:
 	GEdge	edge;
 	int		m_winding;
-	int	m_face[2];	// external faces
-	int	m_nx;		// tesselation
+	int		m_nx;		// tesselation
 	double	m_gx;	// zoning
 	bool	m_bx;	// single or double zoning
 	
@@ -134,7 +133,6 @@ public:
 	int	m_nx, m_ny;	// face tesselation
 	double m_gx, m_gy;	// zoning
 	bool m_bx, m_by;	// single or double zoning
-	int	m_nbr[4];	// the neighbour faces
 	int	m_sid;		// surface smoothgin ID
 
 	// data for sphere sections
@@ -157,7 +155,6 @@ public:
 		m_nx = m_ny = 1;
 		m_gx = m_gy = 1.0;
 		m_bx = m_by = false;
-		m_nbr[0] = m_nbr[1] = m_nbr[2] = m_nbr[3] = -1;
 		m_edgeWinding[0] = m_edgeWinding[1] = m_edgeWinding[2] = m_edgeWinding[3] = 0;
 		m_sid = -1; // -1 = use GID instead
 
@@ -179,6 +176,8 @@ public:
 	bool IsExternal() { return m_block[1] == -1; }
 
 	MBFace& SetSizes(int nx, int ny) { m_nx = nx; m_ny = ny; return *this; }
+
+	void Invert();
 };
 
 class MBBlock : public MBItem
@@ -248,9 +247,11 @@ public:
 	const MBNode& GetMBNode(int i) const { return m_MBNode[i]; }
 	MBFace& GetBlockFace(int nb, int nf);
 	MBEdge& GetFaceEdge(MBFace& f, int n);
+	MBFace& AddFace();
 
 	int Edges() const { return (int)m_MBEdge.size(); }
 	MBEdge& GetEdge(int nedge);
+	MBEdge& AddEdge();
 
 	int Blocks() const { return (int)m_MBlock.size(); }
 	MBBlock& GetBlock(int i) { return m_MBlock[i]; }
@@ -263,9 +264,10 @@ public:
 	int Faces() const { return (int)m_MBFace.size(); }
 	MBFace& GetFace(int i) { return m_MBFace[i]; }
 
+	bool DeleteBlock(int n);
+
 protected:
 	void FindBlockNeighbours();
-	void FindFaceNeighbours();
 	void BuildMBFaces();
 	void BuildMBEdges();
 
@@ -401,6 +403,8 @@ public:
 	FEMultiBlockMesher(GMultiBox* po);
 
 	void SetMultiBlockMesh(const FEMultiBlockMesh& mb);
+
+	FEMultiBlockMesh& GetMultiBlockMesh();
 
 	// build the mesh
 	FEMesh* BuildMesh();

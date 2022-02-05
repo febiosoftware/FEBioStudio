@@ -82,7 +82,7 @@ public:
 public:
 	void Attach(GObject* po, bool bweld, double tol);
 
-	bool DeletePart(GPart* pg);
+	bool DeletePart(GPart* pg) override;
 
 protected:
 	void BuildGMesh() override;

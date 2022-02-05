@@ -83,6 +83,8 @@ public:
 	void AddFace(GFace* f);
 	GFace* AddFace();
 
+	virtual bool DeletePart(GPart* pg);
+
 	// update the node types
 	void UpdateNodeTypes();
 

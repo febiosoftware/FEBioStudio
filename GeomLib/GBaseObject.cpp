@@ -538,6 +538,13 @@ GPart* GBaseObject::AddPart()
 }
 
 //-----------------------------------------------------------------------------
+bool GBaseObject::DeletePart(GPart* pg)
+{
+	// let the derived class do the heavy lifting. 
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 //! This function updates the type of nodes. A node is either a vertex, which
 //! means it is considered part of the geometry, or it is a shape-node, which 
 //! are only used to define the geometry, but are not considered part of it.

@@ -68,7 +68,6 @@ public:
 	void SetFaceSizes(int nface, int nx, int ny);
 
 protected:
-	void FindFaceNeighbours();
 	void BuildMBEdges();
 
 	// build the mesh items

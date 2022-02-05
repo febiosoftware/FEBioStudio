@@ -38,4 +38,9 @@ public:
 	//! constructor
 	GMultiBox();
 	GMultiBox(GObject* po);
+
+	bool DeletePart(GPart* pg) override;
+
+	FEMeshBase* GetEditableMesh() override;
+
 };

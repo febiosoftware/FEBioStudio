@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeNodeList.h>
 #include <GeomLib/geom.h>
 #include <GeomLib/GMultiBox.h>
+#include <algorithm>
 
 void MBBlock::SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8)
 {
@@ -775,19 +776,10 @@ void FEMultiBlockMesh::BuildMBEdges()
 			{
 				MBEdge& e = m_MBEdge[n];
 				f.m_edge[j] = n;
-				if (f.IsExternal())
-				{
-					if (e.m_face[0] == -1) e.m_face[0] = i; 
-					else e.m_face[1] = i;
-				}
 			}
 			else
 			{
 				MBEdge e(n1, n2);
-				e.m_face[0] = e.m_face[1] = -1;
-
-				if (f.IsExternal()) e.m_face[0] = i;
-
 				switch (j)
 				{
 				case 0:
@@ -932,60 +924,6 @@ void FEMultiBlockMesh::BuildMBFaces()
 			}
 		}
 		B.m_ntag = 1;
-	}
-}
-
-//-----------------------------------------------------------------------------
-
-void FEMultiBlockMesh::FindFaceNeighbours()
-{
-	// build the node-face table
-	vector< vector<int> > NFT;
-	BuildNodeFaceTable(NFT);
-
-	// reset all face neighbours
-	int NF = (int)m_MBFace.size();
-	for (int i=0; i<NF; ++i)
-	{
-		MBFace& F = m_MBFace[i];
-		for (int j=0; j<4; ++j) F.m_nbr[j] = -1;
-	}
-
-	// find the face's neighbours
-	int nf, n1, n2;
-	for (int i=0; i<NF; ++i)
-	{
-		MBFace& F = m_MBFace[i];
-		if (F.IsExternal())
-		{
-			for (int j=0; j<4; ++j)
-			{
-				if (F.m_nbr[j] == -1)
-				{
-					// pick a node
-					n1 = F.m_node[j];
-					n2 = F.m_node[(j+1)%4];
-					for (int k=0; k<(int) NFT[n1].size(); ++k)
-					{
-						nf = NFT[n1][k];
-						if (nf != i)
-						{
-							MBFace& F2 = m_MBFace[nf];
-							if (F2.IsExternal())
-							{
-								int l = FindEdgeIndex(F2, n1, n2);
-								if (l != -1)
-								{
-									F.m_nbr[j] = nf;
-									F2.m_nbr[l] = i;
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
 	}
 }
 
@@ -1284,14 +1222,14 @@ int FEMultiBlockMesh::GetBlockFaceNodeIndex(MBBlock &b, int nf, int i, int j)
 	MBFace bf = BuildBlockFace(b, nf);
 
 	int l = -1;
-	if      (bf.m_node[0] == f.m_node[0]) l = 0;
-	else if (bf.m_node[0] == f.m_node[1]) l = 1;
-	else if (bf.m_node[0] == f.m_node[2]) l = 2;
-	else if (bf.m_node[0] == f.m_node[3]) l = 3;
+	if      (f.m_node[0] == bf.m_node[0]) l = 0;
+	else if (f.m_node[0] == bf.m_node[1]) l = 1;
+	else if (f.m_node[0] == bf.m_node[2]) l = 2;
+	else if (f.m_node[0] == bf.m_node[3]) l = 3;
 
 	int m = 0;
-	if (bf.m_node[1] == f.m_node[(l+1)%4]) m = 1;
-	else if (bf.m_node[1] == f.m_node[(l+3)%4]) m = -1;
+	if (f.m_node[1] == bf.m_node[(l+1)%4]) m = 1;
+	else if (f.m_node[1] == bf.m_node[(l+3)%4]) m = -1;
 
 	assert((l!=-1) && (m!=0));
 
@@ -1456,11 +1394,24 @@ MBEdge& FEMultiBlockMesh::GetFaceEdge(MBFace& f, int n)
 }
 
 //-----------------------------------------------------------------------------
+MBFace& FEMultiBlockMesh::AddFace()
+{
+	m_MBFace.push_back(MBFace());
+	return m_MBFace.back();
+}
+
+//-----------------------------------------------------------------------------
+MBEdge& FEMultiBlockMesh::AddEdge()
+{
+	m_MBEdge.push_back(MBEdge());
+	return m_MBEdge.back();
+}
+
+//-----------------------------------------------------------------------------
 void FEMultiBlockMesh::BuildMB()
 {
 	FindBlockNeighbours();
 	BuildMBFaces();
-	FindFaceNeighbours();
 	BuildMBEdges();
 }
 
@@ -1575,6 +1526,220 @@ vector<int> FEMultiBlockMesh::GetFENodeList(MBBlock& block)
 	return nodeList;
 }
 
+void MBFace::Invert()
+{
+	// swap block IDs
+	int tmp = m_block[0]; m_block[0] = m_block[1]; m_block[1] = tmp;
+
+	// we also need to invert the edges and nodes
+	int fn[4], fe[4], fw[4];
+	for (int j = 0; j < 4; ++j) {
+		fn[j] = m_node[j];
+		fe[j] = m_edge[j];
+		fw[j] = m_edgeWinding[j];
+	}
+	for (int j = 0; j < 4; ++j)
+	{
+		m_node[j] = fn[(4 - j) % 4];
+		m_edge[j] = fe[3 - j];
+		m_edgeWinding[j] = -fw[3 - j];
+	}
+
+	// flip meshing parameters
+	tmp = m_nx; m_ny = m_ny; m_ny = tmp;
+	double dtmp = m_gx; m_gx = m_gy; m_gy = dtmp; // TODO: Not sure this is correct.
+	bool btmp = m_bx; m_bx = m_by; m_by = btmp;
+}
+
+
+bool FEMultiBlockMesh::DeleteBlock(int blockIndex)
+{
+	// --------------------------------
+	// tag new block indices
+	int n = 0;
+	for (int i=0; i<m_MBlock.size(); ++i)
+	{
+		MBBlock& b = m_MBlock[i];
+		if (i == blockIndex) b.m_ntag = -1;
+		else b.m_ntag = n++;
+	}
+	assert(n == m_MBlock.size() - 1);
+
+	// update block neighbors
+	for (MBBlock& b : m_MBlock)
+	{
+		for (int i = 0; i < 6; ++i)
+		{
+			if (b.m_Nbr[i] >= 0) b.m_Nbr[i] = m_MBlock[b.m_Nbr[i]].m_ntag;
+		}
+	}
+
+	// update face block ids.
+	for (MBFace& face : m_MBFace)
+	{
+		// update block IDs
+		assert(face.m_block[0] >= 0);
+		face.m_block[0] = m_MBlock[face.m_block[0]].m_ntag;
+		if (face.m_block[1] >= 0) {
+			face.m_block[1] = m_MBlock[face.m_block[1]].m_ntag;
+		}
+
+		// if the face 0 block is -1, then we need to invert it
+		if ((face.m_block[0] == -1) && (face.m_block[1] != -1))
+		{
+			face.Invert();
+		}
+	}
+
+	// remove the block
+	m_MBlock.erase(m_MBlock.begin() + blockIndex);
+	for (int i = 0; i < m_MBlock.size(); ++i) m_MBlock[i].m_gid = i;
+
+	//-------------------------------
+	// Mark faces for removal 
+	n = 0;
+	for (MBFace& face : m_MBFace)
+	{
+		// if the face is free (not connected to a part), mark it for deletion (tag = -1)
+		if ((face.m_block[0] == -1) && (face.m_block[1] == -1))
+		{
+			face.m_ntag = -1;
+		}
+		else face.m_ntag = n++;
+	}
+
+	// update block face IDs
+	for (MBBlock& b : m_MBlock)
+	{
+		for (int j = 0; j < 6; ++j)
+		{
+			b.m_face[j] = m_MBFace[b.m_face[j]].m_ntag;
+			assert(b.m_face[j] >= 0);
+		}
+	}
+
+	// now, delete the actual faces
+	n = 0;
+	for (int i = 0; i < m_MBFace.size(); ++i)
+	{
+		if (m_MBFace[i].m_ntag == -1)
+		{
+			m_MBFace.erase(m_MBFace.begin() + i);
+			i--;
+		}
+		else m_MBFace[i].m_gid = n++;
+	}
+
+	// figure out which edges can be deleted
+	for (MBEdge& edge : m_MBEdge) edge.m_ntag = 0;
+	for (MBFace& face : m_MBFace)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			m_MBEdge[face.m_edge[j]].m_ntag = 1;
+		}
+	}
+
+	// assign new IDs (stored in tag)
+	n = 0;
+	for(MBEdge& edge : m_MBEdge) {
+		if (edge.m_ntag == 0) edge.m_ntag = -1;
+		else edge.m_ntag = n++;
+	};
+
+	// update block edges
+	for (MBBlock& b : m_MBlock)
+	{
+		for (int j = 0; j < 12; ++j)
+		{
+			b.m_edge[j] = m_MBEdge[b.m_edge[j]].m_ntag;
+			assert(b.m_edge[j] >= 0);
+		}
+	}
+
+	// update face edges
+	for (MBFace& f : m_MBFace)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			f.m_edge[j] = m_MBEdge[f.m_edge[j]].m_ntag;
+			assert(f.m_edge[j] >= 0);
+		}
+	}
+
+	// delete edges
+	n = 0;
+	for (int i = 0; i < m_MBEdge.size(); ++i)
+	{
+		if (m_MBEdge[i].m_ntag == -1)
+		{
+			m_MBEdge.erase(m_MBEdge.begin() + i);
+			--i;
+		}
+		else m_MBEdge[i].m_gid = n++;
+	}
+
+	// see if any nodes can be deleted
+	for (MBNode& node : m_MBNode) node.m_ntag = 0;
+	for (MBEdge& edge : m_MBEdge)
+	{
+		m_MBNode[edge.edge.m_node[0]].m_ntag = 1;
+		m_MBNode[edge.edge.m_node[1]].m_ntag = 1;
+		if (edge.edge.m_cnode >= 0)
+		{
+			m_MBNode[edge.edge.m_cnode].m_ntag = 1;
+		}
+	}
+
+	n = 0;
+	for (MBNode& node : m_MBNode)
+	{
+		if (node.m_ntag == 0) node.m_ntag = -1;
+		else node.m_ntag = n++;
+	}
+
+	// update block nodes
+	for (MBBlock& b : m_MBlock) {
+		for (int j = 0; j < 8; ++j) {
+			b.m_node[j] = m_MBNode[b.m_node[j]].m_ntag;
+			assert(b.m_node[j] >= 0);
+		}
+	}
+
+	// update all face nodes
+	for (MBFace& f : m_MBFace) {
+		for (int j = 0; j < 4; ++j) {
+			f.m_node[j] = m_MBNode[f.m_node[j]].m_ntag;
+			assert(f.m_node[j] >= 0);
+		}
+	}
+
+	// update all edge nodes
+	for (MBEdge& e : m_MBEdge) {
+		e.edge.m_node[0] = m_MBNode[e.edge.m_node[0]].m_ntag; assert(e.edge.m_node[0] >= 0);
+		e.edge.m_node[1] = m_MBNode[e.edge.m_node[1]].m_ntag; assert(e.edge.m_node[1] >= 0);
+		if (e.edge.m_cnode >= 0)
+		{
+			e.edge.m_cnode = m_MBNode[e.edge.m_cnode].m_ntag;
+			assert(e.edge.m_cnode >= 0);
+		}
+	}
+
+	// delete nodes
+	n = 0;
+	for (int i = 0; i < m_MBNode.size(); ++i)
+	{
+		if (m_MBNode[i].m_ntag == -1)
+		{
+			m_MBNode.erase(m_MBNode.begin() + i);
+			--i;
+		}
+		else m_MBNode[i].m_gid = n++;
+	}
+
+	return true;
+}
+
 //==============================================================
 FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
 {
@@ -1585,6 +1750,11 @@ FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
 void FEMultiBlockMesher::SetMultiBlockMesh(const FEMultiBlockMesh& mb)
 {
 	m_mb = mb;
+}
+
+FEMultiBlockMesh& FEMultiBlockMesher::GetMultiBlockMesh()
+{
+	return m_mb;
 }
 
 FEMesh* FEMultiBlockMesher::BuildMesh()

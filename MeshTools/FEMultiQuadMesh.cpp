@@ -164,8 +164,6 @@ bool FEMultiQuadMesh::Build(GObject* po)
 		F.m_gid = pf->GetLocalID();
 	}
 
-	FindFaceNeighbours();
-
 	return true;
 }
 
@@ -580,9 +578,6 @@ void FEMultiQuadMesh::BuildMBEdges()
 			{
 				MBEdge& e = m_MBEdge[n];
 				f.m_edge[j] = n;
-				if (e.m_face[0] == -1) e.m_face[0] = i;
-				else e.m_face[1] = i;
-
 				if ((e.Node(0) == n1) && (e.Node(1) == n2)) f.m_edgeWinding[j] =  1;
 				if ((e.Node(0) == n2) && (e.Node(1) == n1)) f.m_edgeWinding[j] = -1;
 				assert(f.m_edgeWinding[j] != 0);
@@ -590,10 +585,6 @@ void FEMultiQuadMesh::BuildMBEdges()
 			else
 			{
 				MBEdge e(n1, n2);
-				e.m_face[0] = e.m_face[1] = -1;
-
-				e.m_face[0] = i;
-
 				switch (j)
 				{
 				case 0:
@@ -625,54 +616,6 @@ void FEMultiQuadMesh::BuildMBEdges()
 	}
 
 	NE = (int)m_MBEdge.size();
-}
-
-//-----------------------------------------------------------------------------
-void FEMultiQuadMesh::FindFaceNeighbours()
-{
-	// build the node-face table
-	vector< vector<int> > NFT;
-	BuildNodeFaceTable(NFT);
-
-	// reset all face neighbours
-	int NF = (int)m_MBFace.size();
-	for (int i = 0; i < NF; ++i)
-	{
-		MBFace& F = m_MBFace[i];
-		for (int j = 0; j < 4; ++j) F.m_nbr[j] = -1;
-	}
-
-	// find the face's neighbours
-	for (int i = 0; i < NF; ++i)
-	{
-		MBFace& F = m_MBFace[i];
-
-		for (int j = 0; j < 4; ++j)
-		{
-			if (F.m_nbr[j] == -1)
-			{
-				// pick a node
-				int n1 = F.m_node[j];
-				int n2 = F.m_node[(j + 1) % 4];
-				for (int k = 0; k < (int)NFT[n1].size(); ++k)
-				{
-					int nf = NFT[n1][k];
-					if (nf != i)
-					{
-						MBFace& F2 = m_MBFace[nf];
-
-						int l = FindEdgeIndex(F2, n1, n2);
-						if (l != -1)
-						{
-							F.m_nbr[j] = nf;
-							F2.m_nbr[l] = i;
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -800,7 +743,6 @@ void FEMultiQuadMesh::SetFaceSizes(int nface, int nx, int ny)
 //-----------------------------------------------------------------------------
 void FEMultiQuadMesh::UpdateMQ()
 {
-	FindFaceNeighbours();
 	BuildMBEdges();
 }
 
