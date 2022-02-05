@@ -102,7 +102,7 @@ void XMLTreeItem::AddComment(const char* comment)
     child->m_value = comment;
     child->SetItemType(COMMENT);
 
-    appendChild(child);
+    insertChild(m_firstAttribute, child);
     m_firstAttribute++;
     m_firstElement++;
 }
@@ -114,7 +114,7 @@ void XMLTreeItem::AddAttribtue(const char* tag, const char* val)
     attr->m_value = val;
     attr->SetItemType(ATTRIBUTE);
 
-    appendChild(attr);
+    insertChild(m_firstElement, attr);
     m_firstElement++;
 }
 
@@ -122,6 +122,40 @@ void XMLTreeItem::appendChild(XMLTreeItem *child)
 {
     m_children.push_back(child);
     child->setParent(this);
+}
+
+void XMLTreeItem::insertChild(int index, XMLTreeItem *child)
+{
+    m_children.insert(m_children.begin() + index, child);
+    child->setParent(this);
+}
+
+bool XMLTreeItem::removeChild(int index)
+{
+    try
+    {
+        XMLTreeItem* child = m_children.at(index);
+
+        switch(child->m_itemType)
+        {
+            case COMMENT:
+                m_firstAttribute--;
+            case ATTRIBUTE:
+                m_firstElement--;
+            default:
+                break;
+        }
+
+        m_children.erase(m_children.begin() + index);
+
+        delete child;
+
+        return true;
+    }
+    catch(const std::out_of_range& e)
+    {
+        return false;
+    }
 }
 
 XMLTreeItem* XMLTreeItem::child(int row)
@@ -293,6 +327,10 @@ QVariant XMLTreeModel::data(const QModelIndex &index, int role) const
         {
             color = Qt::red;
         }
+        else if(item->GetItemType() == XMLTreeItem::COMMENT)
+        {
+            color = Qt::yellow;
+        }
 
         return CIconProvider::BuildPixMap(color, shape);
     }
@@ -323,6 +361,19 @@ Qt::ItemFlags XMLTreeModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return Qt::NoItemFlags;
 
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+
+    int col = index.column();
+
+    if(item->GetItemType() == XMLTreeItem::COMMENT)
+    {
+        if(col != VALUE) return QAbstractItemModel::flags(index);
+    }
+    else if(item->GetItemType() == XMLTreeItem::ATTRIBUTE)
+    {
+        if(col != TAG && col != VALUE) return QAbstractItemModel::flags(index);
+    }
+        
     return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
 }
 
@@ -333,6 +384,55 @@ QVariant XMLTreeModel::headerData(int section, Qt::Orientation orientation,
         return rootItem->data(section);
 
     return QVariant();
+}
+
+bool XMLTreeModel::removeRows(int row, int count, const QModelIndex& parent)
+{
+    if(!parent.isValid()) return false;
+
+    beginRemoveRows(parent, row, row + count -1 );
+
+    XMLTreeItem* parentItem = static_cast<XMLTreeItem*>(parent.internalPointer());
+
+    for(int index = row; index < row + count; index++)
+    {
+        if(!parentItem->removeChild(index)) return false;
+    }
+
+    endRemoveRows();
+
+    return true;
+}
+
+bool XMLTreeModel::insertRow(const QModelIndex& parent, XMLTreeItem::ItemType itemType)
+{
+    if(!parent.isValid()) return false;
+
+    XMLTreeItem* parentItem = static_cast<XMLTreeItem*>(parent.internalPointer());
+
+    switch (itemType)
+    {
+    case XMLTreeItem::COMMENT:
+        beginInsertRows(parent, parentItem->FirstAttribute(), parentItem->FirstAttribute());
+        parentItem->AddComment("");
+        break;
+    case XMLTreeItem::ATTRIBUTE:
+        beginInsertRows(parent, parentItem->FirstElement(), parentItem->FirstElement());
+        parentItem->AddAttribtue("", "");
+        break;
+    case XMLTreeItem::ELEMENT:
+    {
+        beginInsertRows(parent, parentItem->childCount(), parentItem->childCount());
+        XMLTreeItem* child = new XMLTreeItem(parentItem->Depth() + 1);
+        child->SetItemType(XMLTreeItem::ELEMENT);
+        parentItem->appendChild(child);
+        break;
+    }
+    default:
+        break;
+    }
+
+    endInsertRows();
 }
 
 QModelIndex XMLTreeModel::root() const

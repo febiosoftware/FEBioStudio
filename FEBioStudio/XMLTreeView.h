@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include <QTreeView>
 #include <QStyledItemDelegate>
 
+class CMainWindow;
+
 class XMLItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
@@ -54,13 +56,28 @@ class XMLTreeView : public QTreeView
     Q_OBJECT
 
 public:
-    XMLTreeView(QWidget* parent = nullptr);
+    XMLTreeView(CMainWindow* wnd);
 
     void setModel(QAbstractItemModel* newModel) override;
+
+public slots:
+    void on_removeSelectedRow_triggered();
+    void on_addComment_triggered();
+    void on_addAttribute_triggered();
+    void on_addElement_triggered();
+
+protected:
+    void contextMenuEvent(QContextMenuEvent* event) override;
 
 signals:
     void modelEdited();
 
 private:
     void expandToMatch(const QModelIndex& index);
+
+private:
+    QAction* addComment;
+    QAction* addAttribute;
+    QAction* addElement;
+    QAction* removeSelectedRow;
 };

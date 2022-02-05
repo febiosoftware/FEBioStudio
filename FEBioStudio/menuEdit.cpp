@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "DlgPurge.h"
 #include "DlgEditProject.h"
 #include "PostDocument.h"
+#include "XMLDocument.h"
 #include "Commands.h"
 #include <MeshTools/GModel.h>
 #include <QMessageBox>
@@ -131,6 +132,17 @@ void CMainWindow::on_actionClearSelection_triggered()
 
 void CMainWindow::on_actionDeleteSelection_triggered()
 {
+    CXMLDocument* xmlDoc  = dynamic_cast<CXMLDocument*>(GetDocument());
+    if(xmlDoc)
+    {
+        // see if the focus is on the xml tree
+        if(ui->xmlTree->hasFocus())
+        {
+            ui->xmlTree->on_removeSelectedRow_triggered();
+            return;
+        }
+    }
+
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 

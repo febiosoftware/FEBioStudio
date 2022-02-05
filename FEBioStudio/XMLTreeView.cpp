@@ -26,8 +26,13 @@ SOFTWARE.*/
 
 #include <QComboBox>
 #include <QCompleter>
+#include <QContextMenuEvent>
 #include "XMLTreeView.h"
 #include "XMLTreeModel.h"
+#include "MainWindow.h"
+#include "ui_mainwindow.h"
+#include <QMenu>
+#include <QAction>
 #include <FECore/fecore_enum.h>
 #include <FEBioLink/FEBioClass.h>
 
@@ -171,11 +176,25 @@ void XMLItemDelegate::OnEditorSignal()
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-XMLTreeView::XMLTreeView(QWidget* parent) : QTreeView(parent)
+XMLTreeView::XMLTreeView(CMainWindow* wnd) : QTreeView(wnd)
 {
     setItemDelegate(new XMLItemDelegate);
 
+    addComment = new QAction("Add Comment", this);
+    addComment->setObjectName("addComment");
+
+    addAttribute = new QAction("Add Attribute", this);
+    addAttribute->setObjectName("addAttribute");
+
+    addElement = new QAction("Add Element", this);
+    addElement->setObjectName("addElement");
+
+    removeSelectedRow = new QAction("Delete Row", this);
+    removeSelectedRow->setObjectName("removeSelectedRow");
+
     connect(itemDelegate(), &QStyledItemDelegate::commitData, this, &XMLTreeView::modelEdited);
+
+    QMetaObject::connectSlotsByName(this);
 }
 
 void XMLTreeView::setModel(QAbstractItemModel* newModel)
@@ -196,6 +215,83 @@ void XMLTreeView::setModel(QAbstractItemModel* newModel)
 
     connect(this, &XMLTreeView::expanded, current, &XMLTreeModel::ItemExpanded);
     connect(this, &XMLTreeView::collapsed, current, &XMLTreeModel::ItemCollapsed);
+}
+
+void XMLTreeView::on_removeSelectedRow_triggered()
+{
+    QModelIndex index = currentIndex();
+    model()->removeRow(index.row(), index.parent());
+
+    emit modelEdited();
+}
+
+void XMLTreeView::on_addComment_triggered()
+{
+    QModelIndex index = currentIndex();
+    static_cast<XMLTreeModel*>(model())->insertRow(index, XMLTreeItem::COMMENT);
+
+    expand(index);
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+    setCurrentIndex(model()->index(item->FirstAttribute() - 1, 0, index));
+
+    emit modelEdited();
+
+    edit(currentIndex().siblingAtColumn(VALUE));
+}
+
+void XMLTreeView::on_addAttribute_triggered()
+{
+    QModelIndex index = currentIndex();
+    static_cast<XMLTreeModel*>(model())->insertRow(index, XMLTreeItem::ATTRIBUTE);
+
+    expand(index);
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+    setCurrentIndex(model()->index(item->FirstElement() - 1, 0, index));
+
+    emit modelEdited();
+
+    edit(currentIndex().siblingAtColumn(TAG));
+}
+
+void XMLTreeView::on_addElement_triggered()
+{
+    QModelIndex index = currentIndex();
+    static_cast<XMLTreeModel*>(model())->insertRow(index, XMLTreeItem::ELEMENT);
+
+    expand(index);
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+    setCurrentIndex(model()->index(item->childCount() - 1, 0, index));
+
+    emit modelEdited();
+
+    edit(currentIndex().siblingAtColumn(TAG));
+}
+
+void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
+{
+    setCurrentIndex(indexAt(event->pos()));
+
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
+
+    QMenu menu;
+
+    if(item->GetItemType() == XMLTreeItem::ELEMENT)
+    {
+        menu.addAction(addComment);
+        menu.addAction(addAttribute);
+        menu.addAction(addElement);
+    }
+    
+    if(item->Depth() != 0)
+    {
+        if(menu.actions().size() > 0)
+        {
+            menu.addSeparator();
+        }
+        menu.addAction(removeSelectedRow);
+    }
+
+    menu.exec(viewport()->mapToGlobal(event->pos()));
 }
 
 void XMLTreeView::expandToMatch(const QModelIndex& index)

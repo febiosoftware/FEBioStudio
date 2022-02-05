@@ -72,6 +72,8 @@ public:
     ItemType GetItemType() { return m_itemType; }
     
     void appendChild(XMLTreeItem *child);
+    void insertChild(int index, XMLTreeItem *child);
+    bool removeChild(int index);
 
     XMLTreeItem *child(int row);
     int childCount() const;
@@ -120,6 +122,9 @@ public:
     QModelIndex parent(const QModelIndex &index) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+
+    bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
+    bool insertRow(const QModelIndex& parent, XMLTreeItem::ItemType itemType);
 
     QModelIndex root() const;
 
