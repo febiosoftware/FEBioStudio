@@ -1166,22 +1166,21 @@ void CCurveEditor::on_plot_backgroundImageChanged()
 	}
 }
 
-void CCurveEditor::on_plot_doneZoomToRect()
-{
-
-}
-
 void CCurveEditor::on_plot_regionSelected(QRect rt)
 {
-	UpdateSelection();
-}
-
-void CCurveEditor::on_plot_doneSelectingRect(QRect rt)
-{
-	CDlgPlotWidgetProps dlg;
-	if (dlg.exec())
+	if (ui->zoomUser->isChecked())
 	{
-		ui->plot->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+		CDlgPlotWidgetProps dlg;
+		if (dlg.exec())
+		{
+			ui->plot->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+		}
+		ui->zoomUser->setChecked(false);
+	}
+	else
+	{
+		ui->plot->regionSelect(rt);
+		UpdateSelection();
 	}
 }
 
@@ -1337,11 +1336,6 @@ void CCurveEditor::on_zoomY_clicked()
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 	ui->plot->OnZoomToHeight();
-}
-
-void CCurveEditor::on_map_clicked()
-{
-	ui->plot->mapToUserRect();
 }
 
 void CCurveEditor::on_undo_triggered()

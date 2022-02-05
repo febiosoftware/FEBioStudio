@@ -845,6 +845,7 @@ public:
 	QAction* actionSnapshot;
 	QAction* actionProps;
 	QAction* actionZoomSelect;
+	QAction* actionZoomUser;
 
 	QAction* actionSelectX;
 	QAction* actionSelectY;
@@ -955,8 +956,7 @@ public:
 		QAction* actionZoomHeight = zoomBar->addAction(QIcon(QString(":/icons/zoom_y.png")), "Zoom Height"); actionZoomHeight->setObjectName("actionZoomHeight");
 		QAction* actionZoomFit    = zoomBar->addAction(QIcon(QString(":/icons/zoom_fit.png"   )), "Zoom Fit"   ); actionZoomFit->setObjectName("actionZoomFit"   );
 		actionZoomSelect = zoomBar->addAction(QIcon(QString(":/icons/zoom_select.png")), "Zoom Select"); actionZoomSelect->setObjectName("actionZoomSelect"); actionZoomSelect->setCheckable(true);
-		QAction* zoomMap = zoomBar->addAction(QIcon(QString(":/icons/zoom-fit-best-2.png")), "Map to Rectangle"); zoomMap->setObjectName("actionZoomMap"); 
-		zoomMap->setCheckable(true);
+		actionZoomUser   = zoomBar->addAction(QIcon(QString(":/icons/zoom-fit-best-2.png")), "Map to Rectangle"); actionZoomUser->setObjectName("actionZoomUser");  actionZoomUser->setCheckable(true);
 		zoomBar->addSeparator();
 		actionProps = zoomBar->addAction(QIcon(QString(":/icons/properties.png")), "Properties"); actionProps->setObjectName("actionProps");
 
@@ -1348,31 +1348,26 @@ void CGraphWindow::on_actionZoomFit_triggered()
 }
 
 //-----------------------------------------------------------------------------
-void CGraphWindow::on_actionZoomMap_triggered()
+void CGraphWindow::on_plot_regionSelected(QRect rt)
 {
-	ui->plot->ZoomToRect();
-}
-
-//-----------------------------------------------------------------------------
-void CGraphWindow::on_plot_doneSelectingRect(QRect rt)
-{
-	CDlgPlotWidgetProps dlg;
-	if (dlg.exec())
+	if (ui->actionZoomSelect->isChecked())
 	{
-		ui->plot->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+		ui->plot->fitToRect(rt);
 	}
-}
-
-//-----------------------------------------------------------------------------
-void CGraphWindow::on_actionZoomSelect_toggled(bool bchecked)
-{
-	ui->plot->ZoomToRect(bchecked);
-}
-
-//-----------------------------------------------------------------------------
-void CGraphWindow::on_plot_doneZoomToRect()
-{
+	else if (ui->actionZoomUser->isChecked())
+	{
+		CDlgPlotWidgetProps dlg;
+		if (dlg.exec())
+		{
+			ui->plot->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+		}
+	}
+	else
+	{
+		ui->plot->regionSelect(rt);
+	}
 	ui->actionZoomSelect->setChecked(false);
+	ui->actionZoomUser->setChecked(false);
 }
 
 //-----------------------------------------------------------------------------

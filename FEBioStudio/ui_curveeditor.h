@@ -83,6 +83,7 @@ public:
 	QLineEdit*		yval;
 	QToolButton*	addPoint;
 	QToolButton*	snap2grid;
+	QToolButton*	zoomUser;
 	QHBoxLayout*	pltbutton;
 	
 	QComboBox* lineType;
@@ -190,10 +191,11 @@ public:
 		zoomy->setIcon(QIcon(":/icons/zoom_y.png"));
 		zoomy->setToolTip("<font color=\"black\">Zoom Y extents");
 
-		QToolButton* map = new QToolButton; map->setObjectName("map");
-		map->setAutoRaise(true);
-		map->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
-		map->setToolTip("<font color=\"black\">Map to rectangle");
+		zoomUser = new QToolButton;
+		zoomUser->setCheckable(true);
+		zoomUser->setAutoRaise(true);
+		zoomUser->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
+		zoomUser->setToolTip("<font color=\"black\">Map to rectangle");
 
 		QVBoxLayout* treeLayout = new QVBoxLayout;
 		treeLayout->addWidget(filter);
@@ -212,7 +214,7 @@ public:
 		pltbutton->addWidget(zoomx);
 		pltbutton->addWidget(zoomy);
 		pltbutton->addWidget(zoom);
-		pltbutton->addWidget(map);
+		pltbutton->addWidget(zoomUser);
 		pltbutton->addStretch();
 		pltbutton->setSpacing(2);
 
