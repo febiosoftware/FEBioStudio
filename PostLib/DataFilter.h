@@ -67,4 +67,7 @@ FEDataField* DataConvert(FEPostModel& fem, FEDataField* dataField, int newFormat
 
 //-----------------------------------------------------------------------------
 FEDataField* DataEigenTensor(FEPostModel& fem, FEDataField* dataField, const std::string& name);
+
+//-----------------------------------------------------------------------------
+FEDataField* DataTimeRate(FEPostModel& fem, FEDataField* dataField, const std::string& name);
 }
