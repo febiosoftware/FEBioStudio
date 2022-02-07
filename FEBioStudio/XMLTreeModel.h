@@ -24,6 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#pragma once
+
 #include <QAbstractItemModel>
 #include <QString>
 #include <QStringList>
@@ -31,6 +33,8 @@ SOFTWARE.*/
 
 using std::vector;
 using std::string;
+
+class CXMLDocument;
 
 enum columnOrder
 {
@@ -108,7 +112,7 @@ class XMLTreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    XMLTreeModel(XMLTreeItem* root, QObject *parent = nullptr);
+    XMLTreeModel(XMLTreeItem* root, CXMLDocument* doc, QObject *parent = nullptr);
     ~XMLTreeModel();
 
     QVariant data(const QModelIndex &index, int role) const override;
@@ -124,14 +128,18 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
-    bool insertRow(const QModelIndex& parent, XMLTreeItem::ItemType itemType);
+    bool addRow(const QModelIndex& parent, XMLTreeItem::ItemType itemType);
+    bool insertRow(const QModelIndex& parent, int row, XMLTreeItem* item);
 
     QModelIndex root() const;
 
+    CXMLDocument* GetDocument();
 public slots:
     void ItemExpanded(const QModelIndex &index);
     void ItemCollapsed(const QModelIndex &index);
 
 private:
     XMLTreeItem *rootItem;
+
+    CXMLDocument* m_doc;
 };

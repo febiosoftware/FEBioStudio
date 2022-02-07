@@ -24,30 +24,52 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "Document.h"
-#include "XMLTreeModel.h"
-#include <QTreeView>
+#include "Command.h"
+#include <QPersistentModelIndex>
 
-class XMLTag;
-class XMLWriter;
+class XMLTreeModel;
+class XMLTreeItem;
 
-class CXMLDocument : public CUndoDocument
+//-----------------------------------------------------------------------------
+class CXMLCommand : public CCommand
 {
-
 public:
-	CXMLDocument(CMainWindow* wnd);
-    ~CXMLDocument();
+    CXMLCommand(XMLTreeModel* model, std::string name);
+    virtual ~CXMLCommand() {}
 
-	XMLTreeModel* GetModel();
-    
-    bool ReadFromFile(const QString& fileName);
+protected:
+    XMLTreeModel* m_model;
+};
 
-	bool SaveDocument() override;
+//-----------------------------------------------------------------------------
+class CCmdEditCell : public CXMLCommand
+{
+public:
+    CCmdEditCell(QPersistentModelIndex index, QString& newText, QString& oldText, XMLTreeModel* model);
+    virtual ~CCmdEditCell() {}
+
+    void Execute();
+	void UnExecute();
 
 private:
-    XMLTreeItem* getChild(XMLTag& tag, int depth);
-    void writeChild(XMLTreeItem* item, XMLWriter& writer);
+    QPersistentModelIndex m_index;
+    QString m_newText;
+    QString m_oldText;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdRemoveRow : public CXMLCommand
+{
+public:
+    CCmdRemoveRow(QPersistentModelIndex parent, int row, XMLTreeItem* item, XMLTreeModel* model);
+    virtual ~CCmdRemoveRow();
+
+    void Execute();
+	void UnExecute();
 
 private:
-    XMLTreeModel* m_treeModel;
+    QPersistentModelIndex m_parent;
+    int m_row;
+    XMLTreeItem* m_item;
+    bool m_ownsItem;
 };

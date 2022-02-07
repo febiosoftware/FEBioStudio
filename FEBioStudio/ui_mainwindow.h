@@ -1327,7 +1327,7 @@ public:
 		{
 			stack->setCurrentIndex(Ui::CMainWindow::XML_VIEWER);
 
-			menuEdit->menuAction()->setVisible(false);
+			menuEdit->menuAction()->setVisible(true);
 			menuEditTxt->menuAction()->setVisible(true);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);

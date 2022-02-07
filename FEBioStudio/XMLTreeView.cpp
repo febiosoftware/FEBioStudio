@@ -31,6 +31,9 @@ SOFTWARE.*/
 #include "XMLTreeModel.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
+#include "XMLDocument.h"
+#include "XMLCommands.h"
+#include <QApplication>
 #include <QMenu>
 #include <QAction>
 #include <FECore/fecore_enum.h>
@@ -45,6 +48,21 @@ XMLItemDelegate::XMLItemDelegate(QObject* parent)
 XMLItemDelegate::~XMLItemDelegate()
 {
     delete m_superID;
+}
+
+void XMLItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
+{
+    if(index.column() != 4)
+    {
+            painter->save();
+        painter->setPen(qApp->palette().color(QPalette::WindowText));
+        // painter->drawRect(option.rect);
+        painter->drawLine(option.rect.topRight(), option.rect.bottomRight());
+        painter->restore();
+    }
+
+    QStyledItemDelegate::paint(painter, option, index);
+
 }
 
 QWidget* XMLItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -122,7 +140,7 @@ QWidget* XMLItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewIt
         pw->setCompleter(completer);
         
         pw->addItems(classNames);
-        connect(pw, &QComboBox::currentIndexChanged, this, &XMLItemDelegate::OnEditorSignal);
+        // connect(pw, &QComboBox::currentIndexChanged, this, &XMLItemDelegate::OnEditorSignal);
 
         pw->setSizePolicy(QSizePolicy::Expanding, pw->sizePolicy().verticalPolicy());
         return pw;
@@ -136,10 +154,7 @@ void XMLItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) c
 {
     if(!index.isValid()) return;
 
-    // XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
-
-
-
+    // XMLTreeItem* item = static_cast<XMLTreeItem*>(indXML
 
 
     QStyledItemDelegate::setEditorData(editor, index);
@@ -150,22 +165,30 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
 {
     if (!index.isValid()) return;
 
-
+    XMLTreeModel* xmlModel = static_cast<XMLTreeModel*>(model);
+    CXMLDocument* doc = xmlModel->GetDocument();
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+    
+    QString oldString = item->data(index.column());
+    QString newString;
 
     if(dynamic_cast<QComboBox*>(editor))
     {
         QComboBox* comboBox = dynamic_cast<QComboBox*>(editor);
 
-        QString val = comboBox->currentText();
-
-        XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
-
-        item->setData(index.column(), val.toStdString().c_str());
-
-        return;
+        newString = comboBox->currentText();
+    }
+    else
+    {
+        newString = static_cast<QLineEdit*>(editor)->text();
     }
 
-    QStyledItemDelegate::setModelData(editor, model, index);
+    if(newString != oldString)
+    {
+        CCmdEditCell* cmd = new CCmdEditCell(QPersistentModelIndex(index), newString, oldString, xmlModel);
+
+        doc->DoCommand(cmd);
+    }
 }
 
 void XMLItemDelegate::OnEditorSignal()
@@ -176,9 +199,10 @@ void XMLItemDelegate::OnEditorSignal()
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-XMLTreeView::XMLTreeView(CMainWindow* wnd) : QTreeView(wnd)
+XMLTreeView::XMLTreeView(CMainWindow* wnd) : QTreeView(wnd), m_wnd(wnd)
 {
     setItemDelegate(new XMLItemDelegate);
+    setAlternatingRowColors(true);
 
     addComment = new QAction("Add Comment", this);
     addComment->setObjectName("addComment");
@@ -192,7 +216,7 @@ XMLTreeView::XMLTreeView(CMainWindow* wnd) : QTreeView(wnd)
     removeSelectedRow = new QAction("Delete Row", this);
     removeSelectedRow->setObjectName("removeSelectedRow");
 
-    connect(itemDelegate(), &QStyledItemDelegate::commitData, this, &XMLTreeView::modelEdited);
+    // connect(itemDelegate(), &QStyledItemDelegate::commitData, this, &XMLTreeView::modelEdited);
 
     QMetaObject::connectSlotsByName(this);
 }
@@ -217,18 +241,28 @@ void XMLTreeView::setModel(QAbstractItemModel* newModel)
     connect(this, &XMLTreeView::collapsed, current, &XMLTreeModel::ItemCollapsed);
 }
 
+CXMLDocument* XMLTreeView::GetDocument()
+{
+    return dynamic_cast<CXMLDocument*>(m_wnd->GetDocument());
+}
+
 void XMLTreeView::on_removeSelectedRow_triggered()
 {
     QModelIndex index = currentIndex();
-    model()->removeRow(index.row(), index.parent());
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+    // model()->removeRow(index.row(), index.parent());
 
-    emit modelEdited();
+    CCmdRemoveRow* cmd = new CCmdRemoveRow(QPersistentModelIndex(index.parent()), index.row(), item, static_cast<XMLTreeModel*>(model()));
+
+    GetDocument()->DoCommand(cmd);
+
+    // emit modelEdited();
 }
 
 void XMLTreeView::on_addComment_triggered()
 {
     QModelIndex index = currentIndex();
-    static_cast<XMLTreeModel*>(model())->insertRow(index, XMLTreeItem::COMMENT);
+    static_cast<XMLTreeModel*>(model())->addRow(index, XMLTreeItem::COMMENT);
 
     expand(index);
     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
@@ -242,7 +276,7 @@ void XMLTreeView::on_addComment_triggered()
 void XMLTreeView::on_addAttribute_triggered()
 {
     QModelIndex index = currentIndex();
-    static_cast<XMLTreeModel*>(model())->insertRow(index, XMLTreeItem::ATTRIBUTE);
+    static_cast<XMLTreeModel*>(model())->addRow(index, XMLTreeItem::ATTRIBUTE);
 
     expand(index);
     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
@@ -256,7 +290,7 @@ void XMLTreeView::on_addAttribute_triggered()
 void XMLTreeView::on_addElement_triggered()
 {
     QModelIndex index = currentIndex();
-    static_cast<XMLTreeModel*>(model())->insertRow(index, XMLTreeItem::ELEMENT);
+    static_cast<XMLTreeModel*>(model())->addRow(index, XMLTreeItem::ELEMENT);
 
     expand(index);
     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());

@@ -53,7 +53,7 @@ using std::stringstream;
 
 void CMainWindow::on_actionUndo_triggered()
 {
-	CGLDocument* doc = GetGLDocument();
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	if (doc->CanUndo())
@@ -66,7 +66,7 @@ void CMainWindow::on_actionUndo_triggered()
 
 void CMainWindow::on_actionRedo_triggered()
 {
-	CGLDocument* doc = GetGLDocument();
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	if (doc->CanRedo())

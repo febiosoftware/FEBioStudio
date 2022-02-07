@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <XML/XMLWriter.h>
 #include <iostream>
 
-CXMLDocument::CXMLDocument(CMainWindow* wnd) : CDocument(wnd), m_treeModel(nullptr)
+CXMLDocument::CXMLDocument(CMainWindow* wnd) : CUndoDocument(wnd), m_treeModel(nullptr)
 {
 	SetIcon(":/icons/febio.png");
 }
@@ -71,7 +71,7 @@ bool CXMLDocument::ReadFromFile(const QString& fileName)
     root->appendChild(getChild(tag, -1));
     root->child(0)->SetExpanded(true);
     
-    m_treeModel = new XMLTreeModel(root);
+    m_treeModel = new XMLTreeModel(root, this);
 
     return true;
 }

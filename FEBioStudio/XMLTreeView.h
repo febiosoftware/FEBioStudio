@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QStyledItemDelegate>
 
 class CMainWindow;
+class CXMLDocument;
 
 class XMLItemDelegate : public QStyledItemDelegate
 {
@@ -37,6 +38,8 @@ class XMLItemDelegate : public QStyledItemDelegate
 public:
 	explicit XMLItemDelegate(QObject* parent = nullptr);
     ~XMLItemDelegate();
+
+    void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
 
 	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -60,6 +63,8 @@ public:
 
     void setModel(QAbstractItemModel* newModel) override;
 
+    CXMLDocument* GetDocument();
+
 public slots:
     void on_removeSelectedRow_triggered();
     void on_addComment_triggered();
@@ -80,4 +85,6 @@ private:
     QAction* addAttribute;
     QAction* addElement;
     QAction* removeSelectedRow;
+
+    CMainWindow* m_wnd;
 };

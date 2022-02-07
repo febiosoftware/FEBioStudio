@@ -103,8 +103,6 @@ void XMLTreeItem::AddComment(const char* comment)
     child->SetItemType(COMMENT);
 
     insertChild(m_firstAttribute, child);
-    m_firstAttribute++;
-    m_firstElement++;
 }
 
 void XMLTreeItem::AddAttribtue(const char* tag, const char* val)
@@ -115,7 +113,6 @@ void XMLTreeItem::AddAttribtue(const char* tag, const char* val)
     attr->SetItemType(ATTRIBUTE);
 
     insertChild(m_firstElement, attr);
-    m_firstElement++;
 }
 
 void XMLTreeItem::appendChild(XMLTreeItem *child)
@@ -126,6 +123,16 @@ void XMLTreeItem::appendChild(XMLTreeItem *child)
 
 void XMLTreeItem::insertChild(int index, XMLTreeItem *child)
 {
+    switch (child->m_itemType)
+    {
+    case COMMENT:
+        m_firstAttribute++;
+    case ATTRIBUTE:
+        m_firstElement++;
+    default:
+        break;
+    }
+
     m_children.insert(m_children.begin() + index, child);
     child->setParent(this);
 }
@@ -148,7 +155,7 @@ bool XMLTreeItem::removeChild(int index)
 
         m_children.erase(m_children.begin() + index);
 
-        delete child;
+        // delete child;
 
         return true;
     }
@@ -241,8 +248,8 @@ XMLTreeItem* XMLTreeItem::ancestorItem(int depth)
 
 ////////////////////////////////////////////////
 
-XMLTreeModel::XMLTreeModel(XMLTreeItem* root, QObject *parent)
-    : QAbstractItemModel(parent), rootItem(root)
+XMLTreeModel::XMLTreeModel(XMLTreeItem* root, CXMLDocument* doc, QObject *parent)
+    : QAbstractItemModel(parent), rootItem(root), m_doc(doc)
 {
    
 }
@@ -404,7 +411,7 @@ bool XMLTreeModel::removeRows(int row, int count, const QModelIndex& parent)
     return true;
 }
 
-bool XMLTreeModel::insertRow(const QModelIndex& parent, XMLTreeItem::ItemType itemType)
+bool XMLTreeModel::addRow(const QModelIndex& parent, XMLTreeItem::ItemType itemType)
 {
     if(!parent.isValid()) return false;
 
@@ -435,11 +442,33 @@ bool XMLTreeModel::insertRow(const QModelIndex& parent, XMLTreeItem::ItemType it
     endInsertRows();
 }
 
+bool XMLTreeModel::insertRow(const QModelIndex& parent, int row, XMLTreeItem* item)
+{
+    if(!parent.isValid()) return false;
+    
+    emit layoutAboutToBeChanged();
+
+    XMLTreeItem* parentItem = static_cast<XMLTreeItem*>(parent.internalPointer());
+
+    beginInsertRows(parent, row, row);
+
+    parentItem->insertChild(row, item);
+
+    endInsertRows();
+
+    emit layoutChanged();
+}
+
 QModelIndex XMLTreeModel::root() const
 {  
     XMLTreeItem* root = rootItem->child(0);
 
     return createIndex(0, 0, root);
+}
+
+CXMLDocument* XMLTreeModel::GetDocument()
+{
+    return m_doc;
 }
 
 void XMLTreeModel::ItemExpanded(const QModelIndex &index)
