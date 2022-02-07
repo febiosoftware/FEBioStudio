@@ -135,7 +135,7 @@ const char* CBasicCmdManager::GetRedoCmdName() { return (m_Redo.size() ? m_Redo.
 // CCommandManager
 //////////////////////////////////////////////////////////////////////
 
-CCommandManager::CCommandManager(CGLDocument* pdoc)
+CCommandManager::CCommandManager(CUndoDocument* pdoc)
 {
 	m_pDoc = pdoc;
 }
@@ -147,13 +147,22 @@ CCommandManager::~CCommandManager()
 
 void CCommandManager::AddCommand(CCommand* pcmd)
 {
-	pcmd->SetViewState(m_pDoc->GetViewState());
+    CGLDocument* glDoc = dynamic_cast<CGLDocument*>(m_pDoc);
+    if(glDoc)
+    {
+        pcmd->SetViewState(glDoc->GetViewState());
+    }
+	
 	CBasicCmdManager::AddCommand(pcmd);
 }
 
 bool CCommandManager::DoCommand(CCommand* pcmd)
 {
-	pcmd->SetViewState(m_pDoc->GetViewState());
+	CGLDocument* glDoc = dynamic_cast<CGLDocument*>(m_pDoc);
+    if(glDoc)
+    {
+        pcmd->SetViewState(glDoc->GetViewState());
+    }
 
 	m_err.clear();
 
@@ -207,7 +216,11 @@ void CCommandManager::UndoCommand()
 	CCommand* pcmd = m_Undo.top(); m_Undo.pop();
 
 	// reset the view state
-	m_pDoc->SetViewState(pcmd->GetViewState());
+    CGLDocument* glDoc = dynamic_cast<CGLDocument*>(m_pDoc);
+    if(glDoc)
+    {
+        glDoc->SetViewState(pcmd->GetViewState());
+    }
 
 	// unexecute it
 	pcmd->UnExecute();
@@ -222,7 +235,11 @@ void CCommandManager::RedoCommand()
 	CCommand* pcmd = m_Redo.top(); m_Redo.pop();
 
 	// reset the view state
-	m_pDoc->SetViewState(pcmd->GetViewState());
+	CGLDocument* glDoc = dynamic_cast<CGLDocument*>(m_pDoc);
+    if(glDoc)
+    {
+        glDoc->SetViewState(pcmd->GetViewState());
+    }
 
 	// execute it
 	pcmd->Execute();

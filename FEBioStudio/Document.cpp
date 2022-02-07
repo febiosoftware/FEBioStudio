@@ -438,21 +438,154 @@ void CDocument::SetIcon(const std::string& iconName)
 }
 
 //==============================================================================
+// CUndoDocument
+//==============================================================================
+
+//-----------------------------------------------------------------------------
+// Construction/Destruction
+//-----------------------------------------------------------------------------
+
+CUndoDocument::CUndoDocument(CMainWindow* wnd) : CDocument(wnd)
+{
+    m_pCmd = new CCommandManager(this);
+
+	// Clear the command history
+	m_pCmd->Clear();
+}
+
+//-----------------------------------------------------------------------------
+CUndoDocument::~CUndoDocument()
+{
+    delete m_pCmd;   
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::Clear()
+{
+    CDocument::Clear();
+
+	// Clear the command history
+	m_pCmd->Clear();
+}
+
+//-----------------------------------------------------------------------------
+// COMMAND FUNCTIONS
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+bool CUndoDocument::CanUndo() { return m_pCmd->CanUndo(); }
+
+//-----------------------------------------------------------------------------
+bool CUndoDocument::CanRedo() { return m_pCmd->CanRedo(); }
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::AddCommand(CCommand* pcmd)
+{
+	m_pCmd->AddCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::AddCommand(CCommand* pcmd, const std::string& s)
+{
+	m_pCmd->AddCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	if (s.empty() == false)
+	{
+		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
+	}
+	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+}
+
+//-----------------------------------------------------------------------------
+const char* CUndoDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
+
+//-----------------------------------------------------------------------------
+const char* CUndoDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
+
+//-----------------------------------------------------------------------------
+bool CUndoDocument::DoCommand(CCommand* pcmd, bool b)
+{
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+	bool ret = m_pCmd->DoCommand(pcmd);
+	SetModifiedFlag();
+	if (b) UpdateSelection();
+	return ret;
+}
+
+//-----------------------------------------------------------------------------
+bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
+{
+	CMainWindow* wnd = GetMainWindow();
+	if (s.empty() == false)
+	{
+		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
+	}
+	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+
+	bool ret = m_pCmd->DoCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection(b);
+	return ret;
+}
+
+//-----------------------------------------------------------------------------
+const std::string& CUndoDocument::GetCommandErrorString() const
+{
+	return m_pCmd->GetErrorString();
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::UndoCommand()
+{
+	string cmdName = m_pCmd->GetUndoCmdName();
+	m_pCmd->UndoCommand();
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName)));
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::RedoCommand()
+{
+	string cmdName = m_pCmd->GetRedoCmdName();
+	m_pCmd->RedoCommand();
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName)));
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::ClearCommandStack()
+{
+	m_pCmd->Clear();
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::UpdateSelection(bool breport)
+{
+
+}
+
+//==============================================================================
 // CGLDocument
 //==============================================================================
 
 //-----------------------------------------------------------------------------
 // Construction/Destruction
 //-----------------------------------------------------------------------------
-CGLDocument::CGLDocument(CMainWindow* wnd) : CDocument(wnd)
+CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 {
-	m_pCmd = new CCommandManager(this);
-
 	m_fileWriter = nullptr;
 	m_fileReader = nullptr;
-
-	// Clear the command history
-	m_pCmd->Clear();
 
 	// Set default modes
 	m_vs.nselect = SELECT_OBJECT;
@@ -470,17 +603,6 @@ CGLDocument::~CGLDocument()
 	// remove autosave
 	QFile autoSave(m_autoSaveFilePath.c_str());
 	if(autoSave.exists()) autoSave.remove();
-
-	delete m_pCmd;
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::Clear()
-{
-	CDocument::Clear();
-
-	// Clear the command history
-	m_pCmd->Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -493,107 +615,6 @@ void CGLDocument::SetUnitSystem(int unitSystem)
 int CGLDocument::GetUnitSystem() const
 {
 	return m_units;
-}
-
-//-----------------------------------------------------------------------------
-// COMMAND FUNCTIONS
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-bool CGLDocument::CanUndo() { return m_pCmd->CanUndo(); }
-
-//-----------------------------------------------------------------------------
-bool CGLDocument::CanRedo() { return m_pCmd->CanRedo(); }
-
-//-----------------------------------------------------------------------------
-void CGLDocument::AddCommand(CCommand* pcmd)
-{
-	m_pCmd->AddCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::AddCommand(CCommand* pcmd, const std::string& s)
-{
-	m_pCmd->AddCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	if (s.empty() == false)
-	{
-		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
-	}
-	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-}
-
-//-----------------------------------------------------------------------------
-const char* CGLDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
-
-//-----------------------------------------------------------------------------
-const char* CGLDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
-
-//-----------------------------------------------------------------------------
-bool CGLDocument::DoCommand(CCommand* pcmd, bool b)
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-	bool ret = m_pCmd->DoCommand(pcmd);
-	SetModifiedFlag();
-	if (b) UpdateSelection();
-	return ret;
-}
-
-//-----------------------------------------------------------------------------
-bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
-{
-	CMainWindow* wnd = GetMainWindow();
-	if (s.empty() == false)
-	{
-		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
-	}
-	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-
-	bool ret = m_pCmd->DoCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection(b);
-	return ret;
-}
-
-//-----------------------------------------------------------------------------
-const std::string& CGLDocument::GetCommandErrorString() const
-{
-	return m_pCmd->GetErrorString();
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::UndoCommand()
-{
-	string cmdName = m_pCmd->GetUndoCmdName();
-	m_pCmd->UndoCommand();
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName)));
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::RedoCommand()
-{
-	string cmdName = m_pCmd->GetRedoCmdName();
-	m_pCmd->RedoCommand();
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName)));
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::ClearCommandStack()
-{
-	m_pCmd->Clear();
 }
 
 void CGLDocument::UpdateSelection(bool breport)
