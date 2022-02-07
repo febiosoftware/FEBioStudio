@@ -79,7 +79,7 @@ void FEMultiBlockMesh::operator = (const FEMultiBlockMesh& mb)
 //-----------------------------------------------------------------------------
 void FEMultiBlockMesh::CopyFrom(const FEMultiBlockMesh& mb)
 {
-	Clear();
+	ClearMB();
 	m_MBNode = mb.m_MBNode;
 	m_MBEdge = mb.m_MBEdge;
 	m_MBFace = mb.m_MBFace;
@@ -1747,14 +1747,10 @@ FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-void FEMultiBlockMesher::SetMultiBlockMesh(const FEMultiBlockMesh& mb)
+bool FEMultiBlockMesher::BuildMultiBlock()
 {
-	m_mb = mb;
-}
-
-FEMultiBlockMesh& FEMultiBlockMesher::GetMultiBlockMesh()
-{
-	return m_mb;
+	// we assume that the MB is valid
+	return true;
 }
 
 FEMesh* FEMultiBlockMesher::BuildMesh()
@@ -1762,7 +1758,7 @@ FEMesh* FEMultiBlockMesher::BuildMesh()
 	if (m_po == nullptr) return nullptr;
 	GMultiBox& o = *m_po;
 
-	FEMultiBlockMesh& mb = m_mb;
+	FEMultiBlockMesh& mb = *this;
 	int nd = GetIntValue(DIVS);
 	for (int i = 0; i < mb.Blocks(); ++i)
 	{
@@ -1787,5 +1783,5 @@ FEMesh* FEMultiBlockMesher::BuildMesh()
 		assert(false);
 	}
 
-	return m_mb.BuildMesh();
+	return FEMultiBlockMesh::BuildMesh();
 }

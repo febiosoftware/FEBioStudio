@@ -43,4 +43,5 @@ public:
 
 	FEMeshBase* GetEditableMesh() override;
 
+	GObject* Clone() override;
 };

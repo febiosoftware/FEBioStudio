@@ -395,19 +395,17 @@ private:
 
 class GMultiBox;
 
-class FEMultiBlockMesher : public FEMesher
+class FEMultiBlockMesher : public FEMultiBlockMesh
 {
 	enum { DIVS, ELEM_TYPE };
 
 public:
 	FEMultiBlockMesher(GMultiBox* po);
 
-	void SetMultiBlockMesh(const FEMultiBlockMesh& mb);
-
-	FEMultiBlockMesh& GetMultiBlockMesh();
-
 	// build the mesh
-	FEMesh* BuildMesh();
+	FEMesh* BuildMesh() override;
+
+	bool BuildMultiBlock() override;
 
 private:
 	GMultiBox* m_po;

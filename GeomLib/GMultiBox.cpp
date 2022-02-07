@@ -49,6 +49,9 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 	// copy the name
 	SetName(po->GetName());
 
+	// copy the transform
+	GetTransform() = po->GetTransform();
+
 	// creating a new object has increased the object counter
 	// so we need to decrease it again
 	GItem_T<GBaseObject>::DecreaseCounter();
@@ -64,7 +67,7 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 	bool b = mb->BuildMultiBlock(); assert(b);
 
 	// copy it to the multiblock mesh
-	mbMesher->SetMultiBlockMesh(*mb);
+	mbMesher->CopyFrom(*mb);
 
 	// next, we pull the geometry info from the multiblock 
 	// --- Nodes ---
@@ -306,11 +309,16 @@ bool GMultiBox::DeletePart(GPart* pg)
 	FEMultiBlockMesher* mbMesher = dynamic_cast<FEMultiBlockMesher*>(GetFEMesher()); assert(mbMesher);
 
 	// Get the multiblock mesh
-	FEMultiBlockMesh& mb = mbMesher->GetMultiBlockMesh();
-	mb.DeleteBlock(lid);
+	mbMesher->DeleteBlock(lid);
 
 	// rebuild the GMesh
 	BuildGMesh();
 
 	return true;
+}
+
+GObject* GMultiBox::Clone()
+{
+	GMultiBox* clone = new GMultiBox(this);
+	return clone;
 }
