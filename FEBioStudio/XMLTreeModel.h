@@ -38,7 +38,7 @@ class CXMLDocument;
 
 enum columnOrder
 {
-    TAG = 0, ID, TYPE, NAME, VALUE
+    TAG = 0, ID, TYPE, NAME, VALUE, COMMENT, NUM_COLUMNS
 };
 
 class XMLTreeItem
@@ -46,7 +46,7 @@ class XMLTreeItem
 public:
     enum ItemType
     {
-        ELEMENT, ATTRIBUTE, COMMENT
+        ELEMENT, ATTRIBUTE
     };
 
 public:
@@ -60,11 +60,10 @@ public:
     void SetName(const char* val);
     void SetType(const char* val);
     void SetValue(const char* val);
+    void SetComment(const char* val);
 
-    void AddComment(const char* comment);
     void AddAttribtue(const char* tag, const char* val);
 
-    int FirstAttribute() { return m_firstAttribute; }
     int FirstElement() { return m_firstElement; }
 
     int Depth() { return m_depth; }
@@ -98,10 +97,11 @@ private:
     QString m_name;
     QString m_type;
     QString m_value;
+    QString m_comment;
     XMLTreeItem *m_parent;
     int m_depth;
 
-    int m_firstAttribute;
+    // int m_firstAttribute;
     int m_firstElement;
 
     bool m_expanded;

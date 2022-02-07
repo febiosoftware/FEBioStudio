@@ -52,7 +52,7 @@ XMLItemDelegate::~XMLItemDelegate()
 
 void XMLItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
-    if(index.column() != 4)
+    if(index.column() != NUM_COLUMNS - 1)
     {
             painter->save();
         painter->setPen(qApp->palette().color(QPalette::WindowText));
@@ -257,20 +257,6 @@ void XMLTreeView::on_removeSelectedRow_triggered()
     GetDocument()->DoCommand(cmd);
 
     // emit modelEdited();
-}
-
-void XMLTreeView::on_addComment_triggered()
-{
-    QModelIndex index = currentIndex();
-    static_cast<XMLTreeModel*>(model())->addRow(index, XMLTreeItem::COMMENT);
-
-    expand(index);
-    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
-    setCurrentIndex(model()->index(item->FirstAttribute() - 1, 0, index));
-
-    emit modelEdited();
-
-    edit(currentIndex().siblingAtColumn(VALUE));
 }
 
 void XMLTreeView::on_addAttribute_triggered()

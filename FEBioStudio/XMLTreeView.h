@@ -67,7 +67,6 @@ public:
 
 public slots:
     void on_removeSelectedRow_triggered();
-    void on_addComment_triggered();
     void on_addAttribute_triggered();
     void on_addElement_triggered();
 

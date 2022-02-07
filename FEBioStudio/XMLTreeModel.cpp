@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 XMLTreeItem::XMLTreeItem(int depth)
     : m_parent(nullptr), m_depth(depth), m_expanded(false), m_itemType(ELEMENT),
-        m_firstAttribute(0), m_firstElement(0)
+        m_firstElement(0)
 {
 
 }
@@ -63,6 +63,9 @@ bool XMLTreeItem::setData(int index, const char* val)
     case VALUE:
         SetValue(val);
         break;
+    case COMMENT:
+        SetComment(val);
+        break;
     default:
         return false;
     }
@@ -92,17 +95,11 @@ void XMLTreeItem::SetType(const char* val)
 
 void XMLTreeItem::SetValue(const char* val)
 {
-    m_value = val;
+    m_value = QString(val).trimmed();
 }
-
-void XMLTreeItem::AddComment(const char* comment)
+void XMLTreeItem::SetComment(const char* val)
 {
-    XMLTreeItem* child = new XMLTreeItem(m_depth + 1);
-    child->m_tag = "comment";
-    child->m_value = comment;
-    child->SetItemType(COMMENT);
-
-    insertChild(m_firstAttribute, child);
+    m_comment = val;
 }
 
 void XMLTreeItem::AddAttribtue(const char* tag, const char* val)
@@ -123,14 +120,9 @@ void XMLTreeItem::appendChild(XMLTreeItem *child)
 
 void XMLTreeItem::insertChild(int index, XMLTreeItem *child)
 {
-    switch (child->m_itemType)
+    if(child->m_itemType == ATTRIBUTE)
     {
-    case COMMENT:
-        m_firstAttribute++;
-    case ATTRIBUTE:
         m_firstElement++;
-    default:
-        break;
     }
 
     m_children.insert(m_children.begin() + index, child);
@@ -143,14 +135,10 @@ bool XMLTreeItem::removeChild(int index)
     {
         XMLTreeItem* child = m_children.at(index);
 
-        switch(child->m_itemType)
+
+        if(child->m_itemType == ATTRIBUTE)
         {
-            case COMMENT:
-                m_firstAttribute--;
-            case ATTRIBUTE:
-                m_firstElement--;
-            default:
-                break;
+            m_firstElement--;
         }
 
         m_children.erase(m_children.begin() + index);
@@ -182,7 +170,7 @@ int XMLTreeItem::childCount() const
 
 int XMLTreeItem::columnCount() const
 {
-    return 5;
+    return NUM_COLUMNS;
 }
 
 QString XMLTreeItem::data(int column) const
@@ -199,6 +187,8 @@ QString XMLTreeItem::data(int column) const
         return m_name;
     case VALUE:
         return m_value;
+    case COMMENT:
+        return m_comment;
     default:
         return "";
     }    
@@ -334,10 +324,6 @@ QVariant XMLTreeModel::data(const QModelIndex &index, int role) const
         {
             color = Qt::red;
         }
-        else if(item->GetItemType() == XMLTreeItem::COMMENT)
-        {
-            color = Qt::yellow;
-        }
 
         return CIconProvider::BuildPixMap(color, shape);
     }
@@ -372,11 +358,7 @@ Qt::ItemFlags XMLTreeModel::flags(const QModelIndex &index) const
 
     int col = index.column();
 
-    if(item->GetItemType() == XMLTreeItem::COMMENT)
-    {
-        if(col != VALUE) return QAbstractItemModel::flags(index);
-    }
-    else if(item->GetItemType() == XMLTreeItem::ATTRIBUTE)
+    if(item->GetItemType() == XMLTreeItem::ATTRIBUTE)
     {
         if(col != TAG && col != VALUE) return QAbstractItemModel::flags(index);
     }
@@ -419,10 +401,6 @@ bool XMLTreeModel::addRow(const QModelIndex& parent, XMLTreeItem::ItemType itemT
 
     switch (itemType)
     {
-    case XMLTreeItem::COMMENT:
-        beginInsertRows(parent, parentItem->FirstAttribute(), parentItem->FirstAttribute());
-        parentItem->AddComment("");
-        break;
     case XMLTreeItem::ATTRIBUTE:
         beginInsertRows(parent, parentItem->FirstElement(), parentItem->FirstElement());
         parentItem->AddAttribtue("", "");

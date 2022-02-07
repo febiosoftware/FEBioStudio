@@ -67,6 +67,7 @@ bool CXMLDocument::ReadFromFile(const QString& fileName)
     root->SetName("Name");
     root->SetType("Type");
     root->SetValue("Value");
+    root->SetComment("Comment");
 
     root->appendChild(getChild(tag, -1));
     root->child(0)->SetExpanded(true);
@@ -84,7 +85,7 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag, int depth)
 
     if(!tag.comment().empty())
     {
-        child->AddComment(tag.comment().c_str());
+        child->SetComment(tag.comment().c_str());
         tag.clearComment();
     }
 
@@ -145,10 +146,7 @@ bool CXMLDocument::SaveDocument()
 
 void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)
 {
-    for(int child = 0; child < item->FirstAttribute(); child++)
-    {
-        writer.add_comment(item->child(child)->data(VALUE).toStdString());
-    }
+    writer.add_comment(item->data(COMMENT).toStdString().c_str());
 
     XMLElement current(item->data(TAG).toStdString().c_str());
 
@@ -170,7 +168,7 @@ void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)
         current.add_attribute("type", data.toStdString());
     }
 
-    for(int child = item->FirstAttribute(); child < item->FirstElement(); child++)
+    for(int child = 0; child < item->FirstElement(); child++)
     {
         XMLTreeItem* childItem = item->child(child);
         current.add_attribute(childItem->data(TAG).toStdString().c_str(), childItem->data(VALUE).toStdString());
