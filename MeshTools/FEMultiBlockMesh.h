@@ -84,14 +84,18 @@ public:
 class MBEdge : public MBItem
 {
 public:
-	GEdge	edge;
+	int		m_node[2];	// indices of GNodes
+	int		m_cnode;	// center node for arcs
+	int		m_orient;	// orientation for arcs
+	int		m_ntype;	// type identifier
+
 	int		m_nx;		// tesselation
 	double	m_gx;	// zoning
 	bool	m_bx;	// single or double zoning
 	
 	int		m_mx;	// size of fenodes (don't set this manually!)
 
-	int Node(int i) const { return edge.m_node[i]; }
+	int Node(int i) const { return m_node[i]; }
 
 public:
 	MBEdge() 
@@ -100,23 +104,23 @@ public:
 		m_gx = 1;
 		m_bx = false;
 	}
-	MBEdge(int n0, int n1) { edge.m_node[0] = n0; edge.m_node[1] = n1; edge.m_ntype = EDGE_LINE; }
+	MBEdge(int n0, int n1) { m_node[0] = n0; m_node[1] = n1; m_ntype = EDGE_LINE; }
 	bool operator == (const MBEdge& e) const
 	{
-		const int* n1 = edge.m_node;
-		const int* n2 = e.edge.m_node;
+		const int* n1 = m_node;
+		const int* n2 = e.m_node;
 		if ((n1[0] != n2[0]) && (n1[0] != n2[1])) return false;
 		if ((n1[1] != n2[0]) && (n1[1] != n2[1])) return false;
 		return true;
 	}
 
-	MBEdge& SetWinding(int w) { edge.m_orient = w; return *this; }
+	MBEdge& SetWinding(int w) { m_orient = w; return *this; }
 
 	MBEdge& SetEdge(int ntype, int nwinding, int cnode = -1)
 	{
-		edge.m_orient = nwinding;
-		edge.m_ntype = ntype;
-		edge.m_cnode = cnode;
+		m_orient = nwinding;
+		m_ntype = ntype;
+		m_cnode = cnode;
 		return *this;
 	}
 };

@@ -116,14 +116,14 @@ FEMesh* FEShellDisc::BuildMesh()
 	MQ.SetFaceEdgeIDs(11, -1,  3,  4, -1);
 
 	// set edge types (default is line, so we only set the arcs)
-	MQ.GetFaceEdge( 4, 1).edge.m_ntype = EDGE_ZARC;
-	MQ.GetFaceEdge( 5, 1).edge.m_ntype = EDGE_ZARC;
-	MQ.GetFaceEdge( 6, 1).edge.m_ntype = EDGE_ZARC;
-	MQ.GetFaceEdge( 7, 1).edge.m_ntype = EDGE_ZARC;
-	MQ.GetFaceEdge( 8, 1).edge.m_ntype = EDGE_ZARC;
-	MQ.GetFaceEdge( 9, 1).edge.m_ntype = EDGE_ZARC;
-	MQ.GetFaceEdge(10, 1).edge.m_ntype = EDGE_ZARC;
-	MQ.GetFaceEdge(11, 1).edge.m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 4, 1).m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 5, 1).m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 6, 1).m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 7, 1).m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 8, 1).m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge( 9, 1).m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge(10, 1).m_ntype = EDGE_ZARC;
+	MQ.GetFaceEdge(11, 1).m_ntype = EDGE_ZARC;
 
 	// set element type
 	int elemType = GetIntValue(ELEM_TYPE);

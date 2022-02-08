@@ -138,7 +138,11 @@ bool FEMultiQuadMesh::Build(GObject* po)
 	{
 		GEdge* pe = po->Edge(i);
 		MBEdge edge;
-		edge.edge = *pe;
+		edge.m_ntype = pe->m_ntype;
+		edge.m_orient = pe->m_orient;
+		edge.m_node[0] = pe->m_node[0];
+		edge.m_node[1] = pe->m_node[1];
+		edge.m_cnode = pe->m_cnode;
 		edge.m_gid = pe->GetLocalID();
 		m_MBEdge.push_back(edge);
 	}
@@ -176,7 +180,7 @@ vec3d FEMultiQuadMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 	vec3d r2 = m_MBNode[e.Node(1)].m_r;
 
 	vec3d p(0, 0, 0);
-	switch (e.edge.Type())
+	switch (e.m_ntype)
 	{
 	case EDGE_LINE:
 	{
@@ -190,7 +194,7 @@ vec3d FEMultiQuadMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		vec2d b(r2.x, r2.y);
 
 		// create an arc object
-		GM_CIRCLE_ARC ca(c, a, b, e.edge.m_orient);
+		GM_CIRCLE_ARC ca(c, a, b, e.m_orient);
 
 		vec2d q = ca.Point(r);
 		p = vec3d(q.x, q.y, r1.z);
@@ -198,10 +202,10 @@ vec3d FEMultiQuadMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 	break;
 	case EDGE_3P_CIRC_ARC:
 	{
-		vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
-		vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r;
-		vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r;
-		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.edge.m_orient);
+		vec3d r0 = m_MBNode[e.m_cnode].m_r;
+		vec3d r1 = m_MBNode[e.m_node[0]].m_r;
+		vec3d r2 = m_MBNode[e.m_node[1]].m_r;
+		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_orient);
 		p = c.Point(r);
 	}
 	break;

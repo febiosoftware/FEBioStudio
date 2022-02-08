@@ -95,11 +95,11 @@ void GMultiBox::BuildObject()
 	{
 		GEdge* e = AddEdge();
 		MBEdge& eo = mb->GetEdge(i);
-		e->m_node[0] = eo.edge.m_node[0];
-		e->m_node[1] = eo.edge.m_node[1];
-		e->m_cnode = eo.edge.m_cnode;
-		e->m_ntype = eo.edge.m_ntype;
-		e->m_orient = eo.edge.m_orient;
+		e->m_node[0] = eo.m_node[0];
+		e->m_node[1] = eo.m_node[1];
+		e->m_cnode = eo.m_cnode;
+		e->m_ntype = eo.m_ntype;
+		e->m_orient = eo.m_orient;
 	}
 
 	// --- Faces ---

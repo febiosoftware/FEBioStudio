@@ -252,22 +252,22 @@ bool FECone::BuildMultiBlock()
 	MBFace& F7 = GetBlockFace(5, 1); SetFaceEdgeID(F7, 3, -1, 7, 11);
 	MBFace& F8 = GetBlockFace(6, 1); SetFaceEdgeID(F8, 3, 8, 7, -1);
 
-	GetFaceEdge(F1, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F1, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F1, 2).edge.m_orient = -1;
-	GetFaceEdge(F2, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F2, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F2, 2).edge.m_orient = -1;
-	GetFaceEdge(F3, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F3, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F3, 2).edge.m_orient = -1;
-	GetFaceEdge(F4, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F4, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F4, 2).edge.m_orient = -1;
-	GetFaceEdge(F5, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F5, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F5, 2).edge.m_orient = -1;
-	GetFaceEdge(F6, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F6, 2).edge.m_orient = -1;
-	GetFaceEdge(F7, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F7, 2).edge.m_orient = -1;
-	GetFaceEdge(F8, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F8, 2).edge.m_orient = -1;
+	GetFaceEdge(F1, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F1, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F1, 2).m_orient = -1;
+	GetFaceEdge(F2, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F2, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F2, 2).m_orient = -1;
+	GetFaceEdge(F3, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F3, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F3, 2).m_orient = -1;
+	GetFaceEdge(F4, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F4, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F4, 2).m_orient = -1;
+	GetFaceEdge(F5, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F5, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F5, 2).m_orient = -1;
+	GetFaceEdge(F6, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F6, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F6, 2).m_orient = -1;
+	GetFaceEdge(F7, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F7, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F7, 2).m_orient = -1;
+	GetFaceEdge(F8, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F8, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F8, 2).m_orient = -1;
 
 	m_MBNode[21].SetID(0);
 	m_MBNode[23].SetID(1);

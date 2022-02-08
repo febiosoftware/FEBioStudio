@@ -169,14 +169,14 @@ bool FECylinderInBox::BuildMultiBlock()
 	MBFace& F16 = GetBlockFace( 3, 5); SetFaceEdgeID(F16,  7, 28, 19, 31);
 
 	// set the edges
-	GetFaceEdge(F5, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F5, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F5, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F5, 2).SetWinding( 1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F6, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F6, 2).SetWinding( 1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F7, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F7, 2).SetWinding( 1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F8, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F8, 2).SetWinding( 1).m_ntype = EDGE_ZARC;
 
 	UpdateMB();
 

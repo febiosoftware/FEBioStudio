@@ -166,7 +166,7 @@ vec3d FEMultiBlockMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 	vec3d r2 = m_MBNode[e.Node(1)].m_r;
 
 	vec3d p;
-	switch (e.edge.Type())
+	switch (e.m_ntype)
 	{
 	case EDGE_LINE:
 		p = r1 * (1 - r) + r2 * r;
@@ -178,17 +178,17 @@ vec3d FEMultiBlockMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		vec2d b(r2.x, r2.y);
 
 		// create an arc object
-		GM_CIRCLE_ARC ca(c, a, b, e.edge.m_orient);
+		GM_CIRCLE_ARC ca(c, a, b, e.m_orient);
 		vec2d q = ca.Point(r);
 		p = vec3d(q.x, q.y, r1.z);
 	}
 	break;
 	case EDGE_3P_CIRC_ARC:
 	{
-		vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
-		vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r;
-		vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r;
-		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.edge.m_orient);
+		vec3d r0 = m_MBNode[e.m_cnode].m_r;
+		vec3d r1 = m_MBNode[e.m_node[0]].m_r;
+		vec3d r2 = m_MBNode[e.m_node[1]].m_r;
+		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_orient);
 		p = c.Point(r);
 	}
 	break;
@@ -817,8 +817,8 @@ void FEMultiBlockMesh::BuildMBEdges()
 	for (int i = 0; i < NE; ++i)
 	{
 		MBEdge& ei = m_MBEdge[i];
-		ET[ei.edge.m_node[0]].push_back(i);
-		ET[ei.edge.m_node[1]].push_back(i);
+		ET[ei.m_node[0]].push_back(i);
+		ET[ei.m_node[1]].push_back(i);
 	}
 
 	const int EL[12][2] = { {0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7} };
@@ -1439,11 +1439,11 @@ void FEMultiBlockMesh::UpdateMB()
 		f.m_isSphere = true;
 		f.m_sphereRadius = 0;
 		f.m_sphereCenter = vec3d(0, 0, 0);
-		int c0 = m_MBEdge[f.m_edge[0]].edge.m_cnode;
+		int c0 = m_MBEdge[f.m_edge[0]].m_cnode;
 		for (int j = 0; j < 4; ++j)
 		{
 			MBEdge& edgej = m_MBEdge[f.m_edge[j]];
-			if ((edgej.edge.m_ntype != EDGE_3P_CIRC_ARC) || (edgej.edge.m_cnode != c0))
+			if ((edgej.m_ntype != EDGE_3P_CIRC_ARC) || (edgej.m_cnode != c0))
 			{
 				f.m_isSphere = false;
 				break;
@@ -1460,14 +1460,14 @@ void FEMultiBlockMesh::UpdateMB()
 		// see if it is a revolved surface
 		f.m_isRevolve = false;
 		f.m_nrevolveEdge = -1;
-		if ((m_MBEdge[f.m_edge[0]].edge.m_ntype == EDGE_ZARC) &&
-			(m_MBEdge[f.m_edge[2]].edge.m_ntype == EDGE_ZARC))
+		if ((m_MBEdge[f.m_edge[0]].m_ntype == EDGE_ZARC) &&
+			(m_MBEdge[f.m_edge[2]].m_ntype == EDGE_ZARC))
 		{
 			f.m_isRevolve = true;
 			f.m_nrevolveEdge = 1;
 		}
-		if ((m_MBEdge[f.m_edge[1]].edge.m_ntype == EDGE_ZARC) &&
-			(m_MBEdge[f.m_edge[3]].edge.m_ntype == EDGE_ZARC))
+		if ((m_MBEdge[f.m_edge[1]].m_ntype == EDGE_ZARC) &&
+			(m_MBEdge[f.m_edge[3]].m_ntype == EDGE_ZARC))
 		{
 			f.m_isRevolve = true;
 			f.m_nrevolveEdge = 0;
@@ -1683,11 +1683,11 @@ bool FEMultiBlockMesh::DeleteBlock(int blockIndex)
 	for (MBNode& node : m_MBNode) node.m_ntag = 0;
 	for (MBEdge& edge : m_MBEdge)
 	{
-		m_MBNode[edge.edge.m_node[0]].m_ntag = 1;
-		m_MBNode[edge.edge.m_node[1]].m_ntag = 1;
-		if (edge.edge.m_cnode >= 0)
+		m_MBNode[edge.m_node[0]].m_ntag = 1;
+		m_MBNode[edge.m_node[1]].m_ntag = 1;
+		if (edge.m_cnode >= 0)
 		{
-			m_MBNode[edge.edge.m_cnode].m_ntag = 1;
+			m_MBNode[edge.m_cnode].m_ntag = 1;
 		}
 	}
 
@@ -1716,12 +1716,12 @@ bool FEMultiBlockMesh::DeleteBlock(int blockIndex)
 
 	// update all edge nodes
 	for (MBEdge& e : m_MBEdge) {
-		e.edge.m_node[0] = m_MBNode[e.edge.m_node[0]].m_ntag; assert(e.edge.m_node[0] >= 0);
-		e.edge.m_node[1] = m_MBNode[e.edge.m_node[1]].m_ntag; assert(e.edge.m_node[1] >= 0);
-		if (e.edge.m_cnode >= 0)
+		e.m_node[0] = m_MBNode[e.m_node[0]].m_ntag; assert(e.m_node[0] >= 0);
+		e.m_node[1] = m_MBNode[e.m_node[1]].m_ntag; assert(e.m_node[1] >= 0);
+		if (e.m_cnode >= 0)
 		{
-			e.edge.m_cnode = m_MBNode[e.edge.m_cnode].m_ntag;
-			assert(e.edge.m_cnode >= 0);
+			e.m_cnode = m_MBNode[e.m_cnode].m_ntag;
+			assert(e.m_cnode >= 0);
 		}
 	}
 
@@ -1848,8 +1848,8 @@ bool FEMultiBlockMesh::MergeMultiBlock(FEMultiBlockMesh& mb)
 		MBEdge& ei = mb.GetEdge(i);
 		int n0 = mb.GetMBNode(ei.Node(0)).m_ntag; assert(n0 >= 0);
 		int n1 = mb.GetMBNode(ei.Node(1)).m_ntag; assert(n1 >= 0);
-		int n2 = (ei.edge.m_cnode < 0 ? -1 : mb.GetMBNode(ei.edge.m_cnode).m_ntag);
-		assert((ei.edge.m_cnode < 0) || (n2 >= 0));
+		int n2 = (ei.m_cnode < 0 ? -1 : mb.GetMBNode(ei.m_cnode).m_ntag);
+		assert((ei.m_cnode < 0) || (n2 >= 0));
 
 		// see if we already have this edge
 		ei.m_ntag = -1;
@@ -1858,17 +1858,17 @@ bool FEMultiBlockMesh::MergeMultiBlock(FEMultiBlockMesh& mb)
 			MBEdge& ej = GetEdge(j);
 			int m0 = ej.Node(0);
 			int m1 = ej.Node(1);
-			int m2 = ej.edge.m_cnode;
+			int m2 = ej.m_cnode;
 
 			if ((n0 == m0) && (n1 == m1))
 			{
-				assert(ei.edge.m_ntype == ej.edge.m_ntype);
+				assert(ei.m_ntype == ej.m_ntype);
 				ei.m_ntag = j;
 				break;
 			}
 			else if ((n0 == m1) && (n1 == m0))
 			{
-				assert(ei.edge.m_ntype == ej.edge.m_ntype);
+				assert(ei.m_ntype == ej.m_ntype);
 				ei.m_ntag = j;
 				break;
 			}
@@ -1878,9 +1878,9 @@ bool FEMultiBlockMesh::MergeMultiBlock(FEMultiBlockMesh& mb)
 		{
 			ei.m_ntag = m_MBEdge.size();
 			MBEdge newEdge = ei;
-			newEdge.edge.m_node[0] = n0;
-			newEdge.edge.m_node[1] = n1;
-			newEdge.edge.m_cnode = n2;
+			newEdge.m_node[0] = n0;
+			newEdge.m_node[1] = n1;
+			newEdge.m_cnode = n2;
 			m_MBEdge.push_back(newEdge);
 		}
 	}
@@ -1976,11 +1976,11 @@ void FEMultiBlockMesher::Save(OArchive& ar)
 		{
 			ar.BeginChunk(CID_OBJ_EDGE);
 			{
-				ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.edge.m_ntype);
-				ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.edge.m_node[0]);
-				ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.edge.m_node[1]);
-				ar.WriteChunk(CID_OBJ_EDGE_NODE2, e.edge.m_cnode);
-				ar.WriteChunk(CID_OBJ_EDGE_ORIENT, e.edge.m_orient);
+				ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.m_ntype);
+				ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.m_node[0]);
+				ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.m_node[1]);
+				ar.WriteChunk(CID_OBJ_EDGE_NODE2, e.m_cnode);
+				ar.WriteChunk(CID_OBJ_EDGE_ORIENT, e.m_orient);
 			}
 			ar.EndChunk();
 		}
@@ -2069,11 +2069,11 @@ void FEMultiBlockMesher::Load(IArchive& ar)
 					{
 						switch (ar.GetChunkID())
 						{
-						case CID_OBJ_EDGE_TYPE  : ar.read(edge.edge.m_ntype); break;
-						case CID_OBJ_EDGE_NODE0 : ar.read(edge.edge.m_node[0]); break;
-						case CID_OBJ_EDGE_NODE1 : ar.read(edge.edge.m_node[1]); break;
-						case CID_OBJ_EDGE_NODE2 : ar.read(edge.edge.m_cnode); break;
-						case CID_OBJ_EDGE_ORIENT: ar.read(edge.edge.m_orient); break;
+						case CID_OBJ_EDGE_TYPE  : ar.read(edge.m_ntype); break;
+						case CID_OBJ_EDGE_NODE0 : ar.read(edge.m_node[0]); break;
+						case CID_OBJ_EDGE_NODE1 : ar.read(edge.m_node[1]); break;
+						case CID_OBJ_EDGE_NODE2 : ar.read(edge.m_cnode); break;
+						case CID_OBJ_EDGE_ORIENT: ar.read(edge.m_orient); break;
 						}
 						ar.CloseChunk();
 					}

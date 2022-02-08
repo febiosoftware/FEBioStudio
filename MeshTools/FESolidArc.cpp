@@ -124,10 +124,10 @@ bool FESolidArc::BuildMultiBlock()
 	MBFace& F6 = GetBlockFace(0, 5); SetFaceEdgeID(F6, 4, 5, 6, 7);
 
 	// set edge types
-	GetFaceEdge(F1, 0).SetWinding(1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F1, 2).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F3, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F3, 2).SetWinding(1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F1, 0).SetWinding(1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F1, 2).SetWinding(-1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F3, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F3, 2).SetWinding(1).m_ntype = EDGE_ZARC;
 
 	UpdateMB();
 
