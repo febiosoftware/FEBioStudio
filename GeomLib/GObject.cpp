@@ -54,6 +54,8 @@ public:
 		m_col = GLColor(200, 200, 200);
 
 		m_bValid = true;
+
+		m_saveFlag = ObjectSaveFlags::ALL_FLAGS;
 	}
 
 	~Imp()
@@ -67,6 +69,7 @@ public:
 	int	m_ntype;	//!< object type identifier
 	GLColor	m_col;	//!< color of object
 	bool	m_bValid;
+	unsigned int m_saveFlag;
 
 	FEMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
@@ -756,6 +759,12 @@ GNode* GObject::FindNodeFromTag(int ntag)
 }
 
 //-----------------------------------------------------------------------------
+void GObject::SetSaveFlags(unsigned int flags)
+{
+	imp->m_saveFlag = flags;
+}
+
+//-----------------------------------------------------------------------------
 // Save data to file
 void GObject::Save(OArchive &ar)
 {
@@ -811,6 +820,10 @@ void GObject::Save(OArchive &ar)
 					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
 					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
 
+					if (!p.m_node.empty()) ar.WriteChunk(CID_OBJ_PART_NODELIST, p.m_node);
+					if (!p.m_edge.empty()) ar.WriteChunk(CID_OBJ_PART_EDGELIST, p.m_edge);
+					if (!p.m_face.empty()) ar.WriteChunk(CID_OBJ_PART_FACELIST, p.m_face);
+
 					if (p.Parameters() > 0)
 					{
 						ar.BeginChunk(CID_OBJ_PART_PARAMS);
@@ -843,8 +856,9 @@ void GObject::Save(OArchive &ar)
 					ar.WriteChunk(CID_OBJ_FACE_PID0, f.m_nPID[0]);
 					ar.WriteChunk(CID_OBJ_FACE_PID1, f.m_nPID[1]);
 					ar.WriteChunk(CID_OBJ_FACE_PID2, f.m_nPID[2]);
-					ar.WriteChunk(CID_OBJ_FACE_NODES, (int)f.m_node.size());
-					ar.WriteChunk(CID_OBJ_FACE_NODELIST, f.m_node);
+
+					if (!f.m_node.empty()) ar.WriteChunk(CID_OBJ_FACE_NODELIST, f.m_node);
+					if (!f.m_edge.empty()) ar.WriteChunk(CID_OBJ_FACE_EDGELIST, f.m_edge);
 				}
 				ar.EndChunk();
 			}
@@ -865,6 +879,11 @@ void GObject::Save(OArchive &ar)
 					int nid = e.GetID();
 					ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
 					ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
+					ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.Type());
+					ar.WriteChunk(CID_OBJ_EDGE_ORIENT, e.m_orient);
+					ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.m_node[0]);
+					ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.m_node[1]);
+					ar.WriteChunk(CID_OBJ_EDGE_NODE2, e.m_cnode);
 				}
 				ar.EndChunk();
 			}
@@ -912,7 +931,7 @@ void GObject::Save(OArchive &ar)
 	}
 
 	// save the mesh
-	if (imp->m_pmesh)
+	if (imp->m_pmesh && (imp->m_saveFlag & SAVE_MESH))
 	{
 		ar.BeginChunk(CID_MESH);
 		{
@@ -1018,6 +1037,9 @@ void GObject::Load(IArchive& ar)
 							p->ParamContainer::Load(ar);
 						}
 						break;
+					case CID_OBJ_PART_NODELIST: ar.read(p->m_node); break;
+					case CID_OBJ_PART_EDGELIST: ar.read(p->m_edge); break;
+					case CID_OBJ_PART_FACELIST: ar.read(p->m_face); break;
 					}
 					ar.CloseChunk();
 				}
@@ -1048,8 +1070,8 @@ void GObject::Load(IArchive& ar)
 					{
 					case CID_OBJ_FACE_ID: ar.read(nid); f->SetID(nid); break;
 					case CID_OBJ_FACE_TYPE: ar.read(f->m_ntype); break;
-					case CID_OBJ_FACE_NODES: {int n = 0; ar.read(n); f->m_node.assign(n, -1); } break;
 					case CID_OBJ_FACE_NODELIST: ar.read(f->m_node); break;
+					case CID_OBJ_FACE_EDGELIST: ar.read(f->m_edge); break;
 					case CID_OBJ_FACE_NAME:
 					{
 						char szname[256] = { 0 };
@@ -1089,6 +1111,7 @@ void GObject::Load(IArchive& ar)
 					switch (ar.GetChunkID())
 					{
 					case CID_OBJ_EDGE_ID: ar.read(nid); e->SetID(nid); break;
+					case CID_OBJ_EDGE_TYPE: ar.read(e->m_ntype); break;
 					case CID_OBJ_EDGE_NAME:
 					{
 						char szname[256] = { 0 };
@@ -1096,6 +1119,10 @@ void GObject::Load(IArchive& ar)
 						e->SetName(szname);
 					}
 					break;
+					case CID_OBJ_EDGE_ORIENT: ar.read(e->m_orient); break;
+					case CID_OBJ_EDGE_NODE0 : ar.read(e->m_node[0]); break;
+					case CID_OBJ_EDGE_NODE1 : ar.read(e->m_node[1]); break;
+					case CID_OBJ_EDGE_NODE2 : ar.read(e->m_cnode); break;
 					}
 					ar.CloseChunk();
 				}
@@ -1127,6 +1154,7 @@ void GObject::Load(IArchive& ar)
 						switch (ar.GetChunkID())
 						{
 						case CID_OBJ_NODE_ID: ar.read(nid); n->SetID(nid); break;
+						case CID_OBJ_NODE_TYPE: { int ntype;  ar.read(ntype); n->SetType(ntype); } break;
 						case CID_OBJ_NODE_POS: ar.read(n->LocalPosition()); break;
 						case CID_OBJ_NODE_NAME:
 						{

@@ -34,6 +34,8 @@ SOFTWARE.*/
 GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
 {
 	SetFEMesher(new FEMultiBlockMesher(this));
+
+	SetSaveFlags(0);	// this prevents the mesh from getting serialized
 }
 
 //-----------------------------------------------------------------------------
@@ -43,6 +45,8 @@ GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
 // a GMultiBox
 GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 {
+	SetSaveFlags(0);	// this prevents the mesh from getting serialized
+
 	// copy to old object's ID
 	SetID(po->GetID());
 

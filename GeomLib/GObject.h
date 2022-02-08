@@ -48,6 +48,12 @@ class GLMesh;
 class GObject;
 
 //-----------------------------------------------------------------------------
+enum ObjectSaveFlags {
+	SAVE_MESH = 1,
+	ALL_FLAGS = 0xFF
+};
+
+//-----------------------------------------------------------------------------
 // some exceptions that may be thrown in case of throuble
 class GObjectException
 {
@@ -100,6 +106,9 @@ public:
 	// serialization
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
+
+	// set save flag options
+	void SetSaveFlags(unsigned int flags);
 
 	// --- M E S H I N G ---
 
