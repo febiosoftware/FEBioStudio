@@ -677,7 +677,7 @@ void FEMultiBlockMesh::BuildFEElements(FEMesh* pm)
 
 		Sampler1D dx(nx, b.m_gx, b.m_bx);
 		Sampler1D dy(ny, b.m_gy, b.m_by);
-		Sampler1D dz(ny, b.m_gy, b.m_by);
+		Sampler1D dz(ny, b.m_gz, b.m_bz);
 
 		int nn = (m_quadMesh ? 2 : 1);
 		int nk = 0;
