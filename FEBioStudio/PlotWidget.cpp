@@ -312,9 +312,7 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 {
 	ColorList::init();
 
-	m_bzoomRect = false;
-	m_bvalidRect = false;
-	m_mapToRect = false;
+	m_bregionSelect = false;
 
 	m_bautoRngUpdate = true;
 
@@ -378,13 +376,6 @@ void CPlotWidget::contextMenuEvent(QContextMenuEvent* ev)
 		menu.addAction(m_clrBGImage);
 		menu.exec(ev->globalPos());
 	}
-}
-
-//-----------------------------------------------------------------------------
-void CPlotWidget::ZoomToRect(bool b)
-{
-	m_bzoomRect = b;
-	m_bvalidRect = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -514,14 +505,6 @@ void CPlotWidget::OnCopyToClipboard()
 bool CPlotWidget::HasBackgroundImage() const
 {
 	return (m_img != nullptr);
-}
-
-//-----------------------------------------------------------------------------
-void CPlotWidget::mapToUserRect()
-{
-	m_bzoomRect = true;
-	m_bvalidRect = false;
-	m_mapToRect = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -781,7 +764,6 @@ void CPlotWidget::mousePressEvent(QMouseEvent* ev)
 {
 	m_mousePos = ev->pos();
 	m_mouseInitPos = m_mousePos;
-	if (m_bzoomRect) m_bvalidRect = true;
 
 	m_bdragging = false;
 	m_bregionSelect = false;
@@ -854,7 +836,7 @@ void CPlotWidget::mouseMoveEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				if ((m_bzoomRect == false) && (m_bviewLocked == false))
+				if (m_bviewLocked == false)
 				{
 					QPointF r0 = ScreenToView(m_mousePos);
 					QPointF r1 = ScreenToView(p);
@@ -878,34 +860,20 @@ void CPlotWidget::mouseReleaseEvent(QMouseEvent* ev)
 	if (X1 < X0) { X0 ^= X1; X1 ^= X0; X0 ^= X1; }
 	if (Y1 < Y0) { Y0 ^= Y1; Y1 ^= Y0; Y0 ^= Y1; }
 
-	if ((X0 == X1) && (Y0 == Y1)) { m_bregionSelect = false; m_bvalidRect = false; }
+	if ((X0 == X1) && (Y0 == Y1)) m_bregionSelect = false;
 
 	if (m_bregionSelect)
 	{
-		m_bregionSelect = false;
-		m_bvalidRect = false;
-
 		QRect rt(X0, Y0, X1 - X0 + 1, Y1 - Y0 + 1);
-		regionSelect(rt);
 		emit regionSelected(rt);
+
+		m_bregionSelect = false;
 
 		repaint();
 	}
 	else
 	{
-		if (m_bzoomRect)
-		{
-			QRect rt(X0, Y0, X1 - X0 + 1, Y1 - Y0 + 1);
-			if (m_mapToRect == false)
-				fitToRect(rt);
-			m_bzoomRect = false;
-			m_bvalidRect = false;
-			m_mapToRect = false;
-			emit doneSelectingRect(rt);
-			emit doneZoomToRect();
-			repaint();
-		}
-		else if ((X0 == X1) && (Y0 == Y1))
+		if ((X0 == X1) && (Y0 == Y1))
 		{
 			if (ev->button() == Qt::LeftButton)
 			{
@@ -1075,7 +1043,7 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 	p.setClipRect(m_plotRect);
 	drawAllData(p);
 
-	if ((m_bzoomRect && m_bvalidRect) || m_bregionSelect)
+	if (m_bregionSelect)
 	{
 		int l = m_data.m_bgCol.lightness();
 		QColor penCol(l > 100 ? QColor(Qt::black) : QColor(Qt::white));

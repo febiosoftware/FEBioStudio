@@ -1528,3 +1528,105 @@ FEDataField* Post::DataEigenTensor(FEPostModel& fem, FEDataField* dataField, con
 
 	return newField;
 }
+
+FEDataField* Post::DataTimeRate(FEPostModel& fem, FEDataField* dataField, const std::string& name)
+{
+	if (dataField == nullptr) return nullptr;
+
+	int nclass = dataField->DataClass();
+	Data_Type ntype = dataField->Type();
+	int nfmt = dataField->Format();
+
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+
+	FEDataField* newField = 0;
+	if (nclass == CLASS_NODE)
+	{
+		if (ntype == DATA_SCALAR)
+		{
+			newField = new FEDataField_T<FENodeData<float> >(&fem);
+			fem.AddDataField(newField, name);
+
+			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+			int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+			for (int n = 0; n < fem.GetStates(); ++n)
+			{
+				Post::FENodeData<float>& vt = dynamic_cast<FENodeData<float>&>(fem.GetState(n)->m_Data[nnew]);
+				if (n == 0)
+				{
+					for (int i = 0; i < mesh.Nodes(); ++i)
+					{
+						vt[i] = 0.f;
+					}
+				}
+				else
+				{
+					FEState* state0 = fem.GetState(n - 1);
+					FEState* state1 = fem.GetState(n);
+
+					double dt = state1->m_time - state0->m_time;
+
+					Post::FENodeData_T<float>& d0 = dynamic_cast<FENodeData_T<float>&>(state0->m_Data[nold]);
+					Post::FENodeData_T<float>& d1 = dynamic_cast<FENodeData_T<float>&>(state1->m_Data[nold]);
+
+
+					for (int i = 0; i < mesh.Nodes(); ++i)
+					{
+						float v0, v1;
+						d0.eval(i, &v0);
+						d1.eval(i, &v1);
+
+						float dvdt = (v1 - v0) / dt;
+
+						vt[i] = dvdt;
+					}
+				}
+			}
+		}
+		else if (ntype == DATA_VEC3F)
+		{
+			newField = new FEDataField_T<FENodeData<vec3f> >(&fem);
+			fem.AddDataField(newField, name);
+
+			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+			int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+			for (int n = 0; n < fem.GetStates(); ++n)
+			{
+				Post::FENodeData<vec3f>& vt = dynamic_cast<FENodeData<vec3f>&>(fem.GetState(n)->m_Data[nnew]);
+				if (n == 0)
+				{
+					for (int i = 0; i < mesh.Nodes(); ++i)
+					{
+						vt[i] = vec3f(0.f, 0.f, 0.f);
+					}
+				}
+				else
+				{
+					FEState* state0 = fem.GetState(n - 1);
+					FEState* state1 = fem.GetState(n    );
+
+					double dt = state1->m_time - state0->m_time;
+
+					Post::FENodeData_T<vec3f>& d0 = dynamic_cast<FENodeData_T<vec3f>&>(state0->m_Data[nold]);
+					Post::FENodeData_T<vec3f>& d1 = dynamic_cast<FENodeData_T<vec3f>&>(state1->m_Data[nold]);
+
+
+					for (int i = 0; i < mesh.Nodes(); ++i)
+					{
+						vec3f v0, v1;
+						d0.eval(i, &v0);
+						d1.eval(i, &v1);
+
+						vec3f dvdt = (v1 - v0) / dt;
+
+						vt[i] = dvdt;
+					}
+				}
+			}
+		}
+	}
+
+	return newField;
+}

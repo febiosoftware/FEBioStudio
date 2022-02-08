@@ -600,6 +600,7 @@ public:
 		pselect->addItem("Fraction Anisotropy");
 		pselect->addItem("Convert Format");
 		pselect->addItem("Eigen vectors");
+		pselect->addItem("Time Derivative");
 
 		QLabel* label;
 		label = new QLabel("Filter:");
@@ -1134,6 +1135,12 @@ void CPostDataPanel::on_AddFilter_triggered()
 				case 7: // eigen tensor
 				{
 					newData = DataEigenTensor(fem, pdf, sname);
+					bret = (newData != nullptr);
+				}
+				break;
+				case 8: // time derivative
+				{
+					newData = DataTimeRate(fem, pdf, sname);
 					bret = (newData != nullptr);
 				}
 				break;
