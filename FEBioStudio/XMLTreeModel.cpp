@@ -97,6 +97,7 @@ void XMLTreeItem::SetValue(const char* val)
 {
     m_value = QString(val).trimmed();
 }
+
 void XMLTreeItem::SetComment(const char* val)
 {
     m_comment = val;

@@ -80,7 +80,6 @@ private:
     void expandToMatch(const QModelIndex& index);
 
 private:
-    QAction* addComment;
     QAction* addAttribute;
     QAction* addElement;
     QAction* removeSelectedRow;

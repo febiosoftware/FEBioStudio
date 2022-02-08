@@ -89,3 +89,47 @@ void CCmdRemoveRow::UnExecute()
 
     m_ownsItem = false;
 }
+
+//////////////////////////////////////////////////////////////////////
+// CCmdAddAttribute
+//////////////////////////////////////////////////////////////////////
+
+CCmdAddAttribute::CCmdAddAttribute(QPersistentModelIndex parent, XMLTreeModel* model)
+    : CXMLCommand(model, "Add Attribute"), m_parent(parent)
+{
+    
+}
+
+void CCmdAddAttribute::Execute()
+{
+    m_model->addRow(m_parent, XMLTreeItem::ATTRIBUTE);
+}
+
+void CCmdAddAttribute::UnExecute()
+{
+    XMLTreeItem* parentItem = static_cast<XMLTreeItem*>(m_parent.internalPointer());
+
+    m_model->removeRow(parentItem->FirstElement() - 1, m_parent);
+}
+
+//////////////////////////////////////////////////////////////////////
+// CCmdAddAttribute
+//////////////////////////////////////////////////////////////////////
+
+CCmdAddElement::CCmdAddElement(QPersistentModelIndex parent, XMLTreeModel* model)
+    : CXMLCommand(model, "Add Attribute"), m_parent(parent)
+{
+    
+}
+
+void CCmdAddElement::Execute()
+{
+    m_model->addRow(m_parent, XMLTreeItem::ELEMENT);
+}
+
+void CCmdAddElement::UnExecute()
+{
+    XMLTreeItem* parentItem = static_cast<XMLTreeItem*>(m_parent.internalPointer());
+
+    m_model->removeRow(parentItem->childCount() - 1, m_parent);
+}

@@ -73,3 +73,29 @@ private:
     XMLTreeItem* m_item;
     bool m_ownsItem;
 };
+
+//-----------------------------------------------------------------------------
+class CCmdAddAttribute : public CXMLCommand
+{
+public:
+    CCmdAddAttribute(QPersistentModelIndex parent, XMLTreeModel* model);
+
+    void Execute();
+	void UnExecute();
+
+private:
+    QPersistentModelIndex m_parent;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdAddElement : public CXMLCommand
+{
+public:
+    CCmdAddElement(QPersistentModelIndex parent, XMLTreeModel* model);
+
+    void Execute();
+	void UnExecute();
+
+private:
+    QPersistentModelIndex m_parent;
+};

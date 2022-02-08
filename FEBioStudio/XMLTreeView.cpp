@@ -204,9 +204,6 @@ XMLTreeView::XMLTreeView(CMainWindow* wnd) : QTreeView(wnd), m_wnd(wnd)
     setItemDelegate(new XMLItemDelegate);
     setAlternatingRowColors(true);
 
-    addComment = new QAction("Add Comment", this);
-    addComment->setObjectName("addComment");
-
     addAttribute = new QAction("Add Attribute", this);
     addAttribute->setObjectName("addAttribute");
 
@@ -250,25 +247,24 @@ void XMLTreeView::on_removeSelectedRow_triggered()
 {
     QModelIndex index = currentIndex();
     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
-    // model()->removeRow(index.row(), index.parent());
 
     CCmdRemoveRow* cmd = new CCmdRemoveRow(QPersistentModelIndex(index.parent()), index.row(), item, static_cast<XMLTreeModel*>(model()));
 
     GetDocument()->DoCommand(cmd);
-
-    // emit modelEdited();
 }
 
 void XMLTreeView::on_addAttribute_triggered()
 {
     QModelIndex index = currentIndex();
-    static_cast<XMLTreeModel*>(model())->addRow(index, XMLTreeItem::ATTRIBUTE);
 
+    CCmdAddAttribute* cmd = new CCmdAddAttribute(QPersistentModelIndex(index), static_cast<XMLTreeModel*>(model()));
+
+    GetDocument()->DoCommand(cmd);
+
+    // Select new item and begin edititing it
     expand(index);
     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
     setCurrentIndex(model()->index(item->FirstElement() - 1, 0, index));
-
-    emit modelEdited();
 
     edit(currentIndex().siblingAtColumn(TAG));
 }
@@ -276,13 +272,14 @@ void XMLTreeView::on_addAttribute_triggered()
 void XMLTreeView::on_addElement_triggered()
 {
     QModelIndex index = currentIndex();
-    static_cast<XMLTreeModel*>(model())->addRow(index, XMLTreeItem::ELEMENT);
+    CCmdAddElement* cmd = new CCmdAddElement(QPersistentModelIndex(index), static_cast<XMLTreeModel*>(model()));
 
+    GetDocument()->DoCommand(cmd);
+
+    // Select new item and begin edititing it
     expand(index);
     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
     setCurrentIndex(model()->index(item->childCount() - 1, 0, index));
-
-    emit modelEdited();
 
     edit(currentIndex().siblingAtColumn(TAG));
 }
@@ -297,7 +294,6 @@ void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
 
     if(item->GetItemType() == XMLTreeItem::ELEMENT)
     {
-        menu.addAction(addComment);
         menu.addAction(addAttribute);
         menu.addAction(addElement);
     }
