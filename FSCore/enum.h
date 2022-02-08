@@ -215,6 +215,7 @@ SOFTWARE.*/
 #define CID_OBJ_PART_MAT			0x00080103
 #define CID_OBJ_PART_NAME			0x00080104	// as of version 1.9
 #define CID_OBJ_PART_PARAMS			0x00080105 // as of version 1.4
+#define CID_OBJ_PART_NODELIST		0x00080106 // as of MB 1.7
 
 #define CID_OBJ_FACE_SECTION		0x00080200
 #define CID_OBJ_FACE				0x00080201
@@ -222,7 +223,10 @@ SOFTWARE.*/
 #define CID_OBJ_FACE_PID0			0x00080203
 #define CID_OBJ_FACE_PID1			0x00080204
 #define CID_OBJ_FACE_NAME			0x00080205	// as of version 1.9
-#define CID_OBJ_FACE_TYPE			0x00080206	// as of version 2.0
+#define CID_OBJ_FACE_PID2			0x00080206  // as of FB 1.7
+#define CID_OBJ_FACE_TYPE			0x00080207	// as of version 2.0
+#define CID_OBJ_FACE_NODES			0x00080208	// as of FB 1.7
+#define CID_OBJ_FACE_NODELIST		0x00080209	// as of FB 1.7
 
 #define CID_OBJ_EDGE_SECTION		0x00080300
 #define CID_OBJ_EDGE				0x00080301
@@ -232,6 +236,7 @@ SOFTWARE.*/
 #define CID_OBJ_EDGE_NODE0			0x00080305	// version 2.0
 #define CID_OBJ_EDGE_NODE1			0x00080306	// version 2.0
 #define CID_OBJ_EDGE_NODE2			0x00080307	// version 2.0
+#define CID_OBJ_EDGE_ORIENT			0x00080308	// version 2.0
 
 #define CID_OBJ_NODE_SECTION		0x00080400
 #define CID_OBJ_NODE				0x00080401
@@ -239,6 +244,7 @@ SOFTWARE.*/
 #define CID_OBJ_NODE_POS			0x00080403
 //#define CID_OBJ_NODE_MESH_NODE	0x00080404	//---> obsolete: GNode no longer stores its corresponding FE node (1.4)
 #define CID_OBJ_NODE_NAME			0x00080405	// as of version 1.9
+#define CID_OBJ_NODE_TYPE			0x00080406	// as of version FB 1.7
 
 #define CID_OBJ_GOBJECTS			0x00081000
 #define CID_OBJ_GPARTGROUP			0x00082000

@@ -190,7 +190,7 @@ vec3d FEMultiQuadMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		vec2d b(r2.x, r2.y);
 
 		// create an arc object
-		GM_CIRCLE_ARC ca(c, a, b, e.m_winding);
+		GM_CIRCLE_ARC ca(c, a, b, e.edge.m_orient);
 
 		vec2d q = ca.Point(r);
 		p = vec3d(q.x, q.y, r1.z);
@@ -201,7 +201,7 @@ vec3d FEMultiQuadMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
 		vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r;
 		vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r;
-		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_winding);
+		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.edge.m_orient);
 		p = c.Point(r);
 	}
 	break;

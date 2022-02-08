@@ -181,11 +181,11 @@ bool FEQuartDogBone::BuildMultiBlockMesh4()
 	MBFace& F3 = GetBlockFace(2, 1); SetFaceEdgeID(F3, 1, 16, 8, 15);
 	MBFace& F4 = GetBlockFace(2, 2); SetFaceEdgeID(F4, 2, 17, 9, 16);
 	MBFace& F5 = GetBlockFace(0, 2); SetFaceEdgeID(F5, 3, -1, 10, 17);
-	MBEdge& E1 = GetEdge(F5.m_edge[0]);	E1.edge.m_ntype = EDGE_3P_CIRC_ARC; E1.edge.m_cnode = 10; E1.m_winding = -1;
+	MBEdge& E1 = GetEdge(F5.m_edge[0]);	E1.edge.m_ntype = EDGE_3P_CIRC_ARC; E1.edge.m_cnode = 10; E1.edge.m_orient = -1;
 	MBEdge& E2 = GetEdge(F5.m_edge[2]); E2.edge.m_ntype = EDGE_3P_CIRC_ARC; E2.edge.m_cnode = 21;
 
 	MBFace& F6 = GetBlockFace(1, 1); SetFaceEdgeID(F6, 3, 18, 10, -1);
-	MBEdge& E3 = GetEdge(F6.m_edge[0]); E3.edge.m_ntype = EDGE_3P_CIRC_ARC; E3.edge.m_cnode = 10; E3.m_winding = -1;
+	MBEdge& E3 = GetEdge(F6.m_edge[0]); E3.edge.m_ntype = EDGE_3P_CIRC_ARC; E3.edge.m_cnode = 10; E3.edge.m_orient = -1;
 	MBEdge& E4 = GetEdge(F6.m_edge[2]); E4.edge.m_ntype = EDGE_3P_CIRC_ARC; E4.edge.m_cnode = 21;
 
 	MBFace& F7 = GetBlockFace(3, 1); SetFaceEdgeID(F7, 4, 19, 11, 18);
@@ -354,9 +354,9 @@ bool FEQuartDogBone::BuildMultiBlockMesh6()
 	MBFace& F11 = GetBlockFace(4, 3); SetFaceEdgeID(F11, 6, -1, 13, -1);
 	MBFace& F12 = GetBlockFace(0, 3); SetFaceEdgeID(F12, 6, 14, 13, -1);
 
-	MBEdge& E1 = GetEdge(F6.m_edge[0]);	E1.edge.m_ntype = EDGE_3P_CIRC_ARC; E1.edge.m_cnode = 13; E1.m_winding = -1;
+	MBEdge& E1 = GetEdge(F6.m_edge[0]);	E1.edge.m_ntype = EDGE_3P_CIRC_ARC; E1.edge.m_cnode = 13; E1.edge.m_orient = -1;
 	MBEdge& E2 = GetEdge(F6.m_edge[2]); E2.edge.m_ntype = EDGE_3P_CIRC_ARC; E2.edge.m_cnode = 27;
-	MBEdge& E3 = GetEdge(F7.m_edge[0]); E3.edge.m_ntype = EDGE_3P_CIRC_ARC; E3.edge.m_cnode = 13; E3.m_winding = -1;
+	MBEdge& E3 = GetEdge(F7.m_edge[0]); E3.edge.m_ntype = EDGE_3P_CIRC_ARC; E3.edge.m_cnode = 13; E3.edge.m_orient = -1;
 	MBEdge& E4 = GetEdge(F7.m_edge[2]); E4.edge.m_ntype = EDGE_3P_CIRC_ARC; E4.edge.m_cnode = 27;
 
 	m_MBNode[ 0].SetID(0);

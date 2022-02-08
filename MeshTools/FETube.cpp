@@ -159,20 +159,20 @@ bool FETube::BuildMultiBlock()
 
 	// set edge types
 	MBEdge& E1 = GetFaceEdge(F1, 1); E1.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E2 = GetFaceEdge(F1, 3); E2.edge.m_ntype = EDGE_ZARC; E2.m_winding = -1;
+	MBEdge& E2 = GetFaceEdge(F1, 3); E2.edge.m_ntype = EDGE_ZARC; E2.edge.m_orient = -1;
 	MBEdge& E3 = GetFaceEdge(F2, 1); E3.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E4 = GetFaceEdge(F2, 3); E4.edge.m_ntype = EDGE_ZARC; E4.m_winding = -1;
+	MBEdge& E4 = GetFaceEdge(F2, 3); E4.edge.m_ntype = EDGE_ZARC; E4.edge.m_orient = -1;
 	MBEdge& E5 = GetFaceEdge(F3, 1); E5.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E6 = GetFaceEdge(F3, 3); E6.edge.m_ntype = EDGE_ZARC; E6.m_winding = -1;
+	MBEdge& E6 = GetFaceEdge(F3, 3); E6.edge.m_ntype = EDGE_ZARC; E6.edge.m_orient = -1;
 	MBEdge& E7 = GetFaceEdge(F4, 1); E7.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E8 = GetFaceEdge(F4, 3); E8.edge.m_ntype = EDGE_ZARC; E8.m_winding = -1;
-	MBEdge& E9 = GetFaceEdge(F13, 1); E9.edge.m_ntype = EDGE_ZARC; E9.m_winding = -1;
+	MBEdge& E8 = GetFaceEdge(F4, 3); E8.edge.m_ntype = EDGE_ZARC; E8.edge.m_orient = -1;
+	MBEdge& E9 = GetFaceEdge(F13, 1); E9.edge.m_ntype = EDGE_ZARC; E9.edge.m_orient = -1;
 	MBEdge& E10 = GetFaceEdge(F13, 3); E10.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E11 = GetFaceEdge(F14, 1); E11.edge.m_ntype = EDGE_ZARC; E11.m_winding = -1;
+	MBEdge& E11 = GetFaceEdge(F14, 1); E11.edge.m_ntype = EDGE_ZARC; E11.edge.m_orient = -1;
 	MBEdge& E12 = GetFaceEdge(F14, 3); E12.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E13 = GetFaceEdge(F15, 1); E13.edge.m_ntype = EDGE_ZARC; E13.m_winding = -1;
+	MBEdge& E13 = GetFaceEdge(F15, 1); E13.edge.m_ntype = EDGE_ZARC; E13.edge.m_orient = -1;
 	MBEdge& E14 = GetFaceEdge(F15, 3); E14.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E15 = GetFaceEdge(F16, 1); E15.edge.m_ntype = EDGE_ZARC; E15.m_winding = -1;
+	MBEdge& E15 = GetFaceEdge(F16, 1); E15.edge.m_ntype = EDGE_ZARC; E15.edge.m_orient = -1;
 	MBEdge& E16 = GetFaceEdge(F16, 3); E16.edge.m_ntype = EDGE_ZARC;
 
 	UpdateMB();

@@ -99,7 +99,7 @@ void GMultiBox::BuildObject()
 		e->m_node[1] = eo.edge.m_node[1];
 		e->m_cnode = eo.edge.m_cnode;
 		e->m_ntype = eo.edge.m_ntype;
-		e->m_orient = eo.m_winding;
+		e->m_orient = eo.edge.m_orient;
 	}
 
 	// --- Faces ---

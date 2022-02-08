@@ -178,7 +178,7 @@ vec3d FEMultiBlockMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		vec2d b(r2.x, r2.y);
 
 		// create an arc object
-		GM_CIRCLE_ARC ca(c, a, b, e.m_winding);
+		GM_CIRCLE_ARC ca(c, a, b, e.edge.m_orient);
 		vec2d q = ca.Point(r);
 		p = vec3d(q.x, q.y, r1.z);
 	}
@@ -188,7 +188,7 @@ vec3d FEMultiBlockMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
 		vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r;
 		vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r;
-		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_winding);
+		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.edge.m_orient);
 		p = c.Point(r);
 	}
 	break;
@@ -1952,4 +1952,260 @@ bool FEMultiBlockMesh::MergeMultiBlock(FEMultiBlockMesh& mb)
 	FindBlockNeighbours();
 
 	return true;
+}
+
+void FEMultiBlockMesher::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_OBJ_NODE_SECTION);
+	{
+		for (MBNode& n : m_MBNode)
+		{
+			ar.BeginChunk(CID_OBJ_NODE);
+			{
+				ar.WriteChunk(CID_OBJ_NODE_POS , n.m_r);
+				ar.WriteChunk(CID_OBJ_NODE_TYPE, n.m_type);
+			}
+			ar.EndChunk();
+		}
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_OBJ_EDGE_SECTION);
+	{
+		for (MBEdge& e : m_MBEdge)
+		{
+			ar.BeginChunk(CID_OBJ_EDGE);
+			{
+				ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.edge.m_ntype);
+				ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.edge.m_node[0]);
+				ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.edge.m_node[1]);
+				ar.WriteChunk(CID_OBJ_EDGE_NODE2, e.edge.m_cnode);
+				ar.WriteChunk(CID_OBJ_EDGE_ORIENT, e.edge.m_orient);
+			}
+			ar.EndChunk();
+		}
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_OBJ_FACE_SECTION);
+	{
+		for (MBFace& f : m_MBFace)
+		{
+			ar.BeginChunk(CID_OBJ_FACE);
+			{
+				ar.WriteChunk(CID_OBJ_FACE_PID0, f.m_block[0]);
+				ar.WriteChunk(CID_OBJ_FACE_PID1, f.m_block[1]);
+				ar.WriteChunk(CID_OBJ_FACE_NODES, 4);
+				ar.WriteChunk(CID_OBJ_FACE_NODELIST, f.m_node, 4);
+			}
+			ar.EndChunk();
+		}
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_OBJ_PART_SECTION);
+	{
+		for (MBBlock& b : m_MBlock)
+		{
+			ar.BeginChunk(CID_OBJ_PART);
+			{
+				ar.WriteChunk(CID_OBJ_PART_NODELIST, b.m_node, 8);
+			}
+			ar.EndChunk();
+		}
+	}
+	ar.EndChunk();
+}
+
+void FEMultiBlockMesher::Load(IArchive& ar)
+{
+	TRACE("FEMultiBlockMesher::Load");
+
+	ClearMB();
+
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_OBJ_NODE_SECTION:
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				switch (ar.GetChunkID())
+				{
+				case CID_OBJ_NODE:
+				{
+					MBNode node;
+					while (IArchive::IO_OK == ar.OpenChunk())
+					{
+						switch (ar.GetChunkID())
+						{
+						case CID_OBJ_NODE_POS: ar.read(node.m_r); break;
+						case CID_OBJ_NODE_TYPE: ar.read(node.m_type); break;
+						}
+						ar.CloseChunk();
+					}
+					m_MBNode.push_back(node);
+				}
+				break;
+				default:
+					throw ReadError("Error while reading node setion");
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
+		case CID_OBJ_EDGE_SECTION:
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				switch (ar.GetChunkID())
+				{
+				case CID_OBJ_EDGE:
+				{
+					MBEdge edge;
+					while (IArchive::IO_OK == ar.OpenChunk())
+					{
+						switch (ar.GetChunkID())
+						{
+						case CID_OBJ_EDGE_TYPE  : ar.read(edge.edge.m_ntype); break;
+						case CID_OBJ_EDGE_NODE0 : ar.read(edge.edge.m_node[0]); break;
+						case CID_OBJ_EDGE_NODE1 : ar.read(edge.edge.m_node[1]); break;
+						case CID_OBJ_EDGE_NODE2 : ar.read(edge.edge.m_cnode); break;
+						case CID_OBJ_EDGE_ORIENT: ar.read(edge.edge.m_orient); break;
+						}
+						ar.CloseChunk();
+					}
+					m_MBEdge.push_back(edge);
+				}
+				break;
+				default:
+					throw ReadError("Error while reading node setion");
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
+		case CID_OBJ_FACE_SECTION:
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				switch (ar.GetChunkID())
+				{
+				case CID_OBJ_FACE:
+				{
+					MBFace face;
+					int faceNodes = -1;
+					while (IArchive::IO_OK == ar.OpenChunk())
+					{
+						switch (ar.GetChunkID())
+						{
+						case CID_OBJ_FACE_PID0    : ar.read(face.m_block[0]); break;
+						case CID_OBJ_FACE_PID1    : ar.read(face.m_block[1]); break;
+						case CID_OBJ_FACE_NODES   : ar.read(faceNodes); break;
+						case CID_OBJ_FACE_NODELIST: ar.read(face.m_node, 4); break;
+						}
+						ar.CloseChunk();
+					}
+					m_MBFace.push_back(face);
+				}
+				break;
+				default:
+					throw ReadError("Error while reading node setion");
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
+		case CID_OBJ_PART_SECTION:
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				switch (ar.GetChunkID())
+				{
+				case CID_OBJ_PART:
+				{
+					MBBlock b;
+					while (IArchive::IO_OK == ar.OpenChunk())
+					{
+						switch (ar.GetChunkID())
+						{
+						case CID_OBJ_PART_NODELIST: ar.read(b.m_node, 8); break;
+						}
+						ar.CloseChunk();
+					}
+					m_MBlock.push_back(b);
+				}
+				break;
+				default:
+					throw ReadError("Error while reading node setion");
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
+		}
+		ar.CloseChunk();
+	}
+
+	RebuildMB();
+}
+
+void FEMultiBlockMesher::RebuildMB()
+{
+	// Update edge list of faces
+	for (MBFace& f : m_MBFace)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			int n0 = f.m_node[i];
+			int n1 = f.m_node[(i + 1) % 4];
+			int ne = FindEdge(n0, n1); assert(ne >= 0);
+
+			f.m_edge[i] = ne;
+
+			MBEdge& ei = m_MBEdge[ne];
+			if      ((ei.Node(0) == n0) && (ei.Node(1) == n1)) f.m_edgeWinding[i] =  1;
+			else if ((ei.Node(0) == n1) && (ei.Node(1) == n0)) f.m_edgeWinding[i] = -1;
+			else assert(false);
+		}
+	}
+
+	// update block data
+	for (MBBlock& b : m_MBlock)
+	{
+		// update face data
+		for (int i = 0; i < 6; ++i)
+		{
+			b.m_face[i] = -1;
+			MBFace fi = BuildBlockFace(b, i);
+			
+			// TODO: Find a better way
+			for (int j = 0; j < m_MBFace.size(); ++j)
+			{
+				MBFace& fj = m_MBFace[j];
+				if (isSameFace(fi.m_node, fj.m_node))
+				{
+					b.m_face[i] = j;
+					break;
+				}
+			}
+			assert(b.m_face[i] != -1);
+		}
+
+		// update edge data
+		const int EL[12][2] = { {0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7} };
+		for (int i = 0; i < 12; ++i)
+		{
+			int n0 = b.m_node[EL[i][0]];
+			int n1 = b.m_node[EL[i][1]];
+
+			int ne = FindEdge(n0, n1); assert(ne >= 0);
+			b.m_edge[i] = ne;
+		}
+
+		// update block neighbors
+		FindBlockNeighbours();
+	}
 }

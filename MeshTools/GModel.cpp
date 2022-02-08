@@ -1196,7 +1196,8 @@ GObject* BuildObject(int ntype)
 	case GOCCOBJECT         : po = new GOCCObject(); break;
 	case GOCC_BOTTLE        : po = new GOCCBottle(); break;
 	case GOCC_BOX           : po = new GOCCBox(); break;
-	case GCYLINDRICAL_PATCH: po = new GCylindricalPatch(); break;
+	case GCYLINDRICAL_PATCH : po = new GCylindricalPatch(); break;
+	case GMULTI_BLOCK       : po = new GMultiBox(); break;
 	}
 
 	assert(po);

@@ -838,9 +838,13 @@ void GObject::Save(OArchive &ar)
 					GFace& f = *Face(i);
 					int nid = f.GetID();
 					ar.WriteChunk(CID_OBJ_FACE_ID, nid);
+					ar.WriteChunk(CID_OBJ_FACE_TYPE, f.m_ntype);
 					ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
 					ar.WriteChunk(CID_OBJ_FACE_PID0, f.m_nPID[0]);
 					ar.WriteChunk(CID_OBJ_FACE_PID1, f.m_nPID[1]);
+					ar.WriteChunk(CID_OBJ_FACE_PID2, f.m_nPID[2]);
+					ar.WriteChunk(CID_OBJ_FACE_NODES, (int)f.m_node.size());
+					ar.WriteChunk(CID_OBJ_FACE_NODELIST, f.m_node);
 				}
 				ar.EndChunk();
 			}
@@ -887,6 +891,22 @@ void GObject::Save(OArchive &ar)
 				}
 				ar.EndChunk();
 			}
+		}
+		ar.EndChunk();
+	}
+
+	// save the mesher object
+	if (GetFEMesher())
+	{
+		ar.BeginChunk(CID_OBJ_FEMESHER);
+		{
+			int ntype = 0;
+//			if (dynamic_cast<FETetGenMesher*>(GetFEMesher())) ntype = 1;
+			ar.BeginChunk(ntype);
+			{
+				GetFEMesher()->Save(ar);
+			}
+			ar.EndChunk();
 		}
 		ar.EndChunk();
 	}
@@ -1027,6 +1047,9 @@ void GObject::Load(IArchive& ar)
 					switch (ar.GetChunkID())
 					{
 					case CID_OBJ_FACE_ID: ar.read(nid); f->SetID(nid); break;
+					case CID_OBJ_FACE_TYPE: ar.read(f->m_ntype); break;
+					case CID_OBJ_FACE_NODES: {int n = 0; ar.read(n); f->m_node.assign(n, -1); } break;
+					case CID_OBJ_FACE_NODELIST: ar.read(f->m_node); break;
 					case CID_OBJ_FACE_NAME:
 					{
 						char szname[256] = { 0 };
@@ -1036,6 +1059,7 @@ void GObject::Load(IArchive& ar)
 					break;
 					case CID_OBJ_FACE_PID0: ar.read(f->m_nPID[0]); break;
 					case CID_OBJ_FACE_PID1: ar.read(f->m_nPID[1]); break;
+					case CID_OBJ_FACE_PID2: ar.read(f->m_nPID[2]); break;
 					}
 					ar.CloseChunk();
 				}
@@ -1122,6 +1146,26 @@ void GObject::Load(IArchive& ar)
 				}
 				assert((int)m_Node.size() == nnodes);
 			}
+		}
+		break;
+		case CID_OBJ_FEMESHER:
+		{
+			if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
+			else
+			{
+				int ntype = ar.GetChunkID();
+				//				assert(m_pMesher == 0);
+				switch (ntype)
+				{
+				case 0: break;	// use default mesher
+//				case 1: SetFEMesher(new FETetGenMesher(this)); break;
+				default:
+					throw ReadError("error parsing CID_OBJ_FEMESHER");
+				}
+				GetFEMesher()->Load(ar);
+			}
+			ar.CloseChunk();
+			if (ar.OpenChunk() != IArchive::IO_END) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
 		}
 		break;
 		// the mesh object

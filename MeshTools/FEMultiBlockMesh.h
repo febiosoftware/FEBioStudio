@@ -85,7 +85,6 @@ class MBEdge : public MBItem
 {
 public:
 	GEdge	edge;
-	int		m_winding;
 	int		m_nx;		// tesselation
 	double	m_gx;	// zoning
 	bool	m_bx;	// single or double zoning
@@ -100,9 +99,8 @@ public:
 		m_nx = 1;
 		m_gx = 1;
 		m_bx = false;
-		m_winding = 1;
 	}
-	MBEdge(int n0, int n1) { edge.m_node[0] = n0; edge.m_node[1] = n1; edge.m_ntype = EDGE_LINE; m_winding = 1; }
+	MBEdge(int n0, int n1) { edge.m_node[0] = n0; edge.m_node[1] = n1; edge.m_ntype = EDGE_LINE; }
 	bool operator == (const MBEdge& e) const
 	{
 		const int* n1 = edge.m_node;
@@ -112,11 +110,11 @@ public:
 		return true;
 	}
 
-	MBEdge& SetWinding(int w) { m_winding = w; return *this; }
+	MBEdge& SetWinding(int w) { edge.m_orient = w; return *this; }
 
 	MBEdge& SetEdge(int ntype, int nwinding, int cnode = -1)
 	{
-		m_winding = nwinding;
+		edge.m_orient = nwinding;
 		edge.m_ntype = ntype;
 		edge.m_cnode = cnode;
 		return *this;
@@ -410,7 +408,14 @@ public:
 
 	bool BuildMultiBlock() override;
 
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+private:
+	// rebuild MB after loading
+	void RebuildMB();
+
 private:
 	GMultiBox* m_po;
-	FEMultiBlockMesh	m_mb;
 };
