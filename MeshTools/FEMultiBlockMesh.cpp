@@ -1534,6 +1534,166 @@ vector<int> FEMultiBlockMesh::GetFENodeList(MBBlock& block)
 	return nodeList;
 }
 
+void FEMultiBlockMesh::ClearMeshSettings()
+{
+	for (MBEdge& e : m_MBEdge)
+	{
+		e.m_nx = 0;
+		e.m_gx = 1.0;
+		e.m_bx = false;
+	}
+	for (MBFace& f : m_MBFace)
+	{
+		f.m_nx = f.m_ny = 0;
+		f.m_gx = f.m_gy = 1.0;
+		f.m_bx = f.m_by = false;
+	}
+	for (MBBlock& b : m_MBlock)
+	{
+		b.m_nx = b.m_ny = b.m_nz = 0;
+		b.m_gx = b.m_gy = b.m_gz = 1.0;
+		b.m_bx = b.m_by = b.m_bz = false;
+	}
+}
+
+bool FEMultiBlockMesh::SetEdgeDivisions(int iedge, int nd)
+{
+	MBEdge& edge = m_MBEdge[iedge];
+	if (edge.m_nx == nd) return true;	// edge divisions unchanged
+//	if (edge.m_nx != 0) return false; // edge divisions already set. Cannot override.
+
+	for (MBEdge& e : m_MBEdge) e.m_ntag = 0;
+	edge.m_ntag = nd;
+
+	// propagate new edge size
+	const int ET[3][4] = {
+		{ 0, 2,  4,  6 },
+		{ 1, 3,  5,  7 },
+		{ 8, 9, 10, 11 }
+	};
+
+	const int EC[12] = {0, 1, 0, 1, 0, 1, 0, 1, 2, 2, 2, 2};
+
+	bool done = false;
+	while (!done)
+	{
+		done = true;
+		for (MBBlock& b : m_MBlock)
+		{
+			for (int i = 0; i < 12; ++i)
+			{
+				MBEdge& ei = m_MBEdge[b.m_edge[i]];
+				if (ei.m_ntag == nd)
+				{
+					int ec = EC[i];
+					const int* et = ET[ec];
+					for (int j = 0; j < 4; ++j)
+					{
+						MBEdge& ej = m_MBEdge[b.m_edge[et[j]]];
+						if (ej.m_ntag == 0) {
+							ej.m_ntag = nd; 
+							done = false;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// okay, everything looks good, so let's keep the new edge divisions
+	for (MBEdge& e : m_MBEdge) {
+		if (e.m_ntag == nd) e.m_nx = nd;
+	}
+
+	return true;
+}
+
+bool FEMultiBlockMesh::SetDefaultDivisions(int nd)
+{
+	for (MBEdge& e : m_MBEdge)
+	{
+		if (e.m_nx == 0) e.m_nx = nd;
+	}
+
+	// set face meshing stats
+	for (MBFace& f : m_MBFace)
+	{
+		MBEdge& e0 = m_MBEdge[f.m_edge[0]];
+		MBEdge& e1 = m_MBEdge[f.m_edge[1]];
+
+		f.m_nx = e0.m_nx; assert(f.m_nx > 0);
+		f.m_ny = e1.m_nx; assert(f.m_ny > 0);
+
+		if (f.m_edgeWinding[0] == 1) f.m_gx = e0.m_gx; else f.m_gx = 1.0 / e0.m_gx;
+		if (f.m_edgeWinding[1] == 1) f.m_gy = e1.m_gx; else f.m_gy = 1.0 / e1.m_gx;
+
+		if (m_MBEdge[f.m_edge[2]].m_nx != f.m_nx) return false;
+		if (m_MBEdge[f.m_edge[3]].m_nx != f.m_ny) return false;
+	}
+
+	// set block meshing stats
+//	const int EL[12][2] = { {0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7} };
+	for (MBBlock& b : m_MBlock)
+	{
+		MBEdge& e0 = m_MBEdge[b.m_edge[0]];
+		MBEdge& e1 = m_MBEdge[b.m_edge[1]];
+		MBEdge& e2 = m_MBEdge[b.m_edge[8]];
+
+		b.m_nx = e0.m_nx; assert(b.m_nx > 0);
+		b.m_ny = e1.m_nx; assert(b.m_ny > 0);
+		b.m_nz = e2.m_nx; assert(b.m_nz > 0);
+
+		if      ((e0.m_node[0] == b.m_node[0]) && (e0.m_node[1] == b.m_node[1])) b.m_gx = e0.m_gx;
+		else if ((e0.m_node[0] == b.m_node[1]) && (e0.m_node[1] == b.m_node[0])) b.m_gx = 1.0 / e0.m_gx;
+		else assert(false);
+
+		if      ((e1.m_node[0] == b.m_node[1]) && (e1.m_node[1] == b.m_node[2])) b.m_gy = e1.m_gx;
+		else if ((e1.m_node[0] == b.m_node[2]) && (e1.m_node[1] == b.m_node[1])) b.m_gy = 1.0 / e1.m_gx;
+		else assert(false);
+
+		if      ((e2.m_node[0] == b.m_node[0]) && (e2.m_node[1] == b.m_node[4])) b.m_gz = e2.m_gx;
+		else if ((e2.m_node[0] == b.m_node[4]) && (e2.m_node[1] == b.m_node[0])) b.m_gz = 1.0 / e2.m_gx;
+		else assert(false);
+
+		if (m_MBEdge[b.m_edge[2]].m_nx != b.m_nx) return false;
+		if (m_MBEdge[b.m_edge[4]].m_nx != b.m_nx) return false;
+		if (m_MBEdge[b.m_edge[6]].m_nx != b.m_nx) return false;
+
+		if (m_MBEdge[b.m_edge[3]].m_nx != b.m_ny) return false;
+		if (m_MBEdge[b.m_edge[5]].m_nx != b.m_ny) return false;
+		if (m_MBEdge[b.m_edge[7]].m_nx != b.m_ny) return false;
+
+		if (m_MBEdge[b.m_edge[ 9]].m_nx != b.m_nz) return false;
+		if (m_MBEdge[b.m_edge[10]].m_nx != b.m_nz) return false;
+		if (m_MBEdge[b.m_edge[11]].m_nx != b.m_nz) return false;
+	}
+
+	return true;
+}
+
+bool FEMultiBlockMesh::SetNodeWeights(std::vector<double>& w)
+{
+	if (w.size() != m_MBNode.size()) return false;
+
+	for (MBEdge& e : m_MBEdge)
+	{
+		int n0 = e.m_node[0];
+		int n1 = e.m_node[1];
+		double w0 = w[n0]; if (w0 == 0.0) w0 = 1.0;
+		double w1 = w[n1]; if (w1 == 0.0) w1 = 1.0;
+
+		if ((w0 != 1.0) && (w1 == 1.0))
+		{
+			e.m_gx = w0;
+		}
+		else if ((w1 != 1.0) && (w0 == 1.0))
+		{
+			e.m_gx = 1.0 / w1;
+		}
+		else if (w0 != w1) { assert(false); }
+	}
+}
+
 //==============================================================
 FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
 {
@@ -1609,21 +1769,38 @@ FEMesh* FEMultiBlockMesher::BuildMesh()
 	// rebuild the multiblock data
 	BuildMultiBlock();
 
-	// assign meshing parameters
 	FEMultiBlockMesh& mb = *this;
+
+	// clear all mesh settings
+	mb.ClearMeshSettings();
+
+	// assign meshing parameters
 	int nd = GetIntValue(DIVS);
-	for (int i = 0; i < mb.Blocks(); ++i)
+
+	// first see the edge divisions
+	for (int i = 0; i < o.Edges(); ++i)
 	{
-		mb.GetBlock(i).SetSizes(nd, nd, nd);
+		GEdge* edge = o.Edge(i);
+		double w = edge->GetMeshWeight();
+		if (w > 0)
+		{
+			int nx = (int)(nd * w);
+			if (nx < 1) nx = 1;
+			mb.SetEdgeDivisions(i, nx);
+		}
 	}
-	for (int i = 0; i < mb.Faces(); ++i)
+
+	// set the node weights (which also adjusts the edge zoning)
+	vector<double> w(o.Nodes(), 0.0);
+	for (int i = 0; i < o.Nodes(); ++i)
 	{
-		mb.GetFace(i).SetSizes(nd, nd);
+		GNode* node = o.Node(i);
+		w[i] = node->GetMeshWeight();
 	}
-	for (int i = 0; i < mb.Edges(); ++i)
-	{
-		mb.GetEdge(i).m_nx = nd;
-	}
+	mb.SetNodeWeights(w);
+
+	// set the divisions of the remaining items
+	mb.SetDefaultDivisions(nd);
 
 	int elemType = GetIntValue(ELEM_TYPE);
 	switch (elemType)
@@ -1694,4 +1871,43 @@ void FEMultiBlockMesher::RebuildMB()
 		// update block neighbors
 		FindBlockNeighbours();
 	}
+}
+
+//===============================================================================
+FESetMBWeight::FESetMBWeight() : FEModifier("Set MB Weight")
+{
+	AddDoubleParam(0.0, "weight");
+}
+
+FEMesh* FESetMBWeight::Apply(FEMesh* pm)
+{
+	if (pm == nullptr) return nullptr;
+	GMultiBox* po = dynamic_cast<GMultiBox*>(pm->GetGObject());
+	if (po == nullptr) return nullptr;
+
+	double w = GetFloatValue(0);
+
+	for (int i = 0; i < po->Faces(); ++i)
+	{
+		GFace* f = po->Face(i);
+		if (f->IsSelected())
+		{
+			for (int j = 0; j < f->Nodes(); ++j)
+			{
+				GNode* n = po->Node(f->m_node[j]);
+				n->SetMeshWeight(w);
+			}
+		}
+	}
+
+	for (int i = 0; i < po->Edges(); ++i)
+	{
+		GEdge* e = po->Edge(i);
+		if (e->IsSelected())
+		{
+			e->SetMeshWeight(w);
+		}
+	}
+
+	return po->BuildMesh();
 }

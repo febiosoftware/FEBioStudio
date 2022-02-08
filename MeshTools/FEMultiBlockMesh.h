@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMesher.h"
+#include "FEModifier.h"
 #include <GeomLib/GObject.h>
 #include <vector>
 //using namespace std;
@@ -238,6 +239,12 @@ public:
 
 	MBBlock& AddBlock();
 
+	void ClearMeshSettings();
+
+	bool SetEdgeDivisions(int iedge, int nd);
+	bool SetDefaultDivisions(int nd);
+	bool SetNodeWeights(std::vector<double>& w);
+
 	// update the Multi-Block data
 	void UpdateMB();
 
@@ -413,4 +420,13 @@ private:
 
 private:
 	GMultiBox* m_po;
+};
+
+class FESetMBWeight : public FEModifier
+{
+public:
+	FESetMBWeight();
+
+	//! Apply the weld modifier
+	FEMesh* Apply(FEMesh* pm);
 };

@@ -552,7 +552,7 @@ bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
 	CMainWindow* wnd = GetMainWindow();
 	if (s.empty() == false)
 	{
-		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
+//		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
 	}
 	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
 

@@ -89,7 +89,7 @@ class GItem : public FSObject
 {
 public:
 	// Constructor. Takes parent object as parameter
-	GItem(GBaseObject* po = 0) { m_state = GEO_VISIBLE; m_gid = 0; m_lid = -1; m_po = po; }
+	GItem(GBaseObject* po = 0) { m_state = GEO_VISIBLE; m_gid = 0; m_lid = -1; m_po = po; m_weight = 0.0; }
 	virtual ~GItem() { m_po = 0; }
 
 	// get/set global ID
@@ -122,6 +122,9 @@ public:
 	unsigned int GetState() const { return m_state; }
 	void SetState(unsigned int state) { m_state = state; }
 
+	void SetMeshWeight(double w) { m_weight = w; }
+	double GetMeshWeight() const { return m_weight; }
+
 public:
 	int		m_ntag;	// multi-purpose tag
 
@@ -129,6 +132,8 @@ protected:
 	unsigned int	m_state;	// state variable
 	int				m_gid;		// global ID (one-based)
 	int				m_lid;		// local ID (zero-based)
+
+	double	m_weight;	// weight used for meshing
 
 	GBaseObject*	m_po;	// pointer to object this item belongs to
 };
