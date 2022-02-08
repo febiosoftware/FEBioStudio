@@ -1802,6 +1802,36 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 
 	if (allSurfaces == false)
 	{
+		// see if all objects are multiblocks
+		bool allMultiBlocks = true;
+		for (int i = 0; i < sel->Count(); ++i)
+		{
+			GMultiBox* mb = dynamic_cast<GMultiBox*>(sel->Object(i));
+			if (mb == nullptr) {
+				allMultiBlocks = false; break;
+			}
+		}
+
+		// merge all multiblocks
+		if (allMultiBlocks)
+		{
+			// create a new object by copying the first selected object
+			GMultiBox* poa = dynamic_cast<GMultiBox*>(sel->Object(0)); assert(poa);
+			GMultiBox* ponew = new GMultiBox(poa);
+			ponew->SetName(newObjectName.c_str());
+
+			for (int i = 1; i < sel->Count(); ++i)
+			{
+				// get the next object
+				GMultiBox* po = dynamic_cast<GMultiBox*>(sel->Object(i));
+
+				// attach it
+				ponew->Merge(*po);
+			}
+
+			return ponew;
+		}
+
 		// make sure all objects have meshes
 		for (int i = 0; i<sel->Count(); ++i)
 		{

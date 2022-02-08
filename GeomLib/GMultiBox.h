@@ -44,4 +44,9 @@ public:
 	FEMeshBase* GetEditableMesh() override;
 
 	GObject* Clone() override;
+
+	bool Merge(GMultiBox& mb);
+
+private:
+	void BuildObject();
 };

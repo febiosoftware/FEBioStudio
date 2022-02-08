@@ -1785,3 +1785,171 @@ FEMesh* FEMultiBlockMesher::BuildMesh()
 
 	return FEMultiBlockMesh::BuildMesh();
 }
+
+bool isSameFace(int n[4], int m[4])
+{
+	if ((n[0] == m[0]) && (n[1] == m[1]) && (n[2] == m[2]) && (n[3] == m[3])) return true;
+	if ((n[0] == m[1]) && (n[1] == m[2]) && (n[2] == m[3]) && (n[3] == m[0])) return true;
+	if ((n[0] == m[2]) && (n[1] == m[3]) && (n[2] == m[0]) && (n[3] == m[1])) return true;
+	if ((n[0] == m[3]) && (n[1] == m[0]) && (n[2] == m[1]) && (n[3] == m[2])) return true;
+
+	if ((n[0] == m[0]) && (n[1] == m[3]) && (n[2] == m[2]) && (n[3] == m[1])) return true;
+	if ((n[0] == m[3]) && (n[1] == m[2]) && (n[2] == m[1]) && (n[3] == m[0])) return true;
+	if ((n[0] == m[2]) && (n[1] == m[1]) && (n[2] == m[0]) && (n[3] == m[3])) return true;
+	if ((n[0] == m[1]) && (n[1] == m[0]) && (n[2] == m[3]) && (n[3] == m[2])) return true;
+
+	return false;
+}
+
+bool FEMultiBlockMesh::MergeMultiBlock(FEMultiBlockMesh& mb)
+{
+	const double tol = 1e-12;
+
+	// The tag will be set to the node on this that it corresponds to. 
+	// new nodes may be added
+	for (int i = 0; i < mb.Nodes(); ++i)
+	{
+		MBNode& ni = mb.GetMBNode(i);
+
+		// get the  position of the node
+		vec3d ri = ni.m_r;
+
+		// see if we already have this node
+		int jmin = -1;
+		double D2min = 0.0;
+		for (int j = 0; j < Nodes(); ++j)
+		{
+			MBNode& nj = GetMBNode(j);
+			vec3d rj = nj.m_r;
+
+			double D2 = (ri - rj).SqrLength();
+			if ((jmin == -1) || (D2 < D2min))
+			{
+				jmin = j;
+				D2min = D2;
+			}
+		}
+		assert(jmin != -1);
+
+		if (D2min < tol)
+		{
+			ni.m_ntag = jmin;
+		}
+		else
+		{
+			MBNode& newNode = AddNode(ri);
+			ni.m_ntag = Nodes() - 1;
+		}
+	}
+
+	// add all edges
+	for (int i = 0; i < mb.Edges(); ++i)
+	{
+		MBEdge& ei = mb.GetEdge(i);
+		int n0 = mb.GetMBNode(ei.Node(0)).m_ntag; assert(n0 >= 0);
+		int n1 = mb.GetMBNode(ei.Node(1)).m_ntag; assert(n1 >= 0);
+		int n2 = (ei.edge.m_cnode < 0 ? -1 : mb.GetMBNode(ei.edge.m_cnode).m_ntag);
+		assert((ei.edge.m_cnode < 0) || (n2 >= 0));
+
+		// see if we already have this edge
+		ei.m_ntag = -1;
+		for (int j = 0; j < Edges(); ++j)
+		{
+			MBEdge& ej = GetEdge(j);
+			int m0 = ej.Node(0);
+			int m1 = ej.Node(1);
+			int m2 = ej.edge.m_cnode;
+
+			if ((n0 == m0) && (n1 == m1))
+			{
+				assert(ei.edge.m_ntype == ej.edge.m_ntype);
+				ei.m_ntag = j;
+				break;
+			}
+			else if ((n0 == m1) && (n1 == m0))
+			{
+				assert(ei.edge.m_ntype == ej.edge.m_ntype);
+				ei.m_ntag = j;
+				break;
+			}
+		}
+
+		if (ei.m_ntag == -1)
+		{
+			ei.m_ntag = m_MBEdge.size();
+			MBEdge newEdge = ei;
+			newEdge.edge.m_node[0] = n0;
+			newEdge.edge.m_node[1] = n1;
+			newEdge.edge.m_cnode = n2;
+			m_MBEdge.push_back(newEdge);
+		}
+	}
+
+	// add all faces
+	for (int i = 0; i < mb.Faces(); ++i)
+	{
+		MBFace& fi = mb.GetFace(i);
+		int n[4];
+		for (int l = 0; l < 4; ++l) {
+			n[l] = mb.GetMBNode(fi.m_node[l]).m_ntag; assert(n[l] >= 0);
+		}
+
+		// see if we already have this face
+		fi.m_ntag = -1;
+		for (int j = 0; j < Faces(); ++j)
+		{
+			MBFace& fj = GetFace(j);
+			int m[4];
+			for (int l = 0; l < 4; ++l) m[l] = fj.m_node[l];
+
+			if (isSameFace(n, m))
+			{
+				fi.m_ntag = j;
+
+				assert(fi.m_block[1] == -1);
+				assert(fj.m_block[1] == -1);
+
+				fj.m_block[1] = fi.m_block[0] + Blocks();
+				break;
+			}
+		}
+
+		if (fi.m_ntag == -1)
+		{
+			fi.m_ntag = m_MBFace.size();
+			MBFace newFace(fi);
+			for (int l = 0; l < 4; ++l) newFace.m_node[l] = n[l];
+			for (int l = 0; l < 4; ++l)
+			{
+				int n0 = newFace.m_node[l];
+				int n1 = newFace.m_node[(l+1)%4];
+				newFace.m_edge[l] = mb.GetEdge(fi.m_edge[l]).m_ntag;
+
+				MBEdge& edge = GetEdge(newFace.m_edge[l]);
+				if      ((edge.Node(0) == n0) && (edge.Node(1) == n1)) newFace.m_edgeWinding[l] =  1;
+				else if ((edge.Node(0) == n1) && (edge.Node(1) == n0)) newFace.m_edgeWinding[l] = -1;
+				else assert(false);
+			}
+			if (fi.m_block[0] >= 0) newFace.m_block[0] += Blocks();
+			if (fi.m_block[1] >= 0) newFace.m_block[1] += Blocks();
+			m_MBFace.push_back(newFace);
+		}
+	}
+
+	// add new blocks
+	for (int i = 0; i < mb.Blocks(); ++i)
+	{
+		// note that we make a copy!
+		MBBlock bi = mb.GetBlock(i);
+		for (int l = 0; l < 8; ++l) bi.m_node[l] = mb.GetMBNode(bi.m_node[l]).m_ntag;
+		for (int l = 0; l < 6; ++l) bi.m_face[l] = mb.GetFace  (bi.m_face[l]).m_ntag;
+		for (int l = 0; l <12; ++l) bi.m_edge[l] = mb.GetEdge  (bi.m_edge[l]).m_ntag;
+		bi.m_gid += Blocks();
+		m_MBlock.push_back(bi);
+	}
+
+	// we got to rebuild the block neighbors since we didn't update that yet
+	FindBlockNeighbours();
+
+	return true;
+}

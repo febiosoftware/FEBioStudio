@@ -264,7 +264,10 @@ public:
 	int Faces() const { return (int)m_MBFace.size(); }
 	MBFace& GetFace(int i) { return m_MBFace[i]; }
 
+public:
 	bool DeleteBlock(int n);
+
+	bool MergeMultiBlock(FEMultiBlockMesh& mb);
 
 protected:
 	void FindBlockNeighbours();
