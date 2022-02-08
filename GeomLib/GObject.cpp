@@ -818,6 +818,7 @@ void GObject::Save(OArchive &ar)
 					int mid = p.GetMaterialID();
 					ar.WriteChunk(CID_OBJ_PART_ID, nid);
 					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
+					ar.WriteChunk(CID_OBJ_PART_MESHWEIGHT, p.GetMeshWeight());
 					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
 
 					if (!p.m_node.empty()) ar.WriteChunk(CID_OBJ_PART_NODELIST, p.m_node);
@@ -852,6 +853,7 @@ void GObject::Save(OArchive &ar)
 					int nid = f.GetID();
 					ar.WriteChunk(CID_OBJ_FACE_ID, nid);
 					ar.WriteChunk(CID_OBJ_FACE_TYPE, f.m_ntype);
+					ar.WriteChunk(CID_OBJ_FACE_MESHWEIGHT, f.GetMeshWeight());
 					ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
 					ar.WriteChunk(CID_OBJ_FACE_PID0, f.m_nPID[0]);
 					ar.WriteChunk(CID_OBJ_FACE_PID1, f.m_nPID[1]);
@@ -880,6 +882,7 @@ void GObject::Save(OArchive &ar)
 					ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
 					ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
 					ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.Type());
+					ar.WriteChunk(CID_OBJ_EDGE_MESHWEIGHT, e.GetMeshWeight());
 					ar.WriteChunk(CID_OBJ_EDGE_ORIENT, e.m_orient);
 					ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.m_node[0]);
 					ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.m_node[1]);
@@ -905,6 +908,8 @@ void GObject::Save(OArchive &ar)
 					GNode& v = *Node(i);
 					int nid = v.GetID();
 					ar.WriteChunk(CID_OBJ_NODE_ID, nid);
+					ar.WriteChunk(CID_OBJ_NODE_TYPE, v.Type());
+					ar.WriteChunk(CID_OBJ_NODE_MESHWEIGHT, v.GetMeshWeight());
 					ar.WriteChunk(CID_OBJ_NODE_POS, v.LocalPosition());
 					ar.WriteChunk(CID_OBJ_NODE_NAME, v.GetName());
 				}
@@ -1025,6 +1030,7 @@ void GObject::Load(IArchive& ar)
 					{
 					case CID_OBJ_PART_ID: ar.read(nid); p->SetID(nid); break;
 					case CID_OBJ_PART_MAT: ar.read(mid); p->SetMaterialID(mid); break;
+					case CID_OBJ_PART_MESHWEIGHT: { double w = 0.0; ar.read(w); p->SetMeshWeight(w); } break;
 					case CID_OBJ_PART_NAME:
 						{
 							char szname[256] = { 0 };
@@ -1070,6 +1076,7 @@ void GObject::Load(IArchive& ar)
 					{
 					case CID_OBJ_FACE_ID: ar.read(nid); f->SetID(nid); break;
 					case CID_OBJ_FACE_TYPE: ar.read(f->m_ntype); break;
+					case CID_OBJ_FACE_MESHWEIGHT: { double w = 0.0; ar.read(w); f->SetMeshWeight(w); } break;
 					case CID_OBJ_FACE_NODELIST: ar.read(f->m_node); break;
 					case CID_OBJ_FACE_EDGELIST: ar.read(f->m_edge); break;
 					case CID_OBJ_FACE_NAME:
@@ -1112,6 +1119,7 @@ void GObject::Load(IArchive& ar)
 					{
 					case CID_OBJ_EDGE_ID: ar.read(nid); e->SetID(nid); break;
 					case CID_OBJ_EDGE_TYPE: ar.read(e->m_ntype); break;
+					case CID_OBJ_EDGE_MESHWEIGHT: { double w = 0.0; ar.read(w); e->SetMeshWeight(w); } break;
 					case CID_OBJ_EDGE_NAME:
 					{
 						char szname[256] = { 0 };
@@ -1155,6 +1163,7 @@ void GObject::Load(IArchive& ar)
 						{
 						case CID_OBJ_NODE_ID: ar.read(nid); n->SetID(nid); break;
 						case CID_OBJ_NODE_TYPE: { int ntype;  ar.read(ntype); n->SetType(ntype); } break;
+						case CID_OBJ_NODE_MESHWEIGHT: { double w = 0.0; ar.read(w); n->SetMeshWeight(w); } break;
 						case CID_OBJ_NODE_POS: ar.read(n->LocalPosition()); break;
 						case CID_OBJ_NODE_NAME:
 						{
