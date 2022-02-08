@@ -262,3 +262,6 @@ private:
 
 	static GObject*		m_activeObject;
 };
+
+// helper function to see if two faces are identical
+bool IsSameFace(int n[4], int m[4]);

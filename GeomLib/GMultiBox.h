@@ -27,6 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include <GeomLib/GObject.h>
 
+class FEMultiBlockMesh;
+
 //-----------------------------------------------------------------------------
 //! The GMultiBox class is the geometry that is used to create a multi-block mesh. 
 //! A multi-block mesh is basically a mesh that is composed of rectangular blocks. 
@@ -48,5 +50,5 @@ public:
 	bool Merge(GMultiBox& mb);
 
 private:
-	void BuildObject();
+	void BuildObject(FEMultiBlockMesh& mb);
 };

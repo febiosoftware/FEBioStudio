@@ -178,8 +178,6 @@ public:
 	bool IsExternal() { return m_block[1] == -1; }
 
 	MBFace& SetSizes(int nx, int ny) { m_nx = nx; m_ny = ny; return *this; }
-
-	void Invert();
 };
 
 class MBBlock : public MBItem
@@ -238,6 +236,8 @@ public:
 
 	MBBlock& AddBlock(int n0, int n1, int n2, int n3, int n4, int n5, int n6, int n7);
 
+	MBBlock& AddBlock();
+
 	// update the Multi-Block data
 	void UpdateMB();
 
@@ -265,11 +265,6 @@ public:
 
 	int Faces() const { return (int)m_MBFace.size(); }
 	MBFace& GetFace(int i) { return m_MBFace[i]; }
-
-public:
-	bool DeleteBlock(int n);
-
-	bool MergeMultiBlock(FEMultiBlockMesh& mb);
 
 protected:
 	void FindBlockNeighbours();
@@ -411,10 +406,6 @@ public:
 	FEMesh* BuildMesh() override;
 
 	bool BuildMultiBlock() override;
-
-public:
-	void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
 
 private:
 	// rebuild MB after loading

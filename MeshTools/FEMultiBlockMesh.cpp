@@ -1381,6 +1381,14 @@ MBBlock& FEMultiBlockMesh::AddBlock(int n0, int n1, int n2, int n3, int n4, int 
 }
 
 //-----------------------------------------------------------------------------
+MBBlock& FEMultiBlockMesh::AddBlock()
+{
+	MBBlock b;
+	m_MBlock.push_back(b);
+	return m_MBlock[m_MBlock.size() - 1];
+}
+
+//-----------------------------------------------------------------------------
 MBEdge& FEMultiBlockMesh::GetEdge(int nedge)
 {
 	return m_MBEdge[nedge];
@@ -1526,220 +1534,6 @@ vector<int> FEMultiBlockMesh::GetFENodeList(MBBlock& block)
 	return nodeList;
 }
 
-void MBFace::Invert()
-{
-	// swap block IDs
-	int tmp = m_block[0]; m_block[0] = m_block[1]; m_block[1] = tmp;
-
-	// we also need to invert the edges and nodes
-	int fn[4], fe[4], fw[4];
-	for (int j = 0; j < 4; ++j) {
-		fn[j] = m_node[j];
-		fe[j] = m_edge[j];
-		fw[j] = m_edgeWinding[j];
-	}
-	for (int j = 0; j < 4; ++j)
-	{
-		m_node[j] = fn[(4 - j) % 4];
-		m_edge[j] = fe[3 - j];
-		m_edgeWinding[j] = -fw[3 - j];
-	}
-
-	// flip meshing parameters
-	tmp = m_nx; m_ny = m_ny; m_ny = tmp;
-	double dtmp = m_gx; m_gx = m_gy; m_gy = dtmp; // TODO: Not sure this is correct.
-	bool btmp = m_bx; m_bx = m_by; m_by = btmp;
-}
-
-
-bool FEMultiBlockMesh::DeleteBlock(int blockIndex)
-{
-	// --------------------------------
-	// tag new block indices
-	int n = 0;
-	for (int i=0; i<m_MBlock.size(); ++i)
-	{
-		MBBlock& b = m_MBlock[i];
-		if (i == blockIndex) b.m_ntag = -1;
-		else b.m_ntag = n++;
-	}
-	assert(n == m_MBlock.size() - 1);
-
-	// update block neighbors
-	for (MBBlock& b : m_MBlock)
-	{
-		for (int i = 0; i < 6; ++i)
-		{
-			if (b.m_Nbr[i] >= 0) b.m_Nbr[i] = m_MBlock[b.m_Nbr[i]].m_ntag;
-		}
-	}
-
-	// update face block ids.
-	for (MBFace& face : m_MBFace)
-	{
-		// update block IDs
-		assert(face.m_block[0] >= 0);
-		face.m_block[0] = m_MBlock[face.m_block[0]].m_ntag;
-		if (face.m_block[1] >= 0) {
-			face.m_block[1] = m_MBlock[face.m_block[1]].m_ntag;
-		}
-
-		// if the face 0 block is -1, then we need to invert it
-		if ((face.m_block[0] == -1) && (face.m_block[1] != -1))
-		{
-			face.Invert();
-		}
-	}
-
-	// remove the block
-	m_MBlock.erase(m_MBlock.begin() + blockIndex);
-	for (int i = 0; i < m_MBlock.size(); ++i) m_MBlock[i].m_gid = i;
-
-	//-------------------------------
-	// Mark faces for removal 
-	n = 0;
-	for (MBFace& face : m_MBFace)
-	{
-		// if the face is free (not connected to a part), mark it for deletion (tag = -1)
-		if ((face.m_block[0] == -1) && (face.m_block[1] == -1))
-		{
-			face.m_ntag = -1;
-		}
-		else face.m_ntag = n++;
-	}
-
-	// update block face IDs
-	for (MBBlock& b : m_MBlock)
-	{
-		for (int j = 0; j < 6; ++j)
-		{
-			b.m_face[j] = m_MBFace[b.m_face[j]].m_ntag;
-			assert(b.m_face[j] >= 0);
-		}
-	}
-
-	// now, delete the actual faces
-	n = 0;
-	for (int i = 0; i < m_MBFace.size(); ++i)
-	{
-		if (m_MBFace[i].m_ntag == -1)
-		{
-			m_MBFace.erase(m_MBFace.begin() + i);
-			i--;
-		}
-		else m_MBFace[i].m_gid = n++;
-	}
-
-	// figure out which edges can be deleted
-	for (MBEdge& edge : m_MBEdge) edge.m_ntag = 0;
-	for (MBFace& face : m_MBFace)
-	{
-		for (int j = 0; j < 4; ++j)
-		{
-			m_MBEdge[face.m_edge[j]].m_ntag = 1;
-		}
-	}
-
-	// assign new IDs (stored in tag)
-	n = 0;
-	for(MBEdge& edge : m_MBEdge) {
-		if (edge.m_ntag == 0) edge.m_ntag = -1;
-		else edge.m_ntag = n++;
-	};
-
-	// update block edges
-	for (MBBlock& b : m_MBlock)
-	{
-		for (int j = 0; j < 12; ++j)
-		{
-			b.m_edge[j] = m_MBEdge[b.m_edge[j]].m_ntag;
-			assert(b.m_edge[j] >= 0);
-		}
-	}
-
-	// update face edges
-	for (MBFace& f : m_MBFace)
-	{
-		for (int j = 0; j < 4; ++j)
-		{
-			f.m_edge[j] = m_MBEdge[f.m_edge[j]].m_ntag;
-			assert(f.m_edge[j] >= 0);
-		}
-	}
-
-	// delete edges
-	n = 0;
-	for (int i = 0; i < m_MBEdge.size(); ++i)
-	{
-		if (m_MBEdge[i].m_ntag == -1)
-		{
-			m_MBEdge.erase(m_MBEdge.begin() + i);
-			--i;
-		}
-		else m_MBEdge[i].m_gid = n++;
-	}
-
-	// see if any nodes can be deleted
-	for (MBNode& node : m_MBNode) node.m_ntag = 0;
-	for (MBEdge& edge : m_MBEdge)
-	{
-		m_MBNode[edge.m_node[0]].m_ntag = 1;
-		m_MBNode[edge.m_node[1]].m_ntag = 1;
-		if (edge.m_cnode >= 0)
-		{
-			m_MBNode[edge.m_cnode].m_ntag = 1;
-		}
-	}
-
-	n = 0;
-	for (MBNode& node : m_MBNode)
-	{
-		if (node.m_ntag == 0) node.m_ntag = -1;
-		else node.m_ntag = n++;
-	}
-
-	// update block nodes
-	for (MBBlock& b : m_MBlock) {
-		for (int j = 0; j < 8; ++j) {
-			b.m_node[j] = m_MBNode[b.m_node[j]].m_ntag;
-			assert(b.m_node[j] >= 0);
-		}
-	}
-
-	// update all face nodes
-	for (MBFace& f : m_MBFace) {
-		for (int j = 0; j < 4; ++j) {
-			f.m_node[j] = m_MBNode[f.m_node[j]].m_ntag;
-			assert(f.m_node[j] >= 0);
-		}
-	}
-
-	// update all edge nodes
-	for (MBEdge& e : m_MBEdge) {
-		e.m_node[0] = m_MBNode[e.m_node[0]].m_ntag; assert(e.m_node[0] >= 0);
-		e.m_node[1] = m_MBNode[e.m_node[1]].m_ntag; assert(e.m_node[1] >= 0);
-		if (e.m_cnode >= 0)
-		{
-			e.m_cnode = m_MBNode[e.m_cnode].m_ntag;
-			assert(e.m_cnode >= 0);
-		}
-	}
-
-	// delete nodes
-	n = 0;
-	for (int i = 0; i < m_MBNode.size(); ++i)
-	{
-		if (m_MBNode[i].m_ntag == -1)
-		{
-			m_MBNode.erase(m_MBNode.begin() + i);
-			--i;
-		}
-		else m_MBNode[i].m_gid = n++;
-	}
-
-	return true;
-}
-
 //==============================================================
 FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
 {
@@ -1749,7 +1543,61 @@ FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
 
 bool FEMultiBlockMesher::BuildMultiBlock()
 {
-	// we assume that the MB is valid
+	if (m_po == nullptr) return false;
+
+	ClearMB();
+
+	GMultiBox& o = *m_po;
+	for (int i=0; i<o.Nodes(); ++i)
+	{
+		GNode* n = o.Node(i);
+		MBNode& mbNode = AddNode(n->LocalPosition(), n->Type());
+		mbNode.SetID(n->GetLocalID());
+	}
+
+	for (int i=0; i<o.Edges(); ++i)
+	{
+		GEdge* e = o.Edge(i);
+		MBEdge& mbEdge = AddEdge();
+		mbEdge.m_ntype = e->m_ntype;
+		mbEdge.m_node[0] = e->m_node[0];
+		mbEdge.m_node[1] = e->m_node[1];
+		mbEdge.m_cnode = e->m_cnode;
+		mbEdge.m_orient = e->m_orient;
+		mbEdge.SetID(e->GetLocalID());
+	}
+
+	for (int i=0; i<o.Faces(); ++i)
+	{
+		GFace* f = o.Face(i);
+		if (f->Nodes() != 4) return false;
+		MBFace& mbFace = AddFace();
+		mbFace.m_gid = f->GetLocalID();
+		mbFace.m_block[0] = f->m_nPID[0];
+		mbFace.m_block[1] = f->m_nPID[1];
+		for (int j = 0; j < 4; ++j) mbFace.m_node[j] = f->m_node[j];
+		for (int j = 0; j < 4; ++j) {
+			mbFace.m_edge[j] = f->m_edge[j].nid;
+			mbFace.m_edgeWinding[j] = f->m_edge[j].nwn;
+		}
+	}
+
+	for (int i=0; i<o.Parts(); ++i)
+	{
+		GPart* p = o.Part(i);
+		if (p->Nodes() != 8) return false;
+		if (p->Edges() != 12) return false;
+		if (p->Faces() != 6) return false;
+		MBBlock& mbBlock = AddBlock();
+		mbBlock.m_gid = p->GetLocalID();
+		for (int j = 0; j <  8; ++j) mbBlock.m_node[j] = p->m_node[j];
+		for (int j = 0; j < 12; ++j) mbBlock.m_edge[j] = p->m_edge[j];
+		for (int j = 0; j <  6; ++j) mbBlock.m_face[j] = p->m_face[j];
+	}
+
+	// update block neighbors
+	FindBlockNeighbours();
+
 	return true;
 }
 
@@ -1758,6 +1606,10 @@ FEMesh* FEMultiBlockMesher::BuildMesh()
 	if (m_po == nullptr) return nullptr;
 	GMultiBox& o = *m_po;
 
+	// rebuild the multiblock data
+	BuildMultiBlock();
+
+	// assign meshing parameters
 	FEMultiBlockMesh& mb = *this;
 	int nd = GetIntValue(DIVS);
 	for (int i = 0; i < mb.Blocks(); ++i)
@@ -1776,7 +1628,7 @@ FEMesh* FEMultiBlockMesher::BuildMesh()
 	int elemType = GetIntValue(ELEM_TYPE);
 	switch (elemType)
 	{
-	case 0: mb.SetElementType(FE_HEX8); break;
+	case 0: mb.SetElementType(FE_HEX8 ); break;
 	case 1: mb.SetElementType(FE_HEX20); break;
 	case 2: mb.SetElementType(FE_HEX27); break;
 	default:
@@ -1784,372 +1636,6 @@ FEMesh* FEMultiBlockMesher::BuildMesh()
 	}
 
 	return FEMultiBlockMesh::BuildMesh();
-}
-
-bool isSameFace(int n[4], int m[4])
-{
-	if ((n[0] == m[0]) && (n[1] == m[1]) && (n[2] == m[2]) && (n[3] == m[3])) return true;
-	if ((n[0] == m[1]) && (n[1] == m[2]) && (n[2] == m[3]) && (n[3] == m[0])) return true;
-	if ((n[0] == m[2]) && (n[1] == m[3]) && (n[2] == m[0]) && (n[3] == m[1])) return true;
-	if ((n[0] == m[3]) && (n[1] == m[0]) && (n[2] == m[1]) && (n[3] == m[2])) return true;
-
-	if ((n[0] == m[0]) && (n[1] == m[3]) && (n[2] == m[2]) && (n[3] == m[1])) return true;
-	if ((n[0] == m[3]) && (n[1] == m[2]) && (n[2] == m[1]) && (n[3] == m[0])) return true;
-	if ((n[0] == m[2]) && (n[1] == m[1]) && (n[2] == m[0]) && (n[3] == m[3])) return true;
-	if ((n[0] == m[1]) && (n[1] == m[0]) && (n[2] == m[3]) && (n[3] == m[2])) return true;
-
-	return false;
-}
-
-bool FEMultiBlockMesh::MergeMultiBlock(FEMultiBlockMesh& mb)
-{
-	const double tol = 1e-12;
-
-	// The tag will be set to the node on this that it corresponds to. 
-	// new nodes may be added
-	for (int i = 0; i < mb.Nodes(); ++i)
-	{
-		MBNode& ni = mb.GetMBNode(i);
-
-		// get the  position of the node
-		vec3d ri = ni.m_r;
-
-		// see if we already have this node
-		int jmin = -1;
-		double D2min = 0.0;
-		for (int j = 0; j < Nodes(); ++j)
-		{
-			MBNode& nj = GetMBNode(j);
-			vec3d rj = nj.m_r;
-
-			double D2 = (ri - rj).SqrLength();
-			if ((jmin == -1) || (D2 < D2min))
-			{
-				jmin = j;
-				D2min = D2;
-			}
-		}
-		assert(jmin != -1);
-
-		if (D2min < tol)
-		{
-			ni.m_ntag = jmin;
-		}
-		else
-		{
-			MBNode& newNode = AddNode(ri);
-			ni.m_ntag = Nodes() - 1;
-		}
-	}
-
-	// add all edges
-	for (int i = 0; i < mb.Edges(); ++i)
-	{
-		MBEdge& ei = mb.GetEdge(i);
-		int n0 = mb.GetMBNode(ei.Node(0)).m_ntag; assert(n0 >= 0);
-		int n1 = mb.GetMBNode(ei.Node(1)).m_ntag; assert(n1 >= 0);
-		int n2 = (ei.m_cnode < 0 ? -1 : mb.GetMBNode(ei.m_cnode).m_ntag);
-		assert((ei.m_cnode < 0) || (n2 >= 0));
-
-		// see if we already have this edge
-		ei.m_ntag = -1;
-		for (int j = 0; j < Edges(); ++j)
-		{
-			MBEdge& ej = GetEdge(j);
-			int m0 = ej.Node(0);
-			int m1 = ej.Node(1);
-			int m2 = ej.m_cnode;
-
-			if ((n0 == m0) && (n1 == m1))
-			{
-				assert(ei.m_ntype == ej.m_ntype);
-				ei.m_ntag = j;
-				break;
-			}
-			else if ((n0 == m1) && (n1 == m0))
-			{
-				assert(ei.m_ntype == ej.m_ntype);
-				ei.m_ntag = j;
-				break;
-			}
-		}
-
-		if (ei.m_ntag == -1)
-		{
-			ei.m_ntag = m_MBEdge.size();
-			MBEdge newEdge = ei;
-			newEdge.m_node[0] = n0;
-			newEdge.m_node[1] = n1;
-			newEdge.m_cnode = n2;
-			m_MBEdge.push_back(newEdge);
-		}
-	}
-
-	// add all faces
-	for (int i = 0; i < mb.Faces(); ++i)
-	{
-		MBFace& fi = mb.GetFace(i);
-		int n[4];
-		for (int l = 0; l < 4; ++l) {
-			n[l] = mb.GetMBNode(fi.m_node[l]).m_ntag; assert(n[l] >= 0);
-		}
-
-		// see if we already have this face
-		fi.m_ntag = -1;
-		for (int j = 0; j < Faces(); ++j)
-		{
-			MBFace& fj = GetFace(j);
-			int m[4];
-			for (int l = 0; l < 4; ++l) m[l] = fj.m_node[l];
-
-			if (isSameFace(n, m))
-			{
-				fi.m_ntag = j;
-
-				assert(fi.m_block[1] == -1);
-				assert(fj.m_block[1] == -1);
-
-				fj.m_block[1] = fi.m_block[0] + Blocks();
-				break;
-			}
-		}
-
-		if (fi.m_ntag == -1)
-		{
-			fi.m_ntag = m_MBFace.size();
-			MBFace newFace(fi);
-			for (int l = 0; l < 4; ++l) newFace.m_node[l] = n[l];
-			for (int l = 0; l < 4; ++l)
-			{
-				int n0 = newFace.m_node[l];
-				int n1 = newFace.m_node[(l+1)%4];
-				newFace.m_edge[l] = mb.GetEdge(fi.m_edge[l]).m_ntag;
-
-				MBEdge& edge = GetEdge(newFace.m_edge[l]);
-				if      ((edge.Node(0) == n0) && (edge.Node(1) == n1)) newFace.m_edgeWinding[l] =  1;
-				else if ((edge.Node(0) == n1) && (edge.Node(1) == n0)) newFace.m_edgeWinding[l] = -1;
-				else assert(false);
-			}
-			if (fi.m_block[0] >= 0) newFace.m_block[0] += Blocks();
-			if (fi.m_block[1] >= 0) newFace.m_block[1] += Blocks();
-			m_MBFace.push_back(newFace);
-		}
-	}
-
-	// add new blocks
-	for (int i = 0; i < mb.Blocks(); ++i)
-	{
-		// note that we make a copy!
-		MBBlock bi = mb.GetBlock(i);
-		for (int l = 0; l < 8; ++l) bi.m_node[l] = mb.GetMBNode(bi.m_node[l]).m_ntag;
-		for (int l = 0; l < 6; ++l) bi.m_face[l] = mb.GetFace  (bi.m_face[l]).m_ntag;
-		for (int l = 0; l <12; ++l) bi.m_edge[l] = mb.GetEdge  (bi.m_edge[l]).m_ntag;
-		bi.m_gid += Blocks();
-		m_MBlock.push_back(bi);
-	}
-
-	// we got to rebuild the block neighbors since we didn't update that yet
-	FindBlockNeighbours();
-
-	return true;
-}
-
-void FEMultiBlockMesher::Save(OArchive& ar)
-{
-	ar.BeginChunk(CID_OBJ_NODE_SECTION);
-	{
-		for (MBNode& n : m_MBNode)
-		{
-			ar.BeginChunk(CID_OBJ_NODE);
-			{
-				ar.WriteChunk(CID_OBJ_NODE_POS , n.m_r);
-				ar.WriteChunk(CID_OBJ_NODE_TYPE, n.m_type);
-			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
-
-	ar.BeginChunk(CID_OBJ_EDGE_SECTION);
-	{
-		for (MBEdge& e : m_MBEdge)
-		{
-			ar.BeginChunk(CID_OBJ_EDGE);
-			{
-				ar.WriteChunk(CID_OBJ_EDGE_TYPE, e.m_ntype);
-				ar.WriteChunk(CID_OBJ_EDGE_NODE0, e.m_node[0]);
-				ar.WriteChunk(CID_OBJ_EDGE_NODE1, e.m_node[1]);
-				ar.WriteChunk(CID_OBJ_EDGE_NODE2, e.m_cnode);
-				ar.WriteChunk(CID_OBJ_EDGE_ORIENT, e.m_orient);
-			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
-
-	ar.BeginChunk(CID_OBJ_FACE_SECTION);
-	{
-		for (MBFace& f : m_MBFace)
-		{
-			ar.BeginChunk(CID_OBJ_FACE);
-			{
-				ar.WriteChunk(CID_OBJ_FACE_PID0, f.m_block[0]);
-				ar.WriteChunk(CID_OBJ_FACE_PID1, f.m_block[1]);
-				ar.WriteChunk(CID_OBJ_FACE_NODES, 4);
-				ar.WriteChunk(CID_OBJ_FACE_NODELIST, f.m_node, 4);
-			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
-
-	ar.BeginChunk(CID_OBJ_PART_SECTION);
-	{
-		for (MBBlock& b : m_MBlock)
-		{
-			ar.BeginChunk(CID_OBJ_PART);
-			{
-				ar.WriteChunk(CID_OBJ_PART_NODELIST, b.m_node, 8);
-			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
-}
-
-void FEMultiBlockMesher::Load(IArchive& ar)
-{
-	TRACE("FEMultiBlockMesher::Load");
-
-	ClearMB();
-
-	while (IArchive::IO_OK == ar.OpenChunk())
-	{
-		int nid = ar.GetChunkID();
-		switch (nid)
-		{
-		case CID_OBJ_NODE_SECTION:
-		{
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				switch (ar.GetChunkID())
-				{
-				case CID_OBJ_NODE:
-				{
-					MBNode node;
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_NODE_POS: ar.read(node.m_r); break;
-						case CID_OBJ_NODE_TYPE: ar.read(node.m_type); break;
-						}
-						ar.CloseChunk();
-					}
-					m_MBNode.push_back(node);
-				}
-				break;
-				default:
-					throw ReadError("Error while reading node setion");
-				}
-				ar.CloseChunk();
-			}
-		}
-		break;
-		case CID_OBJ_EDGE_SECTION:
-		{
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				switch (ar.GetChunkID())
-				{
-				case CID_OBJ_EDGE:
-				{
-					MBEdge edge;
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_EDGE_TYPE  : ar.read(edge.m_ntype); break;
-						case CID_OBJ_EDGE_NODE0 : ar.read(edge.m_node[0]); break;
-						case CID_OBJ_EDGE_NODE1 : ar.read(edge.m_node[1]); break;
-						case CID_OBJ_EDGE_NODE2 : ar.read(edge.m_cnode); break;
-						case CID_OBJ_EDGE_ORIENT: ar.read(edge.m_orient); break;
-						}
-						ar.CloseChunk();
-					}
-					m_MBEdge.push_back(edge);
-				}
-				break;
-				default:
-					throw ReadError("Error while reading node setion");
-				}
-				ar.CloseChunk();
-			}
-		}
-		break;
-		case CID_OBJ_FACE_SECTION:
-		{
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				switch (ar.GetChunkID())
-				{
-				case CID_OBJ_FACE:
-				{
-					MBFace face;
-					int faceNodes = -1;
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_FACE_PID0    : ar.read(face.m_block[0]); break;
-						case CID_OBJ_FACE_PID1    : ar.read(face.m_block[1]); break;
-						case CID_OBJ_FACE_NODES   : ar.read(faceNodes); break;
-						case CID_OBJ_FACE_NODELIST: ar.read(face.m_node, 4); break;
-						}
-						ar.CloseChunk();
-					}
-					m_MBFace.push_back(face);
-				}
-				break;
-				default:
-					throw ReadError("Error while reading node setion");
-				}
-				ar.CloseChunk();
-			}
-		}
-		break;
-		case CID_OBJ_PART_SECTION:
-		{
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				switch (ar.GetChunkID())
-				{
-				case CID_OBJ_PART:
-				{
-					MBBlock b;
-					while (IArchive::IO_OK == ar.OpenChunk())
-					{
-						switch (ar.GetChunkID())
-						{
-						case CID_OBJ_PART_NODELIST: ar.read(b.m_node, 8); break;
-						}
-						ar.CloseChunk();
-					}
-					m_MBlock.push_back(b);
-				}
-				break;
-				default:
-					throw ReadError("Error while reading node setion");
-				}
-				ar.CloseChunk();
-			}
-		}
-		break;
-		}
-		ar.CloseChunk();
-	}
-
-	RebuildMB();
 }
 
 void FEMultiBlockMesher::RebuildMB()
@@ -2185,7 +1671,7 @@ void FEMultiBlockMesher::RebuildMB()
 			for (int j = 0; j < m_MBFace.size(); ++j)
 			{
 				MBFace& fj = m_MBFace[j];
-				if (isSameFace(fi.m_node, fj.m_node))
+				if (IsSameFace(fi.m_node, fj.m_node))
 				{
 					b.m_face[i] = j;
 					break;

@@ -178,9 +178,19 @@ public:
 
     void setAugTol(double d);
     double augTol() const;
+
+public:
+	int Nodes() const { return (int)m_node.size(); }
+	int Edges() const { return (int)m_edge.size(); }
+	int Faces() const { return (int)m_face.size(); }
     
 protected:
 	int		m_matid;
+
+public:
+	vector<int>	m_node;
+	vector<int>	m_face;
+	vector<int>	m_edge;
 };
 
 //-----------------------------------------------------------------------------
@@ -208,6 +218,8 @@ public:
 	int Edges() { return (int) m_edge.size(); }
 
 	bool HasEdge(int i);
+
+	void Invert();
 
 public:
 	int				m_ntype;	// face type

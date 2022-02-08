@@ -420,6 +420,27 @@ bool GFace::HasEdge(int nid)
 	return false;
 }
 
+
+void GFace::Invert()
+{
+	// swap block IDs
+	int tmp = m_nPID[0]; m_nPID[0] = m_nPID[1]; m_nPID[1] = tmp;
+
+	// we also need to invert the edges and nodes
+	int fn[4], fe[4], fw[4];
+	for (int j = 0; j < 4; ++j) {
+		fn[j] = m_node[j];
+		fe[j] = m_edge[j].nid;
+		fw[j] = m_edge[j].nwn;
+	}
+	for (int j = 0; j < 4; ++j)
+	{
+		m_node[j] = fn[(4 - j) % 4];
+		m_edge[j].nid = fe[3 - j];
+		m_edge[j].nwn = -fw[3 - j];
+	}
+}
+
 //=============================================================================
 // GPart
 //-----------------------------------------------------------------------------

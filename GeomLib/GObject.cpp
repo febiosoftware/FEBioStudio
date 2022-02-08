@@ -1213,3 +1213,19 @@ void GObject::Reindex()
 		pg->SetName(ss.str());
 	}
 }
+
+
+bool IsSameFace(int n[4], int m[4])
+{
+	if ((n[0] == m[0]) && (n[1] == m[1]) && (n[2] == m[2]) && (n[3] == m[3])) return true;
+	if ((n[0] == m[1]) && (n[1] == m[2]) && (n[2] == m[3]) && (n[3] == m[0])) return true;
+	if ((n[0] == m[2]) && (n[1] == m[3]) && (n[2] == m[0]) && (n[3] == m[1])) return true;
+	if ((n[0] == m[3]) && (n[1] == m[0]) && (n[2] == m[1]) && (n[3] == m[2])) return true;
+
+	if ((n[0] == m[0]) && (n[1] == m[3]) && (n[2] == m[2]) && (n[3] == m[1])) return true;
+	if ((n[0] == m[3]) && (n[1] == m[2]) && (n[2] == m[1]) && (n[3] == m[0])) return true;
+	if ((n[0] == m[2]) && (n[1] == m[1]) && (n[2] == m[0]) && (n[3] == m[3])) return true;
+	if ((n[0] == m[1]) && (n[1] == m[0]) && (n[2] == m[3]) && (n[3] == m[2])) return true;
+
+	return false;
+}
