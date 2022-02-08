@@ -1909,5 +1909,6 @@ FEMesh* FESetMBWeight::Apply(FEMesh* pm)
 		}
 	}
 
-	return po->BuildMesh();
+	// don't call po->BuildMesh() since that deletes the current mesh
+	return po->GetFEMesher()->BuildMesh();
 }
