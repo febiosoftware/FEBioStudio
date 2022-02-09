@@ -24,19 +24,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <QTextDocument>
+#include <QPlainTextDocumentLayout>
+#include <QDir>
+#include <QFile>
+#include <QTextStream>
 #include "XMLDocument.h"
 #include <XML/XMLReader.h>
 #include <XML/XMLWriter.h>
+#include <sstream>
 #include <iostream>
 
-CXMLDocument::CXMLDocument(CMainWindow* wnd) : CUndoDocument(wnd), m_treeModel(nullptr)
+CXMLDocument::CXMLDocument(CMainWindow* wnd) 
+    : CUndoDocument(wnd), m_treeModel(nullptr), m_editingText(false),
+        m_textDocument(new QTextDocument)
 {
+    m_textDocument->setDocumentLayout(new QPlainTextDocumentLayout(m_textDocument));
+
 	SetIcon(":/icons/febio.png");
 }
 
 CXMLDocument::~CXMLDocument()
 {
     if(m_treeModel) delete m_treeModel;
+    delete m_textDocument;
 }
 
 XMLTreeModel* CXMLDocument::GetModel()
@@ -44,11 +55,21 @@ XMLTreeModel* CXMLDocument::GetModel()
     return m_treeModel;
 }
 
+QTextDocument* CXMLDocument::GetTextDocument()
+{
+    return m_textDocument;
+}
+
 bool CXMLDocument::ReadFromFile(const QString& fileName)
 {
     XMLReader reader;
     if(!reader.Open(fileName.toStdString().c_str())) return false;
 
+    return ReadXML(reader);
+}
+
+bool CXMLDocument::ReadXML(XMLReader& reader)
+{
     // Find the root element
 	XMLTag tag;
 	try
@@ -138,10 +159,31 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag, int depth)
 
 bool CXMLDocument::SaveDocument()
 {
-    XMLWriter writer;
-    if(writer.open(GetDocFilePath().c_str()) == false) return false;
+    if(m_editingText)
+    {
+        QString fileName = QString::fromStdString(GetDocFilePath());
+        QString normalizeFileName = QDir::fromNativeSeparators(fileName);
 
-    writeChild(static_cast<XMLTreeItem*>(m_treeModel->root().internalPointer()), writer);
+        QFile file(normalizeFileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            return false;
+
+        QTextStream out(&file);
+        out << m_textDocument->toPlainText();
+        file.close();
+
+        SetModifiedFlag(false);
+        m_textDocument->setModified(false);
+
+        return true;
+    }
+    else
+    {
+        XMLWriter writer;
+        if(writer.open(GetDocFilePath().c_str()) == false) return false;
+
+        writeChild(static_cast<XMLTreeItem*>(m_treeModel->root().internalPointer()), writer);
+    }
 }
 
 void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)
@@ -197,4 +239,32 @@ void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)
             writer.add_leaf(current);
         }
     }
+}
+
+bool CXMLDocument::EditAsText(bool editText)
+{
+    m_editingText = editText;
+    ClearCommandStack();
+
+    if(m_editingText)
+    {
+        XMLWriter writer;
+
+        std::ostringstream stream;
+        writer.setStringstream(&stream);
+
+        writeChild(static_cast<XMLTreeItem*>(m_treeModel->root().internalPointer()), writer);
+
+        m_textDocument->setPlainText(stream.str().c_str());
+
+        return true;
+    }
+
+    if(m_treeModel) delete m_treeModel;
+
+    XMLReader reader;
+    std::string text = m_textDocument->toPlainText().toStdString();
+    reader.OpenString(text);
+    
+    return ReadXML(reader);
 }

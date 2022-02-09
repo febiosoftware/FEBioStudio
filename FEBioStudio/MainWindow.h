@@ -541,6 +541,12 @@ public slots:
 	void on_closeFile(const QString& file);
 	void on_addToProject(const QString& file);
 
+    // XML toolbar
+    void on_actionEditXmlAsText_triggered(bool checked);
+    void on_actionAddAttribute_triggered();
+    void on_actionAddElement_triggered();
+    void on_actionRemoveRow_triggered();
+
 	// slots from Post panel
 	void OnPostObjectStateChanged();
 	void OnPostObjectPropsChanged(FSObject* po);

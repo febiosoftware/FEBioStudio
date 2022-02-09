@@ -109,7 +109,7 @@ void CCmdAddAttribute::UnExecute()
 {
     XMLTreeItem* parentItem = static_cast<XMLTreeItem*>(m_parent.internalPointer());
 
-    m_model->removeRow(parentItem->FirstElement() - 1, m_parent);
+    m_model->removeRow(parentItem->FirstElement(), m_parent);
 }
 
 //////////////////////////////////////////////////////////////////////

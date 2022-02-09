@@ -350,6 +350,27 @@ bool XMLTreeModel::setData(const QModelIndex& index, const QVariant& value, int 
     return changed;
 }
 
+// void XMLTreeModel::SetRoot(XMLTreeItem* root)
+// {
+//     emit layoutAboutToBeChanged();
+
+//     QModelIndex index = createIndex(rootItem->row(), 0, rootItem);
+
+//     beginRemoveRows(index, 0, rootItem->childCount() -1 );
+
+//     delete rootItem;
+//     rootItem = root;
+
+//     endRemoveRows();
+
+//     emit layoutChanged();
+// }
+
+XMLTreeItem* XMLTreeModel::GetRoot()
+{
+    return rootItem;
+}
+
 Qt::ItemFlags XMLTreeModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())

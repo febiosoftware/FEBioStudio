@@ -59,7 +59,9 @@ QIcon CIconProvider::GetIcon(const QString& baseIconName, Emblem emblem)
 	QString baseUrl = themedIconURL(baseIconName);
 	QString emblemUrl = emblemIconURL(emblem);
 
-    QPixmap basePixmap(baseUrl); basePixmap.setDevicePixelRatio(m_dpr);
+    QPixmap basePixmap(baseUrl); 
+    basePixmap.setDevicePixelRatio(m_dpr);
+
 	QPixmap emblemPixmap = QPixmap(emblemUrl).scaled(basePixmap.size()/2);
     emblemPixmap.setDevicePixelRatio(m_dpr);
 
@@ -74,11 +76,29 @@ QIcon CIconProvider::GetIcon(const QString& baseIconName, const QString& emblemI
 	QString baseUrl = themedIconURL(baseIconName);
 	QString emblemUrl = themedIconURL(emblemIconName);
 
-	QPixmap basePixmap(baseUrl); basePixmap.setDevicePixelRatio(m_dpr);
+	QPixmap basePixmap(baseUrl); 
+    basePixmap.setDevicePixelRatio(m_dpr);
+
 	QPixmap emblemPixmap = QPixmap(emblemUrl).scaled(basePixmap.size()/2);
     emblemPixmap.setDevicePixelRatio(m_dpr);
 
 	QPainter painter(&basePixmap);
+	painter.drawPixmap(basePixmap.width() - emblemPixmap.width(), basePixmap.height() - emblemPixmap.height(), emblemPixmap);
+
+	return QIcon(basePixmap);
+}
+
+QIcon CIconProvider::GetIcon(const QString& baseIconName, QColor c, Shape shape)
+{
+    QString baseUrl = themedIconURL(baseIconName);
+
+    QPixmap basePixmap(baseUrl); 
+    basePixmap.setDevicePixelRatio(m_dpr);
+
+    QPixmap emblemPixmap = BuildPixMap(c, shape, basePixmap.width()/2);
+    emblemPixmap.setDevicePixelRatio(m_dpr);
+
+    QPainter painter(&basePixmap);
 	painter.drawPixmap(basePixmap.width() - emblemPixmap.width(), basePixmap.height() - emblemPixmap.height(), emblemPixmap);
 
 	return QIcon(basePixmap);

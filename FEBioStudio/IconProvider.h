@@ -42,6 +42,7 @@ public:
 	static QIcon GetIcon(const QString& iconName);
 	static QIcon GetIcon(const QString& baseIconName, Emblem emblem);
 	static QIcon GetIcon(const QString& baseIconName, const QString& emblemIconName);
+    static QIcon GetIcon(const QString& baseIconName, QColor c, Shape shape);
 
     static QPixmap BuildPixMap(QColor& c, Shape shape = Shape::Circle, int size = 12);
 

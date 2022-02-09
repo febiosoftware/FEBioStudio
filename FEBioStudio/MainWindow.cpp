@@ -412,7 +412,14 @@ void CMainWindow::on_xmledit_textChanged()
 			txtDoc->SetModifiedFlag(qtxt->isModified());
 			UpdateTab(txtDoc);
 		}
-	}	
+	}
+
+    CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+	if (xmlDoc && xmlDoc->IsValid() && (xmlDoc->IsModified() == false))
+	{
+        xmlDoc->SetModifiedFlag(qtxt->isModified());
+        UpdateTab(xmlDoc);
+	}		
 }
 
 //-----------------------------------------------------------------------------
@@ -507,7 +514,7 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		QMessageBox box;
 		box.setText("How would you like to open this file?");
 		QPushButton* importButton = box.addButton("Import as Model", QMessageBox::AcceptRole);
-		QPushButton* textButton = box.addButton("Edit as Text", QMessageBox::YesRole);
+		QPushButton* textButton = box.addButton("Edit XML", QMessageBox::YesRole);
 		box.addButton(QMessageBox::Cancel);
 		box.setDefaultButton(importButton);
 

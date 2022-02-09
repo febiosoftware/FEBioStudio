@@ -124,8 +124,6 @@ SOFTWARE.*/
 #include <sstream>
 #include "PostObject.h"
 
-#include "ModelTypeInfoReader.h"
-
 using std::stringstream;
 
 #ifdef HAS_QUAZIP
@@ -1122,6 +1120,22 @@ void CMainWindow::on_actionSaveAs_triggered()
 		{
 			SavePostDoc();
 		}
+
+        CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+        if(xmlDoc)
+        {
+            QFileDialog dlg;
+            dlg.setDirectory(ui->currentPath);
+            dlg.setFileMode(QFileDialog::AnyFile);
+            dlg.setNameFilter("FEBio Input files (*.feb)");
+            dlg.selectFile(QString::fromStdString(xmlDoc->GetDocTitle()));
+            dlg.setAcceptMode(QFileDialog::AcceptSave);
+            if (dlg.exec())
+            {
+                QStringList fileNames = dlg.selectedFiles();
+                SaveDocument(QDir::toNativeSeparators(fileNames[0]));
+            }
+        }
 		return;
 	}
 

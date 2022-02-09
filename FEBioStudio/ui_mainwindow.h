@@ -74,6 +74,7 @@ SOFTWARE.*/
 #include "XMLEditor.h"
 #include "WebDefines.h"
 #include "FEBioJobManager.h"
+#include "XMLDocument.h"
 #include <vector>
 
 class QProcess;
@@ -138,6 +139,7 @@ public:
 	QMenu* menuFile;
 	QMenu* menuEdit;
 	QMenu* menuEditTxt;
+    QMenu* menuEditXml;
 	QMenu* menuPhysics;
 	QMenu* menuTools;
 	QMenu* menuPost;
@@ -182,6 +184,9 @@ public:
 	QSpinBox*		pFontSize;
 	QAction*		actionFontBold;
 	QAction*		actionFontItalic;
+
+    QToolBar* xmlToolbar;
+    QAction* actionEditXmlAsText;
 
 	QAction* actionSelectObjects;
 	QAction* actionSelectParts;
@@ -455,6 +460,15 @@ public:
 		QAction* actionDuplicateLine = addAction("Copy Line Down", "actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::ControlModifier + Qt::Key_D);
 		QAction* actionDeleteLine = addAction("Delete Line", "actionDeleteLine"); actionDeleteLine->setShortcut(Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_L);
 
+        // -- Edit (xml) menut ---
+        QAction* actionAddAttribute = addAction("Add Attribute", "actionAddAttribute");
+        actionAddAttribute->setIcon(CIconProvider::GetIcon("selectAdd", QColor(Qt::red), Shape::Circle));
+        
+        QAction* actionAddElement = addAction("Add Element", "actionAddElement");
+        actionAddElement->setIcon(CIconProvider::GetIcon("selectAdd", QColor(Qt::blue), Shape::Circle));
+        
+        QAction* actionRemoveRow = addAction("Remove Row", "actionRemoveRow", "selectDel");
+
 		// --- Physics menu ---
 		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
@@ -633,6 +647,7 @@ public:
 		menuFile   = new QMenu("File", menuBar);
 		menuEdit   = new QMenu("Edit", menuBar);
 		menuEditTxt = new QMenu("Edit", menuBar);
+        menuEditXml = new QMenu("Edit", menuBar);
 		menuPhysics= new QMenu("Physics", menuBar);
 		menuFEBio  = new QMenu("FEBio", menuBar);
 		menuPost   = new QMenu("Post", menuBar);
@@ -740,6 +755,15 @@ public:
 		menuEditTxt->addAction(actionToggleComment);
 		menuEditTxt->addAction(actionDuplicateLine);
 		menuEditTxt->addAction(actionDeleteLine);
+
+        // Edit (xml) menu
+        menuBar->addAction(menuEditXml->menuAction());
+        menuEditXml->addAction(actionUndo);
+		menuEditXml->addAction(actionRedo);
+		menuEditXml->addSeparator();
+        menuEditXml->addAction(actionAddAttribute);
+        menuEditXml->addAction(actionAddElement);
+        menuEditXml->addAction(actionRemoveRow);
 
 		// Physics menu
 		menuBar->addAction(menuPhysics->menuAction());
@@ -969,6 +993,23 @@ public:
 		pFontToolBar->addAction(actionFontItalic = addAction("Italic", "fontItalic", "font_italic")); actionFontItalic->setCheckable(true);
 		pFontToolBar->addAction(actionProperties);
 		pFontToolBar->setEnabled(false);
+
+        // XML toolbar
+        xmlToolbar = new QToolBar(mainWindow);
+        xmlToolbar->setObjectName("xmlToolbar");
+        xmlToolbar->setWindowTitle("XML Toolbar");
+		mainWindow->addToolBar(Qt::TopToolBarArea, xmlToolbar);
+
+        actionEditXmlAsText = addAction("Edit as Text", "actionEditXmlAsText", "txt", true);
+        
+        xmlToolbar->addAction(actionEditXmlAsText);
+        xmlToolbar->addSeparator();
+        xmlToolbar->addAction(actionAddAttribute);
+        xmlToolbar->addAction(actionAddElement);
+        xmlToolbar->addAction(actionRemoveRow);
+        xmlToolbar->addSeparator();
+        xmlToolbar->addAction(actionUndo);
+        xmlToolbar->addAction(actionRedo);
 	}
 
 	void SetSelectionMode(int nselect)
@@ -1233,6 +1274,7 @@ public:
 			// no open documents
 			menuEdit->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(false);
+            menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);
@@ -1240,6 +1282,7 @@ public:
 			buildToolBar->hide();
 			postToolBar->hide();
 			pFontToolBar->hide();
+            xmlToolbar->hide();
 
 			glw->glc->hide();
 
@@ -1257,6 +1300,7 @@ public:
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
 			menuEditTxt->menuAction()->setVisible(false);
+            menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(true);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(true);
@@ -1264,6 +1308,7 @@ public:
 			buildToolBar->show();
 			postToolBar->hide();
 			pFontToolBar->show();
+            xmlToolbar->hide();
 
 			glw->glc->show();
 
@@ -1281,6 +1326,7 @@ public:
 			// post mode
 			menuEdit->menuAction()->setVisible(true);
 			menuEditTxt->menuAction()->setVisible(false);
+            menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(true);
 			menuRecord->menuAction()->setVisible(true);
@@ -1288,6 +1334,7 @@ public:
 			buildToolBar->hide();
 			postToolBar->show();
 			pFontToolBar->show();
+            xmlToolbar->hide();
 
 			glw->glc->show();
 
@@ -1306,6 +1353,7 @@ public:
 
 			menuEdit->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(true);
+            menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);
@@ -1313,6 +1361,7 @@ public:
 			buildToolBar->hide();
 			postToolBar->hide();
 			pFontToolBar->hide();
+            xmlToolbar->hide();
 
 			glw->glc->hide();
 
@@ -1325,26 +1374,74 @@ public:
 		}
         else if (config == ::CMainWindow::XML_CONFIG)
 		{
-			stack->setCurrentIndex(Ui::CMainWindow::XML_VIEWER);
+            CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(m_wnd->GetDocument());
+            if(xmlDoc)
+            {
+                actionEditXmlAsText->blockSignals(true);
+                actionEditXmlAsText->setChecked(xmlDoc->EditingText());
+                actionEditXmlAsText->blockSignals(false);
 
-			menuEdit->menuAction()->setVisible(true);
-			menuEditTxt->menuAction()->setVisible(true);
-			menuPhysics->menuAction()->setVisible(false);
-			menuPost->menuAction()->setVisible(false);
-			menuRecord->menuAction()->setVisible(false);
+                if(xmlDoc->EditingText())
+                {
+                    stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
 
-			buildToolBar->hide();
-			postToolBar->hide();
-			pFontToolBar->hide();
+                    menuEdit->menuAction()->setVisible(false);
+                    menuEditTxt->menuAction()->setVisible(true);
+                    menuEditXml->menuAction()->setVisible(false);
+                    menuPhysics->menuAction()->setVisible(false);
+                    menuPost->menuAction()->setVisible(false);
+                    menuRecord->menuAction()->setVisible(false);
 
-			glw->glc->hide();
+                    buildToolBar->hide();
+                    postToolBar->hide();
+                    pFontToolBar->hide();
+                    xmlToolbar->show();
 
-			modelViewer->parentWidget()->hide();
-			buildPanel->parentWidget()->hide();
-			postPanel->parentWidget()->hide();
-			logPanel->parentWidget()->hide();
-			infoPanel->parentWidget()->hide();
-			timePanel->parentWidget()->hide();
+                    glw->glc->hide();
+
+                    modelViewer->parentWidget()->hide();
+                    buildPanel->parentWidget()->hide();
+                    postPanel->parentWidget()->hide();
+                    logPanel->parentWidget()->hide();
+                    infoPanel->parentWidget()->hide();
+                    timePanel->parentWidget()->hide();
+
+                    for(int index = 1; index < xmlToolbar->actions().size(); index++)
+                    {
+                        xmlToolbar->actions()[index]->setVisible(false);
+                    }
+                }
+                else
+                {
+                    stack->setCurrentIndex(Ui::CMainWindow::XML_VIEWER);
+
+                    menuEdit->menuAction()->setVisible(false);
+                    menuEditTxt->menuAction()->setVisible(false);
+                    menuEditXml->menuAction()->setVisible(true);
+                    menuPhysics->menuAction()->setVisible(false);
+                    menuPost->menuAction()->setVisible(false);
+                    menuRecord->menuAction()->setVisible(false);
+
+                    buildToolBar->hide();
+                    postToolBar->hide();
+                    pFontToolBar->hide();
+                    xmlToolbar->show();
+
+                    glw->glc->hide();
+
+                    modelViewer->parentWidget()->hide();
+                    buildPanel->parentWidget()->hide();
+                    postPanel->parentWidget()->hide();
+                    logPanel->parentWidget()->hide();
+                    infoPanel->parentWidget()->hide();
+                    timePanel->parentWidget()->hide();
+
+                    for(auto action : xmlToolbar->actions())
+                    {
+                        action->setVisible(true);
+                    }
+                }
+            }
 		}
 	}
 };

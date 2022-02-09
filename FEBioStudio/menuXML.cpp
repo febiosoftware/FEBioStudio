@@ -24,41 +24,45 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
+#include <QTextDocument>
+#include "MainWindow.h"
+#include "ui_mainwindow.h"
 
-#include "Document.h"
-#include "XMLTreeModel.h"
-#include <QTreeView>
-
-class XMLTag;
-class XMLWriter;
-class XMLReader;
-class QTextDocument;
-
-class CXMLDocument : public CUndoDocument
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionEditXmlAsText_triggered(bool checked)
 {
+    CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
 
-public:
-	CXMLDocument(CMainWindow* wnd);
-    ~CXMLDocument();
+    if(!xmlDoc) return;
 
-	XMLTreeModel* GetModel();
-    QTextDocument* GetTextDocument();
-    
-    bool ReadFromFile(const QString& fileName);
-	bool SaveDocument() override;
+    xmlDoc->EditAsText(checked);
 
-    bool EditingText() { return m_editingText; }
+    if(checked)
+    {
+        ui->xmlEdit->SetDocument(xmlDoc->GetTextDocument());
+    }
+    else
+    {
+        ui->xmlTree->setModel(xmlDoc->GetModel());
+    }
 
-    bool EditAsText(bool editText);
+    ui->setUIConfig(::CMainWindow::XML_CONFIG);
+}
 
-private:
-    bool ReadXML(XMLReader& reader);
-    XMLTreeItem* getChild(XMLTag& tag, int depth);
-    void writeChild(XMLTreeItem* item, XMLWriter& writer);
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionAddAttribute_triggered()
+{
+    ui->xmlTree->on_addAttribute_triggered();
+}
 
-private:
-    XMLTreeModel* m_treeModel;
-    QTextDocument* m_textDocument;
-    bool m_editingText;
-};
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionAddElement_triggered()
+{
+    ui->xmlTree->on_addElement_triggered();
+}
+
+//-----------------------------------------------------------------------------   
+void CMainWindow::on_actionRemoveRow_triggered()
+{
+    ui->xmlTree->on_removeSelectedRow_triggered();
+}
