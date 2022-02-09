@@ -52,6 +52,14 @@ void GMesh::Create(int nodes, int faces, int edges)
 }
 
 //-----------------------------------------------------------------------------
+void GMesh::Clear()
+{
+	m_Node.clear();
+	m_Edge.clear();
+	m_Face.clear();
+}
+
+//-----------------------------------------------------------------------------
 int GMesh::AddNode(const vec3d& r, int gid)
 {
 	NODE v;
@@ -229,6 +237,24 @@ void GMesh::AddFace(vec3d* r, int gid, int smoothId, bool bext)
 	n[2] = AddNode(r[2]);
 
 	AddFace(n, 3, gid, smoothId, bext);
+}
+
+//-----------------------------------------------------------------------------
+void GMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
+{
+	int n0 = AddNode(r[0]);
+	int n1 = AddNode(r[1]);
+	int n2 = AddNode(r[2]);
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.nn[0] = n[0];
+	face.nn[1] = n[1];
+	face.nn[2] = n[2];
+	face.c[0] = face.c[1] = face.c[2] = c;
+	m_Face.push_back(face);
 }
 
 //-----------------------------------------------------------------------------
