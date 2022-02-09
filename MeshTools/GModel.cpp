@@ -1818,7 +1818,7 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 		{
 			// create a new object by copying the first selected object
 			GMultiBox* poa = dynamic_cast<GMultiBox*>(sel->Object(0)); assert(poa);
-			GMultiBox* ponew = new GMultiBox(poa);
+			GMultiBox* ponew = dynamic_cast<GMultiBox*>(poa->Clone());
 			ponew->SetName(newObjectName.c_str());
 
 			for (int i = 1; i < sel->Count(); ++i)

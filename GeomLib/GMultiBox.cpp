@@ -362,7 +362,8 @@ GObject* GMultiBox::Clone()
 	for (int i = 0; i < Nodes(); ++i)
 	{
 		GNode& ni = *Node(i);
-		clone->AddNode(ni.LocalPosition(), ni.Type());
+		GNode* newNode = clone->AddNode(ni.LocalPosition(), ni.Type());
+		newNode->SetMeshWeight(ni.GetMeshWeight());
 	}
 
 	// copy edges
@@ -376,6 +377,7 @@ GObject* GMultiBox::Clone()
 		ec->m_cnode   = ei.m_cnode;
 		ec->m_ntype   = ei.m_ntype;
 		ec->m_orient  = ei.m_orient;
+		ec->SetMeshWeight(ei.GetMeshWeight());
 	}
 
 	// copy faces
@@ -389,6 +391,7 @@ GObject* GMultiBox::Clone()
 		fc->m_nPID[2] = fi.m_nPID[2];
 		fc->m_node = fi.m_node;
 		fc->m_edge = fi.m_edge;
+		fc->SetMeshWeight(fi.GetMeshWeight());
 	}
 
 	// copy parts
@@ -399,6 +402,7 @@ GObject* GMultiBox::Clone()
 		pc->m_node = pi.m_node;
 		pc->m_edge = pi.m_edge;
 		pc->m_face = pi.m_face;
+		pc->SetMeshWeight(pi.GetMeshWeight());
 	}
 
 	clone->Update();
@@ -451,6 +455,7 @@ bool GMultiBox::Merge(GMultiBox& mb)
 		{
 			GNode& newNode = *AddNode(ri);
 			ni.m_ntag = Nodes() - 1;
+			newNode.SetMeshWeight(ni.GetMeshWeight());
 		}
 	}
 
@@ -495,6 +500,7 @@ bool GMultiBox::Merge(GMultiBox& mb)
 			newEdge->m_cnode = n2;
 			newEdge->m_ntype = ei.m_ntype;
 			newEdge->m_orient = ei.m_orient;
+			newEdge->SetMeshWeight(ei.GetMeshWeight());
 		}
 	}
 
@@ -532,6 +538,7 @@ bool GMultiBox::Merge(GMultiBox& mb)
 			fi.m_ntag = m_Face.size();
 			GFace& newFace = *AddFace();
 			newFace.m_ntype = fi.m_ntype;
+			newFace.SetMeshWeight(fi.GetMeshWeight());
 			newFace.m_node.resize(4);
 			newFace.m_edge.resize(4);
 			for (int l = 0; l < 4; ++l) newFace.m_node[l] = n[l];
@@ -556,6 +563,7 @@ bool GMultiBox::Merge(GMultiBox& mb)
 	{
 		GPart& bi = *mb.Part(i);
 		GPart& newPart = *AddPart();
+		newPart.SetMeshWeight(bi.GetMeshWeight());
 		newPart.m_node.resize(8);
 		newPart.m_edge.resize(12);
 		newPart.m_face.resize(6);
