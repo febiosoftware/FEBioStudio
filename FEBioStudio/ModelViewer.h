@@ -113,6 +113,7 @@ public slots:
 	void OnCreateNewMeshLayer();
 	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
+	void OnDeleteNamedSelection();
 	void OnAddBC();
 	void OnAddSurfaceLoad();
 	void OnAddBodyLoad();

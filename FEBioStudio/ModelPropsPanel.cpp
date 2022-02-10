@@ -694,7 +694,11 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		if (mat) { SetSelection(mat); return;	}
 
 		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
-		if (pl) { SetSelection(0, pl); return; }
+		if (pl) { 
+			SetSelection(0, pl); 
+			ui->sel1->showNameType(false);
+			return;
+		}
 
 		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
 		if (pi)

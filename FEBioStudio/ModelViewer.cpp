@@ -623,6 +623,11 @@ void CModelViewer::OnUnhideAllParts()
 	}
 }
 
+void CModelViewer::OnDeleteNamedSelection()
+{
+	OnDeleteItem();
+}
+
 void CModelViewer::OnAddBC()
 {
 	CMainWindow* wnd = GetMainWindow();
@@ -1584,6 +1589,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	break;
 	case MT_PART_LIST:
 		menu.addAction("Show All Parts", this, SLOT(OnUnhideAllParts()));
+		break;
+	case MT_PART_GROUP:
+	case MT_FACE_GROUP:
+	case MT_EDGE_GROUP:
+	case MT_NODE_GROUP:
+		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
 		break;
 	case MT_MATERIAL_LIST:
 	{
