@@ -164,6 +164,34 @@ XMLTreeItem* XMLTreeItem::child(int row)
     return m_children[row];
 }
 
+XMLTreeItem* XMLTreeItem::findChlid(int column, QString value)
+{
+    for(auto child : m_children)
+    {
+        if(child->data(column) == value)
+        {
+            return child;
+        }
+    }
+
+    return nullptr;
+}
+
+vector<XMLTreeItem*> XMLTreeItem::findAllChlidren(int column, QString value)
+{
+    vector<XMLTreeItem*> children;
+
+    for(auto child : m_children)
+    {
+        if(child->data(column) == value)
+        {
+            children.push_back(child);
+        }
+    }
+
+    return children;
+}
+
 int XMLTreeItem::childCount() const
 {
     return m_children.size();

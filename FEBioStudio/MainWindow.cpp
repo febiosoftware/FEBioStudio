@@ -3197,3 +3197,8 @@ void CMainWindow::OnDeleteAllMeshData()
 		RedrawGL();
 	}
 }
+
+QSize CMainWindow::GetEditorSize()
+{
+    return ui->stack->size();
+}

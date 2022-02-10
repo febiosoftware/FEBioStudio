@@ -641,6 +641,8 @@ public:
 	int FindView(CDocument* doc);
 	GObject* GetActiveObject();
 
+    QSize GetEditorSize();
+
 	static CMainWindow* GetInstance();
 
 private:

@@ -26,7 +26,11 @@ SOFTWARE.*/
 
 #include <QComboBox>
 #include <QCompleter>
+#include <QTextEdit>
+#include <QSize>
 #include <QContextMenuEvent>
+#include <QKeyEvent>
+#include <QScrollBar>
 #include "XMLTreeView.h"
 #include "XMLTreeModel.h"
 #include "MainWindow.h"
@@ -38,6 +42,44 @@ SOFTWARE.*/
 #include <QAction>
 #include <FECore/fecore_enum.h>
 #include <FEBioLink/FEBioClass.h>
+
+#include <iostream>
+
+
+class VariablePopupComboBox : public QComboBox
+{
+public:
+    VariablePopupComboBox(QWidget* parent) : QComboBox(parent) {}
+
+    void showPopup() override
+    {
+        view()->setMinimumWidth(view()->sizeHintForColumn(0));
+
+        QComboBox::showPopup();
+    }
+
+    void setStringList(QStringList items)
+    {
+        addItems(items);
+
+        QCompleter* completer = new QCompleter(items);
+        completer->setCaseSensitivity(Qt::CaseInsensitive);
+        completer->setFilterMode(Qt::MatchContains);
+
+        setCompleter(completer);
+    }
+
+protected:
+    void keyPressEvent(QKeyEvent* e)
+    {
+        QComboBox::keyPressEvent(e);
+
+        QRect cr = contentsRect();
+        cr.setWidth(completer()->popup()->sizeHintForColumn(0)
+        + completer()->popup()->verticalScrollBar()->sizeHint().width());
+        completer()->complete(cr);
+    }
+};
 
 XMLItemDelegate::XMLItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent), m_superID(new int(FEINVALID_ID))
@@ -106,15 +148,6 @@ QWidget* XMLItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewIt
             *m_superID = FEDISCRETEMATERIAL_ID;
         }
 
-        // if(item->data(TAG) == "material")
-        // {
-        //     m_superID = FEMATERIAL_ID;
-        // }
-        // else if(item->data(TAG) == "contact")
-        // {
-        //     m_superID = FESURFACEINTERFACE_ID;
-        // }
-
         if(*m_superID == FEINVALID_ID)
         {
             QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
@@ -122,27 +155,104 @@ QWidget* XMLItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewIt
         }
 
         QStringList classNames;
-
         for(auto item : FEBio::FindAllClasses(-1, *m_superID))
         {
             classNames.append(item.sztype);
         }
-
         classNames.sort(Qt::CaseInsensitive);
 
-        QComboBox* pw = new QComboBox(parent);
+        VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
         pw->setEditable(true);
+        pw->setStringList(classNames);
 
-        QCompleter* completer = new QCompleter(classNames);
-        completer->setCaseSensitivity(Qt::CaseInsensitive);
-        completer->setFilterMode(Qt::MatchContains);
+        return pw;
+    }
+    else if(index.column() == VALUE)
+    {
+        if(item->data(TAG) == "node_set")
+        {
+            XMLTreeItem* root = item->ancestorItem(0);
+            XMLTreeItem* mesh = root->findChlid(TAG, "Mesh");
 
-        pw->setCompleter(completer);
-        
-        pw->addItems(classNames);
-        // connect(pw, &QComboBox::currentIndexChanged, this, &XMLItemDelegate::OnEditorSignal);
+            if(mesh)
+            {
+                vector<XMLTreeItem*> nodeSets = mesh->findAllChlidren(TAG, "NodeSet");
+                
+                if(nodeSets.size() > 0)
+                {
+                    QStringList nodeSetNames;
 
-        pw->setSizePolicy(QSizePolicy::Expanding, pw->sizePolicy().verticalPolicy());
+                    for(auto set : nodeSets)
+                    {
+                        nodeSetNames.append(set->data(NAME));
+                    }
+
+                    VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
+                    pw->setEditable(true);
+                    pw->setStringList(nodeSetNames);
+                    return pw;
+
+                }
+            }
+        }
+        else if(item->data(TAG) == "rb")
+        {
+            XMLTreeItem* root = item->ancestorItem(0);
+            XMLTreeItem* material = root->findChlid(TAG, "Material");
+
+            if(material)
+            {
+                vector<XMLTreeItem*> rigidBodies = material->findAllChlidren(TYPE, "rigid body");
+                
+                if(rigidBodies.size() > 0)
+                {
+                    QStringList rbNames;
+
+                    for(auto set : rigidBodies)
+                    {
+                        rbNames.append(set->data(ID));
+                    }
+
+                    VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
+                    pw->setEditable(true);
+                    pw->setStringList(rbNames);
+                    return pw;
+
+                }
+            }
+        }
+        else if(item->data(TAG) == "lc")
+        {
+            XMLTreeItem* root = item->ancestorItem(0);
+            XMLTreeItem* loadData = root->findChlid(TAG, "LoadData");
+
+            if(loadData)
+            {
+                vector<XMLTreeItem*> lcs = loadData->findAllChlidren(TAG, "load_controller");
+                
+                if(lcs.size() > 0)
+                {
+                    QStringList lcNames;
+
+                    for(auto set : lcs)
+                    {
+                        lcNames.append(set->data(ID));
+                    }
+
+                    VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
+                    pw->setEditable(true);
+                    pw->setStringList(lcNames);
+                    return pw;
+
+                }
+            }
+        }
+    }
+    else if(index.column() == COMMENT)
+    { 
+        QTextEdit* pw = new QTextEdit(parent);
+        pw->setMinimumHeight(option.rect.height()*4);
+        pw->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
         return pw;
     }
 
@@ -154,8 +264,12 @@ void XMLItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) c
 {
     if(!index.isValid()) return;
 
-    // XMLTreeItem* item = static_cast<XMLTreeItem*>(indXML
+    // if(dynamic_cast<QTextEdit*>(editor))
+    // {
+    //     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
 
+    //     item.
+    // }
 
     QStyledItemDelegate::setEditorData(editor, index);
 
@@ -178,6 +292,10 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
 
         newString = comboBox->currentText();
     }
+    else if(dynamic_cast<QTextEdit*>(editor))
+    {
+        newString = dynamic_cast<QTextEdit*>(editor)->toPlainText();
+    }
     else
     {
         newString = static_cast<QLineEdit*>(editor)->text();
@@ -185,6 +303,19 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
 
     if(newString != oldString)
     {
+        if(FEBio::GetClassId(*m_superID, newString.toStdString()) != -1)
+        {
+            FSModelComponent* comp = FEBio::CreateClass(*m_superID, newString.toStdString(), nullptr);
+
+            for(int param = 0; param < comp->Parameters(); param++)
+            {
+                std::cout << comp->GetParam(param).GetShortName() << std::endl;
+            }
+        }
+
+
+
+
         CCmdEditCell* cmd = new CCmdEditCell(QPersistentModelIndex(index), newString, oldString, xmlModel);
 
         doc->DoCommand(cmd);
@@ -222,13 +353,29 @@ void XMLTreeView::setModel(QAbstractItemModel* newModel)
 {
     XMLTreeModel* current = dynamic_cast<XMLTreeModel*>(model());
 
+    bool firstModel = false;
     if(current)
     {
         disconnect(this, &XMLTreeView::expanded, current, &XMLTreeModel::ItemExpanded);
         disconnect(this, &XMLTreeView::collapsed, current, &XMLTreeModel::ItemCollapsed);
     }
+    else
+    {
+        firstModel = true;
+    }
 
     QTreeView::setModel(newModel);
+
+    // Set the column sizes the first time we set a model
+    if(firstModel)
+    {
+        int width = m_wnd->GetEditorSize().width();
+        setColumnWidth(TAG, width*0.25);
+        setColumnWidth(ID, width*0.05);
+        setColumnWidth(TYPE, width*0.15);
+        setColumnWidth(NAME, width*0.15);
+        setColumnWidth(VALUE, width*0.10);
+    }
 
     current = static_cast<XMLTreeModel*>(newModel);
 

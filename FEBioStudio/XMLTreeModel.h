@@ -78,7 +78,9 @@ public:
     void insertChild(int index, XMLTreeItem *child);
     bool removeChild(int index);
 
-    XMLTreeItem *child(int row);
+    XMLTreeItem* child(int row);
+    XMLTreeItem* findChlid(int column, QString value);
+    vector<XMLTreeItem*> findAllChlidren(int column, QString value);
     int childCount() const;
     int columnCount() const;
     QString data(int column) const;

@@ -177,6 +177,8 @@ void XMLEditor::SetDocument(QTextDocument* doc, const QString& title)
 	}
 
 	setDocument(doc);
+
+    setTabStopDistance(40);
 }
 
 int XMLEditor::lineNumberAreaWidth()
