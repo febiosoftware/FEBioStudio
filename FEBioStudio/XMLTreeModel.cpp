@@ -367,11 +367,9 @@ bool XMLTreeModel::setData(const QModelIndex& index, const QVariant& value, int 
 {
     if(!index.isValid()) return false;
 
-    const char* strValue = value.toString().toStdString().c_str();
-
     XMLTreeItem *item = static_cast<XMLTreeItem*>(index.internalPointer());
 
-    bool changed = item->setData(index.column(), strValue);
+    bool changed = item->setData(index.column(), value.toString().toStdString().c_str());
 
     emit dataChanged(index, index);
 

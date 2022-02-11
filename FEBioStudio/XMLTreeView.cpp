@@ -264,13 +264,6 @@ void XMLItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) c
 {
     if(!index.isValid()) return;
 
-    // if(dynamic_cast<QTextEdit*>(editor))
-    // {
-    //     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
-
-    //     item.
-    // }
-
     QStyledItemDelegate::setEditorData(editor, index);
 
 }
@@ -303,15 +296,15 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
 
     if(newString != oldString)
     {
-        if(FEBio::GetClassId(*m_superID, newString.toStdString()) != -1)
-        {
-            FSModelComponent* comp = FEBio::CreateClass(*m_superID, newString.toStdString(), nullptr);
+        // if(FEBio::GetClassId(*m_superID, newString.toStdString()) != -1)
+        // {
+        //     FSModelComponent* comp = FEBio::CreateClass(*m_superID, newString.toStdString(), nullptr);
 
-            for(int param = 0; param < comp->Parameters(); param++)
-            {
-                std::cout << comp->GetParam(param).GetShortName() << std::endl;
-            }
-        }
+        //     for(int param = 0; param < comp->Parameters(); param++)
+        //     {
+        //         std::cout << comp->GetParam(param).GetShortName() << std::endl;
+        //     }
+        // }
 
 
 
