@@ -31,6 +31,7 @@ float PostSessionFileReader::GetFileProgress() const
 {
 	if (m_openFile == nullptr) return 0.f;
 	else m_openFile->GetFileProgress();
+    return 1.f;
 }
 
 bool PostSessionFileReader::Load(const char* szfile)
