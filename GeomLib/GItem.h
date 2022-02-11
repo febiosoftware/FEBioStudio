@@ -138,7 +138,6 @@ protected:
 	GBaseObject*	m_po;	// pointer to object this item belongs to
 };
 
-
 //-----------------------------------------------------------------------------
 // Intermediate base class defining a counter for each derived item class that
 // can be used to determine a unique global ID number

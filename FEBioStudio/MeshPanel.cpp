@@ -150,17 +150,17 @@ void MeshingThread::stop()
 }
 
 //=======================================================================================
-ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FEGroup* pg)
+ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FESelection* sel)
 {
 	m_doc = doc;
 	m_mod = mod;
-	m_pg = pg;
+	m_sel = sel;
 	m_po = po;
 }
 
 void ModifierThread::run()
 {
-	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_pg);
+	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_sel);
 	emit resultReady(bsuccess);
 }
 
@@ -402,20 +402,8 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	if (m_mod == 0) return;
 
 	FESelection* sel = doc->GetCurrentSelection();
-	FEItemListBuilder* list = (sel ? sel->CreateItemList() : 0);
-	FEGroup* g = dynamic_cast<FEGroup*>(list);
-	if (g == 0) 
-	{ 
-		if (dynamic_cast<GEdgeList*>(list) && (list->size() == 1))
-		{
-			GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
-			GEdge* ge = dynamic_cast<GEdgeList*>(list)->GetEdge(0);
-			g = ge->GetFEEdgeSet();
-		}
-		else { delete list; list = 0; }
-	}
 
-	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, g);
+	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, sel);
 	CDlgStartThread dlg(this, thread);
 	dlg.setTask(QString::fromStdString(m_mod->GetName()));
 	if (dlg.exec())
@@ -443,9 +431,6 @@ void CMeshPanel::on_apply2_clicked(bool b)
 			ui->setActiveModifier(m_mod);
 		}
 	}
-
-	// don't forget to cleanup
-	if (g) delete g;
 
 	w->UpdateModel(activeObject, true);
 	w->UpdateGLControlBar();

@@ -429,5 +429,5 @@ public:
 	FESetMBWeight();
 
 	//! Apply the weld modifier
-	FEMesh* Apply(FEMesh* pm);
+	FEMesh* Apply(GObject* po, FESelection* sel);
 };

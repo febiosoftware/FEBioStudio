@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <GeomLib/geom.h>
 #include <GeomLib/GMultiBox.h>
 #include <algorithm>
+#include "FESelection.h"
+#include "GGroup.h"
 
 void MBBlock::SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8)
 {
@@ -1879,33 +1881,38 @@ FESetMBWeight::FESetMBWeight() : FEModifier("Set MB Weight")
 	AddDoubleParam(0.0, "weight");
 }
 
-FEMesh* FESetMBWeight::Apply(FEMesh* pm)
+FEMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 {
-	if (pm == nullptr) return nullptr;
-	GMultiBox* po = dynamic_cast<GMultiBox*>(pm->GetGObject());
-	if (po == nullptr) return nullptr;
+	GMultiBox* mb = dynamic_cast<GMultiBox*>(po);
+	if (mb == nullptr) return nullptr;
+
+	if (sel == nullptr) return nullptr;
+
+	FEItemListBuilder* list = sel->CreateItemList();
 
 	double w = GetFloatValue(0);
 
-	for (int i = 0; i < po->Faces(); ++i)
+	GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
+	if (edgeList)
 	{
-		GFace* f = po->Face(i);
-		if (f->IsSelected())
+		vector<GEdge*> edges = edgeList->GetEdgeList();
+		for (GEdge* edge : edges)
 		{
-			for (int j = 0; j < f->Nodes(); ++j)
-			{
-				GNode* n = po->Node(f->m_node[j]);
-				n->SetMeshWeight(w);
-			}
+			edge->SetMeshWeight(w);
 		}
 	}
 
-	for (int i = 0; i < po->Edges(); ++i)
+	GFaceList* faceList = dynamic_cast<GFaceList*>(list);
+	if (faceList)
 	{
-		GEdge* e = po->Edge(i);
-		if (e->IsSelected())
+		vector<GFace*> faces = faceList->GetFaceList();
+		for (GFace* face : faces)
 		{
-			e->SetMeshWeight(w);
+			for (int j = 0; j < face->Nodes(); ++j)
+			{
+				GNode* n = mb->Node(face->m_node[j]);
+				n->SetMeshWeight(w);
+			}
 		}
 	}
 
