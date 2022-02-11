@@ -331,6 +331,12 @@ public:
     QAction* addElement;
     QAction* removeSelectedRow;
 
+    QMenu* columnsMenu;
+    QAction* showIDColumn;
+    QAction* showTypeColumn;
+    QAction* showNameColumn;
+    QAction* showCommentColumn;
+
 public:
     void setupUi(::XMLTreeView* parent)
     {
@@ -345,6 +351,33 @@ public:
 
         removeSelectedRow = new QAction("Delete Row", parent);
         removeSelectedRow->setObjectName("removeSelectedRow");
+
+        columnsMenu = new QMenu("Columns");
+
+        showIDColumn = new QAction("ID", parent);
+        showIDColumn->setObjectName("showIDColumn");
+        showIDColumn->setCheckable(true);
+        showIDColumn->setChecked(true);
+        
+        showTypeColumn = new QAction("Type", parent);
+        showTypeColumn->setObjectName("showTypeColumn");
+        showTypeColumn->setCheckable(true);
+        showTypeColumn->setChecked(true);
+
+        showNameColumn= new QAction("Name", parent);
+        showNameColumn->setObjectName("showNameColumn");
+        showNameColumn->setCheckable(true);
+        showNameColumn->setChecked(true);
+
+        showCommentColumn = new QAction("Column", parent);
+        showCommentColumn->setObjectName("showCommentColumn");
+        showCommentColumn->setCheckable(true);
+        showCommentColumn->setChecked(true);
+
+        columnsMenu->addAction(showIDColumn);
+        columnsMenu->addAction(showTypeColumn);
+        columnsMenu->addAction(showNameColumn);
+        columnsMenu->addAction(showCommentColumn);
 
         parent->header()->setContextMenuPolicy(Qt::CustomContextMenu);
         QObject::connect(parent->header(), &QHeaderView::customContextMenuRequested, parent, &::XMLTreeView::on_headerMenu_requested);
@@ -468,12 +501,35 @@ void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
         menu.addAction(ui->removeSelectedRow);
     }
 
+    menu.addSeparator();
+    menu.addMenu(ui->columnsMenu);
+
     menu.exec(viewport()->mapToGlobal(event->pos()));
 }
 
 void XMLTreeView::on_headerMenu_requested(const QPoint& pos)
 {
+    ui->columnsMenu->exec(viewport()->mapToGlobal(pos));
+}
 
+void XMLTreeView::on_showIDColumn_triggered(bool b)
+{
+    setColumnHidden(ID, !b);
+}
+
+void XMLTreeView::on_showTypeColumn_triggered(bool b)
+{
+    setColumnHidden(TYPE, !b);
+}
+
+void XMLTreeView::on_showNameColumn_triggered(bool b)
+{
+    setColumnHidden(NAME, !b);
+}
+
+void XMLTreeView::on_showCommentColumn_triggered(bool b)
+{
+    setColumnHidden(COMMENT, !b);
 }
 
 void XMLTreeView::expandToMatch(const QModelIndex& index)

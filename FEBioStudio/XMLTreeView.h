@@ -80,6 +80,11 @@ protected:
 
 private slots:
     void on_headerMenu_requested(const QPoint& pos);
+    
+    void on_showIDColumn_triggered(bool b);
+    void on_showTypeColumn_triggered(bool b);
+    void on_showNameColumn_triggered(bool b);
+    void on_showCommentColumn_triggered(bool b);
 
 private:
     void expandToMatch(const QModelIndex& index);
