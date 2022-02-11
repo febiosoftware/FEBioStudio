@@ -69,7 +69,7 @@ public:
     int Depth() { return m_depth; }
 
     bool Expanded() { return m_expanded; }
-    bool SetExpanded(bool expanded) { m_expanded = expanded; }
+    void SetExpanded(bool expanded) { m_expanded = expanded; }
 
     void SetItemType(ItemType itemType) { m_itemType = itemType; }
     ItemType GetItemType() { return m_itemType; }

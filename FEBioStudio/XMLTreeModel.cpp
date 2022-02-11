@@ -466,6 +466,8 @@ bool XMLTreeModel::addRow(const QModelIndex& parent, XMLTreeItem::ItemType itemT
     }
 
     endInsertRows();
+
+    return true;
 }
 
 bool XMLTreeModel::insertRow(const QModelIndex& parent, int row, XMLTreeItem* item)
@@ -483,6 +485,8 @@ bool XMLTreeModel::insertRow(const QModelIndex& parent, int row, XMLTreeItem* it
     endInsertRows();
 
     emit layoutChanged();
+
+    return true;
 }
 
 QModelIndex XMLTreeModel::root() const
