@@ -54,6 +54,11 @@ private:
     int* m_superID;
 };
 
+namespace Ui
+{
+    class XMLTreeView;
+}
+
 class XMLTreeView : public QTreeView
 {
     Q_OBJECT
@@ -73,16 +78,15 @@ public slots:
 protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
 
-signals:
-    void modelEdited();
+private slots:
+    void on_headerMenu_requested(const QPoint& pos);
 
 private:
     void expandToMatch(const QModelIndex& index);
 
 private:
-    QAction* addAttribute;
-    QAction* addElement;
-    QAction* removeSelectedRow;
+    friend class Ui::XMLTreeView;
+    Ui::XMLTreeView* ui;
 
     CMainWindow* m_wnd;
 };

@@ -134,7 +134,7 @@ public:
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
-    XMLTreeView*      xmlTree;
+    ::XMLTreeView*      xmlTree;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -345,7 +345,7 @@ public:
 		xmlEdit->setObjectName("xmledit");
 		stack->addWidget(xmlEdit);
 
-        xmlTree = new XMLTreeView(wnd);
+        xmlTree = new ::XMLTreeView(wnd);
         xmlTree->setObjectName("xmlTree");
 		stack->addWidget(xmlTree);
 

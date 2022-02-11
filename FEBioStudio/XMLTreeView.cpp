@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <QContextMenuEvent>
 #include <QKeyEvent>
 #include <QScrollBar>
+#include <QHeaderView>
 #include "XMLTreeView.h"
 #include "XMLTreeModel.h"
 #include "MainWindow.h"
@@ -323,21 +324,39 @@ void XMLItemDelegate::OnEditorSignal()
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-XMLTreeView::XMLTreeView(CMainWindow* wnd) : QTreeView(wnd), m_wnd(wnd)
+class Ui::XMLTreeView
 {
-    setItemDelegate(new XMLItemDelegate);
-    setAlternatingRowColors(true);
+public:
+    QAction* addAttribute;
+    QAction* addElement;
+    QAction* removeSelectedRow;
 
-    addAttribute = new QAction("Add Attribute", this);
-    addAttribute->setObjectName("addAttribute");
+public:
+    void setupUi(::XMLTreeView* parent)
+    {
+        parent->setItemDelegate(new XMLItemDelegate);
+        parent->setAlternatingRowColors(true);
 
-    addElement = new QAction("Add Element", this);
-    addElement->setObjectName("addElement");
+        addAttribute = new QAction("Add Attribute", parent);
+        addAttribute->setObjectName("addAttribute");
 
-    removeSelectedRow = new QAction("Delete Row", this);
-    removeSelectedRow->setObjectName("removeSelectedRow");
+        addElement = new QAction("Add Element", parent);
+        addElement->setObjectName("addElement");
 
-    // connect(itemDelegate(), &QStyledItemDelegate::commitData, this, &XMLTreeView::modelEdited);
+        removeSelectedRow = new QAction("Delete Row", parent);
+        removeSelectedRow->setObjectName("removeSelectedRow");
+
+        parent->header()->setContextMenuPolicy(Qt::CustomContextMenu);
+        QObject::connect(parent->header(), &QHeaderView::customContextMenuRequested, parent, &::XMLTreeView::on_headerMenu_requested);
+    }
+
+};
+
+    
+
+XMLTreeView::XMLTreeView(CMainWindow* wnd) : QTreeView(wnd), m_wnd(wnd), ui(new Ui::XMLTreeView)
+{
+    ui->setupUi(this);
 
     QMetaObject::connectSlotsByName(this);
 }
@@ -428,14 +447,16 @@ void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
 {
     setCurrentIndex(indexAt(event->pos()));
 
+    if(!currentIndex().isValid()) return;
+    
     XMLTreeItem* item = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
 
     QMenu menu;
 
     if(item->GetItemType() == XMLTreeItem::ELEMENT)
     {
-        menu.addAction(addAttribute);
-        menu.addAction(addElement);
+        menu.addAction(ui->addAttribute);
+        menu.addAction(ui->addElement);
     }
     
     if(item->Depth() != 0)
@@ -444,10 +465,15 @@ void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
         {
             menu.addSeparator();
         }
-        menu.addAction(removeSelectedRow);
+        menu.addAction(ui->removeSelectedRow);
     }
 
     menu.exec(viewport()->mapToGlobal(event->pos()));
+}
+
+void XMLTreeView::on_headerMenu_requested(const QPoint& pos)
+{
+
 }
 
 void XMLTreeView::expandToMatch(const QModelIndex& index)
