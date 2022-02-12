@@ -172,9 +172,7 @@ bool FEMultiQuadMesh::Build(GObject* po)
 	m_po = po;
 	if (po == nullptr) return false;
 
-	m_MBNode.clear();
-	m_MBEdge.clear();
-	m_MBFace.clear();
+	ClearMQ();
 	
 	// build nodes
 	int NN = po->Nodes();

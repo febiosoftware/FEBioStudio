@@ -49,7 +49,7 @@ protected:
 	int		m_nx, m_ny;
 };
 
-class FECylndricalPatch : public FEMesher
+class FECylndricalPatch : public FEMultiQuadMesh
 {
 public:
 	enum { T, NX, NY, ELEM_TYPE };
@@ -59,8 +59,7 @@ public:
 	FECylndricalPatch(GCylindricalPatch* po);
 	FEMesh* BuildMesh();
 
-protected:
-	FEMesh* BuildMultiQuadMesh();
+	bool BuildMultiQuad() override;
 
 protected:
 	GCylindricalPatch* m_pobj;

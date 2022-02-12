@@ -25,11 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "FEMultiQuadMesh.h"
 
 class GRing;
 
-class FEShellRing : public FEMesher
+class FEShellRing : public FEMultiQuadMesh
 {
 public:
 	enum { T, NSLICE, NDIV, ELEM_TYPE };
@@ -38,6 +38,8 @@ public:
 	FEShellRing(){}
 	FEShellRing(GRing* po);
 	FEMesh* BuildMesh();
+
+	bool BuildMultiQuad() override;
 
 protected:
 	GRing* m_pobj;

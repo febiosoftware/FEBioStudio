@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <GeomLib/GMultiPatch.h>
 #include <MeshTools/FEFileExport.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
@@ -628,6 +629,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 
 	if      (dynamic_cast<GPrimitive*         >(po)) return "Primitive";
 	else if (dynamic_cast<GMultiBox*          >(po)) return "Multi-block";
+	else if (dynamic_cast<GMultiPatch*        >(po)) return "Multi-patch";
 	else if (dynamic_cast<GMeshObject*		  >(po)) return "Editable mesh";
 	else if (dynamic_cast<GCurveMeshObject*   >(po)) return "Editable curve";
 	else if (dynamic_cast<GSurfaceMeshObject* >(po)) return "Editable surface";

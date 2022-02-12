@@ -110,30 +110,18 @@ FECylndricalPatch::FECylndricalPatch(GCylindricalPatch* po)
 
 FEMesh* FECylndricalPatch::BuildMesh()
 {
-	return BuildMultiQuadMesh();
-}
-
-FEMesh* FECylndricalPatch::BuildMultiQuadMesh()
-{
-	// build the quad mesh data
-	FEMultiQuadMesh MQ;
-	MQ.Build(m_pobj);
-
-	// set sizes
-	int nx = GetIntValue(NX);
-	int ny = GetIntValue(NY);
-	MQ.SetFaceSizes(0, nx, ny);
+	if (BuildMultiQuad() == false) return nullptr;
 
 	int elemType = GetIntValue(ELEM_TYPE);
 	switch (elemType)
 	{
-	case 0: MQ.SetElementType(FE_QUAD4); break;
-	case 1: MQ.SetElementType(FE_QUAD8); break;
-	case 2: MQ.SetElementType(FE_QUAD9); break;
+	case 0: SetElementType(FE_QUAD4); break;
+	case 1: SetElementType(FE_QUAD8); break;
+	case 2: SetElementType(FE_QUAD9); break;
 	};
 
 	// Build the mesh
-	FEMesh* pm = MQ.BuildMesh();
+	FEMesh* pm = FEMultiQuadMesh::BuildMesh();
 	if (pm == nullptr) return nullptr;
 
 	// assign shell thickness
@@ -141,4 +129,19 @@ FEMesh* FECylndricalPatch::BuildMultiQuadMesh()
 	pm->SetUniformShellThickness(t);
 
 	return pm;
+}
+
+bool FECylndricalPatch::BuildMultiQuad()
+{
+	ClearMQ();
+
+	// build the quad mesh data
+	Build(m_pobj);
+
+	// set sizes
+	int nx = GetIntValue(NX);
+	int ny = GetIntValue(NY);
+	SetFaceSizes(0, nx, ny);
+
+	return true;
 }

@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // constructor
-GDisc::GDisc() : GPrimitive(GDISC)
+GDisc::GDisc() : GShellPrimitive(GDISC)
 {
 	// define parameters
 	AddDoubleParam(1.0, "R", "radius");

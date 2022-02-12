@@ -54,29 +54,19 @@ FEShellRing::FEShellRing(GRing* po)
 
 FEMesh* FEShellRing::BuildMesh()
 {
-	// build the mesh data structures
-	FEMultiQuadMesh MQ;
-	MQ.Build(m_pobj);
-
-	// set discretization
-	int nd = GetIntValue(NDIV); if (nd < 1) nd = 1;
-	int ns = GetIntValue(NSLICE); if (ns < 1) ns = 1;
-	MQ.SetFaceSizes(0, ns, nd);
-	MQ.SetFaceSizes(1, ns, nd);
-	MQ.SetFaceSizes(2, ns, nd);
-	MQ.SetFaceSizes(3, ns, nd);
+	if (BuildMultiQuad() == false) return nullptr;
 
 	// set element type
 	int elemType = GetIntValue(ELEM_TYPE);
 	switch (elemType)
 	{
-	case 0: MQ.SetElementType(FE_QUAD4); break;
-	case 1: MQ.SetElementType(FE_QUAD8); break;
-	case 2: MQ.SetElementType(FE_QUAD9); break;
+	case 0: SetElementType(FE_QUAD4); break;
+	case 1: SetElementType(FE_QUAD8); break;
+	case 2: SetElementType(FE_QUAD9); break;
 	};
 
 	// Build the mesh
-	FEMesh* pm = MQ.BuildMesh();
+	FEMesh* pm = FEMultiQuadMesh::BuildMesh();
 	if (pm == nullptr) return nullptr;
 
 	// assign shell thickness
@@ -84,4 +74,22 @@ FEMesh* FEShellRing::BuildMesh()
 	pm->SetUniformShellThickness(t);
 
 	return pm;
+}
+
+bool FEShellRing::BuildMultiQuad()
+{
+	ClearMQ();
+
+	// build the mesh data structures
+	Build(m_pobj);
+
+	// set discretization
+	int nd = GetIntValue(NDIV); if (nd < 1) nd = 1;
+	int ns = GetIntValue(NSLICE); if (ns < 1) ns = 1;
+	SetFaceSizes(0, ns, nd);
+	SetFaceSizes(1, ns, nd);
+	SetFaceSizes(2, ns, nd);
+	SetFaceSizes(3, ns, nd);
+
+	return true;
 }

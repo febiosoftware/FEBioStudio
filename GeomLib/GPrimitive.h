@@ -340,7 +340,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // 2D circular disc
-class GDisc : public GPrimitive
+class GDisc : public GShellPrimitive
 {
 public:
 	enum {RADIUS};
@@ -373,7 +373,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // 2D ring
-class GRing : public GPrimitive
+class GRing : public GShellPrimitive
 {
 public:
 	enum {RIN, ROUT};
@@ -390,7 +390,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // a shell tube (cylinder without capped ends)
-class GThinTube  : public GPrimitive
+class GThinTube  : public GShellPrimitive
 {
 public:
 	enum {RAD, H};
@@ -406,7 +406,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class GCylindricalPatch : public GPrimitive
+class GCylindricalPatch : public GShellPrimitive
 {
 public:
 	enum { W, H, R };
@@ -426,10 +426,10 @@ private:
 
 //-----------------------------------------------------------------------------
 // Gregory patch
-class GGregoryPatch : public GPrimitive
+class GGregoryPatch : public GShellPrimitive
 {
 public:
-	GGregoryPatch(FEMesh* pm) : GPrimitive(GGREGORY_PATCH) { SetFEMesh(pm); }
+	GGregoryPatch(FEMesh* pm);
 
 public:
 	void UpdateMesh();
