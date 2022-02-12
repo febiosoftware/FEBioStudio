@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiBox.h>
+#include <GeomLib/GMultiPatch.h>
 #include "ui_meshpanel.h"
 #include "ObjectProps.h"
 #include "MainWindow.h"
@@ -490,6 +491,14 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multiblock object.");
 
 		GMultiBox* newObject = new GMultiBox(primitive);
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
+	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_MULTIPATCH)
+	{
+		GShellPrimitive* primitive = dynamic_cast<GShellPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multi-patch object.");
+
+		GMultiPatch* newObject = new GMultiPatch(primitive);
 		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
 	}
 	else

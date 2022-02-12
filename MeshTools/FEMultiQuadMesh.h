@@ -40,7 +40,7 @@ public:
 	FEMultiQuadMesh();
 
 	// destructor
-	~FEMultiQuadMesh();
+	virtual ~FEMultiQuadMesh();
 
 	// build the mesh
 	FEMesh* BuildMesh();
@@ -51,10 +51,24 @@ public:
 	// build the mesh from the object
 	bool Build(GObject* po);
 
-public:
-	MBNode& AddNode(const vec3d& r, int ntype = NODE_VERTEX);
-	MBFace& AddFace(int n0, int n1, int n2, int n3);
+	// build the multi-quad data
+	virtual bool BuildMultiQuad();
 
+	// clear the MQ data
+	void ClearMQ();
+
+public:
+	int Nodes() const;
+	MBNode& AddNode(const vec3d& r, int ntype = NODE_VERTEX);
+	MBNode& GetMBNode(int i) { return m_MBNode[i]; }
+
+	int Edges() const;
+	MBEdge& GetEdge(int i);
+	MBEdge& AddEdge();
+
+	int Faces() const;
+	MBFace& AddFace(int n0, int n1, int n2, int n3);
+	MBFace& AddFace();
 	MBFace& GetFace(int n);
 
 	// update the Multii-Block data
@@ -62,10 +76,15 @@ public:
 
 	void SetFaceEdgeIDs(int nface, int n0, int n1, int n2, int n3);
 
-	MBNode& GetMBNode(int i) { return m_MBNode[i]; }
 	MBEdge& GetFaceEdge(int nface, int nedge);
 
 	void SetFaceSizes(int nface, int nx, int ny);
+
+	void ClearMeshSettings();
+
+	bool SetEdgeDivisions(int iedge, int nd);
+	bool SetDefaultDivisions(int nd);
+	bool SetNodeWeights(std::vector<double>& w);
 
 protected:
 	void BuildMBEdges();
@@ -121,4 +140,22 @@ protected:
 	FEMesh* m_pm;
 	FENode* m_currentNode;
 	int		m_nodes;
+};
+
+class GMultiPatch;
+
+class FEMultiQuadMesher : public FEMultiQuadMesh
+{
+	enum { DIVS, ELEM_TYPE };
+
+public:
+	FEMultiQuadMesher(GMultiPatch* po);
+
+	// build the mesh
+	FEMesh* BuildMesh() override;
+
+	bool BuildMultiQuad() override;
+
+private:
+	GMultiPatch* m_po;
 };

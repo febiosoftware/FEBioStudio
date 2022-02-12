@@ -56,6 +56,13 @@ public:
 	GObject* Clone() override;
 };
 
+// use this base class for shell primitives
+class GShellPrimitive : public GPrimitive
+{
+public:
+	GShellPrimitive(int ntype) : GPrimitive(ntype) {}
+};
+
 //-----------------------------------------------------------------------------
 // Simple rectangular box
 class GBox : public GPrimitive
@@ -349,7 +356,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // 2D rectangular patch
-class GPatch : public GPrimitive
+class GPatch : public GShellPrimitive
 {
 public:
 	enum {W, H};

@@ -126,9 +126,14 @@ void CObjectPanel::Update()
 
 			if (dynamic_cast<GPrimitive*>(po))
 			{
-				ui->menu->addAction("Multiblock Mesh")->setData(CONVERT_TO_MULTIBLOCK);
+				ui->menu->addAction("Multi-block Mesh")->setData(CONVERT_TO_MULTIBLOCK);
 			}
 
+			ui->menu->setEnabled(true);
+		}
+		else if (dynamic_cast<GShellPrimitive*>(po))
+		{
+			ui->menu->addAction("Multi-patch Mesh")->setData(CONVERT_TO_MULTIPATCH);
 			ui->menu->setEnabled(true);
 		}
 		else if (dynamic_cast<GPrimitive*>(po))

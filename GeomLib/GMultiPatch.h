@@ -25,46 +25,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMultiQuadMesh.h"
+#include <GeomLib/GObject.h>
 
-class GPatch;
-class GCylindricalPatch;
+class FEMultiQuadMesh;
 
-class FEShellPatch : public FEMultiQuadMesh
+//-----------------------------------------------------------------------------
+//! The GMultiBox class is the geometry that is used to create a multi-block mesh. 
+//! A multi-block mesh is basically a mesh that is composed of rectangular blocks. 
+//! The user can edit the number of partitions by splitting edges, faces and parts.
+//
+class GMultiPatch : public GObject
 {
 public:
-	enum { T, NX, NY, ELEM_TYPE};
+	//! constructor
+	GMultiPatch();
+	GMultiPatch(GObject* po);
 
-public:
-	FEShellPatch(){}
-	FEShellPatch(GPatch* po);
-	FEMesh* BuildMesh();
+	bool DeletePart(GPart* pg) override;
 
-	bool BuildMultiQuad() override;
+	FEMeshBase* GetEditableMesh() override;
 
-protected:
-	GPatch* m_pobj;
+	GObject* Clone() override;
 
-	double	m_t;
-	int		m_nx, m_ny;
-};
+	bool Merge(GMultiPatch& mb);
 
-class FECylndricalPatch : public FEMesher
-{
-public:
-	enum { T, NX, NY, ELEM_TYPE };
-
-public:
-	FECylndricalPatch() {}
-	FECylndricalPatch(GCylindricalPatch* po);
-	FEMesh* BuildMesh();
-
-protected:
-	FEMesh* BuildMultiQuadMesh();
-
-protected:
-	GCylindricalPatch* m_pobj;
-
-	double	m_t;
-	int		m_nx, m_ny;
+private:
+	void BuildObject(FEMultiQuadMesh& mb);
 };
