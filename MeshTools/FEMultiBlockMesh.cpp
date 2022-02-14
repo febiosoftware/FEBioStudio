@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeNodeList.h>
 #include <GeomLib/geom.h>
 #include <GeomLib/GMultiBox.h>
+#include <GeomLib/GMultiPatch.h>
 #include <algorithm>
 #include "FESelection.h"
 #include "GGroup.h"
@@ -1692,6 +1693,11 @@ bool FEMultiBlockMesh::SetNodeWeights(std::vector<double>& w)
 		{
 			e.m_gx = 1.0 / w1;
 		}
+		else if ((e.m_nx != 0) && (w0 == w1) && (w0 != 1.0))
+		{
+			e.m_gx = w0;
+			e.m_bx = true;
+		}
 		else if (w0 != w1) { assert(false); }
 	}
 }
@@ -1883,39 +1889,73 @@ FESetMBWeight::FESetMBWeight() : FEModifier("Set MB Weight")
 
 FEMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
 {
-	GMultiBox* mb = dynamic_cast<GMultiBox*>(po);
-	if (mb == nullptr) return nullptr;
-
 	if (sel == nullptr) return nullptr;
 
-	FEItemListBuilder* list = sel->CreateItemList();
-
-	double w = GetFloatValue(0);
-
-	GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
-	if (edgeList)
+	GMultiBox* mb = dynamic_cast<GMultiBox*>(po);
+	if (mb)
 	{
-		vector<GEdge*> edges = edgeList->GetEdgeList();
-		for (GEdge* edge : edges)
-		{
-			edge->SetMeshWeight(w);
-		}
-	}
+		FEItemListBuilder* list = sel->CreateItemList();
 
-	GFaceList* faceList = dynamic_cast<GFaceList*>(list);
-	if (faceList)
-	{
-		vector<GFace*> faces = faceList->GetFaceList();
-		for (GFace* face : faces)
+		double w = GetFloatValue(0);
+
+		GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
+		if (edgeList)
 		{
-			for (int j = 0; j < face->Nodes(); ++j)
+			vector<GEdge*> edges = edgeList->GetEdgeList();
+			for (GEdge* edge : edges)
 			{
-				GNode* n = mb->Node(face->m_node[j]);
-				n->SetMeshWeight(w);
+				edge->SetMeshWeight(w);
 			}
 		}
+
+		GFaceList* faceList = dynamic_cast<GFaceList*>(list);
+		if (faceList)
+		{
+			vector<GFace*> faces = faceList->GetFaceList();
+			for (GFace* face : faces)
+			{
+				for (int j = 0; j < face->Nodes(); ++j)
+				{
+					GNode* n = mb->Node(face->m_node[j]);
+					n->SetMeshWeight(w);
+				}
+			}
+		}
+
+		// don't call po->BuildMesh() since that deletes the current mesh
+		return po->GetFEMesher()->BuildMesh();
+	}
+	else if (dynamic_cast<GMultiPatch*>(po))
+	{
+		GMultiPatch* mp = dynamic_cast<GMultiPatch*>(po);
+
+		FEItemListBuilder* list = sel->CreateItemList();
+
+		double w = GetFloatValue(0);
+
+		GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
+		if (edgeList)
+		{
+			vector<GEdge*> edges = edgeList->GetEdgeList();
+			for (GEdge* edge : edges)
+			{
+				edge->SetMeshWeight(w);
+			}
+		}
+
+		GNodeList* nodeList = dynamic_cast<GNodeList*>(list);
+		if (nodeList)
+		{
+			vector<GNode*> nodes = nodeList->GetNodeList();
+			for (GNode* node : nodes)
+			{
+				node->SetMeshWeight(w);
+			}
+		}
+
+		// don't call po->BuildMesh() since that deletes the current mesh
+		return po->GetFEMesher()->BuildMesh();
 	}
 
-	// don't call po->BuildMesh() since that deletes the current mesh
-	return po->GetFEMesher()->BuildMesh();
+	return nullptr;
 }

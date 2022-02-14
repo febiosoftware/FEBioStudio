@@ -219,7 +219,7 @@ bool GMultiPatch::DeletePart(GPart* pg)
 	// update block face IDs
 	for (GPart* b : m_Part)
 	{
-		for (int j = 0; j < 6; ++j)
+		for (int j = 0; j < b->m_face.size(); ++j)
 		{
 			b->m_face[j] = m_Face[b->m_face[j]]->m_ntag;
 			assert(b->m_face[j] >= 0);
@@ -259,7 +259,7 @@ bool GMultiPatch::DeletePart(GPart* pg)
 	// update block edges
 	for (GPart* b : m_Part)
 	{
-		for (int j = 0; j < 12; ++j)
+		for (int j = 0; j < b->m_edge.size(); ++j)
 		{
 			b->m_edge[j] = m_Edge[b->m_edge[j]]->m_ntag;
 			assert(b->m_edge[j] >= 0);
@@ -310,7 +310,7 @@ bool GMultiPatch::DeletePart(GPart* pg)
 
 	// update block nodes
 	for (GPart* b : m_Part) {
-		for (int j = 0; j < 8; ++j) {
+		for (int j = 0; j < b->m_node.size(); ++j) {
 			b->m_node[j] = m_Node[b->m_node[j]]->m_ntag;
 			assert(b->m_node[j] >= 0);
 		}

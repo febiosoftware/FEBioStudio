@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <sstream>
 #include "GModel.h"
 #include <GeomLib/GPrimitive.h>
+#include <GeomLib/GMultiPatch.h>
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GCurveMeshObject.h>
@@ -1198,6 +1199,7 @@ GObject* BuildObject(int ntype)
 	case GOCC_BOX           : po = new GOCCBox(); break;
 	case GCYLINDRICAL_PATCH : po = new GCylindricalPatch(); break;
 	case GMULTI_BLOCK       : po = new GMultiBox(); break;
+	case GMULTI_PATCH       : po = new GMultiPatch(); break;
 	}
 
 	assert(po);
@@ -1832,6 +1834,37 @@ GObject* GModel::MergeSelectedObjects(GObjectSelection* sel, const string& newOb
 
 			return ponew;
 		}
+
+		// see if all objects are multi-patch
+		bool allMultiPatch = true;
+		for (int i = 0; i < sel->Count(); ++i)
+		{
+			GMultiPatch* mb = dynamic_cast<GMultiPatch*>(sel->Object(i));
+			if (mb == nullptr) {
+				allMultiPatch = false; break;
+			}
+		}
+
+		// merge all multiblocks
+		if (allMultiPatch)
+		{
+			// create a new object by copying the first selected object
+			GMultiPatch* poa = dynamic_cast<GMultiPatch*>(sel->Object(0)); assert(poa);
+			GMultiPatch* ponew = dynamic_cast<GMultiPatch*>(poa->Clone());
+			ponew->SetName(newObjectName.c_str());
+
+			for (int i = 1; i < sel->Count(); ++i)
+			{
+				// get the next object
+				GMultiPatch* po = dynamic_cast<GMultiPatch*>(sel->Object(i));
+
+				// attach it
+				ponew->Merge(*po);
+			}
+
+			return ponew;
+		}
+
 
 		// make sure all objects have meshes
 		for (int i = 0; i<sel->Count(); ++i)

@@ -652,7 +652,7 @@ bool FEMultiQuadMesh::SetEdgeDivisions(int iedge, int nd)
 				{
 					int ec = EC[i];
 					const int* et = ET[ec];
-					for (int j = 0; j < 4; ++j)
+					for (int j = 0; j < 2; ++j)
 					{
 						MBEdge& ej = m_MBEdge[f.m_edge[et[j]]];
 						if (ej.m_ntag == 0) {
@@ -717,6 +717,11 @@ bool FEMultiQuadMesh::SetNodeWeights(std::vector<double>& w)
 		else if ((w1 != 1.0) && (w0 == 1.0))
 		{
 			e.m_gx = 1.0 / w1;
+		}
+		else if ((e.m_nx != 0) && (w0 == w1) && (w0 != 1.0))
+		{
+			e.m_gx = w0;
+			e.m_bx = true;
 		}
 		else if (w0 != w1) { assert(false); }
 	}
