@@ -64,6 +64,7 @@ SOFTWARE.*/
 #include "MaterialPropsView.h"
 #include "FEClassPropsView.h"
 #include "PlotWidget.h"
+#include "DynamicStackedWidget.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -287,7 +288,7 @@ class Ui::CModelPropsPanel
 
 public:
 	QStackedWidget*	stack;
-	QStackedWidget*	propStack;
+	DynamicStackedWidget*	propStack;
 	CItemListSelectionBox* sel1;
 	CItemListSelectionBox* sel2;
 	::CPropertyListView* props;
@@ -332,7 +333,7 @@ public:
 		gitem = new CGItemPropsPanel;
 		gitem->setObjectName("gitem");
 
-		propStack = new QStackedWidget;
+		propStack = new DynamicStackedWidget;
 		propStack->addWidget(props);
 		propStack->addWidget(form);
 //		propStack->addWidget(mat);
