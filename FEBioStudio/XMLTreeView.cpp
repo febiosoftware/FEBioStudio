@@ -297,15 +297,20 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
 
     if(newString != oldString)
     {
-        // if(FEBio::GetClassId(*m_superID, newString.toStdString()) != -1)
-        // {
-        //     FSModelComponent* comp = FEBio::CreateClass(*m_superID, newString.toStdString(), nullptr);
+    //     if(FEBio::GetClassId(*m_superID, newString.toStdString()) != -1)
+    //     {
+    //         FSModelComponent* comp = FEBio::CreateClass(*m_superID, newString.toStdString(), nullptr);
 
-        //     for(int param = 0; param < comp->Parameters(); param++)
-        //     {
-        //         std::cout << comp->GetParam(param).GetShortName() << std::endl;
-        //     }
-        // }
+    //         for(int param = 0; param < comp->Parameters(); param++)
+    //         {
+    //             std::cout << comp->GetParam(param).GetShortName() << std::endl;
+    //         }
+
+    //         for(int prop = 0; prop < comp->Properties(); prop++)
+    //         {
+    //             std::cout << comp->GetProperty(prop).GetName() << std::endl;
+    //         }
+    //     }
 
 
 
@@ -331,6 +336,11 @@ public:
     QAction* addElement;
     QAction* removeSelectedRow;
 
+    QAction* expandAll;
+    QAction* expandChildren;
+    QAction* collapseAll;
+    QAction* collapseChildren;
+
     QMenu* columnsMenu;
     QAction* showIDColumn;
     QAction* showTypeColumn;
@@ -352,6 +362,18 @@ public:
         removeSelectedRow = new QAction("Delete Row", parent);
         removeSelectedRow->setObjectName("removeSelectedRow");
 
+        expandAll = new QAction("Expand All", parent);
+        expandAll->setObjectName("expandAll");
+
+        expandChildren = new QAction("Expand Children", parent);
+        expandChildren->setObjectName("expandChildren");
+
+        collapseAll = new QAction("Collapse All", parent);
+        collapseAll->setObjectName("collapseAll");
+
+        collapseChildren = new QAction("Collapse Children", parent);
+        collapseChildren->setObjectName("collapseChildren");
+
         columnsMenu = new QMenu("Columns");
 
         showIDColumn = new QAction("ID", parent);
@@ -369,7 +391,7 @@ public:
         showNameColumn->setCheckable(true);
         showNameColumn->setChecked(true);
 
-        showCommentColumn = new QAction("Column", parent);
+        showCommentColumn = new QAction("Comment", parent);
         showCommentColumn->setObjectName("showCommentColumn");
         showCommentColumn->setCheckable(true);
         showCommentColumn->setChecked(true);
@@ -438,7 +460,15 @@ CXMLDocument* XMLTreeView::GetDocument()
 void XMLTreeView::on_removeSelectedRow_triggered()
 {
     QModelIndex index = currentIndex();
+    if(!index.isValid()) return;
+
     XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+
+    // Don't delete the root item
+    if(item->parentItem() == static_cast<XMLTreeModel*>(model())->GetRoot())
+    {
+        return;
+    }
 
     CCmdRemoveRow* cmd = new CCmdRemoveRow(QPersistentModelIndex(index.parent()), index.row(), item, static_cast<XMLTreeModel*>(model()));
 
@@ -448,6 +478,12 @@ void XMLTreeView::on_removeSelectedRow_triggered()
 void XMLTreeView::on_addAttribute_triggered()
 {
     QModelIndex index = currentIndex();
+    if(!index.isValid()) return;
+
+    if(static_cast<XMLTreeItem*>(index.internalPointer())->GetItemType() == XMLTreeItem::ATTRIBUTE)
+    {
+        return;
+    }
 
     CCmdAddAttribute* cmd = new CCmdAddAttribute(QPersistentModelIndex(index), static_cast<XMLTreeModel*>(model()));
 
@@ -464,6 +500,13 @@ void XMLTreeView::on_addAttribute_triggered()
 void XMLTreeView::on_addElement_triggered()
 {
     QModelIndex index = currentIndex();
+    if(!index.isValid()) return;
+
+    if(static_cast<XMLTreeItem*>(index.internalPointer())->GetItemType() == XMLTreeItem::ATTRIBUTE)
+    {
+        return;
+    }
+
     CCmdAddElement* cmd = new CCmdAddElement(QPersistentModelIndex(index), static_cast<XMLTreeModel*>(model()));
 
     GetDocument()->DoCommand(cmd);
@@ -502,6 +545,18 @@ void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
     }
 
     menu.addSeparator();
+    menu.addAction(ui->expandAll);
+    if(item->childCount() > 0)
+    {
+        menu.addAction(ui->expandChildren);
+    }
+    menu.addAction(ui->collapseAll);
+    if(item->childCount() > 0)
+    {
+        menu.addAction(ui->collapseChildren);
+    }
+
+    menu.addSeparator();
     menu.addMenu(ui->columnsMenu);
 
     menu.exec(viewport()->mapToGlobal(event->pos()));
@@ -510,6 +565,42 @@ void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
 void XMLTreeView::on_headerMenu_requested(const QPoint& pos)
 {
     ui->columnsMenu->exec(viewport()->mapToGlobal(pos));
+}
+
+void XMLTreeView::on_expandAll_triggered()
+{
+    expandAll();
+}
+
+void XMLTreeView::on_expandChildren_triggered()
+{
+    QModelIndex index = currentIndex();
+    if(!index.isValid()) return;
+
+    expandRecursively(index);
+}
+
+void XMLTreeView::on_collapseAll_triggered()
+{
+    collapseAll();
+}
+
+void XMLTreeView::on_collapseChildren_triggered(QModelIndex index)
+{
+    if(!index.isValid())
+    {
+        index = currentIndex();
+        if(!index.isValid()) return;
+    }
+
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+
+    for(int child = 0; child < item->childCount(); child++)
+    {
+        on_collapseChildren_triggered(model()->index(child, 0, index));
+    }
+
+    collapse(index);    
 }
 
 void XMLTreeView::on_showIDColumn_triggered(bool b)

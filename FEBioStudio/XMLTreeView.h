@@ -81,6 +81,11 @@ protected:
 private slots:
     void on_headerMenu_requested(const QPoint& pos);
     
+    void on_expandAll_triggered();
+    void on_expandChildren_triggered();
+    void on_collapseAll_triggered();
+    void on_collapseChildren_triggered(QModelIndex index = QModelIndex());
+    
     void on_showIDColumn_triggered(bool b);
     void on_showTypeColumn_triggered(bool b);
     void on_showNameColumn_triggered(bool b);
