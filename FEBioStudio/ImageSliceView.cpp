@@ -204,7 +204,7 @@ void CImageSlice::SetIndex(int index)
 
 int CImageSlice::GetSliceCount()
 {
-    return m_slider->maximum();
+    return m_slider->maximum() + 1;
 }
 
 void CImageSlice::on_slider_changed(int val)

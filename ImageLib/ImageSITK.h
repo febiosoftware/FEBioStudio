@@ -29,14 +29,15 @@ DEALINGS IN THE SOFTWARE.
 #include "3DImage.h"
 #include <SimpleITK.h>
 
-class SITKImage : public C3DImage
+class CImageSITK : public C3DImage
 {
 public:
-    SITKImage();
-    SITKImage(int nx, int ny, int nz);
-    ~SITKImage();
+    CImageSITK();
+    CImageSITK(int nx, int ny, int nz);
+    ~CImageSITK();
 
-    bool LoadFromFile(const char* filename, bool isDicom);
+    bool LoadFromFile(std::string, bool isDicom);
+    bool LoadFromStack(std::vector<std::string> filenames);
 
     std::vector<unsigned int> GetSize();
     std::vector<double> GetOrigin();

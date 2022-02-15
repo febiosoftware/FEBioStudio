@@ -1545,13 +1545,49 @@ void CMainWindow::on_actionImportOMETiffImage_triggered()
 void CMainWindow::on_actionImportImageSequence_triggered()
 {
 	QFileDialog filedlg(this);
-	filedlg.setFileMode(QFileDialog::Directory);
+	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::SEQUENCE);
-	}
+        QStringList files = filedlg.selectedFiles();
+
+        if(files.length() == 0) return;
+
+        CGLDocument* doc = GetGLDocument();
+
+        Post::CImageModel* imageModel = nullptr;
+
+        imageModel = doc->ImportITKStack(files);
+        if (imageModel == nullptr)
+        {
+            QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+            return;
+        }
+
+        if(imageModel)
+        {
+            Update(0, true);
+            ZoomTo(imageModel->GetBoundingBox());
+
+            // only for model docs
+            if (dynamic_cast<CModelDocument*>(doc) || dynamic_cast<CImageDocument*>(doc))
+            {
+                // Post::CVolRender* vr = new Post::CVolRender(imageModel);
+                Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+                vr->Create();
+                imageModel->AddImageRenderer(vr);
+
+                Update(0, true);
+                ShowInModelViewer(imageModel);
+            }
+            else
+            {
+                Update(0, true);
+            }
+            ZoomTo(imageModel->GetBoundingBox());
+        }
+    }
 
 }
 

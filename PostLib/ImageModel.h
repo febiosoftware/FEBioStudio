@@ -38,7 +38,7 @@ SOFTWARE.*/
 enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
 
 class C3DImage;
-class SITKImage;
+class CImageSITK;
 
 namespace Post {
 
@@ -56,11 +56,12 @@ public:
 
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
 	bool LoadITKData(const std::string &filename, ImageFileType type);
+    bool LoadITKSeries(const std::vector<std::string> &filenames);
 
 	C3DImage* Get3DImage() { return m_img; }
 
     void ClearFilters();
-    SITKImage* GetImageToFilter(bool allocate = false);
+    CImageSITK* GetImageToFilter(bool allocate = false);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -91,6 +92,7 @@ public:
 
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
 	bool LoadITKData(const std::string &filename, ImageFileType type);
+    bool LoadITKSeries(const std::vector<std::string> &filenames);
 
 	int ImageRenderers() const { return (int)m_render.Size(); }
 	CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }

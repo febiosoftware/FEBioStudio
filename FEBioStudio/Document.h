@@ -252,7 +252,8 @@ public:
 	FileWriter* GetFileWriter();
 
 #ifdef HAS_ITK
-  Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
+    Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
+    Post::CImageModel* ImportITKStack(QStringList& filenames);
 #endif
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 

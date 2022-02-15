@@ -65,11 +65,11 @@ void MeanImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    SITKImage* image = dynamic_cast<SITKImage*>(m_model->GetImageSource()->Get3DImage());
+    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
 
     if(!image) return;
 
-    SITKImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
+    CImageSITK* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     auto start = std::chrono::system_clock::now();
 
@@ -109,11 +109,11 @@ void GaussianImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    SITKImage* image = dynamic_cast<SITKImage*>(m_model->GetImageSource()->Get3DImage());
+    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
 
     if(!image) return;
 
-    SITKImage* filteredImage = m_model->GetImageSource()->GetImageToFilter();
+    CImageSITK* filteredImage = m_model->GetImageSource()->GetImageToFilter();
 
     auto start = std::chrono::system_clock::now();
 

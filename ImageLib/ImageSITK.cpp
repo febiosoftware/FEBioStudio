@@ -34,12 +34,12 @@ DEALINGS IN THE SOFTWARE.
 
 namespace sitk = itk::simple;
 
-SITKImage::SITKImage()
+CImageSITK::CImageSITK()
 {
 
 }
 
-SITKImage::SITKImage(int nx, int ny, int nz)
+CImageSITK::CImageSITK(int nx, int ny, int nz)
     : m_sitkImage(nx, ny, nz, sitk::sitkUInt8)
 {
     m_cx = nx;
@@ -49,20 +49,20 @@ SITKImage::SITKImage(int nx, int ny, int nz)
     FinalizeImage();
 }
 
-SITKImage::~SITKImage()
+CImageSITK::~CImageSITK()
 {
     m_pb = nullptr;
 }
 
-bool SITKImage::LoadFromFile(const char* filename, bool isDicom)
+bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
 {
-    m_filename = filename;
+    m_filename = filename.c_str();
 
     if(isDicom)
     {
         sitk::ImageSeriesReader reader;
 
-        QFileInfo info(filename);
+        QFileInfo info(filename.c_str());
         const std::vector<std::string> dicom_names = sitk::ImageSeriesReader::GetGDCMSeriesFileNames( info.absolutePath().toStdString().c_str() );
         reader.SetFileNames( dicom_names );
 
@@ -76,21 +76,87 @@ bool SITKImage::LoadFromFile(const char* filename, bool isDicom)
         m_sitkImage = reader.Execute();
     }
 
-    sitk::RescaleIntensityImageFilter rescaleFiler;
-    rescaleFiler.SetOutputMinimum(0);
-    rescaleFiler.SetOutputMaximum(255);
-    m_sitkImage = rescaleFiler.Execute(m_sitkImage);
+    if(m_sitkImage.GetPixelID() != sitk::sitkUInt8)
+    {
+        sitk::RescaleIntensityImageFilter rescaleFiler;
+        rescaleFiler.SetOutputMinimum(0);
+        rescaleFiler.SetOutputMaximum(255);
+        m_sitkImage = rescaleFiler.Execute(m_sitkImage);
 
-    sitk::CastImageFilter castFilter;
-    castFilter.SetOutputPixelType(sitk::sitkUInt8);
-    m_sitkImage = castFilter.Execute(m_sitkImage);
+        sitk::CastImageFilter castFilter;
+        castFilter.SetOutputPixelType(sitk::sitkUInt8);
+        m_sitkImage = castFilter.Execute(m_sitkImage);
+    }
 
     FinalizeImage();
 
     return true;
 }
 
-void SITKImage::FinalizeImage()
+bool CImageSITK::LoadFromStack(std::vector<std::string> filenames)
+{
+    m_filename = filenames[0].c_str();
+
+    sitk::RescaleIntensityImageFilter rescaleFiler;
+    rescaleFiler.SetOutputMinimum(0);
+    rescaleFiler.SetOutputMaximum(255);
+        
+    sitk::CastImageFilter castFilter;
+    castFilter.SetOutputPixelType(sitk::sitkUInt8);
+
+    sitk::ImageFileReader reader;
+    reader.SetFileName(filenames[0]);
+    sitk::Image slice = reader.Execute();
+
+    unsigned int nx = slice.GetWidth();
+    unsigned int ny = slice.GetHeight();
+    unsigned int nz = filenames.size();
+
+    m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt8);
+    Byte* imgBytes = m_sitkImage.GetBufferAsUInt8();
+
+    // std::cout << slice.GetPixelID() << std::endl;
+    // std::vector<uint32_t> index = {0,0};
+    // std::cout << slice.GetPixelAsVectorUInt8(index).size() << std::endl;
+
+    if(slice.GetPixelID() != sitk::sitkUInt8)
+    {
+        slice = rescaleFiler.Execute(slice);
+        slice = castFilter.Execute(slice);
+    }
+
+    Byte* sliceBytes = slice.GetBufferAsUInt8();
+
+    for(int index = 0; index < nx*ny; index++)
+    {
+        imgBytes[index] = sliceBytes[index];
+    }
+    
+    for(int name = 1; name < filenames.size(); name++)
+    {
+        reader.SetFileName(filenames[name]);
+        slice = reader.Execute();
+
+        if(slice.GetPixelID() != sitk::sitkUInt8)
+        {
+            slice = rescaleFiler.Execute(slice);
+            slice = castFilter.Execute(slice);
+        }
+
+        sliceBytes = slice.GetBufferAsUInt8();
+
+        for(int index = nx*ny*name; index < nx*ny*(name+1); index++)
+        {
+            imgBytes[index] = sliceBytes[index];
+        }
+    }
+
+    FinalizeImage();
+
+    return true;
+}
+
+void CImageSITK::FinalizeImage()
 {
     // finalImage = originalImage;
     m_pb = m_sitkImage.GetBufferAsUInt8();
@@ -107,27 +173,27 @@ void SITKImage::FinalizeImage()
     std::cout << origin[0] << " " << origin[1] << " " << origin[2] << std::endl;
 }
 
-std::vector<unsigned int> SITKImage::GetSize()
+std::vector<unsigned int> CImageSITK::GetSize()
 {
     return m_sitkImage.GetSize();
 }
 
-std::vector<double> SITKImage::GetOrigin()
+std::vector<double> CImageSITK::GetOrigin()
 {
     return m_sitkImage.GetOrigin();
 }
 
-std::vector<double> SITKImage::GetSpacing()
+std::vector<double> CImageSITK::GetSpacing()
 {
     return m_sitkImage.GetSpacing();
 }
 
-itk::simple::Image SITKImage::GetSItkImage()
+itk::simple::Image CImageSITK::GetSItkImage()
 {
     return m_sitkImage;
 }
 
-void SITKImage::SetItkImage(itk::simple::Image image)
+void CImageSITK::SetItkImage(itk::simple::Image image)
 {
     if(image.GetPixelID() != sitk::sitkUInt8)
     {

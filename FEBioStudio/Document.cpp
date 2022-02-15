@@ -800,6 +800,36 @@ Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFile
 
 	return po;
 }
+
+Post::CImageModel* CGLDocument::ImportITKStack(QStringList& filenames)
+{
+    static int n = 1;
+	
+
+    std::vector<std::string> stdFiles;
+    for(auto filename : filenames)
+    {
+        // we pass the relative path to the image model
+	    stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
+    }
+
+	Post::CImageModel* po = new Post::CImageModel(nullptr);
+
+	if (po->LoadITKSeries(stdFiles) == false)
+	{
+		delete po;
+		return nullptr;
+	}
+
+	stringstream ss;
+	ss << "ImageModel" << n++;
+	po->SetName(ss.str());
+
+	// add it to the project
+	AddImageModel(po);
+
+	return po;
+}
 #endif
 
 //-----------------------------------------------------------------------------
