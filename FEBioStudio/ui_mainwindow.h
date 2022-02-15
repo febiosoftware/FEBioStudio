@@ -134,7 +134,7 @@ public:
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
-    ::XMLTreeView*      xmlTree;
+    ::XMLTreeView*  xmlTree;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;

@@ -252,7 +252,7 @@ QWidget* XMLItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewIt
     else if(index.column() == COMMENT)
     { 
         QTextEdit* pw = new QTextEdit(parent);
-        pw->setMinimumHeight(option.rect.height()*4);
+        pw->setMinimumHeight(option.rect.height()*5);
         pw->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
         return pw;
     }
