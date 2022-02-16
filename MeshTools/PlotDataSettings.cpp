@@ -210,6 +210,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "yielded bond fraction"             );
 
     AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure"          );
+    AddPlotVariable(MODULE_BIPHASIC, "effective friction coefficient"    );
     AddPlotVariable(MODULE_BIPHASIC, "fluid pressure"                    );
     AddPlotVariable(MODULE_BIPHASIC, "fluid flux");
     AddPlotVariable(MODULE_BIPHASIC, "fluid flow rate", false, true, DOMAIN_SURFACE);
