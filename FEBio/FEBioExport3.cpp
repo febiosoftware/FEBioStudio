@@ -5043,7 +5043,11 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 					if (rf->GetLoadCurve()) val.add_attribute("lc", rf->GetLoadCurve()->GetID());
 					val.value(rf->GetValue());
 					m_xml.add_leaf(val);
-					m_xml.add_leaf("load_type", rf->GetForceType());
+
+					int forceType = rf->GetForceType();
+					m_xml.add_leaf("load_type", forceType);
+
+					if ((forceType == 0) && rf->IsRelative()) m_xml.add_leaf("relative", 1);
 				}
 				m_xml.close_branch();
 			}
