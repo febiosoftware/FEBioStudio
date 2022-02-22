@@ -74,7 +74,7 @@ public:
 
 	// get the amount of the file read so far
 	// expressed in percentage of total file size
-	float GetFileProgress() const;
+	virtual float GetFileProgress() const;
 
 	// get the file title, i.e. the file name w/o the path
 	void FileTitle(char* sz);

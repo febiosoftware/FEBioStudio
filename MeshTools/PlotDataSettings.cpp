@@ -183,6 +183,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "rigid torque"                      );
     AddPlotVariable(MODULE_MECH, "rigid velocity"                    );
     AddPlotVariable(MODULE_MECH, "RVE generations"                   );
+    AddPlotVariable(MODULE_MECH, "RVE reforming bonds"               );
 	AddPlotVariable(MODULE_MECH, "Euler angle"                       );
     AddPlotVariable(MODULE_MECH, "shell director"                    );
     AddPlotVariable(MODULE_MECH, "shell relative volume"             );
@@ -204,6 +205,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "yielded bond fraction"             );
 
     AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure"          );
+    AddPlotVariable(MODULE_BIPHASIC, "effective friction coefficient"    );
     AddPlotVariable(MODULE_BIPHASIC, "fluid pressure"                    );
     AddPlotVariable(MODULE_BIPHASIC, "fluid flux");
     AddPlotVariable(MODULE_BIPHASIC, "fluid flow rate", false, true, DOMAIN_SURFACE);

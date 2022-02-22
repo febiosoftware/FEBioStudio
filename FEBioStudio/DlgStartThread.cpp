@@ -63,6 +63,7 @@ class CDlgStartThreadUI
 public:
 	CustomThread*	m_thread;
 	bool			m_bdone;
+	bool			m_cancelled;
 	bool			m_breturn;
 	const char*		m_szcurrentTask;
 
@@ -77,6 +78,7 @@ public:
 		m_bdone = false;
 		m_breturn = false;
 		m_thread = nullptr;
+		m_cancelled = false;
 		m_szcurrentTask = 0;
 	}
 
@@ -124,7 +126,11 @@ void CDlgStartThread::setTask(const QString& taskString)
 
 void CDlgStartThread::closeEvent(QCloseEvent* ev)
 {
-	if (ui->m_bdone == false) cancel();
+	if (ui->m_bdone == false)
+	{
+		cancel();
+		ui->m_thread->wait();
+	}
 	QDialog::closeEvent(ev);
 }
 
@@ -135,17 +141,26 @@ void CDlgStartThread::accept()
 
 void CDlgStartThread::cancel()
 {
+	ui->m_cancelled = true;
 	ui->m_stop->setEnabled(false);
+	ui->m_task->setText("Cancelling operation. Please wait ...");
+	ui->m_progress->reset();
+	ui->m_progress->setRange(0, 0);
 	ui->m_thread->stop();
-	ui->m_thread->terminate();
-	//	m_thread->wait();
-	reject();
 }
 
 void CDlgStartThread::checkProgress()
 {
-	if (ui->m_bdone) accept();
-	else
+	if (ui->m_bdone)
+	{
+		if (ui->m_cancelled)
+		{
+			ui->m_breturn = false;
+			reject();
+		}
+		else accept();
+	}
+	else if (ui->m_cancelled == false)
 	{
 		if (ui->m_thread->hasProgress())
 		{

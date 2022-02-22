@@ -150,6 +150,7 @@
 #define FE_KAMENSKY_UNCOUPLED			85
 #define FE_FIBER_NEO_HOOKEAN            86
 #define FE_FIBER_NATURAL_NH             87
+#define FE_HOLMES_MOW_UNCOUPLED         88
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -537,6 +538,20 @@ public:
 	FSHolmesMow();
 
 	DECLARE_REGISTERED(FSHolmesMow);
+};
+
+//-----------------------------------------------------------------------------
+// Holmes-Mow uncoupled
+//
+class FEHolmesMowUC : public FSMaterial
+{
+public:
+    enum { MP_DENS, MP_MU, MP_BETA, MP_K };
+    
+public:
+    FEHolmesMowUC();
+    
+    DECLARE_REGISTERED(FEHolmesMowUC);
 };
 
 //-----------------------------------------------------------------------------

@@ -96,6 +96,8 @@ bool FileReader::SetFileStream(ifstream* stream)
     m_stream->seekg(0, std::ios_base::end);
     m_nfilesize = m_stream->tellg();
     m_stream->seekg(pos, std::ios_base::beg);
+
+	return true;
 }
 
 void FileReader::Close()

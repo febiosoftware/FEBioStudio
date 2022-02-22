@@ -106,9 +106,6 @@ public:
 	int plots() { return (int)m_data.m_data.size(); }
 	CPlotData& getPlotData(int i) { return *m_data.m_data[i]; }
 
-	// turn on/off zoom-to-rect mode
-	void ZoomToRect(bool b = true);
-
 	// is view locked
 	bool isViewLocked() const { return m_bviewLocked; }
 	void setViewLocked(bool b) { m_bviewLocked = b; }
@@ -180,8 +177,6 @@ public:
 
 	bool HasBackgroundImage() const;
 
-	void mapToUserRect();
-
 	void mapToUserRect(QRect rt, QRectF rng);
 
 	std::vector<Selection> selection() const { return m_selection; }
@@ -192,9 +187,9 @@ public:
 
 	bool LoadBackgroundImage(const QString& fileName);
 
+	void regionSelect(QRect rt);
+
 signals:
-	void doneZoomToRect();
-	void doneSelectingRect(QRect rt);
 	void regionSelected(QRect rt);
 	void pointClicked(QPointF p, bool bshift);
 	void pointSelected(int n);
@@ -211,8 +206,6 @@ protected:
 	void wheelEvent       (QWheelEvent* ev);
 	void dropEvent        (QDropEvent* e);
 	void dragEnterEvent   (QDragEnterEvent* e);
-
-	void regionSelect(QRect rt);
 
 	// returns false if point is already selected
 	bool addToSelection(int ndata, int npoint);
@@ -274,11 +267,9 @@ public:
 	bool		m_bscaleAxisLabels;
 	bool		m_bfullScreenMode;
 	bool		m_bautoRngUpdate;
-	bool		m_bzoomRect;
-	bool		m_bvalidRect;
-	bool		m_mapToRect;
 	bool		m_newSelect;
 	bool		m_bdragging;
+
 	bool		m_bregionSelect;
 
 	std::vector<Selection>	m_selection;

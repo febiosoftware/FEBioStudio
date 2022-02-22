@@ -75,6 +75,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "TextDocument.h"
+#include "PostSessionFile.h"
 #include "units.h"
 #include "version.h"
 #include "LocalJobProcess.h"
@@ -891,11 +892,8 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		}
 		else if (ext.compare("fsps", Qt::CaseInsensitive) == 0)
 		{
-			bool b = doc->OpenPostSession(fileName.toStdString());
-
-			// we exploit the queue mechanism here to finish up
-			QueuedFile queueFile(doc, fileName, nullptr, QueuedFile::NEW_DOCUMENT);
-			finishedReadingFile(b, queueFile, "");
+			PostSessionFileReader* fsps = new PostSessionFileReader(doc);
+			ReadFile(doc, fileName, fsps, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.isEmpty())
 		{
