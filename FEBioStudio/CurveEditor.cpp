@@ -676,13 +676,13 @@ void CCurveEditor::BuildModelTree()
 				FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RigidConstraint(j));
 				if (pc)
 				{
+					t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
 					for (int n = 0; n < pc->Parameters(); ++n)
 					{
 						Param& p = pc->GetParam(n);
-						if (p.IsEditable())
+						if (p.IsEditable() && (p.GetParamType() == Param_FLOAT))
 						{
 							FELoadCurve* plc = p.GetLoadCurve();
-							t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
 							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
 						}
 					}
@@ -708,7 +708,7 @@ void CCurveEditor::BuildModelTree()
 					for (int n = 0; n<NP; ++n)
 					{
 						Param& p = pc->GetParam(n);
-						if (p.IsEditable())
+						if (p.IsEditable() && (p.GetParamType() == Param_FLOAT))
 						{
 							FELoadCurve* plc = p.GetLoadCurve();
 							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
