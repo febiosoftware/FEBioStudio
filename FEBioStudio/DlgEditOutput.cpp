@@ -116,7 +116,7 @@ public:
 		varList = new QListWidget;
 		domList = new QListWidget;
 
-		QPushButton* newVar = new QPushButton("+"); newVar->setFixedWidth(20); newVar->setToolTip("<font color=\"black\">Add custom variable");
+		QPushButton* newVar = new QPushButton("Add..."); newVar->setToolTip("<font color=\"black\">Add custom variable");
 		QPushButton* add = new QPushButton("Add Domain...");
 		QPushButton* del = new QPushButton("Remove");
 
@@ -260,6 +260,15 @@ public:
 		{
 			const FEItemListBuilder* item = var.GetDomain(i);
 			domList->addItem(QString::fromStdString(item->GetName()));
+		}
+	}
+
+	void setCurrentVariable(const QString& s)
+	{
+		QList<QListWidgetItem*> sel = varList->findItems(s, Qt::MatchExactly);
+		if (sel.size() == 1)
+		{
+			varList->setCurrentItem(sel.at(0));
 		}
 	}
 
@@ -626,14 +635,66 @@ void CDlgEditOutput::onLogRemove()
 	UpdateLogTable();
 }
 
+class CNewVariableDialog : public QDialog
+{
+private:
+	QLineEdit* m_var;
+	QLineEdit* m_flt;
+	QLineEdit* m_aka;
+
+public:
+	CNewVariableDialog(QWidget* parent) : QDialog(parent) 
+	{
+		setWindowTitle("Add New Variable");
+
+		QFormLayout* f = new QFormLayout;
+		f->addRow("Variable", m_var = new QLineEdit);
+		f->addRow("Filter"  , m_flt = new QLineEdit);
+		f->addRow("Alias"   , m_aka = new QLineEdit);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+
+		QVBoxLayout* l = new QVBoxLayout();
+		l->addLayout(f);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	QString getVariable() const { return m_var->text(); }
+	QString getFilter() const { return m_flt->text(); }
+	QString getAlias() const { return m_aka->text(); }
+
+	QString getFullVariableName() const
+	{
+		QString var = getVariable();
+		QString flt = getFilter();
+		QString aka = getAlias();
+
+		QString newvar = var;
+		if (flt.isEmpty() == false) newvar += QString("[%1]").arg(flt);
+		if (aka.isEmpty() == false) newvar += QString("=%1").arg(aka);
+
+		return newvar;
+	}
+};
+
 void CDlgEditOutput::OnNewVariable()
 {
-	QString s = QInputDialog::getText(this, "New Variable", "Name:");
-	if (s.isEmpty() == false)
+	CNewVariableDialog dlg(this);
+	if (dlg.exec())
 	{
-		CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-		plt.AddPlotVariable(MODULE_ALL, s.toStdString(), true, true);
-		UpdateVariables("");
+		QString s = dlg.getFullVariableName();
+		if (s.isEmpty() == false)
+		{
+			CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+			plt.AddPlotVariable(MODULE_ALL, s.toStdString(), true, true);
+			UpdateVariables("");
+			ui->setCurrentVariable(s);
+		}
 	}
 }
 
