@@ -981,6 +981,9 @@ QRect CGraphWindow::m_preferredSize;
 
 CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags) : m_wnd(pwnd), QMainWindow(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
 {
+	static int n = 0;
+	setWindowTitle(QString("Graph%1").arg(++n));
+
 	m_nTrackTime = TRACK_TIME;
 	m_nUserMin = 1;
 	m_nUserMax = -1;
@@ -1477,6 +1480,13 @@ CModelGraphWindow::CModelGraphWindow(CMainWindow* wnd, CPostDocument* postDoc) :
 	m_dataYPrev = -1;
 
 	m_xtype = m_xtypeprev = -1;
+
+	if (postDoc)
+	{
+		std::string docTitle = postDoc->GetDocTitle();
+		QString wndTitle = windowTitle();
+		setWindowTitle(wndTitle + QString(" [%1]").arg(QString::fromStdString(docTitle)));
+	}
 }
 
 //-----------------------------------------------------------------------------

@@ -2757,7 +2757,6 @@ void CMainWindow::RemoveGraph(::CGraphWindow* graph)
 // Add a graph to the list of managed graph windows
 void CMainWindow::AddGraph(CGraphWindow* graph)
 {
-	graph->setWindowTitle(QString("Graph%1").arg(ui->graphList.size() + 1));
 	ui->graphList.push_back(graph);
 }
 
