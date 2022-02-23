@@ -2149,7 +2149,7 @@ void CMainWindow::CloseView(int n, bool forceClose)
 		else it++;
 	}
 
-	ui->htmlViewer->setDocument(nullptr);
+	ui->ShowDefaultBackground();
 	ui->xmlEdit->setDocument(nullptr);
 
 	// now, remove from the doc manager
@@ -3127,7 +3127,7 @@ void CMainWindow::CloseWelcomePage()
 	int n = ui->tab->findView("Welcome");
 	if (n >= 0)
 	{
-		ui->htmlViewer->setDocument(nullptr);
+		ui->ShowDefaultBackground();
 		ui->tab->tabCloseRequested(n);
 	}
 }
