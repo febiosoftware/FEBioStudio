@@ -418,6 +418,15 @@ bool GMultiBox::Merge(GMultiBox& mb)
 
 	const double tol = 1e-12;
 
+	// first check edge types. We can only merge objects with line or 3p-arcs edges 
+	for (int i = 0; i < mb.Edges(); ++i)
+	{
+		int type_i = mb.Edge(i)->Type();
+		if ((type_i != EDGE_LINE) && 
+			(type_i != EDGE_3P_CIRC_ARC) &&
+			(type_i != EDGE_3P_ARC)) return false;
+	}
+
 	// The tag will be set to the node on this that it corresponds to. 
 	// new nodes may be added
 	for (int i = 0; i < mb.Nodes(); ++i)
@@ -453,7 +462,7 @@ bool GMultiBox::Merge(GMultiBox& mb)
 		}
 		else
 		{
-			GNode& newNode = *AddNode(ri);
+			GNode& newNode = *AddNode(ri, ni.Type());
 			ni.m_ntag = Nodes() - 1;
 			newNode.SetMeshWeight(ni.GetMeshWeight());
 		}

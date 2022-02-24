@@ -117,6 +117,7 @@ public:
 	}
 
 	MBEdge& SetWinding(int w) { m_orient = w; return *this; }
+	MBEdge& SetType(int ntype) { m_ntype = ntype; return *this; }
 
 	MBEdge& SetEdge(int ntype, int nwinding, int cnode = -1)
 	{

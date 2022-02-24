@@ -114,6 +114,9 @@ bool FECylinderInBox::BuildMultiBlock()
 	AddNode(vec3d( r,  r, d)).SetID(14);
 	AddNode(vec3d(-r,  r, d)).SetID(15);
 
+	AddNode(vec3d(0, 0, 0), NODE_SHAPE);
+	AddNode(vec3d(0, 0, d), NODE_SHAPE);
+
 	// create the blocks
 	m_MBlock.resize(4);
 	MBBlock& b1 = m_MBlock[0];
@@ -169,14 +172,14 @@ bool FECylinderInBox::BuildMultiBlock()
 	MBFace& F16 = GetBlockFace( 3, 5); SetFaceEdgeID(F16,  7, 28, 19, 31);
 
 	// set the edges
-	GetFaceEdge(F5, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
-	GetFaceEdge(F5, 2).SetWinding( 1).m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 2).SetWinding( 1).m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 2).SetWinding( 1).m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 2).SetWinding( 1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F5, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F5, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+	GetFaceEdge(F6, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F6, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+	GetFaceEdge(F7, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F7, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+	GetFaceEdge(F8, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F8, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
 
 	UpdateMB();
 
