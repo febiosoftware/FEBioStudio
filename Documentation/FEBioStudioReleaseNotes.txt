@@ -6,13 +6,15 @@
 
 ===========================================================================
 
- R E L E A S E   1.7.1   2/23/2022
+ R E L E A S E   1.7.1   2/25/2022
 
 ===========================================================================
 
 * A bug was fixed that showed duplicate entries of rigid constraints in curve editor
 * A bug was fixed that showed incorrect scaling of material icons on post material panel. 
 * All graph windows (New Graphs, Summary, Stats, Integrate, and Integrate Surface) now show the name of the corresponding plot file. 
+* Fixed bug where element table in mesh inspector was not updated.
+* Fixed import of xyzuvw fixed bc of febio 2.0 format.
 
 ===========================================================================
 
