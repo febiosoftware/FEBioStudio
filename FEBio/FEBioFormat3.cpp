@@ -2987,14 +2987,10 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				++tag;
 				do
 				{
-					if (tag == "force")
+					if (ReadParam(*mat, tag) == false)
 					{
-						double F;
-						tag.value(F);
-						int lc = tag.AttributeValue<int>("lc", -1);
-						// TODO: assign the force to the material
+						ParseUnknownTag(tag);
 					}
-					else ParseUnknownTag(tag);
 					++tag;
 				} while (!tag.isend());
 				set.push_back(pg);
