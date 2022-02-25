@@ -66,7 +66,9 @@ public:
 		}
 		else
 		{
-			name->setText("---");
+			if (po) name->setText(QString::fromStdString(po->GetName()));
+			else name->setText("---");
+
 			nodes->setText("---");
 			faces->setText("---");
 			elems->setText("---");
@@ -266,18 +268,18 @@ public:
 		static const char* EN[] = {
 			"HEX8", "TET4", "PENTA6", "QUAD4", "TRI3", "BEAM2", "HEX20", "QUAD8", "LINE3", "TET10", "TRI6", "TET15", "HEX27", "TRI7", "QUAD9", "TET20", "TRI10", "PYRA5", "PENTA15", "TET5", "PYRA13", "(unknown)"};
 
-		table->setRowCount(0);
-
 		info->setMesh(po);
 		if (po == 0) 
 		{
-			m_pm = nullptr; 
+			table->setRowCount(0);
+			m_pm = nullptr;
 			return;
 		}
 
 		FEMesh* pm = po->GetFEMesh();
 		if (pm == 0)
 		{
+			table->setRowCount(0);
 			m_pm = nullptr;
 			return;
 		}
