@@ -38,11 +38,13 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "XMLDocument.h"
 #include "XMLCommands.h"
+#include "FindWidget.h"
 #include <QApplication>
 #include <QMenu>
 #include <QAction>
 #include <FECore/fecore_enum.h>
 #include <FEBioLink/FEBioClass.h>
+#include <stack>
 
 #include <iostream>
 
@@ -347,11 +349,30 @@ public:
     QAction* showNameColumn;
     QAction* showCommentColumn;
 
+    ::CFindWidget* findWidget;
+
+    QAction* find;
+    QAction* replace;
+
 public:
     void setupUi(::XMLTreeView* parent)
     {
         parent->setItemDelegate(new XMLItemDelegate);
         parent->setAlternatingRowColors(true);
+
+        findWidget = new ::CFindWidget(parent);
+        findWidget->setObjectName("findWidget");
+        findWidget->hide();
+
+        find = new QAction("Find", parent);
+        find->setShortcut(QKeySequence::Find);
+        parent->addAction(find);
+        QObject::connect(find, &QAction::triggered, findWidget, &::CFindWidget::ShowFind);
+        
+        replace = new QAction("Replace", parent);
+        replace->setShortcut(QKeySequence::Replace);
+        parent->addAction(replace);
+        QObject::connect(replace, &QAction::triggered, findWidget, &::CFindWidget::ShowReplace);
 
         addAttribute = new QAction("Add Attribute", parent);
         addAttribute->setObjectName("addAttribute");
@@ -405,6 +426,12 @@ public:
         QObject::connect(parent->header(), &QHeaderView::customContextMenuRequested, parent, &::XMLTreeView::on_headerMenu_requested);
     }
 
+public:
+    QString searchTerm; 
+    vector<pair<XMLTreeItem*, int>> searchList;
+    bool searchCaseSensative;
+
+
 };
 
     
@@ -414,6 +441,11 @@ XMLTreeView::XMLTreeView(CMainWindow* wnd) : QTreeView(wnd), m_wnd(wnd), ui(new 
     ui->setupUi(this);
 
     QMetaObject::connectSlotsByName(this);
+}
+
+XMLTreeView::~XMLTreeView()
+{
+    delete ui;
 }
 
 void XMLTreeView::setModel(QAbstractItemModel* newModel)
@@ -545,6 +577,10 @@ void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
     }
 
     menu.addSeparator();
+    menu.addAction(ui->find);
+    menu.addAction(ui->replace);
+
+    menu.addSeparator();
     menu.addAction(ui->expandAll);
     if(item->childCount() > 0)
     {
@@ -562,9 +598,173 @@ void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
     menu.exec(viewport()->mapToGlobal(event->pos()));
 }
 
+void XMLTreeView::resizeEvent(QResizeEvent *event)
+{
+    QTreeView::resizeEvent(event);
+
+    ui->findWidget->move(width() - ui->findWidget->width(), 0);
+}
+
 void XMLTreeView::on_headerMenu_requested(const QPoint& pos)
 {
     ui->columnsMenu->exec(viewport()->mapToGlobal(pos));
+}
+
+void XMLTreeView::on_findWidget_next()
+{
+    rerunFind();
+
+    if(ui->searchList.size() == 0) return;
+
+    if(!currentIndex().isValid()) return;
+    
+    XMLTreeItem* selectedItem = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
+
+    int foundIndex = 0;
+    pair<XMLTreeItem*, int> searchResult;
+
+    if(selectedItem->Depth() == 0)
+    {
+        searchResult = ui->searchList[0];
+    }
+    else
+    {
+        for(int index = 0; index < ui->searchList.size(); index++)
+        {
+            searchResult = ui->searchList[index];
+
+            if(searchResult.first == selectedItem)
+            {
+                if(searchResult.second > currentIndex().column())
+                {
+                    foundIndex = index;
+                    break;
+                }
+
+                continue;
+            }
+
+            bool found = false;
+            int limit = std::min(selectedItem->Depth(), searchResult.first->Depth());
+            int searchRow, selectedRow;
+            for(int depth = 1; depth <= limit; depth++)
+            {
+                searchRow = searchResult.first->ancestorItem(depth)->row();
+                selectedRow = selectedItem->ancestorItem(depth)->row();
+
+                if(searchRow > selectedRow)
+                {
+                    foundIndex = index;
+                    found = true;
+                    break;
+                }
+                
+                if(searchRow < selectedRow)
+                {
+                    break;
+                }
+            }
+
+            if(found)
+            {
+                break;
+            }
+            
+            if(searchRow == selectedRow)
+            {
+                if(searchResult.first->Depth() > selectedItem->Depth())
+                {
+                    foundIndex = index;
+                    break;
+                }
+            }
+        }
+
+        searchResult = ui->searchList[foundIndex];
+    }
+
+    ui->findWidget->SetCurrent(foundIndex + 1);
+
+    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.first, searchResult.second));  
+
+}
+
+void XMLTreeView::on_findWidget_prev()
+{
+    rerunFind();
+
+    if(ui->searchList.size() == 0) return;
+
+    if(!currentIndex().isValid()) return;
+    
+    XMLTreeItem* selectedItem = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
+
+    int foundIndex = ui->searchList.size() - 1;
+    pair<XMLTreeItem*, int> searchResult;
+
+    if(selectedItem->Depth() == 0)
+    {
+        searchResult = ui->searchList[foundIndex];
+    }
+    else
+    {
+        for(int index = ui->searchList.size() - 1; index >= 0; index--)
+        {
+            searchResult = ui->searchList[index];
+
+            if(searchResult.first == selectedItem)
+            {
+                if(searchResult.second < currentIndex().column())
+                {
+                    foundIndex = index;
+                    break;
+                }
+
+                continue;
+            }
+
+            bool found = false;
+            int limit = std::min(selectedItem->Depth(), searchResult.first->Depth());
+            int searchRow, selectedRow;
+            for(int depth = 1; depth <= limit; depth++)
+            {
+                searchRow = searchResult.first->ancestorItem(depth)->row();
+                selectedRow = selectedItem->ancestorItem(depth)->row();
+
+                if(searchRow < selectedRow)
+                {
+                    foundIndex = index;
+                    found = true;
+                    break;
+                }
+                
+                if(searchRow > selectedRow)
+                {
+                    break;
+                }
+            }
+
+            if(found)
+            {
+                break;
+            }
+            
+            if(searchRow == selectedRow)
+            {
+                if(searchResult.first->Depth() < selectedItem->Depth())
+                {
+                    foundIndex = index;
+                    break;
+                }
+            }
+        }
+
+        searchResult = ui->searchList[foundIndex];
+    }
+
+    ui->findWidget->SetCurrent(foundIndex + 1);
+
+    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.first, searchResult.second));
 }
 
 void XMLTreeView::on_expandAll_triggered()
@@ -621,6 +821,45 @@ void XMLTreeView::on_showNameColumn_triggered(bool b)
 void XMLTreeView::on_showCommentColumn_triggered(bool b)
 {
     setColumnHidden(COMMENT, !b);
+}
+
+void XMLTreeView::rerunFind()
+{
+    if(ui->searchTerm != ui->findWidget->GetFindText() || ui->searchCaseSensative != ui->findWidget->GetCaseSensative()) 
+    {
+        ui->searchTerm = ui->findWidget->GetFindText();
+        ui->searchCaseSensative = ui->findWidget->GetCaseSensative();
+        ui->searchList.clear();
+
+        XMLTreeItem* root = static_cast<XMLTreeModel*>(model())->GetRoot();
+
+        root->FindAll(ui->searchTerm, ui->findWidget->GetCaseSensative(), ui->searchList);
+
+        ui->findWidget->SetTotal(ui->searchList.size());
+    }
+}
+
+void XMLTreeView::expandAndSelect(const QModelIndex& index)
+{
+    // QModelIndex parent = index.siblingAtColumn(0).parent();
+    // while(parent.isValid())
+    // {
+    //     expand(parent);
+    //     parent = parent.parent();
+    // }
+
+    // This is an ugly workaround, but I can't get anything else to work
+    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+    XMLTreeItem* parent = item->parentItem();
+    while(parent->Depth() >=0)
+    {
+        parent->SetExpanded(true);
+        parent = parent->parentItem();
+    }
+
+    expandToMatch(static_cast<XMLTreeModel*>(model())->root());
+
+    setCurrentIndex(index);
 }
 
 void XMLTreeView::expandToMatch(const QModelIndex& index)

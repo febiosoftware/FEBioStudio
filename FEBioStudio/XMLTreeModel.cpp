@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include <QColor>
 #include <QPixmap>
+#include <stack>
 #include "XMLTreeModel.h"
 #include "IconProvider.h"
 
@@ -264,6 +265,29 @@ XMLTreeItem* XMLTreeItem::ancestorItem(int depth)
     return item;
 }
 
+void XMLTreeItem::FindAll(const QString& term, bool caseSensative, vector<pair<XMLTreeItem*, int>>& items)
+{
+    // Don't match the term with the root item
+    if(m_depth != 0)    
+    {
+        Qt::CaseSensitivity cs;
+        cs = caseSensative ? Qt::CaseSensitive : Qt::CaseInsensitive;
+
+        for(int col = 0; col < NUM_COLUMNS; col++)
+        {
+            if(data(col).contains(term, cs))
+            {
+                items.emplace_back(this, col);
+            }
+        }
+    }
+
+    for(auto child : m_children)
+    {
+        child->FindAll(term, caseSensative, items);
+    }
+}
+
 
 ////////////////////////////////////////////////
 
@@ -308,6 +332,11 @@ QModelIndex XMLTreeModel::parent(const QModelIndex &index) const
         return QModelIndex();
 
     return createIndex(parentItem->row(), 0, parentItem);
+}
+
+QModelIndex XMLTreeModel::itemToIndex(XMLTreeItem* item, int col)
+{
+    return createIndex(item->row() - 1, col, item);
 }
 
 int XMLTreeModel::rowCount(const QModelIndex &parent) const

@@ -65,6 +65,7 @@ class XMLTreeView : public QTreeView
 
 public:
     XMLTreeView(CMainWindow* wnd);
+    ~XMLTreeView();
 
     void setModel(QAbstractItemModel* newModel) override;
 
@@ -77,9 +78,13 @@ public slots:
 
 protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
     void on_headerMenu_requested(const QPoint& pos);
+
+    void on_findWidget_next();
+    void on_findWidget_prev();
     
     void on_expandAll_triggered();
     void on_expandChildren_triggered();
@@ -92,6 +97,9 @@ private slots:
     void on_showCommentColumn_triggered(bool b);
 
 private:
+    void rerunFind();
+
+    void expandAndSelect(const QModelIndex& index);
     void expandToMatch(const QModelIndex& index);
 
 private:
