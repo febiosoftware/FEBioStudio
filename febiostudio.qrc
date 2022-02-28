@@ -173,5 +173,9 @@
         <file>icons/boxinbox.png</file>
         <file>icons/probe.png</file>
         <file>icons/ruler.png</file>
+        <file>icons/replace.png</file>
+        <file>icons/replace_neg.png</file>
+        <file>icons/replaceAll.png</file>
+        <file>icons/replaceAll_neg.png</file>
 	</qresource>
 </RCC>

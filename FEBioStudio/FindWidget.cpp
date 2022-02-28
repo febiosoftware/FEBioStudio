@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <QAction>
 #include <QBoxLayout>
 #include "FindWidget.h"
+#include "IconProvider.h"
 
 
 MoveHandle::MoveHandle(QWidget* parent) : QWidget(parent)
@@ -123,8 +124,8 @@ public:
         findToolbar->addWidget(findEdit = new QLineEdit);
         findToolbar->addWidget(numLabel = new QLabel);
         findToolbar->addSeparator();
-        findToolbar->addAction(actionNext = new QAction(style->standardIcon(QStyle::SP_ArrowDown), "Next"));
         findToolbar->addAction(actionPrevious = new QAction(style->standardIcon(QStyle::SP_ArrowUp), "Previous"));
+        findToolbar->addAction(actionNext = new QAction(style->standardIcon(QStyle::SP_ArrowDown), "Next"));
         findToolbar->addAction(actionCaseSensative = new QAction("Aa"));
         actionCaseSensative->setCheckable(true);
         findToolbar->addAction(actionClose = new QAction(style->standardIcon(QStyle::SP_TitleBarCloseButton), "Close"));
@@ -134,8 +135,8 @@ public:
         replaceToolbar->addWidget(replaceLabel = new QLabel("Replace: "));
         replaceToolbar->addWidget(replaceEdit = new QLineEdit);
         replaceToolbar->addSeparator();
-        replaceToolbar->addAction(actionReplace = new QAction("Cur"));
-        replaceToolbar->addAction(actionReplaceAll = new QAction("All"));
+        replaceToolbar->addAction(actionReplace = new QAction(CIconProvider::GetIcon("replace"), "Replace Current"));
+        replaceToolbar->addAction(actionReplaceAll = new QAction(CIconProvider::GetIcon("replaceAll"), "Replace All"));
         layout->addWidget(replaceToolbar);
 
         replaceToolbar->hide();
