@@ -93,6 +93,11 @@ void FEItemListBuilder::Load(IArchive &ar)
 	assert((int) m_Item.size() == N);
 }
 
+void FEItemListBuilder::add(const std::list<int>& nodeList)
+{
+	m_Item.insert(m_Item.end(), nodeList.begin(), nodeList.end());
+}
+
 void FEItemListBuilder::remove(int n)
 {
 	if (m_Item.empty()) return;

@@ -57,6 +57,7 @@ REGISTER_MATERIAL(FSNonLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_NONLINEAR_
 FSNonLinearSpringMaterial::FSNonLinearSpringMaterial() : FSDiscreteMaterial(FE_DISCRETE_NONLINEAR_SPRING)
 {
 	AddScienceParam(1, UNIT_FORCE, "force", "spring force");
+	AddDoubleParam(1, "scale", "scale");
 }
 
 //===================================================================
