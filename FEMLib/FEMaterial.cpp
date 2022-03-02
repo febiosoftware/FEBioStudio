@@ -367,7 +367,7 @@ FSHolmesMow::FSHolmesMow() : FSMaterial(FE_HOLMES_MOW)
 // FEHolmesMowUC -uncoupled Holmes-Mow elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEHolmesMowUC, MODULE_MECH, FE_HOLMES_MOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled Holmes-Mow", MaterialFlags::TOPLEVEL, HOLMES_MOW_UC_HTML);
+REGISTER_MATERIAL(FEHolmesMowUC, MODULE_MECH, FE_HOLMES_MOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled Holmes-Mow", MaterialFlags::TOPLEVEL);
 
 FEHolmesMowUC::FEHolmesMowUC() : FSMaterial(FE_HOLMES_MOW_UNCOUPLED)
 {
