@@ -501,7 +501,10 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 	Surface* surface = m_part->FindSurface(szname);
 	if (surface == 0) return 0;
 
-	bool issuesFound = false;
+	const int maxIssues = 10;
+	int issuesFound = 0;
+	stringstream serr;
+	serr << "Building surface \"" << szname << "\":\n";
 
 	// create face list
 	vector<int> faceList;
@@ -517,17 +520,17 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 			bool winding = check_winding(face, meshFace);
 			if (winding == false)
 			{
-				stringstream ss;
-				if (issuesFound == false) ss << "Building surface \"" << szname << "\":\n";
-				ss << "facet has incorrect winding: ";
-				for (int j = 0; j < face.size(); ++j)
+				if (issuesFound < maxIssues)
 				{
-					ss << face[j] + 1;
-					if (j != face.size() - 1) ss << ",";
+					serr << "\tfacet has incorrect winding: ";
+					for (int j = 0; j < face.size(); ++j)
+					{
+						serr << face[j] + 1;
+						if (j != face.size() - 1) serr << ",";
+					}
+					serr << "\n";
 				}
-				string s = ss.str();
-				AddLogEntry(s.c_str());
-				issuesFound = true;
+				issuesFound++;
 			}
 
 			// add it to the list
@@ -535,18 +538,29 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 		}
 		else
 		{
-			stringstream ss;
-			if (issuesFound == false) ss << "Building surface \"" << szname << "\":\n";
-			ss << "Cannot find facet: ";
-			for (int j = 0; j < face.size(); ++j)
+			if (issuesFound < maxIssues)
 			{
-				ss << face[j] + 1;
-				if (j != face.size() - 1) ss << ",";
+				serr << "\tCannot find facet: ";
+				for (int j = 0; j < face.size(); ++j)
+				{
+					serr << face[j] + 1;
+					if (j != face.size() - 1) serr << ",";
+				}
+				serr << "\n";
 			}
-			string s = ss.str();
-			AddLogEntry(s.c_str());
-			issuesFound = true;
+			issuesFound++;
 		}
+	}
+
+	if (issuesFound)
+	{
+		if (issuesFound > maxIssues)
+		{
+			serr << "\t(issue count exceeded limit)\n";
+			serr << "\t" << issuesFound << " issues found when building surface.\n";
+		}
+		string s = serr.str();
+		febImport->AddLogEntry(s.c_str());
 	}
 
 	// create the surface
