@@ -76,6 +76,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "TextDocument.h"
 #include "XMLDocument.h"
+#include "PostSessionFile.h"
 #include "units.h"
 #include "version.h"
 #include "LocalJobProcess.h"
@@ -910,11 +911,8 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		}
 		else if (ext.compare("fsps", Qt::CaseInsensitive) == 0)
 		{
-			bool b = doc->OpenPostSession(fileName.toStdString());
-
-			// we exploit the queue mechanism here to finish up
-			QueuedFile queueFile(doc, fileName, nullptr, QueuedFile::NEW_DOCUMENT);
-			finishedReadingFile(b, queueFile, "");
+			PostSessionFileReader* fsps = new PostSessionFileReader(doc);
+			ReadFile(doc, fileName, fsps, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.isEmpty())
 		{
@@ -2179,7 +2177,7 @@ void CMainWindow::CloseView(int n, bool forceClose)
 		else it++;
 	}
 
-	ui->htmlViewer->setDocument(nullptr);
+	ui->ShowDefaultBackground();
 	ui->xmlEdit->setDocument(nullptr);
 
 	// now, remove from the doc manager
@@ -2814,7 +2812,6 @@ void CMainWindow::RemoveGraph(::CGraphWindow* graph)
 // Add a graph to the list of managed graph windows
 void CMainWindow::AddGraph(CGraphWindow* graph)
 {
-	graph->setWindowTitle(QString("Graph%1").arg(ui->graphList.size() + 1));
 	ui->graphList.push_back(graph);
 }
 
@@ -3157,7 +3154,7 @@ void CMainWindow::CloseWelcomePage()
 	int n = ui->tab->findView("Welcome");
 	if (n >= 0)
 	{
-		ui->htmlViewer->setDocument(nullptr);
+		ui->ShowDefaultBackground();
 		ui->tab->tabCloseRequested(n);
 	}
 }

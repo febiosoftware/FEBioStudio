@@ -45,8 +45,10 @@ SOFTWARE.*/
 
 CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "FEBio Studio: Summary";
-	setWindowTitle(title);
+	QString wndTitle = windowTitle();
+	wndTitle += ":Summary";
+	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
+	setWindowTitle(wndTitle);
 
 	QCheckBox* selectionOnly = new QCheckBox("Selection only");
 	AddToolBarWidget(selectionOnly);

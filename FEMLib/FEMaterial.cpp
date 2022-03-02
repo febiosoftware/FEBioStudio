@@ -364,7 +364,21 @@ FSHolmesMow::FSHolmesMow() : FSMaterial(FE_HOLMES_MOW)
 }
 
 //////////////////////////////////////////////////////////////////////
-// FSArrudaBoyce - Arruda-Boyce elasticity
+// FEHolmesMowUC -uncoupled Holmes-Mow elasticity
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEHolmesMowUC, MODULE_MECH, FE_HOLMES_MOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled Holmes-Mow", MaterialFlags::TOPLEVEL, HOLMES_MOW_UC_HTML);
+
+FEHolmesMowUC::FEHolmesMowUC() : FSMaterial(FE_HOLMES_MOW_UNCOUPLED)
+{
+    AddScienceParam(1, UNIT_DENSITY, "density", "Material density")->SetPersistent(false);
+    AddScienceParam(0, UNIT_PRESSURE , "mu", "shear modulus µ");
+    AddScienceParam(0, UNIT_NONE   , "beta", "power exponent β");
+    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
+}
+
+//////////////////////////////////////////////////////////////////////
+// FEArrudaBoyce - Arruda-Boyce elasticity
 //////////////////////////////////////////////////////////////////////
 
 REGISTER_MATERIAL(FSArrudaBoyce, MODULE_MECH, FE_ARRUDA_BOYCE, FE_MAT_ELASTIC_UNCOUPLED, "Arruda-Boyce", MaterialFlags::TOPLEVEL);

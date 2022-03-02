@@ -1265,6 +1265,18 @@ private:
 	}
 
 public:
+	void ShowDefaultBackground()
+	{
+		htmlViewer->setDocument(nullptr);
+		htmlViewer->setHtml(QString(" \
+					<!DOCTYPE html> \
+					<html> \
+					<body style = \"background-color:#808080;\"> \
+					</body> \
+					</html>"\
+		));
+	}
+
 	void setUIConfig(int config)
 	{
 		if (config == ::CMainWindow::HTML_CONFIG)

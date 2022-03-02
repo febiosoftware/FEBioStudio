@@ -64,6 +64,8 @@ public:
 
 	int States() const;
 
+	bool IsKineValid() const;
+
 protected:
 	bool ReadKine(const char* szkine);
 	bool BuildStates(Post::FEPostModel* glm);
@@ -71,4 +73,5 @@ protected:
 protected:
 	int	m_n0, m_n1, m_ni;
 	std::vector<STATE>	m_State;
+	bool	m_isKineValid;
 };

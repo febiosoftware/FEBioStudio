@@ -44,24 +44,9 @@ SOFTWARE.*/
 #include <QSplitter>
 #include <QLabel>
 #include <unordered_map>
-
 #include "DlgEditLConfigs.h"
 #include "LaunchConfig.h"
-
-
-class StackedWidget : public QStackedWidget
-{
-	QSize sizeHint() const override
-	{
-		return currentWidget()->sizeHint();
-	}
-
-	QSize minimumSizeHint() const override
-	{
-		return currentWidget()->minimumSizeHint();
-	}
-
-};
+#include "DynamicStackedWidget.h"
 
 class Ui::CDlgEditPath
 {
@@ -71,7 +56,7 @@ public:
 	QWidget* defaultPage;
 
 	QStackedWidget* rhsStack;
-	StackedWidget* configStack;
+	DynamicStackedWidget* configStack;
 
 	QToolButton* addConfigBtn;
 	QToolButton* delConfigBtn;
@@ -232,7 +217,7 @@ public:
 		baseForm->addRow("Launch Type:", launchType = new QComboBox);
 
 		// the stack holds the widgets for the different launch configuration types selected via launchType
-		configStack = new StackedWidget;
+		configStack = new DynamicStackedWidget;
 
 		// add the different config widgets
 		launchType->addItem("Local");

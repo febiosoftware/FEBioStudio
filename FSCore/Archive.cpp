@@ -246,9 +246,14 @@ IArchive::IOResult IArchive::read(std::vector<double>& v)
 	CHUNK* pc = m_Chunk.top();
 
 	int nsize = pc->nsize / sizeof(double);
-	v.resize(nsize);
-	int nread = (int)fread(&v[0], sizeof(double), nsize, m_fp);
-	if (nread != nsize) return IO_ERROR;
+	if (nsize > 0)
+	{
+		v.resize(nsize);
+		int nread = (int)fread(&v[0], sizeof(double), nsize, m_fp);
+		if (nread != nsize) return IO_ERROR;
+	}
+	else v.clear();
+
 	return IO_OK;
 }
 

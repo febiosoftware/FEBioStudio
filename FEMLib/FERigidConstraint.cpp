@@ -193,6 +193,7 @@ FSRigidForce::FSRigidForce(FSModel* fem, int nstep) : FSRigidPrescribed(FE_RIGID
 	AddIntParam(0, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
 	AddScienceParam(0.0, UNIT_FORCE, "value", "value");
 	AddIntParam(0, "load_type", "load type")->SetEnumNames("load\0follow\0target\0");
+	AddBoolParam(false, "relative");
 }
 
 FSRigidForce::FSRigidForce(int bc, int matid, double v, int nstep) : FSRigidPrescribed(FE_RIGID_FORCE, nstep)
@@ -216,7 +217,12 @@ void FSRigidForce::SetForceType(int n)
 	SetIntValue(2, n);
 }
 
-FSRigidVelocity::FSRigidVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_VELOCITY, nstep, fem)
+bool FSRigidForce::IsRelative() const
+{
+	return GetBoolValue(3);
+}
+
+FSRigidVelocity::FSRigidVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_VELOCITY, nstep)
 {
 	SetTypeString("Rigid velocity");
 

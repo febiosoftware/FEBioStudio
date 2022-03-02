@@ -67,4 +67,7 @@ ModelDataField* DataConvert(FEPostModel& fem, ModelDataField* dataField, int new
 
 //-----------------------------------------------------------------------------
 ModelDataField* DataEigenTensor(FEPostModel& fem, ModelDataField* dataField, const std::string& name);
+
+//-----------------------------------------------------------------------------
+ModelDataField* DataTimeRate(FEPostModel& fem, ModelDataField* dataField, const std::string& name);
 }

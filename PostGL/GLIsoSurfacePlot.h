@@ -28,12 +28,13 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include "GLWLib/GLWidget.h"
 #include "PostLib/DataMap.h"
+#include <MeshTools/GLMesh.h>
 
 namespace Post {
 
 class CGLIsoSurfacePlot : public CGLLegendPlot
 {
-	enum { DATA_FIELD, COLOR_MAP, CLIP, HIDDEN, SLICES, LEGEND, SMOOTH, RANGE_TYPE, USER_MAX, USER_MIN };
+	enum { DATA_FIELD, COLOR_MAP, TRANSPARENCY, CLIP, HIDDEN, SLICES, LEGEND, SMOOTH, RANGE_TYPE, USER_MAX, USER_MIN };
 
 public:
 	enum RANGE_TYPE {
@@ -79,12 +80,14 @@ public:
 	bool UpdateData(bool bsave = true);
 
 protected:
-	void RenderSlice(float ref, GLColor col);
+	void UpdateMesh();
+	void UpdateSlice(float ref, GLColor col);
 
 protected:
 	int		m_nslices;		// nr. of iso surface slices
 	bool	m_bsmooth;		// render smooth or not
 	bool	m_bcut_hidden;	//!< cut hidden materials or not
+	double	m_transparency;
 
 	int		m_rangeType;				//!< dynamic, static, or user-defined
 	double	m_userMin, m_userMax;		//!< range for user-defined range
@@ -101,6 +104,8 @@ protected:
 	vec2f			m_crng;
 	vector<float>	m_val;	// current nodal values
 	vector<vec3f>	m_grd;	// current gradient values
+
+	GLMesh	m_mesh;	// the mesh to render
 
 	int		m_lastTime;
 	float	m_lastdt;

@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include "GLIsoSurfacePlot.h"
 #include "GLWLib/GLWidgetManager.h"
 #include "PostLib/constants.h"
+#include <GLLib/GLContext.h>
+#include <GLLib/GLCamera.h>
 #include "GLModel.h"
 using namespace Post;
 
@@ -51,6 +53,7 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot()
 
 	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddDoubleParam(1.0, "Transparency")->SetFloatRange(0.0, 1.0, 0.01);
 	AddBoolParam(true, "Allow clipping");
 	AddBoolParam(true, "Slice hidden");
 	AddIntParam(1, "Slices");
@@ -64,6 +67,7 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot()
 	m_bsmooth = true;
 	m_bcut_hidden = false;
 	m_nfield = -1;
+	m_transparency = 1.0;
 
 	m_rangeType = RNG_DYNAMIC;
 	m_rngMin = 0.;
@@ -103,6 +107,7 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 	{
 		int oldField = m_nfield;
 		m_nfield = GetIntValue(DATA_FIELD);
+		m_transparency = GetFloatValue(TRANSPARENCY);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		AllowClipping(GetBoolValue(CLIP));
 		m_bcut_hidden = GetBoolValue(HIDDEN);
@@ -120,6 +125,7 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 	else
 	{
 		SetIntValue(DATA_FIELD, m_nfield);
+		SetFloatValue(TRANSPARENCY, m_transparency);
 		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
 		SetBoolValue(CLIP, AllowClipping());
 		SetBoolValue(HIDDEN, m_bcut_hidden);
@@ -141,7 +147,6 @@ void CGLIsoSurfacePlot::Render(CGLContext& rc)
 	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
 	{
 		glColor4ub(255,255,255,255);
-		vec2f r = m_crng;
 		glEnable(GL_COLOR_MATERIAL);
 		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 		glDisable(GL_TEXTURE_1D);
@@ -152,37 +157,99 @@ void CGLIsoSurfacePlot::Render(CGLContext& rc)
 	//	glLightfv(GL_LIGHT0, GL_AMBIENT, one);
 	//	glLightfv(GL_LIGHT0, GL_DIFFUSE, one);
 
-		float crng = (r.y - r.x);
-		if (crng == 0.f) crng = 1.f;
+		double a = 255 * m_transparency;
 
-		// scale a little to make sure the range extrema will be shown
-		r.x *= .99f;
-		r.y *= .99f;
-
-		float denom = (m_nslices <= 1 ? 1.f : m_nslices - 1.f);
-		for (int i=0; i<m_nslices; ++i)
+		int NF = m_mesh.Faces();
+		vector< pair<int, double> > zlist; zlist.reserve(NF);
+		if (m_transparency < 0.99)
 		{
-			float ref = r.x + (float) i / denom * (r.y - r.x);
+			vec3d r[3];
+			// first, build a list of faces
+			for (int i = 0; i < NF; ++i)
+			{
+				GMesh::FACE& face = m_mesh.Face(i);
 
-			float w = (ref - m_crng.x)/crng;
+				r[0] = m_mesh.Node(face.n[0]).r;
+				r[1] = m_mesh.Node(face.n[1]).r;
+				r[2] = m_mesh.Node(face.n[2]).r;
 
-			CColorMap& map = m_Col.ColorMap();
-			GLColor col = map.map(w);
+				// get the face center
+				vec3d o = (r[0] + r[1] + r[2]) / 3.0;
 
-			RenderSlice(ref, col);
+				// convert to eye coordinates
+				vec3d q = rc.m_cam->WorldToCam(o);
+
+				// add it to the z-list
+				zlist.push_back(pair<int, double>(i, q.z));
+			}
+
+			// sort the zlist
+			std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
+				return a.second < b.second;
+				});
 		}
+		else for (int i = 0; i < NF; ++i) zlist.push_back(pair<int, double>(i, 0.0));
+
+		glBegin(GL_TRIANGLES);
+		{
+			vec3d r[3];
+			for (int i = 0; i < m_mesh.Faces(); ++i)
+			{
+				GMesh::FACE& face = m_mesh.Face(zlist[i].first);
+				r[0] = m_mesh.Node(face.n[0]).r;
+				r[1] = m_mesh.Node(face.n[1]).r;
+				r[2] = m_mesh.Node(face.n[2]).r;
+
+				vec3d* vn = face.nn;
+				GLColor* cn = face.c;
+
+				glColor4ub(cn[0].r, cn[0].g, cn[0].b, a);
+				glNormal3d(vn[0].x, vn[0].y, vn[0].z); 
+				glVertex3d(r[0].x, r[0].y, r[0].z);
+
+				glColor4ub(cn[1].r, cn[1].g, cn[1].b, a);
+				glNormal3d(vn[1].x, vn[1].y, vn[1].z); 
+				glVertex3d(r[1].x, r[1].y, r[1].z);
+
+				glColor4ub(cn[2].r, cn[2].g, cn[2].b, a);
+				glNormal3d(vn[2].x, vn[2].y, vn[2].z); 
+				glVertex3d(r[2].x, r[2].y, r[2].z);
+			}
+		}
+		glEnd();
 	}
 	glPopAttrib();
 }
 
+void CGLIsoSurfacePlot::UpdateMesh()
+{
+	m_mesh.Clear();
+
+	vec2f r = m_crng;
+	float crng = (r.y - r.x);
+	if (crng == 0.f) crng = 1.f;
+
+	// scale a little to make sure the range extrema will be shown
+	r.x *= .99f;
+	r.y *= .99f;
+
+	float denom = (m_nslices <= 1 ? 1.f : m_nslices - 1.f);
+	for (int i = 0; i < m_nslices; ++i)
+	{
+		float ref = r.x + (float)i / denom * (r.y - r.x);
+
+		float w = (ref - m_crng.x) / crng;
+
+		CColorMap& map = m_Col.ColorMap();
+		GLColor col = map.map(w);
+		UpdateSlice(ref, col);
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
+void CGLIsoSurfacePlot::UpdateSlice(float ref, GLColor col)
 {
-	int i, k, l;
-	int ncase, *pf;
-	float w;
-
 	float ev[8];	// element nodal values
 	vec3f ex[8];	// element nodal positions
 	vec3f en[8];	// element nodal gradients
@@ -200,10 +267,8 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 
 	const int* nt = nullptr;
 
-	glColor3ub(col.r, col.g, col.b);
-
 	// loop over all elements
-	for (i=0; i<pm->Elements(); ++i)
+	for (int i=0; i<pm->Elements(); ++i)
 	{
 		// render only if the element is visible and
 		// its material is enabled
@@ -225,7 +290,7 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 			}
 
 			// get the nodal values
-			for (k=0; k<8; ++k)
+			for (int k=0; k<8; ++k)
 			{
 				FSNode& node = pm->Node(el.m_node[nt[k]]);
 
@@ -235,24 +300,24 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 			}
 
 			// calculate the case of the element
-			ncase = 0;
-			for (k=0; k<8; ++k) 
+			int ncase = 0;
+			for (int k=0; k<8; ++k) 
 				if (ev[k] <= ref) ncase |= (1 << k);
 
 			// loop over faces
-			pf = LUT[ncase];
-			for (l=0; l<5; l++)
+			int* pf = LUT[ncase];
+			for (int l=0; l<5; l++)
 			{
 				if (*pf == -1) break;
 
 				// calculate nodal positions
 				vec3f r[3], vn[3];
-				for (k=0; k<3; k++)
+				for (int k=0; k<3; k++)
 				{
 					int n1 = ET_HEX[pf[k]][0];
 					int n2 = ET_HEX[pf[k]][1];
 
-					w = (ref - ev[n1]) / (ev[n2] - ev[n1]);
+					float w = (ref - ev[n1]) / (ev[n2] - ev[n1]);
 
 					r[k] = ex[n1]*(1-w) + ex[n2]*w;
 				}
@@ -260,12 +325,12 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 				// calculate normals
 				if (m_bsmooth)
 				{
-					for (k=0; k<3; k++)
+					for (int k=0; k<3; k++)
 					{
 						int n1 = ET_HEX[pf[k]][0];
 						int n2 = ET_HEX[pf[k]][1];
 
-						w = (ref - ev[n1]) / (ev[n2] - ev[n1]);
+						float w = (ref - ev[n1]) / (ev[n2] - ev[n1]);
 
 						vn[k] = en[n1]*(1-w) + en[n2]*w;
 						vn[k].Normalize();
@@ -273,7 +338,7 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 				}
 				else
 				{
-					for (k=0; k<3; k++)
+					for (int k=0; k<3; k++)
 					{
 						int kp1 = (k+1)%3;
 						int km1 = (k+2)%3;
@@ -282,15 +347,8 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 					}
 				}
 
-				// render the face
-				glBegin(GL_TRIANGLES);
-				{
-					glNormal3f(vn[0].x,vn[0].y,vn[0].z); glVertex3f(r[0].x, r[0].y, r[0].z);
-					glNormal3f(vn[1].x,vn[1].y,vn[1].z); glVertex3f(r[1].x, r[1].y, r[1].z);
-					glNormal3f(vn[2].x,vn[2].y,vn[2].z); glVertex3f(r[2].x, r[2].y, r[2].z);
-				}
-				glEnd();
-
+				// Add the face
+				m_mesh.AddFace(r, vn, col);
 				pf+=3;
 			}
 		}
@@ -402,4 +460,7 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
 	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
+
+	// Update the mesh
+	UpdateMesh();
 }

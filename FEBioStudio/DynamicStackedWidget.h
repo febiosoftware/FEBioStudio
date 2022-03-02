@@ -24,27 +24,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "FEMultiBlockMesh.h"
-
-class GSphere;
-
-class FESphere : public FEMultiBlockMesh
+// QStackedWidget whose size depends only on the currently visible item
+class DynamicStackedWidget : public QStackedWidget
 {
-public:
-//	enum { RATIO, NDIV, NSEG, GD, GR, GD2, GR2, ELEM_TYPE };
-	enum { RATIO, NDIV, NSEG, GR, GR2, ELEM_TYPE };
+	QSize sizeHint() const override
+	{
+		return currentWidget()->sizeHint();
+	}
 
-public:
-	FESphere(){}
-	FESphere(GSphere* po);
-	FSMesh* BuildMesh();
+	QSize minimumSizeHint() const override
+	{
+		return currentWidget()->minimumSizeHint();
+	}
 
-protected:
-	GSphere* m_pobj;
-
-	double	m_r;
-	int	m_ndiv, m_nseg;
-	double	m_gd, m_gr;
-	bool	m_bd, m_br;
 };

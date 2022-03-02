@@ -161,11 +161,50 @@ void GLMusclePath::Render(CGLContext& rc)
 	int nstate = glm->CurrentTimeIndex();
 	if ((nstate < 0) || (nstate >= m_path.size())) return;
 
-	PathData* path = m_path[nstate];
-	if (path == nullptr) return;
-
 	double R = GetFloatValue(PATH_RADIUS);
 	GLColor c = GetColorValue(COLOR);
+
+	PathData* path = m_path[nstate];
+	if (path == nullptr)
+	{
+		int n0 = GetIntValue(START_POINT) - 1;
+		int n1 = GetIntValue(END_POINT) - 1;
+
+		FEPostMesh& mesh = *glm->GetActiveMesh();
+		int NN = mesh.Nodes();
+		if ((n0 < 0) || (n0 >= NN)) return;
+		if ((n1 < 0) || (n1 >= NN)) return;
+
+		vec3d r0 = mesh.Node(n0).pos();
+		vec3d r1 = mesh.Node(n1).pos();
+
+		std::vector<vec3d> points = { r0, r1 };
+
+		float r = (float)c.r;
+		float g = (float)c.g;
+		float b = (float)c.b;
+		float a = (r + g + b)/3.f;
+
+		float w = 0.9f;
+		r = r * (1.f - w) + w * a;
+		g = g * (1.f - w) + w * a;
+		b = b * (1.f - w) + w * a;
+
+		GLColor gray((Byte)r, (Byte)g, (Byte)b);
+
+		// draw the muscle path
+		glColor3ub(gray.r, gray.g, gray.b);
+		glx::drawSmoothPath(points, R);
+
+		// draw the end points
+		glColor3ub(164, 128, 164);
+		glx::drawSphere(r0, 1.5 * R);
+
+		glColor3ub(164, 164, 128);
+		glx::drawSphere(r1, 1.5 * R);
+
+		return;
+	}
 
 	vector<vec3d> points = path->GetPoints();
 

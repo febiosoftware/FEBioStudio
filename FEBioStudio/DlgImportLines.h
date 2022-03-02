@@ -33,6 +33,10 @@ class CMainWindow;
 class CDlgImportLinesUI;
 class CDlgImportPointsUI;
 
+namespace Post {
+	class LineDataModel;
+}
+
 //-----------------------------------------------------------------------------
 class CDlgImportLines : public QDialog
 {
@@ -42,13 +46,12 @@ public:
 	// constructor
 	CDlgImportLines(CMainWindow* wnd);
 
+	QString GetFileName();
+	QString GetName();
+
 private slots:
 	void OnApply();
 	void OnBrowse();
-
-private:
-	bool ReadOldFormat(const char* szfile);
-	int ReadAng2Format(const char* szfile);
 
 private:
 	CDlgImportLinesUI*		ui;
