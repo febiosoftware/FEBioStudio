@@ -374,7 +374,18 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		{
 			if (pc.m_p)
 			{
-				pc.m_p->SetLoadCurveID(LCT[pc.m_lc]);
+				if (pc.m_p->GetParamType() == Param_Type::Param_STD_VECTOR_VEC2D)
+				{
+					// map the points directly to vector
+					FSLoadController* plc = fem.GetLoadController(pc.m_lc);
+					Param* src = plc->GetParam("points"); assert(src);
+					if (src)
+					{
+						std::vector<vec2d> pt = src->GetVectorVec2dValue();
+						pc.m_p->SetVectorVec2dValue(pt);
+					}
+				}
+				else pc.m_p->SetLoadCurveID(LCT[pc.m_lc]);
 			}
 			if (pc.m_plc) 
 			{

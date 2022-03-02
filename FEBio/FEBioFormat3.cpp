@@ -582,12 +582,29 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 					}
 					else
 					{
+						// We need to continue supporting mapping load curves to FEFunction1D. 
+						bool mapLC2F1D = false;
+						if ((prop->GetSuperClassID() == FEFUNCTION1D_ID) &&
+							(tag.AttributeValue("type", true) == nullptr))
+						{
+							sztype = "point";
+							if (tag.AttributeValue("lc", true)) mapLC2F1D = true;
+						}
+
 						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
 						assert(pc->GetSuperClassID() == prop->GetSuperClassID());
 						if (pc)
 						{
 							prop->AddComponent(pc);
-							ParseModelComponent(pc, tag);
+
+							if (mapLC2F1D)
+							{
+								const char* szlc = tag.AttributeValue("lc");
+								int lc = atoi(szlc);
+								Param* pp = pc->GetParam("points"); assert(pp);
+								GetFEBioModel().AddParamCurve(pp, lc);
+							}
+							else ParseModelComponent(pc, tag);
 						}
 					}
 				}
@@ -2246,41 +2263,15 @@ void FEBioFormat3::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	}
 	else name = szname;
 
+	const char* sztype = tag.AttributeValue("type", true);
+	if (sztype == nullptr) sztype = "nodal_load";
+
 	// create the nodal load
-	FSNodalDOFLoad* pbc = new FSNodalDOFLoad(&fem, pg, 0, 1, pstep->GetID());
-	pbc->SetName(name);
-	pstep->AddComponent(pbc);
+	FSNodalLoad* pnl = FEBio::CreateNodalLoad(sztype, &fem);
+	pnl->SetName(name);
+	pstep->AddComponent(pnl);
 
-	// assign nodes to node sets
-	++tag;
-	do
-	{
-		if (tag == "scale")
-		{
-			ReadParam(*pbc, tag);
-		}
-		else if (tag == "dof")
-		{
-			// read the bc attribute
-			string abc = tag.szvalue();
-			int bc = 0;
-			if      (abc == "x") bc = 0;
-			else if (abc == "y") bc = 1;
-			else if (abc == "z") bc = 2;
-			else if (abc == "p") bc = 3;
-            else if (abc.compare(0,1,"c") == 0) {
-                int isol = 0;
-                sscanf(abc.substr(1).c_str(),"%d",&isol);
-                bc = isol+3;
-            }
-			else throw XMLReader::InvalidValue(tag);
-
-			pbc->SetDOF(bc);
-		}
-		else ParseUnknownTag(tag);
-		++tag;
-	}
-	while (!tag.isend());
+	ParseModelComponent(pnl, tag);
 }
 
 //-----------------------------------------------------------------------------
@@ -2932,15 +2923,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				pg->SetMaterial(pdm);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
-				++tag;
-				do
-				{
-					if (ReadParam(*pdm, tag) == false)
-					{
-						ParseUnknownTag(tag);
-					}
-					++tag;
-				} while (!tag.isend());
+				ParseModelComponent(pdm, tag);
 				set.push_back(pg);
 			}
 			else if (strcmp(sztype, "Hill") == 0)
@@ -3003,7 +2986,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			pi->SetName(name);
 			m_pBCStep->AddRigidLoad(pi);
 
-			ReadParameters(*pi, tag);
+			ParseModelComponent(pi, tag);
 		}
 		else ParseUnknownTag(tag);
 		++tag;
