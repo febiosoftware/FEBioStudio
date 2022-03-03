@@ -1,6 +1,8 @@
 #pragma once
 #include "FEModelComponent.h"
 
+class FEItemListBuilder;
+
 enum MeshDataGeneratorType
 {
 	FE_FEBIO_NODEDATA_GENERATOR = 1,
@@ -23,11 +25,24 @@ public:
 	static void SetCounter(int n);
 	static int GetCounter();
 
+public:
+	FEItemListBuilder* GetItemList() { return m_pItem; }
+	void SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
+
+	unsigned int GetMeshItemType() const;
+
+protected:
+	void SetMeshItemType(unsigned int meshItem);
+
 private:
 	int	m_ntype;
 
 private:
 	int			m_nUID;	//!< unique ID
+
+	unsigned int	m_itemType;	// the type of mesh item that can be assigned to this list
+	FEItemListBuilder* m_pItem;	// list of item indices to apply the BC too
+
 	static	int	m_nref;
 };
 

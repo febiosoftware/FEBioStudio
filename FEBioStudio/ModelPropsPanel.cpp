@@ -775,6 +775,14 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			return;
 		}
 
+		FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
+		if (pdg && (pdg->GetMeshItemType() != 0))
+		{
+			ui->showSelectionPanel1(true);
+			SetSelection(0, pdg->GetItemList());
+			return;
+		}
+
 		FSSoloInterface* solo = dynamic_cast<FSSoloInterface*>(m_currentObject);
 		if (solo) { SetSelection(0, solo->GetItemList()); return; }
 
@@ -939,6 +947,64 @@ void CModelPropsPanel::addSelection(int n)
 				}
 			}
 			SetSelection(0, pmc->GetItemList());
+			delete pg;
+		}
+		emit selectionChanged();
+		return;
+	}
+
+	FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
+	if (pdg)
+	{
+		// create the item list from the selection
+		FEItemListBuilder* pg = ps->CreateItemList();
+		if (pg == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "You cannot assign an empty selection.");
+			return;
+		}
+
+		// get the current item list
+		FEItemListBuilder* pl = pdg->GetItemList();
+
+		// see whether the current list exists or not
+		if (pl == nullptr)
+		{
+			// see if we can assign it
+			int itemType = pdg->GetMeshItemType();
+			if (pg->Supports(itemType) == false)
+			{
+				QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
+				delete pg;
+				return;
+			}
+
+			pdg->SetItemList(pg);
+			SetSelection(0, pdg->GetItemList());
+		}
+		else
+		{
+			// merge with the current list
+			if (pg->Type() != pl->Type())
+			{
+				QMessageBox::critical(this, "FEBio Studio", "The selection is not of the correct type.");
+			}
+			else
+			{
+				// for groups, make sure that they are on the same mesh
+				FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
+				FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
+				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
+				}
+				else
+				{
+					list<int> l = pg->CopyItems();
+					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+				}
+			}
+			SetSelection(0, pdg->GetItemList());
 			delete pg;
 		}
 		emit selectionChanged();

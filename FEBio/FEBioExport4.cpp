@@ -437,6 +437,15 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 	for (int i = 0; i < fem.MeshDataGenerators(); ++i)
 	{
 		FSMeshDataGenerator* gen = fem.GetMeshDataGenerator(i);
+
+		if (gen->GetMeshItemType() == FE_ELEM_FLAG)
+		{
+			FEItemListBuilder* pi = gen->GetItemList();
+			string name = pi->GetName();
+			if (name.empty()) name = gen->GetName();
+			if (pi) AddElemSet(name, pi);
+		}
+
 		for (int i = 0; i < gen->Properties(); ++i)
 		{
 			FSProperty& pi = gen->GetProperty(i);
@@ -1925,9 +1934,13 @@ void FEBioExport4::WriteMeshData(FSMeshDataGenerator* map)
 {
 	XMLElement meshData("ElementData");
 	meshData.add_attribute("name", map->GetName());
-//	meshData.add_attribute("type", map->GetTypeString());
-//	meshData.add_attribute("elem_set", map->m_elset);
 
+	FEItemListBuilder* pi = map->GetItemList();
+	if (pi)
+	{
+		std::string elSet = GetElementSetName(pi);
+		meshData.add_attribute("elem_set", elSet);
+	}
 	WriteModelComponent(map, meshData);
 }
 
