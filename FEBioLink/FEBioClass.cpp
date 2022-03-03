@@ -75,6 +75,7 @@ void initMap()
 	idmap[FENLCLOGDATA_ID          ] = "FENLCLOGDATA_ID";
 	idmap[FECALLBACK_ID            ] = "FECALLBACK_ID";
 	idmap[FEDOMAIN_ID              ] = "FEDOMAIN_ID";
+	idmap[FESURFACE_ID             ] = "FESURFACE_ID";
 	idmap[FEIC_ID                  ] = "FEIC_ID";
 	idmap[FENODEDATAGENERATOR_ID   ] = "FENODEDATAGENERATOR_ID";
 	idmap[FEFACEDATAGENERATOR_ID   ] = "FEFACEDATAGENERATOR_ID";
@@ -474,13 +475,11 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		}
 
 		// handle mesh selection properties differently
-		if (prop.GetSuperClassID() == FEDOMAIN_ID)
+		if (prop.GetSuperClassID() == FESURFACE_ID)
 		{
 			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
-
-			if (strcmp(prop.GetName(), "surface") == 0) pms->SetMeshItemType(FE_FACE_FLAG);
-
-			pms->SetSuperClassID(FEDOMAIN_ID);
+			pms->SetMeshItemType(FE_FACE_FLAG);
+			pms->SetSuperClassID(FESURFACE_ID);
 			fsp->AddComponent(pms);
 		}
 /*		else if (prop.GetSuperClassID() == FEITEMLIST_ID)

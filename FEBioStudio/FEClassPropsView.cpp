@@ -487,7 +487,7 @@ public:
 				else
 				{
 					FSProperty& prop = m_pc->GetProperty(m_propId);
-					if (prop.GetSuperClassID() == FEDOMAIN_ID)
+					if (prop.GetSuperClassID() == FESURFACE_ID)
 					{
 						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop.GetComponent()); assert(pms);
 						if (pms)
@@ -1303,7 +1303,7 @@ void FEClassEdit::onItemClicked(const QModelIndex& i)
 		FSFunction1D* pf = dynamic_cast<FSFunction1D*>(p->GetComponent());
 		ui->SetFunction1D(pf);
 	}
-	else if (p->GetSuperClassID() == FEDOMAIN_ID)
+	else if (p->GetSuperClassID() == FESURFACE_ID)
 	{
 		FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(p->GetComponent());
 		ui->SetMeshSelection(pms); return;

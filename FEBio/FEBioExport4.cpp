@@ -433,6 +433,34 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		}
 	}
 
+	// extract mesh data selections
+	for (int i = 0; i < fem.MeshDataGenerators(); ++i)
+	{
+		FSMeshDataGenerator* gen = fem.GetMeshDataGenerator(i);
+		for (int i = 0; i < gen->Properties(); ++i)
+		{
+			FSProperty& pi = gen->GetProperty(i);
+			FSMeshSelection* sel = dynamic_cast<FSMeshSelection*>(pi.GetComponent());
+			if (sel)
+			{
+				FEItemListBuilder* items = sel->GetItemList();
+				if (items == 0) throw InvalidItemListBuilder(sel);
+				if (sel->GetSuperClassID() == FESURFACE_ID)
+				{
+					string name = items->GetName();
+					if (name.empty())
+					{
+						stringstream ss;
+						ss << gen->GetName() << "_" << pi.GetName();
+						name = ss.str();
+					}
+
+					AddSurface(name, items);
+				}
+			}
+		}
+	}
+
 	// Write the user-defined surfaces
 	if (m_exportSelections)
 	{
@@ -909,6 +937,16 @@ void FEBioExport4::WriteMaterialSection()
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 {
+	// handle mesh selections differently
+	if (dynamic_cast<FSMeshSelection*>(pm))
+	{
+		FSMeshSelection* sel = dynamic_cast<FSMeshSelection*>(pm);
+		const char* szname = GetSurfaceName(sel->GetItemList());
+		el.value(szname);
+		m_xml.add_leaf(el);
+		return;
+	}
+
 	// get the type string    
 	const char* sztype = pm->GetTypeString(); assert(sztype);
 	if (sztype && sztype[0]) el.add_attribute("type", pm->GetTypeString());
@@ -1886,17 +1924,11 @@ void FEBioExport4::WriteElementDataSection()
 void FEBioExport4::WriteMeshData(FSMeshDataGenerator* map)
 {
 	XMLElement meshData("ElementData");
-//	meshData.add_attribute("var", map->m_var);
-	meshData.add_attribute("type", map->GetTypeString());
+	meshData.add_attribute("name", map->GetName());
+//	meshData.add_attribute("type", map->GetTypeString());
 //	meshData.add_attribute("elem_set", map->m_elset);
 
-	FSModel& fem = m_prj.GetFSModel();
-
-	m_xml.add_branch(meshData);
-	{
-		WriteParamList(*map);
-	}
-	m_xml.close_branch();
+	WriteModelComponent(map, meshData);
 }
 
 //-----------------------------------------------------------------------------
