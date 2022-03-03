@@ -3,7 +3,9 @@
 
 enum MeshDataGeneratorType
 {
-	FE_FEBIO_MESHDATA_GENERATOR = 1
+	FE_FEBIO_NODEDATA_GENERATOR = 1,
+	FE_FEBIO_FACEDATA_GENERATOR = 2,
+	FE_FEBIO_ELEMDATA_GENERATOR = 3
 };
 
 class FSMeshDataGenerator : public FSModelComponent
@@ -29,8 +31,20 @@ private:
 	static	int	m_nref;
 };
 
-class FEBioMeshDataGenerator : public FSMeshDataGenerator
+class FEBioNodeDataGenerator : public FSMeshDataGenerator
 {
 public:
-	FEBioMeshDataGenerator(FSModel* fem = nullptr);
+	FEBioNodeDataGenerator(FSModel* fem = nullptr);
+};
+
+class FEBioFaceDataGenerator : public FSMeshDataGenerator
+{
+public:
+	FEBioFaceDataGenerator(FSModel* fem = nullptr);
+};
+
+class FEBioElemDataGenerator : public FSMeshDataGenerator
+{
+public:
+	FEBioElemDataGenerator(FSModel* fem = nullptr);
 };

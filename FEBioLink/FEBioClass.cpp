@@ -76,7 +76,9 @@ void initMap()
 	idmap[FECALLBACK_ID            ] = "FECALLBACK_ID";
 	idmap[FEDOMAIN_ID              ] = "FEDOMAIN_ID";
 	idmap[FEIC_ID                  ] = "FEIC_ID";
-	idmap[FEDATAGENERATOR_ID       ] = "FEDATAGENERATOR_ID";
+	idmap[FENODEDATAGENERATOR_ID   ] = "FENODEDATAGENERATOR_ID";
+	idmap[FEFACEDATAGENERATOR_ID   ] = "FEFACEDATAGENERATOR_ID";
+	idmap[FEELEMDATAGENERATOR_ID   ] = "FEELEMDATAGENERATOR_ID";
 	idmap[FELOADCONTROLLER_ID      ] = "FELOADCONTROLLER_ID";
 	idmap[FEMODEL_ID               ] = "FEMODEL_ID";
 	idmap[FEMODELDATA_ID           ] = "FEMODELDATA_ID";
@@ -90,7 +92,6 @@ void initMap()
 	idmap[FEMESHADAPTORCRITERION_ID] = "FEMESHADAPTORCRITERION_ID";
 	idmap[FERIGIDBC_ID             ] = "FERIGIDBC_ID";
 	idmap[FENEWTONSTRATEGY_ID      ] = "FENEWTONSTRATEGY_ID";
-	idmap[FEITEMLIST_ID            ] = "FEITEMLIST_ID";
 	idmap[FETIMECONTROLLER_ID      ] = "FETIMECONTROLLER_ID";
 	idmap[FEEIGENSOLVER_ID         ] = "FEEIGENSOLVER_ID";
 	idmap[FEDATARECORD_ID          ] = "FEDATARECORD_ID";
@@ -253,7 +254,9 @@ FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 		else pc = new FEBioNLConstraint(fem); break;
 	}
 	break;
-	case FEDATAGENERATOR_ID    : pc = new FEBioMeshDataGenerator(fem); break;
+	case FENODEDATAGENERATOR_ID : pc = new FEBioNodeDataGenerator(fem); break;
+	case FEFACEDATAGENERATOR_ID : pc = new FEBioFaceDataGenerator(fem); break;
+	case FEELEMDATAGENERATOR_ID : pc = new FEBioElemDataGenerator(fem); break;
 	case FESOLVER_ID           : pc = new FSGenericClass; break;
 	case FERIGIDBC_ID		   : pc = new FEBioRigidConstraint(fem); break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
@@ -480,7 +483,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 			pms->SetSuperClassID(FEDOMAIN_ID);
 			fsp->AddComponent(pms);
 		}
-		else if (prop.GetSuperClassID() == FEITEMLIST_ID)
+/*		else if (prop.GetSuperClassID() == FEITEMLIST_ID)
 		{
 			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
 			if (strcmp(prop.GetName(), "node_set") == 0) pms->SetMeshItemType(FE_NODE_FLAG);
@@ -490,7 +493,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 			pms->SetSuperClassID(FEDOMAIN_ID);
 			fsp->AddComponent(pms);
 		}
-		else if (prop.size() != 0)
+*/		else if (prop.size() != 0)
 		{
 			FECoreBase* pci = prop.get(0);
 

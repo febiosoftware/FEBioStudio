@@ -41,7 +41,19 @@ int FSMeshDataGenerator::GetCounter()
 }
 
 //=============================================================================
-FEBioMeshDataGenerator::FEBioMeshDataGenerator(FSModel* fem) : FSMeshDataGenerator(fem, FE_FEBIO_MESHDATA_GENERATOR)
+FEBioNodeDataGenerator::FEBioNodeDataGenerator(FSModel* fem) : FSMeshDataGenerator(fem, FE_FEBIO_NODEDATA_GENERATOR)
+{
+
+}
+
+//=============================================================================
+FEBioFaceDataGenerator::FEBioFaceDataGenerator(FSModel* fem) : FSMeshDataGenerator(fem, FE_FEBIO_FACEDATA_GENERATOR)
+{
+
+}
+
+//=============================================================================
+FEBioElemDataGenerator::FEBioElemDataGenerator(FSModel* fem) : FSMeshDataGenerator(fem, FE_FEBIO_ELEMDATA_GENERATOR)
 {
 
 }
