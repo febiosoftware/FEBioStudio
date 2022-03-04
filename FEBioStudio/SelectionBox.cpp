@@ -430,7 +430,6 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 
 	// set the name
 	QString name = QString::fromStdString(item->GetName());
-	showNameType(true);
 	setName(name);
 	enableAllButtons(true);
 	clearData();

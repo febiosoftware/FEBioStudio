@@ -775,9 +775,6 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			return;
 		}
 
-		GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject);
-		if (mat) { SetSelection(mat); return; }
-
 		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
 		if (pl) { 
 			SetSelection(0, pl); 
@@ -811,38 +808,11 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 {
 	CItemListSelectionBox* sel = ui->selectionPanel(n);
-	sel->SetItemList(item);
-}
-
-void CModelPropsPanel::SetSelection(GMaterial* pmat)
-{
-	// get the document
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FSModel& fem = *doc->GetFSModel();
-	GModel& mdl = fem.GetModel();
-
-	// clear the name
-	::CSelectionBox* sel = ui->selectionPanel(0);
-	sel->showNameType(false);
-	sel->enableAllButtons(true);
-	sel->setCollapsed(false);
-
-	// set the type
-	sel->setType("Domains");
-
-	// set the items
-	sel->clearData();
-	int N = mdl.Parts();
-	for (int i = 0; i<mdl.Parts(); ++i)
+	if (item)
 	{
-		GPart* pg = mdl.Part(i);
-		GMaterial* pgm = fem.GetMaterialFromID(pg->GetMaterialID());
-		if (pgm && (pgm->GetID() == pmat->GetID()))
-		{
-			int n = pg->GetID();
-			sel->addData(QString::fromStdString(pg->GetName()), n);
-		}
+		sel->showNameType(true);
 	}
+	sel->SetItemList(item);
 }
 
 void CModelPropsPanel::SetSelection(GDiscreteElementSet* set)
@@ -935,7 +905,8 @@ void CModelPropsPanel::addSelection(int n)
 					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 				}
 			}
-			SetSelection(0, pmc->GetItemList());
+			SetSelection(0, pl);
+			pmc->SetItemList(pl);
 			delete pg;
 		}
 		emit selectionChanged();
@@ -985,37 +956,6 @@ void CModelPropsPanel::addSelection(int n)
 			SetSelection(n, pl);
 			delete pg;
 		}
-
-		emit selectionChanged();
-		return;
-	}
-
-	GMaterial* pmat = dynamic_cast<GMaterial*>(m_currentObject);
-	if (pmat)
-	{
-		if (dynamic_cast<GObjectSelection*>(ps))
-		{
-			GObjectSelection* pos = dynamic_cast<GObjectSelection*>(ps);
-			int N = pos->Count();
-			vector<GObject*> o(N);
-			for (int i = 0; i<N; ++i) o[i] = pos->Object(i);
-			pdoc->DoCommand(new CCmdAssignObjectListMaterial(o, pmat->GetID()));
-		}
-		else if (dynamic_cast<GPartSelection*>(ps))
-		{
-			GPartSelection* pps = dynamic_cast<GPartSelection*>(ps);
-			int N = pps->Count();
-			vector<int> p(N);
-			GPartSelection::Iterator it(pps);
-			for (int i = 0; i<N; ++i, ++it) p[i] = it->GetID();
-			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetGModel(), p, pmat->GetID()));
-		}
-		else
-		{
-			QMessageBox::critical(this, "FEBio Studio", "You cannot assign a material to this selection.");
-		}
-		SetSelection(pmat);
-		m_wnd->RedrawGL();
 
 		emit selectionChanged();
 		return;
@@ -1093,38 +1033,10 @@ void CModelPropsPanel::subSelection(int n)
 			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
 		}
 
-		SetSelection(0, pmc->GetItemList());
-		delete pg;
-		emit selectionChanged();
-		return;
-	}
+		if (pmc) pmc->SetItemList(pl);
 
-	GMaterial* pmat = dynamic_cast<GMaterial*>(m_currentObject);
-	if (pmat)
-	{
-		if (dynamic_cast<GObjectSelection*>(ps))
-		{
-			GObjectSelection* pos = dynamic_cast<GObjectSelection*>(ps);
-			int N = pos->Count();
-			vector<GObject*> o(N);
-			for (int i = 0; i<N; ++i) o[i] = pos->Object(i);
-			pdoc->DoCommand(new CCmdAssignObjectListMaterial(o, 0));
-		}
-		else if (dynamic_cast<GPartSelection*>(ps))
-		{
-			GPartSelection* pps = dynamic_cast<GPartSelection*>(ps);
-			int N = pps->Count();
-			vector<int> p(N);
-			GPartSelection::Iterator it(pps);
-			for (int i = 0; i<N; ++i, ++it) p[i] = it->GetID();
-			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetGModel(), p, 0));
-		}
-		else
-		{
-			QMessageBox::critical(this, "FEBio Studio", "You cannot assign a material to this selection.");
-		}
-		SetSelection(pmat);
-		m_wnd->RedrawGL();
+		SetSelection(n, pl);
+		delete pg;
 		emit selectionChanged();
 		return;
 	}
@@ -1151,6 +1063,8 @@ void CModelPropsPanel::delSelection(int n)
 
 			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
 
+			pmc->SetItemList(pl);
+
 			SetSelection(n, pl);
 			emit selectionChanged();
 		}
@@ -1168,15 +1082,6 @@ void CModelPropsPanel::delSelection(int n)
 			sel->getSelectedItems(items);
 			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
 			SetSelection(n, pl);
-			emit selectionChanged();
-		}
-		else if (dynamic_cast<GMaterial*>(m_currentObject))
-		{
-			vector<int> items;
-			sel->getSelectedItems(items);
-			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetGModel(), items, 0));
-			SetSelection(dynamic_cast<GMaterial*>(m_currentObject));
-			m_wnd->RedrawGL();
 			emit selectionChanged();
 		}
 		else if (dynamic_cast<FEItemListBuilder*>(m_currentObject))
@@ -1240,16 +1145,6 @@ void CModelPropsPanel::clearSelection(int n)
 			SetSelection(n, nullptr);
 			emit selectionChanged();
 		}
-	}
-	else if (dynamic_cast<GMaterial*>(m_currentObject))
-	{
-		vector<int> items;
-		CSelectionBox* sel = ui->selectionPanel(n);
-		sel->getAllItems(items);
-		pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetGModel(), items, 0));
-		SetSelection(dynamic_cast<GMaterial*>(m_currentObject));
-		m_wnd->RedrawGL();
-		emit selectionChanged();
 	}
 }
 

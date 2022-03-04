@@ -493,6 +493,7 @@ void CModelViewer::on_props_nameChanged(const QString& txt)
 void CModelViewer::on_props_selectionChanged()
 {
 	ui->tree->UpdateObject(ui->props->GetCurrentObject());
+	GetMainWindow()->RedrawGL();
 }
 
 void CModelViewer::on_props_dataChanged(bool b)
