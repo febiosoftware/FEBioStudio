@@ -1,5 +1,6 @@
 #pragma once
 #include "FEStepComponent.h"
+#include "IHasItemList.h"
 
 class FSModel;
 class FEItemListBuilder;
@@ -8,7 +9,7 @@ class FEItemListBuilder;
 // Base class for anything applied to a partition of the model's geometry.
 // This includes, boundary conditions, nodal loads, surface loads, body loads,
 // constraints, etc.
-class FSDomainComponent : public FSStepComponent
+class FSDomainComponent : public FSStepComponent, public IHasItemList
 {
 public:
 	enum { NAME, PARAMS, LIST, STEP };
@@ -21,15 +22,14 @@ public:
 
 	int Type() { return m_ntype; }
 
-	FEItemListBuilder* GetItemList() { return m_pItem; }
-	void SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
-
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	unsigned int GetMeshItemType() const;
-
-	void SetMeshItemType(unsigned int meshItem);
+public: // IHasItemList
+	FEItemListBuilder* GetItemList() override;
+	void SetItemList(FEItemListBuilder* pi) override;
+	unsigned int GetMeshItemType() const override;
+	void SetMeshItemType(unsigned int meshItem) override;
 
 protected:
 	unsigned int	m_itemType;	// the type of mesh item that can be assigned to this list
@@ -41,16 +41,17 @@ protected:
 
 //---------------------------------------------------------------------------------------------
 // This class is used to select mesh selections properties
-class FSMeshSelection : public FSModelComponent
+class FSMeshSelection : public FSModelComponent, public IHasItemList
 {
 public:
 	FSMeshSelection(FSModel* fem);
 
-	FEItemListBuilder* GetItemList();
-	void SetItemList(FEItemListBuilder* pi);
+public: // IHasItemList
+	FEItemListBuilder* GetItemList() override;
+	void SetItemList(FEItemListBuilder* pi) override;
 
-	unsigned int GetMeshItemType() const;
-	void SetMeshItemType(unsigned int meshItem);
+	unsigned int GetMeshItemType() const override;
+	void SetMeshItemType(unsigned int meshItem) override;
 
 private:
 	unsigned int		m_itemType;

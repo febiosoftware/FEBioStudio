@@ -210,6 +210,7 @@ void FSPairedInterface::Load(IArchive &ar)
 FSSoloInterface::FSSoloInterface(int ntype, FSModel* ps, int nstep) : FSInterface(ntype, ps, nstep)
 {
 	m_pItem = 0;
+	m_itemType = FE_FACE_FLAG;
 }
 
 //-----------------------------------------------------------------------------
@@ -217,6 +218,13 @@ FSSoloInterface::~FSSoloInterface()
 {
 	delete m_pItem;
 }
+
+//-----------------------------------------------------------------------------
+FEItemListBuilder* FSSoloInterface::GetItemList() { return m_pItem; }
+void FSSoloInterface::SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
+
+unsigned int FSSoloInterface::GetMeshItemType() const { return m_itemType; }
+void FSSoloInterface::SetMeshItemType(unsigned int meshItem) { m_itemType = meshItem; };
 
 //-----------------------------------------------------------------------------
 void FSSoloInterface::Save(OArchive& ar)

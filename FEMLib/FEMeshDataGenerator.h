@@ -1,5 +1,6 @@
 #pragma once
 #include "FEModelComponent.h"
+#include "IHasItemList.h"
 
 class FEItemListBuilder;
 
@@ -10,7 +11,7 @@ enum MeshDataGeneratorType
 	FE_FEBIO_ELEMDATA_GENERATOR = 3
 };
 
-class FSMeshDataGenerator : public FSModelComponent
+class FSMeshDataGenerator : public FSModelComponent, public IHasItemList
 {
 public:
 	FSMeshDataGenerator(FSModel* fem, int ntype);
@@ -26,13 +27,13 @@ public:
 	static int GetCounter();
 
 public:
-	FEItemListBuilder* GetItemList() { return m_pItem; }
-	void SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
+	FEItemListBuilder* GetItemList() override;
+	void SetItemList(FEItemListBuilder* pi) override;
 
-	unsigned int GetMeshItemType() const;
+	unsigned int GetMeshItemType() const override;
 
 protected:
-	void SetMeshItemType(unsigned int meshItem);
+	void SetMeshItemType(unsigned int meshItem) override;
 
 private:
 	int	m_ntype;

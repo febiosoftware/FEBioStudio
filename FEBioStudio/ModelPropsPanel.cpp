@@ -767,27 +767,16 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
 		ui->showSelectionPanel2(false);
 
-		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(m_currentObject);
-		if (pbc && (pbc->GetMeshItemType() != 0))
+		IHasItemList* hil = dynamic_cast<IHasItemList*>(m_currentObject);
+		if (hil && (hil->GetMeshItemType() != 0))
 		{
 			ui->showSelectionPanel1(true);
-			SetSelection(0, pbc->GetItemList()); 
+			SetSelection(0, hil->GetItemList());
 			return;
 		}
-
-		FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
-		if (pdg && (pdg->GetMeshItemType() != 0))
-		{
-			ui->showSelectionPanel1(true);
-			SetSelection(0, pdg->GetItemList());
-			return;
-		}
-
-		FSSoloInterface* solo = dynamic_cast<FSSoloInterface*>(m_currentObject);
-		if (solo) { SetSelection(0, solo->GetItemList()); return; }
 
 		GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject);
-		if (mat) { SetSelection(mat); return;	}
+		if (mat) { SetSelection(mat); return; }
 
 		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
 		if (pl) { 
@@ -895,7 +884,7 @@ void CModelPropsPanel::addSelection(int n)
 	assert(m_currentObject);
 	if (m_currentObject == 0) return;
 
-	FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(m_currentObject);
+	IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
 	if (pmc)
 	{
 		// create the item list from the selection
@@ -921,7 +910,7 @@ void CModelPropsPanel::addSelection(int n)
 				return;
 			}
 
-			pdoc->DoCommand(new CCmdSetModelComponentItemList(pmc, pg));
+			pdoc->DoCommand(new CCmdSetItemList(pmc, pg));
 			SetSelection(0, pmc->GetItemList());
 		}
 		else
@@ -947,64 +936,6 @@ void CModelPropsPanel::addSelection(int n)
 				}
 			}
 			SetSelection(0, pmc->GetItemList());
-			delete pg;
-		}
-		emit selectionChanged();
-		return;
-	}
-
-	FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
-	if (pdg)
-	{
-		// create the item list from the selection
-		FEItemListBuilder* pg = ps->CreateItemList();
-		if (pg == nullptr)
-		{
-			QMessageBox::critical(this, "FEBio Studio", "You cannot assign an empty selection.");
-			return;
-		}
-
-		// get the current item list
-		FEItemListBuilder* pl = pdg->GetItemList();
-
-		// see whether the current list exists or not
-		if (pl == nullptr)
-		{
-			// see if we can assign it
-			int itemType = pdg->GetMeshItemType();
-			if (pg->Supports(itemType) == false)
-			{
-				QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
-				delete pg;
-				return;
-			}
-
-			pdg->SetItemList(pg);
-			SetSelection(0, pdg->GetItemList());
-		}
-		else
-		{
-			// merge with the current list
-			if (pg->Type() != pl->Type())
-			{
-				QMessageBox::critical(this, "FEBio Studio", "The selection is not of the correct type.");
-			}
-			else
-			{
-				// for groups, make sure that they are on the same mesh
-				FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
-				FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
-				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
-				{
-					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
-				}
-				else
-				{
-					list<int> l = pg->CopyItems();
-					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
-				}
-			}
-			SetSelection(0, pdg->GetItemList());
 			delete pg;
 		}
 		emit selectionChanged();
@@ -1052,52 +983,6 @@ void CModelPropsPanel::addSelection(int n)
 				}
 			}
 			SetSelection(n, pl);
-			delete pg;
-		}
-
-		emit selectionChanged();
-		return;
-	}
-
-	FSSoloInterface* psolo = dynamic_cast<FSSoloInterface*>(m_currentObject);
-	if (psolo)
-	{
-		if (dynamic_cast<GObjectSelection*>(ps) ||
-			dynamic_cast<GPartSelection*>(ps)) return;
-
-		FEItemListBuilder* pl = psolo->GetItemList();
-		if (pl == 0)
-		{
-			FEItemListBuilder* pg = ps->CreateItemList();
-			psolo->SetItemList(pg);
-			SetSelection(0, psolo->GetItemList());
-		}
-		else
-		{
-			// create the item list builder
-			FEItemListBuilder* pg = ps->CreateItemList();
-
-			// merge with the current list
-			if (pg->Type() != pl->Type())
-			{
-				QMessageBox::critical(this, "FEBio Studio", "The selection is not of the correct type.");
-			}
-			else
-			{
-				// for groups, make sure that they are on the same mesh
-				FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
-				FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
-				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
-				{
-					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
-				}
-				else
-				{
-					list<int> l = pg->CopyItems();
-					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
-				}
-			}
-			SetSelection(0, psolo->GetItemList());
 			delete pg;
 		}
 
@@ -1184,134 +1069,33 @@ void CModelPropsPanel::subSelection(int n)
 	FESelection* ps = pdoc->GetCurrentSelection();
 	if ((ps == 0) || (ps->Size() == 0)) return;
 
-	FSBoundaryCondition* pbc = dynamic_cast<FSBoundaryCondition*>(m_currentObject);
-	if (pbc)
-	{
-		// don't allow object selections 
-		if (dynamic_cast<GObjectSelection*>(ps)) return;
+	// get the item list
+	FEItemListBuilder* pl = nullptr;
 
-		// don't allow part selections, except for initial conditions
-		if (dynamic_cast<GPartSelection*>(ps) && (dynamic_cast<FSInitialCondition*>(pbc) == 0)) return;
-
-		FEItemListBuilder* pl = pbc->GetItemList();
-		if (pl)
-		{
-			// create the item list builder
-			FEItemListBuilder* pg = ps->CreateItemList();
-
-			// subtract from the current list
-			if (pg->Type() == pl->Type())
-			{
-				list<int> l = pg->CopyItems();
-				pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
-			}
-
-			SetSelection(0, pbc->GetItemList());
-			delete pg;
-			emit selectionChanged();
-		}
-		return;
-	}
-
-	FSSurfaceLoad* psl = dynamic_cast<FSSurfaceLoad*>(m_currentObject);
-	if (psl)
-	{
-		FEItemListBuilder* pl = psl->GetItemList();
-		if (pl)
-		{
-			// create the item list builder
-			FEItemListBuilder* pg = ps->CreateItemList();
-
-			// subtract from the current list
-			if (pg->Type() == pl->Type())
-			{
-				list<int> l = pg->CopyItems();
-				pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
-			}
-
-			SetSelection(0, psl->GetItemList());
-			delete pg;
-			emit selectionChanged();
-		}
-		return;
-	}
-
-	FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
-	if (pdg)
-	{
-		FEItemListBuilder* pl = pdg->GetItemList();
-		if (pl)
-		{
-			// create the item list builder
-			FEItemListBuilder* pg = ps->CreateItemList();
-
-			// subtract from the current list
-			if (pg->Type() == pl->Type())
-			{
-				list<int> l = pg->CopyItems();
-				pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
-			}
-
-			SetSelection(0, pdg->GetItemList());
-			delete pg;
-			emit selectionChanged();
-		}
-		return;
-	}
+	IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
+	if (pmc) pl = pmc->GetItemList();
 
 	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pi)
+	if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
+
+	FEItemListBuilder* pil = dynamic_cast<FEItemListBuilder*>(m_currentObject);
+	if (pil) pl = pil;
+
+	if (pl)
 	{
-		if (dynamic_cast<GObjectSelection*>(ps) ||
-		dynamic_cast<GPartSelection*>(ps)) return;
+		// create the item list builder
+		FEItemListBuilder* pg = ps->CreateItemList();
 
-		FEItemListBuilder* pl = (n==0? pi->GetPrimarySurface() : pi->GetSecondarySurface());
-
-		if (pl)
+		// subtract from the current list
+		if (pg->Type() == pl->Type())
 		{
-			// create the item list builder
-			FEItemListBuilder* pg = ps->CreateItemList();
-
-			// subtract from the current list
-			if (pg->Type() == pl->Type())
-			{
-				list<int> l = pg->CopyItems();
-				pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
-			}
-
-			SetSelection(n, pl);
-
-			delete pg;
-
-			emit selectionChanged();
-			return;
+			list<int> l = pg->CopyItems();
+			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
 		}
-	}
 
-	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
-	if (psi)
-	{
-		if (dynamic_cast<GObjectSelection*>(ps) ||
-			dynamic_cast<GPartSelection*>(ps)) return;
-
-		FEItemListBuilder* pl = psi->GetItemList();
-		if (pl)
-		{
-			// create the item list builder
-			FEItemListBuilder* pg = ps->CreateItemList();
-
-			// subtract from the current list
-			if (pg->Type() == pl->Type())
-			{
-				list<int> l = pg->CopyItems();
-				pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
-			}
-
-			SetSelection(0, psi->GetItemList());
-
-			delete pg;
-			emit selectionChanged();
-		}
+		SetSelection(0, pmc->GetItemList());
+		delete pg;
+		emit selectionChanged();
 		return;
 	}
 
@@ -1344,25 +1128,6 @@ void CModelPropsPanel::subSelection(int n)
 		emit selectionChanged();
 		return;
 	}
-
-	FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
-	if (pl)
-	{
-		// create the item list builder
-		FEItemListBuilder* pg = ps->CreateItemList();
-
-		if (pg->Type() == pl->Type())
-		{
-			list<int> l = pg->CopyItems();
-			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
-		}
-		SetSelection(0, pl);
-
-		delete pg;
-
-		emit selectionChanged();
-		return;
-	}
 }
 
 void CModelPropsPanel::on_select1_delButtonClicked() { delSelection(0); }
@@ -1374,26 +1139,10 @@ void CModelPropsPanel::delSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(m_currentObject);
-	if (pmc)
+	if (dynamic_cast<IHasItemList*>(m_currentObject))
 	{
+		IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
 		pl = pmc->GetItemList();
-		if (pl)
-		{
-			CSelectionBox* sel = ui->selectionPanel(n);
-			list<int> items;
-			sel->getSelectedItems(items);
-
-			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
-
-			SetSelection(n, pl);
-			emit selectionChanged();
-		}
-	}
-	else if (dynamic_cast<FSMeshDataGenerator*>(m_currentObject))
-	{
-		FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
-		pl = pdg->GetItemList();
 		if (pl)
 		{
 			CSelectionBox* sel = ui->selectionPanel(n);
@@ -1408,9 +1157,6 @@ void CModelPropsPanel::delSelection(int n)
 	}
 	else
 	{
-		FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
-		if (psi) pl = psi->GetItemList();
-
 		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 		if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 
@@ -1452,11 +1198,8 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 {
 	FEItemListBuilder* pl = 0;
 
-	FSBoundaryCondition* pbc = dynamic_cast<FSBoundaryCondition*>(m_currentObject);
-	if (pbc) pl = pbc->GetItemList();
-
-	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
-	if (psi) pl = psi->GetItemList();
+	IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
+	if (pmc) pl = pmc->GetItemList();
 
 	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pi) pl = pi->GetPrimarySurface();
@@ -1476,36 +1219,13 @@ void CModelPropsPanel::clearSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	if (dynamic_cast<FSDomainComponent*>(m_currentObject))
+	if (dynamic_cast<IHasItemList*>(m_currentObject))
 	{
-		FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(m_currentObject);
+		IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
 		pl = pmc->GetItemList();
 		if (pl)
 		{
 			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pmc));
-			SetSelection(n, nullptr);
-			emit selectionChanged();
-		}
-	}
-	else if (dynamic_cast<FSMeshDataGenerator*>(m_currentObject))
-	{
-		FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
-		pl = pdg->GetItemList();
-		if (pl)
-		{
-			pdg->SetItemList(nullptr);
-			delete pl;
-			SetSelection(n, nullptr);
-			emit selectionChanged();
-		}
-	}
-	else if (dynamic_cast<FSSoloInterface*>(m_currentObject))
-	{
-		FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
-		pl = psi->GetItemList();
-		if (pl)
-		{
-			pdoc->DoCommand(new CCmdRemoveItemListBuilder(psi));
 			SetSelection(n, nullptr);
 			emit selectionChanged();
 		}
@@ -1537,12 +1257,7 @@ void CModelPropsPanel::on_select2_nameChanged(const QString& t)
 {
 	FEItemListBuilder* pl = 0;
 
-	FSBoundaryCondition* pbc = dynamic_cast<FSBoundaryCondition*>(m_currentObject);
-	if (pbc) pl = pbc->GetItemList();
-
-	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
-	if (psi) pl = psi->GetItemList();
-
+	// this is only used by paired interfaces
 	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pi) pl = pi->GetSecondarySurface();
 

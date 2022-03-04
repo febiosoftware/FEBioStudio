@@ -3241,55 +3241,28 @@ void CCmdAddMaterial::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdSetModelComponentItemList
+// CCmdSetItemList
 //-----------------------------------------------------------------------------
 
-CCmdSetModelComponentItemList::CCmdSetModelComponentItemList(FSDomainComponent* pbc, FEItemListBuilder* pl) : CCommand("Assign BC")
+CCmdSetItemList::CCmdSetItemList(IHasItemList* pbc, FEItemListBuilder* pl) : CCommand("Assign selection")
 {
 	m_pbc = pbc;
 	m_pl = pl;
 }
 
-CCmdSetModelComponentItemList::~CCmdSetModelComponentItemList()
+CCmdSetItemList::~CCmdSetItemList()
 {
 	if (m_pl) delete m_pl;
 }
 
-void CCmdSetModelComponentItemList::Execute()
+void CCmdSetItemList::Execute()
 {
 	FEItemListBuilder* pold = m_pbc->GetItemList();
 	m_pbc->SetItemList(m_pl);
 	m_pl = pold;
 }
 
-void CCmdSetModelComponentItemList::UnExecute()
-{
-	Execute();
-}
-
-//-----------------------------------------------------------------------------
-// CCmdUnassignBC
-//-----------------------------------------------------------------------------
-
-CCmdUnassignBC::CCmdUnassignBC(FSBoundaryCondition* pbc) : CCommand("Unassign BC")
-{
-	m_pbc = pbc;
-	m_pl = 0;
-}
-
-CCmdUnassignBC::~CCmdUnassignBC()
-{
-	if (m_pl) delete m_pl;
-}
-
-void CCmdUnassignBC::Execute()
-{
-	FEItemListBuilder* pold = m_pbc->GetItemList();
-	m_pbc->SetItemList(m_pl);
-	m_pl = pold;
-}
-
-void CCmdUnassignBC::UnExecute()
+void CCmdSetItemList::UnExecute()
 {
 	Execute();
 }
@@ -3356,29 +3329,17 @@ void CCmdRemoveFromItemListBuilder::UnExecute()
 // CCmdRemoveItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSDomainComponent* pmc) : CCommand("Remove selection")
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(IHasItemList* pmc) : CCommand("Remove selection")
 {
 	m_pmc = pmc;
-	m_psi = nullptr;
 	m_ppi = nullptr;
 	m_pitem = nullptr;
 	m_index = -1;
 }
-
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSSoloInterface* pmc) : CCommand("Remove selection")
-{
-	m_pmc = nullptr;
-	m_psi = pmc;
-	m_ppi = nullptr;
-	m_pitem = nullptr;
-	m_index = -1;
-}
-
 
 CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n) : CCommand("Remove selection")
 {
 	m_pmc = nullptr;
-	m_psi = nullptr;
 	m_ppi = pmc;
 	m_pitem = nullptr;
 	m_index = n;
@@ -3396,11 +3357,6 @@ void CCmdRemoveItemListBuilder::Execute()
 		m_pitem = m_pmc->GetItemList();
 		m_pmc->SetItemList(nullptr);
 	}
-	if (m_psi)
-	{
-		m_pitem = m_psi->GetItemList();
-		m_psi->SetItemList(nullptr);
-	}
 	if (m_ppi)
 	{
 		m_pitem = m_ppi->GetItemList(m_index);
@@ -3411,7 +3367,6 @@ void CCmdRemoveItemListBuilder::Execute()
 void CCmdRemoveItemListBuilder::UnExecute()
 {
 	if (m_pmc) m_pmc->SetItemList(m_pitem);
-	if (m_psi) m_psi->SetItemList(m_pitem);
 	if (m_ppi) m_ppi->SetItemList(m_index, m_pitem);
 	m_pitem = nullptr;
 }

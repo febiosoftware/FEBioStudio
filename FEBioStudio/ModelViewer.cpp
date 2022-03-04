@@ -312,15 +312,11 @@ void CModelViewer::on_selectButton_clicked()
 		GObject* pm = dynamic_cast<GObject*>(po);
 		if (pm->IsVisible() && !pm->IsSelected()) pcmd = new CCmdSelectObject(pdoc->GetGModel(), pm, false);
 	}
-	else if (dynamic_cast<FSDomainComponent*>(po))
+	else if (dynamic_cast<IHasItemList*>(po))
 	{
-		FSDomainComponent* pbc = dynamic_cast<FSDomainComponent*>(po);
-		if (dynamic_cast<FSConstBodyForce*>(pbc) == 0)
-		{
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-			else SelectItemList(pitem);
-		}
+		IHasItemList* pil = dynamic_cast<IHasItemList*>(po);
+		FEItemListBuilder* pitem = pil->GetItemList();
+		if (pitem) SelectItemList(pitem);
 	}
 	else if (dynamic_cast<FEItemListBuilder*>(po))
 	{
@@ -354,13 +350,6 @@ void CModelViewer::on_selectButton_clicked()
 		GModel& fem = pdoc->GetFSModel()->GetModel();
 		int n = fem.FindDiscreteObjectIndex(ps);
 		pcmd = new CCmdSelectDiscrete(&fem, &n, 1, false);
-	}
-	else if (dynamic_cast<FSSoloInterface*>(po))
-	{
-		FSSoloInterface* pci = dynamic_cast<FSSoloInterface*>(po);
-		FEItemListBuilder* pl = pci->GetItemList();
-		if (pl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(pl);
 	}
 	else if (dynamic_cast<FSPairedInterface*>(po))
 	{

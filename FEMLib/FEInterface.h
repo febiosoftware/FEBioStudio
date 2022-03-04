@@ -3,6 +3,7 @@
 #include "MeshTools/FEItemListBuilder.h"
 #include "MeshTools/GMaterial.h"
 #include <list>
+#include "IHasItemList.h"
 //using namespace std;
 
 using std::list;
@@ -28,20 +29,25 @@ protected:
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that only require one
 //! surface definition (e.g. rigid interface, rigid wall interface)
-class FSSoloInterface : public FSInterface
+class FSSoloInterface : public FSInterface, public IHasItemList
 {
 public:
 	FSSoloInterface(int ntype, FSModel* ps, int nstep);
 	~FSSoloInterface();
 
-	FEItemListBuilder* GetItemList() { return m_pItem; }
-	void SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
-
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
+public: // IHasItemList
+	FEItemListBuilder* GetItemList() override;
+	void SetItemList(FEItemListBuilder* pi) override;
+
+	unsigned int GetMeshItemType() const override;
+	void SetMeshItemType(unsigned int meshItem) override;
+
 protected:
 	FEItemListBuilder*	m_pItem;	// list of items that define interface
+	unsigned int		m_itemType;
 };
 
 //-----------------------------------------------------------------------------

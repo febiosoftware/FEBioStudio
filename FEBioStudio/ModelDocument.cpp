@@ -782,17 +782,8 @@ void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
 	// create the selection command
 	FEItemListBuilder* pl = 0;
 
-	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(po);
-	if (psi) pl = psi->GetItemList();
-
-	FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(po);
-	if (pmc) pl = pmc->GetItemList();
-
-	FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(po);
-	if (pdg) pl = pdg->GetItemList();
-
-	FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(po);
-	if (pms) pl = pms->GetItemList();
+	IHasItemList* phs = dynamic_cast<IHasItemList*>(po);
+	if (phs) pl = phs->GetItemList();
 
 	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(po);
 	if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());

@@ -12,6 +12,9 @@ FSMeshDataGenerator::FSMeshDataGenerator(FSModel* fem, int ntype) : FSModelCompo
 	m_itemType = 0;
 }
 
+FEItemListBuilder* FSMeshDataGenerator::GetItemList() { return m_pItem; }
+void FSMeshDataGenerator::SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
+
 unsigned int FSMeshDataGenerator::GetMeshItemType() const
 {
 	return m_itemType;

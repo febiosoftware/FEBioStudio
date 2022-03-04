@@ -1340,33 +1340,18 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class CCmdSetModelComponentItemList : public CCommand
+class CCmdSetItemList : public CCommand
 {
 public:
-	CCmdSetModelComponentItemList(FSDomainComponent* pbc, FEItemListBuilder* pl);
-	~CCmdSetModelComponentItemList();
+	CCmdSetItemList(IHasItemList* pbc, FEItemListBuilder* pl);
+	~CCmdSetItemList();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FSDomainComponent*	m_pbc;
+	IHasItemList*		m_pbc;
 	FEItemListBuilder*	m_pl;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdUnassignBC : public CCommand
-{
-public:
-	CCmdUnassignBC(FSBoundaryCondition* pbc);
-	~CCmdUnassignBC();
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FSBoundaryCondition*	m_pbc;
-	FEItemListBuilder*		m_pl;
 };
 
 //-----------------------------------------------------------------------------
@@ -1403,8 +1388,7 @@ protected:
 class CCmdRemoveItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveItemListBuilder(FSDomainComponent* pmc);
-	CCmdRemoveItemListBuilder(FSSoloInterface* pmc);
+	CCmdRemoveItemListBuilder(IHasItemList* pmc);
 	CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n);
 	~CCmdRemoveItemListBuilder();
 
@@ -1413,9 +1397,8 @@ public:
 
 private:
 	FEItemListBuilder*	m_pitem;
-	FSSoloInterface*	m_psi;
+	IHasItemList*		m_pmc;
 	FSPairedInterface*	m_ppi;
-	FSDomainComponent*	m_pmc;
 	int	m_index;
 };
 
