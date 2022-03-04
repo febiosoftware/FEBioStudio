@@ -147,12 +147,46 @@ private:
 	static int	m_ncount;
 };
 
+class GPart;
+
+class GPartSection : public FSObject
+{
+public:
+	GPartSection(GPart*);
+
+	const GPart* GetPart() const;
+	GPart* GetPart();
+
+	virtual GPartSection* Copy() = 0;
+
+private:
+	GPart* m_part;
+};
+
+class GSolidSection : public GPartSection
+{
+public:
+	GSolidSection(GPart* pg);
+	GSolidSection* Copy() override;
+};
+
+class GShellSection : public GPartSection
+{
+public:
+	GShellSection(GPart* pg);
+	GShellSection* Copy() override;
+
+	void SetShellThickness(double h);
+};
+
 //-----------------------------------------------------------------------------
 // Defines a part of the object
 class GPart : public GItem_T<GPart>
 {
 public:
 	GPart();
+	~GPart();
+
 	GPart(GBaseObject* po);
 
 	GPart(const GPart& p);
@@ -170,9 +204,13 @@ public:
 
     void setAugTol(double d);
     double augTol() const;
+
+	void SetSection(GPartSection* section);
+	GPartSection* GetSection() const;
     
 protected:
 	int		m_matid;
+	GPartSection* m_section;
 };
 
 //-----------------------------------------------------------------------------

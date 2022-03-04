@@ -417,29 +417,79 @@ bool GFace::HasEdge(int nid)
 }
 
 //=============================================================================
+GPartSection::GPartSection(GPart* part) : m_part(part)
+{
+	if (part) SetParent(part);
+}
+
+const GPart* GPartSection::GetPart() const { return m_part; }
+GPart* GPartSection::GetPart() { return m_part; }
+
+GSolidSection::GSolidSection(GPart* pg) : GPartSection(pg)
+{
+	AddBoolParam(false, "laugon", "incompressibility constraint");
+	AddDoubleParam(0.01, "atol", "incompressibility tolerance");
+}
+
+GSolidSection* GSolidSection::Copy()
+{
+	GSolidSection* s = new GSolidSection(nullptr);
+	s->CopyParams(*this);
+	return s;
+}
+
+GShellSection::GShellSection(GPart* pg) : GPartSection(pg)
+{
+	AddDoubleParam(0.0, "shell_thickness", "shell thickness");
+	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
+	AddBoolParam(false, "laugon", "incompressibility constraint");
+	AddDoubleParam(0.01, "atol", "incompressibility tolerance");
+}
+
+void GShellSection::SetShellThickness(double h)
+{
+	SetFloatValue(0, h);
+}
+
+GShellSection* GShellSection::Copy()
+{
+	GShellSection* s = new GShellSection(nullptr);
+	s->CopyParams(*this);
+	return s;
+}
+
+//=============================================================================
 // GPart
 //-----------------------------------------------------------------------------
 GPart::GPart() : GItem_T<GPart>(0) 
 { 
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-    AddBoolParam(false, "laugon", "incompressibility constraint");
-    AddDoubleParam(0.01, "atol", "incompressibility tolerance");
 	m_matid = -1;
+	m_section = nullptr;
 }
 GPart::GPart(GBaseObject* po) : GItem_T<GPart>(po) 
 { 
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-    AddBoolParam(false, "laugon", "incompressibility constraint");
-    AddDoubleParam(0.01, "atol", "incompressibility tolerance");
 	m_matid = -1;
+	m_section = nullptr;
 }
+
+GPart::~GPart()
+{
+	delete m_section;
+}
+
+void GPart::SetSection(GPartSection* section) 
+{ 
+	if (m_section == section) return;
+	delete m_section;
+	m_section = section; 
+	section->SetParent(this);
+}
+
+GPartSection* GPart::GetSection() const { return m_section; }
 
 GPart::GPart(const GPart& p)
 {
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-    AddBoolParam(false, "laugon", "incompressibility constraint");
-    AddDoubleParam(0.01, "atol", "incompressibility tolerance");
-	CopyParams(p);
+	if (p.GetSection()) m_section = p.GetSection()->Copy();
 
 	m_matid = p.m_matid;
 

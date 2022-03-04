@@ -508,7 +508,7 @@ void GBaseObject::AddSurface(GFace* f)
 }
 
 //-----------------------------------------------------------------------------
-void GBaseObject::AddPart()
+GPart* GBaseObject::AddPart()
 {
 	GPart* p = new GPart(this);
 	p->SetID(GPart::CreateUniqueID());
@@ -518,6 +518,21 @@ void GBaseObject::AddPart()
 	sprintf(szname, "Part%d", p->GetID());
 	p->SetName(szname);
 	m_Part.push_back(p);
+	return p;
+}
+
+GPart* GBaseObject::AddSolidPart()
+{
+	GPart* p = AddPart();
+	p->SetSection(new GSolidSection(p));
+	return p;
+}
+
+GPart* GBaseObject::AddShellPart()
+{
+	GPart* p = AddPart();
+	p->SetSection(new GShellSection(p));
+	return p;
 }
 
 //-----------------------------------------------------------------------------

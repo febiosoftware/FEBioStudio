@@ -828,8 +828,11 @@ void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(pg)
+CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(0)
 {
+	GPartSection* section = pg->GetSection();
+	if (section) BuildParamList(section);
+
 	m_fem = &fem;
 	m_pg = pg;
 	int mid = pg->GetMaterialID();
@@ -846,13 +849,22 @@ CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(pg)
 
 QVariant CPartProperties::GetPropertyValue(int i)
 {
-	if (i < m_pg->Parameters() - 1) return CObjectProps::GetPropertyValue(i);
+	GPartSection* section = m_pg->GetSection();
+	if (section && (i < section->Parameters()))
+	{
+		return CObjectProps::GetPropertyValue(i);
+	}
 	return m_lid;
 }
 
 void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i < m_pg->Parameters() - 1) return CObjectProps::SetPropertyValue(i, v);
+	GPartSection* section = m_pg->GetSection();
+	if (section && (i < section->Parameters() - 1))
+	{
+		CObjectProps::SetPropertyValue(i, v);
+		return;
+	}
 	m_lid = v.toInt();
 	if (m_lid >= 0)
 	{

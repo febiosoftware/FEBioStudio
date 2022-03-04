@@ -89,7 +89,7 @@ void GPatch::Create()
 
 	// build the parts
 	assert(m_Part.empty());
-	AddPart();
+	AddShellPart();
 
 	// build the faces
 	assert(m_Face.empty());

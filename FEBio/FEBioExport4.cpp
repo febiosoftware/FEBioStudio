@@ -208,7 +208,7 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 
 	// see if we need to add a MeshData section
 	m_bdata = false;
-	if (model.ShellElements() > 0) m_bdata = true;	// for shell thicknesses
+//	if (model.ShellElements() > 0) m_bdata = true;	// for shell thicknesses
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		FSTransverselyIsotropic* pmat = dynamic_cast<FSTransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
@@ -957,11 +957,12 @@ void FEBioExport4::WriteMeshDomainsSection()
 			el.add_attribute("name", dom->m_name);
 			el.add_attribute("mat", dom->m_matName);
 
-			if (pg && pg->Parameters())
+			GPartSection* section = pg->GetSection();
+			if (section && section->Parameters())
 			{
 				m_xml.add_branch(el);
 				{
-					WriteParamList(*pg);
+					WriteParamList(*section);
 				}
 				m_xml.close_branch();
 			}
@@ -1816,7 +1817,9 @@ void FEBioExport4::WriteMeshDataSection()
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteElementDataSection()
 {
-	WriteMeshDataShellThickness();
+	// shell thickness is now stored as a parameter
+	// of the shell section.
+//	WriteMeshDataShellThickness();
 
 	WriteMeshDataMaterialFibers();
 
