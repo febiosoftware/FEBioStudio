@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <PostGL/GLPlot.h>
 #include <MeshLib/FENodeFaceList.h>
+#include <MeshTools/GModel.h>
 
 class CModelContext
 {
@@ -770,6 +771,95 @@ void CModelDocument::HideUnselected()
 			}
 			DoCommand(new CCmdHideFaces(pm, faceList));
 		}
+	}
+}
+
+void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
+{
+	GModel* mdl = GetGModel();
+	FSModel* ps = GetFSModel();
+
+	// create the selection command
+	FEItemListBuilder* pl = 0;
+
+	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(po);
+	if (psi) pl = psi->GetItemList();
+
+	FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(po);
+	if (pmc) pl = pmc->GetItemList();
+
+	FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(po);
+	if (pdg) pl = pdg->GetItemList();
+
+	FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(po);
+	if (pms) pl = pms->GetItemList();
+
+	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(po);
+	if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
+
+	GGroup* pg = dynamic_cast<GGroup*>(po);
+	if (pg) pl = pg;
+
+	FSGroup* pf = dynamic_cast<FSGroup*>(po);
+	if (pf) pl = pf;
+
+	CCommand* pcmd = 0;
+	if (pl)
+	{
+		switch (pl->Type())
+		{
+		case GO_NODE: SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, l, false); break;
+		case GO_EDGE: SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, l, false); break;
+		case GO_FACE: SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, l, false); break;
+		case GO_PART: SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, l, false); break;
+		default:
+			if (dynamic_cast<FSGroup*>(pl))
+			{
+				SetSelectionMode(SELECT_OBJECT);
+				FSGroup* pg = dynamic_cast<FSGroup*>(pl);
+				FSMesh* pm = dynamic_cast<FSMesh*>(pg->GetMesh());
+				assert(pm);
+				switch (pg->Type())
+				{
+				case FE_NODESET: SetItemMode(ITEM_NODE); pcmd = new CCmdSelectFENodes(pm, l, false); break;
+				case FE_EDGESET: SetItemMode(ITEM_EDGE); pcmd = new CCmdSelectFEEdges(pm, l, false); break;
+				case FE_SURFACE: SetItemMode(ITEM_FACE); pcmd = new CCmdSelectFaces(pm, l, false); break;
+				case FE_PART   : SetItemMode(ITEM_ELEM); pcmd = new CCmdSelectElements(pm, l, false); break;
+				default:
+					assert(false);
+				}
+
+				// make sure the parent object is selected
+				GObject* po = pm->GetGObject();
+				assert(po);
+				if (po && !po->IsSelected())
+				{
+					CCmdGroup* pgc = new CCmdGroup("Select");
+					pgc->AddCommand(new CCmdSelectObject(mdl, po, false));
+					pgc->AddCommand(pcmd);
+					pcmd = pgc;
+				}
+			}
+		}
+	}
+	else if (dynamic_cast<GMaterial*>(po))
+	{
+		SetSelectionMode(SELECT_PART);
+		pcmd = new CCmdSelectPart(mdl, l, false);
+	}
+	else if (dynamic_cast<GDiscreteElementSet*>(po))
+	{
+		SetSelectionMode(SELECT_DISCRETE);
+		GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po);
+		pcmd = new CCmdSelectDiscreteElements(ds, l, false);
+	}
+
+	// execute command
+	if (pcmd)
+	{
+		DoCommand(pcmd);
+		m_wnd->UpdateToolbar();
+		m_wnd->Update();
 	}
 }
 

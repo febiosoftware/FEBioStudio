@@ -1217,7 +1217,7 @@ public:
 	FSMeshSelection* m_pms;
 
 public:
-	void setup(QWidget* w)
+	void setup(CMainWindow* wnd, QWidget* w)
 	{
 		m_pf = nullptr;
 		m_pms = nullptr;
@@ -1227,7 +1227,7 @@ public:
 		stack = new QStackedWidget;
 		stack->addWidget(plt  = new CCurveEditWidget);
 		stack->addWidget(math = new CMathEditWidget);
-		stack->addWidget(sel = new CMeshSelectionBox);
+		stack->addWidget(sel = new CMeshSelectionBox(wnd));
 
 		QVBoxLayout* l = new QVBoxLayout;
 		l->setContentsMargins(0, 0, 0, 0);
@@ -1280,9 +1280,9 @@ public:
 	}
 };
 
-FEClassEdit::FEClassEdit(QWidget* parent) : QWidget(parent), ui(new FEClassEditUI)
+FEClassEdit::FEClassEdit(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new FEClassEditUI)
 {
-	ui->setup(this);
+	ui->setup(wnd, this);
 }
 
 void FEClassEdit::SetFEClass(FSCoreBase* pc, FSModel* fem)

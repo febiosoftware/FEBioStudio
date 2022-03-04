@@ -34,6 +34,7 @@ class FSModel;
 class FEClassPropsModel;
 class Param;
 class FSProperty;
+class CMainWindow;
 
 class FEClassPropsDelegate : public QStyledItemDelegate
 {
@@ -82,7 +83,7 @@ class FEClassEdit : public QWidget
 	Q_OBJECT
 
 public:
-	FEClassEdit(QWidget* parent = nullptr);
+	FEClassEdit(CMainWindow* wnd, QWidget* parent = nullptr);
 
 	void SetFEClass(FSCoreBase* pc, FSModel* fem);
 

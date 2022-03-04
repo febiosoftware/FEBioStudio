@@ -312,14 +312,14 @@ public:
 	bool		m_showImageTools;
 
 public:
-	void setupUi(QWidget* parent)
+	void setupUi(::CMainWindow* wnd, QWidget* parent)
 	{
 		m_showImageTools = false;
 
 		props = new ::CPropertyListView; props->setObjectName("props");
 		form  = new ::CPropertyListForm; form->setObjectName("form");
 //		mat   = new CMaterialPropsView; mat->setObjectName("mat");
-		fec   = new FEClassEdit; fec->setObjectName("fec");
+		fec   = new FEClassEdit(wnd); fec->setObjectName("fec");
 		plt   = new CCurveEditWidget; plt->setObjectName("plt");
 		math  = new CMathEditWidget; math->setObjectName("math");
 		math->SetOrdinate("t");
@@ -581,7 +581,7 @@ CModelPropsPanel::CModelPropsPanel(CMainWindow* wnd, QWidget* parent) : QWidget(
 {
 	m_currentObject = 0;
 	m_isUpdating = false;
-	ui->setupUi(this);
+	ui->setupUi(wnd, this);
 }
 
 void CModelPropsPanel::Update()
@@ -1236,6 +1236,29 @@ void CModelPropsPanel::subSelection(int n)
 		return;
 	}
 
+	FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
+	if (pdg)
+	{
+		FEItemListBuilder* pl = pdg->GetItemList();
+		if (pl)
+		{
+			// create the item list builder
+			FEItemListBuilder* pg = ps->CreateItemList();
+
+			// subtract from the current list
+			if (pg->Type() == pl->Type())
+			{
+				list<int> l = pg->CopyItems();
+				pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
+			}
+
+			SetSelection(0, pdg->GetItemList());
+			delete pg;
+			emit selectionChanged();
+		}
+		return;
+	}
+
 	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pi)
 	{
@@ -1367,6 +1390,22 @@ void CModelPropsPanel::delSelection(int n)
 			emit selectionChanged();
 		}
 	}
+	else if (dynamic_cast<FSMeshDataGenerator*>(m_currentObject))
+	{
+		FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
+		pl = pdg->GetItemList();
+		if (pl)
+		{
+			CSelectionBox* sel = ui->selectionPanel(n);
+			list<int> items;
+			sel->getSelectedItems(items);
+
+			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
+
+			SetSelection(n, pl);
+			emit selectionChanged();
+		}
+	}
 	else
 	{
 		FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
@@ -1448,6 +1487,18 @@ void CModelPropsPanel::clearSelection(int n)
 			emit selectionChanged();
 		}
 	}
+	else if (dynamic_cast<FSMeshDataGenerator*>(m_currentObject))
+	{
+		FSMeshDataGenerator* pdg = dynamic_cast<FSMeshDataGenerator*>(m_currentObject);
+		pl = pdg->GetItemList();
+		if (pl)
+		{
+			pdg->SetItemList(nullptr);
+			delete pl;
+			SetSelection(n, nullptr);
+			emit selectionChanged();
+		}
+	}
 	else if (dynamic_cast<FSSoloInterface*>(m_currentObject))
 	{
 		FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
@@ -1504,14 +1555,12 @@ void CModelPropsPanel::on_select2_nameChanged(const QString& t)
 void CModelPropsPanel::selSelection(int n)
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	GModel* mdl = pdoc->GetGModel();
-	FSModel* ps = pdoc->GetFSModel();
 
 	assert(m_currentObject);
 	if (m_currentObject == 0) return;
 
 	CSelectionBox* sel = ui->selectionPanel(n);
-
+	
 	// get the selection list
 	vector<int> l;
 	sel->getSelectedItems(l);
@@ -1521,82 +1570,9 @@ void CModelPropsPanel::selSelection(int n)
 		return;
 	}
 
-	// create the selection command
-	FEItemListBuilder* pl = 0;
-
-	FSSoloInterface* psi = dynamic_cast<FSSoloInterface*>(m_currentObject);
-	if (psi) pl = psi->GetItemList();
-
-	FSDomainComponent* pmc = dynamic_cast<FSDomainComponent*>(m_currentObject);
-	if (pmc) pl = pmc->GetItemList();
-
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pi) pl = (n==0? pi->GetPrimarySurface() : pi->GetSecondarySurface());
-
-	GGroup* pg = dynamic_cast<GGroup*>(m_currentObject);
-	if (pg) pl = pg;
-
-	FSGroup* pf = dynamic_cast<FSGroup*>(m_currentObject);
-	if (pf) pl = pf;
-
-	CCommand* pcmd = 0;
-	if (pl)
-	{
-		switch (pl->Type())
-		{
-		case GO_NODE: pdoc->SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, &l[0], (int)l.size(), false); break;
-		case GO_EDGE: pdoc->SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, &l[0], (int)l.size(), false); break;
-		case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, &l[0], (int)l.size(), false); break;
-		case GO_PART: pdoc->SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, &l[0], (int)l.size(), false); break;
-		default:
-			if (dynamic_cast<FSGroup*>(pl))
-			{
-				pdoc->SetSelectionMode(SELECT_OBJECT);
-				FSGroup* pg = dynamic_cast<FSGroup*>(pl);
-				FSMesh* pm = dynamic_cast<FSMesh*>(pg->GetMesh());
-				assert(pm);
-				switch (pg->Type())
-				{
-				case FE_NODESET: pdoc->SetItemMode(ITEM_NODE); pcmd = new CCmdSelectFENodes(pm, &l[0], (int)l.size(), false); break;
-				case FE_EDGESET: pdoc->SetItemMode(ITEM_EDGE); pcmd = new CCmdSelectFEEdges(pm, &l[0], (int)l.size(), false); break;
-				case FE_SURFACE: pdoc->SetItemMode(ITEM_FACE); pcmd = new CCmdSelectFaces(pm, &l[0], (int)l.size(), false); break;
-				case FE_PART   : pdoc->SetItemMode(ITEM_ELEM); pcmd = new CCmdSelectElements(pm, &l[0], (int)l.size(), false); break;
-				default:
-					assert(false);
-				}
-
-				// make sure the parent object is selected
-				GObject* po = pm->GetGObject();
-				assert(po);
-				if (po && !po->IsSelected())
-				{
-					CCmdGroup* pgc = new CCmdGroup("Select");
-					pgc->AddCommand(new CCmdSelectObject(mdl, po, false));
-					pgc->AddCommand(pcmd);
-					pcmd = pgc;
-				}
-			}
-		}
-	}
-	else if (dynamic_cast<GMaterial*>(m_currentObject))
-	{
-		pdoc->SetSelectionMode(SELECT_PART);
-		pcmd = new CCmdSelectPart(mdl, &l[0], (int)l.size(), false);
-	}
-	else if (dynamic_cast<GDiscreteElementSet*>(m_currentObject))
-	{
-		pdoc->SetSelectionMode(SELECT_DISCRETE);
-		GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(m_currentObject);
-		pcmd = new CCmdSelectDiscreteElements(ds, l, false);
-	}
-
-	// execute command
-	if (pcmd)
-	{
-		pdoc->DoCommand(pcmd);
-		m_wnd->UpdateToolbar();
-		m_wnd->Update();
-	}
+	pdoc->SelectItems(m_currentObject, l, n);
+	m_wnd->UpdateToolbar();
+	m_wnd->Update();
 }
 
 void CModelPropsPanel::on_object_nameChanged(const QString& txt)

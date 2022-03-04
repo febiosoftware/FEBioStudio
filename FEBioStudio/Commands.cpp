@@ -1489,7 +1489,7 @@ CCmdSelectElements::CCmdSelectElements(FSMesh* pm, int* pe, int N, bool badd) : 
 	}
 }
 
-CCmdSelectElements::CCmdSelectElements(FSMesh* pm, vector<int>& el, bool badd) : CCommand("Select Elements")
+CCmdSelectElements::CCmdSelectElements(FSMesh* pm, const vector<int>& el, bool badd) : CCommand("Select Elements")
 {
 	int i;
 	int N = (int)el.size();
@@ -1641,7 +1641,7 @@ CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, int* pf, int N, bool badd) : CC
 	}
 }
 
-CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, vector<int>& fl, bool badd) : CCommand("Select Faces")
+CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, const vector<int>& fl, bool badd) : CCommand("Select Faces")
 {
 	int i;
 	int N = (int)fl.size();
@@ -1782,7 +1782,7 @@ CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, int* pe, int N, bool badd) 
 	}
 }
 
-CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, vector<int>& el, bool badd) : CCommand("Select Edges")
+CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, const vector<int>& el, bool badd) : CCommand("Select Edges")
 {
 	int N = (int)el.size();
 
@@ -1925,7 +1925,7 @@ CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, int* pn, int N, bool badd) 
 	}
 }
 
-CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, vector<int>& nl, bool badd) : CCommand("Select Nodes")
+CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, const vector<int>& nl, bool badd) : CCommand("Select Nodes")
 {
 	int i;
 	int N = (int)nl.size();

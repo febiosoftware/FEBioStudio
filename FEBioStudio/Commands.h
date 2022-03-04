@@ -733,7 +733,7 @@ class CCmdSelectElements : public CCommand
 {
 public:
 	CCmdSelectElements(FSMesh* pm, int* pe, int N, bool badd);
-	CCmdSelectElements(FSMesh* pm, vector<int>& el, bool badd);
+	CCmdSelectElements(FSMesh* pm, const vector<int>& el, bool badd);
 	~CCmdSelectElements() { delete[] m_ptag; delete[] m_pel; }
 
 	void Execute();
@@ -773,7 +773,7 @@ class CCmdSelectFaces : public CCommand
 {
 public:
 	CCmdSelectFaces(FSMeshBase* pm, int* pf, int N, bool badd);
-	CCmdSelectFaces(FSMeshBase* pm, vector<int>& fl, bool badd);
+	CCmdSelectFaces(FSMeshBase* pm, const vector<int>& fl, bool badd);
 	~CCmdSelectFaces() { delete[] m_ptag; delete[] m_pface; }
 
 	void Execute();
@@ -813,7 +813,7 @@ class CCmdSelectFEEdges : public CCommand
 {
 public:
 	CCmdSelectFEEdges(FSLineMesh* pm, int* pe, int N, bool badd);
-	CCmdSelectFEEdges(FSLineMesh* pm, vector<int>& el, bool badd);
+	CCmdSelectFEEdges(FSLineMesh* pm, const vector<int>& el, bool badd);
 	~CCmdSelectFEEdges() { delete[] m_ptag; delete[] m_pedge; }
 
 	void Execute();
@@ -853,7 +853,7 @@ class CCmdSelectFENodes : public CCommand
 {
 public:
 	CCmdSelectFENodes(FSLineMesh* pm, int* pn, int N, bool badd);
-	CCmdSelectFENodes(FSLineMesh* pm, vector<int>& nl, bool badd);
+	CCmdSelectFENodes(FSLineMesh* pm, const vector<int>& nl, bool badd);
 	~CCmdSelectFENodes() { delete[] m_ptag; delete[] m_pn; }
 
 	void Execute();
