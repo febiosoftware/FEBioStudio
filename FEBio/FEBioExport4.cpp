@@ -262,30 +262,18 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		for (int j = 0; j < pstep->Loads(); ++j)
 		{
 			// this is only for nodal loads
-			FSNodalDOFLoad* pl = dynamic_cast<FSNodalDOFLoad*>(pstep->Load(j));
-			if (pl && pl->IsActive())
+			FSLoad* pload = pstep->Load(j);
+			if (pload && pload->IsActive())
 			{
-				FEItemListBuilder* ps = pl->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pl);
+				FEItemListBuilder* ps = pload->GetItemList();
+				if (ps == 0) throw InvalidItemListBuilder(pload);
 
 				string name = ps->GetName();
-				if (name.empty()) name = pl->GetName();
+				if (name.empty()) name = pload->GetName();
 
 				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
 				else if (ps->Type() == GO_PART) AddElemSet(name, ps);
 				else AddNodeSet(name, ps);
-			}
-
-			FSBodyLoad* pbl = dynamic_cast<FSBodyLoad*>(pstep->Load(j));
-			if (pbl && pbl->IsActive())
-			{
-				FEItemListBuilder* ps = pbl->GetItemList();
-				if (ps)
-				{
-					string name = ps->GetName();
-					if (name.empty()) name = pbl->GetName();
-					if (ps->Type() == GO_PART) AddElemSet(name, ps);
-				}
 			}
 		}
 		for (int j = 0; j < pstep->ICs(); ++j)
@@ -306,7 +294,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		}
 		for (int j = 0; j < pstep->Interfaces(); ++j)
 		{
-			FSRigidInterface* pri = dynamic_cast<FSRigidInterface*>(pstep->Interface(j));
+			FSSoloInterface* pri = dynamic_cast<FSSoloInterface*>(pstep->Interface(j));
 			if (pri && pri->IsActive())
 			{
 				FEItemListBuilder* ps = pri->GetItemList();
@@ -318,101 +306,33 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
 				else AddNodeSet(name, ps);
 			}
-		}
-	}
 
-	// get the named surfaces (loads)
-	for (int i = 0; i < fem.Steps(); ++i)
-	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j < pstep->Loads(); ++j)
-		{
-			FSLoad* pl = pstep->Load(j);
-			if (pl->IsActive())
+			FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(pstep->Interface(j));
+			if (pci && pci->IsActive())
 			{
-				// we need to exclude nodal loads and body loads
-				if (dynamic_cast<FSNodalDOFLoad*>(pl)) pl = 0;
-				if (dynamic_cast<FSBodyLoad*>(pl)) pl = 0;
-				if (pl && pl->IsActive())
+				FEItemListBuilder* pss = pci->GetPrimarySurface();
+				if (pss == 0) throw InvalidItemListBuilder(pci);
+
+				string name = pss->GetName();
+				if (name.empty())
 				{
-					FEItemListBuilder* ps = pl->GetItemList();
-					if (ps == 0) throw InvalidItemListBuilder(pl);
-
-					string name = ps->GetName();
-					if (name.empty()) name = pl->GetName();
-
-					AddSurface(name, ps);
+					stringstream ss; ss << pci->GetName() << "_primary";
+					name = ss.str();
 				}
+				AddSurface(name, pss);
+
+				FEItemListBuilder* pms = pci->GetSecondarySurface();
+				if (pms == 0) throw InvalidItemListBuilder(pci);
+
+				name = pms->GetName();
+				if (name.empty())
+				{
+					stringstream ss; ss << pci->GetName() << "_secondary";
+					name = ss.str();
+				}
+				AddSurface(name, pms);
 			}
 		}
-	}
-
-	// get the named surfaces (paired interfaces)
-	char szbuf[256] = { 0 };
-	for (int i = 0; i < fem.Steps(); ++i)
-	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j < pstep->Interfaces(); ++j)
-		{
-			FSInterface* pj = pstep->Interface(j);
-			if (pj->IsActive())
-			{
-				FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(pj);
-
-				// Note: Don't export surfaces of tied-spring interfaces
-				if (dynamic_cast<FSSpringTiedInterface*>(pi)) pi = 0;
-
-				if (pi && pi->IsActive())
-				{
-					FEItemListBuilder* pss = pi->GetPrimarySurface();
-					if (pss == 0) throw InvalidItemListBuilder(pi);
-
-					string name = pss->GetName();
-					const char* szname = name.c_str();
-					if ((szname == 0) || (szname[0] == 0))
-					{
-						sprintf(szbuf, "%s_primary", pi->GetName().c_str());
-						szname = szbuf;
-					}
-					AddSurface(szname, pss);
-
-					FEItemListBuilder* pms = pi->GetSecondarySurface();
-					if (pms == 0) throw InvalidItemListBuilder(pi);
-
-					name = pms->GetName();
-					szname = name.c_str();
-					if ((szname == 0) || (szname[0] == 0))
-					{
-						sprintf(szbuf, "%s_secondary", pi->GetName().c_str());
-						szname = szbuf;
-					}
-					AddSurface(szname, pms);
-				}
-
-				FSRigidWallInterface* pw = dynamic_cast<FSRigidWallInterface*>(pj);
-				if (pw && pw->IsActive())
-				{
-					FEItemListBuilder* pitem = pw->GetItemList();
-					if (pitem == 0) throw InvalidItemListBuilder(pw);
-
-					string name = pitem->GetName();
-					if (name.empty()) name = pw->GetName();
-					AddSurface(name, pitem);
-				}
-
-				FSRigidSphereInterface* prs = dynamic_cast<FSRigidSphereInterface*>(pj);
-				if (prs && prs->IsActive())
-				{
-					FEItemListBuilder* pitem = prs->GetItemList();
-					if (pitem == 0) throw InvalidItemListBuilder(prs);
-
-					string name = pitem->GetName();
-					if (name.empty()) name = prs->GetName();
-					AddSurface(name, pitem);
-				}
-			}
-		}
-
 		for (int j = 0; j < pstep->Constraints(); ++j)
 		{
 			FSModelConstraint* pj = pstep->Constraint(j);
@@ -606,30 +526,6 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 			}
 		}
 	}
-}
-
-//-----------------------------------------------------------------------------
-GPartList* FEBioExport4::BuildPartList(GMaterial* mat)
-{
-	// get the document
-	FSModel& fem = m_prj.GetFSModel();
-	GModel& mdl = fem.GetModel();
-
-	GPartList* pl = new GPartList(&fem);
-
-	// set the items
-	int N = mdl.Parts();
-	for (int i = 0; i < mdl.Parts(); ++i)
-	{
-		GPart* pg = mdl.Part(i);
-		GMaterial* pgm = fem.GetMaterialFromID(pg->GetMaterialID());
-		if (pgm && (pgm->GetID() == mat->GetID()))
-		{
-			pl->add(pg->GetID());
-		}
-	}
-
-	return pl;
 }
 
 //-----------------------------------------------------------------------------

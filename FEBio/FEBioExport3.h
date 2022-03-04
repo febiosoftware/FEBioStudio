@@ -217,8 +217,6 @@ protected:
 	bool PrepareExport(FSProject& prj);
 	void BuildItemLists(FSProject& prj);
 
-	GPartList* BuildPartList(GMaterial* mat);
-
 public:
 	void WriteModuleSection(FSStep* pstep);
 	void WriteControlSection(FSStep& s);

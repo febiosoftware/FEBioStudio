@@ -212,8 +212,6 @@ protected:
 	bool PrepareExport(FSProject& prj);
 	void BuildItemLists(FSProject& prj);
 
-	GPartList* BuildPartList(GMaterial* mat);
-
 	void WriteModuleSection(FSProject& prj);
 	void WriteControlSection(FSStep& s);
 	void WriteMaterialSection();

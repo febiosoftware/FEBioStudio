@@ -720,30 +720,6 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-GPartList* FEBioExport3::BuildPartList(GMaterial* mat)
-{
-	// get the document
-	FSModel& fem = m_prj.GetFSModel();
-	GModel& mdl = fem.GetModel();
-
-	GPartList* pl = new GPartList(&fem);
-
-	// set the items
-	int N = mdl.Parts();
-	for (int i = 0; i<mdl.Parts(); ++i)
-	{
-		GPart* pg = mdl.Part(i);
-		GMaterial* pgm = fem.GetMaterialFromID(pg->GetMaterialID());
-		if (pgm && (pgm->GetID() == mat->GetID()))
-		{
-			pl->add(pg->GetID());
-		}
-	}
-
-	return pl;
-}
-
-//-----------------------------------------------------------------------------
 bool FEBioExport3::Write(const char* szfile)
 {
 	// get the project and model
