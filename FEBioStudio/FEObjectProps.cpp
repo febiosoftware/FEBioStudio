@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
+#include <FEMLib/FEMKernel.h>
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
@@ -829,7 +830,7 @@ void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(0)
+CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : FEObjectProps(0)
 {
 	GPartSection* section = pg->GetSection();
 	if (section)
@@ -865,6 +866,29 @@ CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(0)
 	addProperty("material", CProperty::Enum)->setEnumValues(mats);
 }
 
+QStringList CPartProperties::GetEnumValues(const char* ch)
+{
+	if (strcmp(ch, "$(solid_domain)") == 0)
+	{
+		vector<FEClassFactory*> l = FEMKernel::FindAllClasses(MODULE_ALL, FESOLIDDOMAIN_ID);
+		QStringList sl;
+		sl << "default";
+		for (int i = 0; i < l.size(); ++i) sl << l[i]->GetTypeStr();
+		return sl;
+	}
+
+	if (strcmp(ch, "$(shell_domain)") == 0)
+	{
+		vector<FEClassFactory*> l = FEMKernel::FindAllClasses(MODULE_ALL, FESHELLDOMAIN_ID);
+		QStringList sl;
+		sl << "default";
+		for (int i = 0; i < l.size(); ++i) sl << l[i]->GetTypeStr();
+		return sl;
+	}
+
+	return FEObjectProps::GetEnumValues(ch);
+}
+
 QVariant CPartProperties::GetPropertyValue(int i)
 {
 	if (i < Properties() - 1) return CObjectProps::GetPropertyValue(i);
@@ -875,5 +899,14 @@ void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 {
 	GPartSection* section = m_pg->GetSection();
 	if (i < Properties() - 1) return CObjectProps::SetPropertyValue(i, v);
-	else m_pg->SetMaterialID(-1);
+	else
+	{
+		m_lid = v.toInt();
+		if (m_lid < 0) m_pg->SetMaterialID(-1);
+		else
+		{
+			GMaterial* m = m_fem->GetMaterial(m_lid);
+			m_pg->SetMaterialID(m->GetID());
+		}
+	}
 }

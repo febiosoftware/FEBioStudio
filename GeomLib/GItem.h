@@ -176,6 +176,8 @@ public:
 	void SetElementFormulation(FESolidFormulation* form);
 	FESolidFormulation* GetElementFormulation();
 
+	bool UpdateData(bool bsave) override;
+
 private:
 	FESolidFormulation*		m_form;
 };
@@ -193,8 +195,11 @@ public:
 	void SetShellThickness(double h);
 	double shellThickness() const;
 
+	bool UpdateData(bool bsave) override;
+
 private:
 	FEShellFormulation* m_form;
+	int	m_formId;
 };
 
 //-----------------------------------------------------------------------------

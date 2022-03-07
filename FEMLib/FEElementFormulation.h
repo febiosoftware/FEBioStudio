@@ -24,11 +24,33 @@ public:
 	FEUDGHexFormulation(FSModel* fem);
 };
 
-class FEDefaultShellFormulation : public FEShellFormulation
+class FENewShellFormulation : public FEShellFormulation
 {
 public: 
-	FEDefaultShellFormulation(FSModel* fem);
+	FENewShellFormulation(FSModel* fem);
 
+	void setShellNormalNodal(bool b);
+	bool shellNormalNodal() const;
+};
+
+class FEElasticEASShellFormulation : public FEShellFormulation
+{
+public:
+	FEElasticEASShellFormulation(FSModel* fem);
+};
+
+class FEElasticANSShellFormulation : public FEShellFormulation
+{
+public:
+	FEElasticANSShellFormulation(FSModel* fem);
+};
+
+class FE3FieldShellFormulation : public FEShellFormulation
+{
+public:
+	FE3FieldShellFormulation(FSModel* fem);
+
+public:
 	void setShellNormalNodal(bool b);
 	bool shellNormalNodal() const;
 
@@ -37,4 +59,10 @@ public:
 
 	void setAugTol(double d);
 	double augTol() const;
+};
+
+class FEOldShellFormulation : public FEShellFormulation
+{
+public:
+	FEOldShellFormulation(FSModel* fem);
 };

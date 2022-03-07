@@ -452,10 +452,14 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioElemDataGenerator, 0, FEELEMDATAGENERATOR_ID, FE_FEBIO_ELEMDATA_GENERATOR, "[febio]");
 	REGISTER_FE_CLASS(FEBioMaterialProperty , 0, FEMATERIALPROP_ID     , FE_FEBIO_MATERIAL_PROPERTY , "[febio]");
 
-	REGISTER_FE_CLASS(FEDefaultShellFormulation, 0, FESHELLDOMAIN_ID, FE_FEBIO_DEFAULTSHELL, "new-shell");
+	REGISTER_FE_CLASS(FENewShellFormulation       , MODULE_ALL, FESHELLDOMAIN_ID, FE_FEBIO_NEWSHELL, "elastic-shell");
+	REGISTER_FE_CLASS(FE3FieldShellFormulation    , MODULE_ALL, FESHELLDOMAIN_ID, FE_FEBIO_3FIELDSHELL, "three-field-shell");
+	REGISTER_FE_CLASS(FEElasticEASShellFormulation, MODULE_ALL, FESHELLDOMAIN_ID, FE_FEBIO_EASSHELL, "elastic-shell-eas");
+	REGISTER_FE_CLASS(FEElasticANSShellFormulation, MODULE_ALL, FESHELLDOMAIN_ID, FE_FEBIO_ANSSHELL, "elastic-shell-ans");
+	REGISTER_FE_CLASS(FEOldShellFormulation       , MODULE_ALL, FESHELLDOMAIN_ID, FE_FEBIO_OLDSHELL, "elastic-shell-old");
 
-	REGISTER_FE_CLASS(FEUT4Formulation         , 0, FESOLIDDOMAIN_ID, FE_FEBIO_UT4, "ut4");
-	REGISTER_FE_CLASS(FEUDGHexFormulation      , 0, FESOLIDDOMAIN_ID, FE_FEBIO_UDGHEX, "udg-hex");
+	REGISTER_FE_CLASS(FEUT4Formulation         , MODULE_ALL, FESOLIDDOMAIN_ID, FE_FEBIO_UT4, "ut4");
+	REGISTER_FE_CLASS(FEUDGHexFormulation      , MODULE_ALL, FESOLIDDOMAIN_ID, FE_FEBIO_UDGHEX, "udg-hex");
 }
 
 //-------------------------------------------------------------------------------------------------

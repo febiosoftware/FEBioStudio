@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <MeshTools/FEGroup.h>
 #include <MeshLib/FEMesh.h>
 #include <FEMLib/FEElementFormulation.h>
+#include <FEMLib/FEMKernel.h>
+#include <FECore/fecore_enum.h>
 
 //-----------------------------------------------------------------------------
 // initialize static variables
@@ -420,7 +422,6 @@ bool GFace::HasEdge(int nid)
 //=============================================================================
 GPartSection::GPartSection(GPart* part) : m_part(part)
 {
-	AddChoiceParam(0, "elem_type", "Element Formulation")->SetEnumNames("Default\0UT4\0UDG-HEX");
 	if (part) SetParent(part);
 }
 
@@ -429,12 +430,25 @@ GPart* GPartSection::GetPart() { return m_part; }
 
 GSolidSection::GSolidSection(GPart* pg) : GPartSection(pg)
 {
+	AddChoiceParam(0, "elem_type", "Element Formulation")->SetEnumNames("$(solid_domain)");
 	m_form = nullptr;
 }
 
 GSolidSection::~GSolidSection()
 {
 	delete m_form;
+}
+
+bool GSolidSection::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		int n = GetIntValue(0);
+		delete m_form;
+		m_form = fecore_new<FESolidFormulation>(nullptr, FESOLIDDOMAIN_ID, n);
+		return true;
+	}
+	return false;
 }
 
 GSolidSection* GSolidSection::Copy()
@@ -456,9 +470,10 @@ FESolidFormulation* GSolidSection::GetElementFormulation()
 
 GShellSection::GShellSection(GPart* pg) : GPartSection(pg)
 {
-	AddChoiceParam(0, "elem_type", "Shell Formulation")->SetEnumNames("Default\0new\0old");
+	AddChoiceParam(0, "elem_type", "Shell Formulation")->SetEnumNames("$(shell_domain)");
 	AddDoubleParam(0.0, "shell_thickness", "shell thickness");
 	m_form = nullptr;
+	m_formId = 0;
 }
 
 GShellSection::~GShellSection()
@@ -471,12 +486,28 @@ FEShellFormulation* GShellSection::GetElementFormulation() { return m_form; }
 
 void GShellSection::SetShellThickness(double h)
 {
-	SetFloatValue(0, h);
+	SetFloatValue(1, h);
 }
 
 double GShellSection::shellThickness() const
 {
-	return GetFloatValue(0);
+	return GetFloatValue(1);
+}
+
+bool GShellSection::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		int n = GetIntValue(0);
+		if (n != m_formId)
+		{
+			delete m_form;
+			m_form = fecore_new<FEShellFormulation>(nullptr, FESHELLDOMAIN_ID, n);
+			m_formId = n;
+			return true;
+		}
+	}
+	return false;
 }
 
 GShellSection* GShellSection::Copy()
