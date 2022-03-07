@@ -319,7 +319,7 @@ void FEBioFormat25::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& t
 
 	// add domain to list
 	FEBioInputModel::Domain* dom = part->AddDomain(name, matID);
-	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
+//	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// read the elements
 	vector<FEBioInputModel::ELEM> elem;

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GMaterial.h>
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FEElementFormulation.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
 
@@ -831,7 +832,17 @@ void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(0)
 {
 	GPartSection* section = pg->GetSection();
-	if (section) BuildParamList(section);
+	if (section)
+	{
+		BuildParamList(section);
+
+		GSolidSection* solidSection = dynamic_cast<GSolidSection*>(section);
+		if (solidSection && solidSection->GetElementFormulation())
+		{
+			FESolidFormulation* form = solidSection->GetElementFormulation();
+			AddParameterList(form);
+		}
+	}
 
 	m_fem = &fem;
 	m_pg = pg;
@@ -849,27 +860,13 @@ CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(0)
 
 QVariant CPartProperties::GetPropertyValue(int i)
 {
-	GPartSection* section = m_pg->GetSection();
-	if (section && (i < section->Parameters()))
-	{
-		return CObjectProps::GetPropertyValue(i);
-	}
+	if (i < Properties() - 1) return CObjectProps::GetPropertyValue(i);
 	return m_lid;
 }
 
 void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 {
 	GPartSection* section = m_pg->GetSection();
-	if (section && (i < section->Parameters() - 1))
-	{
-		CObjectProps::SetPropertyValue(i, v);
-		return;
-	}
-	m_lid = v.toInt();
-	if (m_lid >= 0)
-	{
-		GMaterial* mat = m_fem->GetMaterial(m_lid);
-		m_pg->SetMaterialID(mat->GetID());
-	}
+	if (i < Properties() - 1) return CObjectProps::SetPropertyValue(i, v);
 	else m_pg->SetMaterialID(-1);
 }

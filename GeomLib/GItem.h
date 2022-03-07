@@ -163,20 +163,38 @@ private:
 	GPart* m_part;
 };
 
+class FESolidFormulation;
+class FEShellFormulation;
+
 class GSolidSection : public GPartSection
 {
 public:
 	GSolidSection(GPart* pg);
+	~GSolidSection();
 	GSolidSection* Copy() override;
+
+	void SetElementFormulation(FESolidFormulation* form);
+	FESolidFormulation* GetElementFormulation();
+
+private:
+	FESolidFormulation*		m_form;
 };
 
 class GShellSection : public GPartSection
 {
 public:
 	GShellSection(GPart* pg);
+	~GShellSection();
 	GShellSection* Copy() override;
 
+	void SetElementFormulation(FEShellFormulation* form);
+	FEShellFormulation* GetElementFormulation();
+
 	void SetShellThickness(double h);
+	double shellThickness() const;
+
+private:
+	FEShellFormulation* m_form;
 };
 
 //-----------------------------------------------------------------------------
@@ -195,15 +213,6 @@ public:
 public:
 	int GetMaterialID() const { return m_matid; }
 	void SetMaterialID(int mid) { m_matid = mid; }
-
-	void setShellNormalNodal(bool b);
-	bool shellNormalNodal() const;
-    
-    void setLaugon(bool b);
-    bool laugon() const;
-
-    void setAugTol(double d);
-    double augTol() const;
 
 	void SetSection(GPartSection* section);
 	GPartSection* GetSection() const;

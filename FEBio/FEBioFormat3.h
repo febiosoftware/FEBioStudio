@@ -62,6 +62,9 @@ private:
 	void ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag);
 	void ParseModelComponent(FSModelComponent* pmc, XMLTag& tag);
 
+	void ParseSolidDomain(XMLTag& tag);
+	void ParseShellDomain(XMLTag& tag);
+
 private:
 	// geometry parsing functions (version 2.0 and up)
 	void ParseGeometryNodes      (FEBioInputModel::Part* part, XMLTag& tag);

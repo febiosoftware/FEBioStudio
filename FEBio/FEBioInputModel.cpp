@@ -604,18 +604,14 @@ FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 //=============================================================================
 FEBioInputModel::Domain::Domain(Part* part) : m_part(part)
 {
-	m_bshellNodalNormals = true;
-    m_blaugon = false;
-    m_augtol = 0.01;
+	m_form = nullptr;
 }
 
 FEBioInputModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_part(part)
 {
 	m_name = name;
 	m_matID = matID;
-	m_bshellNodalNormals = true;
-    m_blaugon = false;
-    m_augtol = 0.01;
+	m_form = nullptr;
 }
 
 FEBioInputModel::Domain::Domain(const Domain& part)
@@ -623,21 +619,16 @@ FEBioInputModel::Domain::Domain(const Domain& part)
 	m_part = part.m_part;
 	m_name = part.m_name;
 	m_matID = part.m_matID;
-	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_elem = part.m_elem;
-    m_blaugon = part.m_blaugon;
-    m_augtol = part.m_augtol;
+	m_form = part.m_form;
 }
 
 void FEBioInputModel::Domain::operator = (const Domain& part)
 {
 	m_part = part.m_part;
 	m_name = part.m_name;
-	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_matID = part.m_matID;
 	m_elem = part.m_elem;
-    m_blaugon = part.m_blaugon;
-    m_augtol = part.m_augtol;
 }
 
 //=============================================================================
@@ -865,11 +856,23 @@ void FEBioInputModel::UpdateGeometry()
 			std::string name = elSet.name();
 			gpart.SetName(name.c_str());
 
-			gpart.setShellNormalNodal(elSet.m_bshellNodalNormals);
-            
-            gpart.setLaugon(elSet.m_blaugon);
-            
-            gpart.setAugTol(elSet.m_augtol);
+			FESolidFormulation* solidForm = dynamic_cast<FESolidFormulation*>(elSet.m_form);
+			if (solidForm)
+			{
+				GSolidSection* solidSection = new GSolidSection(&gpart);
+				gpart.SetSection(solidSection);
+
+				solidSection->SetElementFormulation(solidForm);
+			}
+
+			FEShellFormulation* shellForm = dynamic_cast<FEShellFormulation*>(elSet.m_form);
+			if (shellForm)
+			{
+				GShellSection* shellSection = new GShellSection(&gpart);
+				gpart.SetSection(shellSection);
+
+				shellSection->SetElementFormulation(shellForm);
+			}
         }
 	}
 }

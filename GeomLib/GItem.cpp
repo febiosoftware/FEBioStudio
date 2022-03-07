@@ -427,8 +427,12 @@ GPart* GPartSection::GetPart() { return m_part; }
 
 GSolidSection::GSolidSection(GPart* pg) : GPartSection(pg)
 {
-	AddBoolParam(false, "laugon", "incompressibility constraint");
-	AddDoubleParam(0.01, "atol", "incompressibility tolerance");
+	m_form = nullptr;
+}
+
+GSolidSection::~GSolidSection()
+{
+	delete m_form;
 }
 
 GSolidSection* GSolidSection::Copy()
@@ -438,17 +442,39 @@ GSolidSection* GSolidSection::Copy()
 	return s;
 }
 
+void GSolidSection::SetElementFormulation(FESolidFormulation* form)
+{
+	m_form = form;
+}
+
+FESolidFormulation* GSolidSection::GetElementFormulation()
+{
+	return m_form;
+}
+
 GShellSection::GShellSection(GPart* pg) : GPartSection(pg)
 {
 	AddDoubleParam(0.0, "shell_thickness", "shell thickness");
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-	AddBoolParam(false, "laugon", "incompressibility constraint");
-	AddDoubleParam(0.01, "atol", "incompressibility tolerance");
+
+	m_form = nullptr;
 }
+
+GShellSection::~GShellSection()
+{
+	delete m_form;
+}
+
+void GShellSection::SetElementFormulation(FEShellFormulation* form) { m_form = form; }
+FEShellFormulation* GShellSection::GetElementFormulation() { return m_form; }
 
 void GShellSection::SetShellThickness(double h)
 {
 	SetFloatValue(0, h);
+}
+
+double GShellSection::shellThickness() const
+{
+	return GetFloatValue(0);
 }
 
 GShellSection* GShellSection::Copy()
@@ -511,34 +537,4 @@ void GPart::operator =(const GPart &p)
 	m_lid = p.m_lid;
 	SetName(p.GetName());
 //	m_po = p.m_po;
-}
-
-void GPart::setShellNormalNodal(bool b)
-{
-	SetBoolValue(0, b);
-}
-
-bool GPart::shellNormalNodal() const
-{
-	return GetBoolValue(0);
-}
-
-void GPart::setLaugon(bool b)
-{
-    SetBoolValue(1, b);
-}
-
-bool GPart::laugon() const
-{
-    return GetBoolValue(1);
-}
-
-void GPart::setAugTol(double d)
-{
-    SetFloatValue(2, d);
-}
-
-double GPart::augTol() const
-{
-    return GetFloatValue(2);
 }
