@@ -1,17 +1,17 @@
 #include "FEElementFormulation.h"
 
-FEUT4Formulation::FEUT4Formulation()
+FEUT4Formulation::FEUT4Formulation(FSModel* fem)
 {
 	AddDoubleParam(0.0, "alpha");
 	AddBoolParam(false, "iso_stab");
 }
 
-FEUDGHexFormulation::FEUDGHexFormulation()
+FEUDGHexFormulation::FEUDGHexFormulation(FSModel* fem)
 {
 	AddDoubleParam(0.0, "hg", "hourglass");
 }
 
-FEDefaultShellFormulation::FEDefaultShellFormulation()
+FEDefaultShellFormulation::FEDefaultShellFormulation(FSModel* fem)
 {
 	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
 	AddBoolParam(false, "laugon", "incompressibility constraint");

@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FELoadController.h>
 #include <FEMLib/FEMeshDataGenerator.h>
+#include <FEMLib/FEElementFormulation.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <FEBioLink/FEBioModule.h>
@@ -450,6 +451,11 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioFaceDataGenerator, 0, FEFACEDATAGENERATOR_ID, FE_FEBIO_FACEDATA_GENERATOR, "[febio]");
 	REGISTER_FE_CLASS(FEBioElemDataGenerator, 0, FEELEMDATAGENERATOR_ID, FE_FEBIO_ELEMDATA_GENERATOR, "[febio]");
 	REGISTER_FE_CLASS(FEBioMaterialProperty , 0, FEMATERIALPROP_ID     , FE_FEBIO_MATERIAL_PROPERTY , "[febio]");
+
+	REGISTER_FE_CLASS(FEDefaultShellFormulation, 0, FESHELLDOMAIN_ID, FE_FEBIO_DEFAULTSHELL, "new-shell");
+
+	REGISTER_FE_CLASS(FEUT4Formulation         , 0, FESOLIDDOMAIN_ID, FE_FEBIO_UT4, "ut4");
+	REGISTER_FE_CLASS(FEUDGHexFormulation      , 0, FESOLIDDOMAIN_ID, FE_FEBIO_UDGHEX, "udg-hex");
 }
 
 //-------------------------------------------------------------------------------------------------

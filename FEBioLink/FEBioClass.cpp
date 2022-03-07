@@ -74,7 +74,11 @@ void initMap()
 	idmap[FERIGIDOBJECT_ID         ] = "FERIGIDOBJECT_ID";
 	idmap[FENLCLOGDATA_ID          ] = "FENLCLOGDATA_ID";
 	idmap[FECALLBACK_ID            ] = "FECALLBACK_ID";
-	idmap[FEDOMAIN_ID              ] = "FEDOMAIN_ID";
+	idmap[FESOLIDDOMAIN_ID         ] = "FESOLIDDOMAIN_ID";
+	idmap[FESHELLDOMAIN_ID         ] = "FESHELLDOMAIN_ID";
+	idmap[FETRUSSDOMAIN_ID         ] = "FETRUSSDOMAIN_ID";
+	idmap[FEDOMAIN2D_ID            ] = "FEDOMAIN2D_ID";
+	idmap[FEDISCRETEDOMAIN_ID      ] = "FEDISCRETEDOMAIN_ID";
 	idmap[FESURFACE_ID             ] = "FESURFACE_ID";
 	idmap[FEIC_ID                  ] = "FEIC_ID";
 	idmap[FENODEDATAGENERATOR_ID   ] = "FENODEDATAGENERATOR_ID";

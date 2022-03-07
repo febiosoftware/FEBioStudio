@@ -842,6 +842,13 @@ CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(0)
 			FESolidFormulation* form = solidSection->GetElementFormulation();
 			AddParameterList(form);
 		}
+
+		GShellSection* shellSection = dynamic_cast<GShellSection*>(section);
+		if (shellSection && shellSection->GetElementFormulation())
+		{
+			FEShellFormulation* form = shellSection->GetElementFormulation();
+			AddParameterList(form);
+		}
 	}
 
 	m_fem = &fem;

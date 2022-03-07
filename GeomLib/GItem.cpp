@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "geom.h"
 #include <MeshTools/FEGroup.h>
 #include <MeshLib/FEMesh.h>
+#include <FEMLib/FEElementFormulation.h>
 
 //-----------------------------------------------------------------------------
 // initialize static variables
@@ -419,6 +420,7 @@ bool GFace::HasEdge(int nid)
 //=============================================================================
 GPartSection::GPartSection(GPart* part) : m_part(part)
 {
+	AddChoiceParam(0, "elem_type", "Element Formulation")->SetEnumNames("Default\0UT4\0UDG-HEX");
 	if (part) SetParent(part);
 }
 
@@ -454,8 +456,8 @@ FESolidFormulation* GSolidSection::GetElementFormulation()
 
 GShellSection::GShellSection(GPart* pg) : GPartSection(pg)
 {
+	AddChoiceParam(0, "elem_type", "Shell Formulation")->SetEnumNames("Default\0new\0old");
 	AddDoubleParam(0.0, "shell_thickness", "shell thickness");
-
 	m_form = nullptr;
 }
 

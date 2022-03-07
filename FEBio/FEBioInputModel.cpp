@@ -620,7 +620,7 @@ FEBioInputModel::Domain::Domain(const Domain& part)
 	m_name = part.m_name;
 	m_matID = part.m_matID;
 	m_elem = part.m_elem;
-	m_form = part.m_form;
+	m_form = part.m_form; // TODO: Need to copy!
 }
 
 void FEBioInputModel::Domain::operator = (const Domain& part)

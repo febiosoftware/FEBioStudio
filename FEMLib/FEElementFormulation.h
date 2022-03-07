@@ -1,6 +1,8 @@
 #pragma once
 #include <FSCore/FSObject.h>
 
+class FSModel;
+
 class FEElementFormulation : public FSObject
 {
 public:
@@ -13,19 +15,19 @@ class FEShellFormulation : public FEElementFormulation {};
 class FEUT4Formulation : public FESolidFormulation
 {
 public:
-	FEUT4Formulation();
+	FEUT4Formulation(FSModel* fem);
 };
 
 class FEUDGHexFormulation : public FESolidFormulation
 {
 public:
-	FEUDGHexFormulation();
+	FEUDGHexFormulation(FSModel* fem);
 };
 
 class FEDefaultShellFormulation : public FEShellFormulation
 {
 public: 
-	FEDefaultShellFormulation();
+	FEDefaultShellFormulation(FSModel* fem);
 
 	void setShellNormalNodal(bool b);
 	bool shellNormalNodal() const;

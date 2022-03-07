@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FEMKernel.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -695,8 +696,12 @@ void FEBioFormat3::ParseSolidDomain(XMLTag& tag)
 
 		FESolidFormulation* eform = nullptr;
 		const char* szelem = tag.AttributeValue("elem_type", true);
-		if (strcmp(szelem, "ut4"   ) == 0) eform = new FEUT4Formulation;
-		if (strcmp(szelem, "HEX8G1") == 0) eform = new FEUDGHexFormulation;
+		if (szelem)
+		{
+			if (strcmp(szelem, "HEX8G1") == 0) szelem = "udg-hex";
+			eform = fecore_new<FESolidFormulation>(&febio.GetFSModel(), FESOLIDDOMAIN_ID, szelem);
+			assert(eform);
+		}
 
 		dom->m_form = eform;
 
@@ -727,7 +732,10 @@ void FEBioFormat3::ParseShellDomain(XMLTag& tag)
 		FEBioInputModel::Domain* dom = part->FindDomain(szname);
 		if (dom) dom->SetMatID(matID);
 
-		FEShellFormulation* shell = new FEDefaultShellFormulation();
+		FEShellFormulation* shell = nullptr;
+		const char* szelem = tag.AttributeValue("elem_type", true);
+		if (szelem) shell = fecore_new<FEShellFormulation>(&febio.GetFSModel(), FESHELLDOMAIN_ID, szelem);
+
 		dom->m_form = shell;
 
 		// read the domain parameters
