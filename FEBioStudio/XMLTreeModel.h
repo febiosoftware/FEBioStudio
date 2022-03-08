@@ -42,6 +42,26 @@ enum columnOrder
     TAG = 0, ID, TYPE, NAME, VALUE, COMMENT, NUM_COLUMNS
 };
 
+class XMLTreeItem;
+
+struct XMLSearchResult
+{
+    XMLTreeItem* item;
+    int column;
+    int stringIndex;
+
+    XMLSearchResult()
+        : item(nullptr), column(0), stringIndex(0)
+    {
+
+    }
+
+    XMLSearchResult(XMLTreeItem* item, int column, int stringIndex)
+        : item(item), column(column), stringIndex(stringIndex)
+    {        
+    }
+};
+
 class XMLTreeItem
 {
 public:
@@ -89,7 +109,7 @@ public:
     XMLTreeItem *parentItem();
     XMLTreeItem *ancestorItem(int depth);
 
-    void FindAll(const QString& term, bool caseSensative, vector<pair<XMLTreeItem*, int>>& items);
+    void FindAll(const QString& term, bool caseSensative, vector<XMLSearchResult>& items);
 
 private:
     void setParent(XMLTreeItem* parent);

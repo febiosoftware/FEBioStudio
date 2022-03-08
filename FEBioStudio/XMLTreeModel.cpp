@@ -265,19 +265,25 @@ XMLTreeItem* XMLTreeItem::ancestorItem(int depth)
     return item;
 }
 
-void XMLTreeItem::FindAll(const QString& term, bool caseSensative, vector<pair<XMLTreeItem*, int>>& items)
+void XMLTreeItem::FindAll(const QString& term, bool caseSensative, vector<XMLSearchResult>& items)
 {
-    // Don't match the term with the root item
-    if(m_depth != 0)    
-    {
-        Qt::CaseSensitivity cs;
-        cs = caseSensative ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    Qt::CaseSensitivity cs;
+    cs = caseSensative ? Qt::CaseSensitive : Qt::CaseInsensitive;
 
-        for(int col = 0; col < NUM_COLUMNS; col++)
+    for(int col = 0; col < NUM_COLUMNS; col++)
+    {
+        int num = data(col).count(term, cs);
+        if(num == 1)
         {
-            if(data(col).contains(term, cs))
+            items.emplace_back(this, col, -1);
+        }
+        else
+        {
+            int index = 0;
+            for(int match = 0; match < num; match++)
             {
-                items.emplace_back(this, col);
+                index = data(col).indexOf(term, index, cs);
+                items.emplace_back(this, col, index);
             }
         }
     }

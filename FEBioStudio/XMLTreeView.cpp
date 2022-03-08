@@ -455,7 +455,7 @@ public:
 
 public:
     QString searchTerm; 
-    vector<pair<XMLTreeItem*, int>> searchList;
+    vector<XMLSearchResult> searchList;
     bool searchCaseSensative;
 
 
@@ -648,72 +648,64 @@ void XMLTreeView::on_findWidget_next()
     XMLTreeItem* selectedItem = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
 
     int foundIndex = 0;
-    pair<XMLTreeItem*, int> searchResult;
+    XMLSearchResult searchResult;
 
-    if(selectedItem->Depth() == 0)
+    for(int index = 0; index < ui->searchList.size(); index++)
     {
-        searchResult = ui->searchList[0];
-    }
-    else
-    {
-        for(int index = 0; index < ui->searchList.size(); index++)
+        searchResult = ui->searchList[index];
+
+        if(searchResult.item == selectedItem)
         {
-            searchResult = ui->searchList[index];
-
-            if(searchResult.first == selectedItem)
+            if(searchResult.column > currentIndex().column())
             {
-                if(searchResult.second > currentIndex().column())
-                {
-                    foundIndex = index;
-                    break;
-                }
-
-                continue;
+                foundIndex = index;
+                break;
             }
 
-            bool found = false;
-            int limit = std::min(selectedItem->Depth(), searchResult.first->Depth());
-            int searchRow, selectedRow;
-            for(int depth = 1; depth <= limit; depth++)
-            {
-                searchRow = searchResult.first->ancestorItem(depth)->row();
-                selectedRow = selectedItem->ancestorItem(depth)->row();
+            continue;
+        }
 
-                if(searchRow > selectedRow)
-                {
-                    foundIndex = index;
-                    found = true;
-                    break;
-                }
-                
-                if(searchRow < selectedRow)
-                {
-                    break;
-                }
-            }
+        bool found = false;
+        int limit = std::min(selectedItem->Depth(), searchResult.item->Depth());
+        int searchRow, selectedRow;
+        for(int depth = 0; depth <= limit; depth++)
+        {
+            searchRow = searchResult.item->ancestorItem(depth)->row();
+            selectedRow = selectedItem->ancestorItem(depth)->row();
 
-            if(found)
+            if(searchRow > selectedRow)
             {
+                foundIndex = index;
+                found = true;
                 break;
             }
             
-            if(searchRow == selectedRow)
+            if(searchRow < selectedRow)
             {
-                if(searchResult.first->Depth() > selectedItem->Depth())
-                {
-                    foundIndex = index;
-                    break;
-                }
+                break;
             }
         }
 
-        searchResult = ui->searchList[foundIndex];
+        if(found)
+        {
+            break;
+        }
+        
+        if(searchRow == selectedRow)
+        {
+            if(searchResult.item->Depth() > selectedItem->Depth())
+            {
+                foundIndex = index;
+                break;
+            }
+        }
     }
+
+    searchResult = ui->searchList[foundIndex];
 
     ui->findWidget->SetCurrent(foundIndex + 1);
 
-    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.first, searchResult.second));  
-
+    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.item, searchResult.column));  
 }
 
 void XMLTreeView::on_findWidget_prev()
@@ -727,71 +719,64 @@ void XMLTreeView::on_findWidget_prev()
     XMLTreeItem* selectedItem = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
 
     int foundIndex = ui->searchList.size() - 1;
-    pair<XMLTreeItem*, int> searchResult;
+    XMLSearchResult searchResult;
 
-    if(selectedItem->Depth() == 0)
+    for(int index = ui->searchList.size() - 1; index >= 0; index--)
     {
-        searchResult = ui->searchList[foundIndex];
-    }
-    else
-    {
-        for(int index = ui->searchList.size() - 1; index >= 0; index--)
+        searchResult = ui->searchList[index];
+
+        if(searchResult.item == selectedItem)
         {
-            searchResult = ui->searchList[index];
-
-            if(searchResult.first == selectedItem)
+            if(searchResult.column < currentIndex().column())
             {
-                if(searchResult.second < currentIndex().column())
-                {
-                    foundIndex = index;
-                    break;
-                }
-
-                continue;
+                foundIndex = index;
+                break;
             }
 
-            bool found = false;
-            int limit = std::min(selectedItem->Depth(), searchResult.first->Depth());
-            int searchRow, selectedRow;
-            for(int depth = 1; depth <= limit; depth++)
-            {
-                searchRow = searchResult.first->ancestorItem(depth)->row();
-                selectedRow = selectedItem->ancestorItem(depth)->row();
+            continue;
+        }
 
-                if(searchRow < selectedRow)
-                {
-                    foundIndex = index;
-                    found = true;
-                    break;
-                }
-                
-                if(searchRow > selectedRow)
-                {
-                    break;
-                }
-            }
+        bool found = false;
+        int limit = std::min(selectedItem->Depth(), searchResult.item->Depth());
+        int searchRow, selectedRow;
+        for(int depth = 0; depth <= limit; depth++)
+        {
+            searchRow = searchResult.item->ancestorItem(depth)->row();
+            selectedRow = selectedItem->ancestorItem(depth)->row();
 
-            if(found)
+            if(searchRow < selectedRow)
             {
+                foundIndex = index;
+                found = true;
                 break;
             }
             
-            if(searchRow == selectedRow)
+            if(searchRow > selectedRow)
             {
-                if(searchResult.first->Depth() < selectedItem->Depth())
-                {
-                    foundIndex = index;
-                    break;
-                }
+                break;
             }
         }
 
-        searchResult = ui->searchList[foundIndex];
+        if(found)
+        {
+            break;
+        }
+        
+        if(searchRow == selectedRow)
+        {
+            if(searchResult.item->Depth() < selectedItem->Depth())
+            {
+                foundIndex = index;
+                break;
+            }
+        }
     }
+
+    searchResult = ui->searchList[foundIndex];
 
     ui->findWidget->SetCurrent(foundIndex + 1);
 
-    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.first, searchResult.second));
+    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.item, searchResult.column));
 }
 
 void XMLTreeView::on_expandAll_triggered()
