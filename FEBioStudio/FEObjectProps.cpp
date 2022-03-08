@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
-#include <FEMLib/FEMKernel.h>
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
@@ -870,19 +869,19 @@ QStringList CPartProperties::GetEnumValues(const char* ch)
 {
 	if (strcmp(ch, "$(solid_domain)") == 0)
 	{
-		vector<FEClassFactory*> l = FEMKernel::FindAllClasses(MODULE_ALL, FESOLIDDOMAIN_ID);
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESOLIDDOMAIN_ID);
 		QStringList sl;
 		sl << "default";
-		for (int i = 0; i < l.size(); ++i) sl << l[i]->GetTypeStr();
+		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;
 		return sl;
 	}
 
 	if (strcmp(ch, "$(shell_domain)") == 0)
 	{
-		vector<FEClassFactory*> l = FEMKernel::FindAllClasses(MODULE_ALL, FESHELLDOMAIN_ID);
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESHELLDOMAIN_ID);
 		QStringList sl;
 		sl << "default";
-		for (int i = 0; i < l.size(); ++i) sl << l[i]->GetTypeStr();
+		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;
 		return sl;
 	}
 

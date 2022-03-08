@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <MeshTools/FEGroup.h>
 #include <MeshLib/FEMesh.h>
 #include <FEMLib/FEElementFormulation.h>
-#include <FEMLib/FEMKernel.h>
+#include <FEBioLink/FEBioClass.h>
 #include <FECore/fecore_enum.h>
 
 //-----------------------------------------------------------------------------
@@ -444,9 +444,20 @@ bool GSolidSection::UpdateData(bool bsave)
 	if (bsave)
 	{
 		int n = GetIntValue(0);
-		delete m_form;
-		m_form = fecore_new<FESolidFormulation>(nullptr, FESOLIDDOMAIN_ID, n);
-		return true;
+		if (n <= 0) { delete m_form; m_form = nullptr; return true; }
+
+		// we subtract by one, since n==0 is the null formulation (i.e. "default"). 
+		n--;
+		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESOLIDDOMAIN_ID);
+		assert((n >= 0) && (n < l.size()));
+
+		if ((m_form == nullptr) || (m_form->GetClassID() != l[n].classId))
+		{
+			delete m_form;
+			m_form = FEBio::CreateSolidFormulation(l[n].sztype, nullptr);
+			assert(m_form);
+			return true;
+		}
 	}
 	return false;
 }
@@ -460,7 +471,23 @@ GSolidSection* GSolidSection::Copy()
 
 void GSolidSection::SetElementFormulation(FESolidFormulation* form)
 {
+	delete m_form;
 	m_form = form;
+	if (form == nullptr) SetIntValue(0, 0);
+	else
+	{
+		int n = form->GetClassID(); assert(n > 0);
+		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESOLIDDOMAIN_ID);
+		for (int i = 0; i < l.size(); ++i)
+		{
+			if (l[i].classId == n)
+			{
+				// Note we add 1, since we need to offset for the "default" formulation.
+				SetIntValue(0, i + 1);
+				return;
+			}
+		}
+	}
 }
 
 FESolidFormulation* GSolidSection::GetElementFormulation()
@@ -473,7 +500,6 @@ GShellSection::GShellSection(GPart* pg) : GPartSection(pg)
 	AddChoiceParam(0, "elem_type", "Shell Formulation")->SetEnumNames("$(shell_domain)");
 	AddDoubleParam(0.0, "shell_thickness", "shell thickness");
 	m_form = nullptr;
-	m_formId = 0;
 }
 
 GShellSection::~GShellSection()
@@ -481,7 +507,27 @@ GShellSection::~GShellSection()
 	delete m_form;
 }
 
-void GShellSection::SetElementFormulation(FEShellFormulation* form) { m_form = form; }
+void GShellSection::SetElementFormulation(FEShellFormulation* form) 
+{ 
+	delete m_form;
+	m_form = form;
+	if (form == nullptr) SetIntValue(0, 0);
+	else
+	{
+		int n = form->GetClassID(); assert(n > 0);
+		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESHELLDOMAIN_ID);
+		for (int i = 0; i < l.size(); ++i)
+		{
+			if (l[i].classId == n)
+			{
+				// Note we add 1, since we need to offset for the "default" formulation.
+				SetIntValue(0, i + 1);
+				return;
+			}
+		}
+	}
+}
+
 FEShellFormulation* GShellSection::GetElementFormulation() { return m_form; }
 
 void GShellSection::SetShellThickness(double h)
@@ -499,11 +545,18 @@ bool GShellSection::UpdateData(bool bsave)
 	if (bsave)
 	{
 		int n = GetIntValue(0);
-		if (n != m_formId)
+		if (n <= 0) { delete m_form; m_form = nullptr; return true; }
+
+		// we subtract by one, since n==0 is the null formulation (i.e. "default"). 
+		n--;
+		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESHELLDOMAIN_ID);
+		assert((n >= 0) && (n < l.size()));
+
+		if ((m_form == nullptr) || (m_form->GetClassID() != l[n].classId))
 		{
 			delete m_form;
-			m_form = fecore_new<FEShellFormulation>(nullptr, FESHELLDOMAIN_ID, n);
-			m_formId = n;
+			m_form = FEBio::CreateShellFormulation(l[n].sztype, nullptr);
+			assert(m_form);
 			return true;
 		}
 	}

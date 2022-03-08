@@ -653,17 +653,6 @@ SOFTWARE.*/
 #define FE_FEBIO_INITIAL_CONDITION			0x003A
 #define FE_FEBIO_RIGID_LOAD					0x003B
 
-// shell element formulations
-#define FE_FEBIO_NEWSHELL					0x0001
-#define FE_FEBIO_3FIELDSHELL				0x0002
-#define FE_FEBIO_EASSHELL					0x0003
-#define FE_FEBIO_ANSSHELL					0x0004
-#define FE_FEBIO_OLDSHELL					0x0005
-
-// solid element formulations
-#define FE_FEBIO_UT4						0x0001
-#define FE_FEBIO_UDGHEX						0x0002
-
 //--------------------------------------------------------
 // Interface types
 #define FE_RIGID_INTERFACE				0x0001

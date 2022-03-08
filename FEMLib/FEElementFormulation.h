@@ -1,68 +1,20 @@
 #pragma once
-#include <FSCore/FSObject.h>
+#include <FEMLib/FEModelComponent.h>
 
 class FSModel;
 
-class FEElementFormulation : public FSObject
+class FEElementFormulation : public FSModelComponent
 {
 public:
-	FEElementFormulation() {}
+	FEElementFormulation(FSModel*);
 };
 
-class FESolidFormulation : public FEElementFormulation {};
-class FEShellFormulation : public FEElementFormulation {};
-
-class FEUT4Formulation : public FESolidFormulation
+class FESolidFormulation : public FEElementFormulation 
 {
-public:
-	FEUT4Formulation(FSModel* fem);
+public: FESolidFormulation(FSModel*);
 };
 
-class FEUDGHexFormulation : public FESolidFormulation
+class FEShellFormulation : public FEElementFormulation 
 {
-public:
-	FEUDGHexFormulation(FSModel* fem);
-};
-
-class FENewShellFormulation : public FEShellFormulation
-{
-public: 
-	FENewShellFormulation(FSModel* fem);
-
-	void setShellNormalNodal(bool b);
-	bool shellNormalNodal() const;
-};
-
-class FEElasticEASShellFormulation : public FEShellFormulation
-{
-public:
-	FEElasticEASShellFormulation(FSModel* fem);
-};
-
-class FEElasticANSShellFormulation : public FEShellFormulation
-{
-public:
-	FEElasticANSShellFormulation(FSModel* fem);
-};
-
-class FE3FieldShellFormulation : public FEShellFormulation
-{
-public:
-	FE3FieldShellFormulation(FSModel* fem);
-
-public:
-	void setShellNormalNodal(bool b);
-	bool shellNormalNodal() const;
-
-	void setLaugon(bool b);
-	bool laugon() const;
-
-	void setAugTol(double d);
-	double augTol() const;
-};
-
-class FEOldShellFormulation : public FEShellFormulation
-{
-public:
-	FEOldShellFormulation(FSModel* fem);
+public: FEShellFormulation(FSModel*);
 };

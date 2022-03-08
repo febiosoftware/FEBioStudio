@@ -199,7 +199,6 @@ public:
 
 private:
 	FEShellFormulation* m_form;
-	int	m_formId;
 };
 
 //-----------------------------------------------------------------------------

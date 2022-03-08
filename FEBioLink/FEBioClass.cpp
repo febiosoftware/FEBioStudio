@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEDiscreteMaterial.h>
+#include <FEMLib/FEElementFormulation.h>
 #include <MeshTools/FEModel.h>
 #include <sstream>
 using namespace FEBio;
@@ -911,6 +912,16 @@ FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* f
 		pc->SetSuperClassID(FECLASS_ID);
 	}
 	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr);
+}
+
+FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEShellFormulation>(FESHELLDOMAIN_ID, typeStr, fem);
+}
+
+FESolidFormulation* FEBio::CreateSolidFormulation(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FESolidFormulation>(FESOLIDDOMAIN_ID, typeStr, fem);
 }
 
 FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem)

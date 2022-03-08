@@ -33,7 +33,6 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <FEMLib/FEMKernel.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -543,7 +542,7 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 
 		FESolidFormulation* eform = nullptr;
 		const char* szelem = tag.AttributeValue("elem_type", true);
-		if (szelem) eform = fecore_new<FESolidFormulation>(&febio.GetFSModel(), FESOLIDDOMAIN_ID, szelem);
+		if (szelem) eform = FEBio::CreateSolidFormulation(szelem, &febio.GetFSModel());
 
 		// read the domain parameters
 		if (tag.isleaf() == false)
@@ -574,7 +573,7 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 
 		FEShellFormulation* shell = nullptr;
 		const char* szelem = tag.AttributeValue("elem_type", true);
-		if (szelem) shell = fecore_new<FEShellFormulation>(&febio.GetFSModel(), FESHELLDOMAIN_ID, szelem);
+		if (szelem) shell = shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
 
 		dom->m_form = shell;
 
