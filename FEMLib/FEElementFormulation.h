@@ -11,10 +11,20 @@ public:
 
 class FESolidFormulation : public FEElementFormulation 
 {
-public: FESolidFormulation(FSModel*);
+public: 
+	FESolidFormulation(FSModel*);
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 };
 
 class FEShellFormulation : public FEElementFormulation 
 {
-public: FEShellFormulation(FSModel*);
+public: 
+	FEShellFormulation(FSModel*);
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 };

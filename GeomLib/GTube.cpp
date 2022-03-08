@@ -124,7 +124,7 @@ void GTube::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
@@ -256,7 +256,7 @@ void GTube2::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------

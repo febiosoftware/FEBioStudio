@@ -43,6 +43,8 @@ SOFTWARE.*/
 #include <memory>
 #include <sstream>
 #include <FECore/FETransform.h>
+#include <GeomLib/GPartSection.h>
+#include <FEMLib/FEElementFormulation.h>
 
 using std::stringstream;
 using std::unique_ptr;
@@ -948,7 +950,20 @@ void FEBioExport4::WriteMeshDomainsSection()
 			el.name("SolidDomain");
 			el.add_attribute("name", dom->m_name);
 			el.add_attribute("mat", dom->m_matName);
-			m_xml.add_empty(el);
+
+			GSolidSection* section = dynamic_cast<GSolidSection*>(dom->m_pg->GetSection());
+			if (section && section->GetElementFormulation())
+			{
+				FESolidFormulation* solid = section->GetElementFormulation();
+				el.add_attribute("type", solid->GetTypeString());
+				if (solid->Parameters() > 0)
+				{
+					m_xml.add_branch(el);
+					WriteParamList(*solid);
+					m_xml.close_branch();
+				}
+			}
+			else m_xml.add_empty(el);
 		}
 		else if (dom->m_elemClass == ELEM_SHELL)
 		{
@@ -957,14 +972,17 @@ void FEBioExport4::WriteMeshDomainsSection()
 			el.add_attribute("name", dom->m_name);
 			el.add_attribute("mat", dom->m_matName);
 
-			GPartSection* section = pg->GetSection();
-			if (section && section->Parameters())
+			GShellSection* section = dynamic_cast<GShellSection*>(pg->GetSection());
+			if (section && section->GetElementFormulation())
 			{
-				m_xml.add_branch(el);
+				FEShellFormulation* shell = section->GetElementFormulation();
+				el.add_attribute("type", shell->GetTypeString());
+				if (shell->Parameters() > 0)
 				{
-					WriteParamList(*section);
+					m_xml.add_branch(el);
+					WriteParamList(*shell);
+					m_xml.close_branch();
 				}
-				m_xml.close_branch();
 			}
 			else m_xml.add_empty(el);
 		}

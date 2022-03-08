@@ -28,11 +28,9 @@ SOFTWARE.*/
 #include "GBaseObject.h"
 #include "GObject.h"
 #include "geom.h"
+#include "GPartSection.h"
 #include <MeshTools/FEGroup.h>
 #include <MeshLib/FEMesh.h>
-#include <FEMLib/FEElementFormulation.h>
-#include <FEBioLink/FEBioClass.h>
-#include <FECore/fecore_enum.h>
 
 //-----------------------------------------------------------------------------
 // initialize static variables
@@ -419,156 +417,6 @@ bool GFace::HasEdge(int nid)
 	return false;
 }
 
-//=============================================================================
-GPartSection::GPartSection(GPart* part) : m_part(part)
-{
-	if (part) SetParent(part);
-}
-
-const GPart* GPartSection::GetPart() const { return m_part; }
-GPart* GPartSection::GetPart() { return m_part; }
-
-GSolidSection::GSolidSection(GPart* pg) : GPartSection(pg)
-{
-	AddChoiceParam(0, "elem_type", "Element Formulation")->SetEnumNames("$(solid_domain)");
-	m_form = nullptr;
-}
-
-GSolidSection::~GSolidSection()
-{
-	delete m_form;
-}
-
-bool GSolidSection::UpdateData(bool bsave)
-{
-	if (bsave)
-	{
-		int n = GetIntValue(0);
-		if (n <= 0) { delete m_form; m_form = nullptr; return true; }
-
-		// we subtract by one, since n==0 is the null formulation (i.e. "default"). 
-		n--;
-		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESOLIDDOMAIN_ID);
-		assert((n >= 0) && (n < l.size()));
-
-		if ((m_form == nullptr) || (m_form->GetClassID() != l[n].classId))
-		{
-			delete m_form;
-			m_form = FEBio::CreateSolidFormulation(l[n].sztype, nullptr);
-			assert(m_form);
-			return true;
-		}
-	}
-	return false;
-}
-
-GSolidSection* GSolidSection::Copy()
-{
-	GSolidSection* s = new GSolidSection(nullptr);
-	s->CopyParams(*this);
-	return s;
-}
-
-void GSolidSection::SetElementFormulation(FESolidFormulation* form)
-{
-	delete m_form;
-	m_form = form;
-	if (form == nullptr) SetIntValue(0, 0);
-	else
-	{
-		int n = form->GetClassID(); assert(n > 0);
-		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESOLIDDOMAIN_ID);
-		for (int i = 0; i < l.size(); ++i)
-		{
-			if (l[i].classId == n)
-			{
-				// Note we add 1, since we need to offset for the "default" formulation.
-				SetIntValue(0, i + 1);
-				return;
-			}
-		}
-	}
-}
-
-FESolidFormulation* GSolidSection::GetElementFormulation()
-{
-	return m_form;
-}
-
-GShellSection::GShellSection(GPart* pg) : GPartSection(pg)
-{
-	AddChoiceParam(0, "elem_type", "Shell Formulation")->SetEnumNames("$(shell_domain)");
-	AddDoubleParam(0.0, "shell_thickness", "shell thickness");
-	m_form = nullptr;
-}
-
-GShellSection::~GShellSection()
-{
-	delete m_form;
-}
-
-void GShellSection::SetElementFormulation(FEShellFormulation* form) 
-{ 
-	delete m_form;
-	m_form = form;
-	if (form == nullptr) SetIntValue(0, 0);
-	else
-	{
-		int n = form->GetClassID(); assert(n > 0);
-		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESHELLDOMAIN_ID);
-		for (int i = 0; i < l.size(); ++i)
-		{
-			if (l[i].classId == n)
-			{
-				// Note we add 1, since we need to offset for the "default" formulation.
-				SetIntValue(0, i + 1);
-				return;
-			}
-		}
-	}
-}
-
-FEShellFormulation* GShellSection::GetElementFormulation() { return m_form; }
-
-void GShellSection::SetShellThickness(double h)
-{
-	SetFloatValue(1, h);
-}
-
-double GShellSection::shellThickness() const
-{
-	return GetFloatValue(1);
-}
-
-bool GShellSection::UpdateData(bool bsave)
-{
-	if (bsave)
-	{
-		int n = GetIntValue(0);
-		if (n <= 0) { delete m_form; m_form = nullptr; return true; }
-
-		// we subtract by one, since n==0 is the null formulation (i.e. "default"). 
-		n--;
-		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESHELLDOMAIN_ID);
-		assert((n >= 0) && (n < l.size()));
-
-		if ((m_form == nullptr) || (m_form->GetClassID() != l[n].classId))
-		{
-			delete m_form;
-			m_form = FEBio::CreateShellFormulation(l[n].sztype, nullptr);
-			assert(m_form);
-			return true;
-		}
-	}
-	return false;
-}
-
-GShellSection* GShellSection::Copy()
-{
-	GShellSection* s = new GShellSection(nullptr);
-	s->CopyParams(*this);
-	return s;
-}
 
 //=============================================================================
 // GPart
@@ -610,6 +458,18 @@ GPart::GPart(const GPart& p)
 	m_lid = p.m_lid;
 	m_po = p.m_po;
 	SetName(p.GetName());
+}
+
+bool GPart::IsSolid() const
+{
+	assert(m_section);
+	return (dynamic_cast<GSolidSection*>(m_section));
+}
+
+bool GPart::IsShell() const
+{
+	assert(m_section);
+	return (dynamic_cast<GShellSection*>(m_section));
 }
 
 //-----------------------------------------------------------------------------

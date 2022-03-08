@@ -50,9 +50,6 @@ public:
 	// update the object's data
 	bool Update(bool b = true) override;
 
-	void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
-
 	GObject* Clone() override;
 };
 

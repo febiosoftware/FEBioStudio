@@ -73,7 +73,7 @@ void GRing::Create()
 	// 3. build the parts
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	int FT[4][4] = {{ 0, 1, 5, 4}, { 1, 2, 6, 5}, { 2, 3, 7, 6}, { 3, 0, 4, 7}};

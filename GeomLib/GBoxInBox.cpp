@@ -123,5 +123,5 @@ void GBoxInBox::Create()
 	}
 
 	// add part
-	AddPart();
+	AddSolidPart();
 }

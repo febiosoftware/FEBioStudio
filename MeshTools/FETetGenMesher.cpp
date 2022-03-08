@@ -41,10 +41,14 @@ using namespace std;
 	#include <tetgen.h>
 #endif
 
+REGISTER_CLASS3(FETetGenMesher, CLASS_MESHER, TetGen_Mesher, "tetgen", 0, 0);
+
 //-----------------------------------------------------------------------------
 // Constructor
 FETetGenMesher::FETetGenMesher(GObject* po) : m_po(po)
 {
+	SetType(TetGen_Mesher);
+
 	AddDoubleParam(  0, "elsize", "Element Size");
 	AddDoubleParam(2.0, "Quality", "Quality");
 	AddIntParam(0, "eltype", "element type")->SetEnumNames("Tet4\0Tet10\0Tet15\0Tet20\0");

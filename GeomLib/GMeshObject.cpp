@@ -714,7 +714,7 @@ void GMeshObject::Save(OArchive &ar)
 	}
 
 	// save the parts
-	ar.BeginChunk(CID_OBJ_PART_SECTION);
+	ar.BeginChunk(CID_OBJ_PART_LIST);
 	{
 		for (int i=0; i<Parts(); ++i)
 		{
@@ -742,7 +742,7 @@ void GMeshObject::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the surfaces
-	ar.BeginChunk(CID_OBJ_FACE_SECTION);
+	ar.BeginChunk(CID_OBJ_FACE_LIST);
 	{
 		for (int i=0; i<Faces(); ++i)
 		{
@@ -759,7 +759,7 @@ void GMeshObject::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the edges
-	ar.BeginChunk(CID_OBJ_EDGE_SECTION);
+	ar.BeginChunk(CID_OBJ_EDGE_LIST);
 	{
 		for (int i=0; i<Edges(); ++i)
 		{
@@ -780,7 +780,7 @@ void GMeshObject::Save(OArchive &ar)
 	// for instance, a shell disc
 	if (Nodes()>0)
 	{
-		ar.BeginChunk(CID_OBJ_NODE_SECTION);
+		ar.BeginChunk(CID_OBJ_NODE_LIST);
 		{
 			for (int i=0; i<Nodes(); ++i)
 			{	
@@ -875,14 +875,14 @@ void GMeshObject::Load(IArchive& ar)
 			ParamContainer::Load(ar);
 			break;
 		// object parts
-		case CID_OBJ_PART_SECTION:
+		case CID_OBJ_PART_LIST:
 			{
 				assert(nparts > 0);
 				m_Part.reserve(nparts);
 				int n = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_SECTION (GMeshObject::Load)");
+					if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST (GMeshObject::Load)");
 
 					GPart* p = new GPart(this);
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -917,14 +917,14 @@ void GMeshObject::Load(IArchive& ar)
 			}
 			break;
 		// object surfaces
-		case CID_OBJ_FACE_SECTION:
+		case CID_OBJ_FACE_LIST:
 			{
 				assert(nfaces > 0);
 				m_Face.reserve(nfaces);
 				int n = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_SECTION (GMeshObject::Load)");
+					if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_LIST (GMeshObject::Load)");
 
 					GFace* f = new GFace(this);
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -953,14 +953,14 @@ void GMeshObject::Load(IArchive& ar)
 			}
 			break;
 		// object edges
-		case CID_OBJ_EDGE_SECTION:
+		case CID_OBJ_EDGE_LIST:
 			{
 				m_Edge.clear();
 				if (nedges > 0) m_Edge.reserve(nedges);
 				int n = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_SECTION (GMeshObject::Load)");
+					if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST (GMeshObject::Load)");
 
 					GEdge* e = new GEdge(this);
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -989,7 +989,7 @@ void GMeshObject::Load(IArchive& ar)
 			}
 			break;
 		// object nodes
-		case CID_OBJ_NODE_SECTION:
+		case CID_OBJ_NODE_LIST:
 			{
 				m_Node.clear();
 				if (nnodes > 0)
@@ -998,7 +998,7 @@ void GMeshObject::Load(IArchive& ar)
 					int m = 0;
 					while (IArchive::IO_OK == ar.OpenChunk())
 					{
-						if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_SECTION (GMeshObject::Load)");
+						if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST (GMeshObject::Load)");
 
 						GNode* n = new GNode(this);
 						while (IArchive::IO_OK == ar.OpenChunk())

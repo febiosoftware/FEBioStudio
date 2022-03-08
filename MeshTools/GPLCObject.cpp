@@ -247,7 +247,7 @@ void GPLCObject::Create(GSketch &s)
 	while (1);
 
 	// we only add one part for now
-	AddPart();
+	AddSolidPart();
 
 	// Build the GMesh
 	BuildGMesh();

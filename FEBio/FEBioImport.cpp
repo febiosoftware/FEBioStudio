@@ -95,13 +95,13 @@ void FEBioFileImport::AddLogEntry(const char* sz, ...)
 	va_start(args, sz);
 
 	// count how many chars we need to allocate
-	int l = _vscprintf_p(sz, args) + 1;
+	int l = vsnprintf(nullptr, 0, sz, args) + 1;
 	if (l > 1)
 	{
 		szlog = new char[l]; assert(szlog);
 		if (szlog)
 		{
-			_vsprintf_p(szlog, l, sz, args);
+			vsnprintf(szlog, l, sz, args);
 		}
 	}
 	va_end(args);
