@@ -107,7 +107,6 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag, int depth)
     if(!tag.comment().empty())
     {
         child->SetComment(tag.comment().c_str());
-        tag.clearComment();
     }
 
     char szval[256];

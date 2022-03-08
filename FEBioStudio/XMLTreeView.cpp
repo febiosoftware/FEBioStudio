@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <QCompleter>
 #include <QTextEdit>
+#include <QTextCursor>
 #include <QSize>
 #include <QContextMenuEvent>
 #include <QKeyEvent>
@@ -85,13 +86,14 @@ protected:
 };
 
 XMLItemDelegate::XMLItemDelegate(QObject* parent)
-    : QStyledItemDelegate(parent), m_superID(new int(FEINVALID_ID))
+    : QStyledItemDelegate(parent), m_editor(new QWidget*), m_superID(new int(FEINVALID_ID))
 {
-
+    *m_editor = nullptr;
 }
 
 XMLItemDelegate::~XMLItemDelegate()
 {
+    delete m_editor;
     delete m_superID;
 }
 
@@ -99,7 +101,7 @@ void XMLItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & opt
 {
     if(index.column() != NUM_COLUMNS - 1)
     {
-            painter->save();
+        painter->save();
         painter->setPen(qApp->palette().color(QPalette::WindowText));
         // painter->drawRect(option.rect);
         painter->drawLine(option.rect.topRight(), option.rect.bottomRight());
@@ -114,153 +116,155 @@ QWidget* XMLItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewIt
 {
     *m_superID = FEINVALID_ID;
 
-    if(!index.isValid())
+    if(index.isValid())
     {
-        QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
-        return pw;
-    }
+        XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
 
-    XMLTreeItem* item = static_cast<XMLTreeItem*>(index.internalPointer());
+        if(index.column() == TYPE)
+        {
+            XMLTreeItem* ancestor = item->ancestorItem(1);
 
-    if(index.column() == TYPE)
-    {
-        XMLTreeItem* ancestor = item->ancestorItem(1);
-
-        if(ancestor->data(TAG) == "Material")
-        {
-            *m_superID = FEMATERIAL_ID;
-        }
-        else if(ancestor->data(TAG) == "Boundary")
-        {
-            *m_superID = FEBC_ID;
-        }
-        else if(ancestor->data(TAG) == "Contact")
-        {
-            *m_superID = FESURFACEINTERFACE_ID;
-        }
-        else if(ancestor->data(TAG) == "Load")
-        {
-            *m_superID = FELOAD_ID;
-        }
-        else if(ancestor->data(TAG) == "Initial")
-        {
-            *m_superID = FEIC_ID;
-        }
-        else if(ancestor->data(TAG) == "Discrete")
-        {
-            *m_superID = FEDISCRETEMATERIAL_ID;
-        }
-
-        if(*m_superID == FEINVALID_ID)
-        {
-            QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
-            return pw;
-        }
-
-        QStringList classNames;
-        for(auto item : FEBio::FindAllClasses(-1, *m_superID))
-        {
-            classNames.append(item.sztype);
-        }
-        classNames.sort(Qt::CaseInsensitive);
-
-        VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
-        pw->setEditable(true);
-        pw->setStringList(classNames);
-
-        return pw;
-    }
-    else if(index.column() == VALUE)
-    {
-        if(item->data(TAG) == "node_set")
-        {
-            XMLTreeItem* root = item->ancestorItem(0);
-            XMLTreeItem* mesh = root->findChlid(TAG, "Mesh");
-
-            if(mesh)
+            if(ancestor->data(TAG) == "Material")
             {
-                vector<XMLTreeItem*> nodeSets = mesh->findAllChlidren(TAG, "NodeSet");
-                
-                if(nodeSets.size() > 0)
+                *m_superID = FEMATERIAL_ID;
+            }
+            else if(ancestor->data(TAG) == "Boundary")
+            {
+                *m_superID = FEBC_ID;
+            }
+            else if(ancestor->data(TAG) == "Contact")
+            {
+                *m_superID = FESURFACEINTERFACE_ID;
+            }
+            else if(ancestor->data(TAG) == "Load")
+            {
+                *m_superID = FELOAD_ID;
+            }
+            else if(ancestor->data(TAG) == "Initial")
+            {
+                *m_superID = FEIC_ID;
+            }
+            else if(ancestor->data(TAG) == "Discrete")
+            {
+                *m_superID = FEDISCRETEMATERIAL_ID;
+            }
+
+            if(*m_superID != FEINVALID_ID)
+            {
+                QStringList classNames;
+                for(auto item : FEBio::FindAllClasses(-1, *m_superID))
                 {
-                    QStringList nodeSetNames;
+                    classNames.append(item.sztype);
+                }
+                classNames.sort(Qt::CaseInsensitive);
 
-                    for(auto set : nodeSets)
+                VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
+                pw->setEditable(true);
+                pw->setStringList(classNames);
+
+                *m_editor = pw;
+            }
+        }
+        else if(index.column() == VALUE)
+        {
+            if(item->data(TAG) == "node_set")
+            {
+                XMLTreeItem* root = item->ancestorItem(0);
+                XMLTreeItem* mesh = root->findChlid(TAG, "Mesh");
+
+                if(mesh)
+                {
+                    vector<XMLTreeItem*> nodeSets = mesh->findAllChlidren(TAG, "NodeSet");
+                    
+                    if(nodeSets.size() > 0)
                     {
-                        nodeSetNames.append(set->data(NAME));
+                        QStringList nodeSetNames;
+
+                        for(auto set : nodeSets)
+                        {
+                            nodeSetNames.append(set->data(NAME));
+                        }
+
+                        VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
+                        pw->setEditable(true);
+                        pw->setStringList(nodeSetNames);
+                        
+                        *m_editor = pw;
                     }
+                }
+            }
+            else if(item->data(TAG) == "rb")
+            {
+                XMLTreeItem* root = item->ancestorItem(0);
+                XMLTreeItem* material = root->findChlid(TAG, "Material");
 
-                    VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
-                    pw->setEditable(true);
-                    pw->setStringList(nodeSetNames);
-                    return pw;
+                if(material)
+                {
+                    vector<XMLTreeItem*> rigidBodies = material->findAllChlidren(TYPE, "rigid body");
+                    
+                    if(rigidBodies.size() > 0)
+                    {
+                        QStringList rbNames;
 
+                        for(auto set : rigidBodies)
+                        {
+                            rbNames.append(set->data(ID));
+                        }
+
+                        VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
+                        pw->setEditable(true);
+                        pw->setStringList(rbNames);
+                        
+                        *m_editor = pw;
+                    }
+                }
+            }
+            else if(item->data(TAG) == "lc")
+            {
+                XMLTreeItem* root = item->ancestorItem(0);
+                XMLTreeItem* loadData = root->findChlid(TAG, "LoadData");
+
+                if(loadData)
+                {
+                    vector<XMLTreeItem*> lcs = loadData->findAllChlidren(TAG, "load_controller");
+                    
+                    if(lcs.size() > 0)
+                    {
+                        QStringList lcNames;
+
+                        for(auto set : lcs)
+                        {
+                            lcNames.append(set->data(ID));
+                        }
+
+                        VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
+                        pw->setEditable(true);
+                        pw->setStringList(lcNames);
+
+                        *m_editor = pw;
+                    }
                 }
             }
         }
-        else if(item->data(TAG) == "rb")
-        {
-            XMLTreeItem* root = item->ancestorItem(0);
-            XMLTreeItem* material = root->findChlid(TAG, "Material");
-
-            if(material)
-            {
-                vector<XMLTreeItem*> rigidBodies = material->findAllChlidren(TYPE, "rigid body");
-                
-                if(rigidBodies.size() > 0)
-                {
-                    QStringList rbNames;
-
-                    for(auto set : rigidBodies)
-                    {
-                        rbNames.append(set->data(ID));
-                    }
-
-                    VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
-                    pw->setEditable(true);
-                    pw->setStringList(rbNames);
-                    return pw;
-
-                }
-            }
-        }
-        else if(item->data(TAG) == "lc")
-        {
-            XMLTreeItem* root = item->ancestorItem(0);
-            XMLTreeItem* loadData = root->findChlid(TAG, "LoadData");
-
-            if(loadData)
-            {
-                vector<XMLTreeItem*> lcs = loadData->findAllChlidren(TAG, "load_controller");
-                
-                if(lcs.size() > 0)
-                {
-                    QStringList lcNames;
-
-                    for(auto set : lcs)
-                    {
-                        lcNames.append(set->data(ID));
-                    }
-
-                    VariablePopupComboBox* pw = new VariablePopupComboBox(parent);
-                    pw->setEditable(true);
-                    pw->setStringList(lcNames);
-                    return pw;
-
-                }
-            }
+        else if(index.column() == COMMENT)
+        { 
+            QTextEdit* pw = new QTextEdit(parent);
+            pw->setMinimumHeight(option.rect.height()*5);
+            pw->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+            
+            *m_editor = pw;
         }
     }
-    else if(index.column() == COMMENT)
-    { 
-        QTextEdit* pw = new QTextEdit(parent);
-        pw->setMinimumHeight(option.rect.height()*5);
-        pw->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
-        return pw;
+
+    if(!*m_editor)
+    {
+        *m_editor = QStyledItemDelegate::createEditor(parent, option, index);
     }
 
-    QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
-    return pw;
+    // null the editor pointer when the object is destroyed
+    connect(*m_editor, &QObject::destroyed, [=]() { *m_editor = nullptr; });
+
+    return *m_editor;
 }
 
 void XMLItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const 
@@ -321,6 +325,29 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
 
         doc->DoCommand(cmd);
     }
+}
+
+int XMLItemDelegate::getCursorPosition()
+{
+    QTextEdit* textEdit =dynamic_cast<QTextEdit*>(*m_editor);
+    if(textEdit)
+    {
+        return textEdit->textCursor().position();
+    }
+
+    QLineEdit* lineEdit =dynamic_cast<QLineEdit*>(*m_editor);
+    if(lineEdit)
+    {
+        return lineEdit->cursorPosition();
+    }
+
+    VariablePopupComboBox* comboBox = dynamic_cast<VariablePopupComboBox*>(*m_editor);
+    if(comboBox)
+    {
+        comboBox->lineEdit()->cursorPosition();
+    }
+
+    return -1;    
 }
 
 void XMLItemDelegate::OnEditorSignal()

@@ -47,10 +47,14 @@ public:
 
 	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
+    int getCursorPosition();
+
 private slots:
 	void OnEditorSignal();
 
 private:
+    // Evil pointer hack to get around the const in createEditor
+    QWidget** m_editor;
     int* m_superID;
 };
 
