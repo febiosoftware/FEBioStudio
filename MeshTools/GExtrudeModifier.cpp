@@ -155,7 +155,7 @@ void GExtrudeModifier::Apply(GObject* po)
 	assert(po->Parts()==1);
 
 	// but we should have one for each face
-	for (int i=1; i<F*NDIV; ++i) po->AddPart();
+	for (int i=1; i<F*NDIV; ++i) po->AddSolidPart();
 	const int NP = po->Parts();
 
 	// Now, we need to figure out which faces belong to which parts

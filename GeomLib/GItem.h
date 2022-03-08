@@ -160,6 +160,9 @@ public:
 	GPart(const GPart& p);
 	void operator = (const GPart& p);
 
+	bool IsSolid() const;
+	bool IsShell() const;
+
 public:
 	int GetMaterialID() const { return m_matid; }
 	void SetMaterialID(int mid) { m_matid = mid; }

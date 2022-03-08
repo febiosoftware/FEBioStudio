@@ -71,7 +71,7 @@ void GDisc::Create()
 	// 3. build the parts
 	//-------------------
 	assert(m_Part.empty());
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	//------------------

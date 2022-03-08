@@ -24,10 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "stdafx.h"
+//#include "stdafx.h"
 #include <GeomLib/GPrimitive.h>
-#include "FEShellPatch.h"
-#include "FEAdvancingFrontMesher2D.h"
+#include <MeshTools/FEShellPatch.h>
+#include <MeshTools/FEAdvancingFrontMesher2D.h>
 using namespace std;
 
 //=============================================================================

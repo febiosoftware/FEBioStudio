@@ -75,7 +75,7 @@ void GHexagon::Create()
 	for (int i=0; i<18; ++i) AddLine(ET[i][0], ET[i][1]);
 
 	//3. build part
-	AddPart();
+	AddSolidPart();
 
 	//4. build the faces
 	std::vector<int> edge;

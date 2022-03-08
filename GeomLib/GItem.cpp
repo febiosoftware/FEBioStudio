@@ -460,6 +460,18 @@ GPart::GPart(const GPart& p)
 	SetName(p.GetName());
 }
 
+bool GPart::IsSolid() const
+{
+	assert(m_section);
+	return (dynamic_cast<GSolidSection*>(m_section));
+}
+
+bool GPart::IsShell() const
+{
+	assert(m_section);
+	return (dynamic_cast<GShellSection*>(m_section));
+}
+
 //-----------------------------------------------------------------------------
 void GPart::operator =(const GPart &p)
 {

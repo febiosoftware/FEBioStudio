@@ -247,7 +247,7 @@ FSMesh* GSurfaceMeshObject::BuildMesh()
 void GSurfaceMeshObject::Update()
 {
 	// create one part
-	if (Parts() == 0) AddPart();
+	if (Parts() == 0) AddSolidPart();
 
 	// Add surfaces
 	UpdateSurfaces();

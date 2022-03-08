@@ -98,7 +98,7 @@ void GThinTube::Create()
 
 	// 3. build the parts
 	assert(m_Part.empty());
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	int FE[4][4] = {{0, 9, 4, 8}, {1, 10, 5, 9}, {2, 11, 6, 10}, {3, 8, 7, 11}};
@@ -180,7 +180,7 @@ void GCylindricalPatch::Create()
 
 	// 3. build the parts
 	assert(m_Part.empty());
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	int FE[1][4] = { { 0, 3, 1, 2 }};
