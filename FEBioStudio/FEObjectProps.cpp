@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GMaterial.h>
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FEElementFormulation.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
 
@@ -828,8 +829,28 @@ void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(pg)
+CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : FEObjectProps(0)
 {
+	GPartSection* section = pg->GetSection();
+	if (section)
+	{
+		BuildParamList(section);
+
+		GSolidSection* solidSection = dynamic_cast<GSolidSection*>(section);
+		if (solidSection && solidSection->GetElementFormulation())
+		{
+			FESolidFormulation* form = solidSection->GetElementFormulation();
+			AddParameterList(form);
+		}
+
+		GShellSection* shellSection = dynamic_cast<GShellSection*>(section);
+		if (shellSection && shellSection->GetElementFormulation())
+		{
+			FEShellFormulation* form = shellSection->GetElementFormulation();
+			AddParameterList(form);
+		}
+	}
+
 	m_fem = &fem;
 	m_pg = pg;
 	int mid = pg->GetMaterialID();
@@ -844,20 +865,47 @@ CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : CObjectProps(pg)
 	addProperty("material", CProperty::Enum)->setEnumValues(mats);
 }
 
+QStringList CPartProperties::GetEnumValues(const char* ch)
+{
+	if (strcmp(ch, "$(solid_domain)") == 0)
+	{
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESOLIDDOMAIN_ID);
+		QStringList sl;
+		sl << "default";
+		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;
+		return sl;
+	}
+
+	if (strcmp(ch, "$(shell_domain)") == 0)
+	{
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESHELLDOMAIN_ID);
+		QStringList sl;
+		sl << "default";
+		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;
+		return sl;
+	}
+
+	return FEObjectProps::GetEnumValues(ch);
+}
+
 QVariant CPartProperties::GetPropertyValue(int i)
 {
-	if (i < m_pg->Parameters() - 1) return CObjectProps::GetPropertyValue(i);
+	if (i < Properties() - 1) return CObjectProps::GetPropertyValue(i);
 	return m_lid;
 }
 
 void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i < m_pg->Parameters() - 1) return CObjectProps::SetPropertyValue(i, v);
-	m_lid = v.toInt();
-	if (m_lid >= 0)
+	GPartSection* section = m_pg->GetSection();
+	if (i < Properties() - 1) return CObjectProps::SetPropertyValue(i, v);
+	else
 	{
-		GMaterial* mat = m_fem->GetMaterial(m_lid);
-		m_pg->SetMaterialID(mat->GetID());
+		m_lid = v.toInt();
+		if (m_lid < 0) m_pg->SetMaterialID(-1);
+		else
+		{
+			GMaterial* m = m_fem->GetMaterial(m_lid);
+			m_pg->SetMaterialID(m->GetID());
+		}
 	}
-	else m_pg->SetMaterialID(-1);
 }

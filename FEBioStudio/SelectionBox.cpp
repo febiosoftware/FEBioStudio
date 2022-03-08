@@ -40,6 +40,8 @@ SOFTWARE.*/
 #include <MeshTools/GGroup.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
+#include "MainWindow.h"
+#include "ModelDocument.h"
 
 class Ui::CSelectionBox
 {
@@ -428,7 +430,6 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 
 	// set the name
 	QString name = QString::fromStdString(item->GetName());
-	showNameType(true);
 	setName(name);
 	enableAllButtons(true);
 	clearData();
@@ -532,11 +533,16 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 	}
 }
 
-CMeshSelectionBox::CMeshSelectionBox(QWidget* parent)
+CMeshSelectionBox::CMeshSelectionBox(CMainWindow* wnd, QWidget* parent) : CItemListSelectionBox(parent)
 {
+	m_wnd = wnd;
 	m_pms = nullptr;
 
 	QObject::connect(this, SIGNAL(addButtonClicked()), this, SLOT(onAddButtonClicked()));
+	QObject::connect(this, SIGNAL(subButtonClicked()), this, SLOT(onSubButtonClicked()));
+	QObject::connect(this, SIGNAL(delButtonClicked()), this, SLOT(onDelButtonClicked()));
+	QObject::connect(this, SIGNAL(selButtonClicked()), this, SLOT(onSelButtonClicked()));
+	QObject::connect(this, SIGNAL(clearButtonClicked()), this, SLOT(onClearButtonClicked()));
 	QObject::connect(this, SIGNAL(nameChanged(const QString&)), this, SLOT(onNameChanged(const QString&)));
 }
 
@@ -621,5 +627,81 @@ void CMeshSelectionBox::onAddButtonClicked()
 		}
 		emit selectionChanged();
 		return;
+	}
+}
+
+void CMeshSelectionBox::onSubButtonClicked()
+{
+	if (m_pms == nullptr) return;
+
+	// get the current selection
+	FESelection* ps = CActiveSelection::GetCurrentSelection();
+	if ((ps == 0) || (ps->Size() == 0)) return;
+
+	// get the current item list
+	FEItemListBuilder* pl = m_pms->GetItemList();
+	if (pl == nullptr) return;
+
+	// create the item list builder
+	FEItemListBuilder* pg = ps->CreateItemList();
+
+	// subtract from the current list
+	if (pg->Type() == pl->Type())
+	{
+		list<int> l = pg->CopyItems();
+		pl->Subtract(l);
+	}
+
+	SetItemList(pl);
+	delete pg;
+	emit selectionChanged();
+}
+
+void CMeshSelectionBox::onDelButtonClicked()
+{
+	if (m_pms == nullptr) return;
+	FEItemListBuilder* pl = m_pms->GetItemList();
+	if (pl == nullptr) return;
+
+	list<int> items;
+	getSelectedItems(items);
+
+	pl->Subtract(items);
+
+	SetItemList(pl);
+	emit selectionChanged();
+}
+
+void CMeshSelectionBox::onSelButtonClicked()
+{
+	if (m_pms == nullptr) return;
+
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
+
+	// get the selection list
+	vector<int> l;
+	getSelectedItems(l);
+	if (l.empty())
+	{
+		QMessageBox::information(this, "FEBio Studio", "Nothing to select");
+		return;
+	}
+
+	pdoc->SelectItems(m_pms, l, 0);
+	m_wnd->UpdateToolbar();
+	m_wnd->Update();
+}
+
+void CMeshSelectionBox::onClearButtonClicked()
+{
+	if (m_pms == nullptr) return;
+
+	FEItemListBuilder* pl = m_pms->GetItemList();
+	if (pl)
+	{
+		m_pms->SetItemList(nullptr);
+		delete pl;
+		SetItemList(nullptr);
+		emit selectionChanged();
 	}
 }

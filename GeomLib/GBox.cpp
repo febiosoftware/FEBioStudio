@@ -104,7 +104,7 @@ void GBox::Create()
 	// 3. build the parts
 	//-------------------
 	assert(m_Part.empty());
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------

@@ -114,7 +114,7 @@ public:
 	int Next() override;
 	int Prev() override;
 
-	FEItemListBuilder* CreateItemList() override { return 0; }
+	FEItemListBuilder* CreateItemList() override;
 
 	GObject* Object(int i);
 

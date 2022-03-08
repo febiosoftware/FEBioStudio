@@ -333,9 +333,18 @@ void CDlgEditOutput::showEvent(QShowEvent* ev)
 
 	int module = m_prj.GetModule();
 
+	ui->m_plt.clear();
+
 	// get all the FEBio plot classes
 	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	ui->m_plt.clear();
+
+	// first add all existing plot variables
+	for (int i = 0; i < plt.PlotVariables(); ++i)
+	{
+		CPlotVariable& var = plt.PlotVariable(i);
+		ui->m_plt.push_back(var);
+	}
+
 	vector<FEBio::FEBioClassInfo> pltClasses = FEBio::FindAllClasses(module, FEPLOTDATA_ID);
 	for (int i = 0; i < pltClasses.size(); ++i)
 	{
@@ -343,11 +352,7 @@ void CDlgEditOutput::showEvent(QShowEvent* ev)
 		CPlotVariable tmp(feb.sztype, false, true, DOMAIN_MESH);
 
 		CPlotVariable* var = plt.FindVariable(feb.sztype);
-		if (var)
-		{
-			tmp.setActive(var->isActive());
-		}
-		ui->m_plt.push_back(tmp);
+		if (var == nullptr) ui->m_plt.push_back(tmp);
 	}
 
 	UpdateVariables("");
@@ -723,8 +728,19 @@ void CDlgEditOutput::OnNewVariable()
 		QString s = dlg.getFullVariableName();
 		if (s.isEmpty() == false)
 		{
-			CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-			plt.AddPlotVariable(s.toStdString(), true, true);
+			string varName = s.toStdString();
+			// make sure we don't have it yet
+			for (auto& var : ui->m_plt)
+			{
+				if (var.name() == varName)
+				{
+					QMessageBox::information(this, "FEBio Studio", "This variable already exists.");
+					ui->setCurrentVariable(s);
+					return;
+				}
+			}
+			CPlotVariable var(s.toStdString(), true, true, DOMAIN_MESH);
+			ui->m_plt.push_back(var);
 			UpdateVariables("");
 			ui->setCurrentVariable(s);
 		}

@@ -78,7 +78,11 @@ public:
 	void AddFacet(const std::vector<int>& node, const std::vector<pair<int, int> >& edge, int ntype);
 	void AddFacet(const std::vector<int>& edge, int ntype);
 	void AddSurface(GFace* f);
-	void AddPart ();
+	GPart* AddPart ();
+
+	GPart* AddSolidPart();
+	GPart* AddShellPart();
+
 	void AddFace(GFace* f);
 
 	// update the node types

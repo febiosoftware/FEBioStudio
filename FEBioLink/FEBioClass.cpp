@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEDiscreteMaterial.h>
+#include <FEMLib/FEElementFormulation.h>
 #include <MeshTools/FEModel.h>
 #include <sstream>
 using namespace FEBio;
@@ -74,9 +75,16 @@ void initMap()
 	idmap[FERIGIDOBJECT_ID         ] = "FERIGIDOBJECT_ID";
 	idmap[FENLCLOGDATA_ID          ] = "FENLCLOGDATA_ID";
 	idmap[FECALLBACK_ID            ] = "FECALLBACK_ID";
-	idmap[FEDOMAIN_ID              ] = "FEDOMAIN_ID";
+	idmap[FESOLIDDOMAIN_ID         ] = "FESOLIDDOMAIN_ID";
+	idmap[FESHELLDOMAIN_ID         ] = "FESHELLDOMAIN_ID";
+	idmap[FETRUSSDOMAIN_ID         ] = "FETRUSSDOMAIN_ID";
+	idmap[FEDOMAIN2D_ID            ] = "FEDOMAIN2D_ID";
+	idmap[FEDISCRETEDOMAIN_ID      ] = "FEDISCRETEDOMAIN_ID";
+	idmap[FESURFACE_ID             ] = "FESURFACE_ID";
 	idmap[FEIC_ID                  ] = "FEIC_ID";
-	idmap[FEDATAGENERATOR_ID       ] = "FEDATAGENERATOR_ID";
+	idmap[FENODEDATAGENERATOR_ID   ] = "FENODEDATAGENERATOR_ID";
+	idmap[FEFACEDATAGENERATOR_ID   ] = "FEFACEDATAGENERATOR_ID";
+	idmap[FEELEMDATAGENERATOR_ID   ] = "FEELEMDATAGENERATOR_ID";
 	idmap[FELOADCONTROLLER_ID      ] = "FELOADCONTROLLER_ID";
 	idmap[FEMODEL_ID               ] = "FEMODEL_ID";
 	idmap[FEMODELDATA_ID           ] = "FEMODELDATA_ID";
@@ -90,7 +98,6 @@ void initMap()
 	idmap[FEMESHADAPTORCRITERION_ID] = "FEMESHADAPTORCRITERION_ID";
 	idmap[FERIGIDBC_ID             ] = "FERIGIDBC_ID";
 	idmap[FENEWTONSTRATEGY_ID      ] = "FENEWTONSTRATEGY_ID";
-	idmap[FEITEMLIST_ID            ] = "FEITEMLIST_ID";
 	idmap[FETIMECONTROLLER_ID      ] = "FETIMECONTROLLER_ID";
 	idmap[FEEIGENSOLVER_ID         ] = "FEEIGENSOLVER_ID";
 	idmap[FEDATARECORD_ID          ] = "FEDATARECORD_ID";
@@ -253,7 +260,9 @@ FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 		else pc = new FEBioNLConstraint(fem); break;
 	}
 	break;
-	case FEDATAGENERATOR_ID    : pc = new FEBioMeshDataGenerator(fem); break;
+	case FENODEDATAGENERATOR_ID : pc = new FEBioNodeDataGenerator(fem); break;
+	case FEFACEDATAGENERATOR_ID : pc = new FEBioFaceDataGenerator(fem); break;
+	case FEELEMDATAGENERATOR_ID : pc = new FEBioElemDataGenerator(fem); break;
 	case FESOLVER_ID           : pc = new FSGenericClass; break;
 	case FERIGIDBC_ID		   : pc = new FEBioRigidConstraint(fem); break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
@@ -471,16 +480,14 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		}
 
 		// handle mesh selection properties differently
-		if (prop.GetSuperClassID() == FEDOMAIN_ID)
+		if (prop.GetSuperClassID() == FESURFACE_ID)
 		{
 			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
-
-			if (strcmp(prop.GetName(), "surface") == 0) pms->SetMeshItemType(FE_FACE_FLAG);
-
-			pms->SetSuperClassID(FEDOMAIN_ID);
+			pms->SetMeshItemType(FE_FACE_FLAG);
+			pms->SetSuperClassID(FESURFACE_ID);
 			fsp->AddComponent(pms);
 		}
-		else if (prop.GetSuperClassID() == FEITEMLIST_ID)
+/*		else if (prop.GetSuperClassID() == FEITEMLIST_ID)
 		{
 			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
 			if (strcmp(prop.GetName(), "node_set") == 0) pms->SetMeshItemType(FE_NODE_FLAG);
@@ -490,7 +497,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 			pms->SetSuperClassID(FEDOMAIN_ID);
 			fsp->AddComponent(pms);
 		}
-		else if (prop.size() != 0)
+*/		else if (prop.size() != 0)
 		{
 			FECoreBase* pci = prop.get(0);
 
@@ -905,6 +912,16 @@ FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* f
 		pc->SetSuperClassID(FECLASS_ID);
 	}
 	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr);
+}
+
+FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEShellFormulation>(FESHELLDOMAIN_ID, typeStr, fem);
+}
+
+FESolidFormulation* FEBio::CreateSolidFormulation(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FESolidFormulation>(FESOLIDDOMAIN_ID, typeStr, fem);
 }
 
 FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem)

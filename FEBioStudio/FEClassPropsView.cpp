@@ -458,7 +458,7 @@ public:
 				else
 				{
 					FSProperty& prop = m_pc->GetProperty(m_propId);
-					if (prop.GetSuperClassID() == FEDOMAIN_ID)
+					if (prop.GetSuperClassID() == FESURFACE_ID)
 					{
 						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop.GetComponent()); assert(pms);
 						if (pms)
@@ -1188,7 +1188,7 @@ public:
 	FSMeshSelection* m_pms;
 
 public:
-	void setup(QWidget* w)
+	void setup(CMainWindow* wnd, QWidget* w)
 	{
 		m_pf = nullptr;
 		m_pms = nullptr;
@@ -1198,7 +1198,7 @@ public:
 		stack = new QStackedWidget;
 		stack->addWidget(plt  = new CCurveEditWidget);
 		stack->addWidget(math = new CMathEditWidget);
-		stack->addWidget(sel = new CMeshSelectionBox);
+		stack->addWidget(sel = new CMeshSelectionBox(wnd));
 
 		QVBoxLayout* l = new QVBoxLayout;
 		l->setContentsMargins(0, 0, 0, 0);
@@ -1251,9 +1251,9 @@ public:
 	}
 };
 
-FEClassEdit::FEClassEdit(QWidget* parent) : QWidget(parent), ui(new FEClassEditUI)
+FEClassEdit::FEClassEdit(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new FEClassEditUI)
 {
-	ui->setup(this);
+	ui->setup(wnd, this);
 }
 
 void FEClassEdit::SetFEClass(FSCoreBase* pc, FSModel* fem)
@@ -1274,7 +1274,7 @@ void FEClassEdit::onItemClicked(const QModelIndex& i)
 		FSFunction1D* pf = dynamic_cast<FSFunction1D*>(p->GetComponent());
 		ui->SetFunction1D(pf);
 	}
-	else if (p->GetSuperClassID() == FEDOMAIN_ID)
+	else if (p->GetSuperClassID() == FESURFACE_ID)
 	{
 		FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(p->GetComponent());
 		ui->SetMeshSelection(pms); return;

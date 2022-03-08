@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
+#include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEElementData.h>
@@ -506,41 +507,12 @@ bool FEBioFormat4::ParseMeshDomainsSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (!tag.isleaf())
 	{
-		FEBioInputModel::Part* part = DefaultPart();
-
 		// loop over all sections
 		++tag;
 		do
 		{
-			if ((tag == "SolidDomain") || (tag == "ShellDomain"))
-			{
-				const char* szname = tag.AttributeValue("name");
-				const char* szmat = tag.AttributeValue("mat", true);
-				if (szmat)
-				{
-					FEBioInputModel& febio = GetFEBioModel();
-					int matID = febio.GetMaterialIndex(szmat);
-					if (matID == -1) matID = atoi(szmat) - 1;
-
-					FEBioInputModel::Domain* dom = part->FindDomain(szname);
-					if (dom) dom->SetMatID(matID);
-
-					if (tag.isleaf() == false)
-					{
-						++tag;
-						do
-						{
-							if (tag == "shell_normal_nodal")
-							{
-								if (dom) tag.value(dom->m_bshellNodalNormals);
-							}
-							else ParseUnknownTag(tag);
-							++tag;
-						}
-						while (!tag.isend());
-					}
-				}
-			}
+			if      (tag == "SolidDomain") ParseSolidDomain(tag);
+			else if (tag == "ShellDomain") ParseShellDomain(tag);
 			else ParseUnknownTag(tag);
 			++tag;
 		} while (!tag.isend());
@@ -550,6 +522,70 @@ bool FEBioFormat4::ParseMeshDomainsSection(XMLTag& tag)
 	GetFEBioModel().UpdateGeometry();
     
     return true;
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
+{
+	FEBioInputModel::Part* part = DefaultPart();
+
+	const char* szname = tag.AttributeValue("name");
+	const char* szmat = tag.AttributeValue("mat", true);
+	if (szmat)
+	{
+		FEBioInputModel& febio = GetFEBioModel();
+		int matID = febio.GetMaterialIndex(szmat);
+		if (matID == -1) matID = atoi(szmat) - 1;
+
+		FEBioInputModel::Domain* dom = part->FindDomain(szname);
+		if (dom) dom->SetMatID(matID);
+
+		FESolidFormulation* eform = nullptr;
+		const char* szelem = tag.AttributeValue("elem_type", true);
+		if (szelem) eform = FEBio::CreateSolidFormulation(szelem, &febio.GetFSModel());
+
+		// read the domain parameters
+		if (tag.isleaf() == false)
+		{
+			if (eform)
+				ReadParameters(*eform, tag);
+			else
+				ParseUnknownAttribute(tag, "elem_type");
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseShellDomain(XMLTag& tag)
+{
+	FEBioInputModel::Part* part = DefaultPart();
+
+	const char* szname = tag.AttributeValue("name");
+	const char* szmat = tag.AttributeValue("mat", true);
+	if (szmat)
+	{
+		FEBioInputModel& febio = GetFEBioModel();
+		int matID = febio.GetMaterialIndex(szmat);
+		if (matID == -1) matID = atoi(szmat) - 1;
+
+		FEBioInputModel::Domain* dom = part->FindDomain(szname);
+		if (dom) dom->SetMatID(matID);
+
+		FEShellFormulation* shell = nullptr;
+		const char* szelem = tag.AttributeValue("elem_type", true);
+		if (szelem) shell = shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
+
+		dom->m_form = shell;
+
+		// read the domain parameters
+		if (tag.isleaf() == false)
+		{
+			if (shell)
+				ReadParameters(*shell, tag);
+			else
+				ParseUnknownAttribute(tag, "elem_type");
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -695,7 +731,7 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 
 	// add domain to list
 	FEBioInputModel::Domain* dom = part->AddDomain(name, matID);
-	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
+//	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// create elements
 	FSMesh& mesh = *part->GetFEMesh();

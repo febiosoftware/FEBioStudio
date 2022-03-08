@@ -84,19 +84,31 @@ void FEBioFileImport::ClearLog()
 //-----------------------------------------------------------------------------
 void FEBioFileImport::AddLogEntry(const char* sz, ...)
 {
-	if (sz == 0) return;
+	if ((sz == 0) || (*sz==0)) return;
 
 	// get a pointer to the argument list
 	va_list	args;
 
 	// copy to string
-	char szlog[256] = {0};
-	va_start(args, sz);
-	vsprintf(szlog, sz, args);
-	va_end(args);
+	char* szlog = NULL;
 
-	int l = (int)strlen(szlog);
-	if (l == 0) return;
+	va_start(args, sz);
+
+	// count how many chars we need to allocate
+	int l = _vscprintf_p(sz, args) + 1;
+	if (l > 1)
+	{
+		szlog = new char[l]; assert(szlog);
+		if (szlog)
+		{
+			_vsprintf_p(szlog, l, sz, args);
+		}
+	}
+	va_end(args);
+	if (szlog == NULL) return;
+
+	l = (int) strlen(szlog);
+	if (l == 0) { delete szlog;  return; }
 
 	if (m_szlog == 0)
 	{
@@ -111,6 +123,8 @@ void FEBioFileImport::AddLogEntry(const char* sz, ...)
 		delete [] m_szlog;
 		m_szlog = sznew;
 	}
+
+	delete szlog;
 }
 
 //-----------------------------------------------------------------------------
@@ -360,7 +374,18 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		{
 			if (pc.m_p)
 			{
-				pc.m_p->SetLoadCurveID(LCT[pc.m_lc]);
+				if (pc.m_p->GetParamType() == Param_Type::Param_STD_VECTOR_VEC2D)
+				{
+					// map the points directly to vector
+					FSLoadController* plc = fem.GetLoadController(pc.m_lc);
+					Param* src = plc->GetParam("points"); assert(src);
+					if (src)
+					{
+						std::vector<vec2d> pt = src->GetVectorVec2dValue();
+						pc.m_p->SetVectorVec2dValue(pt);
+					}
+				}
+				else pc.m_p->SetLoadCurveID(LCT[pc.m_lc]);
 			}
 			if (pc.m_plc) 
 			{

@@ -501,7 +501,10 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 	Surface* surface = m_part->FindSurface(szname);
 	if (surface == 0) return 0;
 
-	bool issuesFound = false;
+	const int maxIssues = 10;
+	int issuesFound = 0;
+	stringstream serr;
+	serr << "Building surface \"" << szname << "\":\n";
 
 	// create face list
 	vector<int> faceList;
@@ -517,17 +520,17 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 			bool winding = check_winding(face, meshFace);
 			if (winding == false)
 			{
-				stringstream ss;
-				if (issuesFound == false) ss << "Building surface \"" << szname << "\":\n";
-				ss << "facet has incorrect winding: ";
-				for (int j = 0; j < face.size(); ++j)
+				if (issuesFound < maxIssues)
 				{
-					ss << face[j] + 1;
-					if (j != face.size() - 1) ss << ",";
+					serr << "\tfacet has incorrect winding: ";
+					for (int j = 0; j < face.size(); ++j)
+					{
+						serr << face[j] + 1;
+						if (j != face.size() - 1) serr << ",";
+					}
+					serr << "\n";
 				}
-				string s = ss.str();
-				AddLogEntry(s.c_str());
-				issuesFound = true;
+				issuesFound++;
 			}
 
 			// add it to the list
@@ -535,18 +538,29 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 		}
 		else
 		{
-			stringstream ss;
-			if (issuesFound == false) ss << "Building surface \"" << szname << "\":\n";
-			ss << "Cannot find facet: ";
-			for (int j = 0; j < face.size(); ++j)
+			if (issuesFound < maxIssues)
 			{
-				ss << face[j] + 1;
-				if (j != face.size() - 1) ss << ",";
+				serr << "\tCannot find facet: ";
+				for (int j = 0; j < face.size(); ++j)
+				{
+					serr << face[j] + 1;
+					if (j != face.size() - 1) serr << ",";
+				}
+				serr << "\n";
 			}
-			string s = ss.str();
-			AddLogEntry(s.c_str());
-			issuesFound = true;
+			issuesFound++;
 		}
+	}
+
+	if (issuesFound)
+	{
+		if (issuesFound > maxIssues)
+		{
+			serr << "\t(issue count exceeded limit)\n";
+			serr << "\t" << issuesFound << " issues found when building surface.\n";
+		}
+		string s = serr.str();
+		febImport->AddLogEntry(s.c_str());
 	}
 
 	// create the surface
@@ -590,18 +604,14 @@ FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 //=============================================================================
 FEBioInputModel::Domain::Domain(Part* part) : m_part(part)
 {
-	m_bshellNodalNormals = true;
-    m_blaugon = false;
-    m_augtol = 0.01;
+	m_form = nullptr;
 }
 
 FEBioInputModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_part(part)
 {
 	m_name = name;
 	m_matID = matID;
-	m_bshellNodalNormals = true;
-    m_blaugon = false;
-    m_augtol = 0.01;
+	m_form = nullptr;
 }
 
 FEBioInputModel::Domain::Domain(const Domain& part)
@@ -609,21 +619,16 @@ FEBioInputModel::Domain::Domain(const Domain& part)
 	m_part = part.m_part;
 	m_name = part.m_name;
 	m_matID = part.m_matID;
-	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_elem = part.m_elem;
-    m_blaugon = part.m_blaugon;
-    m_augtol = part.m_augtol;
+	m_form = part.m_form; // TODO: Need to copy!
 }
 
 void FEBioInputModel::Domain::operator = (const Domain& part)
 {
 	m_part = part.m_part;
 	m_name = part.m_name;
-	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_matID = part.m_matID;
 	m_elem = part.m_elem;
-    m_blaugon = part.m_blaugon;
-    m_augtol = part.m_augtol;
 }
 
 //=============================================================================
@@ -851,11 +856,23 @@ void FEBioInputModel::UpdateGeometry()
 			std::string name = elSet.name();
 			gpart.SetName(name.c_str());
 
-			gpart.setShellNormalNodal(elSet.m_bshellNodalNormals);
-            
-            gpart.setLaugon(elSet.m_blaugon);
-            
-            gpart.setAugTol(elSet.m_augtol);
+			FESolidFormulation* solidForm = dynamic_cast<FESolidFormulation*>(elSet.m_form);
+			if (solidForm)
+			{
+				GSolidSection* solidSection = new GSolidSection(&gpart);
+				gpart.SetSection(solidSection);
+
+				solidSection->SetElementFormulation(solidForm);
+			}
+
+			FEShellFormulation* shellForm = dynamic_cast<FEShellFormulation*>(elSet.m_form);
+			if (shellForm)
+			{
+				GShellSection* shellSection = new GShellSection(&gpart);
+				gpart.SetSection(shellSection);
+
+				shellSection->SetElementFormulation(shellForm);
+			}
         }
 	}
 }

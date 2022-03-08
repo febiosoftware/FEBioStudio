@@ -198,12 +198,15 @@ private:
 	int					m_nsols;
 };
 
-class CPartProperties : public CObjectProps
+class CPartProperties : public FEObjectProps
 {
 public:
 	CPartProperties(GPart* pg, FSModel& fem);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
+
+	QStringList GetEnumValues(const char* ch) override;
+
 private:
 	int	m_lid;
 	GPart*	m_pg;

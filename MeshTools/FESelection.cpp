@@ -76,6 +76,22 @@ int GObjectSelection::Prev()
 	return n;
 }
 
+FEItemListBuilder* GObjectSelection::CreateItemList()
+{
+	GPartList* partList = new GPartList(m_pfem);
+	GModel& m = m_pfem->GetModel();
+	int N = m.Objects();
+	for (int i = 0; i < N; ++i)
+	{
+		GObject* po = m.Object(i);
+		if (po->IsSelected())
+		{
+			int parts = po->Parts();
+			for (int j = 0; j < parts; ++j) partList->add(po->Part(i)->GetID());
+		}
+	}
+	return partList;
+}
 
 void GObjectSelection::Invert()
 {

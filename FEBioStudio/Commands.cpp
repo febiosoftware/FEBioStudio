@@ -1489,7 +1489,7 @@ CCmdSelectElements::CCmdSelectElements(FSMesh* pm, int* pe, int N, bool badd) : 
 	}
 }
 
-CCmdSelectElements::CCmdSelectElements(FSMesh* pm, vector<int>& el, bool badd) : CCommand("Select Elements")
+CCmdSelectElements::CCmdSelectElements(FSMesh* pm, const vector<int>& el, bool badd) : CCommand("Select Elements")
 {
 	int i;
 	int N = (int)el.size();
@@ -1641,7 +1641,7 @@ CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, int* pf, int N, bool badd) : CC
 	}
 }
 
-CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, vector<int>& fl, bool badd) : CCommand("Select Faces")
+CCmdSelectFaces::CCmdSelectFaces(FSMeshBase* pm, const vector<int>& fl, bool badd) : CCommand("Select Faces")
 {
 	int i;
 	int N = (int)fl.size();
@@ -1782,7 +1782,7 @@ CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, int* pe, int N, bool badd) 
 	}
 }
 
-CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, vector<int>& el, bool badd) : CCommand("Select Edges")
+CCmdSelectFEEdges::CCmdSelectFEEdges(FSLineMesh* pm, const vector<int>& el, bool badd) : CCommand("Select Edges")
 {
 	int N = (int)el.size();
 
@@ -1925,7 +1925,7 @@ CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, int* pn, int N, bool badd) 
 	}
 }
 
-CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, vector<int>& nl, bool badd) : CCommand("Select Nodes")
+CCmdSelectFENodes::CCmdSelectFENodes(FSLineMesh* pm, const vector<int>& nl, bool badd) : CCommand("Select Nodes")
 {
 	int i;
 	int N = (int)nl.size();
@@ -3241,55 +3241,28 @@ void CCmdAddMaterial::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdSetModelComponentItemList
+// CCmdSetItemList
 //-----------------------------------------------------------------------------
 
-CCmdSetModelComponentItemList::CCmdSetModelComponentItemList(FSDomainComponent* pbc, FEItemListBuilder* pl) : CCommand("Assign BC")
+CCmdSetItemList::CCmdSetItemList(IHasItemList* pbc, FEItemListBuilder* pl) : CCommand("Assign selection")
 {
 	m_pbc = pbc;
 	m_pl = pl;
 }
 
-CCmdSetModelComponentItemList::~CCmdSetModelComponentItemList()
+CCmdSetItemList::~CCmdSetItemList()
 {
 	if (m_pl) delete m_pl;
 }
 
-void CCmdSetModelComponentItemList::Execute()
+void CCmdSetItemList::Execute()
 {
 	FEItemListBuilder* pold = m_pbc->GetItemList();
 	m_pbc->SetItemList(m_pl);
 	m_pl = pold;
 }
 
-void CCmdSetModelComponentItemList::UnExecute()
-{
-	Execute();
-}
-
-//-----------------------------------------------------------------------------
-// CCmdUnassignBC
-//-----------------------------------------------------------------------------
-
-CCmdUnassignBC::CCmdUnassignBC(FSBoundaryCondition* pbc) : CCommand("Unassign BC")
-{
-	m_pbc = pbc;
-	m_pl = 0;
-}
-
-CCmdUnassignBC::~CCmdUnassignBC()
-{
-	if (m_pl) delete m_pl;
-}
-
-void CCmdUnassignBC::Execute()
-{
-	FEItemListBuilder* pold = m_pbc->GetItemList();
-	m_pbc->SetItemList(m_pl);
-	m_pl = pold;
-}
-
-void CCmdUnassignBC::UnExecute()
+void CCmdSetItemList::UnExecute()
 {
 	Execute();
 }
@@ -3356,29 +3329,17 @@ void CCmdRemoveFromItemListBuilder::UnExecute()
 // CCmdRemoveItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSDomainComponent* pmc) : CCommand("Remove selection")
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(IHasItemList* pmc) : CCommand("Remove selection")
 {
 	m_pmc = pmc;
-	m_psi = nullptr;
 	m_ppi = nullptr;
 	m_pitem = nullptr;
 	m_index = -1;
 }
-
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSSoloInterface* pmc) : CCommand("Remove selection")
-{
-	m_pmc = nullptr;
-	m_psi = pmc;
-	m_ppi = nullptr;
-	m_pitem = nullptr;
-	m_index = -1;
-}
-
 
 CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n) : CCommand("Remove selection")
 {
 	m_pmc = nullptr;
-	m_psi = nullptr;
 	m_ppi = pmc;
 	m_pitem = nullptr;
 	m_index = n;
@@ -3396,11 +3357,6 @@ void CCmdRemoveItemListBuilder::Execute()
 		m_pitem = m_pmc->GetItemList();
 		m_pmc->SetItemList(nullptr);
 	}
-	if (m_psi)
-	{
-		m_pitem = m_psi->GetItemList();
-		m_psi->SetItemList(nullptr);
-	}
 	if (m_ppi)
 	{
 		m_pitem = m_ppi->GetItemList(m_index);
@@ -3411,7 +3367,6 @@ void CCmdRemoveItemListBuilder::Execute()
 void CCmdRemoveItemListBuilder::UnExecute()
 {
 	if (m_pmc) m_pmc->SetItemList(m_pitem);
-	if (m_psi) m_psi->SetItemList(m_pitem);
 	if (m_ppi) m_ppi->SetItemList(m_index, m_pitem);
 	m_pitem = nullptr;
 }

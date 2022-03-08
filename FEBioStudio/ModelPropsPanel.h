@@ -193,7 +193,6 @@ private slots:
 
 private:
 	void SetSelection(int n, FEItemListBuilder* it);
-	void SetSelection(GMaterial* pmat);
 	void SetSelection(GDiscreteElementSet* set);
 
 	void addSelection(int n);

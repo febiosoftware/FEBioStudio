@@ -75,6 +75,9 @@ private:
 
 	void ParseModelComponent(FSModelComponent* pmc, XMLTag& tag);
 
+	void ParseSolidDomain(XMLTag& tag);
+	void ParseShellDomain(XMLTag& tag);
+
 private:
 	// boundary condition input functions
 	void ParseBC		  (FSStep* pstep, XMLTag& tag);

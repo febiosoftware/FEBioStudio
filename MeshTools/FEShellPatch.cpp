@@ -82,6 +82,11 @@ FSMesh* FEShellPatch::BuildMesh()
 	double t = GetFloatValue(T);
 	pm->SetUniformShellThickness(t);
 
+	// assign shell thickness to section
+	GPart* part = m_pobj->Part(0); assert(part);
+	GShellSection* shellSection = dynamic_cast<GShellSection*>(part->GetSection());
+	if (shellSection) shellSection->SetShellThickness(t);
+
 	return pm;
 }
 

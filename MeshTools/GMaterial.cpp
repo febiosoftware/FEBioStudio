@@ -28,6 +28,9 @@ SOFTWARE.*/
 #include "GMaterial.h"
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMaterial.h>
+#include <MeshTools/GGroup.h>
+#include <MeshTools/GModel.h>
+#include <GeomLib/GObject.h>
 #include <sstream>
 
 using std::stringstream;
@@ -78,10 +81,13 @@ GMaterial::GMaterial(FSMaterial* pm)
 	SetName(ss.str());
 
 	AmbientDiffuse(col[(m_nID-1) % 16]);
+
+	m_partList = nullptr;
 }
 
 GMaterial::~GMaterial(void)
 {
+	delete m_partList;
 	delete m_pm;
 }
 
@@ -169,4 +175,66 @@ void GMaterial::Load(IArchive &ar)
 		}
 		ar.CloseChunk();
 	}
+}
+
+FEItemListBuilder* GMaterial::GetItemList()
+{
+	if (m_partList == nullptr) m_partList = new GPartList(m_ps);
+	m_partList->clear();
+
+	// set the items
+	GModel& mdl = m_ps->GetModel();
+	int NO = mdl.Objects();
+	for (int i = 0; i < NO; ++i)
+	{
+		GObject* po = mdl.Object(i);
+		int NP = po->Parts();
+		for (int j = 0; j < NP; ++j)
+		{
+			GPart* pg = po->Part(i);
+			if (pg->GetMaterialID() == GetID())
+			{
+				m_partList->add(pg->GetID());
+			}
+		}
+	}
+
+	return m_partList;
+}
+
+void GMaterial::SetItemList(FEItemListBuilder* pi)
+{
+	// clear all parts that have this material
+	// set the items
+	GModel& mdl = m_ps->GetModel();
+	int NO = mdl.Objects();
+	for (int i = 0; i < NO; ++i)
+	{
+		GObject* po = mdl.Object(i);
+		int NP = po->Parts();
+		for (int j = 0; j < NP; ++j)
+		{
+			GPart* pg = po->Part(i);
+			if (pg->GetMaterialID() == GetID())
+			{
+				pg->SetMaterialID(-1);
+			}
+		}
+	}
+
+	// re-assign material IDs
+	GPartList* partList = dynamic_cast<GPartList*>(pi);
+	if (partList)
+	{
+		vector<GPart*> parts = partList->GetPartList();
+		for (GPart* pg : parts)
+		{
+			pg->SetMaterialID(GetID());
+		}
+	}
+}
+
+unsigned int GMaterial::GetMeshItemType() const
+{
+	return FE_PART_FLAG;
 }

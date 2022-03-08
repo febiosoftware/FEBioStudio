@@ -25,6 +25,9 @@ FSDomainComponent::~FSDomainComponent(void)
 	if (m_pItem) delete m_pItem;
 }
 
+FEItemListBuilder* FSDomainComponent::GetItemList() { return m_pItem; }
+void FSDomainComponent::SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
+
 unsigned int FSDomainComponent::GetMeshItemType() const
 {
 	return m_itemType;

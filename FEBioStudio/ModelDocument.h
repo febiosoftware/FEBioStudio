@@ -27,12 +27,14 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 #include "FEBioJob.h"
+#include <vector>
 
 //-----------------------------------------------------------------------------
 typedef FSObjectList<CFEBioJob> CFEBioJobList;
 
 //-----------------------------------------------------------------------------
 class CModelContext;
+class FSObject;
 
 //-----------------------------------------------------------------------------
 class CModelDocument : public CGLDocument
@@ -86,6 +88,8 @@ public: // selection
 
 	void HideCurrentSelection();
 	void HideUnselected();
+
+	void SelectItems(FSObject* po, const std::vector<int>& l, int n);
 
 public:
 	int FEBioJobs() const;

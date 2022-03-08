@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <string>
 #include <vector>
 #include <MeshTools/FEProject.h>
+#include <FEMLib/FEElementFormulation.h>
 
 class GMeshObject;
 class GDiscreteElementSet;
@@ -171,10 +172,7 @@ public:
 
 		std::vector<int> GetElementIDList() const { return m_elem; }
 
-	public:
-		bool		m_bshellNodalNormals;
-        bool        m_blaugon;        //!< augmented lagrangian flag
-        double      m_augtol;        //!< augmented lagrangian tolerance
+		FEElementFormulation* m_form;
 
 	private:
 		int			m_matID;	// zero-based material index

@@ -54,6 +54,8 @@ class FSCoreBase;
 class FSLoadController;
 class FSFunction1D;
 class FSGenericClass;
+class FESolidFormulation;
+class FEShellFormulation;
 
 namespace FEBio {
 
@@ -126,6 +128,8 @@ namespace FEBio {
 	FSLoadController*    CreateLoadController   (const std::string& typeStr, FSModel* fem);
 	FSFunction1D*        CreateFunction1D       (const std::string& typeStr, FSModel* fem);
 	FSGenericClass*		 CreateGenericClass     (const std::string& typeStr, FSModel* fem);
+	FEShellFormulation*  CreateShellFormulation (const std::string& typeStr, FSModel* fem);
+	FESolidFormulation*  CreateSolidFormulation (const std::string& typeStr, FSModel* fem);
 
 	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem);
 	FSModelComponent* CreateClass(int classId, FSModel* fem);

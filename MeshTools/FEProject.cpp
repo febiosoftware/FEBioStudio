@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FELoadController.h>
 #include <FEMLib/FEMeshDataGenerator.h>
+#include <FEMLib/FEElementFormulation.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <FEBioLink/FEBioModule.h>
@@ -446,7 +447,9 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioMeshAdaptor      , 0, FEMESHADAPTOR_ID      , FE_FEBIO_MESH_ADAPTOR      , "[febio]");
 	REGISTER_FE_CLASS(FEBioLoadController   , 0, FELOADCONTROLLER_ID   , FE_FEBIO_LOAD_CONTROLLER   , "[febio]");
 	REGISTER_FE_CLASS(FEBioFunction1D       , 0, FEFUNCTION1D_ID       , FE_FEBIO_FUNCTION1D        , "[febio]");
-	REGISTER_FE_CLASS(FEBioMeshDataGenerator, 0, FEDATAGENERATOR_ID    , FE_FEBIO_MESHDATA_GENERATOR, "[febio]");
+	REGISTER_FE_CLASS(FEBioNodeDataGenerator, 0, FENODEDATAGENERATOR_ID, FE_FEBIO_NODEDATA_GENERATOR, "[febio]");
+	REGISTER_FE_CLASS(FEBioFaceDataGenerator, 0, FEFACEDATAGENERATOR_ID, FE_FEBIO_FACEDATA_GENERATOR, "[febio]");
+	REGISTER_FE_CLASS(FEBioElemDataGenerator, 0, FEELEMDATAGENERATOR_ID, FE_FEBIO_ELEMDATA_GENERATOR, "[febio]");
 	REGISTER_FE_CLASS(FEBioMaterialProperty , 0, FEMATERIALPROP_ID     , FE_FEBIO_MATERIAL_PROPERTY , "[febio]");
 }
 
