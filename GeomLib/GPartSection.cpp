@@ -50,6 +50,48 @@ GSolidSection::~GSolidSection()
 	delete m_form;
 }
 
+void GSolidSection::Save(OArchive& ar)
+{
+	// save the parameters
+	if (Parameters() > 0)
+	{
+		ar.BeginChunk(CID_OBJ_PARAMS);
+		{
+			ParamContainer::Save(ar);
+		}
+		ar.EndChunk();
+	}
+
+	if (m_form)
+	{
+		ar.BeginChunk(CID_OBJ_SOLID_DOMAIN);
+		{
+			m_form->Save(ar);
+		}
+		ar.EndChunk();
+	}
+}
+
+void GSolidSection::Load(IArchive& ar)
+{
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid, mid;
+		switch (ar.GetChunkID())
+		{
+		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;
+		case CID_OBJ_SOLID_DOMAIN:
+		{
+			FESolidFormulation* solid = new FESolidFormulation(nullptr);
+			solid->Load(ar);
+			SetElementFormulation(solid);
+		}
+		break;
+		}
+		ar.CloseChunk();
+	}
+}
+
 bool GSolidSection::UpdateData(bool bsave)
 {
 	if (bsave)
@@ -106,6 +148,7 @@ FESolidFormulation* GSolidSection::GetElementFormulation()
 	return m_form;
 }
 
+//========================================================================
 GShellSection::GShellSection(GPart* pg) : GPartSection(pg)
 {
 	AddChoiceParam(0, "elem_type", "Shell Formulation")->SetEnumNames("$(shell_domain)");
@@ -116,6 +159,48 @@ GShellSection::GShellSection(GPart* pg) : GPartSection(pg)
 GShellSection::~GShellSection()
 {
 	delete m_form;
+}
+
+void GShellSection::Save(OArchive& ar)
+{
+	// save the parameters
+	if (Parameters() > 0)
+	{
+		ar.BeginChunk(CID_OBJ_PARAMS);
+		{
+			ParamContainer::Save(ar);
+		}
+		ar.EndChunk();
+	}
+
+	if (m_form)
+	{
+		ar.BeginChunk(CID_OBJ_SHELL_DOMAIN);
+		{
+			m_form->Save(ar);
+		}
+		ar.EndChunk();
+	}
+}
+
+void GShellSection::Load(IArchive& ar)
+{
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid, mid;
+		switch (ar.GetChunkID())
+		{
+		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;
+		case CID_OBJ_SOLID_DOMAIN:
+		{
+			FEShellFormulation* shell = new FEShellFormulation(nullptr);
+			SetElementFormulation(shell);
+			shell->Load(ar);
+		}
+		break;
+		}
+		ar.CloseChunk();
+	}
 }
 
 void GShellSection::SetElementFormulation(FEShellFormulation* form)

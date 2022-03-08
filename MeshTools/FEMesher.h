@@ -30,6 +30,12 @@ SOFTWARE.*/
 class GObject;
 class FSMesh;
 
+// mesher types
+enum FEMesherType {
+	Default_Mesher = 0,
+	TetGen_Mesher = 1
+};
+
 //-----------------------------------------------------------------------------
 // The FEMesher class takes a geometry object and converts it to a finite
 // element mesh.
@@ -57,9 +63,16 @@ public:
 	void SetErrorMessage(const std::string& err);
 	std::string GetErrorMessage() const;
 
+	int Type() const;
+
+protected:
+	void SetType(int ntype);
+
 public:
 	static FEMesher* Create(GObject* po, int classType);
 
 protected:
 	std::string		m_error;
+
+	int	m_ntype;
 };

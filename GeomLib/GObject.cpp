@@ -453,7 +453,7 @@ void GObject::ReplaceSurfaceMesh(FSSurfaceMesh* pm)
 bool GObject::Update(bool b)
 {
 	BuildGMesh();
-	return FSObject::Update(b);
+	return GBaseObject::Update(b);
 }
 
 //-----------------------------------------------------------------------------
@@ -1723,7 +1723,7 @@ void GObject::Save(OArchive &ar)
 	// save the parts
 	if (Parts() > 0)
 	{
-		ar.BeginChunk(CID_OBJ_PART_SECTION);
+		ar.BeginChunk(CID_OBJ_PART_LIST);
 		{
 			for (int i = 0; i<Parts(); ++i)
 			{
@@ -1744,6 +1744,30 @@ void GObject::Save(OArchive &ar)
 						}
 						ar.EndChunk();
 					}
+
+					GPartSection* section = p.GetSection();
+					if (section)
+					{
+						GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
+						if (solid)
+						{
+							ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
+							{
+								solid->Save(ar);
+							}
+							ar.EndChunk();
+						}
+
+						GShellSection* shell = dynamic_cast<GShellSection*>(section);
+						if (shell)
+						{
+							ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
+							{
+								shell->Save(ar);
+							}
+							ar.EndChunk();
+						}
+					}
 				}
 				ar.EndChunk();
 			}
@@ -1754,7 +1778,7 @@ void GObject::Save(OArchive &ar)
 	// save the surfaces
 	if (Faces() > 0)
 	{
-		ar.BeginChunk(CID_OBJ_FACE_SECTION);
+		ar.BeginChunk(CID_OBJ_FACE_LIST);
 		{
 			for (int i = 0; i<Faces(); ++i)
 			{
@@ -1766,6 +1790,9 @@ void GObject::Save(OArchive &ar)
 					ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
 					ar.WriteChunk(CID_OBJ_FACE_PID0, f.m_nPID[0]);
 					ar.WriteChunk(CID_OBJ_FACE_PID1, f.m_nPID[1]);
+					ar.WriteChunk(CID_OBJ_FACE_TYPE, f.m_ntype);
+					ar.WriteChunk(CID_OBJ_FACE_NODELIST, f.m_node);
+					ar.WriteChunk(CID_OBJ_FACE_EDGELIST, f.m_edge);
 				}
 				ar.EndChunk();
 			}
@@ -1776,7 +1803,7 @@ void GObject::Save(OArchive &ar)
 	// save the edges
 	if (Edges() > 0)
 	{
-		ar.BeginChunk(CID_OBJ_EDGE_SECTION);
+		ar.BeginChunk(CID_OBJ_EDGE_LIST);
 		{
 			for (int i = 0; i<Edges(); ++i)
 			{
@@ -1798,7 +1825,7 @@ void GObject::Save(OArchive &ar)
 	// for instance, a shell disc
 	if (Nodes()>0)
 	{
-		ar.BeginChunk(CID_OBJ_NODE_SECTION);
+		ar.BeginChunk(CID_OBJ_NODE_LIST);
 		{
 			for (int i = 0; i<Nodes(); ++i)
 			{
@@ -1812,6 +1839,22 @@ void GObject::Save(OArchive &ar)
 				}
 				ar.EndChunk();
 			}
+		}
+		ar.EndChunk();
+	}
+
+	// save the mesher object
+	if (GetFEMesher())
+	{
+		FEMesher* mesher = GetFEMesher();
+		ar.BeginChunk(CID_OBJ_FEMESHER);
+		{
+			int ntype = mesher->Type();
+			ar.BeginChunk(ntype);
+			{
+				GetFEMesher()->Save(ar);
+			}
+			ar.EndChunk();
 		}
 		ar.EndChunk();
 	}
@@ -1835,6 +1878,13 @@ void GObject::Load(IArchive& ar)
 
 	int nparts = -1, nfaces = -1, nedges = -1, nnodes = -1;
 
+	// clear everything
+	ClearParts();
+	ClearFaces();
+	ClearEdges();
+	ClearNodes();
+
+	// process file
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -1894,14 +1944,14 @@ void GObject::Load(IArchive& ar)
 			ParamContainer::Load(ar);
 			break;
 			// object parts
-		case CID_OBJ_PART_SECTION:
+		case CID_OBJ_PART_LIST:
 		{
 			assert(nparts > 0);
 			m_Part.reserve(nparts);
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_SECTION (GMeshObject::Load)");
+				if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST (GMeshObject::Load)");
 
 				GPart* p = new GPart(this);
 				while (IArchive::IO_OK == ar.OpenChunk())
@@ -1923,6 +1973,20 @@ void GObject::Load(IArchive& ar)
 							p->ParamContainer::Load(ar);
 						}
 						break;
+					case CID_OBJ_PART_SOLIDSECTION:
+					{
+						GSolidSection* solid = new GSolidSection(p);
+						p->SetSection(solid);
+						solid->Load(ar);
+					}
+					break;
+					case CID_OBJ_PART_SHELLSECTION:
+					{
+						GShellSection* shell = new GShellSection(p);
+						p->SetSection(shell);
+						shell->Load(ar);
+					}
+					break;
 					}
 					ar.CloseChunk();
 				}
@@ -1936,14 +2000,14 @@ void GObject::Load(IArchive& ar)
 		}
 		break;
 		// object surfaces
-		case CID_OBJ_FACE_SECTION:
+		case CID_OBJ_FACE_LIST:
 		{
 			assert(nfaces > 0);
 			m_Face.reserve(nfaces);
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_SECTION (GMeshObject::Load)");
+				if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_LIST (GMeshObject::Load)");
 
 				GFace* f = new GFace(this);
 				while (IArchive::IO_OK == ar.OpenChunk())
@@ -1959,8 +2023,11 @@ void GObject::Load(IArchive& ar)
 						f->SetName(szname);
 					}
 					break;
-					case CID_OBJ_FACE_PID0: ar.read(f->m_nPID[0]); break;
-					case CID_OBJ_FACE_PID1: ar.read(f->m_nPID[1]); break;
+					case CID_OBJ_FACE_PID0    : ar.read(f->m_nPID[0]); break;
+					case CID_OBJ_FACE_PID1    : ar.read(f->m_nPID[1]); break;
+					case CID_OBJ_FACE_TYPE    : ar.read(f->m_ntype); break;
+					case CID_OBJ_FACE_NODELIST: ar.read(f->m_node ); break;
+					case CID_OBJ_FACE_EDGELIST: ar.read(f->m_edge ); break;
 					}
 					ar.CloseChunk();
 				}
@@ -1974,14 +2041,14 @@ void GObject::Load(IArchive& ar)
 		}
 		break;
 		// object edges
-		case CID_OBJ_EDGE_SECTION:
+		case CID_OBJ_EDGE_LIST:
 		{
 			m_Edge.clear();
 			if (nedges > 0) m_Edge.reserve(nedges);
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_SECTION (GMeshObject::Load)");
+				if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST (GMeshObject::Load)");
 
 				GEdge* e = new GEdge(this);
 				while (IArchive::IO_OK == ar.OpenChunk())
@@ -2010,7 +2077,7 @@ void GObject::Load(IArchive& ar)
 		}
 		break;
 		// object nodes
-		case CID_OBJ_NODE_SECTION:
+		case CID_OBJ_NODE_LIST:
 		{
 			m_Node.clear();
 			if (nnodes > 0)
@@ -2019,7 +2086,7 @@ void GObject::Load(IArchive& ar)
 				int m = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_SECTION (GMeshObject::Load)");
+					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST (GMeshObject::Load)");
 
 					GNode* n = new GNode(this);
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -2047,6 +2114,34 @@ void GObject::Load(IArchive& ar)
 				}
 				assert((int)m_Node.size() == nnodes);
 			}
+		}
+		break;
+		// mesher object (new way)
+		case CID_OBJ_FEMESHER:
+		{
+			if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error parsing CID_OBJ_FEMESHER (GObject::Load)");
+			else
+			{
+				int ntype = ar.GetChunkID();
+				switch (ntype)
+				{
+				case 0: break;	// use default mesher
+				case 1: 
+				{
+					FEMesher* mesher = FSCore::CreateClassFromID<FEMesher>(CLASS_MESHER, ntype);
+					assert(mesher);
+					SetFEMesher(mesher);
+				}
+				break;
+				default:
+					throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
+				}
+
+				if (GetFEMesher())
+					GetFEMesher()->Load(ar);
+			}
+			ar.CloseChunk();
+			if (ar.OpenChunk() != IArchive::IO_END) throw ReadError("error parsing CID_OBJ_FEMESHER (GObject::Load)");
 		}
 		break;
 		// the mesh object

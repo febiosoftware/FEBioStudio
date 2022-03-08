@@ -32,6 +32,10 @@ public:
 
 	bool UpdateData(bool bsave) override;
 
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
 private:
 	FESolidFormulation* m_form;
 };
@@ -50,6 +54,10 @@ public:
 	double shellThickness() const;
 
 	bool UpdateData(bool bsave) override;
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
 	FEShellFormulation* m_form;

@@ -50,7 +50,7 @@ typedef enum {
 class ClassDescriptor
 {
 public:
-	ClassDescriptor(Class_Type ntype, const char* szname, const char* szres, unsigned int flag = 0);
+	ClassDescriptor(Class_Type ntype, int cid, const char* szname, const char* szres, unsigned int flag = 0);
 	virtual ~ClassDescriptor();
 
 	virtual FSObject* Create() = 0;
@@ -66,11 +66,15 @@ public:
 	void SetFlag(unsigned int n) { m_flag = n; }
 	unsigned int Flag() const { return m_flag; }
 
+	void SetClassId(int cid) { m_classId = cid; }
+	int GetClassId() const { return m_classId; }
+
 protected:
 	Class_Type	m_ntype;	// class type
 	const char*	m_szname;	// name of class
 	const char*	m_szres;	// resource name
 	int			m_ncount;	// count how many objects of this type were created
+	int			m_classId;
 	unsigned int	m_flag;
 };
 
@@ -80,7 +84,7 @@ typedef std::list<ClassDescriptor*>::iterator Class_Iterator;
 template <class theClass> class ClassDescriptor_T : public ClassDescriptor
 {
 public:
-	ClassDescriptor_T(Class_Type ntype, const char* szname,  const char* szres, unsigned int flag) : ClassDescriptor(ntype, szname, szres, flag){}
+	ClassDescriptor_T(Class_Type ntype, int cid, const char* szname,  const char* szres, unsigned int flag) : ClassDescriptor(ntype, cid, szname, szres, flag){}
 	FSObject* Create() { m_ncount++; return new theClass(); }
 
 	bool IsType(FSObject* po) { return (dynamic_cast<theClass*>(po) != 0); }
@@ -99,6 +103,7 @@ public:
 	static Class_Iterator LastCD ();
 
 	static FSObject* CreateClass(Class_Type classType, const char* typeStr);
+	static FSObject* CreateClassFromID(Class_Type classType, int cid);
 
 private:
 	static ClassKernel*	m_pInst;
@@ -122,16 +127,35 @@ public:
 //-----------------------------------------------------------------------------
 // Helper macro for registering a class with the framework.
 #define REGISTER_CLASS(theClass, theType, theName, theFlag) \
-	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theName, 0, theFlag));
+	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, -1, theName, 0, theFlag));
 
 #define REGISTER_CLASS2(theClass, theType, theName, theResource, theFlag) \
-	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theName, theResource, theFlag));
+	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, -1, theName, theResource, theFlag));
+
+#define REGISTER_CLASS3(theClass, theType, theClassId, theName, theResource, theFlag) \
+	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theClassId, theName, theResource, theFlag));
 
 namespace FSCore {
 
 	template <class T> T* CreateClass(Class_Type classType, const char* sztype)
 	{
 		FSObject* po = ClassKernel::CreateClass(classType, sztype);
+		if (po)
+		{
+			T* pt = dynamic_cast<T*>(po);
+			if (pt == nullptr)
+			{
+				delete po;
+				return nullptr;
+			}
+			else return pt;
+		}
+		else return nullptr;
+	}
+
+	template <class T> T* CreateClassFromID(Class_Type classType, int cid)
+	{
+		FSObject* po = ClassKernel::CreateClassFromID(classType, cid);
 		if (po)
 		{
 			T* pt = dynamic_cast<T*>(po);

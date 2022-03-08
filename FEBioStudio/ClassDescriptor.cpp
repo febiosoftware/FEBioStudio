@@ -31,13 +31,14 @@ SOFTWARE.*/
 ClassKernel* ClassKernel::m_pInst = 0;
 
 //-----------------------------------------------------------------------------
-ClassDescriptor::ClassDescriptor(Class_Type ntype, const char* szname, const char* szres, unsigned int flag)
+ClassDescriptor::ClassDescriptor(Class_Type ntype, int cid, const char* szname, const char* szres, unsigned int flag)
 {
 	m_ntype = ntype;
 	m_szname = szname;
 	m_szres  = szres;
 	m_ncount = 0;
 	m_flag = flag;
+	m_classId = cid;
 }
 
 //-----------------------------------------------------------------------------
@@ -81,6 +82,22 @@ FSObject* ClassKernel::CreateClass(Class_Type classType, const char* typeStr)
 	{
 		ClassDescriptor* pcd = *it;
 		if ((pcd->GetType() == classType) && (strcmp(pcd->GetName(), typeStr) == 0))
+		{
+			return pcd->Create();
+		}
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+FSObject* ClassKernel::CreateClassFromID(Class_Type classType, int cid)
+{
+	Class_Iterator it;
+	for (it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
+	{
+		ClassDescriptor* pcd = *it;
+		if ((pcd->GetType()    == classType) && 
+			(pcd->GetClassId() == cid))
 		{
 			return pcd->Create();
 		}
