@@ -43,7 +43,7 @@ CXMLCommand::CXMLCommand(XMLTreeModel* model, std::string name) : CCommand(name)
 //////////////////////////////////////////////////////////////////////
 
 CCmdEditCell::CCmdEditCell(QPersistentModelIndex index,  QString& newText, QString& oldText, XMLTreeModel* model) 
-    : CXMLCommand(model, "Add Cell"), m_index(index), m_newText(newText), m_oldText(oldText)
+    : CXMLCommand(model, "Edit Cell"), m_index(index), m_newText(newText), m_oldText(oldText)
 {
 
 }

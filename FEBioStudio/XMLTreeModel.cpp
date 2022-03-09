@@ -272,19 +272,14 @@ void XMLTreeItem::FindAll(const QString& term, bool caseSensative, vector<XMLSea
 
     for(int col = 0; col < NUM_COLUMNS; col++)
     {
+        int termSize = term.size();
         int num = data(col).count(term, cs);
-        if(num == 1)
+        int index = 0;
+        for(int match = 0; match < num; match++)
         {
-            items.emplace_back(this, col, -1);
-        }
-        else
-        {
-            int index = 0;
-            for(int match = 0; match < num; match++)
-            {
-                index = data(col).indexOf(term, index, cs);
-                items.emplace_back(this, col, index);
-            }
+            index = data(col).indexOf(term, index, cs);
+            items.emplace_back(this, col, index);
+            index += termSize;
         }
     }
 

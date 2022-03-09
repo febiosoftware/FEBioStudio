@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QKeyEvent>
 #include <QScrollBar>
 #include <QHeaderView>
+#include <QCoreApplication>
 #include "XMLTreeView.h"
 #include "XMLTreeModel.h"
 #include "MainWindow.h"
@@ -86,14 +87,15 @@ protected:
 };
 
 XMLItemDelegate::XMLItemDelegate(QObject* parent)
-    : QStyledItemDelegate(parent), m_editor(new QWidget*), m_superID(new int(FEINVALID_ID))
+    : QStyledItemDelegate(parent), m_editor(new QWidget*(nullptr)), m_lastSelection(new pair<int,int>(-1, 0)), m_superID(new int(FEINVALID_ID))
 {
-    *m_editor = nullptr;
+
 }
 
 XMLItemDelegate::~XMLItemDelegate()
 {
     delete m_editor;
+    delete m_lastSelection;
     delete m_superID;
 }
 
@@ -286,6 +288,8 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
     QString oldString = item->data(index.column());
     QString newString;
 
+    SetLastSelection();
+
     if(dynamic_cast<QComboBox*>(editor))
     {
         QComboBox* comboBox = dynamic_cast<QComboBox*>(editor);
@@ -294,11 +298,17 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
     }
     else if(dynamic_cast<QTextEdit*>(editor))
     {
-        newString = dynamic_cast<QTextEdit*>(editor)->toPlainText();
+        QTextEdit* textEdit = dynamic_cast<QTextEdit*>(editor);
+        newString = textEdit->toPlainText();
+    }
+    else if(dynamic_cast<QLineEdit*>(editor))
+    {
+        QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(editor);
+        newString = lineEdit->text();
     }
     else
     {
-        newString = static_cast<QLineEdit*>(editor)->text();
+        return;
     }
 
     if(newString != oldString)
@@ -327,33 +337,79 @@ void XMLItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, c
     }
 }
 
-int XMLItemDelegate::getCursorPosition()
+void XMLItemDelegate::SetSelection(int start, int length)
 {
     QTextEdit* textEdit =dynamic_cast<QTextEdit*>(*m_editor);
     if(textEdit)
     {
-        return textEdit->textCursor().position();
+        QTextCursor cursor = textEdit->textCursor();
+        cursor.setPosition(start);
+        cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, length);
     }
 
     QLineEdit* lineEdit =dynamic_cast<QLineEdit*>(*m_editor);
     if(lineEdit)
     {
-        return lineEdit->cursorPosition();
+        lineEdit->setSelection(start, length);
     }
 
     VariablePopupComboBox* comboBox = dynamic_cast<VariablePopupComboBox*>(*m_editor);
     if(comboBox)
     {
-        comboBox->lineEdit()->cursorPosition();
+        comboBox->lineEdit()->setSelection(start, length);
     }
+}
 
-    return -1;    
+pair<int, int> XMLItemDelegate::GetSelection()
+{
+    SetLastSelection();
+
+    return *m_lastSelection;    
 }
 
 void XMLItemDelegate::OnEditorSignal()
 {
 	QWidget* sender = dynamic_cast<QWidget*>(QObject::sender());
 	emit commitData(sender);
+}
+
+void XMLItemDelegate::SetLastSelection() const
+{
+    if(dynamic_cast<QComboBox*>(*m_editor))
+    {
+        QComboBox* comboBox = dynamic_cast<QComboBox*>(*m_editor);
+
+        int start = comboBox->lineEdit()->selectionStart();
+        if(start == -1)
+        {
+            start = comboBox->lineEdit()->cursorPosition();
+        }
+
+        *m_lastSelection = pair<int,int>(start, comboBox->lineEdit()->selectionLength());
+    }
+    else if(dynamic_cast<QTextEdit*>(*m_editor))
+    {
+        QTextEdit* textEdit = dynamic_cast<QTextEdit*>(*m_editor);
+
+        QTextCursor cursor = textEdit->textCursor();
+
+        int start = std::min(cursor.position(), cursor.anchor());
+        int stop = std::max(cursor.position(), cursor.anchor());
+
+        *m_lastSelection = pair<int,int>(start, stop - start);
+    }
+    else if(dynamic_cast<QLineEdit*>(*m_editor))
+    {
+        QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(*m_editor);
+
+        int start = lineEdit->selectionStart();
+        if(start == -1)
+        {
+            start = lineEdit->cursorPosition();
+        }
+
+        *m_lastSelection = pair<int,int>(start, lineEdit->selectionLength());
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -484,6 +540,7 @@ void XMLTreeView::setModel(QAbstractItemModel* newModel)
     {
         disconnect(this, &XMLTreeView::expanded, current, &XMLTreeModel::ItemExpanded);
         disconnect(this, &XMLTreeView::collapsed, current, &XMLTreeModel::ItemCollapsed);
+        disconnect(current, &XMLTreeModel::dataChanged, this, &XMLTreeView::ResetSearch);
     }
     else
     {
@@ -509,6 +566,9 @@ void XMLTreeView::setModel(QAbstractItemModel* newModel)
 
     connect(this, &XMLTreeView::expanded, current, &XMLTreeModel::ItemExpanded);
     connect(this, &XMLTreeView::collapsed, current, &XMLTreeModel::ItemCollapsed);
+    connect(current, &XMLTreeModel::dataChanged, this, &XMLTreeView::ResetSearch);
+
+    ResetSearch();
 }
 
 CXMLDocument* XMLTreeView::GetDocument()
@@ -578,6 +638,11 @@ void XMLTreeView::on_addElement_triggered()
     edit(currentIndex().siblingAtColumn(TAG));
 }
 
+void XMLTreeView::ResetSearch()
+{
+    ui->searchTerm = "";
+}
+
 void XMLTreeView::contextMenuEvent(QContextMenuEvent* event)
 {
     setCurrentIndex(indexAt(event->pos()));
@@ -641,142 +706,66 @@ void XMLTreeView::on_findWidget_next()
 {
     rerunFind();
 
-    if(ui->searchList.size() == 0) return;
-
-    if(!currentIndex().isValid()) return;
-    
-    XMLTreeItem* selectedItem = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
-
-    int foundIndex = 0;
-    XMLSearchResult searchResult;
-
-    for(int index = 0; index < ui->searchList.size(); index++)
-    {
-        searchResult = ui->searchList[index];
-
-        if(searchResult.item == selectedItem)
-        {
-            if(searchResult.column > currentIndex().column())
-            {
-                foundIndex = index;
-                break;
-            }
-
-            continue;
-        }
-
-        bool found = false;
-        int limit = std::min(selectedItem->Depth(), searchResult.item->Depth());
-        int searchRow, selectedRow;
-        for(int depth = 0; depth <= limit; depth++)
-        {
-            searchRow = searchResult.item->ancestorItem(depth)->row();
-            selectedRow = selectedItem->ancestorItem(depth)->row();
-
-            if(searchRow > selectedRow)
-            {
-                foundIndex = index;
-                found = true;
-                break;
-            }
-            
-            if(searchRow < selectedRow)
-            {
-                break;
-            }
-        }
-
-        if(found)
-        {
-            break;
-        }
-        
-        if(searchRow == selectedRow)
-        {
-            if(searchResult.item->Depth() > selectedItem->Depth())
-            {
-                foundIndex = index;
-                break;
-            }
-        }
-    }
-
-    searchResult = ui->searchList[foundIndex];
-
-    ui->findWidget->SetCurrent(foundIndex + 1);
-
-    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.item, searchResult.column));  
+    findNext();
 }
 
 void XMLTreeView::on_findWidget_prev()
 {
     rerunFind();
 
-    if(ui->searchList.size() == 0) return;
+    findPrev();
+}
 
-    if(!currentIndex().isValid()) return;
-    
-    XMLTreeItem* selectedItem = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
+void XMLTreeView::on_findWidget_replace()
+{
+    rerunFind();
 
-    int foundIndex = ui->searchList.size() - 1;
-    XMLSearchResult searchResult;
-
-    for(int index = ui->searchList.size() - 1; index >= 0; index--)
+    if(findNext(true))
     {
-        searchResult = ui->searchList[index];
+        XMLItemDelegate* delegate = dynamic_cast<XMLItemDelegate*>(itemDelegate());
 
-        if(searchResult.item == selectedItem)
-        {
-            if(searchResult.column < currentIndex().column())
-            {
-                foundIndex = index;
-                break;
-            }
+        pair<int,int> selection = delegate->GetSelection();
 
-            continue;
-        }
+        QString oldText = currentIndex().data().toString();
+        QString newText = oldText;
 
-        bool found = false;
-        int limit = std::min(selectedItem->Depth(), searchResult.item->Depth());
-        int searchRow, selectedRow;
-        for(int depth = 0; depth <= limit; depth++)
-        {
-            searchRow = searchResult.item->ancestorItem(depth)->row();
-            selectedRow = selectedItem->ancestorItem(depth)->row();
+        newText.remove(selection.first, selection.second).insert(selection.first, ui->findWidget->GetReplaceText());
 
-            if(searchRow < selectedRow)
-            {
-                foundIndex = index;
-                found = true;
-                break;
-            }
-            
-            if(searchRow > selectedRow)
-            {
-                break;
-            }
-        }
+        XMLTreeModel* xmlModel = static_cast<XMLTreeModel*>(model());
 
-        if(found)
-        {
-            break;
-        }
-        
-        if(searchRow == selectedRow)
-        {
-            if(searchResult.item->Depth() < selectedItem->Depth())
-            {
-                foundIndex = index;
-                break;
-            }
-        }
+        CCmdEditCell* cmd = new CCmdEditCell(QPersistentModelIndex(currentIndex()), newText, oldText, xmlModel);
+
+        xmlModel->GetDocument()->DoCommand(cmd);
+
+        delegate->SetSelection(selection.first + selection.second, 0);
+
+        executeDelayedItemsLayout();
+
+    }
+}
+
+void XMLTreeView::on_findWidget_replaceAll()
+{
+    rerunFind();
+
+    CCmdGroup* group = new CCmdGroup("Replace All");
+
+    Qt::CaseSensitivity cs = ui->searchCaseSensative ? Qt::CaseSensitive : Qt::CaseInsensitive;
+
+    XMLTreeModel* xmlModel = static_cast<XMLTreeModel*>(model());
+
+    for(auto result : ui->searchList)
+    {
+        QString oldText = result.item->data(result.column);
+        QString newText = oldText;
+        newText.replace(ui->searchTerm, ui->findWidget->GetReplaceText(), cs);
+
+        CCmdEditCell* cmd = new CCmdEditCell(QPersistentModelIndex(xmlModel->itemToIndex(result.item, result.column)), newText, oldText, xmlModel);
+
+        group->AddCommand(cmd);
     }
 
-    searchResult = ui->searchList[foundIndex];
-
-    ui->findWidget->SetCurrent(foundIndex + 1);
-
-    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.item, searchResult.column));
+    xmlModel->GetDocument()->DoCommand(group);
 }
 
 void XMLTreeView::on_expandAll_triggered()
@@ -851,7 +840,213 @@ void XMLTreeView::rerunFind()
     }
 }
 
-void XMLTreeView::expandAndSelect(const QModelIndex& index)
+bool XMLTreeView::findNext(bool stopOnMatch)
+{
+    bool alreadyMatched = false;
+
+    if(ui->searchList.size() == 0) return alreadyMatched; 
+
+    if(!currentIndex().isValid()) return alreadyMatched;
+    
+    XMLTreeItem* selectedItem = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
+
+    int foundIndex = 0;
+    XMLSearchResult searchResult;
+
+    for(int index = 0; index < ui->searchList.size(); index++)
+    {
+        searchResult = ui->searchList[index];
+
+        if(searchResult.item == selectedItem)
+        {
+            if(searchResult.column == currentIndex().column())
+            {
+                pair<int,int> currentSelection = dynamic_cast<XMLItemDelegate*>(itemDelegate())->GetSelection();
+
+                if(stopOnMatch)
+                {
+                    if(currentSelection.first == searchResult.stringIndex && currentSelection.second == ui->searchTerm.size())
+                    {
+                        alreadyMatched = true;
+                        foundIndex = index;
+                        break;
+                    }
+                }
+
+                if(currentSelection.first != -1)
+                {
+                    if(currentSelection.first == searchResult.stringIndex && currentSelection.second == 0)
+                    {
+                        foundIndex = index;
+                        break;
+                    }
+
+                    if(searchResult.stringIndex > currentSelection.first)
+                    {
+                        foundIndex = index;
+                        break;
+                    }
+                }
+            }            
+
+            if(searchResult.column > currentIndex().column())
+            {
+                foundIndex = index;
+                break;
+            }
+
+            continue;
+        }
+
+        bool found = false;
+        int limit = std::min(selectedItem->Depth(), searchResult.item->Depth());
+        int searchRow, selectedRow;
+        for(int depth = 0; depth <= limit; depth++)
+        {
+            searchRow = searchResult.item->ancestorItem(depth)->row();
+            selectedRow = selectedItem->ancestorItem(depth)->row();
+
+            if(searchRow > selectedRow)
+            {
+                foundIndex = index;
+                found = true;
+                break;
+            }
+            
+            if(searchRow < selectedRow)
+            {
+                break;
+            }
+        }
+
+        if(found)
+        {
+            break;
+        }
+        
+        if(searchRow == selectedRow)
+        {
+            if(searchResult.item->Depth() > selectedItem->Depth())
+            {
+                foundIndex = index;
+                break;
+            }
+        }
+    }
+
+    searchResult = ui->searchList[foundIndex];
+
+    ui->findWidget->SetCurrent(foundIndex + 1);
+
+    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.item, searchResult.column), searchResult.stringIndex, ui->searchTerm.size()); 
+
+    return alreadyMatched; 
+}
+
+bool XMLTreeView::findPrev(bool stopOnMatch)
+{
+    bool alreadyMatched = false;
+
+    if(ui->searchList.size() == 0) return alreadyMatched;
+
+    if(!currentIndex().isValid()) return alreadyMatched;
+    
+    XMLTreeItem* selectedItem = static_cast<XMLTreeItem*>(currentIndex().internalPointer());
+
+    int foundIndex = ui->searchList.size() - 1;
+    XMLSearchResult searchResult;
+
+    for(int index = ui->searchList.size() - 1; index >= 0; index--)
+    {
+        searchResult = ui->searchList[index];
+
+        if(searchResult.item == selectedItem)
+        {
+            if(searchResult.column == currentIndex().column())
+            {
+                pair<int,int> currentSelection = dynamic_cast<XMLItemDelegate*>(itemDelegate())->GetSelection();
+
+                if(stopOnMatch)
+                {
+                    if(currentSelection.first == searchResult.stringIndex && currentSelection.second == ui->searchTerm.size())
+                    {
+                        alreadyMatched = true;
+                        foundIndex = index;
+                        break;
+                    }
+                }
+
+                if(currentSelection.first != -1)
+                {
+                    if(searchResult.stringIndex + ui->searchTerm.size() == currentSelection.first && currentSelection.second == 0)
+                    {
+                        foundIndex = index;
+                        break;
+                    }
+
+                    if(searchResult.stringIndex + ui->searchTerm.size() < currentSelection.first)
+                    {
+                        foundIndex = index;
+                        break;
+                    }
+                }
+            }
+
+            if(searchResult.column < currentIndex().column())
+            {
+                foundIndex = index;
+                break;
+            }
+
+            continue;
+        }
+
+        bool found = false;
+        int limit = std::min(selectedItem->Depth(), searchResult.item->Depth());
+        int searchRow, selectedRow;
+        for(int depth = 0; depth <= limit; depth++)
+        {
+            searchRow = searchResult.item->ancestorItem(depth)->row();
+            selectedRow = selectedItem->ancestorItem(depth)->row();
+
+            if(searchRow < selectedRow)
+            {
+                foundIndex = index;
+                found = true;
+                break;
+            }
+            
+            if(searchRow > selectedRow)
+            {
+                break;
+            }
+        }
+
+        if(found)
+        {
+            break;
+        }
+        
+        if(searchRow == selectedRow)
+        {
+            if(searchResult.item->Depth() < selectedItem->Depth())
+            {
+                foundIndex = index;
+                break;
+            }
+        }
+    }
+
+    searchResult = ui->searchList[foundIndex];
+
+    ui->findWidget->SetCurrent(foundIndex + 1);
+
+    expandAndSelect(static_cast<XMLTreeModel*>(model())->itemToIndex(searchResult.item, searchResult.column), searchResult.stringIndex, ui->searchTerm.size());
+
+    return alreadyMatched;
+}
+
+void XMLTreeView::expandAndSelect(const QModelIndex& index, const int cursorStart, int cursorEnd)
 {
     // QModelIndex parent = index.siblingAtColumn(0).parent();
     // while(parent.isValid())
@@ -872,6 +1067,12 @@ void XMLTreeView::expandAndSelect(const QModelIndex& index)
     expandToMatch(static_cast<XMLTreeModel*>(model())->root());
 
     setCurrentIndex(index);
+
+    edit(currentIndex());
+
+    XMLItemDelegate* delegate = static_cast<XMLItemDelegate*>(itemDelegate());
+
+    delegate->SetSelection(cursorStart, cursorEnd);
 }
 
 void XMLTreeView::expandToMatch(const QModelIndex& index)

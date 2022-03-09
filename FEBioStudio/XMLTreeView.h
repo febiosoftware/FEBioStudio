@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include <QTreeView>
 #include <QStyledItemDelegate>
 
+using std::pair;
+
 class CMainWindow;
 class CXMLDocument;
 
@@ -47,14 +49,19 @@ public:
 
 	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
-    int getCursorPosition();
+    pair<int, int> GetSelection();
+    void SetSelection(int start, int length);
 
 private slots:
 	void OnEditorSignal();
 
 private:
+    void SetLastSelection() const;
+
+private:
     // Evil pointer hack to get around the const in createEditor
     QWidget** m_editor;
+    pair<int,int>* m_lastSelection;
     int* m_superID;
 };
 
@@ -80,6 +87,8 @@ public slots:
     void on_addAttribute_triggered();
     void on_addElement_triggered();
 
+    void ResetSearch();
+
 protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
     void resizeEvent(QResizeEvent *event) override;
@@ -89,6 +98,8 @@ private slots:
 
     void on_findWidget_next();
     void on_findWidget_prev();
+    void on_findWidget_replace();
+    void on_findWidget_replaceAll();
     
     void on_expandAll_triggered();
     void on_expandChildren_triggered();
@@ -102,8 +113,10 @@ private slots:
 
 private:
     void rerunFind();
+    bool findNext(bool stopOnMatch = false);
+    bool findPrev(bool stopOnMatch = false);
 
-    void expandAndSelect(const QModelIndex& index);
+    void expandAndSelect(const QModelIndex& index, const int cursorStart, int cursorEnd);
     void expandToMatch(const QModelIndex& index);
 
 private:
