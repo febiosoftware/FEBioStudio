@@ -183,6 +183,7 @@ void CCreateSpringPane::on_newSet_clicked()
 		case 0: dmat = new FELinearSpringMaterial; break;
 		case 1: dmat = new FENonLinearSpringMaterial; break;
 		case 2: dmat = new FEHillContractileMaterial; break;
+		case 3: dmat = new FEGeneralSpringMaterial; break;
 		default:
 			assert(false);
 			return;

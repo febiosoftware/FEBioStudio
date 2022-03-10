@@ -2995,6 +2995,24 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				} while (!tag.isend());
 				set.push_back(pg);
 			}
+			else if (strcmp(sztype, "general spring") == 0)
+			{
+				FEGeneralSpringMaterial* mat = new FEGeneralSpringMaterial();
+				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
+				pg->SetMaterial(mat);
+				pg->SetName(szname);
+				fem.GetModel().AddDiscreteObject(pg);
+				++tag;
+				do
+				{
+					if (ReadParam(*mat, tag) == false)
+					{
+						ParseUnknownTag(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+				set.push_back(pg);
+			}
 			else if (strcmp(sztype, "Hill") == 0)
 			{
 				FEHillContractileMaterial* mat = new FEHillContractileMaterial();
