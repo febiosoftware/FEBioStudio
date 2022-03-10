@@ -249,7 +249,7 @@ void FSFluidTraction::LoadParam(const Param& p)
 FSFluidVelocity::FSFluidVelocity(FSModel* ps) : FSSurfaceLoad(FE_FLUID_VELOCITY, ps)
 {
     SetTypeString("Fluid Velocity Vector");
-    AddVecParam(vec3d(0,0,0), "velocity", "fluid velocity");
+    AddVecParam(vec3d(0,0,0), "velocity", "fluid velocity")->SetUnit(UNIT_VELOCITY);
 	AddDoubleParam(1, "scale", "scale");
 }
 
@@ -265,7 +265,7 @@ FSFluidVelocity::FSFluidVelocity(FSModel* ps, FEItemListBuilder* pi, vec3d t, in
 FSFluidNormalVelocity::FSFluidNormalVelocity(FSModel* ps) : FSSurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps)
 {
     SetTypeString("Fluid Normal Velocity");
-    AddDoubleParam(1, "velocity", "velocity");
+    AddScienceParam(1, UNIT_VELOCITY, "velocity", "normal velocity");
     AddBoolParam(true, "prescribe_nodal_velocities", "prescribe nodal velocities");
     AddBoolParam(false, "parabolic", "parabolic velocity profile");
     AddBoolParam(false, "prescribe_rim_pressure", "prescribe rim pressure");
@@ -273,8 +273,8 @@ FSFluidNormalVelocity::FSFluidNormalVelocity(FSModel* ps) : FSSurfaceLoad(FE_FLU
 
 FSFluidNormalVelocity::FSFluidNormalVelocity(FSModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep) : FSSurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps, pi, nstep)
 {
-    SetTypeString("Fluid Normal Velocity");
-    AddDoubleParam(vn, "velocity", "velocity");
+	SetTypeString("Fluid Normal Velocity");
+	AddScienceParam(vn, UNIT_VELOCITY, "velocity", "normal velocity");
     AddBoolParam(bp, "prescribe_nodal_velocities", "prescribe nodal velocities");
     AddBoolParam(bparab, "parabolic", "parabolic velocity profile");
     AddBoolParam(brimp, "prescribe_rim_pressure", "prescribe rim pressure");
@@ -285,7 +285,7 @@ FSFluidNormalVelocity::FSFluidNormalVelocity(FSModel* ps, FEItemListBuilder* pi,
 FSFluidRotationalVelocity::FSFluidRotationalVelocity(FSModel* ps) : FSSurfaceLoad(FE_FLUID_ROTATIONAL_VELOCITY, ps)
 {
     SetTypeString("Fluid Rotational Velocity");
-    AddDoubleParam(1, "angular_speed", "angular speed");
+    AddScienceParam(1, UNIT_ANGULAR_VELOCITY, "angular_speed", "angular speed");
     AddVecParam(vec3d(0,0,1), "axis", "axis");
     AddVecParam(vec3d(0,0,0), "origin", "origin")->SetUnit(UNIT_LENGTH);
 }
@@ -293,7 +293,7 @@ FSFluidRotationalVelocity::FSFluidRotationalVelocity(FSModel* ps) : FSSurfaceLoa
 FSFluidRotationalVelocity::FSFluidRotationalVelocity(FSModel* ps, FEItemListBuilder* pi, double w, vec3d n, vec3d p, int nstep) : FSSurfaceLoad(FE_FLUID_ROTATIONAL_VELOCITY, ps, pi, nstep)
 {
     SetTypeString("Fluid Normal Velocity");
-    AddDoubleParam(w, "angular_speed", "angular_speed");
+    AddScienceParam(w, UNIT_ANGULAR_VELOCITY, "angular_speed", "angular speed");
     AddVecParam(n, "axis", "axis");
     AddVecParam(p, "origin", "origin")->SetUnit(UNIT_LENGTH);
 }

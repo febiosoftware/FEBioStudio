@@ -58,6 +58,7 @@ FSNonLinearSpringMaterial::FSNonLinearSpringMaterial() : FSDiscreteMaterial(FE_D
 {
 	AddScienceParam(1, UNIT_FORCE, "force", "spring force");
 	AddDoubleParam(1, "scale", "scale");
+	AddChoiceParam(0, "measure", "deformation measure")->SetEnumNames("elongation\0strain\0stretch\0");
 }
 
 //===================================================================
