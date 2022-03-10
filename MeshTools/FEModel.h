@@ -229,11 +229,12 @@ public:
 
 protected:
 	// I/O helper functions
-	void LoadData      (IArchive& ar);
-	void LoadSoluteData(IArchive& ar);
-	void LoadSBMData   (IArchive& ar);
-	void LoadMaterials (IArchive& ar);
-	void LoadSteps     (IArchive& ar);
+	void LoadData           (IArchive& ar);
+	void LoadSoluteData     (IArchive& ar);
+	void LoadSBMData        (IArchive& ar);
+	void LoadMaterials      (IArchive& ar);
+	void LoadSteps          (IArchive& ar);
+	void LoadLoadControllers(IArchive& ar);
 
 protected:
 	GModel*					m_pModel;	//!< Model geometry

@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <FECore/units.h>
 #include <FSCore/ParamBlock.h>
 #include <FEBioLink/FEBioInterface.h>
+#include <FEMLib/FEMKernel.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <vector>
@@ -1066,6 +1067,25 @@ void FSModel::Save(OArchive& ar)
 		ar.EndChunk();
 	}
 
+	// save load controllers
+	if (LoadControllers() > 0)
+	{
+		ar.BeginChunk(CID_LOAD_CONTROLLER_LIST);
+		{
+			for (int i = 0; i < LoadControllers(); ++i)
+			{
+				FSLoadController* plc = GetLoadController(i);
+				int ntype = plc->Type();
+				ar.BeginChunk(ntype);
+				{
+					plc->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
 	// save the steps
 	int nsteps = Steps();
 	if (nsteps > 0)
@@ -1106,12 +1126,13 @@ void FSModel::Load(IArchive& ar)
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_FEM_DATA         : LoadData(ar); break;
-		case CID_FEM_SOLUTE_DATA  : LoadSoluteData(ar); break;
-        case CID_FEM_SBM_DATA     : LoadSBMData(ar); break;
-		case CID_MATERIAL_SECTION : LoadMaterials(ar); break;
-		case CID_GEOMETRY_SECTION : m_pModel->Load(ar); break;
-		case CID_STEP_SECTION     : LoadSteps(ar); break;
+		case CID_FEM_DATA            : LoadData(ar); break;
+		case CID_FEM_SOLUTE_DATA     : LoadSoluteData(ar); break;
+        case CID_FEM_SBM_DATA        : LoadSBMData(ar); break;
+		case CID_MATERIAL_SECTION    : LoadMaterials(ar); break;
+		case CID_GEOMETRY_SECTION    : m_pModel->Load(ar); break;
+		case CID_STEP_SECTION        : LoadSteps(ar); break;
+		case CID_LOAD_CONTROLLER_LIST: LoadLoadControllers(ar); break;
 		}
 		ar.CloseChunk();
 	}
@@ -1225,7 +1246,7 @@ void FSModel::LoadSteps(IArchive& ar)
 		case FE_STEP_NL_DYNAMIC         : ps = new FSNonLinearMechanics (this); break;	// obsolete (remains for backward compatibility)
 		case FE_STEP_HEAT_TRANSFER      : ps = new FSHeatTransfer       (this); break;
 		case FE_STEP_BIPHASIC           : ps = new FSNonLinearBiphasic  (this); break;
-		case FE_STEP_BIPHASIC_SOLUTE   : ps = new FSBiphasicSolutes    (this); break;
+		case FE_STEP_BIPHASIC_SOLUTE    : ps = new FSBiphasicSolutes    (this); break;
 		case FE_STEP_MULTIPHASIC		: ps = new FSMultiphasicAnalysis(this); break;
         case FE_STEP_FLUID              : ps = new FSFluidAnalysis      (this); break;
         case FE_STEP_FLUID_FSI          : ps = new FSFluidFSIAnalysis   (this); break;
@@ -1245,6 +1266,21 @@ void FSModel::LoadSteps(IArchive& ar)
 	}
 }
 
+//-----------------------------------------------------------------------------
+void FSModel::LoadLoadControllers(IArchive& ar)
+{
+	assert(LoadControllers() == 0);
+	FEMKernel& kernel = *FEMKernel::Instance();
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int ntype = ar.GetChunkID();
+		FSLoadController* plc = dynamic_cast<FSLoadController*>(kernel.Create(this, FELOADCONTROLLER_ID, ntype));
+		if (plc == nullptr) throw ReadError("unknown CID in FSModel::LoadLoadControllers");
+		AddLoadController(plc);
+		plc->Load(ar);
+		ar.CloseChunk();
+	}
+}
 
 //-----------------------------------------------------------------------------
 // reads materials from archive

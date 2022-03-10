@@ -43,6 +43,10 @@ public:
 
 	bool UpdateData(bool bsave) override;
 
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
 private:
 	LoadCurve* m_plc;
 };

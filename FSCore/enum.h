@@ -479,6 +479,9 @@ SOFTWARE.*/
 // --- model constraints
 #define CID_CONSTRAINT_SECTION		0x00150000
 
+// --- load controllers
+#define CID_LOAD_CONTROLLER_LIST	0x00160000
+
 // rigid connector joint data
 #define CID_RC_SPHERICAL_JOINT		0x000E5000
 #define CID_RC_REVOLUTE_JOINT		0x000E5001
