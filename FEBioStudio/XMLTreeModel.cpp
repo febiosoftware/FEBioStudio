@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <stack>
 #include "XMLTreeModel.h"
 #include "IconProvider.h"
+#include <stdexcept>
 
 XMLTreeItem::XMLTreeItem(int depth)
     : m_parent(nullptr), m_depth(depth), m_expanded(false), m_itemType(ELEMENT),

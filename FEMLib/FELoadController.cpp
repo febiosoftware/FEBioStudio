@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "FELoadController.h"
+#include <FECore/fecore_enum.h>
 
 int FSLoadController::m_nref = 1;
 
 FSLoadController::FSLoadController(FSModel* fem, int ntype) : FSModelComponent(fem)
 {
+	SetSuperClassID(FELOADCONTROLLER_ID);
 	m_ntype = ntype;
 
 	// set unique ID
@@ -85,6 +87,40 @@ bool FEBioLoadController::UpdateData(bool bsave)
 	}
 
 	return false;
+}
+
+void FEBioLoadController::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSLoadController::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioLoadController::Load(IArchive& ar)
+{
+	TRACE("FEBioLoadController::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSLoadController::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+	// We call this to make sure that the FEBio class has the same parameters
+	UpdateData(true);
 }
 
 //=============================================================================
