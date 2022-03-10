@@ -77,7 +77,7 @@ CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent)
 	connect(ui->loadingCancel, SIGNAL(clicked(bool)), this, SIGNAL(cancelClicked()));
 
     connect(ui->advancedSearch->actionSearch, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedSearch_triggered);
-    connect(ui->advancedSearch->actionClear, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedClear_triggered);
+    connect(ui->advancedSearch->actionClear, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvancedClear_triggered);
     connect(ui->advancedSearch->actionHide, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedHide_triggered);
 
 	dbHandler = new CLocalDatabaseHandler(this);
@@ -1541,7 +1541,7 @@ void CRepositoryPanel::on_actionAdvnacedSearch_triggered()
     on_actionAdvnacedHide_triggered();
 }
 
-void CRepositoryPanel::on_actionAdvnacedClear_triggered()
+void CRepositoryPanel::on_actionAdvancedClear_triggered()
 {
     ui->advancedSearch->Clear();
     ui->searchLineEdit->clear();
@@ -1741,7 +1741,7 @@ void CRepositoryPanel::on_searchTree_customContextMenuRequested(const QPoint &po
 void CRepositoryPanel::on_showProjectsCB_stateChanged(int state) {}
 void CRepositoryPanel::on_showFilesCB_stateChanged(int state) {}
 void CRepositoryPanel::on_actionAdvnacedSearch_triggered() {}
-void CRepositoryPanel::on_actionAdvnacedClear_triggered() {}
+void CRepositoryPanel::on_actionAdvancedClear_triggered() {}
 void CRepositoryPanel::on_actionAdvnacedHide_triggered() {}
 void CRepositoryPanel::SearchDatabase(QString searchTerm) {}
 void CRepositoryPanel::GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths) {}

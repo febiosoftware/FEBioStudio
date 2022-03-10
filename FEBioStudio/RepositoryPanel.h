@@ -123,7 +123,7 @@ private slots:
 	void on_fileTags_linkActivated(const QString& link);
 
     void on_actionAdvnacedSearch_triggered();
-    void on_actionAdvnacedClear_triggered();
+    void on_actionAdvancedClear_triggered();
     void on_actionAdvnacedHide_triggered();
 
 private:
