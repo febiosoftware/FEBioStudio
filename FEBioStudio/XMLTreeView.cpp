@@ -345,6 +345,7 @@ void XMLItemDelegate::SetSelection(int start, int length)
         QTextCursor cursor = textEdit->textCursor();
         cursor.setPosition(start);
         cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, length);
+        textEdit->setTextCursor(cursor);
     }
 
     QLineEdit* lineEdit =dynamic_cast<QLineEdit*>(*m_editor);
