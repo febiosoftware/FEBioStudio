@@ -479,7 +479,6 @@ void GDiscreteSpringSet::Load(IArchive& ar)
 					{
 					case FE_DISCRETE_LINEAR_SPRING   : m_mat = new FELinearSpringMaterial; break;
 					case FE_DISCRETE_NONLINEAR_SPRING: m_mat = new FENonLinearSpringMaterial; break;
-					case FE_DISCRETE_GENERAL_SPRING  : m_mat = new FEGeneralSpringMaterial; break;
 					case FE_DISCRETE_HILL            : m_mat = new FEHillContractileMaterial; break;
 					default:
 						assert(false);

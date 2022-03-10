@@ -57,22 +57,6 @@ FENonLinearSpringMaterial::FENonLinearSpringMaterial() : FEDiscreteMaterial(FE_D
 {
 	AddScienceParam(1, UNIT_FORCE, "force", "spring force")->SetLoadCurve();
 	AddDoubleParam(1, "scale", "scale");
-
-	// create an initial linear ramp
-	LOADPOINT p0(0, 0), p1(1, 1);
-	GetParamLC(0)->Clear();
-	GetParamLC(0)->Add(p0);
-	GetParamLC(0)->Add(p1);
-}
-
-//===================================================================
-
-REGISTER_MATERIAL(FEGeneralSpringMaterial, MODULE_MECH, FE_DISCRETE_GENERAL_SPRING, FE_MAT_DISCRETE, "general spring", 0);
-
-FEGeneralSpringMaterial::FEGeneralSpringMaterial() : FEDiscreteMaterial(FE_DISCRETE_GENERAL_SPRING)
-{
-	AddScienceParam(1, UNIT_FORCE, "force", "spring force")->SetLoadCurve();
-	AddDoubleParam(1, "scale", "scale");
 	AddChoiceParam(0, "measure", "deformation measure")->SetEnumNames("elongation\0strain\0stretch\0");
 
 	// create an initial linear ramp

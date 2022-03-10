@@ -869,7 +869,6 @@ void CModelViewer::OnChangeDiscreteType()
 		if (item == "Linear"   ) mat = new FELinearSpringMaterial();
 		if (item == "Nonlinear") mat = new FENonLinearSpringMaterial();
 		if (item == "Hill"     ) mat = new FEHillContractileMaterial();
-		if (item == "General"  ) mat = new FEGeneralSpringMaterial();
 		if (mat)
 		{
 			delete set->GetMaterial();

@@ -223,7 +223,6 @@ CNewDiscreteSetDlg::CNewDiscreteSetDlg(QWidget* parent) : QDialog(parent)
 	m_combo->addItem("Linear spring");
 	m_combo->addItem("Nonlinear spring");
 	m_combo->addItem("Hill");
-	m_combo->addItem("General spring");
 
 	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 

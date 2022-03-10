@@ -31,15 +31,6 @@ public:
 };
 
 //===================================================================
-// General spring
-class FEGeneralSpringMaterial : public FEDiscreteMaterial
-{
-public:
-	FEGeneralSpringMaterial();
-	DECLARE_REGISTERED(FEGeneralSpringMaterial);
-};
-
-//===================================================================
 // Hill-contractile
 class FEHillContractileMaterial : public FEDiscreteMaterial
 {
