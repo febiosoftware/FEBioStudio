@@ -1067,6 +1067,25 @@ void FSModel::Save(OArchive& ar)
 		ar.EndChunk();
 	}
 
+	// save mesh data generators
+	if (MeshDataGenerators() > 0)
+	{
+		ar.BeginChunk(CID_MESHDATA_LIST);
+		{
+			for (int i = 0; i < MeshDataGenerators(); ++i)
+			{
+				FSMeshDataGenerator* pmd = GetMeshDataGenerator(i);
+				int ntype = pmd->Type();
+				ar.BeginChunk(ntype);
+				{
+					pmd->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
 	// save load controllers
 	if (LoadControllers() > 0)
 	{
@@ -1133,6 +1152,7 @@ void FSModel::Load(IArchive& ar)
 		case CID_GEOMETRY_SECTION    : m_pModel->Load(ar); break;
 		case CID_STEP_SECTION        : LoadSteps(ar); break;
 		case CID_LOAD_CONTROLLER_LIST: LoadLoadControllers(ar); break;
+		case CID_MESHDATA_LIST       : LoadMeshDataGenerators(ar); break;
 		}
 		ar.CloseChunk();
 	}
@@ -1262,6 +1282,29 @@ void FSModel::LoadSteps(IArchive& ar)
 		// add step to model
 		AddStep(ps);
 
+		ar.CloseChunk();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FSModel::LoadMeshDataGenerators(IArchive& ar)
+{
+	assert(MeshDataGenerators() == 0);
+	FEMKernel& kernel = *FEMKernel::Instance();
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int ntype = ar.GetChunkID();
+		FSMeshDataGenerator* pmd = nullptr;
+		switch (ntype)
+		{
+		case FE_FEBIO_NODEDATA_GENERATOR: pmd = dynamic_cast<FSMeshDataGenerator*>(kernel.Create(this, FENODEDATAGENERATOR_ID, ntype)); break;
+		case FE_FEBIO_FACEDATA_GENERATOR: pmd = dynamic_cast<FSMeshDataGenerator*>(kernel.Create(this, FEFACEDATAGENERATOR_ID, ntype)); break;
+		case FE_FEBIO_ELEMDATA_GENERATOR: pmd = dynamic_cast<FSMeshDataGenerator*>(kernel.Create(this, FEELEMDATAGENERATOR_ID, ntype)); break;
+		}
+		
+		if (pmd == nullptr) throw ReadError("unknown CID in FSModel::LoadMeshDataGenerators");
+		AddMeshDataGenerator(pmd);
+		pmd->Load(ar);
 		ar.CloseChunk();
 	}
 }
