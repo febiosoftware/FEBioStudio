@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include "ICPRegistration.h"
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
+#include <FECore/matrix.h>
+using namespace std;
 
 GICPRegistration::GICPRegistration()
 {
@@ -35,8 +37,8 @@ GICPRegistration::GICPRegistration()
 
 Transform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double tol, const int maxIter)
 {
-	FEMesh& trgMesh = *ptrg->GetFEMesh();
-	FEMesh& srcMesh = *psrc->GetFEMesh();
+	FSMesh& trgMesh = *ptrg->GetFEMesh();
+	FSMesh& srcMesh = *psrc->GetFEMesh();
 
 	int NX = trgMesh.Nodes();
 	int NP = srcMesh.Nodes();

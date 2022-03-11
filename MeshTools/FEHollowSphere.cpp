@@ -61,7 +61,7 @@ double gain2(double x, double r, double n)
 	return (pow(r, n*x) - 1.0)/(pow(r, n) - 1.0);
 }
 
-FEMesh* FEHollowSphere::BuildMesh()
+FSMesh* FEHollowSphere::BuildMesh()
 {
 	assert(m_pobj);
 
@@ -399,7 +399,7 @@ FEMesh* FEHollowSphere::BuildMesh()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// update the mesh
 	pm->UpdateMesh();

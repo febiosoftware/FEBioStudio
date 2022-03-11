@@ -281,46 +281,46 @@ public:
 public:
 	FENikeProject() { Defaults(); }
 
-	bool Create(FEProject& prj);
+	bool Create(FSProject& prj);
 
-	// builds an FEProject from a nike project
-	bool Convert(FEProject& prj);
-
-protected:
-	bool BuildControl        (FEProject& prj);
-	bool BuildMaterials      (FEProject& prj);
-	bool BuildNodes          (FEProject& prj);
-	bool BuildElements       (FEProject& prj);
-	bool BuildRigidNodes     (FEProject& prj);
-	bool BuildDiscrete		 (FEProject& prj);
-	bool BuildInterfaces     (FEProject& prj);
-	bool BuildNodalLoads     (FEProject& prj);
-	bool BuildPressureLoads  (FEProject& prj);
-	bool BuildDisplacements  (FEProject& prj);
-	bool BuildBodyForce      (FEProject& prj);
-	bool BuildNodalVelocities(FEProject& prj);
-
-	int AddLoadCurve(FELoadCurve& lc);
+	// builds an FSProject from a nike project
+	bool Convert(FSProject& prj);
 
 protected:
-	bool ConvertMaterials(FEProject& prj);
+	bool BuildControl        (FSProject& prj);
+	bool BuildMaterials      (FSProject& prj);
+	bool BuildNodes          (FSProject& prj);
+	bool BuildElements       (FSProject& prj);
+	bool BuildRigidNodes     (FSProject& prj);
+	bool BuildDiscrete		 (FSProject& prj);
+	bool BuildInterfaces     (FSProject& prj);
+	bool BuildNodalLoads     (FSProject& prj);
+	bool BuildPressureLoads  (FSProject& prj);
+	bool BuildDisplacements  (FSProject& prj);
+	bool BuildBodyForce      (FSProject& prj);
+	bool BuildNodalVelocities(FSProject& prj);
+
+	int AddLoadCurve(LoadCurve& lc);
+
+protected:
+	bool ConvertMaterials(FSProject& prj);
 	void Defaults();
 
 public:
-	CONTROL						m_Ctrl;
-	vector<MATERIAL>			m_Mat;
-	vector<NODE>				m_Node;
-	vector<BRICK>				m_Brick;
-	vector<SHELL>				m_Shell;
-	list<RIGID_FACET>			m_Rigid;
-	vector<SLIDING_INTERFACE>	m_SI;
-	list<SI_FACET>				m_Face;
-	list<FELoadCurve>			m_LC;
-	list<NODAL_LOAD>			m_NF;
-	list<PRESSURE_LOAD>			m_PF;
-	list<NODAL_DISPLACEMENT>	m_DC;
-	list<BODY_FORCE>			m_BF;
-	vector<NODAL_VELOCITY>		m_Vel;
-	vector<DISCRETE_SPRING>		m_DSP;
-	vector<DISCRETE_MATERIAL>	m_DMA;
+	CONTROL							m_Ctrl;
+	std::vector<MATERIAL>			m_Mat;
+	std::vector<NODE>				m_Node;
+	std::vector<BRICK>				m_Brick;
+	std::vector<SHELL>				m_Shell;
+	std::list<RIGID_FACET>			m_Rigid;
+	std::vector<SLIDING_INTERFACE>	m_SI;
+	std::list<SI_FACET>				m_Face;
+	std::list<LoadCurve>			m_LC;
+	std::list<NODAL_LOAD>			m_NF;
+	std::list<PRESSURE_LOAD>		m_PF;
+	std::list<NODAL_DISPLACEMENT>	m_DC;
+	std::list<BODY_FORCE>			m_BF;
+	std::vector<NODAL_VELOCITY>		m_Vel;
+	std::vector<DISCRETE_SPRING>	m_DSP;
+	std::vector<DISCRETE_MATERIAL>	m_DMA;
 };

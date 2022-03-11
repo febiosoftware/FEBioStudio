@@ -25,13 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <vector>
-//using namespace std;
 
-class FEModel;
+class FSModel;
 class GObject;
-class FEMesh;
+class FSMesh;
 
 //-----------------------------------------------------------------------------
 // Class describing the foam generator.
@@ -80,7 +79,7 @@ public:
 	FoamGen();
 
 	// Create the foam object
-	FEMesh* Create();
+	FSMesh* Create();
 
 public:
 	int		m_nx, m_ny, m_nz;
@@ -99,23 +98,23 @@ protected:
 	void EvalGrid();
 	void CalcGradient();	// not used (for now; and not finished)
 	void SmoothGrid();
-	void SmoothMesh(FEMesh* pm, int niter, double w);
+	void SmoothMesh(FSMesh* pm, int niter, double w);
 	void DistortGrid();
-	FEMesh* CreateMesh();
-	FEMesh* WeldMesh(FEMesh* pm);
+	FSMesh* CreateMesh();
+	FSMesh* WeldMesh(FSMesh* pm);
 
 	int FindEdge(int n1, int n2);
 
-	void SelectFace(int i, FEMesh* pm);
+	void SelectFace(int i, FSMesh* pm);
 
 protected:
-	vector<NODE>	m_Node;
-	vector<CELL>	m_Cell;
-	vector<CELL2D>	m_Cell2D[6];
-	vector<NODE>	m_Seed;
-	vector<EDGE>	m_Edge;
-	vector<FACE>	m_Face;
-	vector<N2E>		m_NET;
+	std::vector<NODE>	m_Node;
+	std::vector<CELL>	m_Cell;
+	std::vector<CELL2D>	m_Cell2D[6];
+	std::vector<NODE>	m_Seed;
+	std::vector<EDGE>	m_Edge;
+	std::vector<FACE>	m_Face;
+	std::vector<N2E>	m_NET;
 	
 	int		m_nface[8];
 };

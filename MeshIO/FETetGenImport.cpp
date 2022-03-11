@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FETetGenImport::FETetGenImport(FEProject& prj) : FEFileImport(prj)
+FETetGenImport::FETetGenImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_offset = 0;
 }
@@ -135,18 +135,18 @@ bool FETetGenImport::Load(const char* szfile)
 
 	Close();
 
-	return BuildMesh(m_prj.GetFEModel());
+	return BuildMesh(m_prj.GetFSModel());
 }
 
 //-----------------------------------------------------------------------------
-bool FETetGenImport::BuildMesh(FEModel& fem)
+bool FETetGenImport::BuildMesh(FSModel& fem)
 {
 	// counts
 	int nodes = (int) m_Node.size();
 	int elems = (int) m_Elem.size();
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create the nodes
@@ -160,7 +160,7 @@ bool FETetGenImport::BuildMesh(FEModel& fem)
 	for (int i=0; i<elems; ++i)
 	{
 		ELEM& tet = m_Elem[i];
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 
 		el.SetType(FE_TET4);
 		el.m_node[0] = tet.node[0]-m_offset;

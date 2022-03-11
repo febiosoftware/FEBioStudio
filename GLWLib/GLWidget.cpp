@@ -63,9 +63,12 @@ GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
 	m_szlabel = (char*) szlabel;
 
 	m_fgc = m_base;
-	m_bgc[0] = GLColor(0,0,0,0);
-	m_bgc[1] = GLColor(0,0,0,0);
-	m_nbg = NONE;
+	m_bgFillColor[0] = GLColor(0,0,0,0);
+	m_bgFillColor[1] = GLColor(0,0,0,0);
+	m_bgFillMode = FILL_NONE;
+	m_bgLineMode = LINE_NONE;
+	m_bgLineSize = 1;
+	m_bgLineColor = GLColor(0, 0, 0, 0);
 
 	m_font = QFont("Helvetica", 13);
 	m_font.setBold(false);
@@ -201,21 +204,21 @@ void GLBox::fit_to_size()
 
 void GLBox::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 {
-	QColor c1 = toQColor(m_bgc[0]);
-	QColor c2 = toQColor(m_bgc[1]);
+	QColor c1 = toQColor(m_bgFillColor[0]);
+	QColor c2 = toQColor(m_bgFillColor[1]);
 
 	QRect rt(x0, y0, x1 - x0, y1 - y0);
 
-	switch (m_nbg)
+	switch (m_bgFillMode)
 	{
-	case NONE: break;
-	case COLOR1:
+	case FILL_NONE: break;
+	case FILL_COLOR1:
 		painter->fillRect(rt, c1);
 		break;
-	case COLOR2:
+	case FILL_COLOR2:
 		painter->fillRect(rt, c2);
 		break;
-	case HORIZONTAL:
+	case FILL_HORIZONTAL:
 		{
 			QLinearGradient grad(rt.topLeft(), rt.topRight());
 			grad.setColorAt(0, c1);
@@ -223,7 +226,7 @@ void GLBox::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 			painter->fillRect(rt, grad);
 		}
 		break;
-	case VERTICAL:
+	case FILL_VERTICAL:
 		{
 			QLinearGradient grad(rt.topLeft(), rt.bottomLeft());
 			grad.setColorAt(0, c1);
@@ -231,6 +234,17 @@ void GLBox::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 			painter->fillRect(rt, grad);
 		}
 		break;
+	}
+
+	switch (m_bgLineMode)
+	{
+	case LINE_NONE: break;
+	case LINE_SOLID:
+	{
+		painter->setPen(QPen(toQColor(m_bgLineColor), m_bgLineSize));
+		painter->drawRect(rt);
+	}
+	break;
 	}
 }
 
@@ -286,14 +300,20 @@ GLLegendBar::GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orie
 
 void GLLegendBar::draw(QPainter* painter)
 {
+	int x0 = m_x;
+	int y0 = m_y;
+	int x1 = m_x + m_w;
+	int y1 = m_y + m_h;
+	draw_bg(x0, y0, x1, y1, painter);
+
 	switch (m_ntype)
 	{
 	case GRADIENT: 
-		if (m_nrot == VERTICAL) draw_gradient_vert(painter);
+		if (m_nrot == ORIENT_VERTICAL) draw_gradient_vert(painter);
 		else draw_gradient_horz(painter);
 		break;
 	case DISCRETE:
-		if (m_nrot == VERTICAL) draw_discrete_vert(painter); 
+		if (m_nrot == ORIENT_VERTICAL) draw_discrete_vert(painter); 
 		else draw_discrete_horz(painter);
 		break;
 	default:
@@ -332,6 +352,52 @@ int GLLegendBar::GetDivisions()
 void GLLegendBar::SetDivisions(int n)
 {
 	m_pMap->SetDivisions(n);
+}
+
+void GLLegendBar::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
+{
+	QColor c1 = toQColor(m_bgFillColor[0]);
+	QColor c2 = toQColor(m_bgFillColor[1]);
+
+	QRect rt(x0, y0, x1 - x0, y1 - y0);
+
+	switch (m_bgFillMode)
+	{
+	case FILL_NONE: break;
+	case FILL_COLOR1:
+		painter->fillRect(rt, c1);
+		break;
+	case FILL_COLOR2:
+		painter->fillRect(rt, c2);
+		break;
+	case FILL_HORIZONTAL:
+	{
+		QLinearGradient grad(rt.topLeft(), rt.topRight());
+		grad.setColorAt(0, c1);
+		grad.setColorAt(1, c2);
+		painter->fillRect(rt, grad);
+	}
+	break;
+	case FILL_VERTICAL:
+	{
+		QLinearGradient grad(rt.topLeft(), rt.bottomLeft());
+		grad.setColorAt(0, c1);
+		grad.setColorAt(1, c2);
+		painter->fillRect(rt, grad);
+	}
+	break;
+	}
+
+	switch (m_bgLineMode)
+	{
+	case LINE_NONE: break;
+	case LINE_SOLID: 
+	{
+		painter->setPen(QPen(toQColor(m_bgLineColor), m_bgLineSize));
+		painter->drawRect(rt);
+	}
+	break;
+	}
 }
 
 void GLLegendBar::draw_gradient_vert(QPainter* painter)
@@ -631,7 +697,7 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
 		painter->setFont(m_font);
 
-		if (m_nrot == HORIZONTAL)
+		if (m_nrot == ORIENT_HORIZONTAL)
 		{
 			painter->drawText(x(), y(), w(), h(), Qt::AlignCenter | Qt::AlignBottom, m_szlabel);
 		}
@@ -661,7 +727,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 	glDepthFunc(GL_ALWAYS);
 
 	int x0, y0, x1, y1;
-	if (m_nrot == VERTICAL)
+	if (m_nrot == ORIENT_VERTICAL)
 	{
 		x0 = x() + w() - 50;
 		y0 = y() + 30;
@@ -722,7 +788,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 		// render the lines and text
 		for (i=1; i<nsteps+1; i++)
 		{
-			if (m_nrot == VERTICAL)
+			if (m_nrot == ORIENT_VERTICAL)
 			{
 				yt = y0 + i*(y1 - y0)/(nsteps+1);
 				f = 1.f - (i - 1) / denom;
@@ -772,7 +838,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
 		painter->setFont(m_font);
 
-		if (m_nrot == HORIZONTAL)
+		if (m_nrot == ORIENT_HORIZONTAL)
 		{
 			painter->drawText(x(), y(), w(), h(), Qt::AlignCenter | Qt::AlignBottom, m_szlabel);
 		}
@@ -793,7 +859,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 		// render the lines and text
 		for (i = 1; i<nsteps + 1; i++)
 		{
-			if (m_nrot == VERTICAL)
+			if (m_nrot == ORIENT_VERTICAL)
 			{
 				yt = y0 + i*(y1 - y0) / (nsteps + 1);
 				f = m_fmax + (i-1)*(m_fmin - m_fmax) / denom;

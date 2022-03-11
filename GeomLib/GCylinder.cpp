@@ -81,7 +81,7 @@ void GCylinder::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
@@ -91,7 +91,7 @@ void GCylinder::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 
 	for (i=0; i<6; ++i)
 	{
@@ -195,7 +195,7 @@ void GCylinder2::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
@@ -205,7 +205,7 @@ void GCylinder2::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 
 	for (i=0; i<6; ++i)
 	{

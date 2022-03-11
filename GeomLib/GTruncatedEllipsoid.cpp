@@ -105,7 +105,7 @@ void GTruncatedEllipsoid::Create()
 
 	// build the parts
 	assert(m_Part.empty());
-	AddPart();
+	AddSolidPart();
 
 	// build the faces
 	int FT[12][4] = {

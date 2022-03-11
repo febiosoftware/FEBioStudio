@@ -28,43 +28,44 @@ SOFTWARE.*/
 #include "FEGroup.h"
 #include "FEPostMesh.h"
 #include <string.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
-// FEDomain constructor
-Post::FEDomain::FEDomain(Post::FEPostMesh *pm)
+// FSDomain constructor
+Post::MeshDomain::MeshDomain(Post::FEPostMesh *pm)
 {
 	m_pm = pm;
 	m_nmat = -1;
 }
 
 //-----------------------------------------------------------------------------
-void Post::FEDomain::Reserve(int nelems, int nfaces)
+void Post::MeshDomain::Reserve(int nelems, int nfaces)
 {
 	m_Elem.reserve(nelems);
 	m_Face.reserve(nfaces);
 }
 
 //-----------------------------------------------------------------------------
-void Post::FEDomain::SetMatID(int matid)
+void Post::MeshDomain::SetMatID(int matid)
 {
 	m_nmat = matid;
 }
 
 //-----------------------------------------------------------------------------
-FEFace& Post::FEDomain::Face(int n)
+FSFace& Post::MeshDomain::Face(int n)
 { 
 	return m_pm->Face(m_Face[n]); 
 }
 
 //-----------------------------------------------------------------------------
-FEElement_& Post::FEDomain::Element(int n)
+FEElement_& Post::MeshDomain::Element(int n)
 {
 	return m_pm->ElementRef(m_Elem[n]);
 }
 
-void Post::FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
+void Post::FSPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 {
-	FECoreMesh& mesh = *GetMesh();
+	FSCoreMesh& mesh = *GetMesh();
 	int NN = mesh.Nodes();
 	int NE = Size();
 
@@ -100,9 +101,9 @@ void Post::FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 	}
 }
 
-void Post::FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
+void Post::FSSurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 {
-	FECoreMesh& mesh = *GetMesh();
+	FSCoreMesh& mesh = *GetMesh();
 	int NN = mesh.Nodes();
 	int NF = Size();
 
@@ -111,7 +112,7 @@ void Post::FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 	int n = 0, nnf = 0;
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(m_Face[i]);
+		FSFace& face = mesh.Face(m_Face[i]);
 		int nf = face.Nodes();
 		nnf += nf;
 		for (int j=0; j<nf; ++j)
@@ -127,7 +128,7 @@ void Post::FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 	lnode.resize(nnf); nnf = 0;
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(m_Face[i]);
+		FSFace& face = mesh.Face(m_Face[i]);
 		int nf = face.Nodes();
 		for (int j=0; j<nf; ++j)
 		{

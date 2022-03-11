@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 class FEItemListBuilder;
 class GObject;
-class FENodeSet;
+class FSNodeSet;
 
 class FENodeData : public FEMeshData
 {
@@ -40,7 +40,7 @@ public:
 	// create data field
 	void Create(double v = 0.0);
 
-	void Create(FENodeSet* nset, double v = 0.0);
+	void Create(FSNodeSet* nset, double v = 0.0);
 
 	// size of data field
 	int Size() const { return (int)m_data.size(); }
@@ -57,9 +57,9 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	vector<double>	m_data;
+	std::vector<double>	m_data;
 	GObject*		m_po;
-	FENodeSet*		m_nodeSet;
+	FSNodeSet*		m_nodeSet;
 
 private:
 	FENodeData(const FENodeData& d);

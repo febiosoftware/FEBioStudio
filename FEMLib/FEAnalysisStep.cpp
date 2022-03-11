@@ -27,99 +27,108 @@ SOFTWARE.*/
 #include "FEAnalysisStep.h"
 #include <MeshTools/FEModel.h>
 #include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include <MeshTools/FEProject.h>
 #include "FEInitialCondition.h"
 #include "FESurfaceLoad.h"
 #include "FEMKernel.h"
 #include "FEInterface.h"
+#include <FEBioLink/FEBioInterface.h>
 #include "FEModelConstraint.h"
 #include <FSCore/FSObjectList.h>
+using namespace std;
 
-int FEStep::m_ncount = 0;
+int FSStep::m_ncount = 0;
 
 //-----------------------------------------------------------------------------
-// FEStep
+// FSStep
 //-----------------------------------------------------------------------------
 
-class FEStep::Imp
+class FSStep::Imp
 {
 public:
 	// boundary conditions
-	FSObjectList<FEBoundaryCondition>	m_BC;
+	FSObjectList<FSBoundaryCondition>	m_BC;
 
 	// loads
-	FSObjectList<FELoad>	m_FC;
+	FSObjectList<FSLoad>	m_FC;
 
 	// initial condition
-	FSObjectList<FEInitialCondition>		m_IC;
+	FSObjectList<FSInitialCondition>		m_IC;
 
 	// contact interfaces
-	FSObjectList<FEInterface>	m_Int;
+	FSObjectList<FSInterface>	m_Int;
 
 	// constraints
-	FSObjectList<FEModelConstraint>	m_NLC;
+	FSObjectList<FSModelConstraint>	m_NLC;
 
 	// rigid constraints	
-	FSObjectList<FERigidConstraint>	m_RC;
+	FSObjectList<FSRigidConstraint>	m_RC;
+
+	// rigid loads
+	FSObjectList<FSRigidLoad>	m_RL;
 
 	// linear constraints
-	FSObjectList<FELinearConstraintSet>	m_LC;
+	FSObjectList<FSLinearConstraintSet>	m_LC;
 
 	// rigid connectors (nonlinear constraints)
-	FSObjectList<FERigidConnector>	m_CN;
+	FSObjectList<FSRigidConnector>	m_CN;
+
+	// mesh adaptors
+	FSObjectList<FSMeshAdaptor>	m_MA;
 };
 
 
-FEStep::FEStep(FEModel* ps, int ntype) : m_ntype(ntype), m_pfem(ps), imp(new FEStep::Imp)
+FSStep::FSStep(FSModel* ps, int ntype) : FSModelComponent(ps), m_ntype(ntype), imp(new FSStep::Imp)
 {
 	m_nID = ++m_ncount;
-	m_sztype = "(undefined)";
+	m_superClassID = FEANALYSIS_ID;
 }
 
 //-----------------------------------------------------------------------------
-FEStep::~FEStep()
+FSStep::~FSStep()
 {
 	delete imp;
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::ResetCounter()
+void FSStep::ResetCounter()
 {
 	m_ncount = 0;
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::DecreaseCounter()
+void FSStep::DecreaseCounter()
 {
 	m_ncount--;
 	assert(m_ncount >= 0);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::SetCounter(int n)
+void FSStep::SetCounter(int n)
 {
 	m_ncount = n;
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::GetCounter()
+int FSStep::GetCounter()
 {
 	return m_ncount;
 }
 
 //-----------------------------------------------------------------------------
 
-void FEStep::SetID(int nid)
+void FSStep::SetID(int nid)
 {
 	if (nid > m_ncount) m_ncount = nid;
 	m_nID = nid;
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::BCs() { return (int) imp->m_BC.Size(); }
+int FSStep::BCs() { return (int) imp->m_BC.Size(); }
 
 //-----------------------------------------------------------------------------
-int FEStep::ActiveBCs()
+int FSStep::ActiveBCs()
 {
 	int n = 0;
 	for (int i = 0; i < imp->m_BC.Size(); ++i)
@@ -128,137 +137,137 @@ int FEStep::ActiveBCs()
 }
 
 //-----------------------------------------------------------------------------
-FEBoundaryCondition* FEStep::BC(int i) { return imp->m_BC[i]; }
+FSBoundaryCondition* FSStep::BC(int i) { return imp->m_BC[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddBC(FEBoundaryCondition* pbc)
+void FSStep::AddBC(FSBoundaryCondition* pbc)
 { 
 	imp->m_BC.Add(pbc);
 	pbc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertBC(int n, FEBoundaryCondition* pbc)
+void FSStep::InsertBC(int n, FSBoundaryCondition* pbc)
 { 
 	imp->m_BC.Insert(n, pbc);
 	pbc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveBC(FEBoundaryCondition* pbc)
+int FSStep::RemoveBC(FSBoundaryCondition* pbc)
 {
 	return (int)imp->m_BC.Remove(pbc);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllBCs()
+void FSStep::RemoveAllBCs()
 {
 	imp->m_BC.Clear();
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::Loads() { return (int)imp->m_FC.Size(); }
+int FSStep::Loads() { return (int)imp->m_FC.Size(); }
 
 //-----------------------------------------------------------------------------
-FELoad* FEStep::Load(int i) { return imp->m_FC[i]; }
+FSLoad* FSStep::Load(int i) { return imp->m_FC[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddLoad(FELoad* pfc)
+void FSStep::AddLoad(FSLoad* pfc)
 { 
 	imp->m_FC.Add(pfc);
 	pfc->SetStep(GetID()); 
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertLoad(int n, FELoad* pfc)
+void FSStep::InsertLoad(int n, FSLoad* pfc)
 { 
 	imp->m_FC.Insert(n, pfc);
 	pfc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveLoad(FELoad* pfc)
+int FSStep::RemoveLoad(FSLoad* pfc)
 {
 	return (int)imp->m_FC.Remove(pfc);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllLoads()
+void FSStep::RemoveAllLoads()
 {
 	imp->m_FC.Clear();
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::ICs() { return (int)imp->m_IC.Size(); }
+int FSStep::ICs() { return (int)imp->m_IC.Size(); }
 
 //-----------------------------------------------------------------------------
-FEInitialCondition* FEStep::IC(int i) { return imp->m_IC[i]; }
+FSInitialCondition* FSStep::IC(int i) { return imp->m_IC[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddIC(FEInitialCondition* pic)
+void FSStep::AddIC(FSInitialCondition* pic)
 {
 	imp->m_IC.Add(pic);
 	pic->SetStep(GetID());
 }
 
-void FEStep::InsertIC(int n, FEInitialCondition* pic)
+void FSStep::InsertIC(int n, FSInitialCondition* pic)
 { 
 	imp->m_IC.Insert(n, pic);
 	pic->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveIC(FEInitialCondition* pic)
+int FSStep::RemoveIC(FSInitialCondition* pic)
 {
 	return (int)imp->m_IC.Remove(pic);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllICs()
+void FSStep::RemoveAllICs()
 {
 	imp->m_IC.Clear();
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::Interfaces() { return (int)imp->m_Int.Size(); }
+int FSStep::Interfaces() { return (int)imp->m_Int.Size(); }
 
 //-----------------------------------------------------------------------------
-FEInterface* FEStep::Interface(int i) { return imp->m_Int[i]; }
+FSInterface* FSStep::Interface(int i) { return imp->m_Int[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddInterface(FEInterface* pi)
+void FSStep::AddInterface(FSInterface* pi)
 { 
 	imp->m_Int.Add(pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertInterface(int n, FEInterface* pi)
+void FSStep::InsertInterface(int n, FSInterface* pi)
 { 
 	imp->m_Int.Insert(n, pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveInterface(FEInterface* pi)
+int FSStep::RemoveInterface(FSInterface* pi)
 {
 	return (int)imp->m_Int.Remove(pi);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllInterfaces()
+void FSStep::RemoveAllInterfaces()
 {
 	imp->m_Int.Clear();
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::Constraints()
+int FSStep::Constraints()
 {
 	return (int) imp->m_NLC.Size();
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::Constraints(int ntype)
+int FSStep::Constraints(int ntype)
 {
 	int nc = 0;
 	for (int i = 0; i<(int)imp->m_NLC.Size(); ++i)
@@ -269,45 +278,45 @@ int FEStep::Constraints(int ntype)
 }
 
 //-----------------------------------------------------------------------------
-FEModelConstraint* FEStep::Constraint(int i)
+FSModelConstraint* FSStep::Constraint(int i)
 {
 	return imp->m_NLC[i];
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddConstraint(FEModelConstraint* pc)
+void FSStep::AddConstraint(FSModelConstraint* pc)
 {
 	imp->m_NLC.Add(pc);
 	pc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertConstraint(int n, FEModelConstraint* pc)
+void FSStep::InsertConstraint(int n, FSModelConstraint* pc)
 {
 	imp->m_NLC.Insert(n, pc);
 	pc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveConstraint(FEModelConstraint* pc)
+void FSStep::RemoveConstraint(FSModelConstraint* pc)
 {
 	imp->m_NLC.Remove(pc);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllConstraints()
+void FSStep::RemoveAllConstraints()
 {
 	imp->m_NLC.Clear();
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RigidConstraints() { return (int)imp->m_RC.Size(); }
+int FSStep::RigidConstraints() { return (int)imp->m_RC.Size(); }
 
 //-----------------------------------------------------------------------------
-FERigidConstraint* FEStep::RigidConstraint(int i) { return imp->m_RC[i]; }
+FSRigidConstraint* FSStep::RigidConstraint(int i) { return imp->m_RC[i]; }
 
 //-----------------------------------------------------------------------------
-int FEStep::RigidConstraints(int ntype)
+int FSStep::RigidConstraints(int ntype)
 {
 	int nc = 0;
 	for (int i = 0; i<(int)imp->m_RC.Size(); ++i)
@@ -318,116 +327,189 @@ int FEStep::RigidConstraints(int ntype)
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddRC(FERigidConstraint* prc)
+void FSStep::AddRC(FSRigidConstraint* prc)
 { 
 	imp->m_RC.Add(prc);
 	prc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertRC(int n, FERigidConstraint* prc)
+void FSStep::InsertRC(int n, FSRigidConstraint* prc)
 { 
 	imp->m_RC.Insert(n, prc);
 	prc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveRC(FERigidConstraint* prc)
+int FSStep::RemoveRC(FSRigidConstraint* prc)
 {
 	return (int)imp->m_RC.Remove(prc);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllRigidConstraints()
+void FSStep::RemoveAllRigidConstraints()
 {
 	imp->m_RC.Clear();
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::LinearConstraints() { return (int)imp->m_LC.Size(); }
+int FSStep::RigidLoads()
+{
+	return imp->m_RL.Size();
+}
+
+int FSStep::RigidLoads(int ntype)
+{
+	int nrl = 0;
+	for (int i = 0; i < (int)imp->m_RL.Size(); ++i)
+	{
+		if (imp->m_RL[i]->Type() == ntype) nrl++;
+	}
+	return nrl;
+}
+
+FSRigidLoad* FSStep::RigidLoad(int i)
+{
+	return imp->m_RL[i];
+}
+
+void FSStep::AddRigidLoad(FSRigidLoad* prc)
+{
+	imp->m_RL.Add(prc);
+}
+
+void FSStep::InsertRigidLoad(int n, FSRigidLoad* prc)
+{
+	imp->m_RL.Insert(n, prc);
+}
+
+int FSStep::RemoveRigidLoad(FSRigidLoad* prc)
+{
+	return imp->m_RL.Remove(prc);
+}
+
+void FSStep::RemoveAllRigidLoads()
+{
+	imp->m_RL.Clear();
+}
 
 //-----------------------------------------------------------------------------
-FELinearConstraintSet* FEStep::LinearConstraint(int i) { return imp->m_LC[i]; }
+int FSStep::LinearConstraints() { return (int)imp->m_LC.Size(); }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddLinearConstraint(FELinearConstraintSet* plc)
+FSLinearConstraintSet* FSStep::LinearConstraint(int i) { return imp->m_LC[i]; }
+
+//-----------------------------------------------------------------------------
+void FSStep::AddLinearConstraint(FSLinearConstraintSet* plc)
 { 
 	imp->m_LC.Add(plc);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllLinearConstraints()
+void FSStep::RemoveAllLinearConstraints()
 {
 	imp->m_LC.Clear();
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RigidConnectors() { return (int)imp->m_CN.Size(); }
+int FSStep::RigidConnectors() { return (int)imp->m_CN.Size(); }
 
 //-----------------------------------------------------------------------------
-FERigidConnector* FEStep::RigidConnector(int i) { return imp->m_CN[i]; }
+FSRigidConnector* FSStep::RigidConnector(int i) { return imp->m_CN[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddRigidConnector(FERigidConnector* pi)
+void FSStep::AddRigidConnector(FSRigidConnector* pi)
 {
 	imp->m_CN.Add(pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertRigidConnector(int n, FERigidConnector* pi)
+void FSStep::InsertRigidConnector(int n, FSRigidConnector* pi)
 { 
 	imp->m_CN.Insert(n, pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveRigidConnector(FERigidConnector* pi)
+int FSStep::RemoveRigidConnector(FSRigidConnector* pi)
 {
 	return (int)imp->m_CN.Remove(pi);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllRigidConnectors()
+void FSStep::RemoveAllRigidConnectors()
 {
 	imp->m_CN.Clear();
 }
 
 //-----------------------------------------------------------------------------
+int FSStep::MeshAdaptors() { return (int)imp->m_MA.Size(); }
+
+//-----------------------------------------------------------------------------
+FSMeshAdaptor* FSStep::MeshAdaptor(int i) { return imp->m_MA[i]; }
+
+//-----------------------------------------------------------------------------
+void FSStep::AddMeshAdaptor(FSMeshAdaptor* pi)
+{
+	imp->m_MA.Add(pi);
+	pi->SetStep(GetID());
+}
+
+//-----------------------------------------------------------------------------
+void FSStep::InsertMeshAdaptor(int n, FSMeshAdaptor* pi)
+{
+	imp->m_MA.Insert(n, pi);
+	pi->SetStep(GetID());
+}
+
+//-----------------------------------------------------------------------------
+int FSStep::RemoveMeshAdaptor(FSMeshAdaptor* pi)
+{
+	return (int)imp->m_MA.Remove(pi);
+}
+
+//-----------------------------------------------------------------------------
+void FSStep::RemoveAllMeshAdaptors()
+{
+	imp->m_MA.Clear();
+}
+
+//-----------------------------------------------------------------------------
 #define MoveComponent(Type, Fnc) (dynamic_cast<Type*>(pc)) Fnc(dynamic_cast<Type*>(pc))
 
-void FEStep::AddComponent(FEStepComponent* pc)
+void FSStep::AddComponent(FSStepComponent* pc)
 {
 	// remove it from the old step
 	pc->SetStep(GetID());
-	if      MoveComponent(FEBoundaryCondition, AddBC);
-	else if MoveComponent(FELoad             , AddLoad);
-	else if MoveComponent(FEInterface        , AddInterface);
-	else if MoveComponent(FEInitialCondition , AddIC);
-	else if MoveComponent(FERigidConstraint  , AddRC);
-	else if MoveComponent(FERigidConnector   , AddRigidConnector);
-	else if MoveComponent(FEModelConstraint  , AddConstraint);
+	if      MoveComponent(FSBoundaryCondition, AddBC);
+	else if MoveComponent(FSLoad             , AddLoad);
+	else if MoveComponent(FSInterface        , AddInterface);
+	else if MoveComponent(FSInitialCondition , AddIC);
+	else if MoveComponent(FSRigidConstraint  , AddRC);
+	else if MoveComponent(FSRigidConnector   , AddRigidConnector);
+	else if MoveComponent(FSModelConstraint  , AddConstraint);
 	else assert(false);
 }
 
 //-----------------------------------------------------------------------------
 #define TryRemoveComponent(Type, Cont) (dynamic_cast<Type*>(pc)) imp->Cont.Remove(dynamic_cast<Type*>(pc))
 
-void FEStep::RemoveComponent(FEStepComponent* pc)
+void FSStep::RemoveComponent(FSStepComponent* pc)
 {
 	assert(pc->GetStep() == GetID());
-	if      TryRemoveComponent(FEBoundaryCondition, m_BC);
-	else if TryRemoveComponent(FELoad             , m_FC);
-	else if TryRemoveComponent(FEInitialCondition , m_IC);
-	else if TryRemoveComponent(FEInterface        , m_Int);
-	else if TryRemoveComponent(FEModelConstraint  , m_NLC);
-	else if TryRemoveComponent(FERigidConstraint  , m_RC);
-	else if TryRemoveComponent(FERigidConnector   , m_CN);
+	if      TryRemoveComponent(FSBoundaryCondition, m_BC);
+	else if TryRemoveComponent(FSLoad             , m_FC);
+	else if TryRemoveComponent(FSInitialCondition , m_IC);
+	else if TryRemoveComponent(FSInterface        , m_Int);
+	else if TryRemoveComponent(FSModelConstraint  , m_NLC);
+	else if TryRemoveComponent(FSRigidConstraint  , m_RC);
+	else if TryRemoveComponent(FSRigidConnector   , m_CN);
 	else assert(false);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::Save(OArchive &ar)
+void FSStep::Save(OArchive &ar)
 {
 	// write the name
 	ar.WriteChunk(CID_STEP_NAME, GetName());
@@ -435,6 +517,41 @@ void FEStep::Save(OArchive &ar)
 
 	// write the step
 	ar.WriteChunk(CID_STEP_ID, m_nID);
+
+	// save the step parameters
+	ar.BeginChunk(CID_STEP_PARAMS);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+
+	// save the control properties
+	if (Properties() > 0)
+	{
+		for (int i = 0; i < Properties(); ++i)
+		{
+			FSProperty& prop = GetProperty(i);
+			ar.BeginChunk(CID_STEP_PROPERTY);
+			{
+				// store the property name
+				ar.WriteChunk(CID_STEP_PROPERTY_NAME, prop.GetName());
+
+				// store the property data
+				FSCoreBase* pc = prop.GetComponent();
+				if (pc)
+				{
+					string typeStr = pc->GetTypeString();
+					ar.WriteChunk(CID_STEP_PROPERTY_TYPESTR, typeStr);
+					ar.BeginChunk(CID_STEP_PROPERTY_DATA);
+					{
+						pc->Save(ar);
+					}
+					ar.EndChunk();
+				}
+			}
+			ar.EndChunk();
+		}
+	}
 
 	// save the boundary conditions
 	int nbc = BCs();
@@ -444,7 +561,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nbc; ++i)
 			{
-				FEBoundaryCondition* pb = BC(i);
+				FSBoundaryCondition* pb = BC(i);
 				int ntype = pb->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -464,7 +581,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nfc; ++i)
 			{
-				FELoad* pb = Load(i);
+				FSLoad* pb = Load(i);
 				int ntype = pb->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -484,7 +601,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nic; ++i)
 			{
-				FEInitialCondition* pi = IC(i);
+				FSInitialCondition* pi = IC(i);
 				int ntype = pi->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -504,7 +621,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nintfs; ++i)
 			{
-				FEInterface* pi = Interface(i);
+				FSInterface* pi = Interface(i);
 				int ntype = pi->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -524,7 +641,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i = 0; i < nmlc; ++i)
 			{
-				FEModelConstraint* pmc = Constraint(i);
+				FSModelConstraint* pmc = Constraint(i);
 				int ntype = pmc->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -544,7 +661,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nrc; ++i)
 			{
-				FERigidConstraint* pr = RigidConstraint(i);
+				FSRigidConstraint* pr = RigidConstraint(i);
 				int ntype = pr->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -564,7 +681,7 @@ void FEStep::Save(OArchive &ar)
         {
             for (int i=0; i<ncnct; ++i)
             {
-				FERigidConnector* pi = RigidConnector(i);
+				FSRigidConnector* pi = RigidConnector(i);
                 int ntype = pi->Type();
                 ar.BeginChunk(ntype);
                 {
@@ -578,9 +695,11 @@ void FEStep::Save(OArchive &ar)
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::Load(IArchive &ar)
+void FSStep::Load(IArchive &ar)
 {
-	TRACE("FEStep::Load");
+	TRACE("FSStep::Load");
+
+	FSModel* fem = GetFSModel();
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -590,31 +709,69 @@ void FEStep::Load(IArchive &ar)
 		case CID_STEP_NAME      : { string name; ar.read(name); SetName(name); } break;
 		case CID_FEOBJ_INFO     : { string info; ar.read(info); SetInfo(info); } break;
 		case CID_STEP_ID        : { int nid; ar.read(nid); SetID(nid); } break;
+		case CID_STEP_PARAMS:
+		{
+			ParamContainer::Load(ar);
+		}
+		break;
+		case CID_STEP_PROPERTY:
+		{
+			FSProperty* pc = nullptr;
+			string typeString;
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int cid = ar.GetChunkID();
+				switch (cid)
+				{
+				case CID_STEP_PROPERTY_NAME:
+				{
+					std::string propName;
+					ar.read(propName);
+					pc = FindProperty(propName); assert(pc);
+				}
+				break;
+				case CID_STEP_PROPERTY_TYPESTR: ar.read(typeString); break;
+				case CID_STEP_PROPERTY_DATA: 
+				{
+					FSModelComponent* pmc = FEBio::CreateClass(pc->GetSuperClassID(), typeString.c_str(), fem); assert(pmc);
+					pmc->Load(ar);
+					assert(pc->GetComponent() == nullptr);
+					pc->AddComponent(pmc);
+				}
+				break;
+				default:
+					assert(false);
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
 		case CID_BC_SECTION: // boundary conditions
 			{
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int ntype = ar.GetChunkID();
 
-					FEModelComponent* pb = 0;
+					FSDomainComponent* pb = 0;
 					switch (ntype)
 					{
-					case FE_FIXED_DISPLACEMENT		 : pb = new FEFixedDisplacement         (m_pfem); break;
-					case FE_FIXED_ROTATION           : pb = new FEFixedRotation             (m_pfem); break;
-					case FE_FIXED_FLUID_PRESSURE	 : pb = new FEFixedFluidPressure        (m_pfem); break;
-					case FE_FIXED_TEMPERATURE        : pb = new FEFixedTemperature          (m_pfem); break;
-					case FE_FIXED_CONCENTRATION      : pb = new FEFixedConcentration        (m_pfem); break;
-                    case FE_FIXED_FLUID_VELOCITY     : pb = new FEFixedFluidVelocity        (m_pfem); break;
-                    case FE_FIXED_DILATATION         : pb = new FEFixedFluidDilatation      (m_pfem); break;
-					case FE_PRESCRIBED_DISPLACEMENT	 : pb = new FEPrescribedDisplacement    (m_pfem); break;
-					case FE_PRESCRIBED_ROTATION      : pb = new FEPrescribedRotation        (m_pfem); break;
-					case FE_PRESCRIBED_FLUID_PRESSURE: pb = new FEPrescribedFluidPressure   (m_pfem); break;
-					case FE_PRESCRIBED_TEMPERATURE   : pb = new FEPrescribedTemperature     (m_pfem); break;
-					case FE_PRESCRIBED_CONCENTRATION : pb = new FEPrescribedConcentration   (m_pfem); break;
-                    case FE_PRESCRIBED_FLUID_VELOCITY: pb = new FEPrescribedFluidVelocity   (m_pfem); break;
-                    case FE_PRESCRIBED_DILATATION    : pb = new FEPrescribedFluidDilatation (m_pfem); break;
-					case FE_FIXED_SHELL_DISPLACEMENT : pb = new FEFixedShellDisplacement    (m_pfem); break;
-					case FE_PRESCRIBED_SHELL_DISPLACEMENT: pb = new FEPrescribedShellDisplacement(m_pfem); break;
+					case FE_FIXED_DISPLACEMENT		 : pb = new FSFixedDisplacement         (fem); break;
+					case FE_FIXED_ROTATION           : pb = new FSFixedRotation             (fem); break;
+					case FE_FIXED_FLUID_PRESSURE	 : pb = new FSFixedFluidPressure        (fem); break;
+					case FE_FIXED_TEMPERATURE        : pb = new FSFixedTemperature          (fem); break;
+					case FE_FIXED_CONCENTRATION      : pb = new FSFixedConcentration        (fem); break;
+                    case FE_FIXED_FLUID_VELOCITY     : pb = new FSFixedFluidVelocity        (fem); break;
+                    case FE_FIXED_DILATATION         : pb = new FSFixedFluidDilatation      (fem); break;
+					case FE_PRESCRIBED_DISPLACEMENT	 : pb = new FSPrescribedDisplacement    (fem); break;
+					case FE_PRESCRIBED_ROTATION      : pb = new FSPrescribedRotation        (fem); break;
+					case FE_PRESCRIBED_FLUID_PRESSURE: pb = new FSPrescribedFluidPressure   (fem); break;
+					case FE_PRESCRIBED_TEMPERATURE   : pb = new FSPrescribedTemperature     (fem); break;
+					case FE_PRESCRIBED_CONCENTRATION : pb = new FSPrescribedConcentration   (fem); break;
+                    case FE_PRESCRIBED_FLUID_VELOCITY: pb = new FSPrescribedFluidVelocity   (fem); break;
+                    case FE_PRESCRIBED_DILATATION    : pb = new FSPrescribedFluidDilatation (fem); break;
+					case FE_FIXED_SHELL_DISPLACEMENT : pb = new FSFixedShellDisplacement    (fem); break;
+					case FE_PRESCRIBED_SHELL_DISPLACEMENT: pb = new FSPrescribedShellDisplacement(fem); break;
+					case FE_FEBIO_BC                 : pb = new FEBioBoundaryCondition(fem); break;
 					default:
 						if (ar.Version() < 0x00020000)
 						{
@@ -622,20 +779,20 @@ void FEStep::Load(IArchive &ar)
 							// now have their own section
 							switch(ntype)
 							{
-							case FE_NODAL_VELOCITIES		 : pb = new FENodalVelocities       (m_pfem); break;
-							case FE_NODAL_SHELL_VELOCITIES	 : pb = new FENodalShellVelocities  (m_pfem); break;
-                            case FE_INIT_FLUID_PRESSURE      : pb = new FEInitFluidPressure     (m_pfem); break;
-                            case FE_INIT_SHELL_FLUID_PRESSURE: pb = new FEInitShellFluidPressure(m_pfem); break;
-							case FE_INIT_CONCENTRATION       : pb = new FEInitConcentration     (m_pfem); break;
-                            case FE_INIT_SHELL_CONCENTRATION : pb = new FEInitShellConcentration(m_pfem); break;
-							case FE_INIT_TEMPERATURE         : pb = new FEInitTemperature       (m_pfem); break;
+							case FE_NODAL_VELOCITIES		 : pb = new FSNodalVelocities       (fem); break;
+							case FE_NODAL_SHELL_VELOCITIES	 : pb = new FSNodalShellVelocities  (fem); break;
+                            case FE_INIT_FLUID_PRESSURE      : pb = new FSInitFluidPressure     (fem); break;
+                            case FE_INIT_SHELL_FLUID_PRESSURE: pb = new FSInitShellFluidPressure(fem); break;
+							case FE_INIT_CONCENTRATION       : pb = new FSInitConcentration     (fem); break;
+                            case FE_INIT_SHELL_CONCENTRATION : pb = new FSInitShellConcentration(fem); break;
+							case FE_INIT_TEMPERATURE         : pb = new FSInitTemperature       (fem); break;
 							default:
-								throw ReadError("error parsing CID_BC_SECTION in FEStep::Load");
+								throw ReadError("error parsing CID_BC_SECTION in FSStep::Load");
 							}
 						}
 						else
 						{
-							throw ReadError("error parsing CID_BC_SECTION in FEStep::Load");
+							throw ReadError("error parsing CID_BC_SECTION in FSStep::Load");
 						}
 					}
 
@@ -643,16 +800,16 @@ void FEStep::Load(IArchive &ar)
 
 					if (ar.Version() < 0x0001000F)
 					{
-						// In older version, the rotational dofs were actually stored in the FEFixedDisplacement
-						// but now, they are stored in FEFixedRotation
-						FEFixedDisplacement* pbc = dynamic_cast<FEFixedDisplacement*>(pb);
+						// In older version, the rotational dofs were actually stored in the FSFixedDisplacement
+						// but now, they are stored in FSFixedRotation
+						FSFixedDisplacement* pbc = dynamic_cast<FSFixedDisplacement*>(pb);
 						if (pbc)
 						{
 							int bc = pbc->GetBC();
 							if (bc >= 8)
 							{
 								bc = (bc>>3)&7;
-								FEFixedRotation* prc = new FEFixedRotation(m_pfem);
+								FSFixedRotation* prc = new FSFixedRotation(fem);
 								prc->SetName(pbc->GetName());
 								prc->SetBC(bc);
 								prc->SetItemList(pb->GetItemList()->Copy());
@@ -660,14 +817,14 @@ void FEStep::Load(IArchive &ar)
 							}
 						}
 
-						FEPrescribedDisplacement* pdc = dynamic_cast<FEPrescribedDisplacement*>(pb);
+						FSPrescribedDisplacement* pdc = dynamic_cast<FSPrescribedDisplacement*>(pb);
 						if (pdc)
 						{
 							int bc = pdc->GetDOF();
 							if (bc > 2)
 							{
 								bc -= 3;
-								FEPrescribedRotation* prc = new FEPrescribedRotation(m_pfem);
+								FSPrescribedRotation* prc = new FSPrescribedRotation(fem);
 								prc->SetName(pdc->GetName());
 								prc->SetDOF(bc);
 								prc->SetItemList(pdc->GetItemList()->Copy());
@@ -680,10 +837,10 @@ void FEStep::Load(IArchive &ar)
 					// add BC
 					if (ar.Version() < 0x00020000)
 					{
-						if (dynamic_cast<FEInitialCondition*>(pb)) AddIC(dynamic_cast<FEInitialCondition*>(pb));
-						else AddBC(dynamic_cast<FEBoundaryCondition*>(pb));
+						if (dynamic_cast<FSInitialCondition*>(pb)) AddIC(dynamic_cast<FSInitialCondition*>(pb));
+						else AddBC(dynamic_cast<FSBoundaryCondition*>(pb));
 					}
-					else AddBC(dynamic_cast<FEBoundaryCondition*>(pb));
+					else AddBC(dynamic_cast<FSBoundaryCondition*>(pb));
 
 					ar.CloseChunk();
 				}
@@ -695,24 +852,20 @@ void FEStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FELoad* pl = 0;
+					FSLoad* pl = 0;
 
-					if (ntype == FE_NODAL_LOAD) pl = new FENodalLoad(m_pfem);
+					if (ntype == FE_NODAL_DOF_LOAD) pl = new FSNodalDOFLoad(fem);
+					else if (ntype == FE_FEBIO_NODAL_LOAD) pl = new FEBioNodalLoad(fem);
 					else
 					{
-						// see if it's a surface load
-						pl = fecore_new<FELoad>(m_pfem, FE_SURFACE_LOAD, ntype);
-						if (pl == 0)
-						{
-							// could be a body load
-							pl = fecore_new<FELoad>(m_pfem, FE_BODY_LOAD, ntype);
-						}
+						// see if it's a model load
+						pl = fecore_new<FSLoad>(fem, FELOAD_ID, ntype);
 					}
 
 					// make sure we have something
 					if (pl == 0)
 					{
-						throw ReadError("error parsing CID_FC_SECTION FEStep::Load");
+						throw ReadError("error parsing CID_FC_SECTION FSStep::Load");
 					}
 
 					// read BC data
@@ -731,20 +884,21 @@ void FEStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FEInitialCondition* pi = 0;
+					FSInitialCondition* pi = 0;
 					switch (ntype)
 					{
-					case FE_INIT_FLUID_PRESSURE      : pi = new FEInitFluidPressure     (m_pfem); break;
-                    case FE_INIT_SHELL_FLUID_PRESSURE: pi = new FEInitShellFluidPressure(m_pfem); break;
-                    case FE_INIT_CONCENTRATION       : pi = new FEInitConcentration     (m_pfem); break;
-                    case FE_INIT_SHELL_CONCENTRATION : pi = new FEInitShellConcentration(m_pfem); break;
-					case FE_INIT_TEMPERATURE         : pi = new FEInitTemperature       (m_pfem); break;
-					case FE_NODAL_VELOCITIES         : pi = new FENodalVelocities       (m_pfem); break;
-					case FE_NODAL_SHELL_VELOCITIES   : pi = new FENodalShellVelocities  (m_pfem); break;
-                    case FE_INIT_FLUID_DILATATION    : pi = new FEInitFluidDilatation   (m_pfem); break;
-					case FE_INIT_PRESTRAIN           : pi = new FEInitPrestrain         (m_pfem); break;
+					case FE_INIT_FLUID_PRESSURE      : pi = new FSInitFluidPressure     (fem); break;
+                    case FE_INIT_SHELL_FLUID_PRESSURE: pi = new FSInitShellFluidPressure(fem); break;
+                    case FE_INIT_CONCENTRATION       : pi = new FSInitConcentration     (fem); break;
+                    case FE_INIT_SHELL_CONCENTRATION : pi = new FSInitShellConcentration(fem); break;
+					case FE_INIT_TEMPERATURE         : pi = new FSInitTemperature       (fem); break;
+					case FE_NODAL_VELOCITIES         : pi = new FSNodalVelocities       (fem); break;
+					case FE_NODAL_SHELL_VELOCITIES   : pi = new FSNodalShellVelocities  (fem); break;
+                    case FE_INIT_FLUID_DILATATION    : pi = new FSInitFluidDilatation   (fem); break;
+					case FE_INIT_PRESTRAIN           : pi = new FSInitPrestrain         (fem); break;
+					case FE_FEBIO_INITIAL_CONDITION  : pi = new FEBioInitialCondition   (fem); break;
 					default:
-						throw ReadError("error parsing CID_IC_SECTION FEStep::Load");
+						throw ReadError("error parsing CID_IC_SECTION FSStep::Load");
 					}
 
 					// read data
@@ -763,24 +917,24 @@ void FEStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FEInterface* pi = 0;
+					FSInterface* pi = 0;
 
 					// check obsolete interfaces first
-					if      (ntype == FE_SLIDING_INTERFACE   ) pi = new FESlidingInterface(m_pfem);
-					else if (ntype == FE_SPRINGTIED_INTERFACE) pi = new FESpringTiedInterface(m_pfem);
-					else pi = fecore_new<FEInterface>(m_pfem, FE_INTERFACE, ntype);
+					if      (ntype == FE_SLIDING_INTERFACE   ) pi = new FSSlidingInterface(fem);
+					else if (ntype == FE_SPRINGTIED_INTERFACE) pi = new FSSpringTiedInterface(fem);
+					else pi = fecore_new<FSInterface>(fem, FESURFACEINTERFACE_ID, ntype);
 
 					// make sure we were able to allocate an interface
 					if (pi == 0)
 					{
 						// some "contact" interfaces were moved to constraints
-						FEModelConstraint* pc = fecore_new<FEModelConstraint>(m_pfem, FE_CONSTRAINT, ntype);
+						FSModelConstraint* pc = fecore_new<FSModelConstraint>(fem, FENLCONSTRAINT_ID, ntype);
 						if (pc)
 						{
 							pc->Load(ar);
 							AddConstraint(pc);
 						}
-						else throw ReadError("error parsing unknown CID_INTERFACE_SECTION FEStep::Load");
+						else throw ReadError("error parsing unknown CID_INTERFACE_SECTION FSStep::Load");
 					}
 					else
 					{
@@ -801,12 +955,12 @@ void FEStep::Load(IArchive &ar)
 			{
 				int ntype = ar.GetChunkID();
 
-				FEModelConstraint* pmc = fecore_new<FEModelConstraint>(m_pfem, FE_CONSTRAINT, ntype);
+				FSModelConstraint* pmc = fecore_new<FSModelConstraint>(fem, FENLCONSTRAINT_ID, ntype);
 
 				// make sure we were able to allocate a constraint
 				if (pmc == 0)
 				{
-					throw ReadError("error parsing unknown CID_INTERFACE_SECTION FEStep::Load");
+					throw ReadError("error parsing unknown CID_INTERFACE_SECTION FSStep::Load");
 				}
 				else
 				{
@@ -829,26 +983,27 @@ void FEStep::Load(IArchive &ar)
 
 					if (ar.Version() < 0x00020000)
 					{
-						FERigidConstraintOld* rc_old = new FERigidConstraintOld(ntype, GetID());
+						FSRigidConstraintOld* rc_old = new FSRigidConstraintOld(ntype, GetID());
 
 						// read RC data
 						rc_old->Load(ar);
 
-						vector<FERigidConstraint*> rc = convertOldToNewRigidConstraint(m_pfem, rc_old);
+						vector<FSRigidConstraint*> rc = convertOldToNewRigidConstraint(fem, rc_old);
 
 						// add rigid constraints
 						for (int i=0; i<(int) rc.size(); ++i) AddRC(rc[i]);
 					}
 					else
 					{
-						FERigidConstraint* rc = 0;
+						FSRigidConstraint* rc = 0;
 						switch (ntype)
 						{
-						case FE_RIGID_FIXED            : rc = new FERigidFixed          (m_pfem, GetID()); break;
-						case FE_RIGID_DISPLACEMENT     : rc = new FERigidDisplacement   (m_pfem, GetID()); break;
-						case FE_RIGID_FORCE            : rc = new FERigidForce          (m_pfem, GetID()); break;
-						case FE_RIGID_INIT_VELOCITY    : rc = new FERigidVelocity       (m_pfem, GetID()); break;
-						case FE_RIGID_INIT_ANG_VELOCITY: rc = new FERigidAngularVelocity(m_pfem, GetID()); break;
+						case FE_RIGID_FIXED            : rc = new FSRigidFixed          (fem, GetID()); break;
+						case FE_RIGID_DISPLACEMENT     : rc = new FSRigidDisplacement   (fem, GetID()); break;
+						case FE_RIGID_FORCE            : rc = new FSRigidForce          (fem, GetID()); break;
+						case FE_RIGID_INIT_VELOCITY    : rc = new FSRigidVelocity       (fem, GetID()); break;
+						case FE_RIGID_INIT_ANG_VELOCITY: rc = new FSRigidAngularVelocity(fem, GetID()); break;
+						case FE_FEBIO_RIGID_CONSTRAINT : rc = new FEBioRigidConstraint  (fem, GetID()); break;
 						default:
 							assert(false);
 						}
@@ -870,22 +1025,23 @@ void FEStep::Load(IArchive &ar)
                 {
                     int ntype = ar.GetChunkID();
                     
-					FERigidConnector* pi = 0;
+					FSRigidConnector* pi = 0;
                     switch (ntype)
                     {
-                        case FE_RC_SPHERICAL_JOINT		: pi = new FERigidSphericalJoint    (m_pfem); break;
-                        case FE_RC_REVOLUTE_JOINT		: pi = new FERigidRevoluteJoint     (m_pfem); break;
-                        case FE_RC_PRISMATIC_JOINT		: pi = new FERigidPrismaticJoint    (m_pfem); break;
-                        case FE_RC_CYLINDRICAL_JOINT	: pi = new FERigidCylindricalJoint  (m_pfem); break;
-                        case FE_RC_PLANAR_JOINT         : pi = new FERigidPlanarJoint       (m_pfem); break;
-                        case FE_RC_RIGID_LOCK           : pi = new FERigidLock              (m_pfem); break;
-                        case FE_RC_SPRING               : pi = new FERigidSpring            (m_pfem); break;
-                        case FE_RC_DAMPER               : pi = new FERigidDamper            (m_pfem); break;
-                        case FE_RC_ANGULAR_DAMPER       : pi = new FERigidAngularDamper     (m_pfem); break;
-                        case FE_RC_CONTRACTILE_FORCE    : pi = new FERigidContractileForce  (m_pfem); break;
-						case FE_RC_GENERIC_JOINT        : pi = new FEGenericRigidJoint      (m_pfem); break;
+                        case FE_RC_SPHERICAL_JOINT		: pi = new FSRigidSphericalJoint    (fem); break;
+                        case FE_RC_REVOLUTE_JOINT		: pi = new FSRigidRevoluteJoint     (fem); break;
+                        case FE_RC_PRISMATIC_JOINT		: pi = new FSRigidPrismaticJoint    (fem); break;
+                        case FE_RC_CYLINDRICAL_JOINT	: pi = new FSRigidCylindricalJoint  (fem); break;
+                        case FE_RC_PLANAR_JOINT         : pi = new FSRigidPlanarJoint       (fem); break;
+                        case FE_RC_RIGID_LOCK           : pi = new FSRigidLock              (fem); break;
+                        case FE_RC_SPRING               : pi = new FSRigidSpring            (fem); break;
+                        case FE_RC_DAMPER               : pi = new FSRigidDamper            (fem); break;
+                        case FE_RC_ANGULAR_DAMPER       : pi = new FSRigidAngularDamper     (fem); break;
+                        case FE_RC_CONTRACTILE_FORCE    : pi = new FSRigidContractileForce  (fem); break;
+						case FE_RC_GENERIC_JOINT        : pi = new FSGenericRigidJoint      (fem); break;
+						case FE_FEBIO_RIGID_CONNECTOR   : pi = new FEBioRigidConnector      (fem); break;
                         default:
-                            throw ReadError("error parsing unknown CID_CONNECTOR_SECTION FEStep::Load");
+                            throw ReadError("error parsing unknown CID_CONNECTOR_SECTION FSStep::Load");
                     }
                     
                     // load the interface data
@@ -904,10 +1060,10 @@ void FEStep::Load(IArchive &ar)
 }
 
 //-----------------------------------------------------------------------------
-// FEInitialStep
+// FSInitialStep
 //-----------------------------------------------------------------------------
 
-FEInitialStep::FEInitialStep(FEModel* ps) : FEStep(ps, FE_STEP_INITIAL)
+FSInitialStep::FSInitialStep(FSModel* ps) : FSStep(ps, FE_STEP_INITIAL)
 { 
 	SetName("Initial"); 
 	SetTypeString("Initial");
@@ -916,33 +1072,33 @@ FEInitialStep::FEInitialStep(FEModel* ps) : FEStep(ps, FE_STEP_INITIAL)
 	DecreaseCounter();
 }
 
-void FEInitialStep::Save(OArchive &ar)
+void FSInitialStep::Save(OArchive &ar)
 {
 	// save the step data
 	ar.BeginChunk(CID_STEP_DATA);
 	{
-		FEStep::Save(ar);
+		FSStep::Save(ar);
 	}
 	ar.EndChunk();
 }
 
-void FEInitialStep::Load(IArchive &ar)
+void FSInitialStep::Load(IArchive &ar)
 {
-	TRACE("FEInitialStep::Load");
+	TRACE("FSInitialStep::Load");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_STEP_DATA      : FEStep::Load(ar); break;
+		case CID_STEP_DATA      : FSStep::Load(ar); break;
 		}
 		ar.CloseChunk();
 	}	
 }
 
 //-----------------------------------------------------------------------------
-// FEAnalysisStep
+// FSAnalysisStep
 //-----------------------------------------------------------------------------
 
 void STEP_SETTINGS::Defaults()
@@ -989,20 +1145,19 @@ void STEP_SETTINGS::Defaults()
 //	Ta = 0; //298;
 }
 
-FEAnalysisStep::FEAnalysisStep(FEModel* ps, int ntype) : FEStep(ps, ntype)
+FSAnalysisStep::FSAnalysisStep(FSModel* ps, int ntype) : FSStep(ps, ntype)
 {
 	// set default options
 	m_ops.Defaults();
 
 	// reset must point curve
-	LOADPOINT pt0(0,0), pt1(1,1);
 	m_MP.Clear();
-	m_MP.SetType(FELoadCurve::LC_STEP);
-	m_MP.Add(pt0);
-	m_MP.Add(pt1);
+	m_MP.SetInterpolator(PointCurve::STEP);
+	m_MP.Add(0, 0);
+	m_MP.Add(1, 1);
 }
 
-vector<string> FEAnalysisStep::GetAnalysisStrings() const
+vector<string> FSAnalysisStep::GetAnalysisStrings() const
 {
 	vector<string> s;
 	s.push_back("static");
@@ -1010,7 +1165,7 @@ vector<string> FEAnalysisStep::GetAnalysisStrings() const
 	return s;
 }
 
-void FEAnalysisStep::Save(OArchive &ar)
+void FSAnalysisStep::Save(OArchive &ar)
 {
 	// save the step settings
 	ar.BeginChunk(CID_STEP_SETTINGS);
@@ -1066,14 +1221,14 @@ void FEAnalysisStep::Save(OArchive &ar)
 	// save the step data
 	ar.BeginChunk(CID_STEP_DATA);
 	{
-		FEStep::Save(ar);
+		FSStep::Save(ar);
 	}
 	ar.EndChunk();
 }
 
-void FEAnalysisStep::Load(IArchive &ar)
+void FSAnalysisStep::Load(IArchive &ar)
 {
-	TRACE("FEAnalysisStep::Load");
+	TRACE("FSAnalysisStep::Load");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -1141,14 +1296,14 @@ void FEAnalysisStep::Load(IArchive &ar)
 			}
 			break;
 		case CID_STEP_MUST_POINT: m_MP.Load(ar); break;
-		case CID_STEP_DATA      : FEStep::Load(ar); break;
+		case CID_STEP_DATA      : FSStep::Load(ar); break;
 		}
 		ar.CloseChunk();
 	}	
 }
 
 //-----------------------------------------------------------------------------
-FENonLinearMechanics::FENonLinearMechanics(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_MECHANICS)
+FSNonLinearMechanics::FSNonLinearMechanics(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_MECHANICS)
 {
 	SetTypeString("Structural Mechanics");
 
@@ -1161,23 +1316,23 @@ FENonLinearMechanics::FENonLinearMechanics(FEModel* ps) : FEAnalysisStep(ps, FE_
 	AddDoubleParam(0, "rhoi", "Spectral radius");
 }
 
-double FENonLinearMechanics::GetDisplacementTolerance() { return GetParam(MP_DTOL).GetFloatValue(); }
-double FENonLinearMechanics::GetEnergyTolerance() { return GetParam(MP_ETOL).GetFloatValue(); }
-double FENonLinearMechanics::GetResidualTolerance() { return GetParam(MP_RTOL).GetFloatValue(); }
-double FENonLinearMechanics::GetLineSearchTolerance() { return GetParam(MP_LSTOL).GetFloatValue(); }
+double FSNonLinearMechanics::GetDisplacementTolerance() { return GetParam(MP_DTOL).GetFloatValue(); }
+double FSNonLinearMechanics::GetEnergyTolerance() { return GetParam(MP_ETOL).GetFloatValue(); }
+double FSNonLinearMechanics::GetResidualTolerance() { return GetParam(MP_RTOL).GetFloatValue(); }
+double FSNonLinearMechanics::GetLineSearchTolerance() { return GetParam(MP_LSTOL).GetFloatValue(); }
 
-void FENonLinearMechanics::SetDisplacementTolerance(double dtol) { GetParam(MP_DTOL).SetFloatValue(dtol); }
-void FENonLinearMechanics::SetEnergyTolerance(double etol) { GetParam(MP_ETOL).SetFloatValue(etol); }
-void FENonLinearMechanics::SetResidualTolerance(double rtol) { GetParam(MP_RTOL).SetFloatValue(rtol); }
-void FENonLinearMechanics::SetLineSearchTolerance(double lstol) { GetParam(MP_LSTOL).SetFloatValue(lstol); }
+void FSNonLinearMechanics::SetDisplacementTolerance(double dtol) { GetParam(MP_DTOL).SetFloatValue(dtol); }
+void FSNonLinearMechanics::SetEnergyTolerance(double etol) { GetParam(MP_ETOL).SetFloatValue(etol); }
+void FSNonLinearMechanics::SetResidualTolerance(double rtol) { GetParam(MP_RTOL).SetFloatValue(rtol); }
+void FSNonLinearMechanics::SetLineSearchTolerance(double lstol) { GetParam(MP_LSTOL).SetFloatValue(lstol); }
 
 //-----------------------------------------------------------------------------
-FEHeatTransfer::FEHeatTransfer(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_HEAT_TRANSFER)
+FSHeatTransfer::FSHeatTransfer(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_HEAT_TRANSFER)
 {
 	SetTypeString("Heat Transfer");
 }
 
-vector<string> FEHeatTransfer::GetAnalysisStrings() const
+vector<string> FSHeatTransfer::GetAnalysisStrings() const
 {
 	vector<string> s;
 	s.push_back("steady-state");
@@ -1186,7 +1341,7 @@ vector<string> FEHeatTransfer::GetAnalysisStrings() const
 }
 
 //-----------------------------------------------------------------------------
-FENonLinearBiphasic::FENonLinearBiphasic(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_BIPHASIC)
+FSNonLinearBiphasic::FSNonLinearBiphasic(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_BIPHASIC)
 {
 	SetTypeString("Biphasic");
 
@@ -1202,7 +1357,7 @@ FENonLinearBiphasic::FENonLinearBiphasic(FEModel* ps) : FEAnalysisStep(ps, FE_ST
 	m_ops.nanalysis = 1; // set transient analysis
 }
 
-vector<string> FENonLinearBiphasic::GetAnalysisStrings() const
+vector<string> FSNonLinearBiphasic::GetAnalysisStrings() const
 {
 	vector<string> s;
 	s.push_back("steady-state");
@@ -1211,7 +1366,7 @@ vector<string> FENonLinearBiphasic::GetAnalysisStrings() const
 }
 
 //-----------------------------------------------------------------------------
-FEBiphasicSolutes::FEBiphasicSolutes(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_BIPHASIC_SOLUTE)
+FSBiphasicSolutes::FSBiphasicSolutes(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_BIPHASIC_SOLUTE)
 {
 	SetTypeString("Biphasic-solute");
 
@@ -1227,7 +1382,7 @@ FEBiphasicSolutes::FEBiphasicSolutes(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_B
 	m_ops.nanalysis = 1; // set transient analysis
 }
 
-vector<string> FEBiphasicSolutes::GetAnalysisStrings() const
+vector<string> FSBiphasicSolutes::GetAnalysisStrings() const
 {
 	vector<string> s;
 	s.push_back("steady-state");
@@ -1236,7 +1391,7 @@ vector<string> FEBiphasicSolutes::GetAnalysisStrings() const
 }
 
 //-----------------------------------------------------------------------------
-FEMultiphasicAnalysis::FEMultiphasicAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_MULTIPHASIC)
+FSMultiphasicAnalysis::FSMultiphasicAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_MULTIPHASIC)
 {
 	SetTypeString("Multiphasic");
 
@@ -1258,7 +1413,7 @@ FEMultiphasicAnalysis::FEMultiphasicAnalysis(FEModel* ps) : FEAnalysisStep(ps, F
     m_ops.nmatfmt = 0;   // set non-symmetric flag
 }
 
-vector<string> FEMultiphasicAnalysis::GetAnalysisStrings() const
+vector<string> FSMultiphasicAnalysis::GetAnalysisStrings() const
 {
 	vector<string> s;
 	s.push_back("steady-state");
@@ -1267,7 +1422,7 @@ vector<string> FEMultiphasicAnalysis::GetAnalysisStrings() const
 }
 
 //-----------------------------------------------------------------------------
-FEFluidAnalysis::FEFluidAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_FLUID)
+FSFluidAnalysis::FSFluidAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_FLUID)
 {
     SetTypeString("Fluid");
 
@@ -1287,7 +1442,7 @@ FEFluidAnalysis::FEFluidAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_FLUID
 }
 
 //-----------------------------------------------------------------------------
-FEFluidFSIAnalysis::FEFluidFSIAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_FLUID_FSI)
+FSFluidFSIAnalysis::FSFluidFSIAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_FLUID_FSI)
 {
     SetTypeString("Fluid-FSI");
     
@@ -1307,7 +1462,7 @@ FEFluidFSIAnalysis::FEFluidFSIAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP
 }
 
 //-----------------------------------------------------------------------------
-FEReactionDiffusionAnalysis::FEReactionDiffusionAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_REACTION_DIFFUSION)
+FSReactionDiffusionAnalysis::FSReactionDiffusionAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_REACTION_DIFFUSION)
 {
 	SetTypeString("Reaction diffusion");
 
@@ -1322,10 +1477,48 @@ FEReactionDiffusionAnalysis::FEReactionDiffusionAnalysis(FEModel* ps) : FEAnalys
 }
 
 
-vector<string> FEReactionDiffusionAnalysis::GetAnalysisStrings() const
+vector<string> FSReactionDiffusionAnalysis::GetAnalysisStrings() const
 {
 	vector<string> s;
 	s.push_back("steady-state");
 	s.push_back("transient");
 	return s;
 }
+
+//==================================================================================
+FEBioAnalysisStep::FEBioAnalysisStep(FSModel* ps) : FSStep(ps, FE_STEP_FEBIO_ANALYSIS)
+{
+}
+
+void FEBioAnalysisStep::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSStep::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioAnalysisStep::Load(IArchive& ar)
+{
+	TRACE("FEBioAnalysisStep::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSStep::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+

@@ -150,7 +150,7 @@ public:
 public:
 	// --- Document validation ---
 	bool IsModified();
-	void SetModifiedFlag(bool bset = true);
+	virtual void SetModifiedFlag(bool bset = true);
 	bool IsValid();
 
 public:
@@ -230,14 +230,43 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+// Base class for documents that use the undo stack
+class CUndoDocument : public CDocument
+{
+public:
+    CUndoDocument(CMainWindow* wnd);
+    ~CUndoDocument();
+
+    void Clear() override;
+
+    // --- Command history functions ---
+	bool CanUndo();
+	bool CanRedo();
+	void AddCommand(CCommand* pcmd);
+	void AddCommand(CCommand* pcmd, const std::string& s);
+	bool DoCommand(CCommand* pcmd, bool b = true);
+	bool DoCommand(CCommand* pcmd, const std::string& s, bool b = true);
+	void UndoCommand();
+	void RedoCommand();
+	const char* GetUndoCmdName();
+	const char* GetRedoCmdName();
+	void ClearCommandStack();
+	const std::string& GetCommandErrorString() const;
+
+    virtual void UpdateSelection(bool breport = true);
+
+protected:
+	// The command manager
+	CCommandManager*	m_pCmd;		// the command manager
+};
+
+//-----------------------------------------------------------------------------
 // Base class for documents that require visualization
-class CGLDocument : public CDocument
+class CGLDocument : public CUndoDocument
 {
 public:
 	CGLDocument(CMainWindow* wnd);
 	~CGLDocument();
-
-	void Clear() override;
 
 	bool SaveDocument() override;
 
@@ -251,25 +280,10 @@ public:
 	void SetFileWriter(FileWriter* fileWriter);
 	FileWriter* GetFileWriter();
 
-#ifdef HAS_ITK
-    Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
-    Post::CImageModel* ImportITKStack(QStringList& filenames);
-#endif
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
-	// --- Command history functions ---
-	bool CanUndo();
-	bool CanRedo();
-	void AddCommand(CCommand* pcmd);
-	void AddCommand(CCommand* pcmd, const std::string& s);
-	bool DoCommand(CCommand* pcmd, bool b = true);
-	bool DoCommand(CCommand* pcmd, const std::string& s, bool b = true);
-	void UndoCommand();
-	void RedoCommand();
-	const char* GetUndoCmdName();
-	const char* GetRedoCmdName();
-	void ClearCommandStack();
-	const std::string& GetCommandErrorString() const;
+    Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
+    Post::CImageModel* ImportITKStack(QStringList& filenames);
 
 	// --- view state ---
 	VIEW_STATE GetViewState() { return m_vs; }
@@ -308,14 +322,14 @@ public:
 	void DeleteAllImageModels();
 
 public:
-	void GrowNodeSelection(FEMeshBase* pm);
-	void GrowFaceSelection(FEMeshBase* pm, bool respectPartitions = true);
-	void GrowEdgeSelection(FEMeshBase* pm);
-	void GrowElementSelection(FEMesh* pm, bool respectPartitions = true);
-	void ShrinkNodeSelection(FEMeshBase* pm);
-	void ShrinkFaceSelection(FEMeshBase* pm);
-	void ShrinkEdgeSelection(FEMeshBase* pm);
-	void ShrinkElementSelection(FEMesh* pm);
+	void GrowNodeSelection(FSMeshBase* pm);
+	void GrowFaceSelection(FSMeshBase* pm, bool respectPartitions = true);
+	void GrowEdgeSelection(FSMeshBase* pm);
+	void GrowElementSelection(FSMesh* pm, bool respectPartitions = true);
+	void ShrinkNodeSelection(FSMeshBase* pm);
+	void ShrinkFaceSelection(FSMeshBase* pm);
+	void ShrinkEdgeSelection(FSMeshBase* pm);
+	void ShrinkElementSelection(FSMesh* pm);
 
 protected:
 	void SaveResources(OArchive& ar);
@@ -326,9 +340,6 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	// The command manager
-	CCommandManager*	m_pCmd;		// the command manager
-
 	CGView				m_view;
 
 	VIEW_STATE	m_vs;	// the view state
@@ -340,4 +351,19 @@ protected:
 
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;
+};
+
+// helper class for getting selections without the need to access the document
+class CActiveSelection
+{
+public:
+	static FESelection* GetCurrentSelection();
+
+private:
+	static void SetMainWindow(CMainWindow* wnd);
+
+private:
+	static CMainWindow* m_wnd;
+
+	friend class CMainWindow;
 };

@@ -29,20 +29,20 @@ SOFTWARE.*/
 #include <vector>
 
 //=============================================================================
-class FEElementLibrary
+class FSElementLibrary
 {
 public:
 	static void InitLibrary();
 
-	static const FEElemTraits* GetTraits(int type);
+	static const FSElemTraits* GetTraits(int type);
 
 private:
-	FEElementLibrary() {}
-	FEElementLibrary(const FEElementLibrary&) {}
+	FSElementLibrary() {}
+	FSElementLibrary(const FSElementLibrary&) {}
 
 	static void addElement(int ntype, int nshape, int nclass, int nodes, int faces, int edges);
 
 private:
-	static vector<FEElemTraits>	m_lib;
+	static std::vector<FSElemTraits>	m_lib;
 };
 

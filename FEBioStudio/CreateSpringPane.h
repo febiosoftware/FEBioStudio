@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "CreatePanel.h"
 #include <vector>
-//using namespace std;
 
 namespace Ui {
 	class CCreateSpringPane;
@@ -50,7 +49,7 @@ public:
 	void hideEvent(QHideEvent* ev);
 
 private:
-	bool getNodeSelection(vector<int>& node, int n);
+	bool getNodeSelection(std::vector<int>& node, int n);
 
 	bool updateTempObject();
 

@@ -32,18 +32,18 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // forward declarations
-class FEPart;
-class FESurface;
-class FEEdgeSet;
-class FENodeSet;
+class FSPart;
+class FSSurface;
+class FSEdgeSet;
+class FSNodeSet;
 class FECurveMesh;
-class FESurfaceMesh;
+class FSSurfaceMesh;
 class FEMesher;
-class FEMesh;
-class FEMeshBase;
-class FELineMesh;
-class FENode;
-class FEGroup;
+class FSMesh;
+class FSMeshBase;
+class FSLineMesh;
+class FSNode;
+class FSGroup;
 class GLMesh;
 class GObject;
 
@@ -113,29 +113,29 @@ public:
 	virtual FEMesher* CreateDefaultMesher();
 
 	// retrieve the FE mesh
-	FEMesh* GetFEMesh();
-	const FEMesh* GetFEMesh() const;
+	FSMesh* GetFEMesh();
+	const FSMesh* GetFEMesh() const;
 
 	// get the editable mesh
-	virtual FEMeshBase* GetEditableMesh() { return 0; }
+	virtual FSMeshBase* GetEditableMesh() { return 0; }
 
 	// get the editable line mesh
-	virtual FELineMesh* GetEditableLineMesh() { return 0; }
+	virtual FSLineMesh* GetEditableLineMesh() { return 0; }
 
 	// replace the current mesh
-	void ReplaceFEMesh(FEMesh* pm, bool bup = false, bool bdel = false);
+	void ReplaceFEMesh(FSMesh* pm, bool bup = false, bool bdel = false);
 
 	// set the FE mesh
-	void SetFEMesh(FEMesh* pm);
+	void SetFEMesh(FSMesh* pm);
 
 	// replace the current surface mesh
-	virtual void ReplaceSurfaceMesh(FESurfaceMesh* newMesh);
+	virtual void ReplaceSurfaceMesh(FSSurfaceMesh* newMesh);
 
 	// retrieve an FE nodes from a GNode
-	FENode* GetFENode(int gid);
+	FSNode* GetFENode(int gid);
 
-	// build the FEMesh
-	virtual FEMesh* BuildMesh();
+	// build the FSMesh
+	virtual FSMesh* BuildMesh();
 
 	// delete the mesh
 	void DeleteFEMesh();
@@ -224,30 +224,30 @@ public:
 	int FEEdgeSets() const;
 	int FENodeSets() const;
 
-	void AddFEPart   (FEPart*    pg);
-	void AddFESurface(FESurface* pg);
-	void AddFEEdgeSet(FEEdgeSet* pg);
-	void AddFENodeSet(FENodeSet* pg);
+	void AddFEPart   (FSPart*    pg);
+	void AddFESurface(FSSurface* pg);
+	void AddFEEdgeSet(FSEdgeSet* pg);
+	void AddFENodeSet(FSNodeSet* pg);
 
-	FEPart*    GetFEPart   (int n);
-	FESurface* GetFESurface(int n);
-	FEEdgeSet* GetFEEdgeSet(int n);
-	FENodeSet* GetFENodeSet(int n);
+	FSPart*    GetFEPart   (int n);
+	FSSurface* GetFESurface(int n);
+	FSEdgeSet* GetFEEdgeSet(int n);
+	FSNodeSet* GetFENodeSet(int n);
 
-	int RemoveFEPart(FEPart* pg);
-	int RemoveFESurface(FESurface* pg);
-	int RemoveFEEdgeSet(FEEdgeSet* pg);
-	int RemoveFENodeSet(FENodeSet* pg);
+	int RemoveFEPart(FSPart* pg);
+	int RemoveFESurface(FSSurface* pg);
+	int RemoveFEEdgeSet(FSEdgeSet* pg);
+	int RemoveFENodeSet(FSNodeSet* pg);
 
-	void InsertFEPart   (int n, FEPart*    pg);
-	void InsertFESurface(int n, FESurface* pg);
-	void InsertFEEdgeSet(int n, FEEdgeSet* pg);
-	void InsertFENodeSet(int n, FENodeSet* pg);
+	void InsertFEPart   (int n, FSPart*    pg);
+	void InsertFESurface(int n, FSSurface* pg);
+	void InsertFEEdgeSet(int n, FSEdgeSet* pg);
+	void InsertFENodeSet(int n, FSNodeSet* pg);
 
-	FEGroup* FindFEGroup(int nid);
+	FSGroup* FindFEGroup(int nid);
 
-	FESurface* FindFESurface(const string& szname);
-	FENodeSet* FindFENodeSet(const string& szname);
+	FSSurface* FindFESurface(const string& szname);
+	FSNodeSet* FindFENodeSet(const string& szname);
 
 	void ClearFEParts();
 	void ClearFESurfaces();

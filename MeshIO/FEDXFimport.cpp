@@ -38,7 +38,7 @@ SOFTWARE.*/
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEDXFimport::FEDXFimport(FEProject& prj) : FEFileImport(prj)
+FEDXFimport::FEDXFimport(FSProject& prj) : FSFileImport(prj)
 {	
 }
 
@@ -68,7 +68,7 @@ bool FEDXFimport::SearchFor(const char* sz)
 //-----------------------------------------------------------------------------
 bool FEDXFimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// open the file
@@ -96,12 +96,12 @@ bool FEDXFimport::Load(const char* szfile)
 		int nodes = (*pi)->m_Node.size();
 		int elems = (*pi)->m_Face.size();
 
-		FEMesh* pm = new FEMesh();
+		FSMesh* pm = new FSMesh();
 		pm->Create(nodes, elems);
 
 		// create nodes
 		list<NODE>::iterator in = (*pi)->m_Node.begin();
-		FENode* pn = pm->NodePtr();
+		FSNode* pn = pm->NodePtr();
 		for (i=0; i<nodes; ++i, ++pn, ++in)
 		{
 			pn->r.x = in->x;

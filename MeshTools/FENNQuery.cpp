@@ -24,19 +24,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// FENNQuery.cpp: implementation of the FENNQuery class.
+// FSNNQuery.cpp: implementation of the FSNNQuery class.
 //
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
 #include "FENNQuery.h"
 #include <stdlib.h>
-//using namespace std;
+#include <assert.h>
 
 int cmp_node(const void* e1, const void* e2)
 {
-	FENNQuery::NODE& n1 = *((FENNQuery::NODE*)e1);
-	FENNQuery::NODE& n2 = *((FENNQuery::NODE*)e2);
+	FSNNQuery::NODE& n1 = *((FSNNQuery::NODE*)e1);
+	FSNNQuery::NODE& n2 = *((FSNNQuery::NODE*)e2);
 
 	return (n1.d1 > n2.d1 ? 1 : -1);
 }
@@ -45,19 +45,19 @@ int cmp_node(const void* e1, const void* e2)
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FENNQuery::FENNQuery(vector<vec3d>* ps)
+FSNNQuery::FSNNQuery(std::vector<vec3d>* ps)
 {
 	m_ps = ps;
 }
 
-FENNQuery::~FENNQuery()
+FSNNQuery::~FSNNQuery()
 {
 
 }
 
 //-----------------------------------------------------------------------------
 
-void FENNQuery::Init()
+void FSNNQuery::Init()
 {
 	assert(m_ps);
 
@@ -115,7 +115,7 @@ void FENNQuery::Init()
 
 //-----------------------------------------------------------------------------
 
-int FENNQuery::Find(vec3d x)
+int FSNNQuery::Find(vec3d x)
 {
 	double rmin1, rmin2, rmax1, rmax2;
 	double rmin1s, rmin2s, rmax1s, rmax2s;
@@ -202,7 +202,7 @@ int FENNQuery::Find(vec3d x)
 
 //-----------------------------------------------------------------------------
 
-int FENNQuery::FindRadius(double r)
+int FSNNQuery::FindRadius(double r)
 {
 	int N = (int) m_bk.size();
 	int L = N - 1;

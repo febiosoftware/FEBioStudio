@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 namespace Ui {
 	class CDlgCloneRevolve;

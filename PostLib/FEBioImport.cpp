@@ -30,18 +30,18 @@ SOFTWARE.*/
 #include "FEPostMesh.h"
 using namespace Post;
 
-FEBioImport::FEBioImport(FEPostModel* fem) : FEFileReader(fem)
+FEBioFileImport::FEBioFileImport(FEPostModel* fem) : FEFileReader(fem)
 {
 	m_pm = 0;
 	m_nversion = 0;
 }
 
-FEBioImport::~FEBioImport(void)
+FEBioFileImport::~FEBioFileImport(void)
 {
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioImport::ParseVersion(XMLTag& tag)
+bool FEBioFileImport::ParseVersion(XMLTag& tag)
 {
 	const char* szv = tag.AttributeValue("version");
 	int n1, n2;
@@ -60,16 +60,20 @@ bool FEBioImport::ParseVersion(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioImport::Load(const char* szfile)
+bool FEBioFileImport::Load(const char* szfile)
 {
-	if (Open(szfile, "rt") == false) return errf("Failed opening FEBio input file.");
-
 	m_fem->Clear();
 	m_pm = new FEPostMesh;
 	m_fem->AddMesh(m_pm);
 
-	// Attach the XML reader to the stream
-	if (m_xml.Attach(m_fp) == false) return false;
+    SetFileName(szfile);
+
+	// Open thefile with the XML reader
+	XMLReader xml;
+	if (xml.Open(szfile) == false) return errf("This is not a valid FEBio input file");
+
+    // Set the file stream
+    SetFileStream(xml.GetFileStream());
 
 	// loop over all child tags
 	try
@@ -97,34 +101,9 @@ bool FEBioImport::Load(const char* szfile)
 		}
 		while (!tag.isend());
 	}
-	catch (XMLReader::XMLSyntaxError)
+	catch (XMLReader::Error e)
 	{
-		errf("FATAL ERROR: Syntax error (line %d)\n", m_xml.GetCurrentLine());
-		return false;
-	}
-	catch (XMLReader::InvalidTag e)
-	{
-		errf("FATAL ERROR: unrecognized tag \"%s\" (line %d)\n", e.tag.m_sztag, e.tag.m_nstart_line);
-		return false;
-	}
-	catch (XMLReader::InvalidAttributeValue e)
-	{
-		const char* szt = e.tag.m_sztag;
-		const char* sza = e.szatt;
-		const char* szv = e.szval;
-		int l = e.tag.m_nstart_line;
-		errf("FATAL ERROR: unrecognized value \"%s\" for attribute \"%s.%s\" (line %d)\n", szv, szt, sza, l);
-		return false;
-	}
-	catch (XMLReader::MissingAttribute e)
-	{
-		errf("FATAL ERROR: Missing attribute \"%s\" of tag \"%s\" (line %d)\n", e.szatt, e.tag.m_sztag, e.tag.m_nstart_line);
-		return false;
-	}
-	catch (XMLReader::UnmatchedEndTag e)
-	{
-		const char* sz = e.tag.m_szroot[e.tag.m_nlevel];
-		errf("FATAL ERROR: Unmatched end tag for \"%s\" (line %d)\n", sz, e.tag.m_nstart_line);
+		errf("FATAL ERROR: %s (line %d)\n", e.what(), m_xml.GetCurrentLine());
 		return false;
 	}
 	catch (...)
@@ -132,9 +111,6 @@ bool FEBioImport::Load(const char* szfile)
 		errf("FATAL ERROR: unrecoverable error (line %d)\n", m_xml.GetCurrentLine());
 		return false;
 	}
-
-	// close the XML file
-	Close();
 
 	// update the mesh
 	m_pm->BuildMesh();
@@ -147,9 +123,9 @@ bool FEBioImport::Load(const char* szfile)
 	return true;
 }
 
-void FEBioImport::ParseMaterialSection(FEPostModel& fem, XMLTag& tag)
+void FEBioFileImport::ParseMaterialSection(FEPostModel& fem, XMLTag& tag)
 {
-	FEMaterial mat;
+	Material mat;
 
 	// make sure the section is not empty
 	if (tag.isleaf()) return;
@@ -169,12 +145,12 @@ void FEBioImport::ParseMaterialSection(FEPostModel& fem, XMLTag& tag)
 	for (int i=0; i<m_nmat; ++i)
 	{
 		// add a material to the scene
-		FEMaterial mat;
+		Material mat;
 		m_fem->AddMaterial(mat);
 	}
 }
 
-void FEBioImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
+void FEBioFileImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
 {
 	int i, j;
 
@@ -199,7 +175,7 @@ void FEBioImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
 			m_xml.NextTag(tag);
 			for (i=0; i<nn; ++i)
 			{
-				FENode& node = m_pm->Node(i);
+				FSNode& node = m_pm->Node(i);
 				tag.value(node.r);
 				m_xml.NextTag(tag);
 			}
@@ -216,13 +192,13 @@ void FEBioImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
 
 			// read element data
 			m_xml.NextTag(tag);
-			int n[FEElement::MAX_NODES];
+			int n[FSElement::MAX_NODES];
 			int nbel = 0;
 			int nsel = 0;
 			for (i=0; i<elems; ++i)
 			{
 				FEElementType etype;
-				FEElement& el = static_cast<FEElement&>(m_pm->ElementRef(i));
+				FSElement& el = static_cast<FSElement&>(m_pm->ElementRef(i));
 				if      (tag == "hex8"   ) { etype = FE_HEX8;    ++nbel; }
 				else if (tag == "hex20"  ) { etype = FE_HEX20;   ++nbel; }
 				else if (tag == "hex27"  ) { etype = FE_HEX27;   ++nbel; }
@@ -257,7 +233,7 @@ void FEBioImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
 	while (!tag.isend());
 }
 
-void FEBioImport::ParseGeometrySection2(FEPostModel &fem, XMLTag &tag)
+void FEBioFileImport::ParseGeometrySection2(FEPostModel &fem, XMLTag &tag)
 {
 	// make sure the section is not empty
 	if (tag.isleaf()) return;
@@ -280,7 +256,7 @@ void FEBioImport::ParseGeometrySection2(FEPostModel &fem, XMLTag &tag)
 			m_xml.NextTag(tag);
 			for (int i=0; i<nn; ++i)
 			{
-				FENode& node = m_pm->Node(i);
+				FSNode& node = m_pm->Node(i);
 				tag.value(node.r);
 				m_xml.NextTag(tag);
 			}
@@ -325,12 +301,12 @@ void FEBioImport::ParseGeometrySection2(FEPostModel &fem, XMLTag &tag)
 
 			// read element data
 			m_xml.NextTag(tag);
-			int n[FEElement::MAX_NODES];
+			int n[FSElement::MAX_NODES];
 			int nbel = 0;
 			int nsel = 0;
 			for (int i=0; i<ne; ++i)
 			{
-				FEElement& el = static_cast<FEElement&>(m_pm->ElementRef(NE + i));
+				FSElement& el = static_cast<FSElement&>(m_pm->ElementRef(NE + i));
 				int nid = tag.AttributeValue<int>("id", 0);
 				el.SetID(nid);
 				el.SetType(etype);

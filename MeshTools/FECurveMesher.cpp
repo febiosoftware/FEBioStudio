@@ -96,6 +96,8 @@ FECurveMesh* FECurveMesher::BuildLineMesh(GEdge* edge)
 		edgeMesh->AddEdge(i, i+1);
 	}
 
+	edgeMesh->BuildMesh();
+
 	return edgeMesh;
 }
 

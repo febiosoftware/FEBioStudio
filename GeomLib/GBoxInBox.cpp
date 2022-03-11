@@ -114,7 +114,7 @@ void GBoxInBox::Create()
 	};
 	for (int i = 0; i < NF; ++i)
 	{
-		vector<int> edge(4);
+		std::vector<int> edge(4);
 		edge[0] = FET[i][0];
 		edge[1] = FET[i][1];
 		edge[2] = FET[i][2];
@@ -123,5 +123,5 @@ void GBoxInBox::Create()
 	}
 
 	// add part
-	AddPart();
+	AddSolidPart();
 }

@@ -35,38 +35,38 @@ FEAutoPartition::FEAutoPartition() : FEModifier("Auto Partition")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEAutoPartition::Apply(FEMesh* pm)
+FSMesh* FEAutoPartition::Apply(FSMesh* pm)
 {
 	double w = GetFloatValue(0);
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.AutoPartition(w);
 	return newMesh;
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEAutoPartition::Apply(FEGroup* pg)
+FSMesh* FEAutoPartition::Apply(FSGroup* pg)
 {
 	if (pg == nullptr) return nullptr;
-	FEMesh* pm = pg->GetMesh();
+	FSMesh* pm = pg->GetMesh();
 	if (pm == nullptr) return nullptr;
 
 	double w = GetFloatValue(0);
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 
-	if (dynamic_cast<FEEdgeSet*>(pg))
+	if (dynamic_cast<FSEdgeSet*>(pg))
 	{
-		if (meshBuilder.AutoPartitionEdges(w, dynamic_cast<FEEdgeSet*>(pg)) == false)
+		if (meshBuilder.AutoPartitionEdges(w, dynamic_cast<FSEdgeSet*>(pg)) == false)
 		{
 			delete newMesh;
 			newMesh = nullptr;
 			SetError("Cannot auto-partition this edge selection.");
 		}
 	}
-	else if (dynamic_cast<FESurface*>(pg))
+	else if (dynamic_cast<FSSurface*>(pg))
 	{
-		if (meshBuilder.AutoPartitionFaces(w, dynamic_cast<FESurface*>(pg)) == false)
+		if (meshBuilder.AutoPartitionFaces(w, dynamic_cast<FSSurface*>(pg)) == false)
 		{
 			delete newMesh;
 			newMesh = nullptr;
@@ -86,12 +86,12 @@ FERebuildMesh::FERebuildMesh() : FEModifier("Rebuild mesh")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FERebuildMesh::Apply(FEMesh* pm)
+FSMesh* FERebuildMesh::Apply(FSMesh* pm)
 {
 	bool repartition = GetBoolValue(0);
 	double w = GetFloatValue(1);
 
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.RebuildMesh(w, repartition);
 	return newMesh;

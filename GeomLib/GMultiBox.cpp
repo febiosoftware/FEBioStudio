@@ -139,7 +139,7 @@ void GMultiBox::Create()
 
 //-----------------------------------------------------------------------------
 // build the FE mesh
-FEMesh* GMultiBox::BuildMesh()
+FSMesh* GMultiBox::BuildMesh()
 {
 	return 0;
 }

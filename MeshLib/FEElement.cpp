@@ -57,7 +57,7 @@ FEElement_::FEElement_()
 // Set the element type. This also sets some other type related data
 void FEElement_::SetType(int ntype)
 {
-	m_traits = FEElementLibrary::GetTraits(ntype);
+	m_traits = FSElementLibrary::GetTraits(ntype);
 	assert(m_traits);
 }
 
@@ -121,9 +121,9 @@ bool FEElement_::HasNode(int node) const
 }
 
 //-----------------------------------------------------------------------------
-FEFace FEElement_::GetFace(int i) const
+FSFace FEElement_::GetFace(int i) const
 {
-	FEFace face;
+	FSFace face;
 	GetFace(i, face);
 	return face;
 }
@@ -270,7 +270,7 @@ int FEElement_::GetLocalFaceIndices(int i, int* n) const
 }
 
 //-----------------------------------------------------------------------------
-void FEElement_::GetFace(int i, FEFace& f) const
+void FEElement_::GetFace(int i, FSFace& f) const
 {
 	int* m = m_node;
 	int* n = f.n;
@@ -397,9 +397,9 @@ void FEElement_::GetFace(int i, FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-FEEdge FEElement_::GetEdge(int i) const
+FSEdge FEElement_::GetEdge(int i) const
 {
-	FEEdge e;
+	FSEdge e;
 
 	switch (Type())
 	{
@@ -451,7 +451,7 @@ FEEdge FEElement_::GetEdge(int i) const
 
 //-----------------------------------------------------------------------------
 //! Find the edge index of a shell
-int FEElement_::FindEdge(const FEEdge& edge) const
+int FEElement_::FindEdge(const FSEdge& edge) const
 {
 	assert(IsShell());
 	int nbre = Edges();
@@ -466,7 +466,7 @@ int FEElement_::FindEdge(const FEEdge& edge) const
 }
 
 //-----------------------------------------------------------------------------
-void FEElement_::GetShellFace(FEFace& f) const
+void FEElement_::GetShellFace(FSFace& f) const
 {
 	switch (Type())
 	{
@@ -503,11 +503,11 @@ int FEElement_::FindNodeIndex(int nid)
 }
 
 //-----------------------------------------------------------------------------
-int FEElement_::FindFace(const FEFace& f)
+int FEElement_::FindFace(const FSFace& f)
 {
 	int nf = Faces();
 	for (int i = 0; i<nf; ++i) {
-		FEFace lf = GetFace(i);
+		FSFace lf = GetFace(i);
 		if (lf == f)
 		{
 			return i;
@@ -747,7 +747,7 @@ void FEElement_::shape(double *H, double r, double s, double t)
 //-----------------------------------------------------------------------------
 double FEElement_::eval(double* d, double r, double s, double t)
 {
-	double H[FEElement::MAX_NODES];
+	double H[FSElement::MAX_NODES];
 	shape(H, r, s, t);
 	double a = 0.0;
 	for (int i=0; i<Nodes(); ++i) a += H[i]*d[i];
@@ -757,7 +757,7 @@ double FEElement_::eval(double* d, double r, double s, double t)
 //-----------------------------------------------------------------------------
 float FEElement_::eval(float* d, double r, double s, double t)
 {
-	double H[FEElement::MAX_NODES];
+	double H[FSElement::MAX_NODES];
 	shape(H, r, s, t);
 	double a = 0.0;
 	for (int i = 0; i<Nodes(); ++i) a += H[i] * d[i];
@@ -767,7 +767,7 @@ float FEElement_::eval(float* d, double r, double s, double t)
 //-----------------------------------------------------------------------------
 vec3f FEElement_::eval(vec3f* d, double r, double s, double t)
 {
-	double H[FEElement::MAX_NODES];
+	double H[FSElement::MAX_NODES];
 	shape(H, r, s, t);
 	vec3f a(0,0,0);
 	for (int i=0; i<Nodes(); ++i) a += d[i]*((float)H[i]);
@@ -834,9 +834,9 @@ void FEElement_::setAxes(const vec3d& a, const vec3d& d)
 }
 
 //=============================================================================
-// FEElement
+// FSElement
 //-----------------------------------------------------------------------------
-FEElement::FEElement()
+FSElement::FSElement()
 { 
 	m_node = _node;
 	m_nbr = _nbr;
@@ -850,7 +850,7 @@ FEElement::FEElement()
 }
 
 //-----------------------------------------------------------------------------
-FEElement::FEElement(const FEElement& el)
+FSElement::FSElement(const FSElement& el)
 {
 	m_node = _node;
 	m_nbr = _nbr;
@@ -864,7 +864,7 @@ FEElement::FEElement(const FEElement& el)
 }
 
 //-----------------------------------------------------------------------------
-FEElement& FEElement::operator = (const FEElement& el)
+FSElement& FSElement::operator = (const FSElement& el)
 {
 	copy(el);
 

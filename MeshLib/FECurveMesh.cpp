@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FECurveMesh.h"
 #include <stack>
-//using namespace std;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // Creates an empty curve mesh
@@ -83,7 +83,7 @@ int FECurveMesh::AddNode(const vec3d& r, bool bsnap, double snapTolerance)
 	}
 
 	// node does not exist or needs to be added regardless
-	FENode nd;
+	FSNode nd;
 	nd.r = r;
 	m_Node.push_back(nd);
 
@@ -104,14 +104,14 @@ int FECurveMesh::AddEdge(int n0, int n1)
 	{
 		for (size_t i=0; i<m_Edge.size(); ++i)
 		{
-			FEEdge& edge = m_Edge[i];
+			FSEdge& edge = m_Edge[i];
 			if (((edge.n[0] == n0) && (edge.n[1] == n1)) ||
 				((edge.n[0] == n0) && (edge.n[1] == n1))) return (int) i;
 		}	
 	}
 	
 	// edge does not exist yet so let's add it
-	FEEdge edge;
+	FSEdge edge;
 	edge.SetType(FE_EDGE2);
 	edge.m_gid = -1;
 	edge.n[0] = n0;
@@ -155,14 +155,14 @@ void FECurveMesh::UpdateEdgeNeighbors()
 	// clear all edge neighbors
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& ei = Edge(i);
+		FSEdge& ei = Edge(i);
 		ei.m_nbr[0] = ei.m_nbr[1] = -1;
 	}
 
 	// connect all the edges
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& ei = Edge(i);
+		FSEdge& ei = Edge(i);
 		int n0 = ei.n[0];
 		int n1 = ei.n[1];
 
@@ -173,7 +173,7 @@ void FECurveMesh::UpdateEdgeNeighbors()
 		{
 			for (int j = i + 1; j<NE; ++j)
 			{
-				FEEdge& ej = Edge(j);
+				FSEdge& ej = Edge(j);
 				int m0 = ej.n[0];
 				int m1 = ej.n[1];
 
@@ -228,12 +228,12 @@ void FECurveMesh::UpdateEdgeIDs()
 	{
 		int eid = s.top(); s.pop();
 
-		FEEdge& edge = m_Edge[eid]; assert(edge.m_gid == gid);
+		FSEdge& edge = m_Edge[eid]; assert(edge.m_gid == gid);
 
 		// add neighbors
 		if (edge.m_nbr[0] >= 0)
 		{
-			FEEdge& e0 = m_Edge[edge.m_nbr[0]];
+			FSEdge& e0 = m_Edge[edge.m_nbr[0]];
 			if (e0.m_gid == -1) 
 			{
 				e0.m_gid = gid;
@@ -243,7 +243,7 @@ void FECurveMesh::UpdateEdgeIDs()
 
 		if (edge.m_nbr[1] >= 0)
 		{
-			FEEdge& e1 = m_Edge[edge.m_nbr[1]];
+			FSEdge& e1 = m_Edge[edge.m_nbr[1]];
 			if (e1.m_gid == -1)
 			{
 				e1.m_gid = gid;
@@ -368,7 +368,7 @@ void FECurveMesh::RemoveNode(int node)
 	m_Node.erase(m_Node.begin() + node);
 
 	// update edges
-	for (vector<FEEdge>::iterator edge = m_Edge.begin(); edge != m_Edge.end();)
+	for (vector<FSEdge>::iterator edge = m_Edge.begin(); edge != m_Edge.end();)
 	{
 		if ((edge->n[0] == node) || (edge->n[1] == node))
 		{
@@ -400,7 +400,7 @@ void FECurveMesh::TagAllEdges(int ntag)
 }
 
 //-----------------------------------------------------------------------------
-void FECurveMesh::FlipEdge(FEEdge& e)
+void FECurveMesh::FlipEdge(FSEdge& e)
 {
 	int m = e.n[0];
 	e.n[0] = e.n[1];
@@ -433,7 +433,7 @@ void FECurveMesh::ReorderNodes(vector<int>& NLT)
 	int NE = Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& e = Edge(i);
+		FSEdge& e = Edge(i);
 		e.n[0] = NLT[e.n[0]];
 		e.n[1] = NLT[e.n[1]];
 	}
@@ -445,13 +445,13 @@ void FECurveMesh::ReorderNodes(vector<int>& NLT)
 		if (i != tmp[i])
 		{
 			assert(tmp[i] > i);
-			FENode& oldNode = Node(i);
-			FENode& newNode = Node(tmp[i]);
+			FSNode& oldNode = Node(i);
+			FSNode& newNode = Node(tmp[i]);
 
 			int m0 = newNode.m_ntag; assert(m0 == i);
 			int m1 = oldNode.m_ntag;
 
-			FENode copy(oldNode);
+			FSNode copy(oldNode);
 			oldNode = newNode;
 			newNode = copy;
 
@@ -463,7 +463,7 @@ void FECurveMesh::ReorderNodes(vector<int>& NLT)
 #ifdef _DEBUG
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& n = Node(i);
+		FSNode& n = Node(i);
 		assert(n.m_ntag == i);
 	}
 #endif
@@ -490,7 +490,7 @@ void FECurveMesh::ReorderEdges(vector<int>& ELT)
 	// update neighbors
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = Edge(i);
+		FSEdge& e = Edge(i);
 		if (e.m_nbr[0] >= 0) e.m_nbr[0] = ELT[e.m_nbr[0]];
 		if (e.m_nbr[1] >= 0) e.m_nbr[1] = ELT[e.m_nbr[1]];
 	}
@@ -502,13 +502,13 @@ void FECurveMesh::ReorderEdges(vector<int>& ELT)
 		if (i != tmp[i])
 		{
 			assert(tmp[i] > i);
-			FEEdge& oldEdge = Edge(i);
-			FEEdge& newEdge = Edge(tmp[i]);
+			FSEdge& oldEdge = Edge(i);
+			FSEdge& newEdge = Edge(tmp[i]);
 
 			int m0 = newEdge.m_ntag; assert(m0 == i);
 			int m1 = oldEdge.m_ntag;
 
-			FEEdge copy(oldEdge);
+			FSEdge copy(oldEdge);
 			oldEdge = newEdge;
 			newEdge = copy;
 
@@ -520,7 +520,7 @@ void FECurveMesh::ReorderEdges(vector<int>& ELT)
 #ifdef _DEBUG
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = Edge(i);
+		FSEdge& e = Edge(i);
 		assert(e.m_ntag == i);
 	}
 #endif
@@ -534,7 +534,7 @@ void FECurveMesh::Invert()
 	{
 		if (i != NN-i-1)
 		{
-			FENode tmp = m_Node[i];
+			FSNode tmp = m_Node[i];
 			m_Node[i] = m_Node[NN-i-1];
 			m_Node[NN-i-1] = tmp;
 		}
@@ -577,7 +577,7 @@ void FECurveMesh::Sort()
 		// first look for open edges
 		for (int i=0; i<NE; ++i)
 		{
-			FEEdge& e = Edge(i);
+			FSEdge& e = Edge(i);
 			if (e.m_ntag == -1)
 			{
 				if ((e.m_nbr[0] == -1) && (e.m_nbr[1] != -1))
@@ -600,7 +600,7 @@ void FECurveMesh::Sort()
 		{
 			for (int i = 0; i<NE; ++i)
 			{
-				FEEdge& e = Edge(i);
+				FSEdge& e = Edge(i);
 				if (e.m_ntag == -1)
 				{
 					assert((e.m_nbr[0] != -1) && (e.m_nbr[1] != -1));
@@ -616,7 +616,7 @@ void FECurveMesh::Sort()
 		// start processing the curve
 		while (nedge != -1)
 		{
-			FEEdge& e = Edge(nedge);
+			FSEdge& e = Edge(nedge);
 			e.m_ntag = iedge++;
 			int n0 = e.n[0];
 			int n1 = e.n[1];
@@ -627,7 +627,7 @@ void FECurveMesh::Sort()
 			nedge = -1;
 			if (e.m_nbr[1] != -1)
 			{
-				FEEdge& en = Edge(e.m_nbr[1]);
+				FSEdge& en = Edge(e.m_nbr[1]);
 				assert((en.n[0] == n1) || (en.n[1] == n1));
 				if (en.m_ntag == -1)
 				{
@@ -691,11 +691,11 @@ void FECurveMesh::Attach(const FECurveMesh& curve)
 	int NE = curve.Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		const FEEdge& e = curve.Edge(i);
+		const FSEdge& e = curve.Edge(i);
 		int n0 = tag[e.n[0]];
 		int n1 = tag[e.n[1]];
 
-		FEEdge newEdge;
+		FSEdge newEdge;
 		newEdge.n[0] = n0;
 		newEdge.n[1] = n1;
 		m_Edge.push_back(newEdge);
@@ -711,7 +711,7 @@ double FECurveMesh::Length() const
 	double L = 0.0;
 	for (int i=0; i<Edges(); ++i)
 	{
-		const FEEdge& e = Edge(i);
+		const FSEdge& e = Edge(i);
 		vec3d ra = Node(e.n[0]).r;
 		vec3d rb = Node(e.n[1]).r;
 		L += (rb - ra).Length();
@@ -736,7 +736,7 @@ void FECurveMesh::Save(OArchive& ar)
 	// write the nodes
 	ar.BeginChunk(CID_MESH_NODE_SECTION);
 	{
-		FENode* pn = NodePtr();
+		FSNode* pn = NodePtr();
 		for (int i = 0; i<nodes; ++i, ++pn)
 		{
 			ar.BeginChunk(CID_MESH_NODE);
@@ -752,7 +752,7 @@ void FECurveMesh::Save(OArchive& ar)
 	// write the edges
 	ar.BeginChunk(CID_MESH_EDGE_SECTION);
 	{
-		FEEdge* pe = EdgePtr();
+		FSEdge* pe = EdgePtr();
 		for (int i = 0; i<edges; ++i, ++pe)
 		{
 			int nn = pe->Nodes();
@@ -772,7 +772,7 @@ void FECurveMesh::Save(OArchive& ar)
 //-----------------------------------------------------------------------------
 void FECurveMesh::Load(IArchive& ar)
 {
-	TRACE("FESurfaceMesh::Load");
+	TRACE("FSSurfaceMesh::Load");
 
 	// the first chunk must be the header
 	ar.OpenChunk();
@@ -804,7 +804,7 @@ void FECurveMesh::Load(IArchive& ar)
 		case CID_MESH_NODE_SECTION:
 		{
 			int n = 0;
-			FENode* pn = NodePtr();
+			FSNode* pn = NodePtr();
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -831,7 +831,7 @@ void FECurveMesh::Load(IArchive& ar)
 		case CID_MESH_EDGE_SECTION:
 		{
 			int n = 0;
-			FEEdge* pe = EdgePtr();
+			FSEdge* pe = EdgePtr();
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();

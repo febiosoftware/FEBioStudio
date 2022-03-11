@@ -33,7 +33,7 @@ FERezoneMesh::FERezoneMesh() : FEModifier("Rezone")
 	AddDoubleParam(0.5, "extent");
 }
 
-FEMesh* FERezoneMesh::Apply(FEMesh* pm)
+FSMesh* FERezoneMesh::Apply(FSMesh* pm)
 {
 	// see if any faces are selected. 
 	if (pm->CountSelectedFaces() == 0) return nullptr;
@@ -44,10 +44,10 @@ FEMesh* FERezoneMesh::Apply(FEMesh* pm)
 	// - 2 = edge node, has to remain on edge
 	// - 3 = vertex or node on selected facet, cannot move
 	int N = pm->Nodes();
-	vector<pair<int, int> > tag(N, pair<int, int>(0, -1));
+	std::vector< std::pair<int, int> > tag(N, std::pair<int, int>(0, -1));
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		for (int j = 0; j < face.Nodes(); ++j)
 		{
 			tag[face.n[j]].first = 1;
@@ -56,7 +56,7 @@ FEMesh* FERezoneMesh::Apply(FEMesh* pm)
 	}
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			for (int j = 0; j < edge.Nodes(); ++j)
@@ -68,7 +68,7 @@ FEMesh* FERezoneMesh::Apply(FEMesh* pm)
 	}
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.m_gid >= 0)
 		{
 			tag[i].first = 3;
@@ -77,7 +77,7 @@ FEMesh* FERezoneMesh::Apply(FEMesh* pm)
 	}
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsSelected())
 		{
 			for (int j = 0; j < face.Nodes(); ++j)
@@ -89,13 +89,13 @@ FEMesh* FERezoneMesh::Apply(FEMesh* pm)
 	}
 
 	// get the selected surface
-	FEMesh* surf = pm->ExtractFaces(true);
+	FSMesh* surf = pm->ExtractFaces(true);
 
 	// for each node, find closest point to a selected facet
-	vector<vec3d> trg(N);
+	std::vector<vec3d> trg(N);
 	for (int i = 0; i < N; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (tag[i].first != 3)
 		{
 			vec3d q = projectToSurface(*surf, node.r);
@@ -110,12 +110,12 @@ FEMesh* FERezoneMesh::Apply(FEMesh* pm)
 	double t = GetFloatValue(1) / R;
 
 	// create a copy of the mesh
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 
 	// move the nodes
 	for (int i = 0; i < N; ++i)
 	{
-		FENode& node = newMesh->Node(i);
+		FSNode& node = newMesh->Node(i);
 
 		int ntype = tag[i].first;
 		if (ntype != 3)

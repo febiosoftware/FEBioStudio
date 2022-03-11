@@ -27,12 +27,14 @@ SOFTWARE.*/
 #pragma once
 #include "HelpDialog.h"
 
-class QListWidget;
+class UIDlgAddPhysicsItem;
 
 class CDlgAddPhysicsItem : public CHelpDialog
 {
+	Q_OBJECT
+
 public:
-	CDlgAddPhysicsItem(QString windowName, int superID, FEProject& prj, QWidget* parent);
+	CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent);
 
 	std::string GetName();
 	int GetStep();
@@ -41,16 +43,9 @@ public:
 protected:
 	void SetURL();
 
+public slots:
+	void Update();
+
 private:
-	QListWidget* type;
-	QLineEdit* name;
-	QComboBox* step;
-
-	int m_superID;
-
-public:
-//	QString	m_name;
-//	int		m_nstep;
-//	int		m_ntype;
-//	int		m_module;
+	UIDlgAddPhysicsItem*	ui;
 };

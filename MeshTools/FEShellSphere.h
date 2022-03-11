@@ -39,7 +39,7 @@ public:
 	FEShellSphere(GSphere* po);
 	virtual ~FEShellSphere();
 
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	int GetElementID(int i, int j, int n1, int n2, int n3, int n4)
@@ -57,8 +57,8 @@ protected:
 		return -1;
 	}
 
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k);
 

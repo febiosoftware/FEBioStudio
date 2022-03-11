@@ -32,12 +32,13 @@ class GSphere;
 class FESphere : public FEMultiBlockMesh
 {
 public:
-	enum { RATIO, NDIV, NSEG, GD, GR, GD2, GR2, ELEM_TYPE };
+//	enum { RATIO, NDIV, NSEG, GD, GR, GD2, GR2, ELEM_TYPE };
+	enum { RATIO, NDIV, NSEG, GR, GR2, ELEM_TYPE };
 
 public:
 	FESphere(){}
 	FESphere(GSphere* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GSphere* m_pobj;

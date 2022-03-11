@@ -28,6 +28,9 @@ SOFTWARE.*/
 #include "GMaterial.h"
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMaterial.h>
+#include <MeshTools/GGroup.h>
+#include <MeshTools/GModel.h>
+#include <GeomLib/GObject.h>
 #include <sstream>
 
 using std::stringstream;
@@ -53,7 +56,7 @@ GLColor col[GMaterial::MAX_COLORS] = {
 	GLColor(120, 0, 240)
 };
 
-GMaterial::GMaterial(FEMaterial* pm)
+GMaterial::GMaterial(FSMaterial* pm)
 {
 	m_pm = pm;
 	if (m_pm) m_pm->SetOwner(this);
@@ -78,28 +81,31 @@ GMaterial::GMaterial(FEMaterial* pm)
 	SetName(ss.str());
 
 	AmbientDiffuse(col[(m_nID-1) % 16]);
+
+	m_partList = nullptr;
 }
 
 GMaterial::~GMaterial(void)
 {
+	delete m_partList;
 	delete m_pm;
 }
 
-void GMaterial::SetMaterialProperties(FEMaterial* pm) 
+void GMaterial::SetMaterialProperties(FSMaterial* pm) 
 { 
 	delete m_pm; 
 	m_pm = pm; 
 	m_pm->SetOwner(this);
 }
 
-FEMaterial* GMaterial::GetMaterialProperties()
+FSMaterial* GMaterial::GetMaterialProperties()
 { 
 	return m_pm; 
 }
 
 GMaterial* GMaterial::Clone()
 {
-	FEMaterial* pmCopy = 0;
+	FSMaterial* pmCopy = 0;
 	if (m_pm) pmCopy = m_pm->Clone();
 	return new GMaterial(pmCopy);
 }
@@ -110,8 +116,8 @@ const char* GMaterial::GetFullName()
 
 	if (m_pm->Type() == FE_USER_MATERIAL)
 	{
-		FEUserMaterial* pm = dynamic_cast<FEUserMaterial*>(m_pm);
-		sprintf(sz, "%s (%s)", GetName().c_str(), pm->GetTypeStr());
+		FSUserMaterial* pm = dynamic_cast<FSUserMaterial*>(m_pm);
+		sprintf(sz, "%s (%s)", GetName().c_str(), pm->GetTypeString());
 	}
 	else
 	{
@@ -169,4 +175,66 @@ void GMaterial::Load(IArchive &ar)
 		}
 		ar.CloseChunk();
 	}
+}
+
+FEItemListBuilder* GMaterial::GetItemList()
+{
+	if (m_partList == nullptr) m_partList = new GPartList(m_ps);
+	m_partList->clear();
+
+	// set the items
+	GModel& mdl = m_ps->GetModel();
+	int NO = mdl.Objects();
+	for (int i = 0; i < NO; ++i)
+	{
+		GObject* po = mdl.Object(i);
+		int NP = po->Parts();
+		for (int j = 0; j < NP; ++j)
+		{
+			GPart* pg = po->Part(i);
+			if (pg->GetMaterialID() == GetID())
+			{
+				m_partList->add(pg->GetID());
+			}
+		}
+	}
+
+	return m_partList;
+}
+
+void GMaterial::SetItemList(FEItemListBuilder* pi)
+{
+	// clear all parts that have this material
+	// set the items
+	GModel& mdl = m_ps->GetModel();
+	int NO = mdl.Objects();
+	for (int i = 0; i < NO; ++i)
+	{
+		GObject* po = mdl.Object(i);
+		int NP = po->Parts();
+		for (int j = 0; j < NP; ++j)
+		{
+			GPart* pg = po->Part(i);
+			if (pg->GetMaterialID() == GetID())
+			{
+				pg->SetMaterialID(-1);
+			}
+		}
+	}
+
+	// re-assign material IDs
+	GPartList* partList = dynamic_cast<GPartList*>(pi);
+	if (partList)
+	{
+		vector<GPart*> parts = partList->GetPartList();
+		for (GPart* pg : parts)
+		{
+			pg->SetMaterialID(GetID());
+		}
+	}
+}
+
+unsigned int GMaterial::GetMeshItemType() const
+{
+	return FE_PART_FLAG;
 }

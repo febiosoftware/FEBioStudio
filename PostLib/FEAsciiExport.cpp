@@ -112,7 +112,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 	// tag all selected items
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& n = m.Node(i);
+		FSNode& n = m.Node(i);
 		n.m_ntag = 1;
 		if (m_bselonly && !n.IsSelected()) n.m_ntag = 0;
 	}
@@ -139,7 +139,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 		fprintf(fp, "*FACES\n");
 		for (int i=0; i<m.Faces(); ++i)
 		{
-			FEFace& f = m.Face(i);
+			FSFace& f = m.Face(i);
 			if (f.Nodes() == 3) fprintf(fp, "%8d,%d,%d,%d\n"   , i + 1, f.n[0], f.n[1], f.n[2]);
 			if (f.Nodes() == 4) fprintf(fp, "%8d,%d,%d,%d,%d\n", i + 1, f.n[0], f.n[1], f.n[2], f.n[3]);
 		}
@@ -160,7 +160,7 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 	if (m_belem)
 	{
 		fprintf(fp, "*ELEMENTS\n");
-		int i, n[FEElement::MAX_NODES];
+		int i, n[FSElement::MAX_NODES];
 		for (i = 0; i<NE; ++i)
 		{
 			FEElement_& e = m.ElementRef(i);

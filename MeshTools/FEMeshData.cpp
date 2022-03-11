@@ -52,12 +52,12 @@ FEMeshData::DATA_FORMAT FEMeshData::GetDataFormat() const
 	return m_dataFmt;
 }
 
-FEMesh* FEMeshData::GetMesh() const
+FSMesh* FEMeshData::GetMesh() const
 {
 	return m_pMesh;
 }
 
-void FEMeshData::SetMesh(FEMesh* mesh)
+void FEMeshData::SetMesh(FSMesh* mesh)
 {
 	m_pMesh = mesh;
 }

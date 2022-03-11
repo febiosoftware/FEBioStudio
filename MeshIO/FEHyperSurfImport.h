@@ -29,10 +29,10 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEHyperSurfImport : public FEFileImport
+class FEHyperSurfImport : public FSFileImport
 {
 public:
-	FEHyperSurfImport(FEProject& prj);
+	FEHyperSurfImport(FSProject& prj);
 	~FEHyperSurfImport(void);
 
 	bool Load(const char* szfile) override;

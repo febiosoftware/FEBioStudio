@@ -103,7 +103,7 @@ bool FELSDYNAimport::CARD::nexti(int& n, int nwidth)
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FELSDYNAimport::FELSDYNAimport(FEProject& prj) : FEFileImport(prj)
+FELSDYNAimport::FELSDYNAimport(FSProject& prj) : FSFileImport(prj)
 {
 	m_pprj = 0;
     m_lineno = 0;
@@ -148,7 +148,7 @@ char* FELSDYNAimport::get_line(char* szline)
 
 bool FELSDYNAimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// open the file

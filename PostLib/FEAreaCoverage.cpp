@@ -45,11 +45,11 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 	int nn = 0;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
-			FENode& node = mesh.Node(f.n[j]);
+			FSNode& node = mesh.Node(f.n[j]);
 			if (node.m_ntag == -1) node.m_ntag = nn++;
 		}
 	}
@@ -58,17 +58,17 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 	m_node.resize(nn);
 	for (int i = 0; i<N; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag >= 0) m_node[node.m_ntag] = i;
 	}
 	m_pos.resize(nn);
 
 	// create the local node list
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 	m_lnode.resize(Faces() * MN);
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j = 0; j < nf; ++j) m_lnode[MN*i + j] = mesh.Node(f.n[j]).m_ntag;
 	}
@@ -77,7 +77,7 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 	m_NLT.resize(Nodes());
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
@@ -88,7 +88,7 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-FEAreaCoverage::FEAreaCoverage(Post::FEPostModel* fem, int flags) : Post::FEDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+FEAreaCoverage::FEAreaCoverage(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
 {
 	m_ballowBackIntersections = false;
 	m_angleThreshold = 0.0;
@@ -130,7 +130,7 @@ double Post::FEAreaCoverage::GetBackSearchRadius() const
 }
 
 //-----------------------------------------------------------------------------
-Post::FEDataField* Post::FEAreaCoverage::Clone() const
+Post::ModelDataField* Post::FEAreaCoverage::Clone() const
 {
 	FEAreaCoverage* pd = new FEAreaCoverage(m_fem, 0);
 	pd->m_surf1 = m_surf1;
@@ -181,7 +181,7 @@ void FEAreaCoverage::Apply()
 	m_surf1.Create(mesh);
 	m_surf2.Create(mesh);
 
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 
 	// get the field index
 	int nfield = FIELD_CODE(GetFieldID());
@@ -232,11 +232,11 @@ void FEAreaCoverage::UpdateSurface(FEAreaCoverage::Surface& s, int nstate)
 	// update face normals
 	s.m_fnorm.assign(NF, vec3f(0.f, 0.f, 0.f));
 	s.m_norm.assign(NN, vec3f(0.f,0.f,0.f));
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 	vec3f r[3];
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(s.m_face[i]);
+		FSFace& f = mesh.Face(s.m_face[i]);
 
 		r[0] = s.m_pos[s.m_lnode[i*MN    ]];
 		r[1] = s.m_pos[s.m_lnode[i*MN + 1]];
@@ -271,7 +271,7 @@ void FEAreaCoverage::projectSurface(FEAreaCoverage::Surface& surf1, FEAreaCovera
 		Intersection q;
 		if (intersect(ri, Ni, surf2, q))
 		{
-			vec3d e = q.point - ri;
+			vec3f e = to_vec3f(q.point) - ri;
 			double L1 = e.Length();
 			if (e*Ni < 0.f) L1 = -L1;
 
@@ -295,7 +295,8 @@ void FEAreaCoverage::projectSurface(FEAreaCoverage::Surface& surf1, FEAreaCovera
 bool FEAreaCoverage::intersect(const vec3f& r, const vec3f& N, FEAreaCoverage::Surface& surf, Intersection& qmin)
 {
 	// create the ray
-	Ray ray = {r, N};
+	vec3d rd = to_vec3d(r);
+	Ray ray = {rd, to_vec3d(N)};
 
 	// loop over all facets connected to this node
 	Intersection q;
@@ -306,7 +307,7 @@ bool FEAreaCoverage::intersect(const vec3f& r, const vec3f& N, FEAreaCoverage::S
 		// see if the ray intersects this face
 		if (faceIntersect(surf, ray, i, q))
 		{
-			double L = (q.point - r).Length();
+			double L = (q.point - rd).Length();
 			if ((imin == -1) || (L < Lmin))
 			{
 				imin = i;
@@ -327,9 +328,9 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
 
 	vec3f rn[4];
-	FEFace& face = mesh.Face(surf.m_face[nface]);
+	FSFace& face = mesh.Face(surf.m_face[nface]);
 
-	const int MN = FEFace::MAX_NODES;
+	const int MN = FSFace::MAX_NODES;
 
 	bool bfound = false;
 	switch (face.m_type)
@@ -344,7 +345,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 			rn[i] = surf.m_pos[surf.m_lnode[MN * nface + i]];
 		}
 
-		Triangle tri = { rn[0], rn[1], rn[2], surf.m_fnorm[nface] };
+		Triangle tri = { to_vec3d(rn[0]), to_vec3d(rn[1]), to_vec3d(rn[2]), to_vec3d(surf.m_fnorm[nface]) };
 		bfound = IntersectTriangle(ray, tri, q, false);
 
 		bfound = (bfound && (ray.direction * tri.fn < -m_angleThreshold));
@@ -359,7 +360,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 			rn[i] = surf.m_pos[surf.m_lnode[MN * nface + i]];
 		}
 
-		Quad quad = { rn[0], rn[1], rn[2], rn[3] };
+		Quad quad = { to_vec3d(rn[0]), to_vec3d(rn[1]), to_vec3d(rn[2]), to_vec3d(rn[3]) };
 		bfound = FastIntersectQuad(ray, quad, q);
 	}
 	break;

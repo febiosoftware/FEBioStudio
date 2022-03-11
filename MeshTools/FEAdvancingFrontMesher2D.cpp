@@ -190,7 +190,7 @@ void BuildFrontMesh(vector<int> front, vector<FRONT_NODE>& nodeList, vector<FRON
 
 		// propose a new node, positioned such that it creates a "perfect" triangle
 		vec2d e = rb - ra;
-		vec2d t(-e.y, e.x); // rotate 90 degrees counter-clockwise
+		vec2d t(-e.y(), e.x()); // rotate 90 degrees counter-clockwise
 		vec2d c = (ra + rb)*0.5;
 		double w = e.norm();
 		double h = sqrt(3.0)*0.5;	// height of equilateral triangle
@@ -303,7 +303,7 @@ void BuildFrontMesh(vector<int> front, vector<FRONT_NODE>& nodeList, vector<FRON
 
 //-----------------------------------------------------------------------------
 // generate the mesh
-FEMesh* FEAdvancingFrontMesher2D::BuildMesh()
+FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 {
 	// make sure we a valid object
 	if (m_obj == 0) return 0;
@@ -379,7 +379,7 @@ FEMesh* FEAdvancingFrontMesher2D::BuildMesh()
 	// Build the mesh
 	NN = (int)nodeList.size();
 	int NE = (int)face.size();
-	FEMesh* mesh = new FEMesh;
+	FSMesh* mesh = new FSMesh;
 	mesh->Create(NN, NE);
 	for (int i = 0; i<NN; ++i)
 	{
@@ -389,7 +389,7 @@ FEMesh* FEAdvancingFrontMesher2D::BuildMesh()
 	for (int i = 0; i<NE; ++i)
 	{
 		FRONT_FACE& f = face[i];
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 		el.SetType(FE_TRI3);
 		el.m_node[0] = f.node[0];
 		el.m_node[1] = f.node[1];
@@ -410,24 +410,24 @@ FEMMG2DMesher::FEMMG2DMesher(GObject* po) : m_po(po)
 	AddDoubleParam(0.1, "Element size", "Element size");
 }
 
-FEMesh* FEMMG2DMesher::BuildMesh()
+FSMesh* FEMMG2DMesher::BuildMesh()
 {
 	// MMG needs a base mesh, so let's create one by doing a rough triangulation of the shape.
 	assert(m_po->Faces() == 1);
 	GFace& face = *m_po->Face(0);
 	GLMesh* gm = triangulate(face);
 
-	// MMG needs a FESurfaceMesh, so convert
-	FESurfaceMesh* pm = new FESurfaceMesh(*gm);
+	// MMG needs a FSSurfaceMesh, so convert
+	FSSurfaceMesh* pm = new FSSurfaceMesh(*gm);
 
 	// Now, let's use MMG to remesh
 	double h = GetFloatValue(0);
-	FEMMG2DRemesh mmg;
+	MMG2DRemesh mmg;
 	mmg.SetFloatValue(0, h);
 
-	FESurfaceMesh* newMesh = mmg.Apply(pm);
+	FSSurfaceMesh* newMesh = mmg.Apply(pm);
 
 	delete pm;
 
-	return new FEMesh(*newMesh);
+	return new FSMesh(*newMesh);
 }

@@ -36,7 +36,7 @@ namespace Post {
 
 class FEPostModel;
 
-class FEAreaCoverage : public FEDataField
+class FEAreaCoverage : public ModelDataField
 {
 	class Surface
 	{
@@ -61,7 +61,7 @@ class FEAreaCoverage : public FEDataField
 public:
 	FEAreaCoverage(FEPostModel* fem, int flags);
 
-	FEDataField* Clone() const override;
+	ModelDataField* Clone() const override;
 
 	FEMeshData* CreateData(FEState* pstate) override;
 

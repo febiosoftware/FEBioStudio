@@ -38,7 +38,7 @@ public:
 public:
 	FEShellPatch(){}
 	FEShellPatch(GPatch* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GPatch* m_pobj;
@@ -55,10 +55,10 @@ public:
 public:
 	FECylndricalPatch() {}
 	FECylndricalPatch(GCylindricalPatch* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	FEMesh* BuildMultiQuadMesh();
+	FSMesh* BuildMultiQuadMesh();
 
 protected:
 	GCylindricalPatch* m_pobj;

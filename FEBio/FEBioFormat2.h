@@ -33,7 +33,7 @@ SOFTWARE.*/
 class FEBioFormat2 : public FEBioFormat
 {
 public:
-	FEBioFormat2(FEBioImport* fileReader, FEBioModel& febio);
+	FEBioFormat2(FEBioFileImport* fileReader, FEBioInputModel& febio);
 	~FEBioFormat2();
 
 	bool ParseSection(XMLTag& tag);
@@ -51,82 +51,82 @@ private:
 
 private:
 	// boundary condition input functions
-	void ParseBCFixed     (FEStep* pstep, XMLTag& tag);
-	void ParseBCPrescribed(FEStep* pstep, XMLTag& tag);
-	void ParseSprings     (FEStep* pstep, XMLTag& tag);
-	void ParseContact     (FEStep* pstep, XMLTag& tag);
-	void ParseBodyForce   (FEStep* pstep, XMLTag& tag);
-	void ParseHeatSource  (FEStep* pstep, XMLTag& tag);
+	void ParseBCFixed     (FSStep* pstep, XMLTag& tag);
+	void ParseBCPrescribed(FSStep* pstep, XMLTag& tag);
+	void ParseSprings     (FSStep* pstep, XMLTag& tag);
+	void ParseContact     (FSStep* pstep, XMLTag& tag);
+	void ParseBodyForce   (FSStep* pstep, XMLTag& tag);
+	void ParseHeatSource  (FSStep* pstep, XMLTag& tag);
 
 	// contact input functions
-	void ParseContactSliding    (FEStep* pstep, XMLTag& tag);
-	void ParseContactF2FSliding (FEStep* pstep, XMLTag& tag);
-	void ParseContactBiphasic   (FEStep* pstep, XMLTag& tag);
-	void ParseContactSolute     (FEStep* pstep, XMLTag& tag);
-	void ParseContactMultiphasic(FEStep* pstep, XMLTag& tag);
-	void ParseContactTiedMultiphasic(FEStep* pstep, XMLTag& tag);
-	void ParseContactTied       (FEStep* pstep, XMLTag& tag);
-	void ParseContactTiedF2F    (FEStep* pstep, XMLTag& tag);
-	void ParseContactTiedElastic(FEStep* pstep, XMLTag& tag);
-	void ParseContactSticky     (FEStep* pstep, XMLTag& tag);
-	void ParseContactPeriodic   (FEStep* pstep, XMLTag& tag);
-	void ParseContactRigid      (FEStep* pstep, XMLTag& tag);
-	void ParseContactJoint      (FEStep* pstep, XMLTag& tag);
-	void ParseContactTC         (FEStep* pstep, XMLTag& tag);
-	void ParseContactTiedPoro   (FEStep* pstep, XMLTag& tag);
-	void ParseRigidWall         (FEStep* pstep, XMLTag& tag);
-	void ParseLinearConstraint  (FEStep* pstep, XMLTag& tag);
-	FESurface* ParseContactSurface(XMLTag& tag, int format = 0);
-	void ParseContactParams(XMLTag& tag, FEPairedInterface* pc, int nid);
-	void ParseConstraint(FEStep* pstep, XMLTag& tag);
+	void ParseContactSliding    (FSStep* pstep, XMLTag& tag);
+	void ParseContactF2FSliding (FSStep* pstep, XMLTag& tag);
+	void ParseContactBiphasic   (FSStep* pstep, XMLTag& tag);
+	void ParseContactSolute     (FSStep* pstep, XMLTag& tag);
+	void ParseContactMultiphasic(FSStep* pstep, XMLTag& tag);
+	void ParseContactTiedMultiphasic(FSStep* pstep, XMLTag& tag);
+	void ParseContactTied       (FSStep* pstep, XMLTag& tag);
+	void ParseContactTiedF2F    (FSStep* pstep, XMLTag& tag);
+	void ParseContactTiedElastic(FSStep* pstep, XMLTag& tag);
+	void ParseContactSticky     (FSStep* pstep, XMLTag& tag);
+	void ParseContactPeriodic   (FSStep* pstep, XMLTag& tag);
+	void ParseContactRigid      (FSStep* pstep, XMLTag& tag);
+	void ParseContactJoint      (FSStep* pstep, XMLTag& tag);
+	void ParseContactTC         (FSStep* pstep, XMLTag& tag);
+	void ParseContactTiedPoro   (FSStep* pstep, XMLTag& tag);
+	void ParseRigidWall         (FSStep* pstep, XMLTag& tag);
+	void ParseLinearConstraint  (FSStep* pstep, XMLTag& tag);
+	FSSurface* ParseContactSurface(XMLTag& tag, int format = 0);
+	void ParseContactParams(XMLTag& tag, FSPairedInterface* pc, int nid);
+	void ParseConstraint(FSStep* pstep, XMLTag& tag);
 
 	// constraint input functions
-	void ParseRigidConstraint      (FEStep* pstep, XMLTag& tag);
-	void ParseVolumeConstraint     (FEStep* pstep, XMLTag& tag);
-	void ParseSymmetryPlane        (FEStep* pstep, XMLTag& tag);
-    void ParseNrmlFldVlctSrf       (FEStep* pstep, XMLTag& tag);
-    void ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag);
+	void ParseRigidConstraint      (FSStep* pstep, XMLTag& tag);
+	void ParseVolumeConstraint     (FSStep* pstep, XMLTag& tag);
+	void ParseSymmetryPlane        (FSStep* pstep, XMLTag& tag);
+    void ParseNrmlFldVlctSrf       (FSStep* pstep, XMLTag& tag);
+    void ParseFrictionlessFluidWall(FSStep* pstep, XMLTag& tag);
 
 	// connector input functions
-	void ParseConnector(FEStep* pstep, XMLTag& tag, const int rc);
+	void ParseConnector(FSStep* pstep, XMLTag& tag, const int rc);
 
 	// loads parse functions (version 2.0 and up)
-	void ParseNodeLoad   (FEStep* pstep, XMLTag& tag);
-	void ParseSurfaceLoad(FEStep* pstep, XMLTag& tag);
-	void ParseBodyLoad   (FEStep* pstep, XMLTag& tag);
+	void ParseNodeLoad   (FSStep* pstep, XMLTag& tag);
+	void ParseSurfaceLoad(FSStep* pstep, XMLTag& tag);
+	void ParseBodyLoad   (FSStep* pstep, XMLTag& tag);
 
 	// surface load functions (version 2.0 and up)
-	void ParseLoadPressure          (FEStep* pstep, XMLTag& tag);
-	void ParseLoadTraction          (FEStep* pstep, XMLTag& tag);
-	void ParseLoadFluidTraction     (FEStep* pstep, XMLTag& tag);
-    void ParseLoadFluidVelocity     (FEStep* pstep, XMLTag& tag);
-    void ParseLoadFluidNormalVelocity(FEStep* pstep, XMLTag& tag);
-    void ParseLoadFluidRotationalVelocity(FEStep* pstep, XMLTag& tag);
-    void ParseLoadFluidFlowResistance(FEStep* pstep, XMLTag& tag);
-    void ParseLoadFluidBackflowStabilization(FEStep* pstep, XMLTag& tag);
-    void ParseLoadFluidTangentialStabilization(FEStep* pstep, XMLTag& tag);
-    void ParseLoadFSITraction       (FEStep* pstep, XMLTag& tag);
-	void ParseLoadFluidFlux         (FEStep* pstep, XMLTag& tag);
-	void ParseLoadSoluteFlux        (FEStep* pstep, XMLTag& tag);
-	void ParseLoadNormalTraction    (FEStep* pstep, XMLTag& tag);
-	void ParseLoadHeatFlux          (FEStep* pstep, XMLTag& tag);
-	void ParseLoadConvectiveHeatFlux(FEStep* pstep, XMLTag& tag);
-	void ParseLoadConcentrationFlux (FEStep* pstep, XMLTag& tag);
-	FESurface* ParseLoadSurface     (XMLTag& tag);
+	void ParseLoadPressure          (FSStep* pstep, XMLTag& tag);
+	void ParseLoadTraction          (FSStep* pstep, XMLTag& tag);
+	void ParseLoadFluidTraction     (FSStep* pstep, XMLTag& tag);
+    void ParseLoadFluidVelocity     (FSStep* pstep, XMLTag& tag);
+    void ParseLoadFluidNormalVelocity(FSStep* pstep, XMLTag& tag);
+    void ParseLoadFluidRotationalVelocity(FSStep* pstep, XMLTag& tag);
+    void ParseLoadFluidFlowResistance(FSStep* pstep, XMLTag& tag);
+    void ParseLoadFluidBackflowStabilization(FSStep* pstep, XMLTag& tag);
+    void ParseLoadFluidTangentialStabilization(FSStep* pstep, XMLTag& tag);
+    void ParseLoadFSITraction       (FSStep* pstep, XMLTag& tag);
+	void ParseLoadFluidFlux         (FSStep* pstep, XMLTag& tag);
+	void ParseLoadSoluteFlux        (FSStep* pstep, XMLTag& tag);
+	void ParseLoadNormalTraction    (FSStep* pstep, XMLTag& tag);
+	void ParseLoadHeatFlux          (FSStep* pstep, XMLTag& tag);
+	void ParseLoadConvectiveHeatFlux(FSStep* pstep, XMLTag& tag);
+	void ParseLoadConcentrationFlux (FSStep* pstep, XMLTag& tag);
+	FSSurface* ParseLoadSurface     (XMLTag& tag);
 
 	// geometry parsing functions (version 2.0 and up)
-	void ParseGeometryNodes      (FEBioModel::Part& part, XMLTag& tag);
-	void ParseGeometryElements   (FEBioModel::Part& part, XMLTag& tag);
-	void ParseGeometryElementData(FEBioModel::Part& part, XMLTag& tag);
-	void ParseGeometryNodeSet    (FEBioModel::Part& part, XMLTag& tag);
-	void ParseGeometrySurface    (FEBioModel::Part& part, XMLTag& tag);
+	void ParseGeometryNodes      (FEBioInputModel::Part& part, XMLTag& tag);
+	void ParseGeometryElements   (FEBioInputModel::Part& part, XMLTag& tag);
+	void ParseGeometryElementData(FEBioInputModel::Part& part, XMLTag& tag);
+	void ParseGeometryNodeSet    (FEBioInputModel::Part& part, XMLTag& tag);
+	void ParseGeometrySurface    (FEBioInputModel::Part& part, XMLTag& tag);
 
 	// helper functions (version 2.5 and up)
-	FENodeSet* ParseNodeSet(XMLTag& tag);
+	FSNodeSet* ParseNodeSet(XMLTag& tag);
 
 private:
-	FEBioModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
-	FEMesh& GetFEMesh() { return *GetInstance().GetMesh(); }
+	FEBioInputModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
+	FSMesh& GetFEMesh() { return *GetInstance().GetMesh(); }
 	FEBioMesh& GetFEBioMesh() { return GetFEBioModel().GetPart(0).GetFEBioMesh(); }
 	GMeshObject* GetGObject() { return GetInstance().GetGObject(); }
 };

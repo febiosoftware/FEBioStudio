@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "ParamBlock.h"
+#include "LoadCurve.h"
 #include <assert.h>
 
 //-----------------------------------------------------------------------------
@@ -35,7 +36,7 @@ Param::Param()
 	m_nID = -1; 
 	m_ntype = Param_UNDEF; 
 	m_pd = 0;
-	m_plc = 0; 
+	m_lc = -1; 
 	m_szbrev = m_szname = m_szenum = 0; 
 	m_szunit = 0; 
 	m_nstate = Param_ALLFLAGS; 
@@ -48,6 +49,8 @@ Param::Param()
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_flags = 0;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -55,8 +58,6 @@ Param::Param()
 Param::~Param()
 { 
 	clear(); 
-	if (m_plc) delete m_plc;
-	m_plc = 0;
 	if (m_bcopy) delete [] m_szenum;
 }
 
@@ -140,6 +141,17 @@ bool Param::IsChecked() const
 }
 
 //-----------------------------------------------------------------------------
+void Param::SetParameterGroup(int n)
+{
+	m_paramGroup = n;
+}
+
+int Param::GetParameterGroup() const
+{
+	return m_paramGroup;
+}
+
+//-----------------------------------------------------------------------------
 void Param::clear()
 {
 	if (m_pd)
@@ -153,9 +165,13 @@ void Param::clear()
 		case Param_VEC3D : delete ((vec3d*) m_pd); break;
 		case Param_VEC2I : delete ((vec2i*)m_pd); break;
 		case Param_MAT3D : delete ((mat3d*)m_pd); break;
+		case Param_MAT3DS: delete ((mat3ds*)m_pd); break;
 		case Param_STRING: delete ((std::string*) m_pd); break;
 		case Param_MATH  : delete ((std::string*) m_pd); break;
 		case Param_COLOR : delete ((GLColor*)m_pd); break;
+		case Param_STD_VECTOR_INT: delete ((std::vector<int>*)m_pd); break;
+		case Param_STD_VECTOR_DOUBLE: delete ((std::vector<double>*)m_pd); break;
+		case Param_STD_VECTOR_VEC2D : delete ((std::vector<vec2d>*)m_pd); break;
 		default:
 			assert(false);
 		}
@@ -175,40 +191,28 @@ void Param::SetParamType(Param_Type t)
 	case Param_VEC3D : m_pd = new vec3d; break;
 	case Param_VEC2I : m_pd = new vec2i; break;
 	case Param_MAT3D : m_pd = new mat3d; break;
+	case Param_MAT3DS: m_pd = new mat3ds; break;
 	case Param_STRING: m_pd = new std::string; break;
 	case Param_MATH  : m_pd = new std::string; break;
 	case Param_COLOR : m_pd = new GLColor; break;
+	case Param_STD_VECTOR_INT: m_pd = new std::vector<int>(); break;
+	case Param_STD_VECTOR_DOUBLE: m_pd = new std::vector<double>(); break;
+	case Param_STD_VECTOR_VEC2D : m_pd = new std::vector<vec2d>(); break;
 	default:
 		assert(false);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void Param::SetLoadCurve()
+void Param::SetLoadCurveID(int lcid)
 {
-	if (m_plc == 0) m_plc = new FELoadCurve;
+	m_lc = lcid;
 }
 
 //-----------------------------------------------------------------------------
-void Param::SetLoadCurve(const FELoadCurve& lc)
+int Param::GetLoadCurveID() const
 {
-	if (m_plc) delete m_plc;
-	m_plc = new FELoadCurve(lc);
-}
-
-//-----------------------------------------------------------------------------
-void Param::DeleteLoadCurve()
-{
-	if (m_plc) delete m_plc;
-	m_plc = nullptr;
-}
-
-//-----------------------------------------------------------------------------
-FELoadCurve* Param::RemoveLoadCurve()
-{
-	FELoadCurve* plc = m_plc;
-	m_plc = nullptr;
-	return plc;
+	return m_lc;
 }
 
 //-----------------------------------------------------------------------------
@@ -229,18 +233,40 @@ const char* Param::GetEnumName(int n) const
 }
 
 //-----------------------------------------------------------------------------
+int Param::FindEnum(const char* sz) const
+{
+	if (m_szenum == nullptr) return -1;
+	const char* c = m_szenum;
+	int n = 0;
+	while (c && *c)
+	{
+		if (strcmp(c, sz) == 0) return n;
+		n++;
+		c += strlen(c)+1;
+	}
+	return n;
+}
+
+//-----------------------------------------------------------------------------
 Param::Param(const Param& p)
 {
 	m_nID = p.m_nID;
 	m_ntype = p.m_ntype;
 	m_szbrev = p.m_szbrev;
 	m_szname = p.m_szname;
-	m_szenum = p.m_szenum;
 	m_szunit = p.m_szunit;
 	m_nstate = p.m_nstate;
     m_szindx = p.m_szindx;
     m_nindx = p.m_nindx;
+	m_flags = p.m_flags;
+	m_paramGroup = p.m_paramGroup;
+
+	m_lc = p.m_lc;
+
 	m_bcopy = false;
+	if (p.m_bcopy) CopyEnumNames(p.m_szenum);
+	else m_szenum = p.m_szenum;
+
 	m_offset = p.m_offset;
 	m_isVariable = p.m_isVariable;
 	m_floatRange = p.m_floatRange;
@@ -258,20 +284,23 @@ Param::Param(const Param& p)
 	case Param_VEC3D : { vec3d*	 pv = new vec3d ; m_pd = pv; *pv = *((vec3d* )p.m_pd); } break;
 	case Param_VEC2I : { vec2i*	 pv = new vec2i ; m_pd = pv; *pv = *((vec2i* )p.m_pd); } break;
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
+	case Param_MAT3DS: { mat3ds* pv = new mat3ds; m_pd = pv; *pv = *((mat3ds* )p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
+	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
+	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
+	case Param_STD_VECTOR_VEC2D : { std::vector<vec2d>* pv = new std::vector<vec2d>(); m_pd = pv; *pv = *((std::vector<vec2d>*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
-	if (p.m_plc) m_plc = new FELoadCurve(*p.m_plc); else m_plc = 0;
 }
 
 //-----------------------------------------------------------------------------
 Param& Param::operator = (const Param& p)
 {
 	clear();
-	m_nID = p.m_nID;
+//	m_nID = p.m_nID;
 	m_ntype = p.m_ntype;
 //	m_szbrev = p.m_szbrev;
 //	m_szname = p.m_szname;
@@ -284,6 +313,9 @@ Param& Param::operator = (const Param& p)
 	m_isVariable = p.m_isVariable;
 //	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
+//	m_flags = p.m_flags;
+	m_lc = p.m_lc;
+//	m_paramGroup = p.m_paramGroup;
 
 	switch (m_ntype)
 	{
@@ -294,15 +326,16 @@ Param& Param::operator = (const Param& p)
 	case Param_VEC3D : { vec3d*	 pv = new vec3d ; m_pd = pv; *pv = *((vec3d* )p.m_pd); } break;
 	case Param_VEC2I : { vec2i*	 pv = new vec2i ; m_pd = pv; *pv = *((vec2i* )p.m_pd); } break;
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
+	case Param_MAT3DS: { mat3ds* pv = new mat3ds; m_pd = pv; *pv = *((mat3ds*)p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
+	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
+	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
+	case Param_STD_VECTOR_VEC2D : { std::vector<vec2d>* pv = new std::vector<vec2d>(); m_pd = pv; *pv = *((std::vector<vec2d>*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
-	if (m_plc) delete m_plc;
-	m_plc = 0;
-	if (p.m_plc) m_plc = new FELoadCurve(*p.m_plc);
 
 	return (*this);
 }
@@ -322,7 +355,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -330,6 +363,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -346,7 +380,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -354,6 +388,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -370,7 +405,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -378,6 +413,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -394,7 +430,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -402,6 +438,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -418,7 +455,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -426,6 +463,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -442,7 +480,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -450,6 +488,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 
@@ -467,7 +506,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -475,6 +514,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -491,7 +531,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -499,6 +539,32 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
+}
+
+//-----------------------------------------------------------------------------
+Param::Param(mat3ds v, const char* szb, const char* szn)
+{
+	mat3ds* pv = new mat3ds;
+	*pv = v;
+	m_pd = pv;
+	m_ntype = Param_MAT3DS;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_lc = -1;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -514,7 +580,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -522,6 +588,77 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
+}
+
+//-----------------------------------------------------------------------------
+Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
+{
+	std::vector<int>* pc = new std::vector<int>(v);
+	m_pd = pc;
+	m_ntype = Param_STD_VECTOR_INT;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_lc = -1;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
+	m_paramGroup = -1;
+}
+
+Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
+{
+	std::vector<double>* pc = new std::vector<double>(v);
+	m_pd = pc;
+	m_ntype = Param_STD_VECTOR_DOUBLE;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_lc = -1;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
+	m_paramGroup = -1;
+}
+
+Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
+{
+	std::vector<vec2d>* pc = new std::vector<vec2d>(v);
+	m_pd = pc;
+	m_ntype = Param_STD_VECTOR_VEC2D;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_lc = -1;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
+	m_paramGroup = -1;
 }
 
 Param::Param(const std::string& val, const char* szb, const char* szn)
@@ -537,7 +674,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -545,6 +682,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -561,7 +699,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
     m_nindx = idx;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -569,6 +707,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
     
 //-----------------------------------------------------------------------------
@@ -585,7 +724,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
     m_nindx = idx;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -593,6 +732,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
     
 //-----------------------------------------------------------------------------
@@ -609,7 +749,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
     m_nindx = idx;
 	m_szunit = szunit;
 	m_nstate = Param_ALLFLAGS;
-	m_plc = 0;
+	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
@@ -617,29 +757,109 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
 	m_checked = false;
+	m_paramGroup = -1;
 }
 
 //=============================================================================
 ParamBlock::ParamBlock(void)
 {
+	m_currentGroup = -1;
 }
 
 //-----------------------------------------------------------------------------
 ParamBlock::~ParamBlock(void)
 {
+	Clear();
+}
+
+//-----------------------------------------------------------------------------
+void ParamBlock::Clear()
+{
+	for (int i = 0; i < m_Param.size(); ++i) delete m_Param[i];
+	m_Param.clear();
+	m_currentGroup = -1;
+	m_pg.clear();
 }
 
 //-----------------------------------------------------------------------------
 ParamBlock::ParamBlock(const ParamBlock &b)
 {
-	m_Param = b.m_Param;
+	m_pg = b.m_pg;
+	m_currentGroup = b.m_currentGroup;
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param* p = new Param(s);
+		m_Param.push_back(p);
+	}
 }
 
 ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 {
-	m_Param = b.m_Param;
-
+	Clear();
+	m_pg = b.m_pg;
+	m_currentGroup = b.m_currentGroup;
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param* p = new Param(s);
+		m_Param.push_back(p);
+	}
 	return *this;
+}
+
+//-----------------------------------------------------------------------------
+void ParamBlock::ClearParamGroups()
+{
+	m_pg.clear();
+	m_currentGroup = -1;
+}
+
+//-----------------------------------------------------------------------------
+int ParamBlock::SetActiveGroup(const char* szgroup)
+{
+	if (szgroup == nullptr) m_currentGroup = -1;
+	else
+	{
+		m_currentGroup = -1;
+		for (size_t i = 0; i < m_pg.size(); ++i)
+		{
+			if (strcmp(m_pg[i], szgroup) == 0)
+			{
+				m_currentGroup = i;
+			}
+		}
+		if (m_currentGroup == -1)
+		{
+			m_currentGroup = (int)m_pg.size();
+			m_pg.push_back(szgroup);
+		}
+	}
+	return m_currentGroup;
+
+}
+
+bool ParamBlock::SetActiveGroup(int n)
+{
+	if (n < 0) { m_currentGroup = -1; return true; }
+	if (n >= m_pg.size()) return false;
+	m_currentGroup = n;
+}
+
+int ParamBlock::GetActiveGroup()
+{
+	return m_currentGroup;
+}
+
+int ParamBlock::ParameterGroups() const
+{
+	return (int)m_pg.size();
+}
+
+const char* ParamBlock::GetParameterGroupName(int i)
+{
+	if ((i < 0) || (i >= m_pg.size())) return nullptr;
+	return m_pg[i];
 }
 
 //-----------------------------------------------------------------------------
@@ -664,9 +884,11 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	int nid = p.GetParamID();
 	int ntype = (int) p.GetParamType();
 
-	ar.WriteChunk(CID_PARAM_ID, nid);
+//	ar.WriteChunk(CID_PARAM_ID, nid);
 	ar.WriteChunk(CID_PARAM_TYPE, ntype);
 	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
+	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());
+	ar.WriteChunk(CID_PARAM_LC, p.GetLoadCurveID());
 
 	switch (ntype)
 	{
@@ -677,25 +899,17 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_VEC3D : { vec3d  v = p.GetVec3dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_VEC2I : { vec2i  v = p.GetVec2iValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_MAT3D : { mat3d  v = p.GetMat3dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_MAT3DS: { mat3ds v = p.GetMat3dsValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STRING: { std::string s = p.GetStringValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_MATH  : { std::string s = p.GetMathString(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_COLOR : { GLColor c = p.GetColorValue(); ar.WriteChunk(CID_PARAM_VALUE, c); } break;
+	case Param_STD_VECTOR_INT: { std::vector<int> v = p.GetVectorIntValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_STD_VECTOR_DOUBLE: { std::vector<double> v = p.GetVectorDoubleValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_STD_VECTOR_VEC2D : { std::vector<vec2d> v = p.GetVectorVec2dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	default:
 		assert(false);
 	}
-
-	// store the load curve if there is one
-	FELoadCurve* plc = p.GetLoadCurve();
-	if (plc)
-	{
-		ar.BeginChunk(CID_LOAD_CURVE);
-		{
-			plc->Save(ar);
-		}
-		ar.EndChunk();
-	}
 }
-
 
 //-----------------------------------------------------------------------------
 void ParamContainer::Load(IArchive &ar)
@@ -716,17 +930,21 @@ void ParamContainer::Load(IArchive &ar)
 //-----------------------------------------------------------------------------
 void ParamContainer::LoadParam(IArchive& ar)
 {
-	int npid;
+	int npid = -1;
 	bool b;
 	Param p;
 	int ntype = -1;
+	int lcid = -1;
+	string paramName;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_PARAM_ID: ar.read(npid); p.SetParamID(npid); break;
+		case CID_PARAM_ID: ar.read(npid); break;
 		case CID_PARAM_CHECKED: ar.read(b); p.SetChecked(b); break;
+		case CID_PARAM_NAME: ar.read(paramName); break;
+		case CID_PARAM_LC: ar.read(lcid); p.SetLoadCurveID(lcid); break;
 		case CID_PARAM_TYPE: 
 			ar.read(ntype); 
 			switch (ntype)
@@ -737,11 +955,15 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_VEC3D : p.SetParamType(Param_VEC3D); break;
 			case Param_VEC2I : p.SetParamType(Param_VEC2I); break;
 			case Param_MAT3D : p.SetParamType(Param_MAT3D); break;
+			case Param_MAT3DS: p.SetParamType(Param_MAT3DS); break;
 			case Param_CHOICE: p.SetParamType(Param_CHOICE); break;
 			case Param_STRING: p.SetParamType(Param_STRING); break;
 			case Param_MATH  : p.SetParamType(Param_MATH); break;
 			case Param_COLOR : p.SetParamType(Param_COLOR); break;
 			case Param_CURVE_OBSOLETE: p.SetParamType(Param_FLOAT); break;
+			case Param_STD_VECTOR_INT: p.SetParamType(Param_STD_VECTOR_INT); break;
+			case Param_STD_VECTOR_DOUBLE: p.SetParamType(Param_STD_VECTOR_DOUBLE); break;
+			case Param_STD_VECTOR_VEC2D : p.SetParamType(Param_STD_VECTOR_VEC2D); break;
 			}
 			break;
 		case CID_PARAM_VALUE:
@@ -754,15 +976,21 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_VEC3D : { vec3d  v; ar.read(v); p.SetVec3dValue (v); } break;
 			case Param_VEC2I : { vec2i  v; ar.read(v); p.SetVec2iValue (v); } break;
 			case Param_MAT3D : { mat3d  m; ar.read(m); p.SetMat3dValue (m); } break;
+			case Param_MAT3DS: { mat3ds m; ar.read(m); p.SetMat3dsValue (m); } break;
 			case Param_STRING: { std::string s; ar.read(s); p.SetStringValue(s); } break;
 			case Param_MATH  : { std::string s; ar.read(s); p.SetMathString(s); } break;
 			case Param_COLOR : { GLColor c; ar.read(c); p.SetColorValue(c); break; }
+			case Param_STD_VECTOR_INT: { std::vector<int> v; ar.read(v); p.SetVectorIntValue(v); break; }
+			case Param_STD_VECTOR_DOUBLE: { std::vector<double> v; ar.read(v); p.SetVectorDoubleValue(v); break; }
+			case Param_STD_VECTOR_VEC2D : { std::vector<vec2d> v; ar.read(v); p.SetVectorVec2dValue(v); break; }
 			case Param_CURVE_OBSOLETE:
 				{
 					// This is obsolete but remains for backward compatibility.
-					FELoadCurve lc;
+					LoadCurve lc;
 					lc.Load(ar);
-					if (lc.Size() > 0) p.SetLoadCurve(lc);
+
+					// TODO: Assign load curve to model
+//					if (lc.Size() > 0) p.SetLoadCurve(lc);
 				}
 				break;
 			default:
@@ -771,14 +999,16 @@ void ParamContainer::LoadParam(IArchive& ar)
 			break;
 		case CID_LOAD_CURVE:
 			{
-				FELoadCurve lc;
+				LoadCurve lc;
 				lc.Load(ar);
 
-				// Old versions (<2.0) defined load curves for all float parameters,
+				// Old versions (< PRV 2.0) defined load curves for all float parameters,
 				// although initially these load curves did not have points assigned yet.
 				// Since 2.0 load curves are only assigned to parameters that are time dependant
 				// so we have to add this check to prevent all these load curves from being read in.
-				if (lc.Size() > 0) p.SetLoadCurve(lc);
+
+				// TODO: In FBS2, load controllers are stored on the FSModel. Assign load curve to model
+//				if (lc.Size() > 0) p.SetLoadCurve(lc);
 			}
 			break;
 		}
@@ -788,38 +1018,63 @@ void ParamContainer::LoadParam(IArchive& ar)
 	// For old versions, call LoadParam which could be overriden by classes if the order of parameters has changed
 	if (ar.Version() < 0x00020000)
 	{
+		p.SetParamID(npid);
 		LoadParam(p);
 	}
 	else
 	{
-		Param& param = GetParam(p.GetParamID());
+		// Now, we'll try to find the correct parameter in the class' parameter list. 
+		Param* param = nullptr;
 
-		// some boolean parameters are replaced with int parameters (e.g. laugon contact parameters)
-		if ((p.GetParamType() == Param_BOOL) && (param.GetParamType() == Param_INT))
-		{
-			bool b = p.GetBoolValue();
-			p.SetParamType(Param_INT);
-			p.SetIntValue(b ? 1 : 0);
-		}
+		// As of FEBio Studio 2, the parameter name is stored instead of its ID. To safeguard against
+		// changes in the parameter definition of a class, we now use the parameter name
+		// as the primary mechanism for finding the parameter. 
+		if (paramName.empty() == false)
+			param = GetParam(paramName.c_str());
 
-		bool var = param.IsVariable();
-		if (param.GetParamType() == p.GetParamType())
+		// Of course, older files may not have stored the parameter name, so let's try
+		// the param ID, which should be an index into the container's parameter list. 
+		if ((param == nullptr) && (npid >= 0))
+			param = GetParamPtr(npid);
+
+		// if we find the parameter, let's try to process it
+		if (param)
 		{
-			param = p;
-		}
-		else
-		{
-			if (param.IsVariable())
+			// some boolean parameters are replaced with int parameters (e.g. laugon contact parameters)
+			if ((p.GetParamType() == Param_BOOL) && (param->GetParamType() == Param_INT))
 			{
-				param.SetParamType(p.GetParamType());
-				param = p;
+				bool b = p.GetBoolValue();
+				p.SetParamType(Param_INT);
+				p.SetIntValue(b ? 1 : 0);
+			}
+
+			bool var = param->IsVariable();
+			if (param->GetParamType() == p.GetParamType())
+			{
+				*param = p;
 			}
 			else
 			{
-				// TODO: print some type of error message that parameters are mismatched	
+				if (param->IsVariable())
+				{
+					param->SetParamType(p.GetParamType());
+					*param = p;
+				}
+				else
+				{
+					// TODO: print some type of error message that parameters are mismatched	
+					const char* szname = (paramName.empty() ? "(unknown)" : paramName.c_str());
+					ar.log("Failed to map parameter \"%s\" due to type mismatch.", szname);
+				}
 			}
+			if (var) param->MakeVariable(true);
 		}
-		if (var) param.MakeVariable(true);
+		else
+		{
+			// TODO: print some type of error message that parameters are mismatched
+			const char* szname = (paramName.empty() ? "(unknown)" : paramName.c_str());
+			ar.log("Failed to map parameter: %s", szname);
+		}
 	}
 }
 
@@ -831,14 +1086,12 @@ void ParamContainer::LoadParam(const Param& p)
 
 void ParamContainer::CopyParams(const ParamContainer& pc)
 {
-#ifdef _DEBUG
 	assert(pc.Parameters() == Parameters());
 	for (int i = 0; i < Parameters(); ++i)
 	{
 		Param& pi = GetParam(i);
 		const Param& pj = pc.GetParam(i);
 		assert(pi.GetParamType() == pj.GetParamType());
+		pi = pj;
 	}
-#endif
-	m_Param = pc.m_Param;
 }

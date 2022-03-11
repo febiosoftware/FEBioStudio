@@ -38,12 +38,12 @@ public:
 	FEShellTorus(){}
 	FEShellTorus(GTorus* po);
 	
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	void BuildNodes(FEMesh* pm);
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildNodes(FSMesh* pm);
+	void BuildFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j) { return (i%(4*m_nd))*(4*m_ns) + j%(4*m_ns); }
 

@@ -36,13 +36,17 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QToolButton>
 #include <QToolBar>
+#include <QCompleter>
+#include <QScrollBar>
 #include <QBoxLayout>
 #include <QSplitter>
 #include <QToolButton>
+#include <QCheckBox>
 #include <QStackedLayout>
 #include <QStackedWidget>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QKeyEvent>
 #include <QTextBrowser>
 #include <QProgressBar>
 #include <QLabel>
@@ -62,6 +66,7 @@ SOFTWARE.*/
 #include "MultiLineLabel.h"
 #include "WrapLabel.h"
 #include "TagLabel.h"
+#include "CustomLineEdit.h"
 
 #include <iostream>
 #include <QDebug>
@@ -398,33 +403,206 @@ private:
 
 };
 
-class FileSearchItem : public QTreeWidgetItem
+class SearchItem : public QTreeWidgetItem
 {
 public:
-	FileSearchItem(FileItem* item)
+	SearchItem(CustomTreeWidgetItem* item)
 		: QTreeWidgetItem(), realItem(item)
 	{
 		setText(0, realItem->text(0));
 		setText(1, realItem->text(1));
+
+        for(int index = 0; index < realItem->childCount(); index++)
+        {
+            addChild(new SearchItem(static_cast<CustomTreeWidgetItem*>(realItem->child(index))));
+        }
+
 		Update();
 	}
 
 	void Update()
 	{
+        for(int index = 0; index < childCount(); index++)
+        {
+            static_cast<SearchItem*>(child(index))->Update();
+        }
+
 		setForeground(0, realItem->foreground(0));
 		setForeground(1, realItem->foreground(1));
         setIcon(0,realItem->icon(0));
 	}
 
-	FileItem* getRealItem()
+	CustomTreeWidgetItem* getRealItem()
 	{
 		return realItem;
 	}
 
 private:
-	FileItem* realItem;
-
+	CustomTreeWidgetItem* realItem;
 };
+
+class SearchBox : public QWidget
+{
+public:
+    SearchBox(QString name) : name(name)
+    {
+        QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+        layout->addWidget(label = new QLabel(name + ":"));
+        layout->addWidget(lineEdit = new CustomLineEdit);
+
+        setLayout(layout);
+    }
+
+public:
+    QString name;
+    QLabel* label;
+    CustomLineEdit* lineEdit;
+};
+
+class AdvancedSearchBox : public QWidget
+{
+public:
+    AdvancedSearchBox()
+    {
+        layout = new QVBoxLayout;
+
+        layout->addWidget(new QLabel("General:"));
+
+        toolbar = new QToolBar;
+        toolbar->setContentsMargins(0,0,0,0);
+		toolbar->addWidget(general = new QLineEdit);
+		actionSearch = new QAction(CIconProvider::GetIcon("search"), "Search");
+		toolbar->addAction(actionSearch);
+		actionClear = new QAction(CIconProvider::GetIcon("clear"), "Clear");
+		toolbar->addAction(actionClear);
+        actionHide = new QAction(CIconProvider::GetIcon("collapse"), "Hide");
+		toolbar->addAction(actionHide);
+        layout->addWidget(toolbar);
+
+        gridLayout = new QGridLayout;
+        gridLayout->setContentsMargins(0,0,0,0);
+
+        layout->addLayout(gridLayout);
+
+        setLayout(layout);
+    }
+
+    void Reset(std::vector<std::pair<QString, QStringList>> typeInfo)
+    {
+        QList<SearchBox*> boxes;
+        
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                boxes.append(box);
+            }
+        }
+
+        for(auto box : boxes)
+        {
+            delete box;
+        }
+
+        AddSearchBoxes(typeInfo);
+    }
+
+    void AddSearchBoxes(std::vector<std::pair<QString, QStringList>> typeInfo)
+    {
+        int boxes = 0;
+
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                boxes++;
+            }
+        }
+
+        for(auto info : typeInfo)
+        {
+            int row = (boxes)/2;
+            int col = (boxes)%2;
+
+            SearchBox* box = new SearchBox(info.first);
+
+            if(!info.second.empty())
+            {
+                QCompleter* completer = new QCompleter(info.second);
+                completer->setCaseSensitivity(Qt::CaseInsensitive);
+                completer->setFilterMode(Qt::MatchContains);
+
+                box->lineEdit->setMultipleCompleter(completer);
+            }
+
+            QObject::connect(box->lineEdit, &QLineEdit::returnPressed, this, [this]{emit actionSearch->triggered();});
+
+            gridLayout->addWidget(box, row, col);
+
+            boxes++;
+        }
+    }
+
+    void Clear()
+    {
+        general->clear();
+
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                box->lineEdit->clear();
+            }
+        }
+    }
+
+    QString GetSearchTerm()
+    {
+        QString searchTerm;
+
+        QString generalText = general->text().trimmed();
+
+        if(!generalText.isEmpty())
+        {
+            searchTerm += "all:" + generalText;
+        }
+
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                QString boxText = box->lineEdit->text().trimmed();
+
+                if(!boxText.isEmpty())
+                {
+                    searchTerm += " " + box->name.toLower() + ":" + boxText;
+                }
+
+            }
+        }
+
+        return searchTerm.trimmed();
+    }
+
+public:
+    QToolBar* toolbar;
+    QAction* actionSearch;
+    QAction* actionClear;
+    QAction* actionHide;
+
+
+private:
+    QVBoxLayout* layout;
+    QLineEdit* general;
+    QGridLayout* gridLayout;
+};
+
 
 class Ui::CRepositoryPanel
 {
@@ -440,7 +618,9 @@ public:
 	QWidget* modelPage;
 	QStackedWidget* treeStack;
 	QTreeWidget* projectTree;
-	QTreeWidget* fileSearchTree;
+	QTreeWidget* searchTree;
+    QCheckBox* showProjectsCB;
+    QCheckBox* showFilesCB;
 
 	CToolBox* projectInfoBox;
 
@@ -475,9 +655,13 @@ public:
 
 	QAction* actionFindInTree;
 
+    QToolBar* searchBar;
 	QLineEdit* searchLineEdit;
 	QAction* actionSearch;
 	QAction* actionClearSearch;
+    QAction* actionShowAdvanced;
+
+    AdvancedSearchBox* advancedSearch;
 
 	QWidget* loadingPage;
 	QLabel* loadingLabel;
@@ -566,17 +750,25 @@ public:
 
 		modelVBLayout->addWidget(toolbar);
 
-		QToolBar* searchBar = new QToolBar;
+		searchBar = new QToolBar;
+        searchBar->setContentsMargins(0,0,0,0);
 		searchBar->addWidget(searchLineEdit = new QLineEdit);
 		actionSearch = new QAction(CIconProvider::GetIcon("search"), "Search", parent);
 		actionSearch->setObjectName("actionSearch");
 		searchBar->addAction(actionSearch);
 		actionClearSearch = new QAction(CIconProvider::GetIcon("clear"), "Clear", parent);
 		actionClearSearch->setObjectName("actionClearSearch");
-		searchBar->addAction(actionClearSearch);
+        searchBar->addAction(actionClearSearch);
+        actionShowAdvanced = new QAction(CIconProvider::GetIcon("expand"), "Show", parent);
+		actionShowAdvanced->setObjectName("actionShowAdvanced");
+        searchBar->addAction(actionShowAdvanced);
 
-		modelVBLayout->addWidget(searchBar);
+        modelVBLayout->addWidget(searchBar);
 
+        advancedSearch = new AdvancedSearchBox;
+        advancedSearch->hide();
+        modelVBLayout->addWidget(advancedSearch);
+		
 		actionFindInTree = new QAction("Show in Project Tree", parent);
 		actionFindInTree->setObjectName("actionFindInTree");
 
@@ -596,22 +788,53 @@ public:
 		projectTree->header()->setStretchLastSection(false);
 		treeStack->addWidget(projectTree);
 
-		fileSearchTree = new QTreeWidget;
-		fileSearchTree->setObjectName("fileSearchTree");
-		fileSearchTree->setColumnCount(2);
-		fileSearchTree->setHeaderLabels(QStringList() << "Files" << "Size");
-		fileSearchTree->setSelectionMode(QAbstractItemView::SingleSelection);
-		fileSearchTree->setContextMenuPolicy(Qt::CustomContextMenu);
-		fileSearchTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-		fileSearchTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-		fileSearchTree->header()->setStretchLastSection(false);
-		treeStack->addWidget(fileSearchTree);
+        QWidget* searchTreeWidget = new QWidget;
+        QVBoxLayout* searchTreeLayout = new QVBoxLayout;
+        searchTreeLayout->setContentsMargins(0,0,0,0);
+
+        QHBoxLayout* checkboxLayout = new QHBoxLayout;
+        checkboxLayout->setContentsMargins(0,0,0,0);
+        checkboxLayout->addStretch();
+
+        showProjectsCB = new QCheckBox("Projects");
+        showProjectsCB->setObjectName("showProjectsCB");
+        showProjectsCB->setChecked(true);
+
+        checkboxLayout->addWidget(showProjectsCB);
+
+        checkboxLayout->addStretch();
+
+        showFilesCB = new QCheckBox("Files");
+        showFilesCB->setObjectName("showFilesCB");
+        showFilesCB->setChecked(true);
+
+        checkboxLayout->addWidget(showFilesCB);
+
+        checkboxLayout->addStretch();
+
+        searchTreeLayout->addLayout(checkboxLayout);
+
+		searchTree = new QTreeWidget;
+		searchTree->setObjectName("searchTree");
+		searchTree->setColumnCount(2);
+		searchTree->setHeaderLabels(QStringList() << "Results" << "Size");
+		searchTree->setSelectionMode(QAbstractItemView::SingleSelection);
+		searchTree->setContextMenuPolicy(Qt::CustomContextMenu);
+		searchTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+		searchTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+		searchTree->header()->setStretchLastSection(false);
+		searchTreeLayout->addWidget(searchTree);
+
+        searchTreeWidget->setLayout(searchTreeLayout);
+
+        treeStack->addWidget(searchTreeWidget);
 
 		splitter->addWidget(treeStack);
 
 		projectInfoBox = new CToolBox;
 		QWidget* projectDummy = new QWidget;
 		QVBoxLayout* modelInfoLayout = new QVBoxLayout;
+        modelInfoLayout->setContentsMargins(0,0,0,10);
 		projectDummy->setLayout(modelInfoLayout);
 
 		modelInfoLayout->addWidget(unauthorized = new QLabel("<font color='red'>This project has not yet been approved by our "
@@ -653,13 +876,15 @@ public:
 
 		QWidget* fileDummy = new QWidget;
 		QVBoxLayout* fileInfoLayout = new QVBoxLayout;
+        fileInfoLayout->setContentsMargins(0,0,0,0);
 		fileDummy->setLayout(fileInfoLayout);
 
 		fileInfoForm = new QFormLayout;
 		fileInfoForm->setHorizontalSpacing(10);
 		fileInfoForm->addRow("Filename:", filenameLabel = new MultiLineLabel);
-		fileInfoForm->addRow("Description:", fileDescLabel = new MultiLineLabel);
 		fileInfoLayout->addLayout(fileInfoForm);
+
+        fileInfoLayout->addWidget(fileDescLabel = new MultiLineLabel);
 
 		fileInfoLayout->addWidget(fileTags = new TagLabel);
 		fileTags->setObjectName("fileTags");
@@ -726,19 +951,6 @@ public:
 		return parent;
 	}
 
-	void unhideAll()
-	{
-		for(auto current : projectItemsByID)
-		{
-			current.second->setHidden(false);
-		}
-
-		for(auto current : fileItemsByID)
-		{
-			current.second->setHidden(false);
-		}
-	}
-
 	void showLoadingPage(QString message, bool progress = false)
 	{
 		loadingLabel->setText(message);
@@ -765,13 +977,15 @@ public:
 
 	void setFileDescription(QString description)
 	{
-		fileInfoForm->removeRow(fileDescLabel);
-
-		if(!description.isEmpty())
-		{
-			fileInfoForm->insertRow(1, "Description:", fileDescLabel = new MultiLineLabel(description));
-		}
-
+        if(description.isEmpty())
+        {
+            fileDescLabel->hide();
+        }
+        else
+        {
+            fileDescLabel->setText(description);
+            fileDescLabel->show();
+        }
 	}
 
 	void setFileTags()

@@ -64,13 +64,13 @@ FETube::FETube(GTube* po)
 	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FEMesh* FETube::BuildMesh()
+FSMesh* FETube::BuildMesh()
 {
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
 
-FEMesh* FETube::BuildMultiBlockMesh()
+FSMesh* FETube::BuildMultiBlockMesh()
 {
 	// get the geometry parameters
 	double R0 = m_pobj->GetFloatValue(GTube::RIN);
@@ -185,13 +185,13 @@ FEMesh* FETube::BuildMultiBlockMesh()
 	}
 
 	// build the mesh
-	FEMesh* pm = MB.BuildMesh();
+	FSMesh* pm = MB.BuildMesh();
 
 	// all done
 	return pm;
 }
 
-FEMesh* FETube::BuildMeshLegacy()
+FSMesh* FETube::BuildMeshLegacy()
 {
 	assert(m_pobj);
 
@@ -233,7 +233,7 @@ FEMesh* FETube::BuildMeshLegacy()
 	int nodes = nd*(nr+1)*(nz+1);
 	int elems = nd*nr*nz;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	double cosa, sina;
@@ -286,7 +286,7 @@ FEMesh* FETube::BuildMeshLegacy()
 				x = R*cosa;
 				y = R*sina;
 
-				FENode& node = pm->Node(n);
+				FSNode& node = pm->Node(n);
 
 				node.r = vec3d(x, y, z);
 
@@ -337,7 +337,7 @@ FEMesh* FETube::BuildMeshLegacy()
 			jp1 = (j+1)%nd;
 			for (i=0; i<nr; ++i, ++n)
 			{
-				FEElement& e = pm->Element(n);
+				FSElement& e = pm->Element(n);
 				e.SetType(FE_HEX8);
 				e.m_gid = 0;
 
@@ -360,7 +360,7 @@ FEMesh* FETube::BuildMeshLegacy()
 	return pm;
 }
 
-void FETube::BuildFaces(FEMesh* pm)
+void FETube::BuildFaces(FSMesh* pm)
 {
 	int i, j;
 
@@ -373,14 +373,14 @@ void FETube::BuildFaces(FEMesh* pm)
 	pm->Create(0,0,NF);
 
 	// build the faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 
 	// the outer surfaces
 	for (j=0; j<nz; ++j)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4*i/nd;
 			f.m_gid = 4+4*i/nd;
@@ -397,7 +397,7 @@ void FETube::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4 + 4*i/nd;
 			f.m_gid = 8 + 4*i/nd;
@@ -414,7 +414,7 @@ void FETube::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 12+4*j/nd;
 			f.m_sid = 2;
@@ -430,7 +430,7 @@ void FETube::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 8+4*j/nd;
 			f.m_gid = 4*j/nd;
@@ -443,7 +443,7 @@ void FETube::BuildFaces(FEMesh* pm)
 	}
 }
 
-void FETube::BuildEdges(FEMesh* pm)
+void FETube::BuildEdges(FSMesh* pm)
 {
 	int i;
 
@@ -454,7 +454,7 @@ void FETube::BuildEdges(FEMesh* pm)
 	// count edges
 	int nedges = 4*nd+8*nz + 8*nr;
 	pm->Create(0,0,0,nedges);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 
 	for (i = 0; i< nd / 4; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 0; pe->n[0] = NodeIndex(nr, i, 0); pe->n[1] = NodeIndex(nr, i + 1, 0); }
 	for (i=  nd/4; i<  nd/2; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 1; pe->n[0] = NodeIndex(nr, i, 0); pe->n[1] = NodeIndex(nr, i+1, 0); }
@@ -525,7 +525,7 @@ FETube2::FETube2(GTube2* po)
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 }
 
-FEMesh* FETube2::BuildMesh()
+FSMesh* FETube2::BuildMesh()
 {
 	assert(m_pobj);
 
@@ -569,7 +569,7 @@ FEMesh* FETube2::BuildMesh()
 	int nodes = nd*(nr+1)*(nz+1);
 	int elems = nd*nr*nz;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	double cosa, sina;
@@ -622,7 +622,7 @@ FEMesh* FETube2::BuildMesh()
 				x = (R0x + R*(R1x-R0x))*cosa;
 				y = (R0y + R*(R1y-R0y))*sina;
 
-				FENode& node = pm->Node(n);
+				FSNode& node = pm->Node(n);
 
 				node.r = vec3d(x, y, z);
 
@@ -673,7 +673,7 @@ FEMesh* FETube2::BuildMesh()
 			jp1 = (j+1)%nd;
 			for (i=0; i<nr; ++i, ++n)
 			{
-				FEElement& e = pm->Element(n);
+				FSElement& e = pm->Element(n);
 				e.SetType(FE_HEX8);
 				e.m_gid = 0;
 
@@ -696,7 +696,7 @@ FEMesh* FETube2::BuildMesh()
 	return pm;
 }
 
-void FETube2::BuildFaces(FEMesh* pm)
+void FETube2::BuildFaces(FSMesh* pm)
 {
 	int i, j;
 
@@ -709,14 +709,14 @@ void FETube2::BuildFaces(FEMesh* pm)
 	pm->Create(0,0,NF);
 
 	// build the faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 
 	// the outer surfaces
 	for (j=0; j<nz; ++j)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4*i/nd;
 			f.m_gid = 4+4*i/nd;
@@ -733,7 +733,7 @@ void FETube2::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 4 + 4*i/nd;
 			f.m_gid = 8 + 4*i/nd;
@@ -750,7 +750,7 @@ void FETube2::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 12+4*j/nd;
 			f.m_sid = 2;
@@ -766,7 +766,7 @@ void FETube2::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 //			f.m_gid = 8+4*j/nd;
 			f.m_gid = 4*j/nd;
@@ -779,7 +779,7 @@ void FETube2::BuildFaces(FEMesh* pm)
 	}
 }
 
-void FETube2::BuildEdges(FEMesh* pm)
+void FETube2::BuildEdges(FSMesh* pm)
 {
 	int i;
 
@@ -790,7 +790,7 @@ void FETube2::BuildEdges(FEMesh* pm)
 	// count edges
 	int nedges = 4*nd+8*nz + 8*nr;
 	pm->Create(0,0,0,nedges);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 
 	for (i=     0; i<  nd/4; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 0; pe->n[0] = NodeIndex(nr, i, 0); pe->n[1] = NodeIndex(nr, i+1, 0); }
 	for (i=  nd/4; i<  nd/2; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 1; pe->n[0] = NodeIndex(nr, i, 0); pe->n[1] = NodeIndex(nr, i+1, 0); }

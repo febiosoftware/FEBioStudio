@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FEMeshBuilder.h>
 #include <map>
+using namespace std;
 
 FEBoundaryLayerMesher::FEBoundaryLayerMesher() : FEModifier("PostBL")
 {
@@ -37,9 +38,9 @@ FEBoundaryLayerMesher::FEBoundaryLayerMesher() : FEModifier("PostBL")
 	AddIntParam(1, "Segments", "Segments");
 }
 
-FEMesh* FEBoundaryLayerMesher::Apply(FEMesh* pm)
+FSMesh* FEBoundaryLayerMesher::Apply(FSMesh* pm)
 {
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 	if (BoundaryLayer(pnm) == false)
 	{
 		delete pnm;
@@ -48,7 +49,7 @@ FEMesh* FEBoundaryLayerMesher::Apply(FEMesh* pm)
 	return pnm;
 }
 
-bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
+bool FEBoundaryLayerMesher::BoundaryLayer(FSMesh* pm)
 {
 	// get the modifier's parameters
 	double bias = GetFloatValue(0);
@@ -59,10 +60,10 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 	vector<bool> delem(ne0, false);
 
 	// store list of selected faces in fdata
-	vector<FEFace> fdata;
+	vector<FSFace> fdata;
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsSelected())
 			fdata.push_back(face);
 	}
@@ -81,7 +82,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 	std::map<int, vector<int>> efm;
 	for (int i = 0; i<ne1; ++i)
 	{
-		FEFace face = fdata[i];
+		FSFace face = fdata[i];
 		// get element to which this face belongs
 		int iel = face.m_elem[0].eid;
 		// store faces that share this element
@@ -100,7 +101,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 	// fne mapped values = vector of entries into fdata faces
 	std::map<int, vector<int>> fne;
 	for (int i = 0; i<pm->Elements(); ++i) {
-		FEElement el = pm->Element(i);
+		FSElement el = pm->Element(i);
         if (pm->Element(i).m_ntag == -1) {
             vector<int> shared_nodes;
             shared_nodes.reserve(el.Nodes());
@@ -114,7 +115,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 	}
 
 	// create a domain from all selected elements
-	FEDomain dom(pm);
+	FSDomain dom(pm);
 	std::map<int, vector<int>>::iterator it;
 	for (it = efm.begin(); it != efm.end(); ++it) {
 		if (it->second.size() == 1) {
@@ -123,7 +124,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			// add element to domain
 			dom.AddElement(iel);
 			// set meshing parameters
-			FEFace face = fdata[it->second[0]];
+			FSFace face = fdata[it->second[0]];
 			FEElement_& el = pm->Element(iel);
 			if (el.Type() == FE_HEX8) {
 				// get the box from this domain
@@ -164,8 +165,8 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 		}
 		else if (it->second.size() == 2) {
 			// two faces connected to this element
-			FEFace face0 = fdata[it->second[0]];
-			FEFace face1 = fdata[it->second[1]];
+			FSFace face0 = fdata[it->second[0]];
+			FSFace face1 = fdata[it->second[1]];
 			// check if they share common nodes
 			vector<int> cn;
 			for (int i = 0; i<face0.Nodes(); ++i)
@@ -210,7 +211,7 @@ bool FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			else if (el.Type() == FE_TET4) {
 				// we have a tet with two faces on the selected surface
 				// let's find the other two faces of that tet
-				FEFace opface[2];
+				FSFace opface[2];
 				int ifc0 = el.FindFace(face0);
 				int ifc1 = el.FindFace(face1);
 				int k = 0;

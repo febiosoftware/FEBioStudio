@@ -306,6 +306,20 @@ if(USE_FFMPEG)
     
 endif()
 
+# Find FEBio Libs
+set(FEBio_LIBS "")
+
+set(FEBio_LIB_NAMES fecore febiolib febiomech xml)
+
+foreach(name IN LISTS FEBio_LIB_NAMES)
+    findLib(FEBio_LIB_DIR FEBio_LIB ${name})
+    list(APPEND FEBio_LIBS ${FEBio_LIB})
+    unset(FEBio_LIB)
+endforeach(name)
+
+unset(FEBio_LIB_NAMES)
+
+
 ##### Set appropriate defines and includes #####
 
 if(WIN32)
@@ -389,9 +403,10 @@ include_directories(${ZLIB_INCLUDE_DIR})
 if(USE_ITK)
     add_definitions(-DHAS_ITK)
     #~ include(${ITK_USE_FILE})
+    include_directories(${SimpleITK_INCLUDE_DIRS})
 endif()
 
-include_directories(${SimpleITK_INCLUDE_DIRS})
+include_directories(${FEBio_INC})
 
 ##### Find Source Files #####
 
@@ -402,7 +417,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MathLib MeshIO MeshLib MeshTools Nike3D PostGL PostLib XML XPLTLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -492,6 +507,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
         message(WARNING "Could not find git in system PATH. Development version info will not be addded.")
     endif()
 endif()
+
 
 ##### Link Libraries #####
 
@@ -614,6 +630,8 @@ target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
 target_link_libraries(FEBioStudio ${GLEW_LIBRARIES})
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
+
+target_link_libraries(FEBioStudio ${FEBio_LIBS})
 
 if(WIN32)
     target_link_libraries(FEBioStudio vfw32.lib)

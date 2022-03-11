@@ -25,21 +25,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "FEVTKImport.h"
+#include "VTKImport.h"
 #include "FEMeshData_T.h"
 #include "FEPostModel.h"
 
 using namespace Post;
+using namespace std;
 
-FEVTKimport::FEVTKimport(FEPostModel* fem) : FEFileReader(fem)
+VTKimport::VTKimport(FEPostModel* fem) : FEFileReader(fem)
 {
 }
 
-FEVTKimport::~FEVTKimport(void)
+VTKimport::~VTKimport(void)
 {
 }
 
-bool FEVTKimport::Load(const char* szfile)
+bool VTKimport::Load(const char* szfile)
 {
 	FEPostModel& fem = *m_fem;
 	fem.Clear();
@@ -92,12 +93,12 @@ bool FEVTKimport::Load(const char* szfile)
 	{	
 		for (j=0,k=0;j<nodes_each_row && i*nodes_each_row+j <nodes;j++)
 		{
-			FENode& n= pm->Node(i*nodes_each_row+j);
+			FSNode& n= pm->Node(i*nodes_each_row+j);
 			vec3f r;
 			r.x = (float)temp[k];
 			r.y = (float)temp[k + 1];
 			r.z = (float)temp[k + 2];
-			n.r = r;
+			n.r = to_vec3d(r);
 			k +=3;
 		}
 		ch = fgets(szline, 255, m_fp);
@@ -131,7 +132,7 @@ bool FEVTKimport::Load(const char* szfile)
 	int n[9];
 	for (i=0; i<elems; ++i)
 	{	
-		FEElement& el = static_cast<FEElement&>(pm->ElementRef(i));
+		FSElement& el = static_cast<FSElement&>(pm->ElementRef(i));
 		ch = fgets(szline, 255, m_fp);
 		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 		nread = sscanf(szline, "%d%d%d%d%d%d%d%d%d", &n[0], &n[1], &n[2], &n[3], &n[4],&n[5],&n[6],&n[7],&n[8]);
@@ -304,7 +305,7 @@ bool FEVTKimport::Load(const char* szfile)
 	// add one material for each part
 	for (int i = 0; i < nparts; ++i)
 	{
-		FEMaterial mat;
+		Material mat;
 		fem.AddMaterial(mat);
 	}
 
@@ -312,7 +313,7 @@ bool FEVTKimport::Load(const char* szfile)
 	// so, we have to match the material IDs to the part IDs
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		el.m_MatID = el.m_gid;
 	}
 
@@ -350,7 +351,7 @@ bool FEVTKimport::Load(const char* szfile)
 	return true;
 }
 
-bool FEVTKimport::readPointData(char* szline)
+bool VTKimport::readPointData(char* szline)
 {
 	int size = atoi(szline + 10);
 	char* ch = fgets(szline, 255, m_fp);

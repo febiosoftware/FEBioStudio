@@ -28,34 +28,34 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include "FEItemListBuilder.h"
 
-class FENode;
-class FEEdge;
-class FEFace;
-class FEElement;
-class FEMesh;
+class FSNode;
+class FSEdge;
+class FSFace;
+class FSElement;
+class FSMesh;
 class GObject;
 
 //-----------------------------------------------------------------------------
 // Base class for all groups
 //
-class FEGroup : public FEItemListBuilder
+class FSGroup : public FEItemListBuilder
 {
 public:
-	FEGroup(GObject* po, int ntype);
-	virtual ~FEGroup();
+	FSGroup(GObject* po, int ntype, unsigned int flags);
+	virtual ~FSGroup();
 
-	FEMesh* GetMesh();
+	FSMesh* GetMesh();
 	void SetGObject(GObject* pm);
 	GObject* GetGObject();
 
 	int Type() { return m_ntype; }
 
-	FENodeList* BuildNodeList() { return 0; }
+	FSNodeList* BuildNodeList() { return 0; }
 	FEFaceList* BuildFaceList() { return 0; }
 	FEElemList* BuildElemList() { return 0; }
 
 public:
-	// These functions were added when FEGroup was added to FECore. 
+	// These functions were added when FSGroup was added to FECore. 
 	// The mesh ID is the ID of the GObject that owns the mesh. In FECore
 	// GObjects are not known, so a different mechanism was implemented
 	// to find the parent object (and mesh) when reading the archive. Now, only the
@@ -80,72 +80,72 @@ protected:
 //-----------------------------------------------------------------------------
 // class describing a group of elements
 //
-class FEPart : public FEGroup
+class FSPart : public FSGroup
 {
 public:
-	FEPart(GObject* po) : FEGroup(po, FE_PART) {}
-	FEPart(GObject* po, const vector<int>&  elset);
-	~FEPart(){}
+	FSPart(GObject* po) : FSGroup(po, FE_PART, FE_NODE_FLAG | FE_ELEM_FLAG) {}
+	FSPart(GObject* po, const std::vector<int>&  elset);
+	~FSPart(){}
 
 	void CreateFromMesh();
 
 	FEElemList* BuildElemList();
-	FENodeList* BuildNodeList();
+	FSNodeList* BuildNodeList();
 
 	FEItemListBuilder* Copy();
-	void Copy(FEPart* pg);
+	void Copy(FSPart* pg);
 };
 
 //-----------------------------------------------------------------------------
-// CLASS: FESurface
+// CLASS: FSSurface
 // class describing a group of faces
 //
-class FESurface : public FEGroup
+class FSSurface : public FSGroup
 {
 public:
-	FESurface(GObject* po) : FEGroup(po, FE_SURFACE) {}
-	FESurface(GObject* po, vector<int>& face);
-	~FESurface(){}
+	FSSurface(GObject* po) : FSGroup(po, FE_SURFACE, FE_NODE_FLAG | FE_FACE_FLAG) {}
+	FSSurface(GObject* po, std::vector<int>& face);
+	~FSSurface(){}
 
-	FENodeList* BuildNodeList();
+	FSNodeList* BuildNodeList();
 	FEFaceList* BuildFaceList();
 
 	FEItemListBuilder* Copy();
-	void Copy(FESurface* pg);
+	void Copy(FSSurface* pg);
 };
 
 //-----------------------------------------------------------------------------
 // class describing a group of edges
-class FEEdgeSet : public FEGroup
+class FSEdgeSet : public FSGroup
 {
 public:
-	FEEdgeSet(GObject* po) : FEGroup(po, FE_EDGESET) {}
-	FEEdgeSet(GObject* po, vector<int>& edge);
-	~FEEdgeSet(){}
+	FSEdgeSet(GObject* po) : FSGroup(po, FE_EDGESET, FE_NODE_FLAG) {}
+	FSEdgeSet(GObject* po, std::vector<int>& edge);
+	~FSEdgeSet(){}
 
-	FENodeList* BuildNodeList();
+	FSNodeList* BuildNodeList();
 
-	FEEdge* Edge(FEItemListBuilder::Iterator it);
+	FSEdge* Edge(FEItemListBuilder::Iterator it);
 
 	FEItemListBuilder* Copy();
-	void Copy(FEEdgeSet* pg);
+	void Copy(FSEdgeSet* pg);
 };
 
 //-----------------------------------------------------------------------------
-// CLASS: FENodeSet
+// CLASS: FSNodeSet
 // class describing a group of nodes
 //
-class FENodeSet : public FEGroup
+class FSNodeSet : public FSGroup
 {
 public:
-	FENodeSet(GObject* po) : FEGroup(po, FE_NODESET) {}
-	FENodeSet(GObject* po, const vector<int>& node);
-	~FENodeSet(){}
+	FSNodeSet(GObject* po) : FSGroup(po, FE_NODESET, FE_NODE_FLAG) {}
+	FSNodeSet(GObject* po, const std::vector<int>& node);
+	~FSNodeSet(){}
 
 	void CreateFromMesh();
 
 	FEItemListBuilder* Copy();
-	void Copy(FENodeSet* pg);
+	void Copy(FSNodeSet* pg);
 
-	FENodeList* BuildNodeList();
+	FSNodeList* BuildNodeList();
 };

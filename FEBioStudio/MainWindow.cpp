@@ -56,6 +56,7 @@ SOFTWARE.*/
 #include "DlgWidgetProps.h"
 #include <FEBio/FEBioExport25.h>
 #include <FEBio/FEBioExport3.h>
+#include <FEBio/FEBioExport4.h>
 #include "FEBioJob.h"
 #include <PostLib/ColorMap.h>
 #include <FSCore/FSDir.h>
@@ -76,9 +77,13 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "TextDocument.h"
 #include "ImageDocument.h"
+#include "XMLDocument.h"
+#include "PostSessionFile.h"
 #include "units.h"
 #include "version.h"
-#include <PostLib/FEVTKImport.h>
+#include "LocalJobProcess.h"
+#include "FEBioThread.h"
+#include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
@@ -149,6 +154,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	CResource::Init(this);
 
+	CActiveSelection::SetMainWindow(this);
+
 	setDockOptions(dockOptions() | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);
 
 	// update the Post palette to match PreView's
@@ -211,6 +218,11 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	if (reset == false)
 	{
 		readSettings();
+	}
+	else
+	{
+		// Add the default launch configuration
+		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
 	}
 
 	// allow drop events
@@ -405,7 +417,25 @@ void CMainWindow::on_xmledit_textChanged()
 			txtDoc->SetModifiedFlag(qtxt->isModified());
 			UpdateTab(txtDoc);
 		}
-	}	
+	}
+
+    CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+	if (xmlDoc && xmlDoc->IsValid() && (xmlDoc->IsModified() == false))
+	{
+        xmlDoc->SetModifiedFlag(qtxt->isModified());
+        UpdateTab(xmlDoc);
+	}		
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_xmlTree_modelEdited()
+{
+    CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+	if (xmlDoc && xmlDoc->IsValid() && (xmlDoc->IsModified() == false))
+	{
+        xmlDoc->SetModifiedFlag();
+        UpdateTab(xmlDoc);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -489,7 +519,7 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		QMessageBox box;
 		box.setText("How would you like to open this file?");
 		QPushButton* importButton = box.addButton("Import as Model", QMessageBox::AcceptRole);
-		QPushButton* textButton = box.addButton("Edit as Text", QMessageBox::YesRole);
+		QPushButton* textButton = box.addButton("Edit XML", QMessageBox::YesRole);
 		box.addButton(QMessageBox::Cancel);
 		box.setDefaultButton(importButton);
 
@@ -857,7 +887,7 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		QString ext = QFileInfo(fileName).suffix();
 		if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
 		{
-			xpltFileReader* xplt = new xpltFileReader(doc->GetFEModel());
+			xpltFileReader* xplt = new xpltFileReader(doc->GetFSModel());
 			if (showLoadOptions)
 			{
 				CDlgImportXPLT dlg(this);
@@ -880,21 +910,18 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		}
 		else if (ext.compare("vtk", Qt::CaseInsensitive) == 0)
 		{
-			Post::FEVTKimport* vtk = new Post::FEVTKimport(doc->GetFEModel());
+			Post::VTKimport* vtk = new Post::VTKimport(doc->GetFSModel());
 			ReadFile(doc, fileName, vtk, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.compare("fsps", Qt::CaseInsensitive) == 0)
 		{
-			bool b = doc->OpenPostSession(fileName.toStdString());
-
-			// we exploit the queue mechanism here to finish up
-			QueuedFile queueFile(doc, fileName, nullptr, QueuedFile::NEW_DOCUMENT);
-			finishedReadingFile(b, queueFile, "");
+			PostSessionFileReader* fsps = new PostSessionFileReader(doc);
+			ReadFile(doc, fileName, fsps, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.isEmpty())
 		{
 			// Assume this is an LSDYNA database
-			Post::FELSDYNAPlotImport* lsdyna = new Post::FELSDYNAPlotImport(doc->GetFEModel());
+			Post::FELSDYNAPlotImport* lsdyna = new Post::FELSDYNAPlotImport(doc->GetFSModel());
 			ReadFile(doc, fileName, lsdyna, QueuedFile::NEW_DOCUMENT);
 		}
 	}
@@ -1148,6 +1175,12 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
+	UpdateGraphs(breset);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::UpdateGraphs(bool breset)
+{
 	// update graph windows
 	QList<::CGraphWindow*>::iterator it = ui->graphList.begin();
 	for (int i = 0; i < ui->graphList.size(); ++i, ++it)
@@ -1466,7 +1499,7 @@ void CMainWindow::ReportSelection()
 		if (fs->Size() == 1)
 		{
 			FEFaceSelection::Iterator it = fs->begin();
-			FEFace* pf = it;
+			FSFace* pf = it;
 			switch (pf->Type())
 			{
 			case FE_FACE_TRI3 : AddLogEntry("  Type = TRI3"); break;
@@ -1644,11 +1677,6 @@ bool CMainWindow::updateAvailable()
 	return ui->m_updateAvailable;
 }
 
-bool CMainWindow::helpAvailable()
-{
-	return ui->m_helpAvailable;
-}
-
 // set/get default unit system for new models
 void CMainWindow::SetDefaultUnitSystem(int n)
 {
@@ -1715,27 +1743,33 @@ void CMainWindow::writeSettings()
 	}
 
 	settings.beginGroup("LaunchConfigurations");
+	
 	// Create and save a list of launch config names
+	// NOTE: We do not save the first config, which should be the DEFAULT one
+	assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0].type == launchTypes::DEFAULT));
 	QStringList launch_config_names;
-	for(CLaunchConfig conf : ui->m_launch_configs)
+	for(int i=1; i<ui->m_launch_configs.size(); ++i)
 	{
-		launch_config_names.append(QString::fromStdString(conf.name));
+		CLaunchConfig& confi = ui->m_launch_configs[i];
+		launch_config_names.append(QString::fromStdString(confi.name));
 	}
 	settings.setValue("launchConfigNames", launch_config_names);
 
 	// Save launch configs
 	for(int i = 0; i < launch_config_names.count(); i++)
 	{
+		CLaunchConfig& confi = ui->m_launch_configs[i+1];
+
 		QString configName = "launchConfigs/" + launch_config_names[i];
 
-		settings.setValue(configName + "/type", ui->m_launch_configs[i].type);
-		settings.setValue(configName + "/path", ui->m_launch_configs[i].path.c_str());
-		settings.setValue(configName + "/server", ui->m_launch_configs[i].server.c_str());
-		settings.setValue(configName + "/port", ui->m_launch_configs[i].port);
-		settings.setValue(configName + "/userName", ui->m_launch_configs[i].userName.c_str());
-		settings.setValue(configName + "/remoteDir", ui->m_launch_configs[i].remoteDir.c_str());
-		settings.setValue(configName + "/customFile", ui->m_launch_configs[i].customFile.c_str());
-		settings.setValue(configName + "/text", ui->m_launch_configs[i].getText().c_str());
+		settings.setValue(configName + "/type", confi.type);
+		settings.setValue(configName + "/path", confi.path.c_str());
+		settings.setValue(configName + "/server", confi.server.c_str());
+		settings.setValue(configName + "/port", confi.port);
+		settings.setValue(configName + "/userName", confi.userName.c_str());
+		settings.setValue(configName + "/remoteDir", confi.remoteDir.c_str());
+		settings.setValue(configName + "/customFile", confi.customFile.c_str());
+		settings.setValue(configName + "/text", confi.getText().c_str());
 	}
 	settings.endGroup();
 }
@@ -1811,6 +1845,8 @@ void CMainWindow::readSettings()
 	if(launch_config_names.count() > 0)
 	{
 		ui->m_launch_configs.clear();
+		// create the default launch configuration
+		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
 	}
 
 	for(QString conf : launch_config_names)
@@ -1831,18 +1867,6 @@ void CMainWindow::readSettings()
 
 	}
 	settings.endGroup();
-
-	// This is to fix an issue with the 1.0 installers where the location of the 
-	// FEBio executable was changed. 
-	if (versionString.isEmpty())
-	{
-#ifdef WIN32
-		if (ui->m_launch_configs.size() > 0)
-		{
-			ui->m_launch_configs[0].path = std::string("$(FEBioDir)\\febio3.exe");
-		}
-#endif
-	}
 
 	// Read UUID. Generate if not present. 
 	QString UUID = settings.value("UUID").toString();
@@ -2005,10 +2029,19 @@ void CMainWindow::UpdateUIConfig()
 					ui->setUIConfig(CMainWindow::TEXT_CONFIG);
 				}
 			}
-            else
-            {
-                ui->setUIConfig(HTML_CONFIG);
-            }
+			else
+			{
+                CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+                if(xmlDoc)
+                {
+                    ui->xmlTree->setModel(xmlDoc->GetModel());
+                    ui->setUIConfig(CMainWindow::XML_CONFIG);
+                }
+                else
+                {
+                    ui->setUIConfig(HTML_CONFIG);
+                }
+			}
 			ui->fileViewer->parentWidget()->raise();
 		}
 		return;
@@ -2184,7 +2217,7 @@ void CMainWindow::CloseView(int n, bool forceClose)
 		else it++;
 	}
 
-	ui->htmlViewer->setDocument(nullptr);
+	ui->ShowDefaultBackground();
 	ui->xmlEdit->setDocument(nullptr);
 
 	// now, remove from the doc manager
@@ -2341,6 +2374,12 @@ void CMainWindow::ShowLogPanel()
 void CMainWindow::AddLogEntry(const QString& txt)
 {
 	ui->logPanel->AddText(txt);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::updateOutput(const QString& txt)
+{
+	ui->logPanel->AddText(txt, 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -2503,15 +2542,15 @@ void CMainWindow::UpdatePhysicsUi()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	int module = prj.GetModule();
 
-	ui->actionAddRigidConstraint->setVisible(module & MODULE_MECH);
-	ui->actionAddRigidConnector->setVisible(module & MODULE_MECH);
-	ui->actionSoluteTable->setVisible(module & MODULE_SOLUTES);
-	ui->actionSBMTable->setVisible(module & MODULE_SOLUTES);
-	ui->actionAddReaction->setVisible(module & MODULE_REACTIONS);
-    ui->actionAddMembraneReaction->setVisible(module & MODULE_REACTIONS);
+//	ui->actionAddRigidConstraint->setVisible(module & MODULE_MECH);
+//	ui->actionAddRigidConnector->setVisible(module & MODULE_MECH);
+//	ui->actionSoluteTable->setVisible(module & MODULE_SOLUTES);
+//	ui->actionSBMTable->setVisible(module & MODULE_SOLUTES);
+//	ui->actionAddReaction->setVisible(module & MODULE_REACTIONS);
+//	ui->actionAddMembraneReaction->setVisible(module & MODULE_REACTIONS);
 }
 
 //-----------------------------------------------------------------------------
@@ -2520,7 +2559,7 @@ void CMainWindow::onExportAllMaterials()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	vector<GMaterial*> matList;
 	for (int i=0; i<fem.Materials(); ++i)
@@ -2581,7 +2620,7 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if ((doc == nullptr) || (doc == srcDoc) || (srcDoc == nullptr)) return;
 
-	FEModel* fem = srcDoc->GetFEModel();
+	FSModel* fem = srcDoc->GetFSModel();
 	if (fem->Materials() == 0)
 	{
 		QMessageBox::information(this, "Import Materials", "The selected source file does not contain any materials.");
@@ -2610,7 +2649,7 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 			if (name == item)
 			{
 				GMaterial* newMat = gm->Clone();
-				doc->DoCommand(new CCmdAddMaterial(doc->GetFEModel(), newMat));
+				doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), newMat));
 				UpdateModel(newMat);
 				return;
 			}
@@ -2626,7 +2665,7 @@ void CMainWindow::DeleteAllMaterials()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all materials?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllMaterials();
 		UpdateModel();
 		RedrawGL();
@@ -2641,7 +2680,7 @@ void CMainWindow::DeleteAllBC()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all boundary conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllBC();
 		UpdateModel();
 		RedrawGL();
@@ -2656,7 +2695,7 @@ void CMainWindow::DeleteAllLoads()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllLoads();
 		UpdateModel();
 		RedrawGL();
@@ -2671,7 +2710,7 @@ void CMainWindow::DeleteAllIC()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllIC();
 		UpdateModel();
 		RedrawGL();
@@ -2686,7 +2725,7 @@ void CMainWindow::DeleteAllContact()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all contact interfaces?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllContact();
 		UpdateModel();
 		RedrawGL();
@@ -2701,7 +2740,7 @@ void CMainWindow::DeleteAllConstraints()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllConstraints();
 		UpdateModel();
 		RedrawGL();
@@ -2716,8 +2755,23 @@ void CMainWindow::DeleteAllRigidConstraints()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllRigidConstraints();
+		UpdateModel();
+		RedrawGL();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::DeleteAllRigidLoads()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllRigidLoads();
 		UpdateModel();
 		RedrawGL();
 	}
@@ -2731,7 +2785,7 @@ void CMainWindow::DeleteAllRigidConnectors()
 
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid connectors?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllRigidConnectors();
 		UpdateModel();
 		RedrawGL();
@@ -2748,7 +2802,7 @@ void CMainWindow::DeleteAllSteps()
 
 	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
 	{
-		FEModel& fem = *doc->GetFEModel();
+		FSModel& fem = *doc->GetFSModel();
 		fem.DeleteAllSteps();
 		doc->SetModifiedFlag(true);
 		UpdateTab(doc);
@@ -2798,7 +2852,6 @@ void CMainWindow::RemoveGraph(::CGraphWindow* graph)
 // Add a graph to the list of managed graph windows
 void CMainWindow::AddGraph(CGraphWindow* graph)
 {
-	graph->setWindowTitle(QString("Graph%1").arg(ui->graphList.size() + 1));
 	ui->graphList.push_back(graph);
 }
 
@@ -2947,6 +3000,12 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}
+		else if (febioFileVersion == 2)
+		{
+			FEBioExport4 feb(doc->GetProject());
+			ret = feb.Write(febFile.c_str());
+			if (ret == false) err = feb.GetErrorMessage();
+		}
 		else
 		{
 			assert(false);
@@ -2978,90 +3037,19 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		return;
 	}
 
-	QString cmd = QString::fromStdString(job->m_cmd);
-
-	// get the FEBio job file path
-	string febFile = job->GetFEBFileName();
-
 	// clear output for next job
 	ClearOutput();
 	ShowLogPanel();
-
-	// extract the working directory and file title from the file path
-	QFileInfo fileInfo(QString::fromStdString(febFile));
-	QString workingDir = fileInfo.absolutePath();
-	QString fileName = fileInfo.fileName();
-
-	// set this as the active job
-	CFEBioJob::SetActiveJob(job);
+	ui->logPanel->ShowOutput();
 
 	UpdateTab(job->GetDocument());
-
-	if(job->GetLaunchConfig()->type == LOCAL)
+	// start the job
+	if (ui->m_jobManager->StartJob(job) == false)
 	{
-		// create new process
-		ui->m_process = new QProcess(this);
-		ui->m_process->setProcessChannelMode(QProcess::MergedChannels);
-		if (workingDir.isEmpty() == false)
-		{
-			AddLogEntry(QString("Setting current working directory to: %1\n").arg(workingDir));
-			ui->m_process->setWorkingDirectory(workingDir);
-		}
-		QString program = QString::fromStdString(job->GetLaunchConfig()->path);
-
-		// do string substitution
-		string sprogram = program.toStdString();
-		sprogram = FSDir::expandMacros(sprogram);
-		program = QString::fromStdString(sprogram);
-
-		// extract the arguments
-		QStringList args = cmd.split(" ", Qt::SkipEmptyParts);
-
-		std::string configFile = job->GetConfigFileName();
-
-		args.replaceInStrings("$(Filename)", fileName);
-		args.replaceInStrings("$(ConfigFile)", QString::fromStdString(configFile));
-
-		// get ready
-		AddLogEntry(QString("Starting FEBio: %1\n").arg(args.join(" ")));
-		QObject::connect(ui->m_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onRunFinished(int, QProcess::ExitStatus)));
-		QObject::connect(ui->m_process, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-		QObject::connect(ui->m_process, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(onErrorOccurred(QProcess::ProcessError)));
-
-		// don't forget to reset the kill flag
-		ui->m_bkillProcess = false;
-
-		// go!
-		job->SetStatus(CFEBioJob::RUNNING);
-		UpdateModel(job, false);
-		ui->m_process->start(program, args);
-
-		// show the output window
-		ui->logPanel->parentWidget()->raise();
-		ui->logPanel->ShowOutput();
-	}
-	else
-	{
-#ifdef HAS_SSH
-		CSSHHandler* handler = job->GetSSHHandler();
-
-		if(!handler->IsBusy())
-		{
-			handler->SetTargetFunction(STARTREMOTEJOB);
-
-			CSSHThread* sshThread = new CSSHThread(handler, STARTSSHSESSION);
-			QObject::connect(sshThread, &CSSHThread::FinishedPart, this, &CMainWindow::NextSSHFunction);
-			sshThread->start();
-		}
-
-		// show the output window
-		ui->logPanel->parentWidget()->raise();
-		ui->logPanel->ShowOutput();
-
-		CFEBioJob::SetActiveJob(nullptr);
-#endif
+		QMessageBox::critical(this, "FEBio Studio", "Failed to start job!");
 	}
 
+	UpdateModel(job, false);
 }
 
 void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)
@@ -3206,7 +3194,7 @@ void CMainWindow::CloseWelcomePage()
 	int n = ui->tab->findView("Welcome");
 	if (n >= 0)
 	{
-		ui->htmlViewer->setDocument(nullptr);
+		ui->ShowDefaultBackground();
 		ui->tab->tabCloseRequested(n);
 	}
 }
@@ -3250,5 +3238,46 @@ void CMainWindow::CloseWelcomePage()
 
 	}
 #else
-	void CMainWindow::ProcessITKImage(const QString& fileName, ImageType type) {}
+	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type) {}
 #endif
+
+void CMainWindow::OnDeleteAllLoadControllers()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all load controllers?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel* fem = doc->GetFSModel();
+		fem->DeleteAllLoadControllers();
+		doc->SetModifiedFlag(true);
+		UpdateTab(doc);
+		UpdateModel();
+		RedrawGL();
+	}
+}
+
+void CMainWindow::OnDeleteAllMeshData()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt("Are you sure you want to delete all mesh data?\nThis cannot be undone.");
+
+	if (QMessageBox::question(this, "FEBio Studio", txt, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+	{
+		FSModel* fem = doc->GetFSModel();
+		fem->DeleteAllMeshDataGenerators();
+		doc->SetModifiedFlag(true);
+		UpdateTab(doc);
+		UpdateModel();
+		RedrawGL();
+	}
+}
+
+QSize CMainWindow::GetEditorSize()
+{
+    return ui->stack->size();
+}

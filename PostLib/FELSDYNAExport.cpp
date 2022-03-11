@@ -65,7 +65,7 @@ bool FELSDYNAExport::ExportSurface(FEPostModel &fem, int ntime, const char *szfi
 	for (i=0; i<mesh.Nodes(); ++i) mesh.Node(i).m_ntag = 0;
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		n = f.Nodes();
 		for (j=0; j<n; ++j) mesh.Node(f.n[j]).m_ntag = 1;
 	}
@@ -81,7 +81,7 @@ bool FELSDYNAExport::ExportSurface(FEPostModel &fem, int ntime, const char *szfi
 	fprintf(fp, "*NODE\n");
 	for (i=0; i<mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag > 0)
 		{
 			vec3f r = to_vec3f(node.r);
@@ -95,7 +95,7 @@ bool FELSDYNAExport::ExportSurface(FEPostModel &fem, int ntime, const char *szfi
 	fprintf(fp, "*ELEMENT_SHELL_THICKNESS\n");
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		int n[4];
 		n[0] = mesh.Node(f.n[0]).m_ntag;
 		n[1] = mesh.Node(f.n[1]).m_ntag;
@@ -132,7 +132,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const ch
 	for (i=0; i<NN; ++i) m.Node(i).m_ntag = -1;
 	for (i=0; i<NF; ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		if (f.IsSelected())
 		{
 			int n = f.Nodes();
@@ -147,7 +147,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const ch
 	int n = 1;
 	for (i=0; i<NN; ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_ntag == 1)
 		{
 			node.m_ntag = n++;
@@ -160,7 +160,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const ch
 	int l = 1;
 	for (i=0; i<NF; ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		if (f.IsSelected())
 		{
 			int n[4], nf = f.Nodes();
@@ -181,7 +181,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const ch
 		fprintf(fp, "*NODAL_RESULTS\n");
 		for (int i=0; i<NN; ++i)
 		{
-			FENode& node = m.Node(i);
+			FSNode& node = m.Node(i);
 			if (node.m_ntag != -1)
 			{
 				double v = ps->m_NODE[i].m_val;
@@ -226,7 +226,7 @@ bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 	fprintf(fp, "*NODE\n");
 	for (i=0; i<NN; ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_ntag != -1)
 		{
 			vec3f r = to_vec3f(node.r);
@@ -356,7 +356,7 @@ void FELSDYNAExport::NodalResults(FEPostModel &fem, int ntime, FILE* fp)
 	fprintf(fp, "*NODAL_RESULTS\n");
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_ntag != -1)
 		{
 			double v = ps->m_NODE[i].m_val;

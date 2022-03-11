@@ -102,7 +102,7 @@ void CImageViewer::SetImageModel(CImageModel* img)
 	if (ui->m_img)
 	{
 		CGLModel* mdl = ui->m_img->GetModel();
-		FEPostModel* fem = (mdl ? mdl->GetFEModel() : nullptr);
+		FEPostModel* fem = (mdl ? mdl->GetFSModel() : nullptr);
 		if (fem) fem->RemoveDependant(this);
 	}
 
@@ -121,7 +121,7 @@ void CImageViewer::SetImageModel(CImageModel* img)
 		ui->m_slider->setPageStep(m);
 
 		CGLModel* mdl = img->GetModel();
-		FEPostModel* fem = (mdl ? mdl->GetFEModel() : nullptr);
+		FEPostModel* fem = (mdl ? mdl->GetFSModel() : nullptr);
 		if (fem) fem->AddDependant(this);
 	}
 	Update();
@@ -210,7 +210,7 @@ void CImageViewer::UpdatePath()
 		vec3d r[4];
 		for (int i = 0; i < mesh->Faces(); ++i)
 		{
-			FEFace& face = mesh->Face(i);
+			FSFace& face = mesh->Face(i);
 			int nf = face.Nodes();
 			int nup = 0;
 			for (int j = 0; j < nf; ++j)

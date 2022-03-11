@@ -146,7 +146,7 @@ void CDlgPlotMix::OnApply()
 	// Create a new document
 	/*	CDocument* doc = m_wnd->NewDocument("plotmix");
 
-	FEModel* pnew = reader.Load(&sz[0], nitems);
+	FSModel* pnew = reader.Load(&sz[0], nitems);
 	if (pnew == 0) QMessageBox::critical(0, "Plot Mix Tool", "An error occured reading the plot files.");
 	else
 	{

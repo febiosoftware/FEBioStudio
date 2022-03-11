@@ -32,9 +32,9 @@ class FECreateShells : public FEModifier
 public:
     FECreateShells();
 
-    FEMesh* Apply(FEMesh* pm);
-    FEMesh* Apply(FEGroup* pg);
+    FSMesh* Apply(FSMesh* pm);
+    FSMesh* Apply(FSGroup* pg);
     
 protected:
-    void CreateShells(FEMesh* pm, vector<int>& faceList);
+    void CreateShells(FSMesh* pm, std::vector<int>& faceList);
 };

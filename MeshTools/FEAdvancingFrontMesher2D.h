@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEMesher.h"
 
 //-----------------------------------------------------------------------------
-class FEMesh;
+class FSMesh;
 class GObject;
 
 
@@ -43,7 +43,7 @@ public:
 	FEAdvancingFrontMesher2D(GObject* po);
 
 	// generate the mesh
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GObject*	m_obj;
@@ -54,7 +54,7 @@ class FEMMG2DMesher : public FEMesher
 {
 public:
 	FEMMG2DMesher(GObject* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GObject*	m_po;

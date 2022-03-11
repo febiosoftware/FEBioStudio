@@ -8,7 +8,7 @@ using std::list;
 using std::vector;
 using std::string;
 
-class FEMaterial;
+class FSMaterial;
 
 enum MaterialFlags
 {	
@@ -28,12 +28,11 @@ public:
 			int ntype, 
 			int nclass, 
 			const char* szname,
-			unsigned int flags,
-			const char* helpURL);
+			unsigned int flags);
 
 	virtual ~FEMatDescriptor(){}
 
-	virtual FEMaterial* Create() = 0;
+	virtual FSMaterial* Create() = 0;
 
 	int GetModule() const { return m_nModule; }
 
@@ -41,7 +40,6 @@ public:
 
 	int GetTypeID() const { return m_nType; }
 	const char* GetTypeString() const { return m_szname; }
-	const char* GetHelpURL() const { return m_helpURL; }
 
 	unsigned int GetFlags() const { return m_flags; }
 
@@ -51,14 +49,13 @@ protected:
 	int		m_nClass;	// material category
 	const char*	m_szname;
 	unsigned int m_flags;
-	const char* m_helpURL;
 };
 
 template <typename T> class FEMatDescriptor_T : public FEMatDescriptor
 {
 public:
-	FEMatDescriptor_T(int nmodule, int ntype, int nclass, const char* szname, unsigned int flags, const char* helpURL = "") : FEMatDescriptor(nmodule, ntype, nclass, szname, flags, helpURL) {}
-	virtual FEMaterial* Create() { return new T; }
+	FEMatDescriptor_T(int nmodule, int ntype, int nclass, const char* szname, unsigned int flags) : FEMatDescriptor(nmodule, ntype, nclass, szname, flags) {}
+	virtual FSMaterial* Create() { return new T; }
 };
 
 typedef list<FEMatDescriptor*>::iterator FEMatDescIter;
@@ -101,16 +98,17 @@ public:
 	FEMatDescIter FirstMaterial() { return m_Desc.begin(); }
 
 	// create a material from its ID
-	static FEMaterial* Create(int nid);
+	static FSMaterial* Create(int nid);
 
 	// create a material from its name
-	static FEMaterial* Create(const char* szname, int classId = -1);
+	static FSMaterial* Create(const char* szname, int classId = -1);
 
 	// return the type string of the material
-	static const char* TypeStr(FEMaterial* pm);
+    static const char* TypeStr(int nid);
+	static const char* TypeStr(const FSMaterial* pm);
 
 	// return the class ID of the material
-	static int ClassID(FEMaterial* pm);
+	static int ClassID(FSMaterial* pm);
 
 	// return a list of material types for a given material class
 	static list<FEMatDescriptor*> Enumerate(int matClass);
@@ -160,5 +158,5 @@ public: \
 	static FERegisterMaterial	m_##theClass##_rm;
 
 // the REGISTER_MATERIAL does the actual material registration
-#define REGISTER_MATERIAL(theClass, theModule, theType, theCategory, theName, ...) \
-	FERegisterMaterial theClass::m_##theClass##_rm(new FEMatDescriptor_T<theClass>(theModule, theType, theCategory, theName, __VA_ARGS__));
+#define REGISTER_MATERIAL(theClass, theModule, theType, theCategory, theName, theFlags) \
+	FERegisterMaterial theClass::m_##theClass##_rm(new FEMatDescriptor_T<theClass>(theModule, theType, theCategory, theName, theFlags));

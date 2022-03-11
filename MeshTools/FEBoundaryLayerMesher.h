@@ -46,8 +46,8 @@ class FEBoundaryLayerMesher : public FEModifier
 public:
 	FEBoundaryLayerMesher();
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 protected:
-	bool BoundaryLayer(FEMesh* pm);
+	bool BoundaryLayer(FSMesh* pm);
 };

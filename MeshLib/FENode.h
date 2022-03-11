@@ -26,22 +26,22 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEItem.h"
-#include "MathLib/math3d.h"
+#include <FECore/vec3d.h>
 
 //-----------------------------------------------------------------------------
-// The FENode class stores the nodal data.
+// The FSNode class stores the nodal data.
 //
-class FENode : public FEItem
+class FSNode : public MeshItem
 {
 public:
 	// constructor
-	FENode();
+	FSNode();
 
 	// copy constructor
-	FENode(const FENode& n);
+	FSNode(const FSNode& n);
 
 	// assignment operator
-	void operator = (const FENode& n);
+	void operator = (const FSNode& n);
 
 	// set/get position
 	void pos(const vec3d& p) { r = p; }

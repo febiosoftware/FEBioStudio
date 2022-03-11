@@ -435,21 +435,154 @@ void CDocument::SetIcon(const std::string& iconName)
 }
 
 //==============================================================================
+// CUndoDocument
+//==============================================================================
+
+//-----------------------------------------------------------------------------
+// Construction/Destruction
+//-----------------------------------------------------------------------------
+
+CUndoDocument::CUndoDocument(CMainWindow* wnd) : CDocument(wnd)
+{
+    m_pCmd = new CCommandManager(this);
+
+	// Clear the command history
+	m_pCmd->Clear();
+}
+
+//-----------------------------------------------------------------------------
+CUndoDocument::~CUndoDocument()
+{
+    delete m_pCmd;   
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::Clear()
+{
+    CDocument::Clear();
+
+	// Clear the command history
+	m_pCmd->Clear();
+}
+
+//-----------------------------------------------------------------------------
+// COMMAND FUNCTIONS
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+bool CUndoDocument::CanUndo() { return m_pCmd->CanUndo(); }
+
+//-----------------------------------------------------------------------------
+bool CUndoDocument::CanRedo() { return m_pCmd->CanRedo(); }
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::AddCommand(CCommand* pcmd)
+{
+	m_pCmd->AddCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::AddCommand(CCommand* pcmd, const std::string& s)
+{
+	m_pCmd->AddCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	if (s.empty() == false)
+	{
+		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
+	}
+	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+}
+
+//-----------------------------------------------------------------------------
+const char* CUndoDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
+
+//-----------------------------------------------------------------------------
+const char* CUndoDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
+
+//-----------------------------------------------------------------------------
+bool CUndoDocument::DoCommand(CCommand* pcmd, bool b)
+{
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+	bool ret = m_pCmd->DoCommand(pcmd);
+	SetModifiedFlag();
+	if (b) UpdateSelection();
+	return ret;
+}
+
+//-----------------------------------------------------------------------------
+bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
+{
+	CMainWindow* wnd = GetMainWindow();
+	if (s.empty() == false)
+	{
+		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
+	}
+	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+
+	bool ret = m_pCmd->DoCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection(b);
+	return ret;
+}
+
+//-----------------------------------------------------------------------------
+const std::string& CUndoDocument::GetCommandErrorString() const
+{
+	return m_pCmd->GetErrorString();
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::UndoCommand()
+{
+	string cmdName = m_pCmd->GetUndoCmdName();
+	m_pCmd->UndoCommand();
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName)));
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::RedoCommand()
+{
+	string cmdName = m_pCmd->GetRedoCmdName();
+	m_pCmd->RedoCommand();
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName)));
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::ClearCommandStack()
+{
+	m_pCmd->Clear();
+}
+
+//-----------------------------------------------------------------------------
+void CUndoDocument::UpdateSelection(bool breport)
+{
+
+}
+
+//==============================================================================
 // CGLDocument
 //==============================================================================
 
 //-----------------------------------------------------------------------------
 // Construction/Destruction
 //-----------------------------------------------------------------------------
-CGLDocument::CGLDocument(CMainWindow* wnd) : CDocument(wnd)
+CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 {
-	m_pCmd = new CCommandManager(this);
-
 	m_fileWriter = nullptr;
 	m_fileReader = nullptr;
-
-	// Clear the command history
-	m_pCmd->Clear();
 
 	// Set default modes
 	m_vs.nselect = SELECT_OBJECT;
@@ -467,17 +600,6 @@ CGLDocument::~CGLDocument()
 	// remove autosave
 	QFile autoSave(m_autoSaveFilePath.c_str());
 	if(autoSave.exists()) autoSave.remove();
-
-	delete m_pCmd;
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::Clear()
-{
-	CDocument::Clear();
-
-	// Clear the command history
-	m_pCmd->Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -490,107 +612,6 @@ void CGLDocument::SetUnitSystem(int unitSystem)
 int CGLDocument::GetUnitSystem() const
 {
 	return m_units;
-}
-
-//-----------------------------------------------------------------------------
-// COMMAND FUNCTIONS
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-bool CGLDocument::CanUndo() { return m_pCmd->CanUndo(); }
-
-//-----------------------------------------------------------------------------
-bool CGLDocument::CanRedo() { return m_pCmd->CanRedo(); }
-
-//-----------------------------------------------------------------------------
-void CGLDocument::AddCommand(CCommand* pcmd)
-{
-	m_pCmd->AddCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::AddCommand(CCommand* pcmd, const std::string& s)
-{
-	m_pCmd->AddCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	if (s.empty() == false)
-	{
-		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
-	}
-	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-}
-
-//-----------------------------------------------------------------------------
-const char* CGLDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
-
-//-----------------------------------------------------------------------------
-const char* CGLDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
-
-//-----------------------------------------------------------------------------
-bool CGLDocument::DoCommand(CCommand* pcmd, bool b)
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-	bool ret = m_pCmd->DoCommand(pcmd);
-	SetModifiedFlag();
-	if (b) UpdateSelection();
-	return ret;
-}
-
-//-----------------------------------------------------------------------------
-bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
-{
-	CMainWindow* wnd = GetMainWindow();
-	if (s.empty() == false)
-	{
-		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
-	}
-	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-
-	bool ret = m_pCmd->DoCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection(b);
-	return ret;
-}
-
-//-----------------------------------------------------------------------------
-const std::string& CGLDocument::GetCommandErrorString() const
-{
-	return m_pCmd->GetErrorString();
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::UndoCommand()
-{
-	string cmdName = m_pCmd->GetUndoCmdName();
-	m_pCmd->UndoCommand();
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName)));
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::RedoCommand()
-{
-	string cmdName = m_pCmd->GetRedoCmdName();
-	m_pCmd->RedoCommand();
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName)));
-}
-
-//-----------------------------------------------------------------------------
-void CGLDocument::ClearCommandStack()
-{
-	m_pCmd->Clear();
 }
 
 void CGLDocument::UpdateSelection(bool breport)
@@ -630,41 +651,40 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GMaterial*          >(po))
 	{
 		GMaterial* gmat = dynamic_cast<GMaterial*>(po);
-		FEMaterial* mat = gmat->GetMaterialProperties();
+		FSMaterial* mat = gmat->GetMaterialProperties();
 		if (mat)
 		{
-			FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 			std::stringstream ss;
-			const char* sztype = MF.TypeStr(mat);
+			const char* sztype = mat->GetTypeString();
 			if (sztype == 0) sztype = "";
 			ss << "Material" << " [" << sztype << "]";
 			return ss.str();
 		}
 	}
-	else if (dynamic_cast<FEStepComponent*>(po))
+	else if (dynamic_cast<FSStepComponent*>(po))
 	{
-		FEStepComponent* pc = dynamic_cast<FEStepComponent*>(po);
+		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(po);
 		return pc->GetTypeString();
 	}
-	else if (dynamic_cast<FEStep*>(po))
+	else if (dynamic_cast<FSStep*>(po))
 	{
-		FEStep* step = dynamic_cast<FEStep*>(po);
+		FSStep* step = dynamic_cast<FSStep*>(po);
 		return step->GetTypeString();
 	}
 	else if (dynamic_cast<GDiscreteSpringSet*>(po)) return "Discrete element set";
 	else if (dynamic_cast<GDiscreteElement*>(po)) return "discrete element";
-	else if (dynamic_cast<FEPart*>(po)) return "element selection";
-	else if (dynamic_cast<FESurface*>(po)) return "face selection";
-	else if (dynamic_cast<FEEdgeSet*>(po)) return "edge selection";
-	else if (dynamic_cast<FENodeSet*>(po)) return "node selection";
+	else if (dynamic_cast<FSPart*>(po)) return "element selection";
+	else if (dynamic_cast<FSSurface*>(po)) return "face selection";
+	else if (dynamic_cast<FSEdgeSet*>(po)) return "edge selection";
+	else if (dynamic_cast<FSNodeSet*>(po)) return "node selection";
 	else if (dynamic_cast<GPart*>(po)) return "Part";
 	else if (dynamic_cast<GFace*>(po)) return "Surface";
 	else if (dynamic_cast<GEdge*>(po)) return "Curve";
 	else if (dynamic_cast<GNode*>(po)) return "Node";
 	else if (dynamic_cast<GGroup*>(po)) return "Named selection";
-	else if (dynamic_cast<FEGroup*>(po)) return "Named selection";
+	else if (dynamic_cast<FSGroup*>(po)) return "Named selection";
 	else if (dynamic_cast<GObject*>(po)) return "Object";
-	else if (dynamic_cast<FEDataMapGenerator*>(po)) return "Data map";
+	else if (dynamic_cast<FSDataMapGenerator*>(po)) return "Data map";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
 	else if (dynamic_cast<Post::CImageModel*>(po)) return "3D Image volume";
 	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
@@ -675,18 +695,35 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po)) return "volume image renderer";
 	else if (dynamic_cast<Post::CImageSource*>(po)) return "3D Image source";
     else if (dynamic_cast<CImageFilter*>(po)) return "Image filter";
-	else if (dynamic_cast<FEMaterial*>(po))
+	else if (dynamic_cast<FSMaterial*>(po))
 	{
-		FEMaterial* mat = dynamic_cast<FEMaterial*>(po);
+		FSMaterial* mat = dynamic_cast<FSMaterial*>(po);
 		if (mat)
 		{
-			FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 			std::stringstream ss;
-			const char* sztype = MF.TypeStr(mat);
+			const char* sztype = mat->GetTypeString();
 			if (sztype == 0) sztype = "";
 			ss << "Material" << " [" << sztype << "]";
 			return ss.str();
 		}
+	}
+	else if (dynamic_cast<FSLoadController*>(po))
+	{
+		FSLoadController* plc = dynamic_cast<FSLoadController*>(po);
+		std::stringstream ss;
+		const char* sztype = plc->GetTypeString();
+		if (sztype == 0) sztype = "";
+		ss << "Load controller" << " [" << sztype << "]";
+		return ss.str();
+	}
+	else if (dynamic_cast<FSMeshDataGenerator*>(po))
+	{
+		FSMeshDataGenerator* plc = dynamic_cast<FSMeshDataGenerator*>(po);
+		std::stringstream ss;
+		const char* sztype = plc->GetTypeString();
+		if (sztype == 0) sztype = "";
+		ss << "Mesh data" << " [" << sztype << "]";
+		return ss.str();
 	}
 	else if (dynamic_cast<FEMeshData*>(po))
 	{
@@ -776,7 +813,32 @@ void CGLDocument::LoadResources(IArchive& ar)
 	}
 }
 
-#ifdef HAS_ITK
+//-----------------------------------------------------------------------------
+// import image data
+Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
+{
+	static int n = 1;
+
+	// we pass the relative path to the image model
+	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
+
+	Post::CImageModel* po = new Post::CImageModel(nullptr);
+	if (po->LoadImageData(relFile, nx, ny, nz, box) == false)
+	{
+		delete po;
+		return nullptr;
+	}
+
+	stringstream ss;
+	ss << "ImageModel" << n++;
+	po->SetName(ss.str());
+
+	// add it to the project
+	AddImageModel(po);
+
+	return po;
+}
+
 Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFileType type)
 {
 	static int n = 1;
@@ -816,33 +878,6 @@ Post::CImageModel* CGLDocument::ImportITKStack(QStringList& filenames)
 	Post::CImageModel* po = new Post::CImageModel(nullptr);
 
 	if (po->LoadITKSeries(stdFiles) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-#endif
-
-//-----------------------------------------------------------------------------
-// import image data
-Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
-{
-	static int n = 1;
-
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-	if (po->LoadImageData(relFile, nx, ny, nz, box) == false)
 	{
 		delete po;
 		return nullptr;
@@ -944,13 +979,13 @@ bool CGLDocument::AutoSaveDocument()
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::GrowElementSelection(FEMesh* pm, bool respectPartitions)
+void CGLDocument::GrowElementSelection(FSMesh* pm, bool respectPartitions)
 {
 	int N = pm->Elements(), i;
 	for (i = 0; i < N; ++i) pm->Element(i).m_ntag = 0;
 	for (i = 0; i < N; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		if (e.IsSelected())
 		{
 			e.m_ntag = 1;
@@ -961,7 +996,7 @@ void CGLDocument::GrowElementSelection(FEMesh* pm, bool respectPartitions)
 			for (int j = 0; j < ne; ++j)
 				if (e.m_nbr[j] >= 0)
 				{
-					FEElement& ej = pm->Element(e.m_nbr[j]);
+					FSElement& ej = pm->Element(e.m_nbr[j]);
 					if ((respectPartitions == false) || (e.m_gid == ej.m_gid))
 					{
 						ej.m_ntag = 1;
@@ -985,9 +1020,9 @@ void CGLDocument::GrowElementSelection(FEMesh* pm, bool respectPartitions)
 
 
 //-----------------------------------------------------------------------------
-void CGLDocument::GrowNodeSelection(FEMeshBase* pm)
+void CGLDocument::GrowNodeSelection(FSMeshBase* pm)
 {
-	FENodeFaceList NFT;
+	FSNodeFaceList NFT;
 	NFT.Build(pm);
 
 	int i;
@@ -1006,7 +1041,7 @@ void CGLDocument::GrowNodeSelection(FEMeshBase* pm)
 
 	for (i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_ntag == 1)
 		{
 			for (int j = 0; j < f.Nodes(); ++j) pm->Node(f.n[j]).m_ntag = 1;
@@ -1027,13 +1062,13 @@ void CGLDocument::GrowNodeSelection(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::GrowFaceSelection(FEMeshBase* pm, bool respectPartitions)
+void CGLDocument::GrowFaceSelection(FSMeshBase* pm, bool respectPartitions)
 {
 	int N = pm->Faces(), i;
 	for (i = 0; i < N; ++i) pm->Face(i).m_ntag = 0;
 	for (i = 0; i < N; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.IsSelected())
 		{
 			f.m_ntag = 1;
@@ -1044,7 +1079,7 @@ void CGLDocument::GrowFaceSelection(FEMeshBase* pm, bool respectPartitions)
 			{
 				if (f.m_nbr[j] >= 0)
 				{
-					FEFace& fj = pm->Face(f.m_nbr[j]);
+					FSFace& fj = pm->Face(f.m_nbr[j]);
 					if ((respectPartitions == false) || (f.m_gid == fj.m_gid))
 					{
 						fj.m_ntag = 1;
@@ -1068,15 +1103,15 @@ void CGLDocument::GrowFaceSelection(FEMeshBase* pm, bool respectPartitions)
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::GrowEdgeSelection(FEMeshBase* pm)
+void CGLDocument::GrowEdgeSelection(FSMeshBase* pm)
 {
 	// TODO: implement this
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::ShrinkNodeSelection(FEMeshBase* pm)
+void CGLDocument::ShrinkNodeSelection(FSMeshBase* pm)
 {
-	FENodeFaceList NFT;
+	FSNodeFaceList NFT;
 	NFT.Build(pm);
 
 	int i;
@@ -1095,7 +1130,7 @@ void CGLDocument::ShrinkNodeSelection(FEMeshBase* pm)
 
 	for (i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_ntag == 1)
 		{
 			for (int j = 0; j < f.Nodes(); ++j) pm->Node(f.n[j]).m_ntag = 0;
@@ -1116,13 +1151,13 @@ void CGLDocument::ShrinkNodeSelection(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::ShrinkFaceSelection(FEMeshBase* pm)
+void CGLDocument::ShrinkFaceSelection(FSMeshBase* pm)
 {
 	int N = pm->Faces(), i;
 	for (i = 0; i < N; ++i) pm->Face(i).m_ntag = 1;
 	for (i = 0; i < N; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.IsSelected() == false)
 		{
 			f.m_ntag = 0;
@@ -1147,19 +1182,19 @@ void CGLDocument::ShrinkFaceSelection(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::ShrinkEdgeSelection(FEMeshBase* pm)
+void CGLDocument::ShrinkEdgeSelection(FSMeshBase* pm)
 {
 	// TODO: implement this
 }
 
 //-----------------------------------------------------------------------------
-void CGLDocument::ShrinkElementSelection(FEMesh* pm)
+void CGLDocument::ShrinkElementSelection(FSMesh* pm)
 {
 	int N = pm->Elements(), i;
 	for (i = 0; i < N; ++i) pm->Element(i).m_ntag = 1;
 	for (i = 0; i < N; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		if (e.IsSelected() == false)
 		{
 			e.m_ntag = 0;
@@ -1179,4 +1214,20 @@ void CGLDocument::ShrinkElementSelection(FEMesh* pm)
 		DoCommand(new CCmdSelectElements(pm, pe, n, false));
 		delete[] pe;
 	}
+}
+
+//===================================================================================================
+CMainWindow* CActiveSelection::m_wnd = nullptr;
+
+void CActiveSelection::SetMainWindow(CMainWindow* wnd)
+{
+	m_wnd = wnd;
+}
+
+FESelection* CActiveSelection::GetCurrentSelection()
+{
+	if (m_wnd == nullptr) return nullptr;
+	CGLDocument* doc = m_wnd->GetGLDocument();
+	if (doc == nullptr) return nullptr;
+	return doc->GetCurrentSelection();
 }

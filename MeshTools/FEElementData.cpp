@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "GGroup.h"
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
+FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
 {
 	m_scale = 1.0;
 	m_part = nullptr;
@@ -40,7 +40,7 @@ FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA
 }
 
 //-----------------------------------------------------------------------------
-void FEElementData::Create(FEMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataType)
+void FEElementData::Create(FSMesh* pm, FSPart* part, FEMeshData::DATA_TYPE dataType)
 {
 	SetMesh(pm);
 	m_part = part;
@@ -136,7 +136,7 @@ void FEElementData::Load(IArchive& ar)
 		}
 		else if (nid == CID_MESH_DATA_PART)
 		{
-			m_part = new FEPart(po);
+			m_part = new FSPart(po);
 			m_part->Load(ar);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
@@ -151,7 +151,7 @@ void FEElementData::Load(IArchive& ar)
 }
 
 //=============================================================================
-FEPartData::FEPartData(FEMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(FSMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
 {
 	SetMesh(mesh);
 	m_maxElemItems = 1;
@@ -170,7 +170,7 @@ FEPartData& FEPartData::operator = (const FEPartData& d)
 // create a data field
 bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt)
 {
-	FEMesh* mesh = GetMesh();
+	FSMesh* mesh = GetMesh();
 	assert(mesh);
 	m_data.clear();
 	m_part = partList;
@@ -183,7 +183,7 @@ bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataT
 		int pid = partList[i];
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = mesh->Element(i);
+			FSElement& el = mesh->Element(i);
 			if (el.m_gid == pid)
 			{
 				int nn = el.Nodes();
@@ -211,7 +211,7 @@ bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataT
 
 FEElemList* FEPartData::BuildElemList()
 {
-	FEMesh* mesh = GetMesh();
+	FSMesh* mesh = GetMesh();
 	assert(mesh);
 
 	FEElemList* elemList = new FEElemList;
@@ -221,7 +221,7 @@ FEElemList* FEPartData::BuildElemList()
 		int pid = m_part[i];
 		for (int j = 0; j < NE; ++j)
 		{
-			FEElement& el = mesh->Element(j);
+			FSElement& el = mesh->Element(j);
 			if (el.m_gid == pid)
 			{
 				elemList->Add(mesh, &el, j);
@@ -231,7 +231,7 @@ FEElemList* FEPartData::BuildElemList()
 	return elemList;
 }
 
-GPartList* FEPartData::GetPartList(FEModel* fem)
+GPartList* FEPartData::GetPartList(FSModel* fem)
 {
 	GObject* po = GetMesh()->GetGObject();
 	GPartList* partList = new GPartList(fem);

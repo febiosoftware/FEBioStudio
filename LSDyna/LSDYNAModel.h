@@ -34,9 +34,9 @@ SOFTWARE.*/
 using std::vector;
 using std::list;
 
-class FEModel;
+class FSModel;
 class GMeshObject;
-class FEMesh;
+class FSMesh;
 
 class LSDYNAModel
 {
@@ -228,7 +228,7 @@ public:
 	void addSetSegmentTitle(const SET_SEGMENT_TITLE& s) { m_set.push_back(s); }
 
 public:
-	bool BuildModel(FEModel& fem);
+	bool BuildModel(FSModel& fem);
 
 	GMeshObject* TakeObject() { GMeshObject* po = m_po; m_po = 0; return po; }
 
@@ -238,14 +238,14 @@ public:
 
     int FindShellDomain(int pid);
     
-	void UpdateMesh(FEMesh& mesh);
+	void UpdateMesh(FSMesh& mesh);
 
 	void allocData(int N) { m_Data.assign(N, vector<double>(2)); }
 	double& NodeData(int i, int j) { return m_Data[i][j]; }
 
 protected:
-	bool BuildFEMesh(FEModel& fem);
-	bool BuildMaterials(FEModel& fem);
+	bool BuildFEMesh(FSModel& fem);
+	bool BuildMaterials(FSModel& fem);
 
 public:
 	vector<ELEMENT_SOLID>		m_solid;

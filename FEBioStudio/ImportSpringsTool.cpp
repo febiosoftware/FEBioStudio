@@ -108,12 +108,12 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 	// find closest node
 	int imin = -1;
 	double l2min = 0.0;
-	FEMesh* m = po->GetFEMesh();
+	FSMesh* m = po->GetFEMesh();
 	int N = m->Nodes();
 	imin = -1;
 	for (int i = 0; i < N; ++i)
 	{
-		FENode& ni = m->Node(i);
+		FSNode& ni = m->Node(i);
 		if (ni.IsExterior())
 		{
 			vec3d ri = m->LocalToGlobal(ni.r);
@@ -142,9 +142,9 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 	// set the spring material
 	switch (m_type)
 	{
-	case 0: dset->SetMaterial(new FELinearSpringMaterial); break;
-	case 1: dset->SetMaterial(new FENonLinearSpringMaterial); break;
-	case 2: dset->SetMaterial(new FEHillContractileMaterial); break;
+	case 0: dset->SetMaterial(new FSLinearSpringMaterial); break;
+	case 1: dset->SetMaterial(new FSNonLinearSpringMaterial); break;
+	case 2: dset->SetMaterial(new FSHillContractileMaterial); break;
 	default:
 		assert(false);
 		return false;
@@ -189,7 +189,7 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 
 void CImportSpringsTool::Intersect(GMeshObject* po, CImportSpringsTool::SPRING& spring)
 {
-	FEMesh* mesh = po->GetFEMesh();
+	FSMesh* mesh = po->GetFEMesh();
 
 	vec3d n = spring.r1 - spring.r0; n.Normalize();
 

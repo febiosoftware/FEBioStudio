@@ -28,10 +28,10 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEPLYImport : public FEFileImport
+class FEPLYImport : public FSFileImport
 {
 public:
-	FEPLYImport(FEProject& prj);
+	FEPLYImport(FSProject& prj);
 	~FEPLYImport();
 
 	bool Load(const char* szfile);
@@ -40,5 +40,5 @@ private:
 	bool read_file(const char* szfile);
 
 private:
-	FESurfaceMesh* m_mesh;
+	FSSurfaceMesh* m_mesh;
 };

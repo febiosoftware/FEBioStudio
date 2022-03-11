@@ -56,7 +56,7 @@ public:
 
 	void setMesh(GObject* po)
 	{
-		FEMesh* pm = (po ? po->GetFEMesh() : 0);
+		FSMesh* pm = (po ? po->GetFEMesh() : 0);
 		if (pm)
 		{
 			name->setText(QString::fromStdString(po->GetName()));
@@ -66,7 +66,9 @@ public:
 		}
 		else
 		{
-			name->setText("---");
+			if (po) name->setText(QString::fromStdString(po->GetName()));
+			else name->setText("---");
+
 			nodes->setText("---");
 			faces->setText("---");
 			elems->setText("---");
@@ -177,7 +179,7 @@ public:
 	QSpinBox* curvatureMaxIters;
 	QCheckBox* curvatureExtQuad;
 
-	FEMesh*		m_pm;
+	FSMesh*		m_pm;
 
 	
 
@@ -266,18 +268,18 @@ public:
 		static const char* EN[] = {
 			"HEX8", "TET4", "PENTA6", "QUAD4", "TRI3", "BEAM2", "HEX20", "QUAD8", "LINE3", "TET10", "TRI6", "TET15", "HEX27", "TRI7", "QUAD9", "TET20", "TRI10", "PYRA5", "PENTA15", "TET5", "PYRA13", "(unknown)"};
 
-		table->setRowCount(0);
-
 		info->setMesh(po);
 		if (po == 0) 
 		{
-			m_pm = nullptr; 
+			table->setRowCount(0);
+			m_pm = nullptr;
 			return;
 		}
 
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm == 0)
 		{
+			table->setRowCount(0);
 			m_pm = nullptr;
 			return;
 		}
@@ -291,7 +293,7 @@ public:
 		int NE = pm->Elements();
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& e = pm->Element(i);
+			FSElement& e = pm->Element(i);
 			switch (e.Type())
 			{
 			case FE_HEX8   : n[0]++; break;

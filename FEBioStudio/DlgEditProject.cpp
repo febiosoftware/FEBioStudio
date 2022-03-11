@@ -33,6 +33,9 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QPushButton>
 #include <QLabel>
+#include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioModule.h>
+using namespace std;
 
 class Ui::CDlgEditProject
 {
@@ -44,20 +47,6 @@ public:
 	{
 		list = new QListWidget;
 
-		QPushButton* all  = new QPushButton("All");
-		QPushButton* none = new QPushButton("None");
-
-		QVBoxLayout* l = new QVBoxLayout;
-		l->setContentsMargins(0,0,0,0);
-		l->addWidget(all);
-		l->addWidget(none);
-		l->addStretch();
-
-		QHBoxLayout* h = new QHBoxLayout;
-		h->setContentsMargins(0,0,0,0);
-		h->addWidget(list);
-		h->addLayout(l);
-
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
 		QLabel* m = new QLabel("Modules:");
@@ -65,106 +54,60 @@ public:
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addWidget(m);
-		mainLayout->addLayout(h);
+		mainLayout->addWidget(list);
 		mainLayout->addWidget(bb);
 
 		dlg->setLayout(mainLayout);
 
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
-		QObject::connect(all, SIGNAL(clicked(bool)), dlg, SLOT(onAllClicked()));
-		QObject::connect(none, SIGNAL(clicked(bool)), dlg, SLOT(onNoneClicked()));
 	}
 
-	void addModule(const QString& name, int id, bool checked)
+	void addModule(const QString& name, int id)
 	{
 		QListWidgetItem* item = new QListWidgetItem;
 		item->setText(name);
 		item->setData(Qt::UserRole, id);
-		item->setCheckState(checked? Qt::Checked : Qt::Unchecked);
-
 		list->addItem(item);
-	}
-
-	bool isRowChecked(int nrow)
-	{
-		QListWidgetItem* item = list->item(nrow);
-		if (item)
-		{
-			return (item->checkState() == Qt::Checked);
-		}
-		else
-		{
-			assert(false);
-			return false;
-		}
 	}
 
 	unsigned int getModule()
 	{
-		unsigned int mod = 0;
-		int N = list->count();
-		for (int i=0; i<N; ++i)
-		{
-			QListWidgetItem* item = list->item(i);
-			if (item->checkState() == Qt::Checked)
-			{
-				mod |= item->data(Qt::UserRole).toInt();
-			}
-		}
+		QListWidgetItem* pw = list->currentItem();
+		if (pw == nullptr) return 0;
+		unsigned int mod = pw->data(Qt::UserRole).toInt();
 		return mod;
-	}
-
-	void checkAll(bool checked)
-	{
-		int N = list->count();
-		for (int i = 0; i<N; ++i)
-		{
-			QListWidgetItem* item = list->item(i);
-			item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
-		}
 	}
 };
 
-CDlgEditProject::CDlgEditProject(FEProject& prj, QWidget* parent): QDialog(parent), ui(new Ui::CDlgEditProject), m_prj(prj)
+CDlgEditProject::CDlgEditProject(FSProject& prj, QWidget* parent): QDialog(parent), ui(new Ui::CDlgEditProject), m_prj(prj)
 {
 	ui->setup(this);
 
-	unsigned int mod = prj.GetModule();
+	unsigned int modid = prj.GetModule();
 
-	ui->addModule("Mechanics"			, MODULE_MECH				, (mod & MODULE_MECH));
-	ui->addModule("Heat Transer"		, MODULE_HEAT				, (mod & MODULE_HEAT));
-	ui->addModule("Biphasic"			, MODULE_BIPHASIC			, (mod & MODULE_BIPHASIC));
-	ui->addModule("Solutes"				, MODULE_SOLUTES			, (mod & MODULE_SOLUTES));
-	ui->addModule("Multiphasic"			, MODULE_MULTIPHASIC		, (mod & MODULE_MULTIPHASIC));
-	ui->addModule("Fluid"				, MODULE_FLUID				, (mod & MODULE_FLUID));
-	ui->addModule("Reactions"			, MODULE_REACTIONS			, (mod & MODULE_REACTIONS));
-	ui->addModule("Reaction-Diffusion"	, MODULE_REACTION_DIFFUSION	, (mod & MODULE_REACTION_DIFFUSION));
-    ui->addModule("Fluid-FSI"			, MODULE_FLUID_FSI  , (mod & MODULE_FLUID_FSI));
+	vector<FEBio::FEBioModule> mods = FEBio::GetAllModules();
+	int current = -1;
+	for (int i = 0; i < mods.size(); ++i)
+	{
+		FEBio::FEBioModule& mod = mods[i];
+		if (mod.m_id == modid) current = i;
+		ui->addModule(mod.m_szname, mod.m_id);
+	}
+	ui->list->setCurrentRow(current);
 }
 
 void CDlgEditProject::accept()
 {
-	unsigned int module = ui->getModule();
+	unsigned int moduleId = ui->getModule();
 
-	if (module == 0)
+	if (moduleId == 0)
 	{
 		QMessageBox::critical(this, "Edit Properties", "You must select at least one module.");
 		return;
 	}
 	
-	m_prj.SetModule(module);
+	m_prj.SetModule(moduleId);
 
 	QDialog::accept();
 }
-
-void CDlgEditProject::onAllClicked()
-{
-	ui->checkAll(true);
-}
-
-void CDlgEditProject::onNoneClicked()
-{
-	ui->checkAll(false);
-}
-

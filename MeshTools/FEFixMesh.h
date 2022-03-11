@@ -33,8 +33,8 @@ class FEFixMesh : public FEModifier
 {
 public:
 	FEFixMesh();
-	FEMesh* Apply(FEMesh* pm) override;
+	FSMesh* Apply(FSMesh* pm) override;
 
 public:
-	bool RemoveDuplicateEdges  (FEMesh* pm);
+	bool RemoveDuplicateEdges  (FSMesh* pm);
 };

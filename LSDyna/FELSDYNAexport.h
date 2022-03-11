@@ -39,7 +39,7 @@ struct LSDYNAEXPORT
 class FELSDYNAexport : public FEFileExport
 {
 public:
-	FELSDYNAexport(FEProject& prj);
+	FELSDYNAexport(FSProject& prj);
 	~FELSDYNAexport(void);
 
 	void SetOptions(LSDYNAEXPORT o) { m_ops = o; }

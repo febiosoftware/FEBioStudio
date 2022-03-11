@@ -71,13 +71,13 @@ void GDisc::Create()
 	// 3. build the parts
 	//-------------------
 	assert(m_Part.empty());
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	//------------------
 	int FE[4][3] = {{0,5,4}, {1,6,5}, {2,7,6}, {3,4,7}};
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<4; ++i)
 	{
 		edge.resize(3);

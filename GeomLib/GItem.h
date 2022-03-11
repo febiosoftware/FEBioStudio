@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-
-class FEEdgeSet;
+#include "GPartSection.h"
+class FSEdgeSet;
 
 //-----------------------------------------------------------------------------
 // State values for GItem state
@@ -153,26 +153,26 @@ class GPart : public GItem_T<GPart>
 {
 public:
 	GPart();
+	~GPart();
+
 	GPart(GBaseObject* po);
 
 	GPart(const GPart& p);
 	void operator = (const GPart& p);
 
+	bool IsSolid() const;
+	bool IsShell() const;
+
 public:
 	int GetMaterialID() const { return m_matid; }
 	void SetMaterialID(int mid) { m_matid = mid; }
 
-	void setShellNormalNodal(bool b);
-	bool shellNormalNodal() const;
-    
-    void setLaugon(bool b);
-    bool laugon() const;
-
-    void setAugTol(double d);
-    double augTol() const;
+	void SetSection(GPartSection* section);
+	GPartSection* GetSection() const;
     
 protected:
 	int		m_matid;
+	GPartSection* m_section;
 };
 
 //-----------------------------------------------------------------------------
@@ -204,8 +204,8 @@ public:
 public:
 	int				m_ntype;	// face type
 	int				m_nPID[3];	// part ID's
-	vector<int>		m_node;		// node ID's
-	vector<EDGE>	m_edge;		// edges defining face
+	std::vector<int>	m_node;		// node ID's
+	std::vector<EDGE>	m_edge;		// edges defining face
 };
 
 //-----------------------------------------------------------------------------
@@ -232,7 +232,7 @@ public:
 
 	int Type() const { return m_ntype; }
 
-	FEEdgeSet* GetFEEdgeSet() const;
+	FSEdgeSet* GetFEEdgeSet() const;
 
 public:
 	int		m_node[2];	// indices of GNodes

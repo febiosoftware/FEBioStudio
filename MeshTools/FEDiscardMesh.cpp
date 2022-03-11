@@ -31,7 +31,7 @@ FEDiscardMesh::FEDiscardMesh() : FEModifier("Discard mesh")
 {
 }
 
-FEMesh* FEDiscardMesh::Apply(FEMesh* pm)
+FSMesh* FEDiscardMesh::Apply(FSMesh* pm)
 {
 	return pm->ExtractFaces(false);
 }

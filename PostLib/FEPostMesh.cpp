@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// FEMeshBase.cpp: implementation of the FEMeshBase class.
+// FSMeshBase.cpp: implementation of the FSMeshBase class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FEFaceEdgeList.h>
 #include <stack>
+using namespace std;
 
 //=============================================================================
 
@@ -165,7 +166,7 @@ void Post::FEPostMesh::UpdateDomains()
 	int NF = Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 
 		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
 		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
@@ -177,7 +178,7 @@ void Post::FEPostMesh::UpdateDomains()
 	m_Dom.resize(ndom);
 	for (int i=0; i<ndom; ++i) 
 	{
-		m_Dom[i] = new FEDomain(this);
+		m_Dom[i] = new MeshDomain(this);
 		m_Dom[i]->SetMatID(i);
 		m_Dom[i]->Reserve(elemSize[i], faceSize[i]);
 	}
@@ -190,7 +191,7 @@ void Post::FEPostMesh::UpdateDomains()
 
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 
 		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
 		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
@@ -205,7 +206,7 @@ void Post::FEPostMesh::UpdateDomains()
 void Post::FEPostMesh::BuildMesh()
 {
 	// build mesh data
-	FEMesh::RebuildMesh(60.0);
+	FSMesh::RebuildMesh(60.0);
 
 	// Build the node-element list
 	m_NEL.Build(this);
@@ -218,9 +219,9 @@ void Post::FEPostMesh::BuildMesh()
 }
 
 //-----------------------------------------------------------------------------
-bool Post::FindElementInReferenceFrame(FECoreMesh& m, const vec3f& p, int& nelem, double r[3])
+bool Post::FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
 {
-	vec3f y[FEElement::MAX_NODES];
+	vec3f y[FSElement::MAX_NODES];
 	int NE = m.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
@@ -277,7 +278,7 @@ double Post::IntegrateNodes(Post::FEPostMesh& mesh, Post::FEState* ps)
 	int N = mesh.Nodes();
 	for (int i = 0; i<N; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.IsSelected() && (ps->m_NODE[i].m_ntag > 0))
 		{
 			res += ps->m_NODE[i].m_val;
@@ -298,11 +299,11 @@ double Post::IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps)
 double Post::IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	double res = 0.0;
-	float v[FEFace::MAX_NODES];
-	vec3f r[FEFace::MAX_NODES];
+	float v[FSFace::MAX_NODES];
+	vec3f r[FSFace::MAX_NODES];
 	for (int i = 0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.IsSelected() && f.IsActive())
 		{
 			int nn = f.Nodes();
@@ -344,11 +345,11 @@ double Post::IntegrateReferenceFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	Post::FERefState& ref = *ps->m_ref;
 	double res = 0.0;
-	float v[FEFace::MAX_NODES];
-	vec3f r[FEFace::MAX_NODES];
+	float v[FSFace::MAX_NODES];
+	vec3f r[FSFace::MAX_NODES];
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.IsSelected() && f.IsActive())
 		{
 			int nn = f.Nodes();
@@ -388,12 +389,12 @@ double Post::IntegrateReferenceFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
 vec3d Post::IntegrateSurfaceNormal(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	vec3d res(0,0,0);
-	float vx[FEFace::MAX_NODES], vy[FEFace::MAX_NODES], vz[FEFace::MAX_NODES];
-	vec3f r[FEFace::MAX_NODES];
+	float vx[FSFace::MAX_NODES], vy[FSFace::MAX_NODES], vz[FSFace::MAX_NODES];
+	vec3f r[FSFace::MAX_NODES];
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
-		vec3d N = f.m_fn;
+		FSFace& f = mesh.Face(i);
+		vec3d N = to_vec3d(f.m_fn);
 
 		if (f.IsSelected() && f.IsActive())
 		{
@@ -448,8 +449,8 @@ double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	Post::FERefState& ref = *ps->m_ref;
 	double res = 0.0;
-	float v[FEElement::MAX_NODES];
-	vec3f r[FEElement::MAX_NODES];
+	float v[FSElement::MAX_NODES];
+	vec3f r[FSElement::MAX_NODES];
 	for (int i = 0; i<mesh.Elements(); ++i)
 	{
 		FEElement_& e = mesh.ElementRef(i);
@@ -500,8 +501,8 @@ double Post::IntegrateReferenceElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	double res = 0.0;
-	float v[FEElement::MAX_NODES];
-	vec3f r[FEElement::MAX_NODES];
+	float v[FSElement::MAX_NODES];
+	vec3f r[FSElement::MAX_NODES];
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
 		FEElement_& e = mesh.ElementRef(i);
@@ -510,7 +511,9 @@ double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 			int nn = e.Nodes();
 
 			// get the nodal values and coordinates
-			for (int j = 0; j < nn; ++j) v[j] = ps->m_NODE[e.m_node[j]].m_val;
+			for (int j = 0; j < nn; ++j) v[j] = ps->m_ElemData.value(i, j);
+//			for (int j = 0; j < nn; ++j) v[j] = ps->m_NODE[e.m_node[j]].m_val;
+
 			for (int j = 0; j < nn; ++j) r[j] = ps->m_NODE[e.m_node[j]].m_rt;
 			switch (e.Type())
 			{

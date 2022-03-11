@@ -25,18 +25,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
-class FENode;
-class FEMesh;
-class FEEdgeSet;
-class FENodeSet;
-class FESurface;
+class FSNode;
+class FSMesh;
+class FSEdgeSet;
+class FSNodeSet;
+class FSSurface;
 
 class FEMeshBuilder
 {
 public:
-	FEMeshBuilder(FEMesh& mesh);
+	FEMeshBuilder(FSMesh& mesh);
 
 	// Rebuild all mesh data
 	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false);
@@ -45,7 +45,7 @@ public:
 	void PartitionNode(int node);
 
 	// Partition all nodes in a node set
-	void PartitionNodeSet(FENodeSet* pg);
+	void PartitionNodeSet(FSNodeSet* pg);
 
 	// auto-partition the surface
 	void AutoPartition(double smoothingAngle);
@@ -56,11 +56,11 @@ public:
 	void PartitionElementSelection(int gid = -1);
 
 	// auto-partition selections
-	bool AutoPartitionEdges(double w, FEEdgeSet* pg);
-	bool AutoPartitionFaces(double w, FESurface* pg);
+	bool AutoPartitionEdges(double w, FSEdgeSet* pg);
+	bool AutoPartitionFaces(double w, FSSurface* pg);
 
 	// Add an (isolated) node. The node will be partitioned.
-	FENode* AddNode(const vec3d& r);
+	FSNode* AddNode(const vec3d& r);
 
 	// Remove nodes that are not attached to anything
 	void RemoveIsolatedNodes();
@@ -87,13 +87,13 @@ public:
 	void DeleteTaggedElements(int tag);
 
 	// delete all elements of a part
-	FEMesh* DeletePart(FEMesh& mesh, int partId);
+	FSMesh* DeletePart(FSMesh& mesh, int partId);
 
 	// Attach another mesh to this mesh
-	void Attach(FEMesh& fem);
+	void Attach(FSMesh& fem);
 
 	// Attach and weld another mesh to this mesh
-	void AttachAndWeld(FEMesh& mesh, double tol);
+	void AttachAndWeld(FSMesh& mesh, double tol);
 
 	void InvertTaggedElements(int ntag);
 	void InvertSelectedElements();
@@ -102,7 +102,7 @@ public:
 	void InvertSelectedFaces();
 
 	// detach the selected elements and create a new mesh
-	FEMesh* DetachSelectedMesh();
+	FSMesh* DetachSelectedMesh();
 
 	// remove duplicate edges
 	void RemoveDuplicateEdges();
@@ -122,5 +122,5 @@ private:
 	void AutoPartitionNodes();
 
 private:
-	FEMesh&	m_mesh;
+	FSMesh&	m_mesh;
 };

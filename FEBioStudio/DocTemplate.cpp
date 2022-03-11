@@ -124,14 +124,11 @@ void TemplateManager::AddTemplate(DocTemplate& tmp)
 
 bool TemplateManager::LoadTemplate(const char* sztmp)
 {
-	FILE* fp = fopen(sztmp, "rt");
-	if (fp == 0) return false;
-
 	XMLReader xml;
-	if (xml.Attach(fp) == 0) return false;
+	if (xml.Open(sztmp) == false) return false;
 
 	XMLTag tag;
-	if (xml.FindTag("PreView_Template", tag) == false) {fclose(fp); return false; }
+	if (xml.FindTag("PreView_Template", tag) == false) return false;
 
 	DocTemplate doc;
 
@@ -144,14 +141,11 @@ bool TemplateManager::LoadTemplate(const char* sztmp)
 		else if (tag == "file"       ) { tag.value(buf); doc.fileName = buf; }
 		else
 		{
-			fclose(fp);
 			return false;
 		}
 		++tag;
 	}
 	while (!tag.isend());
-
-	fclose(fp);
 
 	AddTemplate(doc);
 

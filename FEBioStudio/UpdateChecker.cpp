@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QCheckBox>
 #include "UpdateChecker.h"
+#include "ServerSettings.h"
 #include "version.h"
 
 #include <iostream>
@@ -115,9 +116,9 @@ void CUpdateWidget::checkForAppUpdate()
 	}
 
 	QUrl myurl;
-	myurl.setScheme(SCHEME);
-	myurl.setHost(UPDATE_URL);
-	myurl.setPort(PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(urlBase + ".xml");
 
 	QNetworkRequest request;
@@ -269,9 +270,9 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 void CUpdateWidget::checkForUpdaterUpdate()
 {
 	QUrl myurl;
-	myurl.setScheme(SCHEME);
-	myurl.setHost(UPDATE_URL);
-	myurl.setPort(PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(updaterBase + ".xml");
 
 	QNetworkRequest request;

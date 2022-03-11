@@ -113,14 +113,14 @@ public slots:
 	void OnCreateNewMeshLayer();
 	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
+	void OnDeleteNamedSelection();
 	void OnAddBC();
-	void OnAddSurfaceLoad();
-	void OnAddBodyLoad();
 	void OnAddInitialCondition();
 	void OnAddContact();
 	void OnAddConstraint();
 	void OnAddRigidConstraint();
 	void OnAddRigidConnector();
+	void OnAddRigidLoad();
 	void OnAddStep();
 	void OnHideObject();
 	void OnShowObject();
@@ -135,6 +135,7 @@ public slots:
 	void OnChangeDiscreteType();
 	void OnHidePart();
 	void OnSelectPartElements();
+	void OnSelectSurfaceFaces();
 	void OnShowPart();
 	void OnSelectPart();
 	void OnSelectSurface();
@@ -157,6 +158,8 @@ public slots:
 	void OnEditOutputLog();
 	void OnRemoveEmptySelections();
 	void OnRemoveAllSelections();
+	void OnAddMeshAdaptor();
+	void OnDeleteAllMeshAdaptors();
 	void OnChangeMaterial();
 	void OnMaterialHideParts();
 	void OnMaterialShowParts();
@@ -166,19 +169,22 @@ public slots:
 	void OnImportMaterials(QAction*);
 	void OnDeleteAllMaterials();
 	void OnSwapMasterSlave();
-    void OnApplyImageFilters();
-	void OnAddMeanImageFilter();
-	void OnAddGaussianImageFilter();
-    void OnAddThresholdImageFilter();
 	void OnDeleteAllBC();
 	void OnDeleteAllLoads();
 	void OnDeleteAllIC();
 	void OnDeleteAllContact();
 	void OnDeleteAllConstraints();
-	void OnDeleteAllRigidConstraints();
-	void OnDeleteAllRigidConnectors();
+	void OnDeleteAllRigidComponents();
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
+
+    // Image filters
+    void OnApplyImageFilters();
+    // Custom Image filters
+	void OnAddThresholdImageFilter();
+    // SITK Image Filters
+    void OnAddMeanImageFilter();
+	void OnAddGaussianImageFilter();
 
 signals:
 	void currentObjectChanged(FSObject* po);

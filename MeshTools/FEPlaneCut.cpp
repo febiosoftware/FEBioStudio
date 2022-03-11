@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEModifier.h"
 #include <MeshLib/MeshMetrics.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 const int lut[14][3][4] = {
@@ -65,7 +66,7 @@ void FEPlaneCut::SetPlaneCoefficients(double a[4])
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEPlaneCut::Apply(FEMesh* pm)
+FSMesh* FEPlaneCut::Apply(FSMesh* pm)
 {
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_TRI3) == false) return 0;
@@ -87,7 +88,7 @@ FEMesh* FEPlaneCut::Apply(FEMesh* pm)
 	const int NE = pm->Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& ei = pm->Element(i);
+		FSElement& ei = pm->Element(i);
 		ei.m_ntag = 0;
 		double v[3];
 		v[0] = val[ei.m_node[0]]; 
@@ -146,7 +147,7 @@ FEMesh* FEPlaneCut::Apply(FEMesh* pm)
 	int NE2 = 0;
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& ei = pm->Element(i);
+		FSElement& ei = pm->Element(i);
 		if ((ei.m_ntag > 0) && (ei.m_ntag < 7)) NE2 += 3;
 		else if (ei.m_ntag > 7) NE2 += 2;
 		else NE2++;
@@ -159,7 +160,7 @@ FEMesh* FEPlaneCut::Apply(FEMesh* pm)
 	EEL.resize(NE);
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& ei = pm->Element(i);
+		FSElement& ei = pm->Element(i);
 		for (int j=0; j<3; ++j)
 		{
 			int jp1 = (j+1)%3;
@@ -197,7 +198,7 @@ FEMesh* FEPlaneCut::Apply(FEMesh* pm)
 	}
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	int N1 = (int) EL.size();		// number of new nodes (i.e. number of cut edges)
 	pnew->Create(NN + N1, NE2);
 
@@ -207,7 +208,7 @@ FEMesh* FEPlaneCut::Apply(FEMesh* pm)
 	// add new nodes
 	for (int i=0; i<N1; ++i)
 	{
-		FENode& ni = pnew->Node(i + NN);
+		FSNode& ni = pnew->Node(i + NN);
 		vec3d& r0 = pm->Node(EL[i].n0).r;
 		vec3d& r1 = pm->Node(EL[i].n1).r;
 		ni.r = r0 + (r1 - r0)*EL[i].w;
@@ -217,7 +218,7 @@ FEMesh* FEPlaneCut::Apply(FEMesh* pm)
 	int ne = 0;
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& es = pm->Element(i);
+		FSElement& es = pm->Element(i);
 
 		// get the node numbers
 		int n[6];
@@ -232,7 +233,7 @@ FEMesh* FEPlaneCut::Apply(FEMesh* pm)
 		{
 			const int *lj = lut[es.m_ntag][j];
 			if (lj[0]==-1) break;
-			FEElement& ed = pnew->Element(ne++);
+			FSElement& ed = pnew->Element(ne++);
 			ed = es;
 			ed.m_node[0] = n[lj[0]]; assert(ed.m_node[0] != -1);
 			ed.m_node[1] = n[lj[1]]; assert(ed.m_node[1] != -1);

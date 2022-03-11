@@ -131,7 +131,7 @@ bool FENikeImport::ReadMaterialSection()
 		}
 
 		// add a material to the scene
-		FEMaterial mat;
+		Material mat;
 		m_fem->AddMaterial(mat);
 	}
 
@@ -151,7 +151,7 @@ bool FENikeImport::ReadGeometrySection()
 	float x, y, z;
 	for (i=0; i<m_nn; ++i)
 	{
-		FENode& n = m_pm->Node(i);
+		FSNode& n = m_pm->Node(i);
 		if (get_line(szline) == 0) return errf("failed data for node", i+1);
 		sscanf(szline, "%*8d%*5d%g%g%g", &x, &y, &z);
 		n.r = vec3d(x,y,z);
@@ -163,7 +163,7 @@ bool FENikeImport::ReadGeometrySection()
 	int ne = 0;
 	for (i=0; i<m_nhel; ++i)
 	{
-		FEElement& el = static_cast<FEElement&>(m_pm->ElementRef(ne++));
+		FSElement& el = static_cast<FSElement&>(m_pm->ElementRef(ne++));
 
 		if (get_line(szline) == 0) return errf("failed data for node", i+1);
 		sscanf(szline, "%*8d%5d%8d%8d%8d%8d%8d%8d%8d%8d", &nm, n,n+1,n+2,n+3,n+4,n+5,n+6,n+7);
@@ -204,7 +204,7 @@ bool FENikeImport::ReadGeometrySection()
 	// read shell elemets
 	for (i=0; i<m_nsel; ++i)
 	{
-		FEElement& el = static_cast<FEElement&>(m_pm->ElementRef(ne++));
+		FSElement& el = static_cast<FSElement&>(m_pm->ElementRef(ne++));
 
 		if (get_line(szline) == 0) return errf("failed data for shell element", i+1);
 		sscanf(szline, "%*8d%5d%8d%8d%8d%8d", &nm, n,n+1,n+2,n+3);

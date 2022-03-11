@@ -3,56 +3,78 @@
 
 //===================================================================
 // Materials used by discrete element sets
-class FEDiscreteMaterial : public FEMaterial
+class FSDiscreteMaterial : public FSMaterial
 {
 public:
-	FEDiscreteMaterial(int ntype);
+	FSDiscreteMaterial(int ntype);
 };
 
 //===================================================================
 // Linear spring
-class FELinearSpringMaterial : public FEDiscreteMaterial
+class FSLinearSpringMaterial : public FSDiscreteMaterial
 {
 public:
-	FELinearSpringMaterial();
+	FSLinearSpringMaterial();
 
 	void SetSpringConstant(double E);
 
-	DECLARE_REGISTERED(FELinearSpringMaterial);
+	DECLARE_REGISTERED(FSLinearSpringMaterial);
 };
 
 //===================================================================
 // Nonlinear spring
-class FENonLinearSpringMaterial : public FEDiscreteMaterial
+class FSNonLinearSpringMaterial : public FSDiscreteMaterial
 {
 public:
-	FENonLinearSpringMaterial();
-	DECLARE_REGISTERED(FENonLinearSpringMaterial);
+	FSNonLinearSpringMaterial();
+	DECLARE_REGISTERED(FSNonLinearSpringMaterial);
 };
 
 //===================================================================
 // Hill-contractile
-class FEHillContractileMaterial : public FEDiscreteMaterial
+class FSHillContractileMaterial : public FSDiscreteMaterial
 {
 public:
-	FEHillContractileMaterial();
-	DECLARE_REGISTERED(FEHillContractileMaterial);
+	FSHillContractileMaterial();
+	DECLARE_REGISTERED(FSHillContractileMaterial);
 };
 
 //===================================================================
 // This is not a material, but currently there is no mechanism to define 
 // properties in anything except a material, so here we are. 
-class FE1DFunction : public FEMaterial
+class FS1DFunction : public FSMaterial
 {
 public:
-	FE1DFunction(int ntype) : FEMaterial(ntype) {}
+	FS1DFunction(int ntype) : FSMaterial(ntype) {}
 };
 
-class FE1DPointFunction : public FE1DFunction
+class FS1DPointFunction : public FS1DFunction
 {
 public:
-	FE1DPointFunction();
-	FELoadCurve* GetPointCurve();
-	void SetPointCurve(FELoadCurve& lc);
-	DECLARE_REGISTERED(FE1DPointFunction);
+	FS1DPointFunction();
+	LoadCurve* GetPointCurve();
+	void SetPointCurve(LoadCurve& lc);
+	DECLARE_REGISTERED(FS1DPointFunction);
+
+private:
+	LoadCurve	m_lc;
+};
+
+//===================================================================
+class FEBioDiscreteMaterial : public FSDiscreteMaterial
+{
+public:
+	FEBioDiscreteMaterial();
+	~FEBioDiscreteMaterial();
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+	bool UpdateData(bool bsave) override;
+
+	// return a string for the material type
+	const char* GetTypeString() const override;
+	void SetTypeString(const std::string& s) override;
+
+	DECLARE_REGISTERED(FEBioDiscreteMaterial);
 };

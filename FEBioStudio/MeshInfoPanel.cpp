@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <GeomLib/GObject.h>
 #include "units.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 CMeshInfoPanel::CMeshInfoPanel(QWidget* parent) : QWidget(parent)
 {
@@ -84,7 +84,7 @@ void CMeshInfoPanel::setInfo(GObject* po)
 		BOX box = po->GetGlobalBox();
 		setDimensions(box.Width(), box.Height(), box.Depth());
 
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm) setMeshInfo(pm->Nodes(), pm->Faces(), pm->Elements());
 		else setMeshInfo(0, 0, 0);
 	}
@@ -117,7 +117,7 @@ void CSurfaceMeshInfoPanel::setInfo(int nodes, int edges, int faces)
 	m_faces->setText(QString::number(faces));
 }
 
-void CSurfaceMeshInfoPanel::setInfo(const FESurfaceMesh* pm)
+void CSurfaceMeshInfoPanel::setInfo(const FSSurfaceMesh* pm)
 {
 	if (pm)
 	{
@@ -148,7 +148,7 @@ void CPartInfoPanel::setInfo(GPart* pg)
 	if (pg == nullptr) { setPartInfo(0, 0); return; }
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	if (po == nullptr) { setPartInfo(0, 0); return; }
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) { setPartInfo(0, 0); return; }
 
 	int nsolid = 0;
@@ -156,7 +156,7 @@ void CPartInfoPanel::setInfo(GPart* pg)
 	int pid = pg->GetLocalID();
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_gid == pid)
 		{
 			if (el.IsSolid()) nsolid++;

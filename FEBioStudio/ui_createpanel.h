@@ -43,7 +43,7 @@ SOFTWARE.*/
 #include <QListWidget>
 #include "PropertyListForm.h"
 #include "InputWidgets.h"
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include "ToolBox.h"
@@ -220,8 +220,8 @@ CNewDiscreteSetDlg::CNewDiscreteSetDlg(QWidget* parent) : QDialog(parent)
 	form->addRow("Name:", m_edit = new QLineEdit);
 	form->addRow("Type:", m_combo = new QComboBox);
 
-	m_combo->addItem("Linear");
-	m_combo->addItem("Nonlinear");
+	m_combo->addItem("Linear spring");
+	m_combo->addItem("Nonlinear spring");
 	m_combo->addItem("Hill");
 
 	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -322,7 +322,7 @@ FSObject* CCreateLoftSurface::Create()
 	FELoftMesher loft;
 	loft.setElementType(nelem);
 	loft.setDivisions(m_divs->value());
-	FESurfaceMesh* mesh = loft.Apply(curves);
+	FSSurfaceMesh* mesh = loft.Apply(curves);
 
 	GSurfaceMeshObject* po = new GSurfaceMeshObject(mesh);
 

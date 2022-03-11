@@ -136,6 +136,9 @@ public:
 	CColorButton *bgCol1, *bgCol2;
 	CFontWidget* pfont;
 	QDialogButtonBox* buttonBox;
+	QComboBox* bglinemode;
+	QSpinBox* bglinesize;
+	CColorButton* bglinecol;
 
 public:
 	void setupUi(QDialog* parent)
@@ -180,9 +183,16 @@ public:
 		pbgstyle->addItems(items);
 
 		pform->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-		pform->addRow("Background style:", pbgstyle);
+		pform->addRow("Fill mode:", pbgstyle);
 		pform->addRow("Color1:", bgCol1 = new CColorButton);
 		pform->addRow("Color2:", bgCol2 = new CColorButton);
+
+		bglinemode = new QComboBox;
+		bglinemode->addItems(QStringList() << "None" << "Solid");
+
+		pform->addRow("Line mode:", bglinemode);
+		pform->addRow("Line width:", bglinesize = new QSpinBox); bglinesize->setRange(1, 10);
+		pform->addRow("Line color:", bglinecol = new CColorButton);
 		pg->setLayout(pform);
 		textPageLayout->addWidget(pg);
 
@@ -222,6 +232,10 @@ CDlgBoxProps::CDlgBoxProps(GLWidget* widget, QWidget* parent) : QDialog(parent),
 	ui->bgCol1->setColor(toQColor(pb->get_bg_color(0)));
 	ui->bgCol2->setColor(toQColor(pb->get_bg_color(1)));
 
+	ui->bglinemode->setCurrentIndex(pb->get_bg_line_style());
+	ui->bglinesize->setValue(pb->get_bg_line_size());
+	ui->bglinecol->setColor(toQColor(pb->get_bg_line_color()));
+
 	QFont font = pb->get_font();
 	ui->pfont->setFont(font, toQColor(pb->get_fg_color()));
 }
@@ -244,6 +258,9 @@ void CDlgBoxProps::apply()
 
 	pb->set_bg_style(ui->pbgstyle->currentIndex());
 	pb->set_bg_color(toGLColor(ui->bgCol1->color()), toGLColor(ui->bgCol2->color()));
+	pb->set_bg_line_style(ui->bglinemode->currentIndex());
+	pb->set_bg_line_size(ui->bglinesize->value());
+	pb->set_bg_line_color(toGLColor(ui->bglinecol->color()));
 
 	QFont font = ui->pfont->getFont();
 	pb->set_font(font);
@@ -280,6 +297,13 @@ public:
 	QComboBox* orientation;
 	QDoubleSpinBox* plineThick;
 
+	// background
+	QComboBox* pbgstyle;
+	CColorButton* bgCol1, * bgCol2;
+	QComboBox* bglinemode;
+	QSpinBox* bglinesize;
+	CColorButton* bglinecol;
+
 public:
 	void setupUi(QDialog* parent)
 	{
@@ -314,6 +338,28 @@ public:
 				labelsPageLayout->addLayout(pol);
 				plabelFont = new CFontWidget;
 				labelsPageLayout->addWidget(plabelFont);
+
+				// background props
+				QGroupBox* pg = new QGroupBox("Background");
+				QFormLayout* pform = new QFormLayout;
+				QStringList items; items << "None" << "Color 1" << "Color 2" << "Horizontal gradient" << "Vertical gradient";
+				pbgstyle = new QComboBox;
+				pbgstyle->addItems(items);
+
+				bglinemode = new QComboBox;
+				bglinemode->addItems(QStringList() << "None" << "Solid");
+				
+				pform->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+				pform->addRow("Fill mode:", pbgstyle);
+				pform->addRow("Color1:", bgCol1 = new CColorButton);
+				pform->addRow("Color2:", bgCol2 = new CColorButton);
+
+				pform->addRow("Line mode:", bglinemode);
+				pform->addRow("Line width:", bglinesize = new QSpinBox); bglinesize->setRange(1, 10);
+				pform->addRow("Line color:", bglinecol = new CColorButton);
+				pg->setLayout(pform);
+				labelsPageLayout->addWidget(pg);
+
 			labelsPage->setLayout(labelsPageLayout);
 
 		// Position page
@@ -351,6 +397,14 @@ CDlgLegendProps::CDlgLegendProps(GLWidget* widget, CMainWindow* parent) : QDialo
 	ui->placement->setCurrentIndex(pb->GetLabelPosition());
 
 	ui->ppos->setPosition(widget->x(), widget->y(), widget->w(), widget->h());
+
+	ui->pbgstyle->setCurrentIndex(pb->get_bg_style());
+	ui->bgCol1->setColor(toQColor(pb->get_bg_color(0)));
+	ui->bgCol2->setColor(toQColor(pb->get_bg_color(1)));
+
+	ui->bglinemode->setCurrentIndex(pb->get_bg_line_style());
+	ui->bglinesize->setValue(pb->get_bg_line_size());
+	ui->bglinecol->setColor(toQColor(pb->get_bg_line_color()));
 }
 
 void CDlgLegendProps::apply()
@@ -366,6 +420,12 @@ void CDlgLegendProps::apply()
 	QFont labelFont = ui->plabelFont->getFont();
 	pb->set_font(labelFont);
 	pb->set_fg_color(toGLColor(ui->plabelFont->getFontColor()));
+
+	pb->set_bg_style(ui->pbgstyle->currentIndex());
+	pb->set_bg_color(toGLColor(ui->bgCol1->color()), toGLColor(ui->bgCol2->color()));
+	pb->set_bg_line_style(ui->bglinemode->currentIndex());
+	pb->set_bg_line_size(ui->bglinesize->value());
+	pb->set_bg_line_color(toGLColor(ui->bglinecol->color()));
 
 	pb->SetLineThickness((float)ui->plineThick->value());
 

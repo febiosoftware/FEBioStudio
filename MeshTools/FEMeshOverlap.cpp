@@ -30,9 +30,9 @@ SOFTWARE.*/
 #include <PostLib/tools.h>
 #include <GeomLib/GObject.h>
 using namespace MeshTools;
-//using namespace std;
+using namespace std;
 
-std::vector<int> MeshTools::FindSurfaceOverlap(FEMesh* mesh, FEMeshBase* trg)
+std::vector<int> MeshTools::FindSurfaceOverlap(FSMesh* mesh, FSMeshBase* trg)
 {
 	// loop over all of the surface nodes
 	mesh->TagAllNodes(0);
@@ -41,18 +41,18 @@ std::vector<int> MeshTools::FindSurfaceOverlap(FEMesh* mesh, FEMeshBase* trg)
 	vector<vec3d> normalList(NN, vec3d(0, 0, 0));
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 		int nf = f.Nodes();
 		for (int j = 0; j < nf; ++j)
 		{
-			normalList[f.n[j]] += f.m_nn[j];
+			normalList[f.n[j]] += to_vec3d(f.m_nn[j]);
 			mesh->Node(f.n[j]).m_ntag = 1;
 		}
 	}
 
 	for (int i = 0; i < mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.m_ntag == 1)
 		{
 			// convert between coordinate systems
@@ -71,10 +71,10 @@ std::vector<int> MeshTools::FindSurfaceOverlap(FEMesh* mesh, FEMeshBase* trg)
 			bool bfound = false;
 			float Dmin = 0.f;
 			bool backFacing = false;
-			vec3f y[FEFace::MAX_NODES], q;
+			vec3f y[FSFace::MAX_NODES], q;
 			for (int n = 0; n < trg->Faces(); ++n)
 			{
-				FEFace& ft = trg->Face(n);
+				FSFace& ft = trg->Face(n);
 
 				for (int m = 0; m < ft.Nodes(); ++m) y[m] = to_vec3f(trg->Node(ft.n[m]).r);
 
@@ -108,7 +108,7 @@ std::vector<int> MeshTools::FindSurfaceOverlap(FEMesh* mesh, FEMeshBase* trg)
 	vector<int> faceList;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 		int nf = f.Nodes();
 		for (int j = 0; j < nf; ++j)
 		{

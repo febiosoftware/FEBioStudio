@@ -94,7 +94,7 @@ GLTensorPlot::GLTensorPlot()
 	m_range.mintype = RANGE_DYNAMIC;
 	m_range.valid = false;
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
 	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
 	bar->copy_label(szname);
 	bar->ShowTitle(true);
@@ -208,7 +208,7 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (m_map.States() == 0)
 	{
@@ -448,11 +448,11 @@ void GLTensorPlot::Render(CGLContext& rc)
 	gluQuadricNormals(pglyph, GLU_SMOOTH);
 
 	CGLModel* mdl = GetModel();
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 
 	srand(m_seed);
 
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	float scale = 0.02f*m_scale*pfem->GetBoundingBox().Radius();
@@ -478,7 +478,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
 			FEElement_& e = pm->ElementRef(i);
-			FEMaterial* mat = ps->GetMaterial(e.m_MatID);
+			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
 				e.m_ntag = 1;
@@ -551,7 +551,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
 			FEElement_& e = pm->ElementRef(i);
-			FEMaterial* mat = ps->GetMaterial(e.m_MatID);
+			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
 				int n = e.Nodes();
@@ -564,7 +564,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 			// make sure no vector is drawn for hidden nodes
 			for (int i = 0; i < pm->Nodes(); ++i)
 			{
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 				if (node.IsVisible() == false) node.m_ntag = 0;
 			}
 		}
@@ -602,7 +602,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if ((frand() <= m_dens) && node.m_ntag)
 			{
 				vec3d r = node.r;
@@ -660,7 +660,7 @@ void GLTensorPlot::RenderArrows(GLTensorPlot::TENSOR& t, float scale, GLUquadric
 		float r1 = L*0.15;
 
 		vec3f v = t.r[i];
-		quatd q = quatd(vec3f(0,0,1), v);
+		quatd q = quatd(vec3d(0,0,1), to_vec3d(v));
 		float w = q.GetAngle();
 		if (fabs(w) > 1e-6)
 		{
@@ -691,7 +691,7 @@ void GLTensorPlot::RenderLines(GLTensorPlot::TENSOR& t, float scale, GLUquadricO
 		float L = (m_bnormalize ? scale : scale*t.l[i]);
 
 		vec3f v = t.r[i];
-		quatd q = quatd(vec3f(0, 0, 1), v);
+		quatd q = quatd(vec3d(0, 0, 1), to_vec3d(v));
 		float w = q.GetAngle();
 		if (fabs(w) > 1e-6)
 		{

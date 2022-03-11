@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <stack>
 #include <algorithm>
 #include <MeshLib/quad8.h>
-//using namespace std;
+#include <assert.h>
 
 using std::stack;
 
@@ -49,6 +49,14 @@ void GMesh::Create(int nodes, int faces, int edges)
 	m_Node.resize(nodes);
 	m_Face.resize(faces);
 	m_Edge.resize(edges);
+}
+
+//-----------------------------------------------------------------------------
+void GMesh::Clear()
+{
+	m_Node.clear();
+	m_Edge.clear();
+	m_Face.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -229,6 +237,24 @@ void GMesh::AddFace(vec3d* r, int gid, int smoothId, bool bext)
 	n[2] = AddNode(r[2]);
 
 	AddFace(n, 3, gid, smoothId, bext);
+}
+
+//-----------------------------------------------------------------------------
+void GMesh::AddFace(vec3f r[3], vec3f n[3], GLColor c)
+{
+	int n0 = AddNode(to_vec3d(r[0]));
+	int n1 = AddNode(to_vec3d(r[1]));
+	int n2 = AddNode(to_vec3d(r[2]));
+
+	FACE face;
+	face.n[0] = n0;
+	face.n[1] = n1;
+	face.n[2] = n2;
+	face.nn[0] = to_vec3d(n[0]);
+	face.nn[1] = to_vec3d(n[1]);
+	face.nn[2] = to_vec3d(n[2]);
+	face.c[0] = face.c[1] = face.c[2] = c;
+	m_Face.push_back(face);
 }
 
 //-----------------------------------------------------------------------------

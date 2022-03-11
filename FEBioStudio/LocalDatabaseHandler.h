@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <string>
 #include <string.h>
 #include <vector>
-#include <unordered_set>
+#include <set>
 #include <map>
 #include <QList>
 #include <QtGlobal>
@@ -67,8 +67,9 @@ public:
 
 	QList<QList<QVariant>> GetProjectFileInfo(int projID);
 
-	std::unordered_set<int> FullTextSearch(QString term);
-	std::unordered_set<int> FileSearch(QString term);
+	std::set<int> ProjectSearch(QString dataType, QString term);
+	std::set<int> FileSearch(QString dataType, QString term);
+    std::vector<std::pair<QString, QStringList>> GetAdvancedSearchInfo();
 
 	QString ProjectNameFromID(int ID);
 	QString FilePathFromID(int ID, int type);

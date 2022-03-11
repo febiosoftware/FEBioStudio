@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "PointCloud3d.h"
 #include "BivariatePolynomialSpline.h"
 #include "Quadric.h"
+using namespace std;
 
 //--------------------------------------------------------------------------------------
 FEAxesCurvature::FEAxesCurvature() : FEModifier("Axes from Curvature")
@@ -74,9 +75,9 @@ void FEAxesCurvature::clearData()
 }
 
 //--------------------------------------------------------------------------------------
-FEMesh* FEAxesCurvature::Apply(FEMesh* pm)
+FSMesh* FEAxesCurvature::Apply(FSMesh* pm)
 {
-    FEMesh* pnm = new FEMesh(*pm);
+    FSMesh* pnm = new FSMesh(*pm);
     
     bool apply = GetBoolValue(1);
     bool part = GetBoolValue(2);
@@ -98,7 +99,7 @@ FEMesh* FEAxesCurvature::Apply(FEMesh* pm)
 }
 
 //--------------------------------------------------------------------------------------
-void FEAxesCurvature::Curvature(FEMesh* pm)
+void FEAxesCurvature::Curvature(FSMesh* pm)
 {
     // option 0 = spline surface
     // option 1 = quadric surface
@@ -109,7 +110,7 @@ void FEAxesCurvature::Curvature(FEMesh* pm)
     
     for (int i = 0; i<numFaces; ++i)
     {
-        FEFace& face = pm->Face(i);
+        FSFace& face = pm->Face(i);
         if (face.IsSelected())
             fdata.push_back(face);
     }
@@ -119,7 +120,7 @@ void FEAxesCurvature::Curvature(FEMesh* pm)
     // store element attached to face; store neighboring faces; store face nodes
     for (int i = 0; i<ne1; ++i)
     {
-        FEFace face = fdata[i];
+        FSFace face = fdata[i];
         // get element to which this face belongs
         int iel = face.m_elem[0].eid;
         int faceEdges = face.Edges();
@@ -133,7 +134,7 @@ void FEAxesCurvature::Curvature(FEMesh* pm)
         //store neighboring faces to a face
         for (int j = 0; j<faceEdges; ++j)
         {
-			FEFace* pfj = pm->FacePtr(face.m_nbr[j]);
+			FSFace* pfj = pm->FacePtr(face.m_nbr[j]);
             if (pfj && pfj->IsSelected())
             {
                 temp.push_back(face.m_nbr[j]);
@@ -294,8 +295,8 @@ void FEAxesCurvature::Curvature(FEMesh* pm)
                     // find curvature at this location
                     vec2d kappa;
                     vec3d theta[2];
-                    vec3d faceNorm = fdata[i].m_fn;
-                    spline.SurfaceCurvature(uv.x, uv.y, faceNorm, kappa, theta);
+                    vec3d faceNorm = to_vec3d(fdata[i].m_fn);
+                    spline.SurfaceCurvature(uv.x(), uv.y(), faceNorm, kappa, theta);
                     vec3d xn = (theta[0] ^ theta[1]).Normalize();
                     mat3d X(theta[0].x, theta[1].x, xn.x,
                             theta[0].y, theta[1].y, xn.y,
@@ -334,7 +335,7 @@ void FEAxesCurvature::Curvature(FEMesh* pm)
                     // get centroid of face
                     vec3d c = ctr[i];
                     
-                    vec3d faceNorm = fdata[i].m_fn;
+                    vec3d faceNorm = to_vec3d(fdata[i].m_fn);
                     
                     // get closest point on quadric (using norm)
                     vec3d p = quadric.ClosestPoint(c,faceNorm);
@@ -367,7 +368,7 @@ void FEAxesCurvature::Curvature(FEMesh* pm)
 }
 
 //--------------------------------------------------------------------------------------
-void FEAxesCurvature::ApplyCurvature(FEMesh* pm)
+void FEAxesCurvature::ApplyCurvature(FSMesh* pm)
 {
     int numElements = (int)fel.size();
     
@@ -379,7 +380,7 @@ void FEAxesCurvature::ApplyCurvature(FEMesh* pm)
         vec3d b = vec3d(eigenVectors(0,1),eigenVectors(1,1), eigenVectors(2,1));
         vec3d c = vec3d(eigenVectors(0,2),eigenVectors(1,2), eigenVectors(2,2));
         
-        FEElement& el = pm->Element(fel[i]);
+        FSElement& el = pm->Element(fel[i]);
         mat3d& m = el.m_Q;
         m.zero();
         m[0][0] = a.x; m[0][1] = b.x; m[0][2] = c.x;
@@ -391,7 +392,7 @@ void FEAxesCurvature::ApplyCurvature(FEMesh* pm)
 }
 
 //--------------------------------------------------------------------------------------
-void FEAxesCurvature::ApplyCurvaturePart(FEMesh* pm)
+void FEAxesCurvature::ApplyCurvaturePart(FSMesh* pm)
 {
     //Find the face with smallest distance between the face centroid and element centroid
     //of element not on surface in same part. Apply material axes of this closest face's element

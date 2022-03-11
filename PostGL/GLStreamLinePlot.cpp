@@ -74,7 +74,7 @@ CGLStreamLinePlot::CGLStreamLinePlot()
 
 	m_Col.SetDivisions(10);
 
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::ORIENT_HORIZONTAL);
 	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
 	bar->SetType(GLLegendBar::GRADIENT);
 	bar->copy_label(szname);
@@ -171,8 +171,8 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 	m_lastdt = dt;
 
 	CGLModel* mdl = GetModel();
-	FEMeshBase* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FSMeshBase* pm = mdl->GetActiveMesh();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); m_prob.clear(); }
 
@@ -198,7 +198,7 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 
 	if (m_prob.empty())
 	{
-		FEMeshBase& mesh = *pfem->GetFEMesh(0);
+		FSMeshBase& mesh = *pfem->GetFEMesh(0);
 		int NF = mesh.Faces();
 		m_prob.resize(NF);
 		for (int i=0; i<NF; ++i) m_prob[i] = frand();
@@ -265,7 +265,7 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 vec3f CGLStreamLinePlot::Velocity(const vec3f& r, bool& ok)
 {
 	vec3f v(0.f, 0.f, 0.f);
-	vec3f ve[FEElement::MAX_NODES];
+	vec3f ve[FSElement::MAX_NODES];
 	FEPostMesh& mesh = *GetModel()->GetActiveMesh();
 	int nelem;
 	double q[3];
@@ -323,7 +323,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 #pragma omp parallel for shared (NF)
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		// evaluate the average velocity at this face
 		int nf = f.Nodes();
@@ -355,7 +355,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 
 			vec3f vc = vf;
 
-			vec3f v[FEElement::MAX_NODES];
+			vec3f v[FSElement::MAX_NODES];
 			bool ok;
 			do
 			{

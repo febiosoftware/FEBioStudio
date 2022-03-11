@@ -27,7 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include <QtCore/QVariant>
 #include <GLWLib/convert.h>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
+#include <FECore/mat3d.h>
 
 class Param;
 
@@ -51,7 +52,10 @@ public:
 		ColorMap,
 		Vec3,
 		Mat3,
+		Mat3s,
 		Vec2i,
+		Std_Vector_Int,
+		Std_Vector_Double,
 
 		// from PostView
 		DataScalar,
@@ -176,9 +180,17 @@ public:
 	void SetPropertyValue(int i, const QVariant& v);
 };
 
+QString Vec2dToString(const vec2d& r);
 QString Vec3dToString(const vec3d& r);
+vec2d StringToVec2d(const QString& s);
 vec3d StringToVec3d(const QString& s);
 mat3d StringToMat3d(const QString& s);
+mat3ds StringToMat3ds(const QString& s);
 QString Mat3dToString(const mat3d& a);
+QString Mat3dsToString(const mat3ds& a);
 QString Vec2iToString(const vec2i& r);
 vec2i StringToVec2i(const QString& s);
+std::vector<int> StringToVectorInt(const QString& s);
+QString VectorIntToString(const std::vector<int>& v);
+std::vector<double> StringToVectorDouble(const QString& s);
+QString VectorDoubleToString(const std::vector<double>& v);

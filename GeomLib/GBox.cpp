@@ -39,7 +39,7 @@ GBox::GBox() : GPrimitive(GBOX)
 	AddDoubleParam(m_h, "h", "Height (Y)");
 	AddDoubleParam(m_d, "d", "Depth (Z)" );
 	
-	SetFEMesher(new FEBox(this));
+	SetFEMesher(new FEBoxMesher(this));
 
 	Create();
 }
@@ -47,7 +47,7 @@ GBox::GBox() : GPrimitive(GBOX)
 //-----------------------------------------------------------------------------
 FEMesher* GBox::CreateDefaultMesher()
 {
-	return new FEBox(this);
+	return new FEBoxMesher(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ void GBox::Create()
 	// 3. build the parts
 	//-------------------
 	assert(m_Part.empty());
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
@@ -113,7 +113,7 @@ void GBox::Create()
 		{ 3, 8, 7,11},{ 3, 0, 1, 2},{ 4, 5, 6, 7}
 	};
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<6; ++i)
 	{
 		edge.resize(4);

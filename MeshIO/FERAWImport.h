@@ -32,10 +32,10 @@ SOFTWARE.*/
 //! This class imports an 8-bit 3D RAW image file and converts it to a FE model
 //! by making each voxel a hex-element. Different gray scales are assigned to 
 //! different partitions.
-class FERAWImport : public FEFileImport
+class FERAWImport : public FSFileImport
 {
 public:
-	FERAWImport(FEProject& prj);
+	FERAWImport(FSProject& prj);
 	~FERAWImport();
 
 	//! Set the image dimensions
@@ -51,5 +51,5 @@ protected:
 	int	m_nx, m_ny, m_nz;		//!< image dimensions
 	double	m_x0, m_y0, m_z0;	//!< position of box
 	double	m_w, m_h, m_d;		//!< size of box
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 };

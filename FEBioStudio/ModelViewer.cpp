@@ -48,6 +48,8 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include "DocManager.h"
+#include "DlgAddPhysicsItem.h"
+#include <FEBioLink/FEBioInterface.h>
 
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
@@ -312,15 +314,11 @@ void CModelViewer::on_selectButton_clicked()
 		GObject* pm = dynamic_cast<GObject*>(po);
 		if (pm->IsVisible() && !pm->IsSelected()) pcmd = new CCmdSelectObject(pdoc->GetGModel(), pm, false);
 	}
-	else if (dynamic_cast<FEModelComponent*>(po))
+	else if (dynamic_cast<IHasItemList*>(po))
 	{
-		FEModelComponent* pbc = dynamic_cast<FEModelComponent*>(po);
-		if (dynamic_cast<FEConstBodyForce*>(pbc) == 0)
-		{
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-			else SelectItemList(pitem);
-		}
+		IHasItemList* pil = dynamic_cast<IHasItemList*>(po);
+		FEItemListBuilder* pitem = pil->GetItemList();
+		if (pitem) SelectItemList(pitem);
 	}
 	else if (dynamic_cast<FEItemListBuilder*>(po))
 	{
@@ -351,20 +349,13 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<GDiscreteObject*>(po))
 	{
 		GDiscreteObject* ps = dynamic_cast<GDiscreteObject*>(po);
-		GModel& fem = pdoc->GetFEModel()->GetModel();
+		GModel& fem = pdoc->GetFSModel()->GetModel();
 		int n = fem.FindDiscreteObjectIndex(ps);
 		pcmd = new CCmdSelectDiscrete(&fem, &n, 1, false);
 	}
-	else if (dynamic_cast<FESoloInterface*>(po))
+	else if (dynamic_cast<FSPairedInterface*>(po))
 	{
-		FESoloInterface* pci = dynamic_cast<FESoloInterface*>(po);
-		FEItemListBuilder* pl = pci->GetItemList();
-		if (pl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(pl);
-	}
-	else if (dynamic_cast<FEPairedInterface*>(po))
-	{
-		FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(po);
+		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
 		FEItemListBuilder* pml = pci->GetSecondarySurface();
 		FEItemListBuilder* psl = pci->GetPrimarySurface();
 
@@ -403,7 +394,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	for (int i = 0; i<n; ++i, ++it) pi[i] = *it;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel* mdl = pdoc->GetGModel();
 
 	switch (pitem->Type())
@@ -417,9 +408,9 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 			pdoc->SetSelectionMode(SELECT_OBJECT);
 			pdoc->SetItemMode(ITEM_ELEM);
 
-			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
+			FSGroup* pg = dynamic_cast<FSGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Elements"); pcmd = pcg;
-			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
+			FSMesh* pm = dynamic_cast<FSMesh*>(pg->GetMesh());
 			pcg->AddCommand(new CCmdSelectObject(mdl, pg->GetGObject(), badd));
 			pcg->AddCommand(new CCmdSelectElements(pm, pi, n, badd));
 		}
@@ -429,9 +420,9 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 			pdoc->SetSelectionMode(SELECT_OBJECT);
 			pdoc->SetItemMode(ITEM_FACE);
 
-			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
+			FSGroup* pg = dynamic_cast<FSGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Faces"); pcmd = pcg;
-			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
+			FSMesh* pm = dynamic_cast<FSMesh*>(pg->GetMesh());
 			pcg->AddCommand(new CCmdSelectObject(mdl, pg->GetGObject(), badd));
 			pcg->AddCommand(new CCmdSelectFaces(pm, pi, n, badd));
 		}
@@ -441,9 +432,9 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 			pdoc->SetSelectionMode(SELECT_OBJECT);
 			pdoc->SetItemMode(ITEM_NODE);
 
-			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
+			FSGroup* pg = dynamic_cast<FSGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Nodes"); pcmd = pcg;
-			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
+			FSMesh* pm = dynamic_cast<FSMesh*>(pg->GetMesh());
 			pcg->AddCommand(new CCmdSelectObject(mdl, pg->GetGObject(), badd));
 			pcg->AddCommand(new CCmdSelectFENodes(pm, pi, n, badd));
 		}
@@ -504,6 +495,7 @@ void CModelViewer::on_props_nameChanged(const QString& txt)
 void CModelViewer::on_props_selectionChanged()
 {
 	ui->tree->UpdateObject(ui->props->GetCurrentObject());
+	GetMainWindow()->RedrawGL();
 }
 
 void CModelViewer::on_props_dataChanged(bool b)
@@ -625,22 +617,15 @@ void CModelViewer::OnUnhideAllParts()
 	}
 }
 
+void CModelViewer::OnDeleteNamedSelection()
+{
+	OnDeleteItem();
+}
+
 void CModelViewer::OnAddBC()
 {
 	CMainWindow* wnd = GetMainWindow();
 	wnd->on_actionAddBC_triggered();
-}
-
-void CModelViewer::OnAddSurfaceLoad()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddSurfLoad_triggered();
-}
-
-void CModelViewer::OnAddBodyLoad()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddBodyLoad_triggered();
 }
 
 void CModelViewer::OnAddInitialCondition()
@@ -673,6 +658,12 @@ void CModelViewer::OnAddRigidConnector()
 	wnd->on_actionAddRigidConnector_triggered();
 }
 
+void CModelViewer::OnAddRigidLoad()
+{
+	CMainWindow* wnd = GetMainWindow();
+	wnd->on_actionAddRigidLoad_triggered();
+}
+
 void CModelViewer::OnAddStep()
 {
 	CMainWindow* wnd = GetMainWindow();
@@ -682,7 +673,7 @@ void CModelViewer::OnAddStep()
 void CModelViewer::OnHideObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i=0; i<m_selection.size(); ++i)
 	{
@@ -703,7 +694,7 @@ void CModelViewer::OnHideObject()
 void CModelViewer::OnShowObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i=0; i<(int)m_selection.size(); ++i)
 	{
@@ -723,7 +714,7 @@ void CModelViewer::OnShowObject()
 void CModelViewer::OnSelectObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	CMainWindow* wnd = GetMainWindow();
 	wnd->SetSelectionMode(SELECT_OBJECT);
@@ -749,7 +740,7 @@ void CModelViewer::OnDeleteAllDiscete()
 	{
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument()); assert(doc);
 		if (doc == nullptr) return;
-		GModel& m = doc->GetFEModel()->GetModel();
+		GModel& m = doc->GetFSModel()->GetModel();
 		m.ClearDiscrete();
 
 		Select(nullptr);
@@ -762,7 +753,7 @@ void CModelViewer::OnShowAllDiscrete()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument()); assert(doc);
 	if (doc == nullptr) return;
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 	
 	for (int i = 0; i < m.DiscreteObjects(); ++i)
 	{
@@ -776,7 +767,7 @@ void CModelViewer::OnHideAllDiscrete()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument()); assert(doc);
 	if (doc == nullptr) return;
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i = 0; i < m.DiscreteObjects(); ++i)
 	{
@@ -789,7 +780,7 @@ void CModelViewer::OnHideAllDiscrete()
 void CModelViewer::OnSelectDiscreteObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	CMainWindow* wnd = GetMainWindow();
 	wnd->SetSelectionMode(SELECT_DISCRETE);
@@ -815,7 +806,7 @@ void CModelViewer::OnDetachDiscreteObject()
 
 	CMainWindow* wnd = GetMainWindow();
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	GObject* po = m.DetachDiscreteSet(set);
 	if (po)
@@ -858,14 +849,14 @@ void CModelViewer::OnChangeDiscreteType()
 	GDiscreteSpringSet* set = dynamic_cast<GDiscreteSpringSet*>(m_currentObject); assert(set);
 	if (set == 0) return;
 
-	QStringList items; items << "Linear" << "Nonlinear" << "Hill";
+	QStringList items; items << "Linear" << "Nonlinear" << "Hill" << "General";
 	QString item = QInputDialog::getItem(this, "Discrete Set Type", "Type:", items, 0, false);
 	if (item.isEmpty() == false)
 	{
-		FEDiscreteMaterial* mat = nullptr;
-		if (item == "Linear"   ) mat = new FELinearSpringMaterial();
-		if (item == "Nonlinear") mat = new FENonLinearSpringMaterial();
-		if (item == "Hill"     ) mat = new FEHillContractileMaterial();
+		FSDiscreteMaterial* mat = nullptr;
+		if (item == "Linear"   ) mat = new FSLinearSpringMaterial();
+		if (item == "Nonlinear") mat = new FSNonLinearSpringMaterial();
+		if (item == "Hill"     ) mat = new FSHillContractileMaterial();
 		if (mat)
 		{
 			delete set->GetMaterial();
@@ -884,7 +875,7 @@ void CModelViewer::OnChangeDiscreteType()
 void CModelViewer::OnHidePart()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i=0; i<(int)m_selection.size(); ++i)
 	{
@@ -905,7 +896,7 @@ void CModelViewer::OnHidePart()
 void CModelViewer::OnSelectPartElements()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	if (m_selection.size() != 1) return;
 	GPart* pg = dynamic_cast<GPart*>(m_selection[0]); assert(pg);
@@ -913,7 +904,7 @@ void CModelViewer::OnSelectPartElements()
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	// set the correct selection mode
@@ -928,7 +919,7 @@ void CModelViewer::OnSelectPartElements()
 	vector<int> elemList;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_gid == lid) elemList.push_back(i);
 	}
 
@@ -936,13 +927,52 @@ void CModelViewer::OnSelectPartElements()
 	doc->DoCommand(new CCmdSelectElements(pm, elemList, false));
 
 	CMainWindow* wnd = GetMainWindow();
+	wnd->UpdateGLControlBar();
+	wnd->RedrawGL();
+}
+
+void CModelViewer::OnSelectSurfaceFaces()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	GModel& m = doc->GetFSModel()->GetModel();
+
+	if (m_selection.size() != 1) return;
+	GFace* pf = dynamic_cast<GFace*>(m_selection[0]); assert(pf);
+
+	GObject* po = dynamic_cast<GObject*>(pf->Object());
+	if (po == nullptr) return;
+
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	// set the correct selection mode
+	doc->SetSelectionMode(SELECT_OBJECT);
+	doc->SetItemMode(ITEM_FACE);
+
+	// make sure this object is selected first
+	doc->DoCommand(new CCmdSelectObject(&m, po, false));
+
+	// now, select the faces
+	int lid = pf->GetLocalID();
+	vector<int> faceList;
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FSFace& face = pm->Face(i);
+		if (face.m_gid == lid) faceList.push_back(i);
+	}
+
+	// select elements
+	doc->DoCommand(new CCmdSelectFaces(pm, faceList, false));
+
+	CMainWindow* wnd = GetMainWindow();
+	wnd->UpdateGLControlBar();
 	wnd->RedrawGL();
 }
 
 void CModelViewer::OnShowPart()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& m = doc->GetFEModel()->GetModel();
+	GModel& m = doc->GetFSModel()->GetModel();
 
 	for (int i = 0; i<(int)m_selection.size(); ++i)
 	{
@@ -1047,7 +1077,7 @@ void CModelViewer::OnCopyMaterial()
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	doc->DoCommand(new CCmdAddMaterial(doc->GetFEModel(), pmat2));
+	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2));
 
 	// update the model viewer
 	Update();
@@ -1060,24 +1090,28 @@ void CModelViewer::OnChangeMaterial()
 	if (gmat == 0) return;
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEProject& prj = doc->GetProject();
+	if (doc == nullptr) return;
 
-	CMaterialEditor dlg(prj, this);
-	dlg.SetInitMaterial(gmat);
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, prj, false, false, this);
 	if (dlg.exec())
 	{
-		FEMaterial* pmat = dlg.GetMaterial();
-		gmat->SetMaterialProperties(pmat);
-		gmat->SetName(dlg.GetMaterialName().toStdString());
-		Update();
-		Select(gmat);
+		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
+		if (pmat)
+		{
+			gmat->SetMaterialProperties(pmat);
+			Update();
+			Select(gmat);
+		}
 	}
 }
 
 void CModelViewer::OnMaterialHideParts()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 	GModel& mdl = fem->GetModel();
 	list<GPart*> partList;
 	for (int i = 0; i < m_selection.size(); ++i)
@@ -1103,7 +1137,7 @@ void CModelViewer::OnMaterialHideParts()
 void CModelViewer::OnMaterialShowParts()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 	GModel& mdl = fem->GetModel();
 	list<GPart*> partList;
 	for (int i = 0; i < m_selection.size(); ++i)
@@ -1133,7 +1167,7 @@ void CModelViewer::OnMaterialHideOtherParts()
 	if (mat == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 	GModel& mdl = fem->GetModel();
 	list<GPart*> partList = mdl.FindPartsFromMaterial(mat->GetID(), false);
 
@@ -1143,15 +1177,15 @@ void CModelViewer::OnMaterialHideOtherParts()
 
 void CModelViewer::OnCopyInterface()
 {
-	FEInterface* pic = dynamic_cast<FEInterface*>(m_currentObject); assert(pic);
+	FSInterface* pic = dynamic_cast<FSInterface*>(m_currentObject); assert(pic);
 	if (pic == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the interface
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEInterface* piCopy = dynamic_cast<FEInterface*>(fecore->Create(fem, FE_INTERFACE, pic->Type()));
+	FSInterface* piCopy = dynamic_cast<FSInterface*>(fecore->Create(fem, FESURFACEINTERFACE_ID, pic->Type()));
 	assert(piCopy);
 
 	// create a name
@@ -1162,7 +1196,7 @@ void CModelViewer::OnCopyInterface()
 	piCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the interface to the doc
-	FEStep* step = fem->GetStep(pic->GetStep());
+	FSStep* step = fem->GetStep(pic->GetStep());
 	pdoc->DoCommand(new CCmdAddInterface(step, piCopy));
 
 	// update the model viewer
@@ -1172,15 +1206,15 @@ void CModelViewer::OnCopyInterface()
 
 void CModelViewer::OnCopyBC()
 {
-	FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject); assert(pbc);
+	FSBoundaryCondition* pbc = dynamic_cast<FSBoundaryCondition*>(m_currentObject); assert(pbc);
 	if (pbc == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the bc
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEBoundaryCondition* pbcCopy = dynamic_cast<FEBoundaryCondition*>(fecore->Create(fem, FE_ESSENTIAL_BC, pbc->Type()));
+	FSBoundaryCondition* pbcCopy = dynamic_cast<FSBoundaryCondition*>(fecore->Create(fem, FEBC_ID, pbc->Type()));
 	assert(pbcCopy);
 
 	// create a name
@@ -1191,7 +1225,7 @@ void CModelViewer::OnCopyBC()
 	pbcCopy->GetParamBlock() = pbc->GetParamBlock();
 
 	// add the bc to the doc
-	FEStep* step = fem->GetStep(pbc->GetStep());
+	FSStep* step = fem->GetStep(pbc->GetStep());
 	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy));
 
 	// update the model viewer
@@ -1201,15 +1235,15 @@ void CModelViewer::OnCopyBC()
 
 void CModelViewer::OnCopyIC()
 {
-	FEInitialCondition* pic = dynamic_cast<FEInitialCondition*>(m_currentObject); assert(pic);
+	FSInitialCondition* pic = dynamic_cast<FSInitialCondition*>(m_currentObject); assert(pic);
 	if (pic == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the ic
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEInitialCondition* picCopy = dynamic_cast<FEInitialCondition*>(fecore->Create(fem, FE_INITIAL_CONDITION, pic->Type()));
+	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(fecore->Create(fem, FEIC_ID, pic->Type()));
 	assert(picCopy);
 
 	// create a name
@@ -1220,7 +1254,7 @@ void CModelViewer::OnCopyIC()
 	picCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the ic to the doc
-	FEStep* step = fem->GetStep(pic->GetStep());
+	FSStep* step = fem->GetStep(pic->GetStep());
 	pdoc->DoCommand(new CCmdAddIC(step, picCopy));
 
 	// update the model viewer
@@ -1230,15 +1264,15 @@ void CModelViewer::OnCopyIC()
 
 void CModelViewer::OnCopyRigidConnector()
 {
-	FERigidConnector* pc = dynamic_cast<FERigidConnector*>(m_currentObject); assert(pc);
+	FSRigidConnector* pc = dynamic_cast<FSRigidConnector*>(m_currentObject); assert(pc);
 	if (pc == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FERigidConnector* pcCopy =  dynamic_cast<FERigidConnector*>(fecore->Create(fem, FE_RIGID_CONNECTOR, pc->Type()));
+	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
@@ -1249,7 +1283,7 @@ void CModelViewer::OnCopyRigidConnector()
 	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
-	FEStep* step = fem->GetStep(pc->GetStep());
+	FSStep* step = fem->GetStep(pc->GetStep());
 	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy));
 
 	// update the model viewer
@@ -1259,14 +1293,14 @@ void CModelViewer::OnCopyRigidConnector()
 
 void CModelViewer::OnCopyConstraint()
 {
-	FEModelConstraint* pc = dynamic_cast<FEModelConstraint*>(m_currentObject); assert(pc);
+	FSModelConstraint* pc = dynamic_cast<FSModelConstraint*>(m_currentObject); assert(pc);
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEModelConstraint* pcCopy = dynamic_cast<FEModelConstraint*>(fecore->Create(fem, FE_CONSTRAINT, pc->Type()));
+	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
@@ -1277,7 +1311,7 @@ void CModelViewer::OnCopyConstraint()
 	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the constraint to the doc
-	FEStep* step = fem->GetStep(pc->GetStep());
+	FSStep* step = fem->GetStep(pc->GetStep());
 	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy));
 
 	// update the model viewer
@@ -1287,21 +1321,15 @@ void CModelViewer::OnCopyConstraint()
 
 void CModelViewer::OnCopyLoad()
 {
-	FELoad* pl = dynamic_cast<FELoad*>(m_currentObject); assert(pl);
+	FSLoad* pl = dynamic_cast<FSLoad*>(m_currentObject); assert(pl);
 	if (pl == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FELoad* plCopy = 0;
-	if (dynamic_cast<FESurfaceLoad*>(pl))
-		plCopy = dynamic_cast<FELoad*>(fecore->Create(fem, FE_SURFACE_LOAD, pl->Type()));
-	else if (dynamic_cast<FEBodyLoad*>(pl))
-		plCopy = dynamic_cast<FELoad*>(fecore->Create(fem, FE_BODY_LOAD, pl->Type()));
-	else if (dynamic_cast<FENodalLoad*>(pl))
-		plCopy = new FENodalLoad(fem);
+	FSLoad* plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FELOAD_ID, pl->Type()));
 	assert(plCopy);
 
 	// create a name
@@ -1312,7 +1340,7 @@ void CModelViewer::OnCopyLoad()
 	plCopy->GetParamBlock() = pl->GetParamBlock();
 
 	// add the load to the doc
-	FEStep* step = fem->GetStep(pl->GetStep());
+	FSStep* step = fem->GetStep(pl->GetStep());
 	pdoc->DoCommand(new CCmdAddLoad(step, plCopy));
 
 	// update the model viewer
@@ -1322,15 +1350,15 @@ void CModelViewer::OnCopyLoad()
 
 void CModelViewer::OnCopyRigidConstraint()
 {
-	FERigidConstraint* pc = dynamic_cast<FERigidConstraint*>(m_currentObject); assert(pc);
+	FSRigidConstraint* pc = dynamic_cast<FSRigidConstraint*>(m_currentObject); assert(pc);
 	if (pc == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FERigidConstraint* pcCopy = dynamic_cast<FERigidConstraint*>(fecore->Create(fem, FE_RIGID_CONSTRAINT, pc->Type()));
+	FSRigidConstraint* pcCopy = dynamic_cast<FSRigidConstraint*>(fecore->Create(fem, FERIGIDBC_ID, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
@@ -1341,7 +1369,7 @@ void CModelViewer::OnCopyRigidConstraint()
 	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
-	FEStep* step = fem->GetStep(pc->GetStep());
+	FSStep* step = fem->GetStep(pc->GetStep());
 	pdoc->DoCommand(new CCmdAddRC(step, pcCopy));
 
 	// update the model viewer
@@ -1351,15 +1379,15 @@ void CModelViewer::OnCopyRigidConstraint()
 
 void CModelViewer::OnCopyStep()
 {
-	FEAnalysisStep* ps = dynamic_cast<FEAnalysisStep*>(m_currentObject); assert(ps);
+	FSAnalysisStep* ps = dynamic_cast<FSAnalysisStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the step
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEAnalysisStep* psCopy = dynamic_cast<FEAnalysisStep*>(fecore->Create(fem, FE_ANALYSIS, ps->GetType()));
+	FSAnalysisStep* psCopy = dynamic_cast<FSAnalysisStep*>(fecore->Create(fem, FEANALYSIS_ID, ps->GetType()));
 	assert(psCopy);
 
 	// create a name
@@ -1380,11 +1408,11 @@ void CModelViewer::OnCopyStep()
 
 void CModelViewer::OnStepMoveUp()
 {
-	FEAnalysisStep* ps = dynamic_cast<FEAnalysisStep*>(m_currentObject); assert(ps);
+	FSAnalysisStep* ps = dynamic_cast<FSAnalysisStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n > 1)
@@ -1397,11 +1425,11 @@ void CModelViewer::OnStepMoveUp()
 
 void CModelViewer::OnStepMoveDown()
 {
-	FEAnalysisStep* ps = dynamic_cast<FEAnalysisStep*>(m_currentObject); assert(ps);
+	FSAnalysisStep* ps = dynamic_cast<FSAnalysisStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n < fem->Steps() - 1)
@@ -1439,7 +1467,7 @@ void CModelViewer::OnOpenJob()
 void CModelViewer::OnEditOutput()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEProject& prj = pdoc->GetProject();
+	FSProject& prj = pdoc->GetProject();
 
 	CDlgEditOutput dlg(prj, this);
 	dlg.exec();	
@@ -1449,7 +1477,7 @@ void CModelViewer::OnEditOutput()
 void CModelViewer::OnEditOutputLog()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	FEProject& prj = pdoc->GetProject();
+	FSProject& prj = pdoc->GetProject();
 
 	CDlgEditOutput dlg(prj, this, 1);
 	dlg.exec();
@@ -1470,7 +1498,7 @@ void CModelViewer::UpdateCurrentItem()
 void CModelViewer::OnRemoveEmptySelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& mdl = pdoc->GetFEModel()->GetModel();
+	GModel& mdl = pdoc->GetFSModel()->GetModel();
 	mdl.RemoveEmptySelections();
 	Update();
 }
@@ -1478,9 +1506,20 @@ void CModelViewer::OnRemoveEmptySelections()
 void CModelViewer::OnRemoveAllSelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	GModel& mdl = pdoc->GetFEModel()->GetModel();
+	GModel& mdl = pdoc->GetFSModel()->GetModel();
 	mdl.RemoveNamedSelections();
 	Update();
+}
+
+void CModelViewer::OnAddMeshAdaptor()
+{
+	CMainWindow* wnd = GetMainWindow();
+	wnd->on_actionAddMeshAdaptor_triggered();
+}
+
+void CModelViewer::OnDeleteAllMeshAdaptors()
+{
+
 }
 
 // clear current FSObject selection
@@ -1548,6 +1587,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_PART_LIST:
 		menu.addAction("Show All Parts", this, SLOT(OnUnhideAllParts()));
 		break;
+	case MT_PART_GROUP:
+	case MT_FACE_GROUP:
+	case MT_EDGE_GROUP:
+	case MT_NODE_GROUP:
+		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
+		break;
 	case MT_MATERIAL_LIST:
 	{
 		menu.addAction("Add Material ...", this, SLOT(OnAddMaterial()));
@@ -1580,9 +1625,9 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllBC()));
 		break;
 	case MT_LOAD_LIST:
-		menu.addAction("Add Nodal Load ...", wnd, SLOT(on_actionAddNodalLoad_triggered()));
-		menu.addAction("Add Surface Load ...", this, SLOT(OnAddSurfaceLoad()));
-		menu.addAction("Add Body Load ...", this, SLOT(OnAddBodyLoad()));
+		menu.addAction("Add Nodal Load ..."  , wnd, SLOT(on_actionAddNodalLoad_triggered()));
+		menu.addAction("Add Surface Load ...", wnd, SLOT(on_actionAddSurfLoad_triggered()));
+		menu.addAction("Add Body Load ..."   , wnd, SLOT(on_actionAddBodyLoad_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllLoads()));
 		break;
@@ -1597,19 +1642,18 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllContact()));
 		break;
 	case MT_CONSTRAINT_LIST:
-		menu.addAction("Add Constraint ...", this, SLOT(OnAddConstraint()));
+		menu.addAction("Add Surface Constraint ...", wnd, SLOT(OnAddSurfaceConstraint()));
+		menu.addAction("Add Body Constraint ..."   , wnd, SLOT(OnAddBodyConstraint()));
+		menu.addAction("Add General Constraint ...", this, SLOT(OnAddConstraint()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllConstraints()));
 		break;
-	case MT_RIGID_CONSTRAINT_LIST:
+	case MT_RIGID_COMPONENT_LIST:
 		menu.addAction("Add Rigid Constraint ...", this, SLOT(OnAddRigidConstraint()));
-		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConstraints()));
-		break;
-	case MT_RIGID_CONNECTOR_LIST:
 		menu.addAction("Add Rigid Connector ...", this, SLOT(OnAddRigidConnector()));
+		menu.addAction("Add Rigid Load ...", this, SLOT(OnAddRigidLoad()));
 		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConnectors()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidComponents()));
 		break;
 	case MT_STEP_LIST:
 		menu.addAction("Add Analysis Step ...", this, SLOT(OnAddStep()));
@@ -1626,6 +1670,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_NAMED_SELECTION:
 		menu.addAction("Remove empty", this, SLOT(OnRemoveEmptySelections()));
 		menu.addAction("Remove all", this, SLOT(OnRemoveAllSelections()));
+		break;
+	case MT_MESH_ADAPTOR_LIST:
+		menu.addAction("Add Mesh Adaptor", this, SLOT(OnAddMeshAdaptor()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllMeshAdaptors()));
 		break;
 	case MT_OBJECT:
 	{
@@ -1666,6 +1714,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	break;
 	case MT_SURFACE:
 		menu.addAction("Select", this, SLOT(OnSelectSurface()));
+		menu.addAction("Select Faces", this, SLOT(OnSelectSurfaceFaces()));
 		break;
 	case MT_EDGE:
 		menu.addAction("Select", this, SLOT(OnSelectCurve()));
@@ -1702,7 +1751,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_CONTACT:
 	{
 		menu.addAction("Copy", this, SLOT(OnCopyInterface()));
-		FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(data->obj);
+		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(data->obj);
 		if (pci)
 		{
 			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapMasterSlave()));
@@ -1737,7 +1786,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_STEP:
 		{
 			menu.addAction("Copy", this, SLOT(OnCopyStep()));
-			FEAnalysisStep* step = dynamic_cast<FEAnalysisStep*>(data->obj);
+			FSAnalysisStep* step = dynamic_cast<FSAnalysisStep*>(data->obj);
 			if (step)
 			{
 				menu.addAction("Move Up", this, SLOT(OnStepMoveUp()));
@@ -1745,6 +1794,16 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 			}
 			del = true;
 		}
+		break;
+	case MT_LOAD_CONTROLLERS:
+		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
+		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
+		break;
+	case MT_MESH_DATA:
+		menu.addAction("Add Node Data ..."   , wnd, SLOT(on_actionAddNodeData_triggered()));
+		menu.addAction("Add Surface Data ...", wnd, SLOT(on_actionAddFaceData_triggered()));
+		menu.addAction("Add Element Data ...", wnd, SLOT(on_actionAddElemData_triggered()));
+		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
 		break;
 	case MT_JOBLIST:
 		{
@@ -1758,9 +1817,11 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_3DIMAGE:
         menu.addAction("Apply Filters", this, SLOT(OnApplyImageFilters()));
+        menu.addAction("Add Threshold Image Fitler", this, SLOT(OnAddThresholdImageFilter()));
+#ifdef HAS_ITK
 		menu.addAction("Add Mean Image Fitler", this, SLOT(OnAddMeanImageFilter()));
 		menu.addAction("Add Gaussian Image Fitler", this, SLOT(OnAddGaussianImageFilter()));
-        menu.addAction("Add Threshold Image Fitler", this, SLOT(OnAddThresholdImageFilter()));
+#endif
 		del = true;
 		break;
     case MT_3DIMAGE_FILTER:
@@ -1828,7 +1889,7 @@ void CModelViewer::OnDeleteAllMaterials()
 
 void CModelViewer::OnSwapMasterSlave()
 {
-	FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(m_currentObject);
+	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pci)
 	{
 		pci->SwapPrimarySecondary();
@@ -1845,6 +1906,22 @@ void CModelViewer::OnApplyImageFilters()
         model->ApplyFilters();
     }
 }
+
+void CModelViewer::OnAddThresholdImageFilter()
+{
+	Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
+	
+	if(model)
+	{
+		ThresholdImageFilter* filter = new ThresholdImageFilter();
+
+		model->AddImageFilter(filter);
+	}
+
+    Update();
+}
+
+#ifdef HAS_ITK
 
 void CModelViewer::OnAddMeanImageFilter()
 {
@@ -1873,20 +1950,10 @@ void CModelViewer::OnAddGaussianImageFilter()
 
     Update();
 }
-
-void CModelViewer::OnAddThresholdImageFilter()
-{
-	Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
-	
-	if(model)
-	{
-		ThresholdImageFilter* filter = new ThresholdImageFilter();
-
-		model->AddImageFilter(filter);
-	}
-
-    Update();
-}
+#else
+void CModelViewer::OnAddMeanImageFilter() {}
+void CModelViewer::OnAddGaussianImageFilter() {}
+#endif
 
 void CModelViewer::OnDeleteAllBC()
 {
@@ -1913,13 +1980,10 @@ void CModelViewer::OnDeleteAllConstraints()
 	GetMainWindow()->DeleteAllConstraints();
 }
 
-void CModelViewer::OnDeleteAllRigidConstraints()
+void CModelViewer::OnDeleteAllRigidComponents()
 {
 	GetMainWindow()->DeleteAllRigidConstraints();
-}
-
-void CModelViewer::OnDeleteAllRigidConnectors()
-{
+	GetMainWindow()->DeleteAllRigidLoads();
 	GetMainWindow()->DeleteAllRigidConnectors();
 }
 

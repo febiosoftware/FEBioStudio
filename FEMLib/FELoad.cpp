@@ -26,22 +26,60 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FELoad.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 //=============================================================================
 // NODAL LOAD
 //=============================================================================
-FENodalLoad::FENodalLoad(FEModel* ps) : FELoad(FE_NODAL_LOAD, ps)
+FSNodalDOFLoad::FSNodalDOFLoad(FSModel* ps) : FSNodalLoad(FE_NODAL_DOF_LOAD, ps)
 {
 	SetTypeString("Nodal Load");
 	AddIntParam(0, "bc", "bc")->SetEnumNames("x-force\0y-force\0z-force\0");
-	AddScienceParam(1.0, UNIT_FORCE, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
+	AddScienceParam(1.0, UNIT_FORCE, "scale", "scale")->MakeVariable(true);
 }
 
 //-----------------------------------------------------------------------------
-FENodalLoad::FENodalLoad(FEModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep) : FELoad(FE_NODAL_LOAD, ps, pi, nstep)
+FSNodalDOFLoad::FSNodalDOFLoad(FSModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep) : FSNodalLoad(FE_NODAL_DOF_LOAD, ps, pi, nstep)
 {
 	SetTypeString("Nodal Load");
 	AddIntParam(bc, "bc", "bc")->SetEnumNames("x-force\0y-force\0z-force\0");
-	AddScienceParam(f, UNIT_FORCE, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
+	AddScienceParam(f, UNIT_FORCE, "scale", "scale")->MakeVariable(true);
+}
+
+//=============================================================================
+FEBioNodalLoad::FEBioNodalLoad(FSModel* ps) : FSNodalLoad(FE_FEBIO_NODAL_LOAD, ps)
+{
+
+}
+
+void FEBioNodalLoad::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSNodalLoad::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioNodalLoad::Load(IArchive& ar)
+{
+	TRACE("FEBioBoundaryCondition::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSNodalLoad::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
 }

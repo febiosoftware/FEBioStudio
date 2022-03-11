@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <FSCore/Archive.h>
 
 //-----------------------------------------------------------------------------
-class FEModel;
+class FSModel;
 
 //-----------------------------------------------------------------------------
 // The PreView archive
@@ -47,7 +47,7 @@ public:
 	void Close();
 
 private:
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 	int			m_nc;	// counter
 	IArchive	m_ar;	// the archive
 };

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "constants.h"
 #include "FEMeshData_T.h"
 #include <stdio.h>
+using namespace std;
 
 extern int ET_HEX[12][2];
 
@@ -221,7 +222,7 @@ const string& FEPostModel::GetName() const
 
 //-----------------------------------------------------------------------------
 // add a material to the model
-void FEPostModel::AddMaterial(FEMaterial& mat)
+void FEPostModel::AddMaterial(Material& mat)
 { 
 	static int n = 1;
 	if (m_Mat.empty()) n = 1;
@@ -328,10 +329,10 @@ template <typename Type, Data_Format Fmt> void copy_face_data(FEMeshData& d, FEM
 
 //-----------------------------------------------------------------------------
 // Copy a data field
-FEDataField* FEPostModel::CopyDataField(FEDataField* pd, const char* sznewname)
+ModelDataField* FEPostModel::CopyDataField(ModelDataField* pd, const char* sznewname)
 {
 	// Clone the data field
-	FEDataField* pdcopy = pd->Clone();
+	ModelDataField* pdcopy = pd->Clone();
 
 	// create a new name
 	if (sznewname == 0)
@@ -365,7 +366,7 @@ FEDataField* FEPostModel::CopyDataField(FEDataField* pd, const char* sznewname)
 			else if (pd->Type() == DATA_MAT3FS) copy_node_data<mat3fs>(dst, src);
 			else if (pd->Type() == DATA_MAT3FD) copy_node_data<mat3fd>(dst, src);
 			else if (pd->Type() == DATA_MAT3F ) copy_node_data<mat3f >(dst, src);
-			else if (pd->Type() == DATA_MAT3D ) copy_node_data<Mat3d >(dst, src);
+			else if (pd->Type() == DATA_MAT3D ) copy_node_data<mat3d >(dst, src);
 		}
 		else if (IS_FACE_FIELD(pd->GetFieldID()))
 		{
@@ -427,7 +428,7 @@ FEDataField* FEPostModel::CopyDataField(FEDataField* pd, const char* sznewname)
 }
 
 //-----------------------------------------------------------------------------
-FEDataField* createCachedDataField(FEDataField* pd)
+ModelDataField* createCachedDataField(ModelDataField* pd)
 {
 	Post::FEPostModel* fem = pd->GetModel();
 
@@ -435,14 +436,14 @@ FEDataField* createCachedDataField(FEDataField* pd)
 	Data_Type ntype = pd->Type();
 	Data_Format nfmt = pd->Format();
 
-	FEDataField* newField = 0;
+	ModelDataField* newField = 0;
 	if (nclass == CLASS_NODE)
 	{
 		if      (ntype == DATA_FLOAT ) newField = new FEDataField_T<FENodeData<float > >(fem);
 		else if (ntype == DATA_VEC3F ) newField = new FEDataField_T<FENodeData<vec3f > >(fem);
 		else if (ntype == DATA_MAT3FS) newField = new FEDataField_T<FENodeData<mat3fs> >(fem);
 		else if (ntype == DATA_MAT3FD) newField = new FEDataField_T<FENodeData<mat3fd> >(fem);
-		else if (ntype == DATA_MAT3D ) newField = new FEDataField_T<FENodeData<Mat3d > >(fem);
+		else if (ntype == DATA_MAT3D ) newField = new FEDataField_T<FENodeData<mat3d > >(fem);
 		else if (ntype == DATA_MAT3F ) newField = new FEDataField_T<FENodeData<mat3f > >(fem);
 		else assert(false);
 	}
@@ -538,10 +539,10 @@ template <typename T> void cached_copy_face_data_COMP(FEMeshData& dst, FEMeshDat
 	FEFaceData_T<T, DATA_COMP>& s = dynamic_cast<FEFaceData_T<T, DATA_COMP>&>(src);
 
 	int NF = mesh.Faces();
-	T f[FEFace::MAX_NODES];
+	T f[FSFace::MAX_NODES];
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (s.active(i))
 		{
 			int nf = face.Nodes();
@@ -557,14 +558,14 @@ template <typename T> void cached_copy_face_data_NODE(FEMeshData& dst, FEMeshDat
 	FEFaceData_T<T, DATA_NODE>& s = dynamic_cast<FEFaceData_T<T, DATA_NODE>&>(src);
 
 	int NF = mesh.Faces();
-	T f[FEFace::MAX_NODES];
+	T f[FSFace::MAX_NODES];
 	vector<T> vf;
 	vector<int> faceList(1);
 	vector<int> index;
 	vector<int> faceSize(1);
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (s.active(i))
 		{
 			int nf = face.Nodes();
@@ -622,7 +623,7 @@ template <typename T> void cached_copy_elem_data_COMP(FEMeshData& dst, FEMeshDat
 	FEElemData_T<T, DATA_COMP>& s = dynamic_cast<FEElemData_T<T, DATA_COMP>&>(src);
 
 	int NE = mesh.Elements();
-	T f[FEElement::MAX_NODES];
+	T f[FSElement::MAX_NODES];
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement_& el = mesh.ElementRef(i);
@@ -641,7 +642,7 @@ template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshDat
 	FEElemData_T<T, DATA_NODE>& s = dynamic_cast<FEElemData_T<T, DATA_NODE>&>(src);
 
 	int NE = mesh.Elements();
-	T f[FEElement::MAX_NODES];
+	T f[FSElement::MAX_NODES];
 	vector<T> vf;
 	vector<int> elem(1);
 	vector<int> index;
@@ -669,10 +670,10 @@ template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshDat
 
 //-----------------------------------------------------------------------------
 //! Create a cached copy of a data field
-FEDataField* FEPostModel::CreateCachedCopy(FEDataField* pd, const char* sznewname)
+ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sznewname)
 {
 	// create a new data field that will store a cached copy
-	FEDataField* pdcopy = createCachedDataField(pd);
+	ModelDataField* pdcopy = createCachedDataField(pd);
 	if (pdcopy == 0) return 0;
 
 	// Add it to the model
@@ -791,7 +792,7 @@ std::string FEPostModel::getDataString(int ndata, Data_Tensor_Type ntype)
 
 //-----------------------------------------------------------------------------
 // Delete a data field
-void FEPostModel::DeleteDataField(FEDataField* pd)
+void FEPostModel::DeleteDataField(ModelDataField* pd)
 {
 	// find out which data field this is
 	FEDataFieldPtr it = m_pDM->FirstDataField();
@@ -821,7 +822,7 @@ void FEPostModel::DeleteDataField(FEDataField* pd)
 
 //-----------------------------------------------------------------------------
 // Add a data field to all states of the model
-void FEPostModel::AddDataField(FEDataField* pd, const std::string& name)
+void FEPostModel::AddDataField(ModelDataField* pd, const std::string& name)
 {
 	// add the data field to the data manager
 	m_pDM->AddDataField(pd, name);
@@ -839,7 +840,7 @@ void FEPostModel::AddDataField(FEDataField* pd, const std::string& name)
 
 //-----------------------------------------------------------------------------
 // Add an data field to all states of the model
-void FEPostModel::AddDataField(FEDataField* pd, vector<int>& L)
+void FEPostModel::AddDataField(ModelDataField* pd, vector<int>& L)
 {
 	assert(pd->DataClass() == CLASS_FACE);
 
@@ -852,14 +853,14 @@ void FEPostModel::AddDataField(FEDataField* pd, vector<int>& L)
 	{
 		FEFaceItemData* pmd = dynamic_cast<FEFaceItemData*>(pd->CreateData(*it));
 		(*it)->m_Data.push_back(pmd);
-		if (dynamic_cast<FECurvature*>(pmd))
+		if (dynamic_cast<Curvature*>(pmd))
 		{
-			FECurvature* pcrv = dynamic_cast<FECurvature*>(pmd);
+			Curvature* pcrv = dynamic_cast<Curvature*>(pmd);
 			pcrv->set_facelist(L);
 		}
-		if (dynamic_cast<FECongruency*>(pmd))
+		if (dynamic_cast<SurfaceCongruency*>(pmd))
 		{
-			FECongruency* pcon = dynamic_cast<FECongruency*>(pmd);
+			SurfaceCongruency* pcon = dynamic_cast<SurfaceCongruency*>(pmd);
 			pcon->set_facelist(L);
 		}
 	}
@@ -900,7 +901,7 @@ vec3f FEPostModel::NodePosition(const vec3f& r, int ntime)
 	int iel = -1; double iso[3] = {0};
 	if (FindElementInReferenceFrame(*mesh, r, iel, iso))
 	{
-		vec3f x[FEElement::MAX_NODES];
+		vec3f x[FSElement::MAX_NODES];
 		GetElementCoords(iel, ntime, x);
 
 		// evaluate 
@@ -918,7 +919,7 @@ vec3f FEPostModel::NodePosition(const vec3f& r, int ntime)
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEPostModel::FaceNormal(FEFace& f, int ntime)
+vec3f FEPostModel::FaceNormal(FSFace& f, int ntime)
 {
 	vec3f r0 = NodePosition(f.n[0], ntime);
 	vec3f r1 = NodePosition(f.n[1], ntime);
@@ -952,7 +953,7 @@ void FEPostModel::UpdateBoundingBox()
 		return;
 	}
 
-	FENode& n = mesh->Node(0);
+	FSNode& n = mesh->Node(0);
 	m_bbox.x0 = m_bbox.x1 = n.r.x;
 	m_bbox.y0 = m_bbox.y1 = n.r.y;
 	m_bbox.z0 = m_bbox.z1 = n.r.z;
@@ -960,7 +961,7 @@ void FEPostModel::UpdateBoundingBox()
 	int N = mesh->Nodes();
 	for (int i=0; i<N; i++)
 	{
-		FENode& n = mesh->Node(i);
+		FSNode& n = mesh->Node(i);
 		if (n.r.x < m_bbox.x0) m_bbox.x0 = n.r.x;
 		if (n.r.y < m_bbox.y0) m_bbox.y0 = n.r.y;
 		if (n.r.z < m_bbox.z0) m_bbox.z0 = n.r.z;
@@ -1147,8 +1148,8 @@ bool FEPostModel::Merge(FEPostModel* fem)
 	for (int i = 0; i < NMAT1; ++i) m_Mat.push_back(*fem->GetMaterial(i));
 
 	// get the meshes
-	FEMesh& mesh0 = *GetFEMesh(0);
-	FEMesh& mesh1 = *fem->GetFEMesh(0);
+	FSMesh& mesh0 = *GetFEMesh(0);
+	FSMesh& mesh1 = *fem->GetFEMesh(0);
 
 	int NN0 = mesh0.Nodes();
 	int NN1 = mesh1.Nodes();
@@ -1172,7 +1173,7 @@ bool FEPostModel::Merge(FEPostModel* fem)
 	// copy new elements
 	for (int i = 0; i < NE1; ++i)
 	{
-		FEElement& el = mesh0.Element(NE0 + i);
+		FSElement& el = mesh0.Element(NE0 + i);
 		el = mesh1.Element(i);
 		for (int j = 0; j < el.Nodes(); ++j) el.m_node[j] += NN0;
 		el.m_gid += NMAT0;

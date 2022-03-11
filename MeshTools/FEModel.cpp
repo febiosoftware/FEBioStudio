@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// FEModel.cpp: implementation of the FEModel class.
+// FSModel.cpp: implementation of the FSModel class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -37,8 +37,10 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 #include <FSCore/ParamBlock.h>
+#include <FEBioLink/FEBioInterface.h>
+#include <FEMLib/FEMKernel.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <vector>
@@ -74,7 +76,7 @@ std::string Namify(const char* sz)
 	return s;
 }
 
-std::string defaultBCName(FEModel* fem, FEBoundaryCondition* pbc)
+std::string defaultBCName(FSModel* fem, FSBoundaryCondition* pbc)
 {
 	const char* ch = pbc->GetTypeString();
 	string type = Namify(ch);
@@ -86,7 +88,7 @@ std::string defaultBCName(FEModel* fem, FEBoundaryCondition* pbc)
 	return ss.str();
 }
 
-std::string defaultICName(FEModel* fem, FEInitialCondition* pic)
+std::string defaultICName(FSModel* fem, FSInitialCondition* pic)
 {
 	const char* ch = pic->GetTypeString();
 	string type = Namify(ch);
@@ -98,7 +100,7 @@ std::string defaultICName(FEModel* fem, FEInitialCondition* pic)
 	return ss.str();
 }
 
-std::string defaultLoadName(FEModel* fem, FELoad* pbc)
+std::string defaultLoadName(FSModel* fem, FSLoad* pbc)
 {
 	const char* ch = pbc->GetTypeString();
 	string type = Namify(ch);
@@ -110,7 +112,7 @@ std::string defaultLoadName(FEModel* fem, FELoad* pbc)
 	return ss.str();
 }
 
-std::string defaultInterfaceName(FEModel* fem, FEInterface* pi)
+std::string defaultInterfaceName(FSModel* fem, FSInterface* pi)
 {
 	const char* ch = pi->GetTypeString();
 	string type = Namify(ch);
@@ -122,35 +124,43 @@ std::string defaultInterfaceName(FEModel* fem, FEInterface* pi)
 	return ss.str();
 }
 
-std::string defaultConstraintName(FEModel* fem, FEModelConstraint* pi)
+std::string defaultConstraintName(FSModel* fem, FSModelConstraint* pi)
 {
 	const char* ch = pi->GetTypeString();
 	string type = Namify(ch);
 
-	int n = CountConstraints<FEModelConstraint>(*fem);
+	int n = CountConstraints<FSModelConstraint>(*fem);
 
 	stringstream ss;
 	ss << type << n + 1;
 	return ss.str();
 }
 
-std::string defaultRigidConnectorName(FEModel* fem, FERigidConnector* pi)
+std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pi)
 {
-	int nrc = CountConnectors<FERigidConnector>(*fem);
+	int nrc = CountConnectors<FSRigidConnector>(*fem);
 	stringstream ss;
 	ss << "RigidConnector" << nrc + 1;
 	return  ss.str();
 }
 
-std::string defaultRigidConstraintName(FEModel* fem, FERigidConstraint* pc)
+std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc)
 {
-	int nrc = CountRigidConstraints<FERigidConstraint>(*fem);
+	int nrc = CountRigidConstraints<FSRigidConstraint>(*fem);
 	stringstream ss;
 	ss << "RigidConstraint" << nrc + 1;
 	return  ss.str();
 }
 
-std::string defaultStepName(FEModel* fem, FEAnalysisStep* ps)
+std::string defaultMeshAdaptorName(FSModel* fem, FSMeshAdaptor* pc)
+{
+	int nrc = CountMeshAdaptors<FSMeshAdaptor>(*fem);
+	stringstream ss;
+	ss << "MeshAdaptor" << nrc + 1;
+	return ss.str();
+}
+
+std::string defaultStepName(FSModel* fem, FSStep* ps)
 {
 	int nsteps = fem->Steps();
 	stringstream ss;
@@ -159,7 +169,7 @@ std::string defaultStepName(FEModel* fem, FEAnalysisStep* ps)
 }
 
 //-----------------------------------------------------------------------------
-FEModel::FEModel()
+FSModel::FSModel() : m_skipGeometry(false)
 {
 	m_pModel = new GModel(this);
 	New();
@@ -167,34 +177,34 @@ FEModel::FEModel()
 	// define degrees of freedom
 	m_DOF.clear();
 
-	FEDOFVariable* varDisp = AddVariable("Displacement");
+	FEDOFVariable* varDisp = AddVariable("displacement");
 	varDisp->AddDOF("X-displacement", "x");
 	varDisp->AddDOF("Y-displacement", "y");
 	varDisp->AddDOF("Z-displacement", "z");
 
-	FEDOFVariable* varRot = AddVariable("Rotation");
+	FEDOFVariable* varRot = AddVariable("shell rotation");
 	varRot->AddDOF("X-rotation", "u");
 	varRot->AddDOF("Y-rotation", "v");
 	varRot->AddDOF("Z-rotation", "w");
 
-	FEDOFVariable* varPressure = AddVariable("Effective Fluid Pressure");
+	FEDOFVariable* varPressure = AddVariable("fluid pressure");
 	varPressure->AddDOF("pressure", "p");
 
-	FEDOFVariable* varTemperature = AddVariable("Temperature");
+	FEDOFVariable* varTemperature = AddVariable("temperature");
 	varTemperature->AddDOF("temperature", "T");
 
-    FEDOFVariable* varSolute = AddVariable("Effective Solute Concentration");
+    FEDOFVariable* varSolute = AddVariable("concentration");
     // (start with an empty solute variable)
     
-    FEDOFVariable* varVel = AddVariable("Fluid Velocity");
+    FEDOFVariable* varVel = AddVariable("relative fluid velocity");
     varVel->AddDOF("X-fluid velocity", "wx");
     varVel->AddDOF("Y-fluid velocity", "wy");
     varVel->AddDOF("Z-fluid velocity", "wz");
     
-	FEDOFVariable* varDil = AddVariable("Fluid Dilatation");
+	FEDOFVariable* varDil = AddVariable("fluid dilatation");
 	varDil->AddDOF("dilatation", "ef");
 
-	FEDOFVariable* varSDisp = AddVariable("Shell Displacement");
+	FEDOFVariable* varSDisp = AddVariable("shell displacement");
 	varSDisp->AddDOF("Shell X-displacement", "sx");
 	varSDisp->AddDOF("Shell Y-displacement", "sy");
 	varSDisp->AddDOF("Shell Z-displacement", "sz");
@@ -206,15 +216,21 @@ FEModel::FEModel()
 }
 
 //-----------------------------------------------------------------------------
-FEDOFVariable* FEModel::AddVariable(const char* szname)
+void FSModel::ClearVariables()
 {
-	FEDOFVariable var(szname);
+	m_DOF.clear();
+}
+
+//-----------------------------------------------------------------------------
+FEDOFVariable* FSModel::AddVariable(const std::string& varName)
+{
+	FEDOFVariable var(varName);
 	m_DOF.push_back(var);
 	return &m_DOF[m_DOF.size() - 1];
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::GetVariableIndex(const char* sz)
+int FSModel::GetVariableIndex(const char* sz)
 {
 	for (int i=0; i<(int)m_DOF.size(); ++i)
 	{
@@ -225,7 +241,7 @@ int FEModel::GetVariableIndex(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::GetDOFIndex(const char* sz)
+int FSModel::GetDOFIndex(const char* sz)
 {
     int idx = -1;
     for (int i=0; i<(int)m_DOF.size(); ++i)
@@ -240,21 +256,61 @@ int FEModel::GetDOFIndex(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-FEDOFVariable& FEModel::GetVariable(const char* sz)
+FEDOFVariable& FSModel::GetVariable(const char* sz)
 {
 	int nvar = GetVariableIndex(sz);
 	return m_DOF[nvar];
 }
 
 //-----------------------------------------------------------------------------
-FEModel::~FEModel()
+const char* FSModel::GetDOFSymbol(int n) const
+{
+	if (n < 0) { assert(false); return nullptr; }
+	for (int i = 0, m = 0; i < m_DOF.size(); ++i)
+	{
+		const FEDOFVariable& var = m_DOF[i];
+		for (int j = 0; j < var.DOFs(); ++j, ++m)
+		{
+			if (m == n)
+			{
+				const FEDOF& dof = var.GetDOF(j);
+				return dof.symbol();
+			}
+		}
+	}
+	assert(false);
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+const char* FSModel::GetDOFName(int n) const
+{
+	if (n < 0) { return "(invalid)"; }
+	for (int i = 0, m = 0; i < m_DOF.size(); ++i)
+	{
+		const FEDOFVariable& var = m_DOF[i];
+		for (int j = 0; j < var.DOFs(); ++j, ++m)
+		{
+			if (m == n)
+			{
+				const FEDOF& dof = var.GetDOF(j);
+				return dof.name();
+			}
+		}
+	}
+	assert(false);
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+FSModel::~FSModel()
 {
 	Clear();
 	delete m_pModel;
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::ClearSolutes()
+void FSModel::ClearSolutes()
 {
 	if (m_Sol.IsEmpty() == false)
 	{
@@ -265,9 +321,9 @@ void FEModel::ClearSolutes()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AddSolute(const std::string& name, int z, double M, double d)
+void FSModel::AddSolute(const std::string& name, int z, double M, double d)
 {
-	FESoluteData* s = new FESoluteData;
+	SoluteData* s = new SoluteData;
 	s->SetName(name);
 	s->SetChargeNumber(z);
 	s->SetMolarMass(M);
@@ -283,13 +339,13 @@ void FEModel::AddSolute(const std::string& name, int z, double M, double d)
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::GetRigidMaterialNames(char* szbuf)
+void FSModel::GetRigidMaterialNames(char* szbuf)
 {
 	char* ch = szbuf;
 	for (int i = 0; i<Materials(); ++i)
 	{
 		GMaterial* pm = GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			const char* szi = pm->GetName().c_str();
 			strcat(ch, szi);
@@ -300,22 +356,53 @@ void FEModel::GetRigidMaterialNames(char* szbuf)
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::GetVariableNames(const char* szvar, char* szbuf)
+void FSModel::GetVariableNames(const char* szvar, char* szbuf)
 {
-	char var[256] = {0};
+	char var[512] = {0};
 	const char* chl = strchr(szvar, '('); assert(chl);
 	const char* chr = strchr(szvar, ')'); assert(chr);
 	strncpy(var, chl+1, chr-chl-1);
 
-	if (strcmp(var, "Solutes") == 0) { GetSoluteNames(szbuf); return; }
+	if      (strcmp(var, "Solutes") == 0) { GetSoluteNames(szbuf); return; }
 	else if (strcmp(var, "SBMs") == 0) { GetSBMNames(szbuf); return; }
+	else if (strcmp(var, "species") == 0) { GetSpeciesNames(szbuf); return; }
+	else if (strcmp(var, "rigid_materials") == 0) 
+	{
+		GetRigidMaterialNames(szbuf); return;
+	}
 	else
 	{
-		int NVAR = Variables();
-		for (int i=0; i<NVAR; ++i)
+		const char* szvar = var;
+		if (strncmp(var, "dof_list", 8) == 0)
 		{
-			FEDOFVariable& v = Variable(i);
-			if (strcmp(v.name(), var) == 0) { GetDOFNames(v, szbuf); return; }
+			if (szvar[8] == 0)
+			{
+				char* ch = szbuf;
+				int NVAR = Variables();
+				for (int i = 0; i < NVAR; ++i)
+				{
+					FEDOFVariable& var = Variable(i);
+					for (int j = 0; j < var.DOFs(); ++j)
+					{
+						const char* szi = var.GetDOF(j).name();
+						strcat(ch, szi);
+						ch += strlen(szi);
+						*ch++ = '\0';
+					}
+				}
+				return;
+			}
+			else if (szvar[8] == ':')
+			{
+				szvar = var + 9;
+				int NVAR = Variables();
+				for (int i = 0; i < NVAR; ++i)
+				{
+					FEDOFVariable& v = Variable(i);
+					if (strcmp(v.name(), szvar) == 0) { GetDOFNames(v, szbuf); return; }
+				}
+			}
+			else assert(false);
 		}
 	}
 	assert(false);
@@ -323,32 +410,125 @@ void FEModel::GetVariableNames(const char* szvar, char* szbuf)
 
 
 //-----------------------------------------------------------------------------
-const char* FEModel::GetVariableName(const char* szvar, int n)
+const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 {
-	if (strcmp(szvar, "$(Solutes)") == 0)
+	if (szvar[0] != '$') return nullptr;
+
+	char var[256] = { 0 };
+	const char* chl = strchr(szvar, '('); assert(chl);
+	const char* chr = strchr(szvar, ')'); assert(chr);
+	strncpy(var, chl + 1, chr - chl - 1);
+
+	if (strcmp(var, "Solutes") == 0)
 	{
 		if ((n >= 0) && (n < m_Sol.Size()))
 			return m_Sol[n]->GetName().c_str();
 		else
 			return "(invalid)";
 	}
-	else if (strcmp(szvar, "$(SBMs)") == 0)
+	else if (strcmp(var, "SBMs") == 0)
 	{
 		if ((n >= 0) && (n < m_SBM.Size()))
 			return m_SBM[n]->GetName().c_str();
 		else
 			return "(invalid)";
 	}
+	else if (strcmp(var, "species") == 0)
+	{
+		if ((n >= 0) && (n < m_Sol.Size()))
+			return m_Sol[n]->GetName().c_str();
+		else
+		{
+			n -= m_Sol.Size();
+			if ((n >= 0) && (n < m_SBM.Size()))
+				return m_SBM[n]->GetName().c_str();
+			else
+				return "(invalid)";
+		}
+
+	}
+	else if (strncmp(var, "dof_list", 8) == 0)
+	{
+		if (var[8] == 0)
+		{
+			const char* szdof = (longName ? GetDOFName(n) : GetDOFSymbol(n)); assert(szdof);
+			return (szdof == "nullptr" ? "(error)" : szdof);
+		}
+		else if (var[8] == ':')
+		{
+			szvar = var + 9;
+			int NVAR = Variables();
+			for (int i = 0; i < NVAR; ++i)
+			{
+				FEDOFVariable& v = Variable(i);
+				if (strcmp(v.name(), szvar) == 0)
+				{
+					if ((n >= 0) && (n < v.DOFs()))
+					{
+						if (longName)
+							return v.GetDOF(n).name();
+						else
+							return v.GetDOF(n).symbol();
+					}
+					else return nullptr;
+				}
+			}
+		}
+	}
+	else if (strcmp(var, "rigid_materials") == 0)
+	{
+		GMaterial* mat = GetMaterial(n - 1);
+		if (mat)
+		{
+			FSMaterial* femat = mat->GetMaterialProperties();
+			if (femat && femat->IsRigid())
+			{
+				return mat->GetName().c_str();
+			}
+			else assert(femat);
+		}
+		else return "(invalid)";
+	}
 	assert(false);
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-const char* FEModel::GetEnumValue(const char* szenum, int n)
+int FSModel::GetVariableIntValue(const char* szvar, int n)
+{
+	if (strcmp(szvar, "$(Solutes)") == 0)
+	{
+		if ((n >= 0) && (n < m_Sol.Size()))
+			return n + 1;
+		else
+			return -1;
+	}
+	else if (strcmp(szvar, "$(SBMs)") == 0)
+	{
+		if ((n >= 0) && (n < m_SBM.Size()))
+			return n + 1;
+		else
+			return -1;
+	}
+	else if (strcmp(szvar, "$(species)") == 0)
+	{
+		if ((n >= 0) && (n < m_Sol.Size())) return n + 1;
+		else
+		{
+			n -= m_Sol.Size();
+			if ((n >= 0) && (n < m_SBM.Size())) return n + m_Sol.Size() + 1;
+		}
+	}
+//	assert(false);
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+const char* FSModel::GetEnumValue(const char* szenum, int n, bool longName)
 {
 	if (szenum == nullptr) return nullptr;
 
-	if (szenum[0] == '$') return GetVariableName(szenum, n);
+	if (szenum[0] == '$') return GetVariableName(szenum, n, longName);
 	
 	const char* ch = szenum;
 	int i = 0;
@@ -362,7 +542,16 @@ const char* FEModel::GetEnumValue(const char* szenum, int n)
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::GetDOFNames(FEDOFVariable& var, char* szbuf)
+int FSModel::GetEnumIntValue(Param& param)
+{
+	const char* szenum = param.GetEnumNames();
+	if (szenum == nullptr) return 0;
+	if (szenum[0] == '$') return GetVariableIntValue(szenum, param.GetIntValue());
+	return param.GetIntValue();
+}
+
+//-----------------------------------------------------------------------------
+void FSModel::GetDOFNames(FEDOFVariable& var, char* szbuf)
 {
 	char* ch = szbuf;
 	for (int i = 0; i<var.DOFs(); ++i)
@@ -375,7 +564,81 @@ void FEModel::GetDOFNames(FEDOFVariable& var, char* szbuf)
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::GetSoluteNames(char* szbuf)
+void FSModel::GetDOFNames(FEDOFVariable& var, vector<string>& dofList)
+{
+	dofList.clear();
+	for (int i = 0; i < var.DOFs(); ++i)
+	{
+		const char* szi = var.GetDOF(i).name();
+		dofList.push_back(szi);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FSModel::GetDOFSymbols(FEDOFVariable& var, vector<string>& dofList)
+{
+	dofList.clear();
+
+	// TODO: little hack for concentration variables.
+	//       The problem is that the concentration variable is empty and does not get updated.
+	//       when solutes are added. So, we do it this way.
+	if (strcmp(var.name(), "concentration") == 0)
+	{
+		int nsol = Solutes();
+		for (int i = 0; i < nsol; ++i)
+		{
+			char sz[16] = { 0 };
+			sprintf(sz, "c%d", i + 1);
+			dofList.push_back(sz);
+		}
+	}
+
+	for (int i = 0; i < var.DOFs(); ++i)
+	{
+		const char* szi = var.GetDOF(i).symbol();
+		dofList.push_back(szi);
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool FSModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum)
+{
+	assert(szbuf);
+	if (szbuf == nullptr) return false;
+	if (szenum == nullptr) return false;
+	if (szenum[0] == '$')
+	{
+		char var[256] = { 0 };
+		const char* chl = strchr(szenum, '('); assert(chl);
+		const char* chr = strchr(szenum, ')'); assert(chr);
+		strncpy(var, chl + 1, chr - chl - 1);
+
+		if (strncmp(var, "dof_list", 8) == 0)
+		{
+			const char* szvar = var + 9;
+			FEDOFVariable& var = GetVariable(szvar);
+
+			vector<string> dofList; 
+			GetDOFSymbols(var, dofList);
+
+			char* sz = szbuf;
+			for (int i = 0; i < l.size(); ++i)
+			{
+				strcat(sz, dofList[l[i]].c_str());
+				int n = strlen(sz);
+				if (i != l.size()-1) sz[n] = ',';
+				sz += n + 1;
+			}
+
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void FSModel::GetSoluteNames(char* szbuf)
 {
 	char* ch = szbuf;
 	for (int i=0; i<(int)m_Sol.Size(); ++i)
@@ -388,7 +651,7 @@ void FEModel::GetSoluteNames(char* szbuf)
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::GetSBMNames(char* szbuf)
+void FSModel::GetSBMNames(char* szbuf)
 {
 	char* ch = szbuf;
 	for (int i = 0; i<(int)m_SBM.Size(); ++i)
@@ -401,7 +664,23 @@ void FEModel::GetSBMNames(char* szbuf)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::FindSolute(const char* sz)
+void FSModel::GetSpeciesNames(char* szbuf)
+{
+	// get the solute names
+	GetSoluteNames(szbuf);
+
+	// wind the buffer forward
+	while (szbuf[0])
+	{
+		szbuf = szbuf + strlen(szbuf) + 1;
+	}
+
+	// add the SBM names
+	GetSBMNames(szbuf);
+}
+
+//-----------------------------------------------------------------------------
+int FSModel::FindSolute(const char* sz)
 {
 	string sol(sz);
 	for (int i=0; i<m_Sol.Size(); ++i)
@@ -412,19 +691,19 @@ int FEModel::FindSolute(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-FESoluteData& FEModel::GetSoluteData(int i)
+SoluteData& FSModel::GetSoluteData(int i)
 { 
 	return *m_Sol[i]; 
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::Solutes()
+int FSModel::Solutes()
 { 
 	return (int)m_Sol.Size(); 
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::RemoveSolute(int n)
+void FSModel::RemoveSolute(int n)
 {
 	delete m_Sol[n];
 
@@ -442,7 +721,7 @@ void FEModel::RemoveSolute(int n)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::FindSBM(const char* sz)
+int FSModel::FindSBM(const char* sz)
 {
 	string sbm(sz);
 	for (int i = 0; i<m_SBM.Size(); ++i)
@@ -453,21 +732,21 @@ int FEModel::FindSBM(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-FESoluteData& FEModel::GetSBMData(int i)
+SoluteData& FSModel::GetSBMData(int i)
 { 
 	return *m_SBM[i]; 
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::SBMs()
+int FSModel::SBMs()
 { 
 	return (int)m_SBM.Size(); 
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AddSBM(const std::string& name, int z, double M, double d)
+void FSModel::AddSBM(const std::string& name, int z, double M, double d)
 {
-	FESoluteData* s = new FESoluteData;
+	SoluteData* s = new SoluteData;
 	s->SetName(name);
 	s->SetChargeNumber(z);
 	s->SetMolarMass(M);
@@ -476,38 +755,38 @@ void FEModel::AddSBM(const std::string& name, int z, double M, double d)
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::ClearSBMs()
+void FSModel::ClearSBMs()
 {
 	m_SBM.Clear();
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::RemoveSBM(int n)
+void FSModel::RemoveSBM(int n)
 {
 	delete m_SBM[n];
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::Reactions()
+int FSModel::Reactions()
 {
     int n = 0;
 	for (int i=0; i<(int) m_pMat.Size(); ++i)
     {
-        FEMaterial* pmat = m_pMat[i]->GetMaterialProperties();
-        FEMultiphasicMaterial* pmp = dynamic_cast<FEMultiphasicMaterial*>(pmat);
+        FSMaterial* pmat = m_pMat[i]->GetMaterialProperties();
+        FSMultiphasicMaterial* pmp = dynamic_cast<FSMultiphasicMaterial*>(pmat);
         if (pmp) n += pmp->Reactions();
     }
     return n;
 }
 
 //-----------------------------------------------------------------------------
-FEReactionMaterial* FEModel::GetReaction(int id)
+FSReactionMaterial* FSModel::GetReaction(int id)
 {
     int n = -1;
 	for (int i=0; i<(int) m_pMat.Size(); ++i)
     {
-        FEMaterial* pmat = m_pMat[i]->GetMaterialProperties();
-        FEMultiphasicMaterial* pmp = dynamic_cast<FEMultiphasicMaterial*>(pmat);
+        FSMaterial* pmat = m_pMat[i]->GetMaterialProperties();
+        FSMultiphasicMaterial* pmp = dynamic_cast<FSMultiphasicMaterial*>(pmat);
         if (pmp) {
             for (int j=0; j<pmp->Reactions(); ++j) {
                 n++;
@@ -521,7 +800,7 @@ FEReactionMaterial* FEModel::GetReaction(int id)
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
+void FSModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 {
 	// find the old material
 	for (int i=0; i<(int) m_pMat.Size(); ++i)
@@ -550,7 +829,7 @@ void FEModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 
 //-----------------------------------------------------------------------------
 
-bool FEModel::CanDeleteMaterial(GMaterial* pmat)
+bool FSModel::CanDeleteMaterial(GMaterial* pmat)
 {
 	int i, j;
 
@@ -570,31 +849,31 @@ bool FEModel::CanDeleteMaterial(GMaterial* pmat)
 }
 
 //-----------------------------------------------------------------------------
-GMaterial* FEModel::GetMaterial(int n)
+GMaterial* FSModel::GetMaterial(int n)
 {
 	return (n<0 || n >= (int)m_pMat.Size() ? 0 : m_pMat[n]);
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AddMaterial(GMaterial* pmat)
+void FSModel::AddMaterial(GMaterial* pmat)
 {
 	m_pMat.Add(pmat); pmat->SetModel(this);
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::InsertMaterial(int n, GMaterial* pm)
+void FSModel::InsertMaterial(int n, GMaterial* pm)
 { 
 	m_pMat.Insert(n, pm); 
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::Materials()
+int FSModel::Materials()
 { 
 	return (int)m_pMat.Size(); 
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::DeleteMaterial(GMaterial* pmat)
+int FSModel::DeleteMaterial(GMaterial* pmat)
 {
 	// first, we see if this material being used by a mesh
 	for (int i = 0; i<m_pModel->Objects(); ++i)
@@ -612,7 +891,7 @@ int FEModel::DeleteMaterial(GMaterial* pmat)
 }
 
 //-----------------------------------------------------------------------------
-GMaterial* FEModel::GetMaterialFromID(int id)
+GMaterial* FSModel::GetMaterialFromID(int id)
 {
 	// don't bother looking of ID is invalid
 	if (id < 0) return 0;
@@ -625,7 +904,7 @@ GMaterial* FEModel::GetMaterialFromID(int id)
 
 //-----------------------------------------------------------------------------
 // find a material from its name
-GMaterial* FEModel::FindMaterial(const char* szname)
+GMaterial* FSModel::FindMaterial(const char* szname)
 {
 	if (szname == 0) return 0;
 	string sname = szname;
@@ -639,7 +918,7 @@ GMaterial* FEModel::FindMaterial(const char* szname)
 }
 
 //-----------------------------------------------------------------------------
-FERigidConnector* FEModel::GetRigidConnectorFromID(int id)
+FSRigidConnector* FSModel::GetRigidConnectorFromID(int id)
 {
     // don't bother looking of ID is invalid
     if (id < 0) return 0;
@@ -647,7 +926,7 @@ FERigidConnector* FEModel::GetRigidConnectorFromID(int id)
     int lid = -1;
     for (int n = 0; n<Steps(); ++n)
     {
-        FEStep& s = *GetStep(n);
+        FSStep& s = *GetStep(n);
         for (int i = 0; i<s.RigidConnectors(); ++i)
             if (++lid == id) return s.RigidConnector(i);
     }
@@ -657,7 +936,7 @@ FERigidConnector* FEModel::GetRigidConnectorFromID(int id)
 
 //-----------------------------------------------------------------------------
 
-void FEModel::Clear()
+void FSModel::Clear()
 {
 	// clear all data variables
 	m_Var.Clear();
@@ -677,17 +956,17 @@ void FEModel::Clear()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::New()
+void FSModel::New()
 {
 	// clear FE data
 	Clear();
 
 	// define the initial step
-	m_pStep.Add(new FEInitialStep(this));
+	m_pStep.Add(new FSInitialStep(this));
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::Save(OArchive& ar)
+void FSModel::Save(OArchive& ar)
 {
 	// save model data
 	int nvar = Parameters();
@@ -718,7 +997,7 @@ void FEModel::Save(OArchive& ar)
 			int NS = Solutes();
 			for (int i=0; i<NS; ++i)
 			{
-				FESoluteData& sd = *m_Sol[i];
+				SoluteData& sd = *m_Sol[i];
 				ar.BeginChunk(CID_FEM_SOLUTE);
 				{
 					ar.WriteChunk(CID_FEM_SOLUTE_NAME      , sd.GetName());
@@ -740,7 +1019,7 @@ void FEModel::Save(OArchive& ar)
 			int NS = SBMs();
 			for (int i=0; i<NS; ++i)
 			{
-				FESoluteData& sd = *m_SBM[i];
+				SoluteData& sd = *m_SBM[i];
 				ar.BeginChunk(CID_FEM_SBM);
 				{
 					ar.WriteChunk(CID_FEM_SBM_NAME      , sd.GetName());
@@ -765,7 +1044,7 @@ void FEModel::Save(OArchive& ar)
 				GMaterial* pm = GetMaterial(i);
 
 				int ntype = 0;
-				FEMaterial* mat = pm->GetMaterialProperties();
+				FSMaterial* mat = pm->GetMaterialProperties();
 				if (mat) ntype = mat->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -788,6 +1067,25 @@ void FEModel::Save(OArchive& ar)
 		ar.EndChunk();
 	}
 
+	// save load controllers
+	if (LoadControllers() > 0)
+	{
+		ar.BeginChunk(CID_LOAD_CONTROLLER_LIST);
+		{
+			for (int i = 0; i < LoadControllers(); ++i)
+			{
+				FSLoadController* plc = GetLoadController(i);
+				int ntype = plc->Type();
+				ar.BeginChunk(ntype);
+				{
+					plc->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
 	// save the steps
 	int nsteps = Steps();
 	if (nsteps > 0)
@@ -796,7 +1094,7 @@ void FEModel::Save(OArchive& ar)
 		{
 			for (int i=0; i<nsteps; ++i)
 			{
-				FEStep* ps = GetStep(i);
+				FSStep* ps = GetStep(i);
 				int ntype = ps->GetType();
 				ar.BeginChunk(ntype);
 				{
@@ -811,14 +1109,16 @@ void FEModel::Save(OArchive& ar)
 
 //-----------------------------------------------------------------------------
 
-void FEModel::Load(IArchive& ar)
+void FSModel::Load(IArchive& ar)
 {
-	TRACE("FEModel::Load");
+	TRACE("FSModel::Load");
 
 	// clear the model
 	Clear();
 
 	GPartList::SetModel(this);
+
+    m_pModel->SetLoadOnlyDiscreteFlag(m_skipGeometry);
 
 	// read the model data
 	while (IArchive::IO_OK == ar.OpenChunk())
@@ -826,12 +1126,13 @@ void FEModel::Load(IArchive& ar)
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_FEM_DATA         : LoadData(ar); break;
-		case CID_FEM_SOLUTE_DATA  : LoadSoluteData(ar); break;
-        case CID_FEM_SBM_DATA     : LoadSBMData(ar); break;
-		case CID_MATERIAL_SECTION : LoadMaterials(ar); break;
-		case CID_GEOMETRY_SECTION : m_pModel->Load(ar); break;
-		case CID_STEP_SECTION     : LoadSteps(ar); break;
+		case CID_FEM_DATA            : LoadData(ar); break;
+		case CID_FEM_SOLUTE_DATA     : LoadSoluteData(ar); break;
+        case CID_FEM_SBM_DATA        : LoadSBMData(ar); break;
+		case CID_MATERIAL_SECTION    : LoadMaterials(ar); break;
+		case CID_GEOMETRY_SECTION    : m_pModel->Load(ar); break;
+		case CID_STEP_SECTION        : LoadSteps(ar); break;
+		case CID_LOAD_CONTROLLER_LIST: LoadLoadControllers(ar); break;
 		}
 		ar.CloseChunk();
 	}
@@ -841,9 +1142,9 @@ void FEModel::Load(IArchive& ar)
 
 //-----------------------------------------------------------------------------
 // reads the model data
-void FEModel::LoadData(IArchive& ar)
+void FSModel::LoadData(IArchive& ar)
 {
-	TRACE("FEModel::LoadData");
+	TRACE("FSModel::LoadData");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -872,7 +1173,7 @@ void FEModel::LoadData(IArchive& ar)
 
 //-----------------------------------------------------------------------------
 // Load solute data
-void FEModel::LoadSoluteData(IArchive& ar)
+void FSModel::LoadSoluteData(IArchive& ar)
 {
 	int n = 0;
 	m_Sol.Clear();
@@ -881,7 +1182,7 @@ void FEModel::LoadSoluteData(IArchive& ar)
 		int ntype = ar.GetChunkID();
 		if (ntype == CID_FEM_SOLUTE)
 		{
-			if (n > 1) throw ReadError("error parsing CID_FEM_SOLUTE (FEModel::LoadSoluteData)");
+			if (n > 1) throw ReadError("error parsing CID_FEM_SOLUTE (FSModel::LoadSoluteData)");
 			std::string name;
 			int z; double M, d;
 			while (IArchive::IO_OK == ar.OpenChunk())
@@ -895,14 +1196,14 @@ void FEModel::LoadSoluteData(IArchive& ar)
 			}
 			AddSolute(name, z, M, d);
 		}
-		else throw ReadError("error in FEModel::LoadSoluteData");
+		else throw ReadError("error in FSModel::LoadSoluteData");
 		ar.CloseChunk();
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Load solid-bound molecule data
-void FEModel::LoadSBMData(IArchive& ar)
+void FSModel::LoadSBMData(IArchive& ar)
 {
 	int n = 0;
 	m_SBM.Clear();
@@ -911,7 +1212,7 @@ void FEModel::LoadSBMData(IArchive& ar)
 		int ntype = ar.GetChunkID();
 		if (ntype == CID_FEM_SBM)
 		{
-			if (n > 1) throw ReadError("error parsing CID_FEM_SBM (FEModel::LoadSBMData)");
+			if (n > 1) throw ReadError("error parsing CID_FEM_SBM (FSModel::LoadSBMData)");
 			std::string name;
 			int z; double M, d;
 			while (IArchive::IO_OK == ar.OpenChunk())
@@ -925,33 +1226,34 @@ void FEModel::LoadSBMData(IArchive& ar)
 			}
 			AddSBM(name, z, M, d);
 		}
-		else throw ReadError("error in FEModel::LoadSBMData");
+		else throw ReadError("error in FSModel::LoadSBMData");
 		ar.CloseChunk();
 	}
 }
 
 //-----------------------------------------------------------------------------
 // reads the steps from the input file
-void FEModel::LoadSteps(IArchive& ar)
+void FSModel::LoadSteps(IArchive& ar)
 {
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
-		FEStep* ps = 0;
+		FSStep* ps = 0;
 		switch (ntype)
 		{
-		case FE_STEP_INITIAL            : ps = new FEInitialStep        (this); break;
-		case FE_STEP_MECHANICS          : ps = new FENonLinearMechanics (this); break;
-		case FE_STEP_NL_DYNAMIC         : ps = new FENonLinearMechanics (this); break;	// obsolete (remains for backward compatibility)
-		case FE_STEP_HEAT_TRANSFER      : ps = new FEHeatTransfer       (this); break;
-		case FE_STEP_BIPHASIC           : ps = new FENonLinearBiphasic  (this); break;
-		case FE_STEP_BIPHASIC_SOLUTE   : ps = new FEBiphasicSolutes    (this); break;
-		case FE_STEP_MULTIPHASIC		: ps = new FEMultiphasicAnalysis(this); break;
-        case FE_STEP_FLUID              : ps = new FEFluidAnalysis      (this); break;
-        case FE_STEP_FLUID_FSI          : ps = new FEFluidFSIAnalysis   (this); break;
-		case FE_STEP_REACTION_DIFFUSION : ps = new FEReactionDiffusionAnalysis(this); break;
+		case FE_STEP_INITIAL            : ps = new FSInitialStep        (this); break;
+		case FE_STEP_MECHANICS          : ps = new FSNonLinearMechanics (this); break;
+		case FE_STEP_NL_DYNAMIC         : ps = new FSNonLinearMechanics (this); break;	// obsolete (remains for backward compatibility)
+		case FE_STEP_HEAT_TRANSFER      : ps = new FSHeatTransfer       (this); break;
+		case FE_STEP_BIPHASIC           : ps = new FSNonLinearBiphasic  (this); break;
+		case FE_STEP_BIPHASIC_SOLUTE    : ps = new FSBiphasicSolutes    (this); break;
+		case FE_STEP_MULTIPHASIC		: ps = new FSMultiphasicAnalysis(this); break;
+        case FE_STEP_FLUID              : ps = new FSFluidAnalysis      (this); break;
+        case FE_STEP_FLUID_FSI          : ps = new FSFluidFSIAnalysis   (this); break;
+		case FE_STEP_REACTION_DIFFUSION : ps = new FSReactionDiffusionAnalysis(this); break;
+		case FE_STEP_FEBIO_ANALYSIS     : ps = new FEBioAnalysisStep(this); break;
 		default:
-			throw ReadError("unknown CID in FEModel::LoadSteps");
+			throw ReadError("unknown CID in FSModel::LoadSteps");
 		}
 
 		// load the step data
@@ -964,29 +1266,44 @@ void FEModel::LoadSteps(IArchive& ar)
 	}
 }
 
+//-----------------------------------------------------------------------------
+void FSModel::LoadLoadControllers(IArchive& ar)
+{
+	assert(LoadControllers() == 0);
+	FEMKernel& kernel = *FEMKernel::Instance();
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int ntype = ar.GetChunkID();
+		FSLoadController* plc = dynamic_cast<FSLoadController*>(kernel.Create(this, FELOADCONTROLLER_ID, ntype));
+		if (plc == nullptr) throw ReadError("unknown CID in FSModel::LoadLoadControllers");
+		AddLoadController(plc);
+		plc->Load(ar);
+		ar.CloseChunk();
+	}
+}
 
 //-----------------------------------------------------------------------------
 // reads materials from archive
-void FEModel::LoadMaterials(IArchive& ar)
+void FSModel::LoadMaterials(IArchive& ar)
 {
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
 
-		FEMaterial* pmat = 0;
+		FSMaterial* pmat = 0;
 		// allocate the material
-		if (ntype == FE_USER_MATERIAL) pmat = new FEUserMaterial(FE_USER_MATERIAL);
-		else if (ntype == FE_TRANS_MOONEY_RIVLIN_OLD) pmat = new FETransMooneyRivlinOld;
-		else if (ntype == FE_TRANS_VERONDA_WESTMANN_OLD) pmat = new FETransVerondaWestmannOld;
-		else if (ntype == FE_COUPLED_TRANS_ISO_MR_OLD) pmat = new FECoupledTransIsoMooneyRivlinOld;
-        else if (ntype == FE_ACTIVE_CONTRACT_UNI_OLD) pmat = new FEPrescribedActiveContractionUniaxialOld;
-        else if (ntype == FE_ACTIVE_CONTRACT_TISO_OLD) pmat = new FEPrescribedActiveContractionTransIsoOld;
-        else if (ntype == FE_ACTIVE_CONTRACT_UNI_UC_OLD) pmat = new FEPrescribedActiveContractionUniaxialUCOld;
-        else if (ntype == FE_ACTIVE_CONTRACT_TISO_UC_OLD) pmat = new FEPrescribedActiveContractionTransIsoUCOld;
-        else if (ntype == FE_FIBEREXPPOW_COUPLED_OLD) pmat = new FEFiberExpPowOld;
-        else if (ntype == FE_FIBEREXPPOW_UNCOUPLED_OLD) pmat = new FEFiberExpPowUncoupledOld;
-        else if (ntype == FE_FIBERPOWLIN_COUPLED_OLD) pmat = new FEFiberPowLinOld;
-        else if (ntype == FE_FIBERPOWLIN_UNCOUPLED_OLD) pmat = new FEFiberPowLinUncoupledOld;
+		if (ntype == FE_USER_MATERIAL) pmat = new FSUserMaterial(FE_USER_MATERIAL);
+		else if (ntype == FE_TRANS_MOONEY_RIVLIN_OLD    ) pmat = new FSTransMooneyRivlinOld;
+		else if (ntype == FE_TRANS_VERONDA_WESTMANN_OLD ) pmat = new FSTransVerondaWestmannOld;
+		else if (ntype == FE_COUPLED_TRANS_ISO_MR_OLD   ) pmat = new FSCoupledTransIsoMooneyRivlinOld;
+        else if (ntype == FE_ACTIVE_CONTRACT_UNI_OLD    ) pmat = new FSPrescribedActiveContractionUniaxialOld;
+        else if (ntype == FE_ACTIVE_CONTRACT_TISO_OLD   ) pmat = new FSPrescribedActiveContractionTransIsoOld;
+        else if (ntype == FE_ACTIVE_CONTRACT_UNI_UC_OLD ) pmat = new FSPrescribedActiveContractionUniaxialUCOld;
+        else if (ntype == FE_ACTIVE_CONTRACT_TISO_UC_OLD) pmat = new FSPrescribedActiveContractionTransIsoUCOld;
+        else if (ntype == FE_FIBEREXPPOW_COUPLED_OLD    ) pmat = new FSFiberExpPowOld;
+        else if (ntype == FE_FIBEREXPPOW_UNCOUPLED_OLD  ) pmat = new FSFiberExpPowUncoupledOld;
+        else if (ntype == FE_FIBERPOWLIN_COUPLED_OLD    ) pmat = new FSFiberPowLinOld;
+        else if (ntype == FE_FIBERPOWLIN_UNCOUPLED_OLD  ) pmat = new FSFiberPowLinUncoupledOld;
 		else pmat = FEMaterialFactory::Create(ntype);
 
 		GMaterial* pgm = new GMaterial(pmat);
@@ -996,68 +1313,68 @@ void FEModel::LoadMaterials(IArchive& ar)
 
 		if (ntype == FE_TRANS_MOONEY_RIVLIN_OLD)
 		{
-			FETransMooneyRivlin* pnewMat = new FETransMooneyRivlin;
-			pnewMat->Convert(dynamic_cast<FETransMooneyRivlinOld*>(pmat));
+			FSTransMooneyRivlin* pnewMat = new FSTransMooneyRivlin;
+			pnewMat->Convert(dynamic_cast<FSTransMooneyRivlinOld*>(pmat));
 			pgm->SetMaterialProperties(pnewMat);
 		}
 		else if (ntype == FE_TRANS_VERONDA_WESTMANN_OLD)
 		{
-			FETransVerondaWestmann* pnewMat = new FETransVerondaWestmann;
-			pnewMat->Convert(dynamic_cast<FETransVerondaWestmannOld*>(pmat));
+			FSTransVerondaWestmann* pnewMat = new FSTransVerondaWestmann;
+			pnewMat->Convert(dynamic_cast<FSTransVerondaWestmannOld*>(pmat));
 			pgm->SetMaterialProperties(pnewMat);
 		}
 		else if (ntype == FE_COUPLED_TRANS_ISO_MR_OLD)
 		{
-			FECoupledTransIsoMooneyRivlin* pnewMat = new FECoupledTransIsoMooneyRivlin;
-			pnewMat->Convert(dynamic_cast<FECoupledTransIsoMooneyRivlinOld*>(pmat));
+			FSCoupledTransIsoMooneyRivlin* pnewMat = new FSCoupledTransIsoMooneyRivlin;
+			pnewMat->Convert(dynamic_cast<FSCoupledTransIsoMooneyRivlinOld*>(pmat));
 			pgm->SetMaterialProperties(pnewMat);
 		}
         else if (ntype == FE_ACTIVE_CONTRACT_UNI_OLD)
         {
-            FEPrescribedActiveContractionUniaxial* pnewMat = new FEPrescribedActiveContractionUniaxial;
-            pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionUniaxialOld*>(pmat));
+            FSPrescribedActiveContractionUniaxial* pnewMat = new FSPrescribedActiveContractionUniaxial;
+            pnewMat->Convert(dynamic_cast<FSPrescribedActiveContractionUniaxialOld*>(pmat));
             pgm->SetMaterialProperties(pnewMat);
         }
         else if (ntype == FE_ACTIVE_CONTRACT_TISO_OLD)
         {
-            FEPrescribedActiveContractionTransIso* pnewMat = new FEPrescribedActiveContractionTransIso;
-            pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionTransIsoOld*>(pmat));
+            FSPrescribedActiveContractionTransIso* pnewMat = new FSPrescribedActiveContractionTransIso;
+            pnewMat->Convert(dynamic_cast<FSPrescribedActiveContractionTransIsoOld*>(pmat));
             pgm->SetMaterialProperties(pnewMat);
         }
         else if (ntype == FE_ACTIVE_CONTRACT_UNI_UC_OLD)
         {
-            FEPrescribedActiveContractionUniaxialUC* pnewMat = new FEPrescribedActiveContractionUniaxialUC;
-            pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionUniaxialUCOld*>(pmat));
+            FSPrescribedActiveContractionUniaxialUC* pnewMat = new FSPrescribedActiveContractionUniaxialUC;
+            pnewMat->Convert(dynamic_cast<FSPrescribedActiveContractionUniaxialUCOld*>(pmat));
             pgm->SetMaterialProperties(pnewMat);
         }
         else if (ntype == FE_ACTIVE_CONTRACT_TISO_UC_OLD)
         {
-            FEPrescribedActiveContractionTransIsoUC* pnewMat = new FEPrescribedActiveContractionTransIsoUC;
-            pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionTransIsoUCOld*>(pmat));
+            FSPrescribedActiveContractionTransIsoUC* pnewMat = new FSPrescribedActiveContractionTransIsoUC;
+            pnewMat->Convert(dynamic_cast<FSPrescribedActiveContractionTransIsoUCOld*>(pmat));
             pgm->SetMaterialProperties(pnewMat);
         }
         else if (ntype == FE_FIBEREXPPOW_COUPLED_OLD)
         {
-            FEFiberExpPow* pnewMat = new FEFiberExpPow;
-            pnewMat->Convert(dynamic_cast<FEFiberExpPowOld*>(pmat));
+            FSFiberExpPow* pnewMat = new FSFiberExpPow;
+            pnewMat->Convert(dynamic_cast<FSFiberExpPowOld*>(pmat));
             pgm->SetMaterialProperties(pnewMat);
         }
         else if (ntype == FE_FIBEREXPPOW_UNCOUPLED_OLD)
         {
-            FEFiberExpPowUncoupled* pnewMat = new FEFiberExpPowUncoupled;
-            pnewMat->Convert(dynamic_cast<FEFiberExpPowUncoupledOld*>(pmat));
+            FSFiberExpPowUncoupled* pnewMat = new FSFiberExpPowUncoupled;
+            pnewMat->Convert(dynamic_cast<FSFiberExpPowUncoupledOld*>(pmat));
             pgm->SetMaterialProperties(pnewMat);
         }
         else if (ntype == FE_FIBERPOWLIN_COUPLED_OLD)
         {
-            FEFiberPowLin* pnewMat = new FEFiberPowLin;
-            pnewMat->Convert(dynamic_cast<FEFiberPowLinOld*>(pmat));
+            FSFiberPowLin* pnewMat = new FSFiberPowLin;
+            pnewMat->Convert(dynamic_cast<FSFiberPowLinOld*>(pmat));
             pgm->SetMaterialProperties(pnewMat);
         }
         else if (ntype == FE_FIBERPOWLIN_UNCOUPLED_OLD)
         {
-            FEFiberPowLinUncoupled* pnewMat = new FEFiberPowLinUncoupled;
-            pnewMat->Convert(dynamic_cast<FEFiberPowLinUncoupledOld*>(pmat));
+            FSFiberPowLinUncoupled* pnewMat = new FSFiberPowLinUncoupled;
+            pnewMat->Convert(dynamic_cast<FSFiberPowLinUncoupledOld*>(pmat));
             pgm->SetMaterialProperties(pnewMat);
         }
 
@@ -1069,31 +1386,31 @@ void FEModel::LoadMaterials(IArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::Steps()
+int FSModel::Steps()
 { 
 	return (int)m_pStep.Size(); 
 }
 
 //-----------------------------------------------------------------------------
-FEStep* FEModel::GetStep(int i)
+FSStep* FSModel::GetStep(int i)
 { 
 	return m_pStep[i]; 
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AddStep(FEStep* ps)
+void FSModel::AddStep(FSStep* ps)
 { 
 	m_pStep.Add(ps); 
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::InsertStep(int n, FEStep* ps)
+void FSModel::InsertStep(int n, FSStep* ps)
 { 
 	m_pStep.Insert(n, ps); 
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::SwapSteps(FEStep* ps0, FEStep* ps1)
+void FSModel::SwapSteps(FSStep* ps0, FSStep* ps1)
 {
 	int n0 = GetStepIndex(ps0);
 	assert(n0 >= 0);
@@ -1103,14 +1420,14 @@ void FEModel::SwapSteps(FEStep* ps0, FEStep* ps1)
 
 	if ((n0 >= 0) && (n1 >= 0))
 	{
-		FEStep* tmp = m_pStep[n0];
+		FSStep* tmp = m_pStep[n0];
 		m_pStep.Set(n0, m_pStep[n1]);
 		m_pStep.Set(n1, tmp);
 	}
 }
 
 //-----------------------------------------------------------------------------
-FEStep* FEModel::FindStep(int nid)
+FSStep* FSModel::FindStep(int nid)
 {
 	for (int i=0; i<(int) m_pStep.Size(); ++i)
 	{
@@ -1121,7 +1438,7 @@ FEStep* FEModel::FindStep(int nid)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::GetStepIndex(FEStep* ps)
+int FSModel::GetStepIndex(FSStep* ps)
 {
 	for (int i = 0; i < (int)m_pStep.Size(); ++i)
 	{
@@ -1132,13 +1449,13 @@ int FEModel::GetStepIndex(FEStep* ps)
 
 //-----------------------------------------------------------------------------
 
-int FEModel::DeleteStep(FEStep* ps)
+int FSModel::DeleteStep(FSStep* ps)
 {
 	return m_pStep.Remove(ps);
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllMaterials()
+void FSModel::DeleteAllMaterials()
 {
 	// reset all objects materials
 	for (int i = 0; i<m_pModel->Objects(); ++i)
@@ -1152,77 +1469,99 @@ void FEModel::DeleteAllMaterials()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllBC()
+void FSModel::DeleteAllBC()
 {
 	for (int i=0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllBCs();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllLoads()
+void FSModel::DeleteAllLoads()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllLoads();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllIC()
+void FSModel::DeleteAllIC()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllICs();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllContact()
+void FSModel::DeleteAllContact()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllInterfaces();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllConstraints()
+void FSModel::DeleteAllConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllConstraints();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllRigidConstraints()
+void FSModel::DeleteAllRigidLoads()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
+		pstep->RemoveAllRigidLoads();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FSModel::DeleteAllLoadControllers()
+{
+	m_LC.Clear();
+}
+
+//-----------------------------------------------------------------------------
+void FSModel::DeleteAllMeshDataGenerators()
+{
+	m_MD.Clear();
+}
+
+//-----------------------------------------------------------------------------
+void FSModel::DeleteAllRigidConstraints()
+{
+	for (int i = 0; i<Steps(); ++i)
+	{
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllRigidConstraints();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllRigidConnectors()
+void FSModel::DeleteAllRigidConnectors()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
-		FEStep* pstep = GetStep(i);
+		FSStep* pstep = GetStep(i);
 		pstep->RemoveAllRigidConnectors();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllSteps()
+void FSModel::DeleteAllSteps()
 {
 	// remove all steps except the initial step
 	int N = Steps();
@@ -1233,7 +1572,7 @@ void FEModel::DeleteAllSteps()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::Purge(int ops)
+void FSModel::Purge(int ops)
 {
 	if (ops == 0)
 	{
@@ -1250,7 +1589,7 @@ void FEModel::Purge(int ops)
 		DeleteAllMaterials();
 
 		// add an initial step
-		m_pStep.Add(new FEInitialStep(this));
+		m_pStep.Add(new FSInitialStep(this));
 	}
 	else
 	{
@@ -1260,42 +1599,42 @@ void FEModel::Purge(int ops)
 
 //-----------------------------------------------------------------------------
 // clear the selections of all the bc, loads, etc.
-void FEModel::ClearSelections()
+void FSModel::ClearSelections()
 {
 	for (int i=0; i<Steps(); ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		for (int i=0; i<step->BCs(); ++i)
 		{
-			FEBoundaryCondition* pbc = step->BC(i);
+			FSBoundaryCondition* pbc = step->BC(i);
 			delete pbc->GetItemList(); pbc->SetItemList(0);
 		}
 
 		for (int i=0; i<step->Loads(); ++i)
 		{
-			FELoad* pl = step->Load(i);
+			FSLoad* pl = step->Load(i);
 			delete pl->GetItemList(); pl->SetItemList(0);
 		}
 
 		for (int i = 0; i<step->ICs(); ++i)
 		{
-			FEInitialCondition* pic = step->IC(i);
+			FSInitialCondition* pic = step->IC(i);
 			delete pic->GetItemList(); pic->SetItemList(0);
 		}
 
 		for (int i=0; i<step->Interfaces(); ++i)
 		{
-			FEInterface* pi = step->Interface(i);
+			FSInterface* pi = step->Interface(i);
 
-			if (dynamic_cast<FESoloInterface*>(pi))
+			if (dynamic_cast<FSSoloInterface*>(pi))
 			{
-				FESoloInterface* pc = dynamic_cast<FESoloInterface*>(pi);
+				FSSoloInterface* pc = dynamic_cast<FSSoloInterface*>(pi);
 				delete pc->GetItemList(); pc->SetItemList(0);
 			}
-			else if (dynamic_cast<FEPairedInterface*>(pi))
+			else if (dynamic_cast<FSPairedInterface*>(pi))
 			{
-				FEPairedInterface* pc = dynamic_cast<FEPairedInterface*>(pi);
+				FSPairedInterface* pc = dynamic_cast<FSPairedInterface*>(pi);
 				delete pc->GetSecondarySurface(); pc->SetSecondarySurface(0);
 				delete pc->GetPrimarySurface(); pc->SetPrimarySurface(0);
 			}
@@ -1303,32 +1642,32 @@ void FEModel::ClearSelections()
 
 		for (int i = 0; i < step->Constraints(); ++i)
 		{
-			FEModelConstraint* mc = step->Constraint(i);
+			FSModelConstraint* mc = step->Constraint(i);
 			delete mc->GetItemList(); mc->SetItemList(0);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::DataVariables()
+int FSModel::DataVariables()
 { 
 	return (int)m_Var.Size(); 
 }
 
 //-----------------------------------------------------------------------------
-FEDataVariable* FEModel::DataVariable(int i)
+FEDataVariable* FSModel::DataVariable(int i)
 { 
 	return m_Var[i]; 
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AddDataVariable(FEDataVariable* pv)
+void FSModel::AddDataVariable(FEDataVariable* pv)
 { 
 	m_Var.Add(pv); 
 }
 
 //-----------------------------------------------------------------------------
-FEDataVariable* FEModel::FindDataVariable(int nid)
+FEDataVariable* FSModel::FindDataVariable(int nid)
 {
 	for (int i=0; i<(int)m_Var.Size(); ++i)
 	{
@@ -1340,13 +1679,13 @@ FEDataVariable* FEModel::FindDataVariable(int nid)
 
 //-----------------------------------------------------------------------------
 // Update model data
-void FEModel::UpdateData()
+void FSModel::UpdateData()
 {
 	// update material fiber pointer for trans-iso materials
 	for (int i=0; i<m_pModel->Objects(); ++i)
 	{
 		GObject* po = m_pModel->Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			int NP = po->Parts();
@@ -1354,7 +1693,7 @@ void FEModel::UpdateData()
 			{
 				GPart& p = *po->Part(j);
 				GMaterial* pgm = GetMaterialFromID(p.GetMaterialID());
-				FETransverselyIsotropic* pmat = (pgm?dynamic_cast<FETransverselyIsotropic*>(pgm->GetMaterialProperties()):0);
+				FSTransverselyIsotropic* pmat = (pgm?dynamic_cast<FSTransverselyIsotropic*>(pgm->GetMaterialProperties()):0);
 				if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 				{
 					FEDataVariable* pv = FindDataVariable(pmat->GetFiberMaterial()->m_nuser);
@@ -1364,7 +1703,7 @@ void FEModel::UpdateData()
 						vec3d r;
 						for (int n=0; n<NE; ++n)
 						{
-							FEElement& e = pm->Element(n);
+							FSElement& e = pm->Element(n);
 							int ne = e.Nodes();
 							r = vec3d(0,0,0);
 							for (int m = 0; m<ne; ++m) r += po->GetTransform().LocalToGlobal(pm->Node(e.m_node[m]).r);
@@ -1386,9 +1725,9 @@ void FEModel::UpdateData()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AssignComponentToStep(FEStepComponent* pc, FEStep* ps)
+void FSModel::AssignComponentToStep(FSStepComponent* pc, FSStep* ps)
 {
-	FEStep* po = FindStep(pc->GetStep());
+	FSStep* po = FindStep(pc->GetStep());
 	assert(po);
 	if (po == 0) return;
 
@@ -1400,10 +1739,10 @@ void FEModel::AssignComponentToStep(FEStepComponent* pc, FEStep* ps)
 }
 
 //-----------------------------------------------------------------------------
-// This function is used when reading FEGroup's that are not managed by an FEMesh.
-// The FEGroup class reads the mesh ID and then the owner of the FEGroup calls
+// This function is used when reading FSGroup's that are not managed by an FSMesh.
+// The FSGroup class reads the mesh ID and then the owner of the FSGroup calls
 // this function to find the parent object (and mesh).
-bool FEModel::FindGroupParent(FEGroup* pg)
+bool FSModel::FindGroupParent(FSGroup* pg)
 {
 	int obj_id = pg->GetObjectID();
 	if (obj_id == -1) return false;
@@ -1417,42 +1756,18 @@ bool FEModel::FindGroupParent(FEGroup* pg)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::DataMaps() const
-{
-	return (int)m_Map.Size();
-}
-
-//-----------------------------------------------------------------------------
-void FEModel::AddDataMap(FEDataMapGenerator* map)
-{
-	m_Map.Add(map);
-}
-
-//-----------------------------------------------------------------------------
-int FEModel::RemoveMap(FEDataMapGenerator* map)
-{
-	return m_Map.Remove(map);
-}
-
-//-----------------------------------------------------------------------------
-FEDataMapGenerator* FEModel::GetDataMap(int i)
-{
-	return m_Map[i];
-}
-
-//-----------------------------------------------------------------------------
-int FEModel::CountBCs(int type)
+int FSModel::CountBCs(int type)
 {
 	int n = 0;
 	int NSTEPS = Steps();
 	for (int i=0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NBC = step->BCs();
 		for (int j=0; j<NBC; ++j)
 		{
-			FEBoundaryCondition* pbc = step->BC(j);
+			FSBoundaryCondition* pbc = step->BC(j);
 			if (pbc->Type() == type) n++;
 		}
 	}
@@ -1460,18 +1775,18 @@ int FEModel::CountBCs(int type)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::CountLoads(int type)
+int FSModel::CountLoads(int type)
 {
 	int n = 0;
 	int NSTEPS = Steps();
 	for (int i = 0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NL = step->Loads();
 		for (int j = 0; j<NL; ++j)
 		{
-			FELoad* pl = step->Load(j);
+			FSLoad* pl = step->Load(j);
 			if (pl->Type() == type) n++;
 		}
 	}
@@ -1479,18 +1794,18 @@ int FEModel::CountLoads(int type)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::CountICs(int type)
+int FSModel::CountICs(int type)
 {
 	int n = 0;
 	int NSTEPS = Steps();
 	for (int i = 0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NL = step->ICs();
 		for (int j = 0; j<NL; ++j)
 		{
-			FEInitialCondition* pbc = step->IC(j);
+			FSInitialCondition* pbc = step->IC(j);
 			if (pbc->Type() == type) n++;
 		}
 	}
@@ -1498,18 +1813,18 @@ int FEModel::CountICs(int type)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::CountInterfaces(int type)
+int FSModel::CountInterfaces(int type)
 {
 	int n = 0;
 	int NSTEPS = Steps();
 	for (int i = 0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NC = step->Interfaces();
 		for (int j = 0; j<NC; ++j)
 		{
-			FEInterface* pi = step->Interface(j);
+			FSInterface* pi = step->Interface(j);
 			if (pi->Type() == type) n++;
 		}
 	}
@@ -1517,18 +1832,18 @@ int FEModel::CountInterfaces(int type)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::CountRigidConstraints(int type)
+int FSModel::CountRigidConstraints(int type)
 {
 	int n = 0;
 	int NSTEPS = Steps();
 	for (int i = 0; i<NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NRC = step->RigidConstraints();
 		for (int j = 0; j<NRC; ++j)
 		{
-			FERigidConstraint* prc = step->RigidConstraint(j);
+			FSRigidConstraint* prc = step->RigidConstraint(j);
 			if (prc->Type() == type) n++;
 		}
 	}
@@ -1536,20 +1851,115 @@ int FEModel::CountRigidConstraints(int type)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::CountRigidConnectors(int type)
+int FSModel::CountRigidConnectors(int type)
 {
 	int n = 0;
 	int NSTEPS = Steps();
 	for (int i = 0; i < NSTEPS; ++i)
 	{
-		FEStep* step = GetStep(i);
+		FSStep* step = GetStep(i);
 
 		int NRC = step->RigidConnectors();
 		for (int j = 0; j < NRC; ++j)
 		{
-			FERigidConnector* prc = step->RigidConnector(j);
+			FSRigidConnector* prc = step->RigidConnector(j);
 			if (prc->Type() == type) n++;
 		}
 	}
 	return n;
+}
+
+void FSModel::SetSkipGeometry(bool skip)
+{
+    m_skipGeometry = skip;
+}
+
+int FSModel::LoadControllers() const
+{
+	return (int)m_LC.Size();
+}
+
+FSLoadController* FSModel::GetLoadController(int i)
+{
+	return m_LC[i];
+}
+
+FSLoadController* FSModel::GetLoadControllerFromID(int lc)
+{
+	if (lc < 0) return nullptr;
+	for (int i = 0; i < m_LC.Size(); ++i)
+	{
+		FSLoadController* plc = m_LC[i];
+		if (plc->GetID() == lc) return plc;
+	}
+	return nullptr;
+}
+
+void FSModel::AddLoadController(FSLoadController* plc)
+{
+	m_LC.Add(plc);
+}
+
+int FSModel::RemoveLoadController(FSLoadController* plc)
+{
+	return (int) m_LC.Remove(plc);
+}
+
+// helper function for creating load curves (returns UID of load controller)
+FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
+{
+	// allocate load curve
+	FSLoadController* plc = FEBio::CreateLoadController("loadcurve", this);
+
+	// set default name
+	std::string name;
+	const char* szname = lc.GetName();
+	if ((szname == nullptr) || (szname[0] == 0)) 
+	{
+		std::stringstream ss;
+		ss << "LC" << LoadControllers() + 1;
+		name = ss.str();
+	}
+	else name = szname;
+	plc->SetName(name);
+
+	// set parameters
+	plc->SetParamInt("interpolate", lc.GetInterpolator());
+	plc->SetParamInt("extend", lc.GetExtendMode());
+
+	// copy point data
+	std::vector<vec2d> pt;
+	for (int i = 0; i < lc.Points(); ++i)
+	{
+		vec2d pi = lc.Point(i);
+		pt.push_back(pi);
+	}
+	Param& points = *plc->GetParam("points");
+	points.val<std::vector<vec2d> >() = pt;
+
+	// add it to the pile
+	AddLoadController(plc);
+
+	return plc;
+}
+
+//----------------------------------------------------------------------------------------
+int FSModel::MeshDataGenerators() const
+{
+	return m_MD.Size();
+}
+
+FSMeshDataGenerator* FSModel::GetMeshDataGenerator(int i)
+{
+	return m_MD[i];
+}
+
+void FSModel::AddMeshDataGenerator(FSMeshDataGenerator* pmd)
+{
+	m_MD.Add(pmd);
+}
+
+int FSModel::RemoveMeshDataGenerator(FSMeshDataGenerator* pmd)
+{
+	return (int)m_MD.Remove(pmd);
 }

@@ -32,5 +32,5 @@ class FEShellToSolid : public FEModifier
 public:
 	FEShellToSolid();
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };

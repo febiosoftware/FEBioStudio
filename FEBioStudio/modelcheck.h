@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <vector>
-class FEProject;
+class FSProject;
 
 enum ERROR_TYPE
 {
@@ -37,4 +37,4 @@ enum ERROR_TYPE
 
 typedef std::pair<ERROR_TYPE, std::string> MODEL_ERROR;
 
-void checkModel(FEProject& prj, std::vector<MODEL_ERROR>& errorList);
+void checkModel(FSProject& prj, std::vector<MODEL_ERROR>& errorList);

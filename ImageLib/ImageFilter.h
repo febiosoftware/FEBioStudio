@@ -25,6 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+#include <QLineEdit>
+#include <QValidator>
+#include <FECore/vec3d.h>
 
 #include <FSCore/FSObject.h>
 
@@ -45,6 +48,16 @@ protected:
     Post::CImageModel* m_model;
 };
 
+class ThresholdImageFilter : public CImageFilter
+{
+public:
+    ThresholdImageFilter();
+
+    void ApplyFilter() override;
+};
+
+#ifdef HAS_ITK
+
 class MeanImageFilter : public CImageFilter
 {
 public:
@@ -61,10 +74,4 @@ public:
     void ApplyFilter() override;
 };
 
-class ThresholdImageFilter : public CImageFilter
-{
-public:
-    ThresholdImageFilter();
-
-    void ApplyFilter() override;
-};
+#endif

@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEModifier.h"
+#include <FECore/matrix.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FEQuad4ToQuad8::FEQuad4ToQuad8(bool bsmooth) : FEModifier("Quad4-to-Quad8")
@@ -34,7 +36,7 @@ FEQuad4ToQuad8::FEQuad4ToQuad8(bool bsmooth) : FEModifier("Quad4-to-Quad8")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
+FSMesh* FEQuad4ToQuad8::Apply(FSMesh* pm)
 {
     const int NEDG = 4;
     const int EL[NEDG][2] = {{0,1},{1,2},{2,3},{3,0}};
@@ -51,7 +53,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
     vector< vector<int> > NEL; NEL.resize(NN);
     for (int i=0; i<NT; ++i)
     {
-        FEElement& el = pm->Element(i);
+        FSElement& el = pm->Element(i);
         for (int j=0; j<NEDG; ++j)
         {
             int n0 = el.m_node[EL[j][0]];
@@ -90,7 +92,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
     vector< vector<int> > EE; EE.assign(NT, vector<int>(NEDG));
     for (int i=0; i<NT; ++i)
     {
-        FEElement& e = pm->Element(i);
+        FSElement& e = pm->Element(i);
         vector<int>& ee = EE[i];
         for (int j=0; j<NEDG; ++j)
         {
@@ -116,7 +118,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
     vector< vector<int> > FE; FE.assign(NF, vector<int>(4));
     for (int i=0; i<NF; ++i)
     {
-        FEFace& f = pm->Face(i);
+        FSFace& f = pm->Face(i);
         vector<int>& fe = FE[i];
         for (int j=0; j<4; ++j)
         {
@@ -142,7 +144,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
     vector<int> CE; CE.assign(NC, -1);
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& e = pm->Edge(i);
+        FSEdge& e = pm->Edge(i);
         int n0 = e.n[0];
         int n1 = e.n[1];
         if (n0 > n1) { n0 ^= n1; n1 ^= n0; n0 ^= n1; }
@@ -164,14 +166,14 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
     int NN1 = NN + NL;
     
     // allocate a new mesh
-    FEMesh* pnew = new FEMesh;
+    FSMesh* pnew = new FSMesh;
     pnew->Create(NN1, NT, NF, NC);
     
     // copy the old nodes
     for (int i=0; i<NN; ++i)
     {
-        FENode& n0 = pm->Node(i);
-        FENode& n1 = pnew->Node(i);
+        FSNode& n0 = pm->Node(i);
+        FSNode& n1 = pnew->Node(i);
         n1.r = n0.r;
         n1.m_gid = n0.m_gid;
     }
@@ -179,18 +181,18 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
     // create the new edge nodes
     for (int i=0; i<(int) ET.size(); ++i)
     {
-        FENode& na = pm->Node(ET[i].first);
-        FENode& nb = pm->Node(ET[i].second);
+        FSNode& na = pm->Node(ET[i].first);
+        FSNode& nb = pm->Node(ET[i].second);
         
-        FENode& n1 = pnew->Node(i + NN);
+        FSNode& n1 = pnew->Node(i + NN);
         n1.r = (na.r +nb.r)*0.5;
     }
     
     // create the elements
     for (int i=0; i<NT; ++i)
     {
-        FEElement& e0 = pm->Element(i);
-        FEElement& e1 = pnew->Element(i);
+        FSElement& e0 = pm->Element(i);
+        FSElement& e1 = pnew->Element(i);
         e1 = e0;
         
         e1.m_gid = e0.m_gid;
@@ -220,8 +222,8 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
     // create the new faces
     for (int i=0; i<NF; ++i)
     {
-        FEFace& f0 = pm->Face(i);
-        FEFace& f1 = pnew->Face(i);
+        FSFace& f0 = pm->Face(i);
+        FSFace& f1 = pnew->Face(i);
         
         f1.SetType(FE_FACE_QUAD8);
         f1.m_gid = f0.m_gid;
@@ -246,8 +248,8 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
     // create the new edges
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& e0 = pm->Edge(i);
-        FEEdge& e1 = pnew->Edge(i);
+        FSEdge& e0 = pm->Edge(i);
+        FSEdge& e1 = pnew->Edge(i);
         
 		e1.SetType(FE_EDGE3);
         e1.n[0] = e0.n[0];
@@ -272,7 +274,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEQuad8Smooth::Apply(FEMesh* pmesh)
+void FEQuad8Smooth::Apply(FSMesh* pmesh)
 {
     int NN = pmesh->Nodes();
     int NF = pmesh->Faces();
@@ -289,12 +291,12 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
     for (int i=0; i<NN; ++i) pmesh->Node(i).m_ntag = -1;
     for (int i=0; i<NF; ++i)
     {
-        FEFace& f = pmesh->Face(i);
+        FSFace& f = pmesh->Face(i);
         for (int j=0; j<f.Nodes(); ++j) pmesh->Node(f.n[j]).m_ntag = 0;
     }
     for (int i=0; i<NF; ++i)
     {
-        FEFace& f = pmesh->Face(i);
+        FSFace& f = pmesh->Face(i);
         for (int j=0; j<4; ++j) pmesh->Node(f.n[j]).m_ntag = 1;
     }
     
@@ -302,7 +304,7 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
     int NC = pmesh->Edges();
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& e = pmesh->Edge(i);
+        FSEdge& e = pmesh->Edge(i);
         pmesh->Node(e.n[0]).m_ntag = 2;
         pmesh->Node(e.n[1]).m_ntag = 2;
         pmesh->Node(e.n[2]).m_ntag = -1;
@@ -312,8 +314,8 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
     vector<vec3d> sn; sn.assign(NN, vec3d(0,0,0));
     for (int i=0; i<NF; ++i)
     {
-        FEFace& f = pmesh->Face(i);
-        for (int j=0; j<4; ++j) sn[f.n[j]] += f.m_nn[j];
+        FSFace& f = pmesh->Face(i);
+        for (int j=0; j<4; ++j) sn[f.n[j]] += to_vec3d(f.m_nn[j]);
     }
     for (int i=0; i<NN; ++i) sn[i].Normalize();
     
@@ -324,7 +326,7 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
     // loop over all corner nodes
     for (int n=0; n<NN; ++n)
     {
-        FENode& ni = pmesh->Node(n);
+        FSNode& ni = pmesh->Node(n);
         if (ni.m_ntag == 1)
         {
             vec3d r0 = ni.r;
@@ -334,7 +336,7 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
             set<int>::iterator it;
             for (it=l1.begin(); it != l1.end(); ++it)
             {
-                FENode& nj = pmesh->Node(*it);
+                FSNode& nj = pmesh->Node(*it);
                 if (nj.m_ntag >= 1) n1.push_back(*it);
             }
             
@@ -343,7 +345,7 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
             vector<vec3d> x;
             for (int i=0; i<nn; ++i)
             {
-                FENode& nj = pmesh->Node(n1[i]);
+                FSNode& nj = pmesh->Node(n1[i]);
                 x.push_back(nj.r);
             }
             
@@ -396,7 +398,7 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
             // interpolate the quadratic for the center nodes
             for (it=l1.begin(); it != l1.end(); ++it)
             {
-                FENode& nj = pmesh->Node(*it);
+                FSNode& nj = pmesh->Node(*it);
                 if (nj.m_ntag == 0)
                 {
                     vec3d x = nj.r - r0;
@@ -413,14 +415,14 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
     // do all the edges nodes
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& edge1 = pmesh->Edge(i);
+        FSEdge& edge1 = pmesh->Edge(i);
         for (int j=0; j<2; ++j)
         {
             int n0 = edge1.n[j];
             int n1 = edge1.n[(j+1)%2];
             if (edge1.m_nbr[j] >= 0)
             {
-                FEEdge& edge2 = pmesh->Edge(edge1.m_nbr[j]);
+                FSEdge& edge2 = pmesh->Edge(edge1.m_nbr[j]);
                 int n2 = edge2.n[0];
                 if (n2 == n0) n2 = edge2.n[1];
                 assert(n2 != n0);
@@ -482,7 +484,7 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
     // apply the new coordinates of the center nodes
     for (int i=0; i<NN; ++i)
     {
-        FENode& ni = pmesh->Node(i);
+        FSNode& ni = pmesh->Node(i);
         if (tag[i] > 0)
         {
             ni.r = rs[i] / (double) tag[i];
@@ -492,7 +494,7 @@ void FEQuad8Smooth::Apply(FEMesh* pmesh)
 
 //-----------------------------------------------------------------------------
 //! Convert a quad8 to a quad4 mesh by eliminating all the center edge nodes
-FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
+FSMesh* FEQuad8ToQuad4::Apply(FSMesh* pm)
 {
     // make sure the mesh is a quad8 mesh
     if (pm->IsType(FE_QUAD8) == false) return 0;
@@ -507,13 +509,13 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
     for (int i=0; i<NN; ++i) pm->Node(i).m_ntag = 1;
     for (int i=0; i<NE; ++i)
     {
-        FEElement& el = pm->Element(i);
+        FSElement& el = pm->Element(i);
         for (int j=4; j<8; ++j) pm->Node(el.m_node[j]).m_ntag = -1;
     }
     int nn = 0;
     for (int i=0; i<NN; ++i)
     {
-        FENode& ni = pm->Node(i);
+        FSNode& ni = pm->Node(i);
         if (ni.m_ntag == 1) 
         {
             ni.m_ntag = nn++;
@@ -521,17 +523,17 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
     }
     
     // allocate a new mesh
-    FEMesh* pnew = new FEMesh;
+    FSMesh* pnew = new FSMesh;
     pnew->Create(nn, NE, NF, NC);
     
     // create the nodes
     nn = 0;
     for (int i=0; i<NN; ++i)
     {
-        FENode& n0 = pm->Node(i);
+        FSNode& n0 = pm->Node(i);
         if (n0.m_ntag >= 0)
         {
-            FENode& n1 = pnew->Node(nn++);
+            FSNode& n1 = pnew->Node(nn++);
             n1.r = n0.r;
             n1.m_gid = n0.m_gid;
         }
@@ -540,8 +542,8 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
     // create the elements
     for (int i=0; i<NE; ++i)
     {
-        FEElement& e0 = pm->Element(i);
-        FEElement& e1 = pnew->Element(i);
+        FSElement& e0 = pm->Element(i);
+        FSElement& e1 = pnew->Element(i);
         e1 = e0;
         
         e1.m_gid = e0.m_gid;
@@ -561,8 +563,8 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
     // create the new faces
     for (int i=0; i<NF; ++i)
     {
-        FEFace& f0 = pm->Face(i);
-        FEFace& f1 = pnew->Face(i);
+        FSFace& f0 = pm->Face(i);
+        FSFace& f1 = pnew->Face(i);
         
         f1.SetType(FE_FACE_QUAD4);
         f1.m_gid = f0.m_gid;
@@ -583,8 +585,8 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
     // create the new edges
     for (int i=0; i<NC; ++i)
     {
-        FEEdge& e0 = pm->Edge(i);
-        FEEdge& e1 = pnew->Edge(i);
+        FSEdge& e0 = pm->Edge(i);
+        FSEdge& e1 = pnew->Edge(i);
         
 		e1.SetType(FE_EDGE2);
         e1.n[0] = e0.n[0];

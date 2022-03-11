@@ -32,8 +32,8 @@ class FESmoothSurfaceMesh : public FESurfaceModifier
 {
 public:
 	FESmoothSurfaceMesh();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 public:
-	void ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMesh& backMesh, bool preserveShape = false, bool preserveEdges = false);
+	void ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMesh& backMesh, bool preserveShape = false, bool preserveEdges = false);
 };

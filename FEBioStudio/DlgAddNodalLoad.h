@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <QDialog>
 #include <string>
 
-class FEModel;
+class FSModel;
 
 namespace Ui {
 	class CDlgAddNodalLoad;
@@ -38,7 +38,7 @@ namespace Ui {
 class CDlgAddNodalLoad : public QDialog
 {
 public:
-	CDlgAddNodalLoad(FEModel& fem, QWidget* parent);
+	CDlgAddNodalLoad(FSModel& fem, QWidget* parent);
 
 	void accept();
 

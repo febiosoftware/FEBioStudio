@@ -50,7 +50,7 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
-	FELineMesh* GetEditableLineMesh() override;
+	FSLineMesh* GetEditableLineMesh() override;
 
 	void ClearMesh();
 

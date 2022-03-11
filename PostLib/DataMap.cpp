@@ -40,7 +40,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 {
 	assert(m_pmesh);
 	if (m_pmesh == 0) return;
-	vector<vec3f>& G = m_Data[ntime];
+	std::vector<vec3f>& G = m_Data[ntime];
 	FEPostMesh& mesh = *m_pmesh;
 
 	int i, k;
@@ -56,7 +56,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	double f[8];
 	vec3f x[8];
 
-	Mat3d J;
+	mat3d J;
 	double j;
 	int node;
 
@@ -132,8 +132,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 			}
 
 			// invert jacobian
-			j = J.Invert();
-			if (j <= 0) return;
+			if (J.invert() == false) return;
 
 			// evaluate df/dr = SUM( dH[k]/dr * f[k] )
 			dfdr[0] = dfdr[1] = dfdr[2] = 0;
@@ -162,7 +161,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	// "normalize" the gradients
 	for (i=0; i<mesh.Nodes(); i++)
 	{
-		const vector<NodeElemRef>& nel = mesh.NodeElemList(i);
+		const std::vector<NodeElemRef>& nel = mesh.NodeElemList(i);
 		if (!nel.empty()) G[i] /= (float) nel.size();
 		G[i] *= -1;
 	}

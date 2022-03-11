@@ -41,7 +41,7 @@ SOFTWARE.*/
 
 
 //=============================================================================
-STEPImport::STEPImport(FEProject& prj) : FEFileImport(prj)
+STEPImport::STEPImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -95,7 +95,7 @@ bool STEPImport::Load(const char* szfile)
 				sprintf(szname, "%s%02d", szfiletitle, count++);
 				occ->SetName(szname);
 
-				GModel& mdl = m_prj.GetFEModel().GetModel();
+				GModel& mdl = m_prj.GetFSModel().GetModel();
 				mdl.AddObject(occ);
 
 			}

@@ -129,12 +129,12 @@ void GLProbe::Update()
 	Update(m_lastTime, m_lastdt, true);
 }
 
-bool ProjectToElement(FEElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q)
+bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q)
 {
 	int ne = el.Nodes();
 	BOX box;
-	for (int i = 0; i < ne; ++i) box += x0[i];
-	if (box.IsInside(p) == false) return false;
+	for (int i = 0; i < ne; ++i) box += to_vec3d(x0[i]);
+	if (box.IsInside(to_vec3d(p)) == false) return false;
 
 	double r[3] = { 0,0,0 };
 	project_inside_element(el, p, r, x0);
@@ -165,13 +165,13 @@ void GLProbe::Update(int ntime, float dt, bool breset)
 	if (breset)
 	{
 		m_path.clear();
-		FEPostModel* fem = mdl->GetFEModel();
+		FEPostModel* fem = mdl->GetFSModel();
 		int nstates = fem->GetStates();
 		m_path.resize(nstates);
 	}
 
 	// update the size of the probe
-	BOX box = mdl->GetFEModel()->GetBoundingBox();
+	BOX box = mdl->GetFSModel()->GetBoundingBox();
 	m_R = 0.05*box.GetMaxExtent();
 
 	// see if we need to revaluate the FEFindElement object
@@ -190,23 +190,23 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 	CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return -1;
 
-	Post::FEState* state = mdl->GetFEModel()->GetState(nstate);
+	Post::FEState* state = mdl->GetFSModel()->GetState(nstate);
 	Post::FERefState* ps = state->m_ref;
 	Post::FEPostMesh& mesh = *state->GetFEMesh();
-	Post::FEPostModel& fem = *mdl->GetFEModel();
+	Post::FEPostModel& fem = *mdl->GetFSModel();
 
-	rt = r0;
+	rt = to_vec3d(r0);
 
 	int nelem = -1;
-	vec3f x0[FEElement::MAX_NODES];
-	vec3f xt[FEElement::MAX_NODES];
+	vec3f x0[FSElement::MAX_NODES];
+	vec3f xt[FSElement::MAX_NODES];
 	int nmin = -1;
 	double L2min = 0.0;
 	vec3f rmin;
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.IsSolid())
 		{
 			int ne = el.Nodes();
@@ -221,7 +221,7 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 				vec3f q;
 				if (ProjectToElement(el, r0, x0, xt, q))
 				{
-					rt = q;
+					rt = to_vec3d(q);
 					nelem = i;
 					break;
 				}
@@ -231,7 +231,7 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 				vec3f q;
 				if (ProjectToElement(el, r0, x0, x0, q))
 				{
-					rt = q;
+					rt = to_vec3d(q);
 					nelem = i;
 					break;
 				}
@@ -262,12 +262,12 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 
 	if ((nelem == -1) && (nmin != -1))
 	{
-		vec3d dr = r0 - rmin;
+		vec3d dr = to_vec3d(r0 - rmin);
 
-		FEElement& e = mesh.Element(nmin);
-		vec3d a0 = fem.NodePosition(e.m_node[0], 0);
-		vec3d a1 = fem.NodePosition(e.m_node[1], 0);
-		vec3d a2 = fem.NodePosition(e.m_node[2], 0);
+		FSElement& e = mesh.Element(nmin);
+		vec3d a0 = to_vec3d(fem.NodePosition(e.m_node[0], 0));
+		vec3d a1 = to_vec3d(fem.NodePosition(e.m_node[1], 0));
+		vec3d a2 = to_vec3d(fem.NodePosition(e.m_node[2], 0));
 
 		vec3d e1 = a1 - a0; e1.Normalize();
 		vec3d e2 = a2 - a0; e2.Normalize();
@@ -286,15 +286,15 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 		vec3d ri(0, 0, 0);
 		for (int j = 0; j < e.Nodes(); ++j)
 		{
-			FENode& nj = mesh.Node(e.m_node[j]);
-			vec3d rj = fem.NodePosition(e.m_node[j], nstate);
+			FSNode& nj = mesh.Node(e.m_node[j]);
+			vec3d rj = to_vec3d(fem.NodePosition(e.m_node[j], nstate));
 			ri += rj;
 		}
 		ri /= e.Nodes();
 
-		a0 = fem.NodePosition(e.m_node[0], nstate);
-		a1 = fem.NodePosition(e.m_node[1], nstate);
-		a2 = fem.NodePosition(e.m_node[2], nstate);
+		a0 = to_vec3d(fem.NodePosition(e.m_node[0], nstate));
+		a1 = to_vec3d(fem.NodePosition(e.m_node[1], nstate));
+		a2 = to_vec3d(fem.NodePosition(e.m_node[2], nstate));
 
 		e1 = a1 - a0; e1.Normalize();
 		e2 = a2 - a0; e2.Normalize();
@@ -334,13 +334,13 @@ double GLProbe::DataValue(int nfield, int nstep)
 {
 	if (TrackModelData())
 	{
-		FEPostModel& fem = *GetModel()->GetFEModel();
+		FEPostModel& fem = *GetModel()->GetFSModel();
 		float val = 0.f;
 		vec3f p0 = to_vec3f(m_initPos);
 		int nelem = ProjectToMesh(nstep, p0, m_pos);
 		if (nelem >= 0)
 		{
-			float data[FEElement::MAX_NODES];
+			float data[FSElement::MAX_NODES];
 			fem.EvaluateElement(nelem, nstep, nfield, data, val);
 		}
 		return val;

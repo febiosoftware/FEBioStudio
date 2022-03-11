@@ -47,7 +47,7 @@ bool BYUExport::Save(FEPostModel &fem, const char *szfile)
 	if (fp == 0) return false;
 
 	// get the selected mesh
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FSMeshBase& mesh = *fem.GetFEMesh(0);
 
 	// for now we put everything in one part
 	int parts = 1;
@@ -58,7 +58,7 @@ bool BYUExport::Save(FEPostModel &fem, const char *szfile)
 	for (i=0; i<mesh.Nodes(); ++i) mesh.Node(i).m_ntag = 0;
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		n = f.Nodes();
 		assert(n==3||n==4);
 		edges += (n==3? 3 : 6) ;
@@ -81,7 +81,7 @@ bool BYUExport::Save(FEPostModel &fem, const char *szfile)
 	// --- N O D E S ---
 	for (i=0; i<mesh.Nodes(); ++i)
 	{
-		FENode& n = mesh.Node(i);
+		FSNode& n = mesh.Node(i);
 		if (n.m_ntag)
 		{
 			vec3d r = n.pos();
@@ -92,7 +92,7 @@ bool BYUExport::Save(FEPostModel &fem, const char *szfile)
 	// --- E D G E S ---
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		n = f.Nodes();
 		if (n == 3)
 			fprintf(fp, "%d %d %d\n", mesh.Node(f.n[0]).m_ntag, mesh.Node(f.n[1]).m_ntag, -mesh.Node(f.n[2]).m_ntag);

@@ -27,11 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
-
 #include <vector>
-//using namespace std;
 
-class FEBYUimport :	public FEFileImport
+class FEBYUimport :	public FSFileImport
 {
 protected:
 	struct PART
@@ -41,11 +39,11 @@ protected:
 	};
 
 public:
-	FEBYUimport(FEProject& prj);
+	FEBYUimport(FSProject& prj);
 	~FEBYUimport(void);
 
 	bool Load(const char* szfile);
 
 protected:
-	vector<PART>	m_Part;
+	std::vector<PART>	m_Part;
 };

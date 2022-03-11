@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// XmlImport.cpp: implementation of the FEBioImport class.
+// XmlImport.cpp: implementation of the FEBioFileImport class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "FEBioFormat2.h"
 #include "FEBioFormat25.h"
 #include "FEBioFormat3.h"
+#include "FEBioFormat4.h"
 #include <stdio.h>
 #include <string.h>
 #include <cstdarg>
@@ -47,49 +48,67 @@ SOFTWARE.*/
 extern GLColor col[];
 
 //-----------------------------------------------------------------------------
-FEBioImport::FEBioImport(FEProject& prj) : FEFileImport(prj)
+FEBioFileImport::FEBioFileImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_szlog = 0;
 	m_febio = 0;
 	m_geomOnly = false;
+    m_skipGeom = false;
 }
 
 //-----------------------------------------------------------------------------
-FEBioImport::~FEBioImport()
+FEBioFileImport::~FEBioFileImport()
 {
 	ClearLog();
 	delete m_febio;
 }
 
 //-----------------------------------------------------------------------------
-void FEBioImport::SetGeometryOnlyFlag(bool b)
+void FEBioFileImport::SetGeometryOnlyFlag(bool b)
 {
 	m_geomOnly = b;
 }
 
+void FEBioFileImport::SetSkipGeometryFlag(bool b)
+{
+    m_skipGeom = b;
+}
+
 //-----------------------------------------------------------------------------
-void FEBioImport::ClearLog()
+void FEBioFileImport::ClearLog()
 {
 	delete [] m_szlog;
 	m_szlog = 0;
 }
 
 //-----------------------------------------------------------------------------
-void FEBioImport::AddLogEntry(const char* sz, ...)
+void FEBioFileImport::AddLogEntry(const char* sz, ...)
 {
-	if (sz == 0) return;
+	if ((sz == 0) || (*sz==0)) return;
 
 	// get a pointer to the argument list
 	va_list	args;
 
 	// copy to string
-	char szlog[256] = {0};
-	va_start(args, sz);
-	vsprintf(szlog, sz, args);
-	va_end(args);
+	char* szlog = NULL;
 
-	int l = (int)strlen(szlog);
-	if (l == 0) return;
+	va_start(args, sz);
+
+	// count how many chars we need to allocate
+	int l = vsnprintf(nullptr, 0, sz, args) + 1;
+	if (l > 1)
+	{
+		szlog = new char[l]; assert(szlog);
+		if (szlog)
+		{
+			vsnprintf(szlog, l, sz, args);
+		}
+	}
+	va_end(args);
+	if (szlog == NULL) return;
+
+	l = (int) strlen(szlog);
+	if (l == 0) { delete szlog;  return; }
 
 	if (m_szlog == 0)
 	{
@@ -104,13 +123,15 @@ void FEBioImport::AddLogEntry(const char* sz, ...)
 		delete [] m_szlog;
 		m_szlog = sznew;
 	}
+
+	delete szlog;
 }
 
 //-----------------------------------------------------------------------------
 //  Imports an FEBio input file
 //  The actual file is parsed using the XMLReader class.
 //
-bool FEBioImport::Load(const char* szfile)
+bool FEBioFileImport::Load(const char* szfile)
 {
 	ClearLog();
 
@@ -123,19 +144,21 @@ bool FEBioImport::Load(const char* szfile)
 	}
 	if (ch != 0) *(++ch) = 0; else m_szpath[0] = 0;
 
-	// open the file
-	if (Open(szfile, "rb") == false) return errf("Failed opening file: %s", szfile);
+    SetFileName(szfile);
 
-	// Attach the XML reader to the stream
+	// Open thefile with the XML reader
 	XMLReader xml;
-	if (xml.Attach(m_fp) == false) return errf("This is not a valid FEBio input file");
+	if (xml.Open(szfile) == false) return errf("This is not a valid FEBio input file");
 
-	FEModel& fem = m_prj.GetFEModel();
+    // Set the file stream
+    SetFileStream(xml.GetFileStream());
+
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 
-	// create a new FEBioModel
+	// create a new FEBioInputModel
 	InitLog(this);
-	m_febio = new FEBioModel(fem);
+	m_febio = new FEBioInputModel(fem);
 
 	// loop over all child tags
 	try
@@ -152,46 +175,18 @@ bool FEBioImport::Load(const char* szfile)
 		// parse the file
 		if (ReadFile(tag) == false) return false;
 	}
-	catch (XMLReader::XMLSyntaxError)
-	{
-		return errf("FATAL ERROR: Syntax error (line %d)\n", xml.GetCurrentLine());
-	}
-	catch (XMLReader::InvalidTag e)
-	{
-		return errf("FATAL ERROR: unrecognized tag \"%s\" (line %d)\n", e.tag.m_sztag, e.tag.m_nstart_line);
-	}
-	catch (XMLReader::InvalidAttributeValue e)
-	{
-		const char* szt = e.tag.m_sztag;
-		const char* sza = e.szatt;
-		const char* szv = e.szval;
-		int l = e.tag.m_nstart_line;
-		return errf("FATAL ERROR: unrecognized value \"%s\" for attribute \"%s.%s\" (line %d)\n", szv, szt, sza, l);
-	}
-	catch (XMLReader::MissingAttribute e)
-	{
-		return errf("FATAL ERROR: Missing attribute \"%s\" of tag \"%s\" (line %d)\n", e.szatt, e.tag.m_sztag, e.tag.m_nstart_line);
-	}
-	catch (XMLReader::MissingTag e)
-	{
-		return errf("FATAL ERROR: Missing tag \"%s\" (line %d)\n", e.tag.m_sztag, e.tag.m_nstart_line);
-	}
-	catch (XMLReader::UnmatchedEndTag e)
-	{
-		const char* sz = e.tag.m_szroot[e.tag.m_nlevel];
-		return errf("FATAL ERROR: Unmatched end tag for \"%s\" (line %d)\n", sz, e.tag.m_nstart_line);
-	}
 	catch (XMLReader::EndOfFile e)
 	{
 		// this is fine. Moving on ...
+	}
+	catch (std::runtime_error e)
+	{
+		return errf("FATAL ERROR: %s (line %d)\n", e.what(), xml.GetCurrentLine());
 	}
 	catch (...)
 	{
 		return errf("FATAL ERROR: unrecoverable error (line %d)\n", xml.GetCurrentLine());
 	}
-
-	// close the XML file
-	Close();
 
 	// if we get here we are good to go!
 	UpdateFEModel(fem);
@@ -208,7 +203,7 @@ bool FEBioImport::Load(const char* szfile)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioImport::ReadFile(XMLTag& tag)
+bool FEBioFileImport::ReadFile(XMLTag& tag)
 {
 	// loop over all file sections
 	++tag;
@@ -293,7 +288,7 @@ bool FEBioImport::ReadFile(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioImport::ParseVersion(XMLTag& tag)
+bool FEBioFileImport::ParseVersion(XMLTag& tag)
 {
 	const char* szv = tag.AttributeValue("version");
 	int n1, n2;
@@ -311,24 +306,26 @@ bool FEBioImport::ParseVersion(XMLTag& tag)
 	case 0x0200: m_fmt = new FEBioFormat2  (this, *m_febio); break;
 	case 0x0205: m_fmt = new FEBioFormat25 (this, *m_febio); break;
 	case 0x0300: m_fmt = new FEBioFormat3  (this, *m_febio); break;
+	case 0x0400: m_fmt = new FEBioFormat4  (this, *m_febio); break;
 	default:
 		return false;
 	}
 
 	m_fmt->SetGeometryOnlyFlag(m_geomOnly);
+    m_fmt->SetSkipGeometryFlag(m_skipGeom);
 
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-void FEBioImport::ParseUnknownTag(XMLTag& tag)
+void FEBioFileImport::ParseUnknownTag(XMLTag& tag)
 {
 	AddLogEntry("Skipping unknown tag \"%s\" (line %d)", tag.Name(), tag.m_nstart_line);
 	tag.m_preader->SkipTag(tag);
 }
 
 //-----------------------------------------------------------------------------
-void FEBioImport::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
+void FEBioFileImport::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 {
 	AddLogEntry("Skipping tag \"%s\". Unknown value for attribute \"%s\". (line %d)", tag.Name(), szatt, tag.m_nstart_line);
 	tag.m_preader->SkipTag(tag);
@@ -338,7 +335,7 @@ void FEBioImport::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 // TODO: Register parameters that require load curves in a list.
 // Or store the load curves directly. 
 // I think this would eliminate all these dynamic_casts
-bool FEBioImport::UpdateFEModel(FEModel& fem)
+bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 {
 	// set the parent ID's for rigid bodies
 	int nmat = m_febio->Materials();
@@ -347,13 +344,13 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 		GMaterial* pm = fem.GetMaterial(i);
 		if (pm)
 		{
-			FERigidMaterial* pr = dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties());
+			FSRigidMaterial* pr = dynamic_cast<FSRigidMaterial*>(pm->GetMaterialProperties());
 			if (pr && (pr->m_pid != -1))
 			{
 				int pid = pr->m_pid - 1;
 				if ((pid < 0) || (pid >= nmat)) return errf("Invalid material ID for rigid body");
 				GMaterial* pp = fem.GetMaterial(pid);
-				if ((pp == 0) || (dynamic_cast<FERigidMaterial*>(pp->GetMaterialProperties()) == 0)) return errf("Invalid material for rigid body parent");
+				if ((pp == 0) || (dynamic_cast<FSRigidMaterial*>(pp->GetMaterialProperties()) == 0)) return errf("Invalid material for rigid body parent");
 				pr->m_pid = pp->GetID();
 			}
 		}
@@ -361,17 +358,34 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 
 	// resolve all load curve references
 	int NLC = m_febio->LoadCurves();
+	vector<int> LCT(NLC, -1);
+	for (int i = 0; i < NLC; ++i)
+	{
+		LCT[i] = fem.AddLoadCurve(m_febio->GetLoadCurve(i))->GetID();
+	}
+
 	int NPC = m_febio->ParamCurves();
 	for (int i=0; i<NPC; ++i)
 	{
-		FEBioModel::PARAM_CURVE pc = m_febio->GetParamCurve(i);
+		FEBioInputModel::PARAM_CURVE pc = m_febio->GetParamCurve(i);
 		assert(pc.m_lc >= 0);
 		assert(pc.m_p || pc.m_plc);
 		if ((pc.m_lc >= 0) && (pc.m_lc < m_febio->LoadCurves()))
 		{
 			if (pc.m_p)
 			{
-				pc.m_p->SetLoadCurve(m_febio->GetLoadCurve(pc.m_lc));
+				if (pc.m_p->GetParamType() == Param_Type::Param_STD_VECTOR_VEC2D)
+				{
+					// map the points directly to vector
+					FSLoadController* plc = fem.GetLoadController(pc.m_lc);
+					Param* src = plc->GetParam("points"); assert(src);
+					if (src)
+					{
+						std::vector<vec2d> pt = src->GetVectorVec2dValue();
+						pc.m_p->SetVectorVec2dValue(pt);
+					}
+				}
+				else pc.m_p->SetLoadCurveID(LCT[pc.m_lc]);
 			}
 			if (pc.m_plc) 
 			{
@@ -384,7 +398,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	// (only for older versions)
 	if ((m_nversion < 0x0205) && (m_febio->Parts() == 1))
 	{
-		FEBioModel::PartInstance& part = *m_febio->GetInstance(0);
+		FEBioInputModel::PartInstance& part = *m_febio->GetInstance(0);
 		GMeshObject* po = part.GetGObject();
 		if (po)
 		{
@@ -399,14 +413,14 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	GModel& mdl = fem.GetModel();
 	for (int i=0; i<m_febio->PlotVariables(); ++i)
 	{
-		FEBioModel::PlotVariable& v = m_febio->GetPlotVariable(i);
+		FEBioInputModel::PlotVariable& v = m_febio->GetPlotVariable(i);
 		std::string name = v.name();
 
 		// try to find it
-		FEPlotVariable* pv = plt.FindVariable(name);
+		CPlotVariable* pv = plt.FindVariable(name);
 		if (pv == 0)
 		{
-			pv = plt.AddPlotVariable(MODULE_ALL, name, true, true, v.domainType());
+			pv = plt.AddPlotVariable(name, true, true, v.domainType());
 		}
 		pv->setActive(true);
 		pv->setShown(true);
@@ -422,10 +436,10 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 			}
 			else 
 			{
-				FEBioModel::Surface* surf = m_febio->FindSurface(domain.c_str());
+				FEBioInputModel::Surface* surf = m_febio->FindSurface(domain.c_str());
 				if (surf)
 				{
-					FESurface* ps = m_febio->BuildFESurface(domain.c_str());
+					FSSurface* ps = m_febio->BuildFESurface(domain.c_str());
 					GObject* po = ps->GetGObject(); assert(po);
 					if (po)
 					{
@@ -445,15 +459,15 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	for (int i = 0; i < m_febio->Instances(); ++i)
 	{
 		// get the next instance
-		FEBioModel::PartInstance& partInstance = *m_febio->GetInstance(i);
-		FEBioModel::Part* part = partInstance.GetPart();
+		FEBioInputModel::PartInstance& partInstance = *m_febio->GetInstance(i);
+		FEBioInputModel::Part* part = partInstance.GetPart();
 		GMeshObject* po = partInstance.GetGObject();
 		for (int j = 0; j < part->Surfaces(); ++j)
 		{
-			FEBioModel::Surface& surf = part->GetSurface(j);
+			FEBioInputModel::Surface& surf = part->GetSurface(j);
 			if (surf.m_refs == 0)
 			{
-				FESurface* psurf = partInstance.BuildFESurface(surf.name().c_str());
+				FSSurface* psurf = partInstance.BuildFESurface(surf.name().c_str());
 				if (psurf)
 				{
 					psurf->SetName(surf.name());
@@ -467,7 +481,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	for (int i = 0; i<m_febio->Instances(); ++i)
 	{
 		// get the next instance
-		FEBioModel::PartInstance& part = *m_febio->GetInstance(i);
+		FEBioInputModel::PartInstance& part = *m_febio->GetInstance(i);
 
 		// Take the GObject from the part (the part no longer keeps a pointer to this object)
 		GMeshObject* po = part.TakeGObject();
@@ -484,7 +498,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	log.ClearLogData();
 	for (int i = 0; i<m_febio->LogVariables(); ++i)
 	{
-		FEBioModel::LogVariable& v = m_febio->GetLogVariable(i);
+		FEBioInputModel::LogVariable& v = m_febio->GetLogVariable(i);
 
 		FELogData ld;
 		ld.type = v.type();

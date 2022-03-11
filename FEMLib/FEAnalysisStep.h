@@ -1,18 +1,20 @@
 #pragma once
-#include <FSCore/FSObject.h>
+#include <FEMLib/FEModelComponent.h>
+#include <FSCore/LoadCurve.h>
 #include <vector>
-//using namespace std;
 
-class FEModel;
-class FEBoundaryCondition;
-class FELoad;
-class FEInterface;
-class FERigidConstraint;
-class FELinearConstraintSet;
-class FERigidConnector;
-class FEInitialCondition;
-class FEStepComponent;
-class FEModelConstraint;
+class FSModel;
+class FSBoundaryCondition;
+class FSLoad;
+class FSInterface;
+class FSRigidConstraint;
+class FSLinearConstraintSet;
+class FSRigidConnector;
+class FSInitialCondition;
+class FSStepComponent;
+class FSModelConstraint;
+class FSRigidLoad;
+class FSMeshAdaptor;
 
 //-----------------------------------------------------------------------------
 // Analysis types
@@ -27,17 +29,18 @@ class FEModelConstraint;
 #define FE_STEP_FLUID               7
 #define FE_STEP_REACTION_DIFFUSION	8
 #define FE_STEP_FLUID_FSI           9
+#define FE_STEP_FEBIO_ANALYSIS		10
 
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
 //-----------------------------------------------------------------------------
-class FEStep : public FSObject
+class FSStep : public FSModelComponent
 {
 	class Imp;
 
 public:
-	FEStep(FEModel* ps, int ntype);
-	virtual ~FEStep();
+	FSStep(FSModel* ps, int ntype);
+	virtual ~FSStep();
 
 	// get the unique step ID
 	int GetID() { return m_nID; }
@@ -48,87 +51,95 @@ public:
 	// get the step type
 	int GetType() { return m_ntype; }
 
-	// get/set type string
-	void SetTypeString(const char* sztype) { m_sztype = sztype; }
-	const char* GetTypeString() { return m_sztype; }
-
-	//! get the model
-	//! \todo I don't think this is being used)
-	FEModel* GetFEModel() { return m_pfem; }
-
 	// I/O
 	void Load(IArchive& ar);
 	void Save(OArchive& ar);
 
 	// boundary conditions
 	int BCs();
-	FEBoundaryCondition* BC(int i);
-	void AddBC(FEBoundaryCondition* pbc);
-	void InsertBC(int n, FEBoundaryCondition* pbc);
-	int RemoveBC(FEBoundaryCondition* pbc);
+	FSBoundaryCondition* BC(int i);
+	void AddBC(FSBoundaryCondition* pbc);
+	void InsertBC(int n, FSBoundaryCondition* pbc);
+	int RemoveBC(FSBoundaryCondition* pbc);
 	void RemoveAllBCs();
 	int ActiveBCs();
 
 	// loads
 	int Loads();
-	FELoad* Load(int i);
-	void AddLoad(FELoad* pfc);
-	void InsertLoad(int n, FELoad* pfc);
-	int RemoveLoad(FELoad* pfc);
+	FSLoad* Load(int i);
+	void AddLoad(FSLoad* pfc);
+	void InsertLoad(int n, FSLoad* pfc);
+	int RemoveLoad(FSLoad* pfc);
 	void RemoveAllLoads();
 
 	// initial conditions
 	int ICs();
-	FEInitialCondition* IC(int i);
-	void AddIC(FEInitialCondition* pic);
-	void InsertIC(int n, FEInitialCondition* pic);
-	int RemoveIC(FEInitialCondition* pic);
+	FSInitialCondition* IC(int i);
+	void AddIC(FSInitialCondition* pic);
+	void InsertIC(int n, FSInitialCondition* pic);
+	int RemoveIC(FSInitialCondition* pic);
 	void RemoveAllICs();
 
 	// contact interfaces
 	int Interfaces();
-	FEInterface* Interface(int i);
-	void AddInterface(FEInterface* pi);
-	void InsertInterface(int n, FEInterface* pi);
-	int RemoveInterface(FEInterface* pi);
+	FSInterface* Interface(int i);
+	void AddInterface(FSInterface* pi);
+	void InsertInterface(int n, FSInterface* pi);
+	int RemoveInterface(FSInterface* pi);
 	void RemoveAllInterfaces();
 
 	// non-linear constraints
 	int Constraints();
 	int Constraints(int ntype);
-	FEModelConstraint* Constraint(int i);
-	void AddConstraint(FEModelConstraint* pc);
-	void InsertConstraint(int n, FEModelConstraint* pc);
-	void RemoveConstraint(FEModelConstraint* pc);
+	FSModelConstraint* Constraint(int i);
+	void AddConstraint(FSModelConstraint* pc);
+	void InsertConstraint(int n, FSModelConstraint* pc);
+	void RemoveConstraint(FSModelConstraint* pc);
 	void RemoveAllConstraints();
 
 	// rigid constraints
 	int RigidConstraints();
 	int RigidConstraints(int ntype);
-	FERigidConstraint* RigidConstraint(int i);
-	void AddRC(FERigidConstraint* prc);
-	void InsertRC(int n, FERigidConstraint* prc);
-	int RemoveRC(FERigidConstraint* prc);
+	FSRigidConstraint* RigidConstraint(int i);
+	void AddRC(FSRigidConstraint* prc);
+	void InsertRC(int n, FSRigidConstraint* prc);
+	int RemoveRC(FSRigidConstraint* prc);
 	void RemoveAllRigidConstraints();
+
+	// rigid lodas
+	int RigidLoads();
+	int RigidLoads(int ntype);
+	FSRigidLoad* RigidLoad(int i);
+	void AddRigidLoad(FSRigidLoad* prc);
+	void InsertRigidLoad(int n, FSRigidLoad* prc);
+	int RemoveRigidLoad(FSRigidLoad* prc);
+	void RemoveAllRigidLoads();
 
 	// linear constraints
 	int LinearConstraints();
-	FELinearConstraintSet* LinearConstraint(int i);
-	void AddLinearConstraint(FELinearConstraintSet* plc);
+	FSLinearConstraintSet* LinearConstraint(int i);
+	void AddLinearConstraint(FSLinearConstraintSet* plc);
 	void RemoveAllLinearConstraints();
 
     // rigid connectors
 	int RigidConnectors();
-	FERigidConnector* RigidConnector(int i);
-    void AddRigidConnector(FERigidConnector* pi);
-    void InsertRigidConnector(int n, FERigidConnector* pi);
-    int RemoveRigidConnector(FERigidConnector* pi);
+	FSRigidConnector* RigidConnector(int i);
+    void AddRigidConnector(FSRigidConnector* pi);
+    void InsertRigidConnector(int n, FSRigidConnector* pi);
+    int RemoveRigidConnector(FSRigidConnector* pi);
 	void RemoveAllRigidConnectors();
 
+	// mesh adaptors
+	int MeshAdaptors();
+	FSMeshAdaptor* MeshAdaptor(int i);
+	void AddMeshAdaptor(FSMeshAdaptor* pi);
+	void InsertMeshAdaptor(int n, FSMeshAdaptor* pi);
+	int RemoveMeshAdaptor(FSMeshAdaptor* pi);
+	void RemoveAllMeshAdaptors();
+
 	// convenience functions for working with components
-	void AddComponent(FEStepComponent* pc);
-	void RemoveComponent(FEStepComponent* pc);
-    
+	void AddComponent(FSStepComponent* pc);
+	void RemoveComponent(FSStepComponent* pc);
 
 public: // ref counting
 	static void ResetCounter();
@@ -136,13 +147,9 @@ public: // ref counting
 	static int GetCounter();
 	static void DecreaseCounter();
 
-protected:
-	FEModel*	m_pfem;	// pointer to FEModel class
-
 private:
 	Imp*		imp;			// implementation class
 	int			m_ntype;		// type of step
-	const char*	m_sztype;		// type string (set by c'tor of derived classes)
 	int			m_nID;			// ID of step
 	static int	m_ncount;		// counter to set the ID in c'tor
 };
@@ -150,11 +157,11 @@ private:
 //-----------------------------------------------------------------------------
 // Initial step class. Only one initial step can be defined
 //-----------------------------------------------------------------------------
-class FEInitialStep : public FEStep
+class FSInitialStep : public FSStep
 {
 public:
-	FEInitialStep(FEModel* ps);
-	virtual ~FEInitialStep(){}
+	FSInitialStep(FSModel* ps);
+	virtual ~FSInitialStep(){}
 
 	// I/O
 	void Load(IArchive& ar);
@@ -216,11 +223,11 @@ struct STEP_SETTINGS
 //-----------------------------------------------------------------------------
 // This class defines the base class for all analysis steps
 //-----------------------------------------------------------------------------
-class FEAnalysisStep : public FEStep
+class FSAnalysisStep : public FSStep
 {
 public:
 	// destructor
-	virtual ~FEAnalysisStep(){}
+	virtual ~FSAnalysisStep(){}
 
 	// I/O
 	void Save(OArchive& ar);
@@ -230,27 +237,27 @@ public:
 	STEP_SETTINGS& GetSettings() { return m_ops; }
 
 	// get the must-point load curve
-	FELoadCurve* GetMustPointLoadCurve() { return &m_MP; }
+	LoadCurve* GetMustPointLoadCurve() { return &m_MP; }
 
 	// get the analysis types
-	virtual vector<string> GetAnalysisStrings() const;
+	virtual std::vector<string> GetAnalysisStrings() const;
 
 protected:
 	// constructor is private since we don't want to create instances of the base class
-	FEAnalysisStep(FEModel* ps, int ntype);
+	FSAnalysisStep(FSModel* ps, int ntype);
 
 protected:
 	STEP_SETTINGS	m_ops;		// step options
-	FELoadCurve		m_MP;		// must-point curve
+	LoadCurve		m_MP;		// must-point curve
 };
 
 //-----------------------------------------------------------------------------
-class FENonLinearMechanics : public FEAnalysisStep
+class FSNonLinearMechanics : public FSAnalysisStep
 {
 	enum { MP_DTOL, MP_ETOL, MP_RTOL, MP_LSTOL, MP_MINRES, MP_QNMETHOD };
 
 public:
-	FENonLinearMechanics(FEModel* ps);
+	FSNonLinearMechanics(FSModel* ps);
 
 	double GetDisplacementTolerance();
 	double GetEnergyTolerance();
@@ -264,65 +271,74 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEHeatTransfer : public FEAnalysisStep
+class FSHeatTransfer : public FSAnalysisStep
 {
 public:
-	FEHeatTransfer(FEModel* ps);
+	FSHeatTransfer(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
-class FENonLinearBiphasic : public FEAnalysisStep
+class FSNonLinearBiphasic : public FSAnalysisStep
 {
 public:
-	FENonLinearBiphasic(FEModel* ps);
+	FSNonLinearBiphasic(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
-class FEBiphasicSolutes : public FEAnalysisStep
+class FSBiphasicSolutes : public FSAnalysisStep
 {
 public:
-	FEBiphasicSolutes(FEModel* ps);
+	FSBiphasicSolutes(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
-class FEMultiphasicAnalysis : public FEAnalysisStep
+class FSMultiphasicAnalysis : public FSAnalysisStep
 {
 public:
-	FEMultiphasicAnalysis(FEModel* ps);
+	FSMultiphasicAnalysis(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
 };
 
 //-----------------------------------------------------------------------------
-class FEFluidFSIAnalysis : public FEAnalysisStep
+class FSFluidFSIAnalysis : public FSAnalysisStep
 {
 public:
-	FEFluidFSIAnalysis(FEModel* ps);
+	FSFluidFSIAnalysis(FSModel* ps);
 };
 
 //-----------------------------------------------------------------------------
-class FEFluidAnalysis : public FEAnalysisStep
+class FSFluidAnalysis : public FSAnalysisStep
 {
 public:
-    FEFluidAnalysis(FEModel* ps);
+    FSFluidAnalysis(FSModel* ps);
 };
 
 //-----------------------------------------------------------------------------
-class FEReactionDiffusionAnalysis : public FEAnalysisStep
+class FSReactionDiffusionAnalysis : public FSAnalysisStep
 {
 public:
-	FEReactionDiffusionAnalysis(FEModel* ps);
+	FSReactionDiffusionAnalysis(FSModel* ps);
 
 	// get the analysis types
-	vector<string> GetAnalysisStrings() const;
+	std::vector<string> GetAnalysisStrings() const;
+};
+
+//==============================================================================
+class FEBioAnalysisStep : public FSStep
+{
+public:
+	FEBioAnalysisStep(FSModel* ps);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

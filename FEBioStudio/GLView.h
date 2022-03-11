@@ -310,7 +310,7 @@ public:
 
 	// rendering functions for FEMeshes
 	void RenderFEElements(GObject* po);
-	void RenderFEAllElements(FEMesh* pm, bool bext = false);
+	void RenderFEAllElements(FSMesh* pm, bool bext = false);
 	void RenderFEFaces(GObject* po);
 	void RenderFEEdges(GObject* po);
 	void RenderFENodes(GObject* po);
@@ -372,8 +372,8 @@ protected:
 	void paintGL();
 
 private:
-	void TagConnectedNodes(FEMeshBase* pm, int n);
-	void TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1);
+	void TagConnectedNodes(FSMeshBase* pm, int n);
+	void TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1);
 
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
 	Snap_Mode GetSnapMode() { return m_nsnap; }
@@ -381,10 +381,10 @@ private:
 	// convert from device pixel to physical pixel
 	QPoint DeviceToPhysical(int x, int y);
 
-	void TagBackfacingFaces(FEMeshBase& mesh);
-	void TagBackfacingNodes(FEMeshBase& mesh);
-	void TagBackfacingEdges(FEMeshBase& mesh);
-	void TagBackfacingElements(FEMesh& mesh);
+	void TagBackfacingFaces(FSMeshBase& mesh);
+	void TagBackfacingNodes(FSMeshBase& mesh);
+	void TagBackfacingEdges(FSMeshBase& mesh);
+	void TagBackfacingElements(FSMesh& mesh);
 
 public:
 	QImage CaptureScreen();

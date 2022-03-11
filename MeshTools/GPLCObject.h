@@ -39,7 +39,7 @@ public:
 
 	void Create(GSketch& s);
 
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
-	FEMeshBase* GetEditableMesh() override;
+	FSMeshBase* GetEditableMesh() override;
 };

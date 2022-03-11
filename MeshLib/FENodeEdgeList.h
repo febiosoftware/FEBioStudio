@@ -27,15 +27,15 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 
-class FELineMesh;
-class FEEdge;
+class FSLineMesh;
+class FSEdge;
 
-class FENodeEdgeList
+class FSNodeEdgeList
 {
 public:
-	FENodeEdgeList(FELineMesh* mesh = nullptr);
+	FSNodeEdgeList(FSLineMesh* mesh = nullptr);
 
-	void Build(FELineMesh* mesh, bool segsOnly = false);
+	void Build(FSLineMesh* mesh, bool segsOnly = false);
 
 	void Clear();
 
@@ -45,7 +45,7 @@ public:
 	int Edges(int node) const { return (int) m_edge[node].size(); }
 
 	// Return the edge for a given node
-	const FEEdge* Edge(int node, int edge) const;
+	const FSEdge* Edge(int node, int edge) const;
 
 	// return the edge index
 	int EdgeIndex(int node, int edge) const;
@@ -53,6 +53,6 @@ public:
 	const std::vector<int>& EdgeIndexList(int node) const;
 
 private:
-	FELineMesh*			m_mesh;
+	FSLineMesh*			m_mesh;
 	std::vector< std::vector<int> >	m_edge;		// edge list
 };

@@ -165,7 +165,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 
 	// get the mesh
 	FEPostMesh* pm = po->GetActiveMesh();
-	FEPostModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFSModel();
 
 	int N = pfem->GetStates();
 	if (N == 0) return;
@@ -243,7 +243,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		// evaluate all nodes to find range
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			NODEDATA& d0 = s0.m_NODE[i];
 			NODEDATA& d1 = s1.m_NODE[i];
 			if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
@@ -261,13 +261,13 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		// evaluate face values for texture generation
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (face.IsEnabled())
 			{
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
 					int nj = face.n[j];
-					FENode& node = pm->Node(nj);
+					FSNode& node = pm->Node(nj);
 					NODEDATA& d0 = s0.m_NODE[nj];
 					NODEDATA& d1 = s1.m_NODE[nj];
 					if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
@@ -287,7 +287,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			for (int j = 0; j < 2; ++j)
 			{
 				int nj = (j == 0 ? de.n0 : de.n1);
-				FENode& node = pm->Node(nj);
+				FSNode& node = pm->Node(nj);
 				NODEDATA& d0 = s0.m_NODE[nj];
 				NODEDATA& d1 = s1.m_NODE[nj];
 				if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
@@ -306,7 +306,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		int NF = pm->Faces();
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			FACEDATA& fd0 = s0.m_FACE[i];
 			FACEDATA& fd1 = s1.m_FACE[i];
 			//			if (face.IsEnabled() && (face.m_ntag > 0))
@@ -414,7 +414,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	float dti = 1.f / (max - min);
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		FACEDATA& fd = s0.m_FACE[i];
 		if (face.IsEnabled())
 		{
@@ -467,7 +467,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		int NF = surf.Faces();
 		for (int j=0; j<NF; ++j)
 		{
-			FEFace& face = surf.Face(j);
+			FSFace& face = surf.Face(j);
 			if (face.m_elem[0].eid == -1) face.Deactivate();
 			else
 			{
@@ -516,7 +516,7 @@ void CGLColorMap::UpdateState(int ntime, bool breset)
 {
 	// get the model
 	CGLModel* po = GetModel();
-	FEPostModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFSModel();
 
 	// make sure the field variable is still valid
 	if (pfem->IsValidFieldCode(m_nfield, ntime) == false)

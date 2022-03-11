@@ -50,7 +50,7 @@ public:
     void SurfaceCurvature(const vec3d p, const vec3d n, vec2d& kappa, vec3d* v);
     
     // Find ray-quadric surface intersections x: p is point on ray, n is normal along ray
-    void RayQuadricIntersection(const vec3d p, const vec3d n, vector<vec3d>* x, vector<double>* t = nullptr);
+    void RayQuadricIntersection(const vec3d p, const vec3d n, std::vector<vec3d>* x, std::vector<double>* t = nullptr);
     
     // Find the point on the quadric closest to the point p
     vec3d ClosestPoint(const vec3d p);

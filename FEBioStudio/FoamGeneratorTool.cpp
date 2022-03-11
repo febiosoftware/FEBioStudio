@@ -48,10 +48,10 @@ bool CFoamGeneratorTool::OnApply()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return false;
 
-	FEModel* ps = doc->GetFEModel();
+	FSModel* ps = doc->GetFSModel();
 
 	// create the foam mesh
-	FEMesh* pm = m_foam.Create();
+	FSMesh* pm = m_foam.Create();
 	if (pm)
 	{
 		char szname[256] = { 0 };

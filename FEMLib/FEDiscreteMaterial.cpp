@@ -28,47 +28,44 @@ SOFTWARE.*/
 #include "FEDiscreteMaterial.h"
 #include <MeshTools/FEProject.h>
 #include <FSCore/ParamBlock.h>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
+#include <FEBioLink/FEBioInterface.h>
 
 //===================================================================
-FEDiscreteMaterial::FEDiscreteMaterial(int ntype) : FEMaterial(ntype)
+FSDiscreteMaterial::FSDiscreteMaterial(int ntype) : FSMaterial(ntype)
 {
 
 }
 
 //===================================================================
-REGISTER_MATERIAL(FELinearSpringMaterial, MODULE_MECH, FE_DISCRETE_LINEAR_SPRING, FE_MAT_DISCRETE, "linear spring", 0);
+REGISTER_MATERIAL(FSLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_LINEAR_SPRING, FE_MAT_DISCRETE, "linear spring", 0);
 
-FELinearSpringMaterial::FELinearSpringMaterial() : FEDiscreteMaterial(FE_DISCRETE_LINEAR_SPRING)
+FSLinearSpringMaterial::FSLinearSpringMaterial() : FSDiscreteMaterial(FE_DISCRETE_LINEAR_SPRING)
 {
 	AddScienceParam(1, UNIT_STIFFNESS, "E", "spring constant");
 }
 
-void FELinearSpringMaterial::SetSpringConstant(double E)
+void FSLinearSpringMaterial::SetSpringConstant(double E)
 {
 	SetFloatValue(0, E);
 }
 
 //===================================================================
 
-REGISTER_MATERIAL(FENonLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_NONLINEAR_SPRING, FE_MAT_DISCRETE, "nonlinear spring", 0);
+REGISTER_MATERIAL(FSNonLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_NONLINEAR_SPRING, FE_MAT_DISCRETE, "nonlinear spring", 0);
 
-FENonLinearSpringMaterial::FENonLinearSpringMaterial() : FEDiscreteMaterial(FE_DISCRETE_NONLINEAR_SPRING)
+FSNonLinearSpringMaterial::FSNonLinearSpringMaterial() : FSDiscreteMaterial(FE_DISCRETE_NONLINEAR_SPRING)
 {
-	AddScienceParam(1, UNIT_FORCE, "force", "spring force")->SetLoadCurve();
-
-	// create an initial linear ramp
-	LOADPOINT p0(0, 0), p1(1, 1);
-	GetParamLC(0)->Clear();
-	GetParamLC(0)->Add(p0);
-	GetParamLC(0)->Add(p1);
+	AddScienceParam(1, UNIT_FORCE, "force", "spring force");
+	AddDoubleParam(1, "scale", "scale");
+	AddChoiceParam(0, "measure", "deformation measure")->SetEnumNames("elongation\0strain\0stretch\0");
 }
 
 //===================================================================
 
-REGISTER_MATERIAL(FEHillContractileMaterial, MODULE_MECH, FE_DISCRETE_HILL, FE_MAT_DISCRETE, "Hill", 0);
+REGISTER_MATERIAL(FSHillContractileMaterial, MODULE_MECH, FE_DISCRETE_HILL, FE_MAT_DISCRETE, "Hill", 0);
 
-FEHillContractileMaterial::FEHillContractileMaterial() : FEDiscreteMaterial(FE_DISCRETE_HILL)
+FSHillContractileMaterial::FSHillContractileMaterial() : FSDiscreteMaterial(FE_DISCRETE_HILL)
 {
 	AddScienceParam(0, UNIT_FORCE, "Fmax", "Max force");
 	AddScienceParam(1, UNIT_LENGTH, "Lmax", "Max length");
@@ -81,32 +78,94 @@ FEHillContractileMaterial::FEHillContractileMaterial() : FEDiscreteMaterial(FE_D
 	AddProperty("Ftl", FE_MAT_1DFUNC);
 	AddProperty("Fvl", FE_MAT_1DFUNC);
 
-	AddProperty(0, new FE1DPointFunction);
-	AddProperty(1, new FE1DPointFunction);
-	AddProperty(2, new FE1DPointFunction);
+	AddProperty(0, new FS1DPointFunction);
+	AddProperty(1, new FS1DPointFunction);
+	AddProperty(2, new FS1DPointFunction);
 }
 
 //===================================================================
 
-REGISTER_MATERIAL(FE1DPointFunction, MODULE_MECH, FE_FNC1D_POINT, FE_MAT_1DFUNC, "point", 0);
+REGISTER_MATERIAL(FS1DPointFunction, MODULE_MECH, FE_FNC1D_POINT, FE_MAT_1DFUNC, "point", 0);
 
-FE1DPointFunction::FE1DPointFunction() : FE1DFunction(FE_FNC1D_POINT) 
+FS1DPointFunction::FS1DPointFunction() : FS1DFunction(FE_FNC1D_POINT) 
 {
-	// dummy parameter so we can use FEMaterial's serialization for the load curve
-	AddDoubleParam(0, "points", "points")->SetLoadCurve();
-
 	// constant value
-	GetParamLC(0)->Clear();
-	GetParamLC(0)->Add(0, 1);
-	GetParamLC(0)->Add(1, 1);
+	m_lc.Clear();
+	m_lc.Add(0, 1);
+	m_lc.Add(1, 1);
 }
 
-FELoadCurve* FE1DPointFunction::GetPointCurve()
+LoadCurve* FS1DPointFunction::GetPointCurve()
 {
-	return GetParamLC(0);
+	return &m_lc;
 }
 
-void FE1DPointFunction::SetPointCurve(FELoadCurve& lc)
+void FS1DPointFunction::SetPointCurve(LoadCurve& lc)
 {
-	GetParam(0).SetLoadCurve(lc);
+	m_lc = lc;
+}
+
+//===================================================================
+FEBioDiscreteMaterial::FEBioDiscreteMaterial() : FSDiscreteMaterial(FE_DISCRETE_FEBIO_MATERIAL)
+{
+
+}
+
+FEBioDiscreteMaterial::~FEBioDiscreteMaterial()
+{
+
+}
+
+void FEBioDiscreteMaterial::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSDiscreteMaterial::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioDiscreteMaterial::Load(IArchive& ar)
+{
+	TRACE("FEBioDiscreteMaterial::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSDiscreteMaterial::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+	// We call this to make sure that the FEBio class has the same parameters
+	UpdateData(true);
+}
+
+bool FEBioDiscreteMaterial::UpdateData(bool bsave)
+{
+//	if (m_febClass)
+	{
+		if (bsave) FEBio::UpdateFEBioDiscreteMaterial(this);
+	}
+	return false;
+}
+
+// return a string for the material type
+const char* FEBioDiscreteMaterial::GetTypeString() const
+{
+	return FSObject::GetTypeString();
+}
+
+void FEBioDiscreteMaterial::SetTypeString(const std::string& s)
+{
+	FSObject::SetTypeString(s);
 }

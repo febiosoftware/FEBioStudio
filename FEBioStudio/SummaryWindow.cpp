@@ -45,8 +45,10 @@ SOFTWARE.*/
 
 CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "FEBio Studio: Summary";
-	setWindowTitle(title);
+	QString wndTitle = windowTitle();
+	wndTitle += ":Summary";
+	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
+	setWindowTitle(wndTitle);
 
 	QCheckBox* selectionOnly = new QCheckBox("Selection only");
 	AddToolBarWidget(selectionOnly);
@@ -81,13 +83,13 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	{
 		if (doc->IsValid())
 		{
-			SetYDataSelector(new CModelDataSelector(doc->GetFEModel(), Post::DATA_SCALAR));
+			SetYDataSelector(new CModelDataSelector(doc->GetFSModel(), Post::DATA_SCALAR));
 		}
 		else return;
 	}
 
 	Post::CGLModel* po = doc->GetGLModel();
-	Post::FEPostModel* pfem = doc->GetFEModel();
+	Post::FEPostModel* pfem = doc->GetFSModel();
 	Post::FEPostMesh* pfe = po->GetActiveMesh();
 	int nodes = pfe->Nodes();
 
@@ -208,7 +210,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalNodeRange(Post::FEPostModel& fem, int 
 	int NN = mesh.Nodes();
 	for (int i=0; i<NN; i++)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if ((bsel == false) || (node.IsSelected()))
 		{
 			float val = state.m_NODE[i].m_val;
@@ -239,7 +241,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalEdgeRange(Post::FEPostModel& fem, int 
 	int NE = mesh.Edges();
 	for (int i=0; i<NE; i++)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if ((bsel == false) || (edge.IsSelected()))
 		{
 			float val = state.m_EDGE[i].m_val;
@@ -311,7 +313,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalFaceRange(Post::FEPostModel& fem, int 
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; i++)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		if ((bsel == false) || (f.IsSelected()))
 		{

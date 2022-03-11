@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESoluteData.h"
 
-FESoluteData::FESoluteData()
+SoluteData::SoluteData()
 {
 	AddIntParam   (  0, "charge_number", "Charge Number");
 	AddDoubleParam(0.0, "molar_mass", "Molar Mass");

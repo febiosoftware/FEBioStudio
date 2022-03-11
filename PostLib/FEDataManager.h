@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "FEDataField.h"
 #include <vector>
-//using namespace std;
 
 namespace Post {
 
@@ -44,10 +43,10 @@ public:
 	~FEDataManager(void);
 
 	//! add a data field
-	void AddDataField(FEDataField* pd, const std::string& name = "");
+	void AddDataField(ModelDataField* pd, const std::string& name = "");
 
 	//! delete a data field
-	void DeleteDataField(FEDataField* pd);
+	void DeleteDataField(ModelDataField* pd);
 
 	//! get the nodal datafield
 	FEDataFieldPtr FirstDataField();
@@ -68,7 +67,7 @@ public:
 	bool IsValid(int fieldId) const;
 
 protected:
-	vector<FEDataField*>	m_Data;
+	std::vector<ModelDataField*>	m_Data;
 	FEPostModel*	m_pm;
 };
 }

@@ -79,6 +79,6 @@ public:
 protected:
 	CGLCamera m_cam;	//!< current camera
 
-	vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
-	int							m_nkey;	//!< current key
+	std::vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
+	int								m_nkey;	//!< current key
 };

@@ -125,11 +125,11 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 	// get the model
 	CGLModel& mdl = *GetModel();
 
-	FEPostModel* fem = mdl.GetFEModel();
+	FEPostModel* fem = mdl.GetFSModel();
 	FEState* state = fem->CurrentState();
 
 	// get the current mesh
-	FEMeshBase& mesh = *mdl.GetActiveMesh();
+	FSMeshBase& mesh = *mdl.GetActiveMesh();
 
 	// get the largest dimension
 	BOX box = m_box;
@@ -157,7 +157,7 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 		{
 			float x = box.x0 + ((float)i)*(box.x1 - box.x0) / (nx - 1.f);
 			Slice& slice = m_slice_X[i];
-			CreateSlice(slice, vec3f(1, 0, 0), x);
+			CreateSlice(slice, vec3d(1, 0, 0), x);
 		}
 
 #pragma omp for
@@ -165,7 +165,7 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 		{
 			float y = box.y0 + ((float)i)*(box.y1 - box.y0) / (ny - 1.f);
 			Slice& slice = m_slice_Y[i];
-			CreateSlice(slice, vec3f(0, 1, 0), y);
+			CreateSlice(slice, vec3d(0, 1, 0), y);
 		}
 
 #pragma omp for
@@ -173,7 +173,7 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 		{
 			float z = box.z0 + ((float)i)*(box.z1 - box.z0) / (nz - 1.f);
 			Slice& slice = m_slice_Z[i];
-			CreateSlice(slice, vec3f(0, 0, 1), z);
+			CreateSlice(slice, vec3d(0, 0, 1), z);
 		}
 	}
 }
@@ -182,8 +182,8 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 {
 	CGLModel* mdl = GetModel();
 
-	FEMeshBase* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FSMeshBase* pm = mdl->GetActiveMesh();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
 	int NS = pfem->GetStates();
@@ -280,7 +280,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 
 	// get the mesh
 	CGLModel* mdl = GetModel();
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	vec2f rng;
@@ -338,7 +338,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 		// render only if the element is visible and
 		// its material is enabled
 		FEElement_& el = pm->ElementRef(iel);
-		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
+		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && el.IsVisible() && el.IsSolid())
 		{
 			switch (el.Type())
@@ -360,7 +360,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 			// get the nodal values
 			for (int k = 0; k<8; ++k)
 			{
-				FENode& node = pm->Node(el.m_node[nt[k]]);
+				FSNode& node = pm->Node(el.m_node[nt[k]]);
 
 				float f = m_val[el.m_node[nt[k]]];
 				f = (f - rng.x) / (rng.y - rng.x);

@@ -27,8 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 
-class FEProject;
-class FEPlotVariable;
+class FSProject;
+class CPlotVariable;
 class QListWidgetItem;
 class QTableWidgetItem;
 
@@ -44,7 +44,7 @@ class CDlgAddDomain : public QDialog
 public:
 	CDlgAddDomain(QWidget* parent);
 
-	void setVariable(const FEPlotVariable& var);
+	void setVariable(const CPlotVariable& var);
 	void setDomains(const QStringList& l);
 
 	int selectedDomain();
@@ -58,7 +58,7 @@ class CDlgEditOutput : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgEditOutput(FEProject& prj, QWidget* parent = 0, int tab = 0);
+	CDlgEditOutput(FSProject& prj, QWidget* parent = 0, int tab = 0);
 
 	void showEvent(QShowEvent* ev) override;
 
@@ -77,8 +77,9 @@ protected slots:
 	void onLogRemove();
 	void UpdateLogItemList();
 	void onItemChanged(QTableWidgetItem* item);
+	void accept();
 
 private:
-	FEProject&	m_prj;
+	FSProject&	m_prj;
 	Ui::CDlgEditOutput*	ui;
 };

@@ -75,7 +75,7 @@ public:
 	}
 };
 
-CDlgAddNodalLoad::CDlgAddNodalLoad(FEModel& fem, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddNodalLoad)
+CDlgAddNodalLoad::CDlgAddNodalLoad(FSModel& fem, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddNodalLoad)
 {
 	setWindowTitle("Add Nodal Load");
 
@@ -91,6 +91,9 @@ CDlgAddNodalLoad::CDlgAddNodalLoad(FEModel& fem, QWidget* parent) : QDialog(pare
 	ui->var->addItem("x-force");
 	ui->var->addItem("y-force");
 	ui->var->addItem("z-force");
+    ui->var->addItem("shell x-force");
+    ui->var->addItem("shell y-force");
+    ui->var->addItem("shell z-force");
 	ui->var->addItem("fluid volumetric flow rate");
 
 	ui->value->setValue(1.0);

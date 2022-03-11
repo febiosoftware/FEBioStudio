@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "PropertyList.h"
 #include <QtCore/QString>
-#include <MathLib/math3d.h>
 #include <vector>
 
 class FSObject;
@@ -48,7 +47,8 @@ public:
 protected:
 	void BuildParamList(FSObject* po, bool showNonPersistent = false);
 
-	virtual void AddParameter(Param& p);
+	void AddParameter(Param& p);
+	void AddParameterList(FSObject* po);
 	QVariant GetPropertyValue(Param& p);
 	void SetPropertyValue(Param& p, const QVariant& v);
 

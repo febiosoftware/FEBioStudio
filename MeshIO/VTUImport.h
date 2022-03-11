@@ -33,11 +33,11 @@ class VTKDataArray;
 class VTKPiece;
 class VTKModel;
 
-class VTUimport : public FEFileImport
+class VTUimport : public FSFileImport
 {
 
 public:
-	VTUimport(FEProject& prj);
+	VTUimport(FSProject& prj);
 	~VTUimport(void);
 
 	bool Load(const char* szfile);

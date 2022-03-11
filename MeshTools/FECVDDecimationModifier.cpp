@@ -36,9 +36,8 @@ SOFTWARE.*/
 #include "FEFixSurfaceMesh.h"
 #include <algorithm>
 #include <stack>
-
-using std::min;
-using std::stack;
+#include <FECore/matrix.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 //! Constructor
@@ -63,7 +62,7 @@ int randi(int nmax)
 //-----------------------------------------------------------------------------
 //! Create the decimate mesh. 
 //! \todo This implementation will only work with closed surfaces. 
-FESurfaceMesh* FECVDDecimationModifier::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FECVDDecimationModifier::Apply(FSSurfaceMesh* pm)
 {
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_FACE_TRI3) == false) 
@@ -87,7 +86,7 @@ FESurfaceMesh* FECVDDecimationModifier::Apply(FESurfaceMesh* pm)
 
 	// create the new mesh
 	// we can create either the clustered mesh or the final decimated mesh
-	FESurfaceMesh* pnew = 0;
+	FSSurfaceMesh* pnew = 0;
 	if (m_bcvd) 
 	{
 		// partition mesh based on cluster assingments
@@ -138,7 +137,7 @@ FESurfaceMesh* FECVDDecimationModifier::Apply(FESurfaceMesh* pm)
 //! edges between clusters.
 //! \todo I need to create a better random seeding algorithm. If the scale is close
 //! to one, this algorithm may take a while to finish.
-bool FECVDDecimationModifier::Initialize(FESurfaceMesh* pm)
+bool FECVDDecimationModifier::Initialize(FSSurfaceMesh* pm)
 {
 	// nodes on original mesh
 	int N0 = pm->Nodes();
@@ -179,11 +178,11 @@ bool FECVDDecimationModifier::Initialize(FESurfaceMesh* pm)
 	vec3d r[3];
 	
 	//Creating a node node list
-	FENodeNodeList NNL(pm);
+	FSNodeNodeList NNL(pm);
 
 	for (int i=0; i<T0; ++i)
 	{
-		FEFace& fi = pm->Face(i);
+		FSFace& fi = pm->Face(i);
 
 		// get the nodal coordinates
 		r[0] = pm->Node(fi.n[0]).r;
@@ -205,7 +204,7 @@ bool FECVDDecimationModifier::Initialize(FESurfaceMesh* pm)
 			{
 				//normal vector to the jth node of the face
 				//step -1
-				vec3d p = fi.m_nn[j];
+				vec3d p = to_vec3d(fi.m_nn[j]);
 				vec3d r0 = pm->Node(fi.n[j]).r;
 
 				//step -2 
@@ -289,7 +288,7 @@ bool FECVDDecimationModifier::Initialize(FESurfaceMesh* pm)
 	m_Edge.clear();
 	for (int i=0; i<T0; ++i)
 	{
-		FEFace& fi = pm->Face(i);
+		FSFace& fi = pm->Face(i);
 		for (int j=0; j<3; ++j)
 		{
 			int nj = fi.m_nbr[j];
@@ -317,7 +316,7 @@ bool FECVDDecimationModifier::Initialize(FESurfaceMesh* pm)
 
 //-----------------------------------------------------------------------------
 // This function assigns face to a new cluster
-bool FECVDDecimationModifier::Swap(FEFace& face, int nface, int ncluster)
+bool FECVDDecimationModifier::Swap(FSFace& face, int nface, int ncluster)
 {
 	if (m_tag[nface] == ncluster) return false;
 
@@ -356,7 +355,7 @@ bool FECVDDecimationModifier::Swap(FEFace& face, int nface, int ncluster)
 
 //-----------------------------------------------------------------------------
 //! Update clustering to minimize energy
-bool FECVDDecimationModifier::Minimize(FESurfaceMesh* pm)
+bool FECVDDecimationModifier::Minimize(FSSurfaceMesh* pm)
 {
 	bool bconv = false;
 	const int MAX_ITER = 50000;
@@ -489,7 +488,7 @@ bool FECVDDecimationModifier::Minimize(FESurfaceMesh* pm)
 						while (S.empty() == false)
 						{
 							int nface = S.top(); S.pop();
-							FEFace& face = pm->Face(nface);
+							FSFace& face = pm->Face(nface);
 							face.m_ntag = nc;
 
 							am += m_rho[nface];
@@ -560,7 +559,7 @@ bool FECVDDecimationModifier::NODE::AttachToCluster(int n)
 
 //-----------------------------------------------------------------------------
 // TODO: The case n==6 has other ways to get tesselated. I only implemented a few
-FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
+FSSurfaceMesh* FECVDDecimationModifier::Triangulate(FSSurfaceMesh* pm)
 {
 	int N = pm->Nodes();
 	vector<NODE> Node; Node.resize(N);
@@ -569,7 +568,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 		Node[i].nc = 0;
 	}
 
-	FENodeFaceList NFL;
+	FSNodeFaceList NFL;
 	NFL.BuildSorted(pm);
 	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).m_ntag = i;
 	for (int i=0; i<N; ++i)
@@ -596,13 +595,13 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 	}
 
 	// create a new mesh
-	FESurfaceMesh* pnew = new FESurfaceMesh;
+	FSSurfaceMesh* pnew = new FSSurfaceMesh;
 	pnew->Create(nodes, 0, faces);
 
 	// calculate the node positions
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& nd = pnew->Node(i);
+		FSNode& nd = pnew->Node(i);
 		Cluster& Ci = m_Cluster[i+1];
 		assert(Ci.faces() > 0);
 		nd.r = Ci.m_sgamma / Ci.m_srho;
@@ -615,7 +614,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 		NODE& nd = Node[i];
 		if (nd.nc == 3)
 		{
-			FEFace& face = pnew->Face(faces++);
+			FSFace& face = pnew->Face(faces++);
 			face.SetType(FE_FACE_TRI3);
 			face.n[0] = nd.c[0]-1; assert(nd.c[0] > 0);
 			face.n[1] = nd.c[1]-1; assert(nd.c[1] > 0);
@@ -641,13 +640,13 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 
 			if (Amin >= Bmin)
 			{
-				FEFace& f0 = pnew->Face(faces++);
+				FSFace& f0 = pnew->Face(faces++);
 				f0.SetType(FE_FACE_TRI3);
 				f0.n[0] = nd.c[0]-1; assert(nd.c[0] > 0);
 				f0.n[1] = nd.c[1]-1; assert(nd.c[1] > 0);
 				f0.n[2] = nd.c[2]-1; assert(nd.c[2] > 0);
 			
-				FEFace& f1 = pnew->Face(faces++);
+				FSFace& f1 = pnew->Face(faces++);
 				f1.SetType(FE_FACE_TRI3);
 				f1.n[0] = nd.c[2]-1; assert(nd.c[2] > 0);
 				f1.n[1] = nd.c[3]-1; assert(nd.c[3] > 0);
@@ -655,13 +654,13 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 			}
 			else
 			{
-				FEFace& f0 = pnew->Face(faces++);
+				FSFace& f0 = pnew->Face(faces++);
 				f0.SetType(FE_FACE_TRI3);
 				f0.n[0] = nd.c[3]-1; assert(nd.c[3] > 0);
 				f0.n[1] = nd.c[0]-1; assert(nd.c[0] > 0);
 				f0.n[2] = nd.c[1]-1; assert(nd.c[1] > 0);
 			
-				FEFace& f1 = pnew->Face(faces++);
+				FSFace& f1 = pnew->Face(faces++);
 				f1.SetType(FE_FACE_TRI3);
 				f1.n[0] = nd.c[1]-1; assert(nd.c[1] > 0);
 				f1.n[1] = nd.c[2]-1; assert(nd.c[2] > 0);
@@ -700,19 +699,19 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 				}
 			}
 	
-			FEFace& f0 = pnew->Face(faces++);
+			FSFace& f0 = pnew->Face(faces++);
 			f0.SetType(FE_FACE_TRI3);
 			f0.n[0] = nd.c[LUT[imax][0][0]]-1; assert(nd.c[LUT[imax][0][0]] > 0);
 			f0.n[1] = nd.c[LUT[imax][0][1]]-1; assert(nd.c[LUT[imax][0][1]] > 0);
 			f0.n[2] = nd.c[LUT[imax][0][2]]-1; assert(nd.c[LUT[imax][0][2]] > 0);
 
-			FEFace& f1 = pnew->Face(faces++);
+			FSFace& f1 = pnew->Face(faces++);
 			f1.SetType(FE_FACE_TRI3);
 			f1.n[0] = nd.c[LUT[imax][1][0]]-1; assert(nd.c[LUT[imax][1][0]] > 0);
 			f1.n[1] = nd.c[LUT[imax][1][1]]-1; assert(nd.c[LUT[imax][1][1]] > 0);
 			f1.n[2] = nd.c[LUT[imax][1][2]]-1; assert(nd.c[LUT[imax][1][2]] > 0);
 
-			FEFace& f2 = pnew->Face(faces++);
+			FSFace& f2 = pnew->Face(faces++);
 			f2.SetType(FE_FACE_TRI3);
 			f2.n[0] = nd.c[LUT[imax][2][0]]-1; assert(nd.c[LUT[imax][2][0]] > 0);
 			f2.n[1] = nd.c[LUT[imax][2][1]]-1; assert(nd.c[LUT[imax][2][1]] > 0);
@@ -758,25 +757,25 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 				}
 			}
 	
-			FEFace& f0 = pnew->Face(faces++);
+			FSFace& f0 = pnew->Face(faces++);
 			f0.SetType(FE_FACE_TRI3);
 			f0.n[0] = nd.c[LUT[imax][0][0]]-1; assert(nd.c[LUT[imax][0][0]] > 0);
 			f0.n[1] = nd.c[LUT[imax][0][1]]-1; assert(nd.c[LUT[imax][0][1]] > 0);
 			f0.n[2] = nd.c[LUT[imax][0][2]]-1; assert(nd.c[LUT[imax][0][2]] > 0);
 
-			FEFace& f1 = pnew->Face(faces++);
+			FSFace& f1 = pnew->Face(faces++);
 			f1.SetType(FE_FACE_TRI3);
 			f1.n[0] = nd.c[LUT[imax][1][0]]-1; assert(nd.c[LUT[imax][1][0]] > 0);
 			f1.n[1] = nd.c[LUT[imax][1][1]]-1; assert(nd.c[LUT[imax][1][1]] > 0);
 			f1.n[2] = nd.c[LUT[imax][1][2]]-1; assert(nd.c[LUT[imax][1][2]] > 0);
 
-			FEFace& f2 = pnew->Face(faces++);
+			FSFace& f2 = pnew->Face(faces++);
 			f2.SetType(FE_FACE_TRI3);
 			f2.n[0] = nd.c[LUT[imax][2][0]]-1; assert(nd.c[LUT[imax][2][0]] > 0);
 			f2.n[1] = nd.c[LUT[imax][2][1]]-1; assert(nd.c[LUT[imax][2][1]] > 0);
 			f2.n[2] = nd.c[LUT[imax][2][2]]-1; assert(nd.c[LUT[imax][2][2]] > 0);
 
-			FEFace& f3 = pnew->Face(faces++);
+			FSFace& f3 = pnew->Face(faces++);
 			f3.SetType(FE_FACE_TRI3);
 			f3.n[0] = nd.c[LUT[imax][3][0]]-1; assert(nd.c[LUT[imax][3][0]] > 0);
 			f3.n[1] = nd.c[LUT[imax][3][1]]-1; assert(nd.c[LUT[imax][3][1]] > 0);
@@ -788,7 +787,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
+FSSurfaceMesh* FECVDDecimationModifier::Triangulate2(FSSurfaceMesh* pm)
 {
 	// let's build the node data
 	int N = pm->Nodes();
@@ -799,7 +798,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 	}
 
 	// find all clusters a node belongs to
-	FENodeFaceList NFL;
+	FSNodeFaceList NFL;
 	if (NFL.BuildSorted(pm) == false) return 0;
 	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).m_ntag = i;
 	for (int i=0; i<N; ++i)
@@ -824,12 +823,12 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 	int nodes = (int) m_Cluster.size() - 1;
 
 	// create a new mesh
-	FESurfaceMesh* pnew = new FESurfaceMesh;
+	FSSurfaceMesh* pnew = new FSSurfaceMesh;
 	pnew->Create(nodes, 0, 0);
 	// calculate the node positions
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& nd = pnew->Node(i);
+		FSNode& nd = pnew->Node(i);
 		Cluster& Ci = m_Cluster[i+1];
 
 		//nd.r = Ci.m_sgamma / Ci.m_srho;//change here //original point
@@ -840,7 +839,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 		double thickness = 0;
 		for (int j =0 ;j<Ci.faces() ;j++)
 		{
-			FEFace& fj = pm->Face(Ci.m_fid[j]);
+			FSFace& fj = pm->Face(Ci.m_fid[j]);
 			vec3d p[3];
 			p[0] = pm->Node(fj.n[0]).r;//p1
 			p[1] = pm->Node(fj.n[1]).r;//p2
@@ -907,7 +906,7 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 	// build the elements
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& face = pnew->Face(i);
+		FSFace& face = pnew->Face(i);
 		FEFillHole::FACE& fi = tri_list[i];
 		face.SetType(FE_FACE_TRI3);
 		face.m_gid = 0;
@@ -920,14 +919,14 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceMesh* FECVDDecimationModifier::CalculateCVD(FESurfaceMesh* pm)
+FSSurfaceMesh* FECVDDecimationModifier::CalculateCVD(FSSurfaceMesh* pm)
 {
-	FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* pnew = new FSSurfaceMesh(*pm);
 
 	int N = pnew->Faces();
 	for (int i=0; i<N; ++i)
 	{
-		FEFace& f = pnew->Face(i);
+		FSFace& f = pnew->Face(i);
 		f.m_gid = m_tag[i];
 	}
 

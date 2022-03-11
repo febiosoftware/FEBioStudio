@@ -27,6 +27,9 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include "3DImage.h"
+
+#ifdef HAS_ITK
+
 #include <SimpleITK.h>
 
 class CImageSITK : public C3DImage
@@ -76,3 +79,5 @@ private:
 
     // std::vector<std::string> sequenceFiles;
 };
+
+#endif

@@ -87,7 +87,7 @@ const char szerr[][256] = {
 //-----------------------------------------------------------------------------
 // Constructor
 //
-FENIKEImport::FENIKEImport(FEProject& prj) : FEFileImport(prj)
+FENIKEImport::FENIKEImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -123,10 +123,10 @@ bool FENIKEImport::Load(const char* szfile)
 
 	// store a pointer to the project
 	m_po = 0;
-	m_fem = &m_prj.GetFEModel();
+	m_fem = &m_prj.GetFSModel();
 
 	// get the model
-	FEModel& fem = *m_fem;
+	FSModel& fem = *m_fem;
 
 	// create a nike project
 	FENikeProject nike;
@@ -182,8 +182,8 @@ void FENIKEImport::build_model(FENikeProject& nike)
 void FENIKEImport::build_control(FENikeProject& nike)
 {
 	FENikeProject::CONTROL& c = nike.m_Ctrl;
-	FEModel& fem = *m_fem;
-	FENonLinearMechanics* pstep = new FENonLinearMechanics(&fem);
+	FSModel& fem = *m_fem;
+	FSNonLinearMechanics* pstep = new FSNonLinearMechanics(&fem);
 	pstep->SetName("Step01");
 	fem.AddStep(pstep);
 
@@ -220,7 +220,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	int i, j;
 
 	// get the model
-	FEModel& fem = *m_fem;
+	FSModel& fem = *m_fem;
 
 	int nodes = (int)nike.m_Node.size();
 	int nhel  = (int)nike.m_Brick.size();
@@ -229,13 +229,13 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	if ((nodes == 0) || (nhel + nsel == 0)) return;
 
 	// create storage for the mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, nhel + nsel);
 
 	// copy nodes
 	for (i=0; i<nodes; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		FENikeProject::NODE& N = nike.m_Node[i];
 
 		n.r.x = N.x;
@@ -247,7 +247,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	int nmat;
 	for (i=0; i<nhel; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		FENikeProject::BRICK& E = nike.m_Brick[i];
 		nmat = E.nmat - 1;
 
@@ -283,7 +283,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	// copy elements
 	for (i=0; i<nsel; ++i)
 	{
-		FEElement& el = pm->Element(i + nhel);
+		FSElement& el = pm->Element(i + nhel);
 		FENikeProject::SHELL& S = nike.m_Shell[i];
 
 		nmat = S.nmat - 1;
@@ -316,7 +316,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	// assign the materials to the parts
 	for (int i=0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		assert((el.m_gid >= 0)&&(el.m_gid < m_po->Parts()));
 		GPart* pg = m_po->Part(el.m_gid);
 		pg->SetMaterialID(fem.GetMaterial(el.m_gid)->GetID());
@@ -330,9 +330,9 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 void FENIKEImport::build_constraints(FENikeProject& nike)
 {
 	// get the model
-	FEModel& fem = *m_fem;
-	FEMesh* pm = m_po->GetFEMesh();
-	FEStep& s = *fem.GetStep(0);
+	FSModel& fem = *m_fem;
+	FSMesh* pm = m_po->GetFEMesh();
+	FSStep& s = *fem.GetStep(0);
 
 	int i;
 	int N = (int)nike.m_Node.size();
@@ -364,7 +364,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			if (nbc)
 			{
 				// create a nodeset of this BC
-				FENodeSet* pg = new FENodeSet(m_po);
+				FSNodeSet* pg = new FSNodeSet(m_po);
 				sprintf(szname, "FixedNodeset%02d", nfc++);
 				pg->SetName(szname);
 
@@ -397,7 +397,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 				
 				if (bc < 8)
 				{
-					FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, bc);
+					FSFixedDisplacement* pbc = new FSFixedDisplacement(&fem, pg, bc);
 					sprintf(szname, "FixedConstraint%02d", nfc-1);
 					pbc->SetName(szname);
 					pbc->SetBC(bc);
@@ -406,7 +406,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 				else
 				{
 					bc = bc >> 3;
-					FEFixedRotation* prc = new FEFixedRotation(&fem, pg, bc);
+					FSFixedRotation* prc = new FSFixedRotation(&fem, pg, bc);
 					sprintf(szname, "FixedConstraint%02d", nfc-1);
 					prc->SetName(szname);
 					prc->SetBC(bc);
@@ -439,7 +439,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			for (i=0; i<N; ++i, ++pn) if ((BC[i] == nbc) && (pn->lc == nlc)) ++nfix;
 
 			// create a nodeset of this BC
-			FENodeSet* pg = new FENodeSet(m_po);
+			FSNodeSet* pg = new FSNodeSet(m_po);
 			sprintf(szname, "DisplacementNodeset%02d", nfc);
 			pg->SetName(szname);
 
@@ -449,12 +449,12 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			for (i=0; i<N; ++i, ++pn) if ((BC[i] == nbc) && (pn->lc == nlc)) { pg->add(pn->node - 1); BC[i] = 0; }
 			
 			// create the constraint
-			FEPrescribedDisplacement* pbc = new FEPrescribedDisplacement(&fem, pg, nbc-1, scale);
+			FSPrescribedDisplacement* pbc = new FSPrescribedDisplacement(&fem, pg, nbc-1, scale);
 			sprintf(szname, "PrescribedConstraint%02d", nfc++);
 			pbc->SetName(szname);
 			pbc->SetDOF(nbc-1);
-			FELoadCurve* plc = pbc->GetLoadCurve();
-			*plc = m_LC[nlc-1];
+//			LoadCurve* plc = pbc->GetLoadCurve();
+//			*plc = m_LC[nlc-1];
 			s.AddComponent(pbc);
 		}
 	}
@@ -482,7 +482,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			if (nfix > 0)
 			{
 				sprintf(szname, "RigidConstraint%d", nrc++);
-				FERigidFixed* prc = new FERigidFixed(0);
+				FSRigidFixed* prc = new FSRigidFixed(0);
 				prc->SetName(szname);
 				prc->SetMaterialID(fem.GetMaterial(i)->GetID());
 				prc->SetDOF(0, (BC[0] == -1));
@@ -502,13 +502,13 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 					if (BC[j] > 0)
 					{
 						sprintf(szname, "RigidConstraint%d", nrc++);
-						FERigidDisplacement* prc = new FERigidDisplacement(0);
+						FSRigidDisplacement* prc = new FSRigidDisplacement(0);
 						prc->SetName(szname);
 						prc->SetMaterialID(fem.GetMaterial(i)->GetID());
 
 						prc->SetDOF(j);
 						prc->SetValue(1.0);
-						prc->SetLoadCurve(m_LC[BC[j]-1]);
+	//					prc->SetLoadCurve(m_LC[BC[j]-1]);
 						s.AddRC(prc);
 					}
 				}
@@ -523,8 +523,8 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 {
 	int i;
 
-	FEModel& fem = *m_fem;
-	FEStep& step = *fem.GetStep(0);
+	FSModel& fem = *m_fem;
+	FSStep& step = *fem.GetStep(0);
 
 	// assign materials to elements
 	m_nmat = (int)nike.m_Mat.size();
@@ -532,23 +532,23 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 	{
 		FENikeProject::MATERIAL& m = nike.m_Mat[i];
 
-		FEMaterial* pmat = 0;
+		FSMaterial* pmat = 0;
 
 		switch (m.ntype)
 		{
 		case 1:		// isotropic elastic
 			{
-				FEIsotropicElastic* pm = new FEIsotropicElastic();
+				FSIsotropicElastic* pm = new FSIsotropicElastic();
 				pmat = pm;
 
-				pm->SetFloatValue(FEIsotropicElastic::MP_E, m.m[0][0]);
-				pm->SetFloatValue(FEIsotropicElastic::MP_v, m.m[1][0]);
-				pm->SetFloatValue(FEIsotropicElastic::MP_DENSITY, m.dens);
+				pm->SetFloatValue(FSIsotropicElastic::MP_E, m.m[0][0]);
+				pm->SetFloatValue(FSIsotropicElastic::MP_v, m.m[1][0]);
+				pm->SetFloatValue(FSIsotropicElastic::MP_DENSITY, m.dens);
 			}
 			break;
 		case 15:	// mooney-rivlin
 			{
-				FEMooneyRivlin* pm = new FEMooneyRivlin;
+				FSMooneyRivlin* pm = new FSMooneyRivlin;
 				pmat = pm;
 
 				double A = m.m[0][0];
@@ -556,34 +556,34 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 				double v = m.m[2][0];
 				double K = 4*(A + B)*(1 + v)/(3*(1-2*v));
 
-				pm->SetFloatValue(FEMooneyRivlin::MP_A, A);
-				pm->SetFloatValue(FEMooneyRivlin::MP_B, B);
-				pm->SetFloatValue(FEMooneyRivlin::MP_K, K);
-				pm->SetFloatValue(FEMooneyRivlin::MP_DENSITY, m.dens);
+				pm->SetFloatValue(FSMooneyRivlin::MP_A, A);
+				pm->SetFloatValue(FSMooneyRivlin::MP_B, B);
+				pm->SetFloatValue(FSMooneyRivlin::MP_K, K);
+				pm->SetFloatValue(FSMooneyRivlin::MP_DENSITY, m.dens);
 			}
 			break;
 		case 20:
 			{
-				FERigidMaterial* pm = new FERigidMaterial;
+				FSRigidMaterial* pm = new FSRigidMaterial;
 				pmat = pm;
-				pm->SetFloatValue(FERigidMaterial::MP_DENSITY, m.dens);
-				pm->SetFloatValue(FERigidMaterial::MP_E, m.m[0][0]);
-				pm->SetFloatValue(FERigidMaterial::MP_V, m.m[1][0]);
+				pm->SetFloatValue(FSRigidMaterial::MP_DENSITY, m.dens);
+				pm->SetFloatValue(FSRigidMaterial::MP_E, m.m[0][0]);
+				pm->SetFloatValue(FSRigidMaterial::MP_V, m.m[1][0]);
 
-/*				FERigidConstraint* pc = 0;
-				FERigidConstraint* pd = 0;
+/*				FSRigidConstraint* pc = 0;
+				FSRigidConstraint* pd = 0;
 
 				for (j=0; j<6; ++j)
 				{
 					int lc = (int) m.m[2][j];
 					if (lc == -1)
 					{
-						if (pc == 0) pc = new FERigidConstraint(FE_RIGID_FIXED, step.GetID());
+						if (pc == 0) pc = new FSRigidConstraint(FE_RIGID_FIXED, step.GetID());
 						pc->m_BC[j] = 1;
 					}
 					else if (lc > 0)
 					{
-						if (pd == 0) pd = new FERigidConstraint(FE_RIGID_PRESCRIBED, step.GetID());
+						if (pd == 0) pd = new FSRigidConstraint(FE_RIGID_PRESCRIBED, step.GetID());
 						pd->m_BC[j] = 1;
 						pd->m_LC[j].SetID(lc-1);
 						pd->m_val[j] = 1;
@@ -591,8 +591,8 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 				}
 */
 				bool bcom = (m.m[3][0] == 0);
-				pm->SetBoolValue(FERigidMaterial::MP_COM, bcom);
-				pm->SetVecValue(FERigidMaterial::MP_RC, vec3d(m.m[3][1], m.m[3][2], m.m[3][3]));
+				pm->SetBoolValue(FSRigidMaterial::MP_COM, bcom);
+				pm->SetVecValue(FSRigidMaterial::MP_RC, vec3d(m.m[3][1], m.m[3][2], m.m[3][3]));
 			}
 			break;
 		case 18:
@@ -608,30 +608,30 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 				if ((beta[0]>=2) && (beta[1] >= 2) && (beta[2] >= 2))
 				{
 					// it's the EFD material
-					FEEFDMooneyRivlin* pm = new FEEFDMooneyRivlin;
+					FSEFDMooneyRivlin* pm = new FSEFDMooneyRivlin;
 					pmat = pm;
-					pm->SetFloatValue(FEEFDMooneyRivlin::MP_C1, m.m[0][0]);
-					pm->SetFloatValue(FEEFDMooneyRivlin::MP_C2, m.m[0][1]);
-					pm->SetFloatValue(FEEFDMooneyRivlin::MP_K , m.m[1][0]);
-					pm->SetVecValue(FEEFDMooneyRivlin::MP_BETA, vec3d(beta[0], beta[1], beta[2]));
-					pm->SetVecValue(FEEFDMooneyRivlin::MP_KSI , vec3d(ksi [0], ksi [1], ksi [2]));
+					pm->SetFloatValue(FSEFDMooneyRivlin::MP_C1, m.m[0][0]);
+					pm->SetFloatValue(FSEFDMooneyRivlin::MP_C2, m.m[0][1]);
+					pm->SetFloatValue(FSEFDMooneyRivlin::MP_K , m.m[1][0]);
+					pm->SetVecValue(FSEFDMooneyRivlin::MP_BETA, vec3d(beta[0], beta[1], beta[2]));
+					pm->SetVecValue(FSEFDMooneyRivlin::MP_KSI , vec3d(ksi [0], ksi [1], ksi [2]));
 				}
 				else
 				{
 					// assume normal trans-iso MR
-					FETransMooneyRivlin* pm = new FETransMooneyRivlin;
+					FSTransMooneyRivlin* pm = new FSTransMooneyRivlin;
 					pmat = pm;
-					pm->SetFloatValue(FETransMooneyRivlin::MP_DENSITY, m.dens);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C1, m.m[0][0]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C2, m.m[0][1]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C3, m.m[0][2]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C4, m.m[0][3]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_C5, m.m[0][4]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_LAM, m.m[1][1]);
-					pm->SetFloatValue(FETransMooneyRivlin::MP_K, m.m[1][0]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_DENSITY, m.dens);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C1, m.m[0][0]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C2, m.m[0][1]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C3, m.m[0][2]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C4, m.m[0][3]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_C5, m.m[0][4]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_LAM, m.m[1][1]);
+					pm->SetFloatValue(FSTransMooneyRivlin::MP_K, m.m[1][0]);
 
 					// read fiber parameters
-					FEOldFiberMaterial* pf = pm->GetFiberMaterial();
+					FSOldFiberMaterial* pf = pm->GetFiberMaterial();
 					int naopt = (int) m.m[3][0];
 					switch (naopt)
 					{
@@ -648,7 +648,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 			break;
 		default:
 			{
-				pmat = new FEIsotropicElastic;
+				pmat = new FSIsotropicElastic;
 /*				FENIKEMaterial* pm = new FENIKEMaterial();
 				pmat = pm;
 				pm->SetIntValue(FENIKEMaterial::MP_TYPE, m.ntype);
@@ -681,22 +681,22 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 {
 	list<FENikeProject::RIGID_FACET>::iterator pf = nike.m_Rigid.begin();
 
-	FEModel* ps = m_fem;
-	FEMesh* pm = m_po->GetFEMesh();
+	FSModel* ps = m_fem;
+	FSMesh* pm = m_po->GetFEMesh();
 
 	int nrns = 1;
 	char szname[256] = {0};
 
 	while (pf != nike.m_Rigid.end())
 	{
-		FENodeSet* pn = new FENodeSet(m_po);
+		FSNodeSet* pn = new FSNodeSet(m_po);
 		sprintf(szname, "RigidNodeset%2d", nrns);
 		pn->SetName(szname);
 
 		int nrb = pf->nrb;
 		GMaterial* pgm = m_pMat[nrb-1];
-		FEMaterial* pmat = pgm->GetMaterialProperties();
-		if (dynamic_cast<FERigidMaterial*>(pmat) == 0) { delete pn; pn = 0; }
+		FSMaterial* pmat = pgm->GetMaterialProperties();
+		if (dynamic_cast<FSRigidMaterial*>(pmat) == 0) { delete pn; pn = 0; }
 
 		do
 		{
@@ -708,7 +708,7 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 		// create the interface
 		if (pn)
 		{
-			FERigidInterface* pi = new FERigidInterface(ps, pgm, pn, ps->GetStep(0)->GetID());
+			FSRigidInterface* pi = new FSRigidInterface(ps, pgm, pn, ps->GetStep(0)->GetID());
 			sprintf(szname, "RigidInterface%02d", nrns);
 			pi->SetName(szname);
 			ps->GetStep(0)->AddComponent(pi);
@@ -763,8 +763,8 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 {
 	int i, j;
 
-	FEModel* ps = m_fem;
-	FEMesh* pm = m_po->GetFEMesh();
+	FSModel* ps = m_fem;
+	FSMesh* pm = m_po->GetFEMesh();
 	char szname[256];
 
 	list<FENikeProject::SI_FACET>::iterator pf = nike.m_Face.begin();
@@ -774,13 +774,13 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 		FENikeProject::SLIDING_INTERFACE& si = nike.m_SI[i];
 
 		// create the slave surface
-		FESurface* pss = new FESurface(m_po);
+		FSSurface* pss = new FSSurface(m_po);
 		for (j=0; j<si.nns; ++j, ++pf) pss->add(FindFace(pf->n, 1));
 		sprintf(szname, "SlaveSurface%02d", i+1);
 		pss->SetName(szname);
 
 		// create the master surface
-		FESurface* pms = new FESurface(m_po);
+		FSSurface* pms = new FSSurface(m_po);
 		for (j=0; j<si.nms; ++j, ++pf) pms->add(FindFace(pf->n, 1));
 		sprintf(szname, "MasterSurface%02d", i+1);
 		pms->SetName(szname);
@@ -790,21 +790,21 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 		{
 		case 2: // tied contact
 			{
-				FETiedInterface* pi = new FETiedInterface(ps);
+				FSTiedInterface* pi = new FSTiedInterface(ps);
 				sprintf(szname, "TiedInterface%02d", i+1);
 				pi->SetName(szname);
 				pi->SetSecondarySurface(pms);
 				pi->SetPrimarySurface(pss);
 				ps->GetStep(0)->AddComponent(pi);
 
-				pi->SetFloatValue(FETiedInterface::ALTOL, si.toln);
-				pi->SetFloatValue(FETiedInterface::PENALTY, si.pen);
+				pi->SetFloatValue(FSTiedInterface::ALTOL, si.toln);
+				pi->SetFloatValue(FSTiedInterface::PENALTY, si.pen);
 			}
 			break;
 		case -3:
 		case 3: // sliding contact
 			{
-				FESlidingWithGapsInterface* pi = new FESlidingWithGapsInterface(ps);
+				FSSlidingWithGapsInterface* pi = new FSSlidingWithGapsInterface(ps);
 				sprintf(szname, "SlidingInterface%02d", i+1);
 				pi->SetName(szname);
 				ps->GetStep(0)->AddComponent(pi);
@@ -814,12 +814,12 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 				bool twopass = (si.itype == -3);
 				bool auto_pen = (si.pen >= 0);
 
-				pi->SetFloatValue(FESlidingWithGapsInterface::ALTOL, si.toln);
-				pi->SetFloatValue(FESlidingWithGapsInterface::PENALTY, fabs(si.pen));
-				pi->SetBoolValue (FESlidingWithGapsInterface::AUTOPEN, auto_pen);
-				pi->SetBoolValue (FESlidingWithGapsInterface::TWOPASS, twopass);
-				pi->SetFloatValue(FESlidingWithGapsInterface::MU, si.mus);
-				pi->SetFloatValue(FESlidingWithGapsInterface::EPSF, fabs(si.pen));
+				pi->SetFloatValue(FSSlidingWithGapsInterface::ALTOL, si.toln);
+				pi->SetFloatValue(FSSlidingWithGapsInterface::PENALTY, fabs(si.pen));
+				pi->SetBoolValue (FSSlidingWithGapsInterface::AUTOPEN, auto_pen);
+				pi->SetBoolValue (FSSlidingWithGapsInterface::TWOPASS, twopass);
+				pi->SetFloatValue(FSSlidingWithGapsInterface::MU, si.mus);
+				pi->SetFloatValue(FSSlidingWithGapsInterface::EPSF, fabs(si.pen));
 			}
 			break;
 		}
@@ -831,7 +831,7 @@ void FENIKEImport::build_loadcurves(FENikeProject &nike)
 {
 	int nlc = (int)nike.m_LC.size();
 	m_LC.resize(nlc);
-	list<FELoadCurve>::iterator plc = nike.m_LC.begin();
+	list<LoadCurve>::iterator plc = nike.m_LC.begin();
 	for (int i=0; i<nlc; ++i, ++plc) 
 	{
 		m_LC[i] = *plc;
@@ -1252,7 +1252,7 @@ bool FENIKEImport::ReadLoadCurves(FENikeProject& prj)
 	int nread, np;
 	for (int i=0; i<nlc; ++i)
 	{
-		FELoadCurve lc;
+		LoadCurve lc;
 
 		// -------- load card 1 --------
 		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
@@ -1261,14 +1261,16 @@ bool FENIKEImport::ReadLoadCurves(FENikeProject& prj)
 		if (nread != 1) return errf(szerr[ERR_LC], i+1);
 
 		// -------- load card 2 - n --------
-		lc.SetSize(np);
+		lc.Clear();
 		for (int j=0; j<np; ++j)
 		{
-			LOADPOINT& pt = lc[j];
 			if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
-			nread = sscanf(szline, "%10lg%10lg", &pt.time, &pt.load);
+			double d[2];
+			nread = sscanf(szline, "%10lg%10lg", &d[0], &d[1]);
 			if (nread != 2) return errf(szerr[ERR_LC], i+1);
+
+			lc.Add(d[0], d[1]);
 		}
 
 		// add the loadcurve to the project
@@ -1449,11 +1451,11 @@ bool FENIKEImport::ReadVelocities(FENikeProject &prj)
 }
 
 //-----------------------------------------------------------------------------
-void FENIKEImport::UpdateFEModel(FEModel& fem)
+void FENIKEImport::UpdateFEModel(FSModel& fem)
 {
 	int i, n;
-	FELoadCurve* plc;
-	FEStep& s = *fem.GetStep(0);
+	LoadCurve* plc;
+	FSStep& s = *fem.GetStep(0);
 
 	// set control settings
 	// TODO: not sure yet how to fix this.
@@ -1464,7 +1466,7 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 			plc = fem.GetMustPointLoadCurve();
 			*plc = m_LC[m_nmplc];
 			plc->Activate();
-			plc->SetType(FELoadCurve::LC_STEP);
+			plc->SetType(LoadCurve::LC_STEP);
 		}
 	}
 */
@@ -1474,36 +1476,36 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 		// loop over all boundary conditions
 		for (i=0; i<s.BCs(); ++i)
 		{
-			FEBoundaryCondition* pbc = s.BC(i);
+			FSBoundaryCondition* pbc = s.BC(i);
 
 			// nodal displacements
-			FEPrescribedDisplacement* pdc = dynamic_cast<FEPrescribedDisplacement*>(pbc);
+			FSPrescribedDisplacement* pdc = dynamic_cast<FSPrescribedDisplacement*>(pbc);
 			if (pdc)
 			{
-				plc = pdc->GetLoadCurve();
-				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
+//				plc = pdc->GetLoadCurve();
+//				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
 			}
 		}
 
 		// loop over all boundary conditions
 		for (i=0; i<s.Loads(); ++i)
 		{
-			FELoad* pl = s.Load(i);
+			FSLoad* pl = s.Load(i);
 
 			// nodal forces
-			FENodalLoad* pfc = dynamic_cast<FENodalLoad*>(pl);
+			FSNodalDOFLoad* pfc = dynamic_cast<FSNodalDOFLoad*>(pl);
 			if (pfc)
 			{
-				plc = pfc->GetLoadCurve();
-				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
+//				plc = pfc->GetLoadCurve();
+//				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
 			}
 
 			// pressure forces
-			FEPressureLoad* ppc = dynamic_cast<FEPressureLoad*>(pl);
+			FSPressureLoad* ppc = dynamic_cast<FSPressureLoad*>(pl);
 			if (ppc)
 			{
-				plc = ppc->GetLoadCurve();
-				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
+//				plc = ppc->GetLoadCurve();
+//				n = plc->GetID(); if (n >= 0) *plc = m_LC[n];
 			}
 		}
 	}
@@ -1514,17 +1516,17 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 		// find all material loadcurves
 		for (i=0; i<m_nmat; ++i)
 		{
-			FEMaterial* pmat = m_pMat[i]->GetMaterialProperties();
+			FSMaterial* pmat = m_pMat[i]->GetMaterialProperties();
 			ParamBlock& pb = pmat->GetParamBlock();
 			for (int j=0; j<pb.Size(); ++j)
 			{
 				Param& p = pb[j];
-				FELoadCurve* plc = p.GetLoadCurve();
-				if (plc && (plc->Size() > 0))
-				{
-					FELoadCurve& lc = *plc;
-					n = lc.GetID(); if (n >= 0) lc = m_LC[n];
-				}
+	//			LoadCurve* plc = p.GetLoadCurve();
+//				if (plc && (plc->Size() > 0))
+//				{
+//					LoadCurve& lc = *plc;
+//					n = lc.GetID(); if (n >= 0) lc = m_LC[n];
+//				}
 			}
 		}
 	}
@@ -1535,11 +1537,11 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 		// set rigid wall interfaces
 		for (i=0; i<s.Interfaces(); ++i)
 		{
-			FERigidWallInterface* pi = dynamic_cast<FERigidWallInterface*>(s.Interface(i));
+			FSRigidWallInterface* pi = dynamic_cast<FSRigidWallInterface*>(s.Interface(i));
 			if (pi)
 			{
-				FELoadCurve* plc = pi->GetParamLC(FERigidWallInterface::OFFSET);
-				if (plc && plc->GetID() >= 0) *plc = m_LC[plc->GetID()];
+//				LoadCurve* plc = pi->GetParamLC(FSRigidWallInterface::OFFSET);
+//				if (plc && plc->GetID() >= 0) *plc = m_LC[plc->GetID()];
 			}
 		}
 	}
@@ -1547,11 +1549,11 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 	// rigid constraints
 	for (i=0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(s.RigidConstraint(i));
+		FSRigidPrescribed* rc = dynamic_cast<FSRigidPrescribed*>(s.RigidConstraint(i));
 		if (rc)
 		{
-			FELoadCurve& lc = *rc->GetLoadCurve();
-			if (lc.GetID() >= 0) lc = m_LC[lc.GetID()];
+//			LoadCurve& lc = *rc->GetLoadCurve();
+//			if (lc.GetID() >= 0) lc = m_LC[lc.GetID()];
 		}
 	}
 
@@ -1566,10 +1568,10 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// FUNCTION: FEFileImport::UpdateMesh
+// FUNCTION: FSFileImport::UpdateMesh
 //
 
-void FENIKEImport::UpdateMesh(FEMesh& mesh)
+void FENIKEImport::UpdateMesh(FSMesh& mesh)
 {
 //	mesh.Update();
 
@@ -1583,7 +1585,7 @@ void FENIKEImport::UpdateMesh(FEMesh& mesh)
 
 	for (i=0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		for (j=0; j<n; ++j) m_nFace[ face.n[j] ]++;
 		nsize += n;
@@ -1603,7 +1605,7 @@ void FENIKEImport::UpdateMesh(FEMesh& mesh)
 
 	for (i=0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		for (j=0; j<n; ++j) 
 		{
@@ -1617,7 +1619,7 @@ void FENIKEImport::UpdateMesh(FEMesh& mesh)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// FUNCTION: FEFileImport::FindFace
+// FUNCTION: FSFileImport::FindFace
 //
 
 int FENIKEImport::FindFace(int n[4], int noff)
@@ -1626,11 +1628,11 @@ int FENIKEImport::FindFace(int n[4], int noff)
 	int N = m_nFace[n[0] - noff];
 	int i;
 
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 
 	for (i=0; i<N; ++i)
 	{
-		FEFace& face = pm->Face( pf[i] );
+		FSFace& face = pm->Face( pf[i] );
 		if (face.HasNode(n[1] - noff) &&
 			face.HasNode(n[2] - noff) &&
 			face.HasNode(n[3] - noff)) return pf[i];

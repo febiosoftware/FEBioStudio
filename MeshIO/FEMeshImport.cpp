@@ -27,8 +27,9 @@ SOFTWARE.*/
 #include "FEMeshImport.h"
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
+using namespace std;
 
-FEMeshImport::FEMeshImport(FEProject& prj) : FEFileImport(prj)
+FEMeshImport::FEMeshImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_bread_surface = false;
 }
@@ -125,23 +126,23 @@ void FEMeshImport::ReadTri(FILE* fp)
 	}
 }
 
-void FEMeshImport::BuildMesh(FEProject& prj)
+void FEMeshImport::BuildMesh(FSProject& prj)
 {
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 
 	int i;
 	int nodes = m_Node.size();
 	int elems = m_Elem.size();
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create the nodes
 	for (i=0; i<nodes; ++i)
 	{
 		NODE& N = m_Node[i];
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		n.r = vec3d(N.x, N.y, N.z);
 	}
 
@@ -149,7 +150,7 @@ void FEMeshImport::BuildMesh(FEProject& prj)
 	for (i=0; i<elems; ++i)
 	{
 		ELEM& E = m_Elem[i];
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		for (int j=0; j<8; ++j) e.m_node[j] = E.n[j] - 1;
 		switch(E.ntype)
 		{
@@ -172,7 +173,7 @@ void FEMeshImport::BuildMesh(FEProject& prj)
 	for (int i=0; i<elems; ++i)
 	{
 		ELEM& E = m_Elem[i];
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		el.m_gid = E.npid - nmin;
 	}
 
@@ -181,11 +182,11 @@ void FEMeshImport::BuildMesh(FEProject& prj)
 	GMeshObject* po = new GMeshObject(pm);
 	if (nparts > 1)
 	{
-		vector<FEPart*> P(nparts);
+		vector<FSPart*> P(nparts);
 		char sz[256] = {0};
 		for (i=0; i<nparts; ++i)
 		{
-			P[i] = new FEPart(po);
+			P[i] = new FSPart(po);
 			sprintf(sz, "Part%02d", i+1);
 			P[i]->SetName(sz);
 		}

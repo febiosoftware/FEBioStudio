@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FECreateShells.h"
 #include <GeomLib/GMeshObject.h>
+using namespace std;
 
 FECreateShells::FECreateShells() : FEModifier("Create Shells")
 {
@@ -34,7 +35,7 @@ FECreateShells::FECreateShells() : FEModifier("Create Shells")
 }
 
 
-FEMesh* FECreateShells::Apply(FEGroup* pg)
+FSMesh* FECreateShells::Apply(FSGroup* pg)
 {
     if (pg->Type() != FE_SURFACE)
     {
@@ -54,8 +55,8 @@ FEMesh* FECreateShells::Apply(FEGroup* pg)
         faceList.push_back(*it);
     }
     
-    FEMesh* pm = pg->GetMesh();
-    FEMesh* pnm = new FEMesh(*pm);
+    FSMesh* pm = pg->GetMesh();
+    FSMesh* pnm = new FSMesh(*pm);
     CreateShells(pnm, faceList);
     
     return pnm;
@@ -63,7 +64,7 @@ FEMesh* FECreateShells::Apply(FEGroup* pg)
 
 
 
-FEMesh* FECreateShells::Apply(FEMesh* pm)
+FSMesh* FECreateShells::Apply(FSMesh* pm)
 {
     vector<int> faceList;
     for (int i=0; i<pm->Faces(); ++i)
@@ -71,7 +72,7 @@ FEMesh* FECreateShells::Apply(FEMesh* pm)
         if (pm->Face(i).IsSelected()) faceList.push_back(i);
     }
     
-    FEMesh* pnm = new FEMesh(*pm);
+    FSMesh* pnm = new FSMesh(*pm);
     CreateShells(pnm, faceList);
     
     return pnm;
@@ -79,7 +80,7 @@ FEMesh* FECreateShells::Apply(FEMesh* pm)
 
 
 
-void FECreateShells::CreateShells(FEMesh* pm, vector<int>& faceList){
+void FECreateShells::CreateShells(FSMesh* pm, vector<int>& faceList){
     
     //get the user value
     double thick = GetFloatValue(0);
@@ -88,7 +89,7 @@ void FECreateShells::CreateShells(FEMesh* pm, vector<int>& faceList){
     int faces = 0;
     for (int i=0; i < (int)faceList.size(); ++i)
     {
-        FEFace& face = pm->Face(faceList[i]);
+        FSFace& face = pm->Face(faceList[i]);
         int n = face.Nodes();
         // verification
         if ((n != 4) && (n != 3) && (n != 9) && (n != 8) && (n != 6)) return;
@@ -107,7 +108,7 @@ void FECreateShells::CreateShells(FEMesh* pm, vector<int>& faceList){
     int nid = 0;
     for (int i = 0; i<pm->Elements(); ++i)
     {
-        FEElement& el = pm->Element(i);
+        FSElement& el = pm->Element(i);
         if (el.m_gid > nid) nid = el.m_gid;
     }
     nid++;
@@ -119,8 +120,8 @@ void FECreateShells::CreateShells(FEMesh* pm, vector<int>& faceList){
     
     int n=nbrelem;
     for (int i=0; i <(int)faceList.size(); ++i){
-        FEElement& pe=pm->Element(n);
-        FEFace& face = pm->Face(faceList[i]);
+        FSElement& pe=pm->Element(n);
+        FSFace& face = pm->Face(faceList[i]);
         int nf = face.Nodes();
         switch (nf)
         {

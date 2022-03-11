@@ -47,7 +47,7 @@ SOFTWARE.*/
 #include "Commands.h"
 
 //=======================================================================================
-SurfaceModifierThread::SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FEGroup* pg)
+SurfaceModifierThread::SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg)
 {
 	m_doc = doc;
 	m_mod = mod;
@@ -92,7 +92,7 @@ REGISTER_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"
 REGISTER_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"       , 0xFF);
 REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
 REGISTER_CLASS(FEWeldSurfaceNodes         , CLASS_SURFACE_MODIFIER, "Weld Nodes"   , 0xFF);
-REGISTER_CLASS(FEMMGSurfaceRemesh         , CLASS_SURFACE_MODIFIER, "MMG Remesh"   , 0xFF);
+REGISTER_CLASS(MMGSurfaceRemesh         , CLASS_SURFACE_MODIFIER, "MMG Remesh"   , 0xFF);
 
 class CPartitionProps : public CDataPropertyList
 {
@@ -198,7 +198,7 @@ void CEditPanel::on_apply_clicked(bool b)
 	if (activeObject == 0) return;
 
 	// check for a FE mesh
-	FEMesh* pm = activeObject->GetFEMesh();
+	FSMesh* pm = activeObject->GetFEMesh();
 	if (pm)
 	{
 		if (QMessageBox::question(this, "Apply Changes", "This object has a mesh. This mesh has to be discarded before the changes can be applied.\nDo you wish to discard the mesh?", QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
@@ -215,10 +215,10 @@ void CEditPanel::on_apply_clicked(bool b)
 			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 			FESelection* sel = doc->GetCurrentSelection();
 			FEItemListBuilder* list = sel->CreateItemList();
-			FEGroup* g = 0;
+			FSGroup* g = 0;
 			if (sel->Size() > 0)
 			{
-				g = dynamic_cast<FEGroup*>(list);
+				g = dynamic_cast<FSGroup*>(list);
 				if (g == 0) { delete list; list = 0; }
 			}
 
@@ -331,7 +331,7 @@ void CEditPanel::on_buttons_buttonSelected(int id)
 
 			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 
-			GModel* geo = &doc->GetFEModel()->GetModel();
+			GModel* geo = &doc->GetFSModel()->GetModel();
 
 			CPropertyList* pl = 0;
 			if (dynamic_cast<FECurveIntersect*>(ui->m_mod)) pl = new CCurveIntersectProps(geo, dynamic_cast<FECurveIntersect*>(ui->m_mod));

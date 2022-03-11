@@ -28,7 +28,8 @@ SOFTWARE.*/
 #include <stdio.h>
 #include <string.h>
 #include <vector>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
+#include <FECore/tens4d.h>
 #include <FSCore/Archive.h>
 
 //-----------------------------------------------------------------------------
@@ -103,7 +104,7 @@ public: // reading
 	void Flush();
 
 	// Open for reading
-	bool Open(IOFileStream* fp);
+	bool Open(FileStream* fp);
 
 	// open for appending
 	bool Append(const char* szfile);
@@ -141,7 +142,7 @@ public: // reading
 	IOResult read(mat3fs&  a) { return read(&(a.x), 6); }
 	IOResult read(mat3fd&  a) { return read(&(a.x), 3); }
 	IOResult read(tens4fs& a) { return read(&(a.d[0]), 21); }
-	IOResult read(mat3f&   a) { return read(&(a.m_data[0][0]), 9); }
+	IOResult read(mat3f&   a) { return read(&(a.d[0][0]), 9); }
 
 	IOResult read(std::vector<int    >& a) { return read(&a[0], (int) a.size()); }
 	IOResult read(std::vector<float  >& a) { return read(&a[0], (int) a.size()); }
@@ -149,7 +150,7 @@ public: // reading
 	IOResult read(std::vector<mat3fs >& a) { return read(&(a[0].x), 6*(int) a.size()); }
 	IOResult read(std::vector<mat3fd >& a) { return read(&(a[0].x), 3*(int) a.size()); }
 	IOResult read(std::vector<tens4fs>& a) { return read(&(a[0].d[0]), 21*(int) a.size()); }
-	IOResult read(std::vector<mat3f  >& a) { return read(&(a[0].m_data[0][0]), 9*(int) a.size()); }
+	IOResult read(std::vector<mat3f  >& a) { return read(&(a[0].d[0][0]), 9*(int) a.size()); }
 	IOResult read(std::vector<unsigned int>& a) { return read((int*)&a[0], (int)a.size()); }
 
 	// conversion to FILE* 

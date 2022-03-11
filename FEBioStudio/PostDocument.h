@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "Document.h"
-#include <PostLib/FEMaterial.h>
+#include <PostLib/Material.h>
 #include "GraphData.h"
 
 class CModelDocument;
@@ -109,7 +109,7 @@ protected:
 	MODEL						m_mdl;	// CGLModel data
 	COLORMAP					m_cmap;	// CColorMap data
 	DISPLACEMENTMAP				m_dmap;	// DisplacementMap data
-	std::vector<Post::FEMaterial>		m_mat;	// material list
+	std::vector<Post::Material>		m_mat;	// material list
 	std::vector<std::string>	m_data;	// data field strings
 };
 
@@ -128,6 +128,10 @@ public:
 
 	bool IsValid();
 
+	void SetModifiedFlag(bool bset = true) override;
+
+	void SetInitFlag(bool b);
+
 public:
 	int GetStates();
 
@@ -137,7 +141,7 @@ public:
 
 	void SetDataField(int n);
 
-	Post::FEPostModel* GetFEModel();
+	Post::FEPostModel* GetFSModel();
 
 	Post::CGLModel* GetGLModel();
 
@@ -176,12 +180,11 @@ public:
 	// Get current selection
 	FESelection* GetCurrentSelection() override;
 
+	void SetGLModel(Post::CGLModel* glm);
+
 public:
 	//! save to session file
 	bool SavePostSession(const std::string& fileName);
-
-	//! open session file
-	bool OpenPostSession(const std::string& fileName);
 
 public:
 	int Graphs() const;

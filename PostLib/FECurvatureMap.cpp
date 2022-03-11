@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FECurvatureMap.h"
 using namespace Post;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
@@ -37,11 +38,11 @@ void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	int nn = 0;
 	for (int i=0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) 
 		{
-			FENode& node = mesh.Node(f.n[j]);
+			FSNode& node = mesh.Node(f.n[j]);
 			if (node.m_ntag == -1) node.m_ntag = nn++;
 		}
 	}
@@ -50,7 +51,7 @@ void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	m_node.resize(nn);
 	for (int i=0; i<N; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag >= 0) m_node[node.m_ntag].node = i;
 	}
 
@@ -61,7 +62,7 @@ void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	m_lnode.resize(Faces()*4);
 	for (int i=0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		if (f.Nodes() == 4)
 		{
 			m_lnode[4*i  ] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4*i  ] >= 0);
@@ -83,7 +84,7 @@ void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	m_NLT.resize(Nodes());
 	for (int i=0; i<Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(m_face[i]);
+		FSFace& f = mesh.Face(m_face[i]);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
@@ -127,7 +128,7 @@ void FECongruencyMap::Apply(FEPostModel& fem)
 		for (int i=0; i<m_surf1.Nodes(); ++i)
 		{
 			int inode = m_surf1.m_node[i].node;
-			FENode& node = mesh.Node(inode);
+			FSNode& node = mesh.Node(inode);
 			vec3f r = fem.NodePosition(inode, n);
 			float v0 = m_surf1.m_node[i].val;
 			float v1 = project(m_surf2, r, n);
@@ -153,7 +154,7 @@ void FECongruencyMap::EvalSurface(FECongruencyMap::Surface& s, FEState* ps)
 	int NF = s.Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(s.m_face[i]);
+		FSFace& f = mesh.Face(s.m_face[i]);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
@@ -198,7 +199,7 @@ float FECongruencyMap::project(FECongruencyMap::Surface& surf, vec3f& r, int nti
 	for (int i=0; i<(int) FT.size(); ++i)
 	{
 		// get the i-th facet
-		FEFace& face = mesh.Face(surf.m_face[FT[i]]);
+		FSFace& face = mesh.Face(surf.m_face[FT[i]]);
 
 		// project r onto the the facet
 		vec3f p; float vi;
@@ -225,7 +226,7 @@ bool FECongruencyMap::ProjectToFacet(FECongruencyMap::Surface& surf, int iface, 
 	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
 
 	// get the face
-	FEFace& f = mesh.Face(surf.m_face[iface]);
+	FSFace& f = mesh.Face(surf.m_face[iface]);
 	
 	// number of element nodes
 	int ne = f.Nodes();
@@ -250,7 +251,7 @@ bool FECongruencyMap::ProjectToTriangle(FECongruencyMap::Surface& surf, int ifac
 	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
 
 	// get the face
-	FEFace& face = mesh.Face(surf.m_face[iface]);
+	FSFace& face = mesh.Face(surf.m_face[iface]);
 
 	// number of element nodes
 	int ne = face.Nodes();
@@ -319,7 +320,7 @@ bool FECongruencyMap::ProjectToQuad(FECongruencyMap::Surface& surf, int iface, v
 	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
 
 	// get the face
-	FEFace& face = mesh.Face(surf.m_face[iface]);
+	FSFace& face = mesh.Face(surf.m_face[iface]);
 
 	// number of element nodes
 	int ne = face.Nodes();

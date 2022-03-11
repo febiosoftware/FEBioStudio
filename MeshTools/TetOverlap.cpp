@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "TetOverlap.h"
 #include <MeshLib/FEMesh.h>
+using namespace std;
 
 struct TET
 {
@@ -42,7 +43,7 @@ TetOverlap::TetOverlap()
 
 }
 
-bool TetOverlap::Apply(FEMesh* mesh, std::vector<pair<int, int> >& tetList)
+bool TetOverlap::Apply(FSMesh* mesh, std::vector<pair<int, int> >& tetList)
 {
 	if (mesh == nullptr) return false;
 	if (mesh->IsType(FE_TET4) == false) return false;
@@ -52,7 +53,7 @@ bool TetOverlap::Apply(FEMesh* mesh, std::vector<pair<int, int> >& tetList)
 	TET t;
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& e = mesh->Element(i);
+		FSElement& e = mesh->Element(i);
 
 		double V = mesh->TetVolume(e);
 

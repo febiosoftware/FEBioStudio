@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 using std::vector;
 
-class FESurfaceMesh;
+class FSSurfaceMesh;
 class FECurveMesh;
 
 class FELoftMesher
@@ -42,11 +42,11 @@ public:
 
 	void setDivisions(int n) { m_ndivs = n; }
 
-	FESurfaceMesh* Apply(vector<FECurveMesh*> curve);
+	FSSurfaceMesh* Apply(vector<FECurveMesh*> curve);
 
 private:
-	FESurfaceMesh* BuildTriMesh(vector<FECurveMesh*> curve);
-	FESurfaceMesh* BuildQuadMesh(vector<FECurveMesh*> curve);
+	FSSurfaceMesh* BuildTriMesh(vector<FECurveMesh*> curve);
+	FSSurfaceMesh* BuildQuadMesh(vector<FECurveMesh*> curve);
 
 private:
 	int m_elem;

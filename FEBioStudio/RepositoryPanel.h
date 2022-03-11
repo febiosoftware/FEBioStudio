@@ -62,7 +62,7 @@ public:
 	void Raise();
 
 	void SetModelList();
-	void ShowMessage(QString message);
+	void ShowMessage(QString message, bool logout = false);
 	void ShowWelcomeMessage(QByteArray messages);
 	void LoginTimeout();
 	void NetworkInaccessible();
@@ -99,7 +99,7 @@ signals:
 private slots:
 	void on_connectButton_clicked();
 	void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
-	void on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
+	void on_searchTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
 	void on_actionRefresh_triggered();
 	void on_actionDownload_triggered();
 	void on_actionOpen_triggered();
@@ -109,17 +109,28 @@ private slots:
 	void on_actionUpload_triggered();
 	void on_actionSearch_triggered();
 	void on_actionClearSearch_triggered();
+    void on_actionShowAdvanced_triggered();
 	void on_actionDeleteRemote_triggered();
 	void on_actionModify_triggered();
 	void on_actionFindInTree_triggered();
 	void on_treeWidget_itemSelectionChanged();
 	void on_treeWidget_customContextMenuRequested(const QPoint &pos);
-	void on_fileSearchTree_itemSelectionChanged();
-	void on_fileSearchTree_customContextMenuRequested(const QPoint &pos);
+	void on_searchTree_itemSelectionChanged();
+	void on_searchTree_customContextMenuRequested(const QPoint &pos);
+    void on_showProjectsCB_stateChanged(int state);
+    void on_showFilesCB_stateChanged(int state);
 	void on_projectTags_linkActivated(const QString& link);
 	void on_fileTags_linkActivated(const QString& link);
 
+    void on_actionAdvnacedSearch_triggered();
+    void on_actionAdvancedClear_triggered();
+    void on_actionAdvnacedHide_triggered();
+
 private:
+    void GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths);
+
+    void SearchDatabase(QString searchTerm);
+
 	void UpdateInfo(CustomTreeWidgetItem *item);
 	void DownloadItem(CustomTreeWidgetItem *item);
 	void OpenItem(CustomTreeWidgetItem *item);

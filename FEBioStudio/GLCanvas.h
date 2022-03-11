@@ -26,8 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MathLib/math3d.h>
-
 class CGLView;
 
 class GLCanvas

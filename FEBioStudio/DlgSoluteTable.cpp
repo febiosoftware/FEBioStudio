@@ -91,7 +91,7 @@ CDlgSoluteTable::CDlgSoluteTable(int mode, CMainWindow* wnd) : m_wnd(wnd), QDial
 void CDlgSoluteTable::Update()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel* fem = doc->GetFEModel();
+	FSModel* fem = doc->GetFSModel();
 
 	switch (m_mode)
 	{
@@ -103,7 +103,7 @@ void CDlgSoluteTable::Update()
 
 			for (int i=0; i<NS; ++i)
 			{
-				FESoluteData& s = fem->GetSoluteData(i);
+				SoluteData& s = fem->GetSoluteData(i);
 
 				ui->table->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(s.GetName())));
 				ui->table->setItem(i, 1, new QTableWidgetItem(QString::number(s.GetChargeNumber())));
@@ -120,7 +120,7 @@ void CDlgSoluteTable::Update()
 
 			for (int i=0; i<NS; ++i)
 			{
-				FESoluteData& s = fem->GetSBMData(i);
+				SoluteData& s = fem->GetSBMData(i);
 
 				ui->table->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(s.GetName())));
 				ui->table->setItem(i, 1, new QTableWidgetItem(QString::number(s.GetChargeNumber())));
@@ -135,7 +135,7 @@ void CDlgSoluteTable::Update()
 void CDlgSoluteTable::on_addButton_clicked()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel* fem = doc->GetFEModel();
+	FSModel* fem = doc->GetFSModel();
 
 	switch (m_mode)
 	{
@@ -167,11 +167,11 @@ void CDlgSoluteTable::on_table_itemChanged(QTableWidgetItem* item)
 	int ncol = item->column();
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel* fem = doc->GetFEModel();
+	FSModel* fem = doc->GetFSModel();
 
 	QString txt = item->text();
 
-	FESoluteData& solute = (m_mode == ShowSolutes ? fem->GetSoluteData(nrow) : fem->GetSBMData(nrow));
+	SoluteData& solute = (m_mode == ShowSolutes ? fem->GetSoluteData(nrow) : fem->GetSBMData(nrow));
 	switch (ncol)
 	{
 	case 0:  // name
@@ -218,7 +218,7 @@ void CDlgSoluteTable::on_table_itemChanged(QTableWidgetItem* item)
 void CDlgSoluteTable::on_removeButton_clicked()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
-	FEModel* fem = doc->GetFEModel();
+	FSModel* fem = doc->GetFSModel();
 	QItemSelectionModel* mdl = ui->table->selectionModel();
 	QModelIndexList selRows = mdl->selectedRows();
 	if (selRows.isEmpty() == false)

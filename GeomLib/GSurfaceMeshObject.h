@@ -35,14 +35,14 @@ class GSurfaceMeshObject : public GObject
 {
 public:
 	// create a new surface mesh object
-	GSurfaceMeshObject(FESurfaceMesh* pm = 0);
+	GSurfaceMeshObject(FSSurfaceMesh* pm = 0);
 
 	// create a new surface mesh object from a (meshed) object
 	// this extracts the surface from the object
 	GSurfaceMeshObject(GObject* po);
 
 	// build the mesh
-	FEMesh* BuildMesh() override;
+	FSMesh* BuildMesh() override;
 
 	// update mesh for rendering
 	void BuildGMesh() override;
@@ -57,16 +57,16 @@ public:
 	FEMesher* CreateDefaultMesher() override;
 
 	// return the surface mesh
-	FESurfaceMesh* GetSurfaceMesh();
-	const FESurfaceMesh* GetSurfaceMesh() const;
+	FSSurfaceMesh* GetSurfaceMesh();
+	const FSSurfaceMesh* GetSurfaceMesh() const;
 
-	FEMeshBase* GetEditableMesh() override { return GetSurfaceMesh(); }
-	FELineMesh* GetEditableLineMesh() override { return GetSurfaceMesh(); }
+	FSMeshBase* GetEditableMesh() override { return GetSurfaceMesh(); }
+	FSLineMesh* GetEditableLineMesh() override { return GetSurfaceMesh(); }
 
 	// get the mesh of an edge curve
 	FECurveMesh* GetFECurveMesh(int edgeId) override;
 
-	void ReplaceSurfaceMesh(FESurfaceMesh* newMesh) override;
+	void ReplaceSurfaceMesh(FSSurfaceMesh* newMesh) override;
 
 	// serialization
 	void Save(OArchive& ar) override;
@@ -77,7 +77,7 @@ public:
 
 private:
 	// Move this elsewhere or refactor
-	bool build_tetgen_plc(FEMesh* pm, tetgenio& in);
+	bool build_tetgen_plc(FSMesh* pm, tetgenio& in);
 
 private:
 	void UpdateEdges();
@@ -85,7 +85,7 @@ private:
 	void UpdateSurfaces();
 
 private:
-	FESurfaceMesh*	m_surfmesh;
+	FSSurfaceMesh*	m_surfmesh;
 };
 
 // Helper function for converting an object to an editable surface.

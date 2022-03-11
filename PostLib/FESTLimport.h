@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEFileReader.h"
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <vector>
 #include <list>
 

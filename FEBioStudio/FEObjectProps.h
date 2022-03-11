@@ -26,103 +26,120 @@ SOFTWARE.*/
 
 #pragma once
 #include "ObjectProps.h"
+#include <vector>
 
 class GObject;
-class FEModel;
+class FSModel;
 class GMaterial;
-class FEFixedDOF;
-class FEPrescribedDOF;
-class FESoluteMaterial;
-class FEAnalysisStep;
-class FERigidInterface;
-class FERigidConstraint;
-class FERigidConnector;
-class FEProject;
+class FSFixedDOF;
+class FSPrescribedDOF;
+class FSSoluteMaterial;
+class FSAnalysisStep;
+class FSRigidInterface;
+class FSRigidConstraint;
+class FSRigidConnector;
+class FSProject;
 class Param;
-class FEReactionMaterial;
-class FEMaterial;
+class FSReactionMaterial;
+class FSMaterial;
 class GPart;
+class FSStep;
 
 class FEObjectProps : public CObjectProps
 {
 public:
-	FEObjectProps(FSObject* po, FEModel* fem = nullptr);
+	FEObjectProps(FSObject* po, FSModel* fem = nullptr);
 
 protected:
 	QStringList GetEnumValues(const char* ch) override;
 
 private:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 };
 
 class CFixedDOFProps : public CPropertyList
 {
 public:
-	CFixedDOFProps(FEFixedDOF* pbc);
+	CFixedDOFProps(FSFixedDOF* pbc);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FEFixedDOF*	m_bc;
+	FSFixedDOF*	m_bc;
 };
 
 class CAnalysisTimeSettings : public CObjectProps
 {
 public:
-	CAnalysisTimeSettings(FEAnalysisStep* step);
+	CAnalysisTimeSettings(FSAnalysisStep* step);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FEAnalysisStep*	m_step;
+	FSAnalysisStep*	m_step;
+};
+
+class CStepSettings : public CObjectProps
+{
+public:
+	CStepSettings(FSProject& prj, FSStep* step);
+	QVariant GetPropertyValue(int i);
+	void SetPropertyValue(int i, const QVariant& v);
+
+private:
+	void BuildStepProperties();
+
+private:
+	FSStep* m_step;
+	int		m_moduleId;
 };
 
 class CRigidInterfaceSettings : public CPropertyList
 {
 public:
-	CRigidInterfaceSettings(FEModel&fem, FERigidInterface* pi);
+	CRigidInterfaceSettings(FSModel&fem, FSRigidInterface* pi);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FERigidInterface*	m_ri;
-	vector<GMaterial*>	m_mat;
+	FSRigidInterface*	m_ri;
+	std::vector<GMaterial*>	m_mat;
 	int					m_sel;
 };
 
 class CRigidConstraintSettings : public CObjectProps
 {
 public:
-	CRigidConstraintSettings(FEModel& fem, FERigidConstraint* rc);
+	CRigidConstraintSettings(FSModel& fem, FSRigidConstraint* rc);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FERigidConstraint*	m_rc;
-	vector<GMaterial*>	m_mat;
+	FSRigidConstraint*	m_rc;
+	std::vector<GMaterial*>	m_mat;
 	int					m_sel;
 };
 
 class CRigidConnectorSettings : public CObjectProps
 {
 public:
-	CRigidConnectorSettings(FEModel& fem, FERigidConnector* rc);
+	CRigidConnectorSettings(FSModel& fem, FSRigidConnector* rc);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FERigidConnector*	m_rc;
-	vector<GMaterial*>	m_mat;
+	FSRigidConnector*	m_rc;
+	std::vector<GMaterial*>	m_mat;
 	int					m_rbA;
 	int					m_rbB;
 };
@@ -131,7 +148,7 @@ private:
 class CMaterialProps : public FEObjectProps
 {
 public:
-	CMaterialProps(FEModel& fem, FEMaterial* mat);
+	CMaterialProps(FSModel& fem, FSMaterial* mat);
 
 	QVariant GetPropertyValue(int i);
 
@@ -141,13 +158,13 @@ private:
 	void BuildPropertyList();
 
 private:
-	FEMaterial*	m_mat;
+	FSMaterial*	m_mat;
 };
 
 class CLogfileProperties : public CObjectProps
 {
 public:
-	CLogfileProperties(FEProject& prj);
+	CLogfileProperties(FSProject& prj);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 };
@@ -156,39 +173,42 @@ public:
 class CReactionReactantProperties : public CObjectProps
 {
 public:
-	CReactionReactantProperties(FEReactionMaterial* mat, FEModel& fem);
+	CReactionReactantProperties(FSReactionMaterial* mat, FSModel& fem);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FEReactionMaterial*	m_mat;
+	FSReactionMaterial*	m_mat;
 	int					m_nsols;
 };
 
 class CReactionProductProperties : public CObjectProps
 {
 public:
-	CReactionProductProperties(FEReactionMaterial* mat, FEModel& fem);
+	CReactionProductProperties(FSReactionMaterial* mat, FSModel& fem);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FEReactionMaterial*	m_mat;
+	FSReactionMaterial*	m_mat;
 	int					m_nsols;
 };
 
-class CPartProperties : public CObjectProps
+class CPartProperties : public FEObjectProps
 {
 public:
-	CPartProperties(GPart* pg, FEModel& fem);
+	CPartProperties(GPart* pg, FSModel& fem);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
+
+	QStringList GetEnumValues(const char* ch) override;
+
 private:
 	int	m_lid;
 	GPart*	m_pg;
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 };

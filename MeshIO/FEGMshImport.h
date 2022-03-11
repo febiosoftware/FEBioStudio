@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEGMshImport : public FEFileImport
+class FEGMshImport : public FSFileImport
 {
 protected:
 	struct ELEMENT
@@ -39,7 +39,7 @@ protected:
 	};
 
 public:
-	FEGMshImport(FEProject& prj);
+	FEGMshImport(FSProject& prj);
 	bool Load(const char* szfile);
 
 protected:
@@ -50,6 +50,6 @@ protected:
 
 protected:
 	char	m_szline[256];
-	FEModel*	m_pfem;
-	FEMesh*		m_pm;
+	FSModel*	m_pfem;
+	FSMesh*		m_pm;
 };

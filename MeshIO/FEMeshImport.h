@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEMeshImport : public FEFileImport
+class FEMeshImport : public FSFileImport
 {
 protected:
 	struct NODE
@@ -44,7 +44,7 @@ protected:
 	};
 
 public:
-	FEMeshImport(FEProject& prj);
+	FEMeshImport(FSProject& prj);
 	~FEMeshImport();
 
 	bool Load(const char* szfile);
@@ -58,11 +58,11 @@ protected:
 	void ReadTet  (FILE* fp);
 	void ReadTri  (FILE* fp);
 
-	void BuildMesh(FEProject& prj);
+	void BuildMesh(FSProject& prj);
 
 protected:
-	vector<NODE>	m_Node;
-	vector<ELEM>	m_Elem;
+	std::vector<NODE>	m_Node;
+	std::vector<ELEM>	m_Elem;
 
 private:
 	bool	m_bread_surface;

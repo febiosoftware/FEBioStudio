@@ -71,14 +71,14 @@ class GLSurface
 public:
 	GLSurface(){}
 
-	void add(const FEFace& f) { m_Face.push_back(f); }
+	void add(const FSFace& f) { m_Face.push_back(f); }
 
 	int Faces() const { return (int) m_Face.size(); }
 
-	FEFace& Face(int i) { return m_Face[i]; }
+	FSFace& Face(int i) { return m_Face[i]; }
 
 private:
-	vector<FEFace>	m_Face;
+	vector<FSFace>	m_Face;
 };
 
 class GLEdge
@@ -112,7 +112,7 @@ public:
 
 	CGLDisplacementMap* GetDisplacementMap() { return m_pdis; }
 	CGLColorMap* GetColorMap() { return m_pcol; }
-	FEPostModel* GetFEModel() { return m_ps; }
+	FEPostModel* GetFSModel() { return m_ps; }
 
 	bool Update(bool breset) override;
 	void UpdateDisplacements(int nstate, bool breset = false);
@@ -123,7 +123,7 @@ public:
 
 	bool HasDisplacementMap();
 
-	void SetMaterialParams(FEMaterial* pm);
+	void SetMaterialParams(Material* pm);
 
 	//! set the smoothing angle
 	void SetSmoothingAngle(double w);
@@ -216,7 +216,7 @@ protected:
 	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
 	void RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m);
 	void RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m);
-	void RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool benable, bool zsort = false);
+	void RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, bool benable, bool zsort = false);
 
 	void RenderInnerSurface(int m, bool btex = true);
 	void RenderInnerSurfaceOutline(int m, int ndivs);
@@ -231,9 +231,9 @@ public:
 	void SetTimeValue(float ftime);
 
 public: // Selection
-	const vector<FENode*>&		GetNodeSelection   () const { return m_nodeSelection; }
-	const vector<FEEdge*>&		GetEdgeSelection   () const { return m_edgeSelection; }
-	const vector<FEFace*>&		GetFaceSelection   () const { return m_faceSelection; }
+	const vector<FSNode*>&		GetNodeSelection   () const { return m_nodeSelection; }
+	const vector<FSEdge*>&		GetEdgeSelection   () const { return m_edgeSelection; }
+	const vector<FSFace*>&		GetFaceSelection   () const { return m_faceSelection; }
 	const vector<FEElement_*>&	GetElementSelection() const { return m_elemSelection; }
 	void UpdateSelectionLists(int mode = -1);
 	void ClearSelectionLists();
@@ -256,10 +256,10 @@ public: // Selection
 	void SelectConnectedVolumeElements(FEElement_& el);
 
 	//! select connected faces
-	void SelectConnectedFaces(FEFace& f, double angleTol);
+	void SelectConnectedFaces(FSFace& f, double angleTol);
 
 	//! select connected edges
-	void SelectConnectedEdges(FEEdge& e);
+	void SelectConnectedEdges(FSEdge& e);
 
 	//! select connected nodes on surface
 	void SelectConnectedSurfaceNodes(int n);
@@ -383,9 +383,9 @@ protected:
 	Post::FEPostMesh*	m_lastMesh;	// mesh of last evaluated state
 
 	// selected items
-	vector<FENode*>		m_nodeSelection;
-	vector<FEEdge*>		m_edgeSelection;
-	vector<FEFace*>		m_faceSelection;
+	vector<FSNode*>		m_nodeSelection;
+	vector<FSEdge*>		m_edgeSelection;
+	vector<FSFace*>		m_faceSelection;
 	vector<FEElement_*>	m_elemSelection;
 
 	GPlotList			m_pPlot;	// list of plots

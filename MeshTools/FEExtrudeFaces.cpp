@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEExtrudeFaces.h"
 #include <MeshLib/FEMeshBuilder.h>
+using namespace std;
 
 FEExtrudeFaces::FEExtrudeFaces() : FEModifier("Extrude faces")
 {
@@ -62,7 +63,7 @@ void FEExtrudeFaces::SetSymmetricBias(bool b)
 	SetBoolValue(4, b);
 }
 
-FEMesh* FEExtrudeFaces::Apply(FEGroup* pg)
+FSMesh* FEExtrudeFaces::Apply(FSGroup* pg)
 {
 	if (pg->Type() != FE_SURFACE)
 	{
@@ -82,14 +83,14 @@ FEMesh* FEExtrudeFaces::Apply(FEGroup* pg)
 		faceList.push_back(*it);
 	}
 
-	FEMesh* pm = pg->GetMesh();
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pm = pg->GetMesh();
+	FSMesh* pnm = new FSMesh(*pm);
 	Extrude(pnm, faceList);
 
 	return pnm;
 }
 
-FEMesh* FEExtrudeFaces::Apply(FEMesh* pm) 
+FSMesh* FEExtrudeFaces::Apply(FSMesh* pm) 
 {
 	vector<int> faceList;
 	for (int i=0; i<pm->Faces(); ++i)
@@ -97,13 +98,13 @@ FEMesh* FEExtrudeFaces::Apply(FEMesh* pm)
 		if (pm->Face(i).IsSelected()) faceList.push_back(i);
 	}	
 
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 	Extrude(pnm, faceList);
 
 	return pnm;
 }
 
-void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
+void FEExtrudeFaces::Extrude(FSMesh* pm, vector<int>& faceList)
 {
 	// let's mark the nodes that need to be copied
 	pm->TagAllNodes(-1);
@@ -113,7 +114,7 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 	int ne1 = 0;
 	for (int i=0; i < (int)faceList.size(); ++i)
 	{
-		FEFace& face = pm->Face(faceList[i]);
+		FSFace& face = pm->Face(faceList[i]);
 		int n = face.Nodes();
 
 		// extrusion is only allowed on tris and quads!
@@ -155,12 +156,12 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 	// find the extrusion directions
 	for (int i=0; i <(int)faceList.size(); ++i)
 	{
-		FEFace& face = pm->Face(faceList[i]);
+		FSFace& face = pm->Face(faceList[i]);
 		int n = face.Nodes();
 		for (int j = 0; j<n; ++j)
 		{
 			int n1 = pm->Node(face.n[j]).m_ntag;
-			ed[n1] += face.m_nn[j];
+			ed[n1] += to_vec3d(face.m_nn[j]);
 		}
 	}
 
@@ -204,10 +205,10 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 
 		for (int i = 0; i<n0; ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.m_ntag >= 0)
 			{
-				FENode& node2 = pm->Node(n0 + (l - 1)*nn + node.m_ntag);
+				FSNode& node2 = pm->Node(n0 + (l - 1)*nn + node.m_ntag);
 				node2.r = node.r + ed[node.m_ntag] * d;
 				node2.m_ntag = node.m_ntag;
 			}
@@ -222,10 +223,10 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 		{
 			for (int i = 0; i<n0; ++i)
 			{
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 				if (node.m_ntag >= 0)
 				{
-					FENode& node2 = pm->Node(n0 + nseg*nn + (l - 1)*nn + node.m_ntag);
+					FSNode& node2 = pm->Node(n0 + nseg*nn + (l - 1)*nn + node.m_ntag);
 					node2.r = node.r + ed[node.m_ntag] * (d  + dd* 0.5);
 					node2.m_ntag = node.m_ntag;
 				}
@@ -245,7 +246,7 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 	int nid = 0;
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_gid > nid) nid = el.m_gid;
 	}
 	nid++;
@@ -259,9 +260,9 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 	{
 		for (int i = 0; i <(int)faceList.size(); ++i)
 		{
-			FEFace& face = pm->Face(faceList[i]);
+			FSFace& face = pm->Face(faceList[i]);
 
-			FEElement& el = pm->Element(n);
+			FSElement& el = pm->Element(n);
 
 			if (face.Nodes() == 3)
 			{
@@ -452,16 +453,16 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 	pm->ClearFaceSelection();
 	for (int i=0; i<n0; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.m_ntag >= 0)
 		{
-			FENode& nj = pm->Node(n0 + (nseg - 1)*nn + node.m_ntag);
+			FSNode& nj = pm->Node(n0 + (nseg - 1)*nn + node.m_ntag);
 			nj.m_ntag = -2;
 		}
 	}
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int nf = face.Nodes();
 		bool bsel = true;
 		for (int j=0; j<nf; ++j)

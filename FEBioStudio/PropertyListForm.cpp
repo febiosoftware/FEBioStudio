@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QPushButton>
 #include <QListWidget>
-#include <QSlider>
+#include <QToolButton>
 #include "InputWidgets.h"
 #include "GLHighlighter.h"
 #include "ResourceEdit.h"
@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QLabel>
+#include <QEvent>
 #include "CurvePicker.h"
 #include "DataFieldSelector.h"
 #include "PropertyListView.h"
@@ -105,6 +106,52 @@ QString unitString(CProperty& p)
 	return s;
 }
 
+//================================================================================
+CWrapperBox::CWrapperBox(const QString& name, QWidget* parent) : QFrame(parent)
+{
+	setFrameStyle(QFrame::StyledPanel);
+
+	setSizePolicy(sizePolicy().horizontalPolicy(), QSizePolicy::Maximum);
+
+	m_pc = new QComboBox;
+	m_pc->installEventFilter(new CMouseWheelFilter);
+
+	m_pc->setSizePolicy(QSizePolicy::Expanding, m_pc->sizePolicy().verticalPolicy());
+	QHBoxLayout* h = new QHBoxLayout;
+	h->setContentsMargins(1, 1, 1, 1);
+	m_tb = new QToolButton;
+	m_tb->setText(QChar(0x25BC));
+	m_tb->setAutoRaise(true);
+	h->addWidget(m_tb);
+	h->addWidget(new QLabel(QString("<b>%1</b>").arg(name)));
+	h->addWidget(m_pc);
+	QVBoxLayout* vl = new QVBoxLayout;
+	vl->setContentsMargins(0, 0, 0, 0);
+	vl->addLayout(h);
+	m_pg = new QGroupBox;
+	vl->addWidget(m_pg);
+	setLayout(vl);
+
+	QObject::connect(m_tb, SIGNAL(clicked()), SLOT(OnExpandClicked()));
+}
+
+void CWrapperBox::addItems(const QStringList& items) { m_pc->addItems(items); }
+void CWrapperBox::setCurrentIndex(int n) { m_pc->setCurrentIndex(n); }
+
+void CWrapperBox::OnExpandClicked()
+{
+	if (m_pg->isVisible())
+	{
+		m_pg->hide();
+		m_tb->setText(QChar(0x2BC8));
+	}
+	else
+	{
+		m_pg->show();
+		m_tb->setText(QChar(0x2BC6));
+	}
+}
+
 //-----------------------------------------------------------------------------
 // get the property list
 CPropertyList* CPropertyListForm::getPropertyList()
@@ -142,14 +189,30 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 		// see if we need to create a group
 		if (pi.type == CProperty::Group)
 		{
-			pg = new QGroupBox(pi.name);
-			ui->addWidget(pg);
-			m_widget.push_back(pw);
-			pg->setFlat(true);
+			if (pi.values.isEmpty())
+			{
+				pg = new QGroupBox(pi.name);
+				ui->addWidget(pg);
+				m_widget.push_back(pw);
+				pg->setFlat(true);
 
-			pg->setStyleSheet("QGroupBox { font-weight: bold; } ");
+				pg->setStyleSheet("QGroupBox { font-weight: bold; } ");
 
-			pg->setAlignment(Qt::AlignCenter);
+				pg->setAlignment(Qt::AlignCenter);
+			}
+			else
+			{
+				CWrapperBox* pw = new CWrapperBox(pi.name);
+				pw->addItems(pi.values);
+				pg = pw->m_pg;
+				ui->addWidget(pw);
+
+				int index = v.toInt();
+				pw->setCurrentIndex(index);
+
+				m_widget.push_back(pw->m_pc);
+				connect(pw->m_pc, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
+			}
 
 			// we must create a new form
 			form = 0;
@@ -222,7 +285,22 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 			// This is because the m_widget list must have the same size as the property list
 			m_widget.push_back(pw);
 		}
-	}		
+	}
+//	ui->addStretch();
+}
+
+//-----------------------------------------------------------------------------
+bool CMouseWheelFilter::eventFilter(QObject* po, QEvent* ev)
+{
+	if (ev->type() == QEvent::Wheel) {
+		qDebug("Ate wheel event");
+		return true;
+	}
+	else 
+	{
+		// standard event processing
+		return QObject::eventFilter(po, ev);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -243,23 +321,23 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		{
 			if (pi.isEditable())
 			{
-				if(pi.brange)
-				{
-					CIntSlider* pc = new CIntSlider;
-					pc->setRange(pi.imin, pi.imax);
-					pc->setValue(v.toInt());
-					connect(pc, &CIntSlider::valueChanged, this, &CPropertyListForm::onDataChanged);
-					return pc;
-				}
-				else
+				if (pi.brange)
 				{
 					QSpinBox* spin = new QSpinBox;
 					spin->setRange(pi.imin, pi.imax);
 					spin->setValue(v.toInt());
+					spin->setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
 					connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
 					return spin;
 				}
-				
+				else
+				{
+					QLineEdit* edit = new QLineEdit;
+					edit->setValidator(new QIntValidator);
+					edit->setText(QString::number(v.toInt()));
+					connect(edit, SIGNAL(textChanged(const QString&)), this, SLOT(onDataChanged()));
+					return edit;
+				}
 			}
 			else
 			{
@@ -291,9 +369,11 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			if (pi.isEditable())
 			{
 				QComboBox* pc = new QComboBox;
+				pc->installEventFilter(new CMouseWheelFilter);
 				pc->setMinimumWidth(100);
 				pc->addItems(pi.values);
 				pc->setCurrentIndex(v.toInt());
+				pc->setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
 				connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
 				return pc;
 			}
@@ -421,6 +501,47 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			return edit;
 		}
 		break;
+	case CProperty::Std_Vector_Int:
+		{
+			if (pi.values.empty())
+			{
+				QLineEdit* edit = new QLineEdit;
+				edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+				edit->setText(v.toString());
+				connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
+				return edit;
+			}
+			else
+			{
+				std::vector<int> l = StringToVectorInt(v.toString());
+				QListWidget* pw = new QListWidget;
+				for (int i = 0; i < pi.values.size(); ++i)
+				{
+					QListWidgetItem* it = new QListWidgetItem;
+					it->setFlags(it->flags() | Qt::ItemFlag::ItemIsUserCheckable);
+
+					if (std::find(l.begin(), l.end(), i) != l.end())
+						it->setCheckState(Qt::Checked);
+					else
+						it->setCheckState(Qt::Unchecked);
+
+					it->setText(pi.values[i]);
+					pw->addItem(it);
+				}
+				connect(pw, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onDataChanged()));
+				return pw;
+			}
+		}
+		break;
+	case CProperty::Std_Vector_Double:
+	{
+		QLineEdit* edit = new QLineEdit;
+		edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+		edit->setText(v.toString());
+		connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
+		return edit;
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -598,9 +719,11 @@ void CPropertyListForm::onDataChanged()
 					{
 						QSpinBox* spin = qobject_cast<QSpinBox*>(pw);
 						if (spin) m_list->SetPropertyValue(i, spin->value());
-
-						CIntSlider* slider = dynamic_cast<CIntSlider*>(pw);
-						if (slider) { m_list->SetPropertyValue(i, slider->getValue());}
+						else
+						{
+							QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+							if (edit) m_list->SetPropertyValue(i, edit->text().toInt());
+						}
 					}
 					break;
 				case CProperty::Float:
@@ -619,6 +742,7 @@ void CPropertyListForm::onDataChanged()
 					}
 					break;
 				case CProperty::Enum:
+				case CProperty::Group:
 					{
 						QComboBox* pc = qobject_cast<QComboBox*>(pw);
 						if (pc) m_list->SetPropertyValue(i, pc->currentIndex());
@@ -710,6 +834,34 @@ void CPropertyListForm::onDataChanged()
 					}
 					break;
 				case CProperty::Mat3:
+					{
+						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+						if (edit) m_list->SetPropertyValue(i, edit->text());
+					}
+					break;
+				case CProperty::Std_Vector_Int:
+					{
+						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+						if (edit) m_list->SetPropertyValue(i, edit->text());
+
+						QListWidget* plist = qobject_cast<QListWidget*>(pw);
+						if (plist)
+						{
+							QString s;
+							for (int i = 0; i < plist->count(); ++i)
+							{
+								QListWidgetItem* it = plist->item(i);
+								if (it->checkState() == Qt::Checked)
+								{
+									if (s.isEmpty() == false) s += ",";
+									s += QString::number(i);
+								}
+							}
+							m_list->SetPropertyValue(i, s);
+						}
+					}
+					break;
+				case CProperty::Std_Vector_Double:
 					{
 						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
 						if (edit) m_list->SetPropertyValue(i, edit->text());

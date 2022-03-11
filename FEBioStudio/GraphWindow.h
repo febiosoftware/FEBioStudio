@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include <QMainWindow>
-#include <MathLib/MathParser.h>
 #include "PlotWidget.h"
 #include "Document.h"
 
@@ -358,8 +357,7 @@ private slots:
 	void on_actionZoomWidth_triggered();
 	void on_actionZoomHeight_triggered();
 	void on_actionZoomFit_triggered();
-	void on_actionZoomSelect_toggled(bool bchecked);
-	void on_plot_doneZoomToRect();
+	void on_plot_regionSelected(QRect rt);
 	void on_range_optionsChanged();
 	void on_dataSource_currentIndexChanged(int);
 
@@ -394,6 +392,7 @@ private:
 
 namespace Post {
 	class GLProbe;
+	class GLRuler;
 	class GLMusclePath;
 }
 
@@ -418,6 +417,7 @@ private:
 	void addSelectedElems();
 	void addObjectData(int n);
 	void addProbeData(Post::GLProbe* probe);
+	void addRulerData(Post::GLRuler* ruler);
 	void addMusclePathData(Post::GLMusclePath* musclePath);
 
 	CPlotData* nextData();

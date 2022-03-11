@@ -30,37 +30,37 @@ SOFTWARE.*/
 #include "FENodeElementList.h"
 #include "FENodeFaceList.h"
 
-FENodeNodeList::FENodeNodeList(FEMesh* pm, bool preservePartitions)
+FSNodeNodeList::FSNodeNodeList(FSMesh* pm, bool preservePartitions)
 {
 	Build(pm, preservePartitions);
 }
 
-FENodeNodeList::FENodeNodeList(FESurfaceMesh* pm)
+FSNodeNodeList::FSNodeNodeList(FSSurfaceMesh* pm)
 {
 	Build(pm);
 }
 
-FENodeNodeList::~FENodeNodeList()
+FSNodeNodeList::~FSNodeNodeList()
 {
 }
 
-void FENodeNodeList::Build(FEMesh* pm, bool preservePartitions)
+void FSNodeNodeList::Build(FSMesh* pm, bool preservePartitions)
 {
 	assert(pm);
 	if (pm == 0) return;
 
-	FENodeElementList NEL;
+	FSNodeElementList NEL;
 	NEL.Build(pm);
 
 	int NN = pm->Nodes();
-	vector<int> tag; tag.assign(NN, -1);
+	std::vector<int> tag; tag.assign(NN, -1);
 
-	vector<int> P(NN, 0), D(NN, -1);
+	std::vector<int> P(NN, 0), D(NN, -1);
 	if (preservePartitions)
 	{
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.m_gid >= 0)
 			{
 				P[i] = 3;
@@ -70,7 +70,7 @@ void FENodeNodeList::Build(FEMesh* pm, bool preservePartitions)
 
 		for (int i = 0; i < pm->Edges(); ++i)
 		{
-			FEEdge& e = pm->Edge(i);
+			FSEdge& e = pm->Edge(i);
 			if (e.m_gid >= 0)
 			{
 				int nn = e.Nodes();
@@ -88,7 +88,7 @@ void FENodeNodeList::Build(FEMesh* pm, bool preservePartitions)
 
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			if (f.m_gid >= 0)
 			{
 				int nn = f.Nodes();
@@ -177,17 +177,17 @@ void FENodeNodeList::Build(FEMesh* pm, bool preservePartitions)
 	}
 }
 
-void FENodeNodeList::Build(FESurfaceMesh* pm)
+void FSNodeNodeList::Build(FSSurfaceMesh* pm)
 {
 	assert(pm);
 	if (pm == 0) return;
 
-	FENodeFaceList NFL;
+	FSNodeFaceList NFL;
 	NFL.Build(pm);
 
 	int i, j, k, n;
 	int NN = pm->Nodes();
-	vector<int> tag; tag.assign(NN, -1);
+	std::vector<int> tag; tag.assign(NN, -1);
 
 	m_val.resize(NN);
 	int nsize = 0;
@@ -197,7 +197,7 @@ void FENodeNodeList::Build(FESurfaceMesh* pm)
 		int nv = NFL.Valence(i);
 		for (j = n = 0; j<nv; ++j)
 		{
-			FEFace* pf = NFL.Face(i, j);
+			FSFace* pf = NFL.Face(i, j);
 			int nf = pf->Nodes();
 			for (k = 0; k<nf; ++k)
 			{
@@ -228,7 +228,7 @@ void FENodeNodeList::Build(FESurfaceMesh* pm)
 		int noff = m_off[i];
 		for (j = n = 0; j<nv; ++j)
 		{
-			FEFace* pf = NFL.Face(i, j);
+			FSFace* pf = NFL.Face(i, j);
 			int nf = pf->Nodes();
 			for (k = 0; k<nf; ++k)
 			{
@@ -244,7 +244,7 @@ void FENodeNodeList::Build(FESurfaceMesh* pm)
 	}
 }
 
-void FENodeNodeList::InitValues(double v)
+void FSNodeNodeList::InitValues(double v)
 {
 	m_data.assign(m_node.size(), v);
 }

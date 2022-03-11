@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class FEDXFimport : public FEFileImport
+class FEDXFimport : public FSFileImport
 {
 	enum {MAX_LINE=256};
 
@@ -60,7 +60,7 @@ protected:
 	};
 
 public:
-	FEDXFimport(FEProject& prj);
+	FEDXFimport(FSProject& prj);
 	virtual ~FEDXFimport();
 
 	bool Load(const char* szfile) override;
@@ -78,5 +78,5 @@ protected:
 
 	list<POLYFACE*>	m_Obj;
 	list<FACE3D>	m_Face;
-	FEModel*		m_pfem;
+	FSModel*		m_pfem;
 };

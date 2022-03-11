@@ -73,14 +73,14 @@ void GRing::Create()
 	// 3. build the parts
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	int FT[4][4] = {{ 0, 1, 5, 4}, { 1, 2, 6, 5}, { 2, 3, 7, 6}, { 3, 0, 4, 7}};
 	int FE[4][4] = {{ 0, 9, 4, 8}, { 1,10, 5, 9}, { 2,11, 6,10}, { 3, 8, 7,11}};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<4; ++i)
 	{
 		edge.resize(4);

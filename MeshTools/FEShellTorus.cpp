@@ -50,7 +50,7 @@ FEShellTorus::FEShellTorus(GTorus* po)
 	AddIntParam(m_ns, "ns", "Segments");
 }
 
-FEMesh* FEShellTorus::BuildMesh()
+FSMesh* FEShellTorus::BuildMesh()
 {
 	int i, j;
 
@@ -79,12 +79,12 @@ FEMesh* FEShellTorus::BuildMesh()
 	int elems = nd*ns;
 
 	// allocate storage for mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create nodes
 	vec3d r;
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	for (i=0; i<nd; ++i)
 	{
 		double w0 = 2.0*i*PI/nd - PI*0.5;
@@ -144,7 +144,7 @@ FEMesh* FEShellTorus::BuildMesh()
 	return pm;
 }
 
-void FEShellTorus::BuildNodes(FEMesh* pm)
+void FEShellTorus::BuildNodes(FSMesh* pm)
 {
 	pm->Node(NodeIndex(0,     0)).m_gid = 0;
 	pm->Node(NodeIndex(0,  m_ns)).m_gid = 1;
@@ -167,19 +167,19 @@ void FEShellTorus::BuildNodes(FEMesh* pm)
 	pm->Node(NodeIndex(3*m_nd,3*m_ns)).m_gid = 15;
 }
 
-void FEShellTorus::BuildFaces(FEMesh* pm)
+void FEShellTorus::BuildFaces(FSMesh* pm)
 {
 	int i;
 	int nfaces = pm->Elements();
 	pm->Create(0,0,nfaces);
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 	for (i=0; i<nfaces; ++i, ++pf)
 	{
 		FEElement_* pe = pm->ElementPtr(i);
 
 		int i1 = i/(4*m_ns);
 		int i2 = i%(4*m_ns);
-		FEFace& f = *pf;
+		FSFace& f = *pf;
 		f.SetType(FE_FACE_QUAD4);
 		f.m_gid = 4*(i1/m_nd) + i2/m_ns;
 		f.n[0] = pe->m_node[0];
@@ -189,13 +189,13 @@ void FEShellTorus::BuildFaces(FEMesh* pm)
 	}	
 }
 
-void FEShellTorus::BuildEdges(FEMesh* pm)
+void FEShellTorus::BuildEdges(FSMesh* pm)
 {
 	int i;
 	int nd = 4*m_nd;
 	int ns = 4*m_ns;
 	pm->Create(0,0,0,4*nd+4*ns);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	for (i=0; i<nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid =    4*i/nd; pe->n[0] = NodeIndex(i,     0); pe->n[1] = NodeIndex(i+1,     0); }
 	for (i=0; i<nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid =  4+4*i/nd; pe->n[0] = NodeIndex(i,  ns/4); pe->n[1] = NodeIndex(i+1,  ns/4); }
 	for (i=0; i<nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid =  8+4*i/nd; pe->n[0] = NodeIndex(i,  ns/2); pe->n[1] = NodeIndex(i+1,  ns/2); }

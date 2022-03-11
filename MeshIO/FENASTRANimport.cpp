@@ -34,7 +34,7 @@ extern GLColor col[];
 //-----------------------------------------------------------------------------
 bool FENASTRANimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	// clear all data
 	m_Node.clear();
@@ -280,7 +280,7 @@ bool FENASTRANimport::read_MAT1(FENASTRANimport::CARD &c)
 
 //-----------------------------------------------------------------------------
 
-bool FENASTRANimport::BuildMesh(FEModel &fem)
+bool FENASTRANimport::BuildMesh(FSModel& fem)
 {
 	int i, n;
 
@@ -290,12 +290,12 @@ bool FENASTRANimport::BuildMesh(FEModel &fem)
 	int nparts = (int) m_Part.size();
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems);
 
 	// create nodes
 	list<GRID>::iterator in = m_Node.begin();
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	for (i=0; i<nodes; ++i, ++pn, ++in)
 	{
 		pn->r.x = in->x;
@@ -325,7 +325,7 @@ bool FENASTRANimport::BuildMesh(FEModel &fem)
 		list<PSOLID>::iterator ip = m_Part.begin();
 		for (i=0; i<nparts; ++i, ++ip)
 		{
-			FEPart* pg = new FEPart(po);
+			FSPart* pg = new FSPart(po);
 
 			sprintf(szname, "Part%02d", i+1);
 			pg->SetName(szname);
@@ -344,10 +344,10 @@ bool FENASTRANimport::BuildMesh(FEModel &fem)
 		for (i=0; i<(int) m_Mat.size(); ++i, ++im)
 		{
 			MAT1& mat = *im;
-			FEIsotropicElastic* pmat = new FEIsotropicElastic;
-			pmat->SetFloatValue(FEIsotropicElastic::MP_DENSITY, mat.d);
-			pmat->SetFloatValue(FEIsotropicElastic::MP_E, mat.E);
-			pmat->SetFloatValue(FEIsotropicElastic::MP_v, mat.v);
+			FSIsotropicElastic* pmat = new FSIsotropicElastic;
+			pmat->SetFloatValue(FSIsotropicElastic::MP_DENSITY, mat.d);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_E, mat.E);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_v, mat.v);
 
 			GMaterial* pgm = new GMaterial(pmat);
 			pgm->AmbientDiffuse(col[i%16]);

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEPostModel.h>
 using namespace Post;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 vec3d FEKinemat::KINE::apply(const vec3d& r)
@@ -45,7 +46,12 @@ vec3d FEKinemat::KINE::apply(const vec3d& r)
 //-----------------------------------------------------------------------------
 FEKinemat::FEKinemat()
 {
+	m_isKineValid = false;
+}
 
+bool FEKinemat::IsKineValid() const
+{
+	return m_isKineValid;
 }
 
 //-----------------------------------------------------------------------------
@@ -67,7 +73,9 @@ int FEKinemat::States() const
 bool FEKinemat::Apply(Post::FEPostModel* fem, const char* szkine)
 {
 	// read the kinematics file data
+	m_isKineValid = false;
 	if (ReadKine(szkine) == false) return false;
+	m_isKineValid = true;
 
 	// build the states
 	if (BuildStates(fem) == false) return false;
@@ -137,7 +145,7 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 
 	// get the initial coordinates
 	vector<vec3d> r0(NN);
-	for (int i=0; i<NN; ++i) r0[i] = fem.NodePosition(i, 0);
+	for (int i=0; i<NN; ++i) r0[i] = to_vec3d(fem.NodePosition(i, 0));
 
 	int NS = (int)m_State.size();
 	if (m_n0 >= NS) return false;
@@ -184,7 +192,7 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 
 			for (int i=0; i<NN; ++i)
 			{
-				FENode& nd = mesh.Node(i);
+				FSNode& nd = mesh.Node(i);
 				if (nd.m_ntag == 1)
 				{
 					const vec3d& r0_i = r0[i];

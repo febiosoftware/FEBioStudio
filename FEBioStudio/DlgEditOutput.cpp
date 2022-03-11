@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <FEBioLink/FEBioClass.h>
 
 class Ui::CDlgAddDomain
 {
@@ -75,7 +76,7 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 	}
 
-	void setVariable(const FEPlotVariable& var)
+	void setVariable(const CPlotVariable& var)
 	{
 		name->setText(QString::fromStdString(var.name()));
 		switch (var.domainType())
@@ -108,6 +109,8 @@ public:
 	QComboBox* logList;
 	QLineEdit* logEdit;
 
+	vector<CPlotVariable>	m_plt;
+
 public:
 	void setup(QDialog* dlg)
 	{
@@ -116,7 +119,7 @@ public:
 		varList = new QListWidget;
 		domList = new QListWidget;
 
-		QPushButton* newVar = new QPushButton("+"); newVar->setFixedWidth(20); newVar->setToolTip("<font color=\"black\">Add custom variable");
+		QPushButton* newVar = new QPushButton("Add..."); newVar->setToolTip("<font color=\"black\">Add custom variable");
 		QPushButton* add = new QPushButton("Add Domain...");
 		QPushButton* del = new QPushButton("Remove");
 
@@ -202,7 +205,7 @@ public:
 		tab->addTab(plotTab, "Plotfile");
 		tab->addTab(logTab, "Logfile");
 		
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Cancel | QDialogButtonBox::Save);
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addWidget(tab);
@@ -213,6 +216,7 @@ public:
 		filter->setFocus();
 
 		QObject::connect(filter, SIGNAL(textEdited(const QString&)), dlg, SLOT(onFilterChanged(const QString&)));
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 		QObject::connect(add, SIGNAL(clicked()), dlg, SLOT(OnAddDomain()));
 		QObject::connect(del, SIGNAL(clicked()), dlg, SLOT(OnRemoveDomain()));
@@ -252,7 +256,7 @@ public:
 		return nid;
 	}
 
-	void setCurrentVariable(const FEPlotVariable& var)
+	void setCurrentVariable(const CPlotVariable& var)
 	{
 		clearDomainList();
 		int N = var.Domains();
@@ -260,6 +264,15 @@ public:
 		{
 			const FEItemListBuilder* item = var.GetDomain(i);
 			domList->addItem(QString::fromStdString(item->GetName()));
+		}
+	}
+
+	void setCurrentVariable(const QString& s)
+	{
+		QList<QListWidgetItem*> sel = varList->findItems(s, Qt::MatchExactly);
+		if (sel.size() == 1)
+		{
+			varList->setCurrentItem(sel.at(0));
 		}
 	}
 
@@ -289,7 +302,7 @@ CDlgAddDomain::CDlgAddDomain(QWidget* parent) : QDialog(parent), ui(new Ui::CDlg
 	ui->setup(this);
 }
 
-void CDlgAddDomain::setVariable(const FEPlotVariable& var)
+void CDlgAddDomain::setVariable(const CPlotVariable& var)
 {
 	ui->setVariable(var);
 }
@@ -307,7 +320,7 @@ int CDlgAddDomain::selectedDomain()
 
 //=================================================================================================
 
-CDlgEditOutput::CDlgEditOutput(FEProject& prj, QWidget* parent, int tab) : QDialog(parent), ui(new Ui::CDlgEditOutput), m_prj(prj)
+CDlgEditOutput::CDlgEditOutput(FSProject& prj, QWidget* parent, int tab) : QDialog(parent), ui(new Ui::CDlgEditOutput), m_prj(prj)
 {
 	ui->setup(this);
 	ui->tab->setCurrentIndex(tab);
@@ -317,6 +330,31 @@ CDlgEditOutput::CDlgEditOutput(FEProject& prj, QWidget* parent, int tab) : QDial
 void CDlgEditOutput::showEvent(QShowEvent* ev)
 {
 	ui->clearLists();
+
+	int module = m_prj.GetModule();
+
+	ui->m_plt.clear();
+
+	// get all the FEBio plot classes
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+
+	// first add all existing plot variables
+	for (int i = 0; i < plt.PlotVariables(); ++i)
+	{
+		CPlotVariable& var = plt.PlotVariable(i);
+		ui->m_plt.push_back(var);
+	}
+
+	vector<FEBio::FEBioClassInfo> pltClasses = FEBio::FindAllClasses(module, FEPLOTDATA_ID);
+	for (int i = 0; i < pltClasses.size(); ++i)
+	{
+		FEBio::FEBioClassInfo& feb = pltClasses[i];
+		CPlotVariable tmp(feb.sztype, false, true, DOMAIN_MESH);
+
+		CPlotVariable* var = plt.FindVariable(feb.sztype);
+		if (var == nullptr) ui->m_plt.push_back(tmp);
+	}
+
 	UpdateVariables("");
 	UpdateLogTable();
 	UpdateLogItemList();
@@ -327,12 +365,18 @@ void CDlgEditOutput::UpdateVariables(const QString& flt)
 	bool filter = (flt.isEmpty() == false);
 
 	ui->varList->clear();
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 	int module = m_prj.GetModule();
-	int N = plt.PlotVariables();
+	int N = ui->m_plt.size();
 	for (int i = 0; i<N; ++i)
 	{
-		FEPlotVariable& var = plt.PlotVariable(i);
+		CPlotVariable& tmp = ui->m_plt[i];
+		QString t = QString::fromStdString(tmp.name());
+		if ((filter == false) || (t.contains(flt, Qt::CaseInsensitive)))
+		{
+			ui->addVariable(t, tmp.isActive(), i);
+		}
+
+/*		CPlotVariable& var = plt.PlotVariable(i);
 		if (var.isShown() && (var.GetModule() & module))
 		{
 			QString t = QString::fromStdString(var.name());
@@ -341,34 +385,34 @@ void CDlgEditOutput::UpdateVariables(const QString& flt)
 				ui->addVariable(t, var.isActive(), i);
 			}
 		}
+*/
 	}
 	ui->varList->sortItems();
 }
 
 void CDlgEditOutput::OnVariable(int nrow)
 {
-	ui->clearDomainList();
+/*	ui->clearDomainList();
 	if (nrow >= 0)
 	{
 		int nvar = ui->currentVariable();
 		CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-		FEPlotVariable& var = plt.PlotVariable(nvar);
+		CPlotVariable& var = plt.PlotVariable(nvar);
 		ui->setCurrentVariable(var);
 	}
+*/
 }
 
 void CDlgEditOutput::OnItemClicked(QListWidgetItem* item)
 {
 	int nvar = item->data(Qt::UserRole).toInt();
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	FEPlotVariable& var = plt.PlotVariable(nvar);
-
+	CPlotVariable& var = ui->m_plt[nvar];
 	var.setActive(item->checkState() == Qt::Checked);
 }
 
 void CDlgEditOutput::OnAddDomain()
 {
-	int nvar = ui->currentVariable();
+/*	int nvar = ui->currentVariable();
 	if (nvar == -1)
 	{
 		QMessageBox::information(this, "Add Domain", "Please select a plot variable first");
@@ -376,9 +420,9 @@ void CDlgEditOutput::OnAddDomain()
 	}
 
 	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	FEPlotVariable& var = plt.PlotVariable(nvar);
+	CPlotVariable& var = plt.PlotVariable(nvar);
 
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	vector<FEItemListBuilder*> list = fem.GetModel().AllNamedSelections(var.domainType());
 
 	QStringList names;
@@ -399,10 +443,12 @@ void CDlgEditOutput::OnAddDomain()
 			ui->setCurrentVariable(var);
 		}
 	}
+*/
 }
 
 void CDlgEditOutput::OnRemoveDomain()
 {
+/*
 	int nvar = ui->currentVariable();
 	if (nvar == -1)
 	{
@@ -411,7 +457,7 @@ void CDlgEditOutput::OnRemoveDomain()
 	}
 
 	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	FEPlotVariable& var = plt.PlotVariable(nvar);
+	CPlotVariable& var = plt.PlotVariable(nvar);
 
 	QList<QListWidgetItem*> sel = ui->domList->selectedItems();
 	if (sel.empty())
@@ -423,6 +469,7 @@ void CDlgEditOutput::OnRemoveDomain()
 	int nrow = ui->domList->currentRow();
 	var.removeDomain(nrow);
 	ui->setCurrentVariable(var);
+*/
 }
 
 void CDlgEditOutput::onFilterChanged(const QString& txt)
@@ -432,7 +479,7 @@ void CDlgEditOutput::onFilterChanged(const QString& txt)
 
 void CDlgEditOutput::UpdateLogTable()
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	ui->clearLogTable();
@@ -490,7 +537,7 @@ void CDlgEditOutput::UpdateLogTable()
 void CDlgEditOutput::UpdateLogItemList()
 {
 	ui->logList->clear();
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 
 	int ntype = ui->logType->currentIndex();
@@ -538,7 +585,7 @@ void CDlgEditOutput::UpdateLogItemList()
 				int NNS = po->FENodeSets();
 				for (int i=0; i<NNS; ++i)
 				{
-					FENodeSet* pns = po->GetFENodeSet(i);
+					FSNodeSet* pns = po->GetFENodeSet(i);
 					ui->logList->addItem(QString::fromStdString(pns->GetName()), pns->GetID());
 				}
 			}
@@ -552,7 +599,7 @@ void CDlgEditOutput::UpdateLogItemList()
 				int NES = po->FEParts();
 				for (int i = 0; i<NES; ++i)
 				{
-					FEPart* pg = po->GetFEPart(i);
+					FSPart* pg = po->GetFEPart(i);
 					ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
 				}
 			}
@@ -575,10 +622,10 @@ void CDlgEditOutput::UpdateLogItemList()
         int lid = -1;
         for (int i = 0; i<fem.Steps(); ++i)
         {
-            FEStep* pstep = fem.GetStep(i);
+            FSStep* pstep = fem.GetStep(i);
             for (int j = 0; j<pstep->RigidConnectors(); ++j)
             {
-                FERigidConnector* pc = pstep->RigidConnector(j);
+                FSRigidConnector* pc = pstep->RigidConnector(j);
                 ui->logList->addItem(QString::fromStdString(pc->GetName()), ++lid);
             }
         }
@@ -626,14 +673,77 @@ void CDlgEditOutput::onLogRemove()
 	UpdateLogTable();
 }
 
+class CNewVariableDialog : public QDialog
+{
+private:
+	QLineEdit* m_var;
+	QLineEdit* m_flt;
+	QLineEdit* m_aka;
+
+public:
+	CNewVariableDialog(QWidget* parent) : QDialog(parent) 
+	{
+		setWindowTitle("Add New Variable");
+
+		QFormLayout* f = new QFormLayout;
+		f->addRow("Variable", m_var = new QLineEdit);
+		f->addRow("Filter"  , m_flt = new QLineEdit);
+		f->addRow("Alias"   , m_aka = new QLineEdit);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+
+		QVBoxLayout* l = new QVBoxLayout();
+		l->addLayout(f);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	QString getVariable() const { return m_var->text(); }
+	QString getFilter() const { return m_flt->text(); }
+	QString getAlias() const { return m_aka->text(); }
+
+	QString getFullVariableName() const
+	{
+		QString var = getVariable();
+		QString flt = getFilter();
+		QString aka = getAlias();
+
+		QString newvar = var;
+		if (flt.isEmpty() == false) newvar += QString("[%1]").arg(flt);
+		if (aka.isEmpty() == false) newvar += QString("=%1").arg(aka);
+
+		return newvar;
+	}
+};
+
 void CDlgEditOutput::OnNewVariable()
 {
-	QString s = QInputDialog::getText(this, "New Variable", "Name:");
-	if (s.isEmpty() == false)
+	CNewVariableDialog dlg(this);
+	if (dlg.exec())
 	{
-		CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-		plt.AddPlotVariable(MODULE_ALL, s.toStdString(), true, true);
-		UpdateVariables("");
+		QString s = dlg.getFullVariableName();
+		if (s.isEmpty() == false)
+		{
+			string varName = s.toStdString();
+			// make sure we don't have it yet
+			for (auto& var : ui->m_plt)
+			{
+				if (var.name() == varName)
+				{
+					QMessageBox::information(this, "FEBio Studio", "This variable already exists.");
+					ui->setCurrentVariable(s);
+					return;
+				}
+			}
+			CPlotVariable var(s.toStdString(), true, true, DOMAIN_MESH);
+			ui->m_plt.push_back(var);
+			UpdateVariables("");
+			ui->setCurrentVariable(s);
+		}
 	}
 }
 
@@ -649,4 +759,21 @@ void CDlgEditOutput::onItemChanged(QTableWidgetItem* item)
 		QString t = item->text();
 		ld.fileName = t.toStdString();
 	}
+}
+
+void CDlgEditOutput::accept()
+{
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
+	plt.Clear();
+
+	for (int i = 0; i < ui->m_plt.size(); ++i)
+	{
+		CPlotVariable& plti = ui->m_plt[i];
+		if (plti.isActive())
+		{
+			plt.AddPlotVariable(plti);
+		}
+	}
+
+	QDialog::accept();
 }

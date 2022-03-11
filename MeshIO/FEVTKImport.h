@@ -33,11 +33,11 @@ SOFTWARE.*/
 
 class VTKMesh;
 
-class FEVTKimport :	public FEFileImport
+class FEVTKimport :	public FSFileImport
 {
 
 public:
-	FEVTKimport(FEProject& prj);
+	FEVTKimport(FSProject& prj);
 	~FEVTKimport(void);
 
 	bool Load(const char* szfile);

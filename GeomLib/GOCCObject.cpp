@@ -101,8 +101,8 @@ TopoDS_Shape& GOCCObject::GetShape()
 #endif
 }
 
-FEMeshBase* GOCCObject::GetEditableMesh() { return GetFEMesh(); }
-FELineMesh* GOCCObject::GetEditableLineMesh() { return GetFEMesh(); }
+FSMeshBase* GOCCObject::GetEditableMesh() { return GetFEMesh(); }
+FSLineMesh* GOCCObject::GetEditableLineMesh() { return GetFEMesh(); }
 
 void GOCCObject::BuildGObject()
 {

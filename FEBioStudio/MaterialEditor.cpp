@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ui_materialeditor.h"
 #include <QComboBox>
 #include <FEMLib/FEMaterialFactory.h>
+#include <FEBioLink/FEBioClass.h>
 #include <assert.h>
 
 #ifndef WIN32
@@ -87,7 +88,26 @@ void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly)
 	}
 }
 
-void CMaterialEditor::SetMaterial(FEMaterial* mat)
+void FillComboBox2(QComboBox* pc, int nclass, int module, bool btoplevelonly)
+{
+	if (nclass < FE_FEBIO_MATERIAL_CLASS) {
+		FillComboBox(pc, nclass, module, btoplevelonly); return;
+	}
+
+	nclass -= FE_FEBIO_MATERIAL_CLASS;
+	vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllClasses(-1, -1, nclass, true);
+
+	pc->clear();
+	int classes = classInfo.size();
+	for (int i = 0; i < classes; ++i)
+	{
+		FEBio::FEBioClassInfo& ci = classInfo[i];
+		pc->addItem(ci.sztype, ci.classId);
+	}
+	pc->model()->sort(0);
+}
+
+void CMaterialEditor::SetMaterial(FSMaterial* mat)
 {
 	ui->ClearTree();
 	MaterialEditorItem* item = ui->topLevelItem(0);
@@ -103,13 +123,13 @@ QString CMaterialEditor::GetMaterialName() const
 	return ui->name->text();
 }
 
-FEMaterial* CMaterialEditor::GetMaterial()
+FSMaterial* CMaterialEditor::GetMaterial()
 {
 	MaterialEditorItem* it = ui->topLevelItem(0);
 	return it->GetMaterial();
 }
 
-CMaterialEditor::CMaterialEditor(FEProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CMaterialEditor)
+CMaterialEditor::CMaterialEditor(FSProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CMaterialEditor)
 {
 //	setMinimumSize(400, 400);
 	setWindowTitle("Add Material");
@@ -145,10 +165,10 @@ void CMaterialEditor::showEvent(QShowEvent* ev)
 		ui->name->setText(QString::fromStdString(gmat->GetName()));
 
 		// create a copy of the material (just in case we cancel)
-		FEMaterial* pmat = gmat->GetMaterialProperties();
+		FSMaterial* pmat = gmat->GetMaterialProperties();
 		if (pmat)
 		{
-			FEMaterial* pmCopy = FEMaterialFactory::Create(pmat->Type());
+			FSMaterial* pmCopy = FEMaterialFactory::Create(pmat->Type());
 			pmCopy->copy(pmat);
 			SetMaterial(pmCopy);
 			ui->mat = 0;
@@ -163,7 +183,7 @@ void CMaterialEditor::SetURL()
 		if(ui->matList->currentIndex() != -1)
 		{
 			int ntype = ui->matList->currentData().toInt();
-			m_url = FEMaterialFactory::GetInstance()->Find(ntype)->GetHelpURL();
+			// m_url = FEMaterialFactory::GetInstance()->Find(ntype)->GetHelpURL();
 			return;
 		}
 	}
@@ -202,7 +222,7 @@ void CMaterialEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTree
 		FillComboBox(ui->matList, nclass, m_module, (item->ParentMaterial() == 0));
 
 		int index = -1;
-		FEMaterial* pm = item->GetMaterial();
+		FSMaterial* pm = item->GetMaterial();
 		if (pm)
 		{
 			index = ui->matList->findData(pm->Type());
@@ -213,8 +233,6 @@ void CMaterialEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTree
 		QObject::connect(ui->matList, SIGNAL(currentIndexChanged(int)), this, SLOT(materialChanged(int)));
 		ui->tree->setItemWidget(current, 1, ui->matList);
 	}
-
-	LoadPage();
 }
 
 void CMaterialEditor::materialChanged(int n)
@@ -223,11 +241,9 @@ void CMaterialEditor::materialChanged(int n)
 	int ntype = ui->matList->itemData(n).toInt();
 
 	FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-	FEMaterial* pmat = MF.Create(ntype); assert(pmat);
+	FSMaterial* pmat = MF.Create(ntype); assert(pmat);
 
 	it->SetMaterial(pmat);
-
-	LoadPage();
 }
 
 void CMaterialEditor::accept()

@@ -64,9 +64,9 @@ bool CMaterialMapTool::OnApply()
 	}
 	else
 	{
-		FEModel& fem = *pdoc->GetFEModel();
+		FSModel& fem = *pdoc->GetFSModel();
 		GObject* po = fem.GetModel().Object(0);
-		FEMesh& mesh = *po->GetFEMesh();
+		FSMesh& mesh = *po->GetFEMesh();
 		int N = mesh.Nodes();
 		int NE = mesh.Elements();
 
@@ -97,7 +97,7 @@ bool CMaterialMapTool::OnApply()
 			// set the element material ID's
 			for (int i = 0; i<NE; ++i)
 			{
-				FEElement& e = mesh.Element(i);
+				FSElement& e = mesh.Element(i);
 				int ne = e.Nodes();
 				double E = 0;
 				for (int j = 0; j<ne; ++j) E += reader.NodeData(e.m_node[j], 0);
@@ -148,7 +148,7 @@ bool CMaterialMapTool::OnApply()
 			vector<int> MP; MP.assign(NP, 0);
 			for (int i = 0; i<NE; ++i)
 			{
-				FEElement& e = mesh.Element(i);
+				FSElement& e = mesh.Element(i);
 				MP[e.m_gid] = e.m_ntag;
 			}
 

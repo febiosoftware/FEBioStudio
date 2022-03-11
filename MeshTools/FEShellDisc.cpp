@@ -53,7 +53,7 @@ FEShellDisc::FEShellDisc(GDisc* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FEMesh* FEShellDisc::BuildMesh()
+FSMesh* FEShellDisc::BuildMesh()
 {
 	FEMultiQuadMesh MQ;
 
@@ -135,7 +135,7 @@ FEMesh* FEShellDisc::BuildMesh()
 	};
 
 	// Build the mesh
-	FEMesh* pm = MQ.BuildMesh();
+	FSMesh* pm = MQ.BuildMesh();
 	if (pm == nullptr) return nullptr;
 
 	pm->BuildMesh();

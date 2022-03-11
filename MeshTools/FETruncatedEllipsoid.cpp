@@ -50,7 +50,7 @@ FETruncatedEllipsoid::FETruncatedEllipsoid(GTruncatedEllipsoid* po)
 
 extern double gain2(double x, double r, double n);
 
-FEMesh* FETruncatedEllipsoid::BuildMesh()
+FSMesh* FETruncatedEllipsoid::BuildMesh()
 {
 	assert(m_pobj);
 
@@ -280,7 +280,7 @@ FEMesh* FETruncatedEllipsoid::BuildMesh()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// project nodes to geometry
 	int NN = pm->Nodes();

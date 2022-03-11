@@ -33,15 +33,13 @@ FEMatDescriptor::FEMatDescriptor(
 	int ntype,
 	int nclass,
 	const char* szname,
-	unsigned int flags,
-	const char* helpURL)
+	unsigned int flags)
 {
 	m_nModule = module;
 	m_nType = ntype; 
 	m_nClass = nclass;
 	m_szname = szname;
 	m_flags = flags;
-	m_helpURL = helpURL;
 }
 
 FEMaterialFactory* FEMaterialFactory::m_pFac = 0;
@@ -114,27 +112,33 @@ FEMatDescriptor* FEMaterialFactory::AtIndex(int index)
 	return (*it);
 }
 
-FEMaterial* FEMaterialFactory::Create(int nid)
+FSMaterial* FEMaterialFactory::Create(int nid)
 {
 	assert(m_pFac);
 	FEMatDescriptor* pd = m_pFac->Find(nid);
 	return (pd?pd->Create():0);
 }
 
-FEMaterial* FEMaterialFactory::Create(const char *szname, int classId)
+FSMaterial* FEMaterialFactory::Create(const char *szname, int classId)
 {
 	assert(m_pFac);
 	FEMatDescriptor* pd = m_pFac->Find(szname, classId);
 	return (pd?pd->Create():0);
 }
 
-const char* FEMaterialFactory::TypeStr(FEMaterial *pm)
+const char* FEMaterialFactory::TypeStr(int nid)
+{
+    FEMatDescriptor* pd = m_pFac->Find(nid);
+    return pd->GetTypeString();
+}
+
+const char* FEMaterialFactory::TypeStr(const FSMaterial *pm)
 {
 	if (pm == 0) return 0;
 
 	// A user material will not be registered, but instead contains its own type str
 	// TODO: Should I make TypeStr a member of each material?
-	if (dynamic_cast<FEUserMaterial*>(pm)) return (dynamic_cast<FEUserMaterial*>(pm))->GetTypeStr();
+	if (dynamic_cast<const FSUserMaterial*>(pm)) return (dynamic_cast<const FSUserMaterial*>(pm))->GetTypeString();
 
 	FEMaterialFactory* pmf = GetInstance();
 
@@ -147,7 +151,7 @@ const char* FEMaterialFactory::TypeStr(FEMaterial *pm)
 	return 0;
 }
 
-int FEMaterialFactory::ClassID(FEMaterial *pm)
+int FEMaterialFactory::ClassID(FSMaterial *pm)
 {
 	FEMaterialFactory* pmf = GetInstance();
 

@@ -27,9 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 
-class FEMesh;
-class FEMeshBase;
+class FSMesh;
+class FSMeshBase;
 
 namespace MeshTools {
-	std::vector<int> FindSurfaceOverlap(FEMesh* mesh, FEMeshBase* trg);
+	std::vector<int> FindSurfaceOverlap(FSMesh* mesh, FSMeshBase* trg);
 }

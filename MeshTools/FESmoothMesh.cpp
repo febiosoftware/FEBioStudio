@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/MeshTools.h>
+using namespace std;
 
 //=============================================================================
 // FESmoothMesh
@@ -43,10 +44,10 @@ FESmoothMesh::FESmoothMesh() : FEModifier("Smooth")
 	AddBoolParam(false, "volume only");
 }
 
-FEMesh* FESmoothMesh::Apply(FEMesh* pm)
+FSMesh* FESmoothMesh::Apply(FSMesh* pm)
 {
 	// create a copy of the mesh
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	// apply smoothing
 	bool shape = GetBoolValue(2);
@@ -57,14 +58,14 @@ FEMesh* FESmoothMesh::Apply(FEMesh* pm)
 	return pnm;
 }
 
-void FESmoothMesh::SmoothMesh(FEMesh& mesh)
+void FESmoothMesh::SmoothMesh(FSMesh& mesh)
 {
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);
 	bool volOnly = GetBoolValue(4);
 
 	// set up the node-element table
-	FENodeNodeList NNL(&mesh);
+	FSNodeNodeList NNL(&mesh);
 
 	mesh.TagAllNodes(1);
 
@@ -73,7 +74,7 @@ void FESmoothMesh::SmoothMesh(FEMesh& mesh)
 		int NF = mesh.Faces();
 		for (int i=0; i<NF; ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nf = face.Nodes();
 			for (int j=0; j<nf; ++j) mesh.Node(face.n[j]).m_ntag = 0;
 		}
@@ -86,14 +87,14 @@ void FESmoothMesh::SmoothMesh(FEMesh& mesh)
 		vector<vec3d> r(N, vec3d(0, 0, 0));
 		for (int i = 0; i < N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			int nn = NNL.Valence(i);
 			if ((ni.m_ntag == 1) && (nn > 0))
 			{
 				vec3d v(0,0,0);
 				for (int j = 0; j < nn; ++j)
 				{
-					FENode& nj = mesh.Node(NNL.Node(i, j));
+					FSNode& nj = mesh.Node(NNL.Node(i, j));
 					v += nj.r;
 				}
 				v /= (double)nn;
@@ -103,7 +104,7 @@ void FESmoothMesh::SmoothMesh(FEMesh& mesh)
 		}
 		for (int i = 0; i < N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			int nn = NNL.Valence(i);
 			if ((ni.m_ntag == 1) && (nn > 0))
 			{
@@ -114,7 +115,7 @@ void FESmoothMesh::SmoothMesh(FEMesh& mesh)
 	mesh.UpdateMesh();
 }
 /*
-void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
+void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 {
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);
@@ -143,7 +144,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 		// process edge nodes
 		for (int i=0; i<mesh.Edges(); ++i)
 		{
-			FEEdge& edge = mesh.Edge(i);
+			FSEdge& edge = mesh.Edge(i);
 			if (edge.m_gid >= 0)
 			{
 				int ne = edge.Nodes();
@@ -163,7 +164,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 		// process face nodes
 		for (int i = 0; i<mesh.Faces(); ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nf = face.Nodes();
 			for (int j = 0; j<nf; ++j)
 			{
@@ -180,7 +181,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 		// process element nodes
 		for (int i = 0; i<mesh.Elements(); ++i)
 		{
-			FEElement& elem = mesh.Element(i);
+			FSElement& elem = mesh.Element(i);
 			int ne = elem.Nodes();
 			for (int j = 0; j<ne; ++j)
 			{
@@ -197,7 +198,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 		// calculate new node positions
 		for (int i=0; i<mesh.Elements(); ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FSElement& el = mesh.Element(i);
 			int ne = el.Nodes();
 			for (int j=0; j<ne; ++j)
 			{
@@ -216,7 +217,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 
 		for (int i=0; i<N; ++i)
 		{
-			FENode& node = mesh.Node(i);
+			FSNode& node = mesh.Node(i);
 			if (node.m_ntag > 0)
 			{
 				newPos[i] /= (double) node.m_ntag;
@@ -235,7 +236,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 		// assign new node positions
 		for (int i = 0; i<N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			vec3d& vi = newPos[i];
 			ni.r = ni.r*w + vi*(1.0 - w);
 		}
@@ -244,7 +245,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 
 */
 
-void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
+void FESmoothMesh::ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh)
 {
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);
@@ -273,7 +274,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 		// process edge nodes
 		for (int i=0; i<mesh.Edges(); ++i)
 		{
-			FEEdge& edge = mesh.Edge(i);
+			FSEdge& edge = mesh.Edge(i);
 			if (edge.m_gid >= 0)
 			{
 				int ne = edge.Nodes();
@@ -314,7 +315,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 		// process face nodes
 		for (int i = 0; i<mesh.Faces(); ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nf = face.Nodes();
 			for (int j = 0; j<nf; ++j)
 			{
@@ -353,7 +354,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 		// process element nodes
 		for (int i = 0; i<mesh.Elements(); ++i)
 		{
-			FEElement& elem = mesh.Element(i);
+			FSElement& elem = mesh.Element(i);
 			int ne = elem.Nodes();
 			for (int j = 0; j<ne; ++j)
 			{
@@ -384,7 +385,7 @@ void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)
 		// assign new node positions
 		for (int i = 0; i<N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			if (tag[i].first == -1) 
 			{
 				vec3d& vi = newPos[i];

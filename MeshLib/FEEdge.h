@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEItem.h"
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 //-----------------------------------------------------------------------------
 // Edge types
@@ -40,7 +40,7 @@ enum FEEdgeType
 };
 
 //-----------------------------------------------------------------------------
-// The FEEdge class stores the edge data.
+// The FSEdge class stores the edge data.
 // An edge can be linear, quadratic or cubic. Note that the first two nodes 
 // always represent the outside nodes. 
 //
@@ -57,23 +57,23 @@ enum FEEdgeType
 // if only one other edge connects to that end. If no other edge, or multiple
 // edges connect, the neighbor is set to -1.
 //
-class FEEdge : public FEItem
+class FSEdge : public MeshItem
 {
 public:
 	enum { MAX_NODES = 4 };
 
 public:
 	//! constructor
-	FEEdge();
+	FSEdge();
 
 	//! constructor
-	FEEdge(const FEEdge& e);
+	FSEdge(const FSEdge& e);
 
 	//! assignment operator
-	void operator = (const FEEdge& e);
+	void operator = (const FSEdge& e);
 
 	//! edge comparison
-	bool operator == (const FEEdge& e) const;
+	bool operator == (const FSEdge& e) const;
 
 	//! return number of nodes
 	int Nodes() const;

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <vector>
 
 //-----------------------------------------------------------------------------
-class FEFace;
+class FSFace;
 
 //-----------------------------------------------------------------------------
 // This tool measures the angle between three consecutively selected nodes

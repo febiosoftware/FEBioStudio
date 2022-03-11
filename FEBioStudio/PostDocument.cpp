@@ -34,13 +34,17 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/GModel.h>
-#include <XML/XMLWriter.h>
-#include <XML/XMLReader.h>
+//---------------------------------------
+// NOTE: We need to include these FEBio files to make sure we get the correct
+//       implementations for the type_to_string and string_to_type functions.
+#include <FEBio/FEBioFormat.h>
+#include <FEBio/FEBioExport.h>
+//#include <XML/XMLWriter.h>
+//#include <XML/XMLReader.h>
+//---------------------------------------
 #include <XPLTLib/xpltFileReader.h>
 #include "ClassDescriptor.h"
-#include <PostLib/FELSDYNAimport.h>
-#include <PostLib/FEKinemat.h>
-#include <QtCore/QDir>
+#include "PostSessionFile.h"
 
 void TIMESETTINGS::Defaults()
 {
@@ -104,7 +108,7 @@ void ModelData::ReadData(Post::CGLModel* po)
 	}
 
 	// displacement map
-	Post::FEPostModel* ps = po->GetFEModel();
+	Post::FEPostModel* ps = po->GetFSModel();
 	m_dmap.m_nfield = ps->GetDisplacementField();
 
 	// materials 
@@ -151,7 +155,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 	}
 
 	// displacement map
-	Post::FEPostModel* ps = po->GetFEModel();
+	Post::FEPostModel* ps = po->GetFSModel();
 	ps->SetDisplacementField(m_dmap.m_nfield);
 
 	// materials
@@ -166,7 +170,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		Post::FEPostMesh* pmesh = po->GetActiveMesh();
 		for (int i = 0; i<N; ++i)
 		{
-			Post::FEMaterial* pm = ps->GetMaterial(i);
+			Post::Material* pm = ps->GetMaterial(i);
 			if (pm->bvisible == false) po->HideMaterial(i);
 		}
 	}
@@ -301,7 +305,7 @@ bool CPostDocument::Initialize()
 		// map colors from modeldoc
 		if (m_doc)
 		{
-			::FEModel& docfem = *m_doc->GetFEModel();
+			FSModel& docfem = *m_doc->GetFSModel();
 			GModel* mdl = m_doc->GetGModel();
 
 			int mats = docfem.Materials();
@@ -312,7 +316,7 @@ bool CPostDocument::Initialize()
 				{
 					GLColor c = docfem.GetMaterial(i)->Diffuse();
 
-					Post::FEMaterial* mat = m_fem->GetMaterial(i);
+					Post::Material* mat = m_fem->GetMaterial(i);
 					mat->ambient = c;
 					mat->diffuse = c;
 				}
@@ -320,7 +324,7 @@ bool CPostDocument::Initialize()
 				for (int i = 0; i < dmats; ++i)
 				{
 					GLColor c = mdl->DiscreteObject(i)->GetColor();
-					Post::FEMaterial* mat = m_fem->GetMaterial(i + mats);
+					Post::Material* mat = m_fem->GetMaterial(i + mats);
 					mat->ambient = c;
 					mat->diffuse = c;
 				}
@@ -346,7 +350,7 @@ int CPostDocument::GetStates()
 	return m_fem->GetStates();
 }
 
-Post::FEPostModel* CPostDocument::GetFEModel()
+Post::FEPostModel* CPostDocument::GetFSModel()
 {
 	return m_fem;
 }
@@ -445,7 +449,7 @@ std::string CPostDocument::GetFieldString()
 	if (IsValid())
 	{
 		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFEModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
 	}
 	else return "";
 }
@@ -458,7 +462,7 @@ float CPostDocument::GetTimeValue()
 
 float CPostDocument::GetTimeValue(int n)
 {
-	if (m_glm) return m_glm->GetFEModel()->GetTimeValue(n);
+	if (m_glm) return m_glm->GetFSModel()->GetTimeValue(n);
 	else return 0.f;
 }
 
@@ -527,26 +531,26 @@ BOX CPostDocument::GetSelectionBox()
 			for (int j = 0; j < nel; ++j) box += mesh.Node(el.m_node[j]).r;
 		}
 
-		const vector<FEFace*> selFaces = GetGLModel()->GetFaceSelection();
+		const vector<FSFace*> selFaces = GetGLModel()->GetFaceSelection();
 		for (int i = 0; i < (int)selFaces.size(); ++i)
 		{
-			FEFace& face = *selFaces[i];
+			FSFace& face = *selFaces[i];
 			int nel = face.Nodes();
 			for (int j = 0; j < nel; ++j) box += mesh.Node(face.n[j]).r;
 		}
 
-		const vector<FEEdge*> selEdges = GetGLModel()->GetEdgeSelection();
+		const vector<FSEdge*> selEdges = GetGLModel()->GetEdgeSelection();
 		for (int i = 0; i < (int)selEdges.size(); ++i)
 		{
-			FEEdge& edge = *selEdges[i];
+			FSEdge& edge = *selEdges[i];
 			int nel = edge.Nodes();
 			for (int j = 0; j < nel; ++j) box += mesh.Node(edge.n[j]).r;
 		}
 
-		const vector<FENode*> selNodes = GetGLModel()->GetNodeSelection();
+		const vector<FSNode*> selNodes = GetGLModel()->GetNodeSelection();
 		for (int i = 0; i < (int)selNodes.size(); ++i)
 		{
-			FENode& node = *selNodes[i];
+			FSNode& node = *selNodes[i];
 			box += node.r;
 		}
 	}
@@ -567,7 +571,7 @@ FESelection* CPostDocument::GetCurrentSelection()
 {
 	if (m_sel) { delete m_sel; m_sel = nullptr; }
 
-	FEMesh* pm = GetGLModel()->GetActiveMesh();
+	FSMesh* pm = GetGLModel()->GetActiveMesh();
 
 	int selectionMode = m_vs.nitem;
 	switch (selectionMode)
@@ -589,7 +593,17 @@ std::string CPostDocument::GetFileName()
 
 bool CPostDocument::IsValid()
 {
-	return ((m_glm != nullptr) && (m_glm->GetFEModel() != nullptr) && (m_postObj != nullptr));
+	return ((m_glm != nullptr) && (m_glm->GetFSModel() != nullptr) && (m_postObj != nullptr));
+}
+
+void CPostDocument::SetModifiedFlag(bool bset)
+{
+	// ignore this, since post docs can't be saved anyways
+}
+
+void CPostDocument::SetInitFlag(bool b)
+{
+	m_binit = b;
 }
 
 void CPostDocument::ApplyPalette(const Post::CPalette& pal)
@@ -600,7 +614,7 @@ void CPostDocument::ApplyPalette(const Post::CPalette& pal)
 	{
 		GLColor c = pal.Color(i % NCOL);
 
-		Post::FEMaterial& m = *m_fem->GetMaterial(i);
+		Post::Material& m = *m_fem->GetMaterial(i);
 		m.diffuse = c;
 		m.ambient = c;
 		m.specular = GLColor(128, 128, 128);
@@ -675,422 +689,13 @@ bool CPostDocument::MergeFEModel(Post::FEPostModel* fem)
 //! save to session file
 bool CPostDocument::SavePostSession(const std::string& fileName)
 {
-	if (fileName.empty()) return false;
-
-	Post::FEPostModel* fem = GetFEModel();
-	if (fem == nullptr) return false;
-
-	XMLWriter xml;
-	if (xml.open(fileName.c_str()) == false) return false;
-
-	XMLElement root("febiostudio_post_session");
-	root.add_attribute("version", "1.0");
-	xml.add_branch(root);
-	{
-		// save plot file
-		std::string plotFile = GetDocFilePath();
-		XMLElement plt("open");
-		plt.add_attribute("file", plotFile);
-		xml.add_empty(plt);
-
-		// save material settings
-		for (int i = 0; i < fem->Materials(); ++i)
-		{
-			Post::FEMaterial* mat = fem->GetMaterial(i);
-			XMLElement el("material");
-			el.add_attribute("id", i + 1);
-			el.add_attribute("name", mat->GetName());
-			xml.add_branch(el);
-			{
-				xml.add_leaf("diffuse"     , mat->diffuse);
-				xml.add_leaf("ambient"     , mat->ambient);
-				xml.add_leaf("specular"    , mat->specular);
-				xml.add_leaf("emission"    , mat->emission);
-				xml.add_leaf("mesh_color"  , mat->meshcol);
-				xml.add_leaf("shininess"   , mat->shininess);
-				xml.add_leaf("transparency", mat->transparency);
-			}
-			xml.close_branch(); // material
-		}
-
-		// save selections
-		GObject* po = GetActiveObject();
-		if (po)
-		{
-			for (int i = 0; i < po->FENodeSets(); ++i)
-			{
-				FENodeSet* pg = po->GetFENodeSet(i);
-
-				XMLElement el("mesh:nodeset");
-				el.add_attribute("name", pg->GetName());
-				xml.add_branch(el);
-				{
-					std::list<int> items = pg->CopyItems();
-					std::list<int>::iterator it = items.begin();
-					int N = items.size();
-					int l[16];
-					for (int n = 0; n < N; n += 16)
-					{
-						int m = (n + 16 <= N ? 16 : N - n);
-						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
-						xml.add_leaf("nodes", l, m);
-					}
-				}
-				xml.close_branch();
-			}
-
-			for (int i = 0; i < po->FEEdgeSets(); ++i)
-			{
-				FEEdgeSet* pg = po->GetFEEdgeSet(i);
-
-				XMLElement el("mesh:edgeset");
-				el.add_attribute("name", pg->GetName());
-				xml.add_branch(el);
-				{
-					std::list<int> items = pg->CopyItems();
-					std::list<int>::iterator it = items.begin();
-					int N = items.size();
-					int l[16];
-					for (int n = 0; n < N; n += 16)
-					{
-						int m = (n + 16 <= N ? 16 : N - n);
-						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
-						xml.add_leaf("edges", l, m);
-					}
-				}
-				xml.close_branch();
-			}
-
-			for (int i = 0; i < po->FESurfaces(); ++i)
-			{
-				FESurface* pg = po->GetFESurface(i);
-
-				XMLElement el("mesh:surface");
-				el.add_attribute("name", pg->GetName());
-				xml.add_branch(el);
-				{
-					std::list<int> items = pg->CopyItems();
-					std::list<int>::iterator it = items.begin();
-					int N = items.size();
-					int l[16];
-					for (int n = 0; n < N; n += 16)
-					{
-						int m = (n + 16 <= N ? 16 : N - n);
-						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
-						xml.add_leaf("faces", l, m);
-					}
-				}
-				xml.close_branch();
-			}
-
-			for (int i = 0; i < po->FEParts(); ++i)
-			{
-				FEPart* pg = po->GetFEPart(i);
-
-				XMLElement el("mesh:part");
-				el.add_attribute("name", pg->GetName());
-				xml.add_branch(el);
-				{
-					std::list<int> items = pg->CopyItems();
-					std::list<int>::iterator it = items.begin();
-					int N = items.size();
-					int l[16];
-					for (int n = 0; n < N; n += 16)
-					{
-						int m = (n + 16 <= N ? 16 : N - n);
-						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
-						xml.add_leaf("elems", l, m);
-					}
-				}
-				xml.close_branch();
-			}
-		}
-
-		// save post model components
-		Post::CGLModel* glm = GetGLModel();
-		if (glm)
-		{
-			for (int i = 0; i < glm->Plots(); ++i)
-			{
-				Post::CGLPlot* plot = glm->Plot(i);
-
-				std::string typeStr = plot->GetTypeString();
-					
-				XMLElement el("plot");
-				el.add_attribute("type", typeStr);
-				xml.add_branch(el);
-				{
-					for (int i = 0; i < plot->Parameters(); ++i)
-					{
-						Param& pi = plot->GetParam(i);
-						const char* sz = pi.GetShortName();
-
-						el.name(sz);
-						switch (pi.GetParamType())
-						{
-						case Param_BOOL  : { bool b = pi.GetBoolValue(); el.value(b); } break;
-						case Param_INT   : { int n = pi.GetIntValue(); el.value(n); } break;
-						case Param_CHOICE: { int n = pi.GetIntValue(); el.value(n); } break;
-						case Param_FLOAT : { double v = pi.GetFloatValue(); el.value(v); } break;
-						case Param_VEC3D : { vec3d v = pi.GetVec3dValue(); el.value(v); } break;
-						case Param_COLOR : { GLColor c = pi.GetColorValue(); int v[3] = { c.r, c.g, c.b }; el.value(v, 3); } break;
-						}
-
-						xml.add_leaf(el);
-					}
-				}
-				xml.close_branch();
-			}
-		}
-	}
-	xml.close_branch(); // root
-
-	xml.close();
-
-	return true;
+	PostSessionFileWriter writer(this);
+	return writer.Write(fileName.c_str());
 }
 
 //-------------------------------------------------------------------------------------------
-//! open session file
-bool CPostDocument::OpenPostSession(const std::string& fileName)
+void CPostDocument::SetGLModel(Post::CGLModel* glm)
 {
-	if (fileName.empty()) return false;
-
-	// we'll use this for converting to absolute file paths.
-	QFileInfo fi(QString::fromStdString(fileName));
-	QDir currentDir(fi.absolutePath());
-
-	XMLReader xml;
-	if (xml.Open(fileName.c_str()) == false) return false;
-
-	XMLTag tag;
-	if (xml.FindTag("febiostudio_post_session", tag) == false)
-	{
-		return false;
-	}
-
-	if (m_glm) {
-		delete m_glm; m_glm = nullptr;
-	}
-	try {
-		++tag;
-		do
-		{
-			if (tag == "open")
-			{
-				const char* szfile = tag.AttributeValue("file");
-				xpltFileReader xplt(GetFEModel());
-				if (xplt.Load(szfile) == false)
-				{
-					return false;
-				}
-
-				// now create a GL model
-				m_glm = new Post::CGLModel(m_fem);
-
-				// save the plot file as the document's path
-				SetDocFilePath(szfile);
-
-				if (Initialize() == false) return false;
-				m_binit = true;
-			}
-			else if (tag == "kinemat")
-			{
-				int n[3] = { 1,999,1 };
-				std::string modelFile, kineFile;
-				++tag;
-				do
-				{
-					if (tag == "model_file") tag.value(modelFile);
-					if (tag == "kine_file" ) tag.value(kineFile);
-					if (tag == "range"     ) tag.value(n, 3);
-					++tag;
-				} 
-				while (!tag.isend());
-
-				// create absolute file names for model and kine files
-				modelFile = currentDir.absoluteFilePath(QString::fromStdString(modelFile)).toStdString();
-				kineFile  = currentDir.absoluteFilePath(QString::fromStdString(kineFile)).toStdString();
-
-				// read the model
-				Post::FELSDYNAimport reader(m_fem);
-				reader.read_displacements(true);
-				bool bret = reader.Load(modelFile.c_str());
-				if (bret == false) return false;
-
-				// apply kine
-				FEKinemat kine;
-				kine.SetRange(n[0], n[1], n[2]);
-				if (kine.Apply(m_fem, kineFile.c_str()) == false) return false;
-
-				// update post document
-				Initialize();
-
-				// update displacements on all states
-				Post::CGLModel& mdl = *GetGLModel();
-				if (mdl.GetDisplacementMap() == nullptr)
-				{
-					mdl.AddDisplacementMap("Displacement");
-				}
-				int nstates = mdl.GetFEModel()->GetStates();
-				for (int i = 0; i < nstates; ++i) mdl.UpdateDisplacements(i, true);
-			}
-			else if (tag == "material")
-			{
-				const char* szid = tag.AttributeValue("id");
-				int nid = atoi(szid) - 1;
-				if ((nid >= 0) && (nid < m_fem->Materials()))
-				{
-					Post::FEMaterial* mat = m_fem->GetMaterial(nid);
-
-					++tag;
-					do
-					{
-						if (tag == "diffuse") tag.value(mat->diffuse);
-						if (tag == "ambient") tag.value(mat->ambient);
-						if (tag == "specular") tag.value(mat->specular);
-						if (tag == "emission") tag.value(mat->emission);
-						if (tag == "mesh_color") tag.value(mat->meshcol);
-						if (tag == "shininess") tag.value(mat->shininess);
-						if (tag == "transparency") tag.value(mat->transparency);
-						++tag;
-					} while (!tag.isend());
-				}
-			}
-			else if (tag == "mesh:nodeset")
-			{
-				const char* szname = tag.AttributeValue("name");
-				vector<int> nodeList;
-				++tag;
-				do {
-					if (tag == "nodes")
-					{
-						int l[16];
-						int m = tag.value(l, 16);
-						for (int i = 0; i < m; ++i) nodeList.push_back(l[i] - 1);
-					}
-					++tag;
-				} while (!tag.isend());
-
-				GObject* po = GetActiveObject();
-				if (po)
-				{
-					FENodeSet* pg = new FENodeSet(po, nodeList);
-					pg->SetName(szname);
-					po->AddFENodeSet(pg);
-				}
-			}
-			else if (tag == "mesh:edgeset")
-			{
-				const char* szname = tag.AttributeValue("name");
-				vector<int> edgeList;
-				++tag;
-				do {
-					if (tag == "edges")
-					{
-						int l[16];
-						int m = tag.value(l, 16);
-						for (int i = 0; i < m; ++i) edgeList.push_back(l[i] - 1);
-					}
-					++tag;
-				} while (!tag.isend());
-
-				GObject* po = GetActiveObject();
-				if (po)
-				{
-					FEEdgeSet* pg = new FEEdgeSet(po, edgeList);
-					pg->SetName(szname);
-					po->AddFEEdgeSet(pg);
-				}
-			}
-			else if (tag == "mesh:surface")
-			{
-				const char* szname = tag.AttributeValue("name");
-				vector<int> faceList;
-				++tag;
-				do {
-					if (tag == "faces")
-					{
-						int l[16];
-						int m = tag.value(l, 16);
-						for (int i = 0; i < m; ++i) faceList.push_back(l[i] - 1);
-					}
-					++tag;
-				} while (!tag.isend());
-
-				GObject* po = GetActiveObject();
-				if (po)
-				{
-					FESurface* pg = new FESurface(po, faceList);
-					pg->SetName(szname);
-					po->AddFESurface(pg);
-				}
-			}
-			else if (tag == "mesh:part")
-			{
-				const char* szname = tag.AttributeValue("name");
-				vector<int> elemList;
-				++tag;
-				do {
-					if (tag == "elems")
-					{
-						int l[16];
-						int m = tag.value(l, 16);
-						for (int i = 0; i < m; ++i) elemList.push_back(l[i] - 1);
-					}
-					++tag;
-				} while (!tag.isend());
-
-				GObject* po = GetActiveObject();
-				if (po)
-				{
-					FEPart* pg = new FEPart(po, elemList);
-					pg->SetName(szname);
-					po->AddFEPart(pg);
-				}
-			}
-			else if (tag == "plot")
-			{
-				const char* sztype = tag.AttributeValue("type");
-				Post::CGLPlot* plot = FSCore::CreateClass<Post::CGLPlot>(CLASS_PLOT, sztype);
-
-				const char* szname = tag.AttributeValue("name", true);
-				if (szname) plot->SetName(szname);
-
-				m_glm->AddPlot(plot);
-
-				++tag;
-				do
-				{
-					Param* p = plot->GetParam(tag.Name());
-					if (p)
-					{
-						switch (p->GetParamType())
-						{
-						case Param_BOOL: { bool b; tag.value(b); p->SetBoolValue(b); } break;
-						case Param_INT: { int n; tag.value(n); p->SetIntValue(n); } break;
-						case Param_CHOICE: { int n; tag.value(n); p->SetIntValue(n); } break;
-						case Param_FLOAT: { double g; tag.value(g); p->SetFloatValue(g); } break;
-						case Param_VEC3D: { vec3d v; tag.value(v); p->SetVec3dValue(v); } break;
-						case Param_COLOR: { GLColor c; tag.value(c); p->SetColorValue(c); } break;
-						}
-					}
-					++tag;
-				} while (!tag.isend());
-
-				plot->UpdateData(true);
-			}
-			//			else xml.SkipTag(tag);
-			else return false;
-			++tag;
-		} while (!tag.isend());
-	}
-	catch (...)
-	{
-		// TODO: We need this for catching end-of-file. 
-	}
-
-	xml.Close();
-
-	return true;
+	if (m_glm) delete m_glm;
+	m_glm = glm;
 }

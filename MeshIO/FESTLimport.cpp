@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FESTLimport::FESTLimport(FEProject& prj) : FEFileImport(prj)
+FESTLimport::FESTLimport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -66,7 +66,7 @@ bool FESTLimport::read_line(char* szline, const char* sz)
 // Load an STL model
 bool FESTLimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// try to read ascii STL
@@ -179,7 +179,7 @@ bool FESTLimport::read_facet(FESTLimport::FACET& f)
 // Load an STL model
 bool FESTLimport::read_binary(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// try to open the file
@@ -265,14 +265,14 @@ GObject* FESTLimport::build_mesh()
 	int NN = (int)m_Node.size();
 
 	// create the mesh
-	FESurfaceMesh* pm = new FESurfaceMesh;
+	FSSurfaceMesh* pm = new FSSurfaceMesh;
 	pm->Create(NN, 0, NF);
 
 	// create nodes
 	for (i=0; i<NN; ++i)
 	{
 		vec3d& ri = m_Node[i].r;
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		node.pos(ri);
 	}
 
@@ -284,7 +284,7 @@ GObject* FESTLimport::build_mesh()
 		int n = f.nid;
 		if (n >= 0)
 		{
-			FEFace& face = pm->Face(n);
+			FSFace& face = pm->Face(n);
 			face.SetType(FE_FACE_TRI3);
 			face.m_gid = 0;
 			face.n[0] = f.n[0];

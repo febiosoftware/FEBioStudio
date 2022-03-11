@@ -26,7 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include <list>
-#include <MathLib/math3d.h>
+#include <vector>
+#include <FECore/vec3d.h>
 
 namespace Post {
 	class FEPostModel;
@@ -47,7 +48,7 @@ protected:
 	class STATE
 	{
 	public:
-		vector<KINE>	D;
+		std::vector<KINE>	D;
 
 	public:
 		STATE(){}
@@ -63,11 +64,14 @@ public:
 
 	int States() const;
 
+	bool IsKineValid() const;
+
 protected:
 	bool ReadKine(const char* szkine);
 	bool BuildStates(Post::FEPostModel* glm);
 
 protected:
 	int	m_n0, m_n1, m_ni;
-	vector<STATE>	m_State;
+	std::vector<STATE>	m_State;
+	bool	m_isKineValid;
 };

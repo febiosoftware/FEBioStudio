@@ -34,18 +34,18 @@ public:
 	FEEdgeFlip();
 	~FEEdgeFlip();
 
-	FESurfaceMesh* Apply(FESurfaceMesh* pm) override;
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm) override;
 
 private:
 	void Cleanup();
-	void MarkEdges(FESurfaceMesh* mesh);
-	bool FlipEdge(int iedge, FESurfaceMesh* mesh);
-	bool ShouldFlip(int a[3], int b[3], FESurfaceMesh* mesh);
-	void DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FESurfaceMesh* mesh);
+	void MarkEdges(FSSurfaceMesh* mesh);
+	bool FlipEdge(int iedge, FSSurfaceMesh* mesh);
+	bool ShouldFlip(int a[3], int b[3], FSSurfaceMesh* mesh);
+	void DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FSSurfaceMesh* mesh);
 
 private:
-	FEEdgeList*			m_EL;
-	FEFaceEdgeList*		m_FEL;
-	FEEdgeFaceList*		m_EFL;
-	vector<int>			m_tag;
+	FSEdgeList*			m_EL;
+	FSFaceEdgeList*		m_FEL;
+	FSEdgeFaceList*		m_EFL;
+	std::vector<int>	m_tag;
 };

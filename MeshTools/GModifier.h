@@ -34,9 +34,9 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class GObject;
-class FEMesh;
+class FSMesh;
 class GMesh;
-class FEModel;
+class FSModel;
 
 //-----------------------------------------------------------------------------
 class GModifier : public FSObject
@@ -47,7 +47,7 @@ public:
 
 	virtual void Apply(GObject* po) = 0;
 	virtual GMesh* BuildGMesh(GObject* po) = 0;
-	virtual FEMesh* BuildFEMesh(GObject* po) = 0; 
+	virtual FSMesh* BuildFEMesh(GObject* po) = 0; 
 };
 
 //-----------------------------------------------------------------------------
@@ -56,10 +56,10 @@ class GTwistModifier : public GModifier
 public:
 	enum { ORIENT, TWIST, SCALE, SMIN, SMAX };
 public:
-	GTwistModifier(FEModel* ps = 0);
+	GTwistModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po);
-	FEMesh* BuildFEMesh(GObject* po);
+	FSMesh* BuildFEMesh(GObject* po);
 };
 
 //-----------------------------------------------------------------------------
@@ -69,10 +69,10 @@ public:
 	enum {SCALE, ORIENT};
 
 public:
-	GPinchModifier(FEModel* ps = 0);
+	GPinchModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po);
-	FEMesh* BuildFEMesh(GObject* po);
+	FSMesh* BuildFEMesh(GObject* po);
 };
 
 //-----------------------------------------------------------------------------
@@ -82,10 +82,10 @@ public:
 	enum { ORIENT, ANGLE, SMIN, SMAX, XPIVOT, YPIVOT, ZPIVOT };
 
 public:
-	GBendModifier(FEModel* ps = 0);
+	GBendModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po);
-	FEMesh* BuildFEMesh(GObject* po);
+	FSMesh* BuildFEMesh(GObject* po);
 
 protected:
 	void UpdateParams();
@@ -107,10 +107,10 @@ public:
 	enum { ORIENT, SKEW };
 
 public:
-	GSkewModifier(FEModel* ps = 0);
+	GSkewModifier(FSModel* ps = 0);
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po);
-	FEMesh* BuildFEMesh(GObject* po);
+	FSMesh* BuildFEMesh(GObject* po);
 };
 
 //-----------------------------------------------------------------------------
@@ -122,12 +122,12 @@ public:
 	GWrapModifier();
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po) { return 0; }
-	FEMesh* BuildFEMesh(GObject* po) { return 0; }
+	FSMesh* BuildFEMesh(GObject* po) { return 0; }
 	void SetTarget(GObject* ptrg) { m_po = ptrg; }
 
 protected:
-	void ClosestPoint(GObject* po, vector<vec3d>& DS, vector<int>& tag);
-	void NormalProjection(GObject* po, vector<vec3d>& DS, vector<int>& tag, int nsteps);
+	void ClosestPoint(GObject* po, std::vector<vec3d>& DS, std::vector<int>& tag);
+	void NormalProjection(GObject* po, std::vector<vec3d>& DS, std::vector<int>& tag, int nsteps);
 
 protected:
 	GObject*	m_po;	//!< target object
@@ -143,7 +143,7 @@ public:
 	GExtrudeModifier();
 	void Apply(GObject* po);
 	GMesh* BuildGMesh(GObject* po);
-	FEMesh* BuildFEMesh(GObject* po);
+	FSMesh* BuildFEMesh(GObject* po);
 };
 
 
@@ -157,7 +157,7 @@ public:
 	GRevolveModifier();
 	void Apply(GObject* po);
 	GMesh* BuildGMesh(GObject* po);
-	FEMesh* BuildFEMesh(GObject* po);
+	FSMesh* BuildFEMesh(GObject* po);
 };
 
 //-----------------------------------------------------------------------------
@@ -174,10 +174,10 @@ public:
 	void Remove(GModifier* pmod);
 	int Size() { return (int) m_Mod.size(); }
 
-	FEMesh* GetFEMesh() { return m_pmesh; }
+	FSMesh* GetFEMesh() { return m_pmesh; }
 	void ClearMesh();
 
-	void SetFEMesh(FEMesh* pm) { ClearMesh(); m_pmesh = pm; }
+	void SetFEMesh(FSMesh* pm) { ClearMesh(); m_pmesh = pm; }
 
 	GModifier* Modifier(int n)
 	{
@@ -197,7 +197,7 @@ public:
 
 protected:
 	GObject*	m_po;		// the object that owns this stack
-	FEMesh*		m_pmesh;	// the original mesh
+	FSMesh*		m_pmesh;	// the original mesh
 
 	list<GModifier*>	m_Mod;	// the actual modifier stack
 };

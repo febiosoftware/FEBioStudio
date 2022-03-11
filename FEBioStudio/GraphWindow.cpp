@@ -53,14 +53,16 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QComboBox>
 #include <QSpinBox>
-#include <MathLib/LinearRegression.h>
+#include <FECore/tools.h>
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
 #include "PostDocument.h"
 #include <PostLib/constants.h>
 #include <PostLib/evaluate.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
+#include <FECore/MathObject.h>
 
 class TimeRangeOptionsUI
 {
@@ -645,7 +647,9 @@ void MathPlot::draw(QPainter& p)
 
 	p.setPen(QPen(m_col, 2));
 
-	CMathParser mp;
+	MSimpleExpression m;
+	MVariable* xvar = m.AddVariable("x");
+	m.Create(m_math);
 
 	QRectF vr = m_graph->m_viewRect;
 	QRect sr = m_graph->ScreenRect();
@@ -655,9 +659,10 @@ void MathPlot::draw(QPainter& p)
 	for (int i=sr.left(); i < sr.right(); i += 2)
 	{
 		double x = vr.left() + (i - sr.left())*(vr.right() - vr.left())/ (sr.right() - sr.left());
-		mp.set_variable("x", x);
 
-		double y = mp.eval(m_math.c_str(), ierr);
+		xvar->value(x);
+
+		double y = m.value();
 		
 		p1 = m_graph->ViewToScreen(QPointF(x,y));
 
@@ -844,6 +849,7 @@ public:
 	QAction* actionSnapshot;
 	QAction* actionProps;
 	QAction* actionZoomSelect;
+	QAction* actionZoomUser;
 
 	QAction* actionSelectX;
 	QAction* actionSelectY;
@@ -954,6 +960,7 @@ public:
 		QAction* actionZoomHeight = zoomBar->addAction(QIcon(QString(":/icons/zoom_y.png")), "Zoom Height"); actionZoomHeight->setObjectName("actionZoomHeight");
 		QAction* actionZoomFit    = zoomBar->addAction(QIcon(QString(":/icons/zoom_fit.png"   )), "Zoom Fit"   ); actionZoomFit->setObjectName("actionZoomFit"   );
 		actionZoomSelect = zoomBar->addAction(QIcon(QString(":/icons/zoom_select.png")), "Zoom Select"); actionZoomSelect->setObjectName("actionZoomSelect"); actionZoomSelect->setCheckable(true);
+		actionZoomUser   = zoomBar->addAction(QIcon(QString(":/icons/zoom-fit-best-2.png")), "Map to Rectangle"); actionZoomUser->setObjectName("actionZoomUser");  actionZoomUser->setCheckable(true);
 		zoomBar->addSeparator();
 		actionProps = zoomBar->addAction(QIcon(QString(":/icons/properties.png")), "Properties"); actionProps->setObjectName("actionProps");
 
@@ -978,6 +985,9 @@ QRect CGraphWindow::m_preferredSize;
 
 CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags) : m_wnd(pwnd), QMainWindow(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
 {
+	static int n = 0;
+	setWindowTitle(QString("Graph%1").arg(++n));
+
 	m_nTrackTime = TRACK_TIME;
 	m_nUserMin = 1;
 	m_nUserMax = -1;
@@ -1345,15 +1355,26 @@ void CGraphWindow::on_actionZoomFit_triggered()
 }
 
 //-----------------------------------------------------------------------------
-void CGraphWindow::on_actionZoomSelect_toggled(bool bchecked)
+void CGraphWindow::on_plot_regionSelected(QRect rt)
 {
-	ui->plot->ZoomToRect(bchecked);
-}
-
-//-----------------------------------------------------------------------------
-void CGraphWindow::on_plot_doneZoomToRect()
-{
+	if (ui->actionZoomSelect->isChecked())
+	{
+		ui->plot->fitToRect(rt);
+	}
+	else if (ui->actionZoomUser->isChecked())
+	{
+		CDlgPlotWidgetProps dlg;
+		if (dlg.exec())
+		{
+			ui->plot->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+		}
+	}
+	else
+	{
+		ui->plot->regionSelect(rt);
+	}
 	ui->actionZoomSelect->setChecked(false);
+	ui->actionZoomUser->setChecked(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1374,7 +1395,7 @@ void CGraphWindow::on_range_optionsChanged()
 		if (doc)
 		{
 			// check the range. Note that user min and max are one-based!
-			Post::FEPostModel* fem = doc->GetFEModel();
+			Post::FEPostModel* fem = doc->GetFSModel();
 			int N = fem->GetStates();
 			if (m_nUserMin < 1) m_nUserMin = 1;
 			if (m_nUserMin > N) m_nUserMin = N;
@@ -1463,6 +1484,13 @@ CModelGraphWindow::CModelGraphWindow(CMainWindow* wnd, CPostDocument* postDoc) :
 	m_dataYPrev = -1;
 
 	m_xtype = m_xtypeprev = -1;
+
+	if (postDoc)
+	{
+		std::string docTitle = postDoc->GetDocTitle();
+		QString wndTitle = windowTitle();
+		setWindowTitle(wndTitle + QString(" [%1]").arg(QString::fromStdString(docTitle)));
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1479,7 +1507,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	if (breset)
 	{
 		Post::CGLModel* glm = doc->GetGLModel();
-		Post::FEPostModel* fem = doc->GetFEModel();
+		Post::FEPostModel* fem = doc->GetFSModel();
 
 		// update the data sources
 		QStringList sourceNames;
@@ -1494,6 +1522,12 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 			if (p)
 			{
 				sourceNames << QString::fromStdString(p->GetName());
+			}
+
+			Post::GLRuler* r = dynamic_cast<Post::GLRuler*>(glm->Plot(i));
+			if (r)
+			{
+				sourceNames << QString::fromStdString(r->GetName());
 			}
 
 			Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(glm->Plot(i));
@@ -1568,7 +1602,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	//	pview->SetCurrentTimeIndex(ntime);
 
 	Post::CGLModel* po = doc->GetGLModel();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
@@ -1636,6 +1670,17 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 					m++;
 				}
 
+				Post::GLRuler* ruler = dynamic_cast<Post::GLRuler*>(glm->Plot(i));
+				if (ruler)
+				{
+					if (m == n)
+					{
+						addRulerData(ruler);
+						break;
+					}
+					m++;
+				}
+
 				Post::GLMusclePath* musclePath = dynamic_cast<Post::GLMusclePath*>(glm->Plot(i));
 				if (musclePath)
 				{
@@ -1670,7 +1715,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 void CModelGraphWindow::setDataSource(int n)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	if (n == 0)
 	{
@@ -1711,6 +1756,19 @@ void CModelGraphWindow::setDataSource(int n)
 					m++;
 				}
 
+				Post::GLRuler* ruler = dynamic_cast<Post::GLRuler*>(glm->Plot(i));
+				if (ruler)
+				{
+					if (m == n)
+					{
+						SetYDataSelector(new CRulerDataSelector());
+						Update(false, true);
+						break;
+					}
+					m++;
+				}
+
+
 				Post::GLMusclePath* musclePath = dynamic_cast<Post::GLMusclePath*>(glm->Plot(i));
 				if (musclePath)
 				{
@@ -1748,7 +1806,7 @@ CPlotData* CModelGraphWindow::nextData()
 void CModelGraphWindow::addObjectData(int n)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	if ((n < 0) || (n >= fem.PlotObjects())) return;
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -1772,7 +1830,7 @@ void CModelGraphWindow::addObjectData(int n)
 		// get the component
 		int ncomp = FIELD_COMP(m_dataY);
 
-		Post::FEDataField* dataField = po->m_data[ndata];
+		Post::ModelDataField* dataField = po->m_data[ndata];
 
 		float val = 0.f;
 
@@ -1805,7 +1863,7 @@ void CModelGraphWindow::addObjectData(int n)
 void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = m_lastState - m_firstState + 1;
 	vector<float> xdata(nsteps);
@@ -1825,10 +1883,33 @@ void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
 }
 
 //-----------------------------------------------------------------------------
+void CModelGraphWindow::addRulerData(Post::GLRuler* ruler)
+{
+	CPostDocument* doc = GetPostDoc();
+	Post::FEPostModel& fem = *doc->GetFSModel();
+
+	int nsteps = m_lastState - m_firstState + 1;
+	vector<float> xdata(nsteps);
+	vector<float> ydata(nsteps);
+
+	for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+
+	for (int j = 0; j < nsteps; ++j)
+	{
+		double val = ruler->DataValue(m_dataY, j);
+		ydata[j] = (float)val;
+	}
+
+	CPlotData* plot = nextData();
+	plot->setLabel(QString::fromStdString((ruler->GetName())));
+	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
+}
+
+//-----------------------------------------------------------------------------
 void CModelGraphWindow::addMusclePathData(Post::GLMusclePath* musclePath)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = m_lastState - m_firstState + 1;
 	vector<float> xdata(nsteps);
@@ -1852,7 +1933,7 @@ void CModelGraphWindow::addMusclePathData(Post::GLMusclePath* musclePath)
 void CModelGraphWindow::addSelectedNodes()
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -1867,7 +1948,7 @@ void CModelGraphWindow::addSelectedNodes()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			FENode& node = mesh.Node(i);
+			FSNode& node = mesh.Node(i);
 			if (node.IsSelected())
 			{
 				for (int j = 0; j<nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
@@ -1886,7 +1967,7 @@ void CModelGraphWindow::addSelectedNodes()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			FENode& node = mesh.Node(i);
+			FSNode& node = mesh.Node(i);
 			if (node.IsSelected())
 			{
 				for (int j = 0; j<nsteps; j++) xdata[j] = (float)j + 1.f + m_firstState;
@@ -1905,7 +1986,7 @@ void CModelGraphWindow::addSelectedNodes()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			FENode& node = mesh.Node(i);
+			FSNode& node = mesh.Node(i);
 			if (node.IsSelected())
 			{
 				TrackNodeHistory(i, &xdata[0], m_dataX, m_firstState, m_lastState);
@@ -1925,7 +2006,7 @@ void CModelGraphWindow::addSelectedNodes()
 		vector<int> sel;
 		for (int i = 0; i < NN; i++)
 		{
-			FENode& node = mesh.Node(i);
+			FSNode& node = mesh.Node(i);
 			if (node.IsSelected()) sel.push_back(i);
 		}
 
@@ -1959,7 +2040,7 @@ void CModelGraphWindow::addSelectedNodes()
 
 			for (int i = 0; i < (int)sel.size(); i++)
 			{
-				FENode& node = mesh.Node(sel[i]);
+				FSNode& node = mesh.Node(sel[i]);
 				if (node.IsSelected())
 				{
 					// evaluate x-field
@@ -1993,7 +2074,7 @@ void CModelGraphWindow::addSelectedNodes()
 void CModelGraphWindow::addSelectedEdges()
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -2004,7 +2085,7 @@ void CModelGraphWindow::addSelectedEdges()
 	int NL = mesh.Edges();
 	for (int i = 0; i<NL; i++)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if (edge.IsSelected())
 		{
 			// evaluate x-field
@@ -2034,7 +2115,7 @@ void CModelGraphWindow::addSelectedEdges()
 void CModelGraphWindow::addSelectedFaces()
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -2048,7 +2129,7 @@ void CModelGraphWindow::addSelectedFaces()
 	case 0:
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = mesh.Face(i);
+			FSFace& f = mesh.Face(i);
 			if (f.IsSelected())
 			{
 				// evaluate x-field
@@ -2066,7 +2147,7 @@ void CModelGraphWindow::addSelectedFaces()
 	case 1:
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = mesh.Face(i);
+			FSFace& f = mesh.Face(i);
 			if (f.IsSelected())
 			{
 				for (int j = 0; j < nsteps; j++) xdata[j] = (float)j + 1.f + m_firstState;
@@ -2083,7 +2164,7 @@ void CModelGraphWindow::addSelectedFaces()
 	case 2:
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = mesh.Face(i);
+			FSFace& f = mesh.Face(i);
 			if (f.IsSelected())
 			{
 				// evaluate x-field
@@ -2103,7 +2184,7 @@ void CModelGraphWindow::addSelectedFaces()
 		vector<int> sel;
 		for (int i = 0; i < NF; i++)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			if (face.IsSelected()) sel.push_back(i);
 		}
 
@@ -2119,7 +2200,7 @@ void CModelGraphWindow::addSelectedFaces()
 
 			for (int i = 0; i < (int)sel.size(); i++)
 			{
-				FEFace& face = mesh.Face(sel[i]);
+				FSFace& face = mesh.Face(sel[i]);
 
 				// evaluate x-field
 				TrackFaceHistory(sel[i], &xdata[0], m_dataX, m_firstState, m_lastState);
@@ -2155,7 +2236,7 @@ void CModelGraphWindow::addSelectedFaces()
 void CModelGraphWindow::addSelectedElems()
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -2280,7 +2361,7 @@ void CModelGraphWindow::addSelectedElems()
 void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -2302,7 +2383,7 @@ void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int 
 void CModelGraphWindow::TrackEdgeHistory(int edge, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -2324,7 +2405,7 @@ void CModelGraphWindow::TrackEdgeHistory(int edge, float* pval, int nfield, int 
 void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -2333,7 +2414,7 @@ void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int
 	if (nmax <    nmin) nmax = nmin;
 	int nn = nmax - nmin + 1;
 
-	float data[FEFace::MAX_NODES], val;
+	float data[FSFace::MAX_NODES], val;
 	for (int n = 0; n<nn; n++)
 	{
 		fem.EvaluateFace(nface, n + nmin, nfield, data, val);
@@ -2346,7 +2427,7 @@ void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int
 void CModelGraphWindow::TrackElementHistory(int nelem, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -2355,7 +2436,7 @@ void CModelGraphWindow::TrackElementHistory(int nelem, float* pval, int nfield, 
 	if (nmax <    nmin) nmax = nmin;
 	int nn = nmax - nmin + 1;
 
-	float data[FEElement::MAX_NODES] = { 0.f }, val;
+	float data[FSElement::MAX_NODES] = { 0.f }, val;
 	for (int n = 0; n<nn; n++)
 	{
 		fem.EvaluateElement(nelem, n + nmin, nfield, data, val);

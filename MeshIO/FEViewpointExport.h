@@ -31,7 +31,7 @@ SOFTWARE.*/
 class FEViewpointExport : public FEFileExport
 {
 public:
-	FEViewpointExport(FEProject& prj);
+	FEViewpointExport(FSProject& prj);
 	~FEViewpointExport(void);
 
 	bool Write(const char* szfile) override;

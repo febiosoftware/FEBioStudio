@@ -25,9 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEFace.h"
+#include <assert.h>
 
 //-----------------------------------------------------------------------------
-FEFace::FEFace()
+FSFace::FSFace()
 {
 	m_type = FE_FACE_INVALID_TYPE;
 	m_elem[0].eid = m_elem[1].eid = m_elem[2].eid = -1;
@@ -50,7 +51,7 @@ FEFace::FEFace()
 }
 
 //-----------------------------------------------------------------------------
-bool FEFace::operator == (const FEFace& f) const
+bool FSFace::operator == (const FSFace& f) const
 {
 	assert(m_type != FE_FACE_INVALID_TYPE);
 	if (m_type != f.m_type) return false;
@@ -147,14 +148,14 @@ bool FEFace::operator == (const FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-void FEFace::SetType(FEFaceType type)
+void FSFace::SetType(FEFaceType type)
 {
 	assert(type != FE_FACE_INVALID_TYPE);
 	m_type = type;
 }
 
 //-----------------------------------------------------------------------------
-int FEFace::Shape() const
+int FSFace::Shape() const
 {
 	static int S[] {FE_FACE_INVALID_SHAPE, FE_FACE_TRI, FE_FACE_QUAD, FE_FACE_TRI, FE_FACE_TRI, FE_FACE_QUAD, FE_FACE_QUAD, FE_FACE_TRI};
 	assert(m_type != FE_FACE_INVALID_TYPE);
@@ -162,7 +163,7 @@ int FEFace::Shape() const
 }
 
 //-----------------------------------------------------------------------------
-int FEFace::Nodes() const
+int FSFace::Nodes() const
 {
 	static int N[] = {0, 3, 4, 6, 7, 8, 9, 10};
 	assert(m_type != FE_FACE_INVALID_TYPE);
@@ -170,7 +171,7 @@ int FEFace::Nodes() const
 }
 
 //-----------------------------------------------------------------------------
-int FEFace::Edges() const
+int FSFace::Edges() const
 {
 	static int E[] = {0, 3, 4, 3, 3, 4, 4, 3};
 	assert(m_type != FE_FACE_INVALID_TYPE);
@@ -178,7 +179,7 @@ int FEFace::Edges() const
 }
 
 //-----------------------------------------------------------------------------
-bool FEFace::HasEdge(int n1, int n2)
+bool FSFace::HasEdge(int n1, int n2)
 {
 	assert(m_type != FE_FACE_INVALID_TYPE);
 	int shape = Shape();
@@ -200,9 +201,9 @@ bool FEFace::HasEdge(int n1, int n2)
 }
 
 //-----------------------------------------------------------------------------
-int FEFace::FindEdge(const FEEdge& edge)
+int FSFace::FindEdge(const FSEdge& edge)
 {
-	FEEdge edgei;
+	FSEdge edgei;
 	for (int i=0; i<Edges(); ++i)
 	{
 		edgei = GetEdge(i);
@@ -213,7 +214,7 @@ int FEFace::FindEdge(const FEEdge& edge)
 
 //-----------------------------------------------------------------------------
 // See if this face has node i
-bool FEFace::HasNode(int i)
+bool FSFace::HasNode(int i)
 {
 	assert(m_type != FE_FACE_INVALID_TYPE);
 	switch (m_type)
@@ -233,7 +234,7 @@ bool FEFace::HasNode(int i)
 
 //-----------------------------------------------------------------------------
 // Find the array index of node with ID i
-int FEFace::FindNode(int i)
+int FSFace::FindNode(int i)
 {
 	assert(m_type != FE_FACE_INVALID_TYPE);
 	if (i == -1) return -1;
@@ -251,7 +252,7 @@ int FEFace::FindNode(int i)
 }
 
 //-----------------------------------------------------------------------------
-int FEFace::GetEdgeNodes(int i, int* en) const
+int FSFace::GetEdgeNodes(int i, int* en) const
 {
 	assert(m_type != FE_FACE_INVALID_TYPE);
 	int nn = 0;
@@ -303,9 +304,9 @@ int FEFace::GetEdgeNodes(int i, int* en) const
 }
 
 //-----------------------------------------------------------------------------
-FEEdge FEFace::GetEdge(int i) const
+FSEdge FSFace::GetEdge(int i) const
 {
-	FEEdge edge;
+	FSEdge edge;
 	int n = GetEdgeNodes(i, edge.n);
 	switch (n)
 	{
@@ -320,7 +321,7 @@ FEEdge FEFace::GetEdge(int i) const
 
 //-----------------------------------------------------------------------------
 //! Evaluate the shape function values at the iso-parametric point (r,s)
-void FEFace::shape(double* H, double r, double s)
+void FSFace::shape(double* H, double r, double s)
 {
 	switch (m_type)
 	{
@@ -403,7 +404,7 @@ void FEFace::shape(double* H, double r, double s)
 
 //-----------------------------------------------------------------------------
 //! Evaluate the derivatives of shape function values at the iso-parametric point (r,s)
-void FEFace::shape_deriv(double* Hr, double* Hs, double r, double s)
+void FSFace::shape_deriv(double* Hr, double* Hs, double r, double s)
 {
     switch (m_type)
     {
@@ -515,9 +516,9 @@ void FEFace::shape_deriv(double* Hr, double* Hs, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
-double FEFace::eval(double* d, double r, double s)
+double FSFace::eval(double* d, double r, double s)
 {
-	double H[FEFace::MAX_NODES];
+	double H[FSFace::MAX_NODES];
 	shape(H, r, s);
 	double a = 0.0;
 	for (int i = 0; i<Nodes(); ++i) a += H[i] * d[i];
@@ -525,9 +526,9 @@ double FEFace::eval(double* d, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEFace::eval(vec3f* d, double r, double s)
+vec3f FSFace::eval(vec3f* d, double r, double s)
 {
-	double H[FEFace::MAX_NODES];
+	double H[FSFace::MAX_NODES];
 	shape(H, r, s);
 	vec3f a(0, 0, 0);
 	for (int i = 0; i<Nodes(); ++i) a += d[i] * ((float)H[i]);
@@ -535,9 +536,9 @@ vec3f FEFace::eval(vec3f* d, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
-double FEFace::eval_deriv1(double* d, double r, double s)
+double FSFace::eval_deriv1(double* d, double r, double s)
 {
-    double Hr[FEFace::MAX_NODES], Hs[FEFace::MAX_NODES];
+    double Hr[FSFace::MAX_NODES], Hs[FSFace::MAX_NODES];
     shape_deriv(Hr, Hs, r, s);
     double a = 0.0;
     for (int i = 0; i<Nodes(); ++i) a += Hr[i] * d[i];
@@ -545,9 +546,9 @@ double FEFace::eval_deriv1(double* d, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
-double FEFace::eval_deriv2(double* d, double r, double s)
+double FSFace::eval_deriv2(double* d, double r, double s)
 {
-    double Hr[FEFace::MAX_NODES], Hs[FEFace::MAX_NODES];
+    double Hr[FSFace::MAX_NODES], Hs[FSFace::MAX_NODES];
     shape_deriv(Hr, Hs, r, s);
     double a = 0.0;
     for (int i = 0; i<Nodes(); ++i) a += Hs[i] * d[i];
@@ -555,9 +556,9 @@ double FEFace::eval_deriv2(double* d, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
-vec3d FEFace::eval_deriv1(vec3d* d, double r, double s)
+vec3d FSFace::eval_deriv1(vec3d* d, double r, double s)
 {
-    double Hr[FEFace::MAX_NODES], Hs[FEFace::MAX_NODES];
+    double Hr[FSFace::MAX_NODES], Hs[FSFace::MAX_NODES];
     shape_deriv(Hr, Hs, r, s);
     vec3d a(0, 0, 0);
     for (int i = 0; i<Nodes(); ++i) a += d[i] * Hr[i];
@@ -565,9 +566,9 @@ vec3d FEFace::eval_deriv1(vec3d* d, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
-vec3d FEFace::eval_deriv2(vec3d* d, double r, double s)
+vec3d FSFace::eval_deriv2(vec3d* d, double r, double s)
 {
-    double Hr[FEFace::MAX_NODES], Hs[FEFace::MAX_NODES];
+    double Hr[FSFace::MAX_NODES], Hs[FSFace::MAX_NODES];
     shape_deriv(Hr, Hs, r, s);
     vec3d a(0, 0, 0);
     for (int i = 0; i<Nodes(); ++i) a += d[i] * Hs[i];
@@ -575,7 +576,7 @@ vec3d FEFace::eval_deriv2(vec3d* d, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
-int FEFace::gauss(double* gr, double* gs, double* gw)
+int FSFace::gauss(double* gr, double* gs, double* gw)
 {
     int nint = 0;
     

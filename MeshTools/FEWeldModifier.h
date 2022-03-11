@@ -37,18 +37,18 @@ public:
 	FEWeldNodes();
 
 	//! Apply the weld modifier
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void SetThreshold(double d);
 
 protected:
-	void UpdateNodes   (FEMesh* pm);
-	void UpdateElements(FEMesh* pm);
-	void UpdateFaces   (FEMesh* pm);
-	void UpdateEdges   (FEMesh* pm);
+	void UpdateNodes   (FSMesh* pm);
+	void UpdateElements(FSMesh* pm);
+	void UpdateFaces   (FSMesh* pm);
+	void UpdateEdges   (FSMesh* pm);
 
 private:
-	vector<int>	m_order;
+	std::vector<int>	m_order;
 };
 
 //-----------------------------------------------------------------------------
@@ -60,14 +60,14 @@ public:
 	FEWeldSurfaceNodes();
 
 	//! Apply the weld modifier
-	FESurfaceMesh* Apply(FESurfaceMesh* pm) override;
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm) override;
 
 	void SetThreshold(double d);
 
 protected:
-	void UpdateNodes(FESurfaceMesh* pm);
-	void UpdateFaces(FESurfaceMesh* pm);
+	void UpdateNodes(FSSurfaceMesh* pm);
+	void UpdateFaces(FSSurfaceMesh* pm);
 
 private:
-	vector<int>	m_order;
+	std::vector<int>	m_order;
 };

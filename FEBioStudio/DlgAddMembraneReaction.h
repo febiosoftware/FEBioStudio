@@ -38,9 +38,9 @@ class CMainWindow;
 class QListWidget;
 class QListWidgetItem;
 
-class FEMaterial;
-class FEMembraneReactionMaterial;
-class FEModel;
+class FSMaterial;
+class FSMembraneReactionMaterial;
+class FSModel;
 class GMaterial;
 class QAbstractButton;
 class QSelectBox;
@@ -87,8 +87,8 @@ private:
     void InitDialog();
     void apply();
     void accept();
-    void SetMaterial(GMaterial* mat, FEModel& fem);
-    void SetReaction(FEMembraneReactionMaterial* mat);
+    void SetMaterial(GMaterial* mat, FSModel& fem);
+    void SetReaction(FSMembraneReactionMaterial* mat);
     bool hasChanged();
     
     protected slots:
@@ -102,7 +102,7 @@ private:
     
 private:
     GMaterial*                  m_pmp;          // parent multiphasic material
-    FEMembraneReactionMaterial* m_reaction;     // active reaction
+    FSMembraneReactionMaterial* m_reaction;     // active reaction
     
     string              m_name;         // name of chemical reaction
     bool                m_bovrd;        // override calculated Vbar

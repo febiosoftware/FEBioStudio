@@ -43,7 +43,7 @@ public:
 	bool Update(bool b = true);
 
 	// build an FE mesh
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 	// update the FE mesh
 	void UpdateFEMesh();

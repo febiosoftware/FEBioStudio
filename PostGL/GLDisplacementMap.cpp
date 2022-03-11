@@ -48,7 +48,7 @@ bool CGLDisplacementMap::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
-		FEPostModel* pfem = GetModel()->GetFEModel();
+		FEPostModel* pfem = GetModel()->GetFSModel();
 
 		bool bupdate = false;
 		int dispField = GetIntValue(DATA_FIELD);
@@ -69,7 +69,7 @@ bool CGLDisplacementMap::UpdateData(bool bsave)
 	}
 	else
 	{
-		FEPostModel* pfem = GetModel()->GetFEModel();
+		FEPostModel* pfem = GetModel()->GetFSModel();
 		if (pfem) SetIntValue(DATA_FIELD, pfem->GetDisplacementField());
 		SetVecValue(SCALE, m_scl);
 	}
@@ -87,8 +87,8 @@ void CGLDisplacementMap::Activate(bool b)
 		CGLModel* po = GetModel();
 		FEState* state = po->GetActiveState();
 		Post::FERefState& ref = *state->m_ref;
-		FEMeshBase* pm = state->GetFEMesh();
-		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).r = ref.m_Node[i].m_rt;
+		FSMeshBase* pm = state->GetFEMesh();
+		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).r = to_vec3d(ref.m_Node[i].m_rt);
 		pm->UpdateNormals();
 	}
 }
@@ -100,8 +100,8 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 	UpdateData();
 
 	CGLModel* po = GetModel();
-	FEMeshBase* pm = po->GetActiveMesh();
-	FEPostModel* pfem = po->GetFEModel();
+	FSMeshBase* pm = po->GetActiveMesh();
+	FEPostModel* pfem = po->GetFSModel();
 
 	// get the number of states and make sure we have something
 	int N = pfem->GetStates();
@@ -151,7 +151,7 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 		// set the current nodal positions
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 
 			// get nodal displacements
 			vec3f r0 = ref.m_Node[i].m_rt;
@@ -171,14 +171,14 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 {
 	CGLModel* po = GetModel();
-	FEPostModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFSModel();
 	if (pfem == nullptr)
 	{
 		m_ntag.clear();
 		return;
 	}
 
-	FEMeshBase* pm = pfem->GetState(ntime)->GetFEMesh();
+	FSMeshBase* pm = pfem->GetState(ntime)->GetFEMesh();
 	if (pfem == nullptr) {
 		m_ntag.clear(); return;
 	}
@@ -202,7 +202,7 @@ void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 		// set the current nodal positions
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			vec3f dr = pfem->EvaluateNodeVector(i, ntime, nfield);
 
 			// the actual nodal position is stored in the state
@@ -217,7 +217,7 @@ void CGLDisplacementMap::UpdateNodes()
 {
 	CGLModel* po = GetModel();
 	FEState* state = po->GetActiveState();
-	FEMeshBase* pm = po->GetActiveMesh();
+	FSMeshBase* pm = po->GetActiveMesh();
 
 	if (m_du.empty()) return;
 	assert(m_du.size() == pm->Nodes());
@@ -229,8 +229,8 @@ void CGLDisplacementMap::UpdateNodes()
 
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
-		vec3d r0 = ref.m_Node[i].m_rt;
+		FSNode& node = pm->Node(i);
+		vec3d r0 = to_vec3d(ref.m_Node[i].m_rt);
 		node.r.x = r0.x + m_du[i].x * m_scl.x;
 		node.r.y = r0.y + m_du[i].y * m_scl.y;
 		node.r.z = r0.z + m_du[i].z * m_scl.z;

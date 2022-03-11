@@ -29,14 +29,14 @@ SOFTWARE.*/
 #include <QDialog>
 #include <string>
 #include <vector>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 class CMainWindow;
 class QModelIndex;
 class CPostDocument;
 
 namespace Post {
-	class FEDataField;
+	class ModelDataField;
 }
 
 namespace Ui {
@@ -101,7 +101,7 @@ public:
 	CDlgFilter(QWidget* parent);
 
 	void setDataOperands(const std::vector<QString>& opNames);
-	void setDataField(Post::FEDataField* pdf);
+	void setDataField(Post::ModelDataField* pdf);
 
 	int getArrayComponent();
 

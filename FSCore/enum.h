@@ -101,7 +101,8 @@ SOFTWARE.*/
 #define CID_PRJ_NPLOT				0x00020013
 //#define CID_PRJ_PSTIFFNESS			0x00020014	// no longer used
 //#define CID_PRJ_SHELLSTRAIN         0x00020015	// no longer used
-#define CID_PRJ_MODULES				0x00020016
+#define CID_PRJ_MODULES				0x00020016	// obsolete
+#define CID_PRJ_MODULE_NAME			0x00020017
 #define CID_PRJ_PLOTMAP             0x00020100
 #define CID_PRJ_PLOTFIELD1			0x00020101
 #define CID_PRJ_PLOTFIELD2			0x00020102
@@ -117,7 +118,7 @@ SOFTWARE.*/
 #define CID_PRJ_OUTPUT_VAR_VISIBLE	0x00020313
 //#define CID_PRJ_OUTPUT_VAR_DOMAIN	0x00020314	// This was used by the old PreView.
 #define CID_PRJ_OUTPUT_VAR_DOMAINID	0x00020315
-#define CID_PRJ_OUTPUT_VAR_MODULE	0x00020316
+//#define CID_PRJ_OUTPUT_VAR_MODULE	0x00020316	// obsolete
 #define CID_PRJ_LOGDATA				0x00020400
 #define CID_PRJ_LOGDATA_ITEM		0x00020401
 #define CID_PRJ_LOGDATA_TYPE		0x00020402
@@ -132,7 +133,7 @@ SOFTWARE.*/
 #define CID_MODELINFO_COMMENT		0x00030001
 #define CID_MODELINFO_UNITS			0x00030002
 
-// FEModel Data
+// FSModel Data
 #define CID_FEM						0x00040000
 #define CID_FEM_MUST_POINT			0x00040001		//---> obsolete (1.3)
 #define CID_FEM_DATA				0x00041000
@@ -209,22 +210,29 @@ SOFTWARE.*/
 #define CID_OBJ_FEMESHER			0x0008000E
 #define CID_OBJ_MESH_LAYER			0x0008000F
 
-#define CID_OBJ_PART_SECTION		0x00080100
+#define CID_OBJ_PART_LIST			0x00080100
 #define CID_OBJ_PART				0x00080101
 #define CID_OBJ_PART_ID				0x00080102
 #define CID_OBJ_PART_MAT			0x00080103
 #define CID_OBJ_PART_NAME			0x00080104	// as of version 1.9
 #define CID_OBJ_PART_PARAMS			0x00080105 // as of version 1.4
+#define CID_OBJ_PART_SOLIDSECTION	0x00080106
+#define CID_OBJ_PART_SHELLSECTION	0x00080107
 
-#define CID_OBJ_FACE_SECTION		0x00080200
+#define CID_OBJ_SOLID_DOMAIN		0x000801A1
+#define CID_OBJ_SHELL_DOMAIN		0x000801A2
+
+#define CID_OBJ_FACE_LIST			0x00080200
 #define CID_OBJ_FACE				0x00080201
 #define CID_OBJ_FACE_ID				0x00080202
 #define CID_OBJ_FACE_PID0			0x00080203
 #define CID_OBJ_FACE_PID1			0x00080204
 #define CID_OBJ_FACE_NAME			0x00080205	// as of version 1.9
 #define CID_OBJ_FACE_TYPE			0x00080206	// as of version 2.0
+#define CID_OBJ_FACE_NODELIST		0x00080207	// as of version 2.0
+#define CID_OBJ_FACE_EDGELIST		0x00080208	// as of version 2.0
 
-#define CID_OBJ_EDGE_SECTION		0x00080300
+#define CID_OBJ_EDGE_LIST			0x00080300
 #define CID_OBJ_EDGE				0x00080301
 #define CID_OBJ_EDGE_ID				0x00080302
 #define CID_OBJ_EDGE_NAME			0x00080303	// as of version 1.9
@@ -233,7 +241,7 @@ SOFTWARE.*/
 #define CID_OBJ_EDGE_NODE1			0x00080306	// version 2.0
 #define CID_OBJ_EDGE_NODE2			0x00080307	// version 2.0
 
-#define CID_OBJ_NODE_SECTION		0x00080400
+#define CID_OBJ_NODE_LIST			0x00080400
 #define CID_OBJ_NODE				0x00080401
 #define CID_OBJ_NODE_ID				0x00080402
 #define CID_OBJ_NODE_POS			0x00080403
@@ -339,6 +347,8 @@ SOFTWARE.*/
 #define CID_PARAM_TYPE				0x000C0002
 #define CID_PARAM_VALUE				0x000C0003
 #define CID_PARAM_CHECKED			0x000C0004
+#define CID_PARAM_NAME				0x000C0005
+#define CID_PARAM_LC				0x000C0006	// new in FBS 2.0
 
 // --- boundary conditions ---
 #define CID_BC_SECTION					0x000D0000
@@ -410,6 +420,10 @@ SOFTWARE.*/
 #define CID_STEP_PARAMS				0x000F0003
 #define CID_STEP_MUST_POINT			0x000F0004
 #define CID_STEP_DATA				0x000F0005
+#define CID_STEP_PROPERTY			0x000F0006
+#define CID_STEP_PROPERTY_NAME		0x000F0007
+#define CID_STEP_PROPERTY_TYPESTR	0x000F0008
+#define CID_STEP_PROPERTY_DATA		0x000F0009
 
 #define CID_STEP_SETTINGS			0x00100000
 #define CID_STEP_NTIME				0x00100001
@@ -465,6 +479,9 @@ SOFTWARE.*/
 // --- model constraints
 #define CID_CONSTRAINT_SECTION		0x00150000
 
+// --- load controllers
+#define CID_LOAD_CONTROLLER_LIST	0x00160000
+
 // rigid connector joint data
 #define CID_RC_SPHERICAL_JOINT		0x000E5000
 #define CID_RC_REVOLUTE_JOINT		0x000E5001
@@ -502,6 +519,11 @@ SOFTWARE.*/
 // --- Resources
 #define CID_RESOURCE_SECTION		0x00100000
 #define CID_RESOURCE_IMAGEMODEL		0x00101000
+
+// --- info for reconstructing FEBio classes
+#define CID_FEBIO_META_DATA			0x00200001
+#define CID_FEBIO_BASE_DATA			0x00200002
+#define CID_FEBIO_TYPE_STRING		0x00200003
 
 //--------------------------------------------------------
 // Mesh type
@@ -581,7 +603,7 @@ SOFTWARE.*/
 // Boundary Condition types
 #define FE_FIXED_DISPLACEMENT				0x0001
 #define FE_PRESCRIBED_DISPLACEMENT			0x0002
-#define FE_NODAL_LOAD						0x0003
+#define FE_NODAL_DOF_LOAD					0x0003
 #define FE_PRESSURE_LOAD					0x0004
 #define FE_NODAL_VELOCITIES					0x0005
 #define FE_SURFACE_TRACTION					0x0006
@@ -634,6 +656,13 @@ SOFTWARE.*/
 #define FE_FLUID_PRESSURE_LOAD              0x0035
 #define FE_MASSDAMPING_LOAD					0x0036
 
+#define FE_FEBIO_BC							0x0036
+#define FE_FEBIO_NODAL_LOAD					0x0037
+#define FE_FEBIO_SURFACE_LOAD				0x0038
+#define FE_FEBIO_BODY_LOAD					0x0039
+#define FE_FEBIO_INITIAL_CONDITION			0x003A
+#define FE_FEBIO_RIGID_LOAD					0x003B
+
 //--------------------------------------------------------
 // Interface types
 #define FE_RIGID_INTERFACE				0x0001
@@ -658,6 +687,8 @@ SOFTWARE.*/
 #define FE_GAPHEATFLUX_INTERFACE		0x0017	// added in 2.1
 #define FE_CONTACTPOTENTIAL_CONTACT		0x0018
 
+#define FE_FEBIO_INTERFACE				0x0100
+
 //--------------------------------------------------------
 // Connector types
 #define FE_RC_SPHERICAL_JOINT		0x0001
@@ -671,6 +702,7 @@ SOFTWARE.*/
 #define FE_RC_CONTRACTILE_FORCE		0x0009
 #define FE_RC_RIGID_LOCK            0x000A
 #define FE_RC_GENERIC_JOINT			0x000B
+#define FE_FEBIO_RIGID_CONNECTOR	0x000C
 
 //--------------------------------------------------------
 // Constraint types
@@ -681,3 +713,6 @@ SOFTWARE.*/
 #define FE_FRICTIONLESS_FLUID_WALL      0x002F  // added in 2.0
 #define FE_INSITUSTRETCH_CONSTRAINT		0x0030	// added in FS 1.0
 #define FE_PRESTRAIN_CONSTRAINT		    0x0031	// added in FS 1.0
+#define FE_FEBIO_NLCONSTRAINT			0x0032	// added in FS 2.0
+#define FE_FEBIO_SURFACECONSTRAINT		0x0033	// added in FS 2.0
+#define FE_FEBIO_BODYCONSTRAINT			0x0034	// added in FS 2.0

@@ -53,7 +53,7 @@ FESphereInBox::FESphereInBox(GSphereInBox* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FESphereInBox::BuildMesh()
+FSMesh* FESphereInBox::BuildMesh()
 {
 	assert(m_po);
 
@@ -442,7 +442,7 @@ FEMesh* FESphereInBox::BuildMesh()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// update the mesh
 	pm->UpdateMesh();
@@ -458,7 +458,7 @@ FEMesh* FESphereInBox::BuildMesh()
 
 //-----------------------------------------------------------------------------
 /*
-FEMesh* FESphereInBox::BuildMesh()
+FSMesh* FESphereInBox::BuildMesh()
 {
 	assert(m_po);
 
@@ -604,7 +604,7 @@ FEMesh* FESphereInBox::BuildMesh()
 	m_MBNode[15].SetID(15);
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// update the mesh
 	pm->UpdateMesh();

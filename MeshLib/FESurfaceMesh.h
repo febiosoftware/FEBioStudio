@@ -36,16 +36,16 @@ class GLMesh;
 
 //-----------------------------------------------------------------------------
 // Class for representing surface meshes
-class FESurfaceMesh : public FEMeshBase
+class FSSurfaceMesh : public FSMeshBase
 {
 public:
-	FESurfaceMesh();
-	FESurfaceMesh(const FESurfaceMesh& mesh);
-	FESurfaceMesh(TriMesh& triMesh);
-	FESurfaceMesh(GLMesh& mesh);
-	virtual ~FESurfaceMesh();
+	FSSurfaceMesh();
+	FSSurfaceMesh(const FSSurfaceMesh& mesh);
+	FSSurfaceMesh(TriMesh& triMesh);
+	FSSurfaceMesh(GLMesh& mesh);
+	virtual ~FSSurfaceMesh();
 
-	FESurfaceMesh& operator = (const FESurfaceMesh& mesh);
+	FSSurfaceMesh& operator = (const FSSurfaceMesh& mesh);
 
 public:
 	// allocate mesh data structures
@@ -71,10 +71,10 @@ public:
 	void RemoveDuplicateEdges();
 
 	// attach another surface mesh
-	void Attach(const FESurfaceMesh& mesh);
+	void Attach(const FSSurfaceMesh& mesh);
 
 	// attach another surface mesh, welding all edge nodes that are within a certain distance
-	void AttachAndWeld(const FESurfaceMesh& mesh, double weldTolerance);
+	void AttachAndWeld(const FSSurfaceMesh& mesh, double weldTolerance);
 
 	// add a facet
 	void AddFacet(int n0, int n1, int n2);
@@ -84,11 +84,11 @@ public:
 	void PartitionNodeSelection();
 
 public:
-	void ShowFaces(const vector<int>& face, bool bshow = true);
+	void ShowFaces(const std::vector<int>& face, bool bshow = true);
 	void ShowAllFaces();
 	void UpdateItemVisibility() override;
 
-	void SelectFaces(const vector<int>& faceList);
+	void SelectFaces(const std::vector<int>& faceList);
 
 public:
 	void DeleteSelectedNodes();
@@ -130,9 +130,9 @@ public:
 };
 
 // Create a TriMesh from a surface mesh
-void BuildTriMesh(TriMesh& dyna, FESurfaceMesh* pm);
+void BuildTriMesh(TriMesh& dyna, FSSurfaceMesh* pm);
 
 namespace MeshTools {
 	// Is the mesh closed (i.e. do all faces have neighbors)
-	bool IsMeshClosed(FESurfaceMesh& m);
+	bool IsMeshClosed(FSSurfaceMesh& m);
 }

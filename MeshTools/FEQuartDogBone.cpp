@@ -46,7 +46,7 @@ FEQuartDogBone::FEQuartDogBone(GQuartDogBone* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMesh()
+FSMesh* FEQuartDogBone::BuildMesh()
 {
 //	return BuildMeshLegacy();
 
@@ -61,7 +61,7 @@ FEMesh* FEQuartDogBone::BuildMesh()
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
+FSMesh* FEQuartDogBone::BuildMultiBlockMesh4()
 {
 	// get parameters
 	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
@@ -202,13 +202,13 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	return pm;
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
+FSMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 {
 	// get parameters
 	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
@@ -378,14 +378,14 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	return pm;
 }
 
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMeshLegacy()
+FSMesh* FEQuartDogBone::BuildMeshLegacy()
 {
 	assert(m_pobj);
 
@@ -518,10 +518,10 @@ FEMesh* FEQuartDogBone::BuildMeshLegacy()
 	m_MBNode[21].SetID(14);
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// get all the nodes from block 1
-	vector<int> node;
+	std::vector<int> node;
 	pm->FindNodesFromPart(1, node);
 	
 	// project these nodes onto the cylinder

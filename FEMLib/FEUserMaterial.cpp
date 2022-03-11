@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FEUserMaterial.h"
 #include <cstdlib>
 
-void FEUserMaterial::AddParameter(const char* szname, double v)
+void FSUserMaterial::AddParameter(const char* szname, double v)
 {
 	// the parameter does not copy the name so we have to make
 	// sure we make a copy first
@@ -36,28 +36,28 @@ void FEUserMaterial::AddParameter(const char* szname, double v)
 	AddDoubleParam(v, sz, sz);
 }
 
-FEUserMaterial::~FEUserMaterial()
+FSUserMaterial::~FSUserMaterial()
 {
 	for (int i=0; i<(int) m_pname.size(); ++i) free(m_pname[i]);
 	m_pname.clear();
 }
 
-void FEUserMaterial::SetTypeStr(const char* sz)
+void FSUserMaterial::SetTypeString(const std::string& sz)
 {
-	strcpy(m_sztype, sz);
+	strcpy(m_sztype, sz.c_str());
 }
 
 //-----------------------------------------------------------------------------
-void FEUserMaterial::copy(FEMaterial* pmat)
+void FSUserMaterial::copy(FSMaterial* pmat)
 {
-	FEUserMaterial* pm = dynamic_cast<FEUserMaterial*>(pmat);
+	FSUserMaterial* pm = dynamic_cast<FSUserMaterial*>(pmat);
 	assert(pm);
-	if (pm) SetTypeStr(pm->GetTypeStr());
-	FEMaterial::copy(pmat);
+	if (pm) SetTypeString(pm->GetTypeString());
+	FSMaterial::copy(pmat);
 }
 
 //-----------------------------------------------------------------------------
-void FEUserMaterial::Save(OArchive &ar)
+void FSUserMaterial::Save(OArchive &ar)
 {
 	ParamBlock& PB = GetParamBlock();
 	int NP = PB.Size();
@@ -85,9 +85,9 @@ void FEUserMaterial::Save(OArchive &ar)
 }
 
 //-----------------------------------------------------------------------------
-void FEUserMaterial::Load(IArchive &ar)
+void FSUserMaterial::Load(IArchive &ar)
 {
-	TRACE("FEUserMaterial::Load");
+	TRACE("FSUserMaterial::Load");
 
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{

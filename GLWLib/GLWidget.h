@@ -38,7 +38,7 @@ SOFTWARE.*/
 
 #include <QPainter>
 #include <PostLib/ColorMap.h>
-#include <MathLib/math3d.h>
+#include <FECore/quatd.h>
 
 class CGLView;
 class CGLWidgetManager;
@@ -54,7 +54,8 @@ class CGLWidgetManager;
 class GLWidget
 {
 public:
-	enum FillMode { NONE, COLOR1, COLOR2, HORIZONTAL, VERTICAL };
+	enum FillMode { FILL_NONE, FILL_COLOR1, FILL_COLOR2, FILL_HORIZONTAL, FILL_VERTICAL };
+	enum LineMode { LINE_NONE, LINE_SOLID };
 
 public:
 	GLWidget(int x, int y, int w, int h, const char* szlabel = 0);
@@ -68,11 +69,18 @@ public:
 	void set_fg_color(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255) { m_fgc = GLColor(r,g,b,a); }
 	GLColor get_fg_color() { return m_fgc; }
 
-	void set_bg_style(int n) { m_nbg = n; }
-	void set_bg_color(GLColor c1, GLColor c2) { m_bgc[0] = c1; m_bgc[1] = c2; }
-	void set_bg_color(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255) { m_bgc[0] = GLColor(r,g,b,a); }
-	GLColor get_bg_color(int i) { return m_bgc[i]; }
-	int get_bg_style() { return m_nbg; }
+	void set_bg_style(int n) { m_bgFillMode = n; }
+	void set_bg_color(GLColor c1, GLColor c2) { m_bgFillColor[0] = c1; m_bgFillColor[1] = c2; }
+	void set_bg_color(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255) { m_bgFillColor[0] = GLColor(r,g,b,a); }
+	GLColor get_bg_color(int i) { return m_bgFillColor[i]; }
+	int get_bg_style() { return m_bgFillMode; }
+
+	void set_bg_line_style(int n) { m_bgLineMode = n; }
+	void set_bg_line_color(GLColor c) { m_bgLineColor = c; }
+	int get_bg_line_style() const { return m_bgLineMode; }
+	GLColor get_bg_line_color() const { return m_bgLineColor; }
+	void set_bg_line_size(int n) { m_bgLineSize = n; }
+	int get_bg_line_size() const { return m_bgLineSize; }
 
 	void copy_label(const char* szlabel);
 	void set_label(const char* szlabel);
@@ -145,8 +153,10 @@ protected:
 	unsigned int m_layer;
 
 	GLColor	m_fgc;
-	GLColor m_bgc[2];
-	int		m_nbg;	// background style
+	GLColor m_bgFillColor[2], m_bgLineColor;
+	int		m_bgFillMode;	// background fille style
+	int		m_bgLineMode;	// background line style
+	int		m_bgLineSize;
 
 	static GLWidget* m_pfocus;	// the widget that has the focus
 
@@ -185,10 +195,10 @@ class GLLegendBar : public GLWidget
 {
 public:
 	enum { GRADIENT, DISCRETE };
-	enum { HORIZONTAL, VERTICAL };
+	enum { ORIENT_HORIZONTAL, ORIENT_VERTICAL };
 
 public:
-	GLLegendBar(Post::CColorTexture* pm, int x, int y, int w, int h, int orientation = VERTICAL);
+	GLLegendBar(Post::CColorTexture* pm, int x, int y, int w, int h, int orientation = ORIENT_VERTICAL);
 
 	void draw(QPainter* painter);
 
@@ -223,6 +233,8 @@ protected:
 	void draw_gradient_horz(QPainter* painter);
 	void draw_discrete_vert(QPainter* painter);
 	void draw_discrete_horz(QPainter* painter);
+
+	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
 
 protected:
 	int		m_ntype;	// type of bar

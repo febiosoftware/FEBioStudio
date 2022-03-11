@@ -27,10 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <QMainWindow>
 #include <QCloseEvent>
-#include <MathLib/math3d.h>
 #include <QtCore/QProcess>
 #include <FSCore/box.h>
 #include <MeshTools/GMaterial.h>
+#include <FECore/vec3d.h>
 
 class FSObject;
 class CDocument;
@@ -78,7 +78,8 @@ public:
 		MODEL_CONFIG,		// model document	(i.e. fsm file)
 		POST_CONFIG,		// post document	(i.e. xplt file)
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
-        IMAGE_CONFIG,	    // Image document	(i.e. image file)
+        XML_CONFIG,		    // text document	(i.e. feb file)
+        IMAGE_CONFIG	    // Image document	(i.e. image file)
 	};
 
 public:
@@ -197,9 +198,6 @@ public:
 	// autoUpdate Check
 	bool updaterPresent();
 	bool updateAvailable();
-
-	// htmlManual Check
-	bool helpAvailable();
 
 	// set/get default unit system for new models
 	void SetDefaultUnitSystem(int n);
@@ -330,6 +328,7 @@ public slots:
     void on_actionNewImageDoc_triggered();
 	void on_actionOpenProject_triggered();
 	void on_actionOpen_triggered();
+    // void on_actionReadInfo_triggered();
 	void on_actionSave_triggered();
 	void on_actionSaveAs_triggered();
 	void on_actionSaveAll_triggered();
@@ -347,6 +346,7 @@ public slots:
 	void on_actionImportOMETiffImage_triggered();
 	void on_actionImportImageSequence_triggered();
 	void on_actionConvertFeb_triggered();
+    void on_actionConvertFeb2Fsm_triggered();
 	void on_actionConvertGeo_triggered();
 	void on_actionExit_triggered();
 	void on_recentFiles_triggered(QAction* action);
@@ -379,6 +379,7 @@ public slots:
 	void on_actionExtract_triggered();
 	void on_actionEditProject_triggered();
 	void on_actionFaceToElem_triggered();
+	void on_actionSurfaceToFaces_triggered();
 	void on_actionSelectOverlap_triggered();
 	void on_actionGrowSelection_triggered();
 	void on_actionShrinkSelection_triggered();
@@ -391,21 +392,30 @@ public slots:
 	void on_actionDuplicateLine_triggered();
 	void on_actionDeleteLine_triggered();
 
+	// Physics menu
 	void on_actionAddBC_triggered();
 	void on_actionAddNodalLoad_triggered();
 	void on_actionAddSurfLoad_triggered();
 	void on_actionAddBodyLoad_triggered();
+	void on_actionAddRigidLoad_triggered();
 	void on_actionAddIC_triggered();
 	void on_actionAddContact_triggered();
 	void on_actionAddConstraint_triggered();
 	void on_actionAddRigidConstraint_triggered();
 	void on_actionAddRigidConnector_triggered();
 	void on_actionAddMaterial_triggered();
+	void on_actionAddMeshAdaptor_triggered();
+	void on_actionAddLoadController_triggered();
+	void on_actionAddNodeData_triggered();
+	void on_actionAddFaceData_triggered();
+	void on_actionAddElemData_triggered();
 	void on_actionAddStep_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();
 	void on_actionSoluteTable_triggered();
 	void on_actionSBMTable_triggered();
+	void OnAddSurfaceConstraint();
+	void OnAddBodyConstraint();
 
 	void on_actionCurveEditor_triggered();
 	void on_actionMeshInspector_triggered();
@@ -418,6 +428,7 @@ public slots:
 	void on_actionFEBioStop_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();
+	void on_actionFEBioInfo_triggered();
 	void on_actionOptions_triggered();
 #ifdef _DEBUG
 	void on_actionLayerInfo_triggered();
@@ -437,6 +448,7 @@ public slots:
 	void on_actionVolumeRender_triggered();
 	void on_actionMarchingCubes_triggered();
 	void on_actionAddProbe_triggered();
+	void on_actionAddRuler_triggered();
 	void on_actionMusclePath_triggered();
 	void on_actionGraph_triggered();
 	void on_actionSummary_triggered();
@@ -541,11 +553,18 @@ public slots:
 
 	void on_htmlview_anchorClicked(const QUrl& link);
 	void on_xmledit_textChanged();
+    void on_xmlTree_modelEdited();
 
 	void on_clearProject();
 	void on_closeProject();
 	void on_closeFile(const QString& file);
 	void on_addToProject(const QString& file);
+
+    // XML toolbar
+    void on_actionEditXmlAsText_triggered(bool checked);
+    void on_actionAddAttribute_triggered();
+    void on_actionAddElement_triggered();
+    void on_actionRemoveRow_triggered();
 
 	// slots from Post panel
 	void OnPostObjectStateChanged();
@@ -575,11 +594,7 @@ public slots:
 	void on_glview_pointPicked(const vec3d& r);
 	void on_glview_selectionChanged();
 
-	void onRunFinished(int exitCode, QProcess::ExitStatus es);
-	void onReadyRead();
-	void onErrorOccurred(QProcess::ProcessError err);
-
-	void onExportMaterials(const vector<GMaterial*>& matList);
+	void onExportMaterials(const std::vector<GMaterial*>& matList);
 	void onExportAllMaterials();
 	void onImportMaterials();
 	void onImportMaterialsFromModel(CModelDocument* src);
@@ -590,12 +605,17 @@ public slots:
 	void DeleteAllIC();
 	void DeleteAllContact();
 	void DeleteAllConstraints();
+	void DeleteAllRigidLoads();
 	void DeleteAllRigidConstraints();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
 	void DeleteAllJobs();
+	void OnDeleteAllLoadControllers();
+	void OnDeleteAllMeshData();
 
 	CGLView* GetGLView();
+
+	void UpdateGraphs(bool breset);
 
 	Post::CGLModel* GetCurrentModel();
 
@@ -620,6 +640,8 @@ public slots:
 
 	void autoUpdateCheck(bool update);
 
+	void updateOutput(const QString& txt);
+
 public:
 	QStringList GetRecentFileList();
 	QStringList GetRecentProjectsList();
@@ -638,6 +660,8 @@ public:
 	int FindView(CDocument* doc);
 	GObject* GetActiveObject();
 
+    QSize GetEditorSize();
+
 	static CMainWindow* GetInstance();
 
 private:
@@ -646,7 +670,7 @@ private:
 	CDocManager*		m_DocManager;
 
 	CFileThread*		m_fileThread;
-	vector<QueuedFile>	m_fileQueue;
+	std::vector<QueuedFile>	m_fileQueue;
 
 	static CMainWindow*		m_mainWnd;
 };

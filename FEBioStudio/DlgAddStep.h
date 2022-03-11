@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <QDialog>
 #include <string>
 
-class FEProject;
+class FSProject;
 
 namespace Ui {
 	class CDlgAddStep;
@@ -38,7 +38,7 @@ namespace Ui {
 class CDlgAddStep : public QDialog
 {
 public:
-	CDlgAddStep(FEProject& prj, QWidget* parent);
+	CDlgAddStep(FSProject& prj, QWidget* parent);
 
 	void accept();
 

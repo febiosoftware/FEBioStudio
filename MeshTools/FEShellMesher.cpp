@@ -41,12 +41,12 @@ FEShellMesher::FEShellMesher(GObject* po)
 }
 
 // build the mesh
-FEMesh*	FEShellMesher::BuildMesh()
+FSMesh*	FEShellMesher::BuildMesh()
 {
 	GSurfaceMeshObject* po = dynamic_cast<GSurfaceMeshObject*>(m_po);
 	if (po == nullptr) return nullptr;
 
-	FESurfaceMesh* surfaceMesh = po->GetSurfaceMesh();
+	FSSurfaceMesh* surfaceMesh = po->GetSurfaceMesh();
 	if (surfaceMesh == nullptr) return nullptr;
 
 	int NF = surfaceMesh->Faces();
@@ -56,30 +56,30 @@ FEMesh*	FEShellMesher::BuildMesh()
 	double h0 = GetFloatValue(0);
 
 	// allocate mesh
-	FEMesh* mesh = new FEMesh;
+	FSMesh* mesh = new FSMesh;
 	mesh->Create(NN, NF, NF, NC);
 
 	// create nodes
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& sn = surfaceMesh->Node(i);
-		FENode& dn = mesh->Node(i);
+		FSNode& sn = surfaceMesh->Node(i);
+		FSNode& dn = mesh->Node(i);
 		dn = sn;
 	}
 
 	// create edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& se = surfaceMesh->Edge(i);
-		FEEdge& de = mesh->Edge(i);
+		FSEdge& se = surfaceMesh->Edge(i);
+		FSEdge& de = mesh->Edge(i);
 		de = se;
 	}
 
 	// create faces
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& sf = surfaceMesh->Face(i);
-		FEFace& df = mesh->Face(i);
+		FSFace& sf = surfaceMesh->Face(i);
+		FSFace& df = mesh->Face(i);
 		df = sf;
 		df.m_elem[0].eid = i;
 		df.m_elem[0].lid = 0;
@@ -90,8 +90,8 @@ FEMesh*	FEShellMesher::BuildMesh()
 	// create elements
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& sf = surfaceMesh->Face(i);
-		FEElement& el = mesh->Element(i);
+		FSFace& sf = surfaceMesh->Face(i);
+		FSElement& el = mesh->Element(i);
 
 		assert(sf.m_gid >= 0);
 		GFace* pf = po->Face(sf.m_gid);

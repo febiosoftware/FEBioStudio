@@ -39,7 +39,7 @@ SOFTWARE.*/
 ////using namespace std;
 
 //-----------------------------------------------------------------------------
-AbaqusImport::AbaqusImport(FEProject& prj) : FEFileImport(prj)
+AbaqusImport::AbaqusImport(FSProject& prj) : FSFileImport(prj)
 {
 	// default options
 	m_bnodesets = true;
@@ -116,7 +116,7 @@ bool szicmp(const char* sz1, const char* sz2)
 //! Load an Abaqus model file
 bool AbaqusImport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pprj = &m_prj;
 	m_pfem = &fem;
 
@@ -1193,19 +1193,14 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 
 			read_line(szline, fp);
 			char* sz = szline;
-			char* ch = strchr(sz, ',');
 			int nmax = 2;
 			int np = 0;
+			char* ch = 0;
 			do
 			{
-				if (ch) *ch = 0; 
-				sscanf(sz, "%lg", &mat.d[np]);
-				if (ch)
-				{
-					++np;
-					sz = ch+1;
-					ch = strchr(sz, ',');
-				}
+				ch = strchr(sz, ',');
+				sscanf(sz, "%lg", &mat.d[np++]);
+				if (ch) sz = ch + 1;
 			}
 			while (ch && (np < nmax));
 		}
@@ -1426,7 +1421,7 @@ bool AbaqusImport::build_model()
 // Build the model geometry
 bool AbaqusImport::build_mesh()
 {
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 
 	const char* szdefaultName = "Object";
 
@@ -1497,32 +1492,32 @@ bool AbaqusImport::build_mesh()
 //-----------------------------------------------------------------------------
 bool AbaqusImport::build_physics()
 {
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 
 	// add the materials
 	list<AbaqusModel::MATERIAL>& Mat = m_inp.MaterialList();
 	list<AbaqusModel::MATERIAL>::iterator pm = Mat.begin();
 	for (int i = 0; i<(int)Mat.size(); ++i, ++pm)
 	{
-		FEMaterial* pmat = 0;
+		FSMaterial* pmat = 0;
 		switch (pm->mattype)
 		{
 		case AbaqusModel::ELASTIC:
 			if (pm->ntype == 1)
 			{
-				pmat = new FEIsotropicElastic;
-				pmat->SetFloatValue(FEIsotropicElastic::MP_DENSITY, pm->dens);
-				pmat->SetFloatValue(FEIsotropicElastic::MP_E, pm->d[0]);
-				pmat->SetFloatValue(FEIsotropicElastic::MP_v, pm->d[1]);
+				pmat = new FSIsotropicElastic;
+				pmat->SetFloatValue(FSIsotropicElastic::MP_DENSITY, pm->dens);
+				pmat->SetFloatValue(FSIsotropicElastic::MP_E, pm->d[0]);
+				pmat->SetFloatValue(FSIsotropicElastic::MP_v, pm->d[1]);
 			}
 			break;
 		case AbaqusModel::HYPERELASTIC:
 			if (pm->ntype == 1)
 			{
-				pmat = new FEIncompNeoHookean;
-				pmat->SetFloatValue(FEIncompNeoHookean::MP_DENSITY, pm->dens);
-				pmat->SetFloatValue(FEIncompNeoHookean::MP_G, 2.0*pm->d[0]);
-				pmat->SetFloatValue(FEIncompNeoHookean::MP_K, 1.0 / pm->d[1]);
+				pmat = new FSIncompNeoHookean;
+				pmat->SetFloatValue(FSIncompNeoHookean::MP_DENSITY, pm->dens);
+				pmat->SetFloatValue(FSIncompNeoHookean::MP_G, 2.0*pm->d[0]);
+				pmat->SetFloatValue(FSIncompNeoHookean::MP_K, 1.0 / pm->d[1]);
 			}
 			break;
 		}
@@ -1563,7 +1558,7 @@ bool AbaqusImport::build_physics()
 	for (list<AbaqusModel::STEP>::iterator it = Step.begin(); it != Step.end(); ++it)
 	{
 		AbaqusModel::STEP& stepi = *it;
-		FENonLinearMechanics* festep = new FENonLinearMechanics(&fem);
+		FSNonLinearMechanics* festep = new FSNonLinearMechanics(&fem);
 		STEP_SETTINGS& set = festep->GetSettings();
 		set.dt = stepi.dt0;
 		set.ntime = (int) (stepi.time / stepi.dt0 + 0.5);
@@ -1582,10 +1577,10 @@ bool AbaqusImport::build_physics()
 		int ns = (int)bc.m_nodeSet.size();
 		for (int i=0; i<ns; ++i, ++n)
 		{
-			FENodeSet* nset = build_nodeset(bc.m_nodeSet[i].nodeSet);
+			FSNodeSet* nset = build_nodeset(bc.m_nodeSet[i].nodeSet);
 			if (nset)
 			{
-				FEPrescribedDisplacement* pbc = new FEPrescribedDisplacement(&fem, nset, bc.m_nodeSet[i].ndof - 1, bc.m_nodeSet[i].load);
+				FSPrescribedDisplacement* pbc = new FSPrescribedDisplacement(&fem, nset, bc.m_nodeSet[i].ndof - 1, bc.m_nodeSet[i].load);
 				char szname[256] = { 0 };
 				sprintf(szname, "bc_%d", n);
 				pbc->SetName(szname);
@@ -1605,10 +1600,10 @@ bool AbaqusImport::build_physics()
 		int ns = (int)p.m_surf.size();
 		for (int i=0; i<ns; ++i, ++n)
 		{
-			FESurface* surface = build_surface(p.m_surf[i].surf);
+			FSSurface* surface = build_surface(p.m_surf[i].surf);
 			if (surface)
 			{
-				FEPressureLoad* pl = new FEPressureLoad(&fem, surface);
+				FSPressureLoad* pl = new FSPressureLoad(&fem, surface);
 				char szname[256] = {0};
 				sprintf(szname, "dsload_%d", n);
 				pl->SetName(szname);
@@ -1631,7 +1626,7 @@ bool AbaqusImport::build_physics()
 // Build a part
 GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 {
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 	GModel& gm = fem.GetModel();
 
 	AbaqusModel::PART& part = *pg;
@@ -1646,7 +1641,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 
 	if ((nodes == 0) || (elems == 0)) return 0;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// copy nodes
@@ -1655,7 +1650,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	AbaqusModel::Tnode_itr pn = part.m_Node.begin();
 	for (i=0; i<nodes; ++i, ++pn)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		pn->n = i;
 		node.r.x = pn->x;
 		node.r.y = pn->y;
@@ -1672,7 +1667,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	{
 		if (pe->id != -1)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			pe->lid = i++;
 			int etype = pe->type;
 			el.SetType(etype);
@@ -1712,7 +1707,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 				{
 					assert(*pe != -1);
 					int eid = part.FindElement(*pe)->lid;
-					FEElement& el = pm->Element(eid);
+					FSElement& el = pm->Element(eid);
 					el.m_gid = i;
 				}
 			}
@@ -1731,7 +1726,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 
 						vec3d a = vec3d(e.val[0], e.val[1], e.val[2]);
 						vec3d b = vec3d(e.val[3], e.val[4], e.val[5]);
-						FEElement& el = pm->Element(eid);
+						FSElement& el = pm->Element(eid);
 
 						vec3d e1 = a; e1.Normalize();
 						vec3d e3 = a ^ b; e3.Normalize();
@@ -1762,7 +1757,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 				{
 					assert(*pe != -1);
 					int eid = part.FindElement(*pe)->lid;
-					FEElement& el = pm->Element(eid);
+					FSElement& el = pm->Element(eid);
 					el.m_gid = i;
 				}
 			}
@@ -1773,7 +1768,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			// Therefore we reindex the element GID's
 			for (int i=0; i<elems; ++i)
 			{
-				FEElement& el = pm->Element(i);
+				FSElement& el = pm->Element(i);
 				if (el.m_gid >= 0) index[el.m_gid]++;
 			}
 
@@ -1786,7 +1781,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 
 			for (int i = 0; i<elems; ++i)
 			{
-				FEElement& el = pm->Element(i);
+				FSElement& el = pm->Element(i);
 				if (el.m_gid >= 0)
 				{
 					el.m_gid = index[el.m_gid];
@@ -1837,7 +1832,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			for (i=0; i<elsets; ++i, ++pes)
 			{
 				int n = (int)pes->elem.size();
-				FEPart* pg = new FEPart(po);
+				FSPart* pg = new FSPart(po);
 				pg->SetName(pes->szname);
 				vector<int>::iterator pe = pes->elem.begin();
 				for (j=0; j<n; ++j, ++pe) pg->add(part.FindElement(*pe)->lid);
@@ -1856,7 +1851,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			int nn;
 			for (i=0; i<nsets; ++i, ++ns)
 			{
-				FENodeSet* pg = new FENodeSet(po);
+				FSNodeSet* pg = new FSNodeSet(po);
 				pg->SetName(ns->second.szname);
 				list<AbaqusModel::Tnode_itr>::iterator pn = ns->second.node.begin();
 				nn = (int) ns->second.node.size();
@@ -1878,7 +1873,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			list<AbaqusModel::SURFACE>::iterator si = part.m_Surf.begin();
 			for (i=0; i<surfs; ++i, ++si)
 			{
-				FESurface* ps = build_surface(&(*si));
+				FSSurface* ps = build_surface(&(*si));
 				if (ps)
 				{
 					ps->SetName(si->szname);
@@ -1917,7 +1912,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 }
 
 //-----------------------------------------------------------------------------
-FESurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
+FSSurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 {
 	AbaqusModel::PART* part = si->part;
 	if (part == 0) return 0;
@@ -1926,17 +1921,17 @@ FESurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 	GMeshObject* po = dynamic_cast<GMeshObject*>(part->m_po);
 	if (po == 0) return 0;
 
-	FEMesh* pm = part->m_po->GetFEMesh();
+	FSMesh* pm = part->m_po->GetFEMesh();
 
 	int nf, n;
-	FESurface* ps = new FESurface(part->m_po);
+	FSSurface* ps = new FSSurface(part->m_po);
 	nf = (int)si->face.size();
 	list<AbaqusModel::FACE>::iterator pf = si->face.begin();
 	AbaqusModel::Telem_itr pe;
 	for (int j = 0; j<nf; ++j, ++pf)
 	{
 		pe = part->FindElement(pf->eid);
-		FEElement& el = pm->Element(pe->lid);
+		FSElement& el = pm->Element(pe->lid);
 
 		if (el.IsType(FE_HEX8))
 		{
@@ -2024,7 +2019,7 @@ FESurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 }
 
 // build a nodeset
-FENodeSet* AbaqusImport::build_nodeset(AbaqusModel::NODE_SET* ns)
+FSNodeSet* AbaqusImport::build_nodeset(AbaqusModel::NODE_SET* ns)
 {
 	AbaqusModel::PART* part = ns->part;
 	if (part == 0) return 0;
@@ -2033,9 +2028,9 @@ FENodeSet* AbaqusImport::build_nodeset(AbaqusModel::NODE_SET* ns)
 	GMeshObject* po = dynamic_cast<GMeshObject*>(part->m_po);
 	if (po == 0) return 0;
 
-	FEMesh* pm = part->m_po->GetFEMesh();
+	FSMesh* pm = part->m_po->GetFEMesh();
 
-	FENodeSet* nset = new FENodeSet(po);
+	FSNodeSet* nset = new FSNodeSet(po);
 	list<AbaqusModel::Tnode_itr>::iterator it = ns->node.begin();
 	for (it; it != ns->node.end(); ++it)
 	{

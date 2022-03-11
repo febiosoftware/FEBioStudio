@@ -27,8 +27,9 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <MeshTools/GModel.h>
 #include <GeomLib/GObject.h>
+#include <FECore/FETransform.h>
 
-FEAbaqusExport::FEAbaqusExport(FEProject& prj) : FEFileExport(prj)
+FEAbaqusExport::FEAbaqusExport(FSProject& prj) : FEFileExport(prj)
 {
 
 }
@@ -52,7 +53,7 @@ bool FEAbaqusExport::Write(const char* szfile)
 	fprintf(fp, "*HEADING\n");
 	fprintf(fp, "%s\n", m_heading.c_str());
 
-	GModel& model = m_prj.GetFEModel().GetModel();
+	GModel& model = m_prj.GetFSModel().GetModel();
 
 	// write nodes
 	int nc = 1;
@@ -61,12 +62,12 @@ bool FEAbaqusExport::Write(const char* szfile)
 	{
 		GObject* po = model.Object(obs);
 		Transform T = po->GetTransform();
-		FEMesh* mesh = po->GetFEMesh();
+		FSMesh* mesh = po->GetFEMesh();
 		if (mesh == nullptr) { fclose(fp); return errf("Not all objects are meshed."); }
 		int NN = mesh->Nodes();
 		for (int i = 0; i < NN; ++i)
 		{
-			FENode& node = mesh->Node(i);
+			FSNode& node = mesh->Node(i);
 			vec3d r0 = node.pos();
 			vec3d r = T.LocalToGlobal(r0);
 			fprintf(fp, "%d, %.7lg, %.7lg, %.7lg\n", nc, r.x, r.y, r.z);
@@ -79,12 +80,12 @@ bool FEAbaqusExport::Write(const char* szfile)
 	for (int obs = 0; obs < model.Objects(); ++obs)
 	{
 		GObject* po = model.Object(obs);
-		FEMesh* mesh = po->GetFEMesh();
+		FSMesh* mesh = po->GetFEMesh();
 		int NE = mesh->Elements();
 		mesh->TagAllElements(-1);
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = mesh->Element(i);
+			FSElement& el = mesh->Element(i);
 
 			// find an unprocessed element
 			if (el.m_ntag == -1)

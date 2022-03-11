@@ -29,23 +29,22 @@ SOFTWARE.*/
 #include "FEItemList.h"
 #include <string>
 #include <vector>
-//using namespace std;
 
-class FEPart;
+class FSPart;
 class GPartList;
-class FEModel;
+class FSModel;
 
 //-----------------------------------------------------------------------------
 // Element data field
 class FEElementData : public FEMeshData
 {
 public:
-	FEElementData(FEMesh* mesh = nullptr);
+	FEElementData(FSMesh* mesh = nullptr);
 	FEElementData(const FEElementData& d);
 	FEElementData& operator = (const FEElementData& d);
 
 	// create a data field
-	void Create(FEMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
+	void Create(FSMesh* pm, FSPart* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
 
 	// size of data field
 	int Size() { return (int)m_data.size(); }
@@ -58,7 +57,7 @@ public:
 	double& operator [] (int i) { return m_data[i]; }
 
 	// Get the element set
-	const FEPart* GetPart() const { return m_part; }
+	const FSPart* GetPart() const { return m_part; }
 
 	void FillRandomBox(double fmin, double fmax);
 
@@ -70,9 +69,9 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	vector<double>	m_data;		//!< data values
-	FEPart*			m_part;		//!< the part to which the data applies
-	double			m_scale;	//!< scale factor
+	std::vector<double>	m_data;		//!< data values
+	FSPart*				m_part;		//!< the part to which the data applies
+	double				m_scale;	//!< scale factor
 };
 
 //-----------------------------------------------------------------------------
@@ -80,12 +79,12 @@ private:
 class FEPartData : public FEMeshData
 {
 public:
-	FEPartData(FEMesh* mesh = nullptr);
+	FEPartData(FSMesh* mesh = nullptr);
 	FEPartData(const FEPartData& d);
 	FEPartData& operator = (const FEPartData& d);
 
 	// create a data field
-	bool Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR, FEMeshData::DATA_FORMAT dataFmt = FEMeshData::DATA_ITEM);
+	bool Create(const std::vector<int>& partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR, FEMeshData::DATA_FORMAT dataFmt = FEMeshData::DATA_ITEM);
 
 	// size of data field
 	int Size() const;
@@ -104,16 +103,16 @@ public:
 	FEElemList* BuildElemList();
 
 	// get the partlist
-	GPartList* GetPartList(FEModel* fem);
+	GPartList* GetPartList(FSModel* fem);
 
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
 private:
-	vector<double>		m_data;		//!< data values
-	int					m_maxElemItems;	
-	vector<int>			m_part;		//!< the part to which the data applies
+	std::vector<double>		m_data;		//!< data values
+	int						m_maxElemItems;	
+	std::vector<int>		m_part;		//!< the part to which the data applies
 };
 
 inline void FEPartData::SetValue(int i, int j, double v)

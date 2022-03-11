@@ -98,7 +98,7 @@ void CMeshInspector::UpdateData(int ndata)
 	// so we need to subtract one if ndata is larger than the number of eval fields
 	if (ndata > ui->MAX_EVAL_FIELDS) ndata--;
 
-	FEMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
+	FSMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
 	if (pm == 0) return;
 
 	
@@ -121,7 +121,7 @@ void CMeshInspector::UpdateData(int ndata)
 	eval.SetCurvatureExtQuad(curvatureExtQuad);
 
 	int NE = pm->Elements();
-	vector<double> v; v.reserve(NE*FEElement::MAX_NODES);
+	vector<double> v; v.reserve(NE*FSElement::MAX_NODES);
 	double vmax = -1e99, vmin = 1e99, vavg = 0;
 	eval.Evaluate(ndata);
 	Mesh_Data& data = pm->GetMeshData();
@@ -129,7 +129,7 @@ void CMeshInspector::UpdateData(int ndata)
 	{
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			int ne = el.Nodes();
 			if ((etype == -1) || (el.Type() == etype))
 			{
@@ -192,7 +192,7 @@ void CMeshInspector::on_select_clicked()
 	GObject* po = pdoc->GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	double smin, smax;
@@ -214,7 +214,7 @@ void CMeshInspector::on_select_clicked()
 	Mesh_Data& data = pm->GetMeshData();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		if ((etype == -1) || (e.Type() == etype))
 		{
 			if (data.GetElementDataTag(i) > 0)

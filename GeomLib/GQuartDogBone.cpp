@@ -130,11 +130,11 @@ void GQuartDogBone::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
-	vector<int> edge;
+	std::vector<int> edge;
 
 	edge.resize(7);
 	for (int i=0; i<7; ++i) edge[i] = i;

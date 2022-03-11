@@ -176,8 +176,8 @@ bool FELSDYNAPlotImport::ReadHeader(FEPostModel& fem)
 	if (m_hdr.flagV) { pdm->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), "velocity"); m_nfield[LSDYNA_VEL ] = nd++; }
 	if (m_hdr.flagA) { pdm->AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), "acceleration"); m_nfield[LSDYNA_ACC ] = nd++; }
 	if (m_hdr.flagT) { pdm->AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), "temperature"); m_nfield[LSDYNA_TEMP] = nd++; }
-	pdm->AddDataField(new FEDataField_T<FENodeInitPos >(&fem), "Initial position"); nd++;
-	pdm->AddDataField(new FEDataField_T<FENodePosition>(&fem), "Position"); nd++;
+	pdm->AddDataField(new FEDataField_T<NodeInitPos >(&fem), "Initial position"); nd++;
+	pdm->AddDataField(new FEDataField_T<NodePosition>(&fem), "Position"); nd++;
 
 	// add some additional data
 	if (m_hdr.flagU)
@@ -189,7 +189,7 @@ bool FELSDYNAPlotImport::ReadHeader(FEPostModel& fem)
 		if (m_hdr.nv2d == 44) { pdm->AddDataField(new FEDataField_T<FEElementData<mat3fs,DATA_ITEM> >(&fem, EXPORT_DATA), "shell strain"); m_nfield[LSDYNA_SHELL_STRAIN] = nd++; }
 
 		// additional element data
-		pdm->AddDataField(new FEStrainDataField(&fem, FEStrainDataField::LAGRANGE), "Lagrange strain");
+		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
 	}
 	else fem.SetDisplacementField(-1);
  
@@ -204,7 +204,7 @@ void FELSDYNAPlotImport::CreateMaterials(FEPostModel& fem)
 	int nmat = m_hdr.nummat4 + m_hdr.nummat8 + m_hdr.nummat2;
 	for (int i=0; i<nmat; i++)
 	{
-		FEMaterial m;
+		Material m;
 		fem.AddMaterial(m);
 	}
 }
@@ -228,7 +228,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	float xyz[3];
 	for (i=0; i<m_hdr.nump; i++)
 	{
-		FENode& n = mesh.Node(i);
+		FSNode& n = mesh.Node(i);
 
 		ReadData(xyz, sizeof(float), 3);
 		
@@ -245,7 +245,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	int nmat = fem.Materials();
 	for (i=0; i<m_hdr.nel8; i++)
 	{
-		FEElement& el = static_cast<FEElement&>(mesh.ElementRef(ne++));
+		FSElement& el = static_cast<FSElement&>(mesh.ElementRef(ne++));
 
 		nread = ReadData(n, sizeof(int), 9);
 		if (nread != 9)
@@ -300,7 +300,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	// read beam elements
 	for (i=0; i<m_hdr.nel2; ++i)
 	{
-		FEElement& el = static_cast<FEElement&>(mesh.ElementRef(ne++));
+		FSElement& el = static_cast<FSElement&>(mesh.ElementRef(ne++));
 
 		ReadData(n, sizeof(int), 6);
 
@@ -315,7 +315,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	// read shells
 	for (i=0; i<m_hdr.nel4; ++i)
 	{
-		FEElement& el = static_cast<FEElement&>(mesh.ElementRef(ne++));
+		FSElement& el = static_cast<FSElement&>(mesh.ElementRef(ne++));
 
 		ReadData(n, sizeof(int), 5);
 
@@ -338,7 +338,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	for (i=0; i<mesh.Elements(); ++i)
 	{
 		FEElement_& el = mesh.ElementRef(i);
-		FEMaterial* pm = fem.GetMaterial(el.m_MatID);
+		Material* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
 
@@ -359,7 +359,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	// set the enabled-ness of the elements and the nodes
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
         assert(f.m_elem[0].eid >= 0);
 		FEElement_& el = mesh.ElementRef(f.m_elem[0].eid);
 	}
@@ -615,7 +615,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 	float xf[3];
 	for (i=0; i<mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 
 		xf[0] = (float) node.r.x;
 		xf[1] = (float) node.r.y;
@@ -729,7 +729,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 			float xf[3];
 			for (i=0; i<mesh.Nodes(); ++i)
 			{
-				FENode& node = mesh.Node(i);
+				FSNode& node = mesh.Node(i);
 				vec3f r = fem.EvaluateNodeVector(i, l, ncode[2]);
 
 				// since the PLOT file requires floats we need to convert
@@ -787,7 +787,7 @@ bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6
 
 		// write solid element data
 		float s[32] = {0};
-		float data[FEElement::MAX_NODES] = {0.f}, val;
+		float data[FSElement::MAX_NODES] = {0.f}, val;
 		for (i=0; i<mesh.Elements(); ++i)
 		{
 			FEElement_& el = mesh.ElementRef(i);

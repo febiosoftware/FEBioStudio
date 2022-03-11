@@ -53,6 +53,7 @@ SOFTWARE.*/
 #include "Document.h"
 #include "LocalDatabaseHandler.h"
 #include "ZipFiles.h"
+#include "ServerSettings.h"
 #include <iostream>
 
 using std::cout;
@@ -76,12 +77,12 @@ public:
 	{
 		username = "";
 		token = "";
-		int uploadPermission;
-		qint64 sizeLimit = 0;
-		bool authenticated = false;
+		uploadPermission = 0;
+		sizeLimit = 0;
+		authenticated = false;
 
-		QString fileToken = "";
-		bool uploadReady = false;
+		fileToken = "";
+		uploadReady = false;
 
 		dbPanel->LoginTimeout();
 	}
@@ -126,9 +127,9 @@ void CRepoConnectionHandler::authenticate(QString username, QString password)
 	QByteArray payload=QJsonDocument::fromVariant(feed).toJson();
 
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + "authenticate");
 
 	QNetworkRequest request;
@@ -148,9 +149,9 @@ void CRepoConnectionHandler::authenticate(QString username, QString password)
 void CRepoConnectionHandler::getSchema()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + "schema");
 
 	QNetworkRequest request;
@@ -166,9 +167,9 @@ void CRepoConnectionHandler::getSchema()
 void CRepoConnectionHandler::getTables()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + "tables");
 
 	QNetworkRequest request;
@@ -185,9 +186,9 @@ void CRepoConnectionHandler::getTables()
 void CRepoConnectionHandler::getFile(int id, int type)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + QString("files/%1/%2").arg(type).arg(id));
 
 	QNetworkRequest request;
@@ -207,9 +208,9 @@ void CRepoConnectionHandler::getFile(int id, int type)
 void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + "uploadFileRequest");
 
 	QNetworkRequest request;
@@ -229,9 +230,9 @@ void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 void CRepoConnectionHandler::uploadFile()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + "uploadFile");
 
 	QNetworkRequest request;
@@ -262,9 +263,9 @@ void CRepoConnectionHandler::uploadFile()
 void CRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + "requestUploaderPermissions");
 
 	QNetworkRequest request;
@@ -283,9 +284,9 @@ void CRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
 void CRepoConnectionHandler::getMessages()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + "messages");
 
 	QNetworkRequest request;
@@ -300,9 +301,9 @@ void CRepoConnectionHandler::getMessages()
 void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + QString("projects/%1").arg(id));
 
 	QNetworkRequest request;
@@ -322,9 +323,9 @@ void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 void CRepoConnectionHandler::modifyProjectUpload()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + "modifyProjectUpload");
 
 	QNetworkRequest request;
@@ -355,9 +356,9 @@ void CRepoConnectionHandler::modifyProjectUpload()
 void CRepoConnectionHandler::deleteProject(int id)
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + QString("projects/%1").arg(id));
 
 	QNetworkRequest request;
@@ -376,9 +377,9 @@ void CRepoConnectionHandler::deleteProject(int id)
 void CRepoConnectionHandler::cancelUpload()
 {
 	QUrl myurl;
-	myurl.setScheme("https");
-	myurl.setHost(REPO_URL);
-	myurl.setPort(REPO_PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(QString(API_URL) + QString("cancelUpload"));
 
 	QNetworkRequest request;
@@ -496,9 +497,9 @@ bool CRepoConnectionHandler::NetworkAccessibleCheck()
 //bool CRepoConnectionHandler::AuthCheck()
 //{
 //	QUrl myurl;
-//	myurl.setScheme("https");
-//	myurl.setHost(REPO_URL);
-//	myurl.setPort(REPO_PORT);
+//	myurl.setScheme(ServerSettings::Scheme());
+//	myurl.setHost(ServerSettings::URL());
+//	myurl.setPort(ServerSettings::Port());
 //	myurl.setPath(QString(API_URL) + "authCheck");
 //
 //	QNetworkRequest request;
@@ -544,7 +545,7 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 		imp->uploadPermission = 0;
 		imp->sizeLimit = 0;
 
-		getTables();
+		getSchema();
 
 		imp->dbPanel->ShowMessage(message);
 	}
@@ -557,7 +558,7 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 		imp->token = "";
 		imp->uploadPermission = 0;
 
-		getTables();
+		getSchema();
 
 		imp->dbPanel->ShowMessage(message);
 	}
@@ -596,7 +597,7 @@ void CRepoConnectionHandler::getSchemaReply(QNetworkReply *r)
 		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
 		message += std::to_string(statusCode).c_str();
 
-		imp->dbPanel->ShowMessage(message);
+		imp->dbPanel->ShowMessage(message, true);
 	}
 }
 
@@ -621,7 +622,7 @@ void CRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 		QString message = "An unknown server error has occurred.\nHTTP Status Code: ";
 		message += std::to_string(statusCode).c_str();
 
-		imp->dbPanel->ShowMessage(message);
+		imp->dbPanel->ShowMessage(message, true);
 	}
 
 	getMessages();
@@ -697,8 +698,6 @@ void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 	}
 	else if(statusCode == 403)
 	{
-		imp->dbPanel->updateUploadReady(false);
-		
 		imp->loggedOut();
 	}
 	else if(statusCode == 0)
@@ -740,6 +739,10 @@ void CRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
 		{
 			imp->dbPanel->UploadFinished(true, r->readAll());
 		}
+        else if(statusCode == 403)
+        {
+            imp->loggedOut();
+        }
 		else
 		{
 			imp->dbPanel->UploadFinished(false, r->readAll());
@@ -764,8 +767,13 @@ void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
 
 		return;
 	}
-
-	if(statusCode == 200)
+    else if(statusCode == 403)
+	{
+		imp->dbPanel->updateModifyReady(false);
+		
+		imp->loggedOut();
+	}
+	else if(statusCode == 200)
 	{
 		getSchema();
 	}
@@ -794,13 +802,20 @@ void CRepoConnectionHandler::modifyProjectUploadReply(QNetworkReply *r)
 	imp->uploadReady = false;
 	imp->fileToken = "";
 
-	if(statusCode)
-	{
-		imp->dbPanel->ShowMessage(r->readAll());
-	}
-	else
+	
+	if(statusCode == 0)
 	{
 		imp->dbPanel->ShowMessage("Upload cancelled.");
+	}
+    else if(statusCode == 403)
+	{
+		imp->dbPanel->updateModifyReady(false);
+		
+		imp->loggedOut();
+	}
+    else
+	{
+		imp->dbPanel->ShowMessage(r->readAll());
 	}
 }
 

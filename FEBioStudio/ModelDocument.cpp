@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <PostGL/GLPlot.h>
 #include <MeshLib/FENodeFaceList.h>
+#include <MeshTools/GModel.h>
 
 class CModelContext
 {
@@ -63,7 +64,7 @@ public:
 		m_faces = GFace::GetCounter();
 		m_edges = GEdge::GetCounter();
 		m_nodes = GNode::GetCounter();
-		m_steps = FEStep::GetCounter();
+		m_steps = FSStep::GetCounter();
 		m_mats = GMaterial::GetCounter();
 	}
 
@@ -74,7 +75,7 @@ public:
 		GFace::SetCounter(m_faces);
 		GEdge::SetCounter(m_edges);
 		GNode::SetCounter(m_nodes);
-		FEStep::SetCounter(m_steps);
+		FSStep::SetCounter(m_steps);
 		GMaterial::SetCounter(m_mats);
 	}
 
@@ -154,21 +155,21 @@ FSObject* CModelDocument::GetActiveItem()
 
 //-----------------------------------------------------------------------------
 //! Get the project
-FEProject& CModelDocument::GetProject()
+FSProject& CModelDocument::GetProject()
 { 
 	return m_Project; 
 }
 
 //-----------------------------------------------------------------------------
-FEModel* CModelDocument::GetFEModel()
+FSModel* CModelDocument::GetFSModel()
 { 
-	return &m_Project.GetFEModel(); 
+	return &m_Project.GetFSModel(); 
 }
 
 //-----------------------------------------------------------------------------
 GModel* CModelDocument::GetGModel()
 {
-	return &m_Project.GetFEModel().GetModel();
+	return &m_Project.GetFSModel().GetModel();
 }
 
 //-----------------------------------------------------------------------------
@@ -176,13 +177,13 @@ GModel* CModelDocument::GetGModel()
 GObject* CModelDocument::GetActiveObject()
 {
 	GObject* po = nullptr;
-	GObjectSelection sel(GetFEModel());
+	GObjectSelection sel(GetFSModel());
 	if (sel.Count() == 1) po = sel.Object(0);
 	return po;
 }
 
 //-----------------------------------------------------------------------------
-BOX CModelDocument::GetModelBox() { return m_Project.GetFEModel().GetModel().GetBoundingBox(); }
+BOX CModelDocument::GetModelBox() { return m_Project.GetFSModel().GetModel().GetBoundingBox(); }
 
 //-----------------------------------------------------------------------------
 void CModelDocument::AddObject(GObject* po)
@@ -193,13 +194,13 @@ void CModelDocument::AddObject(GObject* po)
 
 void CModelDocument::DeleteObject(FSObject* po)
 {
-	FEModel& fem = *GetFEModel();
+	FSModel& fem = *GetFSModel();
 
 	if (po == GetActiveItem()) SetActiveItem(nullptr);
 
-	if (dynamic_cast<FEStep*>(po))
+	if (dynamic_cast<FSStep*>(po))
 	{
-		if (dynamic_cast<FEInitialStep*>(po))
+		if (dynamic_cast<FSInitialStep*>(po))
 		{
 			QMessageBox::warning(m_wnd, "Delete step", "Cannot delete the initial step.");
 			return;
@@ -209,14 +210,14 @@ void CModelDocument::DeleteObject(FSObject* po)
 			DoCommand(new CCmdDeleteFSObject(po));
 		}
 	}
-	else if (dynamic_cast<FEMaterial*>(po))
+	else if (dynamic_cast<FSMaterial*>(po))
 	{
-		FEMaterial* pm = dynamic_cast<FEMaterial*>(po);
-		FEMaterial* parent = const_cast<FEMaterial*>(pm->GetParentMaterial());
-		FEMaterialProperty* pp = parent->FindProperty(pm);
+		FSMaterial* pm = dynamic_cast<FSMaterial*>(po);
+		FSMaterial* parent = const_cast<FSMaterial*>(pm->GetParentMaterial());
+		FSProperty* pp = parent->FindProperty(pm);
 		if (pp)// && (pp->maxSize() == 0))
 		{
-			pp->RemoveMaterial(pm);
+			pp->RemoveComponent(pm);
 		}
 		else
 		{
@@ -366,7 +367,7 @@ void CModelDocument::Load(IArchive& ar)
 		{
 			nret = ar.read(version);
 			if (nret != IArchive::IO_OK) throw ReadError("Error occurred when parsing CID_VERSION (CDocument::Load)");
-			if (version < MIN_PRV_VERSION)
+			if (version < MIN_FSM_VERSION)
 			{
 				throw InvalidVersion();
 			}
@@ -565,7 +566,7 @@ bool CModelDocument::ImportMaterials(const std::string& fileName)
 	IArchive ar;
 	if (ar.Open(fileName.c_str(), 0x0050564D) == false) return false;
 
-	FEModel& fem = *GetFEModel();
+	FSModel& fem = *GetFSModel();
 	IArchive::IOResult nret = IArchive::IO_OK;
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
@@ -593,8 +594,8 @@ bool CModelDocument::ImportMaterials(const std::string& fileName)
 					int ntype = -1;
 					ar.read(ntype);
 					// allocate the material
-					FEMaterial* pm = 0;
-					if (ntype == FE_USER_MATERIAL) pm = new FEUserMaterial(FE_USER_MATERIAL);
+					FSMaterial* pm = 0;
+					if (ntype == FE_USER_MATERIAL) pm = new FSUserMaterial(FE_USER_MATERIAL);
 					else pm = FEMaterialFactory::Create(ntype);
 
 					if (pm == 0) return false;
@@ -626,13 +627,13 @@ void CModelDocument::UpdateSelection(bool report)
 	if (m_psel) delete m_psel;
 	m_psel = 0;
 
-	FEModel* ps = GetFEModel();
+	FSModel* ps = GetFSModel();
 
 	// figure out if there is a mesh selected
 	GObject* po = GetActiveObject();
-	FEMesh* pm = (po ? po->GetFEMesh() : 0);
-	FEMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
-	FELineMesh* plm = (po ? po->GetEditableLineMesh() : 0);
+	FSMesh* pm = (po ? po->GetFEMesh() : 0);
+	FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
+	FSLineMesh* plm = (po ? po->GetEditableLineMesh() : 0);
 
 	// get the mesh mode
 	int meshMode = m_wnd->GetMeshMode();
@@ -746,26 +747,26 @@ void CModelDocument::HideUnselected()
 
 		if (itemMode == ITEM_ELEM)
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm == 0) return;
 
 			vector<int> elemList;
 			for (int i = 0; i<pm->Elements(); ++i)
 			{
-				FEElement& el = pm->Element(i);
+				FSElement& el = pm->Element(i);
 				if (el.IsSelected() == false) elemList.push_back(i);
 			}
 			DoCommand(new CCmdHideElements(pm, elemList));
 		}
 		else if (itemMode == ITEM_FACE)
 		{
-			FESurfaceMesh* pm = dynamic_cast<FESurfaceMesh*>(po->GetEditableMesh());
+			FSSurfaceMesh* pm = dynamic_cast<FSSurfaceMesh*>(po->GetEditableMesh());
 			if (pm == 0) return;
 
 			vector<int> faceList;
 			for (int i = 0; i<pm->Faces(); ++i)
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				if (face.IsSelected() == false) faceList.push_back(i);
 			}
 			DoCommand(new CCmdHideFaces(pm, faceList));
@@ -773,8 +774,88 @@ void CModelDocument::HideUnselected()
 	}
 }
 
+void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
+{
+	GModel* mdl = GetGModel();
+	FSModel* ps = GetFSModel();
+
+	// create the selection command
+	FEItemListBuilder* pl = 0;
+
+	IHasItemList* phs = dynamic_cast<IHasItemList*>(po);
+	if (phs) pl = phs->GetItemList();
+
+	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(po);
+	if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
+
+	GGroup* pg = dynamic_cast<GGroup*>(po);
+	if (pg) pl = pg;
+
+	FSGroup* pf = dynamic_cast<FSGroup*>(po);
+	if (pf) pl = pf;
+
+	CCommand* pcmd = 0;
+	if (pl)
+	{
+		switch (pl->Type())
+		{
+		case GO_NODE: SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, l, false); break;
+		case GO_EDGE: SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, l, false); break;
+		case GO_FACE: SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, l, false); break;
+		case GO_PART: SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, l, false); break;
+		default:
+			if (dynamic_cast<FSGroup*>(pl))
+			{
+				SetSelectionMode(SELECT_OBJECT);
+				FSGroup* pg = dynamic_cast<FSGroup*>(pl);
+				FSMesh* pm = dynamic_cast<FSMesh*>(pg->GetMesh());
+				assert(pm);
+				switch (pg->Type())
+				{
+				case FE_NODESET: SetItemMode(ITEM_NODE); pcmd = new CCmdSelectFENodes(pm, l, false); break;
+				case FE_EDGESET: SetItemMode(ITEM_EDGE); pcmd = new CCmdSelectFEEdges(pm, l, false); break;
+				case FE_SURFACE: SetItemMode(ITEM_FACE); pcmd = new CCmdSelectFaces(pm, l, false); break;
+				case FE_PART   : SetItemMode(ITEM_ELEM); pcmd = new CCmdSelectElements(pm, l, false); break;
+				default:
+					assert(false);
+				}
+
+				// make sure the parent object is selected
+				GObject* po = pm->GetGObject();
+				assert(po);
+				if (po && !po->IsSelected())
+				{
+					CCmdGroup* pgc = new CCmdGroup("Select");
+					pgc->AddCommand(new CCmdSelectObject(mdl, po, false));
+					pgc->AddCommand(pcmd);
+					pcmd = pgc;
+				}
+			}
+		}
+	}
+	else if (dynamic_cast<GMaterial*>(po))
+	{
+		SetSelectionMode(SELECT_PART);
+		pcmd = new CCmdSelectPart(mdl, l, false);
+	}
+	else if (dynamic_cast<GDiscreteElementSet*>(po))
+	{
+		SetSelectionMode(SELECT_DISCRETE);
+		GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(po);
+		pcmd = new CCmdSelectDiscreteElements(ds, l, false);
+	}
+
+	// execute command
+	if (pcmd)
+	{
+		DoCommand(pcmd);
+		m_wnd->UpdateToolbar();
+		m_wnd->Update();
+	}
+}
+
 //-----------------------------------------------------------------------------
-bool CModelDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
+bool CModelDocument::ImportGeometry(FSFileImport* preader, const char *szfile)
 {
 	ClearCommandStack();
 
@@ -788,14 +869,14 @@ bool CModelDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 }
 
 // helper function for applying a modifier
-bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup* sel, bool clearSel)
+bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FSGroup* sel, bool clearSel)
 {
 	// get the mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return false;
 
 	// apply modifier and create new mesh
-	FEMesh* newMesh = 0;
+	FSMesh* newMesh = 0;
 	try {
 		if (sel)
 			newMesh = modifier.Apply(sel);
@@ -819,14 +900,14 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup*
 	return DoCommand(new CCmdChangeFEMesh(po, newMesh), ss.c_str(), false);
 }
 
-bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FEGroup* sel)
+bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel)
 {
 	// get the surface mesh
-	FESurfaceMesh* mesh = po->GetSurfaceMesh();
+	FSSurfaceMesh* mesh = po->GetSurfaceMesh();
 	if (mesh == 0) return false;
 
 	// create a new mesh
-	FESurfaceMesh* newMesh = 0;
+	FSSurfaceMesh* newMesh = 0;
 	try {
 		newMesh = modifier.Apply(mesh, sel);
 	}

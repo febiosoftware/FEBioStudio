@@ -100,24 +100,24 @@ void GLinearSpring::Load(IArchive& ar)
 GGeneralSpring::GGeneralSpring(GModel* gm) : GDiscreteObject(gm, FE_GENERAL_SPRING)
 {
 	m_node[0] = m_node[1] = -1;
-	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
+	AddDoubleParam(1, "force", "spring force");
 
 	// create an initial linear ramp
-	LOADPOINT p0(0,0), p1(1,1);
-	GetParamLC(MP_F)->Add(p0);
-	GetParamLC(MP_F)->Add(p1);
+//	LOADPOINT p0(0,0), p1(1,1);
+//	GetParamLC(MP_F)->Add(p0);
+//	GetParamLC(MP_F)->Add(p1);
 }
 
 GGeneralSpring::GGeneralSpring(GModel* gm, int n1, int n2) : GDiscreteObject(gm, FE_GENERAL_SPRING)
 {
 	m_node[0] = n1;
 	m_node[1] = n2;
-	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
+	AddDoubleParam(1, "force", "spring force");
 
 	// create an initial linear ramp
-	LOADPOINT p0(0,0), p1(1,1);
-	GetParamLC(MP_F)->Add(p0);
-	GetParamLC(MP_F)->Add(p1);
+//	LOADPOINT p0(0,0), p1(1,1);
+//	GetParamLC(MP_F)->Add(p0);
+//	GetParamLC(MP_F)->Add(p1);
 }
 
 void GGeneralSpring::Save(OArchive& ar)
@@ -405,13 +405,13 @@ void GDiscreteSpringSet::CopyDiscreteElementSet(GDiscreteElementSet* ds)
 }
 
 //-----------------------------------------------------------------------------
-void GDiscreteSpringSet::SetMaterial(FEDiscreteMaterial* mat)
+void GDiscreteSpringSet::SetMaterial(FSDiscreteMaterial* mat)
 {
 	m_mat = mat;
 }
 
 //-----------------------------------------------------------------------------
-FEDiscreteMaterial* GDiscreteSpringSet::GetMaterial()
+FSDiscreteMaterial* GDiscreteSpringSet::GetMaterial()
 {
 	return m_mat;
 }
@@ -477,9 +477,9 @@ void GDiscreteSpringSet::Load(IArchive& ar)
 					int mid = ar.GetChunkID();
 					switch (mid)
 					{
-					case FE_DISCRETE_LINEAR_SPRING   : m_mat = new FELinearSpringMaterial; break;
-					case FE_DISCRETE_NONLINEAR_SPRING: m_mat = new FENonLinearSpringMaterial; break;
-					case FE_DISCRETE_HILL            : m_mat = new FEHillContractileMaterial; break;
+					case FE_DISCRETE_LINEAR_SPRING   : m_mat = new FSLinearSpringMaterial; break;
+					case FE_DISCRETE_NONLINEAR_SPRING: m_mat = new FSNonLinearSpringMaterial; break;
+					case FE_DISCRETE_HILL            : m_mat = new FSHillContractileMaterial; break;
 					default:
 						assert(false);
 						throw ReadError("Unknown discrete material");
@@ -550,13 +550,13 @@ void GLinearSpringSet::Load(IArchive& ar)
 //-----------------------------------------------------------------------------
 GNonlinearSpringSet::GNonlinearSpringSet(GModel* gm) : GDiscreteElementSet(gm, FE_NONLINEAR_SPRING_SET)
 {
-	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
+	AddDoubleParam(1, "force", "spring force");
 
 	// create an initial linear ramp
-	LOADPOINT p0(0,0), p1(1,1);
-	GetParamLC(MP_F)->Clear();
-	GetParamLC(MP_F)->Add(p0);
-	GetParamLC(MP_F)->Add(p1);
+//	LOADPOINT p0(0,0), p1(1,1);
+//	GetParamLC(MP_F)->Clear();
+//	GetParamLC(MP_F)->Add(p0);
+//	GetParamLC(MP_F)->Add(p1);
 }
 
 

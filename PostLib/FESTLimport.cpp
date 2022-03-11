@@ -130,7 +130,7 @@ void FESTLimport::build_mesh()
 	int i;
 
 	// add one material to the scene
-	FEMaterial mat;
+	Material mat;
 	m_fem->AddMaterial(mat);
 
 	// reserve space for nodes
@@ -153,9 +153,9 @@ void FESTLimport::build_mesh()
 	// create nodes
 	for (i=0; i<NN; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		vec3f& ri = m_Node[i];
-		n.r = ri;
+		n.r = to_vec3d(ri);
 	}
 	m_fem->AddMesh(pm);
 
@@ -164,7 +164,7 @@ void FESTLimport::build_mesh()
 	for (i=0; i<NF; ++i, ++is)
 	{
 		FACET& f = *is;
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		e.SetType(FE_TRI3);
 		e.m_node[0] = f.n[0];
 		e.m_node[1] = f.n[1];

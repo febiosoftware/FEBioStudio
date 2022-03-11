@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "FEMesher.h"
 #include <GeomLib/GObject.h>
 #include <vector>
-//using namespace std;
 
 //-----------------------------------------------------------------------------
 // class MBItem: base class for all Multi Block items.
@@ -66,7 +65,7 @@ public:
 	int		m_ntag;	// tag
 	int		m_gid;	// group ID
 
-	vector<int>	m_fenodes;
+	std::vector<int>	m_fenodes;
 };
 
 class MBNode : public MBItem
@@ -223,7 +222,7 @@ public:
 	void SetElementType(int elemType);
 
 	// build the mesh
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 	MBNode& AddNode(const vec3d& r, int nodeType = NODE_VERTEX);
 
@@ -252,13 +251,13 @@ protected:
 	void BuildMBEdges();
 
 	// build the mesh items
-	void BuildFENodes   (FEMesh* pm);
-	void BuildFEElements(FEMesh* pm);
-	void BuildFEFaces   (FEMesh* pm);
-	void BuildFEEdges   (FEMesh* pm);
+	void BuildFENodes   (FSMesh* pm);
+	void BuildFEElements(FSMesh* pm);
+	void BuildFEFaces   (FSMesh* pm);
+	void BuildFEEdges   (FSMesh* pm);
 
-	void BuildNodeBlockTable(vector< vector<int> >& NBT);
-	void BuildNodeFaceTable(vector< vector<int> >& NFT);
+	void BuildNodeBlockTable(std::vector< std::vector<int> >& NBT);
+	void BuildNodeFaceTable(std::vector< std::vector<int> >& NFT);
 	MBFace BuildBlockFace(MBBlock& B, int j);
 	int FindFaceIndex(MBBlock& B, MBFace& face);
 	int FindEdgeIndex(MBFace& F, int n1, int n2);
@@ -290,9 +289,9 @@ protected:
 
 protected:
 	int GetFENode(MBNode& node);
-	vector<int> GetFENodeList(MBEdge& node);
-	vector<int> GetFENodeList(MBFace& node);
-	vector<int> GetFENodeList(MBBlock& node);
+	std::vector<int> GetFENodeList(MBEdge& node);
+	std::vector<int> GetFENodeList(MBFace& node);
+	std::vector<int> GetFENodeList(MBBlock& node);
 
 	int AddFENode(const vec3d& r, int gid = -1);
 	int AddFEEdgeNode(MBEdge& E, const MQPoint& q);
@@ -300,16 +299,16 @@ protected:
 	int AddFEElemNode(MBBlock& B, const MQPoint& q);
 
 protected:
-	vector<MBBlock>	m_MBlock;
-	vector<MBFace>	m_MBFace;
-	vector<MBEdge>	m_MBEdge;
-	vector<MBNode>	m_MBNode;
+	std::vector<MBBlock>	m_MBlock;
+	std::vector<MBFace>	m_MBFace;
+	std::vector<MBEdge>	m_MBEdge;
+	std::vector<MBNode>	m_MBNode;
 
 	int		m_elemType;
 	bool	m_quadMesh;
 
-	FEMesh* m_pm;
-	FENode* m_currentNode;
+	FSMesh* m_pm;
+	FSNode* m_currentNode;
 	int		m_nodes;
 };
 

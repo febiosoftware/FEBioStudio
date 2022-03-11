@@ -33,7 +33,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // Reads in an Amira Hypermesh
 
-class FEHMASCIIimport : public FEFileImport
+class FEHMASCIIimport : public FSFileImport
 {
 protected:
 	struct NODE
@@ -56,14 +56,14 @@ protected:
 	};
 
 public:
-	FEHMASCIIimport(FEProject& prj);
+	FEHMASCIIimport(FSProject& prj);
 	~FEHMASCIIimport(void);
 
 	bool Load(const char* szfile);
 
 	void Clear();
 
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 
 protected:
 	list<NODE>			m_Node;

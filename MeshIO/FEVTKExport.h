@@ -39,7 +39,7 @@ struct VTKEXPORT
 class FEVTKExport : public FEFileExport
 {
 public:
-	FEVTKExport(FEProject& prj);
+	FEVTKExport(FSProject& prj);
 	~FEVTKExport(void);
 
 	bool Write(const char* szfile) override;

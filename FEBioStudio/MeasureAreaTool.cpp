@@ -59,13 +59,13 @@ void CMeasureAreaTool::Update()
 {
 	m_nsel = 0;
 	m_area = 0.0;
-	FEMesh* mesh = GetActiveMesh();
+	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return;
 
 	int NF = mesh->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 		if (f.IsSelected())
 		{
 			++m_nsel;

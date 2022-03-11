@@ -604,7 +604,7 @@ void glx::smoothQUAD4(vec3d r[4], vec3f n[4], float t[4], int ndivs)
 					h[2] = 0.25f*(1 + sak)*(1 + tak);
 					h[3] = 0.25f*(1 - sak)*(1 + tak);
 
-					vec3d nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3];
+					vec3f nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3];
 					vec3d rk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3];
 					float tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3];
 
@@ -863,7 +863,8 @@ void glx::smoothTRI7(vec3d r[7], vec3f n[7], float t[7], int ndivs)
 void glx::smoothTRI10(vec3d r[10], vec3f n[10], float t[10], int ndivs)
 {
 	float sa[2], ta[2], tk, h[10];
-	vec3d nk, xk;
+	vec3f nk;
+	vec3d xk;
 	int i, j, k;
 	int nj = ndivs;
 

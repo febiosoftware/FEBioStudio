@@ -226,8 +226,8 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 		m_find->Init(bdisp ? 1 : 0);
 	}
 
-	FEMeshBase* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FSMeshBase* pm = mdl->GetActiveMesh();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (m_map.States() == 0)
 	{
@@ -355,8 +355,8 @@ void CGLParticleFlowPlot::UpdateParticleColors()
 vec3f CGLParticleFlowPlot::Velocity(const vec3f& r, int ntime, float w, bool& ok)
 {
 	vec3f v(0.f, 0.f, 0.f);
-	vec3f ve0[FEElement::MAX_NODES];
-	vec3f ve1[FEElement::MAX_NODES];
+	vec3f ve0[FSElement::MAX_NODES];
+	vec3f ve1[FSElement::MAX_NODES];
 	FEPostMesh& mesh = *GetModel()->GetActiveMesh();
 
 	vector<vec3f>& val0 = m_map.State(ntime    );
@@ -391,10 +391,10 @@ void CGLParticleFlowPlot::AdvanceParticles(int n0, int n1)
 	// get the model
 	CGLModel* mdl = GetModel();
 	if (mdl == 0) return;
-	FEPostModel& fem = *mdl->GetFEModel();
+	FEPostModel& fem = *mdl->GetFSModel();
 
 	// get the mesh
-	FEMeshBase& mesh = *mdl->GetActiveMesh();
+	FSMeshBase& mesh = *mdl->GetActiveMesh();
 
 	BOX box = m_find->BoundingBox();
 	float R = box.GetMaxExtent();
@@ -468,14 +468,14 @@ void CGLParticleFlowPlot::SeedParticles()
 	if (mdl == 0) return;
 
 	// get the number of states
-	FEPostModel* fem = mdl->GetFEModel();
+	FEPostModel* fem = mdl->GetFSModel();
 	int NS = fem->GetStates();
 
 	// make sure there is a valid seed time
 	if ((m_seedTime < 0) || (m_seedTime >= NS)) return;
 
 	// get the mesh
-	FEMeshBase& mesh = *mdl->GetActiveMesh();
+	FSMeshBase& mesh = *mdl->GetActiveMesh();
 
 	vector<vec3f>& val = m_map.State(m_seedTime);
 
@@ -487,7 +487,7 @@ void CGLParticleFlowPlot::SeedParticles()
 #pragma omp parallel for shared (NF)
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		// evaluate the average velocity at this face
 		int nf = f.Nodes();

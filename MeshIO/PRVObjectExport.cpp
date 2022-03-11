@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-PRVObjectExport::PRVObjectExport(FEProject& prj) : FEFileExport(prj)
+PRVObjectExport::PRVObjectExport(FSProject& prj) : FEFileExport(prj)
 {
 	m_selectedObjectsOnly = true;
 	m_exportDiscrete = true;
@@ -59,14 +59,14 @@ bool PRVObjectExport::Write(const char* szfile)
 	return ret;
 }
 
-bool PRVObjectExport::SaveObjects(OArchive& ar, FEProject& prj)
+bool PRVObjectExport::SaveObjects(OArchive& ar, FSProject& prj)
 {
 	// save version info
 	unsigned int version = PVO_VERSION_NUMBER;
 	ar.WriteChunk(PVO_VERSION, version);
 
 	// write objects
-	GModel& model = prj.GetFEModel().GetModel();
+	GModel& model = prj.GetFSModel().GetModel();
 	int objects = model.Objects();
 	for (int i = 0; i<objects; ++i)
 	{

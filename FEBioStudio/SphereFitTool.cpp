@@ -54,21 +54,21 @@ bool CSphereFitTool::OnApply()
 
 	// get the nodal coordinates (surface only)
 	GObject* po = GetActiveObject();
-	FEMesh* activeMesh = (po ? po->GetFEMesh() : nullptr);
+	FSMesh* activeMesh = (po ? po->GetFEMesh() : nullptr);
 	if (activeMesh == nullptr)
 	{
 		SetErrorString("You must select an object that has a mesh.");
 		return false;
 	}
 
-	FEMesh& mesh = *activeMesh;
+	FSMesh& mesh = *activeMesh;
 
 	int N = mesh.Nodes();
 	int F = mesh.Faces();
 	for (int i=0; i<N; ++i) mesh.Node(i).m_ntag = 0;
 	for (int i=0; i<F; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if ((m_bsel == false) || (f.IsSelected()))
 		{
 			int nf = f.Nodes();
@@ -76,7 +76,7 @@ bool CSphereFitTool::OnApply()
 		}
 	}
 
-	vector<vec3d> y;
+	std::vector<vec3d> y;
 	for (int i=0; i<N; ++i)
 	{
 		if (mesh.Node(i).m_ntag == 1) y.push_back(po->GetTransform().LocalToGlobal(mesh.Node(i).r));

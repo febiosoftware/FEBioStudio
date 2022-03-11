@@ -29,13 +29,15 @@ SOFTWARE.*/
 #include <vector>
 #include <QDialog>
 #include "GraphData.h"
-//using namespace std;
+#include "CommandManager.h"
+#include <FECore/MathObject.h>
 
 //-----------------------------------------------------------------------------
 class QPainter;
 class QAction;
 class CPlotWidget;
 class QImage;
+class LoadCurve;
 
 //-----------------------------------------------------------------------------
 enum ChartStyle
@@ -104,9 +106,6 @@ public:
 	int plots() { return (int)m_data.m_data.size(); }
 	CPlotData& getPlotData(int i) { return *m_data.m_data[i]; }
 
-	// turn on/off zoom-to-rect mode
-	void ZoomToRect(bool b = true);
-
 	// is view locked
 	bool isViewLocked() const { return m_bviewLocked; }
 	void setViewLocked(bool b) { m_bviewLocked = b; }
@@ -159,8 +158,10 @@ public:
 
 	void setBackgroundColor(const QColor& c) { m_data.m_bgCol = c; }
 	void setGridColor(const QColor& c) { m_data.m_gridCol = c; }
-	void setXAxisColor(const QColor& c) { m_data.m_xCol = c; }
-	void setYAxisColor(const QColor& c) { m_data.m_yCol = c; }
+	void setXAxisColor(const QColor& c) { m_data.m_xAxisCol = c; }
+	void setYAxisColor(const QColor& c) { m_data.m_yAxisCol = c; }
+	void setXAxisTickColor(const QColor& c) { m_data.m_xAxisTickCol = c; }
+	void setYAxisTickColor(const QColor& c) { m_data.m_yAxisTickCol = c; }
 
 	QColor selectionColor() { return m_selCol; }
 	void setSelectionColor(const QColor& c) { m_selCol = c; }
@@ -176,19 +177,19 @@ public:
 
 	bool HasBackgroundImage() const;
 
-	void mapToUserRect();
-
 	void mapToUserRect(QRect rt, QRectF rng);
 
-	vector<Selection> selection() const { return m_selection; }
+	std::vector<Selection> selection() const { return m_selection; }
 
 	std::vector<QPointF> SelectedPoints() const;
 
+	void clearSelection();
+
 	bool LoadBackgroundImage(const QString& fileName);
 
+	void regionSelect(QRect rt);
+
 signals:
-	void doneZoomToRect();
-	void doneSelectingRect(QRect rt);
 	void regionSelected(QRect rt);
 	void pointClicked(QPointF p, bool bshift);
 	void pointSelected(int n);
@@ -205,8 +206,6 @@ protected:
 	void wheelEvent       (QWheelEvent* ev);
 	void dropEvent        (QDropEvent* e);
 	void dragEnterEvent   (QDragEnterEvent* e);
-
-	void regionSelect(QRect rt);
 
 	// returns false if point is already selected
 	bool addToSelection(int ndata, int npoint);
@@ -268,14 +267,12 @@ public:
 	bool		m_bscaleAxisLabels;
 	bool		m_bfullScreenMode;
 	bool		m_bautoRngUpdate;
-	bool		m_bzoomRect;
-	bool		m_bvalidRect;
-	bool		m_mapToRect;
 	bool		m_newSelect;
 	bool		m_bdragging;
+
 	bool		m_bregionSelect;
 
-	vector<Selection>	m_selection;
+	std::vector<Selection>	m_selection;
 
 private:
 	QAction*	m_pZoomToFit;
@@ -307,4 +304,121 @@ public:
 
 private:
 	CDlgPlotWidgetProps_Ui*	ui;
+};
+
+class CCurvePlotWidget : public CPlotWidget
+{
+	Q_OBJECT
+
+public:
+	CCurvePlotWidget(QWidget* parent = nullptr);
+
+	void DrawPlotData(QPainter& p, CPlotData& data) override;
+
+	void SetLoadCurve(LoadCurve* lc);
+	LoadCurve* GetLoadCurve();
+
+private:
+	LoadCurve* m_lc;
+};
+
+//=============================================================================
+class UICurveEditWidget;
+
+class CCurveEditWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CCurveEditWidget(QWidget* parent = nullptr);
+
+	void Clear();
+
+	void SetLoadCurve(LoadCurve* lc);
+
+public slots:
+	void on_plot_pointClicked(QPointF p, bool shift);
+	void on_plot_draggingStart(QPoint p);
+	void on_plot_pointDragged(QPoint p);
+	void on_plot_draggingEnd(QPoint p);
+	void on_plot_pointSelected(int n);
+	void on_plot_backgroundImageChanged();
+	void on_plot_doneZoomToRect();
+	void on_plot_regionSelected(QRect);
+	void on_plot_doneSelectingRect(QRect);
+	void on_xval_textEdited();
+	void on_yval_textEdited();
+	void on_deletePoint_clicked();
+	void on_zoomToFit_clicked();
+	void on_zoomX_clicked();
+	void on_zoomY_clicked();
+	void on_map_clicked();
+	void on_lineType_currentIndexChanged(int n);
+	void on_extendMode_currentIndexChanged(int n);
+	void on_undo_clicked(bool b);
+	void on_redo_clicked(bool b);
+	void on_math_clicked(bool b);
+	void on_clip_clicked(bool b);
+	void on_copy_clicked(bool b);
+	void on_paste_clicked(bool b);
+	void on_open_clicked(bool b);
+	void on_save_clicked(bool b);
+
+signals:
+	void dataChanged();
+
+private:
+	void UpdateSelection();
+	void UpdatePlotData();
+
+private:
+	UICurveEditWidget* ui;
+
+	// undo stack
+	CBasicCmdManager	m_cmd;
+};
+
+//=============================================================================
+class CMathPlotWidget : public CPlotWidget
+{
+	Q_OBJECT
+
+public:
+	CMathPlotWidget(QWidget* parent = nullptr);
+	void DrawPlotData(QPainter& p, CPlotData& data) override;
+
+	void SetOrdinate(const std::string& x);
+
+	void SetMath(const QString& txt);
+
+public slots:
+	void onRegionSelected(QRect rt);
+	void onPointClicked(QPointF pt, bool shift);
+
+private:
+	MSimpleExpression	m_math;
+	std::string			m_ord;
+};
+
+//=============================================================================
+class UIMathEditWidget;
+
+class CMathEditWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CMathEditWidget(QWidget* parent = nullptr);
+
+	void SetOrdinate(const QString& ord);
+	void SetMath(const QString& txt);
+
+public slots:
+	void onEditingFinished();
+
+signals:
+	void mathChanged(QString s);
+
+private:
+	UIMathEditWidget* ui;
 };

@@ -26,13 +26,16 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/color.h>
-#include <MathLib/mat3d.h>
+#include <FECore/mat3d.h>
+#include <FECore/quatd.h>
+#include <FECore/vec3d.h>
 #include <qopengl.h>
 #ifdef __APPLE__
     #include <OpenGL/GLU.h>
 #else
     #include <GL/glu.h>
 #endif
+#include <vector>
 
 namespace glx {
 
@@ -81,7 +84,9 @@ void drawLine(double x0, double y0, double z0, double x1, double y1, double z1, 
 inline void vertex3d(const vec3d& r) { glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, double t) { glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n) { glNormal3d(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
+inline void vertex3d(const vec3d& r, const vec3f& n) { glNormal3d(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n, double t) { glNormal3d(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
+inline void vertex3d(const vec3d& r, const vec3f& n, double t) { glNormal3d(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n, const GLColor& c) { glNormal3d(n.x, n.y, n.z); glColor3ub(c.r, c.g, c.b); glVertex3d(r.x, r.y, r.z); }
 
 void smoothQUAD4(vec3d r[ 4], vec3f n[ 4], float t[ 4], int ndivs);

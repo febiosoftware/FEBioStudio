@@ -75,13 +75,13 @@ public:
 	}
 };
 
-CDlgAddStep::CDlgAddStep(FEProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddStep)
+CDlgAddStep::CDlgAddStep(FSProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddStep)
 {
 	setWindowTitle("Add Analysis Step");
 
 	ui->setupUi(this);
 
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i < fem.Steps(); ++i)
 	{
 		ui->steps->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
@@ -89,7 +89,7 @@ CDlgAddStep::CDlgAddStep(FEProject& prj, QWidget* parent) : QDialog(parent), ui(
 	ui->steps->setCurrentIndex(fem.Steps() - 1);
 
 	// set the types
-	vector<FEClassFactory*> l = FEMKernel::FindAllClasses(prj.GetModule(), FE_ANALYSIS);
+	std::vector<FEClassFactory*> l = FEMKernel::FindAllClasses(prj.GetModule(), FEANALYSIS_ID);
 	for (int i=0; i<l.size(); ++i)
 	{
 		QListWidgetItem* w = new QListWidgetItem;

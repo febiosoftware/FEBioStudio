@@ -32,7 +32,7 @@ SOFTWARE.*/
 
 //! \todo PreView has trouble with reading surface elements and volume elements since
 //! the surface elements are not shell elements.
-FEGMshImport::FEGMshImport(FEProject& prj) : FEFileImport(prj)
+FEGMshImport::FEGMshImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_szline[0] = 0;
 	m_pm = 0;
@@ -41,14 +41,14 @@ FEGMshImport::FEGMshImport(FEProject& prj) : FEFileImport(prj)
 
 bool FEGMshImport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// open the file
 	if (!Open(szfile, "rt")) return false;
 
 	// create a new mesh
-	m_pm = new FEMesh();
+	m_pm = new FSMesh();
 
 	bool ret = true;
 	while (fgets(m_szline, 255, m_fp))
@@ -145,7 +145,7 @@ bool FEGMshImport::ReadNodes()
 	// read the nodes
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& node = m_pm->Node(i);
+		FSNode& node = m_pm->Node(i);
 		vec3d& r = node.r;
 
 		fgets(m_szline, 255, m_fp);
@@ -187,8 +187,8 @@ bool FEGMshImport::ReadElements()
 	int nread = sscanf(m_szline, "%d", &elems);
 	if (nread != 1) return errf("Error while reading Element section");
 
-	vector<ELEMENT> Face;
-	vector<ELEMENT> Elem;
+	std::vector<ELEMENT> Face;
+	std::vector<ELEMENT> Elem;
 	Face.reserve(elems);
 	Elem.reserve(elems);
 
@@ -403,7 +403,7 @@ bool FEGMshImport::ReadElements()
 		m_pm->Create(0, nelems, nfaces);
 		for (int i=0; i<nelems; ++i)
 		{
-			FEElement& el = m_pm->Element(i);
+			FSElement& el = m_pm->Element(i);
 			ELEMENT& e = Elem[i];
 
 			el.m_gid = e.gid;
@@ -480,7 +480,7 @@ bool FEGMshImport::ReadElements()
 
 		for (int i=0; i<nfaces; ++i)
 		{
-			FEFace& face = m_pm->Face(i);
+			FSFace& face = m_pm->Face(i);
 			ELEMENT& e = Face[i];
 
 			face.m_gid = e.gid;
@@ -517,7 +517,7 @@ bool FEGMshImport::ReadElements()
 		m_pm->Create(0, nfaces);
 		for (int i=0; i<nfaces; ++i)
 		{
-			FEElement& el = m_pm->Element(i);
+			FSElement& el = m_pm->Element(i);
 			ELEMENT& e = Face[i];
 
 			el.m_gid = e.gid;

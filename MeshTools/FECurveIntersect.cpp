@@ -51,7 +51,7 @@ void FECurveIntersect::ClearCurveList()
 	m_curveList.clear(); 
 }
 
-FESurfaceMesh* FECurveIntersect::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FECurveIntersect::Apply(FSSurfaceMesh* pm)
 {
 	switch (m_method)
 	{

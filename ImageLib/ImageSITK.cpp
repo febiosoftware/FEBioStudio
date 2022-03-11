@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
 #include "ImageSITK.h"
 #include <QFileInfo>
 
-#pragma once
+#ifdef HAS_ITK
 
 namespace sitk = itk::simple;
 
@@ -212,3 +212,5 @@ void CImageSITK::SetItkImage(itk::simple::Image image)
 
     m_pb = m_sitkImage.GetBufferAsUInt8();
 }
+
+#endif

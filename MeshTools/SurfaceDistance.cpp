@@ -49,8 +49,8 @@ void CSurfaceDistance::SetRange(double gmin, double gmax)
 bool CSurfaceDistance::Apply(GObject* pso, GObject* pmo)
 {
 	// Get the meshes
-	FEMesh* ps = pso->GetFEMesh();
-	FEMesh* pm = pmo->GetFEMesh();
+	FSMesh* ps = pso->GetFEMesh();
+	FSMesh* pm = pmo->GetFEMesh();
 
 	// allocate buffer for storing nodal distances
 	int nodes = ps->Nodes();
@@ -72,7 +72,7 @@ bool CSurfaceDistance::Apply(GObject* pso, GObject* pmo)
 	int NE = ps->Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = ps->Element(i);
+		FSElement& el = ps->Element(i);
 		int ne = el.Nodes();
 		for (int j=0; j<ne; ++j)
 		{
@@ -98,8 +98,8 @@ bool CSurfaceDistance::Apply(GObject* pso, GObject* pmo)
 
 bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>& dist)
 {
-	FEMesh* ps = pso->GetFEMesh();
-	FEMesh* pm = pmo->GetFEMesh();
+	FSMesh* ps = pso->GetFEMesh();
+	FSMesh* pm = pmo->GetFEMesh();
 
 	// get the number of nodes
 	int nodes = ps->Nodes();
@@ -109,11 +109,11 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 	nu.assign(nodes, vec3d(0,0,0));
 	for (int i=0; i<ps->Faces(); ++i)
 	{
-		FEFace& fi = ps->Face(i);
+		FSFace& fi = ps->Face(i);
 		int nf = fi.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
-			nu[fi.n[j]] += fi.m_nn[j];
+			nu[fi.n[j]] += to_vec3d(fi.m_nn[j]);
 		}
 	}
 
@@ -128,7 +128,7 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 	// repeat for all nodes
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& nodei = ps->Node(i);
+		FSNode& nodei = ps->Node(i);
 
 		// get the nodal coordinate
 		vec3d ri = pso->GetTransform().LocalToGlobal(nodei.r);
@@ -151,7 +151,7 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 		int NE = pm->Elements();
 		for (int j=0; j<NE; ++j)
 		{
-			FEElement& el = pm->Element(j);
+			FSElement& el = pm->Element(j);
 			assert(el.IsType(FE_TRI3));
 			vec3d r0 = pm->Node(el.m_node[0]).r;
 			vec3d r1 = pm->Node(el.m_node[1]).r;
@@ -256,8 +256,8 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 bool CSurfaceDistance::ClosestPoint(GObject* pso, GObject* pmo, vector<double>& dist)
 {
 	// get the meshes
-	FEMesh* ps = pso->GetFEMesh();
-	FEMesh* pm = pmo->GetFEMesh();
+	FSMesh* ps = pso->GetFEMesh();
+	FSMesh* pm = pmo->GetFEMesh();
 
 	// get the number of nodes
 	int nodes = ps->Nodes();
@@ -265,7 +265,7 @@ bool CSurfaceDistance::ClosestPoint(GObject* pso, GObject* pmo, vector<double>& 
 	// repeat for all nodes
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& nodei = ps->Node(i);
+		FSNode& nodei = ps->Node(i);
 
 		// get the global nodal coordinates
 		vec3d ri = pso->GetTransform().LocalToGlobal(nodei.r);

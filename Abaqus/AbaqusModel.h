@@ -417,7 +417,7 @@ public:
 	list<STEP>& StepList() { return m_Step; }
 
 private:
-	FEModel*	m_fem;		// the model
+	FSModel*	m_fem;		// the model
 
 	list<PART*>	m_Part;		// list of parts
 	PART*		m_pPart;	// current part

@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "FESurfaceModifier.h"
 #include <vector>
-//using namespace std;
 
 class FECurveMesh;
 class GEdge;
@@ -42,7 +41,7 @@ public:
 	FECurveIntersect();
 
 	// apply the modifier
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 public:
 	// clear curve list
@@ -66,5 +65,5 @@ private:
 	int				m_method;
 	bool			m_insertEdges;
 	double			m_tol;
-	vector<GEdge*>	m_curveList;
+	std::vector<GEdge*>	m_curveList;
 };

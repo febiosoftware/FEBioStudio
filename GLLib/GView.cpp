@@ -56,7 +56,7 @@ void CGView::Reset()
 
 void CGView::DeleteAllKeys()
 {
-	vector<GLCameraTransform*>::iterator it;
+	std::vector<GLCameraTransform*>::iterator it;
 	for (it=m_key.begin(); it != m_key.end(); ++it) delete (*it);
 	m_key.clear();
 }
@@ -114,7 +114,7 @@ void CGView::PrevKey()
 void CGView::DeleteKey(GLCameraTransform* pt)
 {
 	if (m_key.empty()) return;
-	vector<GLCameraTransform*>::iterator it;
+	std::vector<GLCameraTransform*>::iterator it;
 	for (it=m_key.begin(); it != m_key.end(); ++it)
 	{
 		if (*it == pt)

@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
 #include "FETetGenMesher.h"
+using namespace std;
 
 //-----------------------------------------------------------------------------
 GRevolveModifier::GRevolveModifier()
@@ -247,7 +248,7 @@ void GRevolveModifier::Apply(GObject* po)
 	assert(po->Parts()==1);
 
 	// but we should have one for each face
-	for (int i=1; i<F*D; ++i) po->AddPart();
+	for (int i=1; i<F*D; ++i) po->AddSolidPart();
 	int NP = po->Parts();
 
 	if (F == 0)
@@ -315,7 +316,7 @@ GMesh* GRevolveModifier::BuildGMesh(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GRevolveModifier::BuildFEMesh(GObject* po)
+FSMesh* GRevolveModifier::BuildFEMesh(GObject* po)
 {
 	FETetGenMesher tet(po);
 	tet.SetFloatValue(FETetGenMesher::ELSIZE, 0.2);

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "FEPostModel.h"
 #include "constants.h"
 using namespace Post;
+using namespace std;
 
 FEDataManager::FEDataManager(FEPostModel* pm)
 {
@@ -52,19 +53,19 @@ int FEDataManager::DataFields() const
 
 void FEDataManager::Clear()
 {
-	vector<FEDataField*>::iterator pi;
+	vector<ModelDataField*>::iterator pi;
 	for (pi = m_Data.begin(); pi != m_Data.end(); ++pi) delete (*pi);
 	m_Data.clear();
 }
 
-void FEDataManager::AddDataField(FEDataField* pd, const std::string& name)
+void FEDataManager::AddDataField(ModelDataField* pd, const std::string& name)
 {
 	if (name.empty() == false) pd->SetName(name);
 	m_Data.push_back(pd);
 	pd->SetFieldID(BUILD_FIELD(pd->DataClass(), DataFields()-1, 0));
 }
 
-void FEDataManager::DeleteDataField(FEDataField* pd)
+void FEDataManager::DeleteDataField(ModelDataField* pd)
 {
 	FEDataFieldPtr it;
 	for (it = m_Data.begin(); it != m_Data.end(); ++it)
@@ -79,7 +80,7 @@ void FEDataManager::DeleteDataField(FEDataField* pd)
 
 int FEDataManager::FindDataField(const std::string& fieldName)
 {
-	vector<FEDataField*>::iterator pe = m_Data.begin();
+	vector<ModelDataField*>::iterator pe = m_Data.begin();
 	for (int i=0; i<(int) m_Data.size(); ++i, ++pe)
 	{
 		if ((*pe)->GetName() == fieldName) return i;
@@ -101,7 +102,7 @@ std::string FEDataManager::getDataString(int nfield, Data_Tensor_Type ntype)
 		int ncomp = FIELD_COMP(nfield);
 		if ((ndata>=0) && (ndata< m_Data.size()))
 		{
-			FEDataField* pd = m_Data[ndata];
+			ModelDataField* pd = m_Data[ndata];
 			return pd->componentName(ncomp, ntype);
 		}
 	}
@@ -114,6 +115,6 @@ bool FEDataManager::IsValid(int fieldId) const
 	int ndata = FIELD_CODE(fieldId);
 	if ((ndata < 0) || (ndata >= m_Data.size())) return false;
 
-	FEDataField* pd = m_Data[ndata];
+	ModelDataField* pd = m_Data[ndata];
 	return (pd->GetFieldID() == fieldId);
 }

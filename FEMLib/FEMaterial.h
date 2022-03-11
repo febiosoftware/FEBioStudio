@@ -56,6 +56,10 @@
 #define FE_MAT_MREACTION_EPRODUCTS      0x00220000
 #define FE_MAT_PLASTIC_FLOW_RULE		0x00230000
 
+
+// Classes with IDs above this refer to FEBio base classes.
+#define FE_FEBIO_MATERIAL_CLASS			0x00FF0000
+
 // --- Material Types ---
 // These values are stored in the prv file so don't change!
 //
@@ -146,6 +150,7 @@
 #define FE_KAMENSKY_UNCOUPLED			85
 #define FE_FIBER_NEO_HOOKEAN            86
 #define FE_FIBER_NATURAL_NH             87
+#define FE_HOLMES_MOW_UNCOUPLED         88
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -174,6 +179,8 @@
 #define FE_REACTIVE_PLASTICITY      129
 #define FE_REACTIVE_PLASTIC_DAMAGE  130
 #define FE_BIPHASIC_FSI_MATERIAL    131
+
+#define FE_FEBIO_MATERIAL			132
 
 // permeability materials
 #define FE_PERM_CONST				200
@@ -204,6 +211,7 @@
 #define FE_MICHAELIS_MENTEN         604
 #define FE_REACTION_RATE_CONST      605
 #define FE_REACTION_RATE_HUISKES    606
+#define FE_REACTION_RATE_FEBIO		607
 
 // membrane reactions
 #define FE_INT_REACTANT_MATERIAL    650
@@ -255,6 +263,9 @@
 #define FE_RELAX_PARK_DIST          804
 #define FE_RELAX_POW                805
 #define FE_RELAX_POW_DIST           806
+#define FE_RELAX_PRONY              807
+#define FE_RELAX_MALKIN             808
+#define FE_RELAX_CSEXP              809
 
 // elastic damage materials
 #define FE_DMG_MATERIAL             900
@@ -308,6 +319,7 @@
 #define FE_DISCRETE_LINEAR_SPRING		1401
 #define FE_DISCRETE_NONLINEAR_SPRING	1402
 #define FE_DISCRETE_HILL				1403
+#define FE_DISCRETE_FEBIO_MATERIAL		1404
 
 // 1D functions
 #define FE_FNC1D_POINT		1501
@@ -318,78 +330,78 @@
 #define FE_MAT_PLASTIC_FLOW_MATH		1603
 
 //-----------------------------------------------------------------------------
-class FEFiberGenerator : public FEMaterial
+class FSFiberGenerator : public FSMaterial
 {
 public:
-	FEFiberGenerator(int ntype) : FEMaterial(ntype) {}
+	FSFiberGenerator(int ntype) : FSMaterial(ntype) {}
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberGeneratorLocal : public FEFiberGenerator
+class FSFiberGeneratorLocal : public FSFiberGenerator
 {
 public:
-	FEFiberGeneratorLocal(int n0 = 0, int n1 = 0);
+	FSFiberGeneratorLocal(int n0 = 0, int n1 = 0);
 	vec3d GetFiber(FEElementRef& el) override;
-	DECLARE_REGISTERED(FEFiberGeneratorLocal);
+	DECLARE_REGISTERED(FSFiberGeneratorLocal);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberGeneratorVector : public FEFiberGenerator
+class FSFiberGeneratorVector : public FSFiberGenerator
 {
 public:
-	FEFiberGeneratorVector(const vec3d& v = vec3d(1,0,0));
+	FSFiberGeneratorVector(const vec3d& v = vec3d(1,0,0));
 	vec3d GetFiber(FEElementRef& el) override;
-	DECLARE_REGISTERED(FEFiberGeneratorVector);
+	DECLARE_REGISTERED(FSFiberGeneratorVector);
 };
 
 //-----------------------------------------------------------------------------
-class FECylindricalVectorGenerator : public FEFiberGenerator
+class FSCylindricalVectorGenerator : public FSFiberGenerator
 {
 public:
-	FECylindricalVectorGenerator();
-	FECylindricalVectorGenerator(const vec3d& center, const vec3d& axis, const vec3d& vector);
+	FSCylindricalVectorGenerator();
+	FSCylindricalVectorGenerator(const vec3d& center, const vec3d& axis, const vec3d& vector);
 	vec3d GetFiber(FEElementRef& el) override;
-	DECLARE_REGISTERED(FECylindricalVectorGenerator);
+	DECLARE_REGISTERED(FSCylindricalVectorGenerator);
 };
 
 //-----------------------------------------------------------------------------
-class FESphericalVectorGenerator : public FEFiberGenerator
+class FSSphericalVectorGenerator : public FSFiberGenerator
 {
 public:
-	FESphericalVectorGenerator();
-	FESphericalVectorGenerator(const vec3d& center, const vec3d& vector);
+	FSSphericalVectorGenerator();
+	FSSphericalVectorGenerator(const vec3d& center, const vec3d& vector);
 	vec3d GetFiber(FEElementRef& el) override;
-	DECLARE_REGISTERED(FESphericalVectorGenerator);
+	DECLARE_REGISTERED(FSSphericalVectorGenerator);
 };
 
 //-----------------------------------------------------------------------------
-class FEAnglesVectorGenerator : public FEFiberGenerator
+class FSAnglesVectorGenerator : public FSFiberGenerator
 {
 public:
-	FEAnglesVectorGenerator(double theta = 0.0, double phi = 90.0);
+	FSAnglesVectorGenerator(double theta = 0.0, double phi = 90.0);
 	vec3d GetFiber(FEElementRef& el) override;
 	void GetAngles(double& theta, double& phi);
 	void SetAngles(double theta, double phi);
-	DECLARE_REGISTERED(FEAnglesVectorGenerator);
+	DECLARE_REGISTERED(FSAnglesVectorGenerator);
 };
 
 //-----------------------------------------------------------------------------
 // Isotropic Elastic
 //
-class FEIsotropicElastic : public FEMaterial
+class FSIsotropicElastic : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_E, MP_v };
 
 public:
-	FEIsotropicElastic();
+	FSIsotropicElastic();
 
-	DECLARE_REGISTERED(FEIsotropicElastic);
+	DECLARE_REGISTERED(FSIsotropicElastic);
 };
 
 //-----------------------------------------------------------------------------
 // Orthotropic elastic
-class FEOrthoElastic : public FEMaterial
+class FSOrthoElastic : public FSMaterial
 {
 public:
 	enum { 
@@ -399,192 +411,206 @@ public:
 	};
 
 public:
-	FEOrthoElastic();
+	FSOrthoElastic();
 
-	DECLARE_REGISTERED(FEOrthoElastic);
+	DECLARE_REGISTERED(FSOrthoElastic);
 };
 
 //-----------------------------------------------------------------------------
 // Neo-Hookean
 //
-class FENeoHookean : public FEMaterial
+class FSNeoHookean : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_E, MP_v };
 
 public:
-	FENeoHookean();
+	FSNeoHookean();
 
-	DECLARE_REGISTERED(FENeoHookean);
+	DECLARE_REGISTERED(FSNeoHookean);
 };
 
 //-----------------------------------------------------------------------------
 // Natural Neo-Hookean
 //
-class FENaturalNeoHookean : public FEMaterial
+class FSNaturalNeoHookean : public FSMaterial
 {
 public:
     enum { MP_DENSITY, MP_G, MP_K };
     
 public:
-    FENaturalNeoHookean();
+    FSNaturalNeoHookean();
     
-    DECLARE_REGISTERED(FENaturalNeoHookean);
+    DECLARE_REGISTERED(FSNaturalNeoHookean);
 };
 
 //-----------------------------------------------------------------------------
 // incompressible neo-Hookean
-class FEIncompNeoHookean : public FEMaterial
+class FSIncompNeoHookean : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_G, MP_K };
 
 public:
-	FEIncompNeoHookean();
-	DECLARE_REGISTERED(FEIncompNeoHookean);
+	FSIncompNeoHookean();
+	DECLARE_REGISTERED(FSIncompNeoHookean);
 };
 
 //-----------------------------------------------------------------------------
 // Porous neo-Hookean
 //
-class FEPorousNeoHookean : public FEMaterial
+class FSPorousNeoHookean : public FSMaterial
 {
 public:
     enum { MP_DENSITY, MP_E, MP_PHI0 };
     
 public:
-    FEPorousNeoHookean();
+    FSPorousNeoHookean();
     
-    DECLARE_REGISTERED(FEPorousNeoHookean);
+    DECLARE_REGISTERED(FSPorousNeoHookean);
 };
 
 //-----------------------------------------------------------------------------
 // Mooney-Rivlin
 //
-class FEMooneyRivlin : public FEMaterial
+class FSMooneyRivlin : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_A, MP_B, MP_K };
 	
 public:
-	FEMooneyRivlin();
+	FSMooneyRivlin();
 
-	DECLARE_REGISTERED(FEMooneyRivlin);
+	DECLARE_REGISTERED(FSMooneyRivlin);
 };
 
 //-----------------------------------------------------------------------------
 // Veronda-Westmann
 //
-class FEVerondaWestmann : public FEMaterial
+class FSVerondaWestmann : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_A, MP_B, MP_K };
 	
 public:
-	FEVerondaWestmann();
+	FSVerondaWestmann();
 
-	DECLARE_REGISTERED(FEVerondaWestmann);
+	DECLARE_REGISTERED(FSVerondaWestmann);
 };
 
 //-----------------------------------------------------------------------------
 // coupled Mooney-Rivlin
 //
-class FECoupledMooneyRivlin : public FEMaterial
+class FSCoupledMooneyRivlin : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_A, MP_B, MP_K };
 
 public:
-	FECoupledMooneyRivlin();
+	FSCoupledMooneyRivlin();
 
-	DECLARE_REGISTERED(FECoupledMooneyRivlin);
+	DECLARE_REGISTERED(FSCoupledMooneyRivlin);
 };
 
 //-----------------------------------------------------------------------------
 // coupled Veronda-Westmann
 //
-class FECoupledVerondaWestmann : public FEMaterial
+class FSCoupledVerondaWestmann : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_A, MP_B, MP_K };
 
 public:
-	FECoupledVerondaWestmann();
+	FSCoupledVerondaWestmann();
 
-	DECLARE_REGISTERED(FECoupledVerondaWestmann);
+	DECLARE_REGISTERED(FSCoupledVerondaWestmann);
 };
 
 //-----------------------------------------------------------------------------
 // Holmes-Mow
 //
-class FEHolmesMow : public FEMaterial
+class FSHolmesMow : public FSMaterial
 {
 public:
 	enum { MP_DENS, MP_E, MP_V, MP_BETA };
 
 public:
-	FEHolmesMow();
+	FSHolmesMow();
 
-	DECLARE_REGISTERED(FEHolmesMow);
+	DECLARE_REGISTERED(FSHolmesMow);
+};
+
+//-----------------------------------------------------------------------------
+// Holmes-Mow uncoupled
+//
+class FEHolmesMowUC : public FSMaterial
+{
+public:
+    enum { MP_DENS, MP_MU, MP_BETA, MP_K };
+    
+public:
+    FEHolmesMowUC();
+    
+    DECLARE_REGISTERED(FEHolmesMowUC);
 };
 
 //-----------------------------------------------------------------------------
 // Arruda-Boyce
 //
-class FEArrudaBoyce: public FEMaterial
+class FSArrudaBoyce: public FSMaterial
 {
 public:
 	enum { MP_DENS, MP_MU, MP_N, MP_K };
 
 public:
-	FEArrudaBoyce();
+	FSArrudaBoyce();
 
-	DECLARE_REGISTERED(FEArrudaBoyce);
+	DECLARE_REGISTERED(FSArrudaBoyce);
 };
 
 //-----------------------------------------------------------------------------
 // Carter-Hayes
 //
-class FECarterHayes : public FEMaterial
+class FSCarterHayes : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_E0, MP_RHO0, MP_GA, MP_v , MP_SBM };
     
 public:
-	FECarterHayes();
+	FSCarterHayes();
     
-	DECLARE_REGISTERED(FECarterHayes);
+	DECLARE_REGISTERED(FSCarterHayes);
 };
 
 //-----------------------------------------------------------------------------
 // Newtonian viscous solid
 //
-class FENewtonianViscousSolid : public FEMaterial
+class FSNewtonianViscousSolid : public FSMaterial
 {
 public:
     enum { MP_DENSITY, MP_MU, MP_K };
     
 public:
-    FENewtonianViscousSolid();
+    FSNewtonianViscousSolid();
     
-    DECLARE_REGISTERED(FENewtonianViscousSolid);
+    DECLARE_REGISTERED(FSNewtonianViscousSolid);
 };
 
 //-----------------------------------------------------------------------------
 // PRLig
 //
-class FEPRLig : public FEMaterial
+class FSPRLig : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_C1, MP_C2, MP_V0, MP_M, MP_MU, MP_K };
 
 public:
-	FEPRLig();
+	FSPRLig();
 
-	DECLARE_REGISTERED(FEPRLig);
+	DECLARE_REGISTERED(FSPRLig);
 };
 
-class FEOldFiberMaterial : public FEMaterial
+class FSOldFiberMaterial : public FSMaterial
 {
 private:
 	enum {
@@ -608,54 +634,54 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
-	void copy(FEOldFiberMaterial* pm);
+	void copy(FSOldFiberMaterial* pm);
 
 public:
-	FEOldFiberMaterial();
+	FSOldFiberMaterial();
 
 	vec3d GetFiberVector(FEElementRef& el);
 
 	bool UpdateData(bool bsave) override;
 
 private:
-	FEOldFiberMaterial(const FEOldFiberMaterial& m);
-	FEOldFiberMaterial& operator = (const FEOldFiberMaterial& m);
+	FSOldFiberMaterial(const FSOldFiberMaterial& m);
+	FSOldFiberMaterial& operator = (const FSOldFiberMaterial& m);
 };
 
 //-----------------------------------------------------------------------------
 // base class for transversely isotropic materials
 //
-class FETransverselyIsotropic : public FEMaterial
+class FSTransverselyIsotropic : public FSMaterial
 {
 public:
 	enum { MP_MAT, MP_FIBERS };
 
 public:
-	FETransverselyIsotropic(int ntype);
+	FSTransverselyIsotropic(int ntype);
 	vec3d GetFiber(FEElementRef& el);
 	bool HasFibers() { return true; }
 
-	FEOldFiberMaterial* GetFiberMaterial();
+	FSOldFiberMaterial* GetFiberMaterial();
 
-	void copy(FEMaterial* pmat);
+	void copy(FSMaterial* pmat);
 	void Load(IArchive& ar);
 	void Save(OArchive& ar);
 
 protected:
-	void SetFiberMaterial(FEOldFiberMaterial* fiber);
+	void SetFiberMaterial(FSOldFiberMaterial* fiber);
 
 private:
-	FEOldFiberMaterial*	m_pfiber;
+	FSOldFiberMaterial*	m_pfiber;
 };
 
 //-----------------------------------------------------------------------------
 // Transversely Isotropic Mooney Rivlin (obsolete implementation)
 //
-class FETransMooneyRivlinOld : public FETransverselyIsotropic
+class FSTransMooneyRivlinOld : public FSTransverselyIsotropic
 {
 public:
 	// the fiber class for this material
-	class Fiber : public FEOldFiberMaterial
+	class Fiber : public FSOldFiberMaterial
 	{
 	public:
 		enum {
@@ -672,19 +698,19 @@ public:
 	enum { MP_DENSITY, MP_C1, MP_C2, MP_K };
 
 public:
-	FETransMooneyRivlinOld();
+	FSTransMooneyRivlinOld();
 
-//	DECLARE_REGISTERED(FETransMooneyRivlinOld);
+//	DECLARE_REGISTERED(FSTransMooneyRivlinOld);
 };
 
 //-----------------------------------------------------------------------------
 // Transversely Isotropic Veronda-Westmann
 //
-class FETransVerondaWestmannOld : public FETransverselyIsotropic
+class FSTransVerondaWestmannOld : public FSTransverselyIsotropic
 {
 public:
 	// the fiber class for this material
-	class Fiber : public FEOldFiberMaterial
+	class Fiber : public FSOldFiberMaterial
 	{
 	public:
 		enum {
@@ -700,122 +726,122 @@ public:
 	enum { MP_DENSITY, MP_C1, MP_C2, MP_K };
 
 public:
-	FETransVerondaWestmannOld();
+	FSTransVerondaWestmannOld();
 
-//	DECLARE_REGISTERED(FETransVerondaWestmannOld);
+//	DECLARE_REGISTERED(FSTransVerondaWestmannOld);
 };
 
 //-----------------------------------------------------------------------------
 // Active contraction material for new transverely-isotropic materials
 
-class FEActiveContraction : public FEMaterial
+class FSActiveContraction : public FSMaterial
 {
 public:
 	enum { MP_ASCL, MP_CA0, MP_BETA, MP_L0, MP_REFL };
 
 public:
-	FEActiveContraction();
+	FSActiveContraction();
 
-	DECLARE_REGISTERED(FEActiveContraction);
+	DECLARE_REGISTERED(FSActiveContraction);
 };
 
 //-----------------------------------------------------------------------------
-class FETransMooneyRivlin : public FETransverselyIsotropic
+class FSTransMooneyRivlin : public FSTransverselyIsotropic
 {
 public:
 	// this material's material parameters
 	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_LAM, MP_K };
 
 public:
-	FETransMooneyRivlin();
+	FSTransMooneyRivlin();
 
 	// convert from the old to the new format
-	void Convert(FETransMooneyRivlinOld* mat);
+	void Convert(FSTransMooneyRivlinOld* mat);
 
-	DECLARE_REGISTERED(FETransMooneyRivlin);
+	DECLARE_REGISTERED(FSTransMooneyRivlin);
 };
 
 //-----------------------------------------------------------------------------
-class FETransVerondaWestmann : public FETransverselyIsotropic
+class FSTransVerondaWestmann : public FSTransverselyIsotropic
 {
 public:
 	// this material's material parameters
 	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_LAM, MP_K };
 
 public:
-	FETransVerondaWestmann();
+	FSTransVerondaWestmann();
 
 	// convert from the old to the new format
-	void Convert(FETransVerondaWestmannOld* mat);
+	void Convert(FSTransVerondaWestmannOld* mat);
 
-	DECLARE_REGISTERED(FETransVerondaWestmann);
+	DECLARE_REGISTERED(FSTransVerondaWestmann);
 };
 
 //-----------------------------------------------------------------------------
-class FECoupledTransIsoVerondaWestmann : public FETransverselyIsotropic
+class FSCoupledTransIsoVerondaWestmann : public FSTransverselyIsotropic
 {
 public:
 	// this material's material parameters
 	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_LAM, MP_K };
 
 public:
-	FECoupledTransIsoVerondaWestmann();
+	FSCoupledTransIsoVerondaWestmann();
 
-	DECLARE_REGISTERED(FECoupledTransIsoVerondaWestmann);
+	DECLARE_REGISTERED(FSCoupledTransIsoVerondaWestmann);
 };
 
 //-----------------------------------------------------------------------------
 // Coupled Transversely Isotropic Mooney Rivlin
 //
-class FECoupledTransIsoMooneyRivlinOld : public FEMaterial
+class FSCoupledTransIsoMooneyRivlinOld : public FSMaterial
 {
 public:
 	// this material's material parameters
 	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_LAMBDA, MP_K };
 
 public:
-	FECoupledTransIsoMooneyRivlinOld();
+	FSCoupledTransIsoMooneyRivlinOld();
 
-//	DECLARE_REGISTERED(FECoupledTransIsoMooneyRivlinOld);
+//	DECLARE_REGISTERED(FSCoupledTransIsoMooneyRivlinOld);
 };
 
 //-----------------------------------------------------------------------------
 // Coupled Transversely Isotropic Mooney Rivlin
 //
-class FECoupledTransIsoMooneyRivlin : public FETransverselyIsotropic
+class FSCoupledTransIsoMooneyRivlin : public FSTransverselyIsotropic
 {
 public:
 	// this material's material parameters
 	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_K, MP_LAMBDA };
 
 public:
-	FECoupledTransIsoMooneyRivlin();
+	FSCoupledTransIsoMooneyRivlin();
 
-	void Convert(FECoupledTransIsoMooneyRivlinOld* mat);
+	void Convert(FSCoupledTransIsoMooneyRivlinOld* mat);
 
-	DECLARE_REGISTERED(FECoupledTransIsoMooneyRivlin);
+	DECLARE_REGISTERED(FSCoupledTransIsoMooneyRivlin);
 };
 
 //-----------------------------------------------------------------------------
-class FEMooneyRivlinVonMisesFibers : public FEMaterial
+class FSMooneyRivlinVonMisesFibers : public FSMaterial
 {
 public:
-	FEMooneyRivlinVonMisesFibers();
-	DECLARE_REGISTERED(FEMooneyRivlinVonMisesFibers);
+	FSMooneyRivlinVonMisesFibers();
+	DECLARE_REGISTERED(FSMooneyRivlinVonMisesFibers);
 };
 
 //-----------------------------------------------------------------------------
-class FE2DTransIsoMooneyRivlin : public FETransverselyIsotropic
+class FS2DTransIsoMooneyRivlin : public FSTransverselyIsotropic
 {
 public:
-	FE2DTransIsoMooneyRivlin();
-	DECLARE_REGISTERED(FE2DTransIsoMooneyRivlin);
+	FS2DTransIsoMooneyRivlin();
+	DECLARE_REGISTERED(FS2DTransIsoMooneyRivlin);
 };
 
 //-----------------------------------------------------------------------------
 // rigid body material
 //
-class FERigidMaterial : public FEMaterial
+class FSRigidMaterial : public FSMaterial
 {
 public:
 	enum { 
@@ -824,28 +850,30 @@ public:
 	};
 
 public:
-	FERigidMaterial();
+	FSRigidMaterial();
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	void copy(FEMaterial* pmat);
+	void copy(FSMaterial* pmat);
 
 	void SetAutoCOM(bool b);
 	void SetCenterOfMass(const vec3d& r);
 
 	vec3d GetCenterOfMass() const;
 
+	bool IsRigid() override;
+
 public:
 	int	m_pid;	// parent ID
 
-	DECLARE_REGISTERED(FERigidMaterial);
+	DECLARE_REGISTERED(FSRigidMaterial);
 };
 
 //-----------------------------------------------------------------------------
 // TC nonlinear orthotropic
 //
-class FETCNonlinearOrthotropic : public FEMaterial
+class FSTCNonlinearOrthotropic : public FSMaterial
 {
 public:
 	enum { 
@@ -855,15 +883,15 @@ public:
 		MP_A, MP_D };
 
 public:
-	FETCNonlinearOrthotropic();
+	FSTCNonlinearOrthotropic();
 
-	DECLARE_REGISTERED(FETCNonlinearOrthotropic);
+	DECLARE_REGISTERED(FSTCNonlinearOrthotropic);
 };
 
 //-----------------------------------------------------------------------------
 // Fung Orthotropic
 //
-class FEFungOrthotropic : public FEMaterial
+class FSFungOrthotropic : public FSMaterial
 {
 public:
 	enum {
@@ -874,15 +902,15 @@ public:
 		MP_C, MP_K };
 
 public:
-	FEFungOrthotropic();
+	FSFungOrthotropic();
 
-	DECLARE_REGISTERED(FEFungOrthotropic);
+	DECLARE_REGISTERED(FSFungOrthotropic);
 };
 
 //-----------------------------------------------------------------------------
 // Fung Orthotropic
 //
-class FEFungOrthoCompressible : public FEMaterial
+class FSFungOrthoCompressible : public FSMaterial
 {
 public:
 	enum {
@@ -893,15 +921,15 @@ public:
 		MP_C, MP_K };
     
 public:
-	FEFungOrthoCompressible();
+	FSFungOrthoCompressible();
     
-	DECLARE_REGISTERED(FEFungOrthoCompressible);
+	DECLARE_REGISTERED(FSFungOrthoCompressible);
 };
 
 //-----------------------------------------------------------------------------
 // Holzapfel-Gasser-Ogden
 //
-class FEHolzapfelGasserOgden : public FEMaterial
+class FSHolzapfelGasserOgden : public FSMaterial
 {
 public:
     enum {
@@ -912,15 +940,15 @@ public:
         MP_K };
     
 public:
-    FEHolzapfelGasserOgden();
+    FSHolzapfelGasserOgden();
     
-    DECLARE_REGISTERED(FEHolzapfelGasserOgden);
+    DECLARE_REGISTERED(FSHolzapfelGasserOgden);
 };
 
 //-----------------------------------------------------------------------------
 // Holzapfel-Gasser-Ogden unconstrained
 //
-class FEHolzapfelUnconstrained : public FEMaterial
+class FSHolzapfelUnconstrained : public FSMaterial
 {
 public:
     enum {
@@ -931,15 +959,15 @@ public:
         MP_K };
     
 public:
-    FEHolzapfelUnconstrained();
+    FSHolzapfelUnconstrained();
     
-    DECLARE_REGISTERED(FEHolzapfelUnconstrained);
+    DECLARE_REGISTERED(FSHolzapfelUnconstrained);
 };
 
 //-----------------------------------------------------------------------------
 // Linear Orthotropic
 //
-class FELinearOrthotropic : public FEMaterial
+class FSLinearOrthotropic : public FSMaterial
 {
 public:
 	enum {
@@ -949,42 +977,42 @@ public:
 		MP_V12, MP_V23, MP_V31 };
 
 public:
-	FELinearOrthotropic();
+	FSLinearOrthotropic();
 
-	DECLARE_REGISTERED(FELinearOrthotropic);
+	DECLARE_REGISTERED(FSLinearOrthotropic);
 };
 
 //-----------------------------------------------------------------------------
 // Muscle Material
 //
-class FEMuscleMaterial : public FETransverselyIsotropic
+class FSMuscleMaterial : public FSTransverselyIsotropic
 {
 public:
 	enum { MP_DENSITY, MP_G1, MP_G2, MP_K, MP_P1, MP_P2, MP_LOFL, MP_LAM, MP_SMAX };
 
 public:
-	FEMuscleMaterial();
+	FSMuscleMaterial();
 
-	DECLARE_REGISTERED(FEMuscleMaterial);
+	DECLARE_REGISTERED(FSMuscleMaterial);
 };
 
 //-----------------------------------------------------------------------------
 // Tendon Material
 //
-class FETendonMaterial : public FETransverselyIsotropic
+class FSTendonMaterial : public FSTransverselyIsotropic
 {
 public:
 	enum { MP_DENSITY, MP_G1, MP_G2, MP_K, MP_L1, MP_L2, MP_LAM };
 
-	FETendonMaterial();
+	FSTendonMaterial();
 
-	DECLARE_REGISTERED(FETendonMaterial);
+	DECLARE_REGISTERED(FSTendonMaterial);
 };
 
 //-----------------------------------------------------------------------------
 // Ogden Material
 //
-class FEOgdenMaterial : public FEMaterial
+class FSOgdenMaterial : public FSMaterial
 {
 public:
 	enum { 
@@ -994,15 +1022,15 @@ public:
 		MP_M1, MP_M2, MP_M3, MP_M4, MP_M5, MP_M6};
 
 public:
-	FEOgdenMaterial();
+	FSOgdenMaterial();
 
-	DECLARE_REGISTERED(FEOgdenMaterial);
+	DECLARE_REGISTERED(FSOgdenMaterial);
 };
 
 //-----------------------------------------------------------------------------
 // Ogden unconstrained Material
 //
-class FEOgdenUnconstrained: public FEMaterial
+class FSOgdenUnconstrained: public FSMaterial
 {
 public:
 	enum { 
@@ -1012,44 +1040,44 @@ public:
 		MP_M1, MP_M2, MP_M3, MP_M4, MP_M5, MP_M6};
 
 public:
-	FEOgdenUnconstrained();
+	FSOgdenUnconstrained();
 
-	DECLARE_REGISTERED(FEOgdenUnconstrained);
+	DECLARE_REGISTERED(FSOgdenUnconstrained);
 };
 
 //-----------------------------------------------------------------------------
 // ellipsoidal fiber distribution - Mooney-Rivlin
 //
-class FEEFDMooneyRivlin : public FEMaterial
+class FSEFDMooneyRivlin : public FSMaterial
 {
 public:
 	enum { MP_C1, MP_C2, MP_K, MP_BETA, MP_KSI };
 
 public:
-	FEEFDMooneyRivlin();
+	FSEFDMooneyRivlin();
 
-	DECLARE_REGISTERED(FEEFDMooneyRivlin);
+	DECLARE_REGISTERED(FSEFDMooneyRivlin);
 
 };
 
 //-----------------------------------------------------------------------------
 // ellipsoidal fiber distribution - neo-Hookean
 //
-class FEEFDNeoHookean : public FEMaterial
+class FSEFDNeoHookean : public FSMaterial
 {
 public:
 	enum { MP_E, MP_v, MP_BETA, MP_KSI };
 
 public:
-	FEEFDNeoHookean();
+	FSEFDNeoHookean();
 
-	DECLARE_REGISTERED(FEEFDNeoHookean);
+	DECLARE_REGISTERED(FSEFDNeoHookean);
 };
 
 //-----------------------------------------------------------------------------
 // ellipsoidal fiber distribution - Donnan Equilibrium Swelling
 //
-class FEEFDDonnan : public FEMaterial
+class FSEFDDonnan : public FSMaterial
 {
 public:
 	enum
@@ -1059,14 +1087,14 @@ public:
 	};
 
 public:
-	FEEFDDonnan();
+	FSEFDDonnan();
 
-	DECLARE_REGISTERED(FEEFDDonnan);
+	DECLARE_REGISTERED(FSEFDDonnan);
 };
 
 //-----------------------------------------------------------------------------
 // ellipsoidal fiber distribution with Veronda-Westmann matrix
-class FEEFDVerondaWestmann : public FEMaterial
+class FSEFDVerondaWestmann : public FSMaterial
 {
 public:
 	enum
@@ -1076,246 +1104,246 @@ public:
 	};
 
 public:
-	FEEFDVerondaWestmann();
+	FSEFDVerondaWestmann();
 
-	DECLARE_REGISTERED(FEEFDVerondaWestmann);
+	DECLARE_REGISTERED(FSEFDVerondaWestmann);
 };
 
 //-----------------------------------------------------------------------------
-class FEKamensky: public FEMaterial
+class FSKamensky: public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_C0, MP_C1, MP_C2, MP_K, MP_TANGENT_SCALE };
 
 public:
-	FEKamensky();
+	FSKamensky();
 
-	DECLARE_REGISTERED(FEKamensky);
+	DECLARE_REGISTERED(FSKamensky);
 };
 
 //-----------------------------------------------------------------------------
-class FEKamenskyUncoupled : public FEMaterial
+class FSKamenskyUncoupled : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_C0, MP_C1, MP_C2, MP_K, MP_TANGENT_SCALE };
 
 public:
-	FEKamenskyUncoupled();
+	FSKamenskyUncoupled();
 
-	DECLARE_REGISTERED(FEKamenskyUncoupled);
+	DECLARE_REGISTERED(FSKamenskyUncoupled);
 };
 
 
 //-----------------------------------------------------------------------------
 // Isotropic Fourier
-class FEIsotropicFourier : public FEMaterial
+class FSIsotropicFourier : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_K, MP_C };
 
 public:
-	FEIsotropicFourier();
-	DECLARE_REGISTERED(FEIsotropicFourier);
+	FSIsotropicFourier();
+	DECLARE_REGISTERED(FSIsotropicFourier);
 };
 
 //-----------------------------------------------------------------------------
 // Constant permeability
-class FEPermConst : public FEMaterial
+class FSPermConst : public FSMaterial
 {
 public:
 	enum { MP_PERM };
 public:
-	FEPermConst();
-	DECLARE_REGISTERED(FEPermConst);
+	FSPermConst();
+	DECLARE_REGISTERED(FSPermConst);
 };
 
 //-----------------------------------------------------------------------------
 // Holmes-Mow permeability
-class FEPermHolmesMow : public FEMaterial
+class FSPermHolmesMow : public FSMaterial
 {
 public:
 	enum { MP_PERM, MP_M, MP_ALPHA };
 public:
-	FEPermHolmesMow();
-	DECLARE_REGISTERED(FEPermHolmesMow);
+	FSPermHolmesMow();
+	DECLARE_REGISTERED(FSPermHolmesMow);
 };
 
 //-----------------------------------------------------------------------------
 // Ateshian-Weiss isotropic permeability
-class FEPermAteshianWeissIso : public FEMaterial
+class FSPermAteshianWeissIso : public FSMaterial
 {
 public:
 	enum { MP_PERM0, MP_PERM1, MP_PERM2, MP_M, MP_ALPHA };
 public:
-	FEPermAteshianWeissIso();
-	DECLARE_REGISTERED(FEPermAteshianWeissIso);
+	FSPermAteshianWeissIso();
+	DECLARE_REGISTERED(FSPermAteshianWeissIso);
 };
 
 //-----------------------------------------------------------------------------
 // Ateshian-Weiss trans-isotropic permeability
-class FEPermAteshianWeissTransIso : public FEMaterial
+class FSPermAteshianWeissTransIso : public FSMaterial
 {
 public:
 	enum { MP_PERM0, MP_PERM1T, MP_PERM1A, MP_PERM2T, MP_PERM2A, MP_M0, MP_MT, MP_MA, MP_ALPHA0, MP_ALPHAT, MP_ALPHAA };
 public:
-	FEPermAteshianWeissTransIso();
-	DECLARE_REGISTERED(FEPermAteshianWeissTransIso);
+	FSPermAteshianWeissTransIso();
+	DECLARE_REGISTERED(FSPermAteshianWeissTransIso);
 };
 
 //-----------------------------------------------------------------------------
 // Ateshian-Weiss orthotropic permeability
-class FEPermAteshianWeissOrtho : public FEMaterial
+class FSPermAteshianWeissOrtho : public FSMaterial
 {
 public:
 	enum { MP_PERM0, MP_PERM1, MP_PERM2, MP_M0, MP_ALPHA0, MP_M, MP_ALPHA };
 
 public:
-	FEPermAteshianWeissOrtho();
-	DECLARE_REGISTERED(FEPermAteshianWeissOrtho);
+	FSPermAteshianWeissOrtho();
+	DECLARE_REGISTERED(FSPermAteshianWeissOrtho);
 };
 
 //-----------------------------------------------------------------------------
 // exponential isotropic permeability
-class FEPermExpIso : public FEMaterial
+class FSPermExpIso : public FSMaterial
 {
 public:
     enum { MP_PERM, MP_M };
 public:
-    FEPermExpIso();
-    DECLARE_REGISTERED(FEPermExpIso);
+    FSPermExpIso();
+    DECLARE_REGISTERED(FSPermExpIso);
 };
 
 //-----------------------------------------------------------------------------
 // Constant diffusivity
-class FEDiffConst : public FEMaterial
+class FSDiffConst : public FSMaterial
 {
 public:
 	enum { MP_DIFF_FREE, MP_DIFF};
 
 public:
-	FEDiffConst();
-	DECLARE_REGISTERED(FEDiffConst);
+	FSDiffConst();
+	DECLARE_REGISTERED(FSDiffConst);
 };
 
 //-----------------------------------------------------------------------------
 // orthotropic diffusivity
-class FEDiffOrtho : public FEMaterial
+class FSDiffOrtho : public FSMaterial
 {
 public:
 	enum { MP_DIFF_FREE, MP_DIFF};
 
 public:
-	FEDiffOrtho();
-	DECLARE_REGISTERED(FEDiffOrtho);
+	FSDiffOrtho();
+	DECLARE_REGISTERED(FSDiffOrtho);
 };
 
 //-----------------------------------------------------------------------------
 // Ateshian-Weiss isotropic diffusivity
-class FEDiffAteshianWeissIso : public FEMaterial
+class FSDiffAteshianWeissIso : public FSMaterial
 {
 public:
 	enum { MP_DIFF_FREE, MP_DIFF0, MP_DIFF1, MP_DIFF2, MP_M, MP_ALPHA };
 
 public:
-	FEDiffAteshianWeissIso();
-	DECLARE_REGISTERED(FEDiffAteshianWeissIso);
+	FSDiffAteshianWeissIso();
+	DECLARE_REGISTERED(FSDiffAteshianWeissIso);
 };
 
 //-----------------------------------------------------------------------------
 // Albro isotropic diffusivity
-class FEDiffAlbroIso : public FEMaterial
+class FSDiffAlbroIso : public FSMaterial
 {
 public:
 	enum { MP_DIFF_FREE, MP_CDINV, MP_ALPHAD };
     
 public:
-	FEDiffAlbroIso();
-	DECLARE_REGISTERED(FEDiffAlbroIso);
+	FSDiffAlbroIso();
+	DECLARE_REGISTERED(FSDiffAlbroIso);
 };
 
 //-----------------------------------------------------------------------------
 // Constant solubility
-class FESolubConst : public FEMaterial
+class FSSolubConst : public FSMaterial
 {
 public:
 	enum { MP_SOLUB };
 
 public:
-	FESolubConst();
-	DECLARE_REGISTERED(FESolubConst);
+	FSSolubConst();
+	DECLARE_REGISTERED(FSSolubConst);
 };
 
 //-----------------------------------------------------------------------------
 // Constant osmotic coefficient
-class FEOsmoConst : public FEMaterial
+class FSOsmoConst : public FSMaterial
 {
 public:
 	enum { MP_OSMO };
 
 public:
-	FEOsmoConst();
-	DECLARE_REGISTERED(FEOsmoConst);
+	FSOsmoConst();
+	DECLARE_REGISTERED(FSOsmoConst);
 };
 
 //-----------------------------------------------------------------------------
 // Wells-Manning osmotic coefficient
-class FEOsmoWellsManning : public FEMaterial
+class FSOsmoWellsManning : public FSMaterial
 {
 public:
     enum { MP_KSI, MP_COION };
 
 public:
-    FEOsmoWellsManning();
+    FSOsmoWellsManning();
 
     // get/set co-ion index
     void SetCoIonIndex(int i) { SetIntValue(MP_COION, i); }
     int GetCoIonIndex() { return GetIntValue(MP_COION); }
     
-    DECLARE_REGISTERED(FEOsmoWellsManning);
+    DECLARE_REGISTERED(FSOsmoWellsManning);
 };
 
 //-----------------------------------------------------------------------------
 // SFD compressible
-class FESFDCoupled : public FEMaterial
+class FSSFDCoupled : public FSMaterial
 {
 public:
 	enum {MP_ALPHA, MP_BETA, MP_KSI};
 public:
-	FESFDCoupled();
-	DECLARE_REGISTERED(FESFDCoupled);
+	FSSFDCoupled();
+	DECLARE_REGISTERED(FSSFDCoupled);
 };
 
 //-----------------------------------------------------------------------------
 // SFD SBM
-class FESFDSBM : public FEMaterial
+class FSSFDSBM : public FSMaterial
 {
 public:
 	enum {MP_ALPHA, MP_BETA, MP_KSI0, MP_RHO0, MP_GAMMA, MP_SBM};
 public:
-	FESFDSBM();
-	DECLARE_REGISTERED(FESFDSBM);
+	FSSFDSBM();
+	DECLARE_REGISTERED(FSSFDSBM);
 };
 
 //-----------------------------------------------------------------------------
 // EFD compressible
-class FEEFDCoupled : public FEMaterial
+class FSEFDCoupled : public FSMaterial
 {
 public:
 	enum {MP_BETA, MP_KSI};
 public:
-	FEEFDCoupled();
-	DECLARE_REGISTERED(FEEFDCoupled);
+	FSEFDCoupled();
+	DECLARE_REGISTERED(FSEFDCoupled);
 };
 
 //-----------------------------------------------------------------------------
 // EFD uncoupled
-class FEEFDUncoupled : public FEMaterial
+class FSEFDUncoupled : public FSMaterial
 {
 public:
 	enum {MP_BETA, MP_KSI, MP_K};
 public:
-	FEEFDUncoupled();
-	DECLARE_REGISTERED(FEEFDUncoupled);
+	FSEFDUncoupled();
+	DECLARE_REGISTERED(FSEFDUncoupled);
 };
 
 //=============================================================================
@@ -1323,43 +1351,43 @@ public:
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-class FEFiberExpPowOld : public FEMaterial
+class FSFiberExpPowOld : public FSMaterial
 {
 public:
 	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_THETA, MP_PHI };
 public:
-	FEFiberExpPowOld();
-//	DECLARE_REGISTERED(FEFiberExpPow);
+	FSFiberExpPowOld();
+//	DECLARE_REGISTERED(FSFiberExpPow);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpPowUncoupledOld : public FEMaterial
+class FSFiberExpPowUncoupledOld : public FSMaterial
 {
 public:
 	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_K, MP_THETA, MP_PHI };
 public:
-	FEFiberExpPowUncoupledOld();
-//	DECLARE_REGISTERED(FEFiberExpPowUncoupled);
+	FSFiberExpPowUncoupledOld();
+//	DECLARE_REGISTERED(FSFiberExpPowUncoupled);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberPowLinOld : public FEMaterial
+class FSFiberPowLinOld : public FSMaterial
 {
 public:
     enum { MP_E, MP_BETA, MP_LAM0, MP_THETA, MP_PHI };
 public:
-    FEFiberPowLinOld();
-//    DECLARE_REGISTERED(FEFiberPowLin);
+    FSFiberPowLinOld();
+//    DECLARE_REGISTERED(FSFiberPowLin);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberPowLinUncoupledOld : public FEMaterial
+class FSFiberPowLinUncoupledOld : public FSMaterial
 {
 public:
     enum { MP_E, MP_BETA, MP_LAM0, MP_K, MP_THETA, MP_PHI };
 public:
-    FEFiberPowLinUncoupledOld();
-//    DECLARE_REGISTERED(FEFiberPowLinUncoupled);
+    FSFiberPowLinUncoupledOld();
+//    DECLARE_REGISTERED(FSFiberPowLinUncoupled);
 };
 
 //=============================================================================
@@ -1368,160 +1396,160 @@ public:
 
 //-----------------------------------------------------------------------------
 // Base class manages the fiber generator
-class FEFiberMaterial : public FEMaterial
+class FSFiberMaterial : public FSMaterial
 {
 public:
-	FEFiberMaterial(int ntype);
+	FSFiberMaterial(int ntype);
 
 	bool HasFibers() override;
 
 	vec3d GetFiber(FEElementRef& el) override;
 
-	void SetFiberGenerator(FEFiberGenerator* v);
+	void SetFiberGenerator(FSFiberGenerator* v);
 
-	FEFiberGenerator* GetFiberGenerator();
+	FSFiberGenerator* GetFiberGenerator();
 
-	void SetAxisMaterial(FEAxisMaterial* Q) override;
+	void SetAxisMaterial(FSAxisMaterial* Q) override;
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpPow : public FEFiberMaterial
+class FSFiberExpPow : public FSFiberMaterial
 {
 public:
     enum { MP_ALPHA, MP_BETA, MP_KSI, M_L0 };
 
 public:
-    FEFiberExpPow();
+    FSFiberExpPow();
     
     // convert from the old to the new format
-    void Convert(FEFiberExpPowOld* mat);
+    void Convert(FSFiberExpPowOld* mat);
     
-    DECLARE_REGISTERED(FEFiberExpPow);
+    DECLARE_REGISTERED(FSFiberExpPow);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpPowUncoupled : public FEFiberMaterial
+class FSFiberExpPowUncoupled : public FSFiberMaterial
 {
 public:
     enum { MP_ALPHA, MP_BETA, MP_KSI, MP_K };
 public:
-    FEFiberExpPowUncoupled();
+    FSFiberExpPowUncoupled();
     
     // convert from the old to the new format
-    void Convert(FEFiberExpPowUncoupledOld* mat);
+    void Convert(FSFiberExpPowUncoupledOld* mat);
     
-    DECLARE_REGISTERED(FEFiberExpPowUncoupled);
+    DECLARE_REGISTERED(FSFiberExpPowUncoupled);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberPowLin : public FEFiberMaterial
+class FSFiberPowLin : public FSFiberMaterial
 {
 public:
     enum { MP_E, MP_BETA, MP_LAM0 };
 public:
-    FEFiberPowLin();
+    FSFiberPowLin();
     
     // convert from the old to the new format
-    void Convert(FEFiberPowLinOld* mat);
+    void Convert(FSFiberPowLinOld* mat);
     
-    DECLARE_REGISTERED(FEFiberPowLin);
+    DECLARE_REGISTERED(FSFiberPowLin);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberPowLinUncoupled : public FEFiberMaterial
+class FSFiberPowLinUncoupled : public FSFiberMaterial
 {
 public:
     enum { MP_E, MP_BETA, MP_LAM0, MP_K };
 public:
-    FEFiberPowLinUncoupled();
+    FSFiberPowLinUncoupled();
     
     // convert from the old to the new format
-    void Convert(FEFiberPowLinUncoupledOld* mat);
+    void Convert(FSFiberPowLinUncoupledOld* mat);
     
-    DECLARE_REGISTERED(FEFiberPowLinUncoupled);
+    DECLARE_REGISTERED(FSFiberPowLinUncoupled);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpLinear : public FEFiberMaterial
+class FSFiberExpLinear : public FSFiberMaterial
 {
 public:
 	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_THETA, MP_PHI };
 public:
-	FEFiberExpLinear();
-	DECLARE_REGISTERED(FEFiberExpLinear);
+	FSFiberExpLinear();
+	DECLARE_REGISTERED(FSFiberExpLinear);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpLinearUncoupled : public FEFiberMaterial
+class FSFiberExpLinearUncoupled : public FSFiberMaterial
 {
 public:
 	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_THETA, MP_PHI };
 public:
-	FEFiberExpLinearUncoupled();
-	DECLARE_REGISTERED(FEFiberExpLinearUncoupled);
+	FSFiberExpLinearUncoupled();
+	DECLARE_REGISTERED(FSFiberExpLinearUncoupled);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberNeoHookean : public FEFiberMaterial
+class FSFiberNeoHookean : public FSFiberMaterial
 {
 public:
     enum { MP_MU };
 public:
-    FEFiberNeoHookean();
+    FSFiberNeoHookean();
     
-    DECLARE_REGISTERED(FEFiberNeoHookean);
+    DECLARE_REGISTERED(FSFiberNeoHookean);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberNaturalNH : public FEFiberMaterial
+class FSFiberNaturalNH : public FSFiberMaterial
 {
 public:
     enum { MP_KSI, MP_LAM0 };
 public:
-    FEFiberNaturalNH();
+    FSFiberNaturalNH();
     
-    DECLARE_REGISTERED(FEFiberNaturalNH);
+    DECLARE_REGISTERED(FSFiberNaturalNH);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberDamagePower : public FEFiberMaterial
+class FSFiberDamagePower : public FSFiberMaterial
 {
 public:
 	enum { MP_ALPHA1, MP_ALPHA2, MP_KAPPA, MP_T0, MP_DMAX, MP_BETA_S, MP_GAMMA_MAX };
 public:
-	FEFiberDamagePower();
-	DECLARE_REGISTERED(FEFiberDamagePower);
+	FSFiberDamagePower();
+	DECLARE_REGISTERED(FSFiberDamagePower);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberDamageExponential : public FEFiberMaterial
+class FSFiberDamageExponential : public FSFiberMaterial
 {
 public:
 	enum { MP_K1, MP_K2, MP_KAPPA, MP_T0, MP_DMAX, MP_BETA_S, MP_GAMMA_MAX };
 public:
-	FEFiberDamageExponential();
-	DECLARE_REGISTERED(FEFiberDamageExponential);
+	FSFiberDamageExponential();
+	DECLARE_REGISTERED(FSFiberDamageExponential);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberDamageExpLinear : public FEFiberMaterial
+class FSFiberDamageExpLinear : public FSFiberMaterial
 {
 public:
 	enum { MP_C3, MP_C4, MP_C5, MP_LAMBDA, MP_T0, MP_DMAX, MP_BETA_S, MP_GAMMA_MAX };
 public:
-	FEFiberDamageExpLinear();
-	DECLARE_REGISTERED(FEFiberDamageExpLinear);
+	FSFiberDamageExpLinear();
+	DECLARE_REGISTERED(FSFiberDamageExpLinear);
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberKiousisUncoupled : public FEFiberMaterial
+class FSFiberKiousisUncoupled : public FSFiberMaterial
 {
 public:
     enum { MP_D1, MP_D2, M_N };
 public:
-    FEFiberKiousisUncoupled();
+    FSFiberKiousisUncoupled();
     
-    DECLARE_REGISTERED(FEFiberKiousisUncoupled);
+    DECLARE_REGISTERED(FSFiberKiousisUncoupled);
 };
 
 //=============================================================================
@@ -1529,21 +1557,21 @@ public:
 //-----------------------------------------------------------------------------
 // CLE cubic
 //
-class FECubicCLE : public FEMaterial
+class FSCubicCLE : public FSMaterial
 {
 public:
     enum { MP_DENSITY, MP_LP1, MP_LM1, MP_L2, MP_MU };
     
 public:
-    FECubicCLE();
+    FSCubicCLE();
     
-    DECLARE_REGISTERED(FECubicCLE);
+    DECLARE_REGISTERED(FSCubicCLE);
 };
 
 //-----------------------------------------------------------------------------
 // CLE orthotropic
 //
-class FEOrthotropicCLE : public FEMaterial
+class FSOrthotropicCLE : public FSMaterial
 {
 public:
     enum { MP_DENSITY,
@@ -1554,205 +1582,205 @@ public:
     };
     
 public:
-    FEOrthotropicCLE();
+    FSOrthotropicCLE();
     
-    DECLARE_REGISTERED(FEOrthotropicCLE);
+    DECLARE_REGISTERED(FSOrthotropicCLE);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed uniaxial active contraction
 //
-class FEPrescribedActiveContractionUniaxialOld : public FEMaterial
+class FSPrescribedActiveContractionUniaxialOld : public FSMaterial
 {
 public:
     enum { MP_T0, MP_TH, MP_PH };
     
 public:
-    FEPrescribedActiveContractionUniaxialOld();
+    FSPrescribedActiveContractionUniaxialOld();
     
-//    DECLARE_REGISTERED(FEPrescribedActiveContractionUniaxial);
+//    DECLARE_REGISTERED(FSPrescribedActiveContractionUniaxial);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed transversely isotropic active contraction
 //
-class FEPrescribedActiveContractionTransIsoOld : public FEMaterial
+class FSPrescribedActiveContractionTransIsoOld : public FSMaterial
 {
 public:
     enum { MP_T0, MP_TH, MP_PH };
     
 public:
-    FEPrescribedActiveContractionTransIsoOld();
+    FSPrescribedActiveContractionTransIsoOld();
     
-//    DECLARE_REGISTERED(FEPrescribedActiveContractionTransIso);
+//    DECLARE_REGISTERED(FSPrescribedActiveContractionTransIso);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed uniaxial active contraction
 //
-class FEPrescribedActiveContractionUniaxial : public FEMaterial
+class FSPrescribedActiveContractionUniaxial : public FSMaterial
 {
 public:
     enum { MP_T0 };
     
 public:
-    FEPrescribedActiveContractionUniaxial();
+    FSPrescribedActiveContractionUniaxial();
     
     // convert from the old to the new format
-    void Convert(FEPrescribedActiveContractionUniaxialOld* mat);
+    void Convert(FSPrescribedActiveContractionUniaxialOld* mat);
 
-    DECLARE_REGISTERED(FEPrescribedActiveContractionUniaxial);
+    DECLARE_REGISTERED(FSPrescribedActiveContractionUniaxial);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed transversely isotropic active contraction
 //
-class FEPrescribedActiveContractionTransIso : public FEMaterial
+class FSPrescribedActiveContractionTransIso : public FSMaterial
 {
 public:
     enum { MP_T0 };
     
 public:
-    FEPrescribedActiveContractionTransIso();
+    FSPrescribedActiveContractionTransIso();
     
     // convert from the old to the new format
-    void Convert(FEPrescribedActiveContractionTransIsoOld* mat);
+    void Convert(FSPrescribedActiveContractionTransIsoOld* mat);
 
-    DECLARE_REGISTERED(FEPrescribedActiveContractionTransIso);
+    DECLARE_REGISTERED(FSPrescribedActiveContractionTransIso);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed isotropic active contraction
 //
-class FEPrescribedActiveContractionIsotropic : public FEMaterial
+class FSPrescribedActiveContractionIsotropic : public FSMaterial
 {
 public:
     enum { MP_T0 };
     
 public:
-    FEPrescribedActiveContractionIsotropic();
+    FSPrescribedActiveContractionIsotropic();
     
-    DECLARE_REGISTERED(FEPrescribedActiveContractionIsotropic);
+    DECLARE_REGISTERED(FSPrescribedActiveContractionIsotropic);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed uniaxial active contraction uncoupled
 //
-class FEPrescribedActiveContractionUniaxialUCOld : public FEMaterial
+class FSPrescribedActiveContractionUniaxialUCOld : public FSMaterial
 {
 public:
     enum { MP_T0, MP_TH, MP_PH };
     
 public:
-    FEPrescribedActiveContractionUniaxialUCOld();
+    FSPrescribedActiveContractionUniaxialUCOld();
     
-//    DECLARE_REGISTERED(FEPrescribedActiveContractionUniaxialUC);
+//    DECLARE_REGISTERED(FSPrescribedActiveContractionUniaxialUC);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed transversely isotropic active contraction uncoupled
 //
-class FEPrescribedActiveContractionTransIsoUCOld : public FEMaterial
+class FSPrescribedActiveContractionTransIsoUCOld : public FSMaterial
 {
 public:
     enum { MP_T0, MP_TH, MP_PH };
     
 public:
-    FEPrescribedActiveContractionTransIsoUCOld();
+    FSPrescribedActiveContractionTransIsoUCOld();
     
-//    DECLARE_REGISTERED(FEPrescribedActiveContractionTransIsoUC);
+//    DECLARE_REGISTERED(FSPrescribedActiveContractionTransIsoUC);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed uniaxial active contraction uncoupled
 //
-class FEPrescribedActiveContractionUniaxialUC : public FEMaterial
+class FSPrescribedActiveContractionUniaxialUC : public FSMaterial
 {
 public:
     enum { MP_T0 };
     
 public:
-    FEPrescribedActiveContractionUniaxialUC();
+    FSPrescribedActiveContractionUniaxialUC();
     
     // convert from the old to the new format
-    void Convert(FEPrescribedActiveContractionUniaxialUCOld* mat);
+    void Convert(FSPrescribedActiveContractionUniaxialUCOld* mat);
 
-    DECLARE_REGISTERED(FEPrescribedActiveContractionUniaxialUC);
+    DECLARE_REGISTERED(FSPrescribedActiveContractionUniaxialUC);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed transversely isotropic active contraction uncoupled
 //
-class FEPrescribedActiveContractionTransIsoUC : public FEMaterial
+class FSPrescribedActiveContractionTransIsoUC : public FSMaterial
 {
 public:
     enum { MP_T0 };
     
 public:
-    FEPrescribedActiveContractionTransIsoUC();
+    FSPrescribedActiveContractionTransIsoUC();
     
     // convert from the old to the new format
-    void Convert(FEPrescribedActiveContractionTransIsoUCOld* mat);
+    void Convert(FSPrescribedActiveContractionTransIsoUCOld* mat);
 
-    DECLARE_REGISTERED(FEPrescribedActiveContractionTransIsoUC);
+    DECLARE_REGISTERED(FSPrescribedActiveContractionTransIsoUC);
 };
 
 //-----------------------------------------------------------------------------
 // Prescribed isotropic active contraction uncoupled
 //
-class FEPrescribedActiveContractionIsotropicUC : public FEMaterial
+class FSPrescribedActiveContractionIsotropicUC : public FSMaterial
 {
 public:
     enum { MP_T0 };
     
 public:
-    FEPrescribedActiveContractionIsotropicUC();
+    FSPrescribedActiveContractionIsotropicUC();
     
-    DECLARE_REGISTERED(FEPrescribedActiveContractionIsotropicUC);
+    DECLARE_REGISTERED(FSPrescribedActiveContractionIsotropicUC);
 };
 
 //-----------------------------------------------------------------------------
-class FEDonnanSwelling : public FEMaterial
+class FSDonnanSwelling : public FSMaterial
 {
 public:
 	enum { MP_PHIW0, MP_CF0, MP_BOSM, MP_PHI };
 public:
-	FEDonnanSwelling();
-	DECLARE_REGISTERED(FEDonnanSwelling);
+	FSDonnanSwelling();
+	DECLARE_REGISTERED(FSDonnanSwelling);
 };
 
 //-----------------------------------------------------------------------------
-class FEPerfectOsmometer : public FEMaterial
+class FSPerfectOsmometer : public FSMaterial
 {
 public:
 	enum { MP_PHIW0, MP_IOSM, MP_BOSM };
 public:
-	FEPerfectOsmometer();
-	DECLARE_REGISTERED(FEPerfectOsmometer);
+	FSPerfectOsmometer();
+	DECLARE_REGISTERED(FSPerfectOsmometer);
 };
 
 //-----------------------------------------------------------------------------
-class FECellGrowth : public FEMaterial
+class FSCellGrowth : public FSMaterial
 {
 public:
 	enum { MP_PHIR, MP_CR, MP_CE };
 public:
-	FECellGrowth();
-	DECLARE_REGISTERED(FECellGrowth);
+	FSCellGrowth();
+	DECLARE_REGISTERED(FSCellGrowth);
 };
 
 //-----------------------------------------------------------------------------
-class FEOsmoticVirial : public FEMaterial
+class FSOsmoticVirial : public FSMaterial
 {
 public:
     enum { MP_PHIW0, MP_CR, MP_C1, MP_C2, MP_c3 };
 public:
-    FEOsmoticVirial();
-    DECLARE_REGISTERED(FEOsmoticVirial);
+    FSOsmoticVirial();
+    DECLARE_REGISTERED(FSOsmoticVirial);
 };
 
 //-----------------------------------------------------------------------------
-class FEReactionRateConst : public FEMaterial
+class FSReactionRateConst : public FSMaterial
 {
 public:
 	enum { MP_K };
@@ -1761,22 +1789,32 @@ public:
 	void SetRateConstant(double K);
 
 public:
-	FEReactionRateConst();
-	DECLARE_REGISTERED(FEReactionRateConst);
+	FSReactionRateConst();
+	DECLARE_REGISTERED(FSReactionRateConst);
 };
 
 //-----------------------------------------------------------------------------
-class FEReactionRateHuiskes : public FEMaterial
+class FSReactionRateHuiskes : public FSMaterial
 {
 public:
 	enum { MP_B, MP_PSI0 };
 public:
-	FEReactionRateHuiskes();
-	DECLARE_REGISTERED(FEReactionRateHuiskes);
+	FSReactionRateHuiskes();
+	DECLARE_REGISTERED(FSReactionRateHuiskes);
 };
 
 //-----------------------------------------------------------------------------
-class FEMembraneReactionRateConst : public FEMaterial
+class FEBioReactionRate : public FSMaterial
+{
+public:
+	FEBioReactionRate();
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+	DECLARE_REGISTERED(FEBioReactionRate);
+};
+
+//-----------------------------------------------------------------------------
+class FSMembraneReactionRateConst : public FSMaterial
 {
 public:
     enum { MP_K };
@@ -1785,12 +1823,12 @@ public:
     void SetRateConstant(double K);
     
 public:
-    FEMembraneReactionRateConst();
-    DECLARE_REGISTERED(FEMembraneReactionRateConst);
+    FSMembraneReactionRateConst();
+    DECLARE_REGISTERED(FSMembraneReactionRateConst);
 };
 
 //-----------------------------------------------------------------------------
-class FEMembraneReactionRateIonChannel : public FEMaterial
+class FSMembraneReactionRateIonChannel : public FSMaterial
 {
 public:
     enum { MP_G, MP_SOL };
@@ -1801,12 +1839,12 @@ public:
     void SetSolute(int isol);
     
 public:
-    FEMembraneReactionRateIonChannel();
-    DECLARE_REGISTERED(FEMembraneReactionRateIonChannel);
+    FSMembraneReactionRateIonChannel();
+    DECLARE_REGISTERED(FSMembraneReactionRateIonChannel);
 };
 
 //-----------------------------------------------------------------------------
-class FEMembraneReactionRateVoltageGated : public FEMaterial
+class FSMembraneReactionRateVoltageGated : public FSMaterial
 {
 public:
     enum { MP_A, MP_B, MP_C, MP_D, MP_SOL };
@@ -1817,589 +1855,651 @@ public:
     void SetSolute(int isol);
     
 public:
-    FEMembraneReactionRateVoltageGated();
-    DECLARE_REGISTERED(FEMembraneReactionRateVoltageGated);
+    FSMembraneReactionRateVoltageGated();
+    DECLARE_REGISTERED(FSMembraneReactionRateVoltageGated);
 };
 
 //-----------------------------------------------------------------------------
-class FECFDFiberExpPow : public FEMaterial
+class FSCFDFiberExpPow : public FSMaterial
 {
 public:
     enum { MP_ALPHA, MP_BETA, MP_KSI, MP_MU };
 public:
-    FECFDFiberExpPow();
-    DECLARE_REGISTERED(FECFDFiberExpPow);
+    FSCFDFiberExpPow();
+    DECLARE_REGISTERED(FSCFDFiberExpPow);
 };
 
 //-----------------------------------------------------------------------------
-class FECFDFiberNH : public FEMaterial
+class FSCFDFiberNH : public FSMaterial
 {
 public:
     enum { MP_MU };
 public:
-    FECFDFiberNH();
-    DECLARE_REGISTERED(FECFDFiberNH);
+    FSCFDFiberNH();
+    DECLARE_REGISTERED(FSCFDFiberNH);
 };
 
 //-----------------------------------------------------------------------------
-class FECFDFiberPowLinear : public FEMaterial
+class FSCFDFiberPowLinear : public FSMaterial
 {
 public:
     enum { MP_E, MP_B, MP_L0 };
 public:
-    FECFDFiberPowLinear();
-    DECLARE_REGISTERED(FECFDFiberPowLinear);
+    FSCFDFiberPowLinear();
+    DECLARE_REGISTERED(FSCFDFiberPowLinear);
 };
 
 //-----------------------------------------------------------------------------
-class FECFDFiberExpPowUC : public FEMaterial
+class FSCFDFiberExpPowUC : public FSMaterial
 {
 public:
     enum { MP_ALPHA, MP_BETA, MP_KSI, MP_MU, MP_K };
 public:
-    FECFDFiberExpPowUC();
-    DECLARE_REGISTERED(FECFDFiberExpPowUC);
+    FSCFDFiberExpPowUC();
+    DECLARE_REGISTERED(FSCFDFiberExpPowUC);
 };
 
 //-----------------------------------------------------------------------------
-class FECFDFiberNHUC : public FEMaterial
+class FSCFDFiberNHUC : public FSMaterial
 {
 public:
     enum { MP_MU, MP_K };
 public:
-    FECFDFiberNHUC();
-    DECLARE_REGISTERED(FECFDFiberNHUC);
+    FSCFDFiberNHUC();
+    DECLARE_REGISTERED(FSCFDFiberNHUC);
 };
 
 //-----------------------------------------------------------------------------
-class FECFDFiberPowLinearUC : public FEMaterial
+class FSCFDFiberPowLinearUC : public FSMaterial
 {
 public:
     enum { MP_E, MP_B, MP_L0, MP_K };
 public:
-    FECFDFiberPowLinearUC();
-    DECLARE_REGISTERED(FECFDFiberPowLinearUC);
+    FSCFDFiberPowLinearUC();
+    DECLARE_REGISTERED(FSCFDFiberPowLinearUC);
 };
 
 //-----------------------------------------------------------------------------
-class FEFDDSpherical : public FEMaterial
+class FSFDDSpherical : public FSMaterial
 {
 public:
-    FEFDDSpherical();
-    DECLARE_REGISTERED(FEFDDSpherical);
+    FSFDDSpherical();
+    DECLARE_REGISTERED(FSFDDSpherical);
 };
 
 //-----------------------------------------------------------------------------
-class FEFDDEllipsoidal : public FEMaterial
+class FSFDDEllipsoidal : public FSMaterial
 {
 public:
     enum { MP_SPA };
 public:
-    FEFDDEllipsoidal();
-    DECLARE_REGISTERED(FEFDDEllipsoidal);
+    FSFDDEllipsoidal();
+    DECLARE_REGISTERED(FSFDDEllipsoidal);
 };
 
 //-----------------------------------------------------------------------------
-class FEFDDvonMises3d : public FEMaterial
+class FSFDDvonMises3d : public FSMaterial
 {
 public:
     enum { MP_B };
 public:
-    FEFDDvonMises3d();
-    DECLARE_REGISTERED(FEFDDvonMises3d);
+    FSFDDvonMises3d();
+    DECLARE_REGISTERED(FSFDDvonMises3d);
 };
 
 //-----------------------------------------------------------------------------
-class FEFDDCircular : public FEMaterial
+class FSFDDCircular : public FSMaterial
 {
 public:
-    FEFDDCircular();
-    DECLARE_REGISTERED(FEFDDCircular);
+    FSFDDCircular();
+    DECLARE_REGISTERED(FSFDDCircular);
 };
 
 //-----------------------------------------------------------------------------
-class FEFDDElliptical : public FEMaterial
+class FSFDDElliptical : public FSMaterial
 {
 public:
     enum { MP_SPA1, M_SPA2 };
 public:
-    FEFDDElliptical();
-    DECLARE_REGISTERED(FEFDDElliptical);
+    FSFDDElliptical();
+    DECLARE_REGISTERED(FSFDDElliptical);
 };
 
 //-----------------------------------------------------------------------------
-class FEFDDvonMises2d : public FEMaterial
+class FSFDDvonMises2d : public FSMaterial
 {
 public:
     enum { MP_B };
 public:
-    FEFDDvonMises2d();
-    DECLARE_REGISTERED(FEFDDvonMises2d);
+    FSFDDvonMises2d();
+    DECLARE_REGISTERED(FSFDDvonMises2d);
 };
 
 //-----------------------------------------------------------------------------
-class FESchemeGKT : public FEMaterial
+class FSSchemeGKT : public FSMaterial
 {
 public:
     enum { MP_NPH, M_NTH };
 public:
-    FESchemeGKT();
-    DECLARE_REGISTERED(FESchemeGKT);
+    FSSchemeGKT();
+    DECLARE_REGISTERED(FSSchemeGKT);
 };
 
 //-----------------------------------------------------------------------------
-class FESchemeFEI : public FEMaterial
+class FSSchemeFEI : public FSMaterial
 {
 public:
     enum { MP_RES };
 public:
-    FESchemeFEI();
-    DECLARE_REGISTERED(FESchemeFEI);
+    FSSchemeFEI();
+    DECLARE_REGISTERED(FSSchemeFEI);
 };
 
 //-----------------------------------------------------------------------------
-class FESchemeT2d : public FEMaterial
+class FSSchemeT2d : public FSMaterial
 {
 public:
     enum { M_NTH };
 public:
-    FESchemeT2d();
-    DECLARE_REGISTERED(FESchemeT2d);
+    FSSchemeT2d();
+    DECLARE_REGISTERED(FSSchemeT2d);
 };
 
 //-----------------------------------------------------------------------------
-class FESchemeGKTUC : public FEMaterial
+class FSSchemeGKTUC : public FSMaterial
 {
 public:
     enum { MP_NPH, M_NTH };
 public:
-    FESchemeGKTUC();
-    DECLARE_REGISTERED(FESchemeGKTUC);
+    FSSchemeGKTUC();
+    DECLARE_REGISTERED(FSSchemeGKTUC);
 };
 
 //-----------------------------------------------------------------------------
-class FESchemeFEIUC : public FEMaterial
+class FSSchemeFEIUC : public FSMaterial
 {
 public:
     enum { MP_RES };
 public:
-    FESchemeFEIUC();
-    DECLARE_REGISTERED(FESchemeFEIUC);
+    FSSchemeFEIUC();
+    DECLARE_REGISTERED(FSSchemeFEIUC);
 };
 
 //-----------------------------------------------------------------------------
-class FESchemeT2dUC : public FEMaterial
+class FSSchemeT2dUC : public FSMaterial
 {
 public:
     enum { M_NTH };
 public:
-    FESchemeT2dUC();
-    DECLARE_REGISTERED(FESchemeT2dUC);
+    FSSchemeT2dUC();
+    DECLARE_REGISTERED(FSSchemeT2dUC);
 };
 
 //-----------------------------------------------------------------------------
-class FECDFSimo : public FEMaterial
+class FSCDFSimo : public FSMaterial
 {
 public:
     enum { MP_A, MP_B };
 public:
-    FECDFSimo();
-    DECLARE_REGISTERED(FECDFSimo);
+    FSCDFSimo();
+    DECLARE_REGISTERED(FSCDFSimo);
 };
 
 //-----------------------------------------------------------------------------
-class FECDFLogNormal : public FEMaterial
+class FSCDFLogNormal : public FSMaterial
 {
 public:
     enum { MP_MU, MP_SIGMA, MP_DMAX };
 public:
-    FECDFLogNormal();
-    DECLARE_REGISTERED(FECDFLogNormal);
+    FSCDFLogNormal();
+    DECLARE_REGISTERED(FSCDFLogNormal);
 };
 
 //-----------------------------------------------------------------------------
-class FECDFWeibull : public FEMaterial
+class FSCDFWeibull : public FSMaterial
 {
 public:
     enum { MP_ALPHA, MP_MU, MP_DMAX };
 public:
-    FECDFWeibull();
-    DECLARE_REGISTERED(FECDFWeibull);
+    FSCDFWeibull();
+    DECLARE_REGISTERED(FSCDFWeibull);
 };
 
 //-----------------------------------------------------------------------------
-class FECDFStep : public FEMaterial
+class FSCDFStep : public FSMaterial
 {
 public:
     enum { MP_MU, MP_DMAX };
 public:
-    FECDFStep();
-    DECLARE_REGISTERED(FECDFStep);
+    FSCDFStep();
+    DECLARE_REGISTERED(FSCDFStep);
 };
 
 //-----------------------------------------------------------------------------
-class FECDFQuintic : public FEMaterial
+class FSCDFQuintic : public FSMaterial
 {
 public:
     enum { MP_MUMIN, MP_MUMAX, MP_DMAX };
 public:
-    FECDFQuintic();
-    DECLARE_REGISTERED(FECDFQuintic);
+    FSCDFQuintic();
+    DECLARE_REGISTERED(FSCDFQuintic);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCSimo : public FEMaterial
+class FSDCSimo : public FSMaterial
 {
 public:
-    FEDCSimo();
-    DECLARE_REGISTERED(FEDCSimo);
+    FSDCSimo();
+    DECLARE_REGISTERED(FSDCSimo);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCStrainEnergyDensity : public FEMaterial
+class FSDCStrainEnergyDensity : public FSMaterial
 {
 public:
-    FEDCStrainEnergyDensity();
-    DECLARE_REGISTERED(FEDCStrainEnergyDensity);
+    FSDCStrainEnergyDensity();
+    DECLARE_REGISTERED(FSDCStrainEnergyDensity);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCSpecificStrainEnergy : public FEMaterial
+class FSDCSpecificStrainEnergy : public FSMaterial
 {
 public:
-    FEDCSpecificStrainEnergy();
-    DECLARE_REGISTERED(FEDCSpecificStrainEnergy);
+    FSDCSpecificStrainEnergy();
+    DECLARE_REGISTERED(FSDCSpecificStrainEnergy);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCvonMisesStress : public FEMaterial
+class FSDCvonMisesStress : public FSMaterial
 {
 public:
-    FEDCvonMisesStress();
-    DECLARE_REGISTERED(FEDCvonMisesStress);
+    FSDCvonMisesStress();
+    DECLARE_REGISTERED(FSDCvonMisesStress);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCDruckerShearStress : public FEMaterial
+class FSDCDruckerShearStress : public FSMaterial
 {
 public:
     enum { MP_C };
 public:
-    FEDCDruckerShearStress();
-    DECLARE_REGISTERED(FEDCDruckerShearStress);
+    FSDCDruckerShearStress();
+    DECLARE_REGISTERED(FSDCDruckerShearStress);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCMaxShearStress : public FEMaterial
+class FSDCMaxShearStress : public FSMaterial
 {
 public:
-    FEDCMaxShearStress();
-    DECLARE_REGISTERED(FEDCMaxShearStress);
+    FSDCMaxShearStress();
+    DECLARE_REGISTERED(FSDCMaxShearStress);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCMaxNormalStress : public FEMaterial
+class FSDCMaxNormalStress : public FSMaterial
 {
 public:
-    FEDCMaxNormalStress();
-    DECLARE_REGISTERED(FEDCMaxNormalStress);
+    FSDCMaxNormalStress();
+    DECLARE_REGISTERED(FSDCMaxNormalStress);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCMaxNormalLagrangeStrain : public FEMaterial
+class FSDCMaxNormalLagrangeStrain : public FSMaterial
 {
 public:
-    FEDCMaxNormalLagrangeStrain();
-    DECLARE_REGISTERED(FEDCMaxNormalLagrangeStrain);
+    FSDCMaxNormalLagrangeStrain();
+    DECLARE_REGISTERED(FSDCMaxNormalLagrangeStrain);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCOctahedralShearStrain : public FEMaterial
+class FSDCOctahedralShearStrain : public FSMaterial
 {
 public:
-    FEDCOctahedralShearStrain();
-    DECLARE_REGISTERED(FEDCOctahedralShearStrain);
+    FSDCOctahedralShearStrain();
+    DECLARE_REGISTERED(FSDCOctahedralShearStrain);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCSimoUC : public FEMaterial
+class FSDCSimoUC : public FSMaterial
 {
 public:
-    FEDCSimoUC();
-    DECLARE_REGISTERED(FEDCSimoUC);
+    FSDCSimoUC();
+    DECLARE_REGISTERED(FSDCSimoUC);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCStrainEnergyDensityUC : public FEMaterial
+class FSDCStrainEnergyDensityUC : public FSMaterial
 {
 public:
-    FEDCStrainEnergyDensityUC();
-    DECLARE_REGISTERED(FEDCStrainEnergyDensityUC);
+    FSDCStrainEnergyDensityUC();
+    DECLARE_REGISTERED(FSDCStrainEnergyDensityUC);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCSpecificStrainEnergyUC : public FEMaterial
+class FSDCSpecificStrainEnergyUC : public FSMaterial
 {
 public:
-    FEDCSpecificStrainEnergyUC();
-    DECLARE_REGISTERED(FEDCSpecificStrainEnergyUC);
+    FSDCSpecificStrainEnergyUC();
+    DECLARE_REGISTERED(FSDCSpecificStrainEnergyUC);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCvonMisesStressUC : public FEMaterial
+class FSDCvonMisesStressUC : public FSMaterial
 {
 public:
-    FEDCvonMisesStressUC();
-    DECLARE_REGISTERED(FEDCvonMisesStressUC);
+    FSDCvonMisesStressUC();
+    DECLARE_REGISTERED(FSDCvonMisesStressUC);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCMaxShearStressUC : public FEMaterial
+class FSDCMaxShearStressUC : public FSMaterial
 {
 public:
-    FEDCMaxShearStressUC();
-    DECLARE_REGISTERED(FEDCMaxShearStressUC);
+    FSDCMaxShearStressUC();
+    DECLARE_REGISTERED(FSDCMaxShearStressUC);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCMaxNormalStressUC : public FEMaterial
+class FSDCMaxNormalStressUC : public FSMaterial
 {
 public:
-    FEDCMaxNormalStressUC();
-    DECLARE_REGISTERED(FEDCMaxNormalStressUC);
+    FSDCMaxNormalStressUC();
+    DECLARE_REGISTERED(FSDCMaxNormalStressUC);
 };
 
 //-----------------------------------------------------------------------------
-class FEDCMaxNormalLagrangeStrainUC : public FEMaterial
+class FSDCMaxNormalLagrangeStrainUC : public FSMaterial
 {
 public:
-    FEDCMaxNormalLagrangeStrainUC();
-    DECLARE_REGISTERED(FEDCMaxNormalLagrangeStrainUC);
+    FSDCMaxNormalLagrangeStrainUC();
+    DECLARE_REGISTERED(FSDCMaxNormalLagrangeStrainUC);
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxExp : public FEMaterial
+class FSRelaxCSExp : public FSMaterial
 {
 public:
     enum { MP_TAU };
 public:
-    FERelaxExp();
-    DECLARE_REGISTERED(FERelaxExp);
+    FSRelaxCSExp();
+    DECLARE_REGISTERED(FSRelaxCSExp);
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxExpDistortion : public FEMaterial
+class FSRelaxExp : public FSMaterial
+{
+public:
+    enum { MP_TAU };
+public:
+    FSRelaxExp();
+    DECLARE_REGISTERED(FSRelaxExp);
+};
+
+//-----------------------------------------------------------------------------
+class FSRelaxExpDistortion : public FSMaterial
 {
 public:
     enum { MP_TAU, M_TAU1, M_ALPHA };
 public:
-    FERelaxExpDistortion();
-    DECLARE_REGISTERED(FERelaxExpDistortion);
+    FSRelaxExpDistortion();
+    DECLARE_REGISTERED(FSRelaxExpDistortion);
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxFung : public FEMaterial
+class FSRelaxFung : public FSMaterial
 {
 public:
     enum { MP_TAU1, M_TAU2 };
 public:
-    FERelaxFung();
-    DECLARE_REGISTERED(FERelaxFung);
+    FSRelaxFung();
+    DECLARE_REGISTERED(FSRelaxFung);
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxPark : public FEMaterial
+class FERelaxMalkin : public FSMaterial
+{
+public:
+    enum { MP_TAU1, M_TAU2, M_BETA };
+public:
+    FERelaxMalkin();
+    DECLARE_REGISTERED(FERelaxMalkin);
+};
+
+//-----------------------------------------------------------------------------
+class FSRelaxPark : public FSMaterial
 {
 public:
     enum { MP_TAU, M_BETA };
 public:
-    FERelaxPark();
-    DECLARE_REGISTERED(FERelaxPark);
+    FSRelaxPark();
+    DECLARE_REGISTERED(FSRelaxPark);
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxParkDistortion : public FEMaterial
+class FSRelaxParkDistortion : public FSMaterial
 {
 public:
     enum { MP_TAU, M_TAU1, M_BETA, M_BETA1, M_ALPHA };
 public:
-    FERelaxParkDistortion();
-    DECLARE_REGISTERED(FERelaxParkDistortion);
+    FSRelaxParkDistortion();
+    DECLARE_REGISTERED(FSRelaxParkDistortion);
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxPow : public FEMaterial
+class FSRelaxPow : public FSMaterial
 {
 public:
     enum { MP_TAU, M_BETA };
 public:
-    FERelaxPow();
-    DECLARE_REGISTERED(FERelaxPow);
+    FSRelaxPow();
+    DECLARE_REGISTERED(FSRelaxPow);
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxPowDistortion : public FEMaterial
+class FSRelaxPowDistortion : public FSMaterial
 {
 public:
     enum { MP_TAU, M_TAU1, M_BETA, M_BETA1, M_ALPHA };
 public:
-    FERelaxPowDistortion();
-    DECLARE_REGISTERED(FERelaxPowDistortion);
+    FSRelaxPowDistortion();
+    DECLARE_REGISTERED(FSRelaxPowDistortion);
+};
+
+//-----------------------------------------------------------------------------
+class FSRelaxProny : public FSMaterial
+{
+public:
+    // max nr of Prony terms
+    enum { MAX_TERMS = 6 };
+    
+    // material parameters
+    enum {
+        MP_G1, MP_G2, MP_G3, MP_G4, MP_G5, MP_G6,
+        MP_T1, MP_T2, MP_T3, MP_T4, MP_T5, MP_T6
+    };
+public:
+    FSRelaxProny();
+    DECLARE_REGISTERED(FSRelaxProny);
 };
 
 //-----------------------------------------------------------------------------
 // Elastic pressure for ideal gas
-class FEEPIdealGas : public FEMaterial
+class FSEPIdealGas : public FSMaterial
 {
 public:
     enum { MP_M };
 public:
-    FEEPIdealGas();
-    DECLARE_REGISTERED(FEEPIdealGas);
+    FSEPIdealGas();
+    DECLARE_REGISTERED(FSEPIdealGas);
 };
 
 //-----------------------------------------------------------------------------
 // Elastic pressure for ideal fluid
-class FEEPIdealFluid : public FEMaterial
+class FSEPIdealFluid : public FSMaterial
 {
 public:
     enum { MP_K };
 public:
-    FEEPIdealFluid();
-    DECLARE_REGISTERED(FEEPIdealFluid);
+    FSEPIdealFluid();
+    DECLARE_REGISTERED(FSEPIdealFluid);
 };
 
 //-----------------------------------------------------------------------------
 // Elastic pressure for neo-Hookean fluid
-class FEEPNeoHookeanFluid : public FEMaterial
+class FSEPNeoHookeanFluid : public FSMaterial
 {
 public:
     enum { MP_K };
 public:
-    FEEPNeoHookeanFluid();
-    DECLARE_REGISTERED(FEEPNeoHookeanFluid);
+    FSEPNeoHookeanFluid();
+    DECLARE_REGISTERED(FSEPNeoHookeanFluid);
 };
 
 //-----------------------------------------------------------------------------
 // Viscous Newtonian fluid
-class FEVFNewtonian : public FEMaterial
+class FSVFNewtonian : public FSMaterial
 {
 public:
     enum { MP_MU, MP_K };
 public:
-    FEVFNewtonian();
-    DECLARE_REGISTERED(FEVFNewtonian);
+    FSVFNewtonian();
+    DECLARE_REGISTERED(FSVFNewtonian);
 };
 
 //-----------------------------------------------------------------------------
 // Viscous Bingham fluid
-class FEVFBingham : public FEMaterial
+class FSVFBingham : public FSMaterial
 {
 public:
     enum { MP_MU, MP_TAUY, MP_N };
 public:
-    FEVFBingham();
-    DECLARE_REGISTERED(FEVFBingham);
+    FSVFBingham();
+    DECLARE_REGISTERED(FSVFBingham);
 };
 
 //-----------------------------------------------------------------------------
 // Viscous Carreau fluid
-class FEVFCarreau : public FEMaterial
+class FSVFCarreau : public FSMaterial
 {
 public:
     enum { MP_MU0, MP_MUI, MP_LAM, MP_N };
 public:
-    FEVFCarreau();
-    DECLARE_REGISTERED(FEVFCarreau);
+    FSVFCarreau();
+    DECLARE_REGISTERED(FSVFCarreau);
 };
 
 //-----------------------------------------------------------------------------
 // Viscous Carreau-Yasuda fluid
-class FEVFCarreauYasuda : public FEMaterial
+class FSVFCarreauYasuda : public FSMaterial
 {
 public:
     enum { MP_MU0, MP_MUI, MP_LAM, MP_N, MP_A };
 public:
-    FEVFCarreauYasuda();
-    DECLARE_REGISTERED(FEVFCarreauYasuda);
+    FSVFCarreauYasuda();
+    DECLARE_REGISTERED(FSVFCarreauYasuda);
 };
 
 //-----------------------------------------------------------------------------
 // Viscous Powell-Eyring fluid
-class FEVFPowellEyring : public FEMaterial
+class FSVFPowellEyring : public FSMaterial
 {
 public:
     enum { MP_MU0, MP_MUI, MP_LAM };
 public:
-    FEVFPowellEyring();
-    DECLARE_REGISTERED(FEVFPowellEyring);
+    FSVFPowellEyring();
+    DECLARE_REGISTERED(FSVFPowellEyring);
 };
 
 //-----------------------------------------------------------------------------
 // Viscous Cross fluid
-class FEVFCross : public FEMaterial
+class FSVFCross : public FSMaterial
 {
 public:
     enum { MP_MU0, MP_MUI, MP_LAM, MP_M };
 public:
-    FEVFCross();
-    DECLARE_REGISTERED(FEVFCross);
+    FSVFCross();
+    DECLARE_REGISTERED(FSVFCross);
 };
 
 //-----------------------------------------------------------------------------
-class FEStarlingSupply : public FEMaterial
+class FSStarlingSupply : public FSMaterial
 {
 public:
 	enum { MP_KP, MP_PV };
 public:
-	FEStarlingSupply();
-	DECLARE_REGISTERED(FEStarlingSupply);
+	FSStarlingSupply();
+	DECLARE_REGISTERED(FSStarlingSupply);
 };
 
 //-----------------------------------------------------------------------------
-class FEPrestrainConstGradient : public FEMaterial
+class FSPrestrainConstGradient : public FSMaterial
 {
 public:
 	enum { MP_F0 };
 public:
-	FEPrestrainConstGradient();
-	DECLARE_REGISTERED(FEPrestrainConstGradient);
+	FSPrestrainConstGradient();
+	DECLARE_REGISTERED(FSPrestrainConstGradient);
 };
 
 //-----------------------------------------------------------------------------
-class FEPrestrainInSituGradient : public FEMaterial
+class FSPrestrainInSituGradient : public FSMaterial
 {
 public:
 	enum { MP_LAM, MP_ISO };
 public:
-	FEPrestrainInSituGradient();
-	DECLARE_REGISTERED(FEPrestrainInSituGradient);
+	FSPrestrainInSituGradient();
+	DECLARE_REGISTERED(FSPrestrainInSituGradient);
 };
 
 //-----------------------------------------------------------------------------
-class FEPlasticFlowCurvePaper : public FEMaterial
+class FSPlasticFlowCurvePaper : public FSMaterial
 {
 public:
     enum { MP_Y0, MP_YM, MP_W0, MP_WE, MP_NF, MP_R };
 public:
-	FEPlasticFlowCurvePaper();
-	DECLARE_REGISTERED(FEPlasticFlowCurvePaper);
+	FSPlasticFlowCurvePaper();
+	DECLARE_REGISTERED(FSPlasticFlowCurvePaper);
 };
 
 //-----------------------------------------------------------------------------
-class FEPlasticFlowCurveUser : public FEMaterial
+class FSPlasticFlowCurveUser : public FSMaterial
 {
 public:
-	FEPlasticFlowCurveUser();
-	DECLARE_REGISTERED(FEPlasticFlowCurveUser);
+	FSPlasticFlowCurveUser();
+	DECLARE_REGISTERED(FSPlasticFlowCurveUser);
 };
 
 //-----------------------------------------------------------------------------
-class FEPlasticFlowCurveMath : public FEMaterial
+class FSPlasticFlowCurveMath : public FSMaterial
 {
 public:
     enum { MP_NF, MP_E0, MP_EM, M_PR };
 public:
-	FEPlasticFlowCurveMath();
-	DECLARE_REGISTERED(FEPlasticFlowCurveMath);
+	FSPlasticFlowCurveMath();
+	DECLARE_REGISTERED(FSPlasticFlowCurveMath);
+};
+
+//-----------------------------------------------------------------------------
+class FEBioMaterial : public FSMaterial
+{
+public:
+	FEBioMaterial();
+	~FEBioMaterial();
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+	bool IsRigid() override;
+
+	bool HasFibers() override;
+
+	vec3d GetFiber(FEElementRef& el) override;
+
+	bool UpdateData(bool bsave) override;
+
+	// return a string for the material type
+	const char* GetTypeString() const override;
+	void SetTypeString(const std::string& s) override;
+
+	DECLARE_REGISTERED(FEBioMaterial);
 };

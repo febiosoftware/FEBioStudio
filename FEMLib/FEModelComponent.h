@@ -1,37 +1,41 @@
 #pragma once
-#include "FEStepComponent.h"
+#include "FEBase.h"
+#include "FEDataMap.h"
+#include <string>
 
-class FEModel;
-class FEItemListBuilder;
+class FSModel;
+class FSLoadController;
 
 //-----------------------------------------------------------------------------
-// Base class for anything applied to a partition of the model's geometry.
-// This includes, boundary conditions, nodal loads, surface loads, body loads,
-// constraints, etc.
-class FEModelComponent : public FEStepComponent
+// Base class for components of an FSModel
+class FSModelComponent : public FSCoreBase
 {
 public:
-	enum { NAME, PARAMS, LIST, STEP };
+	FSModelComponent(FSModel* fem = nullptr);
+
+	int GetSuperClassID() const;
+
+	// Set the super class ID. This should not be called directly,
+	// but now some material classes need to set their super class to FEMATERIALPROP_ID
+	void SetSuperClassID(int superClassID);
+
+	FSModel* GetFSModel();
 
 public:
-	FEModelComponent(int ntype, FEModel* ps, int nstep = 0);
-	FEModelComponent(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0);
-
-	virtual ~FEModelComponent(void);
-
-	int Type() { return m_ntype; }
-
-	FEItemListBuilder* GetItemList() { return m_pItem; }
-	void SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
-
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
-
-	FEModel* GetFEModel() { return m_ps; }
+	// helper function for retrieving the load controller assigned to a parameter
+	FSLoadController* GetLoadController(int n);
 
 protected:
-	int			m_ntype;	// type of boundary condition
-	FEModel*	m_ps;		// pointer to model
+	FSModel*	m_fem;
+	int			m_superClassID;		// super class ID (defined in FECore\fecore_enum.h)
+};
 
-	FEItemListBuilder*	m_pItem;	// list of item indices to apply the BC too
+
+void SaveClassMetaData(FSModelComponent* pc, OArchive& ar);
+void LoadClassMetaData(FSModelComponent* pc, IArchive& ar);
+
+class FSGenericClass : public FSModelComponent
+{
+public:
+	FSGenericClass() {}
 };

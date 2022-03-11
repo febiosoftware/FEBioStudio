@@ -147,14 +147,14 @@ void C4PointAngleTool::Update()
 	SetDecoration(nullptr);
 	m_angle = 0.0;
 
-	FEMesh* mesh = GetActiveMesh();
+	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return;
 
 	int nsel = 0;
 	int N = mesh->Nodes();
 	for (int i = 0; i<N; ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.IsSelected())
 		{
 			nsel++;

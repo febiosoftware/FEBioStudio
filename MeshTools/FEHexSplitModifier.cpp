@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESplitModifier.h"
 #include <MeshLib/FEFaceEdgeList.h>
+using namespace std;
 
 FEHexSplitModifier::FEHexSplitModifier() : FEModifier("Split")
 {
@@ -38,18 +39,18 @@ void FEHexSplitModifier::DoSurfaceSmoothing(bool b)
 	m_smoothSurface = b;
 }
 
-FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
+FSMesh* FEHexSplitModifier::Apply(FSMesh* pm)
 {
 	// make sure we are dealing with a hex mesh
 	if (pm->IsType(FE_HEX8) == false) return 0;
 
 	// build the edge table of the mesh (each edge will add a node)
-	FEEdgeList ET(*pm);
-	FEElementEdgeList EET(*pm, ET);
+	FSEdgeList ET(*pm);
+	FSElementEdgeList EET(*pm, ET);
 
 	// build the face table (each face will add a node)
-	FEFaceTable FT(*pm);
-	FEElementFaceList EFL(*pm, FT);
+	FSFaceTable FT(*pm);
+	FSElementFaceList EFL(*pm, FT);
 
 	// get the mesh item counts
 	int NN0 = pm->Nodes();
@@ -64,37 +65,37 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 	int NE1 = 8*NE0;
 
 	// create new mesh
-	FEMesh* pmnew = new FEMesh;
+	FSMesh* pmnew = new FSMesh;
 	pmnew->Create(NN1, NE1);
 
 	// build face-edge table
-	FEFaceEdgeList FET(*pm, ET);
+	FSFaceEdgeList FET(*pm, ET);
 
 	// assign nodes
 	int n = 0;
 	for (int i=0; i<NN0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
-		FENode& n0 = pm->Node(i);
+		FSNode& n1 = pmnew->Node(n);
+		FSNode& n0 = pm->Node(i);
 		n1 = n0;
 	}
 
 	for (int i=0; i<NC0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
+		FSNode& n1 = pmnew->Node(n);
 
 		pair<int,int>& edge = ET[i];
-		FENode& na = pm->Node(edge.first);
-		FENode& nb = pm->Node(edge.second);
+		FSNode& na = pm->Node(edge.first);
+		FSNode& nb = pm->Node(edge.second);
 
 		n1.r = (na.r + nb.r)*0.5;
 	}
 
 	for (int i=0; i<NF0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
+		FSNode& n1 = pmnew->Node(n);
 
-		FEFace& face = FT[i];
+		FSFace& face = FT[i];
 
 		vec3d r0 = pm->Node(face.n[0]).r;
 		vec3d r1 = pm->Node(face.n[1]).r;
@@ -106,9 +107,9 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 
 	for (int i=0; i<NE0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
+		FSNode& n1 = pmnew->Node(n);
 
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		vec3d r(0,0,0);
 		for (int j=0; j<8; ++j) r += pm->Node(el.m_node[j]).r;
 		r *= 0.125;
@@ -130,7 +131,7 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 	int m[27];
 	for (int i=0; i<NE0; ++i)
 	{
-		FEElement& el0 = pm->Element(i);
+		FSElement& el0 = pm->Element(i);
 		vector<int>& eel = EET[i];
 		vector<int>& fel = EFL[i];
 
@@ -141,7 +142,7 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 
 		for (int j=0; j<8; ++j)
 		{
-			FEElement& el = pmnew->Element(i*8 + j);
+			FSElement& el = pmnew->Element(i*8 + j);
 			el.m_gid = el0.m_gid;
 			el.SetType(FE_HEX8);
 
@@ -159,12 +160,12 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 		int NF = pm->Faces();
 		for (int i=0; i<NF; ++i) 
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			face.m_ntag = -1;
 
 			for (int j=0; j<NF0; ++j)
 			{
-				FEFace& fj = FT[j];
+				FSFace& fj = FT[j];
 				if (fj == face)
 				{
 					face.m_ntag = j;
@@ -179,7 +180,7 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 		vector<vec3d> p(NN0, vec3d(0,0,0));
 		for (int i=0; i<NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			int ne = face.Edges();
 			for (int j=0; j<ne; ++j)
 			{
@@ -198,7 +199,7 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 
 		for (int i=0; i<NN0; ++i)
 		{
-			FENode& ni = pmnew->Node(i);
+			FSNode& ni = pmnew->Node(i);
 			double m = (double) ni.m_ntag;
 			if (m != 0.0)
 			{
@@ -208,7 +209,7 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			int ne = face.Edges();
 			for (int j = 0; j<ne; ++j)
 			{
@@ -219,7 +220,7 @@ FEMesh* FEHexSplitModifier::Apply(FEMesh* pm)
 
 		for (int i=0; i<NC0; ++i) 
 		{
-			FENode& node = pmnew->Node(NN0 + i);
+			FSNode& node = pmnew->Node(NN0 + i);
 			if (node.m_ntag != 0)
 			{
 				pmnew->Node(NN0 + i).r *= 0.5;
@@ -244,7 +245,7 @@ void FEHex2DSplitModifier::DoSurfaceSmoothing(bool b)
 	m_smoothSurface = b;
 }
 
-FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
+FSMesh* FEHex2DSplitModifier::Apply(FSMesh* pm)
 {
 	// make sure we are dealing with a hex mesh
 	if (pm->IsType(FE_HEX8) == false) return 0;
@@ -254,7 +255,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 	// and bottom face (which is assumed to be face 4 and 5).
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if ((el.m_nbr[4] != -1) || (el.m_nbr[5] != -1)) return nullptr;
 	}
 
@@ -263,7 +264,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 	int taggedFaces = 0;
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		el.m_ntag = i;
 		assert((el.m_face[4] != -1) && (el.m_face[5] != -1));
 		if (el.m_face[4] == -1) return nullptr; else { pm->Face(el.m_face[4]).m_ntag = taggedFaces++;}
@@ -277,7 +278,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 	vector< vector<int> > EEL(pm->Elements(), vector<int>(8, -1));
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		for (int k=0; k<=1; ++k)
 		{
 			for (int j = 0; j < 4; ++j)
@@ -295,7 +296,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 				else
 				{
 					int nej = el.m_nbr[j];
-					FEElement& ej = pm->Element(nej);
+					FSElement& ej = pm->Element(nej);
 					if (el.m_ntag < ej.m_ntag)
 					{
 						pair<int, int> edge;
@@ -340,35 +341,35 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 	int NE1 = 4 * NE0;
 
 	// create new mesh
-	FEMesh* pmnew = new FEMesh;
+	FSMesh* pmnew = new FSMesh;
 	pmnew->Create(NN1, NE1);
 
 	// assign nodes
 	int n = 0;
 	for (int i = 0; i < NN0; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
-		FENode& n0 = pm->Node(i);
+		FSNode& n1 = pmnew->Node(n);
+		FSNode& n0 = pm->Node(i);
 		n1 = n0;
 	}
 
 	for (int i = 0; i < edgeCount; ++i, ++n)
 	{
-		FENode& n1 = pmnew->Node(n);
+		FSNode& n1 = pmnew->Node(n);
 
 		pair<int, int>& edge = edges[i];
-		FENode& na = pm->Node(edge.first);
-		FENode& nb = pm->Node(edge.second);
+		FSNode& na = pm->Node(edge.first);
+		FSNode& nb = pm->Node(edge.second);
 
 		n1.r = (na.r + nb.r)*0.5;
 	}
 
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.m_ntag != -1)
 		{
-			FENode& n1 = pmnew->Node(n++);
+			FSNode& n1 = pmnew->Node(n++);
 
 			vec3d r0 = pm->Node(face.n[0]).r;
 			vec3d r1 = pm->Node(face.n[1]).r;
@@ -389,7 +390,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 	int m[18];
 	for (int i = 0; i < NE0; ++i)
 	{
-		FEElement& el0 = pm->Element(i);
+		FSElement& el0 = pm->Element(i);
 		vector<int>& eel = EEL[i];
 
 		for (int j = 0; j < 8; ++j) m[j] = el0.m_node[j];
@@ -398,7 +399,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 
 		for (int j = 0; j < 4; ++j)
 		{
-			FEElement& el = pmnew->Element(i * 4 + j);
+			FSElement& el = pmnew->Element(i * 4 + j);
 			el.m_gid = el0.m_gid;
 			el.SetType(FE_HEX8);
 
@@ -416,12 +417,12 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 		int NF = pm->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			face.m_ntag = -1;
 
 			for (int j = 0; j < NF0; ++j)
 			{
-				FEFace& fj = FT[j];
+				FSFace& fj = FT[j];
 				if (fj == face)
 				{
 					face.m_ntag = j;
@@ -436,7 +437,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 		vector<vec3d> p(NN0, vec3d(0, 0, 0));
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
 			{
@@ -455,7 +456,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 
 		for (int i = 0; i < NN0; ++i)
 		{
-			FENode& ni = pmnew->Node(i);
+			FSNode& ni = pmnew->Node(i);
 			double m = (double)ni.m_ntag;
 			if (m != 0.0)
 			{
@@ -465,7 +466,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
 			{
@@ -476,7 +477,7 @@ FEMesh* FEHex2DSplitModifier::Apply(FEMesh* pm)
 
 		for (int i = 0; i < NC0; ++i)
 		{
-			FENode& node = pmnew->Node(NN0 + i);
+			FSNode& node = pmnew->Node(NN0 + i);
 			if (node.m_ntag != 0)
 			{
 				pmnew->Node(NN0 + i).r *= 0.5;

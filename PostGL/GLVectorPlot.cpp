@@ -94,7 +94,7 @@ CGLVectorPlot::CGLVectorPlot()
 
 	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
 	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	bar->SetOrientation(GLLegendBar::HORIZONTAL);
+	bar->SetOrientation(GLLegendBar::ORIENT_HORIZONTAL);
 	bar->copy_label(szname);
 	SetLegendBar(bar);
 
@@ -183,11 +183,11 @@ void CGLVectorPlot::Render(CGLContext& rc)
 	gluQuadricNormals(pglyph, GLU_SMOOTH);
 
 	CGLModel* mdl = GetModel();
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 
 	srand(m_seed);
 
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	// calculate scale factor for rendering
@@ -227,7 +227,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
 			FEElement_& e = pm->ElementRef(i);
-			FEMaterial* mat = ps->GetMaterial(e.m_MatID);
+			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
 				e.m_ntag = 1;
@@ -262,7 +262,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
 			FEElement_& e = pm->ElementRef(i);
-			FEMaterial* mat = ps->GetMaterial(e.m_MatID);
+			Material* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
 				int n = e.Nodes();
@@ -275,14 +275,14 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			// make sure no vector is drawn for hidden nodes
 			for (int i = 0; i < pm->Nodes(); ++i)
 			{
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 				if (node.IsVisible() == false) node.m_ntag = 0;
 			}
 		}
 
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if ((frand() <= m_dens) && node.m_ntag)
 			{
 				vec3f r = to_vec3f(node.r);
@@ -345,7 +345,7 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 	glPushMatrix();
 
 	glTranslatef(r.x, r.y, r.z);
-	quatd q(vec3d(0,0,1), v);
+	quatd q(vec3d(0,0,1), to_vec3d(v));
 	float w = q.GetAngle();
 	if (fabs(w) > 1e-6)
 	{
@@ -455,7 +455,7 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	int N = pfem->GetStates();
 	if (N == 0) return;
@@ -562,7 +562,7 @@ void CGLVectorPlot::UpdateState(int nstate)
 {
 	CGLModel* mdl = GetModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	// check the tag
 	int ntag = m_map.GetTag(nstate);

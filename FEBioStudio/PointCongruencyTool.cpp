@@ -59,7 +59,7 @@ CPointCongruencyTool::CPointCongruencyTool(CMainWindow* wnd) : CBasicTool(wnd, "
 bool CPointCongruencyTool::OnApply()
 {
 	// get the nodal coordinates (surface only)
-	FEMesh* mesh = GetActiveMesh();
+	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return false;
 
 	int node = m_node - 1;

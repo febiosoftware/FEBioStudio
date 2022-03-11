@@ -226,7 +226,7 @@ public:
 	std::vector<VTKPiece>	m_pieces;
 };
 
-VTUimport::VTUimport(FEProject& prj) : FEFileImport(prj)
+VTUimport::VTUimport(FSProject& prj) : FSFileImport(prj)
 {
 
 }
@@ -313,8 +313,6 @@ bool VTUimport::ParsePiece(XMLTag& tag, VTKModel& vtk)
 			if (ParseCells(tag, piece) == false) return false;
 		}
 		else tag.skip();
-
-		++tag;
 	} 
 	while (!tag.isend());
 
@@ -336,13 +334,11 @@ bool VTUimport::ParsePoints(XMLTag& tag, VTKPiece& piece)
 			if (points.m_type != VTKDataArray::FLOAT32) return false;
 			if (points.m_numComps != 3) return false;
 			if (points.m_values_float.size() != piece.m_numPoints * points.m_numComps) return false;
-
-			// There can be children, so we need to skip this tag
-			tag.skip();
 		}
 		else tag.skip();
-		++tag;
 	} while (!tag.isend());
+
+	++tag;
 
 	return true;
 }
@@ -370,9 +366,11 @@ bool VTUimport::ParseCells(XMLTag& tag, VTKPiece& piece)
 			}
 		}
 		else tag.skip();
-		++tag;
 	} 
 	while (!tag.isend());
+
+	++tag;
+
 	return true;
 }
 
@@ -413,12 +411,15 @@ bool VTUimport::ParseDataArray(XMLTag& tag, VTKDataArray& vtkDataArray)
 		tag.value2(vtkDataArray.m_values_int);
 	}
 
+	// There can be children, so we need to skip this tag
+	tag.skip();
+
 	return true;
 }
 
 bool VTUimport::BuildMesh(VTKModel& vtk)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	for (int n = 0; n < vtk.Pieces(); ++n)
 	{
@@ -429,20 +430,20 @@ bool VTUimport::BuildMesh(VTKModel& vtk)
 		int elems = piece.Cells();
 
 		// create a new mesh
-		FEMesh* pm = new FEMesh();
+		FSMesh* pm = new FSMesh();
 		pm->Create(nodes, elems);
 
 		// copy nodal data
 		for (int i = 0; i < nodes; ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			node.r = piece.Point(i);
 		}
 
 		// copy element data
 		for (int i = 0; i < elems; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 
 			VTKCell cell = piece.Cell(i);
 

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData_T.h>
 
 using namespace Post;
+using namespace std;
 
 template <class Type> void ReadFaceData_REGION(xpltArchive& ar, Post::FEPostMesh& m, XpltReader3::Surface &s, Post::FEMeshData &data)
 {
@@ -317,7 +318,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		it.index = nfields++;
 
 		// add nodal field
-		Post::FEDataField* pdf = nullptr;
+		Post::ModelDataField* pdf = nullptr;
 		switch (it.ntype)
 		{
 		case FLOAT  : pdf = new FEDataField_T<Post::FENodeData<float  > >(&fem, EXPORT_DATA); break;
@@ -348,7 +349,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		DICT_ITEM& it = m_dic.m_Elem[i];
 		it.index = nfields++;
 
-		Post::FEDataField* pdf = nullptr;
+		Post::ModelDataField* pdf = nullptr;
 		switch (it.nfmt)
 		{
 		case FMT_NODE:
@@ -454,7 +455,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		DICT_ITEM& it = m_dic.m_Face[i];
 		it.index = nfields++;
 
-		Post::FEDataField* pdf = nullptr;
+		Post::ModelDataField* pdf = nullptr;
 		switch (it.nfmt)
 		{
 		case FMT_NODE:
@@ -528,25 +529,25 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 	// add additional displacement fields
 	if (m_bHasDispl) 
 	{
-		pdm->AddDataField(new FEStrainDataField(&fem, FEStrainDataField::LAGRANGE), "Lagrange strain");
-		pdm->AddDataField(new FEDataField_T<FENodePosition  >(&fem), "position"         );
-		pdm->AddDataField(new FEDataField_T<FENodeInitPos   >(&fem), "initial position" );
+		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
+		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem), "position"         );
+		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem), "initial position" );
 	}
 
 	// add additional stress fields
 	if (m_bHasStress)
 	{
-		pdm->AddDataField(new FEDataField_T<FEElemPressure>(&fem), "pressure");
+		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure");
 		
 		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<FESolidStress>(&fem), "solid stress");
+			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress");
 		}
 	}
 
 	// add additional stress fields
 	if (m_bHasNodalStress)
 	{
-		pdm->AddDataField(new FEDataField_T<FEElemNodalPressure>(&fem), "nodal pressure");
+		pdm->AddDataField(new FEDataField_T<ElemNodalPressure>(&fem), "nodal pressure");
 	}
 
 	return true;
@@ -743,7 +744,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 					case DATA_VEC3F: dataType = DATA_VEC3F; break;
 					}
 
-					FEPlotObjectData* data = new FEPlotObjectData(&fem, dataType);
+					PlotObjectData* data = new PlotObjectData(&fem, dataType);
 					data->SetName(szdata);
 					ob->m_data.push_back(data);
 				}
@@ -802,7 +803,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 					case DATA_VEC3F: dataType = DATA_VEC3F; break;
 					}
 
-					FEPlotObjectData* data = new FEPlotObjectData(&fem, dataType);
+					PlotObjectData* data = new PlotObjectData(&fem, dataType);
 					data->SetName(szdata);
 					ob->m_data.push_back(data);
 				}
@@ -832,7 +833,7 @@ void XpltReader3::CreateMaterials(FEPostModel& fem)
 	for (int i=0; i<nmat; i++)
 	{
 		MATERIAL& xm = m_xmesh.material(i);
-		FEMaterial m;
+		Material m;
 		m.SetName(xm.szname);
 		fem.AddMaterial(m);
 	}
@@ -977,8 +978,8 @@ bool XpltReader3::ReadDomainSection(FEPostModel &fem)
 						assert(false);
 						return errf("Error while reading Domain section");
 					}
-					assert((ne > 0)&&(ne <= FEElement::MAX_NODES));
-					int n[FEElement::MAX_NODES + 1];
+					assert((ne > 0)&&(ne <= FSElement::MAX_NODES));
+					int n[FSElement::MAX_NODES + 1];
 					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						if (m_ar.GetChunkID() == PLT_ELEMENT)
@@ -1179,7 +1180,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		for (int j=0; j<D.ne; ++j)
 		{
 			ELEM& E = D.elem[j];
-			FEElement& el = pmesh->Element(E.index);
+			FSElement& el = pmesh->Element(E.index);
 			el.m_MatID = D.mid - 1;
 			el.m_gid = i;
 			el.SetID(E.eid);
@@ -1216,18 +1217,18 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	NN = m_xmesh.nodes();
 	for (int i=0; i<NN; i++)
 	{
-		FENode& n = pmesh->Node(i);
+		FSNode& n = pmesh->Node(i);
 		NODE& N = m_xmesh.node(i);
 
 		// assign coordinates
-		n.r = vec3f(N.x[0], N.x[1], N.x[2]);
+		n.r = vec3d(N.x[0], N.x[1], N.x[2]);
 	}
 
 	// set the enabled-ness of the elements and the nodes
 	for (int i=0; i<NE; ++i)
 	{
 		FEElement_& el = pmesh->ElementRef(i);
-		FEMaterial* pm = fem.GetMaterial(el.m_MatID);
+		Material* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
 
@@ -1247,7 +1248,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	pmesh->BuildMesh();
 
 	// Next, we'll build a Node-Face lookup table
-	FENodeFaceList NFT; NFT.Build(pmesh);
+	FSNodeFaceList NFT; NFT.Build(pmesh);
 
 	// next, we reindex the surfaces
 	for (int n=0; n< m_xmesh.surfaces(); ++n)
@@ -1266,7 +1267,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	for (int n=0; n< m_xmesh.nodeSets(); ++n)
 	{
 		NodeSet& s = m_xmesh.nodeSet(n);
-		Post::FENodeSet* ps = new Post::FENodeSet(pmesh);
+		Post::FSNodeSet* ps = new Post::FSNodeSet(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "nodeset%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
 		ps->m_Node = s.node;
@@ -1277,7 +1278,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	for (int n=0; n< m_xmesh.surfaces(); ++n)
 	{
 		Surface& s = m_xmesh.surface(n);
-		Post::FESurface* ps = new Post::FESurface(pmesh);
+		Post::FSSurface* ps = new Post::FSSurface(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "surface%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
 		ps->m_Face.reserve(s.nfaces);
@@ -1289,7 +1290,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	for (int n=0; n< m_xmesh.domains(); ++n)
 	{
 		Domain& s = m_xmesh.domain(n);
-		Post::FEPart* pg = new Post::FEPart(pmesh);
+		Post::FSPart* pg = new Post::FSPart(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "part%02d",n+1); pg->SetName(szname); }
 		else pg->SetName(s.szname);
 		pg->m_Elem.resize(s.ne);
@@ -1529,7 +1530,7 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 		Post::FEElementData<float,DATA_COMP>& df = dynamic_cast<Post::FEElementData<float,DATA_COMP>&>(ps->m_Data[n]);
 		Post::FEPostMesh& mesh = *GetCurrentMesh();
 		int NE = mesh.Elements();
-		float h[FEElement::MAX_NODES] = {0.f};
+		float h[FSElement::MAX_NODES] = {0.f};
 		for (int i=0; i<NE; ++i)
 		{
 			ELEMDATA& d = ps->m_ELEM[i];
@@ -2112,7 +2113,7 @@ bool XpltReader3::ReadFaceData(FEPostModel& fem, FEState* pstate)
 //-----------------------------------------------------------------------------
 bool XpltReader3::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader3::Surface &s, Post::FEMeshData &data, int ntype)
 {
-	// It is possible that the node ordering of the FACE's are different than the FEFace's
+	// It is possible that the node ordering of the FACE's are different than the FSFace's
 	// so we setup up an array to unscramble the nodal values
 	int NF = s.nfaces;
 	vector<int> tag;
@@ -2124,7 +2125,7 @@ bool XpltReader3::ReadFaceData_MULT(Post::FEPostMesh& m, XpltReader3::Surface &s
 		FACE& f = s.face[i];
 		if (f.nid >= 0)
 		{
-			FEFace& fm = m.Face(f.nid);
+			FSFace& fm = m.Face(f.nid);
 			for (int j=0; j<f.nn; ++j) tag[f.node[j]] = j;
 			for (int j=0; j<f.nn; ++j) l[i][j] = tag[fm.n[j]];
 		}
@@ -2319,10 +2320,10 @@ bool XpltReader3::ReadFaceData_NODE(Post::FEPostMesh& m, XpltReader3::Surface &s
 	for (int i = 0; i<s.nfaces; ++i) fn[i] = s.face[i].nn;
 
 	// create the local node index list
-	vector<int> l; l.resize(s.nfaces*FEFace::MAX_NODES);
+	vector<int> l; l.resize(s.nfaces*FSFace::MAX_NODES);
 	for (int i = 0; i<s.nfaces; ++i)
 	{
-		FEFace& f = m.Face(s.face[i].nid);
+		FSFace& f = m.Face(s.face[i].nid);
 		int nn = f.Nodes();
 		for (int j = 0; j<nn; ++j)
 		{

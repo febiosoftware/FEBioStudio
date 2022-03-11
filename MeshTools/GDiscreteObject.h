@@ -190,11 +190,11 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	void SetMaterial(FEDiscreteMaterial* mat);
-	FEDiscreteMaterial* GetMaterial();
+	void SetMaterial(FSDiscreteMaterial* mat);
+	FSDiscreteMaterial* GetMaterial();
 
 private:
-	FEDiscreteMaterial*	m_mat;
+	FSDiscreteMaterial*	m_mat;
 };
 
 //-----------------------------------------------------------------------------

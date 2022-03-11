@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 
-class FEMesh;
+class FSMesh;
 
 namespace Post {
 

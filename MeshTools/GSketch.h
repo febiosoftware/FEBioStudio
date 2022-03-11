@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <FSCore/FSObject.h>
 #include <vector>
 //using namespace std;
@@ -80,8 +80,8 @@ protected:
 	void InsertEdge(EDGE& e);
 
 protected:
-	vector<POINT>	m_pt;
-	vector<EDGE>	m_edge;
+	std::vector<POINT>	m_pt;
+	std::vector<EDGE>	m_edge;
 };
 
 //-----------------------------------------------------------------------------

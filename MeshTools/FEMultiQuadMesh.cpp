@@ -82,7 +82,7 @@ MBFace& FEMultiQuadMesh::GetFace(int n)
 //-----------------------------------------------------------------------------
 // build the FE mesh
 //
-FEMesh* FEMultiQuadMesh::BuildMesh()
+FSMesh* FEMultiQuadMesh::BuildMesh()
 {
 	if ((m_elemType != FE_QUAD4) && (m_elemType != FE_QUAD8) && (m_elemType != FE_QUAD9))
 	{
@@ -92,7 +92,7 @@ FEMesh* FEMultiQuadMesh::BuildMesh()
 	m_bquadMesh = (m_elemType == FE_QUAD4 ? false : true);
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	m_pm = pm;
 
 	// clear the node lists
@@ -195,7 +195,7 @@ vec3d FEMultiQuadMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		GM_CIRCLE_ARC ca(c, a, b, e.m_winding);
 
 		vec2d q = ca.Point(r);
-		p = vec3d(q.x, q.y, r1.z);
+		p = vec3d(q.x(), q.y(), r1.z);
 	}
 	break;
 	case EDGE_3P_CIRC_ARC:
@@ -251,7 +251,7 @@ vec3d FEMultiQuadMesh::FacePosition(MBFace& f, const FEMultiQuadMesh::MQPoint& q
 //-----------------------------------------------------------------------------
 // build the FE nodes
 //
-void FEMultiQuadMesh::BuildFENodes(FEMesh *pm)
+void FEMultiQuadMesh::BuildFENodes(FSMesh *pm)
 {
 	int NF = (int) m_MBFace.size();
 	int NE = (int) m_MBEdge.size();
@@ -392,7 +392,7 @@ int FEMultiQuadMesh::AddFEFaceNode(MBFace& F, const MQPoint& q)
 //-----------------------------------------------------------------------------
 // Build the FE edges
 //
-void FEMultiQuadMesh::BuildFEEdges(FEMesh* pm)
+void FEMultiQuadMesh::BuildFEEdges(FSMesh* pm)
 {
 	// count edges
 	int edges = 0;
@@ -407,7 +407,7 @@ void FEMultiQuadMesh::BuildFEEdges(FEMesh* pm)
 	pm->Create(0, 0, 0, edges);
 
 	// build the edges
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	edges = 0;
 	for (int k = 0; k < (int)m_MBEdge.size(); ++k)
 	{
@@ -456,7 +456,7 @@ void FEMultiQuadMesh::BuildFEEdges(FEMesh* pm)
 //-----------------------------------------------------------------------------
 // build the FE elements
 //
-void FEMultiQuadMesh::BuildFEFaces(FEMesh* pm)
+void FEMultiQuadMesh::BuildFEFaces(FSMesh* pm)
 {
 	// figure out how many faces we have
 	int faces = 0;
@@ -502,7 +502,7 @@ void FEMultiQuadMesh::BuildFEFaces(FEMesh* pm)
 			int ni = 0;
 			for (int i = 0; i < nx; ++i, faces++)
 			{
-				FEFace* pf = pm->FacePtr(faces);
+				FSFace* pf = pm->FacePtr(faces);
 				pf->m_gid = F.m_gid;
 				switch (m_elemType)
 				{
@@ -544,8 +544,8 @@ void FEMultiQuadMesh::BuildFEFaces(FEMesh* pm)
 	// also build the elements
 	for (int i = 0; i < faces; ++i)
 	{
-		FEFace& f = pm->Face(i);
-		FEElement& el = pm->Element(i);
+		FSFace& f = pm->Face(i);
+		FSElement& el = pm->Element(i);
 		el.m_gid = 0;
 		el.SetType(m_elemType);
 

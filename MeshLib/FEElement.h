@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include <assert.h>
-#include "MathLib/mat3d.h"
+#include <FECore/mat3d.h>
 #include "FEItem.h"
 #include "FEEdge.h"
 #include "FEFace.h"
@@ -83,7 +83,7 @@ enum FEElemClass
 
 //-----------------------------------------------------------------------------
 // Element traits
-struct FEElemTraits
+struct FSElemTraits
 {
 	int	ntype;	// type of element
 	int	nshape;	// shape of element
@@ -101,7 +101,7 @@ struct FEElemTraits
 //  - shells can lie on top of solids or sandwhiched between solids
 //    For such shells, the _nbr[4] and _nbr[5] are used to identify the elements
 //    on top of which they sit.
-class FEElement_ : public FEItem
+class FEElement_ : public MeshItem
 {
 public:
 	//! constructor
@@ -140,23 +140,23 @@ public:
 public: // for solid elements only
 
 	//! Get the face i
-	FEFace GetFace(int i) const;
-	void GetFace(int i, FEFace& face) const;
+	FSFace GetFace(int i) const;
+	void GetFace(int i, FSFace& face) const;
 	int GetLocalFaceIndices(int i, int* n) const;
 
 	// Find the face. Returns local index in face array
-	int FindFace(const FEFace& f);
+	int FindFace(const FSFace& f);
 
 public: // for shell elements only
 
 	//! Get the face of a shell
-	void GetShellFace(FEFace& f) const;
+	void GetShellFace(FSFace& f) const;
 
 	//! Get the edge
-	FEEdge GetEdge(int i) const;
+	FSEdge GetEdge(int i) const;
 
 	//! Find the edge index of a shell
-	int FindEdge(const FEEdge& edge) const;
+	int FindEdge(const FSEdge& edge) const;
 
 public:
 	// evaluate shape function at iso-parameteric point (r,s,t)
@@ -202,26 +202,26 @@ public:
 	double	m_a0;		//!< cross-sectional area (only used by truss elements)
 	
 protected:
-	const FEElemTraits* m_traits;	// element traits
+	const FSElemTraits* m_traits;	// element traits
 };
 
 //-----------------------------------------------------------------------------
-// The FEElement class can be used to represent a general purpose element. 
+// The FSElement class can be used to represent a general purpose element. 
 // This class can represent an element of all different types. 
-class FEElement : public FEElement_
+class FSElement : public FEElement_
 {
 public:
 	enum { MAX_NODES = 27 };
 
 public:
 	//! constructor
-	FEElement();
+	FSElement();
 
 	//! copy constructor
-	FEElement(const FEElement& el);
+	FSElement(const FSElement& el);
 
 	//! assignment operator
-	FEElement& operator = (const FEElement& el);
+	FSElement& operator = (const FSElement& el);
 
 private:
 	int		_node[MAX_NODES];	//!< nodal id's
@@ -232,31 +232,31 @@ private:
 
 //=============================================================================
 // Element traits classes
-template <int Type> class FEElementTraits {};
+template <int Type> class FSElementTraits {};
 // Each of these classes defines:
 // Nodes: number of nodes
 // Faces: number of faces. Only solid elements define faces
 // Edges: number of edges. Only surface elements define edges
 
-template <> class FEElementTraits<FE_BEAM2  > { public: enum { Nodes = 2 }; enum { Faces = 0 }; enum { Edges = 0 }; static FEElementType Type() { return FE_BEAM2; } };
-template <> class FEElementTraits<FE_BEAM3  > { public: enum { Nodes = 3 }; enum { Faces = 0 }; enum { Edges = 0 }; static FEElementType Type() { return FE_BEAM3; } };
-template <> class FEElementTraits<FE_TRI3   > { public: enum { Nodes = 3 }; enum { Faces = 0 }; enum { Edges = 3 }; static FEElementType Type() { return FE_TRI3; } };
-template <> class FEElementTraits<FE_TRI6   > { public: enum { Nodes = 6 }; enum { Faces = 0 }; enum { Edges = 3 }; static FEElementType Type() { return FE_TRI6; } };
-template <> class FEElementTraits<FE_QUAD4  > { public: enum { Nodes = 4 }; enum { Faces = 0 }; enum { Edges = 4 }; static FEElementType Type() { return FE_QUAD4; } };
-template <> class FEElementTraits<FE_QUAD8  > { public: enum { Nodes = 8 }; enum { Faces = 0 }; enum { Edges = 4 }; static FEElementType Type() { return FE_QUAD8; } };
-template <> class FEElementTraits<FE_QUAD9  > { public: enum { Nodes = 9 }; enum { Faces = 0 }; enum { Edges = 4 }; static FEElementType Type() { return FE_QUAD9; } };
-template <> class FEElementTraits<FE_TET4   > { public: enum { Nodes = 4 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET4; } };
-template <> class FEElementTraits<FE_TET10  > { public: enum { Nodes = 10 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET10; } };
-template <> class FEElementTraits<FE_TET15  > { public: enum { Nodes = 15 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET15; } };
-template <> class FEElementTraits<FE_TET20  > { public: enum { Nodes = 20 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET20; } };
-template <> class FEElementTraits<FE_PENTA6 > { public: enum { Nodes = 6 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PENTA6; } };
-template <> class FEElementTraits<FE_PENTA15> { public: enum { Nodes = 15 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PENTA15; } };
-template <> class FEElementTraits<FE_HEX8   > { public: enum { Nodes = 8 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX8; } };
-template <> class FEElementTraits<FE_HEX20  > { public: enum { Nodes = 20 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX20; } };
-template <> class FEElementTraits<FE_HEX27  > { public: enum { Nodes = 27 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX27; } };
-template <> class FEElementTraits<FE_PYRA5  > { public: enum { Nodes = 5 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PYRA5; } };
-template <> class FEElementTraits<FE_TET5   > { public: enum { Nodes = 5 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET5; } };
-template <> class FEElementTraits<FE_PYRA13 > { public: enum { Nodes = 13 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PYRA13; } };
+template <> class FSElementTraits<FE_BEAM2  > { public: enum { Nodes = 2 }; enum { Faces = 0 }; enum { Edges = 0 }; static FEElementType Type() { return FE_BEAM2; } };
+template <> class FSElementTraits<FE_BEAM3  > { public: enum { Nodes = 3 }; enum { Faces = 0 }; enum { Edges = 0 }; static FEElementType Type() { return FE_BEAM3; } };
+template <> class FSElementTraits<FE_TRI3   > { public: enum { Nodes = 3 }; enum { Faces = 0 }; enum { Edges = 3 }; static FEElementType Type() { return FE_TRI3; } };
+template <> class FSElementTraits<FE_TRI6   > { public: enum { Nodes = 6 }; enum { Faces = 0 }; enum { Edges = 3 }; static FEElementType Type() { return FE_TRI6; } };
+template <> class FSElementTraits<FE_QUAD4  > { public: enum { Nodes = 4 }; enum { Faces = 0 }; enum { Edges = 4 }; static FEElementType Type() { return FE_QUAD4; } };
+template <> class FSElementTraits<FE_QUAD8  > { public: enum { Nodes = 8 }; enum { Faces = 0 }; enum { Edges = 4 }; static FEElementType Type() { return FE_QUAD8; } };
+template <> class FSElementTraits<FE_QUAD9  > { public: enum { Nodes = 9 }; enum { Faces = 0 }; enum { Edges = 4 }; static FEElementType Type() { return FE_QUAD9; } };
+template <> class FSElementTraits<FE_TET4   > { public: enum { Nodes = 4 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET4; } };
+template <> class FSElementTraits<FE_TET10  > { public: enum { Nodes = 10 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET10; } };
+template <> class FSElementTraits<FE_TET15  > { public: enum { Nodes = 15 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET15; } };
+template <> class FSElementTraits<FE_TET20  > { public: enum { Nodes = 20 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET20; } };
+template <> class FSElementTraits<FE_PENTA6 > { public: enum { Nodes = 6 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PENTA6; } };
+template <> class FSElementTraits<FE_PENTA15> { public: enum { Nodes = 15 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PENTA15; } };
+template <> class FSElementTraits<FE_HEX8   > { public: enum { Nodes = 8 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX8; } };
+template <> class FSElementTraits<FE_HEX20  > { public: enum { Nodes = 20 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX20; } };
+template <> class FSElementTraits<FE_HEX27  > { public: enum { Nodes = 27 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX27; } };
+template <> class FSElementTraits<FE_PYRA5  > { public: enum { Nodes = 5 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PYRA5; } };
+template <> class FSElementTraits<FE_TET5   > { public: enum { Nodes = 5 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET5; } };
+template <> class FSElementTraits<FE_PYRA13 > { public: enum { Nodes = 13 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PYRA13; } };
 
 template <class T> class FEElementBase : public FEElement_
 {
@@ -291,25 +291,25 @@ public:
 	double 	_h[9];				//!< element thickness (only used by shells)
 };
 
-typedef FEElementBase< FEElementTraits<FE_BEAM2  > > FELine2;
-typedef FEElementBase< FEElementTraits<FE_BEAM3  > > FELine3;
-typedef FEElementBase< FEElementTraits<FE_TRI3   > > FETri3;
-typedef FEElementBase< FEElementTraits<FE_TRI6   > > FETri6;
-typedef FEElementBase< FEElementTraits<FE_QUAD4  > > FEQuad4;
-typedef FEElementBase< FEElementTraits<FE_QUAD8  > > FEQuad8;
-typedef FEElementBase< FEElementTraits<FE_QUAD9  > > FEQuad9;
-typedef FEElementBase< FEElementTraits<FE_TET4   > > FETet4;
-typedef FEElementBase< FEElementTraits<FE_TET10  > > FETet10;
-typedef FEElementBase< FEElementTraits<FE_TET15  > > FETet15;
-typedef FEElementBase< FEElementTraits<FE_TET20  > > FETet20;
-typedef FEElementBase< FEElementTraits<FE_PENTA6 > > FEPenta6;
-typedef FEElementBase< FEElementTraits<FE_PENTA15> > FEPenta15;
-typedef FEElementBase< FEElementTraits<FE_HEX8   > > FEHex8;
-typedef FEElementBase< FEElementTraits<FE_HEX20  > > FEHex20;
-typedef FEElementBase< FEElementTraits<FE_HEX27  > > FEHex27;
-typedef FEElementBase< FEElementTraits<FE_PYRA5  > > FEPyra5;
-typedef FEElementBase< FEElementTraits<FE_TET5   > > FETet5;
-typedef FEElementBase< FEElementTraits<FE_PYRA13 > > FEPyra13;
+typedef FEElementBase< FSElementTraits<FE_BEAM2  > > FELine2;
+typedef FEElementBase< FSElementTraits<FE_BEAM3  > > FELine3;
+typedef FEElementBase< FSElementTraits<FE_TRI3   > > FETri3;
+typedef FEElementBase< FSElementTraits<FE_TRI6   > > FETri6;
+typedef FEElementBase< FSElementTraits<FE_QUAD4  > > FEQuad4;
+typedef FEElementBase< FSElementTraits<FE_QUAD8  > > FEQuad8;
+typedef FEElementBase< FSElementTraits<FE_QUAD9  > > FEQuad9;
+typedef FEElementBase< FSElementTraits<FE_TET4   > > FETet4;
+typedef FEElementBase< FSElementTraits<FE_TET10  > > FETet10;
+typedef FEElementBase< FSElementTraits<FE_TET15  > > FETet15;
+typedef FEElementBase< FSElementTraits<FE_TET20  > > FETet20;
+typedef FEElementBase< FSElementTraits<FE_PENTA6 > > FEPenta6;
+typedef FEElementBase< FSElementTraits<FE_PENTA15> > FEPenta15;
+typedef FEElementBase< FSElementTraits<FE_HEX8   > > FEHex8;
+typedef FEElementBase< FSElementTraits<FE_HEX20  > > FEHex20;
+typedef FEElementBase< FSElementTraits<FE_HEX27  > > FEHex27;
+typedef FEElementBase< FSElementTraits<FE_PYRA5  > > FEPyra5;
+typedef FEElementBase< FSElementTraits<FE_TET5   > > FETet5;
+typedef FEElementBase< FSElementTraits<FE_PYRA13 > > FEPyra13;
 
 //-----------------------------------------------------------------------------
 // This element class can represent any of the linear elements.

@@ -30,7 +30,7 @@ SOFTWARE.*/
 class FEPLYExport : public FEFileExport
 {
 public:
-	FEPLYExport(FEProject& prj);
+	FEPLYExport(FSProject& prj);
 	~FEPLYExport(void);
 
 	bool Write(const char* szfile) override;

@@ -33,7 +33,7 @@ class FELinearToQuadratic : public FEModifier
 {
 public:
 	FELinearToQuadratic();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 	void SetSmoothing(bool b) { m_bsmooth = b; }
 
 protected:
@@ -46,7 +46,7 @@ class FEQuadraticToLinear : public FEModifier
 {
 public:
 	FEQuadraticToLinear() : FEModifier("Quadratic-to-Linear"){}
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -54,5 +54,5 @@ public:
 class FESolidSmooth
 {
 public:
-	void Apply(FEMesh* pm);
+	void Apply(FSMesh* pm);
 };

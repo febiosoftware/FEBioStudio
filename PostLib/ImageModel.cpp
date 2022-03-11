@@ -161,8 +161,11 @@ void CImageSource::ClearFilters()
     }
 }
 
-CImageSITK* CImageSource::GetImageToFilter(bool allocate)
+C3DImage* CImageSource::GetImageToFilter(bool allocate)
 {
+
+#ifdef HAS_ITK
+
     if(m_img == m_originalImage)
     {
         if(allocate)
@@ -179,7 +182,21 @@ CImageSITK* CImageSource::GetImageToFilter(bool allocate)
         }
     }
 
-    return static_cast<CImageSITK*>(m_img);
+#else
+
+    if(m_img == m_originalImage)
+    {
+        int nx = m_originalImage->Width();
+        int ny = m_originalImage->Height();
+        int nz = m_originalImage->Depth();
+
+        m_img = new C3DImage();
+        m_img->Create(nx, ny, nz);
+    }
+
+#endif
+
+    return m_img;
 }
 
 void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)

@@ -27,31 +27,33 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include <FSCore/color.h>
+#include <FEMLib/IHasItemList.h>
 
 //-----------------------------------------------------------------------------
-class FEModel;
-class FEMaterial;
+class FSModel;
+class FSMaterial;
+class GPartList;
 
 //-----------------------------------------------------------------------------
 // This class defines a material. It stores the material properties (as a 
-// FEMaterial class), the material name and other attributes, mostly used for rendering
+// FSMaterial class), the material name and other attributes, mostly used for rendering
 //
-class GMaterial : public FSObject
+class GMaterial : public FSObject, public IHasItemList
 {
 public:
 	enum {MAX_COLORS = 16};
 
 public:
-	GMaterial(FEMaterial* pm = 0);
+	GMaterial(FSMaterial* pm = 0);
 	~GMaterial(void);
 
 public:
 
-	void SetMaterialProperties(FEMaterial* pm);
-	FEMaterial* GetMaterialProperties();
+	void SetMaterialProperties(FSMaterial* pm);
+	FSMaterial* GetMaterialProperties();
 
-	void SetModel(FEModel* ps) { m_ps = ps; }
-	FEModel* GetModel() { return m_ps; }
+	void SetModel(FSModel* ps) { m_ps = ps; }
+	FSModel* GetModel() { return m_ps; }
 
 	int GetID() { return m_nID; }
 	void SetID(int nid)
@@ -78,6 +80,14 @@ public:
 	void Specular(GLColor c) { m_specular = c; }
 	void AmbientDiffuse(GLColor c) { m_ambient = m_diffuse = c; }
 
+public:	// IHasItemList
+	FEItemListBuilder* GetItemList() override;
+	virtual unsigned int GetMeshItemType() const override;
+
+private:
+	void SetItemList(FEItemListBuilder* pi) override;
+	virtual void SetMeshItemType(unsigned int meshItem){};
+
 public:
 	static void ResetCounter() { m_nref = 1; }
 	static void SetCounter(int n) { m_nref = n; }
@@ -98,7 +108,11 @@ protected:
 
 protected:
 	int			m_nID;	//!< unique material ID
-	FEMaterial*	m_pm;	//!< the material properties
-	FEModel*	m_ps;	//!< the model to which this material belongs \todo is this being used?
+	FSMaterial*	m_pm;	//!< the material properties
+	FSModel*	m_ps;	//!< the model to which this material belongs \todo is this being used?
+
+private:
+	GPartList* m_partList;
+
 	static	int	m_nref;
 };

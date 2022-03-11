@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class AnsysImport : public FEFileImport
+class AnsysImport : public FSFileImport
 {
 	struct NODE
 	{
@@ -49,7 +49,7 @@ class AnsysImport : public FEFileImport
 	};
 
 public:
-	AnsysImport(FEProject& prj);
+	AnsysImport(FSProject& prj);
 	~AnsysImport(void);
 
 	bool read_NBLOCK();
@@ -58,7 +58,7 @@ public:
 	bool Load(const char* szfile);
 
 protected:
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 
 protected:
 	list<NODE>	m_Node;

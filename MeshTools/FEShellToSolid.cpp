@@ -26,12 +26,14 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEShellToSolid.h"
+using namespace std;
+
 
 FEShellToSolid::FEShellToSolid() : FEModifier("Shell To Solid")
 {
 }
 
-FEMesh* FEShellToSolid::Apply(FEMesh* pm)
+FSMesh* FEShellToSolid::Apply(FSMesh* pm)
 {
 	// Make sure that we have a triangle or quad mesh
 	if ((pm->IsType(FE_TRI3)==false)&&(pm->IsType(FE_QUAD4)==false)) return 0;
@@ -43,7 +45,7 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 	int NE = pm->Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected())
 		{
 			int ne = el.Nodes();
@@ -64,13 +66,13 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 	int NF = pm->Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (pm->Element(f.m_elem[0].eid).IsSelected())
 		{
 			int nf = f.Nodes();
 			for (int j=0; j<nf; ++j)
 			{
-				if (tag[f.n[j]] != 0) normals[f.n[j]] += f.m_nn[j];
+				if (tag[f.n[j]] != 0) normals[f.n[j]] += to_vec3d(f.m_nn[j]);
 			}
 		}
 	}
@@ -82,7 +84,7 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 	vector<double> h(NN, 0.0);
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected())
 		{
 			int ne = el.Nodes();
@@ -94,7 +96,7 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 		if (tag[i] != 0) h[i] /= (double) tag[i];
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh(*pm);
+	FSMesh* pnew = new FSMesh(*pm);
 	pnew->Create(NN + nn, 0);
 
 	// position the new nodes
@@ -105,8 +107,8 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 	{
 		if (tag[i] >= 0)
 		{
-			FENode& nd = pnew->Node(tag[i]);
-			FENode& ns = pm->Node(i);
+			FSNode& nd = pnew->Node(tag[i]);
+			FSNode& ns = pm->Node(i);
 			nd.r = ns.r + normals[i]*h[i];
 		}
 	}
@@ -114,7 +116,7 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 	// upgrade elements
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pnew->Element(i);
+		FSElement& el = pnew->Element(i);
 		if (el.IsSelected())
 		{
 			if (el.Type() == FE_QUAD4)

@@ -48,7 +48,7 @@ SOFTWARE.*/
 class Ui::CDlgSelectParam
 {
 public:
-	FEModel*		m_fem;
+	FSModel*		m_fem;
 	QTreeWidget*	tree;
 	QString			m_text;
 	int				m_paramOption;
@@ -73,7 +73,7 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), w, SLOT(reject()));
 	}
 
-	void AddMaterial(FEMaterial* mat, QTreeWidgetItem* item)
+	void AddMaterial(FSMaterial* mat, QTreeWidgetItem* item)
 	{
 		for (int j = 0; j < mat->Parameters(); ++j)
 		{
@@ -84,12 +84,12 @@ public:
 
 		for (int j = 0; j < mat->Properties(); ++j)
 		{
-			FEMaterialProperty& prop = mat->GetProperty(j);
+			FSProperty& prop = mat->GetProperty(j);
 			int nsize = prop.Size();
 			QString propName = QString::fromStdString(prop.GetName());
 			for (int k = 0; k < nsize; ++k)
 			{
-				FEMaterial* mj = mat->GetProperty(j).GetMaterial(k);
+				FSMaterial* mj = mat->GetMaterialProperty(j, k);
 				if (mj)
 				{
 					QString matName = propName;
@@ -114,7 +114,7 @@ public:
 			{
 				GMaterial* mat = m_fem->GetMaterial(i);
 				QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(mat->GetName()), 1);
-				FEMaterial* matProps = mat->GetMaterialProperties();
+				FSMaterial* matProps = mat->GetMaterialProperties();
 
 				AddMaterial(matProps, matItem);
 				root->addChild(matItem);
@@ -127,8 +127,8 @@ public:
 			for (int i = 0; i < NMAT; ++i)
 			{
 				GMaterial* mat = m_fem->GetMaterial(i);
-				FEMaterial* matProps = mat->GetMaterialProperties();
-				if (dynamic_cast<FERigidMaterial*>(matProps)) {
+				FSMaterial* matProps = mat->GetMaterialProperties();
+				if (matProps->IsRigid()) {
 					QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(mat->GetName()), 3);
 					matItem->addChild(new QTreeWidgetItem(QStringList() << "Fx", 2));
 					matItem->addChild(new QTreeWidgetItem(QStringList() << "Fy", 2));
@@ -177,14 +177,14 @@ QString CDlgSelectParam::text()
 }
 
 
-CDlgSelectParam::CDlgSelectParam(FEModel* fem, int paramOption, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgSelectParam)
+CDlgSelectParam::CDlgSelectParam(FSModel* fem, int paramOption, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgSelectParam)
 {
 	ui->m_fem = fem;
 	ui->m_paramOption = paramOption;
 	ui->setup(this);
 }
 
-CSelectParam::CSelectParam(FEModel* fem, int paramOption, QWidget* parent) : m_fem(fem), QWidget(parent)
+CSelectParam::CSelectParam(FSModel* fem, int paramOption, QWidget* parent) : m_fem(fem), QWidget(parent)
 {
 	m_paramOption = paramOption;
 
@@ -214,7 +214,7 @@ void CSelectParam::onSelectClicked()
 class Ui::CDlgFEBioOptimize
 {
 public:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 	FEBioOpt	opt;
 	int			m_theme;
 
@@ -452,7 +452,7 @@ CDlgFEBioOptimize::CDlgFEBioOptimize(CMainWindow* parent) : QWizard(parent), ui(
 
 	setWindowTitle("Generate FEBio optimization");
 	ui->m_theme = parent->currentTheme();
-	ui->m_fem = doc->GetFEModel();
+	ui->m_fem = doc->GetFSModel();
 	ui->setup(this);
 
 	QMetaObject::connectSlotsByName(this);
@@ -475,11 +475,11 @@ void CDlgFEBioOptimize::on_addData_clicked()
 	if (dlg.exec())
 	{
 		ui->dataTable->setRowCount(0);
-		std::vector<LOADPOINT> pts = dlg.GetPoints();
+		std::vector<vec2d> pts = dlg.GetPoints();
 		for (int i = 0; i < pts.size(); ++i)
 		{
-			LOADPOINT& p = pts[i];
-			ui->addDataPoint(p.time, p.load);
+			vec2d& p = pts[i];
+			ui->addDataPoint(p.x(), p.y());
 		}
 	}
 }
@@ -568,7 +568,7 @@ CDlgFEBioTangent::CDlgFEBioTangent(CMainWindow* parent) : QDialog(parent), ui(ne
 	CModelDocument* doc = parent->GetModelDocument();
 	if (doc)
 	{
-		FEModel* fem = doc->GetFEModel(); assert(fem);
+		FSModel* fem = doc->GetFSModel(); assert(fem);
 		int nmat = fem->Materials();
 		for (int i = 0; i < nmat; ++i)
 		{

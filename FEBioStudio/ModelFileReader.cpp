@@ -88,6 +88,12 @@ bool ModelFileReader::Load(const char* szfile)
 			Close();
 			return errf("An error occurred processing model:\n%s", e.ErrorMsg());
 		}
+		catch (std::exception e)
+		{
+			Close();
+			const char* szerr = (e.what() == nullptr ? "(unknown)" : e.what());
+			return errf("An exception occurred: %s", szerr);
+		}
 		catch (...)
 		{
 			Close();

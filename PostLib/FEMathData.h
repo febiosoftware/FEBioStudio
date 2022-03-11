@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMeshData_T.h"
-#include <MathLib/MathParser.h>
 
 namespace Post {
 
@@ -70,16 +69,16 @@ private:
 	FEMathMat3DataField*	m_pdf;
 };
 
-class FEMathDataField : public FEDataField
+class FEMathDataField : public ModelDataField
 {
 public:
-	FEMathDataField(Post::FEPostModel* fem, unsigned int flag = 0) : FEDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_NODE, flag)
+	FEMathDataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_NODE, flag)
 	{
 		m_eq = "";
 	}
 
 	//! Create a copy
-	FEDataField* Clone() const override
+	ModelDataField* Clone() const override
 	{
 		FEMathDataField* pd = new FEMathDataField(m_fem);
 		pd->m_eq = m_eq;
@@ -100,10 +99,10 @@ private:
 	std::string	m_eq;		//!< equation string
 };
 
-class FEMathVec3DataField : public FEDataField
+class FEMathVec3DataField : public ModelDataField
 {
 public:
-	FEMathVec3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : FEDataField(fem, DATA_VEC3F, DATA_NODE, CLASS_NODE, flag)
+	FEMathVec3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_VEC3F, DATA_NODE, CLASS_NODE, flag)
 	{
 		m_eq[0] = "";
 		m_eq[1] = "";
@@ -111,7 +110,7 @@ public:
 	}
 
 	//! Create a copy
-	FEDataField* Clone() const override
+	ModelDataField* Clone() const override
 	{
 		FEMathVec3DataField* pd = new FEMathVec3DataField(m_fem);
 		pd->m_eq[0] = m_eq[0];
@@ -141,15 +140,15 @@ private:
 	std::string	m_eq[3];		//!< equation string
 };
 
-class FEMathMat3DataField : public FEDataField
+class FEMathMat3DataField : public ModelDataField
 {
 public:
-	FEMathMat3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : FEDataField(fem, DATA_MAT3F, DATA_NODE, CLASS_NODE, flag)
+	FEMathMat3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_MAT3F, DATA_NODE, CLASS_NODE, flag)
 	{
 	}
 
 	//! Create a copy
-	FEDataField* Clone() const override
+	ModelDataField* Clone() const override
 	{
 		FEMathMat3DataField* pd = new FEMathMat3DataField(m_fem);
 		for (int i = 0; i < 9; ++i) pd->m_eq[i] = m_eq[i];

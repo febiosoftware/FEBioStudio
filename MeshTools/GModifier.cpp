@@ -72,11 +72,11 @@ void GModifierStack::ClearMesh()
 void GModifierStack::Apply()
 {
 	// get the original mesh
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 
 	// if no mesh exists, we create a copy of the current mesh
 	// else we restore the original mesh before we apply the modifiers
-	if (m_pmesh == 0) { m_pmesh = new FEMesh; m_pmesh->ShallowCopy(pm); }
+	if (m_pmesh == 0) { m_pmesh = new FSMesh; m_pmesh->ShallowCopy(pm); }
 	else pm->ShallowCopy(m_pmesh);
 
 	list<GModifier*>::iterator pi = m_Mod.begin();
@@ -149,7 +149,7 @@ void GModifierStack::Load(IArchive &ar)
 		switch (nid)
 		{
 		case CID_MODIFIER_MESH:
-			m_pmesh = new FEMesh;
+			m_pmesh = new FSMesh;
 			m_pmesh->SetGObject(m_po);
 			m_pmesh->Load(ar);
 			break;
@@ -206,7 +206,7 @@ void GModifierStack::Copy(GModifierStack* ps)
 //=============================================================================
 // GTwistModifier
 //-----------------------------------------------------------------------------
-GTwistModifier::GTwistModifier(FEModel* ps)
+GTwistModifier::GTwistModifier(FSModel* ps)
 {
 	AddIntParam(2, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0, "twist", "twist");
@@ -395,9 +395,9 @@ GMesh* GTwistModifier::BuildGMesh(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GTwistModifier::BuildFEMesh(GObject* po)
+FSMesh* GTwistModifier::BuildFEMesh(GObject* po)
 {
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	int m = GetIntValue(ORIENT);
 	double w = GetFloatValue(TWIST);
@@ -425,7 +425,7 @@ FEMesh* GTwistModifier::BuildFEMesh(GObject* po)
 		{
 			for (int i=0; i<N; ++i)
 			{
-				FENode& n = pm->Node(i);
+				FSNode& n = pm->Node(i);
 				t = (n.r.x - box.x0) / dx;
 				t = (t < smin ? 0 : (t > smax ? smax - smin : t - smin));
 				a = w*t*dx/h;
@@ -444,7 +444,7 @@ FEMesh* GTwistModifier::BuildFEMesh(GObject* po)
 		{
 			for (int i=0; i<N; ++i)
 			{
-				FENode& n = pm->Node(i);
+				FSNode& n = pm->Node(i);
 				t = (n.r.y - box.y0) / dy;
 				t = (t < smin ? 0 : (t > smax ? smax - smin : t - smin));
 				a = w*t*dy/h;
@@ -463,7 +463,7 @@ FEMesh* GTwistModifier::BuildFEMesh(GObject* po)
 		{
 			for (int i=0; i<N; ++i)
 			{
-				FENode& n = pm->Node(i);
+				FSNode& n = pm->Node(i);
 				t = (n.r.z - box.z0) / dz;
 				t = (t < smin ? 0 : (t > smax ? smax - smin : t - smin));
 				a = w*t*dz/h;
@@ -490,7 +490,7 @@ FEMesh* GTwistModifier::BuildFEMesh(GObject* po)
 //=============================================================================
 // GPinchModifier
 //-----------------------------------------------------------------------------
-GPinchModifier::GPinchModifier(FEModel* ps)
+GPinchModifier::GPinchModifier(FSModel* ps)
 {
 	AddDoubleParam(1.0, "scale", "scale");
 	AddIntParam(0, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
@@ -568,9 +568,9 @@ GMesh* GPinchModifier::BuildGMesh(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GPinchModifier::BuildFEMesh(GObject* po)
+FSMesh* GPinchModifier::BuildFEMesh(GObject* po)
 {
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	BOX box = pm->GetBoundingBox();
 	vec3d c = box.Center();
@@ -591,7 +591,7 @@ FEMesh* GPinchModifier::BuildFEMesh(GObject* po)
 
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		vec3d r = node.r - c;
 		double w = fabs(r.*pa)/W;
 		if (w>1) w = 1;
@@ -609,7 +609,7 @@ FEMesh* GPinchModifier::BuildFEMesh(GObject* po)
 //=============================================================================
 // GBendModifier
 //-----------------------------------------------------------------------------
-GBendModifier::GBendModifier(FEModel* ps)
+GBendModifier::GBendModifier(FSModel* ps)
 {
 	AddIntParam(2, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0, "angle", "angle");
@@ -727,9 +727,9 @@ GMesh* GBendModifier::BuildGMesh(GObject *po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GBendModifier::BuildFEMesh(GObject* po)
+FSMesh* GBendModifier::BuildFEMesh(GObject* po)
 {
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// set the bounding box
 	m_box = pm->GetBoundingBox();
@@ -737,12 +737,12 @@ FEMesh* GBendModifier::BuildFEMesh(GObject* po)
 	// update parameters
 	UpdateParams();
 
-	// apply modifier to FEMesh
+	// apply modifier to FSMesh
 	int N = pm->Nodes();
 	vec3d r;
 	for (int i=0; i<N; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		r = node.r - m_box.Center();
 		Apply(r);
 		node.r = r + m_box.Center();
@@ -790,7 +790,7 @@ void GBendModifier::Apply(vec3d& r)
 //=============================================================================
 // GSkewModifier
 //-----------------------------------------------------------------------------
-GSkewModifier::GSkewModifier(FEModel* ps)
+GSkewModifier::GSkewModifier(FSModel* ps)
 {
 	AddIntParam(0, "orientation", "Orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0, "distance", "Skew distance");
@@ -877,9 +877,9 @@ GMesh* GSkewModifier::BuildGMesh(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GSkewModifier::BuildFEMesh(GObject* po)
+FSMesh* GSkewModifier::BuildFEMesh(GObject* po)
 {
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// get parameters
 	int m = GetIntValue(ORIENT);
@@ -908,7 +908,7 @@ FEMesh* GSkewModifier::BuildFEMesh(GObject* po)
 
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		r = node.r - rc;
 		r.*pl += a*(r.*pr)*d;
 		node.r = r + rc;

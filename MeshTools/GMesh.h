@@ -47,7 +47,7 @@ public:
 		vec3d	n;		// normal (but not really)
 		int		tag;	// multipurpose tag
 		int		pid;	// GNode parent local ID
-		int		nid;	// Node index of FENode (in case a mesh object created this GMesh)
+		int		nid;	// Node index of FSNode (in case a mesh object created this GMesh)
 	};
 
 	struct EDGE
@@ -75,6 +75,7 @@ public:
 	virtual ~GMesh(void);
 
 	void Create(int nodes, int faces, int edges = 0);
+	void Clear();
 
 	virtual void Update();
 
@@ -107,6 +108,7 @@ public:
 	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true);
 	void AddFace(int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true);
 	void AddFace(vec3d* r, int gid = 0, int smoothId = 0, bool bext = true);
+	void AddFace(vec3f r[3], vec3f n[3], GLColor c);
 
 protected:
 	void FindNeighbors();

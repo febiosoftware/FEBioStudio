@@ -9,7 +9,96 @@ mark_as_advanced(${Qt_Version}_DIR ${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR
     ${Qt_Version}Widgets_DIR ${Qt_Version}Core5Compat_DIR ${Qt_Version}GuiTools_DIR ${Qt_Version}CoreTools_DIR ${Qt_Version}OpenGLWidgets_DIR
     ${Qt_Version}WidgetsTools_DIR XKB_INCLUDE_DIR XKB_LIBRARY)
 
-#Teem
+# FEBio
+# Find FEBio SDK or git repo automatically
+if(WIN32)
+	set(TEMP_PATHS ${CMAKE_SOURCE_DIR}/.. ${CMAKE_SOURCE_DIR}/../.. $ENV{HOMEPATH}/ $ENV{HOMEPATH}/source/repos $ENV{HOMEPATH}/*)
+else()
+    set(TEMP_PATHS ${CMAKE_SOURCE_DIR}/.. ${CMAKE_SOURCE_DIR}/../.. $ENV{HOME}/ $ENV{HOME}/*)
+endif()
+    
+find_path(FEBio_SDK FECore/Archive.h
+    PATHS ${TEMP_PATHS}
+    PATH_SUFFIXES FEBio
+    DOC "Path to the FEBio SDK, or git repo.")
+    
+if(NOT FEBio_SDK)
+    if(WIN32)
+        set(TEMP_PATHS $ENV{PROGRAMFILES}/* $ENV{HOMEPATH}/*)
+    elseif(APPLE)
+        set(TEMP_PATHS /Applications/* $ENV{HOME}/*)
+    else()
+        set(TEMP_PATHS $ENV{HOME}/*)
+    endif() 
+    
+    find_path(FEBio_SDK "include/FECore/Archive.h"
+        PATHS ${TEMP_PATHS}
+        PATH_SUFFIXES sdk
+        DOC "Path to the FEBio SDK, or git repo.")
+endif()
+
+if(NOT FEBio_SDK)
+    set(FEBio_SDK "" CACHE PATH "Path to the FEBio SDK, or git repo.")
+    message(FATAL_ERROR "Unable to find path to FEBio SDK or git repo automatically. Please set FEBio_SDK to the path to your FEBio SDK or git repo.")
+endif()
+
+# Only update the include and lib directories if the FEBio_SDK path has been changed. 
+if(NOT OLD_SDK)
+    set(NEWPATH TRUE)
+else()
+    string(COMPARE NOTEQUAL ${FEBio_SDK} ${OLD_SDK} NEWPATH)
+endif()
+
+if(NEWPATH)
+    # Is this the SDK?
+    string(REGEX MATCH "sdk" IS_SDK ${FEBio_SDK})
+
+    set(LIB_SUFFIXES "")
+    if(IS_SDK)
+        set(FEBio_INC "${FEBio_SDK}/include" CACHE PATH "Path to FEBio include directory." FORCE)
+        
+        if(WIN32)
+            list(APPEND LIB_SUFFIXES "vs2017/Release" "vs2017/Debug")
+        else()
+            list(APPEND LIB_SUFFIXES "lib")
+        endif()
+    else()
+        set(FEBio_INC ${FEBio_SDK} CACHE PATH "Path to FEBio include directory." FORCE)
+        
+        if(WIN32)
+            list(APPEND LIB_SUFFIXES "cmbuild/lib/Release" "cmbuild/lib/Debug" "cbuild/lib/Release" "cbuild/lib/Debug" "build/lib/Release" "build/lib/Debug")
+        else()
+            list(APPEND LIB_SUFFIXES "cbuild/lib" "cmbuild/lib" "build/lib" "cbuild/Release/lib" "cmbuild/Release/lib" "build/Release/lib" "cbuild/Debug/lib" "cmbuild/Debug/lib" "build/Debug/lib")
+        endif()
+    endif()
+
+    mark_as_advanced(FEBio_INC)
+
+    # Find lib path
+    find_library(FECORE  
+        NAMES FECore fecore fecore_gcc64 fecore_lnx64
+        PATHS ${FEBio_SDK}
+        PATH_SUFFIXES ${LIB_SUFFIXES}
+        DOC "FEBio library path")
+
+    if(FECORE)
+        get_filename_component(FECORE_TEMP ${FECORE} DIRECTORY)
+        set(FEBio_LIB_DIR ${FECORE_TEMP} CACHE PATH "Path to the FEBio lib directory." FORCE)
+        mark_as_advanced(FEBio_LIB_DIR)
+        unset(FECORE_TEMP)
+        unset(FECORE CACHE)
+    else()
+        set(FEBio_LIB_DIR CACHE PATH "Path to the FEBio lib directory." FORCE)
+        message(SEND_ERROR "Unable to find FEBio Library path automatically. Set FEBio_LIB_DIR.")
+        unset(FECORE CACHE)
+    endif()
+endif()
+
+set(OLD_SDK ${FEBio_SDK} CACHE PATH "Don't edit. Old SDK path used to automatically make changes." FORCE)
+mark_as_advanced(OLD_SDK)
+
+
+# Teem
 if(WIN32)
 	find_path(TEEM_INC teem/nrrd.h
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
@@ -40,7 +129,7 @@ else()
     unset(TEEM_LIB CACHE)
 endif()
 
-#Libtiff
+# Libtiff
 if(WIN32)
 	find_path(LIBTIFF_INC tiffio.h
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
@@ -386,7 +475,7 @@ mark_as_advanced(SSL_DBG_LIB_DIR)
 
 # QuaZip
 if(Qt_Ver VERSION_EQUAL 6)
-    set(QUAZIP_NAMES quazip1-qt6 quazip6 quazip)
+    set(QUAZIP_NAMES quazip1-qt6 quazip6 quazip quazip1-qt6d)
 else()
     set(QUAZIP_NAMES quazip5 quazip)
 endif()

@@ -32,12 +32,12 @@ class OArchive;
 class PRVObjectExport : public FEFileExport
 {
 public:
-	PRVObjectExport(FEProject& prj);
+	PRVObjectExport(FSProject& prj);
 
 	bool Write(const char* szfile) override;
 
 private:
-	bool SaveObjects(OArchive& ar, FEProject& prj);
+	bool SaveObjects(OArchive& ar, FSProject& prj);
 
 private:
 	bool	m_selectedObjectsOnly;

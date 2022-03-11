@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 using std::vector;
 
-class FESurfaceMesh;
+class FSSurfaceMesh;
 class GEdge;
 
 class InsertCurves
@@ -38,5 +38,5 @@ class InsertCurves
 public:
 	InsertCurves();
 
-	FESurfaceMesh* Apply(FESurfaceMesh* mesh, vector<GEdge*>& curveList, bool insertEdges, double tol);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* mesh, vector<GEdge*>& curveList, bool insertEdges, double tol);
 };

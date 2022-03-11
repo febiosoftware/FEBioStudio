@@ -31,15 +31,10 @@ SOFTWARE.*/
 #include <vector>
 #include <set>
 #include <string>
-//using namespace std;
-
-using std::vector;
-using std::set;
-using std::string;
 
 //-----------------------------------------------------------------------------
-class FESurfaceMesh;
-class FEMesh;
+class FSSurfaceMesh;
+class FSMesh;
 class FEMeshData;
 class FENodeData;
 class FESurfaceData;
@@ -50,7 +45,7 @@ class Mesh_Data
 {
 	struct DATA
 	{
-		double	val[FEElement::MAX_NODES];	// nodal values for element
+		double	val[FSElement::MAX_NODES];	// nodal values for element
 		int		nval;						// number of nodal values (should equal nr of nodes for corresponding element)
 		int		tag;
 	};
@@ -62,7 +57,7 @@ public:
 
 	void Clear();
 
-	void Init(FEMesh* mesh, double initVal, int initTag);
+	void Init(FSMesh* mesh, double initVal, int initTag);
 
 	bool IsValid() const { return (m_data.empty() == false); }
 
@@ -99,25 +94,25 @@ public:
 
 //-----------------------------------------------------------------------------
 class FEMeshBuilder;
-class FESurfaceMesh;
+class FSSurfaceMesh;
 
 //-----------------------------------------------------------------------------
-// This class describes a finite element mesh. Every FEMesh must be owned by a
+// This class describes a finite element mesh. Every FSMesh must be owned by a
 // GObject class. 
-class FEMesh : public FECoreMesh
+class FSMesh : public FSCoreMesh
 {
 public:
 	// --- C O N S T R U C T I O N ---
-	FEMesh();
-	FEMesh(FEMesh& m);
-	FEMesh(FESurfaceMesh& m);
-	virtual ~FEMesh();
+	FSMesh();
+	FSMesh(FSMesh& m);
+	FSMesh(FSSurfaceMesh& m);
+	virtual ~FSMesh();
 
 	// allocate space for mesh
 	void Create(int nodes, int elems, int faces = 0, int edges = 0) override;
 
 	// copy part of the mesh
-	void ShallowCopy(FEMesh* pm);
+	void ShallowCopy(FSMesh* pm);
 
 	//! clear this mesh
 	void Clear();
@@ -125,14 +120,14 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-public: // from FECoreMesh
+public: // from FSCoreMesh
 
 	//! return number of elements
 	int Elements() const override { return (int)m_Elem.size(); }
 
 	//! return element
-	FEElement& Element(int n) { return m_Elem[n]; }
-	const FEElement& Element(int n) const { return m_Elem[n]; }
+	FSElement& Element(int n) { return m_Elem[n]; }
+	const FSElement& Element(int n) const { return m_Elem[n]; }
 
 	//! return reference to element
 	FEElement_& ElementRef(int n) override { return m_Elem[n]; }
@@ -188,43 +183,43 @@ public:
 	void ResizeElems(int newSize);
 
 	// extract faces and return as new mesh
-	FEMesh* ExtractFaces(bool selectedOnly);
+	FSMesh* ExtractFaces(bool selectedOnly);
 
 public:
 	int MeshDataFields() const;
 	FEMeshData* GetMeshDataField(int i);
-	FEMeshData* FindMeshDataField(const string& sz);
+	FEMeshData* FindMeshDataField(const std::string& sz);
 	void RemoveMeshDataField(int i);
 	int GetMeshDataIndex(FEMeshData* data);
 	void InsertMeshData(int i, FEMeshData* data);
 	void AddMeshDataField(FEMeshData* data);
 
-	FENodeData* AddNodeDataField(const string& name, double v = 0.0);
-	FENodeData*    AddNodeDataField   (const string& name, FENodeSet* nodeset, FEMeshData::DATA_TYPE dataType);
-	FESurfaceData* AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType);
-	FEElementData* AddElementDataField(const string& name, FEPart* part, FEMeshData::DATA_TYPE dataType);
+	FENodeData* AddNodeDataField(const std::string& name, double v = 0.0);
+	FENodeData*    AddNodeDataField   (const std::string& name, FSNodeSet* nodeset, FEMeshData::DATA_TYPE dataType);
+	FESurfaceData* AddSurfaceDataField(const std::string& name, FSSurface* surface, FEMeshData::DATA_TYPE dataType);
+	FEElementData* AddElementDataField(const std::string& name, FSPart* part, FEMeshData::DATA_TYPE dataType);
 	void ClearMeshData();
 
 	Mesh_Data& GetMeshData();
 
 public: // --- M E S H   Q U E R I E S ---
-	void BuildSurfaceNodeNodeTable(vector< set<int> >& NNT);
+	void BuildSurfaceNodeNodeTable(std::vector< std::set<int> >& NNT);
 
-	void FindDuplicateFaces(vector<int>& l);
-	void FindDuplicateEdges(vector<int>& l);
+	void FindDuplicateFaces(std::vector<int>& l);
+	void FindDuplicateEdges(std::vector<int>& l);
 
 	// select elements based on face selection
-	vector<int> GetElementsFromSelectedFaces();
+	std::vector<int> GetElementsFromSelectedFaces();
 
 protected:
 	// elements
-	std::vector<FEElement>	m_Elem;	//!< FE elements
+	std::vector<FSElement>	m_Elem;	//!< FE elements
 
 	// mesh data (used for data evaluation)
 	Mesh_Data	m_data;
 
 	// data fields
-	vector<FEMeshData*>		m_meshData;
+	std::vector<FEMeshData*>		m_meshData;
 
 	friend class FEMeshBuilder;
 };
@@ -232,4 +227,4 @@ protected:
 double bias(double b, double x);
 double gain(double g, double x);
 
-FEMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh);
+FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh);

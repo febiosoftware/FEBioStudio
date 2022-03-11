@@ -29,54 +29,48 @@ SOFTWARE.*/
 #include "FEProject.h"
 #include "GModel.h"
 
-FEPlotVariable::FEPlotVariable(int module, const string& name, const string& displayName, bool bactive, bool bshow, DOMAIN_TYPE type)
+CPlotVariable::CPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type)
 {
-	m_module = module;
 	m_name = name;
-	m_displayName = displayName;
 	m_bactive = bactive;
 	m_bshow = bshow;
 	m_domainType = type;
 }
 
-FEPlotVariable::FEPlotVariable(const FEPlotVariable& v)
+CPlotVariable::CPlotVariable(const CPlotVariable& v)
 {
-	m_module = v.m_module;
 	m_name = v.m_name;
-	m_displayName = v.m_displayName;
 	m_bactive = v.m_bactive;
 	m_bshow = v.m_bshow;
 	m_domainType = v.m_domainType;
 	m_domains = v.m_domains;
 }
 
-void FEPlotVariable::operator = (const FEPlotVariable& v)
+void CPlotVariable::operator = (const CPlotVariable& v)
 {
-	m_module = v.m_module;
 	m_name = v.m_name;
-	m_displayName = v.m_displayName;
 	m_bactive = v.m_bactive;
 	m_bshow = v.m_bshow;
 	m_domainType = v.m_domainType;
 	m_domains = v.m_domains;
 }
 
-int FEPlotVariable::Domains() const
+int CPlotVariable::Domains() const
 {
 	return (int)m_domains.size();
 }
 
-FEItemListBuilder* FEPlotVariable::GetDomain(int i)
+FEItemListBuilder* CPlotVariable::GetDomain(int i)
 {
 	return m_domains[i];
 }
 
-const FEItemListBuilder* FEPlotVariable::GetDomain(int i) const
+const FEItemListBuilder* CPlotVariable::GetDomain(int i) const
 {
 	return m_domains[i];
 }
 
-void FEPlotVariable::addDomain(FEItemListBuilder* pi)
+void CPlotVariable::addDomain(FEItemListBuilder* pi)
 {
 	// make sure the domain is not already added
 	for (size_t i=0; i<m_domains.size(); ++i)
@@ -88,7 +82,7 @@ void FEPlotVariable::addDomain(FEItemListBuilder* pi)
 	m_domains.push_back(pi);
 }
 
-void FEPlotVariable::removeDomain(FEItemListBuilder* pi)
+void CPlotVariable::removeDomain(FEItemListBuilder* pi)
 {
 	for (size_t i = 0; i<m_domains.size(); ++i)
 	{
@@ -102,7 +96,7 @@ void FEPlotVariable::removeDomain(FEItemListBuilder* pi)
 	assert(false);
 }
 
-void FEPlotVariable::removeDomain(int n)
+void CPlotVariable::removeDomain(int n)
 {
 	if ((n >= 0) && (n < m_domains.size()))
 	{
@@ -116,7 +110,7 @@ void FEPlotVariable::removeDomain(int n)
 }
 
 //=================================================================================================
-CPlotDataSettings::CPlotDataSettings(FEProject& prj) : m_prj(prj)
+CPlotDataSettings::CPlotDataSettings(FSProject& prj) : m_prj(prj)
 {
 	Init();
 }
@@ -124,7 +118,7 @@ CPlotDataSettings::CPlotDataSettings(FEProject& prj) : m_prj(prj)
 void CPlotDataSettings::Init()
 {
 	m_plot.clear();
-
+/*
 	// add default plot file variables
 	AddPlotVariable(MODULE_MECH, "acceleration"                      );
 	AddPlotVariable(MODULE_MECH, "contact area"                      );
@@ -139,6 +133,9 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "density"                           );
     AddPlotVariable(MODULE_MECH, "deviatoric fiber stretch"          );
 	AddPlotVariable(MODULE_MECH, "deviatoric strain energy density"  );
+    AddPlotVariable(MODULE_MECH, "deviatoric strong bond SED"        );
+    AddPlotVariable(MODULE_MECH, "deviatoric weak bond SED"          );
+    AddPlotVariable(MODULE_MECH, "weak bond SED"                     );
 	AddPlotVariable(MODULE_MECH, "discrete element stretch"          );
 	AddPlotVariable(MODULE_MECH, "discrete element force"            );
 	AddPlotVariable(MODULE_MECH, "displacement"                      );
@@ -186,6 +183,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "rigid torque"                      );
     AddPlotVariable(MODULE_MECH, "rigid velocity"                    );
     AddPlotVariable(MODULE_MECH, "RVE generations"                   );
+    AddPlotVariable(MODULE_MECH, "RVE reforming bonds"               );
 	AddPlotVariable(MODULE_MECH, "Euler angle"                       );
     AddPlotVariable(MODULE_MECH, "shell director"                    );
     AddPlotVariable(MODULE_MECH, "shell relative volume"             );
@@ -194,7 +192,11 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "SPR stress"                        );
     AddPlotVariable(MODULE_MECH, "specific strain energy"            );
     AddPlotVariable(MODULE_MECH, "strain energy density"             );
+    AddPlotVariable(MODULE_MECH, "strong bond SED"                   );
+    AddPlotVariable(MODULE_MECH, "weak bond SED"                     );
     AddPlotVariable(MODULE_MECH, "stress"                            );
+    AddPlotVariable(MODULE_MECH, "PK1 stress"                        );
+    AddPlotVariable(MODULE_MECH, "PK2 stress"                        );
     AddPlotVariable(MODULE_MECH, "surface area"                      , false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_MECH, "surface traction"                  );
     AddPlotVariable(MODULE_MECH, "uncoupled pressure"                );
@@ -203,10 +205,13 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "yielded bond fraction"             );
 
     AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure"          );
+    AddPlotVariable(MODULE_BIPHASIC, "effective friction coefficient"    );
     AddPlotVariable(MODULE_BIPHASIC, "fluid pressure"                    );
     AddPlotVariable(MODULE_BIPHASIC, "fluid flux");
     AddPlotVariable(MODULE_BIPHASIC, "fluid flow rate", false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_BIPHASIC, "fluid force"                       );
+    AddPlotVariable(MODULE_BIPHASIC, "fluid load support"                );
+    AddPlotVariable(MODULE_BIPHASIC, "local fluid load support"          );
     AddPlotVariable(MODULE_BIPHASIC, "permeability"                      );
     AddPlotVariable(MODULE_BIPHASIC, "porosity"                          );
     AddPlotVariable(MODULE_BIPHASIC, "pressure gap"                      );
@@ -268,53 +273,48 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_FLUID_FSI, "porosity"                      );
     AddPlotVariable(MODULE_FLUID_FSI, "relative fluid velocity"       );
     AddPlotVariable(MODULE_FLUID_FSI, "solid stress"                  );
+*/
 }
 
 //-----------------------------------------------------------------------------
-FEPlotVariable* CPlotDataSettings::AddPlotVariable(int module, const std::string& var, bool b, bool s, DOMAIN_TYPE type)
+void CPlotDataSettings::Clear()
 {
-	FEPlotVariable v(module, var, var, b, s, type);
+	m_plot.clear();
+}
+
+//-----------------------------------------------------------------------------
+CPlotVariable* CPlotDataSettings::AddPlotVariable(const std::string& var, bool b, bool s, DOMAIN_TYPE type)
+{
+	CPlotVariable* pv = FindVariable(var);
+	if (pv) return pv;
+
+	CPlotVariable v(var, b, s, type);
 	m_plot.push_back(v);
 	return &m_plot[ m_plot.size() - 1];
 }
 
 //-----------------------------------------------------------------------------
+void CPlotDataSettings::AddPlotVariable(CPlotVariable& var)
+{
+	CPlotVariable* pv = FindVariable(var.name());
+	if (pv)
+	{
+		pv->setActive(var.isActive());
+	}
+	else m_plot.push_back(var);
+}
+
+//-----------------------------------------------------------------------------
 // Find a plot file variable
-FEPlotVariable* CPlotDataSettings::FindVariable(const std::string& var, int module)
+CPlotVariable* CPlotDataSettings::FindVariable(const std::string& var)
 {
 	int N = (int)m_plot.size();
 	for (int i = 0; i<N; ++i) 
 	{
-		FEPlotVariable& pv = m_plot[i];
-		if ((module == -1) || (pv.GetModule() == module))
-		{
-			if (var == m_plot[i].name()) return &m_plot[i];
-		}
+		CPlotVariable& pv = m_plot[i];
+		if (var == m_plot[i].name()) return &m_plot[i];
 	}
 	return 0;
-}
-
-void CPlotDataSettings::SetAllVariables(bool b)
-{
-	int N = PlotVariables();
-	for (int i=0; i<N; ++i)
-	{
-		FEPlotVariable& var = PlotVariable(i);
-		var.setActive(b);
-	}
-}
-
-void CPlotDataSettings::SetAllModuleVariables(int module, bool b)
-{
-	int N = PlotVariables();
-	for (int i = 0; i<N; ++i)
-	{
-		FEPlotVariable& var = PlotVariable(i);
-		if (var.GetModule() == module)
-		{
-			var.setActive(b);
-		}
-	}
 }
 
 void CPlotDataSettings::Save(OArchive& ar)
@@ -324,9 +324,8 @@ void CPlotDataSettings::Save(OArchive& ar)
 	{
 		ar.BeginChunk(CID_PRJ_OUTPUT_VAR);
 		{
-			FEPlotVariable& v = m_plot[i];
+			CPlotVariable& v = m_plot[i];
 			ar.WriteChunk(CID_PRJ_OUTPUT_VAR_NAME, v.name());
-			ar.WriteChunk(CID_PRJ_OUTPUT_VAR_MODULE, v.GetModule());
 			int n = (v.isActive()? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_ACTIVE, n);
 			int m = (v.isShown() ? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_VISIBLE, m);
 			for (int j=0; j<v.Domains(); ++j)
@@ -341,7 +340,7 @@ void CPlotDataSettings::Save(OArchive& ar)
 
 void CPlotDataSettings::Load(IArchive& ar)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -349,13 +348,12 @@ void CPlotDataSettings::Load(IArchive& ar)
 		{
 			string tmp;
 			int n = 0, m = 0, id, module = -1;
-			vector<int> dom;
+			std::vector<int> dom;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				switch (ar.GetChunkID())
 				{
 				case CID_PRJ_OUTPUT_VAR_NAME   : ar.read(tmp); break;
-				case CID_PRJ_OUTPUT_VAR_MODULE : ar.read(module); break;
 				case CID_PRJ_OUTPUT_VAR_ACTIVE : ar.read(n); break;
 				case CID_PRJ_OUTPUT_VAR_VISIBLE: ar.read(m); break;
 				case CID_PRJ_OUTPUT_VAR_DOMAINID: 
@@ -368,8 +366,8 @@ void CPlotDataSettings::Load(IArchive& ar)
 				ar.CloseChunk();
 			}
 
-			FEPlotVariable* pv = FindVariable(tmp, module);
-			if (pv == 0) pv = AddPlotVariable(MODULE_ALL, tmp);
+			CPlotVariable* pv = FindVariable(tmp);
+			if (pv == 0) pv = AddPlotVariable(tmp);
 
 			pv->setActive(n != 0);
 			pv->setShown(m != 0);

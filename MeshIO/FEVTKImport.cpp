@@ -31,6 +31,7 @@ SOFTWARE.*/
 #ifdef LINUX
 #include <wctype.h>
 #endif
+using namespace std;
 
 enum VTK_DATASET_TYPE {
 	VTK_INVALID,
@@ -66,7 +67,7 @@ public:
 		int	label;
 		int	numNodes;
 		int cellType;
-		int	node[FEElement::MAX_NODES];
+		int	node[FSElement::MAX_NODES];
 	};
 
 public:
@@ -82,7 +83,7 @@ public:
     vector<int>     m_cellcnctvty;
 };
 
-FEVTKimport::FEVTKimport(FEProject& prj) : FEFileImport(prj)
+FEVTKimport::FEVTKimport(FSProject& prj) : FSFileImport(prj)
 {
 	m_szline[0] = 0;
 }
@@ -519,20 +520,20 @@ bool FEVTKimport::read_FIELD(VTKMesh& vtkMesh)
 
 bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	// get the number of nodes and elements
 	int nodes = vtk.nodes();
 	int elems = vtk.cells();
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// copy nodal data
 	for (int i = 0; i < nodes; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		VTKMesh::NODE& vtkNode = vtk.m_nodeList[i];
 		node.r = vec3d(vtkNode.r[0], vtkNode.r[1], vtkNode.r[2]);
 	}
@@ -540,7 +541,7 @@ bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 	// copy element data
 	for (int i = 0; i < elems; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		VTKMesh::CELL& cell = vtk.m_cellList[i];
 
 		el.m_gid = cell.label; assert(el.m_gid >= 0);

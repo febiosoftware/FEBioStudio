@@ -26,8 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <list>
-#include <MathLib/math3d.h>
-//using namespace std;
+#include <FECore/vec3d.h>
 
 //-----------------------------------------------------------------------------
 // Class that represents a triangle mesh in 2D
@@ -41,9 +40,9 @@ private:
 	class FACE;
 
 	// "pointers" to the items
-	typedef list<NODE>::iterator NODEP;
-	typedef list<EDGE>::iterator EDGEP;
-	typedef list<FACE>::iterator FACEP;
+	typedef std::list<NODE>::iterator NODEP;
+	typedef std::list<EDGE>::iterator EDGEP;
+	typedef std::list<FACE>::iterator FACEP;
 
 	// class representing a vertex
 	// only stores the vertex coordinates

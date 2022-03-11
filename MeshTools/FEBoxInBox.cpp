@@ -58,8 +58,8 @@ FEBoxInBox::FEBoxInBox(GBoxInBox* po)
 }
 
 //-----------------------------------------------------------------------------
-// Build the FEMesh
-FEMesh* FEBoxInBox::BuildMesh()
+// Build the FSMesh
+FSMesh* FEBoxInBox::BuildMesh()
 {
 	assert(m_pobj);
 	if (m_pobj == nullptr) return nullptr;

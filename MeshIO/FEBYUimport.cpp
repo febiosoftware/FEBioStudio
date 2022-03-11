@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEBYUimport::FEBYUimport(FEProject& prj) : FEFileImport(prj)
+FEBYUimport::FEBYUimport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -38,7 +38,7 @@ FEBYUimport::~FEBYUimport(void)
 
 bool FEBYUimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	if (!Open(szfile, "rt")) return errf("Failed opening file %s.", szfile);
 
@@ -71,13 +71,13 @@ bool FEBYUimport::Load(const char* szfile)
 	}
 
 	// create a new mesh
-	FESurfaceMesh* pm = new FESurfaceMesh();
+	FSSurfaceMesh* pm = new FSSurfaceMesh();
 	pm->Create(nodes, 0, elems);
 
 	// read the nodes
 	for (i=0; i<nodes; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		vec3d& r = n.r;
 		ch = fgets(szline, 255, m_fp);
 		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
@@ -89,7 +89,7 @@ bool FEBYUimport::Load(const char* szfile)
 	int n[5];
 	for (i=0; i<elems; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		f.m_gid = 0;
 		ch = fgets(szline, 255, m_fp);
 //		if (ch == 0) return errf("An unexpected error occured while reading the file data.");

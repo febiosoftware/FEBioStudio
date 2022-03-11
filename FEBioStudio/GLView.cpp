@@ -1582,7 +1582,7 @@ void CGLView::paintGL()
 		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
 		if (mdoc)
 		{
-			FEModel* ps = mdoc->GetFEModel();
+			FSModel* ps = mdoc->GetFSModel();
 			GModel& model = ps->GetModel();
 
 			painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
@@ -1820,7 +1820,7 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 
 			float inf = box.Radius()*100.f;
 
-			vec3d lpv = GetLightPosition();
+			vec3d lpv = to_vec3d(GetLightPosition());
 
 			quatd q = cam.GetOrientation();
 			q.Inverse().RotateVector(lpv);
@@ -1847,7 +1847,7 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 			glCullFace(GL_FRONT);
 			glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
 
-			Post::FEPostModel* fem = glm->GetFEModel();
+			Post::FEPostModel* fem = glm->GetFSModel();
 			glm->RenderShadows(fem, lpv, inf);
 
 			glCullFace(GL_BACK);
@@ -2080,12 +2080,12 @@ void CGLView::PositionCamera()
 	// see if we need to track anything
 	if (pdoc->IsValid() && m_btrack)
 	{
-		FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 		int NN = pm->Nodes();
 		int* nt = m_ntrack;
 		if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { m_btrack = false; return; }
 
-		Post::FEPostModel& fem = *pdoc->GetFEModel();
+		Post::FEPostModel& fem = *pdoc->GetFSModel();
 
 		vec3d a = pm->Node(nt[0]).r;
 		vec3d b = pm->Node(nt[1]).r;
@@ -2144,12 +2144,12 @@ void CGLView::SetTrackingData(int n[3])
 
 	// get the current nodal positions
 	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 	int NN = pm->Nodes();
 	int* nt = m_ntrack;
 	if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { assert(false); return; }
 
-	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFSModel();
 	vec3d a = pm->Node(nt[0]).r;
 	vec3d b = pm->Node(nt[1]).r;
 	vec3d c = pm->Node(nt[2]).r;
@@ -2188,7 +2188,7 @@ void CGLView::TrackSelection(bool b)
 		Post::CGLModel* model = pdoc->GetGLModel(); assert(model);
 
 		int nmode = model->GetSelectionMode();
-		FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 		if (nmode == Post::SELECT_ELEMS)
 		{
 			const vector<FEElement_*> selElems = pdoc->GetGLModel()->GetElementSelection();
@@ -2393,7 +2393,7 @@ void CGLView::RenderNormals(GObject* po, double scale)
 {
 	if (po->IsVisible() == false) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 	if (pm == 0) return;
 
 	double R = 0.05*pm->GetBoundingBox().GetMaxExtent()*scale;
@@ -2414,11 +2414,11 @@ void CGLView::RenderNormals(GObject* po, double scale)
 		int N = pm->Faces();
 		for (int i = 0; i<N; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
 			if (face.IsVisible() && bvis)
 			{
-				vec3d fn = face.m_fn;
+				vec3d fn = to_vec3d(face.m_fn);
 
 				int n = face.Nodes();
 				vec3d p = vec3d(0, 0, 0);
@@ -2450,7 +2450,7 @@ void CGLView::RenderModel()
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// Get the item mode
@@ -2609,7 +2609,7 @@ void CGLView::RenderSelectionBox()
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// Get the item mode
@@ -2682,7 +2682,7 @@ void CGLView::RenderDiscrete()
 	bool bsel = (nsel == SELECT_DISCRETE);
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// render the discrete objects
@@ -2810,7 +2810,7 @@ void CGLView::RenderTrack()
 	CPostDocument* pdoc = m_pWnd->GetPostDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 	int* nt = m_ntrack;
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -2894,7 +2894,7 @@ void CGLView::RenderImageData()
 	glPopMatrix();
 }
 
-void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, const vec3d& c, double h)
+void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, double h)
 {
 	if (pmat->HasFibers())
 	{
@@ -2902,7 +2902,7 @@ void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, const vec3d& 
 
 		// This vector is defined in global coordinates, except for user-defined fibers, which
 		// are assumed to be in local coordinates
-		FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat);
+		FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(pmat);
 		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 		{
 			q = po->GetTransform().LocalToGlobalNormal(q);
@@ -2922,10 +2922,10 @@ void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, const vec3d& 
 
 	for (int i = 0; i < pmat->Properties(); ++i)
 	{
-		FEMaterialProperty& prop = pmat->GetProperty(i);
+		FSProperty& prop = pmat->GetProperty(i);
 		for (int j = 0; j < prop.Size(); ++j)
 		{
-			FEMaterial* matj = prop.GetMaterial(j);
+			FSMaterial* matj = pmat->GetMaterialProperty(i, j);
 			if (matj) RenderFiber(po, matj, rel, c, h);
 		}
 	}
@@ -2939,7 +2939,7 @@ void CGLView::RenderMaterialFibers()
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	FEElementRef rel;
@@ -2957,13 +2957,13 @@ void CGLView::RenderMaterialFibers()
 		GObject* po = model.Object(i);
 		if (po->IsVisible() && po->IsValid())
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
 				rel.m_pmesh = pm;
 				for (int j = 0; j<pm->Elements(); ++j)
 				{
-					FEElement& el = pm->Element(j);
+					FSElement& el = pm->Element(j);
 					GPart* pg = po->Part(el.m_gid);
 
 					bool showFiber = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
@@ -2971,7 +2971,7 @@ void CGLView::RenderMaterialFibers()
 					if (showFiber)
 					{
 						GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
-						FEMaterial* pmat = 0;
+						FSMaterial* pmat = 0;
 						if (pgm) pmat = pgm->GetMaterialProperties();
 
 						rel.m_nelem = j;
@@ -3004,7 +3004,7 @@ void CGLView::RenderLocalMaterialAxes()
 	if (pdoc == nullptr) return;
 
 	// get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	FEElementRef rel;
@@ -3023,14 +3023,14 @@ void CGLView::RenderLocalMaterialAxes()
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
 				Transform& T = po->GetTransform();
 				rel.m_pmesh = pm;
 				for (int j = 0; j<pm->Elements(); ++j)
 				{
-					FEElement& el = pm->Element(j);
+					FSElement& el = pm->Element(j);
 
 					GPart* pg = po->Part(el.m_gid);
 
@@ -3039,7 +3039,7 @@ void CGLView::RenderLocalMaterialAxes()
 					if (showAxes)
 					{
 						GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
-						FEMaterial* pmat = 0;
+						FSMaterial* pmat = 0;
 						if (pgm) pmat = pgm->GetMaterialProperties();
 
 						rel.m_nelem = j;
@@ -3205,7 +3205,7 @@ void CGLView::RenderRigidWalls()
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	BOX box = ps->GetModel().GetBoundingBox();
 	double R = box.GetMaxExtent();
 	vec3d c = box.Center();
@@ -3216,10 +3216,10 @@ void CGLView::RenderRigidWalls()
 
 	for (int n = 0; n<ps->Steps(); ++n)
 	{
-		FEStep& s = *ps->GetStep(n);
+		FSStep& s = *ps->GetStep(n);
 		for (int i = 0; i<s.Interfaces(); ++i)
 		{
-			FERigidWallInterface* pi = dynamic_cast<FERigidWallInterface*>(s.Interface(i));
+			FSRigidWallInterface* pi = dynamic_cast<FSRigidWallInterface*>(s.Interface(i));
 			if (pi)
 			{
 				// get the plane equation
@@ -3260,7 +3260,7 @@ void CGLView::RenderRigidWalls()
 				}
 				glPopMatrix();
 			}
-			FERigidSphereInterface* prs = dynamic_cast<FERigidSphereInterface*>(s.Interface(i));
+			FSRigidSphereInterface* prs = dynamic_cast<FSRigidSphereInterface*>(s.Interface(i));
 			if (prs)
 			{
 				vec3d c = prs->Center();
@@ -3291,7 +3291,7 @@ void CGLView::RenderRigidJoints()
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 
 	double scale = 0.05*(double)cam.GetTargetDistance();
 	double R = 0.5*scale;
@@ -3303,13 +3303,13 @@ void CGLView::RenderRigidJoints()
 
 	for (int n = 0; n<ps->Steps(); ++n)
 	{
-		FEStep& s = *ps->GetStep(n);
+		FSStep& s = *ps->GetStep(n);
 		for (int i = 0; i<s.Interfaces(); ++i)
 		{
-			FERigidJoint* pj = dynamic_cast<FERigidJoint*> (s.Interface(i));
+			FSRigidJoint* pj = dynamic_cast<FSRigidJoint*> (s.Interface(i));
 			if (pj)
 			{
-				vec3d r = pj->GetVecValue(FERigidJoint::RJ);
+				vec3d r = pj->GetVecValue(FSRigidJoint::RJ);
 
 				glColor3ub(255, 0, 0);
 				glPushMatrix();
@@ -3330,7 +3330,7 @@ void CGLView::RenderRigidConnectors()
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 
 	double scale = 0.05*(double)cam.GetTargetDistance();
 	double R = 0.5*scale;
@@ -3342,14 +3342,14 @@ void CGLView::RenderRigidConnectors()
 
 	for (int n = 0; n<ps->Steps(); ++n)
 	{
-		FEStep& s = *ps->GetStep(n);
+		FSStep& s = *ps->GetStep(n);
 		for (int i = 0; i<s.RigidConnectors(); ++i)
 		{
-			FERigidConnector* rci = s.RigidConnector(i);
-			if (dynamic_cast<FERigidSphericalJoint*> (rci))
+			FSRigidConnector* rci = s.RigidConnector(i);
+			if (dynamic_cast<FSRigidSphericalJoint*> (rci))
 			{
-				FERigidSphericalJoint* pj = dynamic_cast<FERigidSphericalJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidSphericalJoint::J_ORIG);
+				FSRigidSphericalJoint* pj = dynamic_cast<FSRigidSphericalJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidSphericalJoint::J_ORIG);
 
 				glColor3ub(255, 0, 0);
 				glPushMatrix();
@@ -3357,12 +3357,12 @@ void CGLView::RenderRigidConnectors()
 				glx::renderJoint(R);
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidRevoluteJoint*> (rci))
+			else if (dynamic_cast<FSRigidRevoluteJoint*> (rci))
 			{
-				FERigidRevoluteJoint* pj = dynamic_cast<FERigidRevoluteJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidRevoluteJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FERigidRevoluteJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FERigidRevoluteJoint::T_AXIS); a.Normalize();
+				FSRigidRevoluteJoint* pj = dynamic_cast<FSRigidRevoluteJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidRevoluteJoint::J_ORIG);
+				vec3d c = pj->GetVecValue(FSRigidRevoluteJoint::J_AXIS); c.Normalize();
+				vec3d a = pj->GetVecValue(FSRigidRevoluteJoint::T_AXIS); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
 				GLfloat Q4[16] = {
@@ -3380,12 +3380,12 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidPrismaticJoint*> (rci))
+			else if (dynamic_cast<FSRigidPrismaticJoint*> (rci))
 			{
-				FERigidPrismaticJoint* pj = dynamic_cast<FERigidPrismaticJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidPrismaticJoint::J_ORIG);
-				vec3d a = pj->GetVecValue(FERigidPrismaticJoint::J_AXIS); a.Normalize();
-				vec3d b = pj->GetVecValue(FERigidPrismaticJoint::T_AXIS); b.Normalize();
+				FSRigidPrismaticJoint* pj = dynamic_cast<FSRigidPrismaticJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidPrismaticJoint::J_ORIG);
+				vec3d a = pj->GetVecValue(FSRigidPrismaticJoint::J_AXIS); a.Normalize();
+				vec3d b = pj->GetVecValue(FSRigidPrismaticJoint::T_AXIS); b.Normalize();
 				vec3d c = a ^ b; c.Normalize();
 				b = c ^ a; b.Normalize();
 				GLfloat Q4[16] = {
@@ -3403,12 +3403,12 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidCylindricalJoint*> (rci))
+			else if (dynamic_cast<FSRigidCylindricalJoint*> (rci))
 			{
-				FERigidCylindricalJoint* pj = dynamic_cast<FERigidCylindricalJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidCylindricalJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FERigidCylindricalJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FERigidCylindricalJoint::T_AXIS); a.Normalize();
+				FSRigidCylindricalJoint* pj = dynamic_cast<FSRigidCylindricalJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidCylindricalJoint::J_ORIG);
+				vec3d c = pj->GetVecValue(FSRigidCylindricalJoint::J_AXIS); c.Normalize();
+				vec3d a = pj->GetVecValue(FSRigidCylindricalJoint::T_AXIS); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
 				GLfloat Q4[16] = {
@@ -3426,12 +3426,12 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidPlanarJoint*> (rci))
+			else if (dynamic_cast<FSRigidPlanarJoint*> (rci))
 			{
-				FERigidPlanarJoint* pj = dynamic_cast<FERigidPlanarJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidPlanarJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FERigidPlanarJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FERigidPlanarJoint::T_AXIS); a.Normalize();
+				FSRigidPlanarJoint* pj = dynamic_cast<FSRigidPlanarJoint*> (rci);
+				vec3d r = pj->GetVecValue(FSRigidPlanarJoint::J_ORIG);
+				vec3d c = pj->GetVecValue(FSRigidPlanarJoint::J_AXIS); c.Normalize();
+				vec3d a = pj->GetVecValue(FSRigidPlanarJoint::T_AXIS); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
 				GLfloat Q4[16] = {
@@ -3449,12 +3449,12 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-            else if (dynamic_cast<FERigidLock*> (rci))
+            else if (dynamic_cast<FSRigidLock*> (rci))
             {
-                FERigidLock* pj = dynamic_cast<FERigidLock*> (rci);
-                vec3d r = pj->GetVecValue(FERigidLock::J_ORIG);
-                vec3d c = pj->GetVecValue(FERigidLock::J_AXIS); c.Normalize();
-                vec3d a = pj->GetVecValue(FERigidLock::T_AXIS); a.Normalize();
+                FSRigidLock* pj = dynamic_cast<FSRigidLock*> (rci);
+                vec3d r = pj->GetVecValue(FSRigidLock::J_ORIG);
+                vec3d c = pj->GetVecValue(FSRigidLock::J_AXIS); c.Normalize();
+                vec3d a = pj->GetVecValue(FSRigidLock::T_AXIS); a.Normalize();
                 vec3d b = c ^ a; b.Normalize();
                 a = b ^ c; a.Normalize();
                 GLfloat Q4[16] = {
@@ -3473,22 +3473,22 @@ void CGLView::RenderRigidConnectors()
                 
                 glPopMatrix();
             }
-			else if (dynamic_cast<FERigidSpring*> (rci))
+			else if (dynamic_cast<FSRigidSpring*> (rci))
 			{
-				FERigidSpring* pj = dynamic_cast<FERigidSpring*> (rci);
-				vec3d xa = pj->GetVecValue(FERigidSpring::XA);
-				vec3d xb = pj->GetVecValue(FERigidSpring::XB);
+				FSRigidSpring* pj = dynamic_cast<FSRigidSpring*> (rci);
+				vec3d xa = pj->GetVecValue(FSRigidSpring::XA);
+				vec3d xb = pj->GetVecValue(FSRigidSpring::XB);
 
 				glPushMatrix();
 				glColor3ub(255, 0, 0);
 				glx::renderSpring(xa, xb, R);
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidDamper*> (rci))
+			else if (dynamic_cast<FSRigidDamper*> (rci))
 			{
-				FERigidDamper* pj = dynamic_cast<FERigidDamper*> (rci);
-				vec3d xa = pj->GetVecValue(FERigidDamper::XA);
-				vec3d xb = pj->GetVecValue(FERigidDamper::XB);
+				FSRigidDamper* pj = dynamic_cast<FSRigidDamper*> (rci);
+				vec3d xa = pj->GetVecValue(FSRigidDamper::XA);
+				vec3d xb = pj->GetVecValue(FSRigidDamper::XB);
 
 				glPushMatrix();
 
@@ -3497,11 +3497,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FERigidContractileForce*> (rci))
+			else if (dynamic_cast<FSRigidContractileForce*> (rci))
 			{
-				FERigidContractileForce* pj = dynamic_cast<FERigidContractileForce*> (rci);
-				vec3d xa = pj->GetVecValue(FERigidContractileForce::XA);
-				vec3d xb = pj->GetVecValue(FERigidContractileForce::XB);
+				FSRigidContractileForce* pj = dynamic_cast<FSRigidContractileForce*> (rci);
+				vec3d xa = pj->GetVecValue(FSRigidContractileForce::XA);
+				vec3d xb = pj->GetVecValue(FSRigidContractileForce::XB);
 
 				glPushMatrix();
 
@@ -3524,7 +3524,7 @@ void CGLView::RenderRigidBodies()
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 
 	double scale = 0.03*(double)cam.GetTargetDistance();
 	double R = 0.5*scale;
@@ -3539,14 +3539,14 @@ void CGLView::RenderRigidBodies()
 	for (int i = 0; i<ps->Materials(); ++i)
 	{
 		GMaterial* pm = ps->GetMaterial(i);
-		FERigidMaterial* pb = dynamic_cast<FERigidMaterial*> (pm->GetMaterialProperties());
+		FSRigidMaterial* pb = dynamic_cast<FSRigidMaterial*> (pm->GetMaterialProperties());
 		if (pb)
 		{
 			GLColor c = pm->Diffuse();
 
 			glColor3ub(c.r, c.g, c.b);
 
-			vec3d r = pb->GetVecValue(FERigidMaterial::MP_RC);
+			vec3d r = pb->GetVecValue(FSRigidMaterial::MP_RC);
 
 			glPushMatrix();
 			glTranslatef((float)r.x, (float)r.y, (float)r.z);
@@ -3558,12 +3558,12 @@ void CGLView::RenderRigidBodies()
 			// get the parent
 			if (pb->m_pid != -1)
 			{
-				FERigidMaterial* pp = dynamic_cast<FERigidMaterial*>(ps->GetMaterialFromID(pb->m_pid)->GetMaterialProperties());
+				FSRigidMaterial* pp = dynamic_cast<FSRigidMaterial*>(ps->GetMaterialFromID(pb->m_pid)->GetMaterialProperties());
 				assert(pp);
 
 				glColor3ub(50, 50, 255);
-				vec3d r0 = pb->GetVecValue(FERigidMaterial::MP_RC);
-				vec3d r1 = pp->GetVecValue(FERigidMaterial::MP_RC);
+				vec3d r0 = pb->GetVecValue(FSRigidMaterial::MP_RC);
+				vec3d r1 = pp->GetVecValue(FSRigidMaterial::MP_RC);
 
 				double l = (r1 - r0).Length();
 				vec3d el = r0 - r1; el.Normalize();
@@ -3957,7 +3957,7 @@ void CGLView::SelectObjects(int x, int y)
 
 	makeCurrent();
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// convert the point to a ray
@@ -4012,7 +4012,7 @@ void CGLView::SelectParts(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	if (model.Parts() == 0) return;
@@ -4111,7 +4111,7 @@ void CGLView::SelectSurfaces(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	if (model.Surfaces() == 0) return;
@@ -4189,7 +4189,7 @@ void CGLView::SelectEdges(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int NE = model.Edges();
@@ -4263,7 +4263,7 @@ void CGLView::HighlightEdge(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// set up selection buffer
@@ -4329,7 +4329,7 @@ void CGLView::SelectNodes(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int X = x;
@@ -4400,7 +4400,7 @@ void CGLView::SelectDiscrete(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int ND = model.DiscreteObjects();
@@ -4543,7 +4543,7 @@ void CGLView::SelectFEElements(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// convert the point to a ray
 	makeCurrent();
@@ -4611,7 +4611,7 @@ void CGLView::SelectFEElements(int x, int y)
 			if (pe->IsShell())
 			{
 				assert(pe->m_face[0] >= 0);
-				t = pm->Face(pe->m_face[0]).m_fn; tr = cos(PI*view.m_fconn / 180.0);
+				t = to_vec3d(pm->Face(pe->m_face[0]).m_fn); tr = cos(PI*view.m_fconn / 180.0);
 			}
 
 			// get the respect partition boundary flag
@@ -4637,7 +4637,7 @@ void CGLView::SelectFEElements(int x, int y)
 							int fid2 = -1;
 							if (pe->m_face[i] >= 0)
 							{
-								FEFace& f2 = pm->Face(pe->m_face[i]);
+								FSFace& f2 = pm->Face(pe->m_face[i]);
 								fid2 = f2.m_gid;
 							}
 
@@ -4695,10 +4695,10 @@ void CGLView::SelectFEElements(int x, int y)
 					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
 					if (cmap && cmap->IsActive())
 					{
-						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_ELEM[num].m_val;
-						FEElement& el = pm->Element(num);
+						FSElement& el = pm->Element(num);
 						QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
 						m_pWnd->AddLogEntry(txt);
 					}
@@ -4722,7 +4722,7 @@ void CGLView::SelectFEElements(int x, int y)
 		int NE = pm->Elements();
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& del = pm->Element(i);
+			FSElement& del = pm->Element(i);
 			if (del.IsBeam() && del.IsVisible())
 			{
 				vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[0]).r);
@@ -4777,7 +4777,7 @@ void CGLView::SelectFEFaces(int x, int y)
 	if (po == 0) return;
 
 	// get the FE mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	// convert the point to a ray
@@ -4817,10 +4817,10 @@ void CGLView::SelectFEFaces(int x, int y)
 					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
 					if (cmap && cmap->IsActive())
 					{
-						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_FACE[index].m_val;
-						FEFace& face = pm->Face(index);
+						FSFace& face = pm->Face(index);
 						QString txt = QString("Face %1 : %2\n").arg(face.m_nid).arg(val);
 						m_pWnd->AddLogEntry(txt);
 					}
@@ -4852,7 +4852,7 @@ void CGLView::SelectFEEdges(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	int X = x;
@@ -4871,7 +4871,7 @@ void CGLView::SelectFEEdges(int x, int y)
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
@@ -4904,12 +4904,12 @@ void CGLView::SelectFEEdges(int x, int y)
 			int m = 0;
 
 			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
-			std::stack<FEEdge*> stack;
+			std::stack<FSEdge*> stack;
 
-			FENodeEdgeList NEL(pm);
+			FSNodeEdgeList NEL(pm);
 
 			// push the first face to the stack
-			FEEdge* pe = pm->EdgePtr(index);
+			FSEdge* pe = pm->EdgePtr(index);
 			pint[m++] = index;
 			pe->m_ntag = -1;
 			stack.push(pe);
@@ -4937,7 +4937,7 @@ void CGLView::SelectFEEdges(int x, int y)
 						int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
 						if (edgeID >= 0)
 						{
-							FEEdge* pe2 = pm->EdgePtr(edgeID);
+							FSEdge* pe2 = pm->EdgePtr(edgeID);
 							vec3d& r0 = pm->Node(pe2->n[0]).r;
 							vec3d& r1 = pm->Node(pe2->n[1]).r;
 							vec3d t2 = r1 - r0; t2.Normalize();
@@ -4970,10 +4970,10 @@ void CGLView::SelectFEEdges(int x, int y)
 					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
 					if (cmap && cmap->IsActive())
 					{
-						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_EDGE[num].m_val;
-						FEEdge& ed = pm->Edge(num);
+						FSEdge& ed = pm->Edge(num);
 						QString txt = QString("Edge %1 : %2\n").arg(ed.m_nid).arg(val);
 						m_pWnd->AddLogEntry(txt);
 					}
@@ -5006,7 +5006,7 @@ void CGLView::SelectSurfaceFaces(int x, int y)
 	if (po == 0) return;
 
 	// get the surface mesh
-	FEMeshBase* pm = po->GetSurfaceMesh();
+	FSMeshBase* pm = po->GetSurfaceMesh();
 	if (pm == 0) return;
 
 	// convert the point to a ray
@@ -5055,7 +5055,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FELineMesh* pm = po->GetEditableLineMesh();
+	FSLineMesh* pm = po->GetEditableLineMesh();
 
 	int X = x;
 	int Y = y;
@@ -5073,7 +5073,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
@@ -5106,12 +5106,12 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 			int m = 0;
 
 			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
-			std::stack<FEEdge*> stack;
+			std::stack<FSEdge*> stack;
 
-			FENodeEdgeList NEL(pm);
+			FSNodeEdgeList NEL(pm);
 
 			// push the first face to the stack
-			FEEdge* pe = pm->EdgePtr(index);
+			FSEdge* pe = pm->EdgePtr(index);
 			pint[m++] = index;
 			pe->m_ntag = -1;
 			stack.push(pe);
@@ -5139,7 +5139,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 						int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
 						if (edgeID >= 0)
 						{
-							FEEdge* pe2 = pm->EdgePtr(edgeID);
+							FSEdge* pe2 = pm->EdgePtr(edgeID);
 							vec3d& r0 = pm->Node(pe2->n[0]).r;
 							vec3d& r1 = pm->Node(pe2->n[1]).r;
 							vec3d t2 = r1 - r0; t2.Normalize();
@@ -5184,8 +5184,8 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
-	FELineMesh* lineMesh = po->GetEditableLineMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
+	FSLineMesh* lineMesh = po->GetEditableLineMesh();
 	if (lineMesh == 0) return;
 
 	int X = x;
@@ -5201,7 +5201,7 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 	int NN = lineMesh->Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = lineMesh->Node(i);
+		FSNode& node = lineMesh->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(lineMesh->Node(i).r);
@@ -5314,7 +5314,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 		vec3d rl = po->GetTransform().GlobalToLocal(ray.origin);
 		vec3d nl = po->GetTransform().GlobalToLocalNormal(ray.direction);
 
-		FEMeshBase* mesh = po->GetEditableMesh();
+		FSMeshBase* mesh = po->GetEditableMesh();
 		vec3d q;
 		if (FindIntersection(*mesh, rl, nl, q, view.m_snapToNode))
 		{
@@ -5347,7 +5347,7 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 	if (model.Objects() == 0) return;
 
@@ -5419,7 +5419,7 @@ void CGLView::RegionSelectParts(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	if (model.Parts() == 0) return;
@@ -5487,7 +5487,7 @@ void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int nSurfaces = model.Surfaces();
@@ -5553,7 +5553,7 @@ void CGLView::RegionSelectEdges(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -5610,7 +5610,7 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = doc->GetFEModel();
+	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -5658,7 +5658,7 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = doc->GetFEModel();
+	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -5700,7 +5700,7 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagBackfacingNodes(FEMeshBase& mesh)
+void CGLView::TagBackfacingNodes(FSMeshBase& mesh)
 {
 	int NN = mesh.Nodes();
 	for (int i = 0; i<NN; ++i) mesh.Node(i).m_ntag = 1;
@@ -5711,7 +5711,7 @@ void CGLView::TagBackfacingNodes(FEMeshBase& mesh)
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.m_ntag == 0)
 		{
 			int nn = f.Nodes();
@@ -5733,8 +5733,8 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
-	FELineMesh* lineMesh = po->GetEditableLineMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
+	FSLineMesh* lineMesh = po->GetEditableLineMesh();
 	if (lineMesh == 0) return;
 
 	makeCurrent();
@@ -5743,7 +5743,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	if (pm)
 	{
 		// ignore exterior option for surface meshes
-		if (view.m_bext || (dynamic_cast<FESurfaceMesh*>(pm)))
+		if (view.m_bext || (dynamic_cast<FSSurfaceMesh*>(pm)))
 		{
 			if (view.m_bcullSel)
 			{
@@ -5755,7 +5755,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 				// tag all exterior nodes
 				for (int i = 0; i < pm->Nodes(); ++i)
 				{
-					FENode& node = pm->Node(i);
+					FSNode& node = pm->Node(i);
 					if (node.IsExterior()) node.m_ntag = 0;
 					else node.m_ntag = -1;
 				}
@@ -5769,7 +5769,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	vector<int> selectedNodes;
 	for (int i = 0; i<lineMesh->Nodes(); ++i)
 	{
-		FENode& node = lineMesh->Node(i);
+		FSNode& node = lineMesh->Node(i);
 		if (node.IsVisible() && (node.m_ntag == 0))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
@@ -5796,14 +5796,14 @@ bool IsBackfacing(const vec3d r[3])
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagBackfacingElements(FEMesh& mesh)
+void CGLView::TagBackfacingElements(FSMesh& mesh)
 {
 	GLViewTransform transform(this);
 	vec3d r[4], p1[3], p2[3];
 	int NE = mesh.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		el.m_ntag = 0;
 
 		// make sure the element is visible
@@ -5819,10 +5819,10 @@ void CGLView::TagBackfacingElements(FEMesh& mesh)
 			el.m_ntag = 1;
 			for (int j = 0; j<NF; ++j)
 			{
-				FEElement* pj = (el.m_nbr[j] != -1 ? &mesh.Element(el.m_nbr[j]) : 0);
+				FSElement* pj = (el.m_nbr[j] != -1 ? &mesh.Element(el.m_nbr[j]) : 0);
 				if ((pj == 0) || (pj->IsVisible() == false))
 				{
-					FEFace f = el.GetFace(j);
+					FSFace f = el.GetFace(j);
 					switch (f.Type())
 					{
 					case FE_FACE_TRI3:
@@ -5874,10 +5874,10 @@ void CGLView::TagBackfacingElements(FEMesh& mesh)
 			// shells 
 			if (el.IsShell())
 			{
-				FEFace* pf = mesh.FacePtr(el.m_face[0]);
+				FSFace* pf = mesh.FacePtr(el.m_face[0]);
 				if (pf)
 				{
-					FEFace& f = *pf;
+					FSFace& f = *pf;
 					switch (f.Type())
 					{
 					case FE_FACE_TRI3:
@@ -5941,7 +5941,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// activate the gl rendercontext
 	makeCurrent();
@@ -5957,7 +5957,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	int NE = pm->Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 
 		// if the exterior-only flag is off, make sure all solids are selectable
 		if ((view.m_bext == false) && el.IsSolid()) el.m_ntag = 0;
@@ -5997,7 +5997,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 
 
 //-----------------------------------------------------------------------------
-bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region, FEFace& face, FEMeshBase* pm)
+bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region, FSFace& face, FSMeshBase* pm)
 {
 	if (pm == 0) return false;
 
@@ -6046,7 +6046,7 @@ bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region,
 	return binside;
 }
 
-void CGLView::TagBackfacingFaces(FEMeshBase& mesh)
+void CGLView::TagBackfacingFaces(FSMeshBase& mesh)
 {
 	GLViewTransform transform(this);
 
@@ -6054,7 +6054,7 @@ void CGLView::TagBackfacingFaces(FEMeshBase& mesh)
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		if (f.IsExterior())
 		{
@@ -6117,7 +6117,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 
 	// activate the gl rendercontext
 	makeCurrent();
@@ -6134,7 +6134,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 		// tag exterior faces only 
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			if (f.IsExterior()) f.m_ntag = 0;
 			else f.m_ntag = -1;
 		}
@@ -6153,7 +6153,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 	int NF = pm->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsVisible() && vis[face.m_gid] && (face.m_ntag == 0))
 		{
 			if (regionFaceIntersect(transform, region, face, pm))
@@ -6170,7 +6170,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagBackfacingEdges(FEMeshBase& mesh)
+void CGLView::TagBackfacingEdges(FSMeshBase& mesh)
 {
 	int NE = mesh.Edges();
 	for (int i = 0; i<NE; ++i) mesh.Edge(i).m_ntag = 1;
@@ -6179,7 +6179,7 @@ void CGLView::TagBackfacingEdges(FEMeshBase& mesh)
 
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = mesh.Edge(i);
+		FSEdge& e = mesh.Edge(i);
 		if ((mesh.Node(e.n[0]).m_ntag == 0) && (mesh.Node(e.n[1]).m_ntag == 0))
 			e.m_ntag = 0;
 	}
@@ -6198,7 +6198,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 
 	// activate the gl rendercontext
 	makeCurrent();
@@ -6213,7 +6213,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if (edge.IsVisible() && (edge.m_ntag == 0))
 		{
 			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
@@ -6255,7 +6255,7 @@ void CGLView::SelectFENodes(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	int X = x;
@@ -6271,7 +6271,7 @@ void CGLView::SelectFENodes(int x, int y)
 	int NN = pm->Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(pm->Node(i).r);
@@ -6335,9 +6335,9 @@ void CGLView::SelectFENodes(int x, int y)
 				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
 				if (postDoc && postDoc->IsValid())
 				{
-					Post::FEPostModel* fem = postDoc->GetFEModel();
+					Post::FEPostModel* fem = postDoc->GetFSModel();
 					Post::FEState* state = fem->CurrentState();
-					FENode& node = pm->Node(index);
+					FSNode& node = pm->Node(index);
 					vec3f r = state->m_NODE[index].m_rt;
 					QString txt = QString("Node %1 : position = (%2, %3, %4)").arg(node.m_nid).arg(r.x).arg(r.y).arg(r.z);
 
@@ -6369,7 +6369,7 @@ void CGLView::SelectFENodes(int x, int y)
 
 //-----------------------------------------------------------------------------
 
-void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
+void CGLView::TagConnectedNodes(FSMeshBase* pm, int num)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
@@ -6388,12 +6388,12 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 		pm->Node(num).m_ntag = 1;
 
 		// see if this node belongs to an edge
-		std::stack<FEEdge*> stack;
+		std::stack<FSEdge*> stack;
 
 		// find all edges that have this node as a node
 		for (int i = 0; i<pm->Edges(); ++i)
 		{
-			FEEdge* pe = pm->EdgePtr(i);
+			FSEdge* pe = pm->EdgePtr(i);
 			if (pe->m_gid >= 0)
 			{
 				pe->m_ntag = 0;
@@ -6410,7 +6410,7 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 			// now push the rest
 			while (!stack.empty())
 			{
-				FEEdge* pe = stack.top(); stack.pop();
+				FSEdge* pe = stack.top(); stack.pop();
 
 				// mark all nodes
 				int nn = pe->Nodes();
@@ -6423,7 +6423,7 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 				for (int i = 0; i<2; ++i)
 				if (pe->m_nbr[i] >= 0)
 				{
-					FEEdge* pe2 = pm->EdgePtr(pe->m_nbr[i]);
+					FSEdge* pe2 = pm->EdgePtr(pe->m_nbr[i]);
 					if (pe2->m_ntag >= 0 && pe2->IsVisible() && (pe2->m_gid == pe->m_gid))
 					{
 						pe2->m_ntag = -1;
@@ -6435,18 +6435,18 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 		else
 		{
 			// create a stack of face pointers
-			std::stack<FEFace*> stack;
+			std::stack<FSFace*> stack;
 
 			// find all faces that have this node as a node
 			vec3d t(0, 0, 0);
 			for (int i = 0; i<pm->Faces(); ++i)
 			{
-				FEFace* pf = pm->FacePtr(i);
+				FSFace* pf = pm->FacePtr(i);
 				pf->m_ntag = 0;
 				int m = pf->FindNode(num);
 				if (m >= 0)
 				{
-					t += pf->m_fn;
+					t += to_vec3d(pf->m_fn);
 					stack.push(pf);
 					pf->m_ntag = -1;
 				}
@@ -6459,7 +6459,7 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 			int m = 0;
 			while (!stack.empty())
 			{
-				FEFace* pf = stack.top(); stack.pop();
+				FSFace* pf = stack.top(); stack.pop();
 				int nn = pf->Nodes();
 				int ne = pf->Edges();
 
@@ -6473,7 +6473,7 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 				for (int i = 0; i<ne; ++i)
 				if (pf->m_nbr[i] >= 0)
 				{
-					FEFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
+					FSFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
 					if (pf2->m_ntag >= 0 && pf2->IsVisible() && (pf2->m_gid == pf->m_gid) && ((pf2->m_fn*to_vec3f(t) >= tr) || (bangle == false)))
 					{
 						pf2->m_ntag = -1;
@@ -6486,7 +6486,7 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
+void CGLView::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
 {
 	if (n1 == n0) return;
 
@@ -6501,7 +6501,7 @@ void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
 	int NE = pm->Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if ((edge.n[0] == n0) || (edge.n[1] == n0)) b0 = true;
 		if ((edge.n[0] == n1) || (edge.n[1] == n1)) b1 = true;
 
@@ -6511,7 +6511,7 @@ void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
 	if (b0 && b1)
 	{
 		// see if we can connect the nodes by staying on edges
-		FENodeEdgeList NEL(pm);
+		FSNodeEdgeList NEL(pm);
 
 		int n = n0;
 		double Lmin = (r1 - r0).SqrLength();
@@ -6521,7 +6521,7 @@ void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
 			int nval = NEL.Edges(n);
 			for (int i = 0; i<nval; ++i)
 			{
-				const FEEdge* pe = NEL.Edge(n, i);
+				const FSEdge* pe = NEL.Edge(n, i);
 				int ne = pe->Nodes();
 				for (int j = 0; j<ne; ++j)
 				{
@@ -6551,7 +6551,7 @@ void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
 	}
 	else
 	{
-		FENodeFaceList NFL;
+		FSNodeFaceList NFL;
 		NFL.Build(pm);
 
 		int n = n0;
@@ -6565,7 +6565,7 @@ void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
 			int nval = NFL.Valence(n);
 			for (int i=0; i<nval; ++i)
 			{
-				FEFace* pf = NFL.Face(n, i);
+				FSFace* pf = NFL.Face(n, i);
 				int nf = pf->Nodes();
 				for (int j=0; j<nf; ++j)
 				{
@@ -6614,7 +6614,7 @@ void CGLView::RenderFeatureEdges()
 	glDisable(GL_LIGHTING);
 	glColor3ub(0, 0, 0);
 
-	FEModel* ps = doc->GetFEModel();
+	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	for (int k = 0; k<model.Objects(); ++k)
@@ -6739,13 +6739,13 @@ void CGLView::RenderSelectedNodes(GObject* po)
 
 #ifdef _DEBUG
 	// Draw FE nodes on top of GMesh nodes to make sure they match
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
 		glColor3ub(255, 0, 0);
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			FENode& n = pm->Node(i);
+			FSNode& n = pm->Node(i);
 			if (n.m_gid > -1)
 			{
 				GNode& gn = *po->Node(n.m_gid);
@@ -6825,13 +6825,13 @@ void CGLView::RenderSelectedEdges(GObject* po)
 
 #ifdef _DEBUG
 	// Render FE edges onto of GMesh edges to make sure they are consistent
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
 		glColor3ub(255, 0, 0);
 		for (int i = 0; i<pm->Edges(); ++i)
 		{
-			FEEdge& e = pm->Edge(i);
+			FSEdge& e = pm->Edge(i);
 			if (e.m_gid > -1)
 			{
 				GEdge& ge = *po->Edge(e.m_gid);
@@ -6865,7 +6865,7 @@ void CGLView::RenderSurfaces(GObject* po)
 	VIEW_SETTINGS& vs = GetViewSettings();
 
 	// get the GLMesh
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GLMesh* pm = po->GetRenderMesh();
 	assert(pm);
 
@@ -6987,14 +6987,14 @@ void CGLView::RenderSelectedSurfaces(GObject* po)
 		}
 */
 		// render FE surfaces
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
 			glColor3ub(255, 0, 0);
-			vec3d rf[FEElement::MAX_NODES];
+			vec3d rf[FSElement::MAX_NODES];
 			for (int i = 0; i<pm->Faces(); ++i)
 			{
-				FEFace& f = pm->Face(i);
+				FSFace& f = pm->Face(i);
 				if (f.m_gid > -1)
 				{
 					GFace& gf = *po->Face(f.m_gid);
@@ -7099,7 +7099,7 @@ void CGLView::RenderParts(GObject* po)
 	VIEW_SETTINGS& vs = GetViewSettings();
 
 	// get the GLMesh
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GLMesh* pm = po->GetRenderMesh();
 	assert(pm);
 
@@ -7217,7 +7217,7 @@ void CGLView::RenderObject(GObject* po)
 	VIEW_SETTINGS& vs = GetViewSettings();
 
 	// get the GLMesh
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GLMesh* pm = po->GetRenderMesh();
 	if (pm == 0) return;
 	assert(pm);
@@ -7317,7 +7317,7 @@ void CGLView::RenderFENodes(GObject* po)
 	float fsize = GetViewSettings().m_node_size;
 	m_renderer.SetPointSize(fsize);
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
 		int N = pm->Nodes();
@@ -7330,7 +7330,7 @@ void CGLView::RenderFENodes(GObject* po)
 		// make sure we render all isolated nodes
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			int n = el.Nodes();
 			for (int j = 0; j<n; ++j) pm->Node(el.m_node[j]).m_ntag = 0;
 		}
@@ -7338,7 +7338,7 @@ void CGLView::RenderFENodes(GObject* po)
 		// check visibility
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.IsVisible() && (po->Part(el.m_gid)->IsVisible()))
 			{
 				int n = el.Nodes();
@@ -7352,11 +7352,11 @@ void CGLView::RenderFENodes(GObject* po)
 			vec3d f;
 			for (int i = 0; i<NF; ++i)
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				int n = face.Nodes();
 				for (int j = 0; j<n; ++j)
 				{
-					vec3d nn = face.m_nn[j];
+					vec3d nn = to_vec3d(face.m_nn[j]);
 					f = q*nn;
 					if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
 				}
@@ -7368,7 +7368,7 @@ void CGLView::RenderFENodes(GObject* po)
 		{
 			for (int i = 0; i<N; ++i)
 			{
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 				if (!node.IsExterior()) node.m_ntag = 0;
 			}
 		}
@@ -7377,7 +7377,7 @@ void CGLView::RenderFENodes(GObject* po)
 	}
 	else
 	{
-		FEMeshBase* mesh = po->GetEditableMesh();
+		FSMeshBase* mesh = po->GetEditableMesh();
 		if (mesh)
 		{
 			// reset all tags
@@ -7387,7 +7387,7 @@ void CGLView::RenderFENodes(GObject* po)
 			int NF = mesh->Faces();
 			for (int i = 0; i<NF; ++i)
 			{
-				FEFace& face = mesh->Face(i);
+				FSFace& face = mesh->Face(i);
 				int n = face.Nodes();
 				for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 0;
 			}
@@ -7395,7 +7395,7 @@ void CGLView::RenderFENodes(GObject* po)
 			// check visibility
 			for (int i = 0; i<NF; ++i)
 			{
-				FEFace& face = mesh->Face(i);
+				FSFace& face = mesh->Face(i);
 				if (face.IsVisible())
 				{
 					int n = face.Nodes();
@@ -7409,11 +7409,11 @@ void CGLView::RenderFENodes(GObject* po)
 				vec3d f;
 				for (int i = 0; i<NF; ++i)
 				{
-					FEFace& face = mesh->Face(i);
+					FSFace& face = mesh->Face(i);
 					int n = face.Nodes();
 					for (int j = 0; j<n; ++j)
 					{
-						vec3d nn = face.m_nn[j];
+						vec3d nn = to_vec3d(face.m_nn[j]);
 						f = q*nn;
 						if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
 					}
@@ -7424,7 +7424,7 @@ void CGLView::RenderFENodes(GObject* po)
 		}
 		else
 		{
-			FELineMesh* pm = po->GetEditableLineMesh();
+			FSLineMesh* pm = po->GetEditableLineMesh();
 			if (pm)
 			{
 				pm->TagAllNodes(1);
@@ -7441,8 +7441,8 @@ void CGLView::RenderFEFaces(GObject* po)
 	if (doc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
-	FEMesh* pm = po->GetFEMesh();
+	FSModel& fem = *doc->GetFSModel();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0)
 	{
 		RenderObject(po);
@@ -7464,13 +7464,13 @@ void CGLView::RenderFEFaces(GObject* po)
 	// render the unselected faces
 	for (int i = 0; i<pm->Faces(); i++)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 
-		FEElement& el = pm->Element(face.m_elem[0].eid);
+		FSElement& el = pm->Element(face.m_elem[0].eid);
 		GPart* pg = po->Part(el.m_gid);
 		if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
 		{
-			FEElement& el1 = pm->Element(face.m_elem[1].eid);
+			FSElement& el1 = pm->Element(face.m_elem[1].eid);
 			pg = po->Part(el1.m_gid);
 		}
 
@@ -7482,11 +7482,11 @@ void CGLView::RenderFEFaces(GObject* po)
 				{
 					if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
 					{
-						int fnl[FEElement::MAX_NODES];
+						int fnl[FSElement::MAX_NODES];
 						int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
 						assert(nn == face.Nodes());
 
-						GLColor c[FEFace::MAX_NODES];
+						GLColor c[FSFace::MAX_NODES];
 						int nf = face.Nodes();
 						for (int j = 0; j<nf; ++j)
 							c[j] = map.map(data.GetElementValue(face.m_elem[0].eid, fnl[j]));
@@ -7570,7 +7570,7 @@ void CGLView::RenderSurfaceMeshFaces(GObject* po)
 		return;
 	}
 
-	FESurfaceMesh* surfaceMesh = surfaceObject->GetSurfaceMesh();
+	FSSurfaceMesh* surfaceMesh = surfaceObject->GetSurfaceMesh();
 	assert(surfaceMesh);
 	if (surfaceMesh == 0) return;
 
@@ -7578,7 +7578,7 @@ void CGLView::RenderSurfaceMeshFaces(GObject* po)
 	if (doc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	GLColor col = po->GetColor();
 	SetMatProps(0);
@@ -7614,8 +7614,8 @@ void CGLView::RenderSurfaceMeshEdges(GObject* po)
 	if (doc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
-	FELineMesh* pm = po->GetEditableLineMesh();
+	FSModel& fem = *doc->GetFSModel();
+	FSLineMesh* pm = po->GetEditableLineMesh();
 	assert(pm);
 	if (pm == 0) return;
 
@@ -7648,7 +7648,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 	float fsize = GetViewSettings().m_node_size;
 	m_renderer.SetPointSize(fsize);
 
-	FEMeshBase* mesh = po->GetEditableMesh();
+	FSMeshBase* mesh = po->GetEditableMesh();
 	if (mesh)
 	{
 		// reset all tags
@@ -7658,7 +7658,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 		int NF = mesh->Faces();
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = mesh->Face(i);
+			FSFace& face = mesh->Face(i);
 			int n = face.Nodes();
 			for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 0;
 		}
@@ -7666,7 +7666,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 		// check visibility
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = mesh->Face(i);
+			FSFace& face = mesh->Face(i);
 			if (face.IsVisible())
 			{
 				int n = face.Nodes();
@@ -7680,11 +7680,11 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 			vec3d f;
 			for (int i = 0; i<NF; ++i)
 			{
-				FEFace& face = mesh->Face(i);
+				FSFace& face = mesh->Face(i);
 				int n = face.Nodes();
 				for (int j = 0; j<n; ++j)
 				{
-					vec3d nn = face.m_nn[j];
+					vec3d nn = to_vec3d(face.m_nn[j]);
 					f = q*nn;
 					if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
 				}
@@ -7695,7 +7695,7 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 	}
 	else
 	{
-		FELineMesh* pm = po->GetEditableLineMesh();
+		FSLineMesh* pm = po->GetEditableLineMesh();
 		if (pm)
 		{
 			pm->TagAllNodes(1);
@@ -7712,8 +7712,8 @@ void CGLView::RenderFEEdges(GObject* po)
 	if (doc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
-	FEMesh* pm = po->GetFEMesh();
+	FSModel& fem = *doc->GetFSModel();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -7739,8 +7739,8 @@ void CGLView::RenderFEElements(GObject* po)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	FEModel& fem = *pdoc->GetFEModel();
-	FEMesh* pm = po->GetFEMesh();
+	FSModel& fem = *pdoc->GetFSModel();
+	FSMesh* pm = po->GetFEMesh();
 	assert(pm);
 	if (pm == 0) return;
 
@@ -7767,7 +7767,7 @@ void CGLView::RenderFEElements(GObject* po)
 	int NE = pm->Elements();
 	for (i = 0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 
 		if (!el.IsSelected() && el.IsVisible())
@@ -7777,7 +7777,7 @@ void CGLView::RenderFEElements(GObject* po)
 			{
 				if (showContour)
 				{
-					GLColor c[FEElement::MAX_NODES];
+					GLColor c[FSElement::MAX_NODES];
 					int ne = el.Nodes();
 					for (int j = 0; j < ne; ++j)
 					{
@@ -8002,7 +8002,7 @@ void CGLView::RenderFEElements(GObject* po)
 
 //-----------------------------------------------------------------------------
 // This function is used for selecting elements
-void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
+void CGLView::RenderFEAllElements(FSMesh* pm, bool bexterior)
 {
 	// get the document
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -8020,7 +8020,7 @@ void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
 
 	for (i = 0; i<pm->Elements(); i++)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 
 		bok = e.IsVisible();
 		if (bexterior && (e.IsExterior() == false)) bok = false;
@@ -8393,7 +8393,7 @@ void CGLView::RenderMeshLines()
 		GObject* po = model.Object(i);
 		if (po->IsVisible() && po->IsValid())
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
 				glPushMatrix();
@@ -8408,7 +8408,7 @@ void CGLView::RenderMeshLines()
 			}
 			else if (dynamic_cast<GSurfaceMeshObject*>(po))
 			{
-				FESurfaceMesh* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(po)->GetSurfaceMesh();
+				FSSurfaceMesh* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(po)->GetSurfaceMesh();
 				if (surfaceMesh && (nitem != ITEM_EDGE))
 				{
 					glPushMatrix();
@@ -8426,7 +8426,7 @@ void CGLView::RenderMeshLines(GObject* po)
 {
 	if ((po == 0) || !po->IsVisible()) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
@@ -8878,8 +8878,8 @@ void CGLView::RenderTags()
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
-	FEMeshBase* pmb = pm;
+	FSMesh* pm = po->GetFEMesh();
+	FSMeshBase* pmb = pm;
 	if (pm == nullptr)
 	{
 		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
@@ -8927,7 +8927,7 @@ void CGLView::RenderTags()
 		int NF = pmb->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = pmb->Face(i);
+			FSFace& f = pmb->Face(i);
 			if (f.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
@@ -8950,7 +8950,7 @@ void CGLView::RenderTags()
 		int NC = pmb->Edges();
 		for (int i = 0; i<NC; i++)
 		{
-			FEEdge& edge = pmb->Edge(i);
+			FSEdge& edge = pmb->Edge(i);
 			if (edge.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
@@ -8972,7 +8972,7 @@ void CGLView::RenderTags()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			FENode& node = pmb->Node(i);
+			FSNode& node = pmb->Node(i);
 			if (node.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(node.r);
@@ -8991,7 +8991,7 @@ void CGLView::RenderTags()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			FENode& node = pmb->Node(i);
+			FSNode& node = pmb->Node(i);
 			if (node.m_ntag == 1)
 			{
 				tag.r = pmb->LocalToGlobal(node.r);
@@ -9089,7 +9089,7 @@ void CGLView::RenderRigidLabels()
 	CModelDocument* pdoc = m_pWnd->GetModelDocument();
 	if (pdoc == nullptr) return;
 
-	FEModel* fem = pdoc->GetFEModel();
+	FSModel* fem = pdoc->GetFSModel();
 	if (fem == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
@@ -9099,7 +9099,7 @@ void CGLView::RenderRigidLabels()
 	for (int i = 0; i < fem->Materials(); ++i)
 	{
 		GMaterial* mat = fem->GetMaterial(i);
-		FERigidMaterial* rb = dynamic_cast<FERigidMaterial*>(mat->GetMaterialProperties());
+		FSRigidMaterial* rb = dynamic_cast<FSRigidMaterial*>(mat->GetMaterialProperties());
 		if (rb)
 		{
 			GLTAG tag;
@@ -9198,7 +9198,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 
 	GModel& mdl = *doc->GetGModel();
 	if (mdl.Objects() == 0) return;
@@ -9222,11 +9222,11 @@ void CGLView::UpdatePlaneCut(bool breset)
 			GObject* po = mdl.Object(n);
 			if (po->GetFEMesh())
 			{
-				FEMesh* mesh = po->GetFEMesh();
+				FSMesh* mesh = po->GetFEMesh();
 				int NE = mesh->Elements();
 				for (int i = 0; i < NE; ++i)
 				{
-					FEElement& el = mesh->Element(i);
+					FSElement& el = mesh->Element(i);
 					el.Show(); el.Unhide();
 				}
 				po->UpdateItemVisibility();
@@ -9243,7 +9243,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 			GObject* po = mdl.Object(i);
 			if (po->GetFEMesh())
 			{
-				FEMesh* mesh = po->GetFEMesh();
+				FSMesh* mesh = po->GetFEMesh();
 
 				vec3d ex[8];
 				int en[8];
@@ -9265,7 +9265,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 				for (int i = 0; i < NE; ++i)
 				{
 					// render only when visible
-					FEElement& el = mesh->Element(i);
+					FSElement& el = mesh->Element(i);
 					GPart* pg = po->Part(el.m_gid);
 					if (el.IsVisible() && el.IsSolid() && (pg && pg->IsVisible()))
 					{
@@ -9308,8 +9308,8 @@ void CGLView::UpdatePlaneCut(bool breset)
 						// get the nodal values
 						for (int k = 0; k < 8; ++k)
 						{
-							FENode& node = mesh->Node(el.m_node[nt[k]]);
-							ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
+							FSNode& node = mesh->Node(el.m_node[nt[k]]);
+							ex[k] = mesh->LocalToGlobal(node.r);
 							en[k] = el.m_node[nt[k]];
 						}
 
@@ -9447,14 +9447,14 @@ void CGLView::UpdatePlaneCut(bool breset)
 			GObject* po = mdl.Object(n);
 			if (po->GetFEMesh())
 			{
-				FEMesh* mesh = po->GetFEMesh();
+				FSMesh* mesh = po->GetFEMesh();
 
 				if (m_showPlaneCut)
 				{
 					int NN = mesh->Nodes();
 					for (int i = 0; i < NN; ++i)
 					{
-						FENode& node = mesh->Node(i);
+						FSNode& node = mesh->Node(i);
 						node.m_ntag = 0;
 
 						vec3d ri = mesh->LocalToGlobal(node.pos());
@@ -9467,7 +9467,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					int NE = mesh->Elements();
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = mesh->Element(i);
+						FSElement& el = mesh->Element(i);
 						el.Show(); el.Unhide();
 						int ne = el.Nodes();
 						for (int j = 0; j < ne; ++j)
@@ -9485,7 +9485,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					int NE = mesh->Elements();
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = mesh->Element(i);
+						FSElement& el = mesh->Element(i);
 						el.Show(); el.Unhide();
 					}
 				}
@@ -9508,7 +9508,7 @@ void CGLView::RenderPlaneCut()
 	glColor3ub(200, 0, 200);
 	RenderBox(box, false);
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	int MAT = fem.Materials();
 
 	// render the unselected faces

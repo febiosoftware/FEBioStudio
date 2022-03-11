@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/Serializable.h>
+#include <FECore/fecore_enum.h>
 #include <stdlib.h>
 #include "FEModel.h"
 #include "PlotDataSettings.h"
@@ -33,32 +34,6 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 #define FE_STATIC	0
 #define FE_DYNAMIC	1
-
-//-----------------------------------------------------------------------------
-enum FEPlotLevel {
-	FE_PLOT_NEVER,
-	FE_PLOT_MAJOR_ITRS,
-	FE_PLOT_MINOR_ITRS,
-	FE_PLOT_MUST_POINTS,
-	FE_PLOT_FINAL,
-	FE_PLOT_AUGMENTS,
-	FE_PLOT_STEP_FINAL
-};
-
-//-----------------------------------------------------------------------------
-// FE Super classes
-enum FESuperClass
-{
-	FE_ANALYSIS,
-	FE_ESSENTIAL_BC,
-	FE_SURFACE_LOAD,
-	FE_BODY_LOAD,
-	FE_INITIAL_CONDITION,
-	FE_INTERFACE,
-	FE_RIGID_CONSTRAINT,
-	FE_RIGID_CONNECTOR,
-	FE_CONSTRAINT
-};
 
 //-----------------------------------------------------------------------------
 // Module flags
@@ -137,22 +112,22 @@ public:
 	void RemoveLogData(int item);
 
 private:
-	vector<FELogData>		m_log;		// log data
+	std::vector<FELogData>		m_log;		// log data
 };
 
 //-----------------------------------------------------------------------------
-//! The FEProject class stores all the FE data.
-class FEProject : public CSerializable
+//! The FSProject class stores all the FE data.
+class FSProject : public CSerializable
 {
 public:
 	//! constructor 
-	FEProject(void);
+	FSProject(void);
 
 	//! class destructor
-	virtual ~FEProject(void);
+	virtual ~FSProject(void);
 
 	// get the FE data
-	FEModel& GetFEModel() { return m_fem; }
+	FSModel& GetFSModel() { return m_fem; }
 
 	//! save project to file
 	void Save(OArchive& ar);
@@ -178,8 +153,8 @@ public:
 	//! Get the log file settings
 	CLogDataSettings& GetLogDataSettings() { return m_log; }
 
-	//! activate plot variables for a new step
-	void ActivatePlotVariables(FEAnalysisStep* step);
+	//! set default plot variables
+	void SetDefaultPlotVariables();
 
 	unsigned int GetModule() const;
 	void SetModule(unsigned int mod);
@@ -189,7 +164,7 @@ public:
 private:
 	unsigned int		m_module;	// active module
 	string				m_title;	// Project Title
-	FEModel				m_fem;		// FE model data
+	FSModel				m_fem;		// FE model data
 	CPlotDataSettings	m_plt;		// plot file settings
 	CLogDataSettings	m_log;		// log file settings
 };

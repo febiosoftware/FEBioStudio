@@ -34,7 +34,7 @@ SOFTWARE.*/
 class FEQuadSplitModifier : public FEModifier
 {
 	struct DATA {
-		FEElement*	pe;
+		FSElement*	pe;
 		int			ncase;
 		int			nid;
 		int			ntag;
@@ -42,20 +42,20 @@ class FEQuadSplitModifier : public FEModifier
 
 public:
 	FEQuadSplitModifier();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 protected:
-	FEElement* neighbor(FEElement* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
+	FSElement* neighbor(FSElement* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
 
-	bool is_split(FEElement* pe, int i);
+	bool is_split(FSElement* pe, int i);
 
-	bool can_split(FEElement* pe, int i);
+	bool can_split(FSElement* pe, int i);
 
-	bool have_to_split(FEElement* pe, int i);
+	bool have_to_split(FSElement* pe, int i);
 
 protected:
-	FEMesh*				m_pm;
-	vector<DATA>		m_Data;
+	FSMesh*				m_pm;
+	std::vector<DATA>	m_Data;
 };
 
 //-----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ protected:
 class FETriSplitModifier : public FEModifier
 {
 	struct DATA {
-		FEElement*	pe;
+		FSElement*	pe;
 		int			ncase;
 		int			nid;
 		int			ntag;
@@ -71,23 +71,23 @@ class FETriSplitModifier : public FEModifier
 
 public:
 	FETriSplitModifier();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void SetIterations(int niter) { m_niter = niter; }
 
 protected:
-	FEMesh* Split(FEMesh* pm);
+	FSMesh* Split(FSMesh* pm);
 
-	FEElement* neighbor(FEElement* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
+	FSElement* neighbor(FSElement* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
 
-	bool is_split(FEElement* pe, int i);
+	bool is_split(FSElement* pe, int i);
 
-	bool can_split(FEElement* pe, int i);
+	bool can_split(FSElement* pe, int i);
 
-	bool have_to_split(FEElement* pe, int i);
+	bool have_to_split(FSElement* pe, int i);
 
 protected:
-	FEMesh*				m_pm;
+	FSMesh*				m_pm;
 	int					m_niter;
 };
 
@@ -97,7 +97,7 @@ class FETetSplitModifier : public FEModifier
 {
 public:
 	FETetSplitModifier();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 protected:
 	double	m_tol;	// tolerance for splitting facets
@@ -110,7 +110,7 @@ class FEHexSplitModifier : public FEModifier
 {
 public:
 	FEHexSplitModifier();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void DoSurfaceSmoothing(bool b);
 
@@ -126,7 +126,7 @@ class FEHex2DSplitModifier : public FEModifier
 {
 public:
 	FEHex2DSplitModifier();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void DoSurfaceSmoothing(bool b);
 

@@ -26,90 +26,169 @@ SOFTWARE.*/
 
 #include <QLineEdit>
 #include <QComboBox>
-#include <QListWidget>
-#include <QListWidgetItem>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 #include <QFormLayout>
 #include <QBoxLayout>
+#include <QLabel>
+#include <QToolButton>
+#include <QHeaderView>
 #include <FEMLib/FEMKernel.h>
 #include "MeshTools/FEProject.h"
 #include "DlgAddPhysicsItem.h"
+#include <FEBioLink/FEBioClass.h>
+#include <FSCore/FSCore.h>
+#include "HelpUrl.h"
 
+#include <iostream>
 
-CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, FEProject& prj, QWidget* parent)
-	: CHelpDialog(prj, parent), m_superID(superID)
+using namespace std;
+
+class UIDlgAddPhysicsItem
+{
+public:
+	QTreeWidget* type;
+	QLineEdit* name;
+	QComboBox* step;
+	QLineEdit* flt;
+	QToolButton* tb;
+
+	int		m_superID;
+	int		m_baseClassID;
+	bool	m_modDepends;
+
+public:
+	void setup(CDlgAddPhysicsItem* dlg, bool showStepList)
+	{
+		// Setup UI
+		QString placeHolder = "(leave blank for default)";
+		name = new QLineEdit; name->setPlaceholderText(placeHolder);
+		name->setMinimumWidth(name->fontMetrics().size(Qt::TextSingleLine, placeHolder).width() * 1.3);
+
+		type = new QTreeWidget;
+		type->setColumnCount(2);
+		type->setHeaderLabels(QStringList() << "Type" << "Module");
+		type->header()->setStretchLastSection(true);
+		type->header()->resizeSection(0, 400);
+
+		QFormLayout* form = new QFormLayout;
+		form->setLabelAlignment(Qt::AlignRight);
+		form->addRow("Name:", name);
+
+		step = nullptr;
+		if (showStepList)
+		{
+			step = new QComboBox;
+			form->addRow("Step:", step);
+		}
+
+		QVBoxLayout* layout = new QVBoxLayout;
+
+		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(new QLabel("Filter:"));
+		h->addWidget(flt = new QLineEdit());
+		flt->setPlaceholderText("enter filter text");
+		h->addWidget(tb = new QToolButton); tb->setText("Aa"); tb->setToolTip("Match case"); tb->setCheckable(true);
+
+		layout->addLayout(form);
+		layout->addLayout(h);
+		layout->addWidget(type);
+
+		dlg->SetLeftSideLayout(layout);
+
+		QObject::connect(type, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), dlg, SLOT(accept()));
+		QObject::connect(flt, SIGNAL(textChanged(const QString&)), dlg, SLOT(Update()));
+		QObject::connect(tb, SIGNAL(clicked()), dlg, SLOT(Update()));
+
+		flt->setFocus();
+	}
+};
+
+CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent)
+	: CHelpDialog(prj, parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
+	setMinimumSize(600, 400);
 
-	// Setup UI
-	QString placeHolder = "(leave blank for default)";
-	name = new QLineEdit; name->setPlaceholderText(placeHolder);
-	name->setMinimumWidth(name->fontMetrics().size(Qt::TextSingleLine, placeHolder).width()*1.3);
-
-	step = new QComboBox;
-	type = new QListWidget;
-
-	QFormLayout* form = new QFormLayout;
-	form->setLabelAlignment(Qt::AlignRight);
-	form->addRow("Name:", name);
-	form->addRow("Step:", step);
-
-	QVBoxLayout* layout = new QVBoxLayout;
-
-	layout->addLayout(form);
-	layout->addWidget(type);
-
-	SetLeftSideLayout(layout);
-
+	ui->m_superID = superID;
+	ui->m_baseClassID = baseClassID;
+	ui->m_modDepends = includeModuleDependencies;
+	ui->setup(this, showStepList);
 
 	// add the steps
-	FEModel& fem = prj.GetFEModel();
-	for (int i = 0; i<fem.Steps(); ++i)
+	if (ui->step)
 	{
-		step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
+		FSModel& fem = prj.GetFSModel();
+		for (int i = 0; i < fem.Steps(); ++i)
+		{
+			ui->step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
+		}
 	}
 
 	m_module = prj.GetModule();
 
+	Update();
+}
+
+void CDlgAddPhysicsItem::Update()
+{
+	ui->type->clear();
+
+	QString filter = ui->flt->text();
+
+	unsigned int searchFlags = (ui->m_modDepends ? FEBio::ClassSearchFlags::IncludeModuleDependencies : 0);
+
 	// set the types
-	vector<FEClassFactory*> l = FEMKernel::FindAllClasses(m_module, superID);
-	for (int i=0; i<(int)l.size(); ++i)
+	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, ui->m_baseClassID, searchFlags);
+	for (int i = 0; i < (int)l.size(); ++i)
 	{
-		FEClassFactory* fac = l[i];
+		FEBio::FEBioClassInfo& fac = l[i];
 
-		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(fac->GetTypeStr()));
-		item->setData(Qt::UserRole, fac->GetClassID());
-		type->addItem(item);
+		QString type = QString::fromStdString(FSCore::beautify_string(fac.sztype));
+
+		if (filter.isEmpty() || type.contains(filter, (ui->tb->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive)))
+		{
+			QTreeWidgetItem* item = new QTreeWidgetItem(ui->type);
+			item->setText(0, type);
+			item->setText(1, fac.szmod);
+			item->setData(0, Qt::UserRole, fac.classId);
+		}
 	}
-
-	type->setCurrentRow(0);
-
-	QObject::connect(type, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(accept()));
-	QObject::connect(type, &QListWidget::currentRowChanged, this, &CHelpDialog::LoadPage);
+	ui->type->model()->sort(0);
 }
 
 std::string CDlgAddPhysicsItem::GetName()
 {
-	return name->text().toStdString();
+	return ui->name->text().toStdString();
 }
 
 int CDlgAddPhysicsItem::GetStep()
 {
-	return step->currentIndex();
+	return (ui->step ? ui->step->currentIndex() : -1);
 }
 
 int CDlgAddPhysicsItem::GetClassID()
 {
-	return type->currentItem()->data(Qt::UserRole).toInt();
+	return ui->type->currentItem()->data(0, Qt::UserRole).toInt();
 }
 
 void CDlgAddPhysicsItem::SetURL()
 {
-	int classID = type->currentItem()->data(Qt::UserRole).toInt();
+    if(ui->type->selectedItems().size() > 0)
+    {
 
-	m_url = FEMKernel::FindClass(m_module, m_superID, classID)->GetHelpURL();
+        int classID = ui->type->currentItem()->data(0, Qt::UserRole).toInt();
+
+        const char* typeString = FEBio::GetClassInfo(classID).sztype;
+
+        m_url = GetHelpURL(ui->m_superID, typeString);
+    }
+    else
+    {
+        m_url = UNSELECTED_HELP;
+    }
+
+    // cout << "SUPERID " << ui->m_superID << endl;
+
+    // FECoreKernel::GetInstance().List((SUPER_CLASS_ID) ui->m_superID);
 }
-
-
-
-
-

@@ -37,15 +37,15 @@ public:
 public:
 	FESolidArc(){}
 	FESolidArc(GSolidArc* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiBlockMesh();
+	FSMesh* BuildMeshLegacy();
+	FSMesh* BuildMultiBlockMesh();
 
 protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k)
 	{

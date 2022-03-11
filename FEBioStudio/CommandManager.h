@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <string>
 
 class CCommand;
-class CGLDocument;
+class CUndoDocument;
 
 typedef std::stack<CCommand*> CCmdStack;
 
@@ -68,7 +68,7 @@ public:
 class CCommandManager  : public CBasicCmdManager
 {
 public:
-	CCommandManager(CGLDocument* pdoc);
+	CCommandManager(CUndoDocument* pdoc);
 	virtual ~CCommandManager();
 
 	void AddCommand(CCommand* pcmd) override;
@@ -80,5 +80,5 @@ public:
 	void RedoCommand() override;
 
 protected:
-	CGLDocument* m_pDoc; // pointer to the current document
+	CUndoDocument* m_pDoc; // pointer to the current document
 };

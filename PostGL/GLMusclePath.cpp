@@ -41,7 +41,6 @@ public:
 	struct Data
 	{
 		double	pathLength = 0.0;
-		double	momentArm = 0.0;
 		vec3d	r0;	// start point
 		vec3d	r1;	// end point
 		vec3d	rd;	// departure point
@@ -50,7 +49,6 @@ public:
 		void Zero()
 		{
 			pathLength = 0.0;
-			momentArm = 0.0;
 			r0 = vec3d(0, 0, 0);
 			r1 = vec3d(0, 0, 0);
 			rd = vec3d(0, 0, 0);
@@ -90,10 +88,10 @@ public:
 
 	size_t Points() const { return m_points.size(); }
 
+	Point& EndPoint() { return m_points[Points() - 1]; }
+
 public:
 	std::vector<Point>	m_points;		// points defining the path
-
-	vec3d	m_ro;		// position of origin
 
 	Data m_data;
 
@@ -110,25 +108,25 @@ GLMusclePath::GLMusclePath()
 
 	m_node0 = 0;
 	m_node1 = 0;
-	m_rc = vec3d(0,0,0);
 	m_method = 0;
 	m_ndiv = 20;
 	m_maxIter = 30;
 	m_tol = 1e-6;
 	m_persist = false;
 	m_searchRadius = 0.0;
+	m_normalTol = -0.1;
 
 	m_part[0] = m_part[1] = -1;
 
 	AddIntParam(m_node0, "point0", "start point");
 	AddIntParam(m_node1, "point1", "end point");
-	AddVecParam(m_rc, "center", "Center of rotation");
 	AddChoiceParam(m_method, "method", "Shortest path method")->SetEnumNames("Straight line\0Spring\0");
 	AddBoolParam(m_persist, "persist");
 	AddIntParam(m_ndiv, "divisions", "Subdivisions");
 	AddIntParam(m_maxIter, "max_iters", "Max smoothness iters.")->SetIntRange(1, 100);
 	AddDoubleParam(m_tol, "tol", "Smoothness tol.");
 	AddDoubleParam(m_searchRadius, "search_radius", "Search radius");
+	AddDoubleParam(m_normalTol, "normal_tol", "Normal tolerance");
 	AddDoubleParam(5.0, "size", "Path radius");
 	AddColorParam(GLColor(255, 0, 0), "color");
 	AddChoiceParam(0, "render_mode", "Render mode")->SetEnumNames("detailed\0path-only\0");
@@ -163,11 +161,50 @@ void GLMusclePath::Render(CGLContext& rc)
 	int nstate = glm->CurrentTimeIndex();
 	if ((nstate < 0) || (nstate >= m_path.size())) return;
 
-	PathData* path = m_path[nstate];
-	if (path == nullptr) return;
-
 	double R = GetFloatValue(PATH_RADIUS);
 	GLColor c = GetColorValue(COLOR);
+
+	PathData* path = m_path[nstate];
+	if (path == nullptr)
+	{
+		int n0 = GetIntValue(START_POINT) - 1;
+		int n1 = GetIntValue(END_POINT) - 1;
+
+		FEPostMesh& mesh = *glm->GetActiveMesh();
+		int NN = mesh.Nodes();
+		if ((n0 < 0) || (n0 >= NN)) return;
+		if ((n1 < 0) || (n1 >= NN)) return;
+
+		vec3d r0 = mesh.Node(n0).pos();
+		vec3d r1 = mesh.Node(n1).pos();
+
+		std::vector<vec3d> points = { r0, r1 };
+
+		float r = (float)c.r;
+		float g = (float)c.g;
+		float b = (float)c.b;
+		float a = (r + g + b)/3.f;
+
+		float w = 0.9f;
+		r = r * (1.f - w) + w * a;
+		g = g * (1.f - w) + w * a;
+		b = b * (1.f - w) + w * a;
+
+		GLColor gray((Byte)r, (Byte)g, (Byte)b);
+
+		// draw the muscle path
+		glColor3ub(gray.r, gray.g, gray.b);
+		glx::drawSmoothPath(points, R);
+
+		// draw the end points
+		glColor3ub(164, 128, 164);
+		glx::drawSphere(r0, 1.5 * R);
+
+		glColor3ub(164, 164, 128);
+		glx::drawSphere(r1, 1.5 * R);
+
+		return;
+	}
 
 	vector<vec3d> points = path->GetPoints();
 
@@ -188,7 +225,7 @@ void GLMusclePath::Render(CGLContext& rc)
 		glColor3ub(255, 0, 255);
 		glx::drawSphere(r0, 1.5 * R);
 
-		glColor3ub(255, 0, 255);
+		glColor3ub(255, 255, 0);
 		glx::drawSphere(r1, 1.5 * R);
 
 /*		glPushAttrib(GL_ENABLE_BIT);
@@ -222,11 +259,6 @@ void GLMusclePath::Render(CGLContext& rc)
 			}
 		}
 	}
-
-	// draw the rotation center
-	vec3d o = path->m_ro;
-	glColor3ub(255, 255, 0);
-	glx::drawSphere(o, R);
 }
 
 void GLMusclePath::Update()
@@ -237,7 +269,7 @@ void GLMusclePath::Update()
 void GLMusclePath::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
 
 	if (breset)
 	{
@@ -250,16 +282,16 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 		m_part[0] = m_part[1] = -1;
 		int n0 = GetIntValue(START_POINT) - 1;
 		int n1 = GetIntValue(END_POINT) - 1;
-		FEMesh& mesh = *fem.GetState(ntime)->GetFEMesh();
+		FSMesh& mesh = *fem.GetState(ntime)->GetFEMesh();
 		int NF = mesh.Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			if (face.HasNode(n0))
 			{
 				if (face.m_elem[0].eid >= 0)
 				{
-					FEElement& el = mesh.Element(face.m_elem[0].eid);
+					FSElement& el = mesh.Element(face.m_elem[0].eid);
 					m_part[0] = el.m_MatID;
 				}
 			}
@@ -267,7 +299,7 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 			{
 				if (face.m_elem[0].eid >= 0)
 				{
-					FEElement& el = mesh.Element(face.m_elem[0].eid);
+					FSElement& el = mesh.Element(face.m_elem[0].eid);
 					m_part[1] = el.m_MatID;
 				}
 			}
@@ -290,7 +322,7 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 void GLMusclePath::UpdatePath(int ntime)
 {
 	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
 	FEPostMesh& mesh = *glm->GetActiveMesh();
 
 	int n0 = GetIntValue(START_POINT) - 1;
@@ -300,14 +332,10 @@ void GLMusclePath::UpdatePath(int ntime)
 	if ((n0 < 0) || (n0 >= NN)) return;
 	if ((n1 < 0) || (n1 >= NN)) return;
 
-	vec3d r0 = fem.NodePosition(n0, ntime);
-	vec3d r1 = fem.NodePosition(n1, ntime);
+	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
+	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
 
 	PathData* path = new PathData;
-
-	// update the location of the reference configuration first
-	// since the 3-point path method needs this
-	path->m_ro = UpdateOrigin(ntime);
 
 	// see which method we're going to use
 	int method = GetIntValue(METHOD);
@@ -329,13 +357,13 @@ void GLMusclePath::UpdatePath(int ntime)
 bool GLMusclePath::UpdateStraighLine(GLMusclePath::PathData* path, int ntime)
 {
 	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
 
 	int n0 = GetIntValue(START_POINT) - 1;
 	int n1 = GetIntValue(END_POINT) - 1;
 
-	vec3d r0 = fem.NodePosition(n0, ntime);
-	vec3d r1 = fem.NodePosition(n1, ntime);
+	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
+	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
 
 	path->m_points.clear();
 	path->push_back(r0, 0, m_part[0]);
@@ -395,22 +423,6 @@ void GLMusclePath::UpdatePathData(int ntime)
 		L += (r1 - r0).Length();
 	}
 	path->m_data.pathLength = L;
-
-	// calculate moment arm
-	if (n >= 2)
-	{
-		vec3d& r0 = path->m_points[n - 2].r;
-		vec3d& r1 = path->m_points[n - 1].r;
-
-		vec3d c = path->m_ro;
-
-		vec3d e = r1 - r0; e.Normalize();
-		vec3d t = r1 - c;
-		vec3d m = e ^ t;
-
-		path->m_data.momentArm = m.Length();
-	}
-	else path->m_data.momentArm = 0.0;
 }
 
 bool GLMusclePath::UpdateData(bool bsave)
@@ -421,13 +433,13 @@ bool GLMusclePath::UpdateData(bool bsave)
 
 		int node0     = GetIntValue(START_POINT     ); if (node0  != m_node0        ) { m_node0        =   node0; reset = true; }
 		int node1     = GetIntValue(END_POINT       ); if (node1  != m_node1        ) { m_node1        =   node1; reset = true; }
-		vec3d rc      = GetVecValue(ROTATION_CENTER ); if ((rc == m_rc) == false    ) { m_rc           =      rc; reset = true; }
 		int method    = GetIntValue(METHOD          ); if (method  != m_method      ) { m_method       =  method; reset = true; }
 		bool persist  = GetBoolValue(PERSIST_PATH   ); if (persist != m_persist     ) { m_persist      = persist; reset = true; }
 		int ndiv      = GetIntValue(SUBDIVISIONS    ); if (ndiv    != m_ndiv        ) { m_ndiv         =    ndiv; reset = true; }
 		int maxIter   = GetIntValue(MAX_SMOOTH_ITERS); if (maxIter != m_maxIter     ) { m_maxIter      = maxIter; reset = true; }
 		double tol    = GetFloatValue(SMOOTH_TOL    ); if (tol     != m_tol         ) { m_tol          =     tol; reset = true; }
 		double radius = GetFloatValue(SEARCH_RADIUS ); if (radius  != m_searchRadius) { m_searchRadius =  radius; reset = true; }
+		double nrmtol = GetFloatValue(NORMAL_TOL    ); if (nrmtol  != m_normalTol   ) { m_normalTol    =  nrmtol; reset = true; }
 		
 		Update(GetModel()->CurrentTimeIndex(), 0.f, reset);
 	}
@@ -451,117 +463,24 @@ double GLMusclePath::DataValue(int field, int step)
 	switch (field)
 	{
 	case 1: val = path->m_data.pathLength; break;
-	case 2: val = path->m_data.momentArm; break;
-	case 3: val = path->m_data.r0.x; break;
-	case 4: val = path->m_data.r0.y; break;
-	case 5: val = path->m_data.r0.z; break;
-	case 6: val = path->m_data.r1.x; break;
-	case 7: val = path->m_data.r1.y; break;
-	case 8: val = path->m_data.r1.z; break;
-	case  9: val = path->m_data.rd.x; break;
-	case 10: val = path->m_data.rd.y; break;
-	case 11: val = path->m_data.rd.z; break;
-	case 12: val = path->m_data.tng.x; break;
-	case 13: val = path->m_data.tng.y; break;
-	case 14: val = path->m_data.tng.z; break;
+	case 2: val = path->m_data.r0.x; break;
+	case 3: val = path->m_data.r0.y; break;
+	case 4: val = path->m_data.r0.z; break;
+	case 5: val = path->m_data.r1.x; break;
+	case 6: val = path->m_data.r1.y; break;
+	case 7: val = path->m_data.r1.z; break;
+	case 8: val = path->m_data.rd.x; break;
+	case 9: val = path->m_data.rd.y; break;
+	case 10: val = path->m_data.rd.z; break;
+	case 11: val = path->m_data.tng.x; break;
+	case 12: val = path->m_data.tng.y; break;
+	case 13: val = path->m_data.tng.z; break;
 	default:
 		assert(false);
 	}
 
 	// return 
 	return val;
-}
-
-vec3d GLMusclePath::UpdateOrigin(int ntime)
-{
-	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
-	FEPostMesh& mesh = *glm->GetActiveMesh();
-
-	if (m_closestFace == -1)
-	{
-		vec3d r0 = GetVecValue(ROTATION_CENTER);
-		mesh.TagAllFaces(0);
-		int nmin = -1;
-		vec3d rmin;
-		double L2min;
-		// find the closest node on the surface
-		for (int i = 0; i < mesh.Faces(); ++i)
-		{
-			FEFace& f = mesh.Face(i);
-			vec3d ri(0,0,0);
-			for (int j = 0; j < f.Nodes(); ++j)
-			{
-				FENode& nj = mesh.Node(f.n[j]);
-				vec3d rj = fem.NodePosition(f.n[j], 0);
-				ri += rj;
-			}
-			ri /= f.Nodes();
-
-			// get the distance
-			double L2 = (ri - r0).SqrLength();
-
-			if ((nmin == -1) || (L2 < L2min))
-			{
-				nmin = i;
-				L2min = L2;
-				rmin = ri;
-			}
-		}
-		if (nmin == -1) return r0;
-
-		m_closestFace = nmin;
-
-		vec3d dr = r0 - rmin;
-
-		FEFace& f = mesh.Face(nmin);
-		vec3d a0 = fem.NodePosition(f.n[0], 0);
-		vec3d a1 = fem.NodePosition(f.n[1], 0);
-		vec3d a2 = fem.NodePosition(f.n[2], 0);
-
-		vec3d e1 = a1 - a0; e1.Normalize();
-		vec3d e2 = a2 - a0; e2.Normalize();
-		vec3d e3 = e1 ^ e2; e3.Normalize();
-		e2 = e3 ^ e1; e2.Normalize();
-
-		mat3d QT(				\
-			e1.x, e1.y, e1.z,	\
-			e2.x, e2.y, e2.z,	\
-			e3.x, e3.y, e3.z	\
-		);
-
-		m_qr = QT * dr;
-	}
-
-	// calculate current position of origin
-	FEFace& f = mesh.Face(m_closestFace);
-	vec3d ri(0, 0, 0);
-	for (int j = 0; j < f.Nodes(); ++j)
-	{
-		FENode& nj = mesh.Node(f.n[j]);
-		vec3d rj = fem.NodePosition(f.n[j], ntime);
-		ri += rj;
-	}
-	ri /= f.Nodes();
-
-	vec3d a0 = fem.NodePosition(f.n[0], ntime);
-	vec3d a1 = fem.NodePosition(f.n[1], ntime);
-	vec3d a2 = fem.NodePosition(f.n[2], ntime);
-
-	vec3d e1 = a1 - a0; e1.Normalize();
-	vec3d e2 = a2 - a0; e2.Normalize();
-	vec3d e3 = e1 ^ e2; e3.Normalize();
-	e2 = e3 ^ e1; e2.Normalize();
-
-	mat3d Q(\
-		e1.x, e2.x, e3.x, \
-		e1.y, e2.y, e3.y, \
-		e1.z, e2.z, e3.z	\
-	);
-
-	vec3d dr = Q * m_qr;
-
-	return ri + dr;
 }
 
 class RINGPOINT
@@ -594,7 +513,7 @@ public:
 	vector<FACE>	m_Face;
 };
 
-bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const vec3d& a, const vec3d& b, RINGPOINT& pt)
+bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const vec3d& a, const vec3d& b, const vec3d& na, RINGPOINT& pt, double normalTolerance)
 {
 	int NF = mesh.Faces();
 	int imin = -1;
@@ -604,7 +523,7 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 		// figure out the case for this face
 		FaceMesh::FACE& face = mesh.Face(i);
 		int ne = 3; // edges!
-		double s[FEFace::MAX_NODES] = { 0 };
+		double s[FSFace::MAX_NODES] = { 0 };
 		int ncase = 0;
 		vec3d* re = face.r;
 		for (int j = 0; j < ne; ++j)
@@ -659,25 +578,29 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 				double D2 = (p - a).SqrLength() + (p - b).SqrLength();
 				if ((imin == -1) || (D2 < Dmin))
 				{
-					imin = i;
-					Dmin = D2;
-					pt.p = p;
-
-					// make sure the point lies on the plane
-					double e = t * (pt.p - rc);
-					assert(fabs(e) < 1e-12);
-
 					// calculate face normal
 					vec3d fn = face.fn;
 
-					// project normal onto plane
-					fn -= t * (fn * t); fn.Normalize();
+					// make sure the normal is not on the wrong side
+					if (fn * na > normalTolerance)
+					{
+						imin = i;
+						Dmin = D2;
+						pt.p = p;
 
-					assert(fabs(fn * t) < 1e-12);
+						// make sure the point lies on the plane
+						double e = t * (pt.p - rc);
+						assert(fabs(e) < 1e-12);
 
-					pt.n = fn;
+						// project normal onto plane
+						fn -= t * (fn * t); fn.Normalize();
 
-					pt.nface = i;
+						assert(fabs(fn * t) < 1e-12);
+
+						pt.n = fn;
+
+						pt.nface = i;
+					}
 				}
 			}
 		}
@@ -736,7 +659,7 @@ void StraightenPath(vector<RINGPOINT>& pt)
 	}
 }
 
-bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters = 10, double tol = 1e-6)
+bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters, double tol, double normalTolerance)
 {
 	// evaluate the initial length
 	int NP = pt.size();
@@ -766,7 +689,7 @@ bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters = 10, doub
 
 			vec3d ri = (a + b) * 0.5;
 
-			if (ClosestPointOnRing(mesh, ri, t, a, b, pi))
+			if (ClosestPointOnRing(mesh, ri, t, a, b, pt[i-1].n, pi, normalTolerance))
 			{
 				if ((ri - pi.p) * pi.n > 0.0)
 				{
@@ -800,14 +723,16 @@ bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters = 10, doub
 bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 {
 	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFEModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
 	FEPostMesh& mesh = *glm->GetActiveMesh();
 
 	int n0 = GetIntValue(START_POINT) - 1;
 	int n1 = GetIntValue(END_POINT) - 1;
 
-	vec3d r0 = fem.NodePosition(n0, ntime);
-	vec3d r1 = fem.NodePosition(n1, ntime);
+	double normalTol = GetFloatValue(NORMAL_TOL);
+
+	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
+	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
 
 	vec3d t = r1 - r0; t.Normalize();
 
@@ -819,9 +744,9 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 	{
 		for (int i = 0; i < mesh.Nodes(); ++i)
 		{
-			FENode& node = mesh.Node(i);
+			FSNode& node = mesh.Node(i);
 			node.m_ntag = 0;
-			vec3d ri = fem.NodePosition(i, ntime);
+			vec3d ri = to_vec3d(fem.NodePosition(i, ntime));
 			double L0 = (ri - r0).SqrLength();
 			double L1 = (ri - r1).SqrLength();
 			if ((L0 < R2) || (L1 < R2)) node.m_ntag = 1;
@@ -836,7 +761,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 		faces = 0;
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nn = face.Edges();
 			face.m_ntag = 0;
 			for (int j = 0; j < nn; ++j)
@@ -861,19 +786,19 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 	int n = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& fs = mesh.Face(i);
+		FSFace& fs = mesh.Face(i);
 		if (fs.m_ntag == 1)
 		{
 			FaceMesh::FACE& fd = faceMesh.Face(n++);
 			int ne = 3; // edges!
 			for (int j = 0; j < ne; ++j)
 			{
-				fd.r[j] = fem.NodePosition(fs.n[j], ntime);
+				fd.r[j] = to_vec3d(fem.NodePosition(fs.n[j], ntime));
 			}
 
 			if (fs.m_elem[0].eid >= 0)
 			{
-				FEElement& el = mesh.Element(fs.m_elem[0].eid);
+				FSElement& el = mesh.Element(fs.m_elem[0].eid);
 				fd.mat = el.m_MatID;
 			}
 
@@ -931,7 +856,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 
 		vec3d ri = (a + b) * 0.5;
 
-		if (ClosestPointOnRing(faceMesh, ri, t, a, b, pi))
+		if (ClosestPointOnRing(faceMesh, ri, t, a, b, pt[i-1].n, pi, normalTol))
 		{
 			if ((ri - pi.p) * pi.n > 0.0)
 			{
@@ -946,7 +871,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 	if (maxIters > 0)
 	{
 		double tol = GetFloatValue(SMOOTH_TOL);
-		SmoothenPath(faceMesh, pt, maxIters, tol);
+		SmoothenPath(faceMesh, pt, maxIters, tol, normalTol);
 	}
 
 	// copy the points to the PathData
@@ -964,6 +889,9 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 
 	// tag departure point
 	int mat = m_part[1];	// get material at end-point
+
+	// make sure the end point has its mat tag set
+	path->EndPoint().mat = mat;
 
 	// the first point in contact with this material is the departure point
 	for (int i = 0; i < path->Points(); ++i)

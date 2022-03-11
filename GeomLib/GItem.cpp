@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GBaseObject.h"
 #include "GObject.h"
 #include "geom.h"
+#include "GPartSection.h"
 #include <MeshTools/FEGroup.h>
 #include <MeshLib/FEMesh.h>
 
@@ -97,10 +98,10 @@ void GNode::MakeRequired()
 	GObject* po = dynamic_cast<GObject*>(Object());
 	if (po)
 	{
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
-			FENode* pn = pm->FindNodeFromID(GetLocalID()); assert(pn);
+			FSNode* pn = pm->FindNodeFromID(GetLocalID()); assert(pn);
 			if (pn) pn->SetRequired(true);
 		}
 	}
@@ -248,8 +249,8 @@ vec3d GEdge::Point(double l)
 			q.RotateVector(r2);
 			GM_CIRCLE_ARC c(vec2d(0,0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y));
 			vec2d a = c.Point(l);
-			p.x = a.x;
-			p.y = a.y;
+			p.x = a.x();
+			p.y = a.y();
 			p.z = 0;
 			qi.RotateVector(p);
 			p += r0;
@@ -266,8 +267,8 @@ vec3d GEdge::Point(double l)
 			q.RotateVector(r2);
 			GM_ARC c(vec2d(0,0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y));
 			vec2d a = c.Point(l);
-			p.x = a.x;
-			p.y = a.y;
+			p.x = a.x();
+			p.y = a.y();
 			p.z = 0;
 			qi.RotateVector(p);
 			p += r0;
@@ -337,19 +338,19 @@ vec2d GEdge::Tangent(double l)
 }
 
 //-----------------------------------------------------------------------------
-FEEdgeSet* GEdge::GetFEEdgeSet() const
+FSEdgeSet* GEdge::GetFEEdgeSet() const
 {
 	GObject* po = dynamic_cast<GObject*>(m_po);
 	if (m_po == nullptr) return nullptr;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return nullptr;
 
-	FEEdgeSet* edge = new FEEdgeSet(po);
+	FSEdgeSet* edge = new FSEdgeSet(po);
 	int eid = GetLocalID();
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		const FEEdge& ei = pm->Edge(i);
+		const FSEdge& ei = pm->Edge(i);
 		if (ei.m_gid == eid) edge->add(i);
 	}
 
@@ -416,30 +417,39 @@ bool GFace::HasEdge(int nid)
 	return false;
 }
 
+
 //=============================================================================
 // GPart
 //-----------------------------------------------------------------------------
 GPart::GPart() : GItem_T<GPart>(0) 
 { 
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-    AddBoolParam(false, "laugon", "incompressibility constraint");
-    AddDoubleParam(0.01, "atol", "incompressibility tolerance");
 	m_matid = -1;
+	m_section = nullptr;
 }
 GPart::GPart(GBaseObject* po) : GItem_T<GPart>(po) 
 { 
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-    AddBoolParam(false, "laugon", "incompressibility constraint");
-    AddDoubleParam(0.01, "atol", "incompressibility tolerance");
 	m_matid = -1;
+	m_section = nullptr;
 }
+
+GPart::~GPart()
+{
+	delete m_section;
+}
+
+void GPart::SetSection(GPartSection* section) 
+{ 
+	if (m_section == section) return;
+	delete m_section;
+	m_section = section; 
+	section->SetParent(this);
+}
+
+GPartSection* GPart::GetSection() const { return m_section; }
 
 GPart::GPart(const GPart& p)
 {
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-    AddBoolParam(false, "laugon", "incompressibility constraint");
-    AddDoubleParam(0.01, "atol", "incompressibility tolerance");
-	CopyParams(p);
+	if (p.GetSection()) m_section = p.GetSection()->Copy();
 
 	m_matid = p.m_matid;
 
@@ -448,6 +458,18 @@ GPart::GPart(const GPart& p)
 	m_lid = p.m_lid;
 	m_po = p.m_po;
 	SetName(p.GetName());
+}
+
+bool GPart::IsSolid() const
+{
+	assert(m_section);
+	return (dynamic_cast<GSolidSection*>(m_section));
+}
+
+bool GPart::IsShell() const
+{
+	assert(m_section);
+	return (dynamic_cast<GShellSection*>(m_section));
 }
 
 //-----------------------------------------------------------------------------
@@ -461,34 +483,4 @@ void GPart::operator =(const GPart &p)
 	m_lid = p.m_lid;
 	SetName(p.GetName());
 //	m_po = p.m_po;
-}
-
-void GPart::setShellNormalNodal(bool b)
-{
-	SetBoolValue(0, b);
-}
-
-bool GPart::shellNormalNodal() const
-{
-	return GetBoolValue(0);
-}
-
-void GPart::setLaugon(bool b)
-{
-    SetBoolValue(1, b);
-}
-
-bool GPart::laugon() const
-{
-    return GetBoolValue(1);
-}
-
-void GPart::setAugTol(double d)
-{
-    SetFloatValue(2, d);
-}
-
-double GPart::augTol() const
-{
-    return GetFloatValue(2);
 }

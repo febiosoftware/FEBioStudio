@@ -30,6 +30,9 @@ SOFTWARE.*/
 #include "FEPostModel.h"
 using namespace Post;
 
+// defined in FEBio/FEBioExport.h
+template <> std::string type_to_string<vec3f>(const vec3f& v);
+
 const char* elementTypeStr(int ntype)
 {
 	const char* szeltype = 0;
@@ -62,8 +65,8 @@ bool FEFEBioExport::Save(FEPostModel& fem, const char* szfile)
 {
 	int nmat = fem.Materials();
 
-	FEPostMesh* pm = fem.GetFEMesh(0);
 	FEState* pst = fem.CurrentState();
+	FEPostMesh* pm = pst->GetFEMesh();
 	int NE = pm->Elements();
 
 	XMLWriter xml;
@@ -126,7 +129,7 @@ bool FEFEBioExport::Save(FEPostModel& fem, const char* szfile)
 					// now export all the elements of this material and type
 					xml.add_branch(part);
 					{
-						int n[FEElement::MAX_NODES];
+						int n[FSElement::MAX_NODES];
 						XMLElement el("elem");
 						int n1 = el.add_attribute("id", "");
 						for (int i=i0; i<pm->Elements(); ++i)

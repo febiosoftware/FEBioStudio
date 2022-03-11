@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ObjectProps.h"
 #include <FSCore/FSObject.h>
+#include <FSCore/FSCore.h>
 
 //=======================================================================================
 CObjectProps::CObjectProps(FSObject* po)
@@ -38,11 +39,16 @@ CObjectProps::CObjectProps(FSObject* po)
 void CObjectProps::AddParameter(Param& p)
 {
 	CProperty* prop = nullptr;
+
+	const char* szname = p.GetLongName();
+	string sname = FSCore::beautify_string(szname);
+	QString paramName = QString::fromStdString(sname);
+
 	switch (p.GetParamType())
 	{
 	case Param_FLOAT: 
 	{
-		prop = addProperty(p.GetLongName(), CProperty::Float);
+		prop = addProperty(paramName, CProperty::Float);
 		if (p.UseRange())
 		{
 			prop->setFloatRange(p.GetFloatMin(), p.GetFloatMax());
@@ -50,12 +56,13 @@ void CObjectProps::AddParameter(Param& p)
 		}
 	}
 	break;
-	case Param_VEC3D: prop = addProperty(p.GetLongName(), CProperty::Vec3); break;
-	case Param_MAT3D: prop = addProperty(p.GetLongName(), CProperty::Mat3); break;
-	case Param_STRING: prop = addProperty(p.GetLongName(), CProperty::String); break;
-	case Param_MATH  : prop = addProperty(p.GetLongName(), CProperty::MathString); break;
-	case Param_COLOR : prop = addProperty(p.GetLongName(), CProperty::Color); break;
-	case Param_VEC2I : prop = addProperty(p.GetLongName(), CProperty::Vec2i); break;
+	case Param_VEC3D : prop = addProperty(paramName, CProperty::Vec3); break;
+	case Param_MAT3D : prop = addProperty(paramName, CProperty::Mat3); break;
+	case Param_MAT3DS: prop = addProperty(paramName, CProperty::Mat3s); break;
+	case Param_STRING: prop = addProperty(paramName, CProperty::String); break;
+	case Param_MATH  : prop = addProperty(paramName, CProperty::MathString); break;
+	case Param_COLOR : prop = addProperty(paramName, CProperty::Color); break;
+	case Param_VEC2I : prop = addProperty(paramName, CProperty::Vec2i); break;
 	case Param_BOOL:
 	{
 		const char* ch = p.GetEnumNames();
@@ -65,11 +72,11 @@ void CObjectProps::AddParameter(Param& p)
 			ops << QString(ch);
 			ch = ch + strlen(ch) + 1;
 			ops << QString(ch);
-			prop = addProperty(p.GetLongName(), CProperty::Enum);
+			prop = addProperty(paramName, CProperty::Enum);
 			prop->setEnumValues(ops);
 			break;
 		}
-		else prop = addProperty(p.GetLongName(), CProperty::Bool);
+		else prop = addProperty(paramName, CProperty::Bool);
 	}
 	break;
 	case Param_CHOICE:
@@ -82,32 +89,32 @@ void CObjectProps::AddParameter(Param& p)
 			{
 				if (strcmp(ch, "@data_scalar") == 0)
 				{
-					prop = addProperty(p.GetLongName(), CProperty::DataScalar);
+					prop = addProperty(paramName, CProperty::DataScalar);
 				}
 				else if (strcmp(ch, "@data_vec3") == 0)
 				{
-					prop = addProperty(p.GetLongName(), CProperty::DataVec3);
+					prop = addProperty(paramName, CProperty::DataVec3);
 				}
 				else if (strcmp(ch, "@data_mat3") == 0)
 				{
-					prop = addProperty(p.GetLongName(), CProperty::DataMat3);
+					prop = addProperty(paramName, CProperty::DataMat3);
 				}
 				else if (strcmp(ch, "@color_map") == 0)
 				{
-					prop = addProperty(p.GetLongName(), CProperty::ColorMap);
+					prop = addProperty(paramName, CProperty::ColorMap);
 				}
 			}
 			else
 			{
 				QStringList ops = GetEnumValues(ch);
-				prop = addProperty(p.GetLongName(), CProperty::Enum);
+				prop = addProperty(paramName, CProperty::Enum);
 				prop->setEnumValues(ops);
 			}
 			break;
 		}
 		else
 		{
-			prop = addProperty(p.GetLongName(), CProperty::Int);
+			prop = addProperty(paramName, CProperty::Int);
 			if (p.UseRange())
 			{
 				prop->setIntRange(p.GetIntMin(), p.GetIntMax());
@@ -115,8 +122,24 @@ void CObjectProps::AddParameter(Param& p)
 		}
 	}
 	break;
+	case Param_STD_VECTOR_INT:
+	{
+		prop = addProperty(paramName, CProperty::Std_Vector_Int);
+		const char* szenum = p.GetEnumNames();
+		if (szenum)
+		{
+			QStringList ops = GetEnumValues(szenum);
+			prop->setEnumValues(ops);
+		}
+	}
+	break;
+	case Param_STD_VECTOR_DOUBLE:
+	{
+		prop = addProperty(paramName, CProperty::Std_Vector_Double);
+	}
+	break;
 	default:
-		prop = addProperty(p.GetLongName(), CProperty::String);
+		prop = addProperty(paramName, CProperty::String);
 		prop->setFlags(CProperty::Visible);
 		break;
 	}
@@ -147,6 +170,19 @@ void CObjectProps::BuildParamList(FSObject* po, bool showNonPersistent)
 	{
 		Param& p = po->GetParam(i);
 		if ((showNonPersistent || p.IsPersistent()) && (p.IsEditable() || p.IsVisible()))
+		{
+			AddParameter(p);
+		}
+	}
+}
+
+void CObjectProps::AddParameterList(FSObject* po)
+{
+	int NP = po->Parameters();
+	for (int i = 0; i < NP; ++i)
+	{
+		Param& p = po->GetParam(i);
+		if (p.IsEditable() || p.IsVisible())
 		{
 			AddParameter(p);
 		}
@@ -189,11 +225,32 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 		return t;
 	}
 	break;
+	case Param_MAT3DS:
+	{
+		mat3ds m = p.GetMat3dsValue();
+		QString t = Mat3dsToString(m);
+		return t;
+	}
+	break;
 	case Param_COLOR:
 	{
 		GLColor c = p.GetColorValue();
 		QColor qcol = toQColor(c);
 		return qcol;
+	}
+	break;
+	case Param_STD_VECTOR_INT:
+	{
+		std::vector<int> v = p.GetVectorIntValue();
+		QString t = VectorIntToString(v);
+		return t;
+	}
+	break;
+	case Param_STD_VECTOR_DOUBLE:
+	{
+		std::vector<double> v = p.GetVectorDoubleValue();
+		QString t = VectorDoubleToString(v);
+		return t;
 	}
 	break;
 	default:
@@ -245,11 +302,44 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 		p.SetMat3dValue(m);
 	}
 	break;
+	case Param_MAT3DS:
+	{
+		QString t = v.toString();
+		mat3ds m = StringToMat3ds(t);
+		p.SetMat3dsValue(m);
+	}
+	break;
 	case Param_COLOR:
 	{
 		QColor qcol = v.value<QColor>();
 		GLColor c = toGLColor(qcol);
 		p.SetColorValue(c);
+	}
+	break;
+	case Param_STD_VECTOR_INT:
+	{
+		QString s = v.toString();
+		std::vector<int> val = StringToVectorInt(s);
+		p.SetVectorIntValue(val);
+	}
+	break;
+	case Param_STD_VECTOR_DOUBLE:
+	{
+		QString s = v.toString();
+		std::vector<double> val = StringToVectorDouble(s);
+		if (val.empty() == false)
+		{
+			// Make sure we don't change the vector's size
+			int n = p.GetVectorDoubleValue().size();
+			if ((n != 0) && (n != val.size()))
+			{
+				std::vector<double> tmp = p.GetVectorDoubleValue();
+				if (val.size() < n) n = val.size();
+				for (int i = 0; i < n; ++i) tmp[i] = val[i];
+				val = tmp;
+			}
+			p.SetVectorDoubleValue(val);
+		}
 	}
 	break;
 	default:

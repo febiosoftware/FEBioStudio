@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/MeshTools.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 GWrapModifier::GWrapModifier()
@@ -46,7 +47,7 @@ void GWrapModifier::Apply(GObject* po)
 	// make sure there is a target
 	if (m_po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	int i, j, k;
 
@@ -68,7 +69,7 @@ void GWrapModifier::Apply(GObject* po)
 	vector<int> tag; tag.assign(pm->Nodes(), 0);
 	for (i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int nf = f.Nodes();
 		for (j=0; j<nf; ++j) tag[f.n[j]] = 1;
 	}
@@ -115,7 +116,7 @@ void GWrapModifier::Apply(GObject* po)
 		}
 
 		// create Node-Node list
-		FENodeNodeList NNL(pm);
+		FSNodeNodeList NNL(pm);
 
 		// apply smoothing
 		int niter = 1;
@@ -142,7 +143,7 @@ void GWrapModifier::Apply(GObject* po)
 	// apply the displacement
 	for (i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		n.r += DS[i];
 	}
 
@@ -154,20 +155,20 @@ void GWrapModifier::Apply(GObject* po)
 void GWrapModifier::ClosestPoint(GObject *ps, vector<vec3d>& DS, vector<int>& tag)
 {
 	// get the target mesh
-	FEMesh* ptrg = m_po->GetFEMesh();
+	FSMesh* ptrg = m_po->GetFEMesh();
 
 	// create the node-face list for the target mesh
-	FENodeFaceList NFL;
+	FSNodeFaceList NFL;
 	NFL.Build(ptrg);
 
 	// get the source mesh
-	FEMesh* pm = ps->GetFEMesh();
+	FSMesh* pm = ps->GetFEMesh();
 
 /*	for (int i=0; i<pm->Nodes(); ++i)
 	{
 		if (tag[i] == 1)
 		{
-			FENode& n = pm->Node(i);
+			FSNode& n = pm->Node(i);
 
 			vec3d nr = ps->GetTransform().LocalToGlobal(n.r);
 			nr = m_po->GetTransform().GlobalToLocal(nr);
@@ -192,7 +193,7 @@ void GWrapModifier::ClosestPoint(GObject *ps, vector<vec3d>& DS, vector<int>& ta
 			dmin = 1e99;
 			for (int j=0; j<nval; ++j)
 			{
-				FEFace& f = *NFL.Face(imin, j);
+				FSFace& f = *NFL.Face(imin, j);
 				double r = 0, s = 0;
 				vec3d q = ProjectToFace(*ptrg, nr, f, r, s);
 
@@ -215,10 +216,10 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 	int i, j;
 
 	// get the target mesh
-	FEMesh* ptrg = m_po->GetFEMesh();
+	FSMesh* ptrg = m_po->GetFEMesh();
 
 	// get the source mesh
-	FEMesh* pm = ps->GetFEMesh();
+	FSMesh* pm = ps->GetFEMesh();
 
 	// store the original positions of the mesh
 	vector<vec3d> r0; r0.resize(pm->Nodes());
@@ -232,10 +233,10 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 		for (i=0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = 0;
 		for (i=0; i<pm->Faces(); ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			for (j=0; j<f.Nodes(); ++j) 
 			{
-				N[f.n[j]] += f.m_nn[j];
+				N[f.n[j]] += to_vec3d(f.m_nn[j]);
 				pm->Node(f.n[j]).m_ntag = 1;
 			}
 		}
@@ -256,7 +257,7 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 		{
 			if (tag[i] == 1)
 			{	
-				FENode& node = pm->Node(i);
+				FSNode& node = pm->Node(i);
 
 				// get the normal
 				vec3d n = N[i];
@@ -269,7 +270,7 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 				double dmin = 1e99, d;
 				for (j=0; j<ptrg->Faces(); ++j)
 				{
-					FEFace& f = ptrg->Face(j);
+					FSFace& f = ptrg->Face(j);
 
 					// find the intersection of the ray with this face
 					if (FindIntersection(*ptrg, f, r, n, q, g))
@@ -300,7 +301,7 @@ void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>
 	// restore original nodal position
 	for (i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		DS[i] = n.r - r0[i];
 		n.r = r0[i];
 	}

@@ -130,7 +130,7 @@ void CGLSlicePlot::SetSliceOffset(float f)
 void CGLSlicePlot::Render(CGLContext& rc)
 {
 	if (m_nfield == 0) return;
-	m_box = GetModel()->GetFEModel()->GetBoundingBox();
+	m_box = GetModel()->GetFSModel()->GetBoundingBox();
 
 	GLTexture1D& tex = m_Col.GetTexture();
 
@@ -139,7 +139,7 @@ void CGLSlicePlot::Render(CGLContext& rc)
 	glDisable(GL_LIGHTING);
 	tex.MakeCurrent();
 	double fmin, fmax;
-	vec3d n = m_norm;
+	vec3d n = to_vec3d(m_norm);
 	n.Normalize();
 	m_box.Range(n, fmin, fmax);
 	float Df = fabs(fmax - fmin);
@@ -190,10 +190,10 @@ void CGLSlicePlot::RenderSlice(float ref)
 
 	// get the mesh
 	CGLModel* mdl = GetModel();
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
-	vec3f norm = m_norm;
+	vec3d norm = to_vec3d(m_norm);
 	norm.Normalize();
 
 	vec2f rng = m_crng;
@@ -206,7 +206,7 @@ void CGLSlicePlot::RenderSlice(float ref)
 		// render only if the element is visible and
 		// its material is enabled
 		FEElement_& el = pm->ElementRef(i);
-		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
+		Material* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && el.IsVisible() && el.IsSolid())
 		{
 			switch (el.Type())
@@ -228,7 +228,7 @@ void CGLSlicePlot::RenderSlice(float ref)
 			// get the nodal values
 			for (k=0; k<8; ++k)
 			{
-				FENode& node = pm->Node(el.m_node[nt[k]]);
+				FSNode& node = pm->Node(el.m_node[nt[k]]);
 
 				f = m_val[el.m_node[nt[k]]];
 				f = (f - rng.x) / (rng.y - rng.x);
@@ -299,8 +299,8 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* mdl = GetModel();
 
-	FEMeshBase* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FSMeshBase* pm = mdl->GetActiveMesh();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
 	int NS = pfem->GetStates();

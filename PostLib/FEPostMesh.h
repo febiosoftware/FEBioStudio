@@ -35,12 +35,11 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <utility>
 #include <vector>
-//using namespace std;
 
 namespace Post {
 
 //-----------------------------------------------------------------------------
-class FEPostMesh : public FEMesh
+class FEPostMesh : public FSMesh
 {
 public:
 	// --- M E M O R Y   M A N A G M E N T ---
@@ -59,7 +58,7 @@ public:
 	//! clean mesh and all data
 	void ClearAll();
 
-	const vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
+	const std::vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
 
 public:
 	// --- G E O M E T R Y ---
@@ -68,34 +67,34 @@ public:
 	int Domains() const { return (int) m_Dom.size(); }
 
 	//! return a domain
-	FEDomain& Domain(int i) { return *m_Dom[i]; }
+	MeshDomain& Domain(int i) { return *m_Dom[i]; }
 
 	//! nr of parts
 	int Parts() const { return (int) m_Part.size(); }
 
 	//! add a part
-	void AddPart(FEPart* pg) { m_Part.push_back(pg); }
+	void AddPart(FSPart* pg) { m_Part.push_back(pg); }
 
 	//! return a part
-	FEPart& Part(int n) { return *m_Part[n]; }
+	FSPart& Part(int n) { return *m_Part[n]; }
 
 	// number of surfaces
 	int Surfaces() const { return (int) m_Surf.size(); }
 
 	// return a surface
-	FESurface& Surface(int n) { return *m_Surf[n]; }
+	FSSurface& Surface(int n) { return *m_Surf[n]; }
 
 	// Add a surface
-	void AddSurface(FESurface* ps) { m_Surf.push_back(ps); }
+	void AddSurface(FSSurface* ps) { m_Surf.push_back(ps); }
 
 	//! number of node sets
 	int NodeSets() const { return (int) m_NSet.size(); }
 
 	//! return a node set
-	FENodeSet& NodeSet(int i) { return *m_NSet[i]; }
+	FSNodeSet& NodeSet(int i) { return *m_NSet[i]; }
 
 	//! Add a node set
-	void AddNodeSet(FENodeSet* ps) { m_NSet.push_back(ps); }
+	void AddNodeSet(FSNodeSet* ps) { m_NSet.push_back(ps); }
 
 	// --- D A T A   U P D A T E ---
 
@@ -112,19 +111,19 @@ protected:
 
 protected:
 	// --- G E O M E T R Y ---
-	vector<FEDomain*>	m_Dom;	// domains
+	std::vector<MeshDomain*>	m_Dom;	// domains
 
 	// user-defined partitions
-	vector<FEPart*>		m_Part;	// parts
-	vector<FESurface*>	m_Surf;	// surfaces
-	vector<FENodeSet*>	m_NSet;	// node sets
+	std::vector<FSPart*>		m_Part;	// parts
+	std::vector<FSSurface*>	m_Surf;	// surfaces
+	std::vector<FSNodeSet*>	m_NSet;	// node sets
 
-	FENodeElementList	m_NEL;
+	FSNodeElementList	m_NEL;
 };
 
 // find the element and the iso-parametric coordinates of a point inside the mesh
 // the x coordinates is assumed to be in reference frame
-bool FindElementInReferenceFrame(FECoreMesh& m, const vec3f& x, int& nelem, double r[3]);
+bool FindElementInReferenceFrame(FSCoreMesh& m, const vec3f& x, int& nelem, double r[3]);
 
 class FEState;
 

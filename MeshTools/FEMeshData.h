@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <string>
 //using namespace std;
 
-class FEMesh;
+class FSMesh;
 
 class FEMeshData : public FSObject
 {
@@ -66,14 +66,14 @@ public:
 	DATA_FORMAT GetDataFormat() const;
 
 	// return mesh this data field belongs to
-	FEMesh* GetMesh() const;
+	FSMesh* GetMesh() const;
 
 protected:
-	void SetMesh(FEMesh* mesh);
+	void SetMesh(FSMesh* mesh);
 	DATA_TYPE		m_dataType;
 	DATA_FORMAT		m_dataFmt;
 
 private:
 	DATA_CLASS		m_dataClass;
-	FEMesh*			m_pMesh;
+	FSMesh*			m_pMesh;
 };

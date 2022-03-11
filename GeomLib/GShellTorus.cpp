@@ -32,7 +32,7 @@ SOFTWARE.*/
 // GShellTorus
 //=============================================================================
 
-GShellTorus::GShellTorus(FEModel* ps) : GPrimitive(ps, GSHELL_TORUS)
+GShellTorus::GShellTorus(FSModel* ps) : GPrimitive(ps, GSHELL_TORUS)
 {
 	m_R0 = 1;
 	m_R1 = 0.02;

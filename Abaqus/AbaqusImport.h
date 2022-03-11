@@ -35,7 +35,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // Implements a class to import ABAQUS files
 // 
-class AbaqusImport : public FEFileImport
+class AbaqusImport : public FSFileImport
 {
 	// attributes
 	struct ATTRIBUTE
@@ -57,7 +57,7 @@ public:	// import options
 	bool	m_breadPhysics;	// read the physics (i.e. materials, bcs, etc).
 
 public:
-	AbaqusImport(FEProject& prj);
+	AbaqusImport(FSProject& prj);
 	virtual ~AbaqusImport();
 
 	bool Load(const char* szfile);
@@ -79,10 +79,10 @@ protected:
 	GObject* build_part(AbaqusModel::PART* pg);
 
 	// build a surface
-	FESurface* build_surface(AbaqusModel::SURFACE* ps);
+	FSSurface* build_surface(AbaqusModel::SURFACE* ps);
 
 	// build a nodeset
-	FENodeSet* build_nodeset(AbaqusModel::NODE_SET* ns);
+	FSNodeSet* build_nodeset(AbaqusModel::NODE_SET* ns);
 
 	// Keyword parsers
 	bool read_heading            (char* szline, FILE* fp);
@@ -125,9 +125,9 @@ protected:
 
 private:
 	char		m_szTitle[AbaqusModel::Max_Title + 1];
-	FEProject*	m_pprj;
+	FSProject*	m_pprj;
 
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 
 	AbaqusModel		m_inp;
 

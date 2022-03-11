@@ -89,7 +89,7 @@ public:
 		m_kine = nullptr;
 		m_task = 0;
 		m_fileReader = nullptr;
-		m_fem = doc->GetFEModel();
+		m_fem = doc->GetFSModel();
 		m_currentState = 0;
 	}
 
@@ -129,7 +129,7 @@ public:
 		{
 			mdl.AddDisplacementMap("Displacement");
 		}
-		int nstates = mdl.GetFEModel()->GetStates();
+		int nstates = mdl.GetFSModel()->GetStates();
 		for (m_currentState = 0; m_currentState < nstates; ++m_currentState) mdl.UpdateDisplacements(m_currentState, true);
 
 		// all done
@@ -200,7 +200,7 @@ void CMainWindow::on_actionKinemat_triggered()
 		std::string modelFile = dlg.GetModelFile().toStdString();
 		std::string kineFile  = dlg.GetKineFile().toStdString();
 
-		Post::FEPostModel& fem = *postDoc->GetFEModel();
+		Post::FEPostModel& fem = *postDoc->GetFSModel();
 		LoadKineFile* kinethread = new LoadKineFile(postDoc);
 		kinethread->m_n0 = dlg.StartIndex();
 		kinethread->m_n1 = dlg.EndIndex();
@@ -278,7 +278,7 @@ void CMainWindow::on_actionLayerInfo_triggered()
 			for (int j = 0; j < nc; ++j)
 			{
 				const FEMesher* mesher = nullptr;
-				const FEMesh*	mesh = nullptr;
+				const FSMesh*	mesh = nullptr;
 
 				if (i == activeLayer)
 				{
@@ -388,90 +388,3 @@ void CMainWindow::on_actionLayerInfo_triggered()
 	log->AddText(QString("Node counter: %1\n").arg(GNode::GetCounter()));
 }
 #endif
-
-void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)
-{
-	CFEBioJob* job = CFEBioJob::GetActiveJob();
-	if (job)
-	{
-		job->SetStatus(exitCode == 0 ? CFEBioJob::COMPLETED : CFEBioJob::FAILED);
-		CFEBioJob::SetActiveJob(nullptr);
-
-		QString sret = (exitCode == 0 ? "NORMAL TERMINATION" : "ERROR TERMINATION");
-		QString jobName = QString::fromStdString(job->GetName());
-		QString msg = QString("FEBio job \"%1 \" has finished:\n\n%2\n").arg(jobName).arg(sret);
-
-		QString logmsg = QString("FEBio job \"%1 \" has finished: %2\n").arg(jobName).arg(sret);
-		AddLogEntry(logmsg);
-
-		if (exitCode == 0)
-		{
-			msg += "\nDo you wish to load the results?";
-			if (QMessageBox::question(this, "Run FEBio", msg) == QMessageBox::Yes)
-			{
-				OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
-			}
-		}
-		else
-		{
-			QMessageBox::critical(this, "Run FEBio", msg);
-		}
-
-		UpdateTab(job->GetDocument());
-	}
-	else
-	{
-		// Not sure if we should ever get here.
-		QMessageBox::information(this, "FEBio Studio", "FEBio is done.");
-	}
-	CFEBioJob::SetActiveJob(nullptr);
-
-	delete ui->m_process;
-	ui->m_process = 0;
-}
-
-void CMainWindow::onReadyRead()
-{
-	if (ui->m_process == 0) return;
-
-	QByteArray output = ui->m_process->readAll();
-	QString s(output);
-	AddOutputEntry(s);
-}
-
-void CMainWindow::onErrorOccurred(QProcess::ProcessError err)
-{
-	// make sure we don't have an active job since onRunFinished will not be called!
-	CFEBioJob::SetActiveJob(nullptr);
-
-	// suppress an error if user stopped FEBio job
-	if (ui->m_bkillProcess && (err==QProcess::Crashed))
-	{
-		return;
-	}
-
-	// check for FailedToStart
-	if (err == QProcess::FailedToStart)
-	{
-		QMessageBox::critical(this, "Run FEBio", "FEBio failed to start.\nCheck the launch configuration and make sure that the path to the FEBio executable is correct.");
-	}
-	else
-	{
-		QString errString;
-		switch (err)
-		{
-		case QProcess::FailedToStart: errString = "Failed to start"; break;
-		case QProcess::Crashed: errString = "Crashed"; break;
-		case QProcess::Timedout: errString = "Timed out"; break;
-		case QProcess::WriteError: errString = "Write error"; break;
-		case QProcess::ReadError: errString = "Read error"; break;
-		case QProcess::UnknownError: errString = "Unknown error"; break;
-		default:
-			errString = QString("Error code = %1").arg(err);
-		}
-
-		QString t = "An error has occurred.\nError = " + errString;
-		AddLogEntry(t);
-		QMessageBox::critical(this, "Run FEBio", t);
-	}
-}

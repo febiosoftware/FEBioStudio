@@ -33,7 +33,7 @@ SOFTWARE.*/
 using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
-FELSDYNAexport::FELSDYNAexport(FEProject& prj) : FEFileExport(prj)
+FELSDYNAexport::FELSDYNAexport(FSProject& prj) : FEFileExport(prj)
 {
 	m_fp = 0;
 
@@ -53,7 +53,7 @@ bool FELSDYNAexport::Write(const char *szfile)
 	m_fp = fopen(szfile, "wt");
 	if (m_fp == 0) return errf("Failed creating LSDYNA file %s", szfile);
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// reset part counter
@@ -96,7 +96,7 @@ bool FELSDYNAexport::Write(const char *szfile)
 //-----------------------------------------------------------------------------
 bool FELSDYNAexport::write_NODE()
 {
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 
 	fprintf(m_fp, "*NODE\n");
@@ -106,7 +106,7 @@ bool FELSDYNAexport::write_NODE()
 		GObject* po = model.Object(i);
 		if (!m_ops.bselonly || (po->IsSelected()))
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			if (pm == 0) return false;
 			for (int j=0; j<pm->Nodes(); ++j)
 			{
@@ -127,7 +127,7 @@ bool FELSDYNAexport::write_ELEMENT_SOLID()
 	int nn[8];
 	int n = 1;
 
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 
 	fprintf(m_fp, "*ELEMENT_SOLID\n");
@@ -136,10 +136,10 @@ bool FELSDYNAexport::write_ELEMENT_SOLID()
 		GObject* po = model.Object(i);
 		if (!m_ops.bselonly || (po->IsSelected()))
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (int j=0; j<m.Elements(); ++j)
 			{
-				FEElement& el = m.Element(j);
+				FSElement& el = m.Element(j);
 				for (int k=0; k<el.Nodes(); ++k) nn[k] = m.Node(el.m_node[k]).m_ntag;
 				el.m_ntag = n;
 
@@ -171,7 +171,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL()
 	int nn[8];
 	int n = 1;
 
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 		
 	fprintf(m_fp, "*ELEMENT_SHELL\n");
@@ -181,10 +181,10 @@ bool FELSDYNAexport::write_ELEMENT_SHELL()
 		GObject* po = model.Object(i);
 		if (!m_ops.bselonly || (po->IsSelected()))
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (int j=0; j<m.Elements(); ++j)
 			{
-				FEElement& el = m.Element(j);
+				FSElement& el = m.Element(j);
 				el.m_ntag = n;
 
 				int npart = m_npart + el.m_gid;
@@ -215,7 +215,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 	int nn[8];
 	int n = 1;
 
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 		
 	fprintf(m_fp, "*ELEMENT_SHELL_THICKNESS\n");
@@ -225,10 +225,10 @@ bool FELSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 		GObject* po = model.Object(i);
 		if (!m_ops.bselonly || (po->IsSelected()))
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (int j=0; j<m.Elements(); ++j)
 			{
-				FEElement& el = m.Element(j);
+				FSElement& el = m.Element(j);
 				el.m_ntag = n;
 
 				for (int k=0; k<el.Nodes(); ++k) nn[k] = m.Node(el.m_node[k]).m_ntag;
@@ -257,7 +257,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 //-----------------------------------------------------------------------------
 bool FELSDYNAexport::write_SET_SHELL_LIST()
 {
-	FEModel* ps = &(m_prj.GetFEModel());
+	FSModel* ps = &(m_prj.GetFSModel());
 	GModel& model = ps->GetModel();
 
 	// export the parts
@@ -268,7 +268,7 @@ bool FELSDYNAexport::write_SET_SHELL_LIST()
 
 		if (!m_ops.bselonly || po->IsSelected())
 		{
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			assert(pm);
 
 			for (int j=0; j<po->FEParts(); ++j)
@@ -277,7 +277,7 @@ bool FELSDYNAexport::write_SET_SHELL_LIST()
 				fprintf(m_fp, "*SET_SHELL_LIST\n");
 				fprintf(m_fp, "%10d%15.10lg%15.10lg%15.10lg%15.10lg\n", n++, 0., 0., 0., 0.);
 
-				FEPart* pg = po->GetFEPart(j);
+				FSPart* pg = po->GetFEPart(j);
 				unique_ptr<FEElemList> pl(pg->BuildElemList());
 				int N = pl->Size();
 				FEElemList::Iterator pi = pl->First();

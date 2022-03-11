@@ -60,7 +60,7 @@ public:
 protected:
 	xpltFileReader*		m_xplt;
 	xpltArchive&		m_ar;
-	vector<int>			m_wrng;	// warning list
+	std::vector<int>	m_wrng;	// warning list
 };
 
 class xpltFileReader : public Post::FEFileReader
@@ -100,10 +100,10 @@ public:
 	bool Load(const char* szfile) override;
 
 	void SetReadStateFlag(int n) { m_read_state_flag = n; }
-	void SetReadStatesList(const vector<int>& l) { m_state_list = l; }
+	void SetReadStatesList(const std::vector<int>& l) { m_state_list = l; }
 
 	int GetReadStateFlag() const { return m_read_state_flag; }
-	vector<int> GetReadStates() const { return m_state_list; }
+	std::vector<int> GetReadStates() const { return m_state_list; }
 
 public:
 	xpltArchive& GetArchive() { return m_ar; }
@@ -120,7 +120,7 @@ private:
 
 	// Options
 	int			m_read_state_flag;	//!< flag setting option for reading states
-	vector<int>	m_state_list;		//!< list of states to read (only when m_read_state_flag == XPLT_READ_STATES_FROM_LIST)
+	std::vector<int>	m_state_list;		//!< list of states to read (only when m_read_state_flag == XPLT_READ_STATES_FROM_LIST)
 
 	friend class xpltParser;
 };

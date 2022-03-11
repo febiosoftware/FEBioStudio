@@ -42,16 +42,16 @@ void stl_write_face(FILE* fp, const vec3d& fn, const vec3d& r0, const vec3d& r1,
 	fprintf(fp, "endfacet\n");
 }
 
-void stl_write_solid(FILE* fp, FEMeshBase* pm, const char* solidName)
+void stl_write_solid(FILE* fp, FSMeshBase* pm, const char* solidName)
 {
 	fprintf(fp, "solid %s\n", solidName);
 
-	vec3d r[FEFace::MAX_NODES];
+	vec3d r[FSFace::MAX_NODES];
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 
-		vec3d fn = face.m_fn;
+		vec3d fn = to_vec3d(face.m_fn);
 
 		for (int j = 0; j < face.Nodes(); ++j)
 		{
@@ -76,7 +76,7 @@ void stl_write_solid(FILE* fp, FEMeshBase* pm, const char* solidName)
 	fprintf(fp, "endsolid\n");
 }
 
-FESTLExport::FESTLExport(FEProject& prj) : FEFileExport(prj)
+FESTLExport::FESTLExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -91,7 +91,7 @@ bool FESTLExport::Write(const char* szfile)
 
 	int i, j, n;
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// only the selected object is exported, unless no object is selected, 
@@ -109,7 +109,7 @@ bool FESTLExport::Write(const char* szfile)
 		GObject* po = model.Object(n);
 		if ((nsel==0) || po->IsSelected())
 		{
-			FEMeshBase* pm = po->GetEditableMesh();
+			FSMeshBase* pm = po->GetEditableMesh();
 			if (pm == 0) return errf("Not all objects are meshed.");
 			const char* szname = po->GetName().c_str();
 			if (strlen(szname) == 0) szname = "object";
@@ -127,7 +127,7 @@ bool FESTLExport::Write(const char* szfile, GObject* po)
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 	if (pm == 0) return errf("Not all objects are meshed.");
 	const char* szname = po->GetName().c_str();
 	if (strlen(szname) == 0) szname = "object";

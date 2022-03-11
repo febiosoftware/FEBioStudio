@@ -35,10 +35,16 @@ SOFTWARE.*/
 #include "GLObject.h"
 #include <FEBioStudio/ImageViewSettings.h>
 
+// #ifdef HAS_ITK
+// class CImageSITK;
+// typedef ImageToFilter CImageSITK;
+// #else
+// typedef ImageToFilter C3DImage;
+// #endif
+
 enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
 
 class C3DImage;
-class CImageSITK;
 
 namespace Post {
 
@@ -61,7 +67,7 @@ public:
 	C3DImage* Get3DImage() { return m_img; }
 
     void ClearFilters();
-    CImageSITK* GetImageToFilter(bool allocate = false);
+    C3DImage* GetImageToFilter(bool allocate = false);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);

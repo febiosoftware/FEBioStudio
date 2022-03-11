@@ -106,11 +106,11 @@ CDlgLameConvertor::CDlgLameConvertor(QWidget* parent) : QDialog(parent), ui(new 
 {
 	ui->setupUi(this);
 
-	ui->from->addItem("Young's modulus & Posisson's ratio");
+	ui->from->addItem("Young's modulus & Poisson's ratio");
 	ui->from->addItem("Bulk modulus & Shear modulus");
 	ui->from->addItem("Lame parameters");
 
-	ui->to->addItem("Young's modulus & Posisson's ratio");
+	ui->to->addItem("Young's modulus & Poisson's ratio");
 	ui->to->addItem("Bulk modulus & Shear modulus");
 	ui->to->addItem("Lame parameters");
 

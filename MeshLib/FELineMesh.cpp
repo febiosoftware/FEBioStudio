@@ -27,12 +27,12 @@ SOFTWARE.*/
 #include "FELineMesh.h"
 #include <GeomLib/GObject.h>
 
-FELineMesh::FELineMesh() : m_pobj(0)
+FSLineMesh::FSLineMesh() : m_pobj(0)
 {
 }
 
 //-----------------------------------------------------------------------------
-void FELineMesh::UpdateSelection()
+void FSLineMesh::UpdateSelection()
 {
 	GObject* po = GetGObject();
 	if (po) po->UpdateSelection();
@@ -40,7 +40,7 @@ void FELineMesh::UpdateSelection()
 
 //-----------------------------------------------------------------------------
 // Tag all nodes
-void FELineMesh::TagAllNodes(int ntag)
+void FSLineMesh::TagAllNodes(int ntag)
 {
 	const int NN = Nodes();
 	for (int i = 0; i<NN; ++i) Node(i).m_ntag = ntag;
@@ -48,29 +48,29 @@ void FELineMesh::TagAllNodes(int ntag)
 
 //-----------------------------------------------------------------------------
 // Tag all edges
-void FELineMesh::TagAllEdges(int ntag)
+void FSLineMesh::TagAllEdges(int ntag)
 {
 	const int NE = Edges();
 	for (int i = 0; i<NE; ++i) Edge(i).m_ntag = ntag;
 }
 
 //-----------------------------------------------------------------------------
-void FELineMesh::SetGObject(GObject* po) { m_pobj = po; }
+void FSLineMesh::SetGObject(GObject* po) { m_pobj = po; }
 
 //-----------------------------------------------------------------------------
-GObject* FELineMesh::GetGObject() { return m_pobj; }
+GObject* FSLineMesh::GetGObject() { return m_pobj; }
 
 //-----------------------------------------------------------------------------
 // convert local coordinates to global coordinates. This uses the transform
 // info from the parent object.
-vec3d FELineMesh::LocalToGlobal(const vec3d& r) const
+vec3d FSLineMesh::LocalToGlobal(const vec3d& r) const
 {
 	if (m_pobj) return m_pobj->GetTransform().LocalToGlobal(r);
 	else return r;
 }
 
 //-----------------------------------------------------------------------------
-vec3d FELineMesh::GlobalToLocal(const vec3d& r) const
+vec3d FSLineMesh::GlobalToLocal(const vec3d& r) const
 {
 	if (m_pobj) return m_pobj->GetTransform().GlobalToLocal(r);
 	else return r;
@@ -78,23 +78,23 @@ vec3d FELineMesh::GlobalToLocal(const vec3d& r) const
 
 //-----------------------------------------------------------------------------
 // return the position of a node in global coordinates
-vec3d FELineMesh::NodePosition(int i) const
+vec3d FSLineMesh::NodePosition(int i) const
 {
 	return LocalToGlobal(Node(i).r);
 }
 
 //-----------------------------------------------------------------------------
 // return the local position of a node
-vec3d FELineMesh::NodeLocalPosition(int i) const
+vec3d FSLineMesh::NodeLocalPosition(int i) const
 {
 	return Node(i).r;
 }
 
 //-----------------------------------------------------------------------------
 // Updates the bounding box (in local coordinates)
-void FELineMesh::UpdateBoundingBox()
+void FSLineMesh::UpdateBoundingBox()
 {
-	FENode* pn = NodePtr();
+	FSNode* pn = NodePtr();
 	if (pn == 0)
 	{
 		m_box.x0 = m_box.y0 = m_box.z0 = 0;

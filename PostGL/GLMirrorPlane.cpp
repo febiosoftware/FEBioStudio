@@ -118,7 +118,7 @@ void CGLMirrorPlane::RenderPlane()
 {
 	CGLModel* mdl = GetModel();
 
-	BOX box = mdl->GetFEModel()->GetBoundingBox();
+	BOX box = mdl->GetFSModel()->GetBoundingBox();
 
 	// plane center
 	vec3d rc = box.Center();
@@ -134,7 +134,7 @@ void CGLMirrorPlane::RenderPlane()
 	glTranslatef(rc.x, rc.y, rc.z);
 	glTranslatef(-0.5f*m_offset*m_norm.x, -0.5f*m_offset*m_norm.y, -0.5f*m_offset*m_norm.z);
 
-	quatd q = quatd(vec3d(0, 0, 1), m_norm);
+	quatd q = quatd(vec3d(0, 0, 1), to_vec3d(m_norm));
 	float w = q.GetAngle();
 	if (w != 0)
 	{

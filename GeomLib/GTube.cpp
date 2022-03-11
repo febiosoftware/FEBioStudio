@@ -124,7 +124,7 @@ void GTube::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
@@ -137,7 +137,7 @@ void GTube::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<16; ++i)
 	{
 		edge.resize(4);
@@ -256,7 +256,7 @@ void GTube2::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
@@ -269,7 +269,7 @@ void GTube2::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<16; ++i)
 	{
 		edge.resize(4);

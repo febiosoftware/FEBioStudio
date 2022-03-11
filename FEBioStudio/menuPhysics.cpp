@@ -44,7 +44,12 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FERigidLoad.h>
+#include <FEMLib/FEMeshAdaptor.h>
+#include <FEMLib/FEMeshDataGenerator.h>
 #include "Commands.h"
+#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
 #include <QMessageBox>
 #include <sstream>
 
@@ -53,15 +58,15 @@ void CMainWindow::on_actionAddBC_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
-	FEModel& fem = prj.GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, this);
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = prj.GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, -1, prj, true, true, this);
 	if (dlg.exec())
 	{
-		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, dlg.GetClassID()); assert(pbc);
+		FSBoundaryCondition* pbc = FEBio::CreateFEBioClass<FSBoundaryCondition>(dlg.GetClassID(), &fem); assert(pbc);
 		if (pbc)
 		{
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 
 			pbc->SetStep(step->GetID());
 
@@ -101,40 +106,43 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEModel& fem = *doc->GetFEModel();
-	CDlgAddNodalLoad dlg(fem, this);
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Nodal Load", FELOAD_ID, FEBio::GetBaseClassIndex("FENodalLoad"), prj, true, true, this);
 	if (dlg.exec())
 	{
-		FENodalLoad* pnl = new FENodalLoad(&fem, 0, dlg.m_nvar, dlg.m_val, dlg.m_nstep);
-
-		std::string name = dlg.m_name;
-		if (name.empty()) name = defaultLoadName(&fem, pnl);
-		pnl->SetName(name);
-		FEStep* step = fem.GetStep(dlg.m_nstep);
-
-		// figure out the selection
-		FESelection* psel = doc->GetCurrentSelection();
-		if (psel && psel->Size())
+		FSNodalLoad* pnl = FEBio::CreateFEBioClass<FSNodalLoad>(dlg.GetClassID(), &fem); assert(pnl);
+		if (pnl)
 		{
-			int ntype = psel->Type();
-			switch (ntype)
+			string name = dlg.GetName();
+			if (name.empty()) name = defaultLoadName(&fem, pnl);
+			pnl->SetName(name);
+
+			// figure out the selection
+			FESelection* psel = doc->GetCurrentSelection();
+			if (psel && psel->Size())
 			{
-			case SELECT_SURFACES:
-			case SELECT_CURVES:
-			case SELECT_NODES:
-			case SELECT_FE_FACES:
-			case SELECT_FE_EDGES:
-			case SELECT_FE_NODES:
+				int ntype = psel->Type();
+				switch (ntype)
+				{
+				case SELECT_SURFACES:
+				case SELECT_CURVES:
+				case SELECT_NODES:
+				case SELECT_FE_FACES:
+				case SELECT_FE_EDGES:
+				case SELECT_FE_NODES:
 				{
 					FEItemListBuilder* items = psel->CreateItemList();
 					pnl->SetItemList(items);
 				}
 				break;
+				}
 			}
-		}
 
-		step->AddLoad(pnl);
-		UpdateModel(pnl);
+			FSStep* step = fem.GetStep(dlg.GetStep());
+			step->AddLoad(pnl);
+			UpdateModel(pnl);
+		}
 	}
 }
 
@@ -143,12 +151,12 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
-	FEModel& fem = prj.GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Surface Load", FE_SURFACE_LOAD, prj, this);
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = prj.GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Surface Load", FELOAD_ID, FEBio::GetBaseClassIndex("FESurfaceLoad"), prj, true, true, this);
 	if (dlg.exec())
 	{
-		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, dlg.GetClassID()); assert(psl);
+		FSSurfaceLoad* psl = FEBio::CreateFEBioClass<FSSurfaceLoad>(dlg.GetClassID(), &fem); assert(psl);
 		if (psl)
 		{
 			string name = dlg.GetName();
@@ -172,7 +180,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 				}
 			}
 
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			psl->SetStep(step->GetID());
 			step->AddLoad(psl);
 			UpdateModel(psl);
@@ -185,22 +193,47 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
-	FEModel& fem = *doc->GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Body Load", FE_BODY_LOAD, prj, this);
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Body Load", FELOAD_ID, FEBio::GetBaseClassIndex("FEBodyLoad"), prj, true, true, this);
 	if (dlg.exec())
 	{
-		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, dlg.GetClassID());
+		FSBodyLoad* pbl = FEBio::CreateFEBioClass<FSBodyLoad>(dlg.GetClassID(), &fem); assert(pbl);
 		if (pbl)
 		{
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultLoadName(&fem, pbl);
 			pbl->SetName(name);
 
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			pbl->SetStep(step->GetID());
 			step->AddLoad(pbl);
 			UpdateModel(pbl);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddRigidLoad_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Rigid Load", FELOAD_ID, FEBio::GetBaseClassIndex("FERigidLoad"), prj, true, true, this);
+	if (dlg.exec())
+	{
+		FSRigidLoad* prl = FEBio::CreateFEBioClass<FSRigidLoad>(dlg.GetClassID(), &fem); assert(prl);
+		if (prl)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultLoadName(&fem, prl);
+			prl->SetName(name);
+
+			FSStep* step = fem.GetStep(dlg.GetStep());
+			prl->SetStep(step->GetID());
+			step->AddRigidLoad(prl);
+			UpdateModel(prl);
 		}
 	}
 }
@@ -210,19 +243,19 @@ void CMainWindow::on_actionAddIC_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
-	FEModel& fem = *doc->GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, this);
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Initial Condition", FEIC_ID, -1, prj, true, true, this);
 	if (dlg.exec())
 	{
-		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, dlg.GetClassID()); assert(pic);
+		FSInitialCondition* pic = FEBio::CreateFEBioClass<FSInitialCondition>(dlg.GetClassID(), &fem); assert(pic);
 		if (pic)
 		{
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultICName(&fem, pic);
 			pic->SetName(name);
 
-			if (dynamic_cast<FEInitialNodalDOF*>(pic))
+			if (dynamic_cast<FSInitialNodalDOF*>(pic))
 			{
 				// figure out the selection
 				FESelection* psel = doc->GetCurrentSelection();
@@ -248,7 +281,7 @@ void CMainWindow::on_actionAddIC_triggered()
 				}
 			}
 
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			pic->SetStep(step->GetID());
 			step->AddIC(pic);
 			UpdateModel(pic);
@@ -261,12 +294,12 @@ void CMainWindow::on_actionAddContact_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
-	FEModel& fem = *doc->GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Contact Interface", FE_INTERFACE, prj, this);
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Contact Interface", FESURFACEINTERFACE_ID, -1, prj, true, true, this);
 	if (dlg.exec())
 	{
-		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
+		FSInterface* pi = FEBio::CreateFEBioClass<FSInterface>(dlg.GetClassID(), &fem); assert(pi);
 		if (pi)
 		{
 			// create a name
@@ -275,9 +308,9 @@ void CMainWindow::on_actionAddContact_triggered()
 			pi->SetName(name);
 
 			// assign selected surfaces (for solo interfaces)
-			if (dynamic_cast<FESoloInterface*>(pi))
+			if (dynamic_cast<FSSoloInterface*>(pi))
 			{
-				FESoloInterface& si = dynamic_cast<FESoloInterface&>(*pi);
+				FSSoloInterface& si = dynamic_cast<FSSoloInterface&>(*pi);
 
 				// figure out the selection
 				FESelection* psel = doc->GetCurrentSelection();
@@ -298,7 +331,7 @@ void CMainWindow::on_actionAddContact_triggered()
 			}
 
 			// assign it to the correct step
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			pi->SetStep(step->GetID());
 			step->AddInterface(pi);
 			UpdateModel(pi);
@@ -311,12 +344,12 @@ void CMainWindow::on_actionAddConstraint_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
-	FEModel& fem = *doc->GetFEModel();
-	CDlgAddPhysicsItem dlg("Add Constraint", FE_CONSTRAINT, prj, this);
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Constraint", FENLCONSTRAINT_ID, -1, prj, true, true, this);
 	if (dlg.exec())
 	{
-		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, dlg.GetClassID()); assert(pi);
+		FSModelConstraint* pi = FEBio::CreateFEBioClass<FSModelConstraint>(dlg.GetClassID(), &fem); assert(pi);
 		if (pi)
 		{
 			// create a name
@@ -324,29 +357,8 @@ void CMainWindow::on_actionAddConstraint_triggered()
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
 			pi->SetName(name);
 
-			FESurfaceConstraint* psc = dynamic_cast<FESurfaceConstraint*>(pi);
-			if (psc)
-			{
-				// figure out the selection
-				FESelection* psel = doc->GetCurrentSelection();
-				if (psel && psel->Size())
-				{
-					int ntype = psel->Type();
-					switch (ntype)
-					{
-					case SELECT_SURFACES:
-					case SELECT_FE_FACES:
-					{
-						FEItemListBuilder* items = psel->CreateItemList();
-						psc->SetItemList(items);
-					}
-					break;
-					}
-				}
-			}
-
 			// assign it to the correct step
-			FEStep* step = fem.GetStep(dlg.GetStep());
+			FSStep* step = fem.GetStep(dlg.GetStep());
 			pi->SetStep(step->GetID());
 			step->AddConstraint(pi);
 			UpdateModel(pi);
@@ -354,21 +366,93 @@ void CMainWindow::on_actionAddConstraint_triggered()
 	}
 }
 
+void CMainWindow::OnAddSurfaceConstraint()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Surface Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FESurfaceConstraint"), prj, true, true, this);
+	if (dlg.exec())
+	{
+		FSSurfaceConstraint* pi = FEBio::CreateFEBioClass<FSSurfaceConstraint>(dlg.GetClassID(), &fem); assert(pi);
+		if (pi)
+		{
+			// create a name
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultConstraintName(&fem, pi);
+			pi->SetName(name);
+
+			// figure out the selection
+			FESelection* psel = doc->GetCurrentSelection();
+			if (psel && psel->Size())
+			{
+				int ntype = psel->Type();
+				switch (ntype)
+				{
+				case SELECT_SURFACES:
+				case SELECT_FE_FACES:
+				{
+					FEItemListBuilder* items = psel->CreateItemList();
+					pi->SetItemList(items);
+				}
+				break;
+				}
+			}
+
+			// assign it to the correct step
+			FSStep* step = fem.GetStep(dlg.GetStep());
+			pi->SetStep(step->GetID());
+			step->AddConstraint(pi);
+			UpdateModel(pi);
+		}
+	}
+}
+
+void CMainWindow::OnAddBodyConstraint()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Body Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FEBodyConstraint"), prj, true, true, this);
+	if (dlg.exec())
+	{
+		FSBodyConstraint* pi = FEBio::CreateFEBioClass<FSBodyConstraint>(dlg.GetClassID(), &fem); assert(pi);
+		if (pi)
+		{
+			// create a name
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultConstraintName(&fem, pi);
+			pi->SetName(name);
+
+			// assign it to the correct step
+			FSStep* step = fem.GetStep(dlg.GetStep());
+			pi->SetStep(step->GetID());
+			step->AddConstraint(pi);
+			UpdateModel(pi);
+		}
+	}
+}
+
+
 void CMainWindow::on_actionAddRigidConstraint_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	CDlgAddRigidConstraint dlg(prj, this);
 	if (dlg.exec())
 	{
-		FEModel* fem = &prj.GetFEModel();
-		FERigidConstraint* prc = fecore_new<FERigidConstraint>(fem, FE_RIGID_CONSTRAINT, dlg.m_type);
+		FSModel* fem = &prj.GetFSModel();
+		FSRigidConstraint* prc = FEBio::CreateFEBioClass<FSRigidConstraint>(dlg.m_type, fem);
 		assert(prc);
 		if (prc)
 		{
-			FEStep* step = fem->GetStep(dlg.m_nstep);
+			FSStep* step = fem->GetStep(dlg.m_nstep);
 			prc->SetStep(step->GetID());
 
 			std::string name = dlg.m_name;
@@ -389,20 +473,20 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 	CDlgAddRigidConnector dlg(prj, this);
 	if (dlg.exec())
 	{
-		FEModel* fem = doc->GetFEModel();
-		FERigidConnector* pc = fecore_new<FERigidConnector>(fem, FE_RIGID_CONNECTOR, dlg.GetType());
+		FSModel* fem = doc->GetFSModel();
+		FSRigidConnector* pc = FEBio::CreateFEBioClass<FSRigidConnector>(dlg.GetType(), fem);
 		assert(pc);
 		if (pc)
 		{
 			pc->SetPosition(GetGLView()->Get3DCursor());
-			pc->m_rbA = dlg.GetMaterialA();
-			pc->m_rbB = dlg.GetMaterialB();
+			pc->SetRigidBody1(dlg.GetMaterialA());
+			pc->SetRigidBody2(dlg.GetMaterialB());
 
-			FEStep* step = fem->GetStep(dlg.GetStep());
+			FSStep* step = fem->GetStep(dlg.GetStep());
 			int stepID = step->GetID();
 			pc->SetStep(stepID);
 
@@ -421,23 +505,23 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
 
-	CMaterialEditor dlg(prj, this);
-//	dlg.SetModules(prj.GetModule());
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, prj, false, false, this);
 	if (dlg.exec())
 	{
-		FEMaterial* pmat = dlg.GetMaterial();
+		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
 		if (pmat)
 		{
-			FEModel& fem = *doc->GetFEModel();
+			FSModel& fem = *doc->GetFSModel();
 
 			// create a material
 			// this also assigns a default name
 			GMaterial* gmat = new GMaterial(pmat);
 
 			// override name if specified
-			std::string sname = dlg.GetMaterialName().toStdString();
+			std::string sname = dlg.GetName();
 			const char* sz = sname.c_str();
 			if (sz && (strlen(sz) > 0)) gmat->SetName(sz);
 
@@ -449,26 +533,170 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	}
 }
 
+void CMainWindow::on_actionAddMeshAdaptor_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	CDlgAddPhysicsItem dlg("Add Mesh Adaptor", FEMESHADAPTOR_ID, -1, prj, true, true, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSMeshAdaptor* pma = FEBio::CreateFEBioClass<FSMeshAdaptor>(dlg.GetClassID(), fem); assert(pma);
+		if (pma)
+		{
+			FSStep* step = fem->GetStep(dlg.GetStep());
+			pma->SetStep(step->GetID());
+
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultMeshAdaptorName(fem, pma);
+
+			pma->SetName(name);
+			step->AddMeshAdaptor(pma);
+			UpdateModel(pma);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddLoadController_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	CDlgAddPhysicsItem dlg("Add Load Controller", FELOADCONTROLLER_ID, -1, prj, true, false, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSLoadController* plc = FEBio::CreateFEBioClass<FSLoadController>(dlg.GetClassID(), fem); assert(plc);
+		if (plc)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				int n = fem->LoadControllers();
+				std::stringstream ss; ss << "LC" << n + 1;
+				name = ss.str();
+			}
+
+			plc->SetName(name);
+			fem->AddLoadController(plc);
+			UpdateModel(plc);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddNodeData_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+
+	CDlgAddPhysicsItem dlg("Add Node Data", FENODEDATAGENERATOR_ID, -1, prj, true, false, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);
+		if (pmd)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				int n = fem->MeshDataGenerators();
+				std::stringstream ss; ss << "MeshData" << n + 1;
+				name = ss.str();
+			}
+
+			pmd->SetName(name);
+			fem->AddMeshDataGenerator(pmd);
+			UpdateModel(pmd);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddFaceData_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+
+	CDlgAddPhysicsItem dlg("Add Surface Data", FEFACEDATAGENERATOR_ID, -1, prj, true, false, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);
+		if (pmd)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				int n = fem->MeshDataGenerators();
+				std::stringstream ss; ss << "MeshData" << n + 1;
+				name = ss.str();
+			}
+
+			pmd->SetName(name);
+			fem->AddMeshDataGenerator(pmd);
+			UpdateModel(pmd);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddElemData_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+
+	CDlgAddPhysicsItem dlg("Add Element Data", FEELEMDATAGENERATOR_ID, -1, prj, true, false, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);
+		if (pmd)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				int n = fem->MeshDataGenerators();
+				std::stringstream ss; ss << "MeshData" << n + 1;
+				name = ss.str();
+			}
+
+			pmd->SetName(name);
+			fem->AddMeshDataGenerator(pmd);
+			UpdateModel(pmd);
+		}
+	}
+}
 void CMainWindow::on_actionAddStep_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEProject& prj = doc->GetProject();
-	FEModel* fem = doc->GetFEModel();
-	CDlgAddStep dlg(prj, this);
-	if (dlg.exec())
+	FSProject& prj = doc->GetProject();
+	FSModel* fem = doc->GetFSModel();
+//	CDlgAddStep dlg(prj, this);
+//	if (dlg.exec())
 	{
-		FEAnalysisStep* ps = fecore_new<FEAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
+//		FSAnalysisStep* ps = fecore_new<FSAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
+
+		FSStep* ps = FEBio::CreateStep("analysis", fem);
 		assert(ps);
 		if (ps)
 		{
-			std::string name = dlg.m_name;
-			if (name.empty()) name = defaultStepName(fem, ps);
+//			std::string name = dlg.m_name;
+//			if (name.empty()) name = defaultStepName(fem, ps);
+			std::string name = defaultStepName(fem, ps);
+
+			FEBio::InitDefaultProps(ps);
 
 			ps->SetName(name);
-			doc->DoCommand(new CCmdAddStep(fem, ps, dlg.insertPosition()));
-			prj.ActivatePlotVariables(ps);
+			doc->DoCommand(new CCmdAddStep(fem, ps, -1));
 			UpdateModel(ps);
 		}
 	}

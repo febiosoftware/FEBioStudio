@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FEMaterialFactory.h"
 #include <MeshTools/FEProject.h>
 #include <sstream>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 using std::stringstream;
 
@@ -37,25 +37,25 @@ using std::stringstream;
 //								VISCO-ELASTIC
 //=============================================================================
 
-REGISTER_MATERIAL(FEViscoElastic, MODULE_MECH, FE_VISCO_ELASTIC, FE_MAT_ELASTIC, "viscoelastic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSViscoElastic, MODULE_MECH, FE_VISCO_ELASTIC, FE_MAT_ELASTIC, "viscoelastic", MaterialFlags::TOPLEVEL);
 
-FEViscoElastic::FEViscoElastic() : FEMaterial(FE_VISCO_ELASTIC)
+FSViscoElastic::FSViscoElastic() : FSMaterial(FE_VISCO_ELASTIC)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
 
-    AddScienceParam(0, UNIT_NONE, "g1", "coeffient G1");
-	AddScienceParam(0, UNIT_NONE, "g2", "coeffient G2");
-	AddScienceParam(0, UNIT_NONE, "g3", "coeffient G3");
-	AddScienceParam(0, UNIT_NONE, "g4", "coeffient G4");
-	AddScienceParam(0, UNIT_NONE, "g5", "coeffient G5");
-	AddScienceParam(0, UNIT_NONE, "g6", "coeffient G6");
+    AddScienceParam(0, UNIT_NONE, "g1", "coeffient γ1");
+	AddScienceParam(0, UNIT_NONE, "g2", "coeffient γ2");
+	AddScienceParam(0, UNIT_NONE, "g3", "coeffient γ3");
+	AddScienceParam(0, UNIT_NONE, "g4", "coeffient γ4");
+	AddScienceParam(0, UNIT_NONE, "g5", "coeffient γ5");
+	AddScienceParam(0, UNIT_NONE, "g6", "coeffient γ6");
 
-	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time t1");
-	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time t2");
-	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time t3");
-	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time t4");
-	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time t5");
-	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time t6");
+	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time τ1");
+	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time τ2");
+	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time τ3");
+	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time τ4");
+	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time τ5");
+	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time τ6");
 
 	// Add one component for the elastic material
 	AddProperty("elastic", FE_MAT_ELASTIC);
@@ -65,25 +65,25 @@ FEViscoElastic::FEViscoElastic() : FEMaterial(FE_VISCO_ELASTIC)
 //								UNCOUPLED VISCO-ELASTIC
 //=============================================================================
 
-REGISTER_MATERIAL(FEUncoupledViscoElastic, MODULE_MECH, FE_UNCOUPLED_VISCO_ELASTIC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled viscoelastic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSUncoupledViscoElastic, MODULE_MECH, FE_UNCOUPLED_VISCO_ELASTIC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled viscoelastic", MaterialFlags::TOPLEVEL);
 
-FEUncoupledViscoElastic::FEUncoupledViscoElastic() : FEMaterial(FE_UNCOUPLED_VISCO_ELASTIC)
+FSUncoupledViscoElastic::FSUncoupledViscoElastic() : FSMaterial(FE_UNCOUPLED_VISCO_ELASTIC)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
     
-	AddScienceParam(0, UNIT_NONE, "g1", "coeffient G1");
-	AddScienceParam(0, UNIT_NONE, "g2", "coeffient G2");
-	AddScienceParam(0, UNIT_NONE, "g3", "coeffient G3");
-	AddScienceParam(0, UNIT_NONE, "g4", "coeffient G4");
-	AddScienceParam(0, UNIT_NONE, "g5", "coeffient G5");
-	AddScienceParam(0, UNIT_NONE, "g6", "coeffient G6");
+	AddScienceParam(0, UNIT_NONE, "g1", "coeffient γ1");
+	AddScienceParam(0, UNIT_NONE, "g2", "coeffient γ2");
+	AddScienceParam(0, UNIT_NONE, "g3", "coeffient γ3");
+	AddScienceParam(0, UNIT_NONE, "g4", "coeffient γ4");
+	AddScienceParam(0, UNIT_NONE, "g5", "coeffient γ5");
+	AddScienceParam(0, UNIT_NONE, "g6", "coeffient γ6");
 
-	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time t1");
-	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time t2");
-	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time t3");
-	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time t4");
-	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time t5");
-	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time t6");
+	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time τ1");
+	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time τ2");
+	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time τ3");
+	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time τ4");
+	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time τ5");
+	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time τ6");
 
     AddScienceParam(0, UNIT_PRESSURE , "k"      , "bulk modulus")->SetPersistent(false);
     
@@ -92,7 +92,7 @@ FEUncoupledViscoElastic::FEUncoupledViscoElastic() : FEMaterial(FE_UNCOUPLED_VIS
 }
 
 //=============================================================================
-FEMultiMaterial::FEMultiMaterial(int ntype) : FEMaterial(ntype)
+FSMultiMaterial::FSMultiMaterial(int ntype) : FSMaterial(ntype)
 {
 
 }
@@ -101,9 +101,9 @@ FEMultiMaterial::FEMultiMaterial(int ntype) : FEMaterial(ntype)
 //									BIPHASIC
 //=============================================================================
 
-REGISTER_MATERIAL(FEBiphasic, MODULE_BIPHASIC, FE_BIPHASIC_MATERIAL, FE_MAT_MULTIPHASIC, "biphasic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSBiphasic, MODULE_BIPHASIC, FE_BIPHASIC_MATERIAL, FE_MAT_MULTIPHASIC, "biphasic", MaterialFlags::TOPLEVEL);
 
-FEBiphasic::FEBiphasic() : FEMultiMaterial(FE_BIPHASIC_MATERIAL)
+FSBiphasic::FSBiphasic() : FSMultiMaterial(FE_BIPHASIC_MATERIAL)
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
@@ -124,9 +124,9 @@ FEBiphasic::FEBiphasic() : FEMultiMaterial(FE_BIPHASIC_MATERIAL)
 //								SOLUTE MATERIAL
 //=============================================================================
 
-REGISTER_MATERIAL(FESoluteMaterial, MODULE_MULTIPHASIC, FE_SOLUTE_MATERIAL, FE_MAT_SOLUTE, "solute", 0);
+REGISTER_MATERIAL(FSSoluteMaterial, MODULE_MULTIPHASIC, FE_SOLUTE_MATERIAL, FE_MAT_SOLUTE, "solute", 0);
 
-FESoluteMaterial::FESoluteMaterial() : FEMaterial(FE_SOLUTE_MATERIAL)
+FSSoluteMaterial::FSSoluteMaterial() : FSMaterial(FE_SOLUTE_MATERIAL)
 {
 	// add the solute material index
 	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);
@@ -142,9 +142,9 @@ FESoluteMaterial::FESoluteMaterial() : FEMaterial(FE_SOLUTE_MATERIAL)
 //								SOLID-BOUND MOLECULES MATERIAL
 //=============================================================================
 
-REGISTER_MATERIAL(FESBMMaterial, MODULE_MULTIPHASIC, FE_SBM_MATERIAL, FE_MAT_SBM, "solid_bound", 0);
+REGISTER_MATERIAL(FSSBMMaterial, MODULE_MULTIPHASIC, FE_SBM_MATERIAL, FE_MAT_SBM, "solid_bound", 0);
 
-FESBMMaterial::FESBMMaterial() : FEMaterial(FE_SBM_MATERIAL)
+FSSBMMaterial::FSSBMMaterial() : FSMaterial(FE_SBM_MATERIAL)
 {
 	// add the SBM material index
 	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(SBMs)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);
@@ -159,9 +159,9 @@ FESBMMaterial::FESBMMaterial() : FEMaterial(FE_SBM_MATERIAL)
 //								BIPHASIC-SOLUTE
 //=============================================================================
 
-REGISTER_MATERIAL(FEBiphasicSolute, MODULE_MULTIPHASIC, FE_BIPHASIC_SOLUTE, FE_MAT_MULTIPHASIC, "biphasic-solute", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSBiphasicSolute, MODULE_MULTIPHASIC, FE_BIPHASIC_SOLUTE, FE_MAT_MULTIPHASIC, "biphasic-solute", MaterialFlags::TOPLEVEL);
 
-FEBiphasicSolute::FEBiphasicSolute() : FEMultiMaterial(FE_BIPHASIC_SOLUTE)
+FSBiphasicSolute::FSBiphasicSolute() : FSMultiMaterial(FE_BIPHASIC_SOLUTE)
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
@@ -183,9 +183,9 @@ FEBiphasicSolute::FEBiphasicSolute() : FEMultiMaterial(FE_BIPHASIC_SOLUTE)
 //								TRIPHASIC
 //=============================================================================
 
-REGISTER_MATERIAL(FETriphasicMaterial, MODULE_MULTIPHASIC, FE_TRIPHASIC_MATERIAL, FE_MAT_MULTIPHASIC, "triphasic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSTriphasicMaterial, MODULE_MULTIPHASIC, FE_TRIPHASIC_MATERIAL, FE_MAT_MULTIPHASIC, "triphasic", MaterialFlags::TOPLEVEL);
 
-FETriphasicMaterial::FETriphasicMaterial() : FEMultiMaterial(FE_TRIPHASIC_MATERIAL)
+FSTriphasicMaterial::FSTriphasicMaterial() : FSMultiMaterial(FE_TRIPHASIC_MATERIAL)
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
@@ -205,53 +205,53 @@ FETriphasicMaterial::FETriphasicMaterial() : FEMultiMaterial(FE_TRIPHASIC_MATERI
 }
 
 // set/get solute i
-void FETriphasicMaterial::SetSoluteMaterial(FESoluteMaterial* pm, int i)
+void FSTriphasicMaterial::SetSoluteMaterial(FSSoluteMaterial* pm, int i)
 { 
 	ReplaceProperty(3, pm, i); 
 }
 
-FEMaterial* FETriphasicMaterial::GetSoluteMaterial(int i) 
+FSMaterial* FSTriphasicMaterial::GetSoluteMaterial(int i) 
 { 
-	return GetProperty(3).GetMaterial(i); 
+	return GetMaterialProperty(3, i);
 }
 
 //=============================================================================
 //								SOLID MIXTURE
 //=============================================================================
 
-REGISTER_MATERIAL(FESolidMixture, MODULE_MECH, FE_SOLID_MIXTURE, FE_MAT_ELASTIC, "solid mixture", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSSolidMixture, MODULE_MECH, FE_SOLID_MIXTURE, FE_MAT_ELASTIC, "solid mixture", MaterialFlags::TOPLEVEL);
 
 //-----------------------------------------------------------------------------
-FESolidMixture::FESolidMixture() : FEMaterial(FE_SOLID_MIXTURE)
+FSSolidMixture::FSSolidMixture() : FSMaterial(FE_SOLID_MIXTURE)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density");
     
-	AddProperty("solid", FE_MAT_ELASTIC, FEMaterialProperty::NO_FIXED_SIZE);
+	AddProperty("solid", FE_MAT_ELASTIC, FSProperty::NO_FIXED_SIZE);
 }
 
 //=============================================================================
 //								UNCOUPLED SOLID MIXTURE
 //=============================================================================
 
-REGISTER_MATERIAL(FEUncoupledSolidMixture, MODULE_MECH, FE_UNCOUPLED_SOLID_MIXTURE, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled solid mixture", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSUncoupledSolidMixture, MODULE_MECH, FE_UNCOUPLED_SOLID_MIXTURE, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled solid mixture", MaterialFlags::TOPLEVEL);
 
-FEUncoupledSolidMixture::FEUncoupledSolidMixture() : FEMaterial(FE_UNCOUPLED_SOLID_MIXTURE) 
+FSUncoupledSolidMixture::FSUncoupledSolidMixture() : FSMaterial(FE_UNCOUPLED_SOLID_MIXTURE) 
 {
 	AddScienceParam(1, UNIT_DENSITY, "density", "density");
 	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus" );
 
-	AddProperty("solid", FE_MAT_ELASTIC_UNCOUPLED, FEMaterialProperty::NO_FIXED_SIZE);
+	AddProperty("solid", FE_MAT_ELASTIC_UNCOUPLED, FSProperty::NO_FIXED_SIZE);
 }
 
 //=============================================================================
 //							CONTINUOUS FIBER DISTRIBUTION
 //=============================================================================
 
-REGISTER_MATERIAL(FECFDMaterial, MODULE_MECH, FE_CFD_MATERIAL, FE_MAT_ELASTIC, "continuous fiber distribution", 0);
+REGISTER_MATERIAL(FSCFDMaterial, MODULE_MECH, FE_CFD_MATERIAL, FE_MAT_ELASTIC, "continuous fiber distribution", 0);
 
-FECFDMaterial::FECFDMaterial() : FEMaterial(FE_CFD_MATERIAL)
+FSCFDMaterial::FSCFDMaterial() : FSMaterial(FE_CFD_MATERIAL)
 {
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 
     // add parameters
     AddScienceParam(1, UNIT_DENSITY, "density", "density");
@@ -270,11 +270,11 @@ FECFDMaterial::FECFDMaterial() : FEMaterial(FE_CFD_MATERIAL)
 //                      CONTINUOUS FIBER DISTRIBUTION UNCOUPLED
 //=============================================================================
 
-REGISTER_MATERIAL(FECFDUCMaterial, MODULE_MECH, FE_CFD_MATERIAL_UC, FE_MAT_ELASTIC_UNCOUPLED, "continuous fiber distribution uncoupled", 0);
+REGISTER_MATERIAL(FSCFDUCMaterial, MODULE_MECH, FE_CFD_MATERIAL_UC, FE_MAT_ELASTIC_UNCOUPLED, "continuous fiber distribution uncoupled", 0);
 
-FECFDUCMaterial::FECFDUCMaterial() : FEMaterial(FE_CFD_MATERIAL_UC)
+FSCFDUCMaterial::FSCFDUCMaterial() : FSMaterial(FE_CFD_MATERIAL_UC)
 {
-	SetAxisMaterial(new FEAxisMaterial);
+	SetAxisMaterial(new FSAxisMaterial);
 
     // add parameters
     AddScienceParam(1, UNIT_DENSITY, "density", "density");
@@ -294,9 +294,9 @@ FECFDUCMaterial::FECFDUCMaterial() : FEMaterial(FE_CFD_MATERIAL_UC)
 //                                 ELASTIC DAMAGE
 //=============================================================================
 
-REGISTER_MATERIAL(FEElasticDamageMaterial, MODULE_MECH, FE_DMG_MATERIAL, FE_MAT_ELASTIC, "elastic damage", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSElasticDamageMaterial, MODULE_MECH, FE_DMG_MATERIAL, FE_MAT_ELASTIC, "elastic damage", MaterialFlags::TOPLEVEL);
 
-FEElasticDamageMaterial::FEElasticDamageMaterial() : FEMaterial(FE_DMG_MATERIAL)
+FSElasticDamageMaterial::FSElasticDamageMaterial() : FSMaterial(FE_DMG_MATERIAL)
 {
     // add parameters
     AddScienceParam(1, UNIT_DENSITY, "density", "density");
@@ -315,9 +315,9 @@ FEElasticDamageMaterial::FEElasticDamageMaterial() : FEMaterial(FE_DMG_MATERIAL)
 //                             UNCOUPLED ELASTIC DAMAGE
 //=============================================================================
 
-REGISTER_MATERIAL(FEElasticDamageMaterialUC, MODULE_MECH, FE_DMG_MATERIAL_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled elastic damage", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSElasticDamageMaterialUC, MODULE_MECH, FE_DMG_MATERIAL_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled elastic damage", MaterialFlags::TOPLEVEL);
 
-FEElasticDamageMaterialUC::FEElasticDamageMaterialUC() : FEMaterial(FE_DMG_MATERIAL_UC)
+FSElasticDamageMaterialUC::FSElasticDamageMaterialUC() : FSMaterial(FE_DMG_MATERIAL_UC)
 {
     // add parameters
     AddScienceParam(1, UNIT_DENSITY, "density", "density");
@@ -337,9 +337,9 @@ FEElasticDamageMaterialUC::FEElasticDamageMaterialUC() : FEMaterial(FE_DMG_MATER
 //							REACTIVE VISCOELASTIC
 //=============================================================================
 
-REGISTER_MATERIAL(FEReactiveViscoelasticMaterial, MODULE_MECH, FE_RV_MATERIAL, FE_MAT_ELASTIC, "reactive viscoelastic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSReactiveViscoelasticMaterial, MODULE_MECH, FE_RV_MATERIAL, FE_MAT_ELASTIC, "reactive viscoelastic", MaterialFlags::TOPLEVEL);
 
-FEReactiveViscoelasticMaterial::FEReactiveViscoelasticMaterial() : FEMaterial(FE_RV_MATERIAL)
+FSReactiveViscoelasticMaterial::FSReactiveViscoelasticMaterial() : FSMaterial(FE_RV_MATERIAL)
 {
     // add parameters
     AddScienceParam(1, UNIT_DENSITY, "density", "density");
@@ -362,9 +362,9 @@ FEReactiveViscoelasticMaterial::FEReactiveViscoelasticMaterial() : FEMaterial(FE
 //                      UNCOUPLED REACTIVE VISCOELASTIC
 //=============================================================================
 
-REGISTER_MATERIAL(FEReactiveViscoelasticMaterialUC, MODULE_MECH, FE_RV_MATERIAL_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled reactive viscoelastic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSReactiveViscoelasticMaterialUC, MODULE_MECH, FE_RV_MATERIAL_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled reactive viscoelastic", MaterialFlags::TOPLEVEL);
 
-FEReactiveViscoelasticMaterialUC::FEReactiveViscoelasticMaterialUC() : FEMaterial(FE_RV_MATERIAL_UC)
+FSReactiveViscoelasticMaterialUC::FSReactiveViscoelasticMaterialUC() : FSMaterial(FE_RV_MATERIAL_UC)
 {
     // add parameters
     AddIntParam(1, "kinetics", "kinetics"); // "bond kinetics type (1 or 2)");
@@ -388,7 +388,7 @@ FEReactiveViscoelasticMaterialUC::FEReactiveViscoelasticMaterialUC() : FEMateria
 //							CHEMICAL REACTION
 //=============================================================================
 
-FEReactionMaterial::FEReactionMaterial(int ntype) : FEMaterial(ntype)
+FSReactionMaterial::FSReactionMaterial(int ntype) : FSMaterial(ntype)
 {
 	// the optional Vbar parameter is hidden by default.
 	AddScienceParam(0, UNIT_MOLAR_VOLUME, "Vbar", "Vbar")->SetState(Param_HIDDEN);
@@ -398,114 +398,114 @@ FEReactionMaterial::FEReactionMaterial(int ntype) : FEMaterial(ntype)
 	AddProperty("forward_rate", FE_MAT_REACTION_RATE);
 	AddProperty("reverse_rate", FE_MAT_REACTION_RATE);
 
-	AddProperty("vR", FE_MAT_REACTION_REACTANTS, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
-	AddProperty("vP", FE_MAT_REACTION_PRODUCTS , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
+	AddProperty("vR", FE_MAT_REACTION_REACTANTS, FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+	AddProperty("vP", FE_MAT_REACTION_PRODUCTS , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
 }
 
 
-void FEReactionMaterial::SetOvrd(bool bovrd) {
+void FSReactionMaterial::SetOvrd(bool bovrd) {
 	SetBoolValue(MP_OVRD, bovrd);
 	if (bovrd) GetParam(MP_VBAR).SetState(Param_ALLFLAGS);
 	else GetParam(MP_VBAR).SetState(Param_HIDDEN);
 }
 
-bool FEReactionMaterial::GetOvrd() { return GetBoolValue(MP_OVRD); }
+bool FSReactionMaterial::GetOvrd() { return GetBoolValue(MP_OVRD); }
 
 // set forward rate
-void FEReactionMaterial::SetForwardRate(FEMaterial* pm) { ReplaceProperty(0, pm); }
-FEMaterial* FEReactionMaterial::GetForwardRate() { return GetProperty(0).GetMaterial(); }
+void FSReactionMaterial::SetForwardRate(FSMaterial* pm) { ReplaceProperty(0, pm); }
+FSMaterial* FSReactionMaterial::GetForwardRate() { return GetMaterialProperty(0); }
 
 // set reverse rate
-void FEReactionMaterial::SetReverseRate(FEMaterial* pm) { ReplaceProperty(1, pm); }
-FEMaterial* FEReactionMaterial::GetReverseRate() { return GetProperty(1).GetMaterial(); }
+void FSReactionMaterial::SetReverseRate(FSMaterial* pm) { ReplaceProperty(1, pm); }
+FSMaterial* FSReactionMaterial::GetReverseRate() { return GetMaterialProperty(1); }
 
-int FEReactionMaterial::Reactants() { return GetProperty(2).Size(); }
-int FEReactionMaterial::Products() { return GetProperty(3).Size(); }
+int FSReactionMaterial::Reactants() { return GetProperty(2).Size(); }
+int FSReactionMaterial::Products() { return GetProperty(3).Size(); }
 
-FEReactantMaterial* FEReactionMaterial::Reactant(int i)
+FSReactantMaterial* FSReactionMaterial::Reactant(int i)
 {
-	return dynamic_cast<FEReactantMaterial*>(GetProperty(2).GetMaterial(i));
+	return dynamic_cast<FSReactantMaterial*>(GetMaterialProperty(2, i));
 }
 
-FEProductMaterial* FEReactionMaterial::Product(int i)
+FSProductMaterial* FSReactionMaterial::Product(int i)
 {
-	return dynamic_cast<FEProductMaterial*>(GetProperty(3).GetMaterial(i));
+	return dynamic_cast<FSProductMaterial*>(GetMaterialProperty(3, i));
 }
 
 // add reactant/product component
-void FEReactionMaterial::AddReactantMaterial(FEReactantMaterial* pm) { AddProperty(2, pm); }
-void FEReactionMaterial::AddProductMaterial (FEProductMaterial* pm) { AddProperty(3, pm); }
+void FSReactionMaterial::AddReactantMaterial(FSReactantMaterial* pm) { AddProperty(2, pm); }
+void FSReactionMaterial::AddProductMaterial (FSProductMaterial* pm) { AddProperty(3, pm); }
 
-void FEReactionMaterial::ClearReactants()
+void FSReactionMaterial::ClearReactants()
 {
 	GetProperty(2).Clear();
 }
 
-void FEReactionMaterial::ClearProducts()
+void FSReactionMaterial::ClearProducts()
 {
 	GetProperty(3).Clear();
 }
 
-void FEReactionMaterial::GetSoluteReactants(vector<int>& solR)
+void FSReactionMaterial::GetSoluteReactants(vector<int>& solR)
 {
 	solR.clear();
-	FEMaterialProperty& p = GetProperty(2);
+	FSProperty& p = GetProperty(2);
 	int N = p.Size();
 	for (int i=0; i<N; ++i)
 	{
-		FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-		if (ri && (ri->GetReactantType() == FEReactionSpecies::SOLUTE_SPECIES)) solR.push_back(ri->GetIndex());
+		FSReactantMaterial* ri = dynamic_cast<FSReactantMaterial*>(p.GetComponent(i)); assert(ri);
+		if (ri && (ri->GetReactantType() == FSReactionSpecies::SOLUTE_SPECIES)) solR.push_back(ri->GetIndex());
 	}
 }
 
-void FEReactionMaterial::GetSBMReactants(vector<int>& sbmR)
+void FSReactionMaterial::GetSBMReactants(vector<int>& sbmR)
 {
 	sbmR.clear();
-	FEMaterialProperty& p = GetProperty(2);
+	FSProperty& p = GetProperty(2);
 	int N = p.Size();
 	for (int i = 0; i<N; ++i)
 	{
-		FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-		if (ri && (ri->GetReactantType() == FEReactionSpecies::SBM_SPECIES)) sbmR.push_back(ri->GetIndex());
+		FSReactantMaterial* ri = dynamic_cast<FSReactantMaterial*>(p.GetComponent(i)); assert(ri);
+		if (ri && (ri->GetReactantType() == FSReactionSpecies::SBM_SPECIES)) sbmR.push_back(ri->GetIndex());
 	}
 }
 
-void FEReactionMaterial::GetSoluteProducts(vector<int>& solP)
+void FSReactionMaterial::GetSoluteProducts(vector<int>& solP)
 {
 	solP.clear();
-	FEMaterialProperty& p = GetProperty(3);
+	FSProperty& p = GetProperty(3);
 	int N = p.Size();
 	for (int i = 0; i<N; ++i)
 	{
-		FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
-		if (ri && (ri->GetProductType() == FEReactionSpecies::SOLUTE_SPECIES)) solP.push_back(ri->GetIndex());
+		FSProductMaterial* ri = dynamic_cast<FSProductMaterial*>(p.GetComponent(i)); assert(ri);
+		if (ri && (ri->GetProductType() == FSReactionSpecies::SOLUTE_SPECIES)) solP.push_back(ri->GetIndex());
 	}
 }
 
-void FEReactionMaterial::GetSBMProducts(vector<int>& sbmP)
+void FSReactionMaterial::GetSBMProducts(vector<int>& sbmP)
 {
 	sbmP.clear();
-	FEMaterialProperty& p = GetProperty(3);
+	FSProperty& p = GetProperty(3);
 	int N = p.Size();
 	for (int i = 0; i<N; ++i)
 	{
-		FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
-		if (ri && (ri->GetProductType() == FEReactionSpecies::SBM_SPECIES)) sbmP.push_back(ri->GetIndex());
+		FSProductMaterial* ri = dynamic_cast<FSProductMaterial*>(p.GetComponent(i)); assert(ri);
+		if (ri && (ri->GetProductType() == FSReactionSpecies::SBM_SPECIES)) sbmP.push_back(ri->GetIndex());
 	}
 }
 
-string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem)
+string buildReactionEquation(FSReactionMaterial* mat, FSModel& fem)
 {
 	stringstream ss;
 	int NR = mat->Reactants();
 	for (int i = 0; i<NR; ++i)
 	{
-		FEReactantMaterial* rm = mat->Reactant(i);
+		FSReactantMaterial* rm = mat->Reactant(i);
 
 		string name;
 		int m = rm->GetIndex();
 		int ntype = rm->GetReactantType();
-		if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+		if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
 			name = fem.GetSoluteData(m).GetName();
 		else
 			name = fem.GetSBMData(m).GetName();
@@ -525,12 +525,12 @@ string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem)
 	int NP = mat->Products();
 	for (int i = 0; i<NP; ++i)
 	{
-		FEProductMaterial* pm = mat->Product(i);
+		FSProductMaterial* pm = mat->Product(i);
 
 		string name;
 		int m = pm->GetIndex();
 		int ntype = pm->GetProductType();
-		if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+		if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
 			name = fem.GetSoluteData(m).GetName();
 		else
 			name = fem.GetSBMData(m).GetName();
@@ -549,7 +549,7 @@ string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem)
 //                            MEMBRANE REACTION
 //=============================================================================
 
-FEMembraneReactionMaterial::FEMembraneReactionMaterial(int ntype) : FEMaterial(ntype)
+FSMembraneReactionMaterial::FSMembraneReactionMaterial(int ntype) : FSMaterial(ntype)
 {
     // the optional Vbar parameter is hidden by default.
     AddScienceParam(0, UNIT_MOLAR_VOLUME, "Vbar", "Vbar")->SetState(Param_HIDDEN);
@@ -559,198 +559,198 @@ FEMembraneReactionMaterial::FEMembraneReactionMaterial(int ntype) : FEMaterial(n
     AddProperty("forward_rate", FE_MAT_MREACTION_RATE);
     AddProperty("reverse_rate", FE_MAT_MREACTION_RATE);
     
-    AddProperty("vR" , FE_MAT_REACTION_REACTANTS  , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
-    AddProperty("vP" , FE_MAT_REACTION_PRODUCTS   , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
-    AddProperty("vRi", FE_MAT_MREACTION_IREACTANTS, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
-    AddProperty("vPi", FE_MAT_MREACTION_IPRODUCTS , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
-    AddProperty("vRe", FE_MAT_MREACTION_EREACTANTS, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
-    AddProperty("vPe", FE_MAT_MREACTION_EPRODUCTS , FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::EDITABLE | FEMaterialProperty::NON_EXTENDABLE);
+    AddProperty("vR" , FE_MAT_REACTION_REACTANTS  , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vP" , FE_MAT_REACTION_PRODUCTS   , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vRi", FE_MAT_MREACTION_IREACTANTS, FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vPi", FE_MAT_MREACTION_IPRODUCTS , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vRe", FE_MAT_MREACTION_EREACTANTS, FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vPe", FE_MAT_MREACTION_EPRODUCTS , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
 }
 
 
-void FEMembraneReactionMaterial::SetOvrd(bool bovrd) {
+void FSMembraneReactionMaterial::SetOvrd(bool bovrd) {
     SetBoolValue(MP_OVRD, bovrd);
     if (bovrd) GetParam(MP_VBAR).SetState(Param_ALLFLAGS);
     else GetParam(MP_VBAR).SetState(Param_HIDDEN);
 }
 
-bool FEMembraneReactionMaterial::GetOvrd() { return GetBoolValue(MP_OVRD); }
+bool FSMembraneReactionMaterial::GetOvrd() { return GetBoolValue(MP_OVRD); }
 
 // set forward rate
-void FEMembraneReactionMaterial::SetForwardRate(FEMaterial* pm) { ReplaceProperty(0, pm); }
-FEMaterial* FEMembraneReactionMaterial::GetForwardRate() { return GetProperty(0).GetMaterial(); }
+void FSMembraneReactionMaterial::SetForwardRate(FSMaterial* pm) { ReplaceProperty(0, pm); }
+FSMaterial* FSMembraneReactionMaterial::GetForwardRate() { return GetMaterialProperty(0); }
 
 // set reverse rate
-void FEMembraneReactionMaterial::SetReverseRate(FEMaterial* pm) { ReplaceProperty(1, pm); }
-FEMaterial* FEMembraneReactionMaterial::GetReverseRate() { return GetProperty(1).GetMaterial(); }
+void FSMembraneReactionMaterial::SetReverseRate(FSMaterial* pm) { ReplaceProperty(1, pm); }
+FSMaterial* FSMembraneReactionMaterial::GetReverseRate() { return GetMaterialProperty(1); }
 
-int FEMembraneReactionMaterial::Reactants() { return GetProperty(2).Size(); }
-int FEMembraneReactionMaterial::Products() { return GetProperty(3).Size(); }
-int FEMembraneReactionMaterial::InternalReactants() { return GetProperty(4).Size(); }
-int FEMembraneReactionMaterial::InternalProducts() { return GetProperty(5).Size(); }
-int FEMembraneReactionMaterial::ExternalReactants() { return GetProperty(6).Size(); }
-int FEMembraneReactionMaterial::ExternalProducts() { return GetProperty(7).Size(); }
+int FSMembraneReactionMaterial::Reactants() { return GetProperty(2).Size(); }
+int FSMembraneReactionMaterial::Products() { return GetProperty(3).Size(); }
+int FSMembraneReactionMaterial::InternalReactants() { return GetProperty(4).Size(); }
+int FSMembraneReactionMaterial::InternalProducts() { return GetProperty(5).Size(); }
+int FSMembraneReactionMaterial::ExternalReactants() { return GetProperty(6).Size(); }
+int FSMembraneReactionMaterial::ExternalProducts() { return GetProperty(7).Size(); }
 
-FEReactantMaterial* FEMembraneReactionMaterial::Reactant(int i)
+FSReactantMaterial* FSMembraneReactionMaterial::Reactant(int i)
 {
-    return dynamic_cast<FEReactantMaterial*>(GetProperty(2).GetMaterial(i));
+    return dynamic_cast<FSReactantMaterial*>(GetMaterialProperty(2, i));
 }
 
-FEProductMaterial* FEMembraneReactionMaterial::Product(int i)
+FSProductMaterial* FSMembraneReactionMaterial::Product(int i)
 {
-    return dynamic_cast<FEProductMaterial*>(GetProperty(3).GetMaterial(i));
+    return dynamic_cast<FSProductMaterial*>(GetMaterialProperty(3, i));
 }
 
-FEInternalReactantMaterial* FEMembraneReactionMaterial::InternalReactant(int i)
+FSInternalReactantMaterial* FSMembraneReactionMaterial::InternalReactant(int i)
 {
-    return dynamic_cast<FEInternalReactantMaterial*>(GetProperty(4).GetMaterial(i));
+    return dynamic_cast<FSInternalReactantMaterial*>(GetMaterialProperty(4, i));
 }
 
-FEInternalProductMaterial* FEMembraneReactionMaterial::InternalProduct(int i)
+FSInternalProductMaterial* FSMembraneReactionMaterial::InternalProduct(int i)
 {
-    return dynamic_cast<FEInternalProductMaterial*>(GetProperty(5).GetMaterial(i));
+    return dynamic_cast<FSInternalProductMaterial*>(GetMaterialProperty(5, i));
 }
 
-FEExternalReactantMaterial* FEMembraneReactionMaterial::ExternalReactant(int i)
+FSExternalReactantMaterial* FSMembraneReactionMaterial::ExternalReactant(int i)
 {
-    return dynamic_cast<FEExternalReactantMaterial*>(GetProperty(6).GetMaterial(i));
+    return dynamic_cast<FSExternalReactantMaterial*>(GetMaterialProperty(6, i));
 }
 
-FEExternalProductMaterial* FEMembraneReactionMaterial::ExternalProduct(int i)
+FSExternalProductMaterial* FSMembraneReactionMaterial::ExternalProduct(int i)
 {
-    return dynamic_cast<FEExternalProductMaterial*>(GetProperty(7).GetMaterial(i));
+    return dynamic_cast<FSExternalProductMaterial*>(GetMaterialProperty(7, i));
 }
 
 // add reactant/product component
-void FEMembraneReactionMaterial::AddReactantMaterial(FEReactantMaterial* pm) { AddProperty(2, pm); }
-void FEMembraneReactionMaterial::AddProductMaterial (FEProductMaterial* pm) { AddProperty(3, pm); }
-void FEMembraneReactionMaterial::AddInternalReactantMaterial(FEInternalReactantMaterial* pm) { AddProperty(4, pm); }
-void FEMembraneReactionMaterial::AddInternalProductMaterial (FEInternalProductMaterial* pm) { AddProperty(5, pm); }
-void FEMembraneReactionMaterial::AddExternalReactantMaterial(FEExternalReactantMaterial* pm) { AddProperty(6, pm); }
-void FEMembraneReactionMaterial::AddExternalProductMaterial (FEExternalProductMaterial* pm) { AddProperty(7, pm); }
+void FSMembraneReactionMaterial::AddReactantMaterial(FSReactantMaterial* pm) { AddProperty(2, pm); }
+void FSMembraneReactionMaterial::AddProductMaterial (FSProductMaterial* pm) { AddProperty(3, pm); }
+void FSMembraneReactionMaterial::AddInternalReactantMaterial(FSInternalReactantMaterial* pm) { AddProperty(4, pm); }
+void FSMembraneReactionMaterial::AddInternalProductMaterial (FSInternalProductMaterial* pm) { AddProperty(5, pm); }
+void FSMembraneReactionMaterial::AddExternalReactantMaterial(FSExternalReactantMaterial* pm) { AddProperty(6, pm); }
+void FSMembraneReactionMaterial::AddExternalProductMaterial (FSExternalProductMaterial* pm) { AddProperty(7, pm); }
 
-void FEMembraneReactionMaterial::ClearReactants()
+void FSMembraneReactionMaterial::ClearReactants()
 {
     GetProperty(2).Clear();
     GetProperty(4).Clear();
     GetProperty(6).Clear();
 }
 
-void FEMembraneReactionMaterial::ClearProducts()
+void FSMembraneReactionMaterial::ClearProducts()
 {
     GetProperty(3).Clear();
     GetProperty(5).Clear();
     GetProperty(7).Clear();
 }
 
-void FEMembraneReactionMaterial::GetSoluteReactants(vector<int>& solR)
+void FSMembraneReactionMaterial::GetSoluteReactants(vector<int>& solR)
 {
     solR.clear();
-    FEMaterialProperty& p = GetProperty(2);
+    FSProperty& p = GetProperty(2);
     int N = p.Size();
     for (int i=0; i<N; ++i)
     {
-        FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetReactantType() == FEReactionSpecies::SOLUTE_SPECIES)) solR.push_back(ri->GetIndex());
+        FSReactantMaterial* ri = dynamic_cast<FSReactantMaterial*>(p.GetComponent(i)); assert(ri);
+        if (ri && (ri->GetReactantType() == FSReactionSpecies::SOLUTE_SPECIES)) solR.push_back(ri->GetIndex());
     }
 }
 
-void FEMembraneReactionMaterial::GetInternalSoluteReactants(vector<int>& solRi)
+void FSMembraneReactionMaterial::GetInternalSoluteReactants(vector<int>& solRi)
 {
     solRi.clear();
-    FEMaterialProperty& p = GetProperty(4);
+    FSProperty& p = GetProperty(4);
     int N = p.Size();
     for (int i=0; i<N; ++i)
     {
-        FEInternalReactantMaterial* ri = dynamic_cast<FEInternalReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetReactantType() == FEReactionSpecies::SOLUTE_SPECIES)) solRi.push_back(ri->GetIndex());
+        FSInternalReactantMaterial* ri = dynamic_cast<FSInternalReactantMaterial*>(p.GetComponent(i)); assert(ri);
+        if (ri && (ri->GetReactantType() == FSReactionSpecies::SOLUTE_SPECIES)) solRi.push_back(ri->GetIndex());
     }
 }
 
-void FEMembraneReactionMaterial::GetExternalSoluteReactants(vector<int>& solRe)
+void FSMembraneReactionMaterial::GetExternalSoluteReactants(vector<int>& solRe)
 {
     solRe.clear();
-    FEMaterialProperty& p = GetProperty(6);
+    FSProperty& p = GetProperty(6);
     int N = p.Size();
     for (int i=0; i<N; ++i)
     {
-        FEExternalReactantMaterial* ri = dynamic_cast<FEExternalReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetReactantType() == FEReactionSpecies::SOLUTE_SPECIES)) solRe.push_back(ri->GetIndex());
+        FSExternalReactantMaterial* ri = dynamic_cast<FSExternalReactantMaterial*>(p.GetComponent(i)); assert(ri);
+        if (ri && (ri->GetReactantType() == FSReactionSpecies::SOLUTE_SPECIES)) solRe.push_back(ri->GetIndex());
     }
 }
 
-void FEMembraneReactionMaterial::GetSBMReactants(vector<int>& sbmR)
+void FSMembraneReactionMaterial::GetSBMReactants(vector<int>& sbmR)
 {
     sbmR.clear();
-    FEMaterialProperty& p = GetProperty(2);
+    FSProperty& p = GetProperty(2);
     int N = p.Size();
     for (int i = 0; i<N; ++i)
     {
-        FEReactantMaterial* ri = dynamic_cast<FEReactantMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetReactantType() == FEReactionSpecies::SBM_SPECIES)) sbmR.push_back(ri->GetIndex());
+        FSReactantMaterial* ri = dynamic_cast<FSReactantMaterial*>(p.GetComponent(i)); assert(ri);
+        if (ri && (ri->GetReactantType() == FSReactionSpecies::SBM_SPECIES)) sbmR.push_back(ri->GetIndex());
     }
 }
 
-void FEMembraneReactionMaterial::GetSoluteProducts(vector<int>& solP)
+void FSMembraneReactionMaterial::GetSoluteProducts(vector<int>& solP)
 {
     solP.clear();
-    FEMaterialProperty& p = GetProperty(3);
+    FSProperty& p = GetProperty(3);
     int N = p.Size();
     for (int i = 0; i<N; ++i)
     {
-        FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetProductType() == FEReactionSpecies::SOLUTE_SPECIES)) solP.push_back(ri->GetIndex());
+        FSProductMaterial* ri = dynamic_cast<FSProductMaterial*>(p.GetComponent(i)); assert(ri);
+        if (ri && (ri->GetProductType() == FSReactionSpecies::SOLUTE_SPECIES)) solP.push_back(ri->GetIndex());
     }
 }
 
-void FEMembraneReactionMaterial::GetInternalSoluteProducts(vector<int>& solPi)
+void FSMembraneReactionMaterial::GetInternalSoluteProducts(vector<int>& solPi)
 {
     solPi.clear();
-    FEMaterialProperty& p = GetProperty(5);
+    FSProperty& p = GetProperty(5);
     int N = p.Size();
     for (int i = 0; i<N; ++i)
     {
-        FEInternalProductMaterial* ri = dynamic_cast<FEInternalProductMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetProductType() == FEReactionSpecies::SOLUTE_SPECIES)) solPi.push_back(ri->GetIndex());
+        FSInternalProductMaterial* ri = dynamic_cast<FSInternalProductMaterial*>(p.GetComponent(i)); assert(ri);
+        if (ri && (ri->GetProductType() == FSReactionSpecies::SOLUTE_SPECIES)) solPi.push_back(ri->GetIndex());
     }
 }
 
-void FEMembraneReactionMaterial::GetExternalSoluteProducts(vector<int>& solPe)
+void FSMembraneReactionMaterial::GetExternalSoluteProducts(vector<int>& solPe)
 {
     solPe.clear();
-    FEMaterialProperty& p = GetProperty(7);
+    FSProperty& p = GetProperty(7);
     int N = p.Size();
     for (int i = 0; i<N; ++i)
     {
-        FEExternalProductMaterial* ri = dynamic_cast<FEExternalProductMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetProductType() == FEReactionSpecies::SOLUTE_SPECIES)) solPe.push_back(ri->GetIndex());
+        FSExternalProductMaterial* ri = dynamic_cast<FSExternalProductMaterial*>(p.GetComponent(i)); assert(ri);
+        if (ri && (ri->GetProductType() == FSReactionSpecies::SOLUTE_SPECIES)) solPe.push_back(ri->GetIndex());
     }
 }
 
-void FEMembraneReactionMaterial::GetSBMProducts(vector<int>& sbmP)
+void FSMembraneReactionMaterial::GetSBMProducts(vector<int>& sbmP)
 {
     sbmP.clear();
-    FEMaterialProperty& p = GetProperty(3);
+    FSProperty& p = GetProperty(3);
     int N = p.Size();
     for (int i = 0; i<N; ++i)
     {
-        FEProductMaterial* ri = dynamic_cast<FEProductMaterial*>(p.GetMaterial(i)); assert(ri);
-        if (ri && (ri->GetProductType() == FEReactionSpecies::SBM_SPECIES)) sbmP.push_back(ri->GetIndex());
+        FSProductMaterial* ri = dynamic_cast<FSProductMaterial*>(p.GetComponent(i)); assert(ri);
+        if (ri && (ri->GetProductType() == FSReactionSpecies::SBM_SPECIES)) sbmP.push_back(ri->GetIndex());
     }
 }
 
-string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& fem)
+string buildMembraneReactionEquation(FSMembraneReactionMaterial* mat, FSModel& fem)
 {
     stringstream ss;
     int NR = mat->Reactants();
     for (int i = 0; i<NR; ++i)
     {
-        FEReactantMaterial* rm = mat->Reactant(i);
+        FSReactantMaterial* rm = mat->Reactant(i);
         
         string name;
         int m = rm->GetIndex();
         int ntype = rm->GetReactantType();
-        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+        if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         else
             name = fem.GetSBMData(m).GetName();
@@ -766,12 +766,12 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
     int NRI = mat->InternalReactants();
     for (int i = 0; i<NRI; ++i)
     {
-        FEInternalReactantMaterial* rm = mat->InternalReactant(i);
+        FSInternalReactantMaterial* rm = mat->InternalReactant(i);
         
         string name;
         int m = rm->GetIndex();
         int ntype = rm->GetReactantType();
-        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+        if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         
         int n = rm->GetCoef();
@@ -785,12 +785,12 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
     int NRE = mat->ExternalReactants();
     for (int i = 0; i<NRE; ++i)
     {
-        FEExternalReactantMaterial* rm = mat->ExternalReactant(i);
+        FSExternalReactantMaterial* rm = mat->ExternalReactant(i);
         
         string name;
         int m = rm->GetIndex();
         int ntype = rm->GetReactantType();
-        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+        if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         
         int n = rm->GetCoef();
@@ -808,12 +808,12 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
     int NP = mat->Products();
     for (int i = 0; i<NP; ++i)
     {
-        FEProductMaterial* pm = mat->Product(i);
+        FSProductMaterial* pm = mat->Product(i);
         
         string name;
         int m = pm->GetIndex();
         int ntype = pm->GetProductType();
-        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+        if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         else
             name = fem.GetSBMData(m).GetName();
@@ -829,12 +829,12 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
     int NPI = mat->InternalProducts();
     for (int i = 0; i<NPI; ++i)
     {
-        FEInternalProductMaterial* pm = mat->InternalProduct(i);
+        FSInternalProductMaterial* pm = mat->InternalProduct(i);
         
         string name;
         int m = pm->GetIndex();
         int ntype = pm->GetProductType();
-        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+        if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         
         int n = pm->GetCoef();
@@ -848,12 +848,12 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
     int NPE = mat->ExternalProducts();
     for (int i = 0; i<NPE; ++i)
     {
-        FEExternalProductMaterial* pm = mat->ExternalProduct(i);
+        FSExternalProductMaterial* pm = mat->ExternalProduct(i);
         
         string name;
         int m = pm->GetIndex();
         int ntype = pm->GetProductType();
-        if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+        if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
             name = fem.GetSoluteData(m).GetName();
         
         int n = pm->GetCoef();
@@ -870,9 +870,9 @@ string buildMembraneReactionEquation(FEMembraneReactionMaterial* mat, FEModel& f
 //								MULTIPHASIC
 //=============================================================================
 
-REGISTER_MATERIAL(FEMultiphasicMaterial, MODULE_MULTIPHASIC, FE_MULTIPHASIC_MATERIAL, FE_MAT_MULTIPHASIC, "multiphasic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSMultiphasicMaterial, MODULE_MULTIPHASIC, FE_MULTIPHASIC_MATERIAL, FE_MAT_MULTIPHASIC, "multiphasic", MaterialFlags::TOPLEVEL);
 
-FEMultiphasicMaterial::FEMultiphasicMaterial() : FEMultiMaterial(FE_MULTIPHASIC_MATERIAL)
+FSMultiphasicMaterial::FSMultiphasicMaterial() : FSMultiMaterial(FE_MULTIPHASIC_MATERIAL)
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
@@ -888,111 +888,111 @@ FEMultiphasicMaterial::FEMultiphasicMaterial() : FEMultiMaterial(FE_MULTIPHASIC_
 	AddProperty("osmotic_coefficient", FE_MAT_OSMOTIC_COEFFICIENT);
 
 	// Add solute property
-	AddProperty("solute", FE_MAT_SOLUTE, FEMaterialProperty::NO_FIXED_SIZE);
+	AddProperty("solute", FE_MAT_SOLUTE, FSProperty::NO_FIXED_SIZE);
 
 	// Add solid bound property
-	AddProperty("solid_bound", FE_MAT_SBM, FEMaterialProperty::NO_FIXED_SIZE);
+	AddProperty("solid_bound", FE_MAT_SBM, FSProperty::NO_FIXED_SIZE);
 
 	// add reaction material
-	AddProperty("reaction", FE_MAT_REACTION, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::NON_EXTENDABLE);
+	AddProperty("reaction", FE_MAT_REACTION, FSProperty::NO_FIXED_SIZE, FSProperty::NON_EXTENDABLE);
 
     // add reaction material
-    AddProperty("membrane_reaction", FE_MAT_MREACTION, FEMaterialProperty::NO_FIXED_SIZE, FEMaterialProperty::NON_EXTENDABLE);
+    AddProperty("membrane_reaction", FE_MAT_MREACTION, FSProperty::NO_FIXED_SIZE, FSProperty::NON_EXTENDABLE);
 }
 
 // set/get elastic component 
-void FEMultiphasicMaterial::SetSolidMaterial(FEMaterial* pm)
+void FSMultiphasicMaterial::SetSolidMaterial(FSMaterial* pm)
 { 
 	ReplaceProperty(SOLID, pm); 
 }
 
 // set/get permeability
-void FEMultiphasicMaterial::SetPermeability(FEMaterial* pm)
+void FSMultiphasicMaterial::SetPermeability(FSMaterial* pm)
 { 
 	ReplaceProperty(PERM, pm); 
 }
 
 // set/get osmotic coefficient
-void FEMultiphasicMaterial::SetOsmoticCoefficient(FEMaterial* pm)
+void FSMultiphasicMaterial::SetOsmoticCoefficient(FSMaterial* pm)
 { 
 	ReplaceProperty(OSMC, pm); 
 }
 
 // add solute component
-void FEMultiphasicMaterial::AddSoluteMaterial(FESoluteMaterial* pm)
+void FSMultiphasicMaterial::AddSoluteMaterial(FSSoluteMaterial* pm)
 {
-	GetProperty(SOLUTE).AddMaterial(pm);
+	GetProperty(SOLUTE).AddComponent(pm);
 }
 
 // add SBM component
-void FEMultiphasicMaterial::AddSBMMaterial(FESBMMaterial* pm)
+void FSMultiphasicMaterial::AddSBMMaterial(FSSBMMaterial* pm)
 {
-	GetProperty(SBM).AddMaterial(pm);
+	GetProperty(SBM).AddComponent(pm);
 }
 
 // add chemical reaction component
-void FEMultiphasicMaterial::AddReactionMaterial(FEReactionMaterial* pm)
+void FSMultiphasicMaterial::AddReactionMaterial(FSReactionMaterial* pm)
 {
-	GetProperty(REACTION).AddMaterial(pm);
+	GetProperty(REACTION).AddComponent(pm);
 }
 
 // add membrane reaction component
-void FEMultiphasicMaterial::AddMembraneReactionMaterial(FEMembraneReactionMaterial* pm)
+void FSMultiphasicMaterial::AddMembraneReactionMaterial(FSMembraneReactionMaterial* pm)
 {
-    GetProperty(MREACTION).AddMaterial(pm);
+    GetProperty(MREACTION).AddComponent(pm);
 }
 
 // get solute global index from local index
-int FEMultiphasicMaterial::GetSoluteIndex(const int isol) 
+int FSMultiphasicMaterial::GetSoluteIndex(const int isol) 
 {
-	FEMaterialProperty& p = GetProperty(SOLUTE);
-	FESoluteMaterial* mp = dynamic_cast<FESoluteMaterial*>(p.GetMaterial(isol));
+	FSProperty& p = GetProperty(SOLUTE);
+	FSSoluteMaterial* mp = dynamic_cast<FSSoluteMaterial*>(p.GetComponent(isol));
 	return mp->GetSoluteIndex();
 }
 
 // get SBM global index from local index
-int FEMultiphasicMaterial::GetSBMIndex(const int isbm) 
+int FSMultiphasicMaterial::GetSBMIndex(const int isbm) 
 {
-	FEMaterialProperty& p = GetProperty(SBM);
-	FESBMMaterial* mp = dynamic_cast<FESBMMaterial*>(p.GetMaterial(isbm));
+	FSProperty& p = GetProperty(SBM);
+	FSSBMMaterial* mp = dynamic_cast<FSSBMMaterial*>(p.GetComponent(isbm));
 	return mp->GetSBMIndex();
 }
 
 // count reaction components
-int FEMultiphasicMaterial::Reactions() 
+int FSMultiphasicMaterial::Reactions() 
 {
 	return GetProperty(REACTION).Size();
 }
 
 // get reaction component
-FEReactionMaterial* FEMultiphasicMaterial::GetReaction(int n)
+FSReactionMaterial* FSMultiphasicMaterial::GetReaction(int n)
 {
-	FEMaterialProperty& p = GetProperty(REACTION);
-	FEReactionMaterial* prm = dynamic_cast<FEReactionMaterial*>(p.GetMaterial(n));
+	FSProperty& p = GetProperty(REACTION);
+	FSReactionMaterial* prm = dynamic_cast<FSReactionMaterial*>(p.GetComponent(n));
 	return prm;
 }
 
 // count membrane reaction components
-int FEMultiphasicMaterial::MembraneReactions()
+int FSMultiphasicMaterial::MembraneReactions()
 {
     return GetProperty(MREACTION).Size();
 }
 
 // get reaction component
-FEMembraneReactionMaterial* FEMultiphasicMaterial::GetMembraneReaction(int n)
+FSMembraneReactionMaterial* FSMultiphasicMaterial::GetMembraneReaction(int n)
 {
-    FEMaterialProperty& p = GetProperty(MREACTION);
-    FEMembraneReactionMaterial* prm = dynamic_cast<FEMembraneReactionMaterial*>(p.GetMaterial(n));
+    FSProperty& p = GetProperty(MREACTION);
+    FSMembraneReactionMaterial* prm = dynamic_cast<FSMembraneReactionMaterial*>(p.GetComponent(n));
     return prm;
 }
 
 // see if this material has a solute with global ID
-bool FEMultiphasicMaterial::HasSolute(int nid)
+bool FSMultiphasicMaterial::HasSolute(int nid)
 {
-	FEMaterialProperty& p = GetProperty(SOLUTE);
+	FSProperty& p = GetProperty(SOLUTE);
 	for (int i=0; i<p.Size(); ++i)
 	{
-		FESoluteMaterial* mp = dynamic_cast<FESoluteMaterial*>(p.GetMaterial(i));
+		FSSoluteMaterial* mp = dynamic_cast<FSSoluteMaterial*>(p.GetComponent(i));
 		int sid = mp->GetSoluteIndex();
 		if (mp && (mp->GetSoluteIndex() == nid)) return true;
 	}
@@ -1000,12 +1000,12 @@ bool FEMultiphasicMaterial::HasSolute(int nid)
 }
 
 // see if this material has a sbm with global ID
-bool FEMultiphasicMaterial::HasSBM(int nid)
+bool FSMultiphasicMaterial::HasSBM(int nid)
 {
-	FEMaterialProperty& p = GetProperty(SBM);
+	FSProperty& p = GetProperty(SBM);
 	for (int i = 0; i<p.Size(); ++i)
 	{
-		FESBMMaterial* mp = dynamic_cast<FESBMMaterial*>(p.GetMaterial(i));
+		FSSBMMaterial* mp = dynamic_cast<FSSBMMaterial*>(p.GetComponent(i));
 		int sid = mp->GetSBMIndex();
 		if (mp && (mp->GetSBMIndex() == nid)) return true;
 	}
@@ -1013,7 +1013,7 @@ bool FEMultiphasicMaterial::HasSBM(int nid)
 }
 
 //=============================================================================
-FEReactionSpecies::FEReactionSpecies(int ntype) : FEMaterial(ntype)
+FSReactionSpecies::FSReactionSpecies(int ntype) : FSMaterial(ntype)
 {
     // add the stoichiometric coefficient
     AddIntParam(1, "v", "v"); // stoichiometric coefficient
@@ -1023,9 +1023,9 @@ FEReactionSpecies::FEReactionSpecies(int ntype) : FEMaterial(ntype)
     AddIntParam(-1, 0, 0)->SetState(Param_HIDDEN);
 }
 
-void FEReactionSpecies::Load(IArchive& ar)
+void FSReactionSpecies::Load(IArchive& ar)
 {
-    FEMaterial::Load(ar);
+    FSMaterial::Load(ar);
 
     // This is a temporary hack to remove species type > 2, which should now all be solutes
     if (GetSpeciesType() > 2) SetSpeciesType(SOLUTE_SPECIES);
@@ -1036,9 +1036,9 @@ void FEReactionSpecies::Load(IArchive& ar)
 //								REACTANT
 //=============================================================================
 
-REGISTER_MATERIAL(FEReactantMaterial, MODULE_REACTIONS, FE_REACTANT_MATERIAL, FE_MAT_REACTION_REACTANTS, "Reactant", 0);
+REGISTER_MATERIAL(FSReactantMaterial, MODULE_REACTIONS, FE_REACTANT_MATERIAL, FE_MAT_REACTION_REACTANTS, "Reactant", 0);
 
-FEReactantMaterial::FEReactantMaterial() : FEReactionSpecies(FE_REACTANT_MATERIAL)
+FSReactantMaterial::FSReactantMaterial() : FSReactionSpecies(FE_REACTANT_MATERIAL)
 {
 }
 
@@ -1046,9 +1046,9 @@ FEReactantMaterial::FEReactantMaterial() : FEReactionSpecies(FE_REACTANT_MATERIA
 //								PRODUCT
 //=============================================================================
 
-REGISTER_MATERIAL(FEProductMaterial, MODULE_REACTIONS, FE_PRODUCT_MATERIAL, FE_MAT_REACTION_PRODUCTS, "Product", 0);
+REGISTER_MATERIAL(FSProductMaterial, MODULE_REACTIONS, FE_PRODUCT_MATERIAL, FE_MAT_REACTION_PRODUCTS, "Product", 0);
 
-FEProductMaterial::FEProductMaterial() : FEReactionSpecies(FE_PRODUCT_MATERIAL)
+FSProductMaterial::FSProductMaterial() : FSReactionSpecies(FE_PRODUCT_MATERIAL)
 {
 }
 
@@ -1056,9 +1056,9 @@ FEProductMaterial::FEProductMaterial() : FEReactionSpecies(FE_PRODUCT_MATERIAL)
 //                          INTERNAL REACTANT
 //=============================================================================
 
-REGISTER_MATERIAL(FEInternalReactantMaterial, MODULE_REACTIONS, FE_INT_REACTANT_MATERIAL, FE_MAT_MREACTION_IREACTANTS, "Internal Reactant", 0);
+REGISTER_MATERIAL(FSInternalReactantMaterial, MODULE_REACTIONS, FE_INT_REACTANT_MATERIAL, FE_MAT_MREACTION_IREACTANTS, "Internal Reactant", 0);
 
-FEInternalReactantMaterial::FEInternalReactantMaterial() : FEReactionSpecies(FE_INT_REACTANT_MATERIAL)
+FSInternalReactantMaterial::FSInternalReactantMaterial() : FSReactionSpecies(FE_INT_REACTANT_MATERIAL)
 {
 }
 
@@ -1066,9 +1066,9 @@ FEInternalReactantMaterial::FEInternalReactantMaterial() : FEReactionSpecies(FE_
 //                           INTERNAL PRODUCT
 //=============================================================================
 
-REGISTER_MATERIAL(FEInternalProductMaterial, MODULE_REACTIONS, FE_INT_PRODUCT_MATERIAL, FE_MAT_MREACTION_IPRODUCTS, "Internal Product", 0);
+REGISTER_MATERIAL(FSInternalProductMaterial, MODULE_REACTIONS, FE_INT_PRODUCT_MATERIAL, FE_MAT_MREACTION_IPRODUCTS, "Internal Product", 0);
 
-FEInternalProductMaterial::FEInternalProductMaterial() : FEReactionSpecies(FE_INT_PRODUCT_MATERIAL)
+FSInternalProductMaterial::FSInternalProductMaterial() : FSReactionSpecies(FE_INT_PRODUCT_MATERIAL)
 {
 }
 
@@ -1076,9 +1076,9 @@ FEInternalProductMaterial::FEInternalProductMaterial() : FEReactionSpecies(FE_IN
 //                          EXTERNAL REACTANT
 //=============================================================================
 
-REGISTER_MATERIAL(FEExternalReactantMaterial, MODULE_REACTIONS, FE_EXT_REACTANT_MATERIAL, FE_MAT_MREACTION_EREACTANTS, "External Reactant", 0);
+REGISTER_MATERIAL(FSExternalReactantMaterial, MODULE_REACTIONS, FE_EXT_REACTANT_MATERIAL, FE_MAT_MREACTION_EREACTANTS, "External Reactant", 0);
 
-FEExternalReactantMaterial::FEExternalReactantMaterial() : FEReactionSpecies(FE_EXT_REACTANT_MATERIAL)
+FSExternalReactantMaterial::FSExternalReactantMaterial() : FSReactionSpecies(FE_EXT_REACTANT_MATERIAL)
 {
 }
 
@@ -1086,9 +1086,9 @@ FEExternalReactantMaterial::FEExternalReactantMaterial() : FEReactionSpecies(FE_
 //                           EXTERNAL PRODUCT
 //=============================================================================
 
-REGISTER_MATERIAL(FEExternalProductMaterial, MODULE_REACTIONS, FE_EXT_PRODUCT_MATERIAL, FE_MAT_MREACTION_EPRODUCTS, "External Product", 0);
+REGISTER_MATERIAL(FSExternalProductMaterial, MODULE_REACTIONS, FE_EXT_PRODUCT_MATERIAL, FE_MAT_MREACTION_EPRODUCTS, "External Product", 0);
 
-FEExternalProductMaterial::FEExternalProductMaterial() : FEReactionSpecies(FE_EXT_PRODUCT_MATERIAL)
+FSExternalProductMaterial::FSExternalProductMaterial() : FSReactionSpecies(FE_EXT_PRODUCT_MATERIAL)
 {
 }
 
@@ -1096,9 +1096,9 @@ FEExternalProductMaterial::FEExternalProductMaterial() : FEReactionSpecies(FE_EX
 //								MASS ACTION FORWARD REACTION
 //=============================================================================
 
-REGISTER_MATERIAL(FEMassActionForward, MODULE_REACTIONS, FE_MASS_ACTION_FORWARD, FE_MAT_REACTION, "mass-action-forward", 0);
+REGISTER_MATERIAL(FSMassActionForward, MODULE_REACTIONS, FE_MASS_ACTION_FORWARD, FE_MAT_REACTION, "mass-action-forward", 0);
 
-FEMassActionForward::FEMassActionForward() : FEReactionMaterial(FE_MASS_ACTION_FORWARD)
+FSMassActionForward::FSMassActionForward() : FSReactionMaterial(FE_MASS_ACTION_FORWARD)
 {
 }
 
@@ -1106,9 +1106,9 @@ FEMassActionForward::FEMassActionForward() : FEReactionMaterial(FE_MASS_ACTION_F
 //								MASS ACTION REVERSIBLE REACTION
 //=============================================================================
 
-REGISTER_MATERIAL(FEMassActionReversible, MODULE_REACTIONS, FE_MASS_ACTION_REVERSIBLE, FE_MAT_REACTION, "mass-action-reversible", 0);
+REGISTER_MATERIAL(FSMassActionReversible, MODULE_REACTIONS, FE_MASS_ACTION_REVERSIBLE, FE_MAT_REACTION, "mass-action-reversible", 0);
 
-FEMassActionReversible::FEMassActionReversible() : FEReactionMaterial(FE_MASS_ACTION_REVERSIBLE)
+FSMassActionReversible::FSMassActionReversible() : FSReactionMaterial(FE_MASS_ACTION_REVERSIBLE)
 {
 }
 
@@ -1116,9 +1116,9 @@ FEMassActionReversible::FEMassActionReversible() : FEReactionMaterial(FE_MASS_AC
 //								MICHAELIS MENTEN REACTION
 //=============================================================================
 
-REGISTER_MATERIAL(FEMichaelisMenten, MODULE_REACTIONS, FE_MICHAELIS_MENTEN, FE_MAT_REACTION, "Michaelis-Menten", 0);
+REGISTER_MATERIAL(FSMichaelisMenten, MODULE_REACTIONS, FE_MICHAELIS_MENTEN, FE_MAT_REACTION, "Michaelis-Menten", 0);
 
-FEMichaelisMenten::FEMichaelisMenten() : FEReactionMaterial(FE_MICHAELIS_MENTEN)
+FSMichaelisMenten::FSMichaelisMenten() : FSReactionMaterial(FE_MICHAELIS_MENTEN)
 {
 	AddScienceParam(0, UNIT_CONCENTRATION, "Km", "Km"); // concentration at half-maximum rate
 	AddScienceParam(0, UNIT_CONCENTRATION, "c0", "c0"); // substrate trigger concentration
@@ -1128,9 +1128,9 @@ FEMichaelisMenten::FEMichaelisMenten() : FEReactionMaterial(FE_MICHAELIS_MENTEN)
 //                         MEMBRANE MASS ACTION FORWARD REACTION
 //=============================================================================
 
-REGISTER_MATERIAL(FEMembraneMassActionForward, MODULE_REACTIONS, FE_MMASS_ACTION_FORWARD, FE_MAT_MREACTION, "membrane-mass-action-forward", 0);
+REGISTER_MATERIAL(FSMembraneMassActionForward, MODULE_REACTIONS, FE_MMASS_ACTION_FORWARD, FE_MAT_MREACTION, "membrane-mass-action-forward", 0);
 
-FEMembraneMassActionForward::FEMembraneMassActionForward() : FEMembraneReactionMaterial(FE_MMASS_ACTION_FORWARD)
+FSMembraneMassActionForward::FSMembraneMassActionForward() : FSMembraneReactionMaterial(FE_MMASS_ACTION_FORWARD)
 {
 }
 
@@ -1138,18 +1138,18 @@ FEMembraneMassActionForward::FEMembraneMassActionForward() : FEMembraneReactionM
 //                         MEMBRANE MASS ACTION REVERSIBLE REACTION
 //=============================================================================
 
-REGISTER_MATERIAL(FEMembraneMassActionReversible, MODULE_REACTIONS, FE_MMASS_ACTION_REVERSIBLE, FE_MAT_MREACTION, "membrane-mass-action-reversible", 0);
+REGISTER_MATERIAL(FSMembraneMassActionReversible, MODULE_REACTIONS, FE_MMASS_ACTION_REVERSIBLE, FE_MAT_MREACTION, "membrane-mass-action-reversible", 0);
 
-FEMembraneMassActionReversible::FEMembraneMassActionReversible() : FEMembraneReactionMaterial(FE_MMASS_ACTION_REVERSIBLE)
+FSMembraneMassActionReversible::FSMembraneMassActionReversible() : FSMembraneReactionMaterial(FE_MMASS_ACTION_REVERSIBLE)
 {
 }
 
 //=============================================================================
 //									FLUID
 //=============================================================================
-REGISTER_MATERIAL(FEFluidMaterial, MODULE_FLUID, FE_FLUID_MATERIAL, FE_MAT_FLUID, "fluid", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSFluidMaterial, MODULE_FLUID, FE_FLUID_MATERIAL, FE_MAT_FLUID, "fluid", MaterialFlags::TOPLEVEL);
 
-FEFluidMaterial::FEFluidMaterial() : FEMaterial(FE_FLUID_MATERIAL)
+FSFluidMaterial::FSFluidMaterial() : FSMaterial(FE_FLUID_MATERIAL)
 {
     // add parameters
     AddScienceParam(1.0, UNIT_DENSITY, "density", "density");
@@ -1165,9 +1165,9 @@ FEFluidMaterial::FEFluidMaterial() : FEMaterial(FE_FLUID_MATERIAL)
 //                                    FLUID-FSI
 //=============================================================================
 
-REGISTER_MATERIAL(FEFluidFSIMaterial, MODULE_FLUID_FSI, FE_FLUID_FSI_MATERIAL, FE_MAT_FLUID_FSI, "fluid-FSI", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSFluidFSIMaterial, MODULE_FLUID_FSI, FE_FLUID_FSI_MATERIAL, FE_MAT_FLUID_FSI, "fluid-FSI", MaterialFlags::TOPLEVEL);
 
-FEFluidFSIMaterial::FEFluidFSIMaterial() : FEMultiMaterial(FE_FLUID_FSI_MATERIAL)
+FSFluidFSIMaterial::FSFluidFSIMaterial() : FSMultiMaterial(FE_FLUID_FSI_MATERIAL)
 {
     // Add fluid component
     AddProperty("fluid", FE_MAT_FLUID);
@@ -1180,9 +1180,9 @@ FEFluidFSIMaterial::FEFluidFSIMaterial() : FEMultiMaterial(FE_FLUID_FSI_MATERIAL
 //                                  BIPHASIC-FSI
 //=============================================================================
 
-REGISTER_MATERIAL(FEBiphasicFSIMaterial, MODULE_FLUID_FSI, FE_BIPHASIC_FSI_MATERIAL, FE_MAT_FLUID_FSI, "biphasic-FSI", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSBiphasicFSIMaterial, MODULE_FLUID_FSI, FE_BIPHASIC_FSI_MATERIAL, FE_MAT_FLUID_FSI, "biphasic-FSI", MaterialFlags::TOPLEVEL);
 
-FEBiphasicFSIMaterial::FEBiphasicFSIMaterial() : FEMultiMaterial(FE_BIPHASIC_FSI_MATERIAL)
+FSBiphasicFSIMaterial::FSBiphasicFSIMaterial() : FSMultiMaterial(FE_BIPHASIC_FSI_MATERIAL)
 {
     // add parameters
     AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
@@ -1201,9 +1201,9 @@ FEBiphasicFSIMaterial::FEBiphasicFSIMaterial() : FEMultiMaterial(FE_BIPHASIC_FSI
 //								SPECIES MATERIAL
 //=============================================================================
 
-REGISTER_MATERIAL(FESpeciesMaterial, MODULE_REACTIONS, FE_SPECIES_MATERIAL, FE_MAT_SPECIES, "species", 0);
+REGISTER_MATERIAL(FSSpeciesMaterial, MODULE_REACTIONS, FE_SPECIES_MATERIAL, FE_MAT_SPECIES, "species", 0);
 
-FESpeciesMaterial::FESpeciesMaterial() : FEMaterial(FE_SPECIES_MATERIAL)
+FSSpeciesMaterial::FSSpeciesMaterial() : FSMaterial(FE_SPECIES_MATERIAL)
 {
 	// add the solute material index
 	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
@@ -1212,12 +1212,12 @@ FESpeciesMaterial::FESpeciesMaterial() : FEMaterial(FE_SPECIES_MATERIAL)
 	AddScienceParam(0, UNIT_DIFFUSIVITY, "diffusivity", "diffusivity");
 }
 
-int FESpeciesMaterial::GetSpeciesIndex()
+int FSSpeciesMaterial::GetSpeciesIndex()
 {
 	return GetParam(0).GetIntValue();
 }
 
-void FESpeciesMaterial::SetSpeciesIndex(int n)
+void FSSpeciesMaterial::SetSpeciesIndex(int n)
 {
 	GetParam(0).SetIntValue(n);
 }
@@ -1226,9 +1226,9 @@ void FESpeciesMaterial::SetSpeciesIndex(int n)
 //								SOLID SPECIES MATERIAL
 //=============================================================================
 
-REGISTER_MATERIAL(FESolidSpeciesMaterial, MODULE_REACTIONS, FE_SOLID_SPECIES_MATERIAL, FE_MAT_SOLID_SPECIES, "solid_bound_species", 0);
+REGISTER_MATERIAL(FSSolidSpeciesMaterial, MODULE_REACTIONS, FE_SOLID_SPECIES_MATERIAL, FE_MAT_SOLID_SPECIES, "solid_bound_species", 0);
 
-FESolidSpeciesMaterial::FESolidSpeciesMaterial() : FEMaterial(FE_SOLID_SPECIES_MATERIAL)
+FSSolidSpeciesMaterial::FSSolidSpeciesMaterial() : FSMaterial(FE_SOLID_SPECIES_MATERIAL)
 {
 	// add the SBM material index
 	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(SBMs)")->SetState(Param_EDITABLE | Param_PERSISTENT);
@@ -1243,45 +1243,45 @@ FESolidSpeciesMaterial::FESolidSpeciesMaterial() : FEMaterial(FE_SOLID_SPECIES_M
 //									REACTION DIFFUSION
 //=============================================================================
 
-REGISTER_MATERIAL(FEReactionDiffusionMaterial, MODULE_REACTION_DIFFUSION, FE_REACTION_DIFFUSION_MATERIAL, FE_MAT_REACTION_DIFFUSION, "reaction-diffusion", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSReactionDiffusionMaterial, MODULE_REACTION_DIFFUSION, FE_REACTION_DIFFUSION_MATERIAL, FE_MAT_REACTION_DIFFUSION, "reaction-diffusion", MaterialFlags::TOPLEVEL);
 
-FEReactionDiffusionMaterial::FEReactionDiffusionMaterial() : FEMaterial(FE_REACTION_DIFFUSION_MATERIAL)
+FSReactionDiffusionMaterial::FSReactionDiffusionMaterial() : FSMaterial(FE_REACTION_DIFFUSION_MATERIAL)
 {
 	// add parameters
 	AddScienceParam(0.0, UNIT_NONE, "solid_volume_fraction", "solid_volume_fraction");
 
 	// Add solute property
-	AddProperty("species", FE_MAT_SPECIES, FEMaterialProperty::NO_FIXED_SIZE);
+	AddProperty("species", FE_MAT_SPECIES, FSProperty::NO_FIXED_SIZE);
 
 	// Add solid bound property
-	AddProperty("solid_bound_species", FE_MAT_SOLID_SPECIES, FEMaterialProperty::NO_FIXED_SIZE);
+	AddProperty("solid_bound_species", FE_MAT_SOLID_SPECIES, FSProperty::NO_FIXED_SIZE);
 
 	// add reaction material
-	AddProperty("reaction", FE_MAT_REACTION, FEMaterialProperty::NO_FIXED_SIZE, 0);
+	AddProperty("reaction", FE_MAT_REACTION, FSProperty::NO_FIXED_SIZE, 0);
 }
 
-void FEReactionDiffusionMaterial::AddSpeciesMaterial(FESpeciesMaterial* pm)
+void FSReactionDiffusionMaterial::AddSpeciesMaterial(FSSpeciesMaterial* pm)
 {
-	GetProperty(0).AddMaterial(pm);
+	GetProperty(0).AddComponent(pm);
 }
 
-void FEReactionDiffusionMaterial::AddSolidSpeciesMaterial(FESolidSpeciesMaterial* pm)
+void FSReactionDiffusionMaterial::AddSolidSpeciesMaterial(FSSolidSpeciesMaterial* pm)
 {
-	GetProperty(1).AddMaterial(pm);
+	GetProperty(1).AddComponent(pm);
 }
 
-void FEReactionDiffusionMaterial::AddReactionMaterial(FEReactionMaterial* pm)
+void FSReactionDiffusionMaterial::AddReactionMaterial(FSReactionMaterial* pm)
 {
-	GetProperty(2).AddMaterial(pm);
+	GetProperty(2).AddComponent(pm);
 }
 
 //=============================================================================
 //                                    GENERATION
 //=============================================================================
 
-REGISTER_MATERIAL(FEGeneration, MODULE_MECH, FE_GENERATION, FE_MAT_GENERATION, "generation", 0);
+REGISTER_MATERIAL(FSGeneration, MODULE_MECH, FE_GENERATION, FE_MAT_GENERATION, "generation", 0);
 
-FEGeneration::FEGeneration() : FEMaterial(FE_GENERATION)
+FSGeneration::FSGeneration() : FSMaterial(FE_GENERATION)
 {
     // add parameters
     AddScienceParam(0, UNIT_TIME, "start_time", "generation start time");
@@ -1294,21 +1294,21 @@ FEGeneration::FEGeneration() : FEMaterial(FE_GENERATION)
 //                                MULTIGENERATION
 //=============================================================================
 
-REGISTER_MATERIAL(FEMultiGeneration, MODULE_MECH, FE_MULTI_GENERATION, FE_MAT_ELASTIC, "multigeneration", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSMultiGeneration, MODULE_MECH, FE_MULTI_GENERATION, FE_MAT_ELASTIC, "multigeneration", MaterialFlags::TOPLEVEL);
 
 //-----------------------------------------------------------------------------
-FEMultiGeneration::FEMultiGeneration() : FEMaterial(FE_MULTI_GENERATION)
+FSMultiGeneration::FSMultiGeneration() : FSMaterial(FE_MULTI_GENERATION)
 {
-    AddProperty("generation", FE_MAT_GENERATION, FEMaterialProperty::NO_FIXED_SIZE);
+    AddProperty("generation", FE_MAT_GENERATION, FSProperty::NO_FIXED_SIZE);
 }
 
 //=============================================================================
 //								PRESTRAIN
 //=============================================================================
 
-REGISTER_MATERIAL(FEPrestrainMaterial, MODULE_MECH, FE_PRESTRAIN_MATERIAL, FE_MAT_ELASTIC, "prestrain elastic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSPrestrainMaterial, MODULE_MECH, FE_PRESTRAIN_MATERIAL, FE_MAT_ELASTIC, "prestrain elastic", MaterialFlags::TOPLEVEL);
 
-FEPrestrainMaterial::FEPrestrainMaterial() : FEMaterial(FE_PRESTRAIN_MATERIAL)
+FSPrestrainMaterial::FSPrestrainMaterial() : FSMaterial(FE_PRESTRAIN_MATERIAL)
 {
 	AddScienceParam(1.0, UNIT_DENSITY, "density");
 
@@ -1321,9 +1321,9 @@ FEPrestrainMaterial::FEPrestrainMaterial() : FEMaterial(FE_PRESTRAIN_MATERIAL)
 //								UNCOUPLED PRESTRAIN
 //=============================================================================
 
-REGISTER_MATERIAL(FEUncoupledPrestrainMaterial, MODULE_MECH, FE_UNCOUPLED_PRESTRAIN_MATERIAL, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prestrain elastic", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSUncoupledPrestrainMaterial, MODULE_MECH, FE_UNCOUPLED_PRESTRAIN_MATERIAL, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prestrain elastic", MaterialFlags::TOPLEVEL);
 
-FEUncoupledPrestrainMaterial::FEUncoupledPrestrainMaterial() : FEMaterial(FE_UNCOUPLED_PRESTRAIN_MATERIAL)
+FSUncoupledPrestrainMaterial::FSUncoupledPrestrainMaterial() : FSMaterial(FE_UNCOUPLED_PRESTRAIN_MATERIAL)
 {
 	AddScienceParam(1, UNIT_DENSITY, "density", "density");
 	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
@@ -1337,9 +1337,9 @@ FEUncoupledPrestrainMaterial::FEUncoupledPrestrainMaterial() : FEMaterial(FE_UNC
 //                              REACTIVE PLASTICITY
 //=============================================================================
 
-REGISTER_MATERIAL(FEReactivePlasticity, MODULE_MECH, FE_REACTIVE_PLASTICITY, FE_MAT_ELASTIC, "reactive plasticity", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSReactivePlasticity, MODULE_MECH, FE_REACTIVE_PLASTICITY, FE_MAT_ELASTIC, "reactive plasticity", MaterialFlags::TOPLEVEL);
 
-FEReactivePlasticity::FEReactivePlasticity() : FEMaterial(FE_REACTIVE_PLASTICITY)
+FSReactivePlasticity::FSReactivePlasticity() : FSMaterial(FE_REACTIVE_PLASTICITY)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
     AddBoolParam   (true,"isochoric", "isochoric plastic flow");
@@ -1358,9 +1358,9 @@ FEReactivePlasticity::FEReactivePlasticity() : FEMaterial(FE_REACTIVE_PLASTICITY
 //                            REACTIVE PLASTIC DAMAGE
 //=============================================================================
 
-REGISTER_MATERIAL(FEReactivePlasticDamage, MODULE_MECH, FE_REACTIVE_PLASTIC_DAMAGE, FE_MAT_ELASTIC, "reactive plastic damage", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSReactivePlasticDamage, MODULE_MECH, FE_REACTIVE_PLASTIC_DAMAGE, FE_MAT_ELASTIC, "reactive plastic damage", MaterialFlags::TOPLEVEL);
 
-FEReactivePlasticDamage::FEReactivePlasticDamage() : FEMaterial(FE_REACTIVE_PLASTIC_DAMAGE)
+FSReactivePlasticDamage::FSReactivePlasticDamage() : FSMaterial(FE_REACTIVE_PLASTIC_DAMAGE)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
     AddBoolParam(true, "isochoric", "isochoric plastic flow");

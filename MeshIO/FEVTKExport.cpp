@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FEVTKExport::FEVTKExport(FEProject& prj) : FEFileExport(prj)
+FEVTKExport::FEVTKExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -50,7 +50,7 @@ bool FEVTKExport::Write(const char* szfile)
 	bool isTet4 = false;
 	bool isTet10 = false;
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int totElems = 0;
@@ -58,9 +58,9 @@ bool FEVTKExport::Write(const char* szfile)
 
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		if (pm == 0) return false;
-		FEMesh& m = *pm;
+		FSMesh& m = *pm;
 
 		//tags all nodes as -1
 		m.TagAllNodes(-1);
@@ -70,7 +70,7 @@ bool FEVTKExport::Write(const char* szfile)
 		// tags all the nodes in elements as 1
 		for (int j=0; j<m.Elements(); ++j)
 		{
-			FEElement &el = m.Element(j);
+			FSElement &el = m.Element(j);
 			for (int k=0; k<el.Nodes(); ++k)
 				m.Node(el.m_node[k]).m_ntag = 1;
 
@@ -116,7 +116,7 @@ bool FEVTKExport::Write(const char* szfile)
 	int nodes = 0;
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (int j=0; j<m.Nodes(); ++j)
 		{
 			if (m.Node(j).m_ntag == 1) 
@@ -140,14 +140,14 @@ bool FEVTKExport::Write(const char* szfile)
 	//fprintf(fp, "%d %d %d %d\n", parts, nodes, faces, edges);
 
 	// --- N O D E S ---
-	vector<vec3d> nodeCoords(nodes);
+	std::vector<vec3d> nodeCoords(nodes);
 	nodes = 0;
 	for (int i = 0; i < model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (int j = 0; j < m.Nodes(); ++j)
 		{
-			FENode& node = m.Node(j);
+			FSNode& node = m.Node(j);
 			if (node.m_ntag >= 0)
 			{
 				vec3d r = m.LocalToGlobal(node.r);
@@ -176,13 +176,13 @@ bool FEVTKExport::Write(const char* szfile)
 	if (isUnstructuredGrid)
 		fprintf(fp, "%s %d %d\n", "CELLS", totElems, totElems * (nodesPerElem + 1));
 
-	int nn[FEElement::MAX_NODES];
+	int nn[FSElement::MAX_NODES];
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (int j=0; j<m.Elements(); ++j)
 		{
-			FEElement& el = m.Element(j);
+			FSElement& el = m.Element(j);
 			for (int k=0; k<el.Nodes(); ++k) 
 				nn[k] = m.Node(el.m_node[k]).m_ntag;
 
@@ -216,7 +216,7 @@ bool FEVTKExport::Write(const char* szfile)
 		fprintf(fp, "%s %d\n", "CELL_TYPES", totElems);
 		for (int i = 0; i < model.Objects(); ++i)
 		{
-			FEMesh& m = *model.Object(i)->GetFEMesh();
+			FSMesh& m = *model.Object(i)->GetFEMesh();
 			for (int j = 0; j < m.Elements(); ++j)
 			{
 				if (isHex8) fprintf(fp, "%s\n", "12");
@@ -237,7 +237,7 @@ bool FEVTKExport::Write(const char* szfile)
 		for (int i = 0; i < model.Objects(); ++i)
 		{
 			int maxId = 0;
-			FEMesh& m = *model.Object(i)->GetFEMesh();
+			FSMesh& m = *model.Object(i)->GetFEMesh();
 			for (int j = 0; j < m.Elements(); ++j)
 			{
 				int gid = m.Element(j).m_gid;
@@ -257,9 +257,9 @@ bool FEVTKExport::Write(const char* szfile)
 		fprintf(fp,"%s\n","LOOKUP_TABLE default");
 		for (int i=0; i<model.Objects(); ++i)
 		{
-			FEMesh& m = *model.Object(i)->GetFEMesh();
+			FSMesh& m = *model.Object(i)->GetFEMesh();
 
-			vector<double> nodeShellThickness; 
+			std::vector<double> nodeShellThickness; 
 			nodeShellThickness.reserve(nodes);
 			int nn[8];
 			for (int k = 0 ; k< nodes;k++)
@@ -267,7 +267,7 @@ bool FEVTKExport::Write(const char* szfile)
 
 			for (int j=0; j<m.Elements(); ++j)
 			{
-				FEElement& el = m.Element(j);
+				FSElement& el = m.Element(j);
 				if (!el.IsType(FE_TRI3) && !el.IsType(FE_QUAD4))
 					break;
 
@@ -300,12 +300,12 @@ bool FEVTKExport::Write(const char* szfile)
 		fprintf(fp,"%s\n","LOOKUP_TABLE default");
 		for (i=0; i<model.Objects(); ++i)
 		{
-			FEMesh& m = *model.Object(i)->GetFEMesh();
+			FSMesh& m = *model.Object(i)->GetFEMesh();
 			for (j=0; j<m.Nodes();)
 			{
 				for (int k =0; k<9 && j+k<m.Nodes();k++)
 				{
-					FENode& n = m.Node(j+k);
+					FSNode& n = m.Node(j+k);
 						fprintf(fp, "%15.10lg ", n.m_ndata);
 				}
 				fprintf(fp, "\n");

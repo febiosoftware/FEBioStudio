@@ -169,7 +169,7 @@ void CScalarFieldTool::Activate()
 	ui->m_matList->clear();
 	if (doc)
 	{
-		FEModel* fem = doc->GetFEModel();
+		FSModel* fem = doc->GetFSModel();
 		if (fem)
 		{
 			int nmat = fem->Materials();
@@ -213,7 +213,7 @@ void CScalarFieldTool::OnApply()
 	}
 
 	// make sure there is a mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0)
 	{
 		QMessageBox::critical(GetMainWindow(), "Tool", "The object needs to be meshed before you can apply this tool.");
@@ -228,7 +228,7 @@ void CScalarFieldTool::OnApply()
 	}
 
 	//get the model and nodeset
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int NN = pm->Nodes();
@@ -240,12 +240,12 @@ void CScalarFieldTool::OnApply()
 		FEItemListBuilder* item = m_data[i];
 		double v = ui->m_table->item(i, 1)->text().toDouble();
 
-		FENodeList* node = item->BuildNodeList(); assert(node);
+		FSNodeList* node = item->BuildNodeList(); assert(node);
 		if (node)
 		{
 			for (int i = 0; i < NN; ++i) pm->Node(i).m_ntag = i;
 
-			FENodeList::Iterator it = node->First();
+			FSNodeList::Iterator it = node->First();
 			int nn = node->Size();
 			for (int j=0; j<nn; ++j, it++)
 			{ 
@@ -274,7 +274,7 @@ void CScalarFieldTool::OnApply()
 			CModelDocument* doc = GetMainWindow()->GetModelDocument();
 			if (doc)
 			{
-				FEModel* fem = doc->GetFEModel();
+				FSModel* fem = doc->GetFSModel();
 				if (fem)
 				{
 					GMaterial* mat = fem->GetMaterial(n);
@@ -285,7 +285,7 @@ void CScalarFieldTool::OnApply()
 						int NE = pm->Elements();
 						for (int i = 0; i < NE; ++i)
 						{
-							FEElement& el = pm->Element(i);
+							FSElement& el = pm->Element(i);
 
 							int pid = el.m_gid;
 							GPart* pg = po->Part(pid); assert(pg);

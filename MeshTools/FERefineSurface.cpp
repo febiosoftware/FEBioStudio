@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FERefineSurface.h"
 #include <MeshLib/FESurfaceMesh.h>
+using namespace std;
 
 FERefineSurface::FERefineSurface() : FESurfaceModifier("Refine Mesh")
 {
@@ -38,7 +39,7 @@ void FERefineSurface::SetIterations(int n)
 	SetIntValue(0, n);
 }
 
-FESurfaceMesh* FERefineSurface::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FERefineSurface::Apply(FSSurfaceMesh* pm)
 {
 	int niter = GetIntValue(0);
 
@@ -54,7 +55,7 @@ FESurfaceMesh* FERefineSurface::Apply(FESurfaceMesh* pm)
 		return 0;
 	}
 
-	FESurfaceMesh* newMesh = 0;
+	FSSurfaceMesh* newMesh = 0;
 	setProgress(0.0);
 	for (int i = 0; i<niter; ++i)
 	{
@@ -71,7 +72,7 @@ FESurfaceMesh* FERefineSurface::Apply(FESurfaceMesh* pm)
 	return newMesh;
 }
 
-FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
+FSSurfaceMesh* FERefineSurface::Split(FSSurfaceMesh* pm)
 {
 	int NN0 = pm->Nodes();
 	int NF0 = pm->Faces();
@@ -79,7 +80,7 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	// tag all faces
 	for (int i=0; i<NF0; ++i) 
 	{
-		FEFace* face = &pm->Face(i);
+		FSFace* face = &pm->Face(i);
 		face->m_ntag = i;
 	}
 
@@ -87,11 +88,11 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	int nen = 0;
 	for (int i=0; i<NF0; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		for (int j=0; j<3; ++j)
 		{
 			int nj = face.m_nbr[j];
-			FEFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
+			FSFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
 			if ((pj == 0) || (face.m_ntag < pj->m_ntag)) nen++;
 		}
 	}
@@ -99,7 +100,7 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	// create the new mesh
 	int NN1 = NN0 + nen;
 	int NF1 = 4*NF0;
-	FESurfaceMesh* pnew = new FESurfaceMesh;
+	FSSurfaceMesh* pnew = new FSSurfaceMesh;
 	pnew->Create(NN1, 0, NF1);
 
 	// copy old nodes
@@ -110,15 +111,15 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	nen = 0;
 	for (int i=0; i<NF0; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		for (int j=0; j<3; ++j)
 		{
 			int nj = face.m_nbr[j];
-			FEFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
+			FSFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
 			if ((pj == 0) || (face.m_ntag < pj->m_ntag))
 			{
-				FENode& n0 = pm->Node(face.n[j      ]);
-				FENode& n1 = pm->Node(face.n[(j+1)%3]);
+				FSNode& n0 = pm->Node(face.n[j      ]);
+				FSNode& n1 = pm->Node(face.n[(j+1)%3]);
 				vec3d r = (n0.r + n1.r)*0.5;
 
 				pnew->Node(NN0 + nen).r = r;
@@ -132,11 +133,11 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 
 	for (int i = 0; i<NF0; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		for (int j = 0; j<3; ++j)
 		{
 			int nj = face.m_nbr[j];
-			FEFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
+			FSFace* pj = (nj != -1 ? &pm->Face(nj) : 0);
 			if (pj && (face.m_ntag > pj->m_ntag))
 			{
 				int nk = pj->FindEdge(face.GetEdge(j)); assert(nk != -1);
@@ -157,12 +158,12 @@ FESurfaceMesh* FERefineSurface::Split(FESurfaceMesh* pm)
 	int nf = 0;
 	for (int i=0; i<NF0; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 
-		FEFace& f0 = pnew->Face(nf++); f0 = face;
-		FEFace& f1 = pnew->Face(nf++); f1 = face;
-		FEFace& f2 = pnew->Face(nf++); f2 = face;
-		FEFace& f3 = pnew->Face(nf++); f3 = face;
+		FSFace& f0 = pnew->Face(nf++); f0 = face;
+		FSFace& f1 = pnew->Face(nf++); f1 = face;
+		FSFace& f2 = pnew->Face(nf++); f2 = face;
+		FSFace& f3 = pnew->Face(nf++); f3 = face;
 
 		int* en = &ELT[3*i];
 

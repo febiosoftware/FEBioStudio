@@ -27,26 +27,28 @@ SOFTWARE.*/
 #include "FENodeFaceList.h"
 #include "FEMeshBase.h"
 #include "FEFace.h"
+#include <assert.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
-FENodeFaceList::FENodeFaceList()
+FSNodeFaceList::FSNodeFaceList()
 {
 	m_pm = nullptr;
 }
 
 //-----------------------------------------------------------------------------
-FENodeFaceList::~FENodeFaceList(void)
+FSNodeFaceList::~FSNodeFaceList(void)
 {
 }
 
 //-----------------------------------------------------------------------------
-void FENodeFaceList::Clear()
+void FSNodeFaceList::Clear()
 {
 	m_face.clear();
 }
 
 //-----------------------------------------------------------------------------
-bool FENodeFaceList::IsEmpty() const
+bool FSNodeFaceList::IsEmpty() const
 {
 	return m_face.empty();
 }
@@ -54,7 +56,7 @@ bool FENodeFaceList::IsEmpty() const
 //-----------------------------------------------------------------------------
 // Builds a sorted node-facet list. That is, the facets form a star around the node.
 // Note that for non-manifold topologies this may fail, so make sure to check the return value.
-bool FENodeFaceList::BuildSorted(FEMeshBase* pm)
+bool FSNodeFaceList::BuildSorted(FSMeshBase* pm)
 {
 	Build(pm);
 
@@ -69,11 +71,11 @@ bool FENodeFaceList::BuildSorted(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FENodeFaceList::Build(FEMeshBase* pm)
+void FSNodeFaceList::Build(FSMeshBase* pm)
 {
 	m_pm = pm;
 	assert(m_pm);
-	FEMeshBase& m = *m_pm;
+	FSMeshBase& m = *m_pm;
 
 	int NN = m.Nodes();
 	int NF = m.Faces();
@@ -81,7 +83,7 @@ void FENodeFaceList::Build(FEMeshBase* pm)
 	m_face.resize(NN);
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
@@ -99,7 +101,7 @@ void FENodeFaceList::Build(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FENodeFaceList::HasFace(int n, FEFace* pf)
+bool FSNodeFaceList::HasFace(int n, FSFace* pf)
 {
 	int nval = Valence(n);
 	for (int i=0; i<nval; ++i) if (Face(n, i) == pf) return true;
@@ -107,20 +109,20 @@ bool FENodeFaceList::HasFace(int n, FEFace* pf)
 }
 
 //-----------------------------------------------------------------------------
-int FENodeFaceList::FindFace(const FEFace& f)
+int FSNodeFaceList::FindFace(const FSFace& f)
 {
 	int n = f.n[0];
 	int nval = Valence(n);
 	for (int i=0; i<nval; ++i)
 	{
-		FEFace* pf = Face(n, i);
+		FSFace* pf = Face(n, i);
 		if (*pf == f) return FaceIndex(n, i);
 	}
 	return -1;
 }
 
 //-----------------------------------------------------------------------------
-bool FENodeFaceList::Sort(int node)
+bool FSNodeFaceList::Sort(int node)
 {
 	int nval = Valence(node);
 	vector<NodeFaceRef> fl; fl.reserve(nval);
@@ -143,7 +145,7 @@ bool FENodeFaceList::Sort(int node)
 		int nj = ref.pf->m_nbr[(m+2)%3];
 		if (nj >= 0)
 		{
-			FEFace* pf2 = &m_pm->Face(nj);
+			FSFace* pf2 = &m_pm->Face(nj);
 			assert(HasFace(node, pf2));
 			if (pf2->m_ntag == 0)
 			{
@@ -175,7 +177,7 @@ bool FENodeFaceList::Sort(int node)
 	return true;
 }
 
-const vector<NodeFaceRef>& FENodeFaceList::FaceList(int n) const
+const vector<NodeFaceRef>& FSNodeFaceList::FaceList(int n) const
 { 
 	return m_face[n]; 
 }
@@ -185,9 +187,9 @@ const vector<NodeFaceRef>& FENodeFaceList::FaceList(int n) const
 // The most likely cause would be if the facet is an interal fact, since PostView does not
 // process internal facets (e.g. facets between two materials).
 // \todo perhaps I should modify PostView so that it stores internal facets as well.
-int FENodeFaceList::FindFace(int inode, int n[10], int m)
+int FSNodeFaceList::FindFace(int inode, int n[10], int m)
 {
-	FEFace ft;
+	FSFace ft;
 	for (int i = 0; i<m; ++i) ft.n[i] = n[i];
 	switch (m)
 	{
@@ -206,7 +208,7 @@ int FENodeFaceList::FindFace(int inode, int n[10], int m)
 	int nf = (int)ni.size();
 	for (int i = 0; i<nf; ++i)
 	{
-		FEFace& f = m_pm->Face(ni[i].fid);
+		FSFace& f = m_pm->Face(ni[i].fid);
 		if (f == ft) return ni[i].fid;
 	}
 	return -1;

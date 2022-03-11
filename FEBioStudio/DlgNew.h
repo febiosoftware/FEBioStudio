@@ -42,7 +42,7 @@ public:
 
 	void accept();
 
-	int getTemplate();
+	int GetModule();
 
 	void showEvent(QShowEvent* ev);
 

@@ -102,7 +102,7 @@ void GHollowSphere::Create()
 
 	// build the parts
 	assert(m_Part.empty());
-	AddPart();
+	AddSolidPart();
 
 	// build the faces
 	int FT[16][3] = {

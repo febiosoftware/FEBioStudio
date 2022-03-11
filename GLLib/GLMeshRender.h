@@ -25,15 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
 #include <FSCore/color.h>
 
 class FEElement_;
-class FEEdge;
-class FEFace;
-class FELineMesh;
-class FECoreMesh;
-class FEMeshBase;
+class FSEdge;
+class FSFace;
+class FSLineMesh;
+class FSCoreMesh;
+class FSMeshBase;
 class GLMesh;
 
 class GLMeshRender
@@ -54,58 +53,58 @@ public:
 
 
 public:
-	void RenderFENodes(FELineMesh* mesh);
+	void RenderFENodes(FSLineMesh* mesh);
 
-	void RenderSelectedFEEdges(FELineMesh* pm);
-	void RenderUnselectedFEEdges(FELineMesh* pm);
-	void RenderFaceEdge(FEFace& face, int j, FEMeshBase* pm, int ndivs);
+	void RenderSelectedFEEdges(FSLineMesh* pm);
+	void RenderUnselectedFEEdges(FSLineMesh* pm);
+	void RenderFaceEdge(FSFace& face, int j, FSMeshBase* pm, int ndivs);
 
-	void RenderMeshLines(FEMeshBase* pm);
-	void RenderSelectedFEFaces(FEMeshBase* pm);
-	void RenderUnselectedFEFaces(FEMeshBase* pm);
-	void RenderSelectedFEFacesOutline(FEMeshBase* pm);
+	void RenderMeshLines(FSMeshBase* pm);
+	void RenderSelectedFEFaces(FSMeshBase* pm);
+	void RenderUnselectedFEFaces(FSMeshBase* pm);
+	void RenderSelectedFEFacesOutline(FSMeshBase* pm);
 
-	void RenderElementOutline(FEElement_& el, FECoreMesh* pm, int ndivs);
+	void RenderElementOutline(FEElement_& el, FSCoreMesh* pm, int ndivs);
 
 public:
 	// drawing routines for elements
-	void RenderHEX8   (FEElement_ *pe, FECoreMesh *pm, bool bsel);
-	void RenderHEX20  (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderHEX27  (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderPENTA  (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderTET4   (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderTET10  (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderTET15  (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderTET20  (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderQUAD   (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderQUAD8  (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderQUAD9  (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderTRI3   (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderTRI6   (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderPYRA5  (FEElement_* pe, FECoreMesh* pm, bool bsel);
-	void RenderPENTA15(FEElement_* pe, FECoreMesh *pm, bool bsel);
-    void RenderPYRA13 (FEElement_* pe, FECoreMesh* pm, bool bsel);
+	void RenderHEX8   (FEElement_ *pe, FSCoreMesh *pm, bool bsel);
+	void RenderHEX20  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderHEX27  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderPENTA  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderTET4   (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderTET10  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderTET15  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderTET20  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderQUAD   (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderQUAD8  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderQUAD9  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderTRI3   (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderTRI6   (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderPYRA5  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderPENTA15(FEElement_* pe, FSCoreMesh *pm, bool bsel);
+    void RenderPYRA13 (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 
-	void RenderHEX8(FEElement_ *pe, FECoreMesh *pm, GLColor* col);
-	void RenderTET4(FEElement_ *pe, FECoreMesh *pm, GLColor* col);
-	void RenderTET10(FEElement_* pe, FECoreMesh* pm, GLColor* col);
-	void RenderTRI3(FEElement_* pe, FECoreMesh* pm, GLColor* col);
-	void RenderQUAD(FEElement_* pe, FECoreMesh* pm, GLColor* col);
+	void RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col);
+	void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col);
+	void RenderTET10(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderTRI3(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderQUAD(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
 
 public:
 	// drawing routines for faces
-	void RenderFEFace(FEFace& face, FEMeshBase* pm);
-	void RenderFace(FEFace& face, FECoreMesh* pm);
-	void RenderFace(FEFace& face, FECoreMesh* pm, GLColor c[4], int ndivs);
+	void RenderFEFace(FSFace& face, FSMeshBase* pm);
+	void RenderFace(FSFace& face, FSCoreMesh* pm);
+	void RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4], int ndivs);
 
-	void RenderFaceOutline(FEFace& face, FECoreMesh* pm, int ndivs);
+	void RenderFaceOutline(FSFace& face, FSCoreMesh* pm, int ndivs);
 
 private:
 	// special render routines for thick shells
-	void RenderThickShell(FEFace& face, FECoreMesh* pm);
-	void RenderThickQuad (FEFace& face, FECoreMesh* pm);
-	void RenderThickTri  (FEFace& face, FECoreMesh* pm);
-	void RenderThickShellOutline(FEFace& face, FECoreMesh* pm);
+	void RenderThickShell(FSFace& face, FSCoreMesh* pm);
+	void RenderThickQuad (FSFace& face, FSCoreMesh* pm);
+	void RenderThickTri  (FSFace& face, FSCoreMesh* pm);
+	void RenderThickShellOutline(FSFace& face, FSCoreMesh* pm);
 
 public:
 	int			m_ndivs;			//!< divisions for smooth render
@@ -116,26 +115,26 @@ public:
 
 // drawing routines for edges
 // Note: Call this from within glBegin(GL_LINES)\glEnd() section
-void RenderFEEdge(FEEdge& edge, FELineMesh* pm);
+void RenderFEEdge(FSEdge& edge, FSLineMesh* pm);
 
 // drawing routines for faces
 // Note: Call these functions from within glBegin(GL_TRIANGLES)\glEnd() section
-void RenderQUAD4(FEMeshBase* pm, FEFace& f);
-void RenderQUAD8(FEMeshBase* pm, FEFace& f);
-void RenderQUAD9(FEMeshBase* pm, FEFace& f);
-void RenderTRI3 (FEMeshBase* pm, FEFace& f);
-void RenderTRI6 (FEMeshBase* pm, FEFace& f);
-void RenderTRI7 (FEMeshBase* pm, FEFace& f);
-void RenderTRI10(FEMeshBase* pm, FEFace& f);
+void RenderQUAD4(FSMeshBase* pm, FSFace& f);
+void RenderQUAD8(FSMeshBase* pm, FSFace& f);
+void RenderQUAD9(FSMeshBase* pm, FSFace& f);
+void RenderTRI3 (FSMeshBase* pm, FSFace& f);
+void RenderTRI6 (FSMeshBase* pm, FSFace& f);
+void RenderTRI7 (FSMeshBase* pm, FSFace& f);
+void RenderTRI10(FSMeshBase* pm, FSFace& f);
 
-void RenderSmoothQUAD4(FECoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothQUAD8(FECoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothQUAD9(FECoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothTRI3 (FECoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothTRI6 (FECoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothTRI7 (FECoreMesh* pm, FEFace& face, int ndivs);
-void RenderSmoothTRI10(FECoreMesh* pm, FEFace& face, int ndivs);
+void RenderSmoothQUAD4(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothQUAD8(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothQUAD9(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI3 (FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI6 (FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI7 (FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI10(FSCoreMesh* pm, FSFace& face, int ndivs);
 
-void RenderFace1Outline(FECoreMesh* pm, FEFace& face);
-void RenderFace2Outline(FECoreMesh* pm, FEFace& face, int ndivs);
-void RenderFace3Outline(FECoreMesh* pm, FEFace& face, int ndivs);
+void RenderFace1Outline(FSCoreMesh* pm, FSFace& face);
+void RenderFace2Outline(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderFace3Outline(FSCoreMesh* pm, FSFace& face, int ndivs);

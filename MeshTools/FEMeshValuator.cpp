@@ -34,7 +34,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // constructor
-FEMeshValuator::FEMeshValuator(FEMesh& mesh) : m_mesh(mesh)
+FEMeshValuator::FEMeshValuator(FSMesh& mesh) : m_mesh(mesh)
 {
 	m_curvature_levels = 1;
 	m_curvature_maxiters = 10;
@@ -90,7 +90,7 @@ void FEMeshValuator::Evaluate(int nfield)
 
 				for (int i = 0; i < NE; ++i)
 				{
-					FEElement& el = m_mesh.Element(i);
+					FSElement& el = m_mesh.Element(i);
 					if (el.IsVisible())
 					{
 						data.SetElementDataTag(i, 1);
@@ -108,7 +108,7 @@ void FEMeshValuator::Evaluate(int nfield)
 		{
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement& el = m_mesh.Element(i);
+				FSElement& el = m_mesh.Element(i);
 				if (el.IsVisible())
 				{
 					try {
@@ -136,10 +136,10 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::NODE_DATA:
 			{
 				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
-				FEMesh* mesh = nodeData.GetMesh();
+				FSMesh* mesh = nodeData.GetMesh();
 				for (int i=0; i < mesh->Elements(); ++i)
 				{ 
-					FEElement& el = mesh->Element(i);
+					FSElement& el = mesh->Element(i);
 					int ne = el.Nodes();
 					for (int j = 0; j < ne; ++j)
 					{
@@ -156,7 +156,7 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::ELEMENT_DATA:
 			{
 				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
-				const FEPart* pg = elemData.GetPart();
+				const FSPart* pg = elemData.GetPart();
 				FEItemListBuilder::ConstIterator it = pg->begin();
 				for (int i = 0; i < pg->size(); ++i, ++it)
 				{
@@ -212,7 +212,7 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 {
 	if (err) *err = 0;
 	double val = 0, sum = 0;
-	const FEElement& el = m_mesh.Element(n);
+	const FSElement& el = m_mesh.Element(n);
 	switch (nfield)
 	{
 	case 0: // element volume

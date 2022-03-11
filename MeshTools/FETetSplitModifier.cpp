@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FESplitModifier.h"
 #include <MeshLib/FEFaceEdgeList.h>
 #include <MeshLib/FENodeElementList.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // Lookup-table for splitting tets into smaller tets
@@ -108,7 +109,7 @@ const int NLT[64][8][6] = {
 // (approximately) the same length, the edge that has the highest node index
 // The em[4] contains the nodes numbers, ordered as a loop around the facet
 // This function returns 0 for split [0,2], or 1 for split [1,3].
-int split_face(FEMesh* pm, int em[4], double tol)
+int split_face(FSMesh* pm, int em[4], double tol)
 {
 	assert(em[0] >= 0);
 	assert(em[1] >= 0);
@@ -147,7 +148,7 @@ int split_face(FEMesh* pm, int em[4], double tol)
 //-----------------------------------------------------------------------------
 // evaluate the volume of a tet.
 // (used for finding inverted elements)
-double tet_volume(FEMesh* pm, int en[4])
+double tet_volume(FSMesh* pm, int en[4])
 {
 	vec3d r0 = pm->Node(en[0]).r;
 	vec3d r1 = pm->Node(en[1]).r;
@@ -168,7 +169,7 @@ FETetSplitModifier::FETetSplitModifier() : FEModifier("Split")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
+FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 {
 	// The number of nodes of the original mesh
 	int NN0 = pm->Nodes();
@@ -177,18 +178,18 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 	int NT0 = pm->Elements();
 
 	// build the edge table of the mesh
-	FEEdgeList ET(*pm);
+	FSEdgeList ET(*pm);
 	int NE = (int) ET.size();
 
 	// build the element-edge table
-	FEElementEdgeList EET(*pm, ET);
+	FSElementEdgeList EET(*pm, ET);
 
 	// tag all selected elements
 	pm->TagAllElements(0);
 	int nsel = 0;
 	for (int i = 0; i < NT0; i++)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected()) { el.m_ntag = 1; nsel++; }
 	}
 	if (nsel == 0) pm->TagAllElements(1);
@@ -198,7 +199,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 	vector<int> EM; EM.assign(NE, -1);
 	for (int i=0; i<NT0; i++)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_ntag == 1)
 		{
 			vector<int>& EETi = EET[i];
@@ -218,7 +219,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 		for (int i=0; i<NN0; ++i) pm->Node(i).m_ntag = 0;
 		for (int i=0; i<NT0; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.m_ntag == 1)
 			{
 				pm->Node(el.m_node[0]).m_ntag = 1;
@@ -229,7 +230,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 		}
 		for (int i=0; i<NT0; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.m_ntag != 1)
 			{
 				vector<int>& EETi = EET[i];
@@ -258,7 +259,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 	}
 
 	// create a new mesh (just nodes for now)
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN1, 0);
 
 	// copy old nodes
@@ -271,8 +272,8 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 		pair<int, int>& edge = ET[i];
 		if (EM[i] != -1)
 		{
-			FENode& n0 = pm->Node(edge.first);
-			FENode& n1 = pm->Node(edge.second);
+			FSNode& n0 = pm->Node(edge.first);
+			FSNode& n1 = pm->Node(edge.second);
 
 			// put the node halfway between the edge nodes
 			vec3d r = (n0.r+n1.r)*0.5;
@@ -286,7 +287,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 	vector<vector<int> > EC(NT0); // case numbers ([0] = major case, [1..8] = subcase for each primitive)
 	for (int i=0; i<NT0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		vector<int>& EETi = EET[i];
 
 		// determine the major case number
@@ -309,7 +310,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 	int NT1 = 0;
 	for (int i=0; i<NT0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		vector<int>& EETi = EET[i];
 
 		// get the (global) node numbers
@@ -400,7 +401,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 	int cn = NN1 - (int) CN.size(); // index for center nodes of wedges (case 0, 7)
 	for (int i=0; i<NT0; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		vector<int>& EETi = EET[i];
 		int ncase    = EC[i][0];
 		bool bsel = (el.m_ntag == 1);
@@ -434,7 +435,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 			if ((nj[5]==-1)&&(nj[4]==-1))
 			{
 				// this is a tet
-				FEElement& ej = pnew->Element(elem++);
+				FSElement& ej = pnew->Element(elem++);
 				ej.SetType(FE_TET4);
 				ej.m_gid = el.m_gid;
 
@@ -467,7 +468,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 				for (int k=0; k<2; ++k)
 				{
 					const int* nk = il[k];
-					FEElement& ej = pnew->Element(elem++);
+					FSElement& ej = pnew->Element(elem++);
 					ej.SetType(FE_TET4);
 					ej.m_gid = el.m_gid;
 					ej.m_node[0] = ML[ nk[0] ]; assert(ej.m_node[0] != -1);
@@ -513,7 +514,7 @@ FEMesh* FETetSplitModifier::Apply(FEMesh* pm)
 					const int* nk = il[k];
 					if (nk[0] == -1) break;
 
-					FEElement& ej = pnew->Element(elem++);
+					FSElement& ej = pnew->Element(elem++);
 					ej.SetType(FE_TET4);
 					ej.m_gid = el.m_gid;
 

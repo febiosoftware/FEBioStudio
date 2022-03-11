@@ -29,10 +29,10 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
-#include "FEBioModel.h"
+#include "FEBioInputModel.h"
 
 //-----------------------------------------------------------------------------
-class FEBioImport;
+class FEBioFileImport;
 
 //-----------------------------------------------------------------------------
 // Class that represents a specific FEBio specification format.
@@ -40,16 +40,17 @@ class FEBioImport;
 class FEBioFormat
 {
 public:
-	FEBioFormat(FEBioImport* fileReader, FEBioModel& febio);
+	FEBioFormat(FEBioFileImport* fileReader, FEBioInputModel& febio);
 	virtual ~FEBioFormat();
 
 	// override this function for processing the top-level sections
 	virtual bool ParseSection(XMLTag& tag) = 0;
 
 	void SetGeometryOnlyFlag(bool b);
+    void SetSkipGeometryFlag(bool b);
 
 protected:
-	FEBioImport* FileReader() { return m_fileReader; }
+	FEBioFileImport* FileReader() { return m_fileReader; }
 
 	void ParseUnknownTag(XMLTag& tag);
 	void ParseUnknownAttribute(XMLTag& tag, const char* szatt);
@@ -59,54 +60,64 @@ protected:
 	void ReadParameters(ParamContainer& PC, XMLTag& tag);
 
 
-	FEAnalysisStep* NewStep(FEModel& fem, int nanalysis, const char* sz = 0);
+	virtual FSStep* NewStep(FSModel& fem, int nanalysis, const char* sz = 0);
 
-	FEBioModel& GetFEBioModel() { return m_febio; }
+	FEBioInputModel& GetFEBioModel() { return m_febio; }
 
-	FEModel& GetFEModel() { return m_febio.GetFEModel(); }
+	FSModel& GetFSModel() { return m_febio.GetFSModel(); }
 
 protected:
 	// common parse functions
 	virtual bool ParseControlSection (XMLTag& tag);
 	bool ParseGlobalsSection (XMLTag& tag);
-	bool ParseMaterialSection(XMLTag& tag);
+	virtual bool ParseMaterialSection(XMLTag& tag);
 	bool ParseOutputSection  (XMLTag& tag);
 	virtual bool ParseLoadDataSection(XMLTag& tag);
 	bool ParsePlotfileSection(XMLTag& tag);
 	bool ParseLogfileSection (XMLTag& tag);
 
 	// material section helper functions
-	FEMaterial* ParseMaterial(XMLTag& tag, const char* szmat, int classId = -1);
-	FEMaterial* ParseRigidBody(XMLTag& tag);
-	void ParseFiberMaterial(FEOldFiberMaterial& fiber, XMLTag& tag);
-	FEMaterial* ParseTransIsoMR    (FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseTransIsoVW    (FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseBiphasicSolute(FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseTriphasic     (FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseMultiphasic   (FEMaterial* pm, XMLTag& tag);
-	FEMaterial* ParseReactionDiffusion(FEMaterial* pm, XMLTag& tag);
-	FEMaterial* Parse1DFunction(FEMaterial* pm, XMLTag& tag);
-    FEMaterial* ParseOsmoManning   (FEMaterial* pm, XMLTag& tag);
-	void ParseMatAxis(XMLTag& tag, FEMaterial* mat);
-	void ParseFiber(XMLTag& tag, FEMaterial* mat);
-	void ParseFiberProperty(XMLTag& tag, FEFiberMaterial* mat);
+	FSMaterial* ParseMaterial(XMLTag& tag, const char* szmat, int classId = -1);
+	FSMaterial* ParseRigidBody(XMLTag& tag);
+	void ParseFiberMaterial(FSOldFiberMaterial& fiber, XMLTag& tag);
+	FSMaterial* ParseTransIsoMR    (FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseTransIsoVW    (FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseBiphasicSolute(FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseTriphasic     (FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseMultiphasic   (FSMaterial* pm, XMLTag& tag);
+	FSMaterial* ParseReactionDiffusion(FSMaterial* pm, XMLTag& tag);
+	FSMaterial* Parse1DFunction(FSMaterial* pm, XMLTag& tag);
+    FSMaterial* ParseOsmoManning   (FSMaterial* pm, XMLTag& tag);
+	void ParseMatAxis(XMLTag& tag, FSMaterial* mat);
+	void ParseFiber(XMLTag& tag, FSMaterial* mat);
+	void ParseFiberProperty(XMLTag& tag, FSFiberMaterial* mat);
 
-	FEReactionMaterial* ParseReaction(XMLTag& tag);
-	FEReactionMaterial* ParseReaction2(XMLTag& tag);
-    FEMembraneReactionMaterial* ParseMembraneReaction(XMLTag& tag);
+	FSReactionMaterial* ParseReaction(XMLTag& tag);
+	FSReactionMaterial* ParseReaction2(XMLTag& tag);
+    FSMembraneReactionMaterial* ParseMembraneReaction(XMLTag& tag);
 
 	void ParseMappedParameter(XMLTag& tag, Param* param);
 
 private:
-	FEBioModel&		m_febio;
-	FEBioImport*	m_fileReader;
+	FEBioInputModel&		m_febio;
+	FEBioFileImport*	m_fileReader;
 
-protected: // TODO: Move to FEBioModel?
+protected: // TODO: Move to FEBioInputModel?
 	bool		m_geomOnly;	// read only geometry section
+    bool        m_skipGeom; // read everything but the geometry section
 	int			m_nAnalysis;	// analysis type
-	FEStep*		m_pstep;		// current analysis step
-	FEStep*		m_pBCStep;		// step to which BCs are assigned
+	FSStep*		m_pstep;		// current analysis step
+	FSStep*		m_pBCStep;		// step to which BCs are assigned
+
+	std::string		m_defaultSolver;
 };
 
 // return the DOF code from a bc string.
 int GetDOFCode(const char* sz);
+
+// convertors for custom types
+template <> void string_to_type<vec2i>(const std::string& s, vec2i& v);
+template <> void string_to_type<vec3f>(const std::string& s, vec3f& v);
+template <> void string_to_type<vec3d>(const std::string& s, vec3d& v);
+template <> void string_to_type<mat3d>(const std::string& s, mat3d& v);
+template <> void string_to_type<GLColor>(const std::string& s, GLColor& v);

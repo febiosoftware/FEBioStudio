@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLLinePlot.h"
 #include <PostGL/GLModel.h>
 #include <PostLib/FEPostModel.h>
+#include <MeshLib/FECurveMesh.h>
 #include <GLLib/glx.h>
 using namespace Post;
 
@@ -67,6 +68,8 @@ CGLLinePlot::CGLLinePlot()
 	m_range.min = 0.0; m_range.max = 1.0;
 	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
 
+	m_lineData = nullptr;
+
 	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
 	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
 	bar->copy_label(szname);
@@ -80,6 +83,14 @@ CGLLinePlot::CGLLinePlot()
 //-----------------------------------------------------------------------------
 CGLLinePlot::~CGLLinePlot()
 {
+	delete m_lineData;
+	m_lineData = nullptr;
+}
+
+void CGLLinePlot::SetLineDataModel(LineDataModel* lineData)
+{
+	if (m_lineData) delete m_lineData;
+	m_lineData = lineData;
 }
 
 bool CGLLinePlot::UpdateData(bool bsave)
@@ -140,8 +151,10 @@ void CGLLinePlot::SetDataField(int n)
 //-----------------------------------------------------------------------------
 void CGLLinePlot::Render(CGLContext& rc)
 {
+	if (m_lineData == nullptr) return;
+
 	CGLModel& glm = *GetModel();
-	FEPostModel& fem = *glm.GetFEModel();
+	FEPostModel& fem = *glm.GetFSModel();
 	int ns = glm.CurrentTimeIndex();
 
 	GLfloat zero[4] = { 0.f };
@@ -160,7 +173,7 @@ void CGLLinePlot::Render(CGLContext& rc)
 	if ((ns >= 0) && (ns <fem.GetStates()))
 	{
 		FEState& s = *fem.GetState(ns);
-		Post::LineData& lineData = s.GetLineData();
+		Post::LineData& lineData = m_lineData->GetLineData(ns);
 		int NL = lineData.Lines();
 		if (NL > 0)
 		{
@@ -168,9 +181,9 @@ void CGLLinePlot::Render(CGLContext& rc)
 			{
 				switch (m_nmode)
 				{
-				case 0: RenderLines(s); break;
-				case 1: Render3DLines(s); break;
-				case 2: Render3DSmoothLines(s); break;
+				case 0: RenderLines(s, ns); break;
+				case 1: Render3DLines(s, ns); break;
+				case 2: Render3DSmoothLines(s, ns); break;
 				}
 			}
 			glPopAttrib();
@@ -188,10 +201,10 @@ int randomize(int n, int nmax)
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::RenderLines(FEState& s)
+void CGLLinePlot::RenderLines(FEState& s, int ntime)
 {
 	glDisable(GL_LIGHTING);
-	Post::LineData& lineData = s.GetLineData();
+	Post::LineData& lineData = m_lineData->GetLineData(ntime);
 	if (m_ncolor == COLOR_SOLID)
 	{
 		glColor3ub(m_col.r, m_col.g, m_col.b);
@@ -200,7 +213,7 @@ void CGLLinePlot::RenderLines(FEState& s)
 			int NL = lineData.Lines();
 			for (int i = 0; i < NL; ++i)
 			{
-				LINEDATA& l = lineData.Line(i);
+				LINESEGMENT& l = lineData.Line(i);
 				if (m_show || ShowLine(l, s))
 				{
 					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
@@ -226,7 +239,7 @@ void CGLLinePlot::RenderLines(FEState& s)
 		{
 			for (int i = 0; i < NL; ++i)
 			{
-				LINEDATA& l = lineData.Line(i);
+				LINESEGMENT& l = lineData.Line(i);
 
 				int n = l.m_segId;// randomize(l.m_segId, maxseg);
 				float f = (float)n / (float)maxseg;
@@ -250,13 +263,13 @@ void CGLLinePlot::RenderLines(FEState& s)
 		float vmax = m_range.max;
 		if (vmin == vmax) vmax++;
 
-		Post::LineData& lineData = s.GetLineData();
+		Post::LineData& lineData = m_lineData->GetLineData(ntime);
 		glBegin(GL_LINES);
 		{
 			int NL = lineData.Lines();
 			for (int i = 0; i < NL; ++i)
 			{
-				LINEDATA& l = lineData.Line(i);
+				LINESEGMENT& l = lineData.Line(i);
 				if (m_show || ShowLine(l, s))
 				{
 					float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
@@ -295,28 +308,28 @@ void glxCylinder(float H, float R, float t0 = 0.f, float t1 = 1.f)
 }
 
 //-----------------------------------------------------------------------------
-bool CGLLinePlot::ShowLine(LINEDATA& l, FEState& s)
+bool CGLLinePlot::ShowLine(LINESEGMENT& l, FEState& s)
 {
 	if ((l.m_elem[0] == -1) || (l.m_elem[1] == -1)) return true;
 
 	Post::FEPostMesh* m = s.GetFEMesh();
-	FEElement& e0 = m->Element(l.m_elem[0]);
-	FEElement& e1 = m->Element(l.m_elem[1]);
+	FSElement& e0 = m->Element(l.m_elem[0]);
+	FSElement& e1 = m->Element(l.m_elem[1]);
 
 	return (e0.IsVisible() || e1.IsVisible());
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::Render3DLines(FEState& s)
+void CGLLinePlot::Render3DLines(FEState& s, int ntime)
 {
-	Post::LineData& lineData = s.GetLineData();
+	Post::LineData& lineData = m_lineData->GetLineData(ntime);
 	if (m_ncolor == COLOR_SOLID)
 	{
 		glColor3ub(m_col.r, m_col.g, m_col.b);
 		int NL = lineData.Lines();
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& l = lineData.Line(i);
+			LINESEGMENT& l = lineData.Line(i);
 			if (m_show || ShowLine(l, s))
 			{
 				vec3f n = l.m_r1 - l.m_r0;
@@ -327,7 +340,7 @@ void CGLLinePlot::Render3DLines(FEState& s)
 				{
 					glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
 
-					quatd q(vec3f(0, 0, 1), n);
+					quatd q(vec3d(0, 0, 1), to_vec3d(n));
 					vec3d r = q.GetVector();
 					double angle = 180 * q.GetAngle() / PI;
 					if ((angle != 0.0) && (r.Length() > 0))
@@ -355,7 +368,7 @@ void CGLLinePlot::Render3DLines(FEState& s)
 		int NL = lineData.Lines();
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& l = lineData.Line(i);
+			LINESEGMENT& l = lineData.Line(i);
 			if (m_show || ShowLine(l, s))
 			{
 				vec3f n = l.m_r1 - l.m_r0;
@@ -366,7 +379,7 @@ void CGLLinePlot::Render3DLines(FEState& s)
 				{
 					glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
 
-					quatd q(vec3f(0, 0, 1), n);
+					quatd q(vec3d(0, 0, 1), to_vec3d(n));
 					vec3d r = q.GetVector();
 					double angle = 180 * q.GetAngle() / PI;
 					if ((angle != 0.0) && (r.Length() > 0))
@@ -387,16 +400,16 @@ void CGLLinePlot::Render3DLines(FEState& s)
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::Render3DSmoothLines(FEState& s)
+void CGLLinePlot::Render3DSmoothLines(FEState& s, int ntime)
 {
-	Post::LineData& lineData = s.GetLineData();
+	Post::LineData& lineData = m_lineData->GetLineData(ntime);
 	if (m_ncolor == COLOR_SOLID)
 	{
 		glColor3ub(m_col.r, m_col.g, m_col.b);
 		int NL = lineData.Lines();
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& l = lineData.Line(i);
+			LINESEGMENT& l = lineData.Line(i);
 			if (m_show || ShowLine(l, s))
 			{
 				vec3f n = l.m_r1 - l.m_r0;
@@ -407,11 +420,11 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				vec3d e2 = l.m_t1; e2.Normalize();
 
 				// render cylinder
-				glx::drawSmoothPath(l.m_r0, l.m_r1, m_line, e1, e2);
+				glx::drawSmoothPath(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
 
 				// render caps
-				if (l.m_end[0] == 1) glx::drawHalfSphere(l.m_r0, m_line, e1);
-				if (l.m_end[1] == 1) glx::drawHalfSphere(l.m_r1, m_line, e2);
+				if (l.m_end[0] == 1) glx::drawHalfSphere(to_vec3d(l.m_r0), m_line, e1);
+				if (l.m_end[1] == 1) glx::drawHalfSphere(to_vec3d(l.m_r1), m_line, e2);
 			}
 		}
 	}
@@ -429,7 +442,7 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& l = lineData.Line(i);
+			LINESEGMENT& l = lineData.Line(i);
 			if (m_show || ShowLine(l, s))
 			{
 				vec3f n = l.m_r1 - l.m_r0;
@@ -445,11 +458,11 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				glColor3ub(c.r, c.g, c.b);
 
 				// render cylinder
-				glx::drawSmoothPath(l.m_r0, l.m_r1, m_line, e1, e2);
+				glx::drawSmoothPath(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
 
 				// render caps
-				if (l.m_end[0] == 1) glx::drawHalfSphere(l.m_r0, m_line, e1);
-				if (l.m_end[1] == 1) glx::drawHalfSphere(l.m_r1, m_line, e2);
+				if (l.m_end[0] == 1) glx::drawHalfSphere(to_vec3d(l.m_r0), m_line, e1);
+				if (l.m_end[1] == 1) glx::drawHalfSphere(to_vec3d(l.m_r1), m_line, e2);
 			}
 		}
 	}
@@ -468,7 +481,7 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 		int NL = lineData.Lines();
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& l = lineData.Line(i);
+			LINESEGMENT& l = lineData.Line(i);
 			if (m_show || ShowLine(l, s))
 			{
 				vec3f n = l.m_r1 - l.m_r0;
@@ -482,11 +495,11 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 				float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
 
 				// render cylinder
-				glx::drawSmoothPath(l.m_r0, l.m_r1, m_line, e1, e2, f0, f1);
+				glx::drawSmoothPath(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2, f0, f1);
 
 				// render caps
-				if (l.m_end[0] == 1) glx::drawHalfSphere(l.m_r0, m_line, e1, f0);
-				if (l.m_end[1] == 1) glx::drawHalfSphere(l.m_r1, m_line, e2, f1);
+				if (l.m_end[0] == 1) glx::drawHalfSphere(to_vec3d(l.m_r0), m_line, e1, f0);
+				if (l.m_end[1] == 1) glx::drawHalfSphere(to_vec3d(l.m_r1), m_line, e2, f1);
 			}
 		}
 		glPopAttrib();
@@ -495,6 +508,8 @@ void CGLLinePlot::Render3DSmoothLines(FEState& s)
 
 void CGLLinePlot::Update(int ntime, float dt, bool breset)
 {
+	if (m_lineData == nullptr) return;
+
 	if ((m_ncolor == COLOR_SOLID) || ((m_ncolor==COLOR_MODEL_DATA)&&(m_nfield == -1))) return;
 
 	float vmax = -1e20f;
@@ -502,15 +517,15 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 	if (m_ncolor == COLOR_LINE_DATA)
 	{
 		CGLModel& glm = *GetModel();
-		FEPostModel& fem = *glm.GetFEModel();
+		FEPostModel& fem = *glm.GetFSModel();
 
 		FEState& s = *fem.GetState(ntime);
-		Post::LineData& lineData = s.GetLineData();
+		Post::LineData& lineData = m_lineData->GetLineData(ntime);
 		int NL = lineData.Lines();
 
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& line = lineData.Line(i);
+			LINESEGMENT& line = lineData.Line(i);
 
 			line.m_val[0] = line.m_user_data[0];
 			line.m_val[1] = line.m_user_data[1];
@@ -525,16 +540,16 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 	else if (m_ncolor == COLOR_MODEL_DATA)
 	{
 		CGLModel& glm = *GetModel();
-		FEPostModel& fem = *glm.GetFEModel();
+		FEPostModel& fem = *glm.GetFSModel();
 
 		FEState& s = *fem.GetState(ntime);
-		Post::LineData& lineData = s.GetLineData();
+		Post::LineData& lineData = m_lineData->GetLineData(ntime);
 		int NL = lineData.Lines();
 
 		NODEDATA nd1, nd2;
 		for (int i = 0; i < NL; ++i)
 		{
-			LINEDATA& line = lineData.Line(i);
+			LINESEGMENT& line = lineData.Line(i);
 
 			fem.EvaluateNode(line.m_r0, ntime, m_nfield, nd1);
 			fem.EvaluateNode(line.m_r1, ntime, m_nfield, nd2);
@@ -648,7 +663,7 @@ void CGLPointPlot::AddDataField(const std::string& dataName)
 //-----------------------------------------------------------------------------
 CGLPointPlot::~CGLPointPlot()
 {
-	FEPostModel* fem = GetModel()->GetFEModel();
+	FEPostModel* fem = GetModel()->GetFSModel();
 	if (fem)
 	{
 		for (int i = 0; i < fem->GetStates(); ++i)
@@ -701,7 +716,7 @@ bool CGLPointPlot::UpdateData(bool bsave)
 //-----------------------------------------------------------------------------
 void CGLPointPlot::Render(CGLContext& rc)
 {
-	FEPostModel& fem = *GetModel()->GetFEModel();
+	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = GetModel()->CurrentTimeIndex();
 	if ((ns < 0) || (ns >= fem.GetStates())) return;
 	FEState& s = *fem.GetState(ns);
@@ -717,7 +732,7 @@ void CGLPointPlot::Render(CGLContext& rc)
 
 void CGLPointPlot::RenderPoints()
 {
-	FEPostModel& fem = *GetModel()->GetFEModel();
+	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = fem.CurrentTimeIndex();
 	FEState& s = *fem.GetState(ns);
 
@@ -793,7 +808,7 @@ void CGLPointPlot::RenderPoints()
 
 void CGLPointPlot::RenderSpheres()
 {
-	FEPostModel& fem = *GetModel()->GetFEModel();
+	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = fem.CurrentTimeIndex();
 	FEState& s = *fem.GetState(ns);
 
@@ -867,4 +882,348 @@ void CGLPointPlot::RenderSpheres()
 		glPopMatrix();
 	}
 	gluDeleteQuadric(pobj);
+}
+
+//-----------------------------------------------------------------------------
+class OctreeBox
+{
+public:
+	OctreeBox(BOX box, int levels) : m_box(box), m_level(levels)
+	{
+		if (levels == 0)
+		{
+			for (int i = 0; i < 8; ++i) m_child[i] = nullptr;
+			return;
+		}
+
+		double R = box.Radius();
+
+		double x0 = box.x0, x1 = box.x1;
+		double y0 = box.y0, y1 = box.y1;
+		double z0 = box.z0, z1 = box.z1;
+		int n = 0;
+		for (int i = 0; i < 2; ++i)
+			for (int j = 0; j < 2; ++j)
+				for (int k = 0; k < 2; ++k)
+				{
+					double xa = x0 + i * (x1 - x0) * 0.5;
+					double ya = y0 + j * (y1 - y0) * 0.5;
+					double za = z0 + k * (z1 - z0) * 0.5;
+					double xb = x0 + (i + 1.0) * (x1 - x0) * 0.5;
+					double yb = y0 + (j + 1.0) * (y1 - y0) * 0.5;
+					double zb = z0 + (k + 1.0) * (z1 - z0) * 0.5;
+					BOX boxi(xa, ya, za, xb, yb, zb);
+					boxi.Inflate(R * 1e-7);
+					m_child[n++] = new OctreeBox(boxi, levels - 1);
+				}
+	}
+	~OctreeBox() { for (int i = 0; i < 8; ++i) delete m_child[i]; }
+
+	int addNode(vector<vec3d>& points, const vec3d& r)
+	{
+		if (m_box.IsInside(r) == false) return -1;
+
+		if (m_level == 0)
+		{
+			const double eps = 1e-12;
+			for (int i = 0; i < m_nodes.size(); ++i)
+			{
+				vec3d& ri = points[m_nodes[i]];
+				if ((ri - r).SqrLength() <= eps)
+				{
+					// node is already in list
+					return m_nodes[i];
+				}
+			}
+
+			// if we get here, the node is in this box, 
+			// but not in the points array yet, so add it
+			points.push_back(r);
+			m_nodes.push_back(points.size() - 1);
+			return points.size() - 1;
+		}
+		else
+		{
+			for (int i = 0; i < 8; ++i)
+			{
+				int n = m_child[i]->addNode(points, r);
+				if (n >= 0) return n;
+			}
+			return -1;
+		}
+	}
+
+private:
+	int			m_level;
+	BOX			m_box;
+	OctreeBox* m_child[8];
+	vector<int>	m_nodes;
+};
+
+class Segment
+{
+public:
+	struct LINE
+	{
+		int	m_index;	// index into mesh' edge array
+		int	m_ln[2];	// local node indices in segment's node array
+		int m_orient;	// 1 or -1, depending on the orientation in the segment
+	};
+
+public:
+	Segment(FECurveMesh* mesh) : m_mesh(mesh) {}
+	Segment(const Segment& s) { m_mesh = s.m_mesh; m_pt = s.m_pt; m_seg = s.m_seg; }
+	void operator = (const Segment& s) { m_mesh = s.m_mesh; m_pt = s.m_pt; m_seg = s.m_seg; }
+
+	void Add(int n)
+	{
+		LINE l;
+		l.m_index = n;
+		l.m_orient = 0;
+		l.m_ln[0] = l.m_ln[1] = -1;
+		m_seg.push_back(l);
+	}
+
+	int Points() const { return m_pt.size(); }
+	vec3d& Point(int n) { return m_mesh->Node(m_pt[n]).r; }
+
+	void Build()
+	{
+		m_pt.clear();
+		for (int i = 0; i < m_seg.size(); ++i)
+		{
+			FSEdge& edge = m_mesh->Edge(m_seg[i].m_index);
+			m_seg[i].m_ln[0] = addPoint(edge.n[0]); assert(m_seg[i].m_ln[0] >= 0);
+			m_seg[i].m_ln[1] = addPoint(edge.n[1]); assert(m_seg[i].m_ln[1] >= 0);
+		}
+		assert((m_pt.size() == m_seg.size() + 1) || (m_pt.size() == m_seg.size()));
+
+		Sort();
+	}
+
+	int LineSegments() const { return m_seg.size(); }
+	LINE& GetLineSegment(int n) { return m_seg[n]; }
+
+private:
+	int addPoint(int n)
+	{
+		for (int j = 0; j < m_pt.size(); ++j)
+		{
+			if (m_pt[j] == n) return j;
+		}
+		m_pt.push_back(n);
+		return m_pt.size() - 1;
+	}
+
+	void Sort()
+	{
+		int pts = m_pt.size();
+		vector<int> tag(pts, 0);
+		for (int i = 0; i < m_seg.size(); ++i)
+		{
+			tag[m_seg[i].m_ln[0]]++;
+			tag[m_seg[i].m_ln[1]]++;
+		}
+
+		// find one end
+		vector<int> NLT; NLT.reserve(pts);
+		for (int i = 0; i < pts; ++i)
+		{
+			assert((tag[i] == 1) || (tag[i] == 2));
+			if (tag[i] == 1)
+			{
+				NLT.push_back(i);
+				break;
+			}
+		}
+
+		int nltsize = pts;
+		if (NLT.empty())
+		{
+			// this is probably a loop, so just pick the first point
+			NLT.push_back(0);
+			nltsize++;
+		}
+		assert(NLT.size() == 1);
+
+		int nsegs = m_seg.size();
+		int seg0 = 0;
+		while (NLT.size() != nltsize)
+		{
+			int n0 = NLT.back();
+
+			// find a segment with this node
+			for (int i = seg0; i < nsegs; ++i)
+			{
+				int m0 = m_seg[i].m_ln[0];
+				int m1 = m_seg[i].m_ln[1];
+				if ((m0 == n0) || (m1 == n0))
+				{
+					if (m0 == n0)
+					{
+						NLT.push_back(m1);
+						m_seg[i].m_orient = 1;
+					}
+					else
+					{
+						NLT.push_back(m0);
+						m_seg[i].m_orient = -1;
+					}
+					swapSegments(i, seg0);
+					seg0++;
+					break;
+				}
+			}
+		}
+
+		// reorder nodes
+		vector<int> NLTi(pts);
+		vector<int> newpt(pts);
+		for (int i = 0; i < pts; ++i)
+		{
+			int ni = NLT[i];
+			NLTi[ni] = i;
+			newpt[i] = m_pt[ni];
+		}
+		m_pt = newpt;
+
+		// reorder segments
+		for (int i = 0; i < m_seg.size(); ++i)
+		{
+			LINE& li = m_seg[i];
+			li.m_ln[0] = NLTi[li.m_ln[0]];
+			li.m_ln[1] = NLTi[li.m_ln[1]];
+		}
+	}
+
+	void swapSegments(int a, int b)
+	{
+		if (a == b) return;
+		LINE tmp = m_seg[a];
+		m_seg[a] = m_seg[b];
+		m_seg[b] = tmp;
+	}
+
+private:
+	FECurveMesh* m_mesh;
+	vector<LINE>	m_seg;
+	vector<int>		m_pt;
+};
+
+LineDataModel::LineDataModel(FEPostModel* fem) : m_fem(fem)
+{
+	int ns = fem->GetStates();
+	if (ns != 0) m_line.resize(ns);
+}
+
+void LineData::processLines()
+{
+	int lines = Lines();
+
+	// find the bounding box
+	BOX box;
+	for (int i = 0; i < lines; ++i)
+	{
+		Post::LINESEGMENT& line = Line(i);
+		box += to_vec3d(line.m_r0);
+		box += to_vec3d(line.m_r1);
+	}
+
+	// inflate a little
+	double R = box.GetMaxExtent(); if (R == 0.0) R = 1.0;
+	box.Inflate(R * 1e-5);
+
+	// start adding points
+	int l = (int)(log(lines) / log(8.0));
+	if (l < 3) l = 3;
+	if (l > 8) l = 8;
+	OctreeBox ocb(box, l);
+	vector<pair<int, int> > ptIndex; ptIndex.resize(lines, pair<int, int>(-1, -1));
+	vector<vec3d> points; points.reserve(lines * 2);
+	for (int i = 0; i < lines; ++i)
+	{
+		Post::LINESEGMENT& line = Line(i);
+		ptIndex[i].first = ocb.addNode(points, to_vec3d(line.m_r0)); assert(ptIndex[i].first >= 0);
+		ptIndex[i].second = ocb.addNode(points, to_vec3d(line.m_r1)); assert(ptIndex[i].second >= 0);
+		assert(ptIndex[i].first != ptIndex[i].second);
+	}
+
+	// now build a curve mesh
+	// (this is used to find the segments, i.e. the connected lines)
+	FECurveMesh mesh;
+	mesh.Create(points.size(), lines);
+	for (int i = 0; i < points.size(); ++i)
+	{
+		FSNode& node = mesh.Node(i);
+		node.r = points[i];
+	}
+	for (int i = 0; i < lines; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		edge.n[0] = ptIndex[i].first;
+		edge.n[1] = ptIndex[i].second;
+	}
+	mesh.BuildMesh();
+
+	// figure out the segments
+	int nsegs = mesh.Segments(); assert(nsegs >= 1);
+	vector<Segment> segment(nsegs, Segment(&mesh));
+	for (int i = 0; i < lines; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		segment[edge.m_gid].Add(i);
+		m_Line[i].m_segId = edge.m_gid;
+	}
+
+	// process each segment
+	for (int n = 0; n < nsegs; ++n)
+	{
+		Segment& segn = segment[n];
+		segn.Build();
+
+		int pts = segn.Points();
+		vector<vec3d> t(pts, vec3d(0, 0, 0));
+		for (int i = 0; i < pts - 1; ++i)
+		{
+			vec3d a = segn.Point(i);
+			vec3d b = segn.Point(i + 1);
+
+			vec3d ti = b - a;
+			t[i] += ti;
+			t[i + 1] += ti;
+		}
+
+		// normalize tangents
+		for (int i = 0; i < pts; ++i) t[i].Normalize();
+
+		// assign the tangents
+		int nseg = segn.LineSegments();
+		for (int i = 0; i < nseg; ++i)
+		{
+			Segment::LINE& seg = segn.GetLineSegment(i);
+
+			Post::LINESEGMENT& line = Line(seg.m_index);
+
+			if (i == 0)
+			{
+				if (seg.m_orient > 0) line.m_end[0] = 1;
+				if (seg.m_orient < 0) line.m_end[1] = 1;
+			}
+			else if (i == nseg - 1)
+			{
+				if (seg.m_orient > 0) line.m_end[1] = 1;
+				if (seg.m_orient < 0) line.m_end[0] = 1;
+			}
+
+			line.m_t0 = t[seg.m_ln[0]];
+			line.m_t1 = t[seg.m_ln[1]];
+
+			assert(seg.m_orient != 0);
+			if (seg.m_orient < 0)
+			{
+				line.m_t0 = -line.m_t0;
+				line.m_t1 = -line.m_t1;
+			}
+		}
+	}
 }

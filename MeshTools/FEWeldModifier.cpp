@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEWeldModifier.h"
 #include <MeshLib/FEMeshBuilder.h>
 #include <MeshLib/FESurfaceMesh.h>
+using namespace std;
 
 //! constructor
 FEWeldNodes::FEWeldNodes() : FEModifier("Weld nodes")
@@ -44,11 +45,11 @@ void FEWeldNodes::SetThreshold(double d)
 //! Apply the weld modifier to the mesh and return a new mesh with the nodes
 //! welded. Note that this modifier only works on surface meshes (quad/tri).
 //! This modifier welds only the selected nodes.
-FEMesh* FEWeldNodes::Apply(FEMesh* pm)
+FSMesh* FEWeldNodes::Apply(FSMesh* pm)
 {
 	// create a copy of the mesh
-	FEMesh* pnm = new FEMesh(*pm);
-	FEMesh& m = *pnm;
+	FSMesh* pnm = new FSMesh(*pm);
+	FSMesh& m = *pnm;
 
 	// weld the nodes and figure out the new node numbering
 	UpdateNodes(pnm);
@@ -64,9 +65,9 @@ FEMesh* FEWeldNodes::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldNodes::UpdateNodes(FEMesh* pm)
+void FEWeldNodes::UpdateNodes(FSMesh* pm)
 {
-	FEMesh& m = *pm;
+	FSMesh& m = *pm;
 
 	// find out how many nodes are selected
 	// and put them in a list
@@ -74,7 +75,7 @@ void FEWeldNodes::UpdateNodes(FEMesh* pm)
 	vector<int> sel; sel.reserve(nodes);
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& ni = m.Node(i);
+		FSNode& ni = m.Node(i);
 		if (ni.IsSelected()) sel.push_back(i);
 	}
 
@@ -120,14 +121,14 @@ void FEWeldNodes::UpdateNodes(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldNodes::UpdateElements(FEMesh* pnm)
+void FEWeldNodes::UpdateElements(FSMesh* pnm)
 {
-	FEMesh& m = *pnm;
+	FSMesh& m = *pnm;
 
 	int elems = m.Elements();
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement& el = m.Element(i);
+		FSElement& el = m.Element(i);
 		int ne = el.Nodes();
 		int* en = el.m_node;
 		el.m_ntag = 0;
@@ -189,14 +190,14 @@ void FEWeldNodes::UpdateElements(FEMesh* pnm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldNodes::UpdateFaces(FEMesh* pnm)
+void FEWeldNodes::UpdateFaces(FSMesh* pnm)
 {
-	FEMesh& m = *pnm;
+	FSMesh& m = *pnm;
 
 	int faces = m.Faces();
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& face = m.Face(i);
+		FSFace& face = m.Face(i);
 		int nf = face.Nodes();
 		int* fn = face.n;
 		face.m_ntag = 0;
@@ -251,13 +252,13 @@ void FEWeldNodes::UpdateFaces(FEMesh* pnm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldNodes::UpdateEdges(FEMesh* pm)
+void FEWeldNodes::UpdateEdges(FSMesh* pm)
 {
-	FEMesh& m = *pm;
+	FSMesh& m = *pm;
 	int edges = m.Edges();
 	for (int i=0; i<edges; ++i)
 	{
-		FEEdge& edge = m.Edge(i);
+		FSEdge& edge = m.Edge(i);
 		edge.m_ntag = 0;
 		int* en = edge.n;
 
@@ -295,11 +296,11 @@ void FEWeldSurfaceNodes::SetThreshold(double d)
 //! Apply the weld modifier to the mesh and return a new mesh with the nodes
 //! welded. Note that this modifier only works on surface meshes (quad/tri).
 //! This modifier welds only the selected nodes.
-FESurfaceMesh* FEWeldSurfaceNodes::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEWeldSurfaceNodes::Apply(FSSurfaceMesh* pm)
 {
 	// create a copy of the mesh
-	FESurfaceMesh* pnm = new FESurfaceMesh(*pm);
-	FESurfaceMesh& m = *pnm;
+	FSSurfaceMesh* pnm = new FSSurfaceMesh(*pm);
+	FSSurfaceMesh& m = *pnm;
 
 	// weld the nodes and figure out the new node numbering
 	UpdateNodes(pnm);
@@ -313,9 +314,9 @@ FESurfaceMesh* FEWeldSurfaceNodes::Apply(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldSurfaceNodes::UpdateNodes(FESurfaceMesh* pm)
+void FEWeldSurfaceNodes::UpdateNodes(FSSurfaceMesh* pm)
 {
-	FESurfaceMesh& m = *pm;
+	FSSurfaceMesh& m = *pm;
 
 	// find out how many nodes are selected
 	// and put them in a list
@@ -323,7 +324,7 @@ void FEWeldSurfaceNodes::UpdateNodes(FESurfaceMesh* pm)
 	vector<int> sel; sel.reserve(nodes);
 	for (int i = 0; i < nodes; ++i)
 	{
-		FENode& ni = m.Node(i);
+		FSNode& ni = m.Node(i);
 		if (ni.IsSelected()) sel.push_back(i);
 	}
 	if (sel.empty())
@@ -390,14 +391,14 @@ void FEWeldSurfaceNodes::UpdateNodes(FESurfaceMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FEWeldSurfaceNodes::UpdateFaces(FESurfaceMesh* pnm)
+void FEWeldSurfaceNodes::UpdateFaces(FSSurfaceMesh* pnm)
 {
-	FESurfaceMesh& m = *pnm;
+	FSSurfaceMesh& m = *pnm;
 
 	int faces = m.Faces();
 	for (int i = 0; i < faces; ++i)
 	{
-		FEFace& face = m.Face(i);
+		FSFace& face = m.Face(i);
 		int nf = face.Nodes();
 		int* fn = face.n;
 		face.m_ntag = 0;

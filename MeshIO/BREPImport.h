@@ -29,20 +29,20 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 
 
-class BREPImport : public FEFileImport
+class BREPImport : public FSFileImport
 {
 public:
-	BREPImport(FEProject& prj);
+	BREPImport(FSProject& prj);
 	~BREPImport();
 
 	bool Load(const char* szfile);
 };
 
 // NOTE: There is already an IGES file reader in FEIGESFileImport.h
-class IGESImport : public FEFileImport
+class IGESImport : public FSFileImport
 {
 public:
-	IGESImport(FEProject& prj);
+	IGESImport(FSProject& prj);
 	~IGESImport();
 
 	bool Load(const char* szfile);

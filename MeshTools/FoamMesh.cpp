@@ -59,7 +59,7 @@ FoamGen::FoamGen()
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FoamGen::Create()
+FSMesh* FoamGen::Create()
 {
 	// data check
 	if (m_nx < 1) return 0;
@@ -77,11 +77,11 @@ FEMesh* FoamGen::Create()
 	}
 */
 	// Extract the mesh
-	FEMesh* pm = CreateMesh();
+	FSMesh* pm = CreateMesh();
 	if (pm == 0) return 0;
 
 	// apply a weld modifier
-	FEMesh* pmw = WeldMesh(pm);
+	FSMesh* pmw = WeldMesh(pm);
 
 	// remove duplicate elements
 	int F0 = pmw->Elements();
@@ -99,7 +99,7 @@ FEMesh* FoamGen::Create()
 }
 
 //-----------------------------------------------------------------------------
-void FoamGen::SelectFace(int i, FEMesh* pm)
+void FoamGen::SelectFace(int i, FSMesh* pm)
 {
 	int j;
 
@@ -112,7 +112,7 @@ void FoamGen::SelectFace(int i, FEMesh* pm)
 		// unselect all faces, except the first one
 		for (int n=m_nface[1]; n<m_nface[7]; ++n)
 		{
-			FEElement& f = pm->Element(n);
+			FSElement& f = pm->Element(n);
 			pm->Node(f.m_node[0]).Unselect();
 			pm->Node(f.m_node[1]).Unselect();
 			pm->Node(f.m_node[2]).Unselect();
@@ -127,7 +127,7 @@ void FoamGen::SelectFace(int i, FEMesh* pm)
 		// select the face
 		for (int n=m_nface[i]; n<m_nface[i+1]; ++n)
 		{
-			FEElement& f = pm->Element(n);
+			FSElement& f = pm->Element(n);
 			pm->Node(f.m_node[0]).Select();
 			pm->Node(f.m_node[1]).Select();
 			pm->Node(f.m_node[2]).Select();
@@ -136,7 +136,7 @@ void FoamGen::SelectFace(int i, FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FoamGen::WeldMesh(FEMesh* pm)
+FSMesh* FoamGen::WeldMesh(FSMesh* pm)
 {
 	// find a good welding tolerance
 	double dx = m_w/m_nx;
@@ -160,7 +160,7 @@ FEMesh* FoamGen::WeldMesh(FEMesh* pm)
 		int F0 = pm->Elements();
 
 		// apply weld modifier
-		FEMesh* pmn = mod.Apply(pm);
+		FSMesh* pmn = mod.Apply(pm);
 
 		// adjust face counts
 		int F1 = pmn->Elements();
@@ -174,10 +174,10 @@ FEMesh* FoamGen::WeldMesh(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void FoamGen::SmoothMesh(FEMesh* pm, int niter, double w)
+void FoamGen::SmoothMesh(FSMesh* pm, int niter, double w)
 {
 	// set up the node-element table
-	FENodeNodeList NNL(pm);
+	FSNodeNodeList NNL(pm);
 
 	// smooth node positions
 	for (int n=0; n<niter; ++n)
@@ -185,7 +185,7 @@ void FoamGen::SmoothMesh(FEMesh* pm, int niter, double w)
 		int N = pm->Nodes();
 		for (int i=0; i<N; ++i)
 		{
-			FENode& ni = pm->Node(i);
+			FSNode& ni = pm->Node(i);
 			if (ni.IsSelected())
 			{
 				int nn = NNL.Valence(i);
@@ -194,7 +194,7 @@ void FoamGen::SmoothMesh(FEMesh* pm, int niter, double w)
 					vec3d v;
 					for (int j=0; j<nn; ++j)
 					{
-						FENode& nj = pm->Node(NNL.Node(i, j));
+						FSNode& nj = pm->Node(NNL.Node(i, j));
 						v += nj.r;
 					}
 					v /= (double) nn;
@@ -546,7 +546,7 @@ void FoamGen::CalcGradient()
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FoamGen::CreateMesh()
+FSMesh* FoamGen::CreateMesh()
 {
 	int i;
 	int NE = m_Cell.size();
@@ -684,19 +684,19 @@ FEMesh* FoamGen::CreateMesh()
 	int nf = m_Face.size();
 	if ((nn==0) || (nf==0)) return 0;
 
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nn, nf, nf);
 
 	for (i=0; i<nn; ++i)
 	{
 		EDGE& e = m_Edge[i];
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		node.r = e.r;
 	}
 
 	for (i=0; i<nf; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		FACE& f = m_Face[i];
 		e.SetType(FE_TRI3);
 		e.m_node[0] = f.n[0];
@@ -704,7 +704,7 @@ FEMesh* FoamGen::CreateMesh()
 		e.m_node[2] = f.n[2];
 		e.m_gid = 0;
 
-		FEFace& s = pm->Face(i);
+		FSFace& s = pm->Face(i);
 		s.SetType(FE_FACE_TRI3);
 		s.n[0] = f.n[0];
 		s.n[1] = f.n[1];

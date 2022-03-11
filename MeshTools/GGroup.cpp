@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "GModel.h"
 #include <GeomLib/GObject.h>
 
-GGroup::GGroup(FEModel* ps, int ntype) : FEItemListBuilder(ntype)
+GGroup::GGroup(FSModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
 {
 	m_ps = ps;
 }
@@ -43,23 +43,23 @@ GGroup::~GGroup(void)
 // GNodeList
 //-----------------------------------------------------------------------------
 
-FENodeList* GNodeList::BuildNodeList()
+FSNodeList* GNodeList::BuildNodeList()
 {
-	FEModel* pfem = dynamic_cast<FEModel*>(m_ps);
+	FSModel* pfem = dynamic_cast<FSModel*>(m_ps);
 	GModel& m = pfem->GetModel();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 	for (int i=0; i<N; ++i, ++it)
 	{
 		GNode* pn = m.FindNode(*it);
 		if (pn)
 		{
 			GObject* po = dynamic_cast<GObject*>(pn->Object());
-			FEMesh* pm = po->GetFEMesh();
+			FSMesh* pm = po->GetFEMesh();
 			for (int j=0; j<pm->Nodes(); ++j)
 			{
-				FENode& node = pm->Node(j);
+				FSNode& node = pm->Node(j);
 				if (node.m_gid == pn->GetLocalID())
 				{
 					ps->Add(pm, &node);
@@ -72,7 +72,7 @@ FENodeList* GNodeList::BuildNodeList()
 }
 
 //-----------------------------------------------------------------------------
-GNodeList::GNodeList(FEModel* ps, GNodeSelection* pg) : GGroup(ps, GO_NODE)
+GNodeList::GNodeList(FSModel* ps, GNodeSelection* pg) : GGroup(ps, GO_NODE, FE_NODE_FLAG)
 {
 	int N = pg->Count();
 	assert(N);
@@ -125,7 +125,7 @@ bool GNodeList::IsValid() const
 // GEdgeList
 //-----------------------------------------------------------------------------
 
-GEdgeList::GEdgeList(FEModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE)
+GEdgeList::GEdgeList(FSModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE, FE_NODE_FLAG)
 {
 	int N = pg->Count();
 	if (N > 0)
@@ -136,10 +136,10 @@ GEdgeList::GEdgeList(FEModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE)
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* GEdgeList::BuildNodeList()
+FSNodeList* GEdgeList::BuildNodeList()
 {
-	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
-	FENodeList* ps = new FENodeList();
+	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
+	FSNodeList* ps = new FSNodeList();
 	int N = m_Item.size(), i, n;
 	FEItemListBuilder::Iterator it = m_Item.begin();
 
@@ -147,7 +147,7 @@ FENodeList* GEdgeList::BuildNodeList()
 	{
 		GEdge *pe = model.FindEdge(*it);
 		GObject* po = dynamic_cast<GObject*>(pe->Object());
-		FEMesh& m = *po->GetFEMesh();
+		FSMesh& m = *po->GetFEMesh();
 		for (i=0; i<m.Nodes(); ++i) m.Node(i).m_ntag = 0;
 	}
 
@@ -157,10 +157,10 @@ FENodeList* GEdgeList::BuildNodeList()
 		GEdge *pe = model.FindEdge(*it);
 		int gid = pe->GetLocalID();
 		GObject* po = dynamic_cast<GObject*>(pe->Object());
-		FEMesh& m = *po->GetFEMesh();
+		FSMesh& m = *po->GetFEMesh();
 		for (i=0; i<m.Edges(); ++i)
 		{
-			FEEdge& e = m.Edge(i);
+			FSEdge& e = m.Edge(i);
 			if (e.m_gid == gid)
 			{
 				m.Node(e.n[0]).m_ntag = 1;
@@ -176,10 +176,10 @@ FENodeList* GEdgeList::BuildNodeList()
 	{
 		GEdge *pe = model.FindEdge(*it);
 		GObject* po = dynamic_cast<GObject*>(pe->Object());
-		FEMesh& m = *po->GetFEMesh();
+		FSMesh& m = *po->GetFEMesh();
 		for (i = 0; i < m.Nodes(); ++i)
 		{
-			FENode& node = m.Node(i);
+			FSNode& node = m.Node(i);
 			if (node.m_ntag == 1)
 			{
 				ps->Add(&m, m.NodePtr(i));
@@ -251,7 +251,7 @@ bool GEdgeList::IsValid() const
 // GFaceList
 //-----------------------------------------------------------------------------
 
-GFaceList::GFaceList(FEModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE)
+GFaceList::GFaceList(FSModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG)
 {
 	int N = pg->Count();
 	if (N > 0)
@@ -262,9 +262,9 @@ GFaceList::GFaceList(FEModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE)
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* GFaceList::BuildNodeList()
+FSNodeList* GFaceList::BuildNodeList()
 {
-	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	int N = m_Item.size(), n, i;
 	FEItemListBuilder::Iterator it = m_Item.begin();
 
@@ -274,7 +274,7 @@ FENodeList* GFaceList::BuildNodeList()
 		GFace *pf = model.FindSurface(*it);
 		if (pf == 0) return 0;
 		GObject* po = dynamic_cast<GObject*>(pf->Object());
-		FEMesh& m = *po->GetFEMesh();
+		FSMesh& m = *po->GetFEMesh();
 
 		// clear the tags
 		for (i=0; i<m.Nodes(); ++i) m.Node(i).m_ntag = 0;
@@ -286,13 +286,13 @@ FENodeList* GFaceList::BuildNodeList()
 	{
 		GFace *pf = model.FindSurface(*it);
 		GObject* po = dynamic_cast<GObject*>(pf->Object());
-		FEMesh& m = *po->GetFEMesh();
+		FSMesh& m = *po->GetFEMesh();
 		int gid = pf->GetLocalID();
 
 		// tag the nodes to be added to the list
 		for (i=0; i<m.Faces(); ++i)
 		{
-			FEFace& f = m.Face(i);
+			FSFace& f = m.Face(i);
 			if (f.m_gid == gid)
 			{
 				int l = f.Nodes();
@@ -302,7 +302,7 @@ FENodeList* GFaceList::BuildNodeList()
 	}
 
 	// create a new node list
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 
 	// next we add all the nodes
 	it = m_Item.begin();
@@ -310,10 +310,10 @@ FENodeList* GFaceList::BuildNodeList()
 	{
 		GFace *pf = model.FindSurface(*it);
 		GObject* po = dynamic_cast<GObject*>(pf->Object());
-		FEMesh& m = *po->GetFEMesh();
+		FSMesh& m = *po->GetFEMesh();
 		for (i = 0; i < m.Nodes(); ++i)
 		{
-			FENode& node = m.Node(i);
+			FSNode& node = m.Node(i);
 			if (node.m_ntag == 1)
 			{
 				ps->Add(&m, m.NodePtr(i));
@@ -331,7 +331,7 @@ FENodeList* GFaceList::BuildNodeList()
 //-----------------------------------------------------------------------------
 FEFaceList* GFaceList::BuildFaceList()
 {
-	GModel& m = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& m = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	FEFaceList* ps = new FEFaceList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -342,7 +342,7 @@ FEFaceList* GFaceList::BuildFaceList()
 		if (pf)
 		{
 			GObject* po = dynamic_cast<GObject*>(pf->Object());
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			int gid = pf->GetLocalID();
 
 			for (int i=0; i<m.Faces(); ++i) if (m.Face(i).m_gid == gid) ps->Add(&m, m.FacePtr(i));
@@ -397,7 +397,7 @@ bool GFaceList::IsValid() const
 // GPartList
 //-----------------------------------------------------------------------------
 
-FEModel* GPartList::m_model = nullptr;
+FSModel* GPartList::m_model = nullptr;
 
 GPartList* GPartList::CreateNew()
 {
@@ -405,12 +405,12 @@ GPartList* GPartList::CreateNew()
 	return new GPartList(m_model);
 }
 
-void GPartList::SetModel(FEModel* mdl)
+void GPartList::SetModel(FSModel* mdl)
 {
 	m_model = mdl;
 }
 
-GPartList::GPartList(FEModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART)
+GPartList::GPartList(FSModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG)
 {
 	int N = pg->Count();
 	GPartSelection::Iterator it(pg);
@@ -428,7 +428,7 @@ void GPartList::Create(GObject* po)
 //-----------------------------------------------------------------------------
 FEElemList* GPartList::BuildElemList()
 {
-	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	FEElemList* ps = new FEElemList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -436,11 +436,11 @@ FEElemList* GPartList::BuildElemList()
 	{
 		GPart *pg = model.FindPart(*it);
 		GObject* po = dynamic_cast<GObject*>(pg->Object());
-		FEMesh& m = *po->GetFEMesh();
+		FSMesh& m = *po->GetFEMesh();
 		int gid = pg->GetLocalID();
 		for (int i=0; i<m.Elements(); ++i)
 		{
-			FEElement& e = m.Element(i);
+			FSElement& e = m.Element(i);
 			if (e.m_gid == gid) ps->Add(&m, &e, i);
 		}
 	}
@@ -448,9 +448,9 @@ FEElemList* GPartList::BuildElemList()
 }
 
 //-----------------------------------------------------------------------------
-FENodeList* GPartList::BuildNodeList()
+FSNodeList* GPartList::BuildNodeList()
 {
-	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	int N = m_Item.size(), n, i, j;
 	FEItemListBuilder::Iterator it = m_Item.begin();
 
@@ -460,7 +460,7 @@ FENodeList* GPartList::BuildNodeList()
         GPart *pg = model.FindPart(*it);
         if (pg) {
             GObject* po = dynamic_cast<GObject*>(pg->Object());
-            FEMesh& m = *po->GetFEMesh();
+            FSMesh& m = *po->GetFEMesh();
             
             // clear the tags
             for (i=0; i<m.Nodes(); ++i) m.Node(i).m_ntag = 0;
@@ -474,13 +474,13 @@ FENodeList* GPartList::BuildNodeList()
 		GPart *pg = model.FindPart(*it);
         if (pg) {
             GObject* po = dynamic_cast<GObject*>(pg->Object());
-            FEMesh& m = *po->GetFEMesh();
+            FSMesh& m = *po->GetFEMesh();
             int gid = pg->GetLocalID();
             
             // tag the nodes to be added to the list
             for (i=0; i<m.Elements(); ++i)
             {
-                FEElement& e = m.Element(i);
+                FSElement& e = m.Element(i);
                 if (e.m_gid == gid)
                 {
                     for (j=0; j<e.Nodes(); ++j) m.Node(e.m_node[j]).m_ntag = 1;
@@ -490,17 +490,17 @@ FENodeList* GPartList::BuildNodeList()
 	}
 
 	// next we add all the nodes
-	FENodeList* ps = new FENodeList();
+	FSNodeList* ps = new FSNodeList();
 	it = m_Item.begin();
 	for (n=0; n<N; ++n, ++it)
 	{
 		GPart *pg = model.FindPart(*it);
         if (pg) {
             GObject* po = dynamic_cast<GObject*>(pg->Object());
-            FEMesh& m = *po->GetFEMesh();
+            FSMesh& m = *po->GetFEMesh();
 			for (i = 0; i < m.Nodes(); ++i)
 			{
-				FENode& node = m.Node(i);
+				FSNode& node = m.Node(i);
 				if (node.m_ntag == 1)
 				{
 					ps->Add(&m, m.NodePtr(i));
@@ -518,7 +518,7 @@ FENodeList* GPartList::BuildNodeList()
 //-----------------------------------------------------------------------------
 FEFaceList*	GPartList::BuildFaceList()
 {
-	GModel& m = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	GModel& m = dynamic_cast<FSModel*>(m_ps)->GetModel();
 	FEFaceList* ps = new FEFaceList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -530,10 +530,10 @@ FEFaceList*	GPartList::BuildFaceList()
 			int partId = pg->GetLocalID();
 
 			GObject* po = dynamic_cast<GObject*>(pg->Object());
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (int i = 0; i < m.Faces(); ++i)
 			{
-				FEFace& f = m.Face(i);
+				FSFace& f = m.Face(i);
 				if (f.IsExterior())
 				{
 					int faceId = f.m_gid;

@@ -101,7 +101,7 @@ void GSlice::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
@@ -113,7 +113,7 @@ void GSlice::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (int i=0; i<5; ++i)
 	{
 		if ((i==3)||(i==4))

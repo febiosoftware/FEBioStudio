@@ -25,13 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <MeshLib/Intersect.h>
 #include <MeshLib/FENodeFaceList.h>
 #include <set>
 //using namespace std;
 
-class FEFace;
+class FSFace;
 
 namespace Post {
 
@@ -59,7 +59,7 @@ public:
 	FEPointCongruency();
 
 	// measure the congruency of a point
-	CONGRUENCY_DATA Congruency(FEMesh* pm, int node);
+	CONGRUENCY_DATA Congruency(FSMesh* pm, int node);
 
 	void SetLevels(int niter) { m_nlevels = niter; }
 
@@ -67,12 +67,12 @@ private:
 	bool Project(int nid, int& nface, vec3f& q, double rs[2], vec3f& sn);
 	bool Intersect(const Ray& ray, int& nface, int nid, vec3f& q, double rs[2]);
 
-	bool IntersectTri3 (const Ray& ray, FEFace& face, vec3f& q, double rs[2]);
-	bool IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, double rs[2]);
+	bool IntersectTri3 (const Ray& ray, FSFace& face, vec3f& q, double rs[2]);
+	bool IntersectQuad4(const Ray& ray, FSFace& face, vec3f& q, double rs[2]);
 	float nodal_curvature(int nid, vec3f& nn, int m);
-	void level(int n, int l, set<int>& nl1);
+	void level(int n, int l, std::set<int>& nl1);
 
-	float face_curvature(FEFace& face, double rs[2], vec3f& sn, int m);
+	float face_curvature(FSFace& face, double rs[2], vec3f& sn, int m);
 
 public:
 	int	m_nlevels;
@@ -80,7 +80,7 @@ public:
 	int	m_nmax;
 
 private:
-	FEMesh*		m_mesh;
-	FENodeFaceList	m_NFL;
+	FSMesh*		m_mesh;
+	FSNodeFaceList	m_NFL;
 };
 }

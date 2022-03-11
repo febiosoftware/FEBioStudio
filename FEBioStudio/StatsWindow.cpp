@@ -45,8 +45,11 @@ SOFTWARE.*/
 
 CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "FEBioStudio: Statistics";
-	setWindowTitle(title);
+	QString wndTitle = windowTitle();
+	wndTitle += ":Stats";
+	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
+	setWindowTitle(wndTitle);
+
 	setMinimumWidth(500);
 	resize(600, 500);
 	GetPlotWidget()->setChartStyle(ChartStyle::BARCHART_PLOT);
@@ -57,7 +60,7 @@ void CStatsWindow::Update(bool breset, bool bfit)
 	CPostDocument* doc = GetPostDoc();
 	if (doc->IsValid() == false) return;
 
-	Post::FEPostMesh* pm = doc->GetFEModel()->GetFEMesh(0);
+	Post::FEPostMesh* pm = doc->GetFSModel()->GetFEMesh(0);
 	int N, i, n;
 
 	bool belemfield = IS_ELEM_FIELD(doc->GetEvalField());
@@ -98,7 +101,7 @@ void CStatsWindow::Update(bool breset, bool bfit)
 	{
 		for (i=0; i<pm->Nodes(); ++i)
 		{	
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.IsEnabled())
 			{
 				v = ps->m_NODE[i].m_val;
@@ -129,7 +132,7 @@ void CStatsWindow::Update(bool breset, bool bfit)
 	{
 		for (i=0; i<pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.IsEnabled())
 			{
 				v = ps->m_NODE[i].m_val;
