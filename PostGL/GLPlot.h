@@ -73,6 +73,8 @@ public:
 	bool ShowLegend() const;
 	void ShowLegend(bool b);
 
+	void Activate(bool b) override;
+
 private:
 	GLLegendBar*	m_pbar;
 };
