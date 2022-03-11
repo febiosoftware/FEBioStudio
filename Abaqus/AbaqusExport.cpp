@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <MeshTools/GModel.h>
 #include <GeomLib/GObject.h>
-#include <FECore/FETransform.h>
 
 FEAbaqusExport::FEAbaqusExport(FSProject& prj) : FEFileExport(prj)
 {
