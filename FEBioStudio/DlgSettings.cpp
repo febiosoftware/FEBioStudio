@@ -150,7 +150,7 @@ public:
 #endif
 		addEnumProperty(&m_theme, "Theme")->setEnumValues(themes);
 		addBoolProperty(&m_showNewDialog, "Show New dialog box");
-		addProperty("Recent projects list", CProperty::Action)->info = QString("Clear");
+		addProperty("Recent files list", CProperty::Action)->info = QString("Clear");
 		addIntProperty(&m_autoSaveInterval, "AutoSave Interval (s)");
 	}
 
@@ -158,9 +158,9 @@ public:
 	{
 		if (i == 4)
 		{
-			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear the recent project list.\nThis can not be undone!") == QMessageBox::Yes)
+			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear all the recent files list.\nThis can not be undone!") == QMessageBox::Yes)
 			{
-				m_wnd->ClearRecentProjectsList();
+				m_wnd->ClearRecentFilesList();
 			}
 		}
 		else CDataPropertyList::SetPropertyValue(i, v);
