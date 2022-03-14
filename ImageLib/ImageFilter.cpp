@@ -124,7 +124,7 @@ void MeanImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    CImageSITK* image = static_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
+    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
 
     if(!image) return;
 
@@ -168,7 +168,7 @@ void GaussianImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    CImageSITK* image = static_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
+    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
 
     if(!image) return;
 
