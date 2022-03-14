@@ -129,6 +129,15 @@ int FEBio::GetBaseClassIndex(const std::string& baseClassName)
 	return baseClassIndex(baseClassName.c_str());
 }
 
+std::string FEBio::GetBaseClassName(int baseClassIndex)
+{
+	for (auto& it : classIndex)
+	{
+		if (it.second == baseClassIndex) return it.first;
+	}
+	return std::string();
+}
+
 bool in_vector(const vector<int>& v, int n)
 {
 	for (int j = 0; j < v.size(); ++j)
@@ -147,6 +156,7 @@ FEBioClassInfo FEBio::GetClassInfo(int classId)
 
 	FEBioClassInfo ci;
 	ci.classId = classId;
+	ci.baseClassId = baseClassIndex(fac->GetBaseClassName());
 	ci.sztype = fac->GetTypeStr();
 	ci.szmod = fecore.GetModuleName(modId);
 
@@ -190,7 +200,11 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 			if ((mod == -1) || (mod == facmod) || in_vector(mods, facmod))
 			{
 				const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
-				FEBio::FEBioClassInfo febc = { (unsigned int)i, fac->GetTypeStr(), szmod };
+				FEBio::FEBioClassInfo febc = { 
+					(unsigned int)i, 
+					baseClassIndex(fac->GetBaseClassName()),
+					fac->GetTypeStr(), 
+					szmod };
 				facs.push_back(febc);
 			}
 		}

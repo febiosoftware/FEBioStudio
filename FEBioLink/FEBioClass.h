@@ -89,9 +89,10 @@ namespace FEBio {
 	// helper structure for retrieving febio class info 
 	struct FEBioClassInfo
 	{
-		unsigned int	classId;	// the class ID
-		const char*		sztype;		// the type string
-		const char*		szmod;		// the module name
+		unsigned int	classId;		// the class ID
+		int				baseClassId;	// base class index
+		const char*		sztype;			// the type string
+		const char*		szmod;			// the module name
 	};
 
 	enum ClassSearchFlags {
@@ -108,6 +109,9 @@ namespace FEBio {
 
 	// get the base class Index from the base class name
 	int GetBaseClassIndex(const std::string& baseClassName);
+
+	// get the base class name from its index (returns nullptr if not found)
+	std::string GetBaseClassName(int baseClassIndex);
 
 	// helper functions for creating FEBio classes.
 	FSStep*              CreateStep             (const std::string& typeStr, FSModel* fem);

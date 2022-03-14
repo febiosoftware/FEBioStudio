@@ -31,7 +31,10 @@ std::string FSCore::beautify_string(const char* sz)
 	std::string s;
 	if ((sz == nullptr) || (*sz == 0)) return s;
 
+	if (strncmp(sz, "FE", 2) == 0) sz += 2;
+
 	int n = 0;
+	char cp = 0;
 	while (*sz)
 	{
 		char c = *sz;
@@ -39,11 +42,16 @@ std::string FSCore::beautify_string(const char* sz)
 		{
 			c = toupper(c);
 		}
-		if (c == '_') c = ' ';
+		else if ((n > 0) && (isupper(c) && islower(cp)))
+		{
+			s += ' ';
+		}
+		else if (c == '_') c = ' ';
 
 		s += c;
 		sz++;
 		n++;
+		cp = c;
 	}
 
 	return s;
