@@ -456,7 +456,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		FEProperty& prop = *feb->PropertyClass(i);
 
 		int maxSize = (prop.IsArray() ? 0 : 1);
-		int baseClassId = -1; // TODO: find base class ID
+		int baseClassId = (prop.GetClassName() ? baseClassIndex(prop.GetClassName()) : -1);
 		FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
 
 		fsp->SetLongName(prop.GetLongName());

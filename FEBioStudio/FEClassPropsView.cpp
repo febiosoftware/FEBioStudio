@@ -1011,7 +1011,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				QComboBox* pc = new QComboBox(parent);
 
 				// fill the combo box
-				vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetBaseClassID(), true);
+				vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetPropertyType(), true);
 				pc->clear();
 				int classes = classInfo.size();
 				for (int i = 0; i < classes; ++i)
