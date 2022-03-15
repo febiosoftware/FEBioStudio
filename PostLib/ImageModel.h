@@ -134,6 +134,8 @@ public:
 
     CImageViewSettings* GetViewSettings() { return &viewSettings; }
 
+    Byte ValueAtGlobalPos(vec3d pos);
+
 private:
 	BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View

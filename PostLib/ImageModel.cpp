@@ -444,6 +444,23 @@ CImageSource* CImageModel::GetImageSource()
 	return m_img; 
 }
 
+Byte CImageModel::ValueAtGlobalPos(vec3d pos)
+{
+    if(pos.x < m_box.x0 || pos.x > m_box.x1 ||
+        pos.y < m_box.y0 || pos.y > m_box.y1 ||
+        pos.z < m_box.z0 || pos.z > m_box.z1)
+    {
+        return 0;
+    }
+
+    double x = (m_box.x1 - pos.x)/(m_box.x1 - m_box.x0);
+    double y = (m_box.y1 - pos.y)/(m_box.y1 - m_box.y0);
+    double z = (m_box.z1 - pos.z)/(m_box.z1 - m_box.z0);
+
+    return m_img->Get3DImage()->Peek(x,y,z);
+
+}
+
 void CImageModel::Load(IArchive& ar)
 {
 	delete m_img; m_img = nullptr;
