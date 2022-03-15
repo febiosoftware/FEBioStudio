@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include "FEBioExport.h"
 
-class FSDataMapGenerator;
 class FSSurfaceLoad;
 class GPartList;
 class GMaterial;

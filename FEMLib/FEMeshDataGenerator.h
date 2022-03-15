@@ -51,16 +51,28 @@ class FEBioNodeDataGenerator : public FSMeshDataGenerator
 {
 public:
 	FEBioNodeDataGenerator(FSModel* fem = nullptr);
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 };
 
 class FEBioFaceDataGenerator : public FSMeshDataGenerator
 {
 public:
 	FEBioFaceDataGenerator(FSModel* fem = nullptr);
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 };
 
 class FEBioElemDataGenerator : public FSMeshDataGenerator
 {
 public:
 	FEBioElemDataGenerator(FSModel* fem = nullptr);
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 };

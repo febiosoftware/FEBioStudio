@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
-#include <FEMLib/FEDataMap.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GGroup.h>

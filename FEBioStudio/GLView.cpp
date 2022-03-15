@@ -9327,7 +9327,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 						// calculate the case of the element
 						int ncase = 0;
 						for (int k = 0; k < 8; ++k)
-							if (norm*ex[k] >= ref) ncase |= (1 << k);
+							if (norm*ex[k] > ref*0.999999) ncase |= (1 << k);
 
 						// loop over faces
 						int* pf = LUT[ncase];
@@ -9511,11 +9511,16 @@ void CGLView::RenderPlaneCut()
 	FSModel& fem = *doc->GetFSModel();
 	int MAT = fem.Materials();
 
+	GLMeshRender& mr = GetMeshRenderer();
+
+	bool oldFaceColorMode = mr.GetFaceColor();
+
 	// render the unselected faces
 	glColor3ub(255, 255, 255);
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_COLOR_MATERIAL);
-	GetMeshRenderer().RenderGLMesh(m_planeCut, 0);
+	mr.SetFaceColor(true);
+	mr.RenderGLMesh(m_planeCut, 0);
 
 	// render the selected faces
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -9523,7 +9528,10 @@ void CGLView::RenderPlaneCut()
 	glDisable(GL_LIGHTING);
 	glEnable(GL_POLYGON_STIPPLE);
 	glColor3ub(255, 0, 0);
-	GetMeshRenderer().RenderGLMesh(m_planeCut, 1);
+	mr.SetFaceColor(false);
+	mr.RenderGLMesh(m_planeCut, 1);
+
+	mr.SetFaceColor(oldFaceColorMode);
 
 	if (GetViewSettings().m_bmesh)
 	{

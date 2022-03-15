@@ -129,6 +129,15 @@ int FEBio::GetBaseClassIndex(const std::string& baseClassName)
 	return baseClassIndex(baseClassName.c_str());
 }
 
+std::string FEBio::GetBaseClassName(int baseClassIndex)
+{
+	for (auto& it : classIndex)
+	{
+		if (it.second == baseClassIndex) return it.first;
+	}
+	return std::string();
+}
+
 bool in_vector(const vector<int>& v, int n)
 {
 	for (int j = 0; j < v.size(); ++j)
@@ -147,6 +156,7 @@ FEBioClassInfo FEBio::GetClassInfo(int classId)
 
 	FEBioClassInfo ci;
 	ci.classId = classId;
+	ci.baseClassId = baseClassIndex(fac->GetBaseClassName());
 	ci.sztype = fac->GetTypeStr();
 	ci.szmod = fecore.GetModuleName(modId);
 
@@ -190,7 +200,11 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 			if ((mod == -1) || (mod == facmod) || in_vector(mods, facmod))
 			{
 				const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
-				FEBio::FEBioClassInfo febc = { (unsigned int)i, fac->GetTypeStr(), szmod };
+				FEBio::FEBioClassInfo febc = { 
+					(unsigned int)i, 
+					baseClassIndex(fac->GetBaseClassName()),
+					fac->GetTypeStr(), 
+					szmod };
 				facs.push_back(febc);
 			}
 		}
@@ -272,6 +286,7 @@ FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 	case FEVEC3DGENERATOR_ID  : pc = new FSGenericClass; break;
 	case FEMAT3DGENERATOR_ID  : pc = new FSGenericClass; break;
 	case FEMAT3DSGENERATOR_ID : pc = new FSGenericClass; break;
+	case FEIMAGESOURCE_ID     : pc = new FSGenericClass; break;
 	default:
 		assert(false);
 	}
@@ -456,7 +471,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		FEProperty& prop = *feb->PropertyClass(i);
 
 		int maxSize = (prop.IsArray() ? 0 : 1);
-		int baseClassId = -1; // TODO: find base class ID
+		int baseClassId = (prop.GetClassName() ? baseClassIndex(prop.GetClassName()) : -1);
 		FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
 
 		fsp->SetLongName(prop.GetLongName());

@@ -99,6 +99,9 @@ public:
 
 	void RenderFaceOutline(FSFace& face, FSCoreMesh* pm, int ndivs);
 
+	void SetFaceColor(bool b);
+	bool GetFaceColor() const;
+
 private:
 	// special render routines for thick shells
 	void RenderThickShell(FSFace& face, FSCoreMesh* pm);
@@ -111,6 +114,7 @@ public:
 	bool		m_bShell2Solid;		//!< render shells as solid
 	int			m_nshellref;		//!< shell reference surface
 	float		m_pointSize;		//!< size of points
+	bool		m_bfaceColor;		//!< use face colors when rendering
 };
 
 // drawing routines for edges

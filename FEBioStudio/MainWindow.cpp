@@ -2830,9 +2830,10 @@ void CMainWindow::DeleteAllJobs()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::ClearRecentProjectsList()
+void CMainWindow::ClearRecentFilesList()
 {
 	ui->m_recentFiles.clear();
+	ui->m_recentProjects.clear();
 }
 
 void CMainWindow::OnCameraChanged()

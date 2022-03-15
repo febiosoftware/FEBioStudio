@@ -482,6 +482,9 @@ SOFTWARE.*/
 // --- load controllers
 #define CID_LOAD_CONTROLLER_LIST	0x00160000
 
+// --- mesh data generators
+#define CID_MESHDATA_LIST			0x00170000
+
 // rigid connector joint data
 #define CID_RC_SPHERICAL_JOINT		0x000E5000
 #define CID_RC_REVOLUTE_JOINT		0x000E5001

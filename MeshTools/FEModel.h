@@ -229,12 +229,13 @@ public:
 
 protected:
 	// I/O helper functions
-	void LoadData           (IArchive& ar);
-	void LoadSoluteData     (IArchive& ar);
-	void LoadSBMData        (IArchive& ar);
-	void LoadMaterials      (IArchive& ar);
-	void LoadSteps          (IArchive& ar);
-	void LoadLoadControllers(IArchive& ar);
+	void LoadData              (IArchive& ar);
+	void LoadSoluteData        (IArchive& ar);
+	void LoadSBMData           (IArchive& ar);
+	void LoadMaterials         (IArchive& ar);
+	void LoadSteps             (IArchive& ar);
+	void LoadLoadControllers   (IArchive& ar);
+	void LoadMeshDataGenerators(IArchive& ar);
 
 protected:
 	GModel*					m_pModel;	//!< Model geometry
@@ -245,7 +246,6 @@ protected:
 	FSObjectList<FEDataVariable>	m_Var;		//!< data variables
 	FSObjectList<SoluteData>		m_Sol;		//!< solute data variables
 	FSObjectList<SoluteData>		m_SBM;		//!< solid-bound molecule data variables
-	FSObjectList<FSDataMapGenerator>	m_Map;		//!< data maps
 	FSObjectList<FSLoadController>		m_LC;		//!< load controllers
 	FSObjectList<FSMeshDataGenerator>	m_MD;		//!< mesh data generators
 

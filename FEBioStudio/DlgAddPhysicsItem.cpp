@@ -52,10 +52,13 @@ public:
 	QComboBox* step;
 	QLineEdit* flt;
 	QToolButton* tb;
+	QComboBox* cat;
 
 	int		m_superID;
 	int		m_baseClassID;
 	bool	m_modDepends;
+
+	std::unordered_map<int, std::vector<FEBio::FEBioClassInfo> > classList;
 
 public:
 	void setup(CDlgAddPhysicsItem* dlg, bool showStepList)
@@ -81,6 +84,7 @@ public:
 			step = new QComboBox;
 			form->addRow("Step:", step);
 		}
+		form->addRow("Category:", cat = new QComboBox());
 
 		QVBoxLayout* layout = new QVBoxLayout;
 
@@ -89,7 +93,7 @@ public:
 		h->addWidget(flt = new QLineEdit());
 		flt->setPlaceholderText("enter filter text");
 		h->addWidget(tb = new QToolButton); tb->setText("Aa"); tb->setToolTip("Match case"); tb->setCheckable(true);
-
+		
 		layout->addLayout(form);
 		layout->addLayout(h);
 		layout->addWidget(type);
@@ -99,6 +103,7 @@ public:
 		QObject::connect(type, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), dlg, SLOT(accept()));
 		QObject::connect(flt, SIGNAL(textChanged(const QString&)), dlg, SLOT(Update()));
 		QObject::connect(tb, SIGNAL(clicked()), dlg, SLOT(Update()));
+		QObject::connect(cat, SIGNAL(currentIndexChanged(int)), dlg, SLOT(Update()));
 
 		flt->setFocus();
 	}
@@ -127,6 +132,28 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int base
 
 	m_module = prj.GetModule();
 
+	unsigned int searchFlags = (ui->m_modDepends ? FEBio::ClassSearchFlags::IncludeModuleDependencies : 0);
+
+	// set the types
+	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, ui->m_baseClassID, searchFlags);
+	for (int i = 0; i < (int)l.size(); ++i)
+	{
+		FEBio::FEBioClassInfo& fac = l[i];
+		ui->classList[fac.baseClassId].push_back(fac);
+	}
+
+	ui->cat->clear();
+	ui->cat->addItem("(all)", -2);
+	for (auto& it : ui->classList)
+	{
+		int id = it.first;
+		std::string s = FEBio::GetBaseClassName(id); assert(s.empty() == false);
+
+		std::string bs = FSCore::beautify_string(s.c_str());
+
+		ui->cat->addItem(QString::fromStdString(bs), id);
+	}
+
 	Update();
 }
 
@@ -136,22 +163,27 @@ void CDlgAddPhysicsItem::Update()
 
 	QString filter = ui->flt->text();
 
-	unsigned int searchFlags = (ui->m_modDepends ? FEBio::ClassSearchFlags::IncludeModuleDependencies : 0);
+	int classId = ui->cat->currentData().toInt();
 
 	// set the types
-	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, ui->m_baseClassID, searchFlags);
-	for (int i = 0; i < (int)l.size(); ++i)
+	for (auto& it : ui->classList)
 	{
-		FEBio::FEBioClassInfo& fac = l[i];
+		std::vector<FEBio::FEBioClassInfo>& facList = it.second;
 
-		QString type = QString::fromStdString(FSCore::beautify_string(fac.sztype));
-
-		if (filter.isEmpty() || type.contains(filter, (ui->tb->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive)))
+		for (auto& fac : facList)
 		{
-			QTreeWidgetItem* item = new QTreeWidgetItem(ui->type);
-			item->setText(0, type);
-			item->setText(1, fac.szmod);
-			item->setData(0, Qt::UserRole, fac.classId);
+			if ((classId == -2) || (fac.baseClassId == classId))
+			{
+				QString type = QString::fromStdString(FSCore::beautify_string(fac.sztype));
+
+				if (filter.isEmpty() || type.contains(filter, (ui->tb->isChecked() ? Qt::CaseSensitive : Qt::CaseInsensitive)))
+				{
+					QTreeWidgetItem* item = new QTreeWidgetItem(ui->type);
+					item->setText(0, type);
+					item->setText(1, fac.szmod);
+					item->setData(0, Qt::UserRole, fac.classId);
+				}
+			}
 		}
 	}
 	ui->type->model()->sort(0);

@@ -48,7 +48,14 @@ GLMeshRender::GLMeshRender()
 	m_nshellref = 0;
 	m_ndivs = 1;
 	m_pointSize = 7.f;
+	m_bfaceColor = false;
 }
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::SetFaceColor(bool b) { m_bfaceColor = b; }
+
+//-----------------------------------------------------------------------------
+bool GLMeshRender::GetFaceColor() const { return m_bfaceColor; }
 
 //-----------------------------------------------------------------------------
 // TODO: This may not always give the desired result: I render using both
@@ -146,11 +153,6 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 					n2 = pf->m_nn[1];
 					n3 = pf->m_nn[2];
 					n4 = pf->m_nn[3];
-
-					c[0] = col[FTHEX8[i][0]];
-					c[1] = col[FTHEX8[i][1]];
-					c[2] = col[FTHEX8[i][2]];
-					c[3] = col[FTHEX8[i][3]];
 				}
 				else
 				{
@@ -168,6 +170,11 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 
 			if ((pen == 0) || (!pen->IsVisible()))
 			{
+				c[0] = col[FTHEX8[i][0]];
+				c[1] = col[FTHEX8[i][1]];
+				c[2] = col[FTHEX8[i][2]];
+				c[3] = col[FTHEX8[i][3]];
+
 				glNormal3d(n1.x, n1.y, n1.z); glxColor(c[0]); glVertex3d(r1.x, r1.y, r1.z);
 				glNormal3d(n2.x, n2.y, n2.z); glxColor(c[1]); glVertex3d(r2.x, r2.y, r2.z);
 				glNormal3d(n3.x, n3.y, n3.z); glxColor(c[2]); glVertex3d(r3.x, r3.y, r3.z);
@@ -1243,27 +1250,54 @@ void GLMeshRender::RenderGLMesh(GLMesh* pm, int nid)
 	else if (nid < (int) pm->m_FIL.size())
 	{
 		assert(pm->m_FIL.size() > 0);
-		glBegin(GL_TRIANGLES);
+		if (m_bfaceColor)
 		{
-			pair<int, int> fil = pm->m_FIL[nid];
-			for (int i = 0; i<fil.second; ++i)
+			glBegin(GL_TRIANGLES);
 			{
-				GMesh::FACE& f = pm->Face(i + fil.first);
-				assert(f.pid == nid);
-				r0 = pm->Node(f.n[0]).r;
-				r1 = pm->Node(f.n[1]).r;
-				r2 = pm->Node(f.n[2]).r;
+				pair<int, int> fil = pm->m_FIL[nid];
+				for (int i = 0; i < fil.second; ++i)
+				{
+					GMesh::FACE& f = pm->Face(i + fil.first);
+					assert(f.pid == nid);
+					r0 = pm->Node(f.n[0]).r;
+					r1 = pm->Node(f.n[1]).r;
+					r2 = pm->Node(f.n[2]).r;
 
-				n0 = f.nn[0];
-				n1 = f.nn[1];
-				n2 = f.nn[2];
+					n0 = f.nn[0];
+					n1 = f.nn[1];
+					n2 = f.nn[2];
 
-				glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+					glxColor(f.c[0]); glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
+					glxColor(f.c[1]); glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+					glxColor(f.c[2]); glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+				}
 			}
+			glEnd();
 		}
-		glEnd();
+		else
+		{
+			glBegin(GL_TRIANGLES);
+			{
+				pair<int, int> fil = pm->m_FIL[nid];
+				for (int i = 0; i < fil.second; ++i)
+				{
+					GMesh::FACE& f = pm->Face(i + fil.first);
+					assert(f.pid == nid);
+					r0 = pm->Node(f.n[0]).r;
+					r1 = pm->Node(f.n[1]).r;
+					r2 = pm->Node(f.n[2]).r;
+
+					n0 = f.nn[0];
+					n1 = f.nn[1];
+					n2 = f.nn[2];
+
+					glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
+					glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+					glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+				}
+			}
+			glEnd();
+		}
 	}
 }
 

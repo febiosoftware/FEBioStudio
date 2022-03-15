@@ -75,8 +75,8 @@ public:
 	void SetSuperClassID(int superClassID) { m_nsuperClassID = superClassID; }
 	int GetSuperClassID() const { return m_nsuperClassID; }
 
-	void SetBaseClassID(int baseID) { m_nbaseClassID = baseID; }
-	int GetBaseClassID() const { return m_nbaseClassID; }
+//	void SetBaseClassID(int baseID) { m_nbaseClassID = baseID; }
+//	int GetBaseClassID() const { return m_nbaseClassID; }
 
 	const std::string& GetDefaultType() { return m_defaultType; }
 	void SetDefaultType(const std::string& s) { m_defaultType = s; }
@@ -88,10 +88,10 @@ private:
 	std::string			m_name;			// name of this property
 	std::string			m_longName;		// decorative name of this property
 	std::string			m_defaultType;	// default type string, when type attributed is ommitted.
-	int					m_npropType;	// the property type (NOTE: I think this is only used by FEBioStudio materials)
 
 	int					m_nsuperClassID;// super class ID
-	int					m_nbaseClassID; // base class ID
+	int					m_npropType;	// this is used as the base class ID for FEBio classes
+
 	int					m_maxSize;		// max number of properties (0 for no limit)
 	unsigned int		m_flag;			// property flags
 	FSCoreBase*			m_parent;		// parent object this class is a property off
