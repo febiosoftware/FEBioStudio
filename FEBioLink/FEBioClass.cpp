@@ -286,6 +286,7 @@ FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 	case FEVEC3DGENERATOR_ID  : pc = new FSGenericClass; break;
 	case FEMAT3DGENERATOR_ID  : pc = new FSGenericClass; break;
 	case FEMAT3DSGENERATOR_ID : pc = new FSGenericClass; break;
+	case FEIMAGESOURCE_ID     : pc = new FSGenericClass; break;
 	default:
 		assert(false);
 	}

@@ -161,7 +161,6 @@ void CDlgFEBioInfo::onTreeChanged()
 				case FE_PARAM_VEC3D            : sztype = "vec3d"; break;
 				case FE_PARAM_MAT3D            : sztype = "mat3d"; break;
 				case FE_PARAM_MAT3DS           : sztype = "mat3ds"; break;
-				case FE_PARAM_IMAGE_3D         : sztype = "image3d"; break;
 				case FE_PARAM_STRING           : sztype = "string"; break;
 				case FE_PARAM_DATA_ARRAY       : sztype = "data_array"; break;
 				case FE_PARAM_TENS3DRS         : sztype = "tens3drs"; break;
