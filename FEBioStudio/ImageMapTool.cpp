@@ -41,8 +41,6 @@ SOFTWARE.*/
 #include <MeshTools/FEElementData.h>
 #include <ImageLib/3DImage.h>
 
-#include <iostream>
-
 class UIImageMapTool : public QWidget
 {
 public:
