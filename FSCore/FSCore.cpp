@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "FSCore.h"
+#include <string.h>
 
 std::string FSCore::beautify_string(const char* sz)
 {
