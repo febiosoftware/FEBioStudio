@@ -40,6 +40,8 @@ SOFTWARE.*/
 #include <FEBioLib/febio.h>
 #include <map>
 #include <FEBioLink/FEBioClass.h>
+#include <FECore/FEModule.h>
+
 using namespace std;
 
 static FEBioModel febioModel;
@@ -331,7 +333,17 @@ void CDlgFEBioInfo::onLoadPlugin()
 	{
 		std::string sfile = fileName.toStdString();
 
+		// get the currently active module
+		// We need this, since importing the plugin might change this.
+		FECoreKernel& fecore = FECoreKernel::GetInstance();
+		int modId = fecore.GetActiveModule()->GetModuleID();
+
+		// try to import the plugin
 		bool bsuccess = febio::ImportPlugin(sfile.c_str());
+
+		// restore active module
+		fecore.SetActiveModule(modId);
+
 		if (bsuccess == false)
 		{
 			QMessageBox::critical(this, "Load Plugin", QString("The plugin failed to load:\n%1").arg(fileName));
