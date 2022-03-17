@@ -237,7 +237,7 @@ FECoreBase* CreateFECoreClass(int classId)
 	return pc;
 }
 
-FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
+FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 {
 	FSModelComponent* pc = nullptr;
 	switch (superClassID)
