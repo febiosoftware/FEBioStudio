@@ -110,3 +110,121 @@ void LoadClassMetaData(FSModelComponent* pc, IArchive& ar)
 		ar.CloseChunk();
 	}
 }
+
+
+void SaveFEBioProperties(FSModelComponent* pmc, OArchive& ar)
+{
+	for (int i = 0; i < pmc->Properties(); ++i)
+	{
+		FSProperty& pi = pmc->GetProperty(i);
+		ar.BeginChunk(CID_PROPERTY);
+		{
+			ar.WriteChunk(CID_PROPERTY_NAME, pi.GetName());
+
+			for (int j = 0; j < pi.Size(); ++j)
+			{
+				FSCoreBase* pc = pi.GetComponent(j);
+				if (pc)
+				{
+					ar.BeginChunk(CID_PROPERTY_ITEM);
+					{
+						pc->Save(ar);
+					}
+					ar.EndChunk();
+				}
+			}
+		}
+		ar.EndChunk();
+	}
+}
+
+void LoadFEBioProperties(FSModelComponent* pmc, IArchive& ar)
+{
+	TRACE("LoadFEBioProperties");
+
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		if (nid == CID_PROPERTY)
+		{
+			int n = 0;
+			string propName;
+			FSProperty* prop = nullptr;
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				switch (ar.GetChunkID())
+				{
+				case CID_PROPERTY_NAME:
+				{
+					assert(prop == nullptr);
+					ar.read(propName);
+					prop = pmc->FindProperty(propName); assert(prop);
+					prop->Clear();
+				}
+				break;
+				case CID_PROPERTY_ITEM:
+				{
+					FSModelComponent* pci = FEBio::CreateFSClass(prop->GetSuperClassID(), prop->GetPropertyType(), pmc->GetFSModel());
+					assert(pci);
+					pci->Load(ar);
+
+					if (prop->maxSize() == FSProperty::NO_FIXED_SIZE)
+						prop->AddComponent(pci);
+					else prop->SetComponent(pci, n);
+					n++;
+				}
+				break;
+				}
+				ar.CloseChunk();
+			}
+		}
+
+		ar.CloseChunk();
+	}
+}
+
+//===============================================================================
+
+FSGenericClass::FSGenericClass() {}
+
+void FSGenericClass::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSModelComponent::Save(ar);
+	}
+	ar.EndChunk();
+
+	if (Properties() > 0)
+	{
+		ar.BeginChunk(CID_PROPERTY_LIST);
+		{
+			SaveFEBioProperties(this, ar);
+		}
+		ar.EndChunk();
+	}
+}
+
+void FSGenericClass::Load(IArchive& ar)
+{
+	TRACE("FSGenericClass::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSModelComponent::Load(ar); break;
+		case CID_PROPERTY_LIST: LoadFEBioProperties(this, ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}

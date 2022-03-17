@@ -166,6 +166,9 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			}
 		}
 
+		// for default jobs we want to change the working directory to the jobs folder
+		QDir::setCurrent(absDir);
+
 		CFEBioJob* job = nullptr;
 
 		QDir modelDir(QString::fromStdString(doc->GetDocFolder()));

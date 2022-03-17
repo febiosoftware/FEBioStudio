@@ -33,8 +33,15 @@ protected:
 void SaveClassMetaData(FSModelComponent* pc, OArchive& ar);
 void LoadClassMetaData(FSModelComponent* pc, IArchive& ar);
 
+void SaveFEBioProperties(FSModelComponent* pc, OArchive& ar);
+void LoadFEBioProperties(FSModelComponent* pc, IArchive& ar);
+
 class FSGenericClass : public FSModelComponent
 {
 public:
-	FSGenericClass() {}
+	FSGenericClass();
+
+public:
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

@@ -48,6 +48,8 @@ enum Param_Type {
 	Param_STD_VECTOR_INT,
 	Param_STD_VECTOR_DOUBLE,
 	Param_STD_VECTOR_VEC2D,
+	Param_ARRAY_INT,			// fixed size array of int
+	Param_ARRAY_DOUBLE,			// fixed size array of double
 	Param_CHOICE = 0x0020		// like INT but imported/exported as one-based numbers
 };
 
@@ -107,6 +109,10 @@ public:
 	explicit Param(const std::vector<int>& v, const char* szb, const char* szn = 0);
 	explicit Param(const std::vector<double>& v, const char* szb, const char* szn = 0);
 	explicit Param(const std::vector<vec2d>& v, const char* szb, const char* szn = 0);
+
+	explicit Param(const int* v, int nsize, const char* szb, const char* szn = 0);
+	explicit Param(const double* v, int nsize, const char* szb, const char* szn = 0);
+
 	Param(const std::string& val, const char* szb, const char* szn = 0);
 
 	void SetParamType(Param_Type t);
@@ -148,6 +154,9 @@ public:
 	void SetVectorDoubleValue(const std::vector<double>& v) { assert(m_ntype == Param_STD_VECTOR_DOUBLE); val<std::vector<double> >() = v; }
 	void SetVectorVec2dValue(const std::vector<vec2d>& v) { assert(m_ntype == Param_STD_VECTOR_VEC2D); val<std::vector<vec2d> >() = v; }
 
+	void SetArrayIntValue   (const std::vector<int   >& v);
+	void SetArrayDoubleValue(const std::vector<double>& v);
+
 	double GetFloatValue () const {assert(m_ntype == Param_FLOAT ); return val<double>(); }
 	int    GetIntValue   () const {assert((m_ntype == Param_INT)||(m_ntype == Param_CHOICE)); return val<int>  (); }
 	bool   GetBoolValue  () const {assert(m_ntype == Param_BOOL  ); return val<bool> (); }
@@ -161,6 +170,9 @@ public:
 	std::vector<int> GetVectorIntValue() const { assert(m_ntype == Param_STD_VECTOR_INT); return val<std::vector<int> >(); }
 	std::vector<double> GetVectorDoubleValue() const { assert(m_ntype == Param_STD_VECTOR_DOUBLE); return val<std::vector<double> >(); }
 	std::vector<vec2d> GetVectorVec2dValue() const { assert(m_ntype == Param_STD_VECTOR_VEC2D); return val<std::vector<vec2d> >(); }
+
+	std::vector<int> GetArrayIntValue() const { assert(m_ntype == Param_ARRAY_INT); return val<std::vector<int> >(); }
+	std::vector<double> GetArrayDoubleValue() const { assert(m_ntype == Param_ARRAY_DOUBLE); return val<std::vector<double> >(); }
 
 	const char* GetUnit() const { return m_szunit; }
 	void SetUnit(const char* szunit) { m_szunit = szunit; }
@@ -201,6 +213,8 @@ public:
 
 	unsigned int GetFlags() const { return m_flags; }
 	void SetFlags(unsigned int flags) { m_flags = flags; }
+
+	size_t size() const;
 
 public:
 	void SetParameterGroup(int n);
@@ -424,6 +438,26 @@ public:
 		return p;
 	}
 
+	Param* AddArrayIntParam(const int* v, int nsize, const char* szb, const char* szn = 0)
+	{
+		int ns = (int)m_Param.size();
+		Param* p = new Param(v, nsize, szb, szn);
+		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
+		m_Param.push_back(p);
+		return p;
+	}
+
+	Param* AddArrayDoubleParam(const double* v, int nsize, const char* szb, const char* szn = 0)
+	{
+		int ns = (int)m_Param.size();
+		Param* p = new Param(v, nsize, szb, szn);
+		p->m_nID = ns;
+		p->SetParameterGroup(m_currentGroup);
+		m_Param.push_back(p);
+		return p;
+	}
+
 	const Param& operator [] (int n) const { return *m_Param[n]; }
 	Param& operator [] (int n)	{ return *m_Param[n]; }
 	int Size() const { return (int)m_Param.size(); }
@@ -556,6 +590,9 @@ public:
 	Param* AddVectorIntParam(const std::vector<int>& v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVectorIntParam(v, szb, szn); }
 	Param* AddVectorDoubleParam(const std::vector<double>& v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVectorDoubleParam(v, szb, szn); }
 	Param* AddVectorVec2dParam(const std::vector<vec2d>& v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVectorVec2dParam(v, szb, szn); }
+
+	Param* AddArrayIntParam   (const int*    v, int nsize, const char* szb = 0, const char* szn = 0) { return m_Param.AddArrayIntParam   (v, nsize, szb, szn); }
+	Param* AddArrayDoubleParam(const double* v, int nsize, const char* szb = 0, const char* szn = 0) { return m_Param.AddArrayDoubleParam(v, nsize, szb, szn); }
 
 	// get a parameter from its name
 	Param* GetParam(const char* sz) { return m_Param.Find(sz); }

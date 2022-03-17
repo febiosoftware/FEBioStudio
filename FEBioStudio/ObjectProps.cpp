@@ -138,6 +138,16 @@ void CObjectProps::AddParameter(Param& p)
 		prop = addProperty(paramName, CProperty::Std_Vector_Double);
 	}
 	break;
+	case Param_ARRAY_INT:
+	{
+		prop = addProperty(paramName, CProperty::Std_Vector_Int);
+	}
+	break;
+	case Param_ARRAY_DOUBLE:
+	{
+		prop = addProperty(paramName, CProperty::Std_Vector_Double);
+	}
+	break;
 	default:
 		prop = addProperty(paramName, CProperty::String);
 		prop->setFlags(CProperty::Visible);
@@ -253,6 +263,20 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 		return t;
 	}
 	break;
+	case Param_ARRAY_INT:
+	{
+		std::vector<int> v = p.GetArrayIntValue();
+		QString t = VectorIntToString(v);
+		return t;
+	}
+	break;
+	case Param_ARRAY_DOUBLE:
+	{
+		std::vector<double> v = p.GetArrayDoubleValue();
+		QString t = VectorDoubleToString(v);
+		return t;
+	}
+	break;
 	default:
 		return "(not supported)";
 	}
@@ -340,6 +364,20 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 			}
 			p.SetVectorDoubleValue(val);
 		}
+	}
+	break;
+	case Param_ARRAY_INT:
+	{
+		QString s = v.toString();
+		std::vector<int> val = StringToVectorInt(s);
+		p.SetArrayIntValue(val);
+	}
+	break;
+	case Param_ARRAY_DOUBLE:
+	{
+		QString s = v.toString();
+		std::vector<double> val = StringToVectorDouble(s);
+		p.SetArrayDoubleValue(val);
 	}
 	break;
 	default:

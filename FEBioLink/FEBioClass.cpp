@@ -101,6 +101,7 @@ void initMap()
 	idmap[FETIMECONTROLLER_ID      ] = "FETIMECONTROLLER_ID";
 	idmap[FEEIGENSOLVER_ID         ] = "FEEIGENSOLVER_ID";
 	idmap[FEDATARECORD_ID          ] = "FEDATARECORD_ID";
+	idmap[FECLASS_ID               ] = "FECLASS_ID";
 }
 
 // dummy model used for allocating temporary FEBio classes.
@@ -237,7 +238,7 @@ FECoreBase* CreateFECoreClass(int classId)
 	return pc;
 }
 
-FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
+FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 {
 	FSModelComponent* pc = nullptr;
 	switch (superClassID)
@@ -286,7 +287,6 @@ FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem)
 	case FEVEC3DGENERATOR_ID  : pc = new FSGenericClass; break;
 	case FEMAT3DGENERATOR_ID  : pc = new FSGenericClass; break;
 	case FEMAT3DSGENERATOR_ID : pc = new FSGenericClass; break;
-	case FEIMAGESOURCE_ID     : pc = new FSGenericClass; break;
 	default:
 		assert(false);
 	}
@@ -348,17 +348,33 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 			{
 			case FEBio::FEBIO_PARAM_INT:
 			{
-				int n = param.value<int>();
-				if (param.enums())
+				if (ndim > 1)
 				{
-					p = po->AddChoiceParam(n, szname, szlongname);
-					p->CopyEnumNames(param.enums());
+					p = po->AddArrayIntParam(param.pvalue<int>(), ndim, szname, szlongname);
 				}
-				else p = po->AddIntParam(n, szname, szlongname);
+				else
+				{
+					int n = param.value<int>();
+					if (param.enums())
+					{
+						p = po->AddChoiceParam(n, szname, szlongname);
+						p->CopyEnumNames(param.enums());
+					}
+					else p = po->AddIntParam(n, szname, szlongname);
+				}
 			}
 			break;
 			case FEBio::FEBIO_PARAM_BOOL: p = po->AddBoolParam(param.value<bool>(), szname, szlongname); break;
-			case FEBio::FEBIO_PARAM_DOUBLE: p = po->AddDoubleParam(param.value<double>(), szname, szlongname); break;
+			case FEBio::FEBIO_PARAM_DOUBLE: 
+			{
+				if (ndim > 1)
+				{
+					p = po->AddArrayDoubleParam(param.pvalue<double>(), ndim, szname, szlongname);
+				}
+				else
+					p = po->AddDoubleParam(param.value<double>(), szname, szlongname); 
+			}
+			break;
 			case FEBio::FEBIO_PARAM_VEC3D: p = po->AddVecParam(param.value<vec3d>(), szname, szlongname); break;
 			case FEBio::FEBIO_PARAM_MAT3D: p = po->AddMat3dParam(param.value<mat3d>(), szname, szlongname); break;
 			case FEBio::FEBIO_PARAM_STD_STRING: p = po->AddStringParam(param.value<string>(), szname, szlongname); break;
@@ -772,7 +788,7 @@ bool FEBio::InitDefaultProps(FSModelComponent* pc)
 
 bool BuildModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po)
 {
-	int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId > 0);
+	int classId = FEBio::GetClassId(superClassId, typeStr);
 	po->SetSuperClassID(superClassId);
 	po->SetClassID(classId);
 	po->SetTypeString(typeStr);

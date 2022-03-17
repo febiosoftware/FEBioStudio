@@ -141,6 +141,19 @@ bool Param::IsChecked() const
 }
 
 //-----------------------------------------------------------------------------
+size_t Param::size() const
+{
+	switch (m_ntype)
+	{
+	case Param_ARRAY_INT   : return ((std::vector<int>*)(m_pd))->size(); break;
+	case Param_ARRAY_DOUBLE: return ((std::vector<double>*)(m_pd))->size(); break;
+	default:
+		assert(false);
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
 void Param::SetParameterGroup(int n)
 {
 	m_paramGroup = n;
@@ -169,9 +182,11 @@ void Param::clear()
 		case Param_STRING: delete ((std::string*) m_pd); break;
 		case Param_MATH  : delete ((std::string*) m_pd); break;
 		case Param_COLOR : delete ((GLColor*)m_pd); break;
-		case Param_STD_VECTOR_INT: delete ((std::vector<int>*)m_pd); break;
+		case Param_STD_VECTOR_INT   : delete ((std::vector<int>*)m_pd); break;
 		case Param_STD_VECTOR_DOUBLE: delete ((std::vector<double>*)m_pd); break;
 		case Param_STD_VECTOR_VEC2D : delete ((std::vector<vec2d>*)m_pd); break;
+		case Param_ARRAY_INT   : delete ((std::vector<int>*)m_pd); break;
+		case Param_ARRAY_DOUBLE: delete ((std::vector<double>*)m_pd); break;
 		default:
 			assert(false);
 		}
@@ -195,9 +210,11 @@ void Param::SetParamType(Param_Type t)
 	case Param_STRING: m_pd = new std::string; break;
 	case Param_MATH  : m_pd = new std::string; break;
 	case Param_COLOR : m_pd = new GLColor; break;
-	case Param_STD_VECTOR_INT: m_pd = new std::vector<int>(); break;
+	case Param_STD_VECTOR_INT   : m_pd = new std::vector<int>(); break;
 	case Param_STD_VECTOR_DOUBLE: m_pd = new std::vector<double>(); break;
 	case Param_STD_VECTOR_VEC2D : m_pd = new std::vector<vec2d>(); break;
+	case Param_ARRAY_INT   : m_pd = new std::vector<int   >(); break;
+	case Param_ARRAY_DOUBLE: m_pd = new std::vector<double>(); break;
 	default:
 		assert(false);
 	}
@@ -288,9 +305,11 @@ Param::Param(const Param& p)
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
-	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
+	case Param_STD_VECTOR_INT   : { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
 	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
 	case Param_STD_VECTOR_VEC2D : { std::vector<vec2d>* pv = new std::vector<vec2d>(); m_pd = pv; *pv = *((std::vector<vec2d>*)p.m_pd); } break;
+	case Param_ARRAY_INT   : { std::vector<int   >* pv = new std::vector<int>   (); m_pd = pv; *pv = *((std::vector<int   >*)p.m_pd); } break;
+	case Param_ARRAY_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
@@ -333,6 +352,8 @@ Param& Param::operator = (const Param& p)
 	case Param_STD_VECTOR_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
 	case Param_STD_VECTOR_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
 	case Param_STD_VECTOR_VEC2D : { std::vector<vec2d>* pv = new std::vector<vec2d>(); m_pd = pv; *pv = *((std::vector<vec2d>*)p.m_pd); } break;
+	case Param_ARRAY_INT: { std::vector<int>* pv = new std::vector<int>(); m_pd = pv; *pv = *((std::vector<int>*)p.m_pd); } break;
+	case Param_ARRAY_DOUBLE: { std::vector<double>* pv = new std::vector<double>(); m_pd = pv; *pv = *((std::vector<double>*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
@@ -685,6 +706,60 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_paramGroup = -1;
 }
 
+Param::Param(const int* v, int nsize, const char* szb, const char* szn)
+{
+	assert(nsize > 1);
+	std::vector<int>* pc = new std::vector<int>();
+	pc->resize(nsize);
+	for (int i = 0; i < nsize; ++i) (*pc)[i] = v[i];
+
+	m_pd = pc;
+	m_ntype = Param_ARRAY_INT;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_lc = -1;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
+	m_paramGroup = -1;
+}
+
+Param::Param(const double* v, int nsize, const char* szb, const char* szn)
+{
+	assert(nsize > 1);
+	std::vector<double>* pc = new std::vector<double>();
+	pc->resize(nsize);
+	for (int i = 0; i < nsize; ++i) (*pc)[i] = v[i];
+
+	m_pd = pc;
+	m_ntype = Param_ARRAY_DOUBLE;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_szunit = 0;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_lc = -1;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
+	m_paramGroup = -1;
+}
+
 //-----------------------------------------------------------------------------
 Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 {
@@ -758,6 +833,26 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+}
+
+void Param::SetArrayIntValue(const std::vector<int>& v)
+{
+	assert(m_ntype == Param_ARRAY_INT);
+	auto& d = val<std::vector<int> >();
+	if (d.empty()) { d = v; return; }
+	assert(d.size() == v.size());
+	int n = MIN(d.size(), v.size());
+	for (int i = 0; i < n; ++i) d[i] = v[i];
+}
+
+void Param::SetArrayDoubleValue(const std::vector<double>& v)
+{
+	assert(m_ntype == Param_ARRAY_DOUBLE);
+	auto& d = val<std::vector<double> >();
+	if (d.empty()) { d = v; return; }
+	assert(d.size() == v.size());
+	int n = MIN(d.size(), v.size());
+	for (int i = 0; i < n; ++i) d[i] = v[i];
 }
 
 //=============================================================================
@@ -906,6 +1001,8 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_STD_VECTOR_INT: { std::vector<int> v = p.GetVectorIntValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STD_VECTOR_DOUBLE: { std::vector<double> v = p.GetVectorDoubleValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STD_VECTOR_VEC2D : { std::vector<vec2d> v = p.GetVectorVec2dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_ARRAY_INT   : { std::vector<int   > v = p.GetArrayIntValue   (); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_ARRAY_DOUBLE: { std::vector<double> v = p.GetArrayDoubleValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	default:
 		assert(false);
 	}
@@ -964,6 +1061,8 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_STD_VECTOR_INT: p.SetParamType(Param_STD_VECTOR_INT); break;
 			case Param_STD_VECTOR_DOUBLE: p.SetParamType(Param_STD_VECTOR_DOUBLE); break;
 			case Param_STD_VECTOR_VEC2D : p.SetParamType(Param_STD_VECTOR_VEC2D); break;
+			case Param_ARRAY_INT   : p.SetParamType(Param_ARRAY_INT); break;
+			case Param_ARRAY_DOUBLE: p.SetParamType(Param_ARRAY_DOUBLE); break;
 			}
 			break;
 		case CID_PARAM_VALUE:
@@ -983,6 +1082,8 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_STD_VECTOR_INT: { std::vector<int> v; ar.read(v); p.SetVectorIntValue(v); break; }
 			case Param_STD_VECTOR_DOUBLE: { std::vector<double> v; ar.read(v); p.SetVectorDoubleValue(v); break; }
 			case Param_STD_VECTOR_VEC2D : { std::vector<vec2d> v; ar.read(v); p.SetVectorVec2dValue(v); break; }
+			case Param_ARRAY_INT   : { std::vector<int> v; ar.read(v); p.SetArrayIntValue(v); break; }
+			case Param_ARRAY_DOUBLE: { std::vector<double> v; ar.read(v); p.SetArrayDoubleValue(v); break; }
 			case Param_CURVE_OBSOLETE:
 				{
 					// This is obsolete but remains for backward compatibility.

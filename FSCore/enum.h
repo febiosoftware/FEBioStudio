@@ -350,6 +350,13 @@ SOFTWARE.*/
 #define CID_PARAM_NAME				0x000C0005
 #define CID_PARAM_LC				0x000C0006	// new in FBS 2.0
 
+// --- properties ---
+// (only used by febio classes)
+#define CID_PROPERTY_LIST				0x000C1000
+#define CID_PROPERTY					0x000C1001
+#define CID_PROPERTY_NAME				0x000C1002
+#define CID_PROPERTY_ITEM				0x000C1003
+
 // --- boundary conditions ---
 #define CID_BC_SECTION					0x000D0000
 #define CID_BC_NAME                     0x000D0001

@@ -310,6 +310,8 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		} 
 		break;
 		case Param_STD_VECTOR_DOUBLE: { std::vector<double> v; tag.value(v); pp->SetVectorDoubleValue(v); } break;
+		case Param_ARRAY_INT        : { std::vector<int> v; tag.value(v); pp->SetArrayIntValue(v); } break;
+		case Param_ARRAY_DOUBLE     : { std::vector<double> v; tag.value(v); pp->SetArrayDoubleValue(v); } break;
 		case Param_STD_VECTOR_VEC2D : 
 		{ 
 			std::vector<vec2d> v;

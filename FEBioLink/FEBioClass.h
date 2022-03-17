@@ -136,6 +136,7 @@ namespace FEBio {
 
 	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem);
 	FSModelComponent* CreateClass(int classId, FSModel* fem);
+	FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem);
 
 	template<class T> T* CreateFEBioClass(int classId, FSModel* fem)
 	{

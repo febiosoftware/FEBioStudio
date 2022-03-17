@@ -238,6 +238,15 @@ void FEBioBodyConstraint::Save(OArchive& ar)
 		FSModelConstraint::Save(ar);
 	}
 	ar.EndChunk();
+
+	if (Properties() > 0)
+	{
+		ar.BeginChunk(CID_PROPERTY_LIST);
+		{
+			SaveFEBioProperties(this, ar);
+		}
+		ar.EndChunk();
+	}
 }
 
 void FEBioBodyConstraint::Load(IArchive& ar)
@@ -250,6 +259,7 @@ void FEBioBodyConstraint::Load(IArchive& ar)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
 		case CID_FEBIO_BASE_DATA: FSBodyConstraint::Load(ar); break;
+		case CID_PROPERTY_LIST  : LoadFEBioProperties(this, ar); break;
 		default:
 			assert(false);
 		}

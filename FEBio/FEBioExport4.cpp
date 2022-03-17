@@ -879,6 +879,14 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 				else el.add_attribute(p.GetShortName(), p.GetIntValue());
 			}
 			break;
+			case Param_STRING:
+			{
+				std::string s = p.GetStringValue();
+				el.add_attribute(p.GetShortName(), s);
+			}
+			break;
+			default:
+				assert(false);
 			}
 		}
 	}
@@ -2466,7 +2474,6 @@ void FEBioExport4::WriteConstraints(FSStep& s)
 			if (m_writeNotes) WriteNote(pw);
 
 			XMLElement ec("constraint");
-			ec.add_attribute("type", pw->GetTypeString());
 			const char* sz = pw->GetName().c_str();
 			ec.add_attribute("name", sz);
 
@@ -2476,11 +2483,8 @@ void FEBioExport4::WriteConstraints(FSStep& s)
 				ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
 			}
 
-			m_xml.add_branch(ec);
-			{
-				WriteParamList(*pw);
-			}
-			m_xml.close_branch(); // constraint
+			// write the constraint
+			WriteModelComponent(pw, ec);
 		}
 	}
 }
