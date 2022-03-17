@@ -337,6 +337,10 @@ public:
     void SetRelaxation(FEMaterial* pm) { ReplaceProperty(2, pm); }
     FEMaterial* GetRelaxation() { return GetProperty(2).GetMaterial(); }
     
+    // set/get recruitment
+    void SetRecrutiment(FEMaterial* pm) { ReplaceProperty(3, pm); }
+    FEMaterial* GetRecruitment() { return GetProperty(3).GetMaterial(); }
+
 public:
     DECLARE_REGISTERED(FEReactiveViscoelasticMaterial);
 };
@@ -364,6 +368,10 @@ public:
     // set/get relaxation
     void SetRelaxation(FEMaterial* pm) { ReplaceProperty(2, pm); }
     FEMaterial* GetRelaxation() { return GetProperty(2).GetMaterial(); }
+    
+    // set/get recruitment
+    void SetRecrutiment(FEMaterial* pm) { ReplaceProperty(3, pm); }
+    FEMaterial* GetRecruitment() { return GetProperty(3).GetMaterial(); }
     
 public:
     DECLARE_REGISTERED(FEReactiveViscoelasticMaterialUC);

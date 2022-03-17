@@ -266,6 +266,18 @@ FENaturalNeoHookean::FENaturalNeoHookean() : FEMaterial(FE_NATURAL_NEO_HOOKEAN)
 }
 
 //////////////////////////////////////////////////////////////////////
+// FETraceFreeNeoHookean - trace-free neo-hookean elasticity
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FETraceFreeNeoHookean, MODULE_MECH, FE_TRACE_FREE_NEO_HOOKEAN, FE_MAT_ELASTIC, "trace-free neo-Hookean", MaterialFlags::TOPLEVEL, 0);
+
+FETraceFreeNeoHookean::FETraceFreeNeoHookean() : FEMaterial(FE_TRACE_FREE_NEO_HOOKEAN)
+{
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->MakeVariable(true)->SetPersistent(false);
+    AddScienceParam(0, UNIT_PRESSURE ,    "mu", "shear modulus µ")->MakeVariable(true);
+}
+
+//////////////////////////////////////////////////////////////////////
 // FEIncompNeoHookean - incompressible neo-hookean elasticity
 //////////////////////////////////////////////////////////////////////
 
@@ -2703,6 +2715,19 @@ FECDFQuintic::FECDFQuintic() : FEMaterial(FE_CDF_QUINTIC)
 }
 
 //=============================================================================
+// CDF Power
+//=============================================================================
+
+REGISTER_MATERIAL(FECDFPower, MODULE_MECH, FE_CDF_POWER, FE_MAT_DAMAGE, "CDF power", 0, 0);
+
+FECDFPower::FECDFPower() : FEMaterial(FE_CDF_POWER)
+{
+    AddScienceParam(0, UNIT_NONE, "alpha" , "power exponent α");
+    AddScienceParam(1, UNIT_NONE, "mu0"   , "constant µ0");
+    AddScienceParam(0, UNIT_NONE, "mu1"   , "power coefficient µ1");
+}
+
+//=============================================================================
 // DC Simo
 //=============================================================================
 
@@ -2920,6 +2945,23 @@ FERelaxMalkin::FERelaxMalkin() : FEMaterial(FE_RELAX_MALKIN)
 {
     AddScienceParam(0, UNIT_TIME, "tau1"   , "min. relaxation time τ1"); //  minimum characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau2"   , "max. relaxation time τ2"); // maximum characteristic relaxation time
+    AddScienceParam(0, UNIT_NONE, "beta"   , "power exponent β"); // exponent
+}
+
+//=============================================================================
+// Relaxation Malkin Distortion
+//=============================================================================
+
+REGISTER_MATERIAL(FERelaxMalkinDistortion, MODULE_MECH, FE_RELAX_MALKIN_DIST, FE_MAT_RV_RELAX, "relaxation-Malkin-dist", 0);
+
+FERelaxMalkinDistortion::FERelaxMalkinDistortion() : FEMaterial(FE_RELAX_MALKIN_DIST)
+{
+    AddScienceParam(0, UNIT_TIME, "t1c0"   , "constant for τ1");
+    AddScienceParam(0, UNIT_TIME, "t1c1"   , "coefficient for τ1");
+    AddScienceParam(0, UNIT_TIME, "t1s0"   , "strain for τ1");
+    AddScienceParam(0, UNIT_TIME, "t2c0"   , "constant for τ2");
+    AddScienceParam(0, UNIT_TIME, "t2c1"   , "coefficient for τ2");
+    AddScienceParam(0, UNIT_TIME, "t2s0"   , "strain for τ2");
     AddScienceParam(0, UNIT_NONE, "beta"   , "power exponent β"); // exponent
 }
 
