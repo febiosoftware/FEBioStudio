@@ -149,36 +149,46 @@ void CDlgFEBioInfo::onTreeChanged()
 			{
 				FEParam& pi = *it;
 
+				int dim = pi.dim();
+
 				QTreeWidgetItem* twi = new QTreeWidgetItem(ui->params);
 				twi->setText(0, pi.name());
 
-				const char* sztype = "(unknown)";
+				QString stype = "(unknown)";
 				switch (pi.type())
 				{
-				case FE_PARAM_INVALID          : sztype = "invalid"; break;
-				case FE_PARAM_INT              : sztype = "int"; break;
-				case FE_PARAM_BOOL             : sztype = "bool"; break;
-				case FE_PARAM_DOUBLE           : sztype = "double"; break;
-				case FE_PARAM_VEC2D            : sztype = "vec2d"; break;
-				case FE_PARAM_VEC3D            : sztype = "vec3d"; break;
-				case FE_PARAM_MAT3D            : sztype = "mat3d"; break;
-				case FE_PARAM_MAT3DS           : sztype = "mat3ds"; break;
-				case FE_PARAM_STRING           : sztype = "string"; break;
-				case FE_PARAM_DATA_ARRAY       : sztype = "data_array"; break;
-				case FE_PARAM_TENS3DRS         : sztype = "tens3drs"; break;
-				case FE_PARAM_STD_STRING       : sztype = "std::string"; break;
-				case FE_PARAM_STD_VECTOR_INT   : sztype = "std::vector<int>"; break;
-				case FE_PARAM_STD_VECTOR_DOUBLE: sztype = "std::vector<double>"; break;
-				case FE_PARAM_STD_VECTOR_VEC2D : sztype = "std::vector<vec2d>"; break;
-				case FE_PARAM_STD_VECTOR_STRING: sztype = "std::vector<string>"; break;
-				case FE_PARAM_DOUBLE_MAPPED    : sztype = "FEParamDouble"; break;
-				case FE_PARAM_VEC3D_MAPPED     : sztype = "FEParamVec3d"; break;
-				case FE_PARAM_MAT3D_MAPPED     : sztype = "FEParamMat3d"; break;
-				case FE_PARAM_MAT3DS_MAPPED    : sztype = "FEParamMat3ds"; break;
-				case FE_PARAM_MATERIALPOINT    : sztype = "FEMaterialPoint"; break;
+				case FE_PARAM_INVALID          : stype = "invalid"; break;
+				case FE_PARAM_INT: {
+					if (dim > 1) stype = QString("int[%1]").arg(dim);
+					else stype = "int";
+				}
+				break;
+				case FE_PARAM_BOOL             : stype = "bool"; break;
+				case FE_PARAM_DOUBLE           : {
+					if (dim > 1) stype = QString("double[%1]").arg(dim);
+					else stype = "double";
+				}
+			    break;
+				case FE_PARAM_VEC2D            : stype = "vec2d"; break;
+				case FE_PARAM_VEC3D            : stype = "vec3d"; break;
+				case FE_PARAM_MAT3D            : stype = "mat3d"; break;
+				case FE_PARAM_MAT3DS           : stype = "mat3ds"; break;
+				case FE_PARAM_STRING           : stype = "string"; break;
+				case FE_PARAM_DATA_ARRAY       : stype = "data_array"; break;
+				case FE_PARAM_TENS3DRS         : stype = "tens3drs"; break;
+				case FE_PARAM_STD_STRING       : stype = "std::string"; break;
+				case FE_PARAM_STD_VECTOR_INT   : stype = "std::vector<int>"; break;
+				case FE_PARAM_STD_VECTOR_DOUBLE: stype = "std::vector<double>"; break;
+				case FE_PARAM_STD_VECTOR_VEC2D : stype = "std::vector<vec2d>"; break;
+				case FE_PARAM_STD_VECTOR_STRING: stype = "std::vector<string>"; break;
+				case FE_PARAM_DOUBLE_MAPPED    : stype = "FEParamDouble"; break;
+				case FE_PARAM_VEC3D_MAPPED     : stype = "FEParamVec3d"; break;
+				case FE_PARAM_MAT3D_MAPPED     : stype = "FEParamMat3d"; break;
+				case FE_PARAM_MAT3DS_MAPPED    : stype = "FEParamMat3ds"; break;
+				case FE_PARAM_MATERIALPOINT    : stype = "FEMaterialPoint"; break;
 				}
 				
-				twi->setText(1, sztype);
+				twi->setText(1, stype);
 			}
 
 			int Props = ui->m_pcb->PropertyClasses();

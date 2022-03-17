@@ -224,6 +224,16 @@ void FEBioExport::WriteParam(Param &p)
 		e.value(p.GetVectorDoubleValue());
 	}
 	break;
+	case Param_ARRAY_INT:
+	{
+		e.value(p.GetArrayIntValue());
+	}
+	break;
+	case Param_ARRAY_DOUBLE:
+	{
+		e.value(p.GetArrayDoubleValue());
+	}
+	break;
 	case Param_MATH  :
 	{
 		e.add_attribute("type", "math");

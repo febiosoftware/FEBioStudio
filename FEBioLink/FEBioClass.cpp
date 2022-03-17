@@ -348,17 +348,33 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 			{
 			case FEBio::FEBIO_PARAM_INT:
 			{
-				int n = param.value<int>();
-				if (param.enums())
+				if (ndim > 1)
 				{
-					p = po->AddChoiceParam(n, szname, szlongname);
-					p->CopyEnumNames(param.enums());
+					p = po->AddArrayIntParam(param.pvalue<int>(), ndim, szname, szlongname);
 				}
-				else p = po->AddIntParam(n, szname, szlongname);
+				else
+				{
+					int n = param.value<int>();
+					if (param.enums())
+					{
+						p = po->AddChoiceParam(n, szname, szlongname);
+						p->CopyEnumNames(param.enums());
+					}
+					else p = po->AddIntParam(n, szname, szlongname);
+				}
 			}
 			break;
 			case FEBio::FEBIO_PARAM_BOOL: p = po->AddBoolParam(param.value<bool>(), szname, szlongname); break;
-			case FEBio::FEBIO_PARAM_DOUBLE: p = po->AddDoubleParam(param.value<double>(), szname, szlongname); break;
+			case FEBio::FEBIO_PARAM_DOUBLE: 
+			{
+				if (ndim > 1)
+				{
+					p = po->AddArrayDoubleParam(param.pvalue<double>(), ndim, szname, szlongname);
+				}
+				else
+					p = po->AddDoubleParam(param.value<double>(), szname, szlongname); 
+			}
+			break;
 			case FEBio::FEBIO_PARAM_VEC3D: p = po->AddVecParam(param.value<vec3d>(), szname, szlongname); break;
 			case FEBio::FEBIO_PARAM_MAT3D: p = po->AddMat3dParam(param.value<mat3d>(), szname, szlongname); break;
 			case FEBio::FEBIO_PARAM_STD_STRING: p = po->AddStringParam(param.value<string>(), szname, szlongname); break;
@@ -772,7 +788,7 @@ bool FEBio::InitDefaultProps(FSModelComponent* pc)
 
 bool BuildModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po)
 {
-	int classId = FEBio::GetClassId(superClassId, typeStr); assert(classId > 0);
+	int classId = FEBio::GetClassId(superClassId, typeStr);
 	po->SetSuperClassID(superClassId);
 	po->SetClassID(classId);
 	po->SetTypeString(typeStr);
