@@ -503,7 +503,7 @@ public:
 							int n = prop.Size();
 							return QString("[%1]").arg(n);
 						}
-						else if (prop.GetSuperClassID() != FECLASS_ID)
+						else
 						{
 
 							FSCoreBase* pc = (m_index >= 0 ? m_pc->GetProperty(m_propId, m_index) : nullptr);
@@ -514,7 +514,6 @@ public:
 							}
 							else return pc->GetTypeString();
 						}
-						else return "";
 					}
 				}
 			}
@@ -1048,7 +1047,6 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				FSCoreBase* pcbi = pcb->GetProperty(item->m_propId, item->m_index);
 
 				int nclass = prop.GetSuperClassID();
-				if (nclass == FECLASS_ID) return nullptr;
 
 				QComboBox* pc = new QComboBox(parent);
 

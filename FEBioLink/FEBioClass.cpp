@@ -101,6 +101,7 @@ void initMap()
 	idmap[FETIMECONTROLLER_ID      ] = "FETIMECONTROLLER_ID";
 	idmap[FEEIGENSOLVER_ID         ] = "FEEIGENSOLVER_ID";
 	idmap[FEDATARECORD_ID          ] = "FEDATARECORD_ID";
+	idmap[FECLASS_ID               ] = "FECLASS_ID";
 }
 
 // dummy model used for allocating temporary FEBio classes.
@@ -286,7 +287,6 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FEVEC3DGENERATOR_ID  : pc = new FSGenericClass; break;
 	case FEMAT3DGENERATOR_ID  : pc = new FSGenericClass; break;
 	case FEMAT3DSGENERATOR_ID : pc = new FSGenericClass; break;
-	case FEIMAGESOURCE_ID     : pc = new FSGenericClass; break;
 	default:
 		assert(false);
 	}
