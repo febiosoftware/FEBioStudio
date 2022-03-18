@@ -43,7 +43,6 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
-#include <ImageLib/ImageFilter.h>
 #include <QMessageBox>
 #include <QtCore/QFileInfo>
 #include <FEMLib/FERigidConstraint.h>
@@ -875,6 +874,7 @@ void CModelTree::Build(CModelDocument* doc)
 	else if (m_nfilter == ModelTreeFilter::FILTER_PHYSICS  ) modelName += " > Physics";
 	else if (m_nfilter == ModelTreeFilter::FILTER_STEPS    ) modelName += " > Steps";
 	else if (m_nfilter == ModelTreeFilter::FILTER_JOBS     ) modelName += " > Jobs";
+    else if (m_nfilter == ModelTreeFilter::FILTER_IMAGES     ) modelName += " > Images";
 
 	QTreeWidgetItem* t1 = nullptr;
 
@@ -1088,7 +1088,7 @@ void CModelTree::Build(CModelDocument* doc)
 			UpdateJobs(t1, doc);
 	}
 
-	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE || (m_nfilter == ModelTreeFilter::FILTER_IMAGES))
 	{
 		// add the image stacks
 		if (doc->ImageModels())
@@ -1168,26 +1168,6 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 	{
 		Post::CImageModel* img = doc->GetImageModel(i);
 		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CObjectProps(img), 0);
-
-        if(img->ImageFilters() > 0)
-        {
-            QTreeWidgetItem* filterItem = AddTreeItem(t2, "Filters", MT_3DIMAGE_FILTER_LIST);
-            
-            for (int j = 0; j < img->ImageFilters(); ++j)
-            {
-                CImageFilter* filter = img->GetImageFilter(j);
-                AddTreeItem(filterItem, QString::fromStdString(filter->GetName()), MT_3DIMAGE_FILTER, 0, filter, new CObjectProps(filter), 0);
-            }
-        } 
-
-		Post::CImageSource* src = img->GetImageSource();
-		AddTreeItem(t2, QString::fromStdString(src->GetName()), MT_3DIMAGE, 0, src, new CObjectProps(src), 0);
-
-        for (int j = 0; j < img->ImageRenderers(); ++j)
-		{
-			Post::CGLImageRenderer* imgRender = img->GetImageRenderer(j);
-			AddTreeItem(t2, QString::fromStdString(imgRender->GetName()), MT_3DIMAGE_RENDER, 0, imgRender, new CObjectProps(imgRender), 0);
-		}
 	}
 }
 

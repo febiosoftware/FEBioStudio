@@ -1495,6 +1495,11 @@ void CModelViewer::UpdateCurrentItem()
 	}
 }
 
+void CModelViewer::SetFilter(int index)
+{
+    ui->m_filter->setCurrentIndex(index);
+}
+
 void CModelViewer::OnRemoveEmptySelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1816,17 +1821,8 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_3DIMAGE:
-        menu.addAction("Apply Filters", this, SLOT(OnApplyImageFilters()));
-        menu.addAction("Add Threshold Image Fitler", this, SLOT(OnAddThresholdImageFilter()));
-#ifdef HAS_ITK
-		menu.addAction("Add Mean Image Fitler", this, SLOT(OnAddMeanImageFilter()));
-		menu.addAction("Add Gaussian Image Fitler", this, SLOT(OnAddGaussianImageFilter()));
-#endif
 		del = true;
 		break;
-    case MT_3DIMAGE_FILTER:
-        del = true;
-        break;
 	default:
 		return;
 	}
@@ -1896,64 +1892,6 @@ void CModelViewer::OnSwapMasterSlave()
 		UpdateObject(m_currentObject);
 	}
 }
-
-void CModelViewer::OnApplyImageFilters()
-{
-    Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
-	
-	if(model)
-	{
-        model->ApplyFilters();
-    }
-}
-
-void CModelViewer::OnAddThresholdImageFilter()
-{
-	Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
-	
-	if(model)
-	{
-		ThresholdImageFilter* filter = new ThresholdImageFilter();
-
-		model->AddImageFilter(filter);
-	}
-
-    Update();
-}
-
-#ifdef HAS_ITK
-
-void CModelViewer::OnAddMeanImageFilter()
-{
-	Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
-	
-	if(model)
-	{
-		MeanImageFilter* filter = new MeanImageFilter();
-
-		model->AddImageFilter(filter);
-	}
-
-    Update();
-}
-
-void CModelViewer::OnAddGaussianImageFilter()
-{
-	Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(m_currentObject);
-	
-	if(model)
-	{
-		GaussianImageFilter* filter = new GaussianImageFilter();
-
-		model->AddImageFilter(filter);
-	}
-
-    Update();
-}
-#else
-void CModelViewer::OnAddMeanImageFilter() {}
-void CModelViewer::OnAddGaussianImageFilter() {}
-#endif
 
 void CModelViewer::OnDeleteAllBC()
 {

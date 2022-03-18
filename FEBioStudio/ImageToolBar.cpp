@@ -29,48 +29,48 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "IconProvider.h"
 #include "ImageToolBar.h"
-#include "ImageDocument.h"
 #include <GLLib/GView.h> 
+#include "Document.h"
 #include "DlgDIC.h"
 
 CImageToolBar::CImageToolBar(CMainWindow* wnd)
     : m_wnd(wnd)
 {
-    m_showGLView = new QAction(CIconProvider::GetIcon("volrender"), "GL View");
-    m_showGLView->setCheckable(true);
-    
+    m_showModelView = new QAction(CIconProvider::GetIcon("mesh"), "Model View");
+    m_showModelView->setCheckable(true);
+
     m_showSliceView = new QAction(CIconProvider::GetIcon("Image"), "Slice View");
     m_showSliceView->setCheckable(true);
 
-    m_show2dImageView = new QAction(CIconProvider::GetIcon("Play"), "2D Time View");
+    m_show2dImageView = new QAction(CIconProvider::GetIcon("Image", "play"), "2D Time View");
     m_show2dImageView->setCheckable(true);
 
     QActionGroup* viewGroup = new QActionGroup(this);
-    viewGroup->addAction(m_showGLView);
+    viewGroup->addAction(m_showModelView);
     viewGroup->addAction(m_showSliceView);
     viewGroup->addAction(m_show2dImageView);
     
-    m_showGLView->setChecked(true);
+    m_showModelView->setChecked(true);
 
     connect(viewGroup, &QActionGroup::triggered, this, &CImageToolBar::on_viewAction_triggered);
 
     addActions(viewGroup->actions());
 
-    QAction* dlgDIC = new QAction("DIC");
-    connect(dlgDIC, &QAction::triggered, this, &CImageToolBar::on_dlgDIC_triggered);
-    addAction(dlgDIC);
+    // QAction* dlgDIC = new QAction("DIC");
+    // connect(dlgDIC, &QAction::triggered, this, &CImageToolBar::on_dlgDIC_triggered);
+    // addAction(dlgDIC);
 
 }
 
 void CImageToolBar::on_viewAction_triggered(QAction* action)
 {
-    CImageDocument* doc = m_wnd->GetImageDocument();
+    CGLDocument* doc = m_wnd->GetGLDocument();
 
     if(!doc) return;
 
-    if(action == m_showGLView) 
+    if(action == m_showModelView)
     {
-        doc->GetView()->imgView = CGView::GL_VIEW;
+        doc->GetView()->imgView = CGView::MODEL_VIEW;
     }
     else if(action == m_showSliceView)
     {
@@ -86,17 +86,17 @@ void CImageToolBar::on_viewAction_triggered(QAction* action)
     action->setChecked(true);
 }
 
-void CImageToolBar::on_dlgDIC_triggered()
-{
-    CImageDocument* doc = m_wnd->GetImageDocument();
+// void CImageToolBar::on_dlgDIC_triggered()
+// {
+//     CImageDocument* doc = m_wnd->GetImageDocument();
 
-    if(!doc) return;
+//     if(!doc) return;
 
-    Post::CImageModel* model = doc->GetActiveModel();
+//     Post::CImageModel* model = doc->GetActiveModel();
 
-    if(!model) return;
+//     if(!model) return;
 
-    CDlgDIC dlg(model);
+//     CDlgDIC dlg(model);
 
-    dlg.exec();
-}
+//     dlg.exec();
+// }

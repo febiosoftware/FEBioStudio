@@ -31,7 +31,6 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "PropertyListForm.h"
 #include "ObjectProps.h"
-#include "ImageDocument.h"
 #include <PostLib/ImageModel.h>
 #include "InputWidgets.h"
 #include <vector>
@@ -43,6 +42,11 @@ public:
 
     Param* m_param;
 public:
+
+    ~CImageParam()
+    {
+        delete slider;
+    }
     
     void setup(::CImageParam* parent, Param* param)
     {
@@ -72,6 +76,11 @@ CImageParam::CImageParam(Param* param) : ui(new Ui::CImageParam)
     ui->setup(this, param);
 }
 
+CImageParam::~CImageParam()
+{
+    delete ui;
+}
+
 void CImageParam::updateParam()
 {
     ui->m_param->SetFloatValue(ui->slider->getValue());
@@ -82,10 +91,11 @@ void CImageParam::updateParam()
 class Ui::CImageSettingsPanel
 {
 public:
-    // ::CPropertyListForm* form;
     QGridLayout* layout = new QGridLayout;
 
-    vector<::CImageParam*> params;
+    std::vector<::CImageParam*> params;
+
+    QLabel* noImage;
 
 public:
     void setup(::CImageSettingsPanel* panel)
@@ -94,11 +104,15 @@ public:
 
         layout = new QGridLayout;
 
+        noImage = new QLabel("(No Image Selected)");
+        layout->addWidget(noImage);
+
         panel->setLayout(layout);
     }
 
-    void setFSObject(FSObject* fso)
+    void setImageModel(Post::CImageModel* img)
     {
+        
         for(auto param : params)
         {
             delete param;
@@ -106,15 +120,26 @@ public:
 
         params.clear();
 
-        for(int param = 0; param < fso->Parameters(); param++)
+        if(img)
         {
-            ::CImageParam* imgParam = new ::CImageParam(&fso->GetParam(param));
+            noImage->hide();
 
-            QObject::connect(imgParam, &::CImageParam::paramChanged, m_panel, &::CImageSettingsPanel::ParamChanged);
+            CImageViewSettings* settings = img->GetViewSettings();
 
-            params.push_back(imgParam);
+            for(int param = 0; param < settings->Parameters(); param++)
+            {
+                ::CImageParam* imgParam = new ::CImageParam(&settings->GetParam(param));
 
-            layout->addWidget(imgParam, param/2, param % 2);
+                QObject::connect(imgParam, &::CImageParam::paramChanged, m_panel, &::CImageSettingsPanel::ParamChanged);
+
+                params.push_back(imgParam);
+
+                layout->addWidget(imgParam, param/2, param % 2);
+            }
+        }
+        else
+        {
+            noImage->show();
         }
     }
 private:
@@ -128,14 +153,17 @@ CImageSettingsPanel::CImageSettingsPanel(CMainWindow* wnd, QWidget* parent)
     ui->setup(this);
 }
 
-void CImageSettingsPanel::ImageModelChanged()
+void CImageSettingsPanel::ModelTreeSelectionChanged(FSObject* obj)
 {
-    Post::CImageModel* model = GetMainWindow()->GetImageDocument()->GetActiveModel();
+    Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(obj);
 
-    if(model) ui->setFSObject(model->GetViewSettings());
+    ui->setImageModel(model);
+
+    parentWidget()->show();
+    parentWidget()->raise();
 }
 
 void CImageSettingsPanel::ParamChanged()
 {
-    GetMainWindow()->UpdateImageView();
+    GetMainWindow()->UpdateUiView();
 }

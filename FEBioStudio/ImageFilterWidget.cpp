@@ -32,9 +32,9 @@ SOFTWARE.*/
 #include "PropertyListView.h"
 #include "ObjectProps.h"
 #include "FEBioStudio.h"
-#include "ImageDocument.h"
 #include "IconProvider.h"
 #include "ImageFilterWidget.h"
+#include <PostLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include "DlgImageFilter.h"
 #include "ClassDescriptor.h"
@@ -97,17 +97,18 @@ CImageFilterWidget::CImageFilterWidget()
     QMetaObject::connectSlotsByName(this);
 }
 
+void CImageFilterWidget::SetImageModel(Post::CImageModel* img)
+{
+    m_imgModel = img;
+
+    Update();
+}
+
 void CImageFilterWidget::Update()
 {
     m_list->clear();
     m_filterProps->Update(nullptr);
     
-    CImageDocument* doc = dynamic_cast<CImageDocument*>(PRV::getDocument());
-
-    if(!doc) return;
-
-    m_imgModel = doc->GetActiveModel();
-
     if(m_imgModel)
     {
         for(int filter = 0; filter < m_imgModel->ImageFilters(); filter++)

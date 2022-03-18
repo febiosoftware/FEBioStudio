@@ -60,14 +60,13 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <PostLib/ImageModel.h>
 #include "PostDocument.h"
-#include "ImageDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/GModel.h>
 #include "Commands.h"
 #include "PostObject.h"
 #include <PostLib/ImageSlicer.h>
-#include <iostream>
+#include "ImageSliceView.h"
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
@@ -1500,9 +1499,6 @@ void CGLView::paintGL()
     CModelDocument* mDoc = m_pWnd->GetModelDocument();
 	if (mDoc) RenderModelView();
 
-    CImageDocument* imgDoc = m_pWnd->GetImageDocument();
-	if (imgDoc) RenderImageView();
-
 	// render the grid
 	if (view.m_bgrid && (mDoc)) m_grid.Render(m_rc);
 
@@ -1889,17 +1885,6 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 	Post::CGLPlaneCutPlot::DisableClipPlanes();
 }
 
-void CGLView::RenderImageView()
-{    
-    CImageDocument* doc = m_pWnd->GetImageDocument();
-
-    if(!doc->GetActiveModel() || doc->GetView()->imgView != CGView::SLICE_VIEW) return;
-
-    doc->GetXSlicer()->Render(m_rc);
-    doc->GetYSlicer()->Render(m_rc);
-    doc->GetZSlicer()->Render(m_rc);
-}
-
 //-----------------------------------------------------------------------------
 void CGLView::Render3DCursor(const vec3d& r, double R)
 {
@@ -2012,12 +1997,6 @@ void CGLView::SetupProjection()
     if (postDoc && postDoc->IsValid())
 	{
 		box = postDoc->GetPostObject()->GetBoundingBox();
-	}
-
-    CImageDocument* imgDoc = dynamic_cast<CImageDocument*>(GetDocument());
-    if (imgDoc)
-	{
-		box = BOX(0, 0, 0, 1, 1, 1);
 	}
 
 	CGView& view = *doc->GetView();
@@ -2860,21 +2839,7 @@ void CGLView::RenderImageData()
 	glLoadIdentity();
 	cam.Transform();
 
-    CImageDocument* imgDoc = dynamic_cast<CImageDocument*>(doc);
-
-    if(imgDoc)
-    {
-        Post::CImageModel* img = imgDoc->GetActiveModel();
-        if(img)
-        {
-            BOX box = img->GetBoundingBox();
-            GLColor c(255, 128, 128);
-            glColor3ub(c.r, c.g, c.b);
-            if (img->ShowBox()) RenderBox(box, false);
-            img->Render(m_rc);
-        }
-    }
-    else
+    if(doc->GetView()->imgView == CGView::MODEL_VIEW)
     {
         for (int i = 0; i < doc->ImageModels(); ++i)
         {
@@ -2887,8 +2852,22 @@ void CGLView::RenderImageData()
             img->Render(m_rc);
         }
     }
+    else if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+    {
+        CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
 
-	
+        Post::CImageModel* img =  sliceView->GetImageModel();
+        if(img)
+        {
+            BOX box = img->GetBoundingBox();
+            GLColor c(255, 128, 128);
+            glColor3ub(c.r, c.g, c.b);
+            if (img->ShowBox()) RenderBox(box, false);
+            img->Render(m_rc);
+
+            sliceView->RenderSlicers(m_rc);
+        }
+    }
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();

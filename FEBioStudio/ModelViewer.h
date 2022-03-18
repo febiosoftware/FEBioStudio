@@ -93,6 +93,8 @@ public:
 
 	void UpdateCurrentItem();
 
+    void SetFilter(int index);
+
 public slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
 	void on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column);
@@ -177,14 +179,6 @@ public slots:
 	void OnDeleteAllRigidComponents();
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
-
-    // Image filters
-    void OnApplyImageFilters();
-    // Custom Image filters
-	void OnAddThresholdImageFilter();
-    // SITK Image Filters
-    void OnAddMeanImageFilter();
-	void OnAddGaussianImageFilter();
 
 signals:
 	void currentObjectChanged(FSObject* po);

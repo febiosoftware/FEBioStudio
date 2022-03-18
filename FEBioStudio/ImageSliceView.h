@@ -42,6 +42,7 @@ class CMainWindow;
 namespace Post
 {
     class CImageModel;
+    class CImageSlicer;
 }
 
 class CImageSlice : public QWidget
@@ -93,11 +94,19 @@ class CImageSliceView : public QWidget
 
 public:
     CImageSliceView(CMainWindow* wnd, QWidget* parent = 0);
+    ~CImageSliceView();
 
     void Update();
 
+    Post::CImageModel* GetImageModel() { return m_imgModel; }
+
+    void RenderSlicers(CGLContext& rc);
+
+private:
+    void CleanSlicers();
+
 public slots:
-    void UpdateImage();
+    void ModelTreeSelectionChanged(FSObject* obj);
     void SliceUpdated(int direction, float offset);
 
 protected:
@@ -109,9 +118,15 @@ private:
 public:
     QGridLayout* m_layout;
 
+    Post::CImageModel* m_imgModel;
+
     CImageSlice* m_xSlice;
     CImageSlice* m_ySlice;
     CImageSlice* m_zSlice;
+
+    Post::CImageSlicer* m_xSlicer;
+    Post::CImageSlicer* m_ySlicer;
+    Post::CImageSlicer* m_zSlicer;
 
     CGLView* m_glView;
 };

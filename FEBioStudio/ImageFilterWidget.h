@@ -74,6 +74,8 @@ class CImageFilterWidget : public QWidget
 public:
     CImageFilterWidget();
 
+    void SetImageModel(Post::CImageModel* img);
+
 public slots:
     void Update();
 

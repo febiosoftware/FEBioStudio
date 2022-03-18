@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QSlider>
 #include <QToolBar>
 #include "MainWindow.h"
-#include "ImageDocument.h"
+#include "Document.h"
 #include "GLView.h"
 #include <ImageLib/3DImage.h>
 #include <PostLib/ImageSlicer.h>
@@ -98,6 +98,8 @@ void CImageSlice::SetImage(Post::CImageModel* imgModel)
 
     m_imgModel = imgModel;
 
+    if(!m_imgModel) return;
+
     C3DImage* img = imgModel->GetImageSource()->Get3DImage();
 
     int n;
@@ -122,6 +124,8 @@ void CImageSlice::SetImage(Post::CImageModel* imgModel)
 
 void CImageSlice::Update()
 {
+    m_scene->clear();
+
     if(!m_imgModel) return;
 
     int slice = m_slider->getValue();
@@ -148,8 +152,6 @@ void CImageSlice::Update()
     }
 
     m_slider->setToolTip(QString::number(slice));
-
-    m_scene->clear();
 
     QImage qImg(imgSlice.GetBytes(), imgSlice.Width(), imgSlice.Height(), imgSlice.Width(), QImage::Format::Format_Grayscale8);
 
@@ -220,7 +222,7 @@ void CImageSlice::wheelEvent(QWheelEvent* event)
 ///////
 
 CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
-    : QWidget(parent), m_wnd(wnd)
+    : QWidget(parent), m_wnd(wnd), m_imgModel(nullptr), m_xSlicer(nullptr), m_ySlicer(nullptr), m_zSlicer(nullptr)
 {
     m_layout = new QGridLayout;
 
@@ -242,11 +244,84 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     connect(m_zSlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
 }
 
+CImageSliceView::~CImageSliceView()
+{
+    CleanSlicers();
+
+    delete m_xSlice;
+    delete m_ySlice;
+    delete m_zSlice;
+}
+
+void CImageSliceView::CleanSlicers()
+{
+    if(m_xSlicer)
+    {
+        delete m_xSlicer;
+        m_xSlicer = nullptr;
+    }
+    if(m_ySlicer)
+    {
+        delete m_ySlicer;
+        m_ySlicer = nullptr;
+    }
+    if(m_zSlicer)
+    {
+        delete m_zSlicer;
+        m_zSlicer = nullptr;
+    }
+}
+
 void CImageSliceView::Update()
 {
-    m_xSlice->Update();
-    m_ySlice->Update();
-    m_zSlice->Update();
+    CGLDocument* doc = m_wnd->GetGLDocument();
+
+    if(doc)
+    {   
+        if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+        {
+            m_xSlice->Update();
+            m_ySlice->Update();
+            m_zSlice->Update();
+        }
+    }
+}
+
+void CImageSliceView::RenderSlicers(CGLContext& rc)
+{
+    if(!m_xSlicer || !m_ySlicer || !m_zSlicer) return;
+ 
+    m_xSlicer->Render(rc);
+    m_ySlicer->Render(rc);
+    m_zSlicer->Render(rc);
+}
+
+void CImageSliceView::ModelTreeSelectionChanged(FSObject* obj)
+{
+    m_imgModel = dynamic_cast<Post::CImageModel*>(obj);
+
+    m_xSlice->SetImage(m_imgModel);
+    m_ySlice->SetImage(m_imgModel);
+    m_zSlice->SetImage(m_imgModel);
+
+    CleanSlicers();
+
+    if(m_imgModel)
+    {
+        m_xSlicer = new Post::CImageSlicer(m_imgModel);
+        m_ySlicer = new Post::CImageSlicer(m_imgModel);
+        m_zSlicer = new Post::CImageSlicer(m_imgModel);
+        
+        m_xSlicer->SetOrientation(0);
+        m_ySlicer->SetOrientation(1);
+        m_zSlicer->SetOrientation(2);
+
+        m_xSlicer->Create();
+        m_ySlicer->Create();
+        m_zSlicer->Create();
+    }
+
+    Update();
 }
 
 void CImageSliceView::resizeEvent(QResizeEvent* event)
@@ -256,43 +331,34 @@ void CImageSliceView::resizeEvent(QResizeEvent* event)
     Update();
 }
 
-void CImageSliceView::UpdateImage()
-{
-    CImageDocument* doc = dynamic_cast<CImageDocument*>(m_wnd->GetDocument());
-
-    if(doc)
-    {
-        Post::CImageModel* img = doc->GetActiveModel();
-
-        if(!img) return;
-        
-        m_xSlice->SetImage(img);
-        m_ySlice->SetImage(img);
-        m_zSlice->SetImage(img);
-    }
-
-    Update();
-}
-
 void CImageSliceView::SliceUpdated(int direction, float offset)
 {
-    CImageDocument* doc = m_wnd->GetImageDocument();
+    CGLDocument* doc = m_wnd->GetGLDocument();
 
     if(!doc) return;
     
     switch (direction)
     {
     case CImageSlice::X:
-        doc->GetXSlicer()->SetOffset(offset);
-        doc->GetXSlicer()->Update();
+        if(m_xSlicer)
+        {
+            m_xSlicer->SetOffset(offset);
+            m_xSlicer->Update();
+        }
         break;
     case CImageSlice::Y:
-        doc->GetYSlicer()->SetOffset(offset);
-        doc->GetYSlicer()->Update();
+        if(m_ySlicer)
+        {
+            m_ySlicer->SetOffset(offset);
+            m_ySlicer->Update();
+        }
         break;
     case CImageSlice::Z:
-        doc->GetZSlicer()->SetOffset(offset);
-        doc->GetZSlicer()->Update();
+        if(m_zSlicer)
+        {
+            m_zSlicer->SetOffset(offset);
+            m_zSlicer->Update();
+        }
         break;
     default:
         break;

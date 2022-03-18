@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <QTimer>
 #include <QSpinBox>
 #include "MainWindow.h"
-#include "ImageDocument.h"
+#include "Document.h"
 #include "IconProvider.h"
 #include "ImageSliceView.h"
 #include "2DImageTimeView.h"
@@ -95,22 +95,27 @@ C2DImageTimeView::C2DImageTimeView(CMainWindow* wnd)
     connect(ui->timer, &QTimer::timeout, this, &C2DImageTimeView::on_timer_timeout);
 }
 
-void C2DImageTimeView::UpdateImage()
+void C2DImageTimeView::Update()
 {
-    CImageDocument* doc = dynamic_cast<CImageDocument*>(m_wnd->GetDocument());
+    CGLDocument* doc = m_wnd->GetGLDocument();
 
     if(doc)
-    {
-        Post::CImageModel* img = doc->GetActiveModel();
-
-        if(!img) return;
-        
-        ui->slice->SetImage(img);
+    {   
+        if(doc->GetView()->imgView == CGView::TIME_VIEW_2D)
+        {
+            ui->slice->Update();
+        }
     }
+}
+
+void C2DImageTimeView::ModelTreeSelectionChanged(FSObject* obj)
+{
+    Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(obj);
+
+    ui->slice->SetImage(img);
 
     ui->slice->Update();
 }
-
 
 void C2DImageTimeView::on_actionPlayPause_triggered()
 {
@@ -131,12 +136,25 @@ void C2DImageTimeView::on_actionPlayPause_triggered()
 
 void C2DImageTimeView::on_timer_timeout()
 {
-    int index = ui->slice->GetIndex() + 1;
+    CGLDocument* doc = m_wnd->GetGLDocument();
 
-    if(index == ui->slice->GetSliceCount())
-    {
-        index = 0;
+    if(doc)
+    {   
+        if(doc->GetView()->imgView == CGView::TIME_VIEW_2D)
+        {
+            int index = ui->slice->GetIndex() + 1;
+
+            if(index == ui->slice->GetSliceCount())
+            {
+                index = 0;
+            }
+
+            ui->slice->SetIndex(index);
+
+            return;
+        }
     }
 
-    ui->slice->SetIndex(index);
+    // stop the animation if this view isn't visible
+    on_actionPlayPause_triggered();
 }

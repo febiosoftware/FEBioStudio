@@ -39,8 +39,10 @@ class C2DImageTimeView : public QWidget
 public:
     C2DImageTimeView(CMainWindow* wnd);
 
+    void Update();
+
 public slots:
-    void UpdateImage();
+    void ModelTreeSelectionChanged(FSObject* obj);
 
 private slots:
     void on_actionPlayPause_triggered();

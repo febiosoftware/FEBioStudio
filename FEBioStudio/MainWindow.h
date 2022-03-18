@@ -48,7 +48,6 @@ class CImagePanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
-class CImageDocument;
 class CFEBioJob;
 class CSSHHandler;
 class xpltFileReader;
@@ -56,6 +55,7 @@ class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
 class CGLView;
+class CImageSliceView;
 class GObject;
 enum class ImageFileType;
 
@@ -79,7 +79,6 @@ public:
 		POST_CONFIG,		// post document	(i.e. xplt file)
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
         XML_CONFIG,		    // text document	(i.e. feb file)
-        IMAGE_CONFIG	    // Image document	(i.e. image file)
 	};
 
 public:
@@ -98,7 +97,6 @@ public:
 	CGLDocument* GetGLDocument();
 	CModelDocument* GetModelDocument();
 	CPostDocument* GetPostDocument();
-    CImageDocument* GetImageDocument();
 
 	// get the document manager
 	CDocManager* GetDocManager();
@@ -279,7 +277,7 @@ public:
 	// set the current time of the current post doc
 	void SetCurrentTime(int n);
 
-    void UpdateImageView();
+    void UpdateUiView();
 
 private:
 	void writeSettings();
@@ -325,7 +323,6 @@ private:
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
-    void on_actionNewImageDoc_triggered();
 	void on_actionOpenProject_triggered();
 	void on_actionOpen_triggered();
     // void on_actionReadInfo_triggered();
@@ -614,6 +611,7 @@ public slots:
 	void OnDeleteAllMeshData();
 
 	CGLView* GetGLView();
+    CImageSliceView* GetImageSliceView();
 
 	void UpdateGraphs(bool breset);
 

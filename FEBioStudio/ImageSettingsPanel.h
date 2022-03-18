@@ -45,6 +45,8 @@ class CImageParam : public QWidget
 public:
     CImageParam(Param* param);
 
+    ~CImageParam();
+
 public slots:
     void updateParam();
 
@@ -63,7 +65,7 @@ public:
     CImageSettingsPanel(CMainWindow* wnd, QWidget* parent);
 
 public slots:
-    void ImageModelChanged();
+    void ModelTreeSelectionChanged(FSObject* obj);
     void ParamChanged();
 
 

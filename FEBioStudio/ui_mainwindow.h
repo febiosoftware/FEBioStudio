@@ -34,7 +34,6 @@ SOFTWARE.*/
 #include <QMenu>
 #include <QFile>
 #include <QDockWidget>
-//#include <QDesktopWidget>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QProgressBar>
@@ -53,11 +52,11 @@ SOFTWARE.*/
 #include "XMLTreeView.h"
 #include "FileViewer.h"
 #include "ModelViewer.h"
+#include "ModelTree.h"
 #include "CurveEditor.h"
 #include "MeshInspector.h"
 #include "LogPanel.h"
 #include "BuildPanel.h"
-#include "ImagePanel.h"
 #include "ImageSettingsPanel.h"
 #include "2DImageTimeView.h"
 #include "GLControlBar.h"
@@ -404,6 +403,10 @@ public:
 		indeterminateProgress->setMaximumHeight(15);
 
 		QMetaObject::connectSlotsByName(wnd);
+
+        QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, imageSettingsPanel, &::CImageSettingsPanel::ModelTreeSelectionChanged);
+        QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, sliceView, &::CImageSliceView::ModelTreeSelectionChanged);
+        QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, timeView2D, &::C2DImageTimeView::ModelTreeSelectionChanged);
 	}
 
 	QAction* addAction(const QString& title, const QString& name, const QString& iconFile = QString(), bool bcheckable = false)
@@ -1133,19 +1136,11 @@ public:
 		menuWindows->addAction(dock8->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock8);
 
-        QDockWidget* dock9 = new QDockWidget("Images", m_wnd); dock8->setObjectName("dockImages");
-		imagePanel = new ::CImagePanel(wnd, dock9);
-		dock9->setWidget(imagePanel);
+        QDockWidget* dock9 = new QDockWidget("View Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+		imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock9);
+		dock9->setWidget(imageSettingsPanel);
 		menuWindows->addAction(dock9->toggleViewAction());
-		m_wnd->tabifyDockWidget(dock1, dock9);
-
-        QDockWidget* dock10 = new QDockWidget("View Settings", m_wnd); dock8->setObjectName("dockImageSettings");
-		imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock10);
-		dock10->setWidget(imageSettingsPanel);
-		menuWindows->addAction(dock10->toggleViewAction());
-		m_wnd->tabifyDockWidget(dock4, dock10);
-
-        QObject::connect(imagePanel, &::CImagePanel::ImageModelChanged, imageSettingsPanel, &::CImageSettingsPanel::ImageModelChanged);
+		m_wnd->tabifyDockWidget(dock4, dock9);
 
 		// make sure the file viewer is the visible tab
 		dock1->raise();
@@ -1361,12 +1356,26 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
-            imagePanel->parentWidget()->hide();
             imageSettingsPanel->parentWidget()->hide();
 		}
 		else if (config == ::CMainWindow::MODEL_CONFIG)
 		{
-			stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+            if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::MODEL_VIEW)
+            {
+                stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+
+                modelViewer->SetFilter(FILTER_NONE);
+            }
+            else if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
+            {
+                stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
+                modelViewer->SetFilter(FILTER_IMAGES);
+            }
+            else
+            {
+                modelViewer->SetFilter(FILTER_IMAGES);
+                stack->setCurrentIndex(Ui::CMainWindow::TIME_VIEW_2D);
+            }
 
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
@@ -1378,7 +1387,7 @@ public:
 
 			buildToolBar->show();
 			postToolBar->hide();
-            imageToolBar->hide();
+            imageToolBar->show();
 			pFontToolBar->show();
             xmlToolbar->hide();
 
@@ -1390,8 +1399,6 @@ public:
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
 			timePanel->parentWidget()->hide();
-            imagePanel->parentWidget()->hide();
-            imageSettingsPanel->parentWidget()->hide();
 		}
 		else if (config == ::CMainWindow::POST_CONFIG)
 		{
@@ -1419,7 +1426,6 @@ public:
 			timePanel->parentWidget()->show();
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
-            imagePanel->parentWidget()->hide();
             imageSettingsPanel->parentWidget()->hide();
 
 			showTimeline();
@@ -1449,46 +1455,7 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
-            imagePanel->parentWidget()->hide();
             imageSettingsPanel->parentWidget()->hide();
-		}
-        else if (config == ::CMainWindow::IMAGE_CONFIG)
-		{
-            if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
-            {
-                stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
-            }
-            else if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::GL_VIEW)
-            {
-                stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
-            }
-            else
-            {
-                stack->setCurrentIndex(Ui::CMainWindow::TIME_VIEW_2D);
-            }
-
-			// image mode
-			menuEdit->menuAction()->setVisible(false);
-			menuEditTxt->menuAction()->setVisible(false);
-			menuPhysics->menuAction()->setVisible(false);
-			menuPost->menuAction()->setVisible(false);
-			menuRecord->menuAction()->setVisible(false);
-
-			buildToolBar->hide();
-			postToolBar->hide();
-            imageToolBar->show();
-			pFontToolBar->hide();
-
-			glw->glc->show();
-
-			modelViewer->parentWidget()->hide();
-			buildPanel->parentWidget()->hide();
-			postPanel->parentWidget()->hide();
-			logPanel->parentWidget()->hide();
-			infoPanel->parentWidget()->hide();
-			timePanel->parentWidget()->hide();
-            imagePanel->parentWidget()->show();
-            imageSettingsPanel->parentWidget()->show();
 		}
         else if (config == ::CMainWindow::XML_CONFIG)
 		{
@@ -1523,6 +1490,7 @@ public:
                     logPanel->parentWidget()->hide();
                     infoPanel->parentWidget()->hide();
                     timePanel->parentWidget()->hide();
+                    imageSettingsPanel->parentWidget()->hide();
 
                     for(int index = 1; index < xmlToolbar->actions().size(); index++)
                     {
@@ -1553,6 +1521,7 @@ public:
                     logPanel->parentWidget()->hide();
                     infoPanel->parentWidget()->hide();
                     timePanel->parentWidget()->hide();
+                    imageSettingsPanel->parentWidget()->hide();
 
                     for(auto action : xmlToolbar->actions())
                     {

@@ -76,7 +76,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "TextDocument.h"
-#include "ImageDocument.h"
+#include "ModelTree.h"
 #include "XMLDocument.h"
 #include "PostSessionFile.h"
 #include "units.h"
@@ -1170,8 +1170,6 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(breset);
     
-    if (ui->imagePanel && ui->imagePanel->isVisible()) ui->imagePanel->Update();
-
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
@@ -1189,20 +1187,20 @@ void CMainWindow::UpdateGraphs(bool breset)
 	}
 }
 
-void CMainWindow::UpdateImageView()
+void CMainWindow::UpdateUiView()
 {
-    if(GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
+    if(GetGLDocument()->GetView()->imgView == CGView::MODEL_VIEW)
     {
-        ui->sliceView->UpdateImage();
         RedrawGL();
     }
-    else if(GetGLDocument()->GetView()->imgView == CGView::GL_VIEW)
+    if(GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
     {
+        ui->sliceView->Update();
         RedrawGL();
     }
     else
     {
-        ui->timeView2D->UpdateImage();
+        ui->timeView2D->Update();
     }  
 }
 
@@ -1210,6 +1208,11 @@ void CMainWindow::UpdateImageView()
 CGLView* CMainWindow::GetGLView()
 {
 	return ui->glw->glview;
+}
+
+CImageSliceView* CMainWindow::GetImageSliceView()
+{
+    return ui->sliceView;
 }
 
 //-----------------------------------------------------------------------------
@@ -1264,7 +1267,6 @@ CDocument* CMainWindow::GetDocument()
 CGLDocument* CMainWindow::GetGLDocument() { return dynamic_cast<CGLDocument*>(GetDocument()); }
 CModelDocument* CMainWindow::GetModelDocument() { return dynamic_cast<CModelDocument*>(GetDocument()); }
 CPostDocument* CMainWindow::GetPostDocument() { return dynamic_cast<CPostDocument*>(GetDocument()); }
-CImageDocument* CMainWindow::GetImageDocument() { return dynamic_cast<CImageDocument*>(GetDocument()); }
 
 //-----------------------------------------------------------------------------
 // get the document manager
@@ -1986,18 +1988,7 @@ void CMainWindow::UpdateGLControlBar()
 void CMainWindow::UpdateUIConfig()
 {
 	CPostDocument* postDoc = GetPostDocument();
-    CImageDocument* imgDoc = GetImageDocument();
-
-    if(imgDoc)
-    {
-        imgDoc->Activate();
-        ui->setUIConfig(CMainWindow::IMAGE_CONFIG);
-
-        UpdateImageView();
-
-        ui->imagePanel->parentWidget()->raise();
-    }
-	else if (postDoc == nullptr)
+	if (postDoc == nullptr)
 	{
 		Update(0, true);
 
@@ -2006,9 +1997,10 @@ void CMainWindow::UpdateUIConfig()
 		{
 			// Build Mode
 			ui->setUIConfig(CMainWindow::MODEL_CONFIG);
-			ui->modelViewer->parentWidget()->raise();
 
-			RedrawGL();
+            UpdateUiView();
+
+            ui->modelViewer->parentWidget()->raise();
 		}
 		else
 		{
@@ -3220,7 +3212,7 @@ void CMainWindow::CloseWelcomePage()
 			ZoomTo(imageModel->GetBoundingBox());
 
 			// only for model docs
-			if (dynamic_cast<CModelDocument*>(doc) || dynamic_cast<CImageDocument*>(doc))
+			if (dynamic_cast<CModelDocument*>(doc))
 			{
                 // Post::CVolRender* vr = new Post::CVolRender(imageModel);
 				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);

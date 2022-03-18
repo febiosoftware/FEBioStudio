@@ -38,7 +38,7 @@ CGView::CGView()
 	m_ffar = 50000.f;
 	m_fov = 45.f;
 
-    imgView = GL_VIEW;
+    imgView = MODEL_VIEW;
 }
 
 CGView::~CGView()
