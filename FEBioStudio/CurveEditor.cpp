@@ -392,15 +392,7 @@ void CCurveEditor::BuildModelTree()
 		{
 			FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(map->GetName()));
-			for (int i = 0; i < map->Parameters(); ++i)
-			{
-				Param& pi = map->GetParam(i);
-				if (pi.GetParamType() == Param_FLOAT)
-				{
-//					LoadCurve* plc = fem.GetParamCurve(pi);
-//					ui->addTreeItem(t3, pi.GetLongName(), plc);
-				}
-			}
+			AddParameterList(t3, map);
 		}
 	}
 
