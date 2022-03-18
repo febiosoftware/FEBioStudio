@@ -28,9 +28,9 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "ImageSITK.h"
-#include <QFileInfo>
 
 #ifdef HAS_ITK
+#include <QFileInfo>
 
 namespace sitk = itk::simple;
 

@@ -38,6 +38,8 @@ class CIntSlider;
 
 class CGLView;
 class CMainWindow;
+class CGLContext;
+class FSObject;
 
 namespace Post
 {
