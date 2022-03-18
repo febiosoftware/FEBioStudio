@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QListWidget>
 #include <QToolButton>
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include "GLHighlighter.h"
 #include "ResourceEdit.h"
 #include "LinkPropertyEdit.h"
@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include "PropertyListView.h"
 #include "units.h"
+#include "InputWidgets.h"
 
 //=================================================================================================
 
@@ -583,6 +584,12 @@ void CPropertyListForm::updateData()
 						if (edit)
 						{
 							edit->setText(QString::number(v.toInt()));
+						}
+
+						CIntSlider* slider = dynamic_cast<CIntSlider*>(pw);
+						if (slider) 
+						{ 
+							slider->setValue(v.toInt());
 						}
 					}
 					break;

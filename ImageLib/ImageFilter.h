@@ -24,34 +24,54 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "stdafx.h"
-#include "CIntInput.h"
+#pragma once
+#include <QLineEdit>
+#include <QValidator>
+#include <FECore/vec3d.h>
 
-QString vecToString(const vec3f& v)
+#include <FSCore/FSObject.h>
+
+namespace Post{
+class CImageModel;
+};
+
+class CImageFilter : public FSObject
 {
-	return QString("%1,%2,%3").arg(v.x).arg(v.y).arg(v.z);
-}
+public:
+    CImageFilter();
 
-vec3f stringToVec(const QString& s)
+    virtual void ApplyFilter() = 0;
+
+    void SetImageModel(Post::CImageModel* model);
+
+protected:
+    Post::CImageModel* m_model;
+};
+
+class ThresholdImageFilter : public CImageFilter
 {
-	QStringList l = s.split(',');
-	int N = l.size();
-	vec3f v(0.f, 0.f, 0.f);
-	v.x = (N > 0 ? l[0].toFloat() : 0.f);
-	v.y = (N > 1 ? l[1].toFloat() : 0.f);
-	v.z = (N > 2 ? l[2].toFloat() : 0.f);
+public:
+    ThresholdImageFilter();
 
-	return v;
-}
+    void ApplyFilter() override;
+};
 
-CVec3Input::CVec3Input(QWidget* parent) : QLineEdit(parent) {}
+#ifdef HAS_ITK
 
-void CVec3Input::setValue(const vec3f& v)
+class MeanImageFilter : public CImageFilter
 {
-	setText(vecToString(v));
-}
+public:
+    MeanImageFilter();
 
-vec3f CVec3Input::value() const
+    void ApplyFilter() override;
+};
+
+class GaussianImageFilter : public CImageFilter
 {
-	return stringToVec(text());
-}
+public:
+    GaussianImageFilter();
+
+    void ApplyFilter() override;
+};
+
+#endif

@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "RepositoryPanel.h"
 #include "GLView.h"
+#include "ImageSliceView.h"
 #include <QApplication>
 #include <QAction>
 #include <QActionGroup>
@@ -33,7 +34,6 @@ SOFTWARE.*/
 #include <QMenu>
 #include <QFile>
 #include <QDockWidget>
-//#include <QDesktopWidget>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QProgressBar>
@@ -52,10 +52,13 @@ SOFTWARE.*/
 #include "XMLTreeView.h"
 #include "FileViewer.h"
 #include "ModelViewer.h"
+#include "ModelTree.h"
 #include "CurveEditor.h"
 #include "MeshInspector.h"
 #include "LogPanel.h"
 #include "BuildPanel.h"
+#include "ImageSettingsPanel.h"
+#include "2DImageTimeView.h"
 #include "GLControlBar.h"
 #include "Document.h"
 #include "DataFieldSelector.h"
@@ -66,6 +69,7 @@ SOFTWARE.*/
 #include "DlgMeasure.h"
 #include "DlgPlaneCut.h"
 #include "PostToolBar.h"
+#include "ImageToolBar.h"
 #include "FEBioStudioProject.h"
 #include "welcomePage.h"
 #include "IconProvider.h"
@@ -123,6 +127,8 @@ public:
 		HTML_VIEWER,
 		TEXT_VIEWER,
         XML_VIEWER,
+        IMG_SLICE,
+		TIME_VIEW_2D,
 		GL_VIEWER
 	};
 
@@ -135,6 +141,8 @@ public:
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
     ::XMLTreeView*  xmlTree;
+    CImageSliceView* sliceView;
+    ::C2DImageTimeView* timeView2D;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -150,6 +158,7 @@ public:
 	QMenu* menuRecentFiles;
 	QMenu* menuRecentProjects;
 	QMenu* menuRecentGeomFiles;
+	QMenu* menuImportImage;
 	QMenu* menuWindows;
 	QMenu* menuViews;
 
@@ -170,6 +179,8 @@ public:
 	::CDlgMeasure*	measureTool;
 	::CDlgPlaneCut*	planeCutTool;
 	::CTimelinePanel*	timePanel;
+    ::CImagePanel*	imagePanel;
+    ::CImageSettingsPanel*	imageSettingsPanel;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -178,6 +189,7 @@ public:
 
 	CPostToolBar*	postToolBar;
 	QToolBar*	buildToolBar;
+    CImageToolBar* imageToolBar;
 
 	QToolBar* pFontToolBar;
 	QFontComboBox*	pFontStyle;
@@ -349,6 +361,14 @@ public:
         xmlTree->setObjectName("xmlTree");
 		stack->addWidget(xmlTree);
 
+        sliceView = new ::CImageSliceView(wnd);
+        sliceView->setObjectName("sliceView");
+        stack->addWidget(sliceView);
+
+        timeView2D = new ::C2DImageTimeView(wnd);
+        timeView2D->setObjectName("timeView2D");
+        stack->addWidget(timeView2D);
+
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);
 
@@ -383,6 +403,10 @@ public:
 		indeterminateProgress->setMaximumHeight(15);
 
 		QMetaObject::connectSlotsByName(wnd);
+
+        QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, imageSettingsPanel, &::CImageSettingsPanel::ModelTreeSelectionChanged);
+        QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, sliceView, &::CImageSliceView::ModelTreeSelectionChanged);
+        QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, timeView2D, &::C2DImageTimeView::ModelTreeSelectionChanged);
 	}
 
 	QAction* addAction(const QString& title, const QString& name, const QString& iconFile = QString(), bool bcheckable = false)
@@ -400,6 +424,7 @@ public:
 		// --- File menu ---
 		QAction* actionNewModel   = addAction("New Model ...", "actionNewModel", "new");
 		QAction* actionNewProject = addAction("New Project ...", "actionNewProject");
+        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
 		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
         // QAction* actionReadInfo       = addAction("Read Model Info ..."   , "actionReadInfo"  , "info");;
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
@@ -414,7 +439,11 @@ public:
 		QAction* actionOpenProject   = addAction("Open Project ...", "actionOpenProject");
 		QAction* actionImportProject = addAction("Import Project Archive ...", "actionImportProject");
 		QAction* actionExportProject = addAction("Export Project Archive ...", "actionExportProject");
-		QAction* actionImportImg  = addAction("Import Image ...", "actionImportImage");
+		QAction* actionImportRawImage  = addAction("Raw ...", "actionImportRawImage");
+		QAction* actionImportDICOMImage  = addAction("DICOM/DICOM Sequence ...", "actionImportDICOMImage");
+		QAction* actionImportTiffImage  = addAction("Tiff ...", "actionImportTiffImage");
+		QAction* actionImportOMETiffImage  = addAction("OME Tiff ...", "actionImportOMETiffImage");
+		QAction* actionImportImageSequence  = addAction("Image Sequence ...", "actionImportImageSequence");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
         QAction* actionConvertFeb2Fsm    = addAction("FEB to FSM ...", "actionConvertFeb2Fsm");
 		QAction* actionConvertGeo = addAction("Geometry Files ...", "actionConvertGeo");
@@ -672,11 +701,14 @@ public:
 		recentGeomFilesActionGroup = new QActionGroup(mainWindow);
 		recentGeomFilesActionGroup->setObjectName("recentGeomFiles");
 
+		menuImportImage = new QMenu("Import Image");
+
 		// File menu
 		menuBar->addAction(menuFile->menuAction());
 
 		menuFile->addAction(actionNewModel);
 		menuFile->addAction(actionNewProject);
+        menuFile->addAction(actionNewImageDoc);
 		menuFile->addSeparator();
 		menuFile->addAction(actionOpen);
         // menuFile->addAction(actionReadInfo);
@@ -699,7 +731,13 @@ public:
 		menuFile->addAction(actionExportProject);
 #endif
 		menuFile->addSeparator();
-		menuFile->addAction(actionImportImg);
+		menuFile->addAction(menuImportImage->menuAction());
+		menuImportImage->addAction(actionImportRawImage);
+		menuImportImage->addAction(actionImportDICOMImage);
+		menuImportImage->addAction(actionImportTiffImage);
+		menuImportImage->addAction(actionImportOMETiffImage);
+		menuImportImage->addAction(actionImportImageSequence);
+		
 
 		QMenu* ConvertMenu = new QMenu("Batch convert");
 		ConvertMenu->addAction(actionConvertFeb);
@@ -978,6 +1016,13 @@ public:
 		postToolBar->setDisabled(true);
 		postToolBar->hide();
 
+        // Image tool bar
+        imageToolBar = new CImageToolBar(mainWindow);
+        imageToolBar->setObjectName("imageToolBar");
+		imageToolBar->setWindowTitle("Image Toolbar");
+        mainWindow->addToolBar(Qt::TopToolBarArea, imageToolBar);
+		imageToolBar->hide();
+
 		// Font tool bar
 		pFontToolBar = new QToolBar(mainWindow);
 		pFontToolBar->setObjectName("FontToolBar");
@@ -1090,6 +1135,12 @@ public:
 		dock8->setWidget(timePanel);
 		menuWindows->addAction(dock8->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock8);
+
+        QDockWidget* dock9 = new QDockWidget("View Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+		imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock9);
+		dock9->setWidget(imageSettingsPanel);
+		menuWindows->addAction(dock9->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock4, dock9);
 
 		// make sure the file viewer is the visible tab
 		dock1->raise();
@@ -1293,6 +1344,7 @@ public:
 
 			buildToolBar->hide();
 			postToolBar->hide();
+            imageToolBar->hide();
 			pFontToolBar->hide();
             xmlToolbar->hide();
 
@@ -1304,10 +1356,26 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
+            imageSettingsPanel->parentWidget()->hide();
 		}
 		else if (config == ::CMainWindow::MODEL_CONFIG)
 		{
-			stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+            if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::MODEL_VIEW)
+            {
+                stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+
+                modelViewer->SetFilter(FILTER_NONE);
+            }
+            else if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
+            {
+                stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
+                modelViewer->SetFilter(FILTER_IMAGES);
+            }
+            else
+            {
+                modelViewer->SetFilter(FILTER_IMAGES);
+                stack->setCurrentIndex(Ui::CMainWindow::TIME_VIEW_2D);
+            }
 
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
@@ -1319,6 +1387,7 @@ public:
 
 			buildToolBar->show();
 			postToolBar->hide();
+            imageToolBar->show();
 			pFontToolBar->show();
             xmlToolbar->hide();
 
@@ -1345,6 +1414,7 @@ public:
 
 			buildToolBar->hide();
 			postToolBar->show();
+            imageToolBar->hide();
 			pFontToolBar->show();
             xmlToolbar->hide();
 
@@ -1356,6 +1426,7 @@ public:
 			timePanel->parentWidget()->show();
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
+            imageSettingsPanel->parentWidget()->hide();
 
 			showTimeline();
 		}
@@ -1372,6 +1443,7 @@ public:
 
 			buildToolBar->hide();
 			postToolBar->hide();
+            imageToolBar->hide();
 			pFontToolBar->hide();
             xmlToolbar->hide();
 
@@ -1383,6 +1455,7 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
+            imageSettingsPanel->parentWidget()->hide();
 		}
         else if (config == ::CMainWindow::XML_CONFIG)
 		{
@@ -1417,6 +1490,7 @@ public:
                     logPanel->parentWidget()->hide();
                     infoPanel->parentWidget()->hide();
                     timePanel->parentWidget()->hide();
+                    imageSettingsPanel->parentWidget()->hide();
 
                     for(int index = 1; index < xmlToolbar->actions().size(); index++)
                     {
@@ -1447,6 +1521,7 @@ public:
                     logPanel->parentWidget()->hide();
                     infoPanel->parentWidget()->hide();
                     timePanel->parentWidget()->hide();
+                    imageSettingsPanel->parentWidget()->hide();
 
                     for(auto action : xmlToolbar->actions())
                     {

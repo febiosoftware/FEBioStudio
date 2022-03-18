@@ -42,7 +42,7 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QListWidget>
 #include "PropertyListForm.h"
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include <FECore/vec3d.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>

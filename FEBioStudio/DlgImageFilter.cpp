@@ -24,61 +24,45 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "GLCamera.h"
+#include <QVBoxLayout>
+#include <QDialogButtonBox>
+#include <QComboBox>
+#include <QLabel>
+#include "DlgImageFilter.h"
+#include "ClassDescriptor.h"
 
-//-----------------------------------------------------------------------------
-// This class stores viewing information
-class CGView : public FSObject
+
+CDlgImageFilter::CDlgImageFilter()
 {
-public:
-    enum UiView
-    {
-        MODEL_VIEW, SLICE_VIEW, TIME_VIEW_2D
-    };
+    QVBoxLayout* layout = new QVBoxLayout;
 
-public:
-	CGView();
-	~CGView();
+    layout->addWidget(new QLabel("Choose an Image Filter:"));
+    
+    m_comboBox = new QComboBox;
 
-	CGLCamera& GetCamera() { return m_cam; }
+	for (Class_Iterator it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
+	{
+        ClassDescriptor* pcd = *it;
+		if (pcd->GetType() == CLASS_IMAGE_FILTER)
+		{
+            m_classDesc.push_back(pcd);
+        
+            m_comboBox->addItem(pcd->GetName());
+        }
+    }
 
-	void Reset();
+    layout->addWidget(m_comboBox);
 
-	int CameraKeys() { return (int) m_key.size(); }
+    QDialogButtonBox* bBox = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+    layout->addWidget(bBox);
 
-	GLCameraTransform& GetKey(int i) { return *m_key[i]; }
-	GLCameraTransform& GetCurrentKey() { return *m_key[m_nkey]; }
-	void SetCurrentKey(GLCameraTransform* pkey);
-	void SetCurrentKey(int i);
+    setLayout(layout);
 
-	GLCameraTransform* AddCameraKey(GLCameraTransform& t);
+    connect(bBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(bBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+}
 
-	void DeleteKey(GLCameraTransform* pt);
-
-	void DeleteAllKeys();
-
-	void PrevKey();
-	void NextKey();
-
-	bool OrhographicProjection() { return m_bortho; }
-
-	double GetFOV() { return m_fov; }
-	double GetAspectRatio() { return m_ar; }
-	double GetNearPlane() { return m_fnear; }
-	double GetFarPlane() { return m_ffar; }
-
-public:
-	bool	m_bortho;		// orthographic mode
-	double	m_fnear;
-	double	m_ffar;
-	double	m_fov;
-	double	m_ar;
-    UiView imgView;
-
-protected:
-	CGLCamera m_cam;	//!< current camera
-
-	std::vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
-	int								m_nkey;	//!< current key
-};
+ClassDescriptor* CDlgImageFilter::GetClassDescriptor()
+{
+    return m_classDesc[m_comboBox->currentIndex()];
+}

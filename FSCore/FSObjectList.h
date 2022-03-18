@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FSObject.h"
 #include <vector>
+#include <algorithm>
 
 class FSObjectList_ : public FSObject
 {
@@ -109,6 +110,14 @@ public:
 	{
 		m_obs[pos] = obj;
 	}
+
+    void Move(size_t oldIndex, size_t newIndex)
+    {
+        if (oldIndex > newIndex)
+            std::rotate(m_obs.rend() - oldIndex - 1, m_obs.rend() - oldIndex, m_obs.rend() - newIndex);
+        else        
+            std::rotate(m_obs.begin() + oldIndex, m_obs.begin() + oldIndex + 1, m_obs.begin() + newIndex + 1);
+    }
 
 protected:
 	size_t RemoveChild(FSObject* po) override

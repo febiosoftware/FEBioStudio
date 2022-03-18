@@ -65,6 +65,7 @@ SOFTWARE.*/
 #include "FEClassPropsView.h"
 #include "PlotWidget.h"
 #include "DynamicStackedWidget.h"
+#include "ImageFilterWidget.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -306,7 +307,8 @@ public:
 	CPartInfoPanel* part;
 	QTabWidget* imageTab;
 
-	CImageViewer*		imageView;
+    ::CPropertyListView* imageProps;
+    CImageFilterWidget* imageFilters;
 	CHistogramViewer*	histoView;
 
 	bool		m_showImageTools;
@@ -350,11 +352,10 @@ public:
 		mesh = new CMeshInfoPanel;
 		part = new CPartInfoPanel;
 
-		imageView = new CImageViewer;
-		histoView = new CHistogramViewer;
 		imageTab = new QTabWidget;
-		imageTab->addTab(imageView, "Image Viewer");
-		imageTab->addTab(histoView, "Histogram");
+        imageTab->addTab(imageProps = new ::CPropertyListView, "Properties");
+        imageTab->addTab(imageFilters = new CImageFilterWidget, "Filters");
+		imageTab->addTab(histoView = new CHistogramViewer, "Histogram");
 
 		// compose toolbox
 		tool = new CToolBox;
@@ -503,20 +504,22 @@ public:
 		math->SetMath(QString::fromStdString(s));
 	}
 
-	void showImagePanel(bool b, Post::CImageModel* img = nullptr)
+	void showImagePanel(bool b, Post::CImageModel* img = nullptr, CPropertyList* props = nullptr)
 	{
 		if (b && (m_showImageTools==false))
 		{
 			m_showImageTools = true;
 
-			imageView->SetImageModel(img);
+            imageProps->Update(props);
+            imageFilters->SetImageModel(img);
 			histoView->SetImageModel(img);
 		}
 		else if ((b == false) && m_showImageTools)
 		{
 			m_showImageTools = false;
 
-			imageView->SetImageModel(nullptr);
+            imageProps->Update(nullptr);
+            imageFilters->SetImageModel(nullptr);
 			histoView->SetImageModel(nullptr);
 		}
 		tool->getToolItem(IMAGE_PANEL)->setVisible(b);
@@ -625,17 +628,25 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 	{
 		ui->showProperties(true);
 		ui->showImagePanel(false);
-		Post::CImageSource* imgSrc = dynamic_cast<Post::CImageSource*>(po);
-		if (imgSrc)
-		{
-			Post::CImageModel* img = imgSrc->GetImageModel();
-			if (img)
-			{
-				ui->showPropsPanel(false);
-				ui->showImagePanel(true, img);
-				props = nullptr;
-			}
-		}
+		// Post::CImageSource* imgSrc = dynamic_cast<Post::CImageSource*>(po);
+		// if (imgSrc)
+		// {
+		// 	Post::CImageModel* img = imgSrc->GetImageModel();
+		// 	if (img)
+		// 	{
+		// 		ui->showPropsPanel(false);
+		// 		ui->showImagePanel(true, img);
+		// 		props = nullptr;
+		// 	}
+		// }
+
+        Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+        if(img)
+        {
+            ui->showPropsPanel(false);
+            ui->showImagePanel(true, img, props);
+            props = nullptr;
+        }
 
 		m_currentObject = po;
 		SetSelection(0, 0);

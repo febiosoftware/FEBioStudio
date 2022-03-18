@@ -44,6 +44,7 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
+class CImagePanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -54,7 +55,9 @@ class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
 class CGLView;
+class CImageSliceView;
 class GObject;
+enum class ImageFileType;
 
 namespace Ui {
 	class CMainWindow;
@@ -138,6 +141,9 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
+
+    // get the image panel
+	CImagePanel* GetImagePanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);
@@ -271,6 +277,8 @@ public:
 	// set the current time of the current post doc
 	void SetCurrentTime(int n);
 
+    void UpdateUiView();
+
 private:
 	void writeSettings();
 	void readSettings();
@@ -310,6 +318,8 @@ private:
 	void ShowWelcomePage();
 	void CloseWelcomePage();
 
+	void ProcessITKImage(const QString& fileName, ImageFileType type);
+
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
@@ -327,7 +337,11 @@ public slots:
 	void on_actionExportGeometry_triggered();
 	void on_actionImportProject_triggered();
 	void on_actionExportProject_triggered();
-	void on_actionImportImage_triggered();
+	void on_actionImportRawImage_triggered();
+	void on_actionImportDICOMImage_triggered();
+	void on_actionImportTiffImage_triggered();
+	void on_actionImportOMETiffImage_triggered();
+	void on_actionImportImageSequence_triggered();
 	void on_actionConvertFeb_triggered();
     void on_actionConvertFeb2Fsm_triggered();
 	void on_actionConvertGeo_triggered();
@@ -597,6 +611,7 @@ public slots:
 	void OnDeleteAllMeshData();
 
 	CGLView* GetGLView();
+    CImageSliceView* GetImageSliceView();
 
 	void UpdateGraphs(bool breset);
 

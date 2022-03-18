@@ -400,6 +400,12 @@ endif()
 include_directories(${GLEW_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIR})
 
+if(USE_ITK)
+    add_definitions(-DHAS_ITK)
+    #~ include(${ITK_USE_FILE})
+    include_directories(${SimpleITK_INCLUDE_DIRS})
+endif()
+
 include_directories(${FEBio_INC})
 
 ##### Find Source Files #####
@@ -613,6 +619,12 @@ if(USE_FFMPEG)
         target_link_libraries(FEBioStudio debug ${FFMPEG_LIBS})
     endif()
 endif()
+
+if(USE_ITK)
+    #~ target_link_libraries(FEBioStudio ${ITK_LIBRARIES})
+endif()
+
+target_link_libraries(FEBioStudio ${SimpleITK_LIBRARIES})
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})

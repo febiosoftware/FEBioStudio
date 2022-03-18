@@ -95,6 +95,7 @@ class FESurfaceModifier;
 class GSurfaceMeshObject;
 class FileReader;
 class FileWriter;
+enum class ImageFileType;
 
 namespace Post {
 	class CImageModel;
@@ -279,16 +280,10 @@ public:
 	void SetFileWriter(FileWriter* fileWriter);
 	FileWriter* GetFileWriter();
 
-	// import image data
-#ifdef HAS_TEEM
-  Post::CImageModel* ImportTiff(const std::string& filename);
-  Post::CImageModel* ImportNrrd(const std::string& filename);
-#endif
-
-#ifdef HAS_DICOM
-  Post::CImageModel* ImportDicom(const std::string& filename);
-#endif
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
+
+    Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
+    Post::CImageModel* ImportITKStack(QStringList& filenames);
 
 	// --- view state ---
 	VIEW_STATE GetViewState() { return m_vs; }
@@ -322,7 +317,7 @@ public:
 
 public:
 	int ImageModels() const;
-	void AddImageModel(Post::CImageModel* img);
+	virtual void AddImageModel(Post::CImageModel* img);
 	Post::CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
 

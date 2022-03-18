@@ -1496,115 +1496,154 @@ void CMainWindow::on_actionImportGeometry_triggered()
 	}
 }
 
-void CMainWindow::on_actionImportImage_triggered()
+void CMainWindow::on_actionImportRawImage_triggered()
 {
-	QStringList filters;
-  #ifdef HAS_TEEM && HAS_DICOM
-	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)" << "Dicom files (*.dicom, *.dcm)";
-  #elif HAS_DICOM
-      filters << "RAW files (*.raw)" << "Dicom files (*.dicom, *.dcm)";
-  #elif HAS_TEEM 
-	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)";
-  #else
-	  filters << "RAW files (*.raw)";
-  #endif
-
 	CGLDocument* doc = GetGLDocument();
 
 	// present the file selection dialog box
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "RAW Files (*.raw)" << "All Files (*)";
 	filedlg.setNameFilters(filters);
 
 	if (filedlg.exec())
 	{
-	  // store the current path
-	  QDir dir = filedlg.directory();
-	  SetCurrentFolder(dir.absolutePath());
+		Post::CImageModel* imageModel = nullptr;
+		
+		CDlgRAWImport dlg(this);
+		if (dlg.exec())
+		{
+			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-	  // get the file name
-	  QStringList files = filedlg.selectedFiles();
-	  QString fileName = files.at(0);
+			imageModel = doc->ImportImage(filedlg.selectedFiles()[0].toStdString(), dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+			if (imageModel == nullptr)
+			{
+				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+				return;
+			}
+		}
 
-      std::string sfile = fileName.toStdString();
-      QFileInfo fileInfo(fileName);
-      QString ext = fileInfo.suffix();
-      ext = ext.toLower();
+		if(imageModel)
+		{
+			Update(0, true);
+			ZoomTo(imageModel->GetBoundingBox());
 
-      Post::CImageModel* imageModel = nullptr;
-    
-      if(ext == "tiff" || ext == "tif")
-      {
-        #ifdef HAS_TEEM
-        imageModel = doc->ImportTiff(sfile);
-        #endif
+			// only for model docs
+			if (dynamic_cast<CModelDocument*>(doc))
+			{
+				Post::CVolRender* vr = new Post::CVolRender(imageModel);
+				vr->Create();
+				imageModel->AddImageRenderer(vr);
+
+				Update(0, true);
+				ShowInModelViewer(imageModel);
+			}
+			else
+			{
+				Update(0, true);
+			}
+			ZoomTo(imageModel->GetBoundingBox());
+		}
+	}
+}
+void CMainWindow::on_actionImportDICOMImage_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "DICOM Files (*.dcm *.dicom)" << "All Files (*)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::DICOM);
+	}
+}
+
+void CMainWindow::on_actionImportTiffImage_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "Tiff Files (*.tif *.tiff)" << "All Files (*)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
+	}
+
+}
+
+void CMainWindow::on_actionImportOMETiffImage_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "OME Tiff XML Files (*.xml)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OMETIFF);
+	}
+}
+
+void CMainWindow::on_actionImportImageSequence_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFiles);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	if (filedlg.exec())
+	{
+        QStringList files = filedlg.selectedFiles();
+
+        if(files.length() == 0) return;
+
+        CGLDocument* doc = GetGLDocument();
+
+        Post::CImageModel* imageModel = nullptr;
+
+        imageModel = doc->ImportITKStack(files);
         if (imageModel == nullptr)
         {
-          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-          return;
-        }
-      }
-	  else if (ext == "nrrd")
-	  {
-        #ifdef HAS_TEEM
-        imageModel = doc->ImportNrrd(sfile);
-        #endif
-        if (imageModel == nullptr)
-        {
-          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-          return;
-        }
-	  }
-	  else if (ext == "dcm" || ext == "dicom")
-	  {
-        #ifdef HAS_DICOM
-        imageModel = doc->ImportDicom(sfile);
-        #endif
-        if (imageModel == nullptr)
-        {
-          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-          return;
-        }
-	  }
-      else
-      {
-        CDlgRAWImport dlg(this);
-        if (dlg.exec())
-        {
-          BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
-
-          imageModel = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-          if (imageModel == nullptr)
-          {
             QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
             return;
-          }
         }
-      }
-      if(imageModel)
-      {
-        Update(0, true);
-        ZoomTo(imageModel->GetBoundingBox());
 
-        // only for model docs
-        if (dynamic_cast<CModelDocument*>(doc))
+        if(imageModel)
         {
-//          Post::CVolRender* vr = new Post::CVolRender(imageModel);
-          Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
-          vr->Create();
-          imageModel->AddImageRenderer(vr);
+            Update(0, true);
+            ZoomTo(imageModel->GetBoundingBox());
 
-          Update(0, true);
-          ShowInModelViewer(imageModel);
+            // only for model docs
+            if (dynamic_cast<CModelDocument*>(doc))
+            {
+                Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+                vr->Create();
+                imageModel->AddImageRenderer(vr);
+
+                Update(0, true);
+                ShowInModelViewer(imageModel);
+            }
+            else
+            {
+                Update(0, true);
+            }
+            ZoomTo(imageModel->GetBoundingBox());
         }
-        else
-        {
-          Update(0, true);
-        }
-        ZoomTo(imageModel->GetBoundingBox());
-      }
     }
+
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()

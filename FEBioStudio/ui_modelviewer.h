@@ -87,7 +87,7 @@ public:
 
 		// filter box
 		m_filter = new QComboBox;
-		m_filter->addItems(QStringList() << "All items" << "Geometry" << "Materials" << "Physics" << "Steps" << "Jobs");
+		m_filter->addItems(QStringList() << "All items" << "Geometry" << "Materials" << "Physics" << "Steps" << "Jobs" << "Images");
 		m_filter->setObjectName("filter");
 		m_filter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 

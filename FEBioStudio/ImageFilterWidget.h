@@ -24,61 +24,72 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "GLCamera.h"
+#include <QWidget>
+#include <QListWidget>
+#include <QDropEvent>
+#include <QModelIndex>
+#include <iostream>
 
-//-----------------------------------------------------------------------------
-// This class stores viewing information
-class CGView : public FSObject
+class QListWidget;
+class CPropertyListView;
+
+namespace Post
 {
-public:
-    enum UiView
-    {
-        MODEL_VIEW, SLICE_VIEW, TIME_VIEW_2D
-    };
+    class CImageModel;
+}
+
+class QModelIndex;
+
+class FilterListWidget : public QListWidget
+{
+    Q_OBJECT
 
 public:
-	CGView();
-	~CGView();
+    FilterListWidget() {}
 
-	CGLCamera& GetCamera() { return m_cam; }
-
-	void Reset();
-
-	int CameraKeys() { return (int) m_key.size(); }
-
-	GLCameraTransform& GetKey(int i) { return *m_key[i]; }
-	GLCameraTransform& GetCurrentKey() { return *m_key[m_nkey]; }
-	void SetCurrentKey(GLCameraTransform* pkey);
-	void SetCurrentKey(int i);
-
-	GLCameraTransform* AddCameraKey(GLCameraTransform& t);
-
-	void DeleteKey(GLCameraTransform* pt);
-
-	void DeleteAllKeys();
-
-	void PrevKey();
-	void NextKey();
-
-	bool OrhographicProjection() { return m_bortho; }
-
-	double GetFOV() { return m_fov; }
-	double GetAspectRatio() { return m_ar; }
-	double GetNearPlane() { return m_fnear; }
-	double GetFarPlane() { return m_ffar; }
-
-public:
-	bool	m_bortho;		// orthographic mode
-	double	m_fnear;
-	double	m_ffar;
-	double	m_fov;
-	double	m_ar;
-    UiView imgView;
+signals:
+    void internalMove(int fromIndex, int toIndex);
 
 protected:
-	CGLCamera m_cam;	//!< current camera
+    void dropEvent(QDropEvent *event)
+    {
+        int fromIndex = currentRow();
 
-	std::vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
-	int								m_nkey;	//!< current key
+        QListWidget::dropEvent(event);
+
+        int toIndex = currentRow();
+
+        if(fromIndex != toIndex)
+        {
+            emit internalMove(fromIndex, toIndex);
+        }
+    }
+};
+
+
+class CImageFilterWidget : public QWidget
+{
+    Q_OBJECT
+
+public:
+    CImageFilterWidget();
+
+    void SetImageModel(Post::CImageModel* img);
+
+public slots:
+    void Update();
+
+private slots:
+    void on_list_itemSelectionChanged();
+    void on_list_internalMove(int fromIndex, int toIndex);
+    void on_addFilterBtn_clicked();
+    void on_delFilterBtn_clicked();
+    void on_applyFilters_clicked();
+
+private:
+    Post::CImageModel* m_imgModel;
+    
+    QListWidget* m_list;
+    CPropertyListView* m_filterProps;
+
 };

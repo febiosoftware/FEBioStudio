@@ -62,9 +62,14 @@ public:
 	void GetSampledSliceY(CImage& im, double f);
 	void GetSampledSliceZ(CImage& im, double f);
 
+    void GetThresholdedSliceX(CImage& im, int n, int min, int max);
+    void GetThresholdedSliceY(CImage& im, int n, int min, int max);
+    void GetThresholdedSliceZ(CImage& im, int n, int min, int max);
+
 	void Invert();
 
 	Byte* GetBytes() { return m_pb; }
+	void SetBytes(Byte* bytes) {m_pb = bytes; }
 
 	void Zero();
 

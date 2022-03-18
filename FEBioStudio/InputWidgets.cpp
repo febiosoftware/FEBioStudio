@@ -24,61 +24,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "GLCamera.h"
+#include "stdafx.h"
+#include "InputWidgets.h"
 
-//-----------------------------------------------------------------------------
-// This class stores viewing information
-class CGView : public FSObject
+QString vecToString(const vec3f& v)
 {
-public:
-    enum UiView
-    {
-        MODEL_VIEW, SLICE_VIEW, TIME_VIEW_2D
-    };
+	return QString("%1,%2,%3").arg(v.x).arg(v.y).arg(v.z);
+}
 
-public:
-	CGView();
-	~CGView();
+vec3f stringToVec(const QString& s)
+{
+	QStringList l = s.split(',');
+	int N = l.size();
+	vec3f v(0.f, 0.f, 0.f);
+	v.x = (N > 0 ? l[0].toFloat() : 0.f);
+	v.y = (N > 1 ? l[1].toFloat() : 0.f);
+	v.z = (N > 2 ? l[2].toFloat() : 0.f);
 
-	CGLCamera& GetCamera() { return m_cam; }
+	return v;
+}
 
-	void Reset();
+CVec3Input::CVec3Input(QWidget* parent) : QLineEdit(parent) {}
 
-	int CameraKeys() { return (int) m_key.size(); }
+void CVec3Input::setValue(const vec3f& v)
+{
+	setText(vecToString(v));
+}
 
-	GLCameraTransform& GetKey(int i) { return *m_key[i]; }
-	GLCameraTransform& GetCurrentKey() { return *m_key[m_nkey]; }
-	void SetCurrentKey(GLCameraTransform* pkey);
-	void SetCurrentKey(int i);
-
-	GLCameraTransform* AddCameraKey(GLCameraTransform& t);
-
-	void DeleteKey(GLCameraTransform* pt);
-
-	void DeleteAllKeys();
-
-	void PrevKey();
-	void NextKey();
-
-	bool OrhographicProjection() { return m_bortho; }
-
-	double GetFOV() { return m_fov; }
-	double GetAspectRatio() { return m_ar; }
-	double GetNearPlane() { return m_fnear; }
-	double GetFarPlane() { return m_ffar; }
-
-public:
-	bool	m_bortho;		// orthographic mode
-	double	m_fnear;
-	double	m_ffar;
-	double	m_fov;
-	double	m_ar;
-    UiView imgView;
-
-protected:
-	CGLCamera m_cam;	//!< current camera
-
-	std::vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
-	int								m_nkey;	//!< current key
-};
+vec3f CVec3Input::value() const
+{
+	return stringToVec(text());
+}

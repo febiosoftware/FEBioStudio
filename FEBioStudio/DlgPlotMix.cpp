@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <PostLib/FEPlotMix.h>
 #include "Document.h"
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include <PostLib/FEKinemat.h>
 #include <PostLib/FELSDYNAimport.h>
 #include "PostDocument.h"

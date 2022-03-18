@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
+#include <ImageLib/ImageFilter.h>
 #include <MeshTools/GModel.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -63,10 +64,6 @@ SOFTWARE.*/
 #include <QTextStream>
 
 using std::stringstream;
-
-#ifdef HAS_TEEM
-#include <ImageLib/compatibility.h>
-#endif
 
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
@@ -696,6 +693,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GModel*>(po)) return "model";
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po)) return "volume image renderer";
 	else if (dynamic_cast<Post::CImageSource*>(po)) return "3D Image source";
+    else if (dynamic_cast<CImageFilter*>(po)) return "Image filter";
 	else if (dynamic_cast<FSMaterial*>(po))
 	{
 		FSMaterial* mat = dynamic_cast<FSMaterial*>(po);
@@ -814,90 +812,6 @@ void CGLDocument::LoadResources(IArchive& ar)
 	}
 }
 
-
-#ifdef HAS_TEEM
-// Load Tiff Data
-Post::CImageModel* CGLDocument::ImportTiff(const std::string& fileName)
-{
-	static int n = 1;
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-  // Need to convert relFile to wstring maybe? 
-  std::wstring relativeFile = s2ws(relFile);
-	if (po->LoadTiffData(relativeFile) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-
-}
-
-Post::CImageModel* CGLDocument::ImportNrrd(const std::string& filename)
-{
-	static int n = 1;
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-  // Need to convert relFile to wstring maybe? 
-  std::wstring relativeFile = s2ws(relFile);
-	if (po->LoadNrrdData(relativeFile) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-
-}
-#endif
-
-#ifdef HAS_DICOM
-Post::CImageModel* CGLDocument::ImportDicom(const std::string& filename)
-{
-	static int n = 1;
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-	if (po->LoadDicomData(relFile) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-#endif
-
 //-----------------------------------------------------------------------------
 // import image data
 Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
@@ -909,6 +823,60 @@ Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx,
 
 	Post::CImageModel* po = new Post::CImageModel(nullptr);
 	if (po->LoadImageData(relFile, nx, ny, nz, box) == false)
+	{
+		delete po;
+		return nullptr;
+	}
+
+	stringstream ss;
+	ss << "ImageModel" << n++;
+	po->SetName(ss.str());
+
+	// add it to the project
+	AddImageModel(po);
+
+	return po;
+}
+
+Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFileType type)
+{
+	static int n = 1;
+	// we pass the relative path to the image model
+	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
+
+	Post::CImageModel* po = new Post::CImageModel(nullptr);
+
+	if (po->LoadITKData(relFile, type) == false)
+	{
+		delete po;
+		return nullptr;
+	}
+
+	stringstream ss;
+	ss << "ImageModel" << n++;
+	po->SetName(ss.str());
+
+	// add it to the project
+	AddImageModel(po);
+
+	return po;
+}
+
+Post::CImageModel* CGLDocument::ImportITKStack(QStringList& filenames)
+{
+    static int n = 1;
+	
+
+    std::vector<std::string> stdFiles;
+    for(auto filename : filenames)
+    {
+        // we pass the relative path to the image model
+	    stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
+    }
+
+	Post::CImageModel* po = new Post::CImageModel(nullptr);
+
+	if (po->LoadITKSeries(stdFiles) == false)
 	{
 		delete po;
 		return nullptr;

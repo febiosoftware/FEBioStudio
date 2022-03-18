@@ -45,6 +45,8 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
+#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageFilter.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
@@ -1493,6 +1495,11 @@ void CModelViewer::UpdateCurrentItem()
 	}
 }
 
+void CModelViewer::SetFilter(int index)
+{
+    ui->m_filter->setCurrentIndex(index);
+}
+
 void CModelViewer::OnRemoveEmptySelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1811,6 +1818,9 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_JOB:
 		menu.addAction("Open", this, SLOT(OnOpenJob()));
 		menu.addAction("Rerun job", this, SLOT(OnRerunJob()));
+		del = true;
+		break;
+	case MT_3DIMAGE:
 		del = true;
 		break;
 	default:

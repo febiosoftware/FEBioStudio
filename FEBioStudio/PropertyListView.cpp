@@ -44,8 +44,10 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include <PostLib/FEMeshData.h>
 #include <PostLib/ColorMap.h>
+#include "InputWidgets.h"
 #include "DragBox.h"
 #include "units.h"
+
 
 //-----------------------------------------------------------------------------
 CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent)
@@ -481,13 +483,26 @@ public:
 			}
 			else if (prop.type == CProperty::Int)
 			{
-				QSpinBox* pc = new QSpinBox(parent);
-				pc->setRange(prop.imin, prop.imax);
-				pc->setValue(data.toInt());
-				pc->setAccelerated(true);
-				if (prop.bauto) pc->setSpecialValueText("auto");
-				m_view->connect(pc, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
-				return pc;
+				if(prop.brange)
+				{
+					CIntSlider* pc = new CIntSlider(parent);
+					pc->setRange(prop.imin, prop.imax);
+					pc->setValue(data.toInt());
+					m_view->connect(pc, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
+					return pc;
+				}
+				else
+				{
+					QSpinBox* pc = new QSpinBox(parent);
+					pc->setRange(prop.imin, prop.imax);
+					pc->setValue(data.toInt());
+					pc->setAccelerated(true);
+					if (prop.bauto) pc->setSpecialValueText("auto");
+					m_view->connect(pc, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
+					return pc;
+				}
+
+				
 			}
 			else if (prop.type == CProperty::Enum)
 			{
@@ -521,6 +536,9 @@ public:
 
 		CColorButton* col = qobject_cast<CColorButton*>(editor);
 		if (col) { model->setData(index, col->color(), Qt::EditRole); return; }
+
+		CIntSlider* slider = dynamic_cast<CIntSlider*>(editor);
+		if (slider) { model->setData(index, slider->getValue()); return; }
 
 		QStyledItemDelegate::setModelData(editor, model, index);
 	}

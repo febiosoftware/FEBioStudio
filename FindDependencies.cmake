@@ -645,3 +645,15 @@ endif()
 if(NOT WIN32)
     find_package(OpenMP QUIET)
 endif()
+
+#ITK
+#~ find_package(ITK)
+
+if(DEFINED ITK_USE_FILE)
+	option(USE_ITK "Required to import most image files." ON)
+else()
+	option(USE_ITK "Required to import most image files." OFF)
+endif()
+
+# SITK
+find_package(SimpleITK)

@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QComboBox>
 #include "PropertyList.h"
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include "CColorButton.h"
 
 //-----------------------------------------------------------------------------

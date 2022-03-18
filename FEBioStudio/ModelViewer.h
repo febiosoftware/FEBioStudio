@@ -93,6 +93,8 @@ public:
 
 	void UpdateCurrentItem();
 
+    void SetFilter(int index);
+
 public slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
 	void on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column);

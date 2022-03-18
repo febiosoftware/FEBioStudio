@@ -65,7 +65,8 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "Commands.h"
 #include "PostObject.h"
-#include <iostream>
+#include <PostLib/ImageSlicer.h>
+#include "ImageSliceView.h"
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
@@ -1493,12 +1494,13 @@ void CGLView::paintGL()
 
 	// get the active view
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
+    if(postDoc) RenderPostView(postDoc);
 
-	if (postDoc == nullptr) RenderModelView();
-	else RenderPostView(postDoc);
+    CModelDocument* mDoc = m_pWnd->GetModelDocument();
+	if (mDoc) RenderModelView();
 
 	// render the grid
-	if (view.m_bgrid && (postDoc == nullptr)) m_grid.Render(m_rc);
+	if (view.m_bgrid && (mDoc)) m_grid.Render(m_rc);
 
 	// render the image data
 	RenderImageData();
@@ -1518,7 +1520,7 @@ void CGLView::paintGL()
 	}
 
 	// render the 3D cursor
-	if (postDoc == nullptr)
+	if (mDoc)
 	{
 		// render the highlights
 		GLHighlighter::draw();
@@ -1984,13 +1986,15 @@ void CGLView::SetupProjection()
 	if (doc == nullptr) return;
 
 	BOX box;
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
-	{
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-		box = mdoc->GetModelBox();
-	}
-	else if (postDoc->IsValid())
+
+    CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if(mdoc)
+    {
+        box = mdoc->GetModelBox();
+    }
+
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
+    if (postDoc && postDoc->IsValid())
 	{
 		box = postDoc->GetPostObject()->GetBoundingBox();
 	}
@@ -2835,16 +2839,35 @@ void CGLView::RenderImageData()
 	glLoadIdentity();
 	cam.Transform();
 
-	for (int i = 0; i < doc->ImageModels(); ++i)
-	{
-		Post::CImageModel* img = doc->GetImageModel(i);
-		BOX box = img->GetBoundingBox();
-//		GLColor c = img->GetColor();
-		GLColor c(255, 128, 128);
-		glColor3ub(c.r, c.g, c.b);
-		if (img->ShowBox()) RenderBox(box, false);
-		img->Render(m_rc);
-	}
+    if(doc->GetView()->imgView == CGView::MODEL_VIEW)
+    {
+        for (int i = 0; i < doc->ImageModels(); ++i)
+        {
+            Post::CImageModel* img = doc->GetImageModel(i);
+            BOX box = img->GetBoundingBox();
+    		// GLColor c = img->GetColor();
+            GLColor c(255, 128, 128);
+            glColor3ub(c.r, c.g, c.b);
+            if (img->ShowBox()) RenderBox(box, false);
+            img->Render(m_rc);
+        }
+    }
+    else if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+    {
+        CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
+
+        Post::CImageModel* img =  sliceView->GetImageModel();
+        if(img)
+        {
+            BOX box = img->GetBoundingBox();
+            GLColor c(255, 128, 128);
+            glColor3ub(c.r, c.g, c.b);
+            if (img->ShowBox()) RenderBox(box, false);
+            img->Render(m_rc);
+
+            sliceView->RenderSlicers(m_rc);
+        }
+    }
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();

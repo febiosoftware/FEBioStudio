@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "GLView.h"
+#include "ImageSliceView.h"
 #include "ModelDocument.h"
 #include "ModelFileReader.h"
 #include <QApplication>
@@ -75,6 +76,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "TextDocument.h"
+#include "ModelTree.h"
 #include "XMLDocument.h"
 #include "PostSessionFile.h"
 #include "units.h"
@@ -88,6 +90,8 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
+#include <PostLib/VolRender.h>
+#include <PostLib/VolumeRender2.h>
 
 extern GLColor col[];
 
@@ -1165,7 +1169,7 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(breset);
-
+    
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
@@ -1183,10 +1187,32 @@ void CMainWindow::UpdateGraphs(bool breset)
 	}
 }
 
+void CMainWindow::UpdateUiView()
+{
+    if(GetGLDocument()->GetView()->imgView == CGView::MODEL_VIEW)
+    {
+        RedrawGL();
+    }
+    if(GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
+    {
+        ui->sliceView->Update();
+        RedrawGL();
+    }
+    else
+    {
+        ui->timeView2D->Update();
+    }  
+}
+
 //-----------------------------------------------------------------------------
 CGLView* CMainWindow::GetGLView()
 {
 	return ui->glw->glview;
+}
+
+CImageSliceView* CMainWindow::GetImageSliceView()
+{
+    return ui->sliceView;
 }
 
 //-----------------------------------------------------------------------------
@@ -1204,6 +1230,11 @@ CCreatePanel* CMainWindow::GetCreatePanel()
 CRepositoryPanel* CMainWindow::GetDatabasePanel()
 {
 	return ui->databasePanel;
+}
+
+CImagePanel* CMainWindow::GetImagePanel()
+{
+    return ui->imagePanel;
 }
 
 //-----------------------------------------------------------------------------
@@ -1965,10 +1996,11 @@ void CMainWindow::UpdateUIConfig()
 		if (modelDoc)
 		{
 			// Build Mode
-			ui->setUIConfig(1);
-			ui->modelViewer->parentWidget()->raise();
+			ui->setUIConfig(CMainWindow::MODEL_CONFIG);
 
-			RedrawGL();
+            UpdateUiView();
+
+            ui->modelViewer->parentWidget()->raise();
 		}
 		else
 		{
@@ -1999,7 +2031,7 @@ void CMainWindow::UpdateUIConfig()
                 }
                 else
                 {
-                    ui->setUIConfig(0);
+                    ui->setUIConfig(HTML_CONFIG);
                 }
 			}
 			ui->fileViewer->parentWidget()->raise();
@@ -2009,7 +2041,7 @@ void CMainWindow::UpdateUIConfig()
 	else
 	{
 		// Post Mode
-		ui->setUIConfig(2);
+		ui->setUIConfig(CMainWindow::POST_CONFIG);
 
 		UpdatePostPanel();
 		if (postDoc->IsValid()) ui->postToolBar->Update();
@@ -3159,6 +3191,48 @@ void CMainWindow::CloseWelcomePage()
 		ui->tab->tabCloseRequested(n);
 	}
 }
+
+#ifdef HAS_ITK
+	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type)
+	{
+		CGLDocument* doc = GetGLDocument();
+
+		Post::CImageModel* imageModel = nullptr;
+
+		imageModel = doc->ImportITK(fileName.toStdString(), type);
+		if (imageModel == nullptr)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+			return;
+		}
+
+		if(imageModel)
+		{
+			Update(0, true);
+			ZoomTo(imageModel->GetBoundingBox());
+
+			// only for model docs
+			if (dynamic_cast<CModelDocument*>(doc))
+			{
+                // Post::CVolRender* vr = new Post::CVolRender(imageModel);
+				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+				vr->Create();
+				imageModel->AddImageRenderer(vr);
+
+				Update(0, true);
+				ShowInModelViewer(imageModel);
+			}
+			else
+			{
+				Update(0, true);
+			}
+			ZoomTo(imageModel->GetBoundingBox());
+		}
+
+	}
+#else
+	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type) {}
+#endif
 
 void CMainWindow::OnDeleteAllLoadControllers()
 {

@@ -60,7 +60,7 @@ C3DImage::~C3DImage()
 
 void C3DImage::CleanUp()
 {
-	delete [] m_pb;
+	if(m_pb) delete [] m_pb;
 	m_pb = 0;
 	m_cx = m_cy = m_cz = 0;
 }
@@ -373,6 +373,99 @@ void C3DImage::GetSampledSliceZ(CImage& im, double f)
 			*pd++ = Peek(fx, fy, f);
 		}
 	}
+}
+
+void C3DImage::GetThresholdedSliceX(CImage& im, int n, int min, int max)
+{
+    // create image data
+	if ((im.Width() != m_cy) || (im.Height() != m_cz)) im.Create(m_cy, m_cz);
+
+	Byte* ps;
+	Byte* pd = im.GetBytes();
+
+	// copy image data
+	for (int z=0; z<m_cz; z++)
+	{
+		ps = m_pb + z*m_cx*m_cy + n;
+		for (int y=0; y<m_cy; y++, ps += m_cx)
+        {
+            if(*ps < min)
+            {
+                *pd = 0;
+            }
+            else if (*ps > max)
+            {
+                *pd = 255;
+            }
+            else
+            {
+                *pd = 255 * (float)(*ps - min)/(max-min);
+            }
+            
+            *pd++;
+        }
+	}
+}
+
+void C3DImage::GetThresholdedSliceY(CImage& im, int n, int min, int max)
+{
+    // create image data
+	if ((im.Width() != m_cx) || (im.Height() != m_cz)) im.Create(m_cx, m_cz);
+
+	Byte* ps;
+	Byte* pd = im.GetBytes();
+
+	// copy image data
+	for (int z=0; z<m_cz; z++)
+	{
+		ps = m_pb + z*m_cx*m_cy + n*m_cx;
+		for (int x=0; x<m_cx; x++, ps++)
+        {
+            if(*ps < min)
+            {
+                *pd = 0;
+            }
+            else if (*ps > max)
+            {
+                *pd = 255;
+            }
+            else
+            {
+                *pd = 255 * (float)(*ps - min)/(max-min);
+            }
+            
+            *pd++;
+        }
+	}
+}
+
+void C3DImage::GetThresholdedSliceZ(CImage& im, int n, int min, int max)
+{
+    // create image data
+	if ((im.Width() != m_cx) || (im.Height() != m_cy)) im.Create(m_cx, m_cy);
+
+	// copy image data
+	Byte* pd = im.GetBytes();
+	Byte* ps = m_pb + n*m_cx*m_cy;
+
+	for (int i=0; i<m_cx*m_cy; i++, ps++)
+    {
+        if(*ps < min)
+            {
+                *pd = 0;
+            }
+            else if (*ps > max)
+            {
+                *pd = 255;
+            }
+            else
+            {
+                *pd = 255 * (float)(*ps - min)/(max-min);
+            }
+            
+            *pd++;
+    }
+
 }
 
 void C3DImage::Invert()
