@@ -1088,7 +1088,6 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 	if (doc == nullptr) return;
 	doc->SetActiveState(n - 1);
 	RedrawGL();
-	ui->modelViewer->RefreshProperties();
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(false);
 

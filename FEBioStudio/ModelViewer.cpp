@@ -58,6 +58,14 @@ void CModelViewer::blockUpdate(bool block)
 	ui->m_blockUpdate = block;
 }
 
+// clear the model viewer
+void CModelViewer::Clear()
+{
+	m_currentObject = nullptr;
+	ui->tree->clear();
+	ui->tree->ClearData();
+}
+
 void CModelViewer::Update(bool breset)
 {
 	if (ui->m_blockUpdate) return;
@@ -480,11 +488,6 @@ bool CModelViewer::OnDeleteEvent()
 {
 	on_deleteButton_clicked();
 	return true;
-}
-
-void CModelViewer::RefreshProperties()
-{
-	ui->props->Refresh();
 }
 
 void CModelViewer::on_deleteButton_clicked()
