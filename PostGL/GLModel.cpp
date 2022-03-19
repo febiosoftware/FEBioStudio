@@ -1387,7 +1387,7 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	GLubyte alpha = (GLubyte)(255.f*pmat->transparency);
 
 	// set the color for inactive materials
-	m_col_inactive = GLColor(200, 200, 200);
+	m_col_inactive = m_pcol->GetInactiveColor();
 	m_col_inactive.a = alpha;
 
 	// set the material properties
@@ -1399,9 +1399,9 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 		glColor4ub(255,255,255, alpha);
 		m_pcol->GetColorMap()->GetTexture().MakeCurrent();
 	}
-	else
+	else if (m_pcol->IsActive())
 	{
-		btex = false;
+		glColor4ub(m_col_inactive.r, m_col_inactive.g, m_col_inactive.b, alpha);
 	}
 
 	// see if we allow the model to be clipped

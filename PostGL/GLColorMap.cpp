@@ -48,6 +48,7 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	AddIntParam (0, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "User min");
 	AddBoolParam(false, "Show min/max markers");
+	AddColorParam(GLColor(200, 200, 200), "Inactive color");
 
 	m_range.min = m_range.max = 0;
 	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
@@ -149,6 +150,12 @@ void CGLColorMap::SetColorSmooth(bool b)
 {
 	m_Col.SetSmooth(b);
 	UpdateData(false);
+}
+
+//-----------------------------------------------------------------------------
+GLColor CGLColorMap::GetInactiveColor()
+{
+	return GetColorValue(INACTIVE_COLOR);
 }
 
 //-----------------------------------------------------------------------------

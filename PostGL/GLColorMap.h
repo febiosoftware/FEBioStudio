@@ -38,7 +38,7 @@ class CGLModel;
 
 class CGLColorMap : public CGLDataMap
 {
-	enum { DATA_FIELD, DATA_SMOOTH, COLOR_MAP, NODAL_VALS, RANGE_DIVS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN, SHOW_MINMAX_MARKERS };
+	enum { DATA_FIELD, DATA_SMOOTH, COLOR_MAP, NODAL_VALS, RANGE_DIVS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN, SHOW_MINMAX_MARKERS, INACTIVE_COLOR };
 
 public:
 	CGLColorMap(CGLModel* po);
@@ -73,6 +73,8 @@ public:
 
 	bool GetColorSmooth();
 	void SetColorSmooth(bool b);
+
+	GLColor GetInactiveColor();
 
 	void Activate(bool b) override { CGLObject::Activate(b); ShowLegend(b); }
 
