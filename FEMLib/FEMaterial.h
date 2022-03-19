@@ -151,6 +151,7 @@
 #define FE_FIBER_NEO_HOOKEAN            86
 #define FE_FIBER_NATURAL_NH             87
 #define FE_HOLMES_MOW_UNCOUPLED         88
+#define FE_TRACE_FREE_NEO_HOOKEAN       89
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -266,6 +267,7 @@
 #define FE_RELAX_PRONY              807
 #define FE_RELAX_MALKIN             808
 #define FE_RELAX_CSEXP              809
+#define FE_RELAX_MALKIN_DIST        810
 
 // elastic damage materials
 #define FE_DMG_MATERIAL             900
@@ -275,6 +277,7 @@
 #define FE_CDF_WEIBULL              922
 #define FE_CDF_STEP                 923
 #define FE_CDF_QUINTIC              924
+#define FE_CDF_POWER                925
 #define FE_DC_SIMO                  940
 #define FE_DC_SED                   941
 #define FE_DC_SSE                   942
@@ -442,6 +445,20 @@ public:
     FSNaturalNeoHookean();
     
     DECLARE_REGISTERED(FSNaturalNeoHookean);
+};
+
+//-----------------------------------------------------------------------------
+// trace-free Neo-Hookean
+//
+class FETraceFreeNeoHookean : public FSMaterial
+{
+public:
+    enum { MP_DENSITY, MP_MU };
+    
+public:
+    FETraceFreeNeoHookean();
+    
+    DECLARE_REGISTERED(FETraceFreeNeoHookean);
 };
 
 //-----------------------------------------------------------------------------
@@ -2086,6 +2103,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FECDFPower : public FSMaterial
+{
+public:
+    enum { MP_ALPHA, MP_MU0, MP_MU1 };
+public:
+    FECDFPower();
+    DECLARE_REGISTERED(FECDFPower);
+};
+
+//-----------------------------------------------------------------------------
 class FSDCSimo : public FSMaterial
 {
 public:
@@ -2263,6 +2290,16 @@ public:
 public:
     FERelaxMalkin();
     DECLARE_REGISTERED(FERelaxMalkin);
+};
+
+//-----------------------------------------------------------------------------
+class FERelaxMalkinDistortion : public FSMaterial
+{
+public:
+    enum { MP_T1C0, MP_T1C1, MP_T1S0, MP_T2C0, MP_T2C1, MP_T2S0, M_BETA };
+public:
+    FERelaxMalkinDistortion();
+    DECLARE_REGISTERED(FERelaxMalkinDistortion);
 };
 
 //-----------------------------------------------------------------------------

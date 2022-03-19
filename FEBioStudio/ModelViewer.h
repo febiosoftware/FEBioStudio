@@ -47,6 +47,9 @@ public:
 	// update the model tree and props window
 	void Update(bool breset = true) override;
 
+	// clear the model viewer
+	void Clear();
+
 	// get the currently selected object
 	FSObject* GetCurrentObject();
 
@@ -86,8 +89,6 @@ public:
 	bool IsFocus();
 
 	bool OnDeleteEvent() override;
-
-	void RefreshProperties();
 
 	void blockUpdate(bool block);
 

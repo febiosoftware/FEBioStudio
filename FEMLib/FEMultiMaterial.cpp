@@ -356,6 +356,9 @@ FSReactiveViscoelasticMaterial::FSReactiveViscoelasticMaterial() : FSMaterial(FE
     
     // Add relaxation component
 	AddProperty("relaxation", FE_MAT_RV_RELAX);
+    
+    // Add recruitment component
+    AddProperty("recruitment", FE_MAT_DAMAGE);
 }
 
 //=============================================================================
@@ -382,6 +385,9 @@ FSReactiveViscoelasticMaterialUC::FSReactiveViscoelasticMaterialUC() : FSMateria
     
     // Add relaxation component
 	AddProperty("relaxation", FE_MAT_RV_RELAX);
+    
+    // Add recruitment component
+    AddProperty("recruitment", FE_MAT_DAMAGE);
 }
 
 //=============================================================================

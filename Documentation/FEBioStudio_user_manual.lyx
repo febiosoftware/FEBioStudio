@@ -108,7 +108,7 @@ eqs-within-sections
 
 \series bold
 \begin_inset Graphics
-	filename InstallerImages/Splash.png
+	filename Figures/Splash.png
 	width 6in
 
 \end_inset
@@ -356,7 +356,7 @@ Development of the FEBio project is supported in part by a grant from the
 \begin_layout Standard
 \align center
 \begin_inset Graphics
-	filename Figures/NIHlogo.bmp
+	filename Figures/NIHlogo.png
 	lyxscale 25
 	height 0.75in
 

@@ -2212,6 +2212,11 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	ui->ShowDefaultBackground();
 	ui->xmlEdit->setDocument(nullptr);
 
+	if (dynamic_cast<CModelDocument*>(doc))
+	{
+		ui->modelViewer->Clear();
+	}
+
 	// now, remove from the doc manager
 	m_DocManager->RemoveDocument(n);
 

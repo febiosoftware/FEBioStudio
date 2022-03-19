@@ -169,6 +169,8 @@ public:
 
 	void DeleteObject(Post::CGLObject* po);
 
+	void Activate() override;
+
 	std::string GetFileName();
 
 	// get the model's bounding box

@@ -79,7 +79,7 @@ FSSBMPointSource::FSSBMPointSource(FSModel* ps, int nstep) : FSBodyLoad(FE_SBM_P
 FSCentrifugalBodyForce::FSCentrifugalBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
 {
     SetTypeString("centrifugal");
-    AddScienceParam(0, UNIT_RADIAN, "angular_speed", "angular speed");
+    AddScienceParam(0, UNIT_ANGULAR_VELOCITY, "angular_speed", "angular speed");
     AddVecParam(vec3d(0,0,1),"rotation_axis", "rotation axis");
     AddVecParam(vec3d(0,0,0),"rotation_center", "rotation center");
 }

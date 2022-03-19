@@ -337,6 +337,10 @@ public:
     void SetRelaxation(FSMaterial* pm) { ReplaceProperty(2, pm); }
     FSMaterial* GetRelaxation() { return GetMaterialProperty(2); }
     
+    // set/get recruitment
+    void SetRecrutiment(FSMaterial* pm) { ReplaceProperty(3, pm); }
+    FSMaterial* GetRecruitment() { return GetMaterialProperty(3); }
+
 public:
     DECLARE_REGISTERED(FSReactiveViscoelasticMaterial);
 };
@@ -364,6 +368,10 @@ public:
     // set/get relaxation
     void SetRelaxation(FSMaterial* pm) { ReplaceProperty(2, pm); }
     FSMaterial* GetRelaxation() { return GetMaterialProperty(2); }
+    
+    // set/get recruitment
+    void SetRecrutiment(FSMaterial* pm) { ReplaceProperty(3, pm); }
+    FSMaterial* GetRecruitment() { return GetMaterialProperty(3); }
     
 public:
     DECLARE_REGISTERED(FSReactiveViscoelasticMaterialUC);

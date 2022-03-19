@@ -394,6 +394,12 @@ void CPostDocument::ActivateColormap(bool bchecked)
 	UpdateFEModel();
 }
 
+void CPostDocument::Activate()
+{
+	Post::FEPostModel::SetInstance(m_fem);
+	CGLDocument::Activate();
+}
+
 void CPostDocument::DeleteObject(Post::CGLObject* po)
 {
 	Post::CGLPlot* pp = dynamic_cast<Post::CGLPlot*>(po);

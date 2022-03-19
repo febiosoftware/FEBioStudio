@@ -405,7 +405,6 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	{ 
 		if (dynamic_cast<GEdgeList*>(list) && (list->size() == 1))
 		{
-			GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
 			GEdge* ge = dynamic_cast<GEdgeList*>(list)->GetEdge(0);
 			g = ge->GetFEEdgeSet();
 		}
