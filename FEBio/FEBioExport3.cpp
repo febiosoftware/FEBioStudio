@@ -1219,6 +1219,12 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 		m_xml.close_branch();
 	}
 
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
+
 	if (ops.plot_stride != 1)
 	{
 		m_xml.add_leaf("plot_stride", ops.plot_stride);
@@ -1280,6 +1286,12 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 		m_xml.close_branch();
 	}
 
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
+
 	if (ops.plot_stride != 1)
 	{
 		m_xml.add_leaf("plot_stride", ops.plot_stride);
@@ -1339,6 +1351,12 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
+
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
 
 	if (ops.plot_stride != 1)
 	{
@@ -1400,6 +1418,12 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 		m_xml.close_branch();
 	}
 
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
+
 	if (ops.plot_stride != 1)
 	{
 		m_xml.add_leaf("plot_stride", ops.plot_stride);
@@ -1453,6 +1477,12 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
+
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
 
 	if (ops.plot_stride != 1)
 	{
