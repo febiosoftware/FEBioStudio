@@ -159,8 +159,12 @@ void CImageSettingsPanel::ModelTreeSelectionChanged(FSObject* obj)
 
     ui->setImageModel(model);
 
-    parentWidget()->show();
-    parentWidget()->raise();
+    if(model)
+    {
+        parentWidget()->show();
+        parentWidget()->raise();
+    }
+
 }
 
 void CImageSettingsPanel::ParamChanged()
