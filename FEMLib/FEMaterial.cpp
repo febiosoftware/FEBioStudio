@@ -270,7 +270,7 @@ FSNaturalNeoHookean::FSNaturalNeoHookean() : FSMaterial(FE_NATURAL_NEO_HOOKEAN)
 // FETraceFreeNeoHookean - trace-free neo-hookean elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FETraceFreeNeoHookean, MODULE_MECH, FE_TRACE_FREE_NEO_HOOKEAN, FE_MAT_ELASTIC, "trace-free neo-Hookean", MaterialFlags::TOPLEVEL, 0);
+REGISTER_MATERIAL(FETraceFreeNeoHookean, MODULE_MECH, FE_TRACE_FREE_NEO_HOOKEAN, FE_MAT_ELASTIC, "trace-free neo-Hookean", MaterialFlags::TOPLEVEL);
 
 FETraceFreeNeoHookean::FETraceFreeNeoHookean() : FSMaterial(FE_TRACE_FREE_NEO_HOOKEAN)
 {
@@ -2762,7 +2762,7 @@ FSCDFQuintic::FSCDFQuintic() : FSMaterial(FE_CDF_QUINTIC)
 // CDF Power
 //=============================================================================
 
-REGISTER_MATERIAL(FECDFPower, MODULE_MECH, FE_CDF_POWER, FE_MAT_DAMAGE, "CDF power", 0, 0);
+REGISTER_MATERIAL(FECDFPower, MODULE_MECH, FE_CDF_POWER, FE_MAT_DAMAGE, "CDF power", 0);
 
 FECDFPower::FECDFPower() : FSMaterial(FE_CDF_POWER)
 {
