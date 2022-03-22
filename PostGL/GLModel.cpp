@@ -1207,7 +1207,7 @@ void CGLModel::RenderInnerSurfaceOutline(int m, int ndivs)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool benable, bool zsort)
+void CGLModel::RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool benable, bool zsort, bool activeOnly)
 {
 	FEPostMesh* pm = GetActiveMesh();
 	int ndivs = GetSubDivisions();
@@ -1267,60 +1267,63 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool 
 	}
 
 	// render inactive faces
-	if (btex) glDisable(GL_TEXTURE_1D);
-	if (m_pcol->IsActive() && benable) glColor4ub(m_col_inactive.r, m_col_inactive.g, m_col_inactive.b, m_col_inactive.a);
-
-	if (zsort)
+	if (activeOnly == false)
 	{
-		int NF = dom.Faces();
-		vector< pair<int, double> > zlist; zlist.reserve(NF);
-		for (int i = 0; i < NF; ++i)
+		if (btex) glDisable(GL_TEXTURE_1D);
+
+		if (m_pcol->IsActive() && benable) glColor4ub(m_col_inactive.r, m_col_inactive.g, m_col_inactive.b, m_col_inactive.a);
+
+		if (zsort)
 		{
-			FEFace& face = dom.Face(i);
-			if (face.m_ntag == 2)
+			int NF = dom.Faces();
+			vector< pair<int, double> > zlist; zlist.reserve(NF);
+			for (int i = 0; i < NF; ++i)
 			{
-				// get the face center
-				vec3d r = pm->FaceCenter(face);
+				FEFace& face = dom.Face(i);
+				if (face.m_ntag == 2)
+				{
+					// get the face center
+					vec3d r = pm->FaceCenter(face);
 
-				// convert to eye coordinates
-				vec3d q = rc.m_cam->WorldToCam(r);
+					// convert to eye coordinates
+					vec3d q = rc.m_cam->WorldToCam(r);
 
-				// add it to the z-list
-				zlist.push_back(pair<int, double>(i, q.z));
+					// add it to the z-list
+					zlist.push_back(pair<int, double>(i, q.z));
+				}
 			}
-		}
 
-		// sort the zlist
-		std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
-			return a.second < b.second;
-		});
+			// sort the zlist
+			std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
+				return a.second < b.second;
+				});
 
-		// render the list
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < zlist.size(); ++i)
-		{
-			FEFace& face = dom.Face(zlist[i].first);
-			m_render.RenderFace(face, pm);
-		}
-		glEnd();
-	}
-	else
-	{
-		glBegin(GL_TRIANGLES);
-		int NF = dom.Faces();
-		for (int i = 0; i < NF; ++i)
-		{
-			FEFace& face = dom.Face(i);
-			if (face.m_ntag == 2)
+			// render the list
+			glBegin(GL_TRIANGLES);
+			for (int i = 0; i < zlist.size(); ++i)
 			{
-				// okay, we got one, so let's render it
+				FEFace& face = dom.Face(zlist[i].first);
 				m_render.RenderFace(face, pm);
 			}
+			glEnd();
 		}
-		glEnd();
+		else
+		{
+			glBegin(GL_TRIANGLES);
+			int NF = dom.Faces();
+			for (int i = 0; i < NF; ++i)
+			{
+				FEFace& face = dom.Face(i);
+				if (face.m_ntag == 2)
+				{
+					// okay, we got one, so let's render it
+					m_render.RenderFace(face, pm);
+				}
+			}
+			glEnd();
+		}
+		if (btex) glEnable(GL_TEXTURE_1D);
 	}
-
-	if (btex) glEnable(GL_TEXTURE_1D);
 }
 
 //-----------------------------------------------------------------------------
@@ -1335,11 +1338,12 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 
 	if (nmode == RENDER_MODE_SOLID)
 	{
-		if ((pmat->transparency >= 0.99f) || (pmat->m_ntransmode == RENDER_TRANS_CONSTANT)) RenderSolidMaterial(rc, ps, mat);
+		if ((pmat->transparency >= 0.99f) || (pmat->m_ntransmode == RENDER_TRANS_CONSTANT)) RenderSolidMaterial(rc, ps, mat, false);
 		else RenderTransparentMaterial(rc, ps, mat);
 	}
 	else
 	{
+		RenderSolidMaterial(rc, ps, mat, true);
 		RenderOutline(rc, mat);
 	}
 
@@ -1374,7 +1378,7 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
+void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m, bool activeOnly)
 {
 	// make sure a part with this material exists
 	FEPostMesh* pm = GetActiveMesh();
@@ -1416,6 +1420,7 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	// tag == 1 : draw active
 	// tag == 2 : draw inactive
 	// TODO: It seems that this can be precomputed and stored somewhere in the domains
+	int numActiveFaces = 0;
 	FEDomain& dom = pm->Domain(m);
 	int NF = dom.Faces();
 	for (int i = 0; i<NF; ++i)
@@ -1434,7 +1439,12 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 			{
 				if (((mode != SELECT_ELEMS) || !el.IsSelected()) && ((mode != SELECT_FACES) || !face.IsSelected()) && face.IsVisible())
 				{
-					face.m_ntag = (face.IsActive() ? 1 : 2);
+					if (face.IsActive())
+					{
+						face.m_ntag = 1;
+						numActiveFaces++;
+					}
+					else face.m_ntag = 2;
 				}
 			}
 		}
@@ -1447,14 +1457,24 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 			{
 				if (((mode != SELECT_ELEMS) || !el0.IsSelected()) && ((mode != SELECT_FACES) || !face.IsSelected()))
 				{
-					face.m_ntag = (face.IsActive() ? 1 : 2);
+					if (face.IsActive())
+					{
+						face.m_ntag = 1;
+						numActiveFaces++;
+					}
+					else face.m_ntag = 2;
 				}
 			}
 			else if ((el1.m_MatID == m) && (el1.IsVisible() && !el0.IsVisible()))
 			{
 				if (((mode != SELECT_ELEMS) || !el1.IsSelected()) && ((mode != SELECT_FACES) || !face.IsSelected()))
 				{
-					face.m_ntag = (face.IsActive() ? 1 : 2);
+					if (face.IsActive())
+					{
+						face.m_ntag = 1;
+						numActiveFaces++;
+					}
+					else face.m_ntag = 2;
 				}
 			}
 			else if (el0.IsVisible() && el1.IsVisible())
@@ -1463,57 +1483,77 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 				{
 					FEMaterial* pm2 = m_ps->GetMaterial(el1.m_MatID);
 					float f2 = pm2->transparency;
-					if (alpha > f2) face.m_ntag = (face.IsActive() ? 1 : 2);
+					if (alpha > f2)
+					{
+						if (face.IsActive())
+						{
+							face.m_ntag = 1;
+							numActiveFaces++;
+						}
+						else face.m_ntag = 2;
+					}
 				}
 				else if (el1.m_MatID == m)
 				{
 					FEMaterial* pm2 = m_ps->GetMaterial(el0.m_MatID);
 					float f2 = pm2->transparency;
-					if (alpha > f2) face.m_ntag = (face.IsActive() ? 1 : 2);
+					if (alpha > f2)
+					{
+						if (face.IsActive())
+						{
+							face.m_ntag = 1;
+							numActiveFaces++;
+						}
+						else face.m_ntag = 2;
+					}
 				}
 			}
 		}
 	}
 
-	// do the rendering
-	if (pmat->transparency > .999f)
+	if ((activeOnly == false) || (numActiveFaces > 0))
 	{
-		RenderSolidDomain(rc, dom, btex, pmat->benable);
-	}
-	else
-	{
-		if (m_doZSorting)
+
+		// do the rendering
+		if (pmat->transparency > .999f)
 		{
-			RenderSolidDomain(rc, dom, btex, pmat->benable, true);
+			RenderSolidDomain(rc, dom, btex, pmat->benable, false, activeOnly);
 		}
 		else
 		{
-			// for better transparency we first draw all the backfacing polygons.
-			glPushAttrib(GL_ENABLE_BIT);
-			glEnable(GL_CULL_FACE);
+			if (m_doZSorting)
+			{
+				RenderSolidDomain(rc, dom, btex, pmat->benable, true, activeOnly);
+			}
+			else
+			{
+				// for better transparency we first draw all the backfacing polygons.
+				glPushAttrib(GL_ENABLE_BIT);
+				glEnable(GL_CULL_FACE);
 
-			glCullFace(GL_FRONT);
-			RenderSolidDomain(rc, dom, btex, pmat->benable);
+				glCullFace(GL_FRONT);
+				RenderSolidDomain(rc, dom, btex, pmat->benable, false, activeOnly);
 
-			// and then we draw the front-facing ones.
-			glCullFace(GL_BACK);
-			if (btex) glColor4ub(255, 255, 255, alpha);
-			RenderSolidDomain(rc, dom, btex, pmat->benable);
+				// and then we draw the front-facing ones.
+				glCullFace(GL_BACK);
+				if (btex) glColor4ub(255, 255, 255, alpha);
+				RenderSolidDomain(rc, dom, btex, pmat->benable, false, activeOnly);
 
-			glPopAttrib();
+				glPopAttrib();
+			}
 		}
-	}
 
-	// render the internal surfaces
-	if (mode != SELECT_FACES)
-	{
-		if (btex) glColor3ub(255,255,255);
-		RenderInnerSurface(m, btex);
-	}
+		// render the internal surfaces
+		if (mode != SELECT_FACES)
+		{
+			if (btex) glColor3ub(255, 255, 255);
+			RenderInnerSurface(m, btex);
+		}
 
-	if (pmat->benable && m_pcol->IsActive())
-	{
-		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+		if (pmat->benable && m_pcol->IsActive())
+		{
+			glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+		}
 	}
 
 	glPopAttrib();
