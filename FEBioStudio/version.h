@@ -50,10 +50,14 @@ SOFTWARE.*/
 // 3.13: Added "relative" flag to FSRigidDisplacement. 
 // 3.14: Added additional meshing parameters to FEQuartDogBone.
 // 4.0: new version starting with FEBio Studio 2.
+#define FBS2_FILE		0x00040000	// first version number used by FBS2. Don't change!
 #define SAVE_VERSION	0x00040000
 
 // lowest supported version number
 #define MIN_FSM_VERSION	0x0001000D
+
+#define FBS_MAJOR_VERSION(a) ((a) >> 16)
+#define FBS_MINOR_VERSION(a) ((a) & 0x0000FFFF)
 
 //-----------------------------------------------------------------------------
 // SVN VERSION

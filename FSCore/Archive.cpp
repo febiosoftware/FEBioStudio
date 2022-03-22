@@ -96,6 +96,13 @@ IArchive::~IArchive()
 }
 
 //-----------------------------------------------------------------------------
+// see if there is a valid file pointer
+bool IArchive::IsValid() const
+{
+	return (m_fp != 0);
+}
+
+//-----------------------------------------------------------------------------
 void IArchive::Close()
 {
 	while (m_Chunk.empty() == false) CloseChunk();

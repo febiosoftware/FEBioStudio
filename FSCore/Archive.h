@@ -93,6 +93,9 @@ public:
 	bool Open(const char* szfile, unsigned int signature);
 	bool Open(FILE* file, unsigned int signature);
 
+	// see if there is a valid file pointer
+	bool IsValid() const;
+
 	// Open a chunk
 	int OpenChunk();
 

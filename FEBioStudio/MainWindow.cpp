@@ -761,11 +761,58 @@ void CMainWindow::OpenDocument(const QString& fileName)
 	CModelDocument* doc = new CModelDocument(this);
 	doc->SetDocFilePath(filePath.toStdString());
 
+	// create a model file reader
+	ModelFileReader* reader = new ModelFileReader(doc);
+
+	// try to open the file
+	string sfile = filePath.toStdString();
+	if (reader->Open(sfile.c_str()) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", QString("Failed to open file:\n%1").arg(filePath));
+		delete reader;
+		delete doc;
+		return;
+	}
+
+	// get the file version
+	int fileVersion = reader->GetFileVersion();
+
+	// some checks on the file version
+	if (fileVersion < MIN_FSM_VERSION)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "This files uses an unsupported format and cannot be read in.");
+		delete reader;
+		delete doc;
+		return;
+	}
+
+	if (fileVersion > SAVE_VERSION)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "This file requires a newer version of FEBio Studio.");
+		delete reader;
+		delete doc;
+		return;
+	}
+
+	if (fileVersion < FBS2_FILE)
+	{
+		int majv = FBS_MAJOR_VERSION(fileVersion);
+		int minv = FBS_MINOR_VERSION(fileVersion);
+
+		QString msg = QString("This file was created with an older version of FEBio Studio and needs to converted.\nDo you wish to continue?\n(File version: %1.%2)").arg(majv).arg(minv);
+		if (QMessageBox::question(this, "FEBio Studio", msg) != QMessageBox::Yes)
+		{
+			delete reader;
+			delete doc;
+			return;
+		}
+	}
+
 	// we need to make this the active document
 	CDocument::SetActiveDocument(doc);
 
 	// start reading the file
-	ReadFile(doc, filePath, new ModelFileReader(doc), QueuedFile::NEW_DOCUMENT);
+	ReadFile(doc, filePath, reader, QueuedFile::NEW_DOCUMENT);
 
 	// add file to recent list
 	ui->addToRecentFiles(filePath);

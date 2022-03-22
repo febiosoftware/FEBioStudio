@@ -34,8 +34,14 @@ class ModelFileReader : public PRVArchive
 public:
 	ModelFileReader(CModelDocument* doc);
 
+	bool Open(const char* szfile);
+
 	bool Load(const char* szfile) override;
+
+	int GetFileVersion() const;
 
 private:
 	CModelDocument*	m_doc;
+
+	int	m_fileVersion;
 };
