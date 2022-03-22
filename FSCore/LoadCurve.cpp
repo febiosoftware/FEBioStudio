@@ -125,25 +125,25 @@ void LoadCurve::Load(IArchive& ar)
 		case CID_LC_POINTS: ar.read(N); break;
 		case CID_LC_POINT:
 			{
+				double x(0), y(0);
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
-					double x, y;
 					switch (nid)
 					{
 					case CID_LC_TIME: ar.read(x); break;
 					case CID_LC_LOAD: ar.read(y); break;
 					}
 					ar.CloseChunk();
-					Add(x, y);
 				}
-				assert(Points() == N);
+				Add(x, y);
 			}
 			break;
 		}
 		ar.CloseChunk();
 	}
-    
+	assert(Points() == N);
+
     Update();
 }
 

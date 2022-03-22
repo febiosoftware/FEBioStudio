@@ -38,7 +38,9 @@ std::string FSCore::beautify_string(const char* sz)
 	char cp = 0;
 	while (*sz)
 	{
-		char c = *sz;
+		// We convert to unsigned char since isupper or islower expects
+		// a value between 0 and 255
+		unsigned char c = *sz;
 		if ((n == 0) && islower(c))
 		{
 			c = toupper(c);

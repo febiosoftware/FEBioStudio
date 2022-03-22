@@ -1876,13 +1876,9 @@ void GObject::Load(IArchive& ar)
 {
 	TRACE("GObject::Load");
 
+	// Some objects already have the number of parts, faces, etc. allocated (e.g. primitives)
+	// Others will rely on this function to allocate. 
 	int nparts = -1, nfaces = -1, nedges = -1, nnodes = -1;
-
-	// clear everything
-	ClearParts();
-	ClearFaces();
-	ClearEdges();
-	ClearNodes();
 
 	// process file
 	while (IArchive::IO_OK == ar.OpenChunk())
@@ -1947,13 +1943,20 @@ void GObject::Load(IArchive& ar)
 		case CID_OBJ_PART_LIST:
 		{
 			assert(nparts > 0);
-			m_Part.reserve(nparts);
+			assert(m_Part.empty() || (m_Part.size() == nparts));
+
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST (GMeshObject::Load)");
 
-				GPart* p = new GPart(this);
+				GPart* p = nullptr;
+				if (n < m_Part.size()) p = Part(n);
+				else {
+					p = new GPart(this);
+					m_Part.push_back(p);
+				}
+
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid, mid;
@@ -1993,8 +1996,6 @@ void GObject::Load(IArchive& ar)
 				ar.CloseChunk();
 
 				p->SetLocalID(n++);
-
-				m_Part.push_back(p);
 			}
 			assert((int)m_Part.size() == nparts);
 		}
@@ -2003,13 +2004,20 @@ void GObject::Load(IArchive& ar)
 		case CID_OBJ_FACE_LIST:
 		{
 			assert(nfaces > 0);
-			m_Face.reserve(nfaces);
+			assert(m_Face.empty() || (m_Face.size() == nfaces));
+
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_LIST (GMeshObject::Load)");
 
-				GFace* f = new GFace(this);
+				GFace* f = nullptr;
+				if (n < m_Face.size()) f = Face(n);
+				else {
+					f = new GFace(this);
+					m_Face.push_back(f);
+				}
+
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid;
@@ -2034,8 +2042,6 @@ void GObject::Load(IArchive& ar)
 				ar.CloseChunk();
 
 				f->SetLocalID(n++);
-
-				m_Face.push_back(f);
 			}
 			assert((int)m_Face.size() == nfaces);
 		}
@@ -2043,14 +2049,21 @@ void GObject::Load(IArchive& ar)
 		// object edges
 		case CID_OBJ_EDGE_LIST:
 		{
-			m_Edge.clear();
-			if (nedges > 0) m_Edge.reserve(nedges);
+			assert(nedges > 0);
+			assert(m_Edge.empty() || (m_Edge.size() == nedges));
+
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST (GMeshObject::Load)");
 
-				GEdge* e = new GEdge(this);
+				GEdge* e = nullptr;
+				if (n < m_Edge.size()) e = Edge(n);
+				else {
+					e = new GEdge(this);
+					m_Edge.push_back(e);
+				}
+
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid;
@@ -2070,8 +2083,6 @@ void GObject::Load(IArchive& ar)
 				ar.CloseChunk();
 
 				e->SetLocalID(n++);
-
-				m_Edge.push_back(e);
 			}
 			assert((int)m_Edge.size() == nedges);
 		}
@@ -2079,16 +2090,23 @@ void GObject::Load(IArchive& ar)
 		// object nodes
 		case CID_OBJ_NODE_LIST:
 		{
-			m_Node.clear();
+			assert(nnodes > 0);
+			assert(m_Node.empty() || (m_Node.size() == nnodes));
+
 			if (nnodes > 0)
 			{
-				m_Node.reserve(nnodes);
 				int m = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST (GMeshObject::Load)");
 
-					GNode* n = new GNode(this);
+					GNode* n = nullptr;
+					if (m < m_Node.size()) n = Node(m);
+					else {
+						n = new GNode(this);
+						m_Node.push_back(n);
+					}
+
 					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid;
@@ -2109,8 +2127,6 @@ void GObject::Load(IArchive& ar)
 					ar.CloseChunk();
 
 					n->SetLocalID(m++);
-
-					m_Node.push_back(n);
 				}
 				assert((int)m_Node.size() == nnodes);
 			}
