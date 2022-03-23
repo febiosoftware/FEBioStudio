@@ -2952,7 +2952,7 @@ FERelaxMalkin::FERelaxMalkin() : FEMaterial(FE_RELAX_MALKIN)
 // Relaxation Malkin Distortion
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxMalkinDistortion, MODULE_MECH, FE_RELAX_MALKIN_DIST, FE_MAT_RV_RELAX, "relaxation-Malkin-dist", 0);
+REGISTER_MATERIAL(FERelaxMalkinDistortion, MODULE_MECH, FE_RELAX_MALKIN_DIST, FE_MAT_RV_RELAX, "relaxation-Malkin-distortion", 0);
 
 FERelaxMalkinDistortion::FERelaxMalkinDistortion() : FEMaterial(FE_RELAX_MALKIN_DIST)
 {
