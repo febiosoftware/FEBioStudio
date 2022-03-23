@@ -1343,7 +1343,8 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 	}
 	else
 	{
-		RenderSolidMaterial(rc, ps, mat, true);
+		if (pmat->benable && m_pcol->IsActive())
+			RenderSolidMaterial(rc, ps, mat, true);
 		RenderOutline(rc, mat);
 	}
 
