@@ -6997,8 +6997,8 @@ Physics Options
 \end_layout
 
 \begin_layout Standard
-The Physics options controls how certain model components are displayed
- in the Graphics View.
+The Physics options control how certain model components are displayed in
+ the Graphics View.
  
 \end_layout
 
@@ -7203,7 +7203,7 @@ Units Options
 \end_layout
 
 \begin_layout Standard
-The units options controls how units are displayed in FEBio Studio.
+The units options control how units are displayed in FEBio Studio.
  
 \end_layout
 
@@ -7240,7 +7240,7 @@ name "subsec:Model-Repository-Options"
 \end_layout
 
 \begin_layout Standard
-The model repository options controls how FEBio Studio interacts with the
+The model repository options control how FEBio Studio interacts with the
  online FEBio model repository.
  
 \end_layout
@@ -7253,6 +7253,53 @@ Repository Folder:
 Sets the location where a local copy of the model repository is saved.
  If empty, you will be prompted to set a location upon connecting to the
  model repository.
+ 
+\end_layout
+
+\begin_layout Subsection
+Auto Update Options
+\end_layout
+
+\begin_layout Standard
+FEBio Studio will automatically check for a software update when it is launched.
+ This section of the options dialog will allow you to manually check for
+ an update.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Update to Latest Release:
+\series default
+ There are periodic, official releases of FEBio Studio and FEBio.
+ This button will initiate a check to see if there are any updates available.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Update to Development Version:
+\series default
+ FEBio Studio and FEBio are in almost daily development, and a new developement
+ version of the software is made available each night.
+ This button will initiate a check to see if there are any updates available
+ to the latest development version.
+ Please note that while these versions contain the latest bugfixes and features,
+ they are potentially unstable.
+ 
+\end_layout
+
+\begin_layout Standard
+If a new update is available, click the 
+\begin_inset Quotes eld
+\end_inset
+
+Close and Update
+\begin_inset Quotes erd
+\end_inset
+
+ button on the update dialog to close FEBio Studio and launch the updater.
  
 \end_layout
 
