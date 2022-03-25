@@ -331,6 +331,27 @@ FEVerondaWestmann::FEVerondaWestmann() : FEMaterial(FE_VERONDA_WESTMANN)
 	AddScienceParam(0, UNIT_PRESSURE , "k"      , "bulk modulus")->SetPersistent(false);
 }
 
+//////////////////////////////////////////////////////////////////////
+// FEPolynomialHyperelastic
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEPolynomialHyperelastic, MODULE_MECH, FE_POLYNOMIAL_HYPERELASTIC, FE_MAT_ELASTIC_UNCOUPLED, "polynomial", MaterialFlags::TOPLEVEL);
+
+FEPolynomialHyperelastic::FEPolynomialHyperelastic() : FEMaterial(FE_POLYNOMIAL_HYPERELASTIC)
+{
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "c01", "c01");
+	AddScienceParam(0, UNIT_PRESSURE, "c02", "c02");
+	AddScienceParam(0, UNIT_PRESSURE, "c10", "c10");
+	AddScienceParam(0, UNIT_PRESSURE, "c11", "c11");
+	AddScienceParam(0, UNIT_PRESSURE, "c12", "c12");
+	AddScienceParam(0, UNIT_PRESSURE, "c20", "c20");
+	AddScienceParam(0, UNIT_PRESSURE, "c21", "c21");
+	AddScienceParam(0, UNIT_PRESSURE, "c22", "c22");
+	AddScienceParam(0, UNIT_PRESSURE, "D1", "D1")->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "D2", "D2")->SetPersistent(false);
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // FECoupledMooneyRivlin
