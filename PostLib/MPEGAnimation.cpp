@@ -44,6 +44,8 @@ int CMPEGAnimation::Create(const char *szfile, int cx, int cy, float fps)
 {
 	m_nframe = 0;
     
+    avcodec_register_all();
+    
     // find mpeg1 video encoder
     av_codec = avcodec_find_encoder(AV_CODEC_ID_MPEG1VIDEO);
     
@@ -112,7 +114,7 @@ int CMPEGAnimation::Create(const char *szfile, int cx, int cy, float fps)
 
 	buffer = (uint8_t *)av_malloc(yuv_frame_bytes * sizeof(uint8_t));
 
-    av_image_fill_arrays(yuv_frame->data, yuv_frame->linesize, buffer, AV_PIX_FMT_YUV420P, av_codec_context->width, av_codec_context->height, 32);
+	avpicture_fill((AVPicture *)yuv_frame, buffer, AV_PIX_FMT_YUV420P, av_codec_context->width, av_codec_context->height);
 
     return true;
 }
@@ -125,6 +127,10 @@ int CMPEGAnimation::Write(QImage &im)
         return false;
     }
     
+    // Commenting out repeat frames as they result in choppy video in some cases
+//    for(int index = 0; index < m_repeatFrames; index++)
+//    {
+    
 	int ret;
 	int got_packet = 0;
 	av_init_packet(&av_packet);
@@ -135,29 +141,22 @@ int CMPEGAnimation::Write(QImage &im)
 
 	yuv_frame->pts = m_nframe++;
 
-    ret = avcodec_send_frame(av_codec_context, yuv_frame);
+	// encode the pix
+	ret = avcodec_encode_video2(av_codec_context, &av_packet, yuv_frame, &got_packet);
 
-    if(ret < 0)
-    {
-        return false;
-    }
+	if (ret < 0)
+	{
+		return false;
+	}
 
-    while(ret >= 0)
-    {
-        ret = avcodec_receive_packet(av_codec_context, &av_packet);
-        if(ret == AVERROR(EAGAIN))
-        {
-            return true;
-        }
-        else if(ret < 0)
-        {
-            return false;
-        }
+	if (got_packet)
+	{
 
-        fwrite(av_packet.data, 1, av_packet.size, file);
+		fwrite(av_packet.data, 1, av_packet.size, file);
 
-        av_packet_unref(&av_packet);
-    }
+		av_free_packet(&av_packet);
+	}
+//	}
 
     return true;
 }
@@ -193,30 +192,18 @@ void CMPEGAnimation::Close()
 		{
 			fflush(stdout);
 
-            int ret = avcodec_send_frame(av_codec_context, yuv_frame);
+			int ret = avcodec_encode_video2(av_codec_context, &av_packet, NULL, &got_packet);
 
-            if(ret < 0)
-            {
-                return;
-            }
+			if (ret < 0)
+			{
+				break;
+			}
 
-            while(ret >= 0)
-            {
-                ret = avcodec_receive_packet(av_codec_context, &av_packet);
-                if(ret == AVERROR(EAGAIN))
-                {
-                    continue;
-                }
-                else if(ret < 0)
-                {
-                    break;
-                }
-
-                fwrite(av_packet.data, 1, av_packet.size, file);
-
-                av_packet_unref(&av_packet);
-            }
-
+			if (got_packet)
+			{
+				fwrite(av_packet.data, 1, av_packet.size, file);
+				av_free_packet(&av_packet);
+			}
 		} while (got_packet);
 	}
 
