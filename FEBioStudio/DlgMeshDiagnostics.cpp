@@ -155,6 +155,7 @@ public:
 		checkFacePartitioning(); testCount++;
 		checkEdgePartitioning(); testCount++;
 		checkNodePartitioning(); testCount++;
+		checkSlivers(); testCount++;
 	}
 
 	void checkMeshStats();
@@ -173,6 +174,7 @@ public:
 	void checkFacePartitioning();
 	void checkEdgePartitioning();
 	void checkNodePartitioning();
+	void checkSlivers();
 };
 
 CDlgMeshDiagnostics::CDlgMeshDiagnostics(QWidget* parent) : QDialog(parent), ui(new CDlgMeshDiagnosticsUI)
@@ -997,4 +999,66 @@ void CDlgMeshDiagnosticsUI::checkNodePartitioning()
 	}
 
 	if (berr == false) log("Node partitions look good.");
+}
+
+void CDlgMeshDiagnosticsUI::checkSlivers()
+{
+	const int T[4][4] = {
+		{0,1,2,3},
+		{0,3,1,2},
+		{0,2,3,1},
+		{1,3,2,0}
+	};
+
+	vector<int> slivers;
+	FEMesh& mesh = *obj->GetFEMesh();
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		if (el.Shape() == ELEM_TET)
+		{
+			// get the max edge length
+			double Lmax = 0;
+			for (int i=0; i<4; ++i)
+				for (int j = 1; j < 4; ++j)
+				{
+					vec3d a = mesh.Node(el.m_node[i]).pos();
+					vec3d b = mesh.Node(el.m_node[j]).pos();
+
+					double lij = (b - a).SqrLength();
+					if (lij > Lmax) Lmax = lij;
+				}
+			Lmax = sqrt(Lmax);
+
+			// pick the plane with the largest area
+			double Amax = 0.0;
+			int imax = -1;
+			for (int i = 0; i < 4; ++i)
+			{
+				vec3d r0 = mesh.Node(el.m_node[T[i][0]]).pos();
+				vec3d r1 = mesh.Node(el.m_node[T[i][1]]).pos();
+				vec3d r2 = mesh.Node(el.m_node[T[i][2]]).pos();
+
+				double Ai = ((r1 - r0) ^ (r2 - r0)).SqrLength();
+				if (Ai >= Amax) { Amax = Ai; imax = i; }
+			}
+			assert(imax != -1);
+
+			// create a plane from the first 3 points
+			vec3d r0 = mesh.Node(el.m_node[T[imax][0]]).pos();
+			vec3d r1 = mesh.Node(el.m_node[T[imax][1]]).pos();
+			vec3d r2 = mesh.Node(el.m_node[T[imax][2]]).pos();
+			vec3d r3 = mesh.Node(el.m_node[T[imax][3]]).pos();
+
+			vec3d N = (r1 - r0) ^ (r2 - r0); N.Normalize();
+
+			// see if the fourth point is (approximately) on this plane. 
+			double l = ((r3 - r0) * N)/Lmax;
+
+			if (l < 1e-5) slivers.push_back(i);
+		}
+	}
+
+	if (slivers.empty()) log("No tet slivers found.");
+	else logWarning(QString("%1 tet slivers found!").arg(slivers.size()));
 }
