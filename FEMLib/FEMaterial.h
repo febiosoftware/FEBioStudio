@@ -152,6 +152,7 @@
 #define FE_FIBER_NATURAL_NH             87
 #define FE_HOLMES_MOW_UNCOUPLED         88
 #define FE_TRACE_FREE_NEO_HOOKEAN       89
+#define FE_POLYNOMIAL_HYPERELASTIC      90
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -514,6 +515,21 @@ public:
 
 	DECLARE_REGISTERED(FSVerondaWestmann);
 };
+
+//-----------------------------------------------------------------------------
+// polynomial hyper-elastic
+//
+class FSPolynomialHyperelastic : public FSMaterial
+{
+public:
+    enum { MP_DENSITY, MP_C01, MP_C02, MP_C10, MP_C11, MP_C12, MP_C20, MP_C21, MP_C22, MP_D1, MP_D2 };
+
+public:
+    FSPolynomialHyperelastic();
+
+    DECLARE_REGISTERED(FSPolynomialHyperelastic);
+};
+
 
 //-----------------------------------------------------------------------------
 // coupled Mooney-Rivlin
