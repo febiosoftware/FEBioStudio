@@ -691,7 +691,11 @@ void FEBioFormat3::ParseSolidDomain(XMLTag& tag)
 		if (matID == -1) matID = atoi(szmat) - 1;
 
 		FEBioInputModel::Domain* dom = part->FindDomain(szname);
-		if (dom) dom->SetMatID(matID);
+		if (dom)
+		{
+			dom->SetMatID(matID);
+			dom->SetType(FEBioInputModel::Domain::SOLID);
+		}
 
 		FESolidFormulation* eform = nullptr;
 		const char* szelem = tag.AttributeValue("elem_type", true);
@@ -729,12 +733,24 @@ void FEBioFormat3::ParseShellDomain(XMLTag& tag)
 		if (matID == -1) matID = atoi(szmat) - 1;
 
 		FEBioInputModel::Domain* dom = part->FindDomain(szname);
-		if (dom) dom->SetMatID(matID);
+		if (dom)
+		{
+			dom->SetMatID(matID);
+			dom->SetType(FEBioInputModel::Domain::SHELL);
+		}
 
 		FEShellFormulation* shell = nullptr;
 		const char* szelem = tag.AttributeValue("elem_type", true);
-		if (szelem) shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
 
+		// check for three-field flag
+		const char* sz3field = tag.AttributeValue("three_field", true);
+		if (sz3field) szelem = "three-field-shell";
+
+		// If the shell type is not defined but there are parameters, we'll assume it's the elastic-shell domain
+		if ((szelem == nullptr) && (tag.isleaf() == false)) szelem = "elastic-shell";
+
+		// try to allocate it
+		if (szelem) shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
 		dom->m_form = shell;
 
 		// read the domain parameters

@@ -605,6 +605,7 @@ FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 FEBioInputModel::Domain::Domain(Part* part) : m_part(part)
 {
 	m_form = nullptr;
+	m_type = UNKNOWN;
 }
 
 FEBioInputModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_part(part)
@@ -612,6 +613,7 @@ FEBioInputModel::Domain::Domain(Part* part, const std::string& name, int matID) 
 	m_name = name;
 	m_matID = matID;
 	m_form = nullptr;
+	m_type = UNKNOWN;
 }
 
 FEBioInputModel::Domain::Domain(const Domain& part)
@@ -620,6 +622,7 @@ FEBioInputModel::Domain::Domain(const Domain& part)
 	m_name = part.m_name;
 	m_matID = part.m_matID;
 	m_elem = part.m_elem;
+	m_type = part.m_type;
 	m_form = part.m_form; // TODO: Need to copy!
 }
 
@@ -629,6 +632,7 @@ void FEBioInputModel::Domain::operator = (const Domain& part)
 	m_name = part.m_name;
 	m_matID = part.m_matID;
 	m_elem = part.m_elem;
+	m_type = part.m_type;
 }
 
 //=============================================================================
@@ -857,7 +861,7 @@ void FEBioInputModel::UpdateGeometry()
 			gpart.SetName(name.c_str());
 
 			FESolidFormulation* solidForm = dynamic_cast<FESolidFormulation*>(elSet.m_form);
-			if (solidForm)
+			if (solidForm || (elSet.Type() == Domain::SOLID))
 			{
 				GSolidSection* solidSection = new GSolidSection(&gpart);
 				gpart.SetSection(solidSection);
@@ -866,7 +870,7 @@ void FEBioInputModel::UpdateGeometry()
 			}
 
 			FEShellFormulation* shellForm = dynamic_cast<FEShellFormulation*>(elSet.m_form);
-			if (shellForm)
+			if (shellForm || (elSet.Type() == Domain::SHELL))
 			{
 				GShellSection* shellSection = new GShellSection(&gpart);
 				gpart.SetSection(shellSection);

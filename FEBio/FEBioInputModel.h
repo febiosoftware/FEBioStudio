@@ -152,6 +152,13 @@ public:
 	class Domain
 	{
 	public:
+		enum DOMAIN_TYPE {
+			UNKNOWN,
+			SOLID,
+			SHELL
+		};
+
+	public:
 		Domain(Part* part);
 		Domain(Part* part, const std::string& name, int matID);
 		Domain(const Domain& part);
@@ -174,8 +181,12 @@ public:
 
 		FEElementFormulation* m_form;
 
+		DOMAIN_TYPE Type() const { return m_type; }
+		void SetType(DOMAIN_TYPE type) { m_type = type; }
+
 	private:
-		int			m_matID;	// zero-based material index
+		int				m_matID;	// zero-based material index
+		DOMAIN_TYPE		m_type;		// domain type
 
 		std::string			m_name;	
 		Part*				m_part;
