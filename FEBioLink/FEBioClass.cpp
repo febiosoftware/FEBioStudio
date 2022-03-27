@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
+#include <FEMLib/FEMeshDataGenerator.h>
 #include <MeshTools/FEModel.h>
 #include <sstream>
 using namespace FEBio;
@@ -930,6 +931,11 @@ FSLoadController* FEBio::CreateLoadController(const std::string& typeStr, FSMode
 	return CreateModelComponent<FEBioLoadController>(FELOADCONTROLLER_ID, typeStr, fem);
 }
 
+FSMeshDataGenerator* FEBio::CreateElemDataGenerator(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioElemDataGenerator>(FEELEMDATAGENERATOR_ID, typeStr, fem);
+}
+
 FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEBioFunction1D>(FEFUNCTION1D_ID, typeStr, fem);
@@ -975,6 +981,14 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 		FSGenericClass* pc = new FSGenericClass;
 		BuildModelComponent(superClassID, typeStr, pc);
 		return pc;
+	}
+	break;
+	case FESURFACE_ID:
+	{
+		FSMeshSelection* pms = new FSMeshSelection(fem);
+		pms->SetMeshItemType(FE_FACE_FLAG);
+		pms->SetSuperClassID(FESURFACE_ID);
+		return pms;
 	}
 	break;
 	default:

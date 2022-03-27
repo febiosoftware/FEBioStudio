@@ -1492,88 +1492,40 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 	}
 	else if (var)
 	{
+		FEBioInputModel& feb = GetFEBioModel();
+		FSModel& fem = feb.GetFSModel();
+
+		string name;
+		const char* szname = tag.AttributeValue("name", true);
+		if (szname) name = szname;
+		else
+		{
+			stringstream ss; ss << "MeshData" << fem.MeshDataGenerators() + 1;
+			name = ss.str();
+		}
+	
 		const char* szgen = tag.AttributeValue("generator", true);
 		if (szgen)
 		{
-			// Read the data and store it as a mesh data section
-			FEBioInputModel& feb = GetFEBioModel();
-			FSModel& fem = feb.GetFSModel();
-
-			const char* szset = tag.AttributeValue("elem_set");
-			if (strcmp(szgen, "surface-to-surface map") == 0)
+			// allocate mesh data generator
+			FSMeshDataGenerator* gen = FEBio::CreateElemDataGenerator(szgen, &fem);
+			if (gen)
 			{
-/*				FSSurfaceToSurfaceMap* s2s = new FSSurfaceToSurfaceMap;
-				s2s->m_generator = szgen;
-				s2s->m_var = var->cvalue();
-				s2s->m_elset = szset;
+				gen->SetName(name);
 
-				// get the name
-				const char* szname = tag.AttributeValue("name", true);
-				string sname;
-				if (szname == nullptr)
+				const char* szset = tag.AttributeValue("elem_set", true);
+				if (szset)
 				{
-					stringstream ss;
-					ss << "DataMap" << fem.DataMaps() + 1;
-					sname = ss.str();
+					FSPart* pg = feb.BuildFEPart(szset);
+					if (pg == nullptr) AddLogEntry("Invalid value for elem_set %s", szset);
+					gen->SetItemList(pg);
 				}
-				else sname = szname;
-				s2s->SetName(sname);
 
-				string tmp;
-				++tag;
-				do
-				{
-					if (tag == "bottom_surface") { tag.value(tmp); s2s->SetBottomSurface(tmp); }
-					else if (tag == "top_surface") { tag.value(tmp); s2s->SetTopSurface(tmp); }
-					else if (tag == "function")
-					{
-						Param* p = s2s->GetParam("function"); assert(p);
+				ParseModelComponent(gen, tag);
 
-						const char* szlc = tag.AttributeValue("lc", true);
-						if (szlc)
-						{
-							int lc = atoi(szlc);
-							GetFEBioModel().AddParamCurve(p, lc - 1);
-
-							double v = 0.0;
-							tag.value(v);
-							p->SetFloatValue(v);
-						}
-
-						if (tag.isleaf() == false)
-						{
-							LoadCurve lc; lc.Clear();
-							++tag;
-							do {
-								if (tag == "points")
-								{
-									// read the points
-									double d[2];
-									++tag;
-									do
-									{
-										tag.value(d, 2);
-
-										LOADPOINT pt;
-										pt.time = d[0];
-										pt.load = d[1];
-										lc.Add(pt);
-
-										++tag;
-									} while (!tag.isend());
-								}
-								else ParseUnknownTag(tag);
-								++tag;
-							} while (!tag.isend());
-							//GetFEBioModel().AddLoadCurve(lc);
-							//p->SetLoadCurve(lc);
-						}
-					}
-					else ParseUnknownTag(tag);
-					++tag;
-				} while (!tag.isend());
-				feb.GetFSModel().AddDataMap(s2s);
-*/			}
+				fem.AddMeshDataGenerator(gen);
+			}
+			else ParseUnknownAttribute(tag, "generator");
 		}
 		else ParseUnknownTag(tag);
 	}

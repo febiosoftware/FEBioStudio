@@ -52,6 +52,7 @@ class FSRigidLoad;
 class FSModel;
 class FSCoreBase;
 class FSLoadController;
+class FSMeshDataGenerator;
 class FSFunction1D;
 class FSGenericClass;
 class FESolidFormulation;
@@ -129,6 +130,7 @@ namespace FEBio {
 	FSRigidLoad*	     CreateRigidLoad        (const std::string& typeStr, FSModel* fem);
 	FSInitialCondition*  CreateInitialCondition (const std::string& typeStr, FSModel* fem);
 	FSLoadController*    CreateLoadController   (const std::string& typeStr, FSModel* fem);
+	FSMeshDataGenerator* CreateElemDataGenerator(const std::string& typeStr, FSModel* fem);
 	FSFunction1D*        CreateFunction1D       (const std::string& typeStr, FSModel* fem);
 	FSGenericClass*		 CreateGenericClass     (const std::string& typeStr, FSModel* fem);
 	FEShellFormulation*  CreateShellFormulation (const std::string& typeStr, FSModel* fem);
