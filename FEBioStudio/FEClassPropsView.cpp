@@ -958,8 +958,21 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				break;
 			case Param_STRING:
 				{
-					QLineEdit* pw = new QLineEdit(parent);
-					return pw;
+					if (p->GetEnumNames())
+					{
+						QComboBox* box = new QComboBox(parent);
+						QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
+						box->addItems(enumValues);
+						string s = p->val<std::string>();
+						int n = box->findText(QString::fromStdString(s));
+						box->setCurrentIndex(n);
+						QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+						return box;
+					}
+					else {
+						QLineEdit* pw = new QLineEdit(parent);
+						return pw;
+					}
 				}
 				break;
 			case Param_STD_VECTOR_INT:

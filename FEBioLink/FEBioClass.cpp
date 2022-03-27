@@ -378,7 +378,12 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 			break;
 			case FEBio::FEBIO_PARAM_VEC3D: p = po->AddVecParam(param.value<vec3d>(), szname, szlongname); break;
 			case FEBio::FEBIO_PARAM_MAT3D: p = po->AddMat3dParam(param.value<mat3d>(), szname, szlongname); break;
-			case FEBio::FEBIO_PARAM_STD_STRING: p = po->AddStringParam(param.value<string>(), szname, szlongname); break;
+			case FEBio::FEBIO_PARAM_STD_STRING: 
+			{
+				p = po->AddStringParam(param.value<string>(), szname, szlongname);
+				if (param.enums()) p->CopyEnumNames(param.enums());
+			}
+			break;
 			case FEBio::FEBIO_PARAM_STD_VECTOR_INT:
 			{
 				std::vector<int> val = param.value<std::vector<int> >();

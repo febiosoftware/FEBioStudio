@@ -59,7 +59,16 @@ void CObjectProps::AddParameter(Param& p)
 	case Param_VEC3D : prop = addProperty(paramName, CProperty::Vec3); break;
 	case Param_MAT3D : prop = addProperty(paramName, CProperty::Mat3); break;
 	case Param_MAT3DS: prop = addProperty(paramName, CProperty::Mat3s); break;
-	case Param_STRING: prop = addProperty(paramName, CProperty::String); break;
+	case Param_STRING: 
+	{
+		prop = addProperty(paramName, CProperty::String); 
+		if (p.GetEnumNames())
+		{
+			QStringList ops = GetEnumValues(p.GetEnumNames());
+			prop->setEnumValues(ops);
+		}
+	}
+	break;
 	case Param_MATH  : prop = addProperty(paramName, CProperty::MathString); break;
 	case Param_COLOR : prop = addProperty(paramName, CProperty::Color); break;
 	case Param_VEC2I : prop = addProperty(paramName, CProperty::Vec2i); break;

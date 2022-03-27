@@ -403,11 +403,26 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 	case CProperty::String:
 	case CProperty::MathString:
 		{
-			QLineEdit* edit = new QLineEdit;
-			edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-			edit->setText(v.toString());
-			connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
-			return edit;
+			if (pi.values.empty() == false)
+			{
+				QComboBox* box = new QComboBox();
+				box->setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
+				QStringList enumValues = pi.values;
+				box->addItems(enumValues);
+				QString s = v.toString();
+				int n = box->findText(s);
+				box->setCurrentIndex(n);
+				QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
+				return box;
+			}
+			else
+			{
+				QLineEdit* edit = new QLineEdit;
+				edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+				edit->setText(v.toString());
+				connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
+				return edit;
+			}
 		}
 		break;
 	case CProperty::Resource:
@@ -760,6 +775,10 @@ void CPropertyListForm::onDataChanged()
 					{
 						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
 						if (edit) m_list->SetPropertyValue(i, edit->text());
+						else {
+							QComboBox* box = qobject_cast<QComboBox*>(pw);
+							if (box) m_list->SetPropertyValue(i, box->currentText());
+						}
 					}
 					break;
 				case CProperty::DataScalar:

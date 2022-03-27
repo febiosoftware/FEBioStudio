@@ -962,13 +962,7 @@ void FEBioExport4::WriteMeshDomainsSection()
 			if (section && section->GetElementFormulation())
 			{
 				FESolidFormulation* solid = section->GetElementFormulation();
-				el.add_attribute("type", solid->GetTypeString());
-				if (solid->Parameters() > 0)
-				{
-					m_xml.add_branch(el);
-					WriteParamList(*solid);
-					m_xml.close_branch();
-				}
+				WriteModelComponent(solid, el);
 			}
 			else m_xml.add_empty(el);
 		}
@@ -983,13 +977,7 @@ void FEBioExport4::WriteMeshDomainsSection()
 			if (section && section->GetElementFormulation())
 			{
 				FEShellFormulation* shell = section->GetElementFormulation();
-				el.add_attribute("type", shell->GetTypeString());
-				if (shell->Parameters() > 0)
-				{
-					m_xml.add_branch(el);
-					WriteParamList(*shell);
-					m_xml.close_branch();
-				}
+				WriteModelComponent(shell, el);
 			}
 			else m_xml.add_empty(el);
 		}

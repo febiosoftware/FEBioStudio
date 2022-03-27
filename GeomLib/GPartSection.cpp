@@ -41,7 +41,7 @@ GPart* GPartSection::GetPart() { return m_part; }
 
 GSolidSection::GSolidSection(GPart* pg) : GPartSection(pg)
 {
-	AddChoiceParam(0, "elem_type", "Element Formulation")->SetEnumNames("$(solid_domain)");
+	AddChoiceParam(0, "elem_type", "Formulation")->SetEnumNames("$(solid_domain)");
 	m_form = nullptr;
 }
 
