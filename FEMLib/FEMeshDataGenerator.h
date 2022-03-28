@@ -6,9 +6,7 @@ class FEItemListBuilder;
 
 enum MeshDataGeneratorType
 {
-	FE_FEBIO_NODEDATA_GENERATOR = 1,
-	FE_FEBIO_FACEDATA_GENERATOR = 2,
-	FE_FEBIO_ELEMDATA_GENERATOR = 3
+	FE_FEBIO_MESHDATA_GENERATOR = 1,
 };
 
 class FSMeshDataGenerator : public FSModelComponent, public IHasItemList
@@ -32,7 +30,6 @@ public:
 
 	unsigned int GetMeshItemType() const override;
 
-protected:
 	void SetMeshItemType(unsigned int meshItem) override;
 
 private:
@@ -47,30 +44,10 @@ private:
 	static	int	m_nref;
 };
 
-class FEBioNodeDataGenerator : public FSMeshDataGenerator
+class FEBioMeshDataGenerator : public FSMeshDataGenerator
 {
 public:
-	FEBioNodeDataGenerator(FSModel* fem = nullptr);
-
-public:
-	void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
-};
-
-class FEBioFaceDataGenerator : public FSMeshDataGenerator
-{
-public:
-	FEBioFaceDataGenerator(FSModel* fem = nullptr);
-
-public:
-	void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
-};
-
-class FEBioElemDataGenerator : public FSMeshDataGenerator
-{
-public:
-	FEBioElemDataGenerator(FSModel* fem = nullptr);
+	FEBioMeshDataGenerator(FSModel* fem = nullptr);
 
 public:
 	void Save(OArchive& ar) override;

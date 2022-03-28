@@ -1508,7 +1508,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		if (szgen)
 		{
 			// allocate mesh data generator
-			FSMeshDataGenerator* gen = FEBio::CreateElemDataGenerator(szgen, &fem);
+			FSMeshDataGenerator* gen = FEBio::CreateMeshDataGenerator(szgen, &fem);
 			if (gen)
 			{
 				gen->SetName(name);

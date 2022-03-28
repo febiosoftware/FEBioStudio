@@ -67,14 +67,10 @@ void initMap()
 	idmap[FEPLOTDATA_ID            ] = "FEPLOTDATA_ID";
 	idmap[FEANALYSIS_ID            ] = "FEANALYSIS_ID";
 	idmap[FESURFACEINTERFACE_ID    ] = "FESURFACEINTERFACE_ID";
-	idmap[FENODELOGDATA_ID         ] = "FENODELOGDATA_ID";
-	idmap[FEFACELOGDATA_ID         ] = "FEFACELOGDATA_ID";
-	idmap[FEELEMLOGDATA_ID         ] = "FEELEMLOGDATA_ID";
-	idmap[FEOBJLOGDATA_ID          ] = "FEOBJLOGDATA_ID";
+	idmap[FELOGDATA_ID             ] = "FELOGDATA_ID";
 	idmap[FEBC_ID                  ] = "FEBC_ID";
 	idmap[FEGLOBALDATA_ID          ] = "FEGLOBALDATA_ID";
 	idmap[FERIGIDOBJECT_ID         ] = "FERIGIDOBJECT_ID";
-	idmap[FENLCLOGDATA_ID          ] = "FENLCLOGDATA_ID";
 	idmap[FECALLBACK_ID            ] = "FECALLBACK_ID";
 	idmap[FESOLIDDOMAIN_ID         ] = "FESOLIDDOMAIN_ID";
 	idmap[FESHELLDOMAIN_ID         ] = "FESHELLDOMAIN_ID";
@@ -83,9 +79,7 @@ void initMap()
 	idmap[FEDISCRETEDOMAIN_ID      ] = "FEDISCRETEDOMAIN_ID";
 	idmap[FESURFACE_ID             ] = "FESURFACE_ID";
 	idmap[FEIC_ID                  ] = "FEIC_ID";
-	idmap[FENODEDATAGENERATOR_ID   ] = "FENODEDATAGENERATOR_ID";
-	idmap[FEFACEDATAGENERATOR_ID   ] = "FEFACEDATAGENERATOR_ID";
-	idmap[FEELEMDATAGENERATOR_ID   ] = "FEELEMDATAGENERATOR_ID";
+	idmap[FEMESHDATAGENERATOR_ID   ] = "FEMESHDATAGENERATOR_ID";
 	idmap[FELOADCONTROLLER_ID      ] = "FELOADCONTROLLER_ID";
 	idmap[FEMODEL_ID               ] = "FEMODEL_ID";
 	idmap[FEMODELDATA_ID           ] = "FEMODELDATA_ID";
@@ -276,9 +270,15 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		else pc = new FEBioNLConstraint(fem); break;
 	}
 	break;
-	case FENODEDATAGENERATOR_ID : pc = new FEBioNodeDataGenerator(fem); break;
-	case FEFACEDATAGENERATOR_ID : pc = new FEBioFaceDataGenerator(fem); break;
-	case FEELEMDATAGENERATOR_ID : pc = new FEBioElemDataGenerator(fem); break;
+	case FEMESHDATAGENERATOR_ID : 
+	{
+		FEBioMeshDataGenerator* mdg = new FEBioMeshDataGenerator(fem);
+		if (baseClassId == FEBio::GetBaseClassIndex("FENodeDataGenerator")) mdg->SetMeshItemType(FE_NODE_FLAG);
+		if (baseClassId == FEBio::GetBaseClassIndex("FEFaceDataGenerator")) mdg->SetMeshItemType(FE_FACE_FLAG);
+		if (baseClassId == FEBio::GetBaseClassIndex("FEDomainDataGenerator")) mdg->SetMeshItemType(FE_ELEM_FLAG);
+		pc = mdg;
+	}
+	break;
 	case FESOLVER_ID           : pc = new FSGenericClass; break;
 	case FERIGIDBC_ID		   : pc = new FEBioRigidConstraint(fem); break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
@@ -936,9 +936,9 @@ FSLoadController* FEBio::CreateLoadController(const std::string& typeStr, FSMode
 	return CreateModelComponent<FEBioLoadController>(FELOADCONTROLLER_ID, typeStr, fem);
 }
 
-FSMeshDataGenerator* FEBio::CreateElemDataGenerator(const std::string& typeStr, FSModel* fem)
+FSMeshDataGenerator* FEBio::CreateMeshDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioElemDataGenerator>(FEELEMDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioMeshDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
 }
 
 FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)

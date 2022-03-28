@@ -937,7 +937,7 @@ void CModelTree::Build(CModelDocument* doc)
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
 		// Mesh data
-		t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA);
+		t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA_LIST);
 		UpdateMeshData(t2, fem);
 	}
 

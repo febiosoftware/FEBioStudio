@@ -1297,9 +1297,7 @@ void FSModel::LoadMeshDataGenerators(IArchive& ar)
 		FSMeshDataGenerator* pmd = nullptr;
 		switch (ntype)
 		{
-		case FE_FEBIO_NODEDATA_GENERATOR: pmd = dynamic_cast<FSMeshDataGenerator*>(kernel.Create(this, FENODEDATAGENERATOR_ID, ntype)); break;
-		case FE_FEBIO_FACEDATA_GENERATOR: pmd = dynamic_cast<FSMeshDataGenerator*>(kernel.Create(this, FEFACEDATAGENERATOR_ID, ntype)); break;
-		case FE_FEBIO_ELEMDATA_GENERATOR: pmd = dynamic_cast<FSMeshDataGenerator*>(kernel.Create(this, FEELEMDATAGENERATOR_ID, ntype)); break;
+		case FE_FEBIO_MESHDATA_GENERATOR: pmd = dynamic_cast<FSMeshDataGenerator*>(kernel.Create(this, FEMESHDATAGENERATOR_ID, ntype)); break;
 		}
 		
 		if (pmd == nullptr) throw ReadError("unknown CID in FSModel::LoadMeshDataGenerators");

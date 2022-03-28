@@ -57,13 +57,13 @@ int FSMeshDataGenerator::GetCounter()
 }
 
 //=============================================================================
-FEBioNodeDataGenerator::FEBioNodeDataGenerator(FSModel* fem) : FSMeshDataGenerator(fem, FE_FEBIO_NODEDATA_GENERATOR)
+FEBioMeshDataGenerator::FEBioMeshDataGenerator(FSModel* fem) : FSMeshDataGenerator(fem, FE_FEBIO_MESHDATA_GENERATOR)
 {
-	SetSuperClassID(FENODEDATAGENERATOR_ID);
+	SetSuperClassID(FEMESHDATAGENERATOR_ID);
 	SetMeshItemType(FE_ALL_FLAGS);
 }
 
-void FEBioNodeDataGenerator::Save(OArchive& ar)
+void FEBioMeshDataGenerator::Save(OArchive& ar)
 {
 	ar.BeginChunk(CID_FEBIO_META_DATA);
 	{
@@ -78,92 +78,9 @@ void FEBioNodeDataGenerator::Save(OArchive& ar)
 	ar.EndChunk();
 }
 
-void FEBioNodeDataGenerator::Load(IArchive& ar)
+void FEBioMeshDataGenerator::Load(IArchive& ar)
 {
-	TRACE("FEBioNodeDataGenerator::Load");
-	while (IArchive::IO_OK == ar.OpenChunk())
-	{
-		int nid = ar.GetChunkID();
-		switch (nid)
-		{
-		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FSMeshDataGenerator::Load(ar); break;
-		default:
-			assert(false);
-		}
-		ar.CloseChunk();
-	}
-	// We call this to make sure that the FEBio class has the same parameters
-	UpdateData(true);
-}
-
-
-//=============================================================================
-FEBioFaceDataGenerator::FEBioFaceDataGenerator(FSModel* fem) : FSMeshDataGenerator(fem, FE_FEBIO_FACEDATA_GENERATOR)
-{
-	SetSuperClassID(FEFACEDATAGENERATOR_ID);
-	SetMeshItemType(FE_FACE_FLAG);
-}
-
-void FEBioFaceDataGenerator::Save(OArchive& ar)
-{
-	ar.BeginChunk(CID_FEBIO_META_DATA);
-	{
-		SaveClassMetaData(this, ar);
-	}
-	ar.EndChunk();
-
-	ar.BeginChunk(CID_FEBIO_BASE_DATA);
-	{
-		FSMeshDataGenerator::Save(ar);
-	}
-	ar.EndChunk();
-}
-
-void FEBioFaceDataGenerator::Load(IArchive& ar)
-{
-	TRACE("FEBioFaceDataGenerator::Load");
-	while (IArchive::IO_OK == ar.OpenChunk())
-	{
-		int nid = ar.GetChunkID();
-		switch (nid)
-		{
-		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FSMeshDataGenerator::Load(ar); break;
-		default:
-			assert(false);
-		}
-		ar.CloseChunk();
-	}
-	// We call this to make sure that the FEBio class has the same parameters
-	UpdateData(true);
-}
-
-//=============================================================================
-FEBioElemDataGenerator::FEBioElemDataGenerator(FSModel* fem) : FSMeshDataGenerator(fem, FE_FEBIO_ELEMDATA_GENERATOR)
-{
-	SetSuperClassID(FEELEMDATAGENERATOR_ID);
-	SetMeshItemType(FE_ELEM_FLAG);
-}
-
-void FEBioElemDataGenerator::Save(OArchive& ar)
-{
-	ar.BeginChunk(CID_FEBIO_META_DATA);
-	{
-		SaveClassMetaData(this, ar);
-	}
-	ar.EndChunk();
-
-	ar.BeginChunk(CID_FEBIO_BASE_DATA);
-	{
-		FSMeshDataGenerator::Save(ar);
-	}
-	ar.EndChunk();
-}
-
-void FEBioElemDataGenerator::Load(IArchive& ar)
-{
-	TRACE("FEBioElemDataGenerator::Load");
+	TRACE("FEBioMeshDataGenerator::Load");
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
