@@ -208,7 +208,6 @@ public:
 	QStringList GetEnumValues(const char* ch) override;
 
 private:
-	int	m_lid;
 	GPart*	m_pg;
 	FSModel*	m_fem;
 };

@@ -831,6 +831,9 @@ void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 //=======================================================================================
 CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : FEObjectProps(0)
 {
+	m_fem = &fem;
+	m_pg = pg;
+
 	GPartSection* section = pg->GetSection();
 	if (section)
 	{
@@ -851,15 +854,10 @@ CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : FEObjectProps(0)
 		}
 	}
 
-	m_fem = &fem;
-	m_pg = pg;
-	int mid = pg->GetMaterialID();
-	m_lid = -1;
 	QStringList mats;
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		GMaterial* m = fem.GetMaterial(i);
-		if (m->GetID() == mid) m_lid = i;
 		mats.push_back(QString::fromStdString(m->GetName()));
 	}
 	addProperty("material", CProperty::Enum)->setEnumValues(mats);
@@ -885,13 +883,56 @@ QStringList CPartProperties::GetEnumValues(const char* ch)
 		return sl;
 	}
 
+	if (strcmp(ch, "$(solid_element)") == 0)
+	{
+		assert(m_pg->IsSolid());
+		QStringList sl;
+		sl << "default";
+
+		GObject* po = dynamic_cast<GObject*>(m_pg->Object());
+		if (po && po->GetFEMesh())
+		{
+			FSMesh* pm = po->GetFEMesh();
+			int lid = m_pg->GetLocalID();
+			for (int i = 0; i < pm->Elements(); ++i)
+			{
+				FSElement& el = pm->Element(i);
+				if (el.m_gid == lid)
+				{
+					switch (el.Type())
+					{
+					case FE_TET4 : sl << "TET4G4"; break;
+					case FE_TET10: sl << "TET10G4" << "TET10G8" << "TET10GL11"; break;
+					case FE_TET15: sl << "TET15G8" << "TET15G11" << "TET15G15"; break;
+					case FE_HEX8 : sl << "HEX8G8"; break;
+					case FE_HEX20: sl << "HEX20G8"; break;
+					}
+
+					break;
+				}
+			}
+		}
+
+		return sl;
+	}
+
 	return FEObjectProps::GetEnumValues(ch);
 }
 
 QVariant CPartProperties::GetPropertyValue(int i)
 {
 	if (i < Properties() - 1) return CObjectProps::GetPropertyValue(i);
-	return m_lid;
+
+	int lid = -1;
+	int mid = m_pg->GetMaterialID();
+	for (int i = 0; i < m_fem->Materials(); ++i)
+	{
+		GMaterial* m = m_fem->GetMaterial(i);
+		if (m->GetID() == mid) {
+			lid = i; break;
+		}
+	}
+	return lid;
 }
 
 void CPartProperties::SetPropertyValue(int i, const QVariant& v)
@@ -900,11 +941,11 @@ void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 	if (i < Properties() - 1) return CObjectProps::SetPropertyValue(i, v);
 	else
 	{
-		m_lid = v.toInt();
-		if (m_lid < 0) m_pg->SetMaterialID(-1);
+		int lid = v.toInt();
+		if (lid < 0) m_pg->SetMaterialID(-1);
 		else
 		{
-			GMaterial* m = m_fem->GetMaterial(m_lid);
+			GMaterial* m = m_fem->GetMaterial(lid);
 			m_pg->SetMaterialID(m->GetID());
 		}
 	}
