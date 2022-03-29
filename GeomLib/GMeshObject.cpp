@@ -124,8 +124,11 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 	m_Part.reserve(NP);
 	for (int i = 0; i<NP; ++i)
 	{
-		GPart* g = new GPart(this);
 		GPart& go = *po->Part(i);
+		GPart* g = nullptr;
+		if (go.IsSolid()) g = AddSolidPart();
+		else if (go.IsShell()) g = AddShellPart();
+		else { assert(false); g = new GPart(this); }
 		g->SetMaterialID(go.GetMaterialID());
 		g->SetID(go.GetID());
 		g->SetLocalID(i);
@@ -901,6 +904,10 @@ void GMeshObject::Load(IArchive& ar)
 							break;
 						case CID_OBJ_PART_PARAMS:
 						{
+							// TODO: Parts no longer have parameters, since the parameters
+							//       are now managed by for the FEElementFormulation class. 
+							//		 We need to read in the parameters, and then somehow map them to the 
+							//       FEElementFormulation class. 
 							p->ParamContainer::Load(ar);
 						}
 						break;

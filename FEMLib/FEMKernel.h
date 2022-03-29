@@ -84,12 +84,12 @@ private:
 #define REGISTER_FE_CLASS(theClass, theModule, theSuperID, theClassID, theTypeString) \
 	FEMKernel::Instance()->RegisterClass(new FEClassFactory_T<theClass>(theModule, theSuperID, theClassID, theTypeString));
 
-template <class T> T* fecore_new(FSModel* fem, int superID, int classID)
+template <class T> T* fscore_new(FSModel* fem, int superID, int classID)
 {
 	return dynamic_cast<T*>(FEMKernel::Instance()->Create(fem, superID, classID));
 }
 
-template <class T> T* fecore_new(FSModel* fem, int superID, const char* sztype)
+template <class T> T* fscore_new(FSModel* fem, int superID, const char* sztype)
 {
 	return dynamic_cast<T*>(FEMKernel::Instance()->Create(fem, superID, sztype));
 }

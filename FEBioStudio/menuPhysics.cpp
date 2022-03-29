@@ -625,7 +625,7 @@ void CMainWindow::on_actionAddStep_triggered()
 //	CDlgAddStep dlg(prj, this);
 //	if (dlg.exec())
 	{
-//		FSAnalysisStep* ps = fecore_new<FSAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
+//		FSAnalysisStep* ps = fscore_new<FSAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
 
 		FSStep* ps = FEBio::CreateStep("analysis", fem);
 		assert(ps);

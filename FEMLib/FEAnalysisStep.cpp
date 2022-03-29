@@ -859,7 +859,7 @@ void FSStep::Load(IArchive &ar)
 					else
 					{
 						// see if it's a model load
-						pl = fecore_new<FSLoad>(fem, FELOAD_ID, ntype);
+						pl = fscore_new<FSLoad>(fem, FELOAD_ID, ntype);
 					}
 
 					// make sure we have something
@@ -922,13 +922,13 @@ void FSStep::Load(IArchive &ar)
 					// check obsolete interfaces first
 					if      (ntype == FE_SLIDING_INTERFACE   ) pi = new FSSlidingInterface(fem);
 					else if (ntype == FE_SPRINGTIED_INTERFACE) pi = new FSSpringTiedInterface(fem);
-					else pi = fecore_new<FSInterface>(fem, FESURFACEINTERFACE_ID, ntype);
+					else pi = fscore_new<FSInterface>(fem, FESURFACEINTERFACE_ID, ntype);
 
 					// make sure we were able to allocate an interface
 					if (pi == 0)
 					{
 						// some "contact" interfaces were moved to constraints
-						FSModelConstraint* pc = fecore_new<FSModelConstraint>(fem, FENLCONSTRAINT_ID, ntype);
+						FSModelConstraint* pc = fscore_new<FSModelConstraint>(fem, FENLCONSTRAINT_ID, ntype);
 						if (pc)
 						{
 							pc->Load(ar);
@@ -955,7 +955,7 @@ void FSStep::Load(IArchive &ar)
 			{
 				int ntype = ar.GetChunkID();
 
-				FSModelConstraint* pmc = fecore_new<FSModelConstraint>(fem, FENLCONSTRAINT_ID, ntype);
+				FSModelConstraint* pmc = fscore_new<FSModelConstraint>(fem, FENLCONSTRAINT_ID, ntype);
 
 				// make sure we were able to allocate a constraint
 				if (pmc == 0)
