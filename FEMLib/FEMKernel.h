@@ -86,10 +86,16 @@ private:
 
 template <class T> T* fscore_new(FSModel* fem, int superID, int classID)
 {
-	return dynamic_cast<T*>(FEMKernel::Instance()->Create(fem, superID, classID));
+	FSObject* po = FEMKernel::Instance()->Create(fem, superID, classID);
+	T* pt = dynamic_cast<T*>(po);
+	if (pt == nullptr) delete po;
+	return pt;
 }
 
 template <class T> T* fscore_new(FSModel* fem, int superID, const char* sztype)
 {
-	return dynamic_cast<T*>(FEMKernel::Instance()->Create(fem, superID, sztype));
+	FSObject* po = FEMKernel::Instance()->Create(fem, superID, sztype);
+	T* pt = dynamic_cast<T*>(po);
+	if (pt == nullptr) delete po;
+	return pt;
 }
