@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
+#include <string>
 
 //-------------------------------------------------------------------
 // This class can be used to track a call stack. Macros assist
@@ -40,7 +41,9 @@ public:
 
 	static const std::vector<const char*> GetCallStack() { return m_stack; }
 
-	static int GetCallStackString(char* sz);
+	static std::string GetCallStackString();
+
+	static std::string GetCurrentCall();
 
 private:
 	CCallStack();

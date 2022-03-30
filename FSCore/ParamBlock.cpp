@@ -1011,7 +1011,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 //-----------------------------------------------------------------------------
 void ParamContainer::Load(IArchive &ar)
 {
-	TRACE("ParamContainer::Load");
+//	TRACE("ParamContainer::Load");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -1169,7 +1169,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 		{
 			// TODO: print some type of error message that parameters are mismatched
 			const char* szname = (paramName.empty() ? "(unknown)" : paramName.c_str());
-			ar.log("Failed to map parameter: %s", szname);
+			ar.log("Failed to map parameter: %s (%s)", szname, CCallStack::GetCurrentCall().c_str());
 		}
 	}
 }

@@ -102,16 +102,12 @@ bool ModelFileReader::Load(const char* szfile)
 	}
 	catch (ReadError e)
 	{
-		char* sz = 0;
-		int L = CCallStack::GetCallStackString(0);
-		sz = new char[L + 1];
-		CCallStack::GetCallStackString(sz);
+		std::string s = CCallStack::GetCallStackString();
 
 		stringstream ss;
 		if (e.m_szmsg) { ss << e.m_szmsg << "\n"; }
 		else { ss << "(unknown)\n"; };
-		ss << "\nCALL STACK:\n" << sz;
-		delete[] sz;
+		ss << "\nCALL STACK:\n" << s;
 
 		string errMsg = ss.str();
 
