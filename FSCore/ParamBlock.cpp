@@ -1103,13 +1103,8 @@ void ParamContainer::LoadParam(IArchive& ar)
 				LoadCurve lc;
 				lc.Load(ar);
 
-				// Old versions (< PRV 2.0) defined load curves for all float parameters,
-				// although initially these load curves did not have points assigned yet.
-				// Since 2.0 load curves are only assigned to parameters that are time dependant
-				// so we have to add this check to prevent all these load curves from being read in.
-
-				// TODO: In FBS2, load controllers are stored on the FSModel. Assign load curve to model
-//				if (lc.Size() > 0) p.SetLoadCurve(lc);
+				// In FBS2, load controllers are stored on the FSModel. Assign load curve to model
+				AssignLoadCurve(p, lc);
 			}
 			break;
 		}
@@ -1195,4 +1190,9 @@ void ParamContainer::CopyParams(const ParamContainer& pc)
 		assert(pi.GetParamType() == pj.GetParamType());
 		pi = pj;
 	}
+}
+
+void ParamContainer::AssignLoadCurve(Param& p, LoadCurve& lc)
+{
+	assert(false);
 }

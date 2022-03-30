@@ -71,6 +71,15 @@ FSLoadController* FSModelComponent::GetLoadController(int n)
 	return plc;
 }
 
+void FSModelComponent::AssignLoadCurve(Param& p, LoadCurve& lc)
+{
+	FSModel* fem = GetFSModel(); assert(fem);
+	if (fem == nullptr) return;
+
+	FSLoadController* plc = fem->AddLoadCurve(lc);
+	if (plc) p.SetLoadCurveID(plc->GetID());
+}
+
 //==============================================================================
 void SaveClassMetaData(FSModelComponent* pc, OArchive& ar)
 {

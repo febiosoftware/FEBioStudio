@@ -71,6 +71,7 @@ enum Param_State {
 };
 
 class ParamBlock;
+class LoadCurve;
 
 //-----------------------------------------------------------------------------
 // This class implements a parameter. Parameters are used by classes that
@@ -642,6 +643,13 @@ public:
 	const ParamBlock& GetParamBlock() const { return m_Param; }
 
 	void CopyParams(const ParamContainer& pc);
+
+public:
+	// This is a helper function to assign a loadcurve to a parameter. 
+	// This is called from the LoadParam function, but the problem is that this requires the FSModel
+	// which the ParamContainer doesn't know about. So, this class is overridden in a derived class
+	// that does know the model. 
+	virtual void AssignLoadCurve(Param& p, LoadCurve& lc);
 
 private:
 	ParamBlock	m_Param;

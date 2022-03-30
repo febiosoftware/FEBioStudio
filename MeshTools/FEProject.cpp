@@ -237,7 +237,14 @@ void FSProject::Load(IArchive &ar)
 		switch (nid)
 		{
 		case CID_PRJ_TITLE  : ar.read(m_title); break;
-		case CID_PRJ_MODULES: { int oldModuleId = 0;  ar.read(oldModuleId); m_module = MapOldToNewModules(oldModuleId); } break;
+		case CID_PRJ_MODULES: { 
+			int oldModuleId = 0;  
+			ar.read(oldModuleId); 
+			m_module = MapOldToNewModules(oldModuleId);
+			assert(m_module != -1);
+			SetModule(m_module);
+		} 
+		break;
 		case CID_PRJ_MODULE_NAME:
 		{
 			string modName;

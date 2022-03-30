@@ -834,6 +834,32 @@ void FSStep::Load(IArchive &ar)
 						}
 					}
 
+					// see if we can map this bc to the corresponding febio bc.
+					if (ar.Version() < 0x00040000)
+					{
+						FSFixedDisplacement* pbc = dynamic_cast<FSFixedDisplacement*>(pb);
+						if (pbc)
+						{
+							FSBoundaryCondition* febbc = FEBio::CreateBoundaryCondition("zero displacement", fem); 
+							assert(febbc);
+							int bc = pbc->GetBC();
+
+							vector<int> dofs;
+							for (int i = 0; i < 3; ++i) if (bc & (1 << i)) dofs.push_back(i);
+							febbc->SetParamVectorInt("dofs", dofs);
+
+							// copy the name 
+							febbc->SetName(pbc->GetName());
+
+							// steal the item list
+							febbc->SetItemList(pbc->GetItemList());
+							pbc->SetItemList(nullptr);
+
+							delete pb;
+							pb = febbc; 
+						}
+					}
+
 					// add BC
 					if (ar.Version() < 0x00020000)
 					{
@@ -884,28 +910,15 @@ void FSStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FSInitialCondition* pi = 0;
-					switch (ntype)
-					{
-					case FE_INIT_FLUID_PRESSURE      : pi = new FSInitFluidPressure     (fem); break;
-                    case FE_INIT_SHELL_FLUID_PRESSURE: pi = new FSInitShellFluidPressure(fem); break;
-                    case FE_INIT_CONCENTRATION       : pi = new FSInitConcentration     (fem); break;
-                    case FE_INIT_SHELL_CONCENTRATION : pi = new FSInitShellConcentration(fem); break;
-					case FE_INIT_TEMPERATURE         : pi = new FSInitTemperature       (fem); break;
-					case FE_NODAL_VELOCITIES         : pi = new FSNodalVelocities       (fem); break;
-					case FE_NODAL_SHELL_VELOCITIES   : pi = new FSNodalShellVelocities  (fem); break;
-                    case FE_INIT_FLUID_DILATATION    : pi = new FSInitFluidDilatation   (fem); break;
-					case FE_INIT_PRESTRAIN           : pi = new FSInitPrestrain         (fem); break;
-					case FE_FEBIO_INITIAL_CONDITION  : pi = new FEBioInitialCondition   (fem); break;
-					default:
-						throw ReadError("error parsing CID_IC_SECTION FSStep::Load");
-					}
+					FSInitialCondition* pi = fscore_new<FSInitialCondition>(fem, FEIC_ID, ntype); assert(pi);
+					if (pi == nullptr) ar.log("error parsing CID_IC_SECTION in FSStep::Load");
 
 					// read data
-					pi->Load(ar);
-
-					// Add IC
-					AddIC(pi);
+					if (pi)
+					{
+						pi->Load(ar);
+						AddIC(pi);
+					}
 
 					ar.CloseChunk();
 				}
@@ -995,18 +1008,8 @@ void FSStep::Load(IArchive &ar)
 					}
 					else
 					{
-						FSRigidConstraint* rc = 0;
-						switch (ntype)
-						{
-						case FE_RIGID_FIXED            : rc = new FSRigidFixed          (fem, GetID()); break;
-						case FE_RIGID_DISPLACEMENT     : rc = new FSRigidDisplacement   (fem, GetID()); break;
-						case FE_RIGID_FORCE            : rc = new FSRigidForce          (fem, GetID()); break;
-						case FE_RIGID_INIT_VELOCITY    : rc = new FSRigidVelocity       (fem, GetID()); break;
-						case FE_RIGID_INIT_ANG_VELOCITY: rc = new FSRigidAngularVelocity(fem, GetID()); break;
-						case FE_FEBIO_RIGID_CONSTRAINT : rc = new FEBioRigidConstraint  (fem, GetID()); break;
-						default:
-							assert(false);
-						}
+						FSRigidConstraint* rc = fscore_new<FSRigidConstraint>(fem, FERIGIDBC_ID, ntype); assert(rc);
+						if (rc == nullptr) ar.log("error parsing CID_RC_SECTION in FSStep::Load");
 
 						if (rc)
 						{
@@ -1025,30 +1028,15 @@ void FSStep::Load(IArchive &ar)
                 {
                     int ntype = ar.GetChunkID();
                     
-					FSRigidConnector* pi = 0;
-                    switch (ntype)
-                    {
-                        case FE_RC_SPHERICAL_JOINT		: pi = new FSRigidSphericalJoint    (fem); break;
-                        case FE_RC_REVOLUTE_JOINT		: pi = new FSRigidRevoluteJoint     (fem); break;
-                        case FE_RC_PRISMATIC_JOINT		: pi = new FSRigidPrismaticJoint    (fem); break;
-                        case FE_RC_CYLINDRICAL_JOINT	: pi = new FSRigidCylindricalJoint  (fem); break;
-                        case FE_RC_PLANAR_JOINT         : pi = new FSRigidPlanarJoint       (fem); break;
-                        case FE_RC_RIGID_LOCK           : pi = new FSRigidLock              (fem); break;
-                        case FE_RC_SPRING               : pi = new FSRigidSpring            (fem); break;
-                        case FE_RC_DAMPER               : pi = new FSRigidDamper            (fem); break;
-                        case FE_RC_ANGULAR_DAMPER       : pi = new FSRigidAngularDamper     (fem); break;
-                        case FE_RC_CONTRACTILE_FORCE    : pi = new FSRigidContractileForce  (fem); break;
-						case FE_RC_GENERIC_JOINT        : pi = new FSGenericRigidJoint      (fem); break;
-						case FE_FEBIO_RIGID_CONNECTOR   : pi = new FEBioRigidConnector      (fem); break;
-                        default:
-                            throw ReadError("error parsing unknown CID_CONNECTOR_SECTION FSStep::Load");
-                    }
+					FSRigidConnector* pi = fscore_new<FSRigidConnector>(fem, FENLCONSTRAINT_ID, ntype); assert(pi);
+					if (pi == nullptr) ar.log("error parsing CID_CONNECTOR_SECTION FSStep::Load");
                     
                     // load the interface data
-                    pi->Load(ar);
-                    
-                    // add interface to step
-                    AddRigidConnector(pi);
+					if (pi)
+					{
+						pi->Load(ar);
+						AddRigidConnector(pi);
+					}
                     
                     ar.CloseChunk();
                 }
