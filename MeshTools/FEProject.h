@@ -162,7 +162,6 @@ public:
 	static void InitModules();
 
 private:
-	unsigned int		m_module;	// active module
 	string				m_title;	// Project Title
 	FSModel				m_fem;		// FE model data
 	CPlotDataSettings	m_plt;		// plot file settings

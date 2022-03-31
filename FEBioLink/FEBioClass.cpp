@@ -629,6 +629,13 @@ int FEBio::GetActiveModule()
 	return fecore.GetActiveModuleID();
 }
 
+bool FEBio::SetActiveModule(const char* szmoduleName)
+{
+	int modId = GetModuleId(szmoduleName);
+	if (modId != -1) SetActiveModule(modId); 
+	return (modId != -1);
+}
+
 void FEBio::InitFSModel(FSModel& fem)
 {
 	// make sure we have a FEBioModel

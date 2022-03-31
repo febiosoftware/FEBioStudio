@@ -341,4 +341,6 @@ public:
 	FEBioAnalysisStep(FSModel* ps);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
+
+	bool Convert(FSAnalysisStep& step);
 };

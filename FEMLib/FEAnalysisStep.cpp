@@ -1510,3 +1510,79 @@ void FEBioAnalysisStep::Load(IArchive& ar)
 	}
 }
 
+bool FEBioAnalysisStep::Convert(FSAnalysisStep& step)
+{
+	STEP_SETTINGS& ops = step.GetSettings();
+
+	SetParamInt  ("analysis"  , ops.nanalysis);
+	SetParamInt  ("time_steps", ops.ntime);
+	SetParamFloat("step_size" , ops.dt);
+
+	SetParamInt("plot_level", ops.plot_level);
+	SetParamInt("plot_stride", ops.plot_stride);
+
+	// auto time stepper settings
+	FSProperty* timeStepperProp = FindProperty("time_stepper");
+	FSCoreBase* timeStepper = timeStepperProp->GetComponent(0);
+	if (ops.bauto && timeStepper)
+	{
+		timeStepper->SetParamInt  ("max_retries"   , ops.mxback);
+		timeStepper->SetParamInt  ("opt_iter"      , ops.iteopt);
+		timeStepper->SetParamFloat("dtmin"         , ops.dtmin );
+		timeStepper->SetParamFloat("dtmax"         , ops.dtmax );
+		timeStepper->SetParamInt  ("aggressiveness", ops.ncut  );
+	}
+	else timeStepperProp->SetComponent(nullptr);
+
+	// solver settings
+	FSProperty* solverProp = FindProperty("solver");
+	FSCoreBase* solver = solverProp->GetComponent(0);
+	if (solver)
+	{
+		solver->SetParamInt ("max_refs"             , ops.maxref);
+		solver->SetParamBool("diverge_reform"       , ops.bdivref);
+		solver->SetParamBool("reform_each_time_step", ops.brefstep);
+
+		FSProperty* qnProp = solver->FindProperty("qn_method");
+		qnProp->SetComponent(nullptr);
+		FSCoreBase* qnSolver = nullptr;
+
+		for (int i = 0; i < step.Parameters(); ++i)
+		{
+			Param& p = step.GetParam(i);
+
+			if (strcmp(p.GetShortName(), "qnmethod") == 0)
+			{
+				int qnmethod = p.GetIntValue();
+				switch (qnmethod)
+				{
+				case 0: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS", GetFSModel()); break;
+				case 1: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", GetFSModel()); break;
+				default:
+					assert(false);
+				}
+				qnProp->SetComponent(qnSolver);
+
+				qnSolver->SetParamInt("max_ups", ops.ilimit);
+			}
+			else
+			{
+				Param* pi = solver->GetParam(p.GetShortName());
+				if (pi && (p.GetParamType() == pi->GetParamType()))
+				{
+					switch (p.GetParamType())
+					{
+					case Param_INT: pi->SetIntValue(p.GetIntValue()); break;
+					case Param_FLOAT: pi->SetFloatValue(p.GetFloatValue()); break;
+					case Param_BOOL: pi->SetBoolValue(p.GetBoolValue()); break;
+					default:
+						assert(false);
+					}
+				}
+				else { assert(false); }
+			}
+		}
+	}
+
+	return true;
+}

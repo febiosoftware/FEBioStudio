@@ -21,5 +21,7 @@ namespace FEBio {
 	void SetActiveModule(int moduleID);
 	int GetActiveModule();
 
+	bool SetActiveModule(const char* szmoduleName);
+
 	void InitFSModel(FSModel& fem);
 }

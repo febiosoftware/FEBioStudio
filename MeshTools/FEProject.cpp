@@ -116,9 +116,6 @@ FSProject::FSProject(void) : m_plt(*this)
 	// set the title
 	m_title = "untitled";
 
-	// activate all modules
-	m_module = -1;
-
 	static bool init = false;
 	if (init == false)
 	{
@@ -144,14 +141,13 @@ void FSProject::Reset()
 //-----------------------------------------------------------------------------
 unsigned int FSProject::GetModule() const
 {
-	return m_module;
+	return FEBio::GetActiveModule();
 }
 
 //-----------------------------------------------------------------------------
 void FSProject::SetModule(unsigned int mod)
 {
 	FEBio::SetActiveModule(mod);
-	m_module = mod;
 
 	// get the list of variables
 	FSModel& fem = GetFSModel();
@@ -179,7 +175,8 @@ void FSProject::Save(OArchive& ar)
 	ar.WriteChunk(CID_PRJ_TITLE   , m_title);
 
 	// save the modules flag
-	string modName(FEBio::GetModuleName(m_module));
+	int module = FEBio::GetActiveModule();
+	string modName(FEBio::GetModuleName(module));
 	ar.WriteChunk(CID_PRJ_MODULE_NAME, modName);
 
 	// save the model data
@@ -240,16 +237,16 @@ void FSProject::Load(IArchive &ar)
 		case CID_PRJ_MODULES: { 
 			int oldModuleId = 0;  
 			ar.read(oldModuleId); 
-			m_module = MapOldToNewModules(oldModuleId);
-			assert(m_module != -1);
-			SetModule(m_module);
+			int moduleId = MapOldToNewModules(oldModuleId);
+			assert(moduleId != -1);
+			SetModule(moduleId);
 		} 
 		break;
 		case CID_PRJ_MODULE_NAME:
 		{
 			string modName;
 			ar.read(modName);
-			int moduleId = FEBio::GetModuleId(modName); assert(m_module > 0);
+			int moduleId = FEBio::GetModuleId(modName); assert(moduleId > 0);
 			SetModule(moduleId);
 		}
 		break;
@@ -461,7 +458,8 @@ void FSProject::InitModules()
 //-------------------------------------------------------------------------------------------------
 void FSProject::SetDefaultPlotVariables()
 {
-	const char* szmod = FEBio::GetModuleName(m_module); assert(szmod);
+	int moduleId = GetModule();
+	const char* szmod = FEBio::GetModuleName(moduleId); assert(szmod);
 	if (szmod == nullptr) return;
 	if (strcmp(szmod, "solid") == 0)
 	{
