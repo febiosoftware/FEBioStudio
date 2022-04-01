@@ -153,6 +153,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "intact bond fraction"              );
     AddPlotVariable(MODULE_MECH, "kinetic energy density"            );
     AddPlotVariable(MODULE_MECH, "Lagrange strain"                   );
+    AddPlotVariable(MODULE_MECH, "infinitesimal strain"              );
     AddPlotVariable(MODULE_MECH, "left Hencky"                       );
     AddPlotVariable(MODULE_MECH, "left stretch"                      );
     AddPlotVariable(MODULE_MECH, "material axes"                     );

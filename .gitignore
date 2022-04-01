@@ -32,7 +32,6 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-build/
 build5/
 
 # Visual Studio 2015/2017 cache/options directory
@@ -392,4 +391,8 @@ MigrationBackup/
 
 # Documentation
 Documentation/Doxygen
+Documentation/htmlManual
+
+# Python stuff
+PyLib
 Documentation/htmlManual
