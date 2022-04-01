@@ -2907,7 +2907,7 @@ void FEBioExport2::WriteBCFixed(FSStep &s)
 			case FE_FIXED_TEMPERATURE       : WriteBCFixedTemperature      (dynamic_cast<FSFixedTemperature&  >(*pbc), s); break;
 			case FE_FIXED_CONCENTRATION     : WriteBCFixedConcentration    (dynamic_cast<FSFixedConcentration&>(*pbc), s); break;
             case FE_FIXED_FLUID_VELOCITY    : WriteBCFixedFluidVelocity    (dynamic_cast<FSFixedFluidVelocity&>(*pbc), s); break;
-            case FE_FIXED_DILATATION        : WriteBCFixedFluidDilatation  (dynamic_cast<FSFixedFluidDilatation&   >(*pbc), s); break;
+            case FE_FIXED_FLUID_DILATATION  : WriteBCFixedFluidDilatation  (dynamic_cast<FSFixedFluidDilatation&   >(*pbc), s); break;
 			}
 		}
 	}
@@ -3390,13 +3390,13 @@ void FEBioExport2::WriteBCPrescribed(FSStep &s)
 		{
 			switch (pbc->Type())
 			{
-			case FE_PRESCRIBED_DISPLACEMENT  : WriteBCPrescribedDisplacement (dynamic_cast<FSPrescribedDisplacement &>(*pbc), s); break;
-			case FE_PRESCRIBED_ROTATION      : WriteBCPrescribedRotation     (dynamic_cast<FSPrescribedRotation     &>(*pbc), s); break;
-			case FE_PRESCRIBED_FLUID_PRESSURE: WriteBCPrescribedFluidPressure(dynamic_cast<FSPrescribedFluidPressure&>(*pbc), s); break;
-			case FE_PRESCRIBED_TEMPERATURE   : WriteBCPrescribedTemperature  (dynamic_cast<FSPrescribedTemperature  &>(*pbc), s); break;
-			case FE_PRESCRIBED_CONCENTRATION : WriteBCPrescribedConcentration(dynamic_cast<FSPrescribedConcentration&>(*pbc), s); break;
-            case FE_PRESCRIBED_FLUID_VELOCITY: WriteBCPrescribedFluidVelocity(dynamic_cast<FSPrescribedFluidVelocity&>(*pbc), s); break;
-            case FE_PRESCRIBED_DILATATION    : WriteBCPrescribedFluidDilatation (dynamic_cast<FSPrescribedFluidDilatation&>(*pbc), s); break;
+			case FE_PRESCRIBED_DISPLACEMENT    : WriteBCPrescribedDisplacement (dynamic_cast<FSPrescribedDisplacement &>(*pbc), s); break;
+			case FE_PRESCRIBED_ROTATION        : WriteBCPrescribedRotation     (dynamic_cast<FSPrescribedRotation     &>(*pbc), s); break;
+			case FE_PRESCRIBED_FLUID_PRESSURE  : WriteBCPrescribedFluidPressure(dynamic_cast<FSPrescribedFluidPressure&>(*pbc), s); break;
+			case FE_PRESCRIBED_TEMPERATURE     : WriteBCPrescribedTemperature  (dynamic_cast<FSPrescribedTemperature  &>(*pbc), s); break;
+			case FE_PRESCRIBED_CONCENTRATION   : WriteBCPrescribedConcentration(dynamic_cast<FSPrescribedConcentration&>(*pbc), s); break;
+            case FE_PRESCRIBED_FLUID_VELOCITY  : WriteBCPrescribedFluidVelocity(dynamic_cast<FSPrescribedFluidVelocity&>(*pbc), s); break;
+            case FE_PRESCRIBED_FLUID_DILATATION: WriteBCPrescribedFluidDilatation (dynamic_cast<FSPrescribedFluidDilatation&>(*pbc), s); break;
 			}
 		}
 	}

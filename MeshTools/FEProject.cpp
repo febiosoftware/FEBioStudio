@@ -408,8 +408,8 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSFluidAnalysis               , MODULE_FLUID, FEANALYSIS_ID   , FE_STEP_FLUID                  , "Fluid Mechanics");
     REGISTER_FE_CLASS(FSFixedFluidVelocity          , MODULE_FLUID, FEBC_ID         , FE_FIXED_FLUID_VELOCITY        , "Zero fluid velocity");
     REGISTER_FE_CLASS(FSPrescribedFluidVelocity     , MODULE_FLUID, FEBC_ID         , FE_PRESCRIBED_FLUID_VELOCITY   , "Prescribed fluid velocity");
-	REGISTER_FE_CLASS(FSFixedFluidDilatation        , MODULE_FLUID, FEBC_ID         , FE_FIXED_DILATATION            , "Zero fluid dilatation");
-	REGISTER_FE_CLASS(FSPrescribedFluidDilatation   , MODULE_FLUID, FEBC_ID         , FE_PRESCRIBED_DILATATION       , "Prescribed fluid dilatation");
+	REGISTER_FE_CLASS(FSFixedFluidDilatation        , MODULE_FLUID, FEBC_ID         , FE_FIXED_FLUID_DILATATION      , "Zero fluid dilatation");
+	REGISTER_FE_CLASS(FSPrescribedFluidDilatation   , MODULE_FLUID, FEBC_ID         , FE_PRESCRIBED_FLUID_DILATATION , "Prescribed fluid dilatation");
 	REGISTER_FE_CLASS(FSFluidTraction               , MODULE_FLUID, FELOAD_ID  , FE_FLUID_TRACTION              , "Fluid viscous traction");
     REGISTER_FE_CLASS(FSFluidPressureLoad           , MODULE_FLUID, FELOAD_ID  , FE_FLUID_PRESSURE_LOAD         , "Fluid pressure");
     REGISTER_FE_CLASS(FSFluidVelocity               , MODULE_FLUID, FELOAD_ID  , FE_FLUID_VELOCITY              , "Fluid velocity");

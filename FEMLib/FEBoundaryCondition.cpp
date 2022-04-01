@@ -166,14 +166,14 @@ FSFixedFluidVelocity::FSFixedFluidVelocity(FSModel* ps, FEItemListBuilder* pi, i
 //=============================================================================
 // FIXED FLUID DILATATION
 //=============================================================================
-FSFixedFluidDilatation::FSFixedFluidDilatation(FSModel* ps) : FSFixedDOF(FE_FIXED_DILATATION, ps)
+FSFixedFluidDilatation::FSFixedFluidDilatation(FSModel* ps) : FSFixedDOF(FE_FIXED_FLUID_DILATATION, ps)
 {
     SetTypeString("Fixed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("fluid dilatation"));
 }
 
 //-----------------------------------------------------------------------------
-FSFixedFluidDilatation::FSFixedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FSFixedDOF(FE_FIXED_DILATATION, ps, pi, nstep)
+FSFixedFluidDilatation::FSFixedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FSFixedDOF(FE_FIXED_FLUID_DILATATION, ps, pi, nstep)
 {
     SetTypeString("Fixed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("fluid dilatation"));
@@ -366,14 +366,14 @@ FSPrescribedFluidVelocity::FSPrescribedFluidVelocity(FSModel* ps, FEItemListBuil
 //=============================================================================
 // PRESCRIBED FLUID DILATATION
 //=============================================================================
-FSPrescribedFluidDilatation::FSPrescribedFluidDilatation(FSModel* ps) : FSPrescribedDOF(FE_PRESCRIBED_DILATATION, ps)
+FSPrescribedFluidDilatation::FSPrescribedFluidDilatation(FSModel* ps) : FSPrescribedDOF(FE_PRESCRIBED_FLUID_DILATATION, ps)
 {
     SetTypeString("Prescribed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("fluid dilatation"));
 }
 
 //-----------------------------------------------------------------------------
-FSPrescribedFluidDilatation::FSPrescribedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, double s, int nstep) : FSPrescribedDOF(FE_PRESCRIBED_DILATATION, ps, pi, 0, s, nstep)
+FSPrescribedFluidDilatation::FSPrescribedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, double s, int nstep) : FSPrescribedDOF(FE_PRESCRIBED_FLUID_DILATATION, ps, pi, 0, s, nstep)
 {
     SetTypeString("Prescribed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("fluid dilatation"));

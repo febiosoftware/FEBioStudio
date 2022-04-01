@@ -761,14 +761,14 @@ void FSStep::Load(IArchive &ar)
 					case FE_FIXED_TEMPERATURE        : pb = new FSFixedTemperature          (fem); break;
 					case FE_FIXED_CONCENTRATION      : pb = new FSFixedConcentration        (fem); break;
                     case FE_FIXED_FLUID_VELOCITY     : pb = new FSFixedFluidVelocity        (fem); break;
-                    case FE_FIXED_DILATATION         : pb = new FSFixedFluidDilatation      (fem); break;
+                    case FE_FIXED_FLUID_DILATATION   : pb = new FSFixedFluidDilatation      (fem); break;
 					case FE_PRESCRIBED_DISPLACEMENT	 : pb = new FSPrescribedDisplacement    (fem); break;
 					case FE_PRESCRIBED_ROTATION      : pb = new FSPrescribedRotation        (fem); break;
 					case FE_PRESCRIBED_FLUID_PRESSURE: pb = new FSPrescribedFluidPressure   (fem); break;
 					case FE_PRESCRIBED_TEMPERATURE   : pb = new FSPrescribedTemperature     (fem); break;
 					case FE_PRESCRIBED_CONCENTRATION : pb = new FSPrescribedConcentration   (fem); break;
                     case FE_PRESCRIBED_FLUID_VELOCITY: pb = new FSPrescribedFluidVelocity   (fem); break;
-                    case FE_PRESCRIBED_DILATATION    : pb = new FSPrescribedFluidDilatation (fem); break;
+                    case FE_PRESCRIBED_FLUID_DILATATION: pb = new FSPrescribedFluidDilatation (fem); break;
 					case FE_FIXED_SHELL_DISPLACEMENT : pb = new FSFixedShellDisplacement    (fem); break;
 					case FE_PRESCRIBED_SHELL_DISPLACEMENT: pb = new FSPrescribedShellDisplacement(fem); break;
 					case FE_FEBIO_BC                 : pb = new FEBioBoundaryCondition(fem); break;
@@ -837,26 +837,87 @@ void FSStep::Load(IArchive &ar)
 					// see if we can map this bc to the corresponding febio bc.
 					if (ar.Version() < 0x00040000)
 					{
-						FSFixedDisplacement* pbc = dynamic_cast<FSFixedDisplacement*>(pb);
+						FSBoundaryCondition* febbc = nullptr;
+						FSFixedDOF* pbc = dynamic_cast<FSFixedDOF*>(pb);
 						if (pbc)
 						{
-							FSBoundaryCondition* febbc = FEBio::CreateBoundaryCondition("zero displacement", fem); 
+							switch (ntype)
+							{
+							case FE_FIXED_DISPLACEMENT      : febbc = FEBio::CreateBoundaryCondition("zero displacement"      , fem); break;
+							case FE_FIXED_ROTATION          : febbc = FEBio::CreateBoundaryCondition("zero rotation"          , fem); break;
+							case FE_FIXED_SHELL_DISPLACEMENT: febbc = FEBio::CreateBoundaryCondition("zero shell displacement", fem); break;
+							case FE_FIXED_FLUID_PRESSURE    : febbc = FEBio::CreateBoundaryCondition("zero fluid pressure"    , fem); break;
+							case FE_FIXED_TEMPERATURE       : febbc = FEBio::CreateBoundaryCondition("zero temperature"       , fem); break;
+							case FE_FIXED_CONCENTRATION     : febbc = FEBio::CreateBoundaryCondition("zero concentration"     , fem); break;
+							case FE_FIXED_FLUID_VELOCITY    : febbc = FEBio::CreateBoundaryCondition("zero fluid velocity"    , fem); break;
+							case FE_FIXED_FLUID_DILATATION  : febbc = FEBio::CreateBoundaryCondition("zero fluid velocity"    , fem); break;
+							default:
+								assert(false);
+							}
 							assert(febbc);
-							int bc = pbc->GetBC();
 
-							vector<int> dofs;
-							for (int i = 0; i < 3; ++i) if (bc & (1 << i)) dofs.push_back(i);
-							febbc->SetParamVectorInt("dofs", dofs);
+							if (febbc)
+							{
+								int bc = pbc->GetBC();
 
-							// copy the name 
-							febbc->SetName(pbc->GetName());
+								vector<int> dofs;
+								for (int i = 0; i < 3; ++i) if (bc & (1 << i)) dofs.push_back(i);
+								febbc->SetParamVectorInt("dofs", dofs);
 
-							// steal the item list
-							febbc->SetItemList(pbc->GetItemList());
-							pbc->SetItemList(nullptr);
+								// copy the name 
+								febbc->SetName(pbc->GetName());
 
-							delete pb;
-							pb = febbc; 
+								// steal the item list
+								febbc->SetItemList(pbc->GetItemList());
+								pbc->SetItemList(nullptr);
+
+								delete pb;
+								pb = febbc;
+							}
+							else ar.log("Unable to convert boundary condition %s", pb->GetName().c_str());
+						}
+
+						FSPrescribedDOF* pdc = dynamic_cast<FSPrescribedDOF*>(pb);
+						if (pdc)
+						{
+							switch (ntype)
+							{
+							case FE_PRESCRIBED_DISPLACEMENT       : febbc = FEBio::CreateBoundaryCondition("prescribed displacement"      , fem); break;
+							case FE_PRESCRIBED_ROTATION           : febbc = FEBio::CreateBoundaryCondition("prescribed rotation"          , fem); break;
+							case FE_PRESCRIBED_SHELL_DISPLACEMENT : febbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", fem); break;
+							case FE_PRESCRIBED_FLUID_PRESSURE     : febbc = FEBio::CreateBoundaryCondition("prescribed fluid pressure"    , fem); break;
+							case FE_PRESCRIBED_TEMPERATURE        : febbc = FEBio::CreateBoundaryCondition("prescribed temperature"       , fem); break;
+							case FE_PRESCRIBED_CONCENTRATION      : febbc = FEBio::CreateBoundaryCondition("prescribed concentration"     , fem); break;
+							case FE_PRESCRIBED_FLUID_VELOCITY     : febbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity"    , fem); break;
+							case FE_PRESCRIBED_FLUID_DILATATION   : febbc = FEBio::CreateBoundaryCondition("prescribed fluid dilatation"  , fem); break;
+							default:
+								assert(false);
+							}
+							assert(febbc);
+
+							if (febbc)
+							{
+								int dof = pdc->GetDOF();
+								bool brel = pdc->GetRelativeFlag();
+
+								febbc->SetParamInt("dof", dof);
+								febbc->SetParamBool("relative", brel);
+
+								Param& scl = *pdc->GetParam("scale");
+								Param& val = *febbc->GetParam("value");
+								val = scl;
+
+								// copy the name 
+								febbc->SetName(pbc->GetName());
+
+								// steal the item list
+								febbc->SetItemList(pbc->GetItemList());
+								pbc->SetItemList(nullptr);
+
+								delete pb;
+								pb = febbc;
+							}
+							else ar.log("Unable to convert boundary condition %s", pb->GetName().c_str());
 						}
 					}
 
