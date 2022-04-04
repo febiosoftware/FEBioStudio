@@ -1280,35 +1280,6 @@ void FSModel::LoadSteps(IArchive& ar)
 		// load the step data
 		ps->Load(ar);
 
-		// conver to new step format
-		if ((ar.Version() < 0x00040000) && (ntype != FE_STEP_INITIAL))
-		{
-			// although the active module was read in already, in previous versions of FEBio Studio
-			// the module ID didn't really matter, so it's likely that it was not set properly. 
-			// So, just to be sure, we're going to set the active module here as well, based on the step type
-			switch (ntype)
-			{
-			case FE_STEP_MECHANICS: FEBio::SetActiveModule("solid"); break;
-			}
-
-			FEBioAnalysisStep* step = dynamic_cast<FEBioAnalysisStep*>(FEBio::CreateStep("analysis", this)); assert(step);
-			FEBio::InitDefaultProps(step);
-
-			// copy the step name and ID
-			step->SetName(ps->GetName());
-			step->SetID(ps->GetID());
-
-			// copy settings
-			if (step->Convert(dynamic_cast<FSAnalysisStep&>(*ps)) == false)
-			{
-				ar.log("Failed to convert step %s", ps->GetName().c_str());
-			}
-
-			// swap old with new step
-			delete ps;
-			ps = step;
-		}
-
 		// add step to model
 		AddStep(ps);
 
@@ -1495,6 +1466,12 @@ void FSModel::SwapSteps(FSStep* ps0, FSStep* ps1)
 		m_pStep.Set(n0, m_pStep[n1]);
 		m_pStep.Set(n1, tmp);
 	}
+}
+
+//-----------------------------------------------------------------------------
+FSStep* FSModel::ReplaceStep(int i, FSStep* newStep)
+{
+	return m_pStep.Replace(i, newStep);
 }
 
 //-----------------------------------------------------------------------------

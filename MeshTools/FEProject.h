@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <stdlib.h>
 #include "FEModel.h"
 #include "PlotDataSettings.h"
+#include <ostream>
 
 //-----------------------------------------------------------------------------
 #define FE_STATIC	0
@@ -160,6 +161,20 @@ public:
 	void SetModule(unsigned int mod);
 
 	static void InitModules();
+
+public:
+	// convert the old format to the new
+	bool ConvertToNewFormat(std::ostream& log);
+
+protected:
+	bool ConvertMaterials(std::ostream& log);
+	bool ConvertSteps(std::ostream& log);
+	bool ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep);
+	bool ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	bool ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	bool ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	bool ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	bool ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 
 private:
 	string				m_title;	// Project Title

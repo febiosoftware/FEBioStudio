@@ -166,6 +166,12 @@ void FSStep::RemoveAllBCs()
 }
 
 //-----------------------------------------------------------------------------
+FSBoundaryCondition* FSStep::ReplaceBC(int n, FSBoundaryCondition* newBC)
+{
+	return imp->m_BC.Replace(n, newBC);
+}
+
+//-----------------------------------------------------------------------------
 int FSStep::Loads() { return (int)imp->m_FC.Size(); }
 
 //-----------------------------------------------------------------------------
@@ -195,6 +201,12 @@ int FSStep::RemoveLoad(FSLoad* pfc)
 void FSStep::RemoveAllLoads()
 {
 	imp->m_FC.Clear();
+}
+
+//-----------------------------------------------------------------------------
+FSLoad* FSStep::ReplaceLoad(int n, FSLoad* pl)
+{
+	return imp->m_FC.Replace(n, pl);
 }
 
 //-----------------------------------------------------------------------------
@@ -779,13 +791,13 @@ void FSStep::Load(IArchive &ar)
 							// now have their own section
 							switch(ntype)
 							{
-							case FE_NODAL_VELOCITIES		 : pb = new FSNodalVelocities       (fem); break;
-							case FE_NODAL_SHELL_VELOCITIES	 : pb = new FSNodalShellVelocities  (fem); break;
-                            case FE_INIT_FLUID_PRESSURE      : pb = new FSInitFluidPressure     (fem); break;
-                            case FE_INIT_SHELL_FLUID_PRESSURE: pb = new FSInitShellFluidPressure(fem); break;
-							case FE_INIT_CONCENTRATION       : pb = new FSInitConcentration     (fem); break;
-                            case FE_INIT_SHELL_CONCENTRATION : pb = new FSInitShellConcentration(fem); break;
-							case FE_INIT_TEMPERATURE         : pb = new FSInitTemperature       (fem); break;
+							case FE_INIT_NODAL_VELOCITIES      : pb = new FSNodalVelocities       (fem); break;
+							case FE_INIT_NODAL_SHELL_VELOCITIES: pb = new FSNodalShellVelocities  (fem); break;
+                            case FE_INIT_FLUID_PRESSURE        : pb = new FSInitFluidPressure     (fem); break;
+                            case FE_INIT_SHELL_FLUID_PRESSURE  : pb = new FSInitShellFluidPressure(fem); break;
+							case FE_INIT_CONCENTRATION         : pb = new FSInitConcentration     (fem); break;
+                            case FE_INIT_SHELL_CONCENTRATION   : pb = new FSInitShellConcentration(fem); break;
+							case FE_INIT_TEMPERATURE           : pb = new FSInitTemperature       (fem); break;
 							default:
 								throw ReadError("error parsing CID_BC_SECTION in FSStep::Load");
 							}
@@ -831,93 +843,6 @@ void FSStep::Load(IArchive &ar)
 								delete pdc;
 								pb = prc;
 							}
-						}
-					}
-
-					// see if we can map this bc to the corresponding febio bc.
-					if (ar.Version() < 0x00040000)
-					{
-						FSBoundaryCondition* febbc = nullptr;
-						FSFixedDOF* pbc = dynamic_cast<FSFixedDOF*>(pb);
-						if (pbc)
-						{
-							switch (ntype)
-							{
-							case FE_FIXED_DISPLACEMENT      : febbc = FEBio::CreateBoundaryCondition("zero displacement"      , fem); break;
-							case FE_FIXED_ROTATION          : febbc = FEBio::CreateBoundaryCondition("zero rotation"          , fem); break;
-							case FE_FIXED_SHELL_DISPLACEMENT: febbc = FEBio::CreateBoundaryCondition("zero shell displacement", fem); break;
-							case FE_FIXED_FLUID_PRESSURE    : febbc = FEBio::CreateBoundaryCondition("zero fluid pressure"    , fem); break;
-							case FE_FIXED_TEMPERATURE       : febbc = FEBio::CreateBoundaryCondition("zero temperature"       , fem); break;
-							case FE_FIXED_CONCENTRATION     : febbc = FEBio::CreateBoundaryCondition("zero concentration"     , fem); break;
-							case FE_FIXED_FLUID_VELOCITY    : febbc = FEBio::CreateBoundaryCondition("zero fluid velocity"    , fem); break;
-							case FE_FIXED_FLUID_DILATATION  : febbc = FEBio::CreateBoundaryCondition("zero fluid velocity"    , fem); break;
-							default:
-								assert(false);
-							}
-							assert(febbc);
-
-							if (febbc)
-							{
-								int bc = pbc->GetBC();
-
-								vector<int> dofs;
-								for (int i = 0; i < 3; ++i) if (bc & (1 << i)) dofs.push_back(i);
-								febbc->SetParamVectorInt("dofs", dofs);
-
-								// copy the name 
-								febbc->SetName(pbc->GetName());
-
-								// steal the item list
-								febbc->SetItemList(pbc->GetItemList());
-								pbc->SetItemList(nullptr);
-
-								delete pb;
-								pb = febbc;
-							}
-							else ar.log("Unable to convert boundary condition %s", pb->GetName().c_str());
-						}
-
-						FSPrescribedDOF* pdc = dynamic_cast<FSPrescribedDOF*>(pb);
-						if (pdc)
-						{
-							switch (ntype)
-							{
-							case FE_PRESCRIBED_DISPLACEMENT       : febbc = FEBio::CreateBoundaryCondition("prescribed displacement"      , fem); break;
-							case FE_PRESCRIBED_ROTATION           : febbc = FEBio::CreateBoundaryCondition("prescribed rotation"          , fem); break;
-							case FE_PRESCRIBED_SHELL_DISPLACEMENT : febbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", fem); break;
-							case FE_PRESCRIBED_FLUID_PRESSURE     : febbc = FEBio::CreateBoundaryCondition("prescribed fluid pressure"    , fem); break;
-							case FE_PRESCRIBED_TEMPERATURE        : febbc = FEBio::CreateBoundaryCondition("prescribed temperature"       , fem); break;
-							case FE_PRESCRIBED_CONCENTRATION      : febbc = FEBio::CreateBoundaryCondition("prescribed concentration"     , fem); break;
-							case FE_PRESCRIBED_FLUID_VELOCITY     : febbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity"    , fem); break;
-							case FE_PRESCRIBED_FLUID_DILATATION   : febbc = FEBio::CreateBoundaryCondition("prescribed fluid dilatation"  , fem); break;
-							default:
-								assert(false);
-							}
-							assert(febbc);
-
-							if (febbc)
-							{
-								int dof = pdc->GetDOF();
-								bool brel = pdc->GetRelativeFlag();
-
-								febbc->SetParamInt("dof", dof);
-								febbc->SetParamBool("relative", brel);
-
-								Param& scl = *pdc->GetParam("scale");
-								Param& val = *febbc->GetParam("value");
-								val = scl;
-
-								// copy the name 
-								febbc->SetName(pbc->GetName());
-
-								// steal the item list
-								febbc->SetItemList(pbc->GetItemList());
-								pbc->SetItemList(nullptr);
-
-								delete pb;
-								pb = febbc;
-							}
-							else ar.log("Unable to convert boundary condition %s", pb->GetName().c_str());
 						}
 					}
 
@@ -1569,81 +1494,4 @@ void FEBioAnalysisStep::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
-}
-
-bool FEBioAnalysisStep::Convert(FSAnalysisStep& step)
-{
-	STEP_SETTINGS& ops = step.GetSettings();
-
-	SetParamInt  ("analysis"  , ops.nanalysis);
-	SetParamInt  ("time_steps", ops.ntime);
-	SetParamFloat("step_size" , ops.dt);
-
-	SetParamInt("plot_level", ops.plot_level);
-	SetParamInt("plot_stride", ops.plot_stride);
-
-	// auto time stepper settings
-	FSProperty* timeStepperProp = FindProperty("time_stepper");
-	FSCoreBase* timeStepper = timeStepperProp->GetComponent(0);
-	if (ops.bauto && timeStepper)
-	{
-		timeStepper->SetParamInt  ("max_retries"   , ops.mxback);
-		timeStepper->SetParamInt  ("opt_iter"      , ops.iteopt);
-		timeStepper->SetParamFloat("dtmin"         , ops.dtmin );
-		timeStepper->SetParamFloat("dtmax"         , ops.dtmax );
-		timeStepper->SetParamInt  ("aggressiveness", ops.ncut  );
-	}
-	else timeStepperProp->SetComponent(nullptr);
-
-	// solver settings
-	FSProperty* solverProp = FindProperty("solver");
-	FSCoreBase* solver = solverProp->GetComponent(0);
-	if (solver)
-	{
-		solver->SetParamInt ("max_refs"             , ops.maxref);
-		solver->SetParamBool("diverge_reform"       , ops.bdivref);
-		solver->SetParamBool("reform_each_time_step", ops.brefstep);
-
-		FSProperty* qnProp = solver->FindProperty("qn_method");
-		qnProp->SetComponent(nullptr);
-		FSCoreBase* qnSolver = nullptr;
-
-		for (int i = 0; i < step.Parameters(); ++i)
-		{
-			Param& p = step.GetParam(i);
-
-			if (strcmp(p.GetShortName(), "qnmethod") == 0)
-			{
-				int qnmethod = p.GetIntValue();
-				switch (qnmethod)
-				{
-				case 0: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS", GetFSModel()); break;
-				case 1: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", GetFSModel()); break;
-				default:
-					assert(false);
-				}
-				qnProp->SetComponent(qnSolver);
-
-				qnSolver->SetParamInt("max_ups", ops.ilimit);
-			}
-			else
-			{
-				Param* pi = solver->GetParam(p.GetShortName());
-				if (pi && (p.GetParamType() == pi->GetParamType()))
-				{
-					switch (p.GetParamType())
-					{
-					case Param_INT: pi->SetIntValue(p.GetIntValue()); break;
-					case Param_FLOAT: pi->SetFloatValue(p.GetFloatValue()); break;
-					case Param_BOOL: pi->SetBoolValue(p.GetBoolValue()); break;
-					default:
-						assert(false);
-					}
-				}
-				else { assert(false); }
-			}
-		}
-	}
-
-	return true;
 }

@@ -61,6 +61,7 @@ public:
 	void AddBC(FSBoundaryCondition* pbc);
 	void InsertBC(int n, FSBoundaryCondition* pbc);
 	int RemoveBC(FSBoundaryCondition* pbc);
+	FSBoundaryCondition* ReplaceBC(int n, FSBoundaryCondition* newBC);
 	void RemoveAllBCs();
 	int ActiveBCs();
 
@@ -71,6 +72,7 @@ public:
 	void InsertLoad(int n, FSLoad* pfc);
 	int RemoveLoad(FSLoad* pfc);
 	void RemoveAllLoads();
+	FSLoad* ReplaceLoad(int n, FSLoad* pl);
 
 	// initial conditions
 	int ICs();
@@ -341,6 +343,4 @@ public:
 	FEBioAnalysisStep(FSModel* ps);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
-
-	bool Convert(FSAnalysisStep& step);
 };

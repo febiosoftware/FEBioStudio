@@ -28,26 +28,26 @@ SOFTWARE.*/
 #include <FECore/units.h>
 
 //-----------------------------------------------------------------------------
-FSNodalVelocities::FSNodalVelocities(FSModel* ps) : FSInitialNodalDOF(FE_NODAL_VELOCITIES, ps)
+FSNodalVelocities::FSNodalVelocities(FSModel* ps) : FSInitialNodalDOF(FE_INIT_NODAL_VELOCITIES, ps)
 {
 	SetTypeString("Nodal Velocities");
 	AddVecParam(vec3d(0, 0, 0), "vel", "Velocity")->SetUnit(UNIT_VELOCITY);
 }
 
-FSNodalVelocities::FSNodalVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep) : FSInitialNodalDOF(FE_NODAL_VELOCITIES, ps, pi, nstep)
+FSNodalVelocities::FSNodalVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep) : FSInitialNodalDOF(FE_INIT_NODAL_VELOCITIES, ps, pi, nstep)
 {
 	SetTypeString("Nodal Velocities");
 	AddVecParam(vel, "vel", "Velocity")->SetUnit(UNIT_VELOCITY);;
 }
 
 //-----------------------------------------------------------------------------
-FSNodalShellVelocities::FSNodalShellVelocities(FSModel* ps) : FSInitialNodalDOF(FE_NODAL_SHELL_VELOCITIES, ps)
+FSNodalShellVelocities::FSNodalShellVelocities(FSModel* ps) : FSInitialNodalDOF(FE_INIT_NODAL_SHELL_VELOCITIES, ps)
 {
 	SetTypeString("Shell Nodal Velocities");
 	AddVecParam(vec3d(0, 0, 0), "vel", "Velocity")->SetUnit(UNIT_VELOCITY);
 }
 
-FSNodalShellVelocities::FSNodalShellVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep) : FSInitialNodalDOF(FE_NODAL_SHELL_VELOCITIES, ps, pi, nstep)
+FSNodalShellVelocities::FSNodalShellVelocities(FSModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep) : FSInitialNodalDOF(FE_INIT_NODAL_SHELL_VELOCITIES, ps, pi, nstep)
 {
 	SetTypeString("Shell Nodal Velocities");
 	AddVecParam(vel, "vel", "Velocity")->SetUnit(UNIT_VELOCITY);

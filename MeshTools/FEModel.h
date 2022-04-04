@@ -143,6 +143,10 @@ public:
 	void InsertStep(int n, FSStep* ps);
 	void SwapSteps(FSStep* ps0, FSStep* ps1);
 
+	//! replaces step i with newStep. 
+	//! Returns pointer to old step
+	FSStep* ReplaceStep(int i, FSStep* newStep);
+
 	void AssignComponentToStep(FSStepComponent* pc, FSStep* ps);
 
 	// --- data variables ---

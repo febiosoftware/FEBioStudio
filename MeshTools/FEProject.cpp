@@ -39,8 +39,9 @@ SOFTWARE.*/
 #include "GGroup.h"
 #include "GModel.h"
 #include <FEBioLink/FEBioModule.h>
+#include <FEBioLink/FEBioClass.h>
 #include <GeomLib/GObject.h>
-#include <string>
+#include <sstream>
 //using namespace std;
 
 //=================================================================================================
@@ -256,6 +257,18 @@ void FSProject::Load(IArchive &ar)
 		}
 		ar.CloseChunk();
 	}
+
+	if (ar.Version() < 0x00040000)
+	{
+		ar.log("Converting FE model:");
+		ar.log("===================");
+		std::ostringstream log;
+		bool b = ConvertToNewFormat(log);
+		if (b == false) ar.log("Failed to convert to new format.");
+		string s = log.str();
+		if (s.empty() == false) ar.log(s.c_str());
+		if (b && s.empty()) ar.log("No issues found!");
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -320,8 +333,8 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSPrescribedRotation         , MODULE_MECH, FEBC_ID			    , FE_PRESCRIBED_ROTATION          , "Prescribed shell rotation");
 	REGISTER_FE_CLASS(FSPressureLoad               , MODULE_MECH, FELOAD_ID             , FE_PRESSURE_LOAD                , "Pressure");
 	REGISTER_FE_CLASS(FSSurfaceTraction            , MODULE_MECH, FELOAD_ID             , FE_SURFACE_TRACTION             , "Surface traction");
-	REGISTER_FE_CLASS(FSNodalVelocities            , MODULE_MECH, FEIC_ID               , FE_NODAL_VELOCITIES             , "Velocity");
-	REGISTER_FE_CLASS(FSNodalShellVelocities       , MODULE_MECH, FEIC_ID               , FE_NODAL_SHELL_VELOCITIES       , "Shell velocity");
+	REGISTER_FE_CLASS(FSNodalVelocities            , MODULE_MECH, FEIC_ID               , FE_INIT_NODAL_VELOCITIES        , "Velocity");
+	REGISTER_FE_CLASS(FSNodalShellVelocities       , MODULE_MECH, FEIC_ID               , FE_INIT_NODAL_SHELL_VELOCITIES  , "Shell velocity");
 	REGISTER_FE_CLASS(FSInitPrestrain              , MODULE_MECH, FEIC_ID               , FE_INIT_PRESTRAIN               , "Initialize Prestrain");
 	REGISTER_FE_CLASS(FSRigidInterface             , MODULE_MECH, FESURFACEINTERFACE_ID , FE_RIGID_INTERFACE              , "Rigid");
 	REGISTER_FE_CLASS(FSSlidingWithGapsInterface   , MODULE_MECH, FESURFACEINTERFACE_ID , FE_SLIDING_WITH_GAPS            , "Sliding node-on-facet");
@@ -518,4 +531,534 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("fluid dilatation", true);
 		m_plt.AddPlotVariable("fluid volume ratio", true);
 	}
+}
+
+bool copyParameter(std::ostream& log, FSCoreBase* pc, Param& p)
+{
+	// we try to copy the parameter value, but we need to make sure
+	// that we don't change the type of pc parameter (unless it's a variable parameter). 
+	Param* pi = pc->GetParam(p.GetShortName());
+	if (pi)
+	{
+		if (pi->IsVariable() || p.IsVariable())
+			*pi = p;
+		else
+		{
+			if ((pi->GetParamType() == Param_INT) && (p.GetParamType() == Param_BOOL))
+			{
+				log << "implicit conversion from bool to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+				pi->SetIntValue(p.GetBoolValue() ? 1 : 0);
+				return false;
+			}
+			else if (pi->GetParamType() != p.GetParamType())
+			{
+				log << "Failed to copy parameter (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+				return false;
+			}
+			else *pi = p;
+		}
+	}
+	else { 
+		log << "Failed to copy parameter " << p.GetShortName() << std::endl;
+		return false; 
+	}
+
+	return true;
+}
+
+bool copyParameters(std::ostream& log, FSCoreBase* pd, FSCoreBase* ps)
+{
+	bool bret = true;
+	for (int i = 0; i < ps->Parameters(); ++i)
+	{
+		Param& p = ps->GetParam(i);
+		if (copyParameter(log, pd, p) == false) bret = false;
+	}
+	if (bret == false) log << "Errors encountered copying parameters from " << ps->GetName() << std::endl;
+	return bret;
+}
+
+bool FSProject::ConvertToNewFormat(std::ostream& log)
+{
+	bool bret = true;
+	if (ConvertMaterials(log) == false) bret = false;
+	if (ConvertSteps(log) == false) bret = false;
+
+	return bret;
+}
+
+bool FSProject::ConvertMaterials(std::ostream& log)
+{
+	FSModel& fem = GetFSModel();
+
+	for (int i = 0; i < fem.Materials(); ++i)
+	{
+		GMaterial* mat = fem.GetMaterial(i);
+
+		FSMaterial* pm = mat->GetMaterialProperties();
+
+		FSMaterial* febMat = FEBio::CreateMaterial(pm->GetTypeString(), &fem);
+		if (febMat == nullptr)
+		{
+			log << "Failed to create FEBio material " << pm->GetTypeString() << std::endl;
+		}
+		else
+		{
+			copyParameters(log, febMat, pm);
+			mat->SetMaterialProperties(febMat);
+		}
+	}
+
+	return true;
+}
+
+bool FSProject::ConvertSteps(std::ostream& log)
+{
+	FSModel& fem = GetFSModel();
+
+	// loop over all steps (skipping the initial step)
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* oldStep = fem.GetStep(i);
+		FSStep* newStep = nullptr;
+		if (oldStep->GetType() == FE_STEP_INITIAL)
+		{
+			newStep = new FSInitialStep(&fem);
+		}
+		else
+		{
+			FSAnalysisStep* step = dynamic_cast<FSAnalysisStep*>(fem.GetStep(i)); assert(step);
+			if (step == nullptr) return false;
+
+			// although the active module was read in already, in previous versions of FEBio Studio
+			// the module ID didn't really matter, so it's likely that it was not set properly. 
+			// So, just to be sure, we're going to set the active module here as well, based on the step type
+			int ntype = step->GetType();
+			switch (ntype)
+			{
+			case FE_STEP_MECHANICS      : FEBio::SetActiveModule("solid"); break;
+			case FE_STEP_BIPHASIC       : FEBio::SetActiveModule("biphasic"); break;
+			case FE_STEP_BIPHASIC_SOLUTE: FEBio::SetActiveModule("solute"); break;
+			case FE_STEP_MULTIPHASIC    : FEBio::SetActiveModule("multiphasic"); break;
+			case FE_STEP_FLUID          : FEBio::SetActiveModule("fluid"); break;
+			case FE_STEP_FLUID_FSI      : FEBio::SetActiveModule("fluid-FSI"); break;
+			default:
+				assert(false);
+			}
+
+			FEBioAnalysisStep* febioStep = dynamic_cast<FEBioAnalysisStep*>(FEBio::CreateStep("analysis", &fem)); assert(febioStep);
+			if (febioStep == nullptr)
+			{
+				log << "Failed to create FEBio step.\n";
+				return false;
+			}
+			FEBio::InitDefaultProps(febioStep);
+
+			ConvertStepSettings(log, *febioStep, *step);
+
+			newStep = febioStep;
+		}
+
+		// copy the step name and ID
+		newStep->SetName(oldStep->GetName());
+		newStep->SetID(oldStep->GetID());
+
+		// copy settings
+		if (ConvertStep(log, *newStep, *oldStep) == false)
+		{
+			log << "Failed to convert step" << oldStep->GetName() << std::endl;
+			return false;
+		}
+
+		// swap old with new step
+		fem.ReplaceStep(i, newStep);
+		delete oldStep;
+	}
+
+	return true;
+}
+
+bool FSProject::ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	// convert the model components
+	bool b = true;
+	if (ConvertStepBCs    (log, newStep, oldStep) == false) b = false;
+	if (ConvertStepLoads  (log, newStep, oldStep) == false) b = false;
+	if (ConvertStepContact(log, newStep, oldStep) == false) b = false;
+
+	return b;
+}
+
+bool FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = newStep.GetFSModel();
+	for (int i = 0; i < oldStep.Interfaces(); ++i)
+	{
+		FSInterface* pi = oldStep.Interface(i);
+		FSInterface* newpi = nullptr;
+
+		// some special cases
+		if (pi->Type() == FE_RIGID_WALL)
+		{
+			FSSoloInterface* pc = dynamic_cast<FSSoloInterface*>(pi); assert(pc);
+			FSSurfaceConstraint* newpc = FEBio::CreateSurfaceConstraint("rigid_wall", fem);
+
+			newpc->SetItemList(pc->GetItemList());
+			pc->SetItemList(nullptr);
+
+			newpc->SetName(pc->GetName());
+
+			// replace parameters
+			std::vector<double> plane(4, 0);
+			for (int i = 0; i < pc->Parameters(); ++i)
+			{
+				Param& p = pc->GetParam(i);
+				if      (strcmp(p.GetShortName(), "a") == 0) plane[0] = p.GetFloatValue();
+				else if (strcmp(p.GetShortName(), "b") == 0) plane[1] = p.GetFloatValue();
+				else if (strcmp(p.GetShortName(), "c") == 0) plane[2] = p.GetFloatValue();
+				else if (strcmp(p.GetShortName(), "d") == 0) plane[3] = p.GetFloatValue();
+				else copyParameter(log, newpc, p);
+			}
+
+			newpc->GetParam("plane")->SetArrayDoubleValue(plane);
+
+			newStep.AddConstraint(newpc);
+		}
+		else
+		{
+			switch (pi->Type())
+			{
+	//		case FE_RIGID_INTERFACE				: newpi = FEBio::CreatePairedInterface("rigid", fem); break;
+			case FE_SLIDING_INTERFACE           : newpi = FEBio::CreatePairedInterface("sliding-elastic", fem); break;
+	//		case FE_RIGID_JOINT					: newpi = FEBio::CreatePairedInterface(, fem); break;
+			case FE_TIED_INTERFACE              : newpi = FEBio::CreatePairedInterface("tied-node-on-facet", fem); break;
+			case FE_PORO_INTERFACE              : newpi = FEBio::CreatePairedInterface("sliding-biphasic", fem); break;
+	//		case FE_PORO_SOLUTE_INTERFACE		: newpi = FEBio::CreatePairedInterface(, fem); break;
+			case FE_TENSCOMP_INTERFACE          : newpi = FEBio::CreatePairedInterface("sliding-elastic", fem); break;
+			case FE_TIEDBIPHASIC_INTERFACE      : newpi = FEBio::CreatePairedInterface("tied-biphasic", fem); break;
+	//		case FE_SPRINGTIED_INTERFACE		: newpi = FEBio::CreatePairedInterface(, fem); break;
+			case FE_MULTIPHASIC_INTERFACE       : newpi = FEBio::CreatePairedInterface("sliding-multiphasic", fem); break;
+			case FE_STICKY_INTERFACE            : newpi = FEBio::CreatePairedInterface("sticky", fem); break;
+			case FE_PERIODIC_BOUNDARY			: newpi = FEBio::CreatePairedInterface("periodic boundary", fem); break;
+	//		case FE_RIGID_SPHERE_CONTACT		: newpi = FEBio::CreatePairedInterface(, fem); break;
+			case FE_SLIDING_WITH_GAPS           : newpi = FEBio::CreatePairedInterface("sliding-node-on-facet", fem); break;
+			case FE_FACET_ON_FACET_SLIDING      : newpi = FEBio::CreatePairedInterface("sliding-facet-on-facet", fem); break;
+			case FE_FACET_ON_FACET_TIED         : newpi = FEBio::CreatePairedInterface("tied-facet-on-facet", fem); break;
+			case FE_TIEDMULTIPHASIC_INTERFACE   : newpi = FEBio::CreatePairedInterface("tied-multiphasic", fem); break;
+			case FE_TIED_ELASTIC_INTERFACE      : newpi = FEBio::CreatePairedInterface("tied-elastic", fem); break;
+	//		case FE_GAPHEATFLUX_INTERFACE		: newpi = FEBio::CreatePairedInterface(, fem); break;
+			case FE_CONTACTPOTENTIAL_CONTACT    : newpi = FEBio::CreatePairedInterface("contact potential", fem); break;
+			default:
+				assert(false);
+			}
+			assert(newpi);
+
+			if (newpi)
+			{
+				// copy the name 
+				newpi->SetName(pi->GetName());
+
+				// steal the item lists
+				if (dynamic_cast<FSPairedInterface*>(pi))
+				{
+					FSPairedInterface* pc_old = dynamic_cast<FSPairedInterface*>(pi);
+					FSPairedInterface* pc_new = dynamic_cast<FSPairedInterface*>(newpi); assert(pc_new);
+
+					pc_new->SetPrimarySurface(pc_old->GetPrimarySurface()); pc_old->SetPrimarySurface(nullptr);
+					pc_new->SetSecondarySurface(pc_old->GetSecondarySurface()); pc_old->SetSecondarySurface(nullptr);
+				}
+				if (dynamic_cast<FSSoloInterface*>(pi))
+				{
+					FSSoloInterface* pc_old = dynamic_cast<FSSoloInterface*>(pi);
+					FSSoloInterface* pc_new = dynamic_cast<FSSoloInterface*>(newpi); assert(pc_new);
+
+					pc_new->SetItemList(pc_old->GetItemList()); pc_old->SetItemList(nullptr);
+				}
+
+				// replace parameters
+				bool bret = true;
+				for (int i = 0; i < pi->Parameters(); ++i)
+				{
+					Param& p = pi->GetParam(i);
+
+					// the laugon parameter used to be a boolean, but is now an int
+					if (strcmp(p.GetShortName(), "laugon") == 0)
+					{
+						Param* ppi = newpi->GetParam("laugon");
+						ppi->SetIntValue(p.GetBoolValue() ? 1 : 0);
+					}
+					// regrettably, it was missed that the minaug and maxaug were defined as doubles. 
+					else if (strcmp(p.GetShortName(), "minaug") == 0)
+					{
+						Param* ppi = newpi->GetParam("minaug");
+						ppi->SetIntValue((int)p.GetFloatValue());
+					}
+					else if (strcmp(p.GetShortName(), "maxaug") == 0)
+					{
+						Param* ppi = newpi->GetParam("maxaug");
+						ppi->SetIntValue((int)p.GetFloatValue());
+					}
+					else if (copyParameter(log, newpi, p) == false) bret = false;
+				}
+				if (bret == false) log << "Errors encountered copying parameters from " << pi->GetName() << std::endl;
+
+				newStep.AddInterface(newpi);
+			}
+			else
+			{
+				log << "Failed to convert interface " << pi->GetName() << std::endl;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = newStep.GetFSModel();
+	for (int i = 0; i < oldStep.Loads(); ++i)
+	{
+		FSLoad* pl = oldStep.Load(i);
+		FSLoad* febLoad = nullptr;
+		switch (pl->Type())
+		{
+		case FE_PRESSURE_LOAD       : febLoad = FEBio::CreateSurfaceLoad("pressure" , fem); break;
+		case FE_CONST_BODY_FORCE    : febLoad = FEBio::CreateBodyLoad   ("const"    , fem); break;
+		case FE_NON_CONST_BODY_FORCE: febLoad = FEBio::CreateBodyLoad   ("non-const", fem); break;
+		default:
+			assert(false);
+		}
+		assert(febLoad);
+
+		if (febLoad)
+		{
+			// copy the name 
+			febLoad->SetName(pl->GetName());
+
+			// steal the item list
+			febLoad->SetItemList(pl->GetItemList());
+			pl->SetItemList(nullptr);
+
+			// replace parameters
+			for (int i = 0; i < pl->Parameters(); ++i)
+			{
+				copyParameter(log, febLoad, pl->GetParam(i));
+			}
+
+			newStep.AddLoad(febLoad);
+		}
+		else
+		{
+			log << "Failed to convert load " << pl->GetName() << std::endl;
+		}
+	}
+
+	return true;
+}
+
+bool FSProject::ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = newStep.GetFSModel();
+
+	// convert all model components
+	for (int i = 0; i < oldStep.ICs(); ++i)
+	{
+		FSInitialCondition* ic = oldStep.IC(i);
+		FSInitialCondition* febic = nullptr;
+
+		switch (ic->Type())
+		{
+		case FE_INIT_NODAL_VELOCITIES      : febic = FEBio::CreateInitialCondition("velocity", fem); break;
+//		case FE_INIT_NODAL_SHELL_VELOCITIES: break;
+		case FE_INIT_FLUID_PRESSURE        : febic = FEBio::CreateInitialCondition("initial fluid pressure", fem); break;
+//		case FE_INIT_SHELL_FLUID_PRESSURE  : break;
+		case FE_INIT_CONCENTRATION         : febic = FEBio::CreateInitialCondition("initial concentration", fem); break;
+//		case FE_INIT_SHELL_CONCENTRATION   : break;
+//		case FE_INIT_TEMPERATURE           : break;
+		case FE_INIT_FLUID_DILATATION      : febic = FEBio::CreateInitialCondition("initial fluid dilatation", fem); break;
+		case FE_INIT_PRESTRAIN             : febic = FEBio::CreateInitialCondition("prestrain", fem); break;
+		default:
+			assert(false);
+		}
+		assert(febic);
+
+		if (febic)
+		{
+			febic->SetName(ic->GetName());
+			febic->SetItemList(ic->GetItemList());
+			ic->SetItemList(nullptr);
+
+			copyParameters(log, febic, ic);
+
+			newStep.AddIC(febic);
+		}
+	}
+
+	return true;
+}
+
+
+bool FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = newStep.GetFSModel();
+
+	// convert all model components
+	for (int i = 0; i < oldStep.BCs(); ++i)
+	{
+		FSBoundaryCondition* pb = oldStep.BC(i);
+		FSBoundaryCondition* febbc = nullptr;
+		FSFixedDOF* pbc = dynamic_cast<FSFixedDOF*>(pb);
+		if (pbc)
+		{
+			switch (pbc->Type())
+			{
+			case FE_FIXED_DISPLACEMENT      : febbc = FEBio::CreateBoundaryCondition("zero displacement"      , fem); break;
+			case FE_FIXED_ROTATION          : febbc = FEBio::CreateBoundaryCondition("zero rotation"          , fem); break;
+			case FE_FIXED_SHELL_DISPLACEMENT: febbc = FEBio::CreateBoundaryCondition("zero shell displacement", fem); break;
+			case FE_FIXED_FLUID_PRESSURE    : febbc = FEBio::CreateBoundaryCondition("zero fluid pressure"    , fem); break;
+			case FE_FIXED_TEMPERATURE       : febbc = FEBio::CreateBoundaryCondition("zero temperature"       , fem); break;
+			case FE_FIXED_CONCENTRATION     : febbc = FEBio::CreateBoundaryCondition("zero concentration"     , fem); break;
+			case FE_FIXED_FLUID_VELOCITY    : febbc = FEBio::CreateBoundaryCondition("zero fluid velocity"    , fem); break;
+			case FE_FIXED_FLUID_DILATATION  : febbc = FEBio::CreateBoundaryCondition("zero fluid velocity"    , fem); break;
+			default:
+				assert(false);
+			}
+			assert(febbc);
+
+			if (febbc)
+			{
+				int bc = pbc->GetBC();
+
+				vector<int> dofs;
+				for (int i = 0; i < 3; ++i) if (bc & (1 << i)) dofs.push_back(i);
+				febbc->SetParamVectorInt("dofs", dofs);
+
+				// copy the name 
+				febbc->SetName(pbc->GetName());
+
+				// steal the item list
+				febbc->SetItemList(pbc->GetItemList());
+				pbc->SetItemList(nullptr);
+
+				newStep.AddBC(febbc);
+			}
+			else
+			{
+				log << "Unable to convert boundary condition " << pb->GetName() << std::endl;
+			}
+		}
+
+		FSPrescribedDOF* pdc = dynamic_cast<FSPrescribedDOF*>(pb);
+		if (pdc)
+		{
+			switch (pdc->Type())
+			{
+			case FE_PRESCRIBED_DISPLACEMENT      : febbc = FEBio::CreateBoundaryCondition("prescribed displacement", fem); break;
+			case FE_PRESCRIBED_ROTATION          : febbc = FEBio::CreateBoundaryCondition("prescribed rotation", fem); break;
+			case FE_PRESCRIBED_SHELL_DISPLACEMENT: febbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", fem); break;
+			case FE_PRESCRIBED_FLUID_PRESSURE    : febbc = FEBio::CreateBoundaryCondition("prescribed fluid pressure", fem); break;
+			case FE_PRESCRIBED_TEMPERATURE       : febbc = FEBio::CreateBoundaryCondition("prescribed temperature", fem); break;
+			case FE_PRESCRIBED_CONCENTRATION     : febbc = FEBio::CreateBoundaryCondition("prescribed concentration", fem); break;
+			case FE_PRESCRIBED_FLUID_VELOCITY    : febbc = FEBio::CreateBoundaryCondition("prescribed fluid velocity", fem); break;
+			case FE_PRESCRIBED_FLUID_DILATATION  : febbc = FEBio::CreateBoundaryCondition("prescribed fluid dilatation", fem); break;
+			default:
+				assert(false);
+			}
+			assert(febbc);
+
+			if (febbc)
+			{
+				int dof = pdc->GetDOF();
+				bool brel = pdc->GetRelativeFlag();
+
+				febbc->SetParamInt("dof", dof);
+				febbc->SetParamBool("relative", brel);
+
+				Param& scl = *pdc->GetParam("scale");
+				Param& val = *febbc->GetParam("value");
+				val = scl;
+
+				// copy the name 
+				febbc->SetName(pdc->GetName());
+
+				// steal the item list
+				febbc->SetItemList(pdc->GetItemList());
+				pdc->SetItemList(nullptr);
+
+				newStep.AddBC(febbc);
+			}
+			else
+			{
+				log << "Unable to convert boundary condition " << pb->GetName() << std::endl;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep)
+{
+	STEP_SETTINGS& ops = oldStep.GetSettings();
+
+	febStep.SetParamInt("analysis", ops.nanalysis);
+	febStep.SetParamInt("time_steps", ops.ntime);
+	febStep.SetParamFloat("step_size", ops.dt);
+
+	febStep.SetParamInt("plot_level", ops.plot_level);
+	febStep.SetParamInt("plot_stride", ops.plot_stride);
+
+	// auto time stepper settings
+	FSProperty* timeStepperProp = febStep.FindProperty("time_stepper");
+	FSCoreBase* timeStepper = timeStepperProp->GetComponent(0);
+	if (ops.bauto && timeStepper)
+	{
+		timeStepper->SetParamInt("max_retries", ops.mxback);
+		timeStepper->SetParamInt("opt_iter", ops.iteopt);
+		timeStepper->SetParamFloat("dtmin", ops.dtmin);
+		timeStepper->SetParamFloat("dtmax", ops.dtmax);
+		timeStepper->SetParamInt("aggressiveness", ops.ncut);
+	}
+	else timeStepperProp->SetComponent(nullptr);
+
+	// solver settings
+	FSProperty* solverProp = febStep.FindProperty("solver");
+	FSCoreBase* solver = solverProp->GetComponent(0);
+	if (solver)
+	{
+		solver->SetParamInt("max_refs", ops.maxref);
+		solver->SetParamBool("diverge_reform", ops.bdivref);
+		solver->SetParamBool("reform_each_time_step", ops.brefstep);
+
+		FSProperty* qnProp = solver->FindProperty("qn_method");
+		qnProp->SetComponent(nullptr);
+		FSCoreBase* qnSolver = nullptr;
+
+		for (int i = 0; i < oldStep.Parameters(); ++i)
+		{
+			Param& p = oldStep.GetParam(i);
+
+			if (strcmp(p.GetShortName(), "qnmethod") == 0)
+			{
+				int qnmethod = p.GetIntValue();
+				switch (qnmethod)
+				{
+				case 0: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS", febStep.GetFSModel()); break;
+				case 1: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", febStep.GetFSModel()); break;
+				default:
+					assert(false);
+				}
+				qnProp->SetComponent(qnSolver);
+
+				qnSolver->SetParamInt("max_ups", ops.ilimit);
+			}
+			else
+			{
+				copyParameter(log, solver, p);
+			}
+		}
+	}
+
+	return true;
 }

@@ -1129,7 +1129,7 @@ FS2DTransIsoMooneyRivlin::FS2DTransIsoMooneyRivlin() : FSTransverselyIsotropic(F
 // FSRigidMaterial - rigid body material
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FSRigidMaterial, MODULE_MECH, FE_RIGID_MATERIAL, FE_MAT_RIGID, "Rigid body", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSRigidMaterial, MODULE_MECH, FE_RIGID_MATERIAL, FE_MAT_RIGID, "rigid body", MaterialFlags::TOPLEVEL);
 
 FSRigidMaterial::FSRigidMaterial() : FSMaterial(FE_RIGID_MATERIAL)
 {
@@ -1137,7 +1137,7 @@ FSRigidMaterial::FSRigidMaterial() : FSMaterial(FE_RIGID_MATERIAL)
 	AddScienceParam(0, UNIT_PRESSURE , "E", "Young's modulus");
 	AddScienceParam(0, UNIT_NONE   , "v", "Poisson's ratio");
 	AddBoolParam  (false, "Auto-COM", "Auto-COM");
-	AddVecParam   (vec3d(0,0,0), "rc", "Center of mass");
+	AddVecParam   (vec3d(0,0,0), "center_of_mass", "Center of mass");
 
 	m_pid = -1;
 }

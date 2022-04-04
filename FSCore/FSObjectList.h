@@ -71,6 +71,16 @@ public:
 	}
 
 protected:
+	FSObject* replace(int i, FSObject* po)
+	{
+		FSObject* old = m_obs[i];
+		old->SetParent(nullptr);
+		po->SetParent(this);
+		m_obs[i] = po;
+		return old;
+	}
+
+protected:
 	std::vector<FSObject*>	m_obs;
 };
 
@@ -101,6 +111,11 @@ public:
 	void Insert(size_t pos, T* obj)
 	{
 		InsertChild(pos, obj);
+	}
+
+	T* Replace(int i, T* po)
+	{
+		return dynamic_cast<T*>(replace(i, po));
 	}
 
 	T* operator [] (size_t i) { return dynamic_cast<T*>(m_obs[i]); }

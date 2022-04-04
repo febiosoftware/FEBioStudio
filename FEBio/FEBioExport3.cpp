@@ -4428,15 +4428,15 @@ void FEBioExport3::WriteInitialSection()
 
 			switch (pi->Type())
 			{
-			case FE_NODAL_VELOCITIES:          WriteInitVelocity(dynamic_cast<FSNodalVelocities  &>(*pi)); break;
-			case FE_NODAL_SHELL_VELOCITIES:    WriteInitShellVelocity(dynamic_cast<FSNodalShellVelocities&>(*pi)); break;
-			case FE_INIT_FLUID_PRESSURE:       WriteInitFluidPressure(dynamic_cast<FSInitFluidPressure&>(*pi)); break;
-			case FE_INIT_SHELL_FLUID_PRESSURE:  WriteInitShellFluidPressure(dynamic_cast<FSInitShellFluidPressure&>(*pi)); break;
-			case FE_INIT_CONCENTRATION:        WriteInitConcentration(dynamic_cast<FSInitConcentration&>(*pi)); break;
-			case FE_INIT_SHELL_CONCENTRATION:  WriteInitShellConcentration(dynamic_cast<FSInitShellConcentration&>(*pi)); break;
-			case FE_INIT_TEMPERATURE:          WriteInitTemperature(dynamic_cast<FSInitTemperature  &>(*pi)); break;
-            case FE_INIT_FLUID_DILATATION:     WriteInitFluidDilatation(dynamic_cast<FSInitFluidDilatation  &>(*pi)); break;
-			case FE_INIT_PRESTRAIN           : WriteInitPrestrain(dynamic_cast<FSInitPrestrain&>(*pi)); break;
+			case FE_INIT_NODAL_VELOCITIES      : WriteInitVelocity(dynamic_cast<FSNodalVelocities  &>(*pi)); break;
+			case FE_INIT_NODAL_SHELL_VELOCITIES: WriteInitShellVelocity(dynamic_cast<FSNodalShellVelocities&>(*pi)); break;
+			case FE_INIT_FLUID_PRESSURE        : WriteInitFluidPressure(dynamic_cast<FSInitFluidPressure&>(*pi)); break;
+			case FE_INIT_SHELL_FLUID_PRESSURE  : WriteInitShellFluidPressure(dynamic_cast<FSInitShellFluidPressure&>(*pi)); break;
+			case FE_INIT_CONCENTRATION         : WriteInitConcentration(dynamic_cast<FSInitConcentration&>(*pi)); break;
+			case FE_INIT_SHELL_CONCENTRATION   : WriteInitShellConcentration(dynamic_cast<FSInitShellConcentration&>(*pi)); break;
+			case FE_INIT_TEMPERATURE           : WriteInitTemperature(dynamic_cast<FSInitTemperature  &>(*pi)); break;
+            case FE_INIT_FLUID_DILATATION      : WriteInitFluidDilatation(dynamic_cast<FSInitFluidDilatation  &>(*pi)); break;
+			case FE_INIT_PRESTRAIN             : WriteInitPrestrain(dynamic_cast<FSInitPrestrain&>(*pi)); break;
 			}
 		}
 	}

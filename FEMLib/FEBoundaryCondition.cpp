@@ -243,7 +243,7 @@ void FSPrescribedDOF::LoadParam(const Param& p)
 FSPrescribedDisplacement::FSPrescribedDisplacement(FSModel* ps) : FSPrescribedDOF(FE_PRESCRIBED_DISPLACEMENT, ps)
 {
 	SetTypeString("Prescribed Displacement");
-	SetVarID(ps->GetVariableIndex("Displacement"));
+	SetVarID(ps->GetVariableIndex("displacement"));
 	SetScaleUnit(UNIT_LENGTH);
 }
 
