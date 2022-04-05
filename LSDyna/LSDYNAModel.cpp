@@ -440,7 +440,7 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 		FSMaterial* gpmat = nullptr;
 		if (dynamic_cast<MAT_ELASTIC*>(glmat)) {
 			MAT_ELASTIC& lmat = *dynamic_cast<MAT_ELASTIC*>(glmat);
-			FSIsotropicElastic* pmat = new FSIsotropicElastic;
+			FSIsotropicElastic* pmat = new FSIsotropicElastic(&fem);
 			gpmat = pmat;
 			pmat->SetFloatValue(FSIsotropicElastic::MP_DENSITY, lmat.ro);
 			pmat->SetFloatValue(FSIsotropicElastic::MP_E, lmat.e);
@@ -449,7 +449,7 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 		}
 		else if (dynamic_cast<MAT_RIGID*>(glmat)) {
 			MAT_RIGID& lmat = *dynamic_cast<MAT_RIGID*>(glmat);
-			FSRigidMaterial* pmat = new FSRigidMaterial;
+			FSRigidMaterial* pmat = new FSRigidMaterial(&fem);
 			gpmat = pmat;
 			pmat->SetFloatValue(FSRigidMaterial::MP_DENSITY, lmat.ro);
 			pmat->SetFloatValue(FSRigidMaterial::MP_E, lmat.e);
@@ -458,8 +458,8 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 		}
 		else if (dynamic_cast<MAT_VISCOELASTIC*>(glmat)) {
 			MAT_VISCOELASTIC& lmat = *dynamic_cast<MAT_VISCOELASTIC*>(glmat);
-			FSUncoupledViscoElastic* pmat = new FSUncoupledViscoElastic;
-			FSMooneyRivlin* emat = new FSMooneyRivlin;
+			FSUncoupledViscoElastic* pmat = new FSUncoupledViscoElastic(&fem);
+			FSMooneyRivlin* emat = new FSMooneyRivlin(&fem);
 			gpmat = pmat;
 			emat->SetFloatValue(FSMooneyRivlin::MP_DENSITY, lmat.ro);
 			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi/2.);
@@ -472,8 +472,8 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 		}
 		else if (dynamic_cast<MAT_KELVIN_MAXWELL_VISCOELASTIC*>(glmat)) {
 			MAT_KELVIN_MAXWELL_VISCOELASTIC& lmat = *dynamic_cast<MAT_KELVIN_MAXWELL_VISCOELASTIC*>(glmat);
-			FSUncoupledViscoElastic* pmat = new FSUncoupledViscoElastic;
-			FSMooneyRivlin* emat = new FSMooneyRivlin;
+			FSUncoupledViscoElastic* pmat = new FSUncoupledViscoElastic(&fem);
+			FSMooneyRivlin* emat = new FSMooneyRivlin(&fem);
 			gpmat = pmat;
 			emat->SetFloatValue(FSMooneyRivlin::MP_DENSITY, lmat.ro);
 			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi/2.);
@@ -486,7 +486,7 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 		}
 		// For unknown materials, use MAT_ELASTIC
 		else {
-			FSIsotropicElastic* pmat = new FSIsotropicElastic;
+			FSIsotropicElastic* pmat = new FSIsotropicElastic(&fem);
 			gpmat = pmat;
 			pmat->SetName(glmat->szname);
 		}

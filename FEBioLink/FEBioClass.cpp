@@ -240,7 +240,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	{
 	case FEANALYSIS_ID  : pc = new FEBioAnalysisStep(fem); break;
 	case FEFUNCTION1D_ID: pc = new FEBioFunction1D(fem); break;
-	case FEMATERIAL_ID  : pc = new FEBioMaterial(); break;
+	case FEMATERIAL_ID  : pc = new FEBioMaterial(fem); break;
 	case FEBC_ID:
 	{
 		FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
@@ -279,15 +279,15 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		pc = mdg;
 	}
 	break;
-	case FESOLVER_ID           : pc = new FSGenericClass; break;
+	case FESOLVER_ID           : pc = new FSGenericClass(fem); break;
 	case FERIGIDBC_ID		   : pc = new FEBioRigidConstraint(fem); break;
-	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass; break;
-	case FENEWTONSTRATEGY_ID  : pc = new FSGenericClass; break;
-	case FECLASS_ID           : pc = new FSGenericClass; break;
-	case FETIMECONTROLLER_ID  : pc = new FSGenericClass; break;
-	case FEVEC3DGENERATOR_ID  : pc = new FSGenericClass; break;
-	case FEMAT3DGENERATOR_ID  : pc = new FSGenericClass; break;
-	case FEMAT3DSGENERATOR_ID : pc = new FSGenericClass; break;
+	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass(fem); break;
+	case FENEWTONSTRATEGY_ID  : pc = new FSGenericClass(fem); break;
+	case FECLASS_ID           : pc = new FSGenericClass(fem); break;
+	case FETIMECONTROLLER_ID  : pc = new FSGenericClass(fem); break;
+	case FEVEC3DGENERATOR_ID  : pc = new FSGenericClass(fem); break;
+	case FEMAT3DGENERATOR_ID  : pc = new FSGenericClass(fem); break;
+	case FEMAT3DSGENERATOR_ID : pc = new FSGenericClass(fem); break;
 	default:
 		assert(false);
 	}
@@ -358,7 +358,8 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 					int n = param.value<int>();
 					if (param.enums())
 					{
-						p = po->AddChoiceParam(n, szname, szlongname);
+//						p = po->AddChoiceParam(n, szname, szlongname);
+						p = po->AddIntParam(n, szname, szlongname);
 						p->CopyEnumNames(param.enums());
 					}
 					else p = po->AddIntParam(n, szname, szlongname);
@@ -850,19 +851,6 @@ template <class T> T* CreateModelComponent(int superClassID, const std::string& 
 	return mc;
 }
 
-template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr)
-{
-	T* mc = new T;
-	if (BuildModelComponent(superClassID, typeStr, mc) == false)
-	{
-		assert(false);
-		delete mc;
-		return nullptr;
-	}
-	return mc;
-}
-
-
 FSStep* FEBio::CreateStep(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEBioAnalysisStep>(FEANALYSIS_ID, typeStr, fem);
@@ -870,7 +858,7 @@ FSStep* FEBio::CreateStep(const std::string& typeStr, FSModel* fem)
 
 FSMaterial* FEBio::CreateMaterial(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr);
+	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr, fem);
 }
 
 FSMaterialProperty* FEBio::CreateMaterialProperty(const std::string& typeStr, FSModel* fem)
@@ -880,7 +868,7 @@ FSMaterialProperty* FEBio::CreateMaterialProperty(const std::string& typeStr, FS
 
 FSDiscreteMaterial* FEBio::CreateDiscreteMaterial(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioDiscreteMaterial>(FEDISCRETEMATERIAL_ID, typeStr);
+	return CreateModelComponent<FEBioDiscreteMaterial>(FEDISCRETEMATERIAL_ID, typeStr, fem);
 }
 
 FSBoundaryCondition* FEBio::CreateBoundaryCondition(const std::string& typeStr, FSModel* fem)
@@ -957,10 +945,10 @@ FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* f
 {
 	if (typeStr.empty())
 	{
-		FSGenericClass* pc = new FSGenericClass;
+		FSGenericClass* pc = new FSGenericClass(fem);
 		pc->SetSuperClassID(FECLASS_ID);
 	}
-	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr);
+	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr, fem);
 }
 
 FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)
@@ -990,7 +978,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FEMAT3DGENERATOR_ID  :
 	case FEMAT3DSGENERATOR_ID :
 	{
-		FSGenericClass* pc = new FSGenericClass;
+		FSGenericClass* pc = new FSGenericClass(fem);
 		BuildModelComponent(superClassID, typeStr, pc);
 		return pc;
 	}

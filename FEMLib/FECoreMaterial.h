@@ -44,7 +44,7 @@ class FSAxisMaterial;
 class FSMaterial : public FSModelComponent
 {
 public:
-	FSMaterial(int ntype);
+	FSMaterial(int ntype, FSModel* fem);
 	virtual ~FSMaterial();
 
 	// return the material type
@@ -119,7 +119,7 @@ public:
 	vec3d	m_vec;
 
 public:
-	FSAxisMaterial();
+	FSAxisMaterial(FSModel* fem);
 
 	bool UpdateData(bool bsave) override;
 

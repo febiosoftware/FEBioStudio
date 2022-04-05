@@ -458,6 +458,8 @@ void GDiscreteSpringSet::Load(IArchive& ar)
 	if (m_mat) delete m_mat;
 	m_mat = nullptr;
 
+	FSModel* fem = GetModel()->GetFSModel();
+
 	string s;
 	GLColor col = GetColor();
 	while (IArchive::IO_OK == ar.OpenChunk())
@@ -477,9 +479,9 @@ void GDiscreteSpringSet::Load(IArchive& ar)
 					int mid = ar.GetChunkID();
 					switch (mid)
 					{
-					case FE_DISCRETE_LINEAR_SPRING   : m_mat = new FSLinearSpringMaterial; break;
-					case FE_DISCRETE_NONLINEAR_SPRING: m_mat = new FSNonLinearSpringMaterial; break;
-					case FE_DISCRETE_HILL            : m_mat = new FSHillContractileMaterial; break;
+					case FE_DISCRETE_LINEAR_SPRING   : m_mat = new FSLinearSpringMaterial(fem); break;
+					case FE_DISCRETE_NONLINEAR_SPRING: m_mat = new FSNonLinearSpringMaterial(fem); break;
+					case FE_DISCRETE_HILL            : m_mat = new FSHillContractileMaterial(fem); break;
 					default:
 						assert(false);
 						throw ReadError("Unknown discrete material");

@@ -135,6 +135,8 @@ CMaterialEditor::CMaterialEditor(FSProject& prj, QWidget* parent) : CHelpDialog(
 	setWindowTitle("Add Material");
 	ui->setupUi(this);
 
+	ui->m_fem = &prj.GetFSModel();
+
 	SetLeftSideLayout(ui->mainLayout);
 
 	//String to be displayed by the help dialog when no material is selected
@@ -168,7 +170,7 @@ void CMaterialEditor::showEvent(QShowEvent* ev)
 		FSMaterial* pmat = gmat->GetMaterialProperties();
 		if (pmat)
 		{
-			FSMaterial* pmCopy = FEMaterialFactory::Create(pmat->Type());
+			FSMaterial* pmCopy = FEMaterialFactory::Create(gmat->GetModel(), pmat->Type());
 			pmCopy->copy(pmat);
 			SetMaterial(pmCopy);
 			ui->mat = 0;
@@ -237,11 +239,13 @@ void CMaterialEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTree
 
 void CMaterialEditor::materialChanged(int n)
 {
+	FSModel* fem = ui->m_fem;
+	
 	MaterialEditorItem* it = ui->currentItem();
 	int ntype = ui->matList->itemData(n).toInt();
 
 	FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-	FSMaterial* pmat = MF.Create(ntype); assert(pmat);
+	FSMaterial* pmat = MF.Create(fem, ntype); assert(pmat);
 
 	it->SetMaterial(pmat);
 }

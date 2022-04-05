@@ -849,6 +849,10 @@ void CModelViewer::OnShowDiscreteObject()
 
 void CModelViewer::OnChangeDiscreteType()
 {
+	CMainWindow* wnd = GetMainWindow();
+	CModelDocument* doc = wnd->GetModelDocument();
+	FSModel* fem = doc->GetFSModel();
+
 	GDiscreteSpringSet* set = dynamic_cast<GDiscreteSpringSet*>(m_currentObject); assert(set);
 	if (set == 0) return;
 
@@ -857,9 +861,9 @@ void CModelViewer::OnChangeDiscreteType()
 	if (item.isEmpty() == false)
 	{
 		FSDiscreteMaterial* mat = nullptr;
-		if (item == "Linear"   ) mat = new FSLinearSpringMaterial();
-		if (item == "Nonlinear") mat = new FSNonLinearSpringMaterial();
-		if (item == "Hill"     ) mat = new FSHillContractileMaterial();
+		if (item == "Linear"   ) mat = new FSLinearSpringMaterial(fem);
+		if (item == "Nonlinear") mat = new FSNonLinearSpringMaterial(fem);
+		if (item == "Hill"     ) mat = new FSHillContractileMaterial(fem);
 		if (mat)
 		{
 			delete set->GetMaterial();

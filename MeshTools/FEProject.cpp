@@ -263,11 +263,10 @@ void FSProject::Load(IArchive &ar)
 		ar.log("Converting FE model:");
 		ar.log("===================");
 		std::ostringstream log;
-		bool b = ConvertToNewFormat(log);
-		if (b == false) ar.log("Failed to convert to new format.");
+		ConvertToNewFormat(log);
 		string s = log.str();
 		if (s.empty() == false) ar.log(s.c_str());
-		if (b && s.empty()) ar.log("No issues found!");
+		else ar.log("No issues found!");
 	}
 }
 
@@ -578,16 +577,13 @@ bool copyParameters(std::ostream& log, FSCoreBase* pd, FSCoreBase* ps)
 	return bret;
 }
 
-bool FSProject::ConvertToNewFormat(std::ostream& log)
+void FSProject::ConvertToNewFormat(std::ostream& log)
 {
-	bool bret = true;
-	if (ConvertMaterials(log) == false) bret = false;
-	if (ConvertSteps(log) == false) bret = false;
-
-	return bret;
+	ConvertMaterials(log);
+	ConvertSteps(log);
 }
 
-bool FSProject::ConvertMaterials(std::ostream& log)
+void FSProject::ConvertMaterials(std::ostream& log)
 {
 	FSModel& fem = GetFSModel();
 
@@ -608,8 +604,6 @@ bool FSProject::ConvertMaterials(std::ostream& log)
 			mat->SetMaterialProperties(febMat);
 		}
 	}
-
-	return true;
 }
 
 bool FSProject::ConvertSteps(std::ostream& log)
@@ -664,11 +658,7 @@ bool FSProject::ConvertSteps(std::ostream& log)
 		newStep->SetID(oldStep->GetID());
 
 		// copy settings
-		if (ConvertStep(log, *newStep, *oldStep) == false)
-		{
-			log << "Failed to convert step" << oldStep->GetName() << std::endl;
-			return false;
-		}
+		ConvertStep(log, *newStep, *oldStep);
 
 		// swap old with new step
 		fem.ReplaceStep(i, newStep);
@@ -678,18 +668,155 @@ bool FSProject::ConvertSteps(std::ostream& log)
 	return true;
 }
 
-bool FSProject::ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+void FSProject::ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep)
 {
 	// convert the model components
-	bool b = true;
-	if (ConvertStepBCs    (log, newStep, oldStep) == false) b = false;
-	if (ConvertStepLoads  (log, newStep, oldStep) == false) b = false;
-	if (ConvertStepContact(log, newStep, oldStep) == false) b = false;
-
-	return b;
+	ConvertStepBCs             (log, newStep, oldStep);
+	ConvertStepLoads           (log, newStep, oldStep);
+	ConvertStepContact         (log, newStep, oldStep);
+	ConvertStepConstraints     (log, newStep, oldStep);
+	ConvertStepRigidConstraints(log, newStep, oldStep);
+	ConvertStepRigidConnectors (log, newStep, oldStep);
 }
 
-bool FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = newStep.GetFSModel();
+	for (int i = 0; i < oldStep.RigidConstraints(); ++i)
+	{
+		FSRigidConstraint* pc = oldStep.RigidConstraint(i);
+		FSRigidConstraint* pcfeb = nullptr;
+
+		if (pc->Type() == FE_RIGID_FIXED)
+		{
+			FSRigidFixed* pf = dynamic_cast<FSRigidFixed*>(pc); assert(pf);
+			vector<int> dofs;
+			for (int i = 0; i < 6; ++i)
+			{
+				if (pf->GetBoolValue(i)) dofs.push_back(i);
+			}
+
+			pcfeb = FEBio::CreateRigidConstraint("rigid_fixed", fem); assert(pcfeb);
+			pcfeb->SetParamVectorInt("dofs", dofs);
+		}
+		else
+		{
+			switch (pc->Type())
+			{
+			case FE_RIGID_DISPLACEMENT     : pcfeb = FEBio::CreateRigidConstraint("rigid_prescribed", fem); break;
+//			case FE_RIGID_FORCE			   : pcfeb = FEBio::CreateRigidConstraint("", fem); break;
+			case FE_RIGID_INIT_VELOCITY    : pcfeb = FEBio::CreateRigidConstraint("initial_rigid_velocity", fem); break;
+			case FE_RIGID_INIT_ANG_VELOCITY: pcfeb = FEBio::CreateRigidConstraint("initial_rigid_angular_velocity", fem); break;
+			default:
+				assert(false);
+			}
+			assert(pcfeb);
+
+			if (pcfeb)
+			{
+				// replace parameters
+				copyParameters(log, pcfeb, pc);
+			}
+		}
+
+		if (pcfeb)
+		{
+			// copy the name 
+			pcfeb->SetName(pc->GetName());
+
+			// copy rigid body
+			pcfeb->SetMaterialID(pc->GetMaterialID());
+
+			newStep.AddRC(pcfeb);
+		}
+	}
+}
+
+void FSProject::ConvertStepRigidConnectors(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = newStep.GetFSModel();
+	for (int i = 0; i < oldStep.RigidConnectors(); ++i)
+	{
+		FSRigidConnector* pc = oldStep.RigidConnector(i);
+		FSRigidConnector* pcfeb = nullptr;
+		switch (pc->Type())
+		{
+		case FE_RC_SPHERICAL_JOINT   : pcfeb = FEBio::CreateRigidConnector("rigid spherical joint"  , fem); break;
+		case FE_RC_REVOLUTE_JOINT	 : pcfeb = FEBio::CreateRigidConnector("rigid revolute joint"   , fem); break;
+		case FE_RC_PRISMATIC_JOINT	 : pcfeb = FEBio::CreateRigidConnector("rigid prismatic joint"  , fem); break;
+		case FE_RC_CYLINDRICAL_JOINT : pcfeb = FEBio::CreateRigidConnector("rigid cylindrical joint", fem); break;
+		case FE_RC_PLANAR_JOINT      : pcfeb = FEBio::CreateRigidConnector("rigid planar joint"     , fem); break;
+		case FE_RC_SPRING            : pcfeb = FEBio::CreateRigidConnector("rigid spring"           , fem); break;
+		case FE_RC_DAMPER            : pcfeb = FEBio::CreateRigidConnector("rigid damper"           , fem); break;
+		case FE_RC_ANGULAR_DAMPER	 : pcfeb = FEBio::CreateRigidConnector("rigid angular damper"   , fem); break;
+		case FE_RC_CONTRACTILE_FORCE : pcfeb = FEBio::CreateRigidConnector("rigid contractile force", fem); break;
+		case FE_RC_RIGID_LOCK        : pcfeb = FEBio::CreateRigidConnector("rigid lock"             , fem); break;
+		case FE_RC_GENERIC_JOINT	 : pcfeb = FEBio::CreateRigidConnector("generic rigid joint"    , fem); break;
+		default:
+			assert(false);
+		}
+		assert(pcfeb);
+		
+		if (pcfeb)
+		{
+			// copy the name 
+			pcfeb->SetName(pc->GetName());
+
+			// copy rigid bodys
+			pcfeb->SetRigidBody1(pc->GetRigidBody1());
+			pcfeb->SetRigidBody2(pc->GetRigidBody2());
+
+			// replace parameters
+			copyParameters(log, pcfeb, pc);
+
+			newStep.AddRigidConnector(pcfeb);
+		}
+	}
+}
+
+void FSProject::ConvertStepConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = newStep.GetFSModel();
+	for (int i = 0; i < oldStep.Constraints(); ++i)
+	{
+		FSModelConstraint* pc = oldStep.Constraint(i);
+		FSModelConstraint* pcfeb = nullptr;
+		switch (pc->Type())
+		{
+		case FE_SYMMETRY_PLANE          : pcfeb = FEBio::CreateNLConstraint("symmetry plane", fem); break;
+		case FE_NORMAL_FLUID_FLOW       : pcfeb = FEBio::CreateNLConstraint("normal fluid flow", fem); break;
+		case FE_VOLUME_CONSTRAINT       : pcfeb = FEBio::CreateNLConstraint("volume", fem); break;
+//		case FE_WARP_CONSTRAINT         : pcfeb = FEBio::CreateNLConstraint("", fem); break;
+		case FE_FRICTIONLESS_FLUID_WALL : pcfeb = FEBio::CreateNLConstraint("frictionless fluid wall", fem); break;
+		case FE_INSITUSTRETCH_CONSTRAINT: pcfeb = FEBio::CreateNLConstraint("in-situ stretch", fem); break;
+		case FE_PRESTRAIN_CONSTRAINT    : pcfeb = FEBio::CreateNLConstraint("prestrain", fem); break;
+		default:
+			assert(false);
+		}
+		assert(pcfeb);
+
+		if (pcfeb)
+		{
+			// copy the name 
+			pcfeb->SetName(pc->GetName());
+
+			// steal the item list
+			pcfeb->SetItemList(pc->GetItemList());
+			pc->SetItemList(nullptr);
+
+			// replace parameters
+			copyParameters(log, pcfeb, pc);
+
+			newStep.AddConstraint(pcfeb);
+		}
+		else
+		{
+			log << "Failed to convert constraint " << pc->GetName() << std::endl;
+		}
+	}
+}
+
+void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& oldStep)
 {
 	FSModel* fem = newStep.GetFSModel();
 	for (int i = 0; i < oldStep.Interfaces(); ++i)
@@ -723,6 +850,18 @@ bool FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 			newpc->GetParam("plane")->SetArrayDoubleValue(plane);
 
 			newStep.AddConstraint(newpc);
+		}
+		else if (pi->Type() == FE_RIGID_INTERFACE)
+		{
+			// rigid interface became a boundary condition
+			FSRigidInterface* pr = dynamic_cast<FSRigidInterface*>(pi);
+			FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("rigid", fem); break;
+
+			pbc->SetParamInt("rb", pr->GetRigidBody()->GetID());
+
+			pbc->SetItemList(pr->GetItemList());
+
+			newStep.AddBC(pbc);
 		}
 		else
 		{
@@ -781,14 +920,8 @@ bool FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 				{
 					Param& p = pi->GetParam(i);
 
-					// the laugon parameter used to be a boolean, but is now an int
-					if (strcmp(p.GetShortName(), "laugon") == 0)
-					{
-						Param* ppi = newpi->GetParam("laugon");
-						ppi->SetIntValue(p.GetBoolValue() ? 1 : 0);
-					}
 					// regrettably, it was missed that the minaug and maxaug were defined as doubles. 
-					else if (strcmp(p.GetShortName(), "minaug") == 0)
+					if (strcmp(p.GetShortName(), "minaug") == 0)
 					{
 						Param* ppi = newpi->GetParam("minaug");
 						ppi->SetIntValue((int)p.GetFloatValue());
@@ -810,11 +943,9 @@ bool FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 			}
 		}
 	}
-
-	return true;
 }
 
-bool FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& oldStep)
 {
 	FSModel* fem = newStep.GetFSModel();
 	for (int i = 0; i < oldStep.Loads(); ++i)
@@ -853,11 +984,9 @@ bool FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 			log << "Failed to convert load " << pl->GetName() << std::endl;
 		}
 	}
-
-	return true;
 }
 
-bool FSProject::ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+void FSProject::ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldStep)
 {
 	FSModel* fem = newStep.GetFSModel();
 
@@ -894,12 +1023,10 @@ bool FSProject::ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 			newStep.AddIC(febic);
 		}
 	}
-
-	return true;
 }
 
 
-bool FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldStep)
 {
 	FSModel* fem = newStep.GetFSModel();
 
@@ -930,9 +1057,13 @@ bool FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 			{
 				int bc = pbc->GetBC();
 
-				vector<int> dofs;
-				for (int i = 0; i < 3; ++i) if (bc & (1 << i)) dofs.push_back(i);
-				febbc->SetParamVectorInt("dofs", dofs);
+				if (febbc->GetParam("dofs"))
+				{
+					// TODO: This is not going to work for concentrations!
+					vector<int> dofs;
+					for (int i = 0; i < 3; ++i) if (bc & (1 << i)) dofs.push_back(i);
+					febbc->SetParamVectorInt("dofs", dofs);
+				}
 
 				// copy the name 
 				febbc->SetName(pbc->GetName());
@@ -972,7 +1103,7 @@ bool FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 				int dof = pdc->GetDOF();
 				bool brel = pdc->GetRelativeFlag();
 
-				febbc->SetParamInt("dof", dof);
+				if (febbc->GetParam("dof")) febbc->SetParamInt("dof", dof);
 				febbc->SetParamBool("relative", brel);
 
 				Param& scl = *pdc->GetParam("scale");
@@ -994,11 +1125,9 @@ bool FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 			}
 		}
 	}
-
-	return true;
 }
 
-bool FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep)
+void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep)
 {
 	STEP_SETTINGS& ops = oldStep.GetSettings();
 
@@ -1059,6 +1188,4 @@ bool FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 			}
 		}
 	}
-
-	return true;
 }

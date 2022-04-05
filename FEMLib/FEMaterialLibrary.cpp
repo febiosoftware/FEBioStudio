@@ -72,7 +72,7 @@ bool FEMaterialLibrary::Load(IArchive& ar)
 			int ntype = ar.GetChunkID();
 
 			// allocate the material
-			FSMaterial* pmat = FEMaterialFactory::Create(ntype);
+			FSMaterial* pmat = FEMaterialFactory::Create(nullptr, ntype);
 			if (pmat == 0) throw ReadError("error parsing CID_MATERIAL_SECTION in FEMaterialLibrary::Load");
 
 			char szname[256] = {0};
@@ -142,7 +142,7 @@ void FEMaterialLibrary::Add(const char* szname, FSMaterial* pmat)
 {
 	int ntype = pmat->Type();
 	FEMaterialFactory* pMF = FEMaterialFactory::GetInstance();
-	FSMaterial* pm = pMF->Create(ntype);
+	FSMaterial* pm = pMF->Create(nullptr, ntype);
 	pm->copy(pmat);
 	MATENTRY m;
 	m.m_pmat = pm;

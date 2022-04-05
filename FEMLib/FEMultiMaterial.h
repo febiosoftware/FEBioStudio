@@ -22,7 +22,7 @@ public:
 
 public:
 	// constructor
-	FSViscoElastic();
+	FSViscoElastic(FSModel* fem);
 
 	// set the elastic component of the material
 	void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -49,7 +49,7 @@ public:
 
 public:
 	// constructor
-	FSUncoupledViscoElastic();
+	FSUncoupledViscoElastic(FSModel* fem);
 
 	// set the elastic component of the material
 	void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -64,7 +64,7 @@ public:
 class FSMultiMaterial : public FSMaterial
 {
 public:
-	FSMultiMaterial(int ntype);
+	FSMultiMaterial(int ntype, FSModel* fem);
 };
 
 //-----------------------------------------------------------------------------
@@ -77,7 +77,7 @@ public:
 
 public:
 	// constructor
-	FSBiphasic();
+	FSBiphasic(FSModel* fem);
 
 	// set/get solid component 
 	void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -99,7 +99,7 @@ public:
 	enum { MP_NSOL };
 
 public:
-	FSSoluteMaterial();
+	FSSoluteMaterial(FSModel* fem);
 
 	// set/get diffusivity
 	void SetDiffusivity(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -125,7 +125,7 @@ public:
 	enum { MP_NSBM , MP_RHO0 , MP_RMIN , MP_RMAX };
     
 public:
-	FSSBMMaterial();
+	FSSBMMaterial(FSModel* fem);
     
 	// get/set solid-bound molecule index
 	void SetSBMIndex(int i) { SetIntValue(MP_NSBM, i); }
@@ -146,7 +146,7 @@ public:
 	};
 
 public:
-	FSBiphasicSolute();
+	FSBiphasicSolute(FSModel* fem);
 
 	// set/get elastic component 
 	void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -176,7 +176,7 @@ public:
 	enum { MP_PHI0, MP_CHARGE };
 
 public:
-	FSTriphasicMaterial();
+	FSTriphasicMaterial(FSModel* fem);
 
 	// set/get elastic component 
 	void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -202,7 +202,7 @@ public:
 class FSSolidMixture : public FSMaterial
 {
 public:
-	FSSolidMixture();
+	FSSolidMixture(FSModel* fem);
 
 	DECLARE_REGISTERED(FSSolidMixture);
 };
@@ -212,7 +212,7 @@ public:
 class FSUncoupledSolidMixture : public FSMaterial
 {
 public:
-	FSUncoupledSolidMixture();
+	FSUncoupledSolidMixture(FSModel* fem);
 
 	DECLARE_REGISTERED(FSUncoupledSolidMixture);
 };
@@ -223,7 +223,7 @@ class FSCFDMaterial : public FSMaterial
 {
 public:
     // constructor
-    FSCFDMaterial();
+    FSCFDMaterial(FSModel* fem);
     
     // set/get fiber material
     void SetFiberMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -247,7 +247,7 @@ class FSCFDUCMaterial : public FSMaterial
 {
 public:
     // constructor
-    FSCFDUCMaterial();
+    FSCFDUCMaterial(FSModel* fem);
     
     // set/get fiber material
     void SetFiberMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -271,7 +271,7 @@ class FSElasticDamageMaterial : public FSMaterial
 {
 public:
     // constructor
-    FSElasticDamageMaterial();
+    FSElasticDamageMaterial(FSModel* fem);
     
     // set/get elastic material
     void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -295,7 +295,7 @@ class FSElasticDamageMaterialUC : public FSMaterial
 {
 public:
     // constructor
-    FSElasticDamageMaterialUC();
+    FSElasticDamageMaterialUC(FSModel* fem);
     
     // set/get elastic material
     void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -323,7 +323,7 @@ public:
     
 public:
     // constructor
-    FSReactiveViscoelasticMaterial();
+    FSReactiveViscoelasticMaterial(FSModel* fem);
     
     // set/get elastic material
     void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -355,7 +355,7 @@ public:
 
 public:
     // constructor
-    FSReactiveViscoelasticMaterialUC();
+    FSReactiveViscoelasticMaterialUC(FSModel* fem);
     
     // set/get elastic material
     void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -391,7 +391,7 @@ public:
     };
 
 public:
-    FSReactionSpecies(int ntype);
+    FSReactionSpecies(int ntype, FSModel* fem);
 
     // get/set type (solute or sbm)
     void SetSpeciesType(int i) { SetIntValue(MP_TYPE, i); }
@@ -414,7 +414,7 @@ private:
 class FSReactantMaterial : public FSReactionSpecies
 {
 public:
-	FSReactantMaterial();
+	FSReactantMaterial(FSModel* fem);
     int GetReactantType() { return GetSpeciesType(); }
     void SetReactantType(int i) { SetSpeciesType(i); }
 
@@ -427,7 +427,7 @@ protected:
 class FSProductMaterial : public FSReactionSpecies
 {
 public:
-    FSProductMaterial();
+    FSProductMaterial(FSModel* fem);
     int GetProductType() { return GetSpeciesType(); }
     void SetProductType(int i) { SetSpeciesType(i); }
 
@@ -440,7 +440,7 @@ protected:
 class FSInternalReactantMaterial : public FSReactionSpecies
 {
 public:
-    FSInternalReactantMaterial();
+    FSInternalReactantMaterial(FSModel* fem);
     void SetReactantType(int i) { SetSpeciesType(i); }
     int GetReactantType() { return GetSpeciesType(); }
    
@@ -453,7 +453,7 @@ protected:
 class FSExternalReactantMaterial : public FSReactionSpecies
 {
 public:
-    FSExternalReactantMaterial();
+    FSExternalReactantMaterial(FSModel* fem);
     void SetReactantType(int i) { SetSpeciesType(i); }
     int GetReactantType() { return GetSpeciesType(); }
 
@@ -466,7 +466,7 @@ protected:
 class FSInternalProductMaterial : public FSReactionSpecies
 {
 public:
-    FSInternalProductMaterial();
+    FSInternalProductMaterial(FSModel* fem);
     void SetProductType(int i) { SetSpeciesType(i); }
     int GetProductType() { return GetSpeciesType(); }
    
@@ -479,7 +479,7 @@ protected:
 class FSExternalProductMaterial : public FSReactionSpecies
 {
 public:
-    FSExternalProductMaterial();
+    FSExternalProductMaterial(FSModel* fem);
     void SetProductType(int i) { SetSpeciesType(i); }
     int GetProductType() { return GetSpeciesType(); }
     
@@ -496,7 +496,7 @@ public:
 	enum { MP_VBAR , MP_OVRD };
 
 public:
-    FSReactionMaterial(int ntype);
+    FSReactionMaterial(int ntype, FSModel* fem);
 
     void SetOvrd(bool bovrd);
 
@@ -540,7 +540,7 @@ public:
     enum { MP_VBAR , MP_OVRD };
     
 public:
-    FSMembraneReactionMaterial(int ntype);
+    FSMembraneReactionMaterial(int ntype, FSModel* fem);
     
     void SetOvrd(bool bovrd);
     
@@ -607,7 +607,7 @@ public:
 	enum { SOLID, PERM, OSMC, SOLUTE, SBM, REACTION, MREACTION };
     
 public:
-	FSMultiphasicMaterial();
+	FSMultiphasicMaterial(FSModel* fem);
 
 	// set/get elastic component 
 	void SetSolidMaterial(FSMaterial* pm);
@@ -662,7 +662,7 @@ public:
 class FSMassActionForward : public FSReactionMaterial
 {
 public:
-	FSMassActionForward();
+	FSMassActionForward(FSModel* fem);
 
 protected:
 	DECLARE_REGISTERED(FSMassActionForward);
@@ -673,7 +673,7 @@ protected:
 class FSMassActionReversible : public FSReactionMaterial
 {
 public:
-	FSMassActionReversible();
+	FSMassActionReversible(FSModel* fem);
     
 protected:
 	DECLARE_REGISTERED(FSMassActionReversible);
@@ -688,7 +688,7 @@ public:
 	enum { MP_KM, MP_C0 };
     
 public:
-	FSMichaelisMenten();
+	FSMichaelisMenten(FSModel* fem);
     
 protected:
 	DECLARE_REGISTERED(FSMichaelisMenten);
@@ -699,7 +699,7 @@ protected:
 class FSMembraneMassActionForward : public FSMembraneReactionMaterial
 {
 public:
-    FSMembraneMassActionForward();
+    FSMembraneMassActionForward(FSModel* fem);
     
 protected:
     DECLARE_REGISTERED(FSMembraneMassActionForward);
@@ -710,7 +710,7 @@ protected:
 class FSMembraneMassActionReversible : public FSMembraneReactionMaterial
 {
 public:
-    FSMembraneMassActionReversible();
+    FSMembraneMassActionReversible(FSModel* fem);
     
 protected:
     DECLARE_REGISTERED(FSMembraneMassActionReversible);
@@ -726,7 +726,7 @@ public:
     
 public:
     // constructor
-    FSFluidMaterial();
+    FSFluidMaterial(FSModel* fem);
     
     // set/get viscous component
     void SetViscousMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -741,7 +741,7 @@ class FSFluidFSIMaterial : public FSMultiMaterial
 {
 public:
     // constructor
-    FSFluidFSIMaterial();
+    FSFluidFSIMaterial(FSModel* fem);
     
     // set/get fluid component
     void SetFluidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -764,7 +764,7 @@ public:
     
 public:
     // constructor
-    FSBiphasicFSIMaterial();
+    FSBiphasicFSIMaterial(FSModel* fem);
     
     // set/get fluid component
     void SetFluidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -789,7 +789,7 @@ public:
 	enum {MP_SOL, MP_DIFFUSIVITY};
 
 public:
-	FSSpeciesMaterial();
+	FSSpeciesMaterial(FSModel* fem);
 
 	int GetSpeciesIndex();
 	void SetSpeciesIndex(int n);
@@ -804,7 +804,7 @@ public:
 	enum { MP_NSBM, MP_RHO0, MP_RMIN, MP_RMAX };
 
 public:
-	FSSolidSpeciesMaterial();
+	FSSolidSpeciesMaterial(FSModel* fem);
 
 	// get/set solid-bound molecule index
 	void SetSBMIndex(int i) { SetIntValue(MP_NSBM, i); }
@@ -830,7 +830,7 @@ public:
 
 public:
 	// constructor
-	FSReactionDiffusionMaterial();
+	FSReactionDiffusionMaterial(FSModel* fem);
 
 	DECLARE_REGISTERED(FSReactionDiffusionMaterial);
 };
@@ -845,7 +845,7 @@ public:
     
 public:
     // constructor
-    FSGeneration();
+    FSGeneration(FSModel* fem);
     
     // set/get solid component
     void SetSolidMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -859,7 +859,7 @@ public:
 class FSMultiGeneration : public FSMaterial
 {
 public:
-    FSMultiGeneration();
+    FSMultiGeneration(FSModel* fem);
     
     DECLARE_REGISTERED(FSMultiGeneration);
 };
@@ -870,7 +870,7 @@ class FSPrestrainMaterial : public FSMaterial
 {
 public:
 	// constructor
-	FSPrestrainMaterial();
+	FSPrestrainMaterial(FSModel* fem);
 
 	// set the elastic component of the material
 	void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -885,7 +885,7 @@ class FSUncoupledPrestrainMaterial : public FSMaterial
 {
 public:
 	// constructor
-	FSUncoupledPrestrainMaterial();
+	FSUncoupledPrestrainMaterial(FSModel* fem);
 
 	// set the elastic component of the material
 	void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -904,7 +904,7 @@ public:
     
 public:
     // constructor
-    FSReactivePlasticity();
+    FSReactivePlasticity(FSModel* fem);
     
     // set the elastic component of the material
     void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -932,7 +932,7 @@ public:
     
 public:
     // constructor
-    FSReactivePlasticDamage();
+    FSReactivePlasticDamage(FSModel* fem);
     
     // set the elastic component of the material
     void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
@@ -964,5 +964,3 @@ public:
 
     DECLARE_REGISTERED(FSReactivePlasticDamage);
 };
-
-

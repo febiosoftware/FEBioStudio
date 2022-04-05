@@ -595,8 +595,8 @@ bool CModelDocument::ImportMaterials(const std::string& fileName)
 					ar.read(ntype);
 					// allocate the material
 					FSMaterial* pm = 0;
-					if (ntype == FE_USER_MATERIAL) pm = new FSUserMaterial(FE_USER_MATERIAL);
-					else pm = FEMaterialFactory::Create(ntype);
+					if (ntype == FE_USER_MATERIAL) pm = new FSUserMaterial(FE_USER_MATERIAL, &fem);
+					else pm = FEMaterialFactory::Create(&fem, ntype);
 
 					if (pm == 0) return false;
 					gmat = new GMaterial(pm);

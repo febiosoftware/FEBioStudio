@@ -344,7 +344,7 @@ bool FENASTRANimport::BuildMesh(FSModel& fem)
 		for (i=0; i<(int) m_Mat.size(); ++i, ++im)
 		{
 			MAT1& mat = *im;
-			FSIsotropicElastic* pmat = new FSIsotropicElastic;
+			FSIsotropicElastic* pmat = new FSIsotropicElastic(&fem);
 			pmat->SetFloatValue(FSIsotropicElastic::MP_DENSITY, mat.d);
 			pmat->SetFloatValue(FSIsotropicElastic::MP_E, mat.E);
 			pmat->SetFloatValue(FSIsotropicElastic::MP_v, mat.v);

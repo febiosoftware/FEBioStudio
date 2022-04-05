@@ -89,7 +89,7 @@ bool ModelFileReader::Load(const char* szfile)
 		std::string log = ar.GetLog();
 		if (log.empty() == false)
 		{
-			errf("%s", log.c_str());
+			errf(log.c_str());
 		}
 
 		Close();

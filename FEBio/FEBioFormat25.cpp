@@ -3108,7 +3108,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
-				FSLinearSpringMaterial* mat = new FSLinearSpringMaterial();
+				FSLinearSpringMaterial* mat = new FSLinearSpringMaterial(&fem);
 				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 				pg->SetMaterial(mat);
 				pg->SetName(szname);
@@ -3129,7 +3129,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 			}
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
-				FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial();
+				FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial(&fem);
 				GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 				pg->SetMaterial(mat);
 				pg->SetName(szname);

@@ -538,7 +538,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 		{
 		case 1:		// isotropic elastic
 			{
-				FSIsotropicElastic* pm = new FSIsotropicElastic();
+				FSIsotropicElastic* pm = new FSIsotropicElastic(&fem);
 				pmat = pm;
 
 				pm->SetFloatValue(FSIsotropicElastic::MP_E, m.m[0][0]);
@@ -548,7 +548,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 			break;
 		case 15:	// mooney-rivlin
 			{
-				FSMooneyRivlin* pm = new FSMooneyRivlin;
+				FSMooneyRivlin* pm = new FSMooneyRivlin(&fem);
 				pmat = pm;
 
 				double A = m.m[0][0];
@@ -564,7 +564,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 			break;
 		case 20:
 			{
-				FSRigidMaterial* pm = new FSRigidMaterial;
+				FSRigidMaterial* pm = new FSRigidMaterial(&fem);
 				pmat = pm;
 				pm->SetFloatValue(FSRigidMaterial::MP_DENSITY, m.dens);
 				pm->SetFloatValue(FSRigidMaterial::MP_E, m.m[0][0]);
@@ -608,7 +608,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 				if ((beta[0]>=2) && (beta[1] >= 2) && (beta[2] >= 2))
 				{
 					// it's the EFD material
-					FSEFDMooneyRivlin* pm = new FSEFDMooneyRivlin;
+					FSEFDMooneyRivlin* pm = new FSEFDMooneyRivlin(&fem);
 					pmat = pm;
 					pm->SetFloatValue(FSEFDMooneyRivlin::MP_C1, m.m[0][0]);
 					pm->SetFloatValue(FSEFDMooneyRivlin::MP_C2, m.m[0][1]);
@@ -619,7 +619,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 				else
 				{
 					// assume normal trans-iso MR
-					FSTransMooneyRivlin* pm = new FSTransMooneyRivlin;
+					FSTransMooneyRivlin* pm = new FSTransMooneyRivlin(&fem);
 					pmat = pm;
 					pm->SetFloatValue(FSTransMooneyRivlin::MP_DENSITY, m.dens);
 					pm->SetFloatValue(FSTransMooneyRivlin::MP_C1, m.m[0][0]);
@@ -648,7 +648,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 			break;
 		default:
 			{
-				pmat = new FSIsotropicElastic;
+				pmat = new FSIsotropicElastic(&fem);
 /*				FENIKEMaterial* pm = new FENIKEMaterial();
 				pmat = pm;
 				pm->SetIntValue(FENIKEMaterial::MP_TYPE, m.ntype);

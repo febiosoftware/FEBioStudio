@@ -715,7 +715,9 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 {
-	FSAxisMaterial* axes = new FSAxisMaterial;
+	FSModel* fem = &GetFSModel();
+
+	FSAxisMaterial* axes = new FSAxisMaterial(fem);
 
 	// allow all materials to define mat_axis, even if not required for that material
 	XMLAtt& atype = tag.Attribute("type");
@@ -755,7 +757,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
     }
 	else if (atype == "cylindrical")
 	{
-		FSAxisMaterial* axes = new FSAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial(fem);
 		axes->m_naopt = FE_AXES_CYLINDRICAL;
 		++tag;
 		do {
@@ -769,7 +771,7 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 	}
 	else if (atype == "spherical")
 	{
-		FSAxisMaterial* axes = new FSAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial(fem);
 		axes->m_naopt = FE_AXES_SPHERICAL;
 		++tag;
 		do {
@@ -789,25 +791,27 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FSMaterial* pm)
 //-----------------------------------------------------------------------------
 void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 {
+	FSModel* fem = &GetFSModel();
+
 	// allow all materials to define mat_axis, even if not required for that material
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		FSAxisMaterial* axes = new FSAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial(fem);
 		axes->m_naopt = FE_AXES_LOCAL;
 		tag.value(axes->m_n, 3);
 		pm->SetAxisMaterial(axes);
 	}
 	else if (atype == "vector")
 	{
-		FSAxisMaterial* axes = new FSAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial(fem);
 		axes->m_naopt = FE_AXES_VECTOR;
 		tag.value(axes->m_a);
 		pm->SetAxisMaterial(axes);
 	}
 	else if (atype == "angles")
 	{
-		FSAxisMaterial* axes = new FSAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial(fem);
 		axes->m_naopt = FE_AXES_ANGLES;
 
 		++tag;
@@ -824,7 +828,7 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	}
 	else if (atype == "cylindrical")
 	{
-		FSAxisMaterial* axes = new FSAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial(fem);
 		axes->m_naopt = FE_AXES_CYLINDRICAL;
 		++tag;
 		do {
@@ -838,7 +842,7 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 	}
 	else if (atype == "spherical")
 	{
-		FSAxisMaterial* axes = new FSAxisMaterial;
+		FSAxisMaterial* axes = new FSAxisMaterial(fem);
 		axes->m_naopt = FE_AXES_SPHERICAL;
 		++tag;
 		do {
@@ -856,19 +860,21 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FSMaterial* pm)
 //-----------------------------------------------------------------------------
 void FEBioFormat::ParseFiberProperty(XMLTag& tag, FSFiberMaterial* pm)
 {
+	FSModel* fem = &GetFSModel();
+
 	// allow all materials to define mat_axis, even if not required for that material
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
 		int n[2] = { 0, 0 };
 		tag.value(n, 2);
-		pm->SetFiberGenerator(new FSFiberGeneratorLocal(n[0], n[1]));
+		pm->SetFiberGenerator(new FSFiberGeneratorLocal(fem, n[0], n[1]));
 	}
 	else if (atype == "vector")
 	{
 		vec3d a;
 		tag.value(a);
-		pm->SetFiberGenerator(new FSFiberGeneratorVector(a));
+		pm->SetFiberGenerator(new FSFiberGeneratorVector(fem, a));
 	}
 	else if (atype == "angles")
 	{
@@ -882,7 +888,7 @@ void FEBioFormat::ParseFiberProperty(XMLTag& tag, FSFiberMaterial* pm)
 			++tag;
 		} while (!tag.isend());
 
-		pm->SetFiberGenerator(new FSAnglesVectorGenerator(theta, phi));
+		pm->SetFiberGenerator(new FSAnglesVectorGenerator(fem, theta, phi));
 	}
 	else if (atype == "cylindrical")
 	{
@@ -895,7 +901,7 @@ void FEBioFormat::ParseFiberProperty(XMLTag& tag, FSFiberMaterial* pm)
 			else ParseUnknownTag(tag);
 			++tag;
 		} while (!tag.isend());
-		pm->SetFiberGenerator(new FSCylindricalVectorGenerator(center, axis, vec));
+		pm->SetFiberGenerator(new FSCylindricalVectorGenerator(fem, center, axis, vec));
 	}
 	else if (atype == "spherical")
 	{
@@ -907,7 +913,7 @@ void FEBioFormat::ParseFiberProperty(XMLTag& tag, FSFiberMaterial* pm)
 			else ParseUnknownTag(tag);
 			++tag;
 		} while (!tag.isend());
-		pm->SetFiberGenerator(new FSSphericalVectorGenerator(center, vec));
+		pm->SetFiberGenerator(new FSSphericalVectorGenerator(fem, center, vec));
 	}
 	else ParseUnknownAttribute(tag, "type");
 	++tag;
@@ -953,12 +959,14 @@ void FixUncoupledMaterial(FSMaterial* mat)
 //-----------------------------------------------------------------------------
 FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propType)
 {
+	FSModel* fem = &GetFSModel();
+
 	// create a material
-	FSMaterial* pm = FEMaterialFactory::Create(szmat, propType);
+	FSMaterial* pm = FEMaterialFactory::Create(fem, szmat, propType);
 	if (pm == 0) 
 	{
 		// HACK: a little hack to read in the "EFD neo-Hookean2" materials of the old datamap plugin. 
-		if (strcmp(szmat, "EFD neo-Hookean2") == 0) pm = FEMaterialFactory::Create("EFD neo-Hookean");
+		if (strcmp(szmat, "EFD neo-Hookean2") == 0) pm = FEMaterialFactory::Create(fem, "EFD neo-Hookean");
 
 		if (pm == 0)
 		{
@@ -1035,7 +1043,7 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 					FSAnglesVectorGenerator* fiber = dynamic_cast<FSAnglesVectorGenerator*>(fiberMat->GetFiberGenerator());
 					if (fiber == nullptr)
 					{
-						fiberMat->SetFiberGenerator(fiber = new FSAnglesVectorGenerator(0.0, 90.0));
+						fiberMat->SetFiberGenerator(fiber = new FSAnglesVectorGenerator(fem, 0.0, 90.0));
 					}
 
 					double theta, phi;
@@ -1104,7 +1112,7 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 //
 FSMaterial* FEBioFormat::ParseRigidBody(XMLTag &tag)
 {
-	FSRigidMaterial* pm = new FSRigidMaterial;
+	FSRigidMaterial* pm = new FSRigidMaterial(&GetFSModel());
 	if (tag.isleaf()) return pm;
 
 	pm->GetParam(FSRigidMaterial::MP_COM).SetBoolValue(true);
@@ -1615,7 +1623,7 @@ bool ProcessReactionEquation(FSModel& fem, FSReactionMaterial* pm, const char* s
 
 			if (m == 0)
 			{
-				FSReactantMaterial* vR = new FSReactantMaterial;
+				FSReactantMaterial* vR = new FSReactantMaterial(&fem);
 				if (nsol != -1) { vR->SetReactantType(FSReactionSpecies::SOLUTE_SPECIES); vR->SetIndex(nsol); }
 				else { vR->SetReactantType(FSReactionSpecies::SBM_SPECIES); vR->SetIndex(nsbm); }
 				vR->SetCoeff(nu);
@@ -1623,7 +1631,7 @@ bool ProcessReactionEquation(FSModel& fem, FSReactionMaterial* pm, const char* s
 			}
 			else
 			{
-				FSProductMaterial* vP = new FSProductMaterial;
+				FSProductMaterial* vP = new FSProductMaterial(&fem);
 				if (nsol != -1) { vP->SetProductType(FSReactionSpecies::SOLUTE_SPECIES); vP->SetIndex(nsol); }
 				else { vP->SetProductType(FSReactionSpecies::SBM_SPECIES); vP->SetIndex(nsbm); }
 				vP->SetCoeff(nu);
@@ -1651,6 +1659,8 @@ bool ProcessReactionEquation(FSModel& fem, FSReactionMaterial* pm, const char* s
 //-----------------------------------------------------------------------------
 FSReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 {
+	FSModel* fem = &GetFSModel();
+
 	XMLAtt* att = tag.AttributePtr("name");
 
 	// get the material type
@@ -1660,7 +1670,7 @@ FSReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 	FSReactionMaterial* pm = 0;
 	if (strcmp(sztype, "mass action") == 0) 
 	{
-		pm = new FSMassActionForward;
+		pm = new FSMassActionForward(fem);
 
 		++tag;
 		do
@@ -1674,7 +1684,7 @@ FSReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 				double k;
 				tag.value(k);
 
-				FSReactionRateConst* rc = new FSReactionRateConst;
+				FSReactionRateConst* rc = new FSReactionRateConst(fem);
 				rc->SetRateConstant(k);
 				pm->SetForwardRate(rc);
 			}
@@ -1690,6 +1700,8 @@ FSReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 //-----------------------------------------------------------------------------
 FSReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 {
+	FSModel* fem = &GetFSModel();
+
 	char szname[256] = { 0 };
 
 	// get the material type
@@ -1702,11 +1714,11 @@ FSReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 	FSReactionMaterial* pm = nullptr;
 	const char* sztype = mtype.cvalue();
 	if (strcmp(sztype, "mass-action-forward") == 0)
-		pm = new FSMassActionForward;
+		pm = new FSMassActionForward(fem);
 	else if (strcmp(sztype, "mass-action-reversible") == 0)
-		pm = new FSMassActionReversible;
+		pm = new FSMassActionReversible(fem);
 	else if (strcmp(sztype, "Michaelis-Menten") == 0)
-		pm = new FSMichaelisMenten;
+		pm = new FSMichaelisMenten(fem);
 	else
 	{
 		assert(false);
@@ -1809,6 +1821,8 @@ FSMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
 {
     char szname[256] = { 0 };
     
+	FSModel* fem = &GetFSModel();
+
     // get the material type
     XMLAtt& mtype = tag.Attribute("type");
     
@@ -1819,9 +1833,9 @@ FSMembraneReactionMaterial* FEBioFormat::ParseMembraneReaction(XMLTag &tag)
     FSMembraneReactionMaterial* pm = nullptr;
     const char* sztype = mtype.cvalue();
     if (strcmp(sztype, "membrane-mass-action-forward") == 0)
-        pm = new FSMembraneMassActionForward;
+        pm = new FSMembraneMassActionForward(fem);
     else if (strcmp(sztype, "membrane-mass-action-reversible") == 0)
-        pm = new FSMembraneMassActionReversible;
+        pm = new FSMembraneMassActionReversible(fem);
     
     FSReactantMaterial* psr = 0;
     FSProductMaterial* psp = 0;

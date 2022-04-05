@@ -481,11 +481,11 @@ public:
 					FSMaterial* pmat = nullptr;
 					if (matProp.GetPropertyType() < FE_FEBIO_MATERIAL_CLASS)
 					{
-						pmat = MF.Create(value.toInt());
+						pmat = MF.Create(GetFSModel(), value.toInt());
 					}
 					else if (matId > 0)
 					{
-						pmat = MF.Create(FE_FEBIO_MATERIAL);
+						pmat = MF.Create(GetFSModel(), FE_FEBIO_MATERIAL);
 //						FEBio::CreateMaterial(matId, dynamic_cast<FEBioMaterial*>(pmat));
 					}
 

@@ -112,18 +112,18 @@ FEMatDescriptor* FEMaterialFactory::AtIndex(int index)
 	return (*it);
 }
 
-FSMaterial* FEMaterialFactory::Create(int nid)
+FSMaterial* FEMaterialFactory::Create(FSModel* fem, int nid)
 {
 	assert(m_pFac);
 	FEMatDescriptor* pd = m_pFac->Find(nid);
-	return (pd?pd->Create():0);
+	return (pd?pd->Create(fem):0);
 }
 
-FSMaterial* FEMaterialFactory::Create(const char *szname, int classId)
+FSMaterial* FEMaterialFactory::Create(FSModel* fem, const char *szname, int classId)
 {
 	assert(m_pFac);
 	FEMatDescriptor* pd = m_pFac->Find(szname, classId);
-	return (pd?pd->Create():0);
+	return (pd?pd->Create(fem):0);
 }
 
 const char* FEMaterialFactory::TypeStr(int nid)

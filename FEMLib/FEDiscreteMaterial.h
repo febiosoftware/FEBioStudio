@@ -6,7 +6,7 @@
 class FSDiscreteMaterial : public FSMaterial
 {
 public:
-	FSDiscreteMaterial(int ntype);
+	FSDiscreteMaterial(int ntype, FSModel* fem);
 };
 
 //===================================================================
@@ -14,7 +14,7 @@ public:
 class FSLinearSpringMaterial : public FSDiscreteMaterial
 {
 public:
-	FSLinearSpringMaterial();
+	FSLinearSpringMaterial(FSModel* fem);
 
 	void SetSpringConstant(double E);
 
@@ -26,7 +26,7 @@ public:
 class FSNonLinearSpringMaterial : public FSDiscreteMaterial
 {
 public:
-	FSNonLinearSpringMaterial();
+	FSNonLinearSpringMaterial(FSModel* fem);
 	DECLARE_REGISTERED(FSNonLinearSpringMaterial);
 };
 
@@ -35,7 +35,7 @@ public:
 class FSHillContractileMaterial : public FSDiscreteMaterial
 {
 public:
-	FSHillContractileMaterial();
+	FSHillContractileMaterial(FSModel* fem);
 	DECLARE_REGISTERED(FSHillContractileMaterial);
 };
 
@@ -45,13 +45,13 @@ public:
 class FS1DFunction : public FSMaterial
 {
 public:
-	FS1DFunction(int ntype) : FSMaterial(ntype) {}
+	FS1DFunction(int ntype, FSModel* fem) : FSMaterial(ntype, fem) {}
 };
 
 class FS1DPointFunction : public FS1DFunction
 {
 public:
-	FS1DPointFunction();
+	FS1DPointFunction(FSModel* fem);
 	LoadCurve* GetPointCurve();
 	void SetPointCurve(LoadCurve& lc);
 	DECLARE_REGISTERED(FS1DPointFunction);
@@ -64,7 +64,7 @@ private:
 class FEBioDiscreteMaterial : public FSDiscreteMaterial
 {
 public:
-	FEBioDiscreteMaterial();
+	FEBioDiscreteMaterial(FSModel* fem);
 	~FEBioDiscreteMaterial();
 
 	void Save(OArchive& ar);

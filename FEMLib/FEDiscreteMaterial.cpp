@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 
 //===================================================================
-FSDiscreteMaterial::FSDiscreteMaterial(int ntype) : FSMaterial(ntype)
+FSDiscreteMaterial::FSDiscreteMaterial(int ntype, FSModel* fem) : FSMaterial(ntype, fem)
 {
 
 }
@@ -40,7 +40,7 @@ FSDiscreteMaterial::FSDiscreteMaterial(int ntype) : FSMaterial(ntype)
 //===================================================================
 REGISTER_MATERIAL(FSLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_LINEAR_SPRING, FE_MAT_DISCRETE, "linear spring", 0);
 
-FSLinearSpringMaterial::FSLinearSpringMaterial() : FSDiscreteMaterial(FE_DISCRETE_LINEAR_SPRING)
+FSLinearSpringMaterial::FSLinearSpringMaterial(FSModel* fem) : FSDiscreteMaterial(FE_DISCRETE_LINEAR_SPRING, fem)
 {
 	AddScienceParam(1, UNIT_STIFFNESS, "E", "spring constant");
 }
@@ -54,7 +54,7 @@ void FSLinearSpringMaterial::SetSpringConstant(double E)
 
 REGISTER_MATERIAL(FSNonLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_NONLINEAR_SPRING, FE_MAT_DISCRETE, "nonlinear spring", 0);
 
-FSNonLinearSpringMaterial::FSNonLinearSpringMaterial() : FSDiscreteMaterial(FE_DISCRETE_NONLINEAR_SPRING)
+FSNonLinearSpringMaterial::FSNonLinearSpringMaterial(FSModel* fem) : FSDiscreteMaterial(FE_DISCRETE_NONLINEAR_SPRING, fem)
 {
 	AddScienceParam(1, UNIT_FORCE, "force", "spring force");
 	AddDoubleParam(1, "scale", "scale");
@@ -65,7 +65,7 @@ FSNonLinearSpringMaterial::FSNonLinearSpringMaterial() : FSDiscreteMaterial(FE_D
 
 REGISTER_MATERIAL(FSHillContractileMaterial, MODULE_MECH, FE_DISCRETE_HILL, FE_MAT_DISCRETE, "Hill", 0);
 
-FSHillContractileMaterial::FSHillContractileMaterial() : FSDiscreteMaterial(FE_DISCRETE_HILL)
+FSHillContractileMaterial::FSHillContractileMaterial(FSModel* fem) : FSDiscreteMaterial(FE_DISCRETE_HILL, fem)
 {
 	AddScienceParam(0, UNIT_FORCE, "Fmax", "Max force");
 	AddScienceParam(1, UNIT_LENGTH, "Lmax", "Max length");
@@ -78,16 +78,16 @@ FSHillContractileMaterial::FSHillContractileMaterial() : FSDiscreteMaterial(FE_D
 	AddProperty("Ftl", FE_MAT_1DFUNC);
 	AddProperty("Fvl", FE_MAT_1DFUNC);
 
-	AddProperty(0, new FS1DPointFunction);
-	AddProperty(1, new FS1DPointFunction);
-	AddProperty(2, new FS1DPointFunction);
+	AddProperty(0, new FS1DPointFunction(fem));
+	AddProperty(1, new FS1DPointFunction(fem));
+	AddProperty(2, new FS1DPointFunction(fem));
 }
 
 //===================================================================
 
 REGISTER_MATERIAL(FS1DPointFunction, MODULE_MECH, FE_FNC1D_POINT, FE_MAT_1DFUNC, "point", 0);
 
-FS1DPointFunction::FS1DPointFunction() : FS1DFunction(FE_FNC1D_POINT) 
+FS1DPointFunction::FS1DPointFunction(FSModel* fem) : FS1DFunction(FE_FNC1D_POINT, fem)
 {
 	// constant value
 	m_lc.Clear();
@@ -106,7 +106,7 @@ void FS1DPointFunction::SetPointCurve(LoadCurve& lc)
 }
 
 //===================================================================
-FEBioDiscreteMaterial::FEBioDiscreteMaterial() : FSDiscreteMaterial(FE_DISCRETE_FEBIO_MATERIAL)
+FEBioDiscreteMaterial::FEBioDiscreteMaterial(FSModel* fem) : FSDiscreteMaterial(FE_DISCRETE_FEBIO_MATERIAL, fem)
 {
 
 }

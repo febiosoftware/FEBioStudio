@@ -134,17 +134,18 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 	return -1;
 }
 
-bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
+bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 {
 	// create the discrete set
-	GDiscreteSpringSet* dset = new GDiscreteSpringSet(fem);
+	GDiscreteSpringSet* dset = new GDiscreteSpringSet(gm);
 
 	// set the spring material
+	FSModel* fem = gm->GetFSModel();
 	switch (m_type)
 	{
-	case 0: dset->SetMaterial(new FSLinearSpringMaterial); break;
-	case 1: dset->SetMaterial(new FSNonLinearSpringMaterial); break;
-	case 2: dset->SetMaterial(new FSHillContractileMaterial); break;
+	case 0: dset->SetMaterial(new FSLinearSpringMaterial(fem)); break;
+	case 1: dset->SetMaterial(new FSNonLinearSpringMaterial(fem)); break;
+	case 2: dset->SetMaterial(new FSHillContractileMaterial(fem)); break;
 	default:
 		assert(false);
 		return false;
@@ -156,7 +157,7 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 	dset->SetName(baseName.toStdString());
 
 	// add the discrete set to the model
-	fem->AddDiscreteObject(dset);
+	gm->AddDiscreteObject(dset);
 
 	int notFound = 0;
 	for (size_t i = 0; i < m_springs.size(); ++i)

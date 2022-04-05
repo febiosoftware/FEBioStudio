@@ -42,7 +42,7 @@ void LoadFEBioProperties(FSModelComponent* pc, IArchive& ar);
 class FSGenericClass : public FSModelComponent
 {
 public:
-	FSGenericClass();
+	FSGenericClass(FSModel* fem);
 
 public:
 	void Save(OArchive& ar);

@@ -164,17 +164,20 @@ public:
 
 public:
 	// convert the old format to the new
-	bool ConvertToNewFormat(std::ostream& log);
+	void ConvertToNewFormat(std::ostream& log);
 
 protected:
-	bool ConvertMaterials(std::ostream& log);
+	void ConvertMaterials(std::ostream& log);
 	bool ConvertSteps(std::ostream& log);
-	bool ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep);
-	bool ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep);
-	bool ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldStep);
-	bool ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldStep);
-	bool ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& oldStep);
-	bool ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep);
+	void ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepRigidConnectors(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 
 private:
 	string				m_title;	// Project Title

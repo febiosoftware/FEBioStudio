@@ -194,7 +194,7 @@ void LoadFEBioProperties(FSModelComponent* pmc, IArchive& ar)
 
 //===============================================================================
 
-FSGenericClass::FSGenericClass() {}
+FSGenericClass::FSGenericClass(FSModel* fem) : FSModelComponent(fem) {}
 
 void FSGenericClass::Save(OArchive& ar)
 {

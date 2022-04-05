@@ -9,6 +9,7 @@ using std::vector;
 using std::string;
 
 class FSMaterial;
+class FSModel;
 
 enum MaterialFlags
 {	
@@ -32,7 +33,7 @@ public:
 
 	virtual ~FEMatDescriptor(){}
 
-	virtual FSMaterial* Create() = 0;
+	virtual FSMaterial* Create(FSModel* fem) = 0;
 
 	int GetModule() const { return m_nModule; }
 
@@ -55,7 +56,7 @@ template <typename T> class FEMatDescriptor_T : public FEMatDescriptor
 {
 public:
 	FEMatDescriptor_T(int nmodule, int ntype, int nclass, const char* szname, unsigned int flags) : FEMatDescriptor(nmodule, ntype, nclass, szname, flags) {}
-	virtual FSMaterial* Create() { return new T; }
+	FSMaterial* Create(FSModel* fem) override { return new T(fem); }
 };
 
 typedef list<FEMatDescriptor*>::iterator FEMatDescIter;
@@ -98,10 +99,10 @@ public:
 	FEMatDescIter FirstMaterial() { return m_Desc.begin(); }
 
 	// create a material from its ID
-	static FSMaterial* Create(int nid);
+	static FSMaterial* Create(FSModel* fem, int nid);
 
 	// create a material from its name
-	static FSMaterial* Create(const char* szname, int classId = -1);
+	static FSMaterial* Create(FSModel* fem, const char* szname, int classId = -1);
 
 	// return the type string of the material
     static const char* TypeStr(int nid);

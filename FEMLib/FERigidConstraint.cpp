@@ -161,11 +161,11 @@ FSRigidPrescribed::FSRigidPrescribed(int ntype, int nstep, FSModel* fem) : FSRig
 {
 }
 
-FSRigidDisplacement::FSRigidDisplacement(FSModel* fem, int nstep) : FSRigidPrescribed(FE_RIGID_DISPLACEMENT, nstep)
+FSRigidDisplacement::FSRigidDisplacement(FSModel* fem, int nstep) : FSRigidPrescribed(FE_RIGID_DISPLACEMENT, nstep, fem)
 {
 	SetTypeString("Rigid displacement/rotation");
 
-	AddIntParam(0, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
+	AddIntParam(0, "dof", "degree of freedom")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
 	AddScienceParam(0.0, UNIT_LENGTH, "value", "value");
 	AddBoolParam(false, "relative");
 }
@@ -174,7 +174,7 @@ FSRigidDisplacement::FSRigidDisplacement(int bc, int matid, double v, int nstep)
 {
 	SetTypeString("Rigid displacement/rotation");
 
-	AddIntParam(bc, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
+	AddIntParam(bc, "dof", "degree of freedom")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
 	AddScienceParam(v, UNIT_LENGTH, "value", "value");
 	AddBoolParam(false, "relative");
 
@@ -222,7 +222,7 @@ bool FSRigidForce::IsRelative() const
 	return GetBoolValue(3);
 }
 
-FSRigidVelocity::FSRigidVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_VELOCITY, nstep)
+FSRigidVelocity::FSRigidVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_VELOCITY, nstep, fem)
 {
 	SetTypeString("Rigid velocity");
 

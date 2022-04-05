@@ -138,6 +138,7 @@ GObject* PRVObjectImport::LoadObject(IArchive& ar, FSProject& prj)
 GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FSProject& prj)
 {
 	GDiscreteObject* po = 0;
+	FSModel* fem = &prj.GetFSModel();
 	GModel* gm = &prj.GetFSModel().GetModel();
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
@@ -179,7 +180,7 @@ GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FSProject& pr
 			GDiscreteSpringSet* pnew = new GDiscreteSpringSet(gm);
 			pnew->SetName(po->GetName());
 			pnew->CopyDiscreteElementSet(ds);
-			FSLinearSpringMaterial* mat = new FSLinearSpringMaterial();
+			FSLinearSpringMaterial* mat = new FSLinearSpringMaterial(fem);
 			mat->SetSpringConstant(po->GetFloatValue(GLinearSpringSet::MP_E));
 			pnew->SetMaterial(mat);
 			delete po;
@@ -191,7 +192,7 @@ GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FSProject& pr
 			GDiscreteSpringSet* pnew = new GDiscreteSpringSet(gm);
 			pnew->SetName(po->GetName());
 			pnew->CopyDiscreteElementSet(ds);
-			FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial();
+			FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial(fem);
 			// TODO: map F parameter
 			pnew->SetMaterial(mat);
 			delete po;

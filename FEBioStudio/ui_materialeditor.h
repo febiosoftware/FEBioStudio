@@ -180,11 +180,13 @@ public:
 
 	QComboBox*	matList;
 
+	FSModel* m_fem;
 	GMaterial* mat;	// if nonzero, material that will be edited
 
 public:
 	void setupUi(QWidget* parent)
 	{
+		m_fem = nullptr;
 		mat = 0;
 		matList = 0;
 

@@ -6,7 +6,7 @@ class FSUserMaterial : public FSMaterial
 	enum { SZTYPE, PARAMDATA, PARAMNAME, PARAMVALUE, PARAMTYPE };
 
 public:
-	FSUserMaterial(int ntype) : FSMaterial(ntype) {}
+	FSUserMaterial(int ntype, FSModel* fem);
 	~FSUserMaterial();
 
 	void SetTypeString(const std::string& sz) override;

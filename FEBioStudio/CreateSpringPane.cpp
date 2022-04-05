@@ -171,7 +171,8 @@ void CCreateSpringPane::on_newSet_clicked()
 	if (dlg.exec())
 	{
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
-		GModel& geom = doc->GetFSModel()->GetModel();
+		FSModel* fem = doc->GetFSModel();
+		GModel& geom = fem->GetModel();
 
 		QString name = dlg.m_name;
 		int ntype = dlg.m_type;
@@ -180,9 +181,9 @@ void CCreateSpringPane::on_newSet_clicked()
 		FSDiscreteMaterial* dmat = nullptr;
 		switch (ntype)
 		{
-		case 0: dmat = new FSLinearSpringMaterial; break;
-		case 1: dmat = new FSNonLinearSpringMaterial; break;
-		case 2: dmat = new FSHillContractileMaterial; break;
+		case 0: dmat = new FSLinearSpringMaterial(fem); break;
+		case 1: dmat = new FSNonLinearSpringMaterial(fem); break;
+		case 2: dmat = new FSHillContractileMaterial(fem); break;
 		default:
 			assert(false);
 			return;

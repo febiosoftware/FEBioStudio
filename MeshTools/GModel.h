@@ -64,6 +64,8 @@ public:
 	//! destructor
 	~GModel(void);
 
+	FSModel* GetFSModel();
+
 	//! clear all objects and groups
 	void Clear();
 

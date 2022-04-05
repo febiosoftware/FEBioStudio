@@ -275,6 +275,12 @@ GModel::~GModel(void)
 }
 
 //-----------------------------------------------------------------------------
+FSModel* GModel::GetFSModel()
+{
+	return imp->m_ps;
+}
+
+//-----------------------------------------------------------------------------
 void GModel::Clear()
 {
 	// cleanup all objects
@@ -1321,6 +1327,8 @@ void GModel::Load(IArchive &ar)
 
 void GModel::LoadDiscrete(IArchive& ar)
 {
+	FSModel* fem = imp->m_ps;
+
     while (IArchive::IO_OK == ar.OpenChunk())
     {
         int ntype = ar.GetChunkID();
@@ -1348,7 +1356,7 @@ void GModel::LoadDiscrete(IArchive& ar)
             GDiscreteSpringSet* pnew = new GDiscreteSpringSet(this);
             pnew->SetName(po->GetName());
             pnew->CopyDiscreteElementSet(ds);
-            FSLinearSpringMaterial* mat = new FSLinearSpringMaterial();
+            FSLinearSpringMaterial* mat = new FSLinearSpringMaterial(fem);
             mat->SetSpringConstant(po->GetFloatValue(GLinearSpringSet::MP_E));
             pnew->SetMaterial(mat);
             delete po;
@@ -1360,7 +1368,7 @@ void GModel::LoadDiscrete(IArchive& ar)
             GDiscreteSpringSet* pnew = new GDiscreteSpringSet(this);
             pnew->SetName(po->GetName());
             pnew->CopyDiscreteElementSet(ds);
-            FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial();
+            FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial(fem);
             // TODO: map F parameter
             pnew->SetMaterial(mat);
             delete po;
