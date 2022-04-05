@@ -1136,7 +1136,7 @@ FSRigidMaterial::FSRigidMaterial() : FSMaterial(FE_RIGID_MATERIAL)
 	AddScienceParam(1, UNIT_DENSITY, "density", "density");
 	AddScienceParam(0, UNIT_PRESSURE , "E", "Young's modulus");
 	AddScienceParam(0, UNIT_NONE   , "v", "Poisson's ratio");
-	AddBoolParam  (false, "Auto-COM", "Auto-COM");
+	AddBoolParam  (false, "auto_com", "Auto-COM");
 	AddVecParam   (vec3d(0,0,0), "center_of_mass", "Center of mass");
 
 	m_pid = -1;
