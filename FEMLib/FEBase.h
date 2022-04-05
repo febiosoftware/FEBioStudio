@@ -32,7 +32,7 @@ public:
 	void SetName(const std::string& name);
 
 	// return the name of the property
-	const std::string& GetName();
+	const std::string& GetName() const;
 
 	// set the name of the property
 	void SetLongName(const std::string& name);
@@ -51,6 +51,7 @@ public:
 
 	// return a component from the property's component list
 	FSCoreBase* GetComponent(int i = 0);
+	const FSCoreBase* GetComponent(int i = 0) const;
 
 	// return the index of a component (or -1)
 	int GetComponentIndex(FSCoreBase* mat);
@@ -121,6 +122,7 @@ public:
 
 	// get a property
 	FSProperty& GetProperty(int i);
+	const FSProperty& GetProperty(int i) const;
 
 	// get the class of a property
 	FSCoreBase* GetProperty(int i, int j);

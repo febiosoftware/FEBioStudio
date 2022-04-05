@@ -1735,7 +1735,7 @@ FSIsotropicFourier::FSIsotropicFourier(FSModel* fem) : FSMaterial(FE_ISOTROPIC_F
 
 REGISTER_MATERIAL(FSPermConst, MODULE_BIPHASIC, FE_PERM_CONST, FE_MAT_PERMEABILITY, "perm-const-iso", 0);
 
-FSPermConst::FSPermConst(FSModel* fem) : FSMaterial(FE_PERM_CONST, fem)
+FSPermConst::FSPermConst(FSModel* fem) : FSMaterialProp(FE_PERM_CONST, fem)
 {
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm", "permeability");
 }
@@ -1746,7 +1746,7 @@ FSPermConst::FSPermConst(FSModel* fem) : FSMaterial(FE_PERM_CONST, fem)
 
 REGISTER_MATERIAL(FSPermHolmesMow, MODULE_BIPHASIC, FE_PERM_HOLMES_MOW, FE_MAT_PERMEABILITY, "perm-Holmes-Mow", 0);
 
-FSPermHolmesMow::FSPermHolmesMow(FSModel* fem) : FSMaterial(FE_PERM_HOLMES_MOW, fem)
+FSPermHolmesMow::FSPermHolmesMow(FSModel* fem) : FSMaterialProp(FE_PERM_HOLMES_MOW, fem)
 {
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm" , "permeability");
 	AddScienceParam(0, UNIT_NONE        , "M"    , "M");
@@ -1759,7 +1759,7 @@ FSPermHolmesMow::FSPermHolmesMow(FSModel* fem) : FSMaterial(FE_PERM_HOLMES_MOW, 
 
 REGISTER_MATERIAL(FSPermAteshianWeissIso, MODULE_BIPHASIC, FE_PERM_REF_ISO, FE_MAT_PERMEABILITY, "perm-ref-iso", 0);
 
-FSPermAteshianWeissIso::FSPermAteshianWeissIso(FSModel* fem) : FSMaterial(FE_PERM_REF_ISO, fem)
+FSPermAteshianWeissIso::FSPermAteshianWeissIso(FSModel* fem) : FSMaterialProp(FE_PERM_REF_ISO, fem)
 {
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm0", "perm0");
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm1", "perm1");
@@ -1774,7 +1774,7 @@ FSPermAteshianWeissIso::FSPermAteshianWeissIso(FSModel* fem) : FSMaterial(FE_PER
 
 REGISTER_MATERIAL(FSPermAteshianWeissTransIso, MODULE_BIPHASIC, FE_PERM_REF_TRANS_ISO, FE_MAT_PERMEABILITY, "perm-ref-trans-iso", 0);
 
-FSPermAteshianWeissTransIso::FSPermAteshianWeissTransIso(FSModel* fem) : FSMaterial(FE_PERM_REF_TRANS_ISO, fem)
+FSPermAteshianWeissTransIso::FSPermAteshianWeissTransIso(FSModel* fem) : FSMaterialProp(FE_PERM_REF_TRANS_ISO, fem)
 {
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm0" , "perm0" );
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm1T", "perm1T");
@@ -1797,7 +1797,7 @@ FSPermAteshianWeissTransIso::FSPermAteshianWeissTransIso(FSModel* fem) : FSMater
 
 REGISTER_MATERIAL(FSPermAteshianWeissOrtho, MODULE_BIPHASIC, FE_PERM_REF_ORTHO, FE_MAT_PERMEABILITY, "perm-ref-ortho", 0);
 
-FSPermAteshianWeissOrtho::FSPermAteshianWeissOrtho(FSModel* fem) : FSMaterial(FE_PERM_REF_ORTHO, fem)
+FSPermAteshianWeissOrtho::FSPermAteshianWeissOrtho(FSModel* fem) : FSMaterialProp(FE_PERM_REF_ORTHO, fem)
 {
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm0" , "perm0");
 	AddVecParam(vec3d(0,0,0), "perm1" , "perm1")->SetUnit(UNIT_PERMEABILITY);
@@ -1816,7 +1816,7 @@ FSPermAteshianWeissOrtho::FSPermAteshianWeissOrtho(FSModel* fem) : FSMaterial(FE
 
 REGISTER_MATERIAL(FSPermExpIso, MODULE_BIPHASIC, FE_PERM_EXP_ISO, FE_MAT_PERMEABILITY, "perm-exp-iso", 0);
 
-FSPermExpIso::FSPermExpIso(FSModel* fem) : FSMaterial(FE_PERM_EXP_ISO, fem)
+FSPermExpIso::FSPermExpIso(FSModel* fem) : FSMaterialProp(FE_PERM_EXP_ISO, fem)
 {
     AddScienceParam(0, UNIT_PERMEABILITY, "perm" , "permeability");
     AddScienceParam(0, UNIT_NONE        , "M"    , "M");
@@ -1828,7 +1828,7 @@ FSPermExpIso::FSPermExpIso(FSModel* fem) : FSMaterial(FE_PERM_EXP_ISO, fem)
 
 REGISTER_MATERIAL(FSDiffConst, MODULE_BIPHASIC, FE_DIFF_CONST, FE_MAT_DIFFUSIVITY, "diff-const-iso", 0);
 
-FSDiffConst::FSDiffConst(FSModel* fem) : FSMaterial(FE_DIFF_CONST, fem)
+FSDiffConst::FSDiffConst(FSModel* fem) : FSMaterialProp(FE_DIFF_CONST, fem)
 {
 	AddScienceParam(0, UNIT_DIFFUSIVITY, "free_diff", "free diffusivity");
 	AddScienceParam(0, UNIT_DIFFUSIVITY, "diff"     , "diffusivity");
@@ -1840,7 +1840,7 @@ FSDiffConst::FSDiffConst(FSModel* fem) : FSMaterial(FE_DIFF_CONST, fem)
 
 REGISTER_MATERIAL(FSDiffOrtho, MODULE_BIPHASIC, FE_DIFF_CONST_ORTHO, FE_MAT_DIFFUSIVITY, "diff-const-ortho", 0);
 
-FSDiffOrtho::FSDiffOrtho(FSModel* fem) : FSMaterial(FE_DIFF_CONST_ORTHO, fem)
+FSDiffOrtho::FSDiffOrtho(FSModel* fem) : FSMaterialProp(FE_DIFF_CONST_ORTHO, fem)
 {
 	AddScienceParam(0, UNIT_DIFFUSIVITY, "free_diff", "free diffusivity");
 	AddVecParam(vec3d(0,0,0), "diff", "diffusivity")->SetUnit(UNIT_DIFFUSIVITY);
@@ -1852,7 +1852,7 @@ FSDiffOrtho::FSDiffOrtho(FSModel* fem) : FSMaterial(FE_DIFF_CONST_ORTHO, fem)
 
 REGISTER_MATERIAL(FSDiffAteshianWeissIso, MODULE_BIPHASIC, FE_DIFF_REF_ISO, FE_MAT_DIFFUSIVITY, "diff-ref-iso", 0);
 
-FSDiffAteshianWeissIso::FSDiffAteshianWeissIso(FSModel* fem) : FSMaterial(FE_DIFF_REF_ISO, fem)
+FSDiffAteshianWeissIso::FSDiffAteshianWeissIso(FSModel* fem) : FSMaterialProp(FE_DIFF_REF_ISO, fem)
 {
 	AddScienceParam(0, UNIT_DIFFUSIVITY, "free_diff", "free diffusivity");
 	AddScienceParam(0, UNIT_DIFFUSIVITY, "diff0"    , "diff0");
@@ -1868,7 +1868,7 @@ FSDiffAteshianWeissIso::FSDiffAteshianWeissIso(FSModel* fem) : FSMaterial(FE_DIF
 
 REGISTER_MATERIAL(FSDiffAlbroIso, MODULE_BIPHASIC, FE_DIFF_ALBRO_ISO, FE_MAT_DIFFUSIVITY, "diff-Albro-iso", 0);
 
-FSDiffAlbroIso::FSDiffAlbroIso(FSModel* fem) : FSMaterial(FE_DIFF_ALBRO_ISO, fem)
+FSDiffAlbroIso::FSDiffAlbroIso(FSModel* fem) : FSMaterialProp(FE_DIFF_ALBRO_ISO, fem)
 {
 	AddScienceParam(0, UNIT_DIFFUSIVITY, "free_diff", "free diffusivity");
 	AddScienceParam(0, UNIT_NONE       , "cdinv"    , "cdinv");
@@ -1881,7 +1881,7 @@ FSDiffAlbroIso::FSDiffAlbroIso(FSModel* fem) : FSMaterial(FE_DIFF_ALBRO_ISO, fem
 
 REGISTER_MATERIAL(FSSolubConst, MODULE_BIPHASIC, FE_SOLUB_CONST, FE_MAT_SOLUBILITY, "solub-const", 0);
 
-FSSolubConst::FSSolubConst(FSModel* fem) : FSMaterial(FE_SOLUB_CONST, fem)
+FSSolubConst::FSSolubConst(FSModel* fem) : FSMaterialProp(FE_SOLUB_CONST, fem)
 {
 	AddScienceParam(1, UNIT_NONE, "solub", "solubility");
 }
@@ -1892,7 +1892,7 @@ FSSolubConst::FSSolubConst(FSModel* fem) : FSMaterial(FE_SOLUB_CONST, fem)
 
 REGISTER_MATERIAL(FSOsmoConst, MODULE_BIPHASIC, FE_OSMO_CONST, FE_MAT_OSMOTIC_COEFFICIENT, "osm-coef-const", 0);
 
-FSOsmoConst::FSOsmoConst(FSModel* fem) : FSMaterial(FE_OSMO_CONST, fem)
+FSOsmoConst::FSOsmoConst(FSModel* fem) : FSMaterialProp(FE_OSMO_CONST, fem)
 {
 	AddScienceParam(1, UNIT_NONE, "osmcoef", "osmotic coefficient");
 }
@@ -1903,7 +1903,7 @@ FSOsmoConst::FSOsmoConst(FSModel* fem) : FSMaterial(FE_OSMO_CONST, fem)
 
 REGISTER_MATERIAL(FSOsmoWellsManning, MODULE_BIPHASIC, FE_OSMO_WM, FE_MAT_OSMOTIC_COEFFICIENT, "osm-coef-Manning", 0);
 
-FSOsmoWellsManning::FSOsmoWellsManning(FSModel* fem) : FSMaterial(FE_OSMO_WM, fem)
+FSOsmoWellsManning::FSOsmoWellsManning(FSModel* fem) : FSMaterialProp(FE_OSMO_WM, fem)
 {
     AddScienceParam(1, UNIT_NONE, "ksi", "ksi");
     AddChoiceParam(0, "co_ion", "co-ion")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);

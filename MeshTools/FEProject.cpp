@@ -146,6 +146,13 @@ unsigned int FSProject::GetModule() const
 }
 
 //-----------------------------------------------------------------------------
+std::string FSProject::GetModuleName() const
+{
+	int mod = FEBio::GetActiveModule();
+	return FEBio::GetModuleName(mod);
+}
+
+//-----------------------------------------------------------------------------
 void FSProject::SetModule(unsigned int mod)
 {
 	FEBio::SetActiveModule(mod);
@@ -532,7 +539,7 @@ void FSProject::SetDefaultPlotVariables()
 	}
 }
 
-bool copyParameter(std::ostream& log, FSCoreBase* pc, Param& p)
+bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 {
 	// we try to copy the parameter value, but we need to make sure
 	// that we don't change the type of pc parameter (unless it's a variable parameter). 
@@ -548,6 +555,20 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, Param& p)
 				log << "implicit conversion from bool to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 				pi->SetIntValue(p.GetBoolValue() ? 1 : 0);
 				return false;
+			}
+			else if ((pi->GetParamType() == Param_CHOICE) && (p.GetParamType() == Param_INT))
+			{
+#ifdef _DEBUG
+				log << "implicit conversion from int to choice (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+#endif
+				pi->SetIntValue(p.GetIntValue());
+			}
+			else if ((pi->GetParamType() == Param_INT) && (p.GetParamType() == Param_CHOICE))
+			{
+#ifdef _DEBUG
+				log << "implicit conversion from choice to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+#endif
+				pi->SetIntValue(p.GetIntValue());
 			}
 			else if (pi->GetParamType() != p.GetParamType())
 			{
@@ -565,12 +586,12 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, Param& p)
 	return true;
 }
 
-bool copyParameters(std::ostream& log, FSCoreBase* pd, FSCoreBase* ps)
+bool copyParameters(std::ostream& log, FSCoreBase* pd, const FSCoreBase* ps)
 {
 	bool bret = true;
 	for (int i = 0; i < ps->Parameters(); ++i)
 	{
-		Param& p = ps->GetParam(i);
+		const Param& p = ps->GetParam(i);
 		if (copyParameter(log, pd, p) == false) bret = false;
 	}
 	if (bret == false) log << "Errors encountered copying parameters from " << ps->GetName() << std::endl;
@@ -581,6 +602,53 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 {
 	ConvertMaterials(log);
 	ConvertSteps(log);
+}
+
+void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelComponent* ps)
+{
+	// first copy parameters
+	copyParameters(log, pd, ps);
+
+	// copy properties
+	for (int i = 0; i < ps->Properties(); ++i)
+	{
+		const FSProperty& prop = ps->GetProperty(i);
+
+		FSProperty* pi = pd->FindProperty(prop.GetName());
+		if (pi)
+		{
+			int ncomp = prop.Size();
+			for (int j = 0; j < ncomp; ++j)
+			{
+				if (prop.GetComponent(j))
+				{
+					const FSModelComponent* pcj = dynamic_cast<const FSModelComponent*>(prop.GetComponent(j));
+					if (pcj)
+					{
+						FSModelComponent* pcn = FEBio::CreateClass(pcj->GetSuperClassID(), pcj->GetTypeString(), pd->GetFSModel());
+						assert(pcn);
+						if (pcn)
+						{
+							copyModelComponent(log, pcn, pcj);
+							pi->SetComponent(pcn, j);
+						}
+						else
+						{
+							log << "Failed to create model component!\n";
+						}
+					}
+					else
+					{
+						log << "dynamic_cast to FSModelComponent failed!\n";
+					}
+				}
+			}
+		}
+		else
+		{
+			log << "Failed to find property %s" << prop.GetName() << std::endl;
+		}
+	}
 }
 
 void FSProject::ConvertMaterials(std::ostream& log)
@@ -600,7 +668,7 @@ void FSProject::ConvertMaterials(std::ostream& log)
 		}
 		else
 		{
-			copyParameters(log, febMat, pm);
+			copyModelComponent(log, febMat, pm);
 			mat->SetMaterialProperties(febMat);
 		}
 	}

@@ -869,6 +869,8 @@ void CModelTree::Build(CModelDocument* doc)
 	std::string modelName = doc->GetDocFileBase();
 	if (modelName.empty()) modelName = "Model";
 
+	std::string moduleName = prj.GetModuleName();
+
 	if      (m_nfilter == ModelTreeFilter::FILTER_GEOMETRY ) modelName += " > Geometry";
 	else if (m_nfilter == ModelTreeFilter::FILTER_MATERIALS) modelName += " > Materials";
 	else if (m_nfilter == ModelTreeFilter::FILTER_PHYSICS  ) modelName += " > Physics";
@@ -909,7 +911,8 @@ void CModelTree::Build(CModelDocument* doc)
 
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
-		t1 = AddTreeItem(nullptr, "Model", 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
+		QString s = QString("Model [%1]").arg(QString::fromStdString(moduleName));
+		t1 = AddTreeItem(nullptr, s, 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
 		t1->setExpanded(true);
 		QFont f = t1->font(0);
 		f.setBold(true);

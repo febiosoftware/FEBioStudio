@@ -42,7 +42,7 @@ void FSProperty::SetName(const std::string& name)
 }
 
 //-----------------------------------------------------------------------------
-const std::string& FSProperty::GetName()
+const std::string& FSProperty::GetName() const
 {
 	return m_name;
 }
@@ -144,6 +144,13 @@ FSCoreBase* FSProperty::GetComponent(int i)
 }
 
 //-----------------------------------------------------------------------------
+const FSCoreBase* FSProperty::GetComponent(int i) const
+{
+	if ((i < 0) || (i >= (int)m_cmp.size())) return 0;
+	return m_cmp[i];
+}
+
+//-----------------------------------------------------------------------------
 int FSProperty::GetComponentIndex(FSCoreBase* pc)
 {
 	for (int i = 0; i < (int)m_cmp.size(); ++i)
@@ -194,6 +201,11 @@ size_t FSCoreBase::Properties() const
 }
 
 FSProperty& FSCoreBase::GetProperty(int i)
+{
+	return *m_prop[i];
+}
+
+const FSProperty& FSCoreBase::GetProperty(int i) const
 {
 	return *m_prop[i];
 }

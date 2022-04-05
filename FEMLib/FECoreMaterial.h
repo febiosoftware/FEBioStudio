@@ -101,6 +101,15 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// The only purpose of this class is to set the superclass ID to FEMATERIALPROPERTY_ID
+// Note that there is a different FSMaterialProperty defined below. 
+class FSMaterialProp : public FSMaterial
+{
+public:
+	FSMaterialProp(int ntype, FSModel* fem);
+};
+
+//-----------------------------------------------------------------------------
 // TODO: I had to wrap this in a material so that I can show it in the 
 // MaterialPropsView
 class FSAxisMaterial : public FSMaterial

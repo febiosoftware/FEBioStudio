@@ -587,7 +587,6 @@ void FSMaterial::Load(IArchive &ar)
                             case FE_ACTIVE_CONTRACT_TISO_UC_OLD : pm = new FSPrescribedActiveContractionTransIsoUCOld(fem); break;
                             default:
                                 pm = FEMaterialFactory::Create(fem, nid);
-								pm->SetSuperClassID(prop->GetSuperClassID());
                             }
 							assert(pm);
 							pm->Load(ar);
@@ -697,6 +696,12 @@ void FSMaterial::Load(IArchive &ar)
 		}
 		ar.CloseChunk();
 	}
+}
+
+//===============================================================================================
+FSMaterialProp::FSMaterialProp(int ntype, FSModel* fem) : FSMaterial(ntype, fem)
+{
+	SetSuperClassID(FEMATERIALPROP_ID);
 }
 
 //===============================================================================================

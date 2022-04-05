@@ -160,6 +160,8 @@ public:
 	unsigned int GetModule() const;
 	void SetModule(unsigned int mod);
 
+	std::string GetModuleName() const;
+
 	static void InitModules();
 
 public:

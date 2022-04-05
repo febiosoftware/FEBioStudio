@@ -1181,7 +1181,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Constant permeability
-class FSPermConst : public FSMaterial
+class FSPermConst : public FSMaterialProp
 {
 public:
 	enum { MP_PERM };
@@ -1192,7 +1192,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Holmes-Mow permeability
-class FSPermHolmesMow : public FSMaterial
+class FSPermHolmesMow : public FSMaterialProp
 {
 public:
 	enum { MP_PERM, MP_M, MP_ALPHA };
@@ -1203,7 +1203,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Ateshian-Weiss isotropic permeability
-class FSPermAteshianWeissIso : public FSMaterial
+class FSPermAteshianWeissIso : public FSMaterialProp
 {
 public:
 	enum { MP_PERM0, MP_PERM1, MP_PERM2, MP_M, MP_ALPHA };
@@ -1214,7 +1214,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Ateshian-Weiss trans-isotropic permeability
-class FSPermAteshianWeissTransIso : public FSMaterial
+class FSPermAteshianWeissTransIso : public FSMaterialProp
 {
 public:
 	enum { MP_PERM0, MP_PERM1T, MP_PERM1A, MP_PERM2T, MP_PERM2A, MP_M0, MP_MT, MP_MA, MP_ALPHA0, MP_ALPHAT, MP_ALPHAA };
@@ -1225,7 +1225,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Ateshian-Weiss orthotropic permeability
-class FSPermAteshianWeissOrtho : public FSMaterial
+class FSPermAteshianWeissOrtho : public FSMaterialProp
 {
 public:
 	enum { MP_PERM0, MP_PERM1, MP_PERM2, MP_M0, MP_ALPHA0, MP_M, MP_ALPHA };
@@ -1237,7 +1237,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // exponential isotropic permeability
-class FSPermExpIso : public FSMaterial
+class FSPermExpIso : public FSMaterialProp
 {
 public:
     enum { MP_PERM, MP_M };
@@ -1248,7 +1248,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Constant diffusivity
-class FSDiffConst : public FSMaterial
+class FSDiffConst : public FSMaterialProp
 {
 public:
 	enum { MP_DIFF_FREE, MP_DIFF};
@@ -1260,7 +1260,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // orthotropic diffusivity
-class FSDiffOrtho : public FSMaterial
+class FSDiffOrtho : public FSMaterialProp
 {
 public:
 	enum { MP_DIFF_FREE, MP_DIFF};
@@ -1272,7 +1272,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Ateshian-Weiss isotropic diffusivity
-class FSDiffAteshianWeissIso : public FSMaterial
+class FSDiffAteshianWeissIso : public FSMaterialProp
 {
 public:
 	enum { MP_DIFF_FREE, MP_DIFF0, MP_DIFF1, MP_DIFF2, MP_M, MP_ALPHA };
@@ -1284,7 +1284,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Albro isotropic diffusivity
-class FSDiffAlbroIso : public FSMaterial
+class FSDiffAlbroIso : public FSMaterialProp
 {
 public:
 	enum { MP_DIFF_FREE, MP_CDINV, MP_ALPHAD };
@@ -1296,7 +1296,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Constant solubility
-class FSSolubConst : public FSMaterial
+class FSSolubConst : public FSMaterialProp
 {
 public:
 	enum { MP_SOLUB };
@@ -1308,7 +1308,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Constant osmotic coefficient
-class FSOsmoConst : public FSMaterial
+class FSOsmoConst : public FSMaterialProp
 {
 public:
 	enum { MP_OSMO };
@@ -1320,7 +1320,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Wells-Manning osmotic coefficient
-class FSOsmoWellsManning : public FSMaterial
+class FSOsmoWellsManning : public FSMaterialProp
 {
 public:
     enum { MP_KSI, MP_COION };
