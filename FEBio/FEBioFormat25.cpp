@@ -109,6 +109,23 @@ bool FEBioFormat25::ParseModuleSection(XMLTag &tag)
 	else if (atype == "fluid"      ) m_nAnalysis = FE_STEP_FLUID;
     else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
+
+	// set the project's active modules
+	FEProject& prj = FileReader()->GetProject();
+	switch (m_nAnalysis)
+	{
+	case FE_STEP_MECHANICS         : prj.SetModule(MODULE_MECH); break;
+	case FE_STEP_HEAT_TRANSFER     : prj.SetModule(MODULE_HEAT); break;
+	case FE_STEP_BIPHASIC          : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC); break;
+	case FE_STEP_BIPHASIC_SOLUTE   : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC | MODULE_SOLUTES); break;
+	case FE_STEP_MULTIPHASIC       : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC | MODULE_MULTIPHASIC | MODULE_SOLUTES | MODULE_REACTIONS); break;
+	case FE_STEP_FLUID             : prj.SetModule(MODULE_FLUID); break;
+	case FE_STEP_FLUID_FSI         : prj.SetModule(MODULE_MECH | MODULE_FLUID | MODULE_FLUID_FSI); break;
+	case FE_STEP_REACTION_DIFFUSION: prj.SetModule(MODULE_REACTIONS | MODULE_SOLUTES | MODULE_REACTION_DIFFUSION); break;
+	default:
+		assert(false);
+	}
+
 	return (m_nAnalysis != -1);
 }
 
