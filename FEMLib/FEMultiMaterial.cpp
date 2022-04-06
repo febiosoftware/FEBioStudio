@@ -126,7 +126,7 @@ FSBiphasic::FSBiphasic(FSModel* fem) : FSMultiMaterial(FE_BIPHASIC_MATERIAL, fem
 
 REGISTER_MATERIAL(FSSoluteMaterial, MODULE_MULTIPHASIC, FE_SOLUTE_MATERIAL, FE_MAT_SOLUTE, "solute", 0);
 
-FSSoluteMaterial::FSSoluteMaterial(FSModel* fem) : FSMaterial(FE_SOLUTE_MATERIAL, fem)
+FSSoluteMaterial::FSSoluteMaterial(FSModel* fem) : FSMaterialProp(FE_SOLUTE_MATERIAL, fem)
 {
 	// add the solute material index
 	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);

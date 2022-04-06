@@ -93,7 +93,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // The FSSoluteMaterial is used as a component of a multiphasic material
-class FSSoluteMaterial : public FSMaterial
+class FSSoluteMaterial : public FSMaterialProp
 {
 public:
 	enum { MP_NSOL };
