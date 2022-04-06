@@ -334,6 +334,7 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					FileReader()->AddLogEntry("unknown plot_level (line %d)", tag.currentLine());
 				}
 			}
+            else if (tag == "plot_stride") tag.value(ops.plot_stride);
 			else ParseUnknownTag(tag);
 		}
 		++tag;
