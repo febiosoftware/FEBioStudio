@@ -223,6 +223,7 @@ int MapOldToNewModules(int oldId)
 	if (oldId & MODULE_FLUID_FSI  ) return FEBio::GetModuleId("fluid-FSI");
 	if (oldId & MODULE_FLUID      ) return FEBio::GetModuleId("fluid");
 	if (oldId & MODULE_MULTIPHASIC) return FEBio::GetModuleId("multiphasic");
+	if (oldId & MODULE_SOLUTES    ) return FEBio::GetModuleId("solute");
 	if (oldId & MODULE_BIPHASIC   ) return FEBio::GetModuleId("biphasic");
 	if (oldId & MODULE_HEAT       ) return FEBio::GetModuleId("heat");
 	if (oldId & MODULE_MECH       ) return FEBio::GetModuleId("solid");
@@ -600,6 +601,27 @@ bool copyParameters(std::ostream& log, FSCoreBase* pd, const FSCoreBase* ps)
 
 void FSProject::ConvertToNewFormat(std::ostream& log)
 {
+	// although the active module was read in already, in previous versions of FEBio Studio
+	// the module ID didn't really matter, so it's possible that it was not set properly. 
+	// So, just to be sure, we're going to set the active module here as well, based on the first analysis' step type
+	FSModel& fem = GetFSModel();
+	if (fem.Steps() > 1)
+	{
+		FSAnalysisStep* step = dynamic_cast<FSAnalysisStep*>(fem.GetStep(1)); assert(step);
+		int ntype = step->GetType();
+		switch (ntype)
+		{
+		case FE_STEP_MECHANICS      : FEBio::SetActiveModule("solid"); break;
+		case FE_STEP_BIPHASIC       : FEBio::SetActiveModule("biphasic"); break;
+		case FE_STEP_BIPHASIC_SOLUTE: FEBio::SetActiveModule("solute"); break;
+		case FE_STEP_MULTIPHASIC    : FEBio::SetActiveModule("multiphasic"); break;
+		case FE_STEP_FLUID          : FEBio::SetActiveModule("fluid"); break;
+		case FE_STEP_FLUID_FSI      : FEBio::SetActiveModule("fluid-FSI"); break;
+		default:
+			assert(false);
+		}
+	}
+
 	ConvertMaterials(log);
 	ConvertSteps(log);
 }
@@ -691,22 +713,6 @@ bool FSProject::ConvertSteps(std::ostream& log)
 		{
 			FSAnalysisStep* step = dynamic_cast<FSAnalysisStep*>(fem.GetStep(i)); assert(step);
 			if (step == nullptr) return false;
-
-			// although the active module was read in already, in previous versions of FEBio Studio
-			// the module ID didn't really matter, so it's likely that it was not set properly. 
-			// So, just to be sure, we're going to set the active module here as well, based on the step type
-			int ntype = step->GetType();
-			switch (ntype)
-			{
-			case FE_STEP_MECHANICS      : FEBio::SetActiveModule("solid"); break;
-			case FE_STEP_BIPHASIC       : FEBio::SetActiveModule("biphasic"); break;
-			case FE_STEP_BIPHASIC_SOLUTE: FEBio::SetActiveModule("solute"); break;
-			case FE_STEP_MULTIPHASIC    : FEBio::SetActiveModule("multiphasic"); break;
-			case FE_STEP_FLUID          : FEBio::SetActiveModule("fluid"); break;
-			case FE_STEP_FLUID_FSI      : FEBio::SetActiveModule("fluid-FSI"); break;
-			default:
-				assert(false);
-			}
 
 			FEBioAnalysisStep* febioStep = dynamic_cast<FEBioAnalysisStep*>(FEBio::CreateStep("analysis", &fem)); assert(febioStep);
 			if (febioStep == nullptr)
