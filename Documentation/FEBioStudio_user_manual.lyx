@@ -10933,7 +10933,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-The Edit Output dialog, with the Potfile tab selected.
+The Edit Output dialog, with the Plotfile tab selected.
  This tab allows users to add data variables to the plot file.
  
 \begin_inset CommandInset label
