@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/GModel.h>
 #include <sstream>
+#include <FEBioLink/FEBioModule.h>
 
 using std::stringstream;
 
@@ -73,20 +74,16 @@ bool FEBioFormat2::ParseSection(XMLTag& tag)
 bool FEBioFormat2::ParseModuleSection(XMLTag &tag)
 {
 	m_nAnalysis = -1;
-	XMLAtt& atype = tag.Attribute("type");
-	if      (atype == "solid"      ) m_nAnalysis = FE_STEP_MECHANICS;
-	else if (atype == "heat"       ) m_nAnalysis = FE_STEP_HEAT_TRANSFER;
-	else if (atype == "biphasic"   ) m_nAnalysis = FE_STEP_BIPHASIC;
-	else if (atype == "solute"     ) m_nAnalysis = FE_STEP_BIPHASIC_SOLUTE;
-	else if (atype == "multiphasic") m_nAnalysis = FE_STEP_MULTIPHASIC;
-	else if (atype == "fluid"      ) m_nAnalysis = FE_STEP_FLUID;
-    else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
-	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
-	else
-	{
-		m_nAnalysis = FE_STEP_MECHANICS;
-		FileReader()->AddLogEntry("unknown module type. Assuming solid module (line %d)", tag.currentLine());
-	}
+	const char* sztype = tag.AttributeValue("type");
+
+	// a few special cases.
+	if (strcmp(sztype, "explicit-solid") == 0) { sztype = "solid"; m_defaultSolver = "explicit-solid"; }
+	if (strcmp(sztype, "CG-solid"      ) == 0) { sztype = "solid"; m_defaultSolver = "CG-solid"; }
+	if (strcmp(sztype, "poro"          ) == 0) { sztype = "biphasic"; m_defaultSolver = "biphasic"; }
+
+	m_nAnalysis = FEBio::GetModuleId(sztype);
+	if (m_nAnalysis < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
+	FileReader()->GetProject().SetModule(m_nAnalysis);
 	return (m_nAnalysis != -1);
 }
 
