@@ -1464,7 +1464,8 @@ FEUncoupledReactiveFatigue::FEUncoupledReactiveFatigue() : FEMaterial(FE_UNCOUPL
     AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
     AddScienceParam(0, UNIT_NONE, "k0", "fatigue reaction rate");
     AddScienceParam(1, UNIT_NONE, "beta", "fatigue reaction exponent");
-    
+    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+
     // Add one component for the elastic material
     AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
     

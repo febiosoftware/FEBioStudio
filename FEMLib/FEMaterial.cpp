@@ -921,6 +921,31 @@ FEActiveContraction::FEActiveContraction() : FEMaterial(FE_MAT_ACTIVE_CONTRACTIO
 }
 
 //////////////////////////////////////////////////////////////////////
+// FEForceVelocityEstrada - Active contraction material
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEForceVelocityEstrada, MODULE_MECH, FE_FORCE_VELOCITY_ESTRADA, FE_MAT_ACTIVE_CONTRACTION_CLASS, "force-velocity-Estrada", 0);
+
+FEForceVelocityEstrada::FEForceVelocityEstrada() : FEMaterial(FE_FORCE_VELOCITY_ESTRADA)
+{
+    AddDoubleParam(0, "ascl", "scale")->SetLoadCurve();
+    AddDoubleParam(0, "ca0");
+    AddDoubleParam(0, "camax");
+    AddDoubleParam(0, "beta");
+    AddDoubleParam(0, "l0");
+    AddDoubleParam(0, "refl");
+    AddDoubleParam(0, "Tmax");
+    AddDoubleParam(0, "alpha1");
+    AddDoubleParam(0, "alpha2");
+    AddDoubleParam(0, "alpha3");
+    AddDoubleParam(0, "A1");
+    AddDoubleParam(0, "A2");
+    AddDoubleParam(0, "A3");
+    AddDoubleParam(0, "a_t");
+    AddBoolParam(true, "force_velocity");
+}
+
+//////////////////////////////////////////////////////////////////////
 // FETransMooneyRivlin - transversely isotropic mooney-rivlin
 //////////////////////////////////////////////////////////////////////
 

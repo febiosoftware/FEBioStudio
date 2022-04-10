@@ -1042,7 +1042,7 @@ class FEUncoupledReactiveFatigue : public FEMaterial
 {
 public:
     // material parameters
-    enum { MP_K0, MP_BETA };
+    enum { MP_K0, MP_BETA, MP_K };
     
 public:
     // constructor

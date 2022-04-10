@@ -149,6 +149,7 @@
 #define FE_HOLMES_MOW_UNCOUPLED         88
 #define FE_TRACE_FREE_NEO_HOOKEAN       89
 #define FE_POLYNOMIAL_HYPERELASTIC      90
+#define FE_FORCE_VELOCITY_ESTRADA       91
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -771,6 +772,20 @@ public:
 	FEActiveContraction();
 
 	DECLARE_REGISTERED(FEActiveContraction);
+};
+
+//-----------------------------------------------------------------------------
+// force-velocity Estrada contraction material for transverely-isotropic materials
+
+class FEForceVelocityEstrada : public FEMaterial
+{
+public:
+    enum { MP_ASCL, MP_CA0, MP_CAM, MP_BETA, MP_L0, MP_REFL, M_TMAX, M_AL1, M_AL2, M_AL3, M_A1, M_A2, M_A3, M_AT, M_FV };
+    
+public:
+    FEForceVelocityEstrada();
+    
+    DECLARE_REGISTERED(FEForceVelocityEstrada);
 };
 
 //-----------------------------------------------------------------------------
