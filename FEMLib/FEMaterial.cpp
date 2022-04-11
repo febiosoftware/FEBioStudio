@@ -1710,9 +1710,9 @@ FEPrescribedActiveContractionIsotropicUC::FEPrescribedActiveContractionIsotropic
 }
 
 //////////////////////////////////////////////////////////////////////
-REGISTER_MATERIAL(FEKamensky, MODULE_MECH, FE_KAMENSKY, FE_MAT_ELASTIC, "Kamensky", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FEIsotropicLeeSacks, MODULE_MECH, FE_ISOTROPIC_LEE_SACKS, FE_MAT_ELASTIC, "isotropic Lee-Sacks", MaterialFlags::TOPLEVEL);
 
-FEKamensky::FEKamensky() : FEMaterial(FE_KAMENSKY)
+FEIsotropicLeeSacks::FEIsotropicLeeSacks() : FEMaterial(FE_ISOTROPIC_LEE_SACKS)
 {
 	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c0");
@@ -1723,9 +1723,9 @@ FEKamensky::FEKamensky() : FEMaterial(FE_KAMENSKY)
 }
 
 //////////////////////////////////////////////////////////////////////
-REGISTER_MATERIAL(FEKamenskyUncoupled, MODULE_MECH, FE_KAMENSKY_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Kamensky uncoupled", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FEIsotropicLeeSacksUncoupled, MODULE_MECH, FE_ISOTROPIC_LEE_SACKS_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled isotropic Lee-Sacks", MaterialFlags::TOPLEVEL);
 
-FEKamenskyUncoupled::FEKamenskyUncoupled() : FEMaterial(FE_KAMENSKY_UNCOUPLED)
+FEIsotropicLeeSacksUncoupled::FEIsotropicLeeSacksUncoupled() : FEMaterial(FE_ISOTROPIC_LEE_SACKS_UNCOUPLED)
 {
 	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c0");
