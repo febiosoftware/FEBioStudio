@@ -37,7 +37,6 @@ public:
 
 public slots:
 	void onTreeChanged();
-	void onLoadPlugin();
 	void Update();
 
 private:

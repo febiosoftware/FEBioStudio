@@ -36,11 +36,13 @@ SOFTWARE.*/
 #include <QSplitter>
 #include <QLineEdit>
 #include <QHeaderView>
+#include <QLabel>
 #include <FECore/FECoreKernel.h>
 #include <FEBioLib/febio.h>
 #include <map>
 #include <FEBioLink/FEBioClass.h>
 #include <FECore/FEModule.h>
+#include <FEBioLib/version.h>
 
 using namespace std;
 
@@ -54,7 +56,6 @@ public:
 	QComboBox* pc;
 	QComboBox* modules;
 	FECoreBase* m_pcb;
-	QPushButton* pb;
 	QLineEdit* search;
 
 public:
@@ -70,6 +71,16 @@ public:
 		QVBoxLayout* l = new QVBoxLayout;
 		l->setContentsMargins(0, 0, 0, 0);
 
+		QLabel* febVersion = new QLabel;
+		febVersion->setAlignment(Qt::AlignLeft);
+		const char* szversion = febio::getVersionString();
+		febVersion->setText(QString("FEBio version : %1").arg(szversion));
+		l->addWidget(febVersion);
+
+		QFrame* f = new QFrame;
+		f->setFrameStyle(QFrame::HLine);
+		l->addWidget(f);
+
 		QHBoxLayout* h = new QHBoxLayout;
 		h->setContentsMargins(0, 0, 0, 0);
 		h->addWidget(new QLabel("Filter:"));
@@ -79,7 +90,6 @@ public:
 		h->addWidget(new QLabel("Search:"));
 		h->addWidget(search = new QLineEdit);
 //		h->addStretch();
-		h->addWidget(pb = new QPushButton("Load Plugin ..."));
 
 		l->addLayout(h);
 
@@ -228,7 +238,6 @@ CDlgFEBioInfo::CDlgFEBioInfo(QWidget* parent) : QDialog(parent), ui(new CDlgFEBi
 	QObject::connect(ui->pc, SIGNAL(currentIndexChanged(int)), this, SLOT(Update()));
 	QObject::connect(ui->modules, SIGNAL(currentIndexChanged(int)), this, SLOT(Update()));
 	QObject::connect(ui->pw, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(onTreeChanged()));
-	QObject::connect(ui->pb, SIGNAL(clicked()), this, SLOT(onLoadPlugin()));
 	QObject::connect(ui->search, SIGNAL(textChanged(const QString&)), this, SLOT(Update()));
 }
 
@@ -334,35 +343,4 @@ void CDlgFEBioInfo::Update()
 	}
 
 	ui->pw->model()->sort(0);
-}
-
-void CDlgFEBioInfo::onLoadPlugin()
-{
-	QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dll)");
-	if (fileName.isEmpty() == false)
-	{
-		std::string sfile = fileName.toStdString();
-
-		// get the currently active module
-		// We need this, since importing the plugin might change this.
-		FECoreKernel& fecore = FECoreKernel::GetInstance();
-		int modId = fecore.GetActiveModule()->GetModuleID();
-
-		// try to import the plugin
-		bool bsuccess = febio::ImportPlugin(sfile.c_str());
-
-		// restore active module
-		fecore.SetActiveModule(modId);
-
-		if (bsuccess == false)
-		{
-			QMessageBox::critical(this, "Load Plugin", QString("The plugin failed to load:\n%1").arg(fileName));
-		}
-		else
-		{
-			QMessageBox::information(this, "Load Plugin", QString("The plugin loaded successfully:\n%1").arg(fileName));
-			UpdateModules();
-			Update();
-		}
-	}
 }
