@@ -89,9 +89,11 @@ namespace FEBio {
 	// helper structure for retrieving febio class info 
 	struct FEBioClassInfo
 	{
-		unsigned int	classId;		// the class ID
+		unsigned int	classId;		// the class ID (i.e. index into kernel's factory class list)
+		int				superClassId;	// the super class
 		int				baseClassId;	// base class index
 		const char*		sztype;			// the type string
+		const char*		szclass;		// the (C++) class name
 		const char*		szmod;			// the module name
 	};
 
@@ -102,6 +104,7 @@ namespace FEBio {
 	};
 
 	std::vector<FEBioClassInfo> FindAllClasses(int mod, int superId, int baseClassId = -1, unsigned int flags = ClassSearchFlags::AllFlags);
+	std::vector<FEBioClassInfo> FindAllPluginClasses(int allocId);
 	std::vector<FEBioClassInfo> FindAllActiveClasses(int superId, int baseClassId = -1, unsigned int flags = ClassSearchFlags::AllFlags);
 	int GetClassId(int superClassId, const std::string& typeStr);
 

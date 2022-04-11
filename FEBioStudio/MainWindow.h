@@ -424,6 +424,7 @@ public slots:
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();
 	void on_actionFEBioInfo_triggered();
+	void on_actionFEBioPlugins_triggered();
 	void on_actionOptions_triggered();
 #ifdef _DEBUG
 	void on_actionLayerInfo_triggered();

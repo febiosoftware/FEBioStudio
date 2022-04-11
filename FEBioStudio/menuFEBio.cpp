@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QFileDialog>
 #include "DlgFEBioInfo.h"
+#include "DlgFEBioPlugins.h"
 
 void CMainWindow::on_actionFEBioRun_triggered()
 {
@@ -293,6 +294,12 @@ void CMainWindow::on_actionFEBioOptimize_triggered()
 void CMainWindow::on_actionFEBioInfo_triggered()
 {
 	CDlgFEBioInfo dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionFEBioPlugins_triggered()
+{
+	CDlgFEBioPlugins dlg(this);
 	dlg.exec();
 }
 
