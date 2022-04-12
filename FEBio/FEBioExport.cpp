@@ -128,7 +128,7 @@ XMLWriter& FEBioExport::GetXMLWriter()
 //-----------------------------------------------------------------------------
 const char* FEBioExport::GetEnumValue(Param& p)
 {
-	assert(p.GetParamType() == Param_CHOICE);
+	assert((p.GetParamType() == Param_CHOICE) || (p.GetParamType() == Param_INT));
 	FSModel& fem = m_prj.GetFSModel();
 	return fem.GetEnumValue(p.GetEnumNames(), p.GetIntValue(), false);
 }
@@ -162,6 +162,7 @@ void FEBioExport::WriteParam(Param &p)
 	if (lc > 0) e.add_attribute("lc", lc);
 	switch (p.GetParamType())
 	{
+	case Param_INT:
 	case Param_CHOICE: 
 		{
 			if (m_exportEnumStrings && (p.GetEnumNames()) && (p.GetEnumNames()[0] != '$'))
@@ -186,7 +187,7 @@ void FEBioExport::WriteParam(Param &p)
 			}
 		}
 		break;
-	case Param_INT   : e.value(p.GetIntValue  ()); break;
+//	case Param_INT   : e.value(p.GetIntValue  ()); break;
 	case Param_FLOAT : e.value(p.GetFloatValue()); break;
 	case Param_BOOL  : e.value(p.GetBoolValue ()); break;
 	case Param_VEC3D : e.value(p.GetVec3dValue()); break;
