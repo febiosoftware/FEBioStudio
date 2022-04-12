@@ -1658,7 +1658,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIV
 
 FEPrescribedActiveContractionUniaxialUC::FEPrescribedActiveContractionUniaxialUC() : FEMaterial(FE_ACTIVE_CONTRACT_UNI_UC)
 {
-    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
+    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0")->MakeVariable(true);
 	SetAxisMaterial(new FEAxisMaterial);
 }
 
