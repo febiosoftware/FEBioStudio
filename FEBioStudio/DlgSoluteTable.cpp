@@ -183,7 +183,7 @@ void CDlgSoluteTable::on_table_itemChanged(QTableWidgetItem* item)
 			// also change the corresponding DOF name for solutes
 			if (m_mode == ShowSolutes)
 			{
-				FEDOFVariable& var = fem->Variable(FE_VAR_CONCENTRATION);
+				FEDOFVariable& var = fem->GetVariable("concentration");
 				var.GetDOF(nrow).SetName(szname);
 			}
 		}

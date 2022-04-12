@@ -42,17 +42,6 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 
 //-----------------------------------------------------------------------------
-// For convenience, we define the following variable IDs
-// TODO: It looks like only FE_VAR_CONCENTRATION is used. Maybe see if this can be eliminated.
-#define FE_VAR_DISPLACEMENT		0
-#define FE_VAR_ROTATION			1
-#define FE_VAR_FLUID_PRESSURE	2
-#define FE_VAR_TEMPERATURE		3
-#define FE_VAR_CONCENTRATION	4
-#define FE_VAR_VELOCITY			5
-#define FE_VAR_FLUID_DILATAION	6
-
-//-----------------------------------------------------------------------------
 class GModel;
 class FSReactionMaterial;
 

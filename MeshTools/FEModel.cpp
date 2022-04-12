@@ -316,7 +316,7 @@ void FSModel::ClearSolutes()
 	if (m_Sol.IsEmpty() == false)
 	{
 		m_Sol.Clear(); 
-		FEDOFVariable& var = Variable(FE_VAR_CONCENTRATION);
+		FEDOFVariable& var = GetVariable("concentration");
 		var.Clear();
 	}
 }
@@ -332,7 +332,7 @@ void FSModel::AddSolute(const std::string& name, int z, double M, double d)
 	m_Sol.Add(s);
 
 	// Also add a degree of freedom for this
-	FEDOFVariable& var = Variable(FE_VAR_CONCENTRATION);
+	FEDOFVariable& var = GetVariable("concentration");
 
 	char sz[12] = {0};
 	sprintf(sz, "c%d", (int)m_Sol.Size());
@@ -709,7 +709,7 @@ void FSModel::RemoveSolute(int n)
 	delete m_Sol[n];
 
 	// Also remove degree of freedom for this
-	FEDOFVariable& var = Variable(FE_VAR_CONCENTRATION);
+	FEDOFVariable& var = GetVariable("concentration");
 	var.RemoveDOF(n);
 
 	// redefine the symbols
