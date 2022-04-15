@@ -223,7 +223,7 @@ CDlgFEBioInfo::CDlgFEBioInfo(QWidget* parent) : QDialog(parent), ui(new CDlgFEBi
 
 	ui->setup(this);
 
-	std::map<int, const char*> idmap = FEBio::GetSuperClassMap();
+	std::map<unsigned int, const char*> idmap = FEBio::GetSuperClassMap();
 	ui->pc->addItem("(all)", -1);
 	for (auto it : idmap)
 	{

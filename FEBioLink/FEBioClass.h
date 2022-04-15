@@ -175,7 +175,7 @@ namespace FEBio {
 
 	const char* GetSuperClassString(int superClassID);
 
-	std::map<int, const char*> GetSuperClassMap();
+	std::map<unsigned int, const char*> GetSuperClassMap();
 
 	vec3d GetMaterialFiber(void* vec3dvaluator, const vec3d& p);
 

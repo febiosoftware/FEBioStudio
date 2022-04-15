@@ -51,54 +51,6 @@ SOFTWARE.*/
 #include <sstream>
 using namespace FEBio;
 
-std::map<int, const char*> idmap;
-void initMap()
-{
-	idmap.clear();
-
-	idmap[FEINVALID_ID             ] = "FEINVALID_ID";
-	idmap[FEOBJECT_ID              ] = "FEOBJECT_ID";
-	idmap[FETASK_ID                ] = "FETASK_ID";
-	idmap[FESOLVER_ID              ] = "FESOLVER_ID";
-	idmap[FEMATERIAL_ID            ] = "FEMATERIAL_ID";
-	idmap[FEMATERIALPROP_ID        ] = "FEMATERIALPROP_ID";
-	idmap[FELOAD_ID                ] = "FELOAD_ID";
-	idmap[FENLCONSTRAINT_ID        ] = "FENLCONSTRAINT_ID";
-	idmap[FEPLOTDATA_ID            ] = "FEPLOTDATA_ID";
-	idmap[FEANALYSIS_ID            ] = "FEANALYSIS_ID";
-	idmap[FESURFACEINTERFACE_ID    ] = "FESURFACEINTERFACE_ID";
-	idmap[FELOGDATA_ID             ] = "FELOGDATA_ID";
-	idmap[FEBC_ID                  ] = "FEBC_ID";
-	idmap[FEGLOBALDATA_ID          ] = "FEGLOBALDATA_ID";
-	idmap[FERIGIDOBJECT_ID         ] = "FERIGIDOBJECT_ID";
-	idmap[FECALLBACK_ID            ] = "FECALLBACK_ID";
-	idmap[FESOLIDDOMAIN_ID         ] = "FESOLIDDOMAIN_ID";
-	idmap[FESHELLDOMAIN_ID         ] = "FESHELLDOMAIN_ID";
-	idmap[FETRUSSDOMAIN_ID         ] = "FETRUSSDOMAIN_ID";
-	idmap[FEDOMAIN2D_ID            ] = "FEDOMAIN2D_ID";
-	idmap[FEDISCRETEDOMAIN_ID      ] = "FEDISCRETEDOMAIN_ID";
-	idmap[FESURFACE_ID             ] = "FESURFACE_ID";
-	idmap[FEIC_ID                  ] = "FEIC_ID";
-	idmap[FEMESHDATAGENERATOR_ID   ] = "FEMESHDATAGENERATOR_ID";
-	idmap[FELOADCONTROLLER_ID      ] = "FELOADCONTROLLER_ID";
-	idmap[FEMODEL_ID               ] = "FEMODEL_ID";
-	idmap[FEMODELDATA_ID           ] = "FEMODELDATA_ID";
-	idmap[FESCALARGENERATOR_ID     ] = "FESCALARGENERATOR_ID";
-	idmap[FEVEC3DGENERATOR_ID      ] = "FEVEC3DGENERATOR_ID";
-	idmap[FEMAT3DGENERATOR_ID      ] = "FEMAT3DGENERATOR_ID";
-	idmap[FEMAT3DSGENERATOR_ID     ] = "FEMAT3DSGENERATOR_ID";
-	idmap[FEFUNCTION1D_ID          ] = "FEFUNCTION1D_ID";
-	idmap[FELINEARSOLVER_ID        ] = "FELINEARSOLVER_ID";
-	idmap[FEMESHADAPTOR_ID         ] = "FEMESHADAPTOR_ID";
-	idmap[FEMESHADAPTORCRITERION_ID] = "FEMESHADAPTORCRITERION_ID";
-	idmap[FERIGIDBC_ID             ] = "FERIGIDBC_ID";
-	idmap[FENEWTONSTRATEGY_ID      ] = "FENEWTONSTRATEGY_ID";
-	idmap[FETIMECONTROLLER_ID      ] = "FETIMECONTROLLER_ID";
-	idmap[FEEIGENSOLVER_ID         ] = "FEEIGENSOLVER_ID";
-	idmap[FEDATARECORD_ID          ] = "FEDATARECORD_ID";
-	idmap[FECLASS_ID               ] = "FECLASS_ID";
-}
-
 // dummy model used for allocating temporary FEBio classes.
 static FEBioModel* febioModel = nullptr;
 
@@ -767,17 +719,12 @@ bool FEBio::runModel(const std::string& fileName, FEBioOutputHandler* outputHand
 
 const char* FEBio::GetSuperClassString(int superClassID)
 {
-	if (idmap.empty()) initMap();
-	if (idmap.find(superClassID) != idmap.end())
-		return idmap[superClassID];
-	else
-		return nullptr;
+	return FECoreKernel::SuperClassString(superClassID);
 }
 
-std::map<int, const char*> FEBio::GetSuperClassMap()
+std::map<unsigned int, const char*> FEBio::GetSuperClassMap()
 {
-	if (idmap.empty()) initMap();
-	return idmap;
+	return FECoreKernel::GetSuperClassMap();
 }
 
 vec3d FEBio::GetMaterialFiber(void* vec3dvaluator, const vec3d& p)
