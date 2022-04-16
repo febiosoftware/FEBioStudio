@@ -244,6 +244,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	{
 		if      (baseClassId == FEBio::GetBaseClassIndex("FESurfaceConstraint")) pc = new FEBioSurfaceConstraint(fem);
 		else if (baseClassId == FEBio::GetBaseClassIndex("FEBodyConstraint"   )) pc = new FEBioBodyConstraint(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("FERigidConnector"   )) pc = new FEBioRigidConnector(fem);
 		else pc = new FEBioNLConstraint(fem); break;
 	}
 	break;

@@ -266,7 +266,7 @@ protected:
 	void WriteSurfaceLoads(FSStep& s);
 
 	void WriteLinearConstraints(FSStep& s);
-	void WriteConnectors(FSStep& s);
+	void WriteRigidConnectors(FSStep& s);
 	void WriteConstraints(FSStep& s);
 
 	void WriteModelComponent(FSModelComponent* pmat, XMLElement& el);

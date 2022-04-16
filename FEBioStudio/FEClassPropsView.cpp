@@ -547,7 +547,15 @@ public:
 				case Param_INT: 
 				{
 					int n = value.toInt();
-					p.SetIntValue(n);
+					if (p.GetEnumNames() && GetFSModel())
+					{
+						int m = GetFSModel()->GetVariableIntValue(p.GetEnumNames(), n);
+						p.SetIntValue(m);
+					}
+					else
+					{
+						p.SetIntValue(n);
+					}
 				}
 				break;
 				case Param_VEC3D: p.SetVec3dValue(StringToVec3d(value.toString())); break;

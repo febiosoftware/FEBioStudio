@@ -652,7 +652,7 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + CountInterfaces<FSRigidJoint>(fem);
+			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + pstep->RigidLoads();
 			if ((nrc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Rigid");
@@ -2221,7 +2221,7 @@ void FEBioExport4::WriteRigidSection(FSStep& s)
 	WriteRigidLoads(s);
 
 	// rigid connectors
-	WriteConnectors(s);
+	WriteRigidConnectors(s);
 }
 
 //-----------------------------------------------------------------------------
@@ -3001,7 +3001,7 @@ void FEBioExport4::WriteStepSection()
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = step.RigidConstraints();
+			int nrc = step.RigidConstraints() + step.RigidLoads() + step.RigidConnectors();
 			if (nrc > 0)
 			{
 				m_xml.add_branch("Rigid");
@@ -3035,7 +3035,7 @@ void FEBioExport4::WriteStepSection()
 			}
 
 			// output constraint section
-			int nnlc = step.RigidConstraints() + CountConstraints<FSModelConstraint>(*m_pfem) + CountInterfaces<FSRigidJoint>(*m_pfem);
+			int nnlc = step.Constraints();
 			if (nnlc > 0)
 			{
 				m_xml.add_branch("Constraints");
@@ -3058,16 +3058,10 @@ void FEBioExport4::WriteRigidConstraints(FSStep& s)
 		if (prc && prc->IsActive())
 		{
 			if (m_writeNotes) WriteNote(prc);
-
 			XMLElement el;
 			el.name("rigid_constraint");
 			el.add_attribute("name", prc->GetName());
-			el.add_attribute("type", prc->GetTypeString());
-			m_xml.add_branch(el);
-			{
-				WriteParamList(*prc);
-			}
-			m_xml.close_branch();
+			WriteModelComponent(prc, el);
 		}
 	}
 }
@@ -3081,16 +3075,10 @@ void FEBioExport4::WriteRigidLoads(FSStep& s)
 		if (prl && prl->IsActive())
 		{
 			if (m_writeNotes) WriteNote(prl);
-
 			XMLElement el;
 			el.name("rigid_load");
 			el.add_attribute("name", prl->GetName());
-			el.add_attribute("type", prl->GetTypeString());
-			m_xml.add_branch(el);
-			{
-				WriteParamList(*prl);
-			}
-			m_xml.close_branch();
+			WriteModelComponent(prl, el);
 		}
 	}
 }
@@ -3098,7 +3086,7 @@ void FEBioExport4::WriteRigidLoads(FSStep& s)
 //-----------------------------------------------------------------------------
 // write rigid connectors
 //
-void FEBioExport4::WriteConnectors(FSStep& s)
+void FEBioExport4::WriteRigidConnectors(FSStep& s)
 {
 	for (int i = 0; i < s.RigidConnectors(); ++i)
 	{
@@ -3107,29 +3095,9 @@ void FEBioExport4::WriteConnectors(FSStep& s)
 		if (prc && prc->IsActive())
 		{
 			if (m_writeNotes) WriteNote(prc);
-
 			XMLElement el("rigid_connector");
 			el.add_attribute("name", prc->GetName());
-			el.add_attribute("type", prc->GetTypeString());
-
-			GMaterial* pgA = m_pfem->GetMaterialFromID(prc->GetRigidBody1());
-			if (pgA == 0) throw MissingRigidBody(prc->GetName().c_str());
-			if (pgA->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
-
-			GMaterial* pgB = m_pfem->GetMaterialFromID(prc->GetRigidBody2());
-			if (pgB == 0) throw MissingRigidBody(prc->GetName().c_str());
-			if (pgB->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
-
-			m_xml.add_branch(el);
-			{
-				int na = pgA->m_ntag;
-				int nb = pgB->m_ntag;
-				m_xml.add_leaf("body_a", na);
-				m_xml.add_leaf("body_b", nb);
-
-				WriteParamList(*prc);
-			}
-			m_xml.close_branch();
+			WriteModelComponent(prc, el);
 		}
 	}
 }

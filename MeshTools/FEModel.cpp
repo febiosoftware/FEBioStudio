@@ -520,6 +520,22 @@ int FSModel::GetVariableIntValue(const char* szvar, int n)
 			if ((n >= 0) && (n < m_SBM.Size())) return n + m_Sol.Size() + 1;
 		}
 	}
+	else if (strcmp(szvar, "$(rigid_materials)") == 0)
+	{
+		int m = 0;
+		for (int i = 0; i < Materials(); ++i)
+		{
+			GMaterial* mat = GetMaterial(i);
+			FSMaterial* femat = mat->GetMaterialProperties();
+			if (femat && femat->IsRigid())
+			{
+				if (m == n) return mat->GetID();
+				m++;
+			}
+		}
+//		assert(false);
+	}
+
 //	assert(false);
 	return -1;
 }

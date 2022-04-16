@@ -346,7 +346,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Constraint", FENLCONSTRAINT_ID, -1, prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FENLConstraint"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSModelConstraint* pi = FEBio::CreateFEBioClass<FSModelConstraint>(dlg.GetClassID(), &fem); assert(pi);
@@ -444,22 +444,23 @@ void CMainWindow::on_actionAddRigidConstraint_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-	CDlgAddRigidConstraint dlg(prj, this);
+//	CDlgAddRigidConstraint dlg(prj, this);
+	CDlgAddPhysicsItem dlg("Add Rigid Constraint", FERIGIDBC_ID, FEBio::GetBaseClassIndex("FERigidBC"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
-		FSRigidConstraint* prc = FEBio::CreateFEBioClass<FSRigidConstraint>(dlg.m_type, fem);
+		FSRigidConstraint* prc = FEBio::CreateFEBioClass<FSRigidConstraint>(dlg.GetClassID(), fem);
 		assert(prc);
 		if (prc)
 		{
-			FSStep* step = fem->GetStep(dlg.m_nstep);
+			FSStep* step = fem->GetStep(dlg.GetStep());
 			prc->SetStep(step->GetID());
 
-			std::string name = dlg.m_name;
+			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultRigidConstraintName(fem, prc);
 
-			GMaterial* pmat = dlg.GetMaterial();
-			if (pmat) prc->SetMaterialID(pmat->GetID());
+//			GMaterial* pmat = dlg.GetMaterial();
+//			if (pmat) prc->SetMaterialID(pmat->GetID());
 
 			prc->SetName(name);
 			step->AddRC(prc);
@@ -474,17 +475,18 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-	CDlgAddRigidConnector dlg(prj, this);
+//	CDlgAddRigidConnector dlg(prj, this);
+	CDlgAddPhysicsItem dlg("Add Rigid Connector", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FERigidConnector"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = doc->GetFSModel();
-		FSRigidConnector* pc = FEBio::CreateFEBioClass<FSRigidConnector>(dlg.GetType(), fem);
+		FSRigidConnector* pc = FEBio::CreateFEBioClass<FSRigidConnector>(dlg.GetClassID(), fem);
 		assert(pc);
 		if (pc)
 		{
 			pc->SetPosition(GetGLView()->Get3DCursor());
-			pc->SetRigidBody1(dlg.GetMaterialA());
-			pc->SetRigidBody2(dlg.GetMaterialB());
+//			pc->SetRigidBody1(dlg.GetMaterialA());
+//			pc->SetRigidBody2(dlg.GetMaterialB());
 
 			FSStep* step = fem->GetStep(dlg.GetStep());
 			int stepID = step->GetID();
