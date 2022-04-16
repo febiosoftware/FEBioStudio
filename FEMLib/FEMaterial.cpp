@@ -2129,6 +2129,20 @@ FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEFiberMaterial(FE_FIBE
 }
 
 //=============================================================================
+// Fiber-Exp-Pow-Linear
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberExpPowLin, MODULE_MECH, FE_FIBER_EXP_POW_LIN, FE_MAT_ELASTIC, "fiber-exp-pow-linear", 0, 0);
+
+FEFiberExpPowLin::FEFiberExpPowLin() : FEFiberMaterial(FE_FIBER_EXP_POW_LIN)
+{
+    AddScienceParam(0, UNIT_PRESSURE, "E"  , "E"  );
+    AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
+    AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
+    AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
+}
+
+//=============================================================================
 // Fiber-Neo-Hookean
 //=============================================================================
 

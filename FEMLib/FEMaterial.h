@@ -150,6 +150,7 @@
 #define FE_TRACE_FREE_NEO_HOOKEAN       89
 #define FE_POLYNOMIAL_HYPERELASTIC      90
 #define FE_FORCE_VELOCITY_ESTRADA       91
+#define FE_FIBER_EXP_POW_LIN            92
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -1528,6 +1529,17 @@ public:
 public:
 	FEFiberExpLinearUncoupled();
 	DECLARE_REGISTERED(FEFiberExpLinearUncoupled);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberExpPowLin : public FEFiberMaterial
+{
+public:
+    enum { MP_E, MP_ALPHA, MP_BETA, MP_LAM0 };
+public:
+    FEFiberExpPowLin();
+    
+    DECLARE_REGISTERED(FEFiberExpPowLin);
 };
 
 //-----------------------------------------------------------------------------
