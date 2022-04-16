@@ -704,6 +704,26 @@ void FSStep::Save(OArchive &ar)
         }
         ar.EndChunk();
     }
+
+	// save the rigid loads
+	int nrl = RigidLoads();
+	if (nrl > 0)
+	{
+		ar.BeginChunk(CID_RL_SECTION);
+		{
+			for (int i = 0; i < nrl; ++i)
+			{
+				FSRigidLoad* prl = RigidLoad(i);
+				int ntype = prl->Type();
+				ar.BeginChunk(ntype);
+				{
+					prl->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -745,7 +765,7 @@ void FSStep::Load(IArchive &ar)
 				case CID_STEP_PROPERTY_TYPESTR: ar.read(typeString); break;
 				case CID_STEP_PROPERTY_DATA: 
 				{
-					FSModelComponent* pmc = FEBio::CreateClass(pc->GetSuperClassID(), typeString.c_str(), fem); assert(pmc);
+					FSModelComponent* pmc = FEBio::CreateFSClass(pc->GetSuperClassID(), -1, fem); assert(pmc);
 					pmc->Load(ar);
 					assert(pc->GetComponent() == nullptr);
 					pc->AddComponent(pmc);
@@ -1022,6 +1042,25 @@ void FSStep::Load(IArchive &ar)
 					{
 						pi->Load(ar);
 						AddRigidConnector(pi);
+					}
+                    
+                    ar.CloseChunk();
+                }
+            }
+            break;
+        case CID_RL_SECTION: // rigid loads
+            {
+                while (IArchive::IO_OK == ar.OpenChunk())
+                {
+                    int ntype = ar.GetChunkID();
+                    
+					FEBioRigidLoad* pl = fscore_new<FEBioRigidLoad>(fem, FELOAD_ID, ntype); assert(pl);
+					if (pl == nullptr) ar.log("error parsing CID_RL_SECTION FSStep::Load");
+                    
+					if (pl)
+					{
+						pl->Load(ar);
+						AddRigidLoad(pl);
 					}
                     
                     ar.CloseChunk();
