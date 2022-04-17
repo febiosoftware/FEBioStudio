@@ -3089,6 +3089,7 @@ bool FEBioFormat3::ParseConstraintSection(XMLTag& tag)
 			else if (strcmp(sztype, "prestrain"              ) == 0) ParsePrestrainConstraint(pstep, tag);
             else if (strcmp(sztype, "normal fluid flow"      ) == 0) ParseNrmlFldVlctSrf(pstep, tag);
             else if (strcmp(sztype, "frictionless fluid wall") == 0) ParseFrictionlessFluidWall(pstep, tag);
+            else if (strcmp(sztype, "fixed normal displacement") == 0) ParseFixedNormalDisplacement(pstep, tag);
 			else throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 		}
 		else ParseUnknownTag(tag);
@@ -3281,6 +3282,39 @@ void FEBioFormat3::ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag)
     pi->SetItemList(psurf);
     pstep->AddComponent(pi);
 
+    // read parameters
+    ReadParameters(*pi, tag);
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat3::ParseFixedNormalDisplacement(FEStep* pstep, XMLTag& tag)
+{
+    FEBioModel& febio = GetFEBioModel();
+    FEModel& fem = GetFEModel();
+    
+    // make sure there is something to read
+    if (tag.isempty()) return;
+    
+    // get the (optional) contact name
+    char szbuf[256];
+    const char* szname = tag.AttributeValue("name", true);
+    if (szname == 0)
+    {
+        sprintf(szbuf, "FixedNormalDisplacement%02d", CountConstraints<FEFixedNormalDisplacement>(fem)+1);
+        szname = szbuf;
+    }
+    
+    // find the surface
+    const char* szsurf = tag.AttributeValue("surface");
+    FESurface* psurf = febio.BuildFESurface(szsurf);
+    if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
+    
+    // create a new fixed normal displacement
+    FEFixedNormalDisplacement* pi = new FEFixedNormalDisplacement(&fem, pstep->GetID());
+    pi->SetName(szname);
+    pi->SetItemList(psurf);
+    pstep->AddComponent(pi);
+    
     // read parameters
     ReadParameters(*pi, tag);
 }

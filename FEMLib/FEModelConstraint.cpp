@@ -135,3 +135,20 @@ FEInSituStretchConstraint::FEInSituStretchConstraint(FEModel* ps, int nstep) : F
 	AddDoubleParam(0.0, "max_stretch");
 	AddBoolParam(true, "isochoric");
 }
+
+//=============================================================================
+// FEFixedNormalDisplacement
+//-----------------------------------------------------------------------------
+
+FEFixedNormalDisplacement::FEFixedNormalDisplacement(FEModel* ps, int nstep) : FESurfaceConstraint(FE_FIXED_NORMAL_DISPLACEMENT, ps, nstep)
+{
+    SetTypeString("fixed normal displacement");
+    
+    AddBoolParam(true, "laugon", "augmented lagrangian");
+    AddDoubleParam(0.2, "tol", "augmentation tolerance");
+    AddDoubleParam(1  , "penalty", "penalty factor");
+    AddDoubleParam(0  , "minaug", "min. augmentations");
+    AddDoubleParam(10 , "maxaug", "max. augmentations");
+    AddBoolParam(false , "shell_bottom", "shell bottom");
+}
+

@@ -321,6 +321,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FEVolumeConstraint , MODULE_MECH, FE_CONSTRAINT, FE_VOLUME_CONSTRAINT, "volume constraint");
 	REGISTER_FE_CLASS(FEWarpingConstraint, MODULE_MECH, FE_CONSTRAINT, FE_WARP_CONSTRAINT  , "warp-image");
 	REGISTER_FE_CLASS(FEPrestrainConstraint, MODULE_MECH, FE_CONSTRAINT, FE_PRESTRAIN_CONSTRAINT, "prestrain");
+    REGISTER_FE_CLASS(FEFixedNormalDisplacement, MODULE_MECH, FE_CONSTRAINT, FE_FIXED_NORMAL_DISPLACEMENT   , "fixed normal displacement", 0);
 
 	// --- HEAT MODULE ---
 	REGISTER_FE_CLASS(FEHeatTransfer         , MODULE_HEAT, FE_ANALYSIS         , FE_STEP_HEAT_TRANSFER    , "Heat Transfer");
