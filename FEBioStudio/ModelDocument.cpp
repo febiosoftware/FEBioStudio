@@ -134,6 +134,10 @@ void CModelDocument::Clear()
 void CModelDocument::Activate()
 {
 	m_context->Pull();
+
+	// reset active module
+	unsigned int m = m_Project.GetModule();
+	m_Project.SetModule(m);
 }
 
 void CModelDocument::Deactivate()

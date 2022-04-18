@@ -184,6 +184,7 @@ protected:
 private:
 	string				m_title;	// Project Title
 	FSModel				m_fem;		// FE model data
+	int					m_module;	// active module
 	CPlotDataSettings	m_plt;		// plot file settings
 	CLogDataSettings	m_log;		// log file settings
 };

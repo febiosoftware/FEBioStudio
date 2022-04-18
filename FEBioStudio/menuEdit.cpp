@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include "DlgMergeObjects.h"
 #include "DlgDetachSelection.h"
 #include "DlgPurge.h"
-#include "DlgEditProject.h"
 #include "PostDocument.h"
 #include "XMLDocument.h"
 #include "Commands.h"
@@ -1057,16 +1056,6 @@ void CMainWindow::on_actionPurge_triggered()
 		UpdateModel();
 		Update();
 	}
-}
-
-void CMainWindow::on_actionEditProject_triggered()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	CDlgEditProject dlg(doc->GetProject(), this);
-	dlg.exec();
-	UpdatePhysicsUi();
 }
 
 void CMainWindow::on_actionFaceToElem_triggered()

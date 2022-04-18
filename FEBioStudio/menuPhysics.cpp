@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "DlgAddRigidConstraint.h"
 #include "DlgAddRigidConnector.h"
 #include "MaterialEditor.h"
+#include "DlgEditProject.h"
 #include <MeshTools/FEModel.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEMKernel.h>
@@ -510,7 +511,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, prj, false, false, this);
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, prj, true, false, this);
 	if (dlg.exec())
 	{
 		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
@@ -682,4 +683,14 @@ void CMainWindow::on_actionSBMTable_triggered()
 
 	// since the number of solutes could have changed, let's rebuild the entire model tree
 	UpdateModel(0, true);
+}
+
+void CMainWindow::on_actionEditProject_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	CDlgEditProject dlg(doc->GetProject(), this);
+	dlg.exec();
+	UpdatePhysicsUi();
 }

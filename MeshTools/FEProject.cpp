@@ -117,6 +117,8 @@ FSProject::FSProject(void) : m_plt(*this)
 	// set the title
 	m_title = "untitled";
 
+	m_module = -1;
+
 	static bool init = false;
 	if (init == false)
 	{
@@ -142,19 +144,21 @@ void FSProject::Reset()
 //-----------------------------------------------------------------------------
 unsigned int FSProject::GetModule() const
 {
-	return FEBio::GetActiveModule();
+	return m_module;// FEBio::GetActiveModule();
 }
 
 //-----------------------------------------------------------------------------
 std::string FSProject::GetModuleName() const
 {
 	int mod = FEBio::GetActiveModule();
+	assert(mod == m_module);
 	return FEBio::GetModuleName(mod);
 }
 
 //-----------------------------------------------------------------------------
 void FSProject::SetModule(unsigned int mod)
 {
+	m_module = mod;
 	FEBio::SetActiveModule(mod);
 
 	// get the list of variables
