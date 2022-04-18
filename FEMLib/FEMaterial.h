@@ -337,7 +337,7 @@
 class FSFiberGenerator : public FSMaterial
 {
 public:
-	FSFiberGenerator(int ntype, FSModel* fem) : FSMaterial(ntype, fem) {}
+    FSFiberGenerator(int ntype, FSModel* fem);
 };
 
 //-----------------------------------------------------------------------------
@@ -767,7 +767,7 @@ public:
 //-----------------------------------------------------------------------------
 // Active contraction material for new transverely-isotropic materials
 
-class FSActiveContraction : public FSMaterial
+class FSActiveContraction : public FSMaterialProp
 {
 public:
 	enum { MP_ASCL, MP_CA0, MP_BETA, MP_L0, MP_REFL };
@@ -1813,7 +1813,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSReactionRateConst : public FSMaterial
+class FSReactionRateConst : public FSMaterialProp
 {
 public:
 	enum { MP_K };
@@ -1827,7 +1827,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSReactionRateHuiskes : public FSMaterial
+class FSReactionRateHuiskes : public FSMaterialProp
 {
 public:
 	enum { MP_B, MP_PSI0 };
@@ -1837,7 +1837,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEBioReactionRate : public FSMaterial
+class FEBioReactionRate : public FSMaterialProp
 {
 public:
 	FEBioReactionRate(FSModel* fem);
@@ -1847,7 +1847,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSMembraneReactionRateConst : public FSMaterial
+class FSMembraneReactionRateConst : public FSMaterialProp
 {
 public:
     enum { MP_K };
@@ -1861,7 +1861,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSMembraneReactionRateIonChannel : public FSMaterial
+class FSMembraneReactionRateIonChannel : public FSMaterialProp
 {
 public:
     enum { MP_G, MP_SOL };
@@ -1877,7 +1877,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSMembraneReactionRateVoltageGated : public FSMaterial
+class FSMembraneReactionRateVoltageGated : public FSMaterialProp
 {
 public:
     enum { MP_A, MP_B, MP_C, MP_D, MP_SOL };
@@ -1953,7 +1953,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSFDDSpherical : public FSMaterial
+class FSFDDSpherical : public FSMaterialProp
 {
 public:
     FSFDDSpherical(FSModel* fem);
@@ -1961,7 +1961,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSFDDEllipsoidal : public FSMaterial
+class FSFDDEllipsoidal : public FSMaterialProp
 {
 public:
     enum { MP_SPA };
@@ -1971,7 +1971,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSFDDvonMises3d : public FSMaterial
+class FSFDDvonMises3d : public FSMaterialProp
 {
 public:
     enum { MP_B };
@@ -1981,7 +1981,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSFDDCircular : public FSMaterial
+class FSFDDCircular : public FSMaterialProp
 {
 public:
     FSFDDCircular(FSModel* fem);
@@ -1989,7 +1989,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSFDDElliptical : public FSMaterial
+class FSFDDElliptical : public FSMaterialProp
 {
 public:
     enum { MP_SPA1, M_SPA2 };
@@ -1999,7 +1999,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSFDDvonMises2d : public FSMaterial
+class FSFDDvonMises2d : public FSMaterialProp
 {
 public:
     enum { MP_B };
@@ -2009,7 +2009,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSSchemeGKT : public FSMaterial
+class FSSchemeGKT : public FSMaterialProp
 {
 public:
     enum { MP_NPH, M_NTH };
@@ -2019,7 +2019,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSSchemeFEI : public FSMaterial
+class FSSchemeFEI : public FSMaterialProp
 {
 public:
     enum { MP_RES };
@@ -2029,7 +2029,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSSchemeT2d : public FSMaterial
+class FSSchemeT2d : public FSMaterialProp
 {
 public:
     enum { M_NTH };
@@ -2039,7 +2039,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSSchemeGKTUC : public FSMaterial
+class FSSchemeGKTUC : public FSMaterialProp
 {
 public:
     enum { MP_NPH, M_NTH };
@@ -2049,7 +2049,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSSchemeFEIUC : public FSMaterial
+class FSSchemeFEIUC : public FSMaterialProp
 {
 public:
     enum { MP_RES };
@@ -2059,7 +2059,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSSchemeT2dUC : public FSMaterial
+class FSSchemeT2dUC : public FSMaterialProp
 {
 public:
     enum { M_NTH };
@@ -2069,7 +2069,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSCDFSimo : public FSMaterial
+class FSCDFSimo : public FSMaterialProp
 {
 public:
     enum { MP_A, MP_B };
@@ -2079,7 +2079,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSCDFLogNormal : public FSMaterial
+class FSCDFLogNormal : public FSMaterialProp
 {
 public:
     enum { MP_MU, MP_SIGMA, MP_DMAX };
@@ -2089,7 +2089,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSCDFWeibull : public FSMaterial
+class FSCDFWeibull : public FSMaterialProp
 {
 public:
     enum { MP_ALPHA, MP_MU, MP_DMAX };
@@ -2099,7 +2099,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSCDFStep : public FSMaterial
+class FSCDFStep : public FSMaterialProp
 {
 public:
     enum { MP_MU, MP_DMAX };
@@ -2109,7 +2109,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSCDFQuintic : public FSMaterial
+class FSCDFQuintic : public FSMaterialProp
 {
 public:
     enum { MP_MUMIN, MP_MUMAX, MP_DMAX };
@@ -2119,7 +2119,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FECDFPower : public FSMaterial
+class FECDFPower : public FSMaterialProp
 {
 public:
     enum { MP_ALPHA, MP_MU0, MP_MU1 };
@@ -2129,7 +2129,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCSimo : public FSMaterial
+class FSDCSimo : public FSMaterialProp
 {
 public:
     FSDCSimo(FSModel* fem);
@@ -2137,7 +2137,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCStrainEnergyDensity : public FSMaterial
+class FSDCStrainEnergyDensity : public FSMaterialProp
 {
 public:
     FSDCStrainEnergyDensity(FSModel* fem);
@@ -2145,7 +2145,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCSpecificStrainEnergy : public FSMaterial
+class FSDCSpecificStrainEnergy : public FSMaterialProp
 {
 public:
     FSDCSpecificStrainEnergy(FSModel* fem);
@@ -2153,7 +2153,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCvonMisesStress : public FSMaterial
+class FSDCvonMisesStress : public FSMaterialProp
 {
 public:
     FSDCvonMisesStress(FSModel* fem);
@@ -2161,7 +2161,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCDruckerShearStress : public FSMaterial
+class FSDCDruckerShearStress : public FSMaterialProp
 {
 public:
     enum { MP_C };
@@ -2171,7 +2171,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCMaxShearStress : public FSMaterial
+class FSDCMaxShearStress : public FSMaterialProp
 {
 public:
     FSDCMaxShearStress(FSModel* fem);
@@ -2179,7 +2179,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCMaxNormalStress : public FSMaterial
+class FSDCMaxNormalStress : public FSMaterialProp
 {
 public:
     FSDCMaxNormalStress(FSModel* fem);
@@ -2187,7 +2187,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCMaxNormalLagrangeStrain : public FSMaterial
+class FSDCMaxNormalLagrangeStrain : public FSMaterialProp
 {
 public:
     FSDCMaxNormalLagrangeStrain(FSModel* fem);
@@ -2195,7 +2195,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCOctahedralShearStrain : public FSMaterial
+class FSDCOctahedralShearStrain : public FSMaterialProp
 {
 public:
     FSDCOctahedralShearStrain(FSModel* fem);
@@ -2203,7 +2203,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCSimoUC : public FSMaterial
+class FSDCSimoUC : public FSMaterialProp
 {
 public:
     FSDCSimoUC(FSModel* fem);
@@ -2211,7 +2211,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCStrainEnergyDensityUC : public FSMaterial
+class FSDCStrainEnergyDensityUC : public FSMaterialProp
 {
 public:
     FSDCStrainEnergyDensityUC(FSModel* fem);
@@ -2219,7 +2219,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCSpecificStrainEnergyUC : public FSMaterial
+class FSDCSpecificStrainEnergyUC : public FSMaterialProp
 {
 public:
     FSDCSpecificStrainEnergyUC(FSModel* fem);
@@ -2227,7 +2227,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCvonMisesStressUC : public FSMaterial
+class FSDCvonMisesStressUC : public FSMaterialProp
 {
 public:
     FSDCvonMisesStressUC(FSModel* fem);
@@ -2235,7 +2235,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCMaxShearStressUC : public FSMaterial
+class FSDCMaxShearStressUC : public FSMaterialProp
 {
 public:
     FSDCMaxShearStressUC(FSModel* fem);
@@ -2243,7 +2243,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCMaxNormalStressUC : public FSMaterial
+class FSDCMaxNormalStressUC : public FSMaterialProp
 {
 public:
     FSDCMaxNormalStressUC(FSModel* fem);
@@ -2251,7 +2251,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSDCMaxNormalLagrangeStrainUC : public FSMaterial
+class FSDCMaxNormalLagrangeStrainUC : public FSMaterialProp
 {
 public:
     FSDCMaxNormalLagrangeStrainUC(FSModel* fem);
@@ -2259,7 +2259,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSRelaxCSExp : public FSMaterial
+class FSRelaxCSExp : public FSMaterialProp
 {
 public:
     enum { MP_TAU };
@@ -2269,7 +2269,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSRelaxExp : public FSMaterial
+class FSRelaxExp : public FSMaterialProp
 {
 public:
     enum { MP_TAU };
@@ -2279,7 +2279,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSRelaxExpDistortion : public FSMaterial
+class FSRelaxExpDistortion : public FSMaterialProp
 {
 public:
     enum { MP_TAU, M_TAU1, M_ALPHA };
@@ -2289,7 +2289,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSRelaxFung : public FSMaterial
+class FSRelaxFung : public FSMaterialProp
 {
 public:
     enum { MP_TAU1, M_TAU2 };
@@ -2299,7 +2299,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxMalkin : public FSMaterial
+class FERelaxMalkin : public FSMaterialProp
 {
 public:
     enum { MP_TAU1, M_TAU2, M_BETA };
@@ -2309,7 +2309,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxMalkinDistortion : public FSMaterial
+class FERelaxMalkinDistortion : public FSMaterialProp
 {
 public:
     enum { MP_T1C0, MP_T1C1, MP_T1S0, MP_T2C0, MP_T2C1, MP_T2S0, M_BETA };
@@ -2319,7 +2319,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSRelaxPark : public FSMaterial
+class FSRelaxPark : public FSMaterialProp
 {
 public:
     enum { MP_TAU, M_BETA };
@@ -2329,7 +2329,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSRelaxParkDistortion : public FSMaterial
+class FSRelaxParkDistortion : public FSMaterialProp
 {
 public:
     enum { MP_TAU, M_TAU1, M_BETA, M_BETA1, M_ALPHA };
@@ -2339,7 +2339,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSRelaxPow : public FSMaterial
+class FSRelaxPow : public FSMaterialProp
 {
 public:
     enum { MP_TAU, M_BETA };
@@ -2349,7 +2349,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSRelaxPowDistortion : public FSMaterial
+class FSRelaxPowDistortion : public FSMaterialProp
 {
 public:
     enum { MP_TAU, M_TAU1, M_BETA, M_BETA1, M_ALPHA };
@@ -2359,7 +2359,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSRelaxProny : public FSMaterial
+class FSRelaxProny : public FSMaterialProp
 {
 public:
     // max nr of Prony terms
@@ -2377,7 +2377,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Elastic pressure for ideal gas
-class FSEPIdealGas : public FSMaterial
+class FSEPIdealGas : public FSMaterialProp
 {
 public:
     enum { MP_M };
@@ -2388,7 +2388,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Elastic pressure for ideal fluid
-class FSEPIdealFluid : public FSMaterial
+class FSEPIdealFluid : public FSMaterialProp
 {
 public:
     enum { MP_K };
@@ -2399,7 +2399,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Elastic pressure for neo-Hookean fluid
-class FSEPNeoHookeanFluid : public FSMaterial
+class FSEPNeoHookeanFluid : public FSMaterialProp
 {
 public:
     enum { MP_K };
@@ -2410,7 +2410,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Viscous Newtonian fluid
-class FSVFNewtonian : public FSMaterial
+class FSVFNewtonian : public FSMaterialProp
 {
 public:
     enum { MP_MU, MP_K };
@@ -2421,7 +2421,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Viscous Bingham fluid
-class FSVFBingham : public FSMaterial
+class FSVFBingham : public FSMaterialProp
 {
 public:
     enum { MP_MU, MP_TAUY, MP_N };
@@ -2432,7 +2432,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Viscous Carreau fluid
-class FSVFCarreau : public FSMaterial
+class FSVFCarreau : public FSMaterialProp
 {
 public:
     enum { MP_MU0, MP_MUI, MP_LAM, MP_N };
@@ -2443,7 +2443,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Viscous Carreau-Yasuda fluid
-class FSVFCarreauYasuda : public FSMaterial
+class FSVFCarreauYasuda : public FSMaterialProp
 {
 public:
     enum { MP_MU0, MP_MUI, MP_LAM, MP_N, MP_A };
@@ -2454,7 +2454,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Viscous Powell-Eyring fluid
-class FSVFPowellEyring : public FSMaterial
+class FSVFPowellEyring : public FSMaterialProp
 {
 public:
     enum { MP_MU0, MP_MUI, MP_LAM };
@@ -2465,7 +2465,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Viscous Cross fluid
-class FSVFCross : public FSMaterial
+class FSVFCross : public FSMaterialProp
 {
 public:
     enum { MP_MU0, MP_MUI, MP_LAM, MP_M };
@@ -2475,7 +2475,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSStarlingSupply : public FSMaterial
+class FSStarlingSupply : public FSMaterialProp
 {
 public:
 	enum { MP_KP, MP_PV };
@@ -2485,7 +2485,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSPrestrainConstGradient : public FSMaterial
+class FSPrestrainConstGradient : public FSMaterialProp
 {
 public:
 	enum { MP_F0 };
@@ -2495,7 +2495,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSPrestrainInSituGradient : public FSMaterial
+class FSPrestrainInSituGradient : public FSMaterialProp
 {
 public:
 	enum { MP_LAM, MP_ISO };
@@ -2505,7 +2505,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSPlasticFlowCurvePaper : public FSMaterial
+class FSPlasticFlowCurvePaper : public FSMaterialProp
 {
 public:
     enum { MP_Y0, MP_YM, MP_W0, MP_WE, MP_NF, MP_R };
@@ -2515,7 +2515,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSPlasticFlowCurveUser : public FSMaterial
+class FSPlasticFlowCurveUser : public FSMaterialProp
 {
 public:
 	FSPlasticFlowCurveUser(FSModel* fem);
@@ -2523,7 +2523,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSPlasticFlowCurveMath : public FSMaterial
+class FSPlasticFlowCurveMath : public FSMaterialProp
 {
 public:
     enum { MP_NF, MP_E0, MP_EM, M_PR };

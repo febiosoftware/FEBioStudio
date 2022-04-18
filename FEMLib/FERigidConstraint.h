@@ -46,6 +46,7 @@ private:
 // Instantiate one of the derived classes instead
 class FSRigidConstraint : public FSStepComponent
 {
+protected:
 	enum { MATID, NAME, PARAMS };
 
 protected:
@@ -54,22 +55,33 @@ protected:
 public:
 	~FSRigidConstraint(void);
 
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
-
 public:
 	int Type() { return m_ntype; }
 
-	void SetMaterialID(int mid) { m_matid = mid; }
-	int GetMaterialID() const { return m_matid; }
+	virtual void SetMaterialID(int mid) = 0;
+	virtual int GetMaterialID() const = 0;
 
 private:
 	int		m_ntype;	// constraint type
+};
+
+class FBSRigidConstraint : public FSRigidConstraint
+{
+public:
+	FBSRigidConstraint(int ntype, int nstep, FSModel* fem = nullptr);
+
+	void SetMaterialID(int mid) override { m_matid = mid; }
+	int GetMaterialID() const override { return m_matid; }
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+private:
 	int		m_matid;	// material ID
 };
 
 
-class FSRigidFixed : public FSRigidConstraint
+class FSRigidFixed : public FBSRigidConstraint
 {
 	enum { BC1, BC2, BC3, BC4, BC5, BC6 };
 
@@ -80,7 +92,7 @@ public:
 	void SetDOF(int i, bool b) { SetBoolValue(BC1+i, b); }
 };
 
-class FSRigidPrescribed : public FSRigidConstraint
+class FSRigidPrescribed : public FBSRigidConstraint
 {
 public:
 	enum { DOF, VALUE };
@@ -119,7 +131,7 @@ public:
 	bool IsRelative() const;
 };
 
-class FSRigidVelocity : public FSRigidConstraint
+class FSRigidVelocity : public FBSRigidConstraint
 {
 	enum { VEL };
 
@@ -130,7 +142,7 @@ public:
 	vec3d GetVelocity() const { return GetVecValue(VEL); }
 };
 
-class FSRigidAngularVelocity : public FSRigidConstraint
+class FSRigidAngularVelocity : public FBSRigidConstraint
 {
 	enum { VEL };
 
@@ -147,6 +159,9 @@ public:
 	FEBioRigidConstraint(FSModel* fem, int nstep = 0);
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
+
+	void SetMaterialID(int mid) override;
+	int GetMaterialID() const override;
 };
 
 

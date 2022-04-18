@@ -102,7 +102,6 @@ void FSRigidConstraintOld::Load(IArchive &ar)
 //=============================================================================
 FSRigidConstraint::FSRigidConstraint(int ntype, int nstep, FSModel* fem) : FSStepComponent(fem)
 {
-	m_matid = -1;
 	m_ntype = ntype;
 	m_nstepID = nstep;
 }
@@ -111,7 +110,13 @@ FSRigidConstraint::~FSRigidConstraint(void)
 {
 }
 
-void FSRigidConstraint::Save(OArchive &ar)
+//=============================================================================
+FBSRigidConstraint::FBSRigidConstraint(int ntype, int nstep, FSModel* fem) : FSRigidConstraint(ntype, nstep, fem)
+{
+	m_matid = -1;
+}
+
+void FBSRigidConstraint::Save(OArchive& ar)
 {
 	ar.WriteChunk(NAME, GetName());
 	ar.WriteChunk(MATID, m_matid);
@@ -122,11 +127,11 @@ void FSRigidConstraint::Save(OArchive &ar)
 	ar.EndChunk();
 }
 
-void FSRigidConstraint::Load(IArchive &ar)
+void FBSRigidConstraint::Load(IArchive& ar)
 {
-	TRACE("FSRigidConstraint::Load");
+	TRACE("FBSRigidConstraint::Load");
 
-	char sz[256] = {0};
+	char sz[256] = { 0 };
 	int n = 0;
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
@@ -136,16 +141,17 @@ void FSRigidConstraint::Load(IArchive &ar)
 		case NAME: ar.read(sz); SetName(sz); break;
 		case MATID: ar.read(m_matid); break;
 		case PARAMS:
-			{
-				ParamContainer::Load(ar);
-			}
-			break;
+		{
+			ParamContainer::Load(ar);
+		}
+		break;
 		}
 		ar.CloseChunk();
 	}
 }
 
-FSRigidFixed::FSRigidFixed(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_FIXED, nstep, fem)
+//=============================================================================
+FSRigidFixed::FSRigidFixed(FSModel* fem, int nstep) : FBSRigidConstraint(FE_RIGID_FIXED, nstep, fem)
 {
 	SetTypeString("Rigid fixed");
 
@@ -157,7 +163,7 @@ FSRigidFixed::FSRigidFixed(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID
 	AddBoolParam(false, "bc6", "Z-rotation");
 }
 
-FSRigidPrescribed::FSRigidPrescribed(int ntype, int nstep, FSModel* fem) : FSRigidConstraint(ntype, nstep, fem)
+FSRigidPrescribed::FSRigidPrescribed(int ntype, int nstep, FSModel* fem) : FBSRigidConstraint(ntype, nstep, fem)
 {
 }
 
@@ -222,14 +228,14 @@ bool FSRigidForce::IsRelative() const
 	return GetBoolValue(3);
 }
 
-FSRigidVelocity::FSRigidVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_VELOCITY, nstep, fem)
+FSRigidVelocity::FSRigidVelocity(FSModel* fem, int nstep) : FBSRigidConstraint(FE_RIGID_INIT_VELOCITY, nstep, fem)
 {
 	SetTypeString("Rigid velocity");
 
 	AddVecParam(vec3d(0, 0, 0), "value", "velocity")->SetUnit(UNIT_VELOCITY);
 }
 
-FSRigidAngularVelocity::FSRigidAngularVelocity(FSModel* fem, int nstep) : FSRigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep, fem)
+FSRigidAngularVelocity::FSRigidAngularVelocity(FSModel* fem, int nstep) : FBSRigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep, fem)
 {
 	SetTypeString("Rigid angular velocity");
 
@@ -242,6 +248,16 @@ FEBioRigidConstraint::FEBioRigidConstraint(FSModel* fem, int nstep) : FSRigidCon
 
 }
 
+void FEBioRigidConstraint::SetMaterialID(int mid)
+{
+	GetParam("rb")->SetIntValue(mid);
+}
+
+int FEBioRigidConstraint::GetMaterialID() const
+{
+	return GetParam("rb")->GetIntValue();
+}
+
 void FEBioRigidConstraint::Save(OArchive& ar)
 {
 	ar.BeginChunk(CID_FEBIO_META_DATA);
@@ -252,7 +268,12 @@ void FEBioRigidConstraint::Save(OArchive& ar)
 
 	ar.BeginChunk(CID_FEBIO_BASE_DATA);
 	{
-		FSRigidConstraint::Save(ar);
+		ar.WriteChunk(NAME, GetName());
+		ar.BeginChunk(PARAMS);
+		{
+			ParamContainer::Save(ar);
+		}
+		ar.EndChunk();
 	}
 	ar.EndChunk();
 }
@@ -266,7 +287,21 @@ void FEBioRigidConstraint::Load(IArchive& ar)
 		switch (nid)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FSRigidConstraint::Load(ar); break;
+		case CID_FEBIO_BASE_DATA: 
+		{
+			char sz[256] = { 0 };
+			while (ar.OpenChunk() == IArchive::IO_OK)
+			{
+				unsigned int nid = ar.GetChunkID();
+				switch (nid)
+				{
+				case NAME  : ar.read(sz); SetName(sz); break;
+				case PARAMS: ParamContainer::Load(ar); break;
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
 		default:
 			assert(false);
 		}

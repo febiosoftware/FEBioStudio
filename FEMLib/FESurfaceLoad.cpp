@@ -42,7 +42,7 @@ FSSurfaceLoad::FSSurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int 
 //-----------------------------------------------------------------------------
 FSPressureLoad::FSPressureLoad(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_PRESSURE_LOAD, ps, pi, nstep)
 {
-	SetTypeString("Pressure Load");
+	SetTypeString("pressure");
 	Param* p = AddScienceParam(1, UNIT_PRESSURE, "pressure", "pressure");
 	p->MakeVariable(true);
 	AddBoolParam(false, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
@@ -65,7 +65,7 @@ void FSPressureLoad::LoadParam(const Param& p)
 
 FSFluidFlux::FSFluidFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_FLUID_FLUX, ps, pi, nstep)
 {
-	SetTypeString("Fluid volumetric flow rate");
+	SetTypeString("fluidflux");
 	AddDoubleParam(1, "flux", "flux");
 	AddBoolParam(0, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
 	AddBoolParam(0, "mixture", "Flux")->SetEnumNames("Fluid\0Mixture\0");
@@ -87,7 +87,7 @@ void FSFluidFlux::LoadParam(const Param& p)
 
 FSBPNormalTraction::FSBPNormalTraction(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_BP_NORMAL_TRACTION, ps, pi, nstep)
 {
-	SetTypeString("Mixture normal traction");
+	SetTypeString("normal_traction");
 	AddScienceParam(0, "P", "traction");
 	AddBoolParam(0, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
 	AddBoolParam(0, "effective", "Traction")->SetEnumNames("Mixture\0Effective\0");
@@ -108,7 +108,7 @@ void FSBPNormalTraction::LoadParam(const Param& p)
 //-----------------------------------------------------------------------------
 FSSoluteFlux::FSSoluteFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_SOLUTE_FLUX, ps, pi, nstep)
 {
-	SetTypeString("Solute molar flow rate");
+	SetTypeString("solute flux");
 	AddDoubleParam(1, "flux", "flux");
 	AddBoolParam(0, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
 	AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(Solutes)")->SetOffset(1);
@@ -130,7 +130,7 @@ void FSSoluteFlux::LoadParam(const Param& p)
 
 FSMatchingOsmoticCoefficient::FSMatchingOsmoticCoefficient(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_MATCHING_OSM_COEF, ps, pi, nstep)
 {
-    SetTypeString("Matching osmotic coefficient");
+    SetTypeString("matching_osm_coef");
     AddScienceParam(0, "P", "ambient_pressure");
     AddScienceParam(0, "c", "ambient_osmolarity");
     AddBoolParam(0, "shell_bottom", "Apply to shell bottom")->SetCheckable(false);
@@ -140,7 +140,7 @@ FSMatchingOsmoticCoefficient::FSMatchingOsmoticCoefficient(FSModel* ps, FEItemLi
 
 FSHeatFlux::FSHeatFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_HEAT_FLUX, ps, pi, nstep)
 {
-	SetTypeString("Heat Flux");
+	SetTypeString("heat flux");
 	AddDoubleParam(0.0, "flux", "flux");
 }
 
@@ -159,7 +159,7 @@ void FSHeatFlux::LoadParam(const Param& p)
 
 FSConvectiveHeatFlux::FSConvectiveHeatFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_CONV_HEAT_FLUX, ps, pi, nstep)
 {
-	SetTypeString("Convective Heat Flux");
+	SetTypeString("convective heat flux");
 	AddDoubleParam(1, "hc", "hc");
 	AddDoubleParam(0, "Ta", "Ta");
 }
@@ -179,7 +179,7 @@ void FSConvectiveHeatFlux::LoadParam(const Param& p)
 
 FSSurfaceTraction::FSSurfaceTraction(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_SURFACE_TRACTION, ps, pi, nstep)
 {
-	SetTypeString("Surface Traction");
+	SetTypeString("traction");
 	AddDoubleParam(1.0, "scale");
 	AddVecParam(vec3d(0,0,1), "traction")->SetUnit(UNIT_PRESSURE);
 }
@@ -197,7 +197,7 @@ void FSSurfaceTraction::LoadParam(const Param& p)
 //-----------------------------------------------------------------------------
 FSFluidPressureLoad::FSFluidPressureLoad(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_FLUID_PRESSURE_LOAD, ps, pi, nstep)
 {
-    SetTypeString("Fluid pressure");
+    SetTypeString("fluid pressure");
     Param* p = AddScienceParam(1, UNIT_PRESSURE, "pressure", "pressure");
     p->MakeVariable(true);
 }
@@ -216,7 +216,7 @@ void FSFluidPressureLoad::LoadParam(const Param& p)
 
 FSFluidTraction::FSFluidTraction(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_FLUID_TRACTION, ps, pi, nstep)
 {
-	SetTypeString("Fluid viscous traction");
+	SetTypeString("fluid viscous traction");
 	AddDoubleParam(1.0, "scale");
 	AddVecParam(vec3d(0, 0, 0), "traction")->SetUnit(UNIT_PRESSURE);
 }
@@ -248,14 +248,14 @@ void FSFluidTraction::LoadParam(const Param& p)
 
 FSFluidVelocity::FSFluidVelocity(FSModel* ps) : FSSurfaceLoad(FE_FLUID_VELOCITY, ps)
 {
-    SetTypeString("Fluid Velocity Vector");
+    SetTypeString("fluid velocity");
     AddVecParam(vec3d(0,0,0), "velocity", "fluid velocity")->SetUnit(UNIT_VELOCITY);
 	AddDoubleParam(1, "scale", "scale");
 }
 
 FSFluidVelocity::FSFluidVelocity(FSModel* ps, FEItemListBuilder* pi, vec3d t, int nstep) : FSSurfaceLoad(FE_FLUID_VELOCITY, ps, pi, nstep)
 {
-    SetTypeString("Fluid Velocity Vector");
+    SetTypeString("fluid velocity");
     AddVecParam(t, "velocity", "fluid velocity");
 	AddDoubleParam(1, "scale", "scale");
 }
@@ -264,7 +264,7 @@ FSFluidVelocity::FSFluidVelocity(FSModel* ps, FEItemListBuilder* pi, vec3d t, in
 
 FSFluidNormalVelocity::FSFluidNormalVelocity(FSModel* ps) : FSSurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps)
 {
-    SetTypeString("Fluid Normal Velocity");
+    SetTypeString("fluid normal velocity");
     AddScienceParam(1, UNIT_VELOCITY, "velocity", "normal velocity");
     AddBoolParam(true, "prescribe_nodal_velocities", "prescribe nodal velocities");
     AddBoolParam(false, "parabolic", "parabolic velocity profile");
@@ -273,7 +273,7 @@ FSFluidNormalVelocity::FSFluidNormalVelocity(FSModel* ps) : FSSurfaceLoad(FE_FLU
 
 FSFluidNormalVelocity::FSFluidNormalVelocity(FSModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep) : FSSurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps, pi, nstep)
 {
-	SetTypeString("Fluid Normal Velocity");
+	SetTypeString("fluid normal velocity");
 	AddScienceParam(vn, UNIT_VELOCITY, "velocity", "normal velocity");
     AddBoolParam(bp, "prescribe_nodal_velocities", "prescribe nodal velocities");
     AddBoolParam(bparab, "parabolic", "parabolic velocity profile");
@@ -302,14 +302,14 @@ FSFluidRotationalVelocity::FSFluidRotationalVelocity(FSModel* ps, FEItemListBuil
 
 FSFluidFlowResistance::FSFluidFlowResistance(FSModel* ps) : FSSurfaceLoad(FE_FLUID_FLOW_RESISTANCE, ps)
 {
-    SetTypeString("Fluid Flow Resistance");
+    SetTypeString("fluid resistance");
     AddDoubleParam(0, "R", "resistance");
     AddDoubleParam(0, "pressure_offset", "pressure_offset");
 }
 
 FSFluidFlowResistance::FSFluidFlowResistance(FSModel* ps, FEItemListBuilder* pi, double b, double po, int nstep) : FSSurfaceLoad(FE_FLUID_FLOW_RESISTANCE, ps, pi, nstep)
 {
-    SetTypeString("Fluid Flow Resistance");
+    SetTypeString("fluid resistance");
     AddDoubleParam(b, "R", "resistance");
     AddDoubleParam(po, "pressure_offset", "pressure_offset");
 }
@@ -318,7 +318,7 @@ FSFluidFlowResistance::FSFluidFlowResistance(FSModel* ps, FEItemListBuilder* pi,
 
 FSFluidFlowRCR::FSFluidFlowRCR(FSModel* ps) : FSSurfaceLoad(FE_FLUID_FLOW_RCR, ps)
 {
-    SetTypeString("Fluid RCR");
+    SetTypeString("fluid RCR");
     AddDoubleParam(0, "R", "proximal resistance");
     AddDoubleParam(0, "Rd", "distal resistance");
     AddDoubleParam(0, "capacitance", "compliance");
@@ -330,7 +330,7 @@ FSFluidFlowRCR::FSFluidFlowRCR(FSModel* ps) : FSSurfaceLoad(FE_FLUID_FLOW_RCR, p
 
 FSFluidFlowRCR::FSFluidFlowRCR(FSModel* ps, FEItemListBuilder* pi, double rp, double rd, double co, double po, double ip, bool be, int nstep) : FSSurfaceLoad(FE_FLUID_FLOW_RCR, ps, pi, nstep)
 {
-    SetTypeString("Fluid RCR");
+    SetTypeString("fluid RCR");
     AddDoubleParam(rp, "R", "resistance");
     AddDoubleParam(rd, "Rd", "distal resistance");
     AddDoubleParam(co, "capacitance", "compliance");
@@ -343,13 +343,13 @@ FSFluidFlowRCR::FSFluidFlowRCR(FSModel* ps, FEItemListBuilder* pi, double rp, do
 
 FSFluidBackflowStabilization::FSFluidBackflowStabilization(FSModel* ps) : FSSurfaceLoad(FE_FLUID_BACKFLOW_STABIL, ps)
 {
-    SetTypeString("Fluid Backflow Stabilization");
+    SetTypeString("fluid backflow stabilization");
     AddDoubleParam(1, "beta", "beta");
 }
 
 FSFluidBackflowStabilization::FSFluidBackflowStabilization(FSModel* ps, FEItemListBuilder* pi, double b, int nstep) : FSSurfaceLoad(FE_FLUID_BACKFLOW_STABIL, ps, pi, nstep)
 {
-    SetTypeString("Fluid Backflow Stabilization");
+    SetTypeString("fluid backflow stabilization");
     AddDoubleParam(b, "beta", "beta");
 }
 
@@ -357,13 +357,13 @@ FSFluidBackflowStabilization::FSFluidBackflowStabilization(FSModel* ps, FEItemLi
 
 FSFluidTangentialStabilization::FSFluidTangentialStabilization(FSModel* ps) : FSSurfaceLoad(FE_FLUID_TANGENTIAL_STABIL, ps)
 {
-    SetTypeString("Fluid Tangential Stabilization");
+    SetTypeString("fluid tangential stabilization");
     AddDoubleParam(1, "beta", "beta");
 }
 
 FSFluidTangentialStabilization::FSFluidTangentialStabilization(FSModel* ps, FEItemListBuilder* pi, double b, int nstep) : FSSurfaceLoad(FE_FLUID_TANGENTIAL_STABIL, ps, pi, nstep)
 {
-    SetTypeString("Fluid Tangential Stabilization");
+    SetTypeString("fluid tangential stabilization");
     AddDoubleParam(b, "beta", "beta");
 }
 
@@ -371,24 +371,24 @@ FSFluidTangentialStabilization::FSFluidTangentialStabilization(FSModel* ps, FEIt
 
 FSFSITraction::FSFSITraction(FSModel* ps) : FSSurfaceLoad(FE_FSI_TRACTION, ps)
 {
-    SetTypeString("FSI Interface Traction");
+    SetTypeString("fluid-FSI traction");
 }
 
 FSFSITraction::FSFSITraction(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_FSI_TRACTION, ps, pi, nstep)
 {
-    SetTypeString("FSI Interface Traction");
+    SetTypeString("fluid-FSI traction");
 }
 
 //-----------------------------------------------------------------------------
 
 FSBFSITraction::FSBFSITraction(FSModel* ps) : FSSurfaceLoad(FE_BFSI_TRACTION, ps)
 {
-    SetTypeString("Biphasic-FSI Interface Traction");
+    SetTypeString("biphasic-FSI traction");
 }
 
 FSBFSITraction::FSBFSITraction(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_BFSI_TRACTION, ps, pi, nstep)
 {
-    SetTypeString("Biphasic-FSI Interface Traction");
+    SetTypeString("biphasic-FSI traction");
 }
 
 //=======================================================================================

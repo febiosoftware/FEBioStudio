@@ -36,6 +36,11 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInterface.h>
 
+FSFiberGenerator::FSFiberGenerator(int ntype, FSModel* fem) : FSMaterial(ntype, fem)
+{
+	SetSuperClassID(FEVEC3DGENERATOR_ID);
+}
+
 //////////////////////////////////////////////////////////////////////
 // FEFiberGeneratorLocal
 //////////////////////////////////////////////////////////////////////
@@ -912,7 +917,7 @@ FSTransVerondaWestmannOld::FSTransVerondaWestmannOld(FSModel* fem) : FSTransvers
 
 REGISTER_MATERIAL(FSActiveContraction, MODULE_MECH, FE_MAT_ACTIVE_CONTRACTION, FE_MAT_ACTIVE_CONTRACTION_CLASS, "active_contraction", 0);
 
-FSActiveContraction::FSActiveContraction(FSModel* fem) : FSMaterial(FE_MAT_ACTIVE_CONTRACTION, fem)
+FSActiveContraction::FSActiveContraction(FSModel* fem) : FSMaterialProp(FE_MAT_ACTIVE_CONTRACTION, fem)
 {
 	AddDoubleParam(0, "ascl", "scale");
 	AddDoubleParam(0, "ca0");
@@ -2390,7 +2395,7 @@ FSOsmoticVirial::FSOsmoticVirial(FSModel* fem) : FSMaterial(FE_OSMOTIC_VIRIAL, f
 
 REGISTER_MATERIAL(FSReactionRateConst, MODULE_REACTIONS, FE_REACTION_RATE_CONST, FE_MAT_REACTION_RATE, "constant reaction rate", 0);
 
-FSReactionRateConst::FSReactionRateConst(FSModel* fem) : FSMaterial(FE_REACTION_RATE_CONST, fem)
+FSReactionRateConst::FSReactionRateConst(FSModel* fem) : FSMaterialProp(FE_REACTION_RATE_CONST, fem)
 {
 	AddDoubleParam(0, "k", "k");
 }
@@ -2405,7 +2410,7 @@ void FSReactionRateConst::SetRateConstant(double K) { SetFloatValue(0, K); }
 
 REGISTER_MATERIAL(FSReactionRateHuiskes, MODULE_REACTIONS, FE_REACTION_RATE_HUISKES, FE_MAT_REACTION_RATE, "Huiskes reaction rate", 0);
 
-FSReactionRateHuiskes::FSReactionRateHuiskes(FSModel* fem) : FSMaterial(FE_REACTION_RATE_HUISKES, fem)
+FSReactionRateHuiskes::FSReactionRateHuiskes(FSModel* fem) : FSMaterialProp(FE_REACTION_RATE_HUISKES, fem)
 {
 	AddDoubleParam(0, "B", "B");
 	AddDoubleParam(0, "psi0", "psi0");
@@ -2413,7 +2418,7 @@ FSReactionRateHuiskes::FSReactionRateHuiskes(FSModel* fem) : FSMaterial(FE_REACT
 
 //=============================================================================
 REGISTER_MATERIAL(FEBioReactionRate, MODULE_REACTIONS, FE_REACTION_RATE_FEBIO, FE_MAT_REACTION_RATE, "", 0);
-FEBioReactionRate::FEBioReactionRate(FSModel* fem) : FSMaterial(FE_REACTION_RATE_FEBIO, fem)
+FEBioReactionRate::FEBioReactionRate(FSModel* fem) : FSMaterialProp(FE_REACTION_RATE_FEBIO, fem)
 {
 
 }
@@ -2455,7 +2460,7 @@ void FEBioReactionRate::Load(IArchive& ar)
 
 REGISTER_MATERIAL(FSMembraneReactionRateConst, MODULE_REACTIONS, FE_MREACTION_RATE_CONST, FE_MAT_MREACTION_RATE, "membrane constant reaction rate", 0);
 
-FSMembraneReactionRateConst::FSMembraneReactionRateConst(FSModel* fem) : FSMaterial(FE_MREACTION_RATE_CONST, fem)
+FSMembraneReactionRateConst::FSMembraneReactionRateConst(FSModel* fem) : FSMaterialProp(FE_MREACTION_RATE_CONST, fem)
 {
     AddDoubleParam(0, "k", "k");
 }
@@ -2470,7 +2475,7 @@ void FSMembraneReactionRateConst::SetRateConstant(double K) { SetFloatValue(0, K
 
 REGISTER_MATERIAL(FSMembraneReactionRateIonChannel, MODULE_REACTIONS, FE_MREACTION_RATE_ION_CHNL, FE_MAT_MREACTION_RATE, "membrane ion channel reaction rate", 0);
 
-FSMembraneReactionRateIonChannel::FSMembraneReactionRateIonChannel(FSModel* fem) : FSMaterial(FE_MREACTION_RATE_ION_CHNL, fem)
+FSMembraneReactionRateIonChannel::FSMembraneReactionRateIonChannel(FSModel* fem) : FSMaterialProp(FE_MREACTION_RATE_ION_CHNL, fem)
 {
     AddScienceParam(0, UNIT_CURRENT_CONDUCTIVITY, "g", "g");
     AddIntParam(0,"sol","sol");
@@ -2489,7 +2494,7 @@ void FSMembraneReactionRateIonChannel::SetSolute(int isol) { SetIntValue(1, isol
 
 REGISTER_MATERIAL(FSMembraneReactionRateVoltageGated, MODULE_REACTIONS, FE_MREACTION_RATE_VOLT_GTD, FE_MAT_MREACTION_RATE, "membrane voltage-gated reaction rate", 0);
 
-FSMembraneReactionRateVoltageGated::FSMembraneReactionRateVoltageGated(FSModel* fem) : FSMaterial(FE_MREACTION_RATE_VOLT_GTD, fem)
+FSMembraneReactionRateVoltageGated::FSMembraneReactionRateVoltageGated(FSModel* fem) : FSMaterialProp(FE_MREACTION_RATE_VOLT_GTD, fem)
 {
     AddDoubleParam(0, "a", "a");
     AddDoubleParam(0, "b", "b");
@@ -2590,7 +2595,7 @@ FSCFDFiberPowLinearUC::FSCFDFiberPowLinearUC(FSModel* fem) : FSMaterial(FE_FIBER
 
 REGISTER_MATERIAL(FSFDDSpherical, MODULE_MECH, FE_DSTRB_SFD, FE_MAT_CFD_DIST, "spherical", 0);
 
-FSFDDSpherical::FSFDDSpherical(FSModel* fem) : FSMaterial(FE_DSTRB_SFD, fem)
+FSFDDSpherical::FSFDDSpherical(FSModel* fem) : FSMaterialProp(FE_DSTRB_SFD, fem)
 {
 }
 
@@ -2600,7 +2605,7 @@ FSFDDSpherical::FSFDDSpherical(FSModel* fem) : FSMaterial(FE_DSTRB_SFD, fem)
 
 REGISTER_MATERIAL(FSFDDEllipsoidal, MODULE_MECH, FE_DSTRB_EFD, FE_MAT_CFD_DIST, "ellipsoidal", 0);
 
-FSFDDEllipsoidal::FSFDDEllipsoidal(FSModel* fem) : FSMaterial(FE_DSTRB_EFD, fem)
+FSFDDEllipsoidal::FSFDDEllipsoidal(FSModel* fem) : FSMaterialProp(FE_DSTRB_EFD, fem)
 {
     AddVecParam(vec3d(1,1,1), "spa" , "spa");
 }
@@ -2611,7 +2616,7 @@ FSFDDEllipsoidal::FSFDDEllipsoidal(FSModel* fem) : FSMaterial(FE_DSTRB_EFD, fem)
 
 REGISTER_MATERIAL(FSFDDvonMises3d, MODULE_MECH, FE_DSTRB_VM3, FE_MAT_CFD_DIST, "von-Mises-3d", 0);
 
-FSFDDvonMises3d::FSFDDvonMises3d(FSModel* fem) : FSMaterial(FE_DSTRB_VM3, fem)
+FSFDDvonMises3d::FSFDDvonMises3d(FSModel* fem) : FSMaterialProp(FE_DSTRB_VM3, fem)
 {
     AddDoubleParam(0, "b"   , "concentration");
 }
@@ -2622,7 +2627,7 @@ FSFDDvonMises3d::FSFDDvonMises3d(FSModel* fem) : FSMaterial(FE_DSTRB_VM3, fem)
 
 REGISTER_MATERIAL(FSFDDCircular, MODULE_MECH, FE_DSTRB_CFD, FE_MAT_CFD_DIST, "circular", 0);
 
-FSFDDCircular::FSFDDCircular(FSModel* fem) : FSMaterial(FE_DSTRB_CFD, fem)
+FSFDDCircular::FSFDDCircular(FSModel* fem) : FSMaterialProp(FE_DSTRB_CFD, fem)
 {
 }
 
@@ -2632,7 +2637,7 @@ FSFDDCircular::FSFDDCircular(FSModel* fem) : FSMaterial(FE_DSTRB_CFD, fem)
 
 REGISTER_MATERIAL(FSFDDElliptical, MODULE_MECH, FE_DSTRB_PFD, FE_MAT_CFD_DIST, "elliptical", 0);
 
-FSFDDElliptical::FSFDDElliptical(FSModel* fem) : FSMaterial(FE_DSTRB_PFD, fem)
+FSFDDElliptical::FSFDDElliptical(FSModel* fem) : FSMaterialProp(FE_DSTRB_PFD, fem)
 {
     AddScienceParam(0, UNIT_NONE, "spa1"   , "spa1");
     AddScienceParam(0, UNIT_NONE, "spa2"   , "spa2");
@@ -2644,7 +2649,7 @@ FSFDDElliptical::FSFDDElliptical(FSModel* fem) : FSMaterial(FE_DSTRB_PFD, fem)
 
 REGISTER_MATERIAL(FSFDDvonMises2d, MODULE_MECH, FE_DSTRB_VM2, FE_MAT_CFD_DIST, "von-Mises-2d", 0);
 
-FSFDDvonMises2d::FSFDDvonMises2d(FSModel* fem) : FSMaterial(FE_DSTRB_VM2, fem)
+FSFDDvonMises2d::FSFDDvonMises2d(FSModel* fem) : FSMaterialProp(FE_DSTRB_VM2, fem)
 {
     AddScienceParam(0, UNIT_NONE, "b"   , "concentration");
 }
@@ -2655,7 +2660,7 @@ FSFDDvonMises2d::FSFDDvonMises2d(FSModel* fem) : FSMaterial(FE_DSTRB_VM2, fem)
 
 REGISTER_MATERIAL(FSSchemeGKT, MODULE_MECH, FE_SCHM_GKT, FE_MAT_CFD_SCHEME, "fibers-3d-gkt", 0);
 
-FSSchemeGKT::FSSchemeGKT(FSModel* fem) : FSMaterial(FE_SCHM_GKT, fem)
+FSSchemeGKT::FSSchemeGKT(FSModel* fem) : FSMaterialProp(FE_SCHM_GKT, fem)
 {
     AddIntParam(11, "nph"   , "nph");// choose from 7, 11, 15, 19, 23, or 27
     AddIntParam(31, "nth"   , "nth");// enter odd value >= 3
@@ -2667,7 +2672,7 @@ FSSchemeGKT::FSSchemeGKT(FSModel* fem) : FSMaterial(FE_SCHM_GKT, fem)
 
 REGISTER_MATERIAL(FSSchemeFEI, MODULE_MECH, FE_SCHM_FEI, FE_MAT_CFD_SCHEME, "fibers-3d-fei", 0);
 
-FSSchemeFEI::FSSchemeFEI(FSModel* fem) : FSMaterial(FE_SCHM_FEI, fem)
+FSSchemeFEI::FSSchemeFEI(FSModel* fem) : FSMaterialProp(FE_SCHM_FEI, fem)
 {
     AddIntParam(1796, "resolution"   , "resolution");// choose from 20, 34, 60, 74, 196, 210, 396, 410, ..., 1596, 1610, 1796
 }
@@ -2678,7 +2683,7 @@ FSSchemeFEI::FSSchemeFEI(FSModel* fem) : FSMaterial(FE_SCHM_FEI, fem)
 
 REGISTER_MATERIAL(FSSchemeT2d, MODULE_MECH, FE_SCHM_T2D, FE_MAT_CFD_SCHEME, "fibers-2d-trapezoidal", 0);
 
-FSSchemeT2d::FSSchemeT2d(FSModel* fem) : FSMaterial(FE_SCHM_T2D, fem)
+FSSchemeT2d::FSSchemeT2d(FSModel* fem) : FSMaterialProp(FE_SCHM_T2D, fem)
 {
     AddIntParam(31, "nth"   , "nth");// odd and >= 3
 }
@@ -2689,7 +2694,7 @@ FSSchemeT2d::FSSchemeT2d(FSModel* fem) : FSMaterial(FE_SCHM_T2D, fem)
 
 REGISTER_MATERIAL(FSSchemeGKTUC, MODULE_MECH, FE_SCHM_GKT_UC, FE_MAT_CFD_SCHEME_UC, "fibers-3d-gkt-uncoupled", 0);
 
-FSSchemeGKTUC::FSSchemeGKTUC(FSModel* fem) : FSMaterial(FE_SCHM_GKT_UC, fem)
+FSSchemeGKTUC::FSSchemeGKTUC(FSModel* fem) : FSMaterialProp(FE_SCHM_GKT_UC, fem)
 {
     AddIntParam(11, "nph"   , "nph");// choose from 7, 11, 15, 19, 23, or 27
     AddIntParam(31, "nth"   , "nth");//  enter odd value >= 3
@@ -2701,7 +2706,7 @@ FSSchemeGKTUC::FSSchemeGKTUC(FSModel* fem) : FSMaterial(FE_SCHM_GKT_UC, fem)
 
 REGISTER_MATERIAL(FSSchemeFEIUC, MODULE_MECH, FE_SCHM_FEI_UC, FE_MAT_CFD_SCHEME_UC, "fibers-3d-fei-uncoupled", 0);
 
-FSSchemeFEIUC::FSSchemeFEIUC(FSModel* fem) : FSMaterial(FE_SCHM_FEI_UC, fem)
+FSSchemeFEIUC::FSSchemeFEIUC(FSModel* fem) : FSMaterialProp(FE_SCHM_FEI_UC, fem)
 {
     AddIntParam(11, "resolution"   , "resolution"); // choose from 20, 34, 60, 74, 196, 210, 396, 410, ..., 1596, 1610, 1796
 }
@@ -2712,7 +2717,7 @@ FSSchemeFEIUC::FSSchemeFEIUC(FSModel* fem) : FSMaterial(FE_SCHM_FEI_UC, fem)
 
 REGISTER_MATERIAL(FSSchemeT2dUC, MODULE_MECH, FE_SCHM_T2D_UC, FE_MAT_CFD_SCHEME_UC, "fibers-2d-trapezoidal-uncoupled", 0);
 
-FSSchemeT2dUC::FSSchemeT2dUC(FSModel* fem) : FSMaterial(FE_SCHM_T2D_UC, fem)
+FSSchemeT2dUC::FSSchemeT2dUC(FSModel* fem) : FSMaterialProp(FE_SCHM_T2D_UC, fem)
 {
     AddIntParam(31, "nth"   , "nth"); // nth (odd and >= 3)
 }
@@ -2723,7 +2728,7 @@ FSSchemeT2dUC::FSSchemeT2dUC(FSModel* fem) : FSMaterial(FE_SCHM_T2D_UC, fem)
 
 REGISTER_MATERIAL(FSCDFSimo, MODULE_MECH, FE_CDF_SIMO, FE_MAT_DAMAGE, "CDF Simo", 0);
 
-FSCDFSimo::FSCDFSimo(FSModel* fem) : FSMaterial(FE_CDF_SIMO, fem)
+FSCDFSimo::FSCDFSimo(FSModel* fem) : FSMaterialProp(FE_CDF_SIMO, fem)
 {
 	AddDoubleParam(0, "a", "a");
     AddScienceParam(0, UNIT_NONE, "b" , "b");
@@ -2735,7 +2740,7 @@ FSCDFSimo::FSCDFSimo(FSModel* fem) : FSMaterial(FE_CDF_SIMO, fem)
 
 REGISTER_MATERIAL(FSCDFLogNormal, MODULE_MECH, FE_CDF_LOG_NORMAL, FE_MAT_DAMAGE, "CDF log-normal", 0);
 
-FSCDFLogNormal::FSCDFLogNormal(FSModel* fem) : FSMaterial(FE_CDF_LOG_NORMAL, fem)
+FSCDFLogNormal::FSCDFLogNormal(FSModel* fem) : FSMaterialProp(FE_CDF_LOG_NORMAL, fem)
 {
 	AddDoubleParam(0, "mu" , "mu");
 	AddScienceParam(0, UNIT_NONE, "sigma" , "sigma");
@@ -2748,7 +2753,7 @@ FSCDFLogNormal::FSCDFLogNormal(FSModel* fem) : FSMaterial(FE_CDF_LOG_NORMAL, fem
 
 REGISTER_MATERIAL(FSCDFWeibull, MODULE_MECH, FE_CDF_WEIBULL, FE_MAT_DAMAGE, "CDF Weibull", 0);
 
-FSCDFWeibull::FSCDFWeibull(FSModel* fem) : FSMaterial(FE_CDF_WEIBULL, fem)
+FSCDFWeibull::FSCDFWeibull(FSModel* fem) : FSMaterialProp(FE_CDF_WEIBULL, fem)
 {
 	AddDoubleParam(0, "mu" , "mu");
 	AddScienceParam(0, UNIT_NONE, "alpha" , "alpha");
@@ -2761,7 +2766,7 @@ FSCDFWeibull::FSCDFWeibull(FSModel* fem) : FSMaterial(FE_CDF_WEIBULL, fem)
 
 REGISTER_MATERIAL(FSCDFStep, MODULE_MECH, FE_CDF_STEP, FE_MAT_DAMAGE, "CDF step", 0);
 
-FSCDFStep::FSCDFStep(FSModel* fem) : FSMaterial(FE_CDF_STEP, fem)
+FSCDFStep::FSCDFStep(FSModel* fem) : FSMaterialProp(FE_CDF_STEP, fem)
 {
     AddDoubleParam(0, "mu" , "mu" ); //  mu must be > 0
     AddScienceParam(1, UNIT_NONE, "Dmax" , "Dmax"); // Maximum allowable damage (0 <= Dmax <= 1)
@@ -2773,7 +2778,7 @@ FSCDFStep::FSCDFStep(FSModel* fem) : FSMaterial(FE_CDF_STEP, fem)
 
 REGISTER_MATERIAL(FSCDFQuintic, MODULE_MECH, FE_CDF_QUINTIC, FE_MAT_DAMAGE, "CDF quintic", 0);
 
-FSCDFQuintic::FSCDFQuintic(FSModel* fem) : FSMaterial(FE_CDF_QUINTIC, fem)
+FSCDFQuintic::FSCDFQuintic(FSModel* fem) : FSMaterialProp(FE_CDF_QUINTIC, fem)
 {
     AddDoubleParam(0, "mumin" , "mumin"); // mumin must be > 0
     AddDoubleParam(0, "mumax" , "mumax"); // mumax must be > mumin
@@ -2786,7 +2791,7 @@ FSCDFQuintic::FSCDFQuintic(FSModel* fem) : FSMaterial(FE_CDF_QUINTIC, fem)
 
 REGISTER_MATERIAL(FECDFPower, MODULE_MECH, FE_CDF_POWER, FE_MAT_DAMAGE, "CDF power", 0);
 
-FECDFPower::FECDFPower(FSModel* fem) : FSMaterial(FE_CDF_POWER, fem)
+FECDFPower::FECDFPower(FSModel* fem) : FSMaterialProp(FE_CDF_POWER, fem)
 {
     AddScienceParam(0, UNIT_NONE, "alpha" , "power exponent alpha");
     AddScienceParam(1, UNIT_NONE, "mu0"   , "constant mu0");
@@ -2799,7 +2804,7 @@ FECDFPower::FECDFPower(FSModel* fem) : FSMaterial(FE_CDF_POWER, fem)
 
 REGISTER_MATERIAL(FSDCSimo, MODULE_MECH, FE_DC_SIMO, FE_MAT_DAMAGE_CRITERION, "DC Simo", 0);
 
-FSDCSimo::FSDCSimo(FSModel* fem) : FSMaterial(FE_DC_SIMO, fem)
+FSDCSimo::FSDCSimo(FSModel* fem) : FSMaterialProp(FE_DC_SIMO, fem)
 {
 }
 
@@ -2809,7 +2814,7 @@ FSDCSimo::FSDCSimo(FSModel* fem) : FSMaterial(FE_DC_SIMO, fem)
 
 REGISTER_MATERIAL(FSDCStrainEnergyDensity, MODULE_MECH, FE_DC_SED, FE_MAT_DAMAGE_CRITERION, "DC strain energy density", 0);
 
-FSDCStrainEnergyDensity::FSDCStrainEnergyDensity(FSModel* fem) : FSMaterial(FE_DC_SED, fem)
+FSDCStrainEnergyDensity::FSDCStrainEnergyDensity(FSModel* fem) : FSMaterialProp(FE_DC_SED, fem)
 {
 }
 
@@ -2819,7 +2824,7 @@ FSDCStrainEnergyDensity::FSDCStrainEnergyDensity(FSModel* fem) : FSMaterial(FE_D
 
 REGISTER_MATERIAL(FSDCSpecificStrainEnergy, MODULE_MECH, FE_DC_SSE, FE_MAT_DAMAGE_CRITERION, "DC specific strain energy", 0);
 
-FSDCSpecificStrainEnergy::FSDCSpecificStrainEnergy(FSModel* fem) : FSMaterial(FE_DC_SSE, fem)
+FSDCSpecificStrainEnergy::FSDCSpecificStrainEnergy(FSModel* fem) : FSMaterialProp(FE_DC_SSE, fem)
 {
 }
 
@@ -2829,7 +2834,7 @@ FSDCSpecificStrainEnergy::FSDCSpecificStrainEnergy(FSModel* fem) : FSMaterial(FE
 
 REGISTER_MATERIAL(FSDCvonMisesStress, MODULE_MECH, FE_DC_VMS, FE_MAT_DAMAGE_CRITERION, "DC von Mises stress", 0);
 
-FSDCvonMisesStress::FSDCvonMisesStress(FSModel* fem) : FSMaterial(FE_DC_VMS, fem)
+FSDCvonMisesStress::FSDCvonMisesStress(FSModel* fem) : FSMaterialProp(FE_DC_VMS, fem)
 {
 }
 
@@ -2839,7 +2844,7 @@ FSDCvonMisesStress::FSDCvonMisesStress(FSModel* fem) : FSMaterial(FE_DC_VMS, fem
 
 REGISTER_MATERIAL(FSDCDruckerShearStress, MODULE_MECH, FE_DC_DRUCKER, FE_MAT_DAMAGE_CRITERION, "DC Drucker shear stress", 0);
 
-FSDCDruckerShearStress::FSDCDruckerShearStress(FSModel* fem) : FSMaterial(FE_DC_DRUCKER, fem)
+FSDCDruckerShearStress::FSDCDruckerShearStress(FSModel* fem) : FSMaterialProp(FE_DC_DRUCKER, fem)
 {
     AddScienceParam(1, UNIT_NONE, "c" , "c" ); // Maximum allowable damage (0 <= Dmax <= 1)
 }
@@ -2850,7 +2855,7 @@ FSDCDruckerShearStress::FSDCDruckerShearStress(FSModel* fem) : FSMaterial(FE_DC_
 
 REGISTER_MATERIAL(FSDCMaxShearStress, MODULE_MECH, FE_DC_MSS, FE_MAT_DAMAGE_CRITERION, "DC max shear stress", 0);
 
-FSDCMaxShearStress::FSDCMaxShearStress(FSModel* fem) : FSMaterial(FE_DC_MSS, fem)
+FSDCMaxShearStress::FSDCMaxShearStress(FSModel* fem) : FSMaterialProp(FE_DC_MSS, fem)
 {
 }
 
@@ -2860,7 +2865,7 @@ FSDCMaxShearStress::FSDCMaxShearStress(FSModel* fem) : FSMaterial(FE_DC_MSS, fem
 
 REGISTER_MATERIAL(FSDCMaxNormalStress, MODULE_MECH, FE_DC_MNS, FE_MAT_DAMAGE_CRITERION, "DC max normal stress", 0);
 
-FSDCMaxNormalStress::FSDCMaxNormalStress(FSModel* fem) : FSMaterial(FE_DC_MNS, fem)
+FSDCMaxNormalStress::FSDCMaxNormalStress(FSModel* fem) : FSMaterialProp(FE_DC_MNS, fem)
 {
 }
 
@@ -2870,7 +2875,7 @@ FSDCMaxNormalStress::FSDCMaxNormalStress(FSModel* fem) : FSMaterial(FE_DC_MNS, f
 
 REGISTER_MATERIAL(FSDCMaxNormalLagrangeStrain, MODULE_MECH, FE_DC_MNLE, FE_MAT_DAMAGE_CRITERION, "DC max normal Lagrange strain", 0);
 
-FSDCMaxNormalLagrangeStrain::FSDCMaxNormalLagrangeStrain(FSModel* fem) : FSMaterial(FE_DC_MNLE, fem)
+FSDCMaxNormalLagrangeStrain::FSDCMaxNormalLagrangeStrain(FSModel* fem) : FSMaterialProp(FE_DC_MNLE, fem)
 {
 }
 
@@ -2880,7 +2885,7 @@ FSDCMaxNormalLagrangeStrain::FSDCMaxNormalLagrangeStrain(FSModel* fem) : FSMater
 
 REGISTER_MATERIAL(FSDCOctahedralShearStrain, MODULE_MECH, FE_DC_OSS, FE_MAT_DAMAGE_CRITERION, "DC octahedral shear strain", 0);
 
-FSDCOctahedralShearStrain::FSDCOctahedralShearStrain(FSModel* fem) : FSMaterial(FE_DC_OSS, fem)
+FSDCOctahedralShearStrain::FSDCOctahedralShearStrain(FSModel* fem) : FSMaterialProp(FE_DC_OSS, fem)
 {
 }
 
@@ -2890,7 +2895,7 @@ FSDCOctahedralShearStrain::FSDCOctahedralShearStrain(FSModel* fem) : FSMaterial(
 
 REGISTER_MATERIAL(FSDCSimoUC, MODULE_MECH, FE_DC_SIMO_UC, FE_MAT_DAMAGE_CRITERION_UC, "DC Simo uncoupled", 0);
 
-FSDCSimoUC::FSDCSimoUC(FSModel* fem) : FSMaterial(FE_DC_SIMO_UC, fem)
+FSDCSimoUC::FSDCSimoUC(FSModel* fem) : FSMaterialProp(FE_DC_SIMO_UC, fem)
 {
 }
 
@@ -2900,7 +2905,7 @@ FSDCSimoUC::FSDCSimoUC(FSModel* fem) : FSMaterial(FE_DC_SIMO_UC, fem)
 
 REGISTER_MATERIAL(FSDCStrainEnergyDensityUC, MODULE_MECH, FE_DC_SED_UC, FE_MAT_DAMAGE_CRITERION_UC, "DC strain energy density uncoupled", 0);
 
-FSDCStrainEnergyDensityUC::FSDCStrainEnergyDensityUC(FSModel* fem) : FSMaterial(FE_DC_SED_UC, fem)
+FSDCStrainEnergyDensityUC::FSDCStrainEnergyDensityUC(FSModel* fem) : FSMaterialProp(FE_DC_SED_UC, fem)
 {
 }
 
@@ -2910,7 +2915,7 @@ FSDCStrainEnergyDensityUC::FSDCStrainEnergyDensityUC(FSModel* fem) : FSMaterial(
 
 REGISTER_MATERIAL(FSDCSpecificStrainEnergyUC, MODULE_MECH, FE_DC_SSE_UC, FE_MAT_DAMAGE_CRITERION_UC, "DC specific strain energy uncoupled", 0);
 
-FSDCSpecificStrainEnergyUC::FSDCSpecificStrainEnergyUC(FSModel* fem) : FSMaterial(FE_DC_SSE_UC, fem)
+FSDCSpecificStrainEnergyUC::FSDCSpecificStrainEnergyUC(FSModel* fem) : FSMaterialProp(FE_DC_SSE_UC, fem)
 {
 }
 
@@ -2920,7 +2925,7 @@ FSDCSpecificStrainEnergyUC::FSDCSpecificStrainEnergyUC(FSModel* fem) : FSMateria
 
 REGISTER_MATERIAL(FSDCvonMisesStressUC, MODULE_MECH, FE_DC_VMS_UC, FE_MAT_DAMAGE_CRITERION_UC, "DC von Mises stress uncoupled", 0);
 
-FSDCvonMisesStressUC::FSDCvonMisesStressUC(FSModel* fem) : FSMaterial(FE_DC_VMS_UC, fem)
+FSDCvonMisesStressUC::FSDCvonMisesStressUC(FSModel* fem) : FSMaterialProp(FE_DC_VMS_UC, fem)
 {
 }
 
@@ -2930,7 +2935,7 @@ FSDCvonMisesStressUC::FSDCvonMisesStressUC(FSModel* fem) : FSMaterial(FE_DC_VMS_
 
 REGISTER_MATERIAL(FSDCMaxShearStressUC, MODULE_MECH, FE_DC_MSS_UC, FE_MAT_DAMAGE_CRITERION_UC, "DC max shear stress uncoupled", 0);
 
-FSDCMaxShearStressUC::FSDCMaxShearStressUC(FSModel* fem) : FSMaterial(FE_DC_MSS_UC, fem)
+FSDCMaxShearStressUC::FSDCMaxShearStressUC(FSModel* fem) : FSMaterialProp(FE_DC_MSS_UC, fem)
 {
 }
 
@@ -2940,7 +2945,7 @@ FSDCMaxShearStressUC::FSDCMaxShearStressUC(FSModel* fem) : FSMaterial(FE_DC_MSS_
 
 REGISTER_MATERIAL(FSDCMaxNormalStressUC, MODULE_MECH, FE_DC_MNS_UC, FE_MAT_DAMAGE_CRITERION_UC, "DC max normal stress uncoupled", 0);
 
-FSDCMaxNormalStressUC::FSDCMaxNormalStressUC(FSModel* fem) : FSMaterial(FE_DC_MNS_UC, fem)
+FSDCMaxNormalStressUC::FSDCMaxNormalStressUC(FSModel* fem) : FSMaterialProp(FE_DC_MNS_UC, fem)
 {
 }
 
@@ -2950,7 +2955,7 @@ FSDCMaxNormalStressUC::FSDCMaxNormalStressUC(FSModel* fem) : FSMaterial(FE_DC_MN
 
 REGISTER_MATERIAL(FSDCMaxNormalLagrangeStrainUC, MODULE_MECH, FE_DC_MNLE_UC, FE_MAT_DAMAGE_CRITERION_UC, "DC max normal Lagrange strain uncoupled", 0);
 
-FSDCMaxNormalLagrangeStrainUC::FSDCMaxNormalLagrangeStrainUC(FSModel* fem) : FSMaterial(FE_DC_MNLE_UC, fem)
+FSDCMaxNormalLagrangeStrainUC::FSDCMaxNormalLagrangeStrainUC(FSModel* fem) : FSMaterialProp(FE_DC_MNLE_UC, fem)
 {
 }
 
@@ -2960,7 +2965,7 @@ FSDCMaxNormalLagrangeStrainUC::FSDCMaxNormalLagrangeStrainUC(FSModel* fem) : FSM
 
 REGISTER_MATERIAL(FSRelaxCSExp, MODULE_MECH, FE_RELAX_CSEXP, FE_MAT_RV_RELAX, "relaxation-CSexp", 0);
 
-FSRelaxCSExp::FSRelaxCSExp(FSModel* fem) : FSMaterial(FE_RELAX_CSEXP, fem)
+FSRelaxCSExp::FSRelaxCSExp(FSModel* fem) : FSMaterialProp(FE_RELAX_CSEXP, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau"   , "exponential spectrum constant"); // characteristic relaxation time
 }
@@ -2971,7 +2976,7 @@ FSRelaxCSExp::FSRelaxCSExp(FSModel* fem) : FSMaterial(FE_RELAX_CSEXP, fem)
 
 REGISTER_MATERIAL(FSRelaxExp, MODULE_MECH, FE_RELAX_EXP, FE_MAT_RV_RELAX, "relaxation-exponential", 0);
 
-FSRelaxExp::FSRelaxExp(FSModel* fem) : FSMaterial(FE_RELAX_EXP, fem)
+FSRelaxExp::FSRelaxExp(FSModel* fem) : FSMaterialProp(FE_RELAX_EXP, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau"   , "time constant"); // characteristic relaxation time
 }
@@ -2982,7 +2987,7 @@ FSRelaxExp::FSRelaxExp(FSModel* fem) : FSMaterial(FE_RELAX_EXP, fem)
 
 REGISTER_MATERIAL(FSRelaxExpDistortion, MODULE_MECH, FE_RELAX_EXP_DIST, FE_MAT_RV_RELAX, "relaxation-exp-distortion", 0);
 
-FSRelaxExpDistortion::FSRelaxExpDistortion(FSModel* fem) : FSMaterial(FE_RELAX_EXP_DIST, fem)
+FSRelaxExpDistortion::FSRelaxExpDistortion(FSModel* fem) : FSMaterialProp(FE_RELAX_EXP_DIST, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau0"  , "constant coefficient" ); // characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau1"  , "power coefficient" );
@@ -2995,7 +3000,7 @@ FSRelaxExpDistortion::FSRelaxExpDistortion(FSModel* fem) : FSMaterial(FE_RELAX_E
 
 REGISTER_MATERIAL(FSRelaxFung, MODULE_MECH, FE_RELAX_FUNG, FE_MAT_RV_RELAX, "relaxation-Fung", 0);
 
-FSRelaxFung::FSRelaxFung(FSModel* fem) : FSMaterial(FE_RELAX_FUNG, fem)
+FSRelaxFung::FSRelaxFung(FSModel* fem) : FSMaterialProp(FE_RELAX_FUNG, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau1"   , "min. relaxation time"); //  minimum characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau2"   , "max. relaxation time"); // maximum characteristic relaxation time
@@ -3007,7 +3012,7 @@ FSRelaxFung::FSRelaxFung(FSModel* fem) : FSMaterial(FE_RELAX_FUNG, fem)
 
 REGISTER_MATERIAL(FERelaxMalkin, MODULE_MECH, FE_RELAX_MALKIN, FE_MAT_RV_RELAX, "relaxation-Malkin", 0);
 
-FERelaxMalkin::FERelaxMalkin(FSModel* fem) : FSMaterial(FE_RELAX_MALKIN, fem)
+FERelaxMalkin::FERelaxMalkin(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau1"   , "min. relaxation time"); //  minimum characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau2"   , "max. relaxation time"); // maximum characteristic relaxation time
@@ -3020,7 +3025,7 @@ FERelaxMalkin::FERelaxMalkin(FSModel* fem) : FSMaterial(FE_RELAX_MALKIN, fem)
 
 REGISTER_MATERIAL(FERelaxMalkinDistortion, MODULE_MECH, FE_RELAX_MALKIN_DIST, FE_MAT_RV_RELAX, "relaxation-Malkin-distortion", 0);
 
-FERelaxMalkinDistortion::FERelaxMalkinDistortion(FSModel* fem) : FSMaterial(FE_RELAX_MALKIN_DIST, fem)
+FERelaxMalkinDistortion::FERelaxMalkinDistortion(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN_DIST, fem)
 {
     AddScienceParam(0, UNIT_TIME, "t1c0"   , "constant for tau1");
     AddScienceParam(0, UNIT_TIME, "t1c1"   , "coefficient for tau1");
@@ -3037,7 +3042,7 @@ FERelaxMalkinDistortion::FERelaxMalkinDistortion(FSModel* fem) : FSMaterial(FE_R
 
 REGISTER_MATERIAL(FSRelaxPark, MODULE_MECH, FE_RELAX_PARK, FE_MAT_RV_RELAX, "relaxation-Park", 0);
 
-FSRelaxPark::FSRelaxPark(FSModel* fem) : FSMaterial(FE_RELAX_PARK, fem)
+FSRelaxPark::FSRelaxPark(FSModel* fem) : FSMaterialProp(FE_RELAX_PARK, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau"   , "tau" ); // characteristic relaxation time
     AddScienceParam(0, UNIT_NONE, "beta"  , "beta"); // exponent
@@ -3049,7 +3054,7 @@ FSRelaxPark::FSRelaxPark(FSModel* fem) : FSMaterial(FE_RELAX_PARK, fem)
 
 REGISTER_MATERIAL(FSRelaxParkDistortion, MODULE_MECH, FE_RELAX_PARK_DIST, FE_MAT_RV_RELAX, "relaxation-Park-distortion", 0);
 
-FSRelaxParkDistortion::FSRelaxParkDistortion(FSModel* fem) : FSMaterial(FE_RELAX_PARK_DIST, fem)
+FSRelaxParkDistortion::FSRelaxParkDistortion(FSModel* fem) : FSMaterialProp(FE_RELAX_PARK_DIST, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau0"  , "constant coefficient tau0" ); // characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau1"  , "power coefficient tau1" );
@@ -3064,7 +3069,7 @@ FSRelaxParkDistortion::FSRelaxParkDistortion(FSModel* fem) : FSMaterial(FE_RELAX
 
 REGISTER_MATERIAL(FSRelaxPow, MODULE_MECH, FE_RELAX_POW, FE_MAT_RV_RELAX, "relaxation-power", 0);
 
-FSRelaxPow::FSRelaxPow(FSModel* fem) : FSMaterial(FE_RELAX_POW, fem)
+FSRelaxPow::FSRelaxPow(FSModel* fem) : FSMaterialProp(FE_RELAX_POW, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau"   , "characteristic time constant" ); // characteristic relaxation time
     AddScienceParam(0, UNIT_NONE, "beta"  , "power exponent"); // exponent
@@ -3076,7 +3081,7 @@ FSRelaxPow::FSRelaxPow(FSModel* fem) : FSMaterial(FE_RELAX_POW, fem)
 
 REGISTER_MATERIAL(FSRelaxPowDistortion, MODULE_MECH, FE_RELAX_POW_DIST, FE_MAT_RV_RELAX, "relaxation-power-distortion", 0);
 
-FSRelaxPowDistortion::FSRelaxPowDistortion(FSModel* fem) : FSMaterial(FE_RELAX_POW_DIST, fem)
+FSRelaxPowDistortion::FSRelaxPowDistortion(FSModel* fem) : FSMaterialProp(FE_RELAX_POW_DIST, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau0"  , "constant coefficient tau0" ); // characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau1"  , "power coefficient tau1" );
@@ -3091,7 +3096,7 @@ FSRelaxPowDistortion::FSRelaxPowDistortion(FSModel* fem) : FSMaterial(FE_RELAX_P
 
 REGISTER_MATERIAL(FSRelaxProny, MODULE_MECH, FE_RELAX_PRONY, FE_MAT_RV_RELAX, "relaxation-Prony", 0);
 
-FSRelaxProny::FSRelaxProny(FSModel* fem) : FSMaterial(FE_RELAX_PRONY, fem)
+FSRelaxProny::FSRelaxProny(FSModel* fem) : FSMaterialProp(FE_RELAX_PRONY, fem)
 {
     AddScienceParam(0, UNIT_NONE, "g1", "coeffient g1");
     AddScienceParam(0, UNIT_NONE, "g2", "coeffient g2");
@@ -3114,7 +3119,7 @@ FSRelaxProny::FSRelaxProny(FSModel* fem) : FSMaterial(FE_RELAX_PRONY, fem)
 
 REGISTER_MATERIAL(FSEPIdealGas, MODULE_FLUID, FE_EP_IDEAL_GAS, FE_MAT_FLUID_ELASTIC, "ideal gas", 0);
 
-FSEPIdealGas::FSEPIdealGas(FSModel* fem) : FSMaterial(FE_EP_IDEAL_GAS, fem)
+FSEPIdealGas::FSEPIdealGas(FSModel* fem) : FSMaterialProp(FE_EP_IDEAL_GAS, fem)
 {
     AddScienceParam(0, UNIT_MOLAR_MASS, "molar_mass"  , "molar_mass");
 }
@@ -3125,7 +3130,7 @@ FSEPIdealGas::FSEPIdealGas(FSModel* fem) : FSMaterial(FE_EP_IDEAL_GAS, fem)
 
 REGISTER_MATERIAL(FSEPIdealFluid, MODULE_FLUID, FE_EP_IDEAL_FLUID, FE_MAT_FLUID_ELASTIC, "ideal fluid", 0);
 
-FSEPIdealFluid::FSEPIdealFluid(FSModel* fem) : FSMaterial(FE_EP_IDEAL_FLUID, fem)
+FSEPIdealFluid::FSEPIdealFluid(FSModel* fem) : FSMaterialProp(FE_EP_IDEAL_FLUID, fem)
 {
     AddScienceParam(0, UNIT_PRESSURE, "k"  , "Bulk modulus");
 }
@@ -3136,7 +3141,7 @@ FSEPIdealFluid::FSEPIdealFluid(FSModel* fem) : FSMaterial(FE_EP_IDEAL_FLUID, fem
 
 REGISTER_MATERIAL(FSEPNeoHookeanFluid, MODULE_FLUID, FE_EP_NEOHOOKEAN_FLUID, FE_MAT_FLUID_ELASTIC, "neo-Hookean fluid", 0);
 
-FSEPNeoHookeanFluid::FSEPNeoHookeanFluid(FSModel* fem) : FSMaterial(FE_EP_NEOHOOKEAN_FLUID, fem)
+FSEPNeoHookeanFluid::FSEPNeoHookeanFluid(FSModel* fem) : FSMaterialProp(FE_EP_NEOHOOKEAN_FLUID, fem)
 {
     AddScienceParam(0, UNIT_PRESSURE, "k"  , "Bulk modulus");
 }
@@ -3147,7 +3152,7 @@ FSEPNeoHookeanFluid::FSEPNeoHookeanFluid(FSModel* fem) : FSMaterial(FE_EP_NEOHOO
 
 REGISTER_MATERIAL(FSVFNewtonian, MODULE_FLUID, FE_VF_NEWTONIAN, FE_MAT_FLUID_VISCOSITY, "Newtonian fluid", 0);
 
-FSVFNewtonian::FSVFNewtonian(FSModel* fem) : FSMaterial(FE_VF_NEWTONIAN, fem)
+FSVFNewtonian::FSVFNewtonian(FSModel* fem) : FSMaterialProp(FE_VF_NEWTONIAN, fem)
 {
     AddScienceParam(0, UNIT_VISCOSITY, "mu"  , "shear viscosity");
     AddScienceParam(0, UNIT_VISCOSITY, "kappa", "bulk viscosity");
@@ -3159,7 +3164,7 @@ FSVFNewtonian::FSVFNewtonian(FSModel* fem) : FSMaterial(FE_VF_NEWTONIAN, fem)
 
 REGISTER_MATERIAL(FSVFBingham, MODULE_FLUID, FE_VF_BINGHAM, FE_MAT_FLUID_VISCOSITY, "Bingham", 0);
 
-FSVFBingham::FSVFBingham(FSModel* fem) : FSMaterial(FE_VF_BINGHAM, fem)
+FSVFBingham::FSVFBingham(FSModel* fem) : FSMaterialProp(FE_VF_BINGHAM, fem)
 {
     AddScienceParam(0, UNIT_VISCOSITY, "mu"  , "shear viscosity"); // viscosity at infinite shear rate
     AddScienceParam(0, UNIT_PRESSURE , "tauy", "yield stress"   );
@@ -3172,7 +3177,7 @@ FSVFBingham::FSVFBingham(FSModel* fem) : FSMaterial(FE_VF_BINGHAM, fem)
 
 REGISTER_MATERIAL(FSVFCarreau, MODULE_FLUID, FE_VF_CARREAU, FE_MAT_FLUID_VISCOSITY, "Carreau", 0);
 
-FSVFCarreau::FSVFCarreau(FSModel* fem) : FSMaterial(FE_VF_CARREAU, fem)
+FSVFCarreau::FSVFCarreau(FSModel* fem) : FSMaterialProp(FE_VF_CARREAU, fem)
 {
     AddScienceParam(0, UNIT_VISCOSITY, "mu0" , "zero shear rate viscosity"); // viscosity at zero shear rate
     AddScienceParam(0, UNIT_VISCOSITY, "mui" , "infinite shear rate viscosity"); // viscosity at infinite shear rate
@@ -3186,7 +3191,7 @@ FSVFCarreau::FSVFCarreau(FSModel* fem) : FSMaterial(FE_VF_CARREAU, fem)
 
 REGISTER_MATERIAL(FSVFCarreauYasuda, MODULE_FLUID, FE_VF_CARREAU_YASUDA, FE_MAT_FLUID_VISCOSITY, "Carreau-Yasuda", 0);
 
-FSVFCarreauYasuda::FSVFCarreauYasuda(FSModel* fem) : FSMaterial(FE_VF_CARREAU_YASUDA, fem)
+FSVFCarreauYasuda::FSVFCarreauYasuda(FSModel* fem) : FSMaterialProp(FE_VF_CARREAU_YASUDA, fem)
 {
     AddScienceParam(0, UNIT_VISCOSITY, "mu0" , "zero shear rate viscosity"  );
     AddScienceParam(0, UNIT_VISCOSITY, "mui" , "infinite shear rate viscosity"  );
@@ -3201,7 +3206,7 @@ FSVFCarreauYasuda::FSVFCarreauYasuda(FSModel* fem) : FSMaterial(FE_VF_CARREAU_YA
 
 REGISTER_MATERIAL(FSVFPowellEyring, MODULE_FLUID, FE_VF_POWELL_EYRING, FE_MAT_FLUID_VISCOSITY, "Powell-Eyring", 0);
 
-FSVFPowellEyring::FSVFPowellEyring(FSModel* fem) : FSMaterial(FE_VF_POWELL_EYRING, fem)
+FSVFPowellEyring::FSVFPowellEyring(FSModel* fem) : FSMaterialProp(FE_VF_POWELL_EYRING, fem)
 {
     AddScienceParam(0, UNIT_VISCOSITY, "mu0" , "zero shear rate viscosity"  );
     AddScienceParam(0, UNIT_VISCOSITY, "mui" , "infinite shear rate viscosity"  );
@@ -3214,7 +3219,7 @@ FSVFPowellEyring::FSVFPowellEyring(FSModel* fem) : FSMaterial(FE_VF_POWELL_EYRIN
 
 REGISTER_MATERIAL(FSVFCross, MODULE_FLUID, FE_VF_CROSS, FE_MAT_FLUID_VISCOSITY, "Cross", 0);
 
-FSVFCross::FSVFCross(FSModel* fem) : FSMaterial(FE_VF_CROSS, fem)
+FSVFCross::FSVFCross(FSModel* fem) : FSMaterialProp(FE_VF_CROSS, fem)
 {
     AddScienceParam(0, UNIT_VISCOSITY, "mu0" , "zero shear rate viscosity"  );
     AddScienceParam(0, UNIT_VISCOSITY, "mui" , "infinite shear rate viscosity"  );
@@ -3228,7 +3233,7 @@ FSVFCross::FSVFCross(FSModel* fem) : FSMaterial(FE_VF_CROSS, fem)
 
 REGISTER_MATERIAL(FSStarlingSupply, MODULE_MULTIPHASIC, FE_STARLING_SUPPLY, FE_MAT_SOLVENT_SUPPLY, "Starling", 0);
 
-FSStarlingSupply::FSStarlingSupply(FSModel* fem) : FSMaterial(FE_STARLING_SUPPLY, fem)
+FSStarlingSupply::FSStarlingSupply(FSModel* fem) : FSMaterialProp(FE_STARLING_SUPPLY, fem)
 {
 	AddScienceParam(0, UNIT_FILTRATION, "kp", "filtration coefficient");
 	AddScienceParam(0, UNIT_PRESSURE, "pv", "external pressure");
@@ -3240,7 +3245,7 @@ FSStarlingSupply::FSStarlingSupply(FSModel* fem) : FSMaterial(FE_STARLING_SUPPLY
 
 REGISTER_MATERIAL(FSPrestrainConstGradient, MODULE_MECH, FE_PRESTRAIN_CONST_GRADIENT, FE_MAT_PRESTRAIN_GRADIENT, "prestrain gradient", 0);
 
-FSPrestrainConstGradient::FSPrestrainConstGradient(FSModel* fem) : FSMaterial(FE_PRESTRAIN_CONST_GRADIENT, fem)
+FSPrestrainConstGradient::FSPrestrainConstGradient(FSModel* fem) : FSMaterialProp(FE_PRESTRAIN_CONST_GRADIENT, fem)
 {
 	mat3d F0; F0.unit();
 	AddMat3dParam(F0, "F0", "prestrain gradient");
@@ -3252,7 +3257,7 @@ FSPrestrainConstGradient::FSPrestrainConstGradient(FSModel* fem) : FSMaterial(FE
 
 REGISTER_MATERIAL(FSPrestrainInSituGradient, MODULE_MECH, FE_PRESTRAIN_INSITU_GRADIENT, FE_MAT_PRESTRAIN_GRADIENT, "in-situ stretch", 0);
 
-FSPrestrainInSituGradient::FSPrestrainInSituGradient(FSModel* fem) : FSMaterial(FE_PRESTRAIN_INSITU_GRADIENT, fem)
+FSPrestrainInSituGradient::FSPrestrainInSituGradient(FSModel* fem) : FSMaterialProp(FE_PRESTRAIN_INSITU_GRADIENT, fem)
 {
 	AddScienceParam(1.0, UNIT_NONE, "stretch", "fiber stretch");
 	AddBoolParam(false, "isochoric", "isochoric prestrain");
@@ -3261,7 +3266,7 @@ FSPrestrainInSituGradient::FSPrestrainInSituGradient(FSModel* fem) : FSMaterial(
 //=============================================================================
 REGISTER_MATERIAL(FSPlasticFlowCurvePaper, MODULE_MECH, FE_MAT_PLASTIC_FLOW_PAPER, FE_MAT_PLASTIC_FLOW_RULE, "PFC paper", 0);
 
-FSPlasticFlowCurvePaper::FSPlasticFlowCurvePaper(FSModel* fem) : FSMaterial(FE_MAT_PLASTIC_FLOW_PAPER, fem)
+FSPlasticFlowCurvePaper::FSPlasticFlowCurvePaper(FSModel* fem) : FSMaterialProp(FE_MAT_PLASTIC_FLOW_PAPER, fem)
 {
 	AddDoubleParam(0, "Y0");
 	AddDoubleParam(0, "Ymax");
@@ -3274,7 +3279,7 @@ FSPlasticFlowCurvePaper::FSPlasticFlowCurvePaper(FSModel* fem) : FSMaterial(FE_M
 //=============================================================================
 REGISTER_MATERIAL(FSPlasticFlowCurveUser, MODULE_MECH, FE_MAT_PLASTIC_FLOW_USER, FE_MAT_PLASTIC_FLOW_RULE, "PFC user", 0);
 
-FSPlasticFlowCurveUser::FSPlasticFlowCurveUser(FSModel* fem) : FSMaterial(FE_MAT_PLASTIC_FLOW_USER, fem)
+FSPlasticFlowCurveUser::FSPlasticFlowCurveUser(FSModel* fem) : FSMaterialProp(FE_MAT_PLASTIC_FLOW_USER, fem)
 {
 	AddProperty("plastic_response", FE_MAT_1DFUNC);
 	AddProperty(0, new FS1DPointFunction(fem));
@@ -3283,7 +3288,7 @@ FSPlasticFlowCurveUser::FSPlasticFlowCurveUser(FSModel* fem) : FSMaterial(FE_MAT
 //=============================================================================
 REGISTER_MATERIAL(FSPlasticFlowCurveMath, MODULE_MECH, FE_MAT_PLASTIC_FLOW_MATH, FE_MAT_PLASTIC_FLOW_RULE, "PFC math", 0);
 
-FSPlasticFlowCurveMath::FSPlasticFlowCurveMath(FSModel* fem) : FSMaterial(FE_MAT_PLASTIC_FLOW_MATH, fem)
+FSPlasticFlowCurveMath::FSPlasticFlowCurveMath(FSModel* fem) : FSMaterialProp(FE_MAT_PLASTIC_FLOW_MATH, fem)
 {
 	AddIntParam(1, "nf");
 	AddDoubleParam(0, "e0");

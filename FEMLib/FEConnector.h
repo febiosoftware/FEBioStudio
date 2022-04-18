@@ -17,15 +17,12 @@ public:
 
 	virtual void SetPosition(const vec3d& r);
 
-	void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
-
 public:
-    void SetRigidBody1(int rb) { m_rbA = rb; }
-    void SetRigidBody2(int rb) { m_rbB = rb; }
+    virtual void SetRigidBody1(int rb) = 0;
+    virtual void SetRigidBody2(int rb) = 0;
 
-    int GetRigidBody1() const { return m_rbA; }
-    int GetRigidBody2() const { return m_rbB; }
+    virtual int GetRigidBody1() const = 0;
+    virtual int GetRigidBody2() const = 0;
 
 protected:
 	void SaveList(FEItemListBuilder* pitem, OArchive& ar);
@@ -33,14 +30,33 @@ protected:
 
 protected:
 	int		m_ntype;
-	int	m_rbA;
-	int	m_rbB;
+};
+
+//-----------------------------------------------------------------------------
+class FBSRigidConnector : public FSRigidConnector
+{
+public:
+    FBSRigidConnector(int ntype, FSModel* ps, int nstep);
+
+public:
+    void SetRigidBody1(int rb) override { m_rbA = rb; }
+    void SetRigidBody2(int rb) override { m_rbB = rb; }
+
+    int GetRigidBody1() const override { return m_rbA; }
+    int GetRigidBody2() const override { return m_rbB; }
+
+    void Save(OArchive& ar) override;
+    void Load(IArchive& ar) override;
+
+private:
+    int	m_rbA;
+    int	m_rbB;
 };
 
 //-----------------------------------------------------------------------------
 //  This class implements a rigid spherical joint
 //
-class FSRigidSphericalJoint : public FSRigidConnector
+class FSRigidSphericalJoint : public FBSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG,
@@ -54,7 +70,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid revolute joint
 //
-class FSRigidRevoluteJoint : public FSRigidConnector
+class FSRigidRevoluteJoint : public FBSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -68,7 +84,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid prismatic joint
 //
-class FSRigidPrismaticJoint : public FSRigidConnector
+class FSRigidPrismaticJoint : public FBSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -82,7 +98,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid cylindrical joint
 //
-class FSRigidCylindricalJoint : public FSRigidConnector
+class FSRigidCylindricalJoint : public FBSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -96,7 +112,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid planar joint
 //
-class FSRigidPlanarJoint : public FSRigidConnector
+class FSRigidPlanarJoint : public FBSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -110,7 +126,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid lock joint
 //
-class FSRigidLock : public FSRigidConnector
+class FSRigidLock : public FBSRigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -124,7 +140,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid spring
 //
-class FSRigidSpring : public FSRigidConnector
+class FSRigidSpring : public FBSRigidConnector
 {
 public:
     enum { K, XA, XB };
@@ -136,7 +152,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid damper
 //
-class FSRigidDamper : public FSRigidConnector
+class FSRigidDamper : public FBSRigidConnector
 {
 public:
     enum { C, XA, XB };
@@ -148,7 +164,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid angular damper
 //
-class FSRigidAngularDamper : public FSRigidConnector
+class FSRigidAngularDamper : public FBSRigidConnector
 {
 public:
     enum { C };
@@ -160,7 +176,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid contractile force
 //
-class FSRigidContractileForce : public FSRigidConnector
+class FSRigidContractileForce : public FBSRigidConnector
 {
 public:
     enum { F, XA, XB };
@@ -170,7 +186,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSGenericRigidJoint : public FSRigidConnector
+class FSGenericRigidJoint : public FBSRigidConnector
 {
 public:
 	FSGenericRigidJoint(FSModel* ps, int nstep = 0);
@@ -183,4 +199,10 @@ public:
     FEBioRigidConnector(FSModel* ps, int nstep = 0);
     void Save(OArchive& ar);
     void Load(IArchive& ar);
+
+    void SetRigidBody1(int rb) override;
+    void SetRigidBody2(int rb) override;
+
+    int GetRigidBody1() const override;
+    int GetRigidBody2() const override;
 };

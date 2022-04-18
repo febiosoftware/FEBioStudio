@@ -478,7 +478,7 @@ const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 	}
 	else if (strcmp(var, "rigid_materials") == 0)
 	{
-		GMaterial* mat = GetMaterial(n - 1);
+		GMaterial* mat = GetMaterialFromID(n);
 		if (mat)
 		{
 			FSMaterial* femat = mat->GetMaterialProperties();

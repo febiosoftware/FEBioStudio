@@ -481,6 +481,7 @@ public:
 
 	Param* Find(const char* sz)
 	{
+		if (sz == nullptr) return nullptr;
 		int N = (int)m_Param.size();
 		for (int i=0; i<N; ++i)
 		{

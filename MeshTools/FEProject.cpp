@@ -555,7 +555,11 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 			{
 				log << "implicit conversion from bool to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 				pi->SetIntValue(p.GetBoolValue() ? 1 : 0);
-				return false;
+			}
+			else if ((pi->GetParamType() == Param_BOOL) && (p.GetParamType() == Param_INT))
+			{
+				log << "implicit conversion from int to bool (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+				pi->SetBoolValue(p.GetIntValue() != 0 ? true : false);
 			}
 			else if ((pi->GetParamType() == Param_CHOICE) && (p.GetParamType() == Param_INT))
 			{
@@ -573,27 +577,57 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 			}
 			else if (pi->GetParamType() != p.GetParamType())
 			{
-				log << "Failed to copy parameter (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 				return false;
 			}
 			else *pi = p;
 		}
+
+		// copy load curve IDs
+		pi->SetLoadCurveID(p.GetLoadCurveID());
 	}
 	else { 
-		log << "Failed to copy parameter " << p.GetShortName() << std::endl;
 		return false; 
 	}
 
 	return true;
 }
 
-bool copyParameters(std::ostream& log, FSCoreBase* pd, const FSCoreBase* ps)
+bool copyParameters(std::ostream& log, FSModelComponent* pd, const FSCoreBase* ps)
 {
 	bool bret = true;
 	for (int i = 0; i < ps->Parameters(); ++i)
 	{
 		const Param& p = ps->GetParam(i);
-		if (copyParameter(log, pd, p) == false) bret = false;
+		if (copyParameter(log, pd, p) == false)
+		{
+			bool bok = false;
+
+			// vec3d parameters might be mapped to a vec3d valuator
+			if (p.GetParamType() == Param_VEC3D)
+			{
+				FSProperty* prop = pd->FindProperty(p.GetShortName());
+				if (prop && (prop->GetSuperClassID() == FEVEC3DGENERATOR_ID))
+				{
+					FSModelComponent* pc = FEBio::CreateClass(FEVEC3DGENERATOR_ID, "vector", pd->GetFSModel());
+					prop->SetComponent(pc);
+
+					Param* pv = pc->GetParam("vector");
+					pv->SetVec3dValue(p.GetVec3dValue());
+
+					int lc = p.GetLoadCurveID();
+					pv->SetLoadCurveID(lc);
+
+					bok = true;
+				}
+			}
+
+			if (bok == false)
+			{
+				const char* sz = (p.GetShortName() ? p.GetShortName() : "(unnamed)");
+				log << "Failed to copy parameter " << ps->GetName() << "." << sz << "\n";
+				bret = bok;
+			}
+		}
 	}
 	if (bret == false) log << "Errors encountered copying parameters from " << ps->GetName() << std::endl;
 	return bret;
@@ -640,6 +674,7 @@ void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelCo
 		if (pi)
 		{
 			int ncomp = prop.Size();
+			pi->SetSize(ncomp);
 			for (int j = 0; j < ncomp; ++j)
 			{
 				if (prop.GetComponent(j))
@@ -773,12 +808,16 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 			pcfeb = FEBio::CreateRigidConstraint("rigid_fixed", fem); assert(pcfeb);
 			pcfeb->SetParamVectorInt("dofs", dofs);
 		}
+		else if (pc->Type() == FE_RIGID_FORCE)
+		{
+			// This is now a rigid load
+			FSRigidLoad* pl = FEBio::CreateRigidLoad("rigid_force", fem);
+		}
 		else
 		{
 			switch (pc->Type())
 			{
 			case FE_RIGID_DISPLACEMENT     : pcfeb = FEBio::CreateRigidConstraint("rigid_prescribed", fem); break;
-//			case FE_RIGID_FORCE			   : pcfeb = FEBio::CreateRigidConstraint("", fem); break;
 			case FE_RIGID_INIT_VELOCITY    : pcfeb = FEBio::CreateRigidConstraint("initial_rigid_velocity", fem); break;
 			case FE_RIGID_INIT_ANG_VELOCITY: pcfeb = FEBio::CreateRigidConstraint("initial_rigid_angular_velocity", fem); break;
 			default:
@@ -1026,15 +1065,52 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 	{
 		FSLoad* pl = oldStep.Load(i);
 		FSLoad* febLoad = nullptr;
-		switch (pl->Type())
+		if (pl->Type() == FE_NODAL_DOF_LOAD)
 		{
-		case FE_PRESSURE_LOAD       : febLoad = FEBio::CreateSurfaceLoad("pressure" , fem); break;
-		case FE_CONST_BODY_FORCE    : febLoad = FEBio::CreateBodyLoad   ("const"    , fem); break;
-		case FE_NON_CONST_BODY_FORCE: febLoad = FEBio::CreateBodyLoad   ("non-const", fem); break;
-		default:
+			FSNodalDOFLoad* pnl = dynamic_cast<FSNodalDOFLoad*>(pl);
+
+			febLoad = FEBio::CreateNodalLoad("nodal_force", fem);
+			int bc = pnl->GetDOF();
+			double s = pnl->GetLoad();
+
+			vec3d f;
+			switch (bc)
+			{
+			case 0: f = vec3d(s, 0, 0); break;
+			case 1: f = vec3d(0, s, 0); break;
+			case 2: f = vec3d(0, 0, s); break;
+			}
+
+			FSProperty* pf = febLoad->FindProperty("value"); assert(pf);
+			FSModelComponent* pv = FEBio::CreateClass(FEVEC3DGENERATOR_ID, "vector", fem);
+			pf->SetComponent(pv);
+
+			Param* p = pv->GetParam("vector");
+			p->SetVec3dValue(f);
+
+			int lc = pnl->GetParam(FSNodalDOFLoad::LOAD).GetLoadCurveID();
+			p->SetLoadCurveID(lc);
+		}
+		else if (pl->Type() == FE_FLUID_ROTATIONAL_VELOCITY)
+		{
+			// TODO: This is now a boundary condition
 			assert(false);
 		}
-		assert(febLoad);
+		else
+		{
+			if (dynamic_cast<FSSurfaceLoad*>(pl))
+			{
+				febLoad = FEBio::CreateSurfaceLoad(pl->GetTypeString(), fem);
+			}
+			else if (dynamic_cast<FSBodyLoad*>(pl))
+			{
+				febLoad = FEBio::CreateBodyLoad(pl->GetTypeString(), fem);
+			}
+			assert(febLoad);
+
+			// replace parameters
+			copyParameters(log, febLoad, pl);
+		}
 
 		if (febLoad)
 		{
@@ -1044,12 +1120,6 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 			// steal the item list
 			febLoad->SetItemList(pl->GetItemList());
 			pl->SetItemList(nullptr);
-
-			// replace parameters
-			for (int i = 0; i < pl->Parameters(); ++i)
-			{
-				copyParameter(log, febLoad, pl->GetParam(i));
-			}
 
 			newStep.AddLoad(febLoad);
 		}

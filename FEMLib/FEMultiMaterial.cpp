@@ -144,7 +144,7 @@ FSSoluteMaterial::FSSoluteMaterial(FSModel* fem) : FSMaterialProp(FE_SOLUTE_MATE
 
 REGISTER_MATERIAL(FSSBMMaterial, MODULE_MULTIPHASIC, FE_SBM_MATERIAL, FE_MAT_SBM, "solid_bound", 0);
 
-FSSBMMaterial::FSSBMMaterial(FSModel* fem) : FSMaterial(FE_SBM_MATERIAL, fem)
+FSSBMMaterial::FSSBMMaterial(FSModel* fem) : FSMaterialProp(FE_SBM_MATERIAL, fem)
 {
 	// add the SBM material index
 	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(SBMs)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);
@@ -394,7 +394,7 @@ FSReactiveViscoelasticMaterialUC::FSReactiveViscoelasticMaterialUC(FSModel* fem)
 //							CHEMICAL REACTION
 //=============================================================================
 
-FSReactionMaterial::FSReactionMaterial(int ntype, FSModel* fem) : FSMaterial(ntype, fem)
+FSReactionMaterial::FSReactionMaterial(int ntype, FSModel* fem) : FSMaterialProp(ntype, fem)
 {
 	// the optional Vbar parameter is hidden by default.
 	AddScienceParam(0, UNIT_MOLAR_VOLUME, "Vbar", "Vbar")->SetState(Param_HIDDEN);
@@ -1019,7 +1019,7 @@ bool FSMultiphasicMaterial::HasSBM(int nid)
 }
 
 //=============================================================================
-FSReactionSpecies::FSReactionSpecies(int ntype, FSModel* fem) : FSMaterial(ntype, fem)
+FSReactionSpecies::FSReactionSpecies(int ntype, FSModel* fem) : FSMaterialProp(ntype, fem)
 {
     // add the stoichiometric coefficient
     AddIntParam(1, "v", "v"); // stoichiometric coefficient

@@ -119,7 +119,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // The FSSBMMaterial is used as a component of a multiphasic material
-class FSSBMMaterial : public FSMaterial
+class FSSBMMaterial : public FSMaterialProp
 {
 public:
 	enum { MP_NSBM , MP_RHO0 , MP_RMIN , MP_RMAX };
@@ -378,7 +378,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSReactionSpecies : public FSMaterial
+class FSReactionSpecies : public FSMaterialProp
 {
 public:
     // material parameters
@@ -489,7 +489,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // chemical reaction parent class
-class FSReactionMaterial : public FSMaterial
+class FSReactionMaterial : public FSMaterialProp
 {
 public:
 	// material parameters
