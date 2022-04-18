@@ -130,6 +130,7 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po)
 		Param& p = po->GetParam(n);
 		if (p.GetLoadCurveID() > 0)
 		{
+			assert(p.IsVolatile());
 			string name = po->GetName() + "." + p.GetLongName();
 			ui->addTreeItem(t1, QString::fromStdString(name), &p);
 		}
@@ -145,6 +146,7 @@ void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, con
 		Param& p = mat->GetParam(n);
 		if (p.GetLoadCurveID() > 0)
 		{
+			assert(p.IsVolatile());
 			string paramName = name + "." + p.GetShortName();
 			ui->addTreeItem(t1, QString::fromStdString(paramName), &p);
 		}
@@ -339,7 +341,7 @@ void CCurveEditor::AddParameterList(QTreeWidgetItem* t1, FSModelComponent* po)
 	for (int n = 0; n < po->Parameters(); ++n)
 	{
 		Param& param = po->GetParam(n);
-		if (param.IsEditable())
+		if (param.IsEditable() && param.IsVolatile())
 		{
 			ui->addTreeItem(t1, QString::fromStdString(param.GetShortName()), &param);
 		}

@@ -777,8 +777,13 @@ public:
 				Param* p = item->parameter();
 				if (p)
 				{
-					if (p->GetLoadCurveID() > 0) c = QColor::fromRgb(0, 255, 0);
-					else c = QColor::fromRgb(0, 128, 0);
+					if (p->GetLoadCurveID() > 0)
+					{
+						assert(p->IsVolatile());
+						c = QColor::fromRgb(0, 255, 0);
+					}
+					else if (p->IsVolatile()) c = QColor::fromRgb(0, 128, 0);
+					else c = QColor::fromRgb(32, 32, 32);
 				}
 				else c = QColor::fromRgb(0, 0, 0); 
 				s = Shape::Circle; 

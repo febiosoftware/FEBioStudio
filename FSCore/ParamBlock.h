@@ -73,6 +73,15 @@ enum Param_State {
 class ParamBlock;
 class LoadCurve;
 
+// FEBio parameter flags (see FECore\FEParam.h, FEParamFlag)
+enum Param_Flags {
+	FS_PARAM_ATTRIBUTE = 0x01,		// parameter will be read as attribute
+	FS_PARAM_USER      = 0x02,		// user parameter (owned by parameter list)	
+	FS_PARAM_HIDDEN    = 0x04,		// Hides parameter (in FEBio Studio)
+	FS_PARAM_ADDLC     = 0x08,		// parameter should get a default load curve in FEBio Studio
+	FS_PARAM_VOLATILE  = 0x10		// parameter can change (e.g. via a load curve)
+};
+
 //-----------------------------------------------------------------------------
 // This class implements a parameter. Parameters are used by classes that
 // require user interaction. The parameter interface facilitates the interaction
@@ -214,6 +223,8 @@ public:
 
 	unsigned int GetFlags() const { return m_flags; }
 	void SetFlags(unsigned int flags) { m_flags = flags; }
+
+	bool IsVolatile() const { return (m_flags & FS_PARAM_VOLATILE); }
 
 	size_t size() const;
 
