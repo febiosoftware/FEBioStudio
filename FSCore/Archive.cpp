@@ -281,14 +281,23 @@ void IArchive::log(const char* sz, ...)
 
 	// get a pointer to the argument list
 	va_list	args;
-
-	// copy to string
-	char szlog[256] = { 0 };
 	va_start(args, sz);
-	vsprintf(szlog, sz, args);
-	va_end(args);
 
-	int l = (int)strlen(szlog);
+	// count how many chars we need to allocate
+	char* szlog = NULL;
+	int l = vsnprintf(nullptr, 0, sz, args) + 1;
+	if (l > 1)
+	{
+		szlog = new char[l]; assert(szlog);
+		if (szlog)
+		{
+			vsnprintf(szlog, l, sz, args);
+		}
+	}
+	va_end(args);
+	if (szlog == NULL) return;
+
+	l = (int)strlen(szlog);
 	if (l == 0) return;
 
 	stringstream ss;
