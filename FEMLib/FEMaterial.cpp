@@ -38,7 +38,7 @@ SOFTWARE.*/
 
 FSFiberGenerator::FSFiberGenerator(int ntype, FSModel* fem) : FSMaterial(ntype, fem)
 {
-	SetSuperClassID(FEVEC3DGENERATOR_ID);
+	SetSuperClassID(FEVEC3DVALUATOR_ID);
 }
 
 //////////////////////////////////////////////////////////////////////

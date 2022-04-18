@@ -606,9 +606,9 @@ bool copyParameters(std::ostream& log, FSModelComponent* pd, const FSCoreBase* p
 			if (p.GetParamType() == Param_VEC3D)
 			{
 				FSProperty* prop = pd->FindProperty(p.GetShortName());
-				if (prop && (prop->GetSuperClassID() == FEVEC3DGENERATOR_ID))
+				if (prop && (prop->GetSuperClassID() == FEVEC3DVALUATOR_ID))
 				{
-					FSModelComponent* pc = FEBio::CreateClass(FEVEC3DGENERATOR_ID, "vector", pd->GetFSModel());
+					FSModelComponent* pc = FEBio::CreateClass(FEVEC3DVALUATOR_ID, "vector", pd->GetFSModel());
 					prop->SetComponent(pc);
 
 					Param* pv = pc->GetParam("vector");
@@ -1082,7 +1082,7 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 			}
 
 			FSProperty* pf = febLoad->FindProperty("value"); assert(pf);
-			FSModelComponent* pv = FEBio::CreateClass(FEVEC3DGENERATOR_ID, "vector", fem);
+			FSModelComponent* pv = FEBio::CreateClass(FEVEC3DVALUATOR_ID, "vector", fem);
 			pf->SetComponent(pv);
 
 			Param* p = pv->GetParam("vector");

@@ -263,9 +263,9 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FENEWTONSTRATEGY_ID  : pc = new FSGenericClass(fem); break;
 	case FECLASS_ID           : pc = new FSGenericClass(fem); break;
 	case FETIMECONTROLLER_ID  : pc = new FSGenericClass(fem); break;
-	case FEVEC3DGENERATOR_ID  : pc = new FSGenericClass(fem); break;
-	case FEMAT3DGENERATOR_ID  : pc = new FSGenericClass(fem); break;
-	case FEMAT3DSGENERATOR_ID : pc = new FSGenericClass(fem); break;
+	case FEVEC3DVALUATOR_ID   : pc = new FSGenericClass(fem); break;
+	case FEMAT3DVALUATOR_ID   : pc = new FSGenericClass(fem); break;
+	case FEMAT3DSVALUATOR_ID  : pc = new FSGenericClass(fem); break;
 	default:
 		assert(false);
 	}
@@ -408,10 +408,10 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 				FEVec3dValuator* val = v.valuator(); assert(val);
 
 				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEVec3dValuator"));
-				prop->SetSuperClassID(FEVEC3DGENERATOR_ID);
+				prop->SetSuperClassID(FEVEC3DVALUATOR_ID);
 				prop->SetDefaultType("vector");
 
-				FSModelComponent* vecProp = CreateFSClass(FEVEC3DGENERATOR_ID, -1, po->GetFSModel());
+				FSModelComponent* vecProp = CreateFSClass(FEVEC3DVALUATOR_ID, -1, po->GetFSModel());
 
 				// copy the class data
 				BuildModelComponent(vecProp, val);
@@ -425,10 +425,10 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 				FEMat3dValuator* val = v.valuator(); assert(val);
 
 				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dValuator"));
-				prop->SetSuperClassID(FEMAT3DGENERATOR_ID);
+				prop->SetSuperClassID(FEMAT3DVALUATOR_ID);
 				prop->SetDefaultType("const");
 
-				FSModelComponent* matProp = CreateFSClass(FEMAT3DGENERATOR_ID, -1, po->GetFSModel());
+				FSModelComponent* matProp = CreateFSClass(FEMAT3DVALUATOR_ID, -1, po->GetFSModel());
 
 				// copy the class data
 				BuildModelComponent(matProp, val);
@@ -442,10 +442,10 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 				FEMat3dsValuator* val = v.valuator(); assert(val);
 
 				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dsValuator"));
-				prop->SetSuperClassID(FEMAT3DSGENERATOR_ID);
+				prop->SetSuperClassID(FEMAT3DSVALUATOR_ID);
 				prop->SetDefaultType("const");
 
-				FSModelComponent* matProp = CreateFSClass(FEMAT3DSGENERATOR_ID, -1, po->GetFSModel());
+				FSModelComponent* matProp = CreateFSClass(FEMAT3DSVALUATOR_ID, -1, po->GetFSModel());
 
 				// copy the class data
 				BuildModelComponent(matProp, val);
@@ -947,9 +947,9 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FESOLVER_ID          :
 	case FENEWTONSTRATEGY_ID  :
 	case FETIMECONTROLLER_ID  :
-	case FEVEC3DGENERATOR_ID  :
-	case FEMAT3DGENERATOR_ID  :
-	case FEMAT3DSGENERATOR_ID :
+	case FEVEC3DVALUATOR_ID   :
+	case FEMAT3DVALUATOR_ID  :
+	case FEMAT3DSVALUATOR_ID :
 	{
 		FSGenericClass* pc = new FSGenericClass(fem);
 		BuildModelComponent(superClassID, typeStr, pc);
