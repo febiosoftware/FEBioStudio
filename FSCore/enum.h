@@ -633,6 +633,7 @@ SOFTWARE.*/
 #define FE_BFSI_TRACTION                    0x0034
 #define FE_FLUID_PRESSURE_LOAD              0x0035
 #define FE_MASSDAMPING_LOAD					0x0036
+#define FE_SURFACE_FORCE                    0x0037
 
 //--------------------------------------------------------
 // Interface types

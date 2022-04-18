@@ -1862,6 +1862,7 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	XMLAtt& att = tag.Attribute("type");
 	if      (att == "pressure"                      ) psl = CREATE_SURFACE_LOAD(FEPressureLoad);
 	else if (att == "traction"                      ) psl = CREATE_SURFACE_LOAD(FESurfaceTraction);
+    else if (att == "force"                         ) psl = CREATE_SURFACE_LOAD(FESurfaceForceUniform);
 	else if (att == "fluidflux"                     ) psl = CREATE_SURFACE_LOAD(FEFluidFlux);
 	else if (att == "soluteflux"                    ) psl = CREATE_SURFACE_LOAD(FESoluteFlux);
 	else if (att == "concentration flux"            ) psl = CREATE_SURFACE_LOAD(FEConcentrationFlux);

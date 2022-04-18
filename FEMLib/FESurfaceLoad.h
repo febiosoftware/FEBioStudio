@@ -208,6 +208,28 @@ public:
 
 //-----------------------------------------------------------------------------
 
+class FESurfaceForceUniform : public FESurfaceLoad
+{
+public:
+    enum { SCALE, FORCE };
+    
+public:
+    FESurfaceForceUniform(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    
+    FELoadCurve* GetLoadCurve() { return GetParamLC(SCALE); }
+    
+    void SetScale(double f) { SetFloatValue(SCALE, f); }
+    double GetScale() { return GetFloatValue(SCALE); }
+    
+    void SetForce(const vec3d& t) { SetVecValue(FORCE, t); }
+    vec3d GetForce() { return GetVecValue(FORCE); }
+    
+    // used only for reading parameters for old file formats
+    void LoadParam(const Param& p);
+};
+
+//-----------------------------------------------------------------------------
+
 class FEFluidTraction : public FESurfaceLoad
 {
 public:

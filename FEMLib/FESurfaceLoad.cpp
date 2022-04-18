@@ -184,6 +184,25 @@ void FESurfaceTraction::LoadParam(const Param& p)
 }
 
 //-----------------------------------------------------------------------------
+
+FESurfaceForceUniform::FESurfaceForceUniform(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_SURFACE_FORCE, ps, pi, nstep)
+{
+    SetTypeString("Surface Force");
+    AddDoubleParam(1.0, "scale")->SetLoadCurve();
+    AddVecParam(vec3d(0,0,1), "force")->SetUnit(UNIT_FORCE);
+}
+
+// used only for reading parameters for old file formats
+void FESurfaceForceUniform::LoadParam(const Param& p)
+{
+    switch (p.GetParamID())
+    {
+        case 0: SetForce(p.GetVec3dValue()); break;
+        case 1: *GetLoadCurve() = *p.GetLoadCurve(); break;
+    }
+}
+
+//-----------------------------------------------------------------------------
 FEFluidPressureLoad::FEFluidPressureLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_FLUID_PRESSURE_LOAD, ps, pi, nstep)
 {
     SetTypeString("Fluid pressure");
