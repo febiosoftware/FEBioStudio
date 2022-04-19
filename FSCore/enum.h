@@ -191,6 +191,7 @@ SOFTWARE.*/
 #define CID_MAT_PROPERTY_NAME		0x00070010	// added in 1.13
 #define CID_MAT_PROPERTY_MAT		0x00070011	// added in 2.0
 #define CID_MAT_AXES				0x00070012
+#define CID_MAT_PROPERTY_MATPROP	0x00070013	// added in 2.0
 
 // --- geometry data ---
 #define CID_GEOMETRY_SECTION		0x00080000

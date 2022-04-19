@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FECoreMaterial.h"
 #include "FEMaterialFactory.h"
 #include "FEMaterial.h"
+#include "FEMKernel.h"
 #include <FECore/fecore_enum.h>
 #include <FECore/units.h>
 
@@ -481,7 +482,7 @@ void FSMaterial::Save(OArchive& ar)
 				// store the property data
 				ar.BeginChunk(CID_MAT_PROPERTY_MAT);
 				{
-					for (int j = 0; j<mpi.Size(); ++j)
+					for (int j = 0; j < mpi.Size(); ++j)
 					{
 						FSMaterial* pm = dynamic_cast<FSMaterial*>(mpi.GetComponent(j));
 						if (pm)
@@ -489,6 +490,23 @@ void FSMaterial::Save(OArchive& ar)
 							ar.BeginChunk(pm->Type());
 							{
 								pm->Save(ar);
+							}
+							ar.EndChunk();
+						}
+					}
+				}
+				ar.EndChunk();
+
+				ar.BeginChunk(CID_MAT_PROPERTY_MATPROP);
+				{
+					for (int j = 0; j < mpi.Size(); ++j)
+					{
+						FSMaterialProperty* pp = dynamic_cast<FSMaterialProperty*>(mpi.GetComponent(j));
+						if (pp)
+						{
+							ar.BeginChunk(pp->Type());
+							{
+								pp->Save(ar);
 							}
 							ar.EndChunk();
 						}
@@ -669,6 +687,28 @@ void FSMaterial::Load(IArchive &ar)
 							ar.CloseChunk();
 						}
 					}
+					else if (nid == CID_MAT_PROPERTY_MATPROP)
+					{
+						int n = 0;
+						while (IArchive::IO_OK == ar.OpenChunk())
+						{
+							int nid = ar.GetChunkID();
+							FSMaterialProperty* pm = fscore_new<FSMaterialProperty>(fem, FEMATERIALPROP_ID, nid); assert(pm);
+							if (pm)
+							{
+								pm->Load(ar);
+
+								if (prop)
+								{
+									if (prop->maxSize() == FSProperty::NO_FIXED_SIZE)
+										prop->AddComponent(pm);
+									else prop->SetComponent(pm, n);
+									n++;
+								}
+							}
+							ar.CloseChunk();
+						}
+					}
 					else if (ar.Version() < 0x00020000)
 					{
 						// Note that some materials are considered obsolete. Since they are no longer registered
@@ -708,6 +748,7 @@ FSMaterialProp::FSMaterialProp(int ntype, FSModel* fem) : FSMaterial(ntype, fem)
 FSMaterialProperty::FSMaterialProperty(FSModel* fem, int ntype) : FSModelComponent(fem)
 {
 	m_ntype = ntype;
+	SetSuperClassID(FEMATERIALPROP_ID);
 }
 
 int FSMaterialProperty::Type() const
@@ -718,4 +759,38 @@ int FSMaterialProperty::Type() const
 FEBioMaterialProperty::FEBioMaterialProperty(FSModel* fem) : FSMaterialProperty(fem, FE_FEBIO_MATERIAL_PROPERTY)
 {
 
+}
+
+void FEBioMaterialProperty::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSMaterialProperty::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioMaterialProperty::Load(IArchive& ar)
+{
+	TRACE("FEBioMaterial::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSMaterialProperty::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+	// We call this to make sure that the FEBio class has the same parameters
+	UpdateData(true);
 }

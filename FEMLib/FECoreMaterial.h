@@ -156,4 +156,6 @@ class FEBioMaterialProperty : public FSMaterialProperty
 public:
 	FEBioMaterialProperty(FSModel* fem);
 
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };
