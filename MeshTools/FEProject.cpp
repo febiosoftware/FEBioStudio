@@ -142,7 +142,7 @@ void FSProject::Reset()
 }
 
 //-----------------------------------------------------------------------------
-unsigned int FSProject::GetModule() const
+int FSProject::GetModule() const
 {
 	return m_module;// FEBio::GetActiveModule();
 }
@@ -156,20 +156,23 @@ std::string FSProject::GetModuleName() const
 }
 
 //-----------------------------------------------------------------------------
-void FSProject::SetModule(unsigned int mod)
+void FSProject::SetModule(int mod)
 {
 	m_module = mod;
 	FEBio::SetActiveModule(mod);
 
 	// get the list of variables
-	FSModel& fem = GetFSModel();
-	FEBio::InitFSModel(fem);
-
-	if (m_plt.PlotVariables() == 0)
+	if (mod != -1)
 	{
-		// add some default variables
-		// TODO: Maybe I can pull this info from FEBio somehow
-		SetDefaultPlotVariables();
+		FSModel& fem = GetFSModel();
+		FEBio::InitFSModel(fem);
+
+		if (m_plt.PlotVariables() == 0)
+		{
+			// add some default variables
+			// TODO: Maybe I can pull this info from FEBio somehow
+			SetDefaultPlotVariables();
+		}
 	}
 }
 

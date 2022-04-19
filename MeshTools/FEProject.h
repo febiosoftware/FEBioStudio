@@ -157,8 +157,8 @@ public:
 	//! set default plot variables
 	void SetDefaultPlotVariables();
 
-	unsigned int GetModule() const;
-	void SetModule(unsigned int mod);
+	int GetModule() const;
+	void SetModule(int mod);
 
 	std::string GetModuleName() const;
 
