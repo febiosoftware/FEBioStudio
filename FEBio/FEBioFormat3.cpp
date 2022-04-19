@@ -572,6 +572,9 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 						else sztype = tag.Name();
 					}
 
+					// some classes allow names for their properties (e.g. chemical reactions)
+					const char* szname = tag.AttributeValue("name", true);
+
 					// skip obsolete "user" type
 					if (strcmp(sztype, "user") == 0)
 					{
@@ -592,6 +595,8 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 						assert(pc->GetSuperClassID() == prop->GetSuperClassID());
 						if (pc)
 						{
+							if (szname) pc->SetName(szname);
+
 							prop->AddComponent(pc);
 
 							if (mapLC2F1D)
