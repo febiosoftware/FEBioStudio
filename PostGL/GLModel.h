@@ -341,6 +341,9 @@ public:
 	int Plots() { return (int)m_pPlot.Size(); }
 	CGLPlot* Plot(int i) { return m_pPlot[i]; }
 
+	void MovePlotUp(Post::CGLPlot* plot);
+	void MovePlotDown(Post::CGLPlot* plot);
+
 	void UpdateColorMaps();
 
 protected:

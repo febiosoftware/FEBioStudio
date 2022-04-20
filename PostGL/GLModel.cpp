@@ -3545,6 +3545,32 @@ void CGLModel::ClearPlots()
 	m_pPlot.Clear();
 }
 
+void CGLModel::MovePlotUp(Post::CGLPlot* plot)
+{
+	for (size_t i = 1; i < m_pPlot.Size(); ++i)
+	{
+		if (m_pPlot[i] == plot)
+		{
+			CGLPlot* prv = m_pPlot[i - 1];
+			m_pPlot.Set(i - 1, plot);
+			m_pPlot.Set(i, prv);
+		}
+	}
+}
+
+void CGLModel::MovePlotDown(Post::CGLPlot* plot)
+{
+	for (size_t i = 0; i < m_pPlot.Size() - 1; ++i)
+	{
+		if (m_pPlot[i] == plot)
+		{
+			CGLPlot* nxt = m_pPlot[i + 1];
+			m_pPlot.Set(i, nxt);
+			m_pPlot.Set(i + 1, plot);
+		}
+	}
+}
+
 void CGLModel::UpdateColorMaps()
 {
 	int N = (int)m_pPlot.Size();
