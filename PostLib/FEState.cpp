@@ -386,27 +386,6 @@ void FEState::RebuildData()
 }
 
 //-----------------------------------------------------------------------------
-void FEState::AddPoint(vec3f a, int nlabel)
-{
-	POINTDATA p;
-	p.m_r = a;
-	p.nlabel = nlabel;
-	m_Point.push_back(p);
-}
-
-//-----------------------------------------------------------------------------
-void FEState::AddPoint(vec3f a, const std::vector<float>& data, int nlabel)
-{
-	POINTDATA p;
-	p.m_r = a;
-	p.nlabel = nlabel;
-	int n = data.size();
-	if (n > MAX_POINT_DATA_FIELDS) n = MAX_POINT_DATA_FIELDS;
-	for (int i = 0; i < n; ++i) p.val[i] = data[i];
-	m_Point.push_back(p);
-}
-
-//-----------------------------------------------------------------------------
 OBJECT_DATA& FEState::GetObjectData(int n)
 {
 	if (n < m_objPt.size()) return m_objPt[n];
