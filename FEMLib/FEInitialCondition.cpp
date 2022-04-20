@@ -58,14 +58,14 @@ FSInitConcentration::FSInitConcentration(FSModel* ps) : FSInitialNodalDOF(FE_INI
 {
 	SetTypeString("Initial effective concentration");
 	AddDoubleParam(0, "value", "Value");
-	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
 FSInitConcentration::FSInitConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep) : FSInitialNodalDOF(FE_INIT_CONCENTRATION, ps, pi, nstep)
 {
 	SetTypeString("Initial effective concentration");
 	AddDoubleParam(val, "value", "Value");
-	AddChoiceParam(bc, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+	AddChoiceParam(bc, "sol", "Solute")->SetEnumNames("$(solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
 //-----------------------------------------------------------------------------
@@ -73,14 +73,14 @@ FSInitShellConcentration::FSInitShellConcentration(FSModel* ps) : FSInitialNodal
 {
     SetTypeString("Initial effective shell concentration");
     AddDoubleParam(0, "value", "Value");
-    AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+    AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
 FSInitShellConcentration::FSInitShellConcentration(FSModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep) : FSInitialNodalDOF(FE_INIT_SHELL_CONCENTRATION, ps, pi, nstep)
 {
     SetTypeString("Initial effective shell concentration");
     AddDoubleParam(val, "value", "Value");
-    AddChoiceParam(bc, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+    AddChoiceParam(bc, "sol", "Solute")->SetEnumNames("$(solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
 //-----------------------------------------------------------------------------

@@ -1911,7 +1911,7 @@ REGISTER_MATERIAL(FSOsmoWellsManning, MODULE_BIPHASIC, FE_OSMO_WM, FE_MAT_OSMOTI
 FSOsmoWellsManning::FSOsmoWellsManning(FSModel* fem) : FSMaterialProp(FE_OSMO_WM, fem)
 {
     AddScienceParam(1, UNIT_NONE, "ksi", "ksi");
-    AddChoiceParam(0, "co_ion", "co-ion")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+    AddChoiceParam(0, "co_ion", "co-ion")->SetEnumNames("$(solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
 //=============================================================================

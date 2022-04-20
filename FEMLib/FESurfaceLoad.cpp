@@ -111,7 +111,7 @@ FSSoluteFlux::FSSoluteFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSu
 	SetTypeString("solute flux");
 	AddDoubleParam(1, "flux", "flux");
 	AddBoolParam(0, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
-	AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(Solutes)")->SetOffset(1);
+	AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(solutes)")->SetOffset(1);
 }
 
 // used only for reading parameters for old file formats
@@ -395,7 +395,7 @@ FSBFSITraction::FSBFSITraction(FSModel* ps, FEItemListBuilder* pi, int nstep) : 
 FSConcentrationFlux::FSConcentrationFlux(FSModel* ps) : FSSurfaceLoad(FE_CONCENTRATION_FLUX, ps)
 {
 	SetTypeString("concentration flux");
-	AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(Solutes)")->SetOffset(1);
+	AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(solutes)")->SetOffset(1);
 	AddDoubleParam(0, "flux");
 }
 
