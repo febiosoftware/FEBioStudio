@@ -27,6 +27,7 @@
 #pragma once
 #include <MathLib/math3d.h>
 #include <vector>
+#include <string>
 #include "Quadric.h"
 #include "PointCloud3d.h"
 //using namespace std;
@@ -48,6 +49,7 @@ public:
     
     bool Fit(PointCloud3d* pc);
     Q_TYPE GetType();
+    std::string GetStringType(Q_TYPE qtype);
 
 protected:
     vec3d Transform(vec3d& rc, quatd& q, const vec3d& p)

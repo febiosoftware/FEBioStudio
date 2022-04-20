@@ -634,6 +634,7 @@ SOFTWARE.*/
 #define FE_FLUID_PRESSURE_LOAD              0x0035
 #define FE_MASSDAMPING_LOAD					0x0036
 #define FE_SURFACE_FORCE                    0x0037
+#define FE_BEARING_LOAD                     0x0038
 
 //--------------------------------------------------------
 // Interface types

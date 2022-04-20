@@ -189,7 +189,7 @@ FESurfaceForceUniform::FESurfaceForceUniform(FEModel* ps, FEItemListBuilder* pi,
 {
     SetTypeString("Surface Force");
     AddDoubleParam(1.0, "scale")->SetLoadCurve();
-    AddVecParam(vec3d(0,0,1), "force")->SetUnit(UNIT_FORCE);
+    AddVecParam(vec3d(0,0,0), "force")->SetUnit(UNIT_FORCE);
 }
 
 // used only for reading parameters for old file formats
@@ -200,6 +200,19 @@ void FESurfaceForceUniform::LoadParam(const Param& p)
         case 0: SetForce(p.GetVec3dValue()); break;
         case 1: *GetLoadCurve() = *p.GetLoadCurve(); break;
     }
+}
+
+//-----------------------------------------------------------------------------
+
+FEBearingLoad::FEBearingLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_BEARING_LOAD, ps, pi, nstep)
+{
+    SetTypeString("Bearing Load");
+    AddDoubleParam(1.0, "scale")->SetLoadCurve();
+    AddVecParam(vec3d(0,0,0), "force")->SetUnit(UNIT_FORCE);
+    AddIntParam(1, "profile")->SetEnumNames("Sinusoidal\0Parabolic\0");
+    AddBoolParam(true, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
+    AddBoolParam(false , "symmetric_stiffness", "Formulation")->SetEnumNames("Nonsymmetric\0Symmetric\0");
+    AddBoolParam(false, "shell_bottom", "Apply to shell bottom");
 }
 
 //-----------------------------------------------------------------------------

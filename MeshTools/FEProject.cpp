@@ -279,6 +279,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FEPressureLoad               , MODULE_MECH, FE_SURFACE_LOAD     , FE_PRESSURE_LOAD                , "Pressure", PRESSURE_LOAD_HTML);
 	REGISTER_FE_CLASS(FESurfaceTraction            , MODULE_MECH, FE_SURFACE_LOAD     , FE_SURFACE_TRACTION             , "Surface traction", TRACTION_LOAD_HTML);
     REGISTER_FE_CLASS(FESurfaceForceUniform        , MODULE_MECH, FE_SURFACE_LOAD     , FE_SURFACE_FORCE                , "Surface force", 0);
+    REGISTER_FE_CLASS(FEBearingLoad                , MODULE_MECH, FE_SURFACE_LOAD     , FE_BEARING_LOAD                 , "Bearing load", 0);
 	REGISTER_FE_CLASS(FENodalVelocities            , MODULE_MECH, FE_INITIAL_CONDITION, FE_NODAL_VELOCITIES             , "Velocity");
 	REGISTER_FE_CLASS(FENodalShellVelocities       , MODULE_MECH, FE_INITIAL_CONDITION, FE_NODAL_SHELL_VELOCITIES       , "Shell velocity");
 	REGISTER_FE_CLASS(FEInitPrestrain              , MODULE_MECH, FE_INITIAL_CONDITION, FE_INIT_PRESTRAIN               , "Initialize Prestrain");

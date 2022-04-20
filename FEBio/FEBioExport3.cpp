@@ -4282,6 +4282,7 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 			case FE_PRESSURE_LOAD            : WriteSurfaceLoad(s, pbc, "pressure"); break;
 			case FE_SURFACE_TRACTION         : WriteSurfaceLoad(s, pbc, "traction"); break;
             case FE_SURFACE_FORCE            : WriteSurfaceLoad(s, pbc, "force"); break;
+            case FE_BEARING_LOAD             : WriteSurfaceLoad(s, pbc, "bearing load"); break;
 			case FE_FLUID_FLUX               : WriteSurfaceLoad(s, pbc, "fluidflux"); break;
 			case FE_BP_NORMAL_TRACTION       : WriteSurfaceLoad(s, pbc, "normal_traction"); break;
             case FE_MATCHING_OSM_COEF        : WriteSurfaceLoad(s, pbc, "matching_osm_coef"); break;

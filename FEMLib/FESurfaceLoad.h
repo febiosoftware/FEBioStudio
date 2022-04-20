@@ -230,6 +230,19 @@ public:
 
 //-----------------------------------------------------------------------------
 
+class FEBearingLoad: public FESurfaceLoad
+{
+public:
+    enum { SCALE, FORCE, PROFILE, NTYPE };
+    
+public:
+    FEBearingLoad(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    
+    FELoadCurve* GetLoadCurve() { return GetParamLC(SCALE); }
+};
+
+//-----------------------------------------------------------------------------
+
 class FEFluidTraction : public FESurfaceLoad
 {
 public:
