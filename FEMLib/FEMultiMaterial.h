@@ -531,6 +531,74 @@ public:
 
 string buildReactionEquation(FSReactionMaterial* mat, FSModel& fem);
 
+// helper class for managing chemical reactions using the FEBio classes
+class FEBioReactionMaterial
+{
+public:
+    FEBioReactionMaterial(FSMaterialProperty* reaction);
+
+    void SetReaction(FSMaterialProperty* reaction);
+
+    void SetForwardRate(FSMaterialProperty* fwdRate);
+
+    void SetReverseRate(FSMaterialProperty* revRate);
+
+    int Type() const;
+
+    void SetName(const std::string& name);
+
+    std::string GetName() const;
+
+    operator FSCoreBase* () { return m_reaction; }
+
+    bool IsReversible() const;
+
+    FSMaterialProperty* GetForwardRate();
+
+    FSMaterialProperty* GetReverseRate();
+
+    bool GetOvrd() const;
+
+    void SetOvrd(bool b);
+
+    int Reactants() const;
+
+    int Products() const;
+
+    FSMaterialProperty* Reactant(int n);
+
+    FSMaterialProperty* Product(int n);
+
+    void AddReactantMaterial(FSMaterialProperty* pm);
+    void AddProductMaterial(FSMaterialProperty* pm);
+
+    void GetSoluteReactants(vector<int>& solR);
+    void GetSBMReactants(vector<int>& sbmR);
+    void GetSoluteProducts(vector<int>& solP);
+    void GetSBMProducts(vector<int>& sbmP);
+
+    void ClearReactants();
+    void ClearProducts();
+
+private:
+    FSMaterialProperty* m_reaction;
+};
+
+//-----------------------------------------------------------------------------
+// helper class for handling FEBio multiphasic materials
+class FEBioMultiphasic
+{
+public:
+    FEBioMultiphasic(FSMaterial* mat);
+
+    bool HasSolute(int solID) const;
+
+    bool HasSBM(int solID) const;
+
+private:
+    FSMaterial* m_mat;
+};
+
 //-----------------------------------------------------------------------------
 // membrane reaction parent class
 class FSMembraneReactionMaterial : public FSMaterial

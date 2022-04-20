@@ -952,7 +952,8 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 						QComboBox* box = new QComboBox(parent);
 						QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
 						box->addItems(enumValues);
-						int n = p->val<int>();
+
+						int n = item->GetFSModel()->GetEnumIndex(p->GetEnumNames(), p->GetIntValue());
 						box->setCurrentIndex(n);
 						QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 						return box;

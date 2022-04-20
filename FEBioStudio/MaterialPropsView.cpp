@@ -369,11 +369,11 @@ public:
 						const char* sz = nullptr;
 						if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
 						{
-							sz = fem->GetVariableName("$(Solutes)", index);
+							sz = fem->GetVariableName("$(solutes)", index);
 						}
 						else if (ntype == FSReactionSpecies::SBM_SPECIES)
 						{
-							sz = fem->GetVariableName("$(SBMs)", index);
+							sz = fem->GetVariableName("$(sbms)", index);
 						}
 						else
 						{
@@ -758,11 +758,11 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				char buf[1024] = { 0 };
 				if (ntype == FSReactionSpecies::SBM_SPECIES)
 				{
-					fem.GetVariableNames("$(SBMs)", buf);
+					fem.GetVariableNames("$(sbms)", buf);
 				}
 				else if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
 				{
-					fem.GetVariableNames("$(Solutes)", buf);
+					fem.GetVariableNames("$(solutes)", buf);
 				}
 				else
 				{

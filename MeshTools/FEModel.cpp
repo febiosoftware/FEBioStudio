@@ -364,9 +364,9 @@ void FSModel::GetVariableNames(const char* szvar, char* szbuf)
 	const char* chr = strchr(szvar, ')'); assert(chr);
 	strncpy(var, chl+1, chr-chl-1);
 
-	if      (strcmp(var, "Solutes") == 0) { GetSoluteNames(szbuf); return; }
-	else if (strcmp(var, "SBMs") == 0) { GetSBMNames(szbuf); return; }
-	else if (strcmp(var, "species") == 0) { GetSpeciesNames(szbuf); return; }
+	if      (strcmp(var, "solutes"        ) == 0) { GetSoluteNames(szbuf); return; }
+	else if (strcmp(var, "sbms"           ) == 0) { GetSBMNames(szbuf); return; }
+	else if (strcmp(var, "species"        ) == 0) { GetSpeciesNames(szbuf); return; }
 	else if (strcmp(var, "rigid_materials") == 0) 
 	{
 		GetRigidMaterialNames(szbuf); return;
@@ -420,14 +420,14 @@ const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 	const char* chr = strchr(szvar, ')'); assert(chr);
 	strncpy(var, chl + 1, chr - chl - 1);
 
-	if (strcmp(var, "Solutes") == 0)
+	if (strcmp(var, "solutes") == 0)
 	{
 		if ((n >= 0) && (n < m_Sol.Size()))
 			return m_Sol[n]->GetName().c_str();
 		else
 			return "(invalid)";
 	}
-	else if (strcmp(var, "SBMs") == 0)
+	else if (strcmp(var, "sbms") == 0)
 	{
 		if ((n >= 0) && (n < m_SBM.Size()))
 			return m_SBM[n]->GetName().c_str();
@@ -497,14 +497,14 @@ const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 //-----------------------------------------------------------------------------
 int FSModel::GetVariableIntValue(const char* szvar, int n)
 {
-	if (strcmp(szvar, "$(Solutes)") == 0)
+	if (strcmp(szvar, "$(solutes)") == 0)
 	{
 		if ((n >= 0) && (n < m_Sol.Size()))
 			return n + 1;
 		else
 			return -1;
 	}
-	else if (strcmp(szvar, "$(SBMs)") == 0)
+	else if (strcmp(szvar, "$(sbms)") == 0)
 	{
 		if ((n >= 0) && (n < m_SBM.Size()))
 			return n + 1;
@@ -565,6 +565,55 @@ int FSModel::GetEnumIntValue(Param& param)
 	if (szenum == nullptr) return 0;
 	if (szenum[0] == '$') return GetVariableIntValue(szenum, param.GetIntValue());
 	return param.GetIntValue();
+}
+
+//-----------------------------------------------------------------------------
+int FSModel::GetEnumIndex(const char* szenum, int n)
+{
+	if (szenum == nullptr) return n;
+	if (szenum[0] == '$')
+	{
+		if (strcmp(szenum, "$(solutes)") == 0)
+		{
+			if ((n > 0) && (n <= m_Sol.Size()))
+				return n - 1;
+			else
+				return -1;
+		}
+		else if (strcmp(szenum, "$(sbms)") == 0)
+		{
+			if ((n > 0) && (n <= m_SBM.Size()))
+				return n - 1;
+			else
+				return -1;
+		}
+		else if (strcmp(szenum, "$(species)") == 0)
+		{
+			if ((n > 0) && (n <= m_Sol.Size())) return n - 1;
+			else
+			{
+				n -= m_Sol.Size();
+				if ((n > 0) && (n <= m_SBM.Size())) return n + m_Sol.Size() - 1;
+			}
+		}
+		else if (strcmp(szenum, "$(rigid_materials)") == 0)
+		{
+			int m = 0;
+			for (int i = 0; i < Materials(); ++i)
+			{
+				GMaterial* mat = GetMaterial(i);
+				FSMaterial* femat = mat->GetMaterialProperties();
+				if (femat && femat->IsRigid())
+				{
+					if (mat->GetID() == n) return m;
+					m++;
+				}
+			}
+			return -1;
+		}
+	}
+	
+	return n;
 }
 
 //-----------------------------------------------------------------------------

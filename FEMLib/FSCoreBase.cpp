@@ -282,6 +282,18 @@ FSProperty* FSCoreBase::FindProperty(const std::string& name)
 }
 
 //-----------------------------------------------------------------------------
+const FSProperty* FSCoreBase::FindProperty(const std::string& name) const
+{
+	int n = (int)m_prop.size();
+	for (int i = 0; i < n; ++i)
+	{
+		FSProperty* pm = m_prop[i];
+		if (pm->GetName() == name) return pm;
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
 // find the property by type
 FSProperty* FSCoreBase::FindProperty(int ntype)
 {

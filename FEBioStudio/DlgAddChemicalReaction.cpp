@@ -369,7 +369,6 @@ void CDlgAddChemicalReaction::InitDialog()
 	FSModel& fem = *doc->GetFSModel();
 
 	// fill in the reactions
-//	list<FEMatDescriptor*> mats = FEMaterialFactory::Enumerate(FE_MAT_REACTION);
 	int reactionClassIndex = FEBio::GetBaseClassIndex("FEChemicalReaction");
 	vector<FEBio::FEBioClassInfo> mats = FEBio::FindAllClasses(-1, FEMATERIALPROP_ID, reactionClassIndex, 1);
 	if (mats.empty() == false)
@@ -381,7 +380,6 @@ void CDlgAddChemicalReaction::InitDialog()
 	}
 
 	// fill in reaction rate options
-//	mats = FEMaterialFactory::Enumerate(FE_MAT_REACTION_RATE);
 	int baseClassIndex = FEBio::GetBaseClassIndex("FEReactionRate");
 	vector<FEBio::FEBioClassInfo> rates = FEBio::FindAllClasses(-1, FEMATERIALPROP_ID, baseClassIndex, 1);
 	if (rates.empty() == false)
@@ -450,7 +448,7 @@ void CDlgAddChemicalReaction::onReactionChanged(int n)
 		FSProperty* react = props.FindProperty("reaction"); assert(react);
 		if (react)
 		{
-			FSReactionMaterial* r = dynamic_cast<FSReactionMaterial*>(react->GetComponent(n));
+			FSMaterialProperty* r = dynamic_cast<FSMaterialProperty*>(react->GetComponent(n));
 			SetReaction(r);
 		}
 	}
@@ -479,14 +477,17 @@ void CDlgAddChemicalReaction::SetMaterial(GMaterial* mat, FSModel& fem)
 		int N = react->Size();
 		for (int i=0; i<N; ++i)
 		{
-			FSReactionMaterial* r = dynamic_cast<FSReactionMaterial*>(react->GetComponent(i)); assert(r);
+			FSMaterialProperty* r = dynamic_cast<FSMaterialProperty*>(react->GetComponent(i)); assert(r);
 			if (r)
 			{
 				string name = r->GetName();
 				if (name.empty())
 				{
 					// build a name based on the equation
-					name = buildReactionEquation(r, fem);
+//					name = buildReactionEquation(r, fem);
+					static int n = 1;
+					stringstream ss; ss << "reaction" << n++;
+					name = ss.str();
 				}
 				ui->reactions->AddItem(QString::fromStdString(name), i);
 			}
@@ -505,18 +506,18 @@ void CDlgAddChemicalReaction::onAddReaction()
 	FSModel* fem = doc->GetFSModel();
 
 	// create a default material
-	FSReactionMaterial* r = dynamic_cast<FSReactionMaterial*>(FEMaterialFactory::Create(fem, FE_MASS_ACTION_FORWARD)); assert(r);
+	FEBioReactionMaterial r(FEBio::CreateMaterialProperty("mass-action-forward", fem));
 	react->AddComponent(r);
 
 	stringstream ss;
 	ss << "Reaction" << react->Size();
-	r->SetName(ss.str());
+	r.SetName(ss.str());
 
 	// add a constant forward reaction rate
-	r->SetForwardRate(FEMaterialFactory::Create(fem, FE_REACTION_RATE_CONST));
+	r.SetForwardRate(FEBio::CreateMaterialProperty("constant reaction rate", fem));
 
 	// add it to the list
-	ui->reactions->AddItem(QString::fromStdString(r->GetName()), react->Size() - 1, true);
+	ui->reactions->AddItem(QString::fromStdString(r.GetName()), react->Size() - 1, true);
 }
 
 void CDlgAddChemicalReaction::onNameChanged(const QString& t)
@@ -534,20 +535,21 @@ void CDlgAddChemicalReaction::onRemoveReaction()
 	if ((m_pmp == 0) || (m_reaction == 0)) return;
 
 	FSMaterial& props = *m_pmp->GetMaterialProperties();
-	FSProperty* react = props.FindProperty(FE_MAT_REACTION); assert(react);
+	FSProperty* react = props.FindProperty("reaction"); assert(react);
 
 	// remove the reaction
-	react->RemoveComponent(m_reaction);
+	react->RemoveComponent(*m_reaction);
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FSModel& fem = *doc->GetFSModel();
 
 	// update the list
+	delete m_reaction;
 	m_reaction = 0;
 	SetMaterial(m_pmp, fem);
 }
 
-void CDlgAddChemicalReaction::SetReaction(FSReactionMaterial* mat)
+void CDlgAddChemicalReaction::SetReaction(FSMaterialProperty* mat)
 {
 	// see if we have a reaction present
 	if (m_reaction)
@@ -561,62 +563,73 @@ void CDlgAddChemicalReaction::SetReaction(FSReactionMaterial* mat)
 			}
 		}
 	}
+	else m_reaction = new FEBioReactionMaterial(mat);
 
 	// store the new active reaction
-	m_reaction = mat;
+	m_reaction->SetReaction(mat);
 
 	// update the UI
 	int ntype = mat->Type();
 	ui->setReactionType(ntype);
 
 	// activate the reverse rate if needed
-	if (ntype == FE_MASS_ACTION_REVERSIBLE) ui->revRate->setEnabled(true);
+	if (m_reaction->IsReversible()) ui->revRate->setEnabled(true);
 	else ui->revRate->setEnabled(false);
 
-	FSMaterial* fwd = mat->GetForwardRate(); 
+	FSMaterialProperty* fwd = m_reaction->GetForwardRate();
 	ui->setForwardRateType(fwd ? fwd->Type() : -1);
 
-	FSMaterial* rev = mat->GetReverseRate();
+	FSMaterialProperty* rev = m_reaction->GetReverseRate();
 	ui->setReverseRateType(rev ? rev->Type() : -1);
 
 	ui->name->setText(QString::fromStdString(mat->GetName()));
 
-	m_bovrd = mat->GetOvrd();
+	m_bovrd = m_reaction->GetOvrd();
 	ui->ovrVB->setChecked(m_bovrd);
 
 	// set species
 	ui->selectReactants->clear();
 	ui->selectProducts->clear();
 
-	int nr = mat->Reactants();
-	for (int i=0; i<(int)m_species.size(); ++i)
+	FEBioMultiphasic mp(m_pmp->GetMaterialProperties());
+
+	FSModel* fem = m_pmp->GetModel();
+	int nsol = fem->Solutes();
+
+	int nr = m_reaction->Reactants();
+	for (int i = 0; i<(int)m_species.size(); ++i)
 	{
 		pair<string,int>& spec = m_species[i];
 
 		// see if the parent material has this reactant
 		bool bvalid = true;
-		FSMultiphasicMaterial* mp = dynamic_cast<FSMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
-		if (mp)
+		if (spec.second < 0x100)
 		{
-			if (spec.second < 0x100)
-			{
-				if (mp->HasSolute(spec.second) == false) bvalid = false;
-			}
-			else
-			{
-				if (mp->HasSBM(spec.second - 0x100) == false) bvalid = false;
-			}
+			if (mp.HasSolute(spec.second) == false) bvalid = false;
 		}
+		else
+		{
+			if (mp.HasSBM(spec.second - 0x100) == false) bvalid = false;
+		}
+
+		int index = spec.second;
 
 		bool bfound = false;
 		for (int j=0; j<nr; ++j)
 		{
-			FSReactantMaterial* rm = mat->Reactant(j);
+			FSMaterialProperty* rm = m_reaction->Reactant(j);
 
-			int index = spec.second;
-			if (rm->GetReactantType() == FSReactionSpecies::SBM_SPECIES) index -= 0x100;
+			// the species ID is a zero-based index into the solute+sbm table. 
+			int m = rm->GetParam("species")->GetIntValue();
+			if (m >= 0)
+			{
+				// we need to figure out whether this is a solute or sbm
+				if (m >= nsol) {
+					m -= nsol;  index -= 0x100;
+				}
+			}
 
-			if (index == rm->GetIndex())
+			if (index == m)
 			{
 				ui->selectReactants->addTargetItem(QString::fromStdString(spec.first), spec.second, (bvalid ? 0 : 1));
 				bfound = true;
@@ -630,35 +643,40 @@ void CDlgAddChemicalReaction::SetReaction(FSReactionMaterial* mat)
 		}
 	}
 
-	int np = mat->Products();
+	int np = m_reaction->Products();
 	for (int i = 0; i<(int)m_species.size(); ++i)
 	{
 		pair<string, int>& spec = m_species[i];
 
 		// see if the parent material has this product
 		bool bvalid = true;
-		FSMultiphasicMaterial* mp = dynamic_cast<FSMultiphasicMaterial*>(m_pmp->GetMaterialProperties());
-		if (mp)
+		if (spec.second < 0x100)
 		{
-			if (spec.second < 0x100)
-			{
-				if (mp->HasSolute(spec.second) == false) bvalid = false;
-			}
-			else
-			{
-				if (mp->HasSBM(spec.second - 0x100) == false) bvalid = false;
-			}
+			if (mp.HasSolute(spec.second) == false) bvalid = false;
+		}
+		else
+		{
+			if (mp.HasSBM(spec.second - 0x100) == false) bvalid = false;
 		}
 
 		bool bfound = false;
 		for (int j = 0; j<np; ++j)
 		{
-			FSProductMaterial* rm = mat->Product(j);
+			FSMaterialProperty* rm = m_reaction->Product(j);
 
 			int index = spec.second;
-			if (rm->GetProductType() == FSReactionSpecies::SBM_SPECIES) index -= 0x100;
 
-			if (index == rm->GetIndex())
+			// the species ID is a zero-based index into the solute+sbm table. 
+			int m = rm->GetParam("species")->GetIntValue();
+			if (m >= 0)
+			{
+				// we need to figure out whether this is a solute or sbm
+				if (m >= nsol) {
+					m -= nsol;  index -= 0x100;
+				}
+			}
+
+			if (index == m)
 			{
 				ui->selectProducts->addTargetItem(QString::fromStdString(spec.first), spec.second, (bvalid ? 0 : 1));
 				bfound = true;
@@ -690,7 +708,7 @@ bool CDlgAddChemicalReaction::hasChanged()
 
 	// get the forward rate material
 	m_fwdMat = ui->fwdRate->currentData().toInt();
-	FSMaterial* fwd = m_reaction->GetForwardRate();
+	FSMaterialProperty* fwd = m_reaction->GetForwardRate();
 	if ((fwd == 0) || (fwd->Type() != m_fwdMat)) changed = true;
 
 	// see if we have a reverse rate specified
@@ -699,7 +717,7 @@ bool CDlgAddChemicalReaction::hasChanged()
 	if (m_brr) m_revMat = ui->revRate->currentData().toInt();
 
 	// get the reverse rate material
-	FSMaterial* rev = m_reaction->GetReverseRate();
+	FSMaterialProperty* rev = m_reaction->GetReverseRate();
 	if (rev && (m_revMat != rev->Type())) changed = true;
 	else if ((rev == 0) && m_brr) changed = true;
 
@@ -726,7 +744,6 @@ bool CDlgAddChemicalReaction::hasChanged()
 
 	m_bovrd = ui->ovrVB->isChecked();
 	if (m_bovrd != m_reaction->GetOvrd()) changed = true;
-
 	return changed;
 }
 
@@ -739,25 +756,25 @@ void CDlgAddChemicalReaction::apply()
 	if ((m_pmp == 0) || (m_reaction == 0)) return;
 
 	FSMaterial* mat = m_pmp->GetMaterialProperties();
-	FSProperty* reactProp = mat->FindProperty(FE_MAT_REACTION); assert(reactProp);
+	FSProperty* reactProp = mat->FindProperty("reaction"); assert(reactProp);
 	if (reactProp == 0) return;
 
 	// create the reaction material and set its type
 	if (m_reactionMat != m_reaction->Type())
 	{
 		// we need to create a new material
-		FSReactionMaterial* pmat = dynamic_cast<FSReactionMaterial*>(FEMaterialFactory::Create(fem, m_reactionMat)); assert(pmat);
+		FSMaterialProperty* pmat = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(m_reactionMat, fem));
 		if (pmat == 0) return;
 
 		// find the property
-		int index = reactProp->GetComponentIndex(m_reaction); assert(index >= 0);
+		int index = reactProp->GetComponentIndex(*m_reaction); assert(index >= 0);
 		if (index < 0) return;
 
 		// replace the property
 		reactProp->SetComponent(pmat, index);
 
 		// continue with this material
-		m_reaction = pmat;
+		m_reaction->SetReaction(pmat);
 	}
 
 	// set the name
@@ -767,22 +784,26 @@ void CDlgAddChemicalReaction::apply()
 	m_reaction->SetOvrd(m_bovrd);
 
 	// set the forward rate
-	FSMaterial* fwd = m_reaction->GetForwardRate();
-	if ((fwd == 0) || (m_fwdMat != fwd->Type()))
+	FSMaterialProperty* fwd = m_reaction->GetForwardRate();
+	if ((fwd == nullptr) || (m_fwdMat != fwd->Type()))
 	{
-		m_reaction->SetForwardRate(FEMaterialFactory::Create(fem, m_fwdMat));
+		FSMaterialProperty* fwdRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(fwd->Type(), fem)); assert(fwdRate);
+		m_reaction->SetForwardRate(fwdRate);
 	}
 
 	// set the reverse rate
-	FSMaterial* rev = m_reaction->GetReverseRate();
+	FSMaterialProperty* rev = m_reaction->GetReverseRate();
 	if (m_brr)
 	{
-		if ((rev == 0) || (rev->Type() != m_revMat))
+		if ((rev == nullptr) || (rev->Type() != m_revMat))
 		{
-			m_reaction->SetReverseRate(FEMaterialFactory::Create(fem, m_revMat));
+			FSMaterialProperty* revRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(fwd->Type(), fem)); assert(revRate);
+			m_reaction->SetReverseRate(revRate);
 		}
 	}
-	else m_reaction->SetReverseRate(0);
+	else m_reaction->SetReverseRate(nullptr);
+
+	int nsol = fem->Solutes();
 
 	// add the reactants
 	vector<int> solR, sbmR;
@@ -795,18 +816,16 @@ void CDlgAddChemicalReaction::apply()
 		// add the solute reactants
 		for (int i = 0; i<(int)m_solR.size(); ++i)
 		{
-			FSReactantMaterial* ps = new FSReactantMaterial(fem);
-			ps->SetIndex(m_solR[i]);
-			ps->SetReactantType(FSReactionSpecies::SOLUTE_SPECIES);
+			FSMaterialProperty* ps = FEBio::CreateMaterialProperty("vR", fem);
+			ps->SetParamInt("species", m_solR[i]);
 			m_reaction->AddReactantMaterial(ps);
 		}
 
 		// add the sbm reactants
 		for (int i = 0; i<(int)m_sbmR.size(); ++i)
 		{
-			FSReactantMaterial* ps = new FSReactantMaterial(fem);
-			ps->SetIndex(m_sbmR[i]);
-			ps->SetReactantType(FSReactionSpecies::SBM_SPECIES);
+			FSMaterialProperty* ps = FEBio::CreateMaterialProperty("vR", fem);
+			ps->SetParamInt("species", m_sbmR[i]);
 			m_reaction->AddReactantMaterial(ps);
 		}
 	}
@@ -822,18 +841,16 @@ void CDlgAddChemicalReaction::apply()
 		// add the solute products
 		for (int i = 0; i<(int)m_solP.size(); ++i)
 		{
-			FSProductMaterial* ps = new FSProductMaterial(fem);
-			ps->SetIndex(m_solP[i]);
-			ps->SetProductType(FSReactionSpecies::SOLUTE_SPECIES);
+			FSMaterialProperty* ps = FEBio::CreateMaterialProperty("vP", fem);
+			ps->SetParamInt("species", m_solP[i]);
 			m_reaction->AddProductMaterial(ps);
 		}
 
 		// add the sbm products
 		for (int i = 0; i<(int)m_sbmP.size(); ++i)
 		{
-			FSProductMaterial* ps = new FSProductMaterial(fem);
-			ps->SetIndex(m_sbmP[i]);
-			ps->SetProductType(FSReactionSpecies::SBM_SPECIES);
+			FSMaterialProperty* ps = FEBio::CreateMaterialProperty("vP", fem);
+			ps->SetParamInt("species", m_sbmP[i]);
 			m_reaction->AddProductMaterial(ps);
 		}
 	}

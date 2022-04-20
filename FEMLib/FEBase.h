@@ -129,6 +129,7 @@ public:
 
 	// find a property by name
 	FSProperty* FindProperty(const std::string& name);
+	const FSProperty* FindProperty(const std::string& name) const;
 
 	// find the property by type
 	FSProperty* FindProperty(int ntype);

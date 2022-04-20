@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <sstream>
 #include <FECore/units.h>
+#include <FEBioLink/FEBioClass.h>
 
 using std::stringstream;
 
@@ -129,7 +130,7 @@ REGISTER_MATERIAL(FSSoluteMaterial, MODULE_MULTIPHASIC, FE_SOLUTE_MATERIAL, FE_M
 FSSoluteMaterial::FSSoluteMaterial(FSModel* fem) : FSMaterialProp(FE_SOLUTE_MATERIAL, fem)
 {
 	// add the solute material index
-	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);
+	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);
 
 	// Add diffusivity property
 	AddProperty("diffusivity", FE_MAT_DIFFUSIVITY);
@@ -147,7 +148,7 @@ REGISTER_MATERIAL(FSSBMMaterial, MODULE_MULTIPHASIC, FE_SBM_MATERIAL, FE_MAT_SBM
 FSSBMMaterial::FSSBMMaterial(FSModel* fem) : FSMaterialProp(FE_SBM_MATERIAL, fem)
 {
 	// add the SBM material index
-	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(SBMs)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);
+	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(sbms)")->SetState(Param_EDITABLE | Param_PERSISTENT | Param_VISIBLE);
     
 	// add parameters
 	AddScienceParam(0, UNIT_DENSITY, "rho0", "apparent density");
@@ -549,6 +550,209 @@ string buildReactionEquation(FSReactionMaterial* mat, FSModel& fem)
 		if (i != NP - 1) ss << "+";
 	}
 	return ss.str();
+}
+
+//=============================================================================
+FEBioReactionMaterial::FEBioReactionMaterial(FSMaterialProperty* reaction)
+{
+    m_reaction = reaction;
+}
+
+void FEBioReactionMaterial::SetReaction(FSMaterialProperty* reaction)
+{
+    m_reaction = reaction;
+}
+
+void FEBioReactionMaterial::SetForwardRate(FSMaterialProperty* fwdRate)
+{
+    m_reaction->FindProperty("forward_rate")->SetComponent(fwdRate);
+}
+
+void FEBioReactionMaterial::SetReverseRate(FSMaterialProperty* revRate)
+{
+    FSProperty* p = m_reaction->FindProperty("reverse_rate");
+    if (p) p->SetComponent(revRate);
+}
+
+void FEBioReactionMaterial::SetName(const std::string& name)
+{
+    m_reaction->SetName(name);
+}
+
+int FEBioReactionMaterial::Type() const
+{
+    return m_reaction->Type();
+}
+
+std::string FEBioReactionMaterial::GetName() const
+{
+    return m_reaction->GetName();
+}
+
+bool FEBioReactionMaterial::IsReversible() const
+{
+    return (m_reaction->FindProperty("reverse_rate") != nullptr);
+}
+
+FSMaterialProperty* FEBioReactionMaterial::GetForwardRate()
+{
+    return dynamic_cast<FSMaterialProperty*>(m_reaction->FindProperty("forward_rate")->GetComponent(0));
+}
+
+FSMaterialProperty* FEBioReactionMaterial::GetReverseRate()
+{
+    FSProperty* revRate = m_reaction->FindProperty("reverse_rate");
+    if (revRate)
+        return dynamic_cast<FSMaterialProperty*>(revRate->GetComponent(0));
+    else
+        return nullptr;
+}
+
+bool FEBioReactionMaterial::GetOvrd() const
+{
+    // TODO:
+    return false;
+}
+
+void FEBioReactionMaterial::SetOvrd(bool b)
+{
+    // TODO:
+    assert(false);
+}
+
+int FEBioReactionMaterial::Reactants() const
+{
+    return m_reaction->FindProperty("vR")->Size();
+}
+
+int FEBioReactionMaterial::Products() const
+{
+    return m_reaction->FindProperty("vP")->Size();
+}
+
+FSMaterialProperty* FEBioReactionMaterial::Reactant(int i)
+{
+    FSProperty* pp = m_reaction->FindProperty("vR");
+    return dynamic_cast<FSMaterialProperty*>(pp->GetComponent(i));
+}
+
+FSMaterialProperty* FEBioReactionMaterial::Product(int i)
+{
+    FSProperty* pp = m_reaction->FindProperty("vP");
+    return dynamic_cast<FSMaterialProperty*>(pp->GetComponent(i));
+}
+
+void FEBioReactionMaterial::GetSoluteReactants(vector<int>& solR)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    solR.clear();
+    FSProperty& p = *m_reaction->FindProperty("vR");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m < nsol)) solR.push_back(m);
+    }
+}
+
+void FEBioReactionMaterial::GetSBMReactants(vector<int>& sbmR)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    sbmR.clear();
+    FSProperty& p = *m_reaction->FindProperty("vR");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m >= nsol)) sbmR.push_back(m - nsol);
+    }
+}
+
+void FEBioReactionMaterial::GetSoluteProducts(vector<int>& solP)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    solP.clear();
+    FSProperty& p = *m_reaction->FindProperty("vP");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m < nsol)) solP.push_back(m);
+    }
+}
+
+void FEBioReactionMaterial::GetSBMProducts(vector<int>& sbmP)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    sbmP.clear();
+    FSProperty& p = *m_reaction->FindProperty("vP");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m >= nsol)) sbmP.push_back(m - nsol);
+    }
+}
+
+void FEBioReactionMaterial::ClearReactants()
+{
+    m_reaction->FindProperty("vR")->Clear();
+}
+
+void FEBioReactionMaterial::ClearProducts()
+{
+    m_reaction->FindProperty("vP")->Clear();
+}
+
+void FEBioReactionMaterial::AddReactantMaterial(FSMaterialProperty* pm)
+{ 
+    m_reaction->FindProperty("vR")->AddComponent(pm);
+}
+
+void FEBioReactionMaterial::AddProductMaterial(FSMaterialProperty* pm)
+{ 
+    m_reaction->FindProperty("vP")->AddComponent(pm);
+}
+
+//=============================================================================
+FEBioMultiphasic::FEBioMultiphasic(FSMaterial* mat)
+{
+    assert(strcmp(mat->GetTypeString(), "multiphasic") == 0);
+    m_mat = mat;
+}
+
+// see if this material has a solute with global ID
+bool FEBioMultiphasic::HasSolute(int nid) const
+{
+    const FSProperty& p = *m_mat->FindProperty("solute");
+    for (int i = 0; i < p.Size(); ++i)
+    {
+        const FSMaterialProperty* mp = dynamic_cast<const FSMaterialProperty*>(p.GetComponent(i));
+        int sid = mp->GetParam("sol")->GetIntValue();
+        if (mp && (sid == nid)) return true;
+    }
+    return false;
+}
+
+// see if this material has a solute with global ID
+bool FEBioMultiphasic::HasSBM(int nid) const
+{
+    const FSProperty& p = *m_mat->FindProperty("solid_bound");
+    for (int i = 0; i < p.Size(); ++i)
+    {
+        const FSMaterialProperty* mp = dynamic_cast<const FSMaterialProperty*>(p.GetComponent(i));
+        int sid = mp->GetParam("sbm")->GetIntValue();
+        if (mp && (sid == nid)) return true;
+    }
+    return false;
 }
 
 //=============================================================================
@@ -1212,7 +1416,7 @@ REGISTER_MATERIAL(FSSpeciesMaterial, MODULE_REACTIONS, FE_SPECIES_MATERIAL, FE_M
 FSSpeciesMaterial::FSSpeciesMaterial(FSModel* fem) : FSMaterial(FE_SPECIES_MATERIAL, fem)
 {
 	// add the solute material index
-	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 
 	// add the solute material index
 	AddScienceParam(0, UNIT_DIFFUSIVITY, "diffusivity", "diffusivity");
@@ -1237,7 +1441,7 @@ REGISTER_MATERIAL(FSSolidSpeciesMaterial, MODULE_REACTIONS, FE_SOLID_SPECIES_MAT
 FSSolidSpeciesMaterial::FSSolidSpeciesMaterial(FSModel* fem) : FSMaterial(FE_SOLID_SPECIES_MATERIAL, fem)
 {
 	// add the SBM material index
-	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(SBMs)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(sbms)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 
 	// add parameters
 	AddScienceParam(0, UNIT_DENSITY, "rho0", "apparent density");

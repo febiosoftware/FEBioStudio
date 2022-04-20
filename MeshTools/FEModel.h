@@ -165,8 +165,10 @@ public:
 	
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 	int GetVariableIntValue(const char* szvar, int n);
+
 	const char* GetEnumValue(const char* szenum, int n, bool longName = true);
 	int GetEnumIntValue(Param& param);
+	int GetEnumIndex(const char* szenum, int n);
 	bool GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum);
 
 	SoluteData& GetSBMData(int i);
