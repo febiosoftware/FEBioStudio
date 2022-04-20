@@ -540,15 +540,13 @@ int FSModel::GetEnumValue(const Param& param)
 	}
 	else if (strcmp(szvar, "$(rigid_materials)") == 0)
 	{
-		int m = 0;
 		for (int i = 0; i < Materials(); ++i)
 		{
 			GMaterial* mat = GetMaterial(i);
 			FSMaterial* femat = mat->GetMaterialProperties();
 			if (femat && femat->IsRigid())
 			{
-				if (m == n) return mat->GetID();
-				m++;
+				if (mat->GetID() == n) return i + 1;
 			}
 		}
 //		assert(false);
