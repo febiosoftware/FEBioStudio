@@ -220,11 +220,11 @@ public:
 					case Param_CHOICE:
 					case Param_INT:
 					{
-						int n = p.val<int>();
 						if (p.GetEnumNames())
 						{
-							return GetFSModel()->GetEnumValue(p.GetEnumNames(), n);
+							return GetFSModel()->GetEnumKey(p);
 						}
+						int n = p.val<int>();
 						return n;
 					}
 					break;

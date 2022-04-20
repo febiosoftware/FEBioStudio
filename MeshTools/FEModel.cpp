@@ -446,7 +446,6 @@ const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 			else
 				return "(invalid)";
 		}
-
 	}
 	else if (strncmp(var, "dof_list", 8) == 0)
 	{
@@ -495,30 +494,49 @@ const char* FSModel::GetVariableName(const char* szvar, int n, bool longName)
 }
 
 //-----------------------------------------------------------------------------
-int FSModel::GetVariableIntValue(const char* szvar, int n)
+const char* FSModel::GetEnumKey(const Param& param, bool longName)
 {
+	const char* szenum = param.GetEnumNames();
+
+	if (szenum == nullptr) return nullptr;
+
+	if (szenum[0] == '$')
+	{
+		return GetVariableName(szenum, param.GetIntValue(), longName);
+	}
+	
+	int n = param.GetIntValue();
+	const char* ch = szenum;
+	int i = 0;
+	while (*ch && (i < n))
+	{
+		ch = ch + strlen(ch) + 1;
+		i++;
+	}
+
+	return ch;
+}
+
+//-----------------------------------------------------------------------------
+int FSModel::GetEnumValue(const Param& param)
+{
+	const char* szenum = param.GetEnumNames(); assert(szenum);
+	if ((szenum == nullptr) || (szenum[0] != '$')) return param.GetIntValue();
+
+	const char* szvar = param.GetEnumNames();
+	int n = param.GetIntValue();
+
 	if (strcmp(szvar, "$(solutes)") == 0)
 	{
-		if ((n >= 0) && (n < m_Sol.Size()))
-			return n + 1;
-		else
-			return -1;
+		return n + 1;
 	}
 	else if (strcmp(szvar, "$(sbms)") == 0)
 	{
-		if ((n >= 0) && (n < m_SBM.Size()))
-			return n + 1;
-		else
-			return -1;
+		return n + 1;
 	}
 	else if (strcmp(szvar, "$(species)") == 0)
 	{
-		if ((n >= 0) && (n < m_Sol.Size())) return n + 1;
-		else
-		{
-			n -= m_Sol.Size();
-			if ((n >= 0) && (n < m_SBM.Size())) return n + m_Sol.Size() + 1;
-		}
+		return n + 1;
 	}
 	else if (strcmp(szvar, "$(rigid_materials)") == 0)
 	{
@@ -536,64 +554,38 @@ int FSModel::GetVariableIntValue(const char* szvar, int n)
 //		assert(false);
 	}
 
-//	assert(false);
-	return -1;
-}
-
-//-----------------------------------------------------------------------------
-const char* FSModel::GetEnumValue(const char* szenum, int n, bool longName)
-{
-	if (szenum == nullptr) return nullptr;
-
-	if (szenum[0] == '$') return GetVariableName(szenum, n, longName);
-	
-	const char* ch = szenum;
-	int i = 0;
-	while (*ch && (i < n))
-	{
-		ch = ch + strlen(ch) + 1;
-		i++;
-	}
-
-	return ch;
-}
-
-//-----------------------------------------------------------------------------
-int FSModel::GetEnumIntValue(Param& param)
-{
-	const char* szenum = param.GetEnumNames();
-	if (szenum == nullptr) return 0;
-	if (szenum[0] == '$') return GetVariableIntValue(szenum, param.GetIntValue());
 	return param.GetIntValue();
 }
 
 //-----------------------------------------------------------------------------
-int FSModel::GetEnumIndex(const char* szenum, int n)
+int FSModel::GetEnumIndex(const Param& param)
 {
+	const char* szenum = param.GetEnumNames();
+	int n = param.GetIntValue();
 	if (szenum == nullptr) return n;
 	if (szenum[0] == '$')
 	{
 		if (strcmp(szenum, "$(solutes)") == 0)
 		{
-			if ((n > 0) && (n <= m_Sol.Size()))
-				return n - 1;
+			if ((n >= 0) && (n < m_Sol.Size()))
+				return n;
 			else
 				return -1;
 		}
 		else if (strcmp(szenum, "$(sbms)") == 0)
 		{
-			if ((n > 0) && (n <= m_SBM.Size()))
-				return n - 1;
+			if ((n >= 0) && (n < m_SBM.Size()))
+				return n;
 			else
 				return -1;
 		}
 		else if (strcmp(szenum, "$(species)") == 0)
 		{
-			if ((n > 0) && (n <= m_Sol.Size())) return n - 1;
+			if ((n >= 0) && (n < m_Sol.Size())) return n;
 			else
 			{
 				n -= m_Sol.Size();
-				if ((n > 0) && (n <= m_SBM.Size())) return n + m_Sol.Size() - 1;
+				if ((n >= 0) && (n < m_SBM.Size())) return n + m_Sol.Size();
 			}
 		}
 		else if (strcmp(szenum, "$(rigid_materials)") == 0)
@@ -701,6 +693,99 @@ bool FSModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum
 	}
 	
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool FSModel::SetEnumIndex(Param& param, int index)
+{
+	const char* szvar = param.GetEnumNames();
+	if ((szvar == nullptr) || (szvar[0] != '$')) param.SetIntValue(index);
+
+	int val = index;
+	if (strcmp(szvar, "$(solutes)") == 0)
+	{
+		val = index;
+	}
+	else if (strcmp(szvar, "$(sbms)") == 0)
+	{
+		val = index;
+	}
+	else if (strcmp(szvar, "$(species)") == 0)
+	{
+		val = index;
+	}
+	else if (strcmp(szvar, "$(rigid_materials)") == 0)
+	{
+		int m = 0;
+		for (int i = 0; i < Materials(); ++i)
+		{
+			GMaterial* mat = GetMaterial(i);
+			FSMaterial* femat = mat->GetMaterialProperties();
+			if (femat && femat->IsRigid())
+			{
+				if (m == index)
+				{
+					val = mat->GetID();
+					break;
+				}
+				m++;
+			}
+		}
+	}
+	param.SetIntValue(val);
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool FSModel::SetEnumValue(Param& param, int nvalue)
+{
+	const char* szvar = param.GetEnumNames();
+	if (strcmp(szvar, "$(solutes)") == 0)
+	{
+		if ((nvalue > 0) && (nvalue <= m_Sol.Size()))
+			param.SetIntValue(nvalue - 1);
+		else
+			param.SetIntValue(-1);
+		return true;
+	}
+	else if (strcmp(szvar, "$(sbms)") == 0)
+	{
+		if ((nvalue > 0) && (nvalue <= m_SBM.Size()))
+			param.SetIntValue(nvalue - 1);
+		else
+			param.SetIntValue(-1);
+		return true;
+	}
+	else if (strcmp(szvar, "$(species)") == 0)
+	{
+		if ((nvalue > 0) && (nvalue <= m_Sol.Size() + m_SBM.Size()))
+			param.SetIntValue(nvalue - 1);
+		else
+			param.SetIntValue(-1);
+		return true;
+	}
+	else if (strcmp(szvar, "$(rigid_materials)") == 0)
+	{
+		for (int i = 0; i < Materials(); ++i)
+		{
+			GMaterial* mat = GetMaterial(i);
+			FSMaterial* femat = mat->GetMaterialProperties();
+			if (femat && femat->IsRigid())
+			{
+				if (mat->GetID() == nvalue)
+				{
+					param.SetIntValue(nvalue);
+					return true;
+				}
+			}
+		}
+		assert(false);
+	}
+
+	param.SetIntValue(nvalue);
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------

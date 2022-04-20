@@ -164,13 +164,21 @@ public:
 	void GetVariableNames(const char* szvar, char* szbuf);
 	
 	const char* GetVariableName(const char* szvar, int n, bool longName = true);
-	int GetVariableIntValue(const char* szvar, int n);
 
-	const char* GetEnumValue(const char* szenum, int n, bool longName = true);
-	int GetEnumIntValue(Param& param);
-	int GetEnumIndex(const char* szenum, int n);
+public:
+	// These functions deal with enums
+	// Enums are identified via:
+	// - Key  : The string name of an option (there is a long and short key)
+	// - Value: The numeric value of the option
+	// - Index: The 0-based index into the array of options
+	const char* GetEnumKey(const Param& param, bool longName = true);
+	int GetEnumValue(const Param& param);
+	int GetEnumIndex(const Param& param);
 	bool GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum);
+	bool SetEnumIndex(Param& param, int index);
+	bool SetEnumValue(Param& param, int nvalue);
 
+public:
 	SoluteData& GetSBMData(int i);
 	int SBMs();
 	int FindSBM(const char* sz);

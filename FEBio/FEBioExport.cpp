@@ -126,11 +126,11 @@ XMLWriter& FEBioExport::GetXMLWriter()
 }
 
 //-----------------------------------------------------------------------------
-const char* FEBioExport::GetEnumValue(Param& p)
+const char* FEBioExport::GetEnumKey(Param& p)
 {
 	assert((p.GetParamType() == Param_CHOICE) || (p.GetParamType() == Param_INT));
 	FSModel& fem = m_prj.GetFSModel();
-	return fem.GetEnumValue(p.GetEnumNames(), p.GetIntValue(), false);
+	return fem.GetEnumKey(p, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -165,20 +165,18 @@ void FEBioExport::WriteParam(Param &p)
 	case Param_INT:
 	case Param_CHOICE: 
 		{
-			if (m_exportEnumStrings && (p.GetEnumNames()) && (p.GetEnumNames()[0] != '$'))
+			if (p.GetEnumNames())
 			{
-				const char* sz = GetEnumValue(p);
-				e.value(sz);
-			}
-			else if (m_exportEnumStrings && p.GetEnumNames() && (p.GetEnumNames()[0] == '$'))
-			{
-				const char* sz = GetEnumValue(p);
-				e.value(sz);
-			}
-			else if (p.GetEnumNames() && (p.GetEnumNames()[0] == '$'))
-			{
-				int n = fem.GetEnumIntValue(p);
-				e.value(n);
+				if (m_exportEnumStrings)
+				{
+					const char* sz = GetEnumKey(p);
+					e.value(sz);
+				}
+				else
+				{
+					int n = fem.GetEnumValue(p);
+					e.value(n);
+				}
 			}
 			else
 			{

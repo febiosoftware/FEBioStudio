@@ -254,13 +254,13 @@ public:
 					case Param_CHOICE:
 					case Param_INT:
 					{
-						int n = p.val<int>();
 						if (p.GetEnumNames() && GetFSModel())
 						{
-							const char* sz = GetFSModel()->GetEnumValue(p.GetEnumNames(), n);
+							const char* sz = GetFSModel()->GetEnumKey(p);
 							if (sz == nullptr) sz = "please select";
 							return sz;
 						}
+						int n = p.val<int>();
 						return n;
 					}
 					break;
@@ -404,7 +404,9 @@ public:
 					case Param_INT: 
 					case Param_CHOICE:
 					{ 
-						int n = p.val<int>();
+						int n = -1;
+						if (p.GetEnumNames()) n = GetFSModel()->GetEnumIndex(p);
+						else n = p.val<int>();
 						return n;
 					}
 					break;
@@ -549,8 +551,8 @@ public:
 					int n = value.toInt();
 					if (p.GetEnumNames() && GetFSModel())
 					{
-						int m = GetFSModel()->GetVariableIntValue(p.GetEnumNames(), n);
-						p.SetIntValue(m);
+						bool b = GetFSModel()->SetEnumIndex(p, n);
+						assert(b);
 					}
 					else
 					{
@@ -953,7 +955,7 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 						QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
 						box->addItems(enumValues);
 
-						int n = item->GetFSModel()->GetEnumIndex(p->GetEnumNames(), p->GetIntValue());
+						int n = item->GetFSModel()->GetEnumIndex(*p);
 						box->setCurrentIndex(n);
 						QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 						return box;

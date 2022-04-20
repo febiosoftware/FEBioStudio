@@ -71,7 +71,7 @@ protected:
 
 	void WriteNote(FSObject* po);
 
-	const char* GetEnumValue(Param& p);
+	const char* GetEnumKey(Param& p);
 
 protected:
 	int	GetLC(const Param* p);

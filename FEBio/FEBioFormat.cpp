@@ -189,10 +189,8 @@ FSStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* szname)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioFormat::ReadChoiceParam(Param& p, XMLTag& tag)
+bool FEBioFormat::ReadChoiceParam(Param& p, const char* szval)
 {
-	const char* szval = tag.szvalue();
-
 	// see if the value string matches an enum string
 	int n = 0;
 	const char* sz = nullptr;
@@ -207,7 +205,12 @@ bool FEBioFormat::ReadChoiceParam(Param& p, XMLTag& tag)
 	}
 
 	// it wasn't a string. Let's assume it was a number
-	tag.value(n); p.SetIntValue(n - p.GetOffset());
+	n = atoi(szval);
+	
+	if (p.GetEnumNames())
+		GetFSModel().SetEnumValue(p, n);
+	else
+		p.SetIntValue(n - p.GetOffset());
 
 	return true;
 }
@@ -271,7 +274,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		{ 
 			if (pp->GetEnumNames())
 			{
-				ReadChoiceParam(*pp, tag);
+				ReadChoiceParam(*pp, tag.szvalue());
 			}
 			else
 			{

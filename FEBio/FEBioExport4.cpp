@@ -869,11 +869,9 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 			case Param_CHOICE:
 			case Param_INT:
 			{
-				// this assumes that the value is actually the index into the enums. 
-				// the enums may have an implied value associated that may differ from its index, so we need to acquire that.
 				if (p.GetEnumNames())
 				{
-					int v = fem.GetEnumIntValue(p);
+					int v = fem.GetEnumValue(p);
 					el.add_attribute(p.GetShortName(), v);
 				}
 				else el.add_attribute(p.GetShortName(), p.GetIntValue());

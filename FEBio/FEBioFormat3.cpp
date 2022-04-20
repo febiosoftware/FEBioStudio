@@ -486,14 +486,14 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 			case Param_INT:
 			case Param_CHOICE:
 			{
-				int n = atoi(att.cvalue());
 				if (param->GetEnumNames())
+					ReadChoiceParam(*param, att.m_szatv);
+				else
 				{
-					// TODO: This is hack for reading solute IDs.
-					int n = atoi(att.cvalue());
-					param->SetIntValue(n - 1);
+					int n;
+					tag.value(n);
+					param->SetIntValue(n);
 				}
-				else param->SetIntValue(n);
 			}
 			break;
 			default:
