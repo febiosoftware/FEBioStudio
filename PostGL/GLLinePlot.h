@@ -86,10 +86,30 @@ private:
 	vector<LINESEGMENT>	m_Line;
 };
 
+class LineDataModel;
+
+class LineDataSource
+{
+public:
+	LineDataSource(LineDataModel* mdl);
+	virtual ~LineDataSource() {}
+
+	virtual bool Load(const char* szfile) = 0;
+	virtual bool Reload() = 0;
+
+	LineDataModel* GetLineDataModel() { return m_mdl; }
+
+private:
+	LineDataModel* m_mdl;
+};
+
 class LineDataModel 
 {
 public:
 	LineDataModel(FEPostModel* fem);
+	~LineDataModel();
+
+	void Clear();
 
 	LineData& GetLineData(size_t n) { return m_line[n]; }
 
@@ -97,7 +117,17 @@ public:
 
 	FEPostModel* GetFEModel() { return m_fem; }
 
+	void SetLineDataSource(LineDataSource* src) { m_src = src; }
+	LineDataSource* GetLineDataSource() { return m_src; }
+
+	bool Reload() 
+	{
+		if (m_src) return m_src->Reload();
+		else return false;
+	}
+
 private:
+	LineDataSource* m_src;
 	FEPostModel* m_fem;
 	std::vector<LineData>	m_line;
 };
@@ -142,6 +172,8 @@ public:
 	void Update(int ntime, float dt, bool breset) override;
 
 	bool UpdateData(bool bsave = true) override;
+
+	void Reload() override;
 
 public:
 	void SetLineDataModel(LineDataModel* lineData);

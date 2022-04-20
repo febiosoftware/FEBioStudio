@@ -795,6 +795,7 @@ void CPostModelPanel::BuildModelTree()
 				else if (dynamic_cast<Post::CGLMirrorPlane     *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/mirror.png")));
 				else if (dynamic_cast<Post::GLProbe            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/probe.png")));
 				else if (dynamic_cast<Post::GLRuler            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/ruler.png")));
+				else if (dynamic_cast<Post::CGLLinePlot        *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/wire.png")));
 			}
 		}
 

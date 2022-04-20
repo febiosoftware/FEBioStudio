@@ -38,6 +38,11 @@ CGLPlot::~CGLPlot()
 {
 }
 
+void CGLPlot::Reload()
+{
+
+}
+
 void CGLPlot::UpdateTexture() 
 {
 

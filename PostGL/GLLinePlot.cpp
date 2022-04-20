@@ -148,6 +148,11 @@ void CGLLinePlot::SetDataField(int n)
 	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 }
 
+void CGLLinePlot::Reload()
+{
+	if (m_lineData) m_lineData->Reload();
+}
+
 //-----------------------------------------------------------------------------
 void CGLLinePlot::Render(CGLContext& rc)
 {
@@ -1110,9 +1115,27 @@ private:
 	vector<int>		m_pt;
 };
 
+LineDataSource::LineDataSource(LineDataModel* mdl) : m_mdl(mdl)
+{
+	if (mdl) mdl->SetLineDataSource(this);
+}
+
 LineDataModel::LineDataModel(FEPostModel* fem) : m_fem(fem)
 {
+	m_src = nullptr;
 	int ns = fem->GetStates();
+	if (ns != 0) m_line.resize(ns);
+}
+
+LineDataModel::~LineDataModel()
+{
+	delete m_src;
+}
+
+void LineDataModel::Clear()
+{
+	m_line.clear();
+	int ns = m_fem->GetStates();
 	if (ns != 0) m_line.resize(ns);
 }
 
