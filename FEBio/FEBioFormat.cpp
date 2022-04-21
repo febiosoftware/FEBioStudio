@@ -174,28 +174,35 @@ FSStep* FEBioFormat::NewStep(FSModel& fem, const std::string& typeStr, const cha
 }
 
 //-----------------------------------------------------------------------------
+// helper function to see if a string is a number (i.e. int)
+bool is_number(const char* szval)
+{
+	if (szval == nullptr) return false;
+	const char* c = szval;
+	while (*c) {
+		if (isdigit(*c++) == 0) return false;
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 bool FEBioFormat::ReadChoiceParam(Param& p, const char* szval)
 {
-	// see if the value string matches an enum string
-	int n = 0;
-	const char* sz = nullptr;
-	while (sz = p.GetEnumName(n))
-	{
-		if (stricmp(szval, sz) == 0)
-		{
-			p.SetIntValue(n - p.GetOffset());
-			return true;
-		}
-		n++;
-	}
-
-	// it wasn't a string. Let's assume it was a number
-	n = atoi(szval);
-	
 	if (p.GetEnumNames())
-		GetFSModel().SetEnumValue(p, n);
+	{
+		if (is_number(szval))
+		{
+			int n = atoi(szval);
+			GetFSModel().SetEnumValue(p, n);
+		}
+		else
+			GetFSModel().SetEnumKey(p, szval);
+	}
 	else
+	{
+		int n = atoi(szval);
 		p.SetIntValue(n - p.GetOffset());
+	}
 
 	return true;
 }

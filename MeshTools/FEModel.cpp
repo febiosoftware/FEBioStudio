@@ -47,10 +47,15 @@ SOFTWARE.*/
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <cstring>
 //using namespace std;
 
 using std::vector;
 using std::stringstream;
+
+#ifndef WIN32
+#define _stricmp strncasecmp
+#endif
 
 std::string Namify(const char* sz)
 {
@@ -765,17 +770,14 @@ bool FSModel::SetEnumValue(Param& param, int nvalue)
 	}
 	else if (strcmp(szvar, "$(rigid_materials)") == 0)
 	{
-		for (int i = 0; i < Materials(); ++i)
+		if ((nvalue > 0) && (nvalue <= Materials()))
 		{
-			GMaterial* mat = GetMaterial(i);
+			GMaterial* mat = GetMaterial(nvalue - 1);
 			FSMaterial* femat = mat->GetMaterialProperties();
 			if (femat && femat->IsRigid())
 			{
-				if (mat->GetID() == nvalue)
-				{
-					param.SetIntValue(nvalue);
-					return true;
-				}
+				param.SetIntValue(mat->GetID());
+				return true;
 			}
 		}
 		assert(false);
@@ -784,6 +786,108 @@ bool FSModel::SetEnumValue(Param& param, int nvalue)
 	param.SetIntValue(nvalue);
 
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool FSModel::SetEnumKey(Param& param, const std::string& key)
+{
+	const char* szvar = param.GetEnumNames();
+	if (szvar == nullptr) return false;
+
+	if (strcmp(szvar, "$(solutes)") == 0)
+	{
+		for (int i = 0; i < Solutes(); ++i)
+		{
+			string si = GetSoluteData(i).GetName();
+			if (si == key)
+			{
+				param.SetIntValue(i);
+				return true;
+			}
+		}
+	}
+	else if (strcmp(szvar, "$(sbms)") == 0)
+	{
+		for (int i = 0; i < SBMs(); ++i)
+		{
+			string si = GetSBMData(i).GetName();
+			if (si == key)
+			{
+				param.SetIntValue(i);
+				return true;
+			}
+		}
+	}
+	else if (strcmp(szvar, "$(species)") == 0)
+	{
+		for (int i = 0; i < Solutes(); ++i)
+		{
+			string si = GetSoluteData(i).GetName();
+			if (si == key)
+			{
+				param.SetIntValue(i);
+				return true;
+			}
+		}
+		for (int i = 0; i < SBMs(); ++i)
+		{
+			string si = GetSBMData(i).GetName();
+			if (si == key)
+			{
+				param.SetIntValue(i + Solutes());
+				return true;
+			}
+		}
+	}
+	else if (strcmp(szvar, "$(rigid_materials)") == 0)
+	{
+		for (int i=0; i<Materials(); ++i)
+		{
+			GMaterial* mat = GetMaterial(i);
+			FSMaterial* femat = mat->GetMaterialProperties();
+			if (femat && femat->IsRigid() && (mat->GetName() == key))
+			{
+				param.SetIntValue(mat->GetID());
+				return true;
+			}
+		}
+	}
+	else if (strcmp(szvar, "$(dof_list)") == 0)
+	{
+		int n = 0;
+		int NVAR = Variables();
+		for (int i = 0; i < NVAR; ++i)
+		{
+			FEDOFVariable& var = Variable(i);
+			for (int j = 0; j < var.DOFs(); ++j, ++n)
+			{
+				const char* szi = var.GetDOF(j).symbol();
+				if (key == szi)
+				{
+					param.SetIntValue(n);
+					return true;
+				}
+			}
+		}
+	}
+	else if (szvar[0] != '$')
+	{
+		// see if the value string matches an enum string
+		int n = 0;
+		const char* sz = nullptr;
+		while (sz = param.GetEnumName(n))
+		{
+			if (_stricmp(key.c_str(), sz) == 0)
+			{
+				param.SetIntValue(n - param.GetOffset());
+				return true;
+			}
+			n++;
+		}
+	}
+
+	assert(false);
+	return false;
 }
 
 //-----------------------------------------------------------------------------

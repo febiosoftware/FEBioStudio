@@ -177,6 +177,7 @@ public:
 	bool GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum);
 	bool SetEnumIndex(Param& param, int index);
 	bool SetEnumValue(Param& param, int nvalue);
+	bool SetEnumKey(Param& param, const std::string& key);
 
 public:
 	SoluteData& GetSBMData(int i);
