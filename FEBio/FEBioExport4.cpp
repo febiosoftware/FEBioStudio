@@ -262,19 +262,25 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		}
 		for (int j = 0; j < pstep->Loads(); ++j)
 		{
-			// this is only for nodal loads
 			FSLoad* pload = pstep->Load(j);
 			if (pload && pload->IsActive())
 			{
+				int meshItemType = pload->GetMeshItemType();
 				FEItemListBuilder* ps = pload->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pload);
 
-				string name = ps->GetName();
-				if (name.empty()) name = pload->GetName();
+				if (ps)
+				{
+					string name = ps->GetName();
+					if (name.empty()) name = pload->GetName();
 
-				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-				else if (ps->Type() == GO_PART) AddElemSet(name, ps);
-				else AddNodeSet(name, ps);
+					if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
+					else if (ps->Type() == GO_PART) AddElemSet(name, ps);
+					else AddNodeSet(name, ps);
+				}
+				else if ((meshItemType != FE_PART_FLAG) && (meshItemType != FE_ELEM_FLAG))
+				{
+					throw InvalidItemListBuilder(pload);
+				}
 			}
 		}
 		for (int j = 0; j < pstep->ICs(); ++j)
@@ -697,7 +703,7 @@ bool FEBioExport4::Write(const char* szfile)
 			}
 
 			// output initial section
-			int nic = pstep->ICs() + pstep->RigidConstraints(FE_RIGID_INIT_VELOCITY) + pstep->RigidConstraints(FE_RIGID_INIT_ANG_VELOCITY);
+			int nic = pstep->ICs();
 			if ((nic > 0) && (m_section[FEBIO_INITIAL]))
 			{
 				m_xml.add_branch("Initial");
@@ -708,7 +714,7 @@ bool FEBioExport4::Write(const char* szfile)
 			}
 
 			// output discrete elements (the obsolete spring-tied interface generates springs as well)
-			int nrb = fem.GetModel().DiscreteObjects() + CountInterfaces<FSSpringTiedInterface>(fem);
+			int nrb = fem.GetModel().DiscreteObjects();
 			if ((nrb > 0) && (m_section[FEBIO_DISCRETE]))
 			{
 				m_xml.add_branch("Discrete");
