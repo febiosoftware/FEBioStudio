@@ -59,7 +59,8 @@ protected:
 	bool ReadChoiceParam(Param& p, const char* szval);
 	void ReadParameters(ParamContainer& PC, XMLTag& tag);
 
-	FSStep* NewStep(FSModel& fem, const std::string& typeStr, const char* szname = 0);
+public:
+	FSAnalysisStep* NewStep(FSModel& fem, int nanalysis, const char* sz = 0);
 
 	FEBioInputModel& GetFEBioModel() { return m_febio; }
 
@@ -104,6 +105,7 @@ private:
 protected: // TODO: Move to FEBioInputModel?
 	bool		m_geomOnly;	// read only geometry section
     bool        m_skipGeom; // read everything but the geometry section
+	int			m_nAnalysis;	// analysis type (Obsolete: only used by feb3 or older file readers)
 
 	FSStep*		m_pstep;		// current analysis step
 	FSStep*		m_pBCStep;		// step to which BCs are assigned

@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include <string.h>
 #include <cstdarg>
 #include <vector>
+#include <sstream>
 //using namespace std;
 
 extern GLColor col[];
@@ -506,6 +507,18 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		ld.groupID = v.GroupID();
 		ld.fileName = v.file();
 		log.AddLogData(ld);
+	}
+
+	if (m_nversion < 0x0300)
+	{
+		// older formats need to be converted
+		AddLogEntry("Converting FE model:");
+		AddLogEntry("===================");
+		std::ostringstream log;
+		m_prj.ConvertToNewFormat(log);
+		string s = log.str();
+		if (s.empty() == false) AddLogEntry(s.c_str());
+		else AddLogEntry("No issues found!");
 	}
 
 	return true;

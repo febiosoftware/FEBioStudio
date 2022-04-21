@@ -123,6 +123,7 @@ int GetDOFCode(const char* sz)
 FEBioFormat::FEBioFormat(FEBioFileImport* fileReader, FEBioInputModel& febio) : m_febio(febio)
 {
 	m_fileReader = fileReader;
+	m_nAnalysis = -1;
 
 	m_pstep = 0;
 	m_pBCStep = febio.GetFSModel().GetStep(0);
@@ -156,20 +157,35 @@ void FEBioFormat::ParseUnknownAttribute(XMLTag& tag, const char* szatt)
 
 //-----------------------------------------------------------------------------
 //! Create a new step
-FSStep* FEBioFormat::NewStep(FSModel& fem, const std::string& typeStr, const char* szname)
+FSAnalysisStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* szname)
 {
-	assert(typeStr.empty() == false);
-	FSStep* pstep = FEBio::CreateStep(typeStr, &fem); assert(pstep);
-
-	if ((szname == 0) || (strlen(szname) == 0))
+	FSAnalysisStep* pstep = 0;
+	switch (nanalysis)
 	{
-		char sz[256] = { 0 };
-		sprintf(sz, "Step%02d", fem.Steps());
-		pstep->SetName(sz);
+	case FE_STEP_MECHANICS         : pstep = new FSNonLinearMechanics (&fem); break;
+	case FE_STEP_HEAT_TRANSFER     : pstep = new FSHeatTransfer       (&fem); break;
+	case FE_STEP_BIPHASIC          : pstep = new FSNonLinearBiphasic  (&fem); break;
+	case FE_STEP_BIPHASIC_SOLUTE   : pstep = new FSBiphasicSolutes    (&fem); break;
+	case FE_STEP_MULTIPHASIC       : pstep = new FSMultiphasicAnalysis(&fem); break;
+	case FE_STEP_FLUID             : pstep = new FSFluidAnalysis      (&fem); break;
+    case FE_STEP_FLUID_FSI         : pstep = new FSFluidFSIAnalysis   (&fem); break;
+	case FE_STEP_REACTION_DIFFUSION: pstep = new FSReactionDiffusionAnalysis(&fem); break;
+	default:
+		pstep = new FSNonLinearMechanics(&fem);
+		FileReader()->AddLogEntry("Unknown step type. Creating Structural Mechanics step");
 	}
-	else pstep->SetName(szname);
-	fem.AddStep(pstep);
-
+	assert(pstep);
+	if (pstep)
+	{
+		if ((szname == 0) || (strlen(szname) == 0))
+		{
+			char sz[256] = { 0 };
+			sprintf(sz, "Step%02d", fem.Steps() + 1);
+			pstep->SetName(sz);
+		}
+		else pstep->SetName(szname);
+		fem.AddStep(pstep);
+	}
 	return pstep;
 }
 
@@ -389,7 +405,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// create a new analysis step from these control settings
-	if (m_pstep == 0) m_pstep = NewStep(fem, FEBio::GetActiveModuleName());
+	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
 	FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(m_pstep);
 	assert(pstep);
 

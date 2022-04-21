@@ -189,6 +189,25 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 //=============================================================================
 
 //-----------------------------------------------------------------------------
+//! Create a new step
+FSStep* FEBioFormat4::NewStep(FSModel& fem, const std::string& typeStr, const char* szname)
+{
+	assert(typeStr.empty() == false);
+	FSStep* pstep = FEBio::CreateStep(typeStr, &fem); assert(pstep);
+
+	if ((szname == 0) || (strlen(szname) == 0))
+	{
+		char sz[256] = { 0 };
+		sprintf(sz, "Step%02d", fem.Steps());
+		pstep->SetName(sz);
+	}
+	else pstep->SetName(szname);
+	fem.AddStep(pstep);
+
+	return pstep;
+}
+
+//-----------------------------------------------------------------------------
 //  This function parses the control section from the xml file
 //
 bool FEBioFormat4::ParseControlSection(XMLTag& tag)

@@ -225,6 +225,25 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 //=============================================================================
 
 //-----------------------------------------------------------------------------
+//! Create a new step
+FSStep* FEBioFormat3::NewStep(FSModel& fem, const std::string& typeStr, const char* szname)
+{
+	assert(typeStr.empty() == false);
+	FSStep* pstep = FEBio::CreateStep(typeStr, &fem); assert(pstep);
+
+	if ((szname == 0) || (strlen(szname) == 0))
+	{
+		char sz[256] = { 0 };
+		sprintf(sz, "Step%02d", fem.Steps());
+		pstep->SetName(sz);
+	}
+	else pstep->SetName(szname);
+	fem.AddStep(pstep);
+
+	return pstep;
+}
+
+//-----------------------------------------------------------------------------
 // helper class for mapping old parameters to new structures
 struct OldParam {
 	const char* propName;

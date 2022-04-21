@@ -60,6 +60,9 @@ private:
 	bool ParseControlSection   (XMLTag& tag) override;
 
 private:
+
+	FSStep* NewStep(FSModel& fem, const std::string& typeStr, const char* szname = 0);
+
 	// geometry parsing functions (version 2.0 and up)
 	void ParseGeometryNodes      (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryElements   (FEBioInputModel::Part* part, XMLTag& tag);

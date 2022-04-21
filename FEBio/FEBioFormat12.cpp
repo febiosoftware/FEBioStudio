@@ -33,7 +33,6 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
-#include <FEBioLink/FEBioModule.h>
 
 FEBioFormat12::FEBioFormat12(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)
 {
@@ -66,17 +65,45 @@ bool FEBioFormat12::ParseSection(XMLTag& tag)
 // Parse the Module section
 bool FEBioFormat12::ParseModuleSection(XMLTag &tag)
 {
-	const char* sztype = tag.AttributeValue("type");
+	m_nAnalysis = -1;
+	XMLAtt& atype = tag.Attribute("type");
+	if      (atype == "solid"      ) m_nAnalysis = FE_STEP_MECHANICS;
+	else if (atype == "heat"       ) m_nAnalysis = FE_STEP_HEAT_TRANSFER;
+	else if (atype == "biphasic"   ) m_nAnalysis = FE_STEP_BIPHASIC;
+	else if (atype == "solute"     ) m_nAnalysis = FE_STEP_BIPHASIC_SOLUTE;
+	else if (atype == "multiphasic") m_nAnalysis = FE_STEP_MULTIPHASIC;
+	else if (atype == "fluid"      ) m_nAnalysis = FE_STEP_FLUID;
+    else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
+	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
+	else if (atype == "poro")
+	{
+		m_nAnalysis = FE_STEP_BIPHASIC;
+		FileReader()->AddLogEntry("poro module is obsolete. Use biphasic instead (line %d)", tag.currentLine());
+	}
+	else
+	{
+		m_nAnalysis = FE_STEP_MECHANICS;
+		FileReader()->AddLogEntry("unknown module type. Assuming solid module (line %d)", tag.currentLine());
+	}
 
-	// a few special cases.
-	if (strcmp(sztype, "explicit-solid") == 0) { sztype = "solid"; m_defaultSolver = "explicit-solid"; }
-	if (strcmp(sztype, "CG-solid"      ) == 0) { sztype = "solid"; m_defaultSolver = "CG-solid"; }
-	if (strcmp(sztype, "poro"          ) == 0) { sztype = "biphasic"; m_defaultSolver = "biphasic"; }
-
-	int moduleId = FEBio::GetModuleId(sztype);
-	if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
-	FileReader()->GetProject().SetModule(moduleId);
-	return (moduleId != -1);
+	// set the project's active modules
+/*
+	FSProject& prj = FileReader()->GetProject();
+	switch (m_nAnalysis)
+	{
+	case FE_STEP_MECHANICS         : prj.SetModule(MODULE_MECH); break;
+	case FE_STEP_HEAT_TRANSFER     : prj.SetModule(MODULE_HEAT); break;
+	case FE_STEP_BIPHASIC          : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC); break;
+	case FE_STEP_BIPHASIC_SOLUTE   : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC | MODULE_SOLUTES); break;
+	case FE_STEP_MULTIPHASIC       : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC | MODULE_MULTIPHASIC | MODULE_SOLUTES | MODULE_REACTIONS); break;
+	case FE_STEP_FLUID             : prj.SetModule(MODULE_FLUID); break;
+	case FE_STEP_FLUID_FSI         : prj.SetModule(MODULE_MECH | MODULE_FLUID | MODULE_FLUID_FSI); break;
+	case FE_STEP_REACTION_DIFFUSION: prj.SetModule(MODULE_REACTIONS | MODULE_SOLUTES | MODULE_REACTION_DIFFUSION); break;
+	default:
+		assert(false);
+	}
+*/
+	return (m_nAnalysis != -1);
 }
 
 //=============================================================================
@@ -3150,7 +3177,7 @@ bool FEBioFormat12::ParseStepSection(XMLTag &tag)
 
 	// If not, we assume that the analysis type has not changed.
 	FSModel& fem = GetFSModel();
-	if (m_pstep == 0) m_pstep = NewStep(fem, FEBio::GetActiveModuleName(), szname);
+	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis, szname);
 	m_pBCStep = m_pstep;
 
 	do
