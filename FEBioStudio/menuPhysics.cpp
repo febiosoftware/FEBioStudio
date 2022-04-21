@@ -51,6 +51,7 @@ SOFTWARE.*/
 #include "Commands.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioModule.h>
 #include <QMessageBox>
 #include <sstream>
 
@@ -630,7 +631,7 @@ void CMainWindow::on_actionAddStep_triggered()
 	{
 //		FSAnalysisStep* ps = fscore_new<FSAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
 
-		FSStep* ps = FEBio::CreateStep("analysis", fem);
+		FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
 		assert(ps);
 		if (ps)
 		{

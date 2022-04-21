@@ -73,7 +73,6 @@ bool FEBioFormat2::ParseSection(XMLTag& tag)
 // Parse the Module section
 bool FEBioFormat2::ParseModuleSection(XMLTag &tag)
 {
-	m_nAnalysis = -1;
 	const char* sztype = tag.AttributeValue("type");
 
 	// a few special cases.
@@ -81,10 +80,10 @@ bool FEBioFormat2::ParseModuleSection(XMLTag &tag)
 	if (strcmp(sztype, "CG-solid"      ) == 0) { sztype = "solid"; m_defaultSolver = "CG-solid"; }
 	if (strcmp(sztype, "poro"          ) == 0) { sztype = "biphasic"; m_defaultSolver = "biphasic"; }
 
-	m_nAnalysis = FEBio::GetModuleId(sztype);
-	if (m_nAnalysis < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
-	FileReader()->GetProject().SetModule(m_nAnalysis);
-	return (m_nAnalysis != -1);
+	int moduleId = FEBio::GetModuleId(sztype);
+	if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
+	FileReader()->GetProject().SetModule(moduleId);
+	return (moduleId != -1);
 }
 
 //=============================================================================
@@ -3163,7 +3162,7 @@ bool FEBioFormat2::ParseStepSection(XMLTag &tag)
 
 	// If not, we assume that the analysis type has not changed.
 	FSModel& fem = GetFSModel();
-	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis, szname);
+	if (m_pstep == 0) m_pstep = NewStep(fem, FEBio::GetActiveModuleName(), szname);
 	m_pBCStep = m_pstep;
 
 	do

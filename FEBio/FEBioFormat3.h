@@ -77,8 +77,6 @@ private:
 	void ParseGeometryPart       (XMLTag& tag);
 	void ParseGeometryInstance   (XMLTag& tag);
 
-	FSStep* NewStep(FSModel& fem, int nanalysis, const char* szname = nullptr) override;
-
 private:
 	// boundary condition input functions
 	void ParseBCFixed     (FSStep* pstep, XMLTag& tag);

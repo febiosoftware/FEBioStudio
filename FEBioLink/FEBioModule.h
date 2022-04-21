@@ -20,6 +20,7 @@ namespace FEBio {
 
 	void SetActiveModule(int moduleID);
 	int GetActiveModule();
+	const char* GetActiveModuleName();
 
 	bool SetActiveModule(const char* szmoduleName);
 

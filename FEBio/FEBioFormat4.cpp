@@ -176,34 +176,17 @@ bool FEBioFormat4::ParseSection(XMLTag& tag)
 // Parse the Module section
 bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 {
-	m_nAnalysis = -1;
 	XMLAtt& atype = tag.Attribute("type");
-	m_nAnalysis = FEBio::GetModuleId(atype.cvalue()); assert(m_nAnalysis >= 0);
-	FEBio::SetActiveModule(m_nAnalysis);
-	FileReader()->GetProject().SetModule(m_nAnalysis);
-	return (m_nAnalysis != -1);
+	int moduleId = FEBio::GetModuleId(atype.cvalue()); assert(moduleId >= 0);
+	FEBio::SetActiveModule(moduleId);
+	FileReader()->GetProject().SetModule(moduleId);
+	return (moduleId != -1);
 }
 //=============================================================================
 //
 //                                C O N T R O L
 //
 //=============================================================================
-
-FSStep* FEBioFormat4::NewStep(FSModel& fem, int nanalysis, const char* szname)
-{
-	FSStep* pstep = FEBio::CreateStep("analysis", &fem); assert(pstep);
-
-	if ((szname == 0) || (strlen(szname) == 0))
-	{
-		char sz[256] = { 0 };
-		sprintf(sz, "Step%02d", fem.Steps());
-		pstep->SetName(sz);
-	}
-	else pstep->SetName(szname);
-	fem.AddStep(pstep);
-
-	return pstep;
-}
 
 //-----------------------------------------------------------------------------
 //  This function parses the control section from the xml file
@@ -217,7 +200,8 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// create a new analysis step from these control settings
-	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
+	const char* szmod = FEBio::GetActiveModuleName();
+	if (m_pstep == 0) m_pstep = NewStep(fem, szmod);
 	FSStep* pstep = m_pstep; assert(pstep);
 
 	// parse the settings
@@ -238,7 +222,7 @@ bool FEBioFormat4::ParseControlSection(XMLTag& tag)
 					sztype = tag.Name();
 
 					// The default solver should be the solver with the same name as the module
-					if (strcmp(sztype, "solver") == 0) sztype = FEBio::GetModuleName(m_nAnalysis);
+					if (strcmp(sztype, "solver") == 0) sztype = FEBio::GetActiveModuleName();
 				}
 
 				if (pc->GetComponent() == nullptr)
@@ -2068,14 +2052,12 @@ bool FEBioFormat4::ParseStep(XMLTag& tag)
 
 	++tag;
 
-	// make sure the analysis flag was defined
-	if (m_nAnalysis < 0) return false;
-
 	// create a new step (unless this is the first step)
 	if (m_pstep == 0)
 	{
 		FSModel& fem = GetFSModel();
-		m_pstep = FEBio::CreateStep("analysis", &fem); assert(m_pstep);
+		const char* szmod = FEBio::GetActiveModuleName();
+		m_pstep = FEBio::CreateStep(szmod, &fem); assert(m_pstep);
 		const char* szname = tag.AttributeValue("name", true);
 		if ((szname == 0) || (strlen(szname) == 0))
 		{

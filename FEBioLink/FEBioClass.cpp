@@ -608,6 +608,13 @@ int FEBio::GetActiveModule()
 	return fecore.GetActiveModuleID();
 }
 
+const char* FEBio::GetActiveModuleName()
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	int modId = fecore.GetActiveModuleID();
+	return fecore.GetModuleNameFromId(modId);
+}
+
 bool FEBio::SetActiveModule(const char* szmoduleName)
 {
 	int modId = GetModuleId(szmoduleName);
