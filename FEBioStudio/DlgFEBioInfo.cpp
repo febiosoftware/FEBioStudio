@@ -83,11 +83,11 @@ public:
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->setContentsMargins(0, 0, 0, 0);
-		h->addWidget(new QLabel("Filter:"));
+		h->addWidget(new QLabel("Super class ID:"));
 		h->addWidget(pc = new QComboBox);
 		h->addWidget(new QLabel("Modules:"));
 		h->addWidget(modules = new QComboBox);
-		h->addWidget(new QLabel("Search:"));
+		h->addWidget(new QLabel("Filter:"));
 		h->addWidget(search = new QLineEdit);
 //		h->addStretch();
 
@@ -95,7 +95,7 @@ public:
 
 		l->addWidget(pw = new QTreeWidget, 2);
 		pw->setColumnCount(6);
-		pw->setHeaderLabels(QStringList() << "type string" << "class ID" << "class name" << "base class" << "module" << "source");
+		pw->setHeaderLabels(QStringList() << "type string" << "super class ID" << "class name" << "base class" << "module" << "source");
 
 		pane1->setLayout(l);
 

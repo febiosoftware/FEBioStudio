@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "MainWindow.h"
 #include "FEBioStudio.h"
+#include "version.h"
 #include <stdio.h>
 #include <PostLib/PostView.h>
 #include <FSCore/FSDir.h>
@@ -94,9 +95,10 @@ int main(int argc, char* argv[])
 	QApplication app(argc, argv);
 
 	// set the display name (this will be displayed on all windows and dialogs)
-	app.setApplicationVersion("1.0.0");
+	QString version = QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	app.setApplicationVersion(version);
 	app.setApplicationName("FEBio Studio");
-	app.setApplicationDisplayName("FEBio Studio");
+	app.setApplicationDisplayName("FEBio Studio " + version);
 	app.setWindowIcon(QIcon(":/icons/FEBioStudio.png"));
 
 	string appdir = QApplication::applicationDirPath().toStdString();
