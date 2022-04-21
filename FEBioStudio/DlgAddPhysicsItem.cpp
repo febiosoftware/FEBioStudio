@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QToolButton>
 #include <QHeaderView>
+#include <unordered_map>
 #include <FEMLib/FEMKernel.h>
 #include "MeshTools/FEProject.h"
 #include "DlgAddPhysicsItem.h"
