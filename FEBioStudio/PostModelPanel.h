@@ -68,6 +68,8 @@ private slots:
 	void OnSelectElements();
 	void OnHideElements();
 	void OnShowAllElements();
+	void OnMoveUpInRenderingQueue();
+	void OnMoveDownInRenderingQueue();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
 

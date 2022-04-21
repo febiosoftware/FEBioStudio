@@ -187,6 +187,33 @@ public:
 
 //-----------------------------------------------------------------------------
 
+class FSSurfaceForceUniform : public FSSurfaceLoad
+{
+public:
+    enum { SCALE, FORCE };
+    
+public:
+    FSSurfaceForceUniform(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    
+    void SetScale(double f) { SetFloatValue(SCALE, f); }
+    double GetScale() { return GetFloatValue(SCALE); }
+    
+    void SetForce(const vec3d& t) { SetVecValue(FORCE, t); }
+    vec3d GetForce() { return GetVecValue(FORCE); }
+};
+
+//-----------------------------------------------------------------------------
+class FSBearingLoad: public FSSurfaceLoad
+{
+public:
+    enum { SCALE, FORCE, PROFILE, NTYPE };
+    
+public:
+    FSBearingLoad(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+
 class FSFluidTraction : public FSSurfaceLoad
 {
 public:

@@ -347,6 +347,8 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSPrescribedRotation         , MODULE_MECH, FEBC_ID			    , FE_PRESCRIBED_ROTATION          , "Prescribed shell rotation");
 	REGISTER_FE_CLASS(FSPressureLoad               , MODULE_MECH, FELOAD_ID             , FE_PRESSURE_LOAD                , "Pressure");
 	REGISTER_FE_CLASS(FSSurfaceTraction            , MODULE_MECH, FELOAD_ID             , FE_SURFACE_TRACTION             , "Surface traction");
+	REGISTER_FE_CLASS(FSSurfaceForceUniform        , MODULE_MECH, FELOAD_ID             , FE_SURFACE_FORCE                , "Surface force");
+	REGISTER_FE_CLASS(FSBearingLoad                , MODULE_MECH, FELOAD_ID             , FE_BEARING_LOAD                 , "Bearing load");
 	REGISTER_FE_CLASS(FSNodalVelocities            , MODULE_MECH, FEIC_ID               , FE_INIT_NODAL_VELOCITIES        , "Velocity");
 	REGISTER_FE_CLASS(FSNodalShellVelocities       , MODULE_MECH, FEIC_ID               , FE_INIT_NODAL_SHELL_VELOCITIES  , "Shell velocity");
 	REGISTER_FE_CLASS(FSInitPrestrain              , MODULE_MECH, FEIC_ID               , FE_INIT_PRESTRAIN               , "Initialize Prestrain");
@@ -390,6 +392,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSVolumeConstraint   , MODULE_MECH, FENLCONSTRAINT_ID, FE_VOLUME_CONSTRAINT   , "volume constraint");
 	REGISTER_FE_CLASS(FSWarpingConstraint  , MODULE_MECH, FENLCONSTRAINT_ID, FE_WARP_CONSTRAINT     , "warp-image");
 	REGISTER_FE_CLASS(FSPrestrainConstraint, MODULE_MECH, FENLCONSTRAINT_ID, FE_PRESTRAIN_CONSTRAINT, "prestrain");
+	REGISTER_FE_CLASS(FSFixedNormalDisplacement, MODULE_MECH, FENLCONSTRAINT_ID, FE_FIXED_NORMAL_DISPLACEMENT, "fixed normal displacement");
 
 	// --- HEAT MODULE ---
 	REGISTER_FE_CLASS(FSHeatTransfer         , MODULE_HEAT, FEANALYSIS_ID        , FE_STEP_HEAT_TRANSFER    , "Heat Transfer");

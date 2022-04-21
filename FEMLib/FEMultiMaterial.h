@@ -378,6 +378,42 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// reactive viscoelastic damage material
+class FSRVDamageMaterial : public FSMaterial
+{
+public:
+    // material parameters
+    enum { MP_KNTCS, MP_TRGGR, MP_WMIN, MP_EMIN };
+    
+public:
+    // constructor
+    FSRVDamageMaterial(FSModel* fem);
+    
+    // set/get elastic material
+    void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetElasticMaterial() { return GetMaterialProperty(0); }
+    
+    // set/get bond material
+    void SetBondMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetBondMaterial() { return GetMaterialProperty(1); }
+    
+    // set/get relaxation
+    void SetRelaxation(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetRelaxation() { return GetMaterialProperty(2); }
+    
+    // set/get damage material
+    void SetDamageMaterial(FSMaterial* pm) { ReplaceProperty(3, pm); }
+    FSMaterial* GetDamageMaterial() { return GetMaterialProperty(3); }
+    
+    // set/get criterion
+    void SetCriterion(FSMaterial* pm) { ReplaceProperty(4, pm); }
+    FSMaterial* GetCriterion() { return GetMaterialProperty(4); }
+
+public:
+    DECLARE_REGISTERED(FSRVDamageMaterial);
+};
+
+//-----------------------------------------------------------------------------
 class FSReactionSpecies : public FSMaterialProp
 {
 public:
@@ -1031,4 +1067,74 @@ public:
     FSMaterial* GetIntactDamageCriterion() { return GetMaterialProperty(6); }
 
     DECLARE_REGISTERED(FSReactivePlasticDamage);
+};
+
+//-----------------------------------------------------------------------------
+// reactive fatigue
+class FSReactiveFatigue : public FSMaterial
+{
+public:
+    // material parameters
+    enum { MP_K0, MP_BETA };
+    
+public:
+    // constructor
+    FSReactiveFatigue(FSModel* fem);
+    
+    // set the elastic component of the material
+    void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetElasticMaterial() { return GetMaterialProperty(0); }
+    
+    // set/get elastic damage material
+    void SetElasticDamageMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetElasticDamageMaterial() { return GetMaterialProperty(1); }
+    
+    // set/get elastic damage criterion
+    void SetElasticDamageCriterion(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetElasticDamageCriterion() { return GetMaterialProperty(2); }
+    
+    // set/get fatigue damage material
+    void SetFatigueDamageMaterial(FSMaterial* pm) { ReplaceProperty(3, pm); }
+    FSMaterial* GetFatigueDamageMaterial() { return GetMaterialProperty(3); }
+    
+    // set/get fatigue criterion
+    void SetFatigueDamageCriterion(FSMaterial* pm) { ReplaceProperty(4, pm); }
+    FSMaterial* GetFatigueDamageCriterion() { return GetMaterialProperty(4); }
+    
+    DECLARE_REGISTERED(FSReactiveFatigue);
+};
+
+//-----------------------------------------------------------------------------
+// uncoupled reactive fatigue
+class FSUncoupledReactiveFatigue : public FSMaterial
+{
+public:
+    // material parameters
+    enum { MP_K0, MP_BETA, MP_K };
+    
+public:
+    // constructor
+    FSUncoupledReactiveFatigue(FSModel* fem);
+    
+    // set the elastic component of the material
+    void SetElasticMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetElasticMaterial() { return GetMaterialProperty(0); }
+    
+    // set/get elastic damage material
+    void SetElasticDamageMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetElasticDamageMaterial() { return GetMaterialProperty(1); }
+    
+    // set/get elastic damage criterion
+    void SetElasticDamageCriterion(FSMaterial* pm) { ReplaceProperty(2, pm); }
+    FSMaterial* GetElasticDamageCriterion() { return GetMaterialProperty(2); }
+    
+    // set/get fatigue damage material
+    void SetFatigueDamageMaterial(FSMaterial* pm) { ReplaceProperty(3, pm); }
+    FSMaterial* GetFatigueDamageMaterial() { return GetMaterialProperty(3); }
+    
+    // set/get fatigue criterion
+    void SetFatigueDamageCriterion(FSMaterial* pm) { ReplaceProperty(4, pm); }
+    FSMaterial* GetFatigueDamageCriterion() { return GetMaterialProperty(4); }
+    
+    DECLARE_REGISTERED(FSUncoupledReactiveFatigue);
 };

@@ -185,22 +185,29 @@ void CDlgImportPoints::OnBrowse()
 	}
 }
 
-void CDlgImportPoints::OnApply()
+class PointDataFile : public Post::PointDataSource
 {
-	CPostDocument* doc = ui->m_wnd->GetPostDocument();
-	if (doc && doc->IsValid())
+public:
+	PointDataFile(Post::PointDataModel* mdl) : Post::PointDataSource(mdl) {}
+	bool Load(const char* szfile) override
 	{
-		string fileName = ui->fileName->text().toStdString();
-		string name = ui->name->text().toStdString();
+		m_fileName = szfile;
+		bool b = Reload();
+		if (b == false) m_fileName.clear();
+		return b;
+	}
 
-		FILE* fp = fopen(fileName.c_str(), "rt");
-		if (fp == 0)
-		{
-			QMessageBox::critical(0, "FEBio Studio", "Failed opening data file.");
-			return;
-		}
+	bool Reload() override
+	{
+		Post::PointDataModel* pointData = GetPointDataModel();
+		pointData->Clear();
 
-		Post::FEPostModel& fem = *doc->GetFSModel();
+		Post::FEPostModel& fem = *pointData->GetFEModel();
+
+		const char* szfile = m_fileName.c_str();
+
+		FILE* fp = fopen(szfile, "rt");
+		if (fp == 0) return false;
 
 		char szline[256] = { 0 };
 
@@ -235,8 +242,7 @@ void CDlgImportPoints::OnApply()
 				}
 				else header.push_back(sz);
 				sz = c;
-			}
-			while (sz);
+			} while (sz);
 
 			// read the next line
 			fgets(szline, 255, fp);
@@ -247,11 +253,10 @@ void CDlgImportPoints::OnApply()
 		int nfields = 1;
 		while (sz = strchr(sz, ',')) { nfields++; ++sz; }
 
-		if (nfields < 5) 
-		{ 
-			fclose(fp); 
-			QMessageBox::critical(this, "FEBio Studio", "Hmm, that does not look the correct file format.");
-			return; 
+		if (nfields < 5)
+		{
+			fclose(fp);
+			return false;
 		}
 
 		int ndataFields = nfields - 1; assert(ndataFields >= 0);
@@ -272,9 +277,9 @@ void CDlgImportPoints::OnApply()
 				{
 				case 0: nstate = atoi(sz); break;
 				case 1: id = atoi(sz); v[n - 1] = (float)id; break;
-				case 2: x  = atof(sz); v[n - 1] = (float) x; break;
-				case 3: y  = atof(sz); v[n - 1] = (float) y; break;
-				case 4: z  = atof(sz); v[n - 1] = (float) z; break;
+				case 2: x = atof(sz); v[n - 1] = (float)x; break;
+				case 3: y = atof(sz); v[n - 1] = (float)y; break;
+				case 4: z = atof(sz); v[n - 1] = (float)z; break;
 				default:
 					if (n - 1 < MAX_POINT_DATA_FIELDS) v[n - 1] = atof(sz); else assert(false);
 				}
@@ -282,27 +287,21 @@ void CDlgImportPoints::OnApply()
 				sz = strchr(sz, ',');
 				if (sz) sz++;
 				n++;
-			} 
-			while (sz);
+			} while (sz);
 
 			if ((nstate >= 0) && (nstate < fem.GetStates()))
 			{
-				Post::FEState& s = *fem.GetState(nstate);
+				Post::PointData& pd = pointData->GetPointData(nstate);
 				if (ndataFields > 0)
-					s.AddPoint(vec3f(x, y, z), v, id);
+					pd.AddPoint(vec3f(x, y, z), v, id);
 				else
-					s.AddPoint(vec3f(x, y, z), id);
+					pd.AddPoint(vec3f(x, y, z), id);
 			}
 
 			// read the next line
 			if (fgets(szline, 255, fp) == nullptr) break;
 		}
 		fclose(fp);
-
-		// add a line plot
-		Post::CGLPointPlot* pgl = new Post::CGLPointPlot();
-		doc->GetGLModel()->AddPlot(pgl);
-		pgl->SetName(name.c_str());
 
 		for (int i = 0; i < ndataFields; ++i)
 		{
@@ -316,12 +315,50 @@ void CDlgImportPoints::OnApply()
 				dataName = ss.str();
 			}
 
-			pgl->AddDataField(dataName);
+			pointData->AddDataField(dataName);
 		}
+	}
 
-		ui->name->setText(QString("Points%1").arg(ui->m_ncount));
+private:
+	std::string	m_fileName;
+};
 
-		ui->m_wnd->UpdatePostPanel(false, pgl);
+void CDlgImportPoints::OnApply()
+{
+	CPostDocument* doc = ui->m_wnd->GetPostDocument();
+	if (doc && doc->IsValid())
+	{
+		string fileName = ui->fileName->text().toStdString();
+		string name = ui->name->text().toStdString();
+
+		Post::FEPostModel& fem = *doc->GetFSModel();
+
+		// create a data point
+		Post::PointDataModel* pointData = new Post::PointDataModel(&fem);
+
+		// create the point data source
+		PointDataFile* src = new PointDataFile(pointData);
+
+		bool b = src->Load(fileName.c_str());
+
+		if (b)
+		{
+			// add a line plot
+			Post::CGLPointPlot* pgl = new Post::CGLPointPlot();
+
+			pgl->SetPointDataModel(pointData);
+
+			doc->GetGLModel()->AddPlot(pgl);
+			pgl->SetName(name.c_str());
+
+			ui->name->setText(QString("Points%1").arg(ui->m_ncount));
+
+			ui->m_wnd->UpdatePostPanel(false, pgl);
+		}
+		else
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Hmm, that does not look the correct file format.");
+		}
 
 		accept();
 	}

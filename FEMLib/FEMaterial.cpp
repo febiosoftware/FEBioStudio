@@ -275,9 +275,9 @@ FSNaturalNeoHookean::FSNaturalNeoHookean(FSModel* fem) : FSMaterial(FE_NATURAL_N
 // FETraceFreeNeoHookean - trace-free neo-hookean elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FETraceFreeNeoHookean, MODULE_MECH, FE_TRACE_FREE_NEO_HOOKEAN, FE_MAT_ELASTIC, "trace-free neo-Hookean", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSTraceFreeNeoHookean, MODULE_MECH, FE_TRACE_FREE_NEO_HOOKEAN, FE_MAT_ELASTIC, "trace-free neo-Hookean", MaterialFlags::TOPLEVEL);
 
-FETraceFreeNeoHookean::FETraceFreeNeoHookean(FSModel* fem) : FSMaterial(FE_TRACE_FREE_NEO_HOOKEAN, fem)
+FSTraceFreeNeoHookean::FSTraceFreeNeoHookean(FSModel* fem) : FSMaterial(FE_TRACE_FREE_NEO_HOOKEAN, fem)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->MakeVariable(true)->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE ,    "mu", "shear modulus")->MakeVariable(true);
@@ -405,9 +405,9 @@ FSHolmesMow::FSHolmesMow(FSModel* fem) : FSMaterial(FE_HOLMES_MOW, fem)
 // FEHolmesMowUC -uncoupled Holmes-Mow elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEHolmesMowUC, MODULE_MECH, FE_HOLMES_MOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled Holmes-Mow", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSHolmesMowUC, MODULE_MECH, FE_HOLMES_MOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled Holmes-Mow", MaterialFlags::TOPLEVEL);
 
-FEHolmesMowUC::FEHolmesMowUC(FSModel* fem) : FSMaterial(FE_HOLMES_MOW_UNCOUPLED, fem)
+FSHolmesMowUC::FSHolmesMowUC(FSModel* fem) : FSMaterial(FE_HOLMES_MOW_UNCOUPLED, fem)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "Material density")->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE , "mu", "shear modulus");
@@ -927,7 +927,32 @@ FSActiveContraction::FSActiveContraction(FSModel* fem) : FSMaterialProp(FE_MAT_A
 }
 
 //////////////////////////////////////////////////////////////////////
-// FSTransMooneyRivlin - transversely isotropic mooney-rivlin
+// FEForceVelocityEstrada - Active contraction material
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FSForceVelocityEstrada, MODULE_MECH, FE_FORCE_VELOCITY_ESTRADA, FE_MAT_ACTIVE_CONTRACTION_CLASS, "force-velocity-Estrada", 0);
+
+FSForceVelocityEstrada::FSForceVelocityEstrada(FSModel* fem) : FSMaterialProp(FE_FORCE_VELOCITY_ESTRADA, fem)
+{
+    AddDoubleParam(0, "ascl", "scale");
+    AddDoubleParam(0, "ca0");
+    AddDoubleParam(0, "camax");
+    AddDoubleParam(0, "beta");
+    AddDoubleParam(0, "l0");
+    AddDoubleParam(0, "refl");
+    AddDoubleParam(0, "Tmax");
+    AddDoubleParam(0, "alpha1");
+    AddDoubleParam(0, "alpha2");
+    AddDoubleParam(0, "alpha3");
+    AddDoubleParam(0, "A1");
+    AddDoubleParam(0, "A2");
+    AddDoubleParam(0, "A3");
+    AddDoubleParam(0, "a_t");
+    AddBoolParam(true, "force_velocity");
+}
+
+//////////////////////////////////////////////////////////////////////
+// FETransMooneyRivlin - transversely isotropic mooney-rivlin
 //////////////////////////////////////////////////////////////////////
 
 REGISTER_MATERIAL(FSTransMooneyRivlin, MODULE_MECH, FE_TRANS_ISO_MOONEY_RIVLIN, FE_MAT_ELASTIC_UNCOUPLED, "trans iso Mooney-Rivlin", MaterialFlags::TOPLEVEL);
@@ -1644,7 +1669,7 @@ REGISTER_MATERIAL(FSPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIV
 
 FSPrescribedActiveContractionUniaxialUC::FSPrescribedActiveContractionUniaxialUC(FSModel* fem) : FSMaterial(FE_ACTIVE_CONTRACT_UNI_UC, fem)
 {
-    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
+    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0")->MakeVariable(true);;
 	SetAxisMaterial(new FSAxisMaterial(fem));
 }
 
@@ -1696,9 +1721,9 @@ FSPrescribedActiveContractionIsotropicUC::FSPrescribedActiveContractionIsotropic
 }
 
 //////////////////////////////////////////////////////////////////////
-REGISTER_MATERIAL(FSKamensky, MODULE_MECH, FE_KAMENSKY, FE_MAT_ELASTIC, "Kamensky", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSIsotropicLeeSacks, MODULE_MECH, FE_ISOTROPIC_LEE_SACKS, FE_MAT_ELASTIC, "isotropic Lee-Sacks", MaterialFlags::TOPLEVEL);
 
-FSKamensky::FSKamensky(FSModel* fem) : FSMaterial(FE_KAMENSKY, fem)
+FSIsotropicLeeSacks::FSIsotropicLeeSacks(FSModel* fem) : FSMaterial(FE_ISOTROPIC_LEE_SACKS, fem)
 {
 	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c0");
@@ -1709,9 +1734,9 @@ FSKamensky::FSKamensky(FSModel* fem) : FSMaterial(FE_KAMENSKY, fem)
 }
 
 //////////////////////////////////////////////////////////////////////
-REGISTER_MATERIAL(FSKamenskyUncoupled, MODULE_MECH, FE_KAMENSKY_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Kamensky uncoupled", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSIsotropicLeeSacksUncoupled, MODULE_MECH, FE_ISOTROPIC_LEE_SACKS_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Kamensky uncoupled", MaterialFlags::TOPLEVEL);
 
-FSKamenskyUncoupled::FSKamenskyUncoupled(FSModel* fem) : FSMaterial(FE_KAMENSKY_UNCOUPLED, fem)
+FSIsotropicLeeSacksUncoupled::FSIsotropicLeeSacksUncoupled(FSModel* fem) : FSMaterial(FE_ISOTROPIC_LEE_SACKS_UNCOUPLED, fem)
 {
 	AddScienceParam(1, UNIT_DENSITY , "density")->MakeVariable(true)->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c0");
@@ -2113,6 +2138,20 @@ FSFiberExpLinearUncoupled::FSFiberExpLinearUncoupled(FSModel* fem) : FSFiberMate
 	AddDoubleParam(0.0, "c4", "c4");
 	AddDoubleParam(0.0, "c5", "c5");
 	AddDoubleParam(0.0, "lambda", "lambda");
+}
+
+//=============================================================================
+// Fiber-Exp-Pow-Linear
+//=============================================================================
+
+REGISTER_MATERIAL(FSFiberExpPowLin, MODULE_MECH, FE_FIBER_EXP_POW_LIN, FE_MAT_ELASTIC, "fiber-exp-pow-linear", 0);
+
+FSFiberExpPowLin::FSFiberExpPowLin(FSModel* fem) : FSFiberMaterial(FE_FIBER_EXP_POW_LIN, fem)
+{
+    AddScienceParam(0, UNIT_PRESSURE, "E"  , "E"  );
+    AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
+    AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
+    AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
 }
 
 //=============================================================================
@@ -2789,9 +2828,9 @@ FSCDFQuintic::FSCDFQuintic(FSModel* fem) : FSMaterialProp(FE_CDF_QUINTIC, fem)
 // CDF Power
 //=============================================================================
 
-REGISTER_MATERIAL(FECDFPower, MODULE_MECH, FE_CDF_POWER, FE_MAT_DAMAGE, "CDF power", 0);
+REGISTER_MATERIAL(FSCDFPower, MODULE_MECH, FE_CDF_POWER, FE_MAT_DAMAGE, "CDF power", 0);
 
-FECDFPower::FECDFPower(FSModel* fem) : FSMaterialProp(FE_CDF_POWER, fem)
+FSCDFPower::FSCDFPower(FSModel* fem) : FSMaterialProp(FE_CDF_POWER, fem)
 {
     AddScienceParam(0, UNIT_NONE, "alpha" , "power exponent alpha");
     AddScienceParam(1, UNIT_NONE, "mu0"   , "constant mu0");
@@ -3010,9 +3049,9 @@ FSRelaxFung::FSRelaxFung(FSModel* fem) : FSMaterialProp(FE_RELAX_FUNG, fem)
 // Relaxation Malkin
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxMalkin, MODULE_MECH, FE_RELAX_MALKIN, FE_MAT_RV_RELAX, "relaxation-Malkin", 0);
+REGISTER_MATERIAL(FSRelaxMalkin, MODULE_MECH, FE_RELAX_MALKIN, FE_MAT_RV_RELAX, "relaxation-Malkin", 0);
 
-FERelaxMalkin::FERelaxMalkin(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN, fem)
+FSRelaxMalkin::FSRelaxMalkin(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN, fem)
 {
     AddScienceParam(0, UNIT_TIME, "tau1"   , "min. relaxation time"); //  minimum characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau2"   , "max. relaxation time"); // maximum characteristic relaxation time
@@ -3023,9 +3062,9 @@ FERelaxMalkin::FERelaxMalkin(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN, fem
 // Relaxation Malkin Distortion
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxMalkinDistortion, MODULE_MECH, FE_RELAX_MALKIN_DIST, FE_MAT_RV_RELAX, "relaxation-Malkin-distortion", 0);
+REGISTER_MATERIAL(FSRelaxMalkinDistortion, MODULE_MECH, FE_RELAX_MALKIN_DIST, FE_MAT_RV_RELAX, "relaxation-Malkin-distortion", 0);
 
-FERelaxMalkinDistortion::FERelaxMalkinDistortion(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN_DIST, fem)
+FSRelaxMalkinDistortion::FSRelaxMalkinDistortion(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN_DIST, fem)
 {
     AddScienceParam(0, UNIT_TIME, "t1c0"   , "constant for tau1");
     AddScienceParam(0, UNIT_TIME, "t1c1"   , "coefficient for tau1");

@@ -148,6 +148,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "element strain energy"             );
     AddPlotVariable(MODULE_MECH, "element stress power"              );
     AddPlotVariable(MODULE_MECH, "enclosed volume"                   , false, true, DOMAIN_SURFACE);
+    AddPlotVariable(MODULE_MECH, "fatigue bond fraction"             );
     AddPlotVariable(MODULE_MECH, "fiber stretch"                     );
     AddPlotVariable(MODULE_MECH, "fiber vector"                      );
     AddPlotVariable(MODULE_MECH, "intact bond fraction"              );

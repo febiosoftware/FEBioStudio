@@ -146,13 +146,15 @@
 #define FE_HOLZAPFEL_UNCONSTRAINED      81
 #define FE_FIBER_KIOUSIS_UNCOUPLED      82
 #define FE_NEWTONIAN_VISCOUS_SOLID      83
-#define FE_KAMENSKY						84
-#define FE_KAMENSKY_UNCOUPLED			85
+#define FE_ISOTROPIC_LEE_SACKS			84
+#define FE_ISOTROPIC_LEE_SACKS_UNCOUPLED 85
 #define FE_FIBER_NEO_HOOKEAN            86
 #define FE_FIBER_NATURAL_NH             87
 #define FE_HOLMES_MOW_UNCOUPLED         88
 #define FE_TRACE_FREE_NEO_HOOKEAN       89
 #define FE_POLYNOMIAL_HYPERELASTIC      90
+#define FE_FORCE_VELOCITY_ESTRADA       91
+#define FE_FIBER_EXP_POW_LIN            92
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -181,8 +183,11 @@
 #define FE_REACTIVE_PLASTICITY      129
 #define FE_REACTIVE_PLASTIC_DAMAGE  130
 #define FE_BIPHASIC_FSI_MATERIAL    131
+#define FE_RV_DAMAGE_MATERIAL       132
+#define FE_REACTIVE_FATIGUE         133
+#define FE_UNCOUPLED_REACTIVE_FATIGUE   134
 
-#define FE_FEBIO_MATERIAL			132
+#define FE_FEBIO_MATERIAL			135
 
 // permeability materials
 #define FE_PERM_CONST				200
@@ -451,15 +456,15 @@ public:
 //-----------------------------------------------------------------------------
 // trace-free Neo-Hookean
 //
-class FETraceFreeNeoHookean : public FSMaterial
+class FSTraceFreeNeoHookean : public FSMaterial
 {
 public:
     enum { MP_DENSITY, MP_MU };
     
 public:
-    FETraceFreeNeoHookean(FSModel* fem);
+    FSTraceFreeNeoHookean(FSModel* fem);
     
-    DECLARE_REGISTERED(FETraceFreeNeoHookean);
+    DECLARE_REGISTERED(FSTraceFreeNeoHookean);
 };
 
 //-----------------------------------------------------------------------------
@@ -576,15 +581,15 @@ public:
 //-----------------------------------------------------------------------------
 // Holmes-Mow uncoupled
 //
-class FEHolmesMowUC : public FSMaterial
+class FSHolmesMowUC : public FSMaterial
 {
 public:
     enum { MP_DENS, MP_MU, MP_BETA, MP_K };
     
 public:
-    FEHolmesMowUC(FSModel* fem);
+    FSHolmesMowUC(FSModel* fem);
     
-    DECLARE_REGISTERED(FEHolmesMowUC);
+    DECLARE_REGISTERED(FSHolmesMowUC);
 };
 
 //-----------------------------------------------------------------------------
@@ -776,6 +781,20 @@ public:
 	FSActiveContraction(FSModel* fem);
 
 	DECLARE_REGISTERED(FSActiveContraction);
+};
+
+//-----------------------------------------------------------------------------
+// force-velocity Estrada contraction material for transverely-isotropic materials
+
+class FSForceVelocityEstrada : public FSMaterialProp
+{
+public:
+    enum { MP_ASCL, MP_CA0, MP_CAM, MP_BETA, MP_L0, MP_REFL, M_TMAX, M_AL1, M_AL2, M_AL3, M_A1, M_A2, M_A3, M_AT, M_FV };
+    
+public:
+    FSForceVelocityEstrada(FSModel* fem);
+    
+    DECLARE_REGISTERED(FSForceVelocityEstrada);
 };
 
 //-----------------------------------------------------------------------------
@@ -1143,29 +1162,28 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FSKamensky: public FSMaterial
+class FSIsotropicLeeSacks : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_C0, MP_C1, MP_C2, MP_K, MP_TANGENT_SCALE };
 
 public:
-	FSKamensky(FSModel* fem);
+    FSIsotropicLeeSacks(FSModel* fem);
 
-	DECLARE_REGISTERED(FSKamensky);
+	DECLARE_REGISTERED(FSIsotropicLeeSacks);
 };
 
 //-----------------------------------------------------------------------------
-class FSKamenskyUncoupled : public FSMaterial
+class FSIsotropicLeeSacksUncoupled : public FSMaterial
 {
 public:
 	enum { MP_DENSITY, MP_C0, MP_C1, MP_C2, MP_K, MP_TANGENT_SCALE };
 
 public:
-	FSKamenskyUncoupled(FSModel* fem);
+    FSIsotropicLeeSacksUncoupled(FSModel* fem);
 
-	DECLARE_REGISTERED(FSKamenskyUncoupled);
+	DECLARE_REGISTERED(FSIsotropicLeeSacksUncoupled);
 };
-
 
 //-----------------------------------------------------------------------------
 // Isotropic Fourier
@@ -1520,6 +1538,17 @@ public:
 public:
 	FSFiberExpLinearUncoupled(FSModel* fem);
 	DECLARE_REGISTERED(FSFiberExpLinearUncoupled);
+};
+
+//-----------------------------------------------------------------------------
+class FSFiberExpPowLin : public FSFiberMaterial
+{
+public:
+    enum { MP_E, MP_ALPHA, MP_BETA, MP_LAM0 };
+public:
+    FSFiberExpPowLin(FSModel* fem);
+    
+    DECLARE_REGISTERED(FSFiberExpPowLin);
 };
 
 //-----------------------------------------------------------------------------
@@ -2119,13 +2148,13 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FECDFPower : public FSMaterialProp
+class FSCDFPower : public FSMaterialProp
 {
 public:
     enum { MP_ALPHA, MP_MU0, MP_MU1 };
 public:
-    FECDFPower(FSModel* fem);
-    DECLARE_REGISTERED(FECDFPower);
+    FSCDFPower(FSModel* fem);
+    DECLARE_REGISTERED(FSCDFPower);
 };
 
 //-----------------------------------------------------------------------------
@@ -2299,23 +2328,23 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxMalkin : public FSMaterialProp
+class FSRelaxMalkin : public FSMaterialProp
 {
 public:
     enum { MP_TAU1, M_TAU2, M_BETA };
 public:
-    FERelaxMalkin(FSModel* fem);
-    DECLARE_REGISTERED(FERelaxMalkin);
+    FSRelaxMalkin(FSModel* fem);
+    DECLARE_REGISTERED(FSRelaxMalkin);
 };
 
 //-----------------------------------------------------------------------------
-class FERelaxMalkinDistortion : public FSMaterialProp
+class FSRelaxMalkinDistortion : public FSMaterialProp
 {
 public:
     enum { MP_T1C0, MP_T1C1, MP_T1S0, MP_T2C0, MP_T2C1, MP_T2S0, M_BETA };
 public:
-    FERelaxMalkinDistortion(FSModel* fem);
-    DECLARE_REGISTERED(FERelaxMalkinDistortion);
+    FSRelaxMalkinDistortion(FSModel* fem);
+    DECLARE_REGISTERED(FSRelaxMalkinDistortion);
 };
 
 //-----------------------------------------------------------------------------

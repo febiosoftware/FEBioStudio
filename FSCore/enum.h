@@ -669,13 +669,15 @@ SOFTWARE.*/
 #define FE_BFSI_TRACTION                    0x0034
 #define FE_FLUID_PRESSURE_LOAD              0x0035
 #define FE_MASSDAMPING_LOAD					0x0036
+#define FE_SURFACE_FORCE                    0x0037
+#define FE_BEARING_LOAD                     0x0038
 
-#define FE_FEBIO_BC							0x0036
-#define FE_FEBIO_NODAL_LOAD					0x0037
-#define FE_FEBIO_SURFACE_LOAD				0x0038
-#define FE_FEBIO_BODY_LOAD					0x0039
-#define FE_FEBIO_INITIAL_CONDITION			0x003A
-#define FE_FEBIO_RIGID_LOAD					0x003B
+#define FE_FEBIO_BC							0x0039
+#define FE_FEBIO_NODAL_LOAD					0x003A
+#define FE_FEBIO_SURFACE_LOAD				0x003B
+#define FE_FEBIO_BODY_LOAD					0x003C
+#define FE_FEBIO_INITIAL_CONDITION			0x003D
+#define FE_FEBIO_RIGID_LOAD					0x003E
 
 //--------------------------------------------------------
 // Interface types
@@ -727,6 +729,7 @@ SOFTWARE.*/
 #define FE_FRICTIONLESS_FLUID_WALL      0x002F  // added in 2.0
 #define FE_INSITUSTRETCH_CONSTRAINT		0x0030	// added in FS 1.0
 #define FE_PRESTRAIN_CONSTRAINT		    0x0031	// added in FS 1.0
-#define FE_FEBIO_NLCONSTRAINT			0x0032	// added in FS 2.0
-#define FE_FEBIO_SURFACECONSTRAINT		0x0033	// added in FS 2.0
-#define FE_FEBIO_BODYCONSTRAINT			0x0034	// added in FS 2.0
+#define FE_FIXED_NORMAL_DISPLACEMENT    0x0032
+#define FE_FEBIO_NLCONSTRAINT			0x0033	// added in FS 2.0
+#define FE_FEBIO_SURFACECONSTRAINT		0x0034	// added in FS 2.0
+#define FE_FEBIO_BODYCONSTRAINT			0x0035	// added in FS 2.0

@@ -86,10 +86,30 @@ private:
 	vector<LINESEGMENT>	m_Line;
 };
 
+class LineDataModel;
+
+class LineDataSource
+{
+public:
+	LineDataSource(LineDataModel* mdl);
+	virtual ~LineDataSource() {}
+
+	virtual bool Load(const char* szfile) = 0;
+	virtual bool Reload() = 0;
+
+	LineDataModel* GetLineDataModel() { return m_mdl; }
+
+private:
+	LineDataModel* m_mdl;
+};
+
 class LineDataModel 
 {
 public:
 	LineDataModel(FEPostModel* fem);
+	~LineDataModel();
+
+	void Clear();
 
 	LineData& GetLineData(size_t n) { return m_line[n]; }
 
@@ -97,7 +117,17 @@ public:
 
 	FEPostModel* GetFEModel() { return m_fem; }
 
+	void SetLineDataSource(LineDataSource* src) { m_src = src; }
+	LineDataSource* GetLineDataSource() { return m_src; }
+
+	bool Reload() 
+	{
+		if (m_src) return m_src->Reload();
+		else return false;
+	}
+
 private:
+	LineDataSource* m_src;
 	FEPostModel* m_fem;
 	std::vector<LineData>	m_line;
 };
@@ -143,6 +173,8 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+	void Reload() override;
+
 public:
 	void SetLineDataModel(LineDataModel* lineData);
 
@@ -167,6 +199,79 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+#define MAX_POINT_DATA_FIELDS	32
+
+class PointData
+{
+public:
+	struct POINT
+	{
+		int		nlabel;
+		vec3f	m_r;
+		float	val[MAX_POINT_DATA_FIELDS];
+	};
+
+public:
+
+	void AddPoint(vec3f a, int nlabel);
+
+	void AddPoint(vec3f a, const std::vector<float>& data, int nlabel);
+
+	int Points() const { return (int)m_pt.size(); }
+
+	POINT& Point(int n) { return m_pt[n]; }
+
+public:
+	vector<POINT>	m_pt;
+};
+
+//-----------------------------------------------------------------------------
+class PointDataSource;
+
+class PointDataModel
+{
+public:
+	PointDataModel(FEPostModel* fem);
+	~PointDataModel();
+	void Clear();
+
+	FEPostModel* GetFEModel() { return m_fem; }
+
+	void SetPointDataSource(PointDataSource* src) { m_src = src; }
+	PointDataSource* GetPointDataSource() { return m_src; }
+
+	void AddDataField(const std::string& dataName);
+	std::vector<std::string> GetDataNames() { return m_dataNames; }
+
+	int GetDataFields() const { return (int)m_dataNames.size(); }
+
+	PointData& GetPointData(size_t state) { return m_point[state]; }
+
+	bool Reload();
+
+private:
+	FEPostModel* m_fem;
+	PointDataSource* m_src;
+	std::vector<PointData>	m_point;
+	std::vector<std::string>	m_dataNames;
+};
+
+class PointDataSource
+{
+public:
+	PointDataSource(PointDataModel* mdl) : m_mdl(mdl) { mdl->SetPointDataSource(this); }
+	virtual ~PointDataSource() {}
+
+	virtual bool Load(const char* szfile) = 0;
+	virtual bool Reload() = 0;
+
+	PointDataModel* GetPointDataModel() { return m_mdl; }
+
+private:
+	PointDataModel* m_mdl;
+};
+
+//-----------------------------------------------------------------------------
 // point cloud rendering of imported point data
 class CGLPointPlot : public CGLLegendPlot
 {
@@ -186,7 +291,10 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
-	void AddDataField(const std::string& dataName);
+public:
+	void SetPointDataModel(PointDataModel* pointData);
+
+	void Reload() override;
 
 private:
 	void RenderPoints();
@@ -201,6 +309,6 @@ private:
 	bool		m_showLegend;	//!< show legend bar or not
 	DATA_RANGE	m_range;	// range for legend
 
-	std::vector<std::string>	m_dataNames;
+	PointDataModel* m_pointData;
 };
 }

@@ -112,3 +112,15 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 };
+
+//-----------------------------------------------------------------------------
+// This class implements a fixed normal displacement constraint
+class FSFixedNormalDisplacement : public FSSurfaceConstraint
+{
+public:
+    enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG, SHELLB };
+    
+public:
+    FSFixedNormalDisplacement(FSModel* ps, int nstep = 0);
+};
+

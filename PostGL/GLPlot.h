@@ -55,6 +55,8 @@ public:
 	void SetRenderOrder(int renderOrder);
 	int GetRenderOrder() const;
 
+	virtual void Reload();
+
 private:
 	int	m_renderOrder;
 };

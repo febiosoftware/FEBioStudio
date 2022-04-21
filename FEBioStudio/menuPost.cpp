@@ -524,7 +524,58 @@ private:
 	Post::LineDataModel& m_lines;
 };
 
-bool ReadOldFormat(const char* szfile, Post::LineDataModel& lineData)
+class Ang2LineDataSource : public Post::LineDataSource
+{
+public:
+	Ang2LineDataSource(Post::LineDataModel* mdl) : Post::LineDataSource(mdl) {}
+
+	bool Load(const char* szfile) override
+	{
+		m_fileName = szfile;
+
+		bool bsuccess = Reload();
+		if (bsuccess == false) m_fileName.clear();
+
+		return bsuccess;
+	}
+
+	bool Reload() override
+	{
+		if (m_fileName.empty()) return false;
+		const char* szfile = m_fileName.c_str();
+
+		Post::LineDataModel* lineData = GetLineDataModel();
+		lineData->Clear();
+		bool bsuccess = false;
+		const char* szext = strrchr(szfile, '.');
+		if (szext && (strcmp(szext, ".ang2") == 0))
+		{
+			// Read AngioFE2 format
+			int nret = ReadAng2Format(szfile, *lineData);
+			bsuccess = (nret != 0);
+			if (nret == 2)
+			{
+//				QMessageBox::warning(0, "FEBio Studio", "End-of-file reached before all states were processed.");
+			}
+		}
+		else
+		{
+			// read old format (this assumes this is a text file)
+			bsuccess = ReadOldFormat(szfile, *lineData);
+		}
+
+		return bsuccess;
+	}
+
+private:
+	int ReadAng2Format(const char* szfile, Post::LineDataModel& lineData);
+	bool ReadOldFormat(const char* szfile, Post::LineDataModel& lineData);
+
+private:
+	std::string		m_fileName;
+};
+
+bool Ang2LineDataSource::ReadOldFormat(const char* szfile, Post::LineDataModel& lineData)
 {
 	FILE* fp = fopen(szfile, "rt");
 	if (fp == 0) return false;
@@ -582,7 +633,7 @@ vec3f GetCoordinatesFromFrag(Post::FEPostModel& fem, int nstate, FRAG& a)
 // 0 = failed
 // 1 = success
 // 2 = EOF reached before all states were read in
-int ReadAng2Format(const char* szfile, Post::LineDataModel& lineData)
+int Ang2LineDataSource::ReadAng2Format(const char* szfile, Post::LineDataModel& lineData)
 {
 	FILE* fp = fopen(szfile, "rb");
 	if (fp == 0) return 0;
@@ -750,24 +801,9 @@ void CMainWindow::on_actionImportLines_triggered()
 		// allocate line model
 		Post::LineDataModel* lineData = new Post::LineDataModel(fem);
 
-		bool bsuccess = false;
-		const char* szfile = fileName.c_str();
-		const char* szext = strrchr(szfile, '.');
-		if (szext && (strcmp(szext, ".ang2") == 0))
-		{
-			// Read AngioFE2 format
-			int nret = ReadAng2Format(szfile, *lineData);
-			bsuccess = (nret != 0);
-			if (nret == 2)
-			{
-				QMessageBox::warning(0, "FEBio Studio", "End-of-file reached before all states were processed.");
-			}
-		}
-		else
-		{
-			// read old format (this assumes this is a text file)
-			bsuccess = ReadOldFormat(szfile, *lineData);
-		}
+		Ang2LineDataSource* src = new Ang2LineDataSource(lineData);
+
+		bool bsuccess = src->Load(fileName.c_str());
 
 		if (bsuccess)
 		{
