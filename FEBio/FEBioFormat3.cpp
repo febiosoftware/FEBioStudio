@@ -2273,12 +2273,49 @@ void FEBioFormat3::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	const char* sztype = tag.AttributeValue("type", true);
 	if (sztype == nullptr) sztype = "nodal_load";
 
-	// create the nodal load
-	FSNodalLoad* pnl = FEBio::CreateNodalLoad(sztype, &fem);
-	pnl->SetName(name);
-	pstep->AddComponent(pnl);
+	FSNodalLoad* pnl = nullptr;
+	if (strcmp(sztype, "nodal_load") == 0)
+	{
+		// let's convert it to the new nodal load classes
+		bool brelative = false;
+		string dof;
+		double scale = 0.0;
 
-	ParseModelComponent(pnl, tag);
+		++tag;
+		do {
+			if (tag == "relative") tag.value(brelative);
+			else if (tag == "dof") tag.value(dof);
+			else if (tag == "scale") tag.value(scale);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+
+		if (dof == "p")
+		{
+			pnl = FEBio::CreateNodalLoad("nodal fluidflux", &fem);
+			pnl->SetParamBool("relative", brelative);
+			pnl->SetParamFloat("value", scale);
+		}
+		else
+		{
+			assert(false);
+			pnl = FEBio::CreateNodalLoad(sztype, &fem);
+			ParseModelComponent(pnl, tag);
+		}
+	}
+	else
+	{
+		pnl = FEBio::CreateNodalLoad(sztype, &fem);
+		ParseModelComponent(pnl, tag);
+	}
+
+	assert(pnl);
+	if (pnl)
+	{
+		pnl->SetName(name);
+		pnl->SetItemList(pg);
+		pstep->AddComponent(pnl);
+	}
 }
 
 //-----------------------------------------------------------------------------

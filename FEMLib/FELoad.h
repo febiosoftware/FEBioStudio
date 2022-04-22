@@ -1,5 +1,6 @@
 #pragma once
 #include "FEDomainComponent.h"
+#include <MeshTools\FEItemListBuilder.h>
 
 //=============================================================================
 // Base class for all nodal, edge, surface, and body loads
@@ -17,8 +18,14 @@ public:
 class FSNodalLoad : public FSLoad
 {
 public:
-	FSNodalLoad(int ntype, FSModel* fem) : FSLoad(ntype, fem) {}
-	FSNodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep) {}
+	FSNodalLoad(int ntype, FSModel* fem) : FSLoad(ntype, fem) 
+	{
+		SetMeshItemType(FE_ALL_FLAGS);
+	}
+	FSNodalLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSLoad(ntype, ps, pi, nstep) 
+	{
+		SetMeshItemType(FE_ALL_FLAGS);
+	}
 };
 
 class FSNodalDOFLoad : public FSNodalLoad
