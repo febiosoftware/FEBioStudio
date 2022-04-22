@@ -2280,12 +2280,18 @@ void FEBioFormat3::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 		bool brelative = false;
 		string dof;
 		double scale = 0.0;
+		int lc = -1;
 
 		++tag;
 		do {
 			if (tag == "relative") tag.value(brelative);
 			else if (tag == "dof") tag.value(dof);
-			else if (tag == "scale") tag.value(scale);
+			else if (tag == "scale")
+			{
+				tag.value(scale);
+				const char* szlc = tag.AttributeValue("lc", true);
+				if (szlc) lc = atoi(szlc);
+			}
 			else ParseUnknownTag(tag);
 			++tag;
 		} while (!tag.isend());
@@ -2295,6 +2301,28 @@ void FEBioFormat3::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 			pnl = FEBio::CreateNodalLoad("nodal fluidflux", &fem);
 			pnl->SetParamBool("relative", brelative);
 			pnl->SetParamFloat("value", scale);
+			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
+		}
+		else if (dof == "x")
+		{
+			pnl = FEBio::CreateNodalLoad("nodal_force", &fem);
+			pnl->SetParamBool("relative", brelative);
+			pnl->SetParamVec3d("value", vec3d(scale, 0 ,0));
+			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
+		}
+		else if (dof == "y")
+		{
+			pnl = FEBio::CreateNodalLoad("nodal_force", &fem);
+			pnl->SetParamBool("relative", brelative);
+			pnl->SetParamVec3d("value", vec3d(0, scale, 0));
+			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
+		}
+		else if (dof == "z")
+		{
+			pnl = FEBio::CreateNodalLoad("nodal_force", &fem);
+			pnl->SetParamBool("relative", brelative);
+			pnl->SetParamVec3d("value", vec3d(0, 0, scale));
+			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
 		}
 		else
 		{
