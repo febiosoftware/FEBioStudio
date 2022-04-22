@@ -128,7 +128,11 @@ bool FSProperty::RemoveComponent(FSCoreBase* pm)
 	{
 		if (m_cmp[i] == pm)
 		{
-			m_cmp.erase(m_cmp.begin() + i);
+			if (maxSize() == NO_FIXED_SIZE)
+			{
+				m_cmp.erase(m_cmp.begin() + i);
+			}
+			else m_cmp[i] = nullptr;
 			delete pm;
 			return true;
 		}
