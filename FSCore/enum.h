@@ -672,12 +672,14 @@ SOFTWARE.*/
 #define FE_SURFACE_FORCE                    0x0037
 #define FE_BEARING_LOAD                     0x0038
 
-#define FE_FEBIO_BC							0x0039
-#define FE_FEBIO_NODAL_LOAD					0x003A
-#define FE_FEBIO_SURFACE_LOAD				0x003B
-#define FE_FEBIO_BODY_LOAD					0x003C
-#define FE_FEBIO_INITIAL_CONDITION			0x003D
-#define FE_FEBIO_RIGID_LOAD					0x003E
+#define FE_FEBIO_BC							0x0101
+#define FE_FEBIO_NODAL_LOAD					0x0102
+#define FE_FEBIO_SURFACE_LOAD				0x0103
+#define FE_FEBIO_BODY_LOAD					0x0104
+#define FE_FEBIO_INITIAL_CONDITION			0x0105
+#define FE_FEBIO_RIGID_LOAD					0x0106
+#define FE_FEBIO_RIGID_BC					0x0107
+#define FE_FEBIO_RIGID_IC					0x0108
 
 //--------------------------------------------------------
 // Interface types

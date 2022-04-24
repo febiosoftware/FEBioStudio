@@ -200,8 +200,10 @@ public:
 	int GetOffset() const { return m_offset; }
 	Param* SetOffset(int n) { m_offset = n; return this; }
 
-	Param* MakeVariable(bool b) { m_isVariable = b; return this; }
-	bool IsVariable() const { return m_isVariable; }
+	Param* MakeVariable(bool b);
+	Param* SetVariableType(Param_Type varType) { m_varType = varType; return this; }
+	bool IsVariable() const { return (m_varType != Param_UNDEF); }
+	Param_Type GetVariableType() const { return m_varType; }
 
 	bool UseRange() const { return m_floatRange; }
 
@@ -260,7 +262,7 @@ protected:
     int			m_nindx;    // index value
 	bool		m_bcopy;	// copy enum values
 
-	bool		m_isVariable;	// allow the type of the parameter to change
+	Param_Type	m_varType;	// if set, the parameter can have different types. 
 
 	friend class ParamBlock;
 };

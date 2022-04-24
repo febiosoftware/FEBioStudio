@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
+#include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
 #include <FECore/units.h>
@@ -150,11 +151,27 @@ std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pi)
 	return  ss.str();
 }
 
-std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc)
+std::string defaultRigidBCName(FSModel* fem, FSRigidBC* pc)
 {
-	int nrc = CountRigidConstraints<FSRigidConstraint>(*fem);
+	int nrc = CountRigidBCs<FSRigidBC>(*fem);
 	stringstream ss;
 	ss << "RigidConstraint" << nrc + 1;
+	return  ss.str();
+}
+
+std::string defaultRigidICName(FSModel* fem, FSRigidIC* pc)
+{
+	int nrc = CountRigidICs<FSRigidIC>(*fem);
+	stringstream ss;
+	ss << "RigidIC" << nrc + 1;
+	return  ss.str();
+}
+
+std::string defaultRigidLoadName(FSModel* fem, FSRigidLoad* pc)
+{
+	int nrc = CountRigidLoads<FSRigidLoad>(*fem);
+	stringstream ss;
+	ss << "RigidLoad" << nrc + 1;
 	return  ss.str();
 }
 
@@ -1550,7 +1567,12 @@ void FSModel::LoadMeshDataGenerators(IArchive& ar)
 		FSMeshDataGenerator* pmd = nullptr;
 		switch (ntype)
 		{
-		case FE_FEBIO_MESHDATA_GENERATOR: pmd = dynamic_cast<FSMeshDataGenerator*>(kernel.Create(this, FEMESHDATAGENERATOR_ID, ntype)); break;
+		case FE_FEBIO_NODEDATA_GENERATOR: pmd = new FEBioNodeDataGenerator(this); break;
+		case FE_FEBIO_EDGEDATA_GENERATOR: pmd = new FEBioEdgeDataGenerator(this); break;
+		case FE_FEBIO_FACEDATA_GENERATOR: pmd = new FEBioFaceDataGenerator(this); break;
+		case FE_FEBIO_ELEMDATA_GENERATOR: pmd = new FEBioElemDataGenerator(this); break;
+		default:
+			assert(false);
 		}
 		
 		if (pmd == nullptr) throw ReadError("unknown CID in FSModel::LoadMeshDataGenerators");
@@ -1841,12 +1863,22 @@ void FSModel::DeleteAllMeshDataGenerators()
 }
 
 //-----------------------------------------------------------------------------
-void FSModel::DeleteAllRigidConstraints()
+void FSModel::DeleteAllRigidBCs()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
 		FSStep* pstep = GetStep(i);
-		pstep->RemoveAllRigidConstraints();
+		pstep->RemoveAllRigidBCs();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FSModel::DeleteAllRigidICs()
+{
+	for (int i = 0; i < Steps(); ++i)
+	{
+		FSStep* pstep = GetStep(i);
+		pstep->RemoveAllRigidICs();
 	}
 }
 

@@ -36,7 +36,6 @@ SOFTWARE.*/
 #include <FSCore/ParamBlock.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/GDiscreteObject.h>
-#include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModifiedObject.h>
 #include <MeshTools/FESurfaceModifier.h>
@@ -310,22 +309,6 @@ protected:
 	FSStep*		m_ps;
 	FSLoad*		m_pfc;
 	bool		m_bdel;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdAddRC : public CCommand
-{
-public:
-	CCmdAddRC(FSStep* ps, FSRigidConstraint* prc) : CCommand("Add Rigid Constraint") { m_ps = ps; m_prc = prc; m_bdel = true; }
-	~CCmdAddRC() { if (m_bdel) delete m_prc; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FSStep*				m_ps;
-	FSRigidConstraint*	m_prc;
-	bool				m_bdel;
 };
 
 //----------------------------------------------------------------

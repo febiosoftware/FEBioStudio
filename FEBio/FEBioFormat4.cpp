@@ -26,13 +26,13 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBioFormat4.h"
-#include <FEMLib/FERigidConstraint.h>
 #include <MeshTools/FEGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -1418,18 +1418,6 @@ void FEBioFormat4::ParseBC(FSStep* pstep, XMLTag& tag)
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-static FSRigidConstraint* createNewRigidConstraint(FSRigidConstraint* prc, const char* szclass, int N)
-{
-	// set the name
-	char szname[256] = { 0 };
-	sprintf(szname, "%s%d", szclass + 2, N + 1);
-	prc->SetName(szname);
-	return prc;
-}
-
-#define CREATE_RIGID_CONSTRAINT(className) dynamic_cast<className*>(createNewRigidConstraint(new className(&fem), #className, CountRigidConstraints<className>(fem)))
-
-//-----------------------------------------------------------------------------
 bool FEBioFormat4::ParseRigidSection(XMLTag& tag)
 {
 	// make sure the section is not empty
@@ -1438,7 +1426,9 @@ bool FEBioFormat4::ParseRigidSection(XMLTag& tag)
 	++tag;
 	do
 	{
-		if      (tag == "rigid_constraint") ParseRigidConstraint(m_pBCStep, tag);
+		if      (tag == "rigid_bc"        ) ParseRigidBC(m_pBCStep, tag);
+		if      (tag == "rigid_ic"        ) ParseRigidIC(m_pBCStep, tag);
+		if      (tag == "rigid_load"      ) ParseRigidLoad(m_pBCStep, tag);
 		else if (tag == "rigid_connector" ) ParseRigidConnector (m_pBCStep, tag);
 		else ParseUnknownTag(tag);
 		++tag;
@@ -1715,44 +1705,82 @@ void FEBioFormat4::ParseContact(FSStep *pstep, XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat4::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
+void FEBioFormat4::ParseRigidBC(FSStep* pstep, XMLTag& tag)
 {
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
 
 	// get the name 
 	stringstream ss;
-	ss << "RigidConstraint" << CountConnectors<FSRigidConstraint>(fem) + 1;
+	ss << "RigidConstraint" << CountRigidBCs<FEBioRigidBC>(fem) + 1;
 	std::string name = tag.AttributeValue("name", ss.str());
 
 	// get the type attribute
 	const char* sztype = tag.AttributeValue("type");
 
 	// allocate class
-	FSRigidConstraint* pi = FEBio::CreateRigidConstraint(sztype, &fem);
+	FSRigidBC* pi = FEBio::CreateRigidBC(sztype, &fem);
 	if (pi == nullptr)
 	{
 		ParseUnknownAttribute(tag, "type");
 		return;
 	}
 	pi->SetName(name);
-	pstep->AddRC(pi);
+	pstep->AddRigidBC(pi);
 
-	++tag;
-	do
+	ParseModelComponent(pi, tag);
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseRigidIC(FSStep* pstep, XMLTag& tag)
+{
+	FEBioInputModel& febio = GetFEBioModel();
+	FSModel& fem = GetFSModel();
+
+	// get the name 
+	stringstream ss;
+	ss << "RigidIC" << CountRigidICs<FEBioRigidIC>(fem) + 1;
+	std::string name = tag.AttributeValue("name", ss.str());
+
+	// get the type attribute
+	const char* sztype = tag.AttributeValue("type");
+
+	// allocate class
+	FSRigidIC* pi = FEBio::CreateRigidIC(sztype, &fem);
+	if (pi == nullptr)
 	{
-		if (ReadParam(*pi, tag) == false)
-		{
-			if (tag == "rb")
-			{
-				int na = -1;
-				tag.value(na);
-				if (na >= 0) pi->SetMaterialID(febio.GetMaterial(na - 1)->GetID());
-			}
-			else ParseUnknownTag(tag);
-		}
-		++tag;
-	} while (!tag.isend());
+		ParseUnknownAttribute(tag, "type");
+		return;
+	}
+	pi->SetName(name);
+	pstep->AddRigidIC(pi);
+	ParseModelComponent(pi, tag);
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseRigidLoad(FSStep* pstep, XMLTag& tag)
+{
+	FEBioInputModel& febio = GetFEBioModel();
+	FSModel& fem = GetFSModel();
+
+	// get the name 
+	stringstream ss;
+	ss << "RigidLoad" << CountConnectors<FSRigidLoad>(fem) + 1;
+	std::string name = tag.AttributeValue("name", ss.str());
+
+	// get the type attribute
+	const char* sztype = tag.AttributeValue("type");
+
+	// allocate class
+	FSRigidLoad* pi = FEBio::CreateRigidLoad(sztype, &fem);
+	if (pi == nullptr)
+	{
+		ParseUnknownAttribute(tag, "type");
+		return;
+	}
+	pi->SetName(name);
+	pstep->AddRigidLoad(pi);
+	ParseModelComponent(pi, tag);
 }
 
 //-----------------------------------------------------------------------------
@@ -1780,30 +1808,7 @@ void FEBioFormat4::ParseRigidConnector(FSStep *pstep, XMLTag &tag)
 		return;
 	}
 	pstep->AddRigidConnector(pi);
-
-	FEBioInputModel& febio = GetFEBioModel();
-	++tag;
-	do
-	{
-		if (ReadParam(*pi, tag) == false)
-		{
-			if (tag == "body_a") 
-			{
-				int na = -1;
-				tag.value(na);
-				if (na >= 0) pi->SetRigidBody1(febio.GetMaterial(na - 1)->GetID());
-			}
-			else if (tag == "body_b") 
-			{
-				int nb = -1;
-				tag.value(nb);
-				if (nb >= 0) pi->SetRigidBody2(febio.GetMaterial(nb - 1)->GetID());
-			}
-			else ParseUnknownTag(tag);
-		}
-		++tag;
-	}
-	while (!tag.isend());
+	ParseModelComponent(pi, tag);
 }
 
 //-----------------------------------------------------------------------------

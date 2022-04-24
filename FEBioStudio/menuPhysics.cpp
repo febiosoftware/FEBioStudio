@@ -229,7 +229,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 		if (prl)
 		{
 			std::string name = dlg.GetName();
-			if (name.empty()) name = defaultLoadName(&fem, prl);
+			if (name.empty()) name = defaultRigidLoadName(&fem, prl);
 			prl->SetName(name);
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
@@ -439,19 +439,17 @@ void CMainWindow::OnAddBodyConstraint()
 	}
 }
 
-
-void CMainWindow::on_actionAddRigidConstraint_triggered()
+void CMainWindow::on_actionAddRigidBC_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-//	CDlgAddRigidConstraint dlg(prj, this);
-	CDlgAddPhysicsItem dlg("Add Rigid Constraint", FERIGIDBC_ID, FEBio::GetBaseClassIndex("FERigidBC"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Rigid Constraint", FEBC_ID, FEBio::GetBaseClassIndex("FERigidBC"), prj, true, true, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
-		FSRigidConstraint* prc = FEBio::CreateFEBioClass<FSRigidConstraint>(dlg.GetClassID(), fem);
+		FSRigidBC* prc = FEBio::CreateFEBioClass<FSRigidBC>(dlg.GetClassID(), fem);
 		assert(prc);
 		if (prc)
 		{
@@ -459,13 +457,37 @@ void CMainWindow::on_actionAddRigidConstraint_triggered()
 			prc->SetStep(step->GetID());
 
 			std::string name = dlg.GetName();
-			if (name.empty()) name = defaultRigidConstraintName(fem, prc);
-
-//			GMaterial* pmat = dlg.GetMaterial();
-//			if (pmat) prc->SetMaterialID(pmat->GetID());
+			if (name.empty()) name = defaultRigidBCName(fem, prc);
 
 			prc->SetName(name);
-			step->AddRC(prc);
+			step->AddRigidBC(prc);
+			UpdateModel(prc);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddRigidIC_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	CDlgAddPhysicsItem dlg("Add Rigid Initial Condition", FEIC_ID, FEBio::GetBaseClassIndex("FERigidIC"), prj, true, true, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSRigidIC* prc = FEBio::CreateFEBioClass<FSRigidIC>(dlg.GetClassID(), fem);
+		assert(prc);
+		if (prc)
+		{
+			FSStep* step = fem->GetStep(dlg.GetStep());
+			prc->SetStep(step->GetID());
+
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultRigidICName(fem, prc);
+
+			prc->SetName(name);
+			step->AddRigidIC(prc);
 			UpdateModel(prc);
 		}
 	}
@@ -591,14 +613,14 @@ void CMainWindow::on_actionAddLoadController_triggered()
 	}
 }
 
-void CMainWindow::on_actionAddMeshData_triggered()
+void CMainWindow::on_actionAddNodeData_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
 
-	CDlgAddPhysicsItem dlg("Add Element Data", FEMESHDATAGENERATOR_ID, -1, prj, true, false, this);
+	CDlgAddPhysicsItem dlg("Add Node Data", FENODEDATAGENERATOR_ID, -1, prj, true, false, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();
@@ -619,6 +641,65 @@ void CMainWindow::on_actionAddMeshData_triggered()
 		}
 	}
 }
+
+void CMainWindow::on_actionAddFaceData_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+
+	CDlgAddPhysicsItem dlg("Add Face Data", FEFACEDATAGENERATOR_ID, -1, prj, true, false, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);
+		if (pmd)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				int n = fem->MeshDataGenerators();
+				std::stringstream ss; ss << "MeshData" << n + 1;
+				name = ss.str();
+			}
+
+			pmd->SetName(name);
+			fem->AddMeshDataGenerator(pmd);
+			UpdateModel(pmd);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddElemData_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+
+	CDlgAddPhysicsItem dlg("Add Element Data", FEELEMDATAGENERATOR_ID, -1, prj, true, false, this);
+	if (dlg.exec())
+	{
+		FSModel* fem = &prj.GetFSModel();
+		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);
+		if (pmd)
+		{
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				int n = fem->MeshDataGenerators();
+				std::stringstream ss; ss << "MeshData" << n + 1;
+				name = ss.str();
+			}
+
+			pmd->SetName(name);
+			fem->AddMeshDataGenerator(pmd);
+			UpdateModel(pmd);
+		}
+	}
+}
+
 void CMainWindow::on_actionAddStep_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

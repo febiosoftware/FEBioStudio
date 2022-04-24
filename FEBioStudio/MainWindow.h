@@ -398,12 +398,15 @@ public slots:
 	void on_actionAddIC_triggered();
 	void on_actionAddContact_triggered();
 	void on_actionAddConstraint_triggered();
-	void on_actionAddRigidConstraint_triggered();
+	void on_actionAddRigidBC_triggered();
+	void on_actionAddRigidIC_triggered();
 	void on_actionAddRigidConnector_triggered();
 	void on_actionAddMaterial_triggered();
 	void on_actionAddMeshAdaptor_triggered();
 	void on_actionAddLoadController_triggered();
-	void on_actionAddMeshData_triggered();
+	void on_actionAddNodeData_triggered();
+	void on_actionAddFaceData_triggered();
+	void on_actionAddElemData_triggered();
 	void on_actionAddStep_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();
@@ -602,7 +605,8 @@ public slots:
 	void DeleteAllContact();
 	void DeleteAllConstraints();
 	void DeleteAllRigidLoads();
-	void DeleteAllRigidConstraints();
+	void DeleteAllRigidBCs();
+	void DeleteAllRigidICs();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
 	void DeleteAllJobs();

@@ -43,8 +43,7 @@ FSSurfaceLoad::FSSurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int 
 FSPressureLoad::FSPressureLoad(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_PRESSURE_LOAD, ps, pi, nstep)
 {
 	SetTypeString("pressure");
-	Param* p = AddScienceParam(1, UNIT_PRESSURE, "pressure", "pressure");
-	p->MakeVariable(true);
+	AddScienceParam(1, UNIT_PRESSURE, "pressure", "pressure")->MakeVariable(true);
 	AddBoolParam(false, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
 	AddBoolParam(true , "symmetric_stiffness", "Formulation")->SetEnumNames("Nonsymmetric\0Symmetric\0");
 	AddBoolParam(false, "shell_bottom", "Apply to shell bottom");
@@ -219,8 +218,7 @@ FSBearingLoad::FSBearingLoad(FSModel* ps, FEItemListBuilder* pi, int nstep) : FS
 FSFluidPressureLoad::FSFluidPressureLoad(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_FLUID_PRESSURE_LOAD, ps, pi, nstep)
 {
     SetTypeString("fluid pressure");
-    Param* p = AddScienceParam(1, UNIT_PRESSURE, "pressure", "pressure");
-    p->MakeVariable(true);
+    AddScienceParam(1, UNIT_PRESSURE, "pressure", "pressure")->MakeVariable(true);
 }
 
 // used only for reading parameters for old file formats

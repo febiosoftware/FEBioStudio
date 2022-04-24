@@ -62,11 +62,17 @@ public:
 	// constraints
 	FSObjectList<FSModelConstraint>	m_NLC;
 
-	// rigid constraints	
+	// rigid constraints (obsolete)
 	FSObjectList<FSRigidConstraint>	m_RC;
 
 	// rigid loads
 	FSObjectList<FSRigidLoad>	m_RL;
+
+	// rigid BCs
+	FSObjectList<FSRigidBC>		m_RBC;
+
+	// rigid ICs
+	FSObjectList<FSRigidIC>		m_RIC;
 
 	// linear constraints
 	FSObjectList<FSLinearConstraintSet>	m_LC;
@@ -406,6 +412,88 @@ void FSStep::RemoveAllRigidLoads()
 }
 
 //-----------------------------------------------------------------------------
+int FSStep::RigidBCs()
+{
+	return imp->m_RBC.Size();
+}
+
+int FSStep::RigidBCs(int ntype)
+{
+	int nrl = 0;
+	for (int i = 0; i < (int)imp->m_RBC.Size(); ++i)
+	{
+		if (imp->m_RBC[i]->Type() == ntype) nrl++;
+	}
+	return nrl;
+}
+
+FSRigidBC* FSStep::RigidBC(int i)
+{
+	return imp->m_RBC[i];
+}
+
+void FSStep::AddRigidBC(FSRigidBC* prc)
+{
+	imp->m_RBC.Add(prc);
+}
+
+void FSStep::InsertRigidBC(int n, FSRigidBC* prc)
+{
+	imp->m_RBC.Insert(n, prc);
+}
+
+int FSStep::RemoveRigidBC(FSRigidBC* prc)
+{
+	return imp->m_RBC.Remove(prc);
+}
+
+void FSStep::RemoveAllRigidBCs()
+{
+	imp->m_RBC.Clear();
+}
+
+//-----------------------------------------------------------------------------
+int FSStep::RigidICs()
+{
+	return imp->m_RIC.Size();
+}
+
+int FSStep::RigidICs(int ntype)
+{
+	int nrl = 0;
+	for (int i = 0; i < (int)imp->m_RIC.Size(); ++i)
+	{
+		if (imp->m_RIC[i]->Type() == ntype) nrl++;
+	}
+	return nrl;
+}
+
+FSRigidIC* FSStep::RigidIC(int i)
+{
+	return imp->m_RIC[i];
+}
+
+void FSStep::AddRigidIC(FSRigidIC* prc)
+{
+	imp->m_RIC.Add(prc);
+}
+
+void FSStep::InsertRigidIC(int n, FSRigidIC* prc)
+{
+	imp->m_RIC.Insert(n, prc);
+}
+
+int FSStep::RemoveRigidIC(FSRigidIC* prc)
+{
+	return imp->m_RIC.Remove(prc);
+}
+
+void FSStep::RemoveAllRigidICs()
+{
+	imp->m_RIC.Clear();
+}
+
+//-----------------------------------------------------------------------------
 int FSStep::LinearConstraints() { return (int)imp->m_LC.Size(); }
 
 //-----------------------------------------------------------------------------
@@ -518,6 +606,21 @@ void FSStep::RemoveComponent(FSStepComponent* pc)
 	else if TryRemoveComponent(FSRigidConstraint  , m_RC);
 	else if TryRemoveComponent(FSRigidConnector   , m_CN);
 	else assert(false);
+}
+
+int FSStep::StepComponents()
+{
+	int n = 0;
+	n += BCs();
+	n += Loads();
+	n += ICs();
+	n += Interfaces();
+	n += LinearConstraints();
+	n += RigidBCs();
+	n += RigidICs();
+	n += RigidLoads();
+	n += RigidConnectors();
+	return n;
 }
 
 //-----------------------------------------------------------------------------
@@ -1014,7 +1117,7 @@ void FSStep::Load(IArchive &ar)
 					}
 					else
 					{
-						FSRigidConstraint* rc = fscore_new<FSRigidConstraint>(fem, FERIGIDBC_ID, ntype); assert(rc);
+						FSRigidConstraint* rc = fscore_new<FSRigidConstraint>(fem, FEBC_ID, ntype); assert(rc);
 						if (rc == nullptr) ar.log("error parsing CID_RC_SECTION in FSStep::Load");
 
 						if (rc)

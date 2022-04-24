@@ -30,8 +30,8 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEMaterial.h>
-#include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEBodyLoad.h>
+#include <FEMLib/FERigidLoad.h>
 #include <MeshTools/GModel.h>
 #include <stdarg.h>
 #include <sstream>
@@ -299,9 +299,27 @@ void check_006(FSProject& prj, std::vector<FSObject*>& objList)
 				FSStep* pstep = fem.GetStep(n);
 				
 				// see if this material is referenced by any rigid constraints
-				for (int j = 0; j < pstep->RigidConstraints(); ++j)
+				for (int j = 0; j < pstep->RigidBCs(); ++j)
 				{
-					FSRigidConstraint* prc = pstep->RigidConstraint(j);
+					FSRigidBC* prc = pstep->RigidBC(j);
+					if (prc->GetMaterialID() == matId)
+					{
+						matUsed = true;
+						break;
+					}
+				}
+				for (int j = 0; j < pstep->RigidICs(); ++j)
+				{
+					FSRigidIC* prc = pstep->RigidIC(j);
+					if (prc->GetMaterialID() == matId)
+					{
+						matUsed = true;
+						break;
+					}
+				}
+				for (int j = 0; j < pstep->RigidLoads(); ++j)
+				{
+					FSRigidLoad* prc = pstep->RigidLoad(j);
 					if (prc->GetMaterialID() == matId)
 					{
 						matUsed = true;

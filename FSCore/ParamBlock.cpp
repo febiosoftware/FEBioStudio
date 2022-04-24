@@ -44,7 +44,7 @@ Param::Param()
 	m_nindx = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -162,6 +162,18 @@ void Param::SetParameterGroup(int n)
 int Param::GetParameterGroup() const
 {
 	return m_paramGroup;
+}
+
+//-----------------------------------------------------------------------------
+Param* Param::MakeVariable(bool b)
+{
+	if (b)
+	{
+		assert((m_ntype == Param_FLOAT) || (m_ntype == Param_VEC3D) || (m_ntype == Param_MAT3D));
+		m_varType = m_ntype;
+	}
+	else m_varType = Param_UNDEF;
+	return this;
 }
 
 //-----------------------------------------------------------------------------
@@ -285,7 +297,7 @@ Param::Param(const Param& p)
 	else m_szenum = p.m_szenum;
 
 	m_offset = p.m_offset;
-	m_isVariable = p.m_isVariable;
+	m_varType = p.m_varType;
 	m_floatRange = p.m_floatRange;
 	m_fmin = p.m_fmin;
 	m_fmax = p.m_fmax;
@@ -329,7 +341,7 @@ Param& Param::operator = (const Param& p)
 //  m_szindx = p.m_szindx;
 //  m_nindx = p.m_nindx;
 //	m_offset = p.m_offset;
-	m_isVariable = p.m_isVariable;
+	m_varType = p.m_varType;
 //	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
 //	m_flags = p.m_flags;
@@ -379,7 +391,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -404,7 +416,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -429,7 +441,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -454,7 +466,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -479,7 +491,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -504,7 +516,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -530,7 +542,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -555,7 +567,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -580,7 +592,7 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -604,7 +616,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -628,7 +640,7 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -651,7 +663,7 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -674,7 +686,7 @@ Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -698,7 +710,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -725,7 +737,7 @@ Param::Param(const int* v, int nsize, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -752,7 +764,7 @@ Param::Param(const double* v, int nsize, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -777,7 +789,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -802,7 +814,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -827,7 +839,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
-	m_isVariable = false;
+	m_varType = Param_UNDEF;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
 	m_checkable = false;
@@ -939,6 +951,7 @@ bool ParamBlock::SetActiveGroup(int n)
 	if (n < 0) { m_currentGroup = -1; return true; }
 	if (n >= m_pg.size()) return false;
 	m_currentGroup = n;
+	return true;
 }
 
 int ParamBlock::GetActiveGroup()
@@ -1163,7 +1176,6 @@ void ParamContainer::LoadParam(IArchive& ar)
 					ar.log("Failed to map parameter \"%s\" due to type mismatch.", szname);
 				}
 			}
-			if (var) param->MakeVariable(true);
 		}
 		else
 		{

@@ -45,7 +45,6 @@ SOFTWARE.*/
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
 #include <QtCore/QFileInfo>
-#include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FELoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GModel.h>
@@ -207,19 +206,6 @@ public:
 
 private:
 	FSPairedInterface*	m_pci;
-};
-
-class CRigidConstraintValidator : public CObjectValidator
-{
-public:
-	CRigidConstraintValidator(FSRigidConstraint* rc) : m_rc(rc){}
-
-	QString GetErrorString() const { return "No rigid material assigned"; }
-
-	bool IsValid() { return (m_rc->GetMaterialID() != -1); }
-
-private:
-	FSRigidConstraint*	m_rc;	
 };
 
 class CRigidInterfaceValidator : public CObjectValidator
@@ -1021,7 +1007,13 @@ void CModelTree::Build(CModelDocument* doc)
 	{
 		// add the rigid components
 		int nnlc = 0;
-		for (int i = 0; i < fem.Steps(); ++i) nnlc += fem.GetStep(i)->RigidConstraints();
+		for (int i = 0; i < fem.Steps(); ++i)
+		{
+			nnlc += fem.GetStep(i)->RigidBCs();
+			nnlc += fem.GetStep(i)->RigidICs();
+			nnlc += fem.GetStep(i)->RigidLoads();
+			nnlc += fem.GetStep(i)->RigidConnectors();
+		}
 
 		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 		{
@@ -1706,17 +1698,30 @@ void CModelTree::UpdateRigid(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 		FSStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
-			// rigid constraints
-			for (int j = 0; j<ps->RigidConstraints(); ++j)
+			// rigid BCs
+			for (int j = 0; j<ps->RigidBCs(); ++j)
 			{
-				FSRigidConstraint* prc = ps->RigidConstraint(j);
+				FSRigidBC* prc = ps->RigidBC(j);
 
-				CPropertyList* pl = new CRigidConstraintSettings(fem, prc);
+				CPropertyList* pl = new FEObjectProps(prc, &fem);
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep) flags |= DUPLICATE_ITEM;
 				QString name = QString("%1 [%2]").arg(QString::fromStdString(prc->GetName())).arg(prc->GetTypeString());
-				AddTreeItem(t1, name, MT_RIGID_CONSTRAINT, 0, prc, pl, new CRigidConstraintValidator(prc), flags);
+				AddTreeItem(t1, name, MT_RIGID_BC, 0, prc, pl, nullptr, flags);
+			}
+
+			// rigid ICs
+			for (int j = 0; j < ps->RigidICs(); ++j)
+			{
+				FSRigidIC* prc = ps->RigidIC(j);
+
+				CPropertyList* pl = new FEObjectProps(prc, &fem);
+
+				int flags = SHOW_PROPERTY_FORM;
+				if (pstep) flags |= DUPLICATE_ITEM;
+				QString name = QString("%1 [%2]").arg(QString::fromStdString(prc->GetName())).arg(prc->GetTypeString());
+				AddTreeItem(t1, name, MT_RIGID_IC, 0, prc, pl, nullptr, flags);
 			}
 
 			// rigid loads

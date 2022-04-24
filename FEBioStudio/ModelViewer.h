@@ -121,9 +121,6 @@ public slots:
 	void OnAddInitialCondition();
 	void OnAddContact();
 	void OnAddConstraint();
-	void OnAddRigidConstraint();
-	void OnAddRigidConnector();
-	void OnAddRigidLoad();
 	void OnAddStep();
 	void OnHideObject();
 	void OnShowObject();
@@ -151,7 +148,8 @@ public slots:
 	void OnCopyRigidConnector();
 	void OnCopyLoad();
 	void OnCopyConstraint();
-	void OnCopyRigidConstraint();
+	void OnCopyRigidBC();
+	void OnCopyRigidIC();
 	void OnCopyStep();
 	void OnStepMoveUp();
 	void OnStepMoveDown();

@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
-#include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GModel.h>
 #include <sstream>
@@ -285,9 +285,31 @@ void CCurveEditor::BuildLoadCurves()
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j<pstep->RigidConstraints(); ++j)
+		for (int j = 0; j<pstep->RigidBCs(); ++j)
 		{
-			FSRigidPrescribed* pc = dynamic_cast<FSRigidPrescribed*>(pstep->RigidConstraint(j));
+			FSRigidBC* pc = pstep->RigidBC(j);
+			if (pc) BuildLoadCurves(t1, pc);
+		}
+	}
+
+	// add rigid initial conditions
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FSStep* pstep = fem.GetStep(i);
+		for (int j = 0; j<pstep->RigidICs(); ++j)
+		{
+			FSRigidIC* pc = pstep->RigidIC(j);
+			if (pc) BuildLoadCurves(t1, pc);
+		}
+	}
+
+	// add rigid lodas
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FSStep* pstep = fem.GetStep(i);
+		for (int j = 0; j<pstep->RigidLoads(); ++j)
+		{
+			FSRigidLoad* pc = pstep->RigidLoad(j);
 			if (pc) BuildLoadCurves(t1, pc);
 		}
 	}
@@ -487,13 +509,35 @@ void CCurveEditor::BuildModelTree()
 	// add rigid constraints
 	if (Filter(FLT_RIGID_CONSTRAINT))
 	{
-		t2 = ui->addTreeItem(t1, "Rigid Constraints");
+		t2 = ui->addTreeItem(t1, "Rigid BC");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
 			FSStep* pstep = fem.GetStep(i);
-			for (int j = 0; j<pstep->RigidConstraints(); ++j)
+			for (int j = 0; j<pstep->RigidBCs(); ++j)
 			{
-				FSRigidConstraint* pc = pstep->RigidConstraint(j);
+				FSRigidBC* pc = pstep->RigidBC(j);
+				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
+				AddParameterList(t3, pc);
+			}
+		}
+
+		for (int i = 0; i < fem.Steps(); ++i)
+		{
+			FSStep* pstep = fem.GetStep(i);
+			for (int j = 0; j < pstep->RigidICs(); ++j)
+			{
+				FSRigidIC* pc = pstep->RigidIC(j);
+				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
+				AddParameterList(t3, pc);
+			}
+		}
+
+		for (int i = 0; i < fem.Steps(); ++i)
+		{
+			FSStep* pstep = fem.GetStep(i);
+			for (int j = 0; j < pstep->RigidLoads(); ++j)
+			{
+				FSRigidLoad* pc = pstep->RigidLoad(j);
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
 				AddParameterList(t3, pc);
 			}

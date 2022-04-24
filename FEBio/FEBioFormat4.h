@@ -110,7 +110,9 @@ private:
 private:
 	// rigid input functions
 	void ParseRigidConnector(FSStep* pstep, XMLTag& tag);
-	void ParseRigidConstraint(FSStep* pstep, XMLTag& tag);
+	void ParseRigidBC(FSStep* pstep, XMLTag& tag);
+	void ParseRigidIC(FSStep* pstep, XMLTag& tag);
+	void ParseRigidLoad(FSStep* pstep, XMLTag& tag);
 
 	// helper functions (version 2.5 and up)
 	FEBioInputModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);

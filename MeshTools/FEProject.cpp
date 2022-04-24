@@ -370,11 +370,11 @@ void FSProject::InitModules()
     REGISTER_FE_CLASS(FSCentrifugalBodyForce       , MODULE_MECH, FELOAD_ID        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force");
     REGISTER_FE_CLASS(FSMassDamping                , MODULE_MECH, FELOAD_ID        , FE_MASSDAMPING_LOAD             , "Mass damping");
 
-	REGISTER_FE_CLASS(FSRigidFixed			, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation");
-	REGISTER_FE_CLASS(FSRigidDisplacement	, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation");
-	REGISTER_FE_CLASS(FSRigidForce			, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_FORCE				, "Prescribed rigid force");
-	REGISTER_FE_CLASS(FSRigidVelocity		, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_INIT_VELOCITY		, "Initial rigid velocity");
-	REGISTER_FE_CLASS(FSRigidAngularVelocity, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_INIT_ANG_VELOCITY	, "Initial rigid angular velocity");
+	REGISTER_FE_CLASS(FSRigidFixed			, MODULE_MECH, FEBC_ID, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation");
+	REGISTER_FE_CLASS(FSRigidDisplacement	, MODULE_MECH, FEBC_ID, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation");
+	REGISTER_FE_CLASS(FSRigidForce			, MODULE_MECH, FEBC_ID, FE_RIGID_FORCE				, "Prescribed rigid force");
+	REGISTER_FE_CLASS(FSRigidVelocity		, MODULE_MECH, FEBC_ID, FE_RIGID_INIT_VELOCITY		, "Initial rigid velocity");
+	REGISTER_FE_CLASS(FSRigidAngularVelocity, MODULE_MECH, FEBC_ID, FE_RIGID_INIT_ANG_VELOCITY	, "Initial rigid angular velocity");
 
 	REGISTER_FE_CLASS(FSRigidSphericalJoint		, MODULE_MECH, FENLCONSTRAINT_ID, FE_RC_SPHERICAL_JOINT	, "Spherical joint");
 	REGISTER_FE_CLASS(FSRigidRevoluteJoint		, MODULE_MECH, FENLCONSTRAINT_ID, FE_RC_REVOLUTE_JOINT		, "Revolute joint");
@@ -475,13 +475,13 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioSurfaceConstraint, 0, FENLCONSTRAINT_ID     , FE_FEBIO_SURFACECONSTRAINT , "[febio]");
 	REGISTER_FE_CLASS(FEBioBodyConstraint   , 0, FENLCONSTRAINT_ID     , FE_FEBIO_BODYCONSTRAINT    , "[febio]");
 	REGISTER_FE_CLASS(FEBioAnalysisStep     , 0, FEANALYSIS_ID         , FE_STEP_FEBIO_ANALYSIS     , "[febio]");
-	REGISTER_FE_CLASS(FEBioRigidConstraint  , 0, FERIGIDBC_ID          , FE_FEBIO_RIGID_CONSTRAINT  , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidBC          , 0, FEBC_ID			   , FE_FEBIO_RIGID_BC          , "[febio]");
+	REGISTER_FE_CLASS(FEBioRigidIC          , 0, FEIC_ID			   , FE_FEBIO_RIGID_IC          , "[febio]");
 	REGISTER_FE_CLASS(FEBioRigidConnector   , 0, FENLCONSTRAINT_ID     , FE_FEBIO_RIGID_CONNECTOR   , "[febio]");
 	REGISTER_FE_CLASS(FEBioRigidLoad        , 0, FELOAD_ID             , FE_FEBIO_RIGID_LOAD        , "[febio]");
 	REGISTER_FE_CLASS(FEBioMeshAdaptor      , 0, FEMESHADAPTOR_ID      , FE_FEBIO_MESH_ADAPTOR      , "[febio]");
 	REGISTER_FE_CLASS(FEBioLoadController   , 0, FELOADCONTROLLER_ID   , FE_FEBIO_LOAD_CONTROLLER   , "[febio]");
 	REGISTER_FE_CLASS(FEBioFunction1D       , 0, FEFUNCTION1D_ID       , FE_FEBIO_FUNCTION1D        , "[febio]");
-	REGISTER_FE_CLASS(FEBioMeshDataGenerator, 0, FEMESHDATAGENERATOR_ID, FE_FEBIO_MESHDATA_GENERATOR, "[febio]");
 	REGISTER_FE_CLASS(FEBioMaterialProperty , 0, FEMATERIALPROP_ID     , FE_FEBIO_MATERIAL_PROPERTY , "[febio]");
 }
 
@@ -804,7 +804,6 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 	for (int i = 0; i < oldStep.RigidConstraints(); ++i)
 	{
 		FSRigidConstraint* pc = oldStep.RigidConstraint(i);
-		FSRigidConstraint* pcfeb = nullptr;
 
 		if (pc->Type() == FE_RIGID_FIXED)
 		{
@@ -815,42 +814,58 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 				if (pf->GetBoolValue(i)) dofs.push_back(i);
 			}
 
-			pcfeb = FEBio::CreateRigidConstraint("rigid_fixed", fem); assert(pcfeb);
+			FSRigidBC* pcfeb = FEBio::CreateRigidBC("rigid_fixed", fem); assert(pcfeb);
 			pcfeb->SetParamVectorInt("dofs", dofs);
-		}
-		else if (pc->Type() == FE_RIGID_FORCE)
-		{
-			// This is now a rigid load
-			FSRigidLoad* pl = FEBio::CreateRigidLoad("rigid_force", fem);
-		}
-		else
-		{
-			switch (pc->Type())
-			{
-			case FE_RIGID_DISPLACEMENT     : pcfeb = FEBio::CreateRigidConstraint("rigid_prescribed", fem); break;
-			case FE_RIGID_INIT_VELOCITY    : pcfeb = FEBio::CreateRigidConstraint("initial_rigid_velocity", fem); break;
-			case FE_RIGID_INIT_ANG_VELOCITY: pcfeb = FEBio::CreateRigidConstraint("initial_rigid_angular_velocity", fem); break;
-			default:
-				assert(false);
-			}
-			assert(pcfeb);
 
-			if (pcfeb)
-			{
-				// replace parameters
-				copyParameters(log, pcfeb, pc);
-			}
-		}
-
-		if (pcfeb)
-		{
 			// copy the name 
 			pcfeb->SetName(pc->GetName());
 
 			// copy rigid body
 			pcfeb->SetMaterialID(pc->GetMaterialID());
 
-			newStep.AddRC(pcfeb);
+			newStep.AddRigidBC(pcfeb);
+		}
+		else if (pc->Type() == FE_RIGID_FORCE)
+		{
+			FSRigidLoad* pl = FEBio::CreateRigidLoad("rigid_force", fem);
+
+			// TODO: copy parameters
+			assert(false);
+
+			pl->SetName(pc->GetName());
+			pl->SetMaterialID(pc->GetMaterialID());
+			newStep.AddRigidLoad(pl);
+		}
+		else if (pc->Type() == FE_RIGID_DISPLACEMENT)
+		{
+			FSRigidPrescribed* pf = dynamic_cast<FSRigidPrescribed*>(pc); assert(pf);
+			FSRigidBC* pcfeb = FEBio::CreateRigidBC("rigid_prescribed", fem); assert(pcfeb);
+			copyParameters(log, pcfeb, pc);
+			pcfeb->SetName(pc->GetName());
+			pcfeb->SetMaterialID(pc->GetMaterialID());
+			newStep.AddRigidBC(pcfeb);
+		}
+		else if (pc->Type() == FE_RIGID_INIT_VELOCITY)
+		{
+			FSRigidVelocity* pf = dynamic_cast<FSRigidVelocity*>(pc); assert(pf);
+			FSRigidIC* pcfeb = FEBio::CreateRigidIC("initial_rigid_velocity", fem); assert(pcfeb);
+			copyParameters(log, pcfeb, pc);
+			pcfeb->SetName(pc->GetName());
+			pcfeb->SetMaterialID(pc->GetMaterialID());
+			newStep.AddRigidIC(pcfeb);
+		}
+		else if (pc->Type() == FE_RIGID_INIT_ANG_VELOCITY)
+		{
+			FSRigidAngularVelocity* pf = dynamic_cast<FSRigidAngularVelocity*>(pc); assert(pf);
+			FSRigidIC* pcfeb = FEBio::CreateRigidIC("initial_rigid_angular_velocity", fem); assert(pcfeb);
+			copyParameters(log, pcfeb, pc);
+			pcfeb->SetName(pc->GetName());
+			pcfeb->SetMaterialID(pc->GetMaterialID());
+			newStep.AddRigidIC(pcfeb);
+		}
+		else
+		{
+			assert(false);
 		}
 	}
 }

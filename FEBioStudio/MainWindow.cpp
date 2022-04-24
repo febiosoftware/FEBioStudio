@@ -2792,7 +2792,7 @@ void CMainWindow::DeleteAllConstraints()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllRigidConstraints()
+void CMainWindow::DeleteAllRigidBCs()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
@@ -2800,7 +2800,22 @@ void CMainWindow::DeleteAllRigidConstraints()
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		FSModel& fem = *doc->GetFSModel();
-		fem.DeleteAllRigidConstraints();
+		fem.DeleteAllRigidBCs();
+		UpdateModel();
+		RedrawGL();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::DeleteAllRigidICs()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		FSModel& fem = *doc->GetFSModel();
+		fem.DeleteAllRigidICs();
 		UpdateModel();
 		RedrawGL();
 	}

@@ -7,13 +7,15 @@ class FSModel;
 class FSBoundaryCondition;
 class FSLoad;
 class FSInterface;
-class FSRigidConstraint;
+class FSRigidConstraint;	// obsolete!
 class FSLinearConstraintSet;
+class FSRigidLoad;
+class FSRigidBC;
+class FSRigidIC;
 class FSRigidConnector;
 class FSInitialCondition;
 class FSStepComponent;
 class FSModelConstraint;
-class FSRigidLoad;
 class FSMeshAdaptor;
 
 //-----------------------------------------------------------------------------
@@ -108,7 +110,7 @@ public:
 	int RemoveRC(FSRigidConstraint* prc);
 	void RemoveAllRigidConstraints();
 
-	// rigid lodas
+	// rigid loads
 	int RigidLoads();
 	int RigidLoads(int ntype);
 	FSRigidLoad* RigidLoad(int i);
@@ -116,6 +118,24 @@ public:
 	void InsertRigidLoad(int n, FSRigidLoad* prc);
 	int RemoveRigidLoad(FSRigidLoad* prc);
 	void RemoveAllRigidLoads();
+
+	// rigid BC
+	int RigidBCs();
+	int RigidBCs(int ntype);
+	FSRigidBC* RigidBC(int i);
+	void AddRigidBC(FSRigidBC* prc);
+	void InsertRigidBC(int n, FSRigidBC* prc);
+	int RemoveRigidBC(FSRigidBC* prc);
+	void RemoveAllRigidBCs();
+
+	// rigid IC
+	int RigidICs();
+	int RigidICs(int ntype);
+	FSRigidIC* RigidIC(int i);
+	void AddRigidIC(FSRigidIC* prc);
+	void InsertRigidIC(int n, FSRigidIC* prc);
+	int RemoveRigidIC(FSRigidIC* prc);
+	void RemoveAllRigidICs();
 
 	// linear constraints
 	int LinearConstraints();
@@ -142,6 +162,8 @@ public:
 	// convenience functions for working with components
 	void AddComponent(FSStepComponent* pc);
 	void RemoveComponent(FSStepComponent* pc);
+
+	int StepComponents();
 
 public: // ref counting
 	static void ResetCounter();

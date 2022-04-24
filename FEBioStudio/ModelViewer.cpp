@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/MeshLayer.h>
 #include <MeshTools/GModel.h>
@@ -647,24 +648,6 @@ void CModelViewer::OnAddConstraint()
 {
 	CMainWindow* wnd = GetMainWindow();
 	wnd->on_actionAddConstraint_triggered();
-}
-
-void CModelViewer::OnAddRigidConstraint()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddRigidConstraint_triggered();
-}
-
-void CModelViewer::OnAddRigidConnector()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddRigidConnector_triggered();
-}
-
-void CModelViewer::OnAddRigidLoad()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddRigidLoad_triggered();
 }
 
 void CModelViewer::OnAddStep()
@@ -1355,9 +1338,9 @@ void CModelViewer::OnCopyLoad()
 	Select(plCopy);
 }
 
-void CModelViewer::OnCopyRigidConstraint()
+void CModelViewer::OnCopyRigidBC()
 {
-	FSRigidConstraint* pc = dynamic_cast<FSRigidConstraint*>(m_currentObject); assert(pc);
+	FSRigidBC* pc = dynamic_cast<FSRigidBC*>(m_currentObject); assert(pc);
 	if (pc == 0) return;
 
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1365,11 +1348,11 @@ void CModelViewer::OnCopyRigidConstraint()
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidConstraint* pcCopy = dynamic_cast<FSRigidConstraint*>(fecore->Create(fem, FERIGIDBC_ID, pc->Type()));
+	FSRigidBC* pcCopy = dynamic_cast<FSRigidBC*>(fecore->Create(fem, FEBC_ID, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
-	string name = defaultRigidConstraintName(fem, pc);
+	string name = defaultRigidBCName(fem, pc);
 	pcCopy->SetName(name);
 
 	// copy parameters
@@ -1377,7 +1360,38 @@ void CModelViewer::OnCopyRigidConstraint()
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddRC(step, pcCopy));
+//	pdoc->DoCommand(new CCmdAddRC(step, pcCopy));
+	step->AddRigidBC(pcCopy);
+
+	// update the model viewer
+	Update();
+	Select(pcCopy);
+}
+
+void CModelViewer::OnCopyRigidIC()
+{
+	FSRigidIC* pc = dynamic_cast<FSRigidIC*>(m_currentObject); assert(pc);
+	if (pc == 0) return;
+
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FSModel* fem = pdoc->GetFSModel();
+
+	// copy the load
+	FEMKernel* fecore = FEMKernel::Instance();
+	FSRigidIC* pcCopy = dynamic_cast<FSRigidIC*>(fecore->Create(fem, FEIC_ID, pc->Type()));
+	assert(pcCopy);
+
+	// create a name
+	string name = defaultRigidICName(fem, pc);
+	pcCopy->SetName(name);
+
+	// copy parameters
+	pcCopy->GetParamBlock() = pc->GetParamBlock();
+
+	// add the load to the doc
+	FSStep* step = fem->GetStep(pc->GetStep());
+	//	pdoc->DoCommand(new CCmdAddRC(step, pcCopy));
+	step->AddRigidIC(pcCopy);
 
 	// update the model viewer
 	Update();
@@ -1661,9 +1675,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllConstraints()));
 		break;
 	case MT_RIGID_COMPONENT_LIST:
-		menu.addAction("Add Rigid Constraint ...", this, SLOT(OnAddRigidConstraint()));
-		menu.addAction("Add Rigid Connector ...", this, SLOT(OnAddRigidConnector()));
-		menu.addAction("Add Rigid Load ...", this, SLOT(OnAddRigidLoad()));
+		menu.addAction("Add Rigid Constraint ...", wnd, SLOT(on_actionAddRigidBC_triggered()));
+		menu.addAction("Add Rigid Initial Condition ...", wnd, SLOT(on_actionAddRigidIC_triggered()));
+		menu.addAction("Add Rigid Connector ...", wnd, SLOT(on_actionAddRigidConnector_triggered()));
+		menu.addAction("Add Rigid Load ...", this, SLOT(on_actionAddRigidLoad_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidComponents()));
 		break;
@@ -1787,8 +1802,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Copy", this, SLOT(OnCopyLoad()));
 		del = true;
 		break;
-	case MT_RIGID_CONSTRAINT:
-		menu.addAction("Copy", this, SLOT(OnCopyRigidConstraint()));
+	case MT_RIGID_BC:
+		menu.addAction("Copy", this, SLOT(OnCopyRigidBC()));
+		del = true;
+		break;
+	case MT_RIGID_IC:
+		menu.addAction("Copy", this, SLOT(OnCopyRigidIC()));
 		del = true;
 		break;
 	case MT_CONSTRAINT:
@@ -1812,7 +1831,9 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
 		break;
 	case MT_MESH_DATA_LIST:
-		menu.addAction("Add Mesh Data ..."   , wnd, SLOT(on_actionAddMeshData_triggered()));
+		menu.addAction("Add Node Data ..."   , wnd, SLOT(on_actionAddNodeData_triggered()));
+		menu.addAction("Add Face Data ..."   , wnd, SLOT(on_actionAddFaceData_triggered()));
+		menu.addAction("Add Element Data ...", wnd, SLOT(on_actionAddElemData_triggered()));
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
 		break;
 	case MT_MESH_DATA:
@@ -1928,7 +1949,8 @@ void CModelViewer::OnDeleteAllConstraints()
 
 void CModelViewer::OnDeleteAllRigidComponents()
 {
-	GetMainWindow()->DeleteAllRigidConstraints();
+	GetMainWindow()->DeleteAllRigidBCs();
+	GetMainWindow()->DeleteAllRigidICs();
 	GetMainWindow()->DeleteAllRigidLoads();
 	GetMainWindow()->DeleteAllRigidConnectors();
 }

@@ -69,7 +69,8 @@ public:
 	void DeleteAllIC();
 	void DeleteAllContact();
 	void DeleteAllConstraints();
-	void DeleteAllRigidConstraints();
+	void DeleteAllRigidBCs();
+	void DeleteAllRigidICs();
 	void DeleteAllRigidLoads();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
@@ -360,15 +361,49 @@ template <class T> int CountConnectors(FSModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of rigid constraints of a specific type that have been defined.
-template <class T> int CountRigidConstraints(FSModel& fem)
+template <class T> int CountRigidBCs(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		FSStep* ps = fem.GetStep(i);
-		for (int j = 0; j<ps->RigidConstraints(); ++j)
+		for (int j = 0; j<ps->RigidBCs(); ++j)
 		{
-			T* pbc = dynamic_cast<T*>(ps->RigidConstraint(j));
+			T* pbc = dynamic_cast<T*>(ps->RigidBC(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
+//-----------------------------------------------------------------------------
+// helper function for identifying the number of rigid constraints of a specific type that have been defined.
+template <class T> int CountRigidICs(FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->RigidICs(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->RigidIC(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
+//-----------------------------------------------------------------------------
+// helper function for identifying the number of rigid constraints of a specific type that have been defined.
+template <class T> int CountRigidLoads(FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->RigidLoads(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->RigidLoad(j));
 			if (pbc) nc++;
 		}
 	}
@@ -402,6 +437,8 @@ std::string defaultLoadName(FSModel* fem, FSLoad* pbc);
 std::string defaultInterfaceName(FSModel* fem, FSInterface* pi);
 std::string defaultConstraintName(FSModel* fem, FSModelConstraint* pi);
 std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pc);
-std::string defaultRigidConstraintName(FSModel* fem, FSRigidConstraint* pc);
+std::string defaultRigidBCName(FSModel* fem, FSRigidBC* pc);
+std::string defaultRigidICName(FSModel* fem, FSRigidIC* pc);
+std::string defaultRigidLoadName(FSModel* fem, FSRigidLoad* pc);
 std::string defaultMeshAdaptorName(FSModel* fem, FSMeshAdaptor* pc);
 std::string defaultStepName(FSModel* fem, FSStep* ps);

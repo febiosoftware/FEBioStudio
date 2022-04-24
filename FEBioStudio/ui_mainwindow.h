@@ -213,11 +213,12 @@ public:
 	QAction* actionAddNodalLoad;
 	QAction* actionAddSurfLoad;
 	QAction* actionAddBodyLoad;
-	QAction* actionAddRigidLoad;
 	QAction* actionAddIC;
 	QAction* actionAddContact;
 	QAction* actionAddConstraint;
-	QAction* actionAddRigidConstraint;
+	QAction* actionAddRigidBC;
+	QAction* actionAddRigidIC;
+	QAction* actionAddRigidLoad;
 	QAction* actionAddRigidConnector;
 	QAction* actionAddStep;
 	QAction* actionAddMaterial;
@@ -507,7 +508,9 @@ public:
 		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier + Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
 		actionAddConstraint      = addAction("Add Constraint..."             , "actionAddConstraint");
-		actionAddRigidConstraint = addAction("Add Rigid Constraint ..."      , "actionAddRigidConstraint");
+		actionAddRigidBC         = addAction("Add Rigid Constraint ..."      , "actionAddRigidBC");
+		actionAddRigidIC         = addAction("Add Rigid Initial Condition ...", "actionAddRigidIC");
+		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , " actionAddRigidLoad");
 		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
 		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
 		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier + Qt::Key_M);
@@ -813,7 +816,9 @@ public:
 		menuPhysics->addAction(actionAddIC);
 		menuPhysics->addAction(actionAddContact);
 		menuPhysics->addAction(actionAddConstraint);
-		menuPhysics->addAction(actionAddRigidConstraint);
+		menuPhysics->addAction(actionAddRigidBC);
+		menuPhysics->addAction(actionAddRigidIC);
+		menuPhysics->addAction(actionAddRigidLoad);
 		menuPhysics->addAction(actionAddRigidConnector);
 		menuPhysics->addAction(actionAddMaterial);
 		menuPhysics->addAction(actionAddStep);

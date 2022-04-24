@@ -238,7 +238,8 @@ protected:
 	void WriteConstraintSection(FSStep& s);
 
 	void WriteRigidSection(FSStep& s);
-	void WriteRigidConstraints(FSStep& s);
+	void WriteRigidBCs(FSStep& s);
+	void WriteRigidICs(FSStep& s);
 	void WriteRigidLoads(FSStep& s);
 
 	void WriteBodyLoads(FSStep& s);
@@ -258,7 +259,10 @@ protected:
 	void WriteMeshDataMaterialFibers();
 	void WriteMeshDataMaterialAxes();
 	void WriteElementDataFields();
-	void WriteMeshData(FSMeshDataGenerator* map);
+	void WriteNodeDataGenerator(FSNodeDataGenerator* map);
+	void WriteEdgeDataGenerator(FSEdgeDataGenerator* map);
+	void WriteFaceDataGenerator(FSFaceDataGenerator* map);
+	void WriteElemDataGenerator(FSElemDataGenerator* map);
 
 	void WriteBC(FSStep& s, FSBoundaryCondition* pbc);
 

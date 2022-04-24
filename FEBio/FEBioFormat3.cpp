@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBioFormat3.h"
-#include <FEMLib/FERigidConstraint.h>
 #include <MeshTools/FEGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
@@ -43,6 +42,10 @@ SOFTWARE.*/
 #include <assert.h>
 #include <sstream>
 using namespace std;
+
+#ifndef WIN32
+#define stricmp strncasecmp
+#endif
 
 #define CREATE_SURFACE_LOAD(className) createNewSurfaceLoad(new className(&fem), #className, CountLoads<className>(fem))
 
@@ -349,7 +352,26 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 	++tag;
 	do
 	{
-		if (ReadParam(*pstep, tag) == false)
+		if (tag == "analysis")
+		{
+			Param* pp = pstep->GetParam("analysis"); assert(pp);
+			// Older formats did not always use the correct term (DYNAMIC and TRANSIENT were used interchangeably)
+			// so we need to process this separately. 
+			const char* szval = tag.szvalue();
+			if      (stricmp(szval, "STREADY_STATE") == 0) pp->SetIntValue(0);
+			else if (stricmp(szval, "STATIC"       ) == 0) pp->SetIntValue(0);
+			else if (stricmp(szval, "DYNAMIC"      ) == 0) pp->SetIntValue(1);
+			else if (stricmp(szval, "TRANSIENT"    ) == 0) pp->SetIntValue(1);
+			else
+			{
+				// assume it's a number
+				int n = 0;
+				tag.value(n);
+				assert((n == 0) || (n == 1));
+				pp->SetIntValue(n);
+			}
+		}
+		else if (ReadParam(*pstep, tag) == false)
 		{
 			if (pstep->Properties() > 0)
 			{
@@ -1513,7 +1535,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		if (szgen)
 		{
 			// allocate mesh data generator
-			FSMeshDataGenerator* gen = FEBio::CreateMeshDataGenerator(szgen, &fem);
+			FSMeshDataGenerator* gen = FEBio::CreateElemDataGenerator(szgen, &fem);
 			if (gen)
 			{
 				gen->SetName(name);
@@ -1749,9 +1771,7 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	}
 	else if ((bc == "sx") || (bc == "sy") || (bc == "sz"))
 	{
-		pbc = FEBio::CreateBoundaryCondition("zero displacement", &fem); assert(pbc);
-
-		pbc->SetParamBool("shell_bottom", true);
+		pbc = FEBio::CreateBoundaryCondition("zero shell displacement", &fem); assert(pbc);
 
 		// map the dofs
 		vector<int> dofList;
@@ -1960,26 +1980,23 @@ void FEBioFormat3::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	else if (bc == "sx")
 	{
 //		pbc = new FSPrescribedShellDisplacement(&fem, pg, 0, 1, pstep->GetID());
-		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
+		pbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 0);
-		pbc->SetParamBool("shell_bottom", true);
 	}
 	else if (bc == "sy")
 	{
 //		pbc = new FSPrescribedShellDisplacement(&fem, pg, 1, 1, pstep->GetID());
-		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
+		pbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 1);
-		pbc->SetParamBool("shell_bottom", true);
 	}
 	else if (bc == "sz")
 	{
 //		pbc = new FSPrescribedShellDisplacement(&fem, pg, 2, 1, pstep->GetID());
-		pbc = FEBio::CreateBoundaryCondition("prescribed displacement", &fem);
+		pbc = FEBio::CreateBoundaryCondition("prescribed shell displacement", &fem);
 		pbc->SetItemList(pg);
 		pbc->SetParamInt("dof", 2);
-		pbc->SetParamBool("shell_bottom", true);
 	}
 	else if (bc == "u")
 	{
@@ -2191,18 +2208,6 @@ void FEBioFormat3::ParseBCFluidRotationalVelocity(FSStep* pstep, XMLTag& tag)
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-static FSRigidConstraint* createNewRigidConstraint(FSRigidConstraint* prc, const char* szclass, int N)
-{
-	// set the name
-	char szname[256] = { 0 };
-	sprintf(szname, "%s%d", szclass + 2, N + 1);
-	prc->SetName(szname);
-	return prc;
-}
-
-#define CREATE_RIGID_CONSTRAINT(className) dynamic_cast<className*>(createNewRigidConstraint(new className(&fem), #className, CountRigidConstraints<className>(fem)))
-
-//-----------------------------------------------------------------------------
 bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 {
 	// make sure the section is not empty
@@ -2303,25 +2308,16 @@ void FEBioFormat3::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 			pnl->SetParamFloat("value", scale);
 			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
 		}
-		else if (dof == "x")
+		else if ((dof == "x") || (dof == "y") || (dof == "z"))
 		{
+			vec3d v;
+			if (dof == "x") v = vec3d(scale, 0, 0);
+			if (dof == "y") v = vec3d(0, scale, 0);
+			if (dof == "z") v = vec3d(0, 0, scale);
+
 			pnl = FEBio::CreateNodalLoad("nodal_force", &fem);
 			pnl->SetParamBool("relative", brelative);
-			pnl->SetParamVec3d("value", vec3d(scale, 0 ,0));
-			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
-		}
-		else if (dof == "y")
-		{
-			pnl = FEBio::CreateNodalLoad("nodal_force", &fem);
-			pnl->SetParamBool("relative", brelative);
-			pnl->SetParamVec3d("value", vec3d(0, scale, 0));
-			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
-		}
-		else if (dof == "z")
-		{
-			pnl = FEBio::CreateNodalLoad("nodal_force", &fem);
-			pnl->SetParamBool("relative", brelative);
-			pnl->SetParamVec3d("value", vec3d(0, 0, scale));
+			pnl->SetParamVec3d("value", v);
 			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
 		}
 		else
@@ -2821,15 +2817,15 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 
 	// get the name 
 	stringstream ss;
-	ss << "RigidConstraint" << CountConnectors<FSRigidConstraint>(fem) + 1;
+	ss << "RigidBC" << CountConnectors<FSRigidBC>(fem) + 1;
 	std::string name = tag.AttributeValue("name", ss.str());
 
 	// allocate class
-	FSRigidConstraint* pi = FEBio::CreateRigidConstraint(sztype, &fem);
+	FSRigidBC* pi = FEBio::CreateRigidBC(sztype, &fem);
 	if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 
 	pi->SetName(name);
-	pstep->AddRC(pi);
+	pstep->AddRigidBC(pi);
 
 	++tag;
 	do

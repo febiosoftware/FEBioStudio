@@ -42,7 +42,6 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FEConnector.h>
 #include <FEMLib/FERigidLoad.h>
-#include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
@@ -220,10 +219,22 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FEMATERIAL_ID  : pc = new FEBioMaterial(fem); break;
 	case FEBC_ID:
 	{
-		FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
-		if      (baseClassId == FEBio::GetBaseClassIndex("FENodalBC"  )) pbc->SetMeshItemType(FE_NODE_FLAG);
-		else if (baseClassId == FEBio::GetBaseClassIndex("FESurfaceBC")) pbc->SetMeshItemType(FE_FACE_FLAG);
-		pc = pbc;
+		if (baseClassId == FEBio::GetBaseClassIndex("FENodalBC"))
+		{
+			FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
+			pbc->SetMeshItemType(FE_NODE_FLAG);
+			pc = pbc;
+		}
+		else if (baseClassId == FEBio::GetBaseClassIndex("FESurfaceBC"))
+		{
+			FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
+			pbc->SetMeshItemType(FE_FACE_FLAG);
+			pc = pbc;
+		}
+		else if (baseClassId == FEBio::GetBaseClassIndex("FERigidBC"))
+		{
+			pc = new FEBioRigidBC(fem);
+		}
 	}
 	break;
 	case FEIC_ID: pc = new FEBioInitialCondition(fem); break;
@@ -248,17 +259,11 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		else pc = new FEBioNLConstraint(fem); break;
 	}
 	break;
-	case FEMESHDATAGENERATOR_ID : 
-	{
-		FEBioMeshDataGenerator* mdg = new FEBioMeshDataGenerator(fem);
-		if (baseClassId == FEBio::GetBaseClassIndex("FENodeDataGenerator")) mdg->SetMeshItemType(FE_NODE_FLAG);
-		if (baseClassId == FEBio::GetBaseClassIndex("FEFaceDataGenerator")) mdg->SetMeshItemType(FE_FACE_FLAG);
-		if (baseClassId == FEBio::GetBaseClassIndex("FEDomainDataGenerator")) mdg->SetMeshItemType(FE_ELEM_FLAG);
-		pc = mdg;
-	}
-	break;
+	case FENODEDATAGENERATOR_ID: pc = new FEBioNodeDataGenerator(fem); break;
+	case FEEDGEDATAGENERATOR_ID: pc = new FEBioEdgeDataGenerator(fem); break;
+	case FEFACEDATAGENERATOR_ID: pc = new FEBioFaceDataGenerator(fem); break;
+	case FEELEMDATAGENERATOR_ID: pc = new FEBioElemDataGenerator(fem); break;
 	case FESOLVER_ID           : pc = new FSGenericClass(fem); break;
-	case FERIGIDBC_ID		   : pc = new FEBioRigidConstraint(fem); break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass(fem); break;
 	case FENEWTONSTRATEGY_ID  : pc = new FSGenericClass(fem); break;
 	case FECLASS_ID           : pc = new FSGenericClass(fem); break;
@@ -404,36 +409,20 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 			break;
 			case FEBio::FEBIO_PARAM_VEC3D_MAPPED:
 			{
-				FEParamVec3& v = param.value<FEParamVec3>();
-				FEVec3dValuator* val = v.valuator(); assert(val);
-
-				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEVec3dValuator"));
-				prop->SetSuperClassID(FEVEC3DVALUATOR_ID);
-				prop->SetDefaultType("vector");
-
-				FSModelComponent* vecProp = CreateFSClass(FEVEC3DVALUATOR_ID, -1, po->GetFSModel());
-
-				// copy the class data
-				BuildModelComponent(vecProp, val);
-
-				prop->AddComponent(vecProp);
+				assert(ndim == 1);
+				FEParamVec3& vec = param.value<FEParamVec3>();
+				vec3d v(0, 0, 0);
+				if (vec.isConst()) v = vec.constValue();
+				p = po->AddVecParam(v, szname, szlongname)->MakeVariable(true);
 			}
 			break;
 			case FEBio::FEBIO_PARAM_MAT3D_MAPPED:
 			{
-				FEParamMat3d& v = param.value<FEParamMat3d>();
-				FEMat3dValuator* val = v.valuator(); assert(val);
-
-				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dValuator"));
-				prop->SetSuperClassID(FEMAT3DVALUATOR_ID);
-				prop->SetDefaultType("const");
-
-				FSModelComponent* matProp = CreateFSClass(FEMAT3DVALUATOR_ID, -1, po->GetFSModel());
-
-				// copy the class data
-				BuildModelComponent(matProp, val);
-
-				prop->AddComponent(matProp);
+				assert(ndim == 1);
+				FEParamMat3d& pm = param.value<FEParamMat3d>();
+				mat3d m = mat3d::identity();
+				if (pm.isConst()) m = pm.constValue();
+				p = po->AddMat3dParam(m, szname, szlongname)->MakeVariable(true);
 			}
 			break;
 			case FEBio::FEBIO_PARAM_MAT3DS_MAPPED:
@@ -886,9 +875,14 @@ FSSurfaceConstraint* FEBio::CreateSurfaceConstraint(const std::string& typeStr, 
 	return CreateModelComponent<FEBioSurfaceConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
 }
 
-FSRigidConstraint* FEBio::CreateRigidConstraint(const std::string& typeStr, FSModel* fem)
+FSRigidBC* FEBio::CreateRigidBC(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioRigidConstraint>(FERIGIDBC_ID, typeStr, fem);
+	return CreateModelComponent<FEBioRigidBC>(FEBC_ID, typeStr, fem);
+}
+
+FSRigidIC* FEBio::CreateRigidIC(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioRigidIC>(FEIC_ID, typeStr, fem);
 }
 
 FSRigidConnector* FEBio::CreateRigidConnector(const std::string& typeStr, FSModel* fem)
@@ -911,9 +905,24 @@ FSLoadController* FEBio::CreateLoadController(const std::string& typeStr, FSMode
 	return CreateModelComponent<FEBioLoadController>(FELOADCONTROLLER_ID, typeStr, fem);
 }
 
-FSMeshDataGenerator* FEBio::CreateMeshDataGenerator(const std::string& typeStr, FSModel* fem)
+FSNodeDataGenerator* FEBio::CreateNodeDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioMeshDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioNodeDataGenerator>(FENODEDATAGENERATOR_ID, typeStr, fem);
+}
+
+FSEdgeDataGenerator* FEBio::CreateEdgeDataGenerator(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioEdgeDataGenerator>(FEEDGEDATAGENERATOR_ID, typeStr, fem);
+}
+
+FSFaceDataGenerator* FEBio::CreateFaceDataGenerator(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioFaceDataGenerator>(FEFACEDATAGENERATOR_ID, typeStr, fem);
+}
+
+FSElemDataGenerator* FEBio::CreateElemDataGenerator(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioElemDataGenerator>(FEELEMDATAGENERATOR_ID, typeStr, fem);
 }
 
 FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)

@@ -24,7 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioExport4.h"
-#include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
@@ -364,35 +363,21 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 	for (int i = 0; i < fem.MeshDataGenerators(); ++i)
 	{
 		FSMeshDataGenerator* gen = fem.GetMeshDataGenerator(i);
+		FEItemListBuilder* pi = gen->GetItemList();
 
-		if (gen->GetMeshItemType() == FE_ELEM_FLAG)
+		if (pi)
 		{
-			FEItemListBuilder* pi = gen->GetItemList();
 			string name = pi->GetName();
 			if (name.empty()) name = gen->GetName();
-			if (pi) AddElemSet(name, pi);
-		}
 
-		for (int i = 0; i < gen->Properties(); ++i)
-		{
-			FSProperty& pi = gen->GetProperty(i);
-			FSMeshSelection* sel = dynamic_cast<FSMeshSelection*>(pi.GetComponent());
-			if (sel)
+			switch (gen->Type())
 			{
-				FEItemListBuilder* items = sel->GetItemList();
-				if (items == 0) throw InvalidItemListBuilder(sel);
-				if (sel->GetSuperClassID() == FESURFACE_ID)
-				{
-					string name = items->GetName();
-					if (name.empty())
-					{
-						stringstream ss;
-						ss << gen->GetName() << "_" << pi.GetName();
-						name = ss.str();
-					}
-
-					AddSurface(name, items);
-				}
+			case FE_FEBIO_NODEDATA_GENERATOR: AddNodeSet(name, pi); break;
+//			case FE_FEBIO_EDGEDATA_GENERATOR: AddEdgeSet(name, pi); break;
+			case FE_FEBIO_FACEDATA_GENERATOR: AddSurface(name, pi); break;
+			case FE_FEBIO_ELEMDATA_GENERATOR: AddElemSet(name, pi); break;
+			default:
+				assert(false);
 			}
 		}
 	}
@@ -561,10 +546,8 @@ bool FEBioExport4::Write(const char* szfile)
 		bool bsingle_step = (m_nsteps <= 1);
 		if (m_nsteps == 2)
 		{
-			//			FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(fem.GetStep(1));
-			//			if (pstep == 0) return errf("Step 1 is not an analysis step.");
-			ntype = pstep->GetType();
-			if (pstep->BCs() + pstep->Loads() + pstep->ICs() + pstep->Interfaces() + pstep->LinearConstraints() + pstep->RigidConstraints() + pstep->RigidConnectors() == 0) bsingle_step = true;
+			FSStep* pstep = fem.GetStep(1);
+			if (pstep->StepComponents() == 0) bsingle_step = true;
 		}
 
 		// open the file
@@ -658,7 +641,7 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + pstep->RigidLoads();
+			int nrc = pstep->RigidBCs() + pstep->RigidICs() + pstep->RigidConnectors() + pstep->RigidLoads();
 			if ((nrc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Rigid");
@@ -1826,8 +1809,17 @@ void FEBioExport4::WriteMeshDataSection()
 	int N = fem.MeshDataGenerators();
 	for (int i = 0; i < N; ++i)
 	{
-		FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
-		WriteMeshData(map);
+		FSMeshDataGenerator* pdm = fem.GetMeshDataGenerator(i);
+
+		switch (pdm->Type())
+		{
+		case FE_FEBIO_NODEDATA_GENERATOR: WriteNodeDataGenerator(dynamic_cast<FSNodeDataGenerator*>(pdm)); break;
+		case FE_FEBIO_EDGEDATA_GENERATOR: WriteEdgeDataGenerator(dynamic_cast<FSEdgeDataGenerator*>(pdm)); break;
+		case FE_FEBIO_FACEDATA_GENERATOR: WriteFaceDataGenerator(dynamic_cast<FSFaceDataGenerator*>(pdm)); break;
+		case FE_FEBIO_ELEMDATA_GENERATOR: WriteElemDataGenerator(dynamic_cast<FSElemDataGenerator*>(pdm)); break;
+		default:
+			assert(false);
+		}
 	}
 }
 
@@ -1845,21 +1837,58 @@ void FEBioExport4::WriteElementDataSection()
 	WriteElementDataFields();
 }
 
-//-----------------------------------------------------------------------------
-void FEBioExport4::WriteMeshData(FSMeshDataGenerator* map)
-{
-	XMLElement meshData("ElementData");
-	meshData.add_attribute("name", map->GetName());
 
-	FEItemListBuilder* pi = map->GetItemList();
-	if (pi)
+//-----------------------------------------------------------------------------
+void FEBioExport4::WriteNodeDataGenerator(FSNodeDataGenerator* map)
+{
+	XMLElement meshData("NodeData");
+	meshData.add_attribute("generator", map->GetTypeString());
+	meshData.add_attribute("node_set", GetNodeSetName(map->GetItemList()));
+	m_xml.add_branch(meshData);
 	{
-		std::string elSet = GetElementSetName(pi);
-		meshData.add_attribute("elem_set", elSet);
+		WriteParamList(*map);
 	}
-	WriteModelComponent(map, meshData);
+	m_xml.close_branch();
 }
 
+//-----------------------------------------------------------------------------
+void FEBioExport4::WriteEdgeDataGenerator(FSEdgeDataGenerator* map)
+{
+	XMLElement meshData("EdgeData");
+	meshData.add_attribute("generator", map->GetTypeString());
+//	meshData.add_attribute("edge_set", GetEdgeSetName(map->GetItemList()));
+	m_xml.add_branch(meshData);
+	{
+		WriteParamList(*map);
+	}
+	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport4::WriteFaceDataGenerator(FSFaceDataGenerator* map)
+{
+	XMLElement meshData("SurfaceData");
+	meshData.add_attribute("generator", map->GetTypeString());
+	meshData.add_attribute("surface", GetSurfaceName(map->GetItemList()));
+	m_xml.add_branch(meshData);
+	{
+		WriteParamList(*map);
+	}
+	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport4::WriteElemDataGenerator(FSElemDataGenerator* map)
+{
+	XMLElement meshData("ElementData");
+	meshData.add_attribute("generator", map->GetTypeString());
+	meshData.add_attribute("elem_set", GetElementSetName(map->GetItemList()));
+	m_xml.add_branch(meshData);
+	{
+		WriteParamList(*map);
+	}
+	m_xml.close_branch();
+}
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteMeshDataShellThickness()
 {
@@ -2218,8 +2247,11 @@ void FEBioExport4::WriteBoundarySection(FSStep& s)
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteRigidSection(FSStep& s)
 {
-	// rigid body constraints
-	WriteRigidConstraints(s);
+	// rigid body bcs
+	WriteRigidBCs(s);
+
+	// rigid body ics
+	WriteRigidICs(s);
 
 	// rigid loads
 	WriteRigidLoads(s);
@@ -3054,16 +3086,33 @@ void FEBioExport4::WriteStepSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport4::WriteRigidConstraints(FSStep& s)
+void FEBioExport4::WriteRigidBCs(FSStep& s)
 {
-	for (int i = 0; i < s.RigidConstraints(); ++i)
+	for (int i = 0; i < s.RigidBCs(); ++i)
 	{
-		FSRigidConstraint* prc = s.RigidConstraint(i);
+		FSRigidBC* prc = s.RigidBC(i);
 		if (prc && prc->IsActive())
 		{
 			if (m_writeNotes) WriteNote(prc);
 			XMLElement el;
-			el.name("rigid_constraint");
+			el.name("rigid_bc");
+			el.add_attribute("name", prc->GetName());
+			WriteModelComponent(prc, el);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport4::WriteRigidICs(FSStep& s)
+{
+	for (int i = 0; i < s.RigidICs(); ++i)
+	{
+		FSRigidIC* prc = s.RigidIC(i);
+		if (prc && prc->IsActive())
+		{
+			if (m_writeNotes) WriteNote(prc);
+			XMLElement el;
+			el.name("rigid_ic");
 			el.add_attribute("name", prc->GetName());
 			WriteModelComponent(prc, el);
 		}

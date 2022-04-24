@@ -25,11 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEBioExport3.h"
-#include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/FENodeData.h>
@@ -744,10 +744,8 @@ bool FEBioExport3::Write(const char* szfile)
 		bool bsingle_step = (m_nsteps <= 1);
 		if (m_nsteps == 2)
 		{
-//			FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(fem.GetStep(1));
-//			if (pstep == 0) return errf("Step 1 is not an analysis step.");
-			ntype = pstep->GetType();
-			if (pstep->BCs() + pstep->Loads() + pstep->ICs() + pstep->Interfaces() + pstep->LinearConstraints() + pstep->RigidConstraints() + pstep->RigidConnectors() == 0) bsingle_step = true;
+			FSStep* pstep = fem.GetStep(1);
+			if (pstep->StepComponents() == 0) bsingle_step = true;
 		}
 
 		// open the file
@@ -862,7 +860,7 @@ bool FEBioExport3::Write(const char* szfile)
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + CountInterfaces<FSRigidJoint>(fem);
+			int nrc = pstep->RigidBCs() + pstep->RigidICs() + pstep->RigidLoads() + pstep->RigidConnectors() + CountInterfaces<FSRigidJoint>(fem);
 			if ((nrc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Rigid");
@@ -907,7 +905,7 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output initial section
-			int nic = pstep->ICs() + pstep->RigidConstraints(FE_RIGID_INIT_VELOCITY) + pstep->RigidConstraints(FE_RIGID_INIT_ANG_VELOCITY);
+			int nic = pstep->ICs() + pstep->RigidICs();
 			if ((nic > 0) && (m_section[FEBIO_INITIAL]))
 			{
 				m_xml.add_branch("Initial");
@@ -3274,8 +3272,17 @@ void FEBioExport3::WriteMeshDataSection()
 	int N = fem.MeshDataGenerators();
 	for (int i=0; i<N; ++i)
 	{
-		FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
-		WriteMeshData(map);
+		FSMeshDataGenerator* pdm = fem.GetMeshDataGenerator(i);
+
+		switch (pdm->Type())
+		{
+		case FE_FEBIO_NODEDATA_GENERATOR: WriteNodeDataGenerator(dynamic_cast<FSNodeDataGenerator*>(pdm)); break;
+		case FE_FEBIO_EDGEDATA_GENERATOR: WriteEdgeDataGenerator(dynamic_cast<FSEdgeDataGenerator*>(pdm)); break;
+		case FE_FEBIO_FACEDATA_GENERATOR: WriteFaceDataGenerator(dynamic_cast<FSFaceDataGenerator*>(pdm)); break;
+		case FE_FEBIO_ELEMDATA_GENERATOR: WriteElemDataGenerator(dynamic_cast<FSElemDataGenerator*>(pdm)); break;
+		default:
+			assert(false);
+		}
 	}
 }
 
@@ -3292,15 +3299,50 @@ void FEBioExport3::WriteElementDataSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteMeshData(FSMeshDataGenerator* map)
+void FEBioExport3::WriteNodeDataGenerator(FSNodeDataGenerator* map)
+{
+	XMLElement meshData("NodeData");
+	meshData.add_attribute("generator", map->GetTypeString());
+	meshData.add_attribute("node_set", GetNodeSetName(map->GetItemList()));
+	m_xml.add_branch(meshData);
+	{
+		WriteParamList(*map);
+	}
+	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteEdgeDataGenerator(FSEdgeDataGenerator* map)
+{
+	XMLElement meshData("EdgeData");
+	meshData.add_attribute("generator", map->GetTypeString());
+//	meshData.add_attribute("edge_set", GetEdgeSetName(map->GetItemList()));
+	m_xml.add_branch(meshData);
+	{
+		WriteParamList(*map);
+	}
+	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteFaceDataGenerator(FSFaceDataGenerator* map)
+{
+	XMLElement meshData("SurfaceData");
+	meshData.add_attribute("generator", map->GetTypeString());
+	meshData.add_attribute("surface", GetSurfaceName(map->GetItemList()));
+	m_xml.add_branch(meshData);
+	{
+		WriteParamList(*map);
+	}
+	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteElemDataGenerator(FSElemDataGenerator* map)
 {
 	XMLElement meshData("ElementData");
-//	meshData.add_attribute("var", map->m_var);
 	meshData.add_attribute("generator", map->GetTypeString());
-//	meshData.add_attribute("elem_set", map->m_elset);
-
-	FSModel& fem = m_prj.GetFSModel();
-
+	meshData.add_attribute("elem_set", GetElementSetName(map->GetItemList()));
 	m_xml.add_branch(meshData);
 	{
 		WriteParamList(*map);
@@ -5003,7 +5045,7 @@ void FEBioExport3::WriteStepSection()
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = step.RigidConstraints() + step.RigidConnectors();
+			int nrc = step.RigidBCs() + step.RigidICs() + step.RigidLoads() + step.RigidConnectors();
 			if (nrc > 0)
 			{
 				m_xml.add_branch("Rigid");
@@ -5037,7 +5079,7 @@ void FEBioExport3::WriteStepSection()
 			}
 
 			// output constraint section
-			int nnlc = step.RigidConstraints() + CountConstraints<FSModelConstraint>(*m_pfem) + CountInterfaces<FSRigidJoint>(*m_pfem);
+			int nnlc = CountConstraints<FSModelConstraint>(*m_pfem) + CountInterfaces<FSRigidJoint>(*m_pfem);
 			if (nnlc > 0)
 			{
 				m_xml.add_branch("Constraints");
@@ -5057,124 +5099,61 @@ void FEBioExport3::WriteRigidConstraints(FSStep &s)
 {
 	const char* szbc[6] = { "Rx", "Ry", "Rz", "Ru", "Rv", "Rw" };
 
-	for (int i = 0; i<s.RigidConstraints(); ++i)
+	for (int i = 0; i < s.RigidBCs(); ++i)
 	{
-		FSRigidConstraint* ps = s.RigidConstraint(i);
-
-		if (ps->IsActive())
+		FSRigidBC* ps = s.RigidBC(i);
+		if (ps && ps->IsActive())
 		{
 			if (m_writeNotes) WriteNote(ps);
 
-			GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
-			if (pgm == 0) throw MissingRigidBody(ps->GetName().c_str());
-			if (pgm->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
+			const char* sztype = nullptr;
+			if (strcmp(ps->GetTypeString(), "rigid_fixed") == 0) sztype = "fix";
+			if (strcmp(ps->GetTypeString(), "rigid_prescribed") == 0) sztype = "prescribe";
+			assert(sztype);
 
-			if (ps->Type() == FE_RIGID_FIXED)
-			{
-				FSRigidFixed* rc = dynamic_cast<FSRigidFixed*>(ps);
-				XMLElement el;
-				el.name("rigid_constraint");
-				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", "fix");
-				m_xml.add_branch(el);
-				{
-					string dof;
-					for (int j = 0; j < 6; ++j)
-						if (rc->GetDOF(j))
-						{
-							if (dof.empty() == false) dof += ",";
-							dof += szbc[j];
-						}
-					m_xml.add_leaf("rb", pgm->m_ntag);
-					m_xml.add_leaf("dofs", dof);
-				}
-				m_xml.close_branch();
-			}
-			else if (ps->Type() == FE_RIGID_DISPLACEMENT)
-			{
-				FSRigidDisplacement* rc = dynamic_cast<FSRigidDisplacement*>(ps);
-				XMLElement el;
-				el.name("rigid_constraint");
-				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", "prescribe");
-				m_xml.add_branch(el);
-				{
-					m_xml.add_leaf("rb", pgm->m_ntag);
-					m_xml.add_leaf("dof", szbc[rc->GetDOF()]);
-					el.name("value");
 
-					int lc = GetLC(&rc->GetParam(FSRigidDisplacement::VALUE));
-					if (lc > 0) el.add_attribute("lc", lc);
+			XMLElement el;
+			el.name("rigid_constraint");
+			el.add_attribute("name", ps->GetName());
+			el.add_attribute("type", sztype);
+			m_xml.add_branch(el);
+			WriteParamList(*ps);
+			m_xml.close_branch();
+		}
+	}
 
-					el.value(rc->GetValue());
-					m_xml.add_leaf(el);
-					m_xml.add_leaf("relative", rc->GetRelativeFlag());
-				}
-				m_xml.close_branch();
-			}
-			else if (ps->Type() == FE_RIGID_FORCE)
-			{
-				FSRigidForce* rf = dynamic_cast<FSRigidForce*>(ps);
-				XMLElement el("rigid_constraint");
-				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", "force");
-				m_xml.add_branch(el);
-				{
-					m_xml.add_leaf("rb", pgm->m_ntag);
-					m_xml.add_leaf("dof", szbc[rf->GetDOF()]);
-					XMLElement val("value");
+	for (int i = 0; i < s.RigidLoads(); ++i)
+	{
+		FSRigidLoad* ps = s.RigidLoad(i);
+		if (ps && ps->IsActive())
+		{
+			if (m_writeNotes) WriteNote(ps);
 
-					int lc = GetLC(&rf->GetParam(FSRigidDisplacement::VALUE));
-					if (lc > 0) el.add_attribute("lc", lc);
+			XMLElement el("rigid_constraint");
+			el.add_attribute("name", ps->GetName());
+			el.add_attribute("type", "force");
+			m_xml.add_branch(el);
+			WriteParamList(*ps);
+			m_xml.close_branch();
+		}
+	}
 
-					val.value(rf->GetValue());
-					m_xml.add_leaf(val);
+	for (int i = 0; i < s.RigidICs(); ++i)
+	{
+		FSRigidIC* ps = s.RigidIC(i);
+		if (ps && ps->IsActive())
+		{
+			const char* sztype = nullptr;
+			if (strcmp(ps->GetTypeString(), "initial_rigid_velocity") == 0) sztype = "rigid_velocity";
+			if (strcmp(ps->GetTypeString(), "initial_rigid_angular_velocity") == 0) sztype = "rigid_angular_velocity";
+			assert(sztype);
 
-					int forceType = rf->GetForceType();
-					m_xml.add_leaf("load_type", forceType);
-
-					if ((forceType == 0) && rf->IsRelative()) m_xml.add_leaf("relative", 1);
-				}
-				m_xml.close_branch();
-			}
-			else if (ps->Type() == FE_RIGID_INIT_VELOCITY)
-			{
-				FSRigidVelocity* rv = dynamic_cast<FSRigidVelocity*>(ps);
-				XMLElement el("rigid_constraint");
-				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", "rigid_velocity");
-				m_xml.add_branch(el);
-				{
-					m_xml.add_leaf("rb", pgm->m_ntag);
-					m_xml.add_leaf("value", rv->GetVelocity());
-				}
-				m_xml.close_branch();
-			}
-			else if (ps->Type() == FE_RIGID_INIT_ANG_VELOCITY)
-			{
-				FSRigidAngularVelocity* rv = dynamic_cast<FSRigidAngularVelocity*>(ps);
-				XMLElement el("rigid_constraint");
-				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", "rigid_angular_velocity");
-				m_xml.add_branch(el);
-				{
-					m_xml.add_leaf("rb", pgm->m_ntag);
-					m_xml.add_leaf("value", rv->GetVelocity());
-				}
-				m_xml.close_branch();
-			}
-			else
-			{
-				XMLElement el("rigid_constraint");
-				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", ps->GetTypeString());
-				m_xml.add_branch(el);
-				{
-					m_xml.add_leaf("rb", pgm->m_ntag);
-					WriteParamList(*ps);
-				}
-				m_xml.close_branch();
-			}
+			XMLElement el("rigid_constraint");
+			el.add_attribute("name", ps->GetName());
+			el.add_attribute("type", sztype);
+			m_xml.add_branch(el);
+			WriteParamList(*ps);
+			m_xml.close_branch();
 		}
 	}
 }
