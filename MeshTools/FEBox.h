@@ -44,6 +44,13 @@ public:
 	FSMesh* BuildMesh();
 
 protected:
+	bool BuildMultiBlock() override;
+
+	bool CreateRegularBoxMesh();
+	bool CreateButterfly3DMesh();
+	bool CreateButterfly2DMesh();
+
+protected:
 	FSMesh* CreateRegular();
 	FSMesh* CreateButterfly3D();
 	FSMesh* CreateButterfly2D();

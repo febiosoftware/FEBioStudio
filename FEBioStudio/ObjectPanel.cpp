@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "CColorButton.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GMeshObject.h>
+#include <GeomLib/GPrimitive.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GLWLib/convert.h>
 #include "MainWindow.h"
@@ -122,6 +123,22 @@ void CObjectPanel::Update()
 			// if it has a mesh, we can do either
 			ui->menu->addAction("Editable Mesh")->setData(CONVERT_TO_EDITABLE_MESH);
 			ui->menu->addAction("Editable Surface")->setData(CONVERT_TO_EDITABLE_SURFACE);
+
+			if (dynamic_cast<GPrimitive*>(po))
+			{
+//				ui->menu->addAction("Multi-block Mesh")->setData(CONVERT_TO_MULTIBLOCK);
+			}
+
+			ui->menu->setEnabled(true);
+		}
+		else if (dynamic_cast<GShellPrimitive*>(po))
+		{
+//			ui->menu->addAction("Multi-patch Mesh")->setData(CONVERT_TO_MULTIPATCH);
+			ui->menu->setEnabled(true);
+		}
+		else if (dynamic_cast<GPrimitive*>(po))
+		{
+//			ui->menu->addAction("Multiblock Mesh")->setData(CONVERT_TO_MULTIBLOCK);
 			ui->menu->setEnabled(true);
 		}
 		else ui->menu->setEnabled(false);

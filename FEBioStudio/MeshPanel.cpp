@@ -37,8 +37,11 @@ SOFTWARE.*/
 #include <MeshTools/FECreateShells.h>
 #include <MeshTools/FERevolveFaces.h>
 #include <MeshTools/FEMesher.h>
+#include <MeshTools/FEMultiBlockMesh.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <GeomLib/GMultiBox.h>
+#include <GeomLib/GMultiPatch.h>
 #include "ui_meshpanel.h"
 #include "ObjectProps.h"
 #include "MainWindow.h"
@@ -148,17 +151,17 @@ void MeshingThread::stop()
 }
 
 //=======================================================================================
-ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FSGroup* pg)
+ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FESelection* sel)
 {
 	m_doc = doc;
 	m_mod = mod;
-	m_pg = pg;
+	m_sel = sel;
 	m_po = po;
 }
 
 void ModifierThread::run()
 {
-	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_pg);
+	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_sel);
 	emit resultReady(bsuccess);
 }
 
@@ -212,6 +215,7 @@ REGISTER_CLASS(FESetShellThickness    , CLASS_FEMODIFIER, "Shell Thickness", EDI
 REGISTER_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
 REGISTER_CLASS(FETetGenModifier       , CLASS_FEMODIFIER, "TetGen"         , EDIT_MESH);
 REGISTER_CLASS(FEWeldNodes            , CLASS_FEMODIFIER, "Weld nodes"     , EDIT_MESH);
+REGISTER_CLASS(FESetMBWeight          , CLASS_FEMODIFIER, "Set MB Weight"  , EDIT_MESH | EDIT_SAFE);
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
 {
@@ -411,7 +415,7 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		else { delete list; list = 0; }
 	}
 
-	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, g);
+	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, sel);
 	CDlgStartThread dlg(this, thread);
 	dlg.setTask(QString::fromStdString(m_mod->GetName()));
 	if (dlg.exec())
@@ -439,9 +443,6 @@ void CMeshPanel::on_apply2_clicked(bool b)
 			ui->setActiveModifier(m_mod);
 		}
 	}
-
-	// don't forget to cleanup
-	if (g) delete g;
 
 	w->UpdateModel(activeObject, true);
 	w->UpdateGLControlBar();
@@ -494,6 +495,22 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 				return;
 			}
 		}
+	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_MULTIBLOCK)
+	{
+		GPrimitive* primitive = dynamic_cast<GPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multiblock object.");
+
+		GMultiBox* newObject = new GMultiBox(primitive);
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
+	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_MULTIPATCH)
+	{
+		GShellPrimitive* primitive = dynamic_cast<GShellPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multi-patch object.");
+
+		GMultiPatch* newObject = new GMultiPatch(primitive);
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
 	}
 	else
 	{

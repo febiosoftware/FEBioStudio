@@ -58,11 +58,11 @@ FEBoxInBox::FEBoxInBox(GBoxInBox* po)
 }
 
 //-----------------------------------------------------------------------------
-// Build the FSMesh
-FSMesh* FEBoxInBox::BuildMesh()
+// Build the FEMesh
+bool FEBoxInBox::BuildMultiBlock()
 {
 	assert(m_pobj);
-	if (m_pobj == nullptr) return nullptr;
+	if (m_pobj == nullptr) return false;
 
 	// get object parameters
 	double W0 = m_pobj->OuterWidth();
@@ -165,7 +165,7 @@ FSMesh* FEBoxInBox::BuildMesh()
 	b6.SetZoning(gx, gy, gr, bx, by, br);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// next, we assign the face ID's
 	MBFace& F1  = GetBlockFace(0, 0); F1.SetID(0);
@@ -224,6 +224,15 @@ FSMesh* FEBoxInBox::BuildMesh()
 	GetMBNode(13).SetID(13);
 	GetMBNode(14).SetID(14);
 	GetMBNode(15).SetID(15);
+
+	UpdateMB();
+
+	return true;
+}
+
+FSMesh* FEBoxInBox::BuildMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);

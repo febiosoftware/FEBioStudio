@@ -25,11 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "FEMultiQuadMesh.h"
 
 class GDisc;
 
-class FEShellDisc : public FEMesher
+class FEShellDisc : public FEMultiQuadMesh
 {
 public:
 	enum {RATIO, T, NDIV, NSEG, ELEM_TYPE };
@@ -38,6 +38,8 @@ public:
 	FEShellDisc(){}
 	FEShellDisc(GDisc* po);
 	FSMesh* BuildMesh();
+
+	bool BuildMultiQuad() override;
 
 protected:
 	GDisc*	m_pobj;

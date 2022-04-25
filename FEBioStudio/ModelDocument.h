@@ -79,7 +79,7 @@ public:
 	void DeleteObject(FSObject* po);
 
 	// helper function for applying a modifier
-	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FSGroup* sel = 0, bool clearSel = true);
+	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FESelection* sel = 0, bool clearSel = true);
 	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel = 0);
 
 public: // selection

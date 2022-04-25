@@ -31,7 +31,7 @@ SOFTWARE.*/
 // GRing
 //=============================================================================
 
-GRing::GRing() : GPrimitive(GRING)
+GRing::GRing() : GShellPrimitive(GRING)
 {
 	m_Ri = 0.5;
 	m_Ro = 1;

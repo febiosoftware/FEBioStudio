@@ -43,6 +43,8 @@ protected:
 	FSMesh* BuildMeshLegacy();
 	FSMesh* BuildMultiBlockMesh();
 
+	bool BuildMultiBlock() override;
+
 protected:
 	void BuildFaces(FSMesh* pm);
 	void BuildEdges(FSMesh* pm);

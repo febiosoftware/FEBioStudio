@@ -34,7 +34,7 @@ using namespace std;
 // GPatch
 //=============================================================================
 
-GPatch::GPatch() : GPrimitive(GPATCH)
+GPatch::GPatch() : GShellPrimitive(GPATCH)
 {
 	m_w = m_h = 1;
 

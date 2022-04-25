@@ -39,8 +39,33 @@ SOFTWARE.*/
 #include <stdarg.h>
 #include <FECore/units.h>
 #include <MeshLib/FEMeshBuilder.h>
+#include "GGroup.h"
 
 std::string FEModifier::m_error;
+
+FEModifier::FEModifier(const char* sz) { SetName(sz); }
+FEModifier::~FEModifier() {}
+
+FSMesh* FEModifier::Apply(FSMesh* pm) { return nullptr; }
+FSMesh* FEModifier::Apply(FSGroup* pg) { return Apply(pg->GetMesh()); }
+FSMesh* FEModifier::Apply(GObject* po, FESelection* sel)
+{ 
+	if ((po == nullptr) || (sel == nullptr)) return nullptr;
+	FSMesh* oldMesh = po->GetFEMesh();
+	if (oldMesh == nullptr) return nullptr;
+
+	FSMesh* newMesh = nullptr;
+	FEItemListBuilder* list(sel->CreateItemList());
+	FSGroup* pg = dynamic_cast<FSGroup*>(list);
+	if (pg && (pg->GetMesh() == oldMesh))
+	{
+		newMesh = Apply(pg);
+	}
+	delete list;
+	return newMesh; 
+}
+
+FSMeshBase* FEModifier::ApplyModifier(FSMeshBase* pm) { return nullptr; }
 
 bool FEModifier::SetError(const char* szerr, ...)
 {

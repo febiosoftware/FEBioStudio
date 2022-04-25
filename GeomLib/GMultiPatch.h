@@ -25,23 +25,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMultiBlockMesh.h"
+#include <GeomLib/GObject.h>
 
-class GSphereInBox;
+class FEMultiQuadMesh;
 
-class FESphereInBox : public FEMultiBlockMesh
+//-----------------------------------------------------------------------------
+//! The GMultiBox class is the geometry that is used to create a multi-block mesh. 
+//! A multi-block mesh is basically a mesh that is composed of rectangular blocks. 
+//! The user can edit the number of partitions by splitting edges, faces and parts.
+//
+class GMultiPatch : public GObject
 {
 public:
-	enum {NX, NY, NZ, NR, GR, BR, ELEM_TYPE};
+	//! constructor
+	GMultiPatch();
+	GMultiPatch(GObject* po);
 
-public:
-	FESphereInBox();
-	FESphereInBox(GSphereInBox* po);
-	FSMesh* BuildMesh();
+	bool DeletePart(GPart* pg) override;
 
-protected:
-	bool BuildMultiBlock() override;
+	FSMeshBase* GetEditableMesh() override;
 
-protected:
-	GSphereInBox*	m_po;
+	GObject* Clone() override;
+
+	bool Merge(GMultiPatch& mb);
+
+private:
+	void BuildObject(FEMultiQuadMesh& mb);
 };

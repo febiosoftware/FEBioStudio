@@ -41,6 +41,9 @@ public:
 	FSMesh* BuildMesh();
 
 protected:
+	bool BuildMultiBlock() override;
+
+protected:
 	GSphere* m_pobj;
 
 	double	m_r;

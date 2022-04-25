@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <GeomLib/GMultiPatch.h>
 #include <MeshTools/FEFileExport.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
@@ -522,7 +523,7 @@ bool CUndoDocument::DoCommand(CCommand* pcmd, const std::string& s, bool b)
 	CMainWindow* wnd = GetMainWindow();
 	if (s.empty() == false)
 	{
-		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
+//		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
 	}
 	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
 
@@ -645,6 +646,8 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	if (po == 0) return "(null)";
 
 	if      (dynamic_cast<GPrimitive*         >(po)) return "Primitive";
+	else if (dynamic_cast<GMultiBox*          >(po)) return "Multi-block";
+	else if (dynamic_cast<GMultiPatch*        >(po)) return "Multi-patch";
 	else if (dynamic_cast<GMeshObject*		  >(po)) return "Editable mesh";
 	else if (dynamic_cast<GCurveMeshObject*   >(po)) return "Editable curve";
 	else if (dynamic_cast<GSurfaceMeshObject* >(po)) return "Editable surface";

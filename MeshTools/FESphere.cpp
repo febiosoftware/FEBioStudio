@@ -64,7 +64,7 @@ FESphere::FESphere(GSphere* po)
 	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("HEX8\0HEX20\0HEX27\0");
 }
 
-FSMesh* FESphere::BuildMesh()
+bool FESphere::BuildMultiBlock()
 {
 	assert(m_pobj);
 
@@ -211,7 +211,7 @@ FSMesh* FESphere::BuildMesh()
 	}
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// Face ID's
 	MBFace& F1 = GetBlockFace(13, 1); F1.SetID(0);
@@ -340,6 +340,15 @@ FSMesh* FESphere::BuildMesh()
 	m_MBNode[31].SetID(4);
 	m_MBNode[48].SetID(5);
 
+	UpdateMB();
+
+	return true;
+}
+
+FSMesh* FESphere::BuildMesh()
+{
+	BuildMultiBlock();
+
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
 	switch (nelem)
@@ -355,7 +364,7 @@ FSMesh* FESphere::BuildMesh()
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. Instead we assign
 	// to each face the same smoothing ID
-	for (i=0; i<pm->Faces(); ++i) pm->Face(i).m_sid = 0;
+	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).m_sid = 0;
 
 	// finally, we update the normals and we are good to go
 	pm->UpdateNormals();

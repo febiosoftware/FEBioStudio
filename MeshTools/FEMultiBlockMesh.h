@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMesher.h"
+#include "FEModifier.h"
 #include <GeomLib/GObject.h>
 #include <vector>
 
@@ -43,7 +44,7 @@ SOFTWARE.*/
 class MBItem
 {
 public:
-	MBItem() { m_ntag = 0; m_gid = -1; false; }
+	MBItem() { m_ntag = 0; m_gid = -1; }
 
 	MBItem(const MBItem& it)
 	{
@@ -83,16 +84,18 @@ public:
 class MBEdge : public MBItem
 {
 public:
-	GEdge	edge;
-	int		m_winding;
-	int	m_face[2];	// external faces
-	int	m_nx;		// tesselation
+	int		m_node[2];	// indices of GNodes
+	int		m_cnode;	// center node for arcs
+	int		m_orient;	// orientation for arcs
+	int		m_ntype;	// type identifier
+
+	int		m_nx;		// tesselation
 	double	m_gx;	// zoning
 	bool	m_bx;	// single or double zoning
 	
 	int		m_mx;	// size of fenodes (don't set this manually!)
 
-	int Node(int i) const { return edge.m_node[i]; }
+	int Node(int i) const { return m_node[i]; }
 
 public:
 	MBEdge() 
@@ -100,25 +103,26 @@ public:
 		m_nx = 1;
 		m_gx = 1;
 		m_bx = false;
-		m_winding = 1;
+		m_orient = 1;
 	}
-	MBEdge(int n0, int n1) { edge.m_node[0] = n0; edge.m_node[1] = n1; edge.m_ntype = EDGE_LINE; m_winding = 1; }
+	MBEdge(int n0, int n1) { m_node[0] = n0; m_node[1] = n1; m_ntype = EDGE_LINE; m_orient = 1; }
 	bool operator == (const MBEdge& e) const
 	{
-		const int* n1 = edge.m_node;
-		const int* n2 = e.edge.m_node;
+		const int* n1 = m_node;
+		const int* n2 = e.m_node;
 		if ((n1[0] != n2[0]) && (n1[0] != n2[1])) return false;
 		if ((n1[1] != n2[0]) && (n1[1] != n2[1])) return false;
 		return true;
 	}
 
-	MBEdge& SetWinding(int w) { m_winding = w; return *this; }
+	MBEdge& SetWinding(int w) { m_orient = w; return *this; }
+	MBEdge& SetType(int ntype) { m_ntype = ntype; return *this; }
 
 	MBEdge& SetEdge(int ntype, int nwinding, int cnode = -1)
 	{
-		m_winding = nwinding;
-		edge.m_ntype = ntype;
-		edge.m_cnode = cnode;
+		m_orient = nwinding;
+		m_ntype = ntype;
+		m_cnode = cnode;
 		return *this;
 	}
 };
@@ -133,7 +137,6 @@ public:
 	int	m_nx, m_ny;	// face tesselation
 	double m_gx, m_gy;	// zoning
 	bool m_bx, m_by;	// single or double zoning
-	int	m_nbr[4];	// the neighbour faces
 	int	m_sid;		// surface smoothgin ID
 
 	// data for sphere sections
@@ -156,7 +159,6 @@ public:
 		m_nx = m_ny = 1;
 		m_gx = m_gy = 1.0;
 		m_bx = m_by = false;
-		m_nbr[0] = m_nbr[1] = m_nbr[2] = m_nbr[3] = -1;
 		m_edgeWinding[0] = m_edgeWinding[1] = m_edgeWinding[2] = m_edgeWinding[3] = 0;
 		m_sid = -1; // -1 = use GID instead
 
@@ -215,11 +217,19 @@ class FEMultiBlockMesh : public FEMesher
 public:
 	// constructor
 	FEMultiBlockMesh();
+	FEMultiBlockMesh(const FEMultiBlockMesh& mb);
+	void operator = (const FEMultiBlockMesh& mb);
+
+	void CopyFrom(const FEMultiBlockMesh& mb);
 
 	// destructor
 	~FEMultiBlockMesh();
 
 	void SetElementType(int elemType);
+
+	virtual bool BuildMultiBlock();
+
+	void ClearMB();
 
 	// build the mesh
 	FSMesh* BuildMesh();
@@ -228,15 +238,32 @@ public:
 
 	MBBlock& AddBlock(int n0, int n1, int n2, int n3, int n4, int n5, int n6, int n7);
 
+	MBBlock& AddBlock();
+
+	void ClearMeshSettings();
+
+	bool SetEdgeDivisions(int iedge, int nd);
+	bool SetDefaultDivisions(int nd);
+	bool SetNodeWeights(std::vector<double>& w);
+
 	// update the Multi-Block data
 	void UpdateMB();
 
+	void BuildMB();
+
+	int Nodes() const { return (int)m_MBNode.size(); }
+
 	MBNode& GetMBNode(int i) { return m_MBNode[i]; }
+	const MBNode& GetMBNode(int i) const { return m_MBNode[i]; }
 	MBFace& GetBlockFace(int nb, int nf);
 	MBEdge& GetFaceEdge(MBFace& f, int n);
+	MBFace& AddFace();
 
+	int Edges() const { return (int)m_MBEdge.size(); }
 	MBEdge& GetEdge(int nedge);
+	MBEdge& AddEdge();
 
+	int Blocks() const { return (int)m_MBlock.size(); }
 	MBBlock& GetBlock(int i) { return m_MBlock[i]; }
 
 	MBEdge& GetBlockEdge(int nblock, int nedge);
@@ -244,9 +271,11 @@ public:
 	void SetBlockFaceID(MBBlock& b, int n0, int n1, int n2, int n3, int n4, int n5);
 	void SetFaceEdgeID(MBFace& f, int n0, int n1, int n2, int n3);
 
+	int Faces() const { return (int)m_MBFace.size(); }
+	MBFace& GetFace(int i) { return m_MBFace[i]; }
+
 protected:
 	void FindBlockNeighbours();
-	void FindFaceNeighbours();
 	void BuildMBFaces();
 	void BuildMBEdges();
 
@@ -370,4 +399,35 @@ private:
 	double	m_dr;
 	double	m_gr;
 	double	m_fr;
+};
+
+class GMultiBox;
+
+class FEMultiBlockMesher : public FEMultiBlockMesh
+{
+	enum { DIVS, ELEM_TYPE };
+
+public:
+	FEMultiBlockMesher(GMultiBox* po);
+
+	// build the mesh
+	FSMesh* BuildMesh() override;
+
+	bool BuildMultiBlock() override;
+
+private:
+	// rebuild MB after loading
+	void RebuildMB();
+
+private:
+	GMultiBox* m_po;
+};
+
+class FESetMBWeight : public FEModifier
+{
+public:
+	FESetMBWeight();
+
+	//! Apply the weld modifier
+	FSMesh* Apply(GObject* po, FESelection* sel);
 };

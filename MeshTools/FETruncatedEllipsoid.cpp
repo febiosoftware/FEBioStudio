@@ -157,7 +157,7 @@ FSMesh* FETruncatedEllipsoid::BuildMesh()
 	}
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	GetBlockFace(3, 4).SetID(0);

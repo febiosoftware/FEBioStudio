@@ -70,7 +70,7 @@ FSMesh* FETube::BuildMesh()
 	return BuildMultiBlockMesh();
 }
 
-FSMesh* FETube::BuildMultiBlockMesh()
+bool FETube::BuildMultiBlock()
 {
 	// get the geometry parameters
 	double R0 = m_pobj->GetFloatValue(GTube::RIN);
@@ -97,98 +97,104 @@ FSMesh* FETube::BuildMultiBlockMesh()
 	if (ns == 1) br = false;
 
 	// build the multi-block mesh
-	FEMultiBlockMesh MB;
+	ClearMB();
 
 	// add nodes
-	MB.AddNode(vec3d(R0, 0, 0)).SetID(4);
-	MB.AddNode(vec3d(R1, 0, 0)).SetID(0);
-	MB.AddNode(vec3d(0, R0, 0)).SetID(5);
-	MB.AddNode(vec3d(0, R1, 0)).SetID(1);
-	MB.AddNode(vec3d(-R0, 0, 0)).SetID(6);
-	MB.AddNode(vec3d(-R1, 0, 0)).SetID(2);
-	MB.AddNode(vec3d(0, -R0, 0)).SetID(7);
-	MB.AddNode(vec3d(0, -R1, 0)).SetID(3);
+	AddNode(vec3d(R0, 0, 0)).SetID(4);
+	AddNode(vec3d(R1, 0, 0)).SetID(0);
+	AddNode(vec3d(0, R0, 0)).SetID(5);
+	AddNode(vec3d(0, R1, 0)).SetID(1);
+	AddNode(vec3d(-R0, 0, 0)).SetID(6);
+	AddNode(vec3d(-R1, 0, 0)).SetID(2);
+	AddNode(vec3d(0, -R0, 0)).SetID(7);
+	AddNode(vec3d(0, -R1, 0)).SetID(3);
 
-	MB.AddNode(vec3d(R0, 0, h)).SetID(12);
-	MB.AddNode(vec3d(R1, 0, h)).SetID(8);
-	MB.AddNode(vec3d(0, R0, h)).SetID(13);
-	MB.AddNode(vec3d(0, R1, h)).SetID(9);
-	MB.AddNode(vec3d(-R0, 0, h)).SetID(14);
-	MB.AddNode(vec3d(-R1, 0, h)).SetID(10);
-	MB.AddNode(vec3d(0, -R0, h)).SetID(15);
-	MB.AddNode(vec3d(0, -R1, h)).SetID(11);
+	AddNode(vec3d(R0, 0, h)).SetID(12);
+	AddNode(vec3d(R1, 0, h)).SetID(8);
+	AddNode(vec3d(0, R0, h)).SetID(13);
+	AddNode(vec3d(0, R1, h)).SetID(9);
+	AddNode(vec3d(-R0, 0, h)).SetID(14);
+	AddNode(vec3d(-R1, 0, h)).SetID(10);
+	AddNode(vec3d(0, -R0, h)).SetID(15);
+	AddNode(vec3d(0, -R1, h)).SetID(11);
 
 	// add blocks
-	MB.AddBlock(0, 1, 3, 2,  8,  9, 11, 10).SetSizes(ns, nd, nz).SetZoning(gr, 1, gz, br, false, bz);
-	MB.AddBlock(2, 3, 5, 4, 10, 11, 13, 12).SetSizes(ns, nd, nz).SetZoning(gr, 1, gz, br, false, bz);
-	MB.AddBlock(4, 5, 7, 6, 12, 13, 15, 14).SetSizes(ns, nd, nz).SetZoning(gr, 1, gz, br, false, bz);
-	MB.AddBlock(6, 7, 1, 0, 14, 15,  9,  8).SetSizes(ns, nd, nz).SetZoning(gr, 1, gz, br, false, bz);
+	AddBlock(0, 1, 3, 2, 8, 9, 11, 10).SetSizes(ns, nd, nz).SetZoning(gr, 1, gz, br, false, bz);
+	AddBlock(2, 3, 5, 4, 10, 11, 13, 12).SetSizes(ns, nd, nz).SetZoning(gr, 1, gz, br, false, bz);
+	AddBlock(4, 5, 7, 6, 12, 13, 15, 14).SetSizes(ns, nd, nz).SetZoning(gr, 1, gz, br, false, bz);
+	AddBlock(6, 7, 1, 0, 14, 15, 9, 8).SetSizes(ns, nd, nz).SetZoning(gr, 1, gz, br, false, bz);
 
 	// update MB data structures
-	MB.UpdateMB();
+	BuildMB();
 
 	// set block IDs
-	MBBlock& B1 = MB.GetBlock(0); B1.SetID(0);
-	MBBlock& B2 = MB.GetBlock(1); B2.SetID(0);
-	MBBlock& B3 = MB.GetBlock(2); B3.SetID(0);
-	MBBlock& B4 = MB.GetBlock(3); B4.SetID(0);
+	MBBlock& B1 = GetBlock(0); B1.SetID(0);
+	MBBlock& B2 = GetBlock(1); B2.SetID(0);
+	MBBlock& B3 = GetBlock(2); B3.SetID(0);
+	MBBlock& B4 = GetBlock(3); B4.SetID(0);
 
 	// set the face IDs
-	MB.SetBlockFaceID(B1, -1, 4, -1, 8, 0, 12);
-	MB.SetBlockFaceID(B2, -1, 5, -1, 9, 1, 13);
-	MB.SetBlockFaceID(B3, -1, 6, -1,10, 2, 14);
-	MB.SetBlockFaceID(B4, -1, 7, -1,11, 3, 15);
+	SetBlockFaceID(B1, -1, 4, -1, 8, 0, 12);
+	SetBlockFaceID(B2, -1, 5, -1, 9, 1, 13);
+	SetBlockFaceID(B3, -1, 6, -1, 10, 2, 14);
+	SetBlockFaceID(B4, -1, 7, -1, 11, 3, 15);
 
 	// set the edge IDs
-	MBFace& F1  = MB.GetBlockFace(0, 4); MB.SetFaceEdgeID(F1 , 25, 0, 24, 4);
-	MBFace& F2  = MB.GetBlockFace(1, 4); MB.SetFaceEdgeID(F2 , 26, 1, 25, 5);
-	MBFace& F3  = MB.GetBlockFace(2, 4); MB.SetFaceEdgeID(F3 , 27, 2, 26, 6);
-	MBFace& F4  = MB.GetBlockFace(3, 4); MB.SetFaceEdgeID(F4 , 24, 3, 27, 7);
-	MBFace& F5  = MB.GetBlockFace(0, 1); MB.SetFaceEdgeID(F5 , 0, 17, 8, 16);
-	MBFace& F6  = MB.GetBlockFace(1, 1); MB.SetFaceEdgeID(F6 , 1, 18, 9, 17);
-	MBFace& F7  = MB.GetBlockFace(2, 1); MB.SetFaceEdgeID(F7 , 2, 19, 10, 18);
-	MBFace& F8  = MB.GetBlockFace(3, 1); MB.SetFaceEdgeID(F8 , 3, 16, 11, 19);
-	MBFace& F9  = MB.GetBlockFace(0, 3); MB.SetFaceEdgeID(F9 , 4, 20, 12, 21);
-	MBFace& F10 = MB.GetBlockFace(1, 3); MB.SetFaceEdgeID(F10, 5, 21, 13, 22);
-	MBFace& F11 = MB.GetBlockFace(2, 3); MB.SetFaceEdgeID(F11, 6, 22, 14, 23);
-	MBFace& F12 = MB.GetBlockFace(3, 3); MB.SetFaceEdgeID(F12, 7, 23, 15, 20);
-	MBFace& F13 = MB.GetBlockFace(0, 5); MB.SetFaceEdgeID(F13, 28, 8, 29, 12);
-	MBFace& F14 = MB.GetBlockFace(1, 5); MB.SetFaceEdgeID(F14, 29, 9, 30, 13);
-	MBFace& F15 = MB.GetBlockFace(2, 5); MB.SetFaceEdgeID(F15, 30, 10, 31, 14);
-	MBFace& F16 = MB.GetBlockFace(3, 5); MB.SetFaceEdgeID(F16, 31, 11, 28, 15);
+	MBFace& F1 = GetBlockFace(0, 4); SetFaceEdgeID(F1, 25, 0, 24, 4);
+	MBFace& F2 = GetBlockFace(1, 4); SetFaceEdgeID(F2, 26, 1, 25, 5);
+	MBFace& F3 = GetBlockFace(2, 4); SetFaceEdgeID(F3, 27, 2, 26, 6);
+	MBFace& F4 = GetBlockFace(3, 4); SetFaceEdgeID(F4, 24, 3, 27, 7);
+	MBFace& F5 = GetBlockFace(0, 1); SetFaceEdgeID(F5, 0, 17, 8, 16);
+	MBFace& F6 = GetBlockFace(1, 1); SetFaceEdgeID(F6, 1, 18, 9, 17);
+	MBFace& F7 = GetBlockFace(2, 1); SetFaceEdgeID(F7, 2, 19, 10, 18);
+	MBFace& F8 = GetBlockFace(3, 1); SetFaceEdgeID(F8, 3, 16, 11, 19);
+	MBFace& F9 = GetBlockFace(0, 3); SetFaceEdgeID(F9, 4, 20, 12, 21);
+	MBFace& F10 = GetBlockFace(1, 3); SetFaceEdgeID(F10, 5, 21, 13, 22);
+	MBFace& F11 = GetBlockFace(2, 3); SetFaceEdgeID(F11, 6, 22, 14, 23);
+	MBFace& F12 = GetBlockFace(3, 3); SetFaceEdgeID(F12, 7, 23, 15, 20);
+	MBFace& F13 = GetBlockFace(0, 5); SetFaceEdgeID(F13, 28, 8, 29, 12);
+	MBFace& F14 = GetBlockFace(1, 5); SetFaceEdgeID(F14, 29, 9, 30, 13);
+	MBFace& F15 = GetBlockFace(2, 5); SetFaceEdgeID(F15, 30, 10, 31, 14);
+	MBFace& F16 = GetBlockFace(3, 5); SetFaceEdgeID(F16, 31, 11, 28, 15);
 
 	// set edge types
-	MBEdge& E1  = MB.GetFaceEdge(F1, 1); E1.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E2  = MB.GetFaceEdge(F1, 3); E2.edge.m_ntype = EDGE_ZARC; E2.m_winding = -1;
-	MBEdge& E3  = MB.GetFaceEdge(F2, 1); E3.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E4  = MB.GetFaceEdge(F2, 3); E4.edge.m_ntype = EDGE_ZARC; E4.m_winding = -1;
-	MBEdge& E5  = MB.GetFaceEdge(F3, 1); E5.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E6  = MB.GetFaceEdge(F3, 3); E6.edge.m_ntype = EDGE_ZARC; E6.m_winding = -1;
-	MBEdge& E7  = MB.GetFaceEdge(F4, 1); E7.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E8  = MB.GetFaceEdge(F4, 3); E8.edge.m_ntype = EDGE_ZARC; E8.m_winding = -1;
-	MBEdge& E9  = MB.GetFaceEdge(F13, 1); E9.edge.m_ntype = EDGE_ZARC; E9.m_winding = -1;
-	MBEdge& E10 = MB.GetFaceEdge(F13, 3); E10.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E11 = MB.GetFaceEdge(F14, 1); E11.edge.m_ntype = EDGE_ZARC; E11.m_winding = -1;
-	MBEdge& E12 = MB.GetFaceEdge(F14, 3); E12.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E13 = MB.GetFaceEdge(F15, 1); E13.edge.m_ntype = EDGE_ZARC; E13.m_winding = -1;
-	MBEdge& E14 = MB.GetFaceEdge(F15, 3); E14.edge.m_ntype = EDGE_ZARC;
-	MBEdge& E15 = MB.GetFaceEdge(F16, 1); E15.edge.m_ntype = EDGE_ZARC; E15.m_winding = -1;
-	MBEdge& E16 = MB.GetFaceEdge(F16, 3); E16.edge.m_ntype = EDGE_ZARC;
+	MBEdge& E1  = GetFaceEdge(F1 , 1); E1.m_ntype = EDGE_ZARC;
+	MBEdge& E2  = GetFaceEdge(F1 , 3); E2.m_ntype = EDGE_ZARC; E2.m_orient = -1;
+	MBEdge& E3  = GetFaceEdge(F2 , 1); E3.m_ntype = EDGE_ZARC;
+	MBEdge& E4  = GetFaceEdge(F2 , 3); E4.m_ntype = EDGE_ZARC; E4.m_orient = -1;
+	MBEdge& E5  = GetFaceEdge(F3 , 1); E5.m_ntype = EDGE_ZARC;
+	MBEdge& E6  = GetFaceEdge(F3 , 3); E6.m_ntype = EDGE_ZARC; E6.m_orient = -1;
+	MBEdge& E7  = GetFaceEdge(F4 , 1); E7.m_ntype = EDGE_ZARC;
+	MBEdge& E8  = GetFaceEdge(F4 , 3); E8.m_ntype = EDGE_ZARC; E8.m_orient = -1;
+	MBEdge& E9  = GetFaceEdge(F13, 1); E9.m_ntype = EDGE_ZARC; E9.m_orient = -1;
+	MBEdge& E10 = GetFaceEdge(F13, 3); E10.m_ntype = EDGE_ZARC;
+	MBEdge& E11 = GetFaceEdge(F14, 1); E11.m_ntype = EDGE_ZARC; E11.m_orient = -1;
+	MBEdge& E12 = GetFaceEdge(F14, 3); E12.m_ntype = EDGE_ZARC;
+	MBEdge& E13 = GetFaceEdge(F15, 1); E13.m_ntype = EDGE_ZARC; E13.m_orient = -1;
+	MBEdge& E14 = GetFaceEdge(F15, 3); E14.m_ntype = EDGE_ZARC;
+	MBEdge& E15 = GetFaceEdge(F16, 1); E15.m_ntype = EDGE_ZARC; E15.m_orient = -1;
+	MBEdge& E16 = GetFaceEdge(F16, 3); E16.m_ntype = EDGE_ZARC;
+
+	UpdateMB();
+
+	return true;
+}
+
+FSMesh* FETube::BuildMultiBlockMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
 	switch (nelem)
 	{
-	case 0: MB.SetElementType(FE_HEX8); break;
-	case 1: MB.SetElementType(FE_HEX20); break;
-	case 2: MB.SetElementType(FE_HEX27); break;
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
 	}
 
-	// build the mesh
-	FSMesh* pm = MB.BuildMesh();
-
 	// all done
-	return pm;
+	return FEMultiBlockMesh::BuildMesh();
 }
 
 FSMesh* FETube::BuildMeshLegacy()

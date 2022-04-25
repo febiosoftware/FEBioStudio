@@ -54,6 +54,33 @@ FEShellTube::FEShellTube(GThinTube* po)
 
 FSMesh* FEShellTube::BuildMesh()
 {
+	if (BuildMultiQuad() == false) return nullptr;
+
+	// set element type
+	int elemType = GetIntValue(ELEM_TYPE);
+	switch (elemType)
+	{
+	case 0: SetElementType(FE_QUAD4); break;
+	case 1: SetElementType(FE_QUAD8); break;
+	case 2: SetElementType(FE_QUAD9); break;
+	};
+
+	// Build the mesh
+	FSMesh* pm = FEMultiQuadMesh::BuildMesh();
+	if (pm == nullptr) return nullptr;
+
+	// assign shell thickness
+	double t = GetFloatValue(T);
+	pm->SetUniformShellThickness(t);
+
+	return pm;
+}
+
+bool FEShellTube::BuildMultiQuad()
+{
+	// build the multi patch 
+	Build(m_pobj);
+
 	// get discretization parameters
 	int nd = GetIntValue(NDIV);
 	int nz = GetIntValue(NSTACK);
@@ -62,31 +89,11 @@ FSMesh* FEShellTube::BuildMesh()
 	if (nd < 1) nd = 1;
 	if (nz < 1) nz = 1;
 
-	FEMultiQuadMesh MQ;
-	MQ.Build(m_pobj);
-
-	// set element type
-	int elemType = GetIntValue(ELEM_TYPE);
-	switch (elemType)
-	{
-	case 0: MQ.SetElementType(FE_QUAD4); break;
-	case 1: MQ.SetElementType(FE_QUAD8); break;
-	case 2: MQ.SetElementType(FE_QUAD9); break;
-	};
-
 	// set tesselation
-	MQ.SetFaceSizes(0, nd, nz);
-	MQ.SetFaceSizes(1, nd, nz);
-	MQ.SetFaceSizes(2, nd, nz);
-	MQ.SetFaceSizes(3, nd, nz);
+	SetFaceSizes(0, nd, nz);
+	SetFaceSizes(1, nd, nz);
+	SetFaceSizes(2, nd, nz);
+	SetFaceSizes(3, nd, nz);
 
-	// Build the mesh
-	FSMesh* pm = MQ.BuildMesh();
-	if (pm == nullptr) return nullptr;
-
-	// assign shell thickness
-	double t = GetFloatValue(T);
-	pm->SetUniformShellThickness(t);
-
-	return pm;
+	return true;
 }

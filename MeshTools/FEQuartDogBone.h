@@ -41,10 +41,11 @@ public:
 
 protected:
 	FSMesh* BuildMeshLegacy();
-	FSMesh* BuildMultiBlockMesh4();
-	FSMesh* BuildMultiBlockMesh6();
+
+	bool BuildMultiBlock() override;
+	bool BuildMultiBlockMesh6();
+	bool BuildMultiBlockMesh4();
 
 protected:
 	GQuartDogBone* m_pobj;
-
 };
