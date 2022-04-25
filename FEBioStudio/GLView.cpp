@@ -1233,7 +1233,7 @@ void CGLView::initializeGL()
 	//	glLightfv(GL_LIGHT1, GL_DIFFUSE, dif2);
 
 	// enable color tracking for diffuse color of materials
-	glEnable(GL_COLOR_MATERIAL);
+//	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
 	// set the texture parameters
@@ -1964,11 +1964,13 @@ void CGLView::SetDefaultMatProps()
 {
 	//		GLfloat dif[] = {0.8f, 0.8f, 0.8f, 1.f};
 	GLfloat amb[] = { 0.8f, 0.8f, 0.8f, 1.f };
+	GLfloat rev[] = { 0.8f, 0.6f, 0.6f, 1.f };
 	GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
 	GLfloat emi[] = { 0.0f, 0.0f, 0.0f, 1.f };
 
 	//		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE , dif);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, amb);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, amb);
+	glMaterialfv(GL_BACK , GL_AMBIENT_AND_DIFFUSE, rev);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emi);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);

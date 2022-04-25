@@ -954,6 +954,7 @@ void GLTriad::draw(QPainter* painter)
 
 	// create the cylinder object
 	glEnable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 	GLUquadricObj* pcyl = gluNewQuadric();
 
 	const GLdouble r0 = .05;
