@@ -404,9 +404,7 @@ public slots:
 	void on_actionAddMaterial_triggered();
 	void on_actionAddMeshAdaptor_triggered();
 	void on_actionAddLoadController_triggered();
-	void on_actionAddNodeData_triggered();
-	void on_actionAddFaceData_triggered();
-	void on_actionAddElemData_triggered();
+	void on_actionAddMeshData_triggered();
 	void on_actionAddStep_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();

@@ -613,72 +613,14 @@ void CMainWindow::on_actionAddLoadController_triggered()
 	}
 }
 
-void CMainWindow::on_actionAddNodeData_triggered()
+void CMainWindow::on_actionAddMeshData_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
 
-	CDlgAddPhysicsItem dlg("Add Node Data", FENODEDATAGENERATOR_ID, -1, prj, true, false, this);
-	if (dlg.exec())
-	{
-		FSModel* fem = &prj.GetFSModel();
-		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);
-		if (pmd)
-		{
-			std::string name = dlg.GetName();
-			if (name.empty())
-			{
-				int n = fem->MeshDataGenerators();
-				std::stringstream ss; ss << "MeshData" << n + 1;
-				name = ss.str();
-			}
-
-			pmd->SetName(name);
-			fem->AddMeshDataGenerator(pmd);
-			UpdateModel(pmd);
-		}
-	}
-}
-
-void CMainWindow::on_actionAddFaceData_triggered()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	FSProject& prj = doc->GetProject();
-
-	CDlgAddPhysicsItem dlg("Add Face Data", FEFACEDATAGENERATOR_ID, -1, prj, true, false, this);
-	if (dlg.exec())
-	{
-		FSModel* fem = &prj.GetFSModel();
-		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);
-		if (pmd)
-		{
-			std::string name = dlg.GetName();
-			if (name.empty())
-			{
-				int n = fem->MeshDataGenerators();
-				std::stringstream ss; ss << "MeshData" << n + 1;
-				name = ss.str();
-			}
-
-			pmd->SetName(name);
-			fem->AddMeshDataGenerator(pmd);
-			UpdateModel(pmd);
-		}
-	}
-}
-
-void CMainWindow::on_actionAddElemData_triggered()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	FSProject& prj = doc->GetProject();
-
-	CDlgAddPhysicsItem dlg("Add Element Data", FEELEMDATAGENERATOR_ID, -1, prj, true, false, this);
+	CDlgAddPhysicsItem dlg("Add Mesh Data", FEMESHDATAGENERATOR_ID, -1, prj, true, false, this);
 	if (dlg.exec())
 	{
 		FSModel* fem = &prj.GetFSModel();

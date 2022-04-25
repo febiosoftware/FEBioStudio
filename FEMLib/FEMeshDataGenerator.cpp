@@ -41,7 +41,7 @@ int FSNodeDataGenerator::GetCounter() { return m_nref; }
 //=============================================================================
 FEBioNodeDataGenerator::FEBioNodeDataGenerator(FSModel* fem) : FSNodeDataGenerator(fem, FE_FEBIO_NODEDATA_GENERATOR)
 {
-	SetSuperClassID(FENODEDATAGENERATOR_ID);
+	SetSuperClassID(FEMESHDATAGENERATOR_ID);
 	SetMeshItemType(FE_ALL_FLAGS);
 }
 
@@ -96,7 +96,7 @@ int FSEdgeDataGenerator::GetCounter() { return m_nref; }
 //=============================================================================
 FEBioEdgeDataGenerator::FEBioEdgeDataGenerator(FSModel* fem) : FSEdgeDataGenerator(fem, FE_FEBIO_EDGEDATA_GENERATOR)
 {
-	SetSuperClassID(FEEDGEDATAGENERATOR_ID);
+	SetSuperClassID(FEMESHDATAGENERATOR_ID);
 	SetMeshItemType(FE_EDGE_FLAG);
 }
 
@@ -151,7 +151,7 @@ int FSFaceDataGenerator::GetCounter() { return m_nref; }
 //=============================================================================
 FEBioFaceDataGenerator::FEBioFaceDataGenerator(FSModel* fem) : FSFaceDataGenerator(fem, FE_FEBIO_FACEDATA_GENERATOR)
 {
-	SetSuperClassID(FEFACEDATAGENERATOR_ID);
+	SetSuperClassID(FEMESHDATAGENERATOR_ID);
 	SetMeshItemType(FE_FACE_FLAG);
 }
 
@@ -206,7 +206,7 @@ int FSElemDataGenerator::GetCounter() { return m_nref; }
 //=============================================================================
 FEBioElemDataGenerator::FEBioElemDataGenerator(FSModel* fem) : FSElemDataGenerator(fem, FE_FEBIO_ELEMDATA_GENERATOR)
 {
-	SetSuperClassID(FEELEMDATAGENERATOR_ID);
+	SetSuperClassID(FEMESHDATAGENERATOR_ID);
 	SetMeshItemType(FE_ELEM_FLAG);
 }
 

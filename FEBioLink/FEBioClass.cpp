@@ -259,10 +259,15 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		else pc = new FEBioNLConstraint(fem); break;
 	}
 	break;
-	case FENODEDATAGENERATOR_ID: pc = new FEBioNodeDataGenerator(fem); break;
-	case FEEDGEDATAGENERATOR_ID: pc = new FEBioEdgeDataGenerator(fem); break;
-	case FEFACEDATAGENERATOR_ID: pc = new FEBioFaceDataGenerator(fem); break;
-	case FEELEMDATAGENERATOR_ID: pc = new FEBioElemDataGenerator(fem); break;
+	case FEMESHDATAGENERATOR_ID: 
+	{
+		if      (baseClassId == FEBio::GetBaseClassIndex("FENodeDataGenerator")) pc = new FEBioNodeDataGenerator(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("FEEdgeDataGenerator")) pc = new FEBioEdgeDataGenerator(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("FEFaceDataGenerator")) pc = new FEBioFaceDataGenerator(fem);
+		else if (baseClassId == FEBio::GetBaseClassIndex("FEElemDataGenerator")) pc = new FEBioElemDataGenerator(fem);
+		else assert(false);
+	}
+	break;
 	case FESOLVER_ID           : pc = new FSGenericClass(fem); break;
 	case FEMESHADAPTORCRITERION_ID: pc = new FSGenericClass(fem); break;
 	case FENEWTONSTRATEGY_ID  : pc = new FSGenericClass(fem); break;
@@ -905,24 +910,24 @@ FSLoadController* FEBio::CreateLoadController(const std::string& typeStr, FSMode
 	return CreateModelComponent<FEBioLoadController>(FELOADCONTROLLER_ID, typeStr, fem);
 }
 
-FSNodeDataGenerator* FEBio::CreateNodeDataGenerator(const std::string& typeStr, FSModel* fem)
+FSMeshDataGenerator* FEBio::CreateNodeDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioNodeDataGenerator>(FENODEDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioNodeDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
 }
 
-FSEdgeDataGenerator* FEBio::CreateEdgeDataGenerator(const std::string& typeStr, FSModel* fem)
+FSMeshDataGenerator* FEBio::CreateEdgeDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioEdgeDataGenerator>(FEEDGEDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioEdgeDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
 }
 
-FSFaceDataGenerator* FEBio::CreateFaceDataGenerator(const std::string& typeStr, FSModel* fem)
+FSMeshDataGenerator* FEBio::CreateFaceDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioFaceDataGenerator>(FEFACEDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioFaceDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
 }
 
-FSElemDataGenerator* FEBio::CreateElemDataGenerator(const std::string& typeStr, FSModel* fem)
+FSMeshDataGenerator* FEBio::CreateElemDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioElemDataGenerator>(FEELEMDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioElemDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
 }
 
 FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)
