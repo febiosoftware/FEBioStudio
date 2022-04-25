@@ -142,11 +142,15 @@
 #define FE_HOLZAPFEL_UNCONSTRAINED      81
 #define FE_FIBER_KIOUSIS_UNCOUPLED      82
 #define FE_NEWTONIAN_VISCOUS_SOLID      83
-#define FE_KAMENSKY						84
-#define FE_KAMENSKY_UNCOUPLED			85
+#define FE_ISOTROPIC_LEE_SACKS			84
+#define FE_ISOTROPIC_LEE_SACKS_UNCOUPLED 85
 #define FE_FIBER_NEO_HOOKEAN            86
 #define FE_FIBER_NATURAL_NH             87
 #define FE_HOLMES_MOW_UNCOUPLED         88
+#define FE_TRACE_FREE_NEO_HOOKEAN       89
+#define FE_POLYNOMIAL_HYPERELASTIC      90
+#define FE_FORCE_VELOCITY_ESTRADA       91
+#define FE_FIBER_EXP_POW_LIN            92
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -175,6 +179,9 @@
 #define FE_REACTIVE_PLASTICITY      129
 #define FE_REACTIVE_PLASTIC_DAMAGE  130
 #define FE_BIPHASIC_FSI_MATERIAL    131
+#define FE_RV_DAMAGE_MATERIAL       132
+#define FE_REACTIVE_FATIGUE         133
+#define FE_UNCOUPLED_REACTIVE_FATIGUE   134
 
 // permeability materials
 #define FE_PERM_CONST				200
@@ -259,6 +266,7 @@
 #define FE_RELAX_PRONY              807
 #define FE_RELAX_MALKIN             808
 #define FE_RELAX_CSEXP              809
+#define FE_RELAX_MALKIN_DIST        810
 
 // elastic damage materials
 #define FE_DMG_MATERIAL             900
@@ -268,6 +276,7 @@
 #define FE_CDF_WEIBULL              922
 #define FE_CDF_STEP                 923
 #define FE_CDF_QUINTIC              924
+#define FE_CDF_POWER                925
 #define FE_DC_SIMO                  940
 #define FE_DC_SED                   941
 #define FE_DC_SSE                   942
@@ -437,6 +446,20 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// trace-free Neo-Hookean
+//
+class FETraceFreeNeoHookean : public FEMaterial
+{
+public:
+    enum { MP_DENSITY, MP_MU };
+    
+public:
+    FETraceFreeNeoHookean();
+    
+    DECLARE_REGISTERED(FETraceFreeNeoHookean);
+};
+
+//-----------------------------------------------------------------------------
 // incompressible neo-Hookean
 class FEIncompNeoHookean : public FEMaterial
 {
@@ -489,6 +512,21 @@ public:
 
 	DECLARE_REGISTERED(FEVerondaWestmann);
 };
+
+//-----------------------------------------------------------------------------
+// polynomial hyper-elastic
+//
+class FEPolynomialHyperelastic : public FEMaterial
+{
+public:
+    enum { MP_DENSITY, MP_C01, MP_C02, MP_C10, MP_C11, MP_C12, MP_C20, MP_C21, MP_C22, MP_D1, MP_D2 };
+
+public:
+    FEPolynomialHyperelastic();
+
+    DECLARE_REGISTERED(FEPolynomialHyperelastic);
+};
+
 
 //-----------------------------------------------------------------------------
 // coupled Mooney-Rivlin
@@ -735,6 +773,20 @@ public:
 	FEActiveContraction();
 
 	DECLARE_REGISTERED(FEActiveContraction);
+};
+
+//-----------------------------------------------------------------------------
+// force-velocity Estrada contraction material for transverely-isotropic materials
+
+class FEForceVelocityEstrada : public FEMaterial
+{
+public:
+    enum { MP_ASCL, MP_CA0, MP_CAM, MP_BETA, MP_L0, MP_REFL, M_TMAX, M_AL1, M_AL2, M_AL3, M_A1, M_A2, M_A3, M_AT, M_FV };
+    
+public:
+    FEForceVelocityEstrada();
+    
+    DECLARE_REGISTERED(FEForceVelocityEstrada);
 };
 
 //-----------------------------------------------------------------------------
@@ -1100,27 +1152,27 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEKamensky: public FEMaterial
+class FEIsotropicLeeSacks : public FEMaterial
 {
 public:
 	enum { MP_DENSITY, MP_C0, MP_C1, MP_C2, MP_K, MP_TANGENT_SCALE };
 
 public:
-	FEKamensky();
+    FEIsotropicLeeSacks();
 
-	DECLARE_REGISTERED(FEKamensky);
+	DECLARE_REGISTERED(FEIsotropicLeeSacks);
 };
 
 //-----------------------------------------------------------------------------
-class FEKamenskyUncoupled : public FEMaterial
+class FEIsotropicLeeSacksUncoupled : public FEMaterial
 {
 public:
 	enum { MP_DENSITY, MP_C0, MP_C1, MP_C2, MP_K, MP_TANGENT_SCALE };
 
 public:
-	FEKamenskyUncoupled();
+    FEIsotropicLeeSacksUncoupled();
 
-	DECLARE_REGISTERED(FEKamenskyUncoupled);
+	DECLARE_REGISTERED(FEIsotropicLeeSacksUncoupled);
 };
 
 
@@ -1477,6 +1529,17 @@ public:
 public:
 	FEFiberExpLinearUncoupled();
 	DECLARE_REGISTERED(FEFiberExpLinearUncoupled);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberExpPowLin : public FEFiberMaterial
+{
+public:
+    enum { MP_E, MP_ALPHA, MP_BETA, MP_LAM0 };
+public:
+    FEFiberExpPowLin();
+    
+    DECLARE_REGISTERED(FEFiberExpPowLin);
 };
 
 //-----------------------------------------------------------------------------
@@ -2066,6 +2129,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FECDFPower : public FEMaterial
+{
+public:
+    enum { MP_ALPHA, MP_MU0, MP_MU1 };
+public:
+    FECDFPower();
+    DECLARE_REGISTERED(FECDFPower);
+};
+
+//-----------------------------------------------------------------------------
 class FEDCSimo : public FEMaterial
 {
 public:
@@ -2243,6 +2316,16 @@ public:
 public:
     FERelaxMalkin();
     DECLARE_REGISTERED(FERelaxMalkin);
+};
+
+//-----------------------------------------------------------------------------
+class FERelaxMalkinDistortion : public FEMaterial
+{
+public:
+    enum { MP_T1C0, MP_T1C1, MP_T1S0, MP_T2C0, MP_T2C1, MP_T2S0, M_BETA };
+public:
+    FERelaxMalkinDistortion();
+    DECLARE_REGISTERED(FERelaxMalkinDistortion);
 };
 
 //-----------------------------------------------------------------------------

@@ -154,11 +154,13 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "element strain energy"             );
     AddPlotVariable(MODULE_MECH, "element stress power"              );
     AddPlotVariable(MODULE_MECH, "enclosed volume"                   , false, true, DOMAIN_SURFACE);
+    AddPlotVariable(MODULE_MECH, "fatigue bond fraction"             );
     AddPlotVariable(MODULE_MECH, "fiber stretch"                     );
     AddPlotVariable(MODULE_MECH, "fiber vector"                      );
     AddPlotVariable(MODULE_MECH, "intact bond fraction"              );
     AddPlotVariable(MODULE_MECH, "kinetic energy density"            );
     AddPlotVariable(MODULE_MECH, "Lagrange strain"                   );
+    AddPlotVariable(MODULE_MECH, "infinitesimal strain"              );
     AddPlotVariable(MODULE_MECH, "left Hencky"                       );
     AddPlotVariable(MODULE_MECH, "left stretch"                      );
     AddPlotVariable(MODULE_MECH, "material axes"                     );
@@ -189,6 +191,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "rigid torque"                      );
     AddPlotVariable(MODULE_MECH, "rigid velocity"                    );
     AddPlotVariable(MODULE_MECH, "RVE generations"                   );
+    AddPlotVariable(MODULE_MECH, "RVE reforming bonds"               );
 	AddPlotVariable(MODULE_MECH, "Euler angle"                       );
     AddPlotVariable(MODULE_MECH, "shell director"                    );
     AddPlotVariable(MODULE_MECH, "shell relative volume"             );
@@ -210,6 +213,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "yielded bond fraction"             );
 
     AddPlotVariable(MODULE_BIPHASIC, "effective fluid pressure"          );
+    AddPlotVariable(MODULE_BIPHASIC, "effective friction coefficient"    );
     AddPlotVariable(MODULE_BIPHASIC, "fluid pressure"                    );
     AddPlotVariable(MODULE_BIPHASIC, "fluid flux");
     AddPlotVariable(MODULE_BIPHASIC, "fluid flow rate", false, true, DOMAIN_SURFACE);

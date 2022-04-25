@@ -56,6 +56,8 @@ REGISTER_MATERIAL(FENonLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_NONLINEAR_
 FENonLinearSpringMaterial::FENonLinearSpringMaterial() : FEDiscreteMaterial(FE_DISCRETE_NONLINEAR_SPRING)
 {
 	AddScienceParam(1, UNIT_FORCE, "force", "spring force")->SetLoadCurve();
+	AddDoubleParam(1, "scale", "scale");
+	AddChoiceParam(0, "measure", "deformation measure")->SetEnumNames("elongation\0strain\0stretch\0");
 
 	// create an initial linear ramp
 	LOADPOINT p0(0, 0), p1(1, 1);

@@ -646,6 +646,8 @@ SOFTWARE.*/
 #define FE_BFSI_TRACTION                    0x0034
 #define FE_FLUID_PRESSURE_LOAD              0x0035
 #define FE_MASSDAMPING_LOAD					0x0036
+#define FE_SURFACE_FORCE                    0x0037
+#define FE_BEARING_LOAD                     0x0038
 
 //--------------------------------------------------------
 // Interface types
@@ -694,3 +696,4 @@ SOFTWARE.*/
 #define FE_FRICTIONLESS_FLUID_WALL      0x002F  // added in 2.0
 #define FE_INSITUSTRETCH_CONSTRAINT		0x0030	// added in FS 1.0
 #define FE_PRESTRAIN_CONSTRAINT		    0x0031	// added in FS 1.0
+#define FE_FIXED_NORMAL_DISPLACEMENT    0x0032

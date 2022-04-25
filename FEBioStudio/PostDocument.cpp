@@ -206,6 +206,14 @@ void ModelData::WriteData(Post::CGLModel* po)
 	int ntime = m_mdl.m_ntime;
 	if (ntime >= ps->GetStates() - 1) ntime = ps->GetStates() - 1;
 	po->SetCurrentTimeIndex(ntime);
+
+	// give the plots a chance to reload data if necessary
+	for (int i = 0; i < po->Plots(); ++i)
+	{
+		Post::CGLPlot* plt = po->Plot(i);
+		plt->Reload();
+	}
+
 	po->Update(false);
 }
 
@@ -384,6 +392,12 @@ void CPostDocument::ActivateColormap(bool bchecked)
 	Post::CGLModel* po = m_glm;
 	po->GetColorMap()->Activate(bchecked);
 	UpdateFEModel();
+}
+
+void CPostDocument::Activate()
+{
+	Post::FEPostModel::SetInstance(m_fem);
+	CGLDocument::Activate();
 }
 
 void CPostDocument::DeleteObject(Post::CGLObject* po)

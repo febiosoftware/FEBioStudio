@@ -403,6 +403,17 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	if (m_mod == 0) return;
 
 	FESelection* sel = doc->GetCurrentSelection();
+	FEItemListBuilder* list = (sel ? sel->CreateItemList() : 0);
+	FEGroup* g = dynamic_cast<FEGroup*>(list);
+	if (g == 0) 
+	{ 
+		if (dynamic_cast<GEdgeList*>(list) && (list->size() == 1))
+		{
+			GEdge* ge = dynamic_cast<GEdgeList*>(list)->GetEdge(0);
+			g = ge->GetFEEdgeSet();
+		}
+		else { delete list; list = 0; }
+	}
 
 	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, sel);
 	CDlgStartThread dlg(this, thread);

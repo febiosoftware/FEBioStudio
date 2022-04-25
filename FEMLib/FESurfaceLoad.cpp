@@ -184,6 +184,38 @@ void FESurfaceTraction::LoadParam(const Param& p)
 }
 
 //-----------------------------------------------------------------------------
+
+FESurfaceForceUniform::FESurfaceForceUniform(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_SURFACE_FORCE, ps, pi, nstep)
+{
+    SetTypeString("Surface Force");
+    AddDoubleParam(1.0, "scale")->SetLoadCurve();
+    AddVecParam(vec3d(0,0,0), "force")->SetUnit(UNIT_FORCE);
+}
+
+// used only for reading parameters for old file formats
+void FESurfaceForceUniform::LoadParam(const Param& p)
+{
+    switch (p.GetParamID())
+    {
+        case 0: SetForce(p.GetVec3dValue()); break;
+        case 1: *GetLoadCurve() = *p.GetLoadCurve(); break;
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+FEBearingLoad::FEBearingLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_BEARING_LOAD, ps, pi, nstep)
+{
+    SetTypeString("Bearing Load");
+    AddDoubleParam(1.0, "scale")->SetLoadCurve();
+    AddVecParam(vec3d(0,0,0), "force")->SetUnit(UNIT_FORCE);
+    AddIntParam(1, "profile")->SetEnumNames("Sinusoidal\0Parabolic\0");
+    AddBoolParam(true, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
+    AddBoolParam(false , "symmetric_stiffness", "Formulation")->SetEnumNames("Nonsymmetric\0Symmetric\0");
+    AddBoolParam(false, "shell_bottom", "Apply to shell bottom");
+}
+
+//-----------------------------------------------------------------------------
 FEFluidPressureLoad::FEFluidPressureLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_FLUID_PRESSURE_LOAD, ps, pi, nstep)
 {
     SetTypeString("Fluid pressure");
@@ -241,7 +273,7 @@ void FEFluidTraction::LoadParam(const Param& p)
 FEFluidVelocity::FEFluidVelocity(FEModel* ps) : FESurfaceLoad(FE_FLUID_VELOCITY, ps)
 {
     SetTypeString("Fluid Velocity Vector");
-    AddVecParam(vec3d(0,0,0), "velocity", "fluid velocity");
+    AddVecParam(vec3d(0,0,0), "velocity", "fluid velocity")->SetUnit(UNIT_VELOCITY);
 	AddDoubleParam(1, "scale", "scale");
 }
 
@@ -257,7 +289,7 @@ FEFluidVelocity::FEFluidVelocity(FEModel* ps, FEItemListBuilder* pi, vec3d t, in
 FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps) : FESurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps)
 {
     SetTypeString("Fluid Normal Velocity");
-    AddDoubleParam(1, "velocity", "velocity")->SetLoadCurve();
+    AddScienceParam(1, UNIT_VELOCITY, "velocity", "normal velocity")->SetLoadCurve();
     AddBoolParam(true, "prescribe_nodal_velocities", "prescribe nodal velocities");
     AddBoolParam(false, "parabolic", "parabolic velocity profile");
     AddBoolParam(false, "prescribe_rim_pressure", "prescribe rim pressure");
@@ -265,8 +297,7 @@ FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps) : FESurfaceLoad(FE_FLU
 
 FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep) : FESurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps, pi, nstep)
 {
-    SetTypeString("Fluid Normal Velocity");
-    AddDoubleParam(vn, "velocity", "velocity")->SetLoadCurve();
+    AddScienceParam(vn, UNIT_VELOCITY, "velocity", "normal velocity")->SetLoadCurve();
     AddBoolParam(bp, "prescribe_nodal_velocities", "prescribe nodal velocities");
     AddBoolParam(bparab, "parabolic", "parabolic velocity profile");
     AddBoolParam(brimp, "prescribe_rim_pressure", "prescribe rim pressure");
@@ -277,7 +308,7 @@ FEFluidNormalVelocity::FEFluidNormalVelocity(FEModel* ps, FEItemListBuilder* pi,
 FEFluidRotationalVelocity::FEFluidRotationalVelocity(FEModel* ps) : FESurfaceLoad(FE_FLUID_ROTATIONAL_VELOCITY, ps)
 {
     SetTypeString("Fluid Rotational Velocity");
-    AddDoubleParam(1, "angular_speed", "angular speed")->SetLoadCurve();
+    AddScienceParam(1, UNIT_ANGULAR_VELOCITY, "angular_speed", "angular speed")->SetLoadCurve();
     AddVecParam(vec3d(0,0,1), "axis", "axis");
     AddVecParam(vec3d(0,0,0), "origin", "origin")->SetUnit(UNIT_LENGTH);
 }
@@ -285,7 +316,7 @@ FEFluidRotationalVelocity::FEFluidRotationalVelocity(FEModel* ps) : FESurfaceLoa
 FEFluidRotationalVelocity::FEFluidRotationalVelocity(FEModel* ps, FEItemListBuilder* pi, double w, vec3d n, vec3d p, int nstep) : FESurfaceLoad(FE_FLUID_ROTATIONAL_VELOCITY, ps, pi, nstep)
 {
     SetTypeString("Fluid Normal Velocity");
-    AddDoubleParam(w, "angular_speed", "angular_speed")->SetLoadCurve();
+    AddScienceParam(w, UNIT_ANGULAR_VELOCITY, "angular_speed", "angular speed")->SetLoadCurve();
     AddVecParam(n, "axis", "axis");
     AddVecParam(p, "origin", "origin")->SetUnit(UNIT_LENGTH);
 }

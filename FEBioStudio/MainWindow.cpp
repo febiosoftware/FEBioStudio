@@ -2146,6 +2146,11 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	ui->htmlViewer->setDocument(nullptr);
 	ui->xmlEdit->setDocument(nullptr);
 
+	if (dynamic_cast<CModelDocument*>(doc))
+	{
+		ui->modelViewer->Clear();
+	}
+
 	// now, remove from the doc manager
 	m_DocManager->RemoveDocument(n);
 
@@ -2735,9 +2740,10 @@ void CMainWindow::DeleteAllJobs()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::ClearRecentProjectsList()
+void CMainWindow::ClearRecentFilesList()
 {
 	ui->m_recentFiles.clear();
+	ui->m_recentProjects.clear();
 }
 
 void CMainWindow::OnCameraChanged()
@@ -2757,7 +2763,6 @@ void CMainWindow::RemoveGraph(::CGraphWindow* graph)
 // Add a graph to the list of managed graph windows
 void CMainWindow::AddGraph(CGraphWindow* graph)
 {
-	graph->setWindowTitle(QString("Graph%1").arg(ui->graphList.size() + 1));
 	ui->graphList.push_back(graph);
 }
 

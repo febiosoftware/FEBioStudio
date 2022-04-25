@@ -38,6 +38,11 @@ CGLPlot::~CGLPlot()
 {
 }
 
+void CGLPlot::Reload()
+{
+
+}
+
 void CGLPlot::UpdateTexture() 
 {
 
@@ -97,4 +102,10 @@ void CGLLegendPlot::ShowLegend(bool b)
 	{
 		if (b) m_pbar->show(); else m_pbar->hide();
 	}
+}
+
+void CGLLegendPlot::Activate(bool b)
+{
+	CGLPlot::Activate(b);
+	if (b) ShowLegend(true); else ShowLegend(false);
 }

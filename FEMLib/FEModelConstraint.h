@@ -78,3 +78,15 @@ class FEInSituStretchConstraint : public FEModelConstraint
 public:
 	FEInSituStretchConstraint(FEModel* ps, int nstep = 0);
 };
+
+//-----------------------------------------------------------------------------
+// This class implements a fixed normal displacement constraint
+class FEFixedNormalDisplacement : public FESurfaceConstraint
+{
+public:
+    enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG, SHELLB };
+    
+public:
+    FEFixedNormalDisplacement(FEModel* ps, int nstep = 0);
+};
+

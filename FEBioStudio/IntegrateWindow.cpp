@@ -47,6 +47,11 @@ SOFTWARE.*/
 
 CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
+	QString wndTitle = windowTitle();
+	wndTitle += ":Integrate";
+	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
+	setWindowTitle(wndTitle);
+
 	QWidget* d = new QWidget;
 	QHBoxLayout* l = new QHBoxLayout;
 	l->setContentsMargins(2, 0, 2, 0);
@@ -60,8 +65,6 @@ CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDocument* postDoc) : C
 
 	QObject::connect(config, SIGNAL(currentIndexChanged(int)), this, SLOT(OnConfigChanged(int)));
 
-	QString title = "FEBio Studio: Integrate";
-	setWindowTitle(title);
 	m_nsrc = -1;
 	m_nconf = 0;
 }
@@ -244,8 +247,11 @@ void CIntegrateWindow::IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& d
 
 CIntegrateSurfaceWindow::CIntegrateSurfaceWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "FEBio Studio: Integrate Surface";
-	setWindowTitle(title);
+	QString wndTitle = windowTitle();
+	wndTitle += ":IntegrateSurface";
+	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
+	setWindowTitle(wndTitle);
+
 	m_nsrc = -1;
 }
 

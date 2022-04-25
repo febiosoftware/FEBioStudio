@@ -83,7 +83,7 @@ FESBMPointSource::FESBMPointSource(FEModel* ps, int nstep) : FEBodyLoad(FE_SBM_P
 FECentrifugalBodyForce::FECentrifugalBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
 {
     SetTypeString("centrifugal");
-    AddScienceParam(0, UNIT_RADIAN, "angular_speed", "angular speed")->SetLoadCurve();
+    AddScienceParam(0, UNIT_ANGULAR_VELOCITY, "angular_speed", "angular speed")->SetLoadCurve();
     AddVecParam(vec3d(0,0,1),"rotation_axis", "rotation axis");
     AddVecParam(vec3d(0,0,0),"rotation_center", "rotation center");
 }

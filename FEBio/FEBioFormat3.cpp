@@ -195,6 +195,23 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 	else if (atype == "fluid"      ) m_nAnalysis = FE_STEP_FLUID;
     else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
+
+	// set the project's active modules
+	FEProject& prj = FileReader()->GetProject();
+	switch (m_nAnalysis)
+	{
+	case FE_STEP_MECHANICS         : prj.SetModule(MODULE_MECH); break;
+	case FE_STEP_HEAT_TRANSFER     : prj.SetModule(MODULE_HEAT); break;
+	case FE_STEP_BIPHASIC          : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC); break;
+	case FE_STEP_BIPHASIC_SOLUTE   : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC | MODULE_SOLUTES); break;
+	case FE_STEP_MULTIPHASIC       : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC | MODULE_MULTIPHASIC | MODULE_SOLUTES | MODULE_REACTIONS); break;
+	case FE_STEP_FLUID             : prj.SetModule(MODULE_FLUID); break;
+	case FE_STEP_FLUID_FSI         : prj.SetModule(MODULE_MECH | MODULE_FLUID | MODULE_FLUID_FSI); break;
+	case FE_STEP_REACTION_DIFFUSION: prj.SetModule(MODULE_REACTIONS | MODULE_SOLUTES | MODULE_REACTION_DIFFUSION); break;
+	default:
+		assert(false);
+	}
+
 	return (m_nAnalysis != -1);
 }
 //=============================================================================
@@ -317,6 +334,7 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					FileReader()->AddLogEntry("unknown plot_level (line %d)", tag.currentLine());
 				}
 			}
+            else if (tag == "plot_stride") tag.value(ops.plot_stride);
 			else ParseUnknownTag(tag);
 		}
 		++tag;
@@ -1844,6 +1862,8 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	XMLAtt& att = tag.Attribute("type");
 	if      (att == "pressure"                      ) psl = CREATE_SURFACE_LOAD(FEPressureLoad);
 	else if (att == "traction"                      ) psl = CREATE_SURFACE_LOAD(FESurfaceTraction);
+    else if (att == "force"                         ) psl = CREATE_SURFACE_LOAD(FESurfaceForceUniform);
+    else if (att == "bearing load"                  ) psl = CREATE_SURFACE_LOAD(FEBearingLoad);
 	else if (att == "fluidflux"                     ) psl = CREATE_SURFACE_LOAD(FEFluidFlux);
 	else if (att == "soluteflux"                    ) psl = CREATE_SURFACE_LOAD(FESoluteFlux);
 	else if (att == "concentration flux"            ) psl = CREATE_SURFACE_LOAD(FEConcentrationFlux);
@@ -2987,14 +3007,10 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				++tag;
 				do
 				{
-					if (tag == "force")
+					if (ReadParam(*mat, tag) == false)
 					{
-						double F;
-						tag.value(F);
-						int lc = tag.AttributeValue<int>("lc", -1);
-						// TODO: assign the force to the material
+						ParseUnknownTag(tag);
 					}
-					else ParseUnknownTag(tag);
 					++tag;
 				} while (!tag.isend());
 				set.push_back(pg);
@@ -3075,6 +3091,7 @@ bool FEBioFormat3::ParseConstraintSection(XMLTag& tag)
 			else if (strcmp(sztype, "prestrain"              ) == 0) ParsePrestrainConstraint(pstep, tag);
             else if (strcmp(sztype, "normal fluid flow"      ) == 0) ParseNrmlFldVlctSrf(pstep, tag);
             else if (strcmp(sztype, "frictionless fluid wall") == 0) ParseFrictionlessFluidWall(pstep, tag);
+            else if (strcmp(sztype, "fixed normal displacement") == 0) ParseFixedNormalDisplacement(pstep, tag);
 			else throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 		}
 		else ParseUnknownTag(tag);
@@ -3267,6 +3284,39 @@ void FEBioFormat3::ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag)
     pi->SetItemList(psurf);
     pstep->AddComponent(pi);
 
+    // read parameters
+    ReadParameters(*pi, tag);
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat3::ParseFixedNormalDisplacement(FEStep* pstep, XMLTag& tag)
+{
+    FEBioModel& febio = GetFEBioModel();
+    FEModel& fem = GetFEModel();
+    
+    // make sure there is something to read
+    if (tag.isempty()) return;
+    
+    // get the (optional) contact name
+    char szbuf[256];
+    const char* szname = tag.AttributeValue("name", true);
+    if (szname == 0)
+    {
+        sprintf(szbuf, "FixedNormalDisplacement%02d", CountConstraints<FEFixedNormalDisplacement>(fem)+1);
+        szname = szbuf;
+    }
+    
+    // find the surface
+    const char* szsurf = tag.AttributeValue("surface");
+    FESurface* psurf = febio.BuildFESurface(szsurf);
+    if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
+    
+    // create a new fixed normal displacement
+    FEFixedNormalDisplacement* pi = new FEFixedNormalDisplacement(&fem, pstep->GetID());
+    pi->SetName(szname);
+    pi->SetItemList(psurf);
+    pstep->AddComponent(pi);
+    
     // read parameters
     ReadParameters(*pi, tag);
 }

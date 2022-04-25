@@ -255,8 +255,8 @@ public:
 	// Update the physics menu based on active modules
 	void UpdatePhysicsUi();
 
-	// clear the recent project list
-	void ClearRecentProjectsList();
+	// clear the recent files list
+	void ClearRecentFilesList();
 
 	// remove a graph from the list
 	void RemoveGraph(CGraphWindow* graph);

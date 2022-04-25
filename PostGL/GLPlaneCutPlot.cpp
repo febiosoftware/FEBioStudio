@@ -435,7 +435,7 @@ void CGLPlaneCutPlot::RenderMesh()
 		// render only when visible
 		FEElement_& el = pm->ElementRef(i);
 		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
-		if ((el.m_ntag > 0) && (pmat->bmesh) && (pmat->bvisible || m_bcut_hidden) && (pmat->bclip))
+		if ((el.m_ntag > 0) && el.IsSolid() && (pmat->bmesh) && (pmat->bvisible || m_bcut_hidden) && (pmat->bclip))
 		{
 			switch (el.Type())
 			{

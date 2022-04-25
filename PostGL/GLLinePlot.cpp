@@ -148,6 +148,11 @@ void CGLLinePlot::SetDataField(int n)
 	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 }
 
+void CGLLinePlot::Reload()
+{
+	if (m_lineData) m_lineData->Reload();
+}
+
 //-----------------------------------------------------------------------------
 void CGLLinePlot::Render(CGLContext& rc)
 {
@@ -587,6 +592,57 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 }
 
 //=============================================================================
+PointDataModel::PointDataModel(FEPostModel* fem) : m_fem(fem)
+{
+	int ns = fem->GetStates();
+	if (ns > 0) m_point.resize(ns);
+}
+
+PointDataModel::~PointDataModel()
+{
+	delete m_src;
+}
+
+void PointDataModel::Clear()
+{
+	m_point.clear();
+	int ns = m_fem->GetStates();
+	if (ns > 0) m_point.resize(ns);
+}
+
+void PointDataModel::AddDataField(const std::string& dataName)
+{
+	m_dataNames.push_back(dataName);
+}
+
+bool PointDataModel::Reload()
+{
+	if (m_src) return m_src->Reload();
+	else return false;
+}
+
+//-----------------------------------------------------------------------------
+void PointData::AddPoint(vec3f a, int nlabel)
+{
+	PointData::POINT p;
+	p.m_r = a;
+	p.nlabel = nlabel;
+	m_pt.push_back(p);
+}
+
+//-----------------------------------------------------------------------------
+void PointData::AddPoint(vec3f a, const std::vector<float>& data, int nlabel)
+{
+	PointData::POINT p;
+	p.m_r = a;
+	p.nlabel = nlabel;
+	int n = data.size();
+	if (n > MAX_POINT_DATA_FIELDS) n = MAX_POINT_DATA_FIELDS;
+	for (int i = 0; i < n; ++i) p.val[i] = data[i];
+	m_pt.push_back(p);
+}
+
+//=============================================================================
 
 REGISTER_CLASS(CGLPointPlot, CLASS_PLOT, "points", 0);
 
@@ -631,23 +687,24 @@ CGLPointPlot::CGLPointPlot()
 	UpdateData(false);
 }
 
-void CGLPointPlot::AddDataField(const std::string& dataName)
+void CGLPointPlot::SetPointDataModel(PointDataModel* pointData)
 {
-	m_dataNames.push_back(dataName);
+	m_pointData = pointData;
+	std::vector<std::string> dataNames = pointData->GetDataNames();
 
 	int nsize = 0;
-	for (int i = 0; i < m_dataNames.size(); ++i)
+	for (int i = 0; i < dataNames.size(); ++i)
 	{
-		nsize += m_dataNames[i].length();
+		nsize += dataNames[i].length();
 		nsize += 1; // null character
 	}
 	nsize++; // final null character
 
 	char* buf = new char[nsize];
 	char* c = buf;
-	for (int i = 0; i < m_dataNames.size(); ++i)
+	for (int i = 0; i < dataNames.size(); ++i)
 	{
-		string& s = m_dataNames[i];
+		string& s = dataNames[i];
 		strcpy(c, s.c_str());
 		c += s.length();
 		*c++ = 0;
@@ -658,20 +715,18 @@ void CGLPointPlot::AddDataField(const std::string& dataName)
 	p.CopyEnumNames(buf);
 
 	delete buf;
+
+}
+
+void CGLPointPlot::Reload()
+{
+	m_pointData->Reload();
 }
 
 //-----------------------------------------------------------------------------
 CGLPointPlot::~CGLPointPlot()
 {
-	FEPostModel* fem = GetModel()->GetFEModel();
-	if (fem)
-	{
-		for (int i = 0; i < fem->GetStates(); ++i)
-		{
-			FEState& state = *fem->GetState(i);
-			state.ClearPoints();
-		}
-	}
+	delete m_pointData;
 }
 
 //-----------------------------------------------------------------------------
@@ -719,9 +774,7 @@ void CGLPointPlot::Render(CGLContext& rc)
 	FEPostModel& fem = *GetModel()->GetFEModel();
 	int ns = GetModel()->CurrentTimeIndex();
 	if ((ns < 0) || (ns >= fem.GetStates())) return;
-	FEState& s = *fem.GetState(ns);
-	int NP = s.Points();
-	if (NP <= 0) return;
+	if (m_pointData->GetPointData(ns).Points() <= 0) return;
 
 	switch (m_renderMode)
 	{
@@ -734,17 +787,18 @@ void CGLPointPlot::RenderPoints()
 {
 	FEPostModel& fem = *GetModel()->GetFEModel();
 	int ns = fem.CurrentTimeIndex();
-	FEState& s = *fem.GetState(ns);
+	
+	PointData& pd = m_pointData->GetPointData(ns);
 
 	int ndata = GetIntValue(DATA_FIELD);
 	if (ndata < 0) ndata = 0;
 
 	// evaluate the range
 	float fmin = 1e34f, fmax = -1e34f;
-	int NP = s.Points();
+	int NP = pd.Points();
 	for (int i = 0; i < NP; ++i)
 	{
-		POINTDATA& p = s.Point(i);
+		PointData::POINT& p = pd.Point(i);
 		float v = p.val[ndata];
 
 		if (v < fmin) fmin = v;
@@ -788,7 +842,7 @@ void CGLPointPlot::RenderPoints()
 		{
 			for (int i = 0; i < NP; ++i)
 			{
-				POINTDATA& p = s.Point(i);
+				PointData::POINT& p = pd.Point(i);
 
 				if (m_colorMode == 1)
 				{
@@ -810,13 +864,13 @@ void CGLPointPlot::RenderSpheres()
 {
 	FEPostModel& fem = *GetModel()->GetFEModel();
 	int ns = fem.CurrentTimeIndex();
-	FEState& s = *fem.GetState(ns);
+	PointData& pd = m_pointData->GetPointData(ns);
 
 	int ndata = 0;
 	int colorMode = m_colorMode;
 	if (colorMode == 1)
 	{
-		if (m_dataNames.empty()) colorMode = 0;
+		if (m_pointData->GetDataFields() == 0) colorMode = 0;
 		else ndata = GetIntValue(DATA_FIELD);
 		if (ndata < 0) {
 			colorMode = 0; ndata = 0;
@@ -825,10 +879,10 @@ void CGLPointPlot::RenderSpheres()
 
 	// evaluate the range
 	float fmin = 1e34f, fmax = -1e34f;
-	int NP = s.Points();
+	int NP = pd.Points();
 	for (int i = 0; i < NP; ++i)
 	{
-		POINTDATA& p = s.Point(i);
+		PointData::POINT& p = pd.Point(i);
 		float v = p.val[ndata];
 
 		if (v < fmin) fmin = v;
@@ -862,9 +916,9 @@ void CGLPointPlot::RenderSpheres()
 
 	GLUquadricObj* pobj = gluNewQuadric();
 
-	for (int i = 0; i < s.Points(); ++i)
+	for (int i = 0; i < pd.Points(); ++i)
 	{
-		POINTDATA& p = s.Point(i);
+		PointData::POINT& p = pd.Point(i);
 		vec3f& c = p.m_r;
 
 		if (m_colorMode == 1)
@@ -1110,9 +1164,27 @@ private:
 	vector<int>		m_pt;
 };
 
+LineDataSource::LineDataSource(LineDataModel* mdl) : m_mdl(mdl)
+{
+	if (mdl) mdl->SetLineDataSource(this);
+}
+
 LineDataModel::LineDataModel(FEPostModel* fem) : m_fem(fem)
 {
+	m_src = nullptr;
 	int ns = fem->GetStates();
+	if (ns != 0) m_line.resize(ns);
+}
+
+LineDataModel::~LineDataModel()
+{
+	delete m_src;
+}
+
+void LineDataModel::Clear()
+{
+	m_line.clear();
+	int ns = m_fem->GetStates();
 	if (ns != 0) m_line.resize(ns);
 }
 

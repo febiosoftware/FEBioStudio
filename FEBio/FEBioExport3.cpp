@@ -1219,6 +1219,12 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 		m_xml.close_branch();
 	}
 
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
+
 	if (ops.plot_stride != 1)
 	{
 		m_xml.add_leaf("plot_stride", ops.plot_stride);
@@ -1280,6 +1286,12 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 		m_xml.close_branch();
 	}
 
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
+
 	if (ops.plot_stride != 1)
 	{
 		m_xml.add_leaf("plot_stride", ops.plot_stride);
@@ -1339,6 +1351,12 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
+
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
 
 	if (ops.plot_stride != 1)
 	{
@@ -1400,6 +1418,12 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 		m_xml.close_branch();
 	}
 
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
+
 	if (ops.plot_stride != 1)
 	{
 		m_xml.add_leaf("plot_stride", ops.plot_stride);
@@ -1453,6 +1477,12 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 		}
 		m_xml.close_branch();
 	}
+
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
 
 	if (ops.plot_stride != 1)
 	{
@@ -4251,6 +4281,8 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 			{
 			case FE_PRESSURE_LOAD            : WriteSurfaceLoad(s, pbc, "pressure"); break;
 			case FE_SURFACE_TRACTION         : WriteSurfaceLoad(s, pbc, "traction"); break;
+            case FE_SURFACE_FORCE            : WriteSurfaceLoad(s, pbc, "force"); break;
+            case FE_BEARING_LOAD             : WriteSurfaceLoad(s, pbc, "bearing load"); break;
 			case FE_FLUID_FLUX               : WriteSurfaceLoad(s, pbc, "fluidflux"); break;
 			case FE_BP_NORMAL_TRACTION       : WriteSurfaceLoad(s, pbc, "normal_traction"); break;
             case FE_MATCHING_OSM_COEF        : WriteSurfaceLoad(s, pbc, "matching_osm_coef"); break;
@@ -5043,7 +5075,11 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 					if (rf->GetLoadCurve()) val.add_attribute("lc", rf->GetLoadCurve()->GetID());
 					val.value(rf->GetValue());
 					m_xml.add_leaf(val);
-					m_xml.add_leaf("load_type", rf->GetForceType());
+
+					int forceType = rf->GetForceType();
+					m_xml.add_leaf("load_type", forceType);
+
+					if ((forceType == 0) && rf->IsRelative()) m_xml.add_leaf("relative", 1);
 				}
 				m_xml.close_branch();
 			}

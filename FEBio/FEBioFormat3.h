@@ -121,6 +121,7 @@ private:
     void ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag);
 	void ParseInSituStretchConstraint(FEStep* pstep, XMLTag& tag);
 	void ParsePrestrainConstraint    (FEStep* pste, XMLTag& tag);
+    void ParseFixedNormalDisplacement(FEStep* pste, XMLTag& tag);
 
 private:
 	// rigid input functions

@@ -356,6 +356,9 @@ FEReactiveViscoelasticMaterial::FEReactiveViscoelasticMaterial() : FEMaterial(FE
     
     // Add relaxation component
 	AddProperty("relaxation", FE_MAT_RV_RELAX);
+    
+    // Add recruitment component
+    AddProperty("recruitment", FE_MAT_DAMAGE);
 }
 
 //=============================================================================
@@ -382,6 +385,40 @@ FEReactiveViscoelasticMaterialUC::FEReactiveViscoelasticMaterialUC() : FEMateria
     
     // Add relaxation component
 	AddProperty("relaxation", FE_MAT_RV_RELAX);
+    
+    // Add recruitment component
+    AddProperty("recruitment", FE_MAT_DAMAGE);
+}
+
+//=============================================================================
+//                        REACTIVE VISCOELASTIC DAMAGE
+//=============================================================================
+
+REGISTER_MATERIAL(FERVDamageMaterial, MODULE_MECH, FE_RV_DAMAGE_MATERIAL, FE_MAT_ELASTIC, "reactive viscoelastic damage", MaterialFlags::TOPLEVEL);
+
+FERVDamageMaterial::FERVDamageMaterial() : FEMaterial(FE_RV_DAMAGE_MATERIAL)
+{
+    // add parameters
+    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    AddIntParam(1, "kinetics", "kinetics"); // "bond kinetics type (1 or 2)");
+    AddIntParam(0, "trigger" , "trigger" ); // "bond breaking trigger (0=any, 1=distortion, or 2=dilatation)");
+    AddScienceParam(0, UNIT_NONE, "wmin", "wmin");
+    AddScienceParam(0, UNIT_NONE, "emin", "emin");
+    
+    // Add elastic material component
+    AddProperty("elastic", FE_MAT_ELASTIC);
+    
+    // Add bond material component
+    AddProperty("bond", FE_MAT_ELASTIC);
+    
+    // Add relaxation component
+    AddProperty("relaxation", FE_MAT_RV_RELAX);
+    
+    // Add damage component
+    AddProperty("damage", FE_MAT_DAMAGE);
+    
+    // Add criterion component
+    AddProperty("criterion", FE_MAT_DAMAGE_CRITERION);
 }
 
 //=============================================================================
@@ -1385,4 +1422,63 @@ FEReactivePlasticDamage::FEReactivePlasticDamage() : FEMaterial(FE_REACTIVE_PLAS
     
     // Add intact damage criterion component
     AddProperty("elastic_damage_criterion", FE_MAT_DAMAGE_CRITERION);    
+}
+
+//=============================================================================
+//                            REACTIVE FATIGUE
+//=============================================================================
+
+REGISTER_MATERIAL(FEReactiveFatigue, MODULE_MECH, FE_REACTIVE_FATIGUE, FE_MAT_ELASTIC, "reactive fatigue", MaterialFlags::TOPLEVEL);
+
+FEReactiveFatigue::FEReactiveFatigue() : FEMaterial(FE_REACTIVE_FATIGUE)
+{
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
+    AddScienceParam(0, UNIT_NONE, "k0", "fatigue reaction rate");
+    AddScienceParam(1, UNIT_NONE, "beta", "fatigue reaction exponent");
+
+    // Add one component for the elastic material
+    AddProperty("elastic", FE_MAT_ELASTIC);
+    
+    // Add elastic damage material
+    AddProperty("elastic_damage", FE_MAT_DAMAGE);
+    
+    // Add elastic damage criterion component
+    AddProperty("elastic_criterion", FE_MAT_DAMAGE_CRITERION);
+    
+    // Add fatigue damage material
+    AddProperty("fatigue_damage", FE_MAT_DAMAGE);
+    
+    // Add fatigue damage criterion component
+    AddProperty("fatigue_criterion", FE_MAT_DAMAGE_CRITERION);
+    
+}
+
+//=============================================================================
+//                        UNCOUPLED REACTIVE FATIGUE
+//=============================================================================
+
+REGISTER_MATERIAL(FEUncoupledReactiveFatigue, MODULE_MECH, FE_UNCOUPLED_REACTIVE_FATIGUE, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled reactive fatigue", MaterialFlags::TOPLEVEL);
+
+FEUncoupledReactiveFatigue::FEUncoupledReactiveFatigue() : FEMaterial(FE_UNCOUPLED_REACTIVE_FATIGUE)
+{
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
+    AddScienceParam(0, UNIT_NONE, "k0", "fatigue reaction rate");
+    AddScienceParam(1, UNIT_NONE, "beta", "fatigue reaction exponent");
+    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+
+    // Add one component for the elastic material
+    AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
+    
+    // Add elastic damage material
+    AddProperty("elastic_damage", FE_MAT_DAMAGE);
+    
+    // Add elastic damage criterion component
+    AddProperty("elastic_criterion", FE_MAT_DAMAGE_CRITERION);
+    
+    // Add fatigue damage material
+    AddProperty("fatigue_damage", FE_MAT_DAMAGE);
+    
+    // Add fatigue damage criterion component
+    AddProperty("fatigue_criterion", FE_MAT_DAMAGE_CRITERION);
+    
 }

@@ -55,6 +55,8 @@ public:
 	void SetRenderOrder(int renderOrder);
 	int GetRenderOrder() const;
 
+	virtual void Reload();
+
 private:
 	int	m_renderOrder;
 };
@@ -72,6 +74,8 @@ public:
 
 	bool ShowLegend() const;
 	void ShowLegend(bool b);
+
+	void Activate(bool b) override;
 
 private:
 	GLLegendBar*	m_pbar;

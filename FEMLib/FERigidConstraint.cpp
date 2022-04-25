@@ -192,6 +192,7 @@ FERigidForce::FERigidForce(FEModel* fem, int nstep) : FERigidPrescribed(FE_RIGID
 	AddIntParam(0, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
 	AddScienceParam(0.0, UNIT_FORCE, "value", "value")->SetLoadCurve();
 	AddIntParam(0, "load_type", "load type")->SetEnumNames("load\0follow\0target\0");
+	AddBoolParam(false, "relative");
 }
 
 FERigidForce::FERigidForce(int bc, int matid, double v, int nstep) : FERigidPrescribed(FE_RIGID_FORCE, nstep)
@@ -213,6 +214,11 @@ int FERigidForce::GetForceType() const
 void FERigidForce::SetForceType(int n)
 {
 	SetIntValue(2, n);
+}
+
+bool FERigidForce::IsRelative() const
+{
+	return GetBoolValue(3);
 }
 
 FERigidVelocity::FERigidVelocity(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID_INIT_VELOCITY, nstep)

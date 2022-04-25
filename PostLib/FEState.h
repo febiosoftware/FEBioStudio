@@ -72,25 +72,6 @@ struct FACEDATA
 	float	m_val;		// current face value
 };
 
-#define MAX_POINT_DATA_FIELDS	32
-
-class POINTDATA
-{
-public:
-	int		nlabel;
-	vec3f	m_r;
-	float	val[MAX_POINT_DATA_FIELDS];
-
-public:
-	POINTDATA() : val{ 0.f } {}
-	POINTDATA(const POINTDATA& p)
-	{
-		nlabel = p.nlabel;
-		m_r = p.m_r;
-		for (int i = 0; i < MAX_POINT_DATA_FIELDS; ++i) val[i] = p.val[i];
-	}
-};
-
 class ObjectData
 {
 public:
@@ -162,13 +143,6 @@ public:
 
 	int GetID() const;
 
-	void AddPoint(vec3f a, int nlabel = 0);
-	void AddPoint(vec3f a, const std::vector<float>& data, int nlabel = 0);
-
-	POINTDATA& Point(int n) { return m_Point[n]; }
-	int Points() { return (int) m_Point.size(); }
-	void ClearPoints() { m_Point.clear(); }
-
 	void SetFEMesh(FEPostMesh* pm) { m_mesh = pm; }
 	FEPostMesh* GetFEMesh() { return m_mesh; }
 
@@ -189,7 +163,6 @@ public:
 	vector<EDGEDATA>	m_EDGE;		// edge data
 	vector<FACEDATA>	m_FACE;		// face data
 	vector<ELEMDATA>	m_ELEM;		// element data
-	vector<POINTDATA>	m_Point;	// point data
 
 	vector<OBJ_POINT_DATA>	m_objPt;		// object data
 	vector<OBJ_LINE_DATA>	m_objLn;		// object data

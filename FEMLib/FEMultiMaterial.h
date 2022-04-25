@@ -337,6 +337,10 @@ public:
     void SetRelaxation(FEMaterial* pm) { ReplaceProperty(2, pm); }
     FEMaterial* GetRelaxation() { return GetProperty(2).GetMaterial(); }
     
+    // set/get recruitment
+    void SetRecrutiment(FEMaterial* pm) { ReplaceProperty(3, pm); }
+    FEMaterial* GetRecruitment() { return GetProperty(3).GetMaterial(); }
+
 public:
     DECLARE_REGISTERED(FEReactiveViscoelasticMaterial);
 };
@@ -365,8 +369,48 @@ public:
     void SetRelaxation(FEMaterial* pm) { ReplaceProperty(2, pm); }
     FEMaterial* GetRelaxation() { return GetProperty(2).GetMaterial(); }
     
+    // set/get recruitment
+    void SetRecrutiment(FEMaterial* pm) { ReplaceProperty(3, pm); }
+    FEMaterial* GetRecruitment() { return GetProperty(3).GetMaterial(); }
+    
 public:
     DECLARE_REGISTERED(FEReactiveViscoelasticMaterialUC);
+};
+
+//-----------------------------------------------------------------------------
+// reactive viscoelastic damage material
+class FERVDamageMaterial : public FEMaterial
+{
+public:
+    // material parameters
+    enum { MP_KNTCS, MP_TRGGR, MP_WMIN, MP_EMIN };
+    
+public:
+    // constructor
+    FERVDamageMaterial();
+    
+    // set/get elastic material
+    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
+    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    
+    // set/get bond material
+    void SetBondMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
+    FEMaterial* GetBondMaterial() { return GetProperty(1).GetMaterial(); }
+    
+    // set/get relaxation
+    void SetRelaxation(FEMaterial* pm) { ReplaceProperty(2, pm); }
+    FEMaterial* GetRelaxation() { return GetProperty(2).GetMaterial(); }
+    
+    // set/get damage material
+    void SetDamageMaterial(FEMaterial* pm) { ReplaceProperty(3, pm); }
+    FEMaterial* GetDamageMaterial() { return GetProperty(3).GetMaterial(); }
+    
+    // set/get criterion
+    void SetCriterion(FEMaterial* pm) { ReplaceProperty(4, pm); }
+    FEMaterial* GetCriterion() { return GetProperty(4).GetMaterial(); }
+
+public:
+    DECLARE_REGISTERED(FERVDamageMaterial);
 };
 
 //-----------------------------------------------------------------------------
@@ -956,5 +1000,76 @@ public:
 
     DECLARE_REGISTERED(FEReactivePlasticDamage);
 };
+
+//-----------------------------------------------------------------------------
+// reactive fatigue
+class FEReactiveFatigue : public FEMaterial
+{
+public:
+    // material parameters
+    enum { MP_K0, MP_BETA };
+    
+public:
+    // constructor
+    FEReactiveFatigue();
+    
+    // set the elastic component of the material
+    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
+    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    
+    // set/get elastic damage material
+    void SetElasticDamageMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
+    FEMaterial* GetElasticDamageMaterial() { return GetProperty(1).GetMaterial(); }
+    
+    // set/get elastic damage criterion
+    void SetElasticDamageCriterion(FEMaterial* pm) { ReplaceProperty(2, pm); }
+    FEMaterial* GetElasticDamageCriterion() { return GetProperty(2).GetMaterial(); }
+    
+    // set/get fatigue damage material
+    void SetFatigueDamageMaterial(FEMaterial* pm) { ReplaceProperty(3, pm); }
+    FEMaterial* GetFatigueDamageMaterial() { return GetProperty(3).GetMaterial(); }
+    
+    // set/get fatigue criterion
+    void SetFatigueDamageCriterion(FEMaterial* pm) { ReplaceProperty(4, pm); }
+    FEMaterial* GetFatigueDamageCriterion() { return GetProperty(4).GetMaterial(); }
+    
+    DECLARE_REGISTERED(FEReactiveFatigue);
+};
+
+//-----------------------------------------------------------------------------
+// uncoupled reactive fatigue
+class FEUncoupledReactiveFatigue : public FEMaterial
+{
+public:
+    // material parameters
+    enum { MP_K0, MP_BETA, MP_K };
+    
+public:
+    // constructor
+    FEUncoupledReactiveFatigue();
+    
+    // set the elastic component of the material
+    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
+    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    
+    // set/get elastic damage material
+    void SetElasticDamageMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
+    FEMaterial* GetElasticDamageMaterial() { return GetProperty(1).GetMaterial(); }
+    
+    // set/get elastic damage criterion
+    void SetElasticDamageCriterion(FEMaterial* pm) { ReplaceProperty(2, pm); }
+    FEMaterial* GetElasticDamageCriterion() { return GetProperty(2).GetMaterial(); }
+    
+    // set/get fatigue damage material
+    void SetFatigueDamageMaterial(FEMaterial* pm) { ReplaceProperty(3, pm); }
+    FEMaterial* GetFatigueDamageMaterial() { return GetProperty(3).GetMaterial(); }
+    
+    // set/get fatigue criterion
+    void SetFatigueDamageCriterion(FEMaterial* pm) { ReplaceProperty(4, pm); }
+    FEMaterial* GetFatigueDamageCriterion() { return GetProperty(4).GetMaterial(); }
+    
+    DECLARE_REGISTERED(FEUncoupledReactiveFatigue);
+};
+
 
 

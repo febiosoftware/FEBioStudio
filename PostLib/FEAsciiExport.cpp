@@ -117,6 +117,14 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 		if (m_bselonly && !n.IsSelected()) n.m_ntag = 0;
 	}
 
+	// tag all selected elements
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& el = m.ElementRef(i);
+		if ((m_bselonly == false) || el.IsSelected()) el.m_ntag = 1;
+		else el.m_ntag = 0;
+	}
+
 	fprintf(fp, "*ASCII EXPORT\n");
 
 	// export initial nodal coordinates
@@ -164,42 +172,45 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 		for (i = 0; i<NE; ++i)
 		{
 			FEElement_& e = m.ElementRef(i);
-			int ne = e.Nodes();
-			for (int j = 0; j<ne; ++j) n[j] = e.m_node[j] + 1;
-
-			switch (e.Type())
+			if (e.m_ntag == 1)
 			{
-			case FE_HEX8:
-				fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7]);
-				break;
-			case FE_PYRA5:
-				fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4]);
-				break;
-			case FE_HEX20:
-				fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12], n[13], n[14], n[15], n[16], n[17], n[18], n[19]);
-				break;
-			case FE_HEX27:
-				fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12], n[13], n[14], n[15], n[16], n[17], n[18], n[19], n[20], n[21], n[22], n[23], n[24], n[25], n[26]);
-				break;
-			case FE_PENTA6:
-				fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5]);
-				break;
-			case FE_TET4:
-				fprintf(fp, "%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3]);
-				break;
-			case FE_TET10:
-				fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9]);
-				break;
-			case FE_TET15:
-				fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12], n[13], n[14]);
-				break;
-            case FE_PENTA15:
-                fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12], n[13], n[14]);
-                break;
-            case FE_PYRA13:
-                fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12]);
-                break;
-            }
+				int ne = e.Nodes();
+				for (int j = 0; j < ne; ++j) n[j] = e.m_node[j] + 1;
+
+				switch (e.Type())
+				{
+				case FE_HEX8:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7]);
+					break;
+				case FE_PYRA5:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4]);
+					break;
+				case FE_HEX20:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12], n[13], n[14], n[15], n[16], n[17], n[18], n[19]);
+					break;
+				case FE_HEX27:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12], n[13], n[14], n[15], n[16], n[17], n[18], n[19], n[20], n[21], n[22], n[23], n[24], n[25], n[26]);
+					break;
+				case FE_PENTA6:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5]);
+					break;
+				case FE_TET4:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3]);
+					break;
+				case FE_TET10:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9]);
+					break;
+				case FE_TET15:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12], n[13], n[14]);
+					break;
+				case FE_PENTA15:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12], n[13], n[14]);
+					break;
+				case FE_PYRA13:
+					fprintf(fp, "%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d,%8d\n", i + 1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7], n[8], n[9], n[10], n[11], n[12]);
+					break;
+				}
+			}
 		}
 	}
 
@@ -253,9 +264,13 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 				fprintf(fp, "*ELEMENT_DATA\n");
 				for (int i = 0; i<NE; ++i)
 				{
-					float& d = ps->m_ELEM[i].m_val;
-					int id = m.ElementRef(i).m_nid;
-					print_format(m_szfmt, id, d, fp);
+					FEElement_& e = m.ElementRef(i);
+					if (e.m_ntag == 1)
+					{
+						float& d = ps->m_ELEM[i].m_val;
+						int id = m.ElementRef(i).m_nid;
+						print_format(m_szfmt, id, d, fp);
+					}
 				}
 			}
 		}

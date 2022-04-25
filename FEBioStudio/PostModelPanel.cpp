@@ -50,6 +50,7 @@ SOFTWARE.*/
 #include <PostGL/GLLinePlot.h>
 #include <PostGL/GLStreamLinePlot.h>
 #include <PostGL/GLParticleFlowPlot.h>
+#include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLTensorPlot.h>
 #include <ImageLib/3DImage.h>
 #include <PostLib/VolRender.h>
@@ -787,14 +788,17 @@ void CPostModelPanel::BuildModelTree()
 
 				if      (dynamic_cast<Post::CGLPlaneCutPlot    *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/cut.png")));
 				else if (dynamic_cast<Post::CGLVectorPlot      *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/vectors.png")));
-				else if (dynamic_cast<Post::CGLSlicePlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/slice.png")));
+				else if (dynamic_cast<Post::CGLSlicePlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/sliceplot.png")));
 				else if (dynamic_cast<Post::CGLIsoSurfacePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/isosurface.png")));
 				else if (dynamic_cast<Post::CGLStreamLinePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/streamlines.png")));
 				else if (dynamic_cast<Post::CGLParticleFlowPlot*>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/particle.png")));
+				else if (dynamic_cast<Post::GLVolumeFlowPlot   *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/flow.png")));
 				else if (dynamic_cast<Post::GLTensorPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/tensor.png")));
 				else if (dynamic_cast<Post::CGLMirrorPlane     *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/mirror.png")));
 				else if (dynamic_cast<Post::GLProbe            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/probe.png")));
 				else if (dynamic_cast<Post::GLRuler            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/ruler.png")));
+				else if (dynamic_cast<Post::CGLLinePlot        *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/wire.png")));
+				else if (dynamic_cast<Post::CGLPointPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
 			}
 		}
 
@@ -1115,6 +1119,16 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
+
+	Post::CGLPlot* plot = dynamic_cast<Post::CGLPlot*>(po);
+	if (plot)
+	{
+		QMenu menu(this);
+		menu.addAction("Move up in rendering queue"  , this, SLOT(OnMoveUpInRenderingQueue()));
+		menu.addAction("Move down in rendering queue", this, SLOT(OnMoveDownInRenderingQueue()));
+		menu.exec(ev->globalPos());
+		return;
+	}
 }
 
 void CPostModelPanel::OnSelectElements()
@@ -1163,6 +1177,48 @@ void CPostModelPanel::OnShowAllElements()
 			el.Unhide();
 		});
 		mesh->UpdateItemVisibility();
+		GetMainWindow()->RedrawGL();
+	}
+}
+
+void CPostModelPanel::OnMoveUpInRenderingQueue()
+{
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	Post::CGLPlot* plt = dynamic_cast<Post::CGLPlot*>(po);
+	if (plt)
+	{
+		CPostDocument* pdoc = GetActiveDocument();
+		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+		Post::CGLModel* glm = pdoc->GetGLModel();
+		glm->MovePlotUp(plt);
+
+		Update(true);
+		selectObject(plt);
+
+		GetMainWindow()->RedrawGL();
+	}
+}
+
+void CPostModelPanel::OnMoveDownInRenderingQueue()
+{
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	Post::CGLPlot* plt = dynamic_cast<Post::CGLPlot*>(po);
+	if (plt)
+	{
+		CPostDocument* pdoc = GetActiveDocument();
+		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+		Post::CGLModel* glm = pdoc->GetGLModel();
+		glm->MovePlotDown(plt);
+
+		Update(true);
+		selectObject(plt);
+
 		GetMainWindow()->RedrawGL();
 	}
 }

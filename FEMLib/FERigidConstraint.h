@@ -114,6 +114,8 @@ public:
 
 	int GetForceType() const;
 	void SetForceType(int n);
+
+	bool IsRelative() const;
 };
 
 class FERigidVelocity : public FERigidConstraint

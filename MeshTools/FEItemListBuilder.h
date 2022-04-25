@@ -78,6 +78,7 @@ public:
 
 	void clear() { m_Item.clear(); }
 	void add(int n) { m_Item.push_back(n); }
+	void add(const std::list<int>& nodeList);
 	void remove(int i);
 	int size() const { return (int)m_Item.size(); }
 	Iterator begin() { return m_Item.begin(); }

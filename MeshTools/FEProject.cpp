@@ -278,6 +278,8 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FEPrescribedRotation         , MODULE_MECH, FE_ESSENTIAL_BC     , FE_PRESCRIBED_ROTATION          , "Prescribed shell rotation", PRESCRIBED_NODAL_DEGREES_OF_FREEDOM_HTML);
 	REGISTER_FE_CLASS(FEPressureLoad               , MODULE_MECH, FE_SURFACE_LOAD     , FE_PRESSURE_LOAD                , "Pressure", PRESSURE_LOAD_HTML);
 	REGISTER_FE_CLASS(FESurfaceTraction            , MODULE_MECH, FE_SURFACE_LOAD     , FE_SURFACE_TRACTION             , "Surface traction", TRACTION_LOAD_HTML);
+    REGISTER_FE_CLASS(FESurfaceForceUniform        , MODULE_MECH, FE_SURFACE_LOAD     , FE_SURFACE_FORCE                , "Surface force", 0);
+    REGISTER_FE_CLASS(FEBearingLoad                , MODULE_MECH, FE_SURFACE_LOAD     , FE_BEARING_LOAD                 , "Bearing load", 0);
 	REGISTER_FE_CLASS(FENodalVelocities            , MODULE_MECH, FE_INITIAL_CONDITION, FE_NODAL_VELOCITIES             , "Velocity");
 	REGISTER_FE_CLASS(FENodalShellVelocities       , MODULE_MECH, FE_INITIAL_CONDITION, FE_NODAL_SHELL_VELOCITIES       , "Shell velocity");
 	REGISTER_FE_CLASS(FEInitPrestrain              , MODULE_MECH, FE_INITIAL_CONDITION, FE_INIT_PRESTRAIN               , "Initialize Prestrain");
@@ -321,6 +323,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FEVolumeConstraint , MODULE_MECH, FE_CONSTRAINT, FE_VOLUME_CONSTRAINT, "volume constraint");
 	REGISTER_FE_CLASS(FEWarpingConstraint, MODULE_MECH, FE_CONSTRAINT, FE_WARP_CONSTRAINT  , "warp-image");
 	REGISTER_FE_CLASS(FEPrestrainConstraint, MODULE_MECH, FE_CONSTRAINT, FE_PRESTRAIN_CONSTRAINT, "prestrain");
+    REGISTER_FE_CLASS(FEFixedNormalDisplacement, MODULE_MECH, FE_CONSTRAINT, FE_FIXED_NORMAL_DISPLACEMENT   , "fixed normal displacement", 0);
 
 	// --- HEAT MODULE ---
 	REGISTER_FE_CLASS(FEHeatTransfer         , MODULE_HEAT, FE_ANALYSIS         , FE_STEP_HEAT_TRANSFER    , "Heat Transfer");

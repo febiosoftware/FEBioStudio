@@ -45,8 +45,11 @@ SOFTWARE.*/
 
 CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "FEBioStudio: Statistics";
-	setWindowTitle(title);
+	QString wndTitle = windowTitle();
+	wndTitle += ":Stats";
+	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
+	setWindowTitle(wndTitle);
+
 	setMinimumWidth(500);
 	resize(600, 500);
 	GetPlotWidget()->setChartStyle(ChartStyle::BARCHART_PLOT);

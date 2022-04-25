@@ -87,6 +87,23 @@ bool FEBioFormat2::ParseModuleSection(XMLTag &tag)
 		m_nAnalysis = FE_STEP_MECHANICS;
 		FileReader()->AddLogEntry("unknown module type. Assuming solid module (line %d)", tag.currentLine());
 	}
+
+	// set the project's active modules
+	FEProject& prj = FileReader()->GetProject();
+	switch (m_nAnalysis)
+	{
+	case FE_STEP_MECHANICS         : prj.SetModule(MODULE_MECH); break;
+	case FE_STEP_HEAT_TRANSFER     : prj.SetModule(MODULE_HEAT); break;
+	case FE_STEP_BIPHASIC          : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC); break;
+	case FE_STEP_BIPHASIC_SOLUTE   : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC | MODULE_SOLUTES); break;
+	case FE_STEP_MULTIPHASIC       : prj.SetModule(MODULE_MECH | MODULE_BIPHASIC | MODULE_MULTIPHASIC | MODULE_SOLUTES | MODULE_REACTIONS); break;
+	case FE_STEP_FLUID             : prj.SetModule(MODULE_FLUID); break;
+	case FE_STEP_FLUID_FSI         : prj.SetModule(MODULE_MECH | MODULE_FLUID | MODULE_FLUID_FSI); break;
+	case FE_STEP_REACTION_DIFFUSION: prj.SetModule(MODULE_REACTIONS | MODULE_SOLUTES | MODULE_REACTION_DIFFUSION); break;
+	default:
+		assert(false);
+	}
+
 	return (m_nAnalysis != -1);
 }
 
@@ -526,6 +543,7 @@ void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 	else if (abc == "uv") bc |= 24;
 	else if (abc == "vw") bc |= 48;
 	else if (abc == "uw") bc |= 40;
+	else if (abc == "xyzuvw") bc |= 63;
 	else if (abc == "uvw") bc |= 56;
 	else if (abc == "t") bc |= 64;
 	else if (abc == "p") bc |= 128;
@@ -584,23 +602,56 @@ void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 		pg = new FENodeSet(po);
 	}
 
+	// read the node list
+	std::list<int> nodeList;
+	if (tag.isleaf() == false)
+	{
+		++tag;
+		do
+		{
+			// get the node ID
+			int n = tag.Attribute("id").value<int>() - 1;
+
+			// assign the node to this group
+			nodeList.push_back(n);
+
+			++tag;
+		} while (!tag.isend());
+		pg->clear();
+		pg->add(nodeList);
+	}
+	else
+	{
+		nodeList = pg->CopyItems();
+	}
+
 	// create the constraint
 	FEModel& fem = GetFEModel();
 	char szname[256] = {0};
-	if (bc < 8)
+	if (bc < 64)
 	{
-		FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, bc, pstep->GetID());
-		sprintf(szname, "FixedDisplacement%02d", CountBCs<FEFixedDisplacement>(fem)+1);
-		pbc->SetName(szname);
-		pstep->AddComponent(pbc);
-	}
-	else if (bc < 64)
-	{
-		bc = bc >> 3;
-		FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, bc, pstep->GetID());
-		sprintf(szname, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem)+1);
-		pbc->SetName(szname);
-		pstep->AddComponent(pbc);
+		if (bc & 0x07)
+		{
+			int ddof = bc & 0x07;
+			FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, ddof, pstep->GetID());
+			sprintf(szname, "FixedDisplacement%02d", CountBCs<FEFixedDisplacement>(fem) + 1);
+			pbc->SetName(szname);
+			pstep->AddComponent(pbc);
+			pg = nullptr;
+		}
+
+		if (bc & 0x38)
+		{
+			if (pg == nullptr) {
+				pg = new FENodeSet(po); pg->add(nodeList);
+			}
+
+			int rdof = (bc >> 3);
+			FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, rdof, pstep->GetID());
+			sprintf(szname, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem) + 1);
+			pbc->SetName(szname);
+			pstep->AddComponent(pbc);
+		}
 	}
 	else if (bc == 64)
 	{
@@ -649,23 +700,6 @@ void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			pbc->SetName(szname);
 			pstep->AddComponent(pbc);
 		}
-	}
-
-	// read the node list
-	if (tag.isleaf() == false)
-	{
-		++tag;
-		do
-		{
-			// get the node ID
-			int n = tag.Attribute("id").value<int>() - 1;
-
-			// assign the node to this group
-			pg->add(n);
-
-			++tag;
-		} 
-		while (!tag.isend());
 	}
 }
 
