@@ -365,6 +365,8 @@ public:
 
 	void changeViewMode(View_Mode vm);
 
+	CGLWidgetManager* GetGLWidgetManager() { return m_Widget; }
+
 protected:
 	void initializeGL();
 	void resizeGL(int w, int h);

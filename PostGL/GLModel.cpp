@@ -460,14 +460,6 @@ void CGLModel::Render(CGLContext& rc)
 	// activate all clipping planes
 	CGLPlaneCutPlot::EnableClipPlanes();
 
-	// render outline
-	if (rc.m_showOutline)
-	{
-		rc.m_cam->LineDrawMode(true);
-		RenderOutline(rc);
-		rc.m_cam->LineDrawMode(false);
-	}
-
 	// first we render all the plots
 	RenderPlots(rc, 0);
 
@@ -504,6 +496,14 @@ void CGLModel::Render(CGLContext& rc)
 	{
 		// for nodes, edges, draw the faces as well
 		RenderSurface(m_ps, rc);
+	}
+
+	// render outline
+	if (rc.m_showOutline)
+	{
+		rc.m_cam->LineDrawMode(true);
+		RenderOutline(rc);
+		rc.m_cam->LineDrawMode(false);
 	}
 
 	// render the selected elements and faces

@@ -140,6 +140,7 @@ void CObjectPanel::Update()
 		{
 			ui->menu->addAction("Multiblock Mesh")->setData(CONVERT_TO_MULTIBLOCK);
 			ui->menu->setEnabled(true);
+
 		}
 		else ui->menu->setEnabled(false);
 

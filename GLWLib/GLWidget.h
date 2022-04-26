@@ -65,9 +65,10 @@ public:
 
 	void set_color(GLColor fgc, GLColor bgc);
 
-	void set_fg_color(GLColor c) { m_fgc = c; }
+	void set_fg_color(GLColor c, bool setoverrideflag = true) { m_fgc = c; if (setoverrideflag) m_boverridefgc = true; }
 	void set_fg_color(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255) { m_fgc = GLColor(r,g,b,a); }
 	GLColor get_fg_color() { return m_fgc; }
+	bool isfgc_overridden() const { return m_boverridefgc; }
 
 	void set_bg_style(int n) { m_bgFillMode = n; }
 	void set_bg_color(GLColor c1, GLColor c2) { m_bgFillColor[0] = c1; m_bgFillColor[1] = c2; }
@@ -143,6 +144,8 @@ protected:
 	int m_w, m_h;
 	int	m_minw, m_minh;
 	bool	m_balloc;
+
+	bool	m_boverridefgc;	// flag to see if fg color was overridden.
 	
 	char*			m_szlabel;
 

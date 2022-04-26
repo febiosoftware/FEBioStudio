@@ -49,6 +49,7 @@ public:
 	int Widgets() { return (int)m_Widget.size(); }
 
 	GLWidget* operator [] (int i) { return m_Widget[i]; }
+	GLWidget* get(int i) { return m_Widget[i]; }
 
 	void AttachToView(QOpenGLWidget* pview);
 
