@@ -111,17 +111,21 @@ void VIEW_SETTINGS::Defaults(int ntheme)
 	m_bTags = true;
 	m_ntagInfo = 0;
 
+	m_defaultFGColorOption = 0;
+
 	if (ntheme == 0)
 	{
 		m_col1 = GLColor(255, 255, 255);
 		m_col2 = GLColor(128, 128, 255);
 		m_nbgstyle = BG_HORIZONTAL;
+		m_defaultFGColor = GLColor(0, 0, 0);
 	}
 	else
 	{
 		m_col1 = GLColor(83, 83, 83);
 		m_col2 = GLColor(128, 128, 128);
 		m_nbgstyle = BG_HORIZONTAL;
+		m_defaultFGColor = GLColor(255, 255, 255);
 	}
 
 	m_mcol = GLColor(0, 0, 128);

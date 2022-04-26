@@ -55,6 +55,7 @@ GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
 {
 	m_minw = 30;
 	m_minh = 20;
+	m_boverridefgc = false;
 
 	m_x = x;
 	m_y = y;
