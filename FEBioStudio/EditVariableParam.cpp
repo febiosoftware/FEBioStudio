@@ -30,7 +30,7 @@ void CEditVariableParam::setParam(Param* p)
 		setCurrentIndex(0);
 		setEditText(QString("%1").arg(p->GetFloatValue()));
 	}
-	if (p->GetParamType() == Param_Type::Param_VEC3D)
+	else if (p->GetParamType() == Param_Type::Param_VEC3D)
 	{
 		setCurrentIndex(0);
 		vec3d v = p->GetVec3dValue();
