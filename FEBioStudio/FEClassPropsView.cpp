@@ -774,6 +774,7 @@ public:
 		{
 			QColor c;
 			Shape s = Shape::Circle;
+			bool bicon = true;
 			if (item->isParameter() && (item->m_index == -1)) 
 			{ 
 				Param* p = item->parameter();
@@ -785,7 +786,7 @@ public:
 						c = QColor::fromRgb(0, 255, 0);
 					}
 					else if (p->IsVolatile()) c = QColor::fromRgb(0, 128, 0);
-					else c = QColor::fromRgb(32, 32, 32);
+					else bicon = false;
 				}
 				else c = QColor::fromRgb(0, 0, 0); 
 				s = Shape::Circle; 
@@ -793,7 +794,14 @@ public:
 			if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = Shape::Square; }
 			if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = Shape::Square; }
 
-			return CIconProvider::BuildPixMap(c, s, 12);
+			if (bicon)
+				return CIconProvider::BuildPixMap(c, s, 12);
+			else
+			{
+				QPixmap pix(12, 12);
+				pix.fill(Qt::transparent);
+				return pix;
+			}
 		}
 
 		if ((role != Qt::DisplayRole)&& (role != Qt::EditRole) && (role != Qt::ToolTipRole)) return QVariant();
