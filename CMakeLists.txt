@@ -397,7 +397,12 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
-include_directories(${GLEW_INCLUDE_DIRS})
+if(APPLE)
+    include_directories(${GLEW_INCLUDE_DIR})
+else()
+    include_directories(${GLEW_INCLUDE_DIRS})
+endif()
+
 include_directories(${ZLIB_INCLUDE_DIR})
 
 if(USE_ITK)
@@ -628,7 +633,13 @@ target_link_libraries(FEBioStudio ${SimpleITK_LIBRARIES})
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
-target_link_libraries(FEBioStudio ${GLEW_LIBRARIES})
+
+if(APPLE)
+    target_link_libraries(FEBioStudio ${GLEW_SHARED_LIBRARY_RELEASE})
+else()
+    target_link_libraries(FEBioStudio ${GLEW_LIBRARIES})
+endif()
+
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 target_link_libraries(FEBioStudio ${FEBio_LIBS})
@@ -639,5 +650,4 @@ elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -Wl,--end-group)
 endif()
-
 
