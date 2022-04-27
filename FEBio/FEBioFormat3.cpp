@@ -44,7 +44,8 @@ SOFTWARE.*/
 using namespace std;
 
 #ifndef WIN32
-#define stricmp strncasecmp
+#include <strings.h>
+#define stricmp strcasecmp
 #endif
 
 #define CREATE_SURFACE_LOAD(className) createNewSurfaceLoad(new className(&fem), #className, CountLoads<className>(fem))

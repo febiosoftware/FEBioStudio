@@ -55,7 +55,7 @@ using std::vector;
 using std::stringstream;
 
 #ifndef WIN32
-#define _stricmp strncasecmp
+#define _stricmp strcasecmp
 #endif
 
 std::string Namify(const char* sz)
