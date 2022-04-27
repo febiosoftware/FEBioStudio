@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <QListView>
 #include <QBoxLayout>
 #include <QStackedWidget>
+#include <QApplication>
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
@@ -542,7 +543,10 @@ public:
 				case Param_FLOAT: 
 				{
 					double f = value.toDouble();
-					p.SetFloatValue(f);
+					if (f != p.GetFloatValue()) {
+						p.SetFloatValue(f);
+						p.SetModified(true);
+					}
 				}
 				break;
 				case Param_CHOICE:
@@ -551,30 +555,67 @@ public:
 					int n = value.toInt();
 					if (p.GetEnumNames() && GetFSModel())
 					{
-						bool b = GetFSModel()->SetEnumIndex(p, n);
-						assert(b);
+						int m = GetFSModel()->GetEnumIndex(p);
+						if (m != n)
+						{
+							bool b = GetFSModel()->SetEnumIndex(p, n);
+							assert(b);
+							p.SetModified(true);
+						}
 					}
 					else
 					{
-						p.SetIntValue(n);
+						if (n != p.GetIntValue()) {
+							p.SetIntValue(n);
+							p.SetModified(true);
+						}
 					}
 				}
 				break;
-				case Param_VEC3D: p.SetVec3dValue(StringToVec3d(value.toString())); break;
-				case Param_VEC2I: p.SetVec2iValue(StringToVec2i(value.toString())); break;
-				case Param_MAT3D: p.SetMat3dValue(StringToMat3d(value.toString())); break;
-				case Param_MAT3DS: p.SetMat3dsValue(StringToMat3ds(value.toString())); break;
+				case Param_VEC3D: {
+					vec3d v = StringToVec3d(value.toString());
+					if ((v == p.GetVec3dValue()) == false) {
+						p.SetVec3dValue(v);
+						p.SetModified(true);
+					}
+				}break;
+				case Param_VEC2I: {
+					vec2i v = StringToVec2i(value.toString());
+					vec2i s = p.GetVec2iValue();
+					if ((v.x != s.x) || (v.y != s.y)) {
+						p.SetVec2iValue(v);
+						p.SetModified(true);
+					}
+				}break;
+				case Param_MAT3D: {
+					mat3d m = StringToMat3d(value.toString());
+					p.SetMat3dValue(m);
+					p.SetModified(true);
+				}
+				break;
+				case Param_MAT3DS: {
+					mat3ds m = StringToMat3ds(value.toString());
+					p.SetModified(true);
+				}
+				break;
 				case Param_BOOL:
 				{
-					int n = value.toInt();
-					p.SetBoolValue(n != 0);
+					bool b = (value.toInt() != 0);
+					if (p.GetBoolValue() != b) {
+						p.SetBoolValue(b);
+						p.SetModified(true);
+					}
 				}
 				break;
 				case Param_MATH:
 				{
 					string s = value.toString().toStdString();
 					if ((s.empty() == false) && (s[0] == '=')) s.erase(s.begin());
-					p.SetMathString(s);
+
+					if (p.GetMathString() != s) {
+						p.SetMathString(s);
+						p.SetModified(true);
+					}
 				}
 				break;
 				case Param_STRING:
@@ -586,7 +627,11 @@ public:
 						size_t n = s.rfind('\"');
 						if (n != string::npos) s.erase(s.begin() + n);
 					}
-					p.SetStringValue(s);
+
+					if (p.GetStringValue() != s) {
+						p.SetStringValue(s);
+						p.SetModified(true);
+					}
 				}
 				break;
 				case Param_STD_VECTOR_DOUBLE:
@@ -604,6 +649,7 @@ public:
 						v[m_index] = value.toDouble();
 						p.SetVectorDoubleValue(v);
 					}
+					p.SetModified(true);
 				}
 				break;
 				case Param_STD_VECTOR_VEC2D:
@@ -622,6 +668,7 @@ public:
 						v[m_index] = r;
 						p.SetVectorVec2dValue(v);
 					}
+					p.SetModified(true);
 				}
 				break;
 				case Param_ARRAY_INT:
@@ -629,6 +676,7 @@ public:
 					QString s = value.toString();
 					std::vector<int> v = StringToVectorInt(s);
 					p.SetArrayIntValue(v);
+					p.SetModified(true);
 				}
 				break;				
 				case Param_ARRAY_DOUBLE:
@@ -636,6 +684,7 @@ public:
 					QString s = value.toString();
 					std::vector<double> v = StringToVectorDouble(s);
 					p.SetArrayDoubleValue(v);
+					p.SetModified(true);
 				}
 				break;
 				default:
@@ -763,11 +812,36 @@ public:
 			if (item->isProperty()) return QColor(Qt::darkGray);
 		}
 */
-		if ((role == Qt::FontRole) && (item->m_flag & Item::Item_Bold))
+		if ((role == Qt::FontRole))
 		{
 			QFont font;
-			font.setBold(true);
+
+			if (item->m_flag & Item::Item_Bold) font.setBold(true);
+
+			if ((index.column() == 1) && item->isParameter())
+			{
+				Param* p = item->parameter();
+				if (p && p->IsModified()) font.setBold(true);
+			}
+
 			return font;
+		}
+
+		if ((role == Qt::BackgroundRole) && (index.column() == 1) && item->isParameter())
+		{
+			Param* p = item->parameter();
+			if (p && p->IsModified())
+			{
+				QPalette palette = qApp->palette();
+				QColor tc = palette.color(QPalette::WindowText);
+				QColor c;
+				if (tc.red() == 0)
+					c = QColor::fromRgb(200, 255, 200);
+				else
+					c = QColor::fromRgb(32, 64, 45);
+					
+				return QBrush(c);
+			}
 		}
 
 		if ((index.column() == 0) && (role == Qt::DecorationRole))

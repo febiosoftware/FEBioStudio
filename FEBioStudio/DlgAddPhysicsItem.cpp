@@ -202,7 +202,8 @@ int CDlgAddPhysicsItem::GetStep()
 
 int CDlgAddPhysicsItem::GetClassID()
 {
-	return ui->type->currentItem()->data(0, Qt::UserRole).toInt();
+	QTreeWidgetItem* it = ui->type->currentItem();
+	return (it ? it->data(0, Qt::UserRole).toInt() : -1);
 }
 
 void CDlgAddPhysicsItem::SetURL()

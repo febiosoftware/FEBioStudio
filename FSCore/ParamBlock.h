@@ -66,6 +66,7 @@ enum Param_State {
 	Param_READWRITE  = 0x02,	// Parameter will be imported/exported from FEBio files
 	Param_VISIBLE    = 0x04,	// Parameter will be displayed in model tree
 	Param_PERSISTENT = 0x08,	// if false, parameter will only be shown in top-level (only for materials)
+	Param_MODIFIED   = 0x10,	// parameter was modified from default or read-in value.
 
 	Param_ALLFLAGS = 0x0F
 };
@@ -194,6 +195,9 @@ public:
 	bool IsReadWrite() const { return (m_nstate & Param_READWRITE) != 0; }
 	bool IsVisible  () const { return (m_nstate & Param_VISIBLE) != 0; }
 	bool IsPersistent() const { return (m_nstate & Param_PERSISTENT) != 0; }
+
+	bool IsModified() const { return (m_nstate & Param_MODIFIED) != 0; }
+	void SetModified(bool b) { if (b) m_nstate |= Param_MODIFIED; else m_nstate &= ~Param_MODIFIED; }
 
 	Param* SetPersistent(bool b) { if (b) m_nstate |= Param_PERSISTENT; else m_nstate &= ~Param_PERSISTENT; return this; }
 
