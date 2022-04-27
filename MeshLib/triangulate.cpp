@@ -281,7 +281,11 @@ GLMesh* triangulate(GFace& face)
 	fn.Normalize();
 
 	// find the rotation to bring it back to the x-y plane
-	quatd q(fn, vec3d(0, 0, 1)), qi = q.Inverse();
+	quatd q(fn, vec3d(0, 0, 1));
+	if (q.Norm() == 0.0)
+		q = quatd(PI, vec3d(1, 0, 0));
+	
+	quatd qi = q.Inverse();
 
 	// create all nodes
 	int ne = face.Edges();
@@ -292,6 +296,11 @@ GLMesh* triangulate(GFace& face)
 		int en0 = (ew == 1 ? e.m_node[0] : e.m_node[1]);
 		int en1 = (ew == 1 ? e.m_node[1] : e.m_node[0]);
 		int n0 = obj.Node(en0)->GetLocalID();
+
+		// Not sure if this will always work, but if the face is inverted (e.g. bottom face of cylinder)
+		// then q will also invert the winding of the GM_CIRCLE_ARC, and so we need to flip the edges orientation. 
+		int orient = (fn * vec3d(0, 0, 1) > 0 ? e.m_orient : -e.m_orient);
+
 		switch (e.m_ntype)
 		{
 		case EDGE_LINE:
@@ -314,7 +323,7 @@ GLMesh* triangulate(GFace& face)
 			vec2d a1(r1.x, r1.y);
 			vec2d a2(r2.x, r2.y);
 
-			GM_CIRCLE_ARC ca(a0, a1, a2);
+			GM_CIRCLE_ARC ca(a0, a1, a2, orient);
 
 			if (ew == 1) c.AddNode(r1, n0); else c.AddNode(r2, n0);
 

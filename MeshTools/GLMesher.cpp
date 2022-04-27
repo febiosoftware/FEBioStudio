@@ -258,15 +258,19 @@ void GLMesher::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 		vec3d r0 = o.Node(e0.m_cnode)->LocalPosition();
 		int n0 = 0, n1 = 1;
 		if (f.m_edge[0].nwn == -1) { n0 = 1; n1 = 0; }
-		vec3d r1 = o.Node(e0.m_node[n0])->LocalPosition();
-		vec3d r2 = o.Node(e0.m_node[n1])->LocalPosition();
+		int en0 = e0.m_node[n0];
+		int en1 = e0.m_node[n1];
+		vec3d r1 = o.Node(en0)->LocalPosition();
+		vec3d r2 = o.Node(en1)->LocalPosition();
 
 		// get the extrusion direction
 		vec3d t;
-		if (f.m_edge[1].nwn == 1) t = o.Node(e1.m_node[1])->LocalPosition() - o.Node(e1.m_node[0])->LocalPosition();
+		if (e1.m_node[0] == en1) t = o.Node(e1.m_node[1])->LocalPosition() - o.Node(e1.m_node[0])->LocalPosition();
 		else  t = o.Node(e1.m_node[0])->LocalPosition() - o.Node(e1.m_node[1])->LocalPosition();
 
 		// project the points on a plane
+		// NOTE: This assume the arc is on a plane!
+		double z0 = r0.z;
 		vec2d a0(r0.x, r0.y);
 		vec2d a1(r1.x, r1.y);
 		vec2d a2(r2.x, r2.y);
@@ -283,7 +287,8 @@ void GLMesher::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 			GMesh::NODE& ni = m.Node(i);
 			GMesh::NODE& nj = m.Node(i + (M + 1));
 
-			ni.r = ca.Point(i / (double)M);
+			vec2d q = ca.Point(i / (double)M);
+			ni.r = vec3d(q.x(), q.y(), z0);
 			nj.r = ni.r + t;
 			ni.pid = -1;
 			nj.pid = -1;

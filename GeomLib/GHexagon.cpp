@@ -80,7 +80,7 @@ void GHexagon::Create()
 	//4. build the faces
 	std::vector<int> edge;
 	edge.resize(6);
-	for (int i = 0; i<6; ++i) edge[i] = i;
+	for (int i = 0; i<6; ++i) edge[5 - i] = i;
 	AddFacet(edge, FACE_POLYGON);
 
 	int FE[][4] = {

@@ -218,8 +218,8 @@ void GTruncatedEllipsoid::BuildGMesh()
 		{
 			GMesh::FACE& f = m.Face(n++);
 			f.n[0] = NodeIndex(i, 0, NS); assert(f.n[0] < NN);
-			f.n[1] = NodeIndex(i, 1, NS); assert(f.n[1] < NN);
-			f.n[2] = NodeIndex(i+1, 1, NS); assert(f.n[2] < NN);
+			f.n[2] = NodeIndex(i, 1, NS); assert(f.n[1] < NN);
+			f.n[1] = NodeIndex(i+1, 1, NS); assert(f.n[2] < NN);
 			f.pid = 4*i/NS;
 			f.sid = 0;
 		}
@@ -233,14 +233,14 @@ void GTruncatedEllipsoid::BuildGMesh()
 				GMesh::FACE& f2 = m.Face(n++);
 
 				f1.n[0] = NodeIndex(j  , i  , NS); assert(f1.n[0] < NN);
-				f1.n[1] = NodeIndex(j  , i+1, NS); assert(f1.n[1] < NN);
-				f1.n[2] = NodeIndex(j+1, i+1, NS); assert(f1.n[2] < NN);
+				f1.n[2] = NodeIndex(j  , i+1, NS); assert(f1.n[1] < NN);
+				f1.n[1] = NodeIndex(j+1, i+1, NS); assert(f1.n[2] < NN);
 				f1.pid = 4*j/NS;
 				f1.sid = 0;
 
 				f2.n[0] = NodeIndex(j  , i  , NS); assert(f2.n[0] < NN);
-				f2.n[1] = NodeIndex(j+1, i+1, NS); assert(f2.n[1] < NN);
-				f2.n[2] = NodeIndex(j+1, i  , NS); assert(f2.n[2] < NN);
+				f2.n[2] = NodeIndex(j+1, i+1, NS); assert(f2.n[1] < NN);
+				f2.n[1] = NodeIndex(j+1, i  , NS); assert(f2.n[2] < NN);
 				f2.pid = 4*j/NS;
 				f2.sid = 0;
 			}
@@ -257,7 +257,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 			f.sid = 1;
 		}
 
-		// outside-side
+		// inside-side
 		for (int i=1; i<NZ; ++i)
 		{
 			for (int j=0; j<NS; ++j)

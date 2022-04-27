@@ -136,10 +136,12 @@ void GQuartDogBone::Create()
 	//-------------------
 	std::vector<int> edge;
 
+	// bottom face
 	edge.resize(7);
-	for (int i=0; i<7; ++i) edge[i] = i;
+	for (int i=0; i<7; ++i) edge[6 - i] = i;
 	AddFacet(edge, FACE_POLYGON);
 
+	// sides
 	int FE[][4] = {
 		{0, 15,  7, 14}, {1, 16,  8, 15}, {2, 17,  9, 16},
 		{3, 18, 10, 17}, {4, 19, 11, 18}, {5, 20, 12, 19},
@@ -156,6 +158,7 @@ void GQuartDogBone::Create()
 		AddFacet(edge, FACE_EXTRUDE);
 	}
 
+	// top face
 	edge.resize(7);
 	for (int i=0; i<7; ++i) edge[i] = i + 7;
 	AddFacet(edge, FACE_POLYGON);
