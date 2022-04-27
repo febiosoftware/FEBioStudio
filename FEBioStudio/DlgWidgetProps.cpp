@@ -131,6 +131,7 @@ public:
 	CPositionWidget* ppos;
 	QLineEdit* ptext;
 	QCheckBox* pshadow;
+	QComboBox* align;
 	CColorButton*	pshadowCol;
 	QComboBox* pbgstyle;
 	CColorButton *bgCol1, *bgCol2;
@@ -170,6 +171,14 @@ public:
 			phb->addWidget(pshadowCol);
 			phb->addStretch();
 		pvg->addLayout(phb);
+
+		QHBoxLayout* alignLayout = new QHBoxLayout;
+			align = new QComboBox;
+			align->addItems(QStringList() << "Left" << "Centered" << "Right");
+			alignLayout->addWidget(new QLabel("Align:"));
+			alignLayout->addWidget(align);
+			alignLayout->addStretch();
+		pvg->addLayout(alignLayout);
 		pg->setLayout(pvg);
 		textPageLayout->addWidget(pg);
 
@@ -265,6 +274,9 @@ void CDlgBoxProps::apply()
 	QFont font = ui->pfont->getFont();
 	pb->set_font(font);
 	pb->set_fg_color(toGLColor(ui->pfont->getFontColor()));
+
+	int n = ui->align->currentIndex(); assert(n >= 0);
+	pb->m_align = n;
 
 	CMainWindow* wnd = dynamic_cast<CMainWindow*>(parentWidget());
 	if (wnd) wnd->RedrawGL();

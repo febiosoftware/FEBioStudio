@@ -177,6 +177,13 @@ protected:
 class GLBox : public GLWidget
 {
 public:
+	enum AlignOption {
+		LeftJustified,
+		Centered,
+		RightJustified
+	};
+
+public:
 	GLBox(int x, int y, int w, int h, const char* szlabel = 0);
 
 	void draw(QPainter* painter);
@@ -190,6 +197,7 @@ public:
 	bool	m_bshadow;	// render shadows
 	GLColor	m_shc;		// shadow color
 	int		m_margin;
+	int		m_align;
 };
 
 //-----------------------------------------------------------------------------
