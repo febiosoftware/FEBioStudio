@@ -730,6 +730,7 @@ void FEBioFormat3::ParseSolidDomain(XMLTag& tag)
 		if (szelem)
 		{
 			if (strcmp(szelem, "HEX8G1") == 0) szelem = "udg-hex";
+			if (strcmp(szelem, "ut4") == 0) szelem = "ut4-solid";
 			eform = FEBio::CreateSolidFormulation(szelem, &febio.GetFSModel());
 			assert(eform);
 		}
