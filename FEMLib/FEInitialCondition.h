@@ -6,8 +6,8 @@
 class FSInitialCondition : public FSDomainComponent
 {
 public:
-	FSInitialCondition(int ntype, FSModel* ps, int nstep = 0) : FSDomainComponent(ntype, ps, nstep) { m_superClassID = FEIC_ID; }
-	FSInitialCondition(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0) : FSDomainComponent(ntype, ps, pi, nstep) { m_superClassID = FEIC_ID; }
+	FSInitialCondition(int ntype, FSModel* ps, int nstep = 0);
+	FSInitialCondition(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------

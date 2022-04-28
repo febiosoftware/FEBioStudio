@@ -27,6 +27,18 @@ SOFTWARE.*/
 #include "FEInitialCondition.h"
 #include <FECore/units.h>
 
+FSInitialCondition::FSInitialCondition(int ntype, FSModel* ps, int nstep) : FSDomainComponent(ntype, ps, nstep) 
+{
+	m_superClassID = FEIC_ID; 
+	SetMeshItemType(FE_ALL_FLAGS);
+}
+
+FSInitialCondition::FSInitialCondition(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSDomainComponent(ntype, ps, pi, nstep) 
+{ 
+	m_superClassID = FEIC_ID; 
+	SetMeshItemType(FE_ALL_FLAGS);
+}
+
 //-----------------------------------------------------------------------------
 FSNodalVelocities::FSNodalVelocities(FSModel* ps) : FSInitialNodalDOF(FE_INIT_NODAL_VELOCITIES, ps)
 {
