@@ -2321,6 +2321,19 @@ void FEBioFormat3::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 			pnl->SetParamVec3d("value", v);
 			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
 		}
+		else if ((dof == "sx") || (dof == "sy") || (dof == "sz"))
+		{
+			vec3d v;
+			if (dof == "sx") v = vec3d(scale, 0, 0);
+			if (dof == "sy") v = vec3d(0, scale, 0);
+			if (dof == "sz") v = vec3d(0, 0, scale);
+
+			pnl = FEBio::CreateNodalLoad("nodal_force", &fem);
+			pnl->SetParamBool("relative", brelative);
+			pnl->SetParamVec3d("value", v);
+			pnl->SetParamBool("shell_bottom", true);
+			if (lc > 0) febio.AddParamCurve(pnl->GetParam("value"), lc - 1);
+		}
 		else
 		{
 			assert(false);
