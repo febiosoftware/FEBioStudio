@@ -1382,7 +1382,7 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 	if (dataTypeAtt)
 	{
 		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-		else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+		else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
 		else return false;
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
@@ -1563,14 +1563,15 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		FEBioInputModel& feb = GetFEBioModel();
 
 		XMLAtt* name = tag.AttributePtr("name");
-		XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+		XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 		XMLAtt* set = tag.AttributePtr("elem_set");
 
 		FEMeshData::DATA_TYPE dataType;
 		if (dataTypeAtt)
 		{
-			if (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-			else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+			if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+			else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+			else if (*dataTypeAtt == "mat3"  ) dataType = FEMeshData::DATA_TYPE::DATA_MAT3D;
 			else return false;
 		}
 		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
@@ -1581,15 +1582,35 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		FSMesh* mesh = pg->GetMesh();
 		FEElementData* elemData = mesh->AddElementDataField(name->cvalue(), pg, dataType);
 
-		double val;
+		double v[FEElementData::MAX_ITEM_SIZE];
 		int lid;
 		++tag;
 		do
 		{
 			tag.AttributePtr("lid")->value(lid);
-			tag.value(val);
+			int n = tag.value(v, FEElementData::MAX_ITEM_SIZE);
 
-			(*elemData)[lid - 1] = val;
+			switch (dataType)
+			{
+			case FEMeshData::DATA_SCALAR:
+			{
+				assert(n == 1);
+				elemData->set(lid - 1, v[0]);
+			}
+			break;
+			case FEMeshData::DATA_VEC3D:
+			{
+				assert(n == 3);
+				elemData->set(lid - 1, vec3d(v[0], v[1], v[2]));
+			}
+			break;
+			case FEMeshData::DATA_MAT3D:
+			{
+				assert(n == 9);
+				elemData->set(lid - 1, mat3d(v));
+			}
+			break;
+			}
 
 			++tag;
 		} while (!tag.isend());

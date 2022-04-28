@@ -43,7 +43,8 @@ public:
 
 	enum DATA_TYPE {
 		DATA_SCALAR,
-		DATA_VEC3D
+		DATA_VEC3D,
+		DATA_MAT3D
 	};
 
 	enum DATA_FORMAT {

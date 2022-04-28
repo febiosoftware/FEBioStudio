@@ -39,6 +39,9 @@ class FSModel;
 class FEElementData : public FEMeshData
 {
 public:
+	enum {MAX_ITEM_SIZE = 9};
+
+public:
 	FEElementData(FSMesh* mesh = nullptr);
 	FEElementData(const FEElementData& d);
 	FEElementData& operator = (const FEElementData& d);
@@ -51,7 +54,16 @@ public:
 
 	// get/set
 	double get(int i) { return m_data[i]; }
+	void get(int n, double* d);
 	void set(int i, double v) { m_data[i] = v; }
+	void set(int i, const vec3d& v) 
+	{ 
+		assert(m_dataType == DATA_VEC3D);
+		m_data[3*i  ] = v.x; 
+		m_data[3*i+1] = v.y; 
+		m_data[3*i+2] = v.z; 
+	}
+	void set(int i, const mat3d& v);
 
 	// access operator
 	double& operator [] (int i) { return m_data[i]; }
@@ -64,6 +76,8 @@ public:
 	void SetScaleFactor(double s);
 	double GetScaleFactor() const;
 
+	int ItemSize() const;
+
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -72,6 +86,8 @@ private:
 	std::vector<double>	m_data;		//!< data values
 	FSPart*				m_part;		//!< the part to which the data applies
 	double				m_scale;	//!< scale factor
+
+	int	m_stride;
 };
 
 //-----------------------------------------------------------------------------

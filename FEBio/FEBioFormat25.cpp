@@ -1042,7 +1042,7 @@ bool FEBioFormat25::ParseSurfaceData(XMLTag& tag)
 	FEBioInputModel& feb = GetFEBioModel();
 
 	XMLAtt* name = tag.AttributePtr("name");
-	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+	XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 	XMLAtt* surf = tag.AttributePtr("surface");
 
 	FEMeshData::DATA_TYPE dataType;

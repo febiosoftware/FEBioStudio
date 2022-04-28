@@ -35,6 +35,7 @@ SOFTWARE.*/
 FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
 {
 	m_scale = 1.0;
+	m_stride = 0;
 	m_part = nullptr;
 	SetMesh(mesh);
 }
@@ -44,7 +45,9 @@ void FEElementData::Create(FSMesh* pm, FSPart* part, FEMeshData::DATA_TYPE dataT
 {
 	SetMesh(pm);
 	m_part = part;
-	m_data.assign(part->size(), 0.0);
+	m_dataType = dataType;
+	m_stride = ItemSize();
+	m_data.assign(part->size()*m_stride, 0.0);
 }
 
 //-----------------------------------------------------------------------------
@@ -54,6 +57,8 @@ FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::EL
 	SetName(d.GetName());
 	m_data = d.m_data;
 	m_part = d.m_part;
+	m_dataType = d.m_dataType;
+	m_stride = d.m_stride;
 }
 
 //-----------------------------------------------------------------------------
@@ -63,12 +68,15 @@ FEElementData& FEElementData::operator = (const FEElementData& d)
 	SetMesh(d.GetMesh());
 	m_data = d.m_data;
 	m_part = d.m_part;
+	m_dataType = d.m_dataType;
+	m_stride = d.m_stride;
 	return (*this);
 }
 
 //-----------------------------------------------------------------------------
 void FEElementData::FillRandomBox(double fmin, double fmax)
 {
+	assert(m_dataType == DATA_SCALAR);
 	int N = (int)m_data.size();
 	for (int i = 0; i<N; ++i)
 	{
@@ -91,6 +99,39 @@ double FEElementData::GetScaleFactor() const
 }
 
 //-----------------------------------------------------------------------------
+int FEElementData::ItemSize() const
+{
+	switch (m_dataType)
+	{
+	case DATA_SCALAR: return 1; break;
+	case DATA_VEC3D : return 3; break;
+	case DATA_MAT3D : return 9; break;
+	default:
+		assert(false);
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+void FEElementData::get(int n, double* d)
+{
+	assert((m_stride > 0) && (m_stride == ItemSize()));
+	for (int i = 0; i < m_stride; ++i)
+		d[i] = m_data[m_stride * n + i];
+}
+
+//-----------------------------------------------------------------------------
+void FEElementData::set(int n, const mat3d& v)
+{
+	assert(m_dataType == DATA_MAT3D);
+	assert(m_stride == 9);
+	int m = 0;
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j, ++m)
+			m_data[9 * n + m] = v(i, j);
+}
+
+//-----------------------------------------------------------------------------
 void FEElementData::Save(OArchive& ar)
 {
 	const string& dataName = GetName();
@@ -108,7 +149,8 @@ void FEElementData::Save(OArchive& ar)
 	ar.EndChunk();
 
 	int NE = m_part->size();
-	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NE);
+	assert(m_data.size() == NE * m_stride);
+	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NE*m_stride);
 }
 
 //-----------------------------------------------------------------------------
@@ -142,8 +184,11 @@ void FEElementData::Load(IArchive& ar)
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
 			int NE = m_part->size();
-			m_data.resize(NE);
-			ar.read(&m_data[0], NE);
+			m_stride = ItemSize();
+
+			int dataSize = NE * m_stride;
+			m_data.resize(dataSize);
+			ar.read(&m_data[0], dataSize);
 		}
 
 		ar.CloseChunk();
