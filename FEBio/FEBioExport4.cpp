@@ -246,7 +246,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		for (int j = 0; j < pstep->BCs(); ++j)
 		{
 			FSBoundaryCondition* pl = pstep->BC(j);
-			if (pl && pl->IsActive())
+			if (pl && pl->IsActive() && (pl->GetMeshItemType() != 0))
 			{
 				FEItemListBuilder* ps = pl->GetItemList();
 				if (ps == 0) throw InvalidItemListBuilder(pl);
@@ -262,7 +262,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		for (int j = 0; j < pstep->Loads(); ++j)
 		{
 			FSLoad* pload = pstep->Load(j);
-			if (pload && pload->IsActive())
+			if (pload && pload->IsActive() && (pload->GetMeshItemType() != 0))
 			{
 				int meshItemType = pload->GetMeshItemType();
 				FEItemListBuilder* ps = pload->GetItemList();
@@ -286,7 +286,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		{
 			// this is only for nodal loads
 			FSInitialCondition* pi = pstep->IC(j);
-			if (pi && pi->IsActive())
+			if (pi && pi->IsActive() && (pi->GetMeshItemType() != 0))
 			{
 				FEItemListBuilder* ps = pi->GetItemList();
 				if (ps == 0) throw InvalidItemListBuilder(pi);
@@ -2522,17 +2522,22 @@ void FEBioExport4::WriteBC(FSStep& s, FSBoundaryCondition* pbc)
 
 	if (m_writeNotes) WriteNote(pbc);
 
-	// get the item list
-	FEItemListBuilder* pitem = pbc->GetItemList();
-	if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-	// get node set name
-	string nodeSetName = GetNodeSetName(pitem);
 
 	XMLElement tag("bc");
 	tag.add_attribute("name", pbc->GetName());
 	tag.add_attribute("type", pbc->GetTypeString());
-	tag.add_attribute("node_set", nodeSetName);
+
+	if (pbc->GetMeshItemType() != 0)
+	{
+		// get the item list
+		FEItemListBuilder* pitem = pbc->GetItemList();
+		if (pitem == 0) throw InvalidItemListBuilder(pbc);
+
+		// get node set name
+		string nodeSetName = GetNodeSetName(pitem);
+
+		tag.add_attribute("node_set", nodeSetName);
+	}
 
 	// write the tag
 	m_xml.add_branch(tag);
