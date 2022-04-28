@@ -2815,6 +2815,24 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 		ReadParameters(*pi, tag);
 		return;
 	}
+	else if ((strcmp(sztype, "initial_rigid_velocity") == 0) ||
+		     (strcmp(sztype, "initial_rigid_angular_velocity") == 0))
+	{
+		// get the name 
+		stringstream ss;
+		ss << "RigidIC" << CountRigidICs<FSRigidIC>(fem) + 1;
+		std::string name = tag.AttributeValue("name", ss.str());
+
+		// allocate class
+		FSRigidIC* pi = FEBio::CreateRigidIC(sztype, &fem);
+		if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
+		pi->SetName(name);
+		pstep->AddRigidIC(pi);
+
+		ReadParameters(*pi, tag);
+		return;
+	}
 
 	// get the name 
 	stringstream ss;
