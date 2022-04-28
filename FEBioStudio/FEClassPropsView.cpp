@@ -793,6 +793,20 @@ public:
 		return item->isProperty();
 	}
 
+	bool isParameter(const QModelIndex& index)
+	{
+		if (index.isValid() == false) return false;
+		Item* item = static_cast<Item*>(index.internalPointer());
+		return item->isParameter();
+	}
+
+	Param* GetParameter(const QModelIndex& index)
+	{
+		if (index.isValid() == false) return nullptr;
+		Item* item = static_cast<Item*>(index.internalPointer());
+		return (item->isParameter() ? item->parameter() : nullptr);
+	}
+
 	QVariant data(const QModelIndex& index, int role) const override
 	{
 		if (!index.isValid()) return QVariant();
@@ -827,22 +841,31 @@ public:
 			return font;
 		}
 
-		if ((role == Qt::BackgroundRole) && (index.column() == 1) && item->isParameter())
+	/*	if ((role == Qt::BackgroundRole) && (index.column() == 1) && item->isParameter())
 		{
 			Param* p = item->parameter();
 			if (p && p->IsModified())
 			{
 				QPalette palette = qApp->palette();
 				QColor tc = palette.color(QPalette::WindowText);
-				QColor c;
+
+				QLinearGradient gradient(0, 0, 100, 0);
 				if (tc.red() == 0)
-					c = QColor::fromRgb(200, 255, 200);
+				{
+					gradient.setColorAt(0, QColor::fromRgb(220, 255, 255, 0));
+					gradient.setColorAt(0.5, QColor::fromRgb(220, 255, 255, 0));
+					gradient.setColorAt(1, QColor::fromRgb(220, 255, 255, 255));
+				}
 				else
-					c = QColor::fromRgb(32, 64, 45);
-					
-				return QBrush(c);
+				{
+					gradient.setColorAt(0, QColor::fromRgb(32, 64, 72, 0));
+					gradient.setColorAt(0.5, QColor::fromRgb(32, 64, 72, 0));
+					gradient.setColorAt(1, QColor::fromRgb(32, 64, 72, 255));
+				}
+				return QBrush(gradient);
 			}
 		}
+		*/
 
 		if ((index.column() == 0) && (role == Qt::DecorationRole))
 		{
@@ -1313,6 +1336,25 @@ void FEClassPropsView::drawBranches(QPainter* painter, const QRect& rect, const 
 		}
 	}
 */	QTreeView::drawBranches(painter, rect, index);
+}
+
+void FEClassPropsView::drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+	QTreeView::drawRow(painter, option, index);
+
+	if (index.isValid())
+	{
+		if (m_model->isParameter(index))
+		{
+			Param* p = m_model->GetParameter(index); assert(p);
+			if (p && p->IsModified())
+			{
+				QRect rt = option.rect;
+				rt.setLeft(rt.right() - 5);
+				painter->fillRect(rt, Qt::darkCyan);
+			}
+		}
+	}
 }
 
 void FEClassPropsView::onModelDataChanged()
