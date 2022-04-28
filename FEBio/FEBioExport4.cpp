@@ -208,7 +208,7 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 
 	// see if we need to add a MeshData section
 	m_bdata = false;
-//	if (model.ShellElements() > 0) m_bdata = true;	// for shell thicknesses
+	if (model.ShellElements() > 0) m_bdata = true;	// for shell thicknesses
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		FSTransverselyIsotropic* pmat = dynamic_cast<FSTransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
@@ -1826,9 +1826,7 @@ void FEBioExport4::WriteMeshDataSection()
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteElementDataSection()
 {
-	// shell thickness is now stored as a parameter
-	// of the shell section.
-//	WriteMeshDataShellThickness();
+	WriteMeshDataShellThickness();
 
 	WriteMeshDataMaterialFibers();
 
@@ -1899,19 +1897,39 @@ void FEBioExport4::WriteMeshDataShellThickness()
 		ElementSet& elset = m_ElSet[i];
 		FSCoreMesh* pm = elset.m_mesh;
 
-		// see if this mesh has shells
+		// see if this mesh has shells with nonzero thickness
 		bool bshell = false;
+		double hConst = 0.0;
+		bool constShellThickness = true;
 		for (int k = 0; k < (int)elset.m_elem.size(); ++k)
 		{
 			FEElement_& el = pm->ElementRef(elset.m_elem[k]);
-			if (el.IsShell()) { bshell = true; break; }
+			if (el.IsShell()) 
+			{ 
+				int n = el.Nodes();
+				for (int l = 0; l < n; ++l)
+				{
+					if (el.m_h[l] != 0.0)
+					{
+						if (bshell == false)
+						{
+							bshell = true;
+							hConst = el.m_h[l];
+						}
+						else if (hConst != el.m_h[l])
+						{
+							constShellThickness = false;
+						}
+					}
+				}
+			}
 		}
 
 		// write shell thickness data
 		if (bshell)
 		{
 			XMLElement tag("ElementData");
-			tag.add_attribute("var", "shell thickness");
+			tag.add_attribute("type", "shell thickness");
 			tag.add_attribute("elem_set", elset.m_name.c_str());
 			m_xml.add_branch(tag);
 			{
