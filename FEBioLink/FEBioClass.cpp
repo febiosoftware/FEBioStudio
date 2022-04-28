@@ -251,7 +251,12 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		}
 	}
 	break;
-	case FEIC_ID: pc = new FEBioInitialCondition(fem); break;
+	case FEIC_ID: 
+	{
+		if (baseClassId == FEBio::GetBaseClassIndex("FERigidIC")) pc = new FEBioRigidIC(fem);
+		else pc = new FEBioInitialCondition(fem);
+	}
+	break;
 	case FESURFACEINTERFACE_ID: pc = new FEBioInterface(fem); break;
 	case FELOAD_ID:
 	{
