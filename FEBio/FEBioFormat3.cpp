@@ -590,6 +590,13 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				param->SetArrayIntValue(d);
 			}
 			break;
+			case Param_STRING:
+			{
+				std::string s;
+				tag.value(s);
+				param->SetStringValue(s);
+			}
+			break;
 			default:
 				assert(false);
 			}
