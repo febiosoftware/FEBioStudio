@@ -2717,11 +2717,11 @@ void FEBioFormat3::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// create a new interface
-	FSModelConstraint* pci = FEBio::CreateNLConstraint("rigid_wall", &fem);
+	FSModelConstraint* pci = FEBio::CreateSurfaceConstraint("rigid_wall", &fem);
 
 	// set name
 	char szname[256];
-	sprintf(szname, "RigidWall%02d", CountInterfaces<FSRigidWallInterface>(fem)+1);
+	sprintf(szname, "RigidWall%02d", CountConstraints<FSSurfaceConstraint>(fem)+1);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pci->SetName(szname);
