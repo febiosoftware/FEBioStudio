@@ -243,6 +243,12 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 		{
 			pc = new FEBioRigidBC(fem);
 		}
+		else
+		{
+			FEBioBoundaryCondition* pbc = new FEBioBoundaryCondition(fem);
+			pbc->SetMeshItemType(0);
+			pc = pbc;
+		}
 	}
 	break;
 	case FEIC_ID: pc = new FEBioInitialCondition(fem); break;
@@ -284,6 +290,9 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FEVEC3DVALUATOR_ID   : pc = new FSGenericClass(fem); break;
 	case FEMAT3DVALUATOR_ID   : pc = new FSGenericClass(fem); break;
 	case FEMAT3DSVALUATOR_ID  : pc = new FSGenericClass(fem); break;
+	case FESOLIDDOMAIN_ID     : pc = new FESolidFormulation(fem); break;
+	case FESHELLDOMAIN_ID     : pc = new FEShellFormulation(fem); break;
+	case FEDISCRETEMATERIAL_ID: pc = new FEBioDiscreteMaterial(fem); break;
 	default:
 		assert(false);
 	}
