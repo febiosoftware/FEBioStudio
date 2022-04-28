@@ -46,6 +46,7 @@ class FSInitialCondition;
 class FSPairedInterface;
 class FSModelConstraint;
 class FSSurfaceConstraint;
+class FSBodyConstraint;
 class FSRigidBC;
 class FSRigidIC;
 class FSRigidConnector;
@@ -114,6 +115,9 @@ namespace FEBio {
 	// get the base class Index from the base class name
 	int GetBaseClassIndex(const std::string& baseClassName);
 
+	// get the base class index from super class ID and type string
+	int GetBaseClassIndex(int superId, const std::string& typeStr);
+
 	// get the base class name from its index (returns nullptr if not found)
 	std::string GetBaseClassName(int baseClassIndex);
 
@@ -129,6 +133,7 @@ namespace FEBio {
 	FSPairedInterface*   CreatePairedInterface  (const std::string& typeStr, FSModel* fem);
 	FSModelConstraint*	 CreateNLConstraint     (const std::string& typeStr, FSModel* fem);
 	FSSurfaceConstraint* CreateSurfaceConstraint(const std::string& typeStr, FSModel* fem);
+	FSBodyConstraint*    CreateBodyConstraint   (const std::string& typeStr, FSModel* fem);
 	FSRigidBC*	         CreateRigidBC          (const std::string& typeStr, FSModel* fem);
 	FSRigidIC*	         CreateRigidIC          (const std::string& typeStr, FSModel* fem);
 	FSRigidConnector*	 CreateRigidConnector   (const std::string& typeStr, FSModel* fem);

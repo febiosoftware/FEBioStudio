@@ -76,6 +76,14 @@ int FEBio::GetBaseClassIndex(const std::string& baseClassName)
 	return baseClassIndex(baseClassName.c_str());
 }
 
+int FEBio::GetBaseClassIndex(int superId, const std::string& typeStr)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	const FECoreFactory* fac = fecore.FindFactoryClass(superId, typeStr.c_str()); assert(fac);
+	if (fac == nullptr) return -1;
+	return GetBaseClassIndex(fac->GetBaseClassName());
+}
+
 std::string FEBio::GetBaseClassName(int baseClassIndex)
 {
 	for (auto& it : classIndex)
@@ -815,11 +823,16 @@ void FEBio::UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm)
 
 template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr, FSModel* fem)
 {
-	T* mc = new T(fem);
-	if (BuildModelComponent(superClassID, typeStr, mc) == false)
+	int baseClassIndex = GetBaseClassIndex(superClassID, typeStr);
+
+	FSModelComponent* pmc = CreateFSClass(superClassID, baseClassIndex, fem);
+	if (pmc == nullptr) { assert(false); return nullptr; }
+
+	T* mc = dynamic_cast<T*>(pmc);
+	if ((mc == nullptr) ||
+		(BuildModelComponent(superClassID, typeStr, mc) == false))
 	{
-		assert(false);
-		delete mc;
+		delete pmc;
 		return nullptr;
 	}
 	return mc;
@@ -878,6 +891,11 @@ FSModelConstraint* FEBio::CreateNLConstraint(const std::string& typeStr, FSModel
 FSSurfaceConstraint* FEBio::CreateSurfaceConstraint(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEBioSurfaceConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
+}
+
+FSBodyConstraint* FEBio::CreateBodyConstraint(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioBodyConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
 }
 
 FSRigidBC* FEBio::CreateRigidBC(const std::string& typeStr, FSModel* fem)

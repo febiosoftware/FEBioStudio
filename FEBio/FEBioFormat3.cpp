@@ -3118,14 +3118,14 @@ void FEBioFormat3::ParseConstraint(FSStep* pstep, XMLTag& tag)
 	else
 	{
 		// try body constraint? 
-		pmc = FEBio::CreateSurfaceConstraint(sztype, &fem);
+		pmc = FEBio::CreateBodyConstraint(sztype, &fem);
 		if (pmc)
 		{
 			// TODO: read (optional) elem_set attribute
 		}
 		else
 		{
-			// try generic surface constraint
+			// try generic nonlinear constraint
 			pmc = FEBio::CreateNLConstraint(sztype, &fem);
 		}
 	}
