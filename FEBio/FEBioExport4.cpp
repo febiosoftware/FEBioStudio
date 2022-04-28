@@ -1981,7 +1981,7 @@ void FEBioExport4::WriteMeshDataMaterialFibers()
 		{
 			int NE = (int)elSet.m_elem.size();
 			XMLElement tag("ElementData");
-			tag.add_attribute("var", "fiber");
+			tag.add_attribute("type", "fiber");
 			tag.add_attribute("elem_set", elSet.m_name.c_str());
 			m_xml.add_branch(tag);
 			{
@@ -2027,7 +2027,7 @@ void FEBioExport4::WriteMeshDataMaterialAxes()
 		{
 			int n = 0;
 			XMLElement tag("ElementData");
-			tag.add_attribute("var", "mat_axis");
+			tag.add_attribute("type", "mat_axis");
 			tag.add_attribute("elem_set", elSet.m_name.c_str());
 			m_xml.add_branch(tag);
 			{
