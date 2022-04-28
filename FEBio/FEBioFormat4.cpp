@@ -393,8 +393,12 @@ void FEBioFormat4::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 
 	if (tag.isleaf())
 	{
+		const char* szparam = tag.Name();
+		const char* sztype = tag.AttributeValue("type", true);
+		if (sztype) szparam = sztype;
+
 		// see if there is a parameter with the same name 
-		Param* param = pmc->GetParam(tag.Name());
+		Param* param = pmc->GetParam(szparam);
 		if (param)
 		{
 			switch (param->GetParamType())
@@ -406,10 +410,33 @@ void FEBioFormat4::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				param->SetIntValue(n);
 			}
 			break;
+			case Param_VEC3D:
+			{
+				vec3d v;
+				tag.value(v);
+				param->SetVec3dValue(v);
+			}
+			break;
+			case Param_MAT3D:
+			{
+				mat3d v;
+				tag.value(v);
+				param->SetMat3dValue(v);
+			}
+			break;
+			case Param_ARRAY_INT:
+			{
+				std::vector<int> d = param->GetArrayIntValue();
+				tag.value(d);
+				param->SetArrayIntValue(d);
+			}
+			break;
 			default:
 				assert(false);
 			}
 		}
+		else ParseUnknownTag(tag);
+
 		return;
 	}
 
