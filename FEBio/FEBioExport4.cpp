@@ -878,6 +878,12 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 		}
 	}
 
+	if ((pm->Parameters() == 0) && (pm->Properties() == 0))
+	{
+		m_xml.add_empty(el);
+		return;
+	}
+
 	m_xml.add_branch(el);
 	{
 		// write the parameters (if any)
