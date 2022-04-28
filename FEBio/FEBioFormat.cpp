@@ -2204,14 +2204,20 @@ bool FEBioFormat::ParsePlotfileSection(XMLTag &tag)
 		if (tag == "var")
 		{
 			XMLAtt& avar = tag.Attribute("type");
+			const char* sztype = avar.cvalue();
+
+			// convert some obsolete variables
+			if (strcmp(sztype, "shell relative volume") == 0) sztype = "relative volume";
+			if (strcmp(sztype, "shell strain"         ) == 0) sztype = "Lagrange strain";
+
 			const char* szsurf = tag.AttributeValue("surface", true);
 			if (szsurf) 
 			{
-				fem.AddPlotVariable(FEBioInputModel::PlotVariable(avar.cvalue(), szsurf, DOMAIN_SURFACE));
+				fem.AddPlotVariable(FEBioInputModel::PlotVariable(sztype, szsurf, DOMAIN_SURFACE));
 			}
 			else
 			{
-				fem.AddPlotVariable(FEBioInputModel::PlotVariable(avar.cvalue()));
+				fem.AddPlotVariable(FEBioInputModel::PlotVariable(sztype));
 			}
 		}
 		else if (tag == "compression")

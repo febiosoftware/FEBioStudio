@@ -2622,15 +2622,13 @@ void FEBioExport4::WriteInitialSection()
 		{
 			if (m_writeNotes) WriteNote(pic);
 
-			FEItemListBuilder* pitem = pic->GetItemList();
-			if (pitem)
-			{
-				// TODO: Add item list
-			}
-
 			XMLElement el("ic");
 			el.add_attribute("name", pic->GetName().c_str());
 			el.add_attribute("type", pic->GetTypeString());
+
+			FEItemListBuilder* pitem = pic->GetItemList();
+			if (pitem) el.add_attribute("node_set", GetNodeSetName(pitem));
+
 			m_xml.add_branch(el);
 			{
 				WriteParamList(*pic);
