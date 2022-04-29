@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 #include <sstream>
+#include <iomanip>
 
 //=============================================================================
 
@@ -70,7 +71,7 @@ template <> std::string type_to_string<vec3f>(const vec3f& v)
 template <> std::string type_to_string<vec3d>(const vec3d& v)
 {
 	std::stringstream ss;
-	ss << v.x << "," << v.y << "," << v.z;
+	ss << std::setprecision(8) << v.x << "," << v.y << "," << v.z;
 	return ss.str();
 }
 
