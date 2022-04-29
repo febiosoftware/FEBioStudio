@@ -92,14 +92,93 @@ FEMesh* FEBox::BuildMesh()
 }
 
 //-----------------------------------------------------------------------------
-// Build a 3D butterfly mesh
-FEMesh* FEBox::CreateButterfly3D()
+bool FEBox::BuildMultiBlock()
+{
+	m_ctype = GetIntValue(CTYPE);
+	switch (m_ctype)
+	{
+	case SIMPLE     : return CreateRegularBoxMesh(); break;
+	case BUTTERFLY3D: return CreateButterfly3DMesh(); break;
+	case BUTTERFLY2D: return CreateButterfly2DMesh(); break;
+	default:
+		assert(false);
+	}
+	return false;
+}
+
+bool FEBox::CreateRegularBoxMesh()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
-	double w = param[GBox::WIDTH ].GetFloatValue();
+	double w = 0.5 * param[GBox::WIDTH].GetFloatValue();
+	double h = 0.5 * param[GBox::HEIGHT].GetFloatValue();
+	double d = param[GBox::DEPTH].GetFloatValue();
+
+	// get mesh parameters
+	m_nx = GetIntValue(NX);
+	m_ny = GetIntValue(NY);
+	m_nz = GetIntValue(NZ);
+
+	m_gx = GetFloatValue(GX);
+	m_gy = GetFloatValue(GY);
+	m_gz = GetFloatValue(GZ);
+
+	m_bx = GetBoolValue(GX2);
+	m_by = GetBoolValue(GY2);
+	m_bz = GetBoolValue(GZ2);
+
+	ClearMB();
+
+	// create the MB nodes
+	AddNode(vec3d(-w, -h, 0));
+	AddNode(vec3d(w, -h, 0));
+	AddNode(vec3d(w, h, 0));
+	AddNode(vec3d(-w, h, 0));
+	AddNode(vec3d(-w, -h, d));
+	AddNode(vec3d(w, -h, d));
+	AddNode(vec3d(w, h, d));
+	AddNode(vec3d(-w, h, d));
+
+	// create the MB blocks
+	MBBlock& b1 = AddBlock(0, 1, 2, 3, 4, 5, 6, 7);
+	b1.SetID(0);
+	b1.SetSizes(m_nx, m_ny, m_nz);
+	b1.SetZoning(m_gx, m_gy, m_gz, m_bx, m_by, m_bz);
+
+	// build the MB data
+	BuildMB();
+
+	// assign face ID's
+	SetBlockFaceID(b1, 0, 1, 2, 3, 4, 5);
+
+	MBFace& F1 = GetBlockFace(0, 0); SetFaceEdgeID(F1, 0, 9, 4, 8);
+	MBFace& F2 = GetBlockFace(0, 1); SetFaceEdgeID(F2, 1, 10, 5, 9);
+	MBFace& F3 = GetBlockFace(0, 2); SetFaceEdgeID(F3, 2, 11, 6, 10);
+	MBFace& F4 = GetBlockFace(0, 3); SetFaceEdgeID(F4, 3, 8, 7, 11);
+	MBFace& F5 = GetBlockFace(0, 4); SetFaceEdgeID(F5, 2, 1, 0, 3);
+	MBFace& F6 = GetBlockFace(0, 5); SetFaceEdgeID(F6, 4, 5, 6, 7);
+
+	GetMBNode(0).SetID(0);
+	GetMBNode(1).SetID(1);
+	GetMBNode(2).SetID(2);
+	GetMBNode(3).SetID(3);
+	GetMBNode(4).SetID(4);
+	GetMBNode(5).SetID(5);
+	GetMBNode(6).SetID(6);
+	GetMBNode(7).SetID(7);
+
+	UpdateMB();
+
+	return true;
+}
+
+bool FEBox::CreateButterfly3DMesh()
+{
+	// get object parameters
+	ParamBlock& param = m_pobj->GetParamBlock();
+	double w = param[GBox::WIDTH].GetFloatValue();
 	double h = param[GBox::HEIGHT].GetFloatValue();
-	double d = param[GBox::DEPTH ].GetFloatValue();
+	double d = param[GBox::DEPTH].GetFloatValue();
 
 	// get mesh parameters
 	m_r = GetFloatValue(RATIO);
@@ -133,76 +212,68 @@ FEMesh* FEBox::CreateButterfly3D()
 	if (m_nz == 1) m_bz = false;
 	if (m_ns == 1) m_br = false;
 
+	ClearMB();
+
 	// create the MB nodes
 	double r1 = 0.5;
-	double r2 = m_r*r1;
-	double d1 = d*(1-m_r)*0.5;
+	double r2 = m_r * r1;
+	double d1 = d * (1 - m_r) * 0.5;
 	double d2 = d - d1;
-	m_MBNode.resize(16);
-	m_MBNode[ 0].m_r = vec3d(-w*r1,-h*r1, 0);
-	m_MBNode[ 1].m_r = vec3d( w*r1,-h*r1, 0);
-	m_MBNode[ 2].m_r = vec3d( w*r1, h*r1, 0);
-	m_MBNode[ 3].m_r = vec3d(-w*r1, h*r1, 0);
-	m_MBNode[ 4].m_r = vec3d(-w*r1,-h*r1, d);
-	m_MBNode[ 5].m_r = vec3d( w*r1,-h*r1, d);
-	m_MBNode[ 6].m_r = vec3d( w*r1, h*r1, d);
-	m_MBNode[ 7].m_r = vec3d(-w*r1, h*r1, d);
-	m_MBNode[ 8].m_r = vec3d(-w*r2,-h*r2, d1);
-	m_MBNode[ 9].m_r = vec3d( w*r2,-h*r2, d1);
-	m_MBNode[10].m_r = vec3d( w*r2, h*r2, d1);
-	m_MBNode[11].m_r = vec3d(-w*r2, h*r2, d1);
-	m_MBNode[12].m_r = vec3d(-w*r2,-h*r2, d2);
-	m_MBNode[13].m_r = vec3d( w*r2,-h*r2, d2);
-	m_MBNode[14].m_r = vec3d( w*r2, h*r2, d2);
-	m_MBNode[15].m_r = vec3d(-w*r2, h*r2, d2);
+	AddNode(vec3d(-w * r1, -h * r1, 0));
+	AddNode(vec3d(w * r1, -h * r1, 0));
+	AddNode(vec3d(w * r1, h * r1, 0));
+	AddNode(vec3d(-w * r1, h * r1, 0));
+	AddNode(vec3d(-w * r1, -h * r1, d));
+	AddNode(vec3d(w * r1, -h * r1, d));
+	AddNode(vec3d(w * r1, h * r1, d));
+	AddNode(vec3d(-w * r1, h * r1, d));
+	AddNode(vec3d(-w * r2, -h * r2, d1));
+	AddNode(vec3d(w * r2, -h * r2, d1));
+	AddNode(vec3d(w * r2, h * r2, d1));
+	AddNode(vec3d(-w * r2, h * r2, d1));
+	AddNode(vec3d(-w * r2, -h * r2, d2));
+	AddNode(vec3d(w * r2, -h * r2, d2));
+	AddNode(vec3d(w * r2, h * r2, d2));
+	AddNode(vec3d(-w * r2, h * r2, d2));
 
 	// create the MB block
-	m_MBlock.resize(7);
-
-	MBBlock& b1 = m_MBlock[0];
+	MBBlock& b1 = AddBlock(8, 9, 10, 11, 12, 13, 14, 15);
 	b1.SetID(0);
-	b1.SetNodes(8,9,10,11,12,13,14,15);
 	b1.SetSizes(m_nx, m_ny, m_nz);
 	b1.SetZoning(m_gx, m_gy, m_gz, m_bx, m_by, m_bz);
 
-	MBBlock& b2 = m_MBlock[1];
+	MBBlock& b2 = AddBlock(8, 0, 1, 9, 12, 4, 5, 13);
 	b2.SetID(0);
-	b2.SetNodes(8,0,1,9,12,4,5,13);
 	b2.SetSizes(m_ns, m_nx, m_nz);
 	b2.SetZoning(m_gr, m_gx, m_gz, m_br, m_bx, m_bz);
 
-	MBBlock& b3 = m_MBlock[2];
+	MBBlock& b3 = AddBlock(9, 1, 2, 10, 13, 5, 6, 14);
 	b3.SetID(0);
-	b3.SetNodes(9,1,2,10,13,5,6,14);
 	b3.SetSizes(m_ns, m_ny, m_nz);
 	b3.SetZoning(m_gr, m_gy, m_gz, m_br, m_by, m_bz);
 
-	MBBlock& b4 = m_MBlock[3];
+	MBBlock& b4 = AddBlock(10, 2, 3, 11, 14, 6, 7, 15);
 	b4.SetID(0);
-	b4.SetNodes(10,2,3,11,14,6,7,15);
 	b4.SetSizes(m_ns, m_nx, m_nz);
-	b4.SetZoning(m_gr, (m_bx?m_gx:1/m_gx), m_gz, m_br, m_bx, m_bz);
+	b4.SetZoning(m_gr, (m_bx ? m_gx : 1 / m_gx), m_gz, m_br, m_bx, m_bz);
 
-	MBBlock& b5 = m_MBlock[4];
+	MBBlock& b5 = AddBlock(11, 3, 0, 8, 15, 7, 4, 12);
 	b5.SetID(0);
-	b5.SetNodes(11,3,0,8,15,7,4,12);
 	b5.SetSizes(m_ns, m_ny, m_nz);
-	b5.SetZoning(m_gr, (m_by?m_gy:1/m_gy), m_gz, m_br, m_by, m_bz);
+	b5.SetZoning(m_gr, (m_by ? m_gy : 1 / m_gy), m_gz, m_br, m_by, m_bz);
 
-	MBBlock& b6 = m_MBlock[5];
+	MBBlock& b6 = AddBlock(11, 10, 9, 8, 3, 2, 1, 0);
 	b6.SetID(0);
-	b6.SetNodes(11,10,9,8,3,2,1,0);
 	b6.SetSizes(m_nx, m_ny, m_ns);
-	b6.SetZoning(m_gx, (m_by?m_gy:1/m_gy), m_gr, m_bx, m_by, m_br);
+	b6.SetZoning(m_gx, (m_by ? m_gy : 1 / m_gy), m_gr, m_bx, m_by, m_br);
 
-	MBBlock& b7 = m_MBlock[6];
+	MBBlock& b7 = AddBlock(12, 13, 14, 15, 4, 5, 6, 7);
 	b7.SetID(0);
-	b7.SetNodes(12,13,14,15,4,5,6,7);
 	b7.SetSizes(m_nx, m_ny, m_ns);
 	b7.SetZoning(m_gx, m_gy, m_gr, m_bx, m_by, m_br);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// next, we assign the face ID's
 	MBFace& F1 = GetBlockFace(1, 1); F1.SetID(0);
@@ -236,29 +307,18 @@ FEMesh* FEBox::CreateButterfly3D()
 	GetMBNode(6).SetID(6);
 	GetMBNode(7).SetID(7);
 
-	switch (m_nelem)
-	{
-	case 0: SetElementType(FE_HEX8 ); break;
-	case 1: SetElementType(FE_HEX20); break;
-	case 2: SetElementType(FE_HEX27); break;
-	default:
-		assert(false);
-		break;
-	}
+	UpdateMB();
 
-	// create the MB
-	return FEMultiBlockMesh::BuildMesh();
+	return true;
 }
 
-//-----------------------------------------------------------------------------
-// Build a 2D butterfly mesh
-FEMesh* FEBox::CreateButterfly2D()
+bool FEBox::CreateButterfly2DMesh()
 {
 	// get object parameters
 	ParamBlock& param = m_pobj->GetParamBlock();
-	double w = param[GBox::WIDTH ].GetFloatValue();
+	double w = param[GBox::WIDTH].GetFloatValue();
 	double h = param[GBox::HEIGHT].GetFloatValue();
-	double d = param[GBox::DEPTH ].GetFloatValue();
+	double d = param[GBox::DEPTH].GetFloatValue();
 
 	// get mesh parameters
 	m_r = GetFloatValue(RATIO);
@@ -292,62 +352,56 @@ FEMesh* FEBox::CreateButterfly2D()
 	if (m_nz == 1) m_bz = false;
 	if (m_ns == 1) m_br = false;
 
+	ClearMB();
+
 	// create the MB nodes
 	double r1 = 0.5;
-	double r2 = m_r*r1;
-	m_MBNode.resize(16);
-	m_MBNode[ 0].m_r = vec3d(-w*r1,-h*r1, 0);
-	m_MBNode[ 1].m_r = vec3d( w*r1,-h*r1, 0);
-	m_MBNode[ 2].m_r = vec3d( w*r1, h*r1, 0);
-	m_MBNode[ 3].m_r = vec3d(-w*r1, h*r1, 0);
-	m_MBNode[ 4].m_r = vec3d(-w*r1,-h*r1, d);
-	m_MBNode[ 5].m_r = vec3d( w*r1,-h*r1, d);
-	m_MBNode[ 6].m_r = vec3d( w*r1, h*r1, d);
-	m_MBNode[ 7].m_r = vec3d(-w*r1, h*r1, d);
-	m_MBNode[ 8].m_r = vec3d(-w*r2,-h*r2, 0);
-	m_MBNode[ 9].m_r = vec3d( w*r2,-h*r2, 0);
-	m_MBNode[10].m_r = vec3d( w*r2, h*r2, 0);
-	m_MBNode[11].m_r = vec3d(-w*r2, h*r2, 0);
-	m_MBNode[12].m_r = vec3d(-w*r2,-h*r2, d);
-	m_MBNode[13].m_r = vec3d( w*r2,-h*r2, d);
-	m_MBNode[14].m_r = vec3d( w*r2, h*r2, d);
-	m_MBNode[15].m_r = vec3d(-w*r2, h*r2, d);
+	double r2 = m_r * r1;
+	AddNode(vec3d(-w * r1, -h * r1, 0));
+	AddNode(vec3d(w * r1, -h * r1, 0));
+	AddNode(vec3d(w * r1, h * r1, 0));
+	AddNode(vec3d(-w * r1, h * r1, 0));
+	AddNode(vec3d(-w * r1, -h * r1, d));
+	AddNode(vec3d(w * r1, -h * r1, d));
+	AddNode(vec3d(w * r1, h * r1, d));
+	AddNode(vec3d(-w * r1, h * r1, d));
+	AddNode(vec3d(-w * r2, -h * r2, 0));
+	AddNode(vec3d(w * r2, -h * r2, 0));
+	AddNode(vec3d(w * r2, h * r2, 0));
+	AddNode(vec3d(-w * r2, h * r2, 0));
+	AddNode(vec3d(-w * r2, -h * r2, d));
+	AddNode(vec3d(w * r2, -h * r2, d));
+	AddNode(vec3d(w * r2, h * r2, d));
+	AddNode(vec3d(-w * r2, h * r2, d));
 
 	// create the MB block
-	m_MBlock.resize(5);
-
-	MBBlock& b1 = m_MBlock[0];
+	MBBlock& b1 = AddBlock(8, 9, 10, 11, 12, 13, 14, 15);
 	b1.SetID(0);
-	b1.SetNodes(8,9,10,11,12,13,14,15);
 	b1.SetSizes(m_nx, m_ny, m_nz);
 	b1.SetZoning(m_gx, m_gy, m_gz, m_bx, m_by, m_bz);
 
-	MBBlock& b2 = m_MBlock[1];
+	MBBlock& b2 = AddBlock(8, 0, 1, 9, 12, 4, 5, 13);
 	b2.SetID(0);
-	b2.SetNodes(8,0,1,9,12,4,5,13);
 	b2.SetSizes(m_ns, m_nx, m_nz);
 	b2.SetZoning(m_gr, m_gx, m_gz, m_br, m_bx, m_bz);
 
-	MBBlock& b3 = m_MBlock[2];
+	MBBlock& b3 = AddBlock(9, 1, 2, 10, 13, 5, 6, 14);
 	b3.SetID(0);
-	b3.SetNodes(9,1,2,10,13,5,6,14);
 	b3.SetSizes(m_ns, m_ny, m_nz);
 	b3.SetZoning(m_gr, m_gy, m_gz, m_br, m_by, m_bz);
 
-	MBBlock& b4 = m_MBlock[3];
+	MBBlock& b4 = AddBlock(10, 2, 3, 11, 14, 6, 7, 15);
 	b4.SetID(0);
-	b4.SetNodes(10,2,3,11,14,6,7,15);
 	b4.SetSizes(m_ns, m_nx, m_nz);
-	b4.SetZoning(m_gr, (m_bx?m_gx:1/m_gx), m_gz, m_br, m_bx, m_bz);
+	b4.SetZoning(m_gr, (m_bx ? m_gx : 1 / m_gx), m_gz, m_br, m_bx, m_bz);
 
-	MBBlock& b5 = m_MBlock[4];
+	MBBlock& b5 = AddBlock(11, 3, 0, 8, 15, 7, 4, 12);
 	b5.SetID(0);
-	b5.SetNodes(11,3,0,8,15,7,4,12);
 	b5.SetSizes(m_ns, m_ny, m_nz);
-	b5.SetZoning(m_gr, (m_by?m_gy:1/m_gy), m_gz, m_br, m_by, m_bz);
+	b5.SetZoning(m_gr, (m_by ? m_gy : 1 / m_gy), m_gz, m_br, m_by, m_bz);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// next, we assign the face ID's
 	MBFace& F1 = GetBlockFace(1, 1); F1.SetID(0);
@@ -355,17 +409,17 @@ FEMesh* FEBox::CreateButterfly2D()
 	MBFace& F3 = GetBlockFace(3, 1); F3.SetID(2);
 	MBFace& F4 = GetBlockFace(4, 1); F4.SetID(3);
 
-	GetBlockFace(0,4).SetID(4);
-	GetBlockFace(1,4).SetID(4);
-	GetBlockFace(2,4).SetID(4);
-	GetBlockFace(3,4).SetID(4);
-	GetBlockFace(4,4).SetID(4);
+	GetBlockFace(0, 4).SetID(4);
+	GetBlockFace(1, 4).SetID(4);
+	GetBlockFace(2, 4).SetID(4);
+	GetBlockFace(3, 4).SetID(4);
+	GetBlockFace(4, 4).SetID(4);
 
-	GetBlockFace(0,5).SetID(5);
-	GetBlockFace(1,5).SetID(5);
-	GetBlockFace(2,5).SetID(5);
-	GetBlockFace(3,5).SetID(5);
-	GetBlockFace(4,5).SetID(5);
+	GetBlockFace(0, 5).SetID(5);
+	GetBlockFace(1, 5).SetID(5);
+	GetBlockFace(2, 5).SetID(5);
+	GetBlockFace(3, 5).SetID(5);
+	GetBlockFace(4, 5).SetID(5);
 
 	// next, assign the edge ID's
 	GetFaceEdge(F1, 0).SetID(0);
@@ -391,9 +445,40 @@ FEMesh* FEBox::CreateButterfly2D()
 	GetMBNode(6).SetID(6);
 	GetMBNode(7).SetID(7);
 
+	UpdateMB();
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Build a 3D butterfly mesh
+FEMesh* FEBox::CreateButterfly3D()
+{
+	CreateButterfly3DMesh();
+
 	switch (m_nelem)
 	{
-	case 0: SetElementType(FE_HEX8 ); break;
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	default:
+		assert(false);
+		break;
+	}
+
+	// create the MB
+	return FEMultiBlockMesh::BuildMesh();
+}
+
+//-----------------------------------------------------------------------------
+// Build a 2D butterfly mesh
+FEMesh* FEBox::CreateButterfly2D()
+{
+	CreateButterfly2DMesh();
+
+	switch (m_nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
 	case 1: SetElementType(FE_HEX20); break;
 	case 2: SetElementType(FE_HEX27); break;
 	default:
@@ -427,69 +512,11 @@ FEMesh* FEBox::CreateRegular()
 // Create a regular mesh
 FEMesh* FEBox::CreateRegularHEX()
 {
-	// get object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
-	double w = 0.5 * param[GBox::WIDTH].GetFloatValue();
-	double h = 0.5 * param[GBox::HEIGHT].GetFloatValue();
-	double d = param[GBox::DEPTH].GetFloatValue();
-
-	// get mesh parameters
-	m_nx = GetIntValue(NX);
-	m_ny = GetIntValue(NY);
-	m_nz = GetIntValue(NZ);
-
-	m_gx = GetFloatValue(GX);
-	m_gy = GetFloatValue(GY);
-	m_gz = GetFloatValue(GZ);
-
-	m_bx = GetBoolValue(GX2);
-	m_by = GetBoolValue(GY2);
-	m_bz = GetBoolValue(GZ2);
-
-	// create the MB nodes
-	m_MBNode.resize(8);
-	m_MBNode[0].m_r = vec3d(-w, -h, 0);
-	m_MBNode[1].m_r = vec3d(w, -h, 0);
-	m_MBNode[2].m_r = vec3d(w, h, 0);
-	m_MBNode[3].m_r = vec3d(-w, h, 0);
-	m_MBNode[4].m_r = vec3d(-w, -h, d);
-	m_MBNode[5].m_r = vec3d(w, -h, d);
-	m_MBNode[6].m_r = vec3d(w, h, d);
-	m_MBNode[7].m_r = vec3d(-w, h, d);
-
-	// create the MB blocks
-	m_MBlock.resize(1);
-	MBBlock& b1 = m_MBlock[0];
-	b1.SetID(0);
-	b1.SetNodes(0, 1, 2, 3, 4, 5, 6, 7);
-	b1.SetSizes(m_nx, m_ny, m_nz);
-	b1.SetZoning(m_gx, m_gy, m_gz, m_bx, m_by, m_bz);
-
-	// update the MB data
-	UpdateMB();
-
-	// assign face ID's
-	SetBlockFaceID(b1, 0, 1, 2, 3, 4, 5);
-
-	MBFace& F1 = GetBlockFace(0, 0); SetFaceEdgeID(F1, 0,  9,  4, 8);
-	MBFace& F2 = GetBlockFace(0, 1); SetFaceEdgeID(F2, 1, 10,  5, 9);
-	MBFace& F3 = GetBlockFace(0, 2); SetFaceEdgeID(F3, 2, 11,  6, 10);
-	MBFace& F4 = GetBlockFace(0, 3); SetFaceEdgeID(F4, 3,  8,  7, 11);
-	MBFace& F5 = GetBlockFace(0, 4); SetFaceEdgeID(F5, 2,  1,  0,  3);
-	MBFace& F6 = GetBlockFace(0, 5); SetFaceEdgeID(F6, 4,  5,  6,  7);
-
-	m_MBNode[0].SetID(0);
-	m_MBNode[1].SetID(1);
-	m_MBNode[2].SetID(2);
-	m_MBNode[3].SetID(3);
-	m_MBNode[4].SetID(4);
-	m_MBNode[5].SetID(5);
-	m_MBNode[6].SetID(6);
-	m_MBNode[7].SetID(7);
+	CreateRegularBoxMesh();
 
 	switch (m_nelem)
 	{
-	case 0: SetElementType(FE_HEX8 ); break;
+	case 0: SetElementType(FE_HEX8); break;
 	case 1: SetElementType(FE_HEX20); break;
 	case 2: SetElementType(FE_HEX27); break;
 	default:
@@ -497,10 +524,7 @@ FEMesh* FEBox::CreateRegularHEX()
 		break;
 	}
 
-	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
-
-	return pm;
+	return FEMultiBlockMesh::BuildMesh();
 }
 
 //-----------------------------------------------------------------------------

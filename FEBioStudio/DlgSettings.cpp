@@ -95,6 +95,8 @@ public:
 		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
 		addEnumProperty(&m_nobjcol, "Object color")->setEnumValues(QStringList() << "Default" << "Object");
 		addBoolProperty(&m_dozsorting, "Improved Transparency");
+		addEnumProperty(&m_defaultFGColorOption, "Default text color option")->setEnumValues(QStringList() << "Theme" << "Custom");
+		addColorProperty(&m_defaultFGColor, "Custom text color");
 	}
 
 public:
@@ -107,6 +109,8 @@ public:
 	int		m_ntrans;
 	int		m_nobjcol;
 	bool	m_dozsorting;
+	int		m_defaultFGColorOption;
+	QColor	m_defaultFGColor;
 };
 
 //-----------------------------------------------------------------------------
@@ -983,6 +987,8 @@ void CDlgSettings::UpdateSettings()
 	ui->m_display->m_ntrans = view.m_transparencyMode;
 	ui->m_display->m_nobjcol = view.m_objectColor;
 	ui->m_display->m_dozsorting = view.m_bzsorting;
+	ui->m_display->m_defaultFGColorOption = view.m_defaultFGColorOption;
+	ui->m_display->m_defaultFGColor = toQColor(view.m_defaultFGColor);
 
 	ui->m_physics->m_showRigidBodies = view.m_brigid;
 	ui->m_physics->m_showRigidJoints = view.m_bjoint;
@@ -1068,6 +1074,34 @@ void CDlgSettings::apply()
 	view.m_transparencyMode = ui->m_display->m_ntrans;
 	view.m_objectColor = ui->m_display->m_nobjcol;
 	view.m_bzsorting = ui->m_display->m_dozsorting;
+	view.m_defaultFGColorOption = ui->m_display->m_defaultFGColorOption;
+	view.m_defaultFGColor = toGLColor(ui->m_display->m_defaultFGColor);
+
+	if (view.m_defaultFGColorOption == 0)
+	{
+		int theme = m_pwnd->currentTheme();
+		if (theme == 0) view.m_defaultFGColor = GLColor(0,0,0);
+		else view.m_defaultFGColor = GLColor(255, 255, 255);
+	}
+	GLWidget::set_base_color(view.m_defaultFGColor);
+
+	CGLDocument* doc = m_pwnd->GetGLDocument();
+	if (doc)
+	{
+		CGLView* glview = m_pwnd->GetGLView();
+		CGLWidgetManager* wm = (glview ? glview->GetGLWidgetManager() : nullptr);
+		if (wm)
+		{
+			for (int i = 0; i < wm->Widgets(); ++i)
+			{
+				GLWidget* wi = wm->get(i); 
+				if (wi && (wi->isfgc_overridden() == false))
+				{
+					wi->set_fg_color(view.m_defaultFGColor, false);
+				}
+			}
+		}
+	}
 
 	view.m_brigid = ui->m_physics->m_showRigidBodies;
 	view.m_bjoint = ui->m_physics->m_showRigidJoints;

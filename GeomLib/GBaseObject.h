@@ -68,7 +68,8 @@ public:
 
 	// add a face to the object
 	int AddNode(GNode* n);
-	int AddNode(vec3d r, int n = NODE_VERTEX, bool bdup = false);
+	GNode* AddNode(vec3d r, int n = NODE_VERTEX, bool bdup = false);
+	GEdge* AddEdge();
 	int AddEdge(GEdge* e);
 	int AddLine(int n1, int n2);
 	int AddYArc(int n1, int n2);
@@ -78,8 +79,11 @@ public:
 	void AddFacet(const vector<int>& node, const vector<pair<int, int> >& edge, int ntype);
 	void AddFacet(const vector<int>& edge, int ntype);
 	void AddSurface(GFace* f);
-	void AddPart ();
+	GPart* AddPart ();
 	void AddFace(GFace* f);
+	GFace* AddFace();
+
+	virtual bool DeletePart(GPart* pg);
 
 	// update the node types
 	void UpdateNodeTypes();

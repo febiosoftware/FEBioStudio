@@ -37,6 +37,7 @@ class FEMesh;
 class GObject;
 class FEMesher;
 class FEGroup;
+class FESelection;
 
 namespace Ui {
 	class CMeshPanel;
@@ -92,7 +93,7 @@ private:
 class ModifierThread : public CustomThread
 {
 public:
-	ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FEGroup* pg);
+	ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FESelection* sel);
 
 	void run() Q_DECL_OVERRIDE;
 
@@ -109,5 +110,5 @@ private:
 	CModelDocument*	m_doc;
 	GObject*	m_po;
 	FEModifier*	m_mod;
-	FEGroup*	m_pg;
+	FESelection*	m_sel;
 };

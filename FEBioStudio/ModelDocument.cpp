@@ -788,7 +788,7 @@ bool CModelDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 }
 
 // helper function for applying a modifier
-bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup* sel, bool clearSel)
+bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FESelection* sel, bool clearSel)
 {
 	// get the mesh
 	FEMesh* pm = po->GetFEMesh();
@@ -798,7 +798,7 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup*
 	FEMesh* newMesh = 0;
 	try {
 		if (sel)
-			newMesh = modifier.Apply(sel);
+			newMesh = modifier.Apply(po, sel);
 		else
 			newMesh = modifier.Apply(pm);
 	}

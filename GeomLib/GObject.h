@@ -48,6 +48,12 @@ class GLMesh;
 class GObject;
 
 //-----------------------------------------------------------------------------
+enum ObjectSaveFlags {
+	SAVE_MESH = 1,
+	ALL_FLAGS = 0xFF
+};
+
+//-----------------------------------------------------------------------------
 // some exceptions that may be thrown in case of throuble
 class GObjectException
 {
@@ -100,6 +106,9 @@ public:
 	// serialization
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
+
+	// set save flag options
+	void SetSaveFlags(unsigned int flags);
 
 	// --- M E S H I N G ---
 
@@ -202,15 +211,6 @@ public:
 public:
 	bool IsFaceVisible(const GFace* pf) const;
 
-protected: // helper functions for building the GMesh
-	void BuildFacePolygon     (GLMesh* glmesh, GFace& f);
-	void BuildFaceExtrude     (GLMesh* glmesh, GFace& f);
-	void BuildFaceQuad        (GLMesh* glmesh, GFace& f);
-	void BuildFaceRevolve     (GLMesh* glmesh, GFace& f);
-	void BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f);
-	void BuildEdgeMesh        (GLMesh* glmesh, GEdge& e);
-	void BuildEdgeLine        (GLMesh* glmesh, GEdge& e);
-
 protected:
 	// set the render mesh
 	void SetRenderMesh(GLMesh* mesh);
@@ -271,3 +271,6 @@ private:
 
 	static GObject*		m_activeObject;
 };
+
+// helper function to see if two faces are identical
+bool IsSameFace(int n[4], int m[4]);

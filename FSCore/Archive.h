@@ -200,6 +200,17 @@ public:
 	IOResult read(std::vector<int>& v);
 	IOResult read(std::vector<double>& v);
 
+	template <class T>
+	IOResult read(std::vector<T>& v)
+	{
+		CHUNK* pc = m_Chunk.top();
+		int nsize = pc->nsize / sizeof(T);
+		v.resize(nsize);
+		int nread = (int)fread(&v[0], sizeof(T), nsize, m_fp);
+		if (nread != nsize) return IO_ERROR;
+		return IO_OK;
+	}
+
 	// conversion to FILE* 
 	operator FILE* () { return m_fp; }
 

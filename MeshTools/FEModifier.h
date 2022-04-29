@@ -27,20 +27,22 @@ SOFTWARE.*/
 #pragma once
 #include <MeshLib/FEMesh.h>
 #include <FSCore/FSThreadedTask.h>
+class FESelection;
+class GObject;
 
 //-----------------------------------------------------------------------------
 
 class FEModifier : public FSThreadedTask 
 {
 public:
-	FEModifier(const char* sz) { SetName(sz); }
-	virtual ~FEModifier() {}
+	FEModifier(const char* sz);
+	virtual ~FEModifier();
 
-	virtual FEMesh* Apply(FEMesh* pm) = 0;
+	virtual FEMesh* Apply(FEMesh* pm);
+	virtual FEMesh* Apply(FEGroup* pg);
+	virtual FEMesh* Apply(GObject* po, FESelection* pg);
 
-	virtual FEMesh* Apply(FEGroup* pg) { return (pg ? Apply(pg->GetMesh()) : 0); }
-
-	virtual FEMeshBase* ApplyModifier(FEMeshBase* pm) { return 0; }
+	virtual FEMeshBase* ApplyModifier(FEMeshBase* pm);
 
 	static bool SetError(const char* szerr, ...);
 

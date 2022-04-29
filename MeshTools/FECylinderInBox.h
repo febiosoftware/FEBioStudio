@@ -40,6 +40,9 @@ public:
 	FEMesh* BuildMesh();
 
 protected:
+	bool BuildMultiBlock() override;
+
+protected:
 	int		m_nelem;
 	int		m_nx, m_ny, m_nz, m_nr;
 	double	m_gz, m_gr;

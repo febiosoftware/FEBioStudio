@@ -40,5 +40,8 @@ public:
 	FEMesh* BuildMesh() override;
 
 protected:
+	bool BuildMultiBlock() override;
+
+protected:
 	GBoxInBox* m_pobj;
 };

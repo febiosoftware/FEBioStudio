@@ -25,40 +25,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMultiBlockMesh.h"
+#include <GeomLib/GObject.h>
 
-class GTorus;
+class FEMultiQuadMesh;
 
-class FETorus : public FEMultiBlockMesh
+//-----------------------------------------------------------------------------
+//! The GMultiBox class is the geometry that is used to create a multi-block mesh. 
+//! A multi-block mesh is basically a mesh that is composed of rectangular blocks. 
+//! The user can edit the number of partitions by splitting edges, faces and parts.
+//
+class GMultiPatch : public GObject
 {
 public:
-	enum { NDIV, NSEG, ELEM_TYPE };
+	//! constructor
+	GMultiPatch();
+	GMultiPatch(GObject* po);
 
-public:
-	FETorus(){}
-	FETorus(GTorus* po);
-	FEMesh* BuildMesh();
+	bool DeletePart(GPart* pg) override;
 
-protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiBlockMesh();
+	FEMeshBase* GetEditableMesh() override;
 
-	bool BuildMultiBlock() override;
+	GObject* Clone() override;
 
-protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	bool Merge(GMultiPatch& mb);
 
-	int NodeIndex(int i, int j)
-	{
-		int ns = 4*m_ns;
-		int nd = 2*m_nd;
-		i = (i+nd/2 - 1)%(4*nd);
-		int n = (j%ns)*((nd+1)*(nd+1)+nd*4*nd) + (nd+1)*(nd+1) + (nd-1)*4*nd + i;
-		return n;
-	}
-
-protected:
-	GTorus* m_pobj;
-	int	m_nd, m_ns;
+private:
+	void BuildObject(FEMultiQuadMesh& mb);
 };

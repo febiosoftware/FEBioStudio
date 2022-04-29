@@ -29,6 +29,11 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <GeomLib/geom.h>
+#include <GeomLib/GMultiBox.h>
+#include <GeomLib/GMultiPatch.h>
+#include <algorithm>
+#include "FESelection.h"
+#include "GGroup.h"
 
 void MBBlock::SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8)
 {
@@ -63,6 +68,31 @@ FEMultiBlockMesh::FEMultiBlockMesh()
 }
 
 //-----------------------------------------------------------------------------
+FEMultiBlockMesh::FEMultiBlockMesh(const FEMultiBlockMesh& mb)
+{
+	CopyFrom(mb);
+}
+
+//-----------------------------------------------------------------------------
+void FEMultiBlockMesh::operator = (const FEMultiBlockMesh& mb)
+{
+	CopyFrom(mb);
+}
+
+//-----------------------------------------------------------------------------
+void FEMultiBlockMesh::CopyFrom(const FEMultiBlockMesh& mb)
+{
+	ClearMB();
+	m_MBNode = mb.m_MBNode;
+	m_MBEdge = mb.m_MBEdge;
+	m_MBFace = mb.m_MBFace;
+	m_MBlock = mb.m_MBlock;
+
+	m_elemType = mb.m_elemType;
+	m_quadMesh = mb.m_quadMesh;
+}
+
+//-----------------------------------------------------------------------------
 
 FEMultiBlockMesh::~FEMultiBlockMesh(void)
 {
@@ -76,6 +106,20 @@ void FEMultiBlockMesh::SetElementType(int elemType)
 	m_quadMesh = (elemType != FE_HEX8);
 }
 
+void FEMultiBlockMesh::ClearMB()
+{
+	m_MBlock.clear();
+	m_MBFace.clear();
+	m_MBEdge.clear();
+	m_MBNode.clear();
+	m_pm = nullptr;
+	m_currentNode = nullptr;
+}
+
+bool FEMultiBlockMesh::BuildMultiBlock()
+{
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 // build the FE mesh
@@ -89,6 +133,9 @@ FEMesh* FEMultiBlockMesh::BuildMesh()
 	}
 	m_quadMesh = (m_elemType != FE_HEX8);
 
+	// update MB data structures
+	UpdateMB();
+
 	// create a new mesh
 	FEMesh* pm = new FEMesh();
 	m_pm = pm;
@@ -98,51 +145,6 @@ FEMesh* FEMultiBlockMesh::BuildMesh()
 	for (int i = 0; i < m_MBEdge.size(); ++i) m_MBEdge[i].m_fenodes.clear();
 	for (int i = 0; i < m_MBFace.size(); ++i) m_MBFace[i].m_fenodes.clear();
 	for (int i = 0; i < m_MBlock.size(); ++i) m_MBlock[i].m_fenodes.clear();
-
-	// update face geometry data
-	for (int i = 0; i < m_MBFace.size(); ++i)
-	{
-		MBFace& f = m_MBFace[i];
-
-		// see if this face is a sphere
-		// it is assumed a sphere if all edges are 3P arcs with the same center node
-		f.m_isSphere = true;
-		f.m_sphereRadius = 0;
-		f.m_sphereCenter = vec3d(0, 0, 0);
-		int c0 = m_MBEdge[f.m_edge[0]].edge.m_cnode;
-		for (int j = 0; j < 4; ++j)
-		{
-			MBEdge& edgej = m_MBEdge[f.m_edge[j]];
-			if ((edgej.edge.m_ntype != EDGE_3P_CIRC_ARC) || (edgej.edge.m_cnode != c0))
-			{
-				f.m_isSphere = false;
-				break;
-			}
-		}
-		if (f.m_isSphere)
-		{
-			// we assume that the corner nodes are already on the sphere
-			vec3d r0 = m_MBNode[f.m_node[0]].m_r;
-			f.m_sphereCenter = m_MBNode[c0].m_r;
-			f.m_sphereRadius = (r0 - f.m_sphereCenter).Length();
-		}
-
-		// see if it is a revolved surface
-		f.m_isRevolve = false;
-		f.m_nrevolveEdge = -1;
-		if ((m_MBEdge[f.m_edge[0]].edge.m_ntype == EDGE_ZARC) &&
-			(m_MBEdge[f.m_edge[2]].edge.m_ntype == EDGE_ZARC))
-		{
-			f.m_isRevolve = true;
-			f.m_nrevolveEdge = 1;
-		}
-		if ((m_MBEdge[f.m_edge[1]].edge.m_ntype == EDGE_ZARC) &&
-			(m_MBEdge[f.m_edge[3]].edge.m_ntype == EDGE_ZARC))
-		{
-			f.m_isRevolve = true;
-			f.m_nrevolveEdge = 0;
-		}
-	}
 
 	// build the mesh
 	BuildFENodes(pm);
@@ -167,7 +169,7 @@ vec3d FEMultiBlockMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 	vec3d r2 = m_MBNode[e.Node(1)].m_r;
 
 	vec3d p;
-	switch (e.edge.Type())
+	switch (e.m_ntype)
 	{
 	case EDGE_LINE:
 		p = r1 * (1 - r) + r2 * r;
@@ -179,17 +181,17 @@ vec3d FEMultiBlockMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		vec2d b(r2.x, r2.y);
 
 		// create an arc object
-		GM_CIRCLE_ARC ca(c, a, b, e.m_winding);
+		GM_CIRCLE_ARC ca(c, a, b, e.m_orient);
 		vec2d q = ca.Point(r);
 		p = vec3d(q.x, q.y, r1.z);
 	}
 	break;
 	case EDGE_3P_CIRC_ARC:
 	{
-		vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
-		vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r;
-		vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r;
-		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_winding);
+		vec3d r0 = m_MBNode[e.m_cnode].m_r;
+		vec3d r1 = m_MBNode[e.m_node[0]].m_r;
+		vec3d r2 = m_MBNode[e.m_node[1]].m_r;
+		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_orient);
 		p = c.Point(r);
 	}
 	break;
@@ -678,7 +680,7 @@ void FEMultiBlockMesh::BuildFEElements(FEMesh* pm)
 
 		Sampler1D dx(nx, b.m_gx, b.m_bx);
 		Sampler1D dy(ny, b.m_gy, b.m_by);
-		Sampler1D dz(ny, b.m_gy, b.m_by);
+		Sampler1D dz(ny, b.m_gz, b.m_bz);
 
 		int nn = (m_quadMesh ? 2 : 1);
 		int nk = 0;
@@ -777,19 +779,10 @@ void FEMultiBlockMesh::BuildMBEdges()
 			{
 				MBEdge& e = m_MBEdge[n];
 				f.m_edge[j] = n;
-				if (f.IsExternal())
-				{
-					if (e.m_face[0] == -1) e.m_face[0] = i; 
-					else e.m_face[1] = i;
-				}
 			}
 			else
 			{
 				MBEdge e(n1, n2);
-				e.m_face[0] = e.m_face[1] = -1;
-
-				if (f.IsExternal()) e.m_face[0] = i;
-
 				switch (j)
 				{
 				case 0:
@@ -827,8 +820,8 @@ void FEMultiBlockMesh::BuildMBEdges()
 	for (int i = 0; i < NE; ++i)
 	{
 		MBEdge& ei = m_MBEdge[i];
-		ET[ei.edge.m_node[0]].push_back(i);
-		ET[ei.edge.m_node[1]].push_back(i);
+		ET[ei.m_node[0]].push_back(i);
+		ET[ei.m_node[1]].push_back(i);
 	}
 
 	const int EL[12][2] = { {0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7} };
@@ -938,62 +931,8 @@ void FEMultiBlockMesh::BuildMBFaces()
 }
 
 //-----------------------------------------------------------------------------
-
-void FEMultiBlockMesh::FindFaceNeighbours()
-{
-	// build the node-face table
-	vector< vector<int> > NFT;
-	BuildNodeFaceTable(NFT);
-
-	// reset all face neighbours
-	int NF = (int)m_MBFace.size();
-	for (int i=0; i<NF; ++i)
-	{
-		MBFace& F = m_MBFace[i];
-		for (int j=0; j<4; ++j) F.m_nbr[j] = -1;
-	}
-
-	// find the face's neighbours
-	int nf, n1, n2;
-	for (int i=0; i<NF; ++i)
-	{
-		MBFace& F = m_MBFace[i];
-		if (F.IsExternal())
-		{
-			for (int j=0; j<4; ++j)
-			{
-				if (F.m_nbr[j] == -1)
-				{
-					// pick a node
-					n1 = F.m_node[j];
-					n2 = F.m_node[(j+1)%4];
-					for (int k=0; k<(int) NFT[n1].size(); ++k)
-					{
-						nf = NFT[n1][k];
-						if (nf != i)
-						{
-							MBFace& F2 = m_MBFace[nf];
-							if (F2.IsExternal())
-							{
-								int l = FindEdgeIndex(F2, n1, n2);
-								if (l != -1)
-								{
-									F.m_nbr[j] = nf;
-									F2.m_nbr[l] = i;
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 // This function finds the neighbors for all blocks.
-// It is called from UpdateMB().
+// It is called from BuildMB().
 // At this point it is assumed that the nodes and the blocks are defined.
 void FEMultiBlockMesh::FindBlockNeighbours()
 {
@@ -1286,14 +1225,14 @@ int FEMultiBlockMesh::GetBlockFaceNodeIndex(MBBlock &b, int nf, int i, int j)
 	MBFace bf = BuildBlockFace(b, nf);
 
 	int l = -1;
-	if      (bf.m_node[0] == f.m_node[0]) l = 0;
-	else if (bf.m_node[0] == f.m_node[1]) l = 1;
-	else if (bf.m_node[0] == f.m_node[2]) l = 2;
-	else if (bf.m_node[0] == f.m_node[3]) l = 3;
+	if      (f.m_node[0] == bf.m_node[0]) l = 0;
+	else if (f.m_node[0] == bf.m_node[1]) l = 1;
+	else if (f.m_node[0] == bf.m_node[2]) l = 2;
+	else if (f.m_node[0] == bf.m_node[3]) l = 3;
 
 	int m = 0;
-	if (bf.m_node[1] == f.m_node[(l+1)%4]) m = 1;
-	else if (bf.m_node[1] == f.m_node[(l+3)%4]) m = -1;
+	if (f.m_node[1] == bf.m_node[(l+1)%4]) m = 1;
+	else if (f.m_node[1] == bf.m_node[(l+3)%4]) m = -1;
 
 	assert((l!=-1) && (m!=0));
 
@@ -1445,6 +1384,14 @@ MBBlock& FEMultiBlockMesh::AddBlock(int n0, int n1, int n2, int n3, int n4, int 
 }
 
 //-----------------------------------------------------------------------------
+MBBlock& FEMultiBlockMesh::AddBlock()
+{
+	MBBlock b;
+	m_MBlock.push_back(b);
+	return m_MBlock[m_MBlock.size() - 1];
+}
+
+//-----------------------------------------------------------------------------
 MBEdge& FEMultiBlockMesh::GetEdge(int nedge)
 {
 	return m_MBEdge[nedge];
@@ -1458,12 +1405,85 @@ MBEdge& FEMultiBlockMesh::GetFaceEdge(MBFace& f, int n)
 }
 
 //-----------------------------------------------------------------------------
-void FEMultiBlockMesh::UpdateMB()
+MBFace& FEMultiBlockMesh::AddFace()
+{
+	m_MBFace.push_back(MBFace());
+	return m_MBFace.back();
+}
+
+//-----------------------------------------------------------------------------
+MBEdge& FEMultiBlockMesh::AddEdge()
+{
+	m_MBEdge.push_back(MBEdge());
+	return m_MBEdge.back();
+}
+
+//-----------------------------------------------------------------------------
+void FEMultiBlockMesh::BuildMB()
 {
 	FindBlockNeighbours();
 	BuildMBFaces();
-	FindFaceNeighbours();
 	BuildMBEdges();
+}
+
+//-----------------------------------------------------------------------------
+void FEMultiBlockMesh::UpdateMB()
+{
+	// update face geometry data
+	for (int i = 0; i < m_MBFace.size(); ++i)
+	{
+		MBFace& f = m_MBFace[i];
+
+		// figure out edge winding
+		for (int j = 0; j < 4; ++j)
+		{
+			int n0 = f.m_node[j];
+			int n1 = f.m_node[(j+1)%4];
+			MBEdge& ej = m_MBEdge[f.m_edge[j]];
+			if      ((n0 == ej.Node(0)) && (n1 == ej.Node(1))) f.m_edgeWinding[j] =  1;
+			else if ((n0 == ej.Node(1)) && (n1 == ej.Node(0))) f.m_edgeWinding[j] = -1;
+			else { assert(false); }
+		}
+
+		// see if this face is a sphere
+		// it is assumed a sphere if all edges are 3P arcs with the same center node
+		f.m_isSphere = true;
+		f.m_sphereRadius = 0;
+		f.m_sphereCenter = vec3d(0, 0, 0);
+		int c0 = m_MBEdge[f.m_edge[0]].m_cnode;
+		for (int j = 0; j < 4; ++j)
+		{
+			MBEdge& edgej = m_MBEdge[f.m_edge[j]];
+			if ((edgej.m_ntype != EDGE_3P_CIRC_ARC) || (edgej.m_cnode != c0))
+			{
+				f.m_isSphere = false;
+				break;
+			}
+		}
+		if (f.m_isSphere)
+		{
+			// we assume that the corner nodes are already on the sphere
+			vec3d r0 = m_MBNode[f.m_node[0]].m_r;
+			f.m_sphereCenter = m_MBNode[c0].m_r;
+			f.m_sphereRadius = (r0 - f.m_sphereCenter).Length();
+		}
+
+		// see if it is a revolved surface
+		f.m_isRevolve = false;
+		f.m_nrevolveEdge = -1;
+		if ((m_MBEdge[f.m_edge[0]].m_ntype == EDGE_ZARC) &&
+			(m_MBEdge[f.m_edge[2]].m_ntype == EDGE_ZARC))
+		{
+			f.m_isRevolve = true;
+			f.m_nrevolveEdge = 1;
+		}
+		if ((m_MBEdge[f.m_edge[1]].m_ntype == EDGE_ZARC) &&
+			(m_MBEdge[f.m_edge[3]].m_ntype == EDGE_ZARC))
+		{
+			f.m_isRevolve = true;
+			f.m_nrevolveEdge = 0;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1515,4 +1535,427 @@ vector<int> FEMultiBlockMesh::GetFENodeList(MBBlock& block)
 	nodeList.insert(nodeList.end(), f6.begin(), f6.end());
 
 	return nodeList;
+}
+
+void FEMultiBlockMesh::ClearMeshSettings()
+{
+	for (MBEdge& e : m_MBEdge)
+	{
+		e.m_nx = 0;
+		e.m_gx = 1.0;
+		e.m_bx = false;
+	}
+	for (MBFace& f : m_MBFace)
+	{
+		f.m_nx = f.m_ny = 0;
+		f.m_gx = f.m_gy = 1.0;
+		f.m_bx = f.m_by = false;
+	}
+	for (MBBlock& b : m_MBlock)
+	{
+		b.m_nx = b.m_ny = b.m_nz = 0;
+		b.m_gx = b.m_gy = b.m_gz = 1.0;
+		b.m_bx = b.m_by = b.m_bz = false;
+	}
+}
+
+bool FEMultiBlockMesh::SetEdgeDivisions(int iedge, int nd)
+{
+	MBEdge& edge = m_MBEdge[iedge];
+	if (edge.m_nx == nd) return true;	// edge divisions unchanged
+//	if (edge.m_nx != 0) return false; // edge divisions already set. Cannot override.
+
+	for (MBEdge& e : m_MBEdge) e.m_ntag = 0;
+	edge.m_ntag = nd;
+
+	// propagate new edge size
+	const int ET[3][4] = {
+		{ 0, 2,  4,  6 },
+		{ 1, 3,  5,  7 },
+		{ 8, 9, 10, 11 }
+	};
+
+	const int EC[12] = {0, 1, 0, 1, 0, 1, 0, 1, 2, 2, 2, 2};
+
+	bool done = false;
+	while (!done)
+	{
+		done = true;
+		for (MBBlock& b : m_MBlock)
+		{
+			for (int i = 0; i < 12; ++i)
+			{
+				MBEdge& ei = m_MBEdge[b.m_edge[i]];
+				if (ei.m_ntag == nd)
+				{
+					int ec = EC[i];
+					const int* et = ET[ec];
+					for (int j = 0; j < 4; ++j)
+					{
+						MBEdge& ej = m_MBEdge[b.m_edge[et[j]]];
+						if (ej.m_ntag == 0) {
+							ej.m_ntag = nd; 
+							done = false;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// okay, everything looks good, so let's keep the new edge divisions
+	for (MBEdge& e : m_MBEdge) {
+		if (e.m_ntag == nd) e.m_nx = nd;
+	}
+
+	return true;
+}
+
+bool FEMultiBlockMesh::SetDefaultDivisions(int nd)
+{
+	for (MBEdge& e : m_MBEdge)
+	{
+		if (e.m_nx == 0) e.m_nx = nd;
+	}
+
+	// set face meshing stats
+	for (MBFace& f : m_MBFace)
+	{
+		MBEdge& e0 = m_MBEdge[f.m_edge[0]];
+		MBEdge& e1 = m_MBEdge[f.m_edge[1]];
+
+		f.m_nx = e0.m_nx; assert(f.m_nx > 0);
+		f.m_ny = e1.m_nx; assert(f.m_ny > 0);
+
+		if (f.m_edgeWinding[0] == 1) f.m_gx = e0.m_gx; else f.m_gx = 1.0 / e0.m_gx;
+		if (f.m_edgeWinding[1] == 1) f.m_gy = e1.m_gx; else f.m_gy = 1.0 / e1.m_gx;
+
+		if (m_MBEdge[f.m_edge[2]].m_nx != f.m_nx) return false;
+		if (m_MBEdge[f.m_edge[3]].m_nx != f.m_ny) return false;
+	}
+
+	// set block meshing stats
+//	const int EL[12][2] = { {0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7} };
+	for (MBBlock& b : m_MBlock)
+	{
+		MBEdge& e0 = m_MBEdge[b.m_edge[0]];
+		MBEdge& e1 = m_MBEdge[b.m_edge[1]];
+		MBEdge& e2 = m_MBEdge[b.m_edge[8]];
+
+		b.m_nx = e0.m_nx; assert(b.m_nx > 0);
+		b.m_ny = e1.m_nx; assert(b.m_ny > 0);
+		b.m_nz = e2.m_nx; assert(b.m_nz > 0);
+
+		if      ((e0.m_node[0] == b.m_node[0]) && (e0.m_node[1] == b.m_node[1])) b.m_gx = e0.m_gx;
+		else if ((e0.m_node[0] == b.m_node[1]) && (e0.m_node[1] == b.m_node[0])) b.m_gx = 1.0 / e0.m_gx;
+		else assert(false);
+
+		if      ((e1.m_node[0] == b.m_node[1]) && (e1.m_node[1] == b.m_node[2])) b.m_gy = e1.m_gx;
+		else if ((e1.m_node[0] == b.m_node[2]) && (e1.m_node[1] == b.m_node[1])) b.m_gy = 1.0 / e1.m_gx;
+		else assert(false);
+
+		if      ((e2.m_node[0] == b.m_node[0]) && (e2.m_node[1] == b.m_node[4])) b.m_gz = e2.m_gx;
+		else if ((e2.m_node[0] == b.m_node[4]) && (e2.m_node[1] == b.m_node[0])) b.m_gz = 1.0 / e2.m_gx;
+		else assert(false);
+
+		if (m_MBEdge[b.m_edge[2]].m_nx != b.m_nx) return false;
+		if (m_MBEdge[b.m_edge[4]].m_nx != b.m_nx) return false;
+		if (m_MBEdge[b.m_edge[6]].m_nx != b.m_nx) return false;
+
+		if (m_MBEdge[b.m_edge[3]].m_nx != b.m_ny) return false;
+		if (m_MBEdge[b.m_edge[5]].m_nx != b.m_ny) return false;
+		if (m_MBEdge[b.m_edge[7]].m_nx != b.m_ny) return false;
+
+		if (m_MBEdge[b.m_edge[ 9]].m_nx != b.m_nz) return false;
+		if (m_MBEdge[b.m_edge[10]].m_nx != b.m_nz) return false;
+		if (m_MBEdge[b.m_edge[11]].m_nx != b.m_nz) return false;
+	}
+
+	return true;
+}
+
+bool FEMultiBlockMesh::SetNodeWeights(std::vector<double>& w)
+{
+	if (w.size() != m_MBNode.size()) return false;
+
+	for (MBEdge& e : m_MBEdge)
+	{
+		int n0 = e.m_node[0];
+		int n1 = e.m_node[1];
+		double w0 = w[n0]; if (w0 == 0.0) w0 = 1.0;
+		double w1 = w[n1]; if (w1 == 0.0) w1 = 1.0;
+
+		if ((w0 != 1.0) && (w1 == 1.0))
+		{
+			e.m_gx = w0;
+		}
+		else if ((w1 != 1.0) && (w0 == 1.0))
+		{
+			e.m_gx = 1.0 / w1;
+		}
+		else if ((e.m_nx != 0) && (w0 == w1) && (w0 != 1.0))
+		{
+			e.m_gx = w0;
+			e.m_bx = true;
+		}
+		else if (w0 != w1) { assert(false); }
+	}
+}
+
+//==============================================================
+FEMultiBlockMesher::FEMultiBlockMesher(GMultiBox* po) : m_po(po)
+{
+	AddIntParam(10, "divs", "divisions");
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
+}
+
+bool FEMultiBlockMesher::BuildMultiBlock()
+{
+	if (m_po == nullptr) return false;
+
+	ClearMB();
+
+	GMultiBox& o = *m_po;
+	for (int i=0; i<o.Nodes(); ++i)
+	{
+		GNode* n = o.Node(i);
+		MBNode& mbNode = AddNode(n->LocalPosition(), n->Type());
+		mbNode.SetID(n->GetLocalID());
+	}
+
+	for (int i=0; i<o.Edges(); ++i)
+	{
+		GEdge* e = o.Edge(i);
+		MBEdge& mbEdge = AddEdge();
+		mbEdge.m_ntype = e->m_ntype;
+		mbEdge.m_node[0] = e->m_node[0];
+		mbEdge.m_node[1] = e->m_node[1];
+		mbEdge.m_cnode = e->m_cnode;
+		mbEdge.m_orient = e->m_orient;
+		mbEdge.SetID(e->GetLocalID());
+	}
+
+	for (int i=0; i<o.Faces(); ++i)
+	{
+		GFace* f = o.Face(i);
+		if (f->Nodes() != 4) return false;
+		MBFace& mbFace = AddFace();
+		mbFace.m_gid = f->GetLocalID();
+		mbFace.m_block[0] = f->m_nPID[0];
+		mbFace.m_block[1] = f->m_nPID[1];
+		for (int j = 0; j < 4; ++j) mbFace.m_node[j] = f->m_node[j];
+		for (int j = 0; j < 4; ++j) {
+			mbFace.m_edge[j] = f->m_edge[j].nid;
+			mbFace.m_edgeWinding[j] = f->m_edge[j].nwn;
+		}
+	}
+
+	for (int i=0; i<o.Parts(); ++i)
+	{
+		GPart* p = o.Part(i);
+		if (p->Nodes() != 8) return false;
+		if (p->Edges() != 12) return false;
+		if (p->Faces() != 6) return false;
+		MBBlock& mbBlock = AddBlock();
+		mbBlock.m_gid = p->GetLocalID();
+		for (int j = 0; j <  8; ++j) mbBlock.m_node[j] = p->m_node[j];
+		for (int j = 0; j < 12; ++j) mbBlock.m_edge[j] = p->m_edge[j];
+		for (int j = 0; j <  6; ++j) mbBlock.m_face[j] = p->m_face[j];
+	}
+
+	// update block neighbors
+	FindBlockNeighbours();
+
+	return true;
+}
+
+FEMesh* FEMultiBlockMesher::BuildMesh()
+{
+	if (m_po == nullptr) return nullptr;
+	GMultiBox& o = *m_po;
+
+	// rebuild the multiblock data
+	BuildMultiBlock();
+
+	FEMultiBlockMesh& mb = *this;
+
+	// clear all mesh settings
+	mb.ClearMeshSettings();
+
+	// assign meshing parameters
+	int nd = GetIntValue(DIVS);
+
+	// first see the edge divisions
+	for (int i = 0; i < o.Edges(); ++i)
+	{
+		GEdge* edge = o.Edge(i);
+		double w = edge->GetMeshWeight();
+		if (w > 0)
+		{
+			int nx = (int)(nd * w);
+			if (nx < 1) nx = 1;
+			mb.SetEdgeDivisions(i, nx);
+		}
+	}
+
+	// set the node weights (which also adjusts the edge zoning)
+	vector<double> w(o.Nodes(), 0.0);
+	for (int i = 0; i < o.Nodes(); ++i)
+	{
+		GNode* node = o.Node(i);
+		w[i] = node->GetMeshWeight();
+	}
+	mb.SetNodeWeights(w);
+
+	// set the divisions of the remaining items
+	mb.SetDefaultDivisions(nd);
+
+	int elemType = GetIntValue(ELEM_TYPE);
+	switch (elemType)
+	{
+	case 0: mb.SetElementType(FE_HEX8 ); break;
+	case 1: mb.SetElementType(FE_HEX20); break;
+	case 2: mb.SetElementType(FE_HEX27); break;
+	default:
+		assert(false);
+	}
+
+	return FEMultiBlockMesh::BuildMesh();
+}
+
+void FEMultiBlockMesher::RebuildMB()
+{
+	// Update edge list of faces
+	for (MBFace& f : m_MBFace)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			int n0 = f.m_node[i];
+			int n1 = f.m_node[(i + 1) % 4];
+			int ne = FindEdge(n0, n1); assert(ne >= 0);
+
+			f.m_edge[i] = ne;
+
+			MBEdge& ei = m_MBEdge[ne];
+			if      ((ei.Node(0) == n0) && (ei.Node(1) == n1)) f.m_edgeWinding[i] =  1;
+			else if ((ei.Node(0) == n1) && (ei.Node(1) == n0)) f.m_edgeWinding[i] = -1;
+			else assert(false);
+		}
+	}
+
+	// update block data
+	for (MBBlock& b : m_MBlock)
+	{
+		// update face data
+		for (int i = 0; i < 6; ++i)
+		{
+			b.m_face[i] = -1;
+			MBFace fi = BuildBlockFace(b, i);
+			
+			// TODO: Find a better way
+			for (int j = 0; j < m_MBFace.size(); ++j)
+			{
+				MBFace& fj = m_MBFace[j];
+				if (IsSameFace(fi.m_node, fj.m_node))
+				{
+					b.m_face[i] = j;
+					break;
+				}
+			}
+			assert(b.m_face[i] != -1);
+		}
+
+		// update edge data
+		const int EL[12][2] = { {0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7} };
+		for (int i = 0; i < 12; ++i)
+		{
+			int n0 = b.m_node[EL[i][0]];
+			int n1 = b.m_node[EL[i][1]];
+
+			int ne = FindEdge(n0, n1); assert(ne >= 0);
+			b.m_edge[i] = ne;
+		}
+
+		// update block neighbors
+		FindBlockNeighbours();
+	}
+}
+
+//===============================================================================
+FESetMBWeight::FESetMBWeight() : FEModifier("Set MB Weight")
+{
+	AddDoubleParam(0.0, "weight");
+}
+
+FEMesh* FESetMBWeight::Apply(GObject* po, FESelection* sel)
+{
+	if (sel == nullptr) return nullptr;
+
+	GMultiBox* mb = dynamic_cast<GMultiBox*>(po);
+	if (mb)
+	{
+		FEItemListBuilder* list = sel->CreateItemList();
+
+		double w = GetFloatValue(0);
+
+		GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
+		if (edgeList)
+		{
+			vector<GEdge*> edges = edgeList->GetEdgeList();
+			for (GEdge* edge : edges)
+			{
+				edge->SetMeshWeight(w);
+			}
+		}
+
+		GFaceList* faceList = dynamic_cast<GFaceList*>(list);
+		if (faceList)
+		{
+			vector<GFace*> faces = faceList->GetFaceList();
+			for (GFace* face : faces)
+			{
+				for (int j = 0; j < face->Nodes(); ++j)
+				{
+					GNode* n = mb->Node(face->m_node[j]);
+					n->SetMeshWeight(w);
+				}
+			}
+		}
+
+		// don't call po->BuildMesh() since that deletes the current mesh
+		return po->GetFEMesher()->BuildMesh();
+	}
+	else if (dynamic_cast<GMultiPatch*>(po))
+	{
+		GMultiPatch* mp = dynamic_cast<GMultiPatch*>(po);
+
+		FEItemListBuilder* list = sel->CreateItemList();
+
+		double w = GetFloatValue(0);
+
+		GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
+		if (edgeList)
+		{
+			vector<GEdge*> edges = edgeList->GetEdgeList();
+			for (GEdge* edge : edges)
+			{
+				edge->SetMeshWeight(w);
+			}
+		}
+
+		GNodeList* nodeList = dynamic_cast<GNodeList*>(list);
+		if (nodeList)
+		{
+			vector<GNode*> nodes = nodeList->GetNodeList();
+			for (GNode* node : nodes)
+			{
+				node->SetMeshWeight(w);
+			}
+		}
+
+		// don't call po->BuildMesh() since that deletes the current mesh
+		return po->GetFEMesher()->BuildMesh();
+	}
+
+	return nullptr;
 }

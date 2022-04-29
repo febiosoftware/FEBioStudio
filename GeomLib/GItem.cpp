@@ -114,6 +114,7 @@ GEdge::GEdge(const GEdge& e)
 	m_node[0] = e.m_node[0];
 	m_node[1] = e.m_node[1];
 	m_cnode = e.m_cnode;
+	m_orient = e.m_orient;
 	m_ntype = e.m_ntype;
 
 	m_state = e.m_state;
@@ -129,6 +130,7 @@ void GEdge::operator =(const GEdge &e)
 	m_node[0] = e.m_node[0];
 	m_node[1] = e.m_node[1];
 	m_cnode = e.m_cnode;
+	m_orient = e.m_orient;
 	m_ntype = e.m_ntype;
 
 	m_state = e.m_state;
@@ -151,10 +153,12 @@ bool GEdge::operator==(const GEdge& e)
 	case EDGE_YARC:
 	case EDGE_ZARC:
 		if ((m_node[0] != e.m_node[0]) || (m_node[1] != e.m_node[1])) return false;
+		if (m_orient != e.m_orient) return false;
 		break;
 	case EDGE_3P_CIRC_ARC:
 		if ((m_node[0] != e.m_node[0])  || (m_node[1] != e.m_node[1])) return false;
 		if (m_cnode != e.m_cnode) return false;
+		if (m_orient != e.m_orient) return false;
 		break;
 	case EDGE_3P_ARC:
 		if ((m_node[0] != e.m_node[0]) || (m_node[1] != e.m_node[1])) return false;
@@ -414,6 +418,27 @@ bool GFace::HasEdge(int nid)
 		if (m_edge[i].nid == nid) return true;
 	}
 	return false;
+}
+
+
+void GFace::Invert()
+{
+	// swap block IDs
+	int tmp = m_nPID[0]; m_nPID[0] = m_nPID[1]; m_nPID[1] = tmp;
+
+	// we also need to invert the edges and nodes
+	int fn[4], fe[4], fw[4];
+	for (int j = 0; j < 4; ++j) {
+		fn[j] = m_node[j];
+		fe[j] = m_edge[j].nid;
+		fw[j] = m_edge[j].nwn;
+	}
+	for (int j = 0; j < 4; ++j)
+	{
+		m_node[j] = fn[(4 - j) % 4];
+		m_edge[j].nid = fe[3 - j];
+		m_edge[j].nwn = -fw[3 - j];
+	}
 }
 
 //=============================================================================

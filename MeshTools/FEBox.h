@@ -44,6 +44,13 @@ public:
 	FEMesh* BuildMesh();
 
 protected:
+	bool BuildMultiBlock() override;
+
+	bool CreateRegularBoxMesh();
+	bool CreateButterfly3DMesh();
+	bool CreateButterfly2DMesh();
+
+protected:
 	FEMesh* CreateRegular();
 	FEMesh* CreateButterfly3D();
 	FEMesh* CreateButterfly2D();

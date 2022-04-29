@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <GeomLib/geom.h>
+#include <GeomLib/GMultiPatch.h>
 
 //-----------------------------------------------------------------------------
 FEMultiQuadMesh::FEMultiQuadMesh()
@@ -53,6 +54,30 @@ void FEMultiQuadMesh::SetElementType(int elemType)
 }
 
 //-----------------------------------------------------------------------------
+int FEMultiQuadMesh::Nodes() const
+{
+	return (int)m_MBNode.size();
+}
+
+//-----------------------------------------------------------------------------
+int FEMultiQuadMesh::Edges() const
+{
+	return (int)m_MBEdge.size();
+}
+
+//-----------------------------------------------------------------------------
+MBEdge& FEMultiQuadMesh::GetEdge(int i)
+{
+	return m_MBEdge[i];
+}
+
+MBEdge& FEMultiQuadMesh::AddEdge()
+{
+	m_MBEdge.push_back(MBEdge());
+	return m_MBEdge.back();
+}
+
+//-----------------------------------------------------------------------------
 MBNode& FEMultiQuadMesh::AddNode(const vec3d& r, int ntype)
 {
 	MBNode node;
@@ -60,6 +85,13 @@ MBNode& FEMultiQuadMesh::AddNode(const vec3d& r, int ntype)
 	node.m_type = ntype;
 	m_MBNode.push_back(node);
 	return m_MBNode[m_MBNode.size() - 1];
+}
+
+//-----------------------------------------------------------------------------
+MBFace& FEMultiQuadMesh::AddFace()
+{
+	m_MBFace.push_back(MBFace());
+	return m_MBFace.back();
 }
 
 //-----------------------------------------------------------------------------
@@ -74,9 +106,23 @@ MBFace& FEMultiQuadMesh::AddFace(int n0, int n1, int n2, int n3)
 	return m_MBFace[m_MBFace.size() - 1];
 }
 
+int FEMultiQuadMesh::Faces() const
+{
+	return (int)m_MBFace.size();
+}
+
 MBFace& FEMultiQuadMesh::GetFace(int n)
 {
 	return m_MBFace[n];
+}
+
+//-----------------------------------------------------------------------------
+// clear the MQ data
+void FEMultiQuadMesh::ClearMQ()
+{
+	m_MBNode.clear();
+	m_MBEdge.clear();
+	m_MBFace.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -113,6 +159,12 @@ FEMesh* FEMultiQuadMesh::BuildMesh()
 	return pm;
 }
 
+// build the multi-quad data
+bool FEMultiQuadMesh::BuildMultiQuad()
+{
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // build the mesh from the object
 bool FEMultiQuadMesh::Build(GObject* po)
@@ -120,9 +172,7 @@ bool FEMultiQuadMesh::Build(GObject* po)
 	m_po = po;
 	if (po == nullptr) return false;
 
-	m_MBNode.clear();
-	m_MBEdge.clear();
-	m_MBFace.clear();
+	ClearMQ();
 	
 	// build nodes
 	int NN = po->Nodes();
@@ -138,7 +188,11 @@ bool FEMultiQuadMesh::Build(GObject* po)
 	{
 		GEdge* pe = po->Edge(i);
 		MBEdge edge;
-		edge.edge = *pe;
+		edge.m_ntype = pe->m_ntype;
+		edge.m_orient = pe->m_orient;
+		edge.m_node[0] = pe->m_node[0];
+		edge.m_node[1] = pe->m_node[1];
+		edge.m_cnode = pe->m_cnode;
 		edge.m_gid = pe->GetLocalID();
 		m_MBEdge.push_back(edge);
 	}
@@ -164,8 +218,6 @@ bool FEMultiQuadMesh::Build(GObject* po)
 		F.m_gid = pf->GetLocalID();
 	}
 
-	FindFaceNeighbours();
-
 	return true;
 }
 
@@ -178,7 +230,7 @@ vec3d FEMultiQuadMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 	vec3d r2 = m_MBNode[e.Node(1)].m_r;
 
 	vec3d p(0, 0, 0);
-	switch (e.edge.Type())
+	switch (e.m_ntype)
 	{
 	case EDGE_LINE:
 	{
@@ -192,7 +244,7 @@ vec3d FEMultiQuadMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 		vec2d b(r2.x, r2.y);
 
 		// create an arc object
-		GM_CIRCLE_ARC ca(c, a, b, e.m_winding);
+		GM_CIRCLE_ARC ca(c, a, b, e.m_orient);
 
 		vec2d q = ca.Point(r);
 		p = vec3d(q.x, q.y, r1.z);
@@ -200,10 +252,10 @@ vec3d FEMultiQuadMesh::EdgePosition(MBEdge& e, const MQPoint& q)
 	break;
 	case EDGE_3P_CIRC_ARC:
 	{
-		vec3d r0 = m_MBNode[e.edge.m_cnode].m_r;
-		vec3d r1 = m_MBNode[e.edge.m_node[0]].m_r;
-		vec3d r2 = m_MBNode[e.edge.m_node[1]].m_r;
-		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_winding);
+		vec3d r0 = m_MBNode[e.m_cnode].m_r;
+		vec3d r1 = m_MBNode[e.m_node[0]].m_r;
+		vec3d r2 = m_MBNode[e.m_node[1]].m_r;
+		GM_CIRCLE_3P_ARC c(r0, r1, r2, e.m_orient);
 		p = c.Point(r);
 	}
 	break;
@@ -554,6 +606,129 @@ void FEMultiQuadMesh::BuildFEFaces(FEMesh* pm)
 	}
 }
 
+void FEMultiQuadMesh::ClearMeshSettings()
+{
+	for (MBEdge& e : m_MBEdge)
+	{
+		e.m_nx = 0;
+		e.m_gx = 1.0;
+		e.m_bx = false;
+	}
+	for (MBFace& f : m_MBFace)
+	{
+		f.m_nx = f.m_ny = 0;
+		f.m_gx = f.m_gy = 1.0;
+		f.m_bx = f.m_by = false;
+	}
+}
+
+bool FEMultiQuadMesh::SetEdgeDivisions(int iedge, int nd)
+{
+	MBEdge& edge = m_MBEdge[iedge];
+	if (edge.m_nx == nd) return true;	// edge divisions unchanged
+//	if (edge.m_nx != 0) return false; // edge divisions already set. Cannot override.
+
+	for (MBEdge& e : m_MBEdge) e.m_ntag = 0;
+	edge.m_ntag = nd;
+
+	// propagate new edge size
+	const int ET[2][2] = {
+		{ 0, 2 },
+		{ 1, 3 }
+	};
+
+	const int EC[4] = { 0, 1, 0, 1 };
+
+	bool done = false;
+	while (!done)
+	{
+		done = true;
+		for (MBFace& f : m_MBFace)
+		{
+			for (int i = 0; i < 4; ++i)
+			{
+				MBEdge& ei = m_MBEdge[f.m_edge[i]];
+				if (ei.m_ntag == nd)
+				{
+					int ec = EC[i];
+					const int* et = ET[ec];
+					for (int j = 0; j < 2; ++j)
+					{
+						MBEdge& ej = m_MBEdge[f.m_edge[et[j]]];
+						if (ej.m_ntag == 0) {
+							ej.m_ntag = nd;
+							done = false;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// okay, everything looks good, so let's keep the new edge divisions
+	for (MBEdge& e : m_MBEdge) {
+		if (e.m_ntag == nd) e.m_nx = nd;
+	}
+
+	return true;
+}
+
+bool FEMultiQuadMesh::SetDefaultDivisions(int nd)
+{
+	for (MBEdge& e : m_MBEdge)
+	{
+		if (e.m_nx == 0) e.m_nx = nd;
+	}
+
+	// set face meshing stats
+	for (MBFace& f : m_MBFace)
+	{
+		MBEdge& e0 = m_MBEdge[f.m_edge[0]];
+		MBEdge& e1 = m_MBEdge[f.m_edge[1]];
+
+		f.m_nx = e0.m_nx; assert(f.m_nx > 0);
+		f.m_ny = e1.m_nx; assert(f.m_ny > 0);
+
+		if (f.m_edgeWinding[0] == 1) f.m_gx = e0.m_gx; else f.m_gx = 1.0 / e0.m_gx;
+		if (f.m_edgeWinding[1] == 1) f.m_gy = e1.m_gx; else f.m_gy = 1.0 / e1.m_gx;
+
+		if (m_MBEdge[f.m_edge[2]].m_nx != f.m_nx) return false;
+		if (m_MBEdge[f.m_edge[3]].m_nx != f.m_ny) return false;
+	}
+
+	return true;
+}
+
+bool FEMultiQuadMesh::SetNodeWeights(std::vector<double>& w)
+{
+	if (w.size() != m_MBNode.size()) return false;
+
+	for (MBEdge& e : m_MBEdge)
+	{
+		int n0 = e.m_node[0];
+		int n1 = e.m_node[1];
+		double w0 = w[n0]; if (w0 == 0.0) w0 = 1.0;
+		double w1 = w[n1]; if (w1 == 0.0) w1 = 1.0;
+
+		if ((w0 != 1.0) && (w1 == 1.0))
+		{
+			e.m_gx = w0;
+		}
+		else if ((w1 != 1.0) && (w0 == 1.0))
+		{
+			e.m_gx = 1.0 / w1;
+		}
+		else if ((e.m_nx != 0) && (w0 == w1) && (w0 != 1.0))
+		{
+			e.m_gx = w0;
+			e.m_bx = true;
+		}
+		else if (w0 != w1) { assert(false); }
+	}
+
+	return true;
+}
+
 //-----------------------------------------------------------------------------
 void FEMultiQuadMesh::BuildMBEdges()
 {
@@ -580,9 +755,6 @@ void FEMultiQuadMesh::BuildMBEdges()
 			{
 				MBEdge& e = m_MBEdge[n];
 				f.m_edge[j] = n;
-				if (e.m_face[0] == -1) e.m_face[0] = i;
-				else e.m_face[1] = i;
-
 				if ((e.Node(0) == n1) && (e.Node(1) == n2)) f.m_edgeWinding[j] =  1;
 				if ((e.Node(0) == n2) && (e.Node(1) == n1)) f.m_edgeWinding[j] = -1;
 				assert(f.m_edgeWinding[j] != 0);
@@ -590,10 +762,6 @@ void FEMultiQuadMesh::BuildMBEdges()
 			else
 			{
 				MBEdge e(n1, n2);
-				e.m_face[0] = e.m_face[1] = -1;
-
-				e.m_face[0] = i;
-
 				switch (j)
 				{
 				case 0:
@@ -625,54 +793,6 @@ void FEMultiQuadMesh::BuildMBEdges()
 	}
 
 	NE = (int)m_MBEdge.size();
-}
-
-//-----------------------------------------------------------------------------
-void FEMultiQuadMesh::FindFaceNeighbours()
-{
-	// build the node-face table
-	vector< vector<int> > NFT;
-	BuildNodeFaceTable(NFT);
-
-	// reset all face neighbours
-	int NF = (int)m_MBFace.size();
-	for (int i = 0; i < NF; ++i)
-	{
-		MBFace& F = m_MBFace[i];
-		for (int j = 0; j < 4; ++j) F.m_nbr[j] = -1;
-	}
-
-	// find the face's neighbours
-	for (int i = 0; i < NF; ++i)
-	{
-		MBFace& F = m_MBFace[i];
-
-		for (int j = 0; j < 4; ++j)
-		{
-			if (F.m_nbr[j] == -1)
-			{
-				// pick a node
-				int n1 = F.m_node[j];
-				int n2 = F.m_node[(j + 1) % 4];
-				for (int k = 0; k < (int)NFT[n1].size(); ++k)
-				{
-					int nf = NFT[n1][k];
-					if (nf != i)
-					{
-						MBFace& F2 = m_MBFace[nf];
-
-						int l = FindEdgeIndex(F2, n1, n2);
-						if (l != -1)
-						{
-							F.m_nbr[j] = nf;
-							F2.m_nbr[l] = i;
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -758,7 +878,7 @@ int FEMultiQuadMesh::GetFaceEdgeNodeIndex(MBFace& f, int ne, int i)
 	else if (f.m_edgeWinding[ne] == -1)
 	{
 		// do flip the edge
-		return GetEdgeNodeIndex(e, e.m_fenodes.size() - i - 1);
+		return GetEdgeNodeIndex(e, (int)e.m_fenodes.size() - i - 1);
 	}
 	assert(false);
 	return -1;
@@ -800,7 +920,6 @@ void FEMultiQuadMesh::SetFaceSizes(int nface, int nx, int ny)
 //-----------------------------------------------------------------------------
 void FEMultiQuadMesh::UpdateMQ()
 {
-	FindFaceNeighbours();
 	BuildMBEdges();
 }
 
@@ -808,4 +927,110 @@ void FEMultiQuadMesh::UpdateMQ()
 int FEMultiQuadMesh::GetFENode(MBNode& node)
 {
 	return node.m_ntag;
+}
+
+//==================================================================================
+FEMultiQuadMesher::FEMultiQuadMesher(GMultiPatch* po) : m_po(po)
+{
+	AddIntParam(10, "divs", "divisions");
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Quad4\0");
+}
+
+// build the mesh
+FEMesh* FEMultiQuadMesher::BuildMesh()
+{
+	if (m_po == nullptr) return nullptr;
+	GMultiPatch& o = *m_po;
+
+	// rebuild the multiblock data
+	BuildMultiQuad();
+
+	FEMultiQuadMesh& mb = *this;
+
+	// clear all mesh settings
+	mb.ClearMeshSettings();
+
+	// assign meshing parameters
+	int nd = GetIntValue(DIVS);
+
+	// first see the edge divisions
+	for (int i = 0; i < o.Edges(); ++i)
+	{
+		GEdge* edge = o.Edge(i);
+		double w = edge->GetMeshWeight();
+		if (w > 0)
+		{
+			int nx = (int)(nd * w);
+			if (nx < 1) nx = 1;
+			mb.SetEdgeDivisions(i, nx);
+		}
+	}
+
+	// set the node weights (which also adjusts the edge zoning)
+	vector<double> w(o.Nodes(), 0.0);
+	for (int i = 0; i < o.Nodes(); ++i)
+	{
+		GNode* node = o.Node(i);
+		w[i] = node->GetMeshWeight();
+	}
+	mb.SetNodeWeights(w);
+
+	// set the divisions of the remaining items
+	mb.SetDefaultDivisions(nd);
+
+	int elemType = GetIntValue(ELEM_TYPE);
+	switch (elemType)
+	{
+	case 0: mb.SetElementType(FE_QUAD4); break;
+	case 1: mb.SetElementType(FE_QUAD8); break;
+	case 2: mb.SetElementType(FE_QUAD9); break;
+	default:
+		assert(false);
+	}
+
+	return FEMultiQuadMesh::BuildMesh();
+}
+
+bool FEMultiQuadMesher::BuildMultiQuad()
+{
+	if (m_po == nullptr) return false;
+
+	ClearMQ();
+
+	GMultiPatch& o = *m_po;
+	for (int i = 0; i < o.Nodes(); ++i)
+	{
+		GNode* n = o.Node(i);
+		MBNode& mbNode = AddNode(n->LocalPosition(), n->Type());
+		mbNode.SetID(n->GetLocalID());
+	}
+
+	for (int i = 0; i < o.Edges(); ++i)
+	{
+		GEdge* e = o.Edge(i);
+		MBEdge& mbEdge = AddEdge();
+		mbEdge.m_ntype = e->m_ntype;
+		mbEdge.m_node[0] = e->m_node[0];
+		mbEdge.m_node[1] = e->m_node[1];
+		mbEdge.m_cnode = e->m_cnode;
+		mbEdge.m_orient = e->m_orient;
+		mbEdge.SetID(e->GetLocalID());
+	}
+
+	for (int i = 0; i < o.Faces(); ++i)
+	{
+		GFace* f = o.Face(i);
+		if (f->Nodes() != 4) return false;
+		MBFace& mbFace = AddFace();
+		mbFace.m_gid = f->GetLocalID();
+		mbFace.m_block[0] = f->m_nPID[0];
+		mbFace.m_block[1] = f->m_nPID[1];
+		for (int j = 0; j < 4; ++j) mbFace.m_node[j] = f->m_node[j];
+		for (int j = 0; j < 4; ++j) {
+			mbFace.m_edge[j] = f->m_edge[j].nid;
+			mbFace.m_edgeWinding[j] = f->m_edge[j].nwn;
+		}
+	}
+
+	return true;
 }

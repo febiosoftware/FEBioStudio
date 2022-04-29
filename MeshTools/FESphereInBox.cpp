@@ -53,7 +53,7 @@ FESphereInBox::FESphereInBox(GSphereInBox* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FESphereInBox::BuildMesh()
+bool FESphereInBox::BuildMultiBlock()
 {
 	assert(m_po);
 
@@ -285,7 +285,7 @@ FEMesh* FESphereInBox::BuildMesh()
 //	b24.SetZoning(1, gr, 1, false, br, false);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1 , -1, -1, -1, -1,  4, 10);
@@ -432,6 +432,15 @@ FEMesh* FESphereInBox::BuildMesh()
 	m_MBNode[48].SetID(14);
 	m_MBNode[50].SetID(15);
 
+	UpdateMB();
+
+	return true;
+}
+
+FEMesh* FESphereInBox::BuildMesh()
+{
+	BuildMultiBlock();
+
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);
 	switch (nelem)
@@ -544,7 +553,7 @@ FEMesh* FESphereInBox::BuildMesh()
 	b6.SetZoning(1, 1, gr, false, false, br);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1, 0, -1,  6, -1, -1, -1);

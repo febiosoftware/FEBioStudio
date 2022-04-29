@@ -25,12 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "FEMultiQuadMesh.h"
 
 class GPatch;
 class GCylindricalPatch;
 
-class FEShellPatch : public FEMesher
+class FEShellPatch : public FEMultiQuadMesh
 {
 public:
 	enum { T, NX, NY, ELEM_TYPE};
@@ -40,6 +40,8 @@ public:
 	FEShellPatch(GPatch* po);
 	FEMesh* BuildMesh();
 
+	bool BuildMultiQuad() override;
+
 protected:
 	GPatch* m_pobj;
 
@@ -47,7 +49,7 @@ protected:
 	int		m_nx, m_ny;
 };
 
-class FECylndricalPatch : public FEMesher
+class FECylndricalPatch : public FEMultiQuadMesh
 {
 public:
 	enum { T, NX, NY, ELEM_TYPE };
@@ -57,8 +59,7 @@ public:
 	FECylndricalPatch(GCylindricalPatch* po);
 	FEMesh* BuildMesh();
 
-protected:
-	FEMesh* BuildMultiQuadMesh();
+	bool BuildMultiQuad() override;
 
 protected:
 	GCylindricalPatch* m_pobj;

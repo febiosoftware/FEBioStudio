@@ -23,42 +23,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "FEMultiBlockMesh.h"
+#include <MathLib/math3d.h>
 
-class GTorus;
+class GObject;
+class GFace;
+class GEdge;
+class GLMesh;
 
-class FETorus : public FEMultiBlockMesh
+// class to build GLMesh for a GObject
+class GLMesher
 {
 public:
-	enum { NDIV, NSEG, ELEM_TYPE };
+	GLMesher(GObject* po);
 
-public:
-	FETorus(){}
-	FETorus(GTorus* po);
-	FEMesh* BuildMesh();
+	GLMesh* CreateMesh();
 
-protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiBlockMesh();
+private:
+	// helper functions for building the GMesh
+	void BuildFacePolygon(GLMesh* glmesh, GFace& f);
+	void BuildFaceExtrude(GLMesh* glmesh, GFace& f);
+	void BuildFaceQuad(GLMesh* glmesh, GFace& f);
+	void BuildFaceRevolve(GLMesh* glmesh, GFace& f);
+	void BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f);
+	void BuildEdgeMesh(GLMesh* glmesh, GEdge& e);
+	void BuildEdgeLine(GLMesh* glmesh, GEdge& e);
 
-	bool BuildMultiBlock() override;
+	vec3d EdgePoint(GEdge& edge, double r);
 
-protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
-
-	int NodeIndex(int i, int j)
-	{
-		int ns = 4*m_ns;
-		int nd = 2*m_nd;
-		i = (i+nd/2 - 1)%(4*nd);
-		int n = (j%ns)*((nd+1)*(nd+1)+nd*4*nd) + (nd+1)*(nd+1) + (nd-1)*4*nd + i;
-		return n;
-	}
-
-protected:
-	GTorus* m_pobj;
-	int	m_nd, m_ns;
+private:
+	GObject* m_po;
 };
+

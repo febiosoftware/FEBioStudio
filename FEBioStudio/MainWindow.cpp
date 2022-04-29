@@ -1657,6 +1657,8 @@ void CMainWindow::writeSettings()
 	settings.setValue("showMaterialAxes", vs.m_blma);
 	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
 	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
+	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
+	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1743,6 +1745,14 @@ void CMainWindow::readSettings()
 	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
 	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
 	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
+	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
+	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor).toInt());
+
+	if (vs.m_defaultFGColorOption != 0)
+	{
+		GLWidget::set_base_color(vs.m_defaultFGColor);
+	}
+
 	Units::SetUnitSystem(ui->m_defaultUnits);
 
 	QRect rt;

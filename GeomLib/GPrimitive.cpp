@@ -427,6 +427,12 @@ GObject* GPrimitive::Clone()
 // GGregoryPatch
 //=============================================================================
 
+GGregoryPatch::GGregoryPatch(FEMesh* pm) : GShellPrimitive(GGREGORY_PATCH) 
+{ 
+	SetFEMesh(pm); 
+}
+
+
 void GGregoryPatch::UpdateMesh()
 {
 	FEGregoryPatch& m = dynamic_cast<FEGregoryPatch&>(*GetFEMesh());

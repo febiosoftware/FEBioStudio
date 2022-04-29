@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "GObject.h"
+#include "GMultiBox.h"
 #include <FSCore/ParamBlock.h>
 
 class FEMesh;
@@ -54,6 +54,13 @@ public:
 	void Load(IArchive& ar) override;
 
 	GObject* Clone() override;
+};
+
+// use this base class for shell primitives
+class GShellPrimitive : public GPrimitive
+{
+public:
+	GShellPrimitive(int ntype) : GPrimitive(ntype) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -333,7 +340,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // 2D circular disc
-class GDisc : public GPrimitive
+class GDisc : public GShellPrimitive
 {
 public:
 	enum {RADIUS};
@@ -349,7 +356,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // 2D rectangular patch
-class GPatch : public GPrimitive
+class GPatch : public GShellPrimitive
 {
 public:
 	enum {W, H};
@@ -366,7 +373,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // 2D ring
-class GRing : public GPrimitive
+class GRing : public GShellPrimitive
 {
 public:
 	enum {RIN, ROUT};
@@ -383,7 +390,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // a shell tube (cylinder without capped ends)
-class GThinTube  : public GPrimitive
+class GThinTube  : public GShellPrimitive
 {
 public:
 	enum {RAD, H};
@@ -399,7 +406,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class GCylindricalPatch : public GPrimitive
+class GCylindricalPatch : public GShellPrimitive
 {
 public:
 	enum { W, H, R };
@@ -419,10 +426,10 @@ private:
 
 //-----------------------------------------------------------------------------
 // Gregory patch
-class GGregoryPatch : public GPrimitive
+class GGregoryPatch : public GShellPrimitive
 {
 public:
-	GGregoryPatch(FEMesh* pm) : GPrimitive(GGREGORY_PATCH) { SetFEMesh(pm); }
+	GGregoryPatch(FEMesh* pm);
 
 public:
 	void UpdateMesh();

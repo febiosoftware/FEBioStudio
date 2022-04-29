@@ -32,7 +32,7 @@ SOFTWARE.*/
 // GThinTube
 //=============================================================================
 
-GThinTube::GThinTube() : GPrimitive(GSHELL_TUBE)
+GThinTube::GThinTube() : GShellPrimitive(GSHELL_TUBE)
 {
 	m_R = 1;
 	m_h = 1;
@@ -118,7 +118,7 @@ void GThinTube::Create()
 }
 
 //-----------------------------------------------------------------------------
-GCylindricalPatch::GCylindricalPatch() : GPrimitive(GCYLINDRICAL_PATCH)
+GCylindricalPatch::GCylindricalPatch() : GShellPrimitive(GCYLINDRICAL_PATCH)
 {
 	AddDoubleParam(1.0, "w", "width");
 	AddDoubleParam(1.0, "h", "height");

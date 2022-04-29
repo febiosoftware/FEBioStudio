@@ -40,6 +40,9 @@ public:
 	FEMesh* BuildMesh();
 
 protected:
+	bool BuildMultiBlock() override;
+
+protected:
 	GHollowSphere*	m_pobj;
 	int	m_nd, m_ns;
 	double	m_gr;

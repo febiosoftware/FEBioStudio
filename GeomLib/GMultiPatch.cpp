@@ -24,16 +24,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "GMultiBox.h"
-#include <MeshTools/FEMultiBlockMesh.h>
+#include "GMultiPatch.h"
+#include <MeshTools/FEMultiQuadMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <algorithm>
 
 //-----------------------------------------------------------------------------
 //! Constructor
-GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
+GMultiPatch::GMultiPatch() : GObject(GMULTI_PATCH)
 {
-	SetFEMesher(new FEMultiBlockMesher(this));
+	SetFEMesher(new FEMultiQuadMesher(this));
 
 	SetSaveFlags(0);	// this prevents the mesh from getting serialized
 }
@@ -43,7 +43,7 @@ GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
 // The new GMultiBox will have the same ID as the existing GObject
 // This is used in the CCmdConvertObject command that converts a GPrimitve
 // a GMultiBox
-GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
+GMultiPatch::GMultiPatch(GObject* po) : GObject(GMULTI_PATCH)
 {
 	SetSaveFlags(0);	// this prevents the mesh from getting serialized
 
@@ -61,14 +61,14 @@ GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 	GItem_T<GBaseObject>::DecreaseCounter();
 
 	// define the default mesher
-	FEMultiBlockMesher* mbMesher = new FEMultiBlockMesher(this);
+	FEMultiQuadMesher* mbMesher = new FEMultiQuadMesher(this);
 	SetFEMesher(mbMesher);
 
 	// we need the multi block mesher to pull out the multiblock geometry
-	FEMultiBlockMesh* mb = dynamic_cast<FEMultiBlockMesh*>(po->GetFEMesher()); assert(mb);
+	FEMultiQuadMesh* mb = dynamic_cast<FEMultiQuadMesh*>(po->GetFEMesher()); assert(mb);
 
 	// build the multi-block data
-	bool b = mb->BuildMultiBlock(); assert(b);
+	bool b = mb->BuildMultiQuad(); assert(b);
 
 	// build the object data from the multi-block
 	BuildObject(*mb);
@@ -78,7 +78,7 @@ GMultiBox::GMultiBox(GObject* po) : GObject(GMULTI_BLOCK)
 }
 
 // This function builds the object data from the multiblock mesh
-void GMultiBox::BuildObject(FEMultiBlockMesh& mb)
+void GMultiPatch::BuildObject(FEMultiQuadMesh& mb)
 {
 	ClearAll();
 
@@ -86,7 +86,7 @@ void GMultiBox::BuildObject(FEMultiBlockMesh& mb)
 	// --- Nodes ---
 	int NN = mb.Nodes();
 	m_Node.reserve(NN);
-	for (int i=0; i<NN; ++i)
+	for (int i = 0; i < NN; ++i)
 	{
 		MBNode& no = mb.GetMBNode(i);
 		GNode* n = AddNode(no.m_r);
@@ -96,7 +96,7 @@ void GMultiBox::BuildObject(FEMultiBlockMesh& mb)
 	// --- Edges ---
 	int NE = mb.Edges();
 	m_Edge.reserve(NE);
-	for (int i=0; i<NE; ++i)
+	for (int i = 0; i < NE; ++i)
 	{
 		GEdge* e = AddEdge();
 		MBEdge& eo = mb.GetEdge(i);
@@ -110,7 +110,7 @@ void GMultiBox::BuildObject(FEMultiBlockMesh& mb)
 	// --- Faces ---
 	int NF = mb.Faces();
 	m_Face.reserve(NF);
-	for (int i=0; i<NF; ++i)
+	for (int i = 0; i < NF; ++i)
 	{
 		GFace* f = AddFace();
 		MBFace& fo = mb.GetFace(i);
@@ -122,8 +122,8 @@ void GMultiBox::BuildObject(FEMultiBlockMesh& mb)
 			f->m_edge[j].nid = fo.m_edge[j];
 			f->m_edge[j].nwn = fo.m_edgeWinding[j];
 		}
-		f->m_nPID[0] = fo.m_block[0];
-		f->m_nPID[1] = fo.m_block[1];
+		f->m_nPID[0] = i;// fo.m_block[0];
+		f->m_nPID[1] = -1;// fo.m_block[1];
 		f->m_ntype = FACE_QUAD;	// TODO: Get this data from MBFace
 		if (fo.m_isRevolve)
 		{
@@ -131,34 +131,34 @@ void GMultiBox::BuildObject(FEMultiBlockMesh& mb)
 		}
 	}
 
-	// --- Parts ---
-	int NP = mb.Blocks();
+	// --- Parts (match faces) ---
+	int NP = mb.Faces();
 	m_Part.reserve(NP);
-	for (int i=0; i<NP; ++i)
+	for (int i = 0; i < NP; ++i)
 	{
 		GPart* g = AddPart();
-		MBBlock& go = mb.GetBlock(i);
+		MBFace& go = mb.GetFace(i);
 
 		assert(go.m_gid >= 0);
 		g->SetLocalID(i);
 
-		g->m_node.resize(8);
-		for (int i = 0; i < 8; ++i) g->m_node[i] = go.m_node[i];
+		g->m_node.resize(4);
+		for (int i = 0; i < 4; ++i) g->m_node[i] = go.m_node[i];
 
-		g->m_edge.resize(12);
-		for (int i = 0; i < 12; ++i) g->m_edge[i] = go.m_edge[i];
+		g->m_edge.resize(4);
+		for (int i = 0; i < 4; ++i) g->m_edge[i] = go.m_edge[i];
 
-		g->m_face.resize(6);
-		for (int i = 0; i < 6; ++i) g->m_face[i] = go.m_face[i];
+		g->m_face.resize(1);
+		g->m_face[0] = i;
 	}
 }
 
-FEMeshBase* GMultiBox::GetEditableMesh()
+FEMeshBase* GMultiPatch::GetEditableMesh()
 {
 	return GetFEMesh();
 }
 
-bool GMultiBox::DeletePart(GPart* pg)
+bool GMultiPatch::DeletePart(GPart* pg)
 {
 	if (pg == nullptr) return false;
 	if (pg->Object() != this) return false;
@@ -219,7 +219,7 @@ bool GMultiBox::DeletePart(GPart* pg)
 	// update block face IDs
 	for (GPart* b : m_Part)
 	{
-		for (int j = 0; j < 6; ++j)
+		for (int j = 0; j < b->m_face.size(); ++j)
 		{
 			b->m_face[j] = m_Face[b->m_face[j]]->m_ntag;
 			assert(b->m_face[j] >= 0);
@@ -259,7 +259,7 @@ bool GMultiBox::DeletePart(GPart* pg)
 	// update block edges
 	for (GPart* b : m_Part)
 	{
-		for (int j = 0; j < 12; ++j)
+		for (int j = 0; j < b->m_edge.size(); ++j)
 		{
 			b->m_edge[j] = m_Edge[b->m_edge[j]]->m_ntag;
 			assert(b->m_edge[j] >= 0);
@@ -310,7 +310,7 @@ bool GMultiBox::DeletePart(GPart* pg)
 
 	// update block nodes
 	for (GPart* b : m_Part) {
-		for (int j = 0; j < 8; ++j) {
+		for (int j = 0; j < b->m_node.size(); ++j) {
 			b->m_node[j] = m_Node[b->m_node[j]]->m_ntag;
 			assert(b->m_node[j] >= 0);
 		}
@@ -354,9 +354,9 @@ bool GMultiBox::DeletePart(GPart* pg)
 	return true;
 }
 
-GObject* GMultiBox::Clone()
+GObject* GMultiPatch::Clone()
 {
-	GMultiBox* clone = new GMultiBox();
+	GMultiPatch* clone = new GMultiPatch();
 
 	// copy nodes
 	for (int i = 0; i < Nodes(); ++i)
@@ -374,9 +374,9 @@ GObject* GMultiBox::Clone()
 
 		ec->m_node[0] = ei.m_node[0];
 		ec->m_node[1] = ei.m_node[1];
-		ec->m_cnode   = ei.m_cnode;
-		ec->m_ntype   = ei.m_ntype;
-		ec->m_orient  = ei.m_orient;
+		ec->m_cnode = ei.m_cnode;
+		ec->m_ntype = ei.m_ntype;
+		ec->m_orient = ei.m_orient;
 		ec->SetMeshWeight(ei.GetMeshWeight());
 	}
 
@@ -410,22 +410,13 @@ GObject* GMultiBox::Clone()
 	return clone;
 }
 
-bool GMultiBox::Merge(GMultiBox& mb)
+bool GMultiPatch::Merge(GMultiPatch& mb)
 {
 	// delete the existing mesh
 	delete GetFEMesh();
 	SetFEMesh(nullptr);
 
 	const double tol = 1e-12;
-
-	// first check edge types. We can only merge objects with line or 3p-arcs edges 
-	for (int i = 0; i < mb.Edges(); ++i)
-	{
-		int type_i = mb.Edge(i)->Type();
-		if ((type_i != EDGE_LINE) && 
-			(type_i != EDGE_3P_CIRC_ARC) &&
-			(type_i != EDGE_3P_ARC)) return false;
-	}
 
 	// The tag will be set to the node on this that it corresponds to. 
 	// new nodes may be added
@@ -462,7 +453,7 @@ bool GMultiBox::Merge(GMultiBox& mb)
 		}
 		else
 		{
-			GNode& newNode = *AddNode(ri, ni.Type());
+			GNode& newNode = *AddNode(ri);
 			ni.m_ntag = Nodes() - 1;
 			newNode.SetMeshWeight(ni.GetMeshWeight());
 		}
@@ -567,18 +558,18 @@ bool GMultiBox::Merge(GMultiBox& mb)
 		}
 	}
 
-	// add new blocks
+	// add new parts
 	for (int i = 0; i < mb.Parts(); ++i)
 	{
 		GPart& bi = *mb.Part(i);
 		GPart& newPart = *AddPart();
 		newPart.SetMeshWeight(bi.GetMeshWeight());
-		newPart.m_node.resize(8);
-		newPart.m_edge.resize(12);
-		newPart.m_face.resize(6);
-		for (int l = 0; l < 8; ++l) newPart.m_node[l] = mb.Node(bi.m_node[l])->m_ntag;
-		for (int l = 0; l < 6; ++l) newPart.m_face[l] = mb.Face(bi.m_face[l])->m_ntag;
-		for (int l = 0; l < 12; ++l) newPart.m_edge[l] = mb.Edge(bi.m_edge[l])->m_ntag;
+		newPart.m_node.resize(4);
+		newPart.m_edge.resize(4);
+		newPart.m_face.resize(1);
+		for (int l = 0; l < 4; ++l) newPart.m_node[l] = mb.Node(bi.m_node[l])->m_ntag;
+		for (int l = 0; l < 4; ++l) newPart.m_edge[l] = mb.Edge(bi.m_edge[l])->m_ntag;
+		for (int l = 0; l < 1; ++l) newPart.m_face[l] = mb.Face(bi.m_face[l])->m_ntag;
 	}
 
 	// rebuild the GMesh

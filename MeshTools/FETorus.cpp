@@ -58,7 +58,7 @@ FEMesh* FETorus::BuildMesh()
 	return BuildMultiBlockMesh();
 }
 
-FEMesh* FETorus::BuildMultiBlockMesh()
+bool FETorus::BuildMultiBlock()
 {
 	// get the object parameters
 	double Ro = m_pobj->GetFloatValue(GTorus::RIN);
@@ -177,7 +177,7 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 		}
 	}
 
-	UpdateMB();
+	BuildMB();
 
 	// set uniform smoothing ID
 	for (int i = 0; i < m_MBFace.size(); ++i) m_MBFace[i].m_sid = 0;
@@ -284,6 +284,15 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 	m_MBNode[49].SetID(13);
 	m_MBNode[47].SetID(14);
 	m_MBNode[45].SetID(15);
+
+	UpdateMB();
+
+	return true;
+}
+
+FEMesh* FETorus::BuildMultiBlockMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(ELEM_TYPE);

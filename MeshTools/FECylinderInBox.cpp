@@ -67,7 +67,7 @@ FECylinderInBox::FECylinderInBox(GCylinderInBox* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FECylinderInBox::BuildMesh()
+bool FECylinderInBox::BuildMultiBlock()
 {
 	assert(m_po);
 
@@ -114,6 +114,9 @@ FEMesh* FECylinderInBox::BuildMesh()
 	AddNode(vec3d( r,  r, d)).SetID(14);
 	AddNode(vec3d(-r,  r, d)).SetID(15);
 
+	AddNode(vec3d(0, 0, 0), NODE_SHAPE);
+	AddNode(vec3d(0, 0, d), NODE_SHAPE);
+
 	// create the blocks
 	m_MBlock.resize(4);
 	MBBlock& b1 = m_MBlock[0];
@@ -141,7 +144,7 @@ FEMesh* FECylinderInBox::BuildMesh()
 	b4.SetZoning(1, m_gr, m_gz, false, m_br, m_bz);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1, 0, -1, 4, -1,  8, 12);
@@ -169,14 +172,23 @@ FEMesh* FECylinderInBox::BuildMesh()
 	MBFace& F16 = GetBlockFace( 3, 5); SetFaceEdgeID(F16,  7, 28, 19, 31);
 
 	// set the edges
-	GetFaceEdge(F5, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F5, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F5, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F5, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+	GetFaceEdge(F6, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F6, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+	GetFaceEdge(F7, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F7, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+	GetFaceEdge(F8, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F8, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+
+	UpdateMB();
+
+	return true;
+}
+
+FEMesh* FECylinderInBox::BuildMesh()
+{
+	BuildMultiBlock();
 
 	// set element type
 	int nelem = GetIntValue(NELEM);

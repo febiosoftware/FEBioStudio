@@ -55,6 +55,7 @@ GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
 {
 	m_minw = 30;
 	m_minh = 20;
+	m_boverridefgc = false;
 
 	m_x = x;
 	m_y = y;
@@ -189,6 +190,7 @@ GLBox::GLBox(int x, int y, int w, int h, const char *szlabel) : GLWidget(x, y, w
 	m_bshadow = false;
 	m_shc = GLColor(200,200,200);
 	m_margin = 5;
+	m_align = LeftJustified;
 }
 
 void GLBox::fit_to_size()
@@ -264,19 +266,28 @@ void GLBox::draw(QPainter* painter)
 
 	if (m_szlabel)
 	{
+		// set the align flag
+		int flags = Qt::AlignVCenter;
+		switch (m_align)
+		{
+		case LeftJustified : flags |= Qt::AlignLeft; break;
+		case Centered      : flags |= Qt::AlignHCenter; break;
+		case RightJustified: flags |= Qt::AlignRight; break;
+		}
+
 		string label = processLabel();
 		if (m_bshadow)
 		{
 			int dx = m_font.pointSize()/10+1;
 			painter->setPen(QColor(m_shc.r, m_shc.g, m_shc.b));
 			painter->setFont(m_font);
-			painter->drawText(x0+dx, y0+dx, w, h, Qt::AlignLeft| Qt::AlignVCenter, QString::fromStdString(label));
+			painter->drawText(x0+dx, y0+dx, w, h, flags, QString::fromStdString(label));
 		}
 		QPen pen = painter->pen();
 		pen.setColor(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
 		painter->setFont(m_font);
 		painter->setPen(pen);
-		painter->drawText(x0, y0, w, h, Qt::AlignLeft| Qt::AlignVCenter, QString::fromStdString(label));
+		painter->drawText(x0, y0, w, h, flags, QString::fromStdString(label));
 	}
 }
 
