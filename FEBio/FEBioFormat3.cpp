@@ -565,6 +565,9 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 
 	if (tag.isleaf())
 	{
+		// make sure there is a value
+		if (strlen(tag.szvalue()) == 0) return;
+
 		const char* szparam = tag.Name();
 		const char* sztype = tag.AttributeValue("type", true);
 		if (sztype) szparam = sztype;
@@ -648,39 +651,31 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 					// some classes allow names for their properties (e.g. chemical reactions)
 					const char* szname = tag.AttributeValue("name", true);
 
-					// skip obsolete "user" type
-					if (strcmp(sztype, "user") == 0)
+					// We need to continue supporting mapping load curves to FEFunction1D. 
+					bool mapLC2F1D = false;
+					if ((prop->GetSuperClassID() == FEFUNCTION1D_ID) &&
+						(tag.AttributeValue("type", true) == nullptr))
 					{
-						ParseUnknownAttribute(tag, "type");
+						sztype = "point";
+						if (tag.AttributeValue("lc", true)) mapLC2F1D = true;
 					}
-					else
+
+					FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
+					assert(pc->GetSuperClassID() == prop->GetSuperClassID());
+					if (pc)
 					{
-						// We need to continue supporting mapping load curves to FEFunction1D. 
-						bool mapLC2F1D = false;
-						if ((prop->GetSuperClassID() == FEFUNCTION1D_ID) &&
-							(tag.AttributeValue("type", true) == nullptr))
+						if (szname) pc->SetName(szname);
+
+						prop->AddComponent(pc);
+
+						if (mapLC2F1D)
 						{
-							sztype = "point";
-							if (tag.AttributeValue("lc", true)) mapLC2F1D = true;
+							const char* szlc = tag.AttributeValue("lc");
+							int lc = atoi(szlc);
+							Param* pp = pc->GetParam("points"); assert(pp);
+							GetFEBioModel().AddParamCurve(pp, lc - 1);
 						}
-
-						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
-						assert(pc->GetSuperClassID() == prop->GetSuperClassID());
-						if (pc)
-						{
-							if (szname) pc->SetName(szname);
-
-							prop->AddComponent(pc);
-
-							if (mapLC2F1D)
-							{
-								const char* szlc = tag.AttributeValue("lc");
-								int lc = atoi(szlc);
-								Param* pp = pc->GetParam("points"); assert(pp);
-								GetFEBioModel().AddParamCurve(pp, lc - 1);
-							}
-							else ParseModelComponent(pc, tag);
-						}
+						else ParseModelComponent(pc, tag);
 					}
 				}
 			}

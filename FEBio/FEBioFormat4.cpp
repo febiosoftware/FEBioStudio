@@ -393,6 +393,9 @@ void FEBioFormat4::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 
 	if (tag.isleaf())
 	{
+		// make sure there is a value
+		if (strlen(tag.szvalue()) == 0) return;
+
 		const char* szparam = tag.Name();
 		const char* sztype = tag.AttributeValue("type", true);
 		if (sztype) szparam = sztype;
@@ -476,21 +479,13 @@ void FEBioFormat4::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 					// some classes allow names for their properties (e.g. chemical reactions)
 					const char* szname = tag.AttributeValue("name", true);
 
-					// skip obsolete "user" type
-					if (strcmp(sztype, "user") == 0)
+					FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
+					assert(pc->GetSuperClassID() == prop->GetSuperClassID());
+					if (pc)
 					{
-						ParseUnknownAttribute(tag, "type");
-					}
-					else
-					{
-						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
-						assert(pc->GetSuperClassID() == prop->GetSuperClassID());
-						if (pc)
-						{
-							if (szname) pc->SetName(szname);
-							prop->AddComponent(pc);
-							ParseModelComponent(pc, tag);
-						}
+						if (szname) pc->SetName(szname);
+						prop->AddComponent(pc);
+						ParseModelComponent(pc, tag);
 					}
 				}
 			}

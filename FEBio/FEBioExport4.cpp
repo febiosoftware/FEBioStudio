@@ -211,8 +211,23 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 	if (model.ShellElements() > 0) m_bdata = true;	// for shell thicknesses
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
-		FSTransverselyIsotropic* pmat = dynamic_cast<FSTransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
-		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) m_bdata = true;
+		// get the material properties
+		GMaterial* gmat = fem.GetMaterial(i);
+		FSMaterial* pmat = gmat->GetMaterialProperties();
+
+		// see if we should write fibers
+		// This is only done if the material specifies the "user" fiber property
+		bool writeFibers = false;
+
+		FSProperty* fiberProp = pmat->FindProperty("fiber");
+		if (fiberProp && fiberProp->Size() == 1)
+		{
+			FSCoreBase* fib = fiberProp->GetComponent(0);
+			if (strcmp(fib->GetTypeString(), "user") == 0)
+			{
+				m_bdata = true;
+			}
+		}
 	}
 	for (int i = 0; i < model.Objects(); ++i)
 	{
@@ -1973,11 +1988,25 @@ void FEBioExport4::WriteMeshDataMaterialFibers()
 		GObject* po = pm->GetGObject();
 		const Transform& T = po->GetTransform();
 
-		GMaterial* pmat = fem.GetMaterialFromID(elSet.m_matID);
-		FSTransverselyIsotropic* ptiso = 0;
-		if (pmat) ptiso = dynamic_cast<FSTransverselyIsotropic*>(pmat->GetMaterialProperties());
+		// get the material properties
+		GMaterial* gmat = fem.GetMaterialFromID(elSet.m_matID);
+		FSMaterial* pmat = gmat->GetMaterialProperties();
 
-		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
+		// see if we should write fibers
+		// This is only done if the material specifies the "user" fiber property
+		bool writeFibers = false;
+
+		FSProperty* fiberProp = pmat->FindProperty("fiber");
+		if (fiberProp && fiberProp->Size() == 1)
+		{
+			FSCoreBase* fib = fiberProp->GetComponent(0);
+			if (strcmp(fib->GetTypeString(), "user") == 0)
+			{
+				writeFibers = true;
+			}
+		}
+
+		if (writeFibers)
 		{
 			int NE = (int)elSet.m_elem.size();
 			XMLElement tag("ElementData");
