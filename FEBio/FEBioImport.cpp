@@ -182,10 +182,12 @@ bool FEBioFileImport::Load(const char* szfile)
 	}
 	catch (std::runtime_error e)
 	{
+		SetFileStream(nullptr);
 		return errf("FATAL ERROR: %s (line %d)\n", e.what(), xml.GetCurrentLine());
 	}
 	catch (...)
 	{
+		SetFileStream(nullptr);
 		return errf("FATAL ERROR: unrecoverable error (line %d)\n", xml.GetCurrentLine());
 	}
 
@@ -198,6 +200,8 @@ bool FEBioFileImport::Load(const char* szfile)
 	{
 		errf(szlog);
 	}
+
+	SetFileStream(nullptr);
 
 	// we're done!
 	return true;

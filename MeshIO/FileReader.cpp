@@ -92,10 +92,13 @@ bool FileReader::SetFileStream(ifstream* stream)
 {
     m_stream = stream;
 
-    std::streampos pos = m_stream->tellg();
-    m_stream->seekg(0, std::ios_base::end);
-    m_nfilesize = m_stream->tellg();
-    m_stream->seekg(pos, std::ios_base::beg);
+	if (m_stream)
+	{
+		std::streampos pos = m_stream->tellg();
+		m_stream->seekg(0, std::ios_base::end);
+		m_nfilesize = m_stream->tellg();
+		m_stream->seekg(pos, std::ios_base::beg);
+	}
 
 	return true;
 }
@@ -108,6 +111,7 @@ void FileReader::Close()
 		m_fp = 0;	// we set this to zero first, in order to avoid a race condition
 		fclose(fp);
 	}
+	m_stream = nullptr;
 	m_nfilesize = 0;
 }
 
