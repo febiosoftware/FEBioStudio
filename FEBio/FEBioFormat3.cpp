@@ -598,6 +598,13 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				param->SetIntValue(n);
 			}
 			break;
+			case Param_FLOAT:
+			{
+				double v = 0.0;
+				tag.value(v);
+				param->SetFloatValue(v);
+			}
+			break;
 			case Param_VEC3D:
 			{
 				vec3d v;
@@ -2780,7 +2787,7 @@ void FEBioFormat3::ParseContact(FSStep *pstep, XMLTag &tag)
 		pci->SetName(name);
 
 		// read the parameters
-		ReadParameters(*pci, tag);
+		ParseModelComponent(pci, tag);
 
 		// assign surfaces
         if (surfPair)

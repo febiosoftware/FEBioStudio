@@ -859,7 +859,12 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 
 	// get the type string    
 	const char* sztype = pm->GetTypeString(); assert(sztype);
-	if (sztype && sztype[0]) el.add_attribute("type", pm->GetTypeString());
+	if (sztype && sztype[0])
+	{
+		// only add the type attribute if the tag name is different from the type string
+		if (strcmp(sztype, el.name()) != 0)
+		el.add_attribute("type", sztype);
+	}
 
 	// see if there are any attribute parameters
 	FSModel& fem = m_prj.GetFSModel();
@@ -897,6 +902,61 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 	{
 		m_xml.add_empty(el);
 		return;
+	}
+
+	if (pm->Properties() == 0)
+	{
+		// see if we can use the shorthand notation
+		// In order to use this, there can only be one non-attribute parameter with
+		// the same name as the type string. 
+		Param* pp = nullptr;
+		for (int i = 0; i < pm->Parameters(); ++i)
+		{
+			Param& p = pm->GetParam(i);
+			if ((p.GetFlags() & FS_PARAM_ATTRIBUTE) == 0)
+			{
+				if (strcmp(p.GetShortName(), sztype) == 0)
+				{
+					if (pp == nullptr) pp = &p;
+					else
+					{
+						pp = nullptr;
+						break;
+					}
+				}
+			}
+		}
+
+		// If there is only one parameter, and it has the same name
+		// as the type, then write it all on a single line.
+		if (pp)
+		{
+			bool useShortNotation = true;
+			switch (pp->GetParamType())
+			{
+//			case Param_INT              : el.value(pp->GetIntValue   ()); break;
+			case Param_FLOAT            : el.value(pp->GetFloatValue ()); break;
+//			case Param_BOOL             : el.value(pp->GetBoolValue  ()); break;
+//			case Param_VEC3D            : el.value(pp->GetVec3dValue ()); break;
+//			case Param_VEC2I            : el.value(pp->GetVec2iValue ()); break;
+//			case Param_MAT3D            : el.value(pp->GetMat3dValue ()); break;
+//			case Param_MAT3DS           : el.value(pp->GetMat3dsValue()); break;
+//			case Param_STD_VECTOR_INT   : el.value(pp->GetVectorIntValue()); break;
+//			case Param_STD_VECTOR_DOUBLE: el.value(pp->GetVectorDoubleValue()); break;
+//			case Param_ARRAY_INT        : el.value(pp->GetArrayIntValue()); break;
+//			case Param_ARRAY_DOUBLE     : el.value(pp->GetArrayDoubleValue()); break;
+//			case Param_MATH             : el.value(pp->GetMathString()); break;
+//			case Param_STRING           : el.value(pp->GetStringValue()); break;
+			default:
+				useShortNotation = false;
+			}
+
+			if (useShortNotation)
+			{
+				m_xml.add_leaf(el);
+				return;
+			}
+		}
 	}
 
 	m_xml.add_branch(el);
@@ -2337,18 +2397,12 @@ void FEBioExport4::WriteContactSection(FSStep& s)
 		if (pi && pi->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pi);
+			const char* sz = pi->GetName().c_str();
 
 			XMLElement ec("contact");
-			ec.add_attribute("type", pi->GetTypeString());
-			const char* sz = pi->GetName().c_str();
 			ec.add_attribute("name", sz);
 			ec.add_attribute("surface_pair", sz);
-
-			m_xml.add_branch(ec);
-			{
-				WriteParamList(*pi);
-			}
-			m_xml.close_branch();
+			WriteModelComponent(pi, ec);
 		}
 	}
 
