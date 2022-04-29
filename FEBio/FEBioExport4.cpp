@@ -1861,7 +1861,8 @@ void FEBioExport4::WriteElementDataSection()
 void FEBioExport4::WriteNodeDataGenerator(FSNodeDataGenerator* map)
 {
 	XMLElement meshData("NodeData");
-	meshData.add_attribute("generator", map->GetTypeString());
+	meshData.add_attribute("name", map->GetName());
+	meshData.add_attribute("type", map->GetTypeString());
 	meshData.add_attribute("node_set", GetNodeSetName(map->GetItemList()));
 	m_xml.add_branch(meshData);
 	{

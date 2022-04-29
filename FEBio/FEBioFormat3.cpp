@@ -1407,15 +1407,27 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	{
 		FSMesh* feMesh = nodeSet->GetMesh();
 
-		FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
-
 		const char* szgen = tag.AttributeValue("generator", true);
 		if (szgen)
 		{
-			tag.skip();
+			FSModel* fem = &feb.GetFSModel();
+			// allocate mesh data generator
+			FSMeshDataGenerator* gen = FEBio::CreateNodeDataGenerator(szgen, fem);
+			if (gen)
+			{
+				gen->SetName(name->cvalue());
+				gen->SetItemList(nodeSet);
+
+				ParseModelComponent(gen, tag);
+
+				fem->AddMeshDataGenerator(gen);
+			}
+			else ParseUnknownAttribute(tag, "generator");
 		}
 		else
 		{
+			FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
+
 			double val;
 			int lid;
 			++tag;
