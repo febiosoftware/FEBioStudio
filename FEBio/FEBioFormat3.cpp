@@ -830,8 +830,18 @@ void FEBioFormat3::ParseShellDomain(XMLTag& tag)
 		const char* sz3field = tag.AttributeValue("three_field", true);
 		if (sz3field) szelem = "three-field-shell";
 
-		// If the shell type is not defined but there are parameters, we'll assume it's the elastic-shell domain
-		if ((szelem == nullptr) && (tag.isleaf() == false)) szelem = "elastic-shell";
+		// If the shell type is not defined but there are parameters, we'll assume it's either the elastic-shell domain
+		// or the rigid shell domain
+		if ((szelem == nullptr) && (tag.isleaf() == false))
+		{
+			szelem = "elastic-shell";
+			GMaterial* gmat = febio.GetMaterial(matID);
+			if (gmat)
+			{
+				FSMaterial* pmat = gmat->GetMaterialProperties();
+				if (pmat && pmat->IsRigid()) szelem = "rigid-shell";
+			}
+		}
 
 		// try to allocate it
 		if (szelem) shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
