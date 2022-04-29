@@ -677,7 +677,7 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 								const char* szlc = tag.AttributeValue("lc");
 								int lc = atoi(szlc);
 								Param* pp = pc->GetParam("points"); assert(pp);
-								GetFEBioModel().AddParamCurve(pp, lc);
+								GetFEBioModel().AddParamCurve(pp, lc - 1);
 							}
 							else ParseModelComponent(pc, tag);
 						}
@@ -2595,12 +2595,18 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 						pp->SetParamType(Param_STRING);
 						pp->SetStringValue(scaleValue);
 					}
+					else if (scaleType.empty())
+					{
+						pp->SetFloatValue(val);
+					}
+					else assert(false);
 				}
                 else if (bc == "q")
                 {
 					pic = FEBio::CreateInitialCondition("initial fluid pressure", &fem);
 					pic->SetParamBool("shell_bottom", true);
-                }
+					pic->SetParamFloat("value", val);
+				}
                 else if (bc == "vx")
                 {
 					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
@@ -2618,40 +2624,39 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				}
 				else if (bc == "svx")
                 {
-					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					FSInitialCondition* pic = FEBio::CreateInitialCondition("shell velocity", &fem);
 					pic->SetParamVec3d("value", vec3d(val, 0, 0));
-					pic->SetParamBool("shell_bottom", true);
 				}
                 else if (bc == "svy")
                 {
-					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					FSInitialCondition* pic = FEBio::CreateInitialCondition("shell velocity", &fem);
 					pic->SetParamVec3d("value", vec3d(0, val, 0));
-					pic->SetParamBool("shell_bottom", true);
 				}
                 else if (bc == "svz")
                 {
-					FSInitialCondition* pic = FEBio::CreateInitialCondition("velocity", &fem);
+					FSInitialCondition* pic = FEBio::CreateInitialCondition("shell velocity", &fem);
 					pic->SetParamVec3d("value", vec3d(0, 0, val));
-					pic->SetParamBool("shell_bottom", true);
 				}
                 else if (bc == "ef")
                 {
 					pic = FEBio::CreateInitialCondition("initial fluid dilatation", &fem);
-                }
+					pic->SetParamFloat("value", val);
+				}
                 else if (bc.compare(0,1,"c") == 0)
                 {
                     int nsol;
                     sscanf(bc.substr(1).c_str(),"%d",&nsol);
                     pic = FEBio::CreateInitialCondition("initial concentration", &fem);
 					pic->SetParamInt("dof", nsol - 1);
+					pic->SetParamFloat("value", val);
                 }
                 else if (bc.compare(0,1,"d") == 0)
                 {
                     int nsol;
                     sscanf(bc.substr(1).c_str(),"%d",&nsol);
-					pic = FEBio::CreateInitialCondition("initial concentration", &fem);
+					pic = FEBio::CreateInitialCondition("initial shell concentration", &fem);
 					pic->SetParamInt("dof", nsol - 1);
-					pic->SetParamBool("shell_bottom", true);
+					pic->SetParamFloat("value", val);
 				}
 
 				if (pic)

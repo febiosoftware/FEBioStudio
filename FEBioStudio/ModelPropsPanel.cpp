@@ -764,6 +764,12 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			ui->setFEClassData(pc, pc->GetFSModel());
 			ui->showPropsPanel(true);
 		}
+		else if (dynamic_cast<GDiscreteSpringSet*>(po))
+		{
+			GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(po);
+			ui->setFEClassData(pds->GetMaterial(), pds->GetModel()->GetFSModel());
+			ui->showPropsPanel(true);
+		}
 		else if (props)
 		{
 			if (flags & 1)
