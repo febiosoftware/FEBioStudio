@@ -128,10 +128,12 @@ public:
         // Before we close and delete it, we need to copy the downloaded date for the files
         saveDownloadDates();
 
-		// Delete local copy of the model database in order to write a new one.
-		QFile::remove(dbPath);
-
 		if(!openDatabase()) return;
+
+        // Completely empty the database
+        sqlite3_db_config(db, SQLITE_DBCONFIG_RESET_DATABASE, 1, 0);
+        sqlite3_exec(db, "VACUUM", 0, 0, 0);
+        sqlite3_db_config(db, SQLITE_DBCONFIG_RESET_DATABASE, 0, 0);
 
 		int rc = sqlite3_exec(db,schema.c_str(), NULL, NULL, &zErrMsg);
 
