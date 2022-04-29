@@ -255,6 +255,9 @@ struct OldParam {
 	int vi;
 };
 
+// in FEBioFormat.cpp
+extern bool is_number(const char* szval);
+
 //-----------------------------------------------------------------------------
 void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
 {
@@ -277,12 +280,22 @@ void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
 			}
 			else if (tag == "qnmethod")
 			{
-				int v = -1;
-				tag.value(v);
+				int qn = -1;
+				const char* sz = tag.szvalue();
+				if (is_number(sz))
+					tag.value(qn);
+				else
+				{
+					if      (stricmp(sz, "BFGS"   ) == 0) qn = 0;
+					else if (stricmp(sz, "BROYDEN") == 0) qn = 1;
+					else if (stricmp(sz, "JFK"    ) == 0) qn = 2;
+					else assert(false);
+				}
+
 				FSProperty* solverProp = pmc->FindProperty("qn_method"); assert(solverProp);
 
 				FSModelComponent* qnmethod = nullptr;
-				switch (v)
+				switch (qn)
 				{
 				case 0: qnmethod = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS"   , &fem); break;
 				case 1: qnmethod = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", &fem); break;
