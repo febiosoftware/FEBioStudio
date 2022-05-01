@@ -797,7 +797,7 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FESelect
 	// apply modifier and create new mesh
 	FEMesh* newMesh = 0;
 	try {
-		if (sel)
+		if (sel && (sel->Type() != SELECT_OBJECTS))
 			newMesh = modifier.Apply(po, sel);
 		else
 			newMesh = modifier.Apply(pm);
