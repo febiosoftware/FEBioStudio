@@ -50,14 +50,13 @@ CDlgScreenCapture::CDlgScreenCapture(QImage* img, CMainWindow* wnd)
     layout->addWidget(m_view);
 
     QHBoxLayout* buttonLayout = new QHBoxLayout;
+    buttonLayout->addStretch();
 
     QPushButton* saveButton = new QPushButton("Save Image...");
     buttonLayout->addWidget(saveButton);
 
     QPushButton* copyButton = new QPushButton("Copy to Clipboard");
     buttonLayout->addWidget(copyButton);
-
-    buttonLayout->addStretch();
 
     layout->addLayout(buttonLayout);
 
