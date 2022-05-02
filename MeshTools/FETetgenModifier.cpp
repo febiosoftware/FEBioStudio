@@ -118,7 +118,7 @@ FEMesh* FETetGenModifier::Apply(FEGroup* pg)
 	else
 		m_bremesh = false;
 
-	return Apply(part->GetMesh());
+	return Apply(pg->GetMesh());
 }
 
 //-----------------------------------------------------------------------------
