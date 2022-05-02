@@ -119,6 +119,7 @@ SOFTWARE.*/
 #include <PostLib/VolumeRender2.h>
 #include <sstream>
 #include "PostObject.h"
+#include "DlgScreenCapture.h"
 
 using std::stringstream;
 
@@ -1167,7 +1168,10 @@ void CMainWindow::on_actionCloseAll_triggered()
 void CMainWindow::on_actionSnapShot_triggered()
 {
 	QImage img = GetGLView()->CaptureScreen();
-	SaveImage(img);
+
+    CDlgScreenCapture dlg(&img, this);
+
+    dlg.exec();
 }
 
 void CMainWindow::on_actionSaveProject_triggered()
