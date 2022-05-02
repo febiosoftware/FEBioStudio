@@ -887,6 +887,26 @@ bool FSModel::SetEnumKey(Param& param, const std::string& key)
 			}
 		}
 	}
+	else if (strncmp(szvar, "$(dof_list:", 11) == 0)
+	{
+		const char* szvarname = szvar + 11;
+		char tmp[256] = { 0 };
+		strcpy(tmp, szvar + 11);
+		int l = strlen(tmp);
+		tmp[l - 1] = 0;
+
+		int i = GetVariableIndex(tmp);
+		FEDOFVariable& var = Variable(i);
+		for (int j = 0; j < var.DOFs(); ++j)
+		{
+			const char* szi = var.GetDOF(j).symbol();
+			if (key == szi)
+			{
+				param.SetIntValue(j);
+				return true;
+			}
+		}
+	}
 	else if (szvar[0] != '$')
 	{
 		// see if the value string matches an enum string

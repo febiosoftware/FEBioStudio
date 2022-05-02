@@ -897,6 +897,11 @@ FSPairedInterface* FEBio::CreatePairedInterface(const std::string& typeStr, FSMo
 	return CreateModelComponent<FEBioInterface>(FESURFACEINTERFACE_ID, typeStr, fem);
 }
 
+FSModelConstraint* FEBio::CreateModelConstraint(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FSModelConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
+}
+
 FSModelConstraint* FEBio::CreateNLConstraint(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEBioNLConstraint>(FENLCONSTRAINT_ID, typeStr, fem);

@@ -131,6 +131,7 @@ namespace FEBio {
 	FSSurfaceLoad*       CreateSurfaceLoad      (const std::string& typeStr, FSModel* fem);
 	FSBodyLoad*          CreateBodyLoad         (const std::string& typeStr, FSModel* fem);
 	FSPairedInterface*   CreatePairedInterface  (const std::string& typeStr, FSModel* fem);
+	FSModelConstraint*	 CreateModelConstraint  (const std::string& typeStr, FSModel* fem);
 	FSModelConstraint*	 CreateNLConstraint     (const std::string& typeStr, FSModel* fem);
 	FSSurfaceConstraint* CreateSurfaceConstraint(const std::string& typeStr, FSModel* fem);
 	FSBodyConstraint*    CreateBodyConstraint   (const std::string& typeStr, FSModel* fem);
